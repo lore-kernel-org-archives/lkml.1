@@ -1,207 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759383AbZCSQld@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754181AbZCSQpf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759383AbZCSQld (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Mar 2009 12:41:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753432AbZCSQlX
+	id S1754181AbZCSQpf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Mar 2009 12:45:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753432AbZCSQpW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Mar 2009 12:41:23 -0400
-Received: from g5t0008.atlanta.hp.com ([15.192.0.45]:26354 "EHLO
-	g5t0008.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751880AbZCSQlW (ORCPT
+	Thu, 19 Mar 2009 12:45:22 -0400
+Received: from yw-out-2324.google.com ([74.125.46.31]:35864 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752376AbZCSQpU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Mar 2009 12:41:22 -0400
-Date: Thu, 19 Mar 2009 10:41:19 -0600
-From: Alex Chiang <achiang@hp.com>
-To: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
-Cc: jbarnes@virtuousgeek.org, linux-pci@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Trent Piepho <xyzzy@speakeasy.org>
-Subject: Re: [PATCH v4 08/12] PCI: Introduce /sys/bus/pci/devices/.../remove
-Message-ID: <20090319164119.GC8074@ldl.fc.hp.com>
-References: <20090318222426.887.1008.stgit@bob.kio> <20090318224006.887.91805.stgit@bob.kio> <49C2540E.70207@jp.fujitsu.com>
+	Thu, 19 Mar 2009 12:45:20 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=qumM9XEJc8gu9dmqNjui+BxBPz7G7jXnAnR9aXry4SDQ5BLgcB2f+u/GY/UU0wrztA
+         mP79xVBg5/4hYakbx25V8WvWPN2RjEyg+YhHzrQHZPcU5wu1Y1b56sri/E6vuKqvzp53
+         9zTZH1M0xdHG3Bv5H3WwfAujTTM2N622vxASw=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49C2540E.70207@jp.fujitsu.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <20090319152441.GB3587@tuxdriver.com>
+References: <1237143683.24621.7.camel@johannes.local>
+	 <20090315202603.GA9077@elte.hu>
+	 <b6a2187b0903160624gb9d207dv301506e589d93ed4@mail.gmail.com>
+	 <1237317742.31814.28.camel@johannes.local>
+	 <b6a2187b0903181958ke11abe7tdcbc4efeb950954d@mail.gmail.com>
+	 <b6a2187b0903182149x77e416ecuf73be2970173c601@mail.gmail.com>
+	 <1237455534.5100.56.camel@johannes.local>
+	 <20090319141311.GA3587@tuxdriver.com>
+	 <200903191602.58790.elendil@planet.nl>
+	 <20090319152441.GB3587@tuxdriver.com>
+Date: Fri, 20 Mar 2009 00:45:17 +0800
+Message-ID: <b6a2187b0903190945l29d64016sa755bbd9581968aa@mail.gmail.com>
+Subject: Re: Required sequence to set wireless parameters? (was: 2.6.29-rc8: 
+	Reported regressions from 2.6.28)
+From: Jeff Chua <jeff.chua.linux@gmail.com>
+To: "John W. Linville" <linville@tuxdriver.com>
+Cc: Frans Pop <elendil@planet.nl>, johannes@sipsolutions.net, mingo@elte.hu,
+       torvalds@linux-foundation.org, rjw@sisk.pl,
+       linux-kernel@vger.kernel.org, bunk@kernel.org,
+       akpm@linux-foundation.org, kernel-testers@vger.kernel.org,
+       netdev@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>:
-> Alex Chiang wrote:
->> This patch adds an attribute named "remove" to a PCI device's sysfs
->> directory.  Writing a non-zero value to this attribute will remove the PCI
->> device and any children of it.
->>
->> Trent Piepho wrote the original implementation and documentation.
->>
->> Thanks to Vegard Nossum for testing under kmemcheck and finding locking
->> issues with the sysfs interface.
->>
->> Cc: Trent Piepho <xyzzy@speakeasy.org>
->> Signed-off-by: Alex Chiang <achiang@hp.com>
->> ---
->>
->>  Documentation/ABI/testing/sysfs-bus-pci |    8 ++++++
->>  Documentation/filesystems/sysfs-pci.txt |   10 +++++++
->>  drivers/pci/pci-sysfs.c                 |   44 +++++++++++++++++++++++++++++++
->>  3 files changed, 62 insertions(+), 0 deletions(-)
->>
->> diff --git a/Documentation/ABI/testing/sysfs-bus-pci b/Documentation/ABI/testing/sysfs-bus-pci
->> index ea4aee2..5b1ddde 100644
->> --- a/Documentation/ABI/testing/sysfs-bus-pci
->> +++ b/Documentation/ABI/testing/sysfs-bus-pci
->> @@ -50,6 +50,14 @@ Description:
->>  		re-discover previously removed devices.
->>  		Depends on CONFIG_HOTPLUG.
->>  +What:		/sys/bus/pci/devices/.../remove
->> +Date:		January 2009
->> +Contact:	Linux PCI developers <linux-pci@vger.kernel.org>
->> +Description:
->> +		Writing a non-zero value to this attribute will
->> +		hot-remove the PCI device and any of its children.
->> +		Depends on CONFIG_HOTPLUG.
->> +
->>  What:		/sys/bus/pci/devices/.../vpd
->>  Date:		February 2008
->>  Contact:	Ben Hutchings <bhutchings@solarflare.com>
->> diff --git a/Documentation/filesystems/sysfs-pci.txt b/Documentation/filesystems/sysfs-pci.txt
->> index 9f8740c..26e4b8b 100644
->> --- a/Documentation/filesystems/sysfs-pci.txt
->> +++ b/Documentation/filesystems/sysfs-pci.txt
->> @@ -12,6 +12,7 @@ that support it.  For example, a given bus might look like this:
->>       |   |-- enable
->>       |   |-- irq
->>       |   |-- local_cpus
->> +     |   |-- remove
->>       |   |-- resource
->>       |   |-- resource0
->>       |   |-- resource1
->> @@ -36,6 +37,7 @@ files, each with their own function.
->>         enable	           Whether the device is enabled (ascii, rw)
->>         irq		   IRQ number (ascii, ro)
->>         local_cpus	   nearby CPU mask (cpumask, ro)
->> +       remove		   remove device from kernel's list (ascii, wo)
->>         resource		   PCI resource host addresses (ascii, ro)
->>         resource0..N	   PCI resource N, if present (binary, mmap)
->>         resource0_wc..N_wc  PCI WC map resource N, if prefetchable (binary, mmap)
->> @@ -46,6 +48,7 @@ files, each with their own function.
->>     ro - read only file
->>    rw - file is readable and writable
->> +  wo - write only file
->>    mmap - file is mmapable
->>    ascii - file contains ascii text
->>    binary - file contains binary data
->> @@ -73,6 +76,13 @@ that the device must be enabled for a rom read to return data succesfully.
->>  In the event a driver is not bound to the device, it can be enabled using the
->>  'enable' file, documented above.
->>  +The 'remove' file is used to remove the PCI device, by writing a 
->> non-zero
->> +integer to the file.  This does not involve any kind of hot-plug functionality,
->> +e.g. powering off the device.  The device is removed from the kernel's list of
->> +PCI devices, the sysfs directory for it is removed, and the device will be
->> +removed from any drivers attached to it. Removal of PCI root buses is
->> +disallowed.
->> +
->>  Accessing legacy resources through sysfs
->>  ----------------------------------------
->>  diff --git a/drivers/pci/pci-sysfs.c b/drivers/pci/pci-sysfs.c
->> index 22dbc65..6e2b1fd 100644
->> --- a/drivers/pci/pci-sysfs.c
->> +++ b/drivers/pci/pci-sysfs.c
->> @@ -246,6 +246,47 @@ struct bus_attribute pci_bus_attrs[] = {
->>  	__ATTR(rescan, S_IWUSR, NULL, bus_rescan_store),
->>  	__ATTR_NULL
->>  };
->> +
->> +static void remove_callback(struct device *dev)
->> +{
->> +	int bridge = 0;
->> +	struct pci_dev *pdev = to_pci_dev(dev);
->> +
->> +	mutex_lock(&pci_remove_rescan_mutex);
->> +
->> +	if (pdev->subordinate)
->> +		bridge = 1;
->> +
->> +	pci_remove_bus_device(pdev);
->> +	if (bridge && list_empty(&pdev->bus->devices))
->> +		pci_remove_bus(pdev->bus);
->
-> I cannot understand the above two lines. Could you explain
-> what it intend?
+On Thu, Mar 19, 2009 at 11:24 PM, John W. Linville
+<linville@tuxdriver.com> wrote:
+> On Thu, Mar 19, 2009 at 04:02:56PM +0100, Frans Pop wrote:
+>> John W. Linville wrote:
+>> > On Thu, Mar 19, 2009 at 10:38:54AM +0100, Johannes Berg wrote:
+>> >> On Thu, 2009-03-19 at 12:49 +0800, Jeff Chua wrote:
+>> >> > # this needs patch to work ...
+>> >> > iwconfig wlan0 mode Managed
+>> >> > ifconfig wlan0 up
+>> >> > iwconfig wlan0 essid xxx
+>> >> > iwconfig wlan0 key restricted xxx
+>> >> > iwconfig wlan0 ap auto channel auto
+>> >>
+>> >> If you swap the key and essid lines, it will probably always work.
 
-If the user says:
+I just discovered that  "iwconfig wlan0 ap auto channel auto" is the
+one causing the problem on 2.6.29-rc8. Remove the line and it'll
+associate to the AP. Just tried on two different APs a few times, and
+it seems to behave that way. If I execute the "auto" command, it'll
+fail to associate, but works fine with the patch.
 
-	echo 1 > /sys/bus/pci/devices/.../remove
-
-And that device is a bridge, then we need to specifically call
-pci_remove_bus as well, to actually remove the bus itself.
-Without it, pci_bus_remove_device() will remove all of its
-children (and subordinate buses) in a depth-first manner, but we
-will never actually remove the bus that the user specified.
-
-In other words, without it, we will still see the bus in:
-
-	/sys/class/pci_bus/...
-
-We only want to remove the bus if it has no children left. I
-think the check for list_empty(&pdev->bus->devices) might be
-overkill... I can try taking that bit out and testing again.
-
-Thanks for the review.
-
-/ac
-
-> Thanks,
-> Kenji Kaneshige
->
->
->> +
->> +	mutex_unlock(&pci_remove_rescan_mutex);
->> +}
->> +
->> +static ssize_t
->> +remove_store(struct device *dev, struct device_attribute *dummy,
->> +	     const char *buf, size_t count)
->> +{
->> +	int ret = 0;
->> +	unsigned long val;
->> +	struct pci_dev *pdev = to_pci_dev(dev);
->> +
->> +	if (strict_strtoul(buf, 0, &val) < 0)
->> +		return -EINVAL;
->> +
->> +	if (!capable(CAP_SYS_ADMIN))
->> +		return -EPERM;
->> +
->> +	if (pdev->subordinate && pci_is_root_bus(pdev->bus))
->> +		return -EBUSY;
->> +
->> +	if (val)
->> +		ret = device_schedule_callback(dev, remove_callback);
->> +	if (ret)
->> +		count = ret;
->> +	return count;
->> +}
->>  #endif
->>   struct device_attribute pci_dev_attrs[] = {
->> @@ -266,6 +307,9 @@ struct device_attribute pci_dev_attrs[] = {
->>  	__ATTR(broken_parity_status,(S_IRUGO|S_IWUSR),
->>  		broken_parity_status_show,broken_parity_status_store),
->>  	__ATTR(msi_bus, 0644, msi_bus_show, msi_bus_store),
->> +#ifdef CONFIG_HOTPLUG
->> +	__ATTR(remove, S_IWUSR, NULL, remove_store),
->> +#endif
->>  	__ATTR_NULL,
->>  };
->>  
->>
->> --
->> To unsubscribe from this list: send the line "unsubscribe linux-pci" in
->> the body of a message to majordomo@vger.kernel.org
->> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->>
->>
->
->
+Jeff.
