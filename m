@@ -1,68 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761495AbZCSUxc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758783AbZCSU7P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761495AbZCSUxc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Mar 2009 16:53:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758676AbZCSUxR
+	id S1758783AbZCSU7P (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Mar 2009 16:59:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752733AbZCSU6y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Mar 2009 16:53:17 -0400
-Received: from b01.ext.isohunt.com ([208.71.112.51]:59019 "EHLO
-	mail.isohunt.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1761288AbZCSUxQ (ORCPT
+	Thu, 19 Mar 2009 16:58:54 -0400
+Received: from g4t0016.houston.hp.com ([15.201.24.19]:35237 "EHLO
+	g4t0016.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751191AbZCSU6x convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Mar 2009 16:53:16 -0400
-Date: Thu, 19 Mar 2009 13:18:05 -0700
-From: "Robin H. Johnson" <robbat2@gentoo.org>
-To: linux-kernel@vger.kernel.org
-Subject: Re: rmmod/delete_module hangs forever
-Message-ID: <20090319201805.GH3795@curie-int>
-References: <20090314213947.GA9084@curie-int>
+	Thu, 19 Mar 2009 16:58:53 -0400
+From: Paul Moore <paul.moore@hp.com>
+Organization: Hewlett-Packard
+To: linux-audit@redhat.com
+Subject: Re: [PATCH] Add SELinux context and TTY name to AUDIT_TTY records
+Date: Thu, 19 Mar 2009 16:58:10 -0400
+User-Agent: KMail/1.11.1 (Linux/2.6.27-gentoo-r8; KDE/4.2.1; i686; ; )
+Cc: Miloslav Trmac <mitr@redhat.com>, viro <viro@zeniv.linux.org.uk>,
+       Eric Paris <eparis@redhat.com>,
+       "linux-kernel" <linux-kernel@vger.kernel.org>
+References: <273781508.1737621237483080376.JavaMail.root@zmail07.collab.prod.int.phx2.redhat.com>
+In-Reply-To: <273781508.1737621237483080376.JavaMail.root@zmail07.collab.prod.int.phx2.redhat.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="Zs/RYxT/hKAHzkfQ"
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <20090314213947.GA9084@curie-int>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Message-Id: <200903191658.10530.paul.moore@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thursday 19 March 2009 01:18:00 pm Miloslav Trmac wrote:
+> From: Miloslav Trmač <mitr@redhat.com>
+>
+> Add SELinux context information and TTY name (consistent with the
+> AUDIT_SYSCALL record) to AUDIT_TTY.  An example record after applying
+> this patch:
+>
+>  type=TTY msg=audit(1237480806.220:22): tty pid=2601 uid=0 auid=500 ses=1
+>  subj=unconfined_u:unconfined_r:unconfined_t:s0 major=136 minor=1 tty=pts1
+>  comm="bash" data=6361740D
+>
+> (line wrapped, new fields are "subj" and "tty".)
+>
+> Signed-off-by: Miloslav Trmač <mitr@redhat.com>
+> ---
+>  drivers/char/tty_audit.c |   57 ++++++++++++++++++++++++-------------
+>  1 file changed, 38 insertions(+), 19 deletions(-)
 
---Zs/RYxT/hKAHzkfQ
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Just a quick procedural comment, in the future you should include patches in 
+the body of the email; people will likely ignore your submission otherwise.
 
-On Sat, Mar 14, 2009 at 02:39:47PM -0700, Robin H. Johnson wrote:
-> Strace gives me this fun in the end:
-> delete_module("button", O_RDONLY|O_EXCL|O_NONBLOCK
-> and it just sits there.
-Ok, after much head-scratching and bisect-powered reboots I have
-disproved for myself that this is a kernel issue.
+There are several audit experts which should review this code but two things 
+jumped out at me when glancing at your patch:
 
-Instead it's some weird interaction between certain BIOS settings on my
-motherboard (ASUS P5Q Premium) and my SCSI controller (HP SC11Xe,
-FusionMPT based) I use for tape specifically when there are no SCSI
-devices on the bus. Skipping the mptspi module, or connecting a SCSI
-device causes the problem to go away, ditto changing some settings in
-the BIOS that cause IRQs to be allocated differently.
+ 1. SELinux SIDs should not be recorded
+ 2. From a SELinux/security point of view ttys are considered objects
+    and their labels/contexts should be recorded with "obj=" not "subj="
 
---=20
-Robin Hugh Johnson
-Gentoo Linux Developer & Infra Guy
-E-Mail     : robbat2@gentoo.org
-GnuPG FP   : 11AC BA4F 4778 E3F6 E4ED  F38E B27B 944E 3488 4E85
+-- 
+paul moore
+linux @ hp
 
---Zs/RYxT/hKAHzkfQ
-Content-Type: application/pgp-signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.10 (GNU/Linux)
-Comment: Robbat2 @ Orbis-Terrarum Networks - The text below is a digital signature. If it doesn't make any sense to you, ignore it.
-
-iEYEARECAAYFAknCqH0ACgkQPpIsIjIzwizDGACgqoKE4ia3VWR/Q87CNbpaaIh1
-6sAAniDaT5C7KUWQK64FcXJXfwCd3EI+
-=/jAR
------END PGP SIGNATURE-----
-
---Zs/RYxT/hKAHzkfQ--
