@@ -1,44 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758252AbZCSTXf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759679AbZCSTYr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758252AbZCSTXf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Mar 2009 15:23:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754818AbZCSTX0
+	id S1759679AbZCSTYr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Mar 2009 15:24:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755411AbZCSTYf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Mar 2009 15:23:26 -0400
-Received: from mx45.mail.ru ([94.100.176.59]:35000 "EHLO mx45.mail.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754463AbZCSTXZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Mar 2009 15:23:25 -0400
-X-Greylist: delayed 1643 seconds by postgrey-1.27 at vger.kernel.org; Thu, 19 Mar 2009 15:23:25 EDT
-From: Peter Lojkin <ia6432@inbox.ru>
-To: linux-kernel@vger.kernel.org
-Subject: 2.6.28, limiting cpu time doesn't work
-Mime-Version: 1.0
-X-Mailer: mPOP Web-Mail 2.19
-X-Originating-IP: unknown via proxy [83.167.111.116]
-Date: Thu, 19 Mar 2009 21:34:07 +0300
-X-Mru-Data: 2340:1:1:70:70:0
-Reply-To: Peter Lojkin <ia6432@inbox.ru>
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Message-Id: <E1LkN4B-0002yU-00.ia6432-inbox-ru@f205.mail.ru>
-X-Mras: Ok
+	Thu, 19 Mar 2009 15:24:35 -0400
+Received: from Cpsmtpm-eml108.kpnxchange.com ([195.121.3.12]:58509 "EHLO
+	CPSMTPM-EML108.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754939AbZCSTYe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Mar 2009 15:24:34 -0400
+From: Frans Pop <elendil@planet.nl>
+To: Johannes Berg <johannes@sipsolutions.net>
+Subject: Re: Required sequence to set wireless parameters?
+Date: Thu, 19 Mar 2009 20:24:27 +0100
+User-Agent: KMail/1.9.9
+Cc: "John W. Linville" <linville@tuxdriver.com>, jeff.chua.linux@gmail.com,
+       mingo@elte.hu, torvalds@linux-foundation.org, rjw@sisk.pl,
+       linux-kernel@vger.kernel.org, bunk@kernel.org,
+       akpm@linux-foundation.org, kernel-testers@vger.kernel.org,
+       netdev@vger.kernel.org
+References: <b6a2187b0903142006u546fad9eme66f9ea7b464b81f@mail.gmail.com> <200903191602.58790.elendil@planet.nl> <1237481630.5100.92.camel@johannes.local>
+In-Reply-To: <1237481630.5100.92.camel@johannes.local>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200903192024.30562.elendil@planet.nl>
+X-OriginalArrivalTime: 19 Mar 2009 19:24:31.0000 (UTC) FILETIME=[53D28180:01C9A8C8]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On Thursday 19 March 2009, Johannes Berg wrote:
+> Wext is a mess, and we've known that for a long time... But no, the
+> sequence should _not_ be required, it's just _easier_ for the kernel,
+> and as such has a better probability of succeeding if there are
+> problems, it should still work though.
+>
+> However, one thing that will _not_ work is this:
+> iwconfig wlan0 essid xyz
+> iwconfig wlan0 key s:xyz
+>
+> you still need:
+> iwconfig wlan0 ap any
+>
+> or anything similar after setting the key to trigger the kernel to do
+> something.
 
-after upgrade to 2.6.28 ulimit -t doesn't work. for example:
+OK. Thanks for the info.
 
-bash# ulimit -t 3; cpuhog
+> > Reason I ask is that for example when writing wireless support for
+> > e.g. a distro installation system, it seems most logical to *first*
+> > ask the user what network (ESSID) he wants to connect to. Next to
+> > check if we can connect to that network without additional
+> > authentication and only then, if needed, ask for keys etc.
+> > If it's not possible to set that info in that logical order that
+> > seems rather restrictive to me and would probably mean that you'd
+> > have to reset AP, ESSID and possibly other settings before each
+> > incremental attempt.
+>
+> That's a pretty wrong argument, nothing says your software cannot
+> collect all the information and then give it to the kernel at once
+> later, I think... In fact, this is required anyway when you use RSN or
+> WPA (wpa_supplicant needs all information at once), for example.
 
-(where cpuhog is any program that continuously use cpu)
-with 2.6.27.20 cpuhog gets killed after 3sec as expected.
-with 2.6.28, 2.6.28.8, 2.6.29-rc8-git4 it's keep running indefinitely.
-ulimit -a and /proc/<pid>/limits show that cputime limit was set correctly.
+Well, the thing is that we'll already have tried just setting essid to 
+check if it's an open network. However, I can see the point of needing to 
+set the essid _again_ after asking the key info and setting that.
 
-have i missed some global api changes? recompilation of recent glibc with new kernel headers and shell doesn't help...
+I can also see how you might have to unset some settings in some cases, 
+for example if the NIC has already associated with the wrong network 
+(e.g. because there's a totally open network in range).
 
-ps please cc me, i'm not on the list
-
+Our current logic (in Debian Installer) definitely needs improving and 
+these pointers will help. Thanks.
