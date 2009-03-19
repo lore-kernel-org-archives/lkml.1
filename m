@@ -1,62 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760109AbZCSRuw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752735AbZCSRv6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760109AbZCSRuw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Mar 2009 13:50:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755409AbZCSRum
+	id S1752735AbZCSRv6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Mar 2009 13:51:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755409AbZCSRvr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Mar 2009 13:50:42 -0400
-Received: from mtagate7.uk.ibm.com ([195.212.29.140]:38555 "EHLO
-	mtagate7.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755842AbZCSRul (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Mar 2009 13:50:41 -0400
-Subject: Re: PROBLEM: relay - stale data copied to user space
-From: Martin Peschke <mpeschke@linux.vnet.ibm.com>
-To: Tom Zanussi <tzanussi@gmail.com>
-Cc: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
-In-Reply-To: <1237436347.7834.13.camel@charm-linux>
-References: <1237388848.4084.64.camel@kitka.ibm.com>
-	 <1237436347.7834.13.camel@charm-linux>
-Content-Type: text/plain
-Date: Thu, 19 Mar 2009 18:50:40 +0100
-Message-Id: <1237485040.4752.16.camel@kitka.ibm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-8.el5_2.3) 
+	Thu, 19 Mar 2009 13:51:47 -0400
+Received: from bu3sch.de ([62.75.166.246]:36104 "EHLO vs166246.vserver.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754181AbZCSRvq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Mar 2009 13:51:46 -0400
+From: Michael Buesch <mb@bu3sch.de>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Subject: Re: linux-next: Tree for March 19 (wireless/p54)
+Date: Thu, 19 Mar 2009 18:50:17 +0100
+User-Agent: KMail/1.9.9
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>,
+       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>
+References: <20090319221024.5e2ad6e5.sfr@canb.auug.org.au> <49C280BE.8090106@oracle.com>
+In-Reply-To: <49C280BE.8090106@oracle.com>
+MIME-Version: 1.0
+Content-Disposition: inline
+Message-Id: <200903191850.17825.mb@bu3sch.de>
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Wed, 2009-03-18 at 23:19 -0500, Tom Zanussi wrote:
-> On Wed, 2009-03-18 at 16:07 +0100, Martin Peschke wrote
-> > This is my theory:
-> > Timing matters. It's a race caused by improper protection of critical
-> > sections in a producer-consumer scenario. A bug in the bookkeeping
-> > allows a reader to read at a position that is just being written to.
+On Thursday 19 March 2009 18:28:30 Randy Dunlap wrote:
+> Stephen Rothwell wrote:
+> > Hi all,
 > > 
+> > Changes since 20090318:
 > 
-> It does look consistent with a reader reading an event that's been
-> reserved but not yet written, or partially written e.g. if an event
-> being written on one cpu was read by another before the first one
-> finished.
+> 
+> ERROR: "led_classdev_register" [drivers/net/wireless/p54/p54common.ko] undefined!
+> ERROR: "led_classdev_unregister" [drivers/net/wireless/p54/p54common.ko] undefined!
+> 
+> One possible option (fix) is to have CONFIG_MAC80211_LEDS also select
+> LEDS_CLASS (that would build the missing functions).
 
-So this is part of relay's design, and it's up to user space to make
-sure that reader and writer are on the same CPU?
+Does p54 select CONFIG_MAC80211_LEDS? If that's the case, I think it should
+probably do it the other way around. p54 should build its LED code if CONFIG_MAC80211_LEDS
+is available. Otherwise it should not.
 
-> Can you see if the below patch to blktrace userspace helps?
+This way you don't enter the SELECT dependency hell and still have automagic configuration.
 
-It appears to fix it. I will give it more testing in a larger
-environment.
+Take a look at b43 for an example.
 
-> Or failing that, explicitly using gettid() in place of getpid() in
-> sched_setaffinity().  Or, failing that, you had mentioned previously
-> that you would try to reproduce the problem on your laptop - were you
-> able to do that?  If so, it would help in debugging it further...
-
-This didn't work out. But then, it's a single-CPU machine.
-
-Thanks,
-Martin
-
-
+-- 
+Greetings, Michael.
