@@ -1,71 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756681AbZCSOve@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755813AbZCSOyV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756681AbZCSOve (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Mar 2009 10:51:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752537AbZCSOv0
+	id S1755813AbZCSOyV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Mar 2009 10:54:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754750AbZCSOyL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Mar 2009 10:51:26 -0400
-Received: from mx1.mxtelecom.com ([87.86.212.101]:43017 "EHLO
-	puma.mxtelecom.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752489AbZCSOvZ (ORCPT
+	Thu, 19 Mar 2009 10:54:11 -0400
+Received: from vsmtp04.dti.ne.jp ([202.216.231.139]:55123 "EHLO
+	vsmtp04.dti.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753856AbZCSOyK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Mar 2009 10:51:25 -0400
-Date: Thu, 19 Mar 2009 14:51:18 +0000
-From: Paul Evans <paul@mxtelecom.com>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Slow long-term increase in dirty pages
-Message-ID: <20090319145118.32c5bfb0@nacelle.mxtelecom.com>
-In-Reply-To: <20090319044751.GA12918@localhost>
-References: <20090318145347.3d709de8@nacelle.mxtelecom.com>
-	<20090319044751.GA12918@localhost>
-Organization: MX Telecom
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.12.12; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="Sig_/6Gk6O83w+cYM0+5U71Zut8H";
- protocol="application/pgp-signature"; micalg=PGP-SHA1
+	Thu, 19 Mar 2009 10:54:10 -0400
+From: hooanon05@yahoo.co.jp
+To: David Woodhouse <David.Woodhouse@intel.com>,
+       Al Viro <viro@zeniv.linux.org.uk>
+cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Q: NFSD readdir in linux-2.6.28
+Date: Thu, 19 Mar 2009 23:54:04 +0900
+Message-ID: <8036.1237474444@jrobl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Sig_/6Gk6O83w+cYM0+5U71Zut8H
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
 
-On Thu, 19 Mar 2009 12:47:51 +0800
-Wu Fengguang <fengguang.wu@intel.com> wrote:
+Hello David and Al,
+I have a question about NFSD readdir.
 
-> The attached filecache patch shall help identify the dirty
-> files/pages.
->=20
-> Usage:
->         # run patched kernel
->         modprobe filecache
->         cat /proc/filecache
->=20
-> The dirty files will have the 'D' flag in its "state" field.
+By the commit 14f7dd632011bb89c035722edd6ea0d90ca6b078
+"[PATCH] Copy XFS readdir hack into nfsd code", nfsd_buffered_filldir()
+was introduced and nfs3svc_encode_entry_plus() (the 'func' parameter) is
+not called from vfs_readdir().
 
-Wow, that looks very useful. I'll have a play with it and see if it
-yields anything of interest.
+In 2.6.27, when nfs3svc_encode_entry_plus() calls lookup_one_len(), the
+i_mutex lock was acquired by vfs_readdir() and it was not a problem.
 
-Thanks,
+After the commit (above), nfsd_readdir/nfsd_buffered_readdir/vfs_readdir
+calls nfsd_buffered_filldir(), and nfs3svc_encode_entry_plus() is called
+later.
+In this sequence, lookup_one_len() is called without i_mutex held.
 
---=20
-Paul Evans <paul@mxtelecom.com>
-Tel: +44 (0) 845 666 7778
-Fax: +44 (0) 870 163 4694
-http://www.mxtelecom.com
+Isn't it a problem?
 
---Sig_/6Gk6O83w+cYM0+5U71Zut8H
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Disposition: attachment; filename=signature.asc
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAknCW+cACgkQcGehlx3Gqx4mjwCdGUeogoO+d1m5/qhj6UYBnV8o
-SPMAnizJU8Tv0hOTul7P5M6zRXijYanM
-=ZzM9
------END PGP SIGNATURE-----
-
---Sig_/6Gk6O83w+cYM0+5U71Zut8H--
+J. R. Okajima
