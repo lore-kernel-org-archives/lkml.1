@@ -1,53 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761670AbZCSW13@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761853AbZCSW3i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761670AbZCSW13 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Mar 2009 18:27:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760603AbZCSW1I
+	id S1761853AbZCSW3i (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Mar 2009 18:29:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761732AbZCSW3W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Mar 2009 18:27:08 -0400
-Received: from mail.parknet.ad.jp ([210.171.162.6]:42881 "EHLO
-	mail.officemail.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761599AbZCSW1H (ORCPT
+	Thu, 19 Mar 2009 18:29:22 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:36793 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761761AbZCSW3V (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Mar 2009 18:27:07 -0400
-From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-To: Mikulas Patocka <mpatocka@redhat.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] deadlock when swapping to FAT
-References: <Pine.LNX.4.64.0903120819010.26206@hs20-bc2-1.build.redhat.com>
-	<87zlfqohfn.fsf@devron.myhome.or.jp>
-	<Pine.LNX.4.64.0903142153330.23664@hs20-bc2-1.build.redhat.com>
-	<878wn7h3la.fsf@devron.myhome.or.jp>
-	<Pine.LNX.4.64.0903170815110.26754@hs20-bc2-1.build.redhat.com>
-	<87prgg6sj2.fsf@devron.myhome.or.jp>
-	<Pine.LNX.4.64.0903191052180.14051@hs20-bc2-1.build.redhat.com>
-Date: Fri, 20 Mar 2009 07:27:00 +0900
-In-Reply-To: <Pine.LNX.4.64.0903191052180.14051@hs20-bc2-1.build.redhat.com>
-	(Mikulas Patocka's message of "Thu, 19 Mar 2009 15:34:00 -0400 (EDT)")
-Message-ID: <8763i5xi6j.fsf@devron.myhome.or.jp>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.91 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Anti-Virus: Kaspersky Anti-Virus for MailServers 5.5.10/RELEASE, bases: 24052007 #308098, status: clean
+	Thu, 19 Mar 2009 18:29:21 -0400
+Date: Thu, 19 Mar 2009 19:28:46 -0300
+From: Mauro Carvalho Chehab <mchehab@infradead.org>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, linux-media@vger.kernel.org
+Subject: Re: linux-next: Tree for March 19 (media/video/au0828)
+Message-ID: <20090319192846.30dceaa2@pedra.chehab.org>
+In-Reply-To: <49C278D8.5010809@oracle.com>
+References: <20090319221024.5e2ad6e5.sfr@canb.auug.org.au>
+	<49C278D8.5010809@oracle.com>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mikulas Patocka <mpatocka@redhat.com> writes:
+On Thu, 19 Mar 2009 09:54:48 -0700
+Randy Dunlap <randy.dunlap@oracle.com> wrote:
 
-> It should prevent truncation under bmap. It is used by direct-io code to 
-> protect the file from being truncated while there's direct-io being 
-> processed on it.
+> Stephen Rothwell wrote:
+> > Hi all,
+> > 
+> > Changes since 20090318:
+> 
+> 
+> when ADV_DEBUG=n:
+> 
+> 
+> drivers/media/video/au0828/au0828-video.c:1438: error: 'const struct v4l2_subdev_core_ops' has no member named 'g_register'
+> drivers/media/video/au0828/au0828-video.c:1453: error: 'const struct v4l2_subdev_core_ops' has no member named 's_register'
 
-I know, FAT is ok, of course, and the simple fs would also be ok.
-However, it's not enough for all filesystems, in theory.
+Fixed, thanks!
 
-> But some filesystems do their own direct-io locking (for example XFS). So 
-> I think it would be best to place the lock to generic_block_bmap, so that 
-> filesystem that doesn't want the lock can easily avoid it.
->
-> You can submit this patch after 2.6.29 is released.
-
-I don't have objection to it. Please submit it yourself.
--- 
-OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+Cheers,
+Mauro
