@@ -1,74 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752961AbZCSEZH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755877AbZCSEfd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752961AbZCSEZH (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Mar 2009 00:25:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751840AbZCSEY4
+	id S1755877AbZCSEfd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Mar 2009 00:35:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751807AbZCSEfS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Mar 2009 00:24:56 -0400
-Received: from mail-qy0-f118.google.com ([209.85.221.118]:60463 "EHLO
-	mail-qy0-f118.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751731AbZCSEYz (ORCPT
+	Thu, 19 Mar 2009 00:35:18 -0400
+Received: from yw-out-2324.google.com ([74.125.46.30]:26067 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751799AbZCSEfQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Mar 2009 00:24:55 -0400
-X-Greylist: delayed 339 seconds by postgrey-1.27 at vger.kernel.org; Thu, 19 Mar 2009 00:24:55 EDT
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=qei046OzSfHHPhMExJUf9VLeR70KH7I6djl6T9iu8hU8jy5UFBHIhMYIi8ie9aUPUF
-         CzUeOqlwHoj4R0oiZgEXuJMoXMk0x98ozsoh90U8maqyPe2wpKrfUyK1WVit3/Ww6Ccs
-         e0QR1NBUXsbWSjH2pLfrvidOcCko28YtSTyAY=
-Subject: Re: PROBLEM: relay - stale data copied to user space
-From: Tom Zanussi <tzanussi@gmail.com>
-To: Martin Peschke <mpeschke@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
-In-Reply-To: <1237388848.4084.64.camel@kitka.ibm.com>
-References: <1237388848.4084.64.camel@kitka.ibm.com>
-Content-Type: text/plain
-Date: Wed, 18 Mar 2009 23:19:07 -0500
-Message-Id: <1237436347.7834.13.camel@charm-linux>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
+	Thu, 19 Mar 2009 00:35:16 -0400
+MIME-Version: 1.0
+In-Reply-To: <20090310202949.GA17184@oksana.dev.rtsoft.ru>
+References: <20090310150751.12455.70598.stgit@localhost.localdomain>
+	 <20090310152224.12455.99348.stgit@localhost.localdomain>
+	 <20090310191638.GA8539@oksana.dev.rtsoft.ru>
+	 <fa686aa40903101248n33ee35c2o32c4b24b349b14fc@mail.gmail.com>
+	 <20090310202949.GA17184@oksana.dev.rtsoft.ru>
+Date: Wed, 18 Mar 2009 22:35:14 -0600
+Message-ID: <fa686aa40903182135v51bbeafahc7fa899fb454a312@mail.gmail.com>
+Subject: Re: [PATCH 5/5] net: make mpc5200 fec driver use of_mdio 
+	infrastructure
+From: Grant Likely <grant.likely@secretlab.ca>
+To: avorontsov@ru.mvista.com
+Cc: afleming@freescale.com, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org, jgarzik@pobox.com
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Tue, Mar 10, 2009 at 2:29 PM, Anton Vorontsov
+<avorontsov@ru.mvista.com> wrote:
+> On Tue, Mar 10, 2009 at 01:48:26PM -0600, Grant Likely wrote:
+>> Regardless, I
+>> think all the drivers should be using common code for obtaining the
+>> phy_device from the device tree.
+>
+> Not necessary `struct phy_device'. All we need is some common
+> routine for translating PHY's "mdio_node->full_name + phy id" to
+> phy_bus_id.
 
-On Wed, 2009-03-18 at 16:07 +0100, Martin Peschke wrote:
+This only works if the network driver knows how the MDIO bus is named.
+ The current code assumes that the MDIO bus name is the register
+address, but this is a driver implementation detail and MDIO bus
+drivers can deviate from this.  What about MDIO busses that don't have
+a reg property?  For example, fs_enet/mii-bitbang.c sets the bus name
+to "CPM2 Bitbanged MII".  There is no one-size-fits-all way to figure
+out the phy bus id from the ethernet driver side of things.
 
-> 
-> This is my theory:
-> Timing matters. It's a race caused by improper protection of critical
-> sections in a producer-consumer scenario. A bug in the bookkeeping
-> allows a reader to read at a position that is just being written to.
-> 
+The sure and simple way to guarantee a match between the PHY device
+node and the phy_device is to use the PHY device_node pointer itself
+as the search key.
 
-It does look consistent with a reader reading an event that's been
-reserved but not yet written, or partially written e.g. if an event
-being written on one cpu was read by another before the first one
-finished.  Can you see if the below patch to blktrace userspace helps?
+I concede that my first attempt at this was overly complex, but I've
+reworked the code and I think it makes thinks considerably simpler.
+I'll post a new series tomorrow.  I've got patches to make the
+ucc_eth, gianfar and fs_enet drivers to use the device_node method
+also.
 
-Or failing that, explicitly using gettid() in place of getpid() in
-sched_setaffinity().  Or, failing that, you had mentioned previously
-that you would try to reproduce the problem on your laptop - were you
-able to do that?  If so, it would help in debugging it further...
+g.
 
-Tom
-
-diff --git a/blktrace.c b/blktrace.c
-index 26b3afd..656ab7a 100644
---- a/blktrace.c
-+++ b/blktrace.c
-@@ -610,7 +610,7 @@ static int lock_on_cpu(int cpu)
- 
- 	CPU_ZERO(&cpu_mask);
- 	CPU_SET(cpu, &cpu_mask);
--	if (sched_setaffinity(getpid(), sizeof(cpu_mask), &cpu_mask) < 0)
-+	if (sched_setaffinity(0, sizeof(cpu_mask), &cpu_mask) < 0)
- 		return errno;
- 
- 	return 0;
-
-
+-- 
+Grant Likely, B.Sc., P.Eng.
+Secret Lab Technologies Ltd.
