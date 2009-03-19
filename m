@@ -1,128 +1,183 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754447AbZCSMkc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754224AbZCSMlS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754447AbZCSMkc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Mar 2009 08:40:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752843AbZCSMkM
+	id S1754224AbZCSMlS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Mar 2009 08:41:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752843AbZCSMlB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Mar 2009 08:40:12 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:48548 "EHLO
-	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752041AbZCSMkK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Mar 2009 08:40:10 -0400
-Message-ID: <49C23DB9.6000905@novell.com>
-Date: Thu, 19 Mar 2009 08:42:33 -0400
-From: Gregory Haskins <ghaskins@novell.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Thu, 19 Mar 2009 08:41:01 -0400
+Received: from ozlabs.org ([203.10.76.45]:33849 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752041AbZCSMlA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Mar 2009 08:41:00 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH] cpumask: remove cpumask allocation from idle_balance
+Date: Thu, 19 Mar 2009 23:10:51 +1030
+User-Agent: KMail/1.11.1 (Linux/2.6.27-11-generic; KDE/4.2.1; i686; ; )
+Cc: Steven Rostedt <rostedt@goodmis.org>, LKML <linux-kernel@vger.kernel.org>,
+       Peter Zijlstra <peterz@infradead.org>
+References: <alpine.DEB.2.00.0903181729360.31583@gandalf.stny.rr.com> <alpine.DEB.2.00.0903182225450.31583@gandalf.stny.rr.com> <200903191522.21045.rusty@rustcorp.com.au>
+In-Reply-To: <200903191522.21045.rusty@rustcorp.com.au>
 MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-CC: vernux@us.ibm.com, andi@firstfloor.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org,
-       pmullaney@novell.com
-Subject: Re: High contention on the sk_buff_head.lock
-References: <49C16D7C.3080003@novell.com>	<20090318.180355.228447835.davem@davemloft.net>	<49C1C09E.8050405@novell.com> <20090318.223806.123468340.davem@davemloft.net>
-In-Reply-To: <20090318.223806.123468340.davem@davemloft.net>
-X-Enigmail-Version: 0.95.7
-OpenPGP: id=D8195319
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig36EBAC2DDE86F664ACE742C4"
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200903192310.52314.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig36EBAC2DDE86F664ACE742C4
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+On Thursday 19 March 2009 15:22:20 Rusty Russell wrote:
+>  #ifdef CONFIG_USER_SCHED
+>  	alloc_size *= 2;
+>  #endif
+> +#ifdef CONFIG_CPUMASK_OFFSTACK
+> +	alloc_size *= num_possible_cpus() * cpumask_size();
+> +#endif
 
-David Miller wrote:
-> From: Gregory Haskins <ghaskins@novell.com>
-> Date: Wed, 18 Mar 2009 23:48:46 -0400
->
->  =20
->> To see this in action, try taking a moderately large smp system
->> (8-way+) and scaling the number of flows.
->>    =20
->
-> I can maintain line-rate over 10GB with a 64-cpu box.
-Oh man, I am jealous of that 64-way :)
+Of course, this should be +=.  Thanks for crash report, Ingo.
 
-How many simultaneous flows?  What hardware?  What qdisc and other
-config do you use?  MTU?  I cannot replicate such results on 10GB even
-with much smaller cpu counts.
+This time for sure,
+Rusty.
+===
+Subject: [PATCH] cpumask: remove cpumask allocation from idle_balance
 
-On my test rig here, I have a 10GB link connected by crossover between
-two 8-core boxes.  Running one unidirectional TCP flow is typically
-toping out at ~5.5Gb/s on 2.6.29-rc8.  Granted we are using MTU=3D1500,
-which in of itself is part of the upper limit.  However, that result in
-of itself isn't a problem, per se.  What is a problem is the aggregate
-bandwidth drops with scaling the number of flows.  I would like to
-understand how to make this better, if possible, and perhaps I can learn
-something from your setup.
->   It's not
-> a problem.
->  =20
+Impact: fix circular locking
 
-To clarify terms, we are not saying "the stack performs inadequately".=20
-What we are saying here is that analysis of our workloads and of the
-current stack indicates that we are io-bound, and that this particular
-locking architecture in the qdisc subsystem is the apparent top gating
-factor from going faster.  Therefore we are really saying "how can we
-make it even better"?  This is not a bad question to ask in general,
-would you agree?
+Steven reports a circular locking from alloc_cpumask_var doing a wakeup.
+We get rid of this using the tried-and-true technique of using a per-cpu
+cpumask_var_t rather than doing an alloc every time.  Ugly, but simple.
 
-To vet our findings, we built that prototype I mentioned in the last
-mail where we substituted the single queue and queue_lock with a
-per-cpu, lockless queue.  This meant each cpu could submit work
-independent of the others with substantially reduced contention.  More
-importantly, it eliminated the property of scaling the RFO pressure on a
-single cache-lne for the queue-lock.  When we did this, we got
-significant increases in aggregate throughput (somewhere on the order of
-6%-25% depending on workload,  but this was last summer so I am a little
-hazy on the exact numbers).
+LKML-Reference: <alpine.DEB.2.00.0903181729360.31583@gandalf.stny.rr.com>
+Reported-by: Steven Rostedt <rostedt@goodmis.org>
+Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
 
-So you had said something to the effect of "Contention isn't implicitly
-a bad thing".   I agree to a point.  At least so much as contention
-cannot always be avoided.  Ultimately we only have one resource in this
-equation:  the phy-link in question.  So naturally multiple flows
-targeted for that link will contend for it.
-
-But the important thing to note here is that there are different kinds
-of contention.  And contention against spinlocks *is* generally bad, for
-multiple reasons.  It not only affects the cores under contention, but
-it affects all cores that exist in the same coherency domain.  IMO it
-should be avoided whenever possible.
-
-So I am not saying our per-cpu solution is the answer.  But what I am
-saying is that we found that an architecture that doesnt piggy back all
-flows into a single spinlock does have the potential to unleash even
-more Linux-networking fury :)
-
-I haven't really been following the latest developments in netdev, but
-if I understand correctly part of what we are talking about here would
-be addressed by the new MQ stuff?  And if I also understand that
-correctly, support for MQ is dependent on the hardware beneath it?  If
-so, I wonder if we could apply some of the ideas I presented earlier for
-making "soft MQ" with a lockless-queue per flow or something like that?=20
-Thoughts?
-
--Greg
-
-
-
---------------enig36EBAC2DDE86F664ACE742C4
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
-Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
-
-iEYEARECAAYFAknCPbkACgkQlOSOBdgZUxlrJwCeLNasxUz01bw9POxOCZjl3B7J
-6SAAnRcKhI9jZSz8f2MiAO1DXf9uFKXR
-=bA95
------END PGP SIGNATURE-----
-
---------------enig36EBAC2DDE86F664ACE742C4--
+diff --git a/kernel/sched.c b/kernel/sched.c
+index 5dabd80..48862d4 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -3448,19 +3448,23 @@ find_busiest_queue(struct sched_group *group, enum cpu_idle_type idle,
+  */
+ #define MAX_PINNED_INTERVAL	512
+ 
++/* Working cpumask for load_balance and load_balance_newidle. */
++static DEFINE_PER_CPU(cpumask_var_t, load_balance_tmpmask);
++
+ /*
+  * Check this_cpu to ensure it is balanced within domain. Attempt to move
+  * tasks if there is an imbalance.
+  */
+ static int load_balance(int this_cpu, struct rq *this_rq,
+ 			struct sched_domain *sd, enum cpu_idle_type idle,
+-			int *balance, struct cpumask *cpus)
++			int *balance)
+ {
+ 	int ld_moved, all_pinned = 0, active_balance = 0, sd_idle = 0;
+ 	struct sched_group *group;
+ 	unsigned long imbalance;
+ 	struct rq *busiest;
+ 	unsigned long flags;
++	struct cpumask *cpus = __get_cpu_var(load_balance_tmpmask);
+ 
+ 	cpumask_setall(cpus);
+ 
+@@ -3615,8 +3619,7 @@ out:
+  * this_rq is locked.
+  */
+ static int
+-load_balance_newidle(int this_cpu, struct rq *this_rq, struct sched_domain *sd,
+-			struct cpumask *cpus)
++load_balance_newidle(int this_cpu, struct rq *this_rq, struct sched_domain *sd)
+ {
+ 	struct sched_group *group;
+ 	struct rq *busiest = NULL;
+@@ -3624,6 +3627,7 @@ load_balance_newidle(int this_cpu, struct rq *this_rq, struct sched_domain *sd,
+ 	int ld_moved = 0;
+ 	int sd_idle = 0;
+ 	int all_pinned = 0;
++	struct cpumask *cpus = __get_cpu_var(load_balance_tmpmask);
+ 
+ 	cpumask_setall(cpus);
+ 
+@@ -3764,10 +3768,6 @@ static void idle_balance(int this_cpu, struct rq *this_rq)
+ 	struct sched_domain *sd;
+ 	int pulled_task = 0;
+ 	unsigned long next_balance = jiffies + HZ;
+-	cpumask_var_t tmpmask;
+-
+-	if (!alloc_cpumask_var(&tmpmask, GFP_ATOMIC))
+-		return;
+ 
+ 	for_each_domain(this_cpu, sd) {
+ 		unsigned long interval;
+@@ -3778,7 +3778,7 @@ static void idle_balance(int this_cpu, struct rq *this_rq)
+ 		if (sd->flags & SD_BALANCE_NEWIDLE)
+ 			/* If we've pulled tasks over stop searching: */
+ 			pulled_task = load_balance_newidle(this_cpu, this_rq,
+-							   sd, tmpmask);
++							   sd);
+ 
+ 		interval = msecs_to_jiffies(sd->balance_interval);
+ 		if (time_after(next_balance, sd->last_balance + interval))
+@@ -3793,7 +3793,6 @@ static void idle_balance(int this_cpu, struct rq *this_rq)
+ 		 */
+ 		this_rq->next_balance = next_balance;
+ 	}
+-	free_cpumask_var(tmpmask);
+ }
+ 
+ /*
+@@ -3943,11 +3942,6 @@ static void rebalance_domains(int cpu, enum cpu_idle_type idle)
+ 	unsigned long next_balance = jiffies + 60*HZ;
+ 	int update_next_balance = 0;
+ 	int need_serialize;
+-	cpumask_var_t tmp;
+-
+-	/* Fails alloc?  Rebalancing probably not a priority right now. */
+-	if (!alloc_cpumask_var(&tmp, GFP_ATOMIC))
+-		return;
+ 
+ 	for_each_domain(cpu, sd) {
+ 		if (!(sd->flags & SD_LOAD_BALANCE))
+@@ -3972,7 +3966,7 @@ static void rebalance_domains(int cpu, enum cpu_idle_type idle)
+ 		}
+ 
+ 		if (time_after_eq(jiffies, sd->last_balance + interval)) {
+-			if (load_balance(cpu, rq, sd, idle, &balance, tmp)) {
++			if (load_balance(cpu, rq, sd, idle, &balance)) {
+ 				/*
+ 				 * We've pulled tasks over so either we're no
+ 				 * longer idle, or one of our SMT siblings is
+@@ -4006,8 +4000,6 @@ out:
+ 	 */
+ 	if (likely(update_next_balance))
+ 		rq->next_balance = next_balance;
+-
+-	free_cpumask_var(tmp);
+ }
+ 
+ /*
+@@ -8304,6 +8296,9 @@ void __init sched_init(void)
+ #ifdef CONFIG_USER_SCHED
+ 	alloc_size *= 2;
+ #endif
++#ifdef CONFIG_CPUMASK_OFFSTACK
++	alloc_size += num_possible_cpus() * cpumask_size();
++#endif
+ 	/*
+ 	 * As sched_init() is called before page_alloc is setup,
+ 	 * we use alloc_bootmem().
+@@ -8341,6 +8336,12 @@ void __init sched_init(void)
+ 		ptr += nr_cpu_ids * sizeof(void **);
+ #endif /* CONFIG_USER_SCHED */
+ #endif /* CONFIG_RT_GROUP_SCHED */
++#ifdef CONFIG_CPUMASK_OFFSTACK
++		for_each_possible_cpu(i) {
++			per_cpu(load_balance_tmpmask, i) = (void *)ptr;
++			ptr += cpumask_size();
++		}
++#endif /* CONFIG_CPUMASK_OFFSTACK */
+ 	}
+ 
+ #ifdef CONFIG_SMP
