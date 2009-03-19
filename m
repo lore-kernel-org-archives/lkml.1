@@ -1,134 +1,150 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756392AbZCSRWB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759243AbZCSRWu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756392AbZCSRWB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Mar 2009 13:22:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753069AbZCSRVw
+	id S1759243AbZCSRWu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Mar 2009 13:22:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753069AbZCSRWl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Mar 2009 13:21:52 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:37731 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752271AbZCSRVv (ORCPT
+	Thu, 19 Mar 2009 13:22:41 -0400
+Received: from e28smtp02.in.ibm.com ([59.145.155.2]:38207 "EHLO
+	e28smtp02.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752271AbZCSRWj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Mar 2009 13:21:51 -0400
-Date: Thu, 19 Mar 2009 13:21:47 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Ingo Molnar <mingo@elte.hu>
-cc: LKML <linux-kernel@vger.kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Subject: Re: [PATCH 0/5] [GIT PULL] updates for tip/tracing/ftrace
-In-Reply-To: <20090319073357.GA14615@elte.hu>
-Message-ID: <alpine.DEB.2.00.0903191309170.16987@gandalf.stny.rr.com>
-References: <20090318031423.981603258@goodmis.org> <20090318055924.GA24627@elte.hu> <20090318073903.GA31341@elte.hu> <20090319073357.GA14615@elte.hu>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Thu, 19 Mar 2009 13:22:39 -0400
+Date: Thu, 19 Mar 2009 22:53:52 +0530
+From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+To: Gautham R Shenoy <ego@in.ibm.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, Suresh Siddha <suresh.b.siddha@intel.com>,
+       Balbir Singh <balbir@in.ibm.com>
+Subject: Re: [PATCH 3 5/6] sched: Arbitrate the nomination of
+	preferred_wakeup_cpu
+Message-ID: <20090319172352.GP2990@dirshya.in.ibm.com>
+Reply-To: svaidy@linux.vnet.ibm.com
+References: <20090318092054.24787.18730.stgit@sofia.in.ibm.com> <20090318092243.24787.92087.stgit@sofia.in.ibm.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <20090318092243.24787.92087.stgit@sofia.in.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+* Gautham R Shenoy <ego@in.ibm.com> [2009-03-18 14:52:43]:
 
-I'm still not able to reproduce, but...
+> Currently for sched_mc/smt_power_savings = 2, we consolidate tasks
+> by having a preferred_wakeup_cpu which will be used for all the
+> further wake ups.
+> 
+> This preferred_wakeup_cpu is currently nominated by find_busiest_group()
+> while loadbalancing for sched_domains which has SD_POWERSAVINGS_BALANCE flag
+> set.
+> 
+> However, on systems which are multi-threaded and multi-core, we can
+> have multiple sched_domains in the same hierarchy with
+> SD_POWERSAVINGS_BALANCE flag set.
+> 
+> Currently we don't have any arbitration mechanism as to while load balancing
+> for which sched_domain in the hierarchy should find_busiest_group(sd)
+> nominate the preferred_wakeup_cpu. Hence can overwrite valid nominations
+> made previously thereby causing the preferred_wakup_cpu to ping-pong
+> thereby preventing us from effectively consolidating tasks.
+> 
+> Fix this by means of an arbitration algorithm, where in we nominate the
+> preferred_wakeup_cpu sched_domain in find_busiest_group() for a particular
+> sched_domain if the sched_domain:
+> - is the topmost power aware sched_domain.
+> 	OR
+> - contains the previously nominated preferred wake up cpu in it's span.
+> 
+> This will help to further fine tune the wake-up biasing logic by
+> identifying a partially busy core within a CPU package instead of
+> potentially waking up a completely idle core.
+> 
+> Signed-off-by: Gautham R Shenoy <ego@in.ibm.com>
+> ---
+> 
+>  kernel/sched.c |   45 +++++++++++++++++++++++++++++++++++++++++++--
+>  1 files changed, 43 insertions(+), 2 deletions(-)
+> 
+> diff --git a/kernel/sched.c b/kernel/sched.c
+> index 16d7655..651550c 100644
+> --- a/kernel/sched.c
+> +++ b/kernel/sched.c
+> @@ -522,6 +522,14 @@ struct root_domain {
+>  	 * This is triggered at POWERSAVINGS_BALANCE_WAKEUP(2).
+>  	 */
+>  	unsigned int preferred_wakeup_cpu;
+> +
+> +	/*
+> +	 * top_powersavings_sd_lvl records the level of the highest
+> +	 * sched_domain that has the SD_POWERSAVINGS_BALANCE flag set.
+> +	 *
+> +	 * Used to arbitrate nomination of the preferred_wakeup_cpu.
+> +	 */
+> +	enum sched_domain_level top_powersavings_sd_lvl;
+>  #endif
+>  };
+> 
+> @@ -3416,9 +3424,27 @@ out_balanced:
+>  		goto ret;
+> 
+>  	if (this == group_leader && group_leader != group_min) {
+> +		struct root_domain *my_rd = cpu_rq(this_cpu)->rd;
+>  		*imbalance = min_load_per_task;
+> -		if (active_power_savings_level >= POWERSAVINGS_BALANCE_WAKEUP) {
+> -			cpu_rq(this_cpu)->rd->preferred_wakeup_cpu =
+> +		/*
+> +		 * To avoid overwriting of preferred_wakeup_cpu nominations
+> +		 * while calling find_busiest_group() at various sched_domain
+> +		 * levels, we define an arbitration mechanism wherein
+> +		 * find_busiest_group() nominates a preferred_wakeup_cpu at
+> +		 * the sched_domain sd if:
+> +		 *
+> +		 * - sd is the highest sched_domain in the hierarchy having the
+> +		 *   SD_POWERSAVINGS_BALANCE flag set.
+> +		 *
+> +		 *   OR
+> +		 *
+> +		 * - sd contains the previously nominated preferred_wakeup_cpu
+> +		 *   in it's span.
+> +		 */
+> +		if (sd->level == my_rd->top_powersavings_sd_lvl ||
+> +			cpu_isset(my_rd->preferred_wakeup_cpu,
+> +					*sched_domain_span(sd))) {
+> +			my_rd->preferred_wakeup_cpu =
+>  				cpumask_first(sched_group_cpus(group_leader));
+>  		}
+>  		return group_min;
+> @@ -7541,6 +7567,8 @@ static int __build_sched_domains(const struct cpumask *cpu_map,
+>  	struct root_domain *rd;
+>  	cpumask_var_t nodemask, this_sibling_map, this_core_map, send_covered,
+>  		tmpmask;
+> +	struct sched_domain *sd;
+> +
+>  #ifdef CONFIG_NUMA
+>  	cpumask_var_t domainspan, covered, notcovered;
+>  	struct sched_group **sched_group_nodes = NULL;
+> @@ -7816,6 +7844,19 @@ static int __build_sched_domains(const struct cpumask *cpu_map,
+> 
+>  	err = 0;
+> 
+> +	rd->preferred_wakeup_cpu = UINT_MAX;
+> +	rd->top_powersavings_sd_lvl = SD_LV_NONE;
+> +
+> +	if (active_power_savings_level < POWERSAVINGS_BALANCE_WAKEUP)
+> +		goto free_tmpmask;
+> +
+> +	/* Record the level of the highest power-aware sched_domain */
+> +	for_each_domain(first_cpu(*cpu_map), sd) {
+> +		if (!(sd->flags & SD_POWERSAVINGS_BALANCE))
+> +			continue;
+> +		rd->top_powersavings_sd_lvl = sd->level;
+> +	}
+> +
+>  free_tmpmask:
+>  	free_cpumask_var(tmpmask);
+>  free_send_covered:
+> 
 
-On Thu, 19 Mar 2009, Ingo Molnar wrote:
-
-> 
-> * Ingo Molnar <mingo@elte.hu> wrote:
-> 
-> > these latest ftrace changes caused a lockup on a -tip testsystem:
-> 
-> Note, even with Rusty's offstack-cpumask fix applied (in latest 
-> -tip), i can reproduce a lockup:
-> 
-> [    4.132872] calling  init_mmio_trace+0x0/0x12 @ 1
-> [    4.137551] initcall init_mmio_trace+0x0/0x12 returned 0 after 10 usecs
-> [    4.144149] calling  init_graph_trace+0x0/0x12 @ 1
-> [    4.148913] Testing tracer function_graph: <3>INFO: RCU detected CPU 0 stall (t=4294680313/10000 jiffies)
-> [   18.620342] Pid: 858, comm: kstop/0 Not tainted 2.6.29-rc8-tip-02638-g1c002f5-dirty #3067
-> [   18.620342] Call Trace:
-> [   18.620342]  <IRQ>  [<ffffffff80214c3d>] return_to_handler+0x0/0x73
-> [   18.620342]  [<ffffffff8021b2d5>] print_context_stack+0xbc/0x11e
-> [   18.620342]  [<ffffffff80214c3d>] return_to_handler+0x0/0x73
-> [   18.620342]  [<ffffffff80219c2e>] dump_trace+0x221/0x271
-> [   18.620342]  [<ffffffff80214c3d>] return_to_handler+0x0/0x73
-> [   18.620342]  [<ffffffff8021b180>] show_trace_log_lvl+0x51/0x5e
-> [   18.620342]  [<ffffffff80214c3d>] return_to_handler+0x0/0x73
-> [   18.620342]  [<ffffffff8021b1a2>] show_trace+0x15/0x17
-> [   18.620342]  [<ffffffff80214c3d>] return_to_handler+0x0/0x73
-> [   18.620342]  [<ffffffff8021b505>] dump_stack+0x77/0x82
-> [   18.620342]  [<ffffffff80214c3d>] return_to_handler+0x0/0x73
-> [   18.620342]  [<ffffffff802e343b>] print_cpu_stall+0x40/0x9b
-> [   18.620342]  [<ffffffff80214c3d>] return_to_handler+0x0/0x73
-> [   18.620342]  [<ffffffff802e384f>] check_cpu_stall+0x11e/0x15c
-> [   18.620342]  [<ffffffff80214c3d>] return_to_handler+0x0/0x73
-> [   18.620342]  [<ffffffff802e38a4>] __rcu_pending+0x17/0xff
-> [   18.620342]  [<ffffffff80214c3d>] return_to_handler+0x0/0x73
-> [   18.620342]  [<ffffffff802e39b8>] rcu_pending+0x2c/0x5e
-> [   18.620342]  [<ffffffff80214c3d>] return_to_handler+0x0/0x73
-> [   18.620342]  [<ffffffff8028b89a>] update_process_times+0x3c/0x76
-> [   18.620342]  [<ffffffff80214c3d>] return_to_handler+0x0/0x73
-> [   18.620342]  [<ffffffff802a901e>] tick_periodic+0x7a/0x86
-> [   18.620342]  [<ffffffff80214c3d>] return_to_handler+0x0/0x73
-> [   18.620342]  [<ffffffff802a9050>] tick_handle_periodic+0x26/0x8a
-> [   18.620342]  [<ffffffff80214c3d>] return_to_handler+0x0/0x73
-> [   18.620342]  [<ffffffff802a97f8>] tick_do_broadcast+0x1d4/0x23a
-> [   18.620342]  [<ffffffff80214c3d>] return_to_handler+0x0/0x73
-> [   18.620342]  [<ffffffff802a9929>] tick_do_periodic_broadcast+0x4c/0x5d
-> [   18.620342]  [<ffffffff802e28b9>] ? rcu_torture_timer+0x0/0x12b
-> [   18.620342]  [<ffffffff80214c3d>] return_to_handler+0x0/0x73
-> [   18.620342]  [<ffffffff802a994e>] tick_handle_periodic_broadcast+0x14/0x75
-> [   18.620342]  [<ffffffff80214c3d>] return_to_handler+0x0/0x73
-> [   18.620342]  [<ffffffff80219f0f>] timer_interrupt+0x1f/0x26
-> [   18.620342]  [<ffffffff811f1a6d>] ? _spin_unlock_irq+0x9/0x3b
-> [   18.620342]  [<ffffffff811f1a9b>] ? _spin_unlock_irq+0x37/0x3b
-> [   18.620342]  [<ffffffff80214c3d>] ? return_to_handler+0x0/0x73
-> [   18.620342]  [<ffffffff802dd04c>] handle_IRQ_event+0x167/0x230
-> [   18.620342]  [<ffffffff8025e8e4>] ? idle_cpu+0x4/0x33
-> [   18.620342]  [<ffffffff80215a10>] ? restore_args+0x0/0x30
-> [   18.620342]  [<ffffffff80284453>] ? __local_bh_disable+0x11/0x16c
-> [   18.620342]  [<ffffffff80214c3d>] ? return_to_handler+0x0/0x73
-> [   18.620342]  [<ffffffff802dfc86>] handle_edge_irq+0x1bf/0x225
-> [   18.620342]  [<ffffffff80214c3d>] ? return_to_handler+0x0/0x73
-> [   18.620342]  [<ffffffff80219305>] handle_irq+0x15d/0x171
-> [   18.620342]  [<ffffffff802195e9>] ? do_softirq+0x80/0x187
-> [   18.620342]  [<ffffffff80214c3d>] ? return_to_handler+0x0/0x73
-> [   18.620342]  [<ffffffff811f2457>] do_IRQ+0x5f/0xfc
-> [   18.620342]  [<ffffffff80214c3d>] ? return_to_handler+0x0/0x73
-> [   18.620342]  [<ffffffff80215953>] ret_from_intr+0x0/0x16
-> [   18.620342]  [<ffffffff80214c3d>] ? return_to_handler+0x0/0x73
-> [   18.620342]  [<ffffffff8028aa1d>] run_timer_softirq+0x1c1/0x2af
-> [   18.620342]  <EOI>  [<ffffffff802ce8f0>] ? ack_state+0x4/0x45
-> [   18.620342]  [<ffffffff802ced22>] ? stop_cpu+0x1c5/0x1d1
-
-This looks like it is RCU/stop_machine related. The CPU is stuck in
-in stop_machine? I see that rcu_torture is running. Does this go away if 
-you turn off rcu_torture?
-
--- Steve
-
-> [   18.620342]  [<ffffffff80294a29>] ? run_workqueue+0x1a0/0x2e2
-> [   18.620342]  [<ffffffff802949d6>] ? run_workqueue+0x14d/0x2e2
-> [   18.620342]  [<ffffffff802ceb5d>] ? stop_cpu+0x0/0x1d1
-> [   18.620342]  [<ffffffff826b4140>] ? early_idt_handler+0x0/0x73
-> [   18.620342]  [<ffffffff80295d1b>] ? worker_thread+0x138/0x14c
-> [   18.620342]  [<ffffffff80299e63>] ? autoremove_wake_function+0x0/0x4f
-> [   18.620342]  [<ffffffff80295be3>] ? worker_thread+0x0/0x14c
-> [   18.620342]  [<ffffffff80299d20>] ? kthread+0x60/0xa0
-> [   18.620342]  [<ffffffff8021606a>] ? child_rip+0xa/0x20
-> [   18.620342]  [<ffffffff8026fd4b>] ? finish_task_switch+0x56/0x180
-> [   18.620342]  [<ffffffff80215a10>] ? restore_args+0x0/0x30
-> [   18.620342]  [<ffffffff80299cc0>] ? kthread+0x0/0xa0
-> [   18.620342]  [<ffffffff80216060>] ? child_rip+0x0/0x20
-> [   64.758749] INFO: RCU detected CPU 0 stall (t=4294710313/40000 jiffies)
-> [   64.758749] Pid: 858, comm: kstop/0 Not tainted 2.6.29-rc8-tip-02638-g1c002f5-dirty #3067
-> 
-> (the hang is real - it lasted overnight without the system ever 
-> managing to boot up.)
-> 
-> Config (note, it's different from the config i sent last) and full 
-> bootlog attached.
-> 
-> 	Ingo
-> 
+Acked-by: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
