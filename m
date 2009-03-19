@@ -1,59 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753248AbZCSOQD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756550AbZCSORz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753248AbZCSOQD (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Mar 2009 10:16:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753148AbZCSOPs
+	id S1756550AbZCSORz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Mar 2009 10:17:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753638AbZCSORp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Mar 2009 10:15:48 -0400
-Received: from charlotte.tuxdriver.com ([70.61.120.58]:43892 "EHLO
-	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752311AbZCSOPr (ORCPT
+	Thu, 19 Mar 2009 10:17:45 -0400
+Received: from casper.infradead.org ([85.118.1.10]:59880 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752354AbZCSORo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Mar 2009 10:15:47 -0400
-Date: Thu, 19 Mar 2009 10:13:11 -0400
-From: "John W. Linville" <linville@tuxdriver.com>
-To: Johannes Berg <johannes@sipsolutions.net>
-Cc: Jeff Chua <jeff.chua.linux@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Adrian Bunk <bunk@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Network Development <netdev@vger.kernel.org>
-Subject: Re: 2.6.29-rc8: Reported regressions from 2.6.28
-Message-ID: <20090319141311.GA3587@tuxdriver.com>
-References: <b6a2187b0903142006u546fad9eme66f9ea7b464b81f@mail.gmail.com> <1237140665.24621.2.camel@johannes.local> <alpine.LFD.2.00.0903151136310.3131@localhost.localdomain> <1237143683.24621.7.camel@johannes.local> <20090315202603.GA9077@elte.hu> <b6a2187b0903160624gb9d207dv301506e589d93ed4@mail.gmail.com> <1237317742.31814.28.camel@johannes.local> <b6a2187b0903181958ke11abe7tdcbc4efeb950954d@mail.gmail.com> <b6a2187b0903182149x77e416ecuf73be2970173c601@mail.gmail.com> <1237455534.5100.56.camel@johannes.local>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1237455534.5100.56.camel@johannes.local>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 19 Mar 2009 10:17:44 -0400
+Date: Thu, 19 Mar 2009 07:18:41 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: dipankar@in.ibm.com
+Cc: linux-input@vger.kernel.org, dmitry.torokhov@gmail.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: Question about usage of RCU in the input layer
+Message-ID: <20090319071841.63334eff@infradead.org>
+In-Reply-To: <20090319085628.GA6167@in.ibm.com>
+References: <20090318215812.15496a86@infradead.org>
+	<20090319085628.GA6167@in.ibm.com>
+Organization: Intel
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 19, 2009 at 10:38:54AM +0100, Johannes Berg wrote:
-> On Thu, 2009-03-19 at 12:49 +0800, Jeff Chua wrote:
-> 
-> > Ignore the above loop thing. The cause seems to be this one instead.
-> > 
-> > 
-> > # this needs patch to work ...
-> > iwconfig wlan0 mode Managed
-> > ifconfig wlan0 up
-> > iwconfig wlan0 essid xxx
-> > iwconfig wlan0 key restricted xxx
-> > iwconfig wlan0 ap auto channel auto
-> 
-> If you swap the key and essid lines, it will probably always work. But
-> I've yet to analyse your data to see why it doesn't in the other case.
+On Thu, 19 Mar 2009 14:26:28 +0530
+Dipankar Sarma <dipankar@in.ibm.com> wrote:
 
-That is what I was going to suggest.  I go so far as to say that you
-should set everything else before doing the "iwconfig wlan0 essid
-xxx" bit.
+> On Wed, Mar 18, 2009 at 09:58:12PM -0700, Arjan van de Ven wrote:
+> > Hi,
+> > 
+> > the input layer does a "synchronize_rcu()" after a
+> > list_add_tail_rcu(), which is costing me 1 second of boot time.....
+> > And based on my understanding of the RCU concept, you only need to
+> > synchronize on delete, not on addition... so I think the
+> > synchronize is entirely redundant here...
+> > 
+> 
+> The more appropriate question is - why is synchronize_rcu() taking
+> 1 second ? Any idea what the other CPUs are doing at the time
+> of calling synchronize_rcu() ?
 
-John
+one cpu is doing a lot of i2c traffic which is a bunch of udelay()s
+in loops.. then it does quite a bit of uncached memory access, and
+the lot takes quite while.
+
+> What driver is this ? How early
+> in the boot is this happening ? 
+
+during kernel boot.
+
+I suppose my question is also more generic.. why synchronize when it's
+not needed? At least based on my understanding of RCU (but you're the
+expert), you don't need to synchronize for an add, only between a
+delete and a (k)free.....
+
+
+
 -- 
-John W. Linville		Someday the world will need a hero, and you
-linville@tuxdriver.com			might be all we have.  Be ready.
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
