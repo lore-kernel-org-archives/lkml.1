@@ -1,68 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758854AbZCSQzd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758870AbZCSQ4d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758854AbZCSQzd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Mar 2009 12:55:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753695AbZCSQzU
+	id S1758870AbZCSQ4d (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Mar 2009 12:56:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754030AbZCSQ4X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Mar 2009 12:55:20 -0400
-Received: from gw.goop.org ([64.81.55.164]:55786 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752271AbZCSQzT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Mar 2009 12:55:19 -0400
-Message-ID: <49C278F2.1000600@goop.org>
-Date: Thu, 19 Mar 2009 09:55:14 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Thu, 19 Mar 2009 12:56:23 -0400
+Received: from e23smtp08.au.ibm.com ([202.81.31.141]:57836 "EHLO
+	e23smtp08.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753323AbZCSQ4X (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Mar 2009 12:56:23 -0400
+Date: Thu, 19 Mar 2009 22:27:36 +0530
+From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+To: Gautham R Shenoy <ego@in.ibm.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, Suresh Siddha <suresh.b.siddha@intel.com>,
+       Balbir Singh <balbir@in.ibm.com>
+Subject: Re: [PATCH 3 6/6] sched: Fix sd_parent_degenerate for
+	SD_POWERSAVINGS_BALANCE.
+Message-ID: <20090319165736.GO2990@dirshya.in.ibm.com>
+Reply-To: svaidy@linux.vnet.ibm.com
+References: <20090318092054.24787.18730.stgit@sofia.in.ibm.com> <20090318092248.24787.38811.stgit@sofia.in.ibm.com>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Rusty Russell <rusty@rustcorp.com.au>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH] cpumask: remove cpumask allocation from idle_balance
-References: <alpine.DEB.2.00.0903181729360.31583@gandalf.stny.rr.com> <alpine.DEB.2.00.0903182225450.31583@gandalf.stny.rr.com> <200903191522.21045.rusty@rustcorp.com.au> <200903192310.52314.rusty@rustcorp.com.au> <20090319132426.GA27017@elte.hu> <20090319162942.GA21672@elte.hu>
-In-Reply-To: <20090319162942.GA21672@elte.hu>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <20090318092248.24787.38811.stgit@sofia.in.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Ingo Molnar <mingo@elte.hu> wrote:
->
->   
->>> This time for sure,
->>>       
->> not so sure:
->>
->> [    4.303068] =============================================================================
->> [    4.303332] BUG idr_layer_cache: Redzone overwritten
->> [    4.303332] -----------------------------------------------------------------------------
->> [    4.303332] 
->> [    4.303332] INFO: 0xffff88003f838958-0xffff88003f83895f. First byte 0xa1 instead of 0xbb
->> [    4.303332] INFO: Allocated in 0xffff88003f9b94b0 age=4294878587 cpu=2 pid=0
->> [    4.303332] INFO: Freed in 0xffff88003f8389f0 age=18446744073709463001 cpu=4294967295 pid=0
->> [    4.303332] INFO: Slab 0xffffe200015d5340 objects=13 used=10 fp=0xffff88003f838738 flags=0x40000000000020c3
->> [    4.303332] INFO: Object 0xffff88003f838738 @offset=1848 fp=0x(null)
->>     
->
-> hm, i'm seeing this even with the cpus4096 bits removed.
->
-> It _seems_ to trigger when i add these two commits:
->
->   71ff49d: x86: with the last user gone, remove set_pte_present
->   b40c757: x86/32: no need to use set_pte_present in set_pte_vaddr
->
-> but i'm not completely sure it's related, i tried a bisection and it 
-> showed heisenbug properties.
->
-> Might have come from upstream, that saw some IDR changes recently.
->   
+* Gautham R Shenoy <ego@in.ibm.com> [2009-03-18 14:52:48]:
 
-Seems very unlikely; those patches only touch 32-bit only code, and this 
-looks like a 64-bit crash.
+> Currently a sched_domain having a single group can be prevented from getting
+> degenerated if it contains a SD_POWERSAVINGS_BALANCE flag. But since it has
+> only one group, it won't have any scope for performing powersavings balance as
+> it does not have a sibling group to pull from.
+> 
+> Apart from not provide any powersavings, it also fails to participate
+> in normal load-balancing.
+> 
+> Fix this by allowing such a sched_domain to degenerate and pass on the
+> responsibility of performing the POWERSAVINGS_BALANCE to it's parent domain.
+> 
+> Signed-off-by: Gautham R Shenoy <ego@in.ibm.com>
+> Cc: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+> ---
+> 
+>  kernel/sched.c |   14 ++++++++++++++
+>  1 files changed, 14 insertions(+), 0 deletions(-)
+> 
+> diff --git a/kernel/sched.c b/kernel/sched.c
+> index 651550c..0e7882a 100644
+> --- a/kernel/sched.c
+> +++ b/kernel/sched.c
+> @@ -6970,6 +6970,20 @@ sd_parent_degenerate(struct sched_domain *sd, struct sched_domain *parent)
+>  				SD_SHARE_PKG_RESOURCES);
+>  		if (nr_node_ids == 1)
+>  			pflags &= ~SD_SERIALIZE;
+> +
+> +		/*
+> +		 * If the only flag that is preventing us from degenerating
+> +		 * a domain with a single group is SD_POWERSAVINGS_BALANCE
+> +		 * check if it can be transferred to the new parent,
+> +		 * and degenerate this domain. With a single
+> +		 * group, it anyway can't contribute to power-aware load
+> +		 * balancing.
 
-    J
+                   can't contribute to any form of load balancing or
+                   power savings.  
+
+                   (SD_POWERSAVINGS_BALANCE flags has not being
+                   listed in the flags needing more than 1 group)
+
+> +		 */
+> +		if (pflags & SD_POWERSAVINGS_BALANCE && parent->parent) {
+> +			pflags &= ~SD_POWERSAVINGS_BALANCE;
+> +			parent->parent->flags |=
+> +				sd_power_saving_flags(parent->level);
+> +		}
+>  	}
+>  	if (~cflags & pflags)
+>  		return 0;
+
+--Vaidy
+
