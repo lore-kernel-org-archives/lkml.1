@@ -1,131 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758964AbZCSQb0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758603AbZCSQfZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758964AbZCSQb0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Mar 2009 12:31:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758726AbZCSQbD
+	id S1758603AbZCSQfZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Mar 2009 12:35:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750722AbZCSQfE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Mar 2009 12:31:03 -0400
-Received: from g4t0015.houston.hp.com ([15.201.24.18]:15834 "EHLO
-	g4t0015.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757332AbZCSQbB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Mar 2009 12:31:01 -0400
-Date: Thu, 19 Mar 2009 10:30:58 -0600
-From: Alex Chiang <achiang@hp.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: jbarnes@virtuousgeek.org, linux-pci@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Trent Piepho <xyzzy@speakeasy.org>
-Subject: Re: [PATCH v4 08/12] PCI: Introduce /sys/bus/pci/devices/.../remove
-Message-ID: <20090319163058.GB8074@ldl.fc.hp.com>
-References: <20090318222426.887.1008.stgit@bob.kio> <20090318224006.887.91805.stgit@bob.kio> <20090319024334.59e9e9bc.akpm@linux-foundation.org>
+	Thu, 19 Mar 2009 12:35:04 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:42920 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750831AbZCSQfD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Mar 2009 12:35:03 -0400
+Date: Thu, 19 Mar 2009 17:31:52 +0100
+From: Jiri Pirko <jpirko@redhat.com>
+To: Patrick McHardy <kaber@trash.net>
+Cc: David Miller <davem@davemloft.net>, shemminger@linux-foundation.org,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org, jgarzik@pobox.com,
+       bridge@lists.linux-foundation.org, fubar@us.ibm.com,
+       bonding-devel@lists.sourceforge.net
+Subject: Re: [PATCH] bonding: allow bond in mode balance-alb to work
+	properly in bridge
+Message-ID: <20090319163151.GB6132@psychotron.englab.brq.redhat.com>
+References: <20090314094911.GA3455@psychotron.englab.brq.redhat.com> <20090315161217.7fa2c3a7@nehalam> <20090316111127.GB3484@psychotron.englab.brq.redhat.com> <20090318.232003.30974750.davem@davemloft.net> <49C2073B.8060102@trash.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090319024334.59e9e9bc.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <49C2073B.8060102@trash.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Andrew Morton <akpm@linux-foundation.org>:
-> On Wed, 18 Mar 2009 16:40:06 -0600 Alex Chiang <achiang@hp.com> wrote:
-> 
-> > This patch adds an attribute named "remove" to a PCI device's sysfs
-> > directory.  Writing a non-zero value to this attribute will remove the PCI
-> > device and any children of it.
-> > 
-> > Trent Piepho wrote the original implementation and documentation.
-> > 
-> > Thanks to Vegard Nossum for testing under kmemcheck and finding locking
-> > issues with the sysfs interface.
-> > 
-> > ...
-> >
-> > --- a/drivers/pci/pci-sysfs.c
-> > +++ b/drivers/pci/pci-sysfs.c
-> > @@ -246,6 +246,47 @@ struct bus_attribute pci_bus_attrs[] = {
-> >  	__ATTR(rescan, S_IWUSR, NULL, bus_rescan_store),
-> >  	__ATTR_NULL
-> >  };
-> > +
-> > +static void remove_callback(struct device *dev)
-> > +{
-> > +	int bridge = 0;
-> > +	struct pci_dev *pdev = to_pci_dev(dev);
-> > +
-> > +	mutex_lock(&pci_remove_rescan_mutex);
-> > +
-> > +	if (pdev->subordinate)
-> > +		bridge = 1;
-> > +
-> > +	pci_remove_bus_device(pdev);
-> > +	if (bridge && list_empty(&pdev->bus->devices))
-> > +		pci_remove_bus(pdev->bus);
-> > +
-> > +	mutex_unlock(&pci_remove_rescan_mutex);
-> > +}
-> > +
-> > +static ssize_t
-> > +remove_store(struct device *dev, struct device_attribute *dummy,
-> > +	     const char *buf, size_t count)
-> > +{
-> > +	int ret = 0;
-> > +	unsigned long val;
-> > +	struct pci_dev *pdev = to_pci_dev(dev);
-> > +
-> > +	if (strict_strtoul(buf, 0, &val) < 0)
-> > +		return -EINVAL;
-> > +
-> > +	if (!capable(CAP_SYS_ADMIN))
-> > +		return -EPERM;
-> > +
-> > +	if (pdev->subordinate && pci_is_root_bus(pdev->bus))
-> > +		return -EBUSY;
-> > +
-> > +	if (val)
-> > +		ret = device_schedule_callback(dev, remove_callback);
-> > +	if (ret)
-> > +		count = ret;
-> > +	return count;
-> > +}
-> >  #endif
-> 
-> It is very hard for the reader (this one at least) to work out why
-> device_schedule_callback() is used here, instead of simply doing the work
-> directly.
-> 
-> The way to solve that problem is to add a code comment.
+Thu, Mar 19, 2009 at 09:50:03AM CET, kaber@trash.net wrote:
+> David Miller wrote:
+>> From: Jiri Pirko <jpirko@redhat.com>
+>> Date: Mon, 16 Mar 2009 12:11:28 +0100
+>>
+>>> I can see two solutions. Either like my patch or somehow allow bridge to know
+>>> more MAC addressses per port (maybe netdev can be changed to know more then
+>>> one MAC address).
+>>>
+>>> Any thoughts?
+>>
+>> The netdev struct already supports having a list of multiple unicast
+>> MAC addresses, it can probably be used and inspected for this.
+>>
+>> I'll hold off on your patch until we make some more progress on
+>> this discussion.
+>
+> From reading the balance-alb description, I get the impression that this
+> mode is simply not meant to be used with bridging:
+>
+> 		Adaptive load balancing: includes balance-tlb plus
+> 		receive load balancing (rlb) for IPV4 traffic, and
+> 		does not require any special switch support.  The
+> 		receive load balancing is achieved by ARP negotiation.
+> 		The bonding driver intercepts the ARP Replies sent by
+> 		the local system on their way out and overwrites the
+> 		source hardware address with the unique hardware
+> 		address of one of the slaves in the bond such that
+> 		different peers use different hardware addresses for
+> 		the server.
+>
+> In any case I'd tend to say that if bond-alb mode mangles outgoing MAC
+> addresses, it should restore the original one for received packets
+> and keep the hacks local to bonding.
 
-Hm, I thought it was well-known that a sysfs attribute cannot
-remove itself without deadlocking. Thus, we need to use this
-callback mechanism.
-
-This thread has the most recent discussion:
-
-	http://thread.gmane.org/gmane.linux.kernel/805033
-
-I will add a comment to the code.
-
-> Given that we're in a sysfs write() handler where no relevant locks at all
-> are held, it seems rather weird that we cannot perform this operation
-> synchronously, but no doubt the comment will explain all of this.
-> 
-> Do we need the CAP_SYS_ADMIN check if the sysfs file permissions are
-> correct?  (I keep on asking this then forgetting the answer).
-
-I will remove this (as per Greg's advice in a later mail).
-
-> The device_schedule_callback() thing exposes us to (I assume) a pile of
-> races, the most obvious of which is "what locking or refcounting keeps
-> *dev alive?".  It would be nice to see an analysis/description of the
-> lifetime issues here.  Perhaps in the changelog, preferably in code
-> comments.
-
-No races; device_schedule_callback() takes a ref on dev, pinning
-it until the callback handler returns, after which it releases
-the ref. You can see this in sysfs_schedule_callback.
-
-Thanks for the review.
-
-/ac
-
+To let bonding driver to resolve this I think there will be needed some kind of
+hook in netif_receive_skb() as for example bridge has. I would rather do this
+more general and transparent.
