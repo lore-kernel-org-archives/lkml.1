@@ -1,116 +1,206 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757939AbZCSQR5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756972AbZCSQT7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757939AbZCSQR5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Mar 2009 12:17:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752489AbZCSQRq
+	id S1756972AbZCSQT7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Mar 2009 12:19:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751434AbZCSQTu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Mar 2009 12:17:46 -0400
-Received: from kroah.org ([198.145.64.141]:32881 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752210AbZCSQRp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Mar 2009 12:17:45 -0400
-Date: Thu, 19 Mar 2009 09:06:33 -0700
-From: Greg KH <greg@kroah.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Alex Chiang <achiang@hp.com>, jbarnes@virtuousgeek.org,
-       linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Trent Piepho <xyzzy@speakeasy.org>
-Subject: Re: [PATCH v4 08/12] PCI: Introduce /sys/bus/pci/devices/.../remove
-Message-ID: <20090319160633.GA20816@kroah.com>
-References: <20090318222426.887.1008.stgit@bob.kio> <20090318224006.887.91805.stgit@bob.kio> <20090319024334.59e9e9bc.akpm@linux-foundation.org>
+	Thu, 19 Mar 2009 12:19:50 -0400
+Received: from smtp106.biz.mail.mud.yahoo.com ([68.142.200.254]:42175 "HELO
+	smtp106.biz.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751066AbZCSQTu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Mar 2009 12:19:50 -0400
+X-Yahoo-SMTP: Y9aU0H6swBAqsiryRZEA7xtDWlgllPfq7He2xMk-
+X-YMail-OSG: _GQR9tEVM1kAHJcTO6qcTu0WqeReJbqUuRqHQUKL8bEhphbmUIQDUAgy1uV.xOHptuddYiVxo55zTOCNvnF8v8aXtlYawktxMktt2PqWN646XQuNt40GcbjFu_LET9i7nkD9hMBGRerOsMscgbxHP798U75QHNWgjS5M_BPDfOp93.HHhGyaKGTLWBH1mIn3LF121mrJvTR6t3hyyUpjWbwZWw--
+X-Yahoo-Newman-Property: ymail-3
+From: Steven King <sfking@fdwdc.com>
+Organization: fdwdc.com
+To: Greg Ungerer <gerg@snapgear.com>
+Subject: Re: [RFC 01/14] Coldfire generic GPIO (m68knommu)
+Date: Thu, 19 Mar 2009 09:19:44 -0700
+User-Agent: KMail/1.9.10
+Cc: uClinux development list <uclinux-dev@uclinux.org>,
+       linux-kernel@vger.kernel.org
+References: <200903111455.42856.sfking@fdwdc.com> <49C1E70C.2050404@snapgear.com>
+In-Reply-To: <49C1E70C.2050404@snapgear.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090319024334.59e9e9bc.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Message-Id: <200903190919.44927.sfking@fdwdc.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 19, 2009 at 02:43:34AM -0700, Andrew Morton wrote:
-> On Wed, 18 Mar 2009 16:40:06 -0600 Alex Chiang <achiang@hp.com> wrote:
-> 
-> > This patch adds an attribute named "remove" to a PCI device's sysfs
-> > directory.  Writing a non-zero value to this attribute will remove the PCI
-> > device and any children of it.
-> > 
-> > Trent Piepho wrote the original implementation and documentation.
-> > 
-> > Thanks to Vegard Nossum for testing under kmemcheck and finding locking
-> > issues with the sysfs interface.
-> > 
-> > ...
+On Wednesday, March 18, 2009 11:32:44 Greg Ungerer wrote:
+> Hi Steven,
+>
+> Steven King wrote:
+> > The basic Coldfire generic gpio implementation.
 > >
-> > --- a/drivers/pci/pci-sysfs.c
-> > +++ b/drivers/pci/pci-sysfs.c
-> > @@ -246,6 +246,47 @@ struct bus_attribute pci_bus_attrs[] = {
-> >  	__ATTR(rescan, S_IWUSR, NULL, bus_rescan_store),
-> >  	__ATTR_NULL
-> >  };
+> > Signed-off-by: Steven King <sfking@fdwdc.com>
+> >
+> > diff --git a/arch/m68knommu/platform/coldfire/gpio.c
+> > b/arch/m68knommu/platform/coldfire/gpio.c
+> > new file mode 100644
+> > index 0000000..c2504b9
+> > --- /dev/null
+> > +++ b/arch/m68knommu/platform/coldfire/gpio.c
+> > @@ -0,0 +1,1969 @@
+> > +/*
+> > + * Coldfire generic GPIO support.
+> > + *
+> > + * (C) Copyright 2009, Steven King <sfking@fdwdc.com>
+> > + *
+> > + * This program is free software; you can redistribute it and/or modify
+> > + * it under the terms of the GNU General Public License as published by
+> > + * the Free Software Foundation; version 2 of the License.
+> > + *
+> > + * This program is distributed in the hope that it will be useful,
+> > + * but WITHOUT ANY WARRANTY; without even the implied warranty of
+> > + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+> > + * GNU General Public License for more details.
+> > + */
 > > +
-> > +static void remove_callback(struct device *dev)
-> > +{
-> > +	int bridge = 0;
-> > +	struct pci_dev *pdev = to_pci_dev(dev);
+> > +#include <linux/kernel.h>
+> > +#include <linux/init.h>
+> > +#include <linux/sysdev.h>
 > > +
-> > +	mutex_lock(&pci_remove_rescan_mutex);
+> > +#include <asm/gpio.h>
+> > +#include <asm/pinmux.h>
 > > +
-> > +	if (pdev->subordinate)
-> > +		bridge = 1;
+> > +struct mcf_gpio_chip {
+> > +	struct gpio_chip gpio_chip;
+> > +	void __iomem *pddr;
+> > +	void __iomem *podr;
+> > +	void __iomem *ppdr;
+> > +	void __iomem *setr;
+> > +	void __iomem *clrr;
+> > +	const u8 *gpio_to_pinmux;
+> > +};
 > > +
-> > +	pci_remove_bus_device(pdev);
-> > +	if (bridge && list_empty(&pdev->bus->devices))
-> > +		pci_remove_bus(pdev->bus);
+> > +#define MCF_CHIP(chip) container_of(chip, struct mcf_gpio_chip,
+> > gpio_chip) +
+> > +static int mcf_gpio_direction_input(struct gpio_chip *chip, unsigned
+> > offset) +{
+> > +	unsigned long flags;
+> > +	MCFGPIO_PORTTYPE dir;
+> > +	struct mcf_gpio_chip *mcf_chip = MCF_CHIP(chip);
 > > +
-> > +	mutex_unlock(&pci_remove_rescan_mutex);
+> > +	local_irq_save(flags);
+> > +	dir = mcfgpio_read(mcf_chip->pddr);
+> > +	dir &= ~mcfgpio_bit(chip->base + offset);
+> > +	mcfgpio_write(dir, mcf_chip->pddr);
+> > +	local_irq_restore(flags);
+> > +
+> > +	return 0;
 > > +}
 > > +
-> > +static ssize_t
-> > +remove_store(struct device *dev, struct device_attribute *dummy,
-> > +	     const char *buf, size_t count)
+> > +static int mcf_gpio_get_value(struct gpio_chip *chip, unsigned offset)
 > > +{
-> > +	int ret = 0;
-> > +	unsigned long val;
-> > +	struct pci_dev *pdev = to_pci_dev(dev);
+> > +	struct mcf_gpio_chip *mcf_chip = MCF_CHIP(chip);
 > > +
-> > +	if (strict_strtoul(buf, 0, &val) < 0)
-> > +		return -EINVAL;
-> > +
-> > +	if (!capable(CAP_SYS_ADMIN))
-> > +		return -EPERM;
-> > +
-> > +	if (pdev->subordinate && pci_is_root_bus(pdev->bus))
-> > +		return -EBUSY;
-> > +
-> > +	if (val)
-> > +		ret = device_schedule_callback(dev, remove_callback);
-> > +	if (ret)
-> > +		count = ret;
-> > +	return count;
+> > +	return mcfgpio_read(mcf_chip->ppdr) & mcfgpio_bit(chip->base + offset);
 > > +}
-> >  #endif
-> 
-> It is very hard for the reader (this one at least) to work out why
-> device_schedule_callback() is used here, instead of simply doing the work
-> directly.
-> 
-> The way to solve that problem is to add a code comment.
-> 
-> Given that we're in a sysfs write() handler where no relevant locks at all
-> are held, it seems rather weird that we cannot perform this operation
-> synchronously, but no doubt the comment will explain all of this.
-> 
-> Do we need the CAP_SYS_ADMIN check if the sysfs file permissions are
-> correct?  (I keep on asking this then forgetting the answer).
+> > +
+> > +static int mcf_gpio_direction_output(struct gpio_chip *chip, unsigned
+> > offset, +		int value)
+> > +{
+> > +	unsigned long flags;
+> > +	MCFGPIO_PORTTYPE data;
+> > +	struct mcf_gpio_chip *mcf_chip = MCF_CHIP(chip);
+> > +
+> > +	local_irq_save(flags);
+> > +	/* write the value to the output latch */
+> > +	data = mcfgpio_read(mcf_chip->podr);
+> > +	if (value)
+> > +		data |= mcfgpio_bit(chip->base + offset);
+> > +	else
+> > +		data &= ~mcfgpio_bit(chip->base + offset);
+> > +	mcfgpio_write(data, mcf_chip->podr);
+> > +
+> > +	/* now set the direction to output */
+> > +	data = mcfgpio_read(mcf_chip->pddr);
+> > +	data |= mcfgpio_bit(chip->base + offset);
+> > +	mcfgpio_write(data, mcf_chip->pddr);
+> > +	local_irq_restore(flags);
+> > +
+> > +	return 0;
+> > +}
+> > +
+> > +static void mcf_gpio_set_value(struct gpio_chip *chip, unsigned offset,
+> > +		int value)
+> > +{
+> > +	struct mcf_gpio_chip *mcf_chip = MCF_CHIP(chip);
+> > +
+> > +	unsigned long flags;
+> > +	MCFGPIO_PORTTYPE data;
+> > +
+> > +	local_irq_save(flags);
+> > +	data = mcfgpio_read(mcf_chip->podr);
+> > +	if (value)
+> > +		data |= mcfgpio_bit(chip->base + offset);
+> > +	else
+> > +		data &= ~mcfgpio_bit(chip->base + offset);
+> > +	mcfgpio_write(data, mcf_chip->podr);
+> > +	local_irq_restore(flags);
+> > +}
+> > +
+> > +#if defined(CONFIG_M520x) || defined(CONFIG_M523x) || \
+> > +      defined(CONFIG_M527x) || defined(CONFIG_M528x) ||
+> > defined(CONFIG_M532x) +static void mcf_gpio_set_value_fast(struct
+> > gpio_chip *chip, unsigned offset, +		int value)
+> > +{
+> > +	struct mcf_gpio_chip *mcf_chip = MCF_CHIP(chip);
+> > +
+> > +	if (value)
+> > +		mcfgpio_write(mcfgpio_bit(chip->base + offset), mcf_chip->setr);
+> > +	else
+> > +		mcfgpio_write(~mcfgpio_bit(chip->base + offset), mcf_chip->clrr);
+> > +}
+> > +#endif
+> > +static int mcf_gpio_request(struct gpio_chip *chip, unsigned offset)
+> > +{
+> > +	struct mcf_gpio_chip *mcf_chip = MCF_CHIP(chip);
+> > +
+> > +	return mcf_chip->gpio_to_pinmux ?
+> > +		mcf_pinmux_request(mcf_chip->gpio_to_pinmux[offset], 0) : 0;
+> > +}
+> > +
+> > +static void mcf_gpio_free(struct gpio_chip *chip, unsigned offset)
+> > +{
+> > +	struct mcf_gpio_chip *mcf_chip = MCF_CHIP(chip);
+> > +
+> > +	mcf_gpio_direction_input(chip, offset);
+> > +
+> > +	if (mcf_chip->gpio_to_pinmux)
+> > +		mcf_pinmux_release(mcf_chip->gpio_to_pinmux[offset], 0);
+> > +}
+> > +
+> > +static struct mcf_gpio_chip mcf_gpio_chips[] = {
+> > +#if defined(CONFIG_M5206) || defined(CONFIG_M5206e)
+>
+> I would rather see this table's contents in the per-platform
+> setup code (so under ~/arch/m68knommu/platform/m5206, etc).
+> Associated with each family members specific code. I would have a
+> gpio.c in each platform directory just for this.
+>
+> Keep the common code above in coldfire/gpio.c (the support functions
+> could obviously no longer be static). When new family members
+> are created/added this common coldfire/gpio.c won't need to be
+> touched.
 
-You can do this kind of check if you want to be paranoid.  You can
-specify the mode of the file when you create it, but if a properly
-permissive user (like root) changes the mode, it sticks, so that a
-"normal" use could then write to the file.
+Yeah, I was trying to keep the implementation details static as much as 
+possible.  Having a per-platform table means the struct mcf_gpio_chip also 
+needs to go into a header which I found mildly aesthetically unpleasing.  Oh 
+well.
 
-Usually I wouldn't recommend checking, as it's overkill if you set the
-mode properly in the code.
+> Otherwise I don't see any specific problems with it.
 
-thanks,
+Cool.  I'll fold the per-platform table into the next version of the patch which 
+adds pinmux support (and which definately is going to require per-platform 
+files).
 
-greg k-h
+-- 
+Steven King -- sfking at fdwdc dot com
