@@ -1,68 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758304AbZCSQa3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758501AbZCSQbG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758304AbZCSQa3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Mar 2009 12:30:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752517AbZCSQaN
+	id S1758501AbZCSQbG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Mar 2009 12:31:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753741AbZCSQax
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Mar 2009 12:30:13 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:56870 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753043AbZCSQaL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Mar 2009 12:30:11 -0400
-Date: Thu, 19 Mar 2009 17:29:42 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Rusty Russell <rusty@rustcorp.com.au>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: Steven Rostedt <rostedt@goodmis.org>, LKML <linux-kernel@vger.kernel.org>,
-       Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH] cpumask: remove cpumask allocation from idle_balance
-Message-ID: <20090319162942.GA21672@elte.hu>
-References: <alpine.DEB.2.00.0903181729360.31583@gandalf.stny.rr.com> <alpine.DEB.2.00.0903182225450.31583@gandalf.stny.rr.com> <200903191522.21045.rusty@rustcorp.com.au> <200903192310.52314.rusty@rustcorp.com.au> <20090319132426.GA27017@elte.hu>
+	Thu, 19 Mar 2009 12:30:53 -0400
+Received: from e23smtp04.au.ibm.com ([202.81.31.146]:59648 "EHLO
+	e23smtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753968AbZCSQaw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Mar 2009 12:30:52 -0400
+Date: Thu, 19 Mar 2009 22:02:05 +0530
+From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+To: Gautham R Shenoy <ego@in.ibm.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, Suresh Siddha <suresh.b.siddha@intel.com>,
+       Balbir Singh <balbir@in.ibm.com>
+Subject: Re: [PATCH 3 2/6] sched: Record the current active power savings
+	level
+Message-ID: <20090319163205.GK2990@dirshya.in.ibm.com>
+Reply-To: svaidy@linux.vnet.ibm.com
+References: <20090318092054.24787.18730.stgit@sofia.in.ibm.com> <20090318092227.24787.22917.stgit@sofia.in.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <20090319132426.GA27017@elte.hu>
+In-Reply-To: <20090318092227.24787.22917.stgit@sofia.in.ibm.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+* Gautham R Shenoy <ego@in.ibm.com> [2009-03-18 14:52:28]:
 
-* Ingo Molnar <mingo@elte.hu> wrote:
-
-> > This time for sure,
+> The current active power savings level of a system is defined as the
+> maximum of the sched_mc_power_savings and the sched_smt_power_savings.
 > 
-> not so sure:
+> The decisions during power-aware loadbalancing, depend on this value.
 > 
-> [    4.303068] =============================================================================
-> [    4.303332] BUG idr_layer_cache: Redzone overwritten
-> [    4.303332] -----------------------------------------------------------------------------
-> [    4.303332] 
-> [    4.303332] INFO: 0xffff88003f838958-0xffff88003f83895f. First byte 0xa1 instead of 0xbb
-> [    4.303332] INFO: Allocated in 0xffff88003f9b94b0 age=4294878587 cpu=2 pid=0
-> [    4.303332] INFO: Freed in 0xffff88003f8389f0 age=18446744073709463001 cpu=4294967295 pid=0
-> [    4.303332] INFO: Slab 0xffffe200015d5340 objects=13 used=10 fp=0xffff88003f838738 flags=0x40000000000020c3
-> [    4.303332] INFO: Object 0xffff88003f838738 @offset=1848 fp=0x(null)
+> Record this value in a read mostly global variable instead of having to
+> compute it everytime.
+> 
+> Signed-off-by: Gautham R Shenoy <ego@in.ibm.com>
+> Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> ---
+> 
+>  include/linux/sched.h |    1 +
+>  kernel/sched.c        |    8 ++++++--
+>  kernel/sched_fair.c   |    2 +-
+>  3 files changed, 8 insertions(+), 3 deletions(-)
+> 
+> diff --git a/include/linux/sched.h b/include/linux/sched.h
+> index 37fecf7..7dc8aea 100644
+> --- a/include/linux/sched.h
+> +++ b/include/linux/sched.h
+> @@ -793,6 +793,7 @@ enum powersavings_balance_level {
+>  };
+> 
+>  extern int sched_mc_power_savings, sched_smt_power_savings;
 
-hm, i'm seeing this even with the cpus4096 bits removed.
+Now we will need sched_mc_power_savings and sched_smt_power_savings
+only until we rebuild the sched domains.  These can be static
+variables and we can perhaps remove the extern for them? Better still
+if we can capture this information elsewhere until sched domain is
+built and SD_POWERSAVINGS_BALANCE flags are set so as to not
+have a need for these global variables.
+ 
+> +extern enum powersavings_balance_level active_power_savings_level;
+>  enum sched_domain_level {
+>  	SD_LV_NONE = 0,
+> diff --git a/kernel/sched.c b/kernel/sched.c
+> index 8e2558c..407ee03 100644
+> --- a/kernel/sched.c
+> +++ b/kernel/sched.c
+> @@ -3398,7 +3398,7 @@ out_balanced:
+> 
+>  	if (this == group_leader && group_leader != group_min) {
+>  		*imbalance = min_load_per_task;
+> -		if (sched_mc_power_savings >= POWERSAVINGS_BALANCE_WAKEUP) {
+> +		if (active_power_savings_level >= POWERSAVINGS_BALANCE_WAKEUP) {
+>  			cpu_rq(this_cpu)->rd->sched_mc_preferred_wakeup_cpu =
+>  				cpumask_first(sched_group_cpus(group_leader));
+>  		}
+> @@ -3683,7 +3683,7 @@ redo:
+>  		    !test_sd_parent(sd, SD_POWERSAVINGS_BALANCE))
+>  			return -1;
+> 
+> -		if (sched_mc_power_savings < POWERSAVINGS_BALANCE_WAKEUP)
+> +		if (active_power_savings_level < POWERSAVINGS_BALANCE_WAKEUP)
+>  			return -1;
+> 
+>  		if (sd->nr_balance_failed++ < 2)
+> @@ -7206,6 +7206,8 @@ static void sched_domain_node_span(int node, struct cpumask *span)
+>  #endif /* CONFIG_NUMA */
+> 
+>  int sched_smt_power_savings = 0, sched_mc_power_savings = 0;
+> +/* Records the currently active power savings level */
+> +enum powersavings_balance_level __read_mostly active_power_savings_level;
+> 
+>  /*
+>   * The cpus mask in sched_group and sched_domain hangs off the end.
+> @@ -8040,6 +8042,8 @@ static ssize_t sched_power_savings_store(const char *buf, size_t count, int smt)
+>  		sched_smt_power_savings = level;
+>  	else
+>  		sched_mc_power_savings = level;
+> +	active_power_savings_level = max(sched_smt_power_savings,
+> +						sched_mc_power_savings);
+> 
+>  	arch_reinit_sched_domains();
+> 
+> diff --git a/kernel/sched_fair.c b/kernel/sched_fair.c
+> index 0566f2a..a3583c6 100644
+> --- a/kernel/sched_fair.c
+> +++ b/kernel/sched_fair.c
+> @@ -1054,7 +1054,7 @@ static int wake_idle(int cpu, struct task_struct *p)
+>  	chosen_wakeup_cpu =
+>  		cpu_rq(this_cpu)->rd->sched_mc_preferred_wakeup_cpu;
+> 
+> -	if (sched_mc_power_savings >= POWERSAVINGS_BALANCE_WAKEUP &&
+> +	if (active_power_savings_level >= POWERSAVINGS_BALANCE_WAKEUP &&
+>  		idle_cpu(cpu) && idle_cpu(this_cpu) &&
+>  		p->mm && !(p->flags & PF_KTHREAD) &&
+>  		cpu_isset(chosen_wakeup_cpu, p->cpus_allowed))
+> 
 
-It _seems_ to trigger when i add these two commits:
 
-  71ff49d: x86: with the last user gone, remove set_pte_present
-  b40c757: x86/32: no need to use set_pte_present in set_pte_vaddr
+Acked-by: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
 
-but i'm not completely sure it's related, i tried a bisection and it 
-showed heisenbug properties.
-
-Might have come from upstream, that saw some IDR changes recently.
-
-	Ingo
