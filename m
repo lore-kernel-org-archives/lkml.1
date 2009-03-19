@@ -1,51 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756064AbZCSGIk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757876AbZCSGSu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756064AbZCSGIk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Mar 2009 02:08:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752648AbZCSGI3
+	id S1757876AbZCSGSu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Mar 2009 02:18:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754698AbZCSGSk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Mar 2009 02:08:29 -0400
-Received: from rv-out-0506.google.com ([209.85.198.235]:51683 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752484AbZCSGI2 (ORCPT
+	Thu, 19 Mar 2009 02:18:40 -0400
+Received: from mail.renesas.com ([202.234.163.13]:38767 "EHLO
+	mail04.idc.renesas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753543AbZCSGSj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Mar 2009 02:08:28 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=GYKd6i/F1zGMqMt2wn3bdaHmurXZ8nAMlwSSWQZMvyLObqh/MU/5Np2WEtlHQ1qsnM
-         xPhuA7ba78QAulkaG0+g4N4yIyJRSArvZecJJpxkk8oqy/IMTmpUerYOpm0m4oHsOuA6
-         c2rJsOvRBzXrEC4D5WSnVd7K9/0VYyws8O+X0=
-MIME-Version: 1.0
-In-Reply-To: <d760cf2d0903181930m782932a4reda3a0b582489f5d@mail.gmail.com>
-References: <49BF8ABC.6040805@vflare.org> <49BF8B8B.40408@vflare.org>
-	 <alpine.DEB.1.10.0903171237180.21582@qirst.com>
-	 <d760cf2d0903171028o600dc94cn7a5238520d104455@mail.gmail.com>
-	 <alpine.DEB.1.10.0903171355410.26058@qirst.com>
-	 <49C11088.7000205@vflare.org>
-	 <alpine.DEB.1.10.0903181258110.15570@qirst.com>
-	 <d760cf2d0903181029r43bf417u502b46e08348f6ae@mail.gmail.com>
-	 <84144f020903181221t480caa5dhef0e581a7bef006@mail.gmail.com>
-	 <d760cf2d0903181930m782932a4reda3a0b582489f5d@mail.gmail.com>
-Date: Wed, 18 Mar 2009 23:08:27 -0700
-X-Google-Sender-Auth: 992a0da35d5903b3
-Message-ID: <84144f020903182308r1082e418k7deb441774af4d89@mail.gmail.com>
-Subject: Re: [PATCH 2/3]: xvmalloc memory allocator
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: Nitin Gupta <ngupta@vflare.org>
-Cc: Christoph Lameter <cl@linux-foundation.org>, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Thu, 19 Mar 2009 02:18:39 -0400
+X-AuditID: ac140387-0000000b000005fd-9c-49c1e3b56a61
+Date: Thu, 19 Mar 2009 15:18:29 +0900
+From: Nobuhiro Iwamatsu <iwamatsu.nobuhiro@renesas.com>
+Subject: Re: [PATCH] dmaengine: sh: Add support DMA-Engine driver for DMA of
+	SuperH
+In-reply-to: <e9c3a7c20903161546i5de80305r1b0df1605c7718d8@mail.gmail.com>
+To: Dan Williams <dan.j.williams@intel.com>
+Cc: Linux-sh <linux-sh@vger.kernel.org>, linux-kernel@vger.kernel.org,
+       maciej.sosnowski@intel.com, Paul Mundt <lethal@linux-sh.org>
+Message-id: <49C1E3B5.9050008@renesas.com>
+MIME-version: 1.0
+Content-type: text/plain; format=flowed; charset=ISO-8859-1
+Content-transfer-encoding: 7bit
+User-Agent: Thunderbird 1.5.0.14 (Windows/20071210)
+References: <49B8AF67.8080309@renesas.com>
+ <e9c3a7c20903161546i5de80305r1b0df1605c7718d8@mail.gmail.com>
+X-Brightmail-Tracker: AAAAAA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 3/18/09, Nitin Gupta <ngupta@vflare.org> wrote:
-> I can see quite some places for cleanups (like macros for
-> reaching next free block etc). Do you think CamelCase will be acceptable
-> for now? and also keeping xvmalloc name? Other than these, I will
-> check for potential cleanups and send updated diffs.
+Hi, Dan.
 
-No, I do not think it is acceptable for core kernel code.
+Thank you for your comments.
+
+2009/3/17 Dan Williams <dan.j.williams@intel.com>:
+ > On Wed, Mar 11, 2009 at 11:44 PM, Nobuhiro Iwamatsu
+ > <iwamatsu.nobuhiro@renesas.com> wrote:
+ >> This supports DMA-Engine driver for DMA of SuperH.
+ >> This supported all DMA channels, and it was tested in SH7722/SH7780.
+ >> This can not use with SH DMA API and can control this in Kconfig.
+ >>
+ >> Signed-off-by: Nobuhiro Iwamatsu <iwamatsu.nobuhiro@renesas.com>
+ >> Cc: Paul Mundt <lethal@linux-sh.org>
+ >> Cc: Haavard Skinnemoen <hskinnemoen@atmel.com>
+ >> Cc: Maciej Sosnowski <maciej.sosnowski@intel.com>
+ >> Cc: Dan Williams <dan.j.williams@intel.com>
+ >> ---
+ >>  arch/sh/drivers/dma/Kconfig  |   12 +-
+ >>  arch/sh/drivers/dma/Makefile |    3 +-
+ >>  arch/sh/include/asm/dma-sh.h |   11 +
+ >>  drivers/dma/Kconfig          |    9 +
+ >>  drivers/dma/Makefile         |    2 +
+ >>  drivers/dma/shdma.c          |  743 ++++++++++++++++++++++++++++++++++++++++++
+ >>  drivers/dma/shdma.h          |   65 ++++
+ >>  7 files changed, 840 insertions(+), 5 deletions(-)
+ >>  create mode 100644 drivers/dma/shdma.c
+ >>  create mode 100644 drivers/dma/shdma.h
+ >
+ > Hi,
+ >
+ > I have not finished a full review but one problem jumps out, the use
+ > of spin_lock_irqsave to protect against channel/descriptor
+ > manipulations.  The highest level of protection that net_dma and
+ > async_tx assume is spin_lock_bh.  It seems like the pieces of
+ > sh_dmae_interrupt() that touch the descriptor can be moved to the
+ > tasklet, then the locks can be downgraded.
+
+Because a dmaengine core is not equivalent to the interrupt that is
+severer than spin_lock_bh, is this to rearrange it in tasklet?
+
+ >
+ > Your other patch, to set the alignment in dmatest, makes me wonder if
+ > this engine can handle unaligned accesses?  If it can not then set the
+ > DMA_PRIVATE capability bit at device registration time to prevent
+ > net_dma and other "public" clients from using these channels.  Public
+ > clients assume that there are no alignment constraints.
+ >
+
+I thought to add it because the patch wanted to measure the
+transaction speed with the thing which
+was not considered to be aligned address / data size.
+Depending on a device using DMA, there is the thing forcing aligning
+it of forwarded data.
+DMAC of SH has a register appointing transfer data size.
+I control it by the following functions.
+
++struct sh_dmae_chan {
++	dma_cookie_t completed_cookie;	/* The maximum cookie completed */
++	spinlock_t desc_lock;			/* Descriptor operation lock */
++	struct list_head ld_queue;		/* Link descriptors queue */
++	struct dma_chan common;			/* DMA common channel */
++	struct device *dev;				/* Channel device */
++	struct resource reg;			/* Resource for register */
++	struct tasklet_struct tasklet;
++	int id;	/* Raw id of this channel */
++	char dev_id[16];	/* unique name per DMAC of channel */
++
++	/* Set chcr */
++	int (*set_chcr)(struct sh_dmae_chan *sh_chan, u32 regs);
+
+This set up call from a device using dmaengine, and data appoint aligning it.
+
+Best regards,
+  Nobuhiro
+-- 
+Nobuhiro Iwamatsu
+
