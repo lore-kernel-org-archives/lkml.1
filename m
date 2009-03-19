@@ -1,110 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760115AbZCSRn7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758891AbZCSRoZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760115AbZCSRn7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Mar 2009 13:43:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755824AbZCSRnf
+	id S1758891AbZCSRoZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Mar 2009 13:44:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759532AbZCSRoG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Mar 2009 13:43:35 -0400
-Received: from kroah.org ([198.145.64.141]:42816 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755029AbZCSRnd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Mar 2009 13:43:33 -0400
-Date: Thu, 19 Mar 2009 10:42:15 -0700
-From: Greg KH <greg@kroah.com>
-To: Alex Chiang <achiang@hp.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, jbarnes@virtuousgeek.org,
-       linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v4 06/12] PCI: Introduce pci_rescan_bus()
-Message-ID: <20090319174215.GB26248@kroah.com>
-References: <20090318222426.887.1008.stgit@bob.kio> <20090318223956.887.57080.stgit@bob.kio> <20090319022735.f24b7329.akpm@linux-foundation.org> <20090319170548.GE8074@ldl.fc.hp.com>
+	Thu, 19 Mar 2009 13:44:06 -0400
+Received: from smtp1-g21.free.fr ([212.27.42.1]:53347 "EHLO smtp1-g21.free.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760071AbZCSRoC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Mar 2009 13:44:02 -0400
+Message-ID: <0a0401c9a8b9$fa181c30$f9b5a8c0@pii350>
+From: "Gilles Espinasse" <g.esp@free.fr>
+To: <sam@ravnborg.org>
+Cc: <linux-kernel@vger.kernel.org>, <linux-kbuild@vger.kernel.org>
+Subject: [PATCH] Be able to build pmac driver without IDE built-in
+Date: Thu, 19 Mar 2009 18:41:46 +0100
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090319170548.GE8074@ldl.fc.hp.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+X-Priority: 3
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook Express 6.00.2800.1933
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2800.1933
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 19, 2009 at 11:05:48AM -0600, Alex Chiang wrote:
-> * Andrew Morton <akpm@linux-foundation.org>:
-> > On Wed, 18 Mar 2009 16:39:56 -0600 Alex Chiang <achiang@hp.com> wrote:
-> > 
-> > > This API is used by the PCI core to rescan a bus and rediscover
-> > > newly added devices.
-> > > 
-> > > Over time, it is expected that the various PCI hotplug drivers
-> > > will migrate to this interface and away from the old
-> > > pci_do_scan_bus() interface.
-> > > 
-> > > ...
-> > >
-> > > @@ -1195,10 +1195,39 @@ struct pci_bus * __devinit pci_scan_bus_parented(struct device *parent,
-> > >  EXPORT_SYMBOL(pci_scan_bus_parented);
-> > >  
-> > >  #ifdef CONFIG_HOTPLUG
-> > > +/**
-> > > + * pci_rescan_bus - scan a PCI bus for devices.
-> > > + * @bus: PCI bus to scan
-> > > + *
-> > > + * Scan a PCI bus and child buses for new devices, adds them,
-> > > + * and enables them.
-> > > + *
-> > > + * Returns the max number of subordinate bus discovered.
-> > > + */
-> > > +unsigned int __devinit pci_rescan_bus(struct pci_bus *bus)
-> > > +{
-> > > +	unsigned int max;
-> > > +	struct pci_dev *dev;
-> > > +
-> > > +	max = pci_scan_child_bus(bus);
-> > > +	list_for_each_entry(dev, &bus->devices, bus_list)
-> > > +		if (dev->hdr_type == PCI_HEADER_TYPE_BRIDGE ||
-> > > +		    dev->hdr_type == PCI_HEADER_TYPE_CARDBUS)
-> > > +			if (dev->subordinate)
-> > > +				pci_bus_size_bridges(dev->subordinate);
-> > > +
-> > > +	pci_bus_assign_resources(bus);
-> > > +	pci_enable_bridges(bus);
-> > > +	pci_bus_add_devices(bus);
-> > > +
-> > > +	return max;
-> > > +}
-> > > +
-> > >  EXPORT_SYMBOL(pci_add_new_bus);
-> > >  EXPORT_SYMBOL(pci_scan_slot);
-> > >  EXPORT_SYMBOL(pci_scan_bridge);
-> > >  EXPORT_SYMBOL_GPL(pci_scan_child_bus);
-> > > +EXPORT_SYMBOL_GPL(pci_rescan_bus);
-> > 
-> > uhm, is there any rationale for the seemingly-random mixup of export types
-> > in this interface?
-> 
-> History?
-> 
-> I've no clue why we're mixing EXPORT_SYMBOL and EXPORT_SYMBOL_GPL.
+No reason to need IDE built-in to be able to compile pmac driver
+Tested to work on 2.6.29-rc8 and 2.6.28.8 with ide and pmac as modules
+inside an initramfs
 
-I do :)
+ Signed-off-by: Gilles Espinasse <g.esp@free.fr>
 
-New PCI core exports were added with _GPL, it's the older ones that were
-left at the "normal" level.
+--- linux-2.6.28/drivers/ide/Kconfig.old 2009-03-19 16:36:34.000000000 +0100
++++ linux-2.6.28/drivers/ide/Kconfig 2009-03-19 16:35:49.000000000 +0100
+@@ -676,7 +676,7 @@
+ # TODO: BLK_DEV_IDEDMA_PCI -> BLK_DEV_IDEDMA_SFF
+ config BLK_DEV_IDE_PMAC
+  tristate "PowerMac on-board IDE support"
+- depends on PPC_PMAC && IDE=y
++ depends on PPC_PMAC && IDE
+  select IDE_TIMINGS
+  select BLK_DEV_IDEDMA_PCI
+  help
 
-> git-blame says that the mishmash existed pre-git.
-> 
-> For my new interface, I thought that EXPORT_SYMBOL_GPL would be
-> most appropriate, but maybe not?
-
-Yes it is, pci hotplug exports has always been EXPORT_SYMBOL_GPL(), in
-fact I think it was the first in-tree user of this marking.
-
-> What would you like me to do? Make them all the same?
-
-New ones should be _GPL() please.
-
-But please put the export in the proper place, checkpatch.pl will
-complain if you do not.  Which means you didn't run it on your patches
-:)
-
-thanks,
-
-greg k-h
