@@ -1,41 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757001AbZCSNe4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757138AbZCSNgZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757001AbZCSNe4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Mar 2009 09:34:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752465AbZCSNer
+	id S1757138AbZCSNgZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Mar 2009 09:36:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755344AbZCSNgM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Mar 2009 09:34:47 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:64235 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751116AbZCSNeq (ORCPT
+	Thu, 19 Mar 2009 09:36:12 -0400
+Received: from charybdis-ext.suse.de ([195.135.221.2]:45998 "EHLO
+	emea5-mh.id5.novell.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751671AbZCSNgL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Mar 2009 09:34:46 -0400
-Date: Thu, 19 Mar 2009 09:34:42 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-cc: Ingo Molnar <mingo@elte.hu>, Lai Jiangshan <laijs@cn.fujitsu.com>,
-       Jaswinder Singh Rajput <jaswinder@kernel.org>,
-       =?ISO-8859-15?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: oops in tracepoint_update_probe_range()
-In-Reply-To: <20090319132248.GA20200@Krystal>
-Message-ID: <alpine.DEB.2.00.0903190933440.16987@gandalf.stny.rr.com>
-References: <1237393396.3322.6.camel@localhost.localdomain> <20090318163531.GE21331@elte.hu> <49C1F1DF.2020105@cn.fujitsu.com> <20090319074616.GA17144@elte.hu> <20090319132248.GA20200@Krystal>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 19 Mar 2009 09:36:11 -0400
+Subject: Re: High contention on the sk_buff_head.lock
+From: "Peter W. Morreale" <pmorreale@novell.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Vernon Mauery <vernux@us.ibm.com>, netdev <netdev@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       rt-users <linux-rt-users@vger.kernel.org>
+In-Reply-To: <1237467559.6926.31.camel@hermosa>
+References: <49C12E64.1000301@us.ibm.com> <87prge1rhu.fsf@basil.nowhere.org>
+	 <1237467559.6926.31.camel@hermosa>
+Content-Type: text/plain
+Organization: Linux Solutions Group
+Date: Thu, 19 Mar 2009 07:36:01 -0600
+Message-Id: <1237469761.6926.47.camel@hermosa>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Thu, 19 Mar 2009, Mathieu Desnoyers wrote:
+On Thu, 2009-03-19 at 06:59 -0600, Peter W. Morreale wrote:
+> On Wed, 2009-03-18 at 21:54 +0100, Andi Kleen wrote:
+> > Vernon Mauery <vernux@us.ibm.com> writes:
+> > >
 > 
-> Jaswinder : maybe you have old modules in your /lib/modules/`uname -r`
-> directory which have the correct version, but the wrong module.h header ?
+> > 
+> > But then again I'm not sure it's  worth it if the problem only
+> > happens in out of tree RT.
+> > 
+> 
+> Heh.  That darn bastard child again, eh?  :-)
+> 
+> 
+> Recall that adaptive spin,developed in RT, is now in mainline. 
+> 
 
-Isn't there a module versioning that prevents such things?
+Err..  correction... *about* to be in mainline.   Only point I'm making
+is that RT does implicitly, if not explicitly, contributes to mainline.
+Its not a one-way street. 
 
--- Steve
+Best,
+-PWM
+
+> Best,
+> -PWM
+> 
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-rt-users" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+
