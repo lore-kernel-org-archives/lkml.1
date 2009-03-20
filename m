@@ -1,91 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761851AbZCTKM4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761959AbZCTKNU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761851AbZCTKM4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Mar 2009 06:12:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754815AbZCTKEe
+	id S1761959AbZCTKNU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Mar 2009 06:13:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760368AbZCTKGx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Mar 2009 06:04:34 -0400
-Received: from wf-out-1314.google.com ([209.85.200.171]:45210 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759521AbZCTKEc (ORCPT
+	Fri, 20 Mar 2009 06:06:53 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:59693 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1760318AbZCTKGv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Mar 2009 06:04:32 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=Dr1DH3fdiZOS2fVAerNYnxnV5WVwvSzomd9eCMmHKgz4hI+lHX0gDp+Jfkhz1MlaYv
-         JKZwWj1SKROt6qW2DYkc/bjD9E54bm81do+TNgUfuLu9gPc5+PlpczwMs8WvqRGA1Enj
-         mV2hrv3mGygQACc/huZPhCyOKGjCEAfD+AF0E=
-MIME-Version: 1.0
-In-Reply-To: <1237537967.5100.135.camel@johannes.local>
-References: <MiincthRUSI.A.eKC.F4BvJB@chimera>
-	 <1237143683.24621.7.camel@johannes.local>
-	 <20090315202603.GA9077@elte.hu>
-	 <b6a2187b0903160624gb9d207dv301506e589d93ed4@mail.gmail.com>
-	 <1237317742.31814.28.camel@johannes.local>
-	 <b6a2187b0903181958ke11abe7tdcbc4efeb950954d@mail.gmail.com>
-	 <b6a2187b0903182149x77e416ecuf73be2970173c601@mail.gmail.com>
-	 <1237455534.5100.56.camel@johannes.local>
-	 <b6a2187b0903192155q33510b57l9d5927538a0f4f99@mail.gmail.com>
-	 <1237537967.5100.135.camel@johannes.local>
-Date: Fri, 20 Mar 2009 18:04:29 +0800
-Message-ID: <b6a2187b0903200304l469e3eeet87c51b1cddb43ea8@mail.gmail.com>
-Subject: Re: 2.6.29-rc8: Reported regressions from 2.6.28
-From: Jeff Chua <jeff.chua.linux@gmail.com>
-To: Johannes Berg <johannes@sipsolutions.net>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Adrian Bunk <bunk@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Network Development <netdev@vger.kernel.org>,
-       "John W. Linville" <linville@tuxdriver.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 20 Mar 2009 06:06:51 -0400
+Date: Fri, 20 Mar 2009 03:00:12 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Mark Lord <liml@rtr.ca>
+Cc: Norman Diamond <n0diamond@yahoo.co.jp>, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org
+Subject: Re: Overagressive failing of disk reads, both LIBATA and IDE
+Message-Id: <20090320030012.2f19f709.akpm@linux-foundation.org>
+In-Reply-To: <49C30E67.4060702@rtr.ca>
+References: <F79C774361EF45A6A68BC08F8621E406@DIAMOND8600>
+	<49C30E67.4060702@rtr.ca>
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 20, 2009 at 4:32 PM, Johannes Berg
-<johannes@sipsolutions.net> wrote:
-> 1) It can't be before iwconfig which will result in "SET failed on
-> device wlan0 ; Device or resource busy".
->  So your point 1) confuses me. Can you
-> explain that a little more?
+On Thu, 19 Mar 2009 23:32:55 -0400 Mark Lord <liml@rtr.ca> wrote:
 
-This is what happened ...
+> Norman Diamond wrote:
+> > For months I was wondering how a disk could do this:
+> > dd if=/dev/hda of=/dev/null bs=512 skip=551540 count=4  # succeeds
+> > dd if=/dev/hda of=/dev/null bs=512 skip=551544 count=4  # succeeds
+> > dd if=/dev/hda of=/dev/null bs=512 skip=551540 count=8  # fails
+> > 
+> > It turns out the disk isn't doing that.  Linux is.  The old IDE drivers did
+> > it, but with LIBATA the same thing happens to /dev/sda.  In later examples
+> > also, the same happens to /dev/sda as /dev/hda.
+> ..
+> 
+> You can blame me for the IDE driver not doing that properly.
+> But for libata, it's the SCSI layer.
+> 
+> I've been patching this for years for my clients,
+> and will be updating the patch soon-ish and trying
+> again to get it into upstream kernels.
+> 
+> Here's the (now ancient) 2.6.20 version for SLES10:
+> 
+> * * *
+> 
+> Allow SCSI to continue with the remaining blocks of a request
+> after encountering a media error.  Otherwise, it may just fail
+> the entire request, even though some blocks were fine and needed
+> by a completely different process than the one that wanted the bad block(s).
+> 
+> Signed-off-by: Mark Lord <mlord@pobox.com>
+> 
+> --- linux-2.6.16.60-0.6/drivers/scsi/scsi_lib.c	2008-03-10 13:46:03.000000000 -0400
+> +++ linux/drivers/scsi/scsi_lib.c	2008-03-21 11:54:09.000000000 -0400
+> @@ -888,6 +888,12 @@
+>  	 */
+>  	if (sense_valid && !sense_deferred) {
+>  		switch (sshdr.sense_key) {
+> +		case MEDIUM_ERROR:
+> +		/* Bad sector.  Fail it, and then continue the rest of the request. */
+> +		if (scsi_end_request(cmd, 0, cmd->device->sector_size, 1) == NULL) {
+> +			cmd->retries = 0;       // go around again..
+> +			return;
+> +		}
+>  		case UNIT_ATTENTION:
+>  			if (cmd->device->removable) {
+>  				/* Detected disc change.  Set a bit
 
-# modprobe -r iwlagn
-# modprobe iwlagn
-# ifconfig wlan0 up
-# iwconfig wlan0 mode Managed
-Error for wireless request "Set Mode" (8B06) :
-    SET failed on device wlan0 ; Device or resource busy.
+Once upon a time the VFS would fall back to single page reads when a large
+readahead request failed.  That's probably still the case.
 
-
-> As for 2), that is very very strange since ap auto channel auto is the
-> default, so saying that before you do anything else should do anything
-> at all.
->
-> I suspect something is going on in the driver because the ifconfig order
-> matters and for mac80211, it shouldn't make a difference when the state
-> machine is really started. I'll probably need to try to reproduce this,
-> but to be honest between the varying failure modes, undefined wireless
-> extensions semantics, etc. I'm not very confident I can.
-
-I'll try all the different combination again for 2.6.28, and see if
-it's the same, and on the other AP that seems harder to associate (but
-works well in 2.6.28, and other OSs include Nokia phones ... so I
-don't think it's the AP problem ... because it's been around a while
-and gone thru many 2.6.xx).
-
-It worked so well before that I didn't even bother to think twice, and
-I may have made silly mistakes along the way, so pardon me if I
-confused you.
-
-Thanks for your help.
-
-Jeff.
+It was more by accident than by design, but it had (has) the desired effect?
