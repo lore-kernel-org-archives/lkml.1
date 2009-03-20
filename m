@@ -1,72 +1,204 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753319AbZCTDdU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757193AbZCTDdz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753319AbZCTDdU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Mar 2009 23:33:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752229AbZCTDdG
+	id S1757193AbZCTDdz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Mar 2009 23:33:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754024AbZCTDdo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Mar 2009 23:33:06 -0400
-Received: from rtr.ca ([76.10.145.34]:33879 "EHLO mail.rtr.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752565AbZCTDdE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Mar 2009 23:33:04 -0400
-Message-ID: <49C30E67.4060702@rtr.ca>
-Date: Thu, 19 Mar 2009 23:32:55 -0400
-From: Mark Lord <liml@rtr.ca>
-Organization: Real-Time Remedies Inc.
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Thu, 19 Mar 2009 23:33:44 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:60009 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1752229AbZCTDdn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Mar 2009 23:33:43 -0400
+Message-ID: <49C30EA3.1060004@cn.fujitsu.com>
+Date: Fri, 20 Mar 2009 11:33:55 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-To: Norman Diamond <n0diamond@yahoo.co.jp>
-Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
-Subject: Re: Overagressive failing of disk reads, both LIBATA and IDE
-References: <F79C774361EF45A6A68BC08F8621E406@DIAMOND8600>
-In-Reply-To: <F79C774361EF45A6A68BC08F8621E406@DIAMOND8600>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: Ingo Molnar <mingo@elte.hu>
+CC: Jens Axboe <jens.axboe@oracle.com>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 6/7] blktrace: remove sysfs_blk_trace_enable_show/store()
+References: <49C2F599.3060306@cn.fujitsu.com> <49C2F628.9090300@cn.fujitsu.com>
+In-Reply-To: <49C2F628.9090300@cn.fujitsu.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Norman Diamond wrote:
-> For months I was wondering how a disk could do this:
-> dd if=/dev/hda of=/dev/null bs=512 skip=551540 count=4  # succeeds
-> dd if=/dev/hda of=/dev/null bs=512 skip=551544 count=4  # succeeds
-> dd if=/dev/hda of=/dev/null bs=512 skip=551540 count=8  # fails
-> 
-> It turns out the disk isn't doing that.  Linux is.  The old IDE drivers did
-> it, but with LIBATA the same thing happens to /dev/sda.  In later examples
-> also, the same happens to /dev/sda as /dev/hda.
-..
+> +	if (attr == &dev_attr_enable) {
+> +		if (value)
+> +			ret = blk_trace_setup_queue(q, bdev->bd_dev);
+> +		else
+> +			ret = blk_trace_remove_queue(q);
 
-You can blame me for the IDE driver not doing that properly.
-But for libata, it's the SCSI layer.
+(ret = count) should be returned if ret == 0.. patch updated below
 
-I've been patching this for years for my clients,
-and will be updating the patch soon-ish and trying
-again to get it into upstream kernels.
+> +		goto out_unlock_bdev;
+> +	}
 
-Here's the (now ancient) 2.6.20 version for SLES10:
 
-* * *
+===================
 
-Allow SCSI to continue with the remaining blocks of a request
-after encountering a media error.  Otherwise, it may just fail
-the entire request, even though some blocks were fine and needed
-by a completely different process than the one that wanted the bad block(s).
 
-Signed-off-by: Mark Lord <mlord@pobox.com>
+From: Li Zefan <lizf@cn.fujitsu.com>
+Subject: [PATCH 6/7] blktrace: sysfs_blk_trace_enable_show/store()
 
---- linux-2.6.16.60-0.6/drivers/scsi/scsi_lib.c	2008-03-10 13:46:03.000000000 -0400
-+++ linux/drivers/scsi/scsi_lib.c	2008-03-21 11:54:09.000000000 -0400
-@@ -888,6 +888,12 @@
- 	 */
- 	if (sense_valid && !sense_deferred) {
- 		switch (sshdr.sense_key) {
-+		case MEDIUM_ERROR:
-+		/* Bad sector.  Fail it, and then continue the rest of the request. */
-+		if (scsi_end_request(cmd, 0, cmd->device->sector_size, 1) == NULL) {
-+			cmd->retries = 0;       // go around again..
-+			return;
-+		}
- 		case UNIT_ATTENTION:
- 			if (cmd->device->removable) {
- 				/* Detected disc change.  Set a bit
+sysfs_blk_trace_enable_show()/store() share most of code with
+sysfs_blk_trace_attr_show()/store().
+
+Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+---
+ kernel/trace/blktrace.c |   92 +++++++++++-----------------------------------
+ 1 files changed, 22 insertions(+), 70 deletions(-)
+
+diff --git a/kernel/trace/blktrace.c b/kernel/trace/blktrace.c
+index 14986af..dfee6f9 100644
+--- a/kernel/trace/blktrace.c
++++ b/kernel/trace/blktrace.c
+@@ -1284,72 +1284,6 @@ static int blk_trace_setup_queue(struct request_queue *q, dev_t dev)
+  * sysfs interface to enable and configure tracing
+  */
+ 
+-static ssize_t sysfs_blk_trace_enable_show(struct device *dev,
+-					   struct device_attribute *attr,
+-					   char *buf)
+-{
+-	struct hd_struct *p = dev_to_part(dev);
+-	struct block_device *bdev;
+-	ssize_t ret = -ENXIO;
+-
+-	lock_kernel();
+-	bdev = bdget(part_devt(p));
+-	if (bdev != NULL) {
+-		struct request_queue *q = bdev_get_queue(bdev);
+-
+-		if (q != NULL) {
+-			mutex_lock(&bdev->bd_mutex);
+-			ret = sprintf(buf, "%u\n", !!q->blk_trace);
+-			mutex_unlock(&bdev->bd_mutex);
+-		}
+-
+-		bdput(bdev);
+-	}
+-
+-	unlock_kernel();
+-	return ret;
+-}
+-
+-static ssize_t sysfs_blk_trace_enable_store(struct device *dev,
+-					    struct device_attribute *attr,
+-					    const char *buf, size_t count)
+-{
+-	struct block_device *bdev;
+-	struct request_queue *q;
+-	struct hd_struct *p;
+-	int value;
+-	ssize_t ret = -ENXIO;
+-
+-	if (count == 0 || sscanf(buf, "%d", &value) != 1)
+-		goto out;
+-
+-	lock_kernel();
+-	p = dev_to_part(dev);
+-	bdev = bdget(part_devt(p));
+-	if (bdev == NULL)
+-		goto out_unlock_kernel;
+-
+-	q = bdev_get_queue(bdev);
+-	if (q == NULL)
+-		goto out_bdput;
+-
+-	mutex_lock(&bdev->bd_mutex);
+-	if (value)
+-		ret = blk_trace_setup_queue(q, bdev->bd_dev);
+-	else
+-		ret = blk_trace_remove_queue(q);
+-	mutex_unlock(&bdev->bd_mutex);
+-
+-	if (ret == 0)
+-		ret = count;
+-out_bdput:
+-	bdput(bdev);
+-out_unlock_kernel:
+-	unlock_kernel();
+-out:
+-	return ret;
+-}
+-
+ static ssize_t sysfs_blk_trace_attr_show(struct device *dev,
+ 					 struct device_attribute *attr,
+ 					 char *buf);
+@@ -1361,8 +1295,7 @@ static ssize_t sysfs_blk_trace_attr_store(struct device *dev,
+ 		    sysfs_blk_trace_attr_show, \
+ 		    sysfs_blk_trace_attr_store)
+ 
+-static DEVICE_ATTR(enable, S_IRUGO | S_IWUSR,
+-		   sysfs_blk_trace_enable_show, sysfs_blk_trace_enable_store);
++static BLK_TRACE_DEVICE_ATTR(enable);
+ static BLK_TRACE_DEVICE_ATTR(act_mask);
+ static BLK_TRACE_DEVICE_ATTR(pid);
+ static BLK_TRACE_DEVICE_ATTR(start_lba);
+@@ -1447,6 +1380,12 @@ static ssize_t sysfs_blk_trace_attr_show(struct device *dev,
+ 	if (q == NULL)
+ 		goto out_bdput;
+ 	mutex_lock(&bdev->bd_mutex);
++
++	if (attr == &dev_attr_enable) {
++		ret = sprintf(buf, "%u\n", !!q->blk_trace);
++		goto out_unlock_bdev;
++	}
++
+ 	if (q->blk_trace == NULL)
+ 		ret = sprintf(buf, "disabled\n");
+ 	else if (attr == &dev_attr_act_mask)
+@@ -1457,6 +1396,8 @@ static ssize_t sysfs_blk_trace_attr_show(struct device *dev,
+ 		ret = sprintf(buf, "%llu\n", q->blk_trace->start_lba);
+ 	else if (attr == &dev_attr_end_lba)
+ 		ret = sprintf(buf, "%llu\n", q->blk_trace->end_lba);
++
++out_unlock_bdev:
+ 	mutex_unlock(&bdev->bd_mutex);
+ out_bdput:
+ 	bdput(bdev);
+@@ -1499,6 +1440,15 @@ static ssize_t sysfs_blk_trace_attr_store(struct device *dev,
+ 		goto out_bdput;
+ 
+ 	mutex_lock(&bdev->bd_mutex);
++
++	if (attr == &dev_attr_enable) {
++		if (value)
++			ret = blk_trace_setup_queue(q, bdev->bd_dev);
++		else
++			ret = blk_trace_remove_queue(q);
++		goto out_unlock_bdev;
++	}
++
+ 	ret = 0;
+ 	if (q->blk_trace == NULL)
+ 		ret = blk_trace_setup_queue(q, bdev->bd_dev);
+@@ -1512,13 +1462,15 @@ static ssize_t sysfs_blk_trace_attr_store(struct device *dev,
+ 			q->blk_trace->start_lba = value;
+ 		else if (attr == &dev_attr_end_lba)
+ 			q->blk_trace->end_lba = value;
+-		ret = count;
+ 	}
++
++out_unlock_bdev:
+ 	mutex_unlock(&bdev->bd_mutex);
+ out_bdput:
+ 	bdput(bdev);
+ out_unlock_kernel:
+ 	unlock_kernel();
+ out:
+-	return ret;
++	return ret ? ret : count;
+ }
++
+-- 
+1.5.4.rc3
+
+
