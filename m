@@ -1,66 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759864AbZCTShV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760137AbZCTSiS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759864AbZCTShV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Mar 2009 14:37:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755065AbZCTShH
+	id S1760137AbZCTSiS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Mar 2009 14:38:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757834AbZCTSiB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Mar 2009 14:37:07 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:43144 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752732AbZCTShG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Mar 2009 14:37:06 -0400
-Date: Fri, 20 Mar 2009 19:36:42 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>, LKML <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>
-Subject: Re: [PATCH 0/5] [GIT PULL] updates for tip/tracing/ftrace
-Message-ID: <20090320183642.GA2070@elte.hu>
-References: <20090318031423.981603258@goodmis.org> <20090318055924.GA24627@elte.hu> <20090318073903.GA31341@elte.hu> <20090319073357.GA14615@elte.hu> <alpine.DEB.2.00.0903191309170.16987@gandalf.stny.rr.com> <20090320174331.GH6698@linux.vnet.ibm.com>
+	Fri, 20 Mar 2009 14:38:01 -0400
+Received: from e32.co.us.ibm.com ([32.97.110.150]:58789 "EHLO
+	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755065AbZCTSh7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Mar 2009 14:37:59 -0400
+Date: Fri, 20 Mar 2009 13:37:45 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: mtk.manpages@gmail.com, Stephen Smalley <sds@epoch.ncsc.mil>,
+       Andrew Morgan <morgan@kernel.org>,
+       linux-security-module@vger.kernel.org,
+       lkml <linux-kernel@vger.kernel.org>, linux-nfs@vger.kernel.org,
+       Igor Zhbanov <izh1979@gmail.com>,
+       "J. Bruce Fields" <bfields@citi.umich.edu>, stable@kernel.org,
+       linux-api@vger.kernel.org
+Subject: [PATCH] add some long-missing capabilities to fs_mask
+Message-ID: <20090320183745.GA9352@us.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090320174331.GH6698@linux.vnet.ibm.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+( resubmitting without RFC tag, and updated against J. Bruce
+Fields' patch since that has been applied upstream )
 
-* Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
+When POSIX capabilities were introduced during the 2.1 Linux
+cycle, the fs mask, which represents the capabilities which having
+fsuid==0 is supposed to grant, did not include CAP_MKNOD and
+CAP_LINUX_IMMUTABLE.  However, before capabilities the privilege
+to call these did in fact depend upon fsuid==0.
 
-> On Thu, Mar 19, 2009 at 01:21:47PM -0400, Steven Rostedt wrote:
-> > 
-> > I'm still not able to reproduce, but...
-> > 
-> > On Thu, 19 Mar 2009, Ingo Molnar wrote:
-> > 
-> > > * Ingo Molnar <mingo@elte.hu> wrote:
-> > > 
-> > > > these latest ftrace changes caused a lockup on a -tip testsystem:
-> > > 
-> > > Note, even with Rusty's offstack-cpumask fix applied (in latest 
-> > > -tip), i can reproduce a lockup:
-> > > 
-> 
-> [ . . . ]
-> 
-> > This looks like it is RCU/stop_machine related. The CPU is stuck in
-> > in stop_machine? I see that rcu_torture is running. Does this go away if 
-> > you turn off rcu_torture?
-> 
-> Grasping at straws...  Does Lai's rcu_barrier() fix help?
+This patch introduces those capabilities into the fsmask,
+restoring the old behavior.
 
-which one is that?
+See the thread starting at http://lkml.org/lkml/2009/3/11/157 for
+reference.
 
-	Ingo
+Note that if this fix is deemed valid, then earlier kernel versions (2.4
+and 2.2) ought to be fixed too.
+
+Changelog:
+	[Mar 20] Updated against J. Bruce Fields' patch
+
+Reported-by: Igor Zhbanov <izh1979@gmail.com>
+Signed-off-by: Serge E. Hallyn <serue@us.ibm.com>
+Cc: stable@kernel.org
+Cc: J. Bruce Fields <bfields@citi.umich.edu>
+---
+ include/linux/capability.h |   22 +++++++++++++++++++---
+ 1 files changed, 19 insertions(+), 3 deletions(-)
+
+diff --git a/include/linux/capability.h b/include/linux/capability.h
+index 4864a43..959998a 100644
+--- a/include/linux/capability.h
++++ b/include/linux/capability.h
+@@ -377,7 +377,21 @@ struct cpu_vfs_cap_data {
+ #define CAP_FOR_EACH_U32(__capi)  \
+ 	for (__capi = 0; __capi < _KERNEL_CAPABILITY_U32S; ++__capi)
+ 
++/*
++ * CAP_FS_MASK and CAP_NFSD_MASKS:
++ *
++ * The fs mask is all the privileges that fsuid==0 historically meant.
++ * At one time in the past, that included CAP_MKNOD and CAP_LINUX_IMMUTABLE.
++ *
++ * It has never meant setting security.* and trusted.* xattrs.
++ *
++ * We could also define fsmask as follows:
++ *   1. CAP_FS_MASK is the privilege to bypass all fs-related DAC permissions
++ *   2. The security.* and trusted.* xattrs are fs-related MAC permissions
++ */
++
+ # define CAP_FS_MASK_B0     (CAP_TO_MASK(CAP_CHOWN)		\
++			    | CAP_TO_MASK(CAP_MKNOD)		\
+ 			    | CAP_TO_MASK(CAP_DAC_OVERRIDE)	\
+ 			    | CAP_TO_MASK(CAP_DAC_READ_SEARCH)	\
+ 			    | CAP_TO_MASK(CAP_FOWNER)		\
+@@ -393,10 +407,12 @@ struct cpu_vfs_cap_data {
+ # define CAP_FULL_SET     ((kernel_cap_t){{ ~0, ~0 }})
+ # define CAP_INIT_EFF_SET ((kernel_cap_t){{ ~CAP_TO_MASK(CAP_SETPCAP), ~0 }})
+ # define CAP_FS_SET       ((kernel_cap_t){{ CAP_FS_MASK_B0, CAP_FS_MASK_B1 } })
++# define CAP_FS_SET       ((kernel_cap_t){{ CAP_FS_MASK_B0 \
++				    | CAP_TO_MASK(CAP_LINUX_IMMUTABLE), \
++				    CAP_FS_MASK_B1 } })
+ # define CAP_NFSD_SET     ((kernel_cap_t){{ CAP_FS_MASK_B0 \
+-					    | CAP_TO_MASK(CAP_SYS_RESOURCE) \
+-					    | CAP_TO_MASK(CAP_MKNOD), \
+-					    CAP_FS_MASK_B1 } })
++				    | CAP_TO_MASK(CAP_SYS_RESOURCE), \
++				    CAP_FS_MASK_B1 } })
+ 
+ #endif /* _KERNEL_CAPABILITY_U32S != 2 */
+ 
+-- 
+1.5.4.3
+
