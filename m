@@ -1,125 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759128AbZCTD5M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755853AbZCTD6W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759128AbZCTD5M (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Mar 2009 23:57:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754643AbZCTD44
+	id S1755853AbZCTD6W (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Mar 2009 23:58:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754643AbZCTD6N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Mar 2009 23:56:56 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:33700 "EHLO mx2.redhat.com"
+	Thu, 19 Mar 2009 23:58:13 -0400
+Received: from hera.kernel.org ([140.211.167.34]:40258 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753735AbZCTD4z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Mar 2009 23:56:55 -0400
-Message-ID: <49C31415.1010808@redhat.com>
-Date: Thu, 19 Mar 2009 23:57:09 -0400
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	id S1753864AbZCTD6M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Mar 2009 23:58:12 -0400
+Message-ID: <49C31444.1000700@kernel.org>
+Date: Thu, 19 Mar 2009 20:57:56 -0700
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-To: Steven Rostedt <rostedt@goodmis.org>
-CC: Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Ingo Molnar <mingo@elte.hu>,
-       systemtap-ml <systemtap@sources.redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC][PATCH -tip 9/9] tracing: kprobe-tracer plugin supports
- module_probe
-References: <49C2B4D9.6040602@redhat.com> <alpine.DEB.2.00.0903192007380.13615@gandalf.stny.rr.com>
-In-Reply-To: <alpine.DEB.2.00.0903192007380.13615@gandalf.stny.rr.com>
-Content-Type: text/plain; charset=ISO-2022-JP
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+CC: Ingo Molnar <mingo@elte.hu>, linux-pci@vger.kernel.org,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: x86/pci: Detect mmconfig on nVidia MCP55 -v2 - resend
+References: <20090205181505.GB5661@elte.hu> <20090319193218.445ce0ca@hobbes.lan>
+In-Reply-To: <20090319193218.445ce0ca@hobbes.lan>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Steven Rostedt wrote:
-> On Thu, 19 Mar 2009, Masami Hiramatsu wrote:
-> 
->> Use register/unregister_module_*probe functions for tracing
->> module .init/.exit functions.
->>
->> Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
->> Cc: Steven Rostedt <rostedt@goodmis.org>
->> Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
->> Cc: Ingo Molnar <mingo@elte.hu>
->> ---
->>  kernel/trace/trace_kprobe.c |   15 ++++++++++-----
->>  1 files changed, 10 insertions(+), 5 deletions(-)
->>
->> diff --git a/kernel/trace/trace_kprobe.c b/kernel/trace/trace_kprobe.c
->> index e801e8c..7b7ab53 100644
->> --- a/kernel/trace/trace_kprobe.c
->> +++ b/kernel/trace/trace_kprobe.c
->> @@ -226,6 +226,11 @@ static void free_trace_probe(struct trace_probe *tp)
->>  	kfree(tp);
->>  }
->>
->> +static int activate_handler(void *offset, struct module *mod)
->> +{
->> +	return ((unsigned long)offset == 0) ? 1 : 0;
-> 
-> This is a strange way to implement:
-> 
-> 	return !offset;
+From: Ed Swierk <eswierk@aristanetworks.com>
 
-Yes. Thanks!
+Subject: [PATCH] x86/pci: Detect mmconfig on nVidia MCP55 -v2
 
-> 
-> -- Steve
-> 
->> +}
->> +
->>  static int register_trace_probe(struct trace_probe *tp)
->>  {
->>  	int ret;
->> @@ -234,9 +239,10 @@ static int register_trace_probe(struct trace_probe *tp)
->>  	list_add_tail(&tp->list, &probe_list);
->>
->>  	if (probe_is_return(tp))
->> -		ret = register_kretprobe(&tp->rp);
->> +		ret = register_module_kretprobe(&tp->rp, activate_handler, 0);
->>  	else
->> -		ret = register_kprobe(&tp->kp);
->> +		ret = register_module_kprobe(&tp->kp, activate_handler,
->> +					     (void *)(tp->kp.offset));
->>
->>  	if (ret) {
->>  		pr_warning("Probe registering error: %d\n", ret);
->> @@ -249,9 +255,9 @@ static int register_trace_probe(struct trace_probe *tp)
->>  static void unregister_trace_probe(struct trace_probe *tp)
->>  {
->>  	if (probe_is_return(tp))
->> -		unregister_kretprobe(&tp->rp);
->> +		unregister_module_kretprobe(&tp->rp);
->>  	else
->> -		unregister_kprobe(&tp->kp);
->> +		unregister_module_kprobe(&tp->kp);
->>  	list_del(&tp->list);
->>  }
->>
->> @@ -301,7 +307,6 @@ static int create_trace_probe(int argc, char **argv)
->>  	} else {
->>  		/* a symbol specified */
->>  		symbol = argv[1];
->> -		/* TODO: support .init module functions */
->>  		tmp = strchr(symbol, '+');
->>  		if (!tmp)
->>  			tmp = strchr(symbol, '-');
->> -- 
->> Masami Hiramatsu
->>
->> Software Engineer
->> Hitachi Computer Products (America) Inc.
->> Software Solutions Division
->>
->> e-mail: mhiramat@redhat.com
->>
->>
->>
+Detect and enable memory-mapped PCI configuration space on the nVidia
+MCP55 southbridge.  Tested against 2.6.27.4 on an Arista Networks
+development board with one MCP55, Coreboot firmware, no ACPI.
 
--- 
-Masami Hiramatsu
+v2: add multi mcp55 support, and conexist with amd quad core system by Yinghai
+    also only enable it only when acpi=off or acpi is not built-in
 
-Software Engineer
-Hitachi Computer Products (America) Inc.
-Software Solutions Division
+Signed-off-by: Ed Swierk <eswierk@aristanetworks.com>
+Signed-off-by: Yinghai Lu <yinghai@kernel.org>
 
-e-mail: mhiramat@redhat.com
+---
+ arch/x86/pci/mmconfig-shared.c |   64 +++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 64 insertions(+)
 
+Index: linux-2.6/arch/x86/pci/mmconfig-shared.c
+===================================================================
+--- linux-2.6.orig/arch/x86/pci/mmconfig-shared.c
++++ linux-2.6/arch/x86/pci/mmconfig-shared.c
+@@ -166,6 +166,68 @@ static const char __init *pci_mmcfg_amd_
+ 	return "AMD Family 10h NB";
+ }
+ 
++static bool __initdata mcp55_checked;
++static const char __init *pci_mmcfg_nvidia_mcp55(void)
++{
++	int bus;
++	int mcp55_mmconf_found = 0;
++
++	static const u32 extcfg_regnum		= 0x90;
++	static const u32 extcfg_regsize		= 4;
++	static const u32 extcfg_enable_mask	= 1<<31;
++	static const u32 extcfg_start_mask	= 0xff<<16;
++	static const int extcfg_start_shift	= 16;
++	static const u32 extcfg_size_mask	= 0x3<<28;
++	static const int extcfg_size_shift	= 28;
++	static const int extcfg_sizebus[]	= {0x100, 0x80, 0x40, 0x20};
++	static const u32 extcfg_base_mask[]	= {0x7ff8, 0x7ffc, 0x7ffe, 0x7fff};
++	static const int extcfg_base_lshift	= 25;
++
++	/*
++	 * do check if amd fam10h already took over
++	 */
++	if (!acpi_disabled || pci_mmcfg_config_num || mcp55_checked)
++		return NULL;
++
++	mcp55_checked = true;
++	for (bus = 0; bus < 256; bus++) {
++		u64 base;
++		u32 l, extcfg;
++		u16 vendor, device;
++		int start, size_index, end;
++
++		raw_pci_ops->read(0, bus, PCI_DEVFN(0, 0), 0, 4, &l);
++		vendor = l & 0xffff;
++		device = (l >> 16) & 0xffff;
++
++		if (PCI_VENDOR_ID_NVIDIA != vendor || 0x0369 != device)
++			continue;
++
++		raw_pci_ops->read(0, bus, PCI_DEVFN(0, 0), extcfg_regnum,
++				  extcfg_regsize, &extcfg);
++
++		if (!(extcfg & extcfg_enable_mask))
++			continue;
++
++		if (extend_mmcfg(1) == -1)
++			continue;
++
++		size_index = (extcfg & extcfg_size_mask) >> extcfg_size_shift;
++		base = extcfg & extcfg_base_mask[size_index];
++		/* base could > 4G */
++		base <<= extcfg_base_lshift;
++		start = (extcfg & extcfg_start_mask) >> extcfg_start_shift;
++		end = start + extcfg_sizebus[size_index] - 1;
++		fill_one_mmcfg(base, 0, start, end);
++		mcp55_mmconf_found++;
++	}
++
++	if (!mcp55_mmconf_found)
++		return NULL;
++
++	return "nVidia MCP55";
++}
++
+ struct pci_mmcfg_hostbridge_probe {
+ 	u32 bus;
+ 	u32 devfn;
+@@ -183,6 +245,8 @@ static struct pci_mmcfg_hostbridge_probe
+ 	  0x1200, pci_mmcfg_amd_fam10h },
+ 	{ 0xff, PCI_DEVFN(0, 0), PCI_VENDOR_ID_AMD,
+ 	  0x1200, pci_mmcfg_amd_fam10h },
++	{ 0, PCI_DEVFN(0, 0), PCI_VENDOR_ID_NVIDIA,
++	  0x0369, pci_mmcfg_nvidia_mcp55 },
+ };
+ 
+ static int __init cmp_mmcfg(const void *x1, const void *x2)
