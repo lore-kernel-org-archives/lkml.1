@@ -1,90 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756419AbZCTNJ6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754240AbZCTNK4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756419AbZCTNJ6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Mar 2009 09:09:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755237AbZCTNJp
+	id S1754240AbZCTNK4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Mar 2009 09:10:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753741AbZCTNKn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Mar 2009 09:09:45 -0400
-Received: from rtr.ca ([76.10.145.34]:52933 "EHLO mail.rtr.ca"
+	Fri, 20 Mar 2009 09:10:43 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:48161 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753070AbZCTNJo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Mar 2009 09:09:44 -0400
-Message-ID: <49C39590.2040705@rtr.ca>
-Date: Fri, 20 Mar 2009 09:09:36 -0400
-From: Mark Lord <liml@rtr.ca>
-Organization: Real-Time Remedies Inc.
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	id S1752325AbZCTNKn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Mar 2009 09:10:43 -0400
+Date: Fri, 20 Mar 2009 10:10:17 -0300
+From: Arnaldo Carvalho de Melo <acme@redhat.com>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Jens Axboe <jens.axboe@oracle.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 5/7] blktrace: report EBUSY correctly
+Message-ID: <20090320131017.GN30407@ghostprotocols.net>
+References: <49C2F599.3060306@cn.fujitsu.com> <49C2F614.2010101@cn.fujitsu.com>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Norman Diamond <n0diamond@yahoo.co.jp>, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org
-Subject: Re: Overagressive failing of disk reads, both LIBATA and IDE
-References: <F79C774361EF45A6A68BC08F8621E406@DIAMOND8600>	<49C30E67.4060702@rtr.ca> <20090320030012.2f19f709.akpm@linux-foundation.org>
-In-Reply-To: <20090320030012.2f19f709.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49C2F614.2010101@cn.fujitsu.com>
+X-Url: http://oops.ghostprotocols.net:81/blog
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Thu, 19 Mar 2009 23:32:55 -0400 Mark Lord <liml@rtr.ca> wrote:
+Em Fri, Mar 20, 2009 at 09:49:08AM +0800, Li Zefan escreveu:
+> blk_trace_remove_queue() returns EINVAL if q->blk_trace == NULL,
+> but blk_trace_setup_queue() doesn't return EBUSY if q->blk_trace != NULL.
 > 
->> Norman Diamond wrote:
->>> For months I was wondering how a disk could do this:
->>> dd if=/dev/hda of=/dev/null bs=512 skip=551540 count=4  # succeeds
->>> dd if=/dev/hda of=/dev/null bs=512 skip=551544 count=4  # succeeds
->>> dd if=/dev/hda of=/dev/null bs=512 skip=551540 count=8  # fails
->>>
->>> It turns out the disk isn't doing that.  Linux is.  The old IDE drivers did
->>> it, but with LIBATA the same thing happens to /dev/sda.  In later examples
->>> also, the same happens to /dev/sda as /dev/hda.
->> ..
->>
->> You can blame me for the IDE driver not doing that properly.
->> But for libata, it's the SCSI layer.
->>
->> I've been patching this for years for my clients,
->> and will be updating the patch soon-ish and trying
->> again to get it into upstream kernels.
->>
->> Here's the (now ancient) 2.6.20 version for SLES10:
->>
->> * * *
->>
->> Allow SCSI to continue with the remaining blocks of a request
->> after encountering a media error.  Otherwise, it may just fail
->> the entire request, even though some blocks were fine and needed
->> by a completely different process than the one that wanted the bad block(s).
->>
->> Signed-off-by: Mark Lord <mlord@pobox.com>
->>
->> --- linux-2.6.16.60-0.6/drivers/scsi/scsi_lib.c	2008-03-10 13:46:03.000000000 -0400
->> +++ linux/drivers/scsi/scsi_lib.c	2008-03-21 11:54:09.000000000 -0400
->> @@ -888,6 +888,12 @@
->>  	 */
->>  	if (sense_valid && !sense_deferred) {
->>  		switch (sshdr.sense_key) {
->> +		case MEDIUM_ERROR:
->> +		/* Bad sector.  Fail it, and then continue the rest of the request. */
->> +		if (scsi_end_request(cmd, 0, cmd->device->sector_size, 1) == NULL) {
->> +			cmd->retries = 0;       // go around again..
->> +			return;
->> +		}
->>  		case UNIT_ATTENTION:
->>  			if (cmd->device->removable) {
->>  				/* Detected disc change.  Set a bit
+>  # echo 0 > sdaX/trace/enable
+>  # echo 0 > sdaX/trace/enable
+>  bash: echo: write error: Invalid argument
+>  # echo 1 > sdaX/trace/enable
+>  # echo 1 > sdaX/trace/enable
+>  (should return EBUSY)
 > 
-> Once upon a time the VFS would fall back to single page reads when a large
-> readahead request failed.  That's probably still the case.
-> 
-> It was more by accident than by design, but it had (has) the desired effect?
-..
+> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
 
-Ahh.. but the block layer efficiently merges adjacent sectors
-from multiple processes into single requests.  Generally a good thing,
-that, but it does mean that one bad sector can currently trigger I/O
-failures for several processes which aren't even interested in the
-bad sector.
+Thanks for all the testing, its being really appreciated,
 
--ml
+Acked-by: Arnaldo Carvalho de Melo <acme@redhat.com>
+
+- Arnaldo
