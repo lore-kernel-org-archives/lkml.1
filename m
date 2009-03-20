@@ -1,95 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757061AbZCTO1i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756579AbZCTObV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757061AbZCTO1i (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Mar 2009 10:27:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752984AbZCTO1a
+	id S1756579AbZCTObV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Mar 2009 10:31:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752603AbZCTObM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Mar 2009 10:27:30 -0400
-Received: from fg-out-1718.google.com ([72.14.220.159]:10838 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753439AbZCTO13 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Mar 2009 10:27:29 -0400
-Message-ID: <49C3A7CA.8040500@monstr.eu>
-Date: Fri, 20 Mar 2009 15:27:22 +0100
-From: Michal Simek <monstr@monstr.eu>
-Reply-To: monstr@monstr.eu
-User-Agent: Thunderbird 2.0.0.17 (X11/20081001)
+	Fri, 20 Mar 2009 10:31:12 -0400
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:39316 "EHLO e4.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751060AbZCTObK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Mar 2009 10:31:10 -0400
+Date: Fri, 20 Mar 2009 07:31:04 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: dipankar@in.ibm.com, linux-input@vger.kernel.org,
+       dmitry.torokhov@gmail.com, linux-kernel@vger.kernel.org
+Subject: Re: Question about usage of RCU in the input layer
+Message-ID: <20090320143104.GA6698@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20090318215812.15496a86@infradead.org> <20090319085628.GA6167@in.ibm.com> <20090319071841.63334eff@infradead.org> <20090320020750.GA6807@linux.vnet.ibm.com> <20090319202032.4c971d92@infradead.org> <20090320044541.GE6807@linux.vnet.ibm.com> <20090320065058.65d01771@infradead.org>
 MIME-Version: 1.0
-To: Thomas Gleixner <tglx@linutronix.de>
-CC: LKML <linux-kernel@vger.kernel.org>, john.williams@petalogix.com,
-       John Stultz <johnstul@us.ibm.com>
-Subject: Re: [PATCH 08/57] microblaze_v7: Interrupt handling, timer support,
- selfmod code
-References: <1237408284-8674-1-git-send-email-monstr@monstr.eu> <0168f03c96e9479ede695a9859c8a0691baa8ef3.1237407249.git.monstr@monstr.eu> <c1bdfabf85ce10babc3aa38d3bb7558a093bc49e.1237407249.git.monstr@monstr.eu> <4b5aee01d11fc790c7842838ea63a82ee3273003.1237407249.git.monstr@monstr.eu> <af309ba8e95f503b7990461384d9f8453f45dbbd.1237407249.git.monstr@monstr.eu> <5f8b2a60496983f572ef6d3b4e2f986c167a8336.1237407249.git.monstr@monstr.eu> <fbef554ff1d05fa50312d91e61a0d63d3207076c.1237407249.git.monstr@monstr.eu> <dad2353f129217470f0595eeed98412b4c84ed6b.1237407249.git.monstr@monstr.eu> <20fd42a1e8837c7352d35d157aa3393e88152c32.1237407249.git.monstr@monstr.eu> <alpine.LFD.2.00.0903191639530.29264@localhost.localdomain> <49C2AB09.9040300@monstr.eu> <alpine.LFD.2.00.0903192219500.29264@localhost.localdomain> <49C3A346.5040202@monstr.eu> <alpine.LFD.2.00.0903201508470.29264@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.00.0903201508470.29264@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090320065058.65d01771@infradead.org>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thomas,
-> Michal,
+On Fri, Mar 20, 2009 at 06:50:58AM -0700, Arjan van de Ven wrote:
+> On Thu, 19 Mar 2009 21:45:41 -0700
+> "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
 > 
-> On Fri, 20 Mar 2009, Michal Simek wrote:
->>> I guess the problem is in your chip->xxx functions.
->> I fixed it. There were one additional line.
->> + I set GENERIC_HARDIRQS_NO__DO_IRQ=y.
+> > > single CPU is soooo last decade ;-)
+> > > But seriously I no longer have systems that aren't dual core or SMT
+> > > in some form... 
+> > 
+> > OK, I will ask the stupid question...
+> > 
+> > Why not delay bringing up the non-boot CPUs until later in boot?
 > 
-> Cool.
+> that'd be throwing out the baby with the bathwater... I'm trying to use 
+> the other cpus to do some of the boot work (so that the total goes
+> faster); not using the other cpus would be counter productive to that.
+> (As is just sitting in synchronize_rcu() when the other cpu is
+> working.. hence this discussion ;-)
 
-:-)
+OK, so you are definitely running multiple CPUs when the offending
+synchronize_rcu() executes, then?
 
-NO_HZ works too. Here is the log.
+If so, here are some follow-on questions:
 
-# cat /proc/interrupts
-                CPU0
-  3:       3827     level     INTC  timer
-  8:       1834      edge     INTC  uartlite
-# uptime
- 00:16:47 up 16 min, load average: 0.00, 0.00, 0.00
-# uptime
- 00:17:53 up 17 min, load average: 0.00, 0.00, 0.00
-# cat /proc/interrupts
-                CPU0
-  3:       4105     level     INTC  timer
-  8:       1913      edge     INTC  uartlite
-# uptime
- 00:21:44 up 21 min, load average: 0.00, 0.00, 0.00
-# cat /proc/interrupts
-                CPU0
-  3:       4615     level     INTC  timer
-  8:       1970      edge     INTC  uartlite
-#
+1.	How many synchronize_rcu() calls are you seeing on the
+	critical boot path and what value of HZ are you running?
 
-> 
->> BTW: Below is full chip description where function enable is unmask
->> and disable is mask. Do I have keep there enable and disable function pointers?
->> I commented them and works without them too.
-> 
-> Right. The generic code does:
-> 
->         if (!chip->enable)
->                 chip->enable = default_enable;
->         if (!chip->disable)
->                 chip->disable = default_disable;
+	If each synchronize_rcu() is taking (say) tens of jiffies, then,
+	as Peter Zijlstra notes earlier in this thread, we need to focus
+	on what is taking too long to get through its RCU read-side
+	critical sections.  Otherwise, if each synchronize_rcu() is
+	in the 3-5 jiffy range, I may finally be forced to create an
+	expedited version of the synchronize_rcu() API.
 
-I look at default implementation and seems to me that I can save some
-instruction when I use my enable function not generic one and for disabling is
-default function faster because do nothing.
-I am going to send one email with full intc.c + 2 changes - one in irq.c and
-second in Kconfig.
+2.	If expediting is required, then the code calling synchronize_rcu()
+	might or might not have any idea whether or not expediting is
+	appropriate.  If it does not, then we would need some sort of way
+	to tell synchronize_rcu() that it should act more aggressively,
+	perhaps /proc flag or kernel global variable indicating that
+	boot is in progress.
 
-Thanks,
-Michal
+	No, we do not want to make synchronize_rcu() aggressive all the
+	time, as this would harm performance and energy efficiency in
+	the normal runtime situation.
 
-> 
-> Thanks,
-> 
-> 	tglx
+	So, if it turns out that synchronize_rcu()'s caller does not
+	know whether or not expediting is appropriate, can the boot path
+	manipulate such a flag or variable?
 
+3.	Which RCU implementation are you using?  CONFIG_CLASSIC_RCU,
+	CONFIG_TREE_RCU, or CONFIG_PREEMPT_RCU?
 
--- 
-Michal Simek, Ing. (M.Eng)
-w: www.monstr.eu p: +42-0-721842854
+							Thanx, Paul
