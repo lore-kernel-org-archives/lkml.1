@@ -1,63 +1,141 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760339AbZCTT6Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761344AbZCTUAU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760339AbZCTT6Y (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Mar 2009 15:58:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752505AbZCTT6M
+	id S1761344AbZCTUAU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Mar 2009 16:00:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758966AbZCTUAF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Mar 2009 15:58:12 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:56715 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751520AbZCTT6L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Mar 2009 15:58:11 -0400
-Date: Fri, 20 Mar 2009 20:57:43 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Anton Vorontsov <avorontsov@ru.mvista.com>
-Cc: Steven Rostedt <srostedt@redhat.com>, linuxppc-dev@ozlabs.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] tracing: Fix TRACING_SUPPORT dependency
-Message-ID: <20090320195743.GA25147@elte.hu>
-References: <20090320150914.GA22769@oksana.dev.rtsoft.ru> <20090320190428.GD6224@elte.hu> <20090320193904.GA13707@oksana.dev.rtsoft.ru>
+	Fri, 20 Mar 2009 16:00:05 -0400
+Received: from mail-bw0-f169.google.com ([209.85.218.169]:51724 "EHLO
+	mail-bw0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754312AbZCTUAB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Mar 2009 16:00:01 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-disposition:message-id:content-type
+         :content-transfer-encoding;
+        b=oDAb161PgZ3WZWVcOKbu7cl89ManK+0Ubf0L5rKxGXmQ52MOiilRSByDvfgCY/lIjk
+         jb4eobgMgAvPseqMGeXNJFlp5e/bDPaSNAkiMlYf4oiaWMCOAPMv2QsSaj+OEh8Zlmor
+         +yZa78x9a2/m6hjVay025bnve1Kj+6M9rwsmQ=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH] x86: fix IO APIC resource allocation error message
+Date: Fri, 20 Mar 2009 21:00:30 +0100
+User-Agent: KMail/1.11.1 (Linux/2.6.29-rc8-next-20090319; KDE/4.2.1; i686; ; )
+Cc: Alan Bartlett <ajb.stxsl@googlemail.com>, linux-kernel@vger.kernel.org
+References: <200903202012.41344.bzolnier@gmail.com> <20090320192323.GG6224@elte.hu>
+In-Reply-To: <20090320192323.GG6224@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090320193904.GA13707@oksana.dev.rtsoft.ru>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Message-Id: <200903202100.30789.bzolnier@gmail.com>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Anton Vorontsov <avorontsov@ru.mvista.com> wrote:
-
-> On Fri, Mar 20, 2009 at 08:04:28PM +0100, Ingo Molnar wrote:
-> > 
-> > * Anton Vorontsov <avorontsov@ru.mvista.com> wrote:
-> > 
-> > > commit 40ada30f9621fbd831ac2437b9a2a399aad34b00 ("tracing: clean 
-> > > up menu"), despite the "clean up" in its purpose, introduced 
-> > > behavioural change for Kconfig symbols: we no longer able to 
-> > > select tracing support on PPC32 (because IRQFLAGS_SUPPORT isn't 
-> > > yet implemented).
-> > 
-> > Could you please solve this by implementing proper 
-> > irqflag-tracing support? It's been available upstream for almost 
-> > three years. It's needed for lockdep support as well, etc.
+On Friday 20 March 2009, Ingo Molnar wrote:
 > 
-> Breaking things via clean up patches is an interesting method of 
-> encouraging something to implement. ;-)
->
-> Surely I'll look into implementing irqflags tracing, but 
-> considering that no one ever needed this for almost three years, 
-> [...]
+> * Bartlomiej Zolnierkiewicz <bzolnier@gmail.com> wrote:
+> 
+> > From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> > Subject: [PATCH] x86: fix IO APIC resource allocation error message
+> > 
+> > Impact: fix incorrect error message
+> > 
+> > - IO APIC resource allocation error message contains one too many "be".
+> > 
+> > - Print the error message iff there are IO APICs in the system.
+> > 
+> > Cc: Alan Bartlett <ajb.stxsl@googlemail.com>
+> > Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> > ---
+> > I've seen this error message for some time on my x86-32 laptop...
+> > 
+> >  arch/x86/kernel/io_apic.c |    4 ++--
+> >  1 file changed, 2 insertions(+), 2 deletions(-)
+> > 
+> > Index: b/arch/x86/kernel/io_apic.c
+> > ===================================================================
+> > --- a/arch/x86/kernel/io_apic.c
+> > +++ b/arch/x86/kernel/io_apic.c
+> > @@ -4150,9 +4150,9 @@ static int __init ioapic_insert_resource
+> >  	int i;
+> >  	struct resource *r = ioapic_resources;
+> >  
+> > -	if (!r) {
+> > +	if (!r && nr_ioapics > 0) {
+> >  		printk(KERN_ERR
+> > -		       "IO APIC resources could be not be allocated.\n");
+> > +		       "IO APIC resources couldn't be allocated.\n");
+> >  		return -1;
+> >  	}
+> 
+> looks good, but there's one weirdness:
+> 
+> so if nr_ioapics == 0 && !r we'll drop into this codepath:
+> 
+>         for (i = 0; i < nr_ioapics; i++) {
+>                 insert_resource(&iomem_resource, r);
+>                 r++;
+>         }
+> 
+>         return 0;
+> 
+> we survive the loop by luck, and then return 0 - which we'll survive 
 
-Weird, there's no lockdep support?
+s/by luck/by design/ -- we want to return 0 and thus have the correct
+return value of the initcall
 
-	Ingo
+> too but still it's a bit unexpected and hence fragile.
+
+agreed on this one
+
+> So i think we should rather add a standalone:
+> 
+> 	if (nr_ioapics > 0)
+>   		printk(KERN_ERR
+> 
+> check to the printk only. That wont affect the remaining code flow.
+
+here is the revised version
+
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Subject: [PATCH] x86: fix IO APIC resource allocation error message (take 2)
+
+Impact: fix incorrect error message
+
+- IO APIC resource allocation error message contains one too many "be".
+
+- Print the error message iff there are IO APICs in the system.
+
+Cc: Alan Bartlett <ajb.stxsl@googlemail.com>
+Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+---
+I've seen this error message for some time on my x86-32 laptop...
+
+ arch/x86/kernel/io_apic.c |    9 ++++++---
+ 1 file changed, 6 insertions(+), 3 deletions(-)
+
+Index: b/arch/x86/kernel/io_apic.c
+===================================================================
+--- a/arch/x86/kernel/io_apic.c
++++ b/arch/x86/kernel/io_apic.c
+@@ -4151,9 +4151,12 @@ static int __init ioapic_insert_resource
+ 	struct resource *r = ioapic_resources;
+ 
+ 	if (!r) {
+-		printk(KERN_ERR
+-		       "IO APIC resources could be not be allocated.\n");
+-		return -1;
++		if (nr_ioapics > 0) {
++			printk(KERN_ERR
++				"IO APIC resources couldn't be allocated.\n");
++			return -1;
++		}
++		return 0;
+ 	}
+ 
+ 	for (i = 0; i < nr_ioapics; i++) {
