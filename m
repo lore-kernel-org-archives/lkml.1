@@ -1,88 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758781AbZCTKyh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759405AbZCTKzb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758781AbZCTKyh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Mar 2009 06:54:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751311AbZCTKyY
+	id S1759405AbZCTKzb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Mar 2009 06:55:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754763AbZCTKzW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Mar 2009 06:54:24 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:60435 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755843AbZCTKyX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Mar 2009 06:54:23 -0400
-Date: Fri, 20 Mar 2009 11:53:06 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: peterz@infradead.org, roland@redhat.com, efault@gmx.de, rjw@sisk.pl,
-       jdike@addtoit.com, user-mode-linux-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org
-Subject: Re: [patch] don't preempt not TASK_RUNNING tasks
-Message-ID: <20090320105306.GG6256@elte.hu>
-References: <E1LkbGe-00039U-Hc@pomaz-ex.szeredi.hu> <1237543392.24626.49.camel@twins> <E1Lkc6U-0003II-W1@pomaz-ex.szeredi.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <E1Lkc6U-0003II-W1@pomaz-ex.szeredi.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Fri, 20 Mar 2009 06:55:22 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:36385 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751311AbZCTKzV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Mar 2009 06:55:21 -0400
+Date: Fri, 20 Mar 2009 10:55:56 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Robert Schwebel <r.schwebel@pengutronix.de>
+Cc: Robert Schwebel <r.schwebel@pengutronix.de>, Greg KH <greg@kroah.com>,
+       linux-kernel@vger.kernel.org, daniel.krueger@systec-electronic.com,
+       Michael Olbrich <mol@pengutronix.de>, Wolfram Sang <wsa@pengutronix.de>,
+       Marc Kleine-Budde <mkl@pengutronix.de>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: The Linux Staging tree, what it is and is not.
+Message-ID: <20090320105556.4375176d@lxorguk.ukuu.org.uk>
+In-Reply-To: <20090320103545.GQ5367@pengutronix.de>
+References: <20090318183232.GA11594@kroah.com>
+	<20090320005808.GM5367@pengutronix.de>
+	<20090320100146.6599f671@lxorguk.ukuu.org.uk>
+	<20090320103545.GQ5367@pengutronix.de>
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Miklos Szeredi <miklos@szeredi.hu> wrote:
-
-> On Fri, 20 Mar 2009, Peter Zijlstra wrote:
-> > On Fri, 2009-03-20 at 10:43 +0100, Miklos Szeredi wrote:
-> > > Ingo,
-> > > 
-> > > I tested this one, and I think it makes sense in any case as an
-> > > optimization.  It should also be good for -stable kernels.
-> > > 
-> > > Does it look OK?
-> > 
-> > The idea is good, but there is a risk of preemption latencies here. Some
-> > code paths aren't real quick between setting ->state != TASK_RUNNING and
-> > calling schedule.
-> > 
-> > [ Both quick: as in O(1) and few instructions ]
-> > 
-> > So if we're going to do this, we'd need to audit all such code paths --
-> > and there be lots.
+> > - Security
 > 
-> Oh, yes.
-> 
-> In a random sample the most common pattern is something like this:
-> 
-> 	spin_lock(&some_lock);
-> 	/* do something */
-> 	set_task_state(TASK_SOMESLEEP);
-> 	/* do something more */
-> 	spin_unlock(&some_lock);
-> 	schedule();
-> 	...
-> 
-> Which should only positively be impacted by the change.  But I can 
-> imagine rare cases where it's more complex.
+> For industrial I/O? We are talking about transportation of analog and
+> digital I/O, relais, ADC input etc. The only part that I'd consider
+> security related is tunnel traffic; EPL and EtherCAT have the
 
-I'd suggest spin_unlock_no_resched() and task_unlock_no_resched() 
-instead of open-coding preempt-disable sequences.
+Maybe in your case but if that analogue I/O controls parts of a power
+plant or weapons system you really really don't want a worm or trojan
+getting involved with it.
 
-> > The first line of attack for this problem is making 
-> > wait_task_inactive() sucks less, which shouldn't be too hard, 
-> > that unconditional 1 jiffy sleep is simply retarded.
+> > - Sharing the device/interconnect
 > 
-> I completely agree.  However, I'd like to have a non-invasive 
-> solution that can go into current and stable kernels so UML users 
-> don't need to suffer any more.
+> Sharing the device works also with userspace, because the device is a
+> network card and the interface is raw ethernet frames. What do you mean
+> with interconnect?
 
-Agreed. task_unlock_no_resched() should do that i think.
+Load two user space fieldbus stacks on the same network card (remembering
+this could be done by accident)
 
-	Ingo
+> > - Real time prioritisation
+> 
+> Would be done by giving the kernel task (with threaded interrupts) or
+> userspace task the right POSIX relatime priorities, so I don't see a
+> difference here.
+
+There may be multiple user space tasks with differing priorities beyond
+the message priority. That in turn means you want them to have different
+priorities to the scheduler which means you want them to be different
+processes really.
+
+> Don't tell that to the industrial networking people - they are very
+> proud of the fact that they use a "standardized application API", so
+> even the fanciest and newest industrial ethernet technologies are based
+> on that legacy wart objdict, and it is officially considered to be a
+> *feature*.
+
+It's a standard yes, but so once was the horse and cart.
+
+> then you can put the whole stack into userspace. If kernel, we would
+> need an objdict API to userspace...?
+
+It depends where you split the stack between kernel and user space. There
+needs to be enough in the kernel to allow reasonably efficient
+multi-process models but that can be a small part of the stack. The
+Appletalk stack is a good example. Appletalk has a single address/port
+system for all higher level protocols and the higher level protocols
+don't interact much with each other. It's actually very elegant in that
+way. One result of this is that the AF_APPLETALK kernel stack deals only
+with low level packet routing and delivery. It doesn't have to care about
+higher stuff to provide the needed separation and sharing. IP by
+comparison has all sorts of interactions, multiple port addressing
+schemes and ICMP interactions which mean the kernel has to hold the
+entire TCP and UDP layers.
+
+> One thing that has to be considered is that messages often have to be
+> handled fast and under realtime constraints; for example, it must be
+> possible to hook up the userspace to certain changes in the objdict.
+> Something like:
+
+One model would be
+
+kernel demux by objdict id -> forwards packet to the right user
+
+a completely and gloriously insane one might be to have the objdict in
+mmap space as you suggest but with a futex on each objdict entry.
+
+> Note that what they are doing is to use the objdict as a binary config
+> space (think registers) to configure the whole network workflow; so if
+
+I tend to think of it as a rather peculiar shared event space - much like
+the device end of SNMP. I guess we should be thankful for small mercies
+that it wasn't invented today and using XML ;)
+
+None of which is to say that an entirely userspace stack might not be the
+right model, but there are distinct appeals to the kernel doing some of
+the demux work and separation of stuff.
+
+I shall be interested to see what turns out best as there are other
+busses where the design really expects to set up states and the stack to
+do regular repeating.
