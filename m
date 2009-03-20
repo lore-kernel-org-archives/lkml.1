@@ -1,68 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754340AbZCTIPh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754858AbZCTIQ0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754340AbZCTIPh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Mar 2009 04:15:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752096AbZCTIPX
+	id S1754858AbZCTIQ0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Mar 2009 04:16:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754141AbZCTIQK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Mar 2009 04:15:23 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:62367 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751758AbZCTIPW (ORCPT
+	Fri, 20 Mar 2009 04:16:10 -0400
+Received: from casper.infradead.org ([85.118.1.10]:42176 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753864AbZCTIQI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Mar 2009 04:15:22 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:date:message-id:subject:from:to:content-type:
-	content-transfer-encoding:x-system-of-record;
-	b=HBlYN9LumtBRxir7cnKxr5hS4a9/5bYR/0EbCCllGk2qtNedBFLJ/BF35uBD4IGAi
-	aUKDlAUw6PORm0rsCaiMw==
-MIME-Version: 1.0
-Date: Fri, 20 Mar 2009 16:15:16 +0800
-Message-ID: <9c0b8b730903200115i7ae4512di97418958e05f6a0e@mail.gmail.com>
-Subject: [PATCH] crypto/scatterwalk.c to skip unnecessary flush_dcache_page() 
-	calls which may cause kernel panic
-From: =?Big5?B?Q2h1bmctWWloIFdhbmcgKKT9sVLFdCk=?= <cywang@google.com>
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 20 Mar 2009 04:16:08 -0400
+Subject: Re: check *uaddr==val after queueing - without faulting
+From: Peter Zijlstra <peterz@infradead.org>
+To: Darren Hart <dvhltc@us.ibm.com>
+Cc: "lkml," <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       John Stultz <johnstul@linux.vnet.ibm.com>,
+       Jakub Jelinek <jakub@redhat.com>, Ulrich Drepper <drepper@redhat.com>,
+       Eric Dumazet <dada1@cosmosbay.com>, Oleg Nesterov <oleg@redhat.com>
+In-Reply-To: <49C2C0D6.5080700@us.ibm.com>
+References: <49C2BCF4.50908@us.ibm.com>  <49C2C0D6.5080700@us.ibm.com>
+Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
-X-System-Of-Record: true
+Date: Fri, 20 Mar 2009 09:15:34 +0100
+Message-Id: <1237536935.24626.26.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I am developing the ipsec tools on ARM platform. When I turn the
- CONFIG_DEBUG_VM on, the ipsec traffic triggers the kernel panic
-which is caused by the VM_DEBUG_ON(PageSlab(page)) of
-page_mapping() in the call of flush_dcache_page().
+On Thu, 2009-03-19 at 15:01 -0700, Darren Hart wrote:
+> Adding a few key folks to the Cc, apologies for the short initial Cc list.
+> 
+> Darren Hart wrote:
+> > The current futex_wait() code (I'm looking at tip/core/futexes)
+> > conflicts with a warning in the comments about checking *uaddr==val
+> > before the futex_q is queued on the hb list.  While userspace is able to
+> > alter *uaddr at will and should expect to hang in the kernel forever
+> > should it do so haphazardly, there are legitimate scenarios where the
+> > futex value might change between the call to futex_wait() and when the
+> > futex_q gets on the hb list.
+> > 
+> > For example, glibc protects access to the value of cond.__data.__futex
+> > via the cond.__data.__lock.  However, before it can issue the syscall it
+> > has to drop the cond.__data.__lock, leaving a small race window where
+> > userspace might issue a signal or broadcast, which will modify the value
+> > of cond.__data.__futex.  As I understand it, this will result in the
+> > waiter having changed the value of the futex prior to entering the
+> > kernel, but not enqueuing itself on the hb list until after the waiter
+> > issues the broadcast that was intended to wake it up.
+> > 
+> > I was working up a patch to move the test to after the call to
+> > queue_me(), but in order to do the test we also have to perform the
+> > get_user() after the queue_me(), which might sleep if we still hold the
+> > hb->lock.  If we let queue_me() drop the hb->lock before we call
+> > get_user() then we may see a legitimate change in *uaddr that occured
+> > after the queue_me() and before the get_user().
+> > 
+> > I'm at a loss for how to resolve the race without causing the false
+> > positive inside the kernel.  It might be resolvable in glibc by looking
+> > at the return code from futex_requeue and checking if the number 
+> > woken_or_requeued agrees with the number it expected to be sleeping; 
+> > this likely leaves other gaps for other waking calls, like FUTEX_WAKE.
+> > 
+> > Any thoughts?  Am I missing something that guards against this race?
 
-The root cause is that ipsec/esp intends to encrypt the original
-data and dynamically allocate cache memory in socket buffer for
-this purpose. However, all the cache memory pages dynamically
-allocated in socket buffer will be flagged as PG_slab by
-__SetPageSlab(). That's the reason it asserts on
-VM_BUG_ON(PageSlab(page)) in flush_dcache_page(). Since the
-flush_dcache_page() is to ensure the cache coherency between
-kernel mapping and userspace mapping. The kernel cache memory
-created in socket buffer for encrypting ipsec traffic does not
-need to call this function at all since it is all kernel space
-data.
 
-Below is my patch for fixing this bug for  CONFIG_DEBUG_VM=y.
+get_user_pages_fast() the futex page, that will pin it, then under the
+lock you can kmap_atomic() the page, and read it.
 
-Chung-yih
-
-
-diff --git a/crypto/scatterwalk.c b/crypto/scatterwalk.c
-index 9aeeb52..3de89a4 100644
---- a/crypto/scatterwalk.c
-+++ b/crypto/scatterwalk.c
-@@ -54,7 +54,8 @@ static void scatterwalk_pagedone(struct scatter_walk
-*walk, int out,
-                struct page *page;
-
-                page = sg_page(walk->sg) + ((walk->offset - 1) >> PAGE_SHIFT);
--               flush_dcache_page(page);
-+               if (!PageSlab(page))
-+                       flush_dcache_page(page);
-        }
-
-        if (more) {
+Probably massive overkill though :-)
