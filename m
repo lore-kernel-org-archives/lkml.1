@@ -1,90 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760547AbZCTKiY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755390AbZCTKuT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760547AbZCTKiY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Mar 2009 06:38:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760055AbZCTKiH
+	id S1755390AbZCTKuT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Mar 2009 06:50:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751514AbZCTKuE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Mar 2009 06:38:07 -0400
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:49495 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751622AbZCTKiG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Mar 2009 06:38:06 -0400
-To: peterz@infradead.org
-CC: miklos@szeredi.hu, mingo@elte.hu, roland@redhat.com, efault@gmx.de,
-       rjw@sisk.pl, jdike@addtoit.com,
-       user-mode-linux-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
-       akpm@linux-foundation.org
-In-reply-to: <1237543392.24626.49.camel@twins> (message from Peter Zijlstra on
-	Fri, 20 Mar 2009 11:03:12 +0100)
-Subject: Re: [patch] don't preempt not TASK_RUNNING tasks
-References: <E1LkbGe-00039U-Hc@pomaz-ex.szeredi.hu> <1237543392.24626.49.camel@twins>
-Message-Id: <E1Lkc6U-0003II-W1@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Fri, 20 Mar 2009 11:37:30 +0100
+	Fri, 20 Mar 2009 06:50:04 -0400
+Received: from www.tglx.de ([62.245.132.106]:36641 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751311AbZCTKuD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Mar 2009 06:50:03 -0400
+Date: Fri, 20 Mar 2009 11:49:52 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Michal Simek <monstr@monstr.eu>
+cc: LKML <linux-kernel@vger.kernel.org>, john.williams@petalogix.com,
+       John Stultz <johnstul@us.ibm.com>
+Subject: Re: [PATCH 08/57] microblaze_v7: Interrupt handling, timer support,
+ selfmod code
+In-Reply-To: <49C371F5.5010100@monstr.eu>
+Message-ID: <alpine.LFD.2.00.0903201142300.29264@localhost.localdomain>
+References: <1237408284-8674-1-git-send-email-monstr@monstr.eu> <0168f03c96e9479ede695a9859c8a0691baa8ef3.1237407249.git.monstr@monstr.eu> <c1bdfabf85ce10babc3aa38d3bb7558a093bc49e.1237407249.git.monstr@monstr.eu> <4b5aee01d11fc790c7842838ea63a82ee3273003.1237407249.git.monstr@monstr.eu>
+ <af309ba8e95f503b7990461384d9f8453f45dbbd.1237407249.git.monstr@monstr.eu> <5f8b2a60496983f572ef6d3b4e2f986c167a8336.1237407249.git.monstr@monstr.eu> <fbef554ff1d05fa50312d91e61a0d63d3207076c.1237407249.git.monstr@monstr.eu>
+ <dad2353f129217470f0595eeed98412b4c84ed6b.1237407249.git.monstr@monstr.eu> <20fd42a1e8837c7352d35d157aa3393e88152c32.1237407249.git.monstr@monstr.eu> <alpine.LFD.2.00.0903191639530.29264@localhost.localdomain> <49C2AB09.9040300@monstr.eu>
+ <alpine.LFD.2.00.0903192219500.29264@localhost.localdomain> <49C36149.9000703@monstr.eu> <alpine.LFD.2.00.0903201052340.29264@localhost.localdomain> <49C371F5.5010100@monstr.eu>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 20 Mar 2009, Peter Zijlstra wrote:
-> On Fri, 2009-03-20 at 10:43 +0100, Miklos Szeredi wrote:
-> > Ingo,
-> > 
-> > I tested this one, and I think it makes sense in any case as an
-> > optimization.  It should also be good for -stable kernels.
-> > 
-> > Does it look OK?
-> 
-> The idea is good, but there is a risk of preemption latencies here. Some
-> code paths aren't real quick between setting ->state != TASK_RUNNING and
-> calling schedule.
-> 
-> [ Both quick: as in O(1) and few instructions ]
-> 
-> So if we're going to do this, we'd need to audit all such code paths --
-> and there be lots.
+On Fri, 20 Mar 2009, Michal Simek wrote:
+> Why is my .resolution: 10000000 nsecs? It seems to me weird.
 
-Oh, yes.
+Well. The resulution there is the granularity which the kernel uses to
+expire application timers. Once the kernel switches to high resolution
+mode it sets the granularity to 1ns.
 
-In a random sample the most common pattern is something like this:
+To get high resolution mode you need two things:
 
-	spin_lock(&some_lock);
-	/* do something */
-	set_task_state(TASK_SOMESLEEP);
-	/* do something more */
-	spin_unlock(&some_lock);
-	schedule();
-	...
+1) a suitable clocksource - which needs to have the
+CLOCK_SOURCE_IS_CONTINUOUS flag set
 
-Which should only positively be impacted by the change.  But I can
-imagine rare cases where it's more complex.
+2) a clock event device which has CLOCK_EVT_FEAT_PERIODIC flag set.
 
-> The first line of attack for this problem is making wait_task_inactive()
-> sucks less, which shouldn't be too hard, that unconditional 1 jiffy
-> sleep is simply retarded.
-
-I completely agree.  However, I'd like to have a non-invasive solution
-that can go into current and stable kernels so UML users don't need to
-suffer any more.
+3) CONFIG_HIGH_RES_TIMERS=y
 
 Thanks,
-Miklos
 
-> 
-> > Index: linux.git/kernel/sched.c
-> > ===================================================================
-> > --- linux.git.orig/kernel/sched.c	2009-03-20 09:40:47.000000000 +0100
-> > +++ linux.git/kernel/sched.c	2009-03-20 10:28:56.000000000 +0100
-> > @@ -4632,6 +4632,10 @@ asmlinkage void __sched preempt_schedule
-> >  	if (likely(ti->preempt_count || irqs_disabled()))
-> >  		return;
-> >  
-> > +	/* No point in preempting we are just about to go to sleep. */
-> > +	if (current->state != TASK_RUNNING)
-> > +		return;
-> > +
-> >  	do {
-> >  		add_preempt_count(PREEMPT_ACTIVE);
-> >  		schedule();
-> 
+	tglx
