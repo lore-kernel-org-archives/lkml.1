@@ -1,64 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761615AbZCTKLr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761752AbZCTKMj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761615AbZCTKLr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Mar 2009 06:11:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757642AbZCTKCz
+	id S1761752AbZCTKMj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Mar 2009 06:12:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759466AbZCTKEb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Mar 2009 06:02:55 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:55179 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758208AbZCTKCw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Mar 2009 06:02:52 -0400
-From: Mel Gorman <mel@csn.ul.ie>
-To: Mel Gorman <mel@csn.ul.ie>,
-       Linux Memory Management List <linux-mm@kvack.org>
-Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Lin Ming <ming.m.lin@intel.com>,
-       Zhang Yanmin <yanmin_zhang@linux.intel.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH 24/25] Re-sort GFP flags and fix whitespace alignment for easier reading.
-Date: Fri, 20 Mar 2009 10:03:11 +0000
-Message-Id: <1237543392-11797-25-git-send-email-mel@csn.ul.ie>
-X-Mailer: git-send-email 1.5.6.5
-In-Reply-To: <1237543392-11797-1-git-send-email-mel@csn.ul.ie>
-References: <1237543392-11797-1-git-send-email-mel@csn.ul.ie>
+	Fri, 20 Mar 2009 06:04:31 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:45837 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759485AbZCTKEa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Mar 2009 06:04:30 -0400
+Subject: Re: [patch] don't preempt not TASK_RUNNING tasks
+From: Peter Zijlstra <peterz@infradead.org>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: mingo@elte.hu, roland@redhat.com, efault@gmx.de, rjw@sisk.pl,
+       jdike@addtoit.com, user-mode-linux-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org, torvalds@linux-foundation.org,
+       akpm@linux-foundation.org
+In-Reply-To: <E1LkbGe-00039U-Hc@pomaz-ex.szeredi.hu>
+References: <E1LkbGe-00039U-Hc@pomaz-ex.szeredi.hu>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Fri, 20 Mar 2009 11:03:12 +0100
+Message-Id: <1237543392.24626.49.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Resort the GFP flags after __GFP_MOVABLE got redefined so how the bits
-are used are a bit cleared.
+On Fri, 2009-03-20 at 10:43 +0100, Miklos Szeredi wrote:
+> Ingo,
+> 
+> I tested this one, and I think it makes sense in any case as an
+> optimization.  It should also be good for -stable kernels.
+> 
+> Does it look OK?
 
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Signed-off-by: Mel Gorman <mel@csn.ul.ie>
----
- include/linux/gfp.h |    8 ++++----
- 1 files changed, 4 insertions(+), 4 deletions(-)
+The idea is good, but there is a risk of preemption latencies here. Some
+code paths aren't real quick between setting ->state != TASK_RUNNING and
+calling schedule.
 
-diff --git a/include/linux/gfp.h b/include/linux/gfp.h
-index 59eb093..3109a6b 100644
---- a/include/linux/gfp.h
-+++ b/include/linux/gfp.h
-@@ -46,11 +46,11 @@ struct vm_area_struct;
- #define __GFP_NORETRY	((__force gfp_t)0x1000u)/* See above */
- #define __GFP_COMP	((__force gfp_t)0x4000u)/* Add compound page metadata */
- #define __GFP_ZERO	((__force gfp_t)0x8000u)/* Return zeroed page on success */
--#define __GFP_NOMEMALLOC ((__force gfp_t)0x10000u) /* Don't use emergency reserves */
--#define __GFP_HARDWALL   ((__force gfp_t)0x20000u) /* Enforce hardwall cpuset memory allocs */
--#define __GFP_THISNODE	((__force gfp_t)0x40000u)/* No fallback, no policies */
-+#define __GFP_NOMEMALLOC  ((__force gfp_t)0x10000u) /* Don't use emergency reserves */
-+#define __GFP_HARDWALL    ((__force gfp_t)0x20000u) /* Enforce hardwall cpuset memory allocs */
-+#define __GFP_THISNODE	  ((__force gfp_t)0x40000u) /* No fallback, no policies */
- #define __GFP_RECLAIMABLE ((__force gfp_t)0x80000u) /* Page is reclaimable */
--#define __GFP_MOVABLE	((__force gfp_t)0x100000u)  /* Page is movable */
-+#define __GFP_MOVABLE	  ((__force gfp_t)0x100000u)/* Page is movable */
- 
- #define __GFP_BITS_SHIFT 21	/* Room for 21 __GFP_FOO bits */
- #define __GFP_BITS_MASK ((__force gfp_t)((1 << __GFP_BITS_SHIFT) - 1))
--- 
-1.5.6.5
+[ Both quick: as in O(1) and few instructions ]
 
+So if we're going to do this, we'd need to audit all such code paths --
+and there be lots.
+
+The first line of attack for this problem is making wait_task_inactive()
+sucks less, which shouldn't be too hard, that unconditional 1 jiffy
+sleep is simply retarded.
+
+> Index: linux.git/kernel/sched.c
+> ===================================================================
+> --- linux.git.orig/kernel/sched.c	2009-03-20 09:40:47.000000000 +0100
+> +++ linux.git/kernel/sched.c	2009-03-20 10:28:56.000000000 +0100
+> @@ -4632,6 +4632,10 @@ asmlinkage void __sched preempt_schedule
+>  	if (likely(ti->preempt_count || irqs_disabled()))
+>  		return;
+>  
+> +	/* No point in preempting we are just about to go to sleep. */
+> +	if (current->state != TASK_RUNNING)
+> +		return;
+> +
+>  	do {
+>  		add_preempt_count(PREEMPT_ACTIVE);
+>  		schedule();
