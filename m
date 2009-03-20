@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761786AbZCTXXr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762823AbZCTXXb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761786AbZCTXXr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Mar 2009 19:23:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760214AbZCTXOJ
+	id S1762823AbZCTXXb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Mar 2009 19:23:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757224AbZCTXOI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Mar 2009 19:14:09 -0400
-Received: from kroah.org ([198.145.64.141]:53289 "EHLO coco.kroah.org"
+	Fri, 20 Mar 2009 19:14:08 -0400
+Received: from kroah.org ([198.145.64.141]:53282 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757924AbZCTXOB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Mar 2009 19:14:01 -0400
+	id S1760130AbZCTXOA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Mar 2009 19:14:00 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 20 15:27:13 2009
-Message-Id: <20090320222713.522322598@mini.kroah.org>
+Message-Id: <20090320222713.363453936@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 20 Mar 2009 15:26:40 -0700
+Date: Fri, 20 Mar 2009 15:26:39 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,10 +25,10 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Thomas Bartosik <tbartdev@gmx-topmail.de>
-Subject: [patch 29/32] USB: storage: Unusual USB device Prolific 2507 variation added
+       alan@lxorguk.ukuu.org.uk
+Subject: [patch 28/32] USB: serial: new cp2101 device id
 References: <20090320222611.872315885@mini.kroah.org>
-Content-Disposition: inline; filename=usb-storage-unusual-usb-device-prolific-2507-variation-added.patch
+Content-Disposition: inline; filename=usb-serial-new-cp2101-device-id.patch
 In-Reply-To: <20090320231037.GA2732@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -38,48 +38,26 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Thomas Bartosik <tbartdev@gmx-topmail.de>
+From: Robert M. Kenney <rmk@unh.edu>
 
-commit 8a0845c51b2e300f5204a323b874f7f58ea0eff7 upstream.
+commit c6535668798b0644e1af5934c2aec0e912280449 upstream.
 
-The "c-enter" USB to Toshiba 1.8" IDE enclosure needs special treatment
-to work flawlessly. This patch is absolutely trivial, as the integrated
-USB-IDE bridge is already identified to be an "unusual" device, only the
-bcdDevice is different (lower) to the bcdDeviceMin already included in
-the kernel.
-It is a Prolific 2507 bridge.
-
-T:  Bus=02 Lev=01 Prnt=01 Port=02 Cnt=01 Dev#=  4 Spd=480 MxCh= 0
-D:  Ver= 2.00 Cls=00(>ifc ) Sub=00 Prot=00 MxPS=64 #Cfgs=  1
-P:  Vendor=067b ProdID=2507 Rev= 0.01
-S:  Manufacturer=Prolific Technology Inc.
-S:  Product=ATAPI-6 Bridge Controller
-S:  SerialNumber=00000272
-C:* #Ifs= 1 Cfg#= 1 Atr=c0 MxPwr=100mA
-I:* If#= 0 Alt= 0 #EPs= 2 Cls=08(stor.) Sub=06 Prot=50 Driver=usb-storage
-E:  Ad=01(O) Atr=02(Bulk) MxPS= 512 Ivl=0ms
-E:  Ad=82(I) Atr=02(Bulk) MxPS= 512 Ivl=0ms
-
-
-Signed-off-by: Thomas Bartosik <tbartdev@gmx-topmail.de>
+From: Robert M. Kenney <rmk@unh.edu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/usb/storage/unusual_devs.h |    4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+ drivers/usb/serial/cp2101.c |    1 +
+ 1 file changed, 1 insertion(+)
 
---- a/drivers/usb/storage/unusual_devs.h
-+++ b/drivers/usb/storage/unusual_devs.h
-@@ -990,7 +990,9 @@ UNUSUAL_DEV( 0x066f, 0x8000, 0x0001, 0x0
- 		US_FL_FIX_CAPACITY ),
- 
- /* Reported by Richard -=[]=- <micro_flyer@hotmail.com> */
--UNUSUAL_DEV( 0x067b, 0x2507, 0x0100, 0x0100,
-+/* Change to bcdDeviceMin (0x0100 to 0x0001) reported by
-+ * Thomas Bartosik <tbartdev@gmx-topmail.de> */
-+UNUSUAL_DEV( 0x067b, 0x2507, 0x0001, 0x0100,
- 		"Prolific Technology Inc.",
- 		"Mass Storage Device",
- 		US_SC_DEVICE, US_PR_DEVICE, NULL,
+--- a/drivers/usb/serial/cp2101.c
++++ b/drivers/usb/serial/cp2101.c
+@@ -77,6 +77,7 @@ static struct usb_device_id id_table [] 
+ 	{ USB_DEVICE(0x10C4, 0x814A) }, /* West Mountain Radio RIGblaster P&P */
+ 	{ USB_DEVICE(0x10C4, 0x814B) }, /* West Mountain Radio RIGtalk */
+ 	{ USB_DEVICE(0x10C4, 0x815E) }, /* Helicomm IP-Link 1220-DVM */
++	{ USB_DEVICE(0x10C4, 0x819F) }, /* MJS USB Toslink Switcher */
+ 	{ USB_DEVICE(0x10C4, 0x81A6) }, /* ThinkOptics WavIt */
+ 	{ USB_DEVICE(0x10C4, 0x81AC) }, /* MSD Dash Hawk */
+ 	{ USB_DEVICE(0x10C4, 0x81C8) }, /* Lipowsky Industrie Elektronik GmbH, Baby-JTAG */
 
 
