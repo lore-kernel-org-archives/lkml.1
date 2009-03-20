@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762061AbZCTK1c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762547AbZCTK1J@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762061AbZCTK1c (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Mar 2009 06:27:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759664AbZCTKZ6
+	id S1762547AbZCTK1J (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Mar 2009 06:27:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762287AbZCTKZx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Mar 2009 06:25:58 -0400
-Received: from hera.kernel.org ([140.211.167.34]:35213 "EHLO hera.kernel.org"
+	Fri, 20 Mar 2009 06:25:53 -0400
+Received: from hera.kernel.org ([140.211.167.34]:35202 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762297AbZCTKZ4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Mar 2009 06:25:56 -0400
-Date: Fri, 20 Mar 2009 10:25:17 GMT
+	id S1762265AbZCTKZw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Mar 2009 06:25:52 -0400
+Date: Fri, 20 Mar 2009 10:25:08 GMT
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: linux-tip-commits@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, paulus@samba.org, hpa@zytor.com,
@@ -18,151 +18,82 @@ Cc: linux-kernel@vger.kernel.org, paulus@samba.org, hpa@zytor.com,
 Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org,
        linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
        rostedt@goodmis.org, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <20090319194233.744044174@chello.nl>
-References: <20090319194233.744044174@chello.nl>
-Subject: [tip:perfcounters/core] perf_counter: hook up the tracepoint events
-Message-ID: <tip-ee78a855ff4d8d3d77b46696994dca393228bb8a@git.kernel.org>
-Git-Commit-ID: ee78a855ff4d8d3d77b46696994dca393228bb8a
+In-Reply-To: <20090319194233.652078652@chello.nl>
+References: <20090319194233.652078652@chello.nl>
+Subject: [tip:perfcounters/core] perf_counter: fix up counter free paths
+Message-ID: <tip-789ce7d327a1548779d8b3ca15f244e17c899fe8@git.kernel.org>
+Git-Commit-ID: 789ce7d327a1548779d8b3ca15f244e17c899fe8
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 20 Mar 2009 10:25:19 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 20 Mar 2009 10:25:10 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  ee78a855ff4d8d3d77b46696994dca393228bb8a
-Gitweb:     http://git.kernel.org/tip/ee78a855ff4d8d3d77b46696994dca393228bb8a
+Commit-ID:  789ce7d327a1548779d8b3ca15f244e17c899fe8
+Gitweb:     http://git.kernel.org/tip/789ce7d327a1548779d8b3ca15f244e17c899fe8
 Author:     Peter Zijlstra <a.p.zijlstra@chello.nl>
-AuthorDate: Thu, 19 Mar 2009 20:26:17 +0100
+AuthorDate: Thu, 19 Mar 2009 20:26:16 +0100
 Committer:  Ingo Molnar <mingo@elte.hu>
 CommitDate: Fri, 20 Mar 2009 11:15:12 +0100
 
-perf_counter: hook up the tracepoint events
+perf_counter: fix up counter free paths
 
-Impact: new perfcounters feature
+Impact: fix crash during perfcounters use
 
-Enable usage of tracepoints as perf counter events.
+I found another counter free path, create a free_counter() call to
+accomodate generic tear-down.
 
-tracepoint event ids can be found in /debug/tracing/event/*/*/id
-and (for now) are represented as -65536+id in the type field.
+Fixes an RCU bug.
 
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 Cc: Paul Mackerras <paulus@samba.org>
 Cc: Steven Rostedt <rostedt@goodmis.org>
-LKML-Reference: <20090319194233.744044174@chello.nl>
+LKML-Reference: <20090319194233.652078652@chello.nl>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
 ---
- include/linux/perf_counter.h |    3 ++
- init/Kconfig                 |    5 ++++
- kernel/perf_counter.c        |   43 ++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 51 insertions(+), 0 deletions(-)
+ kernel/perf_counter.c |   11 ++++++++---
+ 1 files changed, 8 insertions(+), 3 deletions(-)
 
-diff --git a/include/linux/perf_counter.h b/include/linux/perf_counter.h
-index 08c11a6..065984c 100644
---- a/include/linux/perf_counter.h
-+++ b/include/linux/perf_counter.h
-@@ -53,6 +53,8 @@ enum hw_event_types {
- 	PERF_COUNT_PAGE_FAULTS_MAJ	= -7,
- 
- 	PERF_SW_EVENTS_MIN		= -8,
-+
-+	PERF_TP_EVENTS_MIN		= -65536
- };
- 
- /*
-@@ -222,6 +224,7 @@ struct perf_counter {
- 	struct perf_data		*usrdata;
- 	struct perf_data		data[2];
- 
-+	void (*destroy)(struct perf_counter *);
- 	struct rcu_head			rcu_head;
- #endif
- };
-diff --git a/init/Kconfig b/init/Kconfig
-index 8a38443..761129a 100644
---- a/init/Kconfig
-+++ b/init/Kconfig
-@@ -945,6 +945,11 @@ config PERF_COUNTERS
- 
- 	  Say Y if unsure.
- 
-+config EVENT_PROFILE
-+	bool "Tracepoint profile sources"
-+	depends on PERF_COUNTERS && EVENT_TRACER
-+	default y
-+
- endmenu
- 
- config VM_EVENT_COUNTERS
 diff --git a/kernel/perf_counter.c b/kernel/perf_counter.c
-index 97f891f..0bbe3e4 100644
+index 99d5930..97f891f 100644
 --- a/kernel/perf_counter.c
 +++ b/kernel/perf_counter.c
-@@ -1152,6 +1152,9 @@ static void free_counter_rcu(struct rcu_head *head)
- 
- static void free_counter(struct perf_counter *counter)
- {
-+	if (counter->destroy)
-+		counter->destroy(counter);
-+
- 	call_rcu(&counter->rcu_head, free_counter_rcu);
+@@ -1150,6 +1150,11 @@ static void free_counter_rcu(struct rcu_head *head)
+ 	kfree(counter);
  }
  
-@@ -1727,6 +1730,45 @@ static const struct hw_perf_counter_ops perf_ops_cpu_migrations = {
- 	.read		= cpu_migrations_perf_counter_read,
- };
++static void free_counter(struct perf_counter *counter)
++{
++	call_rcu(&counter->rcu_head, free_counter_rcu);
++}
++
+ /*
+  * Called when the last reference to the file is gone.
+  */
+@@ -1168,7 +1173,7 @@ static int perf_release(struct inode *inode, struct file *file)
+ 	mutex_unlock(&counter->mutex);
+ 	mutex_unlock(&ctx->mutex);
  
-+#ifdef CONFIG_EVENT_PROFILE
-+void perf_tpcounter_event(int event_id)
-+{
-+	perf_swcounter_event(PERF_TP_EVENTS_MIN + event_id, 1, 1,
-+			task_pt_regs(current));
-+}
-+
-+extern int ftrace_profile_enable(int);
-+extern void ftrace_profile_disable(int);
-+
-+static void tp_perf_counter_destroy(struct perf_counter *counter)
-+{
-+	int event_id = counter->hw_event.type - PERF_TP_EVENTS_MIN;
-+
-+	ftrace_profile_disable(event_id);
-+}
-+
-+static const struct hw_perf_counter_ops *
-+tp_perf_counter_init(struct perf_counter *counter)
-+{
-+	int event_id = counter->hw_event.type - PERF_TP_EVENTS_MIN;
-+	int ret;
-+
-+	ret = ftrace_profile_enable(event_id);
-+	if (ret)
-+		return NULL;
-+
-+	counter->destroy = tp_perf_counter_destroy;
-+
-+	return &perf_ops_generic;
-+}
-+#else
-+static const struct hw_perf_counter_ops *
-+tp_perf_counter_init(struct perf_counter *counter)
-+{
-+	return NULL;
-+}
-+#endif
-+
- static const struct hw_perf_counter_ops *
- sw_perf_counter_init(struct perf_counter *counter)
- {
-@@ -1772,6 +1814,7 @@ sw_perf_counter_init(struct perf_counter *counter)
- 			hw_ops = &perf_ops_cpu_migrations;
- 		break;
- 	default:
-+		hw_ops = tp_perf_counter_init(counter);
- 		break;
+-	call_rcu(&counter->rcu_head, free_counter_rcu);
++	free_counter(counter);
+ 	put_context(ctx);
+ 
+ 	return 0;
+@@ -2128,10 +2133,10 @@ __perf_counter_exit_task(struct task_struct *child,
+ 					 list_entry) {
+ 			if (sub->parent) {
+ 				sync_child_counter(sub, sub->parent);
+-				kfree(sub);
++				free_counter(sub);
+ 			}
+ 		}
+-		kfree(child_counter);
++		free_counter(child_counter);
  	}
+ }
  
