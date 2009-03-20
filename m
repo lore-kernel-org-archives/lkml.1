@@ -1,97 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755638AbZCTCeA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754081AbZCTChd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755638AbZCTCeA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Mar 2009 22:34:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753280AbZCTCdt
+	id S1754081AbZCTChd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Mar 2009 22:37:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753203AbZCTChV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Mar 2009 22:33:49 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:52909 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751711AbZCTCdt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Mar 2009 22:33:49 -0400
-Message-ID: <49C30098.6080107@cn.fujitsu.com>
-Date: Fri, 20 Mar 2009 10:34:00 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Thu, 19 Mar 2009 22:37:21 -0400
+Received: from hera.kernel.org ([140.211.167.34]:38194 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752895AbZCTChU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Mar 2009 22:37:20 -0400
+Message-ID: <49C300D8.5080204@kernel.org>
+Date: Fri, 20 Mar 2009 11:35:04 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Jens Axboe <jens.axboe@oracle.com>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 7/7] blktrace: avoid accessing NULL bdev->bd_disk
-References: <49C2F599.3060306@cn.fujitsu.com> <49C2F63C.2090107@cn.fujitsu.com>
-In-Reply-To: <49C2F63C.2090107@cn.fujitsu.com>
-Content-Type: text/plain; charset=UTF-8
+To: Martin Schwidefsky <schwidefsky@de.ibm.com>
+CC: mingo@elte.hu, rusty@rustcorp.com.au, tglx@linutronix.de, x86@kernel.org,
+       linux-kernel@vger.kernel.org, hpa@zytor.com,
+       Paul Mundt <lethal@linux-sh.org>, rmk@arm.linux.org.uk,
+       starvik@axis.com, ralf@linux-mips.org, davem@davemloft.net,
+       cooloney@kernel.org, kyle@mcmartin.ca, matthew@wil.cx,
+       grundler@parisc-linux.org, takata@linux-m32r.org,
+       benh@kernel.crashing.org, rth@twiddle.net, ink@jurassic.park.msu.ru,
+       heiko.carstens@de.ibm.com
+Subject: Re: [GIT RFC] percpu: use dynamic percpu allocator as the default
+ percpu allocator
+References: <1236671631-9305-1-git-send-email-tj@kernel.org> <20090316190132.7965a49a@skybase>
+In-Reply-To: <20090316190132.7965a49a@skybase>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 20 Mar 2009 02:35:12 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> +static request_queue *blk_trace_get_queue(struct block_device *bdev)
-> +{
+Hello, Martin.
 
-Sorry, should be "struct request_queue", I forgot to re-format the patch
-after I fixed this.
+Sorry about the delay.
 
+Martin Schwidefsky wrote:
+> We do have a problem with #2, the dynamic percpu patches currently
+> breaks s390. But the nice thing is that we can now get rid of the GOTENT
+> relocation for the percpu symbols. If the code is changed to use
+> RELOC_HIDE for the SHIFT_PERCPU_PTR define, everything works just fine.
+> Patch attached. Nice works guys.
+> 
+> Subject: [PATCH] s390: percpu access.
+> 
+> From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+> 
+> With the dynamic percpu allocator there is no need anymore to play
+> tricks with the GOTENT relocation for the access to the percpu
+> symbols. A simple RELOC_HIDE gets the job done.
 
-================
+Hmm... I don't quite get it.  The GOTENT was to work around large
+offsets for modules, right?  Can you please explain what changed by
+the dynamic percpu allocator?
 
+> +#define SHIFT_PERCPU_PTR(var, offset) RELOC_HIDE(&per_cpu_var(var), (offset))
 
-From: Li Zefan <lizf@cn.fujitsu.com>
-Subject: [PATCH 7/7] blktrace: avoid accessing NULL bdev->bd_disk
+Hmm... @var already has per_cpu__ prefix when the above macro is
+invoked, so doing per_cpu_var() on it again wouldn't work.  If simple
+RELOC_HIDE works, you should be able to simply drop the above
+definition.  The generic percpu.h will define it.
 
-bdev->bd_disk can be NULL, if the block device is not opened.
+Thanks.
 
-Try this against an unmounted partition, and you'll see NULL dereference:
-  # echo 1 > /sys/block/sda/sda5/enable
-
-Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
----
- kernel/trace/blktrace.c |   13 +++++++++++--
- 1 files changed, 11 insertions(+), 2 deletions(-)
-
-diff --git a/kernel/trace/blktrace.c b/kernel/trace/blktrace.c
-index 46e0cfe..d2dd9ed 100644
---- a/kernel/trace/blktrace.c
-+++ b/kernel/trace/blktrace.c
-@@ -1362,6 +1362,14 @@ static int blk_str2act_mask(const char *str)
- 	return mask;
- }
- 
-+static struct request_queue *blk_trace_get_queue(struct block_device *bdev)
-+{
-+	if (bdev->bd_disk == NULL)
-+		return NULL;
-+
-+	return bdev_get_queue(bdev);
-+}
-+
- static ssize_t sysfs_blk_trace_attr_show(struct device *dev,
- 					 struct device_attribute *attr,
- 					 char *buf)
-@@ -1376,9 +1384,10 @@ static ssize_t sysfs_blk_trace_attr_show(struct device *dev,
- 	if (bdev == NULL)
- 		goto out_unlock_kernel;
- 
--	q = bdev_get_queue(bdev);
-+	q = blk_trace_get_queue(bdev);
- 	if (q == NULL)
- 		goto out_bdput;
-+
- 	mutex_lock(&bdev->bd_mutex);
- 
- 	if (attr == &dev_attr_enable) {
-@@ -1435,7 +1444,7 @@ static ssize_t sysfs_blk_trace_attr_store(struct device *dev,
- 	if (bdev == NULL)
- 		goto out_unlock_kernel;
- 
--	q = bdev_get_queue(bdev);
-+	q = blk_trace_get_queue(bdev);
- 	if (q == NULL)
- 		goto out_bdput;
- 
 -- 
-1.5.4.rc3
-
+tejun
