@@ -1,56 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762154AbZCTXle@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764699AbZCTXlv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762154AbZCTXle (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Mar 2009 19:41:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763095AbZCTXZo
+	id S1764699AbZCTXlv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Mar 2009 19:41:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763459AbZCTXaS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Mar 2009 19:25:44 -0400
-Received: from mga11.intel.com ([192.55.52.93]:55970 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763060AbZCTXZn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Mar 2009 19:25:43 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.38,397,1233561600"; 
-   d="scan'208";a="674719637"
-Message-ID: <49C425F5.8060309@intel.com>
-Date: Fri, 20 Mar 2009 16:25:41 -0700
-From: "H. Peter Anvin" <h.peter.anvin@intel.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Fri, 20 Mar 2009 19:30:18 -0400
+Received: from fk-out-0910.google.com ([209.85.128.191]:51431 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763429AbZCTXaN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Mar 2009 19:30:13 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:in-reply-to:user-agent;
+        b=cB28K+wvcTl4TqpttVST3pEl04w1GGB1zH8li+tH272IreXdJICRS8XCkKKrxrjGXk
+         aHztFIP+G01VDrHnXq8oG7QsarNmo8NwhCoegtCWUvqHHN60cDUxPtlfoyED2oSEiJ6C
+         fIdqUYH58CKRh5ucbUUnmEg2cBa9tlhdd5LE8=
+Date: Sat, 21 Mar 2009 00:29:43 +0100
+From: Jarek Poplawski <jarkao2@gmail.com>
+To: Vernon Mauery <vernux@us.ibm.com>
+Cc: Eric Dumazet <dada1@cosmosbay.com>, netdev <netdev@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       rt-users <linux-rt-users@vger.kernel.org>
+Subject: Re: High contention on the sk_buff_head.lock
+Message-ID: <20090320232943.GA3024@ami.dom.local>
 MIME-Version: 1.0
-To: Ilya Yanok <yanok@emcraft.com>
-CC: "H. Peter Anvin" <hpa@zytor.com>,
-       "Williams, Dan J" <dan.j.williams@intel.com>,
-       "linux-raid@vger.kernel.org" <linux-raid@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "neilb@suse.de" <neilb@suse.de>,
-       "Sosnowski, Maciej" <maciej.sosnowski@intel.com>,
-       Yuri Tikhonov <yur@emcraft.com>
-Subject: Re: [PATCH 06/13] async_tx: add support for asynchronous GF 	multiplication
-References: <20090318191248.20375.40560.stgit@dwillia2-linux.ch.intel.com>	 <20090318192046.20375.89854.stgit@dwillia2-linux.ch.intel.com>	 <49C26D91.10804@intel.com> <e9c3a7c20903191020k4d0169e3oc9749103a711f3e3@mail.gmail.com> <49C41C1E.4060401@zytor.com> <49C4201A.5060905@emcraft.com>
-In-Reply-To: <49C4201A.5060905@emcraft.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49C156E8.1090306@us.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ilya Yanok wrote:
->>>
->> That doesn't explain what you expect the code to do.  It still doesn't
->> make sense to me.
+Vernon Mauery wrote, On 03/18/2009 09:17 PM:
+...
+> This patch does seem to reduce the number of contentions by about 10%.  That is
+> a good start (and a good catch on the cacheline bounces).  But, like I mentioned
+> above, this lock still has 2 orders of magnitude greater contention than the
+> next lock, so even a large decrease like 10% makes little difference in the
+> overall contention characteristics.
 > 
-> We defined async_pq() function as hardware can do GF multiplication of
-> arbitrary elements and we want to take advantage of this fact. But by
-> the design of ASYNC_TX API we have to provide synchronous version of
-> that function too.
+> So we will have to do something more.  Whether it needs to be more complex or
+> not is still up in the air.  Batched enqueueing/dequeueing are just two options
+> and the former would be a *lot* less complex than the latter.
 > 
+> If anyone else has any ideas they have been holding back, now would be a great
+> time to get them out in the open.
 
-I don't think that makes sense since the algorithm doesn't use 
-vector-vector multiplications and there is no need for them.  As such, 
-you're actively excluding support for hardware which only provides 
-scalar-vector multiplication, even though that is all we need.
+I think there would be interesting to check another idea around this
+contention: not all contenders are equal here. One thread is doing
+qdisc_run() and owning the transmit queue (even after releasing the TX
+lock). So if it waits for the qdisc lock the NIC, if not multiqueue,
+is idle. Probably some handicap like in the patch below could make
+some difference in throughput; alas I didn't test it.
 
-In fact, vectorizing the constant doesn't make much sense.
+Jarek P.
+---
 
-	-hpa
+ net/core/dev.c |    6 +++++-
+ 1 files changed, 5 insertions(+), 1 deletions(-)
 
+diff --git a/net/core/dev.c b/net/core/dev.c
+index f112970..d5ad808 100644
+--- a/net/core/dev.c
++++ b/net/core/dev.c
+@@ -1852,7 +1852,11 @@ gso:
+ 	if (q->enqueue) {
+ 		spinlock_t *root_lock = qdisc_lock(q);
+ 
+-		spin_lock(root_lock);
++		while (!spin_trylock(root_lock)) {
++			do {
++				cpu_relax();
++			} while (spin_is_locked(root_lock));
++		}
+ 
+ 		if (unlikely(test_bit(__QDISC_STATE_DEACTIVATED, &q->state))) {
+ 			kfree_skb(skb);
