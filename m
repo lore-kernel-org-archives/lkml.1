@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763270AbZCTX1g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763114AbZCTX0W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763270AbZCTX1g (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Mar 2009 19:27:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762923AbZCTXYW
+	id S1763114AbZCTX0W (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Mar 2009 19:26:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762934AbZCTXYT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Mar 2009 19:24:22 -0400
-Received: from kroah.org ([198.145.64.141]:48487 "EHLO coco.kroah.org"
+	Fri, 20 Mar 2009 19:24:19 -0400
+Received: from kroah.org ([198.145.64.141]:48430 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1762929AbZCTXYV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Mar 2009 19:24:21 -0400
+	id S1762928AbZCTXYR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Mar 2009 19:24:17 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 20 15:29:23 2009
-Message-Id: <20090320222923.469852861@mini.kroah.org>
+Message-Id: <20090320222922.939065975@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 20 Mar 2009 15:28:14 -0700
+Date: Fri, 20 Mar 2009 15:28:11 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,10 +25,10 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Martin Schwidefsky <schwidefsky@de.ibm.com>
-Subject: [patch 04/43] S390: __div64_31 broken for CONFIG_MARCH_G5
+       alan@lxorguk.ukuu.org.uk, Tony Luck <tony.luck@intel.com>
+Subject: [patch 01/43] [IA64] Build fix for __early_pfn_to_nid() undefined link error
 References: <20090320222810.386844059@mini.kroah.org>
-Content-Disposition: inline; filename=s390-__div64_31-broken-for-config_march_g5.patch
+Content-Disposition: inline; filename=build-fix-for-__early_pfn_to_nid-undefined-link-error.patch
 In-Reply-To: <20090320232116.GA3375@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -38,36 +38,39 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+From: Tony Luck <tony.luck@intel.com>
 
-commit 4fa81ed27781a12f6303b9263056635ae74e3e21 upstream.
+commit 334f85b647bc46ff4d27ace55aa65f44d6a2f4db upstream.
 
-The implementation of __div64_31 for G5 machines is broken. The comments
-in __div64_31 are correct, only the code does not do what the comments
-say. The part "If the remainder has overflown subtract base and increase
-the quotient" is only partially realized, the base is subtracted correctly
-but the quotient is only increased if the dividend had the last bit set.
-Using the correct instruction fixes the problem.
+ia64 only defines __early_pfn_to_nid() for SPARSEMEM && NUMA configurations,
+so the recent:
 
-Reported-by: Frans Pop <elendil@planet.nl>
-Tested-by: Frans Pop <elendil@planet.nl>
-Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
+	commit: f2dbcfa738368c8a40d4a5f0b65dc9879577cb21
+	mm: clean up for early_pfn_to_nid()
+
+ends up with some link problems for certain configuration files.
+
+Fix arch/ia64/Kconfig to only define HAVE_ARCH_EARLY_PFN_TO_NID in the
+cases where we do provide this function.
+
+Signed-off-by: Tony Luck <tony.luck@intel.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/s390/lib/div64.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/ia64/Kconfig |    3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
---- a/arch/s390/lib/div64.c
-+++ b/arch/s390/lib/div64.c
-@@ -61,7 +61,7 @@ static uint32_t __div64_31(uint64_t *n, 
- 		"	clr	%0,%3\n"
- 		"	jl	0f\n"
- 		"	slr	%0,%3\n"
--		"	alr	%1,%2\n"
-+		"	ahi	%1,1\n"
- 		"0:\n"
- 		: "+d" (reg2), "+d" (reg3), "=d" (tmp)
- 		: "d" (base), "2" (1UL) : "cc" );
+--- a/arch/ia64/Kconfig
++++ b/arch/ia64/Kconfig
+@@ -479,8 +479,7 @@ config HOLES_IN_ZONE
+ 	default y if VIRTUAL_MEM_MAP
+ 
+ config HAVE_ARCH_EARLY_PFN_TO_NID
+-	def_bool y
+-	depends on NEED_MULTIPLE_NODES
++	def_bool NUMA && SPARSEMEM
+ 
+ config HAVE_ARCH_NODEDATA_EXTENSION
+ 	def_bool y
 
 
