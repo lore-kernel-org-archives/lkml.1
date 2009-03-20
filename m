@@ -1,148 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755023AbZCTDFZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757207AbZCTDUw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755023AbZCTDFZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Mar 2009 23:05:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750933AbZCTDFK
+	id S1757207AbZCTDUw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Mar 2009 23:20:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751032AbZCTDUj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Mar 2009 23:05:10 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:41631 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751882AbZCTDFJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Mar 2009 23:05:09 -0400
-Message-ID: <49C307FA.7070801@redhat.com>
-Date: Thu, 19 Mar 2009 23:05:30 -0400
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Thu, 19 Mar 2009 23:20:39 -0400
+Received: from kroah.org ([198.145.64.141]:43874 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750722AbZCTDUj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Mar 2009 23:20:39 -0400
+Date: Thu, 19 Mar 2009 19:48:16 -0700
+From: Greg KH <greg@kroah.com>
+To: Robert Schwebel <r.schwebel@pengutronix.de>
+Cc: linux-kernel@vger.kernel.org, daniel.krueger@systec-electronic.com,
+       Michael Olbrich <mol@pengutronix.de>, Wolfram Sang <wsa@pengutronix.de>,
+       Marc Kleine-Budde <mkl@pengutronix.de>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: The Linux Staging tree, what it is and is not.
+Message-ID: <20090320024816.GA20213@kroah.com>
+References: <20090318183232.GA11594@kroah.com> <20090320005808.GM5367@pengutronix.de>
 MIME-Version: 1.0
-To: Steven Rostedt <rostedt@goodmis.org>
-CC: Ingo Molnar <mingo@elte.hu>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       systemtap-ml <systemtap@sources.redhat.com>
-Subject: Re: [RFC][PATCH -tip 0/9] tracing: kprobe-based event tracer
-References: <49C2B4A4.5060109@redhat.com> <alpine.DEB.2.00.0903192008450.13615@gandalf.stny.rr.com>
-In-Reply-To: <alpine.DEB.2.00.0903192008450.13615@gandalf.stny.rr.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090320005808.GM5367@pengutronix.de>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Steven Rostedt wrote:
-> On Thu, 19 Mar 2009, Masami Hiramatsu wrote:
+On Fri, Mar 20, 2009 at 01:58:08AM +0100, Robert Schwebel wrote:
+> Greg,
 > 
->> Hi,
->>
->> This is a series of patches which introduce a proof-of concept of
->> kprobe-based event tracer to ftrace. I think that we could port some
->> tracing features from systemtap on this vehicle.
->> This can be applied on the linux-2.6-tip tree.
->>
->> This patchset includes following changes:
->> - Add kprobe-tracer plugin
->> - Add kernel_trap_sp() on x86, ia64, power, s390, arm which are
->>   ported from systemtap runtime.
->> - Add module_*probe api for repawning/removing kprobes when target
->>   module is coming/going.
->>
->> It's still not unclear that the last module_*probe would better be
->> provided as APIs or just embed it in trace_kprobe.c.
->>
->> Future items:
->> - Use binary print.
->> - Add kernel_trap_sp() on other archs.
->> - Support symbol-based memory fetching (for global variables)
->> - Support primitive types(long, ulong, int, uint, etc) for args.
->> - Support indirect memory fetch from register etc.
->> - Check insertion point safety by using instruction decoder.
->>
->> kprobe-based event tracer
->> ---------------------------
->>
->> This tracer is similar to the events tracer which is based on Tracepoint
->> infrastructure. Instead of Tracepoint, this tracer is based on kprobes(kprobe
->> and kretprobe). It probes anywhere where kprobes can probe(this means, all
->> functions body except for __kprobes functions).
->>
->> Unlike the function tracer, this tracer can probe instructions inside of
->> kernel functions. It allows you to check which instruction has been executed.
->>
->> Unlike the Tracepoint based events tracer, this tracer can add new probe points
->> on the fly.
->>
->> Similar to the events tracer, this tracer doesn't need to be activated via
->> current_tracer, instead of that, just set probe points via
->> /debug/tracing/kprobe_probes.
->>
->> Synopsis of kprobe_probes:
->>   p SYMBOL[+offs|-offs]|MEMADDR [FETCHARGS]     : set a probe
->>   r SYMBOL[+0] [FETCHARGS]                      : set a return probe
->>
->>  FETCHARGS:
->>   rN    : Fetch Nth register (N >= 0)
->>   sN    : Fetch Nth entry of stack (N >= 0)
->>   mADDR : Fetch memory at ADDR (ADDR should be in kernel)
->>   aN    : Fetch function argument. (N >= 1)(*)
->>   rv    : Fetch return value.(**)
->>   rp    : Fetch return address.(**)
->>
->>   (*) aN may not correct on asmlinkaged functions and at function body.
->>   (**) only for return probe.
->>
->> E.g.
->>   echo p do_sys_open a1 a2 a3 a4 > /debug/tracing/kprobe_probes
->>
->>  This sets a kprobe on the top of do_sys_open() function with recording
->> 1st to 3rd arguments.
+> On Wed, Mar 18, 2009 at 11:32:32AM -0700, Greg KH wrote:
+> > If anyone has any questions that this summary doesn't answer, please let me
+> > know.
 > 
-> Do you mean 1st to 4th?
+> Let me take this as an opportunity to discuss the epl (Ethernet
+> Powerlink) driver in staging. Taken aside the eye-cancer thing while
+> looking at the code (this could be fixed in the staging model), I
+> suppose the whole design is questionable.
 
-Oops, yes... it records 1st to 4th arguments.
+Sure it's questionable, and it's horrid code, but it is being used by
+people and is the only public implementation of EPL on Linux that I can
+find.
 
->>   echo r do_sys_open rv rp >> /debug/tracing/kprobe_probes
->>
->>  This sets a kretprobe on the return point of do_sys_open() function with
->> recording return value and return address.
->>
->>   echo > /debug/tracing/kprobe_probes
->>
->>  This clears all probe points. and you can see the traced information via
->> /debug/tracing/trace.
->>
->>   echo /debug/tracing/trace
->> # tracer: nop
->> #
->> #           TASK-PID    CPU#    TIMESTAMP  FUNCTION
->> #              | |       |          |         |
->>            <...>-2376  [001]   262.389131: do_sys_open: @do_sys_open+0 0xffffff9c 0x98db83e 0x8880 0x0
->>            <...>-2376  [001]   262.391166: sys_open: <-do_sys_open+0 0x5 0xc06e8ebb
->>            <...>-2376  [001]   264.384876: do_sys_open: @do_sys_open+0 0xffffff9c 0x98db83e 0x8880 0x0
->>            <...>-2376  [001]   264.386880: sys_open: <-do_sys_open+0 0x5 0xc06e8ebb
->>            <...>-2084  [001]   265.380330: do_sys_open: @do_sys_open+0 0xffffff9c 0x804be3e 0x0 0x1b6
->>            <...>-2084  [001]   265.380399: sys_open: <-do_sys_open+0 0x3 0xc06e8ebb
->>
->>  @SYMBOL means that kernel hits a probe, and <-SYMBOL means kernel returns
->> from SYMBOL(e.g. "sysenter_do_call: <-sys_open+0" means kernel returns from
->> sys_open to sysenter_do_call).
->>
+> We have ported similar commercial EPL stacks to linux-rt in the past,
+> and what we simply did is to implement the code completely in userspace,
+> ontop of a raw socket. It worked out pretty well and with reasonable
+> realtime performance. For the high level API, we used the process data
+> model provided by libpv [1], which gives you an abstraction that follows
+> both, automation-people's "process variable" concept and a modern object
+> oriented desing (in C, modeled after the POSIX object model for example
+> like pthread_create() & friends).
 > 
+> Doing this kind of network protocols in kernel space may be possible in
+> general, but IMHO the first thing that has to be done for a sane design
+> is:
 > 
-> This looks cool. I'll have to start playing with it.
+> 	"Invent proper APIs and abstractions"
 
-Thanks!
+Agreed.
 
+> Unfortunately, industry people have somehow missed the last 10 years of
+> software engineering, so even recent ethernet fieldbus designs like
+> PowerLink or EtherCAT use the CANopen Object Dictionary [1] as their
+> "abstraction" between the stack and the application. So writing
+> applications in the EPL/CANopen/EtherCAT world works by PEEK and POKE on
+> a variable-length global variable array. Welcome to software design of
+> the 80es. Nevertheless, "Object Dictionary" is a standard API for
+> industry people which cannot be discussed away, because automation
+> people are used to this terminology.
 > 
-> Thanks,
-> 
-> -- Steve
-> 
+> So if we want to do any kind of EPL/CANopen/EtherCAT work in the kernel,
+> let's start with the question what it buys us in comparism with a pure
+> userspace solution like outlined above.
 
--- 
-Masami Hiramatsu
+Are userspace solutions for this opensource today?
 
-Software Engineer
-Hitachi Computer Products (America) Inc.
-Software Solutions Division
+<snip>
 
-e-mail: mhiramat@redhat.com
+> What do others think? Is it worth the effort to invent a proper objdict
+> API for linux?
 
+I suggest discussing this on netdev, that's the proper place for network
+protocol discussions like this, right?
+
+thanks,
+
+greg k-h
