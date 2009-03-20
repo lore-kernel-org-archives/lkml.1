@@ -1,42 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758061AbZCTIxr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758346AbZCTIyu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758061AbZCTIxr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Mar 2009 04:53:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757926AbZCTIxd
+	id S1758346AbZCTIyu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Mar 2009 04:54:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755607AbZCTIyk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Mar 2009 04:53:33 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:42046 "EHLO mx1.redhat.com"
+	Fri, 20 Mar 2009 04:54:40 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:33124 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757971AbZCTIxb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Mar 2009 04:53:31 -0400
-Date: Fri, 20 Mar 2009 04:53:27 -0400 (EDT)
-From: Miloslav Trmac <mitr@redhat.com>
-To: Paul Moore <paul.moore@hp.com>
-Cc: viro <viro@zeniv.linux.org.uk>, Eric Paris <eparis@redhat.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>, linux-audit@redhat.com
-Message-ID: <1666981128.1772561237539207343.JavaMail.root@zmail07.collab.prod.int.phx2.redhat.com>
-In-Reply-To: <1446383553.1772511237538977759.JavaMail.root@zmail07.collab.prod.int.phx2.redhat.com>
-Subject: Re: [PATCH] Add SELinux context and TTY name to AUDIT_TTY records
+	id S1754790AbZCTIyj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Mar 2009 04:54:39 -0400
+Date: Fri, 20 Mar 2009 09:54:22 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Paul Mackerras <paulus@samba.org>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, rostedt@goodmis.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 10/10] perf_counter: powerpc: clean up
+	perc_counter_interrupt
+Message-ID: <20090320085422.GC16021@elte.hu>
+References: <20090319192610.660857280@chello.nl> <20090319194234.024464535@chello.nl> <18882.50291.118201.148297@cargo.ozlabs.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-X-Originating-IP: [10.5.5.72]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <18882.50291.118201.148297@cargo.ozlabs.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul,
-Thanks for your review.
------ "Paul Moore" <paul.moore@hp.com> wrote:
-> There are several audit experts which should review this code but two
-> things 
-> jumped out at me when glancing at your patch:
-> 
->  1. SELinux SIDs should not be recorded
-Almost all code that logs SELinux contexts in kernel/audit* does the same thing as this patch, falling back to a SID if it can't be converted to a string.
 
->  2. From a SELinux/security point of view ttys are considered objects
->     and their labels/contexts should be recorded with "obj=" not
-> "subj="
-The patch logs the context of the process, not of the TTY.
-    Mirek
+* Paul Mackerras <paulus@samba.org> wrote:
+
+> Peter Zijlstra writes:
+> 
+> > From: Paul Mackerras <paulus@samba.org>
+> > 
+> > > Nice cleanup, and thanks for updating powerpc too.  With this, I think
+> > > we'll need to update the powerpc perf_counter_interrupt a bit: we
+> > > might as well use get_perf_counter_pending() instead of the wakeup
+> > > variable now.  I'll send an extra patch once I have done some testing.
+> > 
+> > This seems to work OK.
+> > 
+> > Signed-off-by: Paul Mackerras <paulus@samba.org>
+> > Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> 
+> Let's have a better patch description (my fault for not providing a
+> decent one in the first place):
+
+thanks - picked up your changelog.
+
+	Ingo
