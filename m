@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759605AbZCTXNv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761321AbZCTXPl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759605AbZCTXNv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Mar 2009 19:13:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754258AbZCTXNe
+	id S1761321AbZCTXPl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Mar 2009 19:15:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758145AbZCTXNj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Mar 2009 19:13:34 -0400
-Received: from kroah.org ([198.145.64.141]:52971 "EHLO coco.kroah.org"
+	Fri, 20 Mar 2009 19:13:39 -0400
+Received: from kroah.org ([198.145.64.141]:53047 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753762AbZCTXNd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Mar 2009 19:13:33 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 20 15:27:09 2009
-Message-Id: <20090320222709.094312386@mini.kroah.org>
+	id S1757017AbZCTXNh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Mar 2009 19:13:37 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 20 15:27:10 2009
+Message-Id: <20090320222709.873921676@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 20 Mar 2009 15:26:12 -0700
+Date: Fri, 20 Mar 2009 15:26:17 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,10 +25,11 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Tony Luck <tony.luck@intel.com>
-Subject: [patch 01/32] [IA64] Build fix for __early_pfn_to_nid() undefined link error
+       alan@lxorguk.ukuu.org.uk, Jan Beulich <jbeulich@novell.com>,
+       Takashi Iwai <tiwai@suse.de>
+Subject: [patch 06/32] ALSA: Fix vunmap and free order in snd_free_sgbuf_pages()
 References: <20090320222611.872315885@mini.kroah.org>
-Content-Disposition: inline; filename=build-fix-for-__early_pfn_to_nid-undefined-link-error.patch
+Content-Disposition: inline; filename=alsa-fix-vunmap-and-free-order-in-snd_free_sgbuf_pages.patch
 In-Reply-To: <20090320231037.GA2732@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -38,39 +39,46 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Tony Luck <tony.luck@intel.com>
+From: Takashi Iwai <tiwai@suse.de>
 
-commit 334f85b647bc46ff4d27ace55aa65f44d6a2f4db upstream.
+commit 6af845e4eb36fb91b322aaf77ec1cab2220a48ad upstream.
 
-ia64 only defines __early_pfn_to_nid() for SPARSEMEM && NUMA configurations,
-so the recent:
+In snd_free_sgbuf_pags(), vunmap() is called after releasing the SG
+pages, and it causes errors on Xen as Xen manages the pages
+differently.  Although no significant errors have been reported on
+the actual hardware, this order should be fixed other way round,
+first vunmap() then free pages.
 
-	commit: f2dbcfa738368c8a40d4a5f0b65dc9879577cb21
-	mm: clean up for early_pfn_to_nid()
-
-ends up with some link problems for certain configuration files.
-
-Fix arch/ia64/Kconfig to only define HAVE_ARCH_EARLY_PFN_TO_NID in the
-cases where we do provide this function.
-
-Signed-off-by: Tony Luck <tony.luck@intel.com>
+Cc: Jan Beulich <jbeulich@novell.com>
+Signed-off-by: Takashi Iwai <tiwai@suse.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- arch/ia64/Kconfig |    3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
+ sound/core/sgbuf.c |    7 ++++---
+ 1 file changed, 4 insertions(+), 3 deletions(-)
 
---- a/arch/ia64/Kconfig
-+++ b/arch/ia64/Kconfig
-@@ -444,8 +444,7 @@ config HOLES_IN_ZONE
- 	default y if VIRTUAL_MEM_MAP
+--- a/sound/core/sgbuf.c
++++ b/sound/core/sgbuf.c
+@@ -38,6 +38,10 @@ int snd_free_sgbuf_pages(struct snd_dma_
+ 	if (! sgbuf)
+ 		return -EINVAL;
  
- config HAVE_ARCH_EARLY_PFN_TO_NID
--	def_bool y
--	depends on NEED_MULTIPLE_NODES
-+	def_bool NUMA && SPARSEMEM
++	if (dmab->area)
++		vunmap(dmab->area);
++	dmab->area = NULL;
++
+ 	tmpb.dev.type = SNDRV_DMA_TYPE_DEV;
+ 	tmpb.dev.dev = sgbuf->dev;
+ 	for (i = 0; i < sgbuf->pages; i++) {
+@@ -46,9 +50,6 @@ int snd_free_sgbuf_pages(struct snd_dma_
+ 		tmpb.bytes = PAGE_SIZE;
+ 		snd_dma_free_pages(&tmpb);
+ 	}
+-	if (dmab->area)
+-		vunmap(dmab->area);
+-	dmab->area = NULL;
  
- config HAVE_ARCH_NODEDATA_EXTENSION
- 	def_bool y
+ 	kfree(sgbuf->table);
+ 	kfree(sgbuf->page_table);
 
 
