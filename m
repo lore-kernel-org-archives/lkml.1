@@ -1,68 +1,197 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758990AbZCTTKj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758229AbZCTTMS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758990AbZCTTKj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Mar 2009 15:10:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755621AbZCTTK2
+	id S1758229AbZCTTMS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Mar 2009 15:12:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753412AbZCTTMF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Mar 2009 15:10:28 -0400
-Received: from mail-bw0-f169.google.com ([209.85.218.169]:48069 "EHLO
-	mail-bw0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753716AbZCTTK2 (ORCPT
+	Fri, 20 Mar 2009 15:12:05 -0400
+Received: from mail-ew0-f176.google.com ([209.85.219.176]:33667 "EHLO
+	mail-ew0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753061AbZCTTMC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Mar 2009 15:10:28 -0400
+	Fri, 20 Mar 2009 15:12:02 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:mime-version:content-type
-         :content-transfer-encoding:content-disposition:message-id;
-        b=PwXRdp2zulNYdnlBgf0l251V/56kFAglkEe2wYT9iVV2ldIMpvrXGamb3+67BZ939l
-         lkxmp3dn3dZU4Yu9W6WYkShkQ1nJZlKTii6peEgIJqZypQMTohNXrpxi2eOiCPfHt1kO
-         InwMnaPmFt9hQMJDaPb1dSFX99MuCvu4JfQrE=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: [PATCH] x86: fix IO APIC resource allocation error message
-Date: Fri, 20 Mar 2009 20:12:41 +0100
-User-Agent: KMail/1.11.1 (Linux/2.6.29-rc8-next-20090319; KDE/4.2.1; i686; ; )
-Cc: Alan Bartlett <ajb.stxsl@googlemail.com>, linux-kernel@vger.kernel.org
+        h=date:from:to:cc:subject:message-id:user-agent:mime-version
+         :content-type;
+        b=Mtjdtsrl6i3tcbTSAw/WSDoVcA2JAte29q9lS63HfCBgbWSsWzhWTlG53tEioO4Yis
+         rEEGsuxgJv6PoHCZ6m5XrOU/+XJflvYTB5cH6Dcp+eBSJ1vr9IZhJoCfx7I2e9vEBCco
+         qwwqBSxAeB8au+YgQOD/40vNck/wOYoUBJMWw=
+Date: Fri, 20 Mar 2009 20:11:54 +0100 (CET)
+From: Dragoslav Zaric <dragoslav.zaric.kd@gmail.com>
+To: LKML <linux-kernel@vger.kernel.org>
+cc: Otus Devel <otus-devel@venema.h4ckr.net>,
+       Luis Rodriguez <Luis.Rodriguez@Atheros.com>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [PATCH 2.6.29-rc8 2/2] drivers/staging/otus/80211core/amsdu.c: Fix
+ Coding Style
+Message-ID: <alpine.DEB.2.00.0903202008040.11949@Sentinel>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200903202012.41344.bzolnier@gmail.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: [PATCH] x86: fix IO APIC resource allocation error message
-
-Impact: fix incorrect error message
-
-- IO APIC resource allocation error message contains one too many "be".
-
-- Print the error message iff there are IO APICs in the system.
-
-Cc: Alan Bartlett <ajb.stxsl@googlemail.com>
-Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Signed-off-by: Dragoslav Zaric <dragoslav.zaric.kd@gmail.com>
 ---
-I've seen this error message for some time on my x86-32 laptop...
-
- arch/x86/kernel/io_apic.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-Index: b/arch/x86/kernel/io_apic.c
-===================================================================
---- a/arch/x86/kernel/io_apic.c
-+++ b/arch/x86/kernel/io_apic.c
-@@ -4150,9 +4150,9 @@ static int __init ioapic_insert_resource
- 	int i;
- 	struct resource *r = ioapic_resources;
+--- drivers/staging/otus/80211core/amsdu.c	2009-03-19 20:26:41.000000000 +0100
++++ drivers/staging/otus/80211core/amsdu_cs_fix.c	2009-03-19 20:27:13.000000000 +0100
+@@ -34,53 +34,53 @@
+ /*      Stephen Chen        Atheros Communications, INC.    2007.2      */
+ /*                                                                      */
+ /************************************************************************/
+-zbuf_t* zfGetAmsduSubFrame(zdev_t* dev, zbuf_t* buf, u16_t* offset)
++zbuf_t *zfGetAmsduSubFrame(zdev_t *dev, zbuf_t *buf, u16_t *offset)
+ {
+-    u16_t subframeLen;
+-    u16_t amsduLen = zfwBufGetSize(dev, buf);
+-    zbuf_t* newBuf;
+-
+-    ZM_PERFORMANCE_RX_AMSDU(dev, buf, amsduLen);
+-
+-    /* Verify A-MSDU length */
+-    if (amsduLen < (*offset + 14))
+-    {
+-        return NULL;
+-    }
+-
+-    /* Locate A-MSDU subframe by offset and verify subframe length */
+-    subframeLen = (zmw_buf_readb(dev, buf, *offset + 12) << 8) +
+-                  zmw_buf_readb(dev, buf, *offset + 13);
+-    if (subframeLen == 0)
+-    {
+-        return NULL;
+-    }
+-
+-    /* Verify A-MSDU subframe length */
+-    if ((*offset+14+subframeLen) <= amsduLen)
+-    {
+-        /* Allocate a new buffer */
+-        if ((newBuf = zfwBufAllocate(dev, 24+2+subframeLen)) != NULL)
+-        {
+-#ifdef ZM_ENABLE_NATIVE_WIFI
+-            /* Copy and convert subframe to wlan frame format */
+-            /* SHALL NOT INCLUDE QOS and AMSDU header. Ray 20070807 For Vista */
+-            zfRxBufferCopy(dev, newBuf, buf, 0, 0, 24);
+-            zfRxBufferCopy(dev, newBuf, buf, 24, *offset+14, subframeLen);
+-            zfwBufSetSize(dev, newBuf, 24+subframeLen);
+-#else
+-            /* Copy subframe to new buffer */
+-            zfRxBufferCopy(dev, newBuf, buf, 0, *offset, 14+subframeLen);
+-            zfwBufSetSize(dev, newBuf, 14+subframeLen);
+-#endif
+-            /* Update offset */
+-            *offset += (((14+subframeLen)+3) & 0xfffc);
+-
+-            /* Return buffer pointer */
+-            return newBuf;
+-        }
+-    }
+-    return NULL;
++	u16_t subframeLen;
++	u16_t amsduLen = zfwBufGetSize(dev, buf);
++	zbuf_t *newBuf;
++
++	ZM_PERFORMANCE_RX_AMSDU(dev, buf, amsduLen);
++
++	/* Verify A-MSDU length */
++	if (amsduLen < (*offset + 14))
++		return NULL;
++
++	/* Locate A-MSDU subframe by offset and verify subframe length */
++	subframeLen = (zmw_buf_readb(dev, buf, *offset + 12) << 8) +
++		zmw_buf_readb(dev, buf, *offset + 13);
++
++	if (subframeLen == 0)
++		return NULL;
++
++	/* Verify A-MSDU subframe length */
++	if ((*offset+14+subframeLen) <= amsduLen) {
++		/* Allocate a new buffer */
++		newBuf = zfwBufAllocate(dev, 24+2+subframeLen);
++		if (newBuf != NULL) {
++			#ifdef ZM_ENABLE_NATIVE_WIFI
++			/* Copy and convert subframe to wlan frame format
++			* SHALL NOT INCLUDE QOS and AMSDU header.
++			* Ray 20070807 For Vista
++			*/
++			zfRxBufferCopy(dev, newBuf, buf, 0, 0, 24);
++			zfRxBufferCopy(dev, newBuf, buf, 24, *offset+14,
++					subframeLen);
++			zfwBufSetSize(dev, newBuf, 24+subframeLen);
++			#else
++			/* Copy subframe to new buffer */
++			zfRxBufferCopy(dev, newBuf, buf, 0, *offset,
++					14+subframeLen);
++			zfwBufSetSize(dev, newBuf, 14+subframeLen);
++			#endif
++			/* Update offset */
++			*offset += (((14+subframeLen)+3) & 0xfffc);
++
++			/* Return buffer pointer */
++			return newBuf;
++		}
++	}
++	return NULL;
+ }
  
--	if (!r) {
-+	if (!r && nr_ioapics > 0) {
- 		printk(KERN_ERR
--		       "IO APIC resources could be not be allocated.\n");
-+		       "IO APIC resources couldn't be allocated.\n");
- 		return -1;
- 	}
  
+@@ -101,34 +101,29 @@ zbuf_t* zfGetAmsduSubFrame(zdev_t* dev, 
+ /*      Stephen Chen        Atheros Communications, INC.    2007.2      */
+ /*                                                                      */
+ /************************************************************************/
+-void zfDeAmsdu(zdev_t* dev, zbuf_t* buf, u16_t vap, u8_t encryMode)
++void zfDeAmsdu(zdev_t *dev, zbuf_t *buf, u16_t vap, u8_t encryMode)
+ {
+-    u16_t offset = ZM_SIZE_OF_WLAN_DATA_HEADER+ZM_SIZE_OF_QOS_CTRL;
+-    zbuf_t* subframeBuf;
+-    zmw_get_wlan_dev(dev);
+-
+-    ZM_BUFFER_TRACE(dev, buf)
+-
+-    if (encryMode == ZM_AES || encryMode == ZM_TKIP)
+-    {
+-        offset += (ZM_SIZE_OF_IV + ZM_SIZE_OF_EXT_IV);
+-    }
+-    else if (encryMode == ZM_WEP64 || encryMode == ZM_WEP128)
+-    {
+-        offset += ZM_SIZE_OF_IV;
+-    }
+-
+-    /* Repeatly calling zfGetAmsduSubFrame() until NULL returned */
+-    while ((subframeBuf = zfGetAmsduSubFrame(dev, buf, &offset)) != NULL)
+-    {
+-        wd->commTally.NotifyNDISRxFrmCnt++;
+-        if (wd->zfcbRecvEth != NULL)
+-    	{
+-            wd->zfcbRecvEth(dev, subframeBuf, (u8_t)vap);
+-            ZM_PERFORMANCE_RX_MSDU(dev, wd->tick);
+-        }
+-    }
+-    zfwBufFree(dev, buf, 0);
++	u16_t offset = ZM_SIZE_OF_WLAN_DATA_HEADER+ZM_SIZE_OF_QOS_CTRL;
++	zbuf_t *subframeBuf;
++	zmw_get_wlan_dev(dev);
++
++	ZM_BUFFER_TRACE(dev, buf)
++
++	if (encryMode == ZM_AES || encryMode == ZM_TKIP)
++		offset += (ZM_SIZE_OF_IV + ZM_SIZE_OF_EXT_IV);
++	else if (encryMode == ZM_WEP64 || encryMode == ZM_WEP128)
++		offset += ZM_SIZE_OF_IV;
++
++
++	/* Repeatly calling zfGetAmsduSubFrame() until NULL returned */
++	while ((subframeBuf = zfGetAmsduSubFrame(dev, buf, &offset)) != NULL) {
++		wd->commTally.NotifyNDISRxFrmCnt++;
++		if (wd->zfcbRecvEth != NULL) {
++			wd->zfcbRecvEth(dev, subframeBuf, (u8_t)vap);
++			ZM_PERFORMANCE_RX_MSDU(dev, wd->tick);
++		}
++	}
++	zfwBufFree(dev, buf, 0);
+ 
+-    return;
++	return;
+ }
