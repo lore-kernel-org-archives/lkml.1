@@ -1,84 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756275AbZCTBUc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755027AbZCTBks@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756275AbZCTBUc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Mar 2009 21:20:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753567AbZCTBUW
+	id S1755027AbZCTBks (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Mar 2009 21:40:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751756AbZCTBki
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Mar 2009 21:20:22 -0400
-Received: from outbound-mail-40.bluehost.com ([69.89.20.194]:35323 "HELO
-	outbound-mail-40.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753043AbZCTBUV (ORCPT
+	Thu, 19 Mar 2009 21:40:38 -0400
+Received: from web15705.mail.cnb.yahoo.com ([202.165.102.72]:20816 "HELO
+	web15705.mail.cnb.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751689AbZCTBkh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Mar 2009 21:20:21 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
-	b=JgwsLGjeN4TNTltEHinZZRsuWxpivkdFo8OAxOT9LymTESRRaQ9NXs9jBhFwpMGVAM7mdt2PDJJo7HWiYU1D7u+Q5ZA4cjxKklDvAW/2Ee5QzdJFY8JKwLHwdCYQ/bpY;
-Date: Thu, 19 Mar 2009 18:20:16 -0700
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Matthew Wilcox <matthew@wil.cx>
-Cc: Yu Zhao <yu.zhao@intel.com>, linux-pci@vger.kernel.org,
-       kvm@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v11 1/8] PCI: initialize and release SR-IOV capability
-Message-ID: <20090319182016.33a9a1f2@hobbes.lan>
-In-Reply-To: <20090319195312.GC14127@parisc-linux.org>
-References: <1236756349-18892-1-git-send-email-yu.zhao@intel.com>
-	<1236756349-18892-2-git-send-email-yu.zhao@intel.com>
-	<20090319195312.GC14127@parisc-linux.org>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
+	Thu, 19 Mar 2009 21:40:37 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.cn;
+  h=Message-ID:X-YMail-OSG:Received:X-Mailer:Date:From:Subject:To:MIME-Version:Content-Type;
+  b=v1408lwJRwnwvdpdcUj9SkFzkYINBdurCJnOOdQRgpsZb7JnVi8Hhb2hv1wzscfIzLDitgAKSnpJjchOlyeK2zcaDHvb0ynRusF8AEC9VSkZLpd811fm35V8gPI081ai8HUTS20cR+LbZvesQrnC5SiX31NDFvqpDDY8WjgTXWc=;
+Message-ID: <768318.39103.qm@web15705.mail.cnb.yahoo.com>
+X-YMail-OSG: k1NeyDwVM1lbEJ9yTo3LtLuaJX3_r.mv_SJKXRps1hU_p7CLiJcoW9xlq4wrrvx.A_aAfmk0FSg4HW2zseFt1IeCsVQkh5Lph2wdmiEFVZtID3FP3J3zb_VtL50ZquP.duEcqOaNDXYLFvZokqs6GLHu4BTgalhQvt6IihiPnC1GTs8-
+X-Mailer: YahooMailClassic/5.1.20 YahooMailWebService/0.7.289.1
+Date: Fri, 20 Mar 2009 09:40:33 +0800 (CST)
+From: peter meng <mengsanshui@yahoo.com.cn>
+Subject: Ask a question about major and minor number of keyboard driver .
+To: linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 19 Mar 2009 13:53:12 -0600
-Matthew Wilcox <matthew@wil.cx> wrote:
 
-> On Wed, Mar 11, 2009 at 03:25:42PM +0800, Yu Zhao wrote:
-> > +config PCI_IOV
-> > +	bool "PCI IOV support"
-> > +	depends on PCI
-> > +	help
-> > +	  PCI-SIG I/O Virtualization (IOV) Specifications support.
-> > +	  Single Root IOV: allows the creation of virtual PCI
-> > devices
-> > +	  that share the physical resources from a real device.
-> > +
-> > +	  When in doubt, say N.
-> 
-> It's certainly shorter than my text, which is nice.  But I think it
-> still has too much spec-ese and not enough explanation.  How about:
-> 
-> 	help
-> 	  I/O Virtualization is a PCI feature supported by some
-> devices which allows them to create virtual devices which share their
-> 	  physical resources.
-> 
-> 	  If unsure, say N.
-> 
-> > +	list_for_each_entry(pdev, &dev->bus->devices, bus_list)
-> > +		if (pdev->is_physfn)
-> > +			break;
-> > +	if (list_empty(&dev->bus->devices) || !pdev->is_physfn)
-> > +		pdev = NULL;
-> 
-> This is still wrong.  If the 'break' condition is not hit, pdev is
-> pointing to garbage, not to the last pci_dev in the list.
-> 
-> > @@ -270,6 +278,7 @@ struct pci_dev {
-> >  	struct list_head msi_list;
-> >  #endif
-> >  	struct pci_vpd *vpd;
-> > +	struct pci_sriov *sriov;	/* SR-IOV capability
-> > related */
-> 
-> Should be ifdeffed?
+Hi,
 
-Ok Yu, I'm ready to apply this set, can you send an updated one with
-the fixes Matthew mentioned?
+ Such as drivers/input/keyboard/neo1973kbd.c :
 
-Thanks,
--- 
-Jesse Barnes, Intel Open Source Technology Center
+ input_dev->name = "Neo1973 Buttons";
+ input_dev->phys = "neo1973kbd/input0";
+ input_dev->id.bustype = BUS_HOST;
+
+ As i understand , application will access /dev/input/neo1973kbd/input0 as input handler such as open(/dev/input/neo1973kbd/input0) .
+ I want to know which minor number will be used by input0 , because event0 
+ will use minor number 64 .
+ Assume no minor number for neo1973kbd/input0 ,how the driver process open(/dev/input/neo1973kbd/input0) ? because no major and minor number related to it .
+ 
+
+ls -l /dev/input/ 
+crw-r----- 1 root root 13, 64 2009-03-20 08:54 event0
+
+
+Thanks in Advanced .
+Best Regards.
+Peter Meng 
+
+
+
+
+      
