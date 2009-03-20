@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760677AbZCTBtG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761022AbZCTBtq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760677AbZCTBtG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Mar 2009 21:49:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760308AbZCTBsv
+	id S1761022AbZCTBtq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Mar 2009 21:49:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761107AbZCTBtb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Mar 2009 21:48:51 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:64461 "EHLO song.cn.fujitsu.com"
+	Thu, 19 Mar 2009 21:49:31 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:55917 "EHLO song.cn.fujitsu.com"
 	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1758924AbZCTBsu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Mar 2009 21:48:50 -0400
-Message-ID: <49C2F614.2010101@cn.fujitsu.com>
-Date: Fri, 20 Mar 2009 09:49:08 +0800
+	id S1761141AbZCTBta (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Mar 2009 21:49:30 -0400
+Message-ID: <49C2F63C.2090107@cn.fujitsu.com>
+Date: Fri, 20 Mar 2009 09:49:48 +0800
 From: Li Zefan <lizf@cn.fujitsu.com>
 User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
@@ -20,7 +20,7 @@ CC: Jens Axboe <jens.axboe@oracle.com>,
        Steven Rostedt <rostedt@goodmis.org>,
        Frederic Weisbecker <fweisbec@gmail.com>,
        LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH 5/7] blktrace: report EBUSY correctly
+Subject: [PATCH 7/7] blktrace: avoid accessing NULL bdev->bd_disk
 References: <49C2F599.3060306@cn.fujitsu.com>
 In-Reply-To: <49C2F599.3060306@cn.fujitsu.com>
 Content-Type: text/plain; charset=UTF-8
@@ -29,53 +29,56 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-blk_trace_remove_queue() returns EINVAL if q->blk_trace == NULL,
-but blk_trace_setup_queue() doesn't return EBUSY if q->blk_trace != NULL.
+bdev->bd_disk can be NULL, if the block device is not opened.
 
- # echo 0 > sdaX/trace/enable
- # echo 0 > sdaX/trace/enable
- bash: echo: write error: Invalid argument
- # echo 1 > sdaX/trace/enable
- # echo 1 > sdaX/trace/enable
- (should return EBUSY)
+Try this against an unmounted partition, and you'll see NULL dereference:
+  # echo 1 > /sys/block/sda/sda5/enable
 
 Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
 ---
- kernel/trace/blktrace.c |    9 +++------
- 1 files changed, 3 insertions(+), 6 deletions(-)
+ kernel/trace/blktrace.c |   13 +++++++++++--
+ 1 files changed, 11 insertions(+), 2 deletions(-)
 
 diff --git a/kernel/trace/blktrace.c b/kernel/trace/blktrace.c
-index 11e7c8d..14986af 100644
+index 46e0cfe..37095d9 100644
 --- a/kernel/trace/blktrace.c
 +++ b/kernel/trace/blktrace.c
-@@ -1260,12 +1260,10 @@ static int blk_trace_remove_queue(struct request_queue *q)
- static int blk_trace_setup_queue(struct request_queue *q, dev_t dev)
- {
- 	struct blk_trace *old_bt, *bt = NULL;
--	int ret;
- 
--	ret = -ENOMEM;
- 	bt = kzalloc(sizeof(*bt), GFP_KERNEL);
- 	if (!bt)
--		goto err;
-+		return -ENOMEM;
- 
- 	bt->dev = dev;
- 	bt->act_mask = (u16)-1;
-@@ -1276,11 +1274,10 @@ static int blk_trace_setup_queue(struct request_queue *q, dev_t dev)
- 	if (old_bt != NULL) {
- 		(void)xchg(&q->blk_trace, old_bt);
- 		kfree(bt);
--		ret = -EBUSY;
-+		return -EBUSY;
- 	}
-+
- 	return 0;
--err:
--	return ret;
+@@ -1362,6 +1362,14 @@ static int blk_str2act_mask(const char *str)
+ 	return mask;
  }
  
- /*
++static request_queue *blk_trace_get_queue(struct block_device *bdev)
++{
++	if (bdev->bd_disk == NULL)
++		return NULL;
++
++	return bdev_get_queue(bdev);
++}
++
+ static ssize_t sysfs_blk_trace_attr_show(struct device *dev,
+ 					 struct device_attribute *attr,
+ 					 char *buf)
+@@ -1376,9 +1384,10 @@ static ssize_t sysfs_blk_trace_attr_show(struct device *dev,
+ 	if (bdev == NULL)
+ 		goto out_unlock_kernel;
+ 
+-	q = bdev_get_queue(bdev);
++	q = blk_trace_get_queue(bdev);
+ 	if (q == NULL)
+ 		goto out_bdput;
++
+ 	mutex_lock(&bdev->bd_mutex);
+ 
+ 	if (attr == &dev_attr_enable) {
+@@ -1435,7 +1444,7 @@ static ssize_t sysfs_blk_trace_attr_store(struct device *dev,
+ 	if (bdev == NULL)
+ 		goto out_unlock_kernel;
+ 
+-	q = bdev_get_queue(bdev);
++	q = blk_trace_get_queue(bdev);
+ 	if (q == NULL)
+ 		goto out_bdput;
+ 
 -- 
 1.5.4.rc3
 
