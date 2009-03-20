@@ -1,259 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753866AbZCTGiv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753666AbZCTGp2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753866AbZCTGiv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Mar 2009 02:38:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751681AbZCTGil
+	id S1753666AbZCTGp2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Mar 2009 02:45:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752080AbZCTGpK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Mar 2009 02:38:41 -0400
-Received: from mail-fx0-f158.google.com ([209.85.220.158]:39072 "EHLO
-	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751315AbZCTGik (ORCPT
+	Fri, 20 Mar 2009 02:45:10 -0400
+Received: from light.bluelinux.co.uk ([195.10.223.138]:54071 "EHLO
+	light.bluelinux.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751894AbZCTGpG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Mar 2009 02:38:40 -0400
-Message-ID: <49C339EA.2070201@monstr.eu>
-Date: Fri, 20 Mar 2009 07:38:34 +0100
-From: Michal Simek <monstr@monstr.eu>
-Reply-To: monstr@monstr.eu
-User-Agent: Thunderbird 2.0.0.17 (X11/20081001)
+	Fri, 20 Mar 2009 02:45:06 -0400
+X-Greylist: delayed 1982 seconds by postgrey-1.27 at vger.kernel.org; Fri, 20 Mar 2009 02:45:06 EDT
+Date: Fri, 20 Mar 2009 17:08:23 +1100
+From: Daniel Stone <daniel@fooishbar.org>
+To: Greg KH <greg@kroah.com>
+Cc: Sindhudweep Sarkar <sindhudweep.sarkar@gmail.com>,
+       David Airlie <airlied@linux.ie>,
+       Thomas Hellstrom <thellstrom@vmware.com>,
+       dri-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+       Richard Purdie <rpurdie@linux.intel.com>
+Subject: Re: [patch 0/5] Intel Poulsbo/Morrestown DRM driver and DRM core
+	changes
+Message-ID: <20090320060823.GF32194@fooishbar.org>
+Mail-Followup-To: Daniel Stone <daniel@fooishbar.org>,
+	Greg KH <greg@kroah.com>,
+	Sindhudweep Sarkar <sindhudweep.sarkar@gmail.com>,
+	David Airlie <airlied@linux.ie>,
+	Thomas Hellstrom <thellstrom@vmware.com>,
+	dri-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+	Richard Purdie <rpurdie@linux.intel.com>
+References: <20090319040809.GA29249@kroah.com> <6c046ab30903190903r298a0334n939e64403b8aeda6@mail.gmail.com> <20090319162719.GB32078@kroah.com>
 MIME-Version: 1.0
-To: Thomas Gleixner <tglx@linutronix.de>
-CC: LKML <linux-kernel@vger.kernel.org>, john.williams@petalogix.com,
-       John Stultz <johnstul@us.ibm.com>
-Subject: Re: [PATCH 08/57] microblaze_v7: Interrupt handling, timer support,
- selfmod code
-References: <1237408284-8674-1-git-send-email-monstr@monstr.eu> <0168f03c96e9479ede695a9859c8a0691baa8ef3.1237407249.git.monstr@monstr.eu> <c1bdfabf85ce10babc3aa38d3bb7558a093bc49e.1237407249.git.monstr@monstr.eu> <4b5aee01d11fc790c7842838ea63a82ee3273003.1237407249.git.monstr@monstr.eu> <af309ba8e95f503b7990461384d9f8453f45dbbd.1237407249.git.monstr@monstr.eu> <5f8b2a60496983f572ef6d3b4e2f986c167a8336.1237407249.git.monstr@monstr.eu> <fbef554ff1d05fa50312d91e61a0d63d3207076c.1237407249.git.monstr@monstr.eu> <dad2353f129217470f0595eeed98412b4c84ed6b.1237407249.git.monstr@monstr.eu> <20fd42a1e8837c7352d35d157aa3393e88152c32.1237407249.git.monstr@monstr.eu> <alpine.LFD.2.00.0903191639530.29264@localhost.localdomain> <49C2AB09.9040300@monstr.eu> <alpine.LFD.2.00.0903192219500.29264@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.00.0903192219500.29264@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="n/aVsWSeQ4JHkrmm"
+Content-Disposition: inline
+In-Reply-To: <20090319162719.GB32078@kroah.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Thomas,
 
-> Michal,
-> 
-> On Thu, 19 Mar 2009, Michal Simek wrote:
->>>> +	__do_IRQ(irq);
->>> You use irq chips now and you set the type handlers (edge/level), but
->>> you still call __do_IRQ() the all in one fits nothing handler, which
->>> is going to be deprecated and removed.
->> I know about.
->>> Please call 
->>>        generic_handle_irq(irq);
->>>
->>> which will call the correct flow handlers.
->> I would like to use it but don't work with edge interrupt.
->> __do_IRQ handle it in right way.
->>
->> I used this implementation but I did some change edge/level handling and I can't
->> use it.
->> http://developer.petalogix.com/git/gitweb.cgi?p=linux-2.6-microblaze.git;a=blob_plain;f=arch/microblaze/kernel/irq.c;hb=3645d887ad6443a262bbeddf384038321172db2b
->>
->> Any hints what could be wrong?
->  
-> Look at the different handling schemes of __do_IRQ and handle_edge_irq
-> vs. the chip functions:
-> 
-> __do_IRQ() does:
-> {
-> 	   chip->ack();
-> 	   
-> 	   handle_IRQ_event();
-> 
-> 	   chip->end();
-> }
-> 
-> handle_edge_irq() does:
-> {
-> 	if ((desc->status & (IRQ_INPROGRESS | IRQ_DISABLED)) ||
->                     !desc->action)) {
->                 desc->status |= (IRQ_PENDING | IRQ_MASKED);
->                 mask_ack_irq(desc, irq);
-> 		goto out_unlock;
-> 	}
-> 
-> 	chip->ack();
-> 	handle_IRQ_event();
-> 
-> }
-> 
-> I guess the problem is in your chip->xxx functions.
+--n/aVsWSeQ4JHkrmm
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-OK. I look at it in detail.
-> 
->> First of all I have one question to you about MB timer.c.
->> It is about this function - microblaze_read.
->>
->> static cycle_t mb_tick_cnt; /* store counter ticks */
->>
->> static cycle_t microblaze_read(void)
->> {
->> 	u64 temp = (u64)mb_tick_cnt + (u64)((u32)cpuinfo.freq_div_hz
->> 					- (u32)in_be32(TIMER_BASE + TCR0));
->> 	return temp;
->> }
->>
->>
->> MB has 32bit periodic down counter and I need to use u64 value that's why
->> I do these operation above. cpuinfo.freq_div_hz store freq/HZ value - number of
->> ticks for 1/HZ. I subtract current timer value + mb_tick_cnt which store number
->> of count. The problem I have is that gettimeofday LTP test failed on it ->
->> announce that time is going backward.
->> Simple returning only mb_tick_cnt pass this test but of course I am losing
->> information about time till 1/HZ.
->> Do I have to add any specific amount of time which take counting of it?
-> 
-> You do not neeed 64 bit values. The return value is masked with the
-> clocksource->mask anyway. So when your clocksource has less than 64
-> bits it's covered.
-> 
-> So if your timer counts down from 0xFFFFFFFF to 0 and wraps around you
-> just need to return (cycle_t) ~(timer->count);
+Greg,
 
-Counts down from specific value to 0. That specific value and number of tick for
-1/HZ. That mean that I need (cycle_t) (specific_value - timer->count)
+On Thu, Mar 19, 2009 at 09:27:19AM -0700, Greg KH wrote:
+> On Thu, Mar 19, 2009 at 12:03:09PM -0400, Sindhudweep Sarkar wrote:
+> > TI-OMAP 3xxx and a couple of other arm processors use similar SGX-5xx
+> > graphics cores. IIRC arm is often little endian so perhaps a unified
+> > driver would be easier in the long term.
+>=20
+> Long term lots of things are good.
+>=20
+> But how do I get my laptop that I currently have right now up and
+> running properly with linux in a better-than-800x600-framebuffer mode?
+>=20
+> That's why I need/want this driver now, there are hundreds of thousands
+> of these types of laptops in the pipeline to users and I want them to
+> run Linux, not be forced to run some other operating system...
 
-> 
-> But I think I know where your real problem is. You use the same timer
-> for both timekeeping and the periodic tick. That's why you can not
-> support one shot mode. I bet the machine has two timers.
+By the same logic, would you support including the proprietary NVIDIA
+driver while we wait for Nouveau to catch up?
 
-yes. I have no problem to use another counter too. It is FPGA and my timer IP
-support two independent timers. ( Her is the link to doc
-http://www.xilinx.com/support/documentation/ip_documentation/xps_timer.pdf)
-> 
-> So the best way to handle this is:
-> 
->    Use timer A in free running mode - up or down counting does not
->    matter - for the timekeeping. That way you have an ever increasing
->    monotonic time.
-> 
->    Use timer B either for periodic mode or for one shot and all your
->    problems are gone. In periodic mode use autoreload and in one shot
->    mode just follow the instructions of the generic code via the
->    timer_set_next_event() function.
+Cheers,
+Daniel
 
-OK. That mean you timer A as clocksource and the second clock as event device.
-I try to do it.
-> 
->> And the second question is about shift and rating values.
->> I wrote one message in past http://lkml.org/lkml/2009/1/11/291
->> Here is the important of part of that message.
->>
->> ...
->>
->> And the second part is about shift and rating values. Rating is
->> describe(linux/clocksource.h) and seems to me that should be
->> corresponded with CONFIG_HZ value,right?
->> And I found any explanation of shift value -> max value for equation
->> (2-5) * freq << shift / NSEC_PER_SEC should be for my case still 32bit
->> number, where (2-5s) are because of NTP
-> 
-> @John, can you explain the shift vlaue please ?
->  
->> The second thing which seems to me weird in comparing with others log I
->> have seen is .resolution value. Full (proc/timer_lists is below) My
->> .resolution: 10000000 nsecs which
->> is 1/HZ in nsec. (On others log I saw 1nsec values). My the lowest
->> resolution is 1/freq = 8nsec (for 125MHz). Is that OK or not.
->> ...
-> 
-> The 1ns is theoretical and indicates that the kernel has high resolution
-> timer support. Your resolution is just HZ.
-> 
->>>> +static int microblaze_timer_set_next_event(unsigned long delta,
->>>> +					 struct clock_event_device *dev)
->>>> +{
->>>> +	printk(KERN_INFO "next event, delta %x, %d\n", (u32)delta, (u32)delta);
->>>   This should be pr_debug() or do you want to flood the syslog in
->>>   every timer interrupt ?
->> This not flood the syslog. I don't know why (maybe because of missing ONESHOT)
->> but this code is never called in periodic mode. But you are right if this
->> function is called a lot it is necessary to use pr_debug -> but this is not my
->> case in this implementation.
-> 
-> Well. Either you have one shot mode, then better make it work and
-> useable or just remove the one shot support until you figure out how
-> to do it.
+--n/aVsWSeQ4JHkrmm
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
 
-I don't have it - this feature is not there. There is only printk message in
-set_mode function.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
-What is the best timer implementation in kernel? (For inspiration)
+iEYEARECAAYFAknDMtcACgkQUVYB1rKAgJSbjACguk+5zlu1aEgS7nDC5L1l2Qbw
+U7cAnRWLsbAAgCVw3yrmV462dqLNmJ/i
+=2Lno
+-----END PGP SIGNATURE-----
 
-> 
->>>> +	microblaze_timer_start(delta);
->>>> +	return 0;
->>>> +}
->>>> +
->>>> +static void microblaze_timer_set_mode(enum clock_event_mode mode,
->>>> +				    struct clock_event_device *evt)
->>>> +{
->>>> +	microblaze_timer_stop();
->>>> +
->>>> +	switch (mode) {
->>>> +	case CLOCK_EVT_MODE_PERIODIC:
->>>> +		printk(KERN_INFO "%s: periodic\n", __func__);
->>>   pr_debug as well. That's not very informative
->> It is only information that timer work in periodic mode.
->>
->> Part of kernel log which is there - nothing more.
->>
->> microblaze_timer_set_mode: shutdown
->> microblaze_timer_set_mode: periodic
-> 
-> Nothing a normal user is interested in I guess, but ok. 
-
-ok
-
->  
->>>> +static irqreturn_t timer_interrupt(int irq, void *dev_id)
->>>> +{
->>>> +	struct clock_event_device *evt = &clockevent_microblaze_timer;
->>>> +#ifdef CONFIG_HEART_BEAT
->>>> +	heartbeat();
->>>> +#endif
->>>> +	timer_ack();
->>>> +
->>>> +	mb_tick_cnt += cpuinfo.freq_div_hz;
->>> Hmm. How does that work with oneshot timers ?
->> Oneshot is not supported yet - only periodic mode. I had to add it mb_tick_cnt
->> counting because
->> I don't know reason but without it ( kernel and timer in periodic mode )not
->> update system time.
-> 
-> I don't know how that timer works. Do you have a pointer to hardware
-> docs + chapter reference ?
-
-Look at link above. Look at programming model chapter.
-
->  
->>>> +	xtime.tv_sec = mktime(2007, 1, 1, 0, 0, 0);
->>>> +	xtime.tv_nsec = 0;
->>>> +	set_normalized_timespec(&wall_to_monotonic,
->>>> +				-xtime.tv_sec, -xtime.tv_nsec);
->>>   Yuck. What's that ? wall_to_monotonic is maintained by the generic
->>>   code.
->> I take this part of code from arch/blackfin/kernel/time-ts.c:217-219.
->> arch/x86/xen/time.c use it too. And arch/arm/kernel/time.c use similar
->> implemetation.
-> 
-> Right. All of them are similar nonsense. If we want a 1/1/2007 base
-> date if there is no RTC which tells us the real date/time then we
-> should do this in the generic code and not implement 10 variations all
-> over the place.
-
-I have no problem to start from 1970 and remove this part of code. Do nothing
-important to me.
-
-Thanks,
-Michal
-
-> 
->      tglx
-
-
--- 
-Michal Simek, Ing. (M.Eng)
-w: www.monstr.eu p: +42-0-721842854
+--n/aVsWSeQ4JHkrmm--
