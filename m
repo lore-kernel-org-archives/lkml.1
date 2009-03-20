@@ -1,123 +1,143 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753786AbZCTE0X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753487AbZCTEfP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753786AbZCTE0X (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Mar 2009 00:26:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751003AbZCTE0N
+	id S1753487AbZCTEfP (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Mar 2009 00:35:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750820AbZCTEe7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Mar 2009 00:26:13 -0400
-Received: from rv-out-0506.google.com ([209.85.198.224]:38835 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750820AbZCTE0M convert rfc822-to-8bit (ORCPT
+	Fri, 20 Mar 2009 00:34:59 -0400
+Received: from e28smtp05.in.ibm.com ([59.145.155.5]:49523 "EHLO
+	e28smtp05.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750703AbZCTEe6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Mar 2009 00:26:12 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=p/omwd47YXXvfowWB9viONFZpRjeH6HsiR78Zp+8SCM1PMgmrz2QTiEttO4VqkoG/O
-         fmGA4Y1F0py4hQEbzzBUO8ZT0JfzhqnT+4XOhgBRXrLszNlcCnZrIGIKQ2Zyct/iaTuu
-         sglM7ZpfQ9PbjYowG7wp960MAa+BaPVdu5ow8=
+	Fri, 20 Mar 2009 00:34:58 -0400
+Date: Fri, 20 Mar 2009 10:04:37 +0530
+From: Gautham R Shenoy <ego@in.ibm.com>
+To: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, Suresh Siddha <suresh.b.siddha@intel.com>,
+       Balbir Singh <balbir@in.ibm.com>
+Subject: Re: [PATCH 3 2/6] sched: Record the current active power savings
+	level
+Message-ID: <20090320043437.GA6603@in.ibm.com>
+Reply-To: ego@in.ibm.com
+References: <20090318092054.24787.18730.stgit@sofia.in.ibm.com> <20090318092227.24787.22917.stgit@sofia.in.ibm.com> <20090319163205.GK2990@dirshya.in.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <20090318183232.GA11594@kroah.com>
-References: <20090318183232.GA11594@kroah.com>
-Date: Fri, 20 Mar 2009 14:26:10 +1000
-Message-ID: <21d7e9970903192126r69687891madbce3d5ee77f6a0@mail.gmail.com>
-Subject: Re: The Linux Staging tree, what it is and is not.
-From: Dave Airlie <airlied@gmail.com>
-To: Greg KH <greg@kroah.com>
-Cc: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090319163205.GK2990@dirshya.in.ibm.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 19, 2009 at 4:32 AM, Greg KH <greg@kroah.com> wrote:
-> Hi all,
->
-> It's been many months since the Linux Kernel developers conference, where the
-> linux-staging tree was discussed and role changed.  It turns out that people
-> are still a bit confused as to what the staging tree is for, and how it works.
->
-> So here's a short summary, I'm not going into the history or background here,
-> that's a much longer writeup that I'd be glad to do if people are interested.
->
->
-> The Linux Staging Tree, what it is and is not.
->
-> What the Linux Staging tree is:
->  The Linux Staging tree (or just "staging" from now on) is used to hold
->  stand-alone[1] drivers and filesystems that are not ready to be merged into
->  the main portion of the Linux kernel tree at this point in time for various
->  technical reasons.  It is contained within the main Linux kernel tree so
->  that users can get access to the drivers much easier than before, and to
->  provide a common place for the development to happen, resolving the
->  "hundreds of different download sites" problem that most out-of-tree drivers
->  have had in the past.
->
-> What the Linux Staging tree is not:
->  The staging tree is not a place to dump code and run away, hoping that
->  someone else will to the cleanup work for you.  While there are developers
->  available and willing to do this kind of work, you need to get them to agree
->  to "babysit" the code in order for it to be accepted.
->
-> Location and Development:
->  The staging tree is now contained within the main Linux kernel source tree
->  at the location drivers/staging/.  All development happens within the main
->  kernel source tree, like any other subsystem within the kernel.  This means:
->        - the linux-next tree contains the latest version of the staging tree,
->          with bugfixes that are about to be merged into Linus's tree, as well
->          as the patches that are to be merged into the next major kernel
->          release.
->        - if you wish to do work on the staging tree, checkout the linux-next
->          tree and send patches based on that.
->
-> Runtime:
->  When code from the staging tree is loaded in the kernel, a warning message
->  will be printed to the kernel log saying:
->    MODULE_NAME: module is from the staging directory, the quality is unknown, you have been warned.
->  and the kernel will be tainted with the TAINT_CRAP flag.  This flag shows up
->  in any kernel oops that might be produced after the driver has been loaded.
->
->  Note, most kernel developers have expressed the warning that they will not
->  work on bugs for when this taint flag has happened, so if you run into a
->  kernel problem after loading such a module, please work to reproduce the
->  issue without a staging module loaded in order to be able to get help from
->  the community.
->
-> If anyone has any questions that this summary doesn't answer, please let me
-> know.
+On Thu, Mar 19, 2009 at 10:02:05PM +0530, Vaidyanathan Srinivasan wrote:
+> * Gautham R Shenoy <ego@in.ibm.com> [2009-03-18 14:52:28]:
+> 
+> > The current active power savings level of a system is defined as the
+> > maximum of the sched_mc_power_savings and the sched_smt_power_savings.
+> > 
+> > The decisions during power-aware loadbalancing, depend on this value.
+> > 
+> > Record this value in a read mostly global variable instead of having to
+> > compute it everytime.
+> > 
+> > Signed-off-by: Gautham R Shenoy <ego@in.ibm.com>
+> > Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> > ---
+> > 
+> >  include/linux/sched.h |    1 +
+> >  kernel/sched.c        |    8 ++++++--
+> >  kernel/sched_fair.c   |    2 +-
+> >  3 files changed, 8 insertions(+), 3 deletions(-)
+> > 
+> > diff --git a/include/linux/sched.h b/include/linux/sched.h
+> > index 37fecf7..7dc8aea 100644
+> > --- a/include/linux/sched.h
+> > +++ b/include/linux/sched.h
+> > @@ -793,6 +793,7 @@ enum powersavings_balance_level {
+> >  };
+> > 
+> >  extern int sched_mc_power_savings, sched_smt_power_savings;
+> 
+> Now we will need sched_mc_power_savings and sched_smt_power_savings
+> only until we rebuild the sched domains.  These can be static
+> variables and we can perhaps remove the extern for them? Better still
+> if we can capture this information elsewhere until sched domain is
+> built and SD_POWERSAVINGS_BALANCE flags are set so as to not
+> have a need for these global variables.
 
-What is the target audience for staging?
+Right now we need these variables outside sched.c only
+while rebuilding the sched_domains, as you rightly pointed out. So, yes
+these variables should be _read_only outside sched.c, but they are
+required nevertheless.
 
-It doesn't fill the out-of-tree modules void as far as I can tell.
+However, like we had discussed in one of the earlier posts,
+when we can have a single tunable that can capture in
+essence what these two variables seek to achieve, we can get rid of
+these variables. Till then I think we'll have to retain them.
 
-The model most users are stuck with are
-a) distro kernel
-b) hw not supported.
+> 
+> > +extern enum powersavings_balance_level active_power_savings_level;
+> >  enum sched_domain_level {
+> >  	SD_LV_NONE = 0,
+> > diff --git a/kernel/sched.c b/kernel/sched.c
+> > index 8e2558c..407ee03 100644
+> > --- a/kernel/sched.c
+> > +++ b/kernel/sched.c
+> > @@ -3398,7 +3398,7 @@ out_balanced:
+> > 
+> >  	if (this == group_leader && group_leader != group_min) {
+> >  		*imbalance = min_load_per_task;
+> > -		if (sched_mc_power_savings >= POWERSAVINGS_BALANCE_WAKEUP) {
+> > +		if (active_power_savings_level >= POWERSAVINGS_BALANCE_WAKEUP) {
+> >  			cpu_rq(this_cpu)->rd->sched_mc_preferred_wakeup_cpu =
+> >  				cpumask_first(sched_group_cpus(group_leader));
+> >  		}
+> > @@ -3683,7 +3683,7 @@ redo:
+> >  		    !test_sd_parent(sd, SD_POWERSAVINGS_BALANCE))
+> >  			return -1;
+> > 
+> > -		if (sched_mc_power_savings < POWERSAVINGS_BALANCE_WAKEUP)
+> > +		if (active_power_savings_level < POWERSAVINGS_BALANCE_WAKEUP)
+> >  			return -1;
+> > 
+> >  		if (sd->nr_balance_failed++ < 2)
+> > @@ -7206,6 +7206,8 @@ static void sched_domain_node_span(int node, struct cpumask *span)
+> >  #endif /* CONFIG_NUMA */
+> > 
+> >  int sched_smt_power_savings = 0, sched_mc_power_savings = 0;
+> > +/* Records the currently active power savings level */
+> > +enum powersavings_balance_level __read_mostly active_power_savings_level;
+> > 
+> >  /*
+> >   * The cpus mask in sched_group and sched_domain hangs off the end.
+> > @@ -8040,6 +8042,8 @@ static ssize_t sched_power_savings_store(const char *buf, size_t count, int smt)
+> >  		sched_smt_power_savings = level;
+> >  	else
+> >  		sched_mc_power_savings = level;
+> > +	active_power_savings_level = max(sched_smt_power_savings,
+> > +						sched_mc_power_savings);
+> > 
+> >  	arch_reinit_sched_domains();
+> > 
+> > diff --git a/kernel/sched_fair.c b/kernel/sched_fair.c
+> > index 0566f2a..a3583c6 100644
+> > --- a/kernel/sched_fair.c
+> > +++ b/kernel/sched_fair.c
+> > @@ -1054,7 +1054,7 @@ static int wake_idle(int cpu, struct task_struct *p)
+> >  	chosen_wakeup_cpu =
+> >  		cpu_rq(this_cpu)->rd->sched_mc_preferred_wakeup_cpu;
+> > 
+> > -	if (sched_mc_power_savings >= POWERSAVINGS_BALANCE_WAKEUP &&
+> > +	if (active_power_savings_level >= POWERSAVINGS_BALANCE_WAKEUP &&
+> >  		idle_cpu(cpu) && idle_cpu(this_cpu) &&
+> >  		p->mm && !(p->flags & PF_KTHREAD) &&
+> >  		cpu_isset(chosen_wakeup_cpu, p->cpus_allowed))
+> > 
+> 
+> 
+> Acked-by: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
 
-Distro kernel could be any revision from 2.6.15 or something crazy up until now.
-
-Generally you can pull the out of tree modules zip file or repo, build
-it against
-the kernel you have installed and know works with all your other hw
-and your nvidia
-binary driver, and the out of tree people have wrapped all the API changes so
-that you don't have to do much in theory for it to just build and
-install on your
-kernel.
-
-Staging doesn't fulfill this role from my POV:
-a) what sane distro will enable staging drivers? do they care about their users?
-b) if your distro doesn't enable staging drivers you now have two options:
-1. distro kernel rebuild with staging drivers enabled if new enough
-distro kernel
-2. kernel.org kernel build with staging drivers enabled.
-
-For a normal user who just wants his hw to work, these options are possibly
-most unappealing. They still want do just download something from out-of-tree
-which does all the nice API break wrapping for them and is 1MB instead of 300MB.
-
-So hence my target audience question.
-
-Dave.
+-- 
+Thanks and Regards
+gautham
