@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763293AbZCTX1w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763270AbZCTX1g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763293AbZCTX1w (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Mar 2009 19:27:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762930AbZCTXYX
+	id S1763270AbZCTX1g (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Mar 2009 19:27:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762923AbZCTXYW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Mar 2009 19:24:23 -0400
-Received: from kroah.org ([198.145.64.141]:48503 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1762920AbZCTXYW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 20 Mar 2009 19:24:22 -0400
+Received: from kroah.org ([198.145.64.141]:48487 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1762929AbZCTXYV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Mar 2009 19:24:21 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 20 15:29:23 2009
-Message-Id: <20090320222923.632902504@mini.kroah.org>
+Message-Id: <20090320222923.469852861@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 20 Mar 2009 15:28:15 -0700
+Date: Fri, 20 Mar 2009 15:28:14 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,11 +25,10 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Jan Beulich <jbeulich@novell.com>,
-       Takashi Iwai <tiwai@suse.de>
-Subject: [patch 05/43] ALSA: Fix vunmap and free order in snd_free_sgbuf_pages()
+       alan@lxorguk.ukuu.org.uk, Martin Schwidefsky <schwidefsky@de.ibm.com>
+Subject: [patch 04/43] S390: __div64_31 broken for CONFIG_MARCH_G5
 References: <20090320222810.386844059@mini.kroah.org>
-Content-Disposition: inline; filename=alsa-fix-vunmap-and-free-order-in-snd_free_sgbuf_pages.patch
+Content-Disposition: inline; filename=s390-__div64_31-broken-for-config_march_g5.patch
 In-Reply-To: <20090320232116.GA3375@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -39,46 +38,36 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Takashi Iwai <tiwai@suse.de>
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
 
-commit 6af845e4eb36fb91b322aaf77ec1cab2220a48ad upstream.
+commit 4fa81ed27781a12f6303b9263056635ae74e3e21 upstream.
 
-In snd_free_sgbuf_pags(), vunmap() is called after releasing the SG
-pages, and it causes errors on Xen as Xen manages the pages
-differently.  Although no significant errors have been reported on
-the actual hardware, this order should be fixed other way round,
-first vunmap() then free pages.
+The implementation of __div64_31 for G5 machines is broken. The comments
+in __div64_31 are correct, only the code does not do what the comments
+say. The part "If the remainder has overflown subtract base and increase
+the quotient" is only partially realized, the base is subtracted correctly
+but the quotient is only increased if the dividend had the last bit set.
+Using the correct instruction fixes the problem.
 
-Cc: Jan Beulich <jbeulich@novell.com>
-Signed-off-by: Takashi Iwai <tiwai@suse.de>
+Reported-by: Frans Pop <elendil@planet.nl>
+Tested-by: Frans Pop <elendil@planet.nl>
+Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- sound/core/sgbuf.c |    7 ++++---
- 1 file changed, 4 insertions(+), 3 deletions(-)
+ arch/s390/lib/div64.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/sound/core/sgbuf.c
-+++ b/sound/core/sgbuf.c
-@@ -38,6 +38,10 @@ int snd_free_sgbuf_pages(struct snd_dma_
- 	if (! sgbuf)
- 		return -EINVAL;
- 
-+	if (dmab->area)
-+		vunmap(dmab->area);
-+	dmab->area = NULL;
-+
- 	tmpb.dev.type = SNDRV_DMA_TYPE_DEV;
- 	tmpb.dev.dev = sgbuf->dev;
- 	for (i = 0; i < sgbuf->pages; i++) {
-@@ -48,9 +52,6 @@ int snd_free_sgbuf_pages(struct snd_dma_
- 		tmpb.bytes = (sgbuf->table[i].addr & ~PAGE_MASK) << PAGE_SHIFT;
- 		snd_dma_free_pages(&tmpb);
- 	}
--	if (dmab->area)
--		vunmap(dmab->area);
--	dmab->area = NULL;
- 
- 	kfree(sgbuf->table);
- 	kfree(sgbuf->page_table);
+--- a/arch/s390/lib/div64.c
++++ b/arch/s390/lib/div64.c
+@@ -61,7 +61,7 @@ static uint32_t __div64_31(uint64_t *n, 
+ 		"	clr	%0,%3\n"
+ 		"	jl	0f\n"
+ 		"	slr	%0,%3\n"
+-		"	alr	%1,%2\n"
++		"	ahi	%1,1\n"
+ 		"0:\n"
+ 		: "+d" (reg2), "+d" (reg3), "=d" (tmp)
+ 		: "d" (base), "2" (1UL) : "cc" );
 
 
