@@ -1,40 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758893AbZCTCz2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755225AbZCTDED@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758893AbZCTCz2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Mar 2009 22:55:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752565AbZCTCzO
+	id S1755225AbZCTDED (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Mar 2009 23:04:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751882AbZCTDDw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Mar 2009 22:55:14 -0400
-Received: from vsmtp04.dti.ne.jp ([202.216.231.139]:62047 "EHLO
-	vsmtp04.dti.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751032AbZCTCzO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Mar 2009 22:55:14 -0400
-From: hooanon05@yahoo.co.jp
-Subject: Re: [RFC Aufs2 #3 2/2] split 'xino' entry under sysfs 
-To: Greg KH <greg@kroah.com>
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-In-Reply-To: <20090320024249.GA19989@kroah.com>
-References: <1237439565-25039-1-git-send-email-hooanon05@yahoo.co.jp> <1237439565-25039-3-git-send-email-hooanon05@yahoo.co.jp> <20090320004539.GF18781@kroah.com> <3934.1237515949@jrobl> <20090320024249.GA19989@kroah.com>
-Date: Fri, 20 Mar 2009 11:55:09 +0900
-Message-ID: <4443.1237517709@jrobl>
+	Thu, 19 Mar 2009 23:03:52 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:60968 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750933AbZCTDDv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Mar 2009 23:03:51 -0400
+Message-ID: <49C3078F.5090202@redhat.com>
+Date: Thu, 19 Mar 2009 23:03:43 -0400
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+MIME-Version: 1.0
+To: Frederic Weisbecker <fweisbec@gmail.com>
+CC: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       systemtap-ml <systemtap@sources.redhat.com>
+Subject: Re: [RFC][PATCH -tip 1/9] tracing: kprobe-tracer plugin core
+References: <49C2B4AA.9050506@redhat.com> <20090320003533.GB6895@nowhere>
+In-Reply-To: <20090320003533.GB6895@nowhere>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Frederic Weisbecker wrote:
+> On Thu, Mar 19, 2009 at 05:10:02PM -0400, Masami Hiramatsu wrote:
+[...]
+>> +/* event recording functions */
+>> +static void kprobe_trace_record(unsigned long ip, struct trace_probe *tp,
+>> +				struct pt_regs *regs)
+>> +{
+>> +	__trace_printk(ip, "%s%s%+ld\n",
+>> +			probe_is_return(tp) ? "<-" : "@",
+>> +			probe_symbol(tp), probe_offset(tp));
+> 
+> 
+> Ah, it means we should implement a sort of trace_printk where
+> we can put a custom ip.
 
-Greg KH:
-> Really?  Try leaving them out for now and see if anyone notices :)
+Yeah, trace_printk() always shows this function address, instead of
+probing address.
 
-Ok, then I will move them to debugfs.
-Does the rule "one value per file" applied to debugfs too?
+> Anyway I don't recommend you to use __trace_printk() because
+> trace_printk() wrap it by doing some choices of implementation.
+> 
+> If the format is a builtin string like here, it will choose a binary
+> insertion to the ring buffer (the format is not copied but only its address,
+> and the arguments are inserted by their binary values). It is more lightweight
+> and fast.
+> 
+> If you are using such builtin format, use __trace_bprintk instead.
+
+Sure, I'll try to use it.
+
+Thanks!
 
 
-> Do you really need to print these paths?  And are they going to bigger
-> than PATH_MAX?
+-- 
+Masami Hiramatsu
 
-Printing is necessary, and PATH_MAX will be sufficient.
-I just wanted to forbid over-running when the path is incredibly longer.
+Software Engineer
+Hitachi Computer Products (America) Inc.
+Software Solutions Division
 
+e-mail: mhiramat@redhat.com
 
-J. R. Okajima
