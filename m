@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756184AbZCTXhE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764123AbZCTXhf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756184AbZCTXhE (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Mar 2009 19:37:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762969AbZCTXYu
+	id S1764123AbZCTXhf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Mar 2009 19:37:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763016AbZCTXYu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Fri, 20 Mar 2009 19:24:50 -0400
-Received: from kroah.org ([198.145.64.141]:48756 "EHLO coco.kroah.org"
+Received: from kroah.org ([198.145.64.141]:48764 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1763025AbZCTXYs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Mar 2009 19:24:48 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 20 15:29:27 2009
-Message-Id: <20090320222927.797760877@mini.kroah.org>
+	id S1762564AbZCTXYt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Mar 2009 19:24:49 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 20 15:29:28 2009
+Message-Id: <20090320222927.951096921@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 20 Mar 2009 15:28:41 -0700
+Date: Fri, 20 Mar 2009 15:28:42 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -26,9 +26,9 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
        alan@lxorguk.ukuu.org.uk
-Subject: [patch 31/43] USB: serial: new cp2101 device id
+Subject: [patch 32/43] USB: usbtmc: fix stupid bug in open()
 References: <20090320222810.386844059@mini.kroah.org>
-Content-Disposition: inline; filename=usb-serial-new-cp2101-device-id.patch
+Content-Disposition: inline; filename=usb-usbtmc-fix-stupid-bug-in-open.patch
 In-Reply-To: <20090320232116.GA3375@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -38,26 +38,38 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Robert M. Kenney <rmk@unh.edu>
+From: Greg Kroah-Hartman <gregkh@suse.de>
 
-commit c6535668798b0644e1af5934c2aec0e912280449 upstream.
+commit 5b10916ea0a62920204517e1c4ce14560b4f96ab upstream.
 
-From: Robert M. Kenney <rmk@unh.edu>
+open() will never succeed, as we always return -ENODEV.  Fix this
+obvious bug.
+
+Thanks to Jouni Ryno for reporting it.
+
+Reported-by: Jouni Ryno <Jouni.Ryno@fmi.fi>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/usb/serial/cp2101.c |    1 +
- 1 file changed, 1 insertion(+)
+ drivers/usb/class/usbtmc.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
---- a/drivers/usb/serial/cp2101.c
-+++ b/drivers/usb/serial/cp2101.c
-@@ -79,6 +79,7 @@ static struct usb_device_id id_table [] 
- 	{ USB_DEVICE(0x10C4, 0x814A) }, /* West Mountain Radio RIGblaster P&P */
- 	{ USB_DEVICE(0x10C4, 0x814B) }, /* West Mountain Radio RIGtalk */
- 	{ USB_DEVICE(0x10C4, 0x815E) }, /* Helicomm IP-Link 1220-DVM */
-+	{ USB_DEVICE(0x10C4, 0x819F) }, /* MJS USB Toslink Switcher */
- 	{ USB_DEVICE(0x10C4, 0x81A6) }, /* ThinkOptics WavIt */
- 	{ USB_DEVICE(0x10C4, 0x81AC) }, /* MSD Dash Hawk */
- 	{ USB_DEVICE(0x10C4, 0x81C8) }, /* Lipowsky Industrie Elektronik GmbH, Baby-JTAG */
+--- a/drivers/usb/class/usbtmc.c
++++ b/drivers/usb/class/usbtmc.c
+@@ -105,12 +105,13 @@ static int usbtmc_open(struct inode *ino
+ {
+ 	struct usb_interface *intf;
+ 	struct usbtmc_device_data *data;
+-	int retval = -ENODEV;
++	int retval = 0;
+ 
+ 	intf = usb_find_interface(&usbtmc_driver, iminor(inode));
+ 	if (!intf) {
+ 		printk(KERN_ERR KBUILD_MODNAME
+ 		       ": can not find device for minor %d", iminor(inode));
++		retval = -ENODEV;
+ 		goto exit;
+ 	}
+ 
 
 
