@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762259AbZCTXTf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762303AbZCTXTu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762259AbZCTXTf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Mar 2009 19:19:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756668AbZCTXNu
+	id S1762303AbZCTXTu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Mar 2009 19:19:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760022AbZCTXNz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Mar 2009 19:13:50 -0400
-Received: from kroah.org ([198.145.64.141]:53165 "EHLO coco.kroah.org"
+	Fri, 20 Mar 2009 19:13:55 -0400
+Received: from kroah.org ([198.145.64.141]:53175 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1759401AbZCTXNt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Mar 2009 19:13:49 -0400
+	id S1755750AbZCTXNu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Mar 2009 19:13:50 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 20 15:27:11 2009
-Message-Id: <20090320222711.617501597@mini.kroah.org>
+Message-Id: <20090320222711.812245959@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 20 Mar 2009 15:26:28 -0700
+Date: Fri, 20 Mar 2009 15:26:29 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,13 +25,11 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Mark Jenks <mjenks1968@gmail.com>,
-       Andy Walls <awalls@radix.net>,
-       Mauro Carvalho Chehab <mchehab@redhat.com>,
-       Jarod Wilson <jarod@redhat.com>
-Subject: [patch 17/32] V4L/DVB (10218): cx23885: Fix Oops for mixed install of analog and digital only cards
+       alan@lxorguk.ukuu.org.uk, Ingo Molnar <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@linux.intel.com>, Joe Korty <joe.korty@ccur.com>
+Subject: [patch 18/32] Fix misreporting of #cores as #hyperthreads for Q9550
 References: <20090320222611.872315885@mini.kroah.org>
-Content-Disposition: inline; filename=v4l-dvb-cx23885-fix-oops-for-mixed-install-of-analog-and-digital-only-cards.patch
+Content-Disposition: inline; filename=fix-misreporting-of-cores-as-hyperthreads-for-q9550.patch
 In-Reply-To: <20090320231037.GA2732@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -41,69 +39,122 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Andy Walls <awalls@radix.net>
+From: Joe Korty <joe.korty@ccur.com>
 
-commit cd8f894eacf13996d920fdd2aef1afc55156b191 upstream.
+Fix misreporting of #cores for the Intel Quad Core Q9550.
 
-Analog support for HVR-1250 has not been completed, but does exist for
-the HVR-1800.
+For the Q9550, in x86_64 mode, /proc/cpuinfo mistakenly
+reports the #cores present as the #hyperthreads present.
+i386 mode was not examined but is assumed to have the
+same problem.
 
-Since both cards use the same driver, it tries to create the analog
-dev for both devices, which is not possible.
+A backport of the following three 2.6.29-rc1 patches
+fixes the problem:
+  066941bd4eeb159307a5d7d795100d0887c00442:
+    [PATCH] x86: unmask CPUID levels on Intel CPUs
+  99fb4d349db7e7dacb2099c5cc320a9e2d31c1ef:
+    [PATCH] x86: unmask CPUID levels on Intel CPUs, fix
+  bdf21a49bab28f0d9613e8d8724ef9c9168b61b9:
+    [PATCH] x86: add MSR_IA32_MISC_ENABLE bits to <asm/msr-index.h>
 
-This causes a NULL error to show up in video_open and mpeg_open.
+>From the first patch: "If the CPUID limit bit in
+MSR_IA32_MISC_ENABLE is set, clear it to make all CPUID
+information available.  This is required for some features
+to work, in particular XSAVE."
 
--Mark
-
-Iterations through the cx23885_devlist must check for NULL
-pointers as some supported devices only have DVB support at the moment.
-Mark Jenks encoutered an Oops in a system with both an HVR-1250 and HVR-1800
-installed.
-
--Andy
-
-Reported-by: Mark Jenks <mjenks1968@gmail.com>
-Tested-by: Mark Jenks <mjenks1968@gmail.com>
-Signed-off-by: Mark Jenks <mjenks1968@gmail.com>
-Signed-off-by: Andy Walls <awalls@radix.net>
-Signed-off-by: Mauro Carvalho Chehab <mchehab@redhat.com>
-Signed-off-by: Jarod Wilson <jarod@redhat.com>
+Originally-Developed-by: H. Peter Anvin <hpa@linux.intel.com>
+Backported-by: Joe Korty <joe.korty@ccur.com>
+Cc: Ingo Molnar <mingo@elte.hu>
+Signed-off-by: Joe Korty <joe.korty@ccur.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/media/video/cx23885/cx23885-417.c   |    3 ++-
- drivers/media/video/cx23885/cx23885-video.c |    5 +++--
- 2 files changed, 5 insertions(+), 3 deletions(-)
+ arch/x86/kernel/cpu/intel.c    |   13 +++++++++++++
+ arch/x86/kernel/cpu/intel_64.c |   13 +++++++++++++
+ include/asm-x86/msr-index.h    |   29 +++++++++++++++++++++++++++++
+ 3 files changed, 55 insertions(+)
 
---- a/drivers/media/video/cx23885/cx23885-417.c
-+++ b/drivers/media/video/cx23885/cx23885-417.c
-@@ -1585,7 +1585,8 @@ static int mpeg_open(struct inode *inode
+--- a/arch/x86/kernel/cpu/intel_64.c
++++ b/arch/x86/kernel/cpu/intel_64.c
+@@ -9,6 +9,19 @@
  
- 	list_for_each(list, &cx23885_devlist) {
- 		h = list_entry(list, struct cx23885_dev, devlist);
--		if (h->v4l_device->minor == minor) {
-+		if (h->v4l_device &&
-+		    h->v4l_device->minor == minor) {
- 			dev = h;
- 			break;
- 		}
---- a/drivers/media/video/cx23885/cx23885-video.c
-+++ b/drivers/media/video/cx23885/cx23885-video.c
-@@ -733,12 +733,13 @@ static int video_open(struct inode *inod
+ static void __cpuinit early_init_intel(struct cpuinfo_x86 *c)
+ {
++	/* Unmask CPUID levels if masked: */
++	if (c->x86 == 6 && c->x86_model >= 15) {
++		u64 misc_enable;
++
++		rdmsrl(MSR_IA32_MISC_ENABLE, misc_enable);
++
++		if (misc_enable & MSR_IA32_MISC_ENABLE_LIMIT_CPUID) {
++			misc_enable &= ~MSR_IA32_MISC_ENABLE_LIMIT_CPUID;
++			wrmsrl(MSR_IA32_MISC_ENABLE, misc_enable);
++			c->cpuid_level = cpuid_eax(0);
++		}
++	}
++
+ 	if ((c->x86 == 0xf && c->x86_model >= 0x03) ||
+ 	    (c->x86 == 0x6 && c->x86_model >= 0x0e))
+ 		set_cpu_cap(c, X86_FEATURE_CONSTANT_TSC);
+--- a/arch/x86/kernel/cpu/intel.c
++++ b/arch/x86/kernel/cpu/intel.c
+@@ -32,6 +32,19 @@ struct movsl_mask movsl_mask __read_most
  
- 	list_for_each(list, &cx23885_devlist) {
- 		h = list_entry(list, struct cx23885_dev, devlist);
--		if (h->video_dev->minor == minor) {
-+		if (h->video_dev &&
-+		    h->video_dev->minor == minor) {
- 			dev  = h;
- 			type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
- 		}
- 		if (h->vbi_dev &&
--		   h->vbi_dev->minor == minor) {
-+		    h->vbi_dev->minor == minor) {
- 			dev  = h;
- 			type = V4L2_BUF_TYPE_VBI_CAPTURE;
- 		}
+ static void __cpuinit early_init_intel(struct cpuinfo_x86 *c)
+ {
++	/* Unmask CPUID levels if masked: */
++	if (c->x86 == 6 && c->x86_model >= 15) {
++		u64 misc_enable;
++
++		rdmsrl(MSR_IA32_MISC_ENABLE, misc_enable);
++
++		if (misc_enable & MSR_IA32_MISC_ENABLE_LIMIT_CPUID) {
++			misc_enable &= ~MSR_IA32_MISC_ENABLE_LIMIT_CPUID;
++			wrmsrl(MSR_IA32_MISC_ENABLE, misc_enable);
++			c->cpuid_level = cpuid_eax(0);
++		}
++	}
++
+ 	/* Netburst reports 64 bytes clflush size, but does IO in 128 bytes */
+ 	if (c->x86 == 15 && c->x86_cache_alignment == 64)
+ 		c->x86_cache_alignment = 128;
+--- a/include/asm-x86/msr-index.h
++++ b/include/asm-x86/msr-index.h
+@@ -196,6 +196,35 @@
+ #define MSR_IA32_THERM_STATUS		0x0000019c
+ #define MSR_IA32_MISC_ENABLE		0x000001a0
+ 
++/* MISC_ENABLE bits: architectural */
++#define MSR_IA32_MISC_ENABLE_FAST_STRING	(1ULL << 0)
++#define MSR_IA32_MISC_ENABLE_TCC		(1ULL << 1)
++#define MSR_IA32_MISC_ENABLE_EMON		(1ULL << 7)
++#define MSR_IA32_MISC_ENABLE_BTS_UNAVAIL	(1ULL << 11)
++#define MSR_IA32_MISC_ENABLE_PEBS_UNAVAIL	(1ULL << 12)
++#define MSR_IA32_MISC_ENABLE_ENHANCED_SPEEDSTEP	(1ULL << 16)
++#define MSR_IA32_MISC_ENABLE_MWAIT		(1ULL << 18)
++#define MSR_IA32_MISC_ENABLE_LIMIT_CPUID	(1ULL << 22)
++#define MSR_IA32_MISC_ENABLE_XTPR_DISABLE	(1ULL << 23)
++#define MSR_IA32_MISC_ENABLE_XD_DISABLE		(1ULL << 34)
++
++/* MISC_ENABLE bits: model-specific, meaning may vary from core to core */
++#define MSR_IA32_MISC_ENABLE_X87_COMPAT		(1ULL << 2)
++#define MSR_IA32_MISC_ENABLE_TM1		(1ULL << 3)
++#define MSR_IA32_MISC_ENABLE_SPLIT_LOCK_DISABLE	(1ULL << 4)
++#define MSR_IA32_MISC_ENABLE_L3CACHE_DISABLE	(1ULL << 6)
++#define MSR_IA32_MISC_ENABLE_SUPPRESS_LOCK	(1ULL << 8)
++#define MSR_IA32_MISC_ENABLE_PREFETCH_DISABLE	(1ULL << 9)
++#define MSR_IA32_MISC_ENABLE_FERR		(1ULL << 10)
++#define MSR_IA32_MISC_ENABLE_FERR_MULTIPLEX	(1ULL << 10)
++#define MSR_IA32_MISC_ENABLE_TM2		(1ULL << 13)
++#define MSR_IA32_MISC_ENABLE_ADJ_PREF_DISABLE	(1ULL << 19)
++#define MSR_IA32_MISC_ENABLE_SPEEDSTEP_LOCK	(1ULL << 20)
++#define MSR_IA32_MISC_ENABLE_L1D_CONTEXT	(1ULL << 24)
++#define MSR_IA32_MISC_ENABLE_DCU_PREF_DISABLE	(1ULL << 37)
++#define MSR_IA32_MISC_ENABLE_TURBO_DISABLE	(1ULL << 38)
++#define MSR_IA32_MISC_ENABLE_IP_PREF_DISABLE	(1ULL << 39)
++
+ /* Intel Model 6 */
+ #define MSR_P6_EVNTSEL0			0x00000186
+ #define MSR_P6_EVNTSEL1			0x00000187
 
 
