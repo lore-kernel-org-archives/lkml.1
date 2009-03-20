@@ -1,38 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753898AbZCTHgw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753666AbZCTIDF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753898AbZCTHgw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Mar 2009 03:36:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753228AbZCTHgm
+	id S1753666AbZCTIDF (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Mar 2009 04:03:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752921AbZCTICq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Mar 2009 03:36:42 -0400
-Received: from smtp2.it.da.ut.ee ([193.40.5.67]:46129 "EHLO smtp2.it.da.ut.ee"
+	Fri, 20 Mar 2009 04:02:46 -0400
+Received: from hera.kernel.org ([140.211.167.34]:38483 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753098AbZCTHgm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Mar 2009 03:36:42 -0400
-Date: Fri, 20 Mar 2009 09:36:40 +0200 (EET)
-From: Meelis Roos <mroos@linux.ee>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-cc: Linux Kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: Lava dual parallel PCI card IRQ problem
-In-Reply-To: <Pine.SOC.4.64.0903191542500.26750@math.ut.ee>
-Message-ID: <Pine.SOC.4.64.0903200930290.15666@math.ut.ee>
-References: <20090318143921.22B5B13A4B0@koiott.tartu-labor>
- <Pine.LNX.4.64.0903191500520.4721@ondatra.tartu-labor>
- <20090319131002.4040b4dd@lxorguk.ukuu.org.uk> <Pine.SOC.4.64.0903191525001.26750@math.ut.ee>
- <Pine.SOC.4.64.0903191542500.26750@math.ut.ee>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	id S1752916AbZCTICo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Mar 2009 04:02:44 -0400
+Subject: Re: [git-pull -tip] x86: mpparse cleanup
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20090318161829.GC21331@elte.hu>
+References: <1237314836.3212.10.camel@localhost.localdomain>
+	 <1237380351.3042.0.camel@ht.satnam> <20090318141115.GA23034@elte.hu>
+	 <1237392355.12866.2.camel@ht.satnam>  <20090318161829.GC21331@elte.hu>
+Content-Type: text/plain
+Date: Fri, 20 Mar 2009 13:32:14 +0530
+Message-Id: <1237536134.2494.5.camel@ht.satnam>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Printer prints without the patch.
+On Wed, 2009-03-18 at 17:18 +0100, Ingo Molnar wrote:
+
+> Looks good - pulled, thanks Jaswinder!
 > 
-> The whole system hangs hard when trying to print with the patch applied. 
-> 100% repeatable, and with loglevel 9, nothing appears on the console.
+> Would you be interested in resurrecting the more mechanic cleanups 
+> you did as well, on top of this patch?
+> 
+> They are still valuable, we just have to keep them separate from a 
+> potential breakage-causing change like the above one, so that if a 
+> tester bisects to it, we have an as single-purpose and focused 
+> commit to look at as possible.
+> 
 
-Recompiled the kernels with most debug options turned on under kernel 
-hacking menu, still no messages.
+cleanup without code change: based on tip:x86/core or x86/cleanups
+or .. ?
 
--- 
-Meelis Roos (mroos@linux.ee)
+cleanup with code change: based on tip:x86/core or x86/cleanups or .. ?
+
+Thanks,
+--
+JSR
+
