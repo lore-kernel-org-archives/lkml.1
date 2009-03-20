@@ -1,73 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761204AbZCTTcq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760924AbZCTTdo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761204AbZCTTcq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Mar 2009 15:32:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752068AbZCTTch
+	id S1760924AbZCTTdo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Mar 2009 15:33:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755959AbZCTTdg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Mar 2009 15:32:37 -0400
-Received: from www.tglx.de ([62.245.132.106]:46521 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751101AbZCTTch (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Mar 2009 15:32:37 -0400
-Date: Fri, 20 Mar 2009 20:31:01 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Ingo Molnar <mingo@elte.hu>
-cc: Sam Ravnborg <sam@ravnborg.org>, LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH] kbuild: work around distcc/icecc madness
-In-Reply-To: <20090320185917.GB6224@elte.hu>
-Message-ID: <alpine.LFD.2.00.0903202010250.29264@localhost.localdomain>
-References: <alpine.LFD.2.00.0903192121300.29264@localhost.localdomain> <20090320092234.GA3792@elte.hu> <alpine.LFD.2.00.0903201127360.29264@localhost.localdomain> <20090320185917.GB6224@elte.hu>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Fri, 20 Mar 2009 15:33:36 -0400
+Received: from ti-out-0910.google.com ([209.85.142.188]:10740 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754312AbZCTTdf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Mar 2009 15:33:35 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=D+RCHESs5l6K+6Bay++3c3TW5bWD6mCHWXQusk7WvI0nUcLN8zz5m++ZlAI+23PmHQ
+         G243JF33nF7R8a+U74gbwkzWGqxPgSngRD3UFc2yvxNZ9jQZeOIHGplIrtNcRhWi6eeT
+         s65Gj03+SY+CEa3s7NkAf0HZ5Ps1oZMxmZxwE=
+Date: Fri, 20 Mar 2009 22:33:41 +0300
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Alan Bartlett <ajb.stxsl@googlemail.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86: fix IO APIC resource allocation error message
+Message-ID: <20090320193341.GG7453@localhost>
+References: <200903202012.41344.bzolnier@gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200903202012.41344.bzolnier@gmail.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 20 Mar 2009, Ingo Molnar wrote:
-> 
-> * Thomas Gleixner <tglx@linutronix.de> wrote:
-> 
-> > On Fri, 20 Mar 2009, Ingo Molnar wrote:
-> > > > ---
-> > > >  scripts/Kbuild.include |    5 +++--
-> > > >  1 file changed, 3 insertions(+), 2 deletions(-)
-> > > 
-> > > Doesnt fully work:
-> > > 
-> > > arch/x86/kernel/entry_32.S:346: Error: unknown pseudo-op: `.cfi_signal_frame'
-> > > arch/x86/kernel/entry_32.S:394: Error: unknown pseudo-op: `.cfi_signal_frame'
-> > > arch/x86/kernel/entry_32.S:519: Error: unknown pseudo-op: `.cfi_signal_frame'
-> > > arch/x86/kernel/entry_32.S:614: Error: unknown pseudo-op: `.cfi_signal_frame'
-> > > arch/x86/kernel/entry_32.S:685: Error: unknown pseudo-op: `.cfi_signal_frame'
-> > > arch/x86/kernel/entry_32.S:754: Error: unknown pseudo-op: `.cfi_signal_frame'
-> > > 
-> > > config attached. Distcc driven build.
-> > 
-> > Same config works fine here. Do you have different 
-> > compilers/binutils on your distcc cluster ? I tripped over this 
-> > distcc feature in the past, that's why I have switched to iceccc.
-> 
-> the distcc binutils is different from the host build environment 
-> binutils and compiler. This always worked fine - can we preserve it?
+[Bartlomiej Zolnierkiewicz - Fri, Mar 20, 2009 at 08:12:41PM +0100]
+| From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+| Subject: [PATCH] x86: fix IO APIC resource allocation error message
+| 
+| Impact: fix incorrect error message
+| 
+| - IO APIC resource allocation error message contains one too many "be".
+| 
+| - Print the error message iff there are IO APICs in the system.
+| 
+| Cc: Alan Bartlett <ajb.stxsl@googlemail.com>
+| Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+| ---
+| I've seen this error message for some time on my x86-32 laptop...
+| 
+|  arch/x86/kernel/io_apic.c |    4 ++--
+|  1 file changed, 2 insertions(+), 2 deletions(-)
+| 
+| Index: b/arch/x86/kernel/io_apic.c
+| ===================================================================
+| --- a/arch/x86/kernel/io_apic.c
+| +++ b/arch/x86/kernel/io_apic.c
+| @@ -4150,9 +4150,9 @@ static int __init ioapic_insert_resource
+|  	int i;
+|  	struct resource *r = ioapic_resources;
+|  
+| -	if (!r) {
+| +	if (!r && nr_ioapics > 0) {
+|  		printk(KERN_ERR
+| -		       "IO APIC resources could be not be allocated.\n");
+| +		       "IO APIC resources couldn't be allocated.\n");
+|  		return -1;
+|  	}
+|  
+| 
 
-It depends what you define as "worked fine".
+Hi Bartlomiej,
 
-The point is that the CFI checks are done at compile time by checking
-binutils. If you have two versions - one with and one without CFI
-support - then it's just a question of luck which one is checked. So
-in your case it might have worked because both distcc and your local
-gcc agreed that CFI is not enabled, but the reason why the distcc
-check for CFI fails is because it fails to handle the stdin input and
-not because it does not support CFI.
+until I miss something I guess you could even make it simplier :)
+Something like
 
-So with my patch distcc gives you the correct answer, but now you trip
-over the local binutils lack of CFI support.
+---
+static int __init ioapic_insert_resources(void)
+{
+	struct resource *r = ioapic_resources;
+	int err;
+	int i;
 
-I don't think that such a setup is something we need to preserve.
+	for (i = 0; i < nr_ioapics; i++) {
+		err = insert_resource(&iomem_resource, r);
+		if (err) {
+			pr_err("IO APIC resources could not be allocated.\n");
+			return err;
+		}
+		r++;
+	}
 
-Thanks,
+	return 0;
+}
+---
 
-	tglx
+Now we would have 'err' here and get out only on conflicting resource.
+Did I miss something?
+
+	- Cyrill -
