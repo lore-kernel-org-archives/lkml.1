@@ -1,220 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755479AbZCTWSQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756303AbZCTWV2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755479AbZCTWSQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Mar 2009 18:18:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752685AbZCTWR6
+	id S1756303AbZCTWV2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Mar 2009 18:21:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752866AbZCTWVS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Mar 2009 18:17:58 -0400
-Received: from kroah.org ([198.145.64.141]:42461 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752196AbZCTWR5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Mar 2009 18:17:57 -0400
-Date: Fri, 20 Mar 2009 15:17:50 -0700
-From: Greg KH <greg@kroah.com>
-To: Randy Dunlap <randy.dunlap@oracle.com>, Jan Kara <jack@suse.cz>,
-       "Theodore Ts'o" <tytso@mit.edu>
-Cc: tytso@mit.edu, Greg KH <gregkh@suse.de>, mfasheh@suse.com,
-       Andrew Morton <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       stable@kernel.org, Dan Carpenter <error27@gmail.com>, mfasheh@suse.de,
-       Jan Kara <jack@suse.cz>, linux-ext4@vger.kernel.org,
-       ocfs2-devel@oss.oracle.com
-Subject: Re: [stable] Linux 2.6.28.8 (ocfs2 build failure)
-Message-ID: <20090320221750.GA32416@kroah.com>
-References: <20090317012028.GA32410@kroah.com> <49C00787.6060401@oracle.com> <20090317205518.GA4442@kroah.com> <49C00FE9.9040407@oracle.com>
+	Fri, 20 Mar 2009 18:21:18 -0400
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:43004 "EHLO e1.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751704AbZCTWVQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Mar 2009 18:21:16 -0400
+Date: Fri, 20 Mar 2009 15:21:14 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: dipankar@in.ibm.com, linux-input@vger.kernel.org,
+       dmitry.torokhov@gmail.com, linux-kernel@vger.kernel.org
+Subject: Re: Question about usage of RCU in the input layer
+Message-ID: <20090320222114.GA17480@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20090318215812.15496a86@infradead.org> <20090319085628.GA6167@in.ibm.com> <20090319071841.63334eff@infradead.org> <20090320020750.GA6807@linux.vnet.ibm.com> <20090319202032.4c971d92@infradead.org> <20090320044541.GE6807@linux.vnet.ibm.com> <20090320065058.65d01771@infradead.org> <20090320143104.GA6698@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <49C00FE9.9040407@oracle.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <20090320143104.GA6698@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 17, 2009 at 02:02:33PM -0700, Randy Dunlap wrote:
-> Greg KH wrote:
-> > On Tue, Mar 17, 2009 at 01:26:47PM -0700, Randy Dunlap wrote:
-> >> Enable all possible OCFS2 kconfig options:
-> >>
-> >>
-> >>
-> >> In file included from fs/ocfs2/alloc.c:42:
-> >> fs/ocfs2/journal.h: In function 'ocfs2_begin_ordered_truncate':
-> >> fs/ocfs2/journal.h:451: warning: passing argument 1 of 'jbd2_journal_begin_ordered_truncate' from incompatible pointer type
-> >> fs/ocfs2/journal.h:451: warning: passing argument 2 of 'jbd2_journal_begin_ordered_truncate' makes integer from pointer without a cast
-> >> fs/ocfs2/journal.h:451: error: too many arguments to function 'jbd2_journal_begin_ordered_truncate'
-> >>   CC [M]  fs/ocfs2/buffer_head_io.o
-> >> In file included from fs/ocfs2/aops.c:42:
-> >> fs/ocfs2/journal.h: In function 'ocfs2_begin_ordered_truncate':
-> >> fs/ocfs2/journal.h:451: warning: passing argument 1 of 'jbd2_journal_begin_ordered_truncate' from incompatible pointer type
-> >> fs/ocfs2/journal.h:451: warning: passing argument 2 of 'jbd2_journal_begin_ordered_truncate' makes integer from pointer without a cast
-> >> fs/ocfs2/journal.h:451: error: too many arguments to function 'jbd2_journal_begin_ordered_truncate'
-> >> make[2]: *** [fs/ocfs2/aops.o] Error 1
-> >> make[2]: *** Waiting for unfinished jobs....
-> >> In file included from fs/ocfs2/buffer_head_io.c:37:
-> >> fs/ocfs2/journal.h: In function 'ocfs2_begin_ordered_truncate':
-> >> fs/ocfs2/journal.h:451: warning: passing argument 1 of 'jbd2_journal_begin_ordered_truncate' from incompatible pointer type
-> >> fs/ocfs2/journal.h:451: warning: passing argument 2 of 'jbd2_journal_begin_ordered_truncate' makes integer from pointer without a cast
-> >> fs/ocfs2/journal.h:451: error: too many arguments to function 'jbd2_journal_begin_ordered_truncate'
-> >> make[2]: *** [fs/ocfs2/buffer_head_io.o] Error 1
-> >> make[2]: *** [fs/ocfs2/alloc.o] Error 1
+On Fri, Mar 20, 2009 at 07:31:04AM -0700, Paul E. McKenney wrote:
+> On Fri, Mar 20, 2009 at 06:50:58AM -0700, Arjan van de Ven wrote:
+> > On Thu, 19 Mar 2009 21:45:41 -0700
+> > "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
 > > 
-> > Did this show up in 2.6.28.7?
+> > > > single CPU is soooo last decade ;-)
+> > > > But seriously I no longer have systems that aren't dual core or SMT
+> > > > in some form... 
+> > > 
+> > > OK, I will ask the stupid question...
+> > > 
+> > > Why not delay bringing up the non-boot CPUs until later in boot?
+> > 
+> > that'd be throwing out the baby with the bathwater... I'm trying to use 
+> > the other cpus to do some of the boot work (so that the total goes
+> > faster); not using the other cpus would be counter productive to that.
+> > (As is just sitting in synchronize_rcu() when the other cpu is
+> > working.. hence this discussion ;-)
 > 
-> no.
+> OK, so you are definitely running multiple CPUs when the offending
+> synchronize_rcu() executes, then?
 > 
-> > Odds are it's one of the jbd2 patches from Ted.  Ted, any ideas?
+> If so, here are some follow-on questions:
+> 
+> 1.	How many synchronize_rcu() calls are you seeing on the
+> 	critical boot path and what value of HZ are you running?
+> 
+> 	If each synchronize_rcu() is taking (say) tens of jiffies, then,
+> 	as Peter Zijlstra notes earlier in this thread, we need to focus
+> 	on what is taking too long to get through its RCU read-side
+> 	critical sections.  Otherwise, if each synchronize_rcu() is
+> 	in the 3-5 jiffy range, I may finally be forced to create an
+> 	expedited version of the synchronize_rcu() API.
+> 
+> 2.	If expediting is required, then the code calling synchronize_rcu()
+> 	might or might not have any idea whether or not expediting is
+> 	appropriate.  If it does not, then we would need some sort of way
+> 	to tell synchronize_rcu() that it should act more aggressively,
+> 	perhaps /proc flag or kernel global variable indicating that
+> 	boot is in progress.
+> 
+> 	No, we do not want to make synchronize_rcu() aggressive all the
+> 	time, as this would harm performance and energy efficiency in
+> 	the normal runtime situation.
+> 
+> 	So, if it turns out that synchronize_rcu()'s caller does not
+> 	know whether or not expediting is appropriate, can the boot path
+> 	manipulate such a flag or variable?
+> 
+> 3.	Which RCU implementation are you using?  CONFIG_CLASSIC_RCU,
+> 	CONFIG_TREE_RCU, or CONFIG_PREEMPT_RCU?
 
-I tracked this down to commit 54dc90 in the 2.6.28.8 tree.
+And one other thing...  CONFIG_CLASSIC_RCU's synchronize_rcu() normally
+runs faster than CONFIG_PREEMPT_RCU, if that helps.
 
-I've included it below.  Jan and Ted, any ideas on how to fix this
-error?
-
-Should I just revert this from the 2.6.28 tree?  Or does no one really
-care about ocfs2 in the stable tree?
-
-thanks,
-
-greg k-h
-
-From: Jan Kara <jack@suse.cz>
-Date: Tue, 24 Feb 2009 12:14:43 -0500
-Subject: jbd2: Avoid possible NULL dereference in jbd2_journal_begin_ordered_truncate()
-To: stable@kernel.org
-Cc: "Theodore Ts'o" <tytso@mit.edu>, Dan Carpenter <error27@gmail.com>, mfasheh@suse.de, Jan Kara <jack@suse.cz>, linux-ext4@vger.kernel.org, ocfs2-devel@oss.oracle.com
-Message-ID: <1235495688-8044-3-git-send-email-tytso@mit.edu>
-
-
-From: Jan Kara <jack@suse.cz>
-
-(cherry picked from commit 7f5aa215088b817add9c71914b83650bdd49f8a9)
-
-If we race with commit code setting i_transaction to NULL, we could
-possibly dereference it.  Proper locking requires the journal pointer
-(to access journal->j_list_lock), which we don't have.  So we have to
-change the prototype of the function so that filesystem passes us the
-journal pointer.  Also add a more detailed comment about why the
-function jbd2_journal_begin_ordered_truncate() does what it does and
-how it should be used.
-
-Thanks to Dan Carpenter <error27@gmail.com> for pointing to the
-suspitious code.
-
-Signed-off-by: Jan Kara <jack@suse.cz>
-Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
-Acked-by: Joel Becker <joel.becker@oracle.com>
-CC: linux-ext4@vger.kernel.org
-CC: ocfs2-devel@oss.oracle.com
-CC: mfasheh@suse.de
-CC: Dan Carpenter <error27@gmail.com>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
----
- fs/ext4/inode.c       |    6 ++++--
- fs/jbd2/transaction.c |   42 +++++++++++++++++++++++++++++++-----------
- fs/ocfs2/journal.h    |    6 ++++--
- include/linux/jbd2.h  |    3 ++-
- 4 files changed, 41 insertions(+), 16 deletions(-)
-
---- a/fs/ext4/inode.c
-+++ b/fs/ext4/inode.c
-@@ -46,8 +46,10 @@
- static inline int ext4_begin_ordered_truncate(struct inode *inode,
- 					      loff_t new_size)
- {
--	return jbd2_journal_begin_ordered_truncate(&EXT4_I(inode)->jinode,
--						   new_size);
-+	return jbd2_journal_begin_ordered_truncate(
-+					EXT4_SB(inode->i_sb)->s_journal,
-+					&EXT4_I(inode)->jinode,
-+					new_size);
- }
- 
- static void ext4_invalidatepage(struct page *page, unsigned long offset);
---- a/fs/jbd2/transaction.c
-+++ b/fs/jbd2/transaction.c
-@@ -2050,26 +2050,46 @@ done:
- }
- 
- /*
-- * This function must be called when inode is journaled in ordered mode
-- * before truncation happens. It starts writeout of truncated part in
-- * case it is in the committing transaction so that we stand to ordered
-- * mode consistency guarantees.
-+ * File truncate and transaction commit interact with each other in a
-+ * non-trivial way.  If a transaction writing data block A is
-+ * committing, we cannot discard the data by truncate until we have
-+ * written them.  Otherwise if we crashed after the transaction with
-+ * write has committed but before the transaction with truncate has
-+ * committed, we could see stale data in block A.  This function is a
-+ * helper to solve this problem.  It starts writeout of the truncated
-+ * part in case it is in the committing transaction.
-+ *
-+ * Filesystem code must call this function when inode is journaled in
-+ * ordered mode before truncation happens and after the inode has been
-+ * placed on orphan list with the new inode size. The second condition
-+ * avoids the race that someone writes new data and we start
-+ * committing the transaction after this function has been called but
-+ * before a transaction for truncate is started (and furthermore it
-+ * allows us to optimize the case where the addition to orphan list
-+ * happens in the same transaction as write --- we don't have to write
-+ * any data in such case).
-  */
--int jbd2_journal_begin_ordered_truncate(struct jbd2_inode *inode,
-+int jbd2_journal_begin_ordered_truncate(journal_t *journal,
-+					struct jbd2_inode *jinode,
- 					loff_t new_size)
- {
--	journal_t *journal;
--	transaction_t *commit_trans;
-+	transaction_t *inode_trans, *commit_trans;
- 	int ret = 0;
- 
--	if (!inode->i_transaction && !inode->i_next_transaction)
-+	/* This is a quick check to avoid locking if not necessary */
-+	if (!jinode->i_transaction)
- 		goto out;
--	journal = inode->i_transaction->t_journal;
-+	/* Locks are here just to force reading of recent values, it is
-+	 * enough that the transaction was not committing before we started
-+	 * a transaction adding the inode to orphan list */
- 	spin_lock(&journal->j_state_lock);
- 	commit_trans = journal->j_committing_transaction;
- 	spin_unlock(&journal->j_state_lock);
--	if (inode->i_transaction == commit_trans) {
--		ret = filemap_fdatawrite_range(inode->i_vfs_inode->i_mapping,
-+	spin_lock(&journal->j_list_lock);
-+	inode_trans = jinode->i_transaction;
-+	spin_unlock(&journal->j_list_lock);
-+	if (inode_trans == commit_trans) {
-+		ret = filemap_fdatawrite_range(jinode->i_vfs_inode->i_mapping,
- 			new_size, LLONG_MAX);
- 		if (ret)
- 			jbd2_journal_abort(journal, ret);
---- a/fs/ocfs2/journal.h
-+++ b/fs/ocfs2/journal.h
-@@ -445,8 +445,10 @@ static inline int ocfs2_jbd2_file_inode(
- static inline int ocfs2_begin_ordered_truncate(struct inode *inode,
- 					       loff_t new_size)
- {
--	return jbd2_journal_begin_ordered_truncate(&OCFS2_I(inode)->ip_jinode,
--						   new_size);
-+	return jbd2_journal_begin_ordered_truncate(
-+				OCFS2_SB(inode->i_sb)->journal->j_journal,
-+				&OCFS2_I(inode)->ip_jinode,
-+				new_size);
- }
- 
- #endif /* OCFS2_JOURNAL_H */
---- a/include/linux/jbd2.h
-+++ b/include/linux/jbd2.h
-@@ -1087,7 +1087,8 @@ extern int	   jbd2_journal_clear_err  (j
- extern int	   jbd2_journal_bmap(journal_t *, unsigned long, unsigned long long *);
- extern int	   jbd2_journal_force_commit(journal_t *);
- extern int	   jbd2_journal_file_inode(handle_t *handle, struct jbd2_inode *inode);
--extern int	   jbd2_journal_begin_ordered_truncate(struct jbd2_inode *inode, loff_t new_size);
-+extern int	   jbd2_journal_begin_ordered_truncate(journal_t *journal,
-+				struct jbd2_inode *inode, loff_t new_size);
- extern void	   jbd2_journal_init_jbd_inode(struct jbd2_inode *jinode, struct inode *inode);
- extern void	   jbd2_journal_release_jbd_inode(journal_t *journal, struct jbd2_inode *jinode);
- 
+							Thanx, Paul
