@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762766AbZCTXbn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763236AbZCTXbB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762766AbZCTXbn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Mar 2009 19:31:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762943AbZCTXYd
+	id S1763236AbZCTXbB (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Mar 2009 19:31:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762926AbZCTXYb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Mar 2009 19:24:33 -0400
-Received: from kroah.org ([198.145.64.141]:48594 "EHLO coco.kroah.org"
+	Fri, 20 Mar 2009 19:24:31 -0400
+Received: from kroah.org ([198.145.64.141]:48583 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1762929AbZCTXYc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Mar 2009 19:24:32 -0400
+	id S1762929AbZCTXYa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Mar 2009 19:24:30 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 20 15:29:25 2009
-Message-Id: <20090320222925.285081963@mini.kroah.org>
+Message-Id: <20090320222924.954615735@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 20 Mar 2009 15:28:25 -0700
+Date: Fri, 20 Mar 2009 15:28:23 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,12 +25,11 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Huang Ying <ying.huang@intel.com>,
-       Herbert Xu <herbert@gondor.apana.org.au>, Milan Broz <mbroz@redhat.com>,
+       alan@lxorguk.ukuu.org.uk, Milan Broz <mbroz@redhat.com>,
        Alasdair G Kergon <agk@redhat.com>
-Subject: [patch 15/43] dm crypt: fix kcryptd_async_done parameter
+Subject: [patch 13/43] dm ioctl: validate name length when renaming
 References: <20090320222810.386844059@mini.kroah.org>
-Content-Disposition: inline; filename=dm-crypt-fix-kcryptd_async_done-parameter.patch
+Content-Disposition: inline; filename=dm-ioctl-validate-name-length-when-renaming.patch
 In-Reply-To: <20090320232116.GA3375@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -40,105 +39,41 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Huang Ying <ying.huang@intel.com>
+From: Milan Broz <mbroz@redhat.com>
 
-commit b2174eebd1fadb76454dad09a1dacbc17081e6b0 upstream.
+commit bc0fd67feba2e0770aad85393500ba77c6489f1c upstream.
 
-In the async encryption-complete function (kcryptd_async_done), the
-crypto_async_request passed in may be different from the one passed to
-crypto_ablkcipher_encrypt/decrypt.  Only crypto_async_request->data is
-guaranteed to be same as the one passed in.  The current
-kcryptd_async_done uses the passed-in crypto_async_request directly
-which may cause the AES-NI-based AES algorithm implementation to panic.
+When renaming a mapped device validate the length of the new name.
 
-This patch fixes this bug by only using crypto_async_request->data,
-which points to dm_crypt_request, the crypto_async_request passed in.
-The original data (convert_context) is gotten from dm_crypt_request.
+The rename ioctl accepted any correctly-terminated string enclosed
+within the data passed from userspace.  The other ioctls enforce a
+size limit of DM_NAME_LEN.  If the name is changed and becomes longer
+than that, the device can no longer be addressed by name.
 
-[mbroz@redhat.com: reworked]
-Signed-off-by: Huang Ying <ying.huang@intel.com>
-Cc: Herbert Xu <herbert@gondor.apana.org.au>
+Fix it by properly checking for device name length (including
+terminating zero).
+
 Signed-off-by: Milan Broz <mbroz@redhat.com>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Reviewed-by: Jonathan Brassow <jbrassow@redhat.com>
+Reviewed-by: Alasdair G Kergon <agk@redhat.com>
 Signed-off-by: Alasdair G Kergon <agk@redhat.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/md/dm-crypt.c |   26 +++++++++++++++++++++-----
- 1 file changed, 21 insertions(+), 5 deletions(-)
+ drivers/md/dm-ioctl.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
---- a/drivers/md/dm-crypt.c
-+++ b/drivers/md/dm-crypt.c
-@@ -60,6 +60,7 @@ struct dm_crypt_io {
- };
+--- a/drivers/md/dm-ioctl.c
++++ b/drivers/md/dm-ioctl.c
+@@ -704,7 +704,8 @@ static int dev_rename(struct dm_ioctl *p
+ 	char *new_name = (char *) param + param->data_start;
  
- struct dm_crypt_request {
-+	struct convert_context *ctx;
- 	struct scatterlist sg_in;
- 	struct scatterlist sg_out;
- };
-@@ -335,6 +336,18 @@ static void crypt_convert_init(struct cr
- 	init_completion(&ctx->restart);
- }
- 
-+static struct dm_crypt_request *dmreq_of_req(struct crypt_config *cc,
-+					     struct ablkcipher_request *req)
-+{
-+	return (struct dm_crypt_request *)((char *)req + cc->dmreq_start);
-+}
-+
-+static struct ablkcipher_request *req_of_dmreq(struct crypt_config *cc,
-+					       struct dm_crypt_request *dmreq)
-+{
-+	return (struct ablkcipher_request *)((char *)dmreq - cc->dmreq_start);
-+}
-+
- static int crypt_convert_block(struct crypt_config *cc,
- 			       struct convert_context *ctx,
- 			       struct ablkcipher_request *req)
-@@ -345,10 +358,11 @@ static int crypt_convert_block(struct cr
- 	u8 *iv;
- 	int r = 0;
- 
--	dmreq = (struct dm_crypt_request *)((char *)req + cc->dmreq_start);
-+	dmreq = dmreq_of_req(cc, req);
- 	iv = (u8 *)ALIGN((unsigned long)(dmreq + 1),
- 			 crypto_ablkcipher_alignmask(cc->tfm) + 1);
- 
-+	dmreq->ctx = ctx;
- 	sg_init_table(&dmreq->sg_in, 1);
- 	sg_set_page(&dmreq->sg_in, bv_in->bv_page, 1 << SECTOR_SHIFT,
- 		    bv_in->bv_offset + ctx->offset_in);
-@@ -395,8 +409,9 @@ static void crypt_alloc_req(struct crypt
- 		cc->req = mempool_alloc(cc->req_pool, GFP_NOIO);
- 	ablkcipher_request_set_tfm(cc->req, cc->tfm);
- 	ablkcipher_request_set_callback(cc->req, CRYPTO_TFM_REQ_MAY_BACKLOG |
--					     CRYPTO_TFM_REQ_MAY_SLEEP,
--					     kcryptd_async_done, ctx);
-+					CRYPTO_TFM_REQ_MAY_SLEEP,
-+					kcryptd_async_done,
-+					dmreq_of_req(cc, cc->req));
- }
- 
- /*
-@@ -821,7 +836,8 @@ static void kcryptd_crypt_read_convert(s
- static void kcryptd_async_done(struct crypto_async_request *async_req,
- 			       int error)
- {
--	struct convert_context *ctx = async_req->data;
-+	struct dm_crypt_request *dmreq = async_req->data;
-+	struct convert_context *ctx = dmreq->ctx;
- 	struct dm_crypt_io *io = container_of(ctx, struct dm_crypt_io, ctx);
- 	struct crypt_config *cc = io->target->private;
- 
-@@ -830,7 +846,7 @@ static void kcryptd_async_done(struct cr
- 		return;
+ 	if (new_name < param->data ||
+-	    invalid_str(new_name, (void *) param + param_size)) {
++	    invalid_str(new_name, (void *) param + param_size) ||
++	    strlen(new_name) > DM_NAME_LEN - 1) {
+ 		DMWARN("Invalid new logical volume name supplied.");
+ 		return -EINVAL;
  	}
- 
--	mempool_free(ablkcipher_request_cast(async_req), cc->req_pool);
-+	mempool_free(req_of_dmreq(cc, dmreq), cc->req_pool);
- 
- 	if (!atomic_dec_and_test(&ctx->pending))
- 		return;
 
 
