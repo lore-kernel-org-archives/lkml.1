@@ -1,59 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754783AbZCTOzX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754141AbZCTPAe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754783AbZCTOzX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Mar 2009 10:55:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752984AbZCTOzJ
+	id S1754141AbZCTPAe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Mar 2009 11:00:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753585AbZCTPAZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Mar 2009 10:55:09 -0400
-Received: from kroah.org ([198.145.64.141]:51597 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751974AbZCTOzI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Mar 2009 10:55:08 -0400
-Date: Fri, 20 Mar 2009 07:53:40 -0700
-From: Greg KH <greg@kroah.com>
-To: Daniel Stone <daniel@fooishbar.org>,
-       Sindhudweep Sarkar <sindhudweep.sarkar@gmail.com>,
-       David Airlie <airlied@linux.ie>,
-       Thomas Hellstrom <thellstrom@vmware.com>,
-       dri-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       Richard Purdie <rpurdie@linux.intel.com>
-Subject: Re: [patch 0/5] Intel Poulsbo/Morrestown DRM driver and DRM core
-	changes
-Message-ID: <20090320145340.GA11347@kroah.com>
-References: <20090319040809.GA29249@kroah.com> <6c046ab30903190903r298a0334n939e64403b8aeda6@mail.gmail.com> <20090319162719.GB32078@kroah.com> <20090320060823.GF32194@fooishbar.org>
+	Fri, 20 Mar 2009 11:00:25 -0400
+Received: from smtp.ultrahosting.com ([74.213.174.254]:44677 "EHLO
+	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752325AbZCTPAZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Mar 2009 11:00:25 -0400
+Date: Fri, 20 Mar 2009 10:57:43 -0400 (EDT)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@qirst.com
+To: Nitin Gupta <ngupta@vflare.org>
+cc: Pekka Enberg <penberg@cs.helsinki.fi>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/3] xvmalloc memory allocator
+In-Reply-To: <49C3A435.7060703@vflare.org>
+Message-ID: <alpine.DEB.1.10.0903201042570.3740@qirst.com>
+References: <49C3A31D.6070208@vflare.org> <49C3A435.7060703@vflare.org>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090320060823.GF32194@fooishbar.org>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 20, 2009 at 05:08:23PM +1100, Daniel Stone wrote:
-> Greg,
-> 
-> On Thu, Mar 19, 2009 at 09:27:19AM -0700, Greg KH wrote:
-> > On Thu, Mar 19, 2009 at 12:03:09PM -0400, Sindhudweep Sarkar wrote:
-> > > TI-OMAP 3xxx and a couple of other arm processors use similar SGX-5xx
-> > > graphics cores. IIRC arm is often little endian so perhaps a unified
-> > > driver would be easier in the long term.
-> > 
-> > Long term lots of things are good.
-> > 
-> > But how do I get my laptop that I currently have right now up and
-> > running properly with linux in a better-than-800x600-framebuffer mode?
-> > 
-> > That's why I need/want this driver now, there are hundreds of thousands
-> > of these types of laptops in the pipeline to users and I want them to
-> > run Linux, not be forced to run some other operating system...
-> 
-> By the same logic, would you support including the proprietary NVIDIA
-> driver while we wait for Nouveau to catch up?
+On Fri, 20 Mar 2009, Nitin Gupta wrote:
 
-The license of the NVIDIA driver does not allow that to even be a
-possibility.
+> xvmalloc is a memory allocator designed specifically for compcache project.
 
-thanks,
+Its an allocator that is highmem capable? Looks like an entirely new
+animal to me.
 
-greg k-h
+> * Features:
+>  - Low metadata overhead (just 4 bytes per object)
+
+SLUB has 0 byte overhead. SLOB has 2 bytes.
+
+>  - O(1) Alloc/Free - except when we have to call system page allocator to
+>     get additional memory.
+
+SLOB is not O(1) okay but the others are.
+
+>  - Very low fragmentation: In all tests, xvMalloc memory usage is within 12%
+>     of "Ideal".
+
+Maybe try a fair test instead of relying on kmalloc rounding up to
+the next power of 2 size?
+
+> One of the main highlights is that it maps pages only when required.
+> So, it does not hog vmalloc area which is very small on 32-bit systems.
+
+Got some difficulty understanding what is going on here. So this allocator
+is highmem capable? Doesnt that mean that you must make function calls to
+ensure that an object is mapped before accessing it.
+
+> +#include "xvmalloc_int.h"
+> +
+> +static void stat_inc(u64 *value)
+> +{
+> +	*value = *value + 1;
+> +}
+
+(*value) += 1?
+
+atomic_inc?
+
+local_inc?
+
+> +static void bitmap_set(u32 *map, u32 idx)
+> +{
+> +	*map |= (u32)(1 << idx);
+> +}
+
+We have bitops for that purpose. Please use those.
+
+> +/*
+> + * Get index of free list having blocks of size greater than
+> + * or equal to requested size.
+> + */
+> +static u32 get_index(u32 size)
+> +{
+> +	size = (size + FL_DELTA_MASK) & ~FL_DELTA_MASK;
+
+See the ALIGN macro.
+
+> +/*
+> + * Allocate a memory page. Called when a pool needs to grow.
+> + */
+> +static u32 xv_alloc_page(void)
+> +{
+> +	struct page *page;
+> +
+> +	page = alloc_page(GFP_NOIO | __GFP_HIGHMEM);
+
+Yes a highmem based allocator!!!!
+
+> +
+> +	if (unlikely(!page))
+> +		return INVALID_PGNUM;
+
+Return NULL?
+
+> +#define INVALID_PGNUM	((u32)(-1))
+
+NULL
+
+> +#define ROUNDUP(x, y)	(((x) + (y) - 1) / (y) * (y))
+
+There is a global macro available for that purpose
+
+> +/* Each individual bitmap is 32-bit */
+> +#define BITMAP_BITS	32
+
+Use kernel constants please BITS_PER_LONG here.
+
+> +#define ROUNDUP_ALIGN(x)	(((x) + XV_ALIGN_MASK) & ~XV_ALIGN_MASK)
+
+== ALIGN?
+
+Well I think this allocator is pretty useful for systems that depend to a
+large degree on highmem. This is basically x86 32 bit configuration swith
+more than 1G memmory.
