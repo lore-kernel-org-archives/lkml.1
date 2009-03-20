@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762368AbZCTXUP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762436AbZCTXUj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762368AbZCTXUP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Mar 2009 19:20:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752068AbZCTXN4
+	id S1762436AbZCTXUj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Mar 2009 19:20:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758978AbZCTXN5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Mar 2009 19:13:56 -0400
-Received: from kroah.org ([198.145.64.141]:53188 "EHLO coco.kroah.org"
+	Fri, 20 Mar 2009 19:13:57 -0400
+Received: from kroah.org ([198.145.64.141]:53205 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1759684AbZCTXNv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Mar 2009 19:13:51 -0400
+	id S1759929AbZCTXNw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Mar 2009 19:13:52 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 20 15:27:12 2009
-Message-Id: <20090320222711.994532821@mini.kroah.org>
+Message-Id: <20090320222712.154169666@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 20 Mar 2009 15:26:30 -0700
+Date: Fri, 20 Mar 2009 15:26:31 -0700
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org, greg@kroah.com
+To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -25,12 +25,11 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, grant.likely@secretlab.ca,
-       afleming@freescale.com, linuxppc-dev@ozlabs.org,
-       Johns Daniel <johns.daniel@gmail.com>
-Subject: [patch 19/32] powerpc: Remove extra semicolon in fsl_soc.c
+       alan@lxorguk.ukuu.org.uk, Alan Stern <stern@rowland.harvard.edu>,
+       David Brownell <dbrownell@users.sourceforge.net>
+Subject: [patch 20/32] USB: EHCI: expedite unlinks when the root hub is suspended
 References: <20090320222611.872315885@mini.kroah.org>
-Content-Disposition: inline; filename=powerpc-remove-extra-semicolon-in-fsl_soc.c.patch
+Content-Disposition: inline; filename=usb-ehci-expedite-unlinks-when-the-root-hub-is-suspended.patch
 In-Reply-To: <20090320231037.GA2732@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -40,33 +39,42 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Johns Daniel <jdaniel@computer.org>
+From: Alan Stern <stern@rowland.harvard.edu>
 
-TSEC/MDIO will not work with older device trees because of a semicolon
-at the end of a macro resulting in an empty for loop body.
+commit 391016f6e2fe3b9979b4c6880a76e5e434d6947c upstream.
 
-This fix only applies to 2.6.28; this code is gone in 2.6.29, according
-to Grant Likely!
+This patch (as1225) fixes a bug in ehci-hcd.  The condition for
+whether unlinked QHs can become IDLE should not be that the controller
+is halted, but rather that the controller isn't running.  In other
+words when the root hub is suspended, the hardware doesn't own any
+QHs.
 
-Signed-off-by: Johns Daniel <johns.daniel@gmail.com>
-Acked-by: Grant Likely <grant.likely@secretlab.ca>
+This fixes a problem that can show up during hibernation: If a QH is
+only partially unlinked when the root hub is frozen, then when the
+root hub is thawed the QH won't be in the IDLE state.  As a result it
+can't be used properly for new URB submissions.
+
+Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
+Reported-by: Brandon Philips <brandon@ifup.org>
+Tested-by: Brandon Philips <brandon@ifup.org>
+Acked-by: David Brownell <dbrownell@users.sourceforge.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
-
 ---
- arch/powerpc/sysdev/fsl_soc.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/usb/host/ehci-q.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
---- a/arch/powerpc/sysdev/fsl_soc.c
-+++ b/arch/powerpc/sysdev/fsl_soc.c
-@@ -255,7 +255,7 @@ static int __init gfar_mdio_of_init(void
- 		gfar_mdio_of_init_one(np);
+--- a/drivers/usb/host/ehci-q.c
++++ b/drivers/usb/host/ehci-q.c
+@@ -1095,7 +1095,8 @@ static void start_unlink_async (struct e
+ 	prev->qh_next = qh->qh_next;
+ 	wmb ();
  
- 	/* try the deprecated version */
--	for_each_compatible_node(np, "mdio", "gianfar");
-+	for_each_compatible_node(np, "mdio", "gianfar")
- 		gfar_mdio_of_init_one(np);
- 
- 	return 0;
+-	if (unlikely (ehci_to_hcd(ehci)->state == HC_STATE_HALT)) {
++	/* If the controller isn't running, we don't have to wait for it */
++	if (unlikely(!HC_IS_RUNNING(ehci_to_hcd(ehci)->state))) {
+ 		/* if (unlikely (qh->reclaim != 0))
+ 		 *	this will recurse, probably not much
+ 		 */
 
 
