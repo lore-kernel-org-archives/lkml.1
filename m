@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761366AbZCTXic@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764255AbZCTXiu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761366AbZCTXic (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Mar 2009 19:38:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762299AbZCTXYy
+	id S1764255AbZCTXiu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Mar 2009 19:38:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762983AbZCTXYz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Mar 2009 19:24:54 -0400
-Received: from kroah.org ([198.145.64.141]:48788 "EHLO coco.kroah.org"
+	Fri, 20 Mar 2009 19:24:55 -0400
+Received: from kroah.org ([198.145.64.141]:48800 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1762986AbZCTXYw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Mar 2009 19:24:52 -0400
+	id S1761921AbZCTXYx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Mar 2009 19:24:53 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 20 15:29:28 2009
-Message-Id: <20090320222928.408831283@mini.kroah.org>
+Message-Id: <20090320222928.560756537@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 20 Mar 2009 15:28:45 -0700
+Date: Fri, 20 Mar 2009 15:28:46 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,11 +25,11 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Alan Stern <stern@rowland.harvard.edu>,
-       David Brownell <dbrownell@users.sourceforge.net>
-Subject: [patch 35/43] USB: EHCI: expedite unlinks when the root hub is suspended
+       alan@lxorguk.ukuu.org.uk, Karsten Wiese <fzu@wemgehoertderstaat.de>,
+       David Brownell <david-b@pacbell.net>
+Subject: [patch 36/43] USB: EHCI: Fix isochronous URB leak
 References: <20090320222810.386844059@mini.kroah.org>
-Content-Disposition: inline; filename=usb-ehci-expedite-unlinks-when-the-root-hub-is-suspended.patch
+Content-Disposition: inline; filename=usb-ehci-fix-isochronous-urb-leak.patch
 In-Reply-To: <20090320232116.GA3375@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -39,42 +39,80 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Alan Stern <stern@rowland.harvard.edu>
+From: Karsten Wiese <fzuuzf@googlemail.com>
 
-commit 391016f6e2fe3b9979b4c6880a76e5e434d6947c upstream.
+commit 508db8c954d55ed30f870d2c24d741ba6269d13c upstream.
 
-This patch (as1225) fixes a bug in ehci-hcd.  The condition for
-whether unlinked QHs can become IDLE should not be that the controller
-is halted, but rather that the controller isn't running.  In other
-words when the root hub is suspended, the hardware doesn't own any
-QHs.
+ehci-hcd uses usb_get_urb() and usb_put_urb() in an unbalanced way causing
+isochronous URB's kref.counts incrementing once per usb_submit_urb() call.
+The culprit is *usb being set to NULL when usb_put_urb() is called after URB
+is given back.
+Due to other fixes there is no need for ehci-hcd to deal with usb_get_urb()
+nor usb_put_urb() anymore, so patch removes their usages in ehci-hcd.
+Patch also makes ehci_to_hcd(ehci)->self.bandwidth_allocated adjust, if a
+stream finishes.
 
-This fixes a problem that can show up during hibernation: If a QH is
-only partially unlinked when the root hub is frozen, then when the
-root hub is thawed the QH won't be in the IDLE state.  As a result it
-can't be used properly for new URB submissions.
-
-Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
-Reported-by: Brandon Philips <brandon@ifup.org>
-Tested-by: Brandon Philips <brandon@ifup.org>
-Acked-by: David Brownell <dbrownell@users.sourceforge.net>
+Signed-off-by: Karsten Wiese <fzu@wemgehoertderstaat.de>
+Cc: David Brownell <david-b@pacbell.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/usb/host/ehci-q.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ drivers/usb/host/ehci-sched.c |   10 ++++------
+ 1 file changed, 4 insertions(+), 6 deletions(-)
 
---- a/drivers/usb/host/ehci-q.c
-+++ b/drivers/usb/host/ehci-q.c
-@@ -1095,7 +1095,8 @@ static void start_unlink_async (struct e
- 	prev->qh_next = qh->qh_next;
- 	wmb ();
+--- a/drivers/usb/host/ehci-sched.c
++++ b/drivers/usb/host/ehci-sched.c
+@@ -1536,7 +1536,7 @@ itd_link_urb (
+ 					struct ehci_itd, itd_list);
+ 			list_move_tail (&itd->itd_list, &stream->td_list);
+ 			itd->stream = iso_stream_get (stream);
+-			itd->urb = usb_get_urb (urb);
++			itd->urb = urb;
+ 			itd_init (ehci, stream, itd);
+ 		}
  
--	if (unlikely (ehci_to_hcd(ehci)->state == HC_STATE_HALT)) {
-+	/* If the controller isn't running, we don't have to wait for it */
-+	if (unlikely(!HC_IS_RUNNING(ehci_to_hcd(ehci)->state))) {
- 		/* if (unlikely (qh->reclaim != 0))
- 		 *	this will recurse, probably not much
- 		 */
+@@ -1645,7 +1645,7 @@ itd_complete (
+ 	(void) disable_periodic(ehci);
+ 	ehci_to_hcd(ehci)->self.bandwidth_isoc_reqs--;
+ 
+-	if (unlikely (list_empty (&stream->td_list))) {
++	if (unlikely(list_is_singular(&stream->td_list))) {
+ 		ehci_to_hcd(ehci)->self.bandwidth_allocated
+ 				-= stream->bandwidth;
+ 		ehci_vdbg (ehci,
+@@ -1656,7 +1656,6 @@ itd_complete (
+ 	iso_stream_put (ehci, stream);
+ 
+ done:
+-	usb_put_urb(urb);
+ 	itd->urb = NULL;
+ 	if (ehci->clock_frame != itd->frame || itd->index[7] != -1) {
+ 		/* OK to recycle this ITD now. */
+@@ -1949,7 +1948,7 @@ sitd_link_urb (
+ 				struct ehci_sitd, sitd_list);
+ 		list_move_tail (&sitd->sitd_list, &stream->td_list);
+ 		sitd->stream = iso_stream_get (stream);
+-		sitd->urb = usb_get_urb (urb);
++		sitd->urb = urb;
+ 
+ 		sitd_patch(ehci, stream, sitd, sched, packet);
+ 		sitd_link (ehci, (next_uframe >> 3) % ehci->periodic_size,
+@@ -2034,7 +2033,7 @@ sitd_complete (
+ 	(void) disable_periodic(ehci);
+ 	ehci_to_hcd(ehci)->self.bandwidth_isoc_reqs--;
+ 
+-	if (list_empty (&stream->td_list)) {
++	if (list_is_singular(&stream->td_list)) {
+ 		ehci_to_hcd(ehci)->self.bandwidth_allocated
+ 				-= stream->bandwidth;
+ 		ehci_vdbg (ehci,
+@@ -2045,7 +2044,6 @@ sitd_complete (
+ 	iso_stream_put (ehci, stream);
+ 	/* OK to recycle this SITD now that its completion callback ran. */
+ done:
+-	usb_put_urb(urb);
+ 	sitd->urb = NULL;
+ 	sitd->stream = NULL;
+ 	list_move(&sitd->sitd_list, &stream->free_list);
 
 
