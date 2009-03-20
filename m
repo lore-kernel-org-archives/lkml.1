@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753776AbZCTBLb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753924AbZCTBTs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753776AbZCTBLb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Mar 2009 21:11:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751704AbZCTBLW
+	id S1753924AbZCTBTs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Mar 2009 21:19:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752849AbZCTBTh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Mar 2009 21:11:22 -0400
-Received: from ey-out-2122.google.com ([74.125.78.27]:31335 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751415AbZCTBLV (ORCPT
+	Thu, 19 Mar 2009 21:19:37 -0400
+Received: from mail-ew0-f165.google.com ([209.85.219.165]:44554 "EHLO
+	mail-ew0-f165.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752735AbZCTBTf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Mar 2009 21:11:21 -0400
+	Thu, 19 Mar 2009 21:19:35 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=date:from:to:cc:subject:message-id:references:mime-version
          :content-type:content-disposition:in-reply-to:user-agent;
-        b=UfdIxhJqITdxXBWfPEhbw7M+Y15NuLqzTxRPsy1y8572nPofgWNF03/Z3Odo1DjEjR
-         nXnMjm7UTzkY3j0c6e0S0Br2cO7JuhFlHUfvgsndQ8ec6ufA7G4mVxPuZrp3G10FGGXE
-         k+Mj1j/bMSi1tsBtzrTW7iXTU9dxPtUsupKlE=
-Date: Fri, 20 Mar 2009 02:11:15 +0100
+        b=wLv4YAvN60nfkF842RcxSRDLnBEAmOwOCj/2lb/nfsEc7twVz8ePmMN9IRn2A1Pj+B
+         z+/8xSuPOYAKrqyh4kdbhV3v54T+akdZ++FMUcWA4HAx8eT8JcAH1TKHp7MY8Ox5X3Lx
+         lbOPW2NXCUjKqVyfED74dMxgOSz4i4Zk+W6p0=
+Date: Fri, 20 Mar 2009 02:19:30 +0100
 From: Frederic Weisbecker <fweisbec@gmail.com>
 To: Masami Hiramatsu <mhiramat@redhat.com>
 Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
@@ -26,7 +26,7 @@ Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
        systemtap-ml <systemtap@sources.redhat.com>
 Subject: Re: [RFC][PATCH -tip 8/9] kprobes: support respawn probes for
 	module probing
-Message-ID: <20090320011114.GD6895@nowhere>
+Message-ID: <20090320011929.GE6895@nowhere>
 References: <49C2B4D4.1040205@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -71,12 +71,6 @@ On Thu, Mar 19, 2009 at 05:10:44PM -0400, Masami Hiramatsu wrote:
 >  typedef int (*kretprobe_handler_t) (struct kretprobe_instance *,
 >  				    struct pt_regs *);
 > +typedef int (*probe_activate_handler_t)(void *, struct module *);
-
-
-I guess it could also be useful to call the handler when the module
-is unloaded. Be using another parameter with a LOAD/UNLOAD enum value.
-
-
 > 
 >  struct kprobe {
 >  	struct hlist_node hlist;
@@ -128,12 +122,6 @@ is unloaded. Be using another parameter with a LOAD/UNLOAD enum value.
 > +void unregister_module_jprobe(struct jprobe *jp)
 > +{
 > +}
-
-
-Shouldn't the unregister_* be inlined too?
-I think they all could be static inlined too in case of !CONFIG_MODULE
-
-
 >  #endif /* CONFIG_KPROBES */
 >  #endif /* _LINUX_KPROBES_H */
 > diff --git a/kernel/kprobes.c b/kernel/kprobes.c
@@ -164,12 +152,7 @@ I think they all could be static inlined too in case of !CONFIG_MODULE
 > +		struct jprobe *jp;
 > +	};
 > +};
-
-
-#ifdef CONFIG_MODULE ?
-
-Frederic.
-
+> +
 > +static DEFINE_MUTEX(module_probe_mutex);
 > +static LIST_HEAD(module_probe_list);
 > +
@@ -377,6 +360,14 @@ Frederic.
 > +			continue;
 > +		if (state == MODULE_STATE_COMING &&
 > +		    pc->handler(pc->data, module)) {
+
+
+I don't see a place where you check if pc->handler != NULL
+May be you could attach a stub in such cases.
+
+Frederic.
+
+
 > +			activate_module_probe(pc);
 > +		} else if (state == MODULE_STATE_GOING)
 > +			deactivate_module_probe(pc);
