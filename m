@@ -1,145 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759313AbZCTSXP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758330AbZCTSYb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759313AbZCTSXP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Mar 2009 14:23:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757550AbZCTSW6
+	id S1758330AbZCTSYb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Mar 2009 14:24:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753703AbZCTSYX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Mar 2009 14:22:58 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:65176 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753047AbZCTSW5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Mar 2009 14:22:57 -0400
-Date: Fri, 20 Mar 2009 14:22:53 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Frederic Weisbecker <fweisbec@gmail.com>
-cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Subject: Re: [PATCH 0/5] [GIT PULL] updates for tip/tracing/ftrace
-In-Reply-To: <20090320175758.GA5936@nowhere>
-Message-ID: <alpine.DEB.2.00.0903201420020.13615@gandalf.stny.rr.com>
-References: <20090318031423.981603258@goodmis.org> <20090318055924.GA24627@elte.hu> <20090318073903.GA31341@elte.hu> <20090319073357.GA14615@elte.hu> <20090320170548.GC5937@nowhere> <20090320175758.GA5936@nowhere>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Fri, 20 Mar 2009 14:24:23 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:37701 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752000AbZCTSYX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Mar 2009 14:24:23 -0400
+Date: Fri, 20 Mar 2009 19:24:04 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Peter Zijlstra <peterz@infradead.org>, Jan Beulich <jbeulich@novell.com>,
+       tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [tip:core/ipi] generic-ipi: eliminate spurious
+	pointlessWARN_ON()s
+Message-ID: <20090320182404.GA31629@elte.hu>
+References: <49B91A7E.76E4.0078.0@novell.com> <tip-6a09dfa870ba0ed21b1124539968a36b42660661@git.kernel.org> <1236934491.5188.209.camel@laptop> <49BA33BE.76E4.0078.0@novell.com> <1236937423.22914.3698.camel@twins> <20090313103828.GB31094@elte.hu> <m1d4cd9n4k.fsf@fess.ebiederm.org> <20090320085205.GB16021@elte.hu> <m14oxo8qis.fsf@fess.ebiederm.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <m14oxo8qis.fsf@fess.ebiederm.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Fri, 20 Mar 2009, Frederic Weisbecker wrote:
-> On Fri, Mar 20, 2009 at 06:05:54PM +0100, Frederic Weisbecker wrote:
-> > On Thu, Mar 19, 2009 at 08:33:57AM +0100, Ingo Molnar wrote:
-> > > 
-> > > * Ingo Molnar <mingo@elte.hu> wrote:
-> > > 
-> > > > these latest ftrace changes caused a lockup on a -tip testsystem:
-> > > 
-> > > Note, even with Rusty's offstack-cpumask fix applied (in latest 
-> > > -tip), i can reproduce a lockup:
-> > > 
-> > > [    4.132872] calling  init_mmio_trace+0x0/0x12 @ 1
-> > > [    4.137551] initcall init_mmio_trace+0x0/0x12 returned 0 after 10 usecs
-> > > [    4.144149] calling  init_graph_trace+0x0/0x12 @ 1
-> > > [    4.148913] Testing tracer function_graph: <3>INFO: RCU detected CPU 0 stall (t=4294680313/10000 jiffies)
-> > > [   18.620342] Pid: 858, comm: kstop/0 Not tainted 2.6.29-rc8-tip-02638-g1c002f5-dirty #3067
-> > > [   18.620342] Call Trace:
-> > > [   18.620342]  <IRQ>  [<ffffffff80214c3d>] return_to_handler+0x0/0x73
-> > > [   18.620342]  [<ffffffff8021b2d5>] print_context_stack+0xbc/0x11e
-> > > [   18.620342]  [<ffffffff80214c3d>] return_to_handler+0x0/0x73
-> > > [   18.620342]  [<ffffffff80219c2e>] dump_trace+0x221/0x271
-> > > [   18.620342]  [<ffffffff80214c3d>] return_to_handler+0x0/0x73
-> > > [   18.620342]  [<ffffffff8021b180>] show_trace_log_lvl+0x51/0x5e
-> > > [   18.620342]  [<ffffffff80214c3d>] return_to_handler+0x0/0x73
-> > > [   18.620342]  [<ffffffff8021b1a2>] show_trace+0x15/0x17
-> > > [   18.620342]  [<ffffffff80214c3d>] return_to_handler+0x0/0x73
-> > > [   18.620342]  [<ffffffff8021b505>] dump_stack+0x77/0x82
-> > > [   18.620342]  [<ffffffff80214c3d>] return_to_handler+0x0/0x73
-> > > [   18.620342]  [<ffffffff802e343b>] print_cpu_stall+0x40/0x9b
-> > > [   18.620342]  [<ffffffff80214c3d>] return_to_handler+0x0/0x73
-> > > [   18.620342]  [<ffffffff802e384f>] check_cpu_stall+0x11e/0x15c
-> > > [   18.620342]  [<ffffffff80214c3d>] return_to_handler+0x0/0x73
-> > > [   18.620342]  [<ffffffff802e38a4>] __rcu_pending+0x17/0xff
-> > > [   18.620342]  [<ffffffff80214c3d>] return_to_handler+0x0/0x73
-> > > [   18.620342]  [<ffffffff802e39b8>] rcu_pending+0x2c/0x5e
-> > > [   18.620342]  [<ffffffff80214c3d>] return_to_handler+0x0/0x73
-> > > [   18.620342]  [<ffffffff8028b89a>] update_process_times+0x3c/0x76
-> > > [   18.620342]  [<ffffffff80214c3d>] return_to_handler+0x0/0x73
-> > > [   18.620342]  [<ffffffff802a901e>] tick_periodic+0x7a/0x86
-> > > [   18.620342]  [<ffffffff80214c3d>] return_to_handler+0x0/0x73
-> > > [   18.620342]  [<ffffffff802a9050>] tick_handle_periodic+0x26/0x8a
-> > > [   18.620342]  [<ffffffff80214c3d>] return_to_handler+0x0/0x73
-> > > [   18.620342]  [<ffffffff802a97f8>] tick_do_broadcast+0x1d4/0x23a
-> > > [   18.620342]  [<ffffffff80214c3d>] return_to_handler+0x0/0x73
-> > > [   18.620342]  [<ffffffff802a9929>] tick_do_periodic_broadcast+0x4c/0x5d
-> > > [   18.620342]  [<ffffffff802e28b9>] ? rcu_torture_timer+0x0/0x12b
-> > > [   18.620342]  [<ffffffff80214c3d>] return_to_handler+0x0/0x73
-> > > [   18.620342]  [<ffffffff802a994e>] tick_handle_periodic_broadcast+0x14/0x75
-> > > [   18.620342]  [<ffffffff80214c3d>] return_to_handler+0x0/0x73
-> > > [   18.620342]  [<ffffffff80219f0f>] timer_interrupt+0x1f/0x26
-> > > [   18.620342]  [<ffffffff811f1a6d>] ? _spin_unlock_irq+0x9/0x3b
-> > > [   18.620342]  [<ffffffff811f1a9b>] ? _spin_unlock_irq+0x37/0x3b
-> > > [   18.620342]  [<ffffffff80214c3d>] ? return_to_handler+0x0/0x73
-> > > [   18.620342]  [<ffffffff802dd04c>] handle_IRQ_event+0x167/0x230
-> > > [   18.620342]  [<ffffffff8025e8e4>] ? idle_cpu+0x4/0x33
-> > > [   18.620342]  [<ffffffff80215a10>] ? restore_args+0x0/0x30
-> > > [   18.620342]  [<ffffffff80284453>] ? __local_bh_disable+0x11/0x16c
-> > > [   18.620342]  [<ffffffff80214c3d>] ? return_to_handler+0x0/0x73
-> > > [   18.620342]  [<ffffffff802dfc86>] handle_edge_irq+0x1bf/0x225
-> > > [   18.620342]  [<ffffffff80214c3d>] ? return_to_handler+0x0/0x73
-> > > [   18.620342]  [<ffffffff80219305>] handle_irq+0x15d/0x171
-> > > [   18.620342]  [<ffffffff802195e9>] ? do_softirq+0x80/0x187
-> > > [   18.620342]  [<ffffffff80214c3d>] ? return_to_handler+0x0/0x73
-> > > [   18.620342]  [<ffffffff811f2457>] do_IRQ+0x5f/0xfc
-> > > [   18.620342]  [<ffffffff80214c3d>] ? return_to_handler+0x0/0x73
-> > > [   18.620342]  [<ffffffff80215953>] ret_from_intr+0x0/0x16
-> > > [   18.620342]  [<ffffffff80214c3d>] ? return_to_handler+0x0/0x73
-> > > [   18.620342]  [<ffffffff8028aa1d>] run_timer_softirq+0x1c1/0x2af
-> > > [   18.620342]  <EOI>  [<ffffffff802ce8f0>] ? ack_state+0x4/0x45
-> > > [   18.620342]  [<ffffffff802ced22>] ? stop_cpu+0x1c5/0x1d1
-> > > [   18.620342]  [<ffffffff80294a29>] ? run_workqueue+0x1a0/0x2e2
-> > > [   18.620342]  [<ffffffff802949d6>] ? run_workqueue+0x14d/0x2e2
-> > > [   18.620342]  [<ffffffff802ceb5d>] ? stop_cpu+0x0/0x1d1
-> > > [   18.620342]  [<ffffffff826b4140>] ? early_idt_handler+0x0/0x73
-> > > [   18.620342]  [<ffffffff80295d1b>] ? worker_thread+0x138/0x14c
-> > > [   18.620342]  [<ffffffff80299e63>] ? autoremove_wake_function+0x0/0x4f
-> > > [   18.620342]  [<ffffffff80295be3>] ? worker_thread+0x0/0x14c
-> > > [   18.620342]  [<ffffffff80299d20>] ? kthread+0x60/0xa0
-> > > [   18.620342]  [<ffffffff8021606a>] ? child_rip+0xa/0x20
-> > > [   18.620342]  [<ffffffff8026fd4b>] ? finish_task_switch+0x56/0x180
-> > > [   18.620342]  [<ffffffff80215a10>] ? restore_args+0x0/0x30
-> > > [   18.620342]  [<ffffffff80299cc0>] ? kthread+0x0/0xa0
-> > > [   18.620342]  [<ffffffff80216060>] ? child_rip+0x0/0x20
-> > > [   64.758749] INFO: RCU detected CPU 0 stall (t=4294710313/40000 jiffies)
-> > > [   64.758749] Pid: 858, comm: kstop/0 Not tainted 2.6.29-rc8-tip-02638-g1c002f5-dirty #3067
-> > > 
-> > > (the hang is real - it lasted overnight without the system ever 
-> > > managing to boot up.)
-> > > 
-> > > Config (note, it's different from the config i sent last) and full 
-> > > bootlog attached.
-> > 
-> > 
-> > Tested under x86-32 and can't reproduce...
-> > Hopefully this is not because I'm testing on UP.
-> > 
-> 
-> 
-> Now I've tested on x86-64 SMP and still nothing.
-> Note that I've not only tested the selftests but also the function
-> graph tracer. But nothing weird appeared.
+* Eric W. Biederman <ebiederm@xmission.com> wrote:
 
-I have not been able to trigger it either. I tested on three different 
-boxes, with various x86_64/32 configs as well.
+> Now back to my regularly scheduled hotunplug challenges starting 
+> with getting lockdep to warn about the dead locks.
 
-One thing that seems to be common in these crashes is that they all have 
-rcu_torture running. Perhaps the function tracer is widening a race window 
-that is too small to trigger without the tracing?
+that's a neat idea ...
 
-Paul suggested something about Lai's rcu_barrier fix?
-
--- Steve
-
+	Ingo
