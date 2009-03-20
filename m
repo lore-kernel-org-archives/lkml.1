@@ -1,67 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760619AbZCTTjT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761141AbZCTTlu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760619AbZCTTjT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Mar 2009 15:39:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753279AbZCTTjK
+	id S1761141AbZCTTlu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Mar 2009 15:41:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753455AbZCTTll
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Mar 2009 15:39:10 -0400
-Received: from [213.79.90.228] ([213.79.90.228]:41721 "EHLO
-	buildserver.ru.mvista.com" rhost-flags-FAIL-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1758710AbZCTTjJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Mar 2009 15:39:09 -0400
-Date: Fri, 20 Mar 2009 22:39:04 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
+	Fri, 20 Mar 2009 15:41:41 -0400
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:43862 "EHLO e4.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753279AbZCTTlk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Mar 2009 15:41:40 -0400
+Date: Fri, 20 Mar 2009 12:41:38 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
 To: Ingo Molnar <mingo@elte.hu>
-Cc: Steven Rostedt <srostedt@redhat.com>, linuxppc-dev@ozlabs.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] tracing: Fix TRACING_SUPPORT dependency
-Message-ID: <20090320193904.GA13707@oksana.dev.rtsoft.ru>
-Reply-To: avorontsov@ru.mvista.com
-References: <20090320150914.GA22769@oksana.dev.rtsoft.ru> <20090320190428.GD6224@elte.hu>
+Cc: Steven Rostedt <rostedt@goodmis.org>, LKML <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>
+Subject: Re: [PATCH 0/5] [GIT PULL] updates for tip/tracing/ftrace
+Message-ID: <20090320194138.GK6698@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20090318031423.981603258@goodmis.org> <20090318055924.GA24627@elte.hu> <20090318073903.GA31341@elte.hu> <20090319073357.GA14615@elte.hu> <alpine.DEB.2.00.0903191309170.16987@gandalf.stny.rr.com> <20090320174331.GH6698@linux.vnet.ibm.com> <20090320183642.GA2070@elte.hu> <20090320183849.GA3657@elte.hu> <20090320191926.GJ6698@linux.vnet.ibm.com> <20090320192721.GI6224@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090320190428.GD6224@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090320192721.GI6224@elte.hu>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 20, 2009 at 08:04:28PM +0100, Ingo Molnar wrote:
+On Fri, Mar 20, 2009 at 08:27:21PM +0100, Ingo Molnar wrote:
 > 
-> * Anton Vorontsov <avorontsov@ru.mvista.com> wrote:
+> * Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
 > 
-> > commit 40ada30f9621fbd831ac2437b9a2a399aad34b00 ("tracing: clean 
-> > up menu"), despite the "clean up" in its purpose, introduced 
-> > behavioural change for Kconfig symbols: we no longer able to 
-> > select tracing support on PPC32 (because IRQFLAGS_SUPPORT isn't 
-> > yet implemented).
+> > On Fri, Mar 20, 2009 at 07:38:49PM +0100, Ingo Molnar wrote:
+> > > 
+> > > * Ingo Molnar <mingo@elte.hu> wrote:
+> > > 
+> > > > > > This looks like it is RCU/stop_machine related. The CPU is 
+> > > > > > stuck in in stop_machine? I see that rcu_torture is running. 
+> > > > > > Does this go away if you turn off rcu_torture?
+> > > > > 
+> > > > > Grasping at straws...  Does Lai's rcu_barrier() fix help?
+> > > > 
+> > > > which one is that?
+> > > 
+> > > ok, found it. Will know in about ~24 hours whether it helps.
+> > 
+> > http://lkml.org/lkml/2009/3/20/71 was the one I was thinking of, 
+> > just to double-check.
 > 
-> Could you please solve this by implementing proper irqflag-tracing 
-> support? It's been available upstream for almost three years. It's 
-> needed for lockdep support as well, etc.
+> Yeah - i just picked it up into tip:core/rcu.
+> 
+> I didnt immediately connect the two things, as 'tracer self-test' 
+> does not lend itself to 'CPU hotplug and RCU race fix' - but indeed 
+> in the case of the function tracer there's a dependency due to 
+> stop_machine_run(). Thanks for point it out!
 
-Breaking things via clean up patches is an interesting method of
-encouraging something to implement. ;-)
+Thanks go to Steve Rostedt -- I just followed up on his stack-trace
+analysis here.  ;-)
 
-Surely I'll look into implementing irqflags tracing, but considering
-that no one ever needed this for almost three years, and that we
-explicitly have the code to deal with tracing-w/o-irqflags, can we
-please restore the old behaviour?
-
-At least for 2.6.30, because I don't think I'll have enough time to
-implement/test/push irqflags tracing support in time for 2.6.30-rc1.
-
-Thanks,
-
-p.s.
-It would make more sense if 40ada30f's commit message would state
-that tracing w/o irqflags is now obsolete, or better, if it was
-discussed on some mailinglist, so that we'd have some time to
-adapt the architecture-specific code.
-
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+						Thanx, Paul
