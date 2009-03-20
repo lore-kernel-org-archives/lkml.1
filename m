@@ -1,60 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756122AbZCTV7Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757293AbZCTWA3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756122AbZCTV7Y (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Mar 2009 17:59:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752947AbZCTV7J
+	id S1757293AbZCTWA3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Mar 2009 18:00:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753890AbZCTWAN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Mar 2009 17:59:09 -0400
-Received: from www.tglx.de ([62.245.132.106]:41606 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752866AbZCTV7I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Mar 2009 17:59:08 -0400
-Date: Fri, 20 Mar 2009 22:57:38 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Peter Zijlstra <peterz@infradead.org>
-cc: Sam Ravnborg <sam@ravnborg.org>, LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] kbuild: work around distcc/icecc madness
-In-Reply-To: <1237576568.4667.34.camel@laptop>
-Message-ID: <alpine.LFD.2.00.0903202240370.29264@localhost.localdomain>
-References: <alpine.LFD.2.00.0903192121300.29264@localhost.localdomain>  <1237551797.24626.96.camel@twins>  <alpine.LFD.2.00.0903201658140.29264@localhost.localdomain> <1237576568.4667.34.camel@laptop>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 20 Mar 2009 18:00:13 -0400
+Received: from outbound-mail-305.bluehost.com ([67.222.53.251]:48322 "HELO
+	outbound-mail-305.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752244AbZCTWAL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Mar 2009 18:00:11 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
+	b=ZVeXE7ngcCkenBGEVO2Gptyp5wyM39atgsYi+gljKTSQ9KmSeTI3EwxuXYyuA7B0OBMojfDoMB7FrgRQf/G4NvmHuuNxdokNYI5DsaTbhWfS91A0DHWY6aFa2z9ncmOe;
+Date: Fri, 20 Mar 2009 15:00:05 -0700
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Alex Chiang <achiang@hp.com>
+Cc: linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
+       Alex Chiang <achiang@hp.com>
+Subject: Re: [PATCH v5 01/13] PCI: pci_is_root_bus helper
+Message-ID: <20090320150005.565fb46d@hobbes.lan>
+In-Reply-To: <20090320205555.12275.10712.stgit@bob.kio>
+References: <20090320204327.12275.43010.stgit@bob.kio>
+	<20090320205555.12275.10712.stgit@bob.kio>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 20 Mar 2009, Peter Zijlstra wrote:
-> > Changing from distcc to gcc will start a full rebuild on linus tree as
-> > well.
+On Fri, 20 Mar 2009 14:55:55 -0600
+Alex Chiang <achiang@hp.com> wrote:
+
+> From: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
 > 
-> I just tried:
+> Introduce pci_is_root_bus helper function. This will help make code
+> more consistent, as well as prevent incorrect assumptions (such as
+> pci_bus->self == NULL on a root bus, which is not always true).
 > 
-> root@twins:/mnt/build/linux-2.6# /mnt/md0/cross/bin/x86_64-linux-gcc --version
-> x86_64-linux-gcc (GCC) 4.3.1 20080510 (prerelease)
-> Copyright (C) 2008 Free Software Foundation, Inc.
-> This is free software; see the source for copying conditions.  There is NO
-> warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-> 
-> root@twins:/mnt/build/linux-2.6# gcc --version
-> gcc (Ubuntu 4.3.2-1ubuntu12) 4.3.2
-> Copyright (C) 2008 Free Software Foundation, Inc.
-> This is free software; see the source for copying conditions.  There is NO
-> warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-> 
-> The build with the distcc x86_64-linux-gcc compiler and the install
-> using the host compiler works just fine on Linus' tree.
+> Signed-off-by: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+> Signed-off-by: Alex Chiang <achiang@hp.com>
+> ---
 
-Hmm, I went through all the Makefile changes and we do not touch those
-bits at all.
+Applied this series, thanks everyone!
 
-Can you check whether builddir/scripts/mod/.empty.o.cmd has
--DCONFIG_AS_CFI in the command line ?
-
-Can you check that file after you built -tip (w/o my patch) and after
-your make install started to rebuild the tree ?
-
-Thanks,
-
-	tglx
+-- 
+Jesse Barnes, Intel Open Source Technology Center
