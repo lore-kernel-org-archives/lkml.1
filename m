@@ -1,99 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753934AbZCTUau@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755650AbZCTUdb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753934AbZCTUau (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Mar 2009 16:30:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752188AbZCTUak
+	id S1755650AbZCTUdb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Mar 2009 16:33:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752658AbZCTUdV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Mar 2009 16:30:40 -0400
-Received: from charlotte.tuxdriver.com ([70.61.120.58]:50040 "EHLO
-	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752079AbZCTUaj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Mar 2009 16:30:39 -0400
-Date: Fri, 20 Mar 2009 16:29:35 -0400
-From: "John W. Linville" <linville@tuxdriver.com>
-To: davem@davemloft.net
-Cc: linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: pull request: wireless-2.6 2009-03-20
-Message-ID: <20090320202934.GA3263@tuxdriver.com>
+	Fri, 20 Mar 2009 16:33:21 -0400
+Received: from mail.lang.hm ([64.81.33.126]:43103 "EHLO bifrost.lang.hm"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751880AbZCTUdV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Mar 2009 16:33:21 -0400
+Date: Fri, 20 Mar 2009 13:32:44 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+cc: =?ISO-8859-15?Q?Daniel_Kr=FCger?= 
+	<daniel.krueger@systec-electronic.com>,
+       Robert Schwebel <r.schwebel@pengutronix.de>, Greg KH <greg@kroah.com>,
+       linux-kernel@vger.kernel.org, Michael Olbrich <mol@pengutronix.de>,
+       Wolfram Sang <wsa@pengutronix.de>,
+       Marc Kleine-Budde <mkl@pengutronix.de>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: The Linux Staging tree, what it is and is not.
+In-Reply-To: <20090320153713.65bf8e2d@lxorguk.ukuu.org.uk>
+Message-ID: <alpine.DEB.1.10.0903201332130.16753@asgard.lang.hm>
+References: <20090318183232.GA11594@kroah.com> <20090320005808.GM5367@pengutronix.de> <20090320100146.6599f671@lxorguk.ukuu.org.uk> <20090320103545.GQ5367@pengutronix.de> <20090320105556.4375176d@lxorguk.ukuu.org.uk> <20090320111552.GS5367@pengutronix.de>
+ <49C3B33F.1020905@systec-electronic.com> <20090320153713.65bf8e2d@lxorguk.ukuu.org.uk>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dave,
+On Fri, 20 Mar 2009, Alan Cox wrote:
 
-One last(?) straggler for 2.6.29 -- avoid a NULL function pointer
-dereference when processing certain nl80211 messages...
+>> information of what to copy to where comes from the object dictionary.
+>> But it is possible to extract this information from the objdict and pass
+>> it via generic structures (e.g. something like IO vectors) to the PDO
+>> module in kernel. The information flow of the configuration data is
+>> one-way only, from userspace to kernel. This is what I plan to implement
+>> in openPOWERLINK, because the copy information can also be passed to a
+>> special hardware like a DMA controller.
+>
+> Ok so your hardware in fact really is oriented around an mmap type
+> interface ?
 
-Please let me know if there are problems!
+what I understand from this thread is that the hardware is a standard 
+ethernet card.
 
-Thanks,
-
-John
-
----
-
-Individual patch is available here:
-
-	http://www.kernel.org/pub/linux/kernel/people/linville/wireless-2.6/
-
----
-
-The following changes since commit 170ebf85160dd128e1c4206cc197cce7d1424705:
-  Tilman Schmidt (1):
-        bas_gigaset: correctly allocate USB interrupt transfer buffer
-
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/linville/wireless-2.6.git master
-
-Jouni Malinen (1):
-      nl80211: Check that function pointer != NULL before using it
-
- net/wireless/nl80211.c |   11 +++++++++++
- 1 files changed, 11 insertions(+), 0 deletions(-)
-
-diff --git a/net/wireless/nl80211.c b/net/wireless/nl80211.c
-index 1e728ff..31b807a 100644
---- a/net/wireless/nl80211.c
-+++ b/net/wireless/nl80211.c
-@@ -1908,6 +1908,11 @@ static int nl80211_get_mesh_params(struct sk_buff *skb,
- 	if (err)
- 		return err;
- 
-+	if (!drv->ops->get_mesh_params) {
-+		err = -EOPNOTSUPP;
-+		goto out;
-+	}
-+
- 	/* Get the mesh params */
- 	rtnl_lock();
- 	err = drv->ops->get_mesh_params(&drv->wiphy, dev, &cur_params);
-@@ -2017,6 +2022,11 @@ static int nl80211_set_mesh_params(struct sk_buff *skb, struct genl_info *info)
- 	if (err)
- 		return err;
- 
-+	if (!drv->ops->set_mesh_params) {
-+		err = -EOPNOTSUPP;
-+		goto out;
-+	}
-+
- 	/* This makes sure that there aren't more than 32 mesh config
- 	 * parameters (otherwise our bitfield scheme would not work.) */
- 	BUILD_BUG_ON(NL80211_MESHCONF_ATTR_MAX > 32);
-@@ -2061,6 +2071,7 @@ static int nl80211_set_mesh_params(struct sk_buff *skb, struct genl_info *info)
- 	err = drv->ops->set_mesh_params(&drv->wiphy, dev, &cfg, mask);
- 	rtnl_unlock();
- 
-+ out:
- 	/* cleanup */
- 	cfg80211_put_dev(drv);
- 	dev_put(dev);
--- 
-John W. Linville		Someday the world will need a hero, and you
-linville@tuxdriver.com			might be all we have.  Be ready.
+David Lang
