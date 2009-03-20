@@ -1,88 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753751AbZCTFVJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757164AbZCTFVx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753751AbZCTFVJ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Mar 2009 01:21:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753211AbZCTFUw
+	id S1757164AbZCTFVx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Mar 2009 01:21:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750879AbZCTFVn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Mar 2009 01:20:52 -0400
-Received: from mail-gx0-f208.google.com ([209.85.217.208]:33477 "EHLO
-	mail-gx0-f208.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752768AbZCTFUu (ORCPT
+	Fri, 20 Mar 2009 01:21:43 -0400
+Received: from an-out-0708.google.com ([209.85.132.246]:23822 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755386AbZCTFVm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Mar 2009 01:20:50 -0400
+	Fri, 20 Mar 2009 01:21:42 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=dt5SWariNktkoc2taYGhv9y5+GB7E1oIADlL0m3gcPWURBBYV/H9q+ogIFbCEdkdjC
-         VTpInaCLxxP8QRO109QVOm+vZ01HbNSh060SHJL7SOr/YPiLVlYj+gU7irTTGrxikn8W
-         pBvhyGmEMV1XK/KSRbNbRanuxHGk9OcCivhfQ=
-MIME-Version: 1.0
-In-Reply-To: <b6a2187b0903192155q33510b57l9d5927538a0f4f99@mail.gmail.com>
-References: <MiincthRUSI.A.eKC.F4BvJB@chimera>
-	 <alpine.LFD.2.00.0903151136310.3131@localhost.localdomain>
-	 <1237143683.24621.7.camel@johannes.local>
-	 <20090315202603.GA9077@elte.hu>
-	 <b6a2187b0903160624gb9d207dv301506e589d93ed4@mail.gmail.com>
-	 <1237317742.31814.28.camel@johannes.local>
-	 <b6a2187b0903181958ke11abe7tdcbc4efeb950954d@mail.gmail.com>
-	 <b6a2187b0903182149x77e416ecuf73be2970173c601@mail.gmail.com>
-	 <1237455534.5100.56.camel@johannes.local>
-	 <b6a2187b0903192155q33510b57l9d5927538a0f4f99@mail.gmail.com>
-Date: Fri, 20 Mar 2009 13:20:47 +0800
-Message-ID: <b6a2187b0903192220p67880251ue8ba9b392f11da01@mail.gmail.com>
-Subject: Re: 2.6.29-rc8: Reported regressions from 2.6.28
-From: Jeff Chua <jeff.chua.linux@gmail.com>
-To: Johannes Berg <johannes@sipsolutions.net>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Adrian Bunk <bunk@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Network Development <netdev@vger.kernel.org>,
-       "John W. Linville" <linville@tuxdriver.com>
-Content-Type: text/plain; charset=ISO-8859-1
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=s63FaJOgy6oDJQikre1Xm6p4XUvhQNYF9mtljaC2pY7DmvRY2XCFroj4FiAlPj2hkL
+         kyDXBm2RNoNw4c8CH3KOXuXqiUiLyD2A2bCK8UoglBTkTE3Mkj+Z/ojzxMlwX4iMl42w
+         FGif7H0YG04yMSfLkoC1sBZ+D2kVECzQBtlJI=
+Subject: Re: PROBLEM: relay - stale data copied to user space
+From: Tom Zanussi <tzanussi@gmail.com>
+To: Martin Peschke <mpeschke@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
+In-Reply-To: <1237485040.4752.16.camel@kitka.ibm.com>
+References: <1237388848.4084.64.camel@kitka.ibm.com>
+	 <1237436347.7834.13.camel@charm-linux>
+	 <1237485040.4752.16.camel@kitka.ibm.com>
+Content-Type: text/plain
+Date: Fri, 20 Mar 2009 00:21:28 -0500
+Message-Id: <1237526488.7764.58.camel@charm-linux>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 20, 2009 at 12:55 PM, Jeff Chua <jeff.chua.linux@gmail.com> wrote:
-> On Thu, Mar 19, 2009 at 5:38 PM, Johannes Berg
-> <johannes@sipsolutions.net> wrote:
->> On Thu, 2009-03-19 at 12:49 +0800, Jeff Chua wrote:
->>
->>> Ignore the above loop thing. The cause seems to be this one instead.
->>>
->>>
->>> # this needs patch to work ...
->>> iwconfig wlan0 mode Managed
->>> ifconfig wlan0 up
->>> iwconfig wlan0 essid xxx
->>> iwconfig wlan0 key restricted xxx
->>> iwconfig wlan0 ap auto channel auto
->>
->> If you swap the key and essid lines, it will probably always work. But
->> I've yet to analyse your data to see why it doesn't in the other case.
->
-> Doesn't. Taking away "hiwconfig wlan0 ap auto channel auto" makes it works.
+Hi,
 
-More discoveries...
+On Thu, 2009-03-19 at 18:50 +0100, Martin Peschke wrote:
+> On Wed, 2009-03-18 at 23:19 -0500, Tom Zanussi wrote:
+> > On Wed, 2009-03-18 at 16:07 +0100, Martin Peschke wrote
+> > > This is my theory:
+> > > Timing matters. It's a race caused by improper protection of critical
+> > > sections in a producer-consumer scenario. A bug in the bookkeeping
+> > > allows a reader to read at a position that is just being written to.
+> > > 
+> > 
+> > It does look consistent with a reader reading an event that's been
+> > reserved but not yet written, or partially written e.g. if an event
+> > being written on one cpu was read by another before the first one
+> > finished.
+> 
+> So this is part of relay's design, and it's up to user space to make
+> sure that reader and writer are on the same CPU?
+> 
 
-It seems position of "ifconfig wlan0 up" matters
+No, that wasn't originally part of relay's design, but for all practical
+purposes that's what you need to do if you're using the read()
+interface.
 
-1) It can't be before iwconfig which will result in "SET failed on
-device wlan0 ; Device or resource busy".
+The original design was meant to be used with mmap() and poll() on
+complete sub-buffers i.e. you grab complete sub-buffers from the mmaped
+buffer only when poll() says they're ready.  If used this way, it
+doesn't matter which cpu is doing the reading or writing.  relay still
+works this way if you use mmap() as in e.g. the klog example.
 
-2) _Before_ "essid" and "key" settings. "ap auto channel auto" MUST NOT BE SET.
+The read() was added later, on top of something that wasn't designed
+with it in mind, the main difference being that a read() can be done at
+any time and it expects whatever's available to be returned, regardless
+of whether it's reading from a complete sub-buffer or not (if you could
+only read from complete sub-buffers, you might as well use the mmap()
+method).
 
-3) _After_ "essid" and "key". Ensure all iwconfig settings comes
-before "ifconfig".
+So if a reader can read from a sub-buffer at any time, and there can
+simultaneously be a writer in that sub-buffer, if they're on different
+cpus, you can get what you were seeing.  One way to prevent that is to
+keep the reader on the same cpu, and disable preemption for the writer,
+so when the reader on that cpu finally reads, it can be sure there are
+no in-progress events up to the endpoint of what it's reading.
 
+Hope that helps,
 
-So, it seems "ifconfig" must be done as the last stage.
+Tom
 
-Thanks,
-Jeff.
+> > Can you see if the below patch to blktrace userspace helps?
+> 
+> It appears to fix it. I will give it more testing in a larger
+> environment.
+> 
+> > Or failing that, explicitly using gettid() in place of getpid() in
+> > sched_setaffinity().  Or, failing that, you had mentioned previously
+> > that you would try to reproduce the problem on your laptop - were you
+> > able to do that?  If so, it would help in debugging it further...
+> 
+> This didn't work out. But then, it's a single-CPU machine.
+> 
+> Thanks,
+> Martin
+> 
+> 
+
