@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764263AbZCTXjL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764444AbZCTXkJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764263AbZCTXjL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Mar 2009 19:39:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761860AbZCTXY4
+	id S1764444AbZCTXkJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Mar 2009 19:40:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762998AbZCTXY7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Mar 2009 19:24:56 -0400
-Received: from kroah.org ([198.145.64.141]:48811 "EHLO coco.kroah.org"
+	Fri, 20 Mar 2009 19:24:59 -0400
+Received: from kroah.org ([198.145.64.141]:48854 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1762975AbZCTXYy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Mar 2009 19:24:54 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 20 15:29:28 2009
-Message-Id: <20090320222928.729556895@mini.kroah.org>
+	id S1762833AbZCTXY6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Mar 2009 19:24:58 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 20 15:29:29 2009
+Message-Id: <20090320222929.211666354@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 20 Mar 2009 15:28:47 -0700
+Date: Fri, 20 Mar 2009 15:28:50 -0700
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org, greg@kroah.com
+To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -25,12 +25,11 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, grant.likely@secretlab.ca,
-       afleming@freescale.com, linuxppc-dev@ozlabs.org,
-       Johns Daniel <johns.daniel@gmail.com>
-Subject: [patch 37/43] powerpc: Remove extra semicolon in fsl_soc.c
+       alan@lxorguk.ukuu.org.uk, Eric Anholt <eric@anholt.net>,
+       Dave Airlie <airlied@linux.ie>
+Subject: [patch 40/43] drm/i915: Dont double-unpin buffers if we take a signal in evict_everything().
 References: <20090320222810.386844059@mini.kroah.org>
-Content-Disposition: inline; filename=powerpc-remove-extra-semicolon-in-fsl_soc.c.patch
+Content-Disposition: inline; filename=drm-i915-don-t-double-unpin-buffers-if-we-take-a-signal-in-evict_everything.patch
 In-Reply-To: <20090320232116.GA3375@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -40,33 +39,31 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Johns Daniel <jdaniel@computer.org>
+From: Eric Anholt <eric@anholt.net>
 
-TSEC/MDIO will not work with older device trees because of a semicolon
-at the end of a macro resulting in an empty for loop body.
+commit b117763627ef4d24086801dd5f74c9eb2f487790 upstream.
 
-This fix only applies to 2.6.28; this code is gone in 2.6.29, according
-to Grant Likely!
+We haven't seen this in practice, but it was visible when looking at a bug
+report from when i915_gem_evict_everything() was broken and would always
+return error.
 
-Signed-off-by: Johns Daniel <johns.daniel@gmail.com>
-Acked-by: Grant Likely <grant.likely@secretlab.ca>
+Signed-off-by: Eric Anholt <eric@anholt.net>
+Signed-off-by: Dave Airlie <airlied@linux.ie>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
-
 ---
- arch/powerpc/sysdev/fsl_soc.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/gpu/drm/i915/i915_gem.c |    1 +
+ 1 file changed, 1 insertion(+)
 
---- a/arch/powerpc/sysdev/fsl_soc.c
-+++ b/arch/powerpc/sysdev/fsl_soc.c
-@@ -257,7 +257,7 @@ static int __init gfar_mdio_of_init(void
- 		gfar_mdio_of_init_one(np);
+--- a/drivers/gpu/drm/i915/i915_gem.c
++++ b/drivers/gpu/drm/i915/i915_gem.c
+@@ -2036,6 +2036,7 @@ i915_gem_execbuffer(struct drm_device *d
+ 		/* unpin all of our buffers */
+ 		for (i = 0; i < pinned; i++)
+ 			i915_gem_object_unpin(object_list[i]);
++		pinned = 0;
  
- 	/* try the deprecated version */
--	for_each_compatible_node(np, "mdio", "gianfar");
-+	for_each_compatible_node(np, "mdio", "gianfar")
- 		gfar_mdio_of_init_one(np);
- 
- 	return 0;
+ 		/* evict everyone we can from the aperture */
+ 		ret = i915_gem_evict_everything(dev);
 
 
