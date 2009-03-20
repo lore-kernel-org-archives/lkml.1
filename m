@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763375AbZCTX25@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763339AbZCTX2l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763375AbZCTX25 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Mar 2009 19:28:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762920AbZCTXY0
+	id S1763339AbZCTX2l (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Mar 2009 19:28:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762939AbZCTXYZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Mar 2009 19:24:26 -0400
-Received: from kroah.org ([198.145.64.141]:48531 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1762937AbZCTXYZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 20 Mar 2009 19:24:25 -0400
+Received: from kroah.org ([198.145.64.141]:48522 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1762936AbZCTXYY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Mar 2009 19:24:24 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 20 15:29:24 2009
-Message-Id: <20090320222924.155325468@mini.kroah.org>
+Message-Id: <20090320222923.991758234@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 20 Mar 2009 15:28:18 -0700
+Date: Fri, 20 Mar 2009 15:28:17 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,10 +25,11 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Takashi Iwai <tiwai@suse.de>
-Subject: [patch 08/43] ALSA: hda - Fix DMA mask for ATI controllers
+       alan@lxorguk.ukuu.org.uk, Jiri Slaby <jirislaby@gmail.com>,
+       Takashi Iwai <tiwai@suse.de>
+Subject: [patch 07/43] ALSA: pcm_oss, fix locking typo
 References: <20090320222810.386844059@mini.kroah.org>
-Content-Disposition: inline; filename=alsa-hda-fix-dma-mask-for-ati-controllers.patch
+Content-Disposition: inline; filename=alsa-pcm_oss-fix-locking-typo.patch
 In-Reply-To: <20090320232116.GA3375@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -38,40 +39,40 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Takashi Iwai <tiwai@suse.de>
+From: Jiri Slaby <jirislaby@gmail.com>
 
-commit 09240cf429505891d6123ce14a29f58f2a60121e upstream.
+commit 91054598f794fb5d8a0b1e747ff8e2e8fc2115b3 upstream.
 
-ATI controllers (at least some SB0600 models) appear buggy to handle
-64bit DMA.  As a workaround, reset GCAP bit0 and let the driver to
-use only 32bit DMA on these controllers.
+s/mutex_lock/mutex_unlock/ on 2 fail paths in snd_pcm_oss_proc_write.
+Probably a typo, lock should be unlocked when leaving the function.
 
+Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
 Signed-off-by: Takashi Iwai <tiwai@suse.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- sound/pci/hda/hda_intel.c |    8 ++++++++
- 1 file changed, 8 insertions(+)
+ sound/core/oss/pcm_oss.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
---- a/sound/pci/hda/hda_intel.c
-+++ b/sound/pci/hda/hda_intel.c
-@@ -2208,9 +2208,17 @@ static int __devinit azx_create(struct s
- 	gcap = azx_readw(chip, GCAP);
- 	snd_printdd("chipset global capabilities = 0x%x\n", gcap);
- 
-+	/* ATI chips seems buggy about 64bit DMA addresses */
-+	if (chip->driver_type == AZX_DRIVER_ATI)
-+		gcap &= ~0x01;
-+
- 	/* allow 64bit DMA address if supported by H/W */
- 	if ((gcap & 0x01) && !pci_set_dma_mask(pci, DMA_64BIT_MASK))
- 		pci_set_consistent_dma_mask(pci, DMA_64BIT_MASK);
-+	else {
-+		pci_set_dma_mask(pci, DMA_32BIT_MASK);
-+		pci_set_consistent_dma_mask(pci, DMA_32BIT_MASK);
-+	}
- 
- 	/* read number of streams from GCAP register instead of using
- 	 * hardcoded value
+--- a/sound/core/oss/pcm_oss.c
++++ b/sound/core/oss/pcm_oss.c
+@@ -2872,7 +2872,7 @@ static void snd_pcm_oss_proc_write(struc
+ 			setup = kmalloc(sizeof(*setup), GFP_KERNEL);
+ 			if (! setup) {
+ 				buffer->error = -ENOMEM;
+-				mutex_lock(&pstr->oss.setup_mutex);
++				mutex_unlock(&pstr->oss.setup_mutex);
+ 				return;
+ 			}
+ 			if (pstr->oss.setup_list == NULL)
+@@ -2886,7 +2886,7 @@ static void snd_pcm_oss_proc_write(struc
+ 			if (! template.task_name) {
+ 				kfree(setup);
+ 				buffer->error = -ENOMEM;
+-				mutex_lock(&pstr->oss.setup_mutex);
++				mutex_unlock(&pstr->oss.setup_mutex);
+ 				return;
+ 			}
+ 		}
 
 
