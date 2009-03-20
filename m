@@ -1,41 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755623AbZCTBmq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756989AbZCTBnn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755623AbZCTBmq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Mar 2009 21:42:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752814AbZCTBmf
+	id S1756989AbZCTBnn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Mar 2009 21:43:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752032AbZCTBne
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Mar 2009 21:42:35 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:33893 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751202AbZCTBme (ORCPT
+	Thu, 19 Mar 2009 21:43:34 -0400
+Received: from outbound-mail-40.bluehost.com ([69.89.20.194]:40901 "HELO
+	outbound-mail-40.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753783AbZCTBne (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Mar 2009 21:42:34 -0400
-Date: Thu, 19 Mar 2009 19:42:30 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: Yu Zhao <yu.zhao@intel.com>, linux-pci@vger.kernel.org,
-       kvm@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v11 1/8] PCI: initialize and release SR-IOV capability
-Message-ID: <20090320014230.GD14127@parisc-linux.org>
-References: <1236756349-18892-1-git-send-email-yu.zhao@intel.com> <1236756349-18892-2-git-send-email-yu.zhao@intel.com> <20090319195312.GC14127@parisc-linux.org> <20090319182016.33a9a1f2@hobbes.lan>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090319182016.33a9a1f2@hobbes.lan>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Thu, 19 Mar 2009 21:43:34 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
+	b=QWS9razF1InUf0a245E4KoxTlgyjBAbvuFlC0C1qUpPBtSp7j6g0oaE7pBSpn7mFLGdHVZRToQQaSafu7yUSUzWwW44N8mDxvOs3Z/SBAlDQfslauwoiKFQokRjN0PUh;
+Date: Thu, 19 Mar 2009 18:43:31 -0700
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Linux Kernel Development <linux-kernel@vger.kernel.org>,
+       linux-pci@vger.kernel.org
+Subject: Re: [PATCH] pci: Use kzalloc() in pci_create_bus()
+Message-ID: <20090319184331.66a878a5@hobbes.lan>
+In-Reply-To: <Pine.LNX.4.64.0903152009400.2201@anakin>
+References: <Pine.LNX.4.64.0903152009400.2201@anakin>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 19, 2009 at 06:20:16PM -0700, Jesse Barnes wrote:
-> Ok Yu, I'm ready to apply this set, can you send an updated one with
-> the fixes Matthew mentioned?
+On Sun, 15 Mar 2009 20:14:37 +0100 (CET)
+Geert Uytterhoeven <geert@linux-m68k.org> wrote:
 
-And please add Reviewed-by: Matthew Wilcox <willy@linux.intel.com>
-to each of the patches.
+> Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+
+Applied, thanks.
 
 -- 
-Matthew Wilcox				Intel Open Source Technology Centre
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+Jesse Barnes, Intel Open Source Technology Center
