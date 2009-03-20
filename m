@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762517AbZCTXU5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761520AbZCTXV2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762517AbZCTXU5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Mar 2009 19:20:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760053AbZCTXN6
+	id S1761520AbZCTXV2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Mar 2009 19:21:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759943AbZCTXN7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Mar 2009 19:13:58 -0400
-Received: from kroah.org ([198.145.64.141]:53218 "EHLO coco.kroah.org"
+	Fri, 20 Mar 2009 19:13:59 -0400
+Received: from kroah.org ([198.145.64.141]:53237 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1759943AbZCTXNx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Mar 2009 19:13:53 -0400
+	id S1760035AbZCTXNz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Mar 2009 19:13:55 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 20 15:27:12 2009
-Message-Id: <20090320222712.293646809@mini.kroah.org>
+Message-Id: <20090320222712.590730250@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 20 Mar 2009 15:26:32 -0700
+Date: Fri, 20 Mar 2009 15:26:34 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,11 +25,10 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Karsten Wiese <fzu@wemgehoertderstaat.de>,
-       David Brownell <david-b@pacbell.net>
-Subject: [patch 21/32] USB: EHCI: Fix isochronous URB leak
+       alan@lxorguk.ukuu.org.uk, Albert Pauw <albert.pauw@gmail.com>
+Subject: [patch 23/32] USB: option.c: add ZTE 622 modem device
 References: <20090320222611.872315885@mini.kroah.org>
-Content-Disposition: inline; filename=usb-ehci-fix-isochronous-urb-leak.patch
+Content-Disposition: inline; filename=usb-option.c-add-zte-622-modem-device.patch
 In-Reply-To: <20090320231037.GA2732@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -39,80 +38,37 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Karsten Wiese <fzuuzf@googlemail.com>
+From: Albert Pauw <albert.pauw@gmail.com>
 
-commit 508db8c954d55ed30f870d2c24d741ba6269d13c upstream.
+commit 9ea19b82f3126da4e47d6b94563a3c2cd586f6e2 upstream.
 
-ehci-hcd uses usb_get_urb() and usb_put_urb() in an unbalanced way causing
-isochronous URB's kref.counts incrementing once per usb_submit_urb() call.
-The culprit is *usb being set to NULL when usb_put_urb() is called after URB
-is given back.
-Due to other fixes there is no need for ehci-hcd to deal with usb_get_urb()
-nor usb_put_urb() anymore, so patch removes their usages in ehci-hcd.
-Patch also makes ehci_to_hcd(ehci)->self.bandwidth_allocated adjust, if a
-stream finishes.
+Please consider this small patch for the usb option-card driver.
+This patch adds the ZTE 622 usb modem device.
 
-Signed-off-by: Karsten Wiese <fzu@wemgehoertderstaat.de>
-Cc: David Brownell <david-b@pacbell.net>
+Signed-off-by: Albert Pauw <albert.pauw@gmail.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/usb/host/ehci-sched.c |   10 ++++------
- 1 file changed, 4 insertions(+), 6 deletions(-)
+ drivers/usb/serial/option.c |    2 ++
+ 1 file changed, 2 insertions(+)
 
---- a/drivers/usb/host/ehci-sched.c
-+++ b/drivers/usb/host/ehci-sched.c
-@@ -1536,7 +1536,7 @@ itd_link_urb (
- 					struct ehci_itd, itd_list);
- 			list_move_tail (&itd->itd_list, &stream->td_list);
- 			itd->stream = iso_stream_get (stream);
--			itd->urb = usb_get_urb (urb);
-+			itd->urb = urb;
- 			itd_init (ehci, stream, itd);
- 		}
+--- a/drivers/usb/serial/option.c
++++ b/drivers/usb/serial/option.c
+@@ -282,6 +282,7 @@ static int  option_send_setup(struct tty
  
-@@ -1645,7 +1645,7 @@ itd_complete (
- 	(void) disable_periodic(ehci);
- 	ehci_to_hcd(ehci)->self.bandwidth_isoc_reqs--;
- 
--	if (unlikely (list_empty (&stream->td_list))) {
-+	if (unlikely(list_is_singular(&stream->td_list))) {
- 		ehci_to_hcd(ehci)->self.bandwidth_allocated
- 				-= stream->bandwidth;
- 		ehci_vdbg (ehci,
-@@ -1656,7 +1656,6 @@ itd_complete (
- 	iso_stream_put (ehci, stream);
- 
- done:
--	usb_put_urb(urb);
- 	itd->urb = NULL;
- 	if (ehci->clock_frame != itd->frame || itd->index[7] != -1) {
- 		/* OK to recycle this ITD now. */
-@@ -1949,7 +1948,7 @@ sitd_link_urb (
- 				struct ehci_sitd, sitd_list);
- 		list_move_tail (&sitd->sitd_list, &stream->td_list);
- 		sitd->stream = iso_stream_get (stream);
--		sitd->urb = usb_get_urb (urb);
-+		sitd->urb = urb;
- 
- 		sitd_patch(ehci, stream, sitd, sched, packet);
- 		sitd_link (ehci, (next_uframe >> 3) % ehci->periodic_size,
-@@ -2034,7 +2033,7 @@ sitd_complete (
- 	(void) disable_periodic(ehci);
- 	ehci_to_hcd(ehci)->self.bandwidth_isoc_reqs--;
- 
--	if (list_empty (&stream->td_list)) {
-+	if (list_is_singular(&stream->td_list)) {
- 		ehci_to_hcd(ehci)->self.bandwidth_allocated
- 				-= stream->bandwidth;
- 		ehci_vdbg (ehci,
-@@ -2045,7 +2044,6 @@ sitd_complete (
- 	iso_stream_put (ehci, stream);
- 	/* OK to recycle this SITD now that its completion callback ran. */
- done:
--	usb_put_urb(urb);
- 	sitd->urb = NULL;
- 	sitd->stream = NULL;
- 	list_move(&sitd->sitd_list, &stream->free_list);
+ /* ZTE PRODUCTS */
+ #define ZTE_VENDOR_ID				0x19d2
++#define ZTE_PRODUCT_MF622			0x0001
+ #define ZTE_PRODUCT_MF628			0x0015
+ #define ZTE_PRODUCT_MF626			0x0031
+ #define ZTE_PRODUCT_CDMA_TECH			0xfffe
+@@ -499,6 +500,7 @@ static struct usb_device_id option_ids[]
+ 	{ USB_DEVICE(QUALCOMM_VENDOR_ID, 0x6613)}, /* Onda H600/ZTE MF330 */
+ 	{ USB_DEVICE(MAXON_VENDOR_ID, 0x6280) }, /* BP3-USB & BP3-EXT HSDPA */
+ 	{ USB_DEVICE(TELIT_VENDOR_ID, TELIT_PRODUCT_UC864E) },
++	{ USB_DEVICE(ZTE_VENDOR_ID, ZTE_PRODUCT_MF622) },
+ 	{ USB_DEVICE(ZTE_VENDOR_ID, ZTE_PRODUCT_MF626) },
+ 	{ USB_DEVICE(ZTE_VENDOR_ID, ZTE_PRODUCT_MF628) },
+ 	{ USB_DEVICE(ZTE_VENDOR_ID, ZTE_PRODUCT_CDMA_TECH) },
 
 
