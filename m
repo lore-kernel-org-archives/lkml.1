@@ -1,85 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762932AbZCTKaz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762995AbZCTKbl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762932AbZCTKaz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Mar 2009 06:30:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762071AbZCTK2H
+	id S1762995AbZCTKbl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Mar 2009 06:31:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762700AbZCTK2i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Mar 2009 06:28:07 -0400
-Received: from hera.kernel.org ([140.211.167.34]:35343 "EHLO hera.kernel.org"
+	Fri, 20 Mar 2009 06:28:38 -0400
+Received: from hera.kernel.org ([140.211.167.34]:35369 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762671AbZCTK2C (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Mar 2009 06:28:02 -0400
-Date: Fri, 20 Mar 2009 10:26:18 GMT
-From: Li Zefan <lizf@cn.fujitsu.com>
+	id S1762694AbZCTK2h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Mar 2009 06:28:37 -0400
+Date: Fri, 20 Mar 2009 10:26:53 GMT
+From: Peter Zijlstra <peterz@infradead.org>
 To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, acme@redhat.com, hpa@zytor.com,
-       mingo@redhat.com, lizf@cn.fujitsu.com, jens.axboe@oracle.com,
-       fweisbec@gmail.com, rostedt@goodmis.org, tglx@linutronix.de,
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       a.p.zijlstra@chello.nl, peterz@infradead.org, npiggin@suse.de,
+       heiko.carstens@de.ibm.com, tglx@linutronix.de, mingo@elte.hu
+Reply-To: npiggin@suse.de, mingo@redhat.com, hpa@zytor.com,
+       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
+       peterz@infradead.org, heiko.carstens@de.ibm.com, tglx@linutronix.de,
        mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, acme@redhat.com,
-       linux-kernel@vger.kernel.org, lizf@cn.fujitsu.com,
-       jens.axboe@oracle.com, fweisbec@gmail.com, rostedt@goodmis.org,
-       tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <49C2F5FF.80002@cn.fujitsu.com>
-References: <49C2F5FF.80002@cn.fujitsu.com>
-Subject: [tip:tracing/blktrace] blktrace: don't increase blk_probes_ref if failed to setup blk trace
-Message-ID: <tip-64ddedc03c9ecbe97b0700e85c5f11d2f5a4565c@git.kernel.org>
-Git-Commit-ID: 64ddedc03c9ecbe97b0700e85c5f11d2f5a4565c
+In-Reply-To: <1237544000.24626.52.camel@twins>
+References: <1237544000.24626.52.camel@twins>
+Subject: [tip:core/locking] lockdep: fix deadlock in lockdep_trace_alloc
+Message-ID: <tip-b0992675bc7a5eca3c6a5eeea5ed680cec09c8e7@git.kernel.org>
+Git-Commit-ID: b0992675bc7a5eca3c6a5eeea5ed680cec09c8e7
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 20 Mar 2009 10:26:20 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 20 Mar 2009 10:26:55 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  64ddedc03c9ecbe97b0700e85c5f11d2f5a4565c
-Gitweb:     http://git.kernel.org/tip/64ddedc03c9ecbe97b0700e85c5f11d2f5a4565c
-Author:     Li Zefan <lizf@cn.fujitsu.com>
-AuthorDate: Fri, 20 Mar 2009 09:48:47 +0800
+Commit-ID:  b0992675bc7a5eca3c6a5eeea5ed680cec09c8e7
+Gitweb:     http://git.kernel.org/tip/b0992675bc7a5eca3c6a5eeea5ed680cec09c8e7
+Author:     Peter Zijlstra <peterz@infradead.org>
+AuthorDate: Fri, 20 Mar 2009 11:13:20 +0100
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Fri, 20 Mar 2009 11:20:05 +0100
+CommitDate: Fri, 20 Mar 2009 11:23:15 +0100
 
-blktrace: don't increase blk_probes_ref if failed to setup blk trace
+lockdep: fix deadlock in lockdep_trace_alloc
 
-do_blk_trace_setup() may return EBUSY, but the current code
-doesn't decrease blk_probes_ref in this case.
+Heiko reported that we grab the graph lock with irqs enabled.
 
-Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
-Cc: Jens Axboe <jens.axboe@oracle.com>
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>
-Acked-by: Frederic Weisbecker <fweisbec@gmail.com>
-LKML-Reference: <49C2F5FF.80002@cn.fujitsu.com>
+Fix this by providng the same wrapper as all other lockdep entry
+functions have.
+
+Reported-by: Heiko Carstens <heiko.carstens@de.ibm.com>
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Nick Piggin <npiggin@suse.de>
+LKML-Reference: <1237544000.24626.52.camel@twins>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
 ---
- kernel/trace/blktrace.c |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
+ kernel/lockdep.c |   16 +++++++++++++++-
+ 1 files changed, 15 insertions(+), 1 deletions(-)
 
-diff --git a/kernel/trace/blktrace.c b/kernel/trace/blktrace.c
-index 223b92e..11e7c8d 100644
---- a/kernel/trace/blktrace.c
-+++ b/kernel/trace/blktrace.c
-@@ -468,9 +468,6 @@ int do_blk_trace_setup(struct request_queue *q, char *name, dev_t dev,
- 	bt->pid = buts->pid;
- 	bt->trace_state = Blktrace_setup;
+diff --git a/kernel/lockdep.c b/kernel/lockdep.c
+index 77ac37f..c750038 100644
+--- a/kernel/lockdep.c
++++ b/kernel/lockdep.c
+@@ -2257,7 +2257,7 @@ void trace_softirqs_off(unsigned long ip)
+ 		debug_atomic_inc(&redundant_softirqs_off);
+ }
  
--	if (atomic_add_return(1, &blk_probes_ref) == 1)
--		blk_register_tracepoints();
--
- 	ret = -EBUSY;
- 	old_bt = xchg(&q->blk_trace, bt);
- 	if (old_bt) {
-@@ -478,6 +475,9 @@ int do_blk_trace_setup(struct request_queue *q, char *name, dev_t dev,
- 		goto err;
- 	}
+-void lockdep_trace_alloc(gfp_t gfp_mask)
++static void __lockdep_trace_alloc(gfp_t gfp_mask)
+ {
+ 	struct task_struct *curr = current;
  
-+	if (atomic_add_return(1, &blk_probes_ref) == 1)
-+		blk_register_tracepoints();
+@@ -2282,6 +2282,20 @@ void lockdep_trace_alloc(gfp_t gfp_mask)
+ 	mark_held_locks(curr, RECLAIM_FS);
+ }
+ 
++void lockdep_trace_alloc(gfp_t gfp_mask)
++{
++	unsigned long flags;
 +
- 	return 0;
- err:
- 	if (bt) {
++	if (unlikely(current->lockdep_recursion))
++		return;
++
++	raw_local_irq_save(flags);
++	current->lockdep_recursion = 1;
++	__lockdep_trace_alloc(gfp_mask);
++	current->lockdep_recursion = 0;
++	raw_local_irq_restore(flags);
++}
++
+ static int mark_irqflags(struct task_struct *curr, struct held_lock *hlock)
+ {
+ 	/*
