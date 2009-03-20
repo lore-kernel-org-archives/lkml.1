@@ -1,120 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753237AbZCTEQf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753786AbZCTE0X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753237AbZCTEQf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Mar 2009 00:16:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750820AbZCTEQY
+	id S1753786AbZCTE0X (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Mar 2009 00:26:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751003AbZCTE0N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Mar 2009 00:16:24 -0400
-Received: from g5t0007.atlanta.hp.com ([15.192.0.44]:47939 "EHLO
-	g5t0007.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750703AbZCTEQX (ORCPT
+	Fri, 20 Mar 2009 00:26:13 -0400
+Received: from rv-out-0506.google.com ([209.85.198.224]:38835 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750820AbZCTE0M convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Mar 2009 00:16:23 -0400
-Date: Thu, 19 Mar 2009 22:15:00 -0600
-From: Alex Chiang <achiang@hp.com>
-To: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
-Cc: jbarnes@virtuousgeek.org, shimada-yxb@necst.nec.co.jp,
-       linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v4 00/12] PCI core learns hotplug
-Message-ID: <20090320041500.GB26595@ldl.fc.hp.com>
-References: <20090318222426.887.1008.stgit@bob.kio> <49C1FE8A.9000401@jp.fujitsu.com>
+	Fri, 20 Mar 2009 00:26:12 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=p/omwd47YXXvfowWB9viONFZpRjeH6HsiR78Zp+8SCM1PMgmrz2QTiEttO4VqkoG/O
+         fmGA4Y1F0py4hQEbzzBUO8ZT0JfzhqnT+4XOhgBRXrLszNlcCnZrIGIKQ2Zyct/iaTuu
+         sglM7ZpfQ9PbjYowG7wp960MAa+BaPVdu5ow8=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49C1FE8A.9000401@jp.fujitsu.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <20090318183232.GA11594@kroah.com>
+References: <20090318183232.GA11594@kroah.com>
+Date: Fri, 20 Mar 2009 14:26:10 +1000
+Message-ID: <21d7e9970903192126r69687891madbce3d5ee77f6a0@mail.gmail.com>
+Subject: Re: The Linux Staging tree, what it is and is not.
+From: Dave Airlie <airlied@gmail.com>
+To: Greg KH <greg@kroah.com>
+Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>:
-> Alex Chiang wrote:
->> We're getting close to the new merge window, and I _think_ this
->> patch series is ready for consideration. Notably:
->>
->> 	- multiple rescans/removes of devices with and without bridges
->> 	- verified that resource allocation after multiple remove/rescan
->> 	  cycles is the same as what we had during initial boot
->> 	- fixes the complete suckage of fakephp (that I created)
->> 	- doesn't affect existing hotplug drivers
->> 	- tested on x86 and ia64 platforms
->>
->> Please review, and consider testing. For testing ease, you can pull
->> from my git branch:
->>
->> 	git://git.kernel.org/pub/scm/linux/kernel/git/achiang/pci-hotplug.git
->> 	branch 'test-20090318' is what you want
->>
+On Thu, Mar 19, 2009 at 4:32 AM, Greg KH <greg@kroah.com> wrote:
+> Hi all,
 >
-> I got the following oops when I did
+> It's been many months since the Linux Kernel developers conference, where the
+> linux-staging tree was discussed and role changed.  It turns out that people
+> are still a bit confused as to what the staging tree is for, and how it works.
 >
-> # echo 1 > remove
+> So here's a short summary, I'm not going into the history or background here,
+> that's a much longer writeup that I'd be glad to do if people are interested.
 >
-> on the bridge device.
 >
-> [ 6639.239164] =============================================
-> [ 6639.239191] [ INFO: possible recursive locking detected ]
-> [ 6639.239212] 2.6.29-rc8-kk #1
-> [ 6639.239227] ---------------------------------------------
-> [ 6639.239243] events/8/60 is trying to acquire lock:
-> [ 6639.239252]  (events){--..}, at: [<ffffffff80257fc0>] flush_workqueue+0x0/0xa0
-> [ 6639.239252]
-> [ 6639.239252] but task is already holding lock:
-> [ 6639.239252]  (events){--..}, at: [<ffffffff80257648>] run_workqueue+0x108/0x230
-> [ 6639.239252]
-> [ 6639.239252] other info that might help us debug this:
-> [ 6639.239252] 3 locks held by events/8/60:
-> [ 6639.239252]  #0:  (events){--..}, at: [<ffffffff80257648>] run_workqueue+0x108/0x230
-> [ 6639.239252]  #1:  (&ss->work){--..}, at: [<ffffffff80257648>] run_workqueue+0x108/0x230
-> [ 6639.239252]  #2:  (pci_remove_rescan_mutex){--..}, at: [<ffffffff803c05b9>] remove_callback+0x29/0x80
-> [ 6639.239252]
-> [ 6639.239252] stack backtrace:
-> [ 6639.239252] Pid: 60, comm: events/8 Not tainted 2.6.29-rc8-kk #1
-> [ 6639.239252] Call Trace:
-> [ 6639.239252]  [<ffffffff8026dfcd>] validate_chain+0xb7d/0x1260
-> [ 6639.239252]  [<ffffffff8026eade>] __lock_acquire+0x42e/0xa40
-> [ 6639.239252]  [<ffffffff8026f148>] lock_acquire+0x58/0x80
-> [ 6639.239252]  [<ffffffff80257fc0>] ? flush_workqueue+0x0/0xa0
-> [ 6639.239252]  [<ffffffff8025800d>] flush_workqueue+0x4d/0xa0
-> [ 6639.239252]  [<ffffffff80257fc0>] ? flush_workqueue+0x0/0xa0
-> [ 6639.239252]  [<ffffffff80258070>] flush_scheduled_work+0x10/0x20
-> [ 6639.239252]  [<ffffffffa0158065>] e1000_remove+0x55/0xfe [e1000e]
-> [ 6639.239252]  [<ffffffff8033ee60>] ? sysfs_schedule_callback_work+0x0/0x50
-> [ 6639.239252]  [<ffffffff803bf7a2>] pci_device_remove+0x32/0x70
-> [ 6639.239252]  [<ffffffff80441409>] __device_release_driver+0x59/0x90
-> [ 6639.241006]  [<ffffffff8044153b>] device_release_driver+0x2b/0x40
-> [ 6639.241006]  [<ffffffff80441036>] bus_remove_device+0xa6/0x120
-> [ 6639.241006]  [<ffffffff8043dacb>] device_del+0x12b/0x190
-> [ 6639.241006]  [<ffffffff8043db56>] device_unregister+0x26/0x70
-> [ 6639.241006]  [<ffffffff803ba529>] pci_stop_dev+0x49/0x60
-> [ 6639.241006]  [<ffffffff803ba670>] pci_remove_bus_device+0x40/0xc0
-> [ 6639.241006]  [<ffffffff803ba71d>] pci_remove_behind_bridge+0x2d/0x50
-> [ 6639.241006]  [<ffffffff803ba64e>] pci_remove_bus_device+0x1e/0xc0
-> [ 6639.241006]  [<ffffffff803c05c8>] remove_callback+0x38/0x80
-> [ 6639.241006]  [<ffffffff8033ee7f>] sysfs_schedule_callback_work+0x1f/0x50
-> [ 6639.241006]  [<ffffffff8025769a>] run_workqueue+0x15a/0x230
-> [ 6639.241006]  [<ffffffff80257648>] ? run_workqueue+0x108/0x230
-> [ 6639.241006]  [<ffffffff8025846f>] worker_thread+0x9f/0x100
-> [ 6639.241006]  [<ffffffff8025bce0>] ? autoremove_wake_function+0x0/0x40
-> [ 6639.241006]  [<ffffffff802583d0>] ? worker_thread+0x0/0x100
-> [ 6639.241006]  [<ffffffff8025b89d>] kthread+0x4d/0x80
-> [ 6639.241006]  [<ffffffff8020d4ba>] child_rip+0xa/0x20
-> [ 6639.241006]  [<ffffffff8020cebc>] ? restore_args+0x0/0x30
-> [ 6639.241006]  [<ffffffff8025b850>] ? kthread+0x0/0x80
-> [ 6639.241006]  [<ffffffff8020d4b0>] ? child_rip+0x0/0x20
-> [ 6639.283330] e1000e 0000:40:00.0: PCI INT A disabled
-> [ 6639.324332] e1000e 0000:40:00.1: PCI INT B disabled
-> [ 6639.325031] aer 0000:2f:04.0:pcie22: unloading service driver aer
+> The Linux Staging Tree, what it is and is not.
+>
+> What the Linux Staging tree is:
+>  The Linux Staging tree (or just "staging" from now on) is used to hold
+>  stand-alone[1] drivers and filesystems that are not ready to be merged into
+>  the main portion of the Linux kernel tree at this point in time for various
+>  technical reasons.  It is contained within the main Linux kernel tree so
+>  that users can get access to the drivers much easier than before, and to
+>  provide a common place for the development to happen, resolving the
+>  "hundreds of different download sites" problem that most out-of-tree drivers
+>  have had in the past.
+>
+> What the Linux Staging tree is not:
+>  The staging tree is not a place to dump code and run away, hoping that
+>  someone else will to the cleanup work for you.  While there are developers
+>  available and willing to do this kind of work, you need to get them to agree
+>  to "babysit" the code in order for it to be accepted.
+>
+> Location and Development:
+>  The staging tree is now contained within the main Linux kernel source tree
+>  at the location drivers/staging/.  All development happens within the main
+>  kernel source tree, like any other subsystem within the kernel.  This means:
+>        - the linux-next tree contains the latest version of the staging tree,
+>          with bugfixes that are about to be merged into Linus's tree, as well
+>          as the patches that are to be merged into the next major kernel
+>          release.
+>        - if you wish to do work on the staging tree, checkout the linux-next
+>          tree and send patches based on that.
+>
+> Runtime:
+>  When code from the staging tree is loaded in the kernel, a warning message
+>  will be printed to the kernel log saying:
+>    MODULE_NAME: module is from the staging directory, the quality is unknown, you have been warned.
+>  and the kernel will be tainted with the TAINT_CRAP flag.  This flag shows up
+>  in any kernel oops that might be produced after the driver has been loaded.
+>
+>  Note, most kernel developers have expressed the warning that they will not
+>  work on bugs for when this taint flag has happened, so if you run into a
+>  kernel problem after loading such a module, please work to reproduce the
+>  issue without a staging module loaded in order to be able to get help from
+>  the community.
+>
+> If anyone has any questions that this summary doesn't answer, please let me
+> know.
 
-pci_device_remove() calls the driver's ->remove method directly;
-it shouldn't be messing around with that sysfs callback.
+What is the target audience for staging?
 
-Does this only happen with e1000e devices? Or does it happen on
-any bridge device?
+It doesn't fill the out-of-tree modules void as far as I can tell.
 
-I am stumped; I've never seen this locking issue before...
+The model most users are stuck with are
+a) distro kernel
+b) hw not supported.
 
-Will continue to look, thanks.
+Distro kernel could be any revision from 2.6.15 or something crazy up until now.
 
-/ac
+Generally you can pull the out of tree modules zip file or repo, build
+it against
+the kernel you have installed and know works with all your other hw
+and your nvidia
+binary driver, and the out of tree people have wrapped all the API changes so
+that you don't have to do much in theory for it to just build and
+install on your
+kernel.
 
+Staging doesn't fulfill this role from my POV:
+a) what sane distro will enable staging drivers? do they care about their users?
+b) if your distro doesn't enable staging drivers you now have two options:
+1. distro kernel rebuild with staging drivers enabled if new enough
+distro kernel
+2. kernel.org kernel build with staging drivers enabled.
+
+For a normal user who just wants his hw to work, these options are possibly
+most unappealing. They still want do just download something from out-of-tree
+which does all the nice API break wrapping for them and is 1MB instead of 300MB.
+
+So hence my target audience question.
+
+Dave.
