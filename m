@@ -1,84 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761022AbZCTBtq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761667AbZCTBul@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761022AbZCTBtq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Mar 2009 21:49:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761107AbZCTBtb
+	id S1761667AbZCTBul (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Mar 2009 21:50:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754575AbZCTBu2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Mar 2009 21:49:31 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:55917 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1761141AbZCTBta (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Mar 2009 21:49:30 -0400
-Message-ID: <49C2F63C.2090107@cn.fujitsu.com>
-Date: Fri, 20 Mar 2009 09:49:48 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Jens Axboe <jens.axboe@oracle.com>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH 7/7] blktrace: avoid accessing NULL bdev->bd_disk
-References: <49C2F599.3060306@cn.fujitsu.com>
-In-Reply-To: <49C2F599.3060306@cn.fujitsu.com>
-Content-Type: text/plain; charset=UTF-8
+	Thu, 19 Mar 2009 21:50:28 -0400
+Received: from outbound-mail-115.bluehost.com ([69.89.24.5]:37731 "HELO
+	outbound-mail-115.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1757381AbZCTBu1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Mar 2009 21:50:27 -0400
+X-Greylist: delayed 399 seconds by postgrey-1.27 at vger.kernel.org; Thu, 19 Mar 2009 21:50:27 EDT
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
+	b=lC7p3+xpJy/oNkpGM7ORGcbNmeMumzACf0/8wII9c1aOkxwG6nMlNZ5/obqaHAFGPLzJqFS2YPeTL8kmVxymHj+ecyCllfAVp1SwVmGwkjyorlrp6Ci5gO4tr+hy5G/3;
+Date: Thu, 19 Mar 2009 18:43:44 -0700
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Alex Chiang <achiang@hp.com>
+Cc: rjw@sisk.pl, linux-pci <linux-pci@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] PCIe portdrv: eliminate double kfree in remove path
+Message-ID: <20090319184344.286b557e@hobbes.lan>
+In-Reply-To: <20090309180815.GH32589@ldl.fc.hp.com>
+References: <20090309180815.GH32589@ldl.fc.hp.com>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-bdev->bd_disk can be NULL, if the block device is not opened.
+On Mon, 9 Mar 2009 12:08:15 -0600
+Alex Chiang <achiang@hp.com> wrote:
 
-Try this against an unmounted partition, and you'll see NULL dereference:
-  # echo 1 > /sys/block/sda/sda5/enable
+> Commit 55633af3 (PCIe portdrv: Use driver data to simplify code)
+> added a kfree of the driver private data in pcie_port_device_remove
+> but forgot to remove the old kfree from pcie_portdrv_remove.
+> 
+> Signed-off-by: Alex Chiang <achiang@hp.com>
 
-Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
----
- kernel/trace/blktrace.c |   13 +++++++++++--
- 1 files changed, 11 insertions(+), 2 deletions(-)
+Applied, thanks.
 
-diff --git a/kernel/trace/blktrace.c b/kernel/trace/blktrace.c
-index 46e0cfe..37095d9 100644
---- a/kernel/trace/blktrace.c
-+++ b/kernel/trace/blktrace.c
-@@ -1362,6 +1362,14 @@ static int blk_str2act_mask(const char *str)
- 	return mask;
- }
- 
-+static request_queue *blk_trace_get_queue(struct block_device *bdev)
-+{
-+	if (bdev->bd_disk == NULL)
-+		return NULL;
-+
-+	return bdev_get_queue(bdev);
-+}
-+
- static ssize_t sysfs_blk_trace_attr_show(struct device *dev,
- 					 struct device_attribute *attr,
- 					 char *buf)
-@@ -1376,9 +1384,10 @@ static ssize_t sysfs_blk_trace_attr_show(struct device *dev,
- 	if (bdev == NULL)
- 		goto out_unlock_kernel;
- 
--	q = bdev_get_queue(bdev);
-+	q = blk_trace_get_queue(bdev);
- 	if (q == NULL)
- 		goto out_bdput;
-+
- 	mutex_lock(&bdev->bd_mutex);
- 
- 	if (attr == &dev_attr_enable) {
-@@ -1435,7 +1444,7 @@ static ssize_t sysfs_blk_trace_attr_store(struct device *dev,
- 	if (bdev == NULL)
- 		goto out_unlock_kernel;
- 
--	q = bdev_get_queue(bdev);
-+	q = blk_trace_get_queue(bdev);
- 	if (q == NULL)
- 		goto out_bdput;
- 
 -- 
-1.5.4.rc3
-
+Jesse Barnes, Intel Open Source Technology Center
