@@ -1,129 +1,209 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755205AbZCTNfw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755715AbZCTNgV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755205AbZCTNfw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Mar 2009 09:35:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751981AbZCTNfn
+	id S1755715AbZCTNgV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Mar 2009 09:36:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752975AbZCTNf6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Mar 2009 09:35:43 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:43759 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751060AbZCTNfm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Mar 2009 09:35:42 -0400
-Message-Id: <200903201335.n2KDZaLu023877@dhcp-0-152.brq.redhat.com>
-From: Jerome Marchand <jmarchan@redhat.com>
-Date: Thu, 19 Mar 2009 11:54:17 +0100
-Subject: [PATCH] block: allows to turn off disk I/O stat accounting completely
-Cc: Jens Axboe <axboe@kernel.dk>
-To: unlisted-recipients:; (no To-header on input)
+	Fri, 20 Mar 2009 09:35:58 -0400
+Received: from smtp.nokia.com ([192.100.105.134]:42495 "EHLO
+	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754074AbZCTNf5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Mar 2009 09:35:57 -0400
+Date: Fri, 20 Mar 2009 15:35:11 +0200
+From: Denis Karpov <ext-denis.2.karpov@nokia.com>
+To: ext Jan Kara <jack@suse.cz>
+Cc: Nick Piggin <npiggin@suse.de>,
+       "ext Jorge Boncompte [DTI2]" <jorge@dti2.net>,
+       "Hunter Adrian (Nokia-D/Helsinki)" <adrian.hunter@nokia.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>
+Subject: Re: Error testing ext3 on brd ramdisk
+Message-ID: <20090320133511.GK21564@smart.research.nokia.com>
+Mail-Followup-To: ext Jan Kara <jack@suse.cz>,
+	Nick Piggin <npiggin@suse.de>,
+	"ext Jorge Boncompte [DTI2]" <jorge@dti2.net>,
+	"Hunter Adrian (Nokia-D/Helsinki)" <adrian.hunter@nokia.com>,
+	LKML <linux-kernel@vger.kernel.org>,
+	"linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>
+References: <49AFAFD9.9050805@dti2.net> <49AFC1A9.90501@dti2.net> <20090310161247.GA19352@wotan.suse.de> <20090310163002.GC19352@wotan.suse.de> <49B69A09.3080408@dti2.net> <20090311021920.GA16561@wotan.suse.de> <49BA927F.8020701@dti2.net> <20090317094019.GA10360@smart.research.nokia.com> <20090318121116.GC14622@wotan.suse.de> <20090318134202.GB11965@atrey.karlin.mff.cuni.cz>
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="gMR3gsNFwZpnI/Ts"
+Content-Disposition: inline
+In-Reply-To: <20090318134202.GB11965@atrey.karlin.mff.cuni.cz>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+X-OriginalArrivalTime: 20 Mar 2009 13:35:13.0061 (UTC) FILETIME=[B2548D50:01C9A960]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Some stat updates are still executed when disk I/O stat accounting is
-turned off. This patch allows to turn them off too.
 
-Signed-off-by: Jerome Marchand <jmarchan@redhat.com>
----
- block/blk-merge.c     |   31 +++++++++++++++++++------------
- block/genhd.c         |    8 +++++---
- fs/partitions/check.c |    9 ++++++---
- 3 files changed, 30 insertions(+), 18 deletions(-)
+--gMR3gsNFwZpnI/Ts
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-diff --git a/block/blk-merge.c b/block/blk-merge.c
-index 5a244f0..6841c3f 100644
---- a/block/blk-merge.c
-+++ b/block/blk-merge.c
-@@ -338,6 +338,24 @@ static int ll_merge_requests_fn(struct request_queue *q, struct request *req,
- 	return 1;
- }
- 
-+static void blk_account_io_merge(struct request *req)
-+{
-+	struct gendisk *disk = req->rq_disk;
-+
-+	if (disk && blk_do_io_stat(disk->queue)) {
-+		struct hd_struct *part;
-+		int cpu;
-+
-+		cpu = part_stat_lock();
-+		part = disk_map_sector_rcu(disk, req->sector);
-+
-+		part_round_stats(cpu, part);
-+		part_dec_in_flight(part);
-+
-+		part_stat_unlock();
-+	}
-+}
-+
- /*
-  * Has to be called with the request spinlock acquired
-  */
-@@ -386,18 +404,7 @@ static int attempt_merge(struct request_queue *q, struct request *req,
- 
- 	elv_merge_requests(q, req, next);
- 
--	if (req->rq_disk) {
--		struct hd_struct *part;
--		int cpu;
--
--		cpu = part_stat_lock();
--		part = disk_map_sector_rcu(req->rq_disk, req->sector);
--
--		part_round_stats(cpu, part);
--		part_dec_in_flight(part);
--
--		part_stat_unlock();
--	}
-+	blk_account_io_merge(req);
- 
- 	req->ioprio = ioprio_best(req->ioprio, next->ioprio);
- 	if (blk_rq_cpu_valid(next))
-diff --git a/block/genhd.c b/block/genhd.c
-index a9ec910..d527f10 100644
---- a/block/genhd.c
-+++ b/block/genhd.c
-@@ -1013,9 +1013,11 @@ static int diskstats_show(struct seq_file *seqf, void *v)
-  
- 	disk_part_iter_init(&piter, gp, DISK_PITER_INCL_PART0);
- 	while ((hd = disk_part_iter_next(&piter))) {
--		cpu = part_stat_lock();
--		part_round_stats(cpu, hd);
--		part_stat_unlock();
-+		if (blk_do_io_stat(gp->queue)) {
-+			cpu = part_stat_lock();
-+			part_round_stats(cpu, hd);
-+			part_stat_unlock();
-+		}
- 		seq_printf(seqf, "%4d %7d %s %lu %lu %llu "
- 			   "%u %lu %lu %llu %u %u %u %u\n",
- 			   MAJOR(part_devt(hd)), MINOR(part_devt(hd)),
-diff --git a/fs/partitions/check.c b/fs/partitions/check.c
-index 6d72024..5f773cd 100644
---- a/fs/partitions/check.c
-+++ b/fs/partitions/check.c
-@@ -21,6 +21,7 @@
- #include <linux/genhd.h>
- 
- #include "check.h"
-+#include "../block/blk.h"
- 
- #include "acorn.h"
- #include "amiga.h"
-@@ -224,9 +225,11 @@ ssize_t part_stat_show(struct device *dev,
- 	struct hd_struct *p = dev_to_part(dev);
- 	int cpu;
- 
--	cpu = part_stat_lock();
--	part_round_stats(cpu, p);
--	part_stat_unlock();
-+	if (blk_do_io_stat(dev_to_disk(dev)->queue)) {
-+		cpu = part_stat_lock();
-+		part_round_stats(cpu, p);
-+		part_stat_unlock();
-+	}
- 	return sprintf(buf,
- 		"%8lu %8lu %8llu %8u "
- 		"%8lu %8lu %8llu %8u "
--- 
-1.5.5.1
+On Wed, Mar 18, 2009 at 02:42:02PM +0100, ext Jan Kara wrote:
+> > On Tue, Mar 17, 2009 at 11:40:19AM +0200, Denis Karpov wrote:
+> > Jan's fixes are here:
+> > http://marc.info/?l=linux-ext4&m=123731584711382&w=2
+> > It would be interesting to try them, and if they don't work maybe
+> > he's also interested so I cc'ed him.
 
+Hello, 
+
+I've re-run the tests (with Jan's patches and also Nick's "fs: new inode
+i_state corruption fix" patch).
+
+> > > In both cases I saw some complains from JBD/JBD2:
+> > >  JBD: Detected IO errors while flushing file data on
+>   Yes, my patches fix exactly this problem. So please try running with
+> them. I'm not sure about that HTREE corruption you see during fsck. That
+> seems to be a separate issue.
+
+The issue with JBD seems to be gone. But problem with HTREE being corrupted
+still remains (see attached logs).
+
+Denis
+
+--gMR3gsNFwZpnI/Ts
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: attachment; filename="ext3.htree.1.txt"
+
+-------------------------------------------------------------                   
+Cycle 26                                                                        
+Fri Mar 20 09:23:50 EDT 2009                                                    
+Mounting                                                                        
+[  907.443733] EXT3 FS on ram0, internal journal                                
+[  907.448199] EXT3-fs: mounted filesystem with ordered data mode.              
+[  907.448529] kjournald starting.  Commit interval 5 seconds                   
+Removing old fsstress data                                                      
+Starting fsstress                                                               
+Sleeping 30 seconds                                                             
+seed = 1237468251                                                               
+Stopping fsstress                                                               
+ 5656 ttyS0    00:00:00 fsstress_ext3                                           
+ 5659 ttyS0    00:00:26 fsstress_ext3                                           
+ 5660 ttyS0    00:00:25 fsstress_ext3                                           
+ 5661 ttyS0    00:00:25 fsstress_ext3                                           
+./brd_test_ext3.sh: line 37:  5656 Terminated              `pwd`/fsstress_ext3 -
+d $TESTDIR/work -p 3 -l 0 -n 100000000                                          Unmounting                                                                      
+Checking                                                                        
+/dev/ram0: HTREE directory inode 82 has an invalid root node.                   
+HTREE INDEX CLEARED.                                                            
+/dev/ram0: Entry 'c17e8' in /work/p1/d2/d99 (82) has an incorrect filetype (was 
+3, should be 1).                                                                
+                                                                                
+                                                                                
+/dev/ram0: UNEXPECTED INCONSISTENCY; RUN fsck MANUALLY.                         
+        (i.e., without -a or -p options)                                        
+
+# fsck.ext3 /dev/ram0                                 
+e2fsck 1.41.3 (12-Oct-2008)                                                     
+/dev/ram0 contains a file system with errors, check forced.                     
+Pass 1: Checking inodes, blocks, and sizes                                      
+Pass 2: Checking directory structure                                            
+Entry 'c17e8' in /work/p1/d2/d99 (82) has an incorrect filetype (was 3, should b
+e 1).                                                                           
+Fix<y>? yes                                                                     
+                                                                                
+Entry 'fdab' in /work/p1/d2/d99 (82) has an incorrect filetype (was 1, should be
+ 7).                                                                            
+Fix<y>? yes                                                                     
+                                                                                
+Entry 'c17fa' in /work/p1/d2/d99 (82) has an incorrect filetype (was 3, should be 1).                                                                           
+Fix<y>? yes                                                                     
+                                                                                
+Entry 'da0' in /work/p1/d2/d99 (82) is a link to directory /work/p1/d2/d99/da0 (
+238).                                                                           
+Clear<y>? yes                                                                   
+                                                                                
+Pass 3: Checking directory connectivity                                         
+Pass 4: Checking reference counts                                               
+Inode 83 ref count is 9, should be 10.  Fix<y>? yes                             
+                                                                                
+Inode 94 ref count is 3, should be 4.  Fix<y>? yes                                                                                                              
+Inode 99 ref count is 9, should be 10.  Fix<y>? yes                             
+                                                                                ...
+
+Inode 1018 ref count is 2, should be 3.  Fix<y>? yes                            
+                                                                                
+Inode 1024 ref count is 1, should be 2.  Fix<y>? yes                            
+                                                                                
+Pass 5: Checking group summary information                                      
+                                                                                
+/dev/ram0: ***** FILE SYSTEM WAS MODIFIED *****                                 
+/dev/ram0: 1024/1024 files (12.0% non-contiguous), 4096/4096 blocks             
+
+--gMR3gsNFwZpnI/Ts
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: attachment; filename="ext4.htree.1.txt"
+
+-------------------------------------------------------------
+Cycle 5
+Fri Mar 20 09:17:50 EDT 2009
+Mounting
+Removing old fsstress data
+Starting fsstress
+Sleeping 30 seconds
+seed = 1237604365
+Stopping fsstress
+ 5370 pts/0    00:00:00 fsstress_ext4
+ 5373 pts/0    00:00:19 fsstress_ext4
+ 5374 pts/0    00:00:20 fsstress_ext4
+ 5375 pts/0    00:00:19 fsstress_ext4
+./brd_test_ext4.sh: line 36:  5370 Terminated              `pwd`/fsstress_ext4 -d $TESTDIR/work -p 3 -l 0 -n 100000000
+Unmounting
+Checking
+/dev/ram1: HTREE directory inode 165 has an invalid root node.
+HTREE INDEX CLEARED.
+/dev/ram1: HTREE directory inode 272 has an invalid root node.
+HTREE INDEX CLEARED.
+/dev/ram1: Entry 'c363' in /work/p2/d2/de/d5f/d80/d616 (272) has an incorrect filetype (was 3, should be 1).
+
+
+/dev/ram1: UNEXPECTED INCONSISTENCY; RUN fsck MANUALLY.
+        (i.e., without -a or -p options)
+# fsck.ext4 /dev/ram1
+e2fsck 1.41.3 (12-Oct-2008)
+/dev/ram1 contains a file system with errors, check forced.
+Pass 1: Checking inodes, blocks, and sizes
+Pass 2: Checking directory structure
+Entry 'c363' in /work/p2/d2/de/d5f/d80/d616 (272) has an incorrect filetype (was 3, should be 1).
+Fix<y>? yes
+
+Entry 'c10b5' in /work/p2/d2/de/d37 (165) has an incorrect filetype (was 3, should be 1).
+Fix<y>? yes
+
+Entry 'f164' in /work/p2/d2/de/d37 (165) has an incorrect filetype (was 1, should be 3).
+Fix<y>? yes
+
+Entry 'f104e' in /work/p2/d2/de/d37 (165) has an incorrect filetype (was 1, should be 2).
+Fix<y>? yes
+
+Entry 'deaa' in /work/p2/d2/de/d5f/d80/d616 (272) is a link to directory /work/p2/d2/de/d5f/d80/d616/deaa (819).
+Clear<y>? yes
+
+Entry 'd155a' in /work/p2/d2/de/d37 (165) is a link to directory /work/p2/d2/de/d37/d155a (434).
+Clear<y>? yes
+
+Pass 3: Checking directory connectivity
+Pass 4: Checking reference counts
+Inode 25 ref count is 6, should be 7.  Fix<y>? yes
+
+Inode 48 ref count is 1, should be 2.  Fix<y>? yes
+
+...
+
+Inode 1003 ref count is 3, should be 4.  Fix<y>? yes
+
+Inode 1004 ref count is 1, should be 2.  Fix<y>? yes
+
+Pass 5: Checking group summary information
+
+/dev/ram1: ***** FILE SYSTEM WAS MODIFIED *****
+/dev/ram1: 1024/1024 files (20.5% non-contiguous), 4096/4096 blocks
+
+
+
+--gMR3gsNFwZpnI/Ts--
