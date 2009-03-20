@@ -1,61 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753018AbZCTVGS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753304AbZCTVNm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753018AbZCTVGS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Mar 2009 17:06:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751689AbZCTVGE
+	id S1753304AbZCTVNm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Mar 2009 17:13:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752353AbZCTVNc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Mar 2009 17:06:04 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:39385 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752074AbZCTVGC (ORCPT
+	Fri, 20 Mar 2009 17:13:32 -0400
+Received: from e35.co.us.ibm.com ([32.97.110.153]:40864 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752074AbZCTVNb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Mar 2009 17:06:02 -0400
-Date: Fri, 20 Mar 2009 17:05:58 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Frederic Weisbecker <fweisbec@gmail.com>
-cc: Ingo Molnar <mingo@elte.hu>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH 0/5] [GIT PULL] updates for tip/tracing/ftrace
-In-Reply-To: <20090320204848.GA6044@nowhere>
-Message-ID: <alpine.DEB.2.00.0903201705380.13615@gandalf.stny.rr.com>
-References: <20090318073903.GA31341@elte.hu> <20090319073357.GA14615@elte.hu> <alpine.DEB.2.00.0903191309170.16987@gandalf.stny.rr.com> <20090320174331.GH6698@linux.vnet.ibm.com> <20090320183642.GA2070@elte.hu> <20090320183849.GA3657@elte.hu>
- <20090320191926.GJ6698@linux.vnet.ibm.com> <20090320192721.GI6224@elte.hu> <20090320194617.GA5934@nowhere> <20090320195414.GA24129@elte.hu> <20090320204848.GA6044@nowhere>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 20 Mar 2009 17:13:31 -0400
+Subject: Re: [RFC][PATCH 5/8] add f_op for checkpointability
+From: Dave Hansen <dave@linux.vnet.ibm.com>
+To: Christoph Hellwig <hch@infradead.org>
+Cc: containers <containers@lists.linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Alexey Dobriyan <adobriyan@gmail.com>
+In-Reply-To: <20090303131528.GB10931@infradead.org>
+References: <20090227203425.F3B51176@kernel>
+	 <20090227203431.D1E697CB@kernel> <20090228205329.GB4254@infradead.org>
+	 <1236013556.26788.466.camel@nimitz>  <20090303131528.GB10931@infradead.org>
+Content-Type: text/plain
+Date: Fri, 20 Mar 2009 14:13:24 -0700
+Message-Id: <1237583604.8286.294.camel@nimitz>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Fri, 20 Mar 2009, Frederic Weisbecker wrote:
-> > >  
-> > >  	VERBOSE_PRINTK_STRING("rcu_torture_reader task started");
-> > > -	set_user_nice(current, 19);
-> > > +	set_user_nice(current, -1);
-> > >  	if (irqreader && cur_ops->irqcapable)
-> > >  		setup_timer_on_stack(&t, rcu_torture_timer, 0);
+On Tue, 2009-03-03 at 08:15 -0500, Christoph Hellwig wrote:
+> On Mon, Mar 02, 2009 at 09:05:56AM -0800, Dave Hansen wrote:
+> > On Sat, 2009-02-28 at 15:53 -0500, Christoph Hellwig wrote:
+> > > Also the double-use of the op seem not very nice to me.  Is there any
+> > > real life use case were you would have the operation on a file but
+> > > sometimes not allow checkpoiting?
 > > 
-> > i dont have a reproducer right now. Can you trigger it with latest 
-> > -tip, which has this commit included:
+> > I'm still reaching here...
 > > 
-> > 04cb9ac: rcu: rcu_barrier VS cpu_hotplug: Ensure callbacks in dead cpu are migrated to o
+> > I was thinking of /proc.  Opening your own /proc/$$/* would certainly be
+> > considered OK.  But, doing it for some other process not in your pid
+> > namespace would not be OK and would not be checkpointable.
 > > 
-> > ?
-> > 
-> > 	Ingo
+> > I know we're not quite in real-life territory here, yet, but I'm still
+> > thinking.
 > 
-> 
-> I tested three times the same things but with 04cb9ac and... it didn't triggered
-> anymore :-)
+> That mighr be a good enough excuse, I was just wondering what the use
+> case was.
 
-So lets hope that was the culprit.
+I just thought of another one: unlinked files and directories.  They're
+a pain to checkpoint and won't be supported for a while.  Holding open
+an unlinked file would make a process uncheckpointable for a bit.
 
-Great work Frederic!
-
--- Steve
+-- Dave
 
