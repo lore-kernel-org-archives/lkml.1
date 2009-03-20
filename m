@@ -1,83 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760957AbZCTTQf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761138AbZCTTRT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760957AbZCTTQf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Mar 2009 15:16:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755467AbZCTTQ0
+	id S1761138AbZCTTRT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Mar 2009 15:17:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759862AbZCTTRG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Mar 2009 15:16:26 -0400
-Received: from casper.infradead.org ([85.118.1.10]:49737 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753047AbZCTTQZ (ORCPT
+	Fri, 20 Mar 2009 15:17:06 -0400
+Received: from cpsmtpm-eml101.kpnxchange.com ([195.121.3.5]:57128 "EHLO
+	CPSMTPM-EML101.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1759869AbZCTTRF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Mar 2009 15:16:25 -0400
-Subject: Re: [PATCH] kbuild: work around distcc/icecc madness
-From: Peter Zijlstra <peterz@infradead.org>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Sam Ravnborg <sam@ravnborg.org>, LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <alpine.LFD.2.00.0903201658140.29264@localhost.localdomain>
-References: <alpine.LFD.2.00.0903192121300.29264@localhost.localdomain>
-	 <1237551797.24626.96.camel@twins>
-	 <alpine.LFD.2.00.0903201658140.29264@localhost.localdomain>
-Content-Type: text/plain
-Date: Fri, 20 Mar 2009 20:16:08 +0100
-Message-Id: <1237576568.4667.34.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.0 
+	Fri, 20 Mar 2009 15:17:05 -0400
+From: Frans Pop <elendil@planet.nl>
+To: linux-s390@vger.kernel.org
+Subject: Re: [BUG,2.6.29-rc7,s390] SOLVED -- System goes into endless loop during boot or logon
+Date: Fri, 20 Mar 2009 20:17:00 +0100
+User-Agent: KMail/1.9.9
+Cc: Hendrik Brueckner <brueckner@linux.vnet.ibm.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <200903080835.14032.elendil@planet.nl> <200903080853.10704.elendil@planet.nl> <200903090253.34173.elendil@planet.nl>
+In-Reply-To: <200903090253.34173.elendil@planet.nl>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200903202017.01888.elendil@planet.nl>
+X-OriginalArrivalTime: 20 Mar 2009 19:17:02.0504 (UTC) FILETIME=[72E93280:01C9A990]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-03-20 at 17:00 +0100, Thomas Gleixner wrote:
-> On Fri, 20 Mar 2009, Peter Zijlstra wrote:
-> > Yes, this makes it mostly work again... however,
-> > 
-> > On -linus I can do:
-> >   
-> > # cat distmake
-> > 
-> >   #!/bin/bash
-> > 
-> >   ARCH=$1; shift
-> > 
-> >   export LD="nice -n19 ${ARCH}-linux-ld"
-> >   export AS="distcc ${ARCH}-linux-as"
-> >   export CC="distcc ${ARCH}-linux-gcc"
-> > 
-> >   make LD="$LD" AS="$AS" CC="$CC" -j $DISTCC_SLOTS "$@"
-> > 
-> > # distmake x86_64 bzImage
-> > 
-> > to build the tree, and then use: 
-> > 
-> > # make install
-> > 
-> > to install the resulting image. Note how the second make will use the
-> > system gcc and not the distcc with cross arch toolchain.
-> > 
-> > This will still start a full rebuild on -tip. When I change my script to
-> > use distmake x86_64 install, things work again after this patch.
-> 
-> Changing from distcc to gcc will start a full rebuild on linus tree as
-> well.
+On Monday 09 March 2009, Frans Pop wrote:
+> Follow-up to an issue reported on the linux-s390 list, seen in the
+> Hercules S/390 emulator.
+>
+> On Sunday 08 March 2009, Frans Pop wrote:
+> > Well, not quite. It does boot successfully and I do get a login
+> > prompt. I can also login on the console or connect with SSH, but in
+> > both cases the system again gets into some loop before I actually get
+> > a shell prompt.
+>
+> During the bisection series the system would sometimes enter the loop
+> during the boot procedure, before I tried to logon. After it enters the
+> loop one processor just goes racing at 100%.
+>
+> I've bisected this to the following set of three patches:
+> commit ca109491f612aab5c8152207631c0444f63da97f
+> Author: Peter Zijlstra <peterz@infradead.org>
+> Date:   Tue Nov 25 12:43:51 2008 +0100
+>     hrtimer: removing all ur callback modes
+> commit 37810659ea7d9572c5ac284ade272f806ef8f788
+>     hrtimer: removing all ur callback modes, fix hotplug
+> commit a0a99b227da57f81319dd239bc4de811b0f530ec
+>     hrtimer: removing all ur callback modes, fix
+>
+> I've not tried to bisect between these patches as the last two are
+> fixes. If needed I can do though.
 
-I just tried:
+Just for the record, this issue was solved with the following commit (that 
+also fixed the hang I saw during boot with 2.6.28):
 
-root@twins:/mnt/build/linux-2.6# /mnt/md0/cross/bin/x86_64-linux-gcc --version
-x86_64-linux-gcc (GCC) 4.3.1 20080510 (prerelease)
-Copyright (C) 2008 Free Software Foundation, Inc.
-This is free software; see the source for copying conditions.  There is NO
-warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-
-root@twins:/mnt/build/linux-2.6# gcc --version
-gcc (Ubuntu 4.3.2-1ubuntu12) 4.3.2
-Copyright (C) 2008 Free Software Foundation, Inc.
-This is free software; see the source for copying conditions.  There is NO
-warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-
-The build with the distcc x86_64-linux-gcc compiler and the install
-using the host compiler works just fine on Linus' tree.
-
-
-
+commit 4fa81ed27781a12f6303b9263056635ae74e3e21
+Author: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Date:   Wed Mar 18 13:27:32 2009 +0100
+    [S390] __div64_31 broken for CONFIG_MARCH_G5
