@@ -1,227 +1,244 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756595AbZCTOdl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757606AbZCTOgD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756595AbZCTOdl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Mar 2009 10:33:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754771AbZCTOdc
+	id S1757606AbZCTOgD (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Mar 2009 10:36:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754631AbZCTOfx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Mar 2009 10:33:32 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:34888 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1754225AbZCTOdb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Mar 2009 10:33:31 -0400
-Date: Fri, 20 Mar 2009 10:33:26 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: "K.Prasad" <prasad@linux.vnet.ibm.com>
-cc: Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Benjamin Herrenschmidt <benh@au1.ibm.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Maneesh Soni <maneesh@in.ibm.com>, Roland McGrath <roland@redhat.com>,
-       Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: [Patch 01/11] Introducing generic hardware breakpoint handler
- interfaces
-In-Reply-To: <20090319234804.GB10517@in.ibm.com>
-Message-ID: <Pine.LNX.4.44L0.0903201006120.2686-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 20 Mar 2009 10:35:53 -0400
+Received: from 178-47-31-89.wifiinternet.cz ([89.31.47.178]:50060 "EHLO
+	monstr.eu" rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751981AbZCTOfw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Mar 2009 10:35:52 -0400
+From: monstr@monstr.eu
+To: tglx@linutronix.de
+Cc: michal.simek@petalogix.com, linux-kernel@vger.kernel.org,
+       johnstul@us.ibm.com, john.williams@petalogix.com,
+       Michal Simek <monstr@monstr.eu>
+Subject: [PATCH 1/1] Update intc.c and irq code
+Date: Fri, 20 Mar 2009 15:35:31 +0100
+Message-Id: <1237559731-13063-1-git-send-email-monstr@monstr.eu>
+X-Mailer: git-send-email 1.5.5.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 20 Mar 2009, K.Prasad wrote:
+From: Michal Simek <monstr@monstr.eu>
 
-> This patch introduces two new files hw_breakpoint.[ch] which defines the 
-> generic interfaces to use hardware breakpoint infrastructure of the system. 
+This patch add support for use generic_handle_irq
+instead of __do_IRQ. There were necessary to do
+more changes in intc.c code -> especially changes
+in irq_chip function
 
-Prasad:
+Signed-off-by: Michal Simek <monstr@monstr.eu>
+---
+ arch/microblaze/Kconfig       |    3 +
+ arch/microblaze/kernel/intc.c |  169 +++++++++++++++++++++++++++++++++++++++++
+ arch/microblaze/kernel/irq.c  |    2 +-
+ 3 files changed, 173 insertions(+), 1 deletions(-)
+ create mode 100644 arch/microblaze/kernel/intc.c
 
-I'm sorry to say this is full of mistakes.  So far I have looked only 
-at patch 01/11, but it's not good.
-
-> + * Kernel breakpoints grow downwards, starting from HB_NUM
-> + * 'hbkpt_kernel_pos' denotes lowest numbered breakpoint register occupied for
-> + * kernel-space request
-> + */
-> +unsigned int hbkpt_kernel_pos;
-
-This doesn't make much sense.  All you need to know is which registers
-are in use; all others are available.
-
-For example, suppose the kernel allocated breakpoints 3, 2, and 1, and
-then deallocated 2.  Then bp 2 would be available for use, even though
-2 > 1.
-
-It's also a poor choice of name.  Everywhere else (in my patches,
-anyway) the code refers to hardware breakpoints using the abbreviation
-"hwbp" or "hw_breakpoint".  There's no reason suddenly to start using
-"hbkpt".
-
-> +/* An array containing refcount of threads using a given bkpt register */
-> +unsigned int hbkpt_user_max_refcount[HB_NUM];
-
-Why did you put "max" in the name?  Isn't this just a simple refcount?
-
-> +/* One higher than the highest counted user-space breakpoint register */
-> +unsigned int hbkpt_user_max;
-
-Likewise, this variable isn't really needed.  It's just one more than
-the largest i such that hbkpt_user_max_refcount[i] > 0.
-
-> +/*
-> + * Install the debug register values for a new thread.
-> + */
-> +void switch_to_thread_hw_breakpoint(struct task_struct *tsk)
-> +{
-> +	/* Set the debug register */
-
-Set _which_ debug register?
-
-> +	arch_install_thread_hbkpt(tsk);
-> +	last_debugged_task = current;
-> +
-> +	put_cpu_no_resched();
-
-What's this line doing here?  It looks like something you forgot to
-erase.
-
-> +}
-> +
-> +/*
-> + * Install the debug register values for just the kernel, no thread.
-> + */
-> +void switch_to_none_hw_breakpoint(void)
-> +{
-> +	arch_install_none();
-> +	put_cpu_no_resched();
-
-Same for this line.
-
-> +}
-> +
-> +/*
-> + * Load the debug registers during startup of a CPU.
-> + */
-> +void load_debug_registers(void)
-> +{
-> +	int i;
-> +	unsigned long flags;
-> +
-> +	/* Prevent IPIs for new kernel breakpoint updates */
-> +	local_irq_save(flags);
-> +
-> +	for (i = hbkpt_kernel_pos; i < HB_NUM; i++)
-> +		if (hbkpt_kernel[i])
-> +			on_each_cpu(arch_install_kernel_hbkpt,
-> +				(void *)hbkpt_kernel[i], 0);
-
-This is completely wrong.  First of all, it's dumb to send multiple
-IPIs (one for each iteration through the loop).  Second, this routine
-shouldn't send any IPIs at all!  It gets invoked when a CPU is
-starting up and wants to load its _own_ debug registers -- not tell
-another CPU to load anything.
-
-> +	if (current->thread.dr7)
-> +		arch_install_thread_hbkpt(current);
-> +
-> +	local_irq_restore(flags);
-> +}
-> +
-> +/*
-> + * Erase all the hardware breakpoint info associated with a thread.
-> + *
-> + * If tsk != current then tsk must not be usable (for example, a
-> + * child being cleaned up from a failed fork).
-> + */
-> +void flush_thread_hw_breakpoint(struct task_struct *tsk)
-> +{
-> +	int i;
-> +	struct thread_struct *thread = &(tsk->thread);
-> +
-> +	mutex_lock(&hw_breakpoint_mutex);
-> +
-> +	/* Let the breakpoints know they are being uninstalled */
-
-This comment looks like a leftover which should have been erased.
-
-> +/*
-> + * Validate the settings in a hw_breakpoint structure.
-> + */
-> +static int validate_settings(struct hw_breakpoint *bp, struct task_struct *tsk)
-> +{
-> +	int ret;
-> +	unsigned int align;
-> +
-> +	ret = arch_validate_hwbkpt_settings(bp, &align, tsk);
-> +	if (ret < 0)
-> +		goto err;
-> +
-> +	/* Check that the low-order bits of the address are appropriate
-> +	 * for the alignment implied by len.
-> +	 */
-> +	if (bp->info.address & align)
-> +		return -EINVAL;
-> +
-> +	/* Check that the virtual address is in the proper range */
-> +	if (tsk) {
-> +		if (!arch_check_va_in_userspace(bp->info.address, tsk))
-> +			return -EFAULT;
-> +	} else {
-> +		if (!arch_check_va_in_kernelspace(bp->info.address))
-> +			return -EFAULT;
-> +	}
-
-Roland pointed out that these checks need to take into account the
-length of the breakpoint.  For example, in
-arch_check_va_in_userspace() it isn't sufficient for the start of the
-breakpoint region to be a userspace address; the end of the
-breakpoint region must also be in userspace.
-
-> + err:
-> +	return ret;
-> +}
-> +
-> +int __register_user_hw_breakpoint(int pos, struct task_struct *tsk,
-> +					struct hw_breakpoint *bp)
-> +{
-> +	struct thread_struct *thread = &(tsk->thread);
-> +	int rc;
-> +
-> +	/* Do not overcommit. Fail if kernel has used the hbkpt registers */
-> +	if (pos >= hbkpt_kernel_pos)
-> +		return -ENOSPC;
-
-In fact you should fail if the debug register is already in use,
-regardless of whether it is being used by a kernel breakpoint.  And you 
-shouldn't check against hbkpt_kernel_pos; you should check whether 
-hbkpt_kernel[pos] is NULL and thread->hbkpt[pos] is NULL.
-
-> +
-> +	rc = validate_settings(bp, tsk);
-> +	if (rc)
-> +		return rc;
-> +
-> +	thread->hbkpt[pos] = bp;
-> +	thread->hbkpt_num_installed++;
-> +	hbkpt_user_max_refcount[pos]++;
-> +	/* 'tsk' is the thread that uses max number of hbkpt registers */
-
-This is a bad comment.  It sounds like it's saying that "tsk" is
-defined as the thread using the maximum number of breakpoints, rather
-than being defined as the thread for which the breakpoint is being
-registered.
-
-Besides, there's no reason to keep track of which thread uses the max 
-number of breakpoints anyway.  Not to mention the fact that you don't 
-update hbkpt_user_max when its thread exits.
-
-> +	if (hbkpt_user_max < thread->hbkpt_num_installed)
-> +		hbkpt_user_max++;
-
-At this point I got tired of looking, but it seems obvious that the new 
-patch series needs a bunch of improvements.
-
-Alan Stern
+diff --git a/arch/microblaze/Kconfig b/arch/microblaze/Kconfig
+index a2df3f8..cca0b3c 100644
+--- a/arch/microblaze/Kconfig
++++ b/arch/microblaze/Kconfig
+@@ -46,6 +46,9 @@ config GENERIC_TIME_VSYSCALL
+ config GENERIC_CLOCKEVENTS
+ 	def_bool y
+ 
++config GENERIC_HARDIRQS_NO__DO_IRQ
++	def_bool y
++
+ config PCI
+ 	depends on !MMU
+ 	def_bool n
+diff --git a/arch/microblaze/kernel/intc.c b/arch/microblaze/kernel/intc.c
+new file mode 100644
+index 0000000..c48c2d0
+--- /dev/null
++++ b/arch/microblaze/kernel/intc.c
+@@ -0,0 +1,169 @@
++/*
++ * Copyright (C) 2007 Michal Simek <monstr@monstr.eu>
++ * Copyright (C) 2006 Atmark Techno, Inc.
++ *
++ * This file is subject to the terms and conditions of the GNU General Public
++ * License. See the file "COPYING" in the main directory of this archive
++ * for more details.
++ */
++#include <linux/init.h>
++#include <linux/irq.h>
++#include <asm/page.h>
++#include <linux/io.h>
++
++#include <asm/prom.h>
++#include <asm/irq.h>
++
++#ifdef CONFIG_SELFMOD_INTC
++#include <asm/selfmod.h>
++#define INTC_BASE	BARRIER_BASE_ADDR
++#else
++static unsigned int intc_baseaddr;
++#define INTC_BASE	intc_baseaddr
++#endif
++
++unsigned int nr_irq;
++
++/* No one else should require these constants, so define them locally here. */
++#define ISR 0x00			/* Interrupt Status Register */
++#define IPR 0x04			/* Interrupt Pending Register */
++#define IER 0x08			/* Interrupt Enable Register */
++#define IAR 0x0c			/* Interrupt Acknowledge Register */
++#define SIE 0x10			/* Set Interrupt Enable bits */
++#define CIE 0x14			/* Clear Interrupt Enable bits */
++#define IVR 0x18			/* Interrupt Vector Register */
++#define MER 0x1c			/* Master Enable Register */
++
++#define MER_ME (1<<0)
++#define MER_HIE (1<<1)
++
++static void intc_enable_or_unmask(unsigned int irq)
++{
++	pr_debug("enable_or_unmask: %d\n", irq);
++	out_be32(INTC_BASE + SIE, 1 << irq);
++}
++
++static void intc_disable_or_mask(unsigned int irq)
++{
++	pr_debug("disable: %d\n", irq);
++	out_be32(INTC_BASE + CIE, 1 << irq);
++}
++
++static void intc_ack(unsigned int irq)
++{
++	pr_debug("ack: %d\n", irq);
++	out_be32(INTC_BASE + IAR, 1 << irq);
++}
++
++static void intc_mask_ack(unsigned int irq)
++{
++	unsigned long mask = 1 << irq;
++	pr_debug("disable_and_ack: %d\n", irq);
++	out_be32(INTC_BASE + CIE, mask);
++	out_be32(INTC_BASE + IAR, mask);
++}
++
++static void intc_end(unsigned int irq)
++{
++	unsigned long mask = 1 << irq;
++	pr_debug("end: %d\n", irq);
++	if (!(irq_desc[irq].status & (IRQ_DISABLED | IRQ_INPROGRESS))) {
++		out_be32(INTC_BASE + SIE, mask);
++		/* ack level sensitive intr */
++		if (irq_desc[irq].status & IRQ_LEVEL)
++			out_be32(INTC_BASE + IAR, mask);
++	}
++}
++
++static struct irq_chip intc_dev = {
++	.name = "Xilinx INTC",
++	.unmask = intc_enable_or_unmask,
++	.mask = intc_disable_or_mask,
++	.ack = intc_ack,
++	.mask_ack = intc_mask_ack,
++	.end = intc_end,
++};
++
++unsigned int get_irq(struct pt_regs *regs)
++{
++	int irq;
++
++	/*
++	 * NOTE: This function is the one that needs to be improved in
++	 * order to handle multiple interrupt controllers. It currently
++	 * is hardcoded to check for interrupts only on the first INTC.
++	 */
++	irq = in_be32(INTC_BASE + IVR);
++	pr_debug("get_irq: %d\n", irq);
++
++	return irq;
++}
++
++void __init init_IRQ(void)
++{
++	u32 i, j, intr_type;
++	struct device_node *intc = NULL;
++#ifdef CONFIG_SELFMOD_INTC
++	unsigned int intc_baseaddr = 0;
++	static int arr_func[] = {
++				(int)&get_irq,
++				(int)&intc_enable,
++				(int)&intc_disable,
++				(int)&intc_disable_and_ack,
++				(int)&intc_end,
++				0
++			};
++#endif
++	static char *intc_list[] = {
++				"xlnx,xps-intc-1.00.a",
++				"xlnx,opb-intc-1.00.c",
++				"xlnx,opb-intc-1.00.b",
++				"xlnx,opb-intc-1.00.a",
++				NULL
++			};
++
++	for (j = 0; intc_list[j] != NULL; j++) {
++		intc = of_find_compatible_node(NULL, NULL, intc_list[j]);
++		if (intc)
++			break;
++	}
++
++	intc_baseaddr = *(int *) of_get_property(intc, "reg", NULL);
++	intc_baseaddr = (unsigned long) ioremap(intc_baseaddr, PAGE_SIZE);
++	nr_irq = *(int *) of_get_property(intc, "xlnx,num-intr-inputs", NULL);
++
++	intr_type =
++		*(int *) of_get_property(intc, "xlnx,kind-of-intr", NULL);
++	if (intr_type >= (1 << nr_irq))
++		printk(KERN_INFO " ERROR: Mishmash in king-of-intr param\n");
++
++#ifdef CONFIG_SELFMOD_INTC
++	selfmod_function((int *) arr_func, intc_baseaddr);
++#endif
++	printk(KERN_INFO "%s #0 at 0x%08x, num_irq=%d, edge=0x%x\n",
++		intc_list[j], intc_baseaddr, nr_irq, intr_type);
++
++	/*
++	 * Disable all external interrupts until they are
++	 * explicity requested.
++	 */
++	out_be32(intc_baseaddr + IER, 0);
++
++	/* Acknowledge any pending interrupts just in case. */
++	out_be32(intc_baseaddr + IAR, 0xffffffff);
++
++	/* Turn on the Master Enable. */
++	out_be32(intc_baseaddr + MER, MER_HIE | MER_ME);
++
++	for (i = 0; i < nr_irq; ++i) {
++		if (intr_type & (0x00000001 << i)) {
++			set_irq_chip_and_handler_name(i, &intc_dev,
++				handle_edge_irq, intc_dev.name);
++			irq_desc[i].status &= ~IRQ_LEVEL;
++		} else {
++			set_irq_chip_and_handler_name(i, &intc_dev,
++				handle_level_irq, intc_dev.name);
++			irq_desc[i].status |= IRQ_LEVEL;
++		}
++	}
++}
+diff --git a/arch/microblaze/kernel/irq.c b/arch/microblaze/kernel/irq.c
+index ff2d29f..29f0b3e 100644
+--- a/arch/microblaze/kernel/irq.c
++++ b/arch/microblaze/kernel/irq.c
+@@ -48,7 +48,7 @@ void do_IRQ(struct pt_regs *regs)
+ 	irq = get_irq(regs);
+ next_irq:
+ 	BUG_ON(irq == -1U);
+-	__do_IRQ(irq);
++	generic_handle_irq(irq);
+ 
+ 	irq = get_irq(regs);
+ 	if (irq != -1U) {
+-- 
+1.5.5.1
 
