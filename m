@@ -1,136 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760024AbZCTBsX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756210AbZCTBuN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760024AbZCTBsX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Mar 2009 21:48:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753921AbZCTBsJ
+	id S1756210AbZCTBuN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Mar 2009 21:50:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761107AbZCTBtz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Mar 2009 21:48:09 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:53518 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1753579AbZCTBsI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Mar 2009 21:48:08 -0400
-Message-ID: <49C2F5EA.8060606@cn.fujitsu.com>
-Date: Fri, 20 Mar 2009 09:48:26 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
+	Thu, 19 Mar 2009 21:49:55 -0400
+Received: from outbound-mail-40.bluehost.com ([69.89.20.194]:51634 "HELO
+	outbound-mail-40.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1761053AbZCTBty (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Mar 2009 21:49:54 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
+	b=qUSQ6eppsn18J37eWfK0dyQ3kthaF1aWpw7RAhhmFURVXNmdXXehhSbqnDK4GXCX5VLFU/GAwhEh8eE0WGUa/fuHAHjqKspLqjctKA7w+EKjGn1MvFZlnkibli6xuA4R;
+Date: Thu, 19 Mar 2009 18:49:48 -0700
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
 To: Ingo Molnar <mingo@elte.hu>
-CC: Jens Axboe <jens.axboe@oracle.com>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH 3/7] blktrace: remove blk_probe_mutex
-References: <49C2F599.3060306@cn.fujitsu.com>
-In-Reply-To: <49C2F599.3060306@cn.fujitsu.com>
-Content-Type: text/plain; charset=UTF-8
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Yinghai Lu <yinghai@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Matthew Wilcox <matthew@wil.cx>,
+       Jesse Brandeburg <jesse.brandeburg@gmail.com>,
+       David Miller <davem@davemloft.net>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       NetDev <netdev@vger.kernel.org>, linux-pci@vger.kernel.org,
+       pm list <linux-pm@lists.linux-foundation.org>
+Subject: Re: [PATCH] pci: fix kexec with power state D3
+Message-ID: <20090319184948.44bf5e9a@hobbes.lan>
+In-Reply-To: <20090308110835.GB27811@elte.hu>
+References: <49B1F934.5050006@kernel.org>
+	<20090308101530.GB14133@elte.hu>
+	<200903081128.35970.rjw@sisk.pl>
+	<200903081133.33020.rjw@sisk.pl>
+	<20090308110835.GB27811@elte.hu>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-blk_register_tracepoints() always returns 0, so make it return void, thus
-we don't need to use blk_probe_mutex to protect blk_probes_ref.
+> > And, quite frankly, I'm not sure if users will be happy with 
+> > the $subject patch, because it _really_ breaks things (well, 
+> > the kexec users who don't use suspend might be, but surely 
+> > suspend users who don't use kexec won't).
+> 
+> Please note that i havent reviewed the patches and i did not 
+> take any sides in the discussion - i just flagged the maintainer 
+> ping-pong. As long as we pick one of the patches (or a third 
+> one) within a bound amount of time we should be fine :)
 
-Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
----
- kernel/trace/blktrace.c |   27 +++++----------------------
- 1 files changed, 5 insertions(+), 22 deletions(-)
+I'll defer to Rafael here; he's been working the most in this area.
+The changelog wasn't very complete for the original patch, but it
+sounds like in the kexec case the newly booted kernel will get an igb
+device in D3 which it can't handle?  That really does sound like a
+driver bug, not something we should mess with in the core.
 
-diff --git a/kernel/trace/blktrace.c b/kernel/trace/blktrace.c
-index 73845b7..223b92e 100644
---- a/kernel/trace/blktrace.c
-+++ b/kernel/trace/blktrace.c
-@@ -47,10 +47,9 @@ static struct tracer_flags blk_tracer_flags = {
- };
- 
- /* Global reference count of probes */
--static DEFINE_MUTEX(blk_probe_mutex);
- static atomic_t blk_probes_ref = ATOMIC_INIT(0);
- 
--static int blk_register_tracepoints(void);
-+static void blk_register_tracepoints(void);
- static void blk_unregister_tracepoints(void);
- 
- /*
-@@ -256,10 +255,8 @@ static void blk_trace_cleanup(struct blk_trace *bt)
- 	free_percpu(bt->sequence);
- 	free_percpu(bt->msg_data);
- 	kfree(bt);
--	mutex_lock(&blk_probe_mutex);
- 	if (atomic_dec_and_test(&blk_probes_ref))
- 		blk_unregister_tracepoints();
--	mutex_unlock(&blk_probe_mutex);
- }
- 
- int blk_trace_remove(struct request_queue *q)
-@@ -471,13 +468,8 @@ int do_blk_trace_setup(struct request_queue *q, char *name, dev_t dev,
- 	bt->pid = buts->pid;
- 	bt->trace_state = Blktrace_setup;
- 
--	mutex_lock(&blk_probe_mutex);
--	if (atomic_add_return(1, &blk_probes_ref) == 1) {
--		ret = blk_register_tracepoints();
--		if (ret)
--			goto probe_err;
--	}
--	mutex_unlock(&blk_probe_mutex);
-+	if (atomic_add_return(1, &blk_probes_ref) == 1)
-+		blk_register_tracepoints();
- 
- 	ret = -EBUSY;
- 	old_bt = xchg(&q->blk_trace, bt);
-@@ -487,9 +479,6 @@ int do_blk_trace_setup(struct request_queue *q, char *name, dev_t dev,
- 	}
- 
- 	return 0;
--probe_err:
--	atomic_dec(&blk_probes_ref);
--	mutex_unlock(&blk_probe_mutex);
- err:
- 	if (bt) {
- 		if (bt->msg_file)
-@@ -863,7 +852,7 @@ void blk_add_driver_data(struct request_queue *q,
- }
- EXPORT_SYMBOL_GPL(blk_add_driver_data);
- 
--static int blk_register_tracepoints(void)
-+static void blk_register_tracepoints(void)
- {
- 	int ret;
- 
-@@ -901,7 +890,6 @@ static int blk_register_tracepoints(void)
- 	WARN_ON(ret);
- 	ret = register_trace_block_remap(blk_add_trace_remap);
- 	WARN_ON(ret);
--	return 0;
- }
- 
- static void blk_unregister_tracepoints(void)
-@@ -1099,11 +1087,8 @@ static void blk_tracer_print_header(struct seq_file *m)
- 
- static void blk_tracer_start(struct trace_array *tr)
- {
--	mutex_lock(&blk_probe_mutex);
- 	if (atomic_add_return(1, &blk_probes_ref) == 1)
--		if (blk_register_tracepoints())
--			atomic_dec(&blk_probes_ref);
--	mutex_unlock(&blk_probe_mutex);
-+		blk_register_tracepoints();
- 	trace_flags &= ~TRACE_ITER_CONTEXT_INFO;
- }
- 
-@@ -1118,10 +1103,8 @@ static int blk_tracer_init(struct trace_array *tr)
- static void blk_tracer_stop(struct trace_array *tr)
- {
- 	trace_flags |= TRACE_ITER_CONTEXT_INFO;
--	mutex_lock(&blk_probe_mutex);
- 	if (atomic_dec_and_test(&blk_probes_ref))
- 		blk_unregister_tracepoints();
--	mutex_unlock(&blk_probe_mutex);
- }
- 
- static void blk_tracer_reset(struct trace_array *tr)
 -- 
-1.5.4.rc3
-
+Jesse Barnes, Intel Open Source Technology Center
