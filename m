@@ -1,110 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760927AbZCTTyw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761288AbZCTTza@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760927AbZCTTyw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Mar 2009 15:54:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756579AbZCTTyl
+	id S1761288AbZCTTza (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Mar 2009 15:55:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755432AbZCTTzT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Mar 2009 15:54:41 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:37795 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755959AbZCTTyl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Mar 2009 15:54:41 -0400
-Date: Fri, 20 Mar 2009 20:54:14 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH 0/5] [GIT PULL] updates for tip/tracing/ftrace
-Message-ID: <20090320195414.GA24129@elte.hu>
-References: <20090318055924.GA24627@elte.hu> <20090318073903.GA31341@elte.hu> <20090319073357.GA14615@elte.hu> <alpine.DEB.2.00.0903191309170.16987@gandalf.stny.rr.com> <20090320174331.GH6698@linux.vnet.ibm.com> <20090320183642.GA2070@elte.hu> <20090320183849.GA3657@elte.hu> <20090320191926.GJ6698@linux.vnet.ibm.com> <20090320192721.GI6224@elte.hu> <20090320194617.GA5934@nowhere>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090320194617.GA5934@nowhere>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Fri, 20 Mar 2009 15:55:19 -0400
+Received: from epiphany.epiphan.com ([217.160.251.166]:55795 "EHLO
+	epiphany.epiphan.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759575AbZCTTzS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Mar 2009 15:55:18 -0400
+Subject: Re: [PATCH] V4L: em28xx: add support for Digitus/Plextor PX-AV200U
+	 grabbers
+From: Mikhail Jiline <misha@epiphan.com>
+To: Devin Heitmueller <devin.heitmueller@gmail.com>
+Cc: mchehab@infradead.org, linux-kernel@vger.kernel.org,
+       video4linux-list@redhat.com
+In-Reply-To: <412bdbff0903201228t4cb4b6c8m17763c27878434ed@mail.gmail.com>
+References: <1237575285.26159.2.camel@T60p>
+	 <412bdbff0903201228t4cb4b6c8m17763c27878434ed@mail.gmail.com>
+Content-Type: text/plain
+Date: Fri, 20 Mar 2009 15:55:12 -0400
+Message-Id: <1237578912.26159.13.camel@T60p>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Frederic Weisbecker <fweisbec@gmail.com> wrote:
-
-> On Fri, Mar 20, 2009 at 08:27:21PM +0100, Ingo Molnar wrote:
-> > 
-> > * Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
-> > 
-> > > On Fri, Mar 20, 2009 at 07:38:49PM +0100, Ingo Molnar wrote:
-> > > > 
-> > > > * Ingo Molnar <mingo@elte.hu> wrote:
-> > > > 
-> > > > > > > This looks like it is RCU/stop_machine related. The CPU is 
-> > > > > > > stuck in in stop_machine? I see that rcu_torture is running. 
-> > > > > > > Does this go away if you turn off rcu_torture?
-> > > > > > 
-> > > > > > Grasping at straws...  Does Lai's rcu_barrier() fix help?
-> > > > > 
-> > > > > which one is that?
-> > > > 
-> > > > ok, found it. Will know in about ~24 hours whether it helps.
-> > > 
-> > > http://lkml.org/lkml/2009/3/20/71 was the one I was thinking of, 
-> > > just to double-check.
-> > 
-> > Yeah - i just picked it up into tip:core/rcu.
-> > 
-> > I didnt immediately connect the two things, as 'tracer self-test' 
-> > does not lend itself to 'CPU hotplug and RCU race fix' - but indeed 
-> > in the case of the function tracer there's a dependency due to 
-> > stop_machine_run(). Thanks for point it out!
-> > 
-> > 	Ingo
+On Fri, 2009-03-20 at 15:28 -0400, Devin Heitmueller wrote:
+> On Fri, Mar 20, 2009 at 2:54 PM, Mikhail Jiline <misha@epiphan.com> wrote:
+> > From: Misha Zhilin <misha@epiphan.com>
+> >
+> > Adds support for Digitus/Plextor PX-AV200U grabbers
+> > Signed-off-by: Misha Zhilin <misha@epiphan.com>
+> > ---
+> >
+> > diff -urN linux-2.6.27.x86_64.orig/drivers/media/video/em28xx/em28xx-cards.c linux-2.6.27.x86_64.new/drivers/media/video/em28xx/em28xx-cards.c
+> > --- linux-2.6.27.x86_64.orig/drivers/media/video/em28xx/em28xx-cards.c  2008-10-09 18:13:53.000000000 -0400
+> > +++ linux-2.6.27.x86_64.new/drivers/media/video/em28xx/em28xx-cards.c   2009-03-04 16:18:03.000000000 -0500
+> > @@ -1087,6 +1087,21 @@
+> >                        .amux     = EM28XX_AMUX_LINE_IN,
+> >                } },
+> >        },
+> > +       [EM2820_BOARD_PLEXTOR_PX_AV200U] = {
+> > +               .name         = "Plextor PX-AV200U",
+> > +               .valid        = EM28XX_BOARD_NOT_VALIDATED,
+> > +               .vchannels    = 2,
+> > +               .decoder      = EM28XX_SAA7113,
+> > +               .input          = { {
+> > +                       .type     = EM28XX_VMUX_COMPOSITE1,
+> > +                       .vmux     = SAA7115_COMPOSITE0,
+> > +                       .amux     = EM28XX_AMUX_AC97_LINE_IN,
+> > +               }, {
+> > +                       .type     = EM28XX_VMUX_SVIDEO,
+> > +                       .vmux     = SAA7115_SVIDEO3,
+> > +                       .amux     = EM28XX_AMUX_AC97_LINE_IN,
+> > +               } },
+> > +       },
+> >  };
+> >  const unsigned int em28xx_bcount = ARRAY_SIZE(em28xx_boards);
+> >
+> > Binary files linux-2.6.27.x86_64.orig/drivers/media/video/em28xx/.em28xx-cards.c.swp and linux-2.6.27.x86_64.new/drivers/media/video/em28xx/.em28xx-cards.c.swp differ
+> > diff -urN linux-2.6.27.x86_64.orig/drivers/media/video/em28xx/em28xx.h linux-2.6.27.x86_64.new/drivers/media/video/em28xx/em28xx.h
+> > --- linux-2.6.27.x86_64.orig/drivers/media/video/em28xx/em28xx.h        2008-10-09 18:13:53.000000000 -0400
+> > +++ linux-2.6.27.x86_64.new/drivers/media/video/em28xx/em28xx.h 2009-03-04 15:33:24.000000000 -0500
+> > @@ -97,6 +97,8 @@
+> >  #define EM2882_BOARD_PINNACLE_HYBRID_PRO         56
+> >  #define EM2883_BOARD_KWORLD_HYBRID_A316                  57
+> >  #define EM2820_BOARD_COMPRO_VIDEOMATE_FORYOU     58
+> > +#define EM2820_BOARD_PLEXTOR_PX_AV200U            59
+> > +
+> >
+> >  /* Limits minimum and default number of buffers */
+> >  #define EM28XX_MIN_BUF 4
+> > diff -urN linux-2.6.27.x86_64.orig/Documentation/video4linux/CARDLIST.em28xx linux-2.6.27.x86_64.new/Documentation/video4linux/CARDLIST.em28xx
+> > --- linux-2.6.27.x86_64.orig/Documentation/video4linux/CARDLIST.em28xx  2008-10-09 18:13:53.000000000 -0400
+> > +++ linux-2.6.27.x86_64.new/Documentation/video4linux/CARDLIST.em28xx   2009-03-18 11:15:00.000000000 -0400
+> > @@ -57,3 +57,4 @@
+> >  56 -> Pinnacle Hybrid Pro (2)                  (em2882)        [2304:0226]
+> >  57 -> Kworld PlusTV HD Hybrid 330              (em2883)        [eb1a:a316]
+> >  58 -> Compro VideoMate ForYou/Stereo           (em2820/em2840) [185b:2041]
+> > + 59 -> Plextor PX-AV200U                        (em2880)
+> >
+> > --
 > 
-> 
-> I've successfully triggered a crash, the problem is that I can't be sure this is
-> the same because I don't have a serial line on my x86-64, and the trace goes too far.
-> Moreover boot_delay=N make it disappear.
-> 
-> I can trigger it each time I boot with ftrace=function_graph and
-> the following patch applied:
-> 
-> diff --git a/kernel/rcutorture.c b/kernel/rcutorture.c
-> index 7c4142a..e9914a8 100644
-> --- a/kernel/rcutorture.c
-> +++ b/kernel/rcutorture.c
-> @@ -616,7 +616,7 @@ rcu_torture_writer(void *arg)
->  	static DEFINE_RCU_RANDOM(rand);
->  
->  	VERBOSE_PRINTK_STRING("rcu_torture_writer task started");
-> -	set_user_nice(current, 19);
-> +	set_user_nice(current, -1);
->  
->  	do {
->  		schedule_timeout_uninterruptible(1);
-> @@ -736,7 +736,7 @@ rcu_torture_reader(void *arg)
->  	struct timer_list t;
->  
->  	VERBOSE_PRINTK_STRING("rcu_torture_reader task started");
-> -	set_user_nice(current, 19);
-> +	set_user_nice(current, -1);
->  	if (irqreader && cur_ops->irqcapable)
->  		setup_timer_on_stack(&t, rcu_torture_timer, 0);
+> Is this patch incomplete?  Where is the registration for the USB ID of
+> the device?
 
-i dont have a reproducer right now. Can you trigger it with latest 
--tip, which has this commit included:
+The patch is complete. This device (as many others) doesn't have unique
+VID/PID, it uses generic eb1a:2821, which is already associated with
+ex28xx (see drivers/media/video/em28xx/em28xx-cards.c:1103)
 
-04cb9ac: rcu: rcu_barrier VS cpu_hotplug: Ensure callbacks in dead cpu are migrated to o
+Regards,
+Misha.
 
-?
 
-	Ingo
