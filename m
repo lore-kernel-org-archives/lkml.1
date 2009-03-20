@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763670AbZCTXc7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763610AbZCTXcn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763670AbZCTXc7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Mar 2009 19:32:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762964AbZCTXYi
+	id S1763610AbZCTXcn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Mar 2009 19:32:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762966AbZCTXYh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Mar 2009 19:24:38 -0400
-Received: from kroah.org ([198.145.64.141]:48629 "EHLO coco.kroah.org"
+	Fri, 20 Mar 2009 19:24:37 -0400
+Received: from kroah.org ([198.145.64.141]:48619 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1762960AbZCTXYg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Mar 2009 19:24:36 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 20 15:29:26 2009
-Message-Id: <20090320222925.949394608@mini.kroah.org>
+	id S1762952AbZCTXYf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Mar 2009 19:24:35 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 20 15:29:25 2009
+Message-Id: <20090320222925.793762675@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 20 Mar 2009 15:28:29 -0700
+Date: Fri, 20 Mar 2009 15:28:28 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,12 +25,13 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Mathieu Chouquet-Stringer <mchouque@free.fr>,
-       Henrique de Moraes Holschuh <hmh@hmh.eng.br>,
-       Len Brown <len.brown@intel.com>
-Subject: [patch 19/43] thinkpad-acpi: fix module autoloading for older models
+       alan@lxorguk.ukuu.org.uk, Mark Jenks <mjenks1968@gmail.com>,
+       Andy Walls <awalls@radix.net>,
+       Mauro Carvalho Chehab <mchehab@redhat.com>,
+       Jarod Wilson <jarod@redhat.com>
+Subject: [patch 18/43] V4L/DVB (10218): cx23885: Fix Oops for mixed install of analog and digital only cards
 References: <20090320222810.386844059@mini.kroah.org>
-Content-Disposition: inline; filename=thinkpad-acpi-fix-module-autoloading-for-older-models.patch
+Content-Disposition: inline; filename=v4l-dvb-cx23885-fix-oops-for-mixed-install-of-analog-and-digital-only-cards.patch
 In-Reply-To: <20090320232116.GA3375@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -40,59 +41,69 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Mathieu Chouquet-Stringer <mchouque@free.fr>
+From: Andy Walls <awalls@radix.net>
 
-commit b36a50f92d1c4300a88f606b4d2bbdc4f442a2d7 upstream.
+commit cd8f894eacf13996d920fdd2aef1afc55156b191 upstream.
 
-Looking at the source, there seems to be a missing * to match my DMI
-string.  I mean for newer IBM and Lenovo's laptops you match either one
-of the following:
-MODULE_ALIAS("dmi:bvnIBM:*:svnIBM:*:pvrThinkPad*:rvnIBM:*");
-MODULE_ALIAS("dmi:bvnLENOVO:*:svnLENOVO:*:pvrThinkPad*:rvnLENOVO:*");
+Analog support for HVR-1250 has not been completed, but does exist for
+the HVR-1800.
 
-While for older Thinkpads, you do this (for instance):
-IBM_BIOS_MODULE_ALIAS("1[0,3,6,8,A-G,I,K,M-P,S,T]");
+Since both cards use the same driver, it tries to create the analog
+dev for both devices, which is not possible.
 
-with IBM_BIOS_MODULE_ALIAS being MODULE_ALIAS("dmi:bvnIBM:bvr" __type "ET??WW")
+This causes a NULL error to show up in video_open and mpeg_open.
 
-Note there's no * terminating the string.  As result, udev doesn't load
-anything because modprobe cannot find anything matching this (my
-machine actually):
+-Mark
 
-udevtest: run: '/sbin/modprobe dmi:bvnIBM:bvr1IET71WW(2.10):bd06/16/2006:svnIBM:pn236621U:pvrNotAv
+Iterations through the cx23885_devlist must check for NULL
+pointers as some supported devices only have DVB support at the moment.
+Mark Jenks encoutered an Oops in a system with both an HVR-1250 and HVR-1800
+installed.
 
-Signed-off-by: Mathieu Chouquet-Stringer <mchouque@free.fr>
-Acked-by: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-Signed-off-by: Len Brown <len.brown@intel.com>
+-Andy
+
+Reported-by: Mark Jenks <mjenks1968@gmail.com>
+Tested-by: Mark Jenks <mjenks1968@gmail.com>
+Signed-off-by: Mark Jenks <mjenks1968@gmail.com>
+Signed-off-by: Andy Walls <awalls@radix.net>
+Signed-off-by: Mauro Carvalho Chehab <mchehab@redhat.com>
+Signed-off-by: Jarod Wilson <jarod@redhat.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/misc/thinkpad_acpi.c |    8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+ drivers/media/video/cx23885/cx23885-417.c   |    3 ++-
+ drivers/media/video/cx23885/cx23885-video.c |    5 +++--
+ 2 files changed, 5 insertions(+), 3 deletions(-)
 
---- a/drivers/misc/thinkpad_acpi.c
-+++ b/drivers/misc/thinkpad_acpi.c
-@@ -6927,7 +6927,7 @@ MODULE_ALIAS(TPACPI_DRVR_SHORTNAME);
-  * if it is not there yet.
-  */
- #define IBM_BIOS_MODULE_ALIAS(__type) \
--	MODULE_ALIAS("dmi:bvnIBM:bvr" __type "ET??WW")
-+	MODULE_ALIAS("dmi:bvnIBM:bvr" __type "ET??WW*")
- 
- /* Non-ancient thinkpads */
- MODULE_ALIAS("dmi:bvnIBM:*:svnIBM:*:pvrThinkPad*:rvnIBM:*");
-@@ -6936,9 +6936,9 @@ MODULE_ALIAS("dmi:bvnLENOVO:*:svnLENOVO:
- /* Ancient thinkpad BIOSes have to be identified by
-  * BIOS type or model number, and there are far less
-  * BIOS types than model numbers... */
--IBM_BIOS_MODULE_ALIAS("I[B,D,H,I,M,N,O,T,W,V,Y,Z]");
--IBM_BIOS_MODULE_ALIAS("1[0,3,6,8,A-G,I,K,M-P,S,T]");
--IBM_BIOS_MODULE_ALIAS("K[U,X-Z]");
-+IBM_BIOS_MODULE_ALIAS("I[BDHIMNOTWVYZ]");
-+IBM_BIOS_MODULE_ALIAS("1[0368A-GIKM-PST]");
-+IBM_BIOS_MODULE_ALIAS("K[UX-Z]");
- 
- MODULE_AUTHOR("Borislav Deianov, Henrique de Moraes Holschuh");
- MODULE_DESCRIPTION(TPACPI_DESC);
+--- a/drivers/media/video/cx23885/cx23885-417.c
++++ b/drivers/media/video/cx23885/cx23885-417.c
+@@ -1585,7 +1585,8 @@ static int mpeg_open(struct inode *inode
+ 	lock_kernel();
+ 	list_for_each(list, &cx23885_devlist) {
+ 		h = list_entry(list, struct cx23885_dev, devlist);
+-		if (h->v4l_device->minor == minor) {
++		if (h->v4l_device &&
++		    h->v4l_device->minor == minor) {
+ 			dev = h;
+ 			break;
+ 		}
+--- a/drivers/media/video/cx23885/cx23885-video.c
++++ b/drivers/media/video/cx23885/cx23885-video.c
+@@ -730,12 +730,13 @@ static int video_open(struct inode *inod
+ 	lock_kernel();
+ 	list_for_each(list, &cx23885_devlist) {
+ 		h = list_entry(list, struct cx23885_dev, devlist);
+-		if (h->video_dev->minor == minor) {
++		if (h->video_dev &&
++		    h->video_dev->minor == minor) {
+ 			dev  = h;
+ 			type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+ 		}
+ 		if (h->vbi_dev &&
+-		   h->vbi_dev->minor == minor) {
++		    h->vbi_dev->minor == minor) {
+ 			dev  = h;
+ 			type = V4L2_BUF_TYPE_VBI_CAPTURE;
+ 		}
 
 
