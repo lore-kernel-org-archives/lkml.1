@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762947AbZCTXYe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762833AbZCTXZA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762947AbZCTXYe (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Mar 2009 19:24:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760252AbZCTXOL
+	id S1762833AbZCTXZA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Mar 2009 19:25:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760196AbZCTXOM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Mar 2009 19:14:11 -0400
-Received: from kroah.org ([198.145.64.141]:53316 "EHLO coco.kroah.org"
+	Fri, 20 Mar 2009 19:14:12 -0400
+Received: from kroah.org ([198.145.64.141]:53330 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1759401AbZCTXOD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Mar 2009 19:14:03 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 20 15:27:13 2009
-Message-Id: <20090320222713.848173083@mini.kroah.org>
+	id S1755330AbZCTXOE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Mar 2009 19:14:04 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 20 15:27:14 2009
+Message-Id: <20090320222714.000218251@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 20 Mar 2009 15:26:42 -0700
+Date: Fri, 20 Mar 2009 15:26:43 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,11 +25,10 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Moritz Muehlenhoff <jmm@debian.org>,
-       Phil Dibowitz <phil@ipom.com>
-Subject: [patch 31/32] USB: Updated unusual-devs entry for USB mass storage on Nokia 6233
+       alan@lxorguk.ukuu.org.uk, Alan Stern <stern@rowland.harvard.edu>
+Subject: [patch 32/32] USB: usbfs: keep async URBs until the device file is closed
 References: <20090320222611.872315885@mini.kroah.org>
-Content-Disposition: inline; filename=usb-updated-unusual-devs-entry-for-usb-mass-storage-on-nokia-6233.patch
+Content-Disposition: inline; filename=usb-usbfs-keep-async-urbs-until-the-device-file-is-closed.patch
 In-Reply-To: <20090320231037.GA2732@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -39,34 +38,69 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Moritz Muehlenhoff <jmm@debian.org>
+From: Alan Stern <stern@rowland.harvard.edu>
 
-commit 716a9c8561d9c50ec454f4fbd39a265892feda2c upstream.
+commit 6ff10464096540e14d7575a72c50d0316d003714 upstream.
 
-Current firmware revision 5.60 still behaves the same,
-so update the quirk up a (non-existing) 99.99 revision.
+The usbfs driver manages a list of completed asynchronous URBs.  But
+it is too eager to free the entries on this list: destroy_async() gets
+called whenever an interface is unbound or a device is removed, and it
+deallocates the outstanding struct async entries for all URBs on that
+interface or device.  This is wrong; the user program should be able
+to reap an URB any time after it has completed, regardless of whether
+or not the interface is still bound or the device is still present.
 
-http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=493415
+This patch (as1222) moves the code for deallocating the completed list
+entries from destroy_async() to usbdev_release().  The outstanding
+entries won't be freed until the user program has closed the device
+file, thereby eliminating any possibility that the remaining URBs
+might still be reaped.
 
-Signed-off-by: Moritz Muehlenhoff <jmm@debian.org>
-Tested-by: Jan Heitkoetter <devnull@heitkoetter.net>
-Signed-off-by: Phil Dibowitz <phil@ipom.com>
+This fixes a bug in which a program can hang in the USBDEVFS_REAPURB
+ioctl when the device is unplugged.
+
+Reported-and-tested-by: Martin Poupe <martin.poupe@upek.com>
+Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/usb/storage/unusual_devs.h |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/usb/core/devio.c |   12 +++++++-----
+ 1 file changed, 7 insertions(+), 5 deletions(-)
 
---- a/drivers/usb/storage/unusual_devs.h
-+++ b/drivers/usb/storage/unusual_devs.h
-@@ -219,7 +219,7 @@ UNUSUAL_DEV(  0x0421, 0x047c, 0x0370, 0x
- 		US_FL_MAX_SECTORS_64 ),
+--- a/drivers/usb/core/devio.c
++++ b/drivers/usb/core/devio.c
+@@ -359,11 +359,6 @@ static void destroy_async(struct dev_sta
+ 		spin_lock_irqsave(&ps->lock, flags);
+ 	}
+ 	spin_unlock_irqrestore(&ps->lock, flags);
+-	as = async_getcompleted(ps);
+-	while (as) {
+-		free_async(as);
+-		as = async_getcompleted(ps);
+-	}
+ }
  
- /* Reported by Manuel Osdoba <manuel.osdoba@tu-ilmenau.de> */
--UNUSUAL_DEV( 0x0421, 0x0492, 0x0452, 0x0452,
-+UNUSUAL_DEV( 0x0421, 0x0492, 0x0452, 0x9999,
- 		"Nokia",
- 		"Nokia 6233",
- 		US_SC_DEVICE, US_PR_DEVICE, NULL,
+ static void destroy_async_on_interface(struct dev_state *ps,
+@@ -639,6 +634,7 @@ static int usbdev_release(struct inode *
+ 	struct dev_state *ps = file->private_data;
+ 	struct usb_device *dev = ps->dev;
+ 	unsigned int ifnum;
++	struct async *as;
+ 
+ 	usb_lock_device(dev);
+ 
+@@ -657,6 +653,12 @@ static int usbdev_release(struct inode *
+ 	usb_unlock_device(dev);
+ 	usb_put_dev(dev);
+ 	put_pid(ps->disc_pid);
++
++	as = async_getcompleted(ps);
++	while (as) {
++		free_async(as);
++		as = async_getcompleted(ps);
++	}
+ 	kfree(ps);
+ 	return 0;
+ }
 
 
