@@ -1,72 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759116AbZCTQK4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758754AbZCTQOj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759116AbZCTQK4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Mar 2009 12:10:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754454AbZCTQKr
+	id S1758754AbZCTQOj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Mar 2009 12:14:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755700AbZCTQO2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Mar 2009 12:10:47 -0400
-Received: from g1t0028.austin.hp.com ([15.216.28.35]:38697 "EHLO
-	g1t0028.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754161AbZCTQKq (ORCPT
+	Fri, 20 Mar 2009 12:14:28 -0400
+Received: from wf-out-1314.google.com ([209.85.200.174]:52687 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755564AbZCTQO0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Mar 2009 12:10:46 -0400
-Subject: Re: [PATCH 0/2] Make the Unevictable LRU available on NOMMU
-From: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-To: Minchan Kim <minchan.kim@gmail.com>
-Cc: David Howells <dhowells@redhat.com>,
+	Fri, 20 Mar 2009 12:14:26 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=gp3RBtJWmn63YUkWYMBvs76+styEivUaKqE7WI+c9EmLd8k7xsZFQc34B/XNTGK3DG
+         VGaQkkbL5LnmhSb8XNU2UEYLIpqyzu7kYiG7BxoHbkfqn7wKA+aKbq7ZqKWDuLghQ4XI
+         +76ksqAZJR7+A38K48Jo+OCJEL9RXisb6Si88=
+MIME-Version: 1.0
+In-Reply-To: <1237544033.5100.143.camel@johannes.local>
+References: <MiincthRUSI.A.eKC.F4BvJB@chimera>
+	 <b6a2187b0903160624gb9d207dv301506e589d93ed4@mail.gmail.com>
+	 <1237317742.31814.28.camel@johannes.local>
+	 <b6a2187b0903181958ke11abe7tdcbc4efeb950954d@mail.gmail.com>
+	 <b6a2187b0903182149x77e416ecuf73be2970173c601@mail.gmail.com>
+	 <1237455534.5100.56.camel@johannes.local>
+	 <b6a2187b0903192155q33510b57l9d5927538a0f4f99@mail.gmail.com>
+	 <1237537967.5100.135.camel@johannes.local>
+	 <b6a2187b0903200304l469e3eeet87c51b1cddb43ea8@mail.gmail.com>
+	 <1237544033.5100.143.camel@johannes.local>
+Date: Sat, 21 Mar 2009 00:14:24 +0800
+Message-ID: <b6a2187b0903200914r23d635c9obc55b30b7cc04382@mail.gmail.com>
+Subject: Re: 2.6.29-rc8: Reported regressions from 2.6.28
+From: Jeff Chua <jeff.chua.linux@gmail.com>
+To: Johannes Berg <johannes@sipsolutions.net>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Adrian Bunk <bunk@kernel.org>,
        Andrew Morton <akpm@linux-foundation.org>,
-       kosaki.motohiro@jp.fujitsu.com, torvalds@linux-foundation.org,
-       peterz@infradead.org, nrik.Berkhan@ge.com, uclinux-dev@uclinux.org,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org, hannes@cmpxchg.org,
-       riel@surriel.com
-In-Reply-To: <28c262360903131727l4ef41db5xf917c7c5eb4825a8@mail.gmail.com>
-References: <20090312100049.43A3.A69D9226@jp.fujitsu.com>
-	 <20090313173343.10169.58053.stgit@warthog.procyon.org.uk>
-	 <28c262360903131727l4ef41db5xf917c7c5eb4825a8@mail.gmail.com>
-Content-Type: text/plain
-Organization: HP/OSLO
-Date: Fri, 20 Mar 2009 12:08:25 -0400
-Message-Id: <1237565305.27431.48.camel@lts-notebook>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Network Development <netdev@vger.kernel.org>,
+       "John W. Linville" <linville@tuxdriver.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2009-03-14 at 09:27 +0900, Minchan Kim wrote:
-> Hi, David.
-> 
-> It seems your patch is better than mine.  Thanks. :)
-> But my concern is that as Peter pointed out, unevictable lru's
-> solution is not fundamental one.
-> 
-> He want to remove ramfs page from lru list to begin with.
-> I guess Andrew also thought same thing with Peter.
-> 
-> I think it's a fundamental solution. but it may be long term solution.
-> This patch can solve NOMMU problem in current status.
-> 
-> Andrew, What do you think about it ?
+On Fri, Mar 20, 2009 at 6:13 PM, Johannes Berg
+<johannes@sipsolutions.net> wrote:
+> Can I convince you to try getting the packet dump I asked for in
+> another mail?
 
-[been meaning to respond to this...]
+Was digging around for the "iw" package and got distracted. I'll test it soon.
 
-I just want to point out [again :)] that removing the ramfs pages from
-the lru will prevent them from being migrated--e.g., for mem hot unplug,
-defrag or such.  We currently have this situation with the new ram disk
-driver [brd.c] which, unlike the old rd driver, doesn't place its pages
-on the LRU.
+I went back to 2.6.28 and found out that I could associate as follows
+(but this would not work in 2.6.29-rc8 ... should work with the
+patch).
 
-Migration uses isolation of pages from lru to arbitrate between tasks
-trying to migrate or reclaim the same page.  If migration doesn't find
-the page on the lru, it assumes that it lost the race and skips the
-page.  This is one of the reasons we chose to keep unevictable pages on
-an lru-like list known to isolate_lru_page().
+modprobe -r iwlagn
+modprobe iwlagn
+iwconfig wlan0 mode Managed
+ifconfig wlan0 up
+iwconfig wlan0 essid "xxx"
+iwconfig wlan0 key restricted xxx
+iwconfig wlan0 ap auto channel auto
+iwlist wlan0 scan >/dev/null
 
-Something to keep in mind if/when this comes up again.  Maybe we don't
-care?  Maybe ram disk/fs pages should come only from non-movable zone?
-Or maybe migration can be reworked not to require the page be
-"isolatable" from the lru [haven't thought about how one might do this].
 
-Lee
-
+Thanks,
+Jeff.
