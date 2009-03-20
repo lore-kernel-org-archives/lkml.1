@@ -1,89 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754547AbZCTCIM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760024AbZCTBsX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754547AbZCTCIM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Mar 2009 22:08:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752846AbZCTCHz
+	id S1760024AbZCTBsX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Mar 2009 21:48:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753921AbZCTBsJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Mar 2009 22:07:55 -0400
-Received: from e7.ny.us.ibm.com ([32.97.182.137]:48149 "EHLO e7.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752206AbZCTCHy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Mar 2009 22:07:54 -0400
-Date: Thu, 19 Mar 2009 19:07:50 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: dipankar@in.ibm.com, linux-input@vger.kernel.org,
-       dmitry.torokhov@gmail.com, linux-kernel@vger.kernel.org
-Subject: Re: Question about usage of RCU in the input layer
-Message-ID: <20090320020750.GA6807@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20090318215812.15496a86@infradead.org> <20090319085628.GA6167@in.ibm.com> <20090319071841.63334eff@infradead.org>
+	Thu, 19 Mar 2009 21:48:09 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:53518 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1753579AbZCTBsI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Mar 2009 21:48:08 -0400
+Message-ID: <49C2F5EA.8060606@cn.fujitsu.com>
+Date: Fri, 20 Mar 2009 09:48:26 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090319071841.63334eff@infradead.org>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+To: Ingo Molnar <mingo@elte.hu>
+CC: Jens Axboe <jens.axboe@oracle.com>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH 3/7] blktrace: remove blk_probe_mutex
+References: <49C2F599.3060306@cn.fujitsu.com>
+In-Reply-To: <49C2F599.3060306@cn.fujitsu.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 19, 2009 at 07:18:41AM -0700, Arjan van de Ven wrote:
-> On Thu, 19 Mar 2009 14:26:28 +0530
-> Dipankar Sarma <dipankar@in.ibm.com> wrote:
-> 
-> > On Wed, Mar 18, 2009 at 09:58:12PM -0700, Arjan van de Ven wrote:
-> > > Hi,
-> > > 
-> > > the input layer does a "synchronize_rcu()" after a
-> > > list_add_tail_rcu(), which is costing me 1 second of boot time.....
-> > > And based on my understanding of the RCU concept, you only need to
-> > > synchronize on delete, not on addition... so I think the
-> > > synchronize is entirely redundant here...
-> > 
-> > The more appropriate question is - why is synchronize_rcu() taking
-> > 1 second ? Any idea what the other CPUs are doing at the time
-> > of calling synchronize_rcu() ?
-> 
-> one cpu is doing a lot of i2c traffic which is a bunch of udelay()s
-> in loops.. then it does quite a bit of uncached memory access, and
-> the lot takes quite while.
-> 
-> > What driver is this ? How early
-> > in the boot is this happening ? 
-> 
-> during kernel boot.
-> 
-> I suppose my question is also more generic.. why synchronize when it's
-> not needed? At least based on my understanding of RCU (but you're the
-> expert), you don't need to synchronize for an add, only between a
-> delete and a (k)free.....
+blk_register_tracepoints() always returns 0, so make it return void, thus
+we don't need to use blk_probe_mutex to protect blk_probes_ref.
 
-I don't claim to understand the code in question, so it is entirely
-possible that the following is irrelevant.  But one other reason for
-synchronize_rcu() is:
+Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+---
+ kernel/trace/blktrace.c |   27 +++++----------------------
+ 1 files changed, 5 insertions(+), 22 deletions(-)
 
-1.	Make change.
+diff --git a/kernel/trace/blktrace.c b/kernel/trace/blktrace.c
+index 73845b7..223b92e 100644
+--- a/kernel/trace/blktrace.c
++++ b/kernel/trace/blktrace.c
+@@ -47,10 +47,9 @@ static struct tracer_flags blk_tracer_flags = {
+ };
+ 
+ /* Global reference count of probes */
+-static DEFINE_MUTEX(blk_probe_mutex);
+ static atomic_t blk_probes_ref = ATOMIC_INIT(0);
+ 
+-static int blk_register_tracepoints(void);
++static void blk_register_tracepoints(void);
+ static void blk_unregister_tracepoints(void);
+ 
+ /*
+@@ -256,10 +255,8 @@ static void blk_trace_cleanup(struct blk_trace *bt)
+ 	free_percpu(bt->sequence);
+ 	free_percpu(bt->msg_data);
+ 	kfree(bt);
+-	mutex_lock(&blk_probe_mutex);
+ 	if (atomic_dec_and_test(&blk_probes_ref))
+ 		blk_unregister_tracepoints();
+-	mutex_unlock(&blk_probe_mutex);
+ }
+ 
+ int blk_trace_remove(struct request_queue *q)
+@@ -471,13 +468,8 @@ int do_blk_trace_setup(struct request_queue *q, char *name, dev_t dev,
+ 	bt->pid = buts->pid;
+ 	bt->trace_state = Blktrace_setup;
+ 
+-	mutex_lock(&blk_probe_mutex);
+-	if (atomic_add_return(1, &blk_probes_ref) == 1) {
+-		ret = blk_register_tracepoints();
+-		if (ret)
+-			goto probe_err;
+-	}
+-	mutex_unlock(&blk_probe_mutex);
++	if (atomic_add_return(1, &blk_probes_ref) == 1)
++		blk_register_tracepoints();
+ 
+ 	ret = -EBUSY;
+ 	old_bt = xchg(&q->blk_trace, bt);
+@@ -487,9 +479,6 @@ int do_blk_trace_setup(struct request_queue *q, char *name, dev_t dev,
+ 	}
+ 
+ 	return 0;
+-probe_err:
+-	atomic_dec(&blk_probes_ref);
+-	mutex_unlock(&blk_probe_mutex);
+ err:
+ 	if (bt) {
+ 		if (bt->msg_file)
+@@ -863,7 +852,7 @@ void blk_add_driver_data(struct request_queue *q,
+ }
+ EXPORT_SYMBOL_GPL(blk_add_driver_data);
+ 
+-static int blk_register_tracepoints(void)
++static void blk_register_tracepoints(void)
+ {
+ 	int ret;
+ 
+@@ -901,7 +890,6 @@ static int blk_register_tracepoints(void)
+ 	WARN_ON(ret);
+ 	ret = register_trace_block_remap(blk_add_trace_remap);
+ 	WARN_ON(ret);
+-	return 0;
+ }
+ 
+ static void blk_unregister_tracepoints(void)
+@@ -1099,11 +1087,8 @@ static void blk_tracer_print_header(struct seq_file *m)
+ 
+ static void blk_tracer_start(struct trace_array *tr)
+ {
+-	mutex_lock(&blk_probe_mutex);
+ 	if (atomic_add_return(1, &blk_probes_ref) == 1)
+-		if (blk_register_tracepoints())
+-			atomic_dec(&blk_probes_ref);
+-	mutex_unlock(&blk_probe_mutex);
++		blk_register_tracepoints();
+ 	trace_flags &= ~TRACE_ITER_CONTEXT_INFO;
+ }
+ 
+@@ -1118,10 +1103,8 @@ static int blk_tracer_init(struct trace_array *tr)
+ static void blk_tracer_stop(struct trace_array *tr)
+ {
+ 	trace_flags |= TRACE_ITER_CONTEXT_INFO;
+-	mutex_lock(&blk_probe_mutex);
+ 	if (atomic_dec_and_test(&blk_probes_ref))
+ 		blk_unregister_tracepoints();
+-	mutex_unlock(&blk_probe_mutex);
+ }
+ 
+ static void blk_tracer_reset(struct trace_array *tr)
+-- 
+1.5.4.rc3
 
-2.	synchronize_rcu()
-
-3.	Now you are guaranteed that all CPUs/tasks/whatever currently
-	running either are not messing with you on the one hand, or
-	have seen the change on the other.
-
-It sounds like you are seeing these delays later in boot, however,
-if this this is instead happening before the scheduler is operational,
-please check to make sure that the following patch is applied:
-
-	http://lkml.org/lkml/2009/2/25/558
-
-This patch will also -greatly- improve performance on single-CPU systems,
-as in the patch makes synchronize_rcu() be essentially a no-op in the
-single-CPU case for Classic RCU.
-
-Alternatively, again assuming a single-CPU system, the following patch
-also effectively makes synchronize_rcu() be a no-op while also cutting
-down the kernel's memory footprint:
-
-	http://lkml.org/lkml/2009/2/3/333
-
-							Thanx, Paul
