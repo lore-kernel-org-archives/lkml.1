@@ -1,63 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755348AbZCTIUm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755524AbZCTIVF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755348AbZCTIUm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Mar 2009 04:20:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751880AbZCTIU0
+	id S1755524AbZCTIVF (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Mar 2009 04:21:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755113AbZCTIUf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Mar 2009 04:20:26 -0400
-Received: from casper.infradead.org ([85.118.1.10]:55282 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752697AbZCTIUY (ORCPT
+	Fri, 20 Mar 2009 04:20:35 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:38377
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1755410AbZCTIUe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Mar 2009 04:20:24 -0400
-Subject: Re: [patch] fix uml slowness caused by ptrace preemption bug on
- host
-From: Peter Zijlstra <peterz@infradead.org>
-To: Miklos Szeredi <miklos@szeredi.hu>
-Cc: roland@redhat.com, efault@gmx.de, rjw@sisk.pl, jdike@addtoit.com,
-       mingo@elte.hu, user-mode-linux-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <E1LkQeU-00020Z-Be@pomaz-ex.szeredi.hu>
-References: <E1LkQeU-00020Z-Be@pomaz-ex.szeredi.hu>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Fri, 20 Mar 2009 09:19:29 +0100
-Message-Id: <1237537169.24626.29.camel@twins>
+	Fri, 20 Mar 2009 04:20:34 -0400
+Date: Fri, 20 Mar 2009 01:20:20 -0700 (PDT)
+Message-Id: <20090320.012020.100200198.davem@davemloft.net>
+To: cywang@google.com
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] crypto/scatterwalk.c to skip unnecessary
+ flush_dcache_page() calls which may cause kernel panic
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <9c0b8b730903200115i7ae4512di97418958e05f6a0e@mail.gmail.com>
+References: <9c0b8b730903200115i7ae4512di97418958e05f6a0e@mail.gmail.com>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
+Content-Type: Text/Plain; charset=big5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id n2K8LMqu001768
 
-On Thu, 2009-03-19 at 23:23 +0100, Miklos Szeredi wrote:
-> From: Miklos Szeredi <mszeredi@suse.cz>
-> 
-> This patch fixes bug #12208.
-> 
-> This turned out to be not a scheduler regression, but an already
-> existing problem in ptrace being triggered by subtle scheduler
-> changes.
-> 
-> The problem is this:
-> 
->  - task A is ptracing task B
->  - task B stops on a trace event
->  - task A is woken up and preempts task B
->  - task A calls ptrace on task B, which does ptrace_check_attach()
->  - this calls wait_task_inactive(), which sees that task B is still on the runq
->  - task A goes to sleep for a jiffy
->  - ...
-> 
-> Since UML does lots of the above sequences, those jiffies quickly add
-> up to make it slow as hell.
-> 
-> This patch solves this by not scheduling on preempt_enable() after
-> ptrace_stop() has woken up the tracer.
+From: Chung-Yih Wang (¤ı±RÅt) <cywang@google.com>
+Date: Fri, 20 Mar 2009 16:15:16 +0800
 
-Nice,.. however did you find this?
+> Below is my patch for fixing this bug for  CONFIG_DEBUG_VM=y.
 
-Ingo is looking at changing wait_task_inactive() to not be quite so
-stupid. I'll let him respond with more details when he's done poking at
-the code :-)
+This exact change is already in the tree, and it's been there
+for at least a month.
 
-
+ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
