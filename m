@@ -1,209 +1,167 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755715AbZCTNgV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754771AbZCTNpQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755715AbZCTNgV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Mar 2009 09:36:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752975AbZCTNf6
+	id S1754771AbZCTNpQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Mar 2009 09:45:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752421AbZCTNo7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Mar 2009 09:35:58 -0400
-Received: from smtp.nokia.com ([192.100.105.134]:42495 "EHLO
-	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754074AbZCTNf5 (ORCPT
+	Fri, 20 Mar 2009 09:44:59 -0400
+Received: from mail.deathmatch.net ([72.66.92.28]:3313 "EHLO
+	mail.deathmatch.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750920AbZCTNo7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Mar 2009 09:35:57 -0400
-Date: Fri, 20 Mar 2009 15:35:11 +0200
-From: Denis Karpov <ext-denis.2.karpov@nokia.com>
-To: ext Jan Kara <jack@suse.cz>
-Cc: Nick Piggin <npiggin@suse.de>,
-       "ext Jorge Boncompte [DTI2]" <jorge@dti2.net>,
-       "Hunter Adrian (Nokia-D/Helsinki)" <adrian.hunter@nokia.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>
-Subject: Re: Error testing ext3 on brd ramdisk
-Message-ID: <20090320133511.GK21564@smart.research.nokia.com>
-Mail-Followup-To: ext Jan Kara <jack@suse.cz>,
-	Nick Piggin <npiggin@suse.de>,
-	"ext Jorge Boncompte [DTI2]" <jorge@dti2.net>,
-	"Hunter Adrian (Nokia-D/Helsinki)" <adrian.hunter@nokia.com>,
-	LKML <linux-kernel@vger.kernel.org>,
-	"linux-ext4@vger.kernel.org" <linux-ext4@vger.kernel.org>
-References: <49AFAFD9.9050805@dti2.net> <49AFC1A9.90501@dti2.net> <20090310161247.GA19352@wotan.suse.de> <20090310163002.GC19352@wotan.suse.de> <49B69A09.3080408@dti2.net> <20090311021920.GA16561@wotan.suse.de> <49BA927F.8020701@dti2.net> <20090317094019.GA10360@smart.research.nokia.com> <20090318121116.GC14622@wotan.suse.de> <20090318134202.GB11965@atrey.karlin.mff.cuni.cz>
+	Fri, 20 Mar 2009 09:44:59 -0400
+X-Greylist: delayed 1813 seconds by postgrey-1.27 at vger.kernel.org; Fri, 20 Mar 2009 09:44:59 EDT
+Date: Fri, 20 Mar 2009 09:14:37 -0400
+From: Bob Copeland <me@bobcopeland.com>
+To: Sitsofe Wheeler <sitsofe@yahoo.com>
+Cc: Jiri Slaby <jirislaby@gmail.com>, Nick Kossifidis <mickflemm@gmail.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>, linux-kernel@vger.kernel.org,
+       linux-wireless@vger.kernel.org, ath5k-devel@venema.h4ckr.net,
+       "Luis R. Rodriguez" <lrodriguez@atheros.com>
+Subject: Re: [TIP] BUG kmalloc-4096: Poison overwritten (ath5k_rx_skb_alloc)
+Message-ID: <20090320131437.GA30120@hash.localnet>
+References: <20090226170338.GA1745@silver.sucs.org> <20090303041222.GA1238@hash.localnet> <20090303200352.GA8343@silver.sucs.org> <20090304120759.GA6519@hash.localnet> <20090306094249.GA10236@silver.sucs.org> <20090308030928.GB14966@hash.localnet> <49B38FB7.3000002@gmail.com> <20090310004344.GA23466@hash.localnet> <20090312061047.GA13401@silver.sucs.org> <20090313095213.GA14250@silver.sucs.org>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="gMR3gsNFwZpnI/Ts"
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090318134202.GB11965@atrey.karlin.mff.cuni.cz>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-OriginalArrivalTime: 20 Mar 2009 13:35:13.0061 (UTC) FILETIME=[B2548D50:01C9A960]
-X-Nokia-AV: Clean
+In-Reply-To: <20090313095213.GA14250@silver.sucs.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Mar 13, 2009 at 09:52:13AM +0000, Sitsofe Wheeler wrote:
+> The dmesg and trace can be found on
+> http://sucs.org/~sits/test/eeepc-debug/20090313/ .
 
---gMR3gsNFwZpnI/Ts
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Looks like the skb was reused right after it was freed by the mac80211
+workqueue so that seems inline with the idea that the list is getting
+corrupted somehow.  On top of the last patch, would you mind running 
+this overnight?  It'll dump a lot of debug info, I'm really only 
+interested in the last 5 invocations of ath5k_debug_printrxbuffs or so
+before the poison.  During a scan you'll see lots of rx_start/rx_stop.
 
-On Wed, Mar 18, 2009 at 02:42:02PM +0100, ext Jan Kara wrote:
-> > On Tue, Mar 17, 2009 at 11:40:19AM +0200, Denis Karpov wrote:
-> > Jan's fixes are here:
-> > http://marc.info/?l=linux-ext4&m=123731584711382&w=2
-> > It would be interesting to try them, and if they don't work maybe
-> > he's also interested so I cc'ed him.
+Hmm, I can think of another scenario that could break: if the hw updated
+rxdp before DMA completes, then we should check next packet's status too
+in case 'current' packet's status is clobbered.
 
-Hello, 
+Someone suggested dumping the self links and deal with RXEOL, maybe a 
+good idea :)
 
-I've re-run the tests (with Jan's patches and also Nick's "fs: new inode
-i_state corruption fix" patch).
+diff --git a/drivers/net/wireless/ath5k/base.c b/drivers/net/wireless/ath5k/base.c
+index a4e385b..e21705c 100644
+--- a/drivers/net/wireless/ath5k/base.c
++++ b/drivers/net/wireless/ath5k/base.c
+@@ -1143,8 +1143,10 @@ ath5k_rxbuf_setup(struct ath5k_softc *sc, struct ath5k_buf *bf)
+ 
+ 	if (!skb) {
+ 		skb = ath5k_rx_skb_alloc(sc, &bf->skbaddr);
+-		if (!skb)
++		if (!skb) {
++			printk(KERN_DEBUG "ath5k: error exit from rxbuf_setup\n");
+ 			return -ENOMEM;
++		}
+ 		bf->skb = skb;
+ 	}
+ 
+@@ -1561,6 +1563,8 @@ ath5k_rx_start(struct ath5k_softc *sc)
+ 	ath5k_mode_setup(sc);		/* set filters, etc. */
+ 	ath5k_hw_start_rx_pcu(ah);	/* re-enable PCU/DMA engine */
+ 
++        printk(KERN_DEBUG "ath5k: rx_start\n");
++
+ 	return 0;
+ err:
+ 	return ret;
+@@ -1578,8 +1582,7 @@ ath5k_rx_stop(struct ath5k_softc *sc)
+ 	ath5k_hw_set_rx_filter(ah, 0);	/* clear recv filter */
+ 	ath5k_hw_stop_rx_dma(ah);	/* disable DMA engine */
+ 
+-	ath5k_debug_printrxbuffs(sc, ah);
+-
++        printk(KERN_DEBUG "ath5k: rx_stop\n");
+ 	sc->rxlink = NULL;		/* just in case */
+ }
+ 
+@@ -1682,6 +1685,7 @@ ath5k_tasklet_rx(unsigned long data)
+ 	int ret;
+ 	int hdrlen;
+ 	int padsize;
++	static int foo=0;
+ 
+ 	spin_lock(&sc->rxbuflock);
+ 	if (list_empty(&sc->rxbuf)) {
+@@ -1689,6 +1693,10 @@ ath5k_tasklet_rx(unsigned long data)
+ 		goto unlock;
+ 	}
+ 	do {
++		/* dump list state every 8 pkts */
++		if (!(foo++ & 7))
++			ath5k_debug_printrxbuffs(sc, sc->ah);
++
+ 		rxs.flag = 0;
+ 
+ 		bf = list_first_entry(&sc->rxbuf, struct ath5k_buf, list);
+@@ -2308,6 +2316,8 @@ ath5k_stop_locked(struct ath5k_softc *sc)
+ 	} else
+ 		sc->rxlink = NULL;
+ 
++        printk(KERN_DEBUG "ath5k: rx_stop_locked\n");
++
+ 	return 0;
+ }
+ 
+@@ -2430,6 +2440,8 @@ ath5k_intr(int irq, void *dev_id)
+ 				*     least on older hardware revs.
+ 				*/
+ 				sc->rxlink = NULL;
++                                printk(KERN_DEBUG "ath5k: RXEOL\n");
++
+ 			}
+ 			if (status & AR5K_INT_TXURN) {
+ 				/* bump tx trigger level */
+diff --git a/drivers/net/wireless/ath5k/debug.c b/drivers/net/wireless/ath5k/debug.c
+index ccaeb5c..c544da5 100644
+--- a/drivers/net/wireless/ath5k/debug.c
++++ b/drivers/net/wireless/ath5k/debug.c
+@@ -505,7 +505,8 @@ ath5k_debug_printrxbuf(struct ath5k_buf *bf, int done,
+ 	struct ath5k_desc *ds = bf->desc;
+ 	struct ath5k_hw_all_rx_desc *rd = &ds->ud.ds_rx;
+ 
+-	printk(KERN_DEBUG "R (%p %llx) %08x %08x %08x %08x %08x %08x %c\n",
++	printk(KERN_DEBUG "R %p (%p %llx) %08x %08x %08x %08x %08x %08x %c\n",
++                bf, 
+ 		ds, (unsigned long long)bf->daddr,
+ 		ds->ds_link, ds->ds_data,
+ 		rd->rx_ctl.rx_control_0, rd->rx_ctl.rx_control_1,
+@@ -518,23 +519,18 @@ ath5k_debug_printrxbuffs(struct ath5k_softc *sc, struct ath5k_hw *ah)
+ {
+ 	struct ath5k_desc *ds;
+ 	struct ath5k_buf *bf;
+-	struct ath5k_rx_status rs = {};
++	struct ath5k_rx_status rs;
+ 	int status;
+ 
+-	if (likely(!(sc->debug.level & ATH5K_DEBUG_RESET)))
+-		return;
+-
+ 	printk(KERN_DEBUG "rx queue %x, link %p\n",
+ 		ath5k_hw_get_rxdp(ah), sc->rxlink);
+ 
+-	spin_lock_bh(&sc->rxbuflock);
+ 	list_for_each_entry(bf, &sc->rxbuf, list) {
+ 		ds = bf->desc;
++                memset(&rs, 0, sizeof(struct ath5k_rx_status));
+ 		status = ah->ah_proc_rx_desc(ah, ds, &rs);
+-		if (!status)
+-			ath5k_debug_printrxbuf(bf, status == 0, &rs);
++		ath5k_debug_printrxbuf(bf, status == 0, &rs);
+ 	}
+-	spin_unlock_bh(&sc->rxbuflock);
+ }
+ 
+ void
 
-> > > In both cases I saw some complains from JBD/JBD2:
-> > >  JBD: Detected IO errors while flushing file data on
->   Yes, my patches fix exactly this problem. So please try running with
-> them. I'm not sure about that HTREE corruption you see during fsck. That
-> seems to be a separate issue.
+-- 
+Bob Copeland %% www.bobcopeland.com
 
-The issue with JBD seems to be gone. But problem with HTREE being corrupted
-still remains (see attached logs).
-
-Denis
-
---gMR3gsNFwZpnI/Ts
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: attachment; filename="ext3.htree.1.txt"
-
--------------------------------------------------------------                   
-Cycle 26                                                                        
-Fri Mar 20 09:23:50 EDT 2009                                                    
-Mounting                                                                        
-[  907.443733] EXT3 FS on ram0, internal journal                                
-[  907.448199] EXT3-fs: mounted filesystem with ordered data mode.              
-[  907.448529] kjournald starting.  Commit interval 5 seconds                   
-Removing old fsstress data                                                      
-Starting fsstress                                                               
-Sleeping 30 seconds                                                             
-seed = 1237468251                                                               
-Stopping fsstress                                                               
- 5656 ttyS0    00:00:00 fsstress_ext3                                           
- 5659 ttyS0    00:00:26 fsstress_ext3                                           
- 5660 ttyS0    00:00:25 fsstress_ext3                                           
- 5661 ttyS0    00:00:25 fsstress_ext3                                           
-./brd_test_ext3.sh: line 37:  5656 Terminated              `pwd`/fsstress_ext3 -
-d $TESTDIR/work -p 3 -l 0 -n 100000000                                          Unmounting                                                                      
-Checking                                                                        
-/dev/ram0: HTREE directory inode 82 has an invalid root node.                   
-HTREE INDEX CLEARED.                                                            
-/dev/ram0: Entry 'c17e8' in /work/p1/d2/d99 (82) has an incorrect filetype (was 
-3, should be 1).                                                                
-                                                                                
-                                                                                
-/dev/ram0: UNEXPECTED INCONSISTENCY; RUN fsck MANUALLY.                         
-        (i.e., without -a or -p options)                                        
-
-# fsck.ext3 /dev/ram0                                 
-e2fsck 1.41.3 (12-Oct-2008)                                                     
-/dev/ram0 contains a file system with errors, check forced.                     
-Pass 1: Checking inodes, blocks, and sizes                                      
-Pass 2: Checking directory structure                                            
-Entry 'c17e8' in /work/p1/d2/d99 (82) has an incorrect filetype (was 3, should b
-e 1).                                                                           
-Fix<y>? yes                                                                     
-                                                                                
-Entry 'fdab' in /work/p1/d2/d99 (82) has an incorrect filetype (was 1, should be
- 7).                                                                            
-Fix<y>? yes                                                                     
-                                                                                
-Entry 'c17fa' in /work/p1/d2/d99 (82) has an incorrect filetype (was 3, should be 1).                                                                           
-Fix<y>? yes                                                                     
-                                                                                
-Entry 'da0' in /work/p1/d2/d99 (82) is a link to directory /work/p1/d2/d99/da0 (
-238).                                                                           
-Clear<y>? yes                                                                   
-                                                                                
-Pass 3: Checking directory connectivity                                         
-Pass 4: Checking reference counts                                               
-Inode 83 ref count is 9, should be 10.  Fix<y>? yes                             
-                                                                                
-Inode 94 ref count is 3, should be 4.  Fix<y>? yes                                                                                                              
-Inode 99 ref count is 9, should be 10.  Fix<y>? yes                             
-                                                                                ...
-
-Inode 1018 ref count is 2, should be 3.  Fix<y>? yes                            
-                                                                                
-Inode 1024 ref count is 1, should be 2.  Fix<y>? yes                            
-                                                                                
-Pass 5: Checking group summary information                                      
-                                                                                
-/dev/ram0: ***** FILE SYSTEM WAS MODIFIED *****                                 
-/dev/ram0: 1024/1024 files (12.0% non-contiguous), 4096/4096 blocks             
-
---gMR3gsNFwZpnI/Ts
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: attachment; filename="ext4.htree.1.txt"
-
--------------------------------------------------------------
-Cycle 5
-Fri Mar 20 09:17:50 EDT 2009
-Mounting
-Removing old fsstress data
-Starting fsstress
-Sleeping 30 seconds
-seed = 1237604365
-Stopping fsstress
- 5370 pts/0    00:00:00 fsstress_ext4
- 5373 pts/0    00:00:19 fsstress_ext4
- 5374 pts/0    00:00:20 fsstress_ext4
- 5375 pts/0    00:00:19 fsstress_ext4
-./brd_test_ext4.sh: line 36:  5370 Terminated              `pwd`/fsstress_ext4 -d $TESTDIR/work -p 3 -l 0 -n 100000000
-Unmounting
-Checking
-/dev/ram1: HTREE directory inode 165 has an invalid root node.
-HTREE INDEX CLEARED.
-/dev/ram1: HTREE directory inode 272 has an invalid root node.
-HTREE INDEX CLEARED.
-/dev/ram1: Entry 'c363' in /work/p2/d2/de/d5f/d80/d616 (272) has an incorrect filetype (was 3, should be 1).
-
-
-/dev/ram1: UNEXPECTED INCONSISTENCY; RUN fsck MANUALLY.
-        (i.e., without -a or -p options)
-# fsck.ext4 /dev/ram1
-e2fsck 1.41.3 (12-Oct-2008)
-/dev/ram1 contains a file system with errors, check forced.
-Pass 1: Checking inodes, blocks, and sizes
-Pass 2: Checking directory structure
-Entry 'c363' in /work/p2/d2/de/d5f/d80/d616 (272) has an incorrect filetype (was 3, should be 1).
-Fix<y>? yes
-
-Entry 'c10b5' in /work/p2/d2/de/d37 (165) has an incorrect filetype (was 3, should be 1).
-Fix<y>? yes
-
-Entry 'f164' in /work/p2/d2/de/d37 (165) has an incorrect filetype (was 1, should be 3).
-Fix<y>? yes
-
-Entry 'f104e' in /work/p2/d2/de/d37 (165) has an incorrect filetype (was 1, should be 2).
-Fix<y>? yes
-
-Entry 'deaa' in /work/p2/d2/de/d5f/d80/d616 (272) is a link to directory /work/p2/d2/de/d5f/d80/d616/deaa (819).
-Clear<y>? yes
-
-Entry 'd155a' in /work/p2/d2/de/d37 (165) is a link to directory /work/p2/d2/de/d37/d155a (434).
-Clear<y>? yes
-
-Pass 3: Checking directory connectivity
-Pass 4: Checking reference counts
-Inode 25 ref count is 6, should be 7.  Fix<y>? yes
-
-Inode 48 ref count is 1, should be 2.  Fix<y>? yes
-
-...
-
-Inode 1003 ref count is 3, should be 4.  Fix<y>? yes
-
-Inode 1004 ref count is 1, should be 2.  Fix<y>? yes
-
-Pass 5: Checking group summary information
-
-/dev/ram1: ***** FILE SYSTEM WAS MODIFIED *****
-/dev/ram1: 1024/1024 files (20.5% non-contiguous), 4096/4096 blocks
-
-
-
---gMR3gsNFwZpnI/Ts--
