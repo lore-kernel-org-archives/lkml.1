@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762713AbZCTXW1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762714AbZCTXWr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762713AbZCTXW1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Mar 2009 19:22:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759929AbZCTXOD
+	id S1762714AbZCTXWr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Mar 2009 19:22:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760046AbZCTXOF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Mar 2009 19:14:03 -0400
-Received: from kroah.org ([198.145.64.141]:53255 "EHLO coco.kroah.org"
+	Fri, 20 Mar 2009 19:14:05 -0400
+Received: from kroah.org ([198.145.64.141]:53263 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1759167AbZCTXN5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Mar 2009 19:13:57 -0400
+	id S1760070AbZCTXN6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Mar 2009 19:13:58 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 20 15:27:13 2009
-Message-Id: <20090320222712.924905183@mini.kroah.org>
+Message-Id: <20090320222713.060321843@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 20 Mar 2009 15:26:36 -0700
+Date: Fri, 20 Mar 2009 15:26:37 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,10 +25,11 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Dan Williams <dcbw@redhat.com>
-Subject: [patch 25/32] USB: Option: let cdc-acm handle Sony Ericsson F3507g / Dell 5530
+       alan@lxorguk.ukuu.org.uk, Axel Wachtler <axel.wachtler@atmel.com>,
+       Robert Richter <robert.richter@amd.com>
+Subject: [patch 26/32] USB: serial: add FTDI USB/Serial converter devices
 References: <20090320222611.872315885@mini.kroah.org>
-Content-Disposition: inline; filename=usb-option-let-cdc-acm-handle-sony-ericsson-f3507g-dell-5530.patch
+Content-Disposition: inline; filename=usb-serial-add-ftdi-usb-serial-converter-devices.patch
 In-Reply-To: <20090320231037.GA2732@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -38,50 +39,64 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Dan Williams <dcbw@redhat.com>
+From: Axel Wachtler <axel.wachtler@atmel.com>
 
-commit 0cc6bfe901b946df125d8e37186d8e45f876457d upstream.
+commit 7f82b6dd7015aabca2fd55fb690248f742cd67f3 upstream.
 
-The generic cdc-acm driver is now the best one to handle Sony Ericsson
-F3507g-based devices (which the Dell 5530 is a rebrand of), now that all
-the pieces are in place (ie, cac477e8f1038c41b6f29d3161ce351462ef3df7).
-Removing the IDs from option allows cdc-acm to handle the device.
+Add the following devices to the USB FTDI SIO device table:
 
-Signed-off-by: Dan Williams <dcbw@redhat.com>
+ Bus 001 Device 009: ID 03eb:2109 Atmel Corp.
+ http://www.atmel.com/dyn/products/tools_card.asp?tool_id=4187
+
+ Bus 001 Device 008: ID 1cf1:0001
+ http://www.dresden-elektronik.de/shop/prod75.html
+
+ Bus 001 Device 007: ID 1c1f:0004
+ http://www.dresden-elektronik.de/shop/prod64.html
+
+Signed-off-by: Axel Wachtler <axel.wachtler@atmel.com>
+Signed-off-by: Robert Richter <robert.richter@amd.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/usb/serial/option.c |    6 ------
- 1 file changed, 6 deletions(-)
+ drivers/usb/serial/ftdi_sio.c |    3 +++
+ drivers/usb/serial/ftdi_sio.h |   13 +++++++++++++
+ 2 files changed, 16 insertions(+)
 
---- a/drivers/usb/serial/option.c
-+++ b/drivers/usb/serial/option.c
-@@ -288,10 +288,6 @@ static int  option_send_setup(struct tty
- #define ZTE_PRODUCT_MF626			0x0031
- #define ZTE_PRODUCT_CDMA_TECH			0xfffe
+--- a/drivers/usb/serial/ftdi_sio.c
++++ b/drivers/usb/serial/ftdi_sio.c
+@@ -657,6 +657,9 @@ static struct usb_device_id id_table_com
+ 	{ USB_DEVICE(PAPOUCH_VID, PAPOUCH_QUIDO4x4_PID) },
+ 	{ USB_DEVICE(FTDI_VID, FTDI_DOMINTELL_DGQG_PID) },
+ 	{ USB_DEVICE(FTDI_VID, FTDI_DOMINTELL_DUSB_PID) },
++	{ USB_DEVICE(ATMEL_VID, STK541_PID) },
++	{ USB_DEVICE(DE_VID, STB_PID) },
++	{ USB_DEVICE(DE_VID, WHT_PID) },
+ 	{ },					/* Optional parameter entry */
+ 	{ }					/* Terminating entry */
+ };
+--- a/drivers/usb/serial/ftdi_sio.h
++++ b/drivers/usb/serial/ftdi_sio.h
+@@ -870,6 +870,19 @@
+ #define RATOC_PRODUCT_ID_USB60F	0xb020
  
--/* Ericsson products */
--#define ERICSSON_VENDOR_ID			0x0bdb
--#define ERICSSON_PRODUCT_F3507G			0x1900
--
- #define BENQ_VENDOR_ID				0x04a5
- #define BENQ_PRODUCT_H10			0x4068
- 
-@@ -434,7 +430,6 @@ static struct usb_device_id option_ids[]
- 	{ USB_DEVICE(DELL_VENDOR_ID, DELL_PRODUCT_5520_MINICARD_CINGULAR) },	/* Dell Wireless HSDPA 5520 == Novatel Expedite EU860D */
- 	{ USB_DEVICE(DELL_VENDOR_ID, DELL_PRODUCT_5520_MINICARD_GENERIC_L) },	/* Dell Wireless HSDPA 5520 */
- 	{ USB_DEVICE(DELL_VENDOR_ID, DELL_PRODUCT_5520_MINICARD_GENERIC_I) },	/* Dell Wireless 5520 Voda I Mobile Broadband (3G HSDPA) Minicard */
--	{ USB_DEVICE(DELL_VENDOR_ID, 0x8147) },					/* Dell Wireless 5530 Mobile Broadband (3G HSPA) Mini-Card */
- 	{ USB_DEVICE(DELL_VENDOR_ID, DELL_PRODUCT_5730_MINICARD_SPRINT) },	/* Dell Wireless 5730 Mobile Broadband EVDO/HSPA Mini-Card */
- 	{ USB_DEVICE(DELL_VENDOR_ID, DELL_PRODUCT_5730_MINICARD_TELUS) },	/* Dell Wireless 5730 Mobile Broadband EVDO/HSPA Mini-Card */
- 	{ USB_DEVICE(DELL_VENDOR_ID, DELL_PRODUCT_5730_MINICARD_VZW) }, 	/* Dell Wireless 5730 Mobile Broadband EVDO/HSPA Mini-Card */
-@@ -506,7 +501,6 @@ static struct usb_device_id option_ids[]
- 	{ USB_DEVICE(ZTE_VENDOR_ID, ZTE_PRODUCT_MF626) },
- 	{ USB_DEVICE(ZTE_VENDOR_ID, ZTE_PRODUCT_MF628) },
- 	{ USB_DEVICE(ZTE_VENDOR_ID, ZTE_PRODUCT_CDMA_TECH) },
--	{ USB_DEVICE(ERICSSON_VENDOR_ID, ERICSSON_PRODUCT_F3507G) },
- 	{ USB_DEVICE(BENQ_VENDOR_ID, BENQ_PRODUCT_H10) },
- 	{ USB_DEVICE(0x1da5, 0x4515) }, /* BenQ H20 */
- 	{ } /* Terminating entry */
+ /*
++ * Atmel STK541
++ */
++#define ATMEL_VID		0x03eb /* Vendor ID */
++#define STK541_PID		0x2109 /* Zigbee Controller */
++
++/*
++ * Dresden Elektronic Sensor Terminal Board
++ */
++#define DE_VID			0x1cf1 /* Vendor ID */
++#define STB_PID			0x0001 /* Sensor Terminal Board */
++#define WHT_PID			0x0004 /* Wireless Handheld Terminal */
++
++/*
+  *   BmRequestType:  1100 0000b
+  *   bRequest:       FTDI_E2_READ
+  *   wValue:         0
 
 
