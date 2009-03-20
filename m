@@ -1,29 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760315AbZCTSmq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760709AbZCTSng@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760315AbZCTSmq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Mar 2009 14:42:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753061AbZCTSmg
+	id S1760709AbZCTSng (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Mar 2009 14:43:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758716AbZCTSn1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Mar 2009 14:42:36 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:34307 "EHLO mx2.mail.elte.hu"
+	Fri, 20 Mar 2009 14:43:27 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:42101 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751520AbZCTSmg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Mar 2009 14:42:36 -0400
-Date: Fri, 20 Mar 2009 19:42:15 +0100
+	id S1753061AbZCTSn0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Mar 2009 14:43:26 -0400
+Date: Fri, 20 Mar 2009 19:43:11 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Subject: Re: [PATCH 0/5] [GIT PULL] updates for tip/tracing/ftrace
-Message-ID: <20090320184215.GA4024@elte.hu>
-References: <20090318031423.981603258@goodmis.org> <20090318055924.GA24627@elte.hu> <20090318073903.GA31341@elte.hu> <20090319073357.GA14615@elte.hu> <20090320170548.GC5937@nowhere> <20090320175758.GA5936@nowhere> <alpine.DEB.2.00.0903201420020.13615@gandalf.stny.rr.com>
+To: Jaswinder Singh Rajput <jaswinder@kernel.org>
+Cc: x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [git-pull -tip] x86: mpparse cleanup
+Message-ID: <20090320184311.GB4024@elte.hu>
+References: <1237314836.3212.10.camel@localhost.localdomain> <1237380351.3042.0.camel@ht.satnam> <20090318141115.GA23034@elte.hu> <1237392355.12866.2.camel@ht.satnam> <20090318161829.GC21331@elte.hu> <1237536134.2494.5.camel@ht.satnam>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.0903201420020.13615@gandalf.stny.rr.com>
+In-Reply-To: <1237536134.2494.5.camel@ht.satnam>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -38,32 +34,29 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Steven Rostedt <rostedt@goodmis.org> wrote:
+* Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
 
-> > Now I've tested on x86-64 SMP and still nothing. Note that I've 
-> > not only tested the selftests but also the function graph 
-> > tracer. But nothing weird appeared.
+> On Wed, 2009-03-18 at 17:18 +0100, Ingo Molnar wrote:
 > 
-> I have not been able to trigger it either. I tested on three 
-> different boxes, with various x86_64/32 configs as well.
+> > Looks good - pulled, thanks Jaswinder!
+> > 
+> > Would you be interested in resurrecting the more mechanic cleanups 
+> > you did as well, on top of this patch?
+> > 
+> > They are still valuable, we just have to keep them separate from a 
+> > potential breakage-causing change like the above one, so that if a 
+> > tester bisects to it, we have an as single-purpose and focused 
+> > commit to look at as possible.
+> > 
 > 
-> One thing that seems to be common in these crashes is that they 
-> all have rcu_torture running. Perhaps the function tracer is 
-> widening a race window that is too small to trigger without the 
-> tracing?
+> cleanup without code change: based on tip:x86/core or x86/cleanups
+> or .. ?
+> 
+> cleanup with code change: based on tip:x86/core or x86/cleanups or .. ?
 
-It's a highly elusive bug that seems to trigger only after hundreds 
-of random kernel builds + reboots. Minor (and provably irrelevant) 
-changes in .config details can make the bug go away, so it's not 
-bisectabe.
+Any of the x86/* branches is fine - they are permanent branches. 
+(tip:master gets reintegrated every week or so)
 
-But it only triggered on SMP kernels and on SMP systems so far, so 
-the hotplug-race theory has a chance to be relevant.
-
-> Paul suggested something about Lai's rcu_barrier fix?
-
-I'm looking at that now. The function-tracer self-test will trigger 
-stop_machine_run(), which brings CPUs down, correct? That would 
-indeed make sense. Will know in 1-2 days whether the hangs go away.
+x86/core would be the best choice.
 
 	Ingo
