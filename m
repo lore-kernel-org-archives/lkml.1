@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760916AbZCTXOv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761572AbZCTXQj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760916AbZCTXOv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Mar 2009 19:14:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756513AbZCTXNh
+	id S1761572AbZCTXQj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Mar 2009 19:16:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758974AbZCTXNl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Mar 2009 19:13:37 -0400
-Received: from kroah.org ([198.145.64.141]:53029 "EHLO coco.kroah.org"
+	Fri, 20 Mar 2009 19:13:41 -0400
+Received: from kroah.org ([198.145.64.141]:53071 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755580AbZCTXNg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Mar 2009 19:13:36 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 20 15:27:09 2009
-Message-Id: <20090320222709.536711783@mini.kroah.org>
+	id S1758745AbZCTXNk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Mar 2009 19:13:40 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 20 15:27:10 2009
+Message-Id: <20090320222710.189958220@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 20 Mar 2009 15:26:15 -0700
+Date: Fri, 20 Mar 2009 15:26:19 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,10 +25,11 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, "J. Bruce Fields" <bfields@citi.umich.edu>
-Subject: [patch 04/32] nfsd: nfsd should drop CAP_MKNOD for non-root
+       alan@lxorguk.ukuu.org.uk, Jiri Slaby <jirislaby@gmail.com>,
+       Takashi Iwai <tiwai@suse.de>
+Subject: [patch 08/32] ALSA: mixart, fix lock imbalance
 References: <20090320222611.872315885@mini.kroah.org>
-Content-Disposition: inline; filename=nfsd-nfsd-should-drop-cap_mknod-for-non-root.patch
+Content-Disposition: inline; filename=alsa-mixart-fix-lock-imbalance.patch
 In-Reply-To: <20090320231037.GA2732@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -38,40 +39,29 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: J. Bruce Fields <bfields@citi.umich.edu>
+From: Jiri Slaby <jirislaby@gmail.com>
 
-commit 76a67ec6fb79ff3570dcb5342142c16098299911 upstream.
+commit 82f5d57163abed2e5ff271d03217b6f90c616eb8 upstream.
 
-Since creating a device node is normally an operation requiring special
-privilege, Igor Zhbanov points out that it is surprising (to say the
-least) that a client can, for example, create a device node on a
-filesystem exported with root_squash.
+There is an omitted unlock in one snd_mixart_hw_params fail path. Fix it.
 
-So, make sure CAP_MKNOD is among the capabilities dropped when an nfsd
-thread handles a request from a non-root user.
-
-Reported-by: Igor Zhbanov <izh1979@gmail.com>
-Signed-off-by: J. Bruce Fields <bfields@citi.umich.edu>
+Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+Signed-off-by: Takashi Iwai <tiwai@suse.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- include/linux/capability.h |    6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
+ sound/pci/mixart/mixart.c |    1 +
+ 1 file changed, 1 insertion(+)
 
---- a/include/linux/capability.h
-+++ b/include/linux/capability.h
-@@ -382,8 +382,10 @@ typedef struct kernel_cap_struct {
- # define CAP_FULL_SET     ((kernel_cap_t){{ ~0, ~0 }})
- # define CAP_INIT_EFF_SET ((kernel_cap_t){{ ~CAP_TO_MASK(CAP_SETPCAP), ~0 }})
- # define CAP_FS_SET       ((kernel_cap_t){{ CAP_FS_MASK_B0, CAP_FS_MASK_B1 } })
--# define CAP_NFSD_SET     ((kernel_cap_t){{ CAP_FS_MASK_B0|CAP_TO_MASK(CAP_SYS_RESOURCE), \
--					CAP_FS_MASK_B1 } })
-+# define CAP_NFSD_SET     ((kernel_cap_t){{ CAP_FS_MASK_B0 \
-+					    | CAP_TO_MASK(CAP_SYS_RESOURCE) \
-+					    | CAP_TO_MASK(CAP_MKNOD), \
-+					    CAP_FS_MASK_B1 } })
- 
- #endif /* _KERNEL_CAPABILITY_U32S != 2 */
+--- a/sound/pci/mixart/mixart.c
++++ b/sound/pci/mixart/mixart.c
+@@ -607,6 +607,7 @@ static int snd_mixart_hw_params(struct s
+ 	/* set the format to the board */
+ 	err = mixart_set_format(stream, format);
+ 	if(err < 0) {
++		mutex_unlock(&mgr->setup_mutex);
+ 		return err;
+ 	}
  
 
 
