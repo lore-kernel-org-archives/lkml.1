@@ -1,50 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760126AbZCTWpW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755750AbZCTXBU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760126AbZCTWpW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Mar 2009 18:45:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753150AbZCTWpE
+	id S1755750AbZCTXBU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Mar 2009 19:01:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753890AbZCTXBB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Mar 2009 18:45:04 -0400
-Received: from thunk.org ([69.25.196.29]:44986 "EHLO thunker.thunk.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753590AbZCTWpD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Mar 2009 18:45:03 -0400
-Date: Fri, 20 Mar 2009 18:44:58 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
-       Greg Kroah-Hartman <gregkh@suse.de>, Kay Sievers <kay.sievers@vrfy.org>
-Subject: Re: Lockdep problem involving sysfs_mutex in ext4 in linux-next
-Message-ID: <20090320224458.GC4559@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org,
-	Greg Kroah-Hartman <gregkh@suse.de>,
-	Kay Sievers <kay.sievers@vrfy.org>
-References: <E1LiURX-0000jG-Lx@closure.thunk.org> <1237071908.8939.788.camel@laptop> <20090320222522.GB4559@mit.edu>
+	Fri, 20 Mar 2009 19:01:01 -0400
+Received: from ocean.emcraft.com ([213.221.7.182]:35220 "EHLO
+	ocean.emcraft.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752819AbZCTXBA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Mar 2009 19:01:00 -0400
+Message-ID: <49C4201A.5060905@emcraft.com>
+Date: Sat, 21 Mar 2009 02:00:42 +0300
+From: Ilya Yanok <yanok@emcraft.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090320222522.GB4559@mit.edu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+To: "H. Peter Anvin" <hpa@zytor.com>
+CC: Dan Williams <dan.j.williams@intel.com>,
+       "H. Peter Anvin" <h.peter.anvin@intel.com>, linux-raid@vger.kernel.org,
+       linux-kernel@vger.kernel.org, neilb@suse.de, maciej.sosnowski@intel.com,
+       Yuri Tikhonov <yur@emcraft.com>
+Subject: Re: [PATCH 06/13] async_tx: add support for asynchronous GF 	multiplication
+References: <20090318191248.20375.40560.stgit@dwillia2-linux.ch.intel.com>	 <20090318192046.20375.89854.stgit@dwillia2-linux.ch.intel.com>	 <49C26D91.10804@intel.com> <e9c3a7c20903191020k4d0169e3oc9749103a711f3e3@mail.gmail.com> <49C41C1E.4060401@zytor.com>
+In-Reply-To: <49C41C1E.4060401@zytor.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 20, 2009 at 06:25:22PM -0400, Theodore Tso wrote:
-> So if I'm reading this right, the problem is happening because
-> someplace in the kernel, fs/sysfs code is grabbing mmap_sem while it
-> is holding sysfs_mutex, right?  But I can't see where that might be
-> happening...
+Hi H. Peter,
 
-Never mind, I see it.  sysfs_readdir() calls filldir() while holding
-sysfs_mutex, and filldir() in turn calls copy_to_user(), which can
-grab mmap_sem.
+H. Peter Anvin wrote:
+>> Something is broken if we take this path.  This routine could stand to
+>> have a WARN_ONCE(), because if it is ever called there is something is
+>> wrong with the raid6 offload driver.  The intent is that the
+>> asynchronous recovery routines will perform an early check to see if
+>> the recovery can be offloaded (with a series of calls to
+>> async_xor/async_pq).  If not we fall back to the optimized synchronous
+>> recovery routines (raid6_2data_recov, raid6_datap_recov).  The only
+>> time this path will be taken is if we have decided to perform
+>> asynchronous recovery but at a later call to async_pq the offload
+>> driver reports it has run out of descriptors.
+>>
+>
+> That doesn't explain what you expect the code to do.  It still doesn't
+> make sense to me.
 
-The problem is that in other code paths, mmap_sem() is grabbed while
-we grab inode->i_alloc_sem() (in ext4_page_mkwrite), and that in turns
-has a dependency on jbd2_handle, which has a dependency on s_lock, and
-hence lock_super().  Ugh.  What a mess.
+We defined async_pq() function as hardware can do GF multiplication of
+arbitrary elements and we want to take advantage of this fact. But by
+the design of ASYNC_TX API we have to provide synchronous version of
+that function too.
 
-							- Ted
+Regards, Ilya.
+
