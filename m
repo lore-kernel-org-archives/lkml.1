@@ -1,71 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754081AbZCTChd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755438AbZCTCoO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754081AbZCTChd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Mar 2009 22:37:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753203AbZCTChV
+	id S1755438AbZCTCoO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Mar 2009 22:44:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751927AbZCTCnz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Mar 2009 22:37:21 -0400
-Received: from hera.kernel.org ([140.211.167.34]:38194 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752895AbZCTChU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Mar 2009 22:37:20 -0400
-Message-ID: <49C300D8.5080204@kernel.org>
-Date: Fri, 20 Mar 2009 11:35:04 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Thu, 19 Mar 2009 22:43:55 -0400
+Received: from kroah.org ([198.145.64.141]:50851 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750831AbZCTCny (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Mar 2009 22:43:54 -0400
+Date: Thu, 19 Mar 2009 19:42:49 -0700
+From: Greg KH <greg@kroah.com>
+To: hooanon05@yahoo.co.jp
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: [RFC Aufs2 #3 2/2] split 'xino' entry under sysfs
+Message-ID: <20090320024249.GA19989@kroah.com>
+References: <1237439565-25039-1-git-send-email-hooanon05@yahoo.co.jp> <1237439565-25039-3-git-send-email-hooanon05@yahoo.co.jp> <20090320004539.GF18781@kroah.com> <3934.1237515949@jrobl>
 MIME-Version: 1.0
-To: Martin Schwidefsky <schwidefsky@de.ibm.com>
-CC: mingo@elte.hu, rusty@rustcorp.com.au, tglx@linutronix.de, x86@kernel.org,
-       linux-kernel@vger.kernel.org, hpa@zytor.com,
-       Paul Mundt <lethal@linux-sh.org>, rmk@arm.linux.org.uk,
-       starvik@axis.com, ralf@linux-mips.org, davem@davemloft.net,
-       cooloney@kernel.org, kyle@mcmartin.ca, matthew@wil.cx,
-       grundler@parisc-linux.org, takata@linux-m32r.org,
-       benh@kernel.crashing.org, rth@twiddle.net, ink@jurassic.park.msu.ru,
-       heiko.carstens@de.ibm.com
-Subject: Re: [GIT RFC] percpu: use dynamic percpu allocator as the default
- percpu allocator
-References: <1236671631-9305-1-git-send-email-tj@kernel.org> <20090316190132.7965a49a@skybase>
-In-Reply-To: <20090316190132.7965a49a@skybase>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 20 Mar 2009 02:35:12 +0000 (UTC)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <3934.1237515949@jrobl>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello, Martin.
-
-Sorry about the delay.
-
-Martin Schwidefsky wrote:
-> We do have a problem with #2, the dynamic percpu patches currently
-> breaks s390. But the nice thing is that we can now get rid of the GOTENT
-> relocation for the percpu symbols. If the code is changed to use
-> RELOC_HIDE for the SHIFT_PERCPU_PTR define, everything works just fine.
-> Patch attached. Nice works guys.
+On Fri, Mar 20, 2009 at 11:25:49AM +0900, hooanon05@yahoo.co.jp wrote:
 > 
-> Subject: [PATCH] s390: percpu access.
+> Greg KH:
+> > > +Description:
+> > > +		It shows the consumed blocks by xib (External Inode Number
+> > > +		Bitmap), its block size and file size.
+> > > +		When the aufs mount option 'noxino' is specified, it
+> > > +		will be empty. About XINO files, see
+> > > +		Documentation/filesystems/aufs/aufs.5 in detail.
+> > 
+> > Sysfs files are one value per file.  This violates that rule.
 > 
-> From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+> Current print format is 
+> 	"%llux%lu %lld\n", st->blocks, st->blksize, (long long)st->size
 > 
-> With the dynamic percpu allocator there is no need anymore to play
-> tricks with the GOTENT relocation for the access to the percpu
-> symbols. A simple RELOC_HIDE gets the job done.
+> Do you mean this has three values and violates the rule?
 
-Hmm... I don't quite get it.  The GOTENT was to work around large
-offsets for modules, right?  Can you please explain what changed by
-the dynamic percpu allocator?
+Hm, rule is "one value per file", since this file has 3 values, what do
+you think?  :)
 
-> +#define SHIFT_PERCPU_PTR(var, offset) RELOC_HIDE(&per_cpu_var(var), (offset))
+> And aufs should create three entries such like xib/blocks, xib/blksize
+> and xib/size?
 
-Hmm... @var already has per_cpu__ prefix when the above macro is
-invoked, so doing per_cpu_var() on it again wouldn't work.  If simple
-RELOC_HIDE works, you should be able to simply drop the above
-definition.  The generic percpu.h will define it.
+Yes.
 
-Thanks.
+> If I change it "<blocks>x<blksize>", is it still violation?
 
--- 
-tejun
+I don't understand.
+
+> > Are all of these things something that a "normal" user would care about?
+> > or are they development / debugging things?
+> 
+> Normal users want to care them, I guess.
+
+Really?  Try leaving them out for now and see if anyone notices :)
+
+> > And why are you using seq_file for a sysfs file?  That's not allowed,
+> > and a sure sign you are doing something wrong, please remove all of
+> > that.
+> 
+> I just wanted to set limit its size to PAGE_SIZE to print the absolute
+> path. Is there another better approach?
+
+Do you really need to print these paths?  And are they going to bigger
+than PATH_MAX?
+
+thanks,
+
+greg k-h
