@@ -1,269 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757218AbZCTP3t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758656AbZCTPbR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757218AbZCTP3t (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Mar 2009 11:29:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755954AbZCTP3c
+	id S1758656AbZCTPbR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Mar 2009 11:31:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756292AbZCTPbD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Mar 2009 11:29:32 -0400
-Received: from tomts16.bellnexxia.net ([209.226.175.4]:38965 "EHLO
-	tomts16-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756743AbZCTP3a (ORCPT
+	Fri, 20 Mar 2009 11:31:03 -0400
+Received: from vms173007pub.verizon.net ([206.46.173.7]:60213 "EHLO
+	vms173007pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756220AbZCTPbB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Mar 2009 11:29:30 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AgMFAJNTw0lMQW1W/2dsb2JhbACBUNNpg30G
-Date: Fri, 20 Mar 2009 11:28:57 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Masahiro Tamori <masahiro.tamori@gmail.com>
-Cc: ltt-dev <ltt-dev@lists.casi.polymtl.ca>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, linux-nfs@vger.kernel.org
-Subject: Re: [Patch] ltt-relay-alloc mmap support (due to NFS lack of
-	splice support)
-Message-ID: <20090320152857.GB30019@Krystal>
-References: <91e0b5050903170224k51c4895eq8a1491da7a7a9741@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <91e0b5050903170224k51c4895eq8a1491da7a7a9741@mail.gmail.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 11:23:31 up 20 days, 11:49,  1 user,  load average: 0.50, 0.51,
-	0.49
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Fri, 20 Mar 2009 11:31:01 -0400
+Message-id: <49C3B6A5.5030408@acm.org>
+Date: Fri, 20 Mar 2009 10:30:45 -0500
+From: Corey Minyard <minyard@acm.org>
+User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
+MIME-version: 1.0
+To: Greg KH <greg@kroah.com>
+Cc: Martin Wilck <martin.wilck@fujitsu-siemens.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       openipmi-developer@lists.sourceforge.net
+Subject: Re: [PATCH] limit CPU time spent in kipmid
+References: <49C27281.4040207@fujitsu-siemens.com> <49C2B994.7040808@acm.org>
+ <20090319235114.GA18182@kroah.com>
+In-reply-to: <20090319235114.GA18182@kroah.com>
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Content-transfer-encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Masahiro Tamori (masahiro.tamori@gmail.com) wrote:
-> Hello Mathieu,
-> 
-> I use the following version.
-> LTTV 0.12.12
-> LTTng 0.110
-> LTT Control 0.67
-> Kernles 2.6.29-rc7
-> 
-> The target is ARM RealviewEB.
-> 
-> Our customer will use NFS to store trace data not storage device for
-> embedded devices.
-> Since newer lttng use splice() even if NFS can not support splice(),
-> I create a patch to support to mmap of ltt-relay-alloc.
-> 
-> I will send a mail to this mailing list for ltt-control patch.
-> I do not know which mailing list should be posted for userland tools.
-> 
-> Best Regards,
-> Masahiro Tamori
-> 
-> 
-> ltt-relay-alloc mmap support
-> 
-> Splice syscall does not support NFS. We can not save trace data to
-> NFS directory. If this feature is enabled, you can use mmap()
-> instead of splice().
-> 
+Greg KH wrote:
+> On Thu, Mar 19, 2009 at 04:31:00PM -0500, Corey Minyard wrote:
+>   
+>> Martin, thanks for the patch.  I had actually implemented something like 
+>> this before, and it didn't really help very much with the hardware I had, 
+>> so I had abandoned this method.  There's even a comment about it in 
+>> si_sm_result smi_event_handler(). Maybe making it tunable is better, I 
+>> don't know.  But I'm afraid this will kill performance on a lot of systems.
+>>
+>> Did you test throughput on this?  The main problem people had without 
+>> kipmid was that things like firmware upgrades took a *long* time; adding 
+>> kipmid improved speeds by an order of magnitude or more.
+>>
+>> It's my opinion that if you want this interface to work efficiently with 
+>> good performance, you should design the hardware to be used efficiently by 
+>> using interrupts (which are supported and disable kipmid).  With the way 
+>> the hardware is defined, you cannot have both good performance and low CPU 
+>> usage without interrupts.
+>>
+>> It may be possible to add an option to choose between performance and 
+>> efficiency, but it will have to default to performance.
+>>     
+>
+> I would think that very infrequent things, like firmware upgrades, would
+> not take priority over a long-term "keep the cpu busy" type system, like
+> what we currently have.
+>
+> Is there any way to switch between the different modes dynamically?
+>   
+> I like the idea of this change, as I have got a lot of complaints lately
+> about kipmi taking way too much cpu time up on idle systems, messing up
+> some user's process accounting rules in their management systems.  But I
+> worry about making it a module parameter, why can't this be a
+> "self-tunable" thing?
+>   
+It's actually already sort of self-tuning.  kipmid sleeps unless there 
+is IPMI activity.  It only spins if it is expecting something from the 
+controller.
 
+I've been thinking about this a little more.  Assuming that the 
+self-tuning is working (and it appears to be working fine on my 
+systems), that means that something is causing the IPMI driver to 
+constantly talk to the management controller.  I can think of three things:
 
-Hi Masahiro,
+   1. The user is constantly sending messages to management controller.
+   2. There is something wrong with the hardware, like the ATTN bit is
+      stuck high, causing the driver to constantly poll the management
+      controller.
+   3. The driver either has a bug or needs some more work to account for
+      something the hardware needs it to do to clear the ATTN bit.
 
-Maybe we should consider implementing splice() support in NFS instead ?
+If it's #1 above, then I don't know if there is anything we can do about 
+it.  The patch Martin sent will simply slow things down.
 
-I removed the mmap support from the ltt-relay-alloc files because splice
-is more efficient and does not require to vmap the pages.  Unless there
-is a strong argument telling what in NFS makes it impossible to
-implement splice(), I don't really see the gain in putting back the
-old mmap() mechanism we had.
+#2 and #3 will require someone to do some debugging.  If the ATTN bit is 
+stuck, you should see the "attentions" field in /proc/ipmi/0/si_stats 
+constantly going up.  Actually, the contents of that file would be 
+helpful, along with /proc/ipmi/0/stats.
 
-Maybe the NFS people will have some information about this ?
-
-Thanks,
-
-Mathieu
-
-
-> For embeded system, NFS must be used. Target board has not enough memory
-> to save trace data and some board can not connect ATA, USB and some strage
-> devices.
-> 
-> Signed-off-by: Masahiro.Tamori@gmail.com
-> ---
->  ltt/Kconfig              |   11 	11 +	0 -	0 !
->  ltt/ltt-relay-alloc.c    |   88 	88 +	0 -	0 !
->  ltt/ltt-relay-lockless.c |   15 	15 +	0 -	0 !
->  3 files changed, 114 insertions(+)
-> 
-> Index: b/ltt/Kconfig
-> ===================================================================
-> --- a/ltt/Kconfig
-> +++ b/ltt/Kconfig
-> @@ -66,6 +66,17 @@ choice
-> 
->  endchoice
-> 
-> +config LTT_RELAY_ALLOC_MMAP
-> +	bool "Linux Trace Toolkit Relay mmap Support"
-> +	depends on LTT_RELAY_ALLOC
-> +	default y
-> +	help
-> +	  Support mmap for ltt-relay.
-> +
-> +	  Splice syscall does not support NFS. We can not save trace data to
-> +          NFS directory. If this feature is enabled, you can use mmap()
-> +          instead of splice().
-> +
->  config LTT_SERIALIZE
->  	tristate "Linux Trace Toolkit Serializer"
->  	depends on LTT_RELAY_ALLOC
-> Index: b/ltt/ltt-relay-alloc.c
-> ===================================================================
-> --- a/ltt/ltt-relay-alloc.c
-> +++ b/ltt/ltt-relay-alloc.c
-> @@ -27,6 +27,74 @@
->  static DEFINE_MUTEX(relay_channels_mutex);
->  static LIST_HEAD(relay_channels);
-> 
-> +#ifdef CONFIG_LTT_RELAY_ALLOC_MMAP
-> +/*
-> + * close() vm_op implementation for relay file mapping.
-> + */
-> +static void relay_file_mmap_close(struct vm_area_struct *vma)
-> +{
-> +}
-> +
-> +/*
-> + * fault() vm_op implementation for relay file mapping.
-> + */
-> +static int relay_buf_fault(struct vm_area_struct *vma, struct vm_fault *vmf)
-> +{
-> +	struct page *page = NULL;
-> +	struct rchan_buf *buf = vma->vm_private_data;
-> +	pgoff_t pgoff = vmf->pgoff;
-> +	struct page **pages;
-> +
-> +	if (!buf)
-> +		return VM_FAULT_OOM;
-> +
-> +	if (pgoff >= buf->page_count)
-> +		return VM_FAULT_SIGBUS;
-> +
-> +	pages = buf->pages;
-> +	page = pages[pgoff];
-> +	get_page(page);
-> +	vmf->page = page;
-> +
-> +	return 0;
-> +}
-> +
-> +/*
-> + * vm_ops for relay file mappings.
-> + */
-> +static struct vm_operations_struct relay_file_mmap_ops = {
-> +	.fault = relay_buf_fault,
-> +	.close = relay_file_mmap_close,
-> +};
-> +
-> +/**
-> + *	relay_mmap_buf: - mmap channel buffer to process address space
-> + *	@buf: relay channel buffer
-> + *	@vma: vm_area_struct describing memory to be mapped
-> + *
-> + *	Returns 0 if ok, negative on error
-> + *
-> + *	Caller should already have grabbed mmap_sem.
-> + */
-> +static int relay_mmap_buf(struct rchan_buf *buf, struct vm_area_struct *vma)
-> +{
-> +	unsigned long length = vma->vm_end - vma->vm_start;
-> +
-> +	if (!buf)
-> +		return -EBADF;
-> +
-> +	if (length != (unsigned long)buf->chan->alloc_size)
-> +		return -EINVAL;
-> +
-> +	vma->vm_ops = &relay_file_mmap_ops;
-> +	vma->vm_flags |= VM_DONTEXPAND;
-> +	vma->vm_private_data = buf;
-> +
-> +	return 0;
-> +}
-> +
-> +#endif /* CONFIG_LTT_RELAY_ALLOC_MMAP */
-> +
->  /**
->   *	relay_alloc_buf - allocate a channel buffer
->   *	@buf: the buffer struct
-> @@ -601,6 +669,23 @@ static int relay_file_open(struct inode
->  	return nonseekable_open(inode, filp);
->  }
-> 
-> +#ifdef CONFIG_LTT_RELAY_ALLOC_MMAP
-> +
-> +/**
-> + *	relay_file_mmap - mmap file op for relay files
-> + *	@filp: the file
-> + *	@vma: the vma describing what to map
-> + *
-> + *	Calls upon relay_mmap_buf() to map the file into user space.
-> + */
-> +static int relay_file_mmap(struct file *filp, struct vm_area_struct *vma)
-> +{
-> +	struct rchan_buf *buf = filp->private_data;
-> +	return relay_mmap_buf(buf, vma);
-> +}
-> +
-> +#endif /* CONFIG_LTT_RELAY_ALLOC_MMAP */
-> +
->  /**
->   *	relay_file_release - release file op for relay files
->   *	@inode: the inode
-> @@ -619,6 +704,9 @@ static int relay_file_release(struct ino
-> 
->  const struct file_operations ltt_relay_file_operations = {
->  	.open		= relay_file_open,
-> +#ifdef CONFIG_LTT_RELAY_ALLOC_MMAP
-> +	.mmap		= relay_file_mmap,
-> +#endif
->  	.release	= relay_file_release,
->  };
->  EXPORT_SYMBOL_GPL(ltt_relay_file_operations);
-> Index: b/ltt/ltt-relay-lockless.c
-> ===================================================================
-> --- a/ltt/ltt-relay-lockless.c
-> +++ b/ltt/ltt-relay-lockless.c
-> @@ -427,6 +427,18 @@ static int ltt_release(struct inode *ino
->  }
-> 
->  /**
-> + *	ltt_mmap - mmap file op for ltt files
-> + *	@inode: opened inode
-> + *	@file: opened file
-> + *
-> + *	Mmap implementation.
-> + */
-> +static int ltt_mmap(struct file *file,  struct vm_area_struct *vma)
-> +{
-> +	return ltt_relay_file_operations.mmap(file, vma);
-> +}
-> +
-> +/**
->   *	ltt_poll - file op for ltt files
->   *	@filp: the file
->   *	@wait: poll table
-> @@ -1590,6 +1602,9 @@ static struct ltt_transport ltt_relay_tr
->  static const struct file_operations ltt_file_operations = {
->  	.open = ltt_open,
->  	.release = ltt_release,
-> +#ifdef CONFIG_LTT_RELAY_ALLOC_MMAP
-> +	.mmap		= ltt_mmap,
-> +#endif
->  	.poll = ltt_poll,
->  	.splice_read = ltt_relay_file_splice_read,
->  	.ioctl = ltt_ioctl,
-
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+-corey
