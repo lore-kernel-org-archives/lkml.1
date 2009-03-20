@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763799AbZCTXgJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764065AbZCTXgb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763799AbZCTXgJ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Mar 2009 19:36:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763009AbZCTXYr
+	id S1764065AbZCTXgb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Mar 2009 19:36:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763014AbZCTXYr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Fri, 20 Mar 2009 19:24:47 -0400
-Received: from kroah.org ([198.145.64.141]:48727 "EHLO coco.kroah.org"
+Received: from kroah.org ([198.145.64.141]:48738 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1762999AbZCTXYp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Mar 2009 19:24:45 -0400
+	id S1763000AbZCTXYq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Mar 2009 19:24:46 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 20 15:29:27 2009
-Message-Id: <20090320222927.323747141@mini.kroah.org>
+Message-Id: <20090320222927.486077903@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 20 Mar 2009 15:28:38 -0700
+Date: Fri, 20 Mar 2009 15:28:39 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,11 +25,11 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Jan Dumon <j.dumon@option.com>,
-       Phil Dibowitz <phil@ipom.com>
-Subject: [patch 28/43] USB: unusual_devs: Add support for GI 0431 SD-Card interface
+       alan@lxorguk.ukuu.org.uk, Axel Wachtler <axel.wachtler@atmel.com>,
+       Robert Richter <robert.richter@amd.com>
+Subject: [patch 29/43] USB: serial: add FTDI USB/Serial converter devices
 References: <20090320222810.386844059@mini.kroah.org>
-Content-Disposition: inline; filename=usb-unusual_devs-add-support-for-gi-0431-sd-card-interface.patch
+Content-Disposition: inline; filename=usb-serial-add-ftdi-usb-serial-converter-devices.patch
 In-Reply-To: <20090320232116.GA3375@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -39,83 +39,64 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Jan Dumon <j.dumon@option.com>
+From: Axel Wachtler <axel.wachtler@atmel.com>
 
-commit c497e715f93d148d751c055401568684eea0bf6b upstream.
+commit 7f82b6dd7015aabca2fd55fb690248f742cd67f3 upstream.
 
-Enable the SD-Card interface on the GI 0431 HSUPA stick from Option.
+Add the following devices to the USB FTDI SIO device table:
 
-The unusual_devs.h entry is necessary because the device descriptor is
-vendor-specific. That prevents usb-storage from binding to it as an
-interface driver.
+ Bus 001 Device 009: ID 03eb:2109 Atmel Corp.
+ http://www.atmel.com/dyn/products/tools_card.asp?tool_id=4187
 
-T:  Bus=07 Lev=01 Prnt=01 Port=01 Cnt=02 Dev#= 15 Spd=480 MxCh= 0
-D:  Ver= 2.00 Cls=ff(vend.) Sub=ff Prot=ff MxPS=64 #Cfgs=  1
-P:  Vendor=0af0 ProdID=7501 Rev= 0.00
-S:  Manufacturer=Option N.V.
-S:  Product=Globetrotter HSUPA Modem
-C:* #Ifs=11 Cfg#= 1 Atr=a0 MxPwr=500mA
-I:* If#= 0 Alt= 0 #EPs= 2 Cls=ff(vend.) Sub=ff Prot=ff Driver=hso
-E:  Ad=81(I) Atr=02(Bulk) MxPS= 512 Ivl=0ms
-E:  Ad=01(O) Atr=02(Bulk) MxPS= 512 Ivl=4ms
-I:* If#= 1 Alt= 0 #EPs= 2 Cls=ff(vend.) Sub=ff Prot=ff Driver=(none)
-E:  Ad=82(I) Atr=02(Bulk) MxPS= 512 Ivl=0ms
-E:  Ad=02(O) Atr=02(Bulk) MxPS= 512 Ivl=4ms
-I:* If#= 2 Alt= 0 #EPs= 2 Cls=ff(vend.) Sub=ff Prot=ff Driver=(none)
-E:  Ad=83(I) Atr=02(Bulk) MxPS= 512 Ivl=0ms
-E:  Ad=03(O) Atr=02(Bulk) MxPS= 512 Ivl=4ms
-I:* If#= 3 Alt= 0 #EPs= 2 Cls=ff(vend.) Sub=ff Prot=ff Driver=hso
-E:  Ad=84(I) Atr=02(Bulk) MxPS= 512 Ivl=0ms
-E:  Ad=04(O) Atr=02(Bulk) MxPS= 512 Ivl=4ms
-I:* If#= 4 Alt= 0 #EPs= 2 Cls=ff(vend.) Sub=ff Prot=ff Driver=(none)
-E:  Ad=85(I) Atr=02(Bulk) MxPS= 512 Ivl=0ms
-E:  Ad=05(O) Atr=02(Bulk) MxPS= 512 Ivl=4ms
-I:* If#= 5 Alt= 0 #EPs= 2 Cls=ff(vend.) Sub=ff Prot=ff Driver=(none)
-E:  Ad=86(I) Atr=02(Bulk) MxPS= 512 Ivl=0ms
-E:  Ad=06(O) Atr=02(Bulk) MxPS= 512 Ivl=4ms
-I:* If#= 6 Alt= 0 #EPs= 2 Cls=ff(vend.) Sub=ff Prot=ff Driver=hso
-E:  Ad=87(I) Atr=02(Bulk) MxPS= 512 Ivl=0ms
-E:  Ad=07(O) Atr=02(Bulk) MxPS= 512 Ivl=4ms
-I:* If#= 7 Alt= 0 #EPs= 2 Cls=ff(vend.) Sub=ff Prot=ff Driver=hso
-E:  Ad=88(I) Atr=02(Bulk) MxPS= 512 Ivl=0ms
-E:  Ad=08(O) Atr=02(Bulk) MxPS= 512 Ivl=4ms
-I:* If#= 8 Alt= 0 #EPs= 2 Cls=ff(vend.) Sub=ff Prot=ff Driver=(none)
-E:  Ad=89(I) Atr=02(Bulk) MxPS= 512 Ivl=0ms
-E:  Ad=09(O) Atr=02(Bulk) MxPS= 512 Ivl=4ms
-I:* If#= 9 Alt= 0 #EPs= 3 Cls=ff(vend.) Sub=ff Prot=ff Driver=hso
-E:  Ad=8a(I) Atr=03(Int.) MxPS=  64 Ivl=2ms
-E:  Ad=8b(I) Atr=02(Bulk) MxPS= 512 Ivl=0ms
-E:  Ad=0a(O) Atr=02(Bulk) MxPS= 512 Ivl=4ms
-I:* If#=10 Alt= 0 #EPs= 2 Cls=08(stor.) Sub=06 Prot=50 Driver=usb-storage
-E:  Ad=0b(O) Atr=02(Bulk) MxPS= 512 Ivl=0ms
-E:  Ad=8c(I) Atr=02(Bulk) MxPS= 512 Ivl=0ms
+ Bus 001 Device 008: ID 1cf1:0001
+ http://www.dresden-elektronik.de/shop/prod75.html
 
-Signed-off-by: Jan Dumon <j.dumon@option.com>
-Signed-off-by: Phil Dibowitz <phil@ipom.com>
+ Bus 001 Device 007: ID 1c1f:0004
+ http://www.dresden-elektronik.de/shop/prod64.html
+
+Signed-off-by: Axel Wachtler <axel.wachtler@atmel.com>
+Signed-off-by: Robert Richter <robert.richter@amd.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/usb/storage/unusual_devs.h |   10 ++++++++++
- 1 file changed, 10 insertions(+)
+ drivers/usb/serial/ftdi_sio.c |    3 +++
+ drivers/usb/serial/ftdi_sio.h |   13 +++++++++++++
+ 2 files changed, 16 insertions(+)
 
---- a/drivers/usb/storage/unusual_devs.h
-+++ b/drivers/usb/storage/unusual_devs.h
-@@ -1330,6 +1330,16 @@ UNUSUAL_DEV( 0x0af0, 0x7401, 0x0000, 0x0
- 		US_SC_DEVICE, US_PR_DEVICE, NULL,
- 		0 ),
+--- a/drivers/usb/serial/ftdi_sio.c
++++ b/drivers/usb/serial/ftdi_sio.c
+@@ -660,6 +660,9 @@ static struct usb_device_id id_table_com
+ 	{ USB_DEVICE(PAPOUCH_VID, PAPOUCH_QUIDO4x4_PID) },
+ 	{ USB_DEVICE(FTDI_VID, FTDI_DOMINTELL_DGQG_PID) },
+ 	{ USB_DEVICE(FTDI_VID, FTDI_DOMINTELL_DUSB_PID) },
++	{ USB_DEVICE(ATMEL_VID, STK541_PID) },
++	{ USB_DEVICE(DE_VID, STB_PID) },
++	{ USB_DEVICE(DE_VID, WHT_PID) },
+ 	{ },					/* Optional parameter entry */
+ 	{ }					/* Terminating entry */
+ };
+--- a/drivers/usb/serial/ftdi_sio.h
++++ b/drivers/usb/serial/ftdi_sio.h
+@@ -881,6 +881,19 @@
+ #define RATOC_PRODUCT_ID_USB60F	0xb020
  
-+/* Reported by Jan Dumon <j.dumon@option.com>
-+ * This device (wrongly) has a vendor-specific device descriptor.
-+ * The entry is needed so usb-storage can bind to it's mass-storage
-+ * interface as an interface driver */
-+UNUSUAL_DEV( 0x0af0, 0x7501, 0x0000, 0x0000,
-+		"Option",
-+		"GI 0431 SD-Card",
-+		US_SC_DEVICE, US_PR_DEVICE, NULL,
-+		0 ),
+ /*
++ * Atmel STK541
++ */
++#define ATMEL_VID		0x03eb /* Vendor ID */
++#define STK541_PID		0x2109 /* Zigbee Controller */
 +
- #ifdef CONFIG_USB_STORAGE_ISD200
- UNUSUAL_DEV(  0x0bf6, 0xa001, 0x0100, 0x0110,
- 		"ATI",
++/*
++ * Dresden Elektronic Sensor Terminal Board
++ */
++#define DE_VID			0x1cf1 /* Vendor ID */
++#define STB_PID			0x0001 /* Sensor Terminal Board */
++#define WHT_PID			0x0004 /* Wireless Handheld Terminal */
++
++/*
+  *   BmRequestType:  1100 0000b
+  *   bRequest:       FTDI_E2_READ
+  *   wValue:         0
 
 
