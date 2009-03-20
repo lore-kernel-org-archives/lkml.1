@@ -1,94 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757137AbZCTOAd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754878AbZCTOIU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757137AbZCTOAd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Mar 2009 10:00:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752421AbZCTOAQ
+	id S1754878AbZCTOIU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Mar 2009 10:08:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751060AbZCTOIH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Mar 2009 10:00:16 -0400
-Received: from mtagate1.uk.ibm.com ([194.196.100.161]:59867 "EHLO
-	mtagate1.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752007AbZCTOAP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Mar 2009 10:00:15 -0400
-Date: Fri, 20 Mar 2009 15:00:10 +0100
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Nick Piggin <npiggin@suse.de>,
-       "lkml," <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] lockdep: fix deadlock in lockdep_trace_alloc
-Message-ID: <20090320150010.054fa8fc@osiris.boeblingen.de.ibm.com>
-In-Reply-To: <1237556700.24626.100.camel@twins>
-References: <1237544000.24626.52.camel@twins>
-	<1237544798.24626.54.camel@twins>
-	<20090320140753.307a3c7d@osiris.boeblingen.de.ibm.com>
-	<1237556700.24626.100.camel@twins>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.7; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 20 Mar 2009 10:08:07 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:54740 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751508AbZCTOIG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Mar 2009 10:08:06 -0400
+Date: Fri, 20 Mar 2009 15:04:09 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: roland@redhat.com, peterz@infradead.org, efault@gmx.de, rjw@sisk.pl,
+       jdike@addtoit.com, mingo@elte.hu,
+       user-mode-linux-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch] fix uml slowness caused by ptrace preemption bug on
+	host
+Message-ID: <20090320140409.GB20965@redhat.com>
+References: <E1LkQeU-00020Z-Be@pomaz-ex.szeredi.hu> <20090319233311.8B26BFC381@magilla.sf.frob.com> <E1LkZjf-0002vu-84@pomaz-ex.szeredi.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <E1LkZjf-0002vu-84@pomaz-ex.szeredi.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 20 Mar 2009 14:45:00 +0100
-Peter Zijlstra <peterz@infradead.org> wrote:
-> Subject: lockdep: fix deadlock in lockdep_trace_alloc
-> From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> Date: Fri Mar 20 11:24:21 CET 2009
-> 
-> Heiko reported that we grab the graph lock with irqs enabled.
-> 
-> Fix this by providing the same wrapper as all other lockdep entry
-> functions have.
-> 
-> Reported-by: Heiko Carstens <heiko.carstens@de.ibm.com>
-> Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> ---
->  kernel/lockdep.c |   21 +++++++++++++++++++--
->  1 file changed, 19 insertions(+), 2 deletions(-)
-> 
-> Index: linux-2.6/kernel/lockdep.c
-> ===================================================================
-> --- linux-2.6.orig/kernel/lockdep.c
-> +++ linux-2.6/kernel/lockdep.c
-> @@ -2258,7 +2258,7 @@ void trace_softirqs_off(unsigned long ip
->  		debug_atomic_inc(&redundant_softirqs_off);
->  }
-> 
-> -void lockdep_trace_alloc(gfp_t gfp_mask)
-> +static void __lockdep_trace_alloc(gfp_t gfp_mask, unsigned long flags)
->  {
->  	struct task_struct *curr = current;
-> 
-> @@ -2277,12 +2277,29 @@ void lockdep_trace_alloc(gfp_t gfp_mask)
->  	if (!(gfp_mask & __GFP_FS))
->  		return;
-> 
-> -	if (DEBUG_LOCKS_WARN_ON(irqs_disabled()))
-> +	if (DEBUG_LOCKS_WARN_ON(raw_irqs_disabled_flags(flags)))
->  		return;
-> 
->  	mark_held_locks(curr, RECLAIM_FS);
->  }
-> 
-> +static void check_flags(unsigned long flags);
-> +
-> +void lockdep_trace_alloc(gfp_t gfp_mask)
-> +{
-> +	unsigned long flags;
-> +
-> +	if (unlikely(current->lockdep_recursion))
-> +		return;
-> +
-> +	raw_local_irq_save(flags);
-> +	check_flags(flags);
-> +	current->lockdep_recursion = 1;
-> +	__lockdep_trace_alloc(gfp_mask, flags);
-> +	current->lockdep_recursion = 0;
-> +	raw_local_irq_restore(flags);
-> +}
-> +
+On 03/20, Miklos Szeredi wrote:
+>
+> I'm no scheduler expert either.
 
-This one works ;)
+neither me ;)
 
-Tested-by: Heiko Carstens <heiko.carstens@de.ibm.com>
+> --- linux.git.orig/kernel/sched.c	2009-03-18 12:53:47.000000000 +0100
+> +++ linux.git/kernel/sched.c	2009-03-20 08:58:13.000000000 +0100
+> @@ -4629,7 +4629,8 @@ asmlinkage void __sched preempt_schedule
+>  	 * If there is a non-zero preempt_count or interrupts are disabled,
+>  	 * we do not want to preempt the current task. Just return..
+>  	 */
+> -	if (likely(ti->preempt_count || irqs_disabled()))
+> +	if (likely(ti->preempt_count || irqs_disabled() ||
+> +		   current->state != TASK_RUNNING))
+
+But this was specially designed to allow to preempt !TASK_RUNNING tasks,
+note the "if (prev->state && !(preempt_count() & PREEMPT_ACTIVE))" in
+schedule().
+
+Perhaps "|| current->state == TASK_TRACED" makes more sense, TASK_TRACED
+is special because we know we are going to schedule really soon. But I think
+your previous patch is better, imho we should change preempt_schedule() to
+fix the very specific problem with ptrace_notify().
+
+Oleg.
+
