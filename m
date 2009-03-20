@@ -1,165 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762265AbZCTK0F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762366AbZCTK0a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762265AbZCTK0F (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Mar 2009 06:26:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760980AbZCTKZR
+	id S1762366AbZCTK0a (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Mar 2009 06:26:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761319AbZCTKZ0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Mar 2009 06:25:17 -0400
-Received: from hera.kernel.org ([140.211.167.34]:35160 "EHLO hera.kernel.org"
+	Fri, 20 Mar 2009 06:25:26 -0400
+Received: from hera.kernel.org ([140.211.167.34]:35170 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760838AbZCTKZP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Mar 2009 06:25:15 -0400
-Date: Fri, 20 Mar 2009 10:24:42 GMT
-From: "venkatesh.pallipadi@intel.com" <venkatesh.pallipadi@intel.com>
+	id S1759328AbZCTKZY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Mar 2009 06:25:24 -0400
+Date: Fri, 20 Mar 2009 10:24:50 GMT
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       venkatesh.pallipadi@intel.com, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       venkatesh.pallipadi@intel.com, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <20090319215358.901545000@intel.com>
-References: <20090319215358.901545000@intel.com>
-Subject: [tip:x86/mm] x86, CPA: Add set_pages_arrayuc and set_pages_array_wb
-Message-ID: <tip-0f3507555f6fa4acbc85a646d6e8766230db38fc@git.kernel.org>
-Git-Commit-ID: 0f3507555f6fa4acbc85a646d6e8766230db38fc
+Cc: linux-kernel@vger.kernel.org, paulus@samba.org, hpa@zytor.com,
+       mingo@redhat.com, rostedt@goodmis.org, a.p.zijlstra@chello.nl,
+       tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org,
+       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
+       rostedt@goodmis.org, tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <20090319194233.195392657@chello.nl>
+References: <20090319194233.195392657@chello.nl>
+Subject: [tip:perfcounters/core] perf_counter: fix uninitialized usage of event_list
+Message-ID: <tip-50d8b58c48c7acb4f4ed80c24593ffe2a9c7d1ce@git.kernel.org>
+Git-Commit-ID: 50d8b58c48c7acb4f4ed80c24593ffe2a9c7d1ce
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 20 Mar 2009 10:24:43 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 20 Mar 2009 10:24:52 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  0f3507555f6fa4acbc85a646d6e8766230db38fc
-Gitweb:     http://git.kernel.org/tip/0f3507555f6fa4acbc85a646d6e8766230db38fc
-Author:     venkatesh.pallipadi@intel.com <venkatesh.pallipadi@intel.com>
-AuthorDate: Thu, 19 Mar 2009 14:51:15 -0700
+Commit-ID:  50d8b58c48c7acb4f4ed80c24593ffe2a9c7d1ce
+Gitweb:     http://git.kernel.org/tip/50d8b58c48c7acb4f4ed80c24593ffe2a9c7d1ce
+Author:     Peter Zijlstra <a.p.zijlstra@chello.nl>
+AuthorDate: Thu, 19 Mar 2009 20:26:11 +0100
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Fri, 20 Mar 2009 10:34:49 +0100
+CommitDate: Fri, 20 Mar 2009 11:15:11 +0100
 
-x86, CPA: Add set_pages_arrayuc and set_pages_array_wb
+perf_counter: fix uninitialized usage of event_list
 
-Add new interfaces:
+Impact: fix boot crash
 
-  set_pages_array_uc()
-  set_pages_array_wb()
+When doing the generic context switch event I ran into some early
+boot hangs, which were caused by inf func recursion (event, fault,
+event, fault).
 
-that can be used change the page attribute for a bunch of pages with
-flush etc done once at the end of all the changes. These interfaces
-are similar to existing set_memory_array_uc() and set_memory_array_wc().
+I eventually tracked it down to event_list not being initialized
+at the time of the first event. Fix this.
 
-Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-Cc: arjan@infradead.org
-Cc: eric@anholt.net
-Cc: airlied@redhat.com
-LKML-Reference: <20090319215358.901545000@intel.com>
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Steven Rostedt <rostedt@goodmis.org>
+LKML-Reference: <20090319194233.195392657@chello.nl>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
 ---
- arch/x86/include/asm/cacheflush.h |    3 ++
- arch/x86/mm/pageattr.c            |   63 +++++++++++++++++++++++++++++++++++++
- 2 files changed, 66 insertions(+), 0 deletions(-)
+ include/linux/init_task.h |    2 ++
+ kernel/perf_counter.c     |    2 +-
+ 2 files changed, 3 insertions(+), 1 deletions(-)
 
-diff --git a/arch/x86/include/asm/cacheflush.h b/arch/x86/include/asm/cacheflush.h
-index 5b301b7..b3894bf 100644
---- a/arch/x86/include/asm/cacheflush.h
-+++ b/arch/x86/include/asm/cacheflush.h
-@@ -90,6 +90,9 @@ int set_memory_4k(unsigned long addr, int numpages);
- int set_memory_array_uc(unsigned long *addr, int addrinarray);
- int set_memory_array_wb(unsigned long *addr, int addrinarray);
- 
-+int set_pages_array_uc(struct page **pages, int addrinarray);
-+int set_pages_array_wb(struct page **pages, int addrinarray);
-+
- /*
-  * For legacy compatibility with the old APIs, a few functions
-  * are provided that work on a "struct page".
-diff --git a/arch/x86/mm/pageattr.c b/arch/x86/mm/pageattr.c
-index e5c257f..d71e1b6 100644
---- a/arch/x86/mm/pageattr.c
-+++ b/arch/x86/mm/pageattr.c
-@@ -920,6 +920,20 @@ static inline int change_page_attr_clear(unsigned long *addr, int numpages,
- 		(array ? CPA_ARRAY : 0), NULL);
- }
- 
-+static inline int cpa_set_pages_array(struct page **pages, int numpages,
-+				       pgprot_t mask)
-+{
-+	return change_page_attr_set_clr(NULL, numpages, mask, __pgprot(0), 0,
-+		CPA_PAGES_ARRAY, pages);
-+}
-+
-+static inline int cpa_clear_pages_array(struct page **pages, int numpages,
-+					 pgprot_t mask)
-+{
-+	return change_page_attr_set_clr(NULL, numpages, __pgprot(0), mask, 0,
-+		CPA_PAGES_ARRAY, pages);
-+}
-+
- int _set_memory_uc(unsigned long addr, int numpages)
+diff --git a/include/linux/init_task.h b/include/linux/init_task.h
+index 219748d..ca226a9 100644
+--- a/include/linux/init_task.h
++++ b/include/linux/init_task.h
+@@ -124,6 +124,8 @@ extern struct cred init_cred;
+ # define INIT_PERF_COUNTERS(tsk)					\
+ 	.perf_counter_ctx.counter_list =				\
+ 		LIST_HEAD_INIT(tsk.perf_counter_ctx.counter_list),	\
++	.perf_counter_ctx.event_list =					\
++		LIST_HEAD_INIT(tsk.perf_counter_ctx.event_list),	\
+ 	.perf_counter_ctx.lock =					\
+ 		__SPIN_LOCK_UNLOCKED(tsk.perf_counter_ctx.lock),
+ #else
+diff --git a/kernel/perf_counter.c b/kernel/perf_counter.c
+index b39456a..4c4e9eb 100644
+--- a/kernel/perf_counter.c
++++ b/kernel/perf_counter.c
+@@ -1506,7 +1506,7 @@ static void perf_swcounter_ctx_event(struct perf_counter_context *ctx,
  {
- 	/*
-@@ -1076,6 +1090,35 @@ int set_pages_uc(struct page *page, int numpages)
- }
- EXPORT_SYMBOL(set_pages_uc);
+ 	struct perf_counter *counter;
  
-+int set_pages_array_uc(struct page **pages, int addrinarray)
-+{
-+	unsigned long start;
-+	unsigned long end;
-+	int i;
-+	int free_idx;
-+
-+	for (i = 0; i < addrinarray; i++) {
-+		start = (unsigned long)page_address(pages[i]);
-+		end = start + PAGE_SIZE;
-+		if (reserve_memtype(start, end, _PAGE_CACHE_UC_MINUS, NULL))
-+			goto err_out;
-+	}
-+
-+	if (cpa_set_pages_array(pages, addrinarray,
-+			__pgprot(_PAGE_CACHE_UC_MINUS)) == 0) {
-+		return 0; /* Success */
-+	}
-+err_out:
-+	free_idx = i;
-+	for (i = 0; i < free_idx; i++) {
-+		start = (unsigned long)page_address(pages[i]);
-+		end = start + PAGE_SIZE;
-+		free_memtype(start, end);
-+	}
-+	return -EINVAL;
-+}
-+EXPORT_SYMBOL(set_pages_array_uc);
-+
- int set_pages_wb(struct page *page, int numpages)
- {
- 	unsigned long addr = (unsigned long)page_address(page);
-@@ -1084,6 +1127,26 @@ int set_pages_wb(struct page *page, int numpages)
- }
- EXPORT_SYMBOL(set_pages_wb);
+-	if (list_empty(&ctx->event_list))
++	if (system_state != SYSTEM_RUNNING || list_empty(&ctx->event_list))
+ 		return;
  
-+int set_pages_array_wb(struct page **pages, int addrinarray)
-+{
-+	int retval;
-+	unsigned long start;
-+	unsigned long end;
-+	int i;
-+
-+	retval = cpa_clear_pages_array(pages, addrinarray,
-+			__pgprot(_PAGE_CACHE_MASK));
-+
-+	for (i = 0; i < addrinarray; i++) {
-+		start = (unsigned long)page_address(pages[i]);
-+		end = start + PAGE_SIZE;
-+		free_memtype(start, end);
-+	}
-+
-+	return retval;
-+}
-+EXPORT_SYMBOL(set_pages_array_wb);
-+
- int set_pages_x(struct page *page, int numpages)
- {
- 	unsigned long addr = (unsigned long)page_address(page);
+ 	rcu_read_lock();
