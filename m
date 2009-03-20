@@ -1,56 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755750AbZCTXBU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759910AbZCTXEX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755750AbZCTXBU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Mar 2009 19:01:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753890AbZCTXBB
+	id S1759910AbZCTXEX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Mar 2009 19:04:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754535AbZCTXEG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Mar 2009 19:01:01 -0400
-Received: from ocean.emcraft.com ([213.221.7.182]:35220 "EHLO
-	ocean.emcraft.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752819AbZCTXBA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Mar 2009 19:01:00 -0400
-Message-ID: <49C4201A.5060905@emcraft.com>
-Date: Sat, 21 Mar 2009 02:00:42 +0300
-From: Ilya Yanok <yanok@emcraft.com>
-User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
+	Fri, 20 Mar 2009 19:04:06 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:49784 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752475AbZCTXEC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Mar 2009 19:04:02 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Subject: [RFC][PATCH] PCI PM: Be extra careful when changing power states of devices
+Date: Sat, 21 Mar 2009 00:03:54 +0100
+User-Agent: KMail/1.11.1 (Linux/2.6.29-rc8-tst; KDE/4.2.1; x86_64; ; )
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Linux PCI <linux-pci@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: Dan Williams <dan.j.williams@intel.com>,
-       "H. Peter Anvin" <h.peter.anvin@intel.com>, linux-raid@vger.kernel.org,
-       linux-kernel@vger.kernel.org, neilb@suse.de, maciej.sosnowski@intel.com,
-       Yuri Tikhonov <yur@emcraft.com>
-Subject: Re: [PATCH 06/13] async_tx: add support for asynchronous GF 	multiplication
-References: <20090318191248.20375.40560.stgit@dwillia2-linux.ch.intel.com>	 <20090318192046.20375.89854.stgit@dwillia2-linux.ch.intel.com>	 <49C26D91.10804@intel.com> <e9c3a7c20903191020k4d0169e3oc9749103a711f3e3@mail.gmail.com> <49C41C1E.4060401@zytor.com>
-In-Reply-To: <49C41C1E.4060401@zytor.com>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200903210003.55161.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi H. Peter,
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-H. Peter Anvin wrote:
->> Something is broken if we take this path.  This routine could stand to
->> have a WARN_ONCE(), because if it is ever called there is something is
->> wrong with the raid6 offload driver.  The intent is that the
->> asynchronous recovery routines will perform an early check to see if
->> the recovery can be offloaded (with a series of calls to
->> async_xor/async_pq).  If not we fall back to the optimized synchronous
->> recovery routines (raid6_2data_recov, raid6_datap_recov).  The only
->> time this path will be taken is if we have decided to perform
->> asynchronous recovery but at a later call to async_pq the offload
->> driver reports it has run out of descriptors.
->>
->
-> That doesn't explain what you expect the code to do.  It still doesn't
-> make sense to me.
+The story in http://bugzilla.kernel.org/show_bug.cgi?id=12846 shows
+that setting the power state of a PCI device by
+pci_raw_set_power_state() may sometimes fail.  For this reason,
+pci_raw_set_power_state() should not assume that the power state of
+the device has actually changed after writing into its PMCSR.
+Instead, it should read the value from there and use it to update
+dev->current_state.  It also is useful to print a warning if the
+device's power state hasn't changed as expected.
 
-We defined async_pq() function as hardware can do GF multiplication of
-arbitrary elements and we want to take advantage of this fact. But by
-the design of ASYNC_TX API we have to provide synchronous version of
-that function too.
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ drivers/pci/pci.c |   12 ++++++++++--
+ 1 file changed, 10 insertions(+), 2 deletions(-)
 
-Regards, Ilya.
-
+Index: linux-2.6/drivers/pci/pci.c
+===================================================================
+--- linux-2.6.orig/drivers/pci/pci.c
++++ linux-2.6/drivers/pci/pci.c
+@@ -436,7 +436,7 @@ static inline int platform_pci_sleep_wak
+  */
+ static int pci_raw_set_power_state(struct pci_dev *dev, pci_power_t state)
+ {
+-	u16 pmcsr;
++	u16 pmcsr, new_pmcsr;
+ 	bool need_restore = false;
+ 
+ 	/* Check if we're already there */
+@@ -498,7 +498,15 @@ static int pci_raw_set_power_state(struc
+ 	else if (state == PCI_D2 || dev->current_state == PCI_D2)
+ 		udelay(PCI_PM_D2_DELAY);
+ 
+-	dev->current_state = state;
++	pci_read_config_word(dev, dev->pm_cap + PCI_PM_CTRL, &new_pmcsr);
++	if (new_pmcsr == pmcsr) {
++		dev->current_state = state;
++	} else {
++		dev->current_state = (new_pmcsr & PCI_PM_CTRL_STATE_MASK);
++		dev_warn(&dev->dev,
++			"failed to set power state to D%d, is D%d\n", state,
++			dev->current_state);
++	}
+ 
+ 	/* According to section 5.4.1 of the "PCI BUS POWER MANAGEMENT
+ 	 * INTERFACE SPECIFICATION, REV. 1.2", a device transitioning
