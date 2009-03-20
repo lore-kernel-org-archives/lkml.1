@@ -1,124 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762183AbZCTKPa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757710AbZCTKQr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762183AbZCTKPa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Mar 2009 06:15:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761298AbZCTKPM
+	id S1757710AbZCTKQr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Mar 2009 06:16:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752298AbZCTKQg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Mar 2009 06:15:12 -0400
-Received: from xc.sipsolutions.net ([83.246.72.84]:60210 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761220AbZCTKPJ (ORCPT
+	Fri, 20 Mar 2009 06:16:36 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:26280 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751715AbZCTKQf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Mar 2009 06:15:09 -0400
-Subject: Re: 2.6.29-rc8: Reported regressions from 2.6.28
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Jeff Chua <jeff.chua.linux@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Adrian Bunk <bunk@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Network Development <netdev@vger.kernel.org>,
-       "John W. Linville" <linville@tuxdriver.com>
-In-Reply-To: <b6a2187b0903200304l469e3eeet87c51b1cddb43ea8@mail.gmail.com> (sfid-20090320_110431_738151_8D365596)
-References: <MiincthRUSI.A.eKC.F4BvJB@chimera>
-	 <1237143683.24621.7.camel@johannes.local> <20090315202603.GA9077@elte.hu>
-	 <b6a2187b0903160624gb9d207dv301506e589d93ed4@mail.gmail.com>
-	 <1237317742.31814.28.camel@johannes.local>
-	 <b6a2187b0903181958ke11abe7tdcbc4efeb950954d@mail.gmail.com>
-	 <b6a2187b0903182149x77e416ecuf73be2970173c601@mail.gmail.com>
-	 <1237455534.5100.56.camel@johannes.local>
-	 <b6a2187b0903192155q33510b57l9d5927538a0f4f99@mail.gmail.com>
-	 <1237537967.5100.135.camel@johannes.local>
-	 <b6a2187b0903200304l469e3eeet87c51b1cddb43ea8@mail.gmail.com>
-	 (sfid-20090320_110431_738151_8D365596)
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-yQMXHixSw2lKEUTiMnYT"
-Date: Fri, 20 Mar 2009 11:13:53 +0100
-Message-Id: <1237544033.5100.143.camel@johannes.local>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 
+	Fri, 20 Mar 2009 06:16:35 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=ZhZuYU4RyZJSizJn0hTT0t2Wa+MSJ3CKjXS3h1PBk2FdTERmbx7y52JNDMU/8lfWh
+	aZm9BzczRysthYRBccbjg==
+Date: Fri, 20 Mar 2009 03:15:41 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
+Subject: Re: [patch] vmscan: print shrink_slab symbol name on negative shrinker
+ objects
+In-Reply-To: <20090319163314.527687fc.akpm@linux-foundation.org>
+Message-ID: <alpine.DEB.2.00.0903200314280.10035@chino.kir.corp.google.com>
+References: <alpine.DEB.2.00.0903191609040.2457@chino.kir.corp.google.com> <20090319163314.527687fc.akpm@linux-foundation.org>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 19 Mar 2009, Andrew Morton wrote:
 
---=-yQMXHixSw2lKEUTiMnYT
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+> > diff --git a/mm/vmscan.c b/mm/vmscan.c
+> > --- a/mm/vmscan.c
+> > +++ b/mm/vmscan.c
+> > @@ -40,6 +40,7 @@
+> >  #include <linux/memcontrol.h>
+> >  #include <linux/delayacct.h>
+> >  #include <linux/sysctl.h>
+> > +#include <linux/kallsyms.h>
+> >  
+> >  #include <asm/tlbflush.h>
+> >  #include <asm/div64.h>
+> > @@ -214,8 +215,12 @@ unsigned long shrink_slab(unsigned long scanned, gfp_t gfp_mask,
+> >  		do_div(delta, lru_pages + 1);
+> >  		shrinker->nr += delta;
+> >  		if (shrinker->nr < 0) {
+> > -			printk(KERN_ERR "%s: nr=%ld\n",
+> > -					__func__, shrinker->nr);
+> > +			char symname[KSYM_NAME_LEN];
+> > +
+> > +			if (lookup_symbol_name((unsigned long)shrinker->shrink,
+> > +					       symname) > 0)
+> > +				printk(KERN_ERR "shrink_slab: %s nr=%ld\n",
+> > +				       symname, shrinker->nr);
+> >  			shrinker->nr = max_pass;
+> >  		}
+> 
+> Can we use the new printk("%pF", ...) here?
+> 
 
-On Fri, 2009-03-20 at 18:04 +0800, Jeff Chua wrote:
-> On Fri, Mar 20, 2009 at 4:32 PM, Johannes Berg
-> <johannes@sipsolutions.net> wrote:
-> > 1) It can't be before iwconfig which will result in "SET failed on
-> > device wlan0 ; Device or resource busy".
-> >  So your point 1) confuses me. Can you
-> > explain that a little more?
->=20
-> This is what happened ...
->=20
-> # modprobe -r iwlagn
-> # modprobe iwlagn
-> # ifconfig wlan0 up
-> # iwconfig wlan0 mode Managed
-> Error for wireless request "Set Mode" (8B06) :
->     SET failed on device wlan0 ; Device or resource busy.
+Cool, that's super convenient.
 
-Oh, ok, yes, you cannot change the mode while the interface is up.
-Though I guess setting it to the same mode should be accepted. Not that
-it matters, the default mode is "managed" anyway.
 
-> > As for 2), that is very very strange since ap auto channel auto is the
-> > default, so saying that before you do anything else should do anything
-> > at all.
-> >
-> > I suspect something is going on in the driver because the ifconfig orde=
-r
-> > matters and for mac80211, it shouldn't make a difference when the state
-> > machine is really started. I'll probably need to try to reproduce this,
-> > but to be honest between the varying failure modes, undefined wireless
-> > extensions semantics, etc. I'm not very confident I can.
->=20
-> I'll try all the different combination again for 2.6.28, and see if
-> it's the same, and on the other AP that seems harder to associate (but
-> works well in 2.6.28, and other OSs include Nokia phones ... so I
-> don't think it's the AP problem ... because it's been around a while
-> and gone thru many 2.6.xx).
+vmscan: print shrink_slab symbol name on negative shrinker objects
 
-Yeah, I have to admit that an AP problem doesn't make much sense -- but
-the entire failure mode doesn't make much sense to me so far.
+When a shrinker has a negative number of objects to delete, the symbol
+name of the shrinker should be printed, not shrink_slab.  This also makes
+the error message slightly more informative.
 
-> It worked so well before that I didn't even bother to think twice, and
-> I may have made silly mistakes along the way, so pardon me if I
-> confused you.
+Cc: Ingo Molnar <mingo@elte.hu>
+Signed-off-by: David Rientjes <rientjes@google.com>
+---
+ mm/vmscan.c |    5 +++--
+ 1 files changed, 3 insertions(+), 2 deletions(-)
 
-No worries. It really should still work well. Can I convince you to try
-getting the packet dump I asked for in another mail?
-
-johannes
-
---=-yQMXHixSw2lKEUTiMnYT
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iQIcBAABAgAGBQJJw2xeAAoJEKVg1VMiehFYR0EP/3RyBDj/0qUpV46pBzb0Tdhg
-l7fdOFUo93Psc1nF3Jjh57XIWqftVDDNSUwfRcjhqolFTvP/FIxVL32LXcZh2Ilm
-WC64BNUwVg9JgdjRd/eqsS7fVNfiSM2zTqaaQTVDLc2P7YjGtnKVwhQdJuL2iRHp
-8+0dJ8iqXuhaAvDX9cRfOIB1WUxi/5J1oPJ6RjvJZB88IqQng1YZgfgzvfR2SIPD
-7bZRWbqadZE0ij/gaOYCjtb+95QB2O1EaVLJMghDjR8tKGq7KAeuWLXgBY9F67Gx
-2njcdbuzJOvKfo0hkBDA8nalWXJu2kqHxpL9HwkTU0UQ1Q1g+Q4PydjHCBRmMFEL
-86uCip289z/x/2KFSd8ZeUiPRSqYJ699hrF2wh9m2WOso19W2LL/3lmbxj/ruEbr
-1tgTiuWlmLim0aFpnKqKL+E9AhgNzW17GtkNi+AogavdqOs68dTsqZ2WCgPk8CbA
-y7w6YC9KL7P0OkSSOmFpsooDAYFlr408ABq+Z/FR9dYAgHVWlAXPbeh0/BjIHR5P
-A5VjiRKP7oN29oFICS6j673rmT7S2ZLF4owbU+uqQbUQZkZQoxDag8XiA6R3MnhI
-j9q7CC9A8V6atyoUpmyNuytoF6U8XmX1T/tUEqFGGzgC8HGHWNqXGEMT1IQC4zo2
-USNE9QQYIqVkUNcObeDf
-=sbgw
------END PGP SIGNATURE-----
-
---=-yQMXHixSw2lKEUTiMnYT--
-
+diff --git a/mm/vmscan.c b/mm/vmscan.c
+--- a/mm/vmscan.c
++++ b/mm/vmscan.c
+@@ -214,8 +214,9 @@ unsigned long shrink_slab(unsigned long scanned, gfp_t gfp_mask,
+ 		do_div(delta, lru_pages + 1);
+ 		shrinker->nr += delta;
+ 		if (shrinker->nr < 0) {
+-			printk(KERN_ERR "%s: nr=%ld\n",
+-					__func__, shrinker->nr);
++			printk(KERN_ERR "shrink_slab: %pF negative objects to "
++			       "delete nr=%ld\n",
++			       shrinker->shrink, shrinker->nr);
+ 			shrinker->nr = max_pass;
+ 		}
+ 
