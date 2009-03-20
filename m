@@ -1,49 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757567AbZCTIxc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758061AbZCTIxr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757567AbZCTIxc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Mar 2009 04:53:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757568AbZCTIw7
+	id S1758061AbZCTIxr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Mar 2009 04:53:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757926AbZCTIxd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Mar 2009 04:52:59 -0400
-Received: from moutng.kundenserver.de ([212.227.126.188]:53762 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757384AbZCTIw5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Mar 2009 04:52:57 -0400
-Message-ID: <49C3598E.4010704@vlnb.net>
-Date: Fri, 20 Mar 2009 11:53:34 +0300
-From: Vladislav Bolkhovitin <vst@vlnb.net>
-User-Agent: Thunderbird 2.0.0.17 (X11/20081009)
+	Fri, 20 Mar 2009 04:53:33 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:42046 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757971AbZCTIxb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Mar 2009 04:53:31 -0400
+Date: Fri, 20 Mar 2009 04:53:27 -0400 (EDT)
+From: Miloslav Trmac <mitr@redhat.com>
+To: Paul Moore <paul.moore@hp.com>
+Cc: viro <viro@zeniv.linux.org.uk>, Eric Paris <eparis@redhat.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>, linux-audit@redhat.com
+Message-ID: <1666981128.1772561237539207343.JavaMail.root@zmail07.collab.prod.int.phx2.redhat.com>
+In-Reply-To: <1446383553.1772511237538977759.JavaMail.root@zmail07.collab.prod.int.phx2.redhat.com>
+Subject: Re: [PATCH] Add SELinux context and TTY name to AUDIT_TTY records
 MIME-Version: 1.0
-To: Wu Fengguang <wfg@linux.intel.com>
-CC: Jens Axboe <jens.axboe@oracle.com>, Jeff Moyer <jmoyer@redhat.com>,
-       "Vitaly V. Bursov" <vitalyb@telenet.dn.ua>,
-       linux-kernel@vger.kernel.org, linux-nfs@vger.kernel.org,
-       lukasz.jurewicz@gmail.com
-Subject: Re: Slow file transfer speeds with CFQ IO scheduler in some cases
-References: <492BE47B.3010802@vlnb.net> <20081125114908.GA16545@localhost> <492BE97A.3050606@vlnb.net> <492BEAE8.9050809@vlnb.net> <20081125121534.GA16778@localhost> <492EDCFB.7080302@vlnb.net> <20081128004830.GA8874@localhost> <49946BE6.1040005@vlnb.net> <20090213015721.GA5565@localhost> <499B0994.8040000@vlnb.net> <20090219020542.GC5743@localhost> <49C2846D.5030500@vlnb.net>
-In-Reply-To: <49C2846D.5030500@vlnb.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 7bit
-X-Provags-ID: V01U2FsdGVkX18Ad6mz/GOXe1wFw+jq8eKGjoii7mTBrELtEED
- bWXSkswkPpNiK03w+ob3FmM2GGEyXkAmzdDUDyUC80fZ91F9it
- X6lvrXsXRLDNNNHX0/4xBxod2BOB1bx
+X-Originating-IP: [10.5.5.72]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vladislav Bolkhovitin, on 03/19/2009 08:44 PM wrote:
->   6. Unexpected result. In case, when all IO threads work in the same IO 
-> context with CFQ increasing RA size *decreases* throughput. I think this 
-> is, because RA requests performed as single big READ requests, while 
-> requests coming from remote clients are much smaller in size (up to 
-> 256K), so, when the read by RA data transferred to the remote client on 
-> 100MB/s speed, the backstorage media gets rotated a bit, so the next 
-> read request must wait the rotation latency (~0.1ms on 7200RPM).
-                                                ^^^^^^^^^^^^^^^^^
-Oops, it's RP*M*, hence the full rotation latency is in 60 times more, 
-i.e. 8.3 ms.
+Paul,
+Thanks for your review.
+----- "Paul Moore" <paul.moore@hp.com> wrote:
+> There are several audit experts which should review this code but two
+> things 
+> jumped out at me when glancing at your patch:
+> 
+>  1. SELinux SIDs should not be recorded
+Almost all code that logs SELinux contexts in kernel/audit* does the same thing as this patch, falling back to a SID if it can't be converted to a string.
 
-Sorry,
-Vlad
-
+>  2. From a SELinux/security point of view ttys are considered objects
+>     and their labels/contexts should be recorded with "obj=" not
+> "subj="
+The patch logs the context of the process, not of the TTY.
+    Mirek
