@@ -1,77 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759225AbZCTQlr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757924AbZCTQoW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759225AbZCTQlr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Mar 2009 12:41:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756821AbZCTQlj
+	id S1757924AbZCTQoW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Mar 2009 12:44:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756821AbZCTQoI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Mar 2009 12:41:39 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:60744 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756406AbZCTQli (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Mar 2009 12:41:38 -0400
-Date: Fri, 20 Mar 2009 16:41:36 +0000
-From: Mel Gorman <mel@csn.ul.ie>
-To: Christoph Lameter <cl@linux-foundation.org>
-Cc: Linux Memory Management List <linux-mm@kvack.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Nick Piggin <npiggin@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Lin Ming <ming.m.lin@intel.com>,
-       Zhang Yanmin <yanmin_zhang@linux.intel.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 00/25] Cleanup and optimise the page allocator V5
-Message-ID: <20090320164136.GQ24586@csn.ul.ie>
-References: <1237543392-11797-1-git-send-email-mel@csn.ul.ie> <alpine.DEB.1.10.0903201059240.3740@qirst.com> <20090320153723.GO24586@csn.ul.ie> <alpine.DEB.1.10.0903201203340.28571@qirst.com>
+	Fri, 20 Mar 2009 12:44:08 -0400
+Received: from [213.79.90.228] ([213.79.90.228]:41414 "EHLO
+	buildserver.ru.mvista.com" rhost-flags-FAIL-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1754314AbZCTQoH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Mar 2009 12:44:07 -0400
+Date: Fri, 20 Mar 2009 19:44:04 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Steven Rostedt <srostedt@redhat.com>, Sam Ravnborg <sam@ravnborg.org>,
+       Paul Mackerras <paulus@samba.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Subject: [PATCH v4 0/3] Tracers vs. CALLER_ADDR on PowerPC
+Message-ID: <20090320164404.GA19933@oksana.dev.rtsoft.ru>
+Reply-To: avorontsov@ru.mvista.com
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+Content-Type: text/plain; charset=utf8
 Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0903201203340.28571@qirst.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 20, 2009 at 12:04:42PM -0400, Christoph Lameter wrote:
-> On Fri, 20 Mar 2009, Mel Gorman wrote:
-> 
-> > hmm, I'm missing something in your reasoning. The contention I saw for
-> > zone->lru_lock
-> >
-> > &zone->lru_lock          37350 [<ffffffff8029d6fe>] ____pagevec_lru_add+0x9c/0x172
-> > &zone->lru_lock          55423 [<ffffffff8029d377>] release_pages+0x10a/0x21b
-> > &zone->lru_lock            402 [<ffffffff8029d9d9>] activate_page+0x4f/0x147
-> > &zone->lru_lock              6 [<ffffffff8029dbbd>] put_page+0x94/0x122
-> >
-> > So I just assumed it was LRU pages being taken off and freed that was
-> > causing the contention. Can SLUB affect that?
-> 
-> No. But it can affect the taking of the zone lock.
-> 
+Hi all,
 
-True although almost anything will affect the timining of when it's
-taken.
+Here is another approach to fixing tracers vs. CALLER_ADDR problem
+on PowerPC.
 
-> > Maybe you meant zone->lock and SLUB could tune buffers more to avoid
-> > that if that lock was hot. That is one alternative but the later patches
-> > proposed an alternative whereby high-order and compound pages could be
-> > stored on the PCP lists. Compound only really helps SLUB but high-order
-> > also helped stacks, signal handlers and the like so it seemed like a
-> > good idea one way or the other. Course, this meant a search of the PCP
-> > lists or increasing the size of the PCP structure - swings and
-> > roundabouts :/
-> 
-> Maybe include those as well? Its good stuff.
-> 
+Preface for those who don't know or forgot what the problem is:
 
-It wasn't a clear win for this pass though. While conceptually it makes
-sense, the increase in size of the PCP structure and the search cost
-look nasty although they look better in comparison to taking the zone
-lock and then lots of buddy split/merging.
+Gcc frame pointers do nothing useful on PowerPC (they're harmful,
+actually), and thus lib/Kconfig.debug makes CONFIG_FRAME_POINTER
+unselectable on PPC targets, but CALLER_ADDR macros are available
+only with CONFIG_FRAME_POINTER, therefore tracing is completely
+useless on PowerPC:
 
-I reckon it'll be high on the list for pass 2 though if pass 1 goes ok.
+[...]
+  <idle>-0       0X.h3    2us+:      0:140:R   + [000]  1733:120:S mvtsd
+  <idle>-0       0X.h3    9us+: 0 (0)
+  <idle>-0       0X..3   72us : 0 (0)
+  <idle>-0       0X..3   73us :      0:140:R ==> [000]  1733:120:R mvtsd
+
+While it should look like this:
+
+[...]
+  <idle>-0       0X.h3    2us+:      0:140:R   + [000]  1740:120:S mvtsd
+  <idle>-0       0X.h3    9us+: hrtimer_wakeup (__run_hrtimer)
+  <idle>-0       0X..3   87us : cpu_idle (__got2_end)
+  <idle>-0       0X..3   89us :      0:140:R ==> [000]  1740:120:R mvtsd
+
+I've tried to fix the issue via expanding the #ifdef in the ftrace.h:
+http://lkml.org/lkml/2009/1/31/141
+
+Then Steven Rostedt suggested to implement something more generic,
+i.e. HAVE_NORMAL_FRAME_POINTERS Kconfig symbol.
+
+I found a way to solve the problem w/o additional symbols, but
+with some Makefile magic (http://lkml.org/lkml/2009/2/4/273).
+But because of top-level Makefile issues on other arches
+(http://lkml.org/lkml/2009/2/14/89) I had to abandon the approach.
+
+
+So, this patch set combines Steven Rostedt's idea and a small
+Makefile change, so that now only top-level Makefile has to know
+about the new symbol, and the rest of the kernel can stay with
+using CONFIG_FRAME_POINTER.
 
 -- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
