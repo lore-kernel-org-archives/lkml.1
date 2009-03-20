@@ -1,56 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755027AbZCTBks@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755623AbZCTBmq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755027AbZCTBks (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Mar 2009 21:40:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751756AbZCTBki
+	id S1755623AbZCTBmq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Mar 2009 21:42:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752814AbZCTBmf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Mar 2009 21:40:38 -0400
-Received: from web15705.mail.cnb.yahoo.com ([202.165.102.72]:20816 "HELO
-	web15705.mail.cnb.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751689AbZCTBkh (ORCPT
+	Thu, 19 Mar 2009 21:42:35 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:33893 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751202AbZCTBme (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Mar 2009 21:40:37 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.cn;
-  h=Message-ID:X-YMail-OSG:Received:X-Mailer:Date:From:Subject:To:MIME-Version:Content-Type;
-  b=v1408lwJRwnwvdpdcUj9SkFzkYINBdurCJnOOdQRgpsZb7JnVi8Hhb2hv1wzscfIzLDitgAKSnpJjchOlyeK2zcaDHvb0ynRusF8AEC9VSkZLpd811fm35V8gPI081ai8HUTS20cR+LbZvesQrnC5SiX31NDFvqpDDY8WjgTXWc=;
-Message-ID: <768318.39103.qm@web15705.mail.cnb.yahoo.com>
-X-YMail-OSG: k1NeyDwVM1lbEJ9yTo3LtLuaJX3_r.mv_SJKXRps1hU_p7CLiJcoW9xlq4wrrvx.A_aAfmk0FSg4HW2zseFt1IeCsVQkh5Lph2wdmiEFVZtID3FP3J3zb_VtL50ZquP.duEcqOaNDXYLFvZokqs6GLHu4BTgalhQvt6IihiPnC1GTs8-
-X-Mailer: YahooMailClassic/5.1.20 YahooMailWebService/0.7.289.1
-Date: Fri, 20 Mar 2009 09:40:33 +0800 (CST)
-From: peter meng <mengsanshui@yahoo.com.cn>
-Subject: Ask a question about major and minor number of keyboard driver .
-To: linux-kernel@vger.kernel.org
+	Thu, 19 Mar 2009 21:42:34 -0400
+Date: Thu, 19 Mar 2009 19:42:30 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: Yu Zhao <yu.zhao@intel.com>, linux-pci@vger.kernel.org,
+       kvm@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v11 1/8] PCI: initialize and release SR-IOV capability
+Message-ID: <20090320014230.GD14127@parisc-linux.org>
+References: <1236756349-18892-1-git-send-email-yu.zhao@intel.com> <1236756349-18892-2-git-send-email-yu.zhao@intel.com> <20090319195312.GC14127@parisc-linux.org> <20090319182016.33a9a1f2@hobbes.lan>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090319182016.33a9a1f2@hobbes.lan>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Mar 19, 2009 at 06:20:16PM -0700, Jesse Barnes wrote:
+> Ok Yu, I'm ready to apply this set, can you send an updated one with
+> the fixes Matthew mentioned?
 
-Hi,
+And please add Reviewed-by: Matthew Wilcox <willy@linux.intel.com>
+to each of the patches.
 
- Such as drivers/input/keyboard/neo1973kbd.c :
-
- input_dev->name = "Neo1973 Buttons";
- input_dev->phys = "neo1973kbd/input0";
- input_dev->id.bustype = BUS_HOST;
-
- As i understand , application will access /dev/input/neo1973kbd/input0 as input handler such as open(/dev/input/neo1973kbd/input0) .
- I want to know which minor number will be used by input0 , because event0 
- will use minor number 64 .
- Assume no minor number for neo1973kbd/input0 ,how the driver process open(/dev/input/neo1973kbd/input0) ? because no major and minor number related to it .
- 
-
-ls -l /dev/input/ 
-crw-r----- 1 root root 13, 64 2009-03-20 08:54 event0
-
-
-Thanks in Advanced .
-Best Regards.
-Peter Meng 
-
-
-
-
-      
+-- 
+Matthew Wilcox				Intel Open Source Technology Centre
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
