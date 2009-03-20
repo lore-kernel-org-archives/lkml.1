@@ -1,69 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756924AbZCTUf0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756341AbZCTUgs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756924AbZCTUf0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Mar 2009 16:35:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752079AbZCTUfQ
+	id S1756341AbZCTUgs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Mar 2009 16:36:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754557AbZCTUgj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Mar 2009 16:35:16 -0400
-Received: from viefep12-int.chello.at ([62.179.121.32]:38810 "EHLO
-	viefep12-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751880AbZCTUfP (ORCPT
+	Fri, 20 Mar 2009 16:36:39 -0400
+Received: from fg-out-1718.google.com ([72.14.220.152]:12118 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753927AbZCTUgi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Mar 2009 16:35:15 -0400
-X-Greylist: delayed 1024 seconds by postgrey-1.27 at vger.kernel.org; Fri, 20 Mar 2009 16:35:14 EDT
-X-SourceIP: 84.113.196.60
-From: Simon Kitching <skitching@apache.org>
-To: linux-kernel@vger.kernel.org
-Cc: Simon Kitching <skitching@apache.org>
-Subject: [PATCH] initramfs: prevent initramfs printk message being split by messages from other code.
-Date: Fri, 20 Mar 2009 21:18:05 +0100
-Message-Id: <1237580285-25792-1-git-send-email-skitching@apache.org>
-X-Mailer: git-send-email 1.6.0.4
+	Fri, 20 Mar 2009 16:36:38 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=F7VH5Y4Pkd9sjikAIIYHt7R30vuy1T/KlaLgM+/JEAk0ubHW+dQ9a6uQfmqxS4p/nR
+         fEQPIAUwymj+Jvz7I8pj0/vKMPEdfs3odbYUkub0IsihsqdeD3A3TvHmFlVo1a6p9ld4
+         xuJQZ7tYmb+2JIADc3E5GjaNDekjk8BFV9sWo=
+Date: Fri, 20 Mar 2009 23:36:53 +0300
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Alan Bartlett <ajb.stxsl@googlemail.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86: fix IO APIC resource allocation error message
+Message-ID: <20090320203653.GI7453@localhost>
+References: <200903202012.41344.bzolnier@gmail.com> <200903202102.28585.bzolnier@gmail.com> <20090320200954.GH7453@localhost> <200903202127.16307.bzolnier@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200903202127.16307.bzolnier@gmail.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-initramfs uses printk without a linefeed, then does some work, then uses printk
-to finish the message off. However if some other code does a printk in between,
-then the messages get mixed together. Better for each message to be an independent
-line...
+[Bartlomiej Zolnierkiewicz - Fri, Mar 20, 2009 at 09:27:14PM +0100]
+...
+| > | > Now we would have 'err' here and get out only on conflicting resource.
+| > | > Did I miss something?
+| > | 
+| > | nr_ioapics > 0 && r == NULL ?
+| > | 
+| > 
+| > This case happens when alloc_bootmem fails but we already panic'ed!
+| > 
+| > Here is what I mean
+| > 
+| > From ioapic_setup_resources()
+| > 
+| > 	if (nr_ioapics <= 0)
+| > 		return NULL;
+| > 
+| > 	mem = alloc_bootmem(n); <- we panic here anyway
+| 
+| Seems like the following check is superfluous then:
+| 
+|         if (mem != NULL) {
 
-  Example of problem that this fixes:
-    checking if image is initramfs...<7>Switched to high resolution mode on CPU 1
-    Switched to high resolution mode on CPU 0
-    it is
+Yes I believe
 
-Signed-off-by: Simon Kitching <skitching@apache.org>
----
- init/initramfs.c |    7 ++++---
- 1 files changed, 4 insertions(+), 3 deletions(-)
+| 
+| > 	...
+| > 	ioapic_resources = res;
+| 
+| In either case I don't think we that failing all resource insertions
+| (for all IO APICs) if only one has failed is a desirable behavior...
 
-diff --git a/init/initramfs.c b/init/initramfs.c
-index d9c941c..948a2c6 100644
---- a/init/initramfs.c
-+++ b/init/initramfs.c
-@@ -583,17 +583,18 @@ static int __init populate_rootfs(void)
- 	if (initrd_start) {
- #ifdef CONFIG_BLK_DEV_RAM
- 		int fd;
--		printk(KERN_INFO "checking if image is initramfs...");
-+		printk(KERN_INFO "Checking if rootfs image is initramfs...\n");
- 		err = unpack_to_rootfs((char *)initrd_start,
- 			initrd_end - initrd_start, 1);
- 		if (!err) {
--			printk(" it is\n");
-+			printk(KERN_INFO "rootfs image is initramfs; unpacking...\n");
- 			unpack_to_rootfs((char *)initrd_start,
- 				initrd_end - initrd_start, 0);
- 			free_initrd();
- 			return 0;
- 		}
--		printk("it isn't (%s); looks like an initrd\n", err);
-+		printk(KERN_INFO "rootfs image is not initramfs (%s)"
-+			"; looks like an initrd\n", err);
- 		fd = sys_open("/initrd.image", O_WRONLY|O_CREAT, 0700);
- 		if (fd >= 0) {
- 			sys_write(fd, (char *)initrd_start,
--- 
-1.6.0.4
+Indeed, which is even better
 
+| 
+| Thanks,
+| Bart
+| 
+
+Your patch is already merged, so all is fine -- sorry for noise.
+
+	- Cyrill -
