@@ -1,68 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759594AbZCTTya@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760927AbZCTTyw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759594AbZCTTya (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Mar 2009 15:54:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755959AbZCTTyV
+	id S1760927AbZCTTyw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Mar 2009 15:54:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756579AbZCTTyl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Mar 2009 15:54:21 -0400
-Received: from smtp-outbound-1.vmware.com ([65.115.85.69]:55078 "EHLO
-	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754312AbZCTTyV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Mar 2009 15:54:21 -0400
-Message-ID: <49C3F41E.60500@vflare.org>
-Date: Sat, 21 Mar 2009 01:23:02 +0530
-From: Nitin Gupta <ngupta@vflare.org>
-Reply-To: ngupta@vflare.org
-User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
+	Fri, 20 Mar 2009 15:54:41 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:37795 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755959AbZCTTyl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Mar 2009 15:54:41 -0400
+Date: Fri, 20 Mar 2009 20:54:14 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH 0/5] [GIT PULL] updates for tip/tracing/ftrace
+Message-ID: <20090320195414.GA24129@elte.hu>
+References: <20090318055924.GA24627@elte.hu> <20090318073903.GA31341@elte.hu> <20090319073357.GA14615@elte.hu> <alpine.DEB.2.00.0903191309170.16987@gandalf.stny.rr.com> <20090320174331.GH6698@linux.vnet.ibm.com> <20090320183642.GA2070@elte.hu> <20090320183849.GA3657@elte.hu> <20090320191926.GJ6698@linux.vnet.ibm.com> <20090320192721.GI6224@elte.hu> <20090320194617.GA5934@nowhere>
 MIME-Version: 1.0
-To: Pavel Machek <pavel@ucw.cz>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/3]: compressed RAM block device
-References: <49BF8ABC.6040805@vflare.org> <49BF8B4E.1030603@vflare.org> <20090320185637.GA1418@ucw.cz>
-In-Reply-To: <20090320185637.GA1418@ucw.cz>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Antivirus: avast! (VPS 090319-0, 19-03-2009), Outbound message
-X-Antivirus-Status: Clean
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090320194617.GA5934@nowhere>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Machek wrote:
-> On Tue 2009-03-17 17:06:46, Nitin Gupta wrote:
->>  drivers/block/Kconfig     |   22 +
->>  drivers/block/Makefile    |    1 +
->>  drivers/block/compcache.c |  995 +++++++++++++++++++++++++++++++++++++++++++++
->>  drivers/block/compcache.h |  160 ++++++++
->>  4 files changed, 1178 insertions(+), 0 deletions(-)
->>
->> Creates RAM based block device (ramzswap0) which can be used as swap device.
->> Pages swapped to this are compressed and stored in memory itself.
->>
->> The module is called compcache.ko. It depends on:
->>  - xvmalloc.ko: memory allocator
->>  - lzo_compress.ko
->>  - lzo_decompress.ko
->>
->> See Documentation/blockdev/compcache.txt for usage details.
->>
->> Project home: http://code.google.com/p/compcache/
-> 
-> 
-> Compcache is really bad name for this. zramdisk? gzrd?
-> 
-It was named compcache according to its original goal:
-compressed caching for anonymous _and_ filesystem caches. This ram block
-device is for handling anonymous memory only. Anyway, actual block device
-is called ramzswap which you might like more :)
 
-> Is the block device useful for general filesystem storage?
+* Frederic Weisbecker <fweisbec@gmail.com> wrote:
+
+> On Fri, Mar 20, 2009 at 08:27:21PM +0100, Ingo Molnar wrote:
+> > 
+> > * Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
+> > 
+> > > On Fri, Mar 20, 2009 at 07:38:49PM +0100, Ingo Molnar wrote:
+> > > > 
+> > > > * Ingo Molnar <mingo@elte.hu> wrote:
+> > > > 
+> > > > > > > This looks like it is RCU/stop_machine related. The CPU is 
+> > > > > > > stuck in in stop_machine? I see that rcu_torture is running. 
+> > > > > > > Does this go away if you turn off rcu_torture?
+> > > > > > 
+> > > > > > Grasping at straws...  Does Lai's rcu_barrier() fix help?
+> > > > > 
+> > > > > which one is that?
+> > > > 
+> > > > ok, found it. Will know in about ~24 hours whether it helps.
+> > > 
+> > > http://lkml.org/lkml/2009/3/20/71 was the one I was thinking of, 
+> > > just to double-check.
+> > 
+> > Yeah - i just picked it up into tip:core/rcu.
+> > 
+> > I didnt immediately connect the two things, as 'tracer self-test' 
+> > does not lend itself to 'CPU hotplug and RCU race fix' - but indeed 
+> > in the case of the function tracer there's a dependency due to 
+> > stop_machine_run(). Thanks for point it out!
+> > 
+> > 	Ingo
 > 
-No. It can only handle page aligned I/O. But it shouldn't be too hard
-to make it generic compressed ram disk with physical backing device support.
-But unfortunately I do not have bandwidth to do this myself.
+> 
+> I've successfully triggered a crash, the problem is that I can't be sure this is
+> the same because I don't have a serial line on my x86-64, and the trace goes too far.
+> Moreover boot_delay=N make it disappear.
+> 
+> I can trigger it each time I boot with ftrace=function_graph and
+> the following patch applied:
+> 
+> diff --git a/kernel/rcutorture.c b/kernel/rcutorture.c
+> index 7c4142a..e9914a8 100644
+> --- a/kernel/rcutorture.c
+> +++ b/kernel/rcutorture.c
+> @@ -616,7 +616,7 @@ rcu_torture_writer(void *arg)
+>  	static DEFINE_RCU_RANDOM(rand);
+>  
+>  	VERBOSE_PRINTK_STRING("rcu_torture_writer task started");
+> -	set_user_nice(current, 19);
+> +	set_user_nice(current, -1);
+>  
+>  	do {
+>  		schedule_timeout_uninterruptible(1);
+> @@ -736,7 +736,7 @@ rcu_torture_reader(void *arg)
+>  	struct timer_list t;
+>  
+>  	VERBOSE_PRINTK_STRING("rcu_torture_reader task started");
+> -	set_user_nice(current, 19);
+> +	set_user_nice(current, -1);
+>  	if (irqreader && cur_ops->irqcapable)
+>  		setup_timer_on_stack(&t, rcu_torture_timer, 0);
 
-Thanks,
-Nitin
+i dont have a reproducer right now. Can you trigger it with latest 
+-tip, which has this commit included:
 
+04cb9ac: rcu: rcu_barrier VS cpu_hotplug: Ensure callbacks in dead cpu are migrated to o
+
+?
+
+	Ingo
