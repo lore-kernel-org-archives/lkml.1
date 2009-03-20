@@ -1,130 +1,192 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756514AbZCTWkU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758749AbZCTWnV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756514AbZCTWkU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Mar 2009 18:40:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753590AbZCTWkB
+	id S1758749AbZCTWnV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Mar 2009 18:43:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754535AbZCTWnK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Mar 2009 18:40:01 -0400
-Received: from mail.atheros.com ([12.36.123.2]:11406 "EHLO mail.atheros.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753487AbZCTWkA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Mar 2009 18:40:00 -0400
-Date: Fri, 20 Mar 2009 14:39:20 -0700
-From: "Luis R. Rodriguez" <lrodriguez@atheros.com>
-To: <linux-wireless@vger.kernel.org>, <linux-kernel@vger.kernel.org>
-CC: Luis Rodriguez <Luis.Rodriguez@atheros.com>,
-       Max Ott <Max.Ott@nicta.com.au>,
-       Subrata Modak <subrata@linux.vnet.ibm.com>,
-       Qasim Javed <qasimj@gmail.com>,
-       Till Kamppeter <till.kamppeter@gmail.com>
-Subject: Google Summer of Code 2009 -- Linux wireless testing project
-Message-ID: <20090320213920.GC8120@tesla>
+	Fri, 20 Mar 2009 18:43:10 -0400
+Received: from yw-out-2324.google.com ([74.125.46.28]:12724 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754872AbZCTWnJ convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Mar 2009 18:43:09 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=bGIzAsBca7nOycMXPB7Wa+dQ5+aXcnJb5uCQdx4HnCz0mAgnim0LC+j+L9xQrYvcNy
+         5XNvqolDY6UTd6T2nNL6e8o18CCfX00GR9fN9EuO7MYLkutvBUEbqE05NNuTilF2nfkJ
+         F7B78znrqlJM+CQ5bZ7gcDDK8WhVtlgD1lQzs=
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090320072355.GA11823@boomer>
+References: <20090320072355.GA11823@boomer>
+Date: Fri, 20 Mar 2009 17:43:06 -0500
+X-Google-Sender-Auth: 5f808161c4c68fa8
+Message-ID: <d9c105ea0903201543j245079caga476119501f6a919@mail.gmail.com>
+Subject: Re: [PATCH] eCryptfs: NULL crypt_stat dereference during lookup
+From: Dustin Kirkland <kirkland@canonical.com>
+To: Tyler Hicks <tyhicks@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Dan Carpenter <error27@gmail.com>, Serge Hallyn <serue@us.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a list of information to help those students looking into the
-Linux wireless GSoC 2009 "Automation of testing using mac80211_hwsim and Orbit"
-project [0], part of the Linux Foundation set of GSoC projects:
+On Fri, Mar 20, 2009 at 2:23 AM, Tyler Hicks <tyhicks@linux.vnet.ibm.com> wrote:
+> If ecryptfs_encrypted_view or ecryptfs_xattr_metadata were being
+> specified as mount options, a NULL pointer dereference of crypt_stat
+> was possible during lookup.
+>
+> This patch moves the crypt_stat assignment into
+> ecryptfs_lookup_and_interpose_lower(), ensuring that crypt_stat
+> will not be NULL before we attempt to dereference it.
+>
+> Thanks to Dan Carpenter and his static analysis tool, smatch, for
+> finding this bug.
+>
+> Signed-off-by: Tyler Hicks <tyhicks@linux.vnet.ibm.com>
 
-https://www.linuxfoundation.org/en/Google_Summer_of_Code_2009
+Acked-by: Dustin Kirkland <kirkland@canonical.com>
 
-In anyone has ideas to further help this project please just feel free to
-chime in. I'm adding other potential mentors to the project, Maxx Ott
-which might be signing up as a mentor for Orbit-related stuff and
-Subrata Modak which seems to be familiar with the Linux testing project
-(LTP).
+> ---
+>  fs/ecryptfs/crypto.c          |   10 ++++++----
+>  fs/ecryptfs/ecryptfs_kernel.h |    1 -
+>  fs/ecryptfs/inode.c           |   32 ++++++++++++--------------------
+>  3 files changed, 18 insertions(+), 25 deletions(-)
+>
+> diff --git a/fs/ecryptfs/crypto.c b/fs/ecryptfs/crypto.c
+> index 75bee99..8b65f28 100644
+> --- a/fs/ecryptfs/crypto.c
+> +++ b/fs/ecryptfs/crypto.c
+> @@ -2221,17 +2221,19 @@ int ecryptfs_decode_and_decrypt_filename(char **plaintext_name,
+>                                         struct dentry *ecryptfs_dir_dentry,
+>                                         const char *name, size_t name_size)
+>  {
+> +       struct ecryptfs_mount_crypt_stat *mount_crypt_stat =
+> +               &ecryptfs_superblock_to_private(
+> +                       ecryptfs_dir_dentry->d_sb)->mount_crypt_stat;
+>        char *decoded_name;
+>        size_t decoded_name_size;
+>        size_t packet_size;
+>        int rc = 0;
+>
+> -       if ((name_size > ECRYPTFS_FNEK_ENCRYPTED_FILENAME_PREFIX_SIZE)
+> +       if ((mount_crypt_stat->flags & ECRYPTFS_GLOBAL_ENCRYPT_FILENAMES)
+> +           && !(mount_crypt_stat->flags & ECRYPTFS_ENCRYPTED_VIEW_ENABLED)
+> +           && (name_size > ECRYPTFS_FNEK_ENCRYPTED_FILENAME_PREFIX_SIZE)
+>            && (strncmp(name, ECRYPTFS_FNEK_ENCRYPTED_FILENAME_PREFIX,
+>                        ECRYPTFS_FNEK_ENCRYPTED_FILENAME_PREFIX_SIZE) == 0)) {
+> -               struct ecryptfs_mount_crypt_stat *mount_crypt_stat =
+> -                       &ecryptfs_superblock_to_private(
+> -                               ecryptfs_dir_dentry->d_sb)->mount_crypt_stat;
+>                const char *orig_name = name;
+>                size_t orig_name_size = name_size;
+>
+> diff --git a/fs/ecryptfs/ecryptfs_kernel.h b/fs/ecryptfs/ecryptfs_kernel.h
+> index eb2267e..ac749d4 100644
+> --- a/fs/ecryptfs/ecryptfs_kernel.h
+> +++ b/fs/ecryptfs/ecryptfs_kernel.h
+> @@ -620,7 +620,6 @@ int ecryptfs_interpose(struct dentry *hidden_dentry,
+>                       u32 flags);
+>  int ecryptfs_lookup_and_interpose_lower(struct dentry *ecryptfs_dentry,
+>                                        struct dentry *lower_dentry,
+> -                                       struct ecryptfs_crypt_stat *crypt_stat,
+>                                        struct inode *ecryptfs_dir_inode,
+>                                        struct nameidata *ecryptfs_nd);
+>  int ecryptfs_decode_and_decrypt_filename(char **decrypted_name,
+> diff --git a/fs/ecryptfs/inode.c b/fs/ecryptfs/inode.c
+> index 5697899..55b3145 100644
+> --- a/fs/ecryptfs/inode.c
+> +++ b/fs/ecryptfs/inode.c
+> @@ -246,7 +246,6 @@ out:
+>  */
+>  int ecryptfs_lookup_and_interpose_lower(struct dentry *ecryptfs_dentry,
+>                                        struct dentry *lower_dentry,
+> -                                       struct ecryptfs_crypt_stat *crypt_stat,
+>                                        struct inode *ecryptfs_dir_inode,
+>                                        struct nameidata *ecryptfs_nd)
+>  {
+> @@ -254,6 +253,7 @@ int ecryptfs_lookup_and_interpose_lower(struct dentry *ecryptfs_dentry,
+>        struct vfsmount *lower_mnt;
+>        struct inode *lower_inode;
+>        struct ecryptfs_mount_crypt_stat *mount_crypt_stat;
+> +       struct ecryptfs_crypt_stat *crypt_stat;
+>        char *page_virt = NULL;
+>        u64 file_size;
+>        int rc = 0;
+> @@ -314,6 +314,11 @@ int ecryptfs_lookup_and_interpose_lower(struct dentry *ecryptfs_dentry,
+>                        goto out_free_kmem;
+>                }
+>        }
+> +       crypt_stat = &ecryptfs_inode_to_private(
+> +                                       ecryptfs_dentry->d_inode)->crypt_stat;
+> +       /* TODO: lock for crypt_stat comparison */
+> +       if (!(crypt_stat->flags & ECRYPTFS_POLICY_APPLIED))
+> +                       ecryptfs_set_default_sizes(crypt_stat);
+>        rc = ecryptfs_read_and_validate_header_region(page_virt,
+>                                                      ecryptfs_dentry->d_inode);
+>        if (rc) {
+> @@ -362,9 +367,7 @@ static struct dentry *ecryptfs_lookup(struct inode *ecryptfs_dir_inode,
+>  {
+>        char *encrypted_and_encoded_name = NULL;
+>        size_t encrypted_and_encoded_name_size;
+> -       struct ecryptfs_crypt_stat *crypt_stat = NULL;
+>        struct ecryptfs_mount_crypt_stat *mount_crypt_stat = NULL;
+> -       struct ecryptfs_inode_info *inode_info;
+>        struct dentry *lower_dir_dentry, *lower_dentry;
+>        int rc = 0;
+>
+> @@ -388,26 +391,15 @@ static struct dentry *ecryptfs_lookup(struct inode *ecryptfs_dir_inode,
+>        }
+>        if (lower_dentry->d_inode)
+>                goto lookup_and_interpose;
+> -       inode_info =  ecryptfs_inode_to_private(ecryptfs_dentry->d_inode);
+> -       if (inode_info) {
+> -               crypt_stat = &inode_info->crypt_stat;
+> -               /* TODO: lock for crypt_stat comparison */
+> -               if (!(crypt_stat->flags & ECRYPTFS_POLICY_APPLIED))
+> -                       ecryptfs_set_default_sizes(crypt_stat);
+> -       }
+> -       if (crypt_stat)
+> -               mount_crypt_stat = crypt_stat->mount_crypt_stat;
+> -       else
+> -               mount_crypt_stat = &ecryptfs_superblock_to_private(
+> -                       ecryptfs_dentry->d_sb)->mount_crypt_stat;
+> -       if (!(crypt_stat && (crypt_stat->flags & ECRYPTFS_ENCRYPT_FILENAMES))
+> -           && !(mount_crypt_stat && (mount_crypt_stat->flags
+> -                                    & ECRYPTFS_GLOBAL_ENCRYPT_FILENAMES)))
+> +       mount_crypt_stat = &ecryptfs_superblock_to_private(
+> +                               ecryptfs_dentry->d_sb)->mount_crypt_stat;
+> +       if (!(mount_crypt_stat
+> +           && (mount_crypt_stat->flags & ECRYPTFS_GLOBAL_ENCRYPT_FILENAMES)))
+>                goto lookup_and_interpose;
+>        dput(lower_dentry);
+>        rc = ecryptfs_encrypt_and_encode_filename(
+>                &encrypted_and_encoded_name, &encrypted_and_encoded_name_size,
+> -               crypt_stat, mount_crypt_stat, ecryptfs_dentry->d_name.name,
+> +               NULL, mount_crypt_stat, ecryptfs_dentry->d_name.name,
+>                ecryptfs_dentry->d_name.len);
+>        if (rc) {
+>                printk(KERN_ERR "%s: Error attempting to encrypt and encode "
+> @@ -426,7 +418,7 @@ static struct dentry *ecryptfs_lookup(struct inode *ecryptfs_dir_inode,
+>        }
+>  lookup_and_interpose:
+>        rc = ecryptfs_lookup_and_interpose_lower(ecryptfs_dentry, lower_dentry,
+> -                                                crypt_stat, ecryptfs_dir_inode,
+> +                                                ecryptfs_dir_inode,
+>                                                 ecryptfs_nd);
+>        goto out;
+>  out_d_drop:
+> --
+> 1.5.3.7
+>
+>
 
-I'll also recommend to subscribe to the wiki page for the test project
-so you can get e-mails on changes to the wiki page.
 
-Students can start by becoming familiar with iw [1] and using wpa_supplicant with
-the nl80211 driver. We eventually want to not depend on wireless extensions so
-the new cutting edge tests will all be based on the new nl80211 stuff which
-both iw and wpa_supplicant can use. iw is strictly nl80211 based. Of course
-we should still have things to test wireless-extensions but soon it may be
-possible to live completely without them for new cfg80211 based drivers.
 
-Then you can look at starting to quickly create an AP with the different
-encryption options, and use a STA to associate to that AP quickly and easily
-as well.
-
-I have some old scripts which did this which you may feel free to
-use/modify/disregard. There's one for AP [2] and one for STA [3].
-Jouni also has some stuff for this and you can check it out via his
-git gree:
-
-git://w1.fi/srv/git/hostap.git
-
-In there check out the hostap/mac80211_hwsim/tests/ directory.
-
-A starting point would be to extend this with simple scripts which let
-you test mac80211_hwsim to do certain individual taks one at a time. For
-example gettings association completed and transfering some amount of data
-using the different encryptions algorithms available would test the software
-encryption with mac80211. That would be a good first easy step to become
-familiar with what we want to accomplish with the project.
-
-The idea is to build a list of tests which we can automate and run to
-test against the wireless-testing tree completely in software. Once
-these tests are in place we then use them to also test against individual
-drivers using real hardware. Since its not expected that students will have
-all the wireless hardware available we can leverage the kindness of folks
-at Orbit [4] and use sandboxes [5] there during a reservation to test
-the different hardware present there. Fortunately the list of cards available
-in the Sandboxes [6] is pretty decent and can grow. Go read the Orbit
-developer's section [7]. This is the hardware present so far:
-
-  * Atheros AR5002X Mini PCI 802.11a/b/g
-    (AR5212 MAC Baseband Processor + AR5112 Dual-band Radio-on-a-Chip)
-  * Intel PRO/Wireless 2915ABG Network Connection Mini PCI 802.11a/b/g
-  * GNURadio - USB (we won't be testing this)
-  * zd1211 - USB 802.11g
-  * RTL8185 - PCI 802.11bg
-  * ISL3890 - Mini PCI 802.11bg (prism54)
-  * Marvell Libertas 8388 802.11 USB 
-
-We may also have Intel 5000 11n, and I think we have some 11n Atheros stuff too
-and if not I'll be sure to mail them out ASAP. Surely this will depend on
-coordination with the Orbit folks and we cannot simply expect everything to
-be there but its a starting point.
-
-Once we have a set of scripts we are happy with for mac80211_hwsim we
-can save an image for re-use at Orbit with these scripts and that image
-can be installed during a reserved time-slot for testing. Its advised
-the automation of testing to make use of Orbit's own automation
-infrastructure called OMF. These are used at Orbit for research purposes
-but just as they are used for research purposes it can also be used to
-automate tests. Some scripts may need to be ported to use OMF.
-
-To start becoming familiar with the Orbit testbed and using OMF you can
-read their tutorials [8]. I think OMF is completely open source, Maxx
-correct me if I'm wrong. If so then we can always end up contributing to
-it to enhance it should that be possible and needed.
-
-So the end goal is to have a nice list of tests which we can run on
-for mac80211, the driver infrastructure (through mac80211_hwsim) and
-also for each driver either through Orbit or manually so users can run
-them at home or so that the Linux Testing Project [9] can use. In the
-end it would be nice to have a page online which we can go to and see
-some results of tests for each driver and also for mac80211 internals.
-
-If anyone has other idease or documentation that may be usable for the
-students please chime in.
-
-  Luis
-
-[0] http://wireless.kernel.org/en/developers/GSoC/2009/Automation_of_testing
-[1] http://wireless.kernel.org/en/users/Documentation/iw
-[2] http://www.winlab.rutgers.edu/~mcgrof/qa/create-ap.sh.txt
-[3] http://www.winlab.rutgers.edu/~mcgrof/qa/create-client.sh.txt
-[4] http://www.orbit-lab.org/
-[5] http://www.orbit-lab.org/wiki/SandBoxes
-[6] http://www.orbit-lab.org/wiki/SandboxMap
-[7] http://www.orbit-lab.org/wiki/Documentation/Developers
-[8] http://www.orbit-lab.org/wiki/Tutorial
-[9] http://ltp.sourceforge.net/
+-- 
+:-Dustin
