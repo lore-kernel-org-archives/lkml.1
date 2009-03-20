@@ -1,105 +1,152 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761088AbZCTUAj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760244AbZCTUBY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761088AbZCTUAj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Mar 2009 16:00:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760022AbZCTUAH
+	id S1760244AbZCTUBY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Mar 2009 16:01:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760159AbZCTUBD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Mar 2009 16:00:07 -0400
-Received: from mail-bw0-f169.google.com ([209.85.218.169]:41804 "EHLO
-	mail-bw0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755012AbZCTUAE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Mar 2009 16:00:04 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:message-id;
-        b=T7vuwH7WUAZvhtPfL0boRdqq0HtMvEwIIsQld21ck17gpHMPWORB0CNkJ8tMeF+cer
-         Z0ckBsjLOWguJ1V51orzi7KiL7qhS+XEmKJmDuwhUKtomfXmptOs3Z26yANF0w0oQ5G8
-         NYkadIZkCKa3kxIg41mncB63cg1WVkVjQ7Nzg=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Cyrill Gorcunov <gorcunov@gmail.com>
-Subject: Re: [PATCH] x86: fix IO APIC resource allocation error message
-Date: Fri, 20 Mar 2009 21:02:28 +0100
-User-Agent: KMail/1.11.1 (Linux/2.6.29-rc8-next-20090319; KDE/4.2.1; i686; ; )
-Cc: Ingo Molnar <mingo@elte.hu>, Alan Bartlett <ajb.stxsl@googlemail.com>,
-       linux-kernel@vger.kernel.org
-References: <200903202012.41344.bzolnier@gmail.com> <20090320193341.GG7453@localhost>
-In-Reply-To: <20090320193341.GG7453@localhost>
+	Fri, 20 Mar 2009 16:01:03 -0400
+Received: from hera.kernel.org ([140.211.167.34]:53289 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760006AbZCTUBA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Mar 2009 16:01:00 -0400
+Date: Fri, 20 Mar 2009 20:00:23 GMT
+From: Lai Jiangshan <laijs@cn.fujitsu.com>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, paulmck@linux.vnet.ibm.com, hpa@zytor.com,
+       mingo@redhat.com, peterz@infradead.org, tglx@linutronix.de,
+       laijs@cn.fujitsu.com, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, paulmck@linux.vnet.ibm.com,
+       linux-kernel@vger.kernel.org, peterz@infradead.org, tglx@linutronix.de,
+       laijs@cn.fujitsu.com, mingo@elte.hu
+In-Reply-To: <49C36476.1010400@cn.fujitsu.com>
+References: <49C36476.1010400@cn.fujitsu.com>
+Subject: [tip:core/rcu] rcu: rcu_barrier VS cpu_hotplug: Ensure callbacks in dead cpu are migrated to online cpu
+Message-ID: <tip-04cb9ac11ba898049c99dc67ede6e68f6d700dee@git.kernel.org>
+Git-Commit-ID: 04cb9ac11ba898049c99dc67ede6e68f6d700dee
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-Message-Id: <200903202102.28585.bzolnier@gmail.com>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 20 Mar 2009 20:00:26 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 20 March 2009, Cyrill Gorcunov wrote:
-> [Bartlomiej Zolnierkiewicz - Fri, Mar 20, 2009 at 08:12:41PM +0100]
-> | From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> | Subject: [PATCH] x86: fix IO APIC resource allocation error message
-> | 
-> | Impact: fix incorrect error message
-> | 
-> | - IO APIC resource allocation error message contains one too many "be".
-> | 
-> | - Print the error message iff there are IO APICs in the system.
-> | 
-> | Cc: Alan Bartlett <ajb.stxsl@googlemail.com>
-> | Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> | ---
-> | I've seen this error message for some time on my x86-32 laptop...
-> | 
-> |  arch/x86/kernel/io_apic.c |    4 ++--
-> |  1 file changed, 2 insertions(+), 2 deletions(-)
-> | 
-> | Index: b/arch/x86/kernel/io_apic.c
-> | ===================================================================
-> | --- a/arch/x86/kernel/io_apic.c
-> | +++ b/arch/x86/kernel/io_apic.c
-> | @@ -4150,9 +4150,9 @@ static int __init ioapic_insert_resource
-> |  	int i;
-> |  	struct resource *r = ioapic_resources;
-> |  
-> | -	if (!r) {
-> | +	if (!r && nr_ioapics > 0) {
-> |  		printk(KERN_ERR
-> | -		       "IO APIC resources could be not be allocated.\n");
-> | +		       "IO APIC resources couldn't be allocated.\n");
-> |  		return -1;
-> |  	}
-> |  
-> | 
-> 
-> Hi Bartlomiej,
-> 
-> until I miss something I guess you could even make it simplier :)
-> Something like
-> 
-> ---
-> static int __init ioapic_insert_resources(void)
-> {
-> 	struct resource *r = ioapic_resources;
-> 	int err;
-> 	int i;
-> 
-> 	for (i = 0; i < nr_ioapics; i++) {
-> 		err = insert_resource(&iomem_resource, r);
-> 		if (err) {
-> 			pr_err("IO APIC resources could not be allocated.\n");
-> 			return err;
-> 		}
-> 		r++;
-> 	}
-> 
-> 	return 0;
-> }
-> ---
-> 
-> Now we would have 'err' here and get out only on conflicting resource.
-> Did I miss something?
+Commit-ID:  04cb9ac11ba898049c99dc67ede6e68f6d700dee
+Gitweb:     http://git.kernel.org/tip/04cb9ac11ba898049c99dc67ede6e68f6d700dee
+Author:     Lai Jiangshan <laijs@cn.fujitsu.com>
+AuthorDate: Fri, 20 Mar 2009 17:40:06 +0800
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Fri, 20 Mar 2009 19:37:33 +0100
 
-nr_ioapics > 0 && r == NULL ?
+rcu: rcu_barrier VS cpu_hotplug: Ensure callbacks in dead cpu are migrated to online cpu
+
+cpu hotplug may happen asynchronously, some rcu callbacks are maybe
+still on dead cpu, rcu_barrier() also needs to wait for these rcu
+callbacks to complete, so we must ensure callbacks in dead cpu are
+migrated to online cpu.
+
+Paul E. McKenney's review:
+
+  Good stuff, Lai!!!  Simpler than any of the approaches that I was
+  considering, and, better yet, independent of the underlying RCU
+  implementation!!!
+
+  I was initially worried that wake_up() might wake only one of two
+  possible wait_event()s, namely rcu_barrier() and the CPU_POST_DEAD code,
+  but the fact that wait_event() clears WQ_FLAG_EXCLUSIVE avoids that issue.
+  I was also worried about the fact that different RCU implementations have
+  different mappings of call_rcu(), call_rcu_bh(), and call_rcu_sched(), but
+  this is OK as well because we just get an extra (harmless) callback in the
+  case that they map together (for example, Classic RCU has call_rcu_sched()
+  mapping to call_rcu()).
+
+  Overlap of CPU-hotplug operations is prevented by cpu_add_remove_lock,
+  and any stray callbacks that arrive (for example, from irq handlers
+  running on the dying CPU) either are ahead of the CPU_DYING callbacks on
+  the one hand (and thus accounted for), or happened after the rcu_barrier()
+  started on the other (and thus don't need to be accounted for).
+
+Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
+Reviewed-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+Cc: Peter Zijlstra <peterz@infradead.org>
+LKML-Reference: <49C36476.1010400@cn.fujitsu.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+
+---
+ kernel/rcupdate.c |   44 ++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 44 insertions(+), 0 deletions(-)
+
+diff --git a/kernel/rcupdate.c b/kernel/rcupdate.c
+index cae8a05..2c7b845 100644
+--- a/kernel/rcupdate.c
++++ b/kernel/rcupdate.c
+@@ -122,6 +122,8 @@ static void rcu_barrier_func(void *type)
+ 	}
+ }
+ 
++static inline void wait_migrated_callbacks(void);
++
+ /*
+  * Orchestrate the specified type of RCU barrier, waiting for all
+  * RCU callbacks of the specified type to complete.
+@@ -147,6 +149,7 @@ static void _rcu_barrier(enum rcu_barrier type)
+ 		complete(&rcu_barrier_completion);
+ 	wait_for_completion(&rcu_barrier_completion);
+ 	mutex_unlock(&rcu_barrier_mutex);
++	wait_migrated_callbacks();
+ }
+ 
+ /**
+@@ -176,9 +179,50 @@ void rcu_barrier_sched(void)
+ }
+ EXPORT_SYMBOL_GPL(rcu_barrier_sched);
+ 
++static atomic_t rcu_migrate_type_count = ATOMIC_INIT(0);
++static struct rcu_head rcu_migrate_head[3];
++static DECLARE_WAIT_QUEUE_HEAD(rcu_migrate_wq);
++
++static void rcu_migrate_callback(struct rcu_head *notused)
++{
++	if (atomic_dec_and_test(&rcu_migrate_type_count))
++		wake_up(&rcu_migrate_wq);
++}
++
++static inline void wait_migrated_callbacks(void)
++{
++	wait_event(rcu_migrate_wq, !atomic_read(&rcu_migrate_type_count));
++}
++
++static int __cpuinit rcu_barrier_cpu_hotplug(struct notifier_block *self,
++		unsigned long action, void *hcpu)
++{
++	if (action == CPU_DYING) {
++		/*
++		 * preempt_disable() in on_each_cpu() prevents stop_machine(),
++		 * so when "on_each_cpu(rcu_barrier_func, (void *)type, 1);"
++		 * returns, all online cpus have queued rcu_barrier_func(),
++		 * and the dead cpu(if it exist) queues rcu_migrate_callback()s.
++		 *
++		 * These callbacks ensure _rcu_barrier() waits for all
++		 * RCU callbacks of the specified type to complete.
++		 */
++		atomic_set(&rcu_migrate_type_count, 3);
++		call_rcu_bh(rcu_migrate_head, rcu_migrate_callback);
++		call_rcu_sched(rcu_migrate_head + 1, rcu_migrate_callback);
++		call_rcu(rcu_migrate_head + 2, rcu_migrate_callback);
++	} else if (action == CPU_POST_DEAD) {
++		/* rcu_migrate_head is protected by cpu_add_remove_lock */
++		wait_migrated_callbacks();
++	}
++
++	return NOTIFY_OK;
++}
++
+ void __init rcu_init(void)
+ {
+ 	__rcu_init();
++	hotcpu_notifier(rcu_barrier_cpu_hotplug, 0);
+ }
+ 
+ void rcu_scheduler_starting(void)
