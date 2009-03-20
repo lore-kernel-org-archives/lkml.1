@@ -1,171 +1,270 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753549AbZCTHYT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754051AbZCTH1i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753549AbZCTHYT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Mar 2009 03:24:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751927AbZCTHYD
+	id S1754051AbZCTH1i (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Mar 2009 03:27:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751807AbZCTH1Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Mar 2009 03:24:03 -0400
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:38348 "EHLO e5.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751868AbZCTHYB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Mar 2009 03:24:01 -0400
-Date: Fri, 20 Mar 2009 02:23:57 -0500
-From: Tyler Hicks <tyhicks@linux.vnet.ibm.com>
-To: linux-kernel@vger.kernel.org
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Dan Carpenter <error27@gmail.com>, Serge Hallyn <serue@us.ibm.com>,
-       Dustin Kirkland <dustin.kirkland@gmail.com>
-Subject: [PATCH] eCryptfs: NULL crypt_stat dereference during lookup
-Message-ID: <20090320072355.GA11823@boomer>
+	Fri, 20 Mar 2009 03:27:25 -0400
+Received: from fg-out-1718.google.com ([72.14.220.157]:3180 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750782AbZCTH1Y (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Mar 2009 03:27:24 -0400
+Message-ID: <49C34558.6030006@monstr.eu>
+Date: Fri, 20 Mar 2009 08:27:20 +0100
+From: Michal Simek <monstr@monstr.eu>
+Reply-To: monstr@monstr.eu
+User-Agent: Thunderbird 2.0.0.17 (X11/20081001)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: John Stultz <johnstul@us.ibm.com>
+CC: Thomas Gleixner 1 <tglx@linutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>, john.williams@petalogix.com
+Subject: Re: [PATCH 08/57] microblaze_v7: Interrupt handling, timer support,
+ selfmod code
+References: <1237408284-8674-1-git-send-email-monstr@monstr.eu>	 <0168f03c96e9479ede695a9859c8a0691baa8ef3.1237407249.git.monstr@monstr.eu>	 <c1bdfabf85ce10babc3aa38d3bb7558a093bc49e.1237407249.git.monstr@monstr.eu>	 <4b5aee01d11fc790c7842838ea63a82ee3273003.1237407249.git.monstr@monstr.eu>	 <af309ba8e95f503b7990461384d9f8453f45dbbd.1237407249.git.monstr@monstr.eu>	 <5f8b2a60496983f572ef6d3b4e2f986c167a8336.1237407249.git.monstr@monstr.eu>	 <fbef554ff1d05fa50312d91e61a0d63d3207076c.1237407249.git.monstr@monstr.eu>	 <dad2353f129217470f0595eeed98412b4c84ed6b.1237407249.git.monstr@monstr.eu>	 <20fd42a1e8837c7352d35d157aa3393e88152c32.1237407249.git.monstr@monstr.eu>	 <alpine.LFD.2.00.0903191639530.29264@localhost.localdomain>	 <49C2AB09.9040300@monstr.eu>	 <alpine.LFD.2.00.0903192219500.29264@localhost.localdomain> <1237515861.7106.215.camel@jstultz-laptop>
+In-Reply-To: <1237515861.7106.215.camel@jstultz-laptop>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-If ecryptfs_encrypted_view or ecryptfs_xattr_metadata were being
-specified as mount options, a NULL pointer dereference of crypt_stat
-was possible during lookup.
+Hi John S,
 
-This patch moves the crypt_stat assignment into
-ecryptfs_lookup_and_interpose_lower(), ensuring that crypt_stat
-will not be NULL before we attempt to dereference it.
+> On Thu, 2009-03-19 at 22:47 +0100, Thomas Gleixner wrote:
+>> On Thu, 19 Mar 2009, Michal Simek wrote:
+>>> And the second question is about shift and rating values.
+>>> I wrote one message in past http://lkml.org/lkml/2009/1/11/291
+>>> Here is the important of part of that message.
+>>>
+>>> ...
+>>>
+>>> And the second part is about shift and rating values. Rating is
+>>> describe(linux/clocksource.h) and seems to me that should be
+>>> corresponded with CONFIG_HZ value,right?
+> 
+> Not sure where the idea of correspondence w/ CONFIG_HZ came from. The
+> rating value just provides a relative ordering of preferences between
+> possible clocksources. Since different hardware may have a number of
+> different clocksources available, we just need to have a method of
+> selecting a preferred clocksource, and the rating value is used for
+> that.
+> 
+> The guide in linux/clocksource.h is just a guide. Most arches, which
+> only have one or two clocksource options probably won't need much care,
+> and a rating of 200 or 300 will probably suffice. Or if there really
+> isn't any option about it and there is only one which is a must-use
+> clocksource, 400.
 
-Thanks to Dan Carpenter and his static analysis tool, smatch, for
-finding this bug.
+ok. That mean that for my case (only one clocksource) I should set rating to 400
+ - I have one clocksource and is perfect for me.
 
-Signed-off-by: Tyler Hicks <tyhicks@linux.vnet.ibm.com>
----
- fs/ecryptfs/crypto.c          |   10 ++++++----
- fs/ecryptfs/ecryptfs_kernel.h |    1 -
- fs/ecryptfs/inode.c           |   32 ++++++++++++--------------------
- 3 files changed, 18 insertions(+), 25 deletions(-)
+> 
+> 
+>>> And I found any explanation of shift value -> max value for equation
+>>> (2-5) * freq << shift / NSEC_PER_SEC should be for my case still 32bit
+>>> number, where (2-5s) are because of NTP
+>> @John, can you explain the shift vlaue please ?
+> 
+> The shift value is a bit more difficult to explain. The algorithm you
+> describe above is used by sparc to generate shift, and I think it will
+> work, but may not be optimal.
+> 
+> This question comes up over and over, so I figured I should sit down and
+> really solve it. 
+> 
+> Basically the constraint is you want to calculate a mult value using the
+> highest shift possible. However we have to be careful not to overflow
+> 64bits when we multiply ~5second worth of cycles times the mult value.
+> 
+> So I finally put this down into code and here it is. No promises that it
+> is 100% right, but from my simple test examples it worked ok.
 
-diff --git a/fs/ecryptfs/crypto.c b/fs/ecryptfs/crypto.c
-index 75bee99..8b65f28 100644
---- a/fs/ecryptfs/crypto.c
-+++ b/fs/ecryptfs/crypto.c
-@@ -2221,17 +2221,19 @@ int ecryptfs_decode_and_decrypt_filename(char **plaintext_name,
- 					 struct dentry *ecryptfs_dir_dentry,
- 					 const char *name, size_t name_size)
- {
-+	struct ecryptfs_mount_crypt_stat *mount_crypt_stat =
-+		&ecryptfs_superblock_to_private(
-+			ecryptfs_dir_dentry->d_sb)->mount_crypt_stat;
- 	char *decoded_name;
- 	size_t decoded_name_size;
- 	size_t packet_size;
- 	int rc = 0;
- 
--	if ((name_size > ECRYPTFS_FNEK_ENCRYPTED_FILENAME_PREFIX_SIZE)
-+	if ((mount_crypt_stat->flags & ECRYPTFS_GLOBAL_ENCRYPT_FILENAMES)
-+	    && !(mount_crypt_stat->flags & ECRYPTFS_ENCRYPTED_VIEW_ENABLED)
-+	    && (name_size > ECRYPTFS_FNEK_ENCRYPTED_FILENAME_PREFIX_SIZE)
- 	    && (strncmp(name, ECRYPTFS_FNEK_ENCRYPTED_FILENAME_PREFIX,
- 			ECRYPTFS_FNEK_ENCRYPTED_FILENAME_PREFIX_SIZE) == 0)) {
--		struct ecryptfs_mount_crypt_stat *mount_crypt_stat =
--			&ecryptfs_superblock_to_private(
--				ecryptfs_dir_dentry->d_sb)->mount_crypt_stat;
- 		const char *orig_name = name;
- 		size_t orig_name_size = name_size;
- 
-diff --git a/fs/ecryptfs/ecryptfs_kernel.h b/fs/ecryptfs/ecryptfs_kernel.h
-index eb2267e..ac749d4 100644
---- a/fs/ecryptfs/ecryptfs_kernel.h
-+++ b/fs/ecryptfs/ecryptfs_kernel.h
-@@ -620,7 +620,6 @@ int ecryptfs_interpose(struct dentry *hidden_dentry,
- 		       u32 flags);
- int ecryptfs_lookup_and_interpose_lower(struct dentry *ecryptfs_dentry,
- 					struct dentry *lower_dentry,
--					struct ecryptfs_crypt_stat *crypt_stat,
- 					struct inode *ecryptfs_dir_inode,
- 					struct nameidata *ecryptfs_nd);
- int ecryptfs_decode_and_decrypt_filename(char **decrypted_name,
-diff --git a/fs/ecryptfs/inode.c b/fs/ecryptfs/inode.c
-index 5697899..55b3145 100644
---- a/fs/ecryptfs/inode.c
-+++ b/fs/ecryptfs/inode.c
-@@ -246,7 +246,6 @@ out:
-  */
- int ecryptfs_lookup_and_interpose_lower(struct dentry *ecryptfs_dentry,
- 					struct dentry *lower_dentry,
--					struct ecryptfs_crypt_stat *crypt_stat,
- 					struct inode *ecryptfs_dir_inode,
- 					struct nameidata *ecryptfs_nd)
- {
-@@ -254,6 +253,7 @@ int ecryptfs_lookup_and_interpose_lower(struct dentry *ecryptfs_dentry,
- 	struct vfsmount *lower_mnt;
- 	struct inode *lower_inode;
- 	struct ecryptfs_mount_crypt_stat *mount_crypt_stat;
-+	struct ecryptfs_crypt_stat *crypt_stat;
- 	char *page_virt = NULL;
- 	u64 file_size;
- 	int rc = 0;
-@@ -314,6 +314,11 @@ int ecryptfs_lookup_and_interpose_lower(struct dentry *ecryptfs_dentry,
- 			goto out_free_kmem;
- 		}
- 	}
-+	crypt_stat = &ecryptfs_inode_to_private(
-+					ecryptfs_dentry->d_inode)->crypt_stat;
-+	/* TODO: lock for crypt_stat comparison */
-+	if (!(crypt_stat->flags & ECRYPTFS_POLICY_APPLIED))
-+			ecryptfs_set_default_sizes(crypt_stat);
- 	rc = ecryptfs_read_and_validate_header_region(page_virt,
- 						      ecryptfs_dentry->d_inode);
- 	if (rc) {
-@@ -362,9 +367,7 @@ static struct dentry *ecryptfs_lookup(struct inode *ecryptfs_dir_inode,
- {
- 	char *encrypted_and_encoded_name = NULL;
- 	size_t encrypted_and_encoded_name_size;
--	struct ecryptfs_crypt_stat *crypt_stat = NULL;
- 	struct ecryptfs_mount_crypt_stat *mount_crypt_stat = NULL;
--	struct ecryptfs_inode_info *inode_info;
- 	struct dentry *lower_dir_dentry, *lower_dentry;
- 	int rc = 0;
- 
-@@ -388,26 +391,15 @@ static struct dentry *ecryptfs_lookup(struct inode *ecryptfs_dir_inode,
- 	}
- 	if (lower_dentry->d_inode)
- 		goto lookup_and_interpose;
--	inode_info =  ecryptfs_inode_to_private(ecryptfs_dentry->d_inode);
--	if (inode_info) {
--		crypt_stat = &inode_info->crypt_stat;
--		/* TODO: lock for crypt_stat comparison */
--		if (!(crypt_stat->flags & ECRYPTFS_POLICY_APPLIED))
--			ecryptfs_set_default_sizes(crypt_stat);
--	}
--	if (crypt_stat)
--		mount_crypt_stat = crypt_stat->mount_crypt_stat;
--	else
--		mount_crypt_stat = &ecryptfs_superblock_to_private(
--			ecryptfs_dentry->d_sb)->mount_crypt_stat;
--	if (!(crypt_stat && (crypt_stat->flags & ECRYPTFS_ENCRYPT_FILENAMES))
--	    && !(mount_crypt_stat && (mount_crypt_stat->flags
--				     & ECRYPTFS_GLOBAL_ENCRYPT_FILENAMES)))
-+	mount_crypt_stat = &ecryptfs_superblock_to_private(
-+				ecryptfs_dentry->d_sb)->mount_crypt_stat;
-+	if (!(mount_crypt_stat
-+	    && (mount_crypt_stat->flags & ECRYPTFS_GLOBAL_ENCRYPT_FILENAMES)))
- 		goto lookup_and_interpose;
- 	dput(lower_dentry);
- 	rc = ecryptfs_encrypt_and_encode_filename(
- 		&encrypted_and_encoded_name, &encrypted_and_encoded_name_size,
--		crypt_stat, mount_crypt_stat, ecryptfs_dentry->d_name.name,
-+		NULL, mount_crypt_stat, ecryptfs_dentry->d_name.name,
- 		ecryptfs_dentry->d_name.len);
- 	if (rc) {
- 		printk(KERN_ERR "%s: Error attempting to encrypt and encode "
-@@ -426,7 +418,7 @@ static struct dentry *ecryptfs_lookup(struct inode *ecryptfs_dir_inode,
- 	}
- lookup_and_interpose:
- 	rc = ecryptfs_lookup_and_interpose_lower(ecryptfs_dentry, lower_dentry,
--						 crypt_stat, ecryptfs_dir_inode,
-+						 ecryptfs_dir_inode,
- 						 ecryptfs_nd);
- 	goto out;
- out_d_drop:
+OK. Please check my case of that value.
+MB can run from 5Mhz till 150MHz I think.
+I need generic approach that's why I have to calculate with max value (150MHz).
+My timer can tick on that freq too. (There is no different time bases in HW).
+
+I need to find out how many ticks takes ~5s.
+150MHz means that I need for 1sec 150 000 000 timer ticks.
+One tick takes 1/150MHz = ~6-7ns - in the best case I can recognize and set
+6-7ns (this is only theoretical value because of overhead)
+
+~5s takes 750 000 000 ticks = 0x2CB4 1780. And I have 32bit counter.
+
+That my question is how big could be a shift of value above till overflow.
+0x2CB4 1780 << shift not exceed 0xffff ffff ffff ffff.
+
+Here is that table for my case
+shift
+0 = 0x2CB4 1780
+1 = 0x5968 2F00
+2 = 0xB2D0 5E00
+3 = 0x1 65A0 BC00
+
+4 = 0x2 CB41 7800
+5 = 0x5 9682 F000
+6 = 0xB 2D05 E000
+7 = 0x16 5A0B C000
+
+>From first value I can tell that I can shift that value with 32 + 3 => 35 is the
+first shift with overflow 64bit. Am I right?
+If yes, I haven't found that big value in any arch.
+
+For example avr has shift 16, rating 50 (arch/avr32/kernel/time.c) (BTW: Sets
+time from 2007 too)
+
+And the next my question is about difference in clocksource and clock event
+value. Situation is the same. Is it mean that I should set the same rating and
+shift value for both. (It doesn't matter if I use one or two timer -> they are
+the same).
+
+And about high resolution timer. I can recognize in the best case ~6-7ns. That
+mean that measuring values around 100-200ns make sense and should work. Could I
+use it?
+
+Thanks,
+Michal
+
+
+> Let me know if it helps.
+> 
+> thanks
+> -john
+> 
+> 
+> Add helper functions to calculate ideal clocksource shift values given
+> its frequency (either hz or khz). Lightly tested, use with care. 
+> Also fixes a few old-old-old timesource (well, timsource) references my
+> find and replace attempts failed on.
+> 
+> Signed-off-by: John Stultz <johnstul@us.ibm.com>
+> 
+> diff --git a/include/linux/clocksource.h b/include/linux/clocksource.h
+> index f88d32f..9ef062d 100644
+> --- a/include/linux/clocksource.h
+> +++ b/include/linux/clocksource.h
+> @@ -116,7 +116,7 @@ extern struct clocksource *clock;	/* current clocksource */
+>   * @khz:		Clocksource frequency in KHz
+>   * @shift_constant:	Clocksource shift factor
+>   *
+> - * Helper functions that converts a khz counter frequency to a timsource
+> + * Helper functions that converts a khz counter frequency to a clocksource
+>   * multiplier, given the clocksource shift value
+>   */
+>  static inline u32 clocksource_khz2mult(u32 khz, u32 shift_constant)
+> @@ -142,7 +142,7 @@ static inline u32 clocksource_khz2mult(u32 khz, u32 shift_constant)
+>   * @shift_constant:	Clocksource shift factor
+>   *
+>   * Helper functions that converts a hz counter
+> - * frequency to a timsource multiplier, given the
+> + * frequency to a clocksource multiplier, given the
+>   * clocksource shift value
+>   */
+>  static inline u32 clocksource_hz2mult(u32 hz, u32 shift_constant)
+> @@ -162,6 +162,10 @@ static inline u32 clocksource_hz2mult(u32 hz, u32 shift_constant)
+>  	return (u32)tmp;
+>  }
+>  
+> +extern u32 clocksource_khz2shift(u32 freq_khz);
+> +extern u32 clocksource_hz2shift(u32 freq_hz);
+> +
+> +
+>  /**
+>   * clocksource_read: - Access the clocksource's current cycle value
+>   * @cs:		pointer to clocksource being read
+> diff --git a/kernel/time/clocksource.c b/kernel/time/clocksource.c
+> index ca89e15..0a2538d 100644
+> --- a/kernel/time/clocksource.c
+> +++ b/kernel/time/clocksource.c
+> @@ -212,6 +212,83 @@ static void clocksource_check_watchdog(struct clocksource *cs)
+>  static inline void clocksource_resume_watchdog(void) { }
+>  #endif
+>  
+> +
+> +/* Maximum seconds worth of cycles we consider valid */
+> +#define MAX_SEC_OF_CYCLES 5ULL
+> +
+> +/**
+> + * clocksource_khz2shift - calculates shift from khz
+> + * @freq_khz:		Clocksource frequency in KHz
+> + *
+> + * Helper functions that converts a khz counter
+> + * frequency to a clocksource shift.
+> + */
+> +u32 clocksource_khz2shift(u32 freq_khz)
+> +{
+> +	s32 shift = 32;
+> +	u32 mult;
+> +
+> +	while (1) {
+> +		s64 tmp;
+> +		u64 cycles;
+> +		mult = clocksource_khz2mult(freq_khz, shift);
+> +
+> +		cycles = (u64)freq_khz*1000*MAX_SEC_OF_CYCLES;
+> +		tmp = (cycles * mult) >> shift;
+> +
+> +		tmp = (MAX_SEC_OF_CYCLES*NSEC_PER_SEC) - tmp;
+> +		if (tmp < 0)
+> +			tmp = -tmp;
+> +
+> +		/* if we are witin one mult unit, we're good */
+> +		if (tmp < cycles>>shift)
+> +			break;
+> +
+> +		shift--;
+> +		if (shift < 1)
+> +			BUG();
+> +	}
+> +	return shift;
+> +}
+> +
+> +/**
+> + * clocksource_hz2shift - calculates shift from hz
+> + * @freq_hz:		Clocksource frequency in Hz
+> + *
+> + * Helper functions that converts a hz counter
+> + * frequency to a clocksource shift.
+> + */
+> +
+> +u32 clocksource_hz2shift(u32 freq_hz)
+> +{
+> +	s32 shift = 32;
+> +	u32 mult;
+> +
+> +	while (1) {
+> +		s64 tmp;
+> +		u64 cycles;
+> +		mult = clocksource_hz2mult(freq_hz, shift);
+> +
+> +		cycles = (u64)freq_hz*MAX_SEC_OF_CYCLES;
+> +		tmp = (cycles * mult) >> shift;
+> +
+> +		tmp = MAX_SEC_OF_CYCLES*NSEC_PER_SEC - tmp;
+> +		if (tmp < 0)
+> +			tmp = -tmp;
+> +
+> +		/* if we are witin one mult unit, we're good */
+> +		if (tmp < cycles>>shift)
+> +			break;
+> +
+> +		shift--;
+> +		if (shift < 1)
+> +			BUG();
+> +	}
+> +	return shift;
+> +}
+> +
+> +
+> +
+>  /**
+>   * clocksource_resume - resume the clocksource(s)
+>   */
+> 
+> 
+
+
 -- 
-1.5.3.7
-
+Michal Simek, Ing. (M.Eng)
+w: www.monstr.eu p: +42-0-721842854
