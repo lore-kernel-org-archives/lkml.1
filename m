@@ -1,97 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754213AbZCTCFh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756909AbZCTCI3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754213AbZCTCFh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Mar 2009 22:05:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752746AbZCTCFZ
+	id S1756909AbZCTCI3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Mar 2009 22:08:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753735AbZCTCH5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Mar 2009 22:05:25 -0400
-Received: from mga02.intel.com ([134.134.136.20]:43926 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751767AbZCTCFX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Mar 2009 22:05:23 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.38,392,1233561600"; 
-   d="scan'208";a="499308126"
-Date: Fri, 20 Mar 2009 10:06:00 +0800
-From: Yu Zhao <yu.zhao@intel.com>
-To: Matthew Wilcox <matthew@wil.cx>
-Cc: "jbarnes@virtuousgeek.org" <jbarnes@virtuousgeek.org>,
-       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
-       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH v11 1/8] PCI: initialize and release SR-IOV capability
-Message-ID: <20090320020600.GA23967@yzhao-otc.sh.intel.com>
-References: <1236756349-18892-1-git-send-email-yu.zhao@intel.com> <1236756349-18892-2-git-send-email-yu.zhao@intel.com> <20090319195312.GC14127@parisc-linux.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090319195312.GC14127@parisc-linux.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 19 Mar 2009 22:07:57 -0400
+Received: from outbound-mail-06.bluehost.com ([69.89.17.206]:34805 "HELO
+	outbound-mail-06.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752984AbZCTCH4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Mar 2009 22:07:56 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
+	b=I6HiHsJUkjQ5CazEJBEdPL8lg7hLSbTXFr5HiqoD860yRVYuMZr7sSGaDMPJnY4mjkSE67hD3CHrhFImjKFFEGsR62SCEb1xgPSJ3zPVIO2e/97lu8q6yUKjhSQhMIwJ;
+Date: Thu, 19 Mar 2009 19:07:51 -0700
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Bjorn Helgaas <bjorn.helgaas@hp.com>
+Cc: Frans Pop <elendil@planet.nl>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Matthew Wilcox <matthew@wil.cx>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Rene Herman <rene.herman@keyaccess.nl>
+Subject: Re: [Bug #11550] pnp: Huge number of "io resource overlap" messages
+Message-ID: <20090319190751.0ded0c4b@hobbes.lan>
+In-Reply-To: <200903041453.52771.bjorn.helgaas@hp.com>
+References: <200809091250.08620.elendil@planet.nl>
+	<200809261540.31443.bjorn.helgaas@hp.com>
+	<200903042117.18034.elendil@planet.nl>
+	<200903041453.52771.bjorn.helgaas@hp.com>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.27.49 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 20, 2009 at 03:53:12AM +0800, Matthew Wilcox wrote:
-> On Wed, Mar 11, 2009 at 03:25:42PM +0800, Yu Zhao wrote:
-> > +config PCI_IOV
-> > +	bool "PCI IOV support"
-> > +	depends on PCI
-> > +	help
-> > +	  PCI-SIG I/O Virtualization (IOV) Specifications support.
-> > +	  Single Root IOV: allows the creation of virtual PCI devices
-> > +	  that share the physical resources from a real device.
+On Wed, 4 Mar 2009 14:53:51 -0700
+Bjorn Helgaas <bjorn.helgaas@hp.com> wrote:
+
+> On Wednesday 04 March 2009 01:17:15 pm Frans Pop wrote:
+> > Original thread:
+> > http://marc.info/?l=linux-kernel&m=122095745403793&w=4
+> 
+> Seems like we do need something, but this patch is kind of a klunky
+> approach, so I'd like to come up with a better proposal.  I don't
+> have any better ideas yet, though.
+
+Patch actually seems pretty reasonable to me, though like we discussed
+at kernel summit last year, there are places where a 0 resource is
+assumed to mean "not assigned".  And clearly we need to do something
+here...  Anyone else have better ideas than Bjorn's patch below?
+
+> > diff --git a/drivers/pci/setup-res.c b/drivers/pci/setup-res.c
+> > index 32e8d88..e63f800 100644
+> > --- a/drivers/pci/setup-res.c
+> > +++ b/drivers/pci/setup-res.c
+> > @@ -26,6 +26,28 @@
+> >  #include "pci.h"
+> >  
+> >  
+> > +int pci_resource_enabled(struct pci_dev *dev, int bar)
+> > +{
+> > +	u16 command = 0;
+> > +	u32 addr = 0;
 > > +
-> > +	  When in doubt, say N.
+> > +	pci_read_config_word(dev, PCI_COMMAND, &command);
+> > +
+> > +	if (pci_resource_flags(dev, bar) & IORESOURCE_IO)
+> > +		return command & PCI_COMMAND_IO;
+> > +
+> > +	if (command & PCI_COMMAND_MEMORY) {
+> > +		if (bar == PCI_ROM_RESOURCE) {
+> > +			pci_read_config_dword(dev,
+> > dev->rom_base_reg, &addr);
+> > +			return addr & PCI_ROM_ADDRESS_ENABLE;
+> > +		}
+> > +
+> > +		return 1;
+> > +	}
+> > +
+> > +	return 0;
+> > +}
+> > +
+> >  void pci_update_resource(struct pci_dev *dev, int resno)
+> >  {
+> >  	struct pci_bus_region region;
+> > diff --git a/drivers/pnp/quirks.c b/drivers/pnp/quirks.c
+> > index 8473fe5..1f37988 100644
+> > --- a/drivers/pnp/quirks.c
+> > +++ b/drivers/pnp/quirks.c
+> > @@ -247,6 +247,9 @@ static void quirk_system_pci_resources(struct
+> > pnp_dev *dev) for (i = 0; i < DEVICE_COUNT_RESOURCE; i++) {
+> >  			unsigned long type;
+> >  
+> > +			if (!pci_resource_enabled(pdev, i))
+> > +				continue;
+> > +
+> >  			type = pci_resource_flags(pdev, i) &
+> >  					(IORESOURCE_IO |
+> > IORESOURCE_MEM); if (!type || pci_resource_len(pdev, i) == 0)
+> > diff --git a/include/linux/pci.h b/include/linux/pci.h
+> > index c927ae9..9848ac2 100644
+> > --- a/include/linux/pci.h
+> > +++ b/include/linux/pci.h
+> > @@ -870,6 +870,8 @@ static inline int pci_proc_domain(struct
+> > pci_bus *bus) }
+> >  #endif /* CONFIG_PCI_DOMAINS */
+> >  
+> > +extern int pci_resource_enabled(struct pci_dev *dev, int bar);
+> > +
+> >  #else /* CONFIG_PCI is not enabled */
+> >  
+> >  /*
+> > @@ -1050,6 +1052,9 @@ static inline struct pci_dev
+> > *pci_get_bus_and_slot(unsigned int bus, unsigned int devfn)
+> >  { return NULL; }
+> >  
+> > +static inline int pci_resource_enabled(struct pci_dev *dev, int
+> > bar) +{ return 0; }
+> > +
+> >  #endif /* CONFIG_PCI */
+> >  
+> >  /* Include architecture-dependent settings and functions */
+> > 
+> > 
 > 
-> It's certainly shorter than my text, which is nice.  But I think it
-> still has too much spec-ese and not enough explanation.  How about:
 > 
-> 	help
-> 	  I/O Virtualization is a PCI feature supported by some devices
-> 	  which allows them to create virtual devices which share their
-> 	  physical resources.
 > 
-> 	  If unsure, say N.
-
-Yes, it's more user-friendly.
-
-> > +	list_for_each_entry(pdev, &dev->bus->devices, bus_list)
-> > +		if (pdev->is_physfn)
-> > +			break;
-> > +	if (list_empty(&dev->bus->devices) || !pdev->is_physfn)
-> > +		pdev = NULL;
-> 
-> This is still wrong.  If the 'break' condition is not hit, pdev is
-> pointing to garbage, not to the last pci_dev in the list.
-
-Yes, you are right. I should think it over after you commented on it
-last time.
-
-So it looks like we need to make it as:
-
-	ctrl = 0;
-	list_for_each_entry(pdev, &dev->bus->devices, bus_list)
-		if (pdev->is_physfn)
-			goto found;
-
-	pdev = NULL;
-	if (pci_ari_enabled(dev->bus))
-		ctrl |= PCI_SRIOV_CTRL_ARI;
-
-found:
-	pci_write_config_word(dev, pos + PCI_SRIOV_CTRL, ctrl);
-	...
-
-> > @@ -270,6 +278,7 @@ struct pci_dev {
-> >  	struct list_head msi_list;
-> >  #endif
-> >  	struct pci_vpd *vpd;
-> > +	struct pci_sriov *sriov;	/* SR-IOV capability related */
-> 
-> Should be ifdeffed?
-
-Yes, will do.
 
 
-Thank you for reviewing it. The patch series was applied on Xen Domain0
-tree 2 days ago, and I'll carry your comments back to Xen tree too.
+-- 
+Jesse Barnes, Intel Open Source Technology Center
