@@ -1,91 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758556AbZCTQwW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756183AbZCTRBy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758556AbZCTQwW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Mar 2009 12:52:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754786AbZCTQwN
+	id S1756183AbZCTRBy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Mar 2009 13:01:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756849AbZCTRBp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Mar 2009 12:52:13 -0400
-Received: from [213.79.90.228] ([213.79.90.228]:41468 "EHLO
-	buildserver.ru.mvista.com" rhost-flags-FAIL-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1754314AbZCTQwN (ORCPT
+	Fri, 20 Mar 2009 13:01:45 -0400
+Received: from relay.gothnet.se ([82.193.160.251]:12694 "EHLO
+	GOTHNET-SMTP2.gothnet.se" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1755326AbZCTRBo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Mar 2009 12:52:13 -0400
-Date: Fri, 20 Mar 2009 19:52:10 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       Steven Rostedt <srostedt@redhat.com>, Paul Mackerras <paulus@samba.org>,
-       Sam Ravnborg <sam@ravnborg.org>
-Subject: Re: [PATCH v4 0/3] Tracers vs. CALLER_ADDR on PowerPC
-Message-ID: <20090320165210.GA3414@oksana.dev.rtsoft.ru>
-Reply-To: avorontsov@ru.mvista.com
-References: <20090320164404.GA19933@oksana.dev.rtsoft.ru>
+	Fri, 20 Mar 2009 13:01:44 -0400
+Message-ID: <49C3CB88.2000202@shipmail.org>
+Date: Fri, 20 Mar 2009 17:59:52 +0100
+From: =?ISO-8859-1?Q?Thomas_Hellstr=F6m?= <thomas@shipmail.org>
+Organization: VMware
+User-Agent: Thunderbird 1.5.0.7 (X11/20060921)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-Content-Disposition: inline
-In-Reply-To: <20090320164404.GA19933@oksana.dev.rtsoft.ru>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Greg KH <greg@kroah.com>
+CC: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Thomas Hellstrom <thellstrom@vmware.com>,
+       David Airlie <airlied@linux.ie>, linux-kernel@vger.kernel.org,
+       Daniel Stone <daniel@fooishbar.org>,
+       Richard Purdie <rpurdie@linux.intel.com>,
+       Sindhudweep Sarkar <sindhudweep.sarkar@gmail.com>,
+       dri-devel@lists.sourceforge.net
+Subject: Re: [patch 0/5] Intel Poulsbo/Morrestown DRM driver and DRM core
+ changes
+References: <20090319040809.GA29249@kroah.com>	<6c046ab30903190903r298a0334n939e64403b8aeda6@mail.gmail.com>	<20090319162719.GB32078@kroah.com>	<20090320060823.GF32194@fooishbar.org>	<20090320145340.GA11347@kroah.com>	<20090320150032.31ef6a51@lxorguk.ukuu.org.uk> <20090320155010.GA13556@kroah.com>
+In-Reply-To: <20090320155010.GA13556@kroah.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-BitDefender-Scanner: Mail not scanned due to license constraints
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 20, 2009 at 07:44:04PM +0300, Anton Vorontsov wrote:
-> Hi all,
-> 
-> Here is another approach to fixing tracers vs. CALLER_ADDR problem
-> on PowerPC.
-> 
-> Preface for those who don't know or forgot what the problem is:
-> 
-> Gcc frame pointers do nothing useful on PowerPC (they're harmful,
-> actually), and thus lib/Kconfig.debug makes CONFIG_FRAME_POINTER
-> unselectable on PPC targets, but CALLER_ADDR macros are available
-> only with CONFIG_FRAME_POINTER, therefore tracing is completely
-> useless on PowerPC:
-> 
-> [...]
->   <idle>-0       0X.h3    2us+:      0:140:R   + [000]  1733:120:S mvtsd
->   <idle>-0       0X.h3    9us+: 0 (0)
->   <idle>-0       0X..3   72us : 0 (0)
->   <idle>-0       0X..3   73us :      0:140:R ==> [000]  1733:120:R mvtsd
-> 
-> While it should look like this:
-> 
-> [...]
->   <idle>-0       0X.h3    2us+:      0:140:R   + [000]  1740:120:S mvtsd
->   <idle>-0       0X.h3    9us+: hrtimer_wakeup (__run_hrtimer)
->   <idle>-0       0X..3   87us : cpu_idle (__got2_end)
->   <idle>-0       0X..3   89us :      0:140:R ==> [000]  1740:120:R mvtsd
-> 
-> I've tried to fix the issue via expanding the #ifdef in the ftrace.h:
-> http://lkml.org/lkml/2009/1/31/141
-> 
-> Then Steven Rostedt suggested to implement something more generic,
-> i.e. HAVE_NORMAL_FRAME_POINTERS Kconfig symbol.
-> 
-> I found a way to solve the problem w/o additional symbols, but
-> with some Makefile magic (http://lkml.org/lkml/2009/2/4/273).
-> But because of top-level Makefile issues on other arches
-> (http://lkml.org/lkml/2009/2/14/89) I had to abandon the approach.
+Greg KH wrote:
+> On Fri, Mar 20, 2009 at 03:00:32PM +0000, Alan Cox wrote:
+>   
+>>>> By the same logic, would you support including the proprietary NVIDIA
+>>>> driver while we wait for Nouveau to catch up?
+>>>>         
+>>> The license of the NVIDIA driver does not allow that to even be a
+>>> possibility.
+>>>       
+>> I'm not convinced this is any different. If you accept the 3D changes you
+>> step into a dangerous world of estoppel and since it has many
+>> rightsholders also the wonderful world of contributory infringement. It
+>> really really needs lawyers to look into it.
+>>     
+>
+> I would hope that Intel's lawyers would have done such a thing before
+> releasing the kernel and xorg code under the licenses that they did :)
+>
+>   
+>> Now the other way to do it that might be more productive and simpler
+>> would be to rip all the 3D crap out of that driver and just include the
+>> minimum needed 2D bits for the open source X driver. Makes the code
+>> smaller and cleaner, avoids an legal questions and lets people get on
+>> with real work.
+>>     
+>
+> Hm, that sounds fine to me.
+>
+> Does that mean that all of these drm patches that I posted are _only_
+> needed for the 3d portions of the driver?  If I rip out the portions of
+> the psb kernel driver that need these changes, do I end up with an
+> working 2d driver as well?  Richard and Thomas, any thoughts here?
+>
+> thanks,
+>
+> greg k-h
+>
+>   
+Greg,
+Let's not forget the video stuff. I'm not sure about the status of that.
 
-Oh, and btw, I'm aware of
+But all the other patches are needed for 2D functionality and kernel 
+modesetting.
+If you want to strip 3D you can strip.
 
-  commit c79a61f55773d2519fd0525bf58385f7d20752d3
-  Author: Uwe Kleine-Koenig <u.kleine-koenig@pengutronix.de>
-  Date:   Fri Feb 27 21:30:03 2009 +0100
+psb_schedule.[ch] - The 3D scheduler.
+psb_xhw.c - The interface to the binary X server module.
+psb_scene.c - The 3D scene tracker.
 
-      tracing: make CALLER_ADDRx overwriteable
+and anything that appears unused after that.
+This means you lose Render acceleration and textured video and 
+downscaling in the X server as well,
+although accelerated rotation should still work, since it uses the 2D 
+engine.
 
-But I think the patch set is still applicable, considering that
-it removes gcc bug workaround in a nice way, and makes
-CONFIG_FRAME_POINTER available on PowerPC, thus other code
-can rely on that.
+I think the video acceleration sits in
 
-If not, I can just fill-in the asm/ftrace.h for PowerPC.
+psb_msvdx.c
+psb_msvdxinit.c
+lnc_topaz.c
+lnc_topazinit.c
 
-Thanks,
+/Thomas
 
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+
+
