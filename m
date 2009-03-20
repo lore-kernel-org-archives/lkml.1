@@ -1,64 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756996AbZCTPgj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757220AbZCTPhf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756996AbZCTPgj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Mar 2009 11:36:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754141AbZCTPga
+	id S1757220AbZCTPhf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Mar 2009 11:37:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754141AbZCTPh0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Mar 2009 11:36:30 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:51336 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751315AbZCTPg3 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Mar 2009 11:36:29 -0400
-Date: Fri, 20 Mar 2009 15:37:13 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Daniel =?ISO-8859-14?B?S3L8Z2Vy?= 
-	<daniel.krueger@systec-electronic.com>
-Cc: Robert Schwebel <r.schwebel@pengutronix.de>, Greg KH <greg@kroah.com>,
-       linux-kernel@vger.kernel.org, Michael Olbrich <mol@pengutronix.de>,
-       Wolfram Sang <wsa@pengutronix.de>,
-       Marc Kleine-Budde <mkl@pengutronix.de>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: The Linux Staging tree, what it is and is not.
-Message-ID: <20090320153713.65bf8e2d@lxorguk.ukuu.org.uk>
-In-Reply-To: <49C3B33F.1020905@systec-electronic.com>
-References: <20090318183232.GA11594@kroah.com>
-	<20090320005808.GM5367@pengutronix.de>
-	<20090320100146.6599f671@lxorguk.ukuu.org.uk>
-	<20090320103545.GQ5367@pengutronix.de>
-	<20090320105556.4375176d@lxorguk.ukuu.org.uk>
-	<20090320111552.GS5367@pengutronix.de>
-	<49C3B33F.1020905@systec-electronic.com>
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 8BIT
+	Fri, 20 Mar 2009 11:37:26 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:60838 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752921AbZCTPhZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Mar 2009 11:37:25 -0400
+Date: Fri, 20 Mar 2009 15:37:23 +0000
+From: Mel Gorman <mel@csn.ul.ie>
+To: Christoph Lameter <cl@linux-foundation.org>
+Cc: Linux Memory Management List <linux-mm@kvack.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Nick Piggin <npiggin@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Lin Ming <ming.m.lin@intel.com>,
+       Zhang Yanmin <yanmin_zhang@linux.intel.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 00/25] Cleanup and optimise the page allocator V5
+Message-ID: <20090320153723.GO24586@csn.ul.ie>
+References: <1237543392-11797-1-git-send-email-mel@csn.ul.ie> <alpine.DEB.1.10.0903201059240.3740@qirst.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.1.10.0903201059240.3740@qirst.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> My understanding of an object dictionary is that it is only a structured 
-> view to a set of configuration variables, process variables and 
-> diagnostic information. It could also be an XML file or a simple C 
-> struct. In our implementation the object dictionary is not necessarily 
-> the backing store of the data. The process variables for example are 
+On Fri, Mar 20, 2009 at 11:00:42AM -0400, Christoph Lameter wrote:
+> On Fri, 20 Mar 2009, Mel Gorman wrote:
+> 
+> > The lock contention on some machines goes up for the the zone->lru_lock
+> > and zone->lock locks which can regress some workloads even though others on
+> > the same machine still go faster. For netperf, a lock called slock-AF_INET
+> > seemed very important although I didn't look too closely other than noting
+> > contention went up. The zone->lock gets hammered a lot by high order allocs
+> > and frees coming from SLUB which are not covered by the PCP allocator in
+> > this patchset. zone->lru_lock goes up is less clear but as it's page cache
+> > releases but overall contention may be up because CPUs are spending less
+> > time with interrupts disabled and more time trying to do real work but
+> > contending on the locks.
+> 
+> We can tune SLUB to buffer more pages if the lru lock becomes too hot.
+> 
 
-It's also possible I think to look at the object dictionary as no
-different from port numbers. The object identifiers tell you who owns the
-data and thus who needs to be told. I admit to being a bit rusty on this.
-My last near encounters with fieldbus type systems were some years ago
-when I²IT was involved in EMUG and OLCHFA and I managed to keep out of
-the blast radius of those ;)
+hmm, I'm missing something in your reasoning. The contention I saw for
+zone->lru_lock
 
-> information of what to copy to where comes from the object dictionary. 
-> But it is possible to extract this information from the objdict and pass 
-> it via generic structures (e.g. something like IO vectors) to the PDO 
-> module in kernel. The information flow of the configuration data is 
-> one-way only, from userspace to kernel. This is what I plan to implement 
-> in openPOWERLINK, because the copy information can also be passed to a 
-> special hardware like a DMA controller.
+&zone->lru_lock          37350 [<ffffffff8029d6fe>] ____pagevec_lru_add+0x9c/0x172
+&zone->lru_lock          55423 [<ffffffff8029d377>] release_pages+0x10a/0x21b
+&zone->lru_lock            402 [<ffffffff8029d9d9>] activate_page+0x4f/0x147
+&zone->lru_lock              6 [<ffffffff8029dbbd>] put_page+0x94/0x122
 
-Ok so your hardware in fact really is oriented around an mmap type
-interface ?
+So I just assumed it was LRU pages being taken off and freed that was
+causing the contention. Can SLUB affect that?
 
-Alan
+Maybe you meant zone->lock and SLUB could tune buffers more to avoid
+that if that lock was hot. That is one alternative but the later patches
+proposed an alternative whereby high-order and compound pages could be
+stored on the PCP lists. Compound only really helps SLUB but high-order
+also helped stacks, signal handlers and the like so it seemed like a
+good idea one way or the other. Course, this meant a search of the PCP
+lists or increasing the size of the PCP structure - swings and
+roundabouts :/
+
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
