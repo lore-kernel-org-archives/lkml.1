@@ -1,53 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757037AbZCTVjs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754348AbZCTVx4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757037AbZCTVjs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Mar 2009 17:39:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751880AbZCTVji
+	id S1754348AbZCTVx4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Mar 2009 17:53:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752866AbZCTVxn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Mar 2009 17:39:38 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:37518 "EHLO e4.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751060AbZCTVji (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Mar 2009 17:39:38 -0400
-Date: Fri, 20 Mar 2009 14:39:35 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>, laijs@cn.fujitsu.com
-Subject: Re: [PATCH 0/5] [GIT PULL] updates for tip/tracing/ftrace
-Message-ID: <20090320213935.GL6698@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20090319073357.GA14615@elte.hu> <alpine.DEB.2.00.0903191309170.16987@gandalf.stny.rr.com> <20090320174331.GH6698@linux.vnet.ibm.com> <20090320183642.GA2070@elte.hu> <20090320183849.GA3657@elte.hu> <20090320191926.GJ6698@linux.vnet.ibm.com> <20090320192721.GI6224@elte.hu> <20090320194617.GA5934@nowhere> <20090320195414.GA24129@elte.hu> <20090320204848.GA6044@nowhere>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090320204848.GA6044@nowhere>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+	Fri, 20 Mar 2009 17:53:43 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:33604
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1751111AbZCTVxm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Mar 2009 17:53:42 -0400
+Date: Fri, 20 Mar 2009 14:53:29 -0700 (PDT)
+Message-Id: <20090320.145329.203115653.davem@davemloft.net>
+To: linville@tuxdriver.com
+Cc: linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: pull request: wireless-2.6 2009-03-20
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20090320202934.GA3263@tuxdriver.com>
+References: <20090320202934.GA3263@tuxdriver.com>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 20, 2009 at 09:48:48PM +0100, Frederic Weisbecker wrote:
-> On Fri, Mar 20, 2009 at 08:54:14PM +0100, Ingo Molnar wrote:
-> > * Frederic Weisbecker <fweisbec@gmail.com> wrote:
+From: "John W. Linville" <linville@tuxdriver.com>
+Date: Fri, 20 Mar 2009 16:29:35 -0400
 
-[ . . . ]
+> git://git.kernel.org/pub/scm/linux/kernel/git/linville/wireless-2.6.git master
 
-> > i dont have a reproducer right now. Can you trigger it with latest 
-> > -tip, which has this commit included:
-> > 
-> > 04cb9ac: rcu: rcu_barrier VS cpu_hotplug: Ensure callbacks in dead cpu are migrated to o
-> > 
-> > ?
-> > 
-> > 	Ingo
-> 
-> 
-> I tested three times the same things but with 04cb9ac and... it didn't triggered
-> anymore :-)
-
-Woo-hoo!!!  ;-)
-
-							Thanx, Paul
+Pulled, thanks John.
