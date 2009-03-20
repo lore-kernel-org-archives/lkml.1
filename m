@@ -1,50 +1,202 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762009AbZCTATm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761195AbZCTAXh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762009AbZCTATm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Mar 2009 20:19:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757954AbZCTATa
+	id S1761195AbZCTAXh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Mar 2009 20:23:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755342AbZCTAX1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Mar 2009 20:19:30 -0400
-Received: from wa-out-1112.google.com ([209.85.146.179]:14418 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750895AbZCTAT3 convert rfc822-to-8bit (ORCPT
+	Thu, 19 Mar 2009 20:23:27 -0400
+Received: from e37.co.us.ibm.com ([32.97.110.158]:43924 "EHLO
+	e37.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752710AbZCTAX0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Mar 2009 20:19:29 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=XBXs5a6/eIC8RBw2nioj0TiTUh4cefSnzaOqZzaAoNDbENU7GiGJMGEX0+RaJjoJxT
-         ACMtvnZxvzwpeWu4tAuuV2ISNpxoLpPI3k8KyGdgqxKosJKcQIf35/6ONAEvhFjauqRh
-         JaJ95t/XNtS2AqLdOon755ZywcaiHw0UyDzJ4=
+	Thu, 19 Mar 2009 20:23:26 -0400
+Date: Thu, 19 Mar 2009 19:23:21 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Matt Helsley <matthltc@us.ibm.com>
+Cc: lkml <linux-kernel@vger.kernel.org>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>, mingo@elte.hu,
+       Bharata B Rao <bharata@linux.vnet.ibm.com>, peterz@infradead.org,
+       Linux Containers <containers@lists.osdl.org>
+Subject: Re: [PATCH 1/1] introduce user_ns inheritance in user-sched
+Message-ID: <20090320002321.GA26056@us.ibm.com>
+References: <20090319211615.GA18383@us.ibm.com> <20090319235503.GA15844@us.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <18882.57341.196519.507194@notabene.brown>
-References: <20090318191248.20375.40560.stgit@dwillia2-linux.ch.intel.com>
-	 <20090318192102.20375.36540.stgit@dwillia2-linux.ch.intel.com>
-	 <18882.57341.196519.507194@notabene.brown>
-Date: Thu, 19 Mar 2009 17:19:27 -0700
-X-Google-Sender-Auth: 100fea1519483d69
-Message-ID: <e9c3a7c20903191719y501925f2w65c6959e964a9470@mail.gmail.com>
-Subject: Re: [PATCH 09/13] iop-adma: P+Q self test
-From: Dan Williams <dan.j.williams@intel.com>
-To: Neil Brown <neilb@suse.de>
-Cc: linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org,
-       maciej.sosnowski@intel.com
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090319235503.GA15844@us.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 19, 2009 at 5:14 PM, Neil Brown <neilb@suse.de> wrote:
->> +#include <linux/raid/raid6.h>
->
-> ???
->  <linux/raid/pq.h>  Maybe?
->
+Quoting Matt Helsley (matthltc@us.ibm.com):
+> Shouldn't this put_user_ns(new->user_ns) be removed? It looks like two 
+> references to new->user_ns are being dropped if anything fails 
+> after sched_create_user(new) succeeds yet as far as I can tell the
+> patch does not introduce any new references to new->user_ns.
+> 
+> Otherwise looks good to me.
 
-Yes, neglected the cross compile before pushing this out, will fix.
+Here is the new version.  Thanks again.
 
-Thanks,
-Dan
+>From 55c264b27cb1f6f91007ae2aeda2d4f6067bb2eb Mon Sep 17 00:00:00 2001
+From: Serge E. Hallyn <serue@us.ibm.com>
+Date: Wed, 18 Mar 2009 13:29:32 -0700
+Subject: [PATCH] introduce user_ns inheritance in user-sched (v2)
+
+In a kernel compiled with CONFIG_USER_SCHED=y, cpu shares are
+allocated according to uid.  Shares are specifiable under
+/sys/kernel/uids/
+
+In a kernel compiled with CONFIG_USER_NS=y, clone(2) with the
+CLONE_NEWUSER flag creates a new user namespace, and the newly
+cloned task will belong to uid 0 in the new user namespace.
+
+Without this patch,  if uid 500 calls clone(CLONE_NEWUSER) (which
+is possible using a program with the cap_sys_admin,cap_setuid,cap_setgid=pe
+file capabilities), then the new task will get the cpu shares of
+uid 0.
+
+After this patch, if uid 500 calls clone(CLONE_NEWUSER), then even
+though it is uid 0 in the new user namespace, it will be restricted to
+the cpu shares of uid 500.
+
+Currently there is no way to set shares for uids in user namespaces
+other than the initial one.  That will be trivial to add when
+sysfs tagging (or its functional equivalent, also needed to
+expose network devices in network namespaces other than init)
+becomes available.
+
+Until cross-user-namespace file accesses are enforced, nothing
+stops uid 0 in a child namespace from simply writing new values
+into /sys/kernel/uids/500.
+
+Here are results of some testing with and without the patch.
+
+Cpu shares are initialized as follows::
+	user root:   2048
+	user hallyn: 1024
+	user serge:  512
+
+Results are the 'real' part of time make -j4 > o 2>&1,
+each time after a make clean.
+
+=================================================================
+UNPATCHED
+User 1: user serge creates a child user_ns and runs as user root
+User 2: hallyn runs as user hallyn
+=================================================================
+           User 1          User 2
+run 1:   2m58.834s        3m0.609s
+run 2:   2m59.248s        2m59.457s
+
+=============================================================
+PATCHED
+User 1: user serge
+User 2: user hallyn
+=============================================================
+
+           User 1          User 2
+run 1:   3m6.337s        2m22.681s
+run 2:   3m6.323s        2m21.855s
+
+=============================================================
+PATCHED
+User 1: user serge setuid to user root
+User 2: hallyn
+=============================================================
+
+           User 1          User 2
+run 1:   2m17.782s       3m3.947s
+run 2:   2m18.497s       3m7.961s
+
+==========================================================
+PATCHED
+User 1: user root inside userns created by userid serge
+User 2: hallyn
+==========================================================
+
+           User 1          User 2
+run 1:   3m9.876s        2m8.428s
+run 2:   3m8.539s        2m6.356s
+
+Changelog:
+	Mar 19: Matt Helsley pointed out there were
+		two calls to put_user_ns() in alloc_uid()
+		error path.
+
+Signed-off-by: Serge E. Hallyn <serue@us.ibm.com>
+Signed-off-by: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+Cc: mingo@elte.hu
+Cc: Bharata B Rao <bharata@linux.vnet.ibm.com>
+Cc: peterz@infradead.org
+---
+ kernel/user.c           |   13 +++++++++----
+ kernel/user_namespace.c |    2 +-
+ 2 files changed, 10 insertions(+), 5 deletions(-)
+
+diff --git a/kernel/user.c b/kernel/user.c
+index 850e0ba..8ae4bf8 100644
+--- a/kernel/user.c
++++ b/kernel/user.c
+@@ -101,7 +101,12 @@ static int sched_create_user(struct user_struct *up)
+ {
+ 	int rc = 0;
+ 
+-	up->tg = sched_create_group(&root_task_group);
++	struct task_group *parent = &root_task_group;
++
++	if (up->user_ns != &init_user_ns)
++		parent = up->user_ns->creator->tg;
++
++	up->tg = sched_create_group(parent);
+ 	if (IS_ERR(up->tg))
+ 		rc = -ENOMEM;
+ 
+@@ -434,11 +439,11 @@ struct user_struct *alloc_uid(struct user_namespace *ns, uid_t uid)
+ 		new->uid = uid;
+ 		atomic_set(&new->__count, 1);
+ 
++		new->user_ns = get_user_ns(ns);
++
+ 		if (sched_create_user(new) < 0)
+ 			goto out_free_user;
+ 
+-		new->user_ns = get_user_ns(ns);
+-
+ 		if (uids_user_create(new))
+ 			goto out_destoy_sched;
+ 
+@@ -470,8 +475,8 @@ struct user_struct *alloc_uid(struct user_namespace *ns, uid_t uid)
+ 
+ out_destoy_sched:
+ 	sched_destroy_user(new);
+-	put_user_ns(new->user_ns);
+ out_free_user:
++	put_user_ns(new->user_ns);
+ 	kmem_cache_free(uid_cachep, new);
+ out_unlock:
+ 	uids_mutex_unlock();
+diff --git a/kernel/user_namespace.c b/kernel/user_namespace.c
+index 076c7c8..a99d3c7 100644
+--- a/kernel/user_namespace.c
++++ b/kernel/user_namespace.c
+@@ -35,6 +35,7 @@ int create_user_ns(struct cred *new)
+ 		INIT_HLIST_HEAD(ns->uidhash_table + n);
+ 
+ 	/* Alloc new root user.  */
++	ns->creator = new->user;
+ 	root_user = alloc_uid(ns, 0);
+ 	if (!root_user) {
+ 		kfree(ns);
+@@ -42,7 +43,6 @@ int create_user_ns(struct cred *new)
+ 	}
+ 
+ 	/* set the new root user in the credentials under preparation */
+-	ns->creator = new->user;
+ 	new->user = root_user;
+ 	new->uid = new->euid = new->suid = new->fsuid = 0;
+ 	new->gid = new->egid = new->sgid = new->fsgid = 0;
+-- 
+1.5.4.3
+
