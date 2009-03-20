@@ -1,77 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753763AbZCTJ6k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757914AbZCTJ7A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753763AbZCTJ6k (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Mar 2009 05:58:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752238AbZCTJ6a
+	id S1757914AbZCTJ7A (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Mar 2009 05:59:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753839AbZCTJ6s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Mar 2009 05:58:30 -0400
-Received: from out01.mta.xmission.com ([166.70.13.231]:41047 "EHLO
-	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751731AbZCTJ63 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Mar 2009 05:58:29 -0400
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Peter Zijlstra <peterz@infradead.org>, Jan Beulich <jbeulich@novell.com>,
-       tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com,
-       linux-kernel@vger.kernel.org
-References: <49B91A7E.76E4.0078.0@novell.com>
-	<tip-6a09dfa870ba0ed21b1124539968a36b42660661@git.kernel.org>
-	<1236934491.5188.209.camel@laptop> <49BA33BE.76E4.0078.0@novell.com>
-	<1236937423.22914.3698.camel@twins> <20090313103828.GB31094@elte.hu>
-	<m1d4cd9n4k.fsf@fess.ebiederm.org> <20090320085205.GB16021@elte.hu>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Fri, 20 Mar 2009 02:58:19 -0700
-In-Reply-To: <20090320085205.GB16021@elte.hu> (Ingo Molnar's message of "Fri\, 20 Mar 2009 09\:52\:05 +0100")
-Message-ID: <m14oxo8qis.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Fri, 20 Mar 2009 05:58:48 -0400
+Received: from www.tglx.de ([62.245.132.106]:59522 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752238AbZCTJ6r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Mar 2009 05:58:47 -0400
+Date: Fri, 20 Mar 2009 10:58:38 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Michal Simek <monstr@monstr.eu>
+cc: LKML <linux-kernel@vger.kernel.org>, john.williams@petalogix.com,
+       John Stultz <johnstul@us.ibm.com>
+Subject: Re: [PATCH 08/57] microblaze_v7: Interrupt handling, timer support,
+ selfmod code
+In-Reply-To: <49C36149.9000703@monstr.eu>
+Message-ID: <alpine.LFD.2.00.0903201052340.29264@localhost.localdomain>
+References: <1237408284-8674-1-git-send-email-monstr@monstr.eu> <0168f03c96e9479ede695a9859c8a0691baa8ef3.1237407249.git.monstr@monstr.eu> <c1bdfabf85ce10babc3aa38d3bb7558a093bc49e.1237407249.git.monstr@monstr.eu> <4b5aee01d11fc790c7842838ea63a82ee3273003.1237407249.git.monstr@monstr.eu>
+ <af309ba8e95f503b7990461384d9f8453f45dbbd.1237407249.git.monstr@monstr.eu> <5f8b2a60496983f572ef6d3b4e2f986c167a8336.1237407249.git.monstr@monstr.eu> <fbef554ff1d05fa50312d91e61a0d63d3207076c.1237407249.git.monstr@monstr.eu>
+ <dad2353f129217470f0595eeed98412b4c84ed6b.1237407249.git.monstr@monstr.eu> <20fd42a1e8837c7352d35d157aa3393e88152c32.1237407249.git.monstr@monstr.eu> <alpine.LFD.2.00.0903191639530.29264@localhost.localdomain> <49C2AB09.9040300@monstr.eu>
+ <alpine.LFD.2.00.0903192219500.29264@localhost.localdomain> <49C36149.9000703@monstr.eu>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=67.169.126.145;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 67.169.126.145
-X-SA-Exim-Rcpt-To: mingo@elte.hu, linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com, tglx@linutronix.de, jbeulich@novell.com, peterz@infradead.org
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa01 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Combo: ;Ingo Molnar <mingo@elte.hu>
-X-Spam-Relay-Country: 
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
-	*      [score: 0.0000]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa01 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-Subject: Re: [tip:core/ipi] generic-ipi: eliminate spurious pointlessWARN_ON()s
-X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
-X-SA-Exim-Scanned: Yes (on in01.mta.xmission.com)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar <mingo@elte.hu> writes:
+On Fri, 20 Mar 2009, Michal Simek wrote:
 
-> * Eric W. Biederman <ebiederm@xmission.com> wrote:
->
->> Ingo Molnar <mingo@elte.hu> writes:
->> 
->> > I also changed all of panic() to be covered by oops_in_progress 
->> > - see the other commit. Eric: that should make kexec [a tiny 
->> > bit] more robust too, agreed?
->> 
->> A tad.  We shouldn't have any printk's on that path.  But if we do 
->> it will keep us from wedging and getting ourselves into trouble.
->
-> Ok. Baby steps are what got us from Linux 0.12 to where we are now 
-> so i'm content with making a tad of progress with each commit ;-)
+> Thomas,
+> 
+> just one other question.
+> For me will be useful to use second timer which is inside timer IP core.
+> There are two timers with one interrupt line. And I can of course resolve which
+> counter cause it. That's no problem.
+> 
+> My question is about timer_irqaction where is dev_id. What should be there?
+> Point to clocksource structure or clockevent?
+> 
+> static struct irqaction timer_irqaction = {
+> 	.handler = timer_interrupt,
+> 	.flags = IRQF_DISABLED | IRQF_TIMER,
+> 	.name = "timer",
+> 	.dev_id = &clocksource_microblaze,
+> };
 
-Our biggest todo item for kexec on panic is to initialize the local
-apics early enough in boot so we never need to run in compatibility mode.
-Once we get that code working we can remove 50%+ of the kexec on panic
-code.
+The clockevent of course. It's the one which emits the interrupts.
 
-I expect one of these days the apic code will be clean enough to handle
-that.
+Just for clarification. The clocksource is basically a counter to read
+out the current time. Such a counter usually does not deliver
+interrupts. It wraps at some point, but that is handled by the generic
+time keeping code. If you setup the 32 bit counter to count up and let
+it run free then the counter will wrap from 0xffffffff to 0. Nothing
+you have to worry about. You just provide a function to read it.
 
-Now back to my regularly scheduled hotunplug challenges starting with
-getting lockdep to warn about the dead locks.
+The clockevent is the device which delivers either periodic or oneshot
+interrupts. Sa you dont have to worry about the shared interrupt line
+in that case.
 
-Eric
+Thanks,
+
+	tglx
