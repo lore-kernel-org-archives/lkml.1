@@ -1,69 +1,155 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759880AbZCTAqT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760697AbZCTAqe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759880AbZCTAqT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Mar 2009 20:46:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753288AbZCTAqA
+	id S1760697AbZCTAqe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Mar 2009 20:46:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759870AbZCTAqE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Mar 2009 20:46:00 -0400
-Received: from kroah.org ([198.145.64.141]:32864 "EHLO coco.kroah.org"
+	Thu, 19 Mar 2009 20:46:04 -0400
+Received: from kroah.org ([198.145.64.141]:32869 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752065AbZCTAp7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Mar 2009 20:45:59 -0400
-Date: Thu, 19 Mar 2009 17:23:14 -0700
+	id S1757688AbZCTAqD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Mar 2009 20:46:03 -0400
+Date: Thu, 19 Mar 2009 17:32:33 -0700
 From: Greg KH <greg@kroah.com>
-To: Thomas =?iso-8859-1?Q?Hellstr=F6m?= <thomas@shipmail.org>
-Cc: Dave Airlie <airlied@gmail.com>, David Airlie <airlied@linux.ie>,
-       Thomas Hellstrom <thellstrom@vmware.com>,
-       dri-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       Richard Purdie <rpurdie@linux.intel.com>
-Subject: Re: [patch 0/5] Intel Poulsbo/Morrestown DRM driver and DRM core
-	changes
-Message-ID: <20090320002314.GA18781@kroah.com>
-References: <20090319040809.GA29249@kroah.com> <21d7e9970903182348v57a78188ocefe138d353ee197@mail.gmail.com> <49C21B0B.4060809@shipmail.org> <20090319201136.GB17094@kroah.com> <49C2ADA8.2090405@shipmail.org>
+To: Joe Korty <joe.korty@ccur.com>
+Cc: stable@kernel.org, Ingo Molnar <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@linux.intel.com>, linux-kernel@vger.kernel.org
+Subject: Re: [stable] [PATCH 2.6.27-stable] Fix misreporting of #cores as
+	#hyperthreads for Q9550
+Message-ID: <20090320003233.GC18781@kroah.com>
+References: <20090319172744.GA2600@tsunami.ccur.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <49C2ADA8.2090405@shipmail.org>
+In-Reply-To: <20090319172744.GA2600@tsunami.ccur.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 19, 2009 at 09:40:08PM +0100, Thomas Hellström wrote:
-> Greg KH wrote:
->> On Thu, Mar 19, 2009 at 11:14:35AM +0100, Thomas Hellström wrote:
->>   
->>>> First off, the non-staging patches need more complete changelog entries,
->>>> a bit of meaning goes a long way. I'll ack them if they are documented 
->>>> and
->>>> make sense. The unlocked ioctl hook makes sense to me at least!
->>>>         
->>> For the non-staging patches, (which also sit in the modesetting-newttm 
->>> tree), I can add some more elaborate comments. However I think all of
->>> them are targeted to support functionality for TTM, so unless the TTM
->>> code goes into staging or mainstream, there is little point in merging
->>> them to core drm before other drivers find them useful.
->>>
->>> Although I see the patch adding TTM is including some backwards
->>> compatibility defines (In particular the PAT compat stuff) that needs
->>> to be stripped.
->>>     
->>
->> Great, care to respin it and send it to me?
->>
-> Greg,
-> A clean TTM patch was sent to Intel with the other patches.
-> I'm not sure why it got lost along the way?
+On Thu, Mar 19, 2009 at 01:27:44PM -0400, Joe Korty wrote:
+> Fix misreporting of #cores for the Intel Quad Core Q9550.
+> 
+> [ for 2.6.27-stable ]
+> 
+> For the Q9550, in x86_64 mode, /proc/cpuinfo mistakenly
+> reports the #cores present as the #hyperthreads present.
+> i386 mode was not examined but is assumed to have the
+> same problem.
+> 
+> A backport of the following three 2.6.29-rc1 patches
+> fixes the problem:
+> 
+>   [PATCH] x86: unmask CPUID levels on Intel CPUs
+>   [PATCH] x86: unmask CPUID levels on Intel CPUs, fix
+>   [PATCH] x86: add MSR_IA32_MISC_ENABLE bits to <asm/msr-index.h>
 
-As there seems to be an unknown number of people in the "intel chain"
-that resulted in me finally getting these patches, I don't hold out much
-hope that I'm going to be able to get more than what I already got from
-them :(
-
-So, any chance you could just resend it?  I'll be glad to trade it for a
-beer at the next conference :)
+Can you provide the git commit ids for these patches?
 
 thanks,
 
 greg k-h
+
+> 
+> From the first patch: "If the CPUID limit bit in
+> MSR_IA32_MISC_ENABLE is set, clear it to make all CPUID
+> information available.  This is required for some features
+> to work, in particular XSAVE."
+> 
+> Originally-Developed-by: H. Peter Anvin <hpa@linux.intel.com>
+> Backported-by: Joe Korty <joe.korty@ccur.com>
+> Signed-off-by: Joe Korty <joe.korty@ccur.com>
+> 
+> Index: 2.6.27/include/asm-x86/msr-index.h
+> ===================================================================
+> --- 2.6.27.orig/include/asm-x86/msr-index.h	2009-03-19 11:07:59.000000000 -0400
+> +++ 2.6.27/include/asm-x86/msr-index.h	2009-03-19 11:08:27.000000000 -0400
+> @@ -196,6 +196,35 @@
+>  #define MSR_IA32_THERM_STATUS		0x0000019c
+>  #define MSR_IA32_MISC_ENABLE		0x000001a0
+>  
+> +/* MISC_ENABLE bits: architectural */
+> +#define MSR_IA32_MISC_ENABLE_FAST_STRING	(1ULL << 0)
+> +#define MSR_IA32_MISC_ENABLE_TCC		(1ULL << 1)
+> +#define MSR_IA32_MISC_ENABLE_EMON		(1ULL << 7)
+> +#define MSR_IA32_MISC_ENABLE_BTS_UNAVAIL	(1ULL << 11)
+> +#define MSR_IA32_MISC_ENABLE_PEBS_UNAVAIL	(1ULL << 12)
+> +#define MSR_IA32_MISC_ENABLE_ENHANCED_SPEEDSTEP	(1ULL << 16)
+> +#define MSR_IA32_MISC_ENABLE_MWAIT		(1ULL << 18)
+> +#define MSR_IA32_MISC_ENABLE_LIMIT_CPUID	(1ULL << 22)
+> +#define MSR_IA32_MISC_ENABLE_XTPR_DISABLE	(1ULL << 23)
+> +#define MSR_IA32_MISC_ENABLE_XD_DISABLE		(1ULL << 34)
+> +
+> +/* MISC_ENABLE bits: model-specific, meaning may vary from core to core */
+> +#define MSR_IA32_MISC_ENABLE_X87_COMPAT		(1ULL << 2)
+> +#define MSR_IA32_MISC_ENABLE_TM1		(1ULL << 3)
+> +#define MSR_IA32_MISC_ENABLE_SPLIT_LOCK_DISABLE	(1ULL << 4)
+> +#define MSR_IA32_MISC_ENABLE_L3CACHE_DISABLE	(1ULL << 6)
+> +#define MSR_IA32_MISC_ENABLE_SUPPRESS_LOCK	(1ULL << 8)
+> +#define MSR_IA32_MISC_ENABLE_PREFETCH_DISABLE	(1ULL << 9)
+> +#define MSR_IA32_MISC_ENABLE_FERR		(1ULL << 10)
+> +#define MSR_IA32_MISC_ENABLE_FERR_MULTIPLEX	(1ULL << 10)
+> +#define MSR_IA32_MISC_ENABLE_TM2		(1ULL << 13)
+> +#define MSR_IA32_MISC_ENABLE_ADJ_PREF_DISABLE	(1ULL << 19)
+> +#define MSR_IA32_MISC_ENABLE_SPEEDSTEP_LOCK	(1ULL << 20)
+> +#define MSR_IA32_MISC_ENABLE_L1D_CONTEXT	(1ULL << 24)
+> +#define MSR_IA32_MISC_ENABLE_DCU_PREF_DISABLE	(1ULL << 37)
+> +#define MSR_IA32_MISC_ENABLE_TURBO_DISABLE	(1ULL << 38)
+> +#define MSR_IA32_MISC_ENABLE_IP_PREF_DISABLE	(1ULL << 39)
+> +
+>  /* Intel Model 6 */
+>  #define MSR_P6_EVNTSEL0			0x00000186
+>  #define MSR_P6_EVNTSEL1			0x00000187
+> Index: 2.6.27/arch/x86/kernel/cpu/intel.c
+> ===================================================================
+> --- 2.6.27.orig/arch/x86/kernel/cpu/intel.c	2009-03-19 11:08:26.000000000 -0400
+> +++ 2.6.27/arch/x86/kernel/cpu/intel.c	2009-03-19 11:08:27.000000000 -0400
+> @@ -32,6 +32,19 @@
+>  
+>  static void __cpuinit early_init_intel(struct cpuinfo_x86 *c)
+>  {
+> +	/* Unmask CPUID levels if masked: */
+> +	if (c->x86 == 6 && c->x86_model >= 15) {
+> +		u64 misc_enable;
+> +
+> +		rdmsrl(MSR_IA32_MISC_ENABLE, misc_enable);
+> +
+> +		if (misc_enable & MSR_IA32_MISC_ENABLE_LIMIT_CPUID) {
+> +			misc_enable &= ~MSR_IA32_MISC_ENABLE_LIMIT_CPUID;
+> +			wrmsrl(MSR_IA32_MISC_ENABLE, misc_enable);
+> +			c->cpuid_level = cpuid_eax(0);
+> +		}
+> +	}
+> +
+>  	/* Netburst reports 64 bytes clflush size, but does IO in 128 bytes */
+>  	if (c->x86 == 15 && c->x86_cache_alignment == 64)
+>  		c->x86_cache_alignment = 128;
+> Index: 2.6.27/arch/x86/kernel/cpu/intel_64.c
+> ===================================================================
+> --- 2.6.27.orig/arch/x86/kernel/cpu/intel_64.c	2009-03-19 11:08:26.000000000 -0400
+> +++ 2.6.27/arch/x86/kernel/cpu/intel_64.c	2009-03-19 11:08:27.000000000 -0400
+> @@ -9,6 +9,19 @@
+>  
+>  static void __cpuinit early_init_intel(struct cpuinfo_x86 *c)
+>  {
+> +	/* Unmask CPUID levels if masked: */
+> +	if (c->x86 == 6 && c->x86_model >= 15) {
+> +		u64 misc_enable;
+> +
+> +		rdmsrl(MSR_IA32_MISC_ENABLE, misc_enable);
+> +
+> +		if (misc_enable & MSR_IA32_MISC_ENABLE_LIMIT_CPUID) {
+> +			misc_enable &= ~MSR_IA32_MISC_ENABLE_LIMIT_CPUID;
+> +			wrmsrl(MSR_IA32_MISC_ENABLE, misc_enable);
+> +			c->cpuid_level = cpuid_eax(0);
+> +		}
+> +	}
+> +
+>  	if ((c->x86 == 0xf && c->x86_model >= 0x03) ||
+>  	    (c->x86 == 0x6 && c->x86_model >= 0x0e))
+>  		set_cpu_cap(c, X86_FEATURE_CONSTANT_TSC);
+> 
+> _______________________________________________
+> stable mailing list
+> stable@linux.kernel.org
+> http://linux.kernel.org/mailman/listinfo/stable
