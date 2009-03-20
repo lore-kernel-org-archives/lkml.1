@@ -1,204 +1,198 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757193AbZCTDdz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758820AbZCTDe0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757193AbZCTDdz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Mar 2009 23:33:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754024AbZCTDdo
+	id S1758820AbZCTDe0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Mar 2009 23:34:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752668AbZCTDeE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Mar 2009 23:33:44 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:60009 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1752229AbZCTDdn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Mar 2009 23:33:43 -0400
-Message-ID: <49C30EA3.1060004@cn.fujitsu.com>
-Date: Fri, 20 Mar 2009 11:33:55 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Thu, 19 Mar 2009 23:34:04 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:38192 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754024AbZCTDeC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Mar 2009 23:34:02 -0400
+Message-ID: <49C30EA5.5040707@redhat.com>
+Date: Thu, 19 Mar 2009 23:33:57 -0400
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Jens Axboe <jens.axboe@oracle.com>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 6/7] blktrace: remove sysfs_blk_trace_enable_show/store()
-References: <49C2F599.3060306@cn.fujitsu.com> <49C2F628.9090300@cn.fujitsu.com>
-In-Reply-To: <49C2F628.9090300@cn.fujitsu.com>
-Content-Type: text/plain; charset=UTF-8
+To: Frederic Weisbecker <fweisbec@gmail.com>
+CC: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       systemtap-ml <systemtap@sources.redhat.com>
+Subject: Re: [RFC][PATCH -tip 0/9] tracing: kprobe-based event tracer
+References: <49C2B4A4.5060109@redhat.com> <20090320002435.GA6895@nowhere>
+In-Reply-To: <20090320002435.GA6895@nowhere>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> +	if (attr == &dev_attr_enable) {
-> +		if (value)
-> +			ret = blk_trace_setup_queue(q, bdev->bd_dev);
-> +		else
-> +			ret = blk_trace_remove_queue(q);
+Frederic Weisbecker wrote:
+> On Thu, Mar 19, 2009 at 05:09:56PM -0400, Masami Hiramatsu wrote:
+>> Hi,
+>>
+>> This is a series of patches which introduce a proof-of concept of
+>> kprobe-based event tracer to ftrace. I think that we could port some
+>> tracing features from systemtap on this vehicle.
+>> This can be applied on the linux-2.6-tip tree.
+>>
+>> This patchset includes following changes:
+>> - Add kprobe-tracer plugin
+>> - Add kernel_trap_sp() on x86, ia64, power, s390, arm which are
+>>   ported from systemtap runtime.
+>> - Add module_*probe api for repawning/removing kprobes when target
+>>   module is coming/going.
+>>
+>> It's still not unclear that the last module_*probe would better be
+>> provided as APIs or just embed it in trace_kprobe.c.
+>>
+>> Future items:
+>> - Use binary print.
+>> - Add kernel_trap_sp() on other archs.
+>> - Support symbol-based memory fetching (for global variables)
+>> - Support primitive types(long, ulong, int, uint, etc) for args.
+>> - Support indirect memory fetch from register etc.
+>> - Check insertion point safety by using instruction decoder.
+>>
+>> kprobe-based event tracer
+>> ---------------------------
+>>
+>> This tracer is similar to the events tracer which is based on Tracepoint
+>> infrastructure. Instead of Tracepoint, this tracer is based on kprobes(kprobe
+>> and kretprobe). It probes anywhere where kprobes can probe(this means, all
+>> functions body except for __kprobes functions).
+>>
+>> Unlike the function tracer, this tracer can probe instructions inside of
+>> kernel functions. It allows you to check which instruction has been executed.
+>>
+>> Unlike the Tracepoint based events tracer, this tracer can add new probe points
+>> on the fly.
+>>
+>> Similar to the events tracer, this tracer doesn't need to be activated via
+>> current_tracer, instead of that, just set probe points via
+>> /debug/tracing/kprobe_probes.
+>>
+>> Synopsis of kprobe_probes:
+>>   p SYMBOL[+offs|-offs]|MEMADDR [FETCHARGS]     : set a probe
+> 
+> 
+> Ahh, I see this is not only about parameters but also about very low level
+> debugging, such as registers dumps.
+> 
+> This is very powerful.
 
-(ret = count) should be returned if ret == 0.. patch updated below
+Please take care, don't shot your foot :)
+This tracer doesn't have a safety lever(e.g. instruction boundary checker) yet.
+So, currently, we need to use this with objdump -d.
 
-> +		goto out_unlock_bdev;
-> +	}
+> 
+>>   r SYMBOL[+0] [FETCHARGS]                      : set a return probe
+>>
+>>  FETCHARGS:
+>>   rN    : Fetch Nth register (N >= 0)
+> 
+> 
+> Ah, it would be useful to have a per arch register naming here.
+> So that one don't have to feel dizzy when he have to resolve,
+> say edi register, to a number.
+
+Yeah, that should be a good enhancement idea.
+This patchset just focuses on implementing the basic functionality.
 
 
-===================
+>>   sN    : Fetch Nth entry of stack (N >= 0)
+>>   mADDR : Fetch memory at ADDR (ADDR should be in kernel)
+>>   aN    : Fetch function argument. (N >= 1)(*)
+>>   rv    : Fetch return value.(**)
+>>   rp    : Fetch return address.(**)
+>>
+>>   (*) aN may not correct on asmlinkaged functions and at function body.
+>>   (**) only for return probe.
+>>
+>> E.g.
+>>   echo p do_sys_open a1 a2 a3 a4 > /debug/tracing/kprobe_probes
+>>
+>>  This sets a kprobe on the top of do_sys_open() function with recording
+>> 1st to 3rd arguments.
+>>
+>>   echo r do_sys_open rv rp >> /debug/tracing/kprobe_probes
+>>
+>>  This sets a kretprobe on the return point of do_sys_open() function with
+>> recording return value and return address.
+>>
+>>   echo > /debug/tracing/kprobe_probes
+>>
+>>  This clears all probe points. and you can see the traced information via
+>> /debug/tracing/trace.
+>>
+>>   echo /debug/tracing/trace
+>> # tracer: nop
+>> #
+>> #           TASK-PID    CPU#    TIMESTAMP  FUNCTION
+>> #              | |       |          |         |
+>>            <...>-2376  [001]   262.389131: do_sys_open: @do_sys_open+0 0xffffff9c 0x98db83e 0x8880 0x0
+>>            <...>-2376  [001]   262.391166: sys_open: <-do_sys_open+0 0x5 0xc06e8ebb
+>>            <...>-2376  [001]   264.384876: do_sys_open: @do_sys_open+0 0xffffff9c 0x98db83e 0x8880 0x0
+>>            <...>-2376  [001]   264.386880: sys_open: <-do_sys_open+0 0x5 0xc06e8ebb
+>>            <...>-2084  [001]   265.380330: do_sys_open: @do_sys_open+0 0xffffff9c 0x804be3e 0x0 0x1b6
+>>            <...>-2084  [001]   265.380399: sys_open: <-do_sys_open+0 0x3 0xc06e8ebb
+>>
+>>  @SYMBOL means that kernel hits a probe, and <-SYMBOL means kernel returns
+>> from SYMBOL(e.g. "sysenter_do_call: <-sys_open+0" means kernel returns from
+>> sys_open to sysenter_do_call).
+> 
+> 
+> Nice :-)
 
+Thanks ;)
 
-From: Li Zefan <lizf@cn.fujitsu.com>
-Subject: [PATCH 6/7] blktrace: sysfs_blk_trace_enable_show/store()
+> 
+> Frederic.
+> 
+> 
+>>  Documentation/ftrace.txt          |   66 ++++
+>>  arch/arm/include/asm/ptrace.h     |    3 +-
+>>  arch/ia64/include/asm/ptrace.h    |    6 +
+>>  arch/powerpc/include/asm/ptrace.h |    1 +
+>>  arch/s390/include/asm/ptrace.h    |    5 +-
+>>  arch/x86/include/asm/ptrace.h     |    4 +-
+>>  include/linux/kprobes.h           |   39 ++
+>>  kernel/kprobes.c                  |  250 ++++++++++++++
+>>  kernel/trace/Kconfig              |    9 +
+>>  kernel/trace/Makefile             |    1 +
+>>  kernel/trace/trace_kprobe.c       |  688 +++++++++++++++++++++++++++++++++++++
+>>  11 files changed, 1067 insertions(+), 5 deletions(-)
+>>
+>>
+>> Thank you,
+>>
+>> -- 
+>> Masami Hiramatsu
+>>
+>> Software Engineer
+>> Hitachi Computer Products (America) Inc.
+>> Software Solutions Division
+>>
+>> e-mail: mhiramat@redhat.com
+>>
+>>
+>>
+>>
+>>
+>> --
+>> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+>> the body of a message to majordomo@vger.kernel.org
+>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>> Please read the FAQ at  http://www.tux.org/lkml/
+> 
 
-sysfs_blk_trace_enable_show()/store() share most of code with
-sysfs_blk_trace_attr_show()/store().
-
-Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
----
- kernel/trace/blktrace.c |   92 +++++++++++-----------------------------------
- 1 files changed, 22 insertions(+), 70 deletions(-)
-
-diff --git a/kernel/trace/blktrace.c b/kernel/trace/blktrace.c
-index 14986af..dfee6f9 100644
---- a/kernel/trace/blktrace.c
-+++ b/kernel/trace/blktrace.c
-@@ -1284,72 +1284,6 @@ static int blk_trace_setup_queue(struct request_queue *q, dev_t dev)
-  * sysfs interface to enable and configure tracing
-  */
- 
--static ssize_t sysfs_blk_trace_enable_show(struct device *dev,
--					   struct device_attribute *attr,
--					   char *buf)
--{
--	struct hd_struct *p = dev_to_part(dev);
--	struct block_device *bdev;
--	ssize_t ret = -ENXIO;
--
--	lock_kernel();
--	bdev = bdget(part_devt(p));
--	if (bdev != NULL) {
--		struct request_queue *q = bdev_get_queue(bdev);
--
--		if (q != NULL) {
--			mutex_lock(&bdev->bd_mutex);
--			ret = sprintf(buf, "%u\n", !!q->blk_trace);
--			mutex_unlock(&bdev->bd_mutex);
--		}
--
--		bdput(bdev);
--	}
--
--	unlock_kernel();
--	return ret;
--}
--
--static ssize_t sysfs_blk_trace_enable_store(struct device *dev,
--					    struct device_attribute *attr,
--					    const char *buf, size_t count)
--{
--	struct block_device *bdev;
--	struct request_queue *q;
--	struct hd_struct *p;
--	int value;
--	ssize_t ret = -ENXIO;
--
--	if (count == 0 || sscanf(buf, "%d", &value) != 1)
--		goto out;
--
--	lock_kernel();
--	p = dev_to_part(dev);
--	bdev = bdget(part_devt(p));
--	if (bdev == NULL)
--		goto out_unlock_kernel;
--
--	q = bdev_get_queue(bdev);
--	if (q == NULL)
--		goto out_bdput;
--
--	mutex_lock(&bdev->bd_mutex);
--	if (value)
--		ret = blk_trace_setup_queue(q, bdev->bd_dev);
--	else
--		ret = blk_trace_remove_queue(q);
--	mutex_unlock(&bdev->bd_mutex);
--
--	if (ret == 0)
--		ret = count;
--out_bdput:
--	bdput(bdev);
--out_unlock_kernel:
--	unlock_kernel();
--out:
--	return ret;
--}
--
- static ssize_t sysfs_blk_trace_attr_show(struct device *dev,
- 					 struct device_attribute *attr,
- 					 char *buf);
-@@ -1361,8 +1295,7 @@ static ssize_t sysfs_blk_trace_attr_store(struct device *dev,
- 		    sysfs_blk_trace_attr_show, \
- 		    sysfs_blk_trace_attr_store)
- 
--static DEVICE_ATTR(enable, S_IRUGO | S_IWUSR,
--		   sysfs_blk_trace_enable_show, sysfs_blk_trace_enable_store);
-+static BLK_TRACE_DEVICE_ATTR(enable);
- static BLK_TRACE_DEVICE_ATTR(act_mask);
- static BLK_TRACE_DEVICE_ATTR(pid);
- static BLK_TRACE_DEVICE_ATTR(start_lba);
-@@ -1447,6 +1380,12 @@ static ssize_t sysfs_blk_trace_attr_show(struct device *dev,
- 	if (q == NULL)
- 		goto out_bdput;
- 	mutex_lock(&bdev->bd_mutex);
-+
-+	if (attr == &dev_attr_enable) {
-+		ret = sprintf(buf, "%u\n", !!q->blk_trace);
-+		goto out_unlock_bdev;
-+	}
-+
- 	if (q->blk_trace == NULL)
- 		ret = sprintf(buf, "disabled\n");
- 	else if (attr == &dev_attr_act_mask)
-@@ -1457,6 +1396,8 @@ static ssize_t sysfs_blk_trace_attr_show(struct device *dev,
- 		ret = sprintf(buf, "%llu\n", q->blk_trace->start_lba);
- 	else if (attr == &dev_attr_end_lba)
- 		ret = sprintf(buf, "%llu\n", q->blk_trace->end_lba);
-+
-+out_unlock_bdev:
- 	mutex_unlock(&bdev->bd_mutex);
- out_bdput:
- 	bdput(bdev);
-@@ -1499,6 +1440,15 @@ static ssize_t sysfs_blk_trace_attr_store(struct device *dev,
- 		goto out_bdput;
- 
- 	mutex_lock(&bdev->bd_mutex);
-+
-+	if (attr == &dev_attr_enable) {
-+		if (value)
-+			ret = blk_trace_setup_queue(q, bdev->bd_dev);
-+		else
-+			ret = blk_trace_remove_queue(q);
-+		goto out_unlock_bdev;
-+	}
-+
- 	ret = 0;
- 	if (q->blk_trace == NULL)
- 		ret = blk_trace_setup_queue(q, bdev->bd_dev);
-@@ -1512,13 +1462,15 @@ static ssize_t sysfs_blk_trace_attr_store(struct device *dev,
- 			q->blk_trace->start_lba = value;
- 		else if (attr == &dev_attr_end_lba)
- 			q->blk_trace->end_lba = value;
--		ret = count;
- 	}
-+
-+out_unlock_bdev:
- 	mutex_unlock(&bdev->bd_mutex);
- out_bdput:
- 	bdput(bdev);
- out_unlock_kernel:
- 	unlock_kernel();
- out:
--	return ret;
-+	return ret ? ret : count;
- }
-+
 -- 
-1.5.4.rc3
+Masami Hiramatsu
 
+Software Engineer
+Hitachi Computer Products (America) Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com
 
