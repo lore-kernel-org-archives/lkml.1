@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763317AbZCTX2V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763375AbZCTX25@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763317AbZCTX2V (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Mar 2009 19:28:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762931AbZCTXYY
+	id S1763375AbZCTX25 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Mar 2009 19:28:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762920AbZCTXY0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Mar 2009 19:24:24 -0400
-Received: from kroah.org ([198.145.64.141]:48509 "EHLO coco.kroah.org"
+	Fri, 20 Mar 2009 19:24:26 -0400
+Received: from kroah.org ([198.145.64.141]:48531 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1762929AbZCTXYX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Mar 2009 19:24:23 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 20 15:29:23 2009
-Message-Id: <20090320222923.800315181@mini.kroah.org>
+	id S1762937AbZCTXYZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Mar 2009 19:24:25 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 20 15:29:24 2009
+Message-Id: <20090320222924.155325468@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 20 Mar 2009 15:28:16 -0700
+Date: Fri, 20 Mar 2009 15:28:18 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,11 +25,10 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Jiri Slaby <jirislaby@gmail.com>,
-       Takashi Iwai <tiwai@suse.de>
-Subject: [patch 06/43] ALSA: mixart, fix lock imbalance
+       alan@lxorguk.ukuu.org.uk, Takashi Iwai <tiwai@suse.de>
+Subject: [patch 08/43] ALSA: hda - Fix DMA mask for ATI controllers
 References: <20090320222810.386844059@mini.kroah.org>
-Content-Disposition: inline; filename=alsa-mixart-fix-lock-imbalance.patch
+Content-Disposition: inline; filename=alsa-hda-fix-dma-mask-for-ati-controllers.patch
 In-Reply-To: <20090320232116.GA3375@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -39,29 +38,40 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Jiri Slaby <jirislaby@gmail.com>
+From: Takashi Iwai <tiwai@suse.de>
 
-commit 82f5d57163abed2e5ff271d03217b6f90c616eb8 upstream.
+commit 09240cf429505891d6123ce14a29f58f2a60121e upstream.
 
-There is an omitted unlock in one snd_mixart_hw_params fail path. Fix it.
+ATI controllers (at least some SB0600 models) appear buggy to handle
+64bit DMA.  As a workaround, reset GCAP bit0 and let the driver to
+use only 32bit DMA on these controllers.
 
-Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
 Signed-off-by: Takashi Iwai <tiwai@suse.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- sound/pci/mixart/mixart.c |    1 +
- 1 file changed, 1 insertion(+)
+ sound/pci/hda/hda_intel.c |    8 ++++++++
+ 1 file changed, 8 insertions(+)
 
---- a/sound/pci/mixart/mixart.c
-+++ b/sound/pci/mixart/mixart.c
-@@ -607,6 +607,7 @@ static int snd_mixart_hw_params(struct s
- 	/* set the format to the board */
- 	err = mixart_set_format(stream, format);
- 	if(err < 0) {
-+		mutex_unlock(&mgr->setup_mutex);
- 		return err;
- 	}
+--- a/sound/pci/hda/hda_intel.c
++++ b/sound/pci/hda/hda_intel.c
+@@ -2208,9 +2208,17 @@ static int __devinit azx_create(struct s
+ 	gcap = azx_readw(chip, GCAP);
+ 	snd_printdd("chipset global capabilities = 0x%x\n", gcap);
  
++	/* ATI chips seems buggy about 64bit DMA addresses */
++	if (chip->driver_type == AZX_DRIVER_ATI)
++		gcap &= ~0x01;
++
+ 	/* allow 64bit DMA address if supported by H/W */
+ 	if ((gcap & 0x01) && !pci_set_dma_mask(pci, DMA_64BIT_MASK))
+ 		pci_set_consistent_dma_mask(pci, DMA_64BIT_MASK);
++	else {
++		pci_set_dma_mask(pci, DMA_32BIT_MASK);
++		pci_set_consistent_dma_mask(pci, DMA_32BIT_MASK);
++	}
+ 
+ 	/* read number of streams from GCAP register instead of using
+ 	 * hardcoded value
 
 
