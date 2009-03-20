@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763610AbZCTXcn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763730AbZCTXdl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763610AbZCTXcn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Mar 2009 19:32:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762966AbZCTXYh
+	id S1763730AbZCTXdl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Mar 2009 19:33:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762982AbZCTXYl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Mar 2009 19:24:37 -0400
-Received: from kroah.org ([198.145.64.141]:48619 "EHLO coco.kroah.org"
+	Fri, 20 Mar 2009 19:24:41 -0400
+Received: from kroah.org ([198.145.64.141]:48654 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1762952AbZCTXYf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Mar 2009 19:24:35 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 20 15:29:25 2009
-Message-Id: <20090320222925.793762675@mini.kroah.org>
+	id S1762969AbZCTXYi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Mar 2009 19:24:38 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 20 15:29:26 2009
+Message-Id: <20090320222926.284011924@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 20 Mar 2009 15:28:28 -0700
+Date: Fri, 20 Mar 2009 15:28:31 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,13 +25,10 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Mark Jenks <mjenks1968@gmail.com>,
-       Andy Walls <awalls@radix.net>,
-       Mauro Carvalho Chehab <mchehab@redhat.com>,
-       Jarod Wilson <jarod@redhat.com>
-Subject: [patch 18/43] V4L/DVB (10218): cx23885: Fix Oops for mixed install of analog and digital only cards
+       alan@lxorguk.ukuu.org.uk
+Subject: [patch 21/43] Move cc-option to below arch-specific setup
 References: <20090320222810.386844059@mini.kroah.org>
-Content-Disposition: inline; filename=v4l-dvb-cx23885-fix-oops-for-mixed-install-of-analog-and-digital-only-cards.patch
+Content-Disposition: inline; filename=move-cc-option-to-below-arch-specific-setup.patch
 In-Reply-To: <20090320232116.GA3375@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -41,69 +38,45 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Andy Walls <awalls@radix.net>
+From: Linus Torvalds <torvalds@linux-foundation.org>
 
-commit cd8f894eacf13996d920fdd2aef1afc55156b191 upstream.
+commit d0115552cdb0b4d4146975889fee2e9355515c4b upstream.
 
-Analog support for HVR-1250 has not been completed, but does exist for
-the HVR-1800.
+Sam Ravnborg says:
+ "We have several architectures that plays strange games with $(CC) and
+  $(CROSS_COMPILE).
 
-Since both cards use the same driver, it tries to create the analog
-dev for both devices, which is not possible.
+  So we need to postpone any use of $(call cc-option..) until we have
+  included the arch specific Makefile so we try with the correct $(CC)
+  version."
 
-This causes a NULL error to show up in video_open and mpeg_open.
-
--Mark
-
-Iterations through the cx23885_devlist must check for NULL
-pointers as some supported devices only have DVB support at the moment.
-Mark Jenks encoutered an Oops in a system with both an HVR-1250 and HVR-1800
-installed.
-
--Andy
-
-Reported-by: Mark Jenks <mjenks1968@gmail.com>
-Tested-by: Mark Jenks <mjenks1968@gmail.com>
-Signed-off-by: Mark Jenks <mjenks1968@gmail.com>
-Signed-off-by: Andy Walls <awalls@radix.net>
-Signed-off-by: Mauro Carvalho Chehab <mchehab@redhat.com>
-Signed-off-by: Jarod Wilson <jarod@redhat.com>
+Requested-by: Sam Ravnborg <sam@ravnborg.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/media/video/cx23885/cx23885-417.c   |    3 ++-
- drivers/media/video/cx23885/cx23885-video.c |    5 +++--
- 2 files changed, 5 insertions(+), 3 deletions(-)
+ Makefile |    4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
---- a/drivers/media/video/cx23885/cx23885-417.c
-+++ b/drivers/media/video/cx23885/cx23885-417.c
-@@ -1585,7 +1585,8 @@ static int mpeg_open(struct inode *inode
- 	lock_kernel();
- 	list_for_each(list, &cx23885_devlist) {
- 		h = list_entry(list, struct cx23885_dev, devlist);
--		if (h->v4l_device->minor == minor) {
-+		if (h->v4l_device &&
-+		    h->v4l_device->minor == minor) {
- 			dev = h;
- 			break;
- 		}
---- a/drivers/media/video/cx23885/cx23885-video.c
-+++ b/drivers/media/video/cx23885/cx23885-video.c
-@@ -730,12 +730,13 @@ static int video_open(struct inode *inod
- 	lock_kernel();
- 	list_for_each(list, &cx23885_devlist) {
- 		h = list_entry(list, struct cx23885_dev, devlist);
--		if (h->video_dev->minor == minor) {
-+		if (h->video_dev &&
-+		    h->video_dev->minor == minor) {
- 			dev  = h;
- 			type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
- 		}
- 		if (h->vbi_dev &&
--		   h->vbi_dev->minor == minor) {
-+		    h->vbi_dev->minor == minor) {
- 			dev  = h;
- 			type = V4L2_BUF_TYPE_VBI_CAPTURE;
- 		}
+--- a/Makefile
++++ b/Makefile
+@@ -341,7 +341,6 @@ KBUILD_CPPFLAGS := -D__KERNEL__ $(LINUXI
+ KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
+ 		   -fno-strict-aliasing -fno-common \
+ 		   -Werror-implicit-function-declaration
+-KBUILD_CFLAGS	+= $(call cc-option,-fwrapv)
+ KBUILD_AFLAGS   := -D__ASSEMBLY__
+ 
+ # Read KERNELRELEASE from include/config/kernel.release (if it exists)
+@@ -556,6 +555,9 @@ KBUILD_CFLAGS += $(call cc-option,-Wdecl
+ # disable pointer signed / unsigned warnings in gcc 4.0
+ KBUILD_CFLAGS += $(call cc-option,-Wno-pointer-sign,)
+ 
++# disable invalid "can't wrap" optimzations for signed / pointers
++KBUILD_CFLAGS	+= $(call cc-option,-fwrapv)
++
+ # Add user supplied CPPFLAGS, AFLAGS and CFLAGS as the last assignments
+ # But warn user when we do so
+ warn-assign = \
 
 
