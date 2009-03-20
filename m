@@ -1,66 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757914AbZCTJ7A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757884AbZCTKBT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757914AbZCTJ7A (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Mar 2009 05:59:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753839AbZCTJ6s
+	id S1757884AbZCTKBT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Mar 2009 06:01:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752541AbZCTKBG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Mar 2009 05:58:48 -0400
-Received: from www.tglx.de ([62.245.132.106]:59522 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752238AbZCTJ6r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Mar 2009 05:58:47 -0400
-Date: Fri, 20 Mar 2009 10:58:38 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Michal Simek <monstr@monstr.eu>
-cc: LKML <linux-kernel@vger.kernel.org>, john.williams@petalogix.com,
-       John Stultz <johnstul@us.ibm.com>
-Subject: Re: [PATCH 08/57] microblaze_v7: Interrupt handling, timer support,
- selfmod code
-In-Reply-To: <49C36149.9000703@monstr.eu>
-Message-ID: <alpine.LFD.2.00.0903201052340.29264@localhost.localdomain>
-References: <1237408284-8674-1-git-send-email-monstr@monstr.eu> <0168f03c96e9479ede695a9859c8a0691baa8ef3.1237407249.git.monstr@monstr.eu> <c1bdfabf85ce10babc3aa38d3bb7558a093bc49e.1237407249.git.monstr@monstr.eu> <4b5aee01d11fc790c7842838ea63a82ee3273003.1237407249.git.monstr@monstr.eu>
- <af309ba8e95f503b7990461384d9f8453f45dbbd.1237407249.git.monstr@monstr.eu> <5f8b2a60496983f572ef6d3b4e2f986c167a8336.1237407249.git.monstr@monstr.eu> <fbef554ff1d05fa50312d91e61a0d63d3207076c.1237407249.git.monstr@monstr.eu>
- <dad2353f129217470f0595eeed98412b4c84ed6b.1237407249.git.monstr@monstr.eu> <20fd42a1e8837c7352d35d157aa3393e88152c32.1237407249.git.monstr@monstr.eu> <alpine.LFD.2.00.0903191639530.29264@localhost.localdomain> <49C2AB09.9040300@monstr.eu>
- <alpine.LFD.2.00.0903192219500.29264@localhost.localdomain> <49C36149.9000703@monstr.eu>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 20 Mar 2009 06:01:06 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:41643 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751715AbZCTKBF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Mar 2009 06:01:05 -0400
+Date: Fri, 20 Mar 2009 10:01:46 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Robert Schwebel <r.schwebel@pengutronix.de>
+Cc: Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org,
+       daniel.krueger@systec-electronic.com,
+       Michael Olbrich <mol@pengutronix.de>, Wolfram Sang <wsa@pengutronix.de>,
+       Marc Kleine-Budde <mkl@pengutronix.de>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: The Linux Staging tree, what it is and is not.
+Message-ID: <20090320100146.6599f671@lxorguk.ukuu.org.uk>
+In-Reply-To: <20090320005808.GM5367@pengutronix.de>
+References: <20090318183232.GA11594@kroah.com>
+	<20090320005808.GM5367@pengutronix.de>
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 20 Mar 2009, Michal Simek wrote:
+> However, I'm still not convinced that this is the right way to go. What
+> you want to do for the main APIs is provide some nice userspace library
+> API for your applications. Why not put the whole "stack" into userspace
+> then and connect it to the kernel only via raw socket.
 
-> Thomas,
-> 
-> just one other question.
-> For me will be useful to use second timer which is inside timer IP core.
-> There are two timers with one interrupt line. And I can of course resolve which
-> counter cause it. That's no problem.
-> 
-> My question is about timer_irqaction where is dev_id. What should be there?
-> Point to clocksource structure or clockevent?
-> 
-> static struct irqaction timer_irqaction = {
-> 	.handler = timer_interrupt,
-> 	.flags = IRQF_DISABLED | IRQF_TIMER,
-> 	.name = "timer",
-> 	.dev_id = &clocksource_microblaze,
-> };
+- Security
+- Compartmentalisation
+- Sharing the device/interconnect
+- Real time prioritisation
 
-The clockevent of course. It's the one which emits the interrupts.
+and a few others.
 
-Just for clarification. The clocksource is basically a counter to read
-out the current time. Such a counter usually does not deliver
-interrupts. It wraps at some point, but that is handled by the generic
-time keeping code. If you setup the 32 bit counter to count up and let
-it run free then the counter will wrap from 0xffffffff to 0. Nothing
-you have to worry about. You just provide a function to read it.
+> What do others think? Is it worth the effort to invent a proper objdict
+> API for linux?
 
-The clockevent is the device which delivers either periodic or oneshot
-interrupts. Sa you dont have to worry about the shared interrupt line
-in that case.
+Objdict appears to be a legacy wart and can stay where it belongs I
+suspect - you might need to have a objdict -> 21st century conversion
+library for the afflicted. We don't put specialised COBOL support in the
+kernel either we let user space figure out how to cope with the funnies.
 
-Thanks,
-
-	tglx
+Alan
