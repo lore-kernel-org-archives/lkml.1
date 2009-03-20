@@ -1,51 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753666AbZCTIDF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753622AbZCTIGn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753666AbZCTIDF (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Mar 2009 04:03:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752921AbZCTICq
+	id S1753622AbZCTIGn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Mar 2009 04:06:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751920AbZCTIGX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Mar 2009 04:02:46 -0400
-Received: from hera.kernel.org ([140.211.167.34]:38483 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752916AbZCTICo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Mar 2009 04:02:44 -0400
-Subject: Re: [git-pull -tip] x86: mpparse cleanup
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20090318161829.GC21331@elte.hu>
-References: <1237314836.3212.10.camel@localhost.localdomain>
-	 <1237380351.3042.0.camel@ht.satnam> <20090318141115.GA23034@elte.hu>
-	 <1237392355.12866.2.camel@ht.satnam>  <20090318161829.GC21331@elte.hu>
-Content-Type: text/plain
-Date: Fri, 20 Mar 2009 13:32:14 +0530
-Message-Id: <1237536134.2494.5.camel@ht.satnam>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
-Content-Transfer-Encoding: 7bit
+	Fri, 20 Mar 2009 04:06:23 -0400
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:54832 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751486AbZCTIGT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Mar 2009 04:06:19 -0400
+To: roland@redhat.com
+CC: miklos@szeredi.hu, peterz@infradead.org, efault@gmx.de, rjw@sisk.pl,
+       jdike@addtoit.com, mingo@elte.hu, oleg@redhat.com,
+       user-mode-linux-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org
+In-reply-to: <20090319233311.8B26BFC381@magilla.sf.frob.com> (message from
+	Roland McGrath on Thu, 19 Mar 2009 16:33:11 -0700 (PDT))
+Subject: Re: [patch] fix uml slowness caused by ptrace preemption bug on host
+References: <E1LkQeU-00020Z-Be@pomaz-ex.szeredi.hu> <20090319233311.8B26BFC381@magilla.sf.frob.com>
+Message-Id: <E1LkZjf-0002vu-84@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Fri, 20 Mar 2009 09:05:47 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-03-18 at 17:18 +0100, Ingo Molnar wrote:
+On Thu, 19 Mar 2009, Roland McGrath wrote:
+> I'm no scheduler expert and I don't know whether the exact placement in
+> your change is the optimal one.  But it's certainly fine from a ptrace
+> perspective.
 
-> Looks good - pulled, thanks Jaswinder!
-> 
-> Would you be interested in resurrecting the more mechanic cleanups 
-> you did as well, on top of this patch?
-> 
-> They are still valuable, we just have to keep them separate from a 
-> potential breakage-causing change like the above one, so that if a 
-> tester bisects to it, we have an as single-purpose and focused 
-> commit to look at as possible.
-> 
+I'm no scheduler expert either.
 
-cleanup without code change: based on tip:x86/core or x86/cleanups
-or .. ?
-
-cleanup with code change: based on tip:x86/core or x86/cleanups or .. ?
+Maybe a more generic solution in the scheduler (something like this
+totally untested patch) would be better?  What say you, scheduler
+experts?
 
 Thanks,
---
-JSR
+Miklos
 
+
+Index: linux.git/kernel/sched.c
+===================================================================
+--- linux.git.orig/kernel/sched.c	2009-03-18 12:53:47.000000000 +0100
++++ linux.git/kernel/sched.c	2009-03-20 08:58:13.000000000 +0100
+@@ -4629,7 +4629,8 @@ asmlinkage void __sched preempt_schedule
+ 	 * If there is a non-zero preempt_count or interrupts are disabled,
+ 	 * we do not want to preempt the current task. Just return..
+ 	 */
+-	if (likely(ti->preempt_count || irqs_disabled()))
++	if (likely(ti->preempt_count || irqs_disabled() ||
++		   current->state != TASK_RUNNING))
+ 		return;
+ 
+ 	do {
