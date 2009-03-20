@@ -1,81 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756579AbZCTObV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756787AbZCTOdT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756579AbZCTObV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Mar 2009 10:31:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752603AbZCTObM
+	id S1756787AbZCTOdT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Mar 2009 10:33:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754225AbZCTOdH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Mar 2009 10:31:12 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:39316 "EHLO e4.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751060AbZCTObK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Mar 2009 10:31:10 -0400
-Date: Fri, 20 Mar 2009 07:31:04 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: dipankar@in.ibm.com, linux-input@vger.kernel.org,
-       dmitry.torokhov@gmail.com, linux-kernel@vger.kernel.org
-Subject: Re: Question about usage of RCU in the input layer
-Message-ID: <20090320143104.GA6698@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20090318215812.15496a86@infradead.org> <20090319085628.GA6167@in.ibm.com> <20090319071841.63334eff@infradead.org> <20090320020750.GA6807@linux.vnet.ibm.com> <20090319202032.4c971d92@infradead.org> <20090320044541.GE6807@linux.vnet.ibm.com> <20090320065058.65d01771@infradead.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090320065058.65d01771@infradead.org>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+	Fri, 20 Mar 2009 10:33:07 -0400
+Received: from turing-police.cc.vt.edu ([128.173.14.107]:56729 "EHLO
+	turing-police.cc.vt.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753764AbZCTOdG (ORCPT
+	<RFC822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Mar 2009 10:33:06 -0400
+X-Mailer: exmh version 2.7.2 01/07/2005 with nmh-1.2
+To: Oliver Neukum <oliver@neukum.org>
+Cc: Lai Jiangshan <laijs@cn.fujitsu.com>,
+       Andrew Morton <akpm@linux-foundation.org>, jkosina@suse.cz,
+       gregkh@suse.de, linux-kernel@vger.kernel.org,
+       Oleg Nesterov <oleg@tv-sign.ru>
+Subject: Re: 29-rc-mmotm - HID/USB wedge w/ WARNING: at kernel/workqueue.c:371
+In-Reply-To: Your message of "Wed, 18 Mar 2009 08:48:50 BST."
+             <200903180848.51755.oliver@neukum.org>
+From: Valdis.Kletnieks@vt.edu
+References: <6648.1237271589@turing-police.cc.vt.edu> <20090317195004.18fb6af6.akpm@linux-foundation.org> <49C069F2.5040003@cn.fujitsu.com>
+            <200903180848.51755.oliver@neukum.org>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="==_Exmh_1237556528_2961P";
+	 micalg=pgp-sha1; protocol="application/pgp-signature"
+Content-Transfer-Encoding: 7bit
+Date: Fri, 20 Mar 2009 09:42:08 -0400
+Message-ID: <25338.1237556528@turing-police.cc.vt.edu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 20, 2009 at 06:50:58AM -0700, Arjan van de Ven wrote:
-> On Thu, 19 Mar 2009 21:45:41 -0700
-> "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
-> 
-> > > single CPU is soooo last decade ;-)
-> > > But seriously I no longer have systems that aren't dual core or SMT
-> > > in some form... 
-> > 
-> > OK, I will ask the stupid question...
-> > 
-> > Why not delay bringing up the non-boot CPUs until later in boot?
-> 
-> that'd be throwing out the baby with the bathwater... I'm trying to use 
-> the other cpus to do some of the boot work (so that the total goes
-> faster); not using the other cpus would be counter productive to that.
-> (As is just sitting in synchronize_rcu() when the other cpu is
-> working.. hence this discussion ;-)
+--==_Exmh_1237556528_2961P
+Content-Type: text/plain; charset=us-ascii
 
-OK, so you are definitely running multiple CPUs when the offending
-synchronize_rcu() executes, then?
+On Wed, 18 Mar 2009 08:48:50 BST, Oliver Neukum said:
+> Very well, here's a patch.
+> Please test.
 
-If so, here are some follow-on questions:
+> 	Regards
+>		Oliver
+> diff --git a/drivers/hid/usbhid/hid-core.c b/drivers/hid/usbhid/hid-core.c
+> index bc017cd..4306cb1 100644
 
-1.	How many synchronize_rcu() calls are you seeing on the
-	critical boot path and what value of HZ are you running?
+Applied and tested, over the past 2 evenings it's gotten about 18 hours of
+runtime with the evil cooling pad without a problem - before it was rarely
+living more than 90 minutes at a time. So this seems to have fixed the
+workqueue issue I was seeing.
 
-	If each synchronize_rcu() is taking (say) tens of jiffies, then,
-	as Peter Zijlstra notes earlier in this thread, we need to focus
-	on what is taking too long to get through its RCU read-side
-	critical sections.  Otherwise, if each synchronize_rcu() is
-	in the 3-5 jiffy range, I may finally be forced to create an
-	expedited version of the synchronize_rcu() API.
+Thanks for the patch.. :)
 
-2.	If expediting is required, then the code calling synchronize_rcu()
-	might or might not have any idea whether or not expediting is
-	appropriate.  If it does not, then we would need some sort of way
-	to tell synchronize_rcu() that it should act more aggressively,
-	perhaps /proc flag or kernel global variable indicating that
-	boot is in progress.
 
-	No, we do not want to make synchronize_rcu() aggressive all the
-	time, as this would harm performance and energy efficiency in
-	the normal runtime situation.
+--==_Exmh_1237556528_2961P
+Content-Type: application/pgp-signature
 
-	So, if it turns out that synchronize_rcu()'s caller does not
-	know whether or not expediting is appropriate, can the boot path
-	manipulate such a flag or variable?
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+Comment: Exmh version 2.5 07/13/2001
 
-3.	Which RCU implementation are you using?  CONFIG_CLASSIC_RCU,
-	CONFIG_TREE_RCU, or CONFIG_PREEMPT_RCU?
+iD8DBQFJw50wcC3lWbTT17ARAsNQAKCw/OA5lQsPkFnCD1XvQ9qCWYyngwCeOp2S
+++TBt5bjwwBX0HulQirRXhQ=
+=OuCt
+-----END PGP SIGNATURE-----
 
-							Thanx, Paul
+--==_Exmh_1237556528_2961P--
