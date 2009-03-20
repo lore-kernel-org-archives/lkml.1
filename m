@@ -1,94 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761194AbZCTTeS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761344AbZCTTf2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761194AbZCTTeS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Mar 2009 15:34:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759128AbZCTTeB
+	id S1761344AbZCTTf2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Mar 2009 15:35:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751101AbZCTTfU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Mar 2009 15:34:01 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:37813 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752851AbZCTTeA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Mar 2009 15:34:00 -0400
-Date: Fri, 20 Mar 2009 20:33:34 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Sam Ravnborg <sam@ravnborg.org>, LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH] kbuild: work around distcc/icecc madness
-Message-ID: <20090320193334.GA19501@elte.hu>
-References: <alpine.LFD.2.00.0903192121300.29264@localhost.localdomain> <20090320092234.GA3792@elte.hu> <alpine.LFD.2.00.0903201127360.29264@localhost.localdomain> <20090320185917.GB6224@elte.hu> <alpine.LFD.2.00.0903202010250.29264@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0903202010250.29264@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Fri, 20 Mar 2009 15:35:20 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:46355 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751898AbZCTTfT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Mar 2009 15:35:19 -0400
+Subject: cpu hotplug and lockdep (was: Re: [tip:core/ipi] generic-ipi:
+ eliminate spurious pointlessWARN_ON()s)
+From: Peter Zijlstra <peterz@infradead.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Jan Beulich <jbeulich@novell.com>, tglx@linutronix.de, mingo@redhat.com,
+       hpa@zytor.com, linux-kernel@vger.kernel.org,
+       Gautham R Shenoy <ego@in.ibm.com>
+In-Reply-To: <1237575134.4667.5.camel@laptop>
+References: <49B91A7E.76E4.0078.0@novell.com>
+	 <tip-6a09dfa870ba0ed21b1124539968a36b42660661@git.kernel.org>
+	 <1236934491.5188.209.camel@laptop> <49BA33BE.76E4.0078.0@novell.com>
+	 <1236937423.22914.3698.camel@twins> <20090313103828.GB31094@elte.hu>
+	 <m1d4cd9n4k.fsf@fess.ebiederm.org> <20090320085205.GB16021@elte.hu>
+	 <m14oxo8qis.fsf@fess.ebiederm.org>  <20090320182404.GA31629@elte.hu>
+	 <1237575134.4667.5.camel@laptop>
+Content-Type: text/plain
+Date: Fri, 20 Mar 2009 20:34:48 +0100
+Message-Id: <1237577688.4667.68.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.0 
+Content-Transfer-Encoding: 7bit
+X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Thomas Gleixner <tglx@linutronix.de> wrote:
-
-> On Fri, 20 Mar 2009, Ingo Molnar wrote:
+On Fri, 2009-03-20 at 19:52 +0100, Peter Zijlstra wrote:
+> On Fri, 2009-03-20 at 19:24 +0100, Ingo Molnar wrote:
+> > * Eric W. Biederman <ebiederm@xmission.com> wrote:
 > > 
-> > * Thomas Gleixner <tglx@linutronix.de> wrote:
-> > 
-> > > On Fri, 20 Mar 2009, Ingo Molnar wrote:
-> > > > > ---
-> > > > >  scripts/Kbuild.include |    5 +++--
-> > > > >  1 file changed, 3 insertions(+), 2 deletions(-)
-> > > > 
-> > > > Doesnt fully work:
-> > > > 
-> > > > arch/x86/kernel/entry_32.S:346: Error: unknown pseudo-op: `.cfi_signal_frame'
-> > > > arch/x86/kernel/entry_32.S:394: Error: unknown pseudo-op: `.cfi_signal_frame'
-> > > > arch/x86/kernel/entry_32.S:519: Error: unknown pseudo-op: `.cfi_signal_frame'
-> > > > arch/x86/kernel/entry_32.S:614: Error: unknown pseudo-op: `.cfi_signal_frame'
-> > > > arch/x86/kernel/entry_32.S:685: Error: unknown pseudo-op: `.cfi_signal_frame'
-> > > > arch/x86/kernel/entry_32.S:754: Error: unknown pseudo-op: `.cfi_signal_frame'
-> > > > 
-> > > > config attached. Distcc driven build.
-> > > 
-> > > Same config works fine here. Do you have different 
-> > > compilers/binutils on your distcc cluster ? I tripped over this 
-> > > distcc feature in the past, that's why I have switched to iceccc.
-> > 
-> > the distcc binutils is different from the host build environment 
-> > binutils and compiler. This always worked fine - can we preserve 
-> > it?
+> > > Now back to my regularly scheduled hotunplug challenges starting 
+> > > with getting lockdep to warn about the dead locks.
 > 
-> It depends what you define as "worked fine".
-
-as in "did not fail the build" :-)
-
-> The point is that the CFI checks are done at compile time by 
-> checking binutils. If you have two versions - one with and one 
-> without CFI support - then it's just a question of luck which one 
-> is checked. So in your case it might have worked because both 
-> distcc and your local gcc agreed that CFI is not enabled, but the 
-> reason why the distcc check for CFI fails is because it fails to 
-> handle the stdin input and not because it does not support CFI.
+> http://programming.kicks-ass.net/kernel-patches/cpu-hotplug/
 > 
-> So with my patch distcc gives you the correct answer, but now you 
-> trip over the local binutils lack of CFI support.
-> 
-> I don't think that such a setup is something we need to preserve.
+> The recursive read code needs more work.. 
 
-i dont do anything weird. i use:
+You'll find some network softirq inversion 'fixes' there, but those are
+false, (soft)irq recursion isn't a problem for recursive read locks, but
+of course only as long as writes (and thereby all nesting exclusive
+locks) are irq-safe so as to not create write in read deadlocks.
 
-CROSS_COMPILE='distcc 
-/opt/crosstool/gcc-4.2.2-glibc-2.3.6/i686-unknown-linux-gnu/bin/i686-unknown-linux-gnu-'
+Just never gotten around to actually implementing that, ego also offered
+to look at that at one point, but I guess he didn't get around to it
+either ;-)
 
-host compiler was never supposed to be the same in terms of 
-capability as target compiler.
-
-	Ingo
