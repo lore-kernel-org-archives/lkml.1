@@ -1,18 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762833AbZCTXZA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762984AbZCTXZe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762833AbZCTXZA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Mar 2009 19:25:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760196AbZCTXOM
+	id S1762984AbZCTXZe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Mar 2009 19:25:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761340AbZCTXPe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Mar 2009 19:14:12 -0400
-Received: from kroah.org ([198.145.64.141]:53330 "EHLO coco.kroah.org"
+	Fri, 20 Mar 2009 19:15:34 -0400
+Received: from kroah.org ([198.145.64.141]:46872 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755330AbZCTXOE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Mar 2009 19:14:04 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 20 15:27:14 2009
-Message-Id: <20090320222714.000218251@mini.kroah.org>
-User-Agent: quilt/0.48-1
-Date: Fri, 20 Mar 2009 15:26:43 -0700
+	id S1761288AbZCTXPd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Mar 2009 19:15:33 -0400
+Date: Fri, 20 Mar 2009 16:10:37 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,82 +22,67 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Alan Stern <stern@rowland.harvard.edu>
-Subject: [patch 32/32] USB: usbfs: keep async URBs until the device file is closed
-References: <20090320222611.872315885@mini.kroah.org>
-Content-Disposition: inline; filename=usb-usbfs-keep-async-urbs-until-the-device-file-is-closed.patch
-In-Reply-To: <20090320231037.GA2732@kroah.com>
+       alan@lxorguk.ukuu.org.uk
+Subject: [patch 00/32] 2.6.27.21-stable review
+Message-ID: <20090320231037.GA2732@kroah.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2.6.27-stable review patch.  If anyone has any objections, please let us know.
+This is the start of the stable review cycle for the 2.6.27.21 release.
+There are 32 patches in this series, all will be posted as a response to
+this one.  If anyone has any issues with these being applied, please let
+us know.  If anyone is a maintainer of the proper subsystem, and wants
+to add a Signed-off-by: line to the patch, please respond with it.
 
-------------------
+These patches are sent out with a number of different people on the Cc:
+line.  If you wish to be a reviewer, please email stable@kernel.org to
+add your name to the list.  If you want to be off the reviewer list,
+also email us.
 
-From: Alan Stern <stern@rowland.harvard.edu>
+Responses should be made by Monday, March 23, 20:00:00 UTC.
+Anything received after that time might be too late.
 
-commit 6ff10464096540e14d7575a72c50d0316d003714 upstream.
+The whole patch series can be found in one patch at:
+        kernel.org/pub/linux/kernel/v2.6/stable-review/patch-2.6.27.21-rc1.gz
+and the diffstat can be found below.
 
-The usbfs driver manages a list of completed asynchronous URBs.  But
-it is too eager to free the entries on this list: destroy_async() gets
-called whenever an interface is unbound or a device is removed, and it
-deallocates the outstanding struct async entries for all URBs on that
-interface or device.  This is wrong; the user program should be able
-to reap an URB any time after it has completed, regardless of whether
-or not the interface is still bound or the device is still present.
+thanks,
 
-This patch (as1222) moves the code for deallocating the completed list
-entries from destroy_async() to usbdev_release().  The outstanding
-entries won't be freed until the user program has closed the device
-file, thereby eliminating any possibility that the remaining URBs
-might still be reaped.
-
-This fixes a bug in which a program can hang in the USBDEVFS_REAPURB
-ioctl when the device is unplugged.
-
-Reported-and-tested-by: Martin Poupe <martin.poupe@upek.com>
-Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
----
- drivers/usb/core/devio.c |   12 +++++++-----
- 1 file changed, 7 insertions(+), 5 deletions(-)
-
---- a/drivers/usb/core/devio.c
-+++ b/drivers/usb/core/devio.c
-@@ -359,11 +359,6 @@ static void destroy_async(struct dev_sta
- 		spin_lock_irqsave(&ps->lock, flags);
- 	}
- 	spin_unlock_irqrestore(&ps->lock, flags);
--	as = async_getcompleted(ps);
--	while (as) {
--		free_async(as);
--		as = async_getcompleted(ps);
--	}
- }
- 
- static void destroy_async_on_interface(struct dev_state *ps,
-@@ -639,6 +634,7 @@ static int usbdev_release(struct inode *
- 	struct dev_state *ps = file->private_data;
- 	struct usb_device *dev = ps->dev;
- 	unsigned int ifnum;
-+	struct async *as;
- 
- 	usb_lock_device(dev);
- 
-@@ -657,6 +653,12 @@ static int usbdev_release(struct inode *
- 	usb_unlock_device(dev);
- 	usb_put_dev(dev);
- 	put_pid(ps->disc_pid);
-+
-+	as = async_getcompleted(ps);
-+	while (as) {
-+		free_async(as);
-+		as = async_getcompleted(ps);
-+	}
- 	kfree(ps);
- 	return 0;
- }
+greg k-h
 
 
+ Makefile                                    |    5 +++-
+ arch/ia64/Kconfig                           |    3 +-
+ arch/powerpc/sysdev/fsl_soc.c               |    2 +-
+ arch/s390/lib/div64.c                       |    2 +-
+ arch/x86/kernel/cpu/intel.c                 |   13 +++++++++
+ arch/x86/kernel/cpu/intel_64.c              |   13 +++++++++
+ drivers/ata/ata_piix.c                      |   37 +++++++++++++++++++++++++++
+ drivers/md/dm-crypt.c                       |   26 +++++++++++++++---
+ drivers/md/dm-io.c                          |    2 +
+ drivers/md/dm-ioctl.c                       |    3 +-
+ drivers/media/video/cx23885/cx23885-417.c   |    3 +-
+ drivers/media/video/cx23885/cx23885-video.c |    5 ++-
+ drivers/misc/thinkpad_acpi.c                |    8 +++---
+ drivers/usb/core/devio.c                    |   12 +++++---
+ drivers/usb/host/ehci-q.c                   |    3 +-
+ drivers/usb/host/ehci-sched.c               |   10 +++----
+ drivers/usb/serial/cp2101.c                 |    1 +
+ drivers/usb/serial/ftdi_sio.c               |    5 +++
+ drivers/usb/serial/ftdi_sio.h               |   20 ++++++++++++++
+ drivers/usb/serial/option.c                 |   12 ++++----
+ drivers/usb/storage/unusual_devs.h          |   16 ++++++++++-
+ fs/aio.c                                    |   37 +++++++++++++++++++-------
+ fs/nfsd/nfs4xdr.c                           |    1 +
+ include/asm-x86/msr-index.h                 |   29 +++++++++++++++++++++
+ include/linux/capability.h                  |    6 +++-
+ sound/core/oss/pcm_oss.c                    |    4 +-
+ sound/core/sgbuf.c                          |    7 +++--
+ sound/pci/hda/hda_intel.c                   |    8 ++++++
+ sound/pci/mixart/mixart.c                   |    1 +
+ 29 files changed, 239 insertions(+), 55 deletions(-)
