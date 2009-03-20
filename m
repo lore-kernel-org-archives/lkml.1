@@ -1,50 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755390AbZCTKuT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757697AbZCTKyS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755390AbZCTKuT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Mar 2009 06:50:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751514AbZCTKuE
+	id S1757697AbZCTKyS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Mar 2009 06:54:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751311AbZCTKyE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Mar 2009 06:50:04 -0400
-Received: from www.tglx.de ([62.245.132.106]:36641 "EHLO www.tglx.de"
+	Fri, 20 Mar 2009 06:54:04 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:54633 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751311AbZCTKuD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Mar 2009 06:50:03 -0400
-Date: Fri, 20 Mar 2009 11:49:52 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Michal Simek <monstr@monstr.eu>
-cc: LKML <linux-kernel@vger.kernel.org>, john.williams@petalogix.com,
-       John Stultz <johnstul@us.ibm.com>
-Subject: Re: [PATCH 08/57] microblaze_v7: Interrupt handling, timer support,
- selfmod code
-In-Reply-To: <49C371F5.5010100@monstr.eu>
-Message-ID: <alpine.LFD.2.00.0903201142300.29264@localhost.localdomain>
-References: <1237408284-8674-1-git-send-email-monstr@monstr.eu> <0168f03c96e9479ede695a9859c8a0691baa8ef3.1237407249.git.monstr@monstr.eu> <c1bdfabf85ce10babc3aa38d3bb7558a093bc49e.1237407249.git.monstr@monstr.eu> <4b5aee01d11fc790c7842838ea63a82ee3273003.1237407249.git.monstr@monstr.eu>
- <af309ba8e95f503b7990461384d9f8453f45dbbd.1237407249.git.monstr@monstr.eu> <5f8b2a60496983f572ef6d3b4e2f986c167a8336.1237407249.git.monstr@monstr.eu> <fbef554ff1d05fa50312d91e61a0d63d3207076c.1237407249.git.monstr@monstr.eu>
- <dad2353f129217470f0595eeed98412b4c84ed6b.1237407249.git.monstr@monstr.eu> <20fd42a1e8837c7352d35d157aa3393e88152c32.1237407249.git.monstr@monstr.eu> <alpine.LFD.2.00.0903191639530.29264@localhost.localdomain> <49C2AB09.9040300@monstr.eu>
- <alpine.LFD.2.00.0903192219500.29264@localhost.localdomain> <49C36149.9000703@monstr.eu> <alpine.LFD.2.00.0903201052340.29264@localhost.localdomain> <49C371F5.5010100@monstr.eu>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	id S1752095AbZCTKyC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Mar 2009 06:54:02 -0400
+Message-ID: <49C375B7.5090806@redhat.com>
+Date: Fri, 20 Mar 2009 06:53:43 -0400
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: ananth@in.ibm.com
+CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Ingo Molnar <mingo@elte.hu>, linuxppc-dev@ozlabs.org,
+       systemtap-ml <systemtap@sources.redhat.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC][PATCH -tip 4/9] power: add kernel_trap_sp()
+References: <49C2B4BF.4080904@redhat.com> <1237527760.25062.567.camel@pasglop> <20090320073334.GA10519@in.ibm.com>
+In-Reply-To: <20090320073334.GA10519@in.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 20 Mar 2009, Michal Simek wrote:
-> Why is my .resolution: 10000000 nsecs? It seems to me weird.
+Ananth N Mavinakayanahalli wrote:
+> On Fri, Mar 20, 2009 at 04:42:40PM +1100, Benjamin Herrenschmidt wrote:
+>> On Thu, 2009-03-19 at 17:10 -0400, Masami Hiramatsu wrote:
+>>> Add kernel_trap_sp() on powerpc, based on systemtap's runtime/regs.h.
+>>>
+>>> Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
+>> I haven't looked at the usage of it, but it's weird to have something
+>> call "kernel_trap_sp" that returns the -user- stack pointer... is
+>> this really what's expected here ?
+> 
+> In the current usage scenario, this gets called only with a pt_regs
+> snapshot from in kernel. user_stack_pointer() is a misnomer though;
+> all this macro needs is to return the stack pointer from the given
+> pt_regs.
 
-Well. The resulution there is the granularity which the kernel uses to
-expire application timers. Once the kernel switches to high resolution
-mode it sets the granularity to 1ns.
+Indeed,
+I expect kernel_trap_sp() returns the top of stack from pt_regs in the kernel.
+Why I'm using user_stack_pointer() for kernel_trap_sp() is just that the
+definitions of both are same...
 
-To get high resolution mode you need two things:
+Perhaps, should I define as below, even it is same as user_stack_pointer()?
+#define kernel_trap_sp(regs) ((regs)->gpr[1])
 
-1) a suitable clocksource - which needs to have the
-CLOCK_SOURCE_IS_CONTINUOUS flag set
+Thank you,
 
-2) a clock event device which has CLOCK_EVT_FEAT_PERIODIC flag set.
+> 
+> Ananth
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
-3) CONFIG_HIGH_RES_TIMERS=y
+-- 
+Masami Hiramatsu
 
-Thanks,
+Software Engineer
+Hitachi Computer Products (America) Inc.
+Software Solutions Division
 
-	tglx
+e-mail: mhiramat@redhat.com
+
