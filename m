@@ -1,109 +1,238 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758928AbZCTSNM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759238AbZCTSUg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758928AbZCTSNM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Mar 2009 14:13:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754749AbZCTSM4
+	id S1759238AbZCTSUg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Mar 2009 14:20:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754764AbZCTSU1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Mar 2009 14:12:56 -0400
-Received: from casper.infradead.org ([85.118.1.10]:54263 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751981AbZCTSMz (ORCPT
+	Fri, 20 Mar 2009 14:20:27 -0400
+Received: from rv-out-0506.google.com ([209.85.198.231]:40624 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751981AbZCTSU0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Mar 2009 14:12:55 -0400
-Date: Fri, 20 Mar 2009 11:13:54 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: paulmck@linux.vnet.ibm.com
-Cc: dipankar@in.ibm.com, linux-input@vger.kernel.org,
-       dmitry.torokhov@gmail.com, linux-kernel@vger.kernel.org
-Subject: Re: Question about usage of RCU in the input layer
-Message-ID: <20090320111354.679ab53d@infradead.org>
-In-Reply-To: <20090320143104.GA6698@linux.vnet.ibm.com>
-References: <20090318215812.15496a86@infradead.org>
-	<20090319085628.GA6167@in.ibm.com>
-	<20090319071841.63334eff@infradead.org>
-	<20090320020750.GA6807@linux.vnet.ibm.com>
-	<20090319202032.4c971d92@infradead.org>
-	<20090320044541.GE6807@linux.vnet.ibm.com>
-	<20090320065058.65d01771@infradead.org>
-	<20090320143104.GA6698@linux.vnet.ibm.com>
-Organization: Intel
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Fri, 20 Mar 2009 14:20:26 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:cc:content-type;
+        b=ay6GY1UwFHZTtQZXutND0rkUtCP3CBWdr4pgPf67uUoHAtgwRxStNqNQD+LESL2UnE
+         gzh1MzO1RI5IGLw0FbPaK7vvB0dkQbQJ+5GmCZaA5prsRm7B8EceVGO56CKkco7yG3cA
+         33l6n2XHE1p6WywrGR5pzS2v3TlRuWIXFKzhQ=
+MIME-Version: 1.0
+Date: Sat, 21 Mar 2009 02:20:23 +0800
+Message-ID: <804dabb00903201120k61b2dbc2gaa2a1ce09501be41@mail.gmail.com>
+Subject: [PATCH] Removal of kernel_thread() API in RT2870
+From: Peter Teoh <htmldeveloper@gmail.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Greg KH <greg@kroah.com>
+Content-Type: multipart/mixed; boundary=000e0cd2bd0066287d046590f80d
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 20 Mar 2009 07:31:04 -0700
-"Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
-> > 
-> > that'd be throwing out the baby with the bathwater... I'm trying to
-> > use the other cpus to do some of the boot work (so that the total
-> > goes faster); not using the other cpus would be counter productive
-> > to that. (As is just sitting in synchronize_rcu() when the other
-> > cpu is working.. hence this discussion ;-)
-> 
-> OK, so you are definitely running multiple CPUs when the offending
-> synchronize_rcu() executes, then?
+--000e0cd2bd0066287d046590f80d
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 
-absolutely. 
-(and I'm using bootgraph.pl in scripts to track who's stalling etc)
-> 
-> If so, here are some follow-on questions:
-> 
-> 1.	How many synchronize_rcu() calls are you seeing on the
-> 	critical boot path
+Replacing the use of kernel_thread() with kthread_run().   But as
+kthread_run() returned a task structure, as compared with
+kernel_thread() returning a PID, it was found to be more efficient to
+store the task structure pointer as a field data instead of PID
+pointer.   On top of modifying the field to store task structure
+pointer, the initialization of the field (assigned to
+THREAD_PID_INIT_VALUE) was also found unnecessary - as no where it is
+found to be used.
 
-I've seen only this (input) one to take a long time
->  and what value of HZ are you running?
+The patch (to be applied against linus git tree
+v2.6.29-rc8-241-g65c2449) attached compiled and loaded successfully -
+but not with the hardware, as I don't have it.
 
-1000
+Thanks.
 
-> 
-> 	If each synchronize_rcu() is taking (say) tens of jiffies,
-> then, as Peter Zijlstra notes earlier in this thread, we need to focus
-> 	on what is taking too long to get through its RCU read-side
-> 	critical sections
+PS:   attached passed checkpatch.pl.   Thanks.
 
-I know that "the other guy" is not optimal and takes waaay too long.
+--000e0cd2bd0066287d046590f80d
+Content-Type: text/x-diff; charset=US-ASCII; name="rt2870_20march2009-3.patch"
+Content-Disposition: attachment; filename="rt2870_20march2009-3.patch"
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_fsj77kr51
 
->  Otherwise, if each synchronize_rcu() is
-> 	in the 3-5 jiffy range, I may finally be forced to create an
-> 	expedited version of the synchronize_rcu() API.
-
-I think a simplified API for the "add to a list" case might make sense.
-Because the request isn't for a full sync for sure...
-
-(independent of that .. the open question is if this specific case is
-even needed; I think the code confused "send to others" with "wait
-until everyone sees"; afaik synchronize_rcu() has no pushing behavior
-at all, nor should it)
-
-> 
-> 2.	If expediting is required, then the code calling
-> synchronize_rcu() might or might not have any idea whether or not
-> expediting is appropriate.  If it does not, then we would need some
-> sort of way to tell synchronize_rcu() that it should act more
-> aggressively, perhaps /proc flag or kernel global variable indicating
-> that boot is in progress.
-> 
-> 	No, we do not want to make synchronize_rcu() aggressive all
-> the time, as this would harm performance and energy efficiency in
-> 	the normal runtime situation.
-> 
-> 	So, if it turns out that synchronize_rcu()'s caller does not
-> 	know whether or not expediting is appropriate, can the boot
-> path manipulate such a flag or variable?
-> 
-> 3.	Which RCU implementation are you using?  CONFIG_CLASSIC_RCU,
-> 	CONFIG_TREE_RCU, or CONFIG_PREEMPT_RCU?
-
-CLASSIC
-
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+U2lnbmVkLW9mZi1ieTogUGV0ZXIgVGVvaCA8aHRtbGRldmVsb3BlckBnbWFpbC5jb20+CgpkaWZm
+IC0tZ2l0IGEvZHJpdmVycy9zdGFnaW5nL3J0Mjg3MC8yODcwX21haW5fZGV2LmMgYi9kcml2ZXJz
+L3N0YWdpbmcvcnQyODcwLzI4NzBfbWFpbl9kZXYuYwppbmRleCAwNGM3NjRkLi45ZDU5ZTMxIDEw
+MDY0NAotLS0gYS9kcml2ZXJzL3N0YWdpbmcvcnQyODcwLzI4NzBfbWFpbl9kZXYuYworKysgYi9k
+cml2ZXJzL3N0YWdpbmcvcnQyODcwLzI4NzBfbWFpbl9kZXYuYwpAQCAtMjY1LDcgKzI2NSw3IEBA
+IElOVCBNbG1lVGhyZWFkKAogCSAqLwogCURCR1BSSU5UKFJUX0RFQlVHX1RSQUNFLCggIjwtLS0l
+c1xuIixfX2Z1bmNfXykpOwogCi0JcE9iai0+TUxNRVRocl9waWQgPSBUSFJFQURfUElEX0lOSVRf
+VkFMVUU7CisJcE9iai0+TUxNRVRocl90YXNrID0gTlVMTDsKIAogCWNvbXBsZXRlX2FuZF9leGl0
+ICgmcEFkLT5tbG1lQ29tcGxldGUsIDApOwogCXJldHVybiAwOwpAQCAtMzczLDcgKzM3Myw3IEBA
+IElOVCBSVFVTQkNtZFRocmVhZCgKIAkgKi8KIAlEQkdQUklOVChSVF9ERUJVR19UUkFDRSwoICI8
+LS0tUlRVU0JDbWRUaHJlYWRcbiIpKTsKIAotCXBPYmotPlJUVVNCQ21kVGhyX3BpZCA9IFRIUkVB
+RF9QSURfSU5JVF9WQUxVRTsKKwlwT2JqLT5SVFVTQkNtZFRocl90YXNrID0gTlVMTDsKIAogCWNv
+bXBsZXRlX2FuZF9leGl0ICgmcEFkLT5DbWRRQ29tcGxldGUsIDApOwogCXJldHVybiAwOwpAQCAt
+NDY3LDcgKzQ2Nyw3IEBAIElOVCBUaW1lclFUaHJlYWQoCiAJICovCiAJREJHUFJJTlQoUlRfREVC
+VUdfVFJBQ0UsKCAiPC0tLSVzXG4iLF9fZnVuY19fKSk7CiAKLQlwT2JqLT5UaW1lclFUaHJfcGlk
+ID0gVEhSRUFEX1BJRF9JTklUX1ZBTFVFOworCXBPYmotPlRpbWVyUVRocl90YXNrID0gTlVMTDsK
+IAogCWNvbXBsZXRlX2FuZF9leGl0KCZwQWQtPlRpbWVyUUNvbXBsZXRlLCAwKTsKIAlyZXR1cm4g
+MDsKQEAgLTk0NCw2OSArOTQ0LDQ2IEBAIFZPSUQgUlQyOHh4VGhyZWFkVGVybWluYXRlKAogCVJU
+VVNCQ2FuY2VsUGVuZGluZ0lSUHMocEFkKTsKIAogCS8vIFRlcm1pbmF0ZSBUaHJlYWRzCi0JQ0hF
+Q0tfUElEX0xFR0FMSVRZKHBPYmotPlRpbWVyUVRocl9waWQpCisJQlVHX09OKHBPYmotPlRpbWVy
+UVRocl90YXNrID09IE5VTEwpOworCUNIRUNLX1BJRF9MRUdBTElUWSh0YXNrX3BpZChwT2JqLT5U
+aW1lclFUaHJfdGFzaykpCiAJewogCQlQT1NfQ09PS0lFIHBPYmogPSAoUE9TX0NPT0tJRSlwQWQt
+Pk9TX0Nvb2tpZTsKIAotCQlwcmludGsoIlRlcm1pbmF0ZSB0aGUgVGltZXJRVGhyX3BpZD0lZCFc
+biIsIEdFVF9QSURfTlVNQkVSKHBPYmotPlRpbWVyUVRocl9waWQpKTsKKwkJcHJpbnRrKEtFUk5f
+REVCVUcgIlRlcm1pbmF0ZSB0aGUgVGltZXJRVGhyIHBpZD0lZCFcbiIsCisJCQlwaWRfbnIodGFz
+a19waWQocE9iai0+VGltZXJRVGhyX3Rhc2spKSk7CiAJCW1iKCk7CiAJCXBBZC0+VGltZXJGdW5j
+X2tpbGwgPSAxOwogCQltYigpOwotCQlyZXQgPSBLSUxMX1RIUkVBRF9QSUQocE9iai0+VGltZXJR
+VGhyX3BpZCwgU0lHVEVSTSwgMSk7Ci0JCWlmIChyZXQpCi0JCXsKLQkJCXByaW50ayhLRVJOX1dB
+Uk5JTkcgIiVzOiB1bmFibGUgdG8gc3RvcCBUaW1lclFUaHJlYWQsIHBpZD0lZCwgcmV0PSVkIVxu
+IiwKLQkJCQkJcEFkLT5uZXRfZGV2LT5uYW1lLCBHRVRfUElEX05VTUJFUihwT2JqLT5UaW1lclFU
+aHJfcGlkKSwgcmV0KTsKLQkJfQotCQllbHNlCi0JCXsKLQkJCXdhaXRfZm9yX2NvbXBsZXRpb24o
+JnBBZC0+VGltZXJRQ29tcGxldGUpOwotCQkJcE9iai0+VGltZXJRVGhyX3BpZCA9IFRIUkVBRF9Q
+SURfSU5JVF9WQUxVRTsKLQkJfQorCQlrdGhyZWFkX3N0b3AocE9iai0+VGltZXJRVGhyX3Rhc2sp
+OworCQlwT2JqLT5UaW1lclFUaHJfdGFzayA9IE5VTEw7CiAJfQogCi0JQ0hFQ0tfUElEX0xFR0FM
+SVRZKHBPYmotPk1MTUVUaHJfcGlkKQorCUJVR19PTihwT2JqLT5NTE1FVGhyX3Rhc2sgPT0gTlVM
+TCk7CisJQ0hFQ0tfUElEX0xFR0FMSVRZKHRhc2tfcGlkKHBPYmotPk1MTUVUaHJfdGFzaykpCiAJ
+ewotCQlwcmludGsoIlRlcm1pbmF0ZSB0aGUgTUxNRVRocl9waWQ9JWQhXG4iLCBHRVRfUElEX05V
+TUJFUihwT2JqLT5NTE1FVGhyX3BpZCkpOworCQlwcmludGsoS0VSTl9ERUJVRyAiVGVybWluYXRl
+IHRoZSBNTE1FVGhyIHBpZD0lZCFcbiIsCisJCQlwaWRfbnIodGFza19waWQocE9iai0+TUxNRVRo
+cl90YXNrKSkpOwogCQltYigpOwogCQlwQWQtPm1sbWVfa2lsbCA9IDE7CiAJCS8vUlQyOFhYX01M
+TUVfSEFORExFUihwQWQpOwogCQltYigpOwotCQlyZXQgPSBLSUxMX1RIUkVBRF9QSUQocE9iai0+
+TUxNRVRocl9waWQsIFNJR1RFUk0sIDEpOwotCQlpZiAocmV0KQotCQl7Ci0JCQlwcmludGsgKEtF
+Uk5fV0FSTklORyAiJXM6IHVuYWJsZSB0byBNbG1lIHRocmVhZCwgcGlkPSVkLCByZXQ9JWQhXG4i
+LAotCQkJCQlwQWQtPm5ldF9kZXYtPm5hbWUsIEdFVF9QSURfTlVNQkVSKHBPYmotPk1MTUVUaHJf
+cGlkKSwgcmV0KTsKLQkJfQotCQllbHNlCi0JCXsKLQkJCS8vd2FpdF9mb3JfY29tcGxldGlvbiAo
+JnBBZC0+bm90aWZ5KTsKLQkJCXdhaXRfZm9yX2NvbXBsZXRpb24gKCZwQWQtPm1sbWVDb21wbGV0
+ZSk7Ci0JCQlwT2JqLT5NTE1FVGhyX3BpZCA9IFRIUkVBRF9QSURfSU5JVF9WQUxVRTsKLQkJfQor
+CQlrdGhyZWFkX3N0b3AocE9iai0+TUxNRVRocl90YXNrKTsKKwkJcE9iai0+TUxNRVRocl90YXNr
+ID0gTlVMTDsKIAl9CiAKLQlDSEVDS19QSURfTEVHQUxJVFkocE9iai0+UlRVU0JDbWRUaHJfcGlk
+KQorCUJVR19PTihwT2JqLT5SVFVTQkNtZFRocl90YXNrID09IE5VTEwpOworCUNIRUNLX1BJRF9M
+RUdBTElUWSh0YXNrX3BpZChwT2JqLT5SVFVTQkNtZFRocl90YXNrKSkKIAl7Ci0JCXByaW50aygi
+VGVybWluYXRlIHRoZSBSVFVTQkNtZFRocl9waWQ9JWQhXG4iLCBHRVRfUElEX05VTUJFUihwT2Jq
+LT5SVFVTQkNtZFRocl9waWQpKTsKKwkJcHJpbnRrKEtFUk5fREVCVUcgIlRlcm1pbmF0ZSB0aGUg
+UlRVU0JDbWRUaHIgcGlkPSVkIVxuIiwKKwkJCXBpZF9ucih0YXNrX3BpZChwT2JqLT5SVFVTQkNt
+ZFRocl90YXNrKSkpOwogCQltYigpOwogCQlOZGlzQWNxdWlyZVNwaW5Mb2NrKCZwQWQtPkNtZFFM
+b2NrKTsKIAkJcEFkLT5DbWRRLkNtZFFTdGF0ZSA9IFJUMjg3MF9USFJFQURfU1RPUEVEOwogCQlO
+ZGlzUmVsZWFzZVNwaW5Mb2NrKCZwQWQtPkNtZFFMb2NrKTsKIAkJbWIoKTsKIAkJLy9SVFVTQkNN
+RFVwKHBBZCk7Ci0JCXJldCA9IEtJTExfVEhSRUFEX1BJRChwT2JqLT5SVFVTQkNtZFRocl9waWQs
+IFNJR1RFUk0sIDEpOwotCQlpZiAocmV0KQotCQl7Ci0JCQlwcmludGsoS0VSTl9XQVJOSU5HICIl
+czogdW5hYmxlIHRvIFJUVVNCQ21kIHRocmVhZCwgcGlkPSVkLCByZXQ9JWQhXG4iLAotCQkJCQlw
+QWQtPm5ldF9kZXYtPm5hbWUsIEdFVF9QSURfTlVNQkVSKHBPYmotPlJUVVNCQ21kVGhyX3BpZCks
+IHJldCk7Ci0JCX0KLQkJZWxzZQotCQl7Ci0JCQkvL3dhaXRfZm9yX2NvbXBsZXRpb24gKCZwQWQt
+Pm5vdGlmeSk7Ci0JCQl3YWl0X2Zvcl9jb21wbGV0aW9uICgmcEFkLT5DbWRRQ29tcGxldGUpOwot
+CQkJcE9iai0+UlRVU0JDbWRUaHJfcGlkID0gVEhSRUFEX1BJRF9JTklUX1ZBTFVFOwotCX0KKwkJ
+a3RocmVhZF9zdG9wKHBPYmotPlJUVVNCQ21kVGhyX3Rhc2spOworCQlwT2JqLT5SVFVTQkNtZFRo
+cl90YXNrID0gTlVMTDsKIAl9CiAKIApAQCAtMTA2Nyw3ICsxMDQ0LDcgQEAgQk9PTEVBTiBSVDI4
+WFhDaGlwc2V0Q2hlY2soCiAJCWlmIChkZXZfcC0+ZGVzY3JpcHRvci5pZFZlbmRvciA9PSBydHVz
+Yl91c2JfaWRbaV0uaWRWZW5kb3IgJiYKIAkJCWRldl9wLT5kZXNjcmlwdG9yLmlkUHJvZHVjdCA9
+PSBydHVzYl91c2JfaWRbaV0uaWRQcm9kdWN0KQogCQl7Ci0JCQlwcmludGsoInJ0Mjg3MDogaWRW
+ZW5kb3IgPSAweCV4LCBpZFByb2R1Y3QgPSAweCV4XG4iLAorCQkJcHJpbnRrKEtFUk5fREVCVUcg
+InJ0Mjg3MDogaWRWZW5kb3IgPSAweCV4LCBpZFByb2R1Y3QgPSAweCV4XG4iLAogCQkJCQlkZXZf
+cC0+ZGVzY3JpcHRvci5pZFZlbmRvciwgZGV2X3AtPmRlc2NyaXB0b3IuaWRQcm9kdWN0KTsKIAkJ
+CWJyZWFrOwogCQl9CmRpZmYgLS1naXQgYS9kcml2ZXJzL3N0YWdpbmcvcnQyODcwL2NvbW1vbi8y
+ODcwX3J0bXBfaW5pdC5jIGIvZHJpdmVycy9zdGFnaW5nL3J0Mjg3MC9jb21tb24vMjg3MF9ydG1w
+X2luaXQuYwppbmRleCA5ZjUxNDNiLi5jYjE2ZDJmIDEwMDY0NAotLS0gYS9kcml2ZXJzL3N0YWdp
+bmcvcnQyODcwL2NvbW1vbi8yODcwX3J0bXBfaW5pdC5jCisrKyBiL2RyaXZlcnMvc3RhZ2luZy9y
+dDI4NzAvY29tbW9uLzI4NzBfcnRtcF9pbml0LmMKQEAgLTcyNyw4ICs3MjcsOCBAQCBORElTX1NU
+QVRVUyBBZGFwdGVyQmxvY2tBbGxvY2F0ZU1lbW9yeSgKIAogCXVzYl9kZXYgPSBwT2JqLT5wVXNi
+X0RldjsKIAotCXBPYmotPk1MTUVUaHJfcGlkCQk9IFRIUkVBRF9QSURfSU5JVF9WQUxVRTsKLQlw
+T2JqLT5SVFVTQkNtZFRocl9waWQJPSBUSFJFQURfUElEX0lOSVRfVkFMVUU7CisJcE9iai0+TUxN
+RVRocl90YXNrCQk9IE5VTEw7CisJcE9iai0+UlRVU0JDbWRUaHJfdGFzawk9IE5VTEw7CiAKIAkq
+cHBBZCA9IChQVk9JRCl2bWFsbG9jKHNpemVvZihSVE1QX0FEQVBURVIpKTsKIApAQCAtNzY1LDcg
+Kzc2NSw3IEBAIE5ESVNfU1RBVFVTCSBDcmVhdGVUaHJlYWRzKAogewogCVBSVE1QX0FEQVBURVIg
+cEFkID0gbmV0X2Rldi0+bWxfcHJpdjsKIAlQT1NfQ09PS0lFIHBPYmogPSAoUE9TX0NPT0tJRSkg
+cEFkLT5PU19Db29raWU7Ci0JcGlkX3QgcGlkX251bWJlciA9IC0xOworCXN0cnVjdCB0YXNrX3N0
+cnVjdCAqdHNrOwogCiAJLy9pbml0X01VVEVYKCYocEFkLT51c2JkZXZfc2VtYXBob3JlKSk7CiAK
+QEAgLTc3OSwzNiArNzc5LDM5IEBAIE5ESVNfU1RBVFVTCSBDcmVhdGVUaHJlYWRzKAogCWluaXRf
+Y29tcGxldGlvbiAoJnBBZC0+VGltZXJRQ29tcGxldGUpOwogCiAJLy8gQ3JlYXQgTUxNRSBUaHJl
+YWQKLQlwT2JqLT5NTE1FVGhyX3BpZD0gVEhSRUFEX1BJRF9JTklUX1ZBTFVFOwotCXBpZF9udW1i
+ZXIgPSBrZXJuZWxfdGhyZWFkKE1sbWVUaHJlYWQsIHBBZCwgQ0xPTkVfVk0pOwotCWlmIChwaWRf
+bnVtYmVyIDwgMCkKLQl7CisJcE9iai0+TUxNRVRocl90YXNrID0gTlVMTDsKKwl0c2sgPSBrdGhy
+ZWFkX3J1bihNbG1lVGhyZWFkLCBwQWQsIHBBZC0+bmV0X2Rldi0+bmFtZSk7CisKKwlpZiAoSVNf
+RVJSKHRzaykpIHsKIAkJcHJpbnRrIChLRVJOX1dBUk5JTkcgIiVzOiB1bmFibGUgdG8gc3RhcnQg
+TWxtZSB0aHJlYWRcbiIscEFkLT5uZXRfZGV2LT5uYW1lKTsKIAkJcmV0dXJuIE5ESVNfU1RBVFVT
+X0ZBSUxVUkU7CiAJfQotCXBPYmotPk1MTUVUaHJfcGlkID0gR0VUX1BJRChwaWRfbnVtYmVyKTsK
+KworCXBPYmotPk1MTUVUaHJfdGFzayA9IHRzazsKIAkvLyBXYWl0IGZvciB0aGUgdGhyZWFkIHRv
+IHN0YXJ0CiAJd2FpdF9mb3JfY29tcGxldGlvbigmKHBBZC0+bWxtZUNvbXBsZXRlKSk7CiAKIAkv
+LyBDcmVhdCBDb21tYW5kIFRocmVhZAotCXBPYmotPlJUVVNCQ21kVGhyX3BpZD0gVEhSRUFEX1BJ
+RF9JTklUX1ZBTFVFOwotCXBpZF9udW1iZXIgPSBrZXJuZWxfdGhyZWFkKFJUVVNCQ21kVGhyZWFk
+LCBwQWQsIENMT05FX1ZNKTsKLQlpZiAocGlkX251bWJlciA8IDApCisJcE9iai0+UlRVU0JDbWRU
+aHJfdGFzayA9IE5VTEw7CisJdHNrID0ga3RocmVhZF9ydW4oUlRVU0JDbWRUaHJlYWQsIHBBZCwg
+cEFkLT5uZXRfZGV2LT5uYW1lKTsKKworCWlmIChJU19FUlIodHNrKSA8IDApCiAJewogCQlwcmlu
+dGsgKEtFUk5fV0FSTklORyAiJXM6IHVuYWJsZSB0byBzdGFydCBSVFVTQkNtZCB0aHJlYWRcbiIs
+cEFkLT5uZXRfZGV2LT5uYW1lKTsKIAkJcmV0dXJuIE5ESVNfU1RBVFVTX0ZBSUxVUkU7CiAJfQot
+CXBPYmotPlJUVVNCQ21kVGhyX3BpZCA9IEdFVF9QSUQocGlkX251bWJlcik7CisKKwlwT2JqLT5S
+VFVTQkNtZFRocl90YXNrID0gdHNrOwogCXdhaXRfZm9yX2NvbXBsZXRpb24oJihwQWQtPkNtZFFD
+b21wbGV0ZSkpOwogCi0JcE9iai0+VGltZXJRVGhyX3BpZD0gVEhSRUFEX1BJRF9JTklUX1ZBTFVF
+OwotCXBpZF9udW1iZXIgPSBrZXJuZWxfdGhyZWFkKFRpbWVyUVRocmVhZCwgcEFkLCBDTE9ORV9W
+TSk7Ci0JaWYgKHBpZF9udW1iZXIgPCAwKQorCXBPYmotPlRpbWVyUVRocl90YXNrID0gTlVMTDsK
+Kwl0c2sgPSBrdGhyZWFkX3J1bihUaW1lclFUaHJlYWQsIHBBZCwgcEFkLT5uZXRfZGV2LT5uYW1l
+KTsKKwlpZiAoSVNfRVJSKHRzaykgPCAwKQogCXsKIAkJcHJpbnRrIChLRVJOX1dBUk5JTkcgIiVz
+OiB1bmFibGUgdG8gc3RhcnQgVGltZXJRVGhyZWFkXG4iLHBBZC0+bmV0X2Rldi0+bmFtZSk7CiAJ
+CXJldHVybiBORElTX1NUQVRVU19GQUlMVVJFOwogCX0KLQlwT2JqLT5UaW1lclFUaHJfcGlkID0g
+R0VUX1BJRChwaWRfbnVtYmVyKTsKKwlwT2JqLT5UaW1lclFUaHJfdGFzayA9IHRzazsKIAkvLyBX
+YWl0IGZvciB0aGUgdGhyZWFkIHRvIHN0YXJ0CiAJd2FpdF9mb3JfY29tcGxldGlvbigmKHBBZC0+
+VGltZXJRQ29tcGxldGUpKTsKIApkaWZmIC0tZ2l0IGEvZHJpdmVycy9zdGFnaW5nL3J0Mjg3MC9j
+b21tb24vY21tX2RhdGEuYyBiL2RyaXZlcnMvc3RhZ2luZy9ydDI4NzAvY29tbW9uL2NtbV9kYXRh
+LmMKaW5kZXggZmQ4MDlhYi4uZjhlMGViZCAxMDA2NDQKLS0tIGEvZHJpdmVycy9zdGFnaW5nL3J0
+Mjg3MC9jb21tb24vY21tX2RhdGEuYworKysgYi9kcml2ZXJzL3N0YWdpbmcvcnQyODcwL2NvbW1v
+bi9jbW1fZGF0YS5jCkBAIC03MDksOSArNzA5LDYgQEAgQk9PTEVBTiBSVE1QX0ZpbGxUeEJsa0lu
+Zm8oCiAJfQogCiAJcmV0dXJuIFRSVUU7Ci0KLUZpbGxUeEJsa0VycjoKLQlyZXR1cm4gRkFMU0U7
+CiB9CiAKIApkaWZmIC0tZ2l0IGEvZHJpdmVycy9zdGFnaW5nL3J0Mjg3MC9jb21tb24vcnRtcF9p
+bml0LmMgYi9kcml2ZXJzL3N0YWdpbmcvcnQyODcwL2NvbW1vbi9ydG1wX2luaXQuYwppbmRleCA4
+NzBhMDBkLi4wOTliNmE4IDEwMDY0NAotLS0gYS9kcml2ZXJzL3N0YWdpbmcvcnQyODcwL2NvbW1v
+bi9ydG1wX2luaXQuYworKysgYi9kcml2ZXJzL3N0YWdpbmcvcnQyODcwL2NvbW1vbi9ydG1wX2lu
+aXQuYwpAQCAtMzY1NSw3ICszNjU1LDcgQEAgVk9JRAlVc2VyQ2ZnSW5pdCgKICNpZmRlZiBSQUxJ
+TktfMjh4eF9RQQogCS8vcEFkLT5hdGUuUmVwZWF0ID0gMDsKIAlwQWQtPmF0ZS5UeFN0YXR1cyA9
+IDA7Ci0JcEFkLT5hdGUuQXRlUGlkID0gVEhSRUFEX1BJRF9JTklUX1ZBTFVFOworCXBBZC0+YXRl
+LkF0ZVBpZCA9IE5VTEw7CiAjZW5kaWYgLy8gUkFMSU5LXzI4eHhfUUEgLy8KICNlbmRpZiAvLyBS
+QUxJTktfQVRFIC8vCiAKZGlmZiAtLWdpdCBhL2RyaXZlcnMvc3RhZ2luZy9ydDI4NzAvY29tbW9u
+L3J0dXNiX2lvLmMgYi9kcml2ZXJzL3N0YWdpbmcvcnQyODcwL2NvbW1vbi9ydHVzYl9pby5jCmlu
+ZGV4IDZkYjQ0M2UuLmFmZGUxMzYgMTAwNjQ0Ci0tLSBhL2RyaXZlcnMvc3RhZ2luZy9ydDI4NzAv
+Y29tbW9uL3J0dXNiX2lvLmMKKysrIGIvZHJpdmVycy9zdGFnaW5nL3J0Mjg3MC9jb21tb24vcnR1
+c2JfaW8uYwpAQCAtOTU4LDcgKzk1OCw4IEBAIE5ESVNfU1RBVFVTCVJUVVNCRW5xdWV1ZUNtZEZy
+b21OZGlzKAogCVBPU19DT09LSUUgcE9iaiA9IChQT1NfQ09PS0lFKSBwQWQtPk9TX0Nvb2tpZTsK
+IAogCi0JQ0hFQ0tfUElEX0xFR0FMSVRZKHBPYmotPlJUVVNCQ21kVGhyX3BpZCkKKwlCVUdfT04o
+cE9iai0+UlRVU0JDbWRUaHJfdGFzayA9PSBOVUxMKTsKKwlDSEVDS19QSURfTEVHQUxJVFkodGFz
+a19waWQocE9iai0+UlRVU0JDbWRUaHJfdGFzaykpCiAJCXJldHVybiAoTkRJU19TVEFUVVNfUkVT
+T1VSQ0VTKTsKIAogCXN0YXR1cyA9IFJUTVBBbGxvY2F0ZU1lbW9yeSgoUFZPSUQgKikmY21kcWVs
+bXQsIHNpemVvZihDbWRRRWxtdCkpOwpkaWZmIC0tZ2l0IGEvZHJpdmVycy9zdGFnaW5nL3J0Mjg3
+MC9ydDI4NzAuaCBiL2RyaXZlcnMvc3RhZ2luZy9ydDI4NzAvcnQyODcwLmgKaW5kZXggMzBhZjRi
+NS4uODBmMjQ4MiAxMDA2NDQKLS0tIGEvZHJpdmVycy9zdGFnaW5nL3J0Mjg3MC9ydDI4NzAuaAor
+KysgYi9kcml2ZXJzL3N0YWdpbmcvcnQyODcwL3J0Mjg3MC5oCkBAIC01NzYsMTQgKzU3NiwxNiBA
+QCBWT0lEIFJUVVNCQnVsa1J4Q29tcGxldGUocHVyYmJfdCBwVXJiLCBzdHJ1Y3QgcHRfcmVncyAq
+cHRfcmVncyk7CiAjZGVmaW5lIFJUVVNCTWxtZVVwKHBBZCkJICAgICAgICBcCiB7CQkJCQkJCQkg
+ICAgXAogCVBPU19DT09LSUUgcE9iaiA9IChQT1NfQ09PS0lFKSBwQWQtPk9TX0Nvb2tpZTsJXAot
+CUNIRUNLX1BJRF9MRUdBTElUWShwT2JqLT5NTE1FVGhyX3BpZCkJCSAgICBcCisJQlVHX09OKHBP
+YmotPk1MTUVUaHJfdGFzayA9PSBOVUxMKTsJCSAgICBcCisJQ0hFQ0tfUElEX0xFR0FMSVRZKHRh
+c2tfcGlkKHBPYmotPk1MTUVUaHJfdGFzaykpCQkgICAgXAogICAgICAgICB1cCgmKHBBZC0+bWxt
+ZV9zZW1hcGhvcmUpKTsgXAogfQogCiAjZGVmaW5lIFJUVVNCQ01EVXAocEFkKQkgICAgICAgICAg
+ICAgICAgXAogewkJCQkJCQkJCSAgICBcCiAJUE9TX0NPT0tJRSBwT2JqID0gKFBPU19DT09LSUUp
+IHBBZC0+T1NfQ29va2llOwlcCi0JQ0hFQ0tfUElEX0xFR0FMSVRZKHBPYmotPlJUVVNCQ21kVGhy
+X3BpZCkJICAgIFwKKwlCVUdfT04ocE9iai0+UlRVU0JDbWRUaHJfdGFzayA9PSBOVUxMKTsJICAg
+IFwKKwlDSEVDS19QSURfTEVHQUxJVFkodGFza19waWQocE9iai0+UlRVU0JDbWRUaHJfdGFzaykp
+CSAgICBcCiAJICAgIHVwKCYocEFkLT5SVFVTQkNtZF9zZW1hcGhvcmUpKTsgXAogfQogCmRpZmYg
+LS1naXQgYS9kcml2ZXJzL3N0YWdpbmcvcnQyODcwL3J0X2xpbnV4LmggYi9kcml2ZXJzL3N0YWdp
+bmcvcnQyODcwL3J0X2xpbnV4LmgKaW5kZXggODU5ZjljZS4uN2IzOTJiOCAxMDA2NDQKLS0tIGEv
+ZHJpdmVycy9zdGFnaW5nL3J0Mjg3MC9ydF9saW51eC5oCisrKyBiL2RyaXZlcnMvc3RhZ2luZy9y
+dDI4NzAvcnRfbGludXguaApAQCAtNDQsNiArNDQsNyBAQAogI2luY2x1ZGUgPGxpbnV4L21vZHVs
+ZS5oPgogI2luY2x1ZGUgPGxpbnV4L3ZlcnNpb24uaD4KICNpbmNsdWRlIDxsaW51eC9rZXJuZWwu
+aD4KKyNpbmNsdWRlIDxsaW51eC9rdGhyZWFkLmg+CiAKICNpbmNsdWRlIDxsaW51eC9zcGlubG9j
+ay5oPgogI2luY2x1ZGUgPGxpbnV4L2luaXQuaD4KQEAgLTE2NiwxNCArMTY3LDEyIEBAIHR5cGVk
+ZWYgaW50ICgqSEFSRF9TVEFSVF9YTUlUX0ZVTkMpKHN0cnVjdCBza19idWZmICpza2IsIHN0cnVj
+dCBuZXRfZGV2aWNlICpuZXRfCiAKICNpZiBMSU5VWF9WRVJTSU9OX0NPREUgPj0gS0VSTkVMX1ZF
+UlNJT04oMiw2LDI3KQogdHlwZWRlZglzdHJ1Y3QgcGlkICoJVEhSRUFEX1BJRDsKLSNkZWZpbmUJ
+VEhSRUFEX1BJRF9JTklUX1ZBTFVFCU5VTEwKICNkZWZpbmUJR0VUX1BJRChfdikJZmluZF9nZXRf
+cGlkKF92KQogI2RlZmluZQlHRVRfUElEX05VTUJFUihfdikJcGlkX25yKF92KQogI2RlZmluZSBD
+SEVDS19QSURfTEVHQUxJVFkoX3BpZCkJaWYgKHBpZF9ucihfcGlkKSA+PSAwKQogI2RlZmluZSBL
+SUxMX1RIUkVBRF9QSUQoX0EsIF9CLCBfQykJa2lsbF9waWQoX0EsIF9CLCBfQykKICNlbHNlCiB0
+eXBlZGVmCXBpZF90CVRIUkVBRF9QSUQ7Ci0jZGVmaW5lCVRIUkVBRF9QSURfSU5JVF9WQUxVRQkt
+MQogI2RlZmluZQlHRVRfUElEKF92KQlfdgogI2RlZmluZQlHRVRfUElEX05VTUJFUihfdikJX3YK
+ICNkZWZpbmUgQ0hFQ0tfUElEX0xFR0FMSVRZKF9waWQpCWlmIChfcGlkID49IDApCkBAIC0xODks
+MTEgKzE4OCwxMSBAQCBzdHJ1Y3Qgb3NfbG9jayAgewogc3RydWN0IG9zX2Nvb2tpZSB7CiAKICNp
+ZmRlZiBSVDI4NzAKLQlzdHJ1Y3QgdXNiX2RldmljZQkJKnBVc2JfRGV2OworCXN0cnVjdCB1c2Jf
+ZGV2aWNlCSpwVXNiX0RldjsKIAotCVRIUkVBRF9QSUQJCQkJTUxNRVRocl9waWQ7Ci0JVEhSRUFE
+X1BJRAkJCQlSVFVTQkNtZFRocl9waWQ7Ci0JVEhSRUFEX1BJRAkJCQlUaW1lclFUaHJfcGlkOwor
+CXN0cnVjdCB0YXNrX3N0cnVjdAkqTUxNRVRocl90YXNrOworCXN0cnVjdCB0YXNrX3N0cnVjdAkq
+UlRVU0JDbWRUaHJfdGFzazsKKwlzdHJ1Y3QgdGFza19zdHJ1Y3QJKlRpbWVyUVRocl90YXNrOwog
+I2VuZGlmIC8vIFJUMjg3MCAvLwogCiAJc3RydWN0IHRhc2tsZXRfc3RydWN0IAlyeF9kb25lX3Rh
+c2s7Cg==
+--000e0cd2bd0066287d046590f80d--
