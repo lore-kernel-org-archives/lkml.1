@@ -1,53 +1,269 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758065AbZCTP3g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757218AbZCTP3t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758065AbZCTP3g (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Mar 2009 11:29:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751315AbZCTP31
+	id S1757218AbZCTP3t (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Mar 2009 11:29:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755954AbZCTP3c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Mar 2009 11:29:27 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:56477 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754731AbZCTP30 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Mar 2009 11:29:26 -0400
-Date: Fri, 20 Mar 2009 15:29:21 +0000
-From: Mel Gorman <mel@csn.ul.ie>
-To: Christoph Lameter <cl@linux-foundation.org>
-Cc: Linux Memory Management List <linux-mm@kvack.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Nick Piggin <npiggin@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Lin Ming <ming.m.lin@intel.com>,
-       Zhang Yanmin <yanmin_zhang@linux.intel.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 08/25] Calculate the preferred zone for allocation only
-	once
-Message-ID: <20090320152921.GN24586@csn.ul.ie>
-References: <1237543392-11797-1-git-send-email-mel@csn.ul.ie> <1237543392-11797-9-git-send-email-mel@csn.ul.ie> <alpine.DEB.1.10.0903201105530.3740@qirst.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+	Fri, 20 Mar 2009 11:29:32 -0400
+Received: from tomts16.bellnexxia.net ([209.226.175.4]:38965 "EHLO
+	tomts16-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756743AbZCTP3a (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Mar 2009 11:29:30 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AgMFAJNTw0lMQW1W/2dsb2JhbACBUNNpg30G
+Date: Fri, 20 Mar 2009 11:28:57 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Masahiro Tamori <masahiro.tamori@gmail.com>
+Cc: ltt-dev <ltt-dev@lists.casi.polymtl.ca>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, linux-nfs@vger.kernel.org
+Subject: Re: [Patch] ltt-relay-alloc mmap support (due to NFS lack of
+	splice support)
+Message-ID: <20090320152857.GB30019@Krystal>
+References: <91e0b5050903170224k51c4895eq8a1491da7a7a9741@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0903201105530.3740@qirst.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <91e0b5050903170224k51c4895eq8a1491da7a7a9741@mail.gmail.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 11:23:31 up 20 days, 11:49,  1 user,  load average: 0.50, 0.51,
+	0.49
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 20, 2009 at 11:06:46AM -0400, Christoph Lameter wrote:
-> On Fri, 20 Mar 2009, Mel Gorman wrote:
+* Masahiro Tamori (masahiro.tamori@gmail.com) wrote:
+> Hello Mathieu,
 > 
-> > get_page_from_freelist() can be called multiple times for an allocation.
-> > Part of this calculates the preferred_zone which is the first usable
-> > zone in the zonelist. This patch calculates preferred_zone once.
+> I use the following version.
+> LTTV 0.12.12
+> LTTng 0.110
+> LTT Control 0.67
+> Kernles 2.6.29-rc7
 > 
-> Isnt this adding an additional pass over the zonelist? Maybe mitigaged by
-> the first zone usually being the preferred zone.
+> The target is ARM RealviewEB.
+> 
+> Our customer will use NFS to store trace data not storage device for
+> embedded devices.
+> Since newer lttng use splice() even if NFS can not support splice(),
+> I create a patch to support to mmap of ltt-relay-alloc.
+> 
+> I will send a mail to this mailing list for ltt-control patch.
+> I do not know which mailing list should be posted for userland tools.
+> 
+> Best Regards,
+> Masahiro Tamori
+> 
+> 
+> ltt-relay-alloc mmap support
+> 
+> Splice syscall does not support NFS. We can not save trace data to
+> NFS directory. If this feature is enabled, you can use mmap()
+> instead of splice().
 > 
 
-The alternative is uglifing the iterator quite a bit and making the code a
-bit impeneratable. The walk to the first preferred zone should be very short.
+
+Hi Masahiro,
+
+Maybe we should consider implementing splice() support in NFS instead ?
+
+I removed the mmap support from the ltt-relay-alloc files because splice
+is more efficient and does not require to vmap the pages.  Unless there
+is a strong argument telling what in NFS makes it impossible to
+implement splice(), I don't really see the gain in putting back the
+old mmap() mechanism we had.
+
+Maybe the NFS people will have some information about this ?
+
+Thanks,
+
+Mathieu
+
+
+> For embeded system, NFS must be used. Target board has not enough memory
+> to save trace data and some board can not connect ATA, USB and some strage
+> devices.
+> 
+> Signed-off-by: Masahiro.Tamori@gmail.com
+> ---
+>  ltt/Kconfig              |   11 	11 +	0 -	0 !
+>  ltt/ltt-relay-alloc.c    |   88 	88 +	0 -	0 !
+>  ltt/ltt-relay-lockless.c |   15 	15 +	0 -	0 !
+>  3 files changed, 114 insertions(+)
+> 
+> Index: b/ltt/Kconfig
+> ===================================================================
+> --- a/ltt/Kconfig
+> +++ b/ltt/Kconfig
+> @@ -66,6 +66,17 @@ choice
+> 
+>  endchoice
+> 
+> +config LTT_RELAY_ALLOC_MMAP
+> +	bool "Linux Trace Toolkit Relay mmap Support"
+> +	depends on LTT_RELAY_ALLOC
+> +	default y
+> +	help
+> +	  Support mmap for ltt-relay.
+> +
+> +	  Splice syscall does not support NFS. We can not save trace data to
+> +          NFS directory. If this feature is enabled, you can use mmap()
+> +          instead of splice().
+> +
+>  config LTT_SERIALIZE
+>  	tristate "Linux Trace Toolkit Serializer"
+>  	depends on LTT_RELAY_ALLOC
+> Index: b/ltt/ltt-relay-alloc.c
+> ===================================================================
+> --- a/ltt/ltt-relay-alloc.c
+> +++ b/ltt/ltt-relay-alloc.c
+> @@ -27,6 +27,74 @@
+>  static DEFINE_MUTEX(relay_channels_mutex);
+>  static LIST_HEAD(relay_channels);
+> 
+> +#ifdef CONFIG_LTT_RELAY_ALLOC_MMAP
+> +/*
+> + * close() vm_op implementation for relay file mapping.
+> + */
+> +static void relay_file_mmap_close(struct vm_area_struct *vma)
+> +{
+> +}
+> +
+> +/*
+> + * fault() vm_op implementation for relay file mapping.
+> + */
+> +static int relay_buf_fault(struct vm_area_struct *vma, struct vm_fault *vmf)
+> +{
+> +	struct page *page = NULL;
+> +	struct rchan_buf *buf = vma->vm_private_data;
+> +	pgoff_t pgoff = vmf->pgoff;
+> +	struct page **pages;
+> +
+> +	if (!buf)
+> +		return VM_FAULT_OOM;
+> +
+> +	if (pgoff >= buf->page_count)
+> +		return VM_FAULT_SIGBUS;
+> +
+> +	pages = buf->pages;
+> +	page = pages[pgoff];
+> +	get_page(page);
+> +	vmf->page = page;
+> +
+> +	return 0;
+> +}
+> +
+> +/*
+> + * vm_ops for relay file mappings.
+> + */
+> +static struct vm_operations_struct relay_file_mmap_ops = {
+> +	.fault = relay_buf_fault,
+> +	.close = relay_file_mmap_close,
+> +};
+> +
+> +/**
+> + *	relay_mmap_buf: - mmap channel buffer to process address space
+> + *	@buf: relay channel buffer
+> + *	@vma: vm_area_struct describing memory to be mapped
+> + *
+> + *	Returns 0 if ok, negative on error
+> + *
+> + *	Caller should already have grabbed mmap_sem.
+> + */
+> +static int relay_mmap_buf(struct rchan_buf *buf, struct vm_area_struct *vma)
+> +{
+> +	unsigned long length = vma->vm_end - vma->vm_start;
+> +
+> +	if (!buf)
+> +		return -EBADF;
+> +
+> +	if (length != (unsigned long)buf->chan->alloc_size)
+> +		return -EINVAL;
+> +
+> +	vma->vm_ops = &relay_file_mmap_ops;
+> +	vma->vm_flags |= VM_DONTEXPAND;
+> +	vma->vm_private_data = buf;
+> +
+> +	return 0;
+> +}
+> +
+> +#endif /* CONFIG_LTT_RELAY_ALLOC_MMAP */
+> +
+>  /**
+>   *	relay_alloc_buf - allocate a channel buffer
+>   *	@buf: the buffer struct
+> @@ -601,6 +669,23 @@ static int relay_file_open(struct inode
+>  	return nonseekable_open(inode, filp);
+>  }
+> 
+> +#ifdef CONFIG_LTT_RELAY_ALLOC_MMAP
+> +
+> +/**
+> + *	relay_file_mmap - mmap file op for relay files
+> + *	@filp: the file
+> + *	@vma: the vma describing what to map
+> + *
+> + *	Calls upon relay_mmap_buf() to map the file into user space.
+> + */
+> +static int relay_file_mmap(struct file *filp, struct vm_area_struct *vma)
+> +{
+> +	struct rchan_buf *buf = filp->private_data;
+> +	return relay_mmap_buf(buf, vma);
+> +}
+> +
+> +#endif /* CONFIG_LTT_RELAY_ALLOC_MMAP */
+> +
+>  /**
+>   *	relay_file_release - release file op for relay files
+>   *	@inode: the inode
+> @@ -619,6 +704,9 @@ static int relay_file_release(struct ino
+> 
+>  const struct file_operations ltt_relay_file_operations = {
+>  	.open		= relay_file_open,
+> +#ifdef CONFIG_LTT_RELAY_ALLOC_MMAP
+> +	.mmap		= relay_file_mmap,
+> +#endif
+>  	.release	= relay_file_release,
+>  };
+>  EXPORT_SYMBOL_GPL(ltt_relay_file_operations);
+> Index: b/ltt/ltt-relay-lockless.c
+> ===================================================================
+> --- a/ltt/ltt-relay-lockless.c
+> +++ b/ltt/ltt-relay-lockless.c
+> @@ -427,6 +427,18 @@ static int ltt_release(struct inode *ino
+>  }
+> 
+>  /**
+> + *	ltt_mmap - mmap file op for ltt files
+> + *	@inode: opened inode
+> + *	@file: opened file
+> + *
+> + *	Mmap implementation.
+> + */
+> +static int ltt_mmap(struct file *file,  struct vm_area_struct *vma)
+> +{
+> +	return ltt_relay_file_operations.mmap(file, vma);
+> +}
+> +
+> +/**
+>   *	ltt_poll - file op for ltt files
+>   *	@filp: the file
+>   *	@wait: poll table
+> @@ -1590,6 +1602,9 @@ static struct ltt_transport ltt_relay_tr
+>  static const struct file_operations ltt_file_operations = {
+>  	.open = ltt_open,
+>  	.release = ltt_release,
+> +#ifdef CONFIG_LTT_RELAY_ALLOC_MMAP
+> +	.mmap		= ltt_mmap,
+> +#endif
+>  	.poll = ltt_poll,
+>  	.splice_read = ltt_relay_file_splice_read,
+>  	.ioctl = ltt_ioctl,
 
 -- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
