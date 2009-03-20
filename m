@@ -1,13 +1,13 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760207AbZCTKGi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760375AbZCTKG6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760207AbZCTKGi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Mar 2009 06:06:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758119AbZCTKCq
+	id S1760375AbZCTKG6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Mar 2009 06:06:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757610AbZCTKCq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Fri, 20 Mar 2009 06:02:46 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:55064 "EHLO gir.skynet.ie"
+Received: from gir.skynet.ie ([193.1.99.77]:55070 "EHLO gir.skynet.ie"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757885AbZCTKCl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1757207AbZCTKCl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 20 Mar 2009 06:02:41 -0400
 From: Mel Gorman <mel@csn.ul.ie>
 To: Mel Gorman <mel@csn.ul.ie>,
@@ -20,9 +20,9 @@ Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
        Zhang Yanmin <yanmin_zhang@linux.intel.com>,
        Peter Zijlstra <peterz@infradead.org>,
        Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH 10/25] Calculate the alloc_flags for allocation only once
-Date: Fri, 20 Mar 2009 10:02:57 +0000
-Message-Id: <1237543392-11797-11-git-send-email-mel@csn.ul.ie>
+Subject: [PATCH 11/25] Calculate the cold parameter for allocation only once
+Date: Fri, 20 Mar 2009 10:02:58 +0000
+Message-Id: <1237543392-11797-12-git-send-email-mel@csn.ul.ie>
 X-Mailer: git-send-email 1.5.6.5
 In-Reply-To: <1237543392-11797-1-git-send-email-mel@csn.ul.ie>
 References: <1237543392-11797-1-git-send-email-mel@csn.ul.ie>
@@ -30,156 +30,171 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Factor out the mapping between GFP and alloc_flags only once. Once factored
-out, it only needs to be calculated once but some care must be taken.
+GFP mask is checked for __GFP_COLD has been specified when deciding which
+end of the PCP lists to use. However, it is happening multiple times per
+allocation, at least once per zone traversed. Calculate it once.
 
-[neilb@suse.de says]
-As the test:
-
--       if (((p->flags & PF_MEMALLOC) || unlikely(test_thread_flag(TIF_MEMDIE)))
--                       && !in_interrupt()) {
--               if (!(gfp_mask & __GFP_NOMEMALLOC)) {
-
-has been replaced with a slightly weaker one:
-
-+       if (alloc_flags & ALLOC_NO_WATERMARKS) {
-
-we need to ensure we don't recurse when PF_MEMALLOC is set.
-
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Acked-by: Pekka Enberg <penberg@cs.helsinki.fi>
+Signed-off-by: Mel Gorman <mel@csn.ul.ie>
 ---
- mm/page_alloc.c |   88 +++++++++++++++++++++++++++++++-----------------------
- 1 files changed, 50 insertions(+), 38 deletions(-)
+ mm/page_alloc.c |   35 ++++++++++++++++++-----------------
+ 1 files changed, 18 insertions(+), 17 deletions(-)
 
 diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-index 8771de3..0558eb4 100644
+index 0558eb4..ad26052 100644
 --- a/mm/page_alloc.c
 +++ b/mm/page_alloc.c
-@@ -1593,16 +1593,6 @@ __alloc_pages_direct_reclaim(gfp_t gfp_mask, unsigned int order,
+@@ -1068,11 +1068,10 @@ void split_page(struct page *page, unsigned int order)
+  */
+ static struct page *buffered_rmqueue(struct zone *preferred_zone,
+ 			struct zone *zone, int order, gfp_t gfp_flags,
+-			int migratetype)
++			int migratetype, int cold)
+ {
+ 	unsigned long flags;
+ 	struct page *page;
+-	int cold = !!(gfp_flags & __GFP_COLD);
+ 	int cpu;
+ 
+ again:
+@@ -1399,7 +1398,7 @@ static void zlc_mark_zone_full(struct zonelist *zonelist, struct zoneref *z)
+ static struct page *
+ get_page_from_freelist(gfp_t gfp_mask, nodemask_t *nodemask, unsigned int order,
+ 		struct zonelist *zonelist, int high_zoneidx, int alloc_flags,
+-		struct zone *preferred_zone, int migratetype)
++		struct zone *preferred_zone, int migratetype, int cold)
+ {
+ 	struct zoneref *z;
+ 	struct page *page = NULL;
+@@ -1452,7 +1451,7 @@ zonelist_scan:
+ 		}
+ 
+ 		page = buffered_rmqueue(preferred_zone, zone, order,
+-						gfp_mask, migratetype);
++						gfp_mask, migratetype, cold);
+ 		if (page)
+ 			break;
+ this_zone_full:
+@@ -1517,7 +1516,7 @@ static inline struct page *
+ __alloc_pages_may_oom(gfp_t gfp_mask, unsigned int order,
+ 	struct zonelist *zonelist, enum zone_type high_zoneidx,
+ 	nodemask_t *nodemask, struct zone *preferred_zone,
+-	int migratetype)
++	int migratetype, int cold)
+ {
+ 	struct page *page;
+ 
+@@ -1535,7 +1534,7 @@ __alloc_pages_may_oom(gfp_t gfp_mask, unsigned int order,
+ 	page = get_page_from_freelist(gfp_mask|__GFP_HARDWALL, nodemask,
+ 		order, zonelist, high_zoneidx,
+ 		ALLOC_WMARK_HIGH|ALLOC_CPUSET,
+-		preferred_zone, migratetype);
++		preferred_zone, migratetype, cold);
+ 	if (page)
+ 		goto out;
+ 
+@@ -1556,7 +1555,7 @@ static inline struct page *
+ __alloc_pages_direct_reclaim(gfp_t gfp_mask, unsigned int order,
+ 	struct zonelist *zonelist, enum zone_type high_zoneidx,
+ 	nodemask_t *nodemask, int alloc_flags, struct zone *preferred_zone,
+-	int migratetype, unsigned long *did_some_progress)
++	int migratetype, int cold, unsigned long *did_some_progress)
+ {
+ 	struct page *page = NULL;
+ 	struct reclaim_state reclaim_state;
+@@ -1589,7 +1588,7 @@ __alloc_pages_direct_reclaim(gfp_t gfp_mask, unsigned int order,
+ 		page = get_page_from_freelist(gfp_mask, nodemask, order,
+ 					zonelist, high_zoneidx,
+ 					alloc_flags, preferred_zone,
+-					migratetype);
++					migratetype, cold);
  	return page;
  }
  
--static inline int
--is_allocation_high_priority(struct task_struct *p, gfp_t gfp_mask)
--{
--	if (((p->flags & PF_MEMALLOC) || unlikely(test_thread_flag(TIF_MEMDIE)))
--			&& !in_interrupt())
--		if (!(gfp_mask & __GFP_NOMEMALLOC))
--			return 1;
--	return 0;
--}
--
- /*
-  * This is called in the allocator slow-path if the allocation request is of
-  * sufficient urgency to ignore watermarks and take other desperate measures
-@@ -1638,6 +1628,42 @@ void wake_all_kswapd(unsigned int order, struct zonelist *zonelist,
- 		wakeup_kswapd(zone, order);
- }
+@@ -1601,14 +1600,14 @@ static inline struct page *
+ __alloc_pages_high_priority(gfp_t gfp_mask, unsigned int order,
+ 	struct zonelist *zonelist, enum zone_type high_zoneidx,
+ 	nodemask_t *nodemask, struct zone *preferred_zone,
+-	int migratetype)
++	int migratetype, int cold)
+ {
+ 	struct page *page;
  
-+static inline int
-+gfp_to_alloc_flags(gfp_t gfp_mask)
-+{
-+	struct task_struct *p = current;
-+	int alloc_flags = ALLOC_WMARK_MIN | ALLOC_CPUSET;
-+	const gfp_t wait = gfp_mask & __GFP_WAIT;
-+
-+	/*
-+	 * The caller may dip into page reserves a bit more if the caller
-+	 * cannot run direct reclaim, or if the caller has realtime scheduling
-+	 * policy or is asking for __GFP_HIGH memory.  GFP_ATOMIC requests will
-+	 * set both ALLOC_HARDER (!wait) and ALLOC_HIGH (__GFP_HIGH).
-+	 */
-+	if (gfp_mask & __GFP_HIGH)
-+		alloc_flags |= ALLOC_HIGH;
-+
-+	if (!wait) {
-+		alloc_flags |= ALLOC_HARDER;
-+		/*
-+		 * Ignore cpuset if GFP_ATOMIC (!wait) rather than fail alloc.
-+		 * See also cpuset_zone_allowed() comment in kernel/cpuset.c.
-+		 */
-+		alloc_flags &= ~ALLOC_CPUSET;
-+	} else if (unlikely(rt_task(p)) && !in_interrupt())
-+		alloc_flags |= ALLOC_HARDER;
-+
-+	if (likely(!(gfp_mask & __GFP_NOMEMALLOC))) {
-+		if (!in_interrupt() &&
-+		    ((p->flags & PF_MEMALLOC) ||
-+		     unlikely(test_thread_flag(TIF_MEMDIE))))
-+			alloc_flags |= ALLOC_NO_WATERMARKS;
-+	}
-+
-+	return alloc_flags;
-+}
-+
- static inline struct page *
+ 	do {
+ 		page = get_page_from_freelist(gfp_mask, nodemask, order,
+ 			zonelist, high_zoneidx, ALLOC_NO_WATERMARKS,
+-			preferred_zone, migratetype);
++			preferred_zone, migratetype, cold);
+ 
+ 		if (!page && gfp_mask & __GFP_NOFAIL)
+ 			congestion_wait(WRITE, HZ/50);
+@@ -1668,7 +1667,7 @@ static inline struct page *
  __alloc_pages_slowpath(gfp_t gfp_mask, unsigned int order,
  	struct zonelist *zonelist, enum zone_type high_zoneidx,
-@@ -1668,48 +1694,34 @@ __alloc_pages_slowpath(gfp_t gfp_mask, unsigned int order,
- 	 * OK, we're below the kswapd watermark and have kicked background
- 	 * reclaim. Now things get more complex, so set up alloc_flags according
- 	 * to how we want to proceed.
--	 *
--	 * The caller may dip into page reserves a bit more if the caller
--	 * cannot run direct reclaim, or if the caller has realtime scheduling
--	 * policy or is asking for __GFP_HIGH memory.  GFP_ATOMIC requests will
--	 * set both ALLOC_HARDER (!wait) and ALLOC_HIGH (__GFP_HIGH).
- 	 */
--	alloc_flags = ALLOC_WMARK_MIN;
--	if ((unlikely(rt_task(p)) && !in_interrupt()) || !wait)
--		alloc_flags |= ALLOC_HARDER;
--	if (gfp_mask & __GFP_HIGH)
--		alloc_flags |= ALLOC_HIGH;
--	if (wait)
--		alloc_flags |= ALLOC_CPUSET;
-+	alloc_flags = gfp_to_alloc_flags(gfp_mask);
- 
- restart:
--	/*
--	 * Go through the zonelist again. Let __GFP_HIGH and allocations
--	 * coming from realtime tasks go deeper into reserves.
--	 *
--	 * This is the last chance, in general, before the goto nopage.
--	 * Ignore cpuset if GFP_ATOMIC (!wait) rather than fail alloc.
--	 * See also cpuset_zone_allowed() comment in kernel/cpuset.c.
--	 */
-+	/* This is the last chance, in general, before the goto nopage. */
+ 	nodemask_t *nodemask, struct zone *preferred_zone,
+-	int migratetype)
++	int migratetype, int cold)
+ {
+ 	const gfp_t wait = gfp_mask & __GFP_WAIT;
+ 	struct page *page = NULL;
+@@ -1701,7 +1700,7 @@ restart:
+ 	/* This is the last chance, in general, before the goto nopage. */
  	page = get_page_from_freelist(gfp_mask, nodemask, order, zonelist,
--						high_zoneidx, alloc_flags,
--						preferred_zone,
--						migratetype);
-+			high_zoneidx, alloc_flags & ~ALLOC_NO_WATERMARKS,
-+			preferred_zone, migratetype);
+ 			high_zoneidx, alloc_flags & ~ALLOC_NO_WATERMARKS,
+-			preferred_zone, migratetype);
++			preferred_zone, migratetype, cold);
  	if (page)
  		goto got_pg;
  
- 	/* Allocate without watermarks if the context allows */
--	if (is_allocation_high_priority(p, gfp_mask))
-+	if (alloc_flags & ALLOC_NO_WATERMARKS) {
+@@ -1709,7 +1708,7 @@ restart:
+ 	if (alloc_flags & ALLOC_NO_WATERMARKS) {
  		page = __alloc_pages_high_priority(gfp_mask, order,
--			zonelist, high_zoneidx, nodemask, preferred_zone,
--			migratetype);
--	if (page)
--		goto got_pg;
-+				zonelist, high_zoneidx, nodemask,
-+				preferred_zone, migratetype);
-+		if (page)
-+			goto got_pg;
-+	}
- 
- 	/* Atomic allocations - we can't balance anything */
- 	if (!wait)
- 		goto nopage;
- 
-+	/* Avoid recursion of direct reclaim */
-+	if (p->flags & PF_MEMALLOC)
-+		goto nopage;
-+
- 	/* Try direct reclaim and then allocating */
- 	page = __alloc_pages_direct_reclaim(gfp_mask, order,
+ 				zonelist, high_zoneidx, nodemask,
+-				preferred_zone, migratetype);
++				preferred_zone, migratetype, cold);
+ 		if (page)
+ 			goto got_pg;
+ 	}
+@@ -1727,7 +1726,8 @@ restart:
  					zonelist, high_zoneidx,
+ 					nodemask,
+ 					alloc_flags, preferred_zone,
+-					migratetype, &did_some_progress);
++					migratetype, cold,
++					&did_some_progress);
+ 	if (page)
+ 		goto got_pg;
+ 
+@@ -1740,7 +1740,7 @@ restart:
+ 			page = __alloc_pages_may_oom(gfp_mask, order,
+ 					zonelist, high_zoneidx,
+ 					nodemask, preferred_zone,
+-					migratetype);
++					migratetype, cold);
+ 			if (page)
+ 				goto got_pg;
+ 
+@@ -1780,6 +1780,7 @@ __alloc_pages_nodemask(gfp_t gfp_mask, unsigned int order,
+ 	struct zone *preferred_zone;
+ 	struct page *page;
+ 	int migratetype = allocflags_to_migratetype(gfp_mask);
++	int cold = gfp_mask & __GFP_COLD;
+ 
+ 	might_sleep_if(gfp_mask & __GFP_WAIT);
+ 
+@@ -1803,11 +1804,11 @@ __alloc_pages_nodemask(gfp_t gfp_mask, unsigned int order,
+ 	/* First allocation attempt */
+ 	page = get_page_from_freelist(gfp_mask|__GFP_HARDWALL, nodemask, order,
+ 			zonelist, high_zoneidx, ALLOC_WMARK_LOW|ALLOC_CPUSET,
+-			preferred_zone, migratetype);
++			preferred_zone, migratetype, cold);
+ 	if (unlikely(!page))
+ 		page = __alloc_pages_slowpath(gfp_mask, order,
+ 				zonelist, high_zoneidx, nodemask,
+-				preferred_zone, migratetype);
++				preferred_zone, migratetype, cold);
+ 
+ 	return page;
+ }
 -- 
 1.5.6.5
 
