@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754022AbZCTCad@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755834AbZCTCbQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754022AbZCTCad (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Mar 2009 22:30:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752890AbZCTCaX
+	id S1755834AbZCTCbQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Mar 2009 22:31:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755349AbZCTCav
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Mar 2009 22:30:23 -0400
-Received: from outbound-mail-07.bluehost.com ([69.89.17.207]:59939 "HELO
-	outbound-mail-07.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752613AbZCTCaX (ORCPT
+	Thu, 19 Mar 2009 22:30:51 -0400
+Received: from outbound-mail-115.bluehost.com ([69.89.24.5]:59538 "HELO
+	outbound-mail-115.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1757659AbZCTCat (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Mar 2009 22:30:23 -0400
+	Thu, 19 Mar 2009 22:30:49 -0400
 DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
 	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
-	b=SxibpX3lc7Np/LvyWpasDxE0l6CBYnN34tr/Y45Wh29Qof8mWC2Mq3HNXl65hreHeXq04UvKB7sRDBX9+csHOsmuOjGKDnKrawzgi0R/RGDPZbSIT559HddOQ0W2G3eZ;
-Date: Thu, 19 Mar 2009 19:30:13 -0700
+	b=H7GxHjWt4lEwwvnOUV0jB0o1Gtbv0Y8sd1Ar7gOgqEJKDqVdMc46gWboY/nz+PQtfUrKWXj9i9DUCUoKt5qFPuPUthjON4rbIdJv524EHL0IEbiX9ERb9qP4Sw48hmXq;
+Date: Thu, 19 Mar 2009 19:30:43 -0700
 From: Jesse Barnes <jbarnes@virtuousgeek.org>
 To: Yu Zhao <yu.zhao@intel.com>
 Cc: dwmw2@infradead.org, linux-pci@vger.kernel.org,
        iommu@lists.linux-foundation.org, kvm@vger.kernel.org,
        linux-kernel@vger.kernel.org, Yu Zhao <yu.zhao@intel.com>
 Subject: Re: [PATCH v3 0/6] ATS capability support for Intel IOMMU
-Message-ID: <20090319193013.66eaa539@hobbes.lan>
+Message-ID: <20090319193043.583ad601@hobbes.lan>
 In-Reply-To: <1234443038-15437-1-git-send-email-yu.zhao@intel.com>
 References: <1234443038-15437-1-git-send-email-yu.zhao@intel.com>
 X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; x86_64-pc-linux-gnu)
@@ -59,9 +59,7 @@ Yu Zhao <yu.zhao@intel.com> wrote:
 >   VT-d: cleanup iommu_flush_iotlb_psi and flush_unmaps
 >   VT-d: support the device IOTLB
 
-Is this one ready too, Yu?  Care to send a respin incorporating the
-last set of feedback?
+Um nevermind, this should go through the IOMMU tree (David?).
 
-Thanks,
 -- 
 Jesse Barnes, Intel Open Source Technology Center
