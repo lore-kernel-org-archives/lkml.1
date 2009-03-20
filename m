@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755060AbZCTVcu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757883AbZCTVdJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755060AbZCTVcu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Mar 2009 17:32:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752866AbZCTVck
+	id S1757883AbZCTVdJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Mar 2009 17:33:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753651AbZCTVcl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Mar 2009 17:32:40 -0400
-Received: from kroah.org ([198.145.64.141]:48870 "EHLO coco.kroah.org"
+	Fri, 20 Mar 2009 17:32:41 -0400
+Received: from kroah.org ([198.145.64.141]:48878 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751703AbZCTVcj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Mar 2009 17:32:39 -0400
-Date: Fri, 20 Mar 2009 14:31:28 -0700
+	id S1752970AbZCTVck (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Mar 2009 17:32:40 -0400
+Date: Fri, 20 Mar 2009 14:32:24 -0700
 From: Greg KH <greg@kroah.com>
 To: Till Kamppeter <till.kamppeter@gmail.com>
 Cc: jbottomley@novell.com, Linus Torvalds <torvalds@linux-foundation.org>,
        linux-kernel@vger.kernel.org, tech-board@lists.linux-foundation.org,
        shilp.dixit@gmail.com
 Subject: Re: [Tech-board] Project idea for the Google Summer of Code 2009
-Message-ID: <20090320213128.GB12078@kroah.com>
+Message-ID: <20090320213224.GC12078@kroah.com>
 References: <49C402A2.1040705@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -32,20 +32,12 @@ On Fri, Mar 20, 2009 at 09:54:58PM +0100, Till Kamppeter wrote:
 >
 > I got a project idea (see below) from Shilp Dixit for the Google Summer of 
 > Code 2009 through the general contact address gsoc2009@linuxfoundation.org.
->
-> It seems to be a kernel-related project and now I would like that someone 
-> reviews the suggestion and if he thinks that it is interesting offers his 
-> mentorship. Please also feel free to ask Shilp for further information.
 
-I don't see how this relates to the kernel at all, as you can do this
-already with no changes needed to the kernel.
+Shouldn't stuff like this go through the "normal" process that mentors
+of GSoC use to choose projects and students?
 
-Or am I missing something here?
-
-I think others have already done this very thing, Shilp, how does this
-differ from offerings like the opensuse build system, and the different
-tools out there that will build a distro "on demand" from what you ask
-it to include (rPath, suse studio, knopix, etc.)
+I thought that was what the whole "review and score" system that Google
+sets up on the web for the projects to use was for.
 
 thanks,
 
