@@ -1,79 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759626AbZCTD2c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753319AbZCTDdU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759626AbZCTD2c (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Mar 2009 23:28:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757777AbZCTD2U
+	id S1753319AbZCTDdU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Mar 2009 23:33:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752229AbZCTDdG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Mar 2009 23:28:20 -0400
-Received: from mga11.intel.com ([192.55.52.93]:21979 "EHLO mga11.intel.com"
+	Thu, 19 Mar 2009 23:33:06 -0400
+Received: from rtr.ca ([76.10.145.34]:33879 "EHLO mail.rtr.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751689AbZCTD2T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Mar 2009 23:28:19 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.38,392,1233561600"; 
-   d="scan'208";a="440471755"
-Message-ID: <49C30D4F.2050903@intel.com>
-Date: Fri, 20 Mar 2009 11:28:15 +0800
-From: "Zhao, Yu" <yu.zhao@intel.com>
-User-Agent: Thunderbird 2.0.0.17 (Windows/20080914)
+	id S1752565AbZCTDdE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Mar 2009 23:33:04 -0400
+Message-ID: <49C30E67.4060702@rtr.ca>
+Date: Thu, 19 Mar 2009 23:32:55 -0400
+From: Mark Lord <liml@rtr.ca>
+Organization: Real-Time Remedies Inc.
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-CC: Matthew Wilcox <matthew@wil.cx>,
-       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
-       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH v11 1/8] PCI: initialize and release SR-IOV capability
-References: <1236756349-18892-1-git-send-email-yu.zhao@intel.com>	<1236756349-18892-2-git-send-email-yu.zhao@intel.com>	<20090319195312.GC14127@parisc-linux.org> <20090319182016.33a9a1f2@hobbes.lan>
-In-Reply-To: <20090319182016.33a9a1f2@hobbes.lan>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Norman Diamond <n0diamond@yahoo.co.jp>
+Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+Subject: Re: Overagressive failing of disk reads, both LIBATA and IDE
+References: <F79C774361EF45A6A68BC08F8621E406@DIAMOND8600>
+In-Reply-To: <F79C774361EF45A6A68BC08F8621E406@DIAMOND8600>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jesse Barnes wrote:
-> On Thu, 19 Mar 2009 13:53:12 -0600
-> Matthew Wilcox <matthew@wil.cx> wrote:
+Norman Diamond wrote:
+> For months I was wondering how a disk could do this:
+> dd if=/dev/hda of=/dev/null bs=512 skip=551540 count=4  # succeeds
+> dd if=/dev/hda of=/dev/null bs=512 skip=551544 count=4  # succeeds
+> dd if=/dev/hda of=/dev/null bs=512 skip=551540 count=8  # fails
 > 
->> On Wed, Mar 11, 2009 at 03:25:42PM +0800, Yu Zhao wrote:
->>> +config PCI_IOV
->>> +	bool "PCI IOV support"
->>> +	depends on PCI
->>> +	help
->>> +	  PCI-SIG I/O Virtualization (IOV) Specifications support.
->>> +	  Single Root IOV: allows the creation of virtual PCI
->>> devices
->>> +	  that share the physical resources from a real device.
->>> +
->>> +	  When in doubt, say N.
->> It's certainly shorter than my text, which is nice.  But I think it
->> still has too much spec-ese and not enough explanation.  How about:
->>
->> 	help
->> 	  I/O Virtualization is a PCI feature supported by some
->> devices which allows them to create virtual devices which share their
->> 	  physical resources.
->>
->> 	  If unsure, say N.
->>
->>> +	list_for_each_entry(pdev, &dev->bus->devices, bus_list)
->>> +		if (pdev->is_physfn)
->>> +			break;
->>> +	if (list_empty(&dev->bus->devices) || !pdev->is_physfn)
->>> +		pdev = NULL;
->> This is still wrong.  If the 'break' condition is not hit, pdev is
->> pointing to garbage, not to the last pci_dev in the list.
->>
->>> @@ -270,6 +278,7 @@ struct pci_dev {
->>>  	struct list_head msi_list;
->>>  #endif
->>>  	struct pci_vpd *vpd;
->>> +	struct pci_sriov *sriov;	/* SR-IOV capability
->>> related */
->> Should be ifdeffed?
-> 
-> Ok Yu, I'm ready to apply this set, can you send an updated one with
-> the fixes Matthew mentioned?
+> It turns out the disk isn't doing that.  Linux is.  The old IDE drivers did
+> it, but with LIBATA the same thing happens to /dev/sda.  In later examples
+> also, the same happens to /dev/sda as /dev/hda.
+..
 
-Thanks, Jesse. I updated this one according to Matthew's comments and 
-respan others in patchset v12 so they can be cleanly applied.
+You can blame me for the IDE driver not doing that properly.
+But for libata, it's the SCSI layer.
+
+I've been patching this for years for my clients,
+and will be updating the patch soon-ish and trying
+again to get it into upstream kernels.
+
+Here's the (now ancient) 2.6.20 version for SLES10:
+
+* * *
+
+Allow SCSI to continue with the remaining blocks of a request
+after encountering a media error.  Otherwise, it may just fail
+the entire request, even though some blocks were fine and needed
+by a completely different process than the one that wanted the bad block(s).
+
+Signed-off-by: Mark Lord <mlord@pobox.com>
+
+--- linux-2.6.16.60-0.6/drivers/scsi/scsi_lib.c	2008-03-10 13:46:03.000000000 -0400
++++ linux/drivers/scsi/scsi_lib.c	2008-03-21 11:54:09.000000000 -0400
+@@ -888,6 +888,12 @@
+ 	 */
+ 	if (sense_valid && !sense_deferred) {
+ 		switch (sshdr.sense_key) {
++		case MEDIUM_ERROR:
++		/* Bad sector.  Fail it, and then continue the rest of the request. */
++		if (scsi_end_request(cmd, 0, cmd->device->sector_size, 1) == NULL) {
++			cmd->retries = 0;       // go around again..
++			return;
++		}
+ 		case UNIT_ATTENTION:
+ 			if (cmd->device->removable) {
+ 				/* Detected disc change.  Set a bit
