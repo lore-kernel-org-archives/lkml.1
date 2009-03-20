@@ -1,27 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758820AbZCTDe0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753524AbZCTDkX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758820AbZCTDe0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Mar 2009 23:34:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752668AbZCTDeE
+	id S1753524AbZCTDkX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Mar 2009 23:40:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752100AbZCTDkI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Mar 2009 23:34:04 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:38192 "EHLO mx2.redhat.com"
+	Thu, 19 Mar 2009 23:40:08 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:56302 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754024AbZCTDeC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Mar 2009 23:34:02 -0400
-Message-ID: <49C30EA5.5040707@redhat.com>
-Date: Thu, 19 Mar 2009 23:33:57 -0400
+	id S1752085AbZCTDkH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Mar 2009 23:40:07 -0400
+Message-ID: <49C31021.5020305@redhat.com>
+Date: Thu, 19 Mar 2009 23:40:17 -0400
 From: Masami Hiramatsu <mhiramat@redhat.com>
 User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
 To: Frederic Weisbecker <fweisbec@gmail.com>
 CC: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
        Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       systemtap-ml <systemtap@sources.redhat.com>
-Subject: Re: [RFC][PATCH -tip 0/9] tracing: kprobe-based event tracer
-References: <49C2B4A4.5060109@redhat.com> <20090320002435.GA6895@nowhere>
-In-Reply-To: <20090320002435.GA6895@nowhere>
+       systemtap-ml <systemtap@sources.redhat.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC][PATCH -tip 7/9] tracing: kprobe-tracer plugin supports
+ arguments
+References: <49C2B4D0.8030904@redhat.com> <20090320005135.GC6895@nowhere>
+In-Reply-To: <20090320005135.GC6895@nowhere>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
@@ -29,163 +30,93 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Frederic Weisbecker wrote:
-> On Thu, Mar 19, 2009 at 05:09:56PM -0400, Masami Hiramatsu wrote:
->> Hi,
+>> diff --git a/kernel/trace/trace_kprobe.c b/kernel/trace/trace_kprobe.c
+>> index 33bb355..e801e8c 100644
+>> --- a/kernel/trace/trace_kprobe.c
+>> +++ b/kernel/trace/trace_kprobe.c
+>> @@ -27,15 +27,124 @@
+>>  #include <linux/types.h>
+>>  #include <linux/string.h>
+>>  #include <linux/ctype.h>
+>> +#include <linux/ptrace.h>
 >>
->> This is a series of patches which introduce a proof-of concept of
->> kprobe-based event tracer to ftrace. I think that we could port some
->> tracing features from systemtap on this vehicle.
->> This can be applied on the linux-2.6-tip tree.
+>>  #include <linux/ftrace.h>
+>>  #include "trace.h"
 >>
->> This patchset includes following changes:
->> - Add kprobe-tracer plugin
->> - Add kernel_trap_sp() on x86, ia64, power, s390, arm which are
->>   ported from systemtap runtime.
->> - Add module_*probe api for repawning/removing kprobes when target
->>   module is coming/going.
->>
->> It's still not unclear that the last module_*probe would better be
->> provided as APIs or just embed it in trace_kprobe.c.
->>
->> Future items:
->> - Use binary print.
->> - Add kernel_trap_sp() on other archs.
->> - Support symbol-based memory fetching (for global variables)
->> - Support primitive types(long, ulong, int, uint, etc) for args.
->> - Support indirect memory fetch from register etc.
->> - Check insertion point safety by using instruction decoder.
->>
->> kprobe-based event tracer
->> ---------------------------
->>
->> This tracer is similar to the events tracer which is based on Tracepoint
->> infrastructure. Instead of Tracepoint, this tracer is based on kprobes(kprobe
->> and kretprobe). It probes anywhere where kprobes can probe(this means, all
->> functions body except for __kprobes functions).
->>
->> Unlike the function tracer, this tracer can probe instructions inside of
->> kernel functions. It allows you to check which instruction has been executed.
->>
->> Unlike the Tracepoint based events tracer, this tracer can add new probe points
->> on the fly.
->>
->> Similar to the events tracer, this tracer doesn't need to be activated via
->> current_tracer, instead of that, just set probe points via
->> /debug/tracing/kprobe_probes.
->>
->> Synopsis of kprobe_probes:
->>   p SYMBOL[+offs|-offs]|MEMADDR [FETCHARGS]     : set a probe
+>> +/* TODO: Move these functions to arch/XXX/include/asm/ptrace.h */
+>> +#define STACK_MASK (THREAD_SIZE - 1)
+>> +#define valid_stack_addr(regs, addr) \
+>> +	(((addr) & ~STACK_MASK) == (kernel_trap_sp(regs) & ~STACK_MASK))
+>> +
+>> +#if defined(__i386__)
+>> +#define MAX_REG_NUM 15
+>> +#elif defined(__x86_64__)
+>> +#define MAX_REG_NUM 21
+>> +#else
+>> +#define MAX_REG_NUM (sizeof(struct pt_regs)/sizeof(unsigned long))
+>> +#endif
+>> +
+>> +static unsigned long fetch_register(struct pt_regs *regs, void *num)
+>> +{
+>> +	if (unlikely((unsigned)num > MAX_REG_NUM))
+>> +		return 0;
+>> +	return *((unsigned long *)regs + (unsigned)num);
+>> +}
+>> +
+>> +static unsigned long fetch_stack(struct pt_regs *regs, void *num)
+>> +{
+>> +	unsigned long *addr = (unsigned long *)kernel_trap_sp(regs);
+>> +	addr += (unsigned)num;
+>> +	if (valid_stack_addr(regs, (unsigned long)addr))
+>> +		return *addr;
+>> +	else
+>> +		return 0;
+>> +}
+>> +
+>> +static unsigned long fetch_memory(struct pt_regs *regs, void *addr)
+>> +{
+>> +	unsigned long retval;
+>> +	probe_kernel_address(addr, retval);
+>> +	return retval;
+>> +}
 > 
 > 
-> Ahh, I see this is not only about parameters but also about very low level
-> debugging, such as registers dumps.
-> 
-> This is very powerful.
+> It will return a random value.
 
-Please take care, don't shot your foot :)
-This tracer doesn't have a safety lever(e.g. instruction boundary checker) yet.
-So, currently, we need to use this with objdump -d.
+ah, thanks. I'll check the retval of probe_kernel_address().
 
+>> +
+>> +#if defined(__i386__)
+>> +#define REGPARMS 3
+>> +static unsigned long fetch_argument(struct pt_regs *regs, void *data)
+>> +{
+>> +	unsigned long n = (unsigned long)data;
+>> +	if (n > REGPARMS) {
+>> +		/*
+>> +		 * The typical case: arg n is on the stack.
+>> +		 * stack[0] = return address
+>> +		 */
+>> +		return fetch_stack(regs, (void *)(n - REGPARMS));
+>> +	} else {
+>> +		switch (n) {
+>> +		case 1: return regs->ax;
+>> +		case 2: return regs->dx;
+>> +		case 3: return regs->cx;
+>> +		}
+>> +		return 0;
+>> +	}
+>> +}
+>> +#elif define(__x86_64__)
+>> +#define REGPARMS 6
 > 
->>   r SYMBOL[+0] [FETCHARGS]                      : set a return probe
->>
->>  FETCHARGS:
->>   rN    : Fetch Nth register (N >= 0)
 > 
-> 
-> Ah, it would be useful to have a per arch register naming here.
-> So that one don't have to feel dizzy when he have to resolve,
-> say edi register, to a number.
+> These helpers could be defined in the appropriate arch directory.
+> They may even be reused by further debugging engines.
 
-Yeah, that should be a good enhancement idea.
-This patchset just focuses on implementing the basic functionality.
+Agreed. Since we don't have any those infrastructure (arch/*/lib/debug.c ?)
+yet, I just put it in trace_kprobe.c.
 
-
->>   sN    : Fetch Nth entry of stack (N >= 0)
->>   mADDR : Fetch memory at ADDR (ADDR should be in kernel)
->>   aN    : Fetch function argument. (N >= 1)(*)
->>   rv    : Fetch return value.(**)
->>   rp    : Fetch return address.(**)
->>
->>   (*) aN may not correct on asmlinkaged functions and at function body.
->>   (**) only for return probe.
->>
->> E.g.
->>   echo p do_sys_open a1 a2 a3 a4 > /debug/tracing/kprobe_probes
->>
->>  This sets a kprobe on the top of do_sys_open() function with recording
->> 1st to 3rd arguments.
->>
->>   echo r do_sys_open rv rp >> /debug/tracing/kprobe_probes
->>
->>  This sets a kretprobe on the return point of do_sys_open() function with
->> recording return value and return address.
->>
->>   echo > /debug/tracing/kprobe_probes
->>
->>  This clears all probe points. and you can see the traced information via
->> /debug/tracing/trace.
->>
->>   echo /debug/tracing/trace
->> # tracer: nop
->> #
->> #           TASK-PID    CPU#    TIMESTAMP  FUNCTION
->> #              | |       |          |         |
->>            <...>-2376  [001]   262.389131: do_sys_open: @do_sys_open+0 0xffffff9c 0x98db83e 0x8880 0x0
->>            <...>-2376  [001]   262.391166: sys_open: <-do_sys_open+0 0x5 0xc06e8ebb
->>            <...>-2376  [001]   264.384876: do_sys_open: @do_sys_open+0 0xffffff9c 0x98db83e 0x8880 0x0
->>            <...>-2376  [001]   264.386880: sys_open: <-do_sys_open+0 0x5 0xc06e8ebb
->>            <...>-2084  [001]   265.380330: do_sys_open: @do_sys_open+0 0xffffff9c 0x804be3e 0x0 0x1b6
->>            <...>-2084  [001]   265.380399: sys_open: <-do_sys_open+0 0x3 0xc06e8ebb
->>
->>  @SYMBOL means that kernel hits a probe, and <-SYMBOL means kernel returns
->> from SYMBOL(e.g. "sysenter_do_call: <-sys_open+0" means kernel returns from
->> sys_open to sysenter_do_call).
-> 
-> 
-> Nice :-)
-
-Thanks ;)
-
-> 
-> Frederic.
-> 
-> 
->>  Documentation/ftrace.txt          |   66 ++++
->>  arch/arm/include/asm/ptrace.h     |    3 +-
->>  arch/ia64/include/asm/ptrace.h    |    6 +
->>  arch/powerpc/include/asm/ptrace.h |    1 +
->>  arch/s390/include/asm/ptrace.h    |    5 +-
->>  arch/x86/include/asm/ptrace.h     |    4 +-
->>  include/linux/kprobes.h           |   39 ++
->>  kernel/kprobes.c                  |  250 ++++++++++++++
->>  kernel/trace/Kconfig              |    9 +
->>  kernel/trace/Makefile             |    1 +
->>  kernel/trace/trace_kprobe.c       |  688 +++++++++++++++++++++++++++++++++++++
->>  11 files changed, 1067 insertions(+), 5 deletions(-)
->>
->>
->> Thank you,
->>
->> -- 
->> Masami Hiramatsu
->>
->> Software Engineer
->> Hitachi Computer Products (America) Inc.
->> Software Solutions Division
->>
->> e-mail: mhiramat@redhat.com
->>
->>
->>
->>
->>
->> --
->> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
->> the body of a message to majordomo@vger.kernel.org
->> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->> Please read the FAQ at  http://www.tux.org/lkml/
-> 
+Thank you,
 
 -- 
 Masami Hiramatsu
