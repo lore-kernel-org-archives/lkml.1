@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762014AbZCTXSX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761706AbZCTXR6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762014AbZCTXSX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Mar 2009 19:18:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758900AbZCTXNq
+	id S1761706AbZCTXR6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Mar 2009 19:17:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756901AbZCTXNp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Mar 2009 19:13:46 -0400
-Received: from kroah.org ([198.145.64.141]:53122 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1758388AbZCTXNp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 20 Mar 2009 19:13:45 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 20 15:27:11 2009
-Message-Id: <20090320222710.989094141@mini.kroah.org>
+Received: from kroah.org ([198.145.64.141]:53111 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1759289AbZCTXNo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Mar 2009 19:13:44 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 20 15:27:10 2009
+Message-Id: <20090320222710.851950379@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 20 Mar 2009 15:26:24 -0700
+Date: Fri, 20 Mar 2009 15:26:23 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,11 +25,11 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Mikulas Patocka <mpatocka@redhat.com>,
+       alan@lxorguk.ukuu.org.uk, Milan Broz <mbroz@redhat.com>,
        Alasdair G Kergon <agk@redhat.com>
-Subject: [patch 13/32] dm io: respect BIO_MAX_PAGES limit
+Subject: [patch 12/32] dm ioctl: validate name length when renaming
 References: <20090320222611.872315885@mini.kroah.org>
-Content-Disposition: inline; filename=dm-io-respect-bio_max_pages-limit.patch
+Content-Disposition: inline; filename=dm-ioctl-validate-name-length-when-renaming.patch
 In-Reply-To: <20090320231037.GA2732@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -39,35 +39,41 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Mikulas Patocka <mpatocka@redhat.com>
+From: Milan Broz <mbroz@redhat.com>
 
-commit d659e6cc98766a1a61d6bdd283f95d149abd7719 upstream.
+commit bc0fd67feba2e0770aad85393500ba77c6489f1c upstream.
 
-dm-io calls bio_get_nr_vecs to get the maximum number of pages to use
-for a given device.  It allocates one additional bio_vec to use
-internally but failed to respect BIO_MAX_PAGES, so fix this.
+When renaming a mapped device validate the length of the new name.
 
-This was the likely cause of:
-  https://bugzilla.redhat.com/show_bug.cgi?id=173153
+The rename ioctl accepted any correctly-terminated string enclosed
+within the data passed from userspace.  The other ioctls enforce a
+size limit of DM_NAME_LEN.  If the name is changed and becomes longer
+than that, the device can no longer be addressed by name.
 
-Signed-off-by: Mikulas Patocka <mpatocka@redhat.com>
+Fix it by properly checking for device name length (including
+terminating zero).
+
+Signed-off-by: Milan Broz <mbroz@redhat.com>
+Reviewed-by: Jonathan Brassow <jbrassow@redhat.com>
+Reviewed-by: Alasdair G Kergon <agk@redhat.com>
 Signed-off-by: Alasdair G Kergon <agk@redhat.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/md/dm-io.c |    2 ++
- 1 file changed, 2 insertions(+)
+ drivers/md/dm-ioctl.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
---- a/drivers/md/dm-io.c
-+++ b/drivers/md/dm-io.c
-@@ -292,6 +292,8 @@ static void do_region(int rw, unsigned r
- 					     (PAGE_SIZE >> SECTOR_SHIFT));
- 		num_bvecs = 1 + min_t(int, bio_get_nr_vecs(where->bdev),
- 				      num_bvecs);
-+		if (unlikely(num_bvecs > BIO_MAX_PAGES))
-+			num_bvecs = BIO_MAX_PAGES;
- 		bio = bio_alloc_bioset(GFP_NOIO, num_bvecs, io->client->bios);
- 		bio->bi_sector = where->sector + (where->count - remaining);
- 		bio->bi_bdev = where->bdev;
+--- a/drivers/md/dm-ioctl.c
++++ b/drivers/md/dm-ioctl.c
+@@ -704,7 +704,8 @@ static int dev_rename(struct dm_ioctl *p
+ 	char *new_name = (char *) param + param->data_start;
+ 
+ 	if (new_name < param->data ||
+-	    invalid_str(new_name, (void *) param + param_size)) {
++	    invalid_str(new_name, (void *) param + param_size) ||
++	    strlen(new_name) > DM_NAME_LEN - 1) {
+ 		DMWARN("Invalid new logical volume name supplied.");
+ 		return -EINVAL;
+ 	}
 
 
