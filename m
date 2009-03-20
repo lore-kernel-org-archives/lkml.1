@@ -1,81 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760252AbZCTTO2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759996AbZCTTOm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760252AbZCTTO2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Mar 2009 15:14:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758716AbZCTTOS
+	id S1759996AbZCTTOm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Mar 2009 15:14:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760057AbZCTTOW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Mar 2009 15:14:18 -0400
-Received: from epiphany.epiphan.com ([217.160.251.166]:55893 "EHLO
-	epiphany.epiphan.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758692AbZCTTOR (ORCPT
+	Fri, 20 Mar 2009 15:14:22 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:45395 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760305AbZCTTOV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Mar 2009 15:14:17 -0400
-X-Greylist: delayed 1162 seconds by postgrey-1.27 at vger.kernel.org; Fri, 20 Mar 2009 15:14:17 EDT
-Subject: [PATCH] V4L: em28xx: add support for Digitus/Plextor PX-AV200U
-	grabbers
-From: Mikhail Jiline <misha@epiphan.com>
-To: mchehab@infradead.org, linux-kernel@vger.kernel.org,
-       video4linux-list@redhat.com
-Content-Type: text/plain
-Date: Fri, 20 Mar 2009 14:54:45 -0400
-Message-Id: <1237575285.26159.2.camel@T60p>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
-Content-Transfer-Encoding: 7bit
+	Fri, 20 Mar 2009 15:14:21 -0400
+Date: Fri, 20 Mar 2009 19:14:07 +0000
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Vegard Nossum <vegard.nossum@gmail.com>,
+       Alexander Viro <viro@ftp.linux.org.uk>,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       Christopher Li <sparse@chrisli.org>, linux-sparse@vger.kernel.org,
+       Hannes Eder <hannes@hanneseder.net>, linux-kernel@vger.kernel.org
+Subject: Re: Nasal demons in preprocessor use (Re: [PATCH] test-suite: new
+	preprocessor test case)
+Message-ID: <20090320191407.GI28946@ZenIV.linux.org.uk>
+References: <20090319175544.13691.42362.stgit@f10box.hanneseder.net> <20090319182628.GB28946@ZenIV.linux.org.uk> <154e089b0903191151q37ab7b20o43838845af12966f@mail.gmail.com> <20090319190730.GC28946@ZenIV.linux.org.uk> <20090319192758.GB24318@elte.hu> <19f34abd0903191320qdd73530ud85081d23e17b266@mail.gmail.com> <20090320180853.GA24154@elte.hu> <20090320190409.GH28946@ZenIV.linux.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090320190409.GH28946@ZenIV.linux.org.uk>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Misha Zhilin <misha@epiphan.com>
+On Fri, Mar 20, 2009 at 07:04:09PM +0000, Al Viro wrote:
+> On Fri, Mar 20, 2009 at 07:08:53PM +0100, Ingo Molnar wrote:
+> > 
+> > * Vegard Nossum <vegard.nossum@gmail.com> wrote:
+> > 
+> > > I guess this means that kmemcheck branch should be withdrawn from 
+> > > linux-next, at least temporarily, as I have no immediate 
+> > > workarounds/alternatives. Stephen, can you drop it?
+> > 
+> > Al Viro, well done :-(
+> > 
+> > 	Ingo
+> 
+> What the fuck?
 
-Adds support for Digitus/Plextor PX-AV200U grabbers
-Signed-off-by: Misha Zhilin <misha@epiphan.com>
----
+While we are at it, there *is* an obvious workaround:
+#ifdef ...
+	#define L1 <list>
+#else
+	#define L1
+#endif
+#ifdef ...
+	#define L2 <list>
+#else
+	#define L2
+#endif
+	your_macro(...
+	L1
+	L2
+	...)
+#undef L1
+#undef L2
 
-diff -urN linux-2.6.27.x86_64.orig/drivers/media/video/em28xx/em28xx-cards.c linux-2.6.27.x86_64.new/drivers/media/video/em28xx/em28xx-cards.c
---- linux-2.6.27.x86_64.orig/drivers/media/video/em28xx/em28xx-cards.c	2008-10-09 18:13:53.000000000 -0400
-+++ linux-2.6.27.x86_64.new/drivers/media/video/em28xx/em28xx-cards.c	2009-03-04 16:18:03.000000000 -0500
-@@ -1087,6 +1087,21 @@
- 			.amux     = EM28XX_AMUX_LINE_IN,
- 		} },
- 	},
-+	[EM2820_BOARD_PLEXTOR_PX_AV200U] = {
-+		.name         = "Plextor PX-AV200U",
-+		.valid        = EM28XX_BOARD_NOT_VALIDATED,
-+		.vchannels    = 2,
-+		.decoder      = EM28XX_SAA7113,
-+		.input          = { {
-+			.type     = EM28XX_VMUX_COMPOSITE1,
-+			.vmux     = SAA7115_COMPOSITE0,
-+			.amux     = EM28XX_AMUX_AC97_LINE_IN,
-+		}, {
-+			.type     = EM28XX_VMUX_SVIDEO,
-+			.vmux     = SAA7115_SVIDEO3,
-+			.amux     = EM28XX_AMUX_AC97_LINE_IN,
-+		} },
-+	},
- };
- const unsigned int em28xx_bcount = ARRAY_SIZE(em28xx_boards);
- 
-Binary files linux-2.6.27.x86_64.orig/drivers/media/video/em28xx/.em28xx-cards.c.swp and linux-2.6.27.x86_64.new/drivers/media/video/em28xx/.em28xx-cards.c.swp differ
-diff -urN linux-2.6.27.x86_64.orig/drivers/media/video/em28xx/em28xx.h linux-2.6.27.x86_64.new/drivers/media/video/em28xx/em28xx.h
---- linux-2.6.27.x86_64.orig/drivers/media/video/em28xx/em28xx.h	2008-10-09 18:13:53.000000000 -0400
-+++ linux-2.6.27.x86_64.new/drivers/media/video/em28xx/em28xx.h	2009-03-04 15:33:24.000000000 -0500
-@@ -97,6 +97,8 @@
- #define EM2882_BOARD_PINNACLE_HYBRID_PRO	  56
- #define EM2883_BOARD_KWORLD_HYBRID_A316		  57
- #define EM2820_BOARD_COMPRO_VIDEOMATE_FORYOU	  58
-+#define EM2820_BOARD_PLEXTOR_PX_AV200U            59
-+
- 
- /* Limits minimum and default number of buffers */
- #define EM28XX_MIN_BUF 4
-diff -urN linux-2.6.27.x86_64.orig/Documentation/video4linux/CARDLIST.em28xx linux-2.6.27.x86_64.new/Documentation/video4linux/CARDLIST.em28xx
---- linux-2.6.27.x86_64.orig/Documentation/video4linux/CARDLIST.em28xx	2008-10-09 18:13:53.000000000 -0400
-+++ linux-2.6.27.x86_64.new/Documentation/video4linux/CARDLIST.em28xx	2009-03-18 11:15:00.000000000 -0400
-@@ -57,3 +57,4 @@
-  56 -> Pinnacle Hybrid Pro (2)                  (em2882)        [2304:0226]
-  57 -> Kworld PlusTV HD Hybrid 330              (em2883)        [eb1a:a316]
-  58 -> Compro VideoMate ForYou/Stereo           (em2820/em2840) [185b:2041]
-+ 59 -> Plextor PX-AV200U                        (em2880)
-
+Ingo, care to explain what the hell had your reply above been about?
+Especially since we both apparently agree that code in question did
+need fixing, what with your immediate ACK upthread...
