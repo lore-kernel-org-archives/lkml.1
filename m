@@ -1,62 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761333AbZCTAaa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760866AbZCTAcl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761333AbZCTAaa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 19 Mar 2009 20:30:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754864AbZCTAaQ
+	id S1760866AbZCTAcl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 19 Mar 2009 20:32:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755799AbZCTAcb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 19 Mar 2009 20:30:16 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:40003 "EHLO mx2.suse.de"
+	Thu, 19 Mar 2009 20:32:31 -0400
+Received: from www.tglx.de ([62.245.132.106]:44411 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752251AbZCTAaP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 19 Mar 2009 20:30:15 -0400
-From: Neil Brown <neilb@suse.de>
-To: Dan Williams <dan.j.williams@intel.com>
-Date: Fri, 20 Mar 2009 11:30:11 +1100
+	id S1754137AbZCTAca (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 19 Mar 2009 20:32:30 -0400
+Date: Fri, 20 Mar 2009 01:31:41 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: LKML <linux-kernel@vger.kernel.org>
+cc: rt-users <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Peter Zijlstra <peterz@infradead.org>, Carsten Emde <ce@ceag.ch>,
+       Clark Williams <williams@redhat.com>,
+       Frank Rowand <frank.rowand@am.sony.com>
+Subject: [Announce] 2.6.29-rc78rt1
+In-Reply-To: <alpine.LFD.2.00.0903122013230.29264@localhost.localdomain>
+Message-ID: <alpine.LFD.2.00.0903200014320.29264@localhost.localdomain>
+References: <alpine.LFD.2.00.0902112332370.415@localhost.localdomain> <alpine.LFD.2.00.0902122353050.16972@localhost.localdomain> <alpine.LFD.2.00.0902231854360.3523@localhost.localdomain> <alpine.LFD.2.00.0902241849230.3523@localhost.localdomain>
+ <alpine.LFD.2.00.0902241856480.9135@localhost.localdomain> <alpine.LFD.2.00.0903122013230.29264@localhost.localdomain>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18882.58259.565999.429909@notabene.brown>
-Cc: linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org,
-       maciej.sosnowski@intel.com
-Subject: Re: [PATCH 00/13] Asynchronous raid6 acceleration (part 1 of 2)
-In-Reply-To: message from Dan Williams on Wednesday March 18
-References: <20090318191248.20375.40560.stgit@dwillia2-linux.ch.intel.com>
-X-Mailer: VM 7.19 under Emacs 21.4.1
-X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
-	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
-	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday March 18, dan.j.williams@intel.com wrote:
-> This series constitutes the pieces of the raid6 acceleration work that are
-> aimed at the next merge window.  It implements:
-> 1/ An api for asynchronous raid6 parity generation and recovery routines
-> 2/ Extensions to the dmaengine framework and dmatest
-> 3/ RAID6 support for iop13xx
-> 4/ Removal of the BUILD_BUG_ON in async_xor to support platforms with
->    sizeof(dma_addr_t) > sizeof(void *).  This increases the stack
->    utilization in the asynchronous path.
-> 
-> This series is available via git at:
-> 
-> 	git://git.kernel.org/pub/scm/linux/kernel/git/djbw/async_tx.git raid6
-> 
-> ...it is based on git://neil.brown.name/md md-scratch
+We are pleased to announce the next update to our new preempt-rt
+series.
+   
+   - port forward to 2.6.29-rc8
+   - disable -rt conflicting config options
+   - hotplug cpu fixes (peterz)
+   - slab/pagealloc lock breaks (peterz / tglx) 
+   - sigqueue caching for -rt tasks
+   - posixtimer thread avoid useless wakeups
+   - various build fixes (mingo, frank ....)
+   - lots of tracer updates from -tip (check the tip git logs)
 
-Thanks.
+The outstanding improvement is the slab/pagealloc change which breaks
+and splits locking and brought down worst case latencies in
+problematic use cases from >500us to <100us.
 
-I'll take the first patch (which is the only one that affects md
-directly) and feed it to -next and eventually -linus.  I'll leave the
-rest for you.
+As a side note:
 
-> 
-> Part 2, which needs more testing, is the conversion of md/raid6.  It is
-> available at:
-> 
-> 	git://git.kernel.org/pub/scm/linux/kernel/git/djbw/md.git raid6-for-neil
+   There seems to be a wide spread underestimation of the problem spots
+   exposed by preempt-rt. The usual shrug off answer is:
 
-Thanks.  I might have a look if I get a moment.
+	"I don't care about -rt. Come back if you can expose the same
+	problem in the mainline kernel."
 
-NeilBrown
+   This is a fundamentally wrong answer.
+
+   	preempt-rt mostly exposes existing latency spots and magnifies
+   	them
+   
+	Reducing latencies in -rt by a factor 5 will be not that
+	prominent in a non-rt setup, but the problematic code area
+	will still produce measureable latency problems.
+   
+   I'm well aware of the tradeoff between determinitic behaviour and
+   throughput, but problematic spots (e.g. lock contentions) hurt
+   both.
+
+   So can we please put down the stupid "I don't care about -rt"
+   attitudes and accept that we have to think about the mutual
+   benefits of deterministic and throughput aspects without hurting
+   each other ?
+
+
+Download locations:
+ 
+    http://rt.et.redhat.com/download/
+    http://www.kernel.org/pub/linux/kernel/projects/rt/
+  
+Information on the RT patch can be found at:
+
+    http://rt.wiki.kernel.org/index.php/Main_Page
+
+to build the 2.6.29-rc8-rt1 tree, the following patches should be
+applied:
+
+  http://www.kernel.org/pub/linux/kernel/v2.6/testing/linux-2.6.29-rc8.tar.bz2
+  http://www.kernel.org/pub/linux/kernel/projects/rt/patch-2.6.29-rc8-rt1.bz2
+  
+The broken out patches are also available at the same download
+locations.
+
+Enjoy !
+
+       tglx
+ 
+P.S.: ARM/PowerPC support is in the pipeline and will be available
+      with -rt2 (hopefully :)
+
