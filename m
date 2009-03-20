@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763873AbZCTXeZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932080AbZCTXem@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763873AbZCTXeZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Mar 2009 19:34:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762995AbZCTXYm
+	id S932080AbZCTXem (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Mar 2009 19:34:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763001AbZCTXYn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Mar 2009 19:24:42 -0400
-Received: from kroah.org ([198.145.64.141]:48671 "EHLO coco.kroah.org"
+	Fri, 20 Mar 2009 19:24:43 -0400
+Received: from kroah.org ([198.145.64.141]:48684 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1762978AbZCTXYk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Mar 2009 19:24:40 -0400
+	id S1762969AbZCTXYl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Mar 2009 19:24:41 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 20 15:29:26 2009
-Message-Id: <20090320222926.575954209@mini.kroah.org>
+Message-Id: <20090320222926.721059657@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 20 Mar 2009 15:28:33 -0700
+Date: Fri, 20 Mar 2009 15:28:34 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,10 +25,10 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Dirk Hohndel <hohndel@infradead.org>
-Subject: [patch 23/43] USB: Add Vendor/Product ID for new CDMA U727 to option driver
+       alan@lxorguk.ukuu.org.uk, Albert Pauw <albert.pauw@gmail.com>
+Subject: [patch 24/43] USB: option.c: add ZTE 622 modem device
 References: <20090320222810.386844059@mini.kroah.org>
-Content-Disposition: inline; filename=usb-add-vendor-product-id-for-new-cdma-u727-to-option-driver.patch
+Content-Disposition: inline; filename=usb-option.c-add-zte-622-modem-device.patch
 In-Reply-To: <20090320232116.GA3375@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -38,15 +38,14 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Dirk Hohndel <hohndel@infradead.org>
+From: Albert Pauw <albert.pauw@gmail.com>
 
-commit 56a21827439a4d715b510bfaf488534e6f4ad2f8 upstream.
+commit 9ea19b82f3126da4e47d6b94563a3c2cd586f6e2 upstream.
 
-* newer versions of the Novatel Wireless U727 CDMA 3G USB stick
-   have a different Product ID (0x5010); adding this ID makes them
-   work just fine with the option driver
+Please consider this small patch for the usb option-card driver.
+This patch adds the ZTE 622 usb modem device.
 
-Signed-off-by: Dirk Hohndel <hohndel@infradead.org>
+Signed-off-by: Albert Pauw <albert.pauw@gmail.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
@@ -55,21 +54,21 @@ Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 --- a/drivers/usb/serial/option.c
 +++ b/drivers/usb/serial/option.c
-@@ -190,6 +190,7 @@ static int  option_send_setup(struct tty
- /* OVATION PRODUCTS */
- #define NOVATELWIRELESS_PRODUCT_MC727		0x4100
- #define NOVATELWIRELESS_PRODUCT_MC950D		0x4400
-+#define NOVATELWIRELESS_PRODUCT_U727		0x5010
+@@ -282,6 +282,7 @@ static int  option_send_setup(struct tty
  
- /* FUTURE NOVATEL PRODUCTS */
- #define NOVATELWIRELESS_PRODUCT_EVDO_FULLSPEED	0X6000
-@@ -402,6 +403,7 @@ static struct usb_device_id option_ids[]
- 	{ USB_DEVICE(NOVATELWIRELESS_VENDOR_ID, NOVATELWIRELESS_PRODUCT_EU870D) }, /* Novatel EU850D/EU860D/EU870D */
- 	{ USB_DEVICE(NOVATELWIRELESS_VENDOR_ID, NOVATELWIRELESS_PRODUCT_MC950D) }, /* Novatel MC930D/MC950D */
- 	{ USB_DEVICE(NOVATELWIRELESS_VENDOR_ID, NOVATELWIRELESS_PRODUCT_MC727) }, /* Novatel MC727/U727/USB727 */
-+	{ USB_DEVICE(NOVATELWIRELESS_VENDOR_ID, NOVATELWIRELESS_PRODUCT_U727) }, /* Novatel MC727/U727/USB727 */
- 	{ USB_DEVICE(NOVATELWIRELESS_VENDOR_ID, NOVATELWIRELESS_PRODUCT_EVDO_FULLSPEED) }, /* Novatel EVDO product */
- 	{ USB_DEVICE(NOVATELWIRELESS_VENDOR_ID, NOVATELWIRELESS_PRODUCT_HSPA_FULLSPEED) }, /* Novatel HSPA product */
- 	{ USB_DEVICE(NOVATELWIRELESS_VENDOR_ID, NOVATELWIRELESS_PRODUCT_EVDO_EMBEDDED_FULLSPEED) }, /* Novatel EVDO Embedded product */
+ /* ZTE PRODUCTS */
+ #define ZTE_VENDOR_ID				0x19d2
++#define ZTE_PRODUCT_MF622			0x0001
+ #define ZTE_PRODUCT_MF628			0x0015
+ #define ZTE_PRODUCT_MF626			0x0031
+ #define ZTE_PRODUCT_CDMA_TECH			0xfffe
+@@ -499,6 +500,7 @@ static struct usb_device_id option_ids[]
+ 	{ USB_DEVICE(QUALCOMM_VENDOR_ID, 0x6613)}, /* Onda H600/ZTE MF330 */
+ 	{ USB_DEVICE(MAXON_VENDOR_ID, 0x6280) }, /* BP3-USB & BP3-EXT HSDPA */
+ 	{ USB_DEVICE(TELIT_VENDOR_ID, TELIT_PRODUCT_UC864E) },
++	{ USB_DEVICE(ZTE_VENDOR_ID, ZTE_PRODUCT_MF622) },
+ 	{ USB_DEVICE(ZTE_VENDOR_ID, ZTE_PRODUCT_MF626) },
+ 	{ USB_DEVICE(ZTE_VENDOR_ID, ZTE_PRODUCT_MF628) },
+ 	{ USB_DEVICE(ZTE_VENDOR_ID, ZTE_PRODUCT_CDMA_TECH) },
 
 
