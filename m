@@ -1,155 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762187AbZCTK3R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762834AbZCTK3x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762187AbZCTK3R (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Mar 2009 06:29:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762492AbZCTK0v
+	id S1762834AbZCTK3x (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Mar 2009 06:29:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762553AbZCTK0z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Mar 2009 06:26:51 -0400
-Received: from hera.kernel.org ([140.211.167.34]:35299 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762474AbZCTK0s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Mar 2009 06:26:48 -0400
-Date: Fri, 20 Mar 2009 10:26:09 GMT
-From: Li Zefan <lizf@cn.fujitsu.com>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, acme@redhat.com, hpa@zytor.com,
-       mingo@redhat.com, lizf@cn.fujitsu.com, jens.axboe@oracle.com,
-       fweisbec@gmail.com, rostedt@goodmis.org, tglx@linutronix.de,
-       mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, acme@redhat.com,
-       linux-kernel@vger.kernel.org, lizf@cn.fujitsu.com,
-       jens.axboe@oracle.com, fweisbec@gmail.com, rostedt@goodmis.org,
-       tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <49C2F5EA.8060606@cn.fujitsu.com>
-References: <49C2F5EA.8060606@cn.fujitsu.com>
-Subject: [tip:tracing/blktrace] blktrace: remove blk_probe_mutex
-Message-ID: <tip-a2df44c805026d40fae556b04f9addbce486bbe2@git.kernel.org>
-Git-Commit-ID: a2df44c805026d40fae556b04f9addbce486bbe2
-X-Mailer: tip-git-log-daemon
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 20 Mar 2009 10:26:11 +0000 (UTC)
+	Fri, 20 Mar 2009 06:26:55 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:36348 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762546AbZCTK0y (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Mar 2009 06:26:54 -0400
+Subject: [PATCH] lockdep: fix deadlock in lockdep_trace_alloc
+From: Peter Zijlstra <peterz@infradead.org>
+To: Heiko Carstens <heiko.carstens@de.ibm.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Nick Piggin <npiggin@suse.de>,
+       "lkml," <linux-kernel@vger.kernel.org>
+In-Reply-To: <1237544000.24626.52.camel@twins>
+References: <1237544000.24626.52.camel@twins>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Fri, 20 Mar 2009 11:26:38 +0100
+Message-Id: <1237544798.24626.54.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
+X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  a2df44c805026d40fae556b04f9addbce486bbe2
-Gitweb:     http://git.kernel.org/tip/a2df44c805026d40fae556b04f9addbce486bbe2
-Author:     Li Zefan <lizf@cn.fujitsu.com>
-AuthorDate: Fri, 20 Mar 2009 09:48:26 +0800
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Fri, 20 Mar 2009 11:20:05 +0100
+Heiko pointed out that checking for irqs_disabled() after we disable
+them is quite pointless..
 
-blktrace: remove blk_probe_mutex
-
-blk_register_tracepoints() always returns 0, so make it return void,
-thus we don't need to use blk_probe_mutex to protect blk_probes_ref.
-
-Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
-Cc: Jens Axboe <jens.axboe@oracle.com>
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>
-Acked-by: Frederic Weisbecker <fweisbec@gmail.com>
-LKML-Reference: <49C2F5EA.8060606@cn.fujitsu.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
+New patch below.
 
 ---
- kernel/trace/blktrace.c |   27 +++++----------------------
- 1 files changed, 5 insertions(+), 22 deletions(-)
+Subject: lockdep: fix deadlock in lockdep_trace_alloc
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Date: Fri Mar 20 11:24:21 CET 2009
 
-diff --git a/kernel/trace/blktrace.c b/kernel/trace/blktrace.c
-index 73845b7..223b92e 100644
---- a/kernel/trace/blktrace.c
-+++ b/kernel/trace/blktrace.c
-@@ -47,10 +47,9 @@ static struct tracer_flags blk_tracer_flags = {
- };
- 
- /* Global reference count of probes */
--static DEFINE_MUTEX(blk_probe_mutex);
- static atomic_t blk_probes_ref = ATOMIC_INIT(0);
- 
--static int blk_register_tracepoints(void);
-+static void blk_register_tracepoints(void);
- static void blk_unregister_tracepoints(void);
- 
- /*
-@@ -256,10 +255,8 @@ static void blk_trace_cleanup(struct blk_trace *bt)
- 	free_percpu(bt->sequence);
- 	free_percpu(bt->msg_data);
- 	kfree(bt);
--	mutex_lock(&blk_probe_mutex);
- 	if (atomic_dec_and_test(&blk_probes_ref))
- 		blk_unregister_tracepoints();
--	mutex_unlock(&blk_probe_mutex);
+Heiko reported that we grab the graph lock with irqs enabled.
+
+Fix this by providing the same wrapper as all other lockdep entry
+functions have.
+
+Reported-by: Heiko Carstens <heiko.carstens@de.ibm.com>
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+---
+ kernel/lockdep.c |   21 +++++++++++++++++++--
+ 1 file changed, 19 insertions(+), 2 deletions(-)
+
+Index: linux-2.6/kernel/lockdep.c
+===================================================================
+--- linux-2.6.orig/kernel/lockdep.c
++++ linux-2.6/kernel/lockdep.c
+@@ -2258,7 +2258,7 @@ void trace_softirqs_off(unsigned long ip
+ 		debug_atomic_inc(&redundant_softirqs_off);
  }
  
- int blk_trace_remove(struct request_queue *q)
-@@ -471,13 +468,8 @@ int do_blk_trace_setup(struct request_queue *q, char *name, dev_t dev,
- 	bt->pid = buts->pid;
- 	bt->trace_state = Blktrace_setup;
- 
--	mutex_lock(&blk_probe_mutex);
--	if (atomic_add_return(1, &blk_probes_ref) == 1) {
--		ret = blk_register_tracepoints();
--		if (ret)
--			goto probe_err;
--	}
--	mutex_unlock(&blk_probe_mutex);
-+	if (atomic_add_return(1, &blk_probes_ref) == 1)
-+		blk_register_tracepoints();
- 
- 	ret = -EBUSY;
- 	old_bt = xchg(&q->blk_trace, bt);
-@@ -487,9 +479,6 @@ int do_blk_trace_setup(struct request_queue *q, char *name, dev_t dev,
- 	}
- 
- 	return 0;
--probe_err:
--	atomic_dec(&blk_probes_ref);
--	mutex_unlock(&blk_probe_mutex);
- err:
- 	if (bt) {
- 		if (bt->msg_file)
-@@ -863,7 +852,7 @@ void blk_add_driver_data(struct request_queue *q,
- }
- EXPORT_SYMBOL_GPL(blk_add_driver_data);
- 
--static int blk_register_tracepoints(void)
-+static void blk_register_tracepoints(void)
+-void lockdep_trace_alloc(gfp_t gfp_mask)
++static void __lockdep_trace_alloc(gfp_t gfp_mask)
  {
- 	int ret;
+ 	struct task_struct *curr = current;
  
-@@ -901,7 +890,6 @@ static int blk_register_tracepoints(void)
- 	WARN_ON(ret);
- 	ret = register_trace_block_remap(blk_add_trace_remap);
- 	WARN_ON(ret);
--	return 0;
+@@ -2277,10 +2277,27 @@ void lockdep_trace_alloc(gfp_t gfp_mask)
+ 	if (!(gfp_mask & __GFP_FS))
+ 		return;
+ 
++	mark_held_locks(curr, RECLAIM_FS);
++}
++
++static void check_flags(unsigned long flags);
++
++void lockdep_trace_alloc(gfp_t gfp_mask)
++{
++	unsigned long flags;
++
++	if (unlikely(current->lockdep_recursion))
++		return;
++
+ 	if (DEBUG_LOCKS_WARN_ON(irqs_disabled()))
+ 		return;
+ 
+-	mark_held_locks(curr, RECLAIM_FS);
++	raw_local_irq_save(flags);
++	check_flags(flags);
++	current->lockdep_recursion = 1;
++	__lockdep_trace_alloc(gfp_mask);
++	current->lockdep_recursion = 0;
++	raw_local_irq_restore(flags);
  }
  
- static void blk_unregister_tracepoints(void)
-@@ -1099,11 +1087,8 @@ static void blk_tracer_print_header(struct seq_file *m)
- 
- static void blk_tracer_start(struct trace_array *tr)
- {
--	mutex_lock(&blk_probe_mutex);
- 	if (atomic_add_return(1, &blk_probes_ref) == 1)
--		if (blk_register_tracepoints())
--			atomic_dec(&blk_probes_ref);
--	mutex_unlock(&blk_probe_mutex);
-+		blk_register_tracepoints();
- 	trace_flags &= ~TRACE_ITER_CONTEXT_INFO;
- }
- 
-@@ -1118,10 +1103,8 @@ static int blk_tracer_init(struct trace_array *tr)
- static void blk_tracer_stop(struct trace_array *tr)
- {
- 	trace_flags |= TRACE_ITER_CONTEXT_INFO;
--	mutex_lock(&blk_probe_mutex);
- 	if (atomic_dec_and_test(&blk_probes_ref))
- 		blk_unregister_tracepoints();
--	mutex_unlock(&blk_probe_mutex);
- }
- 
- static void blk_tracer_reset(struct trace_array *tr)
+ static int mark_irqflags(struct task_struct *curr, struct held_lock *hlock)
+
