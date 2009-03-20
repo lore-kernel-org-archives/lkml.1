@@ -1,85 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761605AbZCTXmM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754101AbZCTXok@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761605AbZCTXmM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Mar 2009 19:42:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764511AbZCTXkU
+	id S1754101AbZCTXok (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Mar 2009 19:44:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751840AbZCTXo2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Mar 2009 19:40:20 -0400
-Received: from out01.mta.xmission.com ([166.70.13.231]:60325 "EHLO
-	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764494AbZCTXkS (ORCPT
+	Fri, 20 Mar 2009 19:44:28 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:45295 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751735AbZCTXo1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Mar 2009 19:40:18 -0400
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Jan Beulich <jbeulich@novell.com>,
-       tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com,
-       linux-kernel@vger.kernel.org
-References: <49B91A7E.76E4.0078.0@novell.com>
-	<tip-6a09dfa870ba0ed21b1124539968a36b42660661@git.kernel.org>
-	<1236934491.5188.209.camel@laptop> <49BA33BE.76E4.0078.0@novell.com>
-	<1236937423.22914.3698.camel@twins> <20090313103828.GB31094@elte.hu>
-	<m1d4cd9n4k.fsf@fess.ebiederm.org> <20090320085205.GB16021@elte.hu>
-	<m14oxo8qis.fsf@fess.ebiederm.org> <20090320182404.GA31629@elte.hu>
-	<1237575134.4667.5.camel@laptop>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Fri, 20 Mar 2009 16:40:03 -0700
-In-Reply-To: <1237575134.4667.5.camel@laptop> (Peter Zijlstra's message of "Fri\, 20 Mar 2009 19\:52\:14 +0100")
-Message-ID: <m1zlff227g.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Fri, 20 Mar 2009 19:44:27 -0400
+Date: Fri, 20 Mar 2009 23:44:12 +0000
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Vegard Nossum <vegard.nossum@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Stephen Rothwell <sfr@canb.auug.org.au>,
+       Christopher Li <sparse@chrisli.org>, linux-sparse@vger.kernel.org,
+       Hannes Eder <hannes@hanneseder.net>, linux-kernel@vger.kernel.org
+Subject: Re: Nasal demons in preprocessor use (Re: [PATCH] test-suite: new
+	preprocessor test case)
+Message-ID: <20090320234412.GK28946@ZenIV.linux.org.uk>
+References: <20090319175544.13691.42362.stgit@f10box.hanneseder.net> <20090319182628.GB28946@ZenIV.linux.org.uk> <154e089b0903191151q37ab7b20o43838845af12966f@mail.gmail.com> <20090319190730.GC28946@ZenIV.linux.org.uk> <20090319192758.GB24318@elte.hu> <19f34abd0903191320qdd73530ud85081d23e17b266@mail.gmail.com> <20090320180853.GA24154@elte.hu> <20090320190409.GH28946@ZenIV.linux.org.uk> <20090320191407.GI28946@ZenIV.linux.org.uk> <19f34abd0903201616v4175b5afn5630fcae02d7ff4f@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=67.169.126.145;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 67.169.126.145
-X-SA-Exim-Rcpt-To: peterz@infradead.org, linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com, tglx@linutronix.de, jbeulich@novell.com, mingo@elte.hu
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa02 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Combo: ;Peter Zijlstra <peterz@infradead.org>
-X-Spam-Relay-Country: 
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
-	*      [score: 0.0000]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa02 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-	*  0.0 XMSolicitRefs_1 + 2 solicitation references
-Subject: Re: [tip:core/ipi] generic-ipi: eliminate spurious pointlessWARN_ON()s
-X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
-X-SA-Exim-Scanned: Yes (on in01.mta.xmission.com)
+Content-Disposition: inline
+In-Reply-To: <19f34abd0903201616v4175b5afn5630fcae02d7ff4f@mail.gmail.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Zijlstra <peterz@infradead.org> writes:
+On Sat, Mar 21, 2009 at 12:16:17AM +0100, Vegard Nossum wrote:
 
-> On Fri, 2009-03-20 at 19:24 +0100, Ingo Molnar wrote:
->> * Eric W. Biederman <ebiederm@xmission.com> wrote:
->> 
->> > Now back to my regularly scheduled hotunplug challenges starting 
->> > with getting lockdep to warn about the dead locks.
->
-> http://programming.kicks-ass.net/kernel-patches/cpu-hotplug/
->
-> The recursive read code needs more work.. 
+> (The solution you sketched is still quite an uglification of the
+> original code, something we tried to minimize using the construct you
+> saw.)
 
-Cpu hotunplug isn't quite where I am looking at.
-
-Normal device hotunplug, and in particular the use counts sysctl,
-proc, and sysfs that act as reader locks that we eventually wait for
-when it comes time to free those structures.
-
-I think they fit the same model as reader/writer locks where the
-readers can recurse but the writers can not.  Which seems to be
-the model of rcu locks as well.
-
-It doesn't look like read==2 works properly because it does not log any
-locks grabbed underneath the reader lock.  Is that deliberate?  It certainly
-does not seem to be correct.
-
-The deadlock I am worried about is:
-rtnl_lock()                                 inc_use_count();
-wait use_count == 0.                        rtnl_lock();
-
-Which you I have seen several people hit in the last couple of weeks.
-
-Eric
+Frankly, I'd suggest expanding that sucker and being done with that.
+However, more interesting question is whether you really need the
+named field to be a struct.  If not, something like
+bitfields_start(name)
+....
+bitfields_end
+would work just fine, without all that fun.
