@@ -1,132 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753763AbZCTUZh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753934AbZCTUau@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753763AbZCTUZh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Mar 2009 16:25:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751870AbZCTUZ3
+	id S1753934AbZCTUau (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Mar 2009 16:30:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752188AbZCTUak
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Mar 2009 16:25:29 -0400
-Received: from mail-bw0-f169.google.com ([209.85.218.169]:64308 "EHLO
-	mail-bw0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751060AbZCTUZ2 (ORCPT
+	Fri, 20 Mar 2009 16:30:40 -0400
+Received: from charlotte.tuxdriver.com ([70.61.120.58]:50040 "EHLO
+	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752079AbZCTUaj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Mar 2009 16:25:28 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:message-id;
-        b=q/q6hArfkXbyqKOvGHwWOj0drOYx4yNLG5rAk5wkIn4nAG8ZeLcrf2igyxtTBNZZSN
-         tqqRg1WOKMzz2e7Ak0NUC8ps+1kd/il/xgbXgogNQ/Alw8BhL3v2XHMB5wKboe4ZA9F6
-         s7gzcpCzPwYqlvRyaHDILhaAs7j8hr+dHF2U8=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Cyrill Gorcunov <gorcunov@gmail.com>
-Subject: Re: [PATCH] x86: fix IO APIC resource allocation error message
-Date: Fri, 20 Mar 2009 21:27:14 +0100
-User-Agent: KMail/1.11.1 (Linux/2.6.29-rc8-next-20090319; KDE/4.2.1; i686; ; )
-Cc: Ingo Molnar <mingo@elte.hu>, Alan Bartlett <ajb.stxsl@googlemail.com>,
+	Fri, 20 Mar 2009 16:30:39 -0400
+Date: Fri, 20 Mar 2009 16:29:35 -0400
+From: "John W. Linville" <linville@tuxdriver.com>
+To: davem@davemloft.net
+Cc: linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
        linux-kernel@vger.kernel.org
-References: <200903202012.41344.bzolnier@gmail.com> <200903202102.28585.bzolnier@gmail.com> <20090320200954.GH7453@localhost>
-In-Reply-To: <20090320200954.GH7453@localhost>
+Subject: pull request: wireless-2.6 2009-03-20
+Message-ID: <20090320202934.GA3263@tuxdriver.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200903202127.16307.bzolnier@gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 20 March 2009, Cyrill Gorcunov wrote:
-> [Bartlomiej Zolnierkiewicz - Fri, Mar 20, 2009 at 09:02:28PM +0100]
-> | On Friday 20 March 2009, Cyrill Gorcunov wrote:
-> | > [Bartlomiej Zolnierkiewicz - Fri, Mar 20, 2009 at 08:12:41PM +0100]
-> | > | From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> | > | Subject: [PATCH] x86: fix IO APIC resource allocation error message
-> | > | 
-> | > | Impact: fix incorrect error message
-> | > | 
-> | > | - IO APIC resource allocation error message contains one too many "be".
-> | > | 
-> | > | - Print the error message iff there are IO APICs in the system.
-> | > | 
-> | > | Cc: Alan Bartlett <ajb.stxsl@googlemail.com>
-> | > | Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> | > | ---
-> | > | I've seen this error message for some time on my x86-32 laptop...
-> | > | 
-> | > |  arch/x86/kernel/io_apic.c |    4 ++--
-> | > |  1 file changed, 2 insertions(+), 2 deletions(-)
-> | > | 
-> | > | Index: b/arch/x86/kernel/io_apic.c
-> | > | ===================================================================
-> | > | --- a/arch/x86/kernel/io_apic.c
-> | > | +++ b/arch/x86/kernel/io_apic.c
-> | > | @@ -4150,9 +4150,9 @@ static int __init ioapic_insert_resource
-> | > |  	int i;
-> | > |  	struct resource *r = ioapic_resources;
-> | > |  
-> | > | -	if (!r) {
-> | > | +	if (!r && nr_ioapics > 0) {
-> | > |  		printk(KERN_ERR
-> | > | -		       "IO APIC resources could be not be allocated.\n");
-> | > | +		       "IO APIC resources couldn't be allocated.\n");
-> | > |  		return -1;
-> | > |  	}
-> | > |  
-> | > | 
-> | > 
-> | > Hi Bartlomiej,
-> | > 
-> | > until I miss something I guess you could even make it simplier :)
-> | > Something like
-> | > 
-> | > ---
-> | > static int __init ioapic_insert_resources(void)
-> | > {
-> | > 	struct resource *r = ioapic_resources;
-> | > 	int err;
-> | > 	int i;
-> | > 
-> | > 	for (i = 0; i < nr_ioapics; i++) {
-> | > 		err = insert_resource(&iomem_resource, r);
-> | > 		if (err) {
-> | > 			pr_err("IO APIC resources could not be allocated.\n");
-> | > 			return err;
-> | > 		}
-> | > 		r++;
-> | > 	}
-> | > 
-> | > 	return 0;
-> | > }
-> | > ---
-> | > 
-> | > Now we would have 'err' here and get out only on conflicting resource.
-> | > Did I miss something?
-> | 
-> | nr_ioapics > 0 && r == NULL ?
-> | 
-> 
-> This case happens when alloc_bootmem fails but we already panic'ed!
-> 
-> Here is what I mean
-> 
-> From ioapic_setup_resources()
-> 
-> 	if (nr_ioapics <= 0)
-> 		return NULL;
-> 
-> 	mem = alloc_bootmem(n); <- we panic here anyway
+Dave,
 
-Seems like the following check is superfluous then:
+One last(?) straggler for 2.6.29 -- avoid a NULL function pointer
+dereference when processing certain nl80211 messages...
 
-        if (mem != NULL) {
-
-> 	...
-> 	ioapic_resources = res;
-
-In either case I don't think we that failing all resource insertions
-(for all IO APICs) if only one has failed is a desirable behavior...
+Please let me know if there are problems!
 
 Thanks,
-Bart
+
+John
+
+---
+
+Individual patch is available here:
+
+	http://www.kernel.org/pub/linux/kernel/people/linville/wireless-2.6/
+
+---
+
+The following changes since commit 170ebf85160dd128e1c4206cc197cce7d1424705:
+  Tilman Schmidt (1):
+        bas_gigaset: correctly allocate USB interrupt transfer buffer
+
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/linville/wireless-2.6.git master
+
+Jouni Malinen (1):
+      nl80211: Check that function pointer != NULL before using it
+
+ net/wireless/nl80211.c |   11 +++++++++++
+ 1 files changed, 11 insertions(+), 0 deletions(-)
+
+diff --git a/net/wireless/nl80211.c b/net/wireless/nl80211.c
+index 1e728ff..31b807a 100644
+--- a/net/wireless/nl80211.c
++++ b/net/wireless/nl80211.c
+@@ -1908,6 +1908,11 @@ static int nl80211_get_mesh_params(struct sk_buff *skb,
+ 	if (err)
+ 		return err;
+ 
++	if (!drv->ops->get_mesh_params) {
++		err = -EOPNOTSUPP;
++		goto out;
++	}
++
+ 	/* Get the mesh params */
+ 	rtnl_lock();
+ 	err = drv->ops->get_mesh_params(&drv->wiphy, dev, &cur_params);
+@@ -2017,6 +2022,11 @@ static int nl80211_set_mesh_params(struct sk_buff *skb, struct genl_info *info)
+ 	if (err)
+ 		return err;
+ 
++	if (!drv->ops->set_mesh_params) {
++		err = -EOPNOTSUPP;
++		goto out;
++	}
++
+ 	/* This makes sure that there aren't more than 32 mesh config
+ 	 * parameters (otherwise our bitfield scheme would not work.) */
+ 	BUILD_BUG_ON(NL80211_MESHCONF_ATTR_MAX > 32);
+@@ -2061,6 +2071,7 @@ static int nl80211_set_mesh_params(struct sk_buff *skb, struct genl_info *info)
+ 	err = drv->ops->set_mesh_params(&drv->wiphy, dev, &cfg, mask);
+ 	rtnl_unlock();
+ 
++ out:
+ 	/* cleanup */
+ 	cfg80211_put_dev(drv);
+ 	dev_put(dev);
+-- 
+John W. Linville		Someday the world will need a hero, and you
+linville@tuxdriver.com			might be all we have.  Be ready.
