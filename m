@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764255AbZCTXiu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764333AbZCTXjb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764255AbZCTXiu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Mar 2009 19:38:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762983AbZCTXYz
+	id S1764333AbZCTXjb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Mar 2009 19:39:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761750AbZCTXY5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Mar 2009 19:24:55 -0400
-Received: from kroah.org ([198.145.64.141]:48800 "EHLO coco.kroah.org"
+	Fri, 20 Mar 2009 19:24:57 -0400
+Received: from kroah.org ([198.145.64.141]:48825 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1761921AbZCTXYx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Mar 2009 19:24:53 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 20 15:29:28 2009
-Message-Id: <20090320222928.560756537@mini.kroah.org>
+	id S1761670AbZCTXY4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Mar 2009 19:24:56 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 20 15:29:29 2009
+Message-Id: <20090320222928.879548230@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 20 Mar 2009 15:28:46 -0700
+Date: Fri, 20 Mar 2009 15:28:48 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,11 +25,11 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Karsten Wiese <fzu@wemgehoertderstaat.de>,
-       David Brownell <david-b@pacbell.net>
-Subject: [patch 36/43] USB: EHCI: Fix isochronous URB leak
+       alan@lxorguk.ukuu.org.uk, Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Eric Anholt <eric@anholt.net>, Dave Airlie <airlied@linux.ie>
+Subject: [patch 38/43] drm/i915: set vblank enabled flag correctly across IRQ install/uninstall
 References: <20090320222810.386844059@mini.kroah.org>
-Content-Disposition: inline; filename=usb-ehci-fix-isochronous-urb-leak.patch
+Content-Disposition: inline; filename=drm-i915-set-vblank-enabled-flag-correctly-across-irq-install-uninstall.patch
 In-Reply-To: <20090320232116.GA3375@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -39,80 +39,72 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Karsten Wiese <fzuuzf@googlemail.com>
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
 
-commit 508db8c954d55ed30f870d2c24d741ba6269d13c upstream.
+commit dc1336ff4fe08ae7cfe8301bfd7f0b2cfd31d20a upstream.
 
-ehci-hcd uses usb_get_urb() and usb_put_urb() in an unbalanced way causing
-isochronous URB's kref.counts incrementing once per usb_submit_urb() call.
-The culprit is *usb being set to NULL when usb_put_urb() is called after URB
-is given back.
-Due to other fixes there is no need for ehci-hcd to deal with usb_get_urb()
-nor usb_put_urb() anymore, so patch removes their usages in ehci-hcd.
-Patch also makes ehci_to_hcd(ehci)->self.bandwidth_allocated adjust, if a
-stream finishes.
+In the absence of kernel mode setting, many drivers disable IRQs across VT
+switch.  The core DRM vblank code is missing a check for this case however;
+even after IRQ disable, the vblank code will still have the vblank_enabled
+flag set, so unless we track the fact that they're disabled at IRQ uninstall
+time, when we VT switch back in we won't actually re-enable them, which means
+any apps waiting on vblank before the switch will hang.
 
-Signed-off-by: Karsten Wiese <fzu@wemgehoertderstaat.de>
-Cc: David Brownell <david-b@pacbell.net>
+This patch does that and also adds a sanity check to the wait condition to
+look for the irq_enabled flag in general, as well as adding a wakeup to the
+IRQ uninstall path.
+
+Fixes fdo bug #18879 with compiz hangs at VT switch.
+
+Signed-off-by: Jesse Barnes <jbarnes@virtuousgeek.org>
+Signed-off-by: Eric Anholt <eric@anholt.net>
+Signed-off-by: Dave Airlie <airlied@linux.ie>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/usb/host/ehci-sched.c |   10 ++++------
- 1 file changed, 4 insertions(+), 6 deletions(-)
+ drivers/gpu/drm/drm_irq.c |   18 +++++++++++++++---
+ 1 file changed, 15 insertions(+), 3 deletions(-)
 
---- a/drivers/usb/host/ehci-sched.c
-+++ b/drivers/usb/host/ehci-sched.c
-@@ -1536,7 +1536,7 @@ itd_link_urb (
- 					struct ehci_itd, itd_list);
- 			list_move_tail (&itd->itd_list, &stream->td_list);
- 			itd->stream = iso_stream_get (stream);
--			itd->urb = usb_get_urb (urb);
-+			itd->urb = urb;
- 			itd_init (ehci, stream, itd);
- 		}
+--- a/drivers/gpu/drm/drm_irq.c
++++ b/drivers/gpu/drm/drm_irq.c
+@@ -259,7 +259,8 @@ EXPORT_SYMBOL(drm_irq_install);
+  */
+ int drm_irq_uninstall(struct drm_device * dev)
+ {
+-	int irq_enabled;
++	unsigned long irqflags;
++	int irq_enabled, i;
  
-@@ -1645,7 +1645,7 @@ itd_complete (
- 	(void) disable_periodic(ehci);
- 	ehci_to_hcd(ehci)->self.bandwidth_isoc_reqs--;
+ 	if (!drm_core_check_feature(dev, DRIVER_HAVE_IRQ))
+ 		return -EINVAL;
+@@ -269,6 +270,16 @@ int drm_irq_uninstall(struct drm_device 
+ 	dev->irq_enabled = 0;
+ 	mutex_unlock(&dev->struct_mutex);
  
--	if (unlikely (list_empty (&stream->td_list))) {
-+	if (unlikely(list_is_singular(&stream->td_list))) {
- 		ehci_to_hcd(ehci)->self.bandwidth_allocated
- 				-= stream->bandwidth;
- 		ehci_vdbg (ehci,
-@@ -1656,7 +1656,6 @@ itd_complete (
- 	iso_stream_put (ehci, stream);
++	/*
++	 * Wake up any waiters so they don't hang.
++	 */
++	spin_lock_irqsave(&dev->vbl_lock, irqflags);
++	for (i = 0; i < dev->num_crtcs; i++) {
++		DRM_WAKEUP(&dev->vbl_queue[i]);
++		dev->vblank_enabled[i] = 0;
++	}
++	spin_unlock_irqrestore(&dev->vbl_lock, irqflags);
++
+ 	if (!irq_enabled)
+ 		return -EINVAL;
  
- done:
--	usb_put_urb(urb);
- 	itd->urb = NULL;
- 	if (ehci->clock_frame != itd->frame || itd->index[7] != -1) {
- 		/* OK to recycle this ITD now. */
-@@ -1949,7 +1948,7 @@ sitd_link_urb (
- 				struct ehci_sitd, sitd_list);
- 		list_move_tail (&sitd->sitd_list, &stream->td_list);
- 		sitd->stream = iso_stream_get (stream);
--		sitd->urb = usb_get_urb (urb);
-+		sitd->urb = urb;
+@@ -617,8 +628,9 @@ int drm_wait_vblank(struct drm_device *d
+ 		DRM_DEBUG("waiting on vblank count %d, crtc %d\n",
+ 			  vblwait->request.sequence, crtc);
+ 		DRM_WAIT_ON(ret, dev->vbl_queue[crtc], 3 * DRM_HZ,
+-			    ((drm_vblank_count(dev, crtc)
+-			      - vblwait->request.sequence) <= (1 << 23)));
++			    (((drm_vblank_count(dev, crtc) -
++			       vblwait->request.sequence) <= (1 << 23)) ||
++			     !dev->irq_enabled));
  
- 		sitd_patch(ehci, stream, sitd, sched, packet);
- 		sitd_link (ehci, (next_uframe >> 3) % ehci->periodic_size,
-@@ -2034,7 +2033,7 @@ sitd_complete (
- 	(void) disable_periodic(ehci);
- 	ehci_to_hcd(ehci)->self.bandwidth_isoc_reqs--;
- 
--	if (list_empty (&stream->td_list)) {
-+	if (list_is_singular(&stream->td_list)) {
- 		ehci_to_hcd(ehci)->self.bandwidth_allocated
- 				-= stream->bandwidth;
- 		ehci_vdbg (ehci,
-@@ -2045,7 +2044,6 @@ sitd_complete (
- 	iso_stream_put (ehci, stream);
- 	/* OK to recycle this SITD now that its completion callback ran. */
- done:
--	usb_put_urb(urb);
- 	sitd->urb = NULL;
- 	sitd->stream = NULL;
- 	list_move(&sitd->sitd_list, &stream->free_list);
+ 		if (ret != -EINTR) {
+ 			struct timeval now;
 
 
