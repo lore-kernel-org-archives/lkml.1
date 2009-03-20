@@ -1,69 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760629AbZCTTAc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760064AbZCTTCU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760629AbZCTTAc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Mar 2009 15:00:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758940AbZCTTAI
+	id S1760064AbZCTTCU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Mar 2009 15:02:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754499AbZCTTCF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Mar 2009 15:00:08 -0400
-Received: from mail-fx0-f158.google.com ([209.85.220.158]:61078 "EHLO
-	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760565AbZCTTAG (ORCPT
+	Fri, 20 Mar 2009 15:02:05 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:38715 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751689AbZCTTCE convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Mar 2009 15:00:06 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=ud4nFeiuR6IJOipRNMNZLpkHx3FnRzbj9othw8D6n349g1jMQVJ89qgXxn7RlJiH7b
-         LB0ljZ6ZAwSTdcz4jw+v7VOZQpD1+RQPvk9HN3XTQwUuaEOXPJ98BEuGXg3NSuKW26Pe
-         1yNCv2nuFato+msn7DtBqM85vNd1D6ZrpVaW8=
-Subject: Re: [patch] x86, bts: use atomic memory allocation
-From: Markus Metzger <markus.t.metzger@googlemail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: "Metzger, Markus T" <markus.t.metzger@intel.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "tglx@linutronix.de" <tglx@linutronix.de>,
-       "hpa@zytor.com" <hpa@zytor.com>,
-       "roland@redhat.com" <roland@redhat.com>,
-       "eranian@googlemail.com" <eranian@googlemail.com>,
-       "oleg@redhat.com" <oleg@redhat.com>,
-       "Villacis, Juan" <juan.villacis@intel.com>,
-       "ak@linux.jf.intel.com" <ak@linux.jf.intel.com>
-In-Reply-To: <20090320185559.GA6224@elte.hu>
-References: <20090318192700.A6038@sedona.ch.intel.com>
-	 <20090319161141.GA12144@elte.hu>
-	 <928CFBE8E7CB0040959E56B4EA41A77E923FFCA4@irsmsx504.ger.corp.intel.com>
-	 <20090320185559.GA6224@elte.hu>
-Content-Type: text/plain
-Date: Fri, 20 Mar 2009 19:59:51 +0100
-Message-Id: <1237575591.6387.2.camel@raistlin>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1
-Content-Transfer-Encoding: 7bit
+	Fri, 20 Mar 2009 15:02:04 -0400
+To: cl@linux-foundation.org, nitingupta910@gmail.com
+Subject: Re: [PATCH 2/3] xvmalloc memory allocator
+X-IlohaMail-Blah: penberg@cs.helsinki.fi
+X-IlohaMail-Method: mail() [mem]
+X-IlohaMail-Dummy: moo
+X-Mailer: IlohaMail/0.8.12+pk-11 (On: iloha.cs.Helsinki.FI)
+In-Reply-To: <alpine.DEB.1.10.0903201337500.18010@qirst.com>
+Message-ID: <ztOQA2Cz.1237575719.7896090.penberg@cs.helsinki.fi>
+From: "Pekka Enberg" <penberg@cs.helsinki.fi>
+CC: "Pekka Enberg" <penberg@cs.helsinki.fi>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Date: Fri, 20 Mar 2009 21:01:59 +0200 (EET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-03-20 at 19:55 +0100, Ingo Molnar wrote:
-> * Metzger, Markus T <markus.t.metzger@intel.com> wrote:
+
+On 3/20/2009, "Christoph Lameter" <cl@linux-foundation.org> wrote:
+> > I think, with a bit playing around with interfaces, it can be turned into
+> > general purpose allocator (this will most probably lack highmem support).
 > 
+> Then it would need to implement the SLAB api (see include/linux/slab.h).
+> Thus we are getting slab allocator #5.
 
-> > The second config boots OK with the additional changes to keep the 
-> > GFP_KERNEL and move the ds_request_bts() calls out of the 
-> > on_each_cpu() in the hw-branch-tracer.
-> > 
-> > I don't know yet what exactly causes the crash and if there is a 
-> > simpler fix.
-> 
-> hm, this was an AMD box - so perhaps they dont have a compatible DS 
-> implementation?
-
-Hmmm, could be.
-
-In that case, ds_cfg should be zero-initialized and ds_request should
-return -EOPNOTSUPP. I'll try to simulate that.
-
-regards,
-markus.
-
-
+I do not see the point in that. As I suggested earlier, you should
+probably just move this into drivers/block/ and make it a private
+compcache allocator.
