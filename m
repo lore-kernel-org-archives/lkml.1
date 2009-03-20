@@ -1,104 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751853AbZCTEC6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753237AbZCTEQf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751853AbZCTEC6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Mar 2009 00:02:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750767AbZCTECs
+	id S1753237AbZCTEQf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Mar 2009 00:16:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750820AbZCTEQY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Mar 2009 00:02:48 -0400
-Received: from casper.infradead.org ([85.118.1.10]:58716 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750703AbZCTECr (ORCPT
+	Fri, 20 Mar 2009 00:16:24 -0400
+Received: from g5t0007.atlanta.hp.com ([15.192.0.44]:47939 "EHLO
+	g5t0007.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750703AbZCTEQX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Mar 2009 00:02:47 -0400
-Date: Thu, 19 Mar 2009 20:20:32 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: paulmck@linux.vnet.ibm.com
-Cc: dipankar@in.ibm.com, linux-input@vger.kernel.org,
-       dmitry.torokhov@gmail.com, linux-kernel@vger.kernel.org
-Subject: Re: Question about usage of RCU in the input layer
-Message-ID: <20090319202032.4c971d92@infradead.org>
-In-Reply-To: <20090320020750.GA6807@linux.vnet.ibm.com>
-References: <20090318215812.15496a86@infradead.org>
- <20090319085628.GA6167@in.ibm.com>
- <20090319071841.63334eff@infradead.org>
- <20090320020750.GA6807@linux.vnet.ibm.com>
-Organization: Intel
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Fri, 20 Mar 2009 00:16:23 -0400
+Date: Thu, 19 Mar 2009 22:15:00 -0600
+From: Alex Chiang <achiang@hp.com>
+To: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+Cc: jbarnes@virtuousgeek.org, shimada-yxb@necst.nec.co.jp,
+       linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v4 00/12] PCI core learns hotplug
+Message-ID: <20090320041500.GB26595@ldl.fc.hp.com>
+References: <20090318222426.887.1008.stgit@bob.kio> <49C1FE8A.9000401@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49C1FE8A.9000401@jp.fujitsu.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 19 Mar 2009 19:07:50 -0700
-"Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
+* Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>:
+> Alex Chiang wrote:
+>> We're getting close to the new merge window, and I _think_ this
+>> patch series is ready for consideration. Notably:
+>>
+>> 	- multiple rescans/removes of devices with and without bridges
+>> 	- verified that resource allocation after multiple remove/rescan
+>> 	  cycles is the same as what we had during initial boot
+>> 	- fixes the complete suckage of fakephp (that I created)
+>> 	- doesn't affect existing hotplug drivers
+>> 	- tested on x86 and ia64 platforms
+>>
+>> Please review, and consider testing. For testing ease, you can pull
+>> from my git branch:
+>>
+>> 	git://git.kernel.org/pub/scm/linux/kernel/git/achiang/pci-hotplug.git
+>> 	branch 'test-20090318' is what you want
+>>
+>
+> I got the following oops when I did
+>
+> # echo 1 > remove
+>
+> on the bridge device.
+>
+> [ 6639.239164] =============================================
+> [ 6639.239191] [ INFO: possible recursive locking detected ]
+> [ 6639.239212] 2.6.29-rc8-kk #1
+> [ 6639.239227] ---------------------------------------------
+> [ 6639.239243] events/8/60 is trying to acquire lock:
+> [ 6639.239252]  (events){--..}, at: [<ffffffff80257fc0>] flush_workqueue+0x0/0xa0
+> [ 6639.239252]
+> [ 6639.239252] but task is already holding lock:
+> [ 6639.239252]  (events){--..}, at: [<ffffffff80257648>] run_workqueue+0x108/0x230
+> [ 6639.239252]
+> [ 6639.239252] other info that might help us debug this:
+> [ 6639.239252] 3 locks held by events/8/60:
+> [ 6639.239252]  #0:  (events){--..}, at: [<ffffffff80257648>] run_workqueue+0x108/0x230
+> [ 6639.239252]  #1:  (&ss->work){--..}, at: [<ffffffff80257648>] run_workqueue+0x108/0x230
+> [ 6639.239252]  #2:  (pci_remove_rescan_mutex){--..}, at: [<ffffffff803c05b9>] remove_callback+0x29/0x80
+> [ 6639.239252]
+> [ 6639.239252] stack backtrace:
+> [ 6639.239252] Pid: 60, comm: events/8 Not tainted 2.6.29-rc8-kk #1
+> [ 6639.239252] Call Trace:
+> [ 6639.239252]  [<ffffffff8026dfcd>] validate_chain+0xb7d/0x1260
+> [ 6639.239252]  [<ffffffff8026eade>] __lock_acquire+0x42e/0xa40
+> [ 6639.239252]  [<ffffffff8026f148>] lock_acquire+0x58/0x80
+> [ 6639.239252]  [<ffffffff80257fc0>] ? flush_workqueue+0x0/0xa0
+> [ 6639.239252]  [<ffffffff8025800d>] flush_workqueue+0x4d/0xa0
+> [ 6639.239252]  [<ffffffff80257fc0>] ? flush_workqueue+0x0/0xa0
+> [ 6639.239252]  [<ffffffff80258070>] flush_scheduled_work+0x10/0x20
+> [ 6639.239252]  [<ffffffffa0158065>] e1000_remove+0x55/0xfe [e1000e]
+> [ 6639.239252]  [<ffffffff8033ee60>] ? sysfs_schedule_callback_work+0x0/0x50
+> [ 6639.239252]  [<ffffffff803bf7a2>] pci_device_remove+0x32/0x70
+> [ 6639.239252]  [<ffffffff80441409>] __device_release_driver+0x59/0x90
+> [ 6639.241006]  [<ffffffff8044153b>] device_release_driver+0x2b/0x40
+> [ 6639.241006]  [<ffffffff80441036>] bus_remove_device+0xa6/0x120
+> [ 6639.241006]  [<ffffffff8043dacb>] device_del+0x12b/0x190
+> [ 6639.241006]  [<ffffffff8043db56>] device_unregister+0x26/0x70
+> [ 6639.241006]  [<ffffffff803ba529>] pci_stop_dev+0x49/0x60
+> [ 6639.241006]  [<ffffffff803ba670>] pci_remove_bus_device+0x40/0xc0
+> [ 6639.241006]  [<ffffffff803ba71d>] pci_remove_behind_bridge+0x2d/0x50
+> [ 6639.241006]  [<ffffffff803ba64e>] pci_remove_bus_device+0x1e/0xc0
+> [ 6639.241006]  [<ffffffff803c05c8>] remove_callback+0x38/0x80
+> [ 6639.241006]  [<ffffffff8033ee7f>] sysfs_schedule_callback_work+0x1f/0x50
+> [ 6639.241006]  [<ffffffff8025769a>] run_workqueue+0x15a/0x230
+> [ 6639.241006]  [<ffffffff80257648>] ? run_workqueue+0x108/0x230
+> [ 6639.241006]  [<ffffffff8025846f>] worker_thread+0x9f/0x100
+> [ 6639.241006]  [<ffffffff8025bce0>] ? autoremove_wake_function+0x0/0x40
+> [ 6639.241006]  [<ffffffff802583d0>] ? worker_thread+0x0/0x100
+> [ 6639.241006]  [<ffffffff8025b89d>] kthread+0x4d/0x80
+> [ 6639.241006]  [<ffffffff8020d4ba>] child_rip+0xa/0x20
+> [ 6639.241006]  [<ffffffff8020cebc>] ? restore_args+0x0/0x30
+> [ 6639.241006]  [<ffffffff8025b850>] ? kthread+0x0/0x80
+> [ 6639.241006]  [<ffffffff8020d4b0>] ? child_rip+0x0/0x20
+> [ 6639.283330] e1000e 0000:40:00.0: PCI INT A disabled
+> [ 6639.324332] e1000e 0000:40:00.1: PCI INT B disabled
+> [ 6639.325031] aer 0000:2f:04.0:pcie22: unloading service driver aer
 
-> On Thu, Mar 19, 2009 at 07:18:41AM -0700, Arjan van de Ven wrote:
-> > On Thu, 19 Mar 2009 14:26:28 +0530
-> > Dipankar Sarma <dipankar@in.ibm.com> wrote:
-> > 
-> > > On Wed, Mar 18, 2009 at 09:58:12PM -0700, Arjan van de Ven wrote:
-> > > > Hi,
-> > > > 
-> > > > the input layer does a "synchronize_rcu()" after a
-> > > > list_add_tail_rcu(), which is costing me 1 second of boot
-> > > > time..... And based on my understanding of the RCU concept, you
-> > > > only need to synchronize on delete, not on addition... so I
-> > > > think the synchronize is entirely redundant here...
-> > > 
-> > > The more appropriate question is - why is synchronize_rcu() taking
-> > > 1 second ? Any idea what the other CPUs are doing at the time
-> > > of calling synchronize_rcu() ?
-> > 
-> > one cpu is doing a lot of i2c traffic which is a bunch of udelay()s
-> > in loops.. then it does quite a bit of uncached memory access, and
-> > the lot takes quite while.
-> > 
-> > > What driver is this ? How early
-> > > in the boot is this happening ? 
-> > 
-> > during kernel boot.
-> > 
-> > I suppose my question is also more generic.. why synchronize when
-> > it's not needed? At least based on my understanding of RCU (but
-> > you're the expert), you don't need to synchronize for an add, only
-> > between a delete and a (k)free.....
-> 
-> I don't claim to understand the code in question, so it is entirely
-> possible that the following is irrelevant.  But one other reason for
-> synchronize_rcu() is:
-> 
-> 1.	Make change.
-> 
-> 2.	synchronize_rcu()
-> 
-> 3.	Now you are guaranteed that all CPUs/tasks/whatever
-> currently running either are not messing with you on the one hand, or
-> 	have seen the change on the other.
+pci_device_remove() calls the driver's ->remove method directly;
+it shouldn't be messing around with that sysfs callback.
 
-ok so this is for the case where someone is already iterating the list.
+Does this only happen with e1000e devices? Or does it happen on
+any bridge device?
 
-I don't see anything in the code that assumes this..
+I am stumped; I've never seen this locking issue before...
 
-> 
-> It sounds like you are seeing these delays later in boot, however,
+Will continue to look, thanks.
 
-yeah it's during driver init/
+/ac
 
-
-> 
-> Alternatively, again assuming a single-CPU system
-
-single CPU is soooo last decade ;-)
-But seriously I no longer have systems that aren't dual core or SMT in
-some form... 
-
-
-
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
