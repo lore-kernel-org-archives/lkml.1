@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761620AbZCTXQU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761032AbZCTXPT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761620AbZCTXQU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Mar 2009 19:16:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756367AbZCTXNk
+	id S1761032AbZCTXPT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Mar 2009 19:15:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757073AbZCTXNi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Mar 2009 19:13:40 -0400
-Received: from kroah.org ([198.145.64.141]:53059 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757873AbZCTXNi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 20 Mar 2009 19:13:38 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 20 15:27:10 2009
-Message-Id: <20090320222710.038424016@mini.kroah.org>
+Received: from kroah.org ([198.145.64.141]:53043 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1756303AbZCTXNg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Mar 2009 19:13:36 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 20 15:27:09 2009
+Message-Id: <20090320222709.714598497@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 20 Mar 2009 15:26:18 -0700
+Date: Fri, 20 Mar 2009 15:26:16 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,10 +25,11 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Takashi Iwai <tiwai@suse.de>
-Subject: [patch 07/32] ALSA: hda - Fix DMA mask for ATI controllers
+       alan@lxorguk.ukuu.org.uk, Benny Halevy <bhalevy@panasas.com>,
+       "J. Bruce Fields" <bfields@citi.umich.edu>
+Subject: [patch 05/32] NFSD: provide encode routine for OP_OPENATTR
 References: <20090320222611.872315885@mini.kroah.org>
-Content-Disposition: inline; filename=alsa-hda-fix-dma-mask-for-ati-controllers.patch
+Content-Disposition: inline; filename=nfsd-provide-encode-routine-for-op_openattr.patch
 In-Reply-To: <20090320231037.GA2732@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -38,40 +39,37 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Takashi Iwai <tiwai@suse.de>
+From: Benny Halevy <bhalevy@panasas.com>
 
-commit 09240cf429505891d6123ce14a29f58f2a60121e upstream.
+commit 84f09f46b4ee9e4e9b6381f8af31817516d2091b upstream.
 
-ATI controllers (at least some SB0600 models) appear buggy to handle
-64bit DMA.  As a workaround, reset GCAP bit0 and let the driver to
-use only 32bit DMA on these controllers.
+Although this operation is unsupported by our implementation
+we still need to provide an encode routine for it to
+merely encode its (error) status back in the compound reply.
 
-Signed-off-by: Takashi Iwai <tiwai@suse.de>
+Thanks for Bill Baker at sun.com for testing with the Sun
+OpenSolaris' client, finding, and reporting this bug at
+Connectathon 2009.
+
+This bug was introduced in 2.6.27
+
+Signed-off-by: Benny Halevy <bhalevy@panasas.com>
+Signed-off-by: J. Bruce Fields <bfields@citi.umich.edu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- sound/pci/hda/hda_intel.c |    8 ++++++++
- 1 file changed, 8 insertions(+)
+ fs/nfsd/nfs4xdr.c |    1 +
+ 1 file changed, 1 insertion(+)
 
---- a/sound/pci/hda/hda_intel.c
-+++ b/sound/pci/hda/hda_intel.c
-@@ -2110,9 +2110,17 @@ static int __devinit azx_create(struct s
- 	gcap = azx_readw(chip, GCAP);
- 	snd_printdd("chipset global capabilities = 0x%x\n", gcap);
- 
-+	/* ATI chips seems buggy about 64bit DMA addresses */
-+	if (chip->driver_type == AZX_DRIVER_ATI)
-+		gcap &= ~0x01;
-+
- 	/* allow 64bit DMA address if supported by H/W */
- 	if ((gcap & 0x01) && !pci_set_dma_mask(pci, DMA_64BIT_MASK))
- 		pci_set_consistent_dma_mask(pci, DMA_64BIT_MASK);
-+	else {
-+		pci_set_dma_mask(pci, DMA_32BIT_MASK);
-+		pci_set_consistent_dma_mask(pci, DMA_32BIT_MASK);
-+	}
- 
- 	/* read number of streams from GCAP register instead of using
- 	 * hardcoded value
+--- a/fs/nfsd/nfs4xdr.c
++++ b/fs/nfsd/nfs4xdr.c
+@@ -2593,6 +2593,7 @@ static nfsd4_enc nfsd4_enc_ops[] = {
+ 	[OP_LOOKUPP]		= (nfsd4_enc)nfsd4_encode_noop,
+ 	[OP_NVERIFY]		= (nfsd4_enc)nfsd4_encode_noop,
+ 	[OP_OPEN]		= (nfsd4_enc)nfsd4_encode_open,
++	[OP_OPENATTR]		= (nfsd4_enc)nfsd4_encode_noop,
+ 	[OP_OPEN_CONFIRM]	= (nfsd4_enc)nfsd4_encode_open_confirm,
+ 	[OP_OPEN_DOWNGRADE]	= (nfsd4_enc)nfsd4_encode_open_downgrade,
+ 	[OP_PUTFH]		= (nfsd4_enc)nfsd4_encode_noop,
 
 
