@@ -1,102 +1,319 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757164AbZCTFVx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755671AbZCTF2Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757164AbZCTFVx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Mar 2009 01:21:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750879AbZCTFVn
+	id S1755671AbZCTF2Z (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Mar 2009 01:28:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753211AbZCTF2K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Mar 2009 01:21:43 -0400
-Received: from an-out-0708.google.com ([209.85.132.246]:23822 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755386AbZCTFVm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Mar 2009 01:21:42 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=s63FaJOgy6oDJQikre1Xm6p4XUvhQNYF9mtljaC2pY7DmvRY2XCFroj4FiAlPj2hkL
-         kyDXBm2RNoNw4c8CH3KOXuXqiUiLyD2A2bCK8UoglBTkTE3Mkj+Z/ojzxMlwX4iMl42w
-         FGif7H0YG04yMSfLkoC1sBZ+D2kVECzQBtlJI=
-Subject: Re: PROBLEM: relay - stale data copied to user space
-From: Tom Zanussi <tzanussi@gmail.com>
-To: Martin Peschke <mpeschke@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
-In-Reply-To: <1237485040.4752.16.camel@kitka.ibm.com>
-References: <1237388848.4084.64.camel@kitka.ibm.com>
-	 <1237436347.7834.13.camel@charm-linux>
-	 <1237485040.4752.16.camel@kitka.ibm.com>
-Content-Type: text/plain
-Date: Fri, 20 Mar 2009 00:21:28 -0500
-Message-Id: <1237526488.7764.58.camel@charm-linux>
+	Fri, 20 Mar 2009 01:28:10 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:44845 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752424AbZCTF2I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Mar 2009 01:28:08 -0400
+Date: Fri, 20 Mar 2009 16:28:00 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: linux-next@vger.kernel.org
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: linux-next: Tree for March 20
+Message-Id: <20090320162800.24b0ad93.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.14.7; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Fri__20_Mar_2009_16_28_00_+1100_Ip=VjYRpD/jzyG52"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+--Signature=_Fri__20_Mar_2009_16_28_00_+1100_Ip=VjYRpD/jzyG52
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-On Thu, 2009-03-19 at 18:50 +0100, Martin Peschke wrote:
-> On Wed, 2009-03-18 at 23:19 -0500, Tom Zanussi wrote:
-> > On Wed, 2009-03-18 at 16:07 +0100, Martin Peschke wrote
-> > > This is my theory:
-> > > Timing matters. It's a race caused by improper protection of critical
-> > > sections in a producer-consumer scenario. A bug in the bookkeeping
-> > > allows a reader to read at a position that is just being written to.
-> > > 
-> > 
-> > It does look consistent with a reader reading an event that's been
-> > reserved but not yet written, or partially written e.g. if an event
-> > being written on one cpu was read by another before the first one
-> > finished.
-> 
-> So this is part of relay's design, and it's up to user space to make
-> sure that reader and writer are on the same CPU?
-> 
+Hi all,
 
-No, that wasn't originally part of relay's design, but for all practical
-purposes that's what you need to do if you're using the read()
-interface.
+Changes since 20090319:
 
-The original design was meant to be used with mmap() and poll() on
-complete sub-buffers i.e. you grab complete sub-buffers from the mmaped
-buffer only when poll() says they're ready.  If used this way, it
-doesn't matter which cpu is doing the reading or writing.  relay still
-works this way if you use mmap() as in e.g. the klog example.
+Removed tree:
+	kmemcheck (requested due to issues with non standard code)
 
-The read() was added later, on top of something that wasn't designed
-with it in mind, the main difference being that a read() can be done at
-any time and it expects whatever's available to be returned, regardless
-of whether it's reading from a complete sub-buffer or not (if you could
-only read from complete sub-buffers, you might as well use the mmap()
-method).
+The net tree gained a conflict against the net-current tree.
 
-So if a reader can read from a sub-buffer at any time, and there can
-simultaneously be a writer in that sub-buffer, if they're on different
-cpus, you can get what you were seeing.  One way to prevent that is to
-keep the reader on the same cpu, and disable preemption for the writer,
-so when the reader on that cpu finally reads, it can be sure there are
-no in-progress events up to the endpoint of what it's reading.
+The rr tree lost a conflict but gained another against the hid tree.
 
-Hope that helps,
+The watchdog tree gained a conflict against the arm tree.
 
-Tom
+The osd tree lost its conflict.
 
-> > Can you see if the below patch to blktrace userspace helps?
-> 
-> It appears to fix it. I will give it more testing in a larger
-> environment.
-> 
-> > Or failing that, explicitly using gettid() in place of getpid() in
-> > sched_setaffinity().  Or, failing that, you had mentioned previously
-> > that you would try to reproduce the problem on your laptop - were you
-> > able to do that?  If so, it would help in debugging it further...
-> 
-> This didn't work out. But then, it's a single-CPU machine.
-> 
-> Thanks,
-> Martin
-> 
-> 
+The kmemleak tree lost 3 conflicts (probably due to the removal of the
+kmemcheck tree).
 
+The staging tree lost all its conflicts but gained another against the
+drm tree.
+
+The powerpc and sparc build failures were fixed.
+
+----------------------------------------------------------------------------
+
+I have created today's linux-next tree at
+git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git
+(patches at
+http://www.kernel.org/pub/linux/kernel/people/sfr/linux-next/).  If you
+are tracking the linux-next tree using git, you should not use "git pull"
+to do so as that will try to merge the new linux-next release with the
+old one.  You should use "git fetch" as mentioned in the FAQ on the wiki
+(see below).
+
+You can see which trees have been included by looking in the Next/Trees
+file in the source.  There are also quilt-import.log and merge.log files
+in the Next directory.  Between each merge, the tree was built with
+a ppc64_defconfig for powerpc and an allmodconfig for x86_64. After the
+final fixups (if any), it is also built with powerpc allnoconfig (32 and
+64 bit), ppc44x_defconfig and allyesconfig (minus
+CONFIG_PROFILE_ALL_BRANCHES) and i386, sparc and sparc64 defconfig.
+These builds also have CONFIG_ENABLE_WARN_DEPRECATED,
+CONFIG_ENABLE_MUST_CHECK and CONFIG_DEBUG_INFO disabled when necessary.
+
+Below is a summary of the state of the merge.
+
+We are up to 133 trees (counting Linus' and 18 trees of patches pending for
+Linus' tree), more are welcome (even if they are currently empty).
+Thanks to those who have contributed, and to those who haven't, please do.
+
+Status of my local build tests will be at
+http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
+advice about cross compilers/configs that work, we are always open to add
+more builds.
+
+Thanks to Jan Dittmer for adding the linux-next tree to his build tests
+at http://l4x.org/k/ , the guys at http://test.kernel.org/ and Randy
+Dunlap for doing many randconfig builds.
+
+There is a wiki covering stuff to do with linux-next at
+http://linux.f-seidel.de/linux-next/pmwiki/ .  Thanks to Frank Seidel.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+$ git checkout master
+$ git reset --hard stable
+Merging origin/master
+Merging arm-current/master
+Merging m68k-current/for-linus
+Merging powerpc-merge/merge
+Merging sparc-current/master
+Merging scsi-rc-fixes/master
+Merging net-current/master
+Merging sound-current/for-linus
+Merging pci-current/for-linus
+Merging wireless-current/master
+Merging kbuild-current/master
+Merging quilt/driver-core.current
+Merging quilt/usb.current
+Merging cpufreq-current/fixes
+Merging input-current/for-linus
+Merging md-current/for-linus
+Merging audit-current/for-linus
+Merging crypto-current/master
+Merging dwmw2/master
+Merging arm/devel
+CONFLICT (content): Merge conflict in arch/arm/mach-mx1/devices.c
+Merging avr32/avr32-arch
+Merging blackfin/for-linus
+Merging cris/for-next
+Merging ia64/test
+Merging m68k/for-next
+Merging m68knommu/for-next
+Merging mips/mips-for-linux-next
+Merging parisc/master
+Merging powerpc/next
+Merging 4xx/next
+Merging galak/next
+Merging pxa/for-next
+Merging s390/features
+Merging sh/master
+Merging sparc/master
+Merging x86/auto-x86-next
+CONFLICT (content): Merge conflict in arch/powerpc/include/asm/elf.h
+Merging xtensa/master
+Merging tip-core/auto-core-next
+CONFLICT (content): Merge conflict in lib/Kconfig.debug
+Merging cpus4096/auto-cpus4096-next
+CONFLICT (content): Merge conflict in arch/x86/kernel/cpu/common.c
+Merging tracing/auto-tracing-next
+Merging genirq/auto-genirq-next
+CONFLICT (content): Merge conflict in kernel/irq/handle.c
+Merging safe-poison-pointers/auto-safe-poison-pointers-next
+Merging sched/auto-sched-next
+CONFLICT (content): Merge conflict in lib/Makefile
+Merging stackprotector/auto-stackprotector-next
+Merging timers/auto-timers-next
+Merging pci/linux-next
+Merging quilt/device-mapper
+Merging hid/for-next
+Merging quilt/i2c
+CONFLICT (content): Merge conflict in drivers/i2c/busses/i2c-mpc.c
+Merging quilt/jdelvare-hwmon
+Merging quilt/kernel-doc
+CONFLICT (content): Merge conflict in Documentation/kernel-parameters.txt
+Merging v4l-dvb/master
+Merging quota/for_next
+Merging jfs/next
+Merging kbuild/master
+Merging quilt/ide
+CONFLICT (content): Merge conflict in drivers/ide/ide-dma.c
+CONFLICT (content): Merge conflict in drivers/ide/ide-floppy.c
+CONFLICT (content): Merge conflict in include/linux/ide.h
+Merging libata/NEXT
+Merging nfs/linux-next
+Merging xfs/master
+Merging infiniband/for-next
+Merging acpi/test
+Merging nfsd/nfsd-next
+Merging ieee1394/for-next
+Merging ubi/linux-next
+Merging kvm/master
+Merging dlm/next
+Merging scsi/master
+Merging ocfs2/linux-next
+Merging ext4/next
+CONFLICT (content): Merge conflict in fs/ext4/inode.c
+Merging async_tx/next
+Merging udf/for_next
+Merging net/master
+CONFLICT (content): Merge conflict in drivers/net/virtio_net.c
+Merging wireless/master
+Applying: net: tracing interface fixup
+Merging mtd/master
+Merging crypto/master
+Merging vfs/for-next
+Merging sound/for-next
+CONFLICT (content): Merge conflict in sound/soc/pxa/pxa2xx-i2s.c
+Merging cpufreq/next
+CONFLICT (content): Merge conflict in arch/x86/include/asm/timer.h
+Merging v9fs/for-next
+CONFLICT (content): Merge conflict in net/9p/protocol.c
+Merging quilt/rr
+CONFLICT (content): Merge conflict in arch/powerpc/kernel/irq.c
+CONFLICT (content): Merge conflict in arch/x86/include/asm/topology.h
+CONFLICT (content): Merge conflict in arch/x86/kernel/cpu/cpufreq/powernow-=
+k8.c
+CONFLICT (content): Merge conflict in arch/x86/kernel/cpu/cpufreq/speedstep=
+-ich.c
+CONFLICT (content): Merge conflict in arch/x86/kernel/cpu/cpufreq/speedstep=
+-lib.c
+CONFLICT (content): Merge conflict in arch/x86/lguest/boot.c
+CONFLICT (delete/modify): arch/x86/mach-default/setup.c deleted in HEAD and=
+ modified in quilt/rr. Version quilt/rr of arch/x86/mach-default/setup.c le=
+ft in tree.
+CONFLICT (delete/modify): arch/x86/mach-voyager/setup.c deleted in HEAD and=
+ modified in quilt/rr. Version quilt/rr of arch/x86/mach-voyager/setup.c le=
+ft in tree.
+CONFLICT (content): Merge conflict in drivers/firmware/dcdbas.c
+CONFLICT (content): Merge conflict in drivers/hid/hid-core.c
+CONFLICT (content): Merge conflict in drivers/media/video/saa7134/saa7134-c=
+ore.c
+CONFLICT (content): Merge conflict in drivers/media/video/saa7134/saa7134.h
+CONFLICT (content): Merge conflict in drivers/net/virtio_net.c
+CONFLICT (content): Merge conflict in kernel/module.c
+$ git rm -f arch/x86/mach-default/setup.c
+$ git rm -f arch/x86/mach-voyager/setup.c
+Applying: rr: x86 irqaction merge fixup
+Merging cifs/master
+Merging mmc/next
+Merging gfs2/master
+Merging input/next
+Merging bkl-removal/bkl-removal
+Merging ubifs/linux-next
+Merging lsm/for-next
+Merging block/for-next
+CONFLICT (content): Merge conflict in fs/bio-integrity.c
+CONFLICT (content): Merge conflict in fs/bio.c
+CONFLICT (content): Merge conflict in include/linux/bio.h
+Merging embedded/master
+Merging firmware/master
+CONFLICT (content): Merge conflict in firmware/Makefile
+CONFLICT (content): Merge conflict in firmware/WHENCE
+CONFLICT (content): Merge conflict in sound/isa/Kconfig
+Merging pcmcia/master
+Merging battery/master
+Merging leds/for-mm
+Merging backlight/for-mm
+Merging kgdb/kgdb-next
+Merging slab/for-next
+CONFLICT (content): Merge conflict in include/linux/rcupdate.h
+CONFLICT (content): Merge conflict in include/linux/slub_def.h
+CONFLICT (content): Merge conflict in mm/slob.c
+CONFLICT (content): Merge conflict in mm/slub.c
+Merging uclinux/for-next
+Merging md/for-next
+Merging mfd/for-next
+Merging hdlc/hdlc-next
+Merging drm/drm-next
+CONFLICT (content): Merge conflict in drivers/gpu/drm/drm_proc.c
+Merging voltage/for-next
+Merging security-testing/next
+Merging lblnet/master
+Merging quilt/ttydev
+Merging agp/agp-next
+Merging generic-ipi/auto-generic-ipi-next
+Merging oprofile/auto-oprofile-next
+Merging fastboot/auto-fastboot-next
+Merging sparseirq/auto-sparseirq-next
+Merging iommu/auto-iommu-next
+CONFLICT (content): Merge conflict in Documentation/kernel-parameters.txt
+CONFLICT (content): Merge conflict in arch/x86/Kconfig
+CONFLICT (content): Merge conflict in lib/Makefile
+Merging uwb/for-upstream
+Merging watchdog/master
+CONFLICT (content): Merge conflict in drivers/watchdog/omap_wdt.c
+Merging proc/proc
+CONFLICT (content): Merge conflict in security/selinux/hooks.c
+Applying: proc: remove a new user of proc_dir_entry::owner
+Merging bdev/master
+Merging dwmw2-iommu/master
+Merging cputime/cputime
+Merging osd/linux-next
+Merging fatfs/master
+Merging fuse/for-next
+Merging jc_docs/docs-next
+Merging nommu/master
+Merging trivial/for-next
+Merging audit/for-next
+Merging squashfs/master
+Merging omap/for-next
+Merging quilt/aoe
+Merging kmemleak/kmemleak
+CONFLICT (content): Merge conflict in Documentation/kernel-parameters.txt
+CONFLICT (content): Merge conflict in MAINTAINERS
+CONFLICT (content): Merge conflict in include/linux/percpu.h
+CONFLICT (content): Merge conflict in init/main.c
+CONFLICT (content): Merge conflict in kernel/module.c
+CONFLICT (content): Merge conflict in lib/Kconfig.debug
+CONFLICT (content): Merge conflict in mm/slob.c
+CONFLICT (content): Merge conflict in mm/vmalloc.c
+Merging suspend/linux-next
+CONFLICT (content): Merge conflict in drivers/xen/manage.c
+Merging quilt/driver-core
+CONFLICT (content): Merge conflict in drivers/media/video/v4l2-device.c
+CONFLICT (content): Merge conflict in drivers/net/wimax/i2400m/usb-notif.c
+CONFLICT (content): Merge conflict in drivers/sh/maple/maple.c
+Applying: acpi: update thermal for bus_id removal
+Applying: net: update dnet.c for bus_id removal
+Merging quilt/usb
+Merging quilt/staging
+CONFLICT (content): Merge conflict in drivers/gpu/drm/Makefile
+Merging scsi-post-merge/master
+
+--Signature=_Fri__20_Mar_2009_16_28_00_+1100_Ip=VjYRpD/jzyG52
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAknDKWAACgkQjjKRsyhoI8xNeACfZ6pP8iFt4qU7T1L5wSCa98fb
+5lwAoLXxccWpSkCVWVKJdrnhE6N26PWI
+=oqdA
+-----END PGP SIGNATURE-----
+
+--Signature=_Fri__20_Mar_2009_16_28_00_+1100_Ip=VjYRpD/jzyG52--
