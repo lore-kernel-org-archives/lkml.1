@@ -1,78 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759910AbZCTXEX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759605AbZCTXNv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759910AbZCTXEX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Mar 2009 19:04:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754535AbZCTXEG
+	id S1759605AbZCTXNv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Mar 2009 19:13:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754258AbZCTXNe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Mar 2009 19:04:06 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:49784 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752475AbZCTXEC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Mar 2009 19:04:02 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: [RFC][PATCH] PCI PM: Be extra careful when changing power states of devices
-Date: Sat, 21 Mar 2009 00:03:54 +0100
-User-Agent: KMail/1.11.1 (Linux/2.6.29-rc8-tst; KDE/4.2.1; x86_64; ; )
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Linux PCI <linux-pci@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200903210003.55161.rjw@sisk.pl>
+	Fri, 20 Mar 2009 19:13:34 -0400
+Received: from kroah.org ([198.145.64.141]:52971 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753762AbZCTXNd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Mar 2009 19:13:33 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 20 15:27:09 2009
+Message-Id: <20090320222709.094312386@mini.kroah.org>
+User-Agent: quilt/0.48-1
+Date: Fri, 20 Mar 2009 15:26:12 -0700
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
+Cc: Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
+       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
+       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, Tony Luck <tony.luck@intel.com>
+Subject: [patch 01/32] [IA64] Build fix for __early_pfn_to_nid() undefined link error
+References: <20090320222611.872315885@mini.kroah.org>
+Content-Disposition: inline; filename=build-fix-for-__early_pfn_to_nid-undefined-link-error.patch
+In-Reply-To: <20090320231037.GA2732@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Rafael J. Wysocki <rjw@sisk.pl>
+2.6.27-stable review patch.  If anyone has any objections, please let us know.
 
-The story in http://bugzilla.kernel.org/show_bug.cgi?id=12846 shows
-that setting the power state of a PCI device by
-pci_raw_set_power_state() may sometimes fail.  For this reason,
-pci_raw_set_power_state() should not assume that the power state of
-the device has actually changed after writing into its PMCSR.
-Instead, it should read the value from there and use it to update
-dev->current_state.  It also is useful to print a warning if the
-device's power state hasn't changed as expected.
+------------------
 
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+From: Tony Luck <tony.luck@intel.com>
+
+commit 334f85b647bc46ff4d27ace55aa65f44d6a2f4db upstream.
+
+ia64 only defines __early_pfn_to_nid() for SPARSEMEM && NUMA configurations,
+so the recent:
+
+	commit: f2dbcfa738368c8a40d4a5f0b65dc9879577cb21
+	mm: clean up for early_pfn_to_nid()
+
+ends up with some link problems for certain configuration files.
+
+Fix arch/ia64/Kconfig to only define HAVE_ARCH_EARLY_PFN_TO_NID in the
+cases where we do provide this function.
+
+Signed-off-by: Tony Luck <tony.luck@intel.com>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+
 ---
- drivers/pci/pci.c |   12 ++++++++++--
- 1 file changed, 10 insertions(+), 2 deletions(-)
+ arch/ia64/Kconfig |    3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-Index: linux-2.6/drivers/pci/pci.c
-===================================================================
---- linux-2.6.orig/drivers/pci/pci.c
-+++ linux-2.6/drivers/pci/pci.c
-@@ -436,7 +436,7 @@ static inline int platform_pci_sleep_wak
-  */
- static int pci_raw_set_power_state(struct pci_dev *dev, pci_power_t state)
- {
--	u16 pmcsr;
-+	u16 pmcsr, new_pmcsr;
- 	bool need_restore = false;
+--- a/arch/ia64/Kconfig
++++ b/arch/ia64/Kconfig
+@@ -444,8 +444,7 @@ config HOLES_IN_ZONE
+ 	default y if VIRTUAL_MEM_MAP
  
- 	/* Check if we're already there */
-@@ -498,7 +498,15 @@ static int pci_raw_set_power_state(struc
- 	else if (state == PCI_D2 || dev->current_state == PCI_D2)
- 		udelay(PCI_PM_D2_DELAY);
+ config HAVE_ARCH_EARLY_PFN_TO_NID
+-	def_bool y
+-	depends on NEED_MULTIPLE_NODES
++	def_bool NUMA && SPARSEMEM
  
--	dev->current_state = state;
-+	pci_read_config_word(dev, dev->pm_cap + PCI_PM_CTRL, &new_pmcsr);
-+	if (new_pmcsr == pmcsr) {
-+		dev->current_state = state;
-+	} else {
-+		dev->current_state = (new_pmcsr & PCI_PM_CTRL_STATE_MASK);
-+		dev_warn(&dev->dev,
-+			"failed to set power state to D%d, is D%d\n", state,
-+			dev->current_state);
-+	}
- 
- 	/* According to section 5.4.1 of the "PCI BUS POWER MANAGEMENT
- 	 * INTERFACE SPECIFICATION, REV. 1.2", a device transitioning
+ config HAVE_ARCH_NODEDATA_EXTENSION
+ 	def_bool y
+
+
