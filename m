@@ -1,54 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757884AbZCTKBT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757102AbZCTKCx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757884AbZCTKBT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Mar 2009 06:01:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752541AbZCTKBG
+	id S1757102AbZCTKCx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Mar 2009 06:02:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754542AbZCTKCh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Mar 2009 06:01:06 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:41643 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751715AbZCTKBF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Mar 2009 06:01:05 -0400
-Date: Fri, 20 Mar 2009 10:01:46 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Robert Schwebel <r.schwebel@pengutronix.de>
-Cc: Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org,
-       daniel.krueger@systec-electronic.com,
-       Michael Olbrich <mol@pengutronix.de>, Wolfram Sang <wsa@pengutronix.de>,
-       Marc Kleine-Budde <mkl@pengutronix.de>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: The Linux Staging tree, what it is and is not.
-Message-ID: <20090320100146.6599f671@lxorguk.ukuu.org.uk>
-In-Reply-To: <20090320005808.GM5367@pengutronix.de>
-References: <20090318183232.GA11594@kroah.com>
-	<20090320005808.GM5367@pengutronix.de>
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 20 Mar 2009 06:02:37 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:55038 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753613AbZCTKCg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Mar 2009 06:02:36 -0400
+From: Mel Gorman <mel@csn.ul.ie>
+To: Mel Gorman <mel@csn.ul.ie>,
+       Linux Memory Management List <linux-mm@kvack.org>
+Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Lin Ming <ming.m.lin@intel.com>,
+       Zhang Yanmin <yanmin_zhang@linux.intel.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH 02/25] Do not sanity check order in the fast path
+Date: Fri, 20 Mar 2009 10:02:49 +0000
+Message-Id: <1237543392-11797-3-git-send-email-mel@csn.ul.ie>
+X-Mailer: git-send-email 1.5.6.5
+In-Reply-To: <1237543392-11797-1-git-send-email-mel@csn.ul.ie>
+References: <1237543392-11797-1-git-send-email-mel@csn.ul.ie>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> However, I'm still not convinced that this is the right way to go. What
-> you want to do for the main APIs is provide some nice userspace library
-> API for your applications. Why not put the whole "stack" into userspace
-> then and connect it to the kernel only via raw socket.
+No user of the allocator API should be passing in an order >= MAX_ORDER
+but we check for it on each and every allocation. Delete this check and
+make it a VM_BUG_ON check further down the call path.
 
-- Security
-- Compartmentalisation
-- Sharing the device/interconnect
-- Real time prioritisation
+Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+Reviewed-by: Christoph Lameter <cl@linux-foundation.org>
+---
+ include/linux/gfp.h |    6 ------
+ mm/page_alloc.c     |    2 ++
+ 2 files changed, 2 insertions(+), 6 deletions(-)
 
-and a few others.
+diff --git a/include/linux/gfp.h b/include/linux/gfp.h
+index dcf0ab8..8736047 100644
+--- a/include/linux/gfp.h
++++ b/include/linux/gfp.h
+@@ -181,9 +181,6 @@ __alloc_pages(gfp_t gfp_mask, unsigned int order,
+ static inline struct page *alloc_pages_node(int nid, gfp_t gfp_mask,
+ 						unsigned int order)
+ {
+-	if (unlikely(order >= MAX_ORDER))
+-		return NULL;
+-
+ 	/* Unknown node is current node */
+ 	if (nid < 0)
+ 		nid = numa_node_id();
+@@ -197,9 +194,6 @@ extern struct page *alloc_pages_current(gfp_t gfp_mask, unsigned order);
+ static inline struct page *
+ alloc_pages(gfp_t gfp_mask, unsigned int order)
+ {
+-	if (unlikely(order >= MAX_ORDER))
+-		return NULL;
+-
+ 	return alloc_pages_current(gfp_mask, order);
+ }
+ extern struct page *alloc_page_vma(gfp_t gfp_mask,
+diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+index 0671b3f..dd87dad 100644
+--- a/mm/page_alloc.c
++++ b/mm/page_alloc.c
+@@ -1407,6 +1407,8 @@ get_page_from_freelist(gfp_t gfp_mask, nodemask_t *nodemask, unsigned int order,
+ 
+ 	classzone_idx = zone_idx(preferred_zone);
+ 
++	VM_BUG_ON(order >= MAX_ORDER);
++
+ zonelist_scan:
+ 	/*
+ 	 * Scan zonelist, looking for a zone with enough free.
+-- 
+1.5.6.5
 
-> What do others think? Is it worth the effort to invent a proper objdict
-> API for linux?
-
-Objdict appears to be a legacy wart and can stay where it belongs I
-suspect - you might need to have a objdict -> 21st century conversion
-library for the afflicted. We don't put specialised COBOL support in the
-kernel either we let user space figure out how to cope with the funnies.
-
-Alan
