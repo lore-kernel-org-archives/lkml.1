@@ -1,119 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754962AbZCTUKU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754446AbZCTUOQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754962AbZCTUKU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Mar 2009 16:10:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751898AbZCTUKE
+	id S1754446AbZCTUOQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Mar 2009 16:14:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752229AbZCTUN7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Mar 2009 16:10:04 -0400
-Received: from ti-out-0910.google.com ([209.85.142.190]:17805 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751060AbZCTUKA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Mar 2009 16:10:00 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=gT3bVMXR+Qh8raJbq3HbnOkVd7h2ezLzo+YTrz0OnEn+vlWLsFeFrHdoAWcRxISIK5
-         AGO7ovKnTX20rLln6K4wVyJSmprJwfz+XNE1O3JFgFj3x7+kBzvVf4SWT2ZjpOc73QxL
-         raxOExXjM/rLE+e5Rm4S6DhXzEGLhXg3dcVjU=
-Date: Fri, 20 Mar 2009 23:09:54 +0300
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Alan Bartlett <ajb.stxsl@googlemail.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] x86: fix IO APIC resource allocation error message
-Message-ID: <20090320200954.GH7453@localhost>
-References: <200903202012.41344.bzolnier@gmail.com> <20090320193341.GG7453@localhost> <200903202102.28585.bzolnier@gmail.com>
+	Fri, 20 Mar 2009 16:13:59 -0400
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:42493 "EHLO e6.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752188AbZCTUN6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Mar 2009 16:13:58 -0400
+Message-ID: <49C3F8FE.4050406@linux.vnet.ibm.com>
+Date: Fri, 20 Mar 2009 13:13:50 -0700
+From: Corey Ashford <cjashfor@linux.vnet.ibm.com>
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200903202102.28585.bzolnier@gmail.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+To: Paul Mackerras <paulus@samba.org>
+CC: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH/RFC] perfcounters: record time running and time   enabled
+ for each counter
+References: <18883.34555.748843.35920@cargo.ozlabs.ibm.com>
+In-Reply-To: <18883.34555.748843.35920@cargo.ozlabs.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Bartlomiej Zolnierkiewicz - Fri, Mar 20, 2009 at 09:02:28PM +0100]
-| On Friday 20 March 2009, Cyrill Gorcunov wrote:
-| > [Bartlomiej Zolnierkiewicz - Fri, Mar 20, 2009 at 08:12:41PM +0100]
-| > | From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-| > | Subject: [PATCH] x86: fix IO APIC resource allocation error message
-| > | 
-| > | Impact: fix incorrect error message
-| > | 
-| > | - IO APIC resource allocation error message contains one too many "be".
-| > | 
-| > | - Print the error message iff there are IO APICs in the system.
-| > | 
-| > | Cc: Alan Bartlett <ajb.stxsl@googlemail.com>
-| > | Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-| > | ---
-| > | I've seen this error message for some time on my x86-32 laptop...
-| > | 
-| > |  arch/x86/kernel/io_apic.c |    4 ++--
-| > |  1 file changed, 2 insertions(+), 2 deletions(-)
-| > | 
-| > | Index: b/arch/x86/kernel/io_apic.c
-| > | ===================================================================
-| > | --- a/arch/x86/kernel/io_apic.c
-| > | +++ b/arch/x86/kernel/io_apic.c
-| > | @@ -4150,9 +4150,9 @@ static int __init ioapic_insert_resource
-| > |  	int i;
-| > |  	struct resource *r = ioapic_resources;
-| > |  
-| > | -	if (!r) {
-| > | +	if (!r && nr_ioapics > 0) {
-| > |  		printk(KERN_ERR
-| > | -		       "IO APIC resources could be not be allocated.\n");
-| > | +		       "IO APIC resources couldn't be allocated.\n");
-| > |  		return -1;
-| > |  	}
-| > |  
-| > | 
-| > 
-| > Hi Bartlomiej,
-| > 
-| > until I miss something I guess you could even make it simplier :)
-| > Something like
-| > 
-| > ---
-| > static int __init ioapic_insert_resources(void)
-| > {
-| > 	struct resource *r = ioapic_resources;
-| > 	int err;
-| > 	int i;
-| > 
-| > 	for (i = 0; i < nr_ioapics; i++) {
-| > 		err = insert_resource(&iomem_resource, r);
-| > 		if (err) {
-| > 			pr_err("IO APIC resources could not be allocated.\n");
-| > 			return err;
-| > 		}
-| > 		r++;
-| > 	}
-| > 
-| > 	return 0;
-| > }
-| > ---
-| > 
-| > Now we would have 'err' here and get out only on conflicting resource.
-| > Did I miss something?
-| 
-| nr_ioapics > 0 && r == NULL ?
-| 
+Paul Mackerras wrote:
+> Impact: new functionality
+> 
+> Currently, if there are more counters enabled than can fit on the CPU,
+> the kernel will multiplex the counters on to the hardware using
+> round-robin scheduling.  That isn't too bad for sampling counters, but
+> for counting counters it means that the value read from a counter
+> represents some unknown fraction of the true count of events that
+> occurred while the counter was enabled.
+> 
+> This remedies the situation by keeping track of how long each counter
+> is enabled for, and how long it is actually on the cpu and counting
+> events.  These times are recorded in nanoseconds using the task clock
+> for per-task counters and the cpu clock for per-cpu counters.
+> 
+> These values can be supplied to userspace on a read from the counter.
+> Userspace requests that they be supplied after the counter value by
+> setting the PERF_FORMAT_TIME_ENABLED and/or PERF_FORMAT_TIME_RUNNING
+> bits in the hw_event.read_format field when creating the counter.
+> (There is no way to change the read format after the counter is
+> created, though it would be possible to add some way to do that.)
+[snip]
 
-This case happens when alloc_bootmem fails but we already panic'ed!
+This would make the implementation of PAPI simpler than using software 
+CPU timers attached to each group (which I have prototyped).
 
-Here is what I mean
+I'm a little confused about the ABI, though.  I see that I can specify 
+which times I want to be able to read, but the order that they appear in 
+the stream seems to be unstated.  I tried to figure it out by looking at 
+  the kernel code, but there is no reference to PERF_FORMAT_TIME_ENABLED 
+or PERF_FORMAT_TIME_RUNNING in the patch (besides the definition).
 
->From ioapic_setup_resources()
 
-	if (nr_ioapics <= 0)
-		return NULL;
+Regards,
 
-	mem = alloc_bootmem(n); <- we panic here anyway
-	...
-	ioapic_resources = res;
+- Corey
 
-	- Cyrill -
+Corey Ashford
+Software Engineer
+IBM Linux Technology Center, Linux Toolchain
+Beaverton, OR
+503-578-3507
+cjashfor@us.ibm.com
+
