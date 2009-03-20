@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760013AbZCTXOR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760916AbZCTXOv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760013AbZCTXOR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Mar 2009 19:14:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754599AbZCTXNe
+	id S1760916AbZCTXOv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Mar 2009 19:14:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756513AbZCTXNh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Mar 2009 19:13:34 -0400
-Received: from kroah.org ([198.145.64.141]:52992 "EHLO coco.kroah.org"
+	Fri, 20 Mar 2009 19:13:37 -0400
+Received: from kroah.org ([198.145.64.141]:53029 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754199AbZCTXNd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Mar 2009 19:13:33 -0400
+	id S1755580AbZCTXNg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Mar 2009 19:13:36 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Fri Mar 20 15:27:09 2009
-Message-Id: <20090320222709.233703776@mini.kroah.org>
+Message-Id: <20090320222709.536711783@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Fri, 20 Mar 2009 15:26:13 -0700
+Date: Fri, 20 Mar 2009 15:26:15 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,10 +25,10 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk
-Subject: [patch 02/32] Add -fwrapv to gcc CFLAGS
+       alan@lxorguk.ukuu.org.uk, "J. Bruce Fields" <bfields@citi.umich.edu>
+Subject: [patch 04/32] nfsd: nfsd should drop CAP_MKNOD for non-root
 References: <20090320222611.872315885@mini.kroah.org>
-Content-Disposition: inline; filename=add-fwrapv-to-gcc-cflags.patch
+Content-Disposition: inline; filename=nfsd-nfsd-should-drop-cap_mknod-for-non-root.patch
 In-Reply-To: <20090320231037.GA2732@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -38,42 +38,40 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Linus Torvalds <torvalds@linux-foundation.org>
+From: J. Bruce Fields <bfields@citi.umich.edu>
 
-commit 68df3755e383e6fecf2354a67b08f92f18536594 upstream.
+commit 76a67ec6fb79ff3570dcb5342142c16098299911 upstream.
 
-This makes sure that gcc doesn't try to optimize away wrapping
-arithmetic, which the kernel occasionally uses for overflow testing, ie
-things like
+Since creating a device node is normally an operation requiring special
+privilege, Igor Zhbanov points out that it is surprising (to say the
+least) that a client can, for example, create a device node on a
+filesystem exported with root_squash.
 
-	if (ptr + offset < ptr)
+So, make sure CAP_MKNOD is among the capabilities dropped when an nfsd
+thread handles a request from a non-root user.
 
-which technically is undefined for non-unsigned types. See
-
-	http://bugzilla.kernel.org/show_bug.cgi?id=12597
-
-for details.
-
-Not all versions of gcc support it, so we need to make it conditional
-(it looks like it was introduced in gcc-3.4).
-
-Reminded-by: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Reported-by: Igor Zhbanov <izh1979@gmail.com>
+Signed-off-by: J. Bruce Fields <bfields@citi.umich.edu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- Makefile |    1 +
- 1 file changed, 1 insertion(+)
+ include/linux/capability.h |    6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
 
---- a/Makefile
-+++ b/Makefile
-@@ -341,6 +341,7 @@ KBUILD_CPPFLAGS := -D__KERNEL__ $(LINUXI
- KBUILD_CFLAGS   := -Wall -Wundef -Wstrict-prototypes -Wno-trigraphs \
- 		   -fno-strict-aliasing -fno-common \
- 		   -Werror-implicit-function-declaration
-+KBUILD_CFLAGS	+= $(call cc-option,-fwrapv)
- KBUILD_AFLAGS   := -D__ASSEMBLY__
+--- a/include/linux/capability.h
++++ b/include/linux/capability.h
+@@ -382,8 +382,10 @@ typedef struct kernel_cap_struct {
+ # define CAP_FULL_SET     ((kernel_cap_t){{ ~0, ~0 }})
+ # define CAP_INIT_EFF_SET ((kernel_cap_t){{ ~CAP_TO_MASK(CAP_SETPCAP), ~0 }})
+ # define CAP_FS_SET       ((kernel_cap_t){{ CAP_FS_MASK_B0, CAP_FS_MASK_B1 } })
+-# define CAP_NFSD_SET     ((kernel_cap_t){{ CAP_FS_MASK_B0|CAP_TO_MASK(CAP_SYS_RESOURCE), \
+-					CAP_FS_MASK_B1 } })
++# define CAP_NFSD_SET     ((kernel_cap_t){{ CAP_FS_MASK_B0 \
++					    | CAP_TO_MASK(CAP_SYS_RESOURCE) \
++					    | CAP_TO_MASK(CAP_MKNOD), \
++					    CAP_FS_MASK_B1 } })
  
- # Read KERNELRELEASE from include/config/kernel.release (if it exists)
+ #endif /* _KERNEL_CAPABILITY_U32S != 2 */
+ 
 
 
