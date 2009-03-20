@@ -1,49 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755412AbZCTIZh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1750979AbZCTI2Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755412AbZCTIZh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Mar 2009 04:25:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754030AbZCTIZQ
+	id S1750979AbZCTI2Z (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Mar 2009 04:28:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753524AbZCTI2M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Mar 2009 04:25:16 -0400
-Received: from casper.infradead.org ([85.118.1.10]:55359 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753654AbZCTIZP (ORCPT
+	Fri, 20 Mar 2009 04:28:12 -0400
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:51094 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752823AbZCTI2L (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Mar 2009 04:25:15 -0400
-Subject: Re: [PATCH 1/1] introduce user_ns inheritance in user-sched
-From: Peter Zijlstra <peterz@infradead.org>
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-Cc: lkml <linux-kernel@vger.kernel.org>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>, mingo@elte.hu,
-       Bharata B Rao <bharata@linux.vnet.ibm.com>,
-       Linux Containers <containers@lists.osdl.org>
-In-Reply-To: <20090319211615.GA18383@us.ibm.com>
-References: <20090319211615.GA18383@us.ibm.com>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Fri, 20 Mar 2009 09:24:20 +0100
-Message-Id: <1237537460.24626.32.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
+	Fri, 20 Mar 2009 04:28:11 -0400
+To: peterz@infradead.org
+CC: miklos@szeredi.hu, roland@redhat.com, efault@gmx.de, rjw@sisk.pl,
+       jdike@addtoit.com, mingo@elte.hu,
+       user-mode-linux-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org
+In-reply-to: <1237537169.24626.29.camel@twins> (message from Peter Zijlstra on
+	Fri, 20 Mar 2009 09:19:29 +0100)
+Subject: Re: [patch] fix uml slowness caused by ptrace preemption bug on
+ host
+References: <E1LkQeU-00020Z-Be@pomaz-ex.szeredi.hu> <1237537169.24626.29.camel@twins>
+Message-Id: <E1Lka4M-0002za-FQ@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Fri, 20 Mar 2009 09:27:10 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-03-19 at 16:16 -0500, Serge E. Hallyn wrote:
-> In a kernel compiled with CONFIG_USER_SCHED=y, cpu shares are
-> allocated according to uid.  Shares are specifiable under
-> /sys/kernel/uids/<uid>/
+On Fri, 20 Mar 2009, Peter Zijlstra wrote:
+> On Thu, 2009-03-19 at 23:23 +0100, Miklos Szeredi wrote:
+> > 
+> > This patch solves this by not scheduling on preempt_enable() after
+> > ptrace_stop() has woken up the tracer.
 > 
-> In a kernel compiled with CONFIG_USER_NS=y, clone(2) with the
-> CLONE_NEWUSER flag creates a new user namespace, and the newly
-> cloned task will belong to uid 0 in the new user namespace.
+> Nice,.. however did you find this?
 
-We seem to be adding more and more stuff for USER_SCHED, is anybody
-actually using that cruft?
+Ftrace helped a lot, it's a really cool tool :).  I had to patch it
+with this, otherwise the timestamps would be totally off:
 
-How far along with cgroups are we to fully simulate that behaviour?
-
-I think if we have a capable cgroup based replacement for USER_SCHED we
-should axe it from the kernel, would save lots of code...
-
-
+diff --git a/kernel/trace/ring_buffer.c b/kernel/trace/ring_buffer.c
+index bd38c5c..557c2dd 100644
+--- a/kernel/trace/ring_buffer.c
++++ b/kernel/trace/ring_buffer.c
+@@ -108,7 +108,7 @@ u64 ring_buffer_time_stamp(int cpu)
+ 
+ 	preempt_disable_notrace();
+ 	/* shift to debug/test normalization and TIME_EXTENTS */
+-	time = sched_clock() << DEBUG_SHIFT;
++	time = cpu_clock(cpu) << DEBUG_SHIFT;
+ 	preempt_enable_no_resched_notrace();
+ 
+ 	return time;
