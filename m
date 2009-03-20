@@ -1,58 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754656AbZCTNuZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756591AbZCTNvl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754656AbZCTNuZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Mar 2009 09:50:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752681AbZCTNuG
+	id S1756591AbZCTNvl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Mar 2009 09:51:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752484AbZCTNvb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Mar 2009 09:50:06 -0400
-Received: from casper.infradead.org ([85.118.1.10]:51051 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751981AbZCTNuD (ORCPT
+	Fri, 20 Mar 2009 09:51:31 -0400
+Received: from g4t0014.houston.hp.com ([15.201.24.17]:8793 "EHLO
+	g4t0014.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753276AbZCTNva (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Mar 2009 09:50:03 -0400
-Date: Fri, 20 Mar 2009 06:50:58 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: paulmck@linux.vnet.ibm.com
-Cc: dipankar@in.ibm.com, linux-input@vger.kernel.org,
-       dmitry.torokhov@gmail.com, linux-kernel@vger.kernel.org
-Subject: Re: Question about usage of RCU in the input layer
-Message-ID: <20090320065058.65d01771@infradead.org>
-In-Reply-To: <20090320044541.GE6807@linux.vnet.ibm.com>
-References: <20090318215812.15496a86@infradead.org>
-	<20090319085628.GA6167@in.ibm.com>
-	<20090319071841.63334eff@infradead.org>
-	<20090320020750.GA6807@linux.vnet.ibm.com>
-	<20090319202032.4c971d92@infradead.org>
-	<20090320044541.GE6807@linux.vnet.ibm.com>
-Organization: Intel
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 20 Mar 2009 09:51:30 -0400
+From: Paul Moore <paul.moore@hp.com>
+Organization: Hewlett-Packard
+To: Miloslav Trmac <mitr@redhat.com>
+Subject: Re: [PATCH] Add SELinux context and TTY name to AUDIT_TTY records
+Date: Fri, 20 Mar 2009 09:51:25 -0400
+User-Agent: KMail/1.11.1 (Linux/2.6.27-gentoo-r8; KDE/4.2.1; i686; ; )
+Cc: viro <viro@zeniv.linux.org.uk>, Eric Paris <eparis@redhat.com>,
+       "linux-kernel" <linux-kernel@vger.kernel.org>, linux-audit@redhat.com
+References: <1666981128.1772561237539207343.JavaMail.root@zmail07.collab.prod.int.phx2.redhat.com>
+In-Reply-To: <1666981128.1772561237539207343.JavaMail.root@zmail07.collab.prod.int.phx2.redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Disposition: inline
+Message-Id: <200903200951.25699.paul.moore@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 19 Mar 2009 21:45:41 -0700
-"Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
+On Friday 20 March 2009 04:53:27 am Miloslav Trmac wrote:
+> ----- "Paul Moore" <paul.moore@hp.com> wrote:
+> > There are several audit experts which should review this code but two
+> > things jumped out at me when glancing at your patch:
+> >
+> >  1. SELinux SIDs should not be recorded
+>
+> Almost all code that logs SELinux contexts in kernel/audit* does the same
+> thing as this patch, falling back to a SID if it can't be converted to a
+> string.
 
-> > single CPU is soooo last decade ;-)
-> > But seriously I no longer have systems that aren't dual core or SMT
-> > in some form... 
-> 
-> OK, I will ask the stupid question...
-> 
-> Why not delay bringing up the non-boot CPUs until later in boot?
+Ungh, that's ugly and questionably useful (I suppose I know why this is done) 
+but if that convention then who am I to argue.
 
-that'd be throwing out the baby with the bathwater... I'm trying to use 
-the other cpus to do some of the boot work (so that the total goes
-faster); not using the other cpus would be counter productive to that.
-(As is just sitting in synchronize_rcu() when the other cpu is
-working.. hence this discussion ;-)
+> >  2. From a SELinux/security point of view ttys are considered objects
+> >     and their labels/contexts should be recorded with "obj=" not
+> > "subj="
+>
+> The patch logs the context of the process, not of the TTY.
+
+Okay, that is what I get for just glancing at patches and not looking at them 
+closer :)
 
 -- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+paul moore
+linux @ hp
+
