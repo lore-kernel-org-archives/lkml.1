@@ -1,197 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758229AbZCTTMS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760252AbZCTTO2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758229AbZCTTMS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Mar 2009 15:12:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753412AbZCTTMF
+	id S1760252AbZCTTO2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Mar 2009 15:14:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758716AbZCTTOS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Mar 2009 15:12:05 -0400
-Received: from mail-ew0-f176.google.com ([209.85.219.176]:33667 "EHLO
-	mail-ew0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753061AbZCTTMC (ORCPT
+	Fri, 20 Mar 2009 15:14:18 -0400
+Received: from epiphany.epiphan.com ([217.160.251.166]:55893 "EHLO
+	epiphany.epiphan.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758692AbZCTTOR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Mar 2009 15:12:02 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:user-agent:mime-version
-         :content-type;
-        b=Mtjdtsrl6i3tcbTSAw/WSDoVcA2JAte29q9lS63HfCBgbWSsWzhWTlG53tEioO4Yis
-         rEEGsuxgJv6PoHCZ6m5XrOU/+XJflvYTB5cH6Dcp+eBSJ1vr9IZhJoCfx7I2e9vEBCco
-         qwwqBSxAeB8au+YgQOD/40vNck/wOYoUBJMWw=
-Date: Fri, 20 Mar 2009 20:11:54 +0100 (CET)
-From: Dragoslav Zaric <dragoslav.zaric.kd@gmail.com>
-To: LKML <linux-kernel@vger.kernel.org>
-cc: Otus Devel <otus-devel@venema.h4ckr.net>,
-       Luis Rodriguez <Luis.Rodriguez@Atheros.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 2.6.29-rc8 2/2] drivers/staging/otus/80211core/amsdu.c: Fix
- Coding Style
-Message-ID: <alpine.DEB.2.00.0903202008040.11949@Sentinel>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 20 Mar 2009 15:14:17 -0400
+X-Greylist: delayed 1162 seconds by postgrey-1.27 at vger.kernel.org; Fri, 20 Mar 2009 15:14:17 EDT
+Subject: [PATCH] V4L: em28xx: add support for Digitus/Plextor PX-AV200U
+	grabbers
+From: Mikhail Jiline <misha@epiphan.com>
+To: mchehab@infradead.org, linux-kernel@vger.kernel.org,
+       video4linux-list@redhat.com
+Content-Type: text/plain
+Date: Fri, 20 Mar 2009 14:54:45 -0400
+Message-Id: <1237575285.26159.2.camel@T60p>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Dragoslav Zaric <dragoslav.zaric.kd@gmail.com>
+From: Misha Zhilin <misha@epiphan.com>
+
+Adds support for Digitus/Plextor PX-AV200U grabbers
+Signed-off-by: Misha Zhilin <misha@epiphan.com>
 ---
---- drivers/staging/otus/80211core/amsdu.c	2009-03-19 20:26:41.000000000 +0100
-+++ drivers/staging/otus/80211core/amsdu_cs_fix.c	2009-03-19 20:27:13.000000000 +0100
-@@ -34,53 +34,53 @@
- /*      Stephen Chen        Atheros Communications, INC.    2007.2      */
- /*                                                                      */
- /************************************************************************/
--zbuf_t* zfGetAmsduSubFrame(zdev_t* dev, zbuf_t* buf, u16_t* offset)
-+zbuf_t *zfGetAmsduSubFrame(zdev_t *dev, zbuf_t *buf, u16_t *offset)
- {
--    u16_t subframeLen;
--    u16_t amsduLen = zfwBufGetSize(dev, buf);
--    zbuf_t* newBuf;
--
--    ZM_PERFORMANCE_RX_AMSDU(dev, buf, amsduLen);
--
--    /* Verify A-MSDU length */
--    if (amsduLen < (*offset + 14))
--    {
--        return NULL;
--    }
--
--    /* Locate A-MSDU subframe by offset and verify subframe length */
--    subframeLen = (zmw_buf_readb(dev, buf, *offset + 12) << 8) +
--                  zmw_buf_readb(dev, buf, *offset + 13);
--    if (subframeLen == 0)
--    {
--        return NULL;
--    }
--
--    /* Verify A-MSDU subframe length */
--    if ((*offset+14+subframeLen) <= amsduLen)
--    {
--        /* Allocate a new buffer */
--        if ((newBuf = zfwBufAllocate(dev, 24+2+subframeLen)) != NULL)
--        {
--#ifdef ZM_ENABLE_NATIVE_WIFI
--            /* Copy and convert subframe to wlan frame format */
--            /* SHALL NOT INCLUDE QOS and AMSDU header. Ray 20070807 For Vista */
--            zfRxBufferCopy(dev, newBuf, buf, 0, 0, 24);
--            zfRxBufferCopy(dev, newBuf, buf, 24, *offset+14, subframeLen);
--            zfwBufSetSize(dev, newBuf, 24+subframeLen);
--#else
--            /* Copy subframe to new buffer */
--            zfRxBufferCopy(dev, newBuf, buf, 0, *offset, 14+subframeLen);
--            zfwBufSetSize(dev, newBuf, 14+subframeLen);
--#endif
--            /* Update offset */
--            *offset += (((14+subframeLen)+3) & 0xfffc);
--
--            /* Return buffer pointer */
--            return newBuf;
--        }
--    }
--    return NULL;
-+	u16_t subframeLen;
-+	u16_t amsduLen = zfwBufGetSize(dev, buf);
-+	zbuf_t *newBuf;
-+
-+	ZM_PERFORMANCE_RX_AMSDU(dev, buf, amsduLen);
-+
-+	/* Verify A-MSDU length */
-+	if (amsduLen < (*offset + 14))
-+		return NULL;
-+
-+	/* Locate A-MSDU subframe by offset and verify subframe length */
-+	subframeLen = (zmw_buf_readb(dev, buf, *offset + 12) << 8) +
-+		zmw_buf_readb(dev, buf, *offset + 13);
-+
-+	if (subframeLen == 0)
-+		return NULL;
-+
-+	/* Verify A-MSDU subframe length */
-+	if ((*offset+14+subframeLen) <= amsduLen) {
-+		/* Allocate a new buffer */
-+		newBuf = zfwBufAllocate(dev, 24+2+subframeLen);
-+		if (newBuf != NULL) {
-+			#ifdef ZM_ENABLE_NATIVE_WIFI
-+			/* Copy and convert subframe to wlan frame format
-+			* SHALL NOT INCLUDE QOS and AMSDU header.
-+			* Ray 20070807 For Vista
-+			*/
-+			zfRxBufferCopy(dev, newBuf, buf, 0, 0, 24);
-+			zfRxBufferCopy(dev, newBuf, buf, 24, *offset+14,
-+					subframeLen);
-+			zfwBufSetSize(dev, newBuf, 24+subframeLen);
-+			#else
-+			/* Copy subframe to new buffer */
-+			zfRxBufferCopy(dev, newBuf, buf, 0, *offset,
-+					14+subframeLen);
-+			zfwBufSetSize(dev, newBuf, 14+subframeLen);
-+			#endif
-+			/* Update offset */
-+			*offset += (((14+subframeLen)+3) & 0xfffc);
-+
-+			/* Return buffer pointer */
-+			return newBuf;
-+		}
-+	}
-+	return NULL;
- }
+
+diff -urN linux-2.6.27.x86_64.orig/drivers/media/video/em28xx/em28xx-cards.c linux-2.6.27.x86_64.new/drivers/media/video/em28xx/em28xx-cards.c
+--- linux-2.6.27.x86_64.orig/drivers/media/video/em28xx/em28xx-cards.c	2008-10-09 18:13:53.000000000 -0400
++++ linux-2.6.27.x86_64.new/drivers/media/video/em28xx/em28xx-cards.c	2009-03-04 16:18:03.000000000 -0500
+@@ -1087,6 +1087,21 @@
+ 			.amux     = EM28XX_AMUX_LINE_IN,
+ 		} },
+ 	},
++	[EM2820_BOARD_PLEXTOR_PX_AV200U] = {
++		.name         = "Plextor PX-AV200U",
++		.valid        = EM28XX_BOARD_NOT_VALIDATED,
++		.vchannels    = 2,
++		.decoder      = EM28XX_SAA7113,
++		.input          = { {
++			.type     = EM28XX_VMUX_COMPOSITE1,
++			.vmux     = SAA7115_COMPOSITE0,
++			.amux     = EM28XX_AMUX_AC97_LINE_IN,
++		}, {
++			.type     = EM28XX_VMUX_SVIDEO,
++			.vmux     = SAA7115_SVIDEO3,
++			.amux     = EM28XX_AMUX_AC97_LINE_IN,
++		} },
++	},
+ };
+ const unsigned int em28xx_bcount = ARRAY_SIZE(em28xx_boards);
  
+Binary files linux-2.6.27.x86_64.orig/drivers/media/video/em28xx/.em28xx-cards.c.swp and linux-2.6.27.x86_64.new/drivers/media/video/em28xx/.em28xx-cards.c.swp differ
+diff -urN linux-2.6.27.x86_64.orig/drivers/media/video/em28xx/em28xx.h linux-2.6.27.x86_64.new/drivers/media/video/em28xx/em28xx.h
+--- linux-2.6.27.x86_64.orig/drivers/media/video/em28xx/em28xx.h	2008-10-09 18:13:53.000000000 -0400
++++ linux-2.6.27.x86_64.new/drivers/media/video/em28xx/em28xx.h	2009-03-04 15:33:24.000000000 -0500
+@@ -97,6 +97,8 @@
+ #define EM2882_BOARD_PINNACLE_HYBRID_PRO	  56
+ #define EM2883_BOARD_KWORLD_HYBRID_A316		  57
+ #define EM2820_BOARD_COMPRO_VIDEOMATE_FORYOU	  58
++#define EM2820_BOARD_PLEXTOR_PX_AV200U            59
++
  
-@@ -101,34 +101,29 @@ zbuf_t* zfGetAmsduSubFrame(zdev_t* dev, 
- /*      Stephen Chen        Atheros Communications, INC.    2007.2      */
- /*                                                                      */
- /************************************************************************/
--void zfDeAmsdu(zdev_t* dev, zbuf_t* buf, u16_t vap, u8_t encryMode)
-+void zfDeAmsdu(zdev_t *dev, zbuf_t *buf, u16_t vap, u8_t encryMode)
- {
--    u16_t offset = ZM_SIZE_OF_WLAN_DATA_HEADER+ZM_SIZE_OF_QOS_CTRL;
--    zbuf_t* subframeBuf;
--    zmw_get_wlan_dev(dev);
--
--    ZM_BUFFER_TRACE(dev, buf)
--
--    if (encryMode == ZM_AES || encryMode == ZM_TKIP)
--    {
--        offset += (ZM_SIZE_OF_IV + ZM_SIZE_OF_EXT_IV);
--    }
--    else if (encryMode == ZM_WEP64 || encryMode == ZM_WEP128)
--    {
--        offset += ZM_SIZE_OF_IV;
--    }
--
--    /* Repeatly calling zfGetAmsduSubFrame() until NULL returned */
--    while ((subframeBuf = zfGetAmsduSubFrame(dev, buf, &offset)) != NULL)
--    {
--        wd->commTally.NotifyNDISRxFrmCnt++;
--        if (wd->zfcbRecvEth != NULL)
--    	{
--            wd->zfcbRecvEth(dev, subframeBuf, (u8_t)vap);
--            ZM_PERFORMANCE_RX_MSDU(dev, wd->tick);
--        }
--    }
--    zfwBufFree(dev, buf, 0);
-+	u16_t offset = ZM_SIZE_OF_WLAN_DATA_HEADER+ZM_SIZE_OF_QOS_CTRL;
-+	zbuf_t *subframeBuf;
-+	zmw_get_wlan_dev(dev);
-+
-+	ZM_BUFFER_TRACE(dev, buf)
-+
-+	if (encryMode == ZM_AES || encryMode == ZM_TKIP)
-+		offset += (ZM_SIZE_OF_IV + ZM_SIZE_OF_EXT_IV);
-+	else if (encryMode == ZM_WEP64 || encryMode == ZM_WEP128)
-+		offset += ZM_SIZE_OF_IV;
-+
-+
-+	/* Repeatly calling zfGetAmsduSubFrame() until NULL returned */
-+	while ((subframeBuf = zfGetAmsduSubFrame(dev, buf, &offset)) != NULL) {
-+		wd->commTally.NotifyNDISRxFrmCnt++;
-+		if (wd->zfcbRecvEth != NULL) {
-+			wd->zfcbRecvEth(dev, subframeBuf, (u8_t)vap);
-+			ZM_PERFORMANCE_RX_MSDU(dev, wd->tick);
-+		}
-+	}
-+	zfwBufFree(dev, buf, 0);
- 
--    return;
-+	return;
- }
+ /* Limits minimum and default number of buffers */
+ #define EM28XX_MIN_BUF 4
+diff -urN linux-2.6.27.x86_64.orig/Documentation/video4linux/CARDLIST.em28xx linux-2.6.27.x86_64.new/Documentation/video4linux/CARDLIST.em28xx
+--- linux-2.6.27.x86_64.orig/Documentation/video4linux/CARDLIST.em28xx	2008-10-09 18:13:53.000000000 -0400
++++ linux-2.6.27.x86_64.new/Documentation/video4linux/CARDLIST.em28xx	2009-03-18 11:15:00.000000000 -0400
+@@ -57,3 +57,4 @@
+  56 -> Pinnacle Hybrid Pro (2)                  (em2882)        [2304:0226]
+  57 -> Kworld PlusTV HD Hybrid 330              (em2883)        [eb1a:a316]
+  58 -> Compro VideoMate ForYou/Stereo           (em2820/em2840) [185b:2041]
++ 59 -> Plextor PX-AV200U                        (em2880)
+
