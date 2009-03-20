@@ -1,52 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759571AbZCTWno@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760130AbZCTWoX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759571AbZCTWno (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Mar 2009 18:43:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755330AbZCTWnd
+	id S1760130AbZCTWoX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Mar 2009 18:44:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752419AbZCTWoJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Mar 2009 18:43:33 -0400
-Received: from [213.79.90.228] ([213.79.90.228]:42062 "EHLO
-	buildserver.ru.mvista.com" rhost-flags-FAIL-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1754535AbZCTWnc (ORCPT
+	Fri, 20 Mar 2009 18:44:09 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:36037 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752475AbZCTWoI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Mar 2009 18:43:32 -0400
-Date: Sat, 21 Mar 2009 01:43:30 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: yamazaki <yamazaki-seiji@jcom.home.ne.jp>
-Cc: Pierre Ossman <drzeus-sdhci@drzeus.cx>, Ben Dooks <ben-linux@fluff.org>,
-       Arnd Bergmann <arnd@arndb.de>, Liu Dave <DaveLiu@freescale.com>,
-       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       sdhci-devel@list.drzeus.cx
-Subject: Re: [PATCH 11/11] mmc: Add OpenFirmware bindings for SDHCI driver
-Message-ID: <20090320224330.GA23390@oksana.dev.rtsoft.ru>
-Reply-To: avorontsov@ru.mvista.com
-References: <20090316211405.GK9375@oksana.dev.rtsoft.ru> <200903192328.AA00740@cj3020122-b.jcom.home.ne.jp>
+	Fri, 20 Mar 2009 18:44:08 -0400
+Message-ID: <49C41C1E.4060401@zytor.com>
+Date: Fri, 20 Mar 2009 15:43:42 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-Content-Disposition: inline
-In-Reply-To: <200903192328.AA00740@cj3020122-b.jcom.home.ne.jp>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Dan Williams <dan.j.williams@intel.com>
+CC: "H. Peter Anvin" <h.peter.anvin@intel.com>, linux-raid@vger.kernel.org,
+       linux-kernel@vger.kernel.org, neilb@suse.de, maciej.sosnowski@intel.com,
+       Ilya Yanok <yanok@emcraft.com>, Yuri Tikhonov <yur@emcraft.com>
+Subject: Re: [PATCH 06/13] async_tx: add support for asynchronous GF 	multiplication
+References: <20090318191248.20375.40560.stgit@dwillia2-linux.ch.intel.com>	 <20090318192046.20375.89854.stgit@dwillia2-linux.ch.intel.com>	 <49C26D91.10804@intel.com> <e9c3a7c20903191020k4d0169e3oc9749103a711f3e3@mail.gmail.com>
+In-Reply-To: <e9c3a7c20903191020k4d0169e3oc9749103a711f3e3@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
-
-On Fri, Mar 20, 2009 at 08:28:39AM +0900, yamazaki wrote:
-> Hi all,
+Dan Williams wrote:
 > 
-> I am running the Linux kernel 2.6.28.7 on my PPC8347 BRD.
-> I have to write the driver of SDHCI driver(using R5C807 RICOH). 
+> Something is broken if we take this path.  This routine could stand to
+> have a WARN_ONCE(), because if it is ever called there is something is
+> wrong with the raid6 offload driver.  The intent is that the
+> asynchronous recovery routines will perform an early check to see if
+> the recovery can be offloaded (with a series of calls to
+> async_xor/async_pq).  If not we fall back to the optimized synchronous
+> recovery routines (raid6_2data_recov, raid6_datap_recov).  The only
+> time this path will be taken is if we have decided to perform
+> asynchronous recovery but at a later call to async_pq the offload
+> driver reports it has run out of descriptors.
+> 
 
-RICOH? It should be a PCI SD/MMC controller, so you even don't
-need any patches to make it work in 2.6.28.7. Just make sure your
-.config file has following symbols enabled:
+That doesn't explain what you expect the code to do.  It still doesn't 
+make sense to me.
 
-CONFIG_MMC_SDHCI=y
-CONFIG_MMC_SDHCI_PCI=y
-CONFIG_MMC_RICOH_MMC=y
-
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
+	-hpa
