@@ -1,79 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758431AbZCUO4V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757661AbZCUPBU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758431AbZCUO4V (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Mar 2009 10:56:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754947AbZCUO4H
+	id S1757661AbZCUPBU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Mar 2009 11:01:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754919AbZCUPBJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Mar 2009 10:56:07 -0400
-Received: from rtr.ca ([76.10.145.34]:42094 "EHLO mail.rtr.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754564AbZCUO4F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Mar 2009 10:56:05 -0400
-Message-ID: <49C4FFFB.5000601@rtr.ca>
-Date: Sat, 21 Mar 2009 10:55:55 -0400
-From: Mark Lord <lkml@rtr.ca>
-Organization: Real-Time Remedies Inc.
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
-MIME-Version: 1.0
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: Mark Lord <liml@rtr.ca>, Norman Diamond <n0diamond@yahoo.co.jp>,
-       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
-Subject: Re: Overagressive failing of disk reads, both LIBATA and IDE
-References: <F79C774361EF45A6A68BC08F8621E406@DIAMOND8600>	 <49C30E67.4060702@rtr.ca> <1237645333.4600.9.camel@localhost.localdomain>
-In-Reply-To: <1237645333.4600.9.camel@localhost.localdomain>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Sat, 21 Mar 2009 11:01:09 -0400
+Received: from mtagate2.de.ibm.com ([195.212.17.162]:46345 "EHLO
+	mtagate2.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753808AbZCUPBI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 21 Mar 2009 11:01:08 -0400
+Date: Sat, 21 Mar 2009 16:01:02 +0100
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: =?ISO-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
+       Steven Rostedt <rostedt@goodmis.org>, Sam Ravnborg <sam@ravnborg.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] trace/ring_buffer: fix section mismatch warning
+Message-ID: <20090321160102.7b5a9675@osiris.boeblingen.de.ibm.com>
+In-Reply-To: <20090321143911.GA25729@elte.hu>
+References: <20090321124139.4ca216d9@osiris.boeblingen.de.ibm.com>
+	<20090321143911.GA25729@elte.hu>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.7; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-James Bottomley wrote:
-> On Thu, 2009-03-19 at 23:32 -0400, Mark Lord wrote:
-..
->> Allow SCSI to continue with the remaining blocks of a request
->> after encountering a media error.  Otherwise, it may just fail
->> the entire request, even though some blocks were fine and needed
->> by a completely different process than the one that wanted the bad block(s).
->>
->> Signed-off-by: Mark Lord <mlord@pobox.com>
->>
->> --- linux-2.6.16.60-0.6/drivers/scsi/scsi_lib.c	2008-03-10 13:46:03.000000000 -0400
->> +++ linux/drivers/scsi/scsi_lib.c	2008-03-21 11:54:09.000000000 -0400
->> @@ -888,6 +888,12 @@
->>  	 */
->>  	if (sense_valid && !sense_deferred) {
->>  		switch (sshdr.sense_key) {
->> +		case MEDIUM_ERROR:
->> +		/* Bad sector.  Fail it, and then continue the rest of the request. */
->> +		if (scsi_end_request(cmd, 0, cmd->device->sector_size, 1) == NULL) {
->> +			cmd->retries = 0;       // go around again..
->> +			return;
->> +		}
+On Sat, 21 Mar 2009 15:39:11 +0100
+Ingo Molnar <mingo@elte.hu> wrote:
+> > Section mismatch in reference from the function 
+> > ring_buffer_alloc() to the function .cpuinit.text:rb_cpu_notify() 
+> > The function ring_buffer_alloc() references the function __cpuinit 
+> > rb_cpu_notify(). This is often because ring_buffer_alloc lacks a 
+> > __cpuinit annotation or the annotation of rb_cpu_notify is wrong.
+> > 
+> > This is a false positive since rb_cpu_notify gets only referenced 
+> > if CONFIG_HOTPLUG_CPU=y. To get rid of the warning annotate 
+> > ring_buffer_alloc with __ref.
+> > 
+> > Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
+> > ---
+> >  kernel/trace/ring_buffer.c |    2 +-
 > 
-> But we've been over this.  You can't apply something like this because
-> it ignores retries and chunks up the request a sector at a time.  For
-> the enterprise that can increase failure time from a few seconds to
-> hours for 512k transfers.
+> Frederic has beaten you to it narrowly:
 > 
-> Using the disk supplied data about where the error occurred (provided
-> the disk returns it) eliminates all the readahead problems like the one
-> above.  Perhaps just turning of readahead for disks that don't supply
-> error location information would be a reasonable workaround?
-..
+> 09c9e84: tracing/ring-buffer: don't annotate rb_cpu_notify with __cpuinit
 
-The patch *does* use the disk supplied data about the error,
-and returns success for sectors up to that point.  Where it differs
-from mainline SCSI, is that it then continues attempting the remaining
-2000 sectors (or whatever) of the request, hoping that not all of
-them are bad.
+Btw. that was the only section mismatch warning I got on linux-next
+with an allyesconfig on s390. We probably could enable the verbose
+section mismatch warnings at compile time?
 
-It's not perfect, and likely no longer applies/works cleanly on the
-latest kernels.  And perhaps it really ought to fail a "block" rather
-than a "sector" at a time as it seeks clean media after the fault.
-
-I think it could be even more clever, using a binary search or something
-on the remaining chunks, so that it takes less time to skip over a huge
-stretch of sequential bad sectors (scratch on media).  That would probably
-be best all around.
-
-Cheers
+Sam?
