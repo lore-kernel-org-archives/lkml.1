@@ -1,71 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755184AbZCUDAp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760057AbZCUDK4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755184AbZCUDAp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Mar 2009 23:00:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754246AbZCUDAS
+	id S1760057AbZCUDK4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Mar 2009 23:10:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753430AbZCUDKr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Mar 2009 23:00:18 -0400
-Received: from hera.kernel.org ([140.211.167.34]:34694 "EHLO hera.kernel.org"
+	Fri, 20 Mar 2009 23:10:47 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:43937 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754006AbZCUDAO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Mar 2009 23:00:14 -0400
-Message-ID: <49C457C3.6080909@kernel.org>
-Date: Sat, 21 Mar 2009 11:58:11 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
-MIME-Version: 1.0
-To: axboe@kernel.dk, linux-kernel@vger.kernel.org, bzolnier@gmail.com
-CC: =?UTF-8?B?SsO2cmcgRG9yY2hhaW4=?= <joerg@dorchain.net>,
-       Geert Uytterhoeven <geert@linux-m68k.org>, Tim Waugh <tim@cyberelk.net>,
-       Stephen Rothwell <sfr@canb.auug.org.au>,
-       Paul Mackerras <paulus@samba.org>,
-       Jeremy Fitzhardinge <jeremy@xensource.com>,
-       Grant Likely <grant.likely@secretlab.ca>,
-       Markus Lidel <Markus.Lidel@shadowconnect.com>,
-       David Woodhouse <dwmw2@infradead.org>,
-       Pete Zaitcev <zaitcev@redhat.com>
-Subject: Re: [PATCH 15/17] block: kill end_request()
-References: <1237170540-19130-1-git-send-email-tj@kernel.org> <1237170540-19130-16-git-send-email-tj@kernel.org>
-In-Reply-To: <1237170540-19130-16-git-send-email-tj@kernel.org>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=UTF-8
+	id S1752974AbZCUDKq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Mar 2009 23:10:46 -0400
+Subject: Re: [PATCH] tracing: Fix TRACING_SUPPORT dependency
+From: Steven Rostedt <srostedt@redhat.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Anton Vorontsov <avorontsov@ru.mvista.com>, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>, dale@farnsworth.org
+In-Reply-To: <20090320195743.GA25147@elte.hu>
+References: <20090320150914.GA22769@oksana.dev.rtsoft.ru>
+	 <20090320190428.GD6224@elte.hu>
+	 <20090320193904.GA13707@oksana.dev.rtsoft.ru>
+	 <20090320195743.GA25147@elte.hu>
+Content-Type: text/plain
+Organization: Red Hat
+Date: Fri, 20 Mar 2009 23:09:58 -0400
+Message-Id: <1237604998.17367.3.camel@localhost.localdomain>
+Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sat, 21 Mar 2009 02:57:42 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tejun Heo wrote:
-> Impact: kill obsolete interface function
-> 
-> end_request() has been kept around for backward compatibility;
-> however, it seems to be about time for it to go away.
-> 
-> * There aren't too many users left.
-> 
-> * Its use of @updtodate is pretty confusing.
-> 
-> * In some cases, newer code ends up using mixture of end_request() and
->   [__]blk_end_request[_all](), which is way too confusing.
-> 
-> So, kill it.
-> 
-> Most conversions are straightforward.  Noteworthy ones are...
-> 
-> * paride/pcd: next_request() updated to take 0/-errno instead of 1/0.
-> 
-> * paride/pf: pf_end_request() and next_request() updated to take
->   0/-errno instead of 1/0.
-> 
-> * xd: xd_readwrite() updated to return 0/-errno instead of 1/0.
-> 
-> * mtd/mtd_blkdevs: blktrans_discard_request() updated to return
->   0/-errno instead of 1/0.  Unnecessary local variable res
->   initialization removed from mtd_blktrans_thread().
 
-This patch isn't correct.  Will post updated version later.
+Ug, My Red Hat email was not being updated. I totally missed this
+thread.
 
-Thanks.
+On Fri, 2009-03-20 at 20:57 +0100, Ingo Molnar wrote:
+> * Anton Vorontsov <avorontsov@ru.mvista.com> wrote:
+> 
+> > On Fri, Mar 20, 2009 at 08:04:28PM +0100, Ingo Molnar wrote:
+> > > 
+> > > * Anton Vorontsov <avorontsov@ru.mvista.com> wrote:
+> > > 
+> > > > commit 40ada30f9621fbd831ac2437b9a2a399aad34b00 ("tracing: clean 
+> > > > up menu"), despite the "clean up" in its purpose, introduced 
+> > > > behavioural change for Kconfig symbols: we no longer able to 
+> > > > select tracing support on PPC32 (because IRQFLAGS_SUPPORT isn't 
+> > > > yet implemented).
+> > > 
+> > > Could you please solve this by implementing proper 
+> > > irqflag-tracing support? It's been available upstream for almost 
+> > > three years. It's needed for lockdep support as well, etc.
+> > 
+> > Breaking things via clean up patches is an interesting method of 
+> > encouraging something to implement. ;-)
+> >
+> > Surely I'll look into implementing irqflags tracing, but 
+> > considering that no one ever needed this for almost three years, 
+> > [...]
+> 
+> Weird, there's no lockdep support?
 
--- 
-tejun
+I've discussed this with several people before. lockdep exists for
+PPC64, but apparently it does not work for PPC32. There's been ongoing
+work in this area, but unfortunately, nothing stable has come out of it.
+
+I believe Dale was the last one to be working on this.
+
+-- Steve
+
+
