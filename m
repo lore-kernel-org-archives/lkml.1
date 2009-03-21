@@ -1,66 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756786AbZCUNBe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758267AbZCUNEU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756786AbZCUNBe (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Mar 2009 09:01:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752737AbZCUNBZ
+	id S1758267AbZCUNEU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Mar 2009 09:04:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754868AbZCUNEI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Mar 2009 09:01:25 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:42672 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752454AbZCUNBY (ORCPT
+	Sat, 21 Mar 2009 09:04:08 -0400
+Received: from silver.sucs.swan.ac.uk ([137.44.10.1]:47082 "EHLO
+	silver.sucs.swan.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754818AbZCUNEH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Mar 2009 09:01:24 -0400
-Date: Sat, 21 Mar 2009 05:55:32 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Nitin Gupta <nitingupta910@gmail.com>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/3] compcache documentation
-Message-Id: <20090321055532.db1045c0.akpm@linux-foundation.org>
-In-Reply-To: <49C4DE2C.8010808@vflare.org>
-References: <49C3A31D.6070208@vflare.org>
-	<49C3A4B0.3050503@vflare.org>
-	<20090321032636.fdeae224.akpm@linux-foundation.org>
-	<49C4DE2C.8010808@vflare.org>
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; x86_64-redhat-linux-gnu)
+	Sat, 21 Mar 2009 09:04:07 -0400
+Date: Sat, 21 Mar 2009 13:03:53 +0000
+From: Sitsofe Wheeler <sitsofe@yahoo.com>
+To: Nico -telmich- Schottelius 
+	<nico-linux-ipw3945-devel@schottelius.org>,
+       "John W. Linville" <linville@tuxdriver.com>,
+       Nico Schottelius <nico-linux-20090313@schottelius.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       ipw3945-devel@lists.sourceforge.net
+Subject: Re: Strange reboots on 2.6.29-rc6-wl
+Message-ID: <20090321130353.GA5009@silver.sucs.org>
+References: <20090313200657.GA4907@denkbrett.schottelius.org> <20090313204100.GA3554@tuxdriver.com> <20090317075424.GD8777@denkbrett.schottelius.org> <20090317145753.GA1651@silver.sucs.org> <20090320102107.GA17975@denkbrett.schottelius.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090320102107.GA17975@denkbrett.schottelius.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 21 Mar 2009 18:01:40 +0530 Nitin Gupta <nitingupta910@gmail.com> wrote:
-
-> Andrew Morton wrote:
-> > On Fri, 20 Mar 2009 19:44:08 +0530 Nitin Gupta <ngupta@vflare.org> wrote:
+On Fri, Mar 20, 2009 at 11:21:07AM +0100, Nico -telmich- Schottelius wrote:
+> Sitsofe Wheeler [Tue, Mar 17, 2009 at 02:57:53PM +0000]:
+> > On Tue, Mar 17, 2009 at 08:54:24AM +0100, Nico -telmich- Schottelius wrote:
+> > > 
+> > > Has anyone a clue on howto debug the build environment or
+> > > debugging the kernel before it's getting booted?
 > > 
-> >> ...
-> >>
-> >> +   backing_dev: This is block device to be used as backing store for compcache.
-> >> +	It must be a valid swap partition. We move data to this device when we
-> >> +	encounter incompressible page or memlimit is reached. TODO: we may also
-> >> +	move some pages from compcache to this device in case system is really
-> >> +	low on memory.
-> >> +	This device is not directly visible to kernel as a swap device
-> >> +	(/proc/swaps will only show /dev/ramzswap0 and not this device).
-> >> +	Managing this backing device is the job of compcache module.
-> > 
-> > hrm, OK, it kinda/sorta/maybe might be a little bit like a "compressed
-> > cache".  But if someone comes up with a real compressed cache (ie:
-> > pagecache) then they'll want their name back.
-> > 
-> Rename is in progress: compcache->ramzswap :)
+> > If you have a serial console you can probably get output on that.
 > 
-> > Also, the kernel already has a widespread and well-established "backing
-> > device" concept, in include/linux/backing-dev.h.  This new feature's
-> > poaching of that identifier is a bit confusing.  It would be nice to do a
-> > wholesale rename if possible.  secondary_dev?  nv_dev?
-> > 
+> There's no native serial port on the machine :-/
 > 
-> backing_swap?
+> > If you have flipped EMBEDDED to Y then you might also have to enable
+> > EARLY_PRINTK. Another trick might be to turn set
+> > BOOT_PRINTK_DELAY (Kernel hacking -> Delay each boot printk message by N
+> > milliseconds) to something like 2000 and see if you can read/catch the
+> > messages before the kernel reboots...
+> 
+> I've EARLY_PRINTK set, but other than the edd probing message
+> I don't see anything.
 
-Well that gets us back to my other question.  It's a block device driver,
-yes?  It is in fact not tied to swap in any way, apart from swap being the
-expected application?
+What about when you set BOOT_PRINTK_DELAY to a value high enough to
+cause pauses - do you see more messages? Additionally are booting your
+kernel without the quiet option? Have you checked to make sure the
+kernel isn't set to reboot on oops/panic etc? Are you using any binary
+drivers?
+
+> > Failing that start a git bisection (
+> > http://www.kernel.org/doc/local/git-quick.html#bisect or
+> > http://www.stardust.webpages.pl/files/handbook/handbook-en-0.3-rc1.pdf )
+> > from the last good kernel...
+> 
+> I really don't think that it's the kernel's fault, because _all_
+> new versions I compile instantly reboot.
+
+So even a freshly compiled 2.6.27 and 2.6.28 reboot instantly?! If even
+old kernels that worked suddently don't work that hints strongly at
+hardware errors or a duff compiler toolchain...
+
+You can also make the kernel spit out decompression error messages by
+enabling CONFIG_X86_VERBOSE_BOOTUP . I guess it would also be wise to
+make sure CONFIG_DOUBLEFAULT is also set. Are you sure nothing else has
+changed though? Have you enabled some kernel option that was not set
+before?  Have you changed any BIOS settings recently?
+
+> Last one I tried was v2.6.29-rc8-241-g65c2449 (linux-2.6).
+> Isn't there some flag to enable step by step execution (like in gdb)?
+
+I don't think I undrstand what you mean - the kernel isn't a debugger...
+If you are running a User Mode Linux kernel or running inside QEMU etc.
+then you can do what you describe because your "machine" is a program
+but I think the only way to do that with real hardware is to learn how
+to use KGDB ( http://kgdb.sourceforge.net ) and have another machine to
+hand. I suppose you could also sprinkle beep patches/debug printks about
+the place to see just how far it gets before it reboots...
+
+-- 
+Sitsofe | http://sucs.org/~sits/
