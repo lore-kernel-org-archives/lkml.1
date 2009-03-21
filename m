@@ -1,63 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755754AbZCUM31@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757822AbZCUMa1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755754AbZCUM31 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Mar 2009 08:29:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753432AbZCUM3T
+	id S1757822AbZCUMa1 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Mar 2009 08:30:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752914AbZCUMaL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Mar 2009 08:29:19 -0400
-Received: from mba.ocn.ne.jp ([122.1.235.107]:61034 "EHLO smtp.mba.ocn.ne.jp"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752914AbZCUM3S convert rfc822-to-8bit (ORCPT
+	Sat, 21 Mar 2009 08:30:11 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:40833 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753807AbZCUMaK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Mar 2009 08:29:18 -0400
-Date: Sat, 21 Mar 2009 21:29:20 +0900 (JST)
-Message-Id: <20090321.212920.25912728.anemo@mba.ocn.ne.jp>
-To: dan.j.williams@intel.com
-Cc: linux-mips@linux-mips.org, ralf@linux-mips.org,
-       linux-kernel@vger.kernel.org, haavard.skinnemoen@atmel.com
-Subject: Re: [PATCH 1/2] dmaengine: TXx9 Soc DMA Controller driver
-From: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
-In-Reply-To: <e9c3a7c20903181026h1801ef6i945e6ce9ccb36b8a@mail.gmail.com>
-References: <e9c3a7c20903171823g1e6c42b9t5f042d550a6ddd47@mail.gmail.com>
-	<20090318.110154.76582864.nemoto@toshiba-tops.co.jp>
-	<e9c3a7c20903181026h1801ef6i945e6ce9ccb36b8a@mail.gmail.com>
-X-Fingerprint: 6ACA 1623 39BD 9A94 9B1A  B746 CA77 FE94 2874 D52F
-X-Pgp-Public-Key: http://wwwkeys.pgp.net/pks/lookup?op=get&search=0x2874D52F
-X-Mailer: Mew version 5.2 on Emacs 21.4 / Mule 5.0 (SAKAKI)
+	Sat, 21 Mar 2009 08:30:10 -0400
+Date: Sat, 21 Mar 2009 05:24:16 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Nitin Gupta <nitingupta910@gmail.com>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>, cl@linux-foundation.org,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 2/3] xvmalloc memory allocator
+Message-Id: <20090321052416.6eb38759.akpm@linux-foundation.org>
+In-Reply-To: <49C4D9C4.1030103@vflare.org>
+References: <ztOQA2Cz.1237575719.7896090.penberg@cs.helsinki.fi>
+	<49C3F1EE.90903@vflare.org>
+	<20090321032137.8dc113e8.akpm@linux-foundation.org>
+	<49C4D9C4.1030103@vflare.org>
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 18 Mar 2009 10:26:13 -0700, Dan Williams <dan.j.williams@intel.com> wrote:
-> > The atmel-mci does not select "channel".  It just pick the first
-> > usable channel of the dma_device specified by platform_data.  I
-> > suppose dw_dmac is symmetric (it can use any channel for any slave).
+On Sat, 21 Mar 2009 17:42:52 +0530 Nitin Gupta <nitingupta910@gmail.com> wrote:
+
+> Andrew Morton wrote:
+> > On Sat, 21 Mar 2009 01:13:42 +0530 Nitin Gupta <ngupta@vflare.org> wrote:
 > 
-> You are right, it does not hardwire the channel, but it does hardwire
-> the device, see at32_add_device_mci [1].
+> > But what is regrettable is that xvmalloc appears to be tied to
+> > compressed-swap in some manner.  Is it not possible to split these two
+> > initiatives apart so that neither is dependent upon the other?  Or is
+> > compressed-swap hopelessly crippled without xvmalloc?
 > 
-> > But TXx9 SoC DMAC channels are hardwired to each peripheral devices.
+> xvmalloc itself is completely independent of compressed-swap. Infact, its
+> loaded as separate kernel module (xvmalloc.ko)
+
+That sounds good.
+
+> However, this compression project is almost useless without this specialized
+> allocator.
+
+Why?  Important information!!
+
+See, being told all this helps us understand why xvmalloc exists.  Plus
+once we have a good description of _why_ xvmalloc is needed, perhaps we can
+come up with alternatives which are more palatable than merging a whole new
+allocator.  Such as enhancing an existing one.
+
+> > 
+> > (compcache is a terrible name, btw - it isn't a "compressed cache" at all!)
+> > 
 > 
-> I think creating a dma_device instance per channel and specifying that
-> device like atmel-mci is the more future-proof way to go.
+> I have now heard this many times and my conscious is beginning to hurt now :)
+> I will change it to match name of its block device: ramzswap   sounds better?
 
-Well, I have considered it but it looks overkill for me at that time.
-Maybe time to think again...
+Is there anything swap-specific about it?  It's a block device, yes?  I
+should be able to run mkfs.ext2 on it and mount the thing?
 
-> > And I want to call Channel-3 of DMAC-0 "dma0chan3" even if Channel-2
-> > was assigned to for public memcpy channel.
+> >> Anyways, I will move it to drivers/block.
+> > 
+> > This sounds like it might be a backward step.
 > 
-> The problem is you could pass in the chan_id to guarantee 'chan3', but
-> there is no guarantee that you will get 'dma0', as the driver has no
-> knowledge of what other dma devices may be in the system.
+> 
+> I'm bit confused here. Last thing I want to do is block mainline merge
+> because of such issues. Its real pain to maintain these things separately.
 
-Yes, I do not expect 'dma0'.  My filter function uses
-dev_name(chan->device->dev), which is "txx9dmac.0" in this case.
+This is why I tell myself to never use the word "it" in an email message.
 
-Anyway, "one dma-device per channel" manner will make things much simpler.
+I assumed that you were referring to moving xvmalloc() down into
+drivers/block.  That would be bad, because then xvmalloc() will _never_ be
+usable by anything other than ramzblock <new name!>?
 
----
-Atsushi Nemoto
+
