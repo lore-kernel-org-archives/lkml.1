@@ -1,29 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755264AbZCUK4q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754412AbZCUK70@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755264AbZCUK4q (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Mar 2009 06:56:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751754AbZCUK4f
+	id S1754412AbZCUK70 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Mar 2009 06:59:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752821AbZCUK7Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Mar 2009 06:56:35 -0400
-Received: from mtagate2.de.ibm.com ([195.212.17.162]:45336 "EHLO
-	mtagate2.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751532AbZCUK4e (ORCPT
+	Sat, 21 Mar 2009 06:59:16 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:38789 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751754AbZCUK7P (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Mar 2009 06:56:34 -0400
-Date: Sat, 21 Mar 2009 11:56:29 +0100
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
-To: Herbert Xu <herbert@gondor.apana.org.au>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
-       Jan Glauber <jang@linux.vnet.ibm.com>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>
-Subject: Re: linux-next: Tree for March 20 - crypto crash on s390
-Message-ID: <20090321115629.6e911679@osiris.boeblingen.de.ibm.com>
-In-Reply-To: <20090321062605.GA14046@gondor.apana.org.au>
-References: <20090320162800.24b0ad93.sfr@canb.auug.org.au>
-	<20090320135912.53147d76@osiris.boeblingen.de.ibm.com>
-	<20090321062605.GA14046@gondor.apana.org.au>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.7; i486-pc-linux-gnu)
+	Sat, 21 Mar 2009 06:59:15 -0400
+Date: Sat, 21 Mar 2009 03:53:15 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Jos Houtman <jos@hyves.nl>
+Cc: <linux-kernel@vger.kernel.org>, Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: Page Cache writeback too slow,   SSD/noop scheduler/ext2
+Message-Id: <20090321035315.fc10cef6.akpm@linux-foundation.org>
+In-Reply-To: <C5E99E4E.C0E0%jos@hyves.nl>
+References: <C5E989F1.C0C7%jos@hyves.nl>
+	<C5E99E4E.C0E0%jos@hyves.nl>
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -31,40 +27,54 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 21 Mar 2009 14:26:05 +0800
-Herbert Xu <herbert@gondor.apana.org.au> wrote:
+On Fri, 20 Mar 2009 19:26:06 +0100 Jos Houtman <jos@hyves.nl> wrote:
 
-> On Fri, Mar 20, 2009 at 01:59:12PM +0100, Heiko Carstens wrote:
-> >
-> > gets called with an shash_desc where
-> > 
-> > bsize = crypto_shash_blocksize(desc->tfm);
-> > 
-> > results in bsize with zero.
+> Hi,
 > 
-> Oops, this patch should fix it.
+> We have hit a problem where the page-cache writeback algorithm is not
+> keeping up.
+> When memory gets low this will result in very irregular performance drops.
 > 
-> commit b24c94a0d65282dc466339390472d7539e1706c2
-> Author: Herbert Xu <herbert@gondor.apana.org.au>
-> Date:   Sat Mar 21 14:25:19 2009 +0800
+> Our setup is as follows:
+> 30 x Quad core machine with 64GB ram.
+> These are single purpose machines running MySQL.
+> Kernel version: 2.6.28.7
+> A dedicated SSD drive for the ext2 database partition
+> Noop scheduler for the ssd drive.
 > 
->     crypto: sha512-s390 - Add missing block size
->     
->     I missed the block size when converting sha512-s390 to shash.
->     
->     Reported-by: Heiko Carstens <heiko.carstens@de.ibm.com>
->     Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
 > 
-> diff --git a/arch/s390/crypto/sha512_s390.c b/arch/s390/crypto/sha512_s390.c
-> index 420acf4..37b4236 100644
-> --- a/arch/s390/crypto/sha512_s390.c
-> +++ b/arch/s390/crypto/sha512_s390.c
-> @@ -84,6 +84,7 @@ static struct shash_alg sha384_alg = {
->  		.cra_driver_name=	"sha384-s390",
->  		.cra_priority	=	CRYPT_S390_PRIORITY,
->  		.cra_flags	=	CRYPTO_ALG_TYPE_SHASH,
-> +		.cra_blocksize	=	SHA512_BLOCK_SIZE,
+> The current hypothesis is as follows:
+> The wk_update function does not write enough dirty pages, which allows the
+> number of dirty pages to grow to the dirty_background limit.
+> When memory is low,  __background_writeout() comes around and __forcefully__
+> writes dirty pages to disk.
+> This forced write fills the disk queue and starves read calls that MySQL is
+> trying to do: basically killing performance  for a few seconds.
+> This pattern repeats as soon as the cleared memory is filled again.
+> 
+> Decreasing the dirty_writeback_centisecs to 100 doesn__t help
+> 
+> I don__t know why this is, but I did some preliminary tracing using systemtap
+> and it seems that the majority of times wk_update calls decides to do
+> nothing.
+> 
+> Doubling /sys/block/sdb/queue/nr_requests  to 256, seems to help abit:  the
+> nr_dirty pages is increasing more slowly.
+> But I am unsure of side-effects and am afraid of increasing the starvation
+> problem for mysql.
+> 
+> 
+> I__am very much willing to work on this issue and see it fixed, but would
+> like to tap into the knowledge of people here.
+> So: 
+> * Have more people seen this or simular issues?
+> * Is the hypothesis above a viable one?
+> * Suggestions/pointers for further research and statistics I should measure
+> to improve the understanding of this problem.
+> 
 
-Yes, it does fix it. Thanks!
+I don't think that noop-iosched tries to do anything to prevent
+writes-starve-reads.  Do you get better behaviour from any of the other IO
+schedulers?
 
-Tested-by: Heiko Carstens <heiko.carstens@de.ibm.com>
+
