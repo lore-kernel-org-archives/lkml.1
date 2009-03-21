@@ -1,123 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756302AbZCULgj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756850AbZCULh2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756302AbZCULgj (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Mar 2009 07:36:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753008AbZCULg1
+	id S1756850AbZCULh2 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Mar 2009 07:37:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754193AbZCULhI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Mar 2009 07:36:27 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:35886 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752988AbZCULg0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Mar 2009 07:36:26 -0400
-Date: Sat, 21 Mar 2009 12:35:53 +0100
-From: Jiri Pirko <jpirko@redhat.com>
-To: netdev@vger.kernel.org
-Cc: David Miller <davem@davemloft.net>, klassert@mathematik.tu-chemnitz.de,
-       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
-Subject: [PATCH] 3c59x: convert to net_device_ops
-Message-ID: <20090321113552.GB3380@psychotron.englab.brq.redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Sat, 21 Mar 2009 07:37:08 -0400
+Received: from casper.infradead.org ([85.118.1.10]:42366 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752988AbZCULhH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 21 Mar 2009 07:37:07 -0400
+Subject: Re: [PATCH 1/1] introduce user_ns inheritance in user-sched
+From: Peter Zijlstra <peterz@infradead.org>
+To: "Serge E. Hallyn" <serge@hallyn.com>
+Cc: "Serge E. Hallyn" <serue@us.ibm.com>,
+       Linux Containers <containers@lists.osdl.org>, mingo@elte.hu,
+       Bharata B Rao <bharata@linux.vnet.ibm.com>,
+       lkml <linux-kernel@vger.kernel.org>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>
+In-Reply-To: <20090321024639.GB21064@hallyn.com>
+References: <20090319211615.GA18383@us.ibm.com>
+	 <1237537460.24626.32.camel@twins>  <20090321024639.GB21064@hallyn.com>
+Content-Type: text/plain
+Date: Sat, 21 Mar 2009 12:36:49 +0100
+Message-Id: <1237635409.4667.186.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi
+On Fri, 2009-03-20 at 21:46 -0500, Serge E. Hallyn wrote:
+> Quoting Peter Zijlstra (peterz@infradead.org):
+> > On Thu, 2009-03-19 at 16:16 -0500, Serge E. Hallyn wrote:
+> > > In a kernel compiled with CONFIG_USER_SCHED=y, cpu shares are
+> > > allocated according to uid.  Shares are specifiable under
+> > > /sys/kernel/uids/<uid>/
+> > > 
+> > > In a kernel compiled with CONFIG_USER_NS=y, clone(2) with the
+> > > CLONE_NEWUSER flag creates a new user namespace, and the newly
+> > > cloned task will belong to uid 0 in the new user namespace.
+> > 
+> > We seem to be adding more and more stuff for USER_SCHED, is anybody
+> > actually using that cruft?
+> > 
+> > How far along with cgroups are we to fully simulate that behaviour?
+> > 
+> > I think if we have a capable cgroup based replacement for USER_SCHED we
+> > should axe it from the kernel, would save lots of code...
+> 
+> I didn't realize that was the plan.  Using PAM to move users
+> around cgroups? 
 
-I converted this driver to use net_device_ops. I made two structures, one for
-vortex and one for boomerang start_xmit function. Tested on my test system with
-3Com PCI 3c905C Tornado.
+Right, thing is, distro's will all want cgroup enabled, since that's the
+latest fad :-), so this user sched thing will only be for people who
+build their own kernels -- but I suspect most of those simply disable
+all this group scheduling.
 
-Jirka
+>  If so, then yeah that would simplify quite a bit
+> of code.   Won't catch all setuid()s of course 
 
-Signed-off-by: Jiri Pirko <jpirko@redhat.com>
+Right, so if we could somehow get a setuid notification hooked into
+cgroups,.. not sure that would be worth the trouble though.
 
- drivers/net/3c59x.c |   50 ++++++++++++++++++++++++++++++++++++--------------
- 1 files changed, 36 insertions(+), 14 deletions(-)
+> - I don't know who uses USER_SCHED and if that would matter.
 
-diff --git a/drivers/net/3c59x.c b/drivers/net/3c59x.c
-index cdbbb62..6c3d66b 100644
---- a/drivers/net/3c59x.c
-+++ b/drivers/net/3c59x.c
-@@ -992,6 +992,38 @@ out:
- 	return rc;
- }
- 
-+static const struct net_device_ops vortex_netdev_ops = {
-+	.ndo_open               = vortex_open,
-+	.ndo_stop               = vortex_close,
-+	.ndo_start_xmit         = vortex_start_xmit,
-+	.ndo_set_multicast_list = set_rx_mode,
-+	.ndo_validate_addr      = eth_validate_addr,
-+#ifdef CONFIG_PCI
-+	.ndo_do_ioctl		= vortex_ioctl,
-+#endif
-+	.ndo_tx_timeout         = vortex_tx_timeout,
-+	.ndo_get_stats		= vortex_get_stats,
-+#ifdef CONFIG_NET_POLL_CONTROLLER
-+	.ndo_poll_controller    = poll_vortex,
-+#endif
-+};
-+
-+static const struct net_device_ops boomerang_netdev_ops = {
-+	.ndo_open               = vortex_open,
-+	.ndo_stop               = vortex_close,
-+	.ndo_start_xmit         = boomerang_start_xmit,
-+	.ndo_set_multicast_list = set_rx_mode,
-+	.ndo_validate_addr      = eth_validate_addr,
-+#ifdef CONFIG_PCI
-+	.ndo_do_ioctl		= vortex_ioctl,
-+#endif
-+	.ndo_tx_timeout         = vortex_tx_timeout,
-+	.ndo_get_stats		= vortex_get_stats,
-+#ifdef CONFIG_NET_POLL_CONTROLLER
-+	.ndo_poll_controller    = poll_vortex,
-+#endif
-+};
-+
- /*
-  * Start up the PCI/EISA device which is described by *gendev.
-  * Return 0 on success.
-@@ -1366,17 +1398,17 @@ static int __devinit vortex_probe1(struct device *gendev,
- 	}
- 
- 	/* The 3c59x-specific entries in the device structure. */
--	dev->open = vortex_open;
- 	if (vp->full_bus_master_tx) {
--		dev->hard_start_xmit = boomerang_start_xmit;
-+		dev->netdev_ops = &boomerang_netdev_ops;
- 		/* Actually, it still should work with iommu. */
- 		if (card_idx < MAX_UNITS &&
- 		    ((hw_checksums[card_idx] == -1 && (vp->drv_flags & HAS_HWCKSM)) ||
- 				hw_checksums[card_idx] == 1)) {
- 			dev->features |= NETIF_F_IP_CSUM | NETIF_F_SG;
- 		}
--	} else {
--		dev->hard_start_xmit = vortex_start_xmit;
-+	}
-+	else {
-+		dev->netdev_ops = &vortex_netdev_ops;
- 	}
- 
- 	if (print_info) {
-@@ -1386,18 +1418,8 @@ static int __devinit vortex_probe1(struct device *gendev,
- 				(dev->features & NETIF_F_IP_CSUM) ? "en":"dis");
- 	}
- 
--	dev->stop = vortex_close;
--	dev->get_stats = vortex_get_stats;
--#ifdef CONFIG_PCI
--	dev->do_ioctl = vortex_ioctl;
--#endif
- 	dev->ethtool_ops = &vortex_ethtool_ops;
--	dev->set_multicast_list = set_rx_mode;
--	dev->tx_timeout = vortex_tx_timeout;
- 	dev->watchdog_timeo = (watchdog * HZ) / 1000;
--#ifdef CONFIG_NET_POLL_CONTROLLER
--	dev->poll_controller = poll_vortex;
--#endif
- 	if (pdev) {
- 		vp->pm_state_valid = 1;
-  		pci_save_state(VORTEX_PCI(vp));
+Right, me neither... I would just love to be able to cut all that code
+out :-)
+
+
