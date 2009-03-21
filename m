@@ -1,69 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755878AbZCUVMy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756082AbZCUVOU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755878AbZCUVMy (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Mar 2009 17:12:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753107AbZCUVMp
+	id S1756082AbZCUVOU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Mar 2009 17:14:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752135AbZCUVOL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Mar 2009 17:12:45 -0400
-Received: from casper.infradead.org ([85.118.1.10]:37799 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753388AbZCUVMo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Mar 2009 17:12:44 -0400
-Date: Sat, 21 Mar 2009 14:13:40 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Eric Dumazet <dada1@cosmosbay.com>
-Cc: paulmck@linux.vnet.ibm.com, dipankar@in.ibm.com,
-       linux-input@vger.kernel.org, dmitry.torokhov@gmail.com,
+	Sat, 21 Mar 2009 17:14:11 -0400
+Received: from fsfla.org ([195.176.254.155]:37586 "EHLO fsfla.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751007AbZCUVOK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 21 Mar 2009 17:14:10 -0400
+X-Greylist: delayed 1278 seconds by postgrey-1.27 at vger.kernel.org; Sat, 21 Mar 2009 17:14:10 EDT
+To: linux-libre@fsfla.org, libreplanet-discuss@gnu.org,
        linux-kernel@vger.kernel.org
-Subject: Re: Question about usage of RCU in the input layer
-Message-ID: <20090321141340.3b5ffa4f@infradead.org>
-In-Reply-To: <49C54D60.80306@cosmosbay.com>
-References: <20090318215812.15496a86@infradead.org>
-	<20090319085628.GA6167@in.ibm.com>
-	<20090319071841.63334eff@infradead.org>
-	<20090320020750.GA6807@linux.vnet.ibm.com>
-	<20090319202032.4c971d92@infradead.org>
-	<20090320044541.GE6807@linux.vnet.ibm.com>
-	<20090320065058.65d01771@infradead.org>
-	<20090320143104.GA6698@linux.vnet.ibm.com>
-	<20090320111354.679ab53d@infradead.org>
-	<20090321012746.GM6698@linux.vnet.ibm.com>
-	<20090321125115.0a76ac27@infradead.org>
-	<49C54D60.80306@cosmosbay.com>
-Organization: Intel
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+Subject: linux-2.6.28.8-libre1: suitable for Free System Distributions
+From: Alexandre Oliva <lxoliva@fsfla.org>
+Organization: Free thinker, not speaking for FSF Latin America
+Date: Sat, 21 Mar 2009 17:51:57 -0300
+Message-ID: <or7i2i7g5u.fsf@livre.oliva.athome.lsd.ic.unicamp.br>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.3 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 21 Mar 2009 21:26:08 +0100
-Eric Dumazet <dada1@cosmosbay.com> wrote:
+Several months ago, I realized the existing releases of Linux-libre,
+that removed non-Free Software present in Linux, still retained code and
+documentation that induced users to install and use non-Free Software.
+This means it wasn't fit for use in Free System Distributions.
 
-> > 
-> > (svg can be viewed with inkscape, gimp, firefox and various other
-> > tools)
-> > 
-> > 
-> 
-> Interesting stuff...
-> 
-> I thought you mentioned i2c drivers being source of the udelays(),
->  but I cant see them in this svg, unless its async_probe_hard ?
+I started working to fix that bug back then.  Today, I'm very excited to
+announce, straight from the Libre Planet 2009 conference organized by
+the FSF, the first version of Linux-libre that won't do that any more.
 
-yeah that one is doing a ton of i2c
+The 2.6.28-libre1 release, and the patched 2.6.28.8-libre1 release, are
+now available from http://linux-libre.fsfla.org/, bringing back several
+drivers that used to be disabled before, and not disabling any driver
+whatsoever.
 
-(I'm working on optimizing the code in that area still)
+Some of the drivers we used to disable have been modified so that they
+now report the lack of Free firmware, instead of requesting users to
+load non-Free Software into their systems.  These reports should be
+useful for userland to pick up and report some useful, informative and
+educational message to the user, explaining that their hardware is not
+compatible with Free Software.
 
-> 
+Other drivers we used to disabled contained suspicious strings that had
+been conservatively removed.  Having verified the technical and legal
+status of some of them, and having determined that some others weren't
+code after all, this release brings them back in.  Some WiFi interfaces
+and video capture devices, will be functional with this new release.
 
+Other releases of Linux-libre, including past ones and the upcoming
+2.6.29, will certainly require additional work, but nothing even close
+to the amount of work it took to get to this one.  Thanks for your
+patience.
+
+I'd also like to thank the FSF for offering us our new build and web
+server, the first in which this release was prepared, and Jeff Moe, who
+had paid for our previous server.
+
+Please report to linux-libre@fsfla.org any problems you run into with
+this release (other than compile errors in a few dvb drivers, I'm on
+those already), and let us know of any case in which you believe I may
+have removed something that could have been retained.
+
+Happier (and freer) hacking, :-)
 
 -- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+Alexandre Oliva           http://www.lsd.ic.unicamp.br/~oliva/
+You must be the change you wish to see in the world. -- Gandhi
+Be Free! -- http://FSFLA.org/   FSF Latin America board member
+Free Software Evangelist      Red Hat Brazil Compiler Engineer
