@@ -1,76 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759259AbZCUOof@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758431AbZCUO4V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759259AbZCUOof (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Mar 2009 10:44:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754947AbZCUOoZ
+	id S1758431AbZCUO4V (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Mar 2009 10:56:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754947AbZCUO4H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Mar 2009 10:44:25 -0400
-Received: from fg-out-1718.google.com ([72.14.220.158]:7005 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754868AbZCUOoY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Mar 2009 10:44:24 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:user-agent:x-accept-language:mime-version:to
-         :cc:subject:references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=q6RL1YJNA3+KxE3fI54YbtX210QNugvIUDm2KtUeI9aaBU5wOeHgpgq488CpggT7vJ
-         019L5O/NCgXKCHp3AItHLZ++XcTvw4LhlfFKs2ebYqqX2ueBxZMaR7gq1U3TjLIUGZBf
-         aqatjn5ilGWSBctwU2Z6vDW001Ii5vSbVHEyk=
-Message-ID: <49C4FD41.4030504@googlemail.com>
-Date: Sat, 21 Mar 2009 15:44:17 +0100
-From: Michael Riepe <michael.riepe@googlemail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686 (x86_64); en-US; rv:1.7.13) Gecko/20060417
-X-Accept-Language: de-de, de, en-us, en
+	Sat, 21 Mar 2009 10:56:07 -0400
+Received: from rtr.ca ([76.10.145.34]:42094 "EHLO mail.rtr.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754564AbZCUO4F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 21 Mar 2009 10:56:05 -0400
+Message-ID: <49C4FFFB.5000601@rtr.ca>
+Date: Sat, 21 Mar 2009 10:55:55 -0400
+From: Mark Lord <lkml@rtr.ca>
+Organization: Real-Time Remedies Inc.
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Miklos Szeredi <miklos@szeredi.hu>
-Subject: ptrace performance (was: [Bug #12208] uml is very slow on 2.6.28
- host)
-References: <9nR7rAsBwYG.A.iEG.fOCvJB@chimera> <qm8_cedJGaP.A.c1H.2PCvJB@chimera>
-In-Reply-To: <qm8_cedJGaP.A.c1H.2PCvJB@chimera>
-X-Enigmail-Version: 0.91.0.0
-Content-Type: text/plain; charset=us-ascii
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: Mark Lord <liml@rtr.ca>, Norman Diamond <n0diamond@yahoo.co.jp>,
+       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+Subject: Re: Overagressive failing of disk reads, both LIBATA and IDE
+References: <F79C774361EF45A6A68BC08F8621E406@DIAMOND8600>	 <49C30E67.4060702@rtr.ca> <1237645333.4600.9.camel@localhost.localdomain>
+In-Reply-To: <1237645333.4600.9.camel@localhost.localdomain>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Disclaimer: I'm not using UML, but these problems may be related.
+James Bottomley wrote:
+> On Thu, 2009-03-19 at 23:32 -0400, Mark Lord wrote:
+..
+>> Allow SCSI to continue with the remaining blocks of a request
+>> after encountering a media error.  Otherwise, it may just fail
+>> the entire request, even though some blocks were fine and needed
+>> by a completely different process than the one that wanted the bad block(s).
+>>
+>> Signed-off-by: Mark Lord <mlord@pobox.com>
+>>
+>> --- linux-2.6.16.60-0.6/drivers/scsi/scsi_lib.c	2008-03-10 13:46:03.000000000 -0400
+>> +++ linux/drivers/scsi/scsi_lib.c	2008-03-21 11:54:09.000000000 -0400
+>> @@ -888,6 +888,12 @@
+>>  	 */
+>>  	if (sense_valid && !sense_deferred) {
+>>  		switch (sshdr.sense_key) {
+>> +		case MEDIUM_ERROR:
+>> +		/* Bad sector.  Fail it, and then continue the rest of the request. */
+>> +		if (scsi_end_request(cmd, 0, cmd->device->sector_size, 1) == NULL) {
+>> +			cmd->retries = 0;       // go around again..
+>> +			return;
+>> +		}
+> 
+> But we've been over this.  You can't apply something like this because
+> it ignores retries and chunks up the request a sector at a time.  For
+> the enterprise that can increase failure time from a few seconds to
+> hours for 512k transfers.
+> 
+> Using the disk supplied data about where the error occurred (provided
+> the disk returns it) eliminates all the readahead problems like the one
+> above.  Perhaps just turning of readahead for disks that don't supply
+> error location information would be a reasonable workaround?
+..
 
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12208
-> Subject		: uml is very slow on 2.6.28 host
-> Submitter	: Miklos Szeredi <miklos@szeredi.hu>
-> Date		: 2008-12-12 9:35 (93 days old)
-> References	: http://marc.info/?l=linux-kernel&m=122907463518593&w=4
+The patch *does* use the disk supplied data about the error,
+and returns success for sectors up to that point.  Where it differs
+from mainline SCSI, is that it then continues attempting the remaining
+2000 sectors (or whatever) of the request, hoping that not all of
+them are bad.
 
-The other day I noticed a dramatic ptrace slowdown between 2.6.27 and
-2.6.28.x (verified with 2.6.28.8). In particular, a command like
+It's not perfect, and likely no longer applies/works cleanly on the
+latest kernels.  And perhaps it really ought to fail a "block" rather
+than a "sector" at a time as it seeks clean media after the fault.
 
-	dd if=/dev/zero of=/dev/null bs=1024k count=1024
+I think it could be even more clever, using a binary search or something
+on the remaining chunks, so that it takes less time to skip over a huge
+stretch of sequential bad sectors (scratch on media).  That would probably
+be best all around.
 
-will normally report a throughput in the GB/s range. On 2.6.27, this is
-also true if you run
-
-	strace -o /dev/null <dd command as above>
-
-which is only a little slower. But if I do the same on 2.6.28.x, I get a
-throughput of about 100 MB/s or less, i.e. less than 10%. I tried the
-commands on three different machines (an Athlon64 3000+, a Core Duo
-T2400 and an Atom 330), and they all behave similar. The more system
-calls a program uses, the worse the slowdown (try the dd command with
-bs=16k and count=65536, for example - but don't hold your breath).
-
-Interestingly, the CPUs are mostly idle while the command is executing
-on 2.6.28.x, but there is a high (system) load on 2.6.27. Therefore, I
-suspect that it's a scheduling or maybe timer problem that was
-introduced between 2.6.27 and 2.6.28. I haven't had the time to check
-the rc kernels yet; perhaps someone else can run a quick check to verify
-that it's gone in the latest 2.6.29-rc.
-
--- 
-Michael "Tired" Riepe <michael.riepe@googlemail.com>
-X-Tired: Each morning I get up I die a little
+Cheers
