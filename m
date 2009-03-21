@@ -1,123 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758431AbZCUOMr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756957AbZCUOPn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758431AbZCUOMr (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Mar 2009 10:12:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752700AbZCUOMi
+	id S1756957AbZCUOPn (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Mar 2009 10:15:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752914AbZCUOPe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Mar 2009 10:12:38 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:53515 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752150AbZCUOMh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Mar 2009 10:12:37 -0400
-Date: Sat, 21 Mar 2009 15:12:00 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH][GIT PULL] tracing: add function profiler
-Message-ID: <20090321141200.GA20710@elte.hu>
-References: <alpine.DEB.2.00.0903210036590.13615@gandalf.stny.rr.com> <20090321042633.1dfa536a.akpm@linux-foundation.org> <1237636623.4667.223.camel@laptop>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1237636623.4667.223.camel@laptop>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Sat, 21 Mar 2009 10:15:34 -0400
+Received: from gw02.mail.saunalahti.fi ([195.197.172.116]:54403 "EHLO
+	gw02.mail.saunalahti.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752150AbZCUOPd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 21 Mar 2009 10:15:33 -0400
+From: Dmitri Vorobiev <dmitri.vorobiev@movial.com>
+To: mingo@elte.hu, akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Cc: Dmitri Vorobiev <dmitri.vorobiev@movial.com>
+Subject: [PATCH 1/1] Restrict definitions of a couple of static functions
+Date: Sat, 21 Mar 2009 16:15:22 +0200
+Message-Id: <1237644922-7877-1-git-send-email-dmitri.vorobiev@movial.com>
+X-Mailer: git-send-email 1.5.6.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+The call sites of the static functions free_cache_attributes() and
+detect_cache_attributes() in arch/x86/kernel/cpu/intel_cacheinfo.c
+are placed under #ifdef CONFIG_SYSFS/#endif, but their definitions
+are not. This may produce the following warning:
 
-* Peter Zijlstra <peterz@infradead.org> wrote:
+arch/x86/kernel/cpu/intel_cacheinfo.c:542: warning:
+'free_cache_attributes' defined but not used
+arch/x86/kernel/cpu/intel_cacheinfo.c:573: warning:
+'detect_cache_attributes' defined but not used
 
-> On Sat, 2009-03-21 at 04:26 -0700, Andrew Morton wrote:
-> > On Sat, 21 Mar 2009 00:37:59 -0400 (EDT) Steven Rostedt <rostedt@goodmis.org> wrote:
-> > 
-> > >    This patch adds a function profiler. In debugfs/tracing/ two new
-> > >     files are created.
-> > >     
-> > >       function_profile_enabled  - to enable or disable profiling
-> > >     
-> > >       trace_stat/functions   - the profiled functions.
-> > >     
-> > >     For example:
-> > >     
-> > >       echo 1 > /debugfs/tracing/function_profile_enabled
-> > >       ./hackbench 50
-> > >       echo 0 > /debugfs/tracing/function_profile_enabled
-> > >     
-> > >     yields:
-> > >     
-> > >       cat /debugfs/tracing/trace_stat/functions
-> > >     
-> > >       Function                               Hit
-> > >       --------                               ---
-> > >       _spin_lock                        10106442
-> > >       _spin_unlock                      10097492
-> > >       kfree                              6013704
-> > >       _spin_unlock_irqrestore            4423941
-> > >       _spin_lock_irqsave                 4406825
-> > >       __phys_addr                        4181686
-> > >       __slab_free                        4038222
-> > >       dput                               4030130
-> > >       path_put                           4023387
-> > >       unroll_tree_refs                   4019532
-> > >     [...]
-> > >     
-> > >     The most hit functions are listed first. Functions that are not
-> > >     hit are not listed.
-> > 
-> > Why is this useful?
-> > 
-> > Can we think of any scenarios where kernel developers would get
-> > useful-to-them results from this?  Results which couldn't be 
-> > obtained by other similarly-accessible means?
-> > 
-> > <strains a bit>
-> > 
-> > I guess that one could run workload A, look at
-> > /debugfs/tracing/trace_stat/functions changes, then run worklaod B, then
-> > look at its /debugfs/tracing/trace_stat/functions changes, then somehow
-> > glean some information about the differences between the effects of the two
-> > workloads on the kernel.  Or something.
-> > 
-> > But in this rather fake example and, I suspect, in many others, 
-> > the result will be less useful than using oprofile/etc in the 
-> > same fashion.
-> 
-> I have to agree with Andrew here, my plan is to remove all the 
-> profiling stuff from kernel/trace in favour of perf counters.
+This patch fixes the warning by restricting the definitions of the
+two functions to the case when CONFIG_SYSFS is enabled.
 
-i agree with that - but still it would be useful to also have the 
-ability to do in-kernel histograms and the likely/unlikely profiler 
-(which is using the same histogram code) is already using that 
-facility.
+Signed-off-by: Dmitri Vorobiev <dmitri.vorobiev@movial.com>
+---
+ arch/x86/kernel/cpu/intel_cacheinfo.c |   64 ++++++++++++++++----------------
+ 1 files changed, 32 insertions(+), 32 deletions(-)
 
-But instead of the single-purpose likely/unlikely and now function 
-histogram code, we should allow individual counters/events to be 
-linked up with an in-kernel histogram - or route it to user-space 
-via perfcounters.
+diff --git a/arch/x86/kernel/cpu/intel_cacheinfo.c b/arch/x86/kernel/cpu/intel_cacheinfo.c
+index da299eb..f04d351 100644
+--- a/arch/x86/kernel/cpu/intel_cacheinfo.c
++++ b/arch/x86/kernel/cpu/intel_cacheinfo.c
+@@ -538,17 +538,6 @@ static void __cpuinit cache_shared_cpu_map_setup(unsigned int cpu, int index) {}
+ static void __cpuinit cache_remove_shared_cpu_map(unsigned int cpu, int index) {}
+ #endif
+ 
+-static void __cpuinit free_cache_attributes(unsigned int cpu)
+-{
+-	int i;
+-
+-	for (i = 0; i < num_cache_leaves; i++)
+-		cache_remove_shared_cpu_map(cpu, i);
+-
+-	kfree(per_cpu(cpuid4_info, cpu));
+-	per_cpu(cpuid4_info, cpu) = NULL;
+-}
+-
+ static void __cpuinit get_cpu_leaves(void *_retval)
+ {
+ 	int j, *retval = _retval, cpu = smp_processor_id();
+@@ -569,27 +558,6 @@ static void __cpuinit get_cpu_leaves(void *_retval)
+ 	}
+ }
+ 
+-static int __cpuinit detect_cache_attributes(unsigned int cpu)
+-{
+-	int			retval;
+-
+-	if (num_cache_leaves == 0)
+-		return -ENOENT;
+-
+-	per_cpu(cpuid4_info, cpu) = kzalloc(
+-	    sizeof(struct _cpuid4_info) * num_cache_leaves, GFP_KERNEL);
+-	if (per_cpu(cpuid4_info, cpu) == NULL)
+-		return -ENOMEM;
+-
+-	smp_call_function_single(cpu, get_cpu_leaves, &retval, true);
+-	if (retval) {
+-		kfree(per_cpu(cpuid4_info, cpu));
+-		per_cpu(cpuid4_info, cpu) = NULL;
+-	}
+-
+-	return retval;
+-}
+-
+ #ifdef CONFIG_SYSFS
+ 
+ #include <linux/kobject.h>
+@@ -840,6 +808,38 @@ static struct kobj_type ktype_percpu_entry = {
+ 	.sysfs_ops	= &sysfs_ops,
+ };
+ 
++static void __cpuinit free_cache_attributes(unsigned int cpu)
++{
++	int i;
++
++	for (i = 0; i < num_cache_leaves; i++)
++		cache_remove_shared_cpu_map(cpu, i);
++
++	kfree(per_cpu(cpuid4_info, cpu));
++	per_cpu(cpuid4_info, cpu) = NULL;
++}
++
++static int __cpuinit detect_cache_attributes(unsigned int cpu)
++{
++	int			retval;
++
++	if (num_cache_leaves == 0)
++		return -ENOENT;
++
++	per_cpu(cpuid4_info, cpu) = kzalloc(
++	    sizeof(struct _cpuid4_info) * num_cache_leaves, GFP_KERNEL);
++	if (per_cpu(cpuid4_info, cpu) == NULL)
++		return -ENOMEM;
++
++	smp_call_function_single(cpu, get_cpu_leaves, &retval, true);
++	if (retval) {
++		kfree(per_cpu(cpuid4_info, cpu));
++		per_cpu(cpuid4_info, cpu) = NULL;
++	}
++
++	return retval;
++}
++
+ static void __cpuinit cpuid4_cache_sysfs_exit(unsigned int cpu)
+ {
+ 	kfree(per_cpu(cache_kobject, cpu));
+-- 
+1.5.6.3
 
-> If you want exact function count profiling we could try to do 
-> something perf counter based, eg. stick a software counter in the 
-> mcount thingy.
-
-while i agree in general - lets realize that function (and branch) 
-software events _are_ special due to their sheer mass. I dont think 
-it's feasible to route that much information to user-space - just to 
-collapse it into a histogram there. Even doing it in the kernel is 
-already straining the performance envelope quite a bit.
-
-	Ingo
