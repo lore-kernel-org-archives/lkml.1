@@ -1,86 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759289AbZCUDdw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756901AbZCUDug@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759289AbZCUDdw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Mar 2009 23:33:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752410AbZCUDdm
+	id S1756901AbZCUDug (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Mar 2009 23:50:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753924AbZCUDu0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Mar 2009 23:33:42 -0400
-Received: from mail-fx0-f158.google.com ([209.85.220.158]:58310 "EHLO
-	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751060AbZCUDdm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Mar 2009 23:33:42 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        b=vx1w49G3lyLFCbdNd3lieQW4/z1Zn2jzwj0mkdDpbbQO7OUiIph5wya9gkQwgzJqf1
-         K8RcFgK7PGUrhYjwA50s0Iz9f0FUQcdvnST6IP2YhkCASGUarmossTWHC/2GMZ73W6ub
-         UrAqcO5DAoK7uqfORnqoADr1L7PzrgBTgK3c0=
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Steven Rostedt <rostedt@goodmis.org>, LKML <linux-kernel@vger.kernel.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>
-Subject: [PATCH] tracing/ring-buffer: don't annotate rb_cpu_notify with __cpuinit
-Date: Sat, 21 Mar 2009 04:33:36 +0100
-Message-Id: <1237606416-22268-1-git-send-email-fweisbec@gmail.com>
-X-Mailer: git-send-email 1.6.1
+	Fri, 20 Mar 2009 23:50:26 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:33964 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753884AbZCUDuZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Mar 2009 23:50:25 -0400
+Subject: Re: [PATCH 1/3] powerpc, Makefile: Make it possible to safely
+	select CONFIG_FRAME_POINTER
+From: Steven Rostedt <srostedt@redhat.com>
+To: Anton Vorontsov <avorontsov@ru.mvista.com>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Sam Ravnborg <sam@ravnborg.org>,
+       Paul Mackerras <paulus@samba.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20090320164429.GA28037@oksana.dev.rtsoft.ru>
+References: <20090320164404.GA19933@oksana.dev.rtsoft.ru>
+	 <20090320164429.GA28037@oksana.dev.rtsoft.ru>
+Content-Type: text/plain
+Organization: Red Hat
+Date: Fri, 20 Mar 2009 23:49:29 -0400
+Message-Id: <1237607369.17367.7.camel@localhost.localdomain>
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: remove a section warning
 
-CONFIG_DEBUG_SECTION_MISMATCH raises the following warning on -tip:
+Ben,
 
-WARNING: kernel/trace/built-in.o(.text+0x5bc5): Section mismatch in
-reference from the function ring_buffer_alloc() to the function
-.cpuinit.text:rb_cpu_notify()
-The function ring_buffer_alloc() references
-the function __cpuinit rb_cpu_notify().
+Can you ACK this patch? Or even take it in your tree?
 
-This is actually harmless. The code in the ring buffer don't build
-rb_cpu_notify and other cpu hotplug stuffs when !CONFIG_HOTPLUG_CPU
-so we have no risk to reference freed memory here (it would even
-be harmless if we unconditionally build it because register_cpu_notifier
-would do nothing when !CONFIG_HOTPLUG_CPU.
+Thanks,
 
-But since ring_buffer_alloc() can be called everytime, we don't want it
-to be annotated with __cpuinit so we drop the __cpuinit from
-rb_cpu_notify.
-This is not a waste of memory because it is only defined and used on
-CONFIG_HOTPLUG_CPU.
+-- Steve
 
-Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
----
- kernel/trace/ring_buffer.c |    8 ++++----
- 1 files changed, 4 insertions(+), 4 deletions(-)
-
-diff --git a/kernel/trace/ring_buffer.c b/kernel/trace/ring_buffer.c
-index bc74f00..7e05e2c 100644
---- a/kernel/trace/ring_buffer.c
-+++ b/kernel/trace/ring_buffer.c
-@@ -536,8 +536,8 @@ static void rb_free_cpu_buffer(struct ring_buffer_per_cpu *cpu_buffer)
- extern int ring_buffer_page_too_big(void);
- 
- #ifdef CONFIG_HOTPLUG_CPU
--static int __cpuinit rb_cpu_notify(struct notifier_block *self,
--				   unsigned long action, void *hcpu);
-+static int rb_cpu_notify(struct notifier_block *self,
-+			 unsigned long action, void *hcpu);
- #endif
- 
- /**
-@@ -2787,8 +2787,8 @@ static __init int rb_init_debugfs(void)
- fs_initcall(rb_init_debugfs);
- 
- #ifdef CONFIG_HOTPLUG_CPU
--static int __cpuinit rb_cpu_notify(struct notifier_block *self,
--				   unsigned long action, void *hcpu)
-+static int rb_cpu_notify(struct notifier_block *self,
-+			 unsigned long action, void *hcpu)
- {
- 	struct ring_buffer *buffer =
- 		container_of(self, struct ring_buffer, cpu_notify);
--- 
-1.6.1
+On Fri, 2009-03-20 at 19:44 +0300, Anton Vorontsov wrote:
+> This patch introduces ARCH_HAS_NORMAL_FRAME_POINTERS Kconfig symbol.
+> When defined, the top level Makefile won't add -fno-omit-frame-pointer
+> cflag (the flag is useless in PowerPC kernels, and also makes gcc
+> generate wrong code).
+> 
+> Also move ARCH_WANT_FRAME_POINTERS's help text.
+> 
+> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+> ---
+>  Makefile             |    7 +++++--
+>  arch/powerpc/Kconfig |    1 +
+>  lib/Kconfig.debug    |   16 ++++++++++------
+>  3 files changed, 16 insertions(+), 8 deletions(-)
+> 
+> diff --git a/Makefile b/Makefile
+> index 46c04c5..bf41b05 100644
+> --- a/Makefile
+> +++ b/Makefile
+> @@ -538,9 +538,12 @@ KBUILD_CFLAGS += $(call cc-option, -fno-stack-protector)
+>  endif
+>  
+>  ifdef CONFIG_FRAME_POINTER
+> -KBUILD_CFLAGS	+= -fno-omit-frame-pointer -fno-optimize-sibling-calls
+> +  KBUILD_CFLAGS	+= -fno-optimize-sibling-calls
+> +  ifndef ARCH_HAS_NORMAL_FRAME_POINTERS
+> +    KBUILD_CFLAGS	+= -fno-omit-frame-pointer
+> +  endif
+>  else
+> -KBUILD_CFLAGS	+= -fomit-frame-pointer
+> +  KBUILD_CFLAGS	+= -fomit-frame-pointer
+>  endif
+>  
+>  ifdef CONFIG_DEBUG_INFO
+> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+> index 97f9a64..4587e66 100644
+> --- a/arch/powerpc/Kconfig
+> +++ b/arch/powerpc/Kconfig
+> @@ -113,6 +113,7 @@ config PPC
+>  	select HAVE_FUNCTION_TRACER
+>  	select HAVE_FUNCTION_GRAPH_TRACER
+>  	select ARCH_WANT_OPTIONAL_GPIOLIB
+> +	select ARCH_HAS_NORMAL_FRAME_POINTERS
+>  	select HAVE_IDE
+>  	select HAVE_IOREMAP_PROT
+>  	select HAVE_EFFICIENT_UNALIGNED_ACCESS
+> diff --git a/lib/Kconfig.debug b/lib/Kconfig.debug
+> index 4b63b6b..fc8cd1f 100644
+> --- a/lib/Kconfig.debug
+> +++ b/lib/Kconfig.debug
+> @@ -661,20 +661,24 @@ config DEBUG_NOTIFIERS
+>  	  This is a relatively cheap check but if you care about maximum
+>  	  performance, say N.
+>  
+> -#
+> -# Select this config option from the architecture Kconfig, if it
+> -# it is preferred to always offer frame pointers as a config
+> -# option on the architecture (regardless of KERNEL_DEBUG):
+> -#
+>  config ARCH_WANT_FRAME_POINTERS
+>  	bool
+>  	help
+> +	  Select this config option from the architecture Kconfig, if it
+> +	  it is preferred to always offer frame pointers as a config
+> +	  option on the architecture (regardless of KERNEL_DEBUG).
+> +
+> +config ARCH_HAS_NORMAL_FRAME_POINTERS
+> +	bool
+> +	help
+> +	  Architectures should select this symbol if their ABI implies
+> +	  having a frame pointer.
+>  
+>  config FRAME_POINTER
+>  	bool "Compile the kernel with frame pointers"
+>  	depends on DEBUG_KERNEL && \
+>  		(CRIS || M68K || M68KNOMMU || FRV || UML || S390 || \
+> -		 AVR32 || SUPERH || BLACKFIN || MN10300) || \
+> +		 AVR32 || SUPERH || BLACKFIN || MN10300 || PPC) || \
+>  		ARCH_WANT_FRAME_POINTERS
+>  	default y if (DEBUG_INFO && UML) || ARCH_WANT_FRAME_POINTERS
+>  	help
 
