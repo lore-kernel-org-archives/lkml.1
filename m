@@ -1,111 +1,143 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753984AbZCUB17@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753651AbZCUBcf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753984AbZCUB17 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Mar 2009 21:27:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751706AbZCUB1t
+	id S1753651AbZCUBcf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Mar 2009 21:32:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751735AbZCUBc0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Mar 2009 21:27:49 -0400
-Received: from e5.ny.us.ibm.com ([32.97.182.145]:49414 "EHLO e5.ny.us.ibm.com"
+	Fri, 20 Mar 2009 21:32:26 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:37087 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751396AbZCUB1s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Mar 2009 21:27:48 -0400
-Date: Fri, 20 Mar 2009 18:27:46 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: dipankar@in.ibm.com, linux-input@vger.kernel.org,
-       dmitry.torokhov@gmail.com, linux-kernel@vger.kernel.org
-Subject: Re: Question about usage of RCU in the input layer
-Message-ID: <20090321012746.GM6698@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20090318215812.15496a86@infradead.org> <20090319085628.GA6167@in.ibm.com> <20090319071841.63334eff@infradead.org> <20090320020750.GA6807@linux.vnet.ibm.com> <20090319202032.4c971d92@infradead.org> <20090320044541.GE6807@linux.vnet.ibm.com> <20090320065058.65d01771@infradead.org> <20090320143104.GA6698@linux.vnet.ibm.com> <20090320111354.679ab53d@infradead.org>
+	id S1751674AbZCUBcZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Mar 2009 21:32:25 -0400
+Message-ID: <49C443E1.6070400@redhat.com>
+Date: Fri, 20 Mar 2009 21:33:21 -0400
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090320111354.679ab53d@infradead.org>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+To: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>
+CC: LKML <linux-kernel@vger.kernel.org>,
+       systemtap-ml <systemtap@sources.redhat.com>
+Subject: [RFC][PATCH -tip 0/5 V2] tracing: kprobe-based event tracer
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 20, 2009 at 11:13:54AM -0700, Arjan van de Ven wrote:
-> On Fri, 20 Mar 2009 07:31:04 -0700
-> "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
-> > > 
-> > > that'd be throwing out the baby with the bathwater... I'm trying to
-> > > use the other cpus to do some of the boot work (so that the total
-> > > goes faster); not using the other cpus would be counter productive
-> > > to that. (As is just sitting in synchronize_rcu() when the other
-> > > cpu is working.. hence this discussion ;-)
-> > 
-> > OK, so you are definitely running multiple CPUs when the offending
-> > synchronize_rcu() executes, then?
-> 
-> absolutely. 
-> (and I'm using bootgraph.pl in scripts to track who's stalling etc)
-> > 
-> > If so, here are some follow-on questions:
-> > 
-> > 1.	How many synchronize_rcu() calls are you seeing on the
-> > 	critical boot path
-> 
-> I've seen only this (input) one to take a long time
+Hi,
 
-Ouch!!!  A -single- synchronize_rcu() taking a full second???  That
-indicates breakage.
+This is a series of patches which introduce a proof-of concept of
+kprobe-based event tracer for x86. I decided to start it from
+minimum support, so I shrank down the patchset to support only
+x86(-32/-64). (If someone is interested in porting this to other
+architectures, I'd happy to help :))
 
-> >  and what value of HZ are you running?
-> 
-> 1000
+This can be applied on the linux-2.6-tip tree.
 
-K, in absence of readers for RCU_CLASSIC, we should see a handful
-of milliseconds for synchronize_rcu().
+This patchset includes following changes:
+- Add kprobe-tracer plugin [1/5, 3/5, 5/5]
+- Fix kernel_trap_sp() on x86 according to systemtap runtime. [2/5]
+- Add module_*probe api for repawning/removing kprobes when target
+  module is coming/going. [4/5]
 
-> > 	If each synchronize_rcu() is taking (say) tens of jiffies,
-> > then, as Peter Zijlstra notes earlier in this thread, we need to focus
-> > 	on what is taking too long to get through its RCU read-side
-> > 	critical sections
-> 
-> I know that "the other guy" is not optimal and takes waaay too long.
+Future items:
+- Enhance module_*probe for batch unregistering support.
+- Add kernel_trap_sp() and fetch_*() on other archs.
+- Support name-based register fetching (ax, bx, and so on)
+- Support symbol-based memory fetching (for global variables)
+- Support primitive types(long, ulong, int, uint, etc) for args.
+- Support indirect memory fetch from registers etc.
+- Check insertion point safety by using instruction decoder.
 
-That could explain why Peter focused on this case.  ;-)
+We may need to separate above arch-dependent fetching infrastructure.
 
-> >  Otherwise, if each synchronize_rcu() is
-> > 	in the 3-5 jiffy range, I may finally be forced to create an
-> > 	expedited version of the synchronize_rcu() API.
-> 
-> I think a simplified API for the "add to a list" case might make sense.
-> Because the request isn't for a full sync for sure...
-> 
-> (independent of that .. the open question is if this specific case is
-> even needed; I think the code confused "send to others" with "wait
-> until everyone sees"; afaik synchronize_rcu() has no pushing behavior
-> at all, nor should it)
+kprobe-based event tracer
+---------------------------
 
-Quite possibly, perhaps Dmitry will come up with something.
+This tracer is similar to the events tracer which is based on Tracepoint
+infrastructure. Instead of Tracepoint, this tracer is based on kprobes(kprobe
+and kretprobe). It probes anywhere where kprobes can probe(this means, all
+functions body except for __kprobes functions).
 
-> > 2.	If expediting is required, then the code calling
-> > synchronize_rcu() might or might not have any idea whether or not
-> > expediting is appropriate.  If it does not, then we would need some
-> > sort of way to tell synchronize_rcu() that it should act more
-> > aggressively, perhaps /proc flag or kernel global variable indicating
-> > that boot is in progress.
-> > 
-> > 	No, we do not want to make synchronize_rcu() aggressive all
-> > the time, as this would harm performance and energy efficiency in
-> > 	the normal runtime situation.
-> > 
-> > 	So, if it turns out that synchronize_rcu()'s caller does not
-> > 	know whether or not expediting is appropriate, can the boot
-> > path manipulate such a flag or variable?
-> > 
-> > 3.	Which RCU implementation are you using?  CONFIG_CLASSIC_RCU,
-> > 	CONFIG_TREE_RCU, or CONFIG_PREEMPT_RCU?
-> 
-> CLASSIC
+Unlike the function tracer, this tracer can probe instructions inside of
+kernel functions. It allows you to check which instruction has been executed.
 
-OK, it usually has the fastest synchronize_rcu() at the moment, though
-I will be giving TREE_RCU some more help.
+Unlike the Tracepoint based events tracer, this tracer can add new probe points
+on the fly.
 
-Sounds like I should hold off in favor of Dmitry's and Peter's efforts.
+Similar to the events tracer, this tracer doesn't need to be activated via
+current_tracer, instead of that, just set probe points via
+/debug/tracing/kprobe_probes.
 
-							Thanx, Paul
+Synopsis of kprobe_probes:
+  p SYMBOL[+offs|-offs]|MEMADDR [FETCHARGS]     : set a probe
+  r SYMBOL[+0] [FETCHARGS]                      : set a return probe
+
+ FETCHARGS:
+  rN    : Fetch Nth register (N >= 0)
+  sN    : Fetch Nth entry of stack (N >= 0)
+  mADDR : Fetch memory at ADDR (ADDR should be in kernel)
+  aN    : Fetch function argument. (N >= 1)(*)
+  rv    : Fetch return value.(**)
+  rp    : Fetch return address.(**)
+
+  (*) aN may not correct on asmlinkaged functions and at function body.
+  (**) only for return probe.
+
+E.g.
+  echo p do_sys_open a1 a2 a3 a4 > /debug/tracing/kprobe_probes
+
+ This sets a kprobe on the top of do_sys_open() function with recording
+1st to 4th arguments.
+
+  echo r do_sys_open rv rp >> /debug/tracing/kprobe_probes
+
+ This sets a kretprobe on the return point of do_sys_open() function with
+recording return value and return address.
+
+  echo > /debug/tracing/kprobe_probes
+
+ This clears all probe points. and you can see the traced information via
+/debug/tracing/trace.
+
+  echo /debug/tracing/trace
+# tracer: nop
+#
+#           TASK-PID    CPU#    TIMESTAMP  FUNCTION
+#              | |       |          |         |
+           <...>-2376  [001]   262.389131: do_sys_open: @do_sys_open+0 0xffffff9c 0x98db83e 0x8880 0x0
+           <...>-2376  [001]   262.391166: sys_open: <-do_sys_open+0 0x5 0xc06e8ebb
+           <...>-2376  [001]   264.384876: do_sys_open: @do_sys_open+0 0xffffff9c 0x98db83e 0x8880 0x0
+           <...>-2376  [001]   264.386880: sys_open: <-do_sys_open+0 0x5 0xc06e8ebb
+           <...>-2084  [001]   265.380330: do_sys_open: @do_sys_open+0 0xffffff9c 0x804be3e 0x0 0x1b6
+           <...>-2084  [001]   265.380399: sys_open: <-do_sys_open+0 0x3 0xc06e8ebb
+
+ @SYMBOL means that kernel hits a probe, and <-SYMBOL means kernel returns
+from SYMBOL(e.g. "sys_open: <-do_sys_open+0" means kernel returns from
+do_sys_open to sys_open).
+
+
+ Documentation/ftrace.txt      |   66 ++++
+ arch/x86/include/asm/ptrace.h |    4 +-
+ include/linux/kprobes.h       |   44 +++
+ kernel/kprobes.c              |  252 +++++++++++++++
+ kernel/trace/Kconfig          |    9 +
+ kernel/trace/Makefile         |    1 +
+ kernel/trace/trace_kprobe.c   |  693 +++++++++++++++++++++++++++++++++++++++++
+ 7 files changed, 1067 insertions(+), 2 deletions(-)
+
+Thank you,
+
+-- 
+Masami Hiramatsu
+
+Software Engineer
+Hitachi Computer Products (America) Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com
+
+
