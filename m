@@ -1,26 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755400AbZCUJ5T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756089AbZCUKCA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755400AbZCUJ5T (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Mar 2009 05:57:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753576AbZCUJ5J
+	id S1756089AbZCUKCA (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Mar 2009 06:02:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753139AbZCUKBv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Mar 2009 05:57:09 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:47948 "EHLO mx2.mail.elte.hu"
+	Sat, 21 Mar 2009 06:01:51 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:33391 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750800AbZCUJ5I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Mar 2009 05:57:08 -0400
-Date: Sat, 21 Mar 2009 10:56:52 +0100
+	id S1752867AbZCUKBu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 21 Mar 2009 06:01:50 -0400
+Date: Sat, 21 Mar 2009 11:01:29 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Paul Mackerras <paulus@samba.org>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] perfcounters: fix type/event_id layout on big-endian
-	systems
-Message-ID: <20090321095651.GA7201@elte.hu>
-References: <18884.29385.854691.357234@cargo.ozlabs.ibm.com> <20090321094246.GA5594@elte.hu> <18884.47341.106849.379374@cargo.ozlabs.ibm.com>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH 0/5] [GIT PULL] updates for tip/tracing/ftrace
+Message-ID: <20090321100129.GC7201@elte.hu>
+References: <alpine.DEB.2.00.0903191309170.16987@gandalf.stny.rr.com> <20090320174331.GH6698@linux.vnet.ibm.com> <20090320183642.GA2070@elte.hu> <20090320183849.GA3657@elte.hu> <20090320191926.GJ6698@linux.vnet.ibm.com> <20090320192721.GI6224@elte.hu> <20090320194617.GA5934@nowhere> <20090320195414.GA24129@elte.hu> <20090320204848.GA6044@nowhere> <alpine.DEB.2.00.0903201705380.13615@gandalf.stny.rr.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <18884.47341.106849.379374@cargo.ozlabs.ibm.com>
+In-Reply-To: <alpine.DEB.2.00.0903201705380.13615@gandalf.stny.rr.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -35,40 +38,35 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Paul Mackerras <paulus@samba.org> wrote:
+* Steven Rostedt <rostedt@goodmis.org> wrote:
 
-> Ingo Molnar writes:
 > 
-> > hm, this ifdef really looks ugly. How about just changing event_id 
-> > to 64 bits and having a separate u32 type field? The size impact is 
-> > minimal, the cleanliness win is significant :-)
+> On Fri, 20 Mar 2009, Frederic Weisbecker wrote:
+> > > >  
+> > > >  	VERBOSE_PRINTK_STRING("rcu_torture_reader task started");
+> > > > -	set_user_nice(current, 19);
+> > > > +	set_user_nice(current, -1);
+> > > >  	if (irqreader && cur_ops->irqcapable)
+> > > >  		setup_timer_on_stack(&t, rcu_torture_timer, 0);
+> > > 
+> > > i dont have a reproducer right now. Can you trigger it with latest 
+> > > -tip, which has this commit included:
+> > > 
+> > > 04cb9ac: rcu: rcu_barrier VS cpu_hotplug: Ensure callbacks in dead cpu are migrated to o
+> > > 
+> > > ?
+> > > 
+> > > 	Ingo
+> > 
+> > 
+> > I tested three times the same things but with 04cb9ac and... it didn't triggered
+> > anymore :-)
 > 
-> We wanted to get a complete and unique identifier for the event 
-> into 64 bits so that we could put it into the ring buffer for 
-> PERF_RECORD_GROUP and have it take up only one 8-byte slot and yet 
-> identify uniquely which counter's value follows it.  I don't know 
-> that that is absolutely necessary but it sounds like a nice 
-> property.
+> So lets hope that was the culprit.
 > 
-> We could easily go back to a 1-bit raw field and have the type be 
-> either a 64-bit raw value or an 8-bit type plus 32 or 56-bit 
-> event_id.
-> 
-> Or we could keep the current layout but use explicit shifts and 
-> masks rather than bitfields.
-> 
-> I don't know the current C rules concerning unions very well, but 
-> I have the impression that writing to one member of a union and 
-> reading another is undefined behaviour, which is another strike 
-> against the current code if true...
->
-> Anyway, the point is that the current code doesn't compile on 
-> powerpc and wouldn't work properly even if it did, so we need to 
-> do something.
+> Great work Frederic!
 
-yeah - i pulled your fix, thanks Paul.
-
-Maybe the best option is to get rid of the bitfields and use masks 
-...
+No new lockups of this nature in overnight -tip testing. It's still 
+a bit too early to tell for sure but it's promising ;-)
 
 	Ingo
