@@ -1,113 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758669AbZCUSVf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758460AbZCUSYh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758669AbZCUSVf (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Mar 2009 14:21:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754134AbZCUSV1
+	id S1758460AbZCUSYh (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Mar 2009 14:24:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754533AbZCUSY3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Mar 2009 14:21:27 -0400
-Received: from hera.kernel.org ([140.211.167.34]:53272 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753602AbZCUSV0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Mar 2009 14:21:26 -0400
-Subject: Re: [PATCH -tip] x86: apic/io_apic fix compilation warning
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20090321163642.GI11183@elte.hu>
-References: <1237630967.2409.1.camel@ht.satnam>
-	 <20090321163642.GI11183@elte.hu>
-Content-Type: text/plain; charset="UTF-8"
-Date: Sat, 21 Mar 2009 23:50:53 +0530
-Message-Id: <1237659653.12448.2.camel@ht.satnam>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
-Content-Transfer-Encoding: 8bit
+	Sat, 21 Mar 2009 14:24:29 -0400
+Received: from mail-fx0-f158.google.com ([209.85.220.158]:46050 "EHLO
+	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754488AbZCUSY2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 21 Mar 2009 14:24:28 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=nwP/d7o222eZ2ceFyxD7jY+v3zMourXK0Pd8UduD35RiXQv2z3vaaTNOIlL4UKRO/I
+         cHThX3Y7eEeWvkBmZNLnRSf3dNad71ufy/udCkCbCMFaSnttRYBXfmRfXdaf8bJyCeaG
+         f/xHURn2/Lyof4ADMtKPjNMEtf0ZQZx8/rjeA=
+Date: Sat, 21 Mar 2009 21:31:41 +0300
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: Udo van den Heuvel <udovdh@xs4all.nl>
+Cc: linux-kernel@vger.kernel.org, Folkert van Heusden <folkert@vanheusden.com>
+Subject: Re: 2.6.28.2 kernel bug
+Message-ID: <20090321183141.GA2945@x200.localdomain>
+References: <49C52958.7030700@xs4all.nl>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49C52958.7030700@xs4all.nl>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2009-03-21 at 17:36 +0100, Ingo Molnar wrote:
+On Sat, Mar 21, 2009 at 06:52:24PM +0100, Udo van den Heuvel wrote:
+> While doing a find to get rid of 2.5M smallish files in 1 directory I  
+> got the stuff pasted below which made the system freeze.
+> This is on Fedora 10 on AMD x86_64 with a custom kernel.
+> Any ideas on how to fix this? Can I help?
 
-> hm, i think it would be cleaner to remove the CONFIG_INTR_REMAP 
-> define altogether and define msi_ir_chip all the time. (and make 
-> sure this build fine even in the !INTR_REMAP case)
-> 
+Run memtest first.
 
-Is this looks OK to you and can you please check this in your
-magic .config files:
-
-From: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
-Date: Sat, 21 Mar 2009 23:40:00 +0530
-Subject: [PATCH] x86: apic/io_apic.c define msi_ir_chip and ir_ioapic_chip all the time
-
-move out msi_ir_chip and ir_ioapic_chip from CONFIG_INTR_REMAP shadow
-
-Fix:
- arch/x86/kernel/apic/io_apic.c:1431: warning: ‘msi_ir_chip’ defined but not used
-
-Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
----
- arch/x86/kernel/apic/io_apic.c |    9 ++++-----
- 1 files changed, 4 insertions(+), 5 deletions(-)
-
-diff --git a/arch/x86/kernel/apic/io_apic.c b/arch/x86/kernel/apic/io_apic.c
-index d882c03..1aea1c2 100644
---- a/arch/x86/kernel/apic/io_apic.c
-+++ b/arch/x86/kernel/apic/io_apic.c
-@@ -1428,7 +1428,6 @@ void __setup_vector_irq(int cpu)
- 
- static struct irq_chip ioapic_chip;
- static struct irq_chip ir_ioapic_chip;
--static struct irq_chip msi_ir_chip;
- 
- #define IOAPIC_AUTO     -1
- #define IOAPIC_EDGE     0
-@@ -2663,20 +2662,20 @@ static struct irq_chip ioapic_chip __read_mostly = {
- 	.retrigger	= ioapic_retrigger_irq,
- };
- 
--#ifdef CONFIG_INTR_REMAP
- static struct irq_chip ir_ioapic_chip __read_mostly = {
- 	.name		= "IR-IO-APIC",
- 	.startup	= startup_ioapic_irq,
- 	.mask		= mask_IO_APIC_irq,
- 	.unmask		= unmask_IO_APIC_irq,
-+#ifdef CONFIG_INTR_REMAP
- 	.ack		= ack_x2apic_edge,
- 	.eoi		= ack_x2apic_level,
- #ifdef CONFIG_SMP
- 	.set_affinity	= set_ir_ioapic_affinity_irq,
- #endif
-+#endif
- 	.retrigger	= ioapic_retrigger_irq,
- };
--#endif
- 
- static inline void init_IO_APIC_traps(void)
- {
-@@ -3391,18 +3390,18 @@ static struct irq_chip msi_chip = {
- 	.retrigger	= ioapic_retrigger_irq,
- };
- 
--#ifdef CONFIG_INTR_REMAP
- static struct irq_chip msi_ir_chip = {
- 	.name		= "IR-PCI-MSI",
- 	.unmask		= unmask_msi_irq,
- 	.mask		= mask_msi_irq,
-+#ifdef CONFIG_INTR_REMAP
- 	.ack		= ack_x2apic_edge,
- #ifdef CONFIG_SMP
- 	.set_affinity	= ir_set_msi_irq_affinity,
- #endif
-+#endif
- 	.retrigger	= ioapic_retrigger_irq,
- };
--#endif
- 
- /*
-  * Map the PCI dev to the corresponding remapping hardware unit
--- 
-1.6.0.6
-
-
-
+> Mar 21 18:27:44 bla kernel: Bad page state in process 'find'
+> Mar 21 18:27:44 bla kernel: page:ffffe20001d4b8e8  
+> flags:0x4000000000080008 mapping:0000000000000000 mapcount:1 count:0
+> Mar 21 18:27:44 bla kernel: Trying to fix it up, but a reboot is needed
