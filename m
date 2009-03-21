@@ -1,73 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755922AbZCUAp3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754833AbZCUAxs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755922AbZCUAp3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Mar 2009 20:45:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751049AbZCUApK
+	id S1754833AbZCUAxs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Mar 2009 20:53:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751111AbZCUAxi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Mar 2009 20:45:10 -0400
-Received: from [213.79.90.228] ([213.79.90.228]:42264 "EHLO
-	buildserver.ru.mvista.com" rhost-flags-FAIL-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752287AbZCUApJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Mar 2009 20:45:09 -0400
-Date: Sat, 21 Mar 2009 03:45:06 +0300
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: yamazaki <yamazaki-seiji@jcom.home.ne.jp>
-Cc: sdhci-devel@list.drzeus.cx, Arnd Bergmann <arnd@arndb.de>,
-       Liu Dave <DaveLiu@freescale.com>, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org, Ben Dooks <ben-linux@fluff.org>,
-       Pierre Ossman <drzeus-sdhci@drzeus.cx>
-Subject: Re: [PATCH 11/11] mmc: Add OpenFirmware bindings for SDHCI driver
-Message-ID: <20090321004506.GA13031@oksana.dev.rtsoft.ru>
-Reply-To: avorontsov@ru.mvista.com
-References: <20090320224330.GA23390@oksana.dev.rtsoft.ru> <200903210015.AA00742@cj3020122-b.jcom.home.ne.jp>
+	Fri, 20 Mar 2009 20:53:38 -0400
+Received: from gw.goop.org ([64.81.55.164]:40518 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751049AbZCUAxi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Mar 2009 20:53:38 -0400
+Message-ID: <49C43A8E.5090203@goop.org>
+Date: Fri, 20 Mar 2009 17:53:34 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
-Content-Disposition: inline
-In-Reply-To: <200903210015.AA00742@cj3020122-b.jcom.home.ne.jp>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Ingo Molnar <mingo@elte.hu>
+CC: the arch/x86 maintainers <x86@kernel.org>,
+       Jan Beulich <jbeulich@novell.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [PATCH] revert "x86: create a non-zero sized bm_pte only when needed"
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Mar 21, 2009 at 09:15:25AM +0900, yamazaki wrote:
-> Hi 
-> 
-> Thank you for your reply.
-> I know RICOH has PCI SD/MMC controller. But R5C807 RICOH is not the PCI device
-> which is probably new product.
+This reverts commit 698609bdcd35d0641f4c6622c83680ab1a6d67cb.
 
-Ah, then it must be connected via MPC8347's localbus.
+69860 breaks Xen booting, as it relies on head*.S to set up the fixmap
+pagetables (as a side-effect of initializing the USB debug port).
+Xen, however, does not boot via head*.S, and so the fixmap area is
+not initialized.
 
-Well, then you need 2.6.29-rcX kernels, for example
-http://www.kernel.org/pub/linux/kernel/v2.6/testing/linux-2.6.29-rc8.tar.bz2
-is suitable.
+The specific symptom of the crash is a fault in dmi_scan(), because
+the pointer that early_ioremap returns is not actually present.
 
-Untar it and apply the patches (they'll apply fine on that
-kernel). Then you'll need some device tree additions for
-your MPC8347 board, something like this:
+Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 
-        localbus@e0005000 {
-                #address-cells = <2>;
-                #size-cells = <1>;
-                compatible = "fsl,mpc8347-localbus",
-                             "fsl,pq2pro-localbus";
-                reg = <0xe0005000 0xd8>;
-                ranges = <0x1 0x0 0xf0000000 0x1000>;
-		// ^^ change the 0xf0000000 to the actual address
-                sdhci@1,0 {
-                        compatible = "ricoh,r5c807", "generic-sdhci";
-                        reg = <0x1 0x0 0x1000>;
-                        interrupts = <ricoh-interrupt-here 0x8>;
-                        interrupt-parent = <&ipic>;
-                        // if needed, clock-frequency = <freq-in-HZ-here>;
-                };
-        };
+diff --git a/arch/x86/mm/ioremap.c b/arch/x86/mm/ioremap.c
+index 55e127f..83ed74a 100644
+--- a/arch/x86/mm/ioremap.c
++++ b/arch/x86/mm/ioremap.c
+@@ -487,12 +487,7 @@ static int __init early_ioremap_debug_setup(char *str)
+ early_param("early_ioremap_debug", early_ioremap_debug_setup);
+ 
+ static __initdata int after_paging_init;
+-#define __FIXADDR_TOP (-PAGE_SIZE)
+-static pte_t bm_pte[(__fix_to_virt(FIX_DBGP_BASE)
+-		     ^ __fix_to_virt(FIX_BTMAP_BEGIN)) >> PMD_SHIFT
+-		    ? PAGE_SIZE / sizeof(pte_t) : 0] __page_aligned_bss;
+-#undef __FIXADDR_TOP
+-static __initdata pte_t *bm_ptep;
++static pte_t bm_pte[PAGE_SIZE/sizeof(pte_t)] __page_aligned_bss;
+ 
+ static inline pmd_t * __init early_ioremap_pmd(unsigned long addr)
+ {
+@@ -507,8 +502,6 @@ static inline pmd_t * __init early_ioremap_pmd(unsigned long addr)
+ 
+ static inline pte_t * __init early_ioremap_pte(unsigned long addr)
+ {
+-	if (!sizeof(bm_pte))
+-		return &bm_ptep[pte_index(addr)];
+ 	return &bm_pte[pte_index(addr)];
+ }
+ 
+@@ -526,14 +519,8 @@ void __init early_ioremap_init(void)
+ 		slot_virt[i] = fix_to_virt(FIX_BTMAP_BEGIN - NR_FIX_BTMAPS*i);
+ 
+ 	pmd = early_ioremap_pmd(fix_to_virt(FIX_BTMAP_BEGIN));
+-	if (sizeof(bm_pte)) {
+-		memset(bm_pte, 0, sizeof(bm_pte));
+-		pmd_populate_kernel(&init_mm, pmd, bm_pte);
+-	} else {
+-		bm_ptep = pte_offset_kernel(pmd, 0);
+-		if (early_ioremap_debug)
+-			printk(KERN_INFO "bm_ptep=%p\n", bm_ptep);
+-	}
++	memset(bm_pte, 0, sizeof(bm_pte));
++	pmd_populate_kernel(&init_mm, pmd, bm_pte);
+ 
+ 	/*
+ 	 * The boot-ioremap range spans multiple pmds, for which
 
-Note that I'm not sure what endiannes you'll get when connecting
-the ricoh chip to the big-endinan host...
 
--- 
-Anton Vorontsov
-email: cbouatmailru@gmail.com
-irc://irc.freenode.net/bd2
