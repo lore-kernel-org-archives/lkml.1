@@ -1,101 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756918AbZCUL5b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757345AbZCUL5s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756918AbZCUL5b (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Mar 2009 07:57:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752878AbZCUL5W
+	id S1757345AbZCUL5s (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Mar 2009 07:57:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752878AbZCUL5f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Mar 2009 07:57:22 -0400
-Received: from casper.infradead.org ([85.118.1.10]:34383 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752450AbZCUL5V (ORCPT
+	Sat, 21 Mar 2009 07:57:35 -0400
+Received: from fg-out-1718.google.com ([72.14.220.153]:35577 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756821AbZCUL5e (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Mar 2009 07:57:21 -0400
-Subject: Re: [PATCH][GIT PULL] tracing: add function profiler
-From: Peter Zijlstra <peterz@infradead.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Steven Rostedt <rostedt@goodmis.org>, LKML <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       =?ISO-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Paul Mackerras <paulus@samba.org>
-In-Reply-To: <20090321042633.1dfa536a.akpm@linux-foundation.org>
-References: <alpine.DEB.2.00.0903210036590.13615@gandalf.stny.rr.com>
-	 <20090321042633.1dfa536a.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Sat, 21 Mar 2009 12:57:03 +0100
-Message-Id: <1237636623.4667.223.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.0 
+	Sat, 21 Mar 2009 07:57:34 -0400
+Message-ID: <49C4D628.7060805@monstr.eu>
+Date: Sat, 21 Mar 2009 12:57:28 +0100
+From: Michal Simek <monstr@monstr.eu>
+Reply-To: monstr@monstr.eu
+User-Agent: Thunderbird 2.0.0.17 (X11/20081001)
+MIME-Version: 1.0
+To: Thomas Gleixner <tglx@linutronix.de>
+CC: john stultz <johnstul@us.ibm.com>, LKML <linux-kernel@vger.kernel.org>,
+       john.williams@petalogix.com
+Subject: Re: [PATCH 08/57] microblaze_v7: Interrupt handling, timer support,
+ selfmod code
+References: <1237408284-8674-1-git-send-email-monstr@monstr.eu>  <c1bdfabf85ce10babc3aa38d3bb7558a093bc49e.1237407249.git.monstr@monstr.eu>  <4b5aee01d11fc790c7842838ea63a82ee3273003.1237407249.git.monstr@monstr.eu>  <af309ba8e95f503b7990461384d9f8453f45dbbd.1237407249.git.monstr@monstr.eu>  <5f8b2a60496983f572ef6d3b4e2f986c167a8336.1237407249.git.monstr@monstr.eu>  <fbef554ff1d05fa50312d91e61a0d63d3207076c.1237407249.git.monstr@monstr.eu>  <dad2353f129217470f0595eeed98412b4c84ed6b.1237407249.git.monstr@monstr.eu>  <20fd42a1e8837c7352d35d157aa3393e88152c32.1237407249.git.monstr@monstr.eu>  <alpine.LFD.2.00.0903191639530.29264@localhost.localdomain>  <49C2AB09.9040300@monstr.eu>  <alpine.LFD.2.00.0903192219500.29264@localhost.localdomain>  <1237515861.7106.215.camel@jstultz-laptop>  <49C34558.6030006@monstr.eu> <1237581607.7191.51.camel@localhost.localdomain> <49C4C3BD.9090905@monstr.eu> <alpine.LFD.2.00.0903211206090.29264@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.0903211206090.29264@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2009-03-21 at 04:26 -0700, Andrew Morton wrote:
-> On Sat, 21 Mar 2009 00:37:59 -0400 (EDT) Steven Rostedt <rostedt@goodmis.org> wrote:
+Thomas Gleixner wrote:
+> On Sat, 21 Mar 2009, Michal Simek wrote:
+>> CONFIG_HZ_100=y
+>> # CONFIG_HZ_250 is not set
+>> # CONFIG_HZ_300 is not set
+>> # CONFIG_HZ_1000 is not set
+>> CONFIG_HZ=100
+>>
+>> For NO_HZ val I shouldn't use HZ value because of NO_HZ and HZ values shouldn't
+>> be in .config file. Am I right?
 > 
-> >    This patch adds a function profiler. In debugfs/tracing/ two new
-> >     files are created.
-> >     
-> >       function_profile_enabled  - to enable or disable profiling
-> >     
-> >       trace_stat/functions   - the profiled functions.
-> >     
-> >     For example:
-> >     
-> >       echo 1 > /debugfs/tracing/function_profile_enabled
-> >       ./hackbench 50
-> >       echo 0 > /debugfs/tracing/function_profile_enabled
-> >     
-> >     yields:
-> >     
-> >       cat /debugfs/tracing/trace_stat/functions
-> >     
-> >       Function                               Hit
-> >       --------                               ---
-> >       _spin_lock                        10106442
-> >       _spin_unlock                      10097492
-> >       kfree                              6013704
-> >       _spin_unlock_irqrestore            4423941
-> >       _spin_lock_irqsave                 4406825
-> >       __phys_addr                        4181686
-> >       __slab_free                        4038222
-> >       dput                               4030130
-> >       path_put                           4023387
-> >       unroll_tree_refs                   4019532
-> >     [...]
-> >     
-> >     The most hit functions are listed first. Functions that are not
-> >     hit are not listed.
+> No. NO_HZ does not remove the HZ value from the kernel. There is way
+> too much code depending on it. What NO_HZ does is to supress the
+> periodic tick when the system goes idle and the next timer expiry is
+> farther away than 1 HZ. When the system is non idle then the periodic
+> tick runs again. NO_HZ is merily for power saving.
 > 
-> Why is this useful?
+> In a normal kernel when the machine is idle then we wake up every HZ
+> to find out that there is no work to do and we go idle again. But if
+> you think about it then this is stupid, because the kernel knows when
+> the next timer is due to expire. So if the next timer expiry is
+> e.g. 100ms away, then we can sleep for full 100ms instead of sleeping
+> 10 * 10ms (HZ=100) or 100 * 1ms (HZ=1000). This allows systems to go
+> into deeper power saving states.
 > 
-> Can we think of any scenarios where kernel developers would get
-> useful-to-them results from this?  Results which couldn't be 
-> obtained by other similarly-accessible means?
-> 
-> <strains a bit>
-> 
-> I guess that one could run workload A, look at
-> /debugfs/tracing/trace_stat/functions changes, then run worklaod B, then
-> look at its /debugfs/tracing/trace_stat/functions changes, then somehow
-> glean some information about the differences between the effects of the two
-> workloads on the kernel.  Or something.
-> 
-> But in this rather fake example and, I suspect, in many others, the result
-> will be less useful than using oprofile/etc in the same fashion.
+> You should be able to observe the difference by monitoring
+> /proc/interrupts. A nohz enabled kernel should have significantly less
+> timer interrupts on an idle system.
 
-I have to agree with Andrew here, my  plan is to remove all the
-profiling stuff from kernel/trace in favour of perf counters.
+Yes, I see it. I think I sent my log in any previous email in this thread too +
+I see it on my heartbeat led too.
 
-If you want exact function count profiling we could try to do something
-perf counter based, eg. stick a software counter in the mcount thingy.
-
-After that you'd need to get something like
-this_pt_regs()/caller_pt_regs() which would provide the current kernel
-stack information to generate profile information from.
-
-Current software events use get_irq_regs() ?: task_pt_regs() for lack of
-anything better.
+Thanks for explanation,
+Michal
+> 
+> Thanks,
+> 
+> 	tglx
 
 
+-- 
+Michal Simek, Ing. (M.Eng)
+w: www.monstr.eu p: +42-0-721842854
