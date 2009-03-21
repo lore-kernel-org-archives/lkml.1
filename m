@@ -1,89 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758267AbZCUNEU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758735AbZCUNEu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758267AbZCUNEU (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Mar 2009 09:04:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754868AbZCUNEI
+	id S1758735AbZCUNEu (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Mar 2009 09:04:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755751AbZCUNEl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Mar 2009 09:04:08 -0400
-Received: from silver.sucs.swan.ac.uk ([137.44.10.1]:47082 "EHLO
-	silver.sucs.swan.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754818AbZCUNEH (ORCPT
+	Sat, 21 Mar 2009 09:04:41 -0400
+Received: from mail-fx0-f158.google.com ([209.85.220.158]:41095 "EHLO
+	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755580AbZCUNEk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Mar 2009 09:04:07 -0400
-Date: Sat, 21 Mar 2009 13:03:53 +0000
-From: Sitsofe Wheeler <sitsofe@yahoo.com>
-To: Nico -telmich- Schottelius 
-	<nico-linux-ipw3945-devel@schottelius.org>,
-       "John W. Linville" <linville@tuxdriver.com>,
-       Nico Schottelius <nico-linux-20090313@schottelius.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       ipw3945-devel@lists.sourceforge.net
-Subject: Re: Strange reboots on 2.6.29-rc6-wl
-Message-ID: <20090321130353.GA5009@silver.sucs.org>
-References: <20090313200657.GA4907@denkbrett.schottelius.org> <20090313204100.GA3554@tuxdriver.com> <20090317075424.GD8777@denkbrett.schottelius.org> <20090317145753.GA1651@silver.sucs.org> <20090320102107.GA17975@denkbrett.schottelius.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090320102107.GA17975@denkbrett.schottelius.org>
-User-Agent: Mutt/1.4.2.1i
+	Sat, 21 Mar 2009 09:04:40 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=O1kO72Ke7P93ELx2noIR7pPV7Gy9dqUkri3J2/OFTJRzsovvMZufbZAIshp9w542nq
+         Oj1trtF2KFIl5RzHWVovt/FUwtAOhn2dc8AFSWap859tT+Tnuen4Ut9pVw+0Yc7Am2aI
+         TWzIO2so7NG/3vbgCnoqTcMktOvpR3pSTDQgI=
+Message-ID: <49C4E5E1.6090602@gmail.com>
+Date: Sat, 21 Mar 2009 14:04:33 +0100
+From: Till Kamppeter <till.kamppeter@gmail.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090103)
+MIME-Version: 1.0
+To: Greg KH <greg@kroah.com>
+CC: Shilp Dixit <shilp.dixit@gmail.com>, jbottomley@novell.com,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, tech-board@lists.linux-foundation.org
+Subject: Re: [Tech-board] Project idea for the Google Summer of Code 2009
+References: <49C402A2.1040705@gmail.com> <20090320213128.GB12078@kroah.com> <c1369cb90903202145n76cec291x29bb6b5477b52007@mail.gmail.com> <20090321052840.GA16361@kroah.com>
+In-Reply-To: <20090321052840.GA16361@kroah.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 20, 2009 at 11:21:07AM +0100, Nico -telmich- Schottelius wrote:
-> Sitsofe Wheeler [Tue, Mar 17, 2009 at 02:57:53PM +0000]:
-> > On Tue, Mar 17, 2009 at 08:54:24AM +0100, Nico -telmich- Schottelius wrote:
-> > > 
-> > > Has anyone a clue on howto debug the build environment or
-> > > debugging the kernel before it's getting booted?
-> > 
-> > If you have a serial console you can probably get output on that.
+Shilp,
+
+I fear that we probably do not have appropriate mentors at the Linux 
+Foundation. Perhaps you should talk about your project on the #gsoc IRC 
+channel on Freenode. There are usually mentors of many organizations and 
+they help you to find the best-suited organization.
+
+    Till
+
+
+Greg KH wrote:
+> On Sat, Mar 21, 2009 at 10:15:48AM +0530, Shilp Dixit wrote:
+>> Hi
+>>
+>> Ya i agree the concept might be pretty similar to the open suse built
+>> packages but aren't most of these services either online or not very
+>> flexible...What I was suggesting is to make a tool that is available on
+>> every linux OS as an update or something...They give the user more
+>> personalisation power and also allows non-tech users to create their own
+>> live CD's or USB devices... The front end(GUI) will provide 'drag and drop'
+>> facility for the different packages and will make life much easier in terms
+>> of making individual flavours...
 > 
-> There's no native serial port on the machine :-/
+> Ok, that's fair enough, but I fail to see how this relates to the kernel
+> itself.  It looks like it's just a tool to package things up in some
+> way, no kernel changes would be needed, right?
 > 
-> > If you have flipped EMBEDDED to Y then you might also have to enable
-> > EARLY_PRINTK. Another trick might be to turn set
-> > BOOT_PRINTK_DELAY (Kernel hacking -> Delay each boot printk message by N
-> > milliseconds) to something like 2000 and see if you can read/catch the
-> > messages before the kernel reboots...
+> thanks,
 > 
-> I've EARLY_PRINTK set, but other than the edd probing message
-> I don't see anything.
-
-What about when you set BOOT_PRINTK_DELAY to a value high enough to
-cause pauses - do you see more messages? Additionally are booting your
-kernel without the quiet option? Have you checked to make sure the
-kernel isn't set to reboot on oops/panic etc? Are you using any binary
-drivers?
-
-> > Failing that start a git bisection (
-> > http://www.kernel.org/doc/local/git-quick.html#bisect or
-> > http://www.stardust.webpages.pl/files/handbook/handbook-en-0.3-rc1.pdf )
-> > from the last good kernel...
+> greg k-h
 > 
-> I really don't think that it's the kernel's fault, because _all_
-> new versions I compile instantly reboot.
 
-So even a freshly compiled 2.6.27 and 2.6.28 reboot instantly?! If even
-old kernels that worked suddently don't work that hints strongly at
-hardware errors or a duff compiler toolchain...
-
-You can also make the kernel spit out decompression error messages by
-enabling CONFIG_X86_VERBOSE_BOOTUP . I guess it would also be wise to
-make sure CONFIG_DOUBLEFAULT is also set. Are you sure nothing else has
-changed though? Have you enabled some kernel option that was not set
-before?  Have you changed any BIOS settings recently?
-
-> Last one I tried was v2.6.29-rc8-241-g65c2449 (linux-2.6).
-> Isn't there some flag to enable step by step execution (like in gdb)?
-
-I don't think I undrstand what you mean - the kernel isn't a debugger...
-If you are running a User Mode Linux kernel or running inside QEMU etc.
-then you can do what you describe because your "machine" is a program
-but I think the only way to do that with real hardware is to learn how
-to use KGDB ( http://kgdb.sourceforge.net ) and have another machine to
-hand. I suppose you could also sprinkle beep patches/debug printks about
-the place to see just how far it gets before it reboots...
-
--- 
-Sitsofe | http://sucs.org/~sits/
