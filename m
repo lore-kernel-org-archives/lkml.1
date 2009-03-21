@@ -1,61 +1,140 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756500AbZCUQ1A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755992AbZCUQ2f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756500AbZCUQ1A (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Mar 2009 12:27:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753822AbZCUQ0v
+	id S1755992AbZCUQ2f (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Mar 2009 12:28:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754698AbZCUQ2Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Mar 2009 12:26:51 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:41391 "EHLO mx3.mail.elte.hu"
+	Sat, 21 Mar 2009 12:28:24 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:37694 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751648AbZCUQ0u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Mar 2009 12:26:50 -0400
-Date: Sat, 21 Mar 2009 17:26:30 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Peter Zijlstra <peterz@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH][GIT PULL] tracing: add function profiler
-Message-ID: <20090321162630.GE11183@elte.hu>
-References: <alpine.DEB.2.00.0903210036590.13615@gandalf.stny.rr.com> <20090321042633.1dfa536a.akpm@linux-foundation.org> <1237636623.4667.223.camel@laptop> <alpine.DEB.2.00.0903211146430.13615@gandalf.stny.rr.com>
+	id S1754251AbZCUQ2X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 21 Mar 2009 12:28:23 -0400
+Date: Sat, 21 Mar 2009 17:26:54 +0100
+From: Jiri Pirko <jpirko@redhat.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: netdev@vger.kernel.org, David Miller <davem@davemloft.net>,
+       klassert@mathematik.tu-chemnitz.de, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] 3c59x: convert to net_device_ops
+Message-ID: <20090321162653.GA19265@psychotron.englab.brq.redhat.com>
+References: <20090321113552.GB3380@psychotron.englab.brq.redhat.com> <20090321045155.fbdf8dac.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.0903211146430.13615@gandalf.stny.rr.com>
+In-Reply-To: <20090321045155.fbdf8dac.akpm@linux-foundation.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Steven Rostedt <rostedt@goodmis.org> wrote:
-
-> > If you want exact function count profiling we could try to do 
-> > something perf counter based, eg. stick a software counter in 
-> > the mcount thingy.
+Sat, Mar 21, 2009 at 12:51:55PM CET, akpm@linux-foundation.org wrote:
+>On Sat, 21 Mar 2009 12:35:53 +0100 Jiri Pirko <jpirko@redhat.com> wrote:
+>
+>> I converted this driver to use net_device_ops. I made two structures, one for
+>> vortex and one for boomerang start_xmit function. Tested on my test system with
+>> 3Com PCI 3c905C Tornado.
+>
+>linux-next already contains
+Oh, I've missed that, sorry. It seems pretty similar :)
+>
+>commit 48b47a5e306c1c119ee81ccd24d487c2df656410
+>Author:     Stephen Hemminger <shemminger@linux-foundation.org>
+>AuthorDate: Fri Jan 9 13:01:18 2009 +0000
+>Commit:     David S. Miller <davem@davemloft.net>
+>CommitDate: Wed Jan 21 14:02:25 2009 -0800
+>
+>    3c59x: convert to net_device_ops
+>    
+>    Signed-off-by: Stephen Hemminger <shemminger@vyatta.com>
+>    Signed-off-by: David S. Miller <davem@davemloft.net>
+>
+>diff --git a/drivers/net/3c59x.c b/drivers/net/3c59x.c
+>index cdbbb62..b2563d3 100644
+>--- a/drivers/net/3c59x.c
+>+++ b/drivers/net/3c59x.c
+>@@ -992,6 +992,42 @@ out:
+> 	return rc;
+> }
 > 
-> I'd like to get the function graph version working, in order to 
-> calculate the times spent in each funtion, then I can see how we 
-> can (if possible) convert it over to perf counters. :-/
-
-the perf counters angle is definitely worth pursuing (for 
-completeness of the scheme Peter is working on), but please lets not 
-throw the baby out with the bath water: in-kernel histogram 
-collection has real value.
-
-It's _much_ faster than any user-space counter-part, especially for 
-such things as branch tracing or function tracing.
-
-	Ingo
+>+static const struct net_device_ops boomrang_netdev_ops = {
+>+	.ndo_open		= vortex_open,
+>+	.ndo_stop		= vortex_close,
+>+	.ndo_start_xmit		= boomerang_start_xmit,
+>+	.ndo_tx_timeout		= vortex_tx_timeout,
+>+	.ndo_get_stats		= vortex_get_stats,
+>+#ifdef CONFIG_PCI
+>+	.ndo_do_ioctl 		= vortex_ioctl,
+>+#endif
+>+	.ndo_set_multicast_list = set_rx_mode,
+>+	.ndo_change_mtu		= eth_change_mtu,
+>+	.ndo_set_mac_address 	= eth_mac_addr,
+>+	.ndo_validate_addr	= eth_validate_addr,
+>+#ifdef CONFIG_NET_POLL_CONTROLLER
+>+	.ndo_poll_controller	= poll_vortex,
+>+#endif
+>+};
+>+
+>+static const struct net_device_ops vortex_netdev_ops = {
+>+	.ndo_open		= vortex_open,
+>+	.ndo_stop		= vortex_close,
+>+	.ndo_start_xmit		= vortex_start_xmit,
+>+	.ndo_tx_timeout		= vortex_tx_timeout,
+>+	.ndo_get_stats		= vortex_get_stats,
+>+#ifdef CONFIG_PCI
+>+	.ndo_do_ioctl 		= vortex_ioctl,
+>+#endif
+>+	.ndo_set_multicast_list = set_rx_mode,
+>+	.ndo_change_mtu		= eth_change_mtu,
+>+	.ndo_set_mac_address 	= eth_mac_addr,
+>+	.ndo_validate_addr	= eth_validate_addr,
+>+#ifdef CONFIG_NET_POLL_CONTROLLER
+>+	.ndo_poll_controller	= poll_vortex,
+>+#endif
+>+};
+>+
+> /*
+>  * Start up the PCI/EISA device which is described by *gendev.
+>  * Return 0 on success.
+>@@ -1366,18 +1402,16 @@ static int __devinit vortex_probe1(struct device *gendev,
+> 	}
+> 
+> 	/* The 3c59x-specific entries in the device structure. */
+>-	dev->open = vortex_open;
+> 	if (vp->full_bus_master_tx) {
+>-		dev->hard_start_xmit = boomerang_start_xmit;
+>+		dev->netdev_ops = &boomrang_netdev_ops;
+> 		/* Actually, it still should work with iommu. */
+> 		if (card_idx < MAX_UNITS &&
+> 		    ((hw_checksums[card_idx] == -1 && (vp->drv_flags & HAS_HWCKSM)) ||
+> 				hw_checksums[card_idx] == 1)) {
+> 			dev->features |= NETIF_F_IP_CSUM | NETIF_F_SG;
+> 		}
+>-	} else {
+>-		dev->hard_start_xmit = vortex_start_xmit;
+>-	}
+>+	} else
+>+		dev->netdev_ops =  &vortex_netdev_ops;
+> 
+> 	if (print_info) {
+> 		printk(KERN_INFO "%s: scatter/gather %sabled. h/w checksums %sabled\n",
+>@@ -1386,18 +1420,9 @@ static int __devinit vortex_probe1(struct device *gendev,
+> 				(dev->features & NETIF_F_IP_CSUM) ? "en":"dis");
+> 	}
+> 
+>-	dev->stop = vortex_close;
+>-	dev->get_stats = vortex_get_stats;
+>-#ifdef CONFIG_PCI
+>-	dev->do_ioctl = vortex_ioctl;
+>-#endif
+> 	dev->ethtool_ops = &vortex_ethtool_ops;
+>-	dev->set_multicast_list = set_rx_mode;
+>-	dev->tx_timeout = vortex_tx_timeout;
+> 	dev->watchdog_timeo = (watchdog * HZ) / 1000;
+>-#ifdef CONFIG_NET_POLL_CONTROLLER
+>-	dev->poll_controller = poll_vortex;
+>-#endif
+>+
+> 	if (pdev) {
+> 		vp->pm_state_valid = 1;
+>  		pci_save_state(VORTEX_PCI(vp));
+>
