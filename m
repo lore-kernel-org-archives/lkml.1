@@ -1,77 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761520AbZCUFuM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762064AbZCUFw1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761520AbZCUFuM (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Mar 2009 01:50:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761483AbZCUFtg
+	id S1762064AbZCUFw1 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Mar 2009 01:52:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761705AbZCUFuy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Mar 2009 01:49:36 -0400
-Received: from ti-out-0910.google.com ([209.85.142.184]:58102 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761440AbZCUFtO (ORCPT
+	Sat, 21 Mar 2009 01:50:54 -0400
+Received: from vms173019pub.verizon.net ([206.46.173.19]:53224 "EHLO
+	vms173019pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760920AbZCUFuv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Mar 2009 01:49:14 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        b=chTDXaiafmO88yCAvbJS8PRQOuzE3ucLBd6aUVRyDlNgJLK85SVZTdO6Lcx4Q3MmXY
-         6xMYg8MTNBhi3qn2AGO0YFxIPX4sekcw/DwPAvKCCqVYyuEnrPVJt2D1tiLwZzxRlzwt
-         yklmp9sNktpw888c8f4DQ1pn+vXMN+DpJVYgk=
-From: Huang Weiyi <weiyi.huang@gmail.com>
-To: gregkh@suse.de
-Cc: linux-kernel@vger.kernel.org, Huang Weiyi <weiyi.huang@gmail.com>
-Subject: [PATCH] staging: remove duplicated #include's
-Date: Sat, 21 Mar 2009 13:49:05 +0800
-Message-Id: <1237614545-4056-1-git-send-email-weiyi.huang@gmail.com>
-X-Mailer: git-send-email 1.6.0.4
+	Sat, 21 Mar 2009 01:50:51 -0400
+From: Gene Heskett <gene.heskett@verizon.net>
+Organization: Organization? Not detectable
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: Bluetooth Q?
+Date: Sat, 21 Mar 2009 01:50:45 -0400
+User-Agent: KMail/1.11.0 (Linux/2.6.29-rc8; KDE/4.2.0; i686; ; )
+MIME-version: 1.0
+Content-type: text/plain; charset=us-ascii
+Content-transfer-encoding: 7bit
+Content-disposition: inline
+Message-id: <200903210150.46294.gene.heskett@verizon.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Remove duplicated #include's.
+Greetings;
 
-Signed-off-by: Huang Weiyi <weiyi.huang@gmail.com>
----
- drivers/staging/comedi/comedidev.h |    1 -
- drivers/staging/rt2860/rt_linux.h  |    1 -
- drivers/staging/rt2870/rt_linux.h  |    1 -
- 3 files changed, 0 insertions(+), 3 deletions(-)
+Where can I find the status of support for a usb-bt module that answers to 
+this:
 
-diff --git a/drivers/staging/comedi/comedidev.h b/drivers/staging/comedi/comedidev.h
-index 3735355..4679911 100644
---- a/drivers/staging/comedi/comedidev.h
-+++ b/drivers/staging/comedi/comedidev.h
-@@ -36,7 +36,6 @@
- #include <linux/mm.h>
- #include <linux/init.h>
- #include <linux/vmalloc.h>
--#include <linux/mm.h>
- #include "interrupt.h"
- #include <linux/dma-mapping.h>
- #include <linux/uaccess.h>
-diff --git a/drivers/staging/rt2860/rt_linux.h b/drivers/staging/rt2860/rt_linux.h
-index 0fd58f5..f168691 100644
---- a/drivers/staging/rt2860/rt_linux.h
-+++ b/drivers/staging/rt2860/rt_linux.h
-@@ -65,7 +65,6 @@
- #include <linux/vmalloc.h>
- 
- 
--#include <linux/wireless.h>
- #include <net/iw_handler.h>
- 
- // load firmware
-diff --git a/drivers/staging/rt2870/rt_linux.h b/drivers/staging/rt2870/rt_linux.h
-index 859f9ce..49ad37f 100644
---- a/drivers/staging/rt2870/rt_linux.h
-+++ b/drivers/staging/rt2870/rt_linux.h
-@@ -65,7 +65,6 @@
- #include <linux/vmalloc.h>
- 
- 
--#include <linux/wireless.h>
- #include <net/iw_handler.h>
- 
- // load firmware
+Mar 21 00:55:29 coyote kernel: [97026.014221] usb 2-5.1: new full speed USB device using ohci_hcd and address 8
+Mar 21 00:55:29 coyote kernel: [97026.103223] usb 2-5.1: New USB device found, idVendor=0e5e, idProduct=6622
+Mar 21 00:55:29 coyote kernel: [97026.103226] usb 2-5.1: New USB device strings: Mfr=0, Product=0, SerialNumber=0
+Mar 21 00:55:29 coyote kernel: [97026.103308] usb 2-5.1: configuration #1 chosen from 1 choice
+Mar 21 00:55:29 coyote bluetoothd[2581]: HCI dev 0 registered
+Mar 21 00:55:29 coyote bluetoothd[2581]: HCI dev 0 up
+Mar 21 00:55:29 coyote bluetoothd[2581]: Starting security manager 0
+Mar 21 00:55:30 coyote bluetoothd[2581]: Registered interface org.bluez.NetworkPeer on path /org/bluez/2581/hci0
+Mar 21 00:55:30 coyote bluetoothd[2581]: Registered interface org.bluez.NetworkHub on path /org/bluez/2581/hci0
+Mar 21 00:55:30 coyote bluetoothd[2581]: Registered interface org.bluez.NetworkRouter on path /org/bluez/2581/hci0
+Mar 21 00:55:30 coyote bluetoothd[2581]: Registered interface org.bluez.SerialProxyManager on path /org/bluez/2581/hci0
+Mar 21 00:55:30 coyote bluetoothd[2581]: Registered interface org.bluez.Service on path /org/bluez/2581/hci0
+Mar 21 00:55:30 coyote bluetoothd[2581]: Failed to listen on control channel
+Mar 21 00:55:30 coyote bluetoothd[2581]: Adapter /org/bluez/2581/hci0 has been enabled
+
+But this device is nowhere to be found in the /dev listings?
+
+Good links appreciated.
+
+Thanks.
+
 -- 
-1.6.0.4
+Cheers, Gene
+"There are four boxes to be used in defense of liberty:
+ soap, ballot, jury, and ammo. Please use in that order."
+-Ed Howdershelt (Author)
+static buildup
 
