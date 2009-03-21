@@ -1,85 +1,214 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754664AbZCUC31@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754750AbZCUCbJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754664AbZCUC31 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Mar 2009 22:29:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752722AbZCUC3R
+	id S1754750AbZCUCbJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Mar 2009 22:31:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752974AbZCUCaz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Mar 2009 22:29:17 -0400
-Received: from static-220-247-10-204.b-man.svips.gol.ne.jp ([220.247.10.204]:39989
-	"EHLO smtp.kamineko.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752490AbZCUC3Q (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Mar 2009 22:29:16 -0400
-Date: Sat, 21 Mar 2009 11:29:10 +0900
-From: Mattia Dongili <malattia@linux.it>
-To: Alessio Igor Bogani <abogani@texware.it>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       ACPI Devel Mailing List <linux-acpi@vger.kernel.org>
-Subject: Re: [PATCH] sony-laptop: Kill the BKL
-Message-ID: <20090321022910.GB3834@kamineko.org>
-References: <1237572165-6494-1-git-send-email-abogani@texware.it>
+	Fri, 20 Mar 2009 22:30:55 -0400
+Received: from hera.kernel.org ([140.211.167.34]:50494 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752722AbZCUCax (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Mar 2009 22:30:53 -0400
+Message-ID: <49C45115.2090101@kernel.org>
+Date: Fri, 20 Mar 2009 19:29:41 -0700
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1237572165-6494-1-git-send-email-abogani@texware.it>
-X-Message-Flag: Cranky? Try Free Software instead!
-X-Operating-System: Linux 2.6.26-1 i686
-X-Editor: Vim http://www.vim.org/
-X-Disclaimer: Buh!
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+CC: Matthew Wilcox <matthew@wil.cx>, Prakash Punnoor <prakash@punnoor.de>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Robert Hancock <hancockrwd@gmail.com>, david@lang.hm,
+       linux-kernel <linux-kernel@vger.kernel.org>, linux-pci@vger.kernel.org
+Subject: [PATCH] pci: don't enable too much HT MSI mapping -v5 -resend
+References: <alpine.DEB.1.10.0902171419000.26625@asgard.lang.hm> <200903040815.38387.prakash@punnoor.de> <20090305171514.GB1021@parisc-linux.org> <200903060045.13509.prakash@punnoor.de> <20090306011036.GB829@parisc-linux.org> <49B0A371.4040208@kernel.org>
+In-Reply-To: <49B0A371.4040208@kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 20, 2009 at 07:02:45PM +0100, Alessio Igor Bogani wrote:
-> Signed-off-by: Alessio Igor Bogani <abogani@texware.it>
 
-Applied, thanks. Will send together with my patch set for .30 soon.
+Impact: fix bug
 
-> ---
->  drivers/platform/x86/sony-laptop.c |   12 ++++++++----
->  1 files changed, 8 insertions(+), 4 deletions(-)
-> 
-> diff --git a/drivers/platform/x86/sony-laptop.c b/drivers/platform/x86/sony-laptop.c
-> index 537959d..15f940b 100644
-> --- a/drivers/platform/x86/sony-laptop.c
-> +++ b/drivers/platform/x86/sony-laptop.c
-> @@ -46,7 +46,6 @@
->  #include <linux/module.h>
->  #include <linux/moduleparam.h>
->  #include <linux/init.h>
-> -#include <linux/smp_lock.h>
->  #include <linux/types.h>
->  #include <linux/backlight.h>
->  #include <linux/platform_device.h>
-> @@ -1934,10 +1933,15 @@ static int sonypi_misc_release(struct inode *inode, struct file *file)
->  static int sonypi_misc_open(struct inode *inode, struct file *file)
->  {
->  	/* Flush input queue on first open */
-> -	lock_kernel();
-> +	unsigned long flags;
-> +
-> +	spin_lock_irqsave(sonypi_compat.fifo->lock, flags);
-> +
->  	if (atomic_inc_return(&sonypi_compat.open_count) == 1)
-> -		kfifo_reset(sonypi_compat.fifo);
-> -	unlock_kernel();
-> +		__kfifo_reset(sonypi_compat.fifo);
-> +
-> +	spin_unlock_irqrestore(sonypi_compat.fifo->lock, flags);
-> +
->  	return 0;
->  }
->  
-> -- 
-> 1.6.0.4
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
--- 
-mattia
-:wq!
+Prakash reported that his c51-mcp51 system ondie sound card doesn't work MSI
+but if he hack out the HT-MSI on mcp51, the MSI will work well with sound card.
+
+this patch rework the nv_msi_ht_cap_quirk()
+and will only try to avoid to enable ht_msi on device following that root dev,
+and don't touch that root dev
+
+v3: will enable c51...
+v4: will enable c51 kind of without leaf too.
+v5: update to mainline
+
+Reported-by: Prakash Punnoor <prakash@punnoor.de>
+Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+
+---
+ drivers/pci/quirks.c |  118 +++++++++++++++++++++++++++++++++++----------------
+ 1 file changed, 82 insertions(+), 36 deletions(-)
+
+Index: linux-2.6/drivers/pci/quirks.c
+===================================================================
+--- linux-2.6.orig/drivers/pci/quirks.c
++++ linux-2.6/drivers/pci/quirks.c
+@@ -2078,6 +2078,65 @@ DECLARE_PCI_FIXUP_EARLY(PCI_VENDOR_ID_NV
+ 			PCI_DEVICE_ID_NVIDIA_NVENET_15,
+ 			nvenet_msi_disable);
+ 
++static int __devinit ht_check_msi_mapping(struct pci_dev *dev)
++{
++	int pos, ttl = 48;
++	int found = 0;
++
++	/* check if there is HT MSI cap or enabled on this device */
++	pos = pci_find_ht_capability(dev, HT_CAPTYPE_MSI_MAPPING);
++	while (pos && ttl--) {
++		u8 flags;
++
++		if (found < 1)
++			found = 1;
++		if (pci_read_config_byte(dev, pos + HT_MSI_FLAGS,
++					 &flags) == 0) {
++			if (flags & HT_MSI_FLAGS_ENABLE) {
++				if (found < 2) {
++					found = 2;
++					break;
++				}
++			}
++		}
++		pos = pci_find_next_ht_capability(dev, pos,
++						  HT_CAPTYPE_MSI_MAPPING);
++	}
++
++	return found;
++}
++
++static int __devinit host_bridge_with_leaf(struct pci_dev *host_bridge)
++{
++	struct pci_dev *dev;
++	int pos;
++	int i, dev_no;
++	int found = 0;
++
++	dev_no = host_bridge->devfn >> 3;
++	for (i = dev_no + 1; i < 0x20; i++) {
++		dev = pci_get_slot(host_bridge->bus, PCI_DEVFN(i, 0));
++		if (!dev)
++			continue;
++
++		/* found next host bridge ?*/
++		pos = pci_find_ht_capability(dev, HT_CAPTYPE_SLAVE);
++		if (pos != 0) {
++			pci_dev_put(dev);
++			break;
++		}
++
++		if (ht_check_msi_mapping(dev)) {
++			found = 1;
++			pci_dev_put(dev);
++			break;
++		}
++		pci_dev_put(dev);
++	}
++
++	return found;
++}
++
+ static void __devinit nv_ht_enable_msi_mapping(struct pci_dev *dev)
+ {
+ 	struct pci_dev *host_bridge;
+@@ -2102,6 +2161,10 @@ static void __devinit nv_ht_enable_msi_m
+ 	if (!found)
+ 		return;
+ 
++	/* don't enable host_bridge with leaf directly here */
++	if (host_bridge == dev && host_bridge_with_leaf(host_bridge))
++		goto out;
++
+ 	/* root did that ! */
+ 	if (msi_ht_cap_enabled(host_bridge))
+ 		goto out;
+@@ -2132,44 +2195,12 @@ static void __devinit ht_disable_msi_map
+ 	}
+ }
+ 
+-static int __devinit ht_check_msi_mapping(struct pci_dev *dev)
+-{
+-	int pos, ttl = 48;
+-	int found = 0;
+-
+-	/* check if there is HT MSI cap or enabled on this device */
+-	pos = pci_find_ht_capability(dev, HT_CAPTYPE_MSI_MAPPING);
+-	while (pos && ttl--) {
+-		u8 flags;
+-
+-		if (found < 1)
+-			found = 1;
+-		if (pci_read_config_byte(dev, pos + HT_MSI_FLAGS,
+-					 &flags) == 0) {
+-			if (flags & HT_MSI_FLAGS_ENABLE) {
+-				if (found < 2) {
+-					found = 2;
+-					break;
+-				}
+-			}
+-		}
+-		pos = pci_find_next_ht_capability(dev, pos,
+-						  HT_CAPTYPE_MSI_MAPPING);
+-	}
+-
+-	return found;
+-}
+-
+-static void __devinit nv_msi_ht_cap_quirk(struct pci_dev *dev)
++static void __devinit __nv_msi_ht_cap_quirk(struct pci_dev *dev, int all)
+ {
+ 	struct pci_dev *host_bridge;
+ 	int pos;
+ 	int found;
+ 
+-	/* Enabling HT MSI mapping on this device breaks MCP51 */
+-	if (dev->device == 0x270)
+-		return;
+-
+ 	/* check if there is HT MSI cap or enabled on this device */
+ 	found = ht_check_msi_mapping(dev);
+ 
+@@ -2193,7 +2224,10 @@ static void __devinit nv_msi_ht_cap_quir
+ 		/* Host bridge is to HT */
+ 		if (found == 1) {
+ 			/* it is not enabled, try to enable it */
+-			nv_ht_enable_msi_mapping(dev);
++			if (all)
++				ht_enable_msi_mapping(dev);
++			else
++				nv_ht_enable_msi_mapping(dev);
+ 		}
+ 		return;
+ 	}
+@@ -2205,8 +2239,20 @@ static void __devinit nv_msi_ht_cap_quir
+ 	/* Host bridge is not to HT, disable HT MSI mapping on this device */
+ 	ht_disable_msi_mapping(dev);
+ }
+-DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_NVIDIA, PCI_ANY_ID, nv_msi_ht_cap_quirk);
+-DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_AL, PCI_ANY_ID, nv_msi_ht_cap_quirk);
++
++static void __devinit nv_msi_ht_cap_quirk_all(struct pci_dev *dev)
++{
++	return __nv_msi_ht_cap_quirk(dev, 1);
++}
++
++static void __devinit nv_msi_ht_cap_quirk_leaf(struct pci_dev *dev)
++{
++	return __nv_msi_ht_cap_quirk(dev, 0);
++}
++
++DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_NVIDIA, PCI_ANY_ID, nv_msi_ht_cap_quirk_leaf);
++
++DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_AL, PCI_ANY_ID, nv_msi_ht_cap_quirk_all);
+ 
+ static void __devinit quirk_msi_intx_disable_bug(struct pci_dev *dev)
+ {
