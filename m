@@ -1,47 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754619AbZCUKKB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753890AbZCUKTZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754619AbZCUKKB (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Mar 2009 06:10:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754158AbZCUKJt
+	id S1753890AbZCUKTZ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Mar 2009 06:19:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754192AbZCUKTN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Mar 2009 06:09:49 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:55799 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754492AbZCUKJs (ORCPT
+	Sat, 21 Mar 2009 06:19:13 -0400
+Received: from ocean.emcraft.com ([213.221.7.182]:37282 "EHLO
+	ocean.emcraft.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753731AbZCUKTM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Mar 2009 06:09:48 -0400
-Date: Sat, 21 Mar 2009 03:03:09 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Jerome Marchand <jmarchan@redhat.com>
-Cc: Jens Axboe <axboe@kernel.dk>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] block: forbid to re-enable I/O stat accounting
-Message-Id: <20090321030309.f783ec8c.akpm@linux-foundation.org>
-In-Reply-To: <200903201333.n2KDXONh023780@dhcp-0-152.brq.redhat.com>
-References: <200903201333.n2KDXONh023780@dhcp-0-152.brq.redhat.com>
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sat, 21 Mar 2009 06:19:12 -0400
+Message-ID: <49C4BF15.5050502@emcraft.com>
+Date: Sat, 21 Mar 2009 13:19:01 +0300
+From: Ilya Yanok <yanok@emcraft.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
+MIME-Version: 1.0
+To: "H. Peter Anvin" <hpa@zytor.com>
+CC: "H. Peter Anvin" <h.peter.anvin@intel.com>,
+       "Williams, Dan J" <dan.j.williams@intel.com>,
+       "linux-raid@vger.kernel.org" <linux-raid@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "neilb@suse.de" <neilb@suse.de>,
+       "Sosnowski, Maciej" <maciej.sosnowski@intel.com>,
+       Yuri Tikhonov <yur@emcraft.com>
+Subject: Re: [PATCH 06/13] async_tx: add support for asynchronous GF 	multiplication
+References: <20090318191248.20375.40560.stgit@dwillia2-linux.ch.intel.com>	 <20090318192046.20375.89854.stgit@dwillia2-linux.ch.intel.com>	 <49C26D91.10804@intel.com> <e9c3a7c20903191020k4d0169e3oc9749103a711f3e3@mail.gmail.com> <49C41C1E.4060401@zytor.com> <49C4201A.5060905@emcraft.com> <49C425F5.8060309@intel.com> <49C42F99.5010700@emcraft.com> <49C45159.8020503@zytor.com>
+In-Reply-To: <49C45159.8020503@zytor.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi H. Peter,
 
-Please fix your email headers - what I received was
+H. Peter Anvin wrote:
+> Ilya Yanok wrote:
+>   
+>> async_gen_syndrome() takes element of GF^n(256) and returns result of
+>> scalar multiplication of it with constant ({01}, {02}, {02}^2, ...,
+>> {02}^n) vector.
+>>     
+>
+> For any n (which would mean any GF field)?  In that case, that is
+> generic scalar-vector multiplication...
+>   
 
-From: Jerome Marchand <jmarchan@redhat.com>
-To: unlisted-recipients:;;@imap1.linux-foundation.org (no To-header on input)
-Cc: Jens Axboe <axboe@kernel.dk>
+Ok. I think I got it. Vectors are things that depend on position inside
+buffer and scalars are things that don't, am I right? In that sense we
+don't have any vector-vector multiplication. Both async_gen_syndrome()
+and async_pq() use constant coefficients. So I don't really understand
+the problem here.
 
-
-On Thu, 19 Mar 2009 11:36:50 +0100 Jerome Marchand <jmarchan@redhat.com> wrote:
-
-> When we stop I/O stat accounting we stop to update the in-flight
-> requests counter and we need this counter to be reliable for
-> accounting I/O stats. Unfortunately updating in_flight field may
-> affect performance. So, until we have a better solution, just forbid
-> to re-enable I/O stat accounting after it has been disabled.
-
-hm.  Is it really so hard to just quiesce the device until all in-flight
-requests have drained?  freeze_bdev() might be a suitable starting point?
+Regards, Ilya.
 
