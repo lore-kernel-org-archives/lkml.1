@@ -1,27 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753969AbZCUIra@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754460AbZCUIzu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753969AbZCUIra (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Mar 2009 04:47:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752698AbZCUIrU
+	id S1754460AbZCUIzu (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Mar 2009 04:55:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752698AbZCUIzl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Mar 2009 04:47:20 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:59222 "EHLO
+	Sat, 21 Mar 2009 04:55:41 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:49059 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752281AbZCUIrS (ORCPT
+	by vger.kernel.org with ESMTP id S1752407AbZCUIzk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Mar 2009 04:47:18 -0400
-Date: Sat, 21 Mar 2009 01:39:12 -0700
+	Sat, 21 Mar 2009 04:55:40 -0400
+Date: Sat, 21 Mar 2009 01:49:09 -0700
 From: Andrew Morton <akpm@linux-foundation.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Roland McGrath <roland@redhat.com>, Steven Rostedt <rostedt@goodmis.org>,
-       utrace-devel@redhat.com, Frank Eigler <fche@redhat.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/3] utrace-based ftrace "process" engine, v2
-Message-Id: <20090321013912.ed6039c9.akpm@linux-foundation.org>
-In-Reply-To: <20090321074301.GA19384@elte.hu>
+To: Roland McGrath <roland@redhat.com>
+Cc: utrace-devel@redhat.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/3] utrace core
+Message-Id: <20090321014909.6b654f55.akpm@linux-foundation.org>
+In-Reply-To: <20090321014140.AA4F5FC3AB@magilla.sf.frob.com>
 References: <20090321013946.890F4FC3AB@magilla.sf.frob.com>
-	<20090321014244.9ADF1FC3AB@magilla.sf.frob.com>
-	<20090321074301.GA19384@elte.hu>
+	<20090321014140.AA4F5FC3AB@magilla.sf.frob.com>
 X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -30,46 +27,52 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 21 Mar 2009 08:43:01 +0100 Ingo Molnar <mingo@elte.hu> wrote:
+On Fri, 20 Mar 2009 18:41:40 -0700 (PDT) Roland McGrath <roland@redhat.com> wrote:
 
+> This adds the utrace facility, a new modular interface in the kernel for
+> implementing user thread tracing and debugging.  This fits on top of the
+> tracehook_* layer, so the new code is well-isolated.
 > 
-> * Roland McGrath <roland@redhat.com> wrote:
+> The new interface is in <linux/utrace.h> and the DocBook utrace book
+> describes it.  It allows for multiple separate tracing engines to work in
+> parallel without interfering with each other.  Higher-level tracing
+> facilities can be implemented as loadable kernel modules using this layer.
 > 
-> > From: Frank Ch. Eigler <fche@redhat.com>
-> > 
-> > This is v2 of the prototype utrace-ftrace interface.  This code is 
-> > based on Roland McGrath's utrace API, which provides programmatic 
-> > hooks to the in-tree tracehook layer.  This new patch interfaces 
-> > many of those events to ftrace, as configured by a small number of 
-> > debugfs controls.  Here's the 
-> > /debugfs/tracing/process_trace_README:
+> The new facility is made optional under CONFIG_UTRACE.
+> When this is not enabled, no new code is added.
+> It can only be enabled on machines that have all the
+> prerequisites and select CONFIG_HAVE_ARCH_TRACEHOOK.
 > 
-> Please submit changes/enhancements to kernel/trace/* to the tracing 
-> tree maintainers (Steve and me) for review, testing and integration.
-> 
-> Please also post patches against the latest tracing tree:
-> 
->    http://people.redhat.com/mingo/tip.git/README
+> In this initial version, utrace and ptrace do not play together at all.
+> If ptrace is attached to a thread, the attach calls in the utrace kernel
+> API return -EBUSY.  If utrace is attached to a thread, the PTRACE_ATTACH
+> or PTRACE_TRACEME request will return EBUSY to userland.  The old ptrace
+> code is otherwise unchanged and nothing using ptrace should be affected
+> by this patch as long as utrace is not used at the same time.  In the
+> future we can clean up the ptrace implementation and rework it to use
+> the utrace API.
 
-uhm, this patch depends on the (large) utrace patch, which is not kernel/trace
-material.
+I'd be interested in seeing a bit of discussion regarding the overall value
+of utrace - it has been quite a while since it floated past.
 
-> As this patch does not apply:
-> 
->  Applying patch patches/utrace-based-ftrace-process-engine-v2.patch
->  patching file include/linux/processtrace.h
->  patching file kernel/trace/Kconfig
->  Hunk #1 succeeded at 186 with fuzz 2 (offset 36 lines).
->  patching file kernel/trace/Makefile
->  Hunk #1 FAILED at 33.
->  1 out of 1 hunk FAILED -- rejects in file kernel/trace/Makefile
->  patching file kernel/trace/trace.h
->  Hunk #1 succeeded at 7 with fuzz 1.
->  Hunk #2 FAILED at 31.
->  Hunk #3 succeeded at 215 with fuzz 2 (offset 43 lines).
->  Hunk #4 FAILED at 330.
->  2 out of 4 hunks FAILED -- rejects in file kernel/trace/trace.h
->  patching file kernel/trace/trace_process.c
->  Patch patches/utrace-based-ftrace-process-engine-v2.patch does not apply (enforce with -f)
+I assume that redoing ptrace to be a client of utrace _will_ happen, and
+that this is merely a cleanup exercise with no new user-visible features?
 
-The rejects are trivial.
+The "prototype utrace-ftrace interface" seems to be more a cool toy rather
+than a serious new kernel feature (yes?)
+
+If so, what are the new killer utrace clients which would justify all these
+changes?
+
+
+
+Also, is it still the case that RH are shipping utrace?  If so, for what
+reasons and what benefits are users seeing from it?
+
+
+And I recall that there were real problems wiring up the Feb 2007 version
+of utrace to the ARM architecture.  Have those issues been resolved?  Are
+any problems expected for any architectures?
+
+Thanks.
+
