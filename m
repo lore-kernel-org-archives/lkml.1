@@ -1,140 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755992AbZCUQ2f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758951AbZCUQ3Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755992AbZCUQ2f (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Mar 2009 12:28:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754698AbZCUQ2Y
+	id S1758951AbZCUQ3Y (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Mar 2009 12:29:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754630AbZCUQ3P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Mar 2009 12:28:24 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:37694 "EHLO mx2.redhat.com"
+	Sat, 21 Mar 2009 12:29:15 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:37223 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754251AbZCUQ2X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Mar 2009 12:28:23 -0400
-Date: Sat, 21 Mar 2009 17:26:54 +0100
-From: Jiri Pirko <jpirko@redhat.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: netdev@vger.kernel.org, David Miller <davem@davemloft.net>,
-       klassert@mathematik.tu-chemnitz.de, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] 3c59x: convert to net_device_ops
-Message-ID: <20090321162653.GA19265@psychotron.englab.brq.redhat.com>
-References: <20090321113552.GB3380@psychotron.englab.brq.redhat.com> <20090321045155.fbdf8dac.akpm@linux-foundation.org>
+	id S1754251AbZCUQ3O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 21 Mar 2009 12:29:14 -0400
+Date: Sat, 21 Mar 2009 17:28:29 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Eric Dumazet <dada1@cosmosbay.com>
+Cc: Ravikiran G Thirumalai <kiran@scalex86.org>, linux-kernel@vger.kernel.org,
+       shai@scalex86.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] futex: Dynamically size futexes hash table
+Message-ID: <20090321162829.GF11183@elte.hu>
+References: <20090321044637.GA7278@localdomain> <49C4AE64.4060400@cosmosbay.com> <49C4D5A0.5020106@cosmosbay.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090321045155.fbdf8dac.akpm@linux-foundation.org>
+In-Reply-To: <49C4D5A0.5020106@cosmosbay.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sat, Mar 21, 2009 at 12:51:55PM CET, akpm@linux-foundation.org wrote:
->On Sat, 21 Mar 2009 12:35:53 +0100 Jiri Pirko <jpirko@redhat.com> wrote:
->
->> I converted this driver to use net_device_ops. I made two structures, one for
->> vortex and one for boomerang start_xmit function. Tested on my test system with
->> 3Com PCI 3c905C Tornado.
->
->linux-next already contains
-Oh, I've missed that, sorry. It seems pretty similar :)
->
->commit 48b47a5e306c1c119ee81ccd24d487c2df656410
->Author:     Stephen Hemminger <shemminger@linux-foundation.org>
->AuthorDate: Fri Jan 9 13:01:18 2009 +0000
->Commit:     David S. Miller <davem@davemloft.net>
->CommitDate: Wed Jan 21 14:02:25 2009 -0800
->
->    3c59x: convert to net_device_ops
->    
->    Signed-off-by: Stephen Hemminger <shemminger@vyatta.com>
->    Signed-off-by: David S. Miller <davem@davemloft.net>
->
->diff --git a/drivers/net/3c59x.c b/drivers/net/3c59x.c
->index cdbbb62..b2563d3 100644
->--- a/drivers/net/3c59x.c
->+++ b/drivers/net/3c59x.c
->@@ -992,6 +992,42 @@ out:
-> 	return rc;
-> }
-> 
->+static const struct net_device_ops boomrang_netdev_ops = {
->+	.ndo_open		= vortex_open,
->+	.ndo_stop		= vortex_close,
->+	.ndo_start_xmit		= boomerang_start_xmit,
->+	.ndo_tx_timeout		= vortex_tx_timeout,
->+	.ndo_get_stats		= vortex_get_stats,
->+#ifdef CONFIG_PCI
->+	.ndo_do_ioctl 		= vortex_ioctl,
->+#endif
->+	.ndo_set_multicast_list = set_rx_mode,
->+	.ndo_change_mtu		= eth_change_mtu,
->+	.ndo_set_mac_address 	= eth_mac_addr,
->+	.ndo_validate_addr	= eth_validate_addr,
->+#ifdef CONFIG_NET_POLL_CONTROLLER
->+	.ndo_poll_controller	= poll_vortex,
->+#endif
->+};
->+
->+static const struct net_device_ops vortex_netdev_ops = {
->+	.ndo_open		= vortex_open,
->+	.ndo_stop		= vortex_close,
->+	.ndo_start_xmit		= vortex_start_xmit,
->+	.ndo_tx_timeout		= vortex_tx_timeout,
->+	.ndo_get_stats		= vortex_get_stats,
->+#ifdef CONFIG_PCI
->+	.ndo_do_ioctl 		= vortex_ioctl,
->+#endif
->+	.ndo_set_multicast_list = set_rx_mode,
->+	.ndo_change_mtu		= eth_change_mtu,
->+	.ndo_set_mac_address 	= eth_mac_addr,
->+	.ndo_validate_addr	= eth_validate_addr,
->+#ifdef CONFIG_NET_POLL_CONTROLLER
->+	.ndo_poll_controller	= poll_vortex,
->+#endif
->+};
->+
-> /*
->  * Start up the PCI/EISA device which is described by *gendev.
->  * Return 0 on success.
->@@ -1366,18 +1402,16 @@ static int __devinit vortex_probe1(struct device *gendev,
-> 	}
-> 
-> 	/* The 3c59x-specific entries in the device structure. */
->-	dev->open = vortex_open;
-> 	if (vp->full_bus_master_tx) {
->-		dev->hard_start_xmit = boomerang_start_xmit;
->+		dev->netdev_ops = &boomrang_netdev_ops;
-> 		/* Actually, it still should work with iommu. */
-> 		if (card_idx < MAX_UNITS &&
-> 		    ((hw_checksums[card_idx] == -1 && (vp->drv_flags & HAS_HWCKSM)) ||
-> 				hw_checksums[card_idx] == 1)) {
-> 			dev->features |= NETIF_F_IP_CSUM | NETIF_F_SG;
-> 		}
->-	} else {
->-		dev->hard_start_xmit = vortex_start_xmit;
->-	}
->+	} else
->+		dev->netdev_ops =  &vortex_netdev_ops;
-> 
-> 	if (print_info) {
-> 		printk(KERN_INFO "%s: scatter/gather %sabled. h/w checksums %sabled\n",
->@@ -1386,18 +1420,9 @@ static int __devinit vortex_probe1(struct device *gendev,
-> 				(dev->features & NETIF_F_IP_CSUM) ? "en":"dis");
-> 	}
-> 
->-	dev->stop = vortex_close;
->-	dev->get_stats = vortex_get_stats;
->-#ifdef CONFIG_PCI
->-	dev->do_ioctl = vortex_ioctl;
->-#endif
-> 	dev->ethtool_ops = &vortex_ethtool_ops;
->-	dev->set_multicast_list = set_rx_mode;
->-	dev->tx_timeout = vortex_tx_timeout;
-> 	dev->watchdog_timeo = (watchdog * HZ) / 1000;
->-#ifdef CONFIG_NET_POLL_CONTROLLER
->-	dev->poll_controller = poll_vortex;
->-#endif
->+
-> 	if (pdev) {
-> 		vp->pm_state_valid = 1;
->  		pci_save_state(VORTEX_PCI(vp));
->
+
+* Eric Dumazet <dada1@cosmosbay.com> wrote:
+
+> @@ -2016,7 +2021,28 @@ static int __init futex_init(void)
+>  {
+>  	u32 curval;
+>  	int i;
+> +#if !defined(CONFIG_BASE_SMALL)
+> +#if defined(CONFIG_PROVE_LOCKING)
+> +	unsigned int nb_slots = 256;
+> +#else
+> +	unsigned int nb_slots = roundup_pow_of_two(num_possible_cpus()) * 256;
+> +#endif
+> +	size_t sz;
+>  
+> +retry:
+> +	sz = nb_slots * sizeof(struct futex_hash_bucket);
+> +	if (sz > PAGE_SIZE)
+> +		futex_queues = vmalloc(sz);
+> +	else
+> +		futex_queues = kmalloc(sz, GFP_KERNEL);
+> +	if (!futex_queues) {
+> +		nb_slots >>= 1;
+> +		if (!nb_slots)
+> +			panic("Could not allocate futex hash table");
+> +		goto retry;
+> +	}
+> +	futex_hash_mask = nb_slots - 1;
+> +#endif
+
+no fundamental objections and the hash sizing problem is causing 
+real problems and need to be fixed, but this code sequence is too 
+ugly to live.
+
+Is there really no big-hash-alloc framework in existence? I have 
+some vague memories of networking having met such problems in the 
+past - maybe they have some goodness there we could reuse 
+shamelessly in the futex code?
+
+	Ingo
