@@ -1,198 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753666AbZCUJNf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754913AbZCUJOX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753666AbZCUJNf (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Mar 2009 05:13:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754462AbZCUJNP
+	id S1754913AbZCUJOX (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Mar 2009 05:14:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754209AbZCUJOM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Mar 2009 05:13:15 -0400
-Received: from hera.kernel.org ([140.211.167.34]:51555 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754796AbZCUJNO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Mar 2009 05:13:14 -0400
-Subject: [git-pull -tip] x86: mpparse introduce some more helper functions
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: Ingo Molnar <mingo@elte.hu>, x86 maintainers <x86@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Sat, 21 Mar 2009 14:42:35 +0530
-Message-Id: <1237626755.26347.7.camel@ht.satnam>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
-Content-Transfer-Encoding: 7bit
+	Sat, 21 Mar 2009 05:14:12 -0400
+Received: from gw1.cosmosbay.com ([212.99.114.194]:33975 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752698AbZCUJOL convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 21 Mar 2009 05:14:11 -0400
+Message-ID: <49C4AFC2.500@cosmosbay.com>
+Date: Sat, 21 Mar 2009 10:13:38 +0100
+From: Eric Dumazet <dada1@cosmosbay.com>
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
+MIME-Version: 1.0
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+CC: Arjan van de Ven <arjan@infradead.org>, paulmck@linux.vnet.ibm.com,
+       dipankar@in.ibm.com, linux-input@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: Question about usage of RCU in the input layer
+References: <20090318215812.15496a86@infradead.org> <20090320020750.GA6807@linux.vnet.ibm.com> <20090319202032.4c971d92@infradead.org> <200903202246.15772.dmitry.torokhov@gmail.com>
+In-Reply-To: <200903202246.15772.dmitry.torokhov@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Sat, 21 Mar 2009 10:13:41 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Log files are available at:
-http://git.kernel.org/?p=linux/kernel/git/jaswinder/linux-2.6-tip.git;a=shortlog;h=x86/core
+Dmitry Torokhov a écrit :
+> On Thursday 19 March 2009 20:20:32 Arjan van de Ven wrote:
+>>> I don't claim to understand the code in question, so it is entirely
+>>> possible that the following is irrelevant.  But one other reason for
+>>> synchronize_rcu() is:
+>>>
+>>> 1.    Make change.
+>>>
+>>> 2.    synchronize_rcu()
+>>>
+>>> 3.    Now you are guaranteed that all CPUs/tasks/whatever
+>>> currently running either are not messing with you on the one hand, or
+>>>       have seen the change on the other.
+>> ok so this is for the case where someone is already iterating the list.
+>>
+>> I don't see anything in the code that assumes this..
+> 
+> This is something that input core guarantees to its users: by the time
+> input core calls hander->start() or, in its absence, by the time
+> input_register_handle() returns, events from input drivers will be
+> passed into the handle being registered, i.e. the presence of the
+> new item in the list is noticed by all CPUs.
+> 
+> Now, it is possible to stop using RCU primitives in the input core
+> but I think that you'd want to figure out why synchronize_rcu()
+> takes so long first, otheriwse you may find another "abuser"
+> down the road.
+> 
 
-The following changes since commit 7f00a2495bf5b98b097c47be5d6e2d4114ec39bf:
-  Ingo Molnar (1):
-        Merge branches 'x86/cleanups', 'x86/mm', 'x86/setup' and 'linus' into x86/core
+If a cpu does a loop, it nearly impossible that synchronize_rcu() can
+be fast.
 
-are available in the git repository at:
+We had same problem in ksoftirqd(), where I had to add a call
+to rcu_qsctr_inc() to unblock other threads blocked in synchronize_rcu()
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/jaswinder/linux-2.6-tip.git x86/core
+http://git2.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=64ca5ab913f1594ef316556e65f5eae63ff50cee
 
-Jaswinder Singh Rajput (2):
-      x86: mpparse.c introduce smp_dump_mptable helper function
-      x86: mpparse.c introduce check_physptr helper function
-
- arch/x86/kernel/mpparse.c |  112 ++++++++++++++++++++++++---------------------
- 1 files changed, 60 insertions(+), 52 deletions(-)
-
-Complete diff:
-diff --git a/arch/x86/kernel/mpparse.c b/arch/x86/kernel/mpparse.c
-index 290cb57..dce99dc 100644
---- a/arch/x86/kernel/mpparse.c
-+++ b/arch/x86/kernel/mpparse.c
-@@ -282,6 +282,14 @@ static void skip_entry(unsigned char **ptr, int *count, int size)
- 	*count += size;
- }
- 
-+static void __init smp_dump_mptable(struct mpc_table *mpc, unsigned char *mpt)
-+{
-+	printk(KERN_ERR "Your mptable is wrong, contact your HW vendor!\n"
-+		"type %x\n", *mpt);
-+	print_hex_dump(KERN_ERR, "  ", DUMP_PREFIX_ADDRESS, 16,
-+			1, mpc, mpc->length, 1);
-+}
-+
- static int __init smp_read_mpc(struct mpc_table *mpc, unsigned early)
- {
- 	char str[16];
-@@ -340,10 +348,7 @@ static int __init smp_read_mpc(struct mpc_table *mpc, unsigned early)
- 			break;
- 		default:
- 			/* wrong mptable */
--			printk(KERN_ERR "Your mptable is wrong, contact your HW vendor!\n");
--			printk(KERN_ERR "type %x\n", *mpt);
--			print_hex_dump(KERN_ERR, "  ", DUMP_PREFIX_ADDRESS, 16,
--					1, mpc, mpc->length, 1);
-+			smp_dump_mptable(mpc, mpt);
- 			count = mpc->length;
- 			break;
- 		}
-@@ -550,6 +555,55 @@ static unsigned long __init get_mpc_size(unsigned long physptr)
- 	return size;
- }
- 
-+static int __init check_physptr(struct mpf_intel *mpf, unsigned int early)
-+{
-+	struct mpc_table *mpc;
-+	unsigned long size;
-+
-+	size = get_mpc_size(mpf->physptr);
-+	mpc = early_ioremap(mpf->physptr, size);
-+	/*
-+	 * Read the physical hardware table.  Anything here will
-+	 * override the defaults.
-+	 */
-+	if (!smp_read_mpc(mpc, early)) {
-+#ifdef CONFIG_X86_LOCAL_APIC
-+		smp_found_config = 0;
-+#endif
-+		printk(KERN_ERR "BIOS bug, MP table errors detected!...\n"
-+			"... disabling SMP support. (tell your hw vendor)\n");
-+		early_iounmap(mpc, size);
-+		return -1;
-+	}
-+	early_iounmap(mpc, size);
-+
-+	if (early)
-+		return -1;
-+
-+#ifdef CONFIG_X86_IO_APIC
-+	/*
-+	 * If there are no explicit MP IRQ entries, then we are
-+	 * broken.  We set up most of the low 16 IO-APIC pins to
-+	 * ISA defaults and hope it will work.
-+	 */
-+	if (!mp_irq_entries) {
-+		struct mpc_bus bus;
-+
-+		printk(KERN_ERR "BIOS bug, no explicit IRQ entries, "
-+		       "using default mptable. (tell your hw vendor)\n");
-+
-+		bus.type = MP_BUS;
-+		bus.busid = 0;
-+		memcpy(bus.bustype, "ISA   ", 6);
-+		MP_bus_info(&bus);
-+
-+		construct_default_ioirq_mptable(0);
-+	}
-+#endif
-+
-+	return 0;
-+}
-+
- /*
-  * Scan the memory blocks for an SMP configuration block.
-  */
-@@ -603,51 +657,8 @@ static void __init __get_smp_config(unsigned int early)
- 		construct_default_ISA_mptable(mpf->feature1);
- 
- 	} else if (mpf->physptr) {
--		struct mpc_table *mpc;
--		unsigned long size;
--
--		size = get_mpc_size(mpf->physptr);
--		mpc = early_ioremap(mpf->physptr, size);
--		/*
--		 * Read the physical hardware table.  Anything here will
--		 * override the defaults.
--		 */
--		if (!smp_read_mpc(mpc, early)) {
--#ifdef CONFIG_X86_LOCAL_APIC
--			smp_found_config = 0;
--#endif
--			printk(KERN_ERR
--			       "BIOS bug, MP table errors detected!...\n");
--			printk(KERN_ERR "... disabling SMP support. "
--			       "(tell your hw vendor)\n");
--			early_iounmap(mpc, size);
-+		if (check_physptr(mpf, early))
- 			return;
--		}
--		early_iounmap(mpc, size);
--
--		if (early)
--			return;
--#ifdef CONFIG_X86_IO_APIC
--		/*
--		 * If there are no explicit MP IRQ entries, then we are
--		 * broken.  We set up most of the low 16 IO-APIC pins to
--		 * ISA defaults and hope it will work.
--		 */
--		if (!mp_irq_entries) {
--			struct mpc_bus bus;
--
--			printk(KERN_ERR "BIOS bug, no explicit IRQ entries, "
--			       "using default mptable. "
--			       "(tell your hw vendor)\n");
--
--			bus.type = MP_BUS;
--			bus.busid = 0;
--			memcpy(bus.bustype, "ISA   ", 6);
--			MP_bus_info(&bus);
--
--			construct_default_ioirq_mptable(0);
--		}
--#endif
- 	} else
- 		BUG();
- 
-@@ -910,10 +921,7 @@ static int  __init replace_intsrc_all(struct mpc_table *mpc,
- 			break;
- 		default:
- 			/* wrong mptable */
--			printk(KERN_ERR "Your mptable is wrong, contact your HW vendor!\n");
--			printk(KERN_ERR "type %x\n", *mpt);
--			print_hex_dump(KERN_ERR, "  ", DUMP_PREFIX_ADDRESS, 16,
--					1, mpc, mpc->length, 1);
-+			smp_dump_mptable(mpc, mpt);
- 			goto out;
- 		}
- 	}
+If a driver does a loop with no call to scheduler, it might have same problem
 
 
