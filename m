@@ -1,58 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755052AbZCUPJv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753954AbZCUPNX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755052AbZCUPJv (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Mar 2009 11:09:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753201AbZCUPJj
+	id S1753954AbZCUPNX (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Mar 2009 11:13:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751512AbZCUPNG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Mar 2009 11:09:39 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:35059 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752110AbZCUPJi convert rfc822-to-8bit (ORCPT
+	Sat, 21 Mar 2009 11:13:06 -0400
+Received: from xc.sipsolutions.net ([83.246.72.84]:50856 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751399AbZCUPNE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Mar 2009 11:09:38 -0400
-Date: Sat, 21 Mar 2009 15:10:28 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: Mark Lord <liml@rtr.ca>, Norman Diamond <n0diamond@yahoo.co.jp>,
-       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
-Subject: Re: Overagressive failing of disk reads, both LIBATA and IDE
-Message-ID: <20090321151028.2ac4101f@lxorguk.ukuu.org.uk>
-In-Reply-To: <1237645333.4600.9.camel@localhost.localdomain>
-References: <F79C774361EF45A6A68BC08F8621E406@DIAMOND8600>
-	<49C30E67.4060702@rtr.ca>
-	<1237645333.4600.9.camel@localhost.localdomain>
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+	Sat, 21 Mar 2009 11:13:04 -0400
+Subject: Re: 2.6.29-rc8: Reported regressions from 2.6.28
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Jeff Chua <jeff.chua.linux@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Adrian Bunk <bunk@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Network Development <netdev@vger.kernel.org>,
+       "John W. Linville" <linville@tuxdriver.com>
+In-Reply-To: <b6a2187b0903210808m7586fdc2g53e72aa269d6e353@mail.gmail.com> (sfid-20090321_160814_154410_54F18AB4)
+References: <MiincthRUSI.A.eKC.F4BvJB@chimera>
+	 <b6a2187b0903181958ke11abe7tdcbc4efeb950954d@mail.gmail.com>
+	 <b6a2187b0903182149x77e416ecuf73be2970173c601@mail.gmail.com>
+	 <1237455534.5100.56.camel@johannes.local>
+	 <b6a2187b0903192155q33510b57l9d5927538a0f4f99@mail.gmail.com>
+	 <1237537967.5100.135.camel@johannes.local>
+	 <b6a2187b0903200304l469e3eeet87c51b1cddb43ea8@mail.gmail.com>
+	 <1237544033.5100.143.camel@johannes.local>
+	 <b6a2187b0903200914r23d635c9obc55b30b7cc04382@mail.gmail.com>
+	 <1237637375.5100.178.camel@johannes.local>
+	 <b6a2187b0903210808m7586fdc2g53e72aa269d6e353@mail.gmail.com>
+	 (sfid-20090321_160814_154410_54F18AB4)
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-wsp6Ah0OsJizFKNMyiVh"
+Date: Sat, 21 Mar 2009 16:11:54 +0100
+Message-Id: <1237648314.5100.220.camel@johannes.local>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
+X-Mailer: Evolution 2.24.5 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Using the disk supplied data about where the error occurred (provided
-> the disk returns it) eliminates all the readahead problems like the one
 
-ATA disks do provide sector information generally, as do CD-ROMs, in fact
-we actually decode it for error reporting so probably all the bits are
-there to improve any reporting for most read side cases.
+--=-wsp6Ah0OsJizFKNMyiVh
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
->From some of the traces I have been debugging I am not convinced the scsi
-mid layer does the right thing any more. It uses to be handling CD-R
-media (where the end of media is not well defined) but nowdays seems to
-be reporting errors even when told that the I/O partly succeeded. I need
-to debug that case further however but as I don't have one of the problem
-drives its a bit tricky.
+On Sat, 2009-03-21 at 23:08 +0800, Jeff Chua wrote:
+> On Sat, Mar 21, 2009 at 8:09 PM, Johannes Berg
+> <johannes@sipsolutions.net> wrote:
+> > Thing is that this works perfectly fine for me, on very similar
+> > hardware.
+>=20
+> I've set hidden SSID + mac address filtering (only allow my notebook
+> MAC address) as well as 128 WEP. And no problem to associate with
+> non-hidden AP.
 
-> above.  Perhaps just turning of readahead for disks that don't supply
-> error location information would be a reasonable workaround?
+Ok, I haven't tried WEP or MAC address filtering, but I don't see how
+those would make a significant difference. I can try again, but not
+before mid next week since I'm away from my test machine.
 
-Not really. From a performance perspective Mark's patch is vastly
-superior because it punishes the incredibly rare error case not the
-routine working performance. Avoiding the need to do either would be even
-better - as would fixing the block layer not to mess up retries in this
-situation.
+> > OTOH, maybe it got _fixed_ again. Would you check wireless-testing
+> >
+> (http://wireless.kernel.org/en/developers/Documentation#wireless-testing.=
+git) for me? Or compat-wireless (http://wireless.kernel.org/en/users/Downlo=
+ad)
+>=20
+> I'll try that tomorrow. Seems a lot to pull from git.
 
-For low speed devices like MMC cards and flash it might make sense not to
-merge unrelated requests however so that only the relevant one fails.
+Thanks, I appreciate it. You should be able to cut it down by using
+--reference /path/to/local/linux-git-tree or just compat (though I would
+recommend using the git tree). I've also tried to go back to the
+versions you were testing before and had no problem.
 
-Alan
+johannes
+
+--=-wsp6Ah0OsJizFKNMyiVh
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iQIcBAABAgAGBQJJxQO3AAoJEKVg1VMiehFYCFUQAJTYVdeOgp0SuFPVXy3RcK7b
+r+3GE/yHrE9aurZJhu9N2hKYbVupSNcYQoNjWei/VIaCReERXY+tH4atHAYS+hfM
+Lp1myudOHsNw0Iz2v5q8RY0EzVQ/PHsCeFPgB983zpmcJVjMN4ywVrdQOe4p6fyU
+2EQS8F0PokZTi+9H6599LiAsQ9kip/aOMquxtBRzVuOsqGwdM2u8Riy4pPg8pu2p
+uXNVPI3PjqmvYIGLKFN4rZ0/G+4bLeV3ua9Fxpy9kz4ILAyq4sLwMmcywrH+ibUU
+3rqi7+1fnTJQRI4zc6+JdDtwEjr0ltKGb6qlzIvK9hrZAWAVtLbbAoo287k++W2x
+J+FLxrkg9tmihBxsrgGPdAsxYDIDlSL0gk4om3qLuvQv1msNyxeOoS8DgNRxVsRG
+hywwAWrdg24WIicREZkbcJNOlaZDjJnYpXhEEXJXLd4YxG0NZ6KD0nAMw+ZwKIqe
+G0NjQh8nsK8zwc0Db/sBUzpg7bZVM707Da0GfiSDQNvd4Z9xNxlTAfCAM1zyCpmg
+twhX6BrZIZ8tK+eA4rhImw/I0tzSLzHQJbFGW4Y5sIawK5/JYTpRfxnRgDybLJsX
+x2t8K9ReCMRyhmhyCzRdr/yY8UfbAIUdM5CmqW5oChZXvtkrRib1s9j+ACF7qqVV
+/Ol2j0WfDv7sv66+L5Uj
+=k+mW
+-----END PGP SIGNATURE-----
+
+--=-wsp6Ah0OsJizFKNMyiVh--
+
