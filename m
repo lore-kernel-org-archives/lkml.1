@@ -1,137 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757330AbZCUGy0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756730AbZCUHj4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757330AbZCUGy0 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Mar 2009 02:54:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753065AbZCUGyQ
+	id S1756730AbZCUHj4 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Mar 2009 03:39:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753457AbZCUHjo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Mar 2009 02:54:16 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:46254 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752568AbZCUGyQ (ORCPT
+	Sat, 21 Mar 2009 03:39:44 -0400
+Received: from out01.mta.xmission.com ([166.70.13.231]:52056 "EHLO
+	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753336AbZCUHjn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Mar 2009 02:54:16 -0400
-Date: Sat, 21 Mar 2009 02:54:12 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: LKML <linux-kernel@vger.kernel.org>
-cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       =?ISO-8859-15?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>
-Subject: [PATCH][GIT PULL] tracing: fix memory leak in trace_stat
-Message-ID: <alpine.DEB.2.00.0903210251100.13615@gandalf.stny.rr.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Sat, 21 Mar 2009 03:39:43 -0400
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Jan Beulich <jbeulich@novell.com>,
+       tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com,
+       linux-kernel@vger.kernel.org, Gautham R Shenoy <ego@in.ibm.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Alexey Dobriyan <adobriyan@gmail.com>, <netdev@vger.kernel.org>
+References: <49B91A7E.76E4.0078.0@novell.com>
+	<tip-6a09dfa870ba0ed21b1124539968a36b42660661@git.kernel.org>
+	<1236934491.5188.209.camel@laptop> <49BA33BE.76E4.0078.0@novell.com>
+	<1236937423.22914.3698.camel@twins> <20090313103828.GB31094@elte.hu>
+	<m1d4cd9n4k.fsf@fess.ebiederm.org> <20090320085205.GB16021@elte.hu>
+	<m14oxo8qis.fsf@fess.ebiederm.org> <20090320182404.GA31629@elte.hu>
+	<1237575134.4667.5.camel@laptop> <1237577688.4667.68.camel@laptop>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Sat, 21 Mar 2009 00:39:28 -0700
+In-Reply-To: <1237577688.4667.68.camel@laptop> (Peter Zijlstra's message of "Fri\, 20 Mar 2009 20\:34\:48 +0100")
+Message-ID: <m1iqm3xr2n.fsf_-_@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=67.169.126.145;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 67.169.126.145
+X-SA-Exim-Rcpt-To: akpm@linux-foundation.org, netdev@vger.kernel.org, adobriyan@gmail.com, peterz@infradead.org, ego@in.ibm.com, linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com, tglx@linutronix.de, jbeulich@novell.com, mingo@elte.hu
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-Spam-DCC: XMission; sa04 1397; Body=1 Fuz1=1 Fuz2=1 
+X-Spam-Combo: ;Andrew Morton <akpm@linux-foundation.org>
+X-Spam-Relay-Country: 
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+	*  3.0 XMNoVowels Alpha-numberic number with no vowels
+	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
+	*      [score: 0.0000]
+	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
+	*      [sa04 1397; Body=1 Fuz1=1 Fuz2=1]
+	*  0.0 XM_SPF_Neutral SPF-Neutral
+Subject: [PATCH 0/2] sysctl: lockdep support.
+X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
+X-SA-Exim-Scanned: Yes (on in01.mta.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Ingo,
+The problem:  There is a class of deadlocks that we currently
+have in the kernel that lockdep does not recognize. 
 
-Please pull the latest tip/tracing/ftrace tree, which can be found at:
+In particular with the network stack we can have:
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
-tip/tracing/ftrace
+rtnl_lock();                         use_table();
+unregister_netdevice();              rtnl_lock();
+unregister_sysctl_table();           ....
+wait_for_completion();               rtnl_lock();
+....                                 unuse_table()
+rtnl_unlock();                       complete();
 
 
-Steven Rostedt (1):
-      tracing: fix memory leak in trace_stat
 
-----
- kernel/trace/trace_stat.c |   23 +++++++++++++----------
- 1 files changed, 13 insertions(+), 10 deletions(-)
----------------------------
-commit 38c007b2f0b40747074508d8304f2cb01148fb05
-Author: Steven Rostedt <srostedt@redhat.com>
-Date:   Sat Mar 21 02:44:50 2009 -0400
+Where we never make it to the lines labled ....
 
-    tracing: fix memory leak in trace_stat
-    
-    If the function profiler does not have any items recorded and one were
-    to cat the function stat file, the kernel would take a BUG with a NULL
-    pointer dereference.
-    
-    Looking further into this, I found that returning NULL from stat_start
-    did not stop the stat logic, and would later call stat_next. This breaks
-    from the way seq_file works, so I looked into fixing the stat code.
-    
-    This is where I noticed that the last next_entry is never freed.
-    It is allocated, and if the stat_next returns NULL, the code breaks out
-    of the loop, unlocks the mutex and exits. We never link the next_entry
-    nor do we free it. Thus it is a real memory leak.
-    
-    This patch rearranges the code a bit to not only fix the memory leak,
-    but also to act more like seq_file where nothing is printed if there
-    is nothing to print. That is, stat_start returns NULL.
-    
-    Signed-off-by: Steven Rostedt <srostedt@redhat.com>
+My patch following patches treats the sysctl use count as a read/writer
+lock for purposes of lockdep.
 
-diff --git a/kernel/trace/trace_stat.c b/kernel/trace/trace_stat.c
-index 39310e3..f71b85b 100644
---- a/kernel/trace/trace_stat.c
-+++ b/kernel/trace/trace_stat.c
-@@ -75,7 +75,7 @@ static int stat_seq_init(struct tracer_stat_session *session)
- {
- 	struct trace_stat_list *iter_entry, *new_entry;
- 	struct tracer_stat *ts = session->ts;
--	void *prev_stat;
-+	void *stat;
- 	int ret = 0;
- 	int i;
- 
-@@ -85,6 +85,10 @@ static int stat_seq_init(struct tracer_stat_session *session)
- 	if (!ts->stat_cmp)
- 		ts->stat_cmp = dummy_cmp;
- 
-+	stat = ts->stat_start();
-+	if (!stat)
-+		goto exit;
-+
- 	/*
- 	 * The first entry. Actually this is the second, but the first
- 	 * one (the stat_list head) is pointless.
-@@ -99,14 +103,19 @@ static int stat_seq_init(struct tracer_stat_session *session)
- 
- 	list_add(&new_entry->list, &session->stat_list);
- 
--	new_entry->stat = ts->stat_start();
--	prev_stat = new_entry->stat;
-+	new_entry->stat = stat;
- 
- 	/*
- 	 * Iterate over the tracer stat entries and store them in a sorted
- 	 * list.
- 	 */
- 	for (i = 1; ; i++) {
-+		stat = ts->stat_next(stat, i);
-+
-+		/* End of insertion */
-+		if (!stat)
-+			break;
-+
- 		new_entry = kmalloc(sizeof(struct trace_stat_list), GFP_KERNEL);
- 		if (!new_entry) {
- 			ret = -ENOMEM;
-@@ -114,11 +123,7 @@ static int stat_seq_init(struct tracer_stat_session *session)
- 		}
- 
- 		INIT_LIST_HEAD(&new_entry->list);
--		new_entry->stat = ts->stat_next(prev_stat, i);
--
--		/* End of insertion */
--		if (!new_entry->stat)
--			break;
-+		new_entry->stat = stat;
- 
- 		list_for_each_entry(iter_entry, &session->stat_list, list) {
- 
-@@ -137,8 +142,6 @@ static int stat_seq_init(struct tracer_stat_session *session)
- 				break;
- 			}
- 		}
--
--		prev_stat = new_entry->stat;
- 	}
- exit:
- 	mutex_unlock(&session->stat_mutex);
+The code works but I'm not certain I have plugged into lockdep quite
+correctly.
+
+Eric
 
