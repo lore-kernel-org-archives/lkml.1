@@ -1,67 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756749AbZCUPI3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757661AbZCUPI5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756749AbZCUPI3 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Mar 2009 11:08:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752463AbZCUPIQ
+	id S1757661AbZCUPI5 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Mar 2009 11:08:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755036AbZCUPIo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Mar 2009 11:08:16 -0400
-Received: from mail-gx0-f208.google.com ([209.85.217.208]:50075 "EHLO
-	mail-gx0-f208.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751715AbZCUPIO (ORCPT
+	Sat, 21 Mar 2009 11:08:44 -0400
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:36729 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755185AbZCUPIn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Mar 2009 11:08:14 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=sz1xgCbr3KkRlmegYOehFfuF2W4OyRAjgWnBJ/nYCCHaeOfmuRc41HK4NpCiaLcHLD
-         +fhbdSJ5U2Y0FxnnjphgAa7639pPvs4mU/W2KOQH/BH6xjL3axWF6kaNZ8DFTu0d6EbX
-         bSjSd0eLdYKWKa3Pe7hb14wMaGtksJAzm0OSo=
-MIME-Version: 1.0
-In-Reply-To: <1237637375.5100.178.camel@johannes.local>
-References: <MiincthRUSI.A.eKC.F4BvJB@chimera>
-	 <b6a2187b0903181958ke11abe7tdcbc4efeb950954d@mail.gmail.com>
-	 <b6a2187b0903182149x77e416ecuf73be2970173c601@mail.gmail.com>
-	 <1237455534.5100.56.camel@johannes.local>
-	 <b6a2187b0903192155q33510b57l9d5927538a0f4f99@mail.gmail.com>
-	 <1237537967.5100.135.camel@johannes.local>
-	 <b6a2187b0903200304l469e3eeet87c51b1cddb43ea8@mail.gmail.com>
-	 <1237544033.5100.143.camel@johannes.local>
-	 <b6a2187b0903200914r23d635c9obc55b30b7cc04382@mail.gmail.com>
-	 <1237637375.5100.178.camel@johannes.local>
-Date: Sat, 21 Mar 2009 23:08:11 +0800
-Message-ID: <b6a2187b0903210808m7586fdc2g53e72aa269d6e353@mail.gmail.com>
-Subject: Re: 2.6.29-rc8: Reported regressions from 2.6.28
-From: Jeff Chua <jeff.chua.linux@gmail.com>
-To: Johannes Berg <johannes@sipsolutions.net>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Adrian Bunk <bunk@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Network Development <netdev@vger.kernel.org>,
-       "John W. Linville" <linville@tuxdriver.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Sat, 21 Mar 2009 11:08:43 -0400
+Subject: Re: Overagressive failing of disk reads, both LIBATA and IDE
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Mark Lord <lkml@rtr.ca>
+Cc: Mark Lord <liml@rtr.ca>, Norman Diamond <n0diamond@yahoo.co.jp>,
+       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+In-Reply-To: <49C4FFFB.5000601@rtr.ca>
+References: <F79C774361EF45A6A68BC08F8621E406@DIAMOND8600>
+	 <49C30E67.4060702@rtr.ca> <1237645333.4600.9.camel@localhost.localdomain>
+	 <49C4FFFB.5000601@rtr.ca>
+Content-Type: text/plain
+Date: Sat, 21 Mar 2009 10:08:35 -0500
+Message-Id: <1237648115.4600.12.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Mar 21, 2009 at 8:09 PM, Johannes Berg
-<johannes@sipsolutions.net> wrote:
-> Thing is that this works perfectly fine for me, on very similar
-> hardware.
+On Sat, 2009-03-21 at 10:55 -0400, Mark Lord wrote:
+> James Bottomley wrote:
+> > On Thu, 2009-03-19 at 23:32 -0400, Mark Lord wrote:
+> ..
+> >> Allow SCSI to continue with the remaining blocks of a request
+> >> after encountering a media error.  Otherwise, it may just fail
+> >> the entire request, even though some blocks were fine and needed
+> >> by a completely different process than the one that wanted the bad block(s).
+> >>
+> >> Signed-off-by: Mark Lord <mlord@pobox.com>
+> >>
+> >> --- linux-2.6.16.60-0.6/drivers/scsi/scsi_lib.c	2008-03-10 13:46:03.000000000 -0400
+> >> +++ linux/drivers/scsi/scsi_lib.c	2008-03-21 11:54:09.000000000 -0400
+> >> @@ -888,6 +888,12 @@
+> >>  	 */
+> >>  	if (sense_valid && !sense_deferred) {
+> >>  		switch (sshdr.sense_key) {
+> >> +		case MEDIUM_ERROR:
+> >> +		/* Bad sector.  Fail it, and then continue the rest of the request. */
+> >> +		if (scsi_end_request(cmd, 0, cmd->device->sector_size, 1) == NULL) {
+> >> +			cmd->retries = 0;       // go around again..
+> >> +			return;
+> >> +		}
+> > 
+> > But we've been over this.  You can't apply something like this because
+> > it ignores retries and chunks up the request a sector at a time.  For
+> > the enterprise that can increase failure time from a few seconds to
+> > hours for 512k transfers.
+> > 
+> > Using the disk supplied data about where the error occurred (provided
+> > the disk returns it) eliminates all the readahead problems like the one
+> > above.  Perhaps just turning of readahead for disks that don't supply
+> > error location information would be a reasonable workaround?
+> ..
+> 
+> The patch *does* use the disk supplied data about the error,
+> and returns success for sectors up to that point.  Where it differs
+> from mainline SCSI, is that it then continues attempting the remaining
+> 2000 sectors (or whatever) of the request, hoping that not all of
+> them are bad.
 
-I've set hidden SSID + mac address filtering (only allow my notebook
-MAC address) as well as 128 WEP. And no problem to associate with
-non-hidden AP.
+Um, but so does SCSI without your patch ... that was my point.
 
-> OTOH, maybe it got _fixed_ again. Would you check wireless-testing
-> (http://wireless.kernel.org/en/developers/Documentation#wireless-testing.git) for me? Or compat-wireless (http://wireless.kernel.org/en/users/Download)
+> It's not perfect, and likely no longer applies/works cleanly on the
+> latest kernels.  And perhaps it really ought to fail a "block" rather
+> than a "sector" at a time as it seeks clean media after the fault.
+> 
+> I think it could be even more clever, using a binary search or something
+> on the remaining chunks, so that it takes less time to skip over a huge
+> stretch of sequential bad sectors (scratch on media).  That would probably
+> be best all around.
 
-I'll try that tomorrow. Seems a lot to pull from git.
+I don't really think we'd do that.  The problem, as you say is request
+combination.  I think if we really wanted to do this, we'd have block do
+it.  Each separate request that's merged gets a separate bio, and block
+already has capabilities to pick up per bio errors, so we'd do the
+partial completion of the failing bio then skip to the next one in the
+request to try.  That would completely solve both readahead problems and
+request merging ones.
 
-Thanks,
-Jeff.
+James
+
+
