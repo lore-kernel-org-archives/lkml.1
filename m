@@ -1,80 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758226AbZCUQhK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759385AbZCUQhj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758226AbZCUQhK (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Mar 2009 12:37:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754631AbZCUQg4
+	id S1759385AbZCUQhj (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Mar 2009 12:37:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756271AbZCUQhF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Mar 2009 12:36:56 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:54967 "EHLO mx2.mail.elte.hu"
+	Sat, 21 Mar 2009 12:37:05 -0400
+Received: from leb.cs.unibo.it ([130.136.1.102]:38786 "EHLO leb.cs.unibo.it"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754225AbZCUQgz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Mar 2009 12:36:55 -0400
-Date: Sat, 21 Mar 2009 17:36:42 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Jaswinder Singh Rajput <jaswinder@kernel.org>
-Cc: x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH -tip] x86: apic/io_apic fix compilation warning
-Message-ID: <20090321163642.GI11183@elte.hu>
-References: <1237630967.2409.1.camel@ht.satnam>
+	id S1756771AbZCUQhE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 21 Mar 2009 12:37:04 -0400
+Date: Sat, 21 Mar 2009 17:37:00 +0100
+From: Renzo Davoli <renzo@cs.unibo.it>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Roland McGrath <roland@redhat.com>, utrace-devel@redhat.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/3] utrace core
+Message-ID: <20090321163700.GA22292@cs.unibo.it>
+References: <20090321013946.890F4FC3AB@magilla.sf.frob.com> <20090321014140.AA4F5FC3AB@magilla.sf.frob.com> <20090321014909.6b654f55.akpm@linux-foundation.org> <20090321140822.GE18690@cs.unibo.it> <20090321143457.GA24254@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1237630967.2409.1.camel@ht.satnam>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20090321143457.GA24254@elte.hu>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, Mar 21, 2009 at 03:34:57PM +0100, Ingo Molnar wrote:
+> 
+> * Renzo Davoli <renzo@cs.unibo.it> wrote:
+> 
+> > Tracing does not mean only debug. Some tracing facilities can be 
+> > used for virtualization. For example User-Mode Linux is based on 
+> > ptrace.
+> > 
+> > I have a prototype of kernel module for virtualization (kmview) 
+> > based on utrace. [...]
+> 
+> Hm, i cannot find the source code. Can it be downloaded from 
+> somewhere?
+Sure! kmview is not included in our Debian packages yet as it relies on 
+(still) non mainstream features (utrace), but the code is available on 
+our view-os svn repository.
 
-* Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
+Check out:
+svn co https://view-os.svn.sourceforge.net/svnroot/view-os view-os 
 
-> Hello Ingo,
-> 
-> Is this fix looks OK to you:
-> 
-> From: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
-> Date: Sat, 21 Mar 2009 15:41:17 +0530
-> Subject: [PATCH] x86: apic/io_apic fix compilation warning
-> 
-> Fix:
->  arch/x86/kernel/apic/io_apic.c:1431: warning: ‘msi_ir_chip’ defined but not used
-> 
-> Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
-> ---
->  arch/x86/kernel/apic/io_apic.c |    3 ++-
->  1 files changed, 2 insertions(+), 1 deletions(-)
-> 
-> diff --git a/arch/x86/kernel/apic/io_apic.c b/arch/x86/kernel/apic/io_apic.c
-> index d882c03..3ca7838 100644
-> --- a/arch/x86/kernel/apic/io_apic.c
-> +++ b/arch/x86/kernel/apic/io_apic.c
-> @@ -1428,7 +1428,6 @@ void __setup_vector_irq(int cpu)
->  
->  static struct irq_chip ioapic_chip;
->  static struct irq_chip ir_ioapic_chip;
-> -static struct irq_chip msi_ir_chip;
->  
->  #define IOAPIC_AUTO     -1
->  #define IOAPIC_EDGE     0
-> @@ -3402,6 +3401,8 @@ static struct irq_chip msi_ir_chip = {
->  #endif
->  	.retrigger	= ioapic_retrigger_irq,
->  };
-> +#else
-> +static struct irq_chip msi_ir_chip;
->  #endif
+More specifically to browse the code/specifications:
+The kmview device protocol is here:
+http://wiki.virtualsquare.org/index.php/KMview_module_interface_specifications
+The kernel module itself is here:
+http://view-os.svn.sourceforge.net/viewvc/view-os/trunk/kmview-kernel-module/
+The VMM userland application share most of the code with
+umview, the source code for both is here:
+http://view-os.svn.sourceforge.net/viewvc/view-os/trunk/xmview-os/xmview/
 
-hm, i think it would be cleaner to remove the CONFIG_INTR_REMAP 
-define altogether and define msi_ir_chip all the time. (and make 
-sure this build fine even in the !INTR_REMAP case)
+kmview kernel module (current version) needs the following patches:
+utrace
+http://www.mail-archive.com/utrace-devel@redhat.com/msg00654.html
+http://www.mail-archive.com/utrace-devel@redhat.com/msg00655.html
+I am trying to keep everything up to date, but the whole stuff is
+evolving in a quite fast way.
 
-	Ingo
+Everything has been released under GPLv2.
+
+	renzo
