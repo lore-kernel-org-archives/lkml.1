@@ -1,106 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754429AbZCUBdy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754632AbZCUBlV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754429AbZCUBdy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Mar 2009 21:33:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757021AbZCUBdS
+	id S1754632AbZCUBlV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Mar 2009 21:41:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752419AbZCUBlH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Mar 2009 21:33:18 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:37118 "EHLO mx2.redhat.com"
+	Fri, 20 Mar 2009 21:41:07 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:57137 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757037AbZCUBdR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Mar 2009 21:33:17 -0400
-Message-ID: <49C44412.5080408@redhat.com>
-Date: Fri, 20 Mar 2009 21:34:10 -0400
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	id S1752068AbZCUBlG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Mar 2009 21:41:06 -0400
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>
-CC: LKML <linux-kernel@vger.kernel.org>,
-       systemtap-ml <systemtap@sources.redhat.com>
-Subject: [RFC][PATCH -tip 5/5 V2] tracing: kprobe-tracer plugin supports module
- init/exit
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: utrace-devel@redhat.com, linux-kernel@vger.kernel.org
+X-Fcc: ~/Mail/utrace
+Subject: [PATCH 0/3] utrace
+X-Zippy-Says: My LESLIE GORE record is BROKEN..
+Message-Id: <20090321013946.890F4FC3AB@magilla.sf.frob.com>
+Date: Fri, 20 Mar 2009 18:39:46 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use register/unregister_module_*probe functions for tracing
-module .init/.exit functions.
+utrace is a new kernel-side API for kernel modules, intended to make it
+tractable to work on novel ways to trace and debug user-mode tasks.
 
-changes from v1:
- - simplify activate_handler().
+These patches apply to the current Linus tree (v2.6.29-rc8-241-g65c2449).
+The first two should apply fine on the -tip tree as well, and we will be
+glad to rebase the set to whichever tree.  Frank has another version of the
+ftrace patch (3/3) that works for -tip.  The utrace patches don't touch
+anything unless you set a new kconfig option (still marked EXPERIMENTAL),
+and so are quite safe in that regard.
 
-Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>
-Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>
----
+utrace cannot be enabled without CONFIG_HAVE_ARCH_TRACEHOOK and the arch
+details it indicates.  If your arch does not have it yet, its maintainers
+will have to work on that.  The details are in the comments in arch/Kconfig.
 
- kernel/trace/trace_kprobe.c |   15 ++++++++++-----
- 1 files changed, 10 insertions(+), 5 deletions(-)
+The first patch makes a small update to one of the tracehook.h interfaces
+that we needed for utrace.  It moves code a little but does not change any
+of the logic in the existing code.
 
+The second patch adds the utrace kernel API (if CONFIG_UTRACE=y is set).
+There is no change at all without the config option, and with it there is
+no effect on anything at all until a kernel module using the utrace API is
+loaded.  There is detailed documentation on the API in DocBook form.
 
-diff --git a/kernel/trace/trace_kprobe.c b/kernel/trace/trace_kprobe.c
-index def322f..afcfa4a 100644
---- a/kernel/trace/trace_kprobe.c
-+++ b/kernel/trace/trace_kprobe.c
-@@ -228,6 +228,11 @@ static void free_trace_probe(struct trace_probe *tp)
- 	kfree(tp);
- }
-
-+static int activate_handler(void *offset, struct module *mod)
-+{
-+	return !offset;
-+}
-+
- static int register_trace_probe(struct trace_probe *tp)
- {
- 	int ret;
-@@ -236,9 +241,10 @@ static int register_trace_probe(struct trace_probe *tp)
- 	list_add_tail(&tp->list, &probe_list);
-
- 	if (probe_is_return(tp))
--		ret = register_kretprobe(&tp->rp);
-+		ret = register_module_kretprobe(&tp->rp, activate_handler, 0);
- 	else
--		ret = register_kprobe(&tp->kp);
-+		ret = register_module_kprobe(&tp->kp, activate_handler,
-+					     (void *)(tp->kp.offset));
-
- 	if (ret) {
- 		pr_warning("Probe registering error: %d\n", ret);
-@@ -251,9 +257,9 @@ static int register_trace_probe(struct trace_probe *tp)
- static void unregister_trace_probe(struct trace_probe *tp)
- {
- 	if (probe_is_return(tp))
--		unregister_kretprobe(&tp->rp);
-+		unregister_module_kretprobe(&tp->rp);
- 	else
--		unregister_kprobe(&tp->kp);
-+		unregister_module_kprobe(&tp->kp);
- 	list_del(&tp->list);
- }
-
-@@ -303,7 +309,6 @@ static int create_trace_probe(int argc, char **argv)
- 	} else {
- 		/* a symbol specified */
- 		symbol = argv[1];
--		/* TODO: support .init module functions */
- 		tmp = strchr(symbol, '+');
- 		if (!tmp)
- 			tmp = strchr(symbol, '-');
--- 
-Masami Hiramatsu
-
-Software Engineer
-Hitachi Computer Products (America) Inc.
-Software Solutions Division
-
-e-mail: mhiramat@redhat.com
+The third patch is an ftrace widget based on utrace, by Frank Eigler.
+Frank will follow up on any issues about that patch.
 
 
+Thanks,
+Roland
