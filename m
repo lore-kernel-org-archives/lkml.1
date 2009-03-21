@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757677AbZCUTZ6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756614AbZCUT02@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757677AbZCUTZ6 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Mar 2009 15:25:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755531AbZCUTTe
+	id S1756614AbZCUT02 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Mar 2009 15:26:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755146AbZCUTTg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Mar 2009 15:19:34 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:51934 "EHLO ogre.sisk.pl"
+	Sat, 21 Mar 2009 15:19:36 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:51939 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755501AbZCUTTc convert rfc822-to-8bit (ORCPT
+	id S1755463AbZCUTTe convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Mar 2009 15:19:32 -0400
+	Sat, 21 Mar 2009 15:19:34 -0400
 Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Benjamin Herrenschmidt" <benh@kernel.crashing.org>,
-       "Raymond Wooninck" <tittiatcoke@gmail.com>
+       "Hugh Dickins" <hugh@veritas.com>,
+       "John W. Linville" <linville@tuxdriver.com>
 References: <GPBuLTara4J.A.3kH.TZTxJB@chimera>
 In-Reply-To: <GPBuLTara4J.A.3kH.TZTxJB@chimera>
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
@@ -20,10 +20,10 @@ MIME-Version: 1.0
 Content-Disposition: inline
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8BIT
-Message-ID: <l8NZ2a3iQtG.A.4h.uZTxJB@chimera>
-Subject: [Bug #12846] Regression issue with kernel 2.6.29-rc6-git1: high power consumption during sleep
+Message-ID: <l8NZ2a3iQtG.A.KM.jZTxJB@chimera>
+Subject: [Bug #12870] 2.6.29-rc "TKIP: replay detected" regression
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Date: Sat, 21 Mar 2009 17:39:05 +0100 (CET)
+Date: Sat, 21 Mar 2009 17:39:06 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -36,10 +36,12 @@ from 2.6.28.  Please verify if it still should be listed and let me know
 (either way).
 
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12846
-Subject		: Regression issue with kernel 2.6.29-rc6-git1: high power consumption during sleep
-Submitter	: Raymond Wooninck <tittiatcoke@gmail.com>
-Date		: 2009-03-09 08:18 (13 days old)
-First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=1fb25cb8b83e85f5bf1a4adb3c9a254c4ce92405
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12870
+Subject		: 2.6.29-rc "TKIP: replay detected" regression
+Submitter	: Hugh Dickins <hugh@veritas.com>
+Date		: 2009-03-11 12:07 (11 days old)
+References	: http://marc.info/?l=linux-kernel&m=123677337219148&w=4
+Handled-By	: John W. Linville <linville@tuxdriver.com>
+Patch		: http://marc.info/?l=linux-wireless&m=123678463704691&w=2
 
 
