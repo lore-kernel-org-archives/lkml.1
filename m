@@ -1,56 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756239AbZCUNNt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755067AbZCUNPI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756239AbZCUNNt (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Mar 2009 09:13:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753089AbZCUNNi
+	id S1755067AbZCUNPI (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Mar 2009 09:15:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753089AbZCUNOz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Mar 2009 09:13:38 -0400
-Received: from rhun.apana.org.au ([64.62.148.172]:58842 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752914AbZCUNNh (ORCPT
+	Sat, 21 Mar 2009 09:14:55 -0400
+Received: from ti-out-0910.google.com ([209.85.142.191]:36889 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752963AbZCUNOy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Mar 2009 09:13:37 -0400
-Date: Sat, 21 Mar 2009 21:13:26 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Heiko Carstens <heiko.carstens@de.ibm.com>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
-       Jan Glauber <jang@linux.vnet.ibm.com>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>
-Subject: Re: linux-next: Tree for March 20 - crypto crash on s390
-Message-ID: <20090321131326.GA15991@gondor.apana.org.au>
-References: <20090320162800.24b0ad93.sfr@canb.auug.org.au> <20090320135912.53147d76@osiris.boeblingen.de.ibm.com> <20090321062605.GA14046@gondor.apana.org.au> <20090321115629.6e911679@osiris.boeblingen.de.ibm.com>
+	Sat, 21 Mar 2009 09:14:54 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=V2IQiYiFFRqsCX+RsdO53EvkRAHHkd85id/hsEPSNnSBdX9pzvECKimNitFyezOzgT
+         jlrVXW7Kl/dsaGWwFLqr7tpQfBPlJzDQAvWpYm2NRoKRkKEL3NEr1SCypztDQFhOquHQ
+         DbF7/+Q9BApeTkEKOCKi4zjFxVBR8kng4XqeY=
+Message-ID: <49C4E83D.1020604@vflare.org>
+Date: Sat, 21 Mar 2009 18:44:37 +0530
+From: Nitin Gupta <nitingupta910@gmail.com>
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090321115629.6e911679@osiris.boeblingen.de.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Pekka Enberg <penberg@cs.helsinki.fi>, cl@linux-foundation.org,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 2/3] xvmalloc memory allocator
+References: <ztOQA2Cz.1237575719.7896090.penberg@cs.helsinki.fi>	<49C3F1EE.90903@vflare.org>	<20090321032137.8dc113e8.akpm@linux-foundation.org>	<49C4D9C4.1030103@vflare.org> <20090321052416.6eb38759.akpm@linux-foundation.org>
+In-Reply-To: <20090321052416.6eb38759.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Mar 21, 2009 at 11:56:29AM +0100, Heiko Carstens wrote:
->
-> > diff --git a/arch/s390/crypto/sha512_s390.c b/arch/s390/crypto/sha512_s390.c
-> > index 420acf4..37b4236 100644
-> > --- a/arch/s390/crypto/sha512_s390.c
-> > +++ b/arch/s390/crypto/sha512_s390.c
-> > @@ -84,6 +84,7 @@ static struct shash_alg sha384_alg = {
-> >  		.cra_driver_name=	"sha384-s390",
-> >  		.cra_priority	=	CRYPT_S390_PRIORITY,
-> >  		.cra_flags	=	CRYPTO_ALG_TYPE_SHASH,
-> > +		.cra_blocksize	=	SHA512_BLOCK_SIZE,
+Andrew Morton wrote:
+> On Sat, 21 Mar 2009 17:42:52 +0530 Nitin Gupta <nitingupta910@gmail.com> wrote:
 > 
-> Yes, it does fix it. Thanks!
+>> Andrew Morton wrote:
+>>> On Sat, 21 Mar 2009 01:13:42 +0530 Nitin Gupta <ngupta@vflare.org> wrote:
+>>> But what is regrettable is that xvmalloc appears to be tied to
+>>> compressed-swap in some manner.  Is it not possible to split these two
+>>> initiatives apart so that neither is dependent upon the other?  Or is
+>>> compressed-swap hopelessly crippled without xvmalloc?
+>> xvmalloc itself is completely independent of compressed-swap. Infact, its
+>> loaded as separate kernel module (xvmalloc.ko)
 > 
-> Tested-by: Heiko Carstens <heiko.carstens@de.ibm.com>
+> That sounds good.
+> 
+>> However, this compression project is almost useless without this specialized
+>> allocator.
+> 
+> Why?  Important information!!
+> 
+> See, being told all this helps us understand why xvmalloc exists.  Plus
+> once we have a good description of _why_ xvmalloc is needed, perhaps we can
+> come up with alternatives which are more palatable than merging a whole new
+> allocator.  Such as enhancing an existing one.
+> 
 
-Thanks.  I've now changed it to say SHA384_BLOCK_SIZE (which is
-identical but makes a little more sense).
+xvmalloc is needed by compressed swap since:
+  - Its O(1)
+  - It is very memory efficient
+  - It can use "high memory" for allocation
 
-Cheers,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+* space efficiency:
+
+  - comparison with SLUB:
+http://code.google.com/p/compcache/wiki/AllocatorsComparison
+shows that tlsf (allocator on which xvmalloc is based) uses ~40% less memory
+than kmalloc() backed by SLUB. Christoph suggested creating multiple slabs of
+different sizes for this test -- which will be a more fair comparison as kmalloc
+just uses some predefined slabs. I hope to present this data soon.
+Also, SLUB is limited to using "low memory" - this is blocker issue for compress
+swap project (on 32-bit system with >1G RAM). xvmalloc can use high memory.
+
+  - comparison with SLOB:
+In some previous mail in this thread, I explained all the issues that exist
+with SLOB that make it unacceptable for use in this project.
+
+
+>>> (compcache is a terrible name, btw - it isn't a "compressed cache" at all!)
+>>>
+>> I have now heard this many times and my conscious is beginning to hurt now :)
+>> I will change it to match name of its block device: ramzswap   sounds better?
+> 
+> Is there anything swap-specific about it?  It's a block device, yes?  I
+> should be able to run mkfs.ext2 on it and mount the thing?
+> 
+No. It can handle page-aligned I/O only. Maybe its not too difficult to extend
+it to handle arbitrary I/O. But as a swap device, handling just page-aligned
+I/O is good enough.
+
+>>>> Anyways, I will move it to drivers/block.
+>>> This sounds like it might be a backward step.
+>>
+>> I'm bit confused here. Last thing I want to do is block mainline merge
+>> because of such issues. Its real pain to maintain these things separately.
+> 
+> This is why I tell myself to never use the word "it" in an email message.
+> 
+> I assumed that you were referring to moving xvmalloc() down into
+> drivers/block.  That would be bad, because then xvmalloc() will _never_ be
+> usable by anything other than ramzblock <new name!>?
+> 
+
+I was also referring to moving xvmalloc to drivers/block. I meant that for
+now maybe move it to drivers/block it that can help speed up the merge.
+Maybe later if someone else find it useful too then we can work to move
+it back to the real place: mm/ :)
+
+Thanks,
+Nitin
+
