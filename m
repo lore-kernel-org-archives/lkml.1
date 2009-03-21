@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756994AbZCUTXl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755757AbZCUTX7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756994AbZCUTXl (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Mar 2009 15:23:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755266AbZCUTTG
+	id S1755757AbZCUTX7 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Mar 2009 15:23:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755188AbZCUTTV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Mar 2009 15:19:06 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:51892 "EHLO ogre.sisk.pl"
+	Sat, 21 Mar 2009 15:19:21 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:51911 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755291AbZCUTSz convert rfc822-to-8bit (ORCPT
+	id S1755360AbZCUTTU convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Mar 2009 15:18:55 -0400
+	Sat, 21 Mar 2009 15:19:20 -0400
 Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Thomas Hellstrom" <thellstrom@vmware.com>
+       "Rafael J. Wysocki" <rjw@sisk.pl>, "Tino Keitel" <tino.keitel@gmx.de>
 References: <GPBuLTara4J.A.3kH.TZTxJB@chimera>
 In-Reply-To: <GPBuLTara4J.A.3kH.TZTxJB@chimera>
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
@@ -19,8 +19,8 @@ MIME-Version: 1.0
 Content-Disposition: inline
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8BIT
-Message-ID: <l8NZ2a3iQtG.A.v9.HaTxJB@chimera>
-Subject: [Bug #12800] x86 PAT invalid vm_insert_pfn assumptions
+Message-ID: <l8NZ2a3iQtG.A.h7.BaTxJB@chimera>
+Subject: [Bug #12808] Suspend regression with 2.6.29-rc
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Date: Sat, 21 Mar 2009 17:39:04 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
@@ -35,9 +35,11 @@ from 2.6.28.  Please verify if it still should be listed and let me know
 (either way).
 
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12800
-Subject		: x86 PAT invalid vm_insert_pfn assumptions
-Submitter	: Thomas Hellstrom <thellstrom@vmware.com>
-Date		: 2009-03-02 01:40 (20 days old)
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12808
+Subject		: Suspend regression with 2.6.29-rc
+Submitter	: Tino Keitel <tino.keitel@gmx.de>
+Date		: 2009-02-24 19:08 (26 days old)
+References	: http://marc.info/?l=linux-kernel&m=123550257312112&w=4
+Handled-By	: Rafael J. Wysocki <rjw@sisk.pl>
 
 
