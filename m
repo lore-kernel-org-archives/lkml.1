@@ -1,70 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755304AbZCUVCP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754437AbZCUVH7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755304AbZCUVCP (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Mar 2009 17:02:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753750AbZCUVB6
+	id S1754437AbZCUVH7 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Mar 2009 17:07:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753107AbZCUVHu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Mar 2009 17:01:58 -0400
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:56878 "EHLO e1.ny.us.ibm.com"
+	Sat, 21 Mar 2009 17:07:50 -0400
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:49293 "EHLO e3.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753284AbZCUVB6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Mar 2009 17:01:58 -0400
-Date: Sat, 21 Mar 2009 14:01:54 -0700
+	id S1752786AbZCUVHt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 21 Mar 2009 17:07:49 -0400
+Date: Sat, 21 Mar 2009 14:07:45 -0700
 From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH 0/5] [GIT PULL] updates for tip/tracing/ftrace
-Message-ID: <20090321210154.GD7148@linux.vnet.ibm.com>
+To: Eric Dumazet <dada1@cosmosbay.com>
+Cc: Arjan van de Ven <arjan@infradead.org>, dipankar@in.ibm.com,
+       linux-input@vger.kernel.org, dmitry.torokhov@gmail.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: Question about usage of RCU in the input layer
+Message-ID: <20090321210745.GE7148@linux.vnet.ibm.com>
 Reply-To: paulmck@linux.vnet.ibm.com
-References: <20090320192721.GI6224@elte.hu> <20090320194617.GA5934@nowhere> <20090320195414.GA24129@elte.hu> <20090320204848.GA6044@nowhere> <alpine.DEB.2.00.0903201705380.13615@gandalf.stny.rr.com> <20090321100129.GC7201@elte.hu> <20090321165804.GA21366@elte.hu> <alpine.DEB.2.00.0903211323560.13615@gandalf.stny.rr.com> <20090321190746.GC7148@linux.vnet.ibm.com> <20090321200919.GA23992@elte.hu>
+References: <20090319071841.63334eff@infradead.org> <20090320020750.GA6807@linux.vnet.ibm.com> <20090319202032.4c971d92@infradead.org> <20090320044541.GE6807@linux.vnet.ibm.com> <20090320065058.65d01771@infradead.org> <20090320143104.GA6698@linux.vnet.ibm.com> <20090320111354.679ab53d@infradead.org> <20090321012746.GM6698@linux.vnet.ibm.com> <20090321125115.0a76ac27@infradead.org> <49C54D60.80306@cosmosbay.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <20090321200919.GA23992@elte.hu>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <49C54D60.80306@cosmosbay.com>
 User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Mar 21, 2009 at 09:09:19PM +0100, Ingo Molnar wrote:
-> * Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
-> > On Sat, Mar 21, 2009 at 01:25:23PM -0400, Steven Rostedt wrote:
-> > > On Sat, 21 Mar 2009, Ingo Molnar wrote:
-> > > > * Ingo Molnar <mingo@elte.hu> wrote:
-
-[ . . . ]
-
-> > > > CONFIG_CLASSIC_RCU=y
-> > > 
-> > > All the crashes you reported only happen with classic RCU.
-> > > 
-> > > Paul,
-> > > 
-> > > Did anything change recently that could cause this lockup?
+On Sat, Mar 21, 2009 at 09:26:08PM +0100, Eric Dumazet wrote:
+> Arjan van de Ven a écrit :
+> > On Fri, 20 Mar 2009 18:27:46 -0700
+> > "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
 > > 
-> > Arjan van de Ven is seeing a problem where a single 
-> > synchronize_rcu() during bootup is taking a full second, which is 
-> > currently thought to be due to some drivers spinning in the kernel 
-> > (Arjan is working on a bootgraph that will hopefully pinpoint the 
-> > problem: http://lkml.org/lkml/2009/3/21/7).  If the drivers were 
-> > also instrumented with ftrace, they might (or might not)slow down 
-> > even further, depending on exactly why they are spinning.
+> >> On Fri, Mar 20, 2009 at 11:13:54AM -0700, Arjan van de Ven wrote:
+> >>> On Fri, 20 Mar 2009 07:31:04 -0700
+> >>> "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
+> >>>>> that'd be throwing out the baby with the bathwater... I'm
+> >>>>> trying to use the other cpus to do some of the boot work (so
+> >>>>> that the total goes faster); not using the other cpus would be
+> >>>>> counter productive to that. (As is just sitting in
+> >>>>> synchronize_rcu() when the other cpu is working.. hence this
+> >>>>> discussion ;-)
+> >>>> OK, so you are definitely running multiple CPUs when the offending
+> >>>> synchronize_rcu() executes, then?
+> >>> absolutely. 
+> >>> (and I'm using bootgraph.pl in scripts to track who's stalling etc)
+> >>>> If so, here are some follow-on questions:
+> >>>>
+> >>>> 1.	How many synchronize_rcu() calls are you seeing on the
+> >>>> 	critical boot path
+> >>> I've seen only this (input) one to take a long time
+> >> Ouch!!!  A -single- synchronize_rcu() taking a full second???  That
+> >> indicates breakage.
+> >>
+> >>>>  and what value of HZ are you running?
+> >>> 1000
+> >> K, in absence of readers for RCU_CLASSIC, we should see a handful
+> >> of milliseconds for synchronize_rcu().
+> > 
+> > I've attached an instrumented bootgraph of what is going on;
+> > the rcu delays are shown as red blocks inside the regular functions
+> > as they initialize......
+> > 
+> > (svg can be viewed with inkscape, gimp, firefox and various other tools)
 > 
-> for one of the hung boxes in the past i waited 24 hours but it never 
-> unwedged itself. The box that hung today is still hanging and the 
-> RCU stall detector is still busy printing out those backtraces.
+> Interesting stuff...
+> 
+> I thought you mentioned i2c drivers being source of the udelays(),
+>  but I cant see them in this svg, unless its async_probe_hard ?
 
-And on the last trace you emailed, the first and the last stall warning
-are identical according to "diff".  In fact, they are all identical.
-That is a bit unusual, one would normally expect to see slight differences
-in the stack based on the scheduling clock interrupt hitting the "longer
-than average loop" in different places each time.
-
-That would indicate either a very tight loop or a loop that has
-interrupts enabled only in one spot.
+Arjan, another thought -- if the udelays() are not under rcu_read_lock(),
+you should be able to finesse this by using CONFIG_PREEMPT_RCU, which
+will happily ignore spinning CPUs as long as they are not in an RCU
+read-side critical section.
 
 							Thanx, Paul
