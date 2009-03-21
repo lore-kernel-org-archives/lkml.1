@@ -1,79 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754437AbZCUVH7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754973AbZCUVLT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754437AbZCUVH7 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Mar 2009 17:07:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753107AbZCUVHu
+	id S1754973AbZCUVLT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Mar 2009 17:11:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753034AbZCUVLJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Mar 2009 17:07:50 -0400
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:49293 "EHLO e3.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752786AbZCUVHt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Mar 2009 17:07:49 -0400
-Date: Sat, 21 Mar 2009 14:07:45 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Eric Dumazet <dada1@cosmosbay.com>
-Cc: Arjan van de Ven <arjan@infradead.org>, dipankar@in.ibm.com,
-       linux-input@vger.kernel.org, dmitry.torokhov@gmail.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: Question about usage of RCU in the input layer
-Message-ID: <20090321210745.GE7148@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20090319071841.63334eff@infradead.org> <20090320020750.GA6807@linux.vnet.ibm.com> <20090319202032.4c971d92@infradead.org> <20090320044541.GE6807@linux.vnet.ibm.com> <20090320065058.65d01771@infradead.org> <20090320143104.GA6698@linux.vnet.ibm.com> <20090320111354.679ab53d@infradead.org> <20090321012746.GM6698@linux.vnet.ibm.com> <20090321125115.0a76ac27@infradead.org> <49C54D60.80306@cosmosbay.com>
+	Sat, 21 Mar 2009 17:11:09 -0400
+Received: from extu-mxob-2.symantec.com ([216.10.194.135]:59135 "EHLO
+	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752918AbZCUVLI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 21 Mar 2009 17:11:08 -0400
+Date: Sat, 21 Mar 2009 21:10:50 +0000 (GMT)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.anvils
+To: Udo van den Heuvel <udovdh@xs4all.nl>
+cc: linux-kernel@vger.kernel.org, Folkert van Heusden <folkert@vanheusden.com>
+Subject: Re: 2.6.28.2 kernel bug
+In-Reply-To: <49C52958.7030700@xs4all.nl>
+Message-ID: <Pine.LNX.4.64.0903212014380.15606@blonde.anvils>
+References: <49C52958.7030700@xs4all.nl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <49C54D60.80306@cosmosbay.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Mar 21, 2009 at 09:26:08PM +0100, Eric Dumazet wrote:
-> Arjan van de Ven a écrit :
-> > On Fri, 20 Mar 2009 18:27:46 -0700
-> > "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
-> > 
-> >> On Fri, Mar 20, 2009 at 11:13:54AM -0700, Arjan van de Ven wrote:
-> >>> On Fri, 20 Mar 2009 07:31:04 -0700
-> >>> "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
-> >>>>> that'd be throwing out the baby with the bathwater... I'm
-> >>>>> trying to use the other cpus to do some of the boot work (so
-> >>>>> that the total goes faster); not using the other cpus would be
-> >>>>> counter productive to that. (As is just sitting in
-> >>>>> synchronize_rcu() when the other cpu is working.. hence this
-> >>>>> discussion ;-)
-> >>>> OK, so you are definitely running multiple CPUs when the offending
-> >>>> synchronize_rcu() executes, then?
-> >>> absolutely. 
-> >>> (and I'm using bootgraph.pl in scripts to track who's stalling etc)
-> >>>> If so, here are some follow-on questions:
-> >>>>
-> >>>> 1.	How many synchronize_rcu() calls are you seeing on the
-> >>>> 	critical boot path
-> >>> I've seen only this (input) one to take a long time
-> >> Ouch!!!  A -single- synchronize_rcu() taking a full second???  That
-> >> indicates breakage.
-> >>
-> >>>>  and what value of HZ are you running?
-> >>> 1000
-> >> K, in absence of readers for RCU_CLASSIC, we should see a handful
-> >> of milliseconds for synchronize_rcu().
-> > 
-> > I've attached an instrumented bootgraph of what is going on;
-> > the rcu delays are shown as red blocks inside the regular functions
-> > as they initialize......
-> > 
-> > (svg can be viewed with inkscape, gimp, firefox and various other tools)
+On Sat, 21 Mar 2009, Udo van den Heuvel wrote:
 > 
-> Interesting stuff...
+> While doing a find to get rid of 2.5M smallish files in 1 directory I got the
+> stuff pasted below which made the system freeze.
+> This is on Fedora 10 on AMD x86_64 with a custom kernel.
+> Any ideas on how to fix this? Can I help?
+
+Thanks for the helpful full messages, I've cut them down to edited
+highlights below (the "scheduling while atomic" messages were just
+consequential noise, and I doubt the "general protection fault" is
+worth worrying about, given the errors that had already occurred).
+
+I'm pretty sure the page at ffffe20001d4b8e8 is the page with pfn 85ebb
+(0x85ebb * 0x38 == 0x1d4b8e8, 0x38 being sizeof(struct page) on x86_64);
+and the fs/buffer.c:710 warning is likely to be on that same page too.
+
+So we're probably seeing the fallout of just one page which somehow
+got freed and reused while it's still in use elsewhere.  I've not
+attempted a full history of what happens to page count and mapcount
+in such a confusing case, but the various mapcount -1 errors are
+almost certainly just the consequence of how we force it to 0 when
+"Bad page state" finds it 1 (2.6.29-rc handles these differently,
+and should be more robust).
+
+But I don't have any theory for why that might have happened.
+Page table corruption might be a possibility, but I think that
+usually manifests as rmap Eeeks first.  It would certainly be
+helpful to run memtest as Alexey suggested.
+
+This would become more interesting if you are able to reproduce it,
+or something like it - is that massive removal of files something
+you often do without a problem, or was this new?  What does your
+find/rm command line look like?  I'm wondering if we have a bug
+with exceptionally long arg lists.
+
+Hugh
+
+> Bad page state in process 'find'
+> page:ffffe20001d4b8e8 flags:0x4000000000080008
+> mapping:0000000000000000 mapcount:1 count:0
+> unmap_vmas+0x8b4/0x9a0
+> exit_mmap+0xb5/0x1c0
+> mmput+0x25/0xc0
+> flush_old_exec+0x1de/0x890
+> load_elf_binary+0x0/0x1dd0
 > 
-> I thought you mentioned i2c drivers being source of the udelays(),
->  but I cant see them in this svg, unless its async_probe_hard ?
-
-Arjan, another thought -- if the udelays() are not under rcu_read_lock(),
-you should be able to finesse this by using CONFIG_PREEMPT_RCU, which
-will happily ignore spinning CPUs as long as they are not in an RCU
-read-side critical section.
-
-							Thanx, Paul
+> Bad page state in process 'find'
+> page:ffffe20001d4b8e8 flags:0x4000000000000008
+> mapping:0000000000000000 mapcount:1 count:1
+> get_page_from_freelist+0x5c5/0x600
+> __alloc_pages_internal+0xe7/0x4b0
+> __get_user_pages+0x136/0x450
+> get_arg_page+0x46/0xb0
+> copy_strings+0x102/0x1e0
+> 
+> Eeek! page_mapcount(page) went negative! (-1)
+>  page pfn = 85ebb
+>  page->flags = 400000000000001c
+>  page->count = 0
+>  page->mapping = 0000000000000000
+>  vma->vm_ops = 0x0
+> kernel BUG at mm/rmap.c:725!
+> Process rm (pid: 28655, threadinfo
+> unmap_vmas+0x4e6/0x9a0
+> 
+> Bad page state in process 'firefox'
+> page:ffffe20001d4b8e8 flags:0x400000000000001c
+> mapping:0000000000000000 mapcount:-1 count:0
+> get_page_from_freelist+0x5c5/0x600
+> __alloc_pages_internal+0xe7/0x4b0
+> handle_mm_fault+0x4f3/0x840
+> 
+> WARNING: at fs/buffer.c:710 __set_page_dirty+0x12f/0x160()
+> Pid: 29549, comm: find Tainted: G    B D 2.6.28.2
+> set_page_dirty+0x31/0xc0
+> unmap_vmas+0x730/0x9a0
+> 
+> Eeek! page_mapcount(page) went negative! (-1)
+>  page pfn = 85ebb
+>  page->flags = 4000000000000834
+>  page->count = 2
+>  page->mapping = ffff88012f435290
+>  vma->vm_ops = 0x0
+> kernel BUG at mm/rmap.c:725!
+> Process find (pid: 29549, threadinfo
+> unmap_vmas+0x4e6/0x9a0
