@@ -1,24 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755375AbZCUKlN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755264AbZCUK4q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755375AbZCUKlN (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Mar 2009 06:41:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751677AbZCUKk5
+	id S1755264AbZCUK4q (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Mar 2009 06:56:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751754AbZCUK4f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Mar 2009 06:40:57 -0400
-Received: from ppp-110-39.adsl.restena.lu ([158.64.110.39]:42366 "EHLO
-	bonbons.gotdns.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750871AbZCUKk4 (ORCPT
+	Sat, 21 Mar 2009 06:56:35 -0400
+Received: from mtagate2.de.ibm.com ([195.212.17.162]:45336 "EHLO
+	mtagate2.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751532AbZCUK4e (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Mar 2009 06:40:56 -0400
-X-Greylist: delayed 456 seconds by postgrey-1.27 at vger.kernel.org; Sat, 21 Mar 2009 06:40:56 EDT
-Date: Sat, 21 Mar 2009 11:33:15 +0100
-From: Bruno =?UTF-8?B?UHLDqW1vbnQ=?= <bonbons@linux-vserver.org>
-To: phillip@lougher.demon.co.uk
-Cc: linux-kernel@vger.kernel.org
-Subject: SquashFS io errors -  zlib_inflate tried to decompress too much
- data
-Message-ID: <20090321113315.47562aac@neptune.home>
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.12.11; i686-pc-linux-gnu)
+	Sat, 21 Mar 2009 06:56:34 -0400
+Date: Sat, 21 Mar 2009 11:56:29 +0100
+From: Heiko Carstens <heiko.carstens@de.ibm.com>
+To: Herbert Xu <herbert@gondor.apana.org.au>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
+       Jan Glauber <jang@linux.vnet.ibm.com>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>
+Subject: Re: linux-next: Tree for March 20 - crypto crash on s390
+Message-ID: <20090321115629.6e911679@osiris.boeblingen.de.ibm.com>
+In-Reply-To: <20090321062605.GA14046@gondor.apana.org.au>
+References: <20090320162800.24b0ad93.sfr@canb.auug.org.au>
+	<20090320135912.53147d76@osiris.boeblingen.de.ibm.com>
+	<20090321062605.GA14046@gondor.apana.org.au>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.7; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -26,21 +31,40 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Phillip,
+On Sat, 21 Mar 2009 14:26:05 +0800
+Herbert Xu <herbert@gondor.apana.org.au> wrote:
 
-With 2.6.29-rc7-git5 (x86, 32bit) I get the following errors on assumed
-correct squashfs images (generated with mksquashfs from CVS, dated
-2009-03-14)
+> On Fri, Mar 20, 2009 at 01:59:12PM +0100, Heiko Carstens wrote:
+> >
+> > gets called with an shash_desc where
+> > 
+> > bsize = crypto_shash_blocksize(desc->tfm);
+> > 
+> > results in bsize with zero.
+> 
+> Oops, this patch should fix it.
+> 
+> commit b24c94a0d65282dc466339390472d7539e1706c2
+> Author: Herbert Xu <herbert@gondor.apana.org.au>
+> Date:   Sat Mar 21 14:25:19 2009 +0800
+> 
+>     crypto: sha512-s390 - Add missing block size
+>     
+>     I missed the block size when converting sha512-s390 to shash.
+>     
+>     Reported-by: Heiko Carstens <heiko.carstens@de.ibm.com>
+>     Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
+> 
+> diff --git a/arch/s390/crypto/sha512_s390.c b/arch/s390/crypto/sha512_s390.c
+> index 420acf4..37b4236 100644
+> --- a/arch/s390/crypto/sha512_s390.c
+> +++ b/arch/s390/crypto/sha512_s390.c
+> @@ -84,6 +84,7 @@ static struct shash_alg sha384_alg = {
+>  		.cra_driver_name=	"sha384-s390",
+>  		.cra_priority	=	CRYPT_S390_PRIORITY,
+>  		.cra_flags	=	CRYPTO_ALG_TYPE_SHASH,
+> +		.cra_blocksize	=	SHA512_BLOCK_SIZE,
 
-[ 3481.692558] SQUASHFS error: zlib_inflate tried to decompress too much data, expected 8192 bytes.  Zlib data probably corrupt
-[ 3481.692571] SQUASHFS error: squashfs_read_data failed to read block 0x29375e0
-[ 3481.692579] SQUASHFS error: Unable to read metadata cache entry [29375e0]
-[ 3481.692586] SQUASHFS error: Unable to read inode 0x6a04a05ed
+Yes, it does fix it. Thanks!
 
-The same happens on 2.6.28.8 with all squashfs patches from 2.6.29-rc8
-applied to it (x86, 64bit).
-
-If useful I can provide the image (44MiB), it's an image of Gentoo
-portage tree.
-
-Bruno
+Tested-by: Heiko Carstens <heiko.carstens@de.ibm.com>
