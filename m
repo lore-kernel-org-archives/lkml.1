@@ -1,58 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754422AbZCUJoV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754387AbZCUJqU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754422AbZCUJoV (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Mar 2009 05:44:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752126AbZCUJoH
+	id S1754387AbZCUJqU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Mar 2009 05:46:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752410AbZCUJqL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Mar 2009 05:44:07 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:34013 "EHLO mx2.mail.elte.hu"
+	Sat, 21 Mar 2009 05:46:11 -0400
+Received: from bilbo.ozlabs.org ([203.10.76.25]:58584 "EHLO bilbo.ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750800AbZCUJoG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Mar 2009 05:44:06 -0400
-Date: Sat, 21 Mar 2009 10:43:48 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>
-Subject: Re: [PATCH][GIT PULL] tracing: fix memory leak in trace_stat
-Message-ID: <20090321094348.GB5594@elte.hu>
-References: <alpine.DEB.2.00.0903210251100.13615@gandalf.stny.rr.com>
+	id S1750800AbZCUJqK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 21 Mar 2009 05:46:10 -0400
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.0903210251100.13615@gandalf.stny.rr.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Transfer-Encoding: 7bit
+Message-ID: <18884.46934.898678.53966@cargo.ozlabs.ibm.com>
+Date: Sat, 21 Mar 2009 20:45:58 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org
+Subject: Re: [RFC][PATCH 3/3] perf_counter: new output ABI - part 1
+In-Reply-To: <20090320190912.GF6224@elte.hu>
+References: <20090320151547.937040269@chello.nl>
+	<20090320151735.008338484@chello.nl>
+	<20090320190912.GF6224@elte.hu>
+X-Mailer: VM 8.0.9 under Emacs 22.2.1 (i486-pc-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Ingo Molnar writes:
 
-* Steven Rostedt <rostedt@goodmis.org> wrote:
+> i think it would still be nice to allow plain old-fashioned 
+> poll()+read() loops ... but the logistics of that seem difficult. 
+> mmap() seems to fit this better - and it's probably faster as well. 
+> (as we have to construct the kernel-space pages anyway, so mapping 
+> them isnt that big of an issue)
+> 
+> per-CPU-ness will be handled naturally via per-cpu counters.
+> 
+> Paul, can you see any hole/quirkiness in this scheme?
 
-> Ingo,
-> 
-> Please pull the latest tip/tracing/ftrace tree, which can be found at:
-> 
->   git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
-> tip/tracing/ftrace
-> 
-> 
-> Steven Rostedt (1):
->       tracing: fix memory leak in trace_stat
-> 
-> ----
->  kernel/trace/trace_stat.c |   23 +++++++++++++----------
->  1 files changed, 13 insertions(+), 10 deletions(-)
+The one thing I can see that we would lose is the ability to have a
+signal delivered on every event.  The PAPI developers want to be able
+to get a signal generated every time the counter overflows, and
+previously we could do that using the O_ASYNC flag, but now we'll only
+get a signal every page's worth of events.
 
-Pulled, thanks Steve!
+So I think we want userspace to be able to say how often we should
+generate a poll event, i.e. provide a way for userspace to say "please
+generate a poll event every N counter events".  That would also solve
+the problem of 1 page not being a valid configuration - you could set
+the poll interval to the number of events that fit in half a page, for
+instance.
 
-	Ingo
+Paul.
