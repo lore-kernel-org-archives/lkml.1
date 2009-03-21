@@ -1,53 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754868AbZCUMSS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752890AbZCUMWX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754868AbZCUMSS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Mar 2009 08:18:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752580AbZCUMSB
+	id S1752890AbZCUMWX (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Mar 2009 08:22:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752963AbZCUMWI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Mar 2009 08:18:01 -0400
-Received: from smtp-out0.tiscali.nl ([195.241.79.175]:47937 "EHLO
-	smtp-out0.tiscali.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751049AbZCUMSA (ORCPT
+	Sat, 21 Mar 2009 08:22:08 -0400
+Received: from fmmailgate03.web.de ([217.72.192.234]:47144 "EHLO
+	fmmailgate03.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751428AbZCUMWG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Mar 2009 08:18:00 -0400
-Date: Sat, 21 Mar 2009 13:17:57 +0100
-From: Arjan Opmeer <arjan@opmeer.net>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
-Message-ID: <20090321121757.GB24247@adopmeer.homeip.net>
-References: <20090320053509.GA3633@adopmeer.homeip.net> <200903202246.37383.dmitry.torokhov@gmail.com>
+	Sat, 21 Mar 2009 08:22:06 -0400
+From: Christian Lamparter <chunkeey@web.de>
+To: Kalle Valo <kalle.valo@iki.fi>
+Subject: Re: [PATCH] p54: fix SoftLED compile dependencies
+Date: Sat, 21 Mar 2009 13:22:01 +0100
+User-Agent: KMail/1.10.0 (Linux/2.6.29-rc8-wl; KDE/4.2.1; x86_64; ; )
+Cc: Michael Buesch <mb@bu3sch.de>, Randy Dunlap <randy.dunlap@oracle.com>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, linux-wireless@vger.kernel.org,
+       "John W. Linville" <linville@tuxdriver.com>
+References: <20090319221024.5e2ad6e5.sfr@canb.auug.org.au> <200903210057.47067.chunkeey@web.de> <87eiwre61a.fsf@litku.valot.fi>
+In-Reply-To: <87eiwre61a.fsf@litku.valot.fi>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200903202246.37383.dmitry.torokhov@gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-Subject: Re: [PATCH] input: elantech.c provide a workaround for jumpy
-	cursor on firmware 2.34
+Message-Id: <200903211322.01654.chunkeey@web.de>
+X-Provags-ID: V01U2FsdGVkX18LiaU6eA16qbFIYgttwnUPFXIAu5Tb8rgWwfGW
+	COm6LAmteu/B09fcaBlnARyrb2s/WZ9bg4L9sqfCMrRIUX55i7
+	XXfeGMPaM=
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 20, 2009 at 10:46:37PM -0700, Dmitry Torokhov wrote:
-> On Thursday 19 March 2009 22:35:09 Arjan Opmeer wrote:
-> >
-> > +	if (etd->jumpy_cursor) {
-> > +		/* Discard packets that are likely to have bogus coordinates */
-> > +		if (fingers > old_fingers) {
-> > +			elantech_debug("elantech.c: discarding packet\n");
-> > +			goto discard_packet_v1;
+On Saturday 21 March 2009 07:36:33 Kalle Valo wrote:
+> Christian Lamparter <chunkeey@web.de> writes:
 > 
-> Can we do this unconditionally for the v1 protocol and not have an extra
-> konb?
+> > This patch fixes a compile problem when the MAC80211_LEDS
+> > triggers are enabled but not LED class itself. 
+> > (which is sort of pointless, but anyway...)
+> 
+> [...]
+> 
+> > @@ -17,31 +18,6 @@ config P54_USB
+> >  	select CRC32
+> >  	---help---
+> >  	  This driver is for USB isl38xx based wireless cards.
+> > -	  These are USB based adapters found in devices such as:
+> > -
+> > -	  3COM 3CRWE254G72
+> > -	  SMC 2862W-G
+> > -	  Accton 802.11g WN4501 USB
+> > -	  Siemens Gigaset USB
+> > -	  Netgear WG121
+> > -	  Netgear WG111
+> > -	  Medion 40900, Roper Europe
+> > -	  Shuttle PN15, Airvast WM168g, IOGear GWU513
+> > -	  Linksys WUSB54G
+> > -	  Linksys WUSB54G Portable
+> > -	  DLink DWL-G120 Spinnaker
+> > -	  DLink DWL-G122
+> > -	  Belkin F5D7050 ver 1000
+> > -	  Cohiba Proto board
+> > -	  SMC 2862W-G version 2
+> > -	  U.S. Robotics U5 802.11g Adapter
+> > -	  FUJITSU E-5400 USB D1700
+> > -	  Sagem XG703A
+> > -	  DLink DWL-G120 Cohiba
+> > -	  Spinnaker Proto board
+> > -	  Linksys WUSB54AG
+> > -	  Inventel UR054G
+> > -	  Spinnaker DUT
+> 
+> This change wasn't mentioned in the commit log. Did this get included
+> by accident?
+> 
+heh true... should I add them back? after all this list hasn't changed in years
+and we have a much nicer one on http://www.prism54.org/
+( http://wireless.kernel.org/en/users/Drivers/p54/devices )
 
-That is of course possible, although I am not sure it will not have any
-negative side effects.
-
-> Do you have access to boxes with unbroken V1 to test?
-
-Nope. I am sorry. I don't have access to any machine with an Elantech
-touchpad after my laptop died. I am trying to give the best support I can by
-using 'remote development' where users have to report and test changes to
-the driver. As you can imagine it is slow going.
-
-
-Arjan
+Regards,
+	Chr
