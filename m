@@ -1,100 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757328AbZCUMLT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757933AbZCUMLe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757328AbZCUMLT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Mar 2009 08:11:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754367AbZCUMK6
+	id S1757933AbZCUMLe (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Mar 2009 08:11:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757460AbZCUMLH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Mar 2009 08:10:58 -0400
-Received: from xc.sipsolutions.net ([83.246.72.84]:44831 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753432AbZCUMK5 (ORCPT
+	Sat, 21 Mar 2009 08:11:07 -0400
+Received: from mail-bw0-f169.google.com ([209.85.218.169]:60460 "EHLO
+	mail-bw0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756996AbZCUMLF convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Mar 2009 08:10:57 -0400
-Subject: Re: 2.6.29-rc8: Reported regressions from 2.6.28
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Jeff Chua <jeff.chua.linux@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Adrian Bunk <bunk@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Network Development <netdev@vger.kernel.org>,
-       "John W. Linville" <linville@tuxdriver.com>
-In-Reply-To: <b6a2187b0903200914r23d635c9obc55b30b7cc04382@mail.gmail.com> (sfid-20090320_171427_332673_B71D0D63)
-References: <MiincthRUSI.A.eKC.F4BvJB@chimera>
-	 <b6a2187b0903160624gb9d207dv301506e589d93ed4@mail.gmail.com>
-	 <1237317742.31814.28.camel@johannes.local>
-	 <b6a2187b0903181958ke11abe7tdcbc4efeb950954d@mail.gmail.com>
-	 <b6a2187b0903182149x77e416ecuf73be2970173c601@mail.gmail.com>
-	 <1237455534.5100.56.camel@johannes.local>
-	 <b6a2187b0903192155q33510b57l9d5927538a0f4f99@mail.gmail.com>
-	 <1237537967.5100.135.camel@johannes.local>
-	 <b6a2187b0903200304l469e3eeet87c51b1cddb43ea8@mail.gmail.com>
-	 <1237544033.5100.143.camel@johannes.local>
-	 <b6a2187b0903200914r23d635c9obc55b30b7cc04382@mail.gmail.com>
-	 (sfid-20090320_171427_332673_B71D0D63)
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-yoAsfB/ad+FmHrXW6y3a"
-Date: Sat, 21 Mar 2009 13:09:35 +0100
-Message-Id: <1237637375.5100.178.camel@johannes.local>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 
+	Sat, 21 Mar 2009 08:11:05 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=T9hZB1L0vrdhK24Q0920zP5HDEu8/dQOP1DEg+NAVSIkZM442NNPjSN579Rsns6MVg
+         m2UvRKa5Jew+cAwgfxphjsHSwtp2JVH6+cBJxko4wNQhivLK9zEH7WuPuco6zm1w24fJ
+         Ue9DjR9IZRo8XA89QRXMA0liWxf0J0yO+i5kY=
+MIME-Version: 1.0
+In-Reply-To: <20090321113315.47562aac@neptune.home>
+References: <20090321113315.47562aac@neptune.home>
+Date: Sat, 21 Mar 2009 13:11:01 +0100
+X-Google-Sender-Auth: 700ee02db90e9556
+Message-ID: <10f740e80903210511n2867e7adl11fda0f4af04b0d2@mail.gmail.com>
+Subject: Re: SquashFS io errors - zlib_inflate tried to decompress too much 
+	data
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: =?UTF-8?Q?Bruno_Pr=C3=A9mont?= <bonbons@linux-vserver.org>
+Cc: phillip@lougher.demon.co.uk, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, Mar 21, 2009 at 11:33, Bruno Prémont <bonbons@linux-vserver.org> wrote:
+>
+> With 2.6.29-rc7-git5 (x86, 32bit) I get the following errors on assumed
+> correct squashfs images (generated with mksquashfs from CVS, dated
+> 2009-03-14)
+>
+> [ 3481.692558] SQUASHFS error: zlib_inflate tried to decompress too much data, expected 8192 bytes.  Zlib data probably corrupt
+> [ 3481.692571] SQUASHFS error: squashfs_read_data failed to read block 0x29375e0
+> [ 3481.692579] SQUASHFS error: Unable to read metadata cache entry [29375e0]
+> [ 3481.692586] SQUASHFS error: Unable to read inode 0x6a04a05ed
+>
+> The same happens on 2.6.28.8 with all squashfs patches from 2.6.29-rc8
+> applied to it (x86, 64bit).
 
---=-yoAsfB/ad+FmHrXW6y3a
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+A fix for this has entered mainline:
 
-On Sat, 2009-03-21 at 00:14 +0800, Jeff Chua wrote:
+commit 363911d027d1de1c6df79eb3f487f5476b9619f4
+Author: Phillip Lougher <phillip@lougher.demon.co.uk>
+Date:   Thu Mar 12 03:23:48 2009 +0000
 
-> I went back to 2.6.28 and found out that I could associate as follows
-> (but this would not work in 2.6.29-rc8 ... should work with the
-> patch).
->=20
-> modprobe -r iwlagn
-> modprobe iwlagn
-> iwconfig wlan0 mode Managed
-> ifconfig wlan0 up
-> iwconfig wlan0 essid "xxx"
-> iwconfig wlan0 key restricted xxx
-> iwconfig wlan0 ap auto channel auto
-> iwlist wlan0 scan >/dev/null
+    Squashfs: Valid filesystems are flagged as bad by the corrupted fs patch
 
-Thing is that this works perfectly fine for me, on very similar
-hardware.
+Gr{oetje,eeting}s,
 
-OTOH, maybe it got _fixed_ again. Would you check wireless-testing
-(http://wireless.kernel.org/en/developers/Documentation#wireless-testing.gi=
-t) for me? Or compat-wireless (http://wireless.kernel.org/en/users/Download=
-)
+                                                                  Geert
 
-johannes
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
---=-yoAsfB/ad+FmHrXW6y3a
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iQIcBAABAgAGBQJJxNj9AAoJEKVg1VMiehFYtR0QAKTf7xrImi8vzq3looDokqgF
-Ky/+xH06/PRSf8VxeB89SSyridRagfky1jalBbx08lpYMD9qQoX9GI92oOJ6JZkk
-trIFHnhtKegYG0+ff95gjqstCsaEY6XFSNLthTfshv5UMfILjmy6QsAjCLbICeLd
-dfuDoB2Rg1/5pRi59Hr7s7DNHeTk1ieOy/2jNgoFpfJZEvElD2zVxFZ9j9gFN8Ny
-yx6IrtnfHTAEyL223RGv87dXp8f//jFlW6/tiJUbvZZDiG8K8qnPVIvNaaTZ8AtW
-QSYAG0Sao59E8qwJ3h5UQpOaB0Gt4vplBVjfxtEO4xXllztE7j9dHVjRcRiN/dZb
-FdtN1WnRw2cgpInGcIf9Mwvds1dcINfIy2W2jpjymNFN7ZX6r84OqoDjGa1Z7bgG
-s9imYFoN/orXewS5er4gvWi8lQhMMoQcIc3dw+po0t9NthwxPW/SaDKJ+BPuX4Ut
-GFKVRExTGUFrrR2H9fzrAd0N7Q1d2UBxDXICIzncymaOjWTMrpMwHT5TT67A/7Xy
-+VqRypXBgsr/PlMWt+INgCUpuC4armFAXV6h6W0KLBfQz4QCWNdAEijxGYAI8N10
-YCvUB+fRiIgqnneMMp2uFx8VowxDIk5IAdnFwq/sMUvfmw82ThS8GOXl7sNsIqIn
-GVY6emMiE3Ez2ayNZNj+
-=P6f9
------END PGP SIGNATURE-----
-
---=-yoAsfB/ad+FmHrXW6y3a--
-
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+   -- Linus Torvalds
