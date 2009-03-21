@@ -1,53 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755450AbZCUKcg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755045AbZCUKic@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755450AbZCUKcg (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Mar 2009 06:32:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754181AbZCUKc1
+	id S1755045AbZCUKic (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Mar 2009 06:38:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751677AbZCUKiX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Mar 2009 06:32:27 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:54499 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753731AbZCUKc0 (ORCPT
+	Sat, 21 Mar 2009 06:38:23 -0400
+Received: from woodchuck.wormnet.eu ([77.75.105.223]:45037 "EHLO
+	woodchuck.wormnet.eu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750871AbZCUKiW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Mar 2009 06:32:26 -0400
-Date: Sat, 21 Mar 2009 03:26:36 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: ngupta@vflare.org
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/3] compcache documentation
-Message-Id: <20090321032636.fdeae224.akpm@linux-foundation.org>
-In-Reply-To: <49C3A4B0.3050503@vflare.org>
-References: <49C3A31D.6070208@vflare.org>
-	<49C3A4B0.3050503@vflare.org>
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sat, 21 Mar 2009 06:38:22 -0400
+Date: Sat, 21 Mar 2009 10:38:17 +0000
+From: Alexander Clouter <alex@digriz.org.uk>
+To: Herbert Xu <herbert@gondor.apana.org.au>
+Cc: Heiko Carstens <heiko.carstens@de.ibm.com>,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: linux-next: Tree for March 20 - timeriomem build break on s390
+Message-ID: <20090321103817.GL22563@woodchuck>
+References: <20090320162800.24b0ad93.sfr@canb.auug.org.au> <20090320100901.45ce2e6f@osiris.boeblingen.de.ibm.com> <20090321061922.GA13990@gondor.apana.org.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090321061922.GA13990@gondor.apana.org.au>
+Organization: diGriz
+X-URL: http://www.digriz.org.uk/
+X-JabberID: jimdigriz@jabber.earth.li
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 20 Mar 2009 19:44:08 +0530 Nitin Gupta <ngupta@vflare.org> wrote:
+Hi,
 
-> ...
+* Herbert Xu <herbert@gondor.apana.org.au> [2009-03-21 14:19:22+0800]:
+> 
+> On Fri, Mar 20, 2009 at 10:09:01AM +0100, Heiko Carstens wrote:
+> > 'hwrng: timeriomem' breaks an allyesconfig build on s390:
+> > 
+> >   CC      drivers/char/hw_random/timeriomem-rng.o
+> > drivers/char/hw_random/timeriomem-rng.c: In function 'timeriomem_rng_data_read':
+> > drivers/char/hw_random/timeriomem-rng.c:60: error: implicit declaration of function 'readl'
+> > 
+> > Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
+> 
+> Patch applied.  Thanks Heiko!
 >
-> +   backing_dev: This is block device to be used as backing store for compcache.
-> +	It must be a valid swap partition. We move data to this device when we
-> +	encounter incompressible page or memlimit is reached. TODO: we may also
-> +	move some pages from compcache to this device in case system is really
-> +	low on memory.
-> +	This device is not directly visible to kernel as a swap device
-> +	(/proc/swaps will only show /dev/ramzswap0 and not this device).
-> +	Managing this backing device is the job of compcache module.
+Yes, thanks for catching this.
 
-hrm, OK, it kinda/sorta/maybe might be a little bit like a "compressed
-cache".  But if someone comes up with a real compressed cache (ie:
-pagecache) then they'll want their name back.
+Cheers
 
-Also, the kernel already has a widespread and well-established "backing
-device" concept, in include/linux/backing-dev.h.  This new feature's
-poaching of that identifier is a bit confusing.  It would be nice to do a
-wholesale rename if possible.  secondary_dev?  nv_dev?
-
+-- 
+Alexander Clouter
+.sigmonster says: Don't kiss an elephant on the lips today.
