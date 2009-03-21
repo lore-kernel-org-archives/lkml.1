@@ -1,71 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760057AbZCUDK4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759289AbZCUDdw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760057AbZCUDK4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Mar 2009 23:10:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753430AbZCUDKr
+	id S1759289AbZCUDdw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Mar 2009 23:33:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752410AbZCUDdm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Mar 2009 23:10:47 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:43937 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752974AbZCUDKq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Mar 2009 23:10:46 -0400
-Subject: Re: [PATCH] tracing: Fix TRACING_SUPPORT dependency
-From: Steven Rostedt <srostedt@redhat.com>
+	Fri, 20 Mar 2009 23:33:42 -0400
+Received: from mail-fx0-f158.google.com ([209.85.220.158]:58310 "EHLO
+	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751060AbZCUDdm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Mar 2009 23:33:42 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=vx1w49G3lyLFCbdNd3lieQW4/z1Zn2jzwj0mkdDpbbQO7OUiIph5wya9gkQwgzJqf1
+         K8RcFgK7PGUrhYjwA50s0Iz9f0FUQcdvnST6IP2YhkCASGUarmossTWHC/2GMZ73W6ub
+         UrAqcO5DAoK7uqfORnqoADr1L7PzrgBTgK3c0=
+From: Frederic Weisbecker <fweisbec@gmail.com>
 To: Ingo Molnar <mingo@elte.hu>
-Cc: Anton Vorontsov <avorontsov@ru.mvista.com>, linuxppc-dev@ozlabs.org,
-       linux-kernel@vger.kernel.org,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>, dale@farnsworth.org
-In-Reply-To: <20090320195743.GA25147@elte.hu>
-References: <20090320150914.GA22769@oksana.dev.rtsoft.ru>
-	 <20090320190428.GD6224@elte.hu>
-	 <20090320193904.GA13707@oksana.dev.rtsoft.ru>
-	 <20090320195743.GA25147@elte.hu>
-Content-Type: text/plain
-Organization: Red Hat
-Date: Fri, 20 Mar 2009 23:09:58 -0400
-Message-Id: <1237604998.17367.3.camel@localhost.localdomain>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Cc: Steven Rostedt <rostedt@goodmis.org>, LKML <linux-kernel@vger.kernel.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>
+Subject: [PATCH] tracing/ring-buffer: don't annotate rb_cpu_notify with __cpuinit
+Date: Sat, 21 Mar 2009 04:33:36 +0100
+Message-Id: <1237606416-22268-1-git-send-email-fweisbec@gmail.com>
+X-Mailer: git-send-email 1.6.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Impact: remove a section warning
 
-Ug, My Red Hat email was not being updated. I totally missed this
-thread.
+CONFIG_DEBUG_SECTION_MISMATCH raises the following warning on -tip:
 
-On Fri, 2009-03-20 at 20:57 +0100, Ingo Molnar wrote:
-> * Anton Vorontsov <avorontsov@ru.mvista.com> wrote:
-> 
-> > On Fri, Mar 20, 2009 at 08:04:28PM +0100, Ingo Molnar wrote:
-> > > 
-> > > * Anton Vorontsov <avorontsov@ru.mvista.com> wrote:
-> > > 
-> > > > commit 40ada30f9621fbd831ac2437b9a2a399aad34b00 ("tracing: clean 
-> > > > up menu"), despite the "clean up" in its purpose, introduced 
-> > > > behavioural change for Kconfig symbols: we no longer able to 
-> > > > select tracing support on PPC32 (because IRQFLAGS_SUPPORT isn't 
-> > > > yet implemented).
-> > > 
-> > > Could you please solve this by implementing proper 
-> > > irqflag-tracing support? It's been available upstream for almost 
-> > > three years. It's needed for lockdep support as well, etc.
-> > 
-> > Breaking things via clean up patches is an interesting method of 
-> > encouraging something to implement. ;-)
-> >
-> > Surely I'll look into implementing irqflags tracing, but 
-> > considering that no one ever needed this for almost three years, 
-> > [...]
-> 
-> Weird, there's no lockdep support?
+WARNING: kernel/trace/built-in.o(.text+0x5bc5): Section mismatch in
+reference from the function ring_buffer_alloc() to the function
+.cpuinit.text:rb_cpu_notify()
+The function ring_buffer_alloc() references
+the function __cpuinit rb_cpu_notify().
 
-I've discussed this with several people before. lockdep exists for
-PPC64, but apparently it does not work for PPC32. There's been ongoing
-work in this area, but unfortunately, nothing stable has come out of it.
+This is actually harmless. The code in the ring buffer don't build
+rb_cpu_notify and other cpu hotplug stuffs when !CONFIG_HOTPLUG_CPU
+so we have no risk to reference freed memory here (it would even
+be harmless if we unconditionally build it because register_cpu_notifier
+would do nothing when !CONFIG_HOTPLUG_CPU.
 
-I believe Dale was the last one to be working on this.
+But since ring_buffer_alloc() can be called everytime, we don't want it
+to be annotated with __cpuinit so we drop the __cpuinit from
+rb_cpu_notify.
+This is not a waste of memory because it is only defined and used on
+CONFIG_HOTPLUG_CPU.
 
--- Steve
+Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+---
+ kernel/trace/ring_buffer.c |    8 ++++----
+ 1 files changed, 4 insertions(+), 4 deletions(-)
 
+diff --git a/kernel/trace/ring_buffer.c b/kernel/trace/ring_buffer.c
+index bc74f00..7e05e2c 100644
+--- a/kernel/trace/ring_buffer.c
++++ b/kernel/trace/ring_buffer.c
+@@ -536,8 +536,8 @@ static void rb_free_cpu_buffer(struct ring_buffer_per_cpu *cpu_buffer)
+ extern int ring_buffer_page_too_big(void);
+ 
+ #ifdef CONFIG_HOTPLUG_CPU
+-static int __cpuinit rb_cpu_notify(struct notifier_block *self,
+-				   unsigned long action, void *hcpu);
++static int rb_cpu_notify(struct notifier_block *self,
++			 unsigned long action, void *hcpu);
+ #endif
+ 
+ /**
+@@ -2787,8 +2787,8 @@ static __init int rb_init_debugfs(void)
+ fs_initcall(rb_init_debugfs);
+ 
+ #ifdef CONFIG_HOTPLUG_CPU
+-static int __cpuinit rb_cpu_notify(struct notifier_block *self,
+-				   unsigned long action, void *hcpu)
++static int rb_cpu_notify(struct notifier_block *self,
++			 unsigned long action, void *hcpu)
+ {
+ 	struct ring_buffer *buffer =
+ 		container_of(self, struct ring_buffer, cpu_notify);
+-- 
+1.6.1
 
