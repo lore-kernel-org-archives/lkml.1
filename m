@@ -1,64 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759309AbZCUOkf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759259AbZCUOof@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759309AbZCUOkf (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Mar 2009 10:40:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752914AbZCUOk0
+	id S1759259AbZCUOof (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Mar 2009 10:44:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754947AbZCUOoZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Mar 2009 10:40:26 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:44458 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752113AbZCUOkZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Mar 2009 10:40:25 -0400
-Date: Sat, 21 Mar 2009 15:40:13 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Dmitri Vorobiev <dmitri.vorobiev@movial.com>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/1] Restrict definitions of a couple of static
-	functions
-Message-ID: <20090321144013.GB25729@elte.hu>
-References: <1237644922-7877-1-git-send-email-dmitri.vorobiev@movial.com>
+	Sat, 21 Mar 2009 10:44:25 -0400
+Received: from fg-out-1718.google.com ([72.14.220.158]:7005 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754868AbZCUOoY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 21 Mar 2009 10:44:24 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:user-agent:x-accept-language:mime-version:to
+         :cc:subject:references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=q6RL1YJNA3+KxE3fI54YbtX210QNugvIUDm2KtUeI9aaBU5wOeHgpgq488CpggT7vJ
+         019L5O/NCgXKCHp3AItHLZ++XcTvw4LhlfFKs2ebYqqX2ueBxZMaR7gq1U3TjLIUGZBf
+         aqatjn5ilGWSBctwU2Z6vDW001Ii5vSbVHEyk=
+Message-ID: <49C4FD41.4030504@googlemail.com>
+Date: Sat, 21 Mar 2009 15:44:17 +0100
+From: Michael Riepe <michael.riepe@googlemail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686 (x86_64); en-US; rv:1.7.13) Gecko/20060417
+X-Accept-Language: de-de, de, en-us, en
 MIME-Version: 1.0
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Miklos Szeredi <miklos@szeredi.hu>
+Subject: ptrace performance (was: [Bug #12208] uml is very slow on 2.6.28
+ host)
+References: <9nR7rAsBwYG.A.iEG.fOCvJB@chimera> <qm8_cedJGaP.A.c1H.2PCvJB@chimera>
+In-Reply-To: <qm8_cedJGaP.A.c1H.2PCvJB@chimera>
+X-Enigmail-Version: 0.91.0.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1237644922-7877-1-git-send-email-dmitri.vorobiev@movial.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Disclaimer: I'm not using UML, but these problems may be related.
 
-* Dmitri Vorobiev <dmitri.vorobiev@movial.com> wrote:
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12208
+> Subject		: uml is very slow on 2.6.28 host
+> Submitter	: Miklos Szeredi <miklos@szeredi.hu>
+> Date		: 2008-12-12 9:35 (93 days old)
+> References	: http://marc.info/?l=linux-kernel&m=122907463518593&w=4
 
-> The call sites of the static functions free_cache_attributes() and
-> detect_cache_attributes() in arch/x86/kernel/cpu/intel_cacheinfo.c
-> are placed under #ifdef CONFIG_SYSFS/#endif, but their definitions
-> are not. This may produce the following warning:
-> 
-> arch/x86/kernel/cpu/intel_cacheinfo.c:542: warning:
-> 'free_cache_attributes' defined but not used
-> arch/x86/kernel/cpu/intel_cacheinfo.c:573: warning:
-> 'detect_cache_attributes' defined but not used
-> 
-> This patch fixes the warning by restricting the definitions of the
-> two functions to the case when CONFIG_SYSFS is enabled.
-> 
-> Signed-off-by: Dmitri Vorobiev <dmitri.vorobiev@movial.com>
-> ---
->  arch/x86/kernel/cpu/intel_cacheinfo.c |   64 ++++++++++++++++----------------
->  1 files changed, 32 insertions(+), 32 deletions(-)
+The other day I noticed a dramatic ptrace slowdown between 2.6.27 and
+2.6.28.x (verified with 2.6.28.8). In particular, a command like
 
-does not apply to the latest x86 tree anymore:
+	dd if=/dev/zero of=/dev/null bs=1024k count=1024
 
-  http://people.redhat.com/mingo/tip.git/README
+will normally report a throughput in the GB/s range. On 2.6.27, this is
+also true if you run
 
-2 out of 3 hunks FAILED -- rejects in file arch/x86/kernel/cpu/intel_cacheinfo.c
+	strace -o /dev/null <dd command as above>
 
-	Ingo
+which is only a little slower. But if I do the same on 2.6.28.x, I get a
+throughput of about 100 MB/s or less, i.e. less than 10%. I tried the
+commands on three different machines (an Athlon64 3000+, a Core Duo
+T2400 and an Atom 330), and they all behave similar. The more system
+calls a program uses, the worse the slowdown (try the dd command with
+bs=16k and count=65536, for example - but don't hold your breath).
+
+Interestingly, the CPUs are mostly idle while the command is executing
+on 2.6.28.x, but there is a high (system) load on 2.6.27. Therefore, I
+suspect that it's a scheduling or maybe timer problem that was
+introduced between 2.6.27 and 2.6.28. I haven't had the time to check
+the rc kernels yet; perhaps someone else can run a quick check to verify
+that it's gone in the latest 2.6.29-rc.
+
+-- 
+Michael "Tired" Riepe <michael.riepe@googlemail.com>
+X-Tired: Each morning I get up I die a little
