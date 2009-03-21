@@ -1,73 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755375AbZCUK2H@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754530AbZCUKa2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755375AbZCUK2H (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Mar 2009 06:28:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752988AbZCUK1v
+	id S1754530AbZCUKa2 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Mar 2009 06:30:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753105AbZCUKaQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Mar 2009 06:27:51 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:47012 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753105AbZCUK1u (ORCPT
+	Sat, 21 Mar 2009 06:30:16 -0400
+Received: from viefep11-int.chello.at ([62.179.121.31]:9058 "EHLO
+	viefep11-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752988AbZCUKaP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Mar 2009 06:27:50 -0400
-Date: Sat, 21 Mar 2009 03:21:37 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: ngupta@vflare.org
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>, cl@linux-foundation.org,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 2/3] xvmalloc memory allocator
-Message-Id: <20090321032137.8dc113e8.akpm@linux-foundation.org>
-In-Reply-To: <49C3F1EE.90903@vflare.org>
-References: <ztOQA2Cz.1237575719.7896090.penberg@cs.helsinki.fi>
-	<49C3F1EE.90903@vflare.org>
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; x86_64-redhat-linux-gnu)
+	Sat, 21 Mar 2009 06:30:15 -0400
+X-SourceIP: 213.93.53.227
+Subject: Re: [RFC][PATCH 3/3] perf_counter: new output ABI - part 1
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Paul Mackerras <paulus@samba.org>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
+In-Reply-To: <18884.46934.898678.53966@cargo.ozlabs.ibm.com>
+References: <20090320151547.937040269@chello.nl>
+	 <20090320151735.008338484@chello.nl> <20090320190912.GF6224@elte.hu>
+	 <18884.46934.898678.53966@cargo.ozlabs.ibm.com>
+Content-Type: text/plain
+Date: Sat, 21 Mar 2009 11:29:59 +0100
+Message-Id: <1237631399.24626.112.camel@twins>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.24.3 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 21 Mar 2009 01:13:42 +0530 Nitin Gupta <ngupta@vflare.org> wrote:
-
-> Pekka Enberg wrote:
-> > On 3/20/2009, "Christoph Lameter" <cl@linux-foundation.org> wrote:
-> >>> I think, with a bit playing around with interfaces, it can be turned into
-> >>> general purpose allocator (this will most probably lack highmem support).
-> >> Then it would need to implement the SLAB api (see include/linux/slab.h).
-> >> Thus we are getting slab allocator #5.
+On Sat, 2009-03-21 at 20:45 +1100, Paul Mackerras wrote:
+> Ingo Molnar writes:
+> 
+> > i think it would still be nice to allow plain old-fashioned 
+> > poll()+read() loops ... but the logistics of that seem difficult. 
+> > mmap() seems to fit this better - and it's probably faster as well. 
+> > (as we have to construct the kernel-space pages anyway, so mapping 
+> > them isnt that big of an issue)
 > > 
-> > I do not see the point in that. As I suggested earlier, you should
-> > probably just move this into drivers/block/ and make it a private
-> > compcache allocator.
+> > per-CPU-ness will be handled naturally via per-cpu counters.
 > > 
+> > Paul, can you see any hole/quirkiness in this scheme?
 > 
-> Your wish. But, really, we should not dismiss an O(1) allocator with great
-> space-efficiency so easily. I think it will be great at least for embedded
-> devices (its counterpart, SLOB is simply funny).
-> 
-> Just to add to this, Xen recently included a variant of TLSF allocator
-> which was used in earlier versions of compcache. TLSF is allocator on
-> which xvmalloc is based.
-> http://xenbits.xensource.com/xen-unstable.hg?file/0477f9061c8a/xen/common/xmalloc_tlsf.c
-> (Though I do not know which parts of xen depend on this allocator).
-> 
-> and xvmalloc vs tlsf arguments are here:
-> http://code.google.com/p/compcache/wiki/xvMalloc
-> 
-> tlsf:
-> http://rtportal.upv.es/rtmalloc/
+> The one thing I can see that we would lose is the ability to have a
+> signal delivered on every event.  The PAPI developers want to be able
+> to get a signal generated every time the counter overflows, and
+> previously we could do that using the O_ASYNC flag, but now we'll only
+> get a signal every page's worth of events.
 
-Well, xvmalloc may or may not be a good thing and we can discuss that
-separately.
+Ah, nice, didn't know about O_ASYNC and was thinking we should perhaps
+provide some signal too, seems that's already taken care of, sweet :-)
 
-But what is regrettable is that xvmalloc appears to be tied to
-compressed-swap in some manner.  Is it not possible to split these two
-initiatives apart so that neither is dependent upon the other?  Or is
-compressed-swap hopelessly crippled without xvmalloc?
+> So I think we want userspace to be able to say how often we should
+> generate a poll event, i.e. provide a way for userspace to say "please
+> generate a poll event every N counter events".  That would also solve
+> the problem of 1 page not being a valid configuration - you could set
+> the poll interval to the number of events that fit in half a page, for
+> instance.
 
-(compcache is a terrible name, btw - it isn't a "compressed cache" at all!)
+Sure, can do, sounds like s sensible extension -- except it will be hard
+to guess the event size for some future events like callchains and mmap
+data.
 
-> Anyways, I will move it to drivers/block.
 
-This sounds like it might be a backward step.
+
