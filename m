@@ -1,16 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756901AbZCUDug@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755672AbZCUDvV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756901AbZCUDug (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Mar 2009 23:50:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753924AbZCUDu0
+	id S1755672AbZCUDvV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Mar 2009 23:51:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753884AbZCUDvH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Mar 2009 23:50:26 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:33964 "EHLO mx2.redhat.com"
+	Fri, 20 Mar 2009 23:51:07 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:33980 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753884AbZCUDuZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Mar 2009 23:50:25 -0400
-Subject: Re: [PATCH 1/3] powerpc, Makefile: Make it possible to safely
-	select CONFIG_FRAME_POINTER
+	id S1753535AbZCUDvF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Mar 2009 23:51:05 -0400
+Subject: Re: [PATCH 2/3] powerpc: Remove -fno-omit-frame-pointer workarounds
 From: Steven Rostedt <srostedt@redhat.com>
 To: Anton Vorontsov <avorontsov@ru.mvista.com>,
        Benjamin Herrenschmidt <benh@kernel.crashing.org>
@@ -18,13 +17,13 @@ Cc: Ingo Molnar <mingo@elte.hu>, Sam Ravnborg <sam@ravnborg.org>,
        Paul Mackerras <paulus@samba.org>,
        Benjamin Herrenschmidt <benh@kernel.crashing.org>,
        linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20090320164429.GA28037@oksana.dev.rtsoft.ru>
+In-Reply-To: <20090320164431.GB28037@oksana.dev.rtsoft.ru>
 References: <20090320164404.GA19933@oksana.dev.rtsoft.ru>
-	 <20090320164429.GA28037@oksana.dev.rtsoft.ru>
+	 <20090320164431.GB28037@oksana.dev.rtsoft.ru>
 Content-Type: text/plain
 Organization: Red Hat
-Date: Fri, 20 Mar 2009 23:49:29 -0400
-Message-Id: <1237607369.17367.7.camel@localhost.localdomain>
+Date: Fri, 20 Mar 2009 23:50:06 -0400
+Message-Id: <1237607406.17367.9.camel@localhost.localdomain>
 Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
@@ -34,91 +33,106 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Ben,
 
-Can you ACK this patch? Or even take it in your tree?
+Can you ACK or take this patch too.
 
 Thanks,
 
 -- Steve
 
+
 On Fri, 2009-03-20 at 19:44 +0300, Anton Vorontsov wrote:
-> This patch introduces ARCH_HAS_NORMAL_FRAME_POINTERS Kconfig symbol.
-> When defined, the top level Makefile won't add -fno-omit-frame-pointer
-> cflag (the flag is useless in PowerPC kernels, and also makes gcc
-> generate wrong code).
-> 
-> Also move ARCH_WANT_FRAME_POINTERS's help text.
+> The workarounds aren't needed any longer since the top level Makefile
+> doesn't pass -fno-omit-frame-pointer cflag for PowerPC.
 > 
 > Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 > ---
->  Makefile             |    7 +++++--
->  arch/powerpc/Kconfig |    1 +
->  lib/Kconfig.debug    |   16 ++++++++++------
->  3 files changed, 16 insertions(+), 8 deletions(-)
+>  arch/powerpc/Makefile                    |    5 -----
+>  arch/powerpc/kernel/Makefile             |   12 ++++++------
+>  arch/powerpc/platforms/powermac/Makefile |    2 +-
+>  lib/Kconfig.debug                        |    6 +++---
+>  4 files changed, 10 insertions(+), 15 deletions(-)
 > 
-> diff --git a/Makefile b/Makefile
-> index 46c04c5..bf41b05 100644
-> --- a/Makefile
-> +++ b/Makefile
-> @@ -538,9 +538,12 @@ KBUILD_CFLAGS += $(call cc-option, -fno-stack-protector)
+> diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
+> index 551fc58..1dd7748 100644
+> --- a/arch/powerpc/Makefile
+> +++ b/arch/powerpc/Makefile
+> @@ -120,11 +120,6 @@ ifeq ($(CONFIG_6xx),y)
+>  KBUILD_CFLAGS		+= -mcpu=powerpc
 >  endif
 >  
->  ifdef CONFIG_FRAME_POINTER
-> -KBUILD_CFLAGS	+= -fno-omit-frame-pointer -fno-optimize-sibling-calls
-> +  KBUILD_CFLAGS	+= -fno-optimize-sibling-calls
-> +  ifndef ARCH_HAS_NORMAL_FRAME_POINTERS
-> +    KBUILD_CFLAGS	+= -fno-omit-frame-pointer
-> +  endif
->  else
-> -KBUILD_CFLAGS	+= -fomit-frame-pointer
-> +  KBUILD_CFLAGS	+= -fomit-frame-pointer
+> -# Work around a gcc code-gen bug with -fno-omit-frame-pointer.
+> -ifeq ($(CONFIG_FUNCTION_TRACER),y)
+> -KBUILD_CFLAGS		+= -mno-sched-epilog
+> -endif
+> -
+>  cpu-as-$(CONFIG_4xx)		+= -Wa,-m405
+>  cpu-as-$(CONFIG_6xx)		+= -Wa,-maltivec
+>  cpu-as-$(CONFIG_POWER4)		+= -Wa,-maltivec
+> diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
+> index dfec3d2..f86caeb 100644
+> --- a/arch/powerpc/kernel/Makefile
+> +++ b/arch/powerpc/kernel/Makefile
+> @@ -14,14 +14,14 @@ endif
+>  
+>  ifdef CONFIG_FUNCTION_TRACER
+>  # Do not trace early boot code
+> -CFLAGS_REMOVE_cputable.o = -pg -mno-sched-epilog
+> -CFLAGS_REMOVE_prom_init.o = -pg -mno-sched-epilog
+> -CFLAGS_REMOVE_btext.o = -pg -mno-sched-epilog
+> -CFLAGS_REMOVE_prom.o = -pg -mno-sched-epilog
+> +CFLAGS_REMOVE_cputable.o = -pg
+> +CFLAGS_REMOVE_prom_init.o = -pg
+> +CFLAGS_REMOVE_btext.o = -pg
+> +CFLAGS_REMOVE_prom.o = -pg
+>  # do not trace tracer code
+> -CFLAGS_REMOVE_ftrace.o = -pg -mno-sched-epilog
+> +CFLAGS_REMOVE_ftrace.o = -pg
+>  # timers used by tracing
+> -CFLAGS_REMOVE_time.o = -pg -mno-sched-epilog
+> +CFLAGS_REMOVE_time.o = -pg
 >  endif
 >  
->  ifdef CONFIG_DEBUG_INFO
-> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-> index 97f9a64..4587e66 100644
-> --- a/arch/powerpc/Kconfig
-> +++ b/arch/powerpc/Kconfig
-> @@ -113,6 +113,7 @@ config PPC
->  	select HAVE_FUNCTION_TRACER
->  	select HAVE_FUNCTION_GRAPH_TRACER
->  	select ARCH_WANT_OPTIONAL_GPIOLIB
-> +	select ARCH_HAS_NORMAL_FRAME_POINTERS
->  	select HAVE_IDE
->  	select HAVE_IOREMAP_PROT
->  	select HAVE_EFFICIENT_UNALIGNED_ACCESS
+>  obj-y				:= cputable.o ptrace.o syscalls.o \
+> diff --git a/arch/powerpc/platforms/powermac/Makefile b/arch/powerpc/platforms/powermac/Makefile
+> index 50f1693..0eb8781 100644
+> --- a/arch/powerpc/platforms/powermac/Makefile
+> +++ b/arch/powerpc/platforms/powermac/Makefile
+> @@ -2,7 +2,7 @@ CFLAGS_bootx_init.o  		+= -fPIC
+>  
+>  ifdef CONFIG_FUNCTION_TRACER
+>  # Do not trace early boot code
+> -CFLAGS_REMOVE_bootx_init.o = -pg -mno-sched-epilog
+> +CFLAGS_REMOVE_bootx_init.o = -pg
+>  endif
+>  
+>  obj-y				+= pic.o setup.o time.o feature.o pci.o \
 > diff --git a/lib/Kconfig.debug b/lib/Kconfig.debug
-> index 4b63b6b..fc8cd1f 100644
+> index fc8cd1f..713620d 100644
 > --- a/lib/Kconfig.debug
 > +++ b/lib/Kconfig.debug
-> @@ -661,20 +661,24 @@ config DEBUG_NOTIFIERS
->  	  This is a relatively cheap check but if you care about maximum
->  	  performance, say N.
->  
-> -#
-> -# Select this config option from the architecture Kconfig, if it
-> -# it is preferred to always offer frame pointers as a config
-> -# option on the architecture (regardless of KERNEL_DEBUG):
-> -#
->  config ARCH_WANT_FRAME_POINTERS
+> @@ -493,7 +493,7 @@ config LOCKDEP
 >  	bool
->  	help
-> +	  Select this config option from the architecture Kconfig, if it
-> +	  it is preferred to always offer frame pointers as a config
-> +	  option on the architecture (regardless of KERNEL_DEBUG).
-> +
-> +config ARCH_HAS_NORMAL_FRAME_POINTERS
-> +	bool
-> +	help
-> +	  Architectures should select this symbol if their ABI implies
-> +	  having a frame pointer.
+>  	depends on DEBUG_KERNEL && TRACE_IRQFLAGS_SUPPORT && STACKTRACE_SUPPORT && LOCKDEP_SUPPORT
+>  	select STACKTRACE
+> -	select FRAME_POINTER if !MIPS && !PPC && !ARM_UNWIND
+> +	select FRAME_POINTER if !MIPS && !ARM_UNWIND
+>  	select KALLSYMS
+>  	select KALLSYMS_ALL
 >  
->  config FRAME_POINTER
->  	bool "Compile the kernel with frame pointers"
->  	depends on DEBUG_KERNEL && \
->  		(CRIS || M68K || M68KNOMMU || FRV || UML || S390 || \
-> -		 AVR32 || SUPERH || BLACKFIN || MN10300) || \
-> +		 AVR32 || SUPERH || BLACKFIN || MN10300 || PPC) || \
->  		ARCH_WANT_FRAME_POINTERS
->  	default y if (DEBUG_INFO && UML) || ARCH_WANT_FRAME_POINTERS
+> @@ -866,13 +866,13 @@ config FAULT_INJECTION_STACKTRACE_FILTER
+>  	depends on FAULT_INJECTION_DEBUG_FS && STACKTRACE_SUPPORT
+>  	depends on !X86_64
+>  	select STACKTRACE
+> -	select FRAME_POINTER if !PPC
+> +	select FRAME_POINTER
 >  	help
+>  	  Provide stacktrace filter for fault-injection capabilities
+>  
+>  config LATENCYTOP
+>  	bool "Latency measuring infrastructure"
+> -	select FRAME_POINTER if !MIPS && !PPC
+> +	select FRAME_POINTER if !MIPS
+>  	select KALLSYMS
+>  	select KALLSYMS_ALL
+>  	select STACKTRACE
 
