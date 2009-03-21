@@ -1,69 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757933AbZCUMLe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757777AbZCUMNZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757933AbZCUMLe (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Mar 2009 08:11:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757460AbZCUMLH
+	id S1757777AbZCUMNZ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Mar 2009 08:13:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754367AbZCUMNQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Mar 2009 08:11:07 -0400
-Received: from mail-bw0-f169.google.com ([209.85.218.169]:60460 "EHLO
-	mail-bw0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756996AbZCUMLF convert rfc822-to-8bit (ORCPT
+	Sat, 21 Mar 2009 08:13:16 -0400
+Received: from ti-out-0910.google.com ([209.85.142.188]:26945 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753432AbZCUMNQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Mar 2009 08:11:05 -0400
+	Sat, 21 Mar 2009 08:13:16 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=T9hZB1L0vrdhK24Q0920zP5HDEu8/dQOP1DEg+NAVSIkZM442NNPjSN579Rsns6MVg
-         m2UvRKa5Jew+cAwgfxphjsHSwtp2JVH6+cBJxko4wNQhivLK9zEH7WuPuco6zm1w24fJ
-         Ue9DjR9IZRo8XA89QRXMA0liWxf0J0yO+i5kY=
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=ZwqD73nSw3hQYRHFua5EE5/kJvyz2wjJyFscIZh2rKP8h+XIrJk+uCIpCMBWOXzkfG
+         TgC8B6J007r7KTCTY+M0Csp2L1gwUwBkOXqWtKAx7dG1jnljeWxLAsjGrCm1CkN6U02+
+         CbwvSi8mIJkKVplWmpBwhgtjOqg4dVvh0Ef04=
+Message-ID: <49C4D9C4.1030103@vflare.org>
+Date: Sat, 21 Mar 2009 17:42:52 +0530
+From: Nitin Gupta <nitingupta910@gmail.com>
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
 MIME-Version: 1.0
-In-Reply-To: <20090321113315.47562aac@neptune.home>
-References: <20090321113315.47562aac@neptune.home>
-Date: Sat, 21 Mar 2009 13:11:01 +0100
-X-Google-Sender-Auth: 700ee02db90e9556
-Message-ID: <10f740e80903210511n2867e7adl11fda0f4af04b0d2@mail.gmail.com>
-Subject: Re: SquashFS io errors - zlib_inflate tried to decompress too much 
-	data
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: =?UTF-8?Q?Bruno_Pr=C3=A9mont?= <bonbons@linux-vserver.org>
-Cc: phillip@lougher.demon.co.uk, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Pekka Enberg <penberg@cs.helsinki.fi>, cl@linux-foundation.org,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 2/3] xvmalloc memory allocator
+References: <ztOQA2Cz.1237575719.7896090.penberg@cs.helsinki.fi>	<49C3F1EE.90903@vflare.org> <20090321032137.8dc113e8.akpm@linux-foundation.org>
+In-Reply-To: <20090321032137.8dc113e8.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Mar 21, 2009 at 11:33, Bruno Prémont <bonbons@linux-vserver.org> wrote:
->
-> With 2.6.29-rc7-git5 (x86, 32bit) I get the following errors on assumed
-> correct squashfs images (generated with mksquashfs from CVS, dated
-> 2009-03-14)
->
-> [ 3481.692558] SQUASHFS error: zlib_inflate tried to decompress too much data, expected 8192 bytes.  Zlib data probably corrupt
-> [ 3481.692571] SQUASHFS error: squashfs_read_data failed to read block 0x29375e0
-> [ 3481.692579] SQUASHFS error: Unable to read metadata cache entry [29375e0]
-> [ 3481.692586] SQUASHFS error: Unable to read inode 0x6a04a05ed
->
-> The same happens on 2.6.28.8 with all squashfs patches from 2.6.29-rc8
-> applied to it (x86, 64bit).
+Andrew Morton wrote:
+> On Sat, 21 Mar 2009 01:13:42 +0530 Nitin Gupta <ngupta@vflare.org> wrote:
 
-A fix for this has entered mainline:
+> But what is regrettable is that xvmalloc appears to be tied to
+> compressed-swap in some manner.  Is it not possible to split these two
+> initiatives apart so that neither is dependent upon the other?  Or is
+> compressed-swap hopelessly crippled without xvmalloc?
 
-commit 363911d027d1de1c6df79eb3f487f5476b9619f4
-Author: Phillip Lougher <phillip@lougher.demon.co.uk>
-Date:   Thu Mar 12 03:23:48 2009 +0000
+xvmalloc itself is completely independent of compressed-swap. Infact, its
+loaded as separate kernel module (xvmalloc.ko)
+However, this compression project is almost useless without this specialized
+allocator.
 
-    Squashfs: Valid filesystems are flagged as bad by the corrupted fs patch
+> 
+> (compcache is a terrible name, btw - it isn't a "compressed cache" at all!)
+> 
 
-Gr{oetje,eeting}s,
+I have now heard this many times and my conscious is beginning to hurt now :)
+I will change it to match name of its block device: ramzswap   sounds better?
 
-                                                                  Geert
+>> Anyways, I will move it to drivers/block.
+> 
+> This sounds like it might be a backward step.
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-   -- Linus Torvalds
+I'm bit confused here. Last thing I want to do is block mainline merge
+because of such issues. Its real pain to maintain these things separately.
+
+Thanks,
+Nitin
