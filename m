@@ -1,18 +1,18 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761537AbZCTXP6 (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Fri, 20 Mar 2009 19:15:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755915AbZCTXNj
+	id S1755672AbZCUPuU (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Sat, 21 Mar 2009 11:50:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752547AbZCUPuE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Mar 2009 19:13:39 -0400
-Received: from mail.mn.yu ([195.66.166.8]:34550 "EHLO mail.mn.yu"
+	Sat, 21 Mar 2009 11:50:04 -0400
+Received: from mail.mn.yu ([195.66.166.8]:37387 "EHLO mail.mn.yu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757570AbZCTXNi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Mar 2009 19:13:38 -0400
-Message-ID: <44458.81.199.162.24.1237522530.squirrel@mail.mn.yu>
-Date: Fri, 20 Mar 2009 05:15:30 +0100 (CET)
-Subject: WB/NF/IMF/WA-XX027/N08
-From: "Mrs.Phan Thuy Ngoc" <team.serveatm@claims.net>
-Reply-To: atmcardoffice007@yahoo.com.hk
+	id S1752179AbZCUPuB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 21 Mar 2009 11:50:01 -0400
+Message-ID: <40694.81.199.162.24.1237637439.squirrel@mail.mn.yu>
+Date: Sat, 21 Mar 2009 13:10:39 +0100 (CET)
+Subject: BUSINESS OVERTURE.
+From: "Mr.Ming Yang" <mingoffice@east.net>
+Reply-To: ming_y001@yahoo.com.hk
 User-Agent: SquirrelMail/1.4.13
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -21,7 +21,7 @@ X-Priority: 3 (Normal)
 Importance: Normal
 To: undisclosed-recipients:;
 X-SZR-MailScanner: Found to be clean
-X-SZR-MailScanner-From: team.serveatm@claims.net
+X-SZR-MailScanner-From: mingoffice@east.net
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -29,25 +29,40 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 
 
-OUR REF: WB/NF/IMF/WA-XX027/N08
-Your Ref..................................
+Hang Seng Bank Ltd
+Sai Wan Ho Branch
+171 Shaukiwan Road
+Hong Kong.
 
-It is my pleasure officially to inform you that (ATM Card Number;
-280512007660408004) has been accredited in your favor.Your Personal
-Identification Number is ATM-822. The ATM Card Value is $6.8MILLION USD.
-You are advice to contact Mrs. Phan Thuy Ngoc 
-Email:(atmcardoffice007@yahoo.com.hk) with the following information;
+Good Day,
 
-* Full Name:
-* Delivery Address:
-* Age:
-*Sex
-* Occupation:
-* Phone Number:
-* Scan copy  Identity Card / Passport
+I am Mr. Ming Yang, Director of Operations of the Hang Seng Bank Ltd,Sai
+Wan Ho Branch, Hong Kong. My purpose of contacting you is because
+you live in a western world.
 
-Regards,
-Sir. Anthony Boote,
-Regional Director, Debt Management Office [DMO]
-International Monetary Funds.
+I have an obscured business suggestion for you.I am here-by seeking your
+service in helping me recieve a large amount of money and in giving a
+clear research and feasibility studies on areas I could invest on.Your
+services will be paid for, and you will be a partner, if
+yourrecommendation is accepted.
+
+As a bank employee, I can not operate any personal investment till I am
+retired and with the Anti-corruption Bill passed in Hong Kong,it is risky
+for a fixed income earner to own any huge amount of money in HongKong or
+any foreign country. It is then advisable to invest in any
+foreign land secretly and patiently wait retirement.
+
+For security purpose, due to telecom interception in Hong Kong, I shall
+not accept or acknowledge any phone call. Only emailswould be treated
+inrelation to this proposal but not without this code;[CODE NO:AM-001].
+
+Should you be further interested, I would preferyou to reach me soon and
+finally after that I shall provide you with more details of this
+operation.
+
+Contact me through this email for further confidential
+correspondence:ming_y001@yahoo.com.hk
+
+Kind Regards
+Mr.Ming Yang
 
