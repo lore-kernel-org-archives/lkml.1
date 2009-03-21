@@ -1,69 +1,509 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755536AbZCUFqj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754619AbZCUFq6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755536AbZCUFqj (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Mar 2009 01:46:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752123AbZCUFqY
+	id S1754619AbZCUFq6 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Mar 2009 01:46:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754127AbZCUFqg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Mar 2009 01:46:24 -0400
+	Sat, 21 Mar 2009 01:46:36 -0400
 Received: from mail-gx0-f208.google.com ([209.85.217.208]:53572 "EHLO
 	mail-gx0-f208.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751840AbZCUFqX (ORCPT
+	with ESMTP id S1753454AbZCUFqb convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Mar 2009 01:46:23 -0400
+	Sat, 21 Mar 2009 01:46:31 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-disposition:message-id:content-type
-         :content-transfer-encoding;
-        b=q1CLavjjaaVpHbRLbJ9TmWCtd2G0dA2nwEnHrw/fyoRwUnF/qOXnpET+NU23UDWFwT
-         1eu2uY0+Vs4Iz124LxisVp/y0eDZrQks6d9g508QpZwYV697KLWSdT9B+lDX8hGXyh5k
-         R08/3BF9yYjJPAqy+8JL88+OPg/029qWQ1M1c=
+         :mime-version:content-disposition:content-type
+         :content-transfer-encoding:message-id;
+        b=SJI8bMhDuFLjvOphuTYVr5cgIj2gCCR08DfAn6QN0By1W3y61z9F2gvNqsPWudO/d4
+         8HD/+oS35ZD/mnHn6HFISSsvF/i7K31Eb5qonG37XCayDSoN65Lzc+sOqFcvKz9LnOWt
+         WDN4ctEo/ahauDS/kJvNGtyOO2Y8j63ukq7s8=
 From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Arjan van de Ven <arjan@infradead.org>
-Subject: Re: Question about usage of RCU in the input layer
-Date: Fri, 20 Mar 2009 22:46:15 -0700
+To: Peta Blaha <blahapeta@gmail.com>
+Subject: Re: [PATCH] input/joystick: add driver fortius 1942
+Date: Fri, 20 Mar 2009 22:46:25 -0700
 User-Agent: KMail/1.11.1 (Linux/2.6.27.19-170.2.35.fc10.x86_64; KDE/4.2.1; x86_64; ; )
-Cc: paulmck@linux.vnet.ibm.com, dipankar@in.ibm.com,
-       linux-input@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <20090318215812.15496a86@infradead.org> <20090320020750.GA6807@linux.vnet.ibm.com> <20090319202032.4c971d92@infradead.org>
-In-Reply-To: <20090319202032.4c971d92@infradead.org>
+Cc: linux-input@vger.kernel.org, linux-usb@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+References: <739e73230903161921u426f2c65gddbc089d25ba5d50@mail.gmail.com>
+In-Reply-To: <739e73230903161921u426f2c65gddbc089d25ba5d50@mail.gmail.com>
 MIME-Version: 1.0
 Content-Disposition: inline
-Message-Id: <200903202246.15772.dmitry.torokhov@gmail.com>
 Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Message-Id: <200903202246.25426.dmitry.torokhov@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 19 March 2009 20:20:32 Arjan van de Ven wrote:
-> > I don't claim to understand the code in question, so it is entirely
-> > possible that the following is irrelevant.  But one other reason for
-> > synchronize_rcu() is:
-> >
-> > 1.    Make change.
-> >
-> > 2.    synchronize_rcu()
-> >
-> > 3.    Now you are guaranteed that all CPUs/tasks/whatever
-> > currently running either are not messing with you on the one hand, or
-> >       have seen the change on the other.
->
-> ok so this is for the case where someone is already iterating the list.
->
-> I don't see anything in the code that assumes this..
+Hi Peta,
 
-This is something that input core guarantees to its users: by the time
-input core calls hander->start() or, in its absence, by the time
-input_register_handle() returns, events from input drivers will be
-passed into the handle being registered, i.e. the presence of the
-new item in the list is noticed by all CPUs.
+On Monday 16 March 2009 19:21:18 Peta Blaha wrote:
+> Driver for Fortius 1942 device.
+>
 
-Now, it is possible to stop using RCU primitives in the input core
-but I think that you'd want to figure out why synchronize_rcu()
-takes so long first, otheriwse you may find another "abuser"
-down the road.
+Thank you very much for your patch, overall it looks pretty nice.
+It looks like your mailer ate whitespace; I also have some
+requests for you with regard to the driver.
+
+> Signed-off-by: Petr Blaha <blahapeta@gmail.com>
+
+Did you misspell your first name in the signed-off-by by
+any chance?
+
+> ---
+>
+> --- a/drivers/input/joystick/fortius_1942.c.orig 1970-01-01
+> 01:00:00.000000000 +0100
+> +++ b/drivers/input/joystick/fortius_1942.c 2009-03-17 03:17:01.000000000
+> +0100 @@ -0,0 +1,394 @@
+> +/*
+> + * This program is free software; you can redistribute it and/or modify
+> + * it under the terms of the GNU General Public License as published by
+> + * the Free Software Foundation; either version 2 of the License, or
+> + * (at your option) any later version.
+> + *
+> + * This program is distributed in the hope that it will be useful,
+> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
+> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+> + * GNU General Public License for more details.
+> + *
+> + * You should have received a copy of the GNU General Public License
+> + * along with this program; if not, write to the Free Software
+> + * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+> + *
+> + *
+> + *
+> + * Info.
+> + * First unimpemented feature Heart Sensor.
+> + * Use bit 12 and 14(beginning 0), maybe 13 also.Emmisions
+> + * from computer affect measuring.
+> + *
+> + * Second is Active Brake
+> + * Can be maybe used as force feedback. Problem is slowness in
+> + * switching from state to state, its electric motor, it has delay can
+> + * be fragile.
+> + * Try it by changing BRAKE_POS from 0 to 10.
+> + *
+> + * Thirth unimpemented is sending 0x01, when pedal magnet meets frame
+> sensor. + *
+> + * Pedalling works fine. Your wheel can have other size tan mime. Feel
+> free + * to change constant in usb_tfor_irq, when counting value of
+> gasolina. + *
+> + */
+> +
+> +#include <linux/kernel.h>
+> +#include <linux/slab.h>
+> +#include <linux/module.h>
+> +#include <linux/init.h>
+> +#include <linux/usb/input.h>
+> +#include <linux/time.h>
+> +
+> +
+> +#define DRIVER_VERSION "v0.0.2"
+> +#define DRIVER_DESC    "USB Tacx Fortius 1942 driver"
+> +#define DRIVER_LICENSE "GPL"
+> +#define DRIVER_AUTHOR  "Petr Blaha <blahapeta@gmail.com>"
+> +
+> +
+> +/*Don't put here lesser values*/
+> +/*read*/
+> +#define BIT_IN_DEVICE_1942 64
+> +/*write*/
+> +#define BIT_OUT_DEVICE_1942 12
+> +/*read*/
+> +#define BULK_IN_INTERFACE_1942 82
+> +/*write*/
+> +#define BULK_OUT_INTERFACE_1942 02
+> +
+> +
+> +#define BRAKE_POS 2
+> +
+> +
+> +/*11 states of brake,in beginning active brake helps, later add
+> +difficulty to cycling.0x00 0x00 is neutral*/
+> +#define ARRAYINT { {0x4d, 0xf3}, {0xa7, 0xf9}, {0x00, 0x00}, {0x59, 0x06},
+> \ +{0xb3, 0x0c}, {0x0c, 0x13}, {0x66, 0x19}, {0xbf, 0x1f}, {0x18, 0x26},
+> {0x72, \ +0x2c}, {0xcb, 0x32} }
+> +
+> +
+> +MODULE_AUTHOR(DRIVER_AUTHOR);
+> +MODULE_DESCRIPTION(DRIVER_DESC);
+> +MODULE_LICENSE(DRIVER_LICENSE);
+> +
+> + unsigned long difference = 0;
+
+Make it static? Also there is no need to initialize to 0.
+ 
+> + /*time measure*/
+> + struct timeval time, time_before;
+> + /*guessed fastest speed a man can possibly ride-incitating full
+> + throttle*/
+> + unsigned int fastest_wheel_rotate = 1000;
+> + /*actual state of path reached in one cycle*/
+> + unsigned int ride = 0, old_ride = 0;
+
+Same here. You really want to mark everything static unless
+it is used from another module.
+ 
+> +
+> +struct usb_tfor {
+> + char name[128];
+> + char phys[64];
+> + struct usb_device *usbdev;
+> + struct input_dev *input;
+> +
+> + struct urb *irq;
+> + unsigned char *data;
+> + dma_addr_t idata_dma;
+> +
+> + struct urb *out;
+> + unsigned char *data_device;
+> + dma_addr_t odata_dma;
+> + /*brake position*/
+> + unsigned int brake_pos;
+> +};
+> +
+> +static void tfor_disconnect(struct usb_interface *intf)
+
+Mark it as __devexit please.
+
+> +{
+> + struct usb_tfor *tfor = usb_get_intfdata(intf);
+> +
+> + usb_set_intfdata(intf, NULL);
+> + if (tfor) {
+
+Why do we check this? Can it ever be NULL and still
+tfor_disconnect be called for this interface?
+
+> +  /*urb*/
+> +  usb_kill_urb(tfor->out);
+> +  usb_kill_urb(tfor->irq);
+
+You have implemented close method which is guaranteed to
+be called if open succeeded. These is no need to kill
+URBs here.
+
+> +  /*device*/
+> +  input_unregister_device(tfor->input);
+> +  /*urb*/
+> +  usb_free_urb(tfor->out);
+> +  usb_free_urb(tfor->irq);
+> +  /*buffer free*/
+> +  usb_buffer_free(interface_to_usbdev(intf), 10, tfor->data_device, \
+> +  tfor->odata_dma);
+> +  usb_buffer_free(interface_to_usbdev(intf), 10, tfor->data, \
+> +  tfor->idata_dma);
+> +  /*free memory*/
+> +  kfree(tfor);
+> +   }
+> +}
+> +
+> +static int usb_tfor_open(struct input_dev *dev)
+> +{
+> + struct usb_tfor *tfor = input_get_drvdata(dev);
+
+Blank line after variable declarations please.
+
+> + tfor->irq->dev = tfor->usbdev;
+
+This kind of setup should be moved into _probe().
+
+> + usb_submit_urb(tfor->irq, GFP_KERNEL);
+
+> + tfor->out->dev = tfor->usbdev;
+
+This one as well, so the only thing left in _open should
+be calls to usb_submit_urb().
+
+> + usb_submit_urb(tfor->out, GFP_KERNEL);
+> +
+> + return 0;
+> +}
+> +
+> +static void usb_tfor_close(struct input_dev *dev)
+> +{
+> + struct usb_tfor *tfor = input_get_drvdata(dev);
+> + usb_kill_urb(tfor->irq);
+> + usb_kill_urb(tfor->out);
+> +}
+> +
+> +static struct usb_device_id tfor_ids[] = {
+> + { USB_DEVICE(0x3561, 0x1942), .driver_info = 0 },
+> + { }
+> +};
+> +
+> +static void usb_tfor_out(struct urb *urb)
+> +{ struct usb_tfor *tfor = urb->context;
+> + unsigned int brake_bits[11][2] = ARRAYINT;
+> + int retval;
+> + tfor->brake_pos = BRAKE_POS;
+> + /*URB to device*/
+> + /*constant*/
+> + tfor->data_device[0] = 0x01;
+> + /*constant*/
+> + tfor->data_device[1] = 0x08;
+> + /*constant*/
+> + tfor->data_device[2] = 0x01;
+> + /*constant*/
+> + tfor->data_device[3] = 0x00;
+> + /*brake_bits*/
+> + tfor->data_device[4] = brake_bits[tfor->brake_pos][0];
+> + /*brake_bits*/
+> + tfor->data_device[5] = brake_bits[tfor->brake_pos][1];
+> + /*0x01 is turn,when frame sensor meets pedal magnet,
+> + i don't see reason for implementation, nor know how device knows it*/
+> + tfor->data_device[6] = 0x00;
+> + /*constant*/
+> + tfor->data_device[7] = 0x00;
+> + /*constant*/
+> + tfor->data_device[8] = 0x02;
+> + /*constant*/
+> + tfor->data_device[9] = 0x52;
+> + /*constant*/
+> + tfor->data_device[10] = 0x10;
+> + /*constant*/
+> + tfor->data_device[11] = 0x04;
+> +
+> +
+> + switch (urb->status) {
+> + case 0:
+> + /* success */
+> + break;
+> + case -ECONNRESET:
+> + case -ENOENT:
+> + case -ESHUTDOWN:
+> + /* this urb is terminated, clean up */
+> + dbg("%s - urb shutting down with status: %d", __func__, urb->status);
+> + break;
+> + default:
+> +    dbg("%s - nonzero urb status received: %d", __func__, urb->status);
+> + }
+> + retval = usb_submit_urb(urb, GFP_ATOMIC);
+> + if (retval)
+> + err("%s - usb_submit_urb failed with result %d",
+> +    __func__, retval);
+> +}
+> +
+> +static void usb_tfor_irq(struct urb *urb)
+> +{
+> + struct usb_tfor *tfor = urb->context;
+> + unsigned char *data = tfor->data;
+> + struct input_dev *dev = tfor->input;
+> + int status;
+> + int gasolina;
+> +
+> + switch (urb->status) {
+> + case 0:
+> + /* success */
+> +   break;
+> + case -ECONNRESET:
+> + case -ENOENT:
+> + case -ESHUTDOWN:
+> + /* ±this urb is terminated, clean up */
+> + dbg("%s - urb shutting down with status: %d", __func__, \
+> + urb->status);
+> + return;
+> + default:
+> + dbg("%s - nonzero urb status received: %d", __func__, \
+> + urb->status);
+> + goto resubmit;
+> + }
+> +
+> + /*Get actual time*/
+> + do_gettimeofday(&time);
+> + /*Ride counter in velociped is small,avoid mistake here*/
+> + if ((data[28]*255+data[29]) < ride)
+> + ride = 0;
+> + /*We get new data, set new val. of ride counter &time counter*/
+> + if ((data[28]*255+data[29]) > ride) {
+> + old_ride = ride;
+> + ride = (data[28]*255+data[29]);
+> + difference = \
+> + ((time.tv_usec-time_before.tv_usec)\
+> + +(time.tv_sec-time_before.tv_sec)*1000000);
+> + do_gettimeofday(&time_before);
+> + if (difference == 0)
+> + dbg("Something is not good \n");
+> + }
+> + /*Prevent division by 0*/
+> + if (difference != 0)
+> + /*"speed=path/time",change constant 1000
+> +   to naturalize it for your speed*/
+> + gasolina = (ride-old_ride)/(difference/1000);
+> + else
+> + gasolina = 0;
+
+We should probably rename this variable to accel[eration].
+
+> + input_report_abs(dev, ABS_GAS, gasolina);
+> + input_report_key(dev, BTN_RIGHT,   data[13] & 0x01);
+> + input_report_key(dev, BTN_BACK, data[13] & 0x02);
+> + input_report_key(dev, BTN_FORWARD, data[13] & 0x04);
+> + input_report_key(dev, BTN_LEFT, data[13] & 0x08);
+> + input_report_abs(dev, ABS_WHEEL, (((data[18]+((data[19] & 0x0f)*225))-\
+> + (689+170))*-1));
+> +
+> + /* event termination */
+> + input_sync(dev);
+> +
+> +resubmit:
+> + status = usb_submit_urb(urb, GFP_ATOMIC);
+> + if (status)
+> + err("can't resubmit intr, %s-%s/input0, status %d",
+> + tfor->usbdev->bus->bus_name, tfor->usbdev->devpath, status);
+
+We should not use bus_name directly, i think there is a helper
+in driver core for that. Or you can use dev->phys instead.
+
+> +
+> +}
+> +
+> +static int tfor_probe(struct usb_interface *intf, const struct
+> usb_device_id *id)
+
+I think we can mark it __devinit.
+
+> +{
+> + struct usb_device *dev = interface_to_usbdev(intf);
+> + struct usb_tfor *tfor;
+> + struct input_dev *input_dev;
+> + unsigned int err = -ENOMEM;
+> +
+> +
+> + tfor = kzalloc(sizeof(struct usb_tfor), GFP_KERNEL);
+> +
+> + input_dev = input_allocate_device();
+> + if (!tfor || !input_dev) {
+> + err = -ENOMEM;
+> + goto fail1;
+> + }
+> + /*initilization of time counter*/
+> + do_gettimeofday(&time);
+> + time_before.tv_usec = time.tv_usec;
+> + time_before.tv_sec = time.tv_sec;
+> +
+> + tfor->data = usb_buffer_alloc(dev, BIT_IN_DEVICE_1942, GFP_KERNEL, \
+> + &tfor->idata_dma);
+> + if (!tfor->data) {
+> + err = -ENOMEM;
+> + goto fail1;
+> + }
+> +
+> + tfor->data_device = usb_buffer_alloc(dev, BIT_OUT_DEVICE_1942, \
+> + GFP_KERNEL, &tfor->odata_dma);
+> + if (!tfor->data_device) {
+> + err = -ENOMEM;
+> + goto fail1;
+> + }
+> +
+> + tfor->irq = usb_alloc_urb(0, GFP_KERNEL);
+> + if (!tfor->irq) {
+> + err = -ENOMEM;
+> + goto fail2;
+> + }
+> +
+> + tfor->out = usb_alloc_urb(0, GFP_KERNEL);
+> + if (!tfor->irq) {
+> + err = -ENOMEM;
+> + goto fail3;
+> + }
+> +
+> + tfor->usbdev = dev;
+> + tfor->input = input_dev;
+> +
+> + usb_make_path(dev, tfor->phys, sizeof(tfor->phys));
+> + strlcat(tfor->phys, "/input0", sizeof(tfor->phys));
+> +
+> + input_dev->name = "Tacx Fortius 1942";
+> + input_dev->phys = tfor->phys;
+> + usb_to_input_id(dev, &input_dev->id);
+> + input_dev->dev.parent = &intf->dev;
+> + input_set_drvdata(input_dev, tfor);
+> + input_dev->open = usb_tfor_open;
+> + input_dev->close = usb_tfor_close;
+> + input_dev->evbit[0] = BIT_MASK(EV_ABS) | BIT_MASK(EV_KEY);
+> + /*handlebar*/
+> + input_set_abs_params(input_dev, ABS_WHEEL, -170, 170, 0, 20);
+> + /*plyn*/
+> + input_set_abs_params(input_dev, ABS_GAS, 0, 40, 2, 0);
+> + /*buttons*/
+> + set_bit(BTN_LEFT, input_dev->keybit);
+> + set_bit(BTN_RIGHT, input_dev->keybit);
+> + set_bit(BTN_FORWARD, input_dev->keybit);
+> + set_bit(BTN_BACK, input_dev->keybit);
+> +
+> + usb_fill_bulk_urb(tfor->irq, dev, usb_rcvbulkpipe(dev, \
+> + BULK_IN_INTERFACE_1942), tfor->data, BIT_IN_DEVICE_1942, \
+> + usb_tfor_irq, tfor);
+> + tfor->irq->transfer_dma = tfor->idata_dma;
+> + tfor->irq->transfer_flags |= URB_NO_TRANSFER_DMA_MAP;
+> +
+> + /*
+> + * urb sends data to machine
+> + */
+> +
+> + usb_fill_bulk_urb(tfor->out, dev, usb_sndbulkpipe(dev, \
+> + BULK_OUT_INTERFACE_1942), tfor->data_device, BIT_OUT_DEVICE_1942, \
+> + usb_tfor_out, tfor);
+> + tfor->out->transfer_dma = tfor->odata_dma;
+> + tfor->out->transfer_flags |= URB_NO_TRANSFER_DMA_MAP;
+> +
+> + err = input_register_device(tfor->input);
+> + if (err)
+> + goto fail2;
+> +
+> + usb_set_intfdata(intf, tfor);
+> +
+> + return 0;
+> +
+> + fail3: usb_buffer_free(dev, BIT_OUT_DEVICE_1942, tfor->data_device, \
+> + tfor->odata_dma);
+> + fail2: usb_buffer_free(dev, BIT_IN_DEVICE_1942, tfor->data,
+> tfor->idata_dma); + fail1: input_free_device(input_dev);
+> + kfree(tfor);
+> + return err;
+> +}
+> +
+> +static struct usb_driver tfor_driver = {
+> + .name = "fortius_1942",
+> + .probe = tfor_probe,
+> + .disconnect = tfor_disconnect,
+
+__devexit_p() here please.
+
+> + .id_table = tfor_ids,
+
+It would be very nice if the driver supported suspend and resume.
+
+> +};
+> +
+> +static int __init tfor_init(void)
+> +{
+> + int retval;
+> + retval = usb_register(&tfor_driver);
+> + if (retval)
+> + goto out;
+> + printk(KERN_INFO KBUILD_MODNAME ": " DRIVER_VERSION ":" \
+> + DRIVER_DESC "\n");
+
+Our boot is noisy enough, lets drop this message.
+
+> +out:
+> + return retval;
+> +}
+> +
+> +static void __exit tfor_exit(void)
+> +{
+> + usb_deregister(&tfor_driver);
+> +}
+> +
+> +module_init(tfor_init);
+> +module_exit(tfor_exit);
+
+Please CC me when you send updated version. Thanks!
 
 -- 
 Dmitry
