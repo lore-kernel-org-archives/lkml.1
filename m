@@ -1,71 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759870AbZCUPWv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760022AbZCUPXR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759870AbZCUPWv (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Mar 2009 11:22:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754798AbZCUPUb
+	id S1760022AbZCUPXR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Mar 2009 11:23:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753822AbZCUPUg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Mar 2009 11:20:31 -0400
-Received: from rtr.ca ([76.10.145.34]:53269 "EHLO mail.rtr.ca"
+	Sat, 21 Mar 2009 11:20:36 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:41659 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752859AbZCUPU2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Mar 2009 11:20:28 -0400
-Message-ID: <49C505B5.9020804@rtr.ca>
-Date: Sat, 21 Mar 2009 11:20:21 -0400
-From: Mark Lord <liml@rtr.ca>
-Organization: Real-Time Remedies Inc.
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	id S1756278AbZCUPUe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 21 Mar 2009 11:20:34 -0400
+Date: Sat, 21 Mar 2009 16:20:27 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Heiko Carstens <heiko.carstens@de.ibm.com>
+Cc: =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
+       Steven Rostedt <rostedt@goodmis.org>, Sam Ravnborg <sam@ravnborg.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] trace/ring_buffer: fix section mismatch warning
+Message-ID: <20090321152027.GA1073@elte.hu>
+References: <20090321124139.4ca216d9@osiris.boeblingen.de.ibm.com> <20090321143911.GA25729@elte.hu> <20090321160102.7b5a9675@osiris.boeblingen.de.ibm.com>
 MIME-Version: 1.0
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: Mark Lord <lkml@rtr.ca>, Norman Diamond <n0diamond@yahoo.co.jp>,
-       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
-Subject: Re: Overagressive failing of disk reads, both LIBATA and IDE
-References: <F79C774361EF45A6A68BC08F8621E406@DIAMOND8600>	 <49C30E67.4060702@rtr.ca> <1237645333.4600.9.camel@localhost.localdomain>	 <49C4FFFB.5000601@rtr.ca> <1237648115.4600.12.camel@localhost.localdomain>
-In-Reply-To: <1237648115.4600.12.camel@localhost.localdomain>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090321160102.7b5a9675@osiris.boeblingen.de.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-James Bottomley wrote:
-> On Sat, 2009-03-21 at 10:55 -0400, Mark Lord wrote:
-..
->> The patch *does* use the disk supplied data about the error,
->> and returns success for sectors up to that point.  Where it differs
->> from mainline SCSI, is that it then continues attempting the remaining
->> 2000 sectors (or whatever) of the request, hoping that not all of
->> them are bad.
+
+* Heiko Carstens <heiko.carstens@de.ibm.com> wrote:
+
+> On Sat, 21 Mar 2009 15:39:11 +0100
+> Ingo Molnar <mingo@elte.hu> wrote:
+> > > Section mismatch in reference from the function 
+> > > ring_buffer_alloc() to the function .cpuinit.text:rb_cpu_notify() 
+> > > The function ring_buffer_alloc() references the function __cpuinit 
+> > > rb_cpu_notify(). This is often because ring_buffer_alloc lacks a 
+> > > __cpuinit annotation or the annotation of rb_cpu_notify is wrong.
+> > > 
+> > > This is a false positive since rb_cpu_notify gets only referenced 
+> > > if CONFIG_HOTPLUG_CPU=y. To get rid of the warning annotate 
+> > > ring_buffer_alloc with __ref.
+> > > 
+> > > Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
+> > > ---
+> > >  kernel/trace/ring_buffer.c |    2 +-
+> > 
+> > Frederic has beaten you to it narrowly:
+> > 
+> > 09c9e84: tracing/ring-buffer: don't annotate rb_cpu_notify with __cpuinit
 > 
-> Um, but so does SCSI without your patch ... that was my point.
-..
+> Btw. that was the only section mismatch warning I got on linux-next
+> with an allyesconfig on s390. We probably could enable the verbose
+> section mismatch warnings at compile time?
+> 
+> Sam?
 
-Does it?  I thought it still just failed everything after the first
-bad sector?  Kudos are due if that's working now.
+There's still too many warnings in general on other platforms - but 
+as long as it's per arch we could in fact propagate the warnings to 
+build failures.
 
-..
-> I don't really think we'd do that.  The problem, as you say is request
-> combination.  I think if we really wanted to do this, we'd have block do
-> it.  Each separate request that's merged gets a separate bio, and block
-> already has capabilities to pick up per bio errors, so we'd do the
-> partial completion of the failing bio then skip to the next one in the
-> request to try.  That would completely solve both readahead problems and
-> request merging ones.
-..
-
-Yeah, that's a reasonable way to tackle.  And you're right, we *did* discuss
-this back two years ago.  It just never made it as far as new code.  :)
-
-Something else that might be good here, would be to have the md layer
-pass down a (per-bio?) flag indicating whether it has redundacy capability
-or not for the I/O.  Eg. healthy RAID1/4/5/10 etc.. would set the flag,
-and SCSI could then just abort immediately on a bad sector, with NO retries
-beyond the first bad one.
-
-On RAID0, or a degraded (no spares) RAID1 etc, it would not set the flag,
-so SCSI would try harder to recover the data, as we're discussing above.
-
-This sounds like FAST_FAIL, but is different.  And the hint needs to
-come from the upper layer that is performing redundancy.
-
-
-
+	Ingo
