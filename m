@@ -1,77 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759336AbZCUQjV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759745AbZCUQjh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759336AbZCUQjV (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Mar 2009 12:39:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754225AbZCUQjL
+	id S1759745AbZCUQjh (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Mar 2009 12:39:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757640AbZCUQjO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Mar 2009 12:39:11 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:48869 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753277AbZCUQjL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Mar 2009 12:39:11 -0400
-Date: Sat, 21 Mar 2009 12:39:08 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: "K.Prasad" <prasad@linux.vnet.ibm.com>
-cc: Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Benjamin Herrenschmidt <benh@au1.ibm.com>,
-       Maneesh Soni <maneesh@in.ibm.com>, Roland McGrath <roland@redhat.com>
-Subject: Re: [Patch 11/11] ftrace plugin for kernel symbol tracing using HW
- Breakpoint interfaces - v2
-In-Reply-To: <20090321162417.GA9906@in.ibm.com>
-Message-ID: <alpine.DEB.2.00.0903211235390.13615@gandalf.stny.rr.com>
-References: <20090319234044.410725944@K.Prasad> <20090319235032.GL10517@in.ibm.com> <20090320090451.GC7820@nowhere> <20090321162417.GA9906@in.ibm.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Sat, 21 Mar 2009 12:39:14 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:41268 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757154AbZCUQjN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 21 Mar 2009 12:39:13 -0400
+Date: Sat, 21 Mar 2009 17:39:08 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Jaswinder Singh Rajput <jaswinder@kernel.org>
+Cc: x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [git-pull -tip] x86: mpparse introduce some more helper
+	functions
+Message-ID: <20090321163908.GJ11183@elte.hu>
+References: <1237626755.26347.7.camel@ht.satnam>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1237626755.26347.7.camel@ht.satnam>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Sat, 21 Mar 2009, K.Prasad wrote:
-> > > 
+* Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
+
+> Log files are available at:
+> http://git.kernel.org/?p=linux/kernel/git/jaswinder/linux-2.6-tip.git;a=shortlog;h=x86/core
 > 
-> > > +
-> > > +void ksym_collect_stats(unsigned long hbkpt_hit_addr)
-> > > +{
-> > > +	struct hlist_node *node;
-> > > +	struct trace_ksym *entry;
-> > > +
-> > > +	spin_lock(&ksym_stat_lock);
-> > 
-> > 
-> > I see that can be called from ksym_hbkpt_handler which in turn
-> > can be called from interrupt context, right?
-> > You can issue a deadlock if you don't disable interrupts here.
-> > 
-> > Thanks,
-> > Frederic.
-> > 
+> The following changes since commit 7f00a2495bf5b98b097c47be5d6e2d4114ec39bf:
+>   Ingo Molnar (1):
+>         Merge branches 'x86/cleanups', 'x86/mm', 'x86/setup' and 'linus' into x86/core
 > 
-> ksym_collect_stats<--ksym_hbkpt_handler<--hw_breakpoint_handler<--do_debug
-> invocation happens with interrupts enabled (IF bit is set). I do find
-> that a few plugins in kernel/trace enclose the
-> trace_buffer_lock_reserve()--trace_buffer_unlock_commit() invocation
-> within interrupt-disabled code. Is that a requirement there?
+> are available in the git repository at:
 > 
-> The potential deadlock scenario you foresee isn't obvious to me. Can you
-> explain?
+>   git://git.kernel.org/pub/scm/linux/kernel/git/jaswinder/linux-2.6-tip.git x86/core
+> 
+> Jaswinder Singh Rajput (2):
+>       x86: mpparse.c introduce smp_dump_mptable helper function
+>       x86: mpparse.c introduce check_physptr helper function
+> 
+>  arch/x86/kernel/mpparse.c |  112 ++++++++++++++++++++++++---------------------
+>  1 files changed, 60 insertions(+), 52 deletions(-)
 
-Can that lock ever be taken in an interrupt? If not, document that (and 
-perhaps add a WARN_ON(in_interrupt()); ). Otherwise you have a possible:
+Pulled, thanks Jaswinder!
 
-	spin_lock(&ksym_stat_lock);
-
-		===> take interrupt ...
-
-			(from interrupt)
-			spin_lock(&ksym_stat_lock); <== deadlock.
-
-
--- Steve
-
+	Ingo
