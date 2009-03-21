@@ -1,120 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759543AbZCUExs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756044AbZCUE5h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759543AbZCUExs (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Mar 2009 00:53:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751398AbZCUExi
+	id S1756044AbZCUE5h (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Mar 2009 00:57:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750800AbZCUE52
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Mar 2009 00:53:38 -0400
-Received: from bilbo.ozlabs.org ([203.10.76.25]:53895 "EHLO bilbo.ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750800AbZCUExh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Mar 2009 00:53:37 -0400
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sat, 21 Mar 2009 00:57:28 -0400
+Received: from casper.infradead.org ([85.118.1.10]:42566 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750706AbZCUE51 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 21 Mar 2009 00:57:27 -0400
+Date: Fri, 20 Mar 2009 21:58:25 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: paulmck@linux.vnet.ibm.com
+Cc: dipankar@in.ibm.com, linux-input@vger.kernel.org,
+       dmitry.torokhov@gmail.com, linux-kernel@vger.kernel.org
+Subject: Re: Question about usage of RCU in the input layer
+Message-ID: <20090320215825.19b8baae@infradead.org>
+In-Reply-To: <20090321012746.GM6698@linux.vnet.ibm.com>
+References: <20090318215812.15496a86@infradead.org>
+	<20090319085628.GA6167@in.ibm.com>
+	<20090319071841.63334eff@infradead.org>
+	<20090320020750.GA6807@linux.vnet.ibm.com>
+	<20090319202032.4c971d92@infradead.org>
+	<20090320044541.GE6807@linux.vnet.ibm.com>
+	<20090320065058.65d01771@infradead.org>
+	<20090320143104.GA6698@linux.vnet.ibm.com>
+	<20090320111354.679ab53d@infradead.org>
+	<20090321012746.GM6698@linux.vnet.ibm.com>
+Organization: Intel
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Message-ID: <18884.29385.854691.357234@cargo.ozlabs.ibm.com>
-Date: Sat, 21 Mar 2009 15:53:29 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>
-CC: linux-kernel@vger.kernel.org
-Subject: [PATCH] perfcounters: fix type/event_id layout on big-endian systems
-X-Mailer: VM 8.0.9 under Emacs 22.2.1 (i486-pc-linux-gnu)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: build fix for powerpc
+On Fri, 20 Mar 2009 18:27:46 -0700
+"Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
 
-Commit db3a944aca35ae61 ("perf_counter: revamp syscall input ABI")
-expanded the hw_event.type field into a union of structs containing
-bitfields.  In particular it introduced a type field and a raw_type
-field, with the intention that the 1-bit raw_type field should
-overlay the most-significant bit of the 8-bit type field, and in fact
-perf_counter_alloc() now assumes that (or at least, assumes that
-raw_type doesn't overlay any of the bits that are 1 in the values of
-PERF_TYPE_{HARDWARE,SOFTWARE,TRACEPOINT}).
+> > I've seen only this (input) one to take a long time
+> 
+> Ouch!!!  A -single- synchronize_rcu() taking a full second???  That
+> indicates breakage.
 
-Unfortunately this is not true on big-endian systems such as PowerPC,
-where bitfields are laid out from left to right, i.e. from most
-significant bit to least significant.  This means that setting
-hw_event.type = PERF_TYPE_SOFTWARE will set hw_event.raw_type to 1.
+I'll do a debug mode tomorrow and visualize it as part of the bootgraph;
+hopefully it'll be an interesting result.
+I'll share the graph when I have it....
 
-This fixes it by making the layout depend on whether or not
-__BIG_ENDIAN_BITFIELD is defined.  It's a bit ugly, but that's what
-we get for using bitfields in a user/kernel ABI.
 
-Also, that commit didn't fix up some places in arch/powerpc/kernel/
-perf_counter.c where hw_event.raw and hw_event.event_id were used.
-This fixes them too.
 
-Signed-off-by: Paul Mackerras <paulus@samba.org>
----
-This is in the master branch of my perfcounters.git repository at:
-
-git://git.kernel.org/pub/scm/linux/kernel/git/paulus/perfcounters.git master
-
- arch/powerpc/kernel/perf_counter.c |    9 +++++----
- include/linux/perf_counter.h       |   12 ++++++++++++
- 2 files changed, 17 insertions(+), 4 deletions(-)
-
-diff --git a/arch/powerpc/kernel/perf_counter.c b/arch/powerpc/kernel/perf_counter.c
-index 830ca9c..6413d9c 100644
---- a/arch/powerpc/kernel/perf_counter.c
-+++ b/arch/powerpc/kernel/perf_counter.c
-@@ -602,12 +602,13 @@ hw_perf_counter_init(struct perf_counter *counter)
- 		return NULL;
- 	if ((s64)counter->hw_event.irq_period < 0)
- 		return NULL;
--	ev = counter->hw_event.event_id;
--	if (!counter->hw_event.raw) {
--		if (ev >= ppmu->n_generic ||
--		    ppmu->generic_events[ev] == 0)
-+	if (!counter->hw_event.raw_type) {
-+		ev = counter->hw_event.event_id;
-+		if (ev >= ppmu->n_generic || ppmu->generic_events[ev] == 0)
- 			return NULL;
- 		ev = ppmu->generic_events[ev];
-+	} else {
-+		ev = counter->hw_event.raw_event_id;
- 	}
- 	counter->hw.config_base = ev;
- 	counter->hw.idx = 0;
-diff --git a/include/linux/perf_counter.h b/include/linux/perf_counter.h
-index a4b76c0..98f5990 100644
---- a/include/linux/perf_counter.h
-+++ b/include/linux/perf_counter.h
-@@ -15,6 +15,7 @@
- 
- #include <linux/types.h>
- #include <linux/ioctl.h>
-+#include <asm/byteorder.h>
- 
- /*
-  * User-space ABI bits:
-@@ -86,6 +87,7 @@ enum perf_counter_record_type {
-  */
- struct perf_counter_hw_event {
- 	union {
-+#ifndef __BIG_ENDIAN_BITFIELD
- 		struct {
- 			__u64			event_id	: 56,
- 						type		:  8;
-@@ -94,6 +96,16 @@ struct perf_counter_hw_event {
- 			__u64			raw_event_id	: 63,
- 						raw_type	:  1;
- 		};
-+#else
-+		struct {
-+			__u64			type		:  8,
-+						event_id	: 56;
-+		};
-+		struct {
-+			__u64			raw_type	:  1,
-+						raw_event_id	: 63;
-+		};
-+#endif /* __BIT_ENDIAN_BITFIELD */
- 		__u64		event_config;
- 	};
- 
 -- 
-1.5.6.3
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
