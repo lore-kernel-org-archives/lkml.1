@@ -1,62 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755856AbZCUFKr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753871AbZCUFaY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755856AbZCUFKr (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Mar 2009 01:10:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751955AbZCUFK2
+	id S1753871AbZCUFaY (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Mar 2009 01:30:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751817AbZCUFaI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Mar 2009 01:10:28 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:54192 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750912AbZCUFK0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Mar 2009 01:10:26 -0400
-Date: Sat, 21 Mar 2009 16:10:16 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Greg KH <greg@kroah.com>
-Cc: Greg KH <gregkh@suse.de>, Randy Dunlap <randy.dunlap@oracle.com>,
-       linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: linux-next: Tree for March 18 (staging/comedi)
-Message-Id: <20090321161016.9f8a45ac.sfr@canb.auug.org.au>
-In-Reply-To: <20090321043612.GA482@kroah.com>
-References: <20090318173830.7ea03dfb.sfr@canb.auug.org.au>
-	<49C121C7.1040903@oracle.com>
-	<20090318163319.GA9706@suse.de>
-	<20090321043612.GA482@kroah.com>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.14.7; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Sat__21_Mar_2009_16_10_16_+1100_Lq7lNTqwBaljdG3u"
+	Sat, 21 Mar 2009 01:30:08 -0400
+Received: from kroah.org ([198.145.64.141]:57732 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751572AbZCUFaH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 21 Mar 2009 01:30:07 -0400
+Date: Fri, 20 Mar 2009 22:28:41 -0700
+From: Greg KH <greg@kroah.com>
+To: Shilp Dixit <shilp.dixit@gmail.com>
+Cc: Till Kamppeter <till.kamppeter@gmail.com>, jbottomley@novell.com,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, tech-board@lists.linux-foundation.org
+Subject: Re: [Tech-board] Project idea for the Google Summer of Code 2009
+Message-ID: <20090321052840.GA16361@kroah.com>
+References: <49C402A2.1040705@gmail.com> <20090320213128.GB12078@kroah.com> <c1369cb90903202145n76cec291x29bb6b5477b52007@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <c1369cb90903202145n76cec291x29bb6b5477b52007@mail.gmail.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Sat__21_Mar_2009_16_10_16_+1100_Lq7lNTqwBaljdG3u
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Sat, Mar 21, 2009 at 10:15:48AM +0530, Shilp Dixit wrote:
+> Hi
+> 
+> Ya i agree the concept might be pretty similar to the open suse built
+> packages but aren't most of these services either online or not very
+> flexible...What I was suggesting is to make a tool that is available on
+> every linux OS as an update or something...They give the user more
+> personalisation power and also allows non-tech users to create their own
+> live CD's or USB devices... The front end(GUI) will provide 'drag and drop'
+> facility for the different packages and will make life much easier in terms
+> of making individual flavours...
 
-Hi Greg,
+Ok, that's fair enough, but I fail to see how this relates to the kernel
+itself.  It looks like it's just a tool to package things up in some
+way, no kernel changes would be needed, right?
 
-On Fri, 20 Mar 2009 21:36:12 -0700 Greg KH <greg@kroah.com> wrote:
->
-> Now fixed.
+thanks,
 
-Thanks.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Sat__21_Mar_2009_16_10_16_+1100_Lq7lNTqwBaljdG3u
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAknEdrgACgkQjjKRsyhoI8zdPwCgk3n32MLbkY8bInksJIc6xxUO
-TDAAnjcaTRcq+tL5Y9IIJrVkuYuZrEz+
-=BiYV
------END PGP SIGNATURE-----
-
---Signature=_Sat__21_Mar_2009_16_10_16_+1100_Lq7lNTqwBaljdG3u--
+greg k-h
