@@ -1,55 +1,223 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754632AbZCUBlV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757129AbZCUBmY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754632AbZCUBlV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 20 Mar 2009 21:41:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752419AbZCUBlH
+	id S1757129AbZCUBmY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 20 Mar 2009 21:42:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752423AbZCUBmP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 20 Mar 2009 21:41:07 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:57137 "EHLO mx1.redhat.com"
+	Fri, 20 Mar 2009 21:42:15 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:57173 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752068AbZCUBlG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 20 Mar 2009 21:41:06 -0400
+	id S1752068AbZCUBmO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 20 Mar 2009 21:42:14 -0400
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 From: Roland McGrath <roland@redhat.com>
 To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Oleg Nesterov <oleg@redhat.com>
 Cc: utrace-devel@redhat.com, linux-kernel@vger.kernel.org
 X-Fcc: ~/Mail/utrace
-Subject: [PATCH 0/3] utrace
-X-Zippy-Says: My LESLIE GORE record is BROKEN..
-Message-Id: <20090321013946.890F4FC3AB@magilla.sf.frob.com>
-Date: Fri, 20 Mar 2009 18:39:46 -0700 (PDT)
+Subject: [PATCH 1/3] signals: tracehook_notify_jctl change
+In-Reply-To: Roland McGrath's message of  Friday, 20 March 2009 18:39:46 -0700 <20090321013946.890F4FC3AB@magilla.sf.frob.com>
+References: <20090321013946.890F4FC3AB@magilla.sf.frob.com>
+X-Shopping-List: (1) Inconsistent sentimental organs
+   (2) Injurious toxic brunch
+   (3) Vicarious ashes
+Message-Id: <20090321014100.5C4A9FC3AB@magilla.sf.frob.com>
+Date: Fri, 20 Mar 2009 18:41:00 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-utrace is a new kernel-side API for kernel modules, intended to make it
-tractable to work on novel ways to trace and debug user-mode tasks.
+This changes tracehook_notify_jctl() so it's called with the siglock held,
+and changes its argument and return value definition.  These clean-ups make
+it a better fit for what new tracing hooks need to check.
 
-These patches apply to the current Linus tree (v2.6.29-rc8-241-g65c2449).
-The first two should apply fine on the -tip tree as well, and we will be
-glad to rebase the set to whichever tree.  Frank has another version of the
-ftrace patch (3/3) that works for -tip.  The utrace patches don't touch
-anything unless you set a new kconfig option (still marked EXPERIMENTAL),
-and so are quite safe in that regard.
+Tracing needs the siglock here, held from the time TASK_STOPPED was set,
+to avoid potential SIGCONT races if it wants to allow any blocking in its
+tracing hooks.
 
-utrace cannot be enabled without CONFIG_HAVE_ARCH_TRACEHOOK and the arch
-details it indicates.  If your arch does not have it yet, its maintainers
-will have to work on that.  The details are in the comments in arch/Kconfig.
+This also folds the finish_stop() function into its caller do_signal_stop().
+The function is short, called only once and only unconditionally.  It aids
+readability to fold it in.
 
-The first patch makes a small update to one of the tracehook.h interfaces
-that we needed for utrace.  It moves code a little but does not change any
-of the logic in the existing code.
+Signed-off-by: Roland McGrath <roland@redhat.com>
+---
+ include/linux/tracehook.h |   25 ++++++++++------
+ kernel/signal.c           |   69 +++++++++++++++++++++++----------------------
+ 2 files changed, 51 insertions(+), 43 deletions(-)
 
-The second patch adds the utrace kernel API (if CONFIG_UTRACE=y is set).
-There is no change at all without the config option, and with it there is
-no effect on anything at all until a kernel module using the utrace API is
-loaded.  There is detailed documentation on the API in DocBook form.
-
-The third patch is an ftrace widget based on utrace, by Frank Eigler.
-Frank will follow up on any issues about that patch.
-
-
-Thanks,
-Roland
+diff --git a/include/linux/tracehook.h b/include/linux/tracehook.h
+index 6186a78..b622498 100644  
+--- a/include/linux/tracehook.h
++++ b/include/linux/tracehook.h
+@@ -1,7 +1,7 @@
+ /*
+  * Tracing hooks
+  *
+- * Copyright (C) 2008 Red Hat, Inc.  All rights reserved.
++ * Copyright (C) 2008-2009 Red Hat, Inc.  All rights reserved.
+  *
+  * This copyrighted material is made available to anyone wishing to use,
+  * modify, copy, or redistribute it subject to the terms and conditions
+@@ -469,22 +469,29 @@ static inline int tracehook_get_signal(s
+ 
+ /**
+  * tracehook_notify_jctl - report about job control stop/continue
+- * @notify:		nonzero if this is the last thread in the group to stop
++ * @notify:		zero, %CLD_STOPPED or %CLD_CONTINUED
+  * @why:		%CLD_STOPPED or %CLD_CONTINUED
+  *
+  * This is called when we might call do_notify_parent_cldstop().
+- * It's called when about to stop for job control; we are already in
+- * %TASK_STOPPED state, about to call schedule().  It's also called when
+- * a delayed %CLD_STOPPED or %CLD_CONTINUED report is ready to be made.
+  *
+- * Return nonzero to generate a %SIGCHLD with @why, which is
+- * normal if @notify is nonzero.
++ * @notify is zero if we would not ordinarily send a %SIGCHLD,
++ * or is the %CLD_STOPPED or %CLD_CONTINUED .si_code for %SIGCHLD.
+  *
+- * Called with no locks held.
++ * @why is %CLD_STOPPED when about to stop for job control;
++ * we are already in %TASK_STOPPED state, about to call schedule().
++ * It might also be that we have just exited (check %PF_EXITING),
++ * but need to report that a group-wide stop is complete.
++ *
++ * @why is %CLD_CONTINUED when waking up after job control stop and
++ * ready to make a delayed @notify report.
++ *
++ * Return the %CLD_* value for %SIGCHLD, or zero to generate no signal.
++ *
++ * Called with the siglock held.
+  */
+ static inline int tracehook_notify_jctl(int notify, int why)
+ {
+-	return notify || (current->ptrace & PT_PTRACED);
++	return notify ?: (current->ptrace & PT_PTRACED) ? why : 0;
+ }
+ 
+ #define DEATH_REAP			-1
+diff --git a/kernel/signal.c b/kernel/signal.c
+index 2a74fe8..9a0d98f 100644  
+--- a/kernel/signal.c
++++ b/kernel/signal.c
+@@ -691,7 +691,7 @@ static int prepare_signal(int sig, struc
+ 
+ 		if (why) {
+ 			/*
+-			 * The first thread which returns from finish_stop()
++			 * The first thread which returns from do_signal_stop()
+ 			 * will take ->siglock, notice SIGNAL_CLD_MASK, and
+ 			 * notify its parent. See get_signal_to_deliver().
+ 			 */
+@@ -1629,29 +1629,6 @@ void ptrace_notify(int exit_code)
+ 	spin_unlock_irq(&current->sighand->siglock);
+ }
+ 
+-static void
+-finish_stop(int stop_count)
+-{
+-	/*
+-	 * If there are no other threads in the group, or if there is
+-	 * a group stop in progress and we are the last to stop,
+-	 * report to the parent.  When ptraced, every thread reports itself.
+-	 */
+-	if (tracehook_notify_jctl(stop_count == 0, CLD_STOPPED)) {
+-		read_lock(&tasklist_lock);
+-		do_notify_parent_cldstop(current, CLD_STOPPED);
+-		read_unlock(&tasklist_lock);
+-	}
+-
+-	do {
+-		schedule();
+-	} while (try_to_freeze());
+-	/*
+-	 * Now we don't run again until continued.
+-	 */
+-	current->exit_code = 0;
+-}
+-
+ /*
+  * This performs the stopping for SIGSTOP and other stop signals.
+  * We have to stop all threads in the thread group.
+@@ -1662,6 +1639,7 @@ static int do_signal_stop(int signr)
+ {
+ 	struct signal_struct *sig = current->signal;
+ 	int stop_count;
++	int notify;
+ 
+ 	if (sig->group_stop_count > 0) {
+ 		/*
+@@ -1701,8 +1679,30 @@ static int do_signal_stop(int signr)
+ 	current->exit_code = sig->group_exit_code;
+ 	__set_current_state(TASK_STOPPED);
+ 
++	/*
++	 * If there are no other threads in the group, or if there is
++	 * a group stop in progress and we are the last to stop,
++	 * report to the parent.  When ptraced, every thread reports itself.
++	 */
++	notify = tracehook_notify_jctl(stop_count == 0 ? CLD_STOPPED : 0,
++				       CLD_STOPPED);
++
+ 	spin_unlock_irq(&current->sighand->siglock);
+-	finish_stop(stop_count);
++
++	if (notify) {
++		read_lock(&tasklist_lock);
++		do_notify_parent_cldstop(current, notify);
++		read_unlock(&tasklist_lock);
++	}
++
++	do {
++		schedule();
++	} while (try_to_freeze());
++	/*
++	 * Now we don't run again until continued.
++	 */
++	current->exit_code = 0;
++
+ 	return 1;
+ }
+ 
+@@ -1771,14 +1771,15 @@ relock:
+ 		int why = (signal->flags & SIGNAL_STOP_CONTINUED)
+ 				? CLD_CONTINUED : CLD_STOPPED;
+ 		signal->flags &= ~SIGNAL_CLD_MASK;
+-		spin_unlock_irq(&sighand->siglock);
+ 
+-		if (unlikely(!tracehook_notify_jctl(1, why)))
+-			goto relock;
++		why = tracehook_notify_jctl(why, CLD_CONTINUED);
++		spin_unlock_irq(&sighand->siglock);
+ 
+-		read_lock(&tasklist_lock);
+-		do_notify_parent_cldstop(current->group_leader, why);
+-		read_unlock(&tasklist_lock);
++		if (why) {
++			read_lock(&tasklist_lock);
++			do_notify_parent_cldstop(current->group_leader, why);
++			read_unlock(&tasklist_lock);
++		}
+ 		goto relock;
+ 	}
+ 
+@@ -1936,14 +1937,14 @@ void exit_signals(struct task_struct *ts
+ 	if (unlikely(tsk->signal->group_stop_count) &&
+ 			!--tsk->signal->group_stop_count) {
+ 		tsk->signal->flags = SIGNAL_STOP_STOPPED;
+-		group_stop = 1;
++		group_stop = tracehook_notify_jctl(CLD_STOPPED, CLD_STOPPED);
+ 	}
+ out:
+ 	spin_unlock_irq(&tsk->sighand->siglock);
+ 
+-	if (unlikely(group_stop) && tracehook_notify_jctl(1, CLD_STOPPED)) {
++	if (unlikely(group_stop)) {
+ 		read_lock(&tasklist_lock);
+-		do_notify_parent_cldstop(tsk, CLD_STOPPED);
++		do_notify_parent_cldstop(tsk, group_stop);
+ 		read_unlock(&tasklist_lock);
+ 	}
+ }
