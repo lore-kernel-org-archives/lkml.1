@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758699AbZCUPUz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756586AbZCUPV0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758699AbZCUPUz (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Mar 2009 11:20:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756655AbZCUPTl
+	id S1756586AbZCUPV0 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Mar 2009 11:21:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757526AbZCUPTr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Mar 2009 11:19:41 -0400
-Received: from hera.kernel.org ([140.211.167.34]:59909 "EHLO hera.kernel.org"
+	Sat, 21 Mar 2009 11:19:47 -0400
+Received: from hera.kernel.org ([140.211.167.34]:52340 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756337AbZCUPTh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Mar 2009 11:19:37 -0400
-Date: Sat, 21 Mar 2009 15:18:36 GMT
+	id S1757640AbZCUPTq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 21 Mar 2009 11:19:46 -0400
+Date: Sat, 21 Mar 2009 15:18:44 GMT
 From: Li Zefan <lizf@cn.fujitsu.com>
 To: linux-tip-commits@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, acme@redhat.com, hpa@zytor.com,
@@ -20,78 +20,136 @@ Reply-To: mingo@redhat.com, hpa@zytor.com, acme@redhat.com,
        linux-kernel@vger.kernel.org, lizf@cn.fujitsu.com,
        jens.axboe@oracle.com, fweisbec@gmail.com, rostedt@goodmis.org,
        tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <49C2F5D3.8090104@cn.fujitsu.com>
-References: <49C2F5D3.8090104@cn.fujitsu.com>
-Subject: [tip:tracing/blktrace] blktrace: make blk_tracer_enabled a bool flag
-Message-ID: <tip-5006ea73f38caef6065d1136808413813271633f@git.kernel.org>
-Git-Commit-ID: 5006ea73f38caef6065d1136808413813271633f
+In-Reply-To: <49C2F5EA.8060606@cn.fujitsu.com>
+References: <49C2F5EA.8060606@cn.fujitsu.com>
+Subject: [tip:tracing/blktrace] blktrace: remove blk_probe_mutex
+Message-ID: <tip-3c289ba7c320560ee74979a8895141c829046a2d@git.kernel.org>
+Git-Commit-ID: 3c289ba7c320560ee74979a8895141c829046a2d
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sat, 21 Mar 2009 15:18:37 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sat, 21 Mar 2009 15:18:46 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  5006ea73f38caef6065d1136808413813271633f
-Gitweb:     http://git.kernel.org/tip/5006ea73f38caef6065d1136808413813271633f
+Commit-ID:  3c289ba7c320560ee74979a8895141c829046a2d
+Gitweb:     http://git.kernel.org/tip/3c289ba7c320560ee74979a8895141c829046a2d
 Author:     Li Zefan <lizf@cn.fujitsu.com>
-AuthorDate: Fri, 20 Mar 2009 09:48:03 +0800
+AuthorDate: Fri, 20 Mar 2009 09:48:26 +0800
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Sat, 21 Mar 2009 16:16:13 +0100
+CommitDate: Sat, 21 Mar 2009 16:16:25 +0100
 
-blktrace: make blk_tracer_enabled a bool flag
+blktrace: remove blk_probe_mutex
 
-It doesn't have to be a counter, and it can be a bool flag instead.
+blk_register_tracepoints() always returns 0, so make it return void,
+thus we don't need to use blk_probe_mutex to protect blk_probes_ref.
 
 Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+Acked-by: Frederic Weisbecker <fweisbec@gmail.com>
 Acked-by: Arnaldo Carvalho de Melo <acme@redhat.com>
 Cc: Jens Axboe <jens.axboe@oracle.com>
 Cc: Steven Rostedt <rostedt@goodmis.org>
-Acked-by: Frederic Weisbecker <fweisbec@gmail.com>
-LKML-Reference: <49C2F5D3.8090104@cn.fujitsu.com>
+LKML-Reference: <49C2F5EA.8060606@cn.fujitsu.com>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
 ---
- kernel/trace/blktrace.c |   12 +++---------
- 1 files changed, 3 insertions(+), 9 deletions(-)
+ kernel/trace/blktrace.c |   27 +++++----------------------
+ 1 files changed, 5 insertions(+), 22 deletions(-)
 
 diff --git a/kernel/trace/blktrace.c b/kernel/trace/blktrace.c
-index fb3bc53..73845b7 100644
+index 73845b7..223b92e 100644
 --- a/kernel/trace/blktrace.c
 +++ b/kernel/trace/blktrace.c
-@@ -30,7 +30,7 @@
- static unsigned int blktrace_seq __read_mostly = 1;
+@@ -47,10 +47,9 @@ static struct tracer_flags blk_tracer_flags = {
+ };
  
- static struct trace_array *blk_tr;
--static int __read_mostly  blk_tracer_enabled;
-+static bool blk_tracer_enabled __read_mostly;
+ /* Global reference count of probes */
+-static DEFINE_MUTEX(blk_probe_mutex);
+ static atomic_t blk_probes_ref = ATOMIC_INIT(0);
  
- /* Select an alternative, minimalistic output than the original one */
- #define TRACE_BLK_OPT_CLASSIC	0x1
-@@ -1111,9 +1111,7 @@ static int blk_tracer_init(struct trace_array *tr)
- {
- 	blk_tr = tr;
- 	blk_tracer_start(tr);
+-static int blk_register_tracepoints(void);
++static void blk_register_tracepoints(void);
+ static void blk_unregister_tracepoints(void);
+ 
+ /*
+@@ -256,10 +255,8 @@ static void blk_trace_cleanup(struct blk_trace *bt)
+ 	free_percpu(bt->sequence);
+ 	free_percpu(bt->msg_data);
+ 	kfree(bt);
 -	mutex_lock(&blk_probe_mutex);
--	blk_tracer_enabled++;
+ 	if (atomic_dec_and_test(&blk_probes_ref))
+ 		blk_unregister_tracepoints();
 -	mutex_unlock(&blk_probe_mutex);
-+	blk_tracer_enabled = true;
+ }
+ 
+ int blk_trace_remove(struct request_queue *q)
+@@ -471,13 +468,8 @@ int do_blk_trace_setup(struct request_queue *q, char *name, dev_t dev,
+ 	bt->pid = buts->pid;
+ 	bt->trace_state = Blktrace_setup;
+ 
+-	mutex_lock(&blk_probe_mutex);
+-	if (atomic_add_return(1, &blk_probes_ref) == 1) {
+-		ret = blk_register_tracepoints();
+-		if (ret)
+-			goto probe_err;
+-	}
+-	mutex_unlock(&blk_probe_mutex);
++	if (atomic_add_return(1, &blk_probes_ref) == 1)
++		blk_register_tracepoints();
+ 
+ 	ret = -EBUSY;
+ 	old_bt = xchg(&q->blk_trace, bt);
+@@ -487,9 +479,6 @@ int do_blk_trace_setup(struct request_queue *q, char *name, dev_t dev,
+ 	}
+ 
  	return 0;
- }
- 
-@@ -1131,11 +1129,7 @@ static void blk_tracer_reset(struct trace_array *tr)
- 	if (!atomic_read(&blk_probes_ref))
- 		return;
- 
--	mutex_lock(&blk_probe_mutex);
--	blk_tracer_enabled--;
--	WARN_ON(blk_tracer_enabled < 0);
+-probe_err:
+-	atomic_dec(&blk_probes_ref);
 -	mutex_unlock(&blk_probe_mutex);
--
-+	blk_tracer_enabled = false;
- 	blk_tracer_stop(tr);
+ err:
+ 	if (bt) {
+ 		if (bt->msg_file)
+@@ -863,7 +852,7 @@ void blk_add_driver_data(struct request_queue *q,
+ }
+ EXPORT_SYMBOL_GPL(blk_add_driver_data);
+ 
+-static int blk_register_tracepoints(void)
++static void blk_register_tracepoints(void)
+ {
+ 	int ret;
+ 
+@@ -901,7 +890,6 @@ static int blk_register_tracepoints(void)
+ 	WARN_ON(ret);
+ 	ret = register_trace_block_remap(blk_add_trace_remap);
+ 	WARN_ON(ret);
+-	return 0;
  }
  
+ static void blk_unregister_tracepoints(void)
+@@ -1099,11 +1087,8 @@ static void blk_tracer_print_header(struct seq_file *m)
+ 
+ static void blk_tracer_start(struct trace_array *tr)
+ {
+-	mutex_lock(&blk_probe_mutex);
+ 	if (atomic_add_return(1, &blk_probes_ref) == 1)
+-		if (blk_register_tracepoints())
+-			atomic_dec(&blk_probes_ref);
+-	mutex_unlock(&blk_probe_mutex);
++		blk_register_tracepoints();
+ 	trace_flags &= ~TRACE_ITER_CONTEXT_INFO;
+ }
+ 
+@@ -1118,10 +1103,8 @@ static int blk_tracer_init(struct trace_array *tr)
+ static void blk_tracer_stop(struct trace_array *tr)
+ {
+ 	trace_flags |= TRACE_ITER_CONTEXT_INFO;
+-	mutex_lock(&blk_probe_mutex);
+ 	if (atomic_dec_and_test(&blk_probes_ref))
+ 		blk_unregister_tracepoints();
+-	mutex_unlock(&blk_probe_mutex);
+ }
+ 
+ static void blk_tracer_reset(struct trace_array *tr)
