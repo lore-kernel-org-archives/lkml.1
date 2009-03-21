@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756136AbZCUPwY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755922AbZCUPzU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756136AbZCUPwY (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Mar 2009 11:52:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752547AbZCUPwP
+	id S1755922AbZCUPzU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Mar 2009 11:55:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754264AbZCUPzE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Mar 2009 11:52:15 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:55444 "EHLO mx2.mail.elte.hu"
+	Sat, 21 Mar 2009 11:55:04 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:47138 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753564AbZCUPwO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Mar 2009 11:52:14 -0400
-Date: Sat, 21 Mar 2009 16:52:02 +0100
+	id S1754213AbZCUPzD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 21 Mar 2009 11:55:03 -0400
+Date: Sat, 21 Mar 2009 16:54:42 +0100
 From: Ingo Molnar <mingo@elte.hu>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: Paul Mackerras <paulus@samba.org>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
        linux-kernel@vger.kernel.org
 Subject: Re: [PATCH v2] perfcounters: record time running and time enabled
 	for each counter
-Message-ID: <20090321155202.GA6356@elte.hu>
+Message-ID: <20090321155442.GB6356@elte.hu>
 References: <18884.55232.197620.696687@cargo.ozlabs.ibm.com> <20090321055252.eb0673ea.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -38,31 +38,32 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 * Andrew Morton <akpm@linux-foundation.org> wrote:
 
-> > +	u64				time_enabled;
-> > +	u64				time_running;
+> > @@ -243,6 +259,8 @@ struct perf_counter {
+> >  
+> >  	struct perf_counter		*parent;
+> >  	struct list_head		child_list;
+> > +	atomic64_t			child_time_enabled;
+> > +	atomic64_t			child_time_running;
 > 
-> These look like times.  I see no indication (here) as to the units.
-> 
-> > +	u64				start_enabled;
-> 
-> This looks like a boolean, but it's u64.
-> 
-> > +	u64				start_running;
-> 
-> hard to say.
-> 
-> > +	u64				last_stopped;
-> 
-> probably a time, unknown units.
-> 
-> 
-> Perhaps one of the reasons why this code is confusing is the 
-> blurring between the "time" at which an event occured and the 
-> "time" between the occurrence of two events.  A weakness in 
-> English, I guess.  Using the term "interval" in the latter case 
-> will help a lot.
+> These read like booleans, but why are they atomic64_t's?
 
-What we use in the scheduler is "sum_time" or "runtime". A bit of a 
-tongue twister but unambiguous.
+for inherited counters these values get collected back into a 
+'parent counter' in a lockless way - hence to not lose statistics on 
+SMP they need to be atomic64_t.
+
+> > @@ -290,6 +308,8 @@ struct perf_counter_context {
+> >  	int			nr_active;
+> >  	int			is_active;
+> >  	struct task_struct	*task;
+> > +	u64			time_now;
+> > +	u64			time_lost;
+> >  #endif
+> >  };
+> 
+> I don't have a copy of this header file handy, but from the 
+> snippet I see here, it doesn't look as though it is as clear and 
+> as understadable as we can possibly make it?
+
+i'll post the latest perfcounters tree - it's time for that anyway.
 
 	Ingo
