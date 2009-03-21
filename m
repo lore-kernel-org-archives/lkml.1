@@ -1,78 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754460AbZCUIzu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754412AbZCUJIV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754460AbZCUIzu (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Mar 2009 04:55:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752698AbZCUIzl
+	id S1754412AbZCUJIV (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Mar 2009 05:08:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752890AbZCUJIJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Mar 2009 04:55:41 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:49059 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752407AbZCUIzk (ORCPT
+	Sat, 21 Mar 2009 05:08:09 -0400
+Received: from gw1.cosmosbay.com ([212.99.114.194]:50624 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752461AbZCUJIH convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Mar 2009 04:55:40 -0400
-Date: Sat, 21 Mar 2009 01:49:09 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Roland McGrath <roland@redhat.com>
-Cc: utrace-devel@redhat.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/3] utrace core
-Message-Id: <20090321014909.6b654f55.akpm@linux-foundation.org>
-In-Reply-To: <20090321014140.AA4F5FC3AB@magilla.sf.frob.com>
-References: <20090321013946.890F4FC3AB@magilla.sf.frob.com>
-	<20090321014140.AA4F5FC3AB@magilla.sf.frob.com>
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sat, 21 Mar 2009 05:08:07 -0400
+Message-ID: <49C4AE64.4060400@cosmosbay.com>
+Date: Sat, 21 Mar 2009 10:07:48 +0100
+From: Eric Dumazet <dada1@cosmosbay.com>
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
+MIME-Version: 1.0
+To: Ravikiran G Thirumalai <kiran@scalex86.org>
+CC: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       shai@scalex86.org
+Subject: Re: [rfc] [patch 1/2 ] Process private hash tables for private futexes
+References: <20090321044637.GA7278@localdomain>
+In-Reply-To: <20090321044637.GA7278@localdomain>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Sat, 21 Mar 2009 10:07:52 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 20 Mar 2009 18:41:40 -0700 (PDT) Roland McGrath <roland@redhat.com> wrote:
-
-> This adds the utrace facility, a new modular interface in the kernel for
-> implementing user thread tracing and debugging.  This fits on top of the
-> tracehook_* layer, so the new code is well-isolated.
+Ravikiran G Thirumalai a écrit :
+> Patch to have a process private hash table for 'PRIVATE' futexes.
 > 
-> The new interface is in <linux/utrace.h> and the DocBook utrace book
-> describes it.  It allows for multiple separate tracing engines to work in
-> parallel without interfering with each other.  Higher-level tracing
-> facilities can be implemented as loadable kernel modules using this layer.
+> On large core count systems running multiple threaded processes causes
+> false sharing on the global futex hash table.  The global futex hash
+> table is an array of struct futex_hash_bucket which is defined as:
 > 
-> The new facility is made optional under CONFIG_UTRACE.
-> When this is not enabled, no new code is added.
-> It can only be enabled on machines that have all the
-> prerequisites and select CONFIG_HAVE_ARCH_TRACEHOOK.
+> struct futex_hash_bucket {
+>         spinlock_t lock;
+>         struct plist_head chain;
+> };
 > 
-> In this initial version, utrace and ptrace do not play together at all.
-> If ptrace is attached to a thread, the attach calls in the utrace kernel
-> API return -EBUSY.  If utrace is attached to a thread, the PTRACE_ATTACH
-> or PTRACE_TRACEME request will return EBUSY to userland.  The old ptrace
-> code is otherwise unchanged and nothing using ptrace should be affected
-> by this patch as long as utrace is not used at the same time.  In the
-> future we can clean up the ptrace implementation and rework it to use
-> the utrace API.
+> static struct futex_hash_bucket futex_queues[1<<FUTEX_HASHBITS];
+> 
+> Needless to say this will cause multiple spinlocks to reside on the
+> same cacheline which is very bad when multiple un-related process
+> hash onto adjacent hash buckets.  The probability of unrelated futexes
+> ending on adjacent hash buckets increase with the number of cores in the
+> system (more cores available translates to more processes/more threads
+> being run on a system).  The effects of false sharing are tangible on
+> machines with more than 32 cores.  We have noticed this with  workload
+> of a certain multiple threaded FEA (Finite Element Analysis) solvers.
+> We reported this problem couple of years ago which eventually resulted in
+> a new api for private futexes to avoid mmap_sem.  The false sharing on
+> the global futex hash was put off pending glibc changes to accomodate
+> the futex private apis.  Now that the glibc changes are in, and
+> multicore is more prevalent, maybe it is time to fix this problem.
+> 
+> The root cause of the problem is a global futex hash table even for process
+> private futexes.  Process private futexes can be hashed on process private
+> hash tables, avoiding the global hash and a longer hash table walk when
+> there are a lot more futexes in the workload.  However, this results in an
+> addition of one extra pointer to the mm_struct.  Hence, this implementation
+> of a process private hash table is based off a config option, which can be
+> turned off for smaller core count systems.  Furthermore, a subsequent patch
+> will introduce a sysctl to dynamically turn on private futex hash tables.
+> 
+> We found this patch to improve the runtime of a certain FEA solver by about
+> 15% on a 32 core vSMP system.
+> 
+> Signed-off-by: Ravikiran Thirumalai <kiran@scalex86.org>
+> Signed-off-by: Shai Fultheim <shai@scalex86.org>
+> 
 
-I'd be interested in seeing a bit of discussion regarding the overall value
-of utrace - it has been quite a while since it floated past.
+First incantation of PRIVATE_FUTEXES had process private hash table
 
-I assume that redoing ptrace to be a client of utrace _will_ happen, and
-that this is merely a cleanup exercise with no new user-visible features?
+http://lkml.org/lkml/2007/3/15/230
 
-The "prototype utrace-ftrace interface" seems to be more a cool toy rather
-than a serious new kernel feature (yes?)
+I dont remember objections at that time, maybe it was going to slow down small
+users of these PRIVATE_FUTEXES, ie processes that will maybe use one futex_wait()
+ in their existence, because they'll have to allocate their private hash table
+and populate it.
 
-If so, what are the new killer utrace clients which would justify all these
-changes?
+So I dropped parts about NUMA and private hash tables to get PRIVATE_FUTEXES into mainline.
 
+http://lwn.net/Articles/229668/
 
+Did you tried to change FUTEX_HASHBITS instead, since current value is really really
+ridiculous ?
 
-Also, is it still the case that RH are shipping utrace?  If so, for what
-reasons and what benefits are users seeing from it?
+You could also try to adapt this patch to current kernels :
 
+http://linux.derkeiler.com/Mailing-Lists/Kernel/2007-03/msg06504.html
 
-And I recall that there were real problems wiring up the Feb 2007 version
-of utrace to the ARM architecture.  Have those issues been resolved?  Are
-any problems expected for any architectures?
+[PATCH 3/3] FUTEX : NUMA friendly global hashtable
 
-Thanks.
+On NUMA machines, we should get better performance using a big futex
+hashtable, allocated with vmalloc() so that it is spreaded on several nodes.
+
+I chose a static size of four pages. (Very big NUMA machines have 64k page
+size)
+
 
