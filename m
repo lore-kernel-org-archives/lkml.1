@@ -1,254 +1,208 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755822AbZCUWEq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756393AbZCUWFc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755822AbZCUWEq (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Mar 2009 18:04:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752144AbZCUWEg
+	id S1756393AbZCUWFc (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Mar 2009 18:05:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754716AbZCUWFK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Mar 2009 18:04:36 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:55458 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752167AbZCUWEg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Mar 2009 18:04:36 -0400
-Subject: [PATCH] perf_counter: remove the event config bitfields
-From: Peter Zijlstra <peterz@infradead.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org
-In-Reply-To: <1237635675.4667.192.camel@laptop>
-References: <18884.29385.854691.357234@cargo.ozlabs.ibm.com>
-	 <20090321094246.GA5594@elte.hu>
-	 <18884.47341.106849.379374@cargo.ozlabs.ibm.com>
-	 <20090321095651.GA7201@elte.hu>  <1237635675.4667.192.camel@laptop>
-Content-Type: text/plain
-Date: Sat, 21 Mar 2009 23:04:28 +0100
-Message-Id: <1237673068.3922.257.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.0 
+	Sat, 21 Mar 2009 18:05:10 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:52516 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754435AbZCUWFH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 21 Mar 2009 18:05:07 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Yinghai Lu <yinghai@kernel.org>
+Subject: [Updated patch] Re: [PATCH] igb: fix kexec with igb
+Date: Sat, 21 Mar 2009 23:04:59 +0100
+User-Agent: KMail/1.11.1 (Linux/2.6.29-rc8-tst; KDE/4.2.1; x86_64; ; )
+Cc: David Miller <davem@davemloft.net>,
+       Jesse Brandeburg <jesse.brandeburg@gmail.com>,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       NetDev <netdev@vger.kernel.org>,
+       Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+References: <49B1F934.5050006@kernel.org> <200903082232.36660.rjw@sisk.pl> <49B84B2E.6080701@kernel.org>
+In-Reply-To: <49B84B2E.6080701@kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
+Content-Disposition: inline
+Message-Id: <200903212305.00077.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2009-03-21 at 12:41 +0100, Peter Zijlstra wrote:
-> On Sat, 2009-03-21 at 10:56 +0100, Ingo Molnar wrote:
+On Thursday 12 March 2009, Yinghai Lu wrote:
+> Rafael J. Wysocki wrote:
+> > On Sunday 08 March 2009, Rafael J. Wysocki wrote:
+> >> On Sunday 08 March 2009, Yinghai Lu wrote:
+> >>> Rafael J. Wysocki wrote:
+> >>>> On Saturday 07 March 2009, Yinghai Lu wrote:
+> >>>>> On Fri, Mar 6, 2009 at 11:18 PM, Jesse Brandeburg
+> >>>>> <jesse.brandeburg@gmail.com> wrote:
+> >>>>>> On Fri, Mar 6, 2009 at 8:33 PM, Yinghai Lu <yinghai@kernel.org> wrote:
+> >>>>>>> Impact: could probe igb
+> >>>>>>>
+> >>>>>>> Found one system with 82575EB, in the kernel that is kexeced, probe igb
+> >>>>>>> failed with -2.
+> >>>>>>>
+> >>>>>>> it looks like the same behavior happened on forcedeth.
+> >>>>>>>
+> >>>>>>> try to check system_state to make sure if put it on D3
+> >>>>>>>
+> >>>>>>> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+> >>>>>>>
+> >>>>>>> ---
+> >>>>>>>  drivers/net/igb/igb_main.c |   19 ++++++++++++++-----
+> >>>>>>>  1 file changed, 14 insertions(+), 5 deletions(-)
+> >>>>>> I see the point of the patch, but I know for a fact that ixgbe when
+> >>>>>> enabled for MSI-X also doesn't work with kexec.
+> >>>>>>
+> >>>>>> so my questions are:
+> >>>>>> are you going to change every driver?
+> >>>>> i tend to only change driver that i have related HW.
+> >>>>>
+> >>>>>> why can't this be fixed in core kernel code instead?
+> >>>>> will check it.
+> >>>>>
+> >>>>>> Shouldn't pci_enable_device take it out of D3?
+> >>>>>> Or maybe it should be taken out of D3 immediately if someone tries to
+> >>>>>> ioremap any of the BARx registers?
+> >>>>> looks like second kernel can not detect the state any more.
+> >>>> In fact pci_enable_device() calls pci_set_power_state(dev, PCI_D0) as the first
+> >>>> thing.  The question is why it doesn't work as expected.
+> >>> not sure... please check the version for forcedeth that you made.
+> >>>
+> >>> commit 3cb5599a84c557c0dd9a19feb63a3788268cf249
+> >>> Author: Rafael J. Wysocki <rjw@sisk.pl>
+> >>> Date:   Fri Sep 5 14:00:19 2008 -0700
+> >>>
+> >>>     forcedeth: fix kexec regression
+> >>>     
+> >>>     Fix regression tracked as http://bugzilla.kernel.org/show_bug.cgi?id=11361
+> >>>     and caused by commit f735a2a1a4f2a0f5cd823ce323e82675990469e2 ("[netdrvr]
+> >>>     forcedeth: setup wake-on-lan before shutting down") that makes network
+> >>>     adapters integrated into the NVidia MCP55 chipsets fail to work in kexeced
+> >>>     kernels.  The problem appears to be that if the adapter is put into D3_hot
+> >>>     during ->shutdown(), it cannot be brought back into D0 after kexec (ref.
+> >>>     http://marc.info/?l=linux-kernel&m=121900062814967&w=4).  Therefore, only
+> >>>     put forcedeth into D3 during ->shutdown() if the system is to be powered
+> >>>     off.
+> >> Thanks, I remember now.
+> > 
+> > In which case you need to rework igb_shutdown() rather than igb_suspend().
+> > 
+> > Something like the patch below, perhaps (totally untested).
 > 
-> > Maybe the best option is to get rid of the bitfields and use masks 
-> 
-> Yeah, I think that'll be sanest..
+> it works, David, can you picked it up
 
-Paul, I noticed you assign the raw config without mask, is that ok?
+Still, Yinghai, can you please also test the patch below?  It fixes all
+shortcomings in the driver's suspend and shutdown methods I was talking about
+in one of the previous messages.  If it works, IMO it will be a preferable fix
+(in particular, it would be good to check if WoL still works with it,
+but I don't have the hardware).
+
+Thanks,
+Rafael
 
 ---
-Subject: perf_counter: remove the event config bitfields
+From: Rafael J. Wysocki <rjw@sisk.pl>
+Subject: net/igb: Fix kexec with igb (rev. 3)
+Impact: Fix
 
-Since the bitfields turned into a bit of a mess, remove them and rely on
-good old masks.
+Yinghai Lu found one system with 82575EB where, in the kernel that is
+kexeced, probe igb failed with -2, the reason being that the adapter
+could not be brought back from D3 by the kexec kernel, most probably
+due to quirky hardware (it looks like the same behavior happened on
+forcedeth).
 
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Prevent igb from putting the adapter into D3 during shutdown except
+when we going to power off the system.  For this purpose, seperate
+igb_shutdown() from igb_suspend() and use the appropriate PCI PM
+callbacks in both of them.
+
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+Reported-by: Yinghai Lu <yinghai@kernel.org>
 ---
-diff --git a/arch/powerpc/kernel/perf_counter.c b/arch/powerpc/kernel/perf_counter.c
-index 6413d9c..d056515 100644
---- a/arch/powerpc/kernel/perf_counter.c
-+++ b/arch/powerpc/kernel/perf_counter.c
-@@ -602,13 +602,13 @@ hw_perf_counter_init(struct perf_counter *counter)
- 		return NULL;
- 	if ((s64)counter->hw_event.irq_period < 0)
- 		return NULL;
--	if (!counter->hw_event.raw_type) {
--		ev = counter->hw_event.event_id;
-+	if (!perf_event_raw(&counter->hw_event)) {
-+		ev = perf_event_id(&counter->hw_event);
- 		if (ev >= ppmu->n_generic || ppmu->generic_events[ev] == 0)
- 			return NULL;
- 		ev = ppmu->generic_events[ev];
- 	} else {
--		ev = counter->hw_event.raw_event_id;
-+		ev = perf_event_config(&counter->hw_event);
- 	}
- 	counter->hw.config_base = ev;
- 	counter->hw.idx = 0;
-diff --git a/arch/x86/kernel/cpu/perf_counter.c b/arch/x86/kernel/cpu/perf_counter.c
-index 902282d..3f95b0c 100644
---- a/arch/x86/kernel/cpu/perf_counter.c
-+++ b/arch/x86/kernel/cpu/perf_counter.c
-@@ -217,15 +217,15 @@ static int __hw_perf_counter_init(struct perf_counter *counter)
- 	/*
- 	 * Raw event type provide the config in the event structure
- 	 */
--	if (hw_event->raw_type) {
--		hwc->config |= pmc_ops->raw_event(hw_event->raw_event_id);
-+	if (perf_event_raw(hw_event)) {
-+		hwc->config |= pmc_ops->raw_event(perf_event_config(hw_event));
- 	} else {
--		if (hw_event->event_id >= pmc_ops->max_events)
-+		if (perf_event_id(hw_event) >= pmc_ops->max_events)
- 			return -EINVAL;
- 		/*
- 		 * The generic map:
- 		 */
--		hwc->config |= pmc_ops->event_map(hw_event->event_id);
-+		hwc->config |= pmc_ops->event_map(perf_event_id(hw_event));
- 	}
- 	counter->wakeup_pending = 0;
- 
-diff --git a/include/linux/perf_counter.h b/include/linux/perf_counter.h
-index 98f5990..4d0d787 100644
---- a/include/linux/perf_counter.h
-+++ b/include/linux/perf_counter.h
-@@ -82,32 +82,22 @@ enum perf_counter_record_type {
- 	PERF_RECORD_GROUP		= 2,
- };
- 
-+#define PERF_COUNTER_RAW_MASK		0x8000000000000000ULL
-+#define PERF_COUNTER_CONFIG_MASK	0x7FFFFFFFFFFFFFFFULL
-+#define PERF_COUNTER_TYPE_MASK		0x7F00000000000000ULL
-+#define PERF_COUNTER_EVENT_MASK		0x00FFFFFFFFFFFFFFULL
-+
- /*
-  * Hardware event to monitor via a performance monitoring counter:
-  */
- struct perf_counter_hw_event {
--	union {
--#ifndef __BIG_ENDIAN_BITFIELD
--		struct {
--			__u64			event_id	: 56,
--						type		:  8;
--		};
--		struct {
--			__u64			raw_event_id	: 63,
--						raw_type	:  1;
--		};
--#else
--		struct {
--			__u64			type		:  8,
--						event_id	: 56;
--		};
--		struct {
--			__u64			raw_type	:  1,
--						raw_event_id	: 63;
--		};
--#endif /* __BIT_ENDIAN_BITFIELD */
--		__u64		event_config;
--	};
-+	/*
-+	 * The MSB of the config word signifies if the rest contains cpu
-+	 * specific (raw) counter configuration data, if unset, the next
-+	 * 7 bits are an event type and the rest of the bits are the event
-+	 * identifier.
-+	 */
-+	__u64			config;
- 
- 	__u64			irq_period;
- 	__u64			record_type;
-@@ -157,6 +147,26 @@ struct perf_counter_hw_event {
- 
- struct task_struct;
- 
-+static inline u64 perf_event_raw(struct perf_counter_hw_event *hw_event)
-+{
-+	return hw_event->config & PERF_COUNTER_RAW_MASK;
-+}
-+
-+static inline u64 perf_event_config(struct perf_counter_hw_event *hw_event)
-+{
-+	return hw_event->config & PERF_COUNTER_CONFIG_MASK;
-+}
-+
-+static inline u64 perf_event_type(struct perf_counter_hw_event *hw_event)
-+{
-+	return (hw_event->config & PERF_COUNTER_TYPE_MASK) >> 56;
-+}
-+
-+static inline u64 perf_event_id(struct perf_counter_hw_event *hw_event)
-+{
-+	return hw_event->config & PERF_COUNTER_EVENT_MASK;
-+}
-+
- /**
-  * struct hw_perf_counter - performance counter hardware details:
-  */
-@@ -336,8 +346,8 @@ extern void perf_counter_output(struct perf_counter *counter,
-  */
- static inline int is_software_counter(struct perf_counter *counter)
- {
--	return !counter->hw_event.raw_type &&
--		counter->hw_event.type != PERF_TYPE_HARDWARE;
-+	return !perf_event_raw(&counter->hw_event) &&
-+		perf_event_type(&counter->hw_event) != PERF_TYPE_HARDWARE;
+ drivers/net/igb/igb_main.c |   42 ++++++++++++++++++++++++++++++------------
+ 1 file changed, 30 insertions(+), 12 deletions(-)
+
+Index: linux-2.6/drivers/net/igb/igb_main.c
+===================================================================
+--- linux-2.6.orig/drivers/net/igb/igb_main.c
++++ linux-2.6/drivers/net/igb/igb_main.c
+@@ -4277,7 +4277,7 @@ int igb_set_spd_dplx(struct igb_adapter 
  }
  
- extern void perf_swcounter_event(u32, u64, int, struct pt_regs *);
-diff --git a/kernel/perf_counter.c b/kernel/perf_counter.c
-index f054b8c..bbd538a 100644
---- a/kernel/perf_counter.c
-+++ b/kernel/perf_counter.c
-@@ -1379,7 +1379,7 @@ static void perf_counter_handle_group(struct perf_counter *counter)
- 	list_for_each_entry(sub, &leader->sibling_list, list_entry) {
- 		if (sub != counter)
- 			sub->hw_ops->read(sub);
--		perf_counter_store_irq(counter, sub->hw_event.event_config);
-+		perf_counter_store_irq(counter, sub->hw_event.config);
- 		perf_counter_store_irq(counter, atomic64_read(&sub->count));
- 	}
- }
-@@ -1489,13 +1489,13 @@ static int perf_swcounter_match(struct perf_counter *counter,
- 	if (counter->state != PERF_COUNTER_STATE_ACTIVE)
- 		return 0;
  
--	if (counter->hw_event.raw_type)
-+	if (perf_event_raw(&counter->hw_event))
- 		return 0;
- 
--	if (counter->hw_event.type != type)
-+	if (perf_event_type(&counter->hw_event) != type)
- 		return 0;
- 
--	if (counter->hw_event.event_id != event)
-+	if (perf_event_id(&counter->hw_event) != event)
- 		return 0;
- 
- 	if (counter->hw_event.exclude_user && user_mode(regs))
-@@ -1763,7 +1763,7 @@ static void tp_perf_counter_destroy(struct perf_counter *counter)
- static const struct hw_perf_counter_ops *
- tp_perf_counter_init(struct perf_counter *counter)
+-static int igb_suspend(struct pci_dev *pdev, pm_message_t state)
++static int __igb_shutdown(struct pci_dev *pdev, bool *enable_wake)
  {
--	int event_id = counter->hw_event.event_id;
-+	int event_id = perf_event_id(&counter->hw_event);
- 	int ret;
+ 	struct net_device *netdev = pci_get_drvdata(pdev);
+ 	struct igb_adapter *adapter = netdev_priv(netdev);
+@@ -4336,15 +4336,9 @@ static int igb_suspend(struct pci_dev *p
+ 		wr32(E1000_WUFC, 0);
+ 	}
  
- 	ret = ftrace_profile_enable(event_id);
-@@ -1797,7 +1797,7 @@ sw_perf_counter_init(struct perf_counter *counter)
- 	 * to be kernel events, and page faults are never hypervisor
- 	 * events.
- 	 */
--	switch (counter->hw_event.event_id) {
-+	switch (perf_event_id(&counter->hw_event)) {
- 	case PERF_COUNT_CPU_CLOCK:
- 		hw_ops = &perf_ops_cpu_clock;
+-	/* make sure adapter isn't asleep if manageability/wol is enabled */
+-	if (wufc || adapter->en_mng_pt) {
+-		pci_enable_wake(pdev, PCI_D3hot, 1);
+-		pci_enable_wake(pdev, PCI_D3cold, 1);
+-	} else {
++	*enable_wake = wufc || adapter->en_mng_pt;
++	if (!*enable_wake)
+ 		igb_shutdown_fiber_serdes_link_82575(hw);
+-		pci_enable_wake(pdev, PCI_D3hot, 0);
+-		pci_enable_wake(pdev, PCI_D3cold, 0);
+-	}
  
-@@ -1882,9 +1882,12 @@ perf_counter_alloc(struct perf_counter_hw_event *hw_event,
+ 	/* Release control of h/w to f/w.  If f/w is AMT enabled, this
+ 	 * would have already happened in close and is redundant. */
+@@ -4352,12 +4346,29 @@ static int igb_suspend(struct pci_dev *p
  
- 	hw_ops = NULL;
+ 	pci_disable_device(pdev);
  
--	if (hw_event->raw_type)
-+	if (perf_event_raw(hw_event)) {
- 		hw_ops = hw_perf_counter_init(counter);
--	else switch (hw_event->type) {
-+		goto done;
+-	pci_set_power_state(pdev, pci_choose_state(pdev, state));
+-
+ 	return 0;
+ }
+ 
+ #ifdef CONFIG_PM
++static int igb_suspend(struct pci_dev *pdev, pm_message_t state)
++{
++	int retval;
++	bool wake;
++
++	retval = __igb_shutdown(pdev, &wake);
++	if (retval)
++		return retval;
++
++	if (wake) {
++		pci_prepare_to_sleep(pdev);
++	} else {
++		pci_wake_from_d3(pdev, false);
++		pci_set_power_state(pdev, PCI_D3hot);
 +	}
 +
-+	switch (perf_event_type(hw_event)) {
- 	case PERF_TYPE_HARDWARE:
- 		hw_ops = hw_perf_counter_init(counter);
- 		break;
-@@ -1902,6 +1905,7 @@ perf_counter_alloc(struct perf_counter_hw_event *hw_event,
- 		kfree(counter);
- 		return NULL;
- 	}
-+done:
- 	counter->hw_ops = hw_ops;
++	return 0;
++}
++
+ static int igb_resume(struct pci_dev *pdev)
+ {
+ 	struct net_device *netdev = pci_get_drvdata(pdev);
+@@ -4412,7 +4423,14 @@ static int igb_resume(struct pci_dev *pd
  
- 	return counter;
-
-
+ static void igb_shutdown(struct pci_dev *pdev)
+ {
+-	igb_suspend(pdev, PMSG_SUSPEND);
++	bool wake;
++
++	__igb_shutdown(pdev, &wake);
++
++	if (system_state == SYSTEM_POWER_OFF) {
++		pci_wake_from_d3(pdev, wake);
++		pci_set_power_state(pdev, PCI_D3hot);
++	}
+ }
+ 
+ #ifdef CONFIG_NET_POLL_CONTROLLER
