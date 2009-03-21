@@ -1,66 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754530AbZCUKa2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755450AbZCUKcg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754530AbZCUKa2 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Mar 2009 06:30:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753105AbZCUKaQ
+	id S1755450AbZCUKcg (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Mar 2009 06:32:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754181AbZCUKc1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Mar 2009 06:30:16 -0400
-Received: from viefep11-int.chello.at ([62.179.121.31]:9058 "EHLO
-	viefep11-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752988AbZCUKaP (ORCPT
+	Sat, 21 Mar 2009 06:32:27 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:54499 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753731AbZCUKc0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Mar 2009 06:30:15 -0400
-X-SourceIP: 213.93.53.227
-Subject: Re: [RFC][PATCH 3/3] perf_counter: new output ABI - part 1
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Paul Mackerras <paulus@samba.org>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
-In-Reply-To: <18884.46934.898678.53966@cargo.ozlabs.ibm.com>
-References: <20090320151547.937040269@chello.nl>
-	 <20090320151735.008338484@chello.nl> <20090320190912.GF6224@elte.hu>
-	 <18884.46934.898678.53966@cargo.ozlabs.ibm.com>
-Content-Type: text/plain
-Date: Sat, 21 Mar 2009 11:29:59 +0100
-Message-Id: <1237631399.24626.112.camel@twins>
+	Sat, 21 Mar 2009 06:32:26 -0400
+Date: Sat, 21 Mar 2009 03:26:36 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: ngupta@vflare.org
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/3] compcache documentation
+Message-Id: <20090321032636.fdeae224.akpm@linux-foundation.org>
+In-Reply-To: <49C3A4B0.3050503@vflare.org>
+References: <49C3A31D.6070208@vflare.org>
+	<49C3A4B0.3050503@vflare.org>
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2009-03-21 at 20:45 +1100, Paul Mackerras wrote:
-> Ingo Molnar writes:
-> 
-> > i think it would still be nice to allow plain old-fashioned 
-> > poll()+read() loops ... but the logistics of that seem difficult. 
-> > mmap() seems to fit this better - and it's probably faster as well. 
-> > (as we have to construct the kernel-space pages anyway, so mapping 
-> > them isnt that big of an issue)
-> > 
-> > per-CPU-ness will be handled naturally via per-cpu counters.
-> > 
-> > Paul, can you see any hole/quirkiness in this scheme?
-> 
-> The one thing I can see that we would lose is the ability to have a
-> signal delivered on every event.  The PAPI developers want to be able
-> to get a signal generated every time the counter overflows, and
-> previously we could do that using the O_ASYNC flag, but now we'll only
-> get a signal every page's worth of events.
+On Fri, 20 Mar 2009 19:44:08 +0530 Nitin Gupta <ngupta@vflare.org> wrote:
 
-Ah, nice, didn't know about O_ASYNC and was thinking we should perhaps
-provide some signal too, seems that's already taken care of, sweet :-)
+> ...
+>
+> +   backing_dev: This is block device to be used as backing store for compcache.
+> +	It must be a valid swap partition. We move data to this device when we
+> +	encounter incompressible page or memlimit is reached. TODO: we may also
+> +	move some pages from compcache to this device in case system is really
+> +	low on memory.
+> +	This device is not directly visible to kernel as a swap device
+> +	(/proc/swaps will only show /dev/ramzswap0 and not this device).
+> +	Managing this backing device is the job of compcache module.
 
-> So I think we want userspace to be able to say how often we should
-> generate a poll event, i.e. provide a way for userspace to say "please
-> generate a poll event every N counter events".  That would also solve
-> the problem of 1 page not being a valid configuration - you could set
-> the poll interval to the number of events that fit in half a page, for
-> instance.
+hrm, OK, it kinda/sorta/maybe might be a little bit like a "compressed
+cache".  But if someone comes up with a real compressed cache (ie:
+pagecache) then they'll want their name back.
 
-Sure, can do, sounds like s sensible extension -- except it will be hard
-to guess the event size for some future events like callchains and mmap
-data.
-
-
+Also, the kernel already has a widespread and well-established "backing
+device" concept, in include/linux/backing-dev.h.  This new feature's
+poaching of that identifier is a bit confusing.  It would be nice to do a
+wholesale rename if possible.  secondary_dev?  nv_dev?
 
