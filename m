@@ -1,81 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756051AbZCUQYh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756500AbZCUQ1A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756051AbZCUQYh (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Mar 2009 12:24:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753924AbZCUQY2
+	id S1756500AbZCUQ1A (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Mar 2009 12:27:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753822AbZCUQ0v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Mar 2009 12:24:28 -0400
-Received: from e28smtp03.in.ibm.com ([59.145.155.3]:59984 "EHLO
-	e28smtp03.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751648AbZCUQY1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Mar 2009 12:24:27 -0400
-Date: Sat, 21 Mar 2009 21:54:17 +0530
-From: "K.Prasad" <prasad@linux.vnet.ibm.com>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Alan Stern <stern@rowland.harvard.edu>,
+	Sat, 21 Mar 2009 12:26:51 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:41391 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751648AbZCUQ0u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 21 Mar 2009 12:26:50 -0400
+Date: Sat, 21 Mar 2009 17:26:30 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Peter Zijlstra <peterz@infradead.org>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Benjamin Herrenschmidt <benh@au1.ibm.com>,
-       Maneesh Soni <maneesh@in.ibm.com>, Roland McGrath <roland@redhat.com>,
-       Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: [Patch 11/11] ftrace plugin for kernel symbol tracing using HW
-	Breakpoint interfaces - v2
-Message-ID: <20090321162417.GA9906@in.ibm.com>
-Reply-To: prasad@linux.vnet.ibm.com
-References: <20090319234044.410725944@K.Prasad> <20090319235032.GL10517@in.ibm.com> <20090320090451.GC7820@nowhere>
+       LKML <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH][GIT PULL] tracing: add function profiler
+Message-ID: <20090321162630.GE11183@elte.hu>
+References: <alpine.DEB.2.00.0903210036590.13615@gandalf.stny.rr.com> <20090321042633.1dfa536a.akpm@linux-foundation.org> <1237636623.4667.223.camel@laptop> <alpine.DEB.2.00.0903211146430.13615@gandalf.stny.rr.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090320090451.GC7820@nowhere>
+In-Reply-To: <alpine.DEB.2.00.0903211146430.13615@gandalf.stny.rr.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 20, 2009 at 10:04:52AM +0100, Frederic Weisbecker wrote:
-> On Fri, Mar 20, 2009 at 05:20:32AM +0530, K.Prasad wrote:
-> > This patch adds an ftrace plugin to detect and profile memory access over
-> > kernel variables. It uses HW Breakpoint interfaces to 'watch memory
-> > addresses.
-> > 
-> > Signed-off-by: K.Prasad <prasad@linux.vnet.ibm.com> 
-> > ---
-> >  kernel/trace/Kconfig          |   21 +
-> >  kernel/trace/Makefile         |    1 
-> >  kernel/trace/trace.h          |   25 +
-> >  kernel/trace/trace_ksym.c     |  555 ++++++++++++++++++++++++++++++++++++++++++
-> >  kernel/trace/trace_selftest.c |   36 ++
-> >  5 files changed, 638 insertions(+)
-> > 
 
-> > +
-> > +void ksym_collect_stats(unsigned long hbkpt_hit_addr)
-> > +{
-> > +	struct hlist_node *node;
-> > +	struct trace_ksym *entry;
-> > +
-> > +	spin_lock(&ksym_stat_lock);
+* Steven Rostedt <rostedt@goodmis.org> wrote:
+
+> > If you want exact function count profiling we could try to do 
+> > something perf counter based, eg. stick a software counter in 
+> > the mcount thingy.
 > 
-> 
-> I see that can be called from ksym_hbkpt_handler which in turn
-> can be called from interrupt context, right?
-> You can issue a deadlock if you don't disable interrupts here.
-> 
-> Thanks,
-> Frederic.
-> 
+> I'd like to get the function graph version working, in order to 
+> calculate the times spent in each funtion, then I can see how we 
+> can (if possible) convert it over to perf counters. :-/
 
-ksym_collect_stats<--ksym_hbkpt_handler<--hw_breakpoint_handler<--do_debug
-invocation happens with interrupts enabled (IF bit is set). I do find
-that a few plugins in kernel/trace enclose the
-trace_buffer_lock_reserve()--trace_buffer_unlock_commit() invocation
-within interrupt-disabled code. Is that a requirement there?
+the perf counters angle is definitely worth pursuing (for 
+completeness of the scheme Peter is working on), but please lets not 
+throw the baby out with the bath water: in-kernel histogram 
+collection has real value.
 
-The potential deadlock scenario you foresee isn't obvious to me. Can you
-explain?
+It's _much_ faster than any user-space counter-part, especially for 
+such things as branch tracing or function tracing.
 
-Thanks,
-K.Prasad
-
+	Ingo
