@@ -1,107 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754572AbZCUMdh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757547AbZCUMgH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754572AbZCUMdh (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Mar 2009 08:33:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754192AbZCUMd2
+	id S1757547AbZCUMgH (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Mar 2009 08:36:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753807AbZCUMfy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Mar 2009 08:33:28 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:48271 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753103AbZCUMd1 (ORCPT
+	Sat, 21 Mar 2009 08:35:54 -0400
+Received: from ppp-110-39.adsl.restena.lu ([158.64.110.39]:56229 "EHLO
+	bonbons.gotdns.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753432AbZCUMfx convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Mar 2009 08:33:27 -0400
-Subject: [PATCH] lockdep:  fix deadlock in lockdep_trace_alloc -v2
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: npiggin@suse.de, mingo@redhat.com, hpa@zytor.com,
-       linux-kernel@vger.kernel.org, heiko.carstens@de.ibm.com,
-       tglx@linutronix.de, mingo@elte.hu
-Cc: linux-tip-commits@vger.kernel.org
-In-Reply-To: <tip-b0992675bc7a5eca3c6a5eeea5ed680cec09c8e7@git.kernel.org>
-References: <1237544000.24626.52.camel@twins>
-	 <tip-b0992675bc7a5eca3c6a5eeea5ed680cec09c8e7@git.kernel.org>
-Content-Type: text/plain
-Date: Sat, 21 Mar 2009 13:33:08 +0100
-Message-Id: <1237638788.4667.263.camel@laptop>
+	Sat, 21 Mar 2009 08:35:53 -0400
+Date: Sat, 21 Mar 2009 13:35:50 +0100
+From: Bruno =?UTF-8?B?UHLDqW1vbnQ=?= <bonbons@linux-vserver.org>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: phillip@lougher.demon.co.uk, linux-kernel@vger.kernel.org
+Subject: Re: SquashFS io errors - zlib_inflate tried to decompress too much
+  data
+Message-ID: <20090321133550.7aa939d2@neptune.home>
+In-Reply-To: <10f740e80903210511n2867e7adl11fda0f4af04b0d2@mail.gmail.com>
+References: <20090321113315.47562aac@neptune.home>
+	<10f740e80903210511n2867e7adl11fda0f4af04b0d2@mail.gmail.com>
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.12.11; i686-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.0 
-Content-Transfer-Encoding: 7bit
-X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-03-20 at 10:26 +0000, Peter Zijlstra wrote:
-> Commit-ID:  b0992675bc7a5eca3c6a5eeea5ed680cec09c8e7
-> Gitweb:     http://git.kernel.org/tip/b0992675bc7a5eca3c6a5eeea5ed680cec09c8e7
-> Author:     Peter Zijlstra <peterz@infradead.org>
-> AuthorDate: Fri, 20 Mar 2009 11:13:20 +0100
-> Committer:  Ingo Molnar <mingo@elte.hu>
-> CommitDate: Fri, 20 Mar 2009 11:23:15 +0100
+Thanks Geert,
+
+I saw that patch but somehow it slipped through when applying the
+set of squashfs patches for my 2.6.28.8 install...
+With that patch applied access to the image works as expected
+
+Sorry for the noise,
+Bruno
+
+
+On Sat, 21 March 2009 Geert Uytterhoeven <geert@linux-m68k.org> wrote:
+> On Sat, Mar 21, 2009 at 11:33, Bruno Prémont
+> <bonbons@linux-vserver.org> wrote:
+> >
+> > With 2.6.29-rc7-git5 (x86, 32bit) I get the following errors on
+> > assumed correct squashfs images (generated with mksquashfs from
+> > CVS, dated 2009-03-14)
+> >
+> > [ 3481.692558] SQUASHFS error: zlib_inflate tried to decompress too
+> > much data, expected 8192 bytes.  Zlib data probably corrupt
+> > [ 3481.692571] SQUASHFS error: squashfs_read_data failed to read
+> > block 0x29375e0 [ 3481.692579] SQUASHFS error: Unable to read
+> > metadata cache entry [29375e0] [ 3481.692586] SQUASHFS error:
+> > Unable to read inode 0x6a04a05ed
+> >
+> > The same happens on 2.6.28.8 with all squashfs patches from
+> > 2.6.29-rc8 applied to it (x86, 64bit).
 > 
-> lockdep: fix deadlock in lockdep_trace_alloc
+> A fix for this has entered mainline:
 > 
-> Heiko reported that we grab the graph lock with irqs enabled.
+> commit 363911d027d1de1c6df79eb3f487f5476b9619f4
+> Author: Phillip Lougher <phillip@lougher.demon.co.uk>
+> Date:   Thu Mar 12 03:23:48 2009 +0000
 > 
-> Fix this by providng the same wrapper as all other lockdep entry
-> functions have.
+>     Squashfs: Valid filesystems are flagged as bad by the corrupted
+> fs patch
 > 
-> Reported-by: Heiko Carstens <heiko.carstens@de.ibm.com>
-> Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> Cc: Nick Piggin <npiggin@suse.de>
-> LKML-Reference: <1237544000.24626.52.camel@twins>
-> Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> Gr{oetje,eeting}s,
 > 
-
-The below delta fixes it up proper -- saw that I forgot to update the
-subject yesterday for the new iterations.
-
----
-Since we now disabled IRQs, checking for IRQs disabled is a bit
-pointless, check for it in the saved flags.
-
-Also, add the missing check_flags() check for completeness.
-
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
----
-diff --git a/kernel/lockdep.c b/kernel/lockdep.c
-index a39cb6d..b0f0118 100644
---- a/kernel/lockdep.c
-+++ b/kernel/lockdep.c
-@@ -2258,7 +2258,7 @@ void trace_softirqs_off(unsigned long ip)
- 		debug_atomic_inc(&redundant_softirqs_off);
- }
- 
--static void __lockdep_trace_alloc(gfp_t gfp_mask)
-+static void __lockdep_trace_alloc(gfp_t gfp_mask, unsigned long flags)
- {
- 	struct task_struct *curr = current;
- 
-@@ -2277,12 +2277,14 @@ static void __lockdep_trace_alloc(gfp_t gfp_mask)
- 	if (!(gfp_mask & __GFP_FS))
- 		return;
- 
--	if (DEBUG_LOCKS_WARN_ON(irqs_disabled()))
-+	if (DEBUG_LOCKS_WARN_ON(irqs_disabled_flags(flags)))
- 		return;
- 
- 	mark_held_locks(curr, RECLAIM_FS);
- }
- 
-+static void check_flags(unsigned long flags);
-+
- void lockdep_trace_alloc(gfp_t gfp_mask)
- {
- 	unsigned long flags;
-@@ -2291,8 +2293,9 @@ void lockdep_trace_alloc(gfp_t gfp_mask)
- 		return;
- 
- 	raw_local_irq_save(flags);
-+	check_flags(flags);
- 	current->lockdep_recursion = 1;
--	__lockdep_trace_alloc(gfp_mask);
-+	__lockdep_trace_alloc(gfp_mask, flags);
- 	current->lockdep_recursion = 0;
- 	raw_local_irq_restore(flags);
- }
-
-
+>                                                                   Geert
