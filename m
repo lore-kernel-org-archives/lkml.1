@@ -1,74 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757345AbZCUL5s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756791AbZCUMAY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757345AbZCUL5s (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Mar 2009 07:57:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752878AbZCUL5f
+	id S1756791AbZCUMAY (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Mar 2009 08:00:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752450AbZCUMAE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Mar 2009 07:57:35 -0400
-Received: from fg-out-1718.google.com ([72.14.220.153]:35577 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756821AbZCUL5e (ORCPT
+	Sat, 21 Mar 2009 08:00:04 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:58323 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751496AbZCUMAB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Mar 2009 07:57:34 -0400
-Message-ID: <49C4D628.7060805@monstr.eu>
-Date: Sat, 21 Mar 2009 12:57:28 +0100
-From: Michal Simek <monstr@monstr.eu>
-Reply-To: monstr@monstr.eu
-User-Agent: Thunderbird 2.0.0.17 (X11/20081001)
-MIME-Version: 1.0
-To: Thomas Gleixner <tglx@linutronix.de>
-CC: john stultz <johnstul@us.ibm.com>, LKML <linux-kernel@vger.kernel.org>,
-       john.williams@petalogix.com
-Subject: Re: [PATCH 08/57] microblaze_v7: Interrupt handling, timer support,
- selfmod code
-References: <1237408284-8674-1-git-send-email-monstr@monstr.eu>  <c1bdfabf85ce10babc3aa38d3bb7558a093bc49e.1237407249.git.monstr@monstr.eu>  <4b5aee01d11fc790c7842838ea63a82ee3273003.1237407249.git.monstr@monstr.eu>  <af309ba8e95f503b7990461384d9f8453f45dbbd.1237407249.git.monstr@monstr.eu>  <5f8b2a60496983f572ef6d3b4e2f986c167a8336.1237407249.git.monstr@monstr.eu>  <fbef554ff1d05fa50312d91e61a0d63d3207076c.1237407249.git.monstr@monstr.eu>  <dad2353f129217470f0595eeed98412b4c84ed6b.1237407249.git.monstr@monstr.eu>  <20fd42a1e8837c7352d35d157aa3393e88152c32.1237407249.git.monstr@monstr.eu>  <alpine.LFD.2.00.0903191639530.29264@localhost.localdomain>  <49C2AB09.9040300@monstr.eu>  <alpine.LFD.2.00.0903192219500.29264@localhost.localdomain>  <1237515861.7106.215.camel@jstultz-laptop>  <49C34558.6030006@monstr.eu> <1237581607.7191.51.camel@localhost.localdomain> <49C4C3BD.9090905@monstr.eu> <alpine.LFD.2.00.0903211206090.29264@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.00.0903211206090.29264@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1
+	Sat, 21 Mar 2009 08:00:01 -0400
+Date: Sat, 21 Mar 2009 04:51:55 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Jiri Pirko <jpirko@redhat.com>
+Cc: netdev@vger.kernel.org, David Miller <davem@davemloft.net>,
+       klassert@mathematik.tu-chemnitz.de, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] 3c59x: convert to net_device_ops
+Message-Id: <20090321045155.fbdf8dac.akpm@linux-foundation.org>
+In-Reply-To: <20090321113552.GB3380@psychotron.englab.brq.redhat.com>
+References: <20090321113552.GB3380@psychotron.englab.brq.redhat.com>
+X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thomas Gleixner wrote:
-> On Sat, 21 Mar 2009, Michal Simek wrote:
->> CONFIG_HZ_100=y
->> # CONFIG_HZ_250 is not set
->> # CONFIG_HZ_300 is not set
->> # CONFIG_HZ_1000 is not set
->> CONFIG_HZ=100
->>
->> For NO_HZ val I shouldn't use HZ value because of NO_HZ and HZ values shouldn't
->> be in .config file. Am I right?
-> 
-> No. NO_HZ does not remove the HZ value from the kernel. There is way
-> too much code depending on it. What NO_HZ does is to supress the
-> periodic tick when the system goes idle and the next timer expiry is
-> farther away than 1 HZ. When the system is non idle then the periodic
-> tick runs again. NO_HZ is merily for power saving.
-> 
-> In a normal kernel when the machine is idle then we wake up every HZ
-> to find out that there is no work to do and we go idle again. But if
-> you think about it then this is stupid, because the kernel knows when
-> the next timer is due to expire. So if the next timer expiry is
-> e.g. 100ms away, then we can sleep for full 100ms instead of sleeping
-> 10 * 10ms (HZ=100) or 100 * 1ms (HZ=1000). This allows systems to go
-> into deeper power saving states.
-> 
-> You should be able to observe the difference by monitoring
-> /proc/interrupts. A nohz enabled kernel should have significantly less
-> timer interrupts on an idle system.
+On Sat, 21 Mar 2009 12:35:53 +0100 Jiri Pirko <jpirko@redhat.com> wrote:
 
-Yes, I see it. I think I sent my log in any previous email in this thread too +
-I see it on my heartbeat led too.
+> I converted this driver to use net_device_ops. I made two structures, one for
+> vortex and one for boomerang start_xmit function. Tested on my test system with
+> 3Com PCI 3c905C Tornado.
 
-Thanks for explanation,
-Michal
-> 
-> Thanks,
-> 
-> 	tglx
+linux-next already contains
 
+commit 48b47a5e306c1c119ee81ccd24d487c2df656410
+Author:     Stephen Hemminger <shemminger@linux-foundation.org>
+AuthorDate: Fri Jan 9 13:01:18 2009 +0000
+Commit:     David S. Miller <davem@davemloft.net>
+CommitDate: Wed Jan 21 14:02:25 2009 -0800
 
--- 
-Michal Simek, Ing. (M.Eng)
-w: www.monstr.eu p: +42-0-721842854
+    3c59x: convert to net_device_ops
+    
+    Signed-off-by: Stephen Hemminger <shemminger@vyatta.com>
+    Signed-off-by: David S. Miller <davem@davemloft.net>
+
+diff --git a/drivers/net/3c59x.c b/drivers/net/3c59x.c
+index cdbbb62..b2563d3 100644
+--- a/drivers/net/3c59x.c
++++ b/drivers/net/3c59x.c
+@@ -992,6 +992,42 @@ out:
+ 	return rc;
+ }
+ 
++static const struct net_device_ops boomrang_netdev_ops = {
++	.ndo_open		= vortex_open,
++	.ndo_stop		= vortex_close,
++	.ndo_start_xmit		= boomerang_start_xmit,
++	.ndo_tx_timeout		= vortex_tx_timeout,
++	.ndo_get_stats		= vortex_get_stats,
++#ifdef CONFIG_PCI
++	.ndo_do_ioctl 		= vortex_ioctl,
++#endif
++	.ndo_set_multicast_list = set_rx_mode,
++	.ndo_change_mtu		= eth_change_mtu,
++	.ndo_set_mac_address 	= eth_mac_addr,
++	.ndo_validate_addr	= eth_validate_addr,
++#ifdef CONFIG_NET_POLL_CONTROLLER
++	.ndo_poll_controller	= poll_vortex,
++#endif
++};
++
++static const struct net_device_ops vortex_netdev_ops = {
++	.ndo_open		= vortex_open,
++	.ndo_stop		= vortex_close,
++	.ndo_start_xmit		= vortex_start_xmit,
++	.ndo_tx_timeout		= vortex_tx_timeout,
++	.ndo_get_stats		= vortex_get_stats,
++#ifdef CONFIG_PCI
++	.ndo_do_ioctl 		= vortex_ioctl,
++#endif
++	.ndo_set_multicast_list = set_rx_mode,
++	.ndo_change_mtu		= eth_change_mtu,
++	.ndo_set_mac_address 	= eth_mac_addr,
++	.ndo_validate_addr	= eth_validate_addr,
++#ifdef CONFIG_NET_POLL_CONTROLLER
++	.ndo_poll_controller	= poll_vortex,
++#endif
++};
++
+ /*
+  * Start up the PCI/EISA device which is described by *gendev.
+  * Return 0 on success.
+@@ -1366,18 +1402,16 @@ static int __devinit vortex_probe1(struct device *gendev,
+ 	}
+ 
+ 	/* The 3c59x-specific entries in the device structure. */
+-	dev->open = vortex_open;
+ 	if (vp->full_bus_master_tx) {
+-		dev->hard_start_xmit = boomerang_start_xmit;
++		dev->netdev_ops = &boomrang_netdev_ops;
+ 		/* Actually, it still should work with iommu. */
+ 		if (card_idx < MAX_UNITS &&
+ 		    ((hw_checksums[card_idx] == -1 && (vp->drv_flags & HAS_HWCKSM)) ||
+ 				hw_checksums[card_idx] == 1)) {
+ 			dev->features |= NETIF_F_IP_CSUM | NETIF_F_SG;
+ 		}
+-	} else {
+-		dev->hard_start_xmit = vortex_start_xmit;
+-	}
++	} else
++		dev->netdev_ops =  &vortex_netdev_ops;
+ 
+ 	if (print_info) {
+ 		printk(KERN_INFO "%s: scatter/gather %sabled. h/w checksums %sabled\n",
+@@ -1386,18 +1420,9 @@ static int __devinit vortex_probe1(struct device *gendev,
+ 				(dev->features & NETIF_F_IP_CSUM) ? "en":"dis");
+ 	}
+ 
+-	dev->stop = vortex_close;
+-	dev->get_stats = vortex_get_stats;
+-#ifdef CONFIG_PCI
+-	dev->do_ioctl = vortex_ioctl;
+-#endif
+ 	dev->ethtool_ops = &vortex_ethtool_ops;
+-	dev->set_multicast_list = set_rx_mode;
+-	dev->tx_timeout = vortex_tx_timeout;
+ 	dev->watchdog_timeo = (watchdog * HZ) / 1000;
+-#ifdef CONFIG_NET_POLL_CONTROLLER
+-	dev->poll_controller = poll_vortex;
+-#endif
++
+ 	if (pdev) {
+ 		vp->pm_state_valid = 1;
+  		pci_save_state(VORTEX_PCI(vp));
+
