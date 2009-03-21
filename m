@@ -1,85 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754932AbZCULgA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756302AbZCULgj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754932AbZCULgA (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Mar 2009 07:36:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753103AbZCULfu
+	id S1756302AbZCULgj (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Mar 2009 07:36:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753008AbZCULg1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Mar 2009 07:35:50 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:56902 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752988AbZCULfu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Mar 2009 07:35:50 -0400
-Date: Sat, 21 Mar 2009 04:26:33 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       =?ISO-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
-       Arjan van de Ven <arjan@infradead.org>
-Subject: Re: [PATCH][GIT PULL] tracing: add function profiler
-Message-Id: <20090321042633.1dfa536a.akpm@linux-foundation.org>
-In-Reply-To: <alpine.DEB.2.00.0903210036590.13615@gandalf.stny.rr.com>
-References: <alpine.DEB.2.00.0903210036590.13615@gandalf.stny.rr.com>
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sat, 21 Mar 2009 07:36:27 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:35886 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752988AbZCULg0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 21 Mar 2009 07:36:26 -0400
+Date: Sat, 21 Mar 2009 12:35:53 +0100
+From: Jiri Pirko <jpirko@redhat.com>
+To: netdev@vger.kernel.org
+Cc: David Miller <davem@davemloft.net>, klassert@mathematik.tu-chemnitz.de,
+       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
+Subject: [PATCH] 3c59x: convert to net_device_ops
+Message-ID: <20090321113552.GB3380@psychotron.englab.brq.redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 21 Mar 2009 00:37:59 -0400 (EDT) Steven Rostedt <rostedt@goodmis.org> wrote:
+Hi
 
->    This patch adds a function profiler. In debugfs/tracing/ two new
->     files are created.
->     
->       function_profile_enabled  - to enable or disable profiling
->     
->       trace_stat/functions   - the profiled functions.
->     
->     For example:
->     
->       echo 1 > /debugfs/tracing/function_profile_enabled
->       ./hackbench 50
->       echo 0 > /debugfs/tracing/function_profile_enabled
->     
->     yields:
->     
->       cat /debugfs/tracing/trace_stat/functions
->     
->       Function                               Hit
->       --------                               ---
->       _spin_lock                        10106442
->       _spin_unlock                      10097492
->       kfree                              6013704
->       _spin_unlock_irqrestore            4423941
->       _spin_lock_irqsave                 4406825
->       __phys_addr                        4181686
->       __slab_free                        4038222
->       dput                               4030130
->       path_put                           4023387
->       unroll_tree_refs                   4019532
->     [...]
->     
->     The most hit functions are listed first. Functions that are not
->     hit are not listed.
+I converted this driver to use net_device_ops. I made two structures, one for
+vortex and one for boomerang start_xmit function. Tested on my test system with
+3Com PCI 3c905C Tornado.
 
-Why is this useful?
+Jirka
 
-Can we think of any scenarios where kernel developers would get
-useful-to-them results from this?  Results which couldn't be 
-obtained by other similarly-accessible means?
+Signed-off-by: Jiri Pirko <jpirko@redhat.com>
 
-<strains a bit>
+ drivers/net/3c59x.c |   50 ++++++++++++++++++++++++++++++++++++--------------
+ 1 files changed, 36 insertions(+), 14 deletions(-)
 
-I guess that one could run workload A, look at
-/debugfs/tracing/trace_stat/functions changes, then run worklaod B, then
-look at its /debugfs/tracing/trace_stat/functions changes, then somehow
-glean some information about the differences between the effects of the two
-workloads on the kernel.  Or something.
-
-But in this rather fake example and, I suspect, in many others, the result
-will be less useful than using oprofile/etc in the same fashion.
-
+diff --git a/drivers/net/3c59x.c b/drivers/net/3c59x.c
+index cdbbb62..6c3d66b 100644
+--- a/drivers/net/3c59x.c
++++ b/drivers/net/3c59x.c
+@@ -992,6 +992,38 @@ out:
+ 	return rc;
+ }
+ 
++static const struct net_device_ops vortex_netdev_ops = {
++	.ndo_open               = vortex_open,
++	.ndo_stop               = vortex_close,
++	.ndo_start_xmit         = vortex_start_xmit,
++	.ndo_set_multicast_list = set_rx_mode,
++	.ndo_validate_addr      = eth_validate_addr,
++#ifdef CONFIG_PCI
++	.ndo_do_ioctl		= vortex_ioctl,
++#endif
++	.ndo_tx_timeout         = vortex_tx_timeout,
++	.ndo_get_stats		= vortex_get_stats,
++#ifdef CONFIG_NET_POLL_CONTROLLER
++	.ndo_poll_controller    = poll_vortex,
++#endif
++};
++
++static const struct net_device_ops boomerang_netdev_ops = {
++	.ndo_open               = vortex_open,
++	.ndo_stop               = vortex_close,
++	.ndo_start_xmit         = boomerang_start_xmit,
++	.ndo_set_multicast_list = set_rx_mode,
++	.ndo_validate_addr      = eth_validate_addr,
++#ifdef CONFIG_PCI
++	.ndo_do_ioctl		= vortex_ioctl,
++#endif
++	.ndo_tx_timeout         = vortex_tx_timeout,
++	.ndo_get_stats		= vortex_get_stats,
++#ifdef CONFIG_NET_POLL_CONTROLLER
++	.ndo_poll_controller    = poll_vortex,
++#endif
++};
++
+ /*
+  * Start up the PCI/EISA device which is described by *gendev.
+  * Return 0 on success.
+@@ -1366,17 +1398,17 @@ static int __devinit vortex_probe1(struct device *gendev,
+ 	}
+ 
+ 	/* The 3c59x-specific entries in the device structure. */
+-	dev->open = vortex_open;
+ 	if (vp->full_bus_master_tx) {
+-		dev->hard_start_xmit = boomerang_start_xmit;
++		dev->netdev_ops = &boomerang_netdev_ops;
+ 		/* Actually, it still should work with iommu. */
+ 		if (card_idx < MAX_UNITS &&
+ 		    ((hw_checksums[card_idx] == -1 && (vp->drv_flags & HAS_HWCKSM)) ||
+ 				hw_checksums[card_idx] == 1)) {
+ 			dev->features |= NETIF_F_IP_CSUM | NETIF_F_SG;
+ 		}
+-	} else {
+-		dev->hard_start_xmit = vortex_start_xmit;
++	}
++	else {
++		dev->netdev_ops = &vortex_netdev_ops;
+ 	}
+ 
+ 	if (print_info) {
+@@ -1386,18 +1418,8 @@ static int __devinit vortex_probe1(struct device *gendev,
+ 				(dev->features & NETIF_F_IP_CSUM) ? "en":"dis");
+ 	}
+ 
+-	dev->stop = vortex_close;
+-	dev->get_stats = vortex_get_stats;
+-#ifdef CONFIG_PCI
+-	dev->do_ioctl = vortex_ioctl;
+-#endif
+ 	dev->ethtool_ops = &vortex_ethtool_ops;
+-	dev->set_multicast_list = set_rx_mode;
+-	dev->tx_timeout = vortex_tx_timeout;
+ 	dev->watchdog_timeo = (watchdog * HZ) / 1000;
+-#ifdef CONFIG_NET_POLL_CONTROLLER
+-	dev->poll_controller = poll_vortex;
+-#endif
+ 	if (pdev) {
+ 		vp->pm_state_valid = 1;
+  		pci_save_state(VORTEX_PCI(vp));
