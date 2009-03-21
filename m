@@ -1,84 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752890AbZCUMWX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756084AbZCUM2S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752890AbZCUMWX (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Mar 2009 08:22:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752963AbZCUMWI
+	id S1756084AbZCUM2S (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Mar 2009 08:28:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752914AbZCUM15
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Mar 2009 08:22:08 -0400
-Received: from fmmailgate03.web.de ([217.72.192.234]:47144 "EHLO
-	fmmailgate03.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751428AbZCUMWG (ORCPT
+	Sat, 21 Mar 2009 08:27:57 -0400
+Received: from mail-bw0-f169.google.com ([209.85.218.169]:43197 "EHLO
+	mail-bw0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752543AbZCUM14 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Mar 2009 08:22:06 -0400
-From: Christian Lamparter <chunkeey@web.de>
-To: Kalle Valo <kalle.valo@iki.fi>
-Subject: Re: [PATCH] p54: fix SoftLED compile dependencies
-Date: Sat, 21 Mar 2009 13:22:01 +0100
-User-Agent: KMail/1.10.0 (Linux/2.6.29-rc8-wl; KDE/4.2.1; x86_64; ; )
+	Sat, 21 Mar 2009 08:27:56 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:to:cc:subject:references:from:date:in-reply-to:message-id
+         :user-agent:mime-version:content-type;
+        b=C3Qlzq8bUTDQqah3wHTe65bwfvO/0u5Uqk37PfmhK/IIHc4I8TgWP3r3lvyhjw1Wro
+         594IDJeaNcT1BiVKw3hXuggfO266Fx6B+iUEz/UIhTD+0hkzVByMRqlgU3ePchxLPcUb
+         x+0AJRnQ8Bzv6/tNYzGyQNuyF4RSNgeeWzgvE=
+To: Christian Lamparter <chunkeey@web.de>
 Cc: Michael Buesch <mb@bu3sch.de>, Randy Dunlap <randy.dunlap@oracle.com>,
        Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
        LKML <linux-kernel@vger.kernel.org>, linux-wireless@vger.kernel.org,
        "John W. Linville" <linville@tuxdriver.com>
-References: <20090319221024.5e2ad6e5.sfr@canb.auug.org.au> <200903210057.47067.chunkeey@web.de> <87eiwre61a.fsf@litku.valot.fi>
-In-Reply-To: <87eiwre61a.fsf@litku.valot.fi>
+Subject: Re: [PATCH] p54: fix SoftLED compile dependencies
+References: <20090319221024.5e2ad6e5.sfr@canb.auug.org.au>
+	<200903210057.47067.chunkeey@web.de> <87eiwre61a.fsf@litku.valot.fi>
+	<200903211322.01654.chunkeey@web.de>
+From: Kalle Valo <kalle.valo@iki.fi>
+Date: Sat, 21 Mar 2009 14:27:49 +0200
+In-Reply-To: <200903211322.01654.chunkeey@web.de> (Christian Lamparter's message of "Sat\, 21 Mar 2009 13\:22\:01 +0100")
+Message-ID: <873ad7dpru.fsf@litku.valot.fi>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200903211322.01654.chunkeey@web.de>
-X-Provags-ID: V01U2FsdGVkX18LiaU6eA16qbFIYgttwnUPFXIAu5Tb8rgWwfGW
-	COm6LAmteu/B09fcaBlnARyrb2s/WZ9bg4L9sqfCMrRIUX55i7
-	XXfeGMPaM=
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 21 March 2009 07:36:33 Kalle Valo wrote:
-> Christian Lamparter <chunkeey@web.de> writes:
-> 
-> > This patch fixes a compile problem when the MAC80211_LEDS
-> > triggers are enabled but not LED class itself. 
-> > (which is sort of pointless, but anyway...)
-> 
-> [...]
-> 
-> > @@ -17,31 +18,6 @@ config P54_USB
-> >  	select CRC32
-> >  	---help---
-> >  	  This driver is for USB isl38xx based wireless cards.
-> > -	  These are USB based adapters found in devices such as:
-> > -
-> > -	  3COM 3CRWE254G72
-> > -	  SMC 2862W-G
-> > -	  Accton 802.11g WN4501 USB
-> > -	  Siemens Gigaset USB
-> > -	  Netgear WG121
-> > -	  Netgear WG111
-> > -	  Medion 40900, Roper Europe
-> > -	  Shuttle PN15, Airvast WM168g, IOGear GWU513
-> > -	  Linksys WUSB54G
-> > -	  Linksys WUSB54G Portable
-> > -	  DLink DWL-G120 Spinnaker
-> > -	  DLink DWL-G122
-> > -	  Belkin F5D7050 ver 1000
-> > -	  Cohiba Proto board
-> > -	  SMC 2862W-G version 2
-> > -	  U.S. Robotics U5 802.11g Adapter
-> > -	  FUJITSU E-5400 USB D1700
-> > -	  Sagem XG703A
-> > -	  DLink DWL-G120 Cohiba
-> > -	  Spinnaker Proto board
-> > -	  Linksys WUSB54AG
-> > -	  Inventel UR054G
-> > -	  Spinnaker DUT
-> 
-> This change wasn't mentioned in the commit log. Did this get included
-> by accident?
-> 
-heh true... should I add them back? after all this list hasn't changed in years
-and we have a much nicer one on http://www.prism54.org/
-( http://wireless.kernel.org/en/users/Drivers/p54/devices )
+Christian Lamparter <chunkeey@web.de> writes:
 
-Regards,
-	Chr
+>> > -	  Inventel UR054G
+>> > -	  Spinnaker DUT
+>> 
+>> This change wasn't mentioned in the commit log. Did this get included
+>> by accident?
+>> 
+> heh true... should I add them back?
+
+I don't know, I just wanted to point this out in case you missed it :)
+
+> after all this list hasn't changed in years and we have a much nicer
+> one on http://www.prism54.org/ (
+> http://wireless.kernel.org/en/users/Drivers/p54/devices )
+
+In my opinion wireless.kernel.org is better place for the list.
+
+-- 
+Kalle Valo
