@@ -1,80 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754412AbZCUK70@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755271AbZCULOU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754412AbZCUK70 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Mar 2009 06:59:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752821AbZCUK7Q
+	id S1755271AbZCULOU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Mar 2009 07:14:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753150AbZCULOF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Mar 2009 06:59:16 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:38789 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751754AbZCUK7P (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Mar 2009 06:59:15 -0400
-Date: Sat, 21 Mar 2009 03:53:15 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Jos Houtman <jos@hyves.nl>
-Cc: <linux-kernel@vger.kernel.org>, Jens Axboe <jens.axboe@oracle.com>
-Subject: Re: Page Cache writeback too slow,   SSD/noop scheduler/ext2
-Message-Id: <20090321035315.fc10cef6.akpm@linux-foundation.org>
-In-Reply-To: <C5E99E4E.C0E0%jos@hyves.nl>
-References: <C5E989F1.C0C7%jos@hyves.nl>
-	<C5E99E4E.C0E0%jos@hyves.nl>
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sat, 21 Mar 2009 07:14:05 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:34600 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753116AbZCULOC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 21 Mar 2009 07:14:02 -0400
+Date: Sat, 21 Mar 2009 12:14:00 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Jerome Marchand <jmarchan@redhat.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] block: forbid to re-enable I/O stat accounting
+Message-ID: <20090321111400.GJ27476@kernel.dk>
+References: <200903201333.n2KDXONh023780@dhcp-0-152.brq.redhat.com> <20090321030309.f783ec8c.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090321030309.f783ec8c.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 20 Mar 2009 19:26:06 +0100 Jos Houtman <jos@hyves.nl> wrote:
+On Sat, Mar 21 2009, Andrew Morton wrote:
+> 
+> Please fix your email headers - what I received was
+> 
+> From: Jerome Marchand <jmarchan@redhat.com>
+> To: unlisted-recipients:;;@imap1.linux-foundation.org (no To-header on input)
+> Cc: Jens Axboe <axboe@kernel.dk>
 
-> Hi,
-> 
-> We have hit a problem where the page-cache writeback algorithm is not
-> keeping up.
-> When memory gets low this will result in very irregular performance drops.
-> 
-> Our setup is as follows:
-> 30 x Quad core machine with 64GB ram.
-> These are single purpose machines running MySQL.
-> Kernel version: 2.6.28.7
-> A dedicated SSD drive for the ext2 database partition
-> Noop scheduler for the ssd drive.
-> 
-> 
-> The current hypothesis is as follows:
-> The wk_update function does not write enough dirty pages, which allows the
-> number of dirty pages to grow to the dirty_background limit.
-> When memory is low,  __background_writeout() comes around and __forcefully__
-> writes dirty pages to disk.
-> This forced write fills the disk queue and starves read calls that MySQL is
-> trying to do: basically killing performance  for a few seconds.
-> This pattern repeats as soon as the cleared memory is filled again.
-> 
-> Decreasing the dirty_writeback_centisecs to 100 doesn__t help
-> 
-> I don__t know why this is, but I did some preliminary tracing using systemtap
-> and it seems that the majority of times wk_update calls decides to do
-> nothing.
-> 
-> Doubling /sys/block/sdb/queue/nr_requests  to 256, seems to help abit:  the
-> nr_dirty pages is increasing more slowly.
-> But I am unsure of side-effects and am afraid of increasing the starvation
-> problem for mysql.
-> 
-> 
-> I__am very much willing to work on this issue and see it fixed, but would
-> like to tap into the knowledge of people here.
-> So: 
-> * Have more people seen this or simular issues?
-> * Is the hypothesis above a viable one?
-> * Suggestions/pointers for further research and statistics I should measure
-> to improve the understanding of this problem.
-> 
+Ditto, I didn't think anyone else got it. At least noone else got my
+reply :-)
 
-I don't think that noop-iosched tries to do anything to prevent
-writes-starve-reads.  Do you get better behaviour from any of the other IO
-schedulers?
+> On Thu, 19 Mar 2009 11:36:50 +0100 Jerome Marchand <jmarchan@redhat.com> wrote:
+> 
+> > When we stop I/O stat accounting we stop to update the in-flight
+> > requests counter and we need this counter to be reliable for
+> > accounting I/O stats. Unfortunately updating in_flight field may
+> > affect performance. So, until we have a better solution, just forbid
+> > to re-enable I/O stat accounting after it has been disabled.
+> 
+> hm.  Is it really so hard to just quiesce the device until all in-flight
+> requests have drained?  freeze_bdev() might be a suitable starting point?
 
+That was my suggestion as well, we really need to be able to turn it
+back on again. Ideally, I'd like iostat and friends to turn it on/off
+when somebody does the monitoring. A one-way street option is not very
+nice.
+
+-- 
+Jens Axboe
 
