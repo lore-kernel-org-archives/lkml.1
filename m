@@ -1,86 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756011AbZCVUZ2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755939AbZCVUaH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756011AbZCVUZ2 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Mar 2009 16:25:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753705AbZCVUZQ
+	id S1755939AbZCVUaH (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Mar 2009 16:30:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755241AbZCVU3y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Mar 2009 16:25:16 -0400
-Received: from hera.kernel.org ([140.211.167.34]:44386 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753183AbZCVUZP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Mar 2009 16:25:15 -0400
-Subject: Re: [PATCH -tip] x86: e820.h fix various signedness issues in
- setup.c and e820.c
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: Ingo Molnar <mingo@elte.hu>, x86 maintainers <x86@kernel.org>,
-       Rusty Russell <rusty@rustcorp.com.au>, Yinghai Lu <yinghai@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20090322200937.GA5887@uranus.ravnborg.org>
-References: <1237749831.5417.2.camel@ht.satnam>
-	 <20090322200937.GA5887@uranus.ravnborg.org>
-Content-Type: text/plain
-Date: Mon, 23 Mar 2009 01:54:18 +0530
-Message-Id: <1237753458.5417.9.camel@ht.satnam>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
-Content-Transfer-Encoding: 7bit
+	Sun, 22 Mar 2009 16:29:54 -0400
+Received: from swampdragon.chaosbits.net ([90.184.90.115]:16315 "EHLO
+	swampdragon.chaosbits.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754984AbZCVU3x (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Mar 2009 16:29:53 -0400
+Date: Sun, 22 Mar 2009 21:29:51 +0100 (CET)
+From: Jesper Juhl <jj@chaosbits.net>
+To: Dragoslav Zaric <dragoslav.zaric.kd@gmail.com>
+cc: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Test some kernel feature without recompile
+In-Reply-To: <2d05c4580903220343l4b1359fx79f18b56203bd463@mail.gmail.com>
+Message-ID: <alpine.LNX.2.00.0903222124580.7175@swampdragon.chaosbits.net>
+References: <2d05c4580903220343l4b1359fx79f18b56203bd463@mail.gmail.com>
+User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2009-03-22 at 21:09 +0100, Sam Ravnborg wrote:
-> >  
-> >  struct e820map {
-> > -	__u32 nr_map;
-> > +	int nr_map;
-> >  	struct e820entry map[E820_X_MAX];
-> >  };
+On Sun, 22 Mar 2009, Dragoslav Zaric wrote:
+
+> Hi,
 > 
-> but that header is exported so use of plain int looks wrong.
+> I know when you work on some kernel module, you can change code and load
+> module again and test it, but what if you change some built in kernel
+> .c file, why
+> would I need to recompile whole kernel just to see what happens if I change one
+> .c file ??
 > 
+Depends on the nature of the change. Some changes will ripple through the 
+whole kernel.
+If, for example, you made a change to kmalloc() so that it takes an extra 
+argument, then obviously all call sites would need changing and since 
+kmalloc is used almose everywhere, then almost all files would need to be 
+recompiled.
+But if your change is entirely contained to a single file, then 'make' 
+will already ensure that only that file is rebuilt when you run 'make' 
+(you'll still have to re-link the kernel or module though and a reboot 
+will still be needed).
 
-From: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
-Date: Mon, 23 Mar 2009 01:52:15 +0530
-Subject: [PATCH] x86: e820.h fix various signedness issues in setup.c and e820.c
+> Why can I just compile one changed .c file and copy it where compiled version of
+> that file reside inside kernel tree? 
 
-Impact: cleanup
+'make' should already handle that for you. In what way does it not?
 
-This fixed various signedness issues in setup.c and e820.c:
-arch/x86/kernel/setup.c:455:53: warning: incorrect type in argument 3 (different signedness)
-arch/x86/kernel/setup.c:455:53:    expected int *pnr_map
-arch/x86/kernel/setup.c:455:53:    got unsigned int extern [toplevel] *<noident>
-arch/x86/kernel/setup.c:639:53: warning: incorrect type in argument 3 (different signedness)
-arch/x86/kernel/setup.c:639:53:    expected int *pnr_map
-arch/x86/kernel/setup.c:639:53:    got unsigned int extern [toplevel] *<noident>
-arch/x86/kernel/setup.c:820:54: warning: incorrect type in argument 3 (different signedness)
-arch/x86/kernel/setup.c:820:54:    expected int *pnr_map
-arch/x86/kernel/setup.c:820:54:    got unsigned int extern [toplevel] *<noident>
-
-arch/x86/kernel/e820.c:670:53: warning: incorrect type in argument 3 (different signedness)
-arch/x86/kernel/e820.c:670:53:    expected int *pnr_map
-arch/x86/kernel/e820.c:670:53:    got unsigned int [toplevel] *<noident>
-
-Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
----
- arch/x86/include/asm/e820.h |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/arch/x86/include/asm/e820.h b/arch/x86/include/asm/e820.h
-index 00d41ce..991ac17 100644
---- a/arch/x86/include/asm/e820.h
-+++ b/arch/x86/include/asm/e820.h
-@@ -57,7 +57,7 @@ struct e820entry {
- } __attribute__((packed));
- 
- struct e820map {
--	__u32 nr_map;
-+	__s32 nr_map;
- 	struct e820entry map[E820_X_MAX];
- };
- 
 -- 
-1.6.0.6
-
-
+Jesper Juhl <jj@chaosbits.net>             http://www.chaosbits.net/
+Plain text mails only, please      http://www.expita.com/nomime.html
+Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
 
