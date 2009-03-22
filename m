@@ -1,96 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756603AbZCVXGd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756635AbZCVXNR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756603AbZCVXGd (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Mar 2009 19:06:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753531AbZCVXGV
+	id S1756635AbZCVXNR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Mar 2009 19:13:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756515AbZCVXM7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Mar 2009 19:06:21 -0400
-Received: from mail-ew0-f165.google.com ([209.85.219.165]:51693 "EHLO
-	mail-ew0-f165.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752976AbZCVXGU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Mar 2009 19:06:20 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=wjMnmDcNXkIc4LC48T/R+vvnBbz1e6euBFn3FixU21OTeAgTsHdc7ZnJ+0q6CJVOse
-         ewvPYsrVPCpuLqog4Ua1c3VuCTRGjG9gCeRdGhkDbhtmyjxklMCSEz9B8cpCtngf3Mpz
-         pxKDc6kE1wx1FobaG+aMFHD5s7BuFJGxYbRi4=
-Date: Mon, 23 Mar 2009 00:06:16 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Tom Zanussi <tzanussi@gmail.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: [PATCH 0/4] tracing: event filtering v2
-Message-ID: <20090322230615.GI6002@nowhere>
-References: <1237710626.7703.45.camel@charm-linux>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1237710626.7703.45.camel@charm-linux>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Sun, 22 Mar 2009 19:12:59 -0400
+Received: from mail.crca.org.au ([67.207.131.56]:53266 "EHLO crca.org.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756498AbZCVXM7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Mar 2009 19:12:59 -0400
+X-Greylist: delayed 446 seconds by postgrey-1.27 at vger.kernel.org; Sun, 22 Mar 2009 19:12:58 EDT
+X-Bogosity: Ham, spamicity=0.000000
+Subject: Re: [linux-pm] [RFC][PATCH 1/2] PCI PM: Introduce
+ __pci_set_power_state()
+From: Nigel Cunningham <nigel@tuxonice.net>
+Reply-To: nigel@tuxonice.net
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Linux PCI <linux-pci@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <200903222211.50930.rjw@sisk.pl>
+References: <200903210003.55161.rjw@sisk.pl>
+	 <200903222208.22434.rjw@sisk.pl>  <200903222211.50930.rjw@sisk.pl>
+Content-Type: text/plain
+Date: Mon, 23 Mar 2009 10:08:05 +1100
+Message-Id: <1237763285.11186.2.camel@nigel-laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Mar 22, 2009 at 03:30:26AM -0500, Tom Zanussi wrote:
-> Hi,
-> 
-> This is version 2 of my patchset adding filtering to the event-tracing
-> infrastructure.
-> 
-> Changes from the previous version:
-> 
-> - added common_ prefix to the 5 common event fields
-> - ring_buffer_event_discard() fixes from Steven Rostedt
-> - changed 'and' and 'or' for compound filters to '&&' and '||'
-> - fixed a bug in the matching logic 
-> 
-> Everything seems to work ok for me, but I haven't yet gotten around to
-> changing the awkward UI.  I plan to fix that as soon as I can i.e. allow
-> complete compound expressions to be specified all at once, add <, >, <=,
-> >= and parens, etc.  Until then, it should hopefully be usable for basic
-> filtering. 
-> 
-> Thanks,
-> 
-> Tom
-> 
+Hi.
 
+It's not an error if we fail to set the desired state? (I see you have a
+dev_warn only).
 
-Very nice work!
+(If it is an error, the radeon_set_suspend patch needs to be adjusted to
+not ignore the error code).
 
-My events/1 task is pid 4, and swapper (idle) is 0,
+Regards,
 
-cd /debug/tracing/events/sched/sched_switch
-echo prev_pid == 4 > filter
-echo "&& next_pid == 0" > filter
-echo 1 > enable
-
-
-cat /debug/tracing/trace
-
-# tracer: nop
-#
-#           TASK-PID    CPU#    TIMESTAMP  FUNCTION
-#              | |       |          |         |
-           <...>-4     [000]  1136.993069: sched_switch: task events/0:4 [115] ==> swapper:0 [140]
-           <...>-4     [000]  1136.993081: sched_switch: task events/0:4 [115] ==> swapper:0 [140]
-           <...>-4     [000]  1137.218492: sched_switch: task events/0:4 [115] ==> swapper:0 [140]
-           <...>-4     [000]  1137.283787: sched_switch: task events/0:4 [115] ==> swapper:0 [140]
-           <...>-4     [000]  1137.458733: sched_switch: task events/0:4 [115] ==> swapper:0 [140]
-           <...>-4     [000]  1137.560932: sched_switch: task events/0:4 [115] ==> swapper:0 [140]
-           <...>-4     [000]  1137.560941: sched_switch: task events/0:4 [115] ==> swapper:0 [140]
-           <...>-4     [000]  1137.741107: sched_switch: task events/0:4 [115] ==> swapper:0 [140]
-           <...>-4     [000]  1138.159083: sched_switch: task events/0:4 [115] ==> swapper:0 [140]
-           <...>-4     [000]  1138.338673: sched_switch: task events/0:4 [115] ==> swapper:0 [140]
-           <...>-4     [000]  1138.338681: sched_switch: task events/0:4 [115] ==> swapper:0 [140]
-           <...>-4     [000]  1138.517769: sched_switch: task events/0:4 [115] ==> swapper:0 [140]
-           <...>-4     [000]  1138.517833: sched_switch: task events/0:4 [115] ==> swapper:0 [140]
-           <...>-4     [000]  1138.517845: sched_switch: task events/0:4 [115] ==> swapper:0 [140]
-[...]
-
-
-:-)
+Nigel
 
