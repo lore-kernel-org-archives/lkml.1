@@ -1,66 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753968AbZCVIRp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753130AbZCVIao@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753968AbZCVIRp (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Mar 2009 04:17:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752831AbZCVIR2
+	id S1753130AbZCVIao (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Mar 2009 04:30:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752368AbZCVIad
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Mar 2009 04:17:28 -0400
-Received: from gw1.cosmosbay.com ([212.99.114.194]:34696 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752362AbZCVIR0 convert rfc822-to-8bit (ORCPT
+	Sun, 22 Mar 2009 04:30:33 -0400
+Received: from qw-out-2122.google.com ([74.125.92.27]:33106 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752027AbZCVIab (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Mar 2009 04:17:26 -0400
-Message-ID: <49C5F3FD.9010606@cosmosbay.com>
-Date: Sun, 22 Mar 2009 09:17:01 +0100
-From: Eric Dumazet <dada1@cosmosbay.com>
-User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
-MIME-Version: 1.0
-To: Ravikiran G Thirumalai <kiran@scalex86.org>
-CC: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       shai@scalex86.org
-Subject: Re: [rfc] [patch 1/2 ] Process private hash tables for private	futexes
-References: <20090321044637.GA7278@localdomain> <49C4AE64.4060400@cosmosbay.com> <20090322045414.GD7278@localdomain>
-In-Reply-To: <20090322045414.GD7278@localdomain>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Sun, 22 Mar 2009 09:17:04 +0100 (CET)
+	Sun, 22 Mar 2009 04:30:31 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:content-type:date:message-id:mime-version
+         :x-mailer:content-transfer-encoding;
+        b=cDXoaKXXONj8abOWiRElspD4SvXZiAynM/IWRqxawVoXZsCFfmBKY7cNhP4dHdhFyg
+         9IZjkV2rg9Hyp4FdR7ES7d7Ljrpj6Rym2YdmBvhUsaC2TxoxT7vHdk90ovq0lF6plHwF
+         c5o91vA4I2w1AtdUCF1Ur2eCfhaZmojwhgbxw=
+Subject: [PATCH 0/4] tracing: event filtering v2
+From: Tom Zanussi <tzanussi@gmail.com>
+To: linux-kernel <linux-kernel@vger.kernel.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
+       =?ISO-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>
+Content-Type: text/plain
+Date: Sun, 22 Mar 2009 03:30:26 -0500
+Message-Id: <1237710626.7703.45.camel@charm-linux>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ravikiran G Thirumalai a écrit :
->>
->> Did you tried to change FUTEX_HASHBITS instead, since current value is really really
->> ridiculous ?
-> 
-> We tried it in the past and I remember on a 16 core machine, we had to
-> use 32k hash slots to avoid false sharing.
-> 
-> 
-> Yes, dynamically changing the hash table is better (looking at the patch you
-> have posted), but still there are no locality guarantees here.  A process
-> pinned to node X may still end up accessing remote memory locations while
-> accessing the hash table.  A process private table on the other hand should
-> not have this problem. I think using a global hash for entirely process local
-> objects is bad design wise here.
-> 
-> 
+Hi,
 
+This is version 2 of my patchset adding filtering to the event-tracing
+infrastructure.
 
-Bad design, or bad luck... considering all kernel already use such global tables
-(dentries, inodes, tcp, ip route cache, ...).
+Changes from the previous version:
 
-Problem is to size this hash table, being private or not. You said hou had
-to have a 32768 slots to avoid false sharing on a 16 core machine. This seems
-strange to me, given we use jhash. What is the size of the cache line on your
-platforms ???
+- added common_ prefix to the 5 common event fields
+- ring_buffer_event_discard() fixes from Steven Rostedt
+- changed 'and' and 'or' for compound filters to '&&' and '||'
+- fixed a bug in the matching logic 
 
-Say we have 32768 slots for the global hash table, and 256 slots for a private one,
-you probably can have a program running slowly with this private 256 slots table,
-if this program uses all available cores.
+Everything seems to work ok for me, but I haven't yet gotten around to
+changing the awkward UI.  I plan to fix that as soon as I can i.e. allow
+complete compound expressions to be specified all at once, add <, >, <=,
+>= and parens, etc.  Until then, it should hopefully be usable for basic
+filtering. 
 
-If we use large private hash table, the setup cost is higher (need to initialize
-all spinlocks and plist heads at each program startup), unless we use a dedicate
-kmem_cache to keep a pool of preinitialized priv hash tables...
+Thanks,
 
+Tom
 
