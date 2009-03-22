@@ -1,76 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755593AbZCVT0h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755988AbZCVT1F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755593AbZCVT0h (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Mar 2009 15:26:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755010AbZCVT0J
+	id S1755988AbZCVT1F (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Mar 2009 15:27:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755639AbZCVT0L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Mar 2009 15:26:09 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:52555 "EHLO kernel.dk"
+	Sun, 22 Mar 2009 15:26:11 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:52562 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754665AbZCVT0G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Mar 2009 15:26:06 -0400
+	id S1754887AbZCVT0H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Mar 2009 15:26:07 -0400
 From: Jens Axboe <jens.axboe@oracle.com>
 To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
 Cc: chris.mason@oracle.com, david@fromorbit.com, npiggin@suse.de,
-       hch@infradead.org, akpm@linux-foundation.org
-Subject: [PATCH 0/12] Per-bdi writeback flusher threads #2
-Date: Sun, 22 Mar 2009 20:25:52 +0100
-Message-Id: <1237749964-8343-1-git-send-email-jens.axboe@oracle.com>
+       hch@infradead.org, akpm@linux-foundation.org,
+       Jens Axboe <jens.axboe@oracle.com>
+Subject: [PATCH 01/12] Move the default_backing_dev_info out of readahead.c and into backing-dev.c
+Date: Sun, 22 Mar 2009 20:25:53 +0100
+Message-Id: <1237749964-8343-2-git-send-email-jens.axboe@oracle.com>
 X-Mailer: git-send-email 1.6.2.12.g83676
+In-Reply-To: <1237749964-8343-1-git-send-email-jens.axboe@oracle.com>
+References: <1237749964-8343-1-git-send-email-jens.axboe@oracle.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+It really makes no sense to have it in readahead.c, so move it where
+it belongs.
 
-Second version of this patchset. Changes since last time:
+Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
+---
+ mm/backing-dev.c |   26 +++++++++++++++++++++++++-
+ mm/readahead.c   |   25 -------------------------
+ 2 files changed, 25 insertions(+), 26 deletions(-)
 
-- Rearranged the obvious and prep patches to be at the beginning
-  of the series. That's patches 1-3, they will go upstream for 2.6.30
-  since they are just cleanups.
-
-- The other change is more interesting. It adds support for > 1 flusher
-  thread per bdi. Comments welcome, I'm particularly curious whether
-  the super_operation is the right place to add this or not. We'll also
-  need a few other changes, particularly I think that users of this will
-  want to provide their own generic_sync_wb_inodes() at least. Probably
-  along with their own variants of queue_io/requeue_io/redirty_tail() and
-  so on.
-
-- Various little bug fixes.
-
- b/block/blk-core.c            |    1 
- b/drivers/block/aoe/aoeblk.c  |    1 
- b/drivers/char/mem.c          |    1 
- b/fs/btrfs/disk-io.c          |    3 
- b/fs/buffer.c                 |    2 
- b/fs/char_dev.c               |    1 
- b/fs/configfs/inode.c         |    1 
- b/fs/fs-writeback.c           |  490 +++++++++++++++++++++++-----------
- b/fs/fuse/inode.c             |    1 
- b/fs/hugetlbfs/inode.c        |    1 
- b/fs/nfs/client.c             |    1 
- b/fs/ntfs/super.c             |   32 --
- b/fs/ocfs2/dlm/dlmfs.c        |    1 
- b/fs/ramfs/inode.c            |    1 
- b/fs/super.c                  |   14 
- b/fs/sync.c                   |   16 -
- b/fs/sysfs/inode.c            |    1 
- b/fs/ubifs/super.c            |    1 
- b/include/linux/backing-dev.h |   62 ++++
- b/include/linux/fs.h          |   11 
- b/include/linux/writeback.h   |   15 -
- b/kernel/cgroup.c             |    1 
- b/mm/Makefile                 |    2 
- b/mm/backing-dev.c            |  429 +++++++++++++++++++++++++++++
- b/mm/page-writeback.c         |  140 ---------
- mm/pdflush.c                  |  251 -----------------
- b/mm/readahead.c              |   25 -
- b/mm/swap_state.c             |    1 
- b/mm/vmscan.c                 |    2 
- 29 files changed, 889 insertions(+), 619 deletions(-)
-
+diff --git a/mm/backing-dev.c b/mm/backing-dev.c
+index 8e85874..be68c95 100644
+--- a/mm/backing-dev.c
++++ b/mm/backing-dev.c
+@@ -2,11 +2,24 @@
+ #include <linux/wait.h>
+ #include <linux/backing-dev.h>
+ #include <linux/fs.h>
++#include <linux/pagemap.h>
+ #include <linux/sched.h>
+ #include <linux/module.h>
+ #include <linux/writeback.h>
+ #include <linux/device.h>
+ 
++void default_unplug_io_fn(struct backing_dev_info *bdi, struct page *page)
++{
++}
++EXPORT_SYMBOL(default_unplug_io_fn);
++
++struct backing_dev_info default_backing_dev_info = {
++	.ra_pages	= VM_MAX_READAHEAD * 1024 / PAGE_CACHE_SIZE,
++	.state		= 0,
++	.capabilities	= BDI_CAP_MAP_COPY,
++	.unplug_io_fn	= default_unplug_io_fn,
++};
++EXPORT_SYMBOL_GPL(default_backing_dev_info);
+ 
+ static struct class *bdi_class;
+ 
+@@ -166,9 +179,20 @@ static __init int bdi_class_init(void)
+ 	bdi_debug_init();
+ 	return 0;
+ }
+-
+ postcore_initcall(bdi_class_init);
+ 
++static int __init default_bdi_init(void)
++{
++	int err;
++
++	err = bdi_init(&default_backing_dev_info);
++	if (!err)
++		bdi_register(&default_backing_dev_info, NULL, "default");
++
++	return err;
++}
++subsys_initcall(default_bdi_init);
++
+ int bdi_register(struct backing_dev_info *bdi, struct device *parent,
+ 		const char *fmt, ...)
+ {
+diff --git a/mm/readahead.c b/mm/readahead.c
+index bec83c1..9ce303d 100644
+--- a/mm/readahead.c
++++ b/mm/readahead.c
+@@ -17,19 +17,6 @@
+ #include <linux/pagevec.h>
+ #include <linux/pagemap.h>
+ 
+-void default_unplug_io_fn(struct backing_dev_info *bdi, struct page *page)
+-{
+-}
+-EXPORT_SYMBOL(default_unplug_io_fn);
+-
+-struct backing_dev_info default_backing_dev_info = {
+-	.ra_pages	= VM_MAX_READAHEAD * 1024 / PAGE_CACHE_SIZE,
+-	.state		= 0,
+-	.capabilities	= BDI_CAP_MAP_COPY,
+-	.unplug_io_fn	= default_unplug_io_fn,
+-};
+-EXPORT_SYMBOL_GPL(default_backing_dev_info);
+-
+ /*
+  * Initialise a struct file's readahead state.  Assumes that the caller has
+  * memset *ra to zero.
+@@ -233,18 +220,6 @@ unsigned long max_sane_readahead(unsigned long nr)
+ 		+ node_page_state(numa_node_id(), NR_FREE_PAGES)) / 2);
+ }
+ 
+-static int __init readahead_init(void)
+-{
+-	int err;
+-
+-	err = bdi_init(&default_backing_dev_info);
+-	if (!err)
+-		bdi_register(&default_backing_dev_info, NULL, "default");
+-
+-	return err;
+-}
+-subsys_initcall(readahead_init);
+-
+ /*
+  * Submit IO for the read-ahead request in file_ra_state.
+  */
 -- 
-Jens Axboe
-
+1.6.2.12.g83676
 
