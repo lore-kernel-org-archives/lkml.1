@@ -1,68 +1,75 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755672AbZCUPuU (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Sat, 21 Mar 2009 11:50:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752547AbZCUPuE
+	id S1752914AbZCVFgX (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Sun, 22 Mar 2009 01:36:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751837AbZCVFgG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Mar 2009 11:50:04 -0400
-Received: from mail.mn.yu ([195.66.166.8]:37387 "EHLO mail.mn.yu"
+	Sun, 22 Mar 2009 01:36:06 -0400
+Received: from mx44.mail.ru ([94.100.176.58]:60779 "EHLO mx44.mail.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752179AbZCUPuB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Mar 2009 11:50:01 -0400
-Message-ID: <40694.81.199.162.24.1237637439.squirrel@mail.mn.yu>
-Date: Sat, 21 Mar 2009 13:10:39 +0100 (CET)
-Subject: BUSINESS OVERTURE.
-From: "Mr.Ming Yang" <mingoffice@east.net>
-Reply-To: ming_y001@yahoo.com.hk
-User-Agent: SquirrelMail/1.4.13
-MIME-Version: 1.0
+	id S1751742AbZCVFgF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Mar 2009 01:36:05 -0400
+From: Peter Lojkin <ia6432@inbox.ru>
+To: linux-kernel@vger.kernel.org
+Subject: =?koi8-r?Q?Re=3A_[Bug_#12911]_Limiting_cpu_time_doesn't_work?=
+Mime-Version: 1.0
+X-Mailer: mPOP Web-Mail 2.19
+X-Originating-IP: unknown via proxy [83.167.111.116]
+Date: Sun, 22 Mar 2009 08:34:49 +0300
+X-Mru-Data: 2342:1:1:70:70:0
+Reply-To: Peter Lojkin <ia6432@inbox.ru>
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7BIT
-X-Priority: 3 (Normal)
-Importance: Normal
-To: undisclosed-recipients:;
-X-SZR-MailScanner: Found to be clean
-X-SZR-MailScanner-From: mingoffice@east.net
+Message-Id: <E1LlGKf-000OqX-00.ia6432-inbox-ru@f221.mail.ru>
+X-Spam: Not detected
+X-Mras: Ok
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello,
 
+additional info on subject.
+problem first apeared in 2.6.27-git9 and RLIMIT_CPU actually works on process that sets limit but not on its children. examples:
 
+test1.c
+#include <sys/time.h>
+#include <sys/resource.h>
 
-Hang Seng Bank Ltd
-Sai Wan Ho Branch
-171 Shaukiwan Road
-Hong Kong.
+int main() {
+  struct rlimit a;
+  a.rlim_cur=3;
+  a.rlim_max=5;
+  setrlimit(RLIMIT_CPU, &a);
+  while(1);
+  return 0;
+}
 
-Good Day,
+test1 dies with "CPU time limit exceeded" after 3sec as expected, but
 
-I am Mr. Ming Yang, Director of Operations of the Hang Seng Bank Ltd,Sai
-Wan Ho Branch, Hong Kong. My purpose of contacting you is because
-you live in a western world.
+test2.c
+#include <sys/time.h>
+#include <sys/resource.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <unistd.h>
 
-I have an obscured business suggestion for you.I am here-by seeking your
-service in helping me recieve a large amount of money and in giving a
-clear research and feasibility studies on areas I could invest on.Your
-services will be paid for, and you will be a partner, if
-yourrecommendation is accepted.
+int main() {
+  struct rlimit a;
+  int status;
 
-As a bank employee, I can not operate any personal investment till I am
-retired and with the Anti-corruption Bill passed in Hong Kong,it is risky
-for a fixed income earner to own any huge amount of money in HongKong or
-any foreign country. It is then advisable to invest in any
-foreign land secretly and patiently wait retirement.
+  a.rlim_cur=3;
+  a.rlim_max=5;
+  setrlimit(RLIMIT_CPU, &a);
+  if (0==fork())
+    while(1);
+  else
+    wait(&status);
+  return 0;
+}
 
-For security purpose, due to telecom interception in Hong Kong, I shall
-not accept or acknowledge any phone call. Only emailswould be treated
-inrelation to this proposal but not without this code;[CODE NO:AM-001].
+test2 not get killed. checking limits on child process show that limits set correctly.
 
-Should you be further interested, I would preferyou to reach me soon and
-finally after that I shall provide you with more details of this
-operation.
-
-Contact me through this email for further confidential
-correspondence:ming_y001@yahoo.com.hk
-
-Kind Regards
-Mr.Ming Yang
+two equivalent examples for shell:
+sh -c "ulimit -t 3; while true; do true; done"
+sh -c "ulimit -t 3; sh -c 'while true; do true; done'"
 
