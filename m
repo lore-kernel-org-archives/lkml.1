@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756586AbZCVT3b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756697AbZCVTaM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756586AbZCVT3b (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Mar 2009 15:29:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755889AbZCVT0h
+	id S1756697AbZCVTaM (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Mar 2009 15:30:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755972AbZCVT0n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Mar 2009 15:26:37 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:52617 "EHLO kernel.dk"
+	Sun, 22 Mar 2009 15:26:43 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:52607 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755593AbZCVT0M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Mar 2009 15:26:12 -0400
+	id S1755302AbZCVT0L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Mar 2009 15:26:11 -0400
 From: Jens Axboe <jens.axboe@oracle.com>
 To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
 Cc: chris.mason@oracle.com, david@fromorbit.com, npiggin@suse.de,
        hch@infradead.org, akpm@linux-foundation.org,
        Jens Axboe <jens.axboe@oracle.com>
-Subject: [PATCH 11/12] writeback: add name to backing_dev_info
-Date: Sun, 22 Mar 2009 20:26:03 +0100
-Message-Id: <1237749964-8343-12-git-send-email-jens.axboe@oracle.com>
+Subject: [PATCH 06/12] writeback get rid of pdflush completely
+Date: Sun, 22 Mar 2009 20:25:58 +0100
+Message-Id: <1237749964-8343-7-git-send-email-jens.axboe@oracle.com>
 X-Mailer: git-send-email 1.6.2.12.g83676
 In-Reply-To: <1237749964-8343-1-git-send-email-jens.axboe@oracle.com>
 References: <1237749964-8343-1-git-send-email-jens.axboe@oracle.com>
@@ -24,234 +24,333 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Just for testing purposes, to be able to easier track who does what.
+It is now unused, so kill it off.
 
 Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
 ---
- block/blk-core.c            |    1 +
- drivers/block/aoe/aoeblk.c  |    1 +
- drivers/char/mem.c          |    1 +
- fs/btrfs/disk-io.c          |    1 +
- fs/char_dev.c               |    1 +
- fs/configfs/inode.c         |    1 +
- fs/fuse/inode.c             |    1 +
- fs/hugetlbfs/inode.c        |    1 +
- fs/nfs/client.c             |    1 +
- fs/ocfs2/dlm/dlmfs.c        |    1 +
- fs/ramfs/inode.c            |    1 +
- fs/sysfs/inode.c            |    1 +
- fs/ubifs/super.c            |    1 +
- include/linux/backing-dev.h |    2 ++
- kernel/cgroup.c             |    1 +
- mm/backing-dev.c            |    1 +
- mm/swap_state.c             |    1 +
- 17 files changed, 18 insertions(+), 0 deletions(-)
+ fs/fs-writeback.c         |    5 +
+ include/linux/writeback.h |   12 --
+ mm/Makefile               |    2 +-
+ mm/pdflush.c              |  251 ---------------------------------------------
+ 4 files changed, 6 insertions(+), 264 deletions(-)
+ delete mode 100644 mm/pdflush.c
 
-diff --git a/block/blk-core.c b/block/blk-core.c
-index 29bcfac..b147dc6 100644
---- a/block/blk-core.c
-+++ b/block/blk-core.c
-@@ -517,6 +517,7 @@ struct request_queue *blk_alloc_queue_node(gfp_t gfp_mask, int node_id)
+diff --git a/fs/fs-writeback.c b/fs/fs-writeback.c
+index 21de5ac..54c5e19 100644
+--- a/fs/fs-writeback.c
++++ b/fs/fs-writeback.c
+@@ -29,6 +29,11 @@
  
- 	q->backing_dev_info.unplug_io_fn = blk_backing_dev_unplug;
- 	q->backing_dev_info.unplug_io_data = q;
-+	q->backing_dev_info.name = "block";
- 	err = bdi_init(&q->backing_dev_info);
- 	if (err) {
- 		kmem_cache_free(blk_requestq_cachep, q);
-diff --git a/drivers/block/aoe/aoeblk.c b/drivers/block/aoe/aoeblk.c
-index 2307a27..0efb8fc 100644
---- a/drivers/block/aoe/aoeblk.c
-+++ b/drivers/block/aoe/aoeblk.c
-@@ -265,6 +265,7 @@ aoeblk_gdalloc(void *vp)
- 	}
+ #define inode_to_bdi(inode)	(inode)->i_mapping->backing_dev_info
  
- 	blk_queue_make_request(&d->blkq, aoeblk_make_request);
-+	d->blkq.backing_dev_info.name = "aoe";
- 	if (bdi_init(&d->blkq.backing_dev_info))
- 		goto err_mempool;
- 	spin_lock_irqsave(&d->lock, flags);
-diff --git a/drivers/char/mem.c b/drivers/char/mem.c
-index 3586b3b..45b485f 100644
---- a/drivers/char/mem.c
-+++ b/drivers/char/mem.c
-@@ -847,6 +847,7 @@ static const struct file_operations zero_fops = {
-  * - permits private mappings, "copies" are taken of the source of zeros
-  */
- static struct backing_dev_info zero_bdi = {
-+	.name		= "char/mem",
- 	.capabilities	= BDI_CAP_MAP_COPY,
- };
- 
-diff --git a/fs/btrfs/disk-io.c b/fs/btrfs/disk-io.c
-index 6ec80c0..d95cfdf 100644
---- a/fs/btrfs/disk-io.c
-+++ b/fs/btrfs/disk-io.c
-@@ -1342,6 +1342,7 @@ static void btrfs_unplug_io_fn(struct backing_dev_info *bdi, struct page *page)
- 
- static int setup_bdi(struct btrfs_fs_info *info, struct backing_dev_info *bdi)
- {
-+	bdi->name = "btrfs";
- 	bdi_init(bdi);
- 	bdi->ra_pages	= default_backing_dev_info.ra_pages;
- 	bdi->state		= 0;
-diff --git a/fs/char_dev.c b/fs/char_dev.c
-index 38f7122..350ef9c 100644
---- a/fs/char_dev.c
-+++ b/fs/char_dev.c
-@@ -32,6 +32,7 @@
-  * - no readahead or I/O queue unplugging required
-  */
- struct backing_dev_info directly_mappable_cdev_bdi = {
-+	.name = "char",
- 	.capabilities	= (
- #ifdef CONFIG_MMU
- 		/* permit private copies of the data to be taken */
-diff --git a/fs/configfs/inode.c b/fs/configfs/inode.c
-index 5d349d3..9a266cd 100644
---- a/fs/configfs/inode.c
-+++ b/fs/configfs/inode.c
-@@ -46,6 +46,7 @@ static const struct address_space_operations configfs_aops = {
- };
- 
- static struct backing_dev_info configfs_backing_dev_info = {
-+	.name		= "configfs",
- 	.ra_pages	= 0,	/* No readahead */
- 	.capabilities	= BDI_CAP_NO_ACCT_AND_WRITEBACK,
- };
-diff --git a/fs/fuse/inode.c b/fs/fuse/inode.c
-index 459b73d..21ed16c 100644
---- a/fs/fuse/inode.c
-+++ b/fs/fuse/inode.c
-@@ -481,6 +481,7 @@ int fuse_conn_init(struct fuse_conn *fc, struct super_block *sb)
- 	INIT_LIST_HEAD(&fc->bg_queue);
- 	INIT_LIST_HEAD(&fc->entry);
- 	atomic_set(&fc->num_waiting, 0);
-+	fc->bdi.name = "fuse";
- 	fc->bdi.ra_pages = (VM_MAX_READAHEAD * 1024) / PAGE_CACHE_SIZE;
- 	fc->bdi.unplug_io_fn = default_unplug_io_fn;
- 	/* fuse does it's own writeback accounting */
-diff --git a/fs/hugetlbfs/inode.c b/fs/hugetlbfs/inode.c
-index 9b800d9..042f28e 100644
---- a/fs/hugetlbfs/inode.c
-+++ b/fs/hugetlbfs/inode.c
-@@ -44,6 +44,7 @@ static const struct inode_operations hugetlbfs_dir_inode_operations;
- static const struct inode_operations hugetlbfs_inode_operations;
- 
- static struct backing_dev_info hugetlbfs_backing_dev_info = {
-+	.name		= "hugetlbfs",
- 	.ra_pages	= 0,	/* No readahead */
- 	.capabilities	= BDI_CAP_NO_ACCT_AND_WRITEBACK,
- };
-diff --git a/fs/nfs/client.c b/fs/nfs/client.c
-index 574158a..5d3fcac 100644
---- a/fs/nfs/client.c
-+++ b/fs/nfs/client.c
-@@ -842,6 +842,7 @@ static void nfs_server_set_fsinfo(struct nfs_server *server, struct nfs_fsinfo *
- 		server->rsize = NFS_MAX_FILE_IO_SIZE;
- 	server->rpages = (server->rsize + PAGE_CACHE_SIZE - 1) >> PAGE_CACHE_SHIFT;
- 
-+	server->backing_dev_info.name = "nfs";
- 	server->backing_dev_info.ra_pages = server->rpages * NFS_MAX_READAHEAD;
- 
- 	if (server->wsize > max_rpc_payload)
-diff --git a/fs/ocfs2/dlm/dlmfs.c b/fs/ocfs2/dlm/dlmfs.c
-index 1c9efb4..02bf178 100644
---- a/fs/ocfs2/dlm/dlmfs.c
-+++ b/fs/ocfs2/dlm/dlmfs.c
-@@ -325,6 +325,7 @@ clear_fields:
- }
- 
- static struct backing_dev_info dlmfs_backing_dev_info = {
-+	.name		= "ocfs2-dlmfs",
- 	.ra_pages	= 0,	/* No readahead */
- 	.capabilities	= BDI_CAP_NO_ACCT_AND_WRITEBACK,
- };
-diff --git a/fs/ramfs/inode.c b/fs/ramfs/inode.c
-index b7e6ac7..d34bfa4 100644
---- a/fs/ramfs/inode.c
-+++ b/fs/ramfs/inode.c
-@@ -43,6 +43,7 @@ static const struct super_operations ramfs_ops;
- static const struct inode_operations ramfs_dir_inode_operations;
- 
- static struct backing_dev_info ramfs_backing_dev_info = {
-+	.name		= "ramfs",
- 	.ra_pages	= 0,	/* No readahead */
- 	.capabilities	= BDI_CAP_NO_ACCT_AND_WRITEBACK |
- 			  BDI_CAP_MAP_DIRECT | BDI_CAP_MAP_COPY |
-diff --git a/fs/sysfs/inode.c b/fs/sysfs/inode.c
-index dfa3d94..3383f15 100644
---- a/fs/sysfs/inode.c
-+++ b/fs/sysfs/inode.c
-@@ -29,6 +29,7 @@ static const struct address_space_operations sysfs_aops = {
- };
- 
- static struct backing_dev_info sysfs_backing_dev_info = {
-+	.name		= "sysfs",
- 	.ra_pages	= 0,	/* No readahead */
- 	.capabilities	= BDI_CAP_NO_ACCT_AND_WRITEBACK,
- };
-diff --git a/fs/ubifs/super.c b/fs/ubifs/super.c
-index 1182b66..462bda8 100644
---- a/fs/ubifs/super.c
-+++ b/fs/ubifs/super.c
-@@ -1906,6 +1906,7 @@ static int ubifs_fill_super(struct super_block *sb, void *data, int silent)
- 	 *
- 	 * Read-ahead will be disabled because @c->bdi.ra_pages is 0.
- 	 */
-+	c->bdi.name = "ubifs",
- 	c->bdi.capabilities = BDI_CAP_MAP_COPY;
- 	c->bdi.unplug_io_fn = default_unplug_io_fn;
- 	err  = bdi_init(&c->bdi);
-diff --git a/include/linux/backing-dev.h b/include/linux/backing-dev.h
-index 9dd8cb9..3d373d4 100644
---- a/include/linux/backing-dev.h
-+++ b/include/linux/backing-dev.h
-@@ -72,6 +72,8 @@ struct backing_dev_info {
- 	void (*unplug_io_fn)(struct backing_dev_info *, struct page *);
- 	void *unplug_io_data;
- 
-+	char *name;
++/*
++ * We don't actually have pdflush, but this one is exported though /proc...
++ */
++int nr_pdflush_threads = 0;
 +
- 	struct percpu_counter bdi_stat[NR_BDI_STAT_ITEMS];
+ /**
+  * writeback_acquire - attempt to get exclusive writeback access to a device
+  * @bdi: the device's backing_dev_info structure
+diff --git a/include/linux/writeback.h b/include/linux/writeback.h
+index 3697e91..f96fea3 100644
+--- a/include/linux/writeback.h
++++ b/include/linux/writeback.h
+@@ -14,17 +14,6 @@ extern struct list_head inode_in_use;
+ extern struct list_head inode_unused;
  
- 	struct prop_local_percpu completions;
-diff --git a/kernel/cgroup.c b/kernel/cgroup.c
-index 9edb5c4..c63970e 100644
---- a/kernel/cgroup.c
-+++ b/kernel/cgroup.c
-@@ -564,6 +564,7 @@ static struct inode_operations cgroup_dir_inode_operations;
- static struct file_operations proc_cgroupstats_operations;
+ /*
+- * Yes, writeback.h requires sched.h
+- * No, sched.h is not included from here.
+- */
+-static inline int task_is_pdflush(struct task_struct *task)
+-{
+-	return task->flags & PF_FLUSHER;
+-}
+-
+-#define current_is_pdflush()	task_is_pdflush(current)
+-
+-/*
+  * fs/fs-writeback.c
+  */
+ enum writeback_sync_modes {
+@@ -151,7 +140,6 @@ balance_dirty_pages_ratelimited(struct address_space *mapping)
+ typedef int (*writepage_t)(struct page *page, struct writeback_control *wbc,
+ 				void *data);
  
- static struct backing_dev_info cgroup_backing_dev_info = {
-+	.name		= "cgroup",
- 	.capabilities	= BDI_CAP_NO_ACCT_AND_WRITEBACK,
- };
+-int pdflush_operation(void (*fn)(unsigned long), unsigned long arg0);
+ int generic_writepages(struct address_space *mapping,
+ 		       struct writeback_control *wbc);
+ int write_cache_pages(struct address_space *mapping,
+diff --git a/mm/Makefile b/mm/Makefile
+index 72255be..6443e19 100644
+--- a/mm/Makefile
++++ b/mm/Makefile
+@@ -8,7 +8,7 @@ mmu-$(CONFIG_MMU)	:= fremap.o highmem.o madvise.o memory.o mincore.o \
+ 			   vmalloc.o
  
-diff --git a/mm/backing-dev.c b/mm/backing-dev.c
-index e80c90d..981e8e8 100644
---- a/mm/backing-dev.c
-+++ b/mm/backing-dev.c
-@@ -17,6 +17,7 @@ void default_unplug_io_fn(struct backing_dev_info *bdi, struct page *page)
- EXPORT_SYMBOL(default_unplug_io_fn);
- 
- struct backing_dev_info default_backing_dev_info = {
-+	.name		= "default",
- 	.ra_pages	= VM_MAX_READAHEAD * 1024 / PAGE_CACHE_SIZE,
- 	.state		= 0,
- 	.capabilities	= BDI_CAP_MAP_COPY | BDI_CAP_FLUSH_FORKER,
-diff --git a/mm/swap_state.c b/mm/swap_state.c
-index 3ecea98..323da00 100644
---- a/mm/swap_state.c
-+++ b/mm/swap_state.c
-@@ -34,6 +34,7 @@ static const struct address_space_operations swap_aops = {
- };
- 
- static struct backing_dev_info swap_backing_dev_info = {
-+	.name		= "swap",
- 	.capabilities	= BDI_CAP_NO_ACCT_AND_WRITEBACK | BDI_CAP_SWAP_BACKED,
- 	.unplug_io_fn	= swap_unplug_io_fn,
- };
+ obj-y			:= bootmem.o filemap.o mempool.o oom_kill.o fadvise.o \
+-			   maccess.o page_alloc.o page-writeback.o pdflush.o \
++			   maccess.o page_alloc.o page-writeback.o \
+ 			   readahead.o swap.o truncate.o vmscan.o shmem.o \
+ 			   prio_tree.o util.o mmzone.o vmstat.o backing-dev.o \
+ 			   page_isolation.o mm_init.o $(mmu-y)
+diff --git a/mm/pdflush.c b/mm/pdflush.c
+deleted file mode 100644
+index 15de509..0000000
+--- a/mm/pdflush.c
++++ /dev/null
+@@ -1,251 +0,0 @@
+-/*
+- * mm/pdflush.c - worker threads for writing back filesystem data
+- *
+- * Copyright (C) 2002, Linus Torvalds.
+- *
+- * 09Apr2002	Andrew Morton
+- *		Initial version
+- * 29Feb2004	kaos@sgi.com
+- *		Move worker thread creation to kthread to avoid chewing
+- *		up stack space with nested calls to kernel_thread.
+- */
+-
+-#include <linux/sched.h>
+-#include <linux/list.h>
+-#include <linux/signal.h>
+-#include <linux/spinlock.h>
+-#include <linux/gfp.h>
+-#include <linux/init.h>
+-#include <linux/module.h>
+-#include <linux/fs.h>		/* Needed by writeback.h	  */
+-#include <linux/writeback.h>	/* Prototypes pdflush_operation() */
+-#include <linux/kthread.h>
+-#include <linux/cpuset.h>
+-#include <linux/freezer.h>
+-
+-
+-/*
+- * Minimum and maximum number of pdflush instances
+- */
+-#define MIN_PDFLUSH_THREADS	2
+-#define MAX_PDFLUSH_THREADS	8
+-
+-static void start_one_pdflush_thread(void);
+-
+-
+-/*
+- * The pdflush threads are worker threads for writing back dirty data.
+- * Ideally, we'd like one thread per active disk spindle.  But the disk
+- * topology is very hard to divine at this level.   Instead, we take
+- * care in various places to prevent more than one pdflush thread from
+- * performing writeback against a single filesystem.  pdflush threads
+- * have the PF_FLUSHER flag set in current->flags to aid in this.
+- */
+-
+-/*
+- * All the pdflush threads.  Protected by pdflush_lock
+- */
+-static LIST_HEAD(pdflush_list);
+-static DEFINE_SPINLOCK(pdflush_lock);
+-
+-/*
+- * The count of currently-running pdflush threads.  Protected
+- * by pdflush_lock.
+- *
+- * Readable by sysctl, but not writable.  Published to userspace at
+- * /proc/sys/vm/nr_pdflush_threads.
+- */
+-int nr_pdflush_threads = 0;
+-
+-/*
+- * The time at which the pdflush thread pool last went empty
+- */
+-static unsigned long last_empty_jifs;
+-
+-/*
+- * The pdflush thread.
+- *
+- * Thread pool management algorithm:
+- * 
+- * - The minimum and maximum number of pdflush instances are bound
+- *   by MIN_PDFLUSH_THREADS and MAX_PDFLUSH_THREADS.
+- * 
+- * - If there have been no idle pdflush instances for 1 second, create
+- *   a new one.
+- * 
+- * - If the least-recently-went-to-sleep pdflush thread has been asleep
+- *   for more than one second, terminate a thread.
+- */
+-
+-/*
+- * A structure for passing work to a pdflush thread.  Also for passing
+- * state information between pdflush threads.  Protected by pdflush_lock.
+- */
+-struct pdflush_work {
+-	struct task_struct *who;	/* The thread */
+-	void (*fn)(unsigned long);	/* A callback function */
+-	unsigned long arg0;		/* An argument to the callback */
+-	struct list_head list;		/* On pdflush_list, when idle */
+-	unsigned long when_i_went_to_sleep;
+-};
+-
+-static int __pdflush(struct pdflush_work *my_work)
+-{
+-	current->flags |= PF_FLUSHER | PF_SWAPWRITE;
+-	set_freezable();
+-	my_work->fn = NULL;
+-	my_work->who = current;
+-	INIT_LIST_HEAD(&my_work->list);
+-
+-	spin_lock_irq(&pdflush_lock);
+-	nr_pdflush_threads++;
+-	for ( ; ; ) {
+-		struct pdflush_work *pdf;
+-
+-		set_current_state(TASK_INTERRUPTIBLE);
+-		list_move(&my_work->list, &pdflush_list);
+-		my_work->when_i_went_to_sleep = jiffies;
+-		spin_unlock_irq(&pdflush_lock);
+-		schedule();
+-		try_to_freeze();
+-		spin_lock_irq(&pdflush_lock);
+-		if (!list_empty(&my_work->list)) {
+-			/*
+-			 * Someone woke us up, but without removing our control
+-			 * structure from the global list.  swsusp will do this
+-			 * in try_to_freeze()->refrigerator().  Handle it.
+-			 */
+-			my_work->fn = NULL;
+-			continue;
+-		}
+-		if (my_work->fn == NULL) {
+-			printk("pdflush: bogus wakeup\n");
+-			continue;
+-		}
+-		spin_unlock_irq(&pdflush_lock);
+-
+-		(*my_work->fn)(my_work->arg0);
+-
+-		/*
+-		 * Thread creation: For how long have there been zero
+-		 * available threads?
+-		 */
+-		if (time_after(jiffies, last_empty_jifs + 1 * HZ)) {
+-			/* unlocked list_empty() test is OK here */
+-			if (list_empty(&pdflush_list)) {
+-				/* unlocked test is OK here */
+-				if (nr_pdflush_threads < MAX_PDFLUSH_THREADS)
+-					start_one_pdflush_thread();
+-			}
+-		}
+-
+-		spin_lock_irq(&pdflush_lock);
+-		my_work->fn = NULL;
+-
+-		/*
+-		 * Thread destruction: For how long has the sleepiest
+-		 * thread slept?
+-		 */
+-		if (list_empty(&pdflush_list))
+-			continue;
+-		if (nr_pdflush_threads <= MIN_PDFLUSH_THREADS)
+-			continue;
+-		pdf = list_entry(pdflush_list.prev, struct pdflush_work, list);
+-		if (time_after(jiffies, pdf->when_i_went_to_sleep + 1 * HZ)) {
+-			/* Limit exit rate */
+-			pdf->when_i_went_to_sleep = jiffies;
+-			break;					/* exeunt */
+-		}
+-	}
+-	nr_pdflush_threads--;
+-	spin_unlock_irq(&pdflush_lock);
+-	return 0;
+-}
+-
+-/*
+- * Of course, my_work wants to be just a local in __pdflush().  It is
+- * separated out in this manner to hopefully prevent the compiler from
+- * performing unfortunate optimisations against the auto variables.  Because
+- * these are visible to other tasks and CPUs.  (No problem has actually
+- * been observed.  This is just paranoia).
+- */
+-static int pdflush(void *dummy)
+-{
+-	struct pdflush_work my_work;
+-	cpumask_var_t cpus_allowed;
+-
+-	/*
+-	 * Since the caller doesn't even check kthread_run() worked, let's not
+-	 * freak out too much if this fails.
+-	 */
+-	if (!alloc_cpumask_var(&cpus_allowed, GFP_KERNEL)) {
+-		printk(KERN_WARNING "pdflush failed to allocate cpumask\n");
+-		return 0;
+-	}
+-
+-	/*
+-	 * pdflush can spend a lot of time doing encryption via dm-crypt.  We
+-	 * don't want to do that at keventd's priority.
+-	 */
+-	set_user_nice(current, 0);
+-
+-	/*
+-	 * Some configs put our parent kthread in a limited cpuset,
+-	 * which kthread() overrides, forcing cpus_allowed == CPU_MASK_ALL.
+-	 * Our needs are more modest - cut back to our cpusets cpus_allowed.
+-	 * This is needed as pdflush's are dynamically created and destroyed.
+-	 * The boottime pdflush's are easily placed w/o these 2 lines.
+-	 */
+-	cpuset_cpus_allowed(current, cpus_allowed);
+-	set_cpus_allowed_ptr(current, cpus_allowed);
+-	free_cpumask_var(cpus_allowed);
+-
+-	return __pdflush(&my_work);
+-}
+-
+-/*
+- * Attempt to wake up a pdflush thread, and get it to do some work for you.
+- * Returns zero if it indeed managed to find a worker thread, and passed your
+- * payload to it.
+- */
+-int pdflush_operation(void (*fn)(unsigned long), unsigned long arg0)
+-{
+-	unsigned long flags;
+-	int ret = 0;
+-
+-	BUG_ON(fn == NULL);	/* Hard to diagnose if it's deferred */
+-
+-	spin_lock_irqsave(&pdflush_lock, flags);
+-	if (list_empty(&pdflush_list)) {
+-		ret = -1;
+-	} else {
+-		struct pdflush_work *pdf;
+-
+-		pdf = list_entry(pdflush_list.next, struct pdflush_work, list);
+-		list_del_init(&pdf->list);
+-		if (list_empty(&pdflush_list))
+-			last_empty_jifs = jiffies;
+-		pdf->fn = fn;
+-		pdf->arg0 = arg0;
+-		wake_up_process(pdf->who);
+-	}
+-	spin_unlock_irqrestore(&pdflush_lock, flags);
+-
+-	return ret;
+-}
+-
+-static void start_one_pdflush_thread(void)
+-{
+-	kthread_run(pdflush, NULL, "pdflush");
+-}
+-
+-static int __init pdflush_init(void)
+-{
+-	int i;
+-
+-	for (i = 0; i < MIN_PDFLUSH_THREADS; i++)
+-		start_one_pdflush_thread();
+-	return 0;
+-}
+-
+-module_init(pdflush_init);
 -- 
 1.6.2.12.g83676
 
