@@ -1,80 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753230AbZCVCQT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754096AbZCVDkS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753230AbZCVCQT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 21 Mar 2009 22:16:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752831AbZCVCQE
+	id S1754096AbZCVDkS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 21 Mar 2009 23:40:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752811AbZCVDkD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 21 Mar 2009 22:16:04 -0400
-Received: from smtp01.mail.tnz.yahoo.co.jp ([203.216.246.64]:32030 "HELO
-	smtp01.mail.tnz.yahoo.co.jp" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751892AbZCVCQB (ORCPT
+	Sat, 21 Mar 2009 23:40:03 -0400
+Received: from casper.infradead.org ([85.118.1.10]:41267 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752669AbZCVDkB convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 21 Mar 2009 22:16:01 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=yj20050223; d=yahoo.co.jp;
-  h=Received:X-Apparently-From:Message-ID:From:To:Cc:References:Subject:Date:MIME-Version:Content-Type:Content-Transfer-Encoding:X-Priority:X-MSMail-Priority:X-Mailer:X-MimeOLE;
-  b=ObLpQDI/Lh5Ww5lG8orJEGvq1AG3WlaVzEgo2mIY6lhNAUynnizHBY8oO+0+USBE5HQ3cHRwOO2fHHN6rKpdP36Ql2c3rumE6NnBlkG1pVBwkXbI+C91Wi+dNBJZJigV  ;
-X-Apparently-From: <n0diamond@yahoo.co.jp>
-Message-ID: <B102BBC50D804F2AB32D6519849EF6F6@DIAMOND8600>
-From: "Norman Diamond" <n0diamond@yahoo.co.jp>
-To: "James Bottomley" <James.Bottomley@HansenPartnership.com>,
-       "Mark Lord" <liml@rtr.ca>
-Cc: <linux-kernel@vger.kernel.org>, <linux-ide@vger.kernel.org>
-References: <F79C774361EF45A6A68BC08F8621E406@DIAMOND8600> <49C30E67.4060702@rtr.ca> <1237645333.4600.9.camel@localhost.localdomain>
-Subject: Re: Overagressive failing of disk reads, both LIBATA and IDE
-Date: Sun, 22 Mar 2009 11:15:47 +0900
-MIME-Version: 1.0
-Content-Type: text/plain;
-	format=flowed;
-	charset="iso-2022-jp";
-	reply-type=original
-Content-Transfer-Encoding: 7bit
-X-Priority: 3
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook Express 6.00.2900.5512
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.5579
+	Sat, 21 Mar 2009 23:40:01 -0400
+Date: Sat, 21 Mar 2009 20:40:45 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: paulmck@linux.vnet.ibm.com
+Cc: Eric Dumazet <dada1@cosmosbay.com>, dipankar@in.ibm.com,
+       linux-input@vger.kernel.org, dmitry.torokhov@gmail.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: Question about usage of RCU in the input layer
+Message-ID: <20090321204045.4a9022fd@infradead.org>
+In-Reply-To: <20090321210745.GE7148@linux.vnet.ibm.com>
+References: <20090319071841.63334eff@infradead.org>
+	<20090320020750.GA6807@linux.vnet.ibm.com>
+	<20090319202032.4c971d92@infradead.org>
+	<20090320044541.GE6807@linux.vnet.ibm.com>
+	<20090320065058.65d01771@infradead.org>
+	<20090320143104.GA6698@linux.vnet.ibm.com>
+	<20090320111354.679ab53d@infradead.org>
+	<20090321012746.GM6698@linux.vnet.ibm.com>
+	<20090321125115.0a76ac27@infradead.org>
+	<49C54D60.80306@cosmosbay.com>
+	<20090321210745.GE7148@linux.vnet.ibm.com>
+Organization: Intel
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-James Bottomley wrote:
-> On Thu, 2009-03-19 at 23:32 -0400, Mark Lord wrote:
->> Norman Diamond wrote:
->>> For months I was wondering how a disk could do this:
->>> dd if=/dev/hda of=/dev/null bs=512 skip=551540 count=4  # succeeds
->>> dd if=/dev/hda of=/dev/null bs=512 skip=551544 count=4  # succeeds
->>> dd if=/dev/hda of=/dev/null bs=512 skip=551540 count=8  # fails
->
-> This basically means the drive doesn't report where in the requested
-> transfer the error occurred.  If we have that information, we'd return all
-> sectors up to that LBA as OK and all at or beyond as -EIO, so the
-> readahead wouldn't matter.
+On Sat, 21 Mar 2009 14:07:45 -0700
+"Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
 
-That's exactly what my submission suggested Linux should do, because that's
-exactly what Linux isn't doing.  The defective sector number is 551562.
-Linux makes varying decisions on how much to read ahead, and when its
-readahead includes the defective sector Linux doesn't do what you and I want
-it to do.
+> On Sat, Mar 21, 2009 at 09:26:08PM +0100, Eric Dumazet wrote:
+> > Arjan van de Ven a écrit :
+> > > On Fri, 20 Mar 2009 18:27:46 -0700
+> > > "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
+> > > 
+> > >> On Fri, Mar 20, 2009 at 11:13:54AM -0700, Arjan van de Ven wrote:
+> > >>> On Fri, 20 Mar 2009 07:31:04 -0700
+> > >>> "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
+> > >>>>> that'd be throwing out the baby with the bathwater... I'm
+> > >>>>> trying to use the other cpus to do some of the boot work (so
+> > >>>>> that the total goes faster); not using the other cpus would be
+> > >>>>> counter productive to that. (As is just sitting in
+> > >>>>> synchronize_rcu() when the other cpu is working.. hence this
+> > >>>>> discussion ;-)
+> > >>>> OK, so you are definitely running multiple CPUs when the
+> > >>>> offending synchronize_rcu() executes, then?
+> > >>> absolutely. 
+> > >>> (and I'm using bootgraph.pl in scripts to track who's stalling
+> > >>> etc)
+> > >>>> If so, here are some follow-on questions:
+> > >>>>
+> > >>>> 1.	How many synchronize_rcu() calls are you seeing on
+> > >>>> the critical boot path
+> > >>> I've seen only this (input) one to take a long time
+> > >> Ouch!!!  A -single- synchronize_rcu() taking a full second???
+> > >> That indicates breakage.
+> > >>
+> > >>>>  and what value of HZ are you running?
+> > >>> 1000
+> > >> K, in absence of readers for RCU_CLASSIC, we should see a handful
+> > >> of milliseconds for synchronize_rcu().
+> > > 
+> > > I've attached an instrumented bootgraph of what is going on;
+> > > the rcu delays are shown as red blocks inside the regular
+> > > functions as they initialize......
+> > > 
+> > > (svg can be viewed with inkscape, gimp, firefox and various other
+> > > tools)
+> > 
+> > Interesting stuff...
+> > 
+> > I thought you mentioned i2c drivers being source of the udelays(),
+> >  but I cant see them in this svg, unless its async_probe_hard ?
+> 
+> Arjan, another thought -- if the udelays() are not under
+> rcu_read_lock(), you should be able to finesse this by using
+> CONFIG_PREEMPT_RCU, which will happily ignore spinning CPUs as long
+> as they are not in an RCU read-side critical section.
 
-The way I discovered the actual defective sector number is that one time
-last week I noticed it in dmesg output.  After noticing it, investigation
-became a lot easier.  I don't remember if I noticed it for hda (old IDE) or
-sda (LIBATA) but either way the drive put the defective sector number in its
-error report.  When readahead was long enough to reach sector 551562 the
-drive told the PC.
+I'll play with that
+In the mean time I've reduced the "other" function's time significantly;
+so the urgency has gone away some.
 
-Regarding other threads of this discussion, I/Os are not being merged with 
-other processes.  I'm running either Slax or Knoppix from a live CD, and the 
-only one accessing the hard drive is me.
+It's still "interesting" that even in the "there is only really one
+thread running" case the minimum delay seems to be 2700 microseconds
+for classic RCU. Especially during bootup that sounds a bit harsh....
+(since that is where many "read mostly" cases actually get their
+modifications)
 
-In cases where Slax or Knoppix includes a sufficiently recent hdparm, I 
-could attempt reads of individual sectors.  551561 is OK.  551563 is OK. 
-551562 has an uncorrectable media error.  I had mentioned that the drive has 
-egregiously bad firmware (which doesn't excuse Linux).  That includes an 
-effort to relocate the sector by using hdparm to write sector 551562, 
-whereupon Hitachi drives me crazy.  The drive reports success but subsequent 
-reads still fail. 
+> 
+> 							Thanx, Paul
 
---------------------------------------
-Power up the Internet with Yahoo! Toolbar.
-http://pr.mail.yahoo.co.jp/toolbar/
+
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
