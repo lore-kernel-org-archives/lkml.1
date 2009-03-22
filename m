@@ -1,72 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755572AbZCVShv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755073AbZCVSpI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755572AbZCVShv (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Mar 2009 14:37:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752312AbZCVShl
+	id S1755073AbZCVSpI (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Mar 2009 14:45:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751944AbZCVSox
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Mar 2009 14:37:41 -0400
-Received: from extu-mxob-2.symantec.com ([216.10.194.135]:55471 "EHLO
-	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751673AbZCVShl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Mar 2009 14:37:41 -0400
-Date: Sun, 22 Mar 2009 18:36:42 +0000 (GMT)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.anvils
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Nick Piggin <npiggin@suse.de>,
-       "Eric W. Biederman" <ebiederm@aristanetworks.com>,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH mmotm] mm: page_mkwrite change prototype to match fault: fix
- sysfs
-Message-ID: <Pine.LNX.4.64.0903221833140.17976@blonde.anvils>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sun, 22 Mar 2009 14:44:53 -0400
+Received: from hera.kernel.org ([140.211.167.34]:47577 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750699AbZCVSow (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Mar 2009 14:44:52 -0400
+Subject: [PATCH -tip] trace: ring_buffer.c fix various signedness issues
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Mon, 23 Mar 2009 00:14:31 +0530
+Message-Id: <1237747471.8713.1.camel@ht.satnam>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix warnings and return values in sysfs bin_page_mkwrite(), fixing
-fs/sysfs/bin.c: In function `bin_page_mkwrite':
-fs/sysfs/bin.c:250: warning: passing argument 2 of `bb->vm_ops->page_mkwrite' from incompatible pointer type
-fs/sysfs/bin.c: At top level:
-fs/sysfs/bin.c:280: warning: initialization from incompatible pointer type
+From: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+Date: Mon, 23 Mar 2009 00:02:38 +0530
+Subject: [PATCH] trace: ring_buffer.c fix various signedness issues
 
-Signed-off-by: Hugh Dickins <hugh@veritas.com>
+Impact:cleanup
+
+Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
 ---
-To follow mm-page_mkwrite-change-prototype-to-match-fault.patch
-Expects to have my [PATCH next] sysfs: fix some bin_vm_ops errors
+ kernel/trace/ring_buffer.c |    8 ++++----
+ 1 files changed, 4 insertions(+), 4 deletions(-)
 
- fs/sysfs/bin.c |    8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
-
---- next/fs/sysfs/bin.c	2009-03-21 18:01:26.000000000 +0000
-+++ mmotm/fs/sysfs/bin.c	2009-03-21 18:28:51.000000000 +0000
-@@ -234,7 +234,7 @@ static int bin_fault(struct vm_area_stru
- 	return ret;
- }
+diff --git a/kernel/trace/ring_buffer.c b/kernel/trace/ring_buffer.c
+index bd38c5c..114811b 100644
+--- a/kernel/trace/ring_buffer.c
++++ b/kernel/trace/ring_buffer.c
+@@ -57,7 +57,7 @@ enum {
+ 	RB_BUFFERS_DISABLED	= 1 << RB_BUFFERS_DISABLED_BIT,
+ };
  
--static int bin_page_mkwrite(struct vm_area_struct *vma, struct page *page)
-+static int bin_page_mkwrite(struct vm_area_struct *vma, struct vm_fault *vmf)
+-static long ring_buffer_flags __read_mostly = RB_BUFFERS_ON;
++static unsigned long ring_buffer_flags __read_mostly = RB_BUFFERS_ON;
+ 
+ /**
+  * tracing_on - enable all tracing buffers
+@@ -2466,7 +2466,7 @@ static ssize_t
+ rb_simple_read(struct file *filp, char __user *ubuf,
+ 	       size_t cnt, loff_t *ppos)
  {
- 	struct file *file = vma->vm_file;
- 	struct bin_buffer *bb = file->private_data;
-@@ -242,15 +242,15 @@ static int bin_page_mkwrite(struct vm_ar
+-	long *p = filp->private_data;
++	unsigned long *p = filp->private_data;
+ 	char buf[64];
+ 	int r;
+ 
+@@ -2482,9 +2482,9 @@ static ssize_t
+ rb_simple_write(struct file *filp, const char __user *ubuf,
+ 		size_t cnt, loff_t *ppos)
+ {
+-	long *p = filp->private_data;
++	unsigned long *p = filp->private_data;
++	unsigned long val;
+ 	char buf[64];
+-	long val;
  	int ret;
  
- 	if (!bb->vm_ops)
--		return -EINVAL;
-+		return VM_FAULT_SIGBUS;
- 
- 	if (!bb->vm_ops->page_mkwrite)
- 		return 0;
- 
- 	if (!sysfs_get_active_two(attr_sd))
--		return -EINVAL;
-+		return VM_FAULT_SIGBUS;
- 
--	ret = bb->vm_ops->page_mkwrite(vma, page);
-+	ret = bb->vm_ops->page_mkwrite(vma, vmf);
- 
- 	sysfs_put_active_two(attr_sd);
- 	return ret;
+ 	if (cnt >= sizeof(buf))
+-- 
+1.6.0.6
+
+
+
