@@ -1,58 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755939AbZCVUaH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755911AbZCVUgd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755939AbZCVUaH (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Mar 2009 16:30:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755241AbZCVU3y
+	id S1755911AbZCVUgd (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Mar 2009 16:36:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753659AbZCVUgV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Mar 2009 16:29:54 -0400
-Received: from swampdragon.chaosbits.net ([90.184.90.115]:16315 "EHLO
-	swampdragon.chaosbits.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754984AbZCVU3x (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Mar 2009 16:29:53 -0400
-Date: Sun, 22 Mar 2009 21:29:51 +0100 (CET)
-From: Jesper Juhl <jj@chaosbits.net>
-To: Dragoslav Zaric <dragoslav.zaric.kd@gmail.com>
-cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Test some kernel feature without recompile
-In-Reply-To: <2d05c4580903220343l4b1359fx79f18b56203bd463@mail.gmail.com>
-Message-ID: <alpine.LNX.2.00.0903222124580.7175@swampdragon.chaosbits.net>
-References: <2d05c4580903220343l4b1359fx79f18b56203bd463@mail.gmail.com>
-User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sun, 22 Mar 2009 16:36:21 -0400
+Received: from hera.kernel.org ([140.211.167.34]:39532 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753183AbZCVUgV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Mar 2009 16:36:21 -0400
+Subject: [git-pull -tip] trace: fix signedness patches
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: Ingo Molnar <mingo@elte.hu>, x86 maintainers <x86@kernel.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Mon, 23 Mar 2009 02:05:39 +0530
+Message-Id: <1237754139.5417.13.camel@ht.satnam>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 22 Mar 2009, Dragoslav Zaric wrote:
+The following changes since commit 7f00a2495bf5b98b097c47be5d6e2d4114ec39bf:
+  Ingo Molnar (1):
+        Merge branches 'x86/cleanups', 'x86/mm', 'x86/setup' and 'linus' into x86/core
 
-> Hi,
-> 
-> I know when you work on some kernel module, you can change code and load
-> module again and test it, but what if you change some built in kernel
-> .c file, why
-> would I need to recompile whole kernel just to see what happens if I change one
-> .c file ??
-> 
-Depends on the nature of the change. Some changes will ripple through the 
-whole kernel.
-If, for example, you made a change to kmalloc() so that it takes an extra 
-argument, then obviously all call sites would need changing and since 
-kmalloc is used almose everywhere, then almost all files would need to be 
-recompiled.
-But if your change is entirely contained to a single file, then 'make' 
-will already ensure that only that file is rebuilt when you run 'make' 
-(you'll still have to re-link the kernel or module though and a reboot 
-will still be needed).
+are available in the git repository at:
 
-> Why can I just compile one changed .c file and copy it where compiled version of
-> that file reside inside kernel tree? 
+  git://git.kernel.org/pub/scm/linux/kernel/git/jaswinder/linux-2.6-tip.git x86/core
 
-'make' should already handle that for you. In what way does it not?
+Jaswinder Singh Rajput (2):
+      trace: ring_buffer.c fix various signedness issues
+      trace: trace.c fix signedness issue
 
--- 
-Jesper Juhl <jj@chaosbits.net>             http://www.chaosbits.net/
-Plain text mails only, please      http://www.expita.com/nomime.html
-Don't top-post  http://www.catb.org/~esr/jargon/html/T/top-post.html
+ kernel/trace/ring_buffer.c |    8 ++++----
+ kernel/trace/trace.c       |    2 +-
+ 2 files changed, 5 insertions(+), 5 deletions(-)
+
+Complete diff:
+diff --git a/kernel/trace/ring_buffer.c b/kernel/trace/ring_buffer.c
+index bd38c5c..114811b 100644
+--- a/kernel/trace/ring_buffer.c
++++ b/kernel/trace/ring_buffer.c
+@@ -57,7 +57,7 @@ enum {
+ 	RB_BUFFERS_DISABLED	= 1 << RB_BUFFERS_DISABLED_BIT,
+ };
+ 
+-static long ring_buffer_flags __read_mostly = RB_BUFFERS_ON;
++static unsigned long ring_buffer_flags __read_mostly = RB_BUFFERS_ON;
+ 
+ /**
+  * tracing_on - enable all tracing buffers
+@@ -2466,7 +2466,7 @@ static ssize_t
+ rb_simple_read(struct file *filp, char __user *ubuf,
+ 	       size_t cnt, loff_t *ppos)
+ {
+-	long *p = filp->private_data;
++	unsigned long *p = filp->private_data;
+ 	char buf[64];
+ 	int r;
+ 
+@@ -2482,9 +2482,9 @@ static ssize_t
+ rb_simple_write(struct file *filp, const char __user *ubuf,
+ 		size_t cnt, loff_t *ppos)
+ {
+-	long *p = filp->private_data;
++	unsigned long *p = filp->private_data;
++	unsigned long val;
+ 	char buf[64];
+-	long val;
+ 	int ret;
+ 
+ 	if (cnt >= sizeof(buf))
+diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
+index 17bb88d..e85fc41 100644
+--- a/kernel/trace/trace.c
++++ b/kernel/trace/trace.c
+@@ -2929,8 +2929,8 @@ tracing_ctrl_write(struct file *filp, const char __user *ubuf,
+ 		   size_t cnt, loff_t *ppos)
+ {
+ 	struct trace_array *tr = filp->private_data;
++	unsigned long val;
+ 	char buf[64];
+-	long val;
+ 	int ret;
+ 
+ 	if (cnt >= sizeof(buf))
+
 
