@@ -1,64 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756274AbZCVUm1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755868AbZCVUoq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756274AbZCVUm1 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Mar 2009 16:42:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754592AbZCVUmS
+	id S1755868AbZCVUoq (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Mar 2009 16:44:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754957AbZCVUoh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Mar 2009 16:42:18 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:35654 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753659AbZCVUmR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Mar 2009 16:42:17 -0400
-Date: Sun, 22 Mar 2009 21:41:56 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH 0/5] [GIT PULL] updates for tip/tracing/ftrace
-Message-ID: <20090322204156.GA27113@elte.hu>
-References: <20090320183849.GA3657@elte.hu> <20090320191926.GJ6698@linux.vnet.ibm.com> <20090320192721.GI6224@elte.hu> <20090320194617.GA5934@nowhere> <20090320195414.GA24129@elte.hu> <20090320204848.GA6044@nowhere> <alpine.DEB.2.00.0903201705380.13615@gandalf.stny.rr.com> <20090321100129.GC7201@elte.hu> <20090321165804.GA21366@elte.hu> <20090322194153.GA10112@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090322194153.GA10112@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Sun, 22 Mar 2009 16:44:37 -0400
+Received: from xc.sipsolutions.net ([83.246.72.84]:52663 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753659AbZCVUoh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Mar 2009 16:44:37 -0400
+Subject: [PATCH] staging: document that the wifi drivers are pointless
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Greg KH <greg@kroah.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Sun, 22 Mar 2009 21:44:31 +0100
+Message-Id: <1237754671.19647.7.camel@johannes.local>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+All these drivers are pointless -- people shouldn't work on them.
+They have replacements or need to be integrated with the proper
+wireless work or into other, existing, driver infrastructure.
+Some people already started cleaning up the otus driver, despite
+ar9170, because the staging drivers are not documented as being
+pointless.
 
-* Ingo Molnar <mingo@elte.hu> wrote:
+Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
+---
+I thought there was supposed to be a staging list now... doesn't seem to
+have arrived in MAINTAINERS.
 
-> found another, unrelated lockup with the event tracer:
-> 
-> europe:/debug/tracing/events/sched/sched_wakeup_new> cat enable 
-> 0
-> europe:/debug/tracing/events/sched/sched_wakeup_new> echo 1 > enable
-> europe:/debug/tracing/events/sched/sched_wakeup_new> sync
-> europe:/debug/tracing/events/sched/sched_wakeup_new> cat 
-> ../../../trace_pipe 
->            <...>-2870  [000]   688.730160: sched_wakeup_new: task 
-> bash:2898 [120] success=1
->            <...>-2870  [001]   689.945375: sched_wakeup_new: task 
-> bash:2899 [120] success=1
-> 
-> [hard lockup]
+ drivers/staging/otus/TODO      |    7 +++----
+ drivers/staging/rt2860/TODO    |    4 ++--
+ drivers/staging/rt2870/TODO    |    9 ++++++++-
+ drivers/staging/wlan-ng/README |    4 +++-
+ 4 files changed, 16 insertions(+), 8 deletions(-)
 
-ok, tracked it down - it's the new trace_wake_up() from within 
-wake_up_new_task() => bad idea.
+--- wireless-testing.orig/drivers/staging/otus/TODO	2009-03-22 10:31:36.000000000 +0100
++++ wireless-testing/drivers/staging/otus/TODO	2009-03-22 10:31:37.000000000 +0100
+@@ -1,8 +1,7 @@
+ TODO:
+-	- checkpatch.pl cleanups
+-	- sparse cleanups
+-	- port to in-kernel 80211 stack
+-	- proper network developer maintainer
++	Any functionality in this driver should be integrated
++	into the ar9170 driver that is under development on the
++	linux-wireless mailing list.
+ 
+ Please send any patches to Greg Kroah-Hartman <greg@kroah.com> and
+ Luis Rodriguez <Luis.Rodriguez@Atheros.com> and the
+--- wireless-testing.orig/drivers/staging/rt2860/TODO	2009-03-22 10:31:43.000000000 +0100
++++ wireless-testing/drivers/staging/rt2860/TODO	2009-03-22 10:34:12.000000000 +0100
+@@ -1,6 +1,6 @@
+ I'm hesitant to add a TODO file here, as the wireless developers would
+ really have people help them out on the "clean" rt2860 driver that can
+-be found at the rt2860.sf.net site.
++be found at the http://rt2x00.serialmonkey.com/ site.
+ 
+ But, if you wish to clean up this driver instead, here's a short list of
+ things that need to be done to get it into a more mergable shape:
+@@ -8,7 +8,7 @@ things that need to be done to get it in
+ TODO:
+ 	- checkpatch.pl clean
+ 	- sparse clean
+-	- port to in-kernel 80211 stack
++	- port to in-kernel 80211 stack and common rt2x00 infrastructure
+ 	- remove reading from /etc/ config files
+ 	- review by the wireless developer community
+ 
+--- wireless-testing.orig/drivers/staging/rt2870/TODO	2009-03-22 10:31:57.000000000 +0100
++++ wireless-testing/drivers/staging/rt2870/TODO	2009-03-22 10:39:55.000000000 +0100
+@@ -1,7 +1,14 @@
++I'm hesitant to add a TODO file here, as the wireless developers would
++really have people help them out on the "clean" rt2870 driver that can
++be found at the http://rt2x00.serialmonkey.com/ site.
++
++But, if you wish to clean up this driver instead, here's a short list of
++things that need to be done to get it into a more mergable shape:
++
+ TODO:
+ 	- checkpatch.pl clean
+ 	- sparse clean
+-	- port to in-kernel 80211 stack
++	- port to in-kernel 80211 stack and common rt2x00 infrastructure
+ 	- remove reading from /etc/ config files
+ 	- review by the wireless developer community
+ 
+--- wireless-testing.orig/drivers/staging/wlan-ng/README	2009-03-22 10:34:25.000000000 +0100
++++ wireless-testing/drivers/staging/wlan-ng/README	2009-03-22 10:34:32.000000000 +0100
+@@ -4,4 +4,6 @@ TODO:
+ 	- Lindent cleanups
+ 	- move to use the in-kernel wireless stack
+ 
+-Please send all patches to Greg Kroah-Hartman <greg@kroah.com>
++Please send any patches or complaints about this driver to Greg
++Kroah-Hartman <greg@kroah.com> and don't bother the upstream wireless
++kernel developers about it, they want nothing to do with it.
 
-I think this was introduced via:
 
-6eaaa5d: tracing/core: use appropriate waiting on trace_pipe
-
-	Ingo
