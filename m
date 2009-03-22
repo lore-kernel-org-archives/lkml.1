@@ -1,50 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756635AbZCVXNR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756784AbZCVXPW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756635AbZCVXNR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Mar 2009 19:13:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756515AbZCVXM7
+	id S1756784AbZCVXPW (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Mar 2009 19:15:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756603AbZCVXPG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Mar 2009 19:12:59 -0400
-Received: from mail.crca.org.au ([67.207.131.56]:53266 "EHLO crca.org.au"
+	Sun, 22 Mar 2009 19:15:06 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:48696 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756498AbZCVXM7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Mar 2009 19:12:59 -0400
-X-Greylist: delayed 446 seconds by postgrey-1.27 at vger.kernel.org; Sun, 22 Mar 2009 19:12:58 EDT
-X-Bogosity: Ham, spamicity=0.000000
-Subject: Re: [linux-pm] [RFC][PATCH 1/2] PCI PM: Introduce
- __pci_set_power_state()
-From: Nigel Cunningham <nigel@tuxonice.net>
-Reply-To: nigel@tuxonice.net
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Linux PCI <linux-pci@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <200903222211.50930.rjw@sisk.pl>
-References: <200903210003.55161.rjw@sisk.pl>
-	 <200903222208.22434.rjw@sisk.pl>  <200903222211.50930.rjw@sisk.pl>
-Content-Type: text/plain
-Date: Mon, 23 Mar 2009 10:08:05 +1100
-Message-Id: <1237763285.11186.2.camel@nigel-laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
-Content-Transfer-Encoding: 7bit
+	id S1756515AbZCVXPE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Mar 2009 19:15:04 -0400
+Date: Mon, 23 Mar 2009 00:11:11 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: Peter Lojkin <ia6432@inbox.ru>
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <peterz@infradead.org>, rjw@sisk.pl
+Subject: Re: 2.6.28, limiting cpu time doesn't work
+Message-ID: <20090322231111.GA21775@redhat.com>
+References: <20090322201436.GA12838@redhat.com> <E1LlVpr-0000Rv-00.ia6432-inbox-ru@f62.mail.ru>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <E1LlVpr-0000Rv-00.ia6432-inbox-ru@f62.mail.ru>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi.
+On 03/23, Peter Lojkin wrote:
+>
+> Oleg Nesterov wrote:
+>
+> > Found this message on http://bugzilla.kernel.org/show_bug.cgi?id=12911 ...
+> >
+> > I _think_ posix_cpu_timers_init_group() is not right, it should copy
+> > cputime_expires->prof_exp.
+> >
+> > Peter, any chance you can test the (uncompiled/untested) patch below?
+>
+> yes, with this patch 2.6.28.8 works as expected, thank you!
 
-It's not an error if we fail to set the desired state? (I see you have a
-dev_warn only).
+Great, thanks!
 
-(If it is an error, the radeon_set_suspend patch needs to be adjusted to
-not ignore the error code).
+> if you need to test any more patches on the subject i'm ready to do it.
+> regression test system for our project depends on ability to limit cpu time,
+> so it's major problem for us...
 
-Regards,
+I am not sure what should we do, this needs more discussion.
 
-Nigel
+Probably the most simple patch for -stable and 2.6.29 is below.
+(with this patch we don't even need update_rlimit_cpu(), afaics).
+
+Oleg.
+
+--- a/kernel/posix-cpu-timers.c
++++ b/kernel/posix-cpu-timers.c
+@@ -1263,7 +1263,8 @@ static inline int fastpath_timer_check(s
+ 		if (task_cputime_expired(&group_sample, &sig->cputime_expires))
+ 			return 1;
+ 	}
+-	return 0;
++
++	return sig->rlim[RLIMIT_CPU].rlim_cur != RLIM_INFINITY;
+ }
+ 
+ /*
 
