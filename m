@@ -1,61 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755845AbZCVTqT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756058AbZCVTu5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755845AbZCVTqT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Mar 2009 15:46:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755343AbZCVTqC
+	id S1756058AbZCVTu5 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Mar 2009 15:50:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753620AbZCVTur
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Mar 2009 15:46:02 -0400
-Received: from casper.infradead.org ([85.118.1.10]:57978 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754592AbZCVTqB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Mar 2009 15:46:01 -0400
-Date: Sun, 22 Mar 2009 12:46:32 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: paulmck@linux.vnet.ibm.com
-Cc: Eric Dumazet <dada1@cosmosbay.com>, dipankar@in.ibm.com,
-       linux-input@vger.kernel.org, dmitry.torokhov@gmail.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: Question about usage of RCU in the input layer
-Message-ID: <20090322124632.5d5d6266@infradead.org>
-In-Reply-To: <20090322165324.GH7148@linux.vnet.ibm.com>
-References: <20090320111354.679ab53d@infradead.org>
-	<20090321012746.GM6698@linux.vnet.ibm.com>
-	<20090321125115.0a76ac27@infradead.org>
-	<49C54D60.80306@cosmosbay.com>
-	<20090321210745.GE7148@linux.vnet.ibm.com>
-	<20090321204045.4a9022fd@infradead.org>
-	<20090322043838.GF7148@linux.vnet.ibm.com>
-	<20090321215109.717a3f12@infradead.org>
-	<20090322051822.GG7148@linux.vnet.ibm.com>
-	<20090321225318.5b25f0a7@infradead.org>
-	<20090322165324.GH7148@linux.vnet.ibm.com>
-Organization: Intel
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Sun, 22 Mar 2009 15:50:47 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:35819 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752541AbZCVTuq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Mar 2009 15:50:46 -0400
+Date: Sun, 22 Mar 2009 20:50:33 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Tom Zanussi <tzanussi@gmail.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: [PATCH 4/4] tracing: add per-subsystem filtering
+Message-ID: <20090322195033.GA15002@elte.hu>
+References: <1237710677.7703.49.camel@charm-linux> <20090322190158.GF6002@nowhere>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090322190158.GF6002@nowhere>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 22 Mar 2009 09:53:24 -0700
-"Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
 
-> > > How many synchronize_rcu() calls are you seeing on the boot path?
-> > 
-> > I see 20 that hit the above code path (eg ones that wait) until
-> > userspace starts.
+* Frederic Weisbecker <fweisbec@gmail.com> wrote:
+
+> > +int filter_add_subsystem_pred(struct event_subsystem *system,
+> > +			      struct filter_pred *pred)
+> > +{
+> > +	struct ftrace_event_call *call = __start_ftrace_events;
+> > +	struct filter_pred *event_pred;
+> > +	int i;
+> > +
+> > +	if (system->preds && !pred->compound)
+> > +		filter_free_subsystem_preds(system);
+> > +
+> > +	if (!system->preds) {
+> > +		system->preds = kzalloc(MAX_FILTER_PRED * sizeof(pred),
+> > +					GFP_KERNEL);
+> > +		if (!system->preds)
+> > +			return -ENOMEM;
+> > +	}
+> > +
+> > +	for (i = 0; i < MAX_FILTER_PRED; i++) {
+> > +		if (!system->preds[i]) {
+> > +			system->preds[i] = pred;
+> > +			break;
+> > +		}
+> > +		if (i == MAX_FILTER_PRED - 1)
+> > +			return -EINVAL;
 > 
-> So with well-behaved readers, the full sequence would be worth
-> something like 50-60 milliseconds.
+> 
+> Shouldn't it be i == MAX_FILTER_PRED ?
 
-yeah it's about 10% if the total kernel boot time.. so it does start to
-matter
+Here we search for a free slot in the array of sub-expressions of 
+the subsystem level filters. That condition cannot even be true 
+inside a 'i < MAX_FILTER_PRED' loop.
 
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+Checking for i==MAX would be fine if done outside of the loop - and 
+should probably be done that way. But the code is correct this way 
+too i think.
+
+	Ingo
