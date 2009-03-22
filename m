@@ -1,136 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756156AbZCVU4u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756104AbZCVVJA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756156AbZCVU4u (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Mar 2009 16:56:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755593AbZCVU4l
+	id S1756104AbZCVVJA (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Mar 2009 17:09:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752552AbZCVVIu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Mar 2009 16:56:41 -0400
-Received: from yw-out-2324.google.com ([74.125.46.31]:60495 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753705AbZCVU4k convert rfc822-to-8bit (ORCPT
+	Sun, 22 Mar 2009 17:08:50 -0400
+Received: from electric-eye.fr.zoreil.com ([213.41.134.224]:55692 "EHLO
+	electric-eye.fr.zoreil.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752189AbZCVVIt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Mar 2009 16:56:40 -0400
+	Sun, 22 Mar 2009 17:08:49 -0400
+Date: Sun, 22 Mar 2009 22:12:00 +0100
+From: Francois Romieu <romieu@fr.zoreil.com>
+To: Rui Santos <rsantos@grupopie.com>
+Cc: Michael =?iso-8859-1?Q?B=FCker?= <m.bueker@berlin.de>,
+       linux-kernel@vger.kernel.org, Michael Buesch <mb@bu3sch.de>
+Subject: Re: 2.6.27.19 + 28.7: network timeouts for r8169 and 8139too
+Message-ID: <20090322211159.GA23042@electric-eye.fr.zoreil.com>
+References: <200903041828.49972.m.bueker@berlin.de> <20090304224310.GA29043@electric-eye.fr.zoreil.com> <49B5066D.1030309@grupopie.com> <49BE4EF6.3030406@grupopie.com>
 MIME-Version: 1.0
-In-Reply-To: <Pine.LNX.4.64.0903221826520.17976@blonde.anvils>
-References: <Pine.LNX.4.64.0903221826520.17976@blonde.anvils>
-Date: Sun, 22 Mar 2009 13:56:37 -0700
-Message-ID: <aca0ce8b0903221356w487dbbbdie6d5cb9a1862af57@mail.gmail.com>
-Subject: Re: [PATCH next] sysfs: fix some bin_vm_ops errors
-From: Eric Biederman <ebiederm@aristanetworks.com>
-To: Hugh Dickins <hugh@veritas.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>, Tejun Heo <tj@kernel.org>,
-       Kay Sievers <kay.sievers@vrfy.org>, Greg Kroah-Hartman <gregkh@suse.de>,
-       Nick Piggin <npiggin@suse.de>, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: multipart/mixed; boundary="1yeeQ81UyVL57Vl7"
+Content-Disposition: inline
+In-Reply-To: <49BE4EF6.3030406@grupopie.com>
+X-Organisation: Land of Sunshine Inc.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Mar 22, 2009 at 11:33 AM, Hugh Dickins <hugh@veritas.com> wrote:
-> Commit 86c9508eb1c0ce5aa07b5cf1d36b60c54efc3d7a
-> "sysfs: don't block indefinitely for unmapped files" in linux-next
-> crashes the PowerMac G5 when X starts up.  It's caught out by the way
-> powerpc's pci_mmap of legacy_mem uses shmem_zero_setup(), substituting
-> a new vma->vm_file whose private_data no longer points to the bin_buffer
-> (substitution done because some versions of X crash if that mmap fails).
->
-> The fix to this is straightforward: the original vm_file is fput() in
-> that case, so this mmap won't block sysfs at all, so just don't switch
-> over to bin_vm_ops if vm_file has changed.
 
-That part is really weird but it looks reasonable.
+--1yeeQ81UyVL57Vl7
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-> But more fixes made before realizing that was the problem:-
->
-> It should not be an error if bin_page_mkwrite() finds no underlying
-> page_mkwrite().
+Rui Santos <rsantos@grupopie.com> :
+[...]
+> I Finally ended up the big bisect operation. The commit responsible for
+> this issue is commit
+> b726e493e8dc13537d1d7f8cd66bcd28516606c3
+> labeled
+> 'r8169: sync existing 8168 device hardware start sequences with vendor
+> driver'
 
-Likely.  The goal is to get the same behaviour as if mkwrite had not been
-implemented.    Looking at the code clearly returning an error in
-the version I am looking at does not meet the goal, and since I unmap
-everything during a hot-unplug and rely on the fault handler I have
-no problem with that change.
+Thanks a lot for the bisect.
 
-> Check that a file already mmap'ed has the same underlying vm_ops
-> _before_ pointing vma->vm_ops at bin_vm_ops.
+> With that patch removed, I  was able to get a sustained 40MB/s+ on a
+> 20GB ftp transfer. I wasn't able to do it with the specified patch applied.
+> Just as a side note, I was never able to reproduce it on a 100MBit
+> connection, only on a full 1GBit one...
+> 
+> However this patch will not reverse on the current kernel.
+> 
+> What do you think the next step should be ?
+> As usual, if you need any testing, please do let me know.
 
-Checking that the underlying file is the same is good.  I know my original
-reasoning was that using the original vm_ops would likely mess up error
-handling if I used them.
+Can you see if one of the attached patches or a combination of them
+makes a difference for the current (-git) kernel ?
 
-> If the file being mmap'ed is a shmem/tmpfs file, don't fail the mmap
-> on CONFIG_NUMA=y, just because that has a set_policy and get_policy.
-> They probably won't be called, and it's not a disaster if they don't
-> work on sysfs.  vm_ops->migrate?  I couldn't find any example.  Just
-> delete CONFIG_NUMA tests, easy enough to add stubs later if required.
+-- 
+Ueimor
 
-I agree about it being easy enough to add stubs later if required.  In my case
-I deliberately added an error check instead so that the code would fail fast
-instead of failing subtlely if anyone ever did that.  And that check appears to
-have worked in your case so I would like to retain that check.
+--1yeeQ81UyVL57Vl7
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: attachment; filename="r8169-00.patch"
 
-> Signed-off-by: Hugh Dickins <hugh@veritas.com>
-> ---
-> I have only tested that X now starts up fine on the G5: I don't think
-> I've messed up the intent of your patch, but not tested it still works.
->
->  fs/sysfs/bin.c |   18 ++++++++----------
->  1 file changed, 8 insertions(+), 10 deletions(-)
->
-> --- 2.6.29-rc8-next/fs/sysfs/bin.c      2009-03-20 12:41:45.000000000 +0000
-> +++ linux/fs/sysfs/bin.c        2009-03-21 18:01:26.000000000 +0000
-> @@ -241,9 +241,12 @@ static int bin_page_mkwrite(struct vm_ar
->        struct sysfs_dirent *attr_sd = file->f_path.dentry->d_fsdata;
->        int ret;
->
-> -       if (!bb->vm_ops || !bb->vm_ops->page_mkwrite)
-> +       if (!bb->vm_ops)
->                return -EINVAL;
->
-> +       if (!bb->vm_ops->page_mkwrite)
-> +               return 0;
-> +
->        if (!sysfs_get_active_two(attr_sd))
->                return -EINVAL;
->
-> @@ -287,7 +290,6 @@ static int mmap(struct file *file, struc
->        struct sysfs_dirent *attr_sd = file->f_path.dentry->d_fsdata;
->        struct bin_attribute *attr = attr_sd->s_bin_attr.bin_attr;
->        struct kobject *kobj = attr_sd->s_parent->s_dir.kobj;
-> -       struct vm_operations_struct *vm_ops;
->        int rc;
->
->        mutex_lock(&bb->mutex);
-> @@ -302,24 +304,20 @@ static int mmap(struct file *file, struc
->                goto out_put;
->
->        rc = attr->mmap(kobj, attr, vma);
-> -       vm_ops = vma->vm_ops;
-> -       vma->vm_ops = &bin_vm_ops;
->        if (rc)
->                goto out_put;
->
-> -       rc = -EINVAL;
-> -       if (bb->mmapped && bb->vm_ops != vma->vm_ops)
-> +       if (vma->vm_file != file)
->                goto out_put;
->
-> -#ifdef CONFIG_NUMA
->        rc = -EINVAL;
-> -       if (vm_ops && ((vm_ops->set_policy || vm_ops->get_policy || vm_ops->migrate)))
-> +       if (bb->mmapped && bb->vm_ops != vma->vm_ops)
->                goto out_put;
-> -#endif
->
->        rc = 0;
->        bb->mmapped = 1;
-> -       bb->vm_ops = vm_ops;
-> +       bb->vm_ops = vma->vm_ops;
-> +       vma->vm_ops = &bin_vm_ops;
->  out_put:
->        sysfs_put_active_two(attr_sd);
->  out_unlock:
->
+diff --git a/drivers/net/r8169.c b/drivers/net/r8169.c
+index 43fedb9..c23a448 100644
+--- a/drivers/net/r8169.c
++++ b/drivers/net/r8169.c
+@@ -2620,15 +2620,6 @@ static void rtl_hw_start_8168c_1(void __iomem *ioaddr, struct pci_dev *pdev)
+ 
+ static void rtl_hw_start_8168c_2(void __iomem *ioaddr, struct pci_dev *pdev)
+ {
+-	static struct ephy_info e_info_8168c_2[] = {
+-		{ 0x01, 0,	0x0001 },
+-		{ 0x03, 0x0400,	0x0220 }
+-	};
+-
+-	rtl_csi_access_enable(ioaddr);
+-
+-	rtl_ephy_init(ioaddr, e_info_8168c_2, ARRAY_SIZE(e_info_8168c_2));
+-
+ 	__rtl_hw_start_8168cp(ioaddr, pdev);
+ }
+ 
+
+--1yeeQ81UyVL57Vl7
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: attachment; filename="r8169-10.patch"
+
+diff --git a/drivers/net/r8169.c b/drivers/net/r8169.c
+index 43fedb9..f56d20e 100644
+--- a/drivers/net/r8169.c
++++ b/drivers/net/r8169.c
+@@ -2546,15 +2546,7 @@ static void rtl_hw_start_8168bef(void __iomem *ioaddr, struct pci_dev *pdev)
+ 
+ static void __rtl_hw_start_8168cp(void __iomem *ioaddr, struct pci_dev *pdev)
+ {
+-	RTL_W8(Config1, RTL_R8(Config1) | Speed_down);
+-
+-	RTL_W8(Config3, RTL_R8(Config3) & ~Beacon_en);
+-
+ 	rtl_tx_performance_tweak(pdev, 0x5 << MAX_READ_REQUEST_SHIFT);
+-
+-	rtl_disable_clock_request(pdev);
+-
+-	RTL_W16(CPlusCmd, RTL_R16(CPlusCmd) & ~R8168_CPCMD_QUIRK_MASK);
+ }
+ 
+ static void rtl_hw_start_8168cp_1(void __iomem *ioaddr, struct pci_dev *pdev)
+
+--1yeeQ81UyVL57Vl7--
