@@ -1,67 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756784AbZCVXPW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756889AbZCVXPj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756784AbZCVXPW (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Mar 2009 19:15:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756603AbZCVXPG
+	id S1756889AbZCVXPj (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Mar 2009 19:15:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756844AbZCVXPT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Mar 2009 19:15:06 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:48696 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756515AbZCVXPE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Mar 2009 19:15:04 -0400
-Date: Mon, 23 Mar 2009 00:11:11 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: Peter Lojkin <ia6432@inbox.ru>
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <peterz@infradead.org>, rjw@sisk.pl
-Subject: Re: 2.6.28, limiting cpu time doesn't work
-Message-ID: <20090322231111.GA21775@redhat.com>
-References: <20090322201436.GA12838@redhat.com> <E1LlVpr-0000Rv-00.ia6432-inbox-ru@f62.mail.ru>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <E1LlVpr-0000Rv-00.ia6432-inbox-ru@f62.mail.ru>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Sun, 22 Mar 2009 19:15:19 -0400
+Received: from mail-ew0-f165.google.com ([209.85.219.165]:42659 "EHLO
+	mail-ew0-f165.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756825AbZCVXPR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Mar 2009 19:15:17 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=fAVte1DrlgucWidQ9ORxn+ynbvmGTqwzK3PWh18UM2k28mvjgLtCydWC/LaMD6PbUz
+         1i3YaOQ/CWw5gdC5pF3WZA0xjZC5+lvz/qXB7js459GinSW+mCOgBqpIx4fKTyVbuR6W
+         aBx2h4ugv6IVlSb0YKTF4h/6bzJA1cmFoHB2U=
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Steven Rostedt <rostedt@goodmis.org>, LKML <linux-kernel@vger.kernel.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Tom Zanussi <tzanussi@gmail.com>
+Subject: [PATCH] tracing/events: don't discard an event after commit
+Date: Mon, 23 Mar 2009 00:15:12 +0100
+Message-Id: <1237763712-21423-1-git-send-email-fweisbec@gmail.com>
+X-Mailer: git-send-email 1.6.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 03/23, Peter Lojkin wrote:
->
-> Oleg Nesterov wrote:
->
-> > Found this message on http://bugzilla.kernel.org/show_bug.cgi?id=12911 ...
-> >
-> > I _think_ posix_cpu_timers_init_group() is not right, it should copy
-> > cputime_expires->prof_exp.
-> >
-> > Peter, any chance you can test the (uncompiled/untested) patch below?
->
-> yes, with this patch 2.6.28.8 works as expected, thank you!
+Note: depends on "tracing/events: don't use wake up for events"
 
-Great, thanks!
+When we want to filter an event, the filter test is done after
+the event is commited to the ring-buffer to be discarded later if
+needed.
 
-> if you need to test any more patches on the subject i'm ready to do it.
-> regression test system for our project depends on ability to limit cpu time,
-> so it's major problem for us...
+But a reader could be reading this event while we are trying to discard
+it. Other kind of racy events can even happen because the event is
+commited and can be read and/or consumed.
 
-I am not sure what should we do, this needs more discussion.
+What we want is to discard the event before committing it.
 
-Probably the most simple patch for -stable and 2.6.29 is below.
-(with this patch we don't even need update_rlimit_cpu(), afaics).
+Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+---
+ kernel/trace/trace_events_stage_3.h |    5 +++--
+ 1 files changed, 3 insertions(+), 2 deletions(-)
 
-Oleg.
-
---- a/kernel/posix-cpu-timers.c
-+++ b/kernel/posix-cpu-timers.c
-@@ -1263,7 +1263,8 @@ static inline int fastpath_timer_check(s
- 		if (task_cputime_expired(&group_sample, &sig->cputime_expires))
- 			return 1;
- 	}
--	return 0;
-+
-+	return sig->rlim[RLIMIT_CPU].rlim_cur != RLIM_INFINITY;
- }
- 
- /*
+diff --git a/kernel/trace/trace_events_stage_3.h b/kernel/trace/trace_events_stage_3.h
+index 9a3bd49..9d2fa78 100644
+--- a/kernel/trace/trace_events_stage_3.h
++++ b/kernel/trace/trace_events_stage_3.h
+@@ -222,10 +222,11 @@ static void ftrace_raw_event_##call(proto)				\
+ 									\
+ 	assign;								\
+ 									\
+-	trace_nowake_buffer_unlock_commit(event, irq_flags, pc);	\
+-									\
+ 	if (call->preds && !filter_match_preds(call, entry))		\
+ 		ring_buffer_event_discard(event);			\
++									\
++	trace_nowake_buffer_unlock_commit(event, irq_flags, pc);	\
++									\
+ }									\
+ 									\
+ static int ftrace_raw_reg_event_##call(void)				\
+-- 
+1.6.1
 
