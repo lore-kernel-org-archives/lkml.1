@@ -1,64 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756634AbZCVXDm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756603AbZCVXGd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756634AbZCVXDm (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Mar 2009 19:03:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754590AbZCVXDb
+	id S1756603AbZCVXGd (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Mar 2009 19:06:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753531AbZCVXGV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Mar 2009 19:03:31 -0400
-Received: from e9.ny.us.ibm.com ([32.97.182.139]:33833 "EHLO e9.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753589AbZCVXDb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Mar 2009 19:03:31 -0400
-Date: Sun, 22 Mar 2009 16:03:31 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Eric Dumazet <dada1@cosmosbay.com>, dipankar@in.ibm.com,
-       linux-input@vger.kernel.org, dmitry.torokhov@gmail.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: Question about usage of RCU in the input layer
-Message-ID: <20090322230331.GM7148@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20090321210745.GE7148@linux.vnet.ibm.com> <20090321204045.4a9022fd@infradead.org> <20090322043838.GF7148@linux.vnet.ibm.com> <20090321215109.717a3f12@infradead.org> <20090322051822.GG7148@linux.vnet.ibm.com> <20090321225318.5b25f0a7@infradead.org> <20090322165324.GH7148@linux.vnet.ibm.com> <20090322124632.5d5d6266@infradead.org> <20090322205212.GI7148@linux.vnet.ibm.com> <20090322154433.1b2cb1b1@infradead.org>
+	Sun, 22 Mar 2009 19:06:21 -0400
+Received: from mail-ew0-f165.google.com ([209.85.219.165]:51693 "EHLO
+	mail-ew0-f165.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752976AbZCVXGU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Mar 2009 19:06:20 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=wjMnmDcNXkIc4LC48T/R+vvnBbz1e6euBFn3FixU21OTeAgTsHdc7ZnJ+0q6CJVOse
+         ewvPYsrVPCpuLqog4Ua1c3VuCTRGjG9gCeRdGhkDbhtmyjxklMCSEz9B8cpCtngf3Mpz
+         pxKDc6kE1wx1FobaG+aMFHD5s7BuFJGxYbRi4=
+Date: Mon, 23 Mar 2009 00:06:16 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Tom Zanussi <tzanussi@gmail.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: [PATCH 0/4] tracing: event filtering v2
+Message-ID: <20090322230615.GI6002@nowhere>
+References: <1237710626.7703.45.camel@charm-linux>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090322154433.1b2cb1b1@infradead.org>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+In-Reply-To: <1237710626.7703.45.camel@charm-linux>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Mar 22, 2009 at 03:44:33PM -0700, Arjan van de Ven wrote:
-> On Sun, 22 Mar 2009 13:52:12 -0700
-> "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
+On Sun, Mar 22, 2009 at 03:30:26AM -0500, Tom Zanussi wrote:
+> Hi,
 > 
-> > On Sun, Mar 22, 2009 at 12:46:32PM -0700, Arjan van de Ven wrote:
-> > > On Sun, 22 Mar 2009 09:53:24 -0700
-> > > "Paul E. McKenney" <paulmck@linux.vnet.ibm.com> wrote:
-> > > 
-> > > > > > How many synchronize_rcu() calls are you seeing on the boot
-> > > > > > path?
-> > > > > 
-> > > > > I see 20 that hit the above code path (eg ones that wait) until
-> > > > > userspace starts.
-> > > > 
-> > > > So with well-behaved readers, the full sequence would be worth
-> > > > something like 50-60 milliseconds.
-> > > 
-> > > yeah it's about 10% if the total kernel boot time.. so it does
-> > > start to matter
-> > 
-> > Half-second boot, eh?  That would indeed be impressive.
+> This is version 2 of my patchset adding filtering to the event-tracing
+> infrastructure.
 > 
-> half a second until calling init.. that's what I have today (with all
-> drivers built in).. nothing really special needed for it
-> (well a few small patches that are pending for 2.6.30 ;-)
+> Changes from the previous version:
+> 
+> - added common_ prefix to the 5 common event fields
+> - ring_buffer_event_discard() fixes from Steven Rostedt
+> - changed 'and' and 'or' for compound filters to '&&' and '||'
+> - fixed a bug in the matching logic 
+> 
+> Everything seems to work ok for me, but I haven't yet gotten around to
+> changing the awkward UI.  I plan to fix that as soon as I can i.e. allow
+> complete compound expressions to be specified all at once, add <, >, <=,
+> >= and parens, etc.  Until then, it should hopefully be usable for basic
+> filtering. 
+> 
+> Thanks,
+> 
+> Tom
+> 
 
-I thought the measurement was until the desktop was running with no more
-disk activity.  ;-)
 
-But in any case, I will see what I can do about speeding up
-synchronize_rcu().  I will likely start with TREE_RCU, and I may need
-some sort of indication that boot is in progress.
+Very nice work!
 
-							Thanx, Paul
+My events/1 task is pid 4, and swapper (idle) is 0,
+
+cd /debug/tracing/events/sched/sched_switch
+echo prev_pid == 4 > filter
+echo "&& next_pid == 0" > filter
+echo 1 > enable
+
+
+cat /debug/tracing/trace
+
+# tracer: nop
+#
+#           TASK-PID    CPU#    TIMESTAMP  FUNCTION
+#              | |       |          |         |
+           <...>-4     [000]  1136.993069: sched_switch: task events/0:4 [115] ==> swapper:0 [140]
+           <...>-4     [000]  1136.993081: sched_switch: task events/0:4 [115] ==> swapper:0 [140]
+           <...>-4     [000]  1137.218492: sched_switch: task events/0:4 [115] ==> swapper:0 [140]
+           <...>-4     [000]  1137.283787: sched_switch: task events/0:4 [115] ==> swapper:0 [140]
+           <...>-4     [000]  1137.458733: sched_switch: task events/0:4 [115] ==> swapper:0 [140]
+           <...>-4     [000]  1137.560932: sched_switch: task events/0:4 [115] ==> swapper:0 [140]
+           <...>-4     [000]  1137.560941: sched_switch: task events/0:4 [115] ==> swapper:0 [140]
+           <...>-4     [000]  1137.741107: sched_switch: task events/0:4 [115] ==> swapper:0 [140]
+           <...>-4     [000]  1138.159083: sched_switch: task events/0:4 [115] ==> swapper:0 [140]
+           <...>-4     [000]  1138.338673: sched_switch: task events/0:4 [115] ==> swapper:0 [140]
+           <...>-4     [000]  1138.338681: sched_switch: task events/0:4 [115] ==> swapper:0 [140]
+           <...>-4     [000]  1138.517769: sched_switch: task events/0:4 [115] ==> swapper:0 [140]
+           <...>-4     [000]  1138.517833: sched_switch: task events/0:4 [115] ==> swapper:0 [140]
+           <...>-4     [000]  1138.517845: sched_switch: task events/0:4 [115] ==> swapper:0 [140]
+[...]
+
+
+:-)
+
