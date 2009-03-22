@@ -1,30 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753130AbZCVIao@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754148AbZCVIbB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753130AbZCVIao (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Mar 2009 04:30:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752368AbZCVIad
+	id S1754148AbZCVIbB (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Mar 2009 04:31:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752027AbZCVIas
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Mar 2009 04:30:33 -0400
-Received: from qw-out-2122.google.com ([74.125.92.27]:33106 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752027AbZCVIab (ORCPT
+	Sun, 22 Mar 2009 04:30:48 -0400
+Received: from yw-out-2324.google.com ([74.125.46.29]:20795 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753973AbZCVIan (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Mar 2009 04:30:31 -0400
+	Sun, 22 Mar 2009 04:30:43 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=subject:from:to:cc:content-type:date:message-id:mime-version
          :x-mailer:content-transfer-encoding;
-        b=cDXoaKXXONj8abOWiRElspD4SvXZiAynM/IWRqxawVoXZsCFfmBKY7cNhP4dHdhFyg
-         9IZjkV2rg9Hyp4FdR7ES7d7Ljrpj6Rym2YdmBvhUsaC2TxoxT7vHdk90ovq0lF6plHwF
-         c5o91vA4I2w1AtdUCF1Ur2eCfhaZmojwhgbxw=
-Subject: [PATCH 0/4] tracing: event filtering v2
+        b=MMOLQ7r1R0RanN5OV6YEm+vkuwHKb7sdjlVwwaLeGVMvIU0hxzKz2hRjYBWzZQc4iN
+         So+XuX4EGoXYlaBk8GUYC7G05kPLzmR+NQiCDwLpTChLHySKmACrJWfFrxGf1PoJngsZ
+         oxH69pECv6U12RrYlW/V87QZql5vPQF0d0sUE=
+Subject: [PATCH 1/4] tracing: add run-time field descriptions for event
+	filtering
 From: Tom Zanussi <tzanussi@gmail.com>
 To: linux-kernel <linux-kernel@vger.kernel.org>
 Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
        =?ISO-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>
 Content-Type: text/plain
-Date: Sun, 22 Mar 2009 03:30:26 -0500
-Message-Id: <1237710626.7703.45.camel@charm-linux>
+Date: Sun, 22 Mar 2009 03:30:39 -0500
+Message-Id: <1237710639.7703.46.camel@charm-linux>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.12.0 
 Content-Transfer-Encoding: 7bit
@@ -32,25 +33,213 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+This patch makes the field descriptions defined for event tracing
+available at run-time, for the event-filtering mechanism introduced in a
+subsequent patch.
 
-This is version 2 of my patchset adding filtering to the event-tracing
-infrastructure.
+The common event fields are prepended with 'common_' in the format
+display, allowing them to be distinguished from the other fields that
+might internally have same name and can therefore be unambiguously used
+in filters.
 
-Changes from the previous version:
+Signed-off-by: Tom Zanussi <tzanussi@gmail.com>
 
-- added common_ prefix to the 5 common event fields
-- ring_buffer_event_discard() fixes from Steven Rostedt
-- changed 'and' and 'or' for compound filters to '&&' and '||'
-- fixed a bug in the matching logic 
+---
+ kernel/trace/trace.h                |   30 ++++++++++++++++-------
+ kernel/trace/trace_events.c         |   40 ++++++++++++++++++++++++++++++-
+ kernel/trace/trace_events_stage_2.h |   45 +++++++++++++++++++++++++++++++++++
+ kernel/trace/trace_events_stage_3.h |    2 +
+ 4 files changed, 107 insertions(+), 10 deletions(-)
 
-Everything seems to work ok for me, but I haven't yet gotten around to
-changing the awkward UI.  I plan to fix that as soon as I can i.e. allow
-complete compound expressions to be specified all at once, add <, >, <=,
->= and parens, etc.  Until then, it should hopefully be usable for basic
-filtering. 
+diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
+index 7cfb741..9288dc7 100644
+--- a/kernel/trace/trace.h
++++ b/kernel/trace/trace.h
+@@ -775,16 +775,26 @@ enum {
+ 	TRACE_EVENT_TYPE_RAW		= 2,
+ };
+ 
++struct ftrace_event_field {
++	struct list_head	link;
++	char			*name;
++	char			*type;
++	int			offset;
++	int			size;
++};
++
+ struct ftrace_event_call {
+-	char		*name;
+-	char		*system;
+-	struct dentry	*dir;
+-	int		enabled;
+-	int		(*regfunc)(void);
+-	void		(*unregfunc)(void);
+-	int		id;
+-	int		(*raw_init)(void);
+-	int		(*show_format)(struct trace_seq *s);
++	char			*name;
++	char			*system;
++	struct dentry		*dir;
++	int			enabled;
++	int			(*regfunc)(void);
++	void			(*unregfunc)(void);
++	int			id;
++	int			(*raw_init)(void);
++	int			(*show_format)(struct trace_seq *s);
++	int			(*define_fields)(void);
++	struct list_head	fields;
+ 
+ #ifdef CONFIG_EVENT_PROFILE
+ 	atomic_t	profile_count;
+@@ -793,6 +803,8 @@ struct ftrace_event_call {
+ #endif
+ };
+ 
++int trace_define_field(struct ftrace_event_call *call, char *type,
++		       char *name, int offset, int size);
+ void event_trace_printk(unsigned long ip, const char *fmt, ...);
+ extern struct ftrace_event_call __start_ftrace_events[];
+ extern struct ftrace_event_call __stop_ftrace_events[];
+diff --git a/kernel/trace/trace_events.c b/kernel/trace/trace_events.c
+index 3047b56..961b057 100644
+--- a/kernel/trace/trace_events.c
++++ b/kernel/trace/trace_events.c
+@@ -19,6 +19,34 @@
+ 
+ static DEFINE_MUTEX(event_mutex);
+ 
++int trace_define_field(struct ftrace_event_call *call, char *type,
++		       char *name, int offset, int size)
++{
++	struct ftrace_event_field *field;
++
++	field = kmalloc(sizeof(*field), GFP_KERNEL);
++	if (!field)
++		goto err;
++	field->name = kstrdup(name, GFP_KERNEL);
++	if (!field->name)
++		goto err;
++	field->type = kstrdup(type, GFP_KERNEL);
++	if (!field->type)
++		goto err;
++	field->offset = offset;
++	field->size = size;
++	list_add(&field->link, &call->fields);
++
++	return 0;
++err:
++	if (field) {
++		kfree(field->name);
++		kfree(field->type);
++	}
++	kfree(field);
++	return -ENOMEM;
++}
++
+ static void ftrace_clear_events(void)
+ {
+ 	struct ftrace_event_call *call = (void *)__start_ftrace_events;
+@@ -343,7 +371,8 @@ event_enable_write(struct file *filp, const char __user *ubuf, size_t cnt,
+ 
+ #undef FIELD
+ #define FIELD(type, name)						\
+-	#type, #name, offsetof(typeof(field), name), sizeof(field.name)
++	#type, "common_" #name, offsetof(typeof(field), name),		\
++		sizeof(field.name)
+ 
+ static int trace_write_header(struct trace_seq *s)
+ {
+@@ -581,6 +610,15 @@ event_create_dir(struct ftrace_event_call *call, struct dentry *d_events)
+ 					call->name);
+ 	}
+ 
++	if (call->define_fields) {
++		ret = call->define_fields();
++		if (ret < 0) {
++			pr_warning("Could not initialize trace point"
++				   " events/%s\n", call->name);
++			return ret;
++		}
++	}
++
+ 	/* A trace may not want to export its format */
+ 	if (!call->show_format)
+ 		return 0;
+diff --git a/kernel/trace/trace_events_stage_2.h b/kernel/trace/trace_events_stage_2.h
+index 5117c43..30743f7 100644
+--- a/kernel/trace/trace_events_stage_2.h
++++ b/kernel/trace/trace_events_stage_2.h
+@@ -129,3 +129,48 @@ ftrace_format_##call(struct trace_seq *s)				\
+ }
+ 
+ #include <trace/trace_event_types.h>
++
++#undef __field
++#define __field(type, item)						\
++	ret = trace_define_field(event_call, #type, #item,		\
++				 offsetof(typeof(field), item),		\
++				 sizeof(field.item));			\
++	if (ret)							\
++		return ret;
++
++#undef __array
++#define __array(type, item, len)					\
++	ret = trace_define_field(event_call, #type "[" #len "]", #item,	\
++				 offsetof(typeof(field), item),		\
++				 sizeof(field.item));			\
++	if (ret)							\
++		return ret;
++
++#define __common_field(type, item)					\
++	ret = trace_define_field(event_call, #type, "common_" #item,	\
++				 offsetof(typeof(field.ent), item),	\
++				 sizeof(field.ent.item));		\
++	if (ret)							\
++		return ret;
++
++#undef TRACE_EVENT
++#define TRACE_EVENT(call, proto, args, tstruct, func, print)		\
++int									\
++ftrace_define_fields_##call(void)					\
++{									\
++	struct ftrace_raw_##call field;					\
++	struct ftrace_event_call *event_call = &event_##call;		\
++	int ret;							\
++									\
++	__common_field(unsigned char, type);				\
++	__common_field(unsigned char, flags);				\
++	__common_field(unsigned char, preempt_count);			\
++	__common_field(int, pid);					\
++	__common_field(int, tgid);					\
++									\
++	tstruct;							\
++									\
++	return ret;							\
++}
++
++#include <trace/trace_event_types.h>
+diff --git a/kernel/trace/trace_events_stage_3.h b/kernel/trace/trace_events_stage_3.h
+index 6b3261c..468938f 100644
+--- a/kernel/trace/trace_events_stage_3.h
++++ b/kernel/trace/trace_events_stage_3.h
+@@ -252,6 +252,7 @@ static int ftrace_raw_init_event_##call(void)				\
+ 	if (!id)							\
+ 		return -ENODEV;						\
+ 	event_##call.id = id;						\
++	INIT_LIST_HEAD(&event_##call.fields);				\
+ 	return 0;							\
+ }									\
+ 									\
+@@ -264,6 +265,7 @@ __attribute__((section("_ftrace_events"))) event_##call = {		\
+ 	.regfunc		= ftrace_raw_reg_event_##call,		\
+ 	.unregfunc		= ftrace_raw_unreg_event_##call,	\
+ 	.show_format		= ftrace_format_##call,			\
++	.define_fields		= ftrace_define_fields_##call,		\
+ 	_TRACE_PROFILE_INIT(call)					\
+ }
+ 
+-- 
+1.5.6.3
 
-Thanks,
 
-Tom
 
