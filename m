@@ -1,98 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758186AbZC0MyE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754852AbZC0M7W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758186AbZC0MyE (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Mar 2009 08:54:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757265AbZC0Mxw
+	id S1754852AbZC0M7W (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Mar 2009 08:59:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752063AbZC0M7N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Mar 2009 08:53:52 -0400
-Received: from mail-ew0-f165.google.com ([209.85.219.165]:64715 "EHLO
-	mail-ew0-f165.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756842AbZC0Mxv (ORCPT
+	Fri, 27 Mar 2009 08:59:13 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:33941 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751175AbZC0M7M (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Mar 2009 08:53:51 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=akE4hAUDggL8aObFLe16myFzoy39RVDPbZwncuOqJG2qrWYlJ/+p8ygpLnpbQl0VO0
-         Q6wYuNwCMFOedEE9xwJaAR81YDuLl+KVmk0UezK+bD7YRm2N0OfRhhVGn6Kf4ji40YR3
-         Bdx1L1stdC08oi6DFZvLquIQ7r/lqlbbVylGA=
-Date: Fri, 27 Mar 2009 13:53:45 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Zhaolei <zhaolei@cn.fujitsu.com>
-Cc: Lai Jiangshan <laijs@cn.fujitsu.com>, Ingo Molnar <mingo@elte.hu>,
-       torvalds@linux-foundation.org, Steven Rostedt <rostedt@goodmis.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/2] Fix wrong format string iter for printk
-Message-ID: <20090327125345.GF5976@nowhere>
-References: <49CC9739.30107@cn.fujitsu.com> <49CC97B6.7040809@cn.fujitsu.com>
+	Fri, 27 Mar 2009 08:59:12 -0400
+Date: Sun, 22 Mar 2009 10:35:43 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: "K.Prasad" <prasad@linux.vnet.ibm.com>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Benjamin Herrenschmidt <benh@au1.ibm.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>, maneesh@linux.vnet.ibm.com,
+       Roland McGrath <roland@redhat.com>,
+       Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: [Patch 11/11] ftrace plugin for kernel symbol tracing using HW
+	Breakpoint interfaces - v2
+Message-ID: <20090322093543.GA1320@ucw.cz>
+References: <20090324152028.754123712@K.Prasad> <20090324152811.GL17918@in.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <49CC97B6.7040809@cn.fujitsu.com>
+In-Reply-To: <20090324152811.GL17918@in.ibm.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 27, 2009 at 05:09:10PM +0800, Zhaolei wrote:
-> printk("%Q");
-> Output before patch:
-> %QQ
-> Output after patch:
-> %Q
-> 
-> Signed-off-by: Zhao Lei <zhaolei@cn.fujitsu.com>
-> ---
->  lib/vsprintf.c |   16 ----------------
->  1 files changed, 0 insertions(+), 16 deletions(-)
-> 
-> diff --git a/lib/vsprintf.c b/lib/vsprintf.c
-> index 908dd41..b56f6d0 100644
-> --- a/lib/vsprintf.c
-> +++ b/lib/vsprintf.c
-> @@ -1062,13 +1062,6 @@ int vsnprintf(char *buf, size_t size, const char *fmt, va_list args)
->  			if (str < end)
->  				*str = '%';
->  			++str;
-> -			if (*fmt) {
-> -				if (str < end)
-> -					*str = *fmt;
-> -				++str;
-> -			} else {
-> -				--fmt;
-> -			}
->  			break;
->  
->  		case FORMAT_TYPE_NRCHARS: {
-> @@ -1356,8 +1349,6 @@ do {									\
->  			break;
->  
->  		case FORMAT_TYPE_INVALID:
-> -			if (!*fmt)
-> -				--fmt;
->  			break;
->  
->  		case FORMAT_TYPE_NRCHARS: {
-> @@ -1544,13 +1535,6 @@ int bstr_printf(char *buf, size_t size, const char *fmt, const u32 *bin_buf)
->  			if (str < end)
->  				*str = '%';
->  			++str;
-> -			if (*fmt) {
-> -				if (str < end)
-> -					*str = *fmt;
-> -				++str;
-> -			} else {
-> -				--fmt;
-> -			}
->  			break;
->  
->  		case FORMAT_TYPE_NRCHARS:
-> -- 
-> 1.5.5.3
-> 
-> 
+Hi!
+
+> This patch adds an ftrace plugin to detect and profile memory access over
+> kernel variables. It uses HW Breakpoint interfaces to 'watch memory
+> addresses.
 
 
-Thanks for fixing this!
+> +static void ksym_trace_print_header(struct seq_file *m)
+> +{
+> +
+> +	seq_puts(m,
+> +		 "#       TASK-PID      CPU#      Symbol         Type    "
+> +		 "Function         \n");
+> +	seq_puts(m,
+> +		 "#          |           |          |              |         "
+> +		 "|            \n");
+> +}
+...
+> +	trace_assign_type(field, entry);
+> +
+> +	ret = trace_seq_printf(s, "%-15s %-5d %-3d %-20s ", field->p_name,
+> +				entry->pid, iter->cpu, field->ksym_name);
+> +	if (!ret)
+> +		return TRACE_TYPE_PARTIAL_LINE;
+> +
+> +	switch (field->ksym_hbp->info.type) {
+> +	case HW_BREAKPOINT_WRITE:
+> +		ret = trace_seq_printf(s, " W  ");
+> +		break;
+> +	case HW_BREAKPOINT_RW:
+> +		ret = trace_seq_printf(s, " RW ");
+> +		break;
+> +	default:
+> +		return TRACE_TYPE_PARTIAL_LINE;
+> +	}
+> +#ifdef CONFIG_PROFILE_KSYM_TRACER
+> +static int ksym_tracer_stat_headers(struct seq_file *m)
+> +{
+> +	seq_printf(m, "   Access type    ");
+> +	seq_printf(m, "            Symbol                     Counter     \n");
+> +	return 0;
+> +}
+...
 
+> +	switch (access_type) {
+> +	case HW_BREAKPOINT_WRITE:
+> +		seq_printf(m, "     W     ");
+> +		break;
+> +	case HW_BREAKPOINT_RW:
+> +		seq_printf(m, "     RW    ");
+> +		break;
+> +	default:
+> +		seq_printf(m, "     NA    ");
+> +	}
+> +
+> +	if (lookup_symbol_name(entry->ksym_addr, fn_name) >= 0)
+> +		seq_printf(m, "               %s                 ", fn_name);
+> +	else
+> +		seq_printf(m, "               <NA>                ");
+> +
+> +	seq_printf(m, "%15lu\n", entry->counter);
+> +	return 0;
+> +}
+
+Quite as lot of ascii-art here. Is userland expected to parse it? If
+so, how? (docs would be nice) What if you'll want to make fields  wider one day?
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
