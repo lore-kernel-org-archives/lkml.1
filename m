@@ -1,83 +1,372 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756916AbZCVXZe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756897AbZCVXi7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756916AbZCVXZe (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Mar 2009 19:25:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756509AbZCVXZY
+	id S1756897AbZCVXi7 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Mar 2009 19:38:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756683AbZCVXiu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Mar 2009 19:25:24 -0400
-Received: from mailservice.tudelft.nl ([130.161.131.5]:11684 "EHLO
-	mailservice.tudelft.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756182AbZCVXZY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Mar 2009 19:25:24 -0400
-X-Spam-Flag: NO
-X-Spam-Score: -12.589
-Message-ID: <49C6C8DE.7020405@tremplin-utc.net>
-Date: Mon, 23 Mar 2009 00:25:18 +0100
-From: =?UTF-8?B?w4lyaWMgUGllbA==?= <eric.piel@tremplin-utc.net>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.21) Gecko/20090319 Mandriva/2.0.0.21-1mdv2009.1 (2009.1) Thunderbird/2.0.0.21 Mnenhy/0.7.5.0
+	Sun, 22 Mar 2009 19:38:50 -0400
+Received: from bilbo.ozlabs.org ([203.10.76.25]:58288 "EHLO bilbo.ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756668AbZCVXis (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Mar 2009 19:38:48 -0400
 MIME-Version: 1.0
-To: Daniel Mack <daniel@caiaq.de>
-CC: linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH 4/5] lis3: solve dependency between core and ACPI
-References: <49AD8B0A.90901@tremplin-utc.net> <1236131099-8082-1-git-send-email-daniel@caiaq.de> <1236131099-8082-2-git-send-email-daniel@caiaq.de>
-In-Reply-To: <1236131099-8082-2-git-send-email-daniel@caiaq.de>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-ID: <18886.51820.50701.744446@cargo.ozlabs.ibm.com>
+Date: Mon, 23 Mar 2009 10:31:56 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>
+CC: linux-kernel@vger.kernel.org
+Subject: [PATCH] perfcounters: update documentation
+X-Mailer: VM 8.0.9 under Emacs 22.2.1 (i486-pc-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Daniel Mack schreef:
-> This solves the dependency between lis3lv02d.[ch] and ACPI specific
-> methods. It introduces a ->bus_priv pointer to the device struct which
-> is casted to 'struct acpi_device' in the ACIP layer. Changed hp_accel.c
-> accordingly.
-Sorry for the long delay. Eventually I've found time to test the patch
-and fix a bug: the axis conversion was set too late, preventing the
-calibration to work.
+Impact: documentation fix
 
-The attached patch should make your modifications fully working with the
-hp laptops :-)
-I guess the best is to fold it into your patch and I'll ack the new
-version.
+This updates the perfcounter documentation to reflect recent changes.
 
-Eric
-
-=
-Must put the axis info before using it.
+Signed-off-by: Paul Mackerras <paulus@samba.org>
 ---
- drivers/hwmon/hp_accel.c |   10 +++++-----
- 1 files changed, 5 insertions(+), 5 deletions(-)
+Ingo, please pull this from the master branch of my perfcounters.git
+repository at:
 
-diff --git a/drivers/hwmon/hp_accel.c b/drivers/hwmon/hp_accel.c
-index 363220b..b6c32c5 100644
---- a/drivers/hwmon/hp_accel.c
-+++ b/drivers/hwmon/hp_accel.c
-@@ -287,11 +287,6 @@ static int lis3lv02d_add(struct acpi_device *device)
- 	/* obtain IRQ number of our device from ACPI */
- 	lis3lv02d_enum_resources(device);
+git://git.kernel.org/pub/scm/linux/kernel/git/paulus/perfcounters.git master
 
--	/* call the core layer do its init */
--	ret = lis3lv02d_init_device(&lis3_dev);
--	if (ret)
--		return ret;
--
- 	/* If possible use a "standard" axes order */
- 	if (dmi_check_system(lis3lv02d_dmi_ids) == 0) {
- 		printk(KERN_INFO DRIVER_NAME ": laptop model unknown, "
-@@ -299,6 +294,11 @@ static int lis3lv02d_add(struct acpi_device *device)
- 		lis3_dev.ac = lis3lv02d_axis_normal;
- 	}
+ Documentation/perf-counters.txt |  268 +++++++++++++++++++++++++++++----------
+ 1 files changed, 202 insertions(+), 66 deletions(-)
 
-+	/* call the core layer do its init */
-+	ret = lis3lv02d_init_device(&lis3_dev);
-+	if (ret)
-+		return ret;
+diff --git a/Documentation/perf-counters.txt b/Documentation/perf-counters.txt
+index fddd321..aaf105c 100644
+--- a/Documentation/perf-counters.txt
++++ b/Documentation/perf-counters.txt
+@@ -11,7 +11,9 @@ thus be used to profile the code that runs on that CPU.
+ 
+ The Linux Performance Counter subsystem provides an abstraction of these
+ hardware capabilities. It provides per task and per CPU counters, counter
+-groups, and it provides event capabilities on top of those.
++groups, and it provides event capabilities on top of those.  It
++provides "virtual" 64-bit counters, regardless of the width of the
++underlying hardware counters.
+ 
+ Performance counters are accessed via special file descriptors.
+ There's one file descriptor per virtual counter used.
+@@ -20,7 +22,8 @@ The special file descriptor is opened via the perf_counter_open()
+ system call:
+ 
+    int sys_perf_counter_open(struct perf_counter_hw_event *hw_event_uptr,
+-			     pid_t pid, int cpu, int group_fd);
++			     pid_t pid, int cpu, int group_fd,
++			     unsigned long flags);
+ 
+ The syscall returns the new fd. The fd can be used via the normal
+ VFS system calls: read() can be used to read the counter, fcntl()
+@@ -32,90 +35,180 @@ can be poll()ed.
+ When creating a new counter fd, 'perf_counter_hw_event' is:
+ 
+ /*
+- * Hardware event to monitor via a performance monitoring counter:
++ * Event to monitor via a performance monitoring counter:
+  */
+ struct perf_counter_hw_event {
+-	s64			type;
++	__u64			event_config;
+ 
+-	u64			irq_period;
+-	u32			record_type;
++	__u64			irq_period;
++	__u64			record_type;
++	__u64			read_format;
+ 
+-	u32			disabled     :  1, /* off by default */
+-				nmi	     :  1, /* NMI sampling   */
+-				raw	     :  1, /* raw event type */
+-				__reserved_1 : 29;
++	__u64			disabled       :  1, /* off by default        */
++				nmi	       :  1, /* NMI sampling          */
++				inherit	       :  1, /* children inherit it   */
++				pinned	       :  1, /* must always be on PMU */
++				exclusive      :  1, /* only group on PMU     */
++				exclude_user   :  1, /* don't count user      */
++				exclude_kernel :  1, /* ditto kernel          */
++				exclude_hv     :  1, /* ditto hypervisor      */
++				exclude_idle   :  1, /* don't count when idle */
+ 
+-	u64			__reserved_2;
++				__reserved_1   : 55;
 +
- 	INIT_WORK(&hpled_led.work, delayed_set_status_worker);
- 	ret = led_classdev_register(NULL, &hpled_led.led_classdev);
- 	if (ret) {
++	__u32			extra_config_len;
++
++	__u32			__reserved_4;
++	__u64			__reserved_2;
++	__u64			__reserved_3;
+ };
+ 
++The 'event_config' field specifies what the counter should count.  It
++is divided into 3 bit-fields:
++
++raw_type: 1 bit (most significant bit)		0x8000_0000_0000_0000
++type:	  7 bits (next most significant)	0x7f00_0000_0000_0000
++event_id: 56 bits (least significant)		0x00ff_0000_0000_0000
++
++If 'raw_type' is 1, then the counter will count a hardware event
++specified by the remaining 63 bits of event_config.  The encoding is
++machine-specific.
++
++If 'raw_type' is 0, then the 'type' field says what kind of counter
++this is, with the following encoding:
++
++enum perf_event_types {
++	PERF_TYPE_HARDWARE		= 0,
++	PERF_TYPE_SOFTWARE		= 1,
++	PERF_TYPE_TRACEPOINT		= 2,
++};
++
++A counter of PERF_TYPE_HARDWARE will count the hardware event
++specified by 'event_id':
++
+ /*
+- * Generalized performance counter event types, used by the hw_event.type
++ * Generalized performance counter event types, used by the hw_event.event_id
+  * parameter of the sys_perf_counter_open() syscall:
+  */
+-enum hw_event_types {
++enum hw_event_ids {
+ 	/*
+ 	 * Common hardware events, generalized by the kernel:
+ 	 */
+-	PERF_COUNT_CYCLES		=  0,
+-	PERF_COUNT_INSTRUCTIONS		=  1,
+-	PERF_COUNT_CACHE_REFERENCES	=  2,
+-	PERF_COUNT_CACHE_MISSES		=  3,
+-	PERF_COUNT_BRANCH_INSTRUCTIONS	=  4,
+-	PERF_COUNT_BRANCH_MISSES	=  5,
+-
+-	/*
+-	 * Special "software" counters provided by the kernel, even if
+-	 * the hardware does not support performance counters. These
+-	 * counters measure various physical and sw events of the
+-	 * kernel (and allow the profiling of them as well):
+-	 */
+-	PERF_COUNT_CPU_CLOCK		= -1,
+-	PERF_COUNT_TASK_CLOCK		= -2,
+-	/*
+-	 * Future software events:
+-	 */
+-	/* PERF_COUNT_PAGE_FAULTS	= -3,
+-	   PERF_COUNT_CONTEXT_SWITCHES	= -4, */
++	PERF_COUNT_CPU_CYCLES		= 0,
++	PERF_COUNT_INSTRUCTIONS		= 1,
++	PERF_COUNT_CACHE_REFERENCES	= 2,
++	PERF_COUNT_CACHE_MISSES		= 3,
++	PERF_COUNT_BRANCH_INSTRUCTIONS	= 4,
++	PERF_COUNT_BRANCH_MISSES	= 5,
++	PERF_COUNT_BUS_CYCLES		= 6,
+ };
+ 
+-These are standardized types of events that work uniformly on all CPUs
+-that implements Performance Counters support under Linux. If a CPU is
+-not able to count branch-misses, then the system call will return
+--EINVAL.
++These are standardized types of events that work relatively uniformly
++on all CPUs that implement Performance Counters support under Linux,
++although there may be variations (e.g., different CPUs might count
++cache references and misses at different levels of the cache hierarchy).
++If a CPU is not able to count the selected event, then the system call
++will return -EINVAL.
+ 
+-More hw_event_types are supported as well, but they are CPU
+-specific and are enumerated via /sys on a per CPU basis. Raw hw event
+-types can be passed in under hw_event.type if hw_event.raw is 1.
+-For example, to count "External bus cycles while bus lock signal asserted"
+-events on Intel Core CPUs, pass in a 0x4064 event type value and set
+-hw_event.raw to 1.
++More hw_event_types are supported as well, but they are CPU-specific
++and accessed as raw events.  For example, to count "External bus
++cycles while bus lock signal asserted" events on Intel Core CPUs, pass
++in a 0x4064 event_id value and set hw_event.raw_type to 1.
+ 
+-'record_type' is the type of data that a read() will provide for the
+-counter, and it can be one of:
++A counter of type PERF_TYPE_SOFTWARE will count one of the available
++software events, selected by 'event_id':
+ 
+ /*
+- * IRQ-notification data record type:
++ * Special "software" counters provided by the kernel, even if the hardware
++ * does not support performance counters. These counters measure various
++ * physical and sw events of the kernel (and allow the profiling of them as
++ * well):
+  */
+-enum perf_counter_record_type {
+-	PERF_RECORD_SIMPLE		=  0,
+-	PERF_RECORD_IRQ			=  1,
+-	PERF_RECORD_GROUP		=  2,
++enum sw_event_ids {
++	PERF_COUNT_CPU_CLOCK		= 0,
++	PERF_COUNT_TASK_CLOCK		= 1,
++	PERF_COUNT_PAGE_FAULTS		= 2,
++	PERF_COUNT_CONTEXT_SWITCHES	= 3,
++	PERF_COUNT_CPU_MIGRATIONS	= 4,
++	PERF_COUNT_PAGE_FAULTS_MIN	= 5,
++	PERF_COUNT_PAGE_FAULTS_MAJ	= 6,
+ };
+ 
+-a "simple" counter is one that counts hardware events and allows
+-them to be read out into a u64 count value. (read() returns 8 on
+-a successful read of a simple counter.)
++Counters come in two flavours: counting counters and sampling
++counters.  A "counting" counter is one that is used for counting the
++number of events that occur, and is characterised by having
++irq_period = 0 and record_type = PERF_RECORD_SIMPLE.  A read() on a
++counting counter simply returns the current value of the counter as
++an 8-byte number.
+ 
+-An "irq" counter is one that will also provide an IRQ context information:
+-the IP of the interrupted context. In this case read() will return
+-the 8-byte counter value, plus the Instruction Pointer address of the
+-interrupted context.
++A "sampling" counter is one that is set up to generate an interrupt
++every N events, where N is given by 'irq_period'.  A sampling counter
++has irq_period > 0 and record_type != PERF_RECORD_SIMPLE.  The
++record_type controls what data is recorded on each interrupt, and the
++available values are currently:
+ 
+-The parameter 'hw_event_period' is the number of events before waking up
+-a read() that is blocked on a counter fd. Zero value means a non-blocking
+-counter.
++/*
++ * IRQ-notification data record type:
++ */
++enum perf_counter_record_type {
++	PERF_RECORD_SIMPLE		= 0,
++	PERF_RECORD_IRQ			= 1,
++	PERF_RECORD_GROUP		= 2,
++};
+ 
+-The 'pid' parameter allows the counter to be specific to a task:
++A record_type value of PERF_RECORD_IRQ will record the instruction
++pointer (IP) at which the interrupt occurred.  A record_type value of
++PERF_RECORD_GROUP will record the event_config and counter value of
++all of the other counters in the group, and should only be used on a
++group leader (see below).  Currently these two values are mutually
++exclusive, but record_type will become a bit-mask in future and
++support other values.
++
++A sampling counter has an event queue, into which an event is placed
++on each interrupt.  A read() on a sampling counter will read the next
++event from the event queue.  If the queue is empty, the read() will
++either block or return an EAGAIN error, depending on whether the fd
++has been set to non-blocking mode or not.
++
++The 'disabled' bit specifies whether the counter starts out disabled
++or enabled.  If it is initially disabled, it can be enabled by ioctl
++or prctl (see below).
++
++The 'nmi' bit specifies, for hardware events, whether the counter
++should be set up to request non-maskable interrupts (NMIs) or normal
++interrupts.  This bit is ignored if the user doesn't have
++CAP_SYS_ADMIN privilege (i.e. is not root) or if the CPU doesn't
++generate NMIs from hardware counters.
++
++The 'inherit' bit, if set, specifies that this counter should count
++events on descendant tasks as well as the task specified.  This only
++applies to new descendents, not to any existing descendents at the
++time the counter is created (nor to any new descendents of existing
++descendents).
++
++The 'pinned' bit, if set, specifies that the counter should always be
++on the CPU if at all possible.  It only applies to hardware counters
++and only to group leaders.  If a pinned counter cannot be put onto the
++CPU (e.g. because there are not enough hardware counters or because of
++a conflict with some other event), then the counter goes into an
++'error' state, where reads return end-of-file (i.e. read() returns 0)
++until the counter is subsequently enabled or disabled.
++
++The 'exclusive' bit, if set, specifies that when this counter's group
++is on the CPU, it should be the only group using the CPU's counters.
++In future, this will allow sophisticated monitoring programs to supply
++extra configuration information via 'extra_config_len' to exploit
++advanced features of the CPU's Performance Monitor Unit (PMU) that are
++not otherwise accessible and that might disrupt other hardware
++counters.
++
++The 'exclude_user', 'exclude_kernel' and 'exclude_hv' bits provide a
++way to request that counting of events be restricted to times when the
++CPU is in user, kernel and/or hypervisor mode.
++
++
++The 'pid' parameter to the perf_counter_open() system call allows the
++counter to be specific to a task:
+ 
+  pid == 0: if the pid parameter is zero, the counter is attached to the
+  current task.
+@@ -125,8 +218,7 @@ The 'pid' parameter allows the counter to be specific to a task:
+ 
+  pid < 0: all tasks are counted (per cpu counters)
+ 
+-The 'cpu' parameter allows a counter to be made specific to a full
+-CPU:
++The 'cpu' parameter allows a counter to be made specific to a CPU:
+ 
+  cpu >= 0: the counter is restricted to a specific CPU
+  cpu == -1: the counter counts on all CPUs
+@@ -141,7 +233,51 @@ their own tasks.
+ A 'pid == -1' and 'cpu == x' counter is a per CPU counter that counts
+ all events on CPU-x. Per CPU counters need CAP_SYS_ADMIN privilege.
+ 
+-Group counters are created by passing in a group_fd of another counter.
+-Groups are scheduled at once and can be used with PERF_RECORD_GROUP
+-to record multi-dimensional timestamps.
++The 'flags' parameter is currently unused and must be zero.
++
++The 'group_fd' parameter allows counter "groups" to be set up.  A
++counter group has one counter which is the group "leader".  The leader
++is created first, with group_fd = -1 in the perf_counter_open call
++that creates it.  The rest of the group members are created
++subsequently, with group_fd giving the fd of the group leader.
++(A single counter on its own is created with group_fd = -1 and is
++considered to be a group with only 1 member.)
++
++A counter group is scheduled onto the CPU as a unit, that is, it will
++only be put onto the CPU if all of the counters in the group can be
++put onto the CPU.  This means that the values of the member counters
++can be meaningfully compared, added, divided (to get ratios), etc.,
++with each other, since they have counted events for the same set of
++executed instructions.
++
++Counters can be enabled and disabled in two ways: via ioctl and via
++prctl.  When a counter is disabled, it doesn't count or generate
++events but does continue to exist and maintain its count value.
++
++An individual counter or counter group can be enabled with
++
++	ioctl(fd, PERF_COUNTER_IOC_ENABLE);
++
++or disabled with
++
++	ioctl(fd, PERF_COUNTER_IOC_DISABLE);
++
++Enabling or disabling the leader of a group enables or disables the
++whole group; that is, while the group leader is disabled, none of the
++counters in the group will count.  Enabling or disabling a member of a
++group other than the leader only affects that counter - disabling an
++non-leader stops that counter from counting but doesn't affect any
++other counter.
++
++A process can enable or disable all the counter groups that are
++attached to it, using prctl:
++
++	prctl(PR_TASK_PERF_COUNTERS_ENABLE);
++
++	prctl(PR_TASK_PERF_COUNTERS_DISABLE);
++
++This applies to all counters on the current process, whether created
++by this process or by another, and doesn't affect any counters that
++this process has created on other processes.  It only enables or
++disables the group leaders, not any other members in the groups.
+ 
 -- 
-1.6.2.1
+1.5.6.3
 
