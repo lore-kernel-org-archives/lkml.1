@@ -1,85 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754620AbZCVLoi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754876AbZCVLox@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754620AbZCVLoi (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Mar 2009 07:44:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754107AbZCVLo2
+	id S1754876AbZCVLox (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Mar 2009 07:44:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754362AbZCVLoa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Mar 2009 07:44:28 -0400
-Received: from bilbo.ozlabs.org ([203.10.76.25]:48902 "EHLO bilbo.ozlabs.org"
+	Sun, 22 Mar 2009 07:44:30 -0400
+Received: from hera.kernel.org ([140.211.167.34]:56157 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754045AbZCVLo2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1754088AbZCVLo2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Sun, 22 Mar 2009 07:44:28 -0400
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Subject: [PATCH -tip 2/2] x86: irq.c keep CONFIG_X86_LOCAL_APIC interrupts
+ together
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: Ingo Molnar <mingo@elte.hu>, x86 maintainers <x86@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Sun, 22 Mar 2009 17:13:55 +0530
+Message-Id: <1237722235.2671.4.camel@ht.satnam>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
 Content-Transfer-Encoding: 7bit
-Message-ID: <18886.9364.699476.946164@cargo.ozlabs.ibm.com>
-Date: Sun, 22 Mar 2009 22:44:20 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2] perfcounters: record time running and time enabled
- for each counter
-In-Reply-To: <20090322015559.818961b6.akpm@linux-foundation.org>
-References: <18884.55232.197620.696687@cargo.ozlabs.ibm.com>
-	<20090321055252.eb0673ea.akpm@linux-foundation.org>
-	<18885.29855.433194.463455@cargo.ozlabs.ibm.com>
-	<20090322015559.818961b6.akpm@linux-foundation.org>
-X-Mailer: VM 8.0.9 under Emacs 22.2.1 (i486-pc-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton writes:
+This is the incremental patch of :
+[PATCH -tip] x86: irq.c use same path for show_interrupts
 
-> > > > -	return put_user(cntval, (u64 __user *) buf) ? -EFAULT : sizeof(cntval);
-> > > > +	if (count != n * sizeof(u64))
-> > > > +		return -EINVAL;
-> > > > +
-> > > > +	if (!access_ok(VERIFY_WRITE, buf, count))
-> > > > +		return -EFAULT;
-> > > > +	
-> > > 
-> > > <panics>
-> > > 
-> > > Oh.
-> > > 
-> > > It would be a lot more reassuring to verify `uptr', rather than `buf' here.
-> 
-> This?
-> 
-> > > The patch adds new trailing whitespace.  checkpatch helps.
-> > > 
-> > > > +	for (i = 0; i < n; ++i)
-> > > > +		if (__put_user(values[i], uptr + i))
-> > > > +			return -EFAULT;
-> > > 
-> > > And here we iterate across `n', whereas we verified `count'.
-> > 
-> > And the fact that we just verified count == n * 8, four lines above,
-> > doesn't give you any comfort?
-> 
-> 	access_ok(..., uptr, n * sizeof(*uptr))
-> 
-> might be most robust.
+From: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+Date: Sun, 22 Mar 2009 16:10:09 +0530
+Subject: [PATCH] x86: irq.c keep CONFIG_X86_LOCAL_APIC interrupts together
 
-I'm not sure quite what you're getting at.  Are you saying
+Impact: cleanup
 
-(a) you think there is an actual security problem in that code
-(b) you can't tell if there is a problem in that code, or
-(c) you think there isn't a problem but you had to spend too much
-    brain power working that out, or
-(d) you think there isn't a problem but there might be in future if
-    someone changed the code?
+keep CONFIG_X86_LOCAL_APIC interrupts together to avoid extra ifdef
 
-> Or fix up the types (if needed) and copy the whole thing with copy_to_user()
-> 
-> Is it really so performance-sensitive that we can't use plain old put_user()?
+Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+---
+ arch/x86/kernel/irq.c |   15 ++++++---------
+ 1 files changed, 6 insertions(+), 9 deletions(-)
 
-The sort of people that use performance-monitoring tools tend to be
-sensitive to performance issues in their tools, for some reason. :)
+diff --git a/arch/x86/kernel/irq.c b/arch/x86/kernel/irq.c
+index 5e7c3e6..3aaf7b9 100644
+--- a/arch/x86/kernel/irq.c
++++ b/arch/x86/kernel/irq.c
+@@ -58,6 +58,11 @@ static int show_other_interrupts(struct seq_file *p, int prec)
+ 	for_each_online_cpu(j)
+ 		seq_printf(p, "%10u ", irq_stats(j)->apic_timer_irqs);
+ 	seq_printf(p, "  Local timer interrupts\n");
++
++	seq_printf(p, "%*s: ", prec, "SPU");
++	for_each_online_cpu(j)
++		seq_printf(p, "%10u ", irq_stats(j)->irq_spurious_count);
++	seq_printf(p, "  Spurious interrupts\n");
+ #endif
+ 	if (generic_interrupt_extension) {
+ 		seq_printf(p, "PLT: ");
+@@ -91,12 +96,6 @@ static int show_other_interrupts(struct seq_file *p, int prec)
+ 	seq_printf(p, "  Threshold APIC interrupts\n");
+ # endif
+ #endif
+-#ifdef CONFIG_X86_LOCAL_APIC
+-	seq_printf(p, "%*s: ", prec, "SPU");
+-	for_each_online_cpu(j)
+-		seq_printf(p, "%10u ", irq_stats(j)->irq_spurious_count);
+-	seq_printf(p, "  Spurious interrupts\n");
+-#endif
+ 	seq_printf(p, "%*s: %10u\n", prec, "ERR", atomic_read(&irq_err_count));
+ #if defined(CONFIG_X86_IO_APIC)
+ 	seq_printf(p, "%*s: %10u\n", prec, "MIS", atomic_read(&irq_mis_count));
+@@ -166,6 +165,7 @@ u64 arch_irq_stat_cpu(unsigned int cpu)
+ 
+ #ifdef CONFIG_X86_LOCAL_APIC
+ 	sum += irq_stats(cpu)->apic_timer_irqs;
++	sum += irq_stats(cpu)->irq_spurious_count;
+ #endif
+ 	if (generic_interrupt_extension)
+ 		sum += irq_stats(cpu)->generic_irqs;
+@@ -180,9 +180,6 @@ u64 arch_irq_stat_cpu(unsigned int cpu)
+ 	sum += irq_stats(cpu)->irq_threshold_count;
+ #endif
+ #endif
+-#ifdef CONFIG_X86_LOCAL_APIC
+-	sum += irq_stats(cpu)->irq_spurious_count;
+-#endif
+ 	return sum;
+ }
+ 
+-- 
+1.6.0.6
 
-Is copy_to_user on 8 bytes practically as fast as put_user, these
-days?
 
-Paul.
+
