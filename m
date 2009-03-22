@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756697AbZCVTaM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756596AbZCVTai@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756697AbZCVTaM (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Mar 2009 15:30:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755972AbZCVT0n
+	id S1756596AbZCVTai (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Mar 2009 15:30:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755010AbZCVT0p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Mar 2009 15:26:43 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:52607 "EHLO kernel.dk"
+	Sun, 22 Mar 2009 15:26:45 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:52611 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755302AbZCVT0L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1755368AbZCVT0L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Sun, 22 Mar 2009 15:26:11 -0400
 From: Jens Axboe <jens.axboe@oracle.com>
 To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
 Cc: chris.mason@oracle.com, david@fromorbit.com, npiggin@suse.de,
        hch@infradead.org, akpm@linux-foundation.org,
        Jens Axboe <jens.axboe@oracle.com>
-Subject: [PATCH 06/12] writeback get rid of pdflush completely
-Date: Sun, 22 Mar 2009 20:25:58 +0100
-Message-Id: <1237749964-8343-7-git-send-email-jens.axboe@oracle.com>
+Subject: [PATCH 09/12] writeback: include default_backing_dev_info in writeback
+Date: Sun, 22 Mar 2009 20:26:01 +0100
+Message-Id: <1237749964-8343-10-git-send-email-jens.axboe@oracle.com>
 X-Mailer: git-send-email 1.6.2.12.g83676
 In-Reply-To: <1237749964-8343-1-git-send-email-jens.axboe@oracle.com>
 References: <1237749964-8343-1-git-send-email-jens.axboe@oracle.com>
@@ -24,333 +24,221 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-It is now unused, so kill it off.
+We see dirty inodes there occasionally, so better be safe and write them
+out.
 
 Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
 ---
- fs/fs-writeback.c         |    5 +
- include/linux/writeback.h |   12 --
- mm/Makefile               |    2 +-
- mm/pdflush.c              |  251 ---------------------------------------------
- 4 files changed, 6 insertions(+), 264 deletions(-)
- delete mode 100644 mm/pdflush.c
+ fs/fs-writeback.c           |   60 +++++++++++++++++++++++++------------------
+ include/linux/backing-dev.h |    5 +++
+ include/linux/writeback.h   |    1 +
+ mm/backing-dev.c            |   35 +++++++++++++++----------
+ 4 files changed, 62 insertions(+), 39 deletions(-)
 
 diff --git a/fs/fs-writeback.c b/fs/fs-writeback.c
-index 21de5ac..54c5e19 100644
+index 741e127..5fcdcd4 100644
 --- a/fs/fs-writeback.c
 +++ b/fs/fs-writeback.c
-@@ -29,6 +29,11 @@
+@@ -34,6 +34,10 @@
+  */
+ int nr_pdflush_threads = 0;
  
- #define inode_to_bdi(inode)	(inode)->i_mapping->backing_dev_info
- 
-+/*
-+ * We don't actually have pdflush, but this one is exported though /proc...
-+ */
-+int nr_pdflush_threads = 0;
++static void generic_sync_wb_inodes(struct bdi_writeback *wb,
++				   struct super_block *sb,
++				   struct writeback_control *wbc);
 +
  /**
   * writeback_acquire - attempt to get exclusive writeback access to a device
   * @bdi: the device's backing_dev_info structure
-diff --git a/include/linux/writeback.h b/include/linux/writeback.h
-index 3697e91..f96fea3 100644
---- a/include/linux/writeback.h
-+++ b/include/linux/writeback.h
-@@ -14,17 +14,6 @@ extern struct list_head inode_in_use;
- extern struct list_head inode_unused;
+@@ -149,7 +153,7 @@ int bdi_start_writeback(struct backing_dev_info *bdi, struct super_block *sb,
+  * older_than_this takes precedence over nr_to_write.  So we'll only write back
+  * all dirty pages if they are all attached to "old" mappings.
+  */
+-static void wb_kupdated(struct bdi_writeback *wb)
++void wb_kupdated(struct bdi_writeback *wb)
+ {
+ 	long nr_to_write;
+ 	struct writeback_control wbc = {
+@@ -177,11 +181,7 @@ static void wb_kupdated(struct bdi_writeback *wb)
+ 	}
+ }
+ 
+-static void generic_sync_wb_inodes(struct bdi_writeback *wb,
+-				   struct super_block *sb,
+-				   struct writeback_control *wbc);
+-
+-static void wb_writeback(struct bdi_writeback *wb)
++void wb_writeback(struct bdi_writeback *wb)
+ {
+ 	struct writeback_control wbc = {
+ 		.bdi			= wb->bdi,
+@@ -217,6 +217,34 @@ static void wb_writeback(struct bdi_writeback *wb)
+ }
  
  /*
-- * Yes, writeback.h requires sched.h
-- * No, sched.h is not included from here.
-- */
--static inline int task_is_pdflush(struct task_struct *task)
--{
--	return task->flags & PF_FLUSHER;
--}
--
--#define current_is_pdflush()	task_is_pdflush(current)
--
--/*
-  * fs/fs-writeback.c
++ * This will be inlined in bdi_writeback_task() once we get rid of any
++ * dirty inodes on the default_backing_dev_info
++ */
++void wb_do_writeback(struct bdi_writeback *wb)
++{
++	/*
++	 * We get here in two cases:
++	 *
++	 *  schedule_timeout() returned because the dirty writeback
++	 *  interval has elapsed. If that happens, we will be able
++	 *  to acquire the writeback lock and will proceed to do
++	 *  kupdated style writeout.
++	 *
++	 *  Someone called bdi_start_writeback(), which will acquire
++	 *  the writeback lock. This means our writeback_acquire()
++	 *  below will fail and we call into bdi_pdflush() for
++	 *  pdflush style writeout.
++	 *
++	 */
++	if (writeback_acquire(wb))
++		wb_kupdated(wb);
++	else
++		wb_writeback(wb);
++
++	writeback_release(wb);
++}
++
++/*
+  * Handle writeback of dirty data for the device backed by this bdi. Also
+  * wakes up periodically and does kupdated style flushing.
   */
- enum writeback_sync_modes {
-@@ -151,7 +140,6 @@ balance_dirty_pages_ratelimited(struct address_space *mapping)
- typedef int (*writepage_t)(struct page *page, struct writeback_control *wbc,
- 				void *data);
+@@ -229,26 +257,8 @@ int bdi_writeback_task(struct bdi_writeback *wb)
+ 		schedule_timeout(dirty_writeback_interval);
+ 		try_to_freeze();
  
--int pdflush_operation(void (*fn)(unsigned long), unsigned long arg0);
- int generic_writepages(struct address_space *mapping,
- 		       struct writeback_control *wbc);
- int write_cache_pages(struct address_space *mapping,
-diff --git a/mm/Makefile b/mm/Makefile
-index 72255be..6443e19 100644
---- a/mm/Makefile
-+++ b/mm/Makefile
-@@ -8,7 +8,7 @@ mmu-$(CONFIG_MMU)	:= fremap.o highmem.o madvise.o memory.o mincore.o \
- 			   vmalloc.o
+-		/*
+-		 * We get here in two cases:
+-		 *
+-		 *  schedule_timeout() returned because the dirty writeback
+-		 *  interval has elapsed. If that happens, we will be able
+-		 *  to acquire the writeback lock and will proceed to do
+-		 *  kupdated style writeout.
+-		 *
+-		 *  Someone called bdi_start_writeback(), which will acquire
+-		 *  the writeback lock. This means our writeback_acquire()
+-		 *  below will fail and we call into bdi_pdflush() for
+-		 *  pdflush style writeout.
+-		 *
+-		 */
+-		if (writeback_acquire(wb))
+-			wb_kupdated(wb);
+-		else
+-			wb_writeback(wb);
++		wb_do_writeback(wb);
  
- obj-y			:= bootmem.o filemap.o mempool.o oom_kill.o fadvise.o \
--			   maccess.o page_alloc.o page-writeback.o pdflush.o \
-+			   maccess.o page_alloc.o page-writeback.o \
- 			   readahead.o swap.o truncate.o vmscan.o shmem.o \
- 			   prio_tree.o util.o mmzone.o vmstat.o backing-dev.o \
- 			   page_isolation.o mm_init.o $(mmu-y)
-diff --git a/mm/pdflush.c b/mm/pdflush.c
-deleted file mode 100644
-index 15de509..0000000
---- a/mm/pdflush.c
-+++ /dev/null
-@@ -1,251 +0,0 @@
--/*
-- * mm/pdflush.c - worker threads for writing back filesystem data
-- *
-- * Copyright (C) 2002, Linus Torvalds.
-- *
-- * 09Apr2002	Andrew Morton
-- *		Initial version
-- * 29Feb2004	kaos@sgi.com
-- *		Move worker thread creation to kthread to avoid chewing
-- *		up stack space with nested calls to kernel_thread.
-- */
--
--#include <linux/sched.h>
--#include <linux/list.h>
--#include <linux/signal.h>
--#include <linux/spinlock.h>
--#include <linux/gfp.h>
--#include <linux/init.h>
--#include <linux/module.h>
--#include <linux/fs.h>		/* Needed by writeback.h	  */
--#include <linux/writeback.h>	/* Prototypes pdflush_operation() */
--#include <linux/kthread.h>
--#include <linux/cpuset.h>
--#include <linux/freezer.h>
--
--
--/*
-- * Minimum and maximum number of pdflush instances
-- */
--#define MIN_PDFLUSH_THREADS	2
--#define MAX_PDFLUSH_THREADS	8
--
--static void start_one_pdflush_thread(void);
--
--
--/*
-- * The pdflush threads are worker threads for writing back dirty data.
-- * Ideally, we'd like one thread per active disk spindle.  But the disk
-- * topology is very hard to divine at this level.   Instead, we take
-- * care in various places to prevent more than one pdflush thread from
-- * performing writeback against a single filesystem.  pdflush threads
-- * have the PF_FLUSHER flag set in current->flags to aid in this.
-- */
--
--/*
-- * All the pdflush threads.  Protected by pdflush_lock
-- */
--static LIST_HEAD(pdflush_list);
--static DEFINE_SPINLOCK(pdflush_lock);
--
--/*
-- * The count of currently-running pdflush threads.  Protected
-- * by pdflush_lock.
-- *
-- * Readable by sysctl, but not writable.  Published to userspace at
-- * /proc/sys/vm/nr_pdflush_threads.
-- */
--int nr_pdflush_threads = 0;
--
--/*
-- * The time at which the pdflush thread pool last went empty
-- */
--static unsigned long last_empty_jifs;
--
--/*
-- * The pdflush thread.
-- *
-- * Thread pool management algorithm:
-- * 
-- * - The minimum and maximum number of pdflush instances are bound
-- *   by MIN_PDFLUSH_THREADS and MAX_PDFLUSH_THREADS.
-- * 
-- * - If there have been no idle pdflush instances for 1 second, create
-- *   a new one.
-- * 
-- * - If the least-recently-went-to-sleep pdflush thread has been asleep
-- *   for more than one second, terminate a thread.
-- */
--
--/*
-- * A structure for passing work to a pdflush thread.  Also for passing
-- * state information between pdflush threads.  Protected by pdflush_lock.
-- */
--struct pdflush_work {
--	struct task_struct *who;	/* The thread */
--	void (*fn)(unsigned long);	/* A callback function */
--	unsigned long arg0;		/* An argument to the callback */
--	struct list_head list;		/* On pdflush_list, when idle */
--	unsigned long when_i_went_to_sleep;
--};
--
--static int __pdflush(struct pdflush_work *my_work)
--{
--	current->flags |= PF_FLUSHER | PF_SWAPWRITE;
--	set_freezable();
--	my_work->fn = NULL;
--	my_work->who = current;
--	INIT_LIST_HEAD(&my_work->list);
--
--	spin_lock_irq(&pdflush_lock);
--	nr_pdflush_threads++;
--	for ( ; ; ) {
--		struct pdflush_work *pdf;
--
--		set_current_state(TASK_INTERRUPTIBLE);
--		list_move(&my_work->list, &pdflush_list);
--		my_work->when_i_went_to_sleep = jiffies;
--		spin_unlock_irq(&pdflush_lock);
--		schedule();
--		try_to_freeze();
--		spin_lock_irq(&pdflush_lock);
--		if (!list_empty(&my_work->list)) {
--			/*
--			 * Someone woke us up, but without removing our control
--			 * structure from the global list.  swsusp will do this
--			 * in try_to_freeze()->refrigerator().  Handle it.
--			 */
--			my_work->fn = NULL;
--			continue;
--		}
--		if (my_work->fn == NULL) {
--			printk("pdflush: bogus wakeup\n");
--			continue;
--		}
--		spin_unlock_irq(&pdflush_lock);
--
--		(*my_work->fn)(my_work->arg0);
--
+-		writeback_release(wb);
+ 		finish_wait(&wb->wait, &wait);
+ 	}
+ 
+diff --git a/include/linux/backing-dev.h b/include/linux/backing-dev.h
+index 279bc3f..9dd8cb9 100644
+--- a/include/linux/backing-dev.h
++++ b/include/linux/backing-dev.h
+@@ -308,6 +308,11 @@ static inline bool bdi_cap_swap_backed(struct backing_dev_info *bdi)
+ 	return bdi->capabilities & BDI_CAP_SWAP_BACKED;
+ }
+ 
++static inline bool bdi_cap_flush_forker(struct backing_dev_info *bdi)
++{
++	return bdi->capabilities & BDI_CAP_FLUSH_FORKER;
++}
++
+ static inline bool mapping_cap_writeback_dirty(struct address_space *mapping)
+ {
+ 	return bdi_cap_writeback_dirty(mapping->backing_dev_info);
+diff --git a/include/linux/writeback.h b/include/linux/writeback.h
+index f96fea3..5f1d59f 100644
+--- a/include/linux/writeback.h
++++ b/include/linux/writeback.h
+@@ -69,6 +69,7 @@ void writeback_inodes(struct writeback_control *wbc);
+ int inode_wait(void *);
+ void sync_inodes_sb(struct super_block *, int wait);
+ void sync_inodes(int wait);
++void wb_do_writeback(struct bdi_writeback *wb);
+ 
+ /* writeback.h requires fs.h; it, too, is not included from here. */
+ static inline void wait_on_inode(struct inode *inode)
+diff --git a/mm/backing-dev.c b/mm/backing-dev.c
+index 21406f2..7551648 100644
+--- a/mm/backing-dev.c
++++ b/mm/backing-dev.c
+@@ -357,14 +357,6 @@ static int bdi_forker_task(void *ptr)
+ 		struct bdi_writeback *wb;
+ 		DEFINE_WAIT(wait);
+ 
 -		/*
--		 * Thread creation: For how long have there been zero
--		 * available threads?
+-		 * Should never trigger on the default bdi
 -		 */
--		if (time_after(jiffies, last_empty_jifs + 1 * HZ)) {
--			/* unlocked list_empty() test is OK here */
--			if (list_empty(&pdflush_list)) {
--				/* unlocked test is OK here */
--				if (nr_pdflush_threads < MAX_PDFLUSH_THREADS)
--					start_one_pdflush_thread();
--			}
+-		if (wb_has_dirty_io(me)) {
+-			bdi_flush_io(me->bdi);
+-			WARN_ON(1);
 -		}
 -
--		spin_lock_irq(&pdflush_lock);
--		my_work->fn = NULL;
--
--		/*
--		 * Thread destruction: For how long has the sleepiest
--		 * thread slept?
--		 */
--		if (list_empty(&pdflush_list))
--			continue;
--		if (nr_pdflush_threads <= MIN_PDFLUSH_THREADS)
--			continue;
--		pdf = list_entry(pdflush_list.prev, struct pdflush_work, list);
--		if (time_after(jiffies, pdf->when_i_went_to_sleep + 1 * HZ)) {
--			/* Limit exit rate */
--			pdf->when_i_went_to_sleep = jiffies;
--			break;					/* exeunt */
--		}
--	}
--	nr_pdflush_threads--;
--	spin_unlock_irq(&pdflush_lock);
--	return 0;
--}
--
--/*
-- * Of course, my_work wants to be just a local in __pdflush().  It is
-- * separated out in this manner to hopefully prevent the compiler from
-- * performing unfortunate optimisations against the auto variables.  Because
-- * these are visible to other tasks and CPUs.  (No problem has actually
-- * been observed.  This is just paranoia).
-- */
--static int pdflush(void *dummy)
--{
--	struct pdflush_work my_work;
--	cpumask_var_t cpus_allowed;
--
--	/*
--	 * Since the caller doesn't even check kthread_run() worked, let's not
--	 * freak out too much if this fails.
--	 */
--	if (!alloc_cpumask_var(&cpus_allowed, GFP_KERNEL)) {
--		printk(KERN_WARNING "pdflush failed to allocate cpumask\n");
--		return 0;
--	}
--
--	/*
--	 * pdflush can spend a lot of time doing encryption via dm-crypt.  We
--	 * don't want to do that at keventd's priority.
--	 */
--	set_user_nice(current, 0);
--
--	/*
--	 * Some configs put our parent kthread in a limited cpuset,
--	 * which kthread() overrides, forcing cpus_allowed == CPU_MASK_ALL.
--	 * Our needs are more modest - cut back to our cpusets cpus_allowed.
--	 * This is needed as pdflush's are dynamically created and destroyed.
--	 * The boottime pdflush's are easily placed w/o these 2 lines.
--	 */
--	cpuset_cpus_allowed(current, cpus_allowed);
--	set_cpus_allowed_ptr(current, cpus_allowed);
--	free_cpumask_var(cpus_allowed);
--
--	return __pdflush(&my_work);
--}
--
--/*
-- * Attempt to wake up a pdflush thread, and get it to do some work for you.
-- * Returns zero if it indeed managed to find a worker thread, and passed your
-- * payload to it.
-- */
--int pdflush_operation(void (*fn)(unsigned long), unsigned long arg0)
--{
--	unsigned long flags;
--	int ret = 0;
--
--	BUG_ON(fn == NULL);	/* Hard to diagnose if it's deferred */
--
--	spin_lock_irqsave(&pdflush_lock, flags);
--	if (list_empty(&pdflush_list)) {
--		ret = -1;
+ 		prepare_to_wait(&me->wait, &wait, TASK_INTERRUPTIBLE);
+ 
+ 		smp_mb();
+@@ -372,6 +364,21 @@ static int bdi_forker_task(void *ptr)
+ 			schedule();
+ 
+ 		finish_wait(&me->wait, &wait);
++
++		/*
++		 * Ideally we'd like not to see any dirty inodes on the
++		 * default_backing_dev_info. Until these are tracked down,
++		 * perform the same writeback here that bdi_writeback_task
++		 * does. For logic, see comment in
++		 * fs/fs-writeback.c:bdi_writeback_task()
++		 */
++		if (wb_has_dirty_io(me))
++			wb_do_writeback(me);
++
++		/*
++		 * This is our real job - check for pending entries in
++		 * bdi_pending_list, and create the tasks that got added
++		 */
+ repeat:
+ 		bdi = NULL;
+ 		spin_lock_bh(&bdi_lock);
+@@ -489,7 +496,7 @@ int bdi_register(struct backing_dev_info *bdi, struct device *parent,
+ 	 * and add other bdi's to the list. They will get a thread created
+ 	 * on-demand when they need it.
+ 	 */
+-	if (bdi->capabilities & BDI_CAP_FLUSH_FORKER) {
++	if (bdi_cap_flush_forker(bdi)) {
+ 		struct bdi_writeback *wb;
+ 
+ 		wb = bdi_new_wb(bdi);
+@@ -505,12 +512,12 @@ int bdi_register(struct backing_dev_info *bdi, struct device *parent,
+ 			ret = -ENOMEM;
+ 			goto exit;
+ 		}
 -	} else {
--		struct pdflush_work *pdf;
--
--		pdf = list_entry(pdflush_list.next, struct pdflush_work, list);
--		list_del_init(&pdf->list);
--		if (list_empty(&pdflush_list))
--			last_empty_jifs = jiffies;
--		pdf->fn = fn;
--		pdf->arg0 = arg0;
--		wake_up_process(pdf->who);
--	}
--	spin_unlock_irqrestore(&pdflush_lock, flags);
--
--	return ret;
--}
--
--static void start_one_pdflush_thread(void)
--{
--	kthread_run(pdflush, NULL, "pdflush");
--}
--
--static int __init pdflush_init(void)
--{
--	int i;
--
--	for (i = 0; i < MIN_PDFLUSH_THREADS; i++)
--		start_one_pdflush_thread();
--	return 0;
--}
--
--module_init(pdflush_init);
+-		spin_lock_bh(&bdi_lock);
+-		list_add_tail_rcu(&bdi->bdi_list, &bdi_list);
+-		spin_unlock_bh(&bdi_lock);
+ 	}
+ 
++	spin_lock_bh(&bdi_lock);
++	list_add_tail_rcu(&bdi->bdi_list, &bdi_list);
++	spin_unlock_bh(&bdi_lock);
++
+ 	bdi->dev = dev;
+ 	bdi_debug_register(bdi, dev_name(dev));
+ 
+@@ -570,7 +577,7 @@ static void bdi_wb_shutdown(struct backing_dev_info *bdi)
+ void bdi_unregister(struct backing_dev_info *bdi)
+ {
+ 	if (bdi->dev) {
+-		if (!(bdi->capabilities & BDI_CAP_FLUSH_FORKER))
++		if (!bdi_cap_flush_forker(bdi))
+ 			bdi_wb_shutdown(bdi);
+ 		bdi_debug_unregister(bdi);
+ 		device_unregister(bdi->dev);
 -- 
 1.6.2.12.g83676
 
