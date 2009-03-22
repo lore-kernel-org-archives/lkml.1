@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756134AbZCVT1q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756306AbZCVT2q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756134AbZCVT1q (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Mar 2009 15:27:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755471AbZCVT0O
+	id S1756306AbZCVT2q (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Mar 2009 15:28:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755655AbZCVT00
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Mar 2009 15:26:14 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:52576 "EHLO kernel.dk"
+	Sun, 22 Mar 2009 15:26:26 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:52604 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754984AbZCVT0H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Mar 2009 15:26:07 -0400
+	id S1755245AbZCVT0L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Mar 2009 15:26:11 -0400
 From: Jens Axboe <jens.axboe@oracle.com>
 To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
 Cc: chris.mason@oracle.com, david@fromorbit.com, npiggin@suse.de,
        hch@infradead.org, akpm@linux-foundation.org,
        Jens Axboe <jens.axboe@oracle.com>
-Subject: [PATCH 03/12] Get rid of pdflush_operation() in emergency sync and remount
-Date: Sun, 22 Mar 2009 20:25:55 +0100
-Message-Id: <1237749964-8343-4-git-send-email-jens.axboe@oracle.com>
+Subject: [PATCH 04/12] writeback: move dirty inodes from super_block to backing_dev_info
+Date: Sun, 22 Mar 2009 20:25:56 +0100
+Message-Id: <1237749964-8343-5-git-send-email-jens.axboe@oracle.com>
 X-Mailer: git-send-email 1.6.2.12.g83676
 In-Reply-To: <1237749964-8343-1-git-send-email-jens.axboe@oracle.com>
 References: <1237749964-8343-1-git-send-email-jens.axboe@oracle.com>
@@ -24,80 +24,506 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Opencode a cheasy approach with kevent. The idea here is that we'll
-add some generic delayed work infrastructure, which probably wont be
-based on pdflush (or maybe it will, in which case we can just add it
-back).
-
-This is in preparation for getting rid of pdflush completely.
+This is a first step at introducing per-bdi flusher threads. We should
+have no change in behaviour, although sb_has_dirty_inodes() is now
+ridiculously expensive, as there's no easy way to answer that question.
+Not a huge problem, since it'll be deleted in subsequent patches.
 
 Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
 ---
- fs/super.c |   11 +++++++++--
- fs/sync.c  |   14 +++++++++++++-
- 2 files changed, 22 insertions(+), 3 deletions(-)
+ fs/fs-writeback.c           |  186 +++++++++++++++++++++++++++----------------
+ fs/super.c                  |    3 -
+ include/linux/backing-dev.h |    9 ++
+ include/linux/fs.h          |    5 +-
+ mm/backing-dev.c            |   30 +++++++
+ mm/page-writeback.c         |    1 -
+ 6 files changed, 156 insertions(+), 78 deletions(-)
 
-diff --git a/fs/super.c b/fs/super.c
-index 6ce5014..dd4acb1 100644
---- a/fs/super.c
-+++ b/fs/super.c
-@@ -674,7 +674,7 @@ int do_remount_sb(struct super_block *sb, int flags, void *data, int force)
- 	return 0;
- }
+diff --git a/fs/fs-writeback.c b/fs/fs-writeback.c
+index e3fe991..45d2739 100644
+--- a/fs/fs-writeback.c
++++ b/fs/fs-writeback.c
+@@ -25,6 +25,7 @@
+ #include <linux/buffer_head.h>
+ #include "internal.h"
  
--static void do_emergency_remount(unsigned long foo)
-+static void do_emergency_remount(struct work_struct *work)
- {
- 	struct super_block *sb;
++#define inode_to_bdi(inode)	(inode)->i_mapping->backing_dev_info
  
-@@ -697,12 +697,19 @@ static void do_emergency_remount(unsigned long foo)
- 		spin_lock(&sb_lock);
+ /**
+  * writeback_acquire - attempt to get exclusive writeback access to a device
+@@ -158,12 +159,13 @@ void __mark_inode_dirty(struct inode *inode, int flags)
+ 			goto out;
+ 
+ 		/*
+-		 * If the inode was already on s_dirty/s_io/s_more_io, don't
+-		 * reposition it (that would break s_dirty time-ordering).
++		 * If the inode was already on b_dirty/b_io/b_more_io, don't
++		 * reposition it (that would break b_dirty time-ordering).
+ 		 */
+ 		if (!was_dirty) {
+ 			inode->dirtied_when = jiffies;
+-			list_move(&inode->i_list, &sb->s_dirty);
++			list_move(&inode->i_list,
++					&inode_to_bdi(inode)->b_dirty);
+ 		}
  	}
- 	spin_unlock(&sb_lock);
-+	kfree(work);
- 	printk("Emergency Remount complete\n");
- }
- 
- void emergency_remount(void)
+ out:
+@@ -184,31 +186,30 @@ static int write_inode(struct inode *inode, int sync)
+  * furthest end of its superblock's dirty-inode list.
+  *
+  * Before stamping the inode's ->dirtied_when, we check to see whether it is
+- * already the most-recently-dirtied inode on the s_dirty list.  If that is
++ * already the most-recently-dirtied inode on the b_dirty list.  If that is
+  * the case then the inode must have been redirtied while it was being written
+  * out and we don't reset its dirtied_when.
+  */
+ static void redirty_tail(struct inode *inode)
  {
--	pdflush_operation(do_emergency_remount, 0);
-+	struct work_struct *work;
-+
-+	work = kmalloc(sizeof(*work), GFP_ATOMIC);
-+	if (work) {
-+		INIT_WORK(work, do_emergency_remount);
-+		schedule_work(work);
-+	}
+-	struct super_block *sb = inode->i_sb;
++	struct backing_dev_info *bdi = inode_to_bdi(inode);
+ 
+-	if (!list_empty(&sb->s_dirty)) {
+-		struct inode *tail_inode;
++	if (!list_empty(&bdi->b_dirty)) {
++		struct inode *tail;
+ 
+-		tail_inode = list_entry(sb->s_dirty.next, struct inode, i_list);
+-		if (!time_after_eq(inode->dirtied_when,
+-				tail_inode->dirtied_when))
++		tail = list_entry(bdi->b_dirty.next, struct inode, i_list);
++		if (!time_after_eq(inode->dirtied_when, tail->dirtied_when))
+ 			inode->dirtied_when = jiffies;
+ 	}
+-	list_move(&inode->i_list, &sb->s_dirty);
++	list_move(&inode->i_list, &bdi->b_dirty);
  }
  
  /*
-diff --git a/fs/sync.c b/fs/sync.c
-index a16d53e..ec95a69 100644
---- a/fs/sync.c
-+++ b/fs/sync.c
-@@ -42,9 +42,21 @@ SYSCALL_DEFINE0(sync)
- 	return 0;
+- * requeue inode for re-scanning after sb->s_io list is exhausted.
++ * requeue inode for re-scanning after bdi->b_io list is exhausted.
+  */
+ static void requeue_io(struct inode *inode)
+ {
+-	list_move(&inode->i_list, &inode->i_sb->s_more_io);
++	list_move(&inode->i_list, &inode_to_bdi(inode)->b_more_io);
  }
  
-+static void do_sync_work(struct work_struct *work)
-+{
-+	do_sync(0);
-+	kfree(work);
+ static void inode_sync_complete(struct inode *inode)
+@@ -240,18 +241,50 @@ static void move_expired_inodes(struct list_head *delaying_queue,
+ /*
+  * Queue all expired dirty inodes for io, eldest first.
+  */
+-static void queue_io(struct super_block *sb,
+-				unsigned long *older_than_this)
++static void queue_io(struct backing_dev_info *bdi,
++		     unsigned long *older_than_this)
+ {
+-	list_splice_init(&sb->s_more_io, sb->s_io.prev);
+-	move_expired_inodes(&sb->s_dirty, &sb->s_io, older_than_this);
++	list_splice_init(&bdi->b_more_io, bdi->b_io.prev);
++	move_expired_inodes(&bdi->b_dirty, &bdi->b_io, older_than_this);
 +}
 +
- void emergency_sync(void)
- {
--	pdflush_operation(do_sync, 0);
-+	struct work_struct *work;
++static int sb_on_inode_list(struct super_block *sb, struct list_head *list)
++{
++	struct inode *inode;
++	int ret = 0;
 +
-+	work = kmalloc(sizeof(*work), GFP_ATOMIC);
-+	if (work) {
-+		INIT_WORK(work, do_sync_work);
-+		schedule_work(work);
++	spin_lock(&inode_lock);
++	list_for_each_entry(inode, list, i_list) {
++		if (inode->i_sb == sb) {
++			ret = 1;
++			break;
++		}
 +	}
++	spin_unlock(&inode_lock);
++	return ret;
  }
  
+ int sb_has_dirty_inodes(struct super_block *sb)
+ {
+-	return !list_empty(&sb->s_dirty) ||
+-	       !list_empty(&sb->s_io) ||
+-	       !list_empty(&sb->s_more_io);
++	struct backing_dev_info *bdi;
++	int ret = 0;
++
++	/*
++	 * This is REALLY expensive right now, but it'll go away
++	 * when the bdi writeback is introduced
++	 */
++	rcu_read_lock();
++	list_for_each_entry_rcu(bdi, &bdi_list, bdi_list) {
++		if (sb_on_inode_list(sb, &bdi->b_dirty) ||
++		    sb_on_inode_list(sb, &bdi->b_io) ||
++		    sb_on_inode_list(sb, &bdi->b_more_io)) {
++			ret = 1;
++			break;
++		}
++	}
++	rcu_read_unlock();
++
++	return ret;
+ }
+ EXPORT_SYMBOL(sb_has_dirty_inodes);
+ 
+@@ -307,11 +340,11 @@ __sync_single_inode(struct inode *inode, struct writeback_control *wbc)
+ 			/*
+ 			 * We didn't write back all the pages.  nfs_writepages()
+ 			 * sometimes bales out without doing anything. Redirty
+-			 * the inode; Move it from s_io onto s_more_io/s_dirty.
++			 * the inode; Move it from b_io onto b_more_io/b_dirty.
+ 			 */
+ 			/*
+ 			 * akpm: if the caller was the kupdate function we put
+-			 * this inode at the head of s_dirty so it gets first
++			 * this inode at the head of b_dirty so it gets first
+ 			 * consideration.  Otherwise, move it to the tail, for
+ 			 * the reasons described there.  I'm not really sure
+ 			 * how much sense this makes.  Presumably I had a good
+@@ -321,7 +354,7 @@ __sync_single_inode(struct inode *inode, struct writeback_control *wbc)
+ 			if (wbc->for_kupdate) {
+ 				/*
+ 				 * For the kupdate function we move the inode
+-				 * to s_more_io so it will get more writeout as
++				 * to b_more_io so it will get more writeout as
+ 				 * soon as the queue becomes uncongested.
+ 				 */
+ 				inode->i_state |= I_DIRTY_PAGES;
+@@ -387,10 +420,10 @@ __writeback_single_inode(struct inode *inode, struct writeback_control *wbc)
+ 	if ((wbc->sync_mode != WB_SYNC_ALL) && (inode->i_state & I_SYNC)) {
+ 		/*
+ 		 * We're skipping this inode because it's locked, and we're not
+-		 * doing writeback-for-data-integrity.  Move it to s_more_io so
+-		 * that writeback can proceed with the other inodes on s_io.
++		 * doing writeback-for-data-integrity.  Move it to b_more_io so
++		 * that writeback can proceed with the other inodes on b_io.
+ 		 * We'll have another go at writing back this inode when we
+-		 * completed a full scan of s_io.
++		 * completed a full scan of b_io.
+ 		 */
+ 		requeue_io(inode);
+ 		return 0;
+@@ -413,51 +446,24 @@ __writeback_single_inode(struct inode *inode, struct writeback_control *wbc)
+ 	return __sync_single_inode(inode, wbc);
+ }
+ 
+-/*
+- * Write out a superblock's list of dirty inodes.  A wait will be performed
+- * upon no inodes, all inodes or the final one, depending upon sync_mode.
+- *
+- * If older_than_this is non-NULL, then only write out inodes which
+- * had their first dirtying at a time earlier than *older_than_this.
+- *
+- * If we're a pdlfush thread, then implement pdflush collision avoidance
+- * against the entire list.
+- *
+- * If `bdi' is non-zero then we're being asked to writeback a specific queue.
+- * This function assumes that the blockdev superblock's inodes are backed by
+- * a variety of queues, so all inodes are searched.  For other superblocks,
+- * assume that all inodes are backed by the same queue.
+- *
+- * FIXME: this linear search could get expensive with many fileystems.  But
+- * how to fix?  We need to go from an address_space to all inodes which share
+- * a queue with that address_space.  (Easy: have a global "dirty superblocks"
+- * list).
+- *
+- * The inodes to be written are parked on sb->s_io.  They are moved back onto
+- * sb->s_dirty as they are selected for writing.  This way, none can be missed
+- * on the writer throttling path, and we get decent balancing between many
+- * throttled threads: we don't want them all piling up on inode_sync_wait.
+- */
+-void generic_sync_sb_inodes(struct super_block *sb,
+-				struct writeback_control *wbc)
++static void generic_sync_bdi_inodes(struct backing_dev_info *bdi,
++				    struct writeback_control *wbc,
++				    int is_blkdev)
+ {
+ 	const unsigned long start = jiffies;	/* livelock avoidance */
+-	int sync = wbc->sync_mode == WB_SYNC_ALL;
+ 
+ 	spin_lock(&inode_lock);
+-	if (!wbc->for_kupdate || list_empty(&sb->s_io))
+-		queue_io(sb, wbc->older_than_this);
++	if (!wbc->for_kupdate || list_empty(&bdi->b_io))
++		queue_io(bdi, wbc->older_than_this);
+ 
+-	while (!list_empty(&sb->s_io)) {
+-		struct inode *inode = list_entry(sb->s_io.prev,
++	while (!list_empty(&bdi->b_io)) {
++		struct inode *inode = list_entry(bdi->b_io.prev,
+ 						struct inode, i_list);
+-		struct address_space *mapping = inode->i_mapping;
+-		struct backing_dev_info *bdi = mapping->backing_dev_info;
+ 		long pages_skipped;
+ 
+ 		if (!bdi_cap_writeback_dirty(bdi)) {
+ 			redirty_tail(inode);
+-			if (sb_is_blkdev_sb(sb)) {
++			if (is_blkdev) {
+ 				/*
+ 				 * Dirty memory-backed blockdev: the ramdisk
+ 				 * driver does this.  Skip just this inode
+@@ -479,14 +485,14 @@ void generic_sync_sb_inodes(struct super_block *sb,
+ 
+ 		if (wbc->nonblocking && bdi_write_congested(bdi)) {
+ 			wbc->encountered_congestion = 1;
+-			if (!sb_is_blkdev_sb(sb))
++			if (!is_blkdev)
+ 				break;		/* Skip a congested fs */
+ 			requeue_io(inode);
+ 			continue;		/* Skip a congested blockdev */
+ 		}
+ 
+ 		if (wbc->bdi && bdi != wbc->bdi) {
+-			if (!sb_is_blkdev_sb(sb))
++			if (!is_blkdev)
+ 				break;		/* fs has the wrong queue */
+ 			requeue_io(inode);
+ 			continue;		/* blockdev has wrong queue */
+@@ -521,13 +527,55 @@ void generic_sync_sb_inodes(struct super_block *sb,
+ 			wbc->more_io = 1;
+ 			break;
+ 		}
+-		if (!list_empty(&sb->s_more_io))
++		if (!list_empty(&bdi->b_more_io))
+ 			wbc->more_io = 1;
+ 	}
+ 
+-	if (sync) {
++	spin_unlock(&inode_lock);
++	/* Leave any unwritten inodes on b_io */
++}
++
++/*
++ * Write out a superblock's list of dirty inodes.  A wait will be performed
++ * upon no inodes, all inodes or the final one, depending upon sync_mode.
++ *
++ * If older_than_this is non-NULL, then only write out inodes which
++ * had their first dirtying at a time earlier than *older_than_this.
++ *
++ * If we're a pdlfush thread, then implement pdflush collision avoidance
++ * against the entire list.
++ *
++ * If `bdi' is non-zero then we're being asked to writeback a specific queue.
++ * This function assumes that the blockdev superblock's inodes are backed by
++ * a variety of queues, so all inodes are searched.  For other superblocks,
++ * assume that all inodes are backed by the same queue.
++ *
++ * FIXME: this linear search could get expensive with many fileystems.  But
++ * how to fix?  We need to go from an address_space to all inodes which share
++ * a queue with that address_space.  (Easy: have a global "dirty superblocks"
++ * list).
++ *
++ * The inodes to be written are parked on bdi->b_io.  They are moved back onto
++ * bdi->b_dirty as they are selected for writing.  This way, none can be missed
++ * on the writer throttling path, and we get decent balancing between many
++ * throttled threads: we don't want them all piling up on inode_sync_wait.
++ */
++void generic_sync_sb_inodes(struct super_block *sb,
++				struct writeback_control *wbc)
++{
++	const int is_blkdev = sb_is_blkdev_sb(sb);
++	struct backing_dev_info *bdi;
++
++	rcu_read_lock();
++	list_for_each_entry_rcu(bdi, &bdi_list, bdi_list)
++		generic_sync_bdi_inodes(bdi, wbc, is_blkdev);
++	rcu_read_unlock();
++
++	if (wbc->sync_mode == WB_SYNC_ALL) {
+ 		struct inode *inode, *old_inode = NULL;
+ 
++		spin_lock(&inode_lock);
++
+ 		/*
+ 		 * Data integrity sync. Must wait for all pages under writeback,
+ 		 * because there may have been pages dirtied before our sync
+@@ -564,10 +612,8 @@ void generic_sync_sb_inodes(struct super_block *sb,
+ 		}
+ 		spin_unlock(&inode_lock);
+ 		iput(old_inode);
+-	} else
+-		spin_unlock(&inode_lock);
++	}
+ 
+-	return;		/* Leave any unwritten inodes on s_io */
+ }
+ EXPORT_SYMBOL_GPL(generic_sync_sb_inodes);
+ 
+@@ -582,8 +628,8 @@ static void sync_sb_inodes(struct super_block *sb,
+  *
+  * Note:
+  * We don't need to grab a reference to superblock here. If it has non-empty
+- * ->s_dirty it's hadn't been killed yet and kill_super() won't proceed
+- * past sync_inodes_sb() until the ->s_dirty/s_io/s_more_io lists are all
++ * ->b_dirty it's hadn't been killed yet and kill_super() won't proceed
++ * past sync_inodes_sb() until the ->b_dirty/b_io/b_more_io lists are all
+  * empty. Since __sync_single_inode() regains inode_lock before it finally moves
+  * inode from superblock lists we are OK.
+  *
+diff --git a/fs/super.c b/fs/super.c
+index dd4acb1..e4ec03f 100644
+--- a/fs/super.c
++++ b/fs/super.c
+@@ -64,9 +64,6 @@ static struct super_block *alloc_super(struct file_system_type *type)
+ 			s = NULL;
+ 			goto out;
+ 		}
+-		INIT_LIST_HEAD(&s->s_dirty);
+-		INIT_LIST_HEAD(&s->s_io);
+-		INIT_LIST_HEAD(&s->s_more_io);
+ 		INIT_LIST_HEAD(&s->s_files);
+ 		INIT_LIST_HEAD(&s->s_instances);
+ 		INIT_HLIST_HEAD(&s->s_anon);
+diff --git a/include/linux/backing-dev.h b/include/linux/backing-dev.h
+index bee52ab..bb58c95 100644
+--- a/include/linux/backing-dev.h
++++ b/include/linux/backing-dev.h
+@@ -40,6 +40,8 @@ enum bdi_stat_item {
+ #define BDI_STAT_BATCH (8*(1+ilog2(nr_cpu_ids)))
+ 
+ struct backing_dev_info {
++	struct list_head bdi_list;
++
+ 	unsigned long ra_pages;	/* max readahead in PAGE_CACHE_SIZE units */
+ 	unsigned long state;	/* Always use atomic bitops on this */
+ 	unsigned int capabilities; /* Device capabilities */
+@@ -58,6 +60,10 @@ struct backing_dev_info {
+ 
+ 	struct device *dev;
+ 
++	struct list_head	b_dirty;	/* dirty inodes */
++	struct list_head	b_io;		/* parked for writeback */
++	struct list_head	b_more_io;	/* parked for more writeback */
++
+ #ifdef CONFIG_DEBUG_FS
+ 	struct dentry *debug_dir;
+ 	struct dentry *debug_stats;
+@@ -72,6 +78,9 @@ int bdi_register(struct backing_dev_info *bdi, struct device *parent,
+ int bdi_register_dev(struct backing_dev_info *bdi, dev_t dev);
+ void bdi_unregister(struct backing_dev_info *bdi);
+ 
++extern spinlock_t bdi_lock;
++extern struct list_head bdi_list;
++
+ static inline void __add_bdi_stat(struct backing_dev_info *bdi,
+ 		enum bdi_stat_item item, s64 amount)
+ {
+diff --git a/include/linux/fs.h b/include/linux/fs.h
+index 92734c0..3c90eb4 100644
+--- a/include/linux/fs.h
++++ b/include/linux/fs.h
+@@ -648,7 +648,7 @@ static inline int mapping_writably_mapped(struct address_space *mapping)
+ 
+ struct inode {
+ 	struct hlist_node	i_hash;
+-	struct list_head	i_list;
++	struct list_head	i_list;		/* backing dev IO list */
+ 	struct list_head	i_sb_list;
+ 	struct list_head	i_dentry;
+ 	unsigned long		i_ino;
+@@ -1155,9 +1155,6 @@ struct super_block {
+ 	struct xattr_handler	**s_xattr;
+ 
+ 	struct list_head	s_inodes;	/* all inodes */
+-	struct list_head	s_dirty;	/* dirty inodes */
+-	struct list_head	s_io;		/* parked for writeback */
+-	struct list_head	s_more_io;	/* parked for more writeback */
+ 	struct hlist_head	s_anon;		/* anonymous dentries for (nfs) exporting */
+ 	struct list_head	s_files;
+ 	/* s_dentry_lru and s_nr_dentry_unused are protected by dcache_lock */
+diff --git a/mm/backing-dev.c b/mm/backing-dev.c
+index be68c95..82be036 100644
+--- a/mm/backing-dev.c
++++ b/mm/backing-dev.c
+@@ -22,6 +22,8 @@ struct backing_dev_info default_backing_dev_info = {
+ EXPORT_SYMBOL_GPL(default_backing_dev_info);
+ 
+ static struct class *bdi_class;
++DEFINE_SPINLOCK(bdi_lock);
++LIST_HEAD(bdi_list);
+ 
+ #ifdef CONFIG_DEBUG_FS
+ #include <linux/debugfs.h>
+@@ -211,6 +213,10 @@ int bdi_register(struct backing_dev_info *bdi, struct device *parent,
+ 		goto exit;
+ 	}
+ 
++	spin_lock(&bdi_lock);
++	list_add_tail_rcu(&bdi->bdi_list, &bdi_list);
++	spin_unlock(&bdi_lock);
++
+ 	bdi->dev = dev;
+ 	bdi_debug_register(bdi, dev_name(dev));
+ 
+@@ -225,9 +231,23 @@ int bdi_register_dev(struct backing_dev_info *bdi, dev_t dev)
+ }
+ EXPORT_SYMBOL(bdi_register_dev);
+ 
++static void bdi_remove_from_list(struct backing_dev_info *bdi)
++{
++	spin_lock(&bdi_lock);
++	list_del_rcu(&bdi->bdi_list);
++	spin_unlock(&bdi_lock);
++
++	/*
++	 * In case the bdi is freed right after unregister, we need to
++	 * make sure any RCU sections have exited
++	 */
++	synchronize_rcu();
++}
++
+ void bdi_unregister(struct backing_dev_info *bdi)
+ {
+ 	if (bdi->dev) {
++		bdi_remove_from_list(bdi);
+ 		bdi_debug_unregister(bdi);
+ 		device_unregister(bdi->dev);
+ 		bdi->dev = NULL;
+@@ -245,6 +265,10 @@ int bdi_init(struct backing_dev_info *bdi)
+ 	bdi->min_ratio = 0;
+ 	bdi->max_ratio = 100;
+ 	bdi->max_prop_frac = PROP_FRAC_BASE;
++	INIT_LIST_HEAD(&bdi->bdi_list);
++	INIT_LIST_HEAD(&bdi->b_io);
++	INIT_LIST_HEAD(&bdi->b_dirty);
++	INIT_LIST_HEAD(&bdi->b_more_io);
+ 
+ 	for (i = 0; i < NR_BDI_STAT_ITEMS; i++) {
+ 		err = percpu_counter_init(&bdi->bdi_stat[i], 0);
+@@ -259,6 +283,8 @@ int bdi_init(struct backing_dev_info *bdi)
+ err:
+ 		while (i--)
+ 			percpu_counter_destroy(&bdi->bdi_stat[i]);
++
++		bdi_remove_from_list(bdi);
+ 	}
+ 
+ 	return err;
+@@ -269,6 +295,10 @@ void bdi_destroy(struct backing_dev_info *bdi)
+ {
+ 	int i;
+ 
++	WARN_ON(!list_empty(&bdi->b_dirty));
++	WARN_ON(!list_empty(&bdi->b_io));
++	WARN_ON(!list_empty(&bdi->b_more_io));
++
+ 	bdi_unregister(bdi);
+ 
+ 	for (i = 0; i < NR_BDI_STAT_ITEMS; i++)
+diff --git a/mm/page-writeback.c b/mm/page-writeback.c
+index 74dc57c..3ec11d8 100644
+--- a/mm/page-writeback.c
++++ b/mm/page-writeback.c
+@@ -319,7 +319,6 @@ static void task_dirty_limit(struct task_struct *tsk, long *pdirty)
  /*
+  *
+  */
+-static DEFINE_SPINLOCK(bdi_lock);
+ static unsigned int bdi_min_ratio;
+ 
+ int bdi_set_min_ratio(struct backing_dev_info *bdi, unsigned int min_ratio)
 -- 
 1.6.2.12.g83676
 
