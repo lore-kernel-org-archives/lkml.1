@@ -1,427 +1,319 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755453AbZCVR5l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755666AbZCVR7U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755453AbZCVR5l (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Mar 2009 13:57:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751484AbZCVR5a
+	id S1755666AbZCVR7U (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Mar 2009 13:59:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751484AbZCVR7J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Mar 2009 13:57:30 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:54133 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751117AbZCVR53 convert rfc822-to-8bit (ORCPT
+	Sun, 22 Mar 2009 13:59:09 -0400
+Received: from mail-ew0-f165.google.com ([209.85.219.165]:48492 "EHLO
+	mail-ew0-f165.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751341AbZCVR7G (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Mar 2009 13:57:29 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Andrey Borzenkov <arvidjaar@gmail.com>
-Subject: Re: [PATCH -mmotm] fbmem: fix fb_info->lock and mm->mmap_sem circular locking dependency
-Date: Sun, 22 Mar 2009 18:57:19 +0100
-User-Agent: KMail/1.11.1 (Linux/2.6.29-rc8-tst; KDE/4.2.1; x86_64; ; )
-Cc: Andrea Righi <righi.andrea@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Geert Uytterhoeven <geert@linux-m68k.org>,
-       "Antonino A. Daplas" <adaplas@gmail.com>,
-       linux-fbdev-devel@lists.sourceforge.net,
-       linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       Dave Jones <davej@redhat.com>,
-       Harvey Harrison <harvey.harrison@gmail.com>,
-       Johannes Weiner <hannes@cmpxchg.org>,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>
-References: <498817E2.3020008@gmail.com> <1233783983-28802-1-git-send-email-righi.andrea@gmail.com> <200903221748.42871.arvidjaar@gmail.com>
-In-Reply-To: <200903221748.42871.arvidjaar@gmail.com>
+	Sun, 22 Mar 2009 13:59:06 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=hURcgo6oS3jOkR7oqTQnvJyvuCRnflh33G8LbAFThqyVYOfowlVV2y1zzmEWtL92Bp
+         BSngcwqpxvXGS10i6ETlWQopLBq9wDqYb6Ol8JF7PTIcKi+rquFznP0F8qx+lzNAW0B6
+         neVDLCN6ffWu19VadAMO0RjQC0v1Rfexho5/Q=
+Date: Sun, 22 Mar 2009 18:59:01 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Tom Zanussi <tzanussi@gmail.com>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: [PATCH 2/4] tracing: add ring_buffer_event_discard() to ring
+	buffer
+Message-ID: <20090322175859.GC6002@nowhere>
+References: <1237710649.7703.47.camel@charm-linux>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200903221857.20473.rjw@sisk.pl>
+In-Reply-To: <1237710649.7703.47.camel@charm-linux>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 22 March 2009, Andrey Borzenkov wrote:
-> On 5 февраля 2009 00:46:23 Andrea Righi wrote:
-> > Fix this circular locking dependencies in the frame buffer console
-> > driver pushing down the mutex fb_info->lock.
-> >
-> > Circular locking dependecies occur calling the blocking
-> > fb_notifier_call_chain() with fb_info->lock held. Notifier callbacks
-> > can try to acquire mm->mmap_sem, while fb_mmap() acquires the locks
-> > in the reverse order mm->mmap_sem => fb_info->lock.
-> >
-> > Tested-by: Andrey Borzenkov <arvidjaar@mail.ru>
-> > Signed-off-by: Andrea Righi <righi.andrea@gmail.com>
+On Sun, Mar 22, 2009 at 03:30:49AM -0500, Tom Zanussi wrote:
+> This patch overloads RINGBUF_TYPE_PADDING to provide a way to discard
+> events from the ring buffer, for the event-filtering mechanism
+> introduced in a subsequent patch.
 > 
-> Hmm ... is it in current Linus tree? Because I happened to have this again 
-> in rc8:
-
-It doesn't seems so, at least I don't see it in there.
-
-Thanks,
-Rafael
-
-
-> [47800.440873] =======================================================
-> [47800.440950] [ INFO: possible circular locking dependency detected ]
-> [47800.440981] 2.6.29-rc8-1avb #35
-> [47800.440999] -------------------------------------------------------
-> [47800.441026] s2disk/19740 is trying to acquire lock:
-> [47800.441057]  (&fb_info->lock){--..}, at: [<c02175b7>] fb_mmap+0x97/0x170
-> [47800.441149] 
-> [47800.441152] but task is already holding lock:
-> [47800.441183]  (&mm->mmap_sem){----}, at: [<c0106e2e>] sys_mmap2+0x8e/0xc0
-> [47800.441260] 
-> [47800.441262] which lock already depends on the new lock.
-> [47800.441266] 
-> [47800.441307] 
-> [47800.441309] the existing dependency chain (in reverse order) is:
-> [47800.441345] 
-> [47800.441347] -> #3 (&mm->mmap_sem){----}:
-> [47800.441426]        [<c014347f>] __lock_acquire+0x129f/0x1930
-> [47800.441466]        [<c0143b6c>] lock_acquire+0x5c/0x80
-> [47800.441500]        [<c0175f97>] might_fault+0x77/0xa0
-> [47800.441548]        [<c01fd746>] copy_to_user+0x36/0x120
-> [47800.441591]        [<c0199eb7>] filldir+0x97/0xe0
-> [47800.441627]        [<c01d2279>] sysfs_readdir+0x129/0x220
-> [47800.441668]        [<c019a066>] vfs_readdir+0x86/0xa0
-> [47800.441701]        [<c019a1a8>] sys_getdents+0x68/0xc0
-> [47800.441734]        [<c010340a>] syscall_call+0x7/0xb
-> [47800.441770]        [<ffffffff>] 0xffffffff
-> [47800.441839] 
-> [47800.441842] -> #2 (sysfs_mutex){--..}:
-> [47800.441906]        [<c014347f>] __lock_acquire+0x129f/0x1930
-> [47800.441941]        [<c0143b6c>] lock_acquire+0x5c/0x80
-> [47800.441974]        [<c03556ba>] mutex_lock_nested+0xba/0x2f0
-> [47800.442012]        [<c01d260c>] sysfs_addrm_start+0x2c/0xc0
-> [47800.442012]        [<c01d2bc0>] create_dir+0x40/0x90
-> [47800.442012]        [<c01d2c3b>] sysfs_create_dir+0x2b/0x50
-> [47800.442012]        [<c01f74ec>] kobject_add_internal+0xbc/0x1b0
-> [47800.442012]        [<c01f76b1>] kobject_add_varg+0x31/0x50
-> [47800.442012]        [<c01f772c>] kobject_add+0x2c/0x60
-> [47800.442012]        [<c026c598>] device_add+0xa8/0x550
-> [47800.442012]        [<c026ca52>] device_register+0x12/0x20
-> [47800.442012]        [<c026cb0b>] device_create_vargs+0xab/0xc0
-> [47800.442012]        [<c026cb48>] device_create+0x28/0x30
-> [47800.442012]        [<c0265dfd>] register_con_driver+0xed/0x130
-> [47800.442012]        [<c02672eb>] take_over_console+0x1b/0x50
-> [47800.442012]        [<c02244fd>] fbcon_takeover+0x5d/0xb0
-> [47800.442012]        [<c0225170>] fbcon_event_notify+0x820/0x900
-> [47800.442012]        [<c0137183>] notifier_call_chain+0x53/0xa0
-> [47800.442012]        [<c0137444>] __blocking_notifier_call_chain+0x44/0x60
-> [47800.442012]        [<c013747a>] blocking_notifier_call_chain+0x1a/0x20
-> [47800.442012]        [<c0216f51>] fb_notifier_call_chain+0x11/0x20
-> [47800.442012]        [<c0217ed8>] register_framebuffer+0x168/0x220
-> [47800.442012]        [<c047e2f2>] vesafb_probe+0x542/0x783
-> [47800.442012]        [<c026f72f>] platform_drv_probe+0xf/0x20
-> [47800.442012]        [<c026e917>] driver_probe_device+0x87/0x1b0
-> [47800.442012]        [<c026ead8>] __device_attach+0x8/0x10
-> [47800.442012]        [<c026df5b>] bus_for_each_drv+0x5b/0x80
-> [47800.442012]        [<c026eb86>] device_attach+0x76/0x80
-> [47800.442012]        [<c026dd77>] bus_attach_device+0x47/0x70
-> [47800.442012]        [<c026c813>] device_add+0x323/0x550
-> [47800.442012]        [<c0270105>] platform_device_add+0x175/0x1c0
-> [47800.442012]        [<c047e5cd>] vesafb_init+0x9a/0x1ec
-> [47800.442012]        [<c010111a>] do_one_initcall+0x2a/0x160
-> [47800.442012]        [<c04694d5>] kernel_init+0x83/0xd5
-> [47800.442012]        [<c0103a37>] kernel_thread_helper+0x7/0x10
-> [47800.442012]        [<ffffffff>] 0xffffffff
-> [47800.442012] 
-> [47800.442012] -> #1 ((fb_notifier_list).rwsem){----}:
-> [47800.442012]        [<c014347f>] __lock_acquire+0x129f/0x1930
-> [47800.442012]        [<c0143b6c>] lock_acquire+0x5c/0x80
-> [47800.442012]        [<c0355fb9>] down_read+0x49/0x90
-> [47800.442012]        [<c013742a>] __blocking_notifier_call_chain+0x2a/0x60
-> [47800.442012]        [<c013747a>] blocking_notifier_call_chain+0x1a/0x20
-> [47800.442012]        [<c0216f51>] fb_notifier_call_chain+0x11/0x20
-> [47800.442012]        [<c021856e>] do_fb_ioctl+0x2ae/0x5d0
-> [47800.442012]        [<c02188ad>] fb_ioctl+0x1d/0x20
-> [47800.442012]        [<c0199270>] vfs_ioctl+0x20/0x80
-> [47800.442012]        [<c0199482>] do_vfs_ioctl+0x72/0x570
-> [47800.442012]        [<c01999b9>] sys_ioctl+0x39/0x70
-> [47800.442012]        [<c0103331>] sysenter_do_call+0x12/0x31
-> [47800.442012]        [<ffffffff>] 0xffffffff
-> [47800.442012] 
-> [47800.442012] -> #0 (&fb_info->lock){--..}:
-> [47800.442012]        [<c01435ec>] __lock_acquire+0x140c/0x1930
-> [47800.442012]        [<c0143b6c>] lock_acquire+0x5c/0x80
-> [47800.442012]        [<c03556ba>] mutex_lock_nested+0xba/0x2f0
-> [47800.442012]        [<c02175b7>] fb_mmap+0x97/0x170
-> [47800.442012]        [<c017cbc0>] mmap_region+0x2e0/0x440
-> [47800.442012]        [<c017ceea>] do_mmap_pgoff+0x1ca/0x2f0
-> [47800.442012]        [<c0106e4d>] sys_mmap2+0xad/0xc0
-> [47800.442012]        [<c0103331>] sysenter_do_call+0x12/0x31
-> [47800.442012]        [<ffffffff>] 0xffffffff
-> [47800.442012] 
-> [47800.442012] other info that might help us debug this:
-> [47800.442012] 
-> [47800.442012] 1 lock held by s2disk/19740:
-> [47800.442012]  #0:  (&mm->mmap_sem){----}, at: [<c0106e2e>] 
-> sys_mmap2+0x8e/0xc0
-> [47800.442012] 
-> [47800.442012] stack backtrace:
-> [47800.442012] Pid: 19740, comm: s2disk Not tainted 2.6.29-rc8-1avb #35
-> [47800.442012] Call Trace:
-> [47800.442012]  [<c0354324>] ? printk+0x18/0x1c
-> [47800.442012]  [<c0141d8f>] print_circular_bug_tail+0xcf/0xe0
-> [47800.442012]  [<c01435ec>] __lock_acquire+0x140c/0x1930
-> [47800.442012]  [<c0132936>] ? add_wait_queue+0x36/0x50
-> [47800.442012]  [<c013f375>] ? lock_release_holdtime+0x35/0x210
-> [47800.442012]  [<c0143b6c>] lock_acquire+0x5c/0x80
-> [47800.442012]  [<c02175b7>] ? fb_mmap+0x97/0x170
-> [47800.442012]  [<c03556ba>] mutex_lock_nested+0xba/0x2f0
-> [47800.442012]  [<c02175b7>] ? fb_mmap+0x97/0x170
-> [47800.442012]  [<c02175b7>] ? fb_mmap+0x97/0x170
-> [47800.442012]  [<c01892c5>] ? kmem_cache_alloc+0xa5/0x100
-> [47800.442012]  [<c02175b7>] fb_mmap+0x97/0x170
-> [47800.442012]  [<c017cbc0>] mmap_region+0x2e0/0x440
-> [47800.442012]  [<c017ceea>] do_mmap_pgoff+0x1ca/0x2f0
-> [47800.442012]  [<c0106e4d>] sys_mmap2+0xad/0xc0
-> [47800.442012]  [<c0103331>] sysenter_do_call+0x12/0x31
-> [47803.041426] Syncing filesystems ... done.
-> [47803.055587] Freezing user space processes ... (elapsed 0.00 seconds) 
-> done.
-> [47803.059328] Freezing remaining freezable tasks ... (elapsed 0.00 seconds) 
-> done.
+> I did the initial version but thanks to Steven Rostedt for adding the
+> parts that actually made it work. ;-)
 > 
+> ---
+>  include/linux/ring_buffer.h |   11 +++-
+>  kernel/trace/ring_buffer.c  |  117 +++++++++++++++++++++++++++++++++++-------
+>  2 files changed, 105 insertions(+), 23 deletions(-)
 > 
-> > ---
-> >  drivers/video/backlight/backlight.c |    3 +
-> >  drivers/video/backlight/lcd.c       |    3 +
-> >  drivers/video/console/fbcon.c       |   73
-> > ++++++++++++++++++++++++++++++----- drivers/video/fbmem.c            
-> >   |   11 +-----
-> >  4 files changed, 70 insertions(+), 20 deletions(-)
-> >
-> > diff --git a/drivers/video/backlight/backlight.c
-> > b/drivers/video/backlight/backlight.c index 157057c..dd37cbc 100644
-> > --- a/drivers/video/backlight/backlight.c
-> > +++ b/drivers/video/backlight/backlight.c
-> > @@ -35,6 +35,8 @@ static int fb_notifier_callback(struct
-> > notifier_block *self, return 0;
-> >
-> >  	bd = container_of(self, struct backlight_device, fb_notif);
-> > +	if (!lock_fb_info(evdata->info))
-> > +		return -ENODEV;
-> >  	mutex_lock(&bd->ops_lock);
-> >  	if (bd->ops)
-> >  		if (!bd->ops->check_fb ||
-> > @@ -47,6 +49,7 @@ static int fb_notifier_callback(struct
-> > notifier_block *self, backlight_update_status(bd);
-> >  		}
-> >  	mutex_unlock(&bd->ops_lock);
-> > +	unlock_fb_info(evdata->info);
-> >  	return 0;
-> >  }
-> >
-> > diff --git a/drivers/video/backlight/lcd.c
-> > b/drivers/video/backlight/lcd.c index b644947..0bb13df 100644
-> > --- a/drivers/video/backlight/lcd.c
-> > +++ b/drivers/video/backlight/lcd.c
-> > @@ -40,6 +40,8 @@ static int fb_notifier_callback(struct
-> > notifier_block *self, if (!ld->ops)
-> >  		return 0;
-> >
-> > +	if (!lock_fb_info(evdata->info))
-> > +		return -ENODEV;
-> >  	mutex_lock(&ld->ops_lock);
-> >  	if (!ld->ops->check_fb || ld->ops->check_fb(ld, evdata->info)) {
-> >  		if (event == FB_EVENT_BLANK) {
-> > @@ -51,6 +53,7 @@ static int fb_notifier_callback(struct
-> > notifier_block *self, }
-> >  	}
-> >  	mutex_unlock(&ld->ops_lock);
-> > +	unlock_fb_info(evdata->info);
-> >  	return 0;
-> >  }
-> >
-> > diff --git a/drivers/video/console/fbcon.c
-> > b/drivers/video/console/fbcon.c index 1657b96..2cd500a 100644
-> > --- a/drivers/video/console/fbcon.c
-> > +++ b/drivers/video/console/fbcon.c
-> > @@ -2954,8 +2954,11 @@ static int fbcon_fb_unbind(int idx)
-> >
-> >  static int fbcon_fb_unregistered(struct fb_info *info)
-> >  {
-> > -	int i, idx = info->node;
-> > +	int i, idx;
-> >
-> > +	if (!lock_fb_info(info))
-> > +		return -ENODEV;
-> > +	idx = info->node;
-> >  	for (i = first_fb_vc; i <= last_fb_vc; i++) {
-> >  		if (con2fb_map[i] == idx)
-> >  			con2fb_map[i] = -1;
-> > @@ -2979,13 +2982,14 @@ static int fbcon_fb_unregistered(struct
-> > fb_info *info) }
-> >  	}
-> >
-> > -	if (!num_registered_fb)
-> > -		unregister_con_driver(&fb_con);
-> > -
-> > -
-> >  	if (primary_device == idx)
-> >  		primary_device = -1;
-> >
-> > +	unlock_fb_info(info);
-> > +
-> > +	if (!num_registered_fb)
-> > +		unregister_con_driver(&fb_con);
-> > +
-> >  	return 0;
-> >  }
-> >
-> > @@ -3021,9 +3025,13 @@ static inline void fbcon_select_primary(struct
-> > fb_info *info)
-> >
-> >  static int fbcon_fb_registered(struct fb_info *info)
-> >  {
-> > -	int ret = 0, i, idx = info->node;
-> > +	int ret = 0, i, idx;
-> >
-> > +	if (!lock_fb_info(info))
-> > +		return -ENODEV;
-> > +	idx = info->node;
-> >  	fbcon_select_primary(info);
-> > +	unlock_fb_info(info);
-> >
-> >  	if (info_idx == -1) {
-> >  		for (i = first_fb_vc; i <= last_fb_vc; i++) {
-> > @@ -3124,7 +3132,7 @@ static void fbcon_get_requirement(struct
-> > fb_info *info, }
-> >  }
-> >
-> > -static int fbcon_event_notify(struct notifier_block *self,
-> > +static int fbcon_event_notify(struct notifier_block *self,
-> >  			      unsigned long action, void *data)
-> >  {
-> >  	struct fb_event *event = data;
-> > @@ -3132,7 +3140,7 @@ static int fbcon_event_notify(struct
-> > notifier_block *self, struct fb_videomode *mode;
-> >  	struct fb_con2fbmap *con2fb;
-> >  	struct fb_blit_caps *caps;
-> > -	int ret = 0;
-> > +	int idx, ret = 0;
-> >
-> >  	/*
-> >  	 * ignore all events except driver registration and deregistration
-> > @@ -3144,23 +3152,54 @@ static int fbcon_event_notify(struct
-> > notifier_block *self,
-> >
-> >  	switch(action) {
-> >  	case FB_EVENT_SUSPEND:
-> > +		if (!lock_fb_info(info)) {
-> > +			ret = -ENODEV;
-> > +			goto done;
-> > +		}
-> >  		fbcon_suspended(info);
-> > +		unlock_fb_info(info);
-> >  		break;
-> >  	case FB_EVENT_RESUME:
-> > +		if (!lock_fb_info(info)) {
-> > +			ret = -ENODEV;
-> > +			goto done;
-> > +		}
-> >  		fbcon_resumed(info);
-> > +		unlock_fb_info(info);
-> >  		break;
-> >  	case FB_EVENT_MODE_CHANGE:
-> > +		if (!lock_fb_info(info)) {
-> > +			ret = -ENODEV;
-> > +			goto done;
-> > +		}
-> >  		fbcon_modechanged(info);
-> > +		unlock_fb_info(info);
-> >  		break;
-> >  	case FB_EVENT_MODE_CHANGE_ALL:
-> > +		if (!lock_fb_info(info)) {
-> > +			ret = -ENODEV;
-> > +			goto done;
-> > +		}
-> >  		fbcon_set_all_vcs(info);
-> > +		unlock_fb_info(info);
-> >  		break;
-> >  	case FB_EVENT_MODE_DELETE:
-> >  		mode = event->data;
-> > +		if (!lock_fb_info(info)) {
-> > +			ret = -ENODEV;
-> > +			goto done;
-> > +		}
-> >  		ret = fbcon_mode_deleted(info, mode);
-> > +		unlock_fb_info(info);
-> >  		break;
-> >  	case FB_EVENT_FB_UNBIND:
-> > -		ret = fbcon_fb_unbind(info->node);
-> > +		if (!lock_fb_info(info)) {
-> > +			ret = -ENODEV;
-> > +			goto done;
-> > +		}
-> > +		idx = info->node;
-> > +		unlock_fb_info(info);
-> > +		ret = fbcon_fb_unbind(idx);
-> >  		break;
-> >  	case FB_EVENT_FB_REGISTERED:
-> >  		ret = fbcon_fb_registered(info);
-> > @@ -3178,17 +3217,31 @@ static int fbcon_event_notify(struct
-> > notifier_block *self, con2fb->framebuffer =
-> > con2fb_map[con2fb->console - 1];
-> >  		break;
-> >  	case FB_EVENT_BLANK:
-> > +		if (!lock_fb_info(info)) {
-> > +			ret = -ENODEV;
-> > +			goto done;
-> > +		}
-> >  		fbcon_fb_blanked(info, *(int *)event->data);
-> > +		unlock_fb_info(info);
-> >  		break;
-> >  	case FB_EVENT_NEW_MODELIST:
-> > +		if (!lock_fb_info(info)) {
-> > +			ret = -ENODEV;
-> > +			goto done;
-> > +		}
-> >  		fbcon_new_modelist(info);
-> > +		unlock_fb_info(info);
-> >  		break;
-> >  	case FB_EVENT_GET_REQ:
-> >  		caps = event->data;
-> > +		if (!lock_fb_info(info)) {
-> > +			ret = -ENODEV;
-> > +			goto done;
-> > +		}
-> >  		fbcon_get_requirement(info, caps);
-> > +		unlock_fb_info(info);
-> >  		break;
-> >  	}
-> > -
-> >  done:
-> >  	return ret;
-> >  }
-> > diff --git a/drivers/video/fbmem.c b/drivers/video/fbmem.c
-> > index cfd9dce..b64f061 100644
-> > --- a/drivers/video/fbmem.c
-> > +++ b/drivers/video/fbmem.c
-> > @@ -1086,13 +1086,8 @@ static long do_fb_ioctl(struct fb_info *info,
-> > unsigned int cmd, return -EINVAL;
-> >  		con2fb.framebuffer = -1;
-> >  		event.data = &con2fb;
-> > -
-> > -		if (!lock_fb_info(info))
-> > -			return -ENODEV;
-> >  		event.info = info;
-> >  		fb_notifier_call_chain(FB_EVENT_GET_CONSOLE_MAP, &event);
-> > -		unlock_fb_info(info);
-> > -
-> >  		ret = copy_to_user(argp, &con2fb, sizeof(con2fb)) ? -EFAULT : 0;
-> >  		break;
-> >  	case FBIOPUT_CON2FBMAP:
-> > @@ -1109,12 +1104,8 @@ static long do_fb_ioctl(struct fb_info *info,
-> > unsigned int cmd, break;
-> >  		}
-> >  		event.data = &con2fb;
-> > -		if (!lock_fb_info(info))
-> > -			return -ENODEV;
-> >  		event.info = info;
-> > -		ret = fb_notifier_call_chain(FB_EVENT_SET_CONSOLE_MAP,
-> > -					      &event);
-> > -		unlock_fb_info(info);
-> > +		ret = fb_notifier_call_chain(FB_EVENT_SET_CONSOLE_MAP, &event);
-> >  		break;
-> >  	case FBIOBLANK:
-> >  		if (!lock_fb_info(info))
+> diff --git a/include/linux/ring_buffer.h b/include/linux/ring_buffer.h
+> index e20b886..ae5b210 100644
+> --- a/include/linux/ring_buffer.h
+> +++ b/include/linux/ring_buffer.h
+> @@ -22,10 +22,13 @@ struct ring_buffer_event {
+>  /**
+>   * enum ring_buffer_type - internal ring buffer types
+>   *
+> - * @RINGBUF_TYPE_PADDING:	Left over page padding
+> - *				 array is ignored
+> - *				 size is variable depending on how much
+> + * @RINGBUF_TYPE_PADDING:	Left over page padding or discarded event
+> + *				 If time_delta is 0:
+> + *				  array is ignored
+> + *				  size is variable depending on how much
+>   *				  padding is needed
+> + *				 If time_delta is non zero:
+> + *				  everything else same as RINGBUF_TYPE_DATA
+>   *
+>   * @RINGBUF_TYPE_TIME_EXTEND:	Extend the time delta
+>   *				 array[0] = time delta (28 .. 59)
+> @@ -69,6 +72,8 @@ ring_buffer_event_time_delta(struct ring_buffer_event *event)
+>  	return event->time_delta;
+>  }
+>  
+> +void ring_buffer_event_discard(struct ring_buffer_event *event);
+> +
+>  /*
+>   * size is in bytes for each per CPU buffer.
+>   */
+> diff --git a/kernel/trace/ring_buffer.c b/kernel/trace/ring_buffer.c
+> index 7e05e2c..5cd2342 100644
+> --- a/kernel/trace/ring_buffer.c
+> +++ b/kernel/trace/ring_buffer.c
+> @@ -190,16 +190,65 @@ enum {
+>  	RB_LEN_TIME_STAMP = 16,
+>  };
+>  
+> -/* inline for ring buffer fast paths */
+> +static inline int rb_null_event(struct ring_buffer_event *event)
+> +{
+> +	return event->type == RINGBUF_TYPE_PADDING && event->time_delta == 0;
+> +}
+> +
+> +static inline int rb_discarded_event(struct ring_buffer_event *event)
+> +{
+> +	return event->type == RINGBUF_TYPE_PADDING && event->time_delta;
+> +}
+> +
+> +static void rb_event_set_padding(struct ring_buffer_event *event)
+> +{
+> +	event->type = RINGBUF_TYPE_PADDING;
+> +	event->time_delta = 0;
+> +}
+> +
+> +/**
+> + * ring_buffer_event_discard - discard an event in the ring buffer
+> + * @buffer: the ring buffer
+> + * @event: the event to discard
+> + *
+> + * Sometimes a event that is in the ring buffer needs to be ignored.
+> + * This function lets the user discard an event in the ring buffer
+> + * and then that event will not be read later.
+> + *
+> + * Note, it is up to the user to be careful with this, and protect
+> + * against races. If the user discards an event that has been consumed
+> + * it is possible that it could corrupt the ring buffer.
+> + */
+> +void ring_buffer_event_discard(struct ring_buffer_event *event)
+> +{
+> +	event->type = RINGBUF_TYPE_PADDING;
+> +	/* time delta must be non zero */
+> +	if (!event->time_delta)
+> +		event->time_delta = 1;
+> +}
+> +
+>  static unsigned
+> -rb_event_length(struct ring_buffer_event *event)
+> +rb_event_data_length(struct ring_buffer_event *event)
+>  {
+>  	unsigned length;
+>  
+> +	if (event->len)
+> +		length = event->len * RB_ALIGNMENT;
+> +	else
+> +		length = event->array[0];
+> +	return length + RB_EVNT_HDR_SIZE;
+> +}
+> +
+> +/* inline for ring buffer fast paths */
+
+
+I don't see an inline here.
+
+
+> +static unsigned
+> +rb_event_length(struct ring_buffer_event *event)
+> +{
+>  	switch (event->type) {
+>  	case RINGBUF_TYPE_PADDING:
+> -		/* undefined */
+> -		return -1;
+> +		if (rb_null_event(event))
+> +			/* undefined */
+> +			return -1;
+> +		return rb_event_data_length(event);
+>  
+>  	case RINGBUF_TYPE_TIME_EXTEND:
+>  		return RB_LEN_TIME_EXTEND;
+> @@ -208,11 +257,7 @@ rb_event_length(struct ring_buffer_event *event)
+>  		return RB_LEN_TIME_STAMP;
+>  
+>  	case RINGBUF_TYPE_DATA:
+> -		if (event->len)
+> -			length = event->len * RB_ALIGNMENT;
+> -		else
+> -			length = event->array[0];
+> -		return length + RB_EVNT_HDR_SIZE;
+> +		return rb_event_data_length(event);
+>  	default:
+>  		BUG();
+>  	}
+> @@ -846,11 +891,6 @@ int ring_buffer_resize(struct ring_buffer *buffer, unsigned long size)
+>  }
+>  EXPORT_SYMBOL_GPL(ring_buffer_resize);
+>  
+> -static inline int rb_null_event(struct ring_buffer_event *event)
+> -{
+> -	return event->type == RINGBUF_TYPE_PADDING;
+> -}
+> -
+>  static inline void *
+>  __rb_data_page_index(struct buffer_data_page *bpage, unsigned index)
+>  {
+> @@ -1221,7 +1261,7 @@ __rb_reserve_next(struct ring_buffer_per_cpu *cpu_buffer,
+>  			/* Mark the rest of the page with padding */
+>  			event = __rb_page_index(tail_page, tail);
+>  			kmemcheck_annotate_bitfield(event->bitfield);
+> -			event->type = RINGBUF_TYPE_PADDING;
+> +			rb_event_set_padding(event);
+>  		}
+>  
+>  		if (tail <= BUF_PAGE_SIZE)
+> @@ -1972,7 +2012,7 @@ static void rb_advance_reader(struct ring_buffer_per_cpu *cpu_buffer)
+>  
+>  	event = rb_reader_event(cpu_buffer);
+>  
+> -	if (event->type == RINGBUF_TYPE_DATA)
+> +	if (event->type == RINGBUF_TYPE_DATA || rb_discarded_event(event))
+>  		cpu_buffer->entries--;
+>  
+>  	rb_update_read_stamp(cpu_buffer, event);
+> @@ -2055,9 +2095,18 @@ rb_buffer_peek(struct ring_buffer *buffer, int cpu, u64 *ts)
+>  
+>  	switch (event->type) {
+>  	case RINGBUF_TYPE_PADDING:
+> -		RB_WARN_ON(cpu_buffer, 1);
+> +		if (rb_null_event(event))
+> +			RB_WARN_ON(cpu_buffer, 1);
+> +		/*
+> +		 * Because the writer could be discarding every
+> +		 * event it creates (which would probably be bad)
+> +		 * if we were to go back to "again" then we may never
+> +		 * catch up, and will trigger the warn on, or lock
+> +		 * the box. Return the padding, and we will release
+> +		 * the current locks, and try again.
+> +		 */
+>  		rb_advance_reader(cpu_buffer);
+> -		return NULL;
+> +		return event;
+>  
+>  	case RINGBUF_TYPE_TIME_EXTEND:
+>  		/* Internal data, OK to advance */
+> @@ -2118,8 +2167,12 @@ rb_iter_peek(struct ring_buffer_iter *iter, u64 *ts)
+>  
+>  	switch (event->type) {
+>  	case RINGBUF_TYPE_PADDING:
+> -		rb_inc_iter(iter);
+> -		goto again;
+> +		if (rb_null_event(event)) {
+> +			rb_inc_iter(iter);
+> +			goto again;
+> +		}
+> +		rb_advance_iter(iter);
+> +		return event;
+>  
+>  	case RINGBUF_TYPE_TIME_EXTEND:
+>  		/* Internal data, OK to advance */
+> @@ -2166,10 +2219,16 @@ ring_buffer_peek(struct ring_buffer *buffer, int cpu, u64 *ts)
+>  	if (!cpumask_test_cpu(cpu, buffer->cpumask))
+>  		return NULL;
+>  
+> + again:
+>  	spin_lock_irqsave(&cpu_buffer->reader_lock, flags);
+>  	event = rb_buffer_peek(buffer, cpu, ts);
+>  	spin_unlock_irqrestore(&cpu_buffer->reader_lock, flags);
+>  
+> +	if (event && event->type == RINGBUF_TYPE_PADDING) {
+> +		cpu_relax();
+> +		goto again;
+> +	}
+> +
+>  	return event;
+>  }
+>  
+> @@ -2188,10 +2247,16 @@ ring_buffer_iter_peek(struct ring_buffer_iter *iter, u64 *ts)
+>  	struct ring_buffer_event *event;
+>  	unsigned long flags;
+>  
+> + again:
+>  	spin_lock_irqsave(&cpu_buffer->reader_lock, flags);
+>  	event = rb_iter_peek(iter, ts);
+>  	spin_unlock_irqrestore(&cpu_buffer->reader_lock, flags);
+>  
+> +	if (event && event->type == RINGBUF_TYPE_PADDING) {
+> +		cpu_relax();
+> +		goto again;
+> +	}
+> +
+>  	return event;
+>  }
+>  
+> @@ -2210,6 +2275,7 @@ ring_buffer_consume(struct ring_buffer *buffer, int cpu, u64 *ts)
+>  	struct ring_buffer_event *event = NULL;
+>  	unsigned long flags;
+>  
+> + again:
+>  	/* might be called in atomic */
+>  	preempt_disable();
+>  
+> @@ -2231,6 +2297,11 @@ ring_buffer_consume(struct ring_buffer *buffer, int cpu, u64 *ts)
+>   out:
+>  	preempt_enable();
+>  
+> +	if (event && event->type == RINGBUF_TYPE_PADDING) {
+> +		cpu_relax();
+> +		goto again;
+> +	}
+> +
+>  	return event;
+>  }
+>  EXPORT_SYMBOL_GPL(ring_buffer_consume);
+> @@ -2309,6 +2380,7 @@ ring_buffer_read(struct ring_buffer_iter *iter, u64 *ts)
+>  	struct ring_buffer_per_cpu *cpu_buffer = iter->cpu_buffer;
+>  	unsigned long flags;
+>  
+> + again:
+>  	spin_lock_irqsave(&cpu_buffer->reader_lock, flags);
+>  	event = rb_iter_peek(iter, ts);
+>  	if (!event)
+> @@ -2318,6 +2390,11 @@ ring_buffer_read(struct ring_buffer_iter *iter, u64 *ts)
+>   out:
+>  	spin_unlock_irqrestore(&cpu_buffer->reader_lock, flags);
+>  
+> +	if (event && event->type == RINGBUF_TYPE_PADDING) {
+> +		cpu_relax();
+> +		goto again;
+> +	}
+> +
+>  	return event;
+>  }
+>  EXPORT_SYMBOL_GPL(ring_buffer_read);
+> -- 
+
+
+Looks good!
+
+Acked-by: Frederic Weisbecker <fweisbec@gmail.com>
+
