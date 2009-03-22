@@ -1,63 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755775AbZCVTRj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755649AbZCVTYk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755775AbZCVTRj (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Mar 2009 15:17:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754749AbZCVTR1
+	id S1755649AbZCVTYk (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Mar 2009 15:24:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754665AbZCVTYb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Mar 2009 15:17:27 -0400
-Received: from mga05.intel.com ([192.55.52.89]:30386 "EHLO
-	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754587AbZCVTR0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Mar 2009 15:17:26 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.38,403,1233561600"; 
-   d="scan'208";a="441025814"
-Date: Sun, 22 Mar 2009 20:19:35 +0100
-From: Samuel Ortiz <sameo@openedhand.com>
-To: Liam Girdwood <lrg@slimlogic.co.uk>
-Cc: dbrownell@users.sourceforge.net, OMAP <linux-omap@vger.kernel.org>,
-       lkml <linux-kernel@vger.kernel.org>, Mark Brown <broonie@sirena.org.uk>
-Subject: Re: [patch] twl4030-regulator: expose VPLL2
-Message-ID: <20090322191935.GB2832@sortiz.org>
-Reply-To: Samuel Ortiz <sameo@openedhand.com>
-References: <200903131754.54997.david-b@pacbell.net> <20090316155103.GJ16539@sirena.org.uk> <1237486426.6781.345.camel@vega.slimlogic.co.uk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1237486426.6781.345.camel@vega.slimlogic.co.uk>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Sun, 22 Mar 2009 15:24:31 -0400
+Received: from hera.kernel.org ([140.211.167.34]:54829 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754657AbZCVTYa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Mar 2009 15:24:30 -0400
+Subject: [PATCH -tip] x86: e820.h fix various signedness issues in setup.c
+ and e820.c
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: Ingo Molnar <mingo@elte.hu>, x86 maintainers <x86@kernel.org>,
+       Rusty Russell <rusty@rustcorp.com.au>, Yinghai Lu <yinghai@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Mon, 23 Mar 2009 00:53:51 +0530
+Message-Id: <1237749831.5417.2.camel@ht.satnam>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 19, 2009 at 06:13:46PM +0000, Liam Girdwood wrote:
-> On Mon, 2009-03-16 at 15:51 +0000, Mark Brown wrote:
-> > On Fri, Mar 13, 2009 at 05:54:54PM -0700, David Brownell wrote:
-> > > From: David Brownell <dbrownell@users.sourceforge.net>
-> > > 
-> > > Add VPLL2 to the set of twl4030-family regulators exposed for
-> > > use by various drivers.  It's commonly used to power the digital
-> > > video outputs (e.g. LCD or DVI displays) on OMAP3 systems.
-> > > 
-> > > Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
-> > 
-> > Acked-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
-> 
-> Samuel, I've applied this to the regulator tree as the part that touches
-> mfd is relatively minor and twl4030 specific (doesn't touch core).
-Thanks a lot, and sorry for the late reply...
-Feel free to add my Acked-by: if needed.
 
-Cheers,
-Samuel.
+From: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+Date: Mon, 23 Mar 2009 00:27:11 +0530
+Subject: [PATCH] x86: e820.h fix various signedness issues in setup.c and e820.c
 
+Impact: cleanup
+
+This fixed various signedness issues in setup.c and e820.c:
+arch/x86/kernel/setup.c:455:53: warning: incorrect type in argument 3 (different signedness)
+arch/x86/kernel/setup.c:455:53:    expected int *pnr_map
+arch/x86/kernel/setup.c:455:53:    got unsigned int extern [toplevel] *<noident>
+arch/x86/kernel/setup.c:639:53: warning: incorrect type in argument 3 (different signedness)
+arch/x86/kernel/setup.c:639:53:    expected int *pnr_map
+arch/x86/kernel/setup.c:639:53:    got unsigned int extern [toplevel] *<noident>
+arch/x86/kernel/setup.c:820:54: warning: incorrect type in argument 3 (different signedness)
+arch/x86/kernel/setup.c:820:54:    expected int *pnr_map
+arch/x86/kernel/setup.c:820:54:    got unsigned int extern [toplevel] *<noident>
+
+arch/x86/kernel/e820.c:670:53: warning: incorrect type in argument 3 (different signedness)
+arch/x86/kernel/e820.c:670:53:    expected int *pnr_map
+arch/x86/kernel/e820.c:670:53:    got unsigned int [toplevel] *<noident>
+
+Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+---
+ arch/x86/include/asm/e820.h |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/arch/x86/include/asm/e820.h b/arch/x86/include/asm/e820.h
+index 00d41ce..a1e1c54 100644
+--- a/arch/x86/include/asm/e820.h
++++ b/arch/x86/include/asm/e820.h
+@@ -57,7 +57,7 @@ struct e820entry {
+ } __attribute__((packed));
  
-> Thanks
-> 
-> Liam
-> 
-
+ struct e820map {
+-	__u32 nr_map;
++	int nr_map;
+ 	struct e820entry map[E820_X_MAX];
+ };
+ 
 -- 
-Intel Open Source Technology Centre
-http://oss.intel.com/
+1.6.0.6
+
+
+
