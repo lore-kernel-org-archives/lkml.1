@@ -1,80 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756361AbZCVUSv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756011AbZCVUZ2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756361AbZCVUSv (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Mar 2009 16:18:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754957AbZCVUSl
+	id S1756011AbZCVUZ2 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Mar 2009 16:25:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753705AbZCVUZQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Mar 2009 16:18:41 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:33273 "EHLO mx2.redhat.com"
+	Sun, 22 Mar 2009 16:25:16 -0400
+Received: from hera.kernel.org ([140.211.167.34]:44386 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753705AbZCVUSl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Mar 2009 16:18:41 -0400
-Date: Sun, 22 Mar 2009 21:14:36 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: Peter Lojkin <ia6432@inbox.ru>
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <peterz@infradead.org>, rjw@sisk.pl
-Subject: Re: 2.6.28, limiting cpu time doesn't work
-Message-ID: <20090322201436.GA12838@redhat.com>
-References: <E1LkN4B-0002yU-00.ia6432-inbox-ru@f205.mail.ru>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <E1LkN4B-0002yU-00.ia6432-inbox-ru@f205.mail.ru>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	id S1753183AbZCVUZP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Mar 2009 16:25:15 -0400
+Subject: Re: [PATCH -tip] x86: e820.h fix various signedness issues in
+ setup.c and e820.c
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Ingo Molnar <mingo@elte.hu>, x86 maintainers <x86@kernel.org>,
+       Rusty Russell <rusty@rustcorp.com.au>, Yinghai Lu <yinghai@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20090322200937.GA5887@uranus.ravnborg.org>
+References: <1237749831.5417.2.camel@ht.satnam>
+	 <20090322200937.GA5887@uranus.ravnborg.org>
+Content-Type: text/plain
+Date: Mon, 23 Mar 2009 01:54:18 +0530
+Message-Id: <1237753458.5417.9.camel@ht.satnam>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 03/19, Peter Lojkin wrote:
->
-> after upgrade to 2.6.28 ulimit -t doesn't work. for example:
->
-> bash# ulimit -t 3; cpuhog
->
-> (where cpuhog is any program that continuously use cpu)
-> with 2.6.27.20 cpuhog gets killed after 3sec as expected.
-> with 2.6.28, 2.6.28.8, 2.6.29-rc8-git4 it's keep running indefinitely.
-> ulimit -a and /proc/<pid>/limits show that cputime limit was set correctly.
+On Sun, 2009-03-22 at 21:09 +0100, Sam Ravnborg wrote:
+> >  
+> >  struct e820map {
+> > -	__u32 nr_map;
+> > +	int nr_map;
+> >  	struct e820entry map[E820_X_MAX];
+> >  };
+> 
+> but that header is exported so use of plain int looks wrong.
+> 
 
-Found this message on http://bugzilla.kernel.org/show_bug.cgi?id=12911 ...
+From: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+Date: Mon, 23 Mar 2009 01:52:15 +0530
+Subject: [PATCH] x86: e820.h fix various signedness issues in setup.c and e820.c
 
-I _think_ posix_cpu_timers_init_group() is not right, it should copy
-cputime_expires->prof_exp.
+Impact: cleanup
 
-Peter, any chance you can test the (uncompiled/untested) patch below?
+This fixed various signedness issues in setup.c and e820.c:
+arch/x86/kernel/setup.c:455:53: warning: incorrect type in argument 3 (different signedness)
+arch/x86/kernel/setup.c:455:53:    expected int *pnr_map
+arch/x86/kernel/setup.c:455:53:    got unsigned int extern [toplevel] *<noident>
+arch/x86/kernel/setup.c:639:53: warning: incorrect type in argument 3 (different signedness)
+arch/x86/kernel/setup.c:639:53:    expected int *pnr_map
+arch/x86/kernel/setup.c:639:53:    got unsigned int extern [toplevel] *<noident>
+arch/x86/kernel/setup.c:820:54: warning: incorrect type in argument 3 (different signedness)
+arch/x86/kernel/setup.c:820:54:    expected int *pnr_map
+arch/x86/kernel/setup.c:820:54:    got unsigned int extern [toplevel] *<noident>
 
-Also, I assume that something like
+arch/x86/kernel/e820.c:670:53: warning: incorrect type in argument 3 (different signedness)
+arch/x86/kernel/e820.c:670:53:    expected int *pnr_map
+arch/x86/kernel/e820.c:670:53:    got unsigned int [toplevel] *<noident>
 
-	$ ulimit -t 3
-	$ while true; do true; done
+Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+---
+ arch/x86/include/asm/e820.h |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-kills the shell correctly, yes? IOW, I suspect that ulimit works, but
-cpuhog never check RLIMIT_CPU because fastpath_timer_check() always
-returns 0 due to task_cputime_zero(&sig->cputime_expires) == T.
-
-I'm afraid we need the fix fo 2.6.29 as well, but I am looking at rc3.
-
-Hmm. check_process_timers() updates ->cputime_expires, but it never
-clears (say) cputime_expires.prof_exp, why? Can't we just do
-
-	if (cputime_gt(sig->cputime_expires.prof_exp, prof_expires))
-		sig->cputime_expires.prof_exp = prof_expires;
-at the end?
-
-Oleg.
-
---- a/kernel/fork.c
-+++ b/kernel/fork.c
-@@ -790,9 +790,7 @@ static void posix_cpu_timers_init_group(
- 	sig->it_prof_incr = cputime_zero;
+diff --git a/arch/x86/include/asm/e820.h b/arch/x86/include/asm/e820.h
+index 00d41ce..991ac17 100644
+--- a/arch/x86/include/asm/e820.h
++++ b/arch/x86/include/asm/e820.h
+@@ -57,7 +57,7 @@ struct e820entry {
+ } __attribute__((packed));
  
- 	/* Cached expiration times. */
--	sig->cputime_expires.prof_exp = cputime_zero;
--	sig->cputime_expires.virt_exp = cputime_zero;
--	sig->cputime_expires.sched_exp = 0;
-+	sig->cputime_expires = current->signal->cputime_expires;
+ struct e820map {
+-	__u32 nr_map;
++	__s32 nr_map;
+ 	struct e820entry map[E820_X_MAX];
+ };
  
- 	/* The timer lists. */
- 	INIT_LIST_HEAD(&sig->cpu_timers[0]);
+-- 
+1.6.0.6
+
+
 
