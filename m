@@ -1,60 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754704AbZCVMyR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755056AbZCVMzc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754704AbZCVMyR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Mar 2009 08:54:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753292AbZCVMx7
+	id S1755056AbZCVMzc (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Mar 2009 08:55:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754068AbZCVMzW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Mar 2009 08:53:59 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:51302 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751669AbZCVMx7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Mar 2009 08:53:59 -0400
-Date: Sun, 22 Mar 2009 13:53:20 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: "Frank Ch. Eigler" <fche@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Roland McGrath <roland@redhat.com>,
-       Steven Rostedt <rostedt@goodmis.org>, utrace-devel@redhat.com,
-       linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH 3/3] utrace-based ftrace "process" engine, v2
-Message-ID: <20090322125320.GA14171@elte.hu>
-References: <20090321014244.9ADF1FC3AB@magilla.sf.frob.com> <20090321074301.GA19384@elte.hu> <20090321013912.ed6039c9.akpm@linux-foundation.org> <20090321091235.GA29678@elte.hu> <20090321041954.72b99e69.akpm@linux-foundation.org> <20090321115141.GA3566@redhat.com> <20090321050422.d1d99eec.akpm@linux-foundation.org> <20090321154501.GA2707@elte.hu> <20090321214852.GA5262@redhat.com> <20090322120811.GD19826@elte.hu>
+	Sun, 22 Mar 2009 08:55:22 -0400
+Received: from rhlx01.hs-esslingen.de ([129.143.116.10]:58747 "EHLO
+	rhlx01.hs-esslingen.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753292AbZCVMzV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Mar 2009 08:55:21 -0400
+Date: Sun, 22 Mar 2009 13:55:17 +0100
+From: Andreas Mohr <andi@lisas.de>
+To: Takashi Iwai <tiwai@suse.de>
+Cc: Andreas Mohr <andi@lisas.de>, Maxim Levitsky <maximlevitsky@gmail.com>,
+       linux-kernel@vger.kernel.org, alsa-devel@alsa-project.org,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+Subject: Re: [alsa-devel] Bugs on aspire one A150
+Message-ID: <20090322125517.GA26498@rhlx01.hs-esslingen.de>
+References: <20090317100500.GA16029@rhlx01.hs-esslingen.de> <20090317103845.GA26007@rhlx01.hs-esslingen.de> <20090317104755.GA1446@rhlx01.hs-esslingen.de> <s5h3adcpf1i.wl%tiwai@suse.de> <20090317161828.GA32756@rhlx01.hs-esslingen.de> <s5h3adbhovj.wl%tiwai@suse.de> <20090318090507.GA30453@rhlx01.hs-esslingen.de> <s5hsklbchmu.wl%tiwai@suse.de> <20090320185640.GA17278@rhlx01.hs-esslingen.de> <s5hmybgnddc.wl%tiwai@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090322120811.GD19826@elte.hu>
+In-Reply-To: <s5hmybgnddc.wl%tiwai@suse.de>
+X-Priority: none
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
-* Ingo Molnar <mingo@elte.hu> wrote:
-
->  Total download size: 329 M
+On Fri, Mar 20, 2009 at 09:33:19PM +0100, Takashi Iwai wrote:
+> At Fri, 20 Mar 2009 19:56:40 +0100,
+> Andreas Mohr wrote:
+> > 
+> > Hi,
+> > 
+> > On Wed, Mar 18, 2009 at 10:19:53AM +0100, Takashi Iwai wrote:
+> > > What is the output with -v option?
+> > 
+> > Sorry for the delay!
+> > 
+> > $ arecord -fdat -c1 -v test.wav; aplay test.wav 
+> > Recording WAVE 'test.wav' : Signed 16 bit Little Endian, Rate 48000 Hz, Mono
+> > ALSA <-> PulseAudio PCM I/O Plugin
+> > Its setup is:
+> >   stream       : CAPTURE
+> >   access       : RW_INTERLEAVED
+> >   format       : S16_LE
+> >   subformat    : STD
+> >   channels     : 1
+> >   rate         : 48000
+> >   exact rate   : 48000 (48000/1)
+> >   msbits       : 16
+> >   buffer_size  : 24000
+> >   period_size  : 6000
+> >   period_time  : 125000
+> >   tstamp_mode  : NONE
+> >   period_step  : 1
+> >   avail_min    : 6000
+> >   period_event : 0
+> >   start_threshold  : 1
+> >   stop_threshold   : 24000
+> >   silence_threshold: 0
+> >   silence_size : 0
+> >   boundary     : 1572864000
+> > ^CAborted by signal Interrupt...
+> > Playing WAVE 'test.wav' : Signed 16 bit Little Endian, Rate 48000 Hz, Mono
+> > andi@andinet:/tmp$ 
+> > 
+> > 
+> > Hmm. Note the pulseaudio stuff above...
 > 
-> That size of a _compressed_ debuginfo kernel package is obscene. 
-> We can fit 4 years of full Linux kernel Git history into that size 
-> - 60,000+ commits, full metadata and full 20 million lines of code 
-> flux included!
-> 
-> Uncompressed it blows up to gigabytes of on-disk data.
-> 
-> And this download has to be repeated for _every_ minor kernel 
-> upgrade.
+> Yes, that's the very reason.  If you don't PA and avoid the
+> default configuration override (e.g. defined in /etc/asound.conf)
+> my patch should work.
 
-Have to correct my memories about how many commits the kernel repo 
-has: 132,019 commits. That massive history fits into 298 MB. (!)
+Sorry, but how would I achieve "don't PA"?
+I've tried some Ubuntu suggestions
+(e.g. http://ubuntuforums.org/showthread.php?t=852518 ; didn't work,
+it's Jaunty here),
+I tried asoundconf (un)set-pulseaudio (~/.asoundrc contents looked ok
+then but didn't really help),
+I tried pasuspender -- arecord -fdat -c1 -v test.wav
+I always ended up with "ALSA <-> PulseAudio PCM I/O Plugin" mode.
+(I didn't even attempt the ultimate solution, removing all traces of
+PA packages, since that would be a ridiculous thing to do)
+gnome-sound-properties didn't seem overly helpful either...
+(Sound capture was already set as "ALSA")
 
-	Ingo
+If things are that impractical, then there needs to be another builtin way
+to always have the microphone output end up correct, automatically,
+instead of having to go through incredible convolutions to try to
+access the raw ALSA device (which would probably provide a correct
+mic stream) directly, by default.
+
+Or, to put it another way, in many cases the default ALSA device
+wouldn't be used (by sound layers or apps or whatever),
+thus the patch above wouldn't work there if I'm not mistaken,
+thus there needs to be a different way to fix the microphone.
+
+Or, to have it even more condensed, the more you have to fiddle to make
+the patch work, the more distance gets between you and the usual Linux
+distribution use case.
+
+Any ideas or suggestions?
+
+Thanks,
+
+Andreas
