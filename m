@@ -1,87 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753392AbZCVICJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753340AbZCVIRA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753392AbZCVICJ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Mar 2009 04:02:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752362AbZCVIBw
+	id S1753340AbZCVIRA (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Mar 2009 04:17:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752027AbZCVIQp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Mar 2009 04:01:52 -0400
-Received: from e23smtp02.au.ibm.com ([202.81.31.144]:44800 "EHLO
-	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752142AbZCVIBv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Mar 2009 04:01:51 -0400
-Date: Sun, 22 Mar 2009 13:30:55 +0530
-From: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: "Serge E. Hallyn" <serge@hallyn.com>, "Serge E. Hallyn" <serue@us.ibm.com>,
-       Linux Containers <containers@lists.osdl.org>, mingo@elte.hu,
-       Bharata B Rao <bharata@linux.vnet.ibm.com>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1/1] introduce user_ns inheritance in user-sched
-Message-ID: <20090322080055.GA4274@linux.vnet.ibm.com>
-Reply-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-References: <20090319211615.GA18383@us.ibm.com> <1237537460.24626.32.camel@twins> <20090321024639.GB21064@hallyn.com> <1237635409.4667.186.camel@laptop>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1237635409.4667.186.camel@laptop>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Sun, 22 Mar 2009 04:16:45 -0400
+Received: from hera.kernel.org ([140.211.167.34]:51719 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751853AbZCVIQn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Mar 2009 04:16:43 -0400
+Subject: [PATCH -tip] x86: cpu/cpu.h cleanup
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: Ingo Molnar <mingo@elte.hu>, x86 maintainers <x86@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Sun, 22 Mar 2009 13:46:16 +0530
+Message-Id: <1237709776.909.14.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.4 (2.24.4-1.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Mar 21, 2009 at 12:36:49PM +0100, Peter Zijlstra wrote:
-> On Fri, 2009-03-20 at 21:46 -0500, Serge E. Hallyn wrote:
-> > Quoting Peter Zijlstra (peterz@infradead.org):
-> > > On Thu, 2009-03-19 at 16:16 -0500, Serge E. Hallyn wrote:
-> > > > In a kernel compiled with CONFIG_USER_SCHED=y, cpu shares are
-> > > > allocated according to uid.  Shares are specifiable under
-> > > > /sys/kernel/uids/<uid>/
-> > > > 
-> > > > In a kernel compiled with CONFIG_USER_NS=y, clone(2) with the
-> > > > CLONE_NEWUSER flag creates a new user namespace, and the newly
-> > > > cloned task will belong to uid 0 in the new user namespace.
-> > > 
-> > > We seem to be adding more and more stuff for USER_SCHED, is anybody
-> > > actually using that cruft?
-> > > 
-> > > How far along with cgroups are we to fully simulate that behaviour?
-> > > 
-> > > I think if we have a capable cgroup based replacement for USER_SCHED we
-> > > should axe it from the kernel, would save lots of code...
-> > 
-> > I didn't realize that was the plan.  Using PAM to move users
-> > around cgroups? 
-> 
-> Right, thing is, distro's will all want cgroup enabled, since that's the
-> latest fad :-), so this user sched thing will only be for people who
-> build their own kernels -- but I suspect most of those simply disable
-> all this group scheduling.
-> 
+Hello Ingo,
 
-But if they do not, then the behavior is wrong now, and I would prefer
-it to be fixed, which is why this patch.
+Is it worth to move arch/x86/kernel/cpu/cpu.h data to asm/cpu.h and if
+required we can also make it private like:
+#ifdef __KERNEL__
+#ifndef MODULE
+private data for kernel only
+#endif
+#endif
 
-> >  If so, then yeah that would simplify quite a bit
-> > of code.   Won't catch all setuid()s of course 
-> 
-> Right, so if we could somehow get a setuid notification hooked into
-> cgroups,.. not sure that would be worth the trouble though.
-> 
+By this way we move header files to include directory. Or you have some
+better option.
 
-Does anyone really care about uid based grouping? (I do realize the
-userspace daemon classifies on the basis of uids as of now, but still,
-how many use cases really want uid based grouping as opposed to process
-type (as in browser, compiler..) type of grouping)
+From: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+Date: Sun, 22 Mar 2009 13:28:39 +0530
+Subject: [PATCH] x86: cpu/cpu.h cleanup
 
-> > - I don't know who uses USER_SCHED and if that would matter.
-> 
-> Right, me neither... I would just love to be able to cut all that code
-> out :-)
-> 
+Impact: cleanup
 
-me too :)
+ - Fix various style issues
 
+Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+---
+ arch/x86/kernel/cpu/cpu.h |   20 ++++++++++----------
+ 1 files changed, 10 insertions(+), 10 deletions(-)
+
+diff --git a/arch/x86/kernel/cpu/cpu.h b/arch/x86/kernel/cpu/cpu.h
+index 9469ecb..6de9a90 100644
+--- a/arch/x86/kernel/cpu/cpu.h
++++ b/arch/x86/kernel/cpu/cpu.h
+@@ -3,25 +3,25 @@
+ #define ARCH_X86_CPU_H
+ 
+ struct cpu_model_info {
+-	int vendor;
+-	int family;
+-	const char *model_names[16];
++	int		vendor;
++	int		family;
++	const char	*model_names[16];
+ };
+ 
+ /* attempt to consolidate cpu attributes */
+ struct cpu_dev {
+-	const char	* c_vendor;
++	const char	*c_vendor;
+ 
+ 	/* some have two possibilities for cpuid string */
+-	const char	* c_ident[2];
++	const char	*c_ident[2];
+ 
+ 	struct		cpu_model_info c_models[4];
+ 
+-	void            (*c_early_init)(struct cpuinfo_x86 *c);
+-	void		(*c_init)(struct cpuinfo_x86 * c);
+-	void		(*c_identify)(struct cpuinfo_x86 * c);
+-	unsigned int	(*c_size_cache)(struct cpuinfo_x86 * c, unsigned int size);
+-	int	c_x86_vendor;
++	void            (*c_early_init)(struct cpuinfo_x86 *);
++	void		(*c_init)(struct cpuinfo_x86 *);
++	void		(*c_identify)(struct cpuinfo_x86 *);
++	unsigned int	(*c_size_cache)(struct cpuinfo_x86 *, unsigned int);
++	int		c_x86_vendor;
+ };
+ 
+ #define cpu_dev_register(cpu_devX) \
 -- 
-regards,
-Dhaval
+1.6.0.6
+
+
+
