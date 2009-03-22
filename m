@@ -1,29 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754639AbZCVMtr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754704AbZCVMyR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754639AbZCVMtr (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Mar 2009 08:49:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753292AbZCVMth
+	id S1754704AbZCVMyR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Mar 2009 08:54:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753292AbZCVMx7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Mar 2009 08:49:37 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:50688 "EHLO mx2.mail.elte.hu"
+	Sun, 22 Mar 2009 08:53:59 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:51302 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751669AbZCVMtg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Mar 2009 08:49:36 -0400
-Date: Sun, 22 Mar 2009 13:48:18 +0100
+	id S1751669AbZCVMx7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Mar 2009 08:53:59 -0400
+Date: Sun, 22 Mar 2009 13:53:20 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Ravikiran G Thirumalai <kiran@scalex86.org>
-Cc: Yinghai Lu <yinghai@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       shai@scalex86.org
-Subject: Re: [PATCH] x86: don't compile vsmp_64 for 32bit
-Message-ID: <20090322124818.GA31466@elte.hu>
-References: <49A626B2.8090205@kernel.org> <20090226064806.GC27240@localdomain> <20090226114457.GB6651@elte.hu> <20090227001757.GE27240@localdomain> <20090228094430.GH12095@elte.hu> <20090302235120.GF27240@localdomain>
+To: "Frank Ch. Eigler" <fche@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Roland McGrath <roland@redhat.com>,
+       Steven Rostedt <rostedt@goodmis.org>, utrace-devel@redhat.com,
+       linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH 3/3] utrace-based ftrace "process" engine, v2
+Message-ID: <20090322125320.GA14171@elte.hu>
+References: <20090321014244.9ADF1FC3AB@magilla.sf.frob.com> <20090321074301.GA19384@elte.hu> <20090321013912.ed6039c9.akpm@linux-foundation.org> <20090321091235.GA29678@elte.hu> <20090321041954.72b99e69.akpm@linux-foundation.org> <20090321115141.GA3566@redhat.com> <20090321050422.d1d99eec.akpm@linux-foundation.org> <20090321154501.GA2707@elte.hu> <20090321214852.GA5262@redhat.com> <20090322120811.GD19826@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090302235120.GF27240@localdomain>
+In-Reply-To: <20090322120811.GD19826@elte.hu>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -38,41 +40,21 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Ravikiran G Thirumalai <kiran@scalex86.org> wrote:
+* Ingo Molnar <mingo@elte.hu> wrote:
 
-> On Sat, Feb 28, 2009 at 10:44:30AM +0100, Ingo Molnar wrote:
-> >
-> >* Ravikiran G Thirumalai <kiran@scalex86.org> wrote:
-> >
-> >> 
-> >> True, but by how much? 212 bytes, out of 7285943 bytes which 
-> >> is very very small percentage wise.
-> >
-> >How does this eliminate the validity of the patch?
-> >
+>  Total download size: 329 M
 > 
-> It costs 212 bytes to leave is_vsmp_box() to not just be a dummy 
-> no-op. Having is_vsmp_box() detect if the hardware is indeed vSMP, 
-> is meaningful even when CONFIG_VSMP is not turned on.  This is 
-> because is_vsmp_box() is used to tell the kernel, that although 
-> the cpus being used are supposed to have TSCs in sync, they are 
-> not really in sync.  This is because you cannot ensure TSCs won't 
-> drift between multiple boards being aggregated on vSMP systems. 
-> Take the case of distro kernels.  Distro kernels typically do not 
-> have CONFIG_X86_VSMP on.  Due to the large internode cacheline 
-> setting, CONFIG_VSMP would not be on on the generic distro 
-> installer kernels. If is_vsmp_box() is a no-op, the generic distro 
-> installer kernels will assume TSCs to be synched, which is bad.  
-> Hence, it will be nice if, for the cost of 212 bytes, vsmp64.o be 
-> compiled either unconditionally, OR conditionally for 64bit 
-> architectures only.  The question is, is 212 bytes out of 7285943 
-> bytes too expensive for the generic kernels?  I hope not.
+> That size of a _compressed_ debuginfo kernel package is obscene. 
+> We can fit 4 years of full Linux kernel Git history into that size 
+> - 60,000+ commits, full metadata and full 20 million lines of code 
+> flux included!
+> 
+> Uncompressed it blows up to gigabytes of on-disk data.
+> 
+> And this download has to be repeated for _every_ minor kernel 
+> upgrade.
 
-Sorry - got distracted and forgot about this thread. The TSC quirk 
-indeed looks required for your systems - you dont have a reliable 
-TSC due to virtualization, right?
-
-Mind sending a patch (partial revert or so) against latest -tip that 
-fixes that?
+Have to correct my memories about how many commits the kernel repo 
+has: 132,019 commits. That massive history fits into 298 MB. (!)
 
 	Ingo
