@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752777AbZCVERL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751889AbZCVEVT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752777AbZCVERL (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Mar 2009 00:17:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750739AbZCVEQ4
+	id S1751889AbZCVEVT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Mar 2009 00:21:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751179AbZCVEVG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Mar 2009 00:16:56 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:60076 "EHLO
+	Sun, 22 Mar 2009 00:21:06 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:39190 "EHLO
 	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750837AbZCVEQ4 (ORCPT
+	with ESMTP id S1750924AbZCVEVF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Mar 2009 00:16:56 -0400
-Message-ID: <49C5BAB3.1080107@zytor.com>
-Date: Sat, 21 Mar 2009 21:12:35 -0700
+	Sun, 22 Mar 2009 00:21:05 -0400
+Message-ID: <49C5BBE8.6010906@zytor.com>
+Date: Sat, 21 Mar 2009 21:17:44 -0700
 From: "H. Peter Anvin" <hpa@zytor.com>
 User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
@@ -38,11 +38,15 @@ Arjan van de Ven wrote:
 > around the copyrights....
 > 
 
-Yes, although in some jurisdictions bitmap fonts aren't copyrightable.
-That included, at least at one point, the United States.
+Either way, the terminus font by Dimitar Zhekov is GPL 2.  This probably
+means that distributing it without distributing the source format or
+"the preferred form for editing" is illegal in jurisdictions where
+bitmap fonts are copyrightable.  The preferred format for editing the
+terminus font appears to be BDF.
 
-Either way, this isn't the best way to submit them... probably
-submitting a PSF file to the kbd project would be a lot better.
+That, combined with the sheer number of character subsets one can get
+out of the extremely rich terminus font would again mean that the kbd
+project is a better place for it.
 
 	-hpa
 
