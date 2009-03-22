@@ -1,91 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754306AbZCVJDc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754303AbZCVJUy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754306AbZCVJDc (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Mar 2009 05:03:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753130AbZCVJDW
+	id S1754303AbZCVJUy (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Mar 2009 05:20:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752949AbZCVJUn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Mar 2009 05:03:22 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:50632 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752677AbZCVJDV (ORCPT
+	Sun, 22 Mar 2009 05:20:43 -0400
+Received: from clegg.madduck.net ([193.242.105.96]:54026 "EHLO
+	clegg.madduck.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752355AbZCVJUn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Mar 2009 05:03:21 -0400
-Date: Sun, 22 Mar 2009 01:55:59 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Paul Mackerras <paulus@samba.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2] perfcounters: record time running and time enabled
- for each counter
-Message-Id: <20090322015559.818961b6.akpm@linux-foundation.org>
-In-Reply-To: <18885.29855.433194.463455@cargo.ozlabs.ibm.com>
-References: <18884.55232.197620.696687@cargo.ozlabs.ibm.com>
-	<20090321055252.eb0673ea.akpm@linux-foundation.org>
-	<18885.29855.433194.463455@cargo.ozlabs.ibm.com>
-X-Mailer: Sylpheed 2.4.7 (GTK+ 2.12.1; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sun, 22 Mar 2009 05:20:43 -0400
+Date: Sun, 22 Mar 2009 10:20:25 +0100
+From: martin f krafft <madduck@madduck.net>
+To: roma1390 <roma1390@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: raid6 grow "hangs" on 2.6.27 with mounted FS
+Message-ID: <20090322092025.GA4500@piper.oerlikon.madduck.net>
+Mail-Followup-To: roma1390 <roma1390@gmail.com>,
+	linux-kernel@vger.kernel.org
+References: <b410963b0903211329v3c4d787ep2f7a0587bee77789@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="yrj/dFKFPuw6o+aM"
+Content-Disposition: inline
+In-Reply-To: <b410963b0903211329v3c4d787ep2f7a0587bee77789@mail.gmail.com>
+X-Motto: Keep the good times rollin'
+X-OS: Debian GNU/Linux squeeze/sid kernel 2.6.26-1-amd64 x86_64
+X-Spamtrap: madduck.bogus@madduck.net
+X-Subliminal-Message: debian/rules!
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 22 Mar 2009 10:13:35 +1100 Paul Mackerras <paulus@samba.org> wrote:
 
-> Andrew Morton writes:
-> 
-> > Perhaps one of the reasons why this code is confusing is the blurring
-> > between the "time" at which an event occured and the "time" between the
-> > occurrence of two events.  A weakness in English, I guess.  Using the term
-> > "interval" in the latter case will help a lot.
-> 
-> Except that we aren't measuring an "interval", we're measuring the
-> combined length of a whole series of intervals.  What's a good word
-> for that?
+--yrj/dFKFPuw6o+aM
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-foo_total_time?
+also sprach roma1390 <roma1390@gmail.com> [2009.03.21.2129 +0100]:
+> # add block device and grow, wait for resync
+> mdadm --add /dev/md2  /dev/loop5
+> mdadm --grow /dev/md2 --raid-devices=3D5
+> sleep 3
+>=20
+> # dmesg prints: VFS: busy inodes on changed media.
+> # umount hangs ...
+> umount /dev/md2
 
-It doesn't matter so much if the thing has a comment at the definition site.
+I suggest unmounting before growing?
 
-> > > +	atomic64_t			child_time_enabled;
-> > > +	atomic64_t			child_time_running;
-> > 
-> > These read like booleans, but why are they atomic64_t's?
-> 
-> OK so this file could use more comments, but I did answer that
-> question in the patch description.
-> 
-> > > -	return put_user(cntval, (u64 __user *) buf) ? -EFAULT : sizeof(cntval);
-> > > +	if (count != n * sizeof(u64))
-> > > +		return -EINVAL;
-> > > +
-> > > +	if (!access_ok(VERIFY_WRITE, buf, count))
-> > > +		return -EFAULT;
-> > > +	
-> > 
-> > <panics>
-> > 
-> > Oh.
-> > 
-> > It would be a lot more reassuring to verify `uptr', rather than `buf' here.
+--=20
+martin | http://madduck.net/ | http://two.sentenc.es/
+=20
+infinite loop: see 'loop, infinite'.
+loop, infinite: see 'infinite loop'.
+=20
+spamtraps: madduck.bogus@madduck.net
 
-This?
+--yrj/dFKFPuw6o+aM
+Content-Type: application/pgp-signature; name="digital_signature_gpg.asc"
+Content-Description: Digital signature (see http://martin-krafft.net/gpg/)
+Content-Disposition: inline
 
-> > The patch adds new trailing whitespace.  checkpatch helps.
-> > 
-> > > +	for (i = 0; i < n; ++i)
-> > > +		if (__put_user(values[i], uptr + i))
-> > > +			return -EFAULT;
-> > 
-> > And here we iterate across `n', whereas we verified `count'.
-> 
-> And the fact that we just verified count == n * 8, four lines above,
-> doesn't give you any comfort?
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
-	access_ok(..., uptr, n * sizeof(*uptr))
+iEYEARECAAYFAknGAtQACgkQIgvIgzMMSnV4/ACgtbL2R54yNDQUpHMZgakd+550
+pgoAnjjExhw1ChA/Wa/O7r13DXbMnPDu
+=MJHK
+-----END PGP SIGNATURE-----
 
-might be most robust.
-
-Or fix up the types (if needed) and copy the whole thing with copy_to_user()
-
-Is it really so performance-sensitive that we can't use plain old put_user()?
+--yrj/dFKFPuw6o+aM--
