@@ -1,74 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757209AbZCVWNg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756777AbZCVWYa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757209AbZCVWNg (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Mar 2009 18:13:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756967AbZCVWM3
+	id S1756777AbZCVWYa (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Mar 2009 18:24:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753790AbZCVWYT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Mar 2009 18:12:29 -0400
-Received: from mail-ew0-f165.google.com ([209.85.219.165]:51388 "EHLO
-	mail-ew0-f165.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756556AbZCVWM1 (ORCPT
+	Sun, 22 Mar 2009 18:24:19 -0400
+Received: from electric-eye.fr.zoreil.com ([213.41.134.224]:36461 "EHLO
+	electric-eye.fr.zoreil.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751719AbZCVWYT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Mar 2009 18:12:27 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=oG1/gfoWNSjbiw5WBMICAvlKsx1g3t3XCwJCPoinKx1aF8/bS3xg5z90KrOw4vwM+B
-         xOYGIcNi33rTJNJ4qhY0x7K8E1Bk6ETs2N/QxFLfVNx8XV4H5xbxVo1IcUiKo8f1L9yS
-         jgHI5x+l3Ps2zbZHhnXyACrTQWKBdPxZG9yoI=
-Date: Sun, 22 Mar 2009 23:12:22 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Steven Rostedt <rostedt@goodmis.org>, LKML <linux-kernel@vger.kernel.org>,
-       Tom Zanussi <tzanussi@gmail.com>
-Subject: Re: [PATCH 1/5] tracing/events: make the filter files writable
-Message-ID: <20090322221221.GH6002@nowhere>
-References: <1237759847-21025-1-git-send-email-fweisbec@gmail.com>
+	Sun, 22 Mar 2009 18:24:19 -0400
+Date: Sun, 22 Mar 2009 23:27:32 +0100
+From: Francois Romieu <romieu@fr.zoreil.com>
+To: Michael Buesch <mb@bu3sch.de>
+Cc: Rui Santos <rsantos@grupopie.com>,
+       Michael =?unknown-8bit?B?QsODwrxrZXI=?= <m.bueker@berlin.de>,
+       linux-kernel@vger.kernel.org
+Subject: Re: 2.6.27.19 + 28.7: network timeouts for r8169 and 8139too
+Message-ID: <20090322222732.GA25563@electric-eye.fr.zoreil.com>
+References: <200903041828.49972.m.bueker@berlin.de> <200903222219.50112.mb@bu3sch.de> <20090322220032.GA23091@electric-eye.fr.zoreil.com> <200903222309.58116.mb@bu3sch.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1237759847-21025-1-git-send-email-fweisbec@gmail.com>
+In-Reply-To: <200903222309.58116.mb@bu3sch.de>
+X-Organisation: Land of Sunshine Inc.
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Mar 22, 2009 at 11:10:43PM +0100, Frederic Weisbecker wrote:
-> We need the filter files to be writable, the current
-> filter file permissions make are only set readable.
-> 
-> Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
-> ---
->  kernel/trace/trace_events.c |    4 ++--
->  1 files changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/kernel/trace/trace_events.c b/kernel/trace/trace_events.c
-> index 594d78a..19f61dd 100644
-> --- a/kernel/trace/trace_events.c
-> +++ b/kernel/trace/trace_events.c
-> @@ -706,7 +706,7 @@ event_subsystem_dir(const char *name, struct dentry *d_events)
->  
->  	system->preds = NULL;
->  
-> -	entry = debugfs_create_file("filter", 0444, system->entry, system,
-> +	entry = debugfs_create_file("filter", 0644, system->entry, system,
->  				    &ftrace_subsystem_filter_fops);
->  	if (!entry)
->  		pr_warning("Could not create debugfs "
-> @@ -769,7 +769,7 @@ event_create_dir(struct ftrace_event_call *call, struct dentry *d_events)
->  		}
->  	}
->  
-> -	entry = debugfs_create_file("filter", 0444, call->dir, call,
-> +	entry = debugfs_create_file("filter", 0644, call->dir, call,
->  				    &ftrace_event_filter_fops);
->  	if (!entry)
->  		pr_warning("Could not create debugfs "
-> -- 
-> 1.6.1
-> 
+Michael Buesch <mb@bu3sch.de> :
+[...]
+> How do I find out? I don't find "XID" in the kernel log.
 
+Check the log level ?
 
-Adding Tom Zanussi in Cc.
+[...]
+r8169 Gigabit Ethernet driver 2.3LK-NAPI loaded
+r8169 0000:00:0a.0: PCI INT A -> GSI 17 (level, low) -> IRQ 17
+r8169 0000:00:0a.0: no PCI Express capability
+eth2: RTL8110s at 0xf8992400, 00:09:5b:bc:e9:9e, XID 04000000 IRQ 17
 
+-- 
+Ueimor
