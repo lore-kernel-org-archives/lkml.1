@@ -1,319 +1,287 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755666AbZCVR7U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755612AbZCVSAb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755666AbZCVR7U (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Mar 2009 13:59:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751484AbZCVR7J
+	id S1755612AbZCVSAb (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Mar 2009 14:00:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751484AbZCVSAV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Mar 2009 13:59:09 -0400
-Received: from mail-ew0-f165.google.com ([209.85.219.165]:48492 "EHLO
+	Sun, 22 Mar 2009 14:00:21 -0400
+Received: from mail-ew0-f165.google.com ([209.85.219.165]:59140 "EHLO
 	mail-ew0-f165.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751341AbZCVR7G (ORCPT
+	with ESMTP id S1751341AbZCVSAT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Mar 2009 13:59:06 -0400
+	Sun, 22 Mar 2009 14:00:19 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=date:from:to:cc:subject:message-id:references:mime-version
          :content-type:content-disposition:in-reply-to:user-agent;
-        b=hURcgo6oS3jOkR7oqTQnvJyvuCRnflh33G8LbAFThqyVYOfowlVV2y1zzmEWtL92Bp
-         BSngcwqpxvXGS10i6ETlWQopLBq9wDqYb6Ol8JF7PTIcKi+rquFznP0F8qx+lzNAW0B6
-         neVDLCN6ffWu19VadAMO0RjQC0v1Rfexho5/Q=
-Date: Sun, 22 Mar 2009 18:59:01 +0100
+        b=TceL8YF9jUxzcr1aRSW+mxueOnvrXhJ4hRqrAGKEdM/yTboqSjSXTJ6fKvBQQfgOyt
+         qIBGKXEbuLhlJgUqDquUDA+vok6bgcVkApPuKeIyoA89lK7R7CB0C+cIty4T8VWKoj21
+         dvnEN0Flh1/YbqZSxb/y+G/YdPmIn/HCNqNyU=
+Date: Sun, 22 Mar 2009 19:00:13 +0100
 From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Tom Zanussi <tzanussi@gmail.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Tom Zanussi <tzanussi@gmail.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
        Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: [PATCH 2/4] tracing: add ring_buffer_event_discard() to ring
-	buffer
-Message-ID: <20090322175859.GC6002@nowhere>
-References: <1237710649.7703.47.camel@charm-linux>
+Subject: Re: [PATCH 1/4] tracing: add run-time field descriptions for event
+	filtering
+Message-ID: <20090322180012.GD6002@nowhere>
+References: <1237710639.7703.46.camel@charm-linux> <20090322173908.GB6002@nowhere> <20090322174443.GA5632@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1237710649.7703.47.camel@charm-linux>
+In-Reply-To: <20090322174443.GA5632@elte.hu>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Mar 22, 2009 at 03:30:49AM -0500, Tom Zanussi wrote:
-> This patch overloads RINGBUF_TYPE_PADDING to provide a way to discard
-> events from the ring buffer, for the event-filtering mechanism
-> introduced in a subsequent patch.
+On Sun, Mar 22, 2009 at 06:44:43PM +0100, Ingo Molnar wrote:
 > 
-> I did the initial version but thanks to Steven Rostedt for adding the
-> parts that actually made it work. ;-)
+> * Frederic Weisbecker <fweisbec@gmail.com> wrote:
 > 
-> ---
->  include/linux/ring_buffer.h |   11 +++-
->  kernel/trace/ring_buffer.c  |  117 +++++++++++++++++++++++++++++++++++-------
->  2 files changed, 105 insertions(+), 23 deletions(-)
+> > Hi Tom,
+> > 
+> > 
+> > On Sun, Mar 22, 2009 at 03:30:39AM -0500, Tom Zanussi wrote:
+> > > This patch makes the field descriptions defined for event tracing
+> > > available at run-time, for the event-filtering mechanism introduced in a
+> > > subsequent patch.
+> > > 
+> > > The common event fields are prepended with 'common_' in the format
+> > > display, allowing them to be distinguished from the other fields that
+> > > might internally have same name and can therefore be unambiguously used
+> > > in filters.
+> > > 
+> > > Signed-off-by: Tom Zanussi <tzanussi@gmail.com>
+> > > 
+> > > ---
+> > >  kernel/trace/trace.h                |   30 ++++++++++++++++-------
+> > >  kernel/trace/trace_events.c         |   40 ++++++++++++++++++++++++++++++-
+> > >  kernel/trace/trace_events_stage_2.h |   45 +++++++++++++++++++++++++++++++++++
+> > >  kernel/trace/trace_events_stage_3.h |    2 +
+> > >  4 files changed, 107 insertions(+), 10 deletions(-)
+> > > 
+> > > diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
+> > > index 7cfb741..9288dc7 100644
+> > > --- a/kernel/trace/trace.h
+> > > +++ b/kernel/trace/trace.h
+> > > @@ -775,16 +775,26 @@ enum {
+> > >  	TRACE_EVENT_TYPE_RAW		= 2,
+> > >  };
+> > >  
+> > > +struct ftrace_event_field {
+> > > +	struct list_head	link;
+> > > +	char			*name;
+> > > +	char			*type;
+> > > +	int			offset;
+> > > +	int			size;
+> > > +};
+> > > +
+> > >  struct ftrace_event_call {
+> > > -	char		*name;
+> > > -	char		*system;
+> > > -	struct dentry	*dir;
+> > > -	int		enabled;
+> > > -	int		(*regfunc)(void);
+> > > -	void		(*unregfunc)(void);
+> > > -	int		id;
+> > > -	int		(*raw_init)(void);
+> > > -	int		(*show_format)(struct trace_seq *s);
+> > > +	char			*name;
+> > > +	char			*system;
+> > > +	struct dentry		*dir;
+> > > +	int			enabled;
+> > > +	int			(*regfunc)(void);
+> > > +	void			(*unregfunc)(void);
+> > > +	int			id;
+> > > +	int			(*raw_init)(void);
+> > > +	int			(*show_format)(struct trace_seq *s);
+> > > +	int			(*define_fields)(void);
+> > > +	struct list_head	fields;
+> > >  
+> > >  #ifdef CONFIG_EVENT_PROFILE
+> > >  	atomic_t	profile_count;
+> > > @@ -793,6 +803,8 @@ struct ftrace_event_call {
+> > >  #endif
+> > >  };
+> > >  
+> > > +int trace_define_field(struct ftrace_event_call *call, char *type,
+> > > +		       char *name, int offset, int size);
+> > >  void event_trace_printk(unsigned long ip, const char *fmt, ...);
+> > >  extern struct ftrace_event_call __start_ftrace_events[];
+> > >  extern struct ftrace_event_call __stop_ftrace_events[];
+> > > diff --git a/kernel/trace/trace_events.c b/kernel/trace/trace_events.c
+> > > index 3047b56..961b057 100644
+> > > --- a/kernel/trace/trace_events.c
+> > > +++ b/kernel/trace/trace_events.c
+> > > @@ -19,6 +19,34 @@
+> > >  
+> > >  static DEFINE_MUTEX(event_mutex);
+> > >  
+> > > +int trace_define_field(struct ftrace_event_call *call, char *type,
+> > > +		       char *name, int offset, int size)
+> > > +{
+> > > +	struct ftrace_event_field *field;
+> > > +
+> > > +	field = kmalloc(sizeof(*field), GFP_KERNEL);
+> > > +	if (!field)
+> > > +		goto err;
+> > > +	field->name = kstrdup(name, GFP_KERNEL);
+> > > +	if (!field->name)
+> > > +		goto err;
+> > > +	field->type = kstrdup(type, GFP_KERNEL);
+> > > +	if (!field->type)
+> > > +		goto err;
+> > > +	field->offset = offset;
+> > > +	field->size = size;
+> > > +	list_add(&field->link, &call->fields);
+> > > +
+> > > +	return 0;
+> > > +err:
+> > > +	if (field) {
+> > > +		kfree(field->name);
+> > > +		kfree(field->type);
+> > 
+> > 
+> > You need kzalloc to allocate field.
+> > With kmalloc, field will point to random filled memory
+> > after a fresh allocation.
+> > 
+> > Imagine this path:
+> > 
+> > if (!field->name)
+> > 	goto err;
+> > ...
+> > err:
+> > 	kfree(field->name) <- field->name = NULL, correct
+> > 	kfree(field->type) <- field->type = ?
+> > 
+> > 
+> > > +	}
+> > > +	kfree(field);
+> > > +	return -ENOMEM;
+> > > +}
+> > > +
+> > >  static void ftrace_clear_events(void)
+> > >  {
+> > >  	struct ftrace_event_call *call = (void *)__start_ftrace_events;
+> > > @@ -343,7 +371,8 @@ event_enable_write(struct file *filp, const char __user *ubuf, size_t cnt,
+> > >  
+> > >  #undef FIELD
+> > >  #define FIELD(type, name)						\
+> > > -	#type, #name, offsetof(typeof(field), name), sizeof(field.name)
+> > > +	#type, "common_" #name, offsetof(typeof(field), name),		\
+> > > +		sizeof(field.name)
+> > >  
+> > >  static int trace_write_header(struct trace_seq *s)
+> > >  {
+> > > @@ -581,6 +610,15 @@ event_create_dir(struct ftrace_event_call *call, struct dentry *d_events)
+> > >  					call->name);
+> > >  	}
+> > >  
+> > > +	if (call->define_fields) {
+> > > +		ret = call->define_fields();
+> > > +		if (ret < 0) {
+> > > +			pr_warning("Could not initialize trace point"
+> > > +				   " events/%s\n", call->name);
+> > > +			return ret;
+> > > +		}
+> > > +	}
+> > > +
+> > >  	/* A trace may not want to export its format */
+> > >  	if (!call->show_format)
+> > >  		return 0;
+> > > diff --git a/kernel/trace/trace_events_stage_2.h b/kernel/trace/trace_events_stage_2.h
+> > > index 5117c43..30743f7 100644
+> > > --- a/kernel/trace/trace_events_stage_2.h
+> > > +++ b/kernel/trace/trace_events_stage_2.h
+> > > @@ -129,3 +129,48 @@ ftrace_format_##call(struct trace_seq *s)				\
+> > >  }
+> > >  
+> > >  #include <trace/trace_event_types.h>
+> > > +
+> > > +#undef __field
+> > > +#define __field(type, item)						\
+> > > +	ret = trace_define_field(event_call, #type, #item,		\
+> > > +				 offsetof(typeof(field), item),		\
+> > > +				 sizeof(field.item));			\
+> > > +	if (ret)							\
+> > > +		return ret;
+> > > +
+> > > +#undef __array
+> > > +#define __array(type, item, len)					\
+> > > +	ret = trace_define_field(event_call, #type "[" #len "]", #item,	\
+> > > +				 offsetof(typeof(field), item),		\
+> > > +				 sizeof(field.item));			\
+> > > +	if (ret)							\
+> > > +		return ret;
+> > > +
+> > > +#define __common_field(type, item)					\
+> > > +	ret = trace_define_field(event_call, #type, "common_" #item,	\
+> > > +				 offsetof(typeof(field.ent), item),	\
+> > > +				 sizeof(field.ent.item));		\
+> > > +	if (ret)							\
+> > > +		return ret;
+> > > +
+> > > +#undef TRACE_EVENT
+> > > +#define TRACE_EVENT(call, proto, args, tstruct, func, print)		\
+> > > +int									\
+> > > +ftrace_define_fields_##call(void)					\
+> > > +{									\
+> > > +	struct ftrace_raw_##call field;					\
+> > > +	struct ftrace_event_call *event_call = &event_##call;		\
+> > > +	int ret;							\
+> > > +									\
+> > > +	__common_field(unsigned char, type);				\
+> > > +	__common_field(unsigned char, flags);				\
+> > > +	__common_field(unsigned char, preempt_count);			\
+> > > +	__common_field(int, pid);					\
+> > > +	__common_field(int, tgid);					\
+> > > +									\
+> > > +	tstruct;							\
+> > > +									\
+> > > +	return ret;							\
+> > > +}
+> > > +
+> > > +#include <trace/trace_event_types.h>
+> > > diff --git a/kernel/trace/trace_events_stage_3.h b/kernel/trace/trace_events_stage_3.h
+> > > index 6b3261c..468938f 100644
+> > > --- a/kernel/trace/trace_events_stage_3.h
+> > > +++ b/kernel/trace/trace_events_stage_3.h
+> > > @@ -252,6 +252,7 @@ static int ftrace_raw_init_event_##call(void)				\
+> > >  	if (!id)							\
+> > >  		return -ENODEV;						\
+> > >  	event_##call.id = id;						\
+> > > +	INIT_LIST_HEAD(&event_##call.fields);				\
+> > >  	return 0;							\
+> > >  }									\
+> > >  									\
+> > > @@ -264,6 +265,7 @@ __attribute__((section("_ftrace_events"))) event_##call = {		\
+> > >  	.regfunc		= ftrace_raw_reg_event_##call,		\
+> > >  	.unregfunc		= ftrace_raw_unreg_event_##call,	\
+> > >  	.show_format		= ftrace_format_##call,			\
+> > > +	.define_fields		= ftrace_define_fields_##call,		\
+> > >  	_TRACE_PROFILE_INIT(call)					\
+> > >  }
+> > >  
+> >  
+> > Other than the small possible memory leak, it looks good.
 > 
-> diff --git a/include/linux/ring_buffer.h b/include/linux/ring_buffer.h
-> index e20b886..ae5b210 100644
-> --- a/include/linux/ring_buffer.h
-> +++ b/include/linux/ring_buffer.h
-> @@ -22,10 +22,13 @@ struct ring_buffer_event {
->  /**
->   * enum ring_buffer_type - internal ring buffer types
->   *
-> - * @RINGBUF_TYPE_PADDING:	Left over page padding
-> - *				 array is ignored
-> - *				 size is variable depending on how much
-> + * @RINGBUF_TYPE_PADDING:	Left over page padding or discarded event
-> + *				 If time_delta is 0:
-> + *				  array is ignored
-> + *				  size is variable depending on how much
->   *				  padding is needed
-> + *				 If time_delta is non zero:
-> + *				  everything else same as RINGBUF_TYPE_DATA
->   *
->   * @RINGBUF_TYPE_TIME_EXTEND:	Extend the time delta
->   *				 array[0] = time delta (28 .. 59)
-> @@ -69,6 +72,8 @@ ring_buffer_event_time_delta(struct ring_buffer_event *event)
->  	return event->time_delta;
->  }
->  
-> +void ring_buffer_event_discard(struct ring_buffer_event *event);
-> +
->  /*
->   * size is in bytes for each per CPU buffer.
->   */
-> diff --git a/kernel/trace/ring_buffer.c b/kernel/trace/ring_buffer.c
-> index 7e05e2c..5cd2342 100644
-> --- a/kernel/trace/ring_buffer.c
-> +++ b/kernel/trace/ring_buffer.c
-> @@ -190,16 +190,65 @@ enum {
->  	RB_LEN_TIME_STAMP = 16,
->  };
->  
-> -/* inline for ring buffer fast paths */
-> +static inline int rb_null_event(struct ring_buffer_event *event)
-> +{
-> +	return event->type == RINGBUF_TYPE_PADDING && event->time_delta == 0;
-> +}
-> +
-> +static inline int rb_discarded_event(struct ring_buffer_event *event)
-> +{
-> +	return event->type == RINGBUF_TYPE_PADDING && event->time_delta;
-> +}
-> +
-> +static void rb_event_set_padding(struct ring_buffer_event *event)
-> +{
-> +	event->type = RINGBUF_TYPE_PADDING;
-> +	event->time_delta = 0;
-> +}
-> +
-> +/**
-> + * ring_buffer_event_discard - discard an event in the ring buffer
-> + * @buffer: the ring buffer
-> + * @event: the event to discard
-> + *
-> + * Sometimes a event that is in the ring buffer needs to be ignored.
-> + * This function lets the user discard an event in the ring buffer
-> + * and then that event will not be read later.
-> + *
-> + * Note, it is up to the user to be careful with this, and protect
-> + * against races. If the user discards an event that has been consumed
-> + * it is possible that it could corrupt the ring buffer.
-> + */
-> +void ring_buffer_event_discard(struct ring_buffer_event *event)
-> +{
-> +	event->type = RINGBUF_TYPE_PADDING;
-> +	/* time delta must be non zero */
-> +	if (!event->time_delta)
-> +		event->time_delta = 1;
-> +}
-> +
->  static unsigned
-> -rb_event_length(struct ring_buffer_event *event)
-> +rb_event_data_length(struct ring_buffer_event *event)
->  {
->  	unsigned length;
->  
-> +	if (event->len)
-> +		length = event->len * RB_ALIGNMENT;
-> +	else
-> +		length = event->array[0];
-> +	return length + RB_EVNT_HDR_SIZE;
-> +}
-> +
-> +/* inline for ring buffer fast paths */
+> it's not a memory leak but an incorrect kfree(), which can crash the 
+> box.
 
 
-I don't see an inline here.
+Yeah, indeed.
+
+ 
+> > 
+> > Acked-by: Frederic Weisbecker <fweisbec@gmail.com>
+> 
+> thanks - i also queued up a fix for the kfree() bug.
+> 
+> 	Ingo
 
 
-> +static unsigned
-> +rb_event_length(struct ring_buffer_event *event)
-> +{
->  	switch (event->type) {
->  	case RINGBUF_TYPE_PADDING:
-> -		/* undefined */
-> -		return -1;
-> +		if (rb_null_event(event))
-> +			/* undefined */
-> +			return -1;
-> +		return rb_event_data_length(event);
->  
->  	case RINGBUF_TYPE_TIME_EXTEND:
->  		return RB_LEN_TIME_EXTEND;
-> @@ -208,11 +257,7 @@ rb_event_length(struct ring_buffer_event *event)
->  		return RB_LEN_TIME_STAMP;
->  
->  	case RINGBUF_TYPE_DATA:
-> -		if (event->len)
-> -			length = event->len * RB_ALIGNMENT;
-> -		else
-> -			length = event->array[0];
-> -		return length + RB_EVNT_HDR_SIZE;
-> +		return rb_event_data_length(event);
->  	default:
->  		BUG();
->  	}
-> @@ -846,11 +891,6 @@ int ring_buffer_resize(struct ring_buffer *buffer, unsigned long size)
->  }
->  EXPORT_SYMBOL_GPL(ring_buffer_resize);
->  
-> -static inline int rb_null_event(struct ring_buffer_event *event)
-> -{
-> -	return event->type == RINGBUF_TYPE_PADDING;
-> -}
-> -
->  static inline void *
->  __rb_data_page_index(struct buffer_data_page *bpage, unsigned index)
->  {
-> @@ -1221,7 +1261,7 @@ __rb_reserve_next(struct ring_buffer_per_cpu *cpu_buffer,
->  			/* Mark the rest of the page with padding */
->  			event = __rb_page_index(tail_page, tail);
->  			kmemcheck_annotate_bitfield(event->bitfield);
-> -			event->type = RINGBUF_TYPE_PADDING;
-> +			rb_event_set_padding(event);
->  		}
->  
->  		if (tail <= BUF_PAGE_SIZE)
-> @@ -1972,7 +2012,7 @@ static void rb_advance_reader(struct ring_buffer_per_cpu *cpu_buffer)
->  
->  	event = rb_reader_event(cpu_buffer);
->  
-> -	if (event->type == RINGBUF_TYPE_DATA)
-> +	if (event->type == RINGBUF_TYPE_DATA || rb_discarded_event(event))
->  		cpu_buffer->entries--;
->  
->  	rb_update_read_stamp(cpu_buffer, event);
-> @@ -2055,9 +2095,18 @@ rb_buffer_peek(struct ring_buffer *buffer, int cpu, u64 *ts)
->  
->  	switch (event->type) {
->  	case RINGBUF_TYPE_PADDING:
-> -		RB_WARN_ON(cpu_buffer, 1);
-> +		if (rb_null_event(event))
-> +			RB_WARN_ON(cpu_buffer, 1);
-> +		/*
-> +		 * Because the writer could be discarding every
-> +		 * event it creates (which would probably be bad)
-> +		 * if we were to go back to "again" then we may never
-> +		 * catch up, and will trigger the warn on, or lock
-> +		 * the box. Return the padding, and we will release
-> +		 * the current locks, and try again.
-> +		 */
->  		rb_advance_reader(cpu_buffer);
-> -		return NULL;
-> +		return event;
->  
->  	case RINGBUF_TYPE_TIME_EXTEND:
->  		/* Internal data, OK to advance */
-> @@ -2118,8 +2167,12 @@ rb_iter_peek(struct ring_buffer_iter *iter, u64 *ts)
->  
->  	switch (event->type) {
->  	case RINGBUF_TYPE_PADDING:
-> -		rb_inc_iter(iter);
-> -		goto again;
-> +		if (rb_null_event(event)) {
-> +			rb_inc_iter(iter);
-> +			goto again;
-> +		}
-> +		rb_advance_iter(iter);
-> +		return event;
->  
->  	case RINGBUF_TYPE_TIME_EXTEND:
->  		/* Internal data, OK to advance */
-> @@ -2166,10 +2219,16 @@ ring_buffer_peek(struct ring_buffer *buffer, int cpu, u64 *ts)
->  	if (!cpumask_test_cpu(cpu, buffer->cpumask))
->  		return NULL;
->  
-> + again:
->  	spin_lock_irqsave(&cpu_buffer->reader_lock, flags);
->  	event = rb_buffer_peek(buffer, cpu, ts);
->  	spin_unlock_irqrestore(&cpu_buffer->reader_lock, flags);
->  
-> +	if (event && event->type == RINGBUF_TYPE_PADDING) {
-> +		cpu_relax();
-> +		goto again;
-> +	}
-> +
->  	return event;
->  }
->  
-> @@ -2188,10 +2247,16 @@ ring_buffer_iter_peek(struct ring_buffer_iter *iter, u64 *ts)
->  	struct ring_buffer_event *event;
->  	unsigned long flags;
->  
-> + again:
->  	spin_lock_irqsave(&cpu_buffer->reader_lock, flags);
->  	event = rb_iter_peek(iter, ts);
->  	spin_unlock_irqrestore(&cpu_buffer->reader_lock, flags);
->  
-> +	if (event && event->type == RINGBUF_TYPE_PADDING) {
-> +		cpu_relax();
-> +		goto again;
-> +	}
-> +
->  	return event;
->  }
->  
-> @@ -2210,6 +2275,7 @@ ring_buffer_consume(struct ring_buffer *buffer, int cpu, u64 *ts)
->  	struct ring_buffer_event *event = NULL;
->  	unsigned long flags;
->  
-> + again:
->  	/* might be called in atomic */
->  	preempt_disable();
->  
-> @@ -2231,6 +2297,11 @@ ring_buffer_consume(struct ring_buffer *buffer, int cpu, u64 *ts)
->   out:
->  	preempt_enable();
->  
-> +	if (event && event->type == RINGBUF_TYPE_PADDING) {
-> +		cpu_relax();
-> +		goto again;
-> +	}
-> +
->  	return event;
->  }
->  EXPORT_SYMBOL_GPL(ring_buffer_consume);
-> @@ -2309,6 +2380,7 @@ ring_buffer_read(struct ring_buffer_iter *iter, u64 *ts)
->  	struct ring_buffer_per_cpu *cpu_buffer = iter->cpu_buffer;
->  	unsigned long flags;
->  
-> + again:
->  	spin_lock_irqsave(&cpu_buffer->reader_lock, flags);
->  	event = rb_iter_peek(iter, ts);
->  	if (!event)
-> @@ -2318,6 +2390,11 @@ ring_buffer_read(struct ring_buffer_iter *iter, u64 *ts)
->   out:
->  	spin_unlock_irqrestore(&cpu_buffer->reader_lock, flags);
->  
-> +	if (event && event->type == RINGBUF_TYPE_PADDING) {
-> +		cpu_relax();
-> +		goto again;
-> +	}
-> +
->  	return event;
->  }
->  EXPORT_SYMBOL_GPL(ring_buffer_read);
-> -- 
-
-
-Looks good!
-
-Acked-by: Frederic Weisbecker <fweisbec@gmail.com>
+Thanks.
 
