@@ -1,72 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755649AbZCVTYk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755593AbZCVT0h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755649AbZCVTYk (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Mar 2009 15:24:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754665AbZCVTYb
+	id S1755593AbZCVT0h (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Mar 2009 15:26:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755010AbZCVT0J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Mar 2009 15:24:31 -0400
-Received: from hera.kernel.org ([140.211.167.34]:54829 "EHLO hera.kernel.org"
+	Sun, 22 Mar 2009 15:26:09 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:52555 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754657AbZCVTYa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Mar 2009 15:24:30 -0400
-Subject: [PATCH -tip] x86: e820.h fix various signedness issues in setup.c
- and e820.c
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: Ingo Molnar <mingo@elte.hu>, x86 maintainers <x86@kernel.org>,
-       Rusty Russell <rusty@rustcorp.com.au>, Yinghai Lu <yinghai@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Mon, 23 Mar 2009 00:53:51 +0530
-Message-Id: <1237749831.5417.2.camel@ht.satnam>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
-Content-Transfer-Encoding: 7bit
+	id S1754665AbZCVT0G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Mar 2009 15:26:06 -0400
+From: Jens Axboe <jens.axboe@oracle.com>
+To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Cc: chris.mason@oracle.com, david@fromorbit.com, npiggin@suse.de,
+       hch@infradead.org, akpm@linux-foundation.org
+Subject: [PATCH 0/12] Per-bdi writeback flusher threads #2
+Date: Sun, 22 Mar 2009 20:25:52 +0100
+Message-Id: <1237749964-8343-1-git-send-email-jens.axboe@oracle.com>
+X-Mailer: git-send-email 1.6.2.12.g83676
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
-From: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
-Date: Mon, 23 Mar 2009 00:27:11 +0530
-Subject: [PATCH] x86: e820.h fix various signedness issues in setup.c and e820.c
+Second version of this patchset. Changes since last time:
 
-Impact: cleanup
+- Rearranged the obvious and prep patches to be at the beginning
+  of the series. That's patches 1-3, they will go upstream for 2.6.30
+  since they are just cleanups.
 
-This fixed various signedness issues in setup.c and e820.c:
-arch/x86/kernel/setup.c:455:53: warning: incorrect type in argument 3 (different signedness)
-arch/x86/kernel/setup.c:455:53:    expected int *pnr_map
-arch/x86/kernel/setup.c:455:53:    got unsigned int extern [toplevel] *<noident>
-arch/x86/kernel/setup.c:639:53: warning: incorrect type in argument 3 (different signedness)
-arch/x86/kernel/setup.c:639:53:    expected int *pnr_map
-arch/x86/kernel/setup.c:639:53:    got unsigned int extern [toplevel] *<noident>
-arch/x86/kernel/setup.c:820:54: warning: incorrect type in argument 3 (different signedness)
-arch/x86/kernel/setup.c:820:54:    expected int *pnr_map
-arch/x86/kernel/setup.c:820:54:    got unsigned int extern [toplevel] *<noident>
+- The other change is more interesting. It adds support for > 1 flusher
+  thread per bdi. Comments welcome, I'm particularly curious whether
+  the super_operation is the right place to add this or not. We'll also
+  need a few other changes, particularly I think that users of this will
+  want to provide their own generic_sync_wb_inodes() at least. Probably
+  along with their own variants of queue_io/requeue_io/redirty_tail() and
+  so on.
 
-arch/x86/kernel/e820.c:670:53: warning: incorrect type in argument 3 (different signedness)
-arch/x86/kernel/e820.c:670:53:    expected int *pnr_map
-arch/x86/kernel/e820.c:670:53:    got unsigned int [toplevel] *<noident>
+- Various little bug fixes.
 
-Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
----
- arch/x86/include/asm/e820.h |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ b/block/blk-core.c            |    1 
+ b/drivers/block/aoe/aoeblk.c  |    1 
+ b/drivers/char/mem.c          |    1 
+ b/fs/btrfs/disk-io.c          |    3 
+ b/fs/buffer.c                 |    2 
+ b/fs/char_dev.c               |    1 
+ b/fs/configfs/inode.c         |    1 
+ b/fs/fs-writeback.c           |  490 +++++++++++++++++++++++-----------
+ b/fs/fuse/inode.c             |    1 
+ b/fs/hugetlbfs/inode.c        |    1 
+ b/fs/nfs/client.c             |    1 
+ b/fs/ntfs/super.c             |   32 --
+ b/fs/ocfs2/dlm/dlmfs.c        |    1 
+ b/fs/ramfs/inode.c            |    1 
+ b/fs/super.c                  |   14 
+ b/fs/sync.c                   |   16 -
+ b/fs/sysfs/inode.c            |    1 
+ b/fs/ubifs/super.c            |    1 
+ b/include/linux/backing-dev.h |   62 ++++
+ b/include/linux/fs.h          |   11 
+ b/include/linux/writeback.h   |   15 -
+ b/kernel/cgroup.c             |    1 
+ b/mm/Makefile                 |    2 
+ b/mm/backing-dev.c            |  429 +++++++++++++++++++++++++++++
+ b/mm/page-writeback.c         |  140 ---------
+ mm/pdflush.c                  |  251 -----------------
+ b/mm/readahead.c              |   25 -
+ b/mm/swap_state.c             |    1 
+ b/mm/vmscan.c                 |    2 
+ 29 files changed, 889 insertions(+), 619 deletions(-)
 
-diff --git a/arch/x86/include/asm/e820.h b/arch/x86/include/asm/e820.h
-index 00d41ce..a1e1c54 100644
---- a/arch/x86/include/asm/e820.h
-+++ b/arch/x86/include/asm/e820.h
-@@ -57,7 +57,7 @@ struct e820entry {
- } __attribute__((packed));
- 
- struct e820map {
--	__u32 nr_map;
-+	int nr_map;
- 	struct e820entry map[E820_X_MAX];
- };
- 
 -- 
-1.6.0.6
-
+Jens Axboe
 
 
