@@ -1,68 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755671AbZCVRWW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755303AbZCVRWk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755671AbZCVRWW (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Mar 2009 13:22:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751388AbZCVRWJ
+	id S1755303AbZCVRWk (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Mar 2009 13:22:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755362AbZCVRW0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Mar 2009 13:22:09 -0400
-Received: from rv-out-0506.google.com ([209.85.198.239]:54343 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750879AbZCVRWH convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Mar 2009 13:22:07 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=IQ/c5gqvoR03X6SNnVAu3ybyatRAf8u0r1NOAeu30IE1qRuAH2vWZwF+etUrVboRAa
-         jYDJoeelpj5bXPI0IKUMIDcv0+xmVLfBHChfeD4leiILTq8QEKPebrre2BdjVm2Vq3Px
-         D0jfjt1x7q5R7KN8CfNv2z09LKdADqGFd9fmc=
+	Sun, 22 Mar 2009 13:22:26 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:36508 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755497AbZCVRWZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Mar 2009 13:22:25 -0400
+Date: Sun, 22 Mar 2009 18:22:17 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Yinghai Lu <yinghai@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [crash] Re: Latest brk patchset
+Message-ID: <20090322172217.GA22639@elte.hu>
+References: <49BC4CAC.202@goop.org> <49BC4DB6.9070403@zytor.com> <49BCA03D.3020605@goop.org> <20090315203802.GA14625@elte.hu> <49BD70EF.7010204@goop.org> <20090315212854.GA23960@elte.hu> <49BD8F15.4020301@goop.org> <20090316085402.GC1062@elte.hu> <20090322150917.GA17815@elte.hu> <49C6719B.2020303@goop.org>
 MIME-Version: 1.0
-In-Reply-To: <20090319200931.GA10491@skl-net.de>
-References: <20090318191248.20375.40560.stgit@dwillia2-linux.ch.intel.com>
-	 <20090318192021.20375.69678.stgit@dwillia2-linux.ch.intel.com>
-	 <20090319200931.GA10491@skl-net.de>
-Date: Sun, 22 Mar 2009 10:22:05 -0700
-X-Google-Sender-Auth: d635748e9efa2317
-Message-ID: <e9c3a7c20903221022v6049a74fu89b5032322343f25@mail.gmail.com>
-Subject: Re: [PATCH 01/13] md/raid6: move raid6 data processing to raid6_pq.ko
-From: Dan Williams <dan.j.williams@intel.com>
-To: Andre Noll <maan@systemlinux.org>
-Cc: linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org, neilb@suse.de,
-       maciej.sosnowski@intel.com
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49C6719B.2020303@goop.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 19, 2009 at 1:09 PM, Andre Noll <maan@systemlinux.org> wrote:
-> On 12:20, Dan Williams wrote:
->> Move the raid6 data processing routines into a standalone module
->> (raid6_pq) to prepare them to be called from async_tx wrappers and other
->> non-md drivers/modules.  This precludes a circular dependency of raid456
->> needing the async modules for data processing while those modules in
->> turn depend on raid456 for the base level synchronous raid6 routines.
->>
->> To support this move:
->> 1/ The exportable definitions in raid6.h move to include/linux/raid/pq.h
+
+* Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+
+> Ingo Molnar wrote:
+>> btw, we have a ton of section warnings:
+>>   
 >
-> As raid*.h and md.h have been moved to drivers/md recently, pq.h
-> should probably live there as well.
+> Do you think its related to the brk changes, or is it just a general  
+> observation?
 
-Not in this case.  pq.h is analogous to xor.h currently in
-include/linux/raid/.  I.e. just the data processing symbols that are
-used by modules outside of drivers/md/.
+last entry seemed to be related to the brk patches:
 
->> +#define time_before(x, y) ((x) < (y))
->
-> This macro seems to have no users (and a strange name).
->
+> WARNING: vmlinux.o(.text+0x6a288e): Section mismatch in reference from
+> the function dmi_alloc() to the function .init.text:extend_brk()
+> The function dmi_alloc() references
+> the function __init extend_brk().
+> This is often because dmi_alloc lacks a __init annotation or the
+> annotation of extend_brk is wrong.
 
-It's used a few lines down in the same file.  It allows raid6algos.c
-to be compiled for the userspace test (drivers/md/raid6test/) where we
-do not have jiffies.h.
+most of them are not.
 
-Regards,
-Dan
+	Ingo
