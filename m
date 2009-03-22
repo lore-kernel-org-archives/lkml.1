@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756586AbZCVVOS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756627AbZCVVOe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756586AbZCVVOS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Mar 2009 17:14:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755789AbZCVVNp
+	id S1756627AbZCVVOe (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Mar 2009 17:14:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756020AbZCVVNr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Mar 2009 17:13:45 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:54603 "EHLO ogre.sisk.pl"
+	Sun, 22 Mar 2009 17:13:47 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:54604 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754957AbZCVVNo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Mar 2009 17:13:44 -0400
+	id S1755320AbZCVVNp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Mar 2009 17:13:45 -0400
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
 To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: [RFC][PATCH 0/2] Make radeonfb use PCI PM core for suspendig device (was: Re: [RFC][PATCH] PCI PM: Be extra careful when changing power states of devices)
-Date: Sun, 22 Mar 2009 22:08:21 +0100
+Subject: [RFC][PATCH 2/2] radeonfb: Avoid open coding of PCI PM operations
+Date: Sun, 22 Mar 2009 22:13:13 +0100
 User-Agent: KMail/1.11.1 (Linux/2.6.29-rc8-tst; KDE/4.2.1; x86_64; ; )
 Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
        Linux PCI <linux-pci@vger.kernel.org>,
@@ -20,42 +20,72 @@ Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
        LKML <linux-kernel@vger.kernel.org>,
        Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>
-References: <200903210003.55161.rjw@sisk.pl>
-In-Reply-To: <200903210003.55161.rjw@sisk.pl>
+References: <200903210003.55161.rjw@sisk.pl> <200903222208.22434.rjw@sisk.pl>
+In-Reply-To: <200903222208.22434.rjw@sisk.pl>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200903222208.22434.rjw@sisk.pl>
+Message-Id: <200903222213.14186.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 21 March 2009, Rafael J. Wysocki wrote:
-> From: Rafael J. Wysocki <rjw@sisk.pl>
-> 
-> The story in http://bugzilla.kernel.org/show_bug.cgi?id=12846 shows
-> that setting the power state of a PCI device by
-> pci_raw_set_power_state() may sometimes fail.  For this reason,
-> pci_raw_set_power_state() should not assume that the power state of
-> the device has actually changed after writing into its PMCSR.
-> Instead, it should read the value from there and use it to update
-> dev->current_state.  It also is useful to print a warning if the
-> device's power state hasn't changed as expected.
-> 
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> ---
-OK, since the Ben's radeonfb fix for bug #12846 has been merged, I'd like
-to do something a bit different.
+From: Rafael J. Wysocki <rjw@sisk.pl>
 
-Patch 1/2 introduces __pci_set_power_state() that will allow the radeonfb
-driver not to open code PCI PM operations.
+The radeonfb driver uses open coded programming of the low power
+state D2 into the device, because it has to handle some chips
+that don't follow the specification.  Avoid that by making it use
+__pci_set_power_state() for this purpose.
 
-Patch 2/2 makes the driver use __pci_set_power_state().
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ drivers/video/aty/radeon_pm.c |   26 +++-----------------------
+ 1 file changed, 3 insertions(+), 23 deletions(-)
 
-Comments welcome.
-
-Thanks,
-Rafael
-
+Index: linux-2.6/drivers/video/aty/radeon_pm.c
+===================================================================
+--- linux-2.6.orig/drivers/video/aty/radeon_pm.c
++++ linux-2.6/drivers/video/aty/radeon_pm.c
+@@ -2507,25 +2507,6 @@ static void radeon_reinitialize_QW(struc
+ 
+ #endif /* CONFIG_PPC_OF */
+ 
+-static void radeonfb_whack_power_state(struct radeonfb_info *rinfo, pci_power_t state)
+-{
+-	u16 pwr_cmd;
+-
+-	for (;;) {
+-		pci_read_config_word(rinfo->pdev,
+-				     rinfo->pm_reg+PCI_PM_CTRL,
+-				     &pwr_cmd);
+-		if (pwr_cmd & 2)
+-			break;
+-		pwr_cmd = (pwr_cmd & ~PCI_PM_CTRL_STATE_MASK) | 2;
+-		pci_write_config_word(rinfo->pdev,
+-				      rinfo->pm_reg+PCI_PM_CTRL,
+-				      pwr_cmd);
+-		msleep(500);
+-	}
+-	rinfo->pdev->current_state = state;
+-}
+-
+ static void radeon_set_suspend(struct radeonfb_info *rinfo, int suspend)
+ {
+ 	u32 tmp;
+@@ -2578,11 +2559,10 @@ static void radeon_set_suspend(struct ra
+ 		pci_disable_device(rinfo->pdev);
+ 		pci_save_state(rinfo->pdev);
+ 		/* The chip seems to need us to whack the PM register
+-		 * repeatedly until it sticks. We do that -prior- to
+-		 * calling pci_set_power_state()
++		 * repeatedly until it sticks.  However, with the 500 ms delay,
++		 * it's better to give up after 10 unsuccessful attempts.
+ 		 */
+-		radeonfb_whack_power_state(rinfo, PCI_D2);
+-		pci_set_power_state(rinfo->pdev, PCI_D2);
++		__pci_set_power_state(rinfo->pdev, PCI_D2, 10, 500);
+ 	} else {
+ 		printk(KERN_DEBUG "radeonfb (%s): switching to D0 state...\n",
+ 		       pci_name(rinfo->pdev));
