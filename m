@@ -1,182 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752047AbZCVEEv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751820AbZCVEP0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752047AbZCVEEv (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Mar 2009 00:04:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750734AbZCVEEm
+	id S1751820AbZCVEP0 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Mar 2009 00:15:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750837AbZCVEPL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Mar 2009 00:04:42 -0400
-Received: from mail-ew0-f165.google.com ([209.85.219.165]:57195 "EHLO
-	mail-ew0-f165.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750717AbZCVEEl (ORCPT
+	Sun, 22 Mar 2009 00:15:11 -0400
+Received: from byss.tchmachines.com ([208.76.80.75]:50850 "EHLO
+	byss.tchmachines.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750834AbZCVEPK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Mar 2009 00:04:41 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        b=XWH5PVf8jM2Ft45bYMoEvQgo/9lS2AS+004yafVsFZzxd2ojO2vuOr4cqKUvP3JTJ8
-         LI9aUmkUHozHvatH7hSG5m6nqrtJIXtuPu5BO03+OxQbmv1rLLmZEJ1rGf37C6yVUamP
-         ch4t+DgyFHAH2rXUEjJt8LlA8ygSDFpX9aNHo=
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Steven Rostedt <rostedt@goodmis.org>, LKML <linux-kernel@vger.kernel.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>
-Subject: [PATCH] tracing/function-graph-tracer: prevent from hangs during selftests
-Date: Sun, 22 Mar 2009 05:04:35 +0100
-Message-Id: <1237694675-23509-1-git-send-email-fweisbec@gmail.com>
-X-Mailer: git-send-email 1.6.1
+	Sun, 22 Mar 2009 00:15:10 -0400
+Date: Sat, 21 Mar 2009 21:15:02 -0700
+From: Ravikiran G Thirumalai <kiran@scalex86.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       shai@scalex86.org
+Subject: Re: [rfc] [patch 1/2 ] Process private hash tables for private
+	futexes
+Message-ID: <20090322041502.GC7278@localdomain>
+References: <20090321044637.GA7278@localdomain> <20090321043514.69f8243d.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090321043514.69f8243d.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - byss.tchmachines.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - scalex86.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: fix some hangs on some configs
+On Sat, Mar 21, 2009 at 04:35:14AM -0700, Andrew Morton wrote:
+>On Fri, 20 Mar 2009 21:46:37 -0700 Ravikiran G Thirumalai <kiran@scalex86.org> wrote:
+>
+>> 
+>> Index: linux-2.6.28.6/include/linux/mm_types.h
+>> ===================================================================
+>> --- linux-2.6.28.6.orig/include/linux/mm_types.h	2009-03-11 16:52:06.000000000 -0800
+>> +++ linux-2.6.28.6/include/linux/mm_types.h	2009-03-11 16:52:23.000000000 -0800
+>> @@ -256,6 +256,10 @@ struct mm_struct {
+>>  #ifdef CONFIG_MMU_NOTIFIER
+>>  	struct mmu_notifier_mm *mmu_notifier_mm;
+>>  #endif
+>> +#ifdef CONFIG_PROCESS_PRIVATE_FUTEX
+>> +	/* Process private futex hash table */
+>> +	struct futex_hash_bucket *htb;
+>> +#endif
+>
+>So we're effectively improving the hashing operation by splitting the
+>single hash table into multiple ones.
+>
+>But was that the best way of speeding up the hashing operation?  I'd have
+>thought that for some workloads, there will still be tremendous amounts of
+>contention for the per-mm hashtable?  In which case it is but a partial fix
+>for certain workloads.
 
-Sometimes, with some configs, the function graph tracer can make
-the timer interrupt too much slow, hanging the kernel in an endless
-loop of timer interrupts servicing.
+If there is tremendous contention on the per-mm hashtable, then
+workload suffers from userspace lock contention to begin with, and the right
+approach would be to fix the lock contention in userspace/workload, no?
+True, if a workload happens to be one process on a large core count machine
+with a zillion threads, using a zillion futexes, hashing might still be bad,
+but  such a workload has bigger hurdles like the mmap_sem which is still
+a bigger lock than the per-bucket locks of the private hash table.  (Even
+with use of the FUTEX_PRIVATE_FLAG, mmap_sem gets contended for page faults
+and the like).
 
-As suggested by Ingo, this patch brings a watchdog which stops the
-selftest after a defined number of functions traced, definitely
-disabling this tracer.
+The fundamental problem we are facing right now is the private futexes
+hashing onto a global hash table and then the futex subsystem
+wading through the table that contains private futexes from other
+*unrelated* processes.  Even with better hashing/larger hash table, we do not
+eliminate the possibility of private futexes from two unrelated processes
+hashing on to hash buckets close enough to be on the same cache line -- if
+we use one global hash table for private futexes.
+(I remember doing some tests and instrumentation in the past with a
+different hash function as well as more hash slots)
+Hence, it seems like a private hash table for private futexes are the right
+solution.  Perhaps we can reduce the hash slots for private hash table and
+increase the hash slots on the global hash (to help non-private futex
+hashing)?
 
-For those who want to debug the cause of the function graph trace
-hang, you can pass the ftrace_dump_on_oops kernel parameter to dump
-the traces after this hang detection.
-
-Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
----
- kernel/trace/trace.c          |   26 +++++++++++++++++++++++---
- kernel/trace/trace_selftest.c |   38 +++++++++++++++++++++++++++++++++++++-
- 2 files changed, 60 insertions(+), 4 deletions(-)
-
-diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
-index e3dfefe..e6fac0f 100644
---- a/kernel/trace/trace.c
-+++ b/kernel/trace/trace.c
-@@ -4018,11 +4018,12 @@ trace_printk_seq(struct trace_seq *s)
- 	trace_seq_init(s);
- }
- 
--void ftrace_dump(void)
-+static void __ftrace_dump(bool disable_tracing)
- {
- 	static DEFINE_SPINLOCK(ftrace_dump_lock);
- 	/* use static because iter can be a bit big for the stack */
- 	static struct trace_iterator iter;
-+	unsigned int old_userobj;
- 	static int dump_ran;
- 	unsigned long flags;
- 	int cnt = 0, cpu;
-@@ -4034,14 +4035,17 @@ void ftrace_dump(void)
- 
- 	dump_ran = 1;
- 
--	/* No turning back! */
- 	tracing_off();
--	ftrace_kill();
-+
-+	if (disable_tracing)
-+		ftrace_kill();
- 
- 	for_each_tracing_cpu(cpu) {
- 		atomic_inc(&global_trace.data[cpu]->disabled);
- 	}
- 
-+	old_userobj = trace_flags & TRACE_ITER_SYM_USEROBJ;
-+
- 	/* don't look at user memory in panic mode */
- 	trace_flags &= ~TRACE_ITER_SYM_USEROBJ;
- 
-@@ -4086,10 +4090,26 @@ void ftrace_dump(void)
- 	else
- 		printk(KERN_TRACE "---------------------------------\n");
- 
-+	/* Re-enable tracing if requested */
-+	if (!disable_tracing) {
-+		trace_flags |= old_userobj;
-+
-+		for_each_tracing_cpu(cpu) {
-+			atomic_dec(&global_trace.data[cpu]->disabled);
-+		}
-+		tracing_on();
-+	}
-+
-  out:
- 	spin_unlock_irqrestore(&ftrace_dump_lock, flags);
- }
- 
-+/* By default: disable tracing after the dump */
-+void ftrace_dump(void)
-+{
-+	__ftrace_dump(true);
-+}
-+
- __init static int tracer_alloc_buffers(void)
- {
- 	struct trace_array_cpu *data;
-diff --git a/kernel/trace/trace_selftest.c b/kernel/trace/trace_selftest.c
-index 38856ba..01cd2d6 100644
---- a/kernel/trace/trace_selftest.c
-+++ b/kernel/trace/trace_selftest.c
-@@ -248,6 +248,28 @@ trace_selftest_startup_function(struct tracer *trace, struct trace_array *tr)
- 
- 
- #ifdef CONFIG_FUNCTION_GRAPH_TRACER
-+
-+/* Maximum number of functions to trace before diagnosing a hang */
-+#define GRAPH_MAX_FUNC_TEST	100000000
-+
-+static void __ftrace_dump(bool disable_tracing);
-+static unsigned int graph_hang_thresh;
-+
-+/* Wrap the real function entry probe to avoid possible hanging */
-+static int trace_graph_entry_watchdog(struct ftrace_graph_ent *trace)
-+{
-+	/* This is harmlessly racy, we want to approximately detect a hang */
-+	if (unlikely(++graph_hang_thresh > GRAPH_MAX_FUNC_TEST)) {
-+		ftrace_graph_stop();
-+		printk(KERN_WARNING "Function graph tracer seems hanging\n");
-+		if (ftrace_dump_on_oops)
-+			__ftrace_dump(false);
-+		return 0;
-+	}
-+
-+	return trace_graph_entry(trace);
-+}
-+
- /*
-  * Pretty much the same than for the function tracer from which the selftest
-  * has been borrowed.
-@@ -259,15 +281,29 @@ trace_selftest_startup_function_graph(struct tracer *trace,
- 	int ret;
- 	unsigned long count;
- 
--	ret = tracer_init(trace, tr);
-+	/*
-+	 * Simulate the init() callback but we attach a watchdog callback
-+	 * to detect and recover from possible hangs
-+	 */
-+	tracing_reset_online_cpus(tr);
-+	ret = register_ftrace_graph(&trace_graph_return,
-+				    &trace_graph_entry_watchdog);
- 	if (ret) {
- 		warn_failed_init_tracer(trace, ret);
- 		goto out;
- 	}
-+	tracing_start_cmdline_record();
- 
- 	/* Sleep for a 1/10 of a second */
- 	msleep(100);
- 
-+	/* Have we just recovered from a hang? */
-+	if (graph_hang_thresh > GRAPH_MAX_FUNC_TEST) {
-+		trace->reset(tr);
-+		ret = -1;
-+		goto out;
-+	}
-+
- 	tracing_stop();
- 
- 	/* check the trace buffer */
--- 
-1.6.1
-
+Thanks,
+Kiran
