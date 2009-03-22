@@ -1,230 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756428AbZCVUxs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756156AbZCVU4u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756428AbZCVUxs (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Mar 2009 16:53:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753705AbZCVUxj
+	id S1756156AbZCVU4u (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Mar 2009 16:56:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755593AbZCVU4l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Mar 2009 16:53:39 -0400
-Received: from hera.kernel.org ([140.211.167.34]:42995 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751204AbZCVUxi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Mar 2009 16:53:38 -0400
-Subject: [git-pull -tip] x86: cleanup patches 20090322
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: Ingo Molnar <mingo@elte.hu>, x86 maintainers <x86@kernel.org>,
-       Rusty Russell <rusty@rustcorp.com.au>, Sam Ravnborg <sam@ravnborg.org>,
-       Yinghai Lu <yinghai@kernel.org>, LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Mon, 23 Mar 2009 02:22:56 +0530
-Message-Id: <1237755176.5417.16.camel@ht.satnam>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
-Content-Transfer-Encoding: 7bit
+	Sun, 22 Mar 2009 16:56:41 -0400
+Received: from yw-out-2324.google.com ([74.125.46.31]:60495 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753705AbZCVU4k convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Mar 2009 16:56:40 -0400
+MIME-Version: 1.0
+In-Reply-To: <Pine.LNX.4.64.0903221826520.17976@blonde.anvils>
+References: <Pine.LNX.4.64.0903221826520.17976@blonde.anvils>
+Date: Sun, 22 Mar 2009 13:56:37 -0700
+Message-ID: <aca0ce8b0903221356w487dbbbdie6d5cb9a1862af57@mail.gmail.com>
+Subject: Re: [PATCH next] sysfs: fix some bin_vm_ops errors
+From: Eric Biederman <ebiederm@aristanetworks.com>
+To: Hugh Dickins <hugh@veritas.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>, Tejun Heo <tj@kernel.org>,
+       Kay Sievers <kay.sievers@vrfy.org>, Greg Kroah-Hartman <gregkh@suse.de>,
+       Nick Piggin <npiggin@suse.de>, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The following changes since commit 7f00a2495bf5b98b097c47be5d6e2d4114ec39bf:
-  Ingo Molnar (1):
-        Merge branches 'x86/cleanups', 'x86/mm', 'x86/setup' and 'linus' into x86/core
+On Sun, Mar 22, 2009 at 11:33 AM, Hugh Dickins <hugh@veritas.com> wrote:
+> Commit 86c9508eb1c0ce5aa07b5cf1d36b60c54efc3d7a
+> "sysfs: don't block indefinitely for unmapped files" in linux-next
+> crashes the PowerMac G5 when X starts up.  It's caught out by the way
+> powerpc's pci_mmap of legacy_mem uses shmem_zero_setup(), substituting
+> a new vma->vm_file whose private_data no longer points to the bin_buffer
+> (substitution done because some versions of X crash if that mmap fails).
+>
+> The fix to this is straightforward: the original vm_file is fput() in
+> that case, so this mmap won't block sysfs at all, so just don't switch
+> over to bin_vm_ops if vm_file has changed.
 
-are available in the git repository at:
+That part is really weird but it looks reasonable.
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/jaswinder/linux-2.6-tiptop.git x86/core
+> But more fixes made before realizing that was the problem:-
+>
+> It should not be an error if bin_page_mkwrite() finds no underlying
+> page_mkwrite().
 
-Jaswinder Singh Rajput (5):
-      x86: cpu/cpu.h cleanup
-      x86: irq.c use same path for show_interrupts
-      x86: irq.c keep CONFIG_X86_LOCAL_APIC interrupts together
-      x86: apic/io_apic.c define msi_ir_chip and ir_ioapic_chip all the time
-      x86: e820.h fix various signedness issues in setup.c and e820.c
+Likely.  The goal is to get the same behaviour as if mkwrite had not been
+implemented.    Looking at the code clearly returning an error in
+the version I am looking at does not meet the goal, and since I unmap
+everything during a hot-unplug and rely on the fault handler I have
+no problem with that change.
 
- arch/x86/include/asm/e820.h    |    2 +-
- arch/x86/kernel/apic/io_apic.c |    9 ++++-----
- arch/x86/kernel/cpu/cpu.h      |   20 ++++++++++----------
- arch/x86/kernel/irq.c          |   23 ++++++-----------------
- 4 files changed, 21 insertions(+), 33 deletions(-)
+> Check that a file already mmap'ed has the same underlying vm_ops
+> _before_ pointing vma->vm_ops at bin_vm_ops.
 
-Complete diff:
-diff --git a/arch/x86/include/asm/e820.h b/arch/x86/include/asm/e820.h
-index 00d41ce..991ac17 100644
---- a/arch/x86/include/asm/e820.h
-+++ b/arch/x86/include/asm/e820.h
-@@ -57,7 +57,7 @@ struct e820entry {
- } __attribute__((packed));
- 
- struct e820map {
--	__u32 nr_map;
-+	__s32 nr_map;
- 	struct e820entry map[E820_X_MAX];
- };
- 
-diff --git a/arch/x86/kernel/apic/io_apic.c b/arch/x86/kernel/apic/io_apic.c
-index 42cdc78..d36e3d8 100644
---- a/arch/x86/kernel/apic/io_apic.c
-+++ b/arch/x86/kernel/apic/io_apic.c
-@@ -1428,7 +1428,6 @@ void __setup_vector_irq(int cpu)
- 
- static struct irq_chip ioapic_chip;
- static struct irq_chip ir_ioapic_chip;
--static struct irq_chip msi_ir_chip;
- 
- #define IOAPIC_AUTO     -1
- #define IOAPIC_EDGE     0
-@@ -2663,20 +2662,20 @@ static struct irq_chip ioapic_chip __read_mostly = {
- 	.retrigger	= ioapic_retrigger_irq,
- };
- 
--#ifdef CONFIG_INTR_REMAP
- static struct irq_chip ir_ioapic_chip __read_mostly = {
- 	.name		= "IR-IO-APIC",
- 	.startup	= startup_ioapic_irq,
- 	.mask		= mask_IO_APIC_irq,
- 	.unmask		= unmask_IO_APIC_irq,
-+#ifdef CONFIG_INTR_REMAP
- 	.ack		= ack_x2apic_edge,
- 	.eoi		= ack_x2apic_level,
- #ifdef CONFIG_SMP
- 	.set_affinity	= set_ir_ioapic_affinity_irq,
- #endif
-+#endif
- 	.retrigger	= ioapic_retrigger_irq,
- };
--#endif
- 
- static inline void init_IO_APIC_traps(void)
- {
-@@ -3391,18 +3390,18 @@ static struct irq_chip msi_chip = {
- 	.retrigger	= ioapic_retrigger_irq,
- };
- 
--#ifdef CONFIG_INTR_REMAP
- static struct irq_chip msi_ir_chip = {
- 	.name		= "IR-PCI-MSI",
- 	.unmask		= unmask_msi_irq,
- 	.mask		= mask_msi_irq,
-+#ifdef CONFIG_INTR_REMAP
- 	.ack		= ack_x2apic_edge,
- #ifdef CONFIG_SMP
- 	.set_affinity	= ir_set_msi_irq_affinity,
- #endif
-+#endif
- 	.retrigger	= ioapic_retrigger_irq,
- };
--#endif
- 
- /*
-  * Map the PCI dev to the corresponding remapping hardware unit
-diff --git a/arch/x86/kernel/cpu/cpu.h b/arch/x86/kernel/cpu/cpu.h
-index 9469ecb..6de9a90 100644
---- a/arch/x86/kernel/cpu/cpu.h
-+++ b/arch/x86/kernel/cpu/cpu.h
-@@ -3,25 +3,25 @@
- #define ARCH_X86_CPU_H
- 
- struct cpu_model_info {
--	int vendor;
--	int family;
--	const char *model_names[16];
-+	int		vendor;
-+	int		family;
-+	const char	*model_names[16];
- };
- 
- /* attempt to consolidate cpu attributes */
- struct cpu_dev {
--	const char	* c_vendor;
-+	const char	*c_vendor;
- 
- 	/* some have two possibilities for cpuid string */
--	const char	* c_ident[2];
-+	const char	*c_ident[2];
- 
- 	struct		cpu_model_info c_models[4];
- 
--	void            (*c_early_init)(struct cpuinfo_x86 *c);
--	void		(*c_init)(struct cpuinfo_x86 * c);
--	void		(*c_identify)(struct cpuinfo_x86 * c);
--	unsigned int	(*c_size_cache)(struct cpuinfo_x86 * c, unsigned int size);
--	int	c_x86_vendor;
-+	void            (*c_early_init)(struct cpuinfo_x86 *);
-+	void		(*c_init)(struct cpuinfo_x86 *);
-+	void		(*c_identify)(struct cpuinfo_x86 *);
-+	unsigned int	(*c_size_cache)(struct cpuinfo_x86 *, unsigned int);
-+	int		c_x86_vendor;
- };
- 
- #define cpu_dev_register(cpu_devX) \
-diff --git a/arch/x86/kernel/irq.c b/arch/x86/kernel/irq.c
-index b8ac3b6..3aaf7b9 100644
---- a/arch/x86/kernel/irq.c
-+++ b/arch/x86/kernel/irq.c
-@@ -58,6 +58,11 @@ static int show_other_interrupts(struct seq_file *p, int prec)
- 	for_each_online_cpu(j)
- 		seq_printf(p, "%10u ", irq_stats(j)->apic_timer_irqs);
- 	seq_printf(p, "  Local timer interrupts\n");
-+
-+	seq_printf(p, "%*s: ", prec, "SPU");
-+	for_each_online_cpu(j)
-+		seq_printf(p, "%10u ", irq_stats(j)->irq_spurious_count);
-+	seq_printf(p, "  Spurious interrupts\n");
- #endif
- 	if (generic_interrupt_extension) {
- 		seq_printf(p, "PLT: ");
-@@ -91,12 +96,6 @@ static int show_other_interrupts(struct seq_file *p, int prec)
- 	seq_printf(p, "  Threshold APIC interrupts\n");
- # endif
- #endif
--#ifdef CONFIG_X86_LOCAL_APIC
--	seq_printf(p, "%*s: ", prec, "SPU");
--	for_each_online_cpu(j)
--		seq_printf(p, "%10u ", irq_stats(j)->irq_spurious_count);
--	seq_printf(p, "  Spurious interrupts\n");
--#endif
- 	seq_printf(p, "%*s: %10u\n", prec, "ERR", atomic_read(&irq_err_count));
- #if defined(CONFIG_X86_IO_APIC)
- 	seq_printf(p, "%*s: %10u\n", prec, "MIS", atomic_read(&irq_mis_count));
-@@ -133,23 +132,15 @@ int show_interrupts(struct seq_file *p, void *v)
- 		return 0;
- 
- 	spin_lock_irqsave(&desc->lock, flags);
--#ifndef CONFIG_SMP
--	any_count = kstat_irqs(i);
--#else
- 	for_each_online_cpu(j)
- 		any_count |= kstat_irqs_cpu(i, j);
--#endif
- 	action = desc->action;
- 	if (!action && !any_count)
- 		goto out;
- 
- 	seq_printf(p, "%*d: ", prec, i);
--#ifndef CONFIG_SMP
--	seq_printf(p, "%10u ", kstat_irqs(i));
--#else
- 	for_each_online_cpu(j)
- 		seq_printf(p, "%10u ", kstat_irqs_cpu(i, j));
--#endif
- 	seq_printf(p, " %8s", desc->chip->name);
- 	seq_printf(p, "-%-8s", desc->name);
- 
-@@ -174,6 +165,7 @@ u64 arch_irq_stat_cpu(unsigned int cpu)
- 
- #ifdef CONFIG_X86_LOCAL_APIC
- 	sum += irq_stats(cpu)->apic_timer_irqs;
-+	sum += irq_stats(cpu)->irq_spurious_count;
- #endif
- 	if (generic_interrupt_extension)
- 		sum += irq_stats(cpu)->generic_irqs;
-@@ -188,9 +180,6 @@ u64 arch_irq_stat_cpu(unsigned int cpu)
- 	sum += irq_stats(cpu)->irq_threshold_count;
- #endif
- #endif
--#ifdef CONFIG_X86_LOCAL_APIC
--	sum += irq_stats(cpu)->irq_spurious_count;
--#endif
- 	return sum;
- }
- 
+Checking that the underlying file is the same is good.  I know my original
+reasoning was that using the original vm_ops would likely mess up error
+handling if I used them.
 
+> If the file being mmap'ed is a shmem/tmpfs file, don't fail the mmap
+> on CONFIG_NUMA=y, just because that has a set_policy and get_policy.
+> They probably won't be called, and it's not a disaster if they don't
+> work on sysfs.  vm_ops->migrate?  I couldn't find any example.  Just
+> delete CONFIG_NUMA tests, easy enough to add stubs later if required.
 
+I agree about it being easy enough to add stubs later if required.  In my case
+I deliberately added an error check instead so that the code would fail fast
+instead of failing subtlely if anyone ever did that.  And that check appears to
+have worked in your case so I would like to retain that check.
+
+> Signed-off-by: Hugh Dickins <hugh@veritas.com>
+> ---
+> I have only tested that X now starts up fine on the G5: I don't think
+> I've messed up the intent of your patch, but not tested it still works.
+>
+>  fs/sysfs/bin.c |   18 ++++++++----------
+>  1 file changed, 8 insertions(+), 10 deletions(-)
+>
+> --- 2.6.29-rc8-next/fs/sysfs/bin.c      2009-03-20 12:41:45.000000000 +0000
+> +++ linux/fs/sysfs/bin.c        2009-03-21 18:01:26.000000000 +0000
+> @@ -241,9 +241,12 @@ static int bin_page_mkwrite(struct vm_ar
+>        struct sysfs_dirent *attr_sd = file->f_path.dentry->d_fsdata;
+>        int ret;
+>
+> -       if (!bb->vm_ops || !bb->vm_ops->page_mkwrite)
+> +       if (!bb->vm_ops)
+>                return -EINVAL;
+>
+> +       if (!bb->vm_ops->page_mkwrite)
+> +               return 0;
+> +
+>        if (!sysfs_get_active_two(attr_sd))
+>                return -EINVAL;
+>
+> @@ -287,7 +290,6 @@ static int mmap(struct file *file, struc
+>        struct sysfs_dirent *attr_sd = file->f_path.dentry->d_fsdata;
+>        struct bin_attribute *attr = attr_sd->s_bin_attr.bin_attr;
+>        struct kobject *kobj = attr_sd->s_parent->s_dir.kobj;
+> -       struct vm_operations_struct *vm_ops;
+>        int rc;
+>
+>        mutex_lock(&bb->mutex);
+> @@ -302,24 +304,20 @@ static int mmap(struct file *file, struc
+>                goto out_put;
+>
+>        rc = attr->mmap(kobj, attr, vma);
+> -       vm_ops = vma->vm_ops;
+> -       vma->vm_ops = &bin_vm_ops;
+>        if (rc)
+>                goto out_put;
+>
+> -       rc = -EINVAL;
+> -       if (bb->mmapped && bb->vm_ops != vma->vm_ops)
+> +       if (vma->vm_file != file)
+>                goto out_put;
+>
+> -#ifdef CONFIG_NUMA
+>        rc = -EINVAL;
+> -       if (vm_ops && ((vm_ops->set_policy || vm_ops->get_policy || vm_ops->migrate)))
+> +       if (bb->mmapped && bb->vm_ops != vma->vm_ops)
+>                goto out_put;
+> -#endif
+>
+>        rc = 0;
+>        bb->mmapped = 1;
+> -       bb->vm_ops = vm_ops;
+> +       bb->vm_ops = vma->vm_ops;
+> +       vma->vm_ops = &bin_vm_ops;
+>  out_put:
+>        sysfs_put_active_two(attr_sd);
+>  out_unlock:
+>
