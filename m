@@ -1,67 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758787AbZCWPVK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758884AbZCWPVo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758787AbZCWPVK (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Mar 2009 11:21:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758653AbZCWPTo
+	id S1758884AbZCWPVo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Mar 2009 11:21:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758711AbZCWPUS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Mar 2009 11:19:44 -0400
-Received: from hera.kernel.org ([140.211.167.34]:48139 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758651AbZCWPTm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Mar 2009 11:19:42 -0400
-Date: Mon, 23 Mar 2009 15:19:04 GMT
-From: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       eduard.munteanu@linux360.ro, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       eduard.munteanu@linux360.ro, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <284dba2732a144849d5aa82258fe0de2ad8dcb0b.1237813499.git.eduard.munteanu@linux360.ro>
-References: <284dba2732a144849d5aa82258fe0de2ad8dcb0b.1237813499.git.eduard.munteanu@linux360.ro>
-Subject: [tip:tracing/kmemtrace] kmemtrace: kmemtrace_alloc() must fill type_id
-Message-ID: <tip-76825df5cfefce3c2b8d9768b058848930427e4e@git.kernel.org>
-Git-Commit-ID: 76825df5cfefce3c2b8d9768b058848930427e4e
-X-Mailer: tip-git-log-daemon
+	Mon, 23 Mar 2009 11:20:18 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:36919 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758629AbZCWPUR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Mar 2009 11:20:17 -0400
+Date: Mon, 23 Mar 2009 16:20:03 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Jody McIntyre <scjody@sun.com>
+Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       trivial@kernel.org
+Subject: Re: [PATCH] trivial: fix bad links in the ext2 and ext3
+	documentation
+Message-ID: <20090323152003.GA1412@ucw.cz>
+References: <20090312213922.GK8732@clouds>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 23 Mar 2009 15:19:06 +0000 (UTC)
+In-Reply-To: <20090312213922.GK8732@clouds>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  76825df5cfefce3c2b8d9768b058848930427e4e
-Gitweb:     http://git.kernel.org/tip/76825df5cfefce3c2b8d9768b058848930427e4e
-Author:     Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-AuthorDate: Mon, 23 Mar 2009 15:12:25 +0200
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Mon, 23 Mar 2009 16:06:56 +0100
+On Thu 2009-03-12 17:39:23, Jody McIntyre wrote:
+> Trivial patch to fix bad links in the ext2 and ext3 documentation.
+> 
+> Signed-off-by: Jody McIntyre <scjody@sun.com>
+> 
+> Index: linux-2.6/Documentation/filesystems/ext2.txt
+> ===================================================================
+> --- linux-2.6.orig/Documentation/filesystems/ext2.txt
+> +++ linux-2.6/Documentation/filesystems/ext2.txt
+> @@ -373,10 +373,10 @@ Filesystem Resizing	http://ext2resize.so
+>  Compression (*)		http://e2compr.sourceforge.net/
+>  
+>  Implementations for:
+> -Windows 95/98/NT/2000	http://uranus.it.swin.edu.au/~jn/linux/Explore2fs.htm
+> -Windows 95 (*)		http://www.yipton.demon.co.uk/content.html#FSDEXT2
+> +Windows 95/98/NT/2000	http://www.chrysocome.net/explore2fs
+> +Windows 95 (*)		http://www.yipton.net/content.html#FSDEXT2
+>  DOS client (*)		ftp://metalab.unc.edu/pub/Linux/system/filesystems/ext2/
+> -OS/2			http://perso.wanadoo.fr/matthieu.willm/ext2-os2/
+> -RISC OS client		ftp://ftp.barnet.ac.uk/pub/acorn/armlinux/iscafs/
+> +OS/2 (*)		ftp://metalab.unc.edu/pub/Linux/system/filesystems/ext2/
+> +RISC OS client		http://www.esw-heim.tu-clausthal.de/~marco/smorbrod/IscaFS/
+>  
+> -(*) no longer actively developed/supported (as of Apr 2001)
+> +(*) no longer actively developed/supported (as of Mar 2009)
 
-kmemtrace: kmemtrace_alloc() must fill type_id
+Uhuh, this removes useful  info -- the fact that win95 client is
+orphaned from 2001...
 
-Impact: fix trace output
-
-kmemtrace_alloc() was not filling type_id, which allowed garbage to make
-it into tracing data.
-
-Signed-off-by: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-LKML-Reference: <284dba2732a144849d5aa82258fe0de2ad8dcb0b.1237813499.git.eduard.munteanu@linux360.ro>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-
----
- kernel/trace/kmemtrace.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
-
-diff --git a/kernel/trace/kmemtrace.c b/kernel/trace/kmemtrace.c
-index 3316dc5..15f40f4 100644
---- a/kernel/trace/kmemtrace.c
-+++ b/kernel/trace/kmemtrace.c
-@@ -67,6 +67,7 @@ static inline void kmemtrace_alloc(enum kmemtrace_type_id type_id,
- 	tracing_generic_entry_update(&entry->ent, 0, 0);
- 
- 	entry->ent.type = TRACE_KMEM_ALLOC;
-+	entry->type_id = type_id;
- 	entry->call_site = call_site;
- 	entry->ptr = ptr;
- 	entry->bytes_req = bytes_req;
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
