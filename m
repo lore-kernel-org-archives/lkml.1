@@ -1,93 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759941AbZCWTIZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760408AbZCWTIk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759941AbZCWTIZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Mar 2009 15:08:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759330AbZCWTIP
+	id S1760408AbZCWTIk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Mar 2009 15:08:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760436AbZCWTI3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Mar 2009 15:08:15 -0400
-Received: from e23smtp06.au.ibm.com ([202.81.31.148]:57718 "EHLO
-	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753455AbZCWTIN (ORCPT
+	Mon, 23 Mar 2009 15:08:29 -0400
+Received: from mail-fx0-f158.google.com ([209.85.220.158]:39806 "EHLO
+	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759618AbZCWTI2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Mar 2009 15:08:13 -0400
-Date: Tue, 24 Mar 2009 00:38:00 +0530
-From: "K.Prasad" <prasad@linux.vnet.ibm.com>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Benjamin Herrenschmidt <benh@au1.ibm.com>,
-       Maneesh Soni <maneesh@in.ibm.com>, Roland McGrath <roland@redhat.com>
-Subject: Re: [Patch 11/11] ftrace plugin for kernel symbol tracing using HW
-	Breakpoint interfaces - v2
-Message-ID: <20090323190800.GA12442@in.ibm.com>
-Reply-To: prasad@linux.vnet.ibm.com
-References: <20090319234044.410725944@K.Prasad> <20090319235032.GL10517@in.ibm.com> <20090320090451.GC7820@nowhere> <20090321162417.GA9906@in.ibm.com> <alpine.DEB.2.00.0903211235390.13615@gandalf.stny.rr.com>
+	Mon, 23 Mar 2009 15:08:28 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:user-agent:x-accept-language:mime-version:to
+         :cc:subject:references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=TQ1QwHd61JWa/JNRtv3VqiYWmL2AvDWeTMlAyhTeqN+P/qJy8rehR4GgOVskaS3WTe
+         fC+UX3/9q0ihb4fVW+HuTIgHm1cvS32LX4pi51MK8Fw0/koix7KmP0ZdckXbbnv4Mj/t
+         EAl3lx/vbgzF7/vUDRylrhX1tboLsJ9hl5Kms=
+Message-ID: <49C7DE25.4030706@googlemail.com>
+Date: Mon, 23 Mar 2009 20:08:21 +0100
+From: Michael Riepe <michael.riepe@googlemail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686 (x86_64); en-US; rv:1.7.13) Gecko/20060417
+X-Accept-Language: de-de, de, en-us, en
 MIME-Version: 1.0
+To: Miklos Szeredi <miklos@szeredi.hu>
+CC: mingo@elte.hu, linux-kernel@vger.kernel.org, oleg@redhat.com,
+       peterz@infradead.org, roland@redhat.com, efault@gmx.de, rjw@sisk.pl,
+       jdike@addtoit.com, user-mode-linux-devel@lists.sourceforge.net,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       stable@kernel.org
+Subject: Re: [patch] fix ptrace slowness
+References: <E1LllkK-0000zF-1h@pomaz-ex.szeredi.hu> <20090323151954.GC21267@elte.hu> <E1Llmpk-0001A3-2E@pomaz-ex.szeredi.hu>
+In-Reply-To: <E1Llmpk-0001A3-2E@pomaz-ex.szeredi.hu>
+X-Enigmail-Version: 0.91.0.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.0903211235390.13615@gandalf.stny.rr.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Mar 21, 2009 at 12:39:08PM -0400, Steven Rostedt wrote:
-> 
-> On Sat, 21 Mar 2009, K.Prasad wrote:
-> > > > 
-> > 
-> > > > +
-> > > > +void ksym_collect_stats(unsigned long hbkpt_hit_addr)
-> > > > +{
-> > > > +	struct hlist_node *node;
-> > > > +	struct trace_ksym *entry;
-> > > > +
-> > > > +	spin_lock(&ksym_stat_lock);
-> > > 
-> > > 
-> > > I see that can be called from ksym_hbkpt_handler which in turn
-> > > can be called from interrupt context, right?
-> > > You can issue a deadlock if you don't disable interrupts here.
-> > > 
-> > > Thanks,
-> > > Frederic.
-> > > 
-> > 
-> > ksym_collect_stats<--ksym_hbkpt_handler<--hw_breakpoint_handler<--do_debug
-> > invocation happens with interrupts enabled (IF bit is set). I do find
-> > that a few plugins in kernel/trace enclose the
-> > trace_buffer_lock_reserve()--trace_buffer_unlock_commit() invocation
-> > within interrupt-disabled code. Is that a requirement there?
-> > 
-> > The potential deadlock scenario you foresee isn't obvious to me. Can you
-> > explain?
-> 
-> Can that lock ever be taken in an interrupt? If not, document that (and 
-> perhaps add a WARN_ON(in_interrupt()); ). Otherwise you have a possible:
-> 
-> 	spin_lock(&ksym_stat_lock);
-> 
-> 		===> take interrupt ...
-> 
-> 			(from interrupt)
-> 			spin_lock(&ksym_stat_lock); <== deadlock.
-> 
-> 
-> -- Steve
->
+Hi!
 
-Given that the function pointed by the trigger() routine is invoked with
-breakpoints disabled on that CPU, I don't think we'd enter into a loop
-a cyclic dependancy as above.
+Miklos Szeredi wrote:
+> On Mon, 23 Mar 2009, Ingo Molnar wrote:
+> 
+>>* Miklos Szeredi <miklos@szeredi.hu> wrote:
+>>
+>>
+>>>This one incorporates comments from Oleg and Ingo.  Please apply 
+>>>to 2.6.29 and 2.6.2[78]-stable trees.
+>>
+>>The fix first needs to go upstream. There's an alternative patch 
+>>below. Would you mind to give it a test? Chances are that it will 
+>>make UML even faster than your fix.
+> 
+> 
+> Just the opposite.  With my patch a UML image boots in 17 seconnds,
+> with your patch it boots in 33 seconds.  Without either patch it boots
+> in about 5 minutes.
 
-On the other hand, my observation w.r.t. IF bit being set was misplaced
-in the sense that it corresponded to the saved stack and not when inside
-the breakpoint handler in which case interrupts were disabled.
+My strace test case runs 60% faster with this patch (compared to Ingo's).
 
-So we are safe in either ways.
-
-Thanks,
-K.Prasad
- 
+-- 
+Michael "Tired" Riepe <michael.riepe@googlemail.com>
+X-Tired: Each morning I get up I die a little
