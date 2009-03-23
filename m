@@ -1,38 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755534AbZCWKtd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756262AbZCWKtt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755534AbZCWKtd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Mar 2009 06:49:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753536AbZCWKtW
+	id S1756262AbZCWKtt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Mar 2009 06:49:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755014AbZCWKta
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Mar 2009 06:49:22 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:34669 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752598AbZCWKtW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Mar 2009 06:49:22 -0400
-Date: Mon, 23 Mar 2009 10:49:45 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: =?UTF-8?B?5bCP5aSp?= <xtfeng@gmail.com>
-Cc: Markus <M4rkusXXL@web.de>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-Subject: Re: [Bug #12872] pwc mmap always fails with EAGAIN
-Message-ID: <20090323104945.0fc497e6@lxorguk.ukuu.org.uk>
-In-Reply-To: <7b6bb4a50903230341r6ab4a910l401a49d41aa289c7@mail.gmail.com>
-References: <GPBuLTara4J.A.3kH.TZTxJB@chimera>
-	<20090322142837.2df0d93d@lxorguk.ukuu.org.uk>
-	<20090322144516.GA13129@elte.hu>
-	<200903222058.12924.M4rkusXXL@web.de>
-	<7b6bb4a50903230341r6ab4a910l401a49d41aa289c7@mail.gmail.com>
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 23 Mar 2009 06:49:30 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:36189 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754585AbZCWKt3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Mar 2009 06:49:29 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <20090323001418.GA32758@cmpxchg.org>
+References: <20090323001418.GA32758@cmpxchg.org> <20090321102044.GA3427@cmpxchg.org> <1237752784-1989-1-git-send-email-hannes@cmpxchg.org> <20090323084423.490C.A69D9226@jp.fujitsu.com>
+To: Johannes Weiner <hannes@cmpxchg.org>
+Cc: dhowells@redhat.com, KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, Nick Piggin <npiggin@suse.de>,
+       Rik van Riel <riel@redhat.com>, Peter Zijlstra <peterz@infradead.com>,
+       MinChan Kim <minchan.kim@gmail.com>,
+       Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+Subject: Re: [patch 1/3] mm: decouple unevictable lru from mmu
+Date: Mon, 23 Mar 2009 10:48:25 +0000
+Message-ID: <12087.1237805305@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> >    Rename the pagerange_is_ram() to pat_pagerange_is_ram() and add the
-> >    "track legacy 1MB region as non RAM" condition.
+Johannes Weiner <hannes@cmpxchg.org> wrote:
 
-But the lowest 640K are most definitely RAM.
+> David, why do we need two Kconfig symbols for mlock and the mlock page
+> bit?  Don't we always provide mlock on mmu and never on nommu?
+
+Because whilst the PG_mlocked doesn't exist if we don't have mlock() because
+we're in NOMMU mode, that does not imply that it _does_ exist if we _do_ have
+mlock() as it's also contingent on having the unevictable LRU.
+
+Not only that, CONFIG_HAVE_MLOCK used in mm/internal.h to switch some stuff
+out based on whether we have mlock() available or not - which is not the same
+as whether we have PG_mlocked or not.
+
+Mainly I thought it made the train of logic easier.
+
+Note that neither symbol is actually manually adjustable.
+
+David
