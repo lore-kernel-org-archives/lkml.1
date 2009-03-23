@@ -1,138 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760584AbZCWW2X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759267AbZCWWqj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760584AbZCWW2X (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Mar 2009 18:28:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753225AbZCWW2O
+	id S1759267AbZCWWqj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Mar 2009 18:46:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754678AbZCWWq0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Mar 2009 18:28:14 -0400
-Received: from hera.kernel.org ([140.211.167.34]:52362 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752553AbZCWW2N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Mar 2009 18:28:13 -0400
-Date: Mon, 23 Mar 2009 22:27:32 GMT
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       fweisbec@gmail.com, rostedt@goodmis.org, tglx@linutronix.de,
-       mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       fweisbec@gmail.com, rostedt@goodmis.org, tglx@linutronix.de,
-       mingo@elte.hu
-In-Reply-To: <1237843021-11695-1-git-send-email-fweisbec@gmail.com>
-References: <1237843021-11695-1-git-send-email-fweisbec@gmail.com>
-Subject: [tip:tracing/filters] tracing/function-graph-tracer: fix functions call traces imbalance
-Message-ID: <tip-1618536961d31f9b3f55767b22d4a897f4204c26@git.kernel.org>
-Git-Commit-ID: 1618536961d31f9b3f55767b22d4a897f4204c26
-X-Mailer: tip-git-log-daemon
+	Mon, 23 Mar 2009 18:46:26 -0400
+Received: from e38.co.us.ibm.com ([32.97.110.159]:53967 "EHLO
+	e38.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754327AbZCWWqY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Mar 2009 18:46:24 -0400
+Date: Mon, 23 Mar 2009 17:46:21 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: mtk.manpages@gmail.com, Stephen Smalley <sds@epoch.ncsc.mil>,
+       Andrew Morgan <morgan@kernel.org>,
+       linux-security-module@vger.kernel.org,
+       lkml <linux-kernel@vger.kernel.org>, linux-nfs@vger.kernel.org,
+       Igor Zhbanov <izh1979@gmail.com>,
+       "J. Bruce Fields" <bfields@citi.umich.edu>, stable@kernel.org,
+       linux-api@vger.kernel.org, Chris Wright <chrisw@sous-sol.org>
+Subject: [PATCH] add some long-missing capabilities to fs_mask
+Message-ID: <20090323224621.GA22552@us.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 23 Mar 2009 22:27:34 +0000 (UTC)
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  1618536961d31f9b3f55767b22d4a897f4204c26
-Gitweb:     http://git.kernel.org/tip/1618536961d31f9b3f55767b22d4a897f4204c26
-Author:     Frederic Weisbecker <fweisbec@gmail.com>
-AuthorDate: Mon, 23 Mar 2009 22:17:01 +0100
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Mon, 23 Mar 2009 23:25:32 +0100
+(Sorry, the version I sent Friday had a duplicate CAP_FS_SET define)
 
-tracing/function-graph-tracer: fix functions call traces imbalance
+When POSIX capabilities were introduced during the 2.1 Linux
+cycle, the fs mask, which represents the capabilities which having
+fsuid==0 is supposed to grant, did not include CAP_MKNOD and
+CAP_LINUX_IMMUTABLE.  However, before capabilities the privilege
+to call these did in fact depend upon fsuid==0.
 
-Impact: fix traces output
+This patch introduces those capabilities into the fsmask,
+restoring the old behavior.
 
-Sometimes one can observe an imbalance in the traces between function
-calls and function return traces:
+See the thread starting at http://lkml.org/lkml/2009/3/11/157 for
+reference.
 
-func1() {
-    }
-}
+Note that if this fix is deemed valid, then earlier kernel versions (2.4
+and 2.2) ought to be fixed too.
 
-The curly brace inside func1() is the return of another function nested
-inside func1. The return trace have been inserted in the buffer but not
-the entry.
-We are storing a return address on the function traces stack while we
-haven't inserted its entry on the buffer, hence the imbalance on the
-traces.
+Changelog:
+	[Mar 23] Actually delete old CAP_FS_SET definition...
+	[Mar 20] Updated against J. Bruce Fields's patch
 
-This is because the tracers doesn't check all failures that can happen
-on buffer insertion.
-
-This patch reports the tracing recursion failures and the ring buffer
-failures. In such cases, we now restore the original return address for
-the function, giving up its return trace.
-
-Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>
-LKML-Reference: <1237843021-11695-1-git-send-email-fweisbec@gmail.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-
+Reported-by: Igor Zhbanov <izh1979@gmail.com>
+Signed-off-by: Serge E. Hallyn <serue@us.ibm.com>
+Cc: stable@kernel.org
+Cc: J. Bruce Fields <bfields@citi.umich.edu>
 ---
- kernel/trace/trace.c |   16 +++++++++++-----
- 1 files changed, 11 insertions(+), 5 deletions(-)
+ include/linux/capability.h |   23 +++++++++++++++++++----
+ 1 files changed, 19 insertions(+), 4 deletions(-)
 
-diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
-index 6bad128..89f0c25 100644
---- a/kernel/trace/trace.c
-+++ b/kernel/trace/trace.c
-@@ -924,7 +924,7 @@ trace_function(struct trace_array *tr,
- }
+diff --git a/include/linux/capability.h b/include/linux/capability.h
+index 4864a43..c302110 100644
+--- a/include/linux/capability.h
++++ b/include/linux/capability.h
+@@ -377,7 +377,21 @@ struct cpu_vfs_cap_data {
+ #define CAP_FOR_EACH_U32(__capi)  \
+ 	for (__capi = 0; __capi < _KERNEL_CAPABILITY_U32S; ++__capi)
  
- #ifdef CONFIG_FUNCTION_GRAPH_TRACER
--static void __trace_graph_entry(struct trace_array *tr,
-+static int __trace_graph_entry(struct trace_array *tr,
- 				struct ftrace_graph_ent *trace,
- 				unsigned long flags,
- 				int pc)
-@@ -933,15 +933,17 @@ static void __trace_graph_entry(struct trace_array *tr,
- 	struct ftrace_graph_ent_entry *entry;
- 
- 	if (unlikely(local_read(&__get_cpu_var(ftrace_cpu_disabled))))
--		return;
-+		return 0;
- 
- 	event = trace_buffer_lock_reserve(&global_trace, TRACE_GRAPH_ENT,
- 					  sizeof(*entry), flags, pc);
- 	if (!event)
--		return;
-+		return 0;
- 	entry	= ring_buffer_event_data(event);
- 	entry->graph_ent			= *trace;
- 	ring_buffer_unlock_commit(global_trace.buffer, event);
++/*
++ * CAP_FS_MASK and CAP_NFSD_MASKS:
++ *
++ * The fs mask is all the privileges that fsuid==0 historically meant.
++ * At one time in the past, that included CAP_MKNOD and CAP_LINUX_IMMUTABLE.
++ *
++ * It has never meant setting security.* and trusted.* xattrs.
++ *
++ * We could also define fsmask as follows:
++ *   1. CAP_FS_MASK is the privilege to bypass all fs-related DAC permissions
++ *   2. The security.* and trusted.* xattrs are fs-related MAC permissions
++ */
 +
-+	return 1;
- }
+ # define CAP_FS_MASK_B0     (CAP_TO_MASK(CAP_CHOWN)		\
++			    | CAP_TO_MASK(CAP_MKNOD)		\
+ 			    | CAP_TO_MASK(CAP_DAC_OVERRIDE)	\
+ 			    | CAP_TO_MASK(CAP_DAC_READ_SEARCH)	\
+ 			    | CAP_TO_MASK(CAP_FOWNER)		\
+@@ -392,11 +406,12 @@ struct cpu_vfs_cap_data {
+ # define CAP_EMPTY_SET    ((kernel_cap_t){{ 0, 0 }})
+ # define CAP_FULL_SET     ((kernel_cap_t){{ ~0, ~0 }})
+ # define CAP_INIT_EFF_SET ((kernel_cap_t){{ ~CAP_TO_MASK(CAP_SETPCAP), ~0 }})
+-# define CAP_FS_SET       ((kernel_cap_t){{ CAP_FS_MASK_B0, CAP_FS_MASK_B1 } })
++# define CAP_FS_SET       ((kernel_cap_t){{ CAP_FS_MASK_B0 \
++				    | CAP_TO_MASK(CAP_LINUX_IMMUTABLE), \
++				    CAP_FS_MASK_B1 } })
+ # define CAP_NFSD_SET     ((kernel_cap_t){{ CAP_FS_MASK_B0 \
+-					    | CAP_TO_MASK(CAP_SYS_RESOURCE) \
+-					    | CAP_TO_MASK(CAP_MKNOD), \
+-					    CAP_FS_MASK_B1 } })
++				    | CAP_TO_MASK(CAP_SYS_RESOURCE), \
++				    CAP_FS_MASK_B1 } })
  
- static void __trace_graph_return(struct trace_array *tr,
-@@ -1162,6 +1164,7 @@ int trace_graph_entry(struct ftrace_graph_ent *trace)
- 	struct trace_array_cpu *data;
- 	unsigned long flags;
- 	long disabled;
-+	int ret;
- 	int cpu;
- 	int pc;
+ #endif /* _KERNEL_CAPABILITY_U32S != 2 */
  
-@@ -1177,15 +1180,18 @@ int trace_graph_entry(struct ftrace_graph_ent *trace)
- 	disabled = atomic_inc_return(&data->disabled);
- 	if (likely(disabled == 1)) {
- 		pc = preempt_count();
--		__trace_graph_entry(tr, trace, flags, pc);
-+		ret = __trace_graph_entry(tr, trace, flags, pc);
-+	} else {
-+		ret = 0;
- 	}
- 	/* Only do the atomic if it is not already set */
- 	if (!test_tsk_trace_graph(current))
- 		set_tsk_trace_graph(current);
-+
- 	atomic_dec(&data->disabled);
- 	local_irq_restore(flags);
- 
--	return 1;
-+	return ret;
- }
- 
- void trace_graph_return(struct ftrace_graph_ret *trace)
+-- 
+1.5.4.3
+
