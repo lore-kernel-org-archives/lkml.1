@@ -1,194 +1,142 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755471AbZCWJnR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756612AbZCWJqJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755471AbZCWJnR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Mar 2009 05:43:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753417AbZCWJm7
+	id S1756612AbZCWJqJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Mar 2009 05:46:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754156AbZCWJpz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Mar 2009 05:42:59 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:60967 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752964AbZCWJm6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Mar 2009 05:42:58 -0400
-Subject: Re: [PATCH] posixtimers: Fix posix clock monotonicity v3
-From: Peter Zijlstra <peterz@infradead.org>
-To: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       stable@kernel.org
-In-Reply-To: <49C75911.7020206@jp.fujitsu.com>
-References: <49BF3F73.5090007@jp.fujitsu.com>
-	 <49C0CFC2.7080604@jp.fujitsu.com> <20090318113430.GD32233@elte.hu>
-	 <49C71A15.5030300@jp.fujitsu.com> <1237795059.24918.5.camel@twins>
-	 <49C752AF.7040706@jp.fujitsu.com>  <49C75911.7020206@jp.fujitsu.com>
+	Mon, 23 Mar 2009 05:45:55 -0400
+Received: from hera.kernel.org ([140.211.167.34]:43081 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754123AbZCWJpy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Mar 2009 05:45:54 -0400
+Subject: Re: [git-pull -tip] x86: cleanup patches 20090322
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: Ingo Molnar <mingo@elte.hu>, x86 maintainers <x86@kernel.org>,
+       Sam Ravnborg <sam@ravnborg.org>, Yinghai Lu <yinghai@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <200903231845.05394.rusty@rustcorp.com.au>
+References: <1237755176.5417.16.camel@ht.satnam>
+	 <200903231845.05394.rusty@rustcorp.com.au>
 Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Mon, 23 Mar 2009 10:42:32 +0100
-Message-Id: <1237801352.24918.46.camel@twins>
+Date: Mon, 23 Mar 2009 15:15:06 +0530
+Message-Id: <1237801506.2485.7.camel@ht.satnam>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.0 
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-03-23 at 18:40 +0900, Hidetoshi Seto wrote:
-> Impact: Regression fix (against clock_gettime() backwarding bug)
+On Mon, 2009-03-23 at 18:45 +1030, Rusty Russell wrote:
+> On Monday 23 March 2009 07:22:56 Jaswinder Singh Rajput wrote:
+> >       x86: e820.h fix various signedness issues in setup.c and e820.c
 > 
-> This patch re-introduces a couple of function, task_sched_runtime
-> and thread_group_sched_runtime, which was once removed at the
-> time of 2.6.28-rc1.
+> Wouldn't fixing the users be better than changing the header?  Esp. since
+> it could well now cause similar warnings in userspace programs.
 > 
-> These functions protect the sampling of thread/process clock with
-> rq lock.  This rq lock is required not to update rq->clock during
-> the sampling.
-> i.e.
->   The clock_gettime() may return
->    ((accounted runtime before update) + (delta after update))
->   that is less than what it should be.
+> >  struct e820map {
+> > -	__u32 nr_map;
+> > +	__s32 nr_map;
+> >  	struct e820entry map[E820_X_MAX];
+> >  };
 > 
-> v2 -> v3:
-> 	- Rename static helper function __task_delta_exec()
-> 	  to do_task_delta_exec() since -tip tree already has
-> 	  a __task_delta_exec() of different version.
+> This number can't be negative!
 > 
-> v1 -> v2:
-> 	- Revises comments of function and patch description.
-> 	- Add note about accuracy of thread group's runtime.
-> 
-> Signed-off-by: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-> Cc: Peter Zijlstra <peterz@infradead.org>
-> Cc: Ingo Molnar <mingo@elte.hu>
-> Cc: stable@kernel.org	[2.6.28.x]
+
+Is this OK, or should I go more further:
+
+From: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+Date: Mon, 23 Mar 2009 02:13:01 +0530
+Subject: [PATCH] x86: e820 fix various signedness issues in setup.c and e820.c
+
+Impact: cleanup
+
+This fixed various signedness issues in setup.c and e820.c:
+arch/x86/kernel/setup.c:455:53: warning: incorrect type in argument 3 (different signedness)
+arch/x86/kernel/setup.c:455:53:    expected int *pnr_map
+arch/x86/kernel/setup.c:455:53:    got unsigned int extern [toplevel] *<noident>
+arch/x86/kernel/setup.c:639:53: warning: incorrect type in argument 3 (different signedness)
+arch/x86/kernel/setup.c:639:53:    expected int *pnr_map
+arch/x86/kernel/setup.c:639:53:    got unsigned int extern [toplevel] *<noident>
+arch/x86/kernel/setup.c:820:54: warning: incorrect type in argument 3 (different signedness)
+arch/x86/kernel/setup.c:820:54:    expected int *pnr_map
+arch/x86/kernel/setup.c:820:54:    got unsigned int extern [toplevel] *<noident>
+
+arch/x86/kernel/e820.c:670:53: warning: incorrect type in argument 3 (different signedness)
+arch/x86/kernel/e820.c:670:53:    expected int *pnr_map
+arch/x86/kernel/e820.c:670:53:    got unsigned int [toplevel] *<noident>
+
+Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+---
+ arch/x86/include/asm/e820.h |    2 +-
+ arch/x86/kernel/e820.c      |   10 +++++-----
+ 2 files changed, 6 insertions(+), 6 deletions(-)
+
+diff --git a/arch/x86/include/asm/e820.h b/arch/x86/include/asm/e820.h
+index 00d41ce..7ecba4d 100644
+--- a/arch/x86/include/asm/e820.h
++++ b/arch/x86/include/asm/e820.h
+@@ -72,7 +72,7 @@ extern int e820_all_mapped(u64 start, u64 end, unsigned type);
+ extern void e820_add_region(u64 start, u64 size, int type);
+ extern void e820_print_map(char *who);
+ extern int
+-sanitize_e820_map(struct e820entry *biosmap, int max_nr_map, int *pnr_map);
++sanitize_e820_map(struct e820entry *biosmap, int max_nr_map, u32 *pnr_map);
+ extern u64 e820_update_range(u64 start, u64 size, unsigned old_type,
+ 			       unsigned new_type);
+ extern u64 e820_remove_range(u64 start, u64 size, unsigned old_type,
+diff --git a/arch/x86/kernel/e820.c b/arch/x86/kernel/e820.c
+index fb638d9..ef2c356 100644
+--- a/arch/x86/kernel/e820.c
++++ b/arch/x86/kernel/e820.c
+@@ -233,7 +233,7 @@ void __init e820_print_map(char *who)
+  */
+ 
+ int __init sanitize_e820_map(struct e820entry *biosmap, int max_nr_map,
+-				int *pnr_map)
++			     u32 *pnr_map)
+ {
+ 	struct change_member {
+ 		struct e820entry *pbios; /* pointer to original bios entry */
+@@ -552,7 +552,7 @@ u64 __init e820_remove_range(u64 start, u64 size, unsigned old_type,
+ 
+ void __init update_e820(void)
+ {
+-	int nr_map;
++	u32 nr_map;
+ 
+ 	nr_map = e820.nr_map;
+ 	if (sanitize_e820_map(e820.map, ARRAY_SIZE(e820.map), &nr_map))
+@@ -563,7 +563,7 @@ void __init update_e820(void)
+ }
+ static void __init update_e820_saved(void)
+ {
+-	int nr_map;
++	u32 nr_map;
+ 
+ 	nr_map = e820_saved.nr_map;
+ 	if (sanitize_e820_map(e820_saved.map, ARRAY_SIZE(e820_saved.map), &nr_map))
+@@ -1303,7 +1303,7 @@ early_param("memmap", parse_memmap_opt);
+ void __init finish_e820_parsing(void)
+ {
+ 	if (userdef) {
+-		int nr = e820.nr_map;
++		u32 nr = e820.nr_map;
+ 
+ 		if (sanitize_e820_map(e820.map, ARRAY_SIZE(e820.map), &nr) < 0)
+ 			early_panic("Invalid user supplied memory map");
+@@ -1386,7 +1386,7 @@ void __init e820_reserve_resources_late(void)
+ char *__init default_machine_specific_memory_setup(void)
+ {
+ 	char *who = "BIOS-e820";
+-	int new_nr;
++	u32 new_nr;
+ 	/*
+ 	 * Try to copy the BIOS-supplied E820-map.
+ 	 *
+-- 
+1.6.0.6
 
 
-Looks good to me, thanks!
 
-Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-
-> ---
->  kernel/posix-cpu-timers.c |    7 +++--
->  kernel/sched.c            |   65 +++++++++++++++++++++++++++++++++++++++-----
->  2 files changed, 61 insertions(+), 11 deletions(-)
-> 
-> diff --git a/kernel/posix-cpu-timers.c b/kernel/posix-cpu-timers.c
-> index 4e5288a..a65641a 100644
-> --- a/kernel/posix-cpu-timers.c
-> +++ b/kernel/posix-cpu-timers.c
-> @@ -294,7 +294,7 @@ static int cpu_clock_sample(const clockid_t which_clock, struct task_struct *p,
->  		cpu->cpu = virt_ticks(p);
->  		break;
->  	case CPUCLOCK_SCHED:
-> -		cpu->sched = p->se.sum_exec_runtime + task_delta_exec(p);
-> +		cpu->sched = task_sched_runtime(p);
->  		break;
->  	}
->  	return 0;
-> @@ -310,18 +310,19 @@ static int cpu_clock_sample_group(const clockid_t which_clock,
->  {
->  	struct task_cputime cputime;
->  
-> -	thread_group_cputime(p, &cputime);
->  	switch (CPUCLOCK_WHICH(which_clock)) {
->  	default:
->  		return -EINVAL;
->  	case CPUCLOCK_PROF:
-> +		thread_group_cputime(p, &cputime);
->  		cpu->cpu = cputime_add(cputime.utime, cputime.stime);
->  		break;
->  	case CPUCLOCK_VIRT:
-> +		thread_group_cputime(p, &cputime);
->  		cpu->cpu = cputime.utime;
->  		break;
->  	case CPUCLOCK_SCHED:
-> -		cpu->sched = cputime.sum_exec_runtime + task_delta_exec(p);
-> +		cpu->sched = thread_group_sched_runtime(p);
->  		break;
->  	}
->  	return 0;
-> diff --git a/kernel/sched.c b/kernel/sched.c
-> index db66874..2674597 100644
-> --- a/kernel/sched.c
-> +++ b/kernel/sched.c
-> @@ -4064,9 +4064,25 @@ DEFINE_PER_CPU(struct kernel_stat, kstat);
->  EXPORT_PER_CPU_SYMBOL(kstat);
->  
->  /*
-> - * Return any ns on the sched_clock that have not yet been banked in
-> + * Return any ns on the sched_clock that have not yet been accounted in
->   * @p in case that task is currently running.
-> + *
-> + * Called with task_rq_lock() held on @rq.
->   */
-> +static u64 do_task_delta_exec(struct task_struct *p, struct rq *rq)
-> +{
-> +	u64 ns = 0;
-> +
-> +	if (task_current(rq, p)) {
-> +		update_rq_clock(rq);
-> +		ns = rq->clock - p->se.exec_start;
-> +		if ((s64)ns < 0)
-> +			ns = 0;
-> +	}
-> +
-> +	return ns;
-> +}
-> +
->  unsigned long long task_delta_exec(struct task_struct *p)
->  {
->  	unsigned long flags;
-> @@ -4074,16 +4090,49 @@ unsigned long long task_delta_exec(struct task_struct *p)
->  	u64 ns = 0;
->  
->  	rq = task_rq_lock(p, &flags);
-> +	ns = do_task_delta_exec(p, rq);
-> +	task_rq_unlock(rq, &flags);
->  
-> -	if (task_current(rq, p)) {
-> -		u64 delta_exec;
-> +	return ns;
-> +}
->  
-> -		update_rq_clock(rq);
-> -		delta_exec = rq->clock - p->se.exec_start;
-> -		if ((s64)delta_exec > 0)
-> -			ns = delta_exec;
-> -	}
-> +/*
-> + * Return accounted runtime for the task.
-> + * In case the task is currently running, return the runtime plus current's
-> + * pending runtime that have not been accounted yet.
-> + */
-> +unsigned long long task_sched_runtime(struct task_struct *p)
-> +{
-> +	unsigned long flags;
-> +	struct rq *rq;
-> +	u64 ns = 0;
-> +
-> +	rq = task_rq_lock(p, &flags);
-> +	ns = p->se.sum_exec_runtime + do_task_delta_exec(p, rq);
-> +	task_rq_unlock(rq, &flags);
-> +
-> +	return ns;
-> +}
->  
-> +/*
-> + * Return sum_exec_runtime for the thread group.
-> + * In case the task is currently running, return the sum plus current's
-> + * pending runtime that have not been accounted yet.
-> + *
-> + * Note that the thread group might have other running tasks as well,
-> + * so the return value not includes other pending runtime that other
-> + * running tasks might have.
-> + */
-> +unsigned long long thread_group_sched_runtime(struct task_struct *p)
-> +{
-> +	struct task_cputime totals;
-> +	unsigned long flags;
-> +	struct rq *rq;
-> +	u64 ns;
-> +
-> +	rq = task_rq_lock(p, &flags);
-> +	thread_group_cputime(p, &totals);
-> +	ns = totals.sum_exec_runtime + do_task_delta_exec(p, rq);
->  	task_rq_unlock(rq, &flags);
->  
->  	return ns;
