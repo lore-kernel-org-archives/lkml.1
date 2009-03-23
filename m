@@ -1,167 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759068AbZCWSPL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761254AbZCWSQZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759068AbZCWSPL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Mar 2009 14:15:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755583AbZCWSKZ
+	id S1761254AbZCWSQZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Mar 2009 14:16:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761126AbZCWSPR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Mar 2009 14:10:25 -0400
-Received: from adsl-69-107-72-54.dsl.pltn13.pacbell.net ([69.107.72.54]:60881
-	"EHLO abulafia.goop.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1760580AbZCWSKL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Mar 2009 14:10:11 -0400
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: the arch/x86 maintainers <x86@kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Xen-devel <xen-devel@lists.xensource.com>,
-       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Subject: [PATCH 15/15] x86: don't need "changed" parameter for set_io_bitmap()
-Date: Mon, 23 Mar 2009 11:09:59 -0700
-Message-Id: <1237831799-6568-16-git-send-email-jeremy@goop.org>
-X-Mailer: git-send-email 1.6.0.6
-In-Reply-To: <49C45238.7050007@zytor.com>
-References: <49C45238.7050007@zytor.com>
+	Mon, 23 Mar 2009 14:15:17 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:60609 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760216AbZCWSPO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Mar 2009 14:15:14 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: nigel@tuxonice.net
+Subject: Re: [linux-pm] [RFC][PATCH 1/2] PCI PM: Introduce __pci_set_power_state()
+Date: Mon, 23 Mar 2009 19:14:58 +0100
+User-Agent: KMail/1.11.1 (Linux/2.6.29-rc8-tst; KDE/4.2.1; x86_64; ; )
+Cc: Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Linux PCI <linux-pci@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+References: <200903210003.55161.rjw@sisk.pl> <200903222211.50930.rjw@sisk.pl> <1237763285.11186.2.camel@nigel-laptop>
+In-Reply-To: <1237763285.11186.2.camel@nigel-laptop>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-2"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200903231914.59762.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+On Monday 23 March 2009, Nigel Cunningham wrote:
+> Hi.
 
-Impact: cleanup
+Hi,
 
-The "changed" parameter isn't really used, so don't bother passing it.
-(xen_set_io_bitmap can keep track of it for itself, if it wants.)
+> It's not an error if we fail to set the desired state? (I see you have a
+> dev_warn only).
 
-Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
----
- arch/x86/include/asm/paravirt.h  |    6 +++---
- arch/x86/include/asm/processor.h |    2 +-
- arch/x86/kernel/ioport.c         |    9 +++------
- arch/x86/kernel/process.c        |    4 ++--
- arch/x86/xen/enlighten.c         |    5 +----
- 5 files changed, 10 insertions(+), 16 deletions(-)
+Theoretically, it is, but since we've never returned errors in such cases,
+we'd probably see some unexpected suspend failures if we started to do that
+now.
 
-diff --git a/arch/x86/include/asm/paravirt.h b/arch/x86/include/asm/paravirt.h
-index fd2c31b..56acbe8 100644
---- a/arch/x86/include/asm/paravirt.h
-+++ b/arch/x86/include/asm/paravirt.h
-@@ -157,7 +157,7 @@ struct pv_cpu_ops {
- 
- 	void (*set_iopl_mask)(unsigned mask);
- 	void (*set_io_bitmap)(struct thread_struct *thread,
--	                      int changed, unsigned long bytes_updated);
-+	                      unsigned long bytes_updated);
- 
- 	void (*wbinvd)(void);
- 	void (*io_delay)(void);
-@@ -1005,9 +1005,9 @@ static inline void set_iopl_mask(unsigned mask)
- }
- 
- static inline void set_io_bitmap(struct thread_struct *thread,
--                                 int changed, unsigned long bytes_updated)
-+                                 unsigned long bytes_updated)
- {
--	PVOP_VCALL3(pv_cpu_ops.set_io_bitmap, thread, changed, bytes_updated);
-+	PVOP_VCALL2(pv_cpu_ops.set_io_bitmap, thread, bytes_updated);
- }
- 
- /* The paravirtualized I/O functions */
-diff --git a/arch/x86/include/asm/processor.h b/arch/x86/include/asm/processor.h
-index 0ed4cba..15d0769 100644
---- a/arch/x86/include/asm/processor.h
-+++ b/arch/x86/include/asm/processor.h
-@@ -539,7 +539,7 @@ static inline void native_set_iopl_mask(unsigned mask)
- }
- 
- extern void native_set_io_bitmap(struct thread_struct *thread,
--                                 int changed, unsigned long updated_bytes);
-+                                 unsigned long updated_bytes);
- 
- static inline void
- native_load_sp0(struct tss_struct *tss, struct thread_struct *thread)
-diff --git a/arch/x86/kernel/ioport.c b/arch/x86/kernel/ioport.c
-index 5a12c9f..642660f 100644
---- a/arch/x86/kernel/ioport.c
-+++ b/arch/x86/kernel/ioport.c
-@@ -31,7 +31,7 @@ static void set_bitmap(unsigned long *bitmap, unsigned int base,
- }
- 
- void native_set_io_bitmap(struct thread_struct *t,
--                          int changed, unsigned long bytes_updated)
-+                          unsigned long bytes_updated)
- {
- 	struct tss_struct *tss;
- 
-@@ -54,7 +54,6 @@ asmlinkage long sys_ioperm(unsigned long from, unsigned long num, int turn_on)
- {
- 	struct thread_struct *t = &current->thread;
- 	unsigned int i, max_long, bytes, bytes_updated;
--	int changed;
- 
- 	if ((from + num <= from) || (from + num > IO_BITMAP_BITS))
- 		return -EINVAL;
-@@ -75,9 +74,7 @@ asmlinkage long sys_ioperm(unsigned long from, unsigned long num, int turn_on)
- 		memset(bitmap, 0xff, IO_BITMAP_BYTES);
- 		t->io_bitmap_ptr = bitmap;
- 		set_thread_flag(TIF_IO_BITMAP);
--		changed = 1;
--	} else
--		changed = 0;
-+	}
- 
- 	/*
- 	 * do it in the per-thread copy
-@@ -104,7 +101,7 @@ asmlinkage long sys_ioperm(unsigned long from, unsigned long num, int turn_on)
- 
- 	t->io_bitmap_max = bytes;
- 
--	set_io_bitmap(t, changed, bytes_updated);
-+	set_io_bitmap(t, bytes_updated);
- 
- 	preempt_enable();
- 
-diff --git a/arch/x86/kernel/process.c b/arch/x86/kernel/process.c
-index 174ab04..f1be97f 100644
---- a/arch/x86/kernel/process.c
-+++ b/arch/x86/kernel/process.c
-@@ -74,7 +74,7 @@ void exit_thread(void)
- 		preempt_disable();
- 		t->io_bitmap_ptr = NULL;
- 		clear_thread_flag(TIF_IO_BITMAP);
--		set_io_bitmap(t, 1, t->io_bitmap_max);
-+		set_io_bitmap(t, t->io_bitmap_max);
- 		t->io_bitmap_max = 0;
- 		preempt_enable();
- 		kfree(bp);
-@@ -209,7 +209,7 @@ void __switch_to_xtra(struct task_struct *prev_p, struct task_struct *next_p,
- 
- 	if (test_tsk_thread_flag(next_p, TIF_IO_BITMAP) ||
- 	    test_tsk_thread_flag(prev_p, TIF_IO_BITMAP))
--		set_io_bitmap(next, 1,
-+		set_io_bitmap(next,
- 		              max(prev->io_bitmap_max, next->io_bitmap_max));
- }
- 
-diff --git a/arch/x86/xen/enlighten.c b/arch/x86/xen/enlighten.c
-index 61ce3ae..f673cd8 100644
---- a/arch/x86/xen/enlighten.c
-+++ b/arch/x86/xen/enlighten.c
-@@ -569,13 +569,10 @@ static void xen_set_iopl_mask(unsigned mask)
- }
- 
- static void xen_set_io_bitmap(struct thread_struct *thread,
--                              int changed, unsigned long bytes_updated)
-+                              unsigned long bytes_updated)
- {
- 	struct physdev_set_iobitmap set_iobitmap;
- 
--	if (!changed)
--		return;
--
- 	set_xen_guest_handle(set_iobitmap.bitmap,
- 	                     (char *)thread->io_bitmap_ptr);
- 	set_iobitmap.nr_ports = thread->io_bitmap_ptr ? IO_BITMAP_BITS : 0;
--- 
-1.6.0.6
-
+Thanks,
+Rafael
