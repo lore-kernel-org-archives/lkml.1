@@ -1,78 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754730AbZCWFFI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754650AbZCWFHx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754730AbZCWFFI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Mar 2009 01:05:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752812AbZCWFEy
+	id S1754650AbZCWFHx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Mar 2009 01:07:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753196AbZCWFHo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Mar 2009 01:04:54 -0400
-Received: from e28smtp08.in.ibm.com ([59.145.155.8]:42633 "EHLO
-	e28smtp08.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751036AbZCWFEx (ORCPT
+	Mon, 23 Mar 2009 01:07:44 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:39726 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750899AbZCWFHn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Mar 2009 01:04:53 -0400
-Message-ID: <49C7186F.3050403@in.ibm.com>
-Date: Mon, 23 Mar 2009 10:34:47 +0530
-From: Sachin Sant <sachinp@in.ibm.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081216)
+	Mon, 23 Mar 2009 01:07:43 -0400
+Message-ID: <49C7190D.7080100@jp.fujitsu.com>
+Date: Mon, 23 Mar 2009 14:07:25 +0900
+From: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-CC: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-Subject: Re: [Bug #12792] 2.6.29-rc6-git4 boot failure
-References: <GPBuLTara4J.A.3kH.TZTxJB@chimera> <l8NZ2a3iQtG.A.6EB.JaTxJB@chimera> <1237758581.25062.677.camel@pasglop>
-In-Reply-To: <1237758581.25062.677.camel@pasglop>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Ingo Molnar <mingo@elte.hu>
+CC: linux-kernel@vger.kernel.org, stable@kernel.org,
+       Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH] posixtimers: Fix posix clock monotonicity v2
+References: <49BF3F73.5090007@jp.fujitsu.com> <49C0CFC2.7080604@jp.fujitsu.com> <20090318113430.GD32233@elte.hu>
+In-Reply-To: <20090318113430.GD32233@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Benjamin Herrenschmidt wrote:
-> On Sat, 2009-03-21 at 17:39 +0100, Rafael J. Wysocki wrote:
->   
->> This message has been generated automatically as a part of a report
->> of recent regressions.
->>
->> The following bug entry is on the current list of known regressions
->> from 2.6.28.  Please verify if it still should be listed and let me know
->> (either way).
->>     
->
-> Sachin, did you find anything about this one ?
->   
-Hi Ben,
+Ingo Molnar wrote:
+> * Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com> wrote:
+> 
+>> Impact: Regression fix (against clock_gettime() backwarding bug)
+> 
+> Looks good, thanks! Would you mind to post a version against -tip?
+> 
+>   http://people.redhat.com/mingo/tip.git/README
+> 
+> Which already has a __task_delta_exec() (different version).
 
-I narrowed it down to 2.6.28-git2(Boots) while 2.6.28-git4(fails to boot).
-I could not boot test 2.6.28-git3 as i ran into kernel compilation issues.
+Sorry, I was AFK last few days.
 
-Here is the error message i got when i tried compiling 2.6.28-git3.
+Well, I confirmed that the current version (v2) is good for Linus's
+tree and 28-stable tree, but it troubles on -tip.
+So I made patches for -tip.  It will follow to this post.
 
-  LD      vmlinux.o
-ld: dynreloc miscount for kernel/built-in.o, section .opd
-ld: can not edit opd Bad value
+[PATCH 1/2] x86: Rename __task_delta_exec() to task_delta_exec_locked()
+[PATCH 2/2] posixtimers: Fix posix clock monotonicity v2
 
-I think the above one was some tool chain related issue.
+The [2/2] is essentially no different from previous version, but
+just have solved a fuzz against -tip.
 
-I don't know how to git bisect using these two releases (2.6.28-git2/2.6.28-git4).
-I guess that is not possible since there are no commit tags for these releases.
-But i could be wrong.
 
-Is there anything else that i could try out to find a solution for this ?
-The machine in question is a Power Mac G5 running Ubuntu Hardy with a
-PPC970, altivec supported CPU(2).
-
-For the record i can still recreate this issue with 2.6.29-rc8-git6.
-
-Thanks
--Sachin
-
--- 
-
----------------------------------
-Sachin Sant
-IBM Linux Technology Center
-India Systems and Technology Labs
-Bangalore, India
----------------------------------
+Thanks,
+H.Seto
 
