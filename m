@@ -1,136 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759329AbZCWP7x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759420AbZCWQBP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759329AbZCWP7x (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Mar 2009 11:59:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754818AbZCWP7h
+	id S1759420AbZCWQBP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Mar 2009 12:01:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759387AbZCWQAx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Mar 2009 11:59:37 -0400
-Received: from hera.kernel.org ([140.211.167.34]:48444 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752866AbZCWP7g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Mar 2009 11:59:36 -0400
-Date: Mon, 23 Mar 2009 15:57:27 GMT
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       fweisbec@gmail.com, rostedt@goodmis.org, gregkh@suse.de,
-       tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       fweisbec@gmail.com, rostedt@goodmis.org, gregkh@suse.de,
-       tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <1237759847-21025-2-git-send-email-fweisbec@gmail.com>
-References: <1237759847-21025-2-git-send-email-fweisbec@gmail.com>
-Subject: [tip:tracing/ftrace] debugfs: function to know if debugfs is initialized
-Message-ID: <tip-c0f92ba99bdeaf35f9c580291b4e1a657c67fbd4@git.kernel.org>
-Git-Commit-ID: c0f92ba99bdeaf35f9c580291b4e1a657c67fbd4
-X-Mailer: tip-git-log-daemon
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 23 Mar 2009 15:57:29 +0000 (UTC)
+	Mon, 23 Mar 2009 12:00:53 -0400
+Received: from mail09.linbit.com ([212.69.161.110]:52240 "EHLO
+	mail09.linbit.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754818AbZCWQAv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Mar 2009 12:00:51 -0400
+From: Philipp Reisner <philipp.reisner@linbit.com>
+To: linux-kernel@vger.kernel.org
+Cc: philipp.reisner@linbit.com, gregkh@suse.de
+Subject: [PATCH 12/12] DRBD: final
+Date: Mon, 23 Mar 2009 16:48:07 +0100
+Message-Id: <1237823287-12734-13-git-send-email-philipp.reisner@linbit.com>
+X-Mailer: git-send-email 1.5.6.3
+In-Reply-To: <1237823287-12734-12-git-send-email-philipp.reisner@linbit.com>
+References: <1237823287-12734-1-git-send-email-philipp.reisner@linbit.com>
+ <1237823287-12734-2-git-send-email-philipp.reisner@linbit.com>
+ <1237823287-12734-3-git-send-email-philipp.reisner@linbit.com>
+ <1237823287-12734-4-git-send-email-philipp.reisner@linbit.com>
+ <1237823287-12734-5-git-send-email-philipp.reisner@linbit.com>
+ <1237823287-12734-6-git-send-email-philipp.reisner@linbit.com>
+ <1237823287-12734-7-git-send-email-philipp.reisner@linbit.com>
+ <1237823287-12734-8-git-send-email-philipp.reisner@linbit.com>
+ <1237823287-12734-9-git-send-email-philipp.reisner@linbit.com>
+ <1237823287-12734-10-git-send-email-philipp.reisner@linbit.com>
+ <1237823287-12734-11-git-send-email-philipp.reisner@linbit.com>
+ <1237823287-12734-12-git-send-email-philipp.reisner@linbit.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  c0f92ba99bdeaf35f9c580291b4e1a657c67fbd4
-Gitweb:     http://git.kernel.org/tip/c0f92ba99bdeaf35f9c580291b4e1a657c67fbd4
-Author:     Frederic Weisbecker <fweisbec@gmail.com>
-AuthorDate: Sun, 22 Mar 2009 23:10:44 +0100
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Mon, 23 Mar 2009 16:25:46 +0100
-
-debugfs: function to know if debugfs is initialized
-
-Impact: add new debugfs API
-
-With ftrace, some tracers are registered in early initcalls
-and attempt to create files on the debugfs filesystem.
-Depending on when they are activated, they can try to create their
-file at any time. Some checks can be done on the tracing area
-but providing a helper to know if debugfs is registered make it
-really more easy.
-
-Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
-Acked-by: Greg Kroah-Hartman <gregkh@suse.de>
-Cc: Steven Rostedt <rostedt@goodmis.org>
-LKML-Reference: <1237759847-21025-2-git-send-email-fweisbec@gmail.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
+Kconfig integration, Makefile and major.h
 
 ---
- fs/debugfs/inode.c      |   16 ++++++++++++++++
- include/linux/debugfs.h |    8 ++++++++
- 2 files changed, 24 insertions(+), 0 deletions(-)
-
-diff --git a/fs/debugfs/inode.c b/fs/debugfs/inode.c
-index 81ae9ea..0662ba6 100644
---- a/fs/debugfs/inode.c
-+++ b/fs/debugfs/inode.c
-@@ -30,6 +30,7 @@
+diff -uNrp linux-2.6.29-rc8/include/linux/major.h linux-2.6.29-rc8-drbd/include/linux/major.h
+--- linux-2.6.29-rc8/include/linux/major.h	2009-03-13 03:39:28.000000000 +0100
++++ linux-2.6.29-rc8-drbd/include/linux/major.h	2009-03-23 12:45:27.894029774 +0100
+@@ -145,6 +145,7 @@
+ #define UNIX98_PTY_MAJOR_COUNT	8
+ #define UNIX98_PTY_SLAVE_MAJOR	(UNIX98_PTY_MASTER_MAJOR+UNIX98_PTY_MAJOR_COUNT)
  
- static struct vfsmount *debugfs_mount;
- static int debugfs_mount_count;
-+static bool debugfs_registered;
++#define DRBD_MAJOR		147
+ #define RTF_MAJOR		150
+ #define RAW_MAJOR		162
  
- static struct inode *debugfs_get_inode(struct super_block *sb, int mode, dev_t dev)
- {
-@@ -496,6 +497,16 @@ exit:
- }
- EXPORT_SYMBOL_GPL(debugfs_rename);
+/home/phil/src/drbd83/scripts
+diff -uNrp linux-2.6.29-rc8/drivers/block/Kconfig linux-2.6.29-rc8-drbd/drivers/block/Kconfig
+--- linux-2.6.29-rc8/drivers/block/Kconfig	2009-03-13 03:39:28.000000000 +0100
++++ linux-2.6.29-rc8-drbd/drivers/block/Kconfig	2009-03-23 12:45:27.885529728 +0100
+@@ -264,6 +264,8 @@ config BLK_DEV_CRYPTOLOOP
+ 	  instead, which can be configured to be on-disk compatible with the
+ 	  cryptoloop device.
  
-+/**
-+ * debugfs_initialized - Tells whether debugfs has been registered
-+ */
-+bool debugfs_initialized(void)
-+{
-+	return debugfs_registered;
-+}
-+EXPORT_SYMBOL_GPL(debugfs_initialized);
++source "drivers/block/drbd/Kconfig"
 +
-+
- static struct kobject *debug_kobj;
+ config BLK_DEV_NBD
+ 	tristate "Network block device support"
+ 	depends on NET
+diff -uNrp linux-2.6.29-rc8/drivers/block/Makefile linux-2.6.29-rc8-drbd/drivers/block/Makefile
+--- linux-2.6.29-rc8/drivers/block/Makefile	2009-03-13 03:39:28.000000000 +0100
++++ linux-2.6.29-rc8-drbd/drivers/block/Makefile	2009-03-23 12:45:27.877529782 +0100
+@@ -32,3 +32,4 @@ obj-$(CONFIG_BLK_DEV_UB)	+= ub.o
+ obj-$(CONFIG_BLK_DEV_HD)	+= hd.o
  
- static int __init debugfs_init(void)
-@@ -509,11 +520,16 @@ static int __init debugfs_init(void)
- 	retval = register_filesystem(&debug_fs_type);
- 	if (retval)
- 		kobject_put(debug_kobj);
-+	else
-+		debugfs_registered = true;
+ obj-$(CONFIG_XEN_BLKDEV_FRONTEND)	+= xen-blkfront.o
++obj-$(CONFIG_BLK_DEV_DRBD)     += drbd/
+diff -uNrp linux-2.6.29-rc8/drivers/block/drbd/Kconfig linux-2.6.29-rc8-drbd/drivers/block/drbd/Kconfig
+--- linux-2.6.29-rc8/drivers/block/drbd/Kconfig	1970-01-01 01:00:00.000000000 +0100
++++ linux-2.6.29-rc8-drbd/drivers/block/drbd/Kconfig	2008-11-24 11:43:33.016969000 +0100
+@@ -0,0 +1,32 @@
++#
++# DRBD device driver configuration
++#
++config BLK_DEV_DRBD
++	tristate "DRBD Distributed Replicated Block Device support"
++	select INET
++	select PROC_FS
++	select CONNECTOR
++	select CRYPTO
++	select CRYPTO_HMAC
++	---help---
++	  DRBD is a block device which is designed to build high availability
++	  clusters.  This is done by mirroring a whole block device via (a
++	  dedicated) network.  You could see it as a network RAID 1.
 +
- 	return retval;
- }
- 
- static void __exit debugfs_exit(void)
- {
-+	debugfs_registered = false;
++	  Each minor device has a state, which can be 'primary' or 'secondary'.
++	  On the node with the primary device the application is supposed to
++	  run and to access the device (/dev/drbdX). Every write is sent to the
++	  local 'lower level block device' and via network to the node with the
++	  device in 'secondary' state.
++	  The secondary device simply writes the data to its lower level block
++	  device. Currently no read-balancing via the network is done.
 +
- 	simple_release_fs(&debugfs_mount, &debugfs_mount_count);
- 	unregister_filesystem(&debug_fs_type);
- 	kobject_put(debug_kobj);
-diff --git a/include/linux/debugfs.h b/include/linux/debugfs.h
-index af0e01d..eb5c2ba 100644
---- a/include/linux/debugfs.h
-+++ b/include/linux/debugfs.h
-@@ -71,6 +71,9 @@ struct dentry *debugfs_create_bool(const char *name, mode_t mode,
- struct dentry *debugfs_create_blob(const char *name, mode_t mode,
- 				  struct dentry *parent,
- 				  struct debugfs_blob_wrapper *blob);
++	  DRBD can also be used with "shared-disk semantics" (primary-primary),
++	  even though it is a "shared-nothing cluster".  You'd need to use a
++	  cluster file system on top of that for cache coherency.
 +
-+bool debugfs_initialized(void);
++	  DRBD management is done through user-space tools.
++	  For automatic failover you need a cluster manager (e.g. heartbeat).
++	  See also: http://www.drbd.org/, http://www.linux-ha.org
 +
- #else
- 
- #include <linux/err.h>
-@@ -183,6 +186,11 @@ static inline struct dentry *debugfs_create_blob(const char *name, mode_t mode,
- 	return ERR_PTR(-ENODEV);
- }
- 
-+static inline bool debugfs_initialized(void)
-+{
-+	return false;
-+}
++	  If unsure, say N.
+diff -uNrp linux-2.6.29-rc8/drivers/block/drbd/Makefile linux-2.6.29-rc8-drbd/drivers/block/drbd/Makefile
+--- linux-2.6.29-rc8/drivers/block/drbd/Makefile	1970-01-01 01:00:00.000000000 +0100
++++ linux-2.6.29-rc8-drbd/drivers/block/drbd/Makefile	2009-03-23 12:45:27.829529747 +0100
+@@ -0,0 +1,7 @@
++#CFLAGS_drbd_sizeof_sanity_check.o = -Wpadded # -Werror
 +
- #endif
- 
- #endif
++drbd-objs  :=	drbd_buildtag.o drbd_bitmap.o drbd_proc.o \
++		drbd_worker.o drbd_receiver.o drbd_req.o drbd_actlog.o \
++		lru_cache.o drbd_main.o drbd_strings.o drbd_nl.o
++
++obj-$(CONFIG_BLK_DEV_DRBD)     += drbd.o
