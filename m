@@ -1,83 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757080AbZCWF0M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755956AbZCWFcV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757080AbZCWF0M (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Mar 2009 01:26:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751491AbZCWFZ4
+	id S1755956AbZCWFcV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Mar 2009 01:32:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751891AbZCWFcA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Mar 2009 01:25:56 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:36762 "EHLO mx2.suse.de"
+	Mon, 23 Mar 2009 01:32:00 -0400
+Received: from ozlabs.org ([203.10.76.45]:38773 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751328AbZCWFZz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Mar 2009 01:25:55 -0400
-From: Neil Brown <neilb@suse.de>
-To: roma1390 <roma1390@gmail.com>
-Date: Mon, 23 Mar 2009 16:02:48 +1100
+	id S1752686AbZCWFb7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Mar 2009 01:31:59 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       peterz@infradead.org, tglx@linutronix.de, mingo@elte.hu
+Subject: Re: [tip:core/stacktrace] symbols, stacktrace: look up init symbols after module symbols
+Date: Mon, 23 Mar 2009 16:01:50 +1030
+User-Agent: KMail/1.11.1 (Linux/2.6.27-11-generic; KDE/4.2.1; i686; ; )
+Cc: linux-tip-commits@vger.kernel.org
+References: <new-discussion> <tip-4a44bac1f98223ed77e47bf3b42fcfd10cddd85f@git.kernel.org>
+In-Reply-To: <tip-4a44bac1f98223ed77e47bf3b42fcfd10cddd85f@git.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-ID: <18887.6136.84328.602390@notabene.brown>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: raid6 grow "hangs" on 2.6.27 with mounted FS
-In-Reply-To: message from roma1390 on Saturday March 21
-References: <b410963b0903211329v3c4d787ep2f7a0587bee77789@mail.gmail.com>
-X-Mailer: VM 7.19 under Emacs 21.4.1
-X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
-	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
-	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
+Content-Disposition: inline
+Message-Id: <200903231601.51648.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday March 21, roma1390@gmail.com wrote:
-> i have 2.6.27
-> trying thease command
+On Thursday 19 March 2009 22:24:35 Ingo Molnar wrote:
+>   a2da405: module: Don't report discarded init pages as kernel text.
 > 
-> # create raid6 with 4 block devices
-> mdadm --create /dev/md2 --level=6 --raid-devices=4 /dev/loop{1,2,3,4}
-> # wait to sync
-> sleep 3
-> # create and mount FS
-> mkfs.ext2 /dev/md2
-> mount /dev/md2 -t ext2 /mnt
+> The reason is this check added to core_kernel_text():
 > 
-> # add block device and grow, wait for resync
-> mdadm --add /dev/md2  /dev/loop5
-> mdadm --grow /dev/md2 --raid-devices=5
-> sleep 3
+> -       if (addr >= (unsigned long)_sinittext &&
+> +       if (system_state == SYSTEM_BOOTING &&
+> +           addr >= (unsigned long)_sinittext &&
+>             addr <= (unsigned long)_einittext)
+>                 return 1;
 > 
-> # dmesg prints: VFS: busy inodes on changed media.
-> # umount hangs ...
-> umount /dev/md2
-> # also: "mdadm --query /dev/md2" hangs in D state.
+> This will discard inittext symbols even though their symbol table
+> is still present and even though stacktraces done while the system
+> was booting up might still be relevant.
+> 
+> To not reintroduce the (not well-specified) bug addressed in that
+> commit, first do a module symbols lookup, then a final init-symbols
+> lookup.
+> 
+> This will work fine on architectures that have separate address
+> spaces for modules (such as x86) - and should not crash any other
+> architectures either.
 
-Thanks for the detailed report.
+Returning "1" all the time won't crash them either, AFAICT, but it's still
+misleading if kernel_text_address() isn't reliable.  It makes me
+uncomfortable.
 
-I can almost reproduce this.
-However when I run it, the "mdadm --grow" prints 
-    mdadm: Need to backup 384K of critical section..
-(as expected) and then hangs.
+Does every kernel_text_address() caller want this behavior, or should we
+have a was_ever_text_address()?
 
-If I interrupt it and proceed, then the umount hangs.
-
-Is this the case for you?
-
-The umount hangs because there is something important that mdadm needs
-to do which it didn't do because it was interrupted.  During the
-'critical section', mdadm causes all writes to the start of the device
-to be blocked.  The umount tries to write the filesystem superblock
-and hangs.
-You can test if this is the problem by running the command
-
- cat /sys/block/md2/md/suspend_hi > /sys/block/md2/md/suspend_lo
-
-That should allow the 'umount' to complete.
-
-This will only happen on very small arrays that take less than a
-couple of seconds for the reshape to complete.  I have a patch for
-mdadm which makes it more robust in this situation.  It will be in
-future releases.
-
-Does this explain what is happening to you?
-
-Thanks,
-NeilBrown
+Rusty.
