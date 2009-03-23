@@ -1,63 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756477AbZCWFfr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755429AbZCWGFm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756477AbZCWFfr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Mar 2009 01:35:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753700AbZCWFfh
+	id S1755429AbZCWGFm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Mar 2009 02:05:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753439AbZCWGFb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Mar 2009 01:35:37 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:50410 "EHLO mx1.redhat.com"
+	Mon, 23 Mar 2009 02:05:31 -0400
+Received: from gate.crashing.org ([63.228.1.57]:52820 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750983AbZCWFfh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Mar 2009 01:35:37 -0400
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1750972AbZCWGFb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Mar 2009 02:05:31 -0400
+Subject: Re: [Bug #12792] 2.6.29-rc6-git4 boot failure
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Sachin Sant <sachinp@in.ibm.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+In-Reply-To: <49C7186F.3050403@in.ibm.com>
+References: <GPBuLTara4J.A.3kH.TZTxJB@chimera>
+	 <l8NZ2a3iQtG.A.6EB.JaTxJB@chimera> <1237758581.25062.677.camel@pasglop>
+	 <49C7186F.3050403@in.ibm.com>
+Content-Type: text/plain
+Date: Mon, 23 Mar 2009 17:05:07 +1100
+Message-Id: <1237788307.25062.686.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
 Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: Ingo Molnar <mingo@elte.hu>
-X-Fcc: ~/Mail/utrace
-X-Fcc: ~/Mail/linus
-Cc: "Frank Ch. Eigler" <fche@redhat.com>,
-       Alexey Dobriyan <adobriyan@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Steven Rostedt <rostedt@goodmis.org>, utrace-devel@redhat.com,
-       linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH 3/3] utrace-based ftrace "process" engine, v2
-In-Reply-To: Ingo Molnar's message of  Sunday, 22 March 2009 11:25:34 +0100 <20090322102534.GC19826@elte.hu>
-References: <20090321041954.72b99e69.akpm@linux-foundation.org>
-	<20090321115141.GA3566@redhat.com>
-	<20090321050422.d1d99eec.akpm@linux-foundation.org>
-	<20090321154501.GA2707@elte.hu>
-	<20090321143413.75ead1aa.akpm@linux-foundation.org>
-	<20090321215145.GB5262@redhat.com>
-	<alpine.LFD.2.00.0903211501060.3030@localhost.localdomain>
-	<20090321222030.GA5157@redhat.com>
-	<20090321223759.GA22770@x200.localdomain>
-	<20090321233839.GB5157@redhat.com>
-	<20090322102534.GC19826@elte.hu>
-X-Antipastobozoticataclysm: Bariumenemanilow
-Message-Id: <20090323053323.2F28DFC3AB@magilla.sf.frob.com>
-Date: Sun, 22 Mar 2009 22:33:23 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> And i think the ptrace-via-utrace engine is actually fully ready, 
-> just perhaps it was not submitted out of caution to keep the 
-> logistics simple.
 
-That's not so.  There is a clumsy prototype version.  Much of the work to
-do it properly is really just plain ptrace clean-up and not specifically
-about using utrace.  Oleg and I are ready to work on it as soon as our time
-is not monopolized by trying to get the core utrace code to be accepted.
+> I narrowed it down to 2.6.28-git2(Boots) while 2.6.28-git4(fails to boot).
+> I could not boot test 2.6.28-git3 as i ran into kernel compilation issues.
+> 
+> Here is the error message i got when i tried compiling 2.6.28-git3.
+> 
+>   LD      vmlinux.o
+> ld: dynreloc miscount for kernel/built-in.o, section .opd
+> ld: can not edit opd Bad value
+> 
+> I think the above one was some tool chain related issue.
+> 
+> I don't know how to git bisect using these two releases (2.6.28-git2/2.6.28-git4).
+> I guess that is not possible since there are no commit tags for these releases.
+> But i could be wrong.
+> 
+> Is there anything else that i could try out to find a solution for this ?
+> The machine in question is a Power Mac G5 running Ubuntu Hardy with a
+> PPC970, altivec supported CPU(2).
+> 
+> For the record i can still recreate this issue with 2.6.29-rc8-git6.
 
-This ptrace work really buys nothing with immediate pay-off at all.  It's a
-real shame if its lack keeps people from actually looking at utrace itself.
-(This has been a long conversation so far with zero discussion of the code.)
-A collaboration with focus on what new things can be built, rather than on
-reasons not to let the foundations be poured, would be a lovely thing.
+Strange I have such a powermac here and haven't seen that problem... let
+me dig a bit.
+
+Cheers,
+Ben.
 
 
-Thanks,
-Roland
