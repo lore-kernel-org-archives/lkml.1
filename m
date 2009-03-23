@@ -1,57 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760112AbZCWVwq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759769AbZCWVyR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760112AbZCWVwq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Mar 2009 17:52:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755230AbZCWVwg
+	id S1759769AbZCWVyR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Mar 2009 17:54:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753750AbZCWVx5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Mar 2009 17:52:36 -0400
-Received: from mail-in-06.arcor-online.net ([151.189.21.46]:33992 "EHLO
-	mail-in-06.arcor-online.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751706AbZCWVwf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Mar 2009 17:52:35 -0400
-X-DKIM: Sendmail DKIM Filter v2.8.2 mail-in-07.arcor-online.net 7169C3CA5F9
-From: Bodo Eggert <7eggert@gmx.de>
-Subject: Re: Barriers still not passing on simple dm devices...
-To: Eric Sandeen <sandeen@redhat.com>,
-       device-mapper development <dm-devel@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jens Axboe <jens.axboe@oracle.com>, Andi Kleen <andi@firstfloor.org>,
-       ?missing.closing.'"' in token?"MASON",
-	CHRISTOPHER <CHRIS.MASON@oracle.com>"@vax.1wt.eu
-Illegal-Object: Syntax error in To: address found on vger.kernel.org:
-	To:	?missing closing '"' in token?"MASON", CHRISTOPHER <CHRIS.MASON@oracle.com>"
-			^				    ^-missing closing '"' in token
-		 \-extraneous tokens in address
-Illegal-Object: Syntax error in To: address found on vger.kernel.org:
-	To:	?missing closing '"' in token?"MASON", CHRISTOPHER <CHRIS.MASON@oracle.com>"
-			^				    ^-missing closing '"' in token
-		 \-extraneous tokens in address
-Reply-To: 7eggert@gmx.de
-Date: Mon, 23 Mar 2009 22:52:31 +0100
-References: <ciXHh-39c-37@gated-at.bofh.it>
-User-Agent: KNode/0.10.4
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7Bit
-Message-Id: <E1Lls4N-0001LL-Pz@be1.7eggert.dyndns.org>
+	Mon, 23 Mar 2009 17:53:57 -0400
+Received: from gimli.pxnet.com ([195.227.45.7]:39340 "EHLO mail.pxnet.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750711AbZCWVxz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Mar 2009 17:53:55 -0400
+From: Tilman Schmidt <tilman@imap.cc>
+Subject: [PATCH 2.6.27/28-stable] bas_gigaset: correctly allocate USB interrupt transfer buffer
+To: stable@kernel.org
+CC: Kolja Waschk <kawk@users.sourceforge.net>, Hansjoerg Lipp <hjlipp@web.de>,
+       davem@davemloft.net, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Message-ID: <20090323-patch-01.tilman@imap.cc>
+Date: Mon, 23 Mar 2009 22:47:06 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric Sandeen <sandeen@redhat.com> wrote:
+Greg,
 
-> I've noticed that on 2.6.29-rcX, with Andi's patch
-> (ab4c1424882be9cd70b89abf2b484add355712fa, dm: support barriers on
-> simple devices) barriers are still getting rejected on these simple devices.
+the following patch backports the Gigaset driver bugfix merged for
+2.6.29 as commit 170ebf85160dd128e1c4206cc197cce7d1424705 to both
+v2.6.27.x and v2.6.28.x. I would appreciate to see it included in
+your stable series.
 
-> So what's the right way around this?  What should dm (or md for that
-> matter) advertise on their queues about ordered-ness?  Should there be
-> some sort of "QUEUE_ORDERED_PASSTHROUGH" or something to say "this level
-> doesn't care, ask the next level" or somesuch?  Or should it inherit the
-> flag from the next level down?  Ideas?
+Thanks,
+Tilman
 
-IMO each block device SHOULD provide barriers - either native or emulated,
-and each meta device MUST provide emulated barriers if it provides dynamic
-device binding and barriers.
+bas_gigaset: correctly allocate USB interrupt transfer buffer
 
+commit 170ebf85160dd128e1c4206cc197cce7d1424705 upstream.
+
+Every USB transfer buffer has to be allocated individually by kmalloc.
+
+Impact: bugfix, no functional change
+
+Signed-off-by: Tilman Schmidt <tilman@imap.cc>
+Tested-by: Kolja Waschk <kawk@users.sourceforge.net>
+---
+ drivers/isdn/gigaset/bas-gigaset.c |   15 +++++++++++++---
+ 1 files changed, 12 insertions(+), 3 deletions(-)
+
+--- a/drivers/isdn/gigaset/bas-gigaset.c	2008-12-25 00:26:37.000000000 +0100
++++ b/drivers/isdn/gigaset/bas-gigaset.c	2009-03-17 23:38:30.000000000 +0100
+@@ -46,6 +46,9 @@ MODULE_PARM_DESC(cidmode, "Call-ID mode"
+ /* length limit according to Siemens 3070usb-protokoll.doc ch. 2.1 */
+ #define IF_WRITEBUF 264
+ 
++/* interrupt pipe message size according to ibid. ch. 2.2 */
++#define IP_MSGSIZE 3
++
+ /* Values for the Gigaset 307x */
+ #define USB_GIGA_VENDOR_ID      0x0681
+ #define USB_3070_PRODUCT_ID     0x0001
+@@ -110,7 +113,7 @@ struct bas_cardstate {
+ 	unsigned char		*rcvbuf;	/* AT reply receive buffer */
+ 
+ 	struct urb		*urb_int_in;	/* URB for interrupt pipe */
+-	unsigned char		int_in_buf[3];
++	unsigned char		*int_in_buf;
+ 
+ 	spinlock_t		lock;		/* locks all following */
+ 	int			basstate;	/* bitmap (BS_*) */
+@@ -657,7 +660,7 @@ static void read_int_callback(struct urb
+ 	}
+ 
+ 	/* drop incomplete packets even if the missing bytes wouldn't matter */
+-	if (unlikely(urb->actual_length < 3)) {
++	if (unlikely(urb->actual_length < IP_MSGSIZE)) {
+ 		dev_warn(cs->dev, "incomplete interrupt packet (%d bytes)\n",
+ 			 urb->actual_length);
+ 		goto resubmit;
+@@ -2127,6 +2130,7 @@ static void gigaset_reinitbcshw(struct b
+ static void gigaset_freecshw(struct cardstate *cs)
+ {
+ 	/* timers, URBs and rcvbuf are disposed of in disconnect */
++	kfree(cs->hw.bas->int_in_buf);
+ 	kfree(cs->hw.bas);
+ 	cs->hw.bas = NULL;
+ }
+@@ -2138,6 +2142,11 @@ static int gigaset_initcshw(struct cards
+ 	cs->hw.bas = ucs = kmalloc(sizeof *ucs, GFP_KERNEL);
+ 	if (!ucs)
+ 		return 0;
++	ucs->int_in_buf = kmalloc(IP_MSGSIZE, GFP_KERNEL);
++	if (!ucs->int_in_buf) {
++		kfree(ucs);
++		return 0;
++	}
+ 
+ 	ucs->urb_cmd_in = NULL;
+ 	ucs->urb_cmd_out = NULL;
+@@ -2290,7 +2299,7 @@ static int gigaset_probe(struct usb_inte
+ 	usb_fill_int_urb(ucs->urb_int_in, udev,
+ 			 usb_rcvintpipe(udev,
+ 					(endpoint->bEndpointAddress) & 0x0f),
+-			 ucs->int_in_buf, 3, read_int_callback, cs,
++			 ucs->int_in_buf, IP_MSGSIZE, read_int_callback, cs,
+ 			 endpoint->bInterval);
+ 	if ((rc = usb_submit_urb(ucs->urb_int_in, GFP_KERNEL)) != 0) {
+ 		dev_err(cs->dev, "could not submit interrupt URB: %s\n",
