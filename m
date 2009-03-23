@@ -1,51 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758192AbZCWPTQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758650AbZCWPTn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758192AbZCWPTQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Mar 2009 11:19:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755939AbZCWPS7
+	id S1758650AbZCWPTn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Mar 2009 11:19:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757155AbZCWPT3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Mar 2009 11:18:59 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:35686 "EHLO mx2.redhat.com"
+	Mon, 23 Mar 2009 11:19:29 -0400
+Received: from hera.kernel.org ([140.211.167.34]:48127 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753773AbZCWPS7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Mar 2009 11:18:59 -0400
-Date: Mon, 23 Mar 2009 16:14:00 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: Alexey Dobriyan <adobriyan@gmail.com>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Roland McGrath <roland@redhat.com>,
-       Steven Rostedt <rostedt@goodmis.org>, utrace-devel@redhat.com,
-       linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH 3/3] utrace-based ftrace "process" engine, v2
-Message-ID: <20090323151400.GA3413@redhat.com>
-References: <20090321091235.GA29678@elte.hu> <20090321041954.72b99e69.akpm@linux-foundation.org> <20090321115141.GA3566@redhat.com> <20090321050422.d1d99eec.akpm@linux-foundation.org> <20090321154501.GA2707@elte.hu> <20090321143413.75ead1aa.akpm@linux-foundation.org> <20090321215145.GB5262@redhat.com> <alpine.LFD.2.00.0903211501060.3030@localhost.localdomain> <20090322123749.GF19826@elte.hu> <20090323134813.GA18219@x200.localdomain>
+	id S1755939AbZCWPT1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Mar 2009 11:19:27 -0400
+Date: Mon, 23 Mar 2009 15:18:29 GMT
+From: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       eduard.munteanu@linux360.ro, tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       eduard.munteanu@linux360.ro, tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <75eba730cfee8e771090b60c4b252bd8d3ffcb18.1237813499.git.eduard.munteanu@linux360.ro>
+References: <75eba730cfee8e771090b60c4b252bd8d3ffcb18.1237813499.git.eduard.munteanu@linux360.ro>
+Subject: [tip:tracing/kmemtrace] rcu: don't include unnecessary headers, allow kmemtrace w/ tracepoints
+Message-ID: <tip-e251ea2fa52321009940fad02238ef1c369531ae@git.kernel.org>
+Git-Commit-ID: e251ea2fa52321009940fad02238ef1c369531ae
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-In-Reply-To: <20090323134813.GA18219@x200.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 23 Mar 2009 15:18:32 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 03/23, Alexey Dobriyan wrote:
->
-> Right now with ptrace(2) rewrite the following is easily triggerable:
->
-> WARNING: at kernel/ptrace.c:515 ptrace_report_signal+0x2c1/0x2d0()
+Commit-ID:  e251ea2fa52321009940fad02238ef1c369531ae
+Gitweb:     http://git.kernel.org/tip/e251ea2fa52321009940fad02238ef1c369531ae
+Author:     Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
+AuthorDate: Mon, 23 Mar 2009 15:12:21 +0200
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Mon, 23 Mar 2009 16:06:54 +0100
 
-Yes, ptrace-over-utrace needs more work. But your message looks as if
-utrace core is buggy, imho this is a bit unfair ;)
+rcu: don't include unnecessary headers, allow kmemtrace w/ tracepoints
 
-As Roland said, ptrace-over-utrace is not ready yet. If you mean that
-utrace core should not be merged alone - this is another story.
+linux/percpu.h includes linux/slab.h, which generates circular inclusion
+dependencies when trying to switch kmemtrace to use tracepoints instead
+of markers. This patch allows tracing within slab headers' inline
+functions.
 
-But personally I understand why Roland sends utrace core before changing
-ptrace.
+Signed-off-by: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
+Cc: rostedt@goodmis.org
+Cc: compudj@krystal.dyndns.org
+Cc: fweisbec@gmail.com
+Cc: penberg@cs.helsinki.fi
+Cc: paulmck@linux.vnet.ibm.com
+LKML-Reference: <75eba730cfee8e771090b60c4b252bd8d3ffcb18.1237813499.git.eduard.munteanu@linux360.ro>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
-Oleg.
 
+---
+ include/linux/rcuclassic.h |    1 -
+ include/linux/rcupdate.h   |    1 -
+ include/linux/rcupreempt.h |    2 +-
+ 3 files changed, 1 insertions(+), 3 deletions(-)
+
+diff --git a/include/linux/rcuclassic.h b/include/linux/rcuclassic.h
+index 80044a4..cc3f723 100644
+--- a/include/linux/rcuclassic.h
++++ b/include/linux/rcuclassic.h
+@@ -36,7 +36,6 @@
+ #include <linux/cache.h>
+ #include <linux/spinlock.h>
+ #include <linux/threads.h>
+-#include <linux/percpu.h>
+ #include <linux/cpumask.h>
+ #include <linux/seqlock.h>
+ 
+diff --git a/include/linux/rcupdate.h b/include/linux/rcupdate.h
+index 528343e..15fbb3c 100644
+--- a/include/linux/rcupdate.h
++++ b/include/linux/rcupdate.h
+@@ -36,7 +36,6 @@
+ #include <linux/cache.h>
+ #include <linux/spinlock.h>
+ #include <linux/threads.h>
+-#include <linux/percpu.h>
+ #include <linux/cpumask.h>
+ #include <linux/seqlock.h>
+ #include <linux/lockdep.h>
+diff --git a/include/linux/rcupreempt.h b/include/linux/rcupreempt.h
+index 74304b4..5ff2d23 100644
+--- a/include/linux/rcupreempt.h
++++ b/include/linux/rcupreempt.h
+@@ -36,7 +36,7 @@
+ #include <linux/cache.h>
+ #include <linux/spinlock.h>
+ #include <linux/threads.h>
+-#include <linux/percpu.h>
++#include <linux/smp.h>
+ #include <linux/cpumask.h>
+ #include <linux/seqlock.h>
+ 
