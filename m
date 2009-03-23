@@ -1,56 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760589AbZCWVUY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760927AbZCWVUl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760589AbZCWVUY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Mar 2009 17:20:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758428AbZCWVUG
+	id S1760927AbZCWVUl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Mar 2009 17:20:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760831AbZCWVUa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Mar 2009 17:20:06 -0400
-Received: from tichy.grunau.be ([85.131.189.73]:45235 "EHLO tichy.grunau.be"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757798AbZCWVUF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Mar 2009 17:20:05 -0400
-Date: Mon, 23 Mar 2009 22:19:43 +0100
-From: Janne Grunau <j@jannau.net>
-To: Hans Verkuil <hverkuil@xs4all.nl>
-Cc: Randy Dunlap <randy.dunlap@oracle.com>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, linux-media@vger.kernel.org
-Subject: Re: linux-next: Tree for March 23 (media/video/hdpvr)
-Message-ID: <20090323211943.GC5079@aniel>
-References: <20090323205454.d0cbf721.sfr@canb.auug.org.au> <49C7D965.5080202@oracle.com> <20090323204940.GA5079@aniel> <200903232204.15457.hverkuil@xs4all.nl>
+	Mon, 23 Mar 2009 17:20:30 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:43158 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1758428AbZCWVU3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Mar 2009 17:20:29 -0400
+Date: Mon, 23 Mar 2009 17:20:27 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: "K.Prasad" <prasad@linux.vnet.ibm.com>
+cc: Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Benjamin Herrenschmidt <benh@au1.ibm.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Maneesh Soni <maneesh@in.ibm.com>, Roland McGrath <roland@redhat.com>,
+       Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: [Patch 01/11] Introducing generic hardware breakpoint handler
+ interfaces
+In-Reply-To: <20090323204220.GA19602@in.ibm.com>
+Message-ID: <Pine.LNX.4.44L0.0903231713360.3610-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200903232204.15457.hverkuil@xs4all.nl>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 23, 2009 at 10:04:15PM +0100, Hans Verkuil wrote:
-> On Monday 23 March 2009 21:49:40 Janne Grunau wrote:
+On Tue, 24 Mar 2009, K.Prasad wrote:
+
+> > Isn't that exactly the check you need to implement?
 > > 
-> > diff --git a/drivers/media/video/hdpvr/hdpvr-core.c
-> > b/drivers/media/video/hdpvr/hdpvr-core.c index e7300b5..dadb2e7 100644
-> > --- a/drivers/media/video/hdpvr/hdpvr-core.c
-> > +++ b/drivers/media/video/hdpvr/hdpvr-core.c
-> > @@ -21,6 +21,7 @@
-> >  #include <linux/usb.h>
-> >  #include <linux/mutex.h>
-> >  #include <linux/i2c.h>
-> > +#include <linux/autoconf.h>
+> > 	addr >= TASK_SIZE && (addr + len) >= TASK_SIZE,
+> > 
+> > or perhaps better,
+> > 
+> > 	addr >= TASK_SIZE && (addr + len) >= addr.
+> > 
+> > In this case you _do_ know the length of the breakpoint.
+> > 
+> > Alan Stern
 > >
-> >  #include <linux/videodev2.h>
-> >  #include <media/v4l2-dev.h>
 > 
-> Don't include autoconf.h! It's preloaded for you already and shouldn't be
-> included manually. Esp. since the v4l-dvb tree creates and preloads a custom
-> version. Loading it manually will overwrite that.
+> Aren't we just checking if len is a positive number through the above
+> checks? The validation checks in the patchset should take care of
+> negative lengths. Or am I missing something?
+
+Well, 0x60000000 is a positive number, and 0xd0000000 is >= TASK_SIZE.  
+But their sum is 0x30000000, which lies in userspace.  In other words, 
+you are missing the possibility that the addition might overflow and 
+wrap around.
+
+> I thought you wanted the code to check for an upper sane limit for addr
+> in kernel-space, say something like this:
 > 
-> Other than that it's fine.
+> TASK_SIZE <= addr <= (Upper limit for Kernel Virtual Address)
 
-Thanks Hans,
+No, the test should be
 
-fixed in the patch sent to Mauro.
+    TASK_SIZE <= addr <= addr + (len-1) <= (Upper limit for Kernel VA)
 
-Janne
+By the way, is TASK_SIZE the correct lower bound for kernel virtual
+addresses on x86-64?
+
+> When I referred to 'len' in my previous mail, it meant the length
+> of the kernel virtual memory area (which can be used to find the upper
+> bound).
+
+Oh, sorry, I misunderstood.  Isn't that limit always 0xffffffff on 
+x86-32?
+
+Alan Stern
+
