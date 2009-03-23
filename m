@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757072AbZCWSOb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760996AbZCWSOt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757072AbZCWSOb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Mar 2009 14:14:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760458AbZCWSKW
+	id S1760996AbZCWSOt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Mar 2009 14:14:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760587AbZCWSKY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Mar 2009 14:10:22 -0400
-Received: from adsl-69-107-72-54.dsl.pltn13.pacbell.net ([69.107.72.54]:60895
+	Mon, 23 Mar 2009 14:10:24 -0400
+Received: from adsl-69-107-72-54.dsl.pltn13.pacbell.net ([69.107.72.54]:60881
 	"EHLO abulafia.goop.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1760578AbZCWSKL (ORCPT
+	with ESMTP id S1760447AbZCWSKG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Mar 2009 14:10:11 -0400
+	Mon, 23 Mar 2009 14:10:06 -0400
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: "H. Peter Anvin" <hpa@zytor.com>
 Cc: the arch/x86 maintainers <x86@kernel.org>, Ingo Molnar <mingo@elte.hu>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Xen-devel <xen-devel@lists.xensource.com>,
-       Christophe Saout <chtephan@leto.intern.saout.de>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
        Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Subject: [PATCH 14/15] paravirtualize IO permission bitmap
-Date: Mon, 23 Mar 2009 11:09:58 -0700
-Message-Id: <1237831799-6568-15-git-send-email-jeremy@goop.org>
+Subject: [PATCH 07/15] xen/dom0: use _PAGE_IOMAP in ioremap to do machine mappings
+Date: Mon, 23 Mar 2009 11:09:51 -0700
+Message-Id: <1237831799-6568-8-git-send-email-jeremy@goop.org>
 X-Mailer: git-send-email 1.6.0.6
 In-Reply-To: <49C45238.7050007@zytor.com>
 References: <49C45238.7050007@zytor.com>
@@ -27,250 +27,180 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Christophe Saout <chtephan@leto.intern.saout.de>
+Impact: allow Xen domain to map real hardware
 
-Impact: make ioperm bitmap work under Xen
+In a Xen domain, ioremap operates on machine addresses, not
+pseudo-physical addresses.  We use _PAGE_IOMAP to determine whether a
+mapping is intended for machine addresses.
 
-A PV Xen guest kernel has no TSS of its own, so the IO permission
-bitmap must be paravirtualized.  This patch adds set_io_bitmap
-as a paravirt op, and defines a native version which updates the tss,
-and a Xen version which uses a hypercall.
-
-This is much easier now that 32 and 64-bit use the same code to
-manage the IO bitmap.
-
-Signed-off-by: Christophe Saout <chtephan@leto.intern.saout.de>
 Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 ---
- arch/x86/include/asm/paravirt.h  |    9 +++++++++
- arch/x86/include/asm/processor.h |    4 ++++
- arch/x86/kernel/ioport.c         |   34 ++++++++++++++++++++++++++--------
- arch/x86/kernel/paravirt.c       |    1 +
- arch/x86/kernel/process.c        |   27 +++++++--------------------
- arch/x86/xen/enlighten.c         |   16 ++++++++++++++++
- 6 files changed, 63 insertions(+), 28 deletions(-)
+ arch/x86/include/asm/xen/page.h |    8 +---
+ arch/x86/xen/enlighten.c        |    4 ++-
+ arch/x86/xen/mmu.c              |   69 +++++++++++++++++++++++++++++++++++++-
+ 3 files changed, 72 insertions(+), 9 deletions(-)
 
-diff --git a/arch/x86/include/asm/paravirt.h b/arch/x86/include/asm/paravirt.h
-index bc384be..fd2c31b 100644
---- a/arch/x86/include/asm/paravirt.h
-+++ b/arch/x86/include/asm/paravirt.h
-@@ -156,6 +156,8 @@ struct pv_cpu_ops {
- 	void (*load_sp0)(struct tss_struct *tss, struct thread_struct *t);
- 
- 	void (*set_iopl_mask)(unsigned mask);
-+	void (*set_io_bitmap)(struct thread_struct *thread,
-+	                      int changed, unsigned long bytes_updated);
- 
- 	void (*wbinvd)(void);
- 	void (*io_delay)(void);
-@@ -996,11 +998,18 @@ static inline void write_idt_entry(gate_desc *dt, int entry, const gate_desc *g)
- {
- 	PVOP_VCALL3(pv_cpu_ops.write_idt_entry, dt, entry, g);
- }
-+
- static inline void set_iopl_mask(unsigned mask)
- {
- 	PVOP_VCALL1(pv_cpu_ops.set_iopl_mask, mask);
- }
- 
-+static inline void set_io_bitmap(struct thread_struct *thread,
-+                                 int changed, unsigned long bytes_updated)
-+{
-+	PVOP_VCALL3(pv_cpu_ops.set_io_bitmap, thread, changed, bytes_updated);
-+}
-+
- /* The paravirtualized I/O functions */
- static inline void slow_down_io(void)
- {
-diff --git a/arch/x86/include/asm/processor.h b/arch/x86/include/asm/processor.h
-index 34c5237..0ed4cba 100644
---- a/arch/x86/include/asm/processor.h
-+++ b/arch/x86/include/asm/processor.h
-@@ -538,6 +538,9 @@ static inline void native_set_iopl_mask(unsigned mask)
- #endif
- }
- 
-+extern void native_set_io_bitmap(struct thread_struct *thread,
-+                                 int changed, unsigned long updated_bytes);
-+
- static inline void
- native_load_sp0(struct tss_struct *tss, struct thread_struct *thread)
- {
-@@ -579,6 +582,7 @@ static inline void load_sp0(struct tss_struct *tss,
- }
- 
- #define set_iopl_mask native_set_iopl_mask
-+#define set_io_bitmap native_set_io_bitmap
- #endif /* CONFIG_PARAVIRT */
- 
- /*
-diff --git a/arch/x86/kernel/ioport.c b/arch/x86/kernel/ioport.c
-index 99c4d30..5a12c9f 100644
---- a/arch/x86/kernel/ioport.c
-+++ b/arch/x86/kernel/ioport.c
-@@ -30,14 +30,31 @@ static void set_bitmap(unsigned long *bitmap, unsigned int base,
- 	}
- }
- 
-+void native_set_io_bitmap(struct thread_struct *t,
-+                          int changed, unsigned long bytes_updated)
-+{
-+	struct tss_struct *tss;
-+
-+	if (!bytes_updated)
-+		return;
-+
-+	tss = &__get_cpu_var(init_tss);
-+
-+	/* Update the TSS: */
-+	if (t->io_bitmap_ptr)
-+		memcpy(tss->io_bitmap, t->io_bitmap_ptr, bytes_updated);
-+	else
-+		memset(tss->io_bitmap, 0xff, bytes_updated);
-+}
-+
- /*
-  * this changes the io permissions bitmap in the current task.
+diff --git a/arch/x86/include/asm/xen/page.h b/arch/x86/include/asm/xen/page.h
+index 018a0a4..bf5f7d3 100644
+--- a/arch/x86/include/asm/xen/page.h
++++ b/arch/x86/include/asm/xen/page.h
+@@ -112,13 +112,9 @@ static inline xpaddr_t machine_to_phys(xmaddr_t machine)
   */
- asmlinkage long sys_ioperm(unsigned long from, unsigned long num, int turn_on)
+ static inline unsigned long mfn_to_local_pfn(unsigned long mfn)
  {
- 	struct thread_struct *t = &current->thread;
--	struct tss_struct *tss;
- 	unsigned int i, max_long, bytes, bytes_updated;
-+	int changed;
- 
- 	if ((from + num <= from) || (from + num > IO_BITMAP_BITS))
- 		return -EINVAL;
-@@ -58,16 +75,18 @@ asmlinkage long sys_ioperm(unsigned long from, unsigned long num, int turn_on)
- 		memset(bitmap, 0xff, IO_BITMAP_BYTES);
- 		t->io_bitmap_ptr = bitmap;
- 		set_thread_flag(TIF_IO_BITMAP);
--	}
-+		changed = 1;
-+	} else
-+		changed = 0;
- 
- 	/*
--	 * do it in the per-thread copy and in the TSS ...
-+	 * do it in the per-thread copy
- 	 *
--	 * Disable preemption via get_cpu() - we must not switch away
-+	 * Disable preemption - we must not switch away
- 	 * because the ->io_bitmap_max value must match the bitmap
- 	 * contents:
- 	 */
--	tss = &per_cpu(init_tss, get_cpu());
-+	preempt_disable();
- 
- 	set_bitmap(t->io_bitmap_ptr, from, num, !turn_on);
- 
-@@ -85,10 +104,9 @@ asmlinkage long sys_ioperm(unsigned long from, unsigned long num, int turn_on)
- 
- 	t->io_bitmap_max = bytes;
- 
--	/* Update the TSS: */
--	memcpy(tss->io_bitmap, t->io_bitmap_ptr, bytes_updated);
-+	set_io_bitmap(t, changed, bytes_updated);
- 
--	put_cpu();
-+	preempt_enable();
- 
- 	return 0;
- }
-diff --git a/arch/x86/kernel/paravirt.c b/arch/x86/kernel/paravirt.c
-index aa34423..1c15178 100644
---- a/arch/x86/kernel/paravirt.c
-+++ b/arch/x86/kernel/paravirt.c
-@@ -398,6 +398,7 @@ struct pv_cpu_ops pv_cpu_ops = {
- 	.swapgs = native_swapgs,
- 
- 	.set_iopl_mask = native_set_iopl_mask,
-+	.set_io_bitmap = native_set_io_bitmap,
- 	.io_delay = native_io_delay,
- 
- 	.start_context_switch = paravirt_nop,
-diff --git a/arch/x86/kernel/process.c b/arch/x86/kernel/process.c
-index ac25491..174ab04 100644
---- a/arch/x86/kernel/process.c
-+++ b/arch/x86/kernel/process.c
-@@ -71,16 +71,12 @@ void exit_thread(void)
- 	unsigned long *bp = t->io_bitmap_ptr;
- 
- 	if (bp) {
--		struct tss_struct *tss = &per_cpu(init_tss, get_cpu());
--
-+		preempt_disable();
- 		t->io_bitmap_ptr = NULL;
- 		clear_thread_flag(TIF_IO_BITMAP);
--		/*
--		 * Careful, clear this in the TSS too:
--		 */
--		memset(tss->io_bitmap, 0xff, t->io_bitmap_max);
-+		set_io_bitmap(t, 1, t->io_bitmap_max);
- 		t->io_bitmap_max = 0;
--		put_cpu();
-+		preempt_enable();
- 		kfree(bp);
- 	}
- 
-@@ -211,19 +207,10 @@ void __switch_to_xtra(struct task_struct *prev_p, struct task_struct *next_p,
- 			hard_enable_TSC();
- 	}
- 
--	if (test_tsk_thread_flag(next_p, TIF_IO_BITMAP)) {
--		/*
--		 * Copy the relevant range of the IO bitmap.
--		 * Normally this is 128 bytes or less:
--		 */
--		memcpy(tss->io_bitmap, next->io_bitmap_ptr,
--		       max(prev->io_bitmap_max, next->io_bitmap_max));
--	} else if (test_tsk_thread_flag(prev_p, TIF_IO_BITMAP)) {
--		/*
--		 * Clear any possible leftover bits:
--		 */
--		memset(tss->io_bitmap, 0xff, prev->io_bitmap_max);
--	}
-+	if (test_tsk_thread_flag(next_p, TIF_IO_BITMAP) ||
-+	    test_tsk_thread_flag(prev_p, TIF_IO_BITMAP))
-+		set_io_bitmap(next, 1,
-+		              max(prev->io_bitmap_max, next->io_bitmap_max));
+-	extern unsigned long max_mapnr;
+ 	unsigned long pfn = mfn_to_pfn(mfn);
+-	if ((pfn < max_mapnr)
+-	    && !xen_feature(XENFEAT_auto_translated_physmap)
+-	    && (get_phys_to_machine(pfn) != mfn))
+-		return max_mapnr; /* force !pfn_valid() */
+-	/* XXX fixme; not true with sparsemem */
++	if (get_phys_to_machine(pfn) != mfn)
++		return -1; /* force !pfn_valid() */
+ 	return pfn;
  }
  
- int sys_fork(struct pt_regs *regs)
 diff --git a/arch/x86/xen/enlighten.c b/arch/x86/xen/enlighten.c
-index 213e1ba..61ce3ae 100644
+index 731c096..35deb3e 100644
 --- a/arch/x86/xen/enlighten.c
 +++ b/arch/x86/xen/enlighten.c
-@@ -568,6 +568,21 @@ static void xen_set_iopl_mask(unsigned mask)
- 	HYPERVISOR_physdev_op(PHYSDEVOP_set_iopl, &set_iopl);
+@@ -978,7 +978,9 @@ asmlinkage void __init xen_start_kernel(void)
+ 
+ 	/* Prevent unwanted bits from being set in PTEs. */
+ 	__supported_pte_mask &= ~_PAGE_GLOBAL;
+-	if (!xen_initial_domain())
++	if (xen_initial_domain())
++		__supported_pte_mask |= _PAGE_IOMAP;
++	else
+ 		__supported_pte_mask &= ~(_PAGE_PWT | _PAGE_PCD);
+ 
+ 	/* Don't do the full vcpu_info placement stuff until we have a
+diff --git a/arch/x86/xen/mmu.c b/arch/x86/xen/mmu.c
+index e80e63c..545c00c 100644
+--- a/arch/x86/xen/mmu.c
++++ b/arch/x86/xen/mmu.c
+@@ -395,6 +395,28 @@ static bool xen_page_pinned(void *ptr)
+ 	return PagePinned(page);
  }
  
-+static void xen_set_io_bitmap(struct thread_struct *thread,
-+                              int changed, unsigned long bytes_updated)
++static bool xen_iomap_pte(pte_t pte)
 +{
-+	struct physdev_set_iobitmap set_iobitmap;
-+
-+	if (!changed)
-+		return;
-+
-+	set_xen_guest_handle(set_iobitmap.bitmap,
-+	                     (char *)thread->io_bitmap_ptr);
-+	set_iobitmap.nr_ports = thread->io_bitmap_ptr ? IO_BITMAP_BITS : 0;
-+	WARN_ON(HYPERVISOR_physdev_op(PHYSDEVOP_set_iobitmap,
-+	                              &set_iobitmap));
++	return xen_initial_domain() && (pte_flags(pte) & _PAGE_IOMAP);
 +}
 +
- static void xen_io_delay(void)
++static void xen_set_iomap_pte(pte_t *ptep, pte_t pteval)
++{
++	struct multicall_space mcs;
++	struct mmu_update *u;
++
++	mcs = xen_mc_entry(sizeof(*u));
++	u = mcs.args;
++
++	/* ptep might be kmapped when using 32-bit HIGHPTE */
++	u->ptr = arbitrary_virt_to_machine(ptep).maddr;
++	u->val = pte_val_ma(pteval);
++
++	MULTI_mmu_update(mcs.mc, mcs.args, 1, NULL, DOMID_IO);
++
++	xen_mc_issue(PARAVIRT_LAZY_MMU);
++}
++
+ static void xen_extend_mmu_update(const struct mmu_update *update)
  {
+ 	struct multicall_space mcs;
+@@ -471,6 +493,11 @@ void set_pte_mfn(unsigned long vaddr, unsigned long mfn, pgprot_t flags)
+ void xen_set_pte_at(struct mm_struct *mm, unsigned long addr,
+ 		    pte_t *ptep, pte_t pteval)
+ {
++	if (xen_iomap_pte(pteval)) {
++		xen_set_iomap_pte(ptep, pteval);
++		goto out;
++	}
++
+ 	ADD_STATS(set_pte_at, 1);
+ //	ADD_STATS(set_pte_at_pinned, xen_page_pinned(ptep));
+ 	ADD_STATS(set_pte_at_current, mm == current->mm);
+@@ -541,8 +568,25 @@ static pteval_t pte_pfn_to_mfn(pteval_t val)
+ 	return val;
  }
-@@ -861,6 +876,7 @@ static const struct pv_cpu_ops xen_cpu_ops __initdata = {
- 	.load_sp0 = xen_load_sp0,
  
- 	.set_iopl_mask = xen_set_iopl_mask,
-+	.set_io_bitmap = xen_set_io_bitmap,
- 	.io_delay = xen_io_delay,
++static pteval_t iomap_pte(pteval_t val)
++{
++	if (val & _PAGE_PRESENT) {
++		unsigned long pfn = (val & PTE_PFN_MASK) >> PAGE_SHIFT;
++		pteval_t flags = val & PTE_FLAGS_MASK;
++
++		/* We assume the pte frame number is a MFN, so
++		   just use it as-is. */
++		val = ((pteval_t)pfn << PAGE_SHIFT) | flags;
++	}
++
++	return val;
++}
++
+ pteval_t xen_pte_val(pte_t pte)
+ {
++	if (xen_initial_domain() && (pte.pte & _PAGE_IOMAP))
++		return pte.pte;
++
+ 	return pte_mfn_to_pfn(pte.pte);
+ }
+ PV_CALLEE_SAVE_REGS_THUNK(xen_pte_val);
+@@ -555,7 +599,11 @@ PV_CALLEE_SAVE_REGS_THUNK(xen_pgd_val);
  
- 	/* Xen takes care of %gs when switching to usermode for us */
+ pte_t xen_make_pte(pteval_t pte)
+ {
+-	pte = pte_pfn_to_mfn(pte);
++	if (unlikely(xen_initial_domain() && (pte & _PAGE_IOMAP)))
++		pte = iomap_pte(pte);
++	else
++		pte = pte_pfn_to_mfn(pte);
++
+ 	return native_make_pte(pte);
+ }
+ PV_CALLEE_SAVE_REGS_THUNK(xen_make_pte);
+@@ -611,6 +659,11 @@ void xen_set_pud(pud_t *ptr, pud_t val)
+ 
+ void xen_set_pte(pte_t *ptep, pte_t pte)
+ {
++	if (xen_iomap_pte(pte)) {
++		xen_set_iomap_pte(ptep, pte);
++		return;
++	}
++
+ 	ADD_STATS(pte_update, 1);
+ //	ADD_STATS(pte_update_pinned, xen_page_pinned(ptep));
+ 	ADD_STATS(pte_update_batched, paravirt_get_lazy_mode() == PARAVIRT_LAZY_MMU);
+@@ -627,6 +680,11 @@ void xen_set_pte(pte_t *ptep, pte_t pte)
+ #ifdef CONFIG_X86_PAE
+ void xen_set_pte_atomic(pte_t *ptep, pte_t pte)
+ {
++	if (xen_iomap_pte(pte)) {
++		xen_set_iomap_pte(ptep, pte);
++		return;
++	}
++
+ 	set_64bit((u64 *)ptep, native_pte_val(pte));
+ }
+ 
+@@ -1844,9 +1902,16 @@ static void xen_set_fixmap(unsigned idx, unsigned long phys, pgprot_t prot)
+ 		pte = pfn_pte(phys, prot);
+ 		break;
+ 
+-	default:
++	case FIX_PARAVIRT_BOOTMAP:
++		/* This is an MFN, but it isn't an IO mapping from the
++		   IO domain */
+ 		pte = mfn_pte(phys, prot);
+ 		break;
++
++	default:
++		/* By default, set_fixmap is used for hardware mappings */
++		pte = mfn_pte(phys, __pgprot(pgprot_val(prot) | _PAGE_IOMAP));
++		break;
+ 	}
+ 
+ 	__native_set_fixmap(idx, pte);
 -- 
 1.6.0.6
 
