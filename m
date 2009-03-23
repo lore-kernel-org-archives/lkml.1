@@ -1,31 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757013AbZCWAMo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756851AbZCWAPf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757013AbZCWAMo (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Mar 2009 20:12:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753028AbZCWAMe
+	id S1756851AbZCWAPf (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Mar 2009 20:15:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751996AbZCWAP0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Mar 2009 20:12:34 -0400
-Received: from gate.crashing.org ([63.228.1.57]:60561 "EHLO gate.crashing.org"
+	Sun, 22 Mar 2009 20:15:26 -0400
+Received: from gate.crashing.org ([63.228.1.57]:60584 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751972AbZCWAMd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Mar 2009 20:12:33 -0400
-Subject: Re: [RFC][PATCH 0/2] Make radeonfb use PCI PM core for suspendig
- device (was: Re: [RFC][PATCH] PCI PM: Be extra careful when changing power
- states of devices)
+	id S1751972AbZCWAPZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Mar 2009 20:15:25 -0400
+Subject: Re: [PATCH next] sysfs: fix some bin_vm_ops errors
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Linux PCI <linux-pci@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <200903222208.22434.rjw@sisk.pl>
-References: <200903210003.55161.rjw@sisk.pl>
-	 <200903222208.22434.rjw@sisk.pl>
+To: Hugh Dickins <hugh@veritas.com>
+Cc: "Eric W. Biederman" <ebiederm@aristanetworks.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>, Tejun Heo <tj@kernel.org>,
+       Kay Sievers <kay.sievers@vrfy.org>, Greg Kroah-Hartman <gregkh@suse.de>,
+       Nick Piggin <npiggin@suse.de>, linux-kernel@vger.kernel.org
+In-Reply-To: <Pine.LNX.4.64.0903221826520.17976@blonde.anvils>
+References: <Pine.LNX.4.64.0903221826520.17976@blonde.anvils>
 Content-Type: text/plain
-Date: Mon, 23 Mar 2009 11:09:02 +1100
-Message-Id: <1237766942.25062.680.camel@pasglop>
+Date: Mon, 23 Mar 2009 11:08:34 +1100
+Message-Id: <1237766914.25062.679.camel@pasglop>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.24.3 
 Content-Transfer-Encoding: 7bit
@@ -33,33 +29,24 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2009-03-22 at 22:08 +0100, Rafael J. Wysocki wrote:
-> On Saturday 21 March 2009, Rafael J. Wysocki wrote:
-> > From: Rafael J. Wysocki <rjw@sisk.pl>
-> > 
-> > The story in http://bugzilla.kernel.org/show_bug.cgi?id=12846 shows
-> > that setting the power state of a PCI device by
-> > pci_raw_set_power_state() may sometimes fail.  For this reason,
-> > pci_raw_set_power_state() should not assume that the power state of
-> > the device has actually changed after writing into its PMCSR.
-> > Instead, it should read the value from there and use it to update
-> > dev->current_state.  It also is useful to print a warning if the
-> > device's power state hasn't changed as expected.
-> > 
-> > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> > ---
-> OK, since the Ben's radeonfb fix for bug #12846 has been merged, I'd like
-> to do something a bit different.
+On Sun, 2009-03-22 at 18:33 +0000, Hugh Dickins wrote:
+> Commit 86c9508eb1c0ce5aa07b5cf1d36b60c54efc3d7a
+> "sysfs: don't block indefinitely for unmapped files" in linux-next
+> crashes the PowerMac G5 when X starts up.  It's caught out by the way
+> powerpc's pci_mmap of legacy_mem uses shmem_zero_setup(), substituting
+> a new vma->vm_file whose private_data no longer points to the bin_buffer
+> (substitution done because some versions of X crash if that mmap fails).
 > 
-> Patch 1/2 introduces __pci_set_power_state() that will allow the radeonfb
-> driver not to open code PCI PM operations.
-> 
-> Patch 2/2 makes the driver use __pci_set_power_state().
-> 
-> Comments welcome.
+> The fix to this is straightforward: the original vm_file is fput() in
+> that case, so this mmap won't block sysfs at all, so just don't switch
+> over to bin_vm_ops if vm_file has changed.
 
-No objection.
+Looks good, though we should probably also add a comment to your code
+to make it clear why the test is here.
 
+The fix should probably go into .29...
+
+Cheers,
 Ben.
 
 
