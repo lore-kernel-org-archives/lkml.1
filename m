@@ -1,69 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756485AbZCWIJX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756691AbZCWIM0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756485AbZCWIJX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Mar 2009 04:09:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754056AbZCWII7
+	id S1756691AbZCWIM0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Mar 2009 04:12:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755944AbZCWIMJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Mar 2009 04:08:59 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:43238 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752851AbZCWII6 (ORCPT
+	Mon, 23 Mar 2009 04:12:09 -0400
+Received: from mail-ew0-f165.google.com ([209.85.219.165]:59021 "EHLO
+	mail-ew0-f165.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755311AbZCWIMF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Mar 2009 04:08:58 -0400
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Nikanth Karthikesan <knikanth@suse.de>
-Subject: Re: ftrace not working?
-Cc: kosaki.motohiro@jp.fujitsu.com, Steven Rostedt <rostedt@goodmis.org>,
+	Mon, 23 Mar 2009 04:12:05 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=UkJD00UIGe8gIb4msnV+1aNH2ybjr0yd2gSxuc74qmRyh0JTUkvi8Q+d4ERFEjltja
+         XiqXW5f/D7I3kpu7FK9gnG769GPf76pIP5MgixLeNBWVak2IbmJCVeukYc0UBXoO1W/e
+         vekCuO7rsrBQT8KmVHLoytuZq/kFSvqYBGRog=
+Date: Mon, 23 Mar 2009 08:11:58 +0000
+From: Jarek Poplawski <jarkao2@gmail.com>
+To: David Miller <davem@davemloft.net>
+Cc: mpm@selenic.com, marcin.slusarz@gmail.com, netdev@vger.kernel.org,
+       k-keiichi@bx.jp.nec.com, stable@kernel.org, rjw@sisk.pl,
        linux-kernel@vger.kernel.org
-In-Reply-To: <200903231208.03723.knikanth@suse.de>
-References: <200903231208.03723.knikanth@suse.de>
-Message-Id: <20090323170234.6A12.A69D9226@jp.fujitsu.com>
+Subject: Re: [PATCH] netconsole: fix BUG during net device "upping"
+Message-ID: <20090323081158.GB4976@ff.dom.local>
+References: <20090322.212107.55546529.davem@davemloft.net> <20090323080455.GA4976@ff.dom.local> <20090323.010541.94308473.davem@davemloft.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50 [ja]
-Date: Mon, 23 Mar 2009 17:08:53 +0900 (JST)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090323.010541.94308473.davem@davemloft.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi
-
-> I tried ftrace with the linus git 2.6.29 rc-6, & rc-8, but I always seem to
-> get empty trace! Am I doing something wrong?
+On Mon, Mar 23, 2009 at 01:05:41AM -0700, David Miller wrote:
+> From: Jarek Poplawski <jarkao2@gmail.com>
+> Date: Mon, 23 Mar 2009 08:04:55 +0000
 > 
-> This is what I did.
+> > What is the rationale of this decision? printk is a basic tool,
+> > especially designed to work in as many places as possible, and
+> > netconsole is rather something secondary (sorry Matt)?!
 > 
-> linux-glcc:/data/git/linux-2.6 # cd /sys/kernel/debug/tracing/
-> linux-glcc:/sys/kernel/debug/tracing # cat available_tracers 
-> function_graph function sysprof sched_switch nop
-> linux-glcc:/sys/kernel/debug/tracing # echo sched_switch > current_tracer 
-> linux-glcc:/sys/kernel/debug/tracing # echo 1 > tracing_enabled 
-> linux-glcc:/sys/kernel/debug/tracing # cat tracing_enabled 
-> 1
-> linux-glcc:/sys/kernel/debug/tracing # cat trace
-> # tracer: sched_switch
-> #
-> #           TASK-PID    CPU#    TIMESTAMP  FUNCTION
-> #              | |       |          |         |
+> And this basic tool cannot work from the drivers ->open() method.
 
-your operation seems fine and your .config seems fine too.
-but my box works ftrace well on 2.6.29-rc8.
+And in any function used in the drivers ->open(). BTW, with Marcin's
+patch it can...
 
-hmm...
-
-Could you post followin operation result and dmesg?
-
-# cat failures
-# cat current_tracer
-# cat trace_options
-# cat buffer_size_kb
-# cat dyn_ftrace_total_info
-# cat trace_options
-# cat set_ftrace_filter
-# cat tracing_cpumask
-# cat tracing_enabled
-# cat tracing_on
-
-
-
+Jarek P.
