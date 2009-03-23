@@ -1,86 +1,169 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759369AbZCWQAb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759498AbZCWQBj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759369AbZCWQAb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Mar 2009 12:00:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754818AbZCWQAI
+	id S1759498AbZCWQBj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Mar 2009 12:01:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759343AbZCWQAx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Mar 2009 12:00:08 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:55536 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755876AbZCWQAG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Mar 2009 12:00:06 -0400
-Date: Mon, 23 Mar 2009 16:59:38 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Christoph Lameter <cl@linux-foundation.org>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Manfred Spraul <manfred@colorfullife.com>,
-       Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH -mm 1/6] slab: introduce __kfree_rcu
-Message-ID: <20090323155938.GA27151@elte.hu>
-References: <49AD3433.9000001@cn.fujitsu.com> <1237794502.6313.21.camel@penberg-laptop> <alpine.DEB.1.10.0903230931570.4095@qirst.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0903230931570.4095@qirst.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Mon, 23 Mar 2009 12:00:53 -0400
+Received: from mail09.linbit.com ([212.69.161.110]:52242 "EHLO
+	mail09.linbit.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759150AbZCWQAw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Mar 2009 12:00:52 -0400
+From: Philipp Reisner <philipp.reisner@linbit.com>
+To: linux-kernel@vger.kernel.org
+Cc: philipp.reisner@linbit.com, gregkh@suse.de
+Subject: [PATCH 11/12] DRBD: misc
+Date: Mon, 23 Mar 2009 16:48:06 +0100
+Message-Id: <1237823287-12734-12-git-send-email-philipp.reisner@linbit.com>
+X-Mailer: git-send-email 1.5.6.3
+In-Reply-To: <1237823287-12734-11-git-send-email-philipp.reisner@linbit.com>
+References: <1237823287-12734-1-git-send-email-philipp.reisner@linbit.com>
+ <1237823287-12734-2-git-send-email-philipp.reisner@linbit.com>
+ <1237823287-12734-3-git-send-email-philipp.reisner@linbit.com>
+ <1237823287-12734-4-git-send-email-philipp.reisner@linbit.com>
+ <1237823287-12734-5-git-send-email-philipp.reisner@linbit.com>
+ <1237823287-12734-6-git-send-email-philipp.reisner@linbit.com>
+ <1237823287-12734-7-git-send-email-philipp.reisner@linbit.com>
+ <1237823287-12734-8-git-send-email-philipp.reisner@linbit.com>
+ <1237823287-12734-9-git-send-email-philipp.reisner@linbit.com>
+ <1237823287-12734-10-git-send-email-philipp.reisner@linbit.com>
+ <1237823287-12734-11-git-send-email-philipp.reisner@linbit.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+buildtag.c tag will go away when we are not longer an external module.
 
-* Christoph Lameter <cl@linux-foundation.org> wrote:
-
-> On Mon, 23 Mar 2009, Pekka Enberg wrote:
-> 
-> > > +static inline void *portion_to_obj(void *portion)
-> > > +{
-> > > +	struct page *page = virt_to_head_page(portion);
-> > > +	struct slab *slab = page_get_slab(page);
-> > > +	struct kmem_cache *cache = page_get_cache(page);
-> > > +	unsigned int offset = portion - slab->s_mem;
-> > > +	unsigned int index = offset / cache->buffer_size;
-> > > +
-> > > +	return index_to_obj(cache, slab, index);
-> > > +}
-> >
-> > A minor nit: I think this would be more readable if you separated
-> > variable declarations from the initializations. Also, you can probably
-> > drop the inline from the function declaration and let GCC decide what to
-> > do.
-> 
-> Thats debatable. I find the setting up a number of variables that 
-> are all dependend in the above manner very readable. They are 
-> usually repetitive. Multiple functions use similar 
-> initializations.
-
-I agree with Pekka, it's clearly more readable when separated out 
-nicely:
-
-	struct kmem_cache *cache;
-	unsigned int offset;
-	unsigned int index;
-	struct page *page;
-	struct slab *slab;
-
-	page	= virt_to_head_page(portion);
-	slab	= page_get_slab(page);
-	cache	= page_get_cache(page);
-
-	offset	= portion - slab->s_mem;
-	index	= offset / cache->buffer_size;
-
-The original form is hard to read due to lack of structure.
-
-	Ingo
+---
+diff -uNrp linux-2.6.29-rc8/drivers/block/drbd/drbd_buildtag.c linux-2.6.29-rc8-drbd/drivers/block/drbd/drbd_buildtag.c
+--- linux-2.6.29-rc8/drivers/block/drbd/drbd_buildtag.c	1970-01-01 01:00:00.000000000 +0100
++++ linux-2.6.29-rc8-drbd/drivers/block/drbd/drbd_buildtag.c	2009-03-23 10:54:33.411143000 +0100
+@@ -0,0 +1,7 @@
++/* automatically generated. DO NOT EDIT. */
++#include <linux/drbd_config.h>
++const char *drbd_buildtag(void)
++{
++	return "GIT-hash: 4af0e2574a0647b16810a7a82856691ca822a3a9"
++		" build by phil@fat-tyre, 2009-03-23 10:54:33";
++}
+diff -uNrp linux-2.6.29-rc8/drivers/block/drbd/drbd_strings.c linux-2.6.29-rc8-drbd/drivers/block/drbd/drbd_strings.c
+--- linux-2.6.29-rc8/drivers/block/drbd/drbd_strings.c	1970-01-01 01:00:00.000000000 +0100
++++ linux-2.6.29-rc8-drbd/drivers/block/drbd/drbd_strings.c	2009-03-18 13:45:47.923235000 +0100
+@@ -0,0 +1,116 @@
++/*
++  drbd.h
++  Kernel module for 2.6.x Kernels
++
++  This file is part of DRBD by Philipp Reisner and Lars Ellenberg.
++
++  Copyright (C) 2003-2008, LINBIT Information Technologies GmbH.
++  Copyright (C) 2003-2008, Philipp Reisner <philipp.reisner@linbit.com>.
++  Copyright (C) 2003-2008, Lars Ellenberg <lars.ellenberg@linbit.com>.
++
++  drbd is free software; you can redistribute it and/or modify
++  it under the terms of the GNU General Public License as published by
++  the Free Software Foundation; either version 2, or (at your option)
++  any later version.
++
++  drbd is distributed in the hope that it will be useful,
++  but WITHOUT ANY WARRANTY; without even the implied warranty of
++  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++  GNU General Public License for more details.
++
++  You should have received a copy of the GNU General Public License
++  along with drbd; see the file COPYING.  If not, write to
++  the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
++
++*/
++
++#include <linux/drbd.h>
++
++static const char *drbd_conn_s_names[] = {
++	[StandAlone]     = "StandAlone",
++	[Disconnecting]  = "Disconnecting",
++	[Unconnected]    = "Unconnected",
++	[Timeout]        = "Timeout",
++	[BrokenPipe]     = "BrokenPipe",
++	[NetworkFailure] = "NetworkFailure",
++	[ProtocolError]  = "ProtocolError",
++	[WFConnection]   = "WFConnection",
++	[WFReportParams] = "WFReportParams",
++	[TearDown]       = "TearDown",
++	[Connected]      = "Connected",
++	[StartingSyncS]  = "StartingSyncS",
++	[StartingSyncT]  = "StartingSyncT",
++	[WFBitMapS]      = "WFBitMapS",
++	[WFBitMapT]      = "WFBitMapT",
++	[WFSyncUUID]     = "WFSyncUUID",
++	[SyncSource]     = "SyncSource",
++	[SyncTarget]     = "SyncTarget",
++	[VerifyS]        = "VerifyS",
++	[VerifyT]        = "VerifyT",
++	[PausedSyncS]    = "PausedSyncS",
++	[PausedSyncT]    = "PausedSyncT"
++};
++
++static const char *drbd_role_s_names[] = {
++	[Primary]   = "Primary",
++	[Secondary] = "Secondary",
++	[Unknown]   = "Unknown"
++};
++
++static const char *drbd_disk_s_names[] = {
++	[Diskless]     = "Diskless",
++	[Attaching]    = "Attaching",
++	[Failed]       = "Failed",
++	[Negotiating]  = "Negotiating",
++	[Inconsistent] = "Inconsistent",
++	[Outdated]     = "Outdated",
++	[DUnknown]     = "DUnknown",
++	[Consistent]   = "Consistent",
++	[UpToDate]     = "UpToDate",
++};
++
++static const char *drbd_state_sw_errors[] = {
++	[-SS_TwoPrimaries] = "Multiple primaries not allowed by config",
++	[-SS_NoUpToDateDisk] =
++		"Refusing to be Primary without at least one UpToDate disk",
++	[-SS_BothInconsistent] = "Refusing to be inconsistent on both nodes",
++	[-SS_SyncingDiskless] = "Refusing to be syncing and diskless",
++	[-SS_ConnectedOutdates] = "Refusing to be Outdated while Connected",
++	[-SS_PrimaryNOP] = "Refusing to be Primary while peer is not outdated",
++	[-SS_ResyncRunning] = "Can not start OV/resync since it is already active",
++	[-SS_AlreadyStandAlone] = "Can not disconnect a StandAlone device",
++	[-SS_CW_FailedByPeer] = "State changed was refused by peer node",
++	[-SS_IsDiskLess] =
++		"Device is diskless, the requesed operation requires a disk",
++	[-SS_DeviceInUse] = "Device is held open by someone",
++	[-SS_NoNetConfig] = "Have no net/connection configuration",
++	[-SS_NoVerifyAlg] = "Need a verify algorithm to start online verify",
++	[-SS_NeedConnection] = "Need a connection to start verify or resync",
++	[-SS_NotSupported] = "Peer does not support protocol",
++	[-SS_LowerThanOutdated] = "Disk state is lower than outdated",
++	[-SS_InTransientState] = "In transient state, retry after next state change",
++	[-SS_ConcurrentStChg] = "Concurrent state changes detected and aborted",
++};
++
++const char *conns_to_name(enum drbd_conns s)
++{
++	/* enums are unsigned... */
++	return s > PausedSyncT ? "TOO_LARGE" : drbd_conn_s_names[s];
++}
++
++const char *roles_to_name(enum drbd_role s)
++{
++	return s > Secondary   ? "TOO_LARGE" : drbd_role_s_names[s];
++}
++
++const char *disks_to_name(enum drbd_disk_state s)
++{
++	return s > UpToDate    ? "TOO_LARGE" : drbd_disk_s_names[s];
++}
++
++const char *set_st_err_name(enum set_st_err err)
++{
++	return err <= SS_AfterLastError ? "TOO_SMALL" :
++	       err > SS_TwoPrimaries ? "TOO_LARGE"
++			: drbd_state_sw_errors[-err];
++}
