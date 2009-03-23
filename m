@@ -1,124 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757311AbZCWOiB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757540AbZCWOrg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757311AbZCWOiB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Mar 2009 10:38:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756010AbZCWOhu
+	id S1757540AbZCWOrg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Mar 2009 10:47:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756456AbZCWOrZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Mar 2009 10:37:50 -0400
-Received: from fmmailgate02.web.de ([217.72.192.227]:46385 "EHLO
-	fmmailgate02.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753350AbZCWOht (ORCPT
+	Mon, 23 Mar 2009 10:47:25 -0400
+Received: from yw-out-2324.google.com ([74.125.46.28]:45082 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756557AbZCWOrX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Mar 2009 10:37:49 -0400
-From: Christian Lamparter <chunkeey@web.de>
-To: "John W. Linville" <linville@tuxdriver.com>
-Subject: [PATCH v2] p54: fix SoftLED compile dependencies
-Date: Mon, 23 Mar 2009 15:37:45 +0100
-User-Agent: KMail/1.10.0 (Linux/2.6.29-rc8-wl; KDE/4.2.1; x86_64; ; )
-Cc: Kalle Valo <kalle.valo@iki.fi>, Michael Buesch <mb@bu3sch.de>,
-       Randy Dunlap <randy.dunlap@oracle.com>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, linux-wireless@vger.kernel.org
-References: <20090319221024.5e2ad6e5.sfr@canb.auug.org.au> <200903211322.01654.chunkeey@web.de> <20090323141320.GC3285@tuxdriver.com>
-In-Reply-To: <20090323141320.GC3285@tuxdriver.com>
+	Mon, 23 Mar 2009 10:47:23 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=ZwqRC/yBU2Uy6Gud4zYJqI5s6NwafscdpKZ/FwIod7mfEjrF4ktuR78WLTXMGO9UvV
+         5Md2nAt6UUuMsgJMJxLwbDAHI2A8V8j9cbdOaTKgxzNW9dxqMGiViCZ+fAnwQnlCA6Qb
+         6HkNPBKSGTH4ZKQopSei6kMYu+LxuqjI6krus=
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+In-Reply-To: <1237816050.3833.20.camel@T60p>
+References: <1237575285.26159.2.camel@T60p>
+	 <412bdbff0903201228t4cb4b6c8m17763c27878434ed@mail.gmail.com>
+	 <1237578912.26159.13.camel@T60p>
+	 <412bdbff0903201302ib6758a8ue76a8dd235cfa4cb@mail.gmail.com>
+	 <1237579738.26159.16.camel@T60p>
+	 <412bdbff0903201314r5105d373ofe6614ee08431d4b@mail.gmail.com>
+	 <1237816050.3833.20.camel@T60p>
+Date: Mon, 23 Mar 2009 10:47:21 -0400
+Message-ID: <412bdbff0903230747i1ebc4487x2636369e6b20ce8f@mail.gmail.com>
+Subject: Re: [PATCH] V4L: em28xx: add support for Digitus/Plextor PX-AV200U 
+	grabbers
+From: Devin Heitmueller <devin.heitmueller@gmail.com>
+To: Mikhail Jiline <misha@epiphan.com>
+Cc: mchehab@infradead.org, linux-kernel@vger.kernel.org,
+       video4linux-list@redhat.com
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200903231537.45716.chunkeey@web.de>
-X-Provags-ID: V01U2FsdGVkX18aCaqmtPlfOXQ6zLD/hWXeUXIPHDccSDNpvRSV
-	vaE+aIXALeGxcR0JT5YcMVf+LWo7ihZHhyrE4bGJELutFqNqap
-	8JxU1UGQI=
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch fixes a compile problem when the MAC80211_LEDS
-triggers are enabled but not LED class itself. 
-(which is sort of pointless, but anyway...)
+On Mon, Mar 23, 2009 at 9:47 AM, Mikhail Jiline <misha@epiphan.com> wrote:
+> Here is the output from the version with em28xx_i2c_hash hint. Update patch is below.
+<snip>
 
-Signed-off-by: Christian Lamparter <chunkeey@web.de>
----
-> > heh true... should I add them back? after all this list hasn't changed in years
-> > and we have a much nicer one on http://www.prism54.org/
-> > ( http://wireless.kernel.org/en/users/Drivers/p54/devices )
-> 
-> Getting rid of them is fine, but it should probably be done in a different patch.
-heh, "451 4.5.0 From MTA([127.0.0.1]:10025) during fwd-connect"...
+Ok, that looks better.  You should no longer need the "card=" line
+with that patch.
 
-I guess no one got my last reply, right?
----
-diff --git a/drivers/net/wireless/p54/Kconfig b/drivers/net/wireless/p54/Kconfig
-index 0e344ac..ee1aaca 100644
---- a/drivers/net/wireless/p54/Kconfig
-+++ b/drivers/net/wireless/p54/Kconfig
-@@ -71,3 +71,8 @@ config P54_SPI
- 	  Nokia's N800/N810 Portable Internet Tablet.
- 
- 	  If you choose to build a module, it'll be called p54spi.
-+
-+config P54_LEDS
-+	bool
-+	depends on P54_COMMON && MAC80211_LEDS && (LEDS_CLASS = y || LEDS_CLASS = P54_COMMON)
-+	default y
-diff --git a/drivers/net/wireless/p54/p54common.c b/drivers/net/wireless/p54/p54common.c
-index 0a98983..0c1b057 100644
---- a/drivers/net/wireless/p54/p54common.c
-+++ b/drivers/net/wireless/p54/p54common.c
-@@ -21,9 +21,9 @@
- #include <linux/etherdevice.h>
- 
- #include <net/mac80211.h>
--#ifdef CONFIG_MAC80211_LEDS
-+#ifdef CONFIG_P54_LEDS
- #include <linux/leds.h>
--#endif /* CONFIG_MAC80211_LEDS */
-+#endif /* CONFIG_P54_LEDS */
- 
- #include "p54.h"
- #include "p54common.h"
-@@ -2420,7 +2420,7 @@ static int p54_set_key(struct ieee80211_hw *dev, enum set_key_cmd cmd,
- 	return 0;
- }
- 
--#ifdef CONFIG_MAC80211_LEDS
-+#ifdef CONFIG_P54_LEDS
- static void p54_led_brightness_set(struct led_classdev *led_dev,
- 				   enum led_brightness brightness)
- {
-@@ -2508,7 +2508,7 @@ static void p54_unregister_leds(struct ieee80211_hw *dev)
- 	if (priv->assoc_led.registered)
- 		led_classdev_unregister(&priv->assoc_led.led_dev);
- }
--#endif /* CONFIG_MAC80211_LEDS */
-+#endif /* CONFIG_P54_LEDS */
- 
- static const struct ieee80211_ops p54_ops = {
- 	.tx			= p54_tx,
-@@ -2592,11 +2592,11 @@ int p54_register_common(struct ieee80211_hw *dev, struct device *pdev)
- 		return err;
- 	}
- 
--	#ifdef CONFIG_MAC80211_LEDS
-+#ifdef CONFIG_P54_LEDS
- 	err = p54_init_leds(dev);
- 	if (err)
- 		return err;
--	#endif /* CONFIG_MAC80211_LEDS */
-+#endif /* CONFIG_P54_LEDS */
- 
- 	dev_info(pdev, "is registered as '%s'\n", wiphy_name(dev->wiphy));
- 	return 0;
-@@ -2610,9 +2610,9 @@ void p54_free_common(struct ieee80211_hw *dev)
- 	kfree(priv->output_limit);
- 	kfree(priv->curve_data);
- 
--	#ifdef CONFIG_MAC80211_LEDS
-+#ifdef CONFIG_P54_LEDS
- 	p54_unregister_leds(dev);
--	#endif /* CONFIG_MAC80211_LEDS */
-+#endif /* CONFIG_P54_LEDS */
- }
- EXPORT_SYMBOL_GPL(p54_free_common);
- 
+Did you verify that both video inputs were working as expected?  Also,
+did you confirm the audio support works?  If so, please remove the
+"valid        = EM28XX_BOARD_NOT_VALIDATED", submit a final patch, and
+I will check it in.
+
+Thanks,
+
+Devin
+
+-- 
+Devin J. Heitmueller
+http://www.devinheitmueller.com
+AIM: devinheitmueller
