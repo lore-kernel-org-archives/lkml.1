@@ -1,26 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760681AbZCWSKv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760670AbZCWSLM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760681AbZCWSKv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Mar 2009 14:10:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760547AbZCWSKH
+	id S1760670AbZCWSLM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Mar 2009 14:11:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760573AbZCWSKJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Mar 2009 14:10:07 -0400
-Received: from adsl-69-107-72-54.dsl.pltn13.pacbell.net ([69.107.72.54]:60835
+	Mon, 23 Mar 2009 14:10:09 -0400
+Received: from adsl-69-107-72-54.dsl.pltn13.pacbell.net ([69.107.72.54]:60837
 	"EHLO abulafia.goop.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1759782AbZCWSKC (ORCPT
+	with ESMTP id S1760336AbZCWSKE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Mar 2009 14:10:02 -0400
+	Mon, 23 Mar 2009 14:10:04 -0400
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: "H. Peter Anvin" <hpa@zytor.com>
 Cc: the arch/x86 maintainers <x86@kernel.org>, Ingo Molnar <mingo@elte.hu>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Xen-devel <xen-devel@lists.xensource.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>,
-       Juan Quintela <quintela@redhat.com>
-Subject: [PATCH 01/15] xen dom0: Make hvc_xen console work for dom0.
-Date: Mon, 23 Mar 2009 11:09:45 -0700
-Message-Id: <1237831799-6568-2-git-send-email-jeremy@goop.org>
+       Juan Quintela <quintela@redhat.com>,
+       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+Subject: [PATCH 03/15] xen dom0: Set up basic IO permissions for dom0.
+Date: Mon, 23 Mar 2009 11:09:47 -0700
+Message-Id: <1237831799-6568-4-git-send-email-jeremy@goop.org>
 X-Mailer: git-send-email 1.6.0.6
 In-Reply-To: <49C45238.7050007@zytor.com>
 References: <49C45238.7050007@zytor.com>
@@ -28,226 +27,126 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: Add Xen dom0 console
+From: Juan Quintela <quintela@redhat.com>
 
-Use the console hypercalls for dom0 console.
+Impact: set iopl for dom0 kernel; map ISA
+
+Add the direct mapping area for ISA bus access, and enable IO space
+access for the guest when running as dom0.
 
 Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 Signed-off-by: Juan Quintela <quintela@redhat.com>
 ---
- drivers/char/hvc_xen.c |  101 ++++++++++++++++++++++++++++++++----------------
- drivers/xen/events.c   |    2 +-
- include/xen/events.h   |    2 +
- 3 files changed, 70 insertions(+), 35 deletions(-)
+ arch/x86/xen/enlighten.c |    8 ++++++++
+ arch/x86/xen/mmu.c       |   24 ++++++++++++++++++++++++
+ arch/x86/xen/setup.c     |    6 +++++-
+ arch/x86/xen/xen-ops.h   |    1 +
+ 4 files changed, 38 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/char/hvc_xen.c b/drivers/char/hvc_xen.c
-index eba999f..81d9186 100644
---- a/drivers/char/hvc_xen.c
-+++ b/drivers/char/hvc_xen.c
-@@ -55,7 +55,7 @@ static inline void notify_daemon(void)
- 	notify_remote_via_evtchn(xen_start_info->console.domU.evtchn);
- }
+diff --git a/arch/x86/xen/enlighten.c b/arch/x86/xen/enlighten.c
+index da33e0c..19af31b 100644
+--- a/arch/x86/xen/enlighten.c
++++ b/arch/x86/xen/enlighten.c
+@@ -989,6 +989,7 @@ asmlinkage void __init xen_start_kernel(void)
  
--static int write_console(uint32_t vtermno, const char *data, int len)
-+static int domU_write_console(uint32_t vtermno, const char *data, int len)
- {
- 	struct xencons_interface *intf = xencons_interface();
- 	XENCONS_RING_IDX cons, prod;
-@@ -76,7 +76,7 @@ static int write_console(uint32_t vtermno, const char *data, int len)
- 	return sent;
- }
+ 	xen_raw_console_write("mapping kernel into physical memory\n");
+ 	pgd = xen_setup_kernel_pagetable(pgd, xen_start_info->nr_pages);
++	xen_ident_map_ISA();
  
--static int read_console(uint32_t vtermno, char *buf, int len)
-+static int domU_read_console(uint32_t vtermno, char *buf, int len)
- {
- 	struct xencons_interface *intf = xencons_interface();
- 	XENCONS_RING_IDX cons, prod;
-@@ -97,28 +97,63 @@ static int read_console(uint32_t vtermno, char *buf, int len)
- 	return recv;
- }
+ 	init_mm.pgd = pgd;
  
--static struct hv_ops hvc_ops = {
--	.get_chars = read_console,
--	.put_chars = write_console,
-+static struct hv_ops domU_hvc_ops = {
-+	.get_chars = domU_read_console,
-+	.put_chars = domU_write_console,
- 	.notifier_add = notifier_add_irq,
- 	.notifier_del = notifier_del_irq,
- 	.notifier_hangup = notifier_hangup_irq,
- };
+@@ -998,6 +999,13 @@ asmlinkage void __init xen_start_kernel(void)
+ 	if (xen_feature(XENFEAT_supervisor_mode_kernel))
+ 		pv_info.kernel_rpl = 0;
  
--static int __init xen_init(void)
-+static int dom0_read_console(uint32_t vtermno, char *buf, int len)
-+{
-+	return HYPERVISOR_console_io(CONSOLEIO_read, len, buf);
-+}
-+
-+/*
-+ * Either for a dom0 to write to the system console, or a domU with a
-+ * debug version of Xen
-+ */
-+static int dom0_write_console(uint32_t vtermno, const char *str, int len)
-+{
-+	int rc = HYPERVISOR_console_io(CONSOLEIO_write, len, (char *)str);
-+	if (rc < 0)
-+		return 0;
-+
-+	return len;
-+}
-+
-+static struct hv_ops dom0_hvc_ops = {
-+	.get_chars = dom0_read_console,
-+	.put_chars = dom0_write_console,
-+	.notifier_add = notifier_add_irq,
-+	.notifier_del = notifier_del_irq,
-+	.notifier_hangup = notifier_hangup_irq,
-+};
-+
-+static int __init xen_hvc_init(void)
- {
- 	struct hvc_struct *hp;
-+	struct hv_ops *ops;
- 
--	if (!xen_pv_domain() ||
--	    xen_initial_domain() ||
--	    !xen_start_info->console.domU.evtchn)
--		return -ENODEV;
-+	if (!xen_pv_domain())
-+ 		return -ENODEV;
-+
 +	if (xen_initial_domain()) {
-+		ops = &dom0_hvc_ops;
-+		xencons_irq = bind_virq_to_irq(VIRQ_CONSOLE, 0);
-+	} else {
-+		if (!xen_start_info->console.domU.evtchn)
-+			return -ENODEV;
-+
-+		ops = &domU_hvc_ops;
-+		xencons_irq = bind_evtchn_to_irq(xen_start_info->console.domU.evtchn);
++		struct physdev_set_iopl set_iopl;
++		set_iopl.iopl = 1;
++		if (HYPERVISOR_physdev_op(PHYSDEVOP_set_iopl, &set_iopl) == -1)
++			BUG();
 +	}
++
+ 	/* set the limit of our address space */
+ 	xen_reserve_top();
  
--	xencons_irq = bind_evtchn_to_irq(xen_start_info->console.domU.evtchn);
- 	if (xencons_irq < 0)
- 		xencons_irq = 0; /* NO_IRQ */
- 
--	hp = hvc_alloc(HVC_COOKIE, xencons_irq, &hvc_ops, 256);
-+	hp = hvc_alloc(HVC_COOKIE, xencons_irq, ops, 256);
- 	if (IS_ERR(hp))
- 		return PTR_ERR(hp);
- 
-@@ -135,7 +170,7 @@ void xen_console_resume(void)
- 		rebind_evtchn_irq(xen_start_info->console.domU.evtchn, xencons_irq);
+diff --git a/arch/x86/xen/mmu.c b/arch/x86/xen/mmu.c
+index b4e828c..e80e63c 100644
+--- a/arch/x86/xen/mmu.c
++++ b/arch/x86/xen/mmu.c
+@@ -1635,6 +1635,7 @@ static void *m2v(phys_addr_t maddr)
+ 	return __ka(m2p(maddr));
  }
  
--static void __exit xen_fini(void)
-+static void __exit xen_hvc_fini(void)
++/* Set the page permissions on an identity-mapped pages */
+ static void set_page_prot(void *addr, pgprot_t prot)
  {
- 	if (hvc)
- 		hvc_remove(hvc);
-@@ -143,29 +178,24 @@ static void __exit xen_fini(void)
- 
- static int xen_cons_init(void)
- {
-+	struct hv_ops *ops;
-+
- 	if (!xen_pv_domain())
- 		return 0;
- 
--	hvc_instantiate(HVC_COOKIE, 0, &hvc_ops);
-+	ops = &domU_hvc_ops;
-+	if (xen_initial_domain())
-+		ops = &dom0_hvc_ops;
-+
-+	hvc_instantiate(HVC_COOKIE, 0, ops);
-+
- 	return 0;
+ 	unsigned long pfn = __pa(addr) >> PAGE_SHIFT;
+@@ -1860,6 +1861,29 @@ static void xen_set_fixmap(unsigned idx, unsigned long phys, pgprot_t prot)
+ #endif
  }
  
--module_init(xen_init);
--module_exit(xen_fini);
-+module_init(xen_hvc_init);
-+module_exit(xen_hvc_fini);
- console_initcall(xen_cons_init);
- 
--static void raw_console_write(const char *str, int len)
--{
--	while(len > 0) {
--		int rc = HYPERVISOR_console_io(CONSOLEIO_write, len, (char *)str);
--		if (rc <= 0)
--			break;
--
--		str += rc;
--		len -= rc;
--	}
--}
--
- #ifdef CONFIG_EARLY_PRINTK
- static void xenboot_write_console(struct console *console, const char *string,
- 				  unsigned len)
-@@ -173,19 +203,22 @@ static void xenboot_write_console(struct console *console, const char *string,
- 	unsigned int linelen, off = 0;
- 	const char *pos;
- 
--	raw_console_write(string, len);
-+	dom0_write_console(0, string, len);
++__init void xen_ident_map_ISA(void)
++{
++	unsigned long pa;
 +
-+	if (xen_initial_domain())
++	/*
++	 * If we're dom0, then linear map the ISA machine addresses into
++	 * the kernel's address space.
++	 */
++	if (!xen_initial_domain())
 +		return;
- 
--	write_console(0, "(early) ", 8);
-+	domU_write_console(0, "(early) ", 8);
- 	while (off < len && NULL != (pos = strchr(string+off, '\n'))) {
- 		linelen = pos-string+off;
- 		if (off + linelen > len)
- 			break;
--		write_console(0, string+off, linelen);
--		write_console(0, "\r\n", 2);
-+		domU_write_console(0, string+off, linelen);
-+		domU_write_console(0, "\r\n", 2);
- 		off += linelen + 1;
- 	}
- 	if (off < len)
--		write_console(0, string+off, len-off);
-+		domU_write_console(0, string+off, len-off);
- }
- 
- struct console xenboot_console = {
-@@ -197,7 +230,7 @@ struct console xenboot_console = {
- 
- void xen_raw_console_write(const char *str)
- {
--	raw_console_write(str, strlen(str));
-+	dom0_write_console(0, str, strlen(str));
- }
- 
- void xen_raw_printk(const char *fmt, ...)
-diff --git a/drivers/xen/events.c b/drivers/xen/events.c
-index 30963af..f46e880 100644
---- a/drivers/xen/events.c
-+++ b/drivers/xen/events.c
-@@ -404,7 +404,7 @@ static int bind_ipi_to_irq(unsigned int ipi, unsigned int cpu)
- }
- 
- 
--static int bind_virq_to_irq(unsigned int virq, unsigned int cpu)
-+int bind_virq_to_irq(unsigned int virq, unsigned int cpu)
- {
- 	struct evtchn_bind_virq bind_virq;
- 	int evtchn, irq;
-diff --git a/include/xen/events.h b/include/xen/events.h
-index 0d5f1ad..0397ba1 100644
---- a/include/xen/events.h
-+++ b/include/xen/events.h
-@@ -12,6 +12,8 @@ int bind_evtchn_to_irqhandler(unsigned int evtchn,
- 			      irq_handler_t handler,
- 			      unsigned long irqflags, const char *devname,
- 			      void *dev_id);
-+int bind_virq_to_irq(unsigned int virq, unsigned int cpu);
 +
- int bind_virq_to_irqhandler(unsigned int virq, unsigned int cpu,
- 			    irq_handler_t handler,
- 			    unsigned long irqflags, const char *devname,
++	xen_raw_printk("Xen: setup ISA identity maps\n");
++
++	for (pa = ISA_START_ADDRESS; pa < ISA_END_ADDRESS; pa += PAGE_SIZE) {
++		pte_t pte = mfn_pte(PFN_DOWN(pa), PAGE_KERNEL_IO);
++
++		if (HYPERVISOR_update_va_mapping(PAGE_OFFSET + pa, pte, 0))
++			BUG();
++	}
++
++	xen_flush_tlb();
++}
++
+ __init void xen_post_allocator_init(void)
+ {
+ 	pv_mmu_ops.set_pte = xen_set_pte;
+diff --git a/arch/x86/xen/setup.c b/arch/x86/xen/setup.c
+index 15c6c68..3e4cf46 100644
+--- a/arch/x86/xen/setup.c
++++ b/arch/x86/xen/setup.c
+@@ -51,6 +51,9 @@ char * __init xen_memory_setup(void)
+ 	 * Even though this is normal, usable memory under Xen, reserve
+ 	 * ISA memory anyway because too many things think they can poke
+ 	 * about in there.
++	 *
++	 * In a dom0 kernel, this region is identity mapped with the
++	 * hardware ISA area, so it really is out of bounds.
+ 	 */
+ 	e820_add_region(ISA_START_ADDRESS, ISA_END_ADDRESS - ISA_START_ADDRESS,
+ 			E820_RESERVED);
+@@ -188,7 +191,8 @@ void __init xen_arch_setup(void)
+ 
+ 	pm_idle = xen_idle;
+ 
+-	paravirt_disable_iospace();
++	if (!xen_initial_domain())
++		paravirt_disable_iospace();
+ 
+ 	fiddle_vdso();
+ }
+diff --git a/arch/x86/xen/xen-ops.h b/arch/x86/xen/xen-ops.h
+index 5c50a10..6ff6203 100644
+--- a/arch/x86/xen/xen-ops.h
++++ b/arch/x86/xen/xen-ops.h
+@@ -29,6 +29,7 @@ void xen_setup_machphys_mapping(void);
+ pgd_t *xen_setup_kernel_pagetable(pgd_t *pgd, unsigned long max_pfn);
+ void xen_ident_map_ISA(void);
+ void xen_reserve_top(void);
++void xen_ident_map_ISA(void);
+ 
+ void xen_post_allocator_init(void);
+ 
 -- 
 1.6.0.6
 
