@@ -1,66 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757016AbZCWO4Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757708AbZCWO6N@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757016AbZCWO4Z (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Mar 2009 10:56:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751779AbZCWO4Q
+	id S1757708AbZCWO6N (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Mar 2009 10:58:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754367AbZCWO55
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Mar 2009 10:56:16 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:50714 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751283AbZCWO4P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Mar 2009 10:56:15 -0400
-Date: Mon, 23 Mar 2009 15:55:56 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-Cc: rostedt@goodmis.org, compudj@krystal.dyndns.org, fweisbec@gmail.com,
-       penberg@cs.helsinki.fi, paulmck@linux.vnet.ibm.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 7/7] kmemtrace: update usage of
-	ring_buffer_lock_reserve()
-Message-ID: <20090323145556.GA21267@elte.hu>
-References: <cover.1237813499.git.eduard.munteanu@linux360.ro> <c56426665804da261115c2883818c5fea6b217b6.1237813499.git.eduard.munteanu@linux360.ro>
+	Mon, 23 Mar 2009 10:57:57 -0400
+Received: from 195-23-16-24.net.novis.pt ([195.23.16.24]:42273 "EHLO
+	bipbip.grupopie.com" rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1752173AbZCWO55 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Mar 2009 10:57:57 -0400
+Message-ID: <49C7A370.9070601@grupopie.com>
+Date: Mon, 23 Mar 2009 14:57:52 +0000
+From: Rui Santos <rsantos@grupopie.com>
+Organization: GrupoPIE, Portugal SA
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <c56426665804da261115c2883818c5fea6b217b6.1237813499.git.eduard.munteanu@linux360.ro>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: =?ISO-8859-1?Q?Michael_B=FCker?= <m.bueker@berlin.de>
+CC: Francois Romieu <romieu@fr.zoreil.com>, linux-kernel@vger.kernel.org,
+       Michael Buesch <mb@bu3sch.de>
+Subject: Re: 2.6.27.19 + 28.7: network timeouts for r8169 and 8139too
+References: <200903041828.49972.m.bueker@berlin.de> <49BE4EF6.3030406@grupopie.com> <20090322211159.GA23042@electric-eye.fr.zoreil.com> <200903231529.18064.m.bueker@berlin.de>
+In-Reply-To: <200903231529.18064.m.bueker@berlin.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Michael Büker wrote:
+> On Sunday 22 March 2009, Francois Romieu wrote:
+>   
+> I have not tried your patches, but I'd like to point out that I can also 
+> reproduce this error with a card that uses the 8139too driver, so it seems 
+> unlikely to me that the root of it all lies in the r8169 code.
+>
+> Please don't be annoyed if this comment is utterly unqualified, it just seems 
+> like a point that should be made :)
+>   
+There are also a few other notes that should be taken into
+consideration, witch I already mentioned:
+1) I have 3 other NIC's on the same machine that also use r8169 driver.
+I cannot reproduce this problem in any of them. These are PCI cards.
+2) The card on which I can reproduce this problem is a PCI Express one (
+on board ).
+3) If I compile the kernel without MSI/MSI-X support, I can't also
+reproduce the problem. You may test it by booting with pci=nomsi
 
-* Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro> wrote:
+I believe that Francoi's patches (correct me if I'm wrong), are meant
+for him just be sure/clue on where the problem lies. I'll test those
+patches in a few hours and will report back the results.
 
-> The ring buffer API has changed a bit and kmemtrace wasn't 
-> compiling anymore. This fixes the issue and allows kmemtrace to 
-> build.
-> 
-> Signed-off-by: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
+> Michael
+>
+>   
 
-hm, kmemtrace was building and working fine in -tip:
+-- 
+Regards,
+Rui Santos
 
- [root@aldebaran tracing]# head trace
- # tracer: kmemtrace
- #
- type_id 0 call_site 18446744071565600429 ptr 18446612139794190624
- type_id 0 call_site 18446744071565600392 ptr 18446612146227278976
- type_id 1 call_site 18446744071564535786 ptr 18446612146228083456
- type_id 0 call_site 18446744071565600392 ptr 18446612146240588256
- type_id 1 call_site 18446744071564535786 ptr 18446612146240893824
-
-the build error that is fixed by you here was introduced by your 
-earlier 4/7 patch in this series:
-
-   kmemtrace: use tracepoints
-
-So i've backmerged patch 7/7 into patch 4/7. Agreed?
-
-	Ingo
