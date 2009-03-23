@@ -1,130 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759854AbZCWRES@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759180AbZCWRFU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759854AbZCWRES (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Mar 2009 13:04:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755829AbZCWREE
+	id S1759180AbZCWRFU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Mar 2009 13:05:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756016AbZCWRFD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Mar 2009 13:04:04 -0400
-Received: from tomts10.bellnexxia.net ([209.226.175.54]:41146 "EHLO
-	tomts10-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753061AbZCWREB (ORCPT
+	Mon, 23 Mar 2009 13:05:03 -0400
+Received: from e38.co.us.ibm.com ([32.97.110.159]:40390 "EHLO
+	e38.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755673AbZCWRFB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Mar 2009 13:04:01 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ApsEACtdx0lMQW1W/2dsb2JhbACBUNEzg34G
-Date: Mon, 23 Mar 2009 13:03:56 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: "Frank Ch. Eigler" <fche@redhat.com>
-Cc: Masami Hiramatsu <mhiramat@redhat.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Roland McGrath <roland@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Jiaying Zhang <jiayingz@google.com>, Martin Bligh <mbligh@google.com>,
-       utrace-devel@redhat.com
-Subject: Re: [RFC][PATCH 1/2] tracing/ftrace: syscall tracing infrastructure
-Message-ID: <20090323170356.GD24084@Krystal>
-References: <1236401580-5758-1-git-send-email-fweisbec@gmail.com> <1236401580-5758-2-git-send-email-fweisbec@gmail.com> <49BEAA5A.4030708@redhat.com> <20090316201526.GE8393@nowhere> <49BEB8C4.2010606@redhat.com> <20090316214526.GA15119@Krystal> <20090316221800.GE12974@redhat.com> <20090323164208.GB22501@Krystal> <20090323165242.GB18774@redhat.com>
-Mime-Version: 1.0
+	Mon, 23 Mar 2009 13:05:01 -0400
+Date: Mon, 23 Mar 2009 13:04:18 -0400
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       ltt-dev@lists.casi.polymtl.ca
+Subject: Re: cli/sti vs local_cmpxchg and local_add_return
+Message-ID: <20090323170418.GD4224@zod.rchland.ibm.com>
+References: <20090317013220.GA22474@Krystal> <20090318115624.GF3873@zod.rchland.ibm.com> <20090323165632.GC24084@Krystal>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090323165242.GB18774@redhat.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 12:58:22 up 23 days, 13:24,  1 user,  load average: 0.75, 0.73,
-	0.68
+In-Reply-To: <20090323165632.GC24084@Krystal>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Frank Ch. Eigler (fche@redhat.com) wrote:
-> Hi -
-> 
-> On Mon, Mar 23, 2009 at 12:42:08PM -0400, Mathieu Desnoyers wrote:
-> > [...]
-> 
-> (Please trim emails you're responding to.)
-> 
-> > [...]
-> > > > So if the system has, say 3000 threads, then we have 3000 struct
-> > > > utrace_engine created ? I wonder what effet this could have one
-> > > > cachelines if this is used to trace hot paths like system call
-> > > > entry/exit. Have you benchmarked this kind of scenario under tbench ?
-> > > 
-> > > It has not been a problem, since utrace_engines are designed to be
-> > > lightweight.  Starting or stopping a systemtap script of the form
-> > > 
-> > >     probe process.syscall {}
-> > > 
-> > > appears to have no noticable impact on a tbench suite.
-> > 
-> > Do you mean starting this script for a single process or for _all_ the
-> > processes and threads running on the system ?
-> 
-> The script above usually applies to all threads.
-> 
+On Mon, Mar 23, 2009 at 12:56:32PM -0400, Mathieu Desnoyers wrote:
+>* Josh Boyer (jwboyer@linux.vnet.ibm.com) wrote:
+>> On Mon, Mar 16, 2009 at 09:32:20PM -0400, Mathieu Desnoyers wrote:
+>> >Hi,
+>> >
+>> >I am trying to get access to some non-x86 hardware to run some atomic
+>> >primitive benchmarks for a paper on LTTng I am preparing. That should be
+>> >useful to argue about performance benefit of per-cpu atomic operations
+>> >vs interrupt disabling. I would like to run the following benchmark
+>> >module on CONFIG_SMP :
+>> >
+>> >- PowerPC
+>> >- MIPS
+>> >- ia64
+>> >- alpha
+>> >
+>> >usage :
+>> >make
+>> >insmod test-cmpxchg-nolock.ko
+>> >insmod: error inserting 'test-cmpxchg-nolock.ko': -1 Resource temporarily unavailable
+>> >dmesg (see dmesg output)
+>> >
+>> >If some of you would be kind enough to run my test module provided below
+>> >and provide the results of these tests on a recent kernel (2.6.26~2.6.29
+>> >should be good) along with their cpuinfo, I would greatly appreciate.
+>> >
+>> >Here are the CAS results for various Intel-based architectures :
+>> >
+>> >Architecture         | Speedup                      |      CAS     |         Interrupts         |
+>> >                     | (cli + sti) / local cmpxchg  | local | sync | Enable (sti) | Disable (cli)
+>> >-------------------------------------------------------------------------------------------------
+>> >Intel Pentium 4      | 5.24                         |  25   | 81   | 70           | 61          |
+>> >AMD Athlon(tm)64 X2  | 4.57                         |  7    | 17   | 17           | 15          |
+>> >Intel Core2          | 6.33                         |  6    | 30   | 20           | 18          |
+>> >Intel Xeon E5405     | 5.25                         |  8    | 24   | 20           | 22          |
+>> 
+>> 
+>> I know you have results from a POWER6 machine already, but
+>> here are the results on a dual-G5 running 2.6.29-rc7-git4.
+>> 
+>> If you are interested, I could get you results from running
+>> this on an embedded PowerPC board.
+>> 
+>
+>Thanks for the results. Well, those already shows that the tradeoff is
+>different between POWER6 and POWER5, so I guess further powerpc numbers
+>won't be required.
 
-Hrm, I already spent more time installing and benchmarking systemtap
-than I should, so I don't have time currently to run further systemtap
-benchmarks, but I seriously doubt about this. Have you run the following
-benchmark ?
+Correction, a dual-G5 is a PowerPC 970 machine.  It's closer to POWER4
+than POWER5 and nothing like POWER6.  The Apple G5 machines are about
+2 generations old in terms of 64-bit PowerPC CPUs.
 
-Baseline :
-vanilla kernel, without utrace
-
-Comparison with :
-utrace-enabled kernel, with the syscall probe activated
-
-?
-
-If you are comparing a utrace-enabled kernel with and without the
-syscall probes activated, then you are probably missing some performance
-impact. Also make sure AUDIT SYSCALL, secure computing and
-frame pointers are disabled in your baseline kernel too.
-
-If this is what you did, I would really like to see the numbers.
-
-> 
-> > > > Looking at utrace_set_events(), we seem to be limited to 32 events on a
-> > > > 32-bits architectures because it uses a bitmask ? Isn't it a bit small?
-> > > 
-> > > There are only a few types of thread events that involve different
-> > > classes of treatment, or different degrees of freedom in terms of
-> > > interference with the uninstrumented fast path of the threads. [...]
-> > 
-> > If we limit ourself to thread-interaction events, I agree that they are
-> > limited. But in the system-wide tracing scenario, the criterions for
-> > filtering can apply to many more event categories.
-> 
-> If those different criteria have equivalent impact on running threads,
-> there is no need to differentiate them at the low (utrace event flag)
-> level.  Could you offer an example to clarify?
-> 
-> 
-> > Referring to Roland's reply, I think using utrace to enable
-> > system-wide collection of data would just be a waste of
-> > resources. Going through a more lightweight system-wide activation
-> > seems more appropriate to me.  [...]
-> 
-> Perhaps.  OTOH it also makes sense to me to use (and improve) one
-> general facility, if it can do the right thing almost as fast as a
-> wholly separate facility that's specialized for one small purpose.
-> The decision would probably rest with a more data-based comparison of
-> performance & code size.
-> 
-
-Sure.
-
-Mathieu
-
-> 
-> - FChE
-
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+josh
