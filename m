@@ -1,135 +1,155 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760081AbZCWQ4r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758967AbZCWQ5T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760081AbZCWQ4r (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Mar 2009 12:56:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758205AbZCWQ4i
+	id S1758967AbZCWQ5T (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Mar 2009 12:57:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758205AbZCWQ5D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Mar 2009 12:56:38 -0400
-Received: from tomts40.bellnexxia.net ([209.226.175.97]:51119 "EHLO
-	tomts40-srv.bellnexxia.net" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1758597AbZCWQ4h (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Mar 2009 12:56:37 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ApsEACNWx0lMQW1W/2dsb2JhbACBUNEHg34G
-Date: Mon, 23 Mar 2009 12:56:32 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       ltt-dev@lists.casi.polymtl.ca
-Subject: Re: cli/sti vs local_cmpxchg and local_add_return
-Message-ID: <20090323165632.GC24084@Krystal>
-References: <20090317013220.GA22474@Krystal> <20090318115624.GF3873@zod.rchland.ibm.com>
-Mime-Version: 1.0
+	Mon, 23 Mar 2009 12:57:03 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:52866 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757703AbZCWQ5A (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Mar 2009 12:57:00 -0400
+Date: Mon, 23 Mar 2009 17:56:39 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Christoph Lameter <cl@linux-foundation.org>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Manfred Spraul <manfred@colorfullife.com>,
+       Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH -mm 1/6] slab: introduce __kfree_rcu
+Message-ID: <20090323165639.GA6841@elte.hu>
+References: <49AD3433.9000001@cn.fujitsu.com> <1237794502.6313.21.camel@penberg-laptop> <alpine.DEB.1.10.0903230931570.4095@qirst.com> <20090323155938.GA27151@elte.hu> <alpine.DEB.1.10.0903231234110.11796@qirst.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090318115624.GF3873@zod.rchland.ibm.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 12:55:00 up 23 days, 13:21,  1 user,  load average: 1.02, 0.72,
-	0.67
+In-Reply-To: <alpine.DEB.1.10.0903231234110.11796@qirst.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Josh Boyer (jwboyer@linux.vnet.ibm.com) wrote:
-> On Mon, Mar 16, 2009 at 09:32:20PM -0400, Mathieu Desnoyers wrote:
-> >Hi,
-> >
-> >I am trying to get access to some non-x86 hardware to run some atomic
-> >primitive benchmarks for a paper on LTTng I am preparing. That should be
-> >useful to argue about performance benefit of per-cpu atomic operations
-> >vs interrupt disabling. I would like to run the following benchmark
-> >module on CONFIG_SMP :
-> >
-> >- PowerPC
-> >- MIPS
-> >- ia64
-> >- alpha
-> >
-> >usage :
-> >make
-> >insmod test-cmpxchg-nolock.ko
-> >insmod: error inserting 'test-cmpxchg-nolock.ko': -1 Resource temporarily unavailable
-> >dmesg (see dmesg output)
-> >
-> >If some of you would be kind enough to run my test module provided below
-> >and provide the results of these tests on a recent kernel (2.6.26~2.6.29
-> >should be good) along with their cpuinfo, I would greatly appreciate.
-> >
-> >Here are the CAS results for various Intel-based architectures :
-> >
-> >Architecture         | Speedup                      |      CAS     |         Interrupts         |
-> >                     | (cli + sti) / local cmpxchg  | local | sync | Enable (sti) | Disable (cli)
-> >-------------------------------------------------------------------------------------------------
-> >Intel Pentium 4      | 5.24                         |  25   | 81   | 70           | 61          |
-> >AMD Athlon(tm)64 X2  | 4.57                         |  7    | 17   | 17           | 15          |
-> >Intel Core2          | 6.33                         |  6    | 30   | 20           | 18          |
-> >Intel Xeon E5405     | 5.25                         |  8    | 24   | 20           | 22          |
-> 
-> 
-> I know you have results from a POWER6 machine already, but
-> here are the results on a dual-G5 running 2.6.29-rc7-git4.
-> 
-> If you are interested, I could get you results from running
-> this on an embedded PowerPC board.
-> 
 
-Thanks for the results. Well, those already shows that the tradeoff is
-different between POWER6 and POWER5, so I guess further powerpc numbers
-won't be required.
+* Christoph Lameter <cl@linux-foundation.org> wrote:
 
-Mathieu
-
-> josh
+> On Mon, 23 Mar 2009, Ingo Molnar wrote:
 > 
-> test init
-> test results: time for baseline
-> number of loops: 20000
-> total time: 1532
-> -> baseline takes 0 cycles
-> test end
-> test results: time for locked cmpxchg
-> number of loops: 20000
-> total time: 48052
-> -> locked cmpxchg takes 2 cycles
-> test end
-> test results: time for non locked cmpxchg
-> number of loops: 20000
-> total time: 29141
-> -> non locked cmpxchg takes 1 cycles
-> test end
-> test results: time for locked add return
-> number of loops: 20000
-> total time: 44985
-> -> locked add return takes 2 cycles
-> test end
-> test results: time for non locked add return
-> number of loops: 20000
-> total time: 32400
-> -> non locked add return takes 1 cycles
-> test end
-> test results: time for enabling interrupts (STI)
-> number of loops: 20000
-> total time: 65579
-> -> enabling interrupts (STI) takes 3 cycles
-> test end
-> test results: time for disabling interrupts (CLI)
-> number of loops: 20000
-> total time: 29135
-> -> disabling interrupts (CLI) takes 1 cycles
-> test end
-> test results: time for disabling/enabling interrupts (STI/CLI)
-> number of loops: 20000
-> total time: 173594
-> -> enabling/disabling interrupts (STI/CLI) takes 8 cycles
-> test end
-> [jwboyer@localhost ~]$
+> >
+> > * Christoph Lameter <cl@linux-foundation.org> wrote:
+> >
+> > > On Mon, 23 Mar 2009, Pekka Enberg wrote:
+> > >
+> > > > > +static inline void *portion_to_obj(void *portion)
+> > > > > +{
+> > > > > +	struct page *page = virt_to_head_page(portion);
+> > > > > +	struct slab *slab = page_get_slab(page);
+> > > > > +	struct kmem_cache *cache = page_get_cache(page);
+> > > > > +	unsigned int offset = portion - slab->s_mem;
+> > > > > +	unsigned int index = offset / cache->buffer_size;
+> > > > > +
+> > > > > +	return index_to_obj(cache, slab, index);
+> > > > > +}
+> > > >
+> > > > A minor nit: I think this would be more readable if you separated
+> > > > variable declarations from the initializations. Also, you can probably
+> > > > drop the inline from the function declaration and let GCC decide what to
+> > > > do.
+> > >
+> > > Thats debatable. I find the setting up a number of variables that
+> > > are all dependend in the above manner very readable. They are
+> > > usually repetitive. Multiple functions use similar
+> > > initializations.
+> >
+> > I agree with Pekka, it's clearly more readable when separated out
+> > nicely:
+> >
+> > 	struct kmem_cache *cache;
+> > 	unsigned int offset;
+> > 	unsigned int index;
+> > 	struct page *page;
+> > 	struct slab *slab;
+> >
+> > 	page	= virt_to_head_page(portion);
+> > 	slab	= page_get_slab(page);
+> > 	cache	= page_get_cache(page);
+> >
+> > 	offset	= portion - slab->s_mem;
+> > 	index	= offset / cache->buffer_size;
+> >
+> > The original form is hard to read due to lack of structure.
+> 
+> Structure can also be established differently:
+> 
+> static inline void *portion_to_obj(void *portion)
+> {
+> 	struct page *page = virt_to_head_page(portion);
+> 	struct slab *slab = page_get_slab(page);
+> 	struct kmem_cache *cache = page_get_cache(page);
+> 
+> 	unsigned int offset = portion - slab->s_mem;
+> 	unsigned int index = offset / cache->buffer_size;
+> 
+> 	return index_to_obj(cache, slab, index);
 
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+It's still not as readable to me as the version i posted above and 
+confusing as well, due to the newline in the middle of local 
+variable definitions.
+
+> It would be good if the whole series of actions that need to be 
+> taken in order for the function to "get to know" the slab the 
+> object parms would be simpler. Like its done in ruby
+> 
+> 	(page, slab, cache) = get_slab_info(portion)
+> 
+> 	(offset, index) = get_position_info(slab, portion)
+> 
+> But how can this be done in C without weird pointer passing?
+
+The version i posted is pretty compact visually. The actual type 
+enumeration is repetitive and it's often a meaningless pattern.
+
+What matters is this sequence of symbols:
+
+> > 	page	= virt_to_head_page(portion);
+> > 	slab	= page_get_slab(page);
+> > 	cache	= page_get_cache(page);
+> >
+> > 	offset	= portion - slab->s_mem;
+> > 	index	= offset / cache->buffer_size;
+
+... and anyone versed in slab internals will know the type of these 
+variables without having to look them up. (using variable names 
+consistently through a full subsystem is important for this reason)
+ 
+Pairing them up with their base types just obscures the real logic.
+
+That is one reason why i generally use the 'reverse christmas tree' 
+type of local variable definition blocks:
+
+> > 	struct kmem_cache *cache;
+> > 	unsigned int offset;
+> > 	unsigned int index;
+> > 	struct page *page;
+> > 	struct slab *slab;
+
+As the trained eye will just want to skip over this as irrelevant 
+fluff and the shape makes this the easiest (the less complex a shape 
+is geometrically, the less 'eye skipping overhead' there is).
+
+Anyway, these are nuances and if you go strictly by what's minimally 
+required by Documentation/CodingStyle you can stop a lot sooner than 
+having to bother about such fine details. The original version was 
+certainly acceptable - it's just that IMO Pekka was right that it 
+can be done better.
+
+	Ingo
