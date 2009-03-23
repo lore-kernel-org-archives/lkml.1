@@ -1,26 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759372AbZCWSGF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759366AbZCWSFp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759372AbZCWSGF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Mar 2009 14:06:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758561AbZCWSE3
+	id S1759366AbZCWSFp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Mar 2009 14:05:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758269AbZCWSE2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Mar 2009 14:04:29 -0400
-Received: from adsl-69-107-72-54.dsl.pltn13.pacbell.net ([69.107.72.54]:34999
+	Mon, 23 Mar 2009 14:04:28 -0400
+Received: from adsl-69-107-72-54.dsl.pltn13.pacbell.net ([69.107.72.54]:35003
 	"EHLO abulafia.goop.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755639AbZCWSEZ (ORCPT
+	with ESMTP id S1757540AbZCWSEZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 23 Mar 2009 14:04:25 -0400
-X-Greylist: delayed 551 seconds by postgrey-1.27 at vger.kernel.org; Mon, 23 Mar 2009 14:04:24 EDT
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: "H. Peter Anvin" <hpa@zytor.com>
 Cc: the arch/x86 maintainers <x86@kernel.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Xen-devel <xen-devel@lists.xensource.com>,
-       Ian Campbell <ian.campbell@citrix.com>,
        Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Subject: [PATCH 02/11] xen: add /dev/xen/evtchn driver
-Date: Mon, 23 Mar 2009 10:55:02 -0700
-Message-Id: <1237830911-6249-3-git-send-email-jeremy@goop.org>
+Subject: [PATCH 04/11] xen/dev-evtchn: clean up locking in evtchn
+Date: Mon, 23 Mar 2009 10:55:04 -0700
+Message-Id: <1237830911-6249-5-git-send-email-jeremy@goop.org>
 X-Mailer: git-send-email 1.6.0.6
 In-Reply-To: <49C45238.7050007@zytor.com>
 References: <49C45238.7050007@zytor.com>
@@ -28,651 +26,112 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Ian Campbell <ian.campbell@citrix.com>
+From: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 
-This driver is used by application which wish to receive notifications
-from the hypervisor or other guests via Xen's event channel
-mechanism. In particular it is used by the xenstore daemon in domain
-0.
+Define a new per_user_data mutex to serialize bind/unbind operations
+to prevent them from racing with each other.  Fix error returns
+and don't do a bind while holding a spinlock.
 
-Signed-off-by: Ian Campbell <ian.campbell@citrix.com>
 Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 ---
- drivers/xen/Kconfig  |   10 +
- drivers/xen/Makefile |    3 +-
- drivers/xen/evtchn.c |  494 ++++++++++++++++++++++++++++++++++++++++++++++++++
- include/xen/evtchn.h |   88 +++++++++
- 4 files changed, 594 insertions(+), 1 deletions(-)
- create mode 100644 drivers/xen/evtchn.c
- create mode 100644 include/xen/evtchn.h
+ drivers/xen/evtchn.c |   37 +++++++++++++++++++++++++------------
+ 1 files changed, 25 insertions(+), 12 deletions(-)
 
-diff --git a/drivers/xen/Kconfig b/drivers/xen/Kconfig
-index 526187c..1bbb910 100644
---- a/drivers/xen/Kconfig
-+++ b/drivers/xen/Kconfig
-@@ -18,6 +18,16 @@ config XEN_SCRUB_PAGES
- 	  secure, but slightly less efficient.
- 	  If in doubt, say yes.
- 
-+config XEN_DEV_EVTCHN
-+	tristate "Xen /dev/xen/evtchn device"
-+	depends on XEN
-+	default y
-+	help
-+	  The evtchn driver allows a userspace process to triger event
-+	  channels and to receive notification of an event channel
-+	  firing.
-+	  If in doubt, say yes.
-+
- config XENFS
- 	tristate "Xen filesystem"
- 	depends on XEN
-diff --git a/drivers/xen/Makefile b/drivers/xen/Makefile
-index ff8accc..1567639 100644
---- a/drivers/xen/Makefile
-+++ b/drivers/xen/Makefile
-@@ -4,4 +4,5 @@ obj-y	+= xenbus/
- obj-$(CONFIG_HOTPLUG_CPU)	+= cpu_hotplug.o
- obj-$(CONFIG_XEN_XENCOMM)	+= xencomm.o
- obj-$(CONFIG_XEN_BALLOON)	+= balloon.o
--obj-$(CONFIG_XENFS)		+= xenfs/
-\ No newline at end of file
-+obj-$(CONFIG_XEN_DEV_EVTCHN)	+= evtchn.o
-+obj-$(CONFIG_XENFS)		+= xenfs/
 diff --git a/drivers/xen/evtchn.c b/drivers/xen/evtchn.c
-new file mode 100644
-index 0000000..517b9ee
---- /dev/null
+index 517b9ee..af03195 100644
+--- a/drivers/xen/evtchn.c
 +++ b/drivers/xen/evtchn.c
-@@ -0,0 +1,494 @@
-+/******************************************************************************
-+ * evtchn.c
-+ *
-+ * Driver for receiving and demuxing event-channel signals.
-+ *
-+ * Copyright (c) 2004-2005, K A Fraser
-+ * Multi-process extensions Copyright (c) 2004, Steven Smith
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License version 2
-+ * as published by the Free Software Foundation; or, when distributed
-+ * separately from the Linux kernel or incorporated into other
-+ * software packages, subject to the following license:
-+ *
-+ * Permission is hereby granted, free of charge, to any person obtaining a copy
-+ * of this source file (the "Software"), to deal in the Software without
-+ * restriction, including without limitation the rights to use, copy, modify,
-+ * merge, publish, distribute, sublicense, and/or sell copies of the Software,
-+ * and to permit persons to whom the Software is furnished to do so, subject to
-+ * the following conditions:
-+ *
-+ * The above copyright notice and this permission notice shall be included in
-+ * all copies or substantial portions of the Software.
-+ *
-+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
-+ * IN THE SOFTWARE.
-+ */
-+
-+#include <linux/module.h>
-+#include <linux/kernel.h>
-+#include <linux/sched.h>
-+#include <linux/slab.h>
-+#include <linux/string.h>
-+#include <linux/errno.h>
-+#include <linux/fs.h>
-+#include <linux/errno.h>
-+#include <linux/miscdevice.h>
-+#include <linux/major.h>
-+#include <linux/proc_fs.h>
-+#include <linux/stat.h>
-+#include <linux/poll.h>
-+#include <linux/irq.h>
-+#include <linux/init.h>
-+#include <linux/gfp.h>
-+#include <linux/mutex.h>
-+#include <linux/cpu.h>
-+#include <xen/events.h>
-+#include <xen/evtchn.h>
-+#include <asm/xen/hypervisor.h>
-+
-+struct per_user_data {
-+	/* Notification ring, accessed via /dev/xen/evtchn. */
-+#define EVTCHN_RING_SIZE     (PAGE_SIZE / sizeof(evtchn_port_t))
-+#define EVTCHN_RING_MASK(_i) ((_i)&(EVTCHN_RING_SIZE-1))
-+	evtchn_port_t *ring;
-+	unsigned int ring_cons, ring_prod, ring_overflow;
-+	struct mutex ring_cons_mutex; /* protect against concurrent readers */
-+
-+	/* Processes wait on this queue when ring is empty. */
-+	wait_queue_head_t evtchn_wait;
-+	struct fasync_struct *evtchn_async_queue;
-+	const char *name;
-+};
-+
-+/* Who's bound to each port? */
-+static struct per_user_data *port_user[NR_EVENT_CHANNELS];
-+static DEFINE_SPINLOCK(port_user_lock);
-+
-+irqreturn_t evtchn_interrupt(int irq, void *data)
-+{
-+	unsigned int port = (unsigned long)data;
-+	struct per_user_data *u;
-+
-+	spin_lock(&port_user_lock);
-+
-+	u = port_user[port];
-+
-+	disable_irq_nosync(irq);
-+
-+	if ((u->ring_prod - u->ring_cons) < EVTCHN_RING_SIZE) {
-+		u->ring[EVTCHN_RING_MASK(u->ring_prod)] = port;
-+		wmb(); /* Ensure ring contents visible */
-+		if (u->ring_cons == u->ring_prod++) {
-+			wake_up_interruptible(&u->evtchn_wait);
-+			kill_fasync(&u->evtchn_async_queue,
-+				    SIGIO, POLL_IN);
-+		}
-+	} else {
-+		u->ring_overflow = 1;
-+	}
-+
-+	spin_unlock(&port_user_lock);
-+
-+	return IRQ_HANDLED;
-+}
-+
-+static ssize_t evtchn_read(struct file *file, char __user *buf,
-+			   size_t count, loff_t *ppos)
-+{
-+	int rc;
-+	unsigned int c, p, bytes1 = 0, bytes2 = 0;
-+	struct per_user_data *u = file->private_data;
-+
-+	/* Whole number of ports. */
-+	count &= ~(sizeof(evtchn_port_t)-1);
-+
-+	if (count == 0)
-+		return 0;
-+
-+	if (count > PAGE_SIZE)
-+		count = PAGE_SIZE;
-+
-+	for (;;) {
-+		mutex_lock(&u->ring_cons_mutex);
-+
-+		rc = -EFBIG;
-+		if (u->ring_overflow)
-+			goto unlock_out;
-+
-+		c = u->ring_cons;
-+		p = u->ring_prod;
-+		if (c != p)
-+			break;
-+
-+		mutex_unlock(&u->ring_cons_mutex);
-+
-+		if (file->f_flags & O_NONBLOCK)
-+			return -EAGAIN;
-+
-+		rc = wait_event_interruptible(u->evtchn_wait,
-+					      u->ring_cons != u->ring_prod);
-+		if (rc)
-+			return rc;
-+	}
-+
-+	/* Byte lengths of two chunks. Chunk split (if any) is at ring wrap. */
-+	if (((c ^ p) & EVTCHN_RING_SIZE) != 0) {
-+		bytes1 = (EVTCHN_RING_SIZE - EVTCHN_RING_MASK(c)) *
-+			sizeof(evtchn_port_t);
-+		bytes2 = EVTCHN_RING_MASK(p) * sizeof(evtchn_port_t);
-+	} else {
-+		bytes1 = (p - c) * sizeof(evtchn_port_t);
-+		bytes2 = 0;
-+	}
-+
-+	/* Truncate chunks according to caller's maximum byte count. */
-+	if (bytes1 > count) {
-+		bytes1 = count;
-+		bytes2 = 0;
-+	} else if ((bytes1 + bytes2) > count) {
-+		bytes2 = count - bytes1;
-+	}
-+
-+	rc = -EFAULT;
-+	rmb(); /* Ensure that we see the port before we copy it. */
-+	if (copy_to_user(buf, &u->ring[EVTCHN_RING_MASK(c)], bytes1) ||
-+	    ((bytes2 != 0) &&
-+	     copy_to_user(&buf[bytes1], &u->ring[0], bytes2)))
-+		goto unlock_out;
-+
-+	u->ring_cons += (bytes1 + bytes2) / sizeof(evtchn_port_t);
-+	rc = bytes1 + bytes2;
-+
-+ unlock_out:
-+	mutex_unlock(&u->ring_cons_mutex);
-+	return rc;
-+}
-+
-+static ssize_t evtchn_write(struct file *file, const char __user *buf,
-+			    size_t count, loff_t *ppos)
-+{
-+	int rc, i;
-+	evtchn_port_t *kbuf = (evtchn_port_t *)__get_free_page(GFP_KERNEL);
-+	struct per_user_data *u = file->private_data;
-+
-+	if (kbuf == NULL)
-+		return -ENOMEM;
-+
-+	/* Whole number of ports. */
-+	count &= ~(sizeof(evtchn_port_t)-1);
-+
-+	rc = 0;
-+	if (count == 0)
-+		goto out;
-+
-+	if (count > PAGE_SIZE)
-+		count = PAGE_SIZE;
-+
-+	rc = -EFAULT;
-+	if (copy_from_user(kbuf, buf, count) != 0)
-+		goto out;
-+
-+	spin_lock_irq(&port_user_lock);
-+	for (i = 0; i < (count/sizeof(evtchn_port_t)); i++)
-+		if ((kbuf[i] < NR_EVENT_CHANNELS) && (port_user[kbuf[i]] == u))
-+			enable_irq(irq_from_evtchn(kbuf[i]));
-+	spin_unlock_irq(&port_user_lock);
-+
-+	rc = count;
-+
-+ out:
-+	free_page((unsigned long)kbuf);
-+	return rc;
-+}
-+
-+static int evtchn_bind_to_user(struct per_user_data *u, int port)
-+{
-+	int irq;
-+	int rc = 0;
-+
-+	spin_lock_irq(&port_user_lock);
-+
-+	BUG_ON(port_user[port] != NULL);
-+
-+	irq = bind_evtchn_to_irqhandler(port, evtchn_interrupt, IRQF_DISABLED,
-+					u->name, (void *)(unsigned long)port);
-+	if (rc < 0)
-+		goto fail;
-+
-+	port_user[port] = u;
-+
-+fail:
-+	spin_unlock_irq(&port_user_lock);
-+	return rc;
-+}
-+
-+static void evtchn_unbind_from_user(struct per_user_data *u, int port)
-+{
-+	int irq = irq_from_evtchn(port);
-+
-+	unbind_from_irqhandler(irq, (void *)(unsigned long)port);
-+	port_user[port] = NULL;
-+}
-+
-+static long evtchn_ioctl(struct file *file,
-+			 unsigned int cmd, unsigned long arg)
-+{
-+	int rc;
-+	struct per_user_data *u = file->private_data;
-+	void __user *uarg = (void __user *) arg;
-+
-+	switch (cmd) {
-+	case IOCTL_EVTCHN_BIND_VIRQ: {
-+		struct ioctl_evtchn_bind_virq bind;
-+		struct evtchn_bind_virq bind_virq;
-+
-+		rc = -EFAULT;
-+		if (copy_from_user(&bind, uarg, sizeof(bind)))
-+			break;
-+
-+		bind_virq.virq = bind.virq;
-+		bind_virq.vcpu = 0;
-+		rc = HYPERVISOR_event_channel_op(EVTCHNOP_bind_virq,
-+						 &bind_virq);
-+		if (rc != 0)
-+			break;
-+
-+		rc = evtchn_bind_to_user(u, bind_virq.port);
-+		if (rc == 0)
-+			rc = bind_virq.port;
-+		break;
-+	}
-+
-+	case IOCTL_EVTCHN_BIND_INTERDOMAIN: {
-+		struct ioctl_evtchn_bind_interdomain bind;
-+		struct evtchn_bind_interdomain bind_interdomain;
-+
-+		rc = -EFAULT;
-+		if (copy_from_user(&bind, uarg, sizeof(bind)))
-+			break;
-+
-+		bind_interdomain.remote_dom  = bind.remote_domain;
-+		bind_interdomain.remote_port = bind.remote_port;
-+		rc = HYPERVISOR_event_channel_op(EVTCHNOP_bind_interdomain,
-+						 &bind_interdomain);
-+		if (rc != 0)
-+			break;
-+
-+		rc = evtchn_bind_to_user(u, bind_interdomain.local_port);
-+		if (rc == 0)
-+			rc = bind_interdomain.local_port;
-+		break;
-+	}
-+
-+	case IOCTL_EVTCHN_BIND_UNBOUND_PORT: {
-+		struct ioctl_evtchn_bind_unbound_port bind;
-+		struct evtchn_alloc_unbound alloc_unbound;
-+
-+		rc = -EFAULT;
-+		if (copy_from_user(&bind, uarg, sizeof(bind)))
-+			break;
-+
-+		alloc_unbound.dom        = DOMID_SELF;
-+		alloc_unbound.remote_dom = bind.remote_domain;
-+		rc = HYPERVISOR_event_channel_op(EVTCHNOP_alloc_unbound,
-+						 &alloc_unbound);
-+		if (rc != 0)
-+			break;
-+
-+		rc = evtchn_bind_to_user(u, alloc_unbound.port);
-+		if (rc == 0)
-+			rc = alloc_unbound.port;
-+		break;
-+	}
-+
-+	case IOCTL_EVTCHN_UNBIND: {
-+		struct ioctl_evtchn_unbind unbind;
-+
-+		rc = -EFAULT;
-+		if (copy_from_user(&unbind, uarg, sizeof(unbind)))
-+			break;
-+
-+		rc = -EINVAL;
-+		if (unbind.port >= NR_EVENT_CHANNELS)
-+			break;
-+
-+		spin_lock_irq(&port_user_lock);
-+
-+		rc = -ENOTCONN;
-+		if (port_user[unbind.port] != u) {
-+			spin_unlock_irq(&port_user_lock);
-+			break;
-+		}
-+
-+		evtchn_unbind_from_user(u, unbind.port);
-+
-+		spin_unlock_irq(&port_user_lock);
-+
+@@ -54,6 +54,8 @@
+ #include <asm/xen/hypervisor.h>
+ 
+ struct per_user_data {
++	struct mutex bind_mutex; /* serialize bind/unbind operations */
++
+ 	/* Notification ring, accessed via /dev/xen/evtchn. */
+ #define EVTCHN_RING_SIZE     (PAGE_SIZE / sizeof(evtchn_port_t))
+ #define EVTCHN_RING_MASK(_i) ((_i)&(EVTCHN_RING_SIZE-1))
+@@ -69,7 +71,7 @@ struct per_user_data {
+ 
+ /* Who's bound to each port? */
+ static struct per_user_data *port_user[NR_EVENT_CHANNELS];
+-static DEFINE_SPINLOCK(port_user_lock);
++static DEFINE_SPINLOCK(port_user_lock); /* protects port_user[] and ring_prod */
+ 
+ irqreturn_t evtchn_interrupt(int irq, void *data)
+ {
+@@ -210,22 +212,24 @@ static ssize_t evtchn_write(struct file *file, const char __user *buf,
+ 
+ static int evtchn_bind_to_user(struct per_user_data *u, int port)
+ {
+-	int irq;
+ 	int rc = 0;
+ 
+-	spin_lock_irq(&port_user_lock);
+-
++	/*
++	 * Ports are never reused, so every caller should pass in a
++	 * unique port.
++	 *
++	 * (Locking not necessary because we haven't registered the
++	 * interrupt handler yet, and our caller has already
++	 * serialized bind operations.)
++	 */
+ 	BUG_ON(port_user[port] != NULL);
+-
+-	irq = bind_evtchn_to_irqhandler(port, evtchn_interrupt, IRQF_DISABLED,
+-					u->name, (void *)(unsigned long)port);
+-	if (rc < 0)
+-		goto fail;
+-
+ 	port_user[port] = u;
+ 
+-fail:
+-	spin_unlock_irq(&port_user_lock);
++	rc = bind_evtchn_to_irqhandler(port, evtchn_interrupt, IRQF_DISABLED,
++				       u->name, (void *)(unsigned long)port);
++	if (rc >= 0)
 +		rc = 0;
-+		break;
-+	}
 +
-+	case IOCTL_EVTCHN_NOTIFY: {
-+		struct ioctl_evtchn_notify notify;
+ 	return rc;
+ }
+ 
+@@ -234,6 +238,10 @@ static void evtchn_unbind_from_user(struct per_user_data *u, int port)
+ 	int irq = irq_from_evtchn(port);
+ 
+ 	unbind_from_irqhandler(irq, (void *)(unsigned long)port);
 +
-+		rc = -EFAULT;
-+		if (copy_from_user(&notify, uarg, sizeof(notify)))
-+			break;
++	/* make sure we unbind the irq handler before clearing the port */
++	barrier();
 +
-+		if (notify.port >= NR_EVENT_CHANNELS) {
-+			rc = -EINVAL;
-+		} else if (port_user[notify.port] != u) {
-+			rc = -ENOTCONN;
-+		} else {
-+			notify_remote_via_evtchn(notify.port);
-+			rc = 0;
-+		}
-+		break;
-+	}
+ 	port_user[port] = NULL;
+ }
+ 
+@@ -244,6 +252,9 @@ static long evtchn_ioctl(struct file *file,
+ 	struct per_user_data *u = file->private_data;
+ 	void __user *uarg = (void __user *) arg;
+ 
++	/* Prevent bind from racing with unbind */
++	mutex_lock(&u->bind_mutex);
 +
-+	case IOCTL_EVTCHN_RESET: {
-+		/* Initialise the ring to empty. Clear errors. */
-+		mutex_lock(&u->ring_cons_mutex);
-+		spin_lock_irq(&port_user_lock);
-+		u->ring_cons = u->ring_prod = u->ring_overflow = 0;
-+		spin_unlock_irq(&port_user_lock);
-+		mutex_unlock(&u->ring_cons_mutex);
-+		rc = 0;
-+		break;
-+	}
-+
-+	default:
-+		rc = -ENOSYS;
-+		break;
-+	}
-+
-+	return rc;
-+}
-+
-+static unsigned int evtchn_poll(struct file *file, poll_table *wait)
-+{
-+	unsigned int mask = POLLOUT | POLLWRNORM;
-+	struct per_user_data *u = file->private_data;
-+
-+	poll_wait(file, &u->evtchn_wait, wait);
-+	if (u->ring_cons != u->ring_prod)
-+		mask |= POLLIN | POLLRDNORM;
-+	if (u->ring_overflow)
-+		mask = POLLERR;
-+	return mask;
-+}
-+
-+static int evtchn_fasync(int fd, struct file *filp, int on)
-+{
-+	struct per_user_data *u = filp->private_data;
-+	return fasync_helper(fd, filp, on, &u->evtchn_async_queue);
-+}
-+
-+static int evtchn_open(struct inode *inode, struct file *filp)
-+{
-+	struct per_user_data *u;
-+
-+	u = kzalloc(sizeof(*u), GFP_KERNEL);
-+	if (u == NULL)
-+		return -ENOMEM;
-+
-+	u->name = kasprintf(GFP_KERNEL, "evtchn:%s", current->comm);
-+	if (u->name == NULL) {
-+		kfree(u);
-+		return -ENOMEM;
-+	}
-+
-+	init_waitqueue_head(&u->evtchn_wait);
-+
-+	u->ring = (evtchn_port_t *)__get_free_page(GFP_KERNEL);
-+	if (u->ring == NULL) {
-+		kfree(u->name);
-+		kfree(u);
-+		return -ENOMEM;
-+	}
-+
-+	mutex_init(&u->ring_cons_mutex);
-+
-+	filp->private_data = u;
-+
-+	return 0;
-+}
-+
-+static int evtchn_release(struct inode *inode, struct file *filp)
-+{
-+	int i;
-+	struct per_user_data *u = filp->private_data;
-+
-+	spin_lock_irq(&port_user_lock);
-+
-+	free_page((unsigned long)u->ring);
-+
-+	for (i = 0; i < NR_EVENT_CHANNELS; i++) {
-+		if (port_user[i] != u)
-+			continue;
-+
-+		evtchn_unbind_from_user(port_user[i], i);
-+	}
-+
-+	spin_unlock_irq(&port_user_lock);
-+
-+	kfree(u->name);
-+	kfree(u);
-+
-+	return 0;
-+}
-+
-+static const struct file_operations evtchn_fops = {
-+	.owner   = THIS_MODULE,
-+	.read    = evtchn_read,
-+	.write   = evtchn_write,
-+	.unlocked_ioctl = evtchn_ioctl,
-+	.poll    = evtchn_poll,
-+	.fasync  = evtchn_fasync,
-+	.open    = evtchn_open,
-+	.release = evtchn_release,
-+};
-+
-+static struct miscdevice evtchn_miscdev = {
-+	.minor        = MISC_DYNAMIC_MINOR,
-+	.name         = "evtchn",
-+	.fops         = &evtchn_fops,
-+};
-+static int __init evtchn_init(void)
-+{
-+	int err;
-+
-+	if (!xen_domain())
-+		return -ENODEV;
-+
-+	spin_lock_init(&port_user_lock);
-+	memset(port_user, 0, sizeof(port_user));
-+
-+	/* Create '/dev/misc/evtchn'. */
-+	err = misc_register(&evtchn_miscdev);
-+	if (err != 0) {
-+		printk(KERN_ALERT "Could not register /dev/misc/evtchn\n");
-+		return err;
-+	}
-+
-+	printk(KERN_INFO "Event-channel device installed.\n");
-+
-+	return 0;
-+}
-+
-+static void __exit evtchn_cleanup(void)
-+{
-+	misc_deregister(&evtchn_miscdev);
-+}
-+
-+module_init(evtchn_init);
-+module_exit(evtchn_cleanup);
-+
-+MODULE_LICENSE("GPL");
-diff --git a/include/xen/evtchn.h b/include/xen/evtchn.h
-new file mode 100644
-index 0000000..14e833e
---- /dev/null
-+++ b/include/xen/evtchn.h
-@@ -0,0 +1,88 @@
-+/******************************************************************************
-+ * evtchn.h
-+ *
-+ * Interface to /dev/xen/evtchn.
-+ *
-+ * Copyright (c) 2003-2005, K A Fraser
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License version 2
-+ * as published by the Free Software Foundation; or, when distributed
-+ * separately from the Linux kernel or incorporated into other
-+ * software packages, subject to the following license:
-+ *
-+ * Permission is hereby granted, free of charge, to any person obtaining a copy
-+ * of this source file (the "Software"), to deal in the Software without
-+ * restriction, including without limitation the rights to use, copy, modify,
-+ * merge, publish, distribute, sublicense, and/or sell copies of the Software,
-+ * and to permit persons to whom the Software is furnished to do so, subject to
-+ * the following conditions:
-+ *
-+ * The above copyright notice and this permission notice shall be included in
-+ * all copies or substantial portions of the Software.
-+ *
-+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
-+ * IN THE SOFTWARE.
-+ */
-+
-+#ifndef __LINUX_PUBLIC_EVTCHN_H__
-+#define __LINUX_PUBLIC_EVTCHN_H__
-+
-+/*
-+ * Bind a fresh port to VIRQ @virq.
-+ * Return allocated port.
-+ */
-+#define IOCTL_EVTCHN_BIND_VIRQ				\
-+	_IOC(_IOC_NONE, 'E', 0, sizeof(struct ioctl_evtchn_bind_virq))
-+struct ioctl_evtchn_bind_virq {
-+	unsigned int virq;
-+};
-+
-+/*
-+ * Bind a fresh port to remote <@remote_domain, @remote_port>.
-+ * Return allocated port.
-+ */
-+#define IOCTL_EVTCHN_BIND_INTERDOMAIN			\
-+	_IOC(_IOC_NONE, 'E', 1, sizeof(struct ioctl_evtchn_bind_interdomain))
-+struct ioctl_evtchn_bind_interdomain {
-+	unsigned int remote_domain, remote_port;
-+};
-+
-+/*
-+ * Allocate a fresh port for binding to @remote_domain.
-+ * Return allocated port.
-+ */
-+#define IOCTL_EVTCHN_BIND_UNBOUND_PORT			\
-+	_IOC(_IOC_NONE, 'E', 2, sizeof(struct ioctl_evtchn_bind_unbound_port))
-+struct ioctl_evtchn_bind_unbound_port {
-+	unsigned int remote_domain;
-+};
-+
-+/*
-+ * Unbind previously allocated @port.
-+ */
-+#define IOCTL_EVTCHN_UNBIND				\
-+	_IOC(_IOC_NONE, 'E', 3, sizeof(struct ioctl_evtchn_unbind))
-+struct ioctl_evtchn_unbind {
-+	unsigned int port;
-+};
-+
-+/*
-+ * Unbind previously allocated @port.
-+ */
-+#define IOCTL_EVTCHN_NOTIFY				\
-+	_IOC(_IOC_NONE, 'E', 4, sizeof(struct ioctl_evtchn_notify))
-+struct ioctl_evtchn_notify {
-+	unsigned int port;
-+};
-+
-+/* Clear and reinitialise the event buffer. Clear error condition. */
-+#define IOCTL_EVTCHN_RESET				\
-+	_IOC(_IOC_NONE, 'E', 5, 0)
-+
-+#endif /* __LINUX_PUBLIC_EVTCHN_H__ */
+ 	switch (cmd) {
+ 	case IOCTL_EVTCHN_BIND_VIRQ: {
+ 		struct ioctl_evtchn_bind_virq bind;
+@@ -368,6 +379,7 @@ static long evtchn_ioctl(struct file *file,
+ 		rc = -ENOSYS;
+ 		break;
+ 	}
++	mutex_unlock(&u->bind_mutex);
+ 
+ 	return rc;
+ }
+@@ -414,6 +426,7 @@ static int evtchn_open(struct inode *inode, struct file *filp)
+ 		return -ENOMEM;
+ 	}
+ 
++	mutex_init(&u->bind_mutex);
+ 	mutex_init(&u->ring_cons_mutex);
+ 
+ 	filp->private_data = u;
 -- 
 1.6.0.6
 
