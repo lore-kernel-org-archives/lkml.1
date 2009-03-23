@@ -1,111 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758209AbZCWQjI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758920AbZCWQkd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758209AbZCWQjI (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Mar 2009 12:39:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751283AbZCWQiy
+	id S1758920AbZCWQkd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Mar 2009 12:40:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757540AbZCWQkW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Mar 2009 12:38:54 -0400
-Received: from e7.ny.us.ibm.com ([32.97.182.137]:47176 "EHLO e7.ny.us.ibm.com"
+	Mon, 23 Mar 2009 12:40:22 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:37204 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750786AbZCWQix (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Mar 2009 12:38:53 -0400
-Date: Mon, 23 Mar 2009 22:09:10 +0530
-From: Bharata B Rao <bharata@linux.vnet.ibm.com>
-To: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       systemtap-ml <systemtap@sources.redhat.com>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-Subject: Re: [BUGFIX][PATCH -tip] x86: kretprobe-booster interrupt
-	emulation code fix
-Message-ID: <20090323163910.GB3858@in.ibm.com>
-Reply-To: bharata@linux.vnet.ibm.com
-References: <49C7995C.2010601@redhat.com>
+	id S1757377AbZCWQkV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Mar 2009 12:40:21 -0400
+Date: Mon, 23 Mar 2009 17:38:38 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: linux-kernel@vger.kernel.org, oleg@redhat.com, peterz@infradead.org,
+       roland@redhat.com, efault@gmx.de, rjw@sisk.pl, jdike@addtoit.com,
+       user-mode-linux-devel@lists.sourceforge.net,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       stable@kernel.org
+Subject: Re: [patch] fix ptrace slowness
+Message-ID: <20090323163838.GA24454@elte.hu>
+References: <E1LllkK-0000zF-1h@pomaz-ex.szeredi.hu> <20090323151954.GC21267@elte.hu> <E1Llmpk-0001A3-2E@pomaz-ex.szeredi.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <49C7995C.2010601@redhat.com>
+In-Reply-To: <E1Llmpk-0001A3-2E@pomaz-ex.szeredi.hu>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 23, 2009 at 10:14:52AM -0400, Masami Hiramatsu wrote:
-> Fix interrupt emulation code in kretprobe-booster according to
-> pt_regs update (es/ds change and gs adding).
-> 
-> This issue has been reported on systemtap-bugzilla:
-> http://sources.redhat.com/bugzilla/show_bug.cgi?id=9965
 
-Do you want to put some of the details from the bugzilla entry
-to this patch description so that one is not forced to look
-at the bugzilla in future when git log is done ?
+* Miklos Szeredi <miklos@szeredi.hu> wrote:
 
+> On Mon, 23 Mar 2009, Ingo Molnar wrote:
+> > * Miklos Szeredi <miklos@szeredi.hu> wrote:
+> > 
+> > > This one incorporates comments from Oleg and Ingo.  Please apply 
+> > > to 2.6.29 and 2.6.2[78]-stable trees.
+> > 
+> > The fix first needs to go upstream. There's an alternative patch 
+> > below. Would you mind to give it a test? Chances are that it 
+> > will make UML even faster than your fix.
 > 
-> Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
-> Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-> ---
->  arch/x86/kernel/kprobes.c |   17 +++++++++--------
->  1 files changed, 9 insertions(+), 8 deletions(-)
-> 
-> diff --git a/arch/x86/kernel/kprobes.c b/arch/x86/kernel/kprobes.c
-> index 55b9461..64dba72 100644
-> --- a/arch/x86/kernel/kprobes.c
-> +++ b/arch/x86/kernel/kprobes.c
-> @@ -638,13 +638,13 @@ static void __used __kprobes kretprobe_trampoline_holder(void)
->  #else
->  			"	pushf\n"
->  			/*
-> -			 * Skip cs, ip, orig_ax.
-> +			 * Skip cs, ip, orig_ax and gs.
->  			 * trampoline_handler() will plug in these values
->  			 */
-> -			"	subl $12, %esp\n"
-> +			"	subl $16, %esp\n"
->  			"	pushl %fs\n"
-> -			"	pushl %ds\n"
->  			"	pushl %es\n"
-> +			"	pushl %ds\n"
->  			"	pushl %eax\n"
->  			"	pushl %ebp\n"
->  			"	pushl %edi\n"
-> @@ -655,10 +655,10 @@ static void __used __kprobes kretprobe_trampoline_holder(void)
->  			"	movl %esp, %eax\n"
->  			"	call trampoline_handler\n"
->  			/* Move flags to cs */
-> -			"	movl 52(%esp), %edx\n"
-> -			"	movl %edx, 48(%esp)\n"
-> +			"	movl 56(%esp), %edx\n"
-> +			"	movl %edx, 52(%esp)\n"
->  			/* Replace saved flags with true return address. */
-> -			"	movl %eax, 52(%esp)\n"
-> +			"	movl %eax, 56(%esp)\n"
->  			"	popl %ebx\n"
->  			"	popl %ecx\n"
->  			"	popl %edx\n"
-> @@ -666,8 +666,8 @@ static void __used __kprobes kretprobe_trampoline_holder(void)
->  			"	popl %edi\n"
->  			"	popl %ebp\n"
->  			"	popl %eax\n"
-> -			/* Skip ip, orig_ax, es, ds, fs */
-> -			"	addl $20, %esp\n"
-> +			/* Skip ds, es, fs, gs, orig_ax and ip */
-> +			"	addl $24, %esp\n"
->  			"	popf\n"
->  #endif
->  			"	ret\n");
-> @@ -694,6 +694,7 @@ static __used __kprobes void *trampoline_handler(struct pt_regs *regs)
->  #endif
->  	regs->ip = trampoline_address;
->  	regs->orig_ax = ~0UL;
-> +	regs->gs = 0;
-> 
->  	/*
->  	 * It is possible to have multiple instances associated with a given
-> 
+> Just the opposite.  With my patch a UML image boots in 17 
+> seconnds, with your patch it boots in 33 seconds.  Without either 
+> patch it boots in about 5 minutes.
 
-This change works for me. I no longer see "BUG: sleeping from invalid context"
-messages with kretprobe after this change.
+okay - i've queued up your fix.
 
-Regards,
-Bharata.
+	Ingo
