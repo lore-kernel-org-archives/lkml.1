@@ -1,24 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759366AbZCWSFp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759525AbZCWSGZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759366AbZCWSFp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Mar 2009 14:05:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758269AbZCWSE2
+	id S1759525AbZCWSGZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Mar 2009 14:06:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758594AbZCWSEa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Mar 2009 14:04:28 -0400
-Received: from adsl-69-107-72-54.dsl.pltn13.pacbell.net ([69.107.72.54]:35003
+	Mon, 23 Mar 2009 14:04:30 -0400
+Received: from adsl-69-107-72-54.dsl.pltn13.pacbell.net ([69.107.72.54]:35005
 	"EHLO abulafia.goop.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757540AbZCWSEZ (ORCPT
+	with ESMTP id S1757806AbZCWSE0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Mar 2009 14:04:25 -0400
+	Mon, 23 Mar 2009 14:04:26 -0400
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: "H. Peter Anvin" <hpa@zytor.com>
 Cc: the arch/x86 maintainers <x86@kernel.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Xen-devel <xen-devel@lists.xensource.com>,
+       Ian Campbell <ian.campbell@citrix.com>,
        Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Subject: [PATCH 04/11] xen/dev-evtchn: clean up locking in evtchn
-Date: Mon, 23 Mar 2009 10:55:04 -0700
-Message-Id: <1237830911-6249-5-git-send-email-jeremy@goop.org>
+Subject: [PATCH 10/11] xen: use device model for suspending xenbus devices
+Date: Mon, 23 Mar 2009 10:55:10 -0700
+Message-Id: <1237830911-6249-11-git-send-email-jeremy@goop.org>
 X-Mailer: git-send-email 1.6.0.6
 In-Reply-To: <49C45238.7050007@zytor.com>
 References: <49C45238.7050007@zytor.com>
@@ -26,112 +27,153 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+From: Ian Campbell <ian.campbell@citrix.com>
 
-Define a new per_user_data mutex to serialize bind/unbind operations
-to prevent them from racing with each other.  Fix error returns
-and don't do a bind while holding a spinlock.
-
+Signed-off-by: Ian Campbell <ian.campbell@citrix.com>
 Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 ---
- drivers/xen/evtchn.c |   37 +++++++++++++++++++++++++------------
- 1 files changed, 25 insertions(+), 12 deletions(-)
+ drivers/xen/manage.c              |    9 ++++-----
+ drivers/xen/xenbus/xenbus_probe.c |   37 +++++++++----------------------------
+ drivers/xen/xenbus/xenbus_xs.c    |    2 ++
+ include/xen/xenbus.h              |    2 +-
+ 4 files changed, 16 insertions(+), 34 deletions(-)
 
-diff --git a/drivers/xen/evtchn.c b/drivers/xen/evtchn.c
-index 517b9ee..af03195 100644
---- a/drivers/xen/evtchn.c
-+++ b/drivers/xen/evtchn.c
-@@ -54,6 +54,8 @@
- #include <asm/xen/hypervisor.h>
- 
- struct per_user_data {
-+	struct mutex bind_mutex; /* serialize bind/unbind operations */
-+
- 	/* Notification ring, accessed via /dev/xen/evtchn. */
- #define EVTCHN_RING_SIZE     (PAGE_SIZE / sizeof(evtchn_port_t))
- #define EVTCHN_RING_MASK(_i) ((_i)&(EVTCHN_RING_SIZE-1))
-@@ -69,7 +71,7 @@ struct per_user_data {
- 
- /* Who's bound to each port? */
- static struct per_user_data *port_user[NR_EVENT_CHANNELS];
--static DEFINE_SPINLOCK(port_user_lock);
-+static DEFINE_SPINLOCK(port_user_lock); /* protects port_user[] and ring_prod */
- 
- irqreturn_t evtchn_interrupt(int irq, void *data)
- {
-@@ -210,22 +212,24 @@ static ssize_t evtchn_write(struct file *file, const char __user *buf,
- 
- static int evtchn_bind_to_user(struct per_user_data *u, int port)
- {
--	int irq;
- 	int rc = 0;
- 
--	spin_lock_irq(&port_user_lock);
--
-+	/*
-+	 * Ports are never reused, so every caller should pass in a
-+	 * unique port.
-+	 *
-+	 * (Locking not necessary because we haven't registered the
-+	 * interrupt handler yet, and our caller has already
-+	 * serialized bind operations.)
-+	 */
- 	BUG_ON(port_user[port] != NULL);
--
--	irq = bind_evtchn_to_irqhandler(port, evtchn_interrupt, IRQF_DISABLED,
--					u->name, (void *)(unsigned long)port);
--	if (rc < 0)
--		goto fail;
--
- 	port_user[port] = u;
- 
--fail:
--	spin_unlock_irq(&port_user_lock);
-+	rc = bind_evtchn_to_irqhandler(port, evtchn_interrupt, IRQF_DISABLED,
-+				       u->name, (void *)(unsigned long)port);
-+	if (rc >= 0)
-+		rc = 0;
-+
- 	return rc;
- }
- 
-@@ -234,6 +238,10 @@ static void evtchn_unbind_from_user(struct per_user_data *u, int port)
- 	int irq = irq_from_evtchn(port);
- 
- 	unbind_from_irqhandler(irq, (void *)(unsigned long)port);
-+
-+	/* make sure we unbind the irq handler before clearing the port */
-+	barrier();
-+
- 	port_user[port] = NULL;
- }
- 
-@@ -244,6 +252,9 @@ static long evtchn_ioctl(struct file *file,
- 	struct per_user_data *u = file->private_data;
- 	void __user *uarg = (void __user *) arg;
- 
-+	/* Prevent bind from racing with unbind */
-+	mutex_lock(&u->bind_mutex);
-+
- 	switch (cmd) {
- 	case IOCTL_EVTCHN_BIND_VIRQ: {
- 		struct ioctl_evtchn_bind_virq bind;
-@@ -368,6 +379,7 @@ static long evtchn_ioctl(struct file *file,
- 		rc = -ENOSYS;
- 		break;
- 	}
-+	mutex_unlock(&u->bind_mutex);
- 
- 	return rc;
- }
-@@ -414,6 +426,7 @@ static int evtchn_open(struct inode *inode, struct file *filp)
- 		return -ENOMEM;
+diff --git a/drivers/xen/manage.c b/drivers/xen/manage.c
+index 3ccd348..0489ea2 100644
+--- a/drivers/xen/manage.c
++++ b/drivers/xen/manage.c
+@@ -104,9 +104,8 @@ static void do_suspend(void)
+ 		goto out;
  	}
  
-+	mutex_init(&u->bind_mutex);
- 	mutex_init(&u->ring_cons_mutex);
+-	printk("suspending xenbus...\n");
+-	/* XXX use normal device tree? */
+-	xenbus_suspend();
++	printk(KERN_DEBUG "suspending xenstore...\n");
++	xs_suspend();
  
- 	filp->private_data = u;
+ 	err = stop_machine(xen_suspend, &cancelled, cpumask_of(0));
+ 	if (err) {
+@@ -116,9 +115,9 @@ static void do_suspend(void)
+ 
+ 	if (!cancelled) {
+ 		xen_arch_resume();
+-		xenbus_resume();
++		xs_resume();
+ 	} else
+-		xenbus_suspend_cancel();
++		xs_suspend_cancel();
+ 
+ 	device_resume(PMSG_RESUME);
+ 
+diff --git a/drivers/xen/xenbus/xenbus_probe.c b/drivers/xen/xenbus/xenbus_probe.c
+index bd20361..4649213 100644
+--- a/drivers/xen/xenbus/xenbus_probe.c
++++ b/drivers/xen/xenbus/xenbus_probe.c
+@@ -71,6 +71,9 @@ static int xenbus_probe_frontend(const char *type, const char *name);
+ 
+ static void xenbus_dev_shutdown(struct device *_dev);
+ 
++static int xenbus_dev_suspend(struct device *dev, pm_message_t state);
++static int xenbus_dev_resume(struct device *dev);
++
+ /* If something in array of ids matches this device, return it. */
+ static const struct xenbus_device_id *
+ match_device(const struct xenbus_device_id *arr, struct xenbus_device *dev)
+@@ -188,6 +191,9 @@ static struct xen_bus_type xenbus_frontend = {
+ 		.remove    = xenbus_dev_remove,
+ 		.shutdown  = xenbus_dev_shutdown,
+ 		.dev_attrs = xenbus_dev_attrs,
++
++		.suspend   = xenbus_dev_suspend,
++		.resume    = xenbus_dev_resume,
+ 	},
+ };
+ 
+@@ -669,7 +675,7 @@ static struct xenbus_watch fe_watch = {
+ 	.callback = frontend_changed,
+ };
+ 
+-static int suspend_dev(struct device *dev, void *data)
++static int xenbus_dev_suspend(struct device *dev, pm_message_t state)
+ {
+ 	int err = 0;
+ 	struct xenbus_driver *drv;
+@@ -682,14 +688,14 @@ static int suspend_dev(struct device *dev, void *data)
+ 	drv = to_xenbus_driver(dev->driver);
+ 	xdev = container_of(dev, struct xenbus_device, dev);
+ 	if (drv->suspend)
+-		err = drv->suspend(xdev);
++		err = drv->suspend(xdev, state);
+ 	if (err)
+ 		printk(KERN_WARNING
+ 		       "xenbus: suspend %s failed: %i\n", dev_name(dev), err);
+ 	return 0;
+ }
+ 
+-static int resume_dev(struct device *dev, void *data)
++static int xenbus_dev_resume(struct device *dev)
+ {
+ 	int err;
+ 	struct xenbus_driver *drv;
+@@ -734,31 +740,6 @@ static int resume_dev(struct device *dev, void *data)
+ 	return 0;
+ }
+ 
+-void xenbus_suspend(void)
+-{
+-	DPRINTK("");
+-
+-	bus_for_each_dev(&xenbus_frontend.bus, NULL, NULL, suspend_dev);
+-	xenbus_backend_suspend(suspend_dev);
+-	xs_suspend();
+-}
+-EXPORT_SYMBOL_GPL(xenbus_suspend);
+-
+-void xenbus_resume(void)
+-{
+-	xb_init_comms();
+-	xs_resume();
+-	bus_for_each_dev(&xenbus_frontend.bus, NULL, NULL, resume_dev);
+-	xenbus_backend_resume(resume_dev);
+-}
+-EXPORT_SYMBOL_GPL(xenbus_resume);
+-
+-void xenbus_suspend_cancel(void)
+-{
+-	xs_suspend_cancel();
+-}
+-EXPORT_SYMBOL_GPL(xenbus_suspend_cancel);
+-
+ /* A flag to determine if xenstored is 'ready' (i.e. has started) */
+ int xenstored_ready = 0;
+ 
+diff --git a/drivers/xen/xenbus/xenbus_xs.c b/drivers/xen/xenbus/xenbus_xs.c
+index e325eab..eab33f1 100644
+--- a/drivers/xen/xenbus/xenbus_xs.c
++++ b/drivers/xen/xenbus/xenbus_xs.c
+@@ -673,6 +673,8 @@ void xs_resume(void)
+ 	struct xenbus_watch *watch;
+ 	char token[sizeof(watch) * 2 + 1];
+ 
++	xb_init_comms();
++
+ 	mutex_unlock(&xs_state.response_mutex);
+ 	mutex_unlock(&xs_state.request_mutex);
+ 	up_write(&xs_state.transaction_mutex);
+diff --git a/include/xen/xenbus.h b/include/xen/xenbus.h
+index 0836772..b9763ba 100644
+--- a/include/xen/xenbus.h
++++ b/include/xen/xenbus.h
+@@ -91,7 +91,7 @@ struct xenbus_driver {
+ 	void (*otherend_changed)(struct xenbus_device *dev,
+ 				 enum xenbus_state backend_state);
+ 	int (*remove)(struct xenbus_device *dev);
+-	int (*suspend)(struct xenbus_device *dev);
++	int (*suspend)(struct xenbus_device *dev, pm_message_t state);
+ 	int (*resume)(struct xenbus_device *dev);
+ 	int (*uevent)(struct xenbus_device *, char **, int, char *, int);
+ 	struct device_driver driver;
 -- 
 1.6.0.6
 
