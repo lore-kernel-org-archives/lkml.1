@@ -1,111 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760526AbZCWTOs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759300AbZCWTTK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760526AbZCWTOs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Mar 2009 15:14:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758054AbZCWTOh
+	id S1759300AbZCWTTK (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Mar 2009 15:19:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754072AbZCWTSz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Mar 2009 15:14:37 -0400
-Received: from mail-out1.uio.no ([129.240.10.57]:48759 "EHLO mail-out1.uio.no"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757072AbZCWTOf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Mar 2009 15:14:35 -0400
-Subject: Re: [Patch] ltt-relay-alloc mmap support (due to NFS lack of
- splice support)
-From: Trond Myklebust <trond.myklebust@fys.uio.no>
-To: Mathieu Desnoyers <compudj@krystal.dyndns.org>
-Cc: Masahiro Tamori <masahiro.tamori@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       ltt-dev <ltt-dev@lists.casi.polymtl.ca>, linux-kernel@vger.kernel.org,
-       linux-embedded@vger.kernel.org, linux-nfs@vger.kernel.org,
-       Jens Axboe <axboe@kernel.dk>, Nick Piggin <npiggin@suse.de>
-In-Reply-To: <20090323175820.GH24084@Krystal>
-References: <91e0b5050903170224k51c4895eq8a1491da7a7a9741@mail.gmail.com>
-	 <20090320152857.GB30019@Krystal>
-	 <91e0b5050903230534g57d1ef8byd14a1fb5ca807192@mail.gmail.com>
-	 <20090323175820.GH24084@Krystal>
-Content-Type: text/plain
-Date: Mon, 23 Mar 2009 15:14:24 -0400
-Message-Id: <1237835664.6935.14.camel@heimdal.trondhjem.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.0 
-Content-Transfer-Encoding: 7bit
-X-UiO-Spam-info: not spam, SpamAssassin (score=-5.0, required=5.0, autolearn=disabled, UIO_MAIL_IS_INTERNAL=-5, uiobl=NO, uiouri=NO)
-X-UiO-Scanned: 1CC5C9C374C5F8EB6371D4500ED17EB9BD9FC038
-X-UiO-SPAM-Test: remote_host: 71.227.91.12 spam_score: -49 maxlevel 200 minaction 2 bait 0 mail/h: 1 total 94 max/h 3 blacklist 0 greylist 0 ratelimit 0
+	Mon, 23 Mar 2009 15:18:55 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:55324 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753553AbZCWTSx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Mar 2009 15:18:53 -0400
+Date: Mon, 23 Mar 2009 15:18:49 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Frederic Weisbecker <fweisbec@gmail.com>
+cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: Re: [PATCH 3/5] tracing/ftrace: check if debugfs is registered before
+ creating files
+In-Reply-To: <1237759847-21025-3-git-send-email-fweisbec@gmail.com>
+Message-ID: <alpine.DEB.2.00.0903231517410.3578@gandalf.stny.rr.com>
+References: <1237759847-21025-1-git-send-email-fweisbec@gmail.com> <1237759847-21025-3-git-send-email-fweisbec@gmail.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-03-23 at 13:58 -0400, Mathieu Desnoyers wrote:
-> * Masahiro Tamori (masahiro.tamori@gmail.com) wrote:
-> > 2009/3/21 Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>:
-> > > * Masahiro Tamori (masahiro.tamori@gmail.com) wrote:
-> [...]
-> > >> Our customer will use NFS to store trace data not storage device for
-> > >> embedded devices.
-> > >> Since newer lttng use splice() even if NFS can not support splice(),
-> > >> I create a patch to support to mmap of ltt-relay-alloc.
-> > >>
-> [...]
-> > >> ltt-relay-alloc mmap support
-> > >>
-> > >> Splice syscall does not support NFS. We can not save trace data to
-> > >> NFS directory. If this feature is enabled, you can use mmap()
-> > >> instead of splice().
-> > >>
-> > >
-> > >
-> > > Hi Masahiro,
-> > >
-> > > Maybe we should consider implementing splice() support in NFS instead ?
-> > >
-> > > I removed the mmap support from the ltt-relay-alloc files because splice
-> > > is more efficient and does not require to vmap the pages.  Unless there
-> > > is a strong argument telling what in NFS makes it impossible to
-> > > implement splice(), I don't really see the gain in putting back the
-> > > old mmap() mechanism we had.
-> > >
-> > > Maybe the NFS people will have some information about this ?
-> > >
-> > > Thanks,
-> > >
-> > > Mathieu
-> > >
-> > 
-> > Hello Mathieu,
-> > 
-> > I think that the best solution is NFS can support splice() even if
-> > it cannot zero copy.
-> > 
-> > The splice() will be used by any other tools, hence NFS should support
-> > it sooner or later.
-> > 
-> > If technical issue is remained to support splice() in NFS,
-> > we should support mmap in LTTng until the problem is resolved.
-> > Embedded people will want to use LTTng with NFS,
-> > though this is a bad choice.
-> > 
-> > Thank you,
-> > Masahiro Tamori
-> > 
-> 
-> There was a LKML thread on NFS splice support back in 2006 :
-> 
-> http://lkml.indiana.edu/hypermail/linux/kernel/0603.3/2102.html
-> 
-> I don't know what happened with this ? I have tested NFS v2 and v3 and
-> have seen they do not support splice, but haven't tested NFSv4.
-> 
-> Mathieu
 
-We do support splice reads and apparently don't support splice writes.
-However I don't see what has been stopping anybody from implementing the
-latter.
+On Sun, 22 Mar 2009, Frederic Weisbecker wrote:
 
-In fact, it looks to me as if we should just be able to use
-generic_file_splice_write() as is. There is no O_APPEND support or
-anything that would require us to revalidate file lengths; it's just a
-perfectly ordinary write into the page cache...
+> Impact: fix a crash with ftrace={nop,boot} parameter
+> 
+> If the nop or initcall tracers are launched as boot tracers,
+> they will attempt to create their option directory and files.
+> But these tracers are registered very early and then assigned
+> as "boot tracers" very early if asked to.
+> 
+> Since they do this before debugfs has been registered (core initcall),
+> a crash is triggered.
+> 
+> Another early tracers could also come later. So we fix it by
+> checking if debugfs is initialized before creating the root
+> tracing directory.
+> 
+> Cc: Greg Kroah-Hartman <gregkh@suse.de>
+> Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+> ---
+>  kernel/trace/trace.c |    3 +++
+>  1 files changed, 3 insertions(+), 0 deletions(-)
+> 
+> diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
+> index ace685c..f0e1337 100644
+> --- a/kernel/trace/trace.c
+> +++ b/kernel/trace/trace.c
+> @@ -3513,6 +3513,9 @@ struct dentry *tracing_init_dentry(void)
+>  	if (d_tracer)
+>  		return d_tracer;
+>  
+> +	if (!debugfs_initialized())
+> +		return NULL;
+> +
+>  	d_tracer = debugfs_create_dir("tracing", NULL);
+>  
 
-Cheers
-   Trond
+Hmm, those tracers should separate out the debugfs code, and put it into 
+a fs_initcall(), where debugfs should already initialized.
+
+-- Steve
 
