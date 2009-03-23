@@ -1,29 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757471AbZCWRjC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758329AbZCWRpy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757471AbZCWRjC (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Mar 2009 13:39:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755049AbZCWRiu
+	id S1758329AbZCWRpy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Mar 2009 13:45:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753768AbZCWRpn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Mar 2009 13:38:50 -0400
-Received: from gw.goop.org ([64.81.55.164]:43081 "EHLO mail.goop.org"
+	Mon, 23 Mar 2009 13:45:43 -0400
+Received: from gw.goop.org ([64.81.55.164]:44796 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752573AbZCWRis (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Mar 2009 13:38:48 -0400
-Message-ID: <49C7C916.2080806@goop.org>
-Date: Mon, 23 Mar 2009 10:38:30 -0700
+	id S1753417AbZCWRpm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Mar 2009 13:45:42 -0400
+Message-ID: <49C7CABF.9020801@goop.org>
+Date: Mon, 23 Mar 2009 10:45:35 -0700
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
 To: "H. Peter Anvin" <hpa@zytor.com>
 CC: Ingo Molnar <mingo@elte.hu>, the arch/x86 maintainers <x86@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Xen-devel <xen-devel@lists.xensource.com>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Alok Kataria <akataria@vmware.com>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Marcelo Tosatti <mtosatti@redhat.com>
-Subject: [GIT PULL] x86/paravirt: allow preemption while doing lazy mmu update
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: [GIT PULL] core Xen updates for 2.6.30
 References: <49C28AC2.4010407@goop.org> <49C29381.9050201@zytor.com> <49C29983.3040305@goop.org> <49C2ABCA.6010009@zytor.com> <49C43D31.7040805@goop.org> <49C45238.7050007@zytor.com>
 In-Reply-To: <49C45238.7050007@zytor.com>
 X-Enigmail-Version: 0.95.6
@@ -33,648 +28,642 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This series allows preemption during lazy mmu updates.
+This series updates core domU Xen support.
 
-No changes from previous postings, just rebased to a newer tip/master.
+Changes since last posting:
 
-The following changes since commit 8c85122f33c5242e2f384b1f9f202f28e6bf4e61:
-  Ingo Molnar (1):
-        Merge branch 'core/locking'
+    * rebased to newer tip/master
+    * addressed hpa's review comments
+    * little cleanups
+
+Thanks,
+    J
+
+The following changes since commit 8d336ed83a87149bcae6b872fff1aed8be268342:
+  Jeremy Fitzhardinge (1):
+        x86/paravirt: use percpu_ rather than __get_cpu_var
 
 are available in the git repository at:
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/jeremy/xen.git push2/x86/paravirt
+  git://git.kernel.org/pub/scm/linux/kernel/git/jeremy/xen.git push2/xen/core
 
-Jeremy Fitzhardinge (8):
-      mm: disable preemption in apply_to_pte_range
-      x86/paravirt: remove lazy mode in interrupts
-      x86/pvops: replace arch_enter_lazy_cpu_mode with arch_start_context_switch
-      x86/paravirt: flush pending mmu updates on context switch
-      x86/paravirt: finish change from lazy cpu to context switch start/end
-      x86/paravirt: allow preemption with lazy mmu mode
-      mm: allow preemption in apply_to_pte_range
-      x86/paravirt: use percpu_ rather than __get_cpu_var
+Alex Nixon (1):
+      Xen: Add virt_to_pfn helper function
 
- arch/x86/include/asm/paravirt.h    |   22 +++++++-------
- arch/x86/include/asm/pgtable.h     |    2 +
- arch/x86/include/asm/thread_info.h |    2 +
- arch/x86/kernel/kvm.c              |    2 +-
- arch/x86/kernel/paravirt.c         |   56 ++++++++++++++++-------------------
- arch/x86/kernel/process_32.c       |    2 +-
- arch/x86/kernel/process_64.c       |    2 +-
- arch/x86/kernel/vmi_32.c           |   20 ++++++++----
- arch/x86/lguest/boot.c             |   16 +++++++---
- arch/x86/mm/fault.c                |    6 +--
- arch/x86/mm/highmem_32.c           |    2 -
- arch/x86/mm/iomap_32.c             |    2 -
- arch/x86/mm/pageattr.c             |   14 ---------
- arch/x86/xen/enlighten.c           |   10 ++----
- arch/x86/xen/mmu.c                 |   20 +++++--------
- arch/x86/xen/xen-ops.h             |    1 -
- include/asm-frv/pgtable.h          |    4 +-
- include/asm-generic/pgtable.h      |   21 +++++++------
- kernel/sched.c                     |    2 +-
- 19 files changed, 96 insertions(+), 110 deletions(-)
+Hannes Eder (1):
+      NULL noise: arch/x86/xen/smp.c
 
-Overall diff:
+Jeremy Fitzhardinge (15):
+      xen: disable preempt for leave_lazy_mmu
+      xen: separate p2m allocation from setting
+      xen: dynamically allocate p2m tables
+      xen: split construction of p2m mfn tables from registration
+      xen: clean up xen_load_gdt
+      xen: make xen_load_gdt simpler
+      xen: remove xen_load_gdt debug
+      xen: reserve i386 Xen pagetables
+      xen: mask XSAVE from cpuid
+      xen: add FIX_TEXT_POKE to fixmap
+      x86-64: remove PGE from must-have feature list
+      x86-64: non-paravirt systems always has PSE and PGE
+      xen/mmu: some early pagetable cleanups
+      Revert "x86: create a non-zero sized bm_pte only when needed"
+      xen/mmu: weaken flush_tlb_other test
 
-diff --git a/arch/x86/include/asm/paravirt.h b/arch/x86/include/asm/paravirt.h
-index 7727aa8..bc384be 100644
---- a/arch/x86/include/asm/paravirt.h
-+++ b/arch/x86/include/asm/paravirt.h
-@@ -56,6 +56,7 @@ struct desc_ptr;
- struct tss_struct;
- struct mm_struct;
- struct desc_struct;
-+struct task_struct;
+ arch/x86/include/asm/required-features.h |    8 ++-
+ arch/x86/include/asm/xen/page.h          |    3 +-
+ arch/x86/mm/ioremap.c                    |   19 +---
+ arch/x86/xen/enlighten.c                 |   76 +++++++++++---
+ arch/x86/xen/mmu.c                       |  160 ++++++++++++++++++++++--------
+ arch/x86/xen/mmu.h                       |    3 +
+ arch/x86/xen/smp.c                       |    4 +-
+ arch/x86/xen/xen-ops.h                   |    2 -
+ 8 files changed, 196 insertions(+), 79 deletions(-)
+
+diff --git a/arch/x86/include/asm/required-features.h b/arch/x86/include/asm/required-features.h
+index d5cd6c5..64cf2d2 100644
+--- a/arch/x86/include/asm/required-features.h
++++ b/arch/x86/include/asm/required-features.h
+@@ -48,9 +48,15 @@
+ #endif
  
- /*
-  * Wrapper type for pointers to code which uses the non-standard
-@@ -203,7 +204,8 @@ struct pv_cpu_ops {
+ #ifdef CONFIG_X86_64
++#ifdef CONFIG_PARAVIRT
++/* Paravirtualized systems may not have PSE or PGE available */
+ #define NEED_PSE	0
++#define NEED_PGE	0
++#else
++#define NEED_PSE	(1<<(X86_FEATURE_PSE) & 31)
++#define NEED_PGE	(1<<(X86_FEATURE_PGE) & 31)
++#endif
+ #define NEED_MSR	(1<<(X86_FEATURE_MSR & 31))
+-#define NEED_PGE	(1<<(X86_FEATURE_PGE & 31))
+ #define NEED_FXSR	(1<<(X86_FEATURE_FXSR & 31))
+ #define NEED_XMM	(1<<(X86_FEATURE_XMM & 31))
+ #define NEED_XMM2	(1<<(X86_FEATURE_XMM2 & 31))
+diff --git a/arch/x86/include/asm/xen/page.h b/arch/x86/include/asm/xen/page.h
+index 1a918dd..018a0a4 100644
+--- a/arch/x86/include/asm/xen/page.h
++++ b/arch/x86/include/asm/xen/page.h
+@@ -124,7 +124,8 @@ static inline unsigned long mfn_to_local_pfn(unsigned long mfn)
  
- 	void (*swapgs)(void);
+ /* VIRT <-> MACHINE conversion */
+ #define virt_to_machine(v)	(phys_to_machine(XPADDR(__pa(v))))
+-#define virt_to_mfn(v)		(pfn_to_mfn(PFN_DOWN(__pa(v))))
++#define virt_to_pfn(v)          (PFN_DOWN(__pa(v)))
++#define virt_to_mfn(v)		(pfn_to_mfn(virt_to_pfn(v)))
+ #define mfn_to_virt(m)		(__va(mfn_to_pfn(m) << PAGE_SHIFT))
  
--	struct pv_lazy_ops lazy_mode;
-+	void (*start_context_switch)(struct task_struct *prev);
-+	void (*end_context_switch)(struct task_struct *next);
- };
+ static inline unsigned long pte_mfn(pte_t pte)
+diff --git a/arch/x86/mm/ioremap.c b/arch/x86/mm/ioremap.c
+index 55e127f..83ed74a 100644
+--- a/arch/x86/mm/ioremap.c
++++ b/arch/x86/mm/ioremap.c
+@@ -487,12 +487,7 @@ static int __init early_ioremap_debug_setup(char *str)
+ early_param("early_ioremap_debug", early_ioremap_debug_setup);
  
- struct pv_irq_ops {
-@@ -1399,25 +1401,23 @@ enum paravirt_lazy_mode {
- };
+ static __initdata int after_paging_init;
+-#define __FIXADDR_TOP (-PAGE_SIZE)
+-static pte_t bm_pte[(__fix_to_virt(FIX_DBGP_BASE)
+-		     ^ __fix_to_virt(FIX_BTMAP_BEGIN)) >> PMD_SHIFT
+-		    ? PAGE_SIZE / sizeof(pte_t) : 0] __page_aligned_bss;
+-#undef __FIXADDR_TOP
+-static __initdata pte_t *bm_ptep;
++static pte_t bm_pte[PAGE_SIZE/sizeof(pte_t)] __page_aligned_bss;
  
- enum paravirt_lazy_mode paravirt_get_lazy_mode(void);
--void paravirt_enter_lazy_cpu(void);
--void paravirt_leave_lazy_cpu(void);
-+void paravirt_start_context_switch(struct task_struct *prev);
-+void paravirt_end_context_switch(struct task_struct *next);
-+
- void paravirt_enter_lazy_mmu(void);
- void paravirt_leave_lazy_mmu(void);
--void paravirt_leave_lazy(enum paravirt_lazy_mode mode);
- 
--#define  __HAVE_ARCH_ENTER_LAZY_CPU_MODE
--static inline void arch_enter_lazy_cpu_mode(void)
-+#define  __HAVE_ARCH_START_CONTEXT_SWITCH
-+static inline void arch_start_context_switch(struct task_struct *prev)
+ static inline pmd_t * __init early_ioremap_pmd(unsigned long addr)
  {
--	PVOP_VCALL0(pv_cpu_ops.lazy_mode.enter);
-+	PVOP_VCALL1(pv_cpu_ops.start_context_switch, prev);
- }
+@@ -507,8 +502,6 @@ static inline pmd_t * __init early_ioremap_pmd(unsigned long addr)
  
--static inline void arch_leave_lazy_cpu_mode(void)
-+static inline void arch_end_context_switch(struct task_struct *next)
+ static inline pte_t * __init early_ioremap_pte(unsigned long addr)
  {
--	PVOP_VCALL0(pv_cpu_ops.lazy_mode.leave);
-+	PVOP_VCALL1(pv_cpu_ops.end_context_switch, next);
+-	if (!sizeof(bm_pte))
+-		return &bm_ptep[pte_index(addr)];
+ 	return &bm_pte[pte_index(addr)];
  }
  
--void arch_flush_lazy_cpu_mode(void);
--
- #define  __HAVE_ARCH_ENTER_LAZY_MMU_MODE
- static inline void arch_enter_lazy_mmu_mode(void)
- {
-diff --git a/arch/x86/include/asm/pgtable.h b/arch/x86/include/asm/pgtable.h
-index f5ba6c1..205f6a9 100644
---- a/arch/x86/include/asm/pgtable.h
-+++ b/arch/x86/include/asm/pgtable.h
-@@ -81,6 +81,8 @@ static inline void __init paravirt_pagetable_setup_done(pgd_t *base)
- #define pte_val(x)	native_pte_val(x)
- #define __pte(x)	native_make_pte(x)
+@@ -526,14 +519,8 @@ void __init early_ioremap_init(void)
+ 		slot_virt[i] = fix_to_virt(FIX_BTMAP_BEGIN - NR_FIX_BTMAPS*i);
  
-+#define arch_end_context_switch(prev)	do {} while(0)
-+
- #endif	/* CONFIG_PARAVIRT */
- 
- /*
-diff --git a/arch/x86/include/asm/thread_info.h b/arch/x86/include/asm/thread_info.h
-index 83d2b73..e6b4beb 100644
---- a/arch/x86/include/asm/thread_info.h
-+++ b/arch/x86/include/asm/thread_info.h
-@@ -96,6 +96,7 @@ struct thread_info {
- #define TIF_DEBUGCTLMSR		25	/* uses thread_struct.debugctlmsr */
- #define TIF_DS_AREA_MSR		26      /* uses thread_struct.ds_area_msr */
- #define TIF_SYSCALL_FTRACE	27	/* for ftrace syscall instrumentation */
-+#define TIF_LAZY_MMU_UPDATES	28	/* task is updating the mmu lazily */
- 
- #define _TIF_SYSCALL_TRACE	(1 << TIF_SYSCALL_TRACE)
- #define _TIF_NOTIFY_RESUME	(1 << TIF_NOTIFY_RESUME)
-@@ -119,6 +120,7 @@ struct thread_info {
- #define _TIF_DEBUGCTLMSR	(1 << TIF_DEBUGCTLMSR)
- #define _TIF_DS_AREA_MSR	(1 << TIF_DS_AREA_MSR)
- #define _TIF_SYSCALL_FTRACE	(1 << TIF_SYSCALL_FTRACE)
-+#define _TIF_LAZY_MMU_UPDATES	(1 << TIF_LAZY_MMU_UPDATES)
- 
- /* work to do in syscall_trace_enter() */
- #define _TIF_WORK_SYSCALL_ENTRY	\
-diff --git a/arch/x86/kernel/kvm.c b/arch/x86/kernel/kvm.c
-index 33019dd..6551ded 100644
---- a/arch/x86/kernel/kvm.c
-+++ b/arch/x86/kernel/kvm.c
-@@ -195,7 +195,7 @@ static void kvm_leave_lazy_mmu(void)
- 	struct kvm_para_state *state = kvm_para_state();
- 
- 	mmu_queue_flush(state);
--	paravirt_leave_lazy(paravirt_get_lazy_mode());
-+	paravirt_leave_lazy_mmu();
- 	state->mode = paravirt_get_lazy_mode();
- }
- 
-diff --git a/arch/x86/kernel/paravirt.c b/arch/x86/kernel/paravirt.c
-index 8e45f44..aa34423 100644
---- a/arch/x86/kernel/paravirt.c
-+++ b/arch/x86/kernel/paravirt.c
-@@ -246,18 +246,16 @@ static DEFINE_PER_CPU(enum paravirt_lazy_mode, paravirt_lazy_mode) = PARAVIRT_LA
- 
- static inline void enter_lazy(enum paravirt_lazy_mode mode)
- {
--	BUG_ON(__get_cpu_var(paravirt_lazy_mode) != PARAVIRT_LAZY_NONE);
--	BUG_ON(preemptible());
-+	BUG_ON(percpu_read(paravirt_lazy_mode) != PARAVIRT_LAZY_NONE);
- 
--	__get_cpu_var(paravirt_lazy_mode) = mode;
-+	percpu_write(paravirt_lazy_mode, mode);
- }
- 
--void paravirt_leave_lazy(enum paravirt_lazy_mode mode)
-+static void leave_lazy(enum paravirt_lazy_mode mode)
- {
--	BUG_ON(__get_cpu_var(paravirt_lazy_mode) != mode);
--	BUG_ON(preemptible());
-+	BUG_ON(percpu_read(paravirt_lazy_mode) != mode);
- 
--	__get_cpu_var(paravirt_lazy_mode) = PARAVIRT_LAZY_NONE;
-+	percpu_write(paravirt_lazy_mode, PARAVIRT_LAZY_NONE);
- }
- 
- void paravirt_enter_lazy_mmu(void)
-@@ -267,22 +265,36 @@ void paravirt_enter_lazy_mmu(void)
- 
- void paravirt_leave_lazy_mmu(void)
- {
--	paravirt_leave_lazy(PARAVIRT_LAZY_MMU);
-+	leave_lazy(PARAVIRT_LAZY_MMU);
- }
- 
--void paravirt_enter_lazy_cpu(void)
-+void paravirt_start_context_switch(struct task_struct *prev)
- {
-+	BUG_ON(preemptible());
-+
-+	if (percpu_read(paravirt_lazy_mode) == PARAVIRT_LAZY_MMU) {
-+		arch_leave_lazy_mmu_mode();
-+		set_ti_thread_flag(task_thread_info(prev), TIF_LAZY_MMU_UPDATES);
-+	}
- 	enter_lazy(PARAVIRT_LAZY_CPU);
- }
- 
--void paravirt_leave_lazy_cpu(void)
-+void paravirt_end_context_switch(struct task_struct *next)
- {
--	paravirt_leave_lazy(PARAVIRT_LAZY_CPU);
-+	BUG_ON(preemptible());
-+
-+	leave_lazy(PARAVIRT_LAZY_CPU);
-+
-+	if (test_and_clear_ti_thread_flag(task_thread_info(next), TIF_LAZY_MMU_UPDATES))
-+		arch_enter_lazy_mmu_mode();
- }
- 
- enum paravirt_lazy_mode paravirt_get_lazy_mode(void)
- {
--	return __get_cpu_var(paravirt_lazy_mode);
-+	if (in_interrupt())
-+		return PARAVIRT_LAZY_NONE;
-+
-+	return percpu_read(paravirt_lazy_mode);
- }
- 
- void arch_flush_lazy_mmu_mode(void)
-@@ -290,7 +302,6 @@ void arch_flush_lazy_mmu_mode(void)
- 	preempt_disable();
- 
- 	if (paravirt_get_lazy_mode() == PARAVIRT_LAZY_MMU) {
--		WARN_ON(preempt_count() == 1);
- 		arch_leave_lazy_mmu_mode();
- 		arch_enter_lazy_mmu_mode();
- 	}
-@@ -298,19 +309,6 @@ void arch_flush_lazy_mmu_mode(void)
- 	preempt_enable();
- }
- 
--void arch_flush_lazy_cpu_mode(void)
--{
--	preempt_disable();
--
--	if (paravirt_get_lazy_mode() == PARAVIRT_LAZY_CPU) {
--		WARN_ON(preempt_count() == 1);
--		arch_leave_lazy_cpu_mode();
--		arch_enter_lazy_cpu_mode();
+ 	pmd = early_ioremap_pmd(fix_to_virt(FIX_BTMAP_BEGIN));
+-	if (sizeof(bm_pte)) {
+-		memset(bm_pte, 0, sizeof(bm_pte));
+-		pmd_populate_kernel(&init_mm, pmd, bm_pte);
+-	} else {
+-		bm_ptep = pte_offset_kernel(pmd, 0);
+-		if (early_ioremap_debug)
+-			printk(KERN_INFO "bm_ptep=%p\n", bm_ptep);
 -	}
--
--	preempt_enable();
--}
--
- struct pv_info pv_info = {
- 	.name = "bare hardware",
- 	.paravirt_enabled = 0,
-@@ -402,10 +400,8 @@ struct pv_cpu_ops pv_cpu_ops = {
- 	.set_iopl_mask = native_set_iopl_mask,
- 	.io_delay = native_io_delay,
- 
--	.lazy_mode = {
--		.enter = paravirt_nop,
--		.leave = paravirt_nop,
--	},
-+	.start_context_switch = paravirt_nop,
-+	.end_context_switch = paravirt_nop,
- };
- 
- struct pv_apic_ops pv_apic_ops = {
-diff --git a/arch/x86/kernel/process_32.c b/arch/x86/kernel/process_32.c
-index 14014d7..d766c76 100644
---- a/arch/x86/kernel/process_32.c
-+++ b/arch/x86/kernel/process_32.c
-@@ -407,7 +407,7 @@ __switch_to(struct task_struct *prev_p, struct task_struct *next_p)
- 	 * done before math_state_restore, so the TS bit is up
- 	 * to date.
- 	 */
--	arch_leave_lazy_cpu_mode();
-+	arch_end_context_switch(next_p);
- 
- 	/* If the task has used fpu the last 5 timeslices, just do a full
- 	 * restore of the math state immediately to avoid the trap; the
-diff --git a/arch/x86/kernel/process_64.c b/arch/x86/kernel/process_64.c
-index abb7e6a..e8a9aaf 100644
---- a/arch/x86/kernel/process_64.c
-+++ b/arch/x86/kernel/process_64.c
-@@ -428,7 +428,7 @@ __switch_to(struct task_struct *prev_p, struct task_struct *next_p)
- 	 * done before math_state_restore, so the TS bit is up
- 	 * to date.
- 	 */
--	arch_leave_lazy_cpu_mode();
-+	arch_end_context_switch(next_p);
++	memset(bm_pte, 0, sizeof(bm_pte));
++	pmd_populate_kernel(&init_mm, pmd, bm_pte);
  
  	/*
- 	 * Switch FS and GS.
-diff --git a/arch/x86/kernel/vmi_32.c b/arch/x86/kernel/vmi_32.c
-index 95deb9f..b263423 100644
---- a/arch/x86/kernel/vmi_32.c
-+++ b/arch/x86/kernel/vmi_32.c
-@@ -462,22 +462,28 @@ vmi_startup_ipi_hook(int phys_apicid, unsigned long start_eip,
- }
- #endif
- 
--static void vmi_enter_lazy_cpu(void)
-+static void vmi_start_context_switch(struct task_struct *prev)
- {
--	paravirt_enter_lazy_cpu();
-+	paravirt_start_context_switch(prev);
- 	vmi_ops.set_lazy_mode(2);
- }
- 
-+static void vmi_end_context_switch(struct task_struct *next)
-+{
-+	vmi_ops.set_lazy_mode(0);
-+	paravirt_end_context_switch(next);
-+}
-+
- static void vmi_enter_lazy_mmu(void)
- {
- 	paravirt_enter_lazy_mmu();
- 	vmi_ops.set_lazy_mode(1);
- }
- 
--static void vmi_leave_lazy(void)
-+static void vmi_leave_lazy_mmu(void)
- {
--	paravirt_leave_lazy(paravirt_get_lazy_mode());
- 	vmi_ops.set_lazy_mode(0);
-+	paravirt_leave_lazy_mmu();
- }
- 
- static inline int __init check_vmi_rom(struct vrom_header *rom)
-@@ -711,14 +717,14 @@ static inline int __init activate_vmi(void)
- 	para_fill(pv_cpu_ops.set_iopl_mask, SetIOPLMask);
- 	para_fill(pv_cpu_ops.io_delay, IODelay);
- 
--	para_wrap(pv_cpu_ops.lazy_mode.enter, vmi_enter_lazy_cpu,
-+	para_wrap(pv_cpu_ops.start_context_switch, vmi_start_context_switch,
- 		  set_lazy_mode, SetLazyMode);
--	para_wrap(pv_cpu_ops.lazy_mode.leave, vmi_leave_lazy,
-+	para_wrap(pv_cpu_ops.end_context_switch, vmi_end_context_switch,
- 		  set_lazy_mode, SetLazyMode);
- 
- 	para_wrap(pv_mmu_ops.lazy_mode.enter, vmi_enter_lazy_mmu,
- 		  set_lazy_mode, SetLazyMode);
--	para_wrap(pv_mmu_ops.lazy_mode.leave, vmi_leave_lazy,
-+	para_wrap(pv_mmu_ops.lazy_mode.leave, vmi_leave_lazy_mmu,
- 		  set_lazy_mode, SetLazyMode);
- 
- 	/* user and kernel flush are just handled with different flags to FlushTLB */
-diff --git a/arch/x86/lguest/boot.c b/arch/x86/lguest/boot.c
-index 90e44a1..25799f3 100644
---- a/arch/x86/lguest/boot.c
-+++ b/arch/x86/lguest/boot.c
-@@ -147,10 +147,16 @@ static void lazy_hcall(unsigned long call,
- 
- /* When lazy mode is turned off reset the per-cpu lazy mode variable and then
-  * issue the do-nothing hypercall to flush any stored calls. */
--static void lguest_leave_lazy_mode(void)
-+static void lguest_leave_lazy_mmu_mode(void)
- {
--	paravirt_leave_lazy(paravirt_get_lazy_mode());
- 	hcall(LHCALL_FLUSH_ASYNC, 0, 0, 0);
-+	paravirt_leave_lazy_mmu();
-+}
-+
-+static void lguest_end_context_switch(struct task_struct *next)
-+{
-+	hcall(LHCALL_FLUSH_ASYNC, 0, 0, 0);
-+	paravirt_end_context_switch(next);
- }
- 
- /*G:033
-@@ -1025,8 +1031,8 @@ __init void lguest_init(void)
- 	pv_cpu_ops.write_gdt_entry = lguest_write_gdt_entry;
- 	pv_cpu_ops.write_idt_entry = lguest_write_idt_entry;
- 	pv_cpu_ops.wbinvd = lguest_wbinvd;
--	pv_cpu_ops.lazy_mode.enter = paravirt_enter_lazy_cpu;
--	pv_cpu_ops.lazy_mode.leave = lguest_leave_lazy_mode;
-+	pv_cpu_ops.start_context_switch = paravirt_start_context_switch;
-+	pv_cpu_ops.end_context_switch = lguest_end_context_switch;
- 
- 	/* pagetable management */
- 	pv_mmu_ops.write_cr3 = lguest_write_cr3;
-@@ -1039,7 +1045,7 @@ __init void lguest_init(void)
- 	pv_mmu_ops.read_cr2 = lguest_read_cr2;
- 	pv_mmu_ops.read_cr3 = lguest_read_cr3;
- 	pv_mmu_ops.lazy_mode.enter = paravirt_enter_lazy_mmu;
--	pv_mmu_ops.lazy_mode.leave = lguest_leave_lazy_mode;
-+	pv_mmu_ops.lazy_mode.leave = lguest_leave_lazy_mmu_mode;
- 
- #ifdef CONFIG_X86_LOCAL_APIC
- 	/* apic read/write intercepts */
-diff --git a/arch/x86/mm/fault.c b/arch/x86/mm/fault.c
-index f70b901..09e6ae4 100644
---- a/arch/x86/mm/fault.c
-+++ b/arch/x86/mm/fault.c
-@@ -227,12 +227,10 @@ static inline pmd_t *vmalloc_sync_one(pgd_t *pgd, unsigned long address)
- 	if (!pmd_present(*pmd_k))
- 		return NULL;
- 
--	if (!pmd_present(*pmd)) {
-+	if (!pmd_present(*pmd))
- 		set_pmd(pmd, *pmd_k);
--		arch_flush_lazy_mmu_mode();
--	} else {
-+	else
- 		BUG_ON(pmd_page(*pmd) != pmd_page(*pmd_k));
--	}
- 
- 	return pmd_k;
- }
-diff --git a/arch/x86/mm/highmem_32.c b/arch/x86/mm/highmem_32.c
-index 522db5e..17d0103 100644
---- a/arch/x86/mm/highmem_32.c
-+++ b/arch/x86/mm/highmem_32.c
-@@ -87,7 +87,6 @@ void *kmap_atomic_prot(struct page *page, enum km_type type, pgprot_t prot)
- 	vaddr = __fix_to_virt(FIX_KMAP_BEGIN + idx);
- 	BUG_ON(!pte_none(*(kmap_pte-idx)));
- 	set_pte(kmap_pte-idx, mk_pte(page, prot));
--	arch_flush_lazy_mmu_mode();
- 
- 	return (void *)vaddr;
- }
-@@ -117,7 +116,6 @@ void kunmap_atomic(void *kvaddr, enum km_type type)
- #endif
- 	}
- 
--	arch_flush_lazy_mmu_mode();
- 	pagefault_enable();
- }
- 
-diff --git a/arch/x86/mm/iomap_32.c b/arch/x86/mm/iomap_32.c
-index 699c9b2..0c16a33 100644
---- a/arch/x86/mm/iomap_32.c
-+++ b/arch/x86/mm/iomap_32.c
-@@ -41,7 +41,6 @@ void *kmap_atomic_prot_pfn(unsigned long pfn, enum km_type type, pgprot_t prot)
- 	idx = type + KM_TYPE_NR * smp_processor_id();
- 	vaddr = __fix_to_virt(FIX_KMAP_BEGIN + idx);
- 	set_pte(kmap_pte - idx, pfn_pte(pfn, prot));
--	arch_flush_lazy_mmu_mode();
- 
- 	return (void *)vaddr;
- }
-@@ -80,7 +79,6 @@ iounmap_atomic(void *kvaddr, enum km_type type)
- 	if (vaddr == __fix_to_virt(FIX_KMAP_BEGIN+idx))
- 		kpte_clear_flush(kmap_pte-idx, vaddr);
- 
--	arch_flush_lazy_mmu_mode();
- 	pagefault_enable();
- }
- EXPORT_SYMBOL_GPL(iounmap_atomic);
-diff --git a/arch/x86/mm/pageattr.c b/arch/x86/mm/pageattr.c
-index b0e5adb..1224865 100644
---- a/arch/x86/mm/pageattr.c
-+++ b/arch/x86/mm/pageattr.c
-@@ -844,13 +844,6 @@ static int change_page_attr_set_clr(unsigned long *addr, int numpages,
- 
- 	vm_unmap_aliases();
- 
--	/*
--	 * If we're called with lazy mmu updates enabled, the
--	 * in-memory pte state may be stale.  Flush pending updates to
--	 * bring them up to date.
--	 */
--	arch_flush_lazy_mmu_mode();
--
- 	cpa.vaddr = addr;
- 	cpa.pages = pages;
- 	cpa.numpages = numpages;
-@@ -895,13 +888,6 @@ static int change_page_attr_set_clr(unsigned long *addr, int numpages,
- 	} else
- 		cpa_flush_all(cache);
- 
--	/*
--	 * If we've been called with lazy mmu updates enabled, then
--	 * make sure that everything gets flushed out before we
--	 * return.
--	 */
--	arch_flush_lazy_mmu_mode();
--
- out:
- 	return ret;
- }
+ 	 * The boot-ioremap range spans multiple pmds, for which
 diff --git a/arch/x86/xen/enlighten.c b/arch/x86/xen/enlighten.c
-index 82cd39a..70b355d 100644
+index 70b355d..da33e0c 100644
 --- a/arch/x86/xen/enlighten.c
 +++ b/arch/x86/xen/enlighten.c
-@@ -203,10 +203,10 @@ static unsigned long xen_get_debugreg(int reg)
- 	return HYPERVISOR_get_debugreg(reg);
+@@ -168,21 +168,23 @@ static void __init xen_banner(void)
+ 	       xen_feature(XENFEAT_mmu_pt_update_preserve_ad) ? " (preserve-AD)" : "");
  }
  
--void xen_leave_lazy(void)
-+static void xen_end_context_switch(struct task_struct *next)
++static __read_mostly unsigned int cpuid_leaf1_edx_mask = ~0;
++static __read_mostly unsigned int cpuid_leaf1_ecx_mask = ~0;
++
+ static void xen_cpuid(unsigned int *ax, unsigned int *bx,
+ 		      unsigned int *cx, unsigned int *dx)
  {
--	paravirt_leave_lazy(paravirt_get_lazy_mode());
- 	xen_mc_flush();
-+	paravirt_end_context_switch(next);
++	unsigned maskecx = ~0;
+ 	unsigned maskedx = ~0;
+ 
+ 	/*
+ 	 * Mask out inconvenient features, to try and disable as many
+ 	 * unsupported kernel subsystems as possible.
+ 	 */
+-	if (*ax == 1)
+-		maskedx = ~((1 << X86_FEATURE_APIC) |  /* disable APIC */
+-			    (1 << X86_FEATURE_ACPI) |  /* disable ACPI */
+-			    (1 << X86_FEATURE_MCE)  |  /* disable MCE */
+-			    (1 << X86_FEATURE_MCA)  |  /* disable MCA */
+-			    (1 << X86_FEATURE_ACC));   /* thermal monitoring */
++	if (*ax == 1) {
++		maskecx = cpuid_leaf1_ecx_mask;
++		maskedx = cpuid_leaf1_edx_mask;
++	}
+ 
+ 	asm(XEN_EMULATE_PREFIX "cpuid"
+ 		: "=a" (*ax),
+@@ -190,9 +192,43 @@ static void xen_cpuid(unsigned int *ax, unsigned int *bx,
+ 		  "=c" (*cx),
+ 		  "=d" (*dx)
+ 		: "0" (*ax), "2" (*cx));
++
++	*cx &= maskecx;
+ 	*dx &= maskedx;
  }
  
- static unsigned long xen_store_tr(void)
-@@ -817,10 +817,8 @@ static const struct pv_cpu_ops xen_cpu_ops __initdata = {
- 	/* Xen takes care of %gs when switching to usermode for us */
- 	.swapgs = paravirt_nop,
++static __init void xen_init_cpuid_mask(void)
++{
++	unsigned int ax, bx, cx, dx;
++
++	cpuid_leaf1_edx_mask =
++		~((1 << X86_FEATURE_MCE)  |  /* disable MCE */
++		  (1 << X86_FEATURE_MCA)  |  /* disable MCA */
++		  (1 << X86_FEATURE_ACC));   /* thermal monitoring */
++
++	if (!xen_initial_domain())
++		cpuid_leaf1_edx_mask &=
++			~((1 << X86_FEATURE_APIC) |  /* disable local APIC */
++			  (1 << X86_FEATURE_ACPI));  /* disable ACPI */
++
++	ax = 1;
++	xen_cpuid(&ax, &bx, &cx, &dx);
++
++	/* cpuid claims we support xsave; try enabling it to see what happens */
++	if (cx & (1 << (X86_FEATURE_XSAVE % 32))) {
++		unsigned long cr4;
++
++		set_in_cr4(X86_CR4_OSXSAVE);
++		
++		cr4 = read_cr4();
++
++		if ((cr4 & X86_CR4_OSXSAVE) == 0)
++			cpuid_leaf1_ecx_mask &= ~(1 << (X86_FEATURE_XSAVE % 32));
++
++		clear_in_cr4(X86_CR4_OSXSAVE);
++	}
++}
++
+ static void xen_set_debugreg(int reg, unsigned long val)
+ {
+ 	HYPERVISOR_set_debugreg(reg, val);
+@@ -284,12 +320,11 @@ static void xen_set_ldt(const void *addr, unsigned entries)
  
--	.lazy_mode = {
--		.enter = paravirt_enter_lazy_cpu,
--		.leave = xen_leave_lazy,
--	},
-+	.start_context_switch = paravirt_start_context_switch,
-+	.end_context_switch = xen_end_context_switch,
- };
+ static void xen_load_gdt(const struct desc_ptr *dtr)
+ {
+-	unsigned long *frames;
+ 	unsigned long va = dtr->address;
+ 	unsigned int size = dtr->size + 1;
+ 	unsigned pages = (size + PAGE_SIZE - 1) / PAGE_SIZE;
++	unsigned long frames[pages];
+ 	int f;
+-	struct multicall_space mcs;
  
- static const struct pv_apic_ops xen_apic_ops __initdata = {
+ 	/* A GDT can be up to 64k in size, which corresponds to 8192
+ 	   8-byte entries, or 16 4k pages.. */
+@@ -297,19 +332,26 @@ static void xen_load_gdt(const struct desc_ptr *dtr)
+ 	BUG_ON(size > 65536);
+ 	BUG_ON(va & ~PAGE_MASK);
+ 
+-	mcs = xen_mc_entry(sizeof(*frames) * pages);
+-	frames = mcs.args;
+-
+ 	for (f = 0; va < dtr->address + size; va += PAGE_SIZE, f++) {
+-		frames[f] = arbitrary_virt_to_mfn((void *)va);
++		int level;
++		pte_t *ptep = lookup_address(va, &level);
++		unsigned long pfn, mfn;
++		void *virt;
++
++		BUG_ON(ptep == NULL);
++
++		pfn = pte_pfn(*ptep);
++		mfn = pfn_to_mfn(pfn);
++		virt = __va(PFN_PHYS(pfn));
++
++		frames[f] = mfn;
+ 
+ 		make_lowmem_page_readonly((void *)va);
+-		make_lowmem_page_readonly(mfn_to_virt(frames[f]));
++		make_lowmem_page_readonly(virt);
+ 	}
+ 
+-	MULTI_set_gdt(mcs.mc, frames, size / sizeof(struct desc_struct));
+-
+-	xen_mc_issue(PARAVIRT_LAZY_CPU);
++	if (HYPERVISOR_set_gdt(frames, size / sizeof(struct desc_struct)))
++		BUG();
+ }
+ 
+ static void load_TLS_descriptor(struct thread_struct *t,
+@@ -895,6 +937,8 @@ asmlinkage void __init xen_start_kernel(void)
+ 
+ 	xen_init_irq_ops();
+ 
++	xen_init_cpuid_mask();
++
+ #ifdef CONFIG_X86_LOCAL_APIC
+ 	/*
+ 	 * set up the basic apic ops.
 diff --git a/arch/x86/xen/mmu.c b/arch/x86/xen/mmu.c
-index db3802f..e194f72 100644
+index e194f72..aa16ef4 100644
 --- a/arch/x86/xen/mmu.c
 +++ b/arch/x86/xen/mmu.c
-@@ -419,10 +419,6 @@ void set_pte_mfn(unsigned long vaddr, unsigned long mfn, pgprot_t flags)
- void xen_set_pte_at(struct mm_struct *mm, unsigned long addr,
- 		    pte_t *ptep, pte_t pteval)
- {
--	/* updates to init_mm may be done without lock */
--	if (mm == &init_mm)
--		preempt_disable();
+@@ -159,18 +159,14 @@ DEFINE_PER_CPU(unsigned long, xen_current_cr3);	 /* actual vcpu cr3 */
+ #define TOP_ENTRIES		(MAX_DOMAIN_PAGES / P2M_ENTRIES_PER_PAGE)
+ 
+ /* Placeholder for holes in the address space */
+-static unsigned long p2m_missing[P2M_ENTRIES_PER_PAGE] __page_aligned_data =
+-		{ [ 0 ... P2M_ENTRIES_PER_PAGE-1 ] = ~0UL };
++static unsigned long *p2m_missing;
+ 
+  /* Array of pointers to pages containing p2m entries */
+-static unsigned long *p2m_top[TOP_ENTRIES] __page_aligned_data =
+-		{ [ 0 ... TOP_ENTRIES - 1] = &p2m_missing[0] };
++static unsigned long **p2m_top;
+ 
+ /* Arrays of p2m arrays expressed in mfns used for save/restore */
+-static unsigned long p2m_top_mfn[TOP_ENTRIES] __page_aligned_bss;
 -
- 	ADD_STATS(set_pte_at, 1);
- //	ADD_STATS(set_pte_at_pinned, xen_page_pinned(ptep));
- 	ADD_STATS(set_pte_at_current, mm == current->mm);
-@@ -443,9 +439,7 @@ void xen_set_pte_at(struct mm_struct *mm, unsigned long addr,
+-static unsigned long p2m_top_mfn_list[TOP_ENTRIES / P2M_ENTRIES_PER_PAGE]
+-	__page_aligned_bss;
++static unsigned long *p2m_top_mfn;
++static unsigned long *p2m_top_mfn_list;
+ 
+ static inline unsigned p2m_top_index(unsigned long pfn)
+ {
+@@ -183,22 +179,35 @@ static inline unsigned p2m_index(unsigned long pfn)
+ 	return pfn % P2M_ENTRIES_PER_PAGE;
+ }
+ 
++#define SIZE_TOP_MFN sizeof(*p2m_top_mfn) * TOP_ENTRIES
++#define SIZE_TOP_MFN_LIST sizeof(*p2m_top_mfn_list) *			\
++	(TOP_ENTRIES / P2M_ENTRIES_PER_PAGE)
++
++RESERVE_BRK(xen_top_mfn, SIZE_TOP_MFN);
++RESERVE_BRK(xen_top_mfn_list, SIZE_TOP_MFN_LIST);
++
+ /* Build the parallel p2m_top_mfn structures */
+-void xen_setup_mfn_list_list(void)
++static void __init xen_build_mfn_list_list(void)
+ {
+ 	unsigned pfn, idx;
+ 
++	p2m_top_mfn = extend_brk(SIZE_TOP_MFN, PAGE_SIZE);
++	p2m_top_mfn_list = extend_brk(SIZE_TOP_MFN_LIST, PAGE_SIZE);
++
+ 	for (pfn = 0; pfn < MAX_DOMAIN_PAGES; pfn += P2M_ENTRIES_PER_PAGE) {
+ 		unsigned topidx = p2m_top_index(pfn);
+ 
+ 		p2m_top_mfn[topidx] = virt_to_mfn(p2m_top[topidx]);
  	}
- 	xen_set_pte(ptep, pteval);
  
--out:
--	if (mm == &init_mm)
--		preempt_enable();
-+out:	return;
- }
- 
- pte_t xen_ptep_modify_prot_start(struct mm_struct *mm,
-@@ -1119,10 +1113,8 @@ static void drop_other_mm_ref(void *info)
- 
- 	/* If this cpu still has a stale cr3 reference, then make sure
- 	   it has been flushed. */
--	if (percpu_read(xen_current_cr3) == __pa(mm->pgd)) {
-+	if (percpu_read(xen_current_cr3) == __pa(mm->pgd))
- 		load_cr3(swapper_pg_dir);
--		arch_flush_lazy_cpu_mode();
--	}
- }
- 
- static void xen_drop_mm_ref(struct mm_struct *mm)
-@@ -1135,7 +1127,6 @@ static void xen_drop_mm_ref(struct mm_struct *mm)
- 			load_cr3(swapper_pg_dir);
- 		else
- 			leave_mm(smp_processor_id());
--		arch_flush_lazy_cpu_mode();
+-	for (idx = 0; idx < ARRAY_SIZE(p2m_top_mfn_list); idx++) {
++	for (idx = 0; idx < (TOP_ENTRIES / P2M_ENTRIES_PER_PAGE); idx++) {
+ 		unsigned topidx = idx * P2M_ENTRIES_PER_PAGE;
+ 		p2m_top_mfn_list[idx] = virt_to_mfn(&p2m_top_mfn[topidx]);
  	}
- 
- 	/* Get the "official" set of cpus referring to our pagetable. */
-@@ -1819,6 +1810,11 @@ __init void xen_post_allocator_init(void)
- 	xen_mark_init_mm_pinned();
- }
- 
-+static void xen_leave_lazy_mmu(void)
-+{
-+	xen_mc_flush();
-+	paravirt_leave_lazy_mmu();
 +}
  
++void xen_setup_mfn_list_list(void)
++{
+ 	BUG_ON(HYPERVISOR_shared_info == &xen_dummy_shared_info);
+ 
+ 	HYPERVISOR_shared_info->arch.pfn_to_mfn_frame_list_list =
+@@ -206,18 +215,34 @@ void xen_setup_mfn_list_list(void)
+ 	HYPERVISOR_shared_info->arch.max_pfn = xen_start_info->nr_pages;
+ }
+ 
++#define SIZE_P2M_MISSING	sizeof(*p2m_missing) * P2M_ENTRIES_PER_PAGE
++#define SIZE_P2M_TOP		sizeof(*p2m_top) * TOP_ENTRIES
++RESERVE_BRK(xen_p2m_missing, SIZE_P2M_MISSING);
++RESERVE_BRK(xen_p2m_top, SIZE_P2M_TOP);
++
+ /* Set up p2m_top to point to the domain-builder provided p2m pages */
+ void __init xen_build_dynamic_phys_to_machine(void)
+ {
+ 	unsigned long *mfn_list = (unsigned long *)xen_start_info->mfn_list;
+ 	unsigned long max_pfn = min(MAX_DOMAIN_PAGES, xen_start_info->nr_pages);
+ 	unsigned pfn;
++	unsigned i;
++
++	p2m_missing = extend_brk(SIZE_P2M_MISSING, PAGE_SIZE);
++	for(i = 0; i < P2M_ENTRIES_PER_PAGE; i++)
++		p2m_missing[i] = ~0ul;
++
++	p2m_top = extend_brk(SIZE_P2M_TOP, PAGE_SIZE);
++	for(i = 0; i < TOP_ENTRIES; i++)
++		p2m_top[i] = p2m_missing;
+ 
+ 	for (pfn = 0; pfn < max_pfn; pfn += P2M_ENTRIES_PER_PAGE) {
+ 		unsigned topidx = p2m_top_index(pfn);
+ 
+ 		p2m_top[topidx] = &mfn_list[pfn];
+ 	}
++
++	xen_build_mfn_list_list();
+ }
+ 
+ unsigned long get_phys_to_machine(unsigned long pfn)
+@@ -233,47 +258,74 @@ unsigned long get_phys_to_machine(unsigned long pfn)
+ }
+ EXPORT_SYMBOL_GPL(get_phys_to_machine);
+ 
+-static void alloc_p2m(unsigned long **pp, unsigned long *mfnp)
++/* install a  new p2m_top page */
++bool install_p2mtop_page(unsigned long pfn, unsigned long *p)
+ {
+-	unsigned long *p;
++	unsigned topidx = p2m_top_index(pfn);
++	unsigned long **pfnp, *mfnp;
+ 	unsigned i;
+ 
+-	p = (void *)__get_free_page(GFP_KERNEL | __GFP_NOFAIL);
+-	BUG_ON(p == NULL);
++	pfnp = &p2m_top[topidx];
++	mfnp = &p2m_top_mfn[topidx];
+ 
+ 	for (i = 0; i < P2M_ENTRIES_PER_PAGE; i++)
+ 		p[i] = INVALID_P2M_ENTRY;
+ 
+-	if (cmpxchg(pp, p2m_missing, p) != p2m_missing)
+-		free_page((unsigned long)p);
+-	else
++	if (cmpxchg(pfnp, p2m_missing, p) == p2m_missing) {
+ 		*mfnp = virt_to_mfn(p);
++		return true;
++	}
++
++	return false;
+ }
+ 
+-void set_phys_to_machine(unsigned long pfn, unsigned long mfn)
++static void alloc_p2m(unsigned long pfn)
+ {
+-	unsigned topidx, idx;
++	unsigned long *p;
+ 
+-	if (unlikely(xen_feature(XENFEAT_auto_translated_physmap))) {
+-		BUG_ON(pfn != mfn && mfn != INVALID_P2M_ENTRY);
+-		return;
+-	}
++	p = (void *)__get_free_page(GFP_KERNEL | __GFP_NOFAIL);
++	BUG_ON(p == NULL);
++
++	if (!install_p2mtop_page(pfn, p))
++		free_page((unsigned long)p);
++}
++
++/* Try to install p2m mapping; fail if intermediate bits missing */
++bool __set_phys_to_machine(unsigned long pfn, unsigned long mfn)
++{
++	unsigned topidx, idx;
+ 
+ 	if (unlikely(pfn >= MAX_DOMAIN_PAGES)) {
+ 		BUG_ON(mfn != INVALID_P2M_ENTRY);
+-		return;
++		return true;
+ 	}
+ 
+ 	topidx = p2m_top_index(pfn);
+ 	if (p2m_top[topidx] == p2m_missing) {
+-		/* no need to allocate a page to store an invalid entry */
+ 		if (mfn == INVALID_P2M_ENTRY)
+-			return;
+-		alloc_p2m(&p2m_top[topidx], &p2m_top_mfn[topidx]);
++			return true;
++		return false;
+ 	}
+ 
+ 	idx = p2m_index(pfn);
+ 	p2m_top[topidx][idx] = mfn;
++
++	return true;
++}
++
++void set_phys_to_machine(unsigned long pfn, unsigned long mfn)
++{
++	if (unlikely(xen_feature(XENFEAT_auto_translated_physmap))) {
++		BUG_ON(pfn != mfn && mfn != INVALID_P2M_ENTRY);
++		return;
++	}
++
++	if (unlikely(!__set_phys_to_machine(pfn, mfn)))  {
++		alloc_p2m(pfn);
++
++		if (!__set_phys_to_machine(pfn, mfn))
++			BUG();
++	}
+ }
+ 
+ unsigned long arbitrary_virt_to_mfn(void *vaddr)
+@@ -981,7 +1033,7 @@ static __init int xen_mark_pinned(struct mm_struct *mm, struct page *page,
+ 	return 0;
+ }
+ 
+-void __init xen_mark_init_mm_pinned(void)
++static void __init xen_mark_init_mm_pinned(void)
+ {
+ 	xen_pgd_walk(&init_mm, xen_mark_pinned, FIXADDR_TOP);
+ }
+@@ -1261,8 +1313,8 @@ static void xen_flush_tlb_others(const struct cpumask *cpus,
+ 	} *args;
+ 	struct multicall_space mcs;
+ 
+-	BUG_ON(cpumask_empty(cpus));
+-	BUG_ON(!mm);
++	if (cpumask_empty(cpus))
++		return;		/* nothing to do */
+ 
+ 	mcs = xen_mc_entry(sizeof(*args));
+ 	args = mcs.args;
+@@ -1429,6 +1481,15 @@ static __init void xen_set_pte_init(pte_t *ptep, pte_t pte)
+ }
+ #endif
+ 
++static void pin_pagetable_pfn(unsigned cmd, unsigned long pfn)
++{
++	struct mmuext_op op;
++	op.cmd = cmd;
++	op.arg1.mfn = pfn_to_mfn(pfn);
++	if (HYPERVISOR_mmuext_op(&op, 1, NULL, DOMID_SELF))
++		BUG();
++}
++
+ /* Early in boot, while setting up the initial pagetable, assume
+    everything is pinned. */
+ static __init void xen_alloc_pte_init(struct mm_struct *mm, unsigned long pfn)
+@@ -1437,22 +1498,29 @@ static __init void xen_alloc_pte_init(struct mm_struct *mm, unsigned long pfn)
+ 	BUG_ON(mem_map);	/* should only be used early */
+ #endif
+ 	make_lowmem_page_readonly(__va(PFN_PHYS(pfn)));
++	pin_pagetable_pfn(MMUEXT_PIN_L1_TABLE, pfn);
++}
++
++/* Used for pmd and pud */
++static __init void xen_alloc_pmd_init(struct mm_struct *mm, unsigned long pfn)
++{
++#ifdef CONFIG_FLATMEM
++	BUG_ON(mem_map);	/* should only be used early */
++#endif
++	make_lowmem_page_readonly(__va(PFN_PHYS(pfn)));
+ }
+ 
+ /* Early release_pte assumes that all pts are pinned, since there's
+    only init_mm and anything attached to that is pinned. */
+-static void xen_release_pte_init(unsigned long pfn)
++static __init void xen_release_pte_init(unsigned long pfn)
+ {
++	pin_pagetable_pfn(MMUEXT_UNPIN_TABLE, pfn);
+ 	make_lowmem_page_readwrite(__va(PFN_PHYS(pfn)));
+ }
+ 
+-static void pin_pagetable_pfn(unsigned cmd, unsigned long pfn)
++static __init void xen_release_pmd_init(unsigned long pfn)
+ {
+-	struct mmuext_op op;
+-	op.cmd = cmd;
+-	op.arg1.mfn = pfn_to_mfn(pfn);
+-	if (HYPERVISOR_mmuext_op(&op, 1, NULL, DOMID_SELF))
+-		BUG();
++	make_lowmem_page_readwrite(__va(PFN_PHYS(pfn)));
+ }
+ 
+ /* This needs to make sure the new pte page is pinned iff its being
+@@ -1737,6 +1805,11 @@ __init pgd_t *xen_setup_kernel_pagetable(pgd_t *pgd,
+ 
+ 	pin_pagetable_pfn(MMUEXT_PIN_L3_TABLE, PFN_DOWN(__pa(swapper_pg_dir)));
+ 
++	reserve_early(__pa(xen_start_info->pt_base),
++		      __pa(xen_start_info->pt_base +
++			   xen_start_info->nr_pt_frames * PAGE_SIZE),
++		      "XEN PAGETABLES");
++
+ 	return swapper_pg_dir;
+ }
+ #endif	/* CONFIG_X86_64 */
+@@ -1764,6 +1837,9 @@ static void xen_set_fixmap(unsigned idx, unsigned long phys, pgprot_t prot)
+ #ifdef CONFIG_X86_LOCAL_APIC
+ 	case FIX_APIC_BASE:	/* maps dummy local APIC */
+ #endif
++	case FIX_TEXT_POKE0:
++	case FIX_TEXT_POKE1:
++		/* All local page mappings */
+ 		pte = pfn_pte(phys, prot);
+ 		break;
+ 
+@@ -1812,8 +1888,10 @@ __init void xen_post_allocator_init(void)
+ 
+ static void xen_leave_lazy_mmu(void)
+ {
++	preempt_disable();
+ 	xen_mc_flush();
+ 	paravirt_leave_lazy_mmu();
++	preempt_enable();
+ }
+ 
  const struct pv_mmu_ops xen_mmu_ops __initdata = {
- 	.pagetable_setup_start = xen_pagetable_setup_start,
-@@ -1893,7 +1889,7 @@ const struct pv_mmu_ops xen_mmu_ops __initdata = {
+@@ -1839,9 +1917,9 @@ const struct pv_mmu_ops xen_mmu_ops __initdata = {
  
- 	.lazy_mode = {
- 		.enter = paravirt_enter_lazy_mmu,
--		.leave = xen_leave_lazy,
-+		.leave = xen_leave_lazy_mmu,
- 	},
+ 	.alloc_pte = xen_alloc_pte_init,
+ 	.release_pte = xen_release_pte_init,
+-	.alloc_pmd = xen_alloc_pte_init,
++	.alloc_pmd = xen_alloc_pmd_init,
+ 	.alloc_pmd_clone = paravirt_nop,
+-	.release_pmd = xen_release_pte_init,
++	.release_pmd = xen_release_pmd_init,
  
- 	.set_fixmap = xen_set_fixmap,
+ #ifdef CONFIG_HIGHPTE
+ 	.kmap_atomic_pte = xen_kmap_atomic_pte,
+@@ -1879,8 +1957,8 @@ const struct pv_mmu_ops xen_mmu_ops __initdata = {
+ 	.make_pud = PV_CALLEE_SAVE(xen_make_pud),
+ 	.set_pgd = xen_set_pgd_hyper,
+ 
+-	.alloc_pud = xen_alloc_pte_init,
+-	.release_pud = xen_release_pte_init,
++	.alloc_pud = xen_alloc_pmd_init,
++	.release_pud = xen_release_pmd_init,
+ #endif	/* PAGETABLE_LEVELS == 4 */
+ 
+ 	.activate_mm = xen_activate_mm,
+diff --git a/arch/x86/xen/mmu.h b/arch/x86/xen/mmu.h
+index 24d1b44..da73026 100644
+--- a/arch/x86/xen/mmu.h
++++ b/arch/x86/xen/mmu.h
+@@ -11,6 +11,9 @@ enum pt_level {
+ };
+ 
+ 
++bool __set_phys_to_machine(unsigned long pfn, unsigned long mfn);
++bool install_p2mtop_page(unsigned long pfn, unsigned long *p);
++
+ void set_pte_mfn(unsigned long vaddr, unsigned long pfn, pgprot_t flags);
+ 
+ 
+diff --git a/arch/x86/xen/smp.c b/arch/x86/xen/smp.c
+index 585a6e3..429834e 100644
+--- a/arch/x86/xen/smp.c
++++ b/arch/x86/xen/smp.c
+@@ -317,7 +317,7 @@ static int __cpuinit xen_cpu_up(unsigned int cpu)
+ 	BUG_ON(rc);
+ 
+ 	while(per_cpu(cpu_state, cpu) != CPU_ONLINE) {
+-		HYPERVISOR_sched_op(SCHEDOP_yield, 0);
++		HYPERVISOR_sched_op(SCHEDOP_yield, NULL);
+ 		barrier();
+ 	}
+ 
+@@ -422,7 +422,7 @@ static void xen_smp_send_call_function_ipi(const struct cpumask *mask)
+ 	/* Make sure other vcpus get a chance to run if they need to. */
+ 	for_each_cpu(cpu, mask) {
+ 		if (xen_vcpu_stolen(cpu)) {
+-			HYPERVISOR_sched_op(SCHEDOP_yield, 0);
++			HYPERVISOR_sched_op(SCHEDOP_yield, NULL);
+ 			break;
+ 		}
+ 	}
 diff --git a/arch/x86/xen/xen-ops.h b/arch/x86/xen/xen-ops.h
-index 2f5ef26..f897cdf 100644
+index f897cdf..5c50a10 100644
 --- a/arch/x86/xen/xen-ops.h
 +++ b/arch/x86/xen/xen-ops.h
-@@ -30,7 +30,6 @@ pgd_t *xen_setup_kernel_pagetable(pgd_t *pgd, unsigned long max_pfn);
- void xen_ident_map_ISA(void);
- void xen_reserve_top(void);
+@@ -56,8 +56,6 @@ irqreturn_t xen_debug_interrupt(int irq, void *dev_id);
  
--void xen_leave_lazy(void);
- void xen_post_allocator_init(void);
+ bool xen_vcpu_stolen(int vcpu);
  
- char * __init xen_memory_setup(void);
-diff --git a/include/asm-frv/pgtable.h b/include/asm-frv/pgtable.h
-index e16fdb1..0988704 100644
---- a/include/asm-frv/pgtable.h
-+++ b/include/asm-frv/pgtable.h
-@@ -73,8 +73,8 @@ static inline int pte_file(pte_t pte) { return 0; }
- #define pgtable_cache_init()		do {} while (0)
- #define arch_enter_lazy_mmu_mode()	do {} while (0)
- #define arch_leave_lazy_mmu_mode()	do {} while (0)
--#define arch_enter_lazy_cpu_mode()	do {} while (0)
--#define arch_leave_lazy_cpu_mode()	do {} while (0)
-+
-+#define arch_start_context_switch(prev)	do {} while (0)
+-void xen_mark_init_mm_pinned(void);
+-
+ void xen_setup_vcpu_info_placement(void);
  
- #else /* !CONFIG_MMU */
- /*****************************************************************************/
-diff --git a/include/asm-generic/pgtable.h b/include/asm-generic/pgtable.h
-index 8e6d0ca..e410f60 100644
---- a/include/asm-generic/pgtable.h
-+++ b/include/asm-generic/pgtable.h
-@@ -280,17 +280,18 @@ static inline void ptep_modify_prot_commit(struct mm_struct *mm,
- #endif
- 
- /*
-- * A facility to provide batching of the reload of page tables with the
-- * actual context switch code for paravirtualized guests.  By convention,
-- * only one of the lazy modes (CPU, MMU) should be active at any given
-- * time, entry should never be nested, and entry and exits should always
-- * be paired.  This is for sanity of maintaining and reasoning about the
-- * kernel code.
-+ * A facility to provide batching of the reload of page tables and
-+ * other process state with the actual context switch code for
-+ * paravirtualized guests.  By convention, only one of the batched
-+ * update (lazy) modes (CPU, MMU) should be active at any given time,
-+ * entry should never be nested, and entry and exits should always be
-+ * paired.  This is for sanity of maintaining and reasoning about the
-+ * kernel code.  In this case, the exit (end of the context switch) is
-+ * in architecture-specific code, and so doesn't need a generic
-+ * definition.
-  */
--#ifndef __HAVE_ARCH_ENTER_LAZY_CPU_MODE
--#define arch_enter_lazy_cpu_mode()	do {} while (0)
--#define arch_leave_lazy_cpu_mode()	do {} while (0)
--#define arch_flush_lazy_cpu_mode()	do {} while (0)
-+#ifndef __HAVE_ARCH_START_CONTEXT_SWITCH
-+#define arch_start_context_switch(prev)	do {} while (0)
- #endif
- 
- #ifndef __HAVE_PFNMAP_TRACKING
-diff --git a/kernel/sched.c b/kernel/sched.c
-index 3e827b8..77b43e3 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -2804,7 +2804,7 @@ context_switch(struct rq *rq, struct task_struct *prev,
- 	 * combine the page table reload and the switch backend into
- 	 * one hypercall.
- 	 */
--	arch_enter_lazy_cpu_mode();
-+	arch_start_context_switch(prev);
- 
- 	if (unlikely(!mm)) {
- 		next->active_mm = oldmm;
+ #ifdef CONFIG_SMP
 
 
