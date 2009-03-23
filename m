@@ -1,99 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759172AbZCWVop@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758721AbZCWVpV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759172AbZCWVop (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Mar 2009 17:44:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754818AbZCWVoe
+	id S1758721AbZCWVpV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Mar 2009 17:45:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754818AbZCWVpA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Mar 2009 17:44:34 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:59054 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1754406AbZCWVod (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Mar 2009 17:44:33 -0400
-Date: Mon, 23 Mar 2009 17:44:31 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Frans Pop <elendil@planet.nl>
-cc: linux-usb@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       <linux-pm@lists.linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] usb: avoid PM error messages during resume if a device
- was disconnected
-In-Reply-To: <200903232211.51154.elendil@planet.nl>
-Message-ID: <Pine.LNX.4.44L0.0903231738300.3610-100000@iolanthe.rowland.org>
+	Mon, 23 Mar 2009 17:45:00 -0400
+Received: from thunk.org ([69.25.196.29]:53072 "EHLO thunker.thunk.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752866AbZCWVo7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Mar 2009 17:44:59 -0400
+Date: Mon, 23 Mar 2009 17:44:17 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Oleg Nesterov <oleg@redhat.com>
+Cc: Alexey Dobriyan <adobriyan@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       "Frank Ch. Eigler" <fche@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Roland McGrath <roland@redhat.com>,
+       Steven Rostedt <rostedt@goodmis.org>, utrace-devel@redhat.com,
+       linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH 3/3] utrace-based ftrace "process" engine, v2
+Message-ID: <20090323214417.GD5814@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Oleg Nesterov <oleg@redhat.com>,
+	Alexey Dobriyan <adobriyan@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	"Frank Ch. Eigler" <fche@redhat.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Roland McGrath <roland@redhat.com>,
+	Steven Rostedt <rostedt@goodmis.org>, utrace-devel@redhat.com,
+	linux-kernel@vger.kernel.org,
+	Peter Zijlstra <a.p.zijlstra@chello.nl>,
+	Thomas Gleixner <tglx@linutronix.de>
+References: <20090321041954.72b99e69.akpm@linux-foundation.org> <20090321115141.GA3566@redhat.com> <20090321050422.d1d99eec.akpm@linux-foundation.org> <20090321154501.GA2707@elte.hu> <20090321143413.75ead1aa.akpm@linux-foundation.org> <20090321215145.GB5262@redhat.com> <alpine.LFD.2.00.0903211501060.3030@localhost.localdomain> <20090322123749.GF19826@elte.hu> <20090323134813.GA18219@x200.localdomain> <20090323151400.GA3413@redhat.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090323151400.GA3413@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 23 Mar 2009, Frans Pop wrote:
-
-> Currently if a laptop is suspended e.g. while docked and then resumed after
-> undocking it, the following errors get generated because the USB hub in the
-> docking station and the devices connected to it are no longer available:
-> pm_op(): usb_dev_resume+0x0/0x10 returns -19
-> PM: Device 1-2 failed to resume: error -19
-> pm_op(): usb_dev_resume+0x0/0x10 returns -19
-> PM: Device 1-2.2 failed to resume: error -19
-> pm_op(): usb_dev_resume+0x0/0x10 returns -19
-> PM: Device 1-2.3 failed to resume: error -19
+On Mon, Mar 23, 2009 at 04:14:00PM +0100, Oleg Nesterov wrote:
 > 
-> As the removal of USB devices while a system is suspended is a relatively
-> common use case and in most cases not an error, just return success on
-> -ENODEV. The user gets informed anyway as the USB subsystem generates
-> regular disconnect messages for the devices shortly afterwards:
-> usb 1-2: USB disconnect, address 3
-> usb 1-2.2: USB disconnect, address 4
-> usblp0: removed
-> usb 1-2.3: USB disconnect, address 5
+> Yes, ptrace-over-utrace needs more work. But your message looks as if
+> utrace core is buggy, imho this is a bit unfair ;)
 > 
-> Signed-off-by: Frans Pop <elendil@planet.nl>
-> Cc: Alan Stern <stern@rowland.harvard.edu>
-> Cc: Rafael J. Wysocki <rjw@sisk.pl>
-> ---
+> As Roland said, ptrace-over-utrace is not ready yet. If you mean that
+> utrace core should not be merged alone - this is another story.
 > 
-> I've walked through the code and AFAICT just returning 0 does not make any
-> difference for the PM core code.
+> But personally I understand why Roland sends utrace core before changing
+> ptrace.
 
-That's right.  After all, there isn't much the PM core can do when an 
-error occurs.
+Yes, but if it's going to be merged this during 2.6.x cycle, we need
+to have a user for the kernel interface along with the new kernel
+interface.  This is true for any body trying to add some new
+infrastructure to the kernel; you have to have an in-tree user of said
+interface.
 
-> In a first version of this patch I had the following included just before
-> the 'return 0':
-> 	pr_info("usb %s: failed to resume: no longer connected\n",
-> 						dev_name(&udev->dev));
-> 
-> Problem with that was that the message got printed twice for each device,
-> once for .resume and once for .complete. Given that the disconnects are
-> reported shortly after anyway, I decided the simpler patch might do just
-> as well.
-> 
-> Cheers,
-> FJP
-> 
-> diff --git a/drivers/usb/core/driver.c b/drivers/usb/core/driver.c
-> index d0a21a5..97ea69b 100644
-> --- a/drivers/usb/core/driver.c
-> +++ b/drivers/usb/core/driver.c
-> @@ -1727,6 +1727,10 @@ int usb_external_resume_device(struct usb_device *udev, pm_message_t msg)
->  	status = usb_resume_both(udev, msg);
->  	udev->last_busy = jiffies;
->  	usb_pm_unlock(udev);
-> +
-> +	if (status == -ENODEV)
-> +		return 0;
-> +
->  	if (status == 0)
->  		do_unbind_rebind(udev, DO_REBIND);
+I mean, if some device manufacturer were to go to Red Hat's kernel
+team, and say, "we need this interface for our uber expensive RDMA
+interface card", and there was no in-kernel user for the interface, we
+know what Red Hat would tell that device manufacturer, right?  So why
+is the SystemTap team trying to get an exception for utrace?  It just
+seems a little hypocritical.
 
-Please include a short comment explaining the reason for this test 
-(i.e., that there's no advantage in producing an error message since 
-the regular disconnect messages will be generated shortly).
+So what about the ftrace user of utrace?  Is that ready to be merged?
 
-Or do you think maybe it would be better to move this test up into the
-PM core?  After all, other subsystems will face the same issue.  I 
-think that would be the best approach.  Yes?
-
-Alan STern
-
+   	      	  	      	 	     - Ted
