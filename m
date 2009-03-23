@@ -1,61 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757958AbZCWJNq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758025AbZCWJQo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757958AbZCWJNq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Mar 2009 05:13:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756807AbZCWJNh
+	id S1758025AbZCWJQo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Mar 2009 05:16:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756713AbZCWJQd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Mar 2009 05:13:37 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:46466 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756316AbZCWJNg (ORCPT
+	Mon, 23 Mar 2009 05:16:33 -0400
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:55641 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753104AbZCWJQc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Mar 2009 05:13:36 -0400
-Message-ID: <49C752AF.7040706@jp.fujitsu.com>
-Date: Mon, 23 Mar 2009 18:13:19 +0900
-From: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
+	Mon, 23 Mar 2009 05:16:32 -0400
+Date: Mon, 23 Mar 2009 10:16:19 +0100
+From: Robert Schwebel <r.schwebel@pengutronix.de>
+To: Daniel =?iso-8859-15?Q?Kr=FCger?= 
+	<daniel.krueger@systec-electronic.com>
+Cc: david@lang.hm, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Robert Schwebel <r.schwebel@pengutronix.de>, Greg KH <greg@kroah.com>,
+       linux-kernel@vger.kernel.org, Michael Olbrich <mol@pengutronix.de>,
+       Wolfram Sang <wsa@pengutronix.de>,
+       Marc Kleine-Budde <mkl@pengutronix.de>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: The Linux Staging tree, what it is and is not.
+Message-ID: <20090323091619.GN5367@pengutronix.de>
+References: <20090318183232.GA11594@kroah.com> <20090320005808.GM5367@pengutronix.de> <20090320100146.6599f671@lxorguk.ukuu.org.uk> <20090320103545.GQ5367@pengutronix.de> <20090320105556.4375176d@lxorguk.ukuu.org.uk> <20090320111552.GS5367@pengutronix.de> <49C3B33F.1020905@systec-electronic.com> <20090320153713.65bf8e2d@lxorguk.ukuu.org.uk> <alpine.DEB.1.10.0903201332130.16753@asgard.lang.hm> <49C7505B.2010205@systec-electronic.com>
 MIME-Version: 1.0
-To: Peter Zijlstra <peterz@infradead.org>
-CC: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       stable@kernel.org
-Subject: Re: [PATCH 1/2] x86: Rename __task_delta_exec() to task_delta_exec_locked()
-References: <49BF3F73.5090007@jp.fujitsu.com>	 <49C0CFC2.7080604@jp.fujitsu.com> <20090318113430.GD32233@elte.hu>	 <49C71A15.5030300@jp.fujitsu.com> <1237795059.24918.5.camel@twins>
-In-Reply-To: <1237795059.24918.5.camel@twins>
-Content-Type: text/plain; charset=ISO-2022-JP
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <49C7505B.2010205@systec-electronic.com>
+X-Sent-From: Pengutronix Entwicklungszentrum Nord - Hildesheim
+X-URL: http://www.pengutronix.de/
+X-IRC: #ptxdist @freenode
+X-Accept-Language: de,en
+X-Accept-Content-Type: text/plain
+X-Impressum: Pengutronix - Linux Solutions for Science and Industry
+	Handelsregister:  Amtsgericht Hildesheim, HRA 2686 Peiner Strasse
+	6-8, 31137 Hildesheim, Germany Phone: +49-5121-206917-0 |  Fax:
+	+49-5121-206917-5555 Inhaber: Dipl.-Ing. Robert Schwebel
+X-Message-Flag: See Message Headers for Impressum
+X-Uptime: 10:06:01 up 33 days, 59 min, 24 users,  load average: 0.10, 0.10,
+	0.06
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
+X-SA-Exim-Mail-From: rsc@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Zijlstra wrote:
-> On Mon, 2009-03-23 at 14:11 +0900, Hidetoshi Seto wrote:
->> Externing function with prefix "__" is unpleasant.
->> This patch renames the function and fix the caller.
->> This change is desirable for other fix that against posix clocks,
->> since the fix introduces another __task_delta_exec() which is static.
-> 
-> There's nothing wrong with __ prefixed functions, the core kernel is
-> stuffed with them, and its a well known prefix for functions that need
-> special care.
+On Mon, Mar 23, 2009 at 10:03:23AM +0100, Daniel Krüger wrote:
+>> what I understand from this thread is that the hardware is a standard
+>> ethernet card.
+>
+> It may be a standard Ethernet controller. But it could also be a
+> controller with a special hardware acceleration.
 
-I often suppose that the functions with __ prefix is used for a kind of
-(local) subroutine that mostly used internally in the *.c file, and that
-therefore it is often defined as static (or static inline).
+Industrial Ethernets or CANopen can also be implemented with hardware
+solutions like a netX or an FPGA, which both would have shared memory to
+the CPU plus a part of the stack in userspace; however, this is nothing
+that should be abstracted with this driver infrastructure. It is an
+issue for a more higher level interface, which is what we will provide
+with the OSADL Fieldbus Framework:
 
-I also suppose that __Func() followed by Func() is called from Func()
-(and its relatives, like Func_foo() or Func_bar() etc., if exists)
-as a common core part of Func().
++------------------------------------+
+I            Application             I
++------------------------------------+
 
-> Furthermore your argument seems contradictory in that it
-> introduces one.
++------------------------------------+
+I         Process Data Library       I
++------------------------------------+
 
-I thought it is acceptable since the introduced one is static.
++--------------------+ +-------------+
+I   $FIELDBUS Stack  I I  Userspace  I
+I                    I I    Driver   I
++--------------------+ +-------------+
 
-Still I feel uneasy about the non-static __Func(), however it is
-easy to fix with a little patients.
-Wait a moment for next patch (it will be a single patch, v3).
++--------------------+ +-------------+
+I AF_CAN / AF_PACKET I I     UIO     I
+I     Socket         I I             I
++--------------------+ +-------------+ Userspace
+                                        ___^___
++--------------------+ +-------------+     v
+I    eth/can Card    I I UIO driver  I  Kernel
+I with normal driver I I             I
++--------------------+ +-------------+
 
-
-Thanks,
-H.Seto
-
+rsc
+-- 
+Pengutronix e.K.                           |                             |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
+Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
