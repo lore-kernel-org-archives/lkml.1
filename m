@@ -1,142 +1,632 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757803AbZCWN5x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757950AbZCWN6P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757803AbZCWN5x (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Mar 2009 09:57:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752975AbZCWN5n
+	id S1757950AbZCWN6P (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Mar 2009 09:58:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756902AbZCWN5t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Mar 2009 09:57:43 -0400
-Received: from mx1.emlix.com ([193.175.82.87]:46538 "EHLO mx1.emlix.com"
+	Mon, 23 Mar 2009 09:57:49 -0400
+Received: from mx1.emlix.com ([193.175.82.87]:42443 "EHLO mx1.emlix.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752853AbZCWN5n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Mar 2009 09:57:43 -0400
+	id S1757309AbZCWN5r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Mar 2009 09:57:47 -0400
 From: Oskar Schirmer <os@emlix.com>
 To: Chris Zankel <chris@zankel.net>
 Cc: linux-kernel@vger.kernel.org, linux-xtensa@linux-xtensa.org,
-       Oskar Schirmer <os@emlix.com>
-Subject: [patch 1/2] xtensa: cache inquiry and unaligned cache handling functions
-Date: Mon, 23 Mar 2009 14:58:42 +0100
-Message-Id: <1237816723-29041-1-git-send-email-os@emlix.com>
+       Oskar Schirmer <os@emlix.com>,
+       =?utf-8?q?Daniel=20Gl=C3=B6ckner?= <dg@emlix.com>,
+       Fabian Godehardt <fg@emlix.com>
+Subject: [patch 2/2] xtensa: s6000 dma engine support
+Date: Mon, 23 Mar 2009 14:58:43 +0100
+Message-Id: <1237816723-29041-2-git-send-email-os@emlix.com>
+In-Reply-To: <1237816723-29041-1-git-send-email-os@emlix.com>
+References: <1237816723-29041-1-git-send-email-os@emlix.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Organization: emlix gmbh, Goettingen, Germany"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The existing xtensa cache handling functions work on page-aligned
-memory regions.
+There are four slightly different dma engines on the s6000 family.
+One for memory-memory transfers, the other three for memory-device.
 
-These functions are needed for the s6000 dma engine which can work on
-a byte-granularity.
+This patch implements a platform-specific kernel-API to control these
+engines.  It is needed for the network, video, audio peripherals on
+s6000.
 
 Signed-off-by: Oskar Schirmer <os@emlix.com>
+Signed-off-by: Daniel Glöckner <dg@emlix.com>
+Signed-off-by: Fabian Godehardt <fg@emlix.com>
 ---
- arch/xtensa/include/asm/cacheflush.h |   95 ++++++++++++++++++++++++++++++++++
- 1 files changed, 95 insertions(+), 0 deletions(-)
+ arch/xtensa/variants/s6000/Makefile               |    2 +-
+ arch/xtensa/variants/s6000/dmac.c                 |  173 +++++++++
+ arch/xtensa/variants/s6000/include/variant/dmac.h |  387 +++++++++++++++++++++
+ 3 files changed, 561 insertions(+), 1 deletions(-)
+ create mode 100644 arch/xtensa/variants/s6000/dmac.c
+ create mode 100644 arch/xtensa/variants/s6000/include/variant/dmac.h
 
-diff --git a/arch/xtensa/include/asm/cacheflush.h b/arch/xtensa/include/asm/cacheflush.h
-index 8fc1c0c..b7b8fbe 100644
---- a/arch/xtensa/include/asm/cacheflush.h
-+++ b/arch/xtensa/include/asm/cacheflush.h
-@@ -155,5 +155,100 @@ extern void copy_from_user_page(struct vm_area_struct*, struct page*,
+diff --git a/arch/xtensa/variants/s6000/Makefile b/arch/xtensa/variants/s6000/Makefile
+index 03b3975..ddfa415 100644
+--- a/arch/xtensa/variants/s6000/Makefile
++++ b/arch/xtensa/variants/s6000/Makefile
+@@ -1,3 +1,3 @@
+ # s6000 Makefile
  
- #endif
- 
-+#define XTENSA_CACHEBLK_LOG2	29
-+#define XTENSA_CACHEBLK_SIZE	(1 << XTENSA_CACHEBLK_LOG2)
-+#define XTENSA_CACHEBLK_MASK	(7 << XTENSA_CACHEBLK_LOG2)
+-obj-y		+= irq.o gpio.o
++obj-y		+= irq.o gpio.o dmac.o
+diff --git a/arch/xtensa/variants/s6000/dmac.c b/arch/xtensa/variants/s6000/dmac.c
+new file mode 100644
+index 0000000..dc7f7c5
+--- /dev/null
++++ b/arch/xtensa/variants/s6000/dmac.c
+@@ -0,0 +1,173 @@
++/*
++ * Authors:	Oskar Schirmer <os@emlix.com>
++ *		Daniel Gloeckner <dg@emlix.com>
++ * (c) 2008 emlix GmbH http://www.emlix.com
++ *
++ * This program is free software; you can redistribute  it and/or modify it
++ * under  the terms of  the GNU General  Public License as published by the
++ * Free Software Foundation;  either version 2 of the  License, or (at your
++ * option) any later version.
++ */
 +
-+#if XCHAL_HAVE_CACHEATTR
-+static inline u32 xtensa_get_cacheattr(void)
++#include <linux/kernel.h>
++#include <linux/io.h>
++#include <linux/types.h>
++#include <linux/errno.h>
++#include <linux/spinlock.h>
++#include <asm/cacheflush.h>
++#include <variant/dmac.h>
++
++/* DMA engine lookup */
++
++struct s6dmac_ctrl s6dmac_ctrl[S6_DMAC_NB];
++
++
++/* DMA control, per engine */
++
++void s6dmac_put_fifo_cache(u32 dmac, int chan, u32 src, u32 dst, u32 size)
 +{
-+	u32 r;
-+	asm volatile("	rsr %0, CACHEATTR" : "=a"(r));
++	if (xtensa_need_flush_dma_source(src)) {
++		u32 base = src;
++		u32 span = size;
++		u32 chunk = readl(DMA_CHNL(dmac, chan) + S6_DMA_CMONCHUNK);
++		if (chunk && (size > chunk)) {
++			s32 skip =
++				readl(DMA_CHNL(dmac, chan) + S6_DMA_SRCSKIP);
++			u32 gaps = (size+chunk-1)/chunk - 1;
++			if (skip >= 0) {
++				span += gaps * skip;
++			} else if (-skip > chunk) {
++				s32 decr = gaps * (chunk + skip);
++				base += decr;
++				span = chunk - decr;
++			} else {
++				span = max(span + gaps * skip,
++					(chunk + skip) * gaps - skip);
++			}
++		}
++		flush_dcache_unaligned(base, span);
++	}
++	if (xtensa_need_invalidate_dma_destination(dst)) {
++		u32 base = dst;
++		u32 span = size;
++		u32 chunk = readl(DMA_CHNL(dmac, chan) + S6_DMA_CMONCHUNK);
++		if (chunk && (size > chunk)) {
++			s32 skip =
++				readl(DMA_CHNL(dmac, chan) + S6_DMA_DSTSKIP);
++			u32 gaps = (size+chunk-1)/chunk - 1;
++			if (skip >= 0) {
++				span += gaps * skip;
++			} else if (-skip > chunk) {
++				s32 decr = gaps * (chunk + skip);
++				base += decr;
++				span = chunk - decr;
++			} else {
++				span = max(span + gaps * skip,
++					(chunk + skip) * gaps - skip);
++			}
++		}
++		invalidate_dcache_unaligned(base, span);
++	}
++	s6dmac_put_fifo(dmac, chan, src, dst, size);
++}
++
++void s6dmac_disable_error_irqs(u32 dmac, u32 mask)
++{
++	unsigned long flags;
++	spinlock_t *spinl = &s6dmac_ctrl[_dmac_addr_index(dmac)].lock;
++	spin_lock_irqsave(spinl, flags);
++	_s6dmac_disable_error_irqs(dmac, mask);
++	spin_unlock_irqrestore(spinl, flags);
++}
++
++u32 s6dmac_int_sources(u32 dmac, u32 channel)
++{
++	u32 mask, ret, tmp;
++	mask = 1 << channel;
++
++	tmp = readl(dmac + S6_DMA_TERMCNTIRQSTAT);
++	tmp &= mask;
++	writel(tmp, dmac + S6_DMA_TERMCNTIRQCLR);
++	ret = tmp >> channel;
++
++	tmp = readl(dmac + S6_DMA_PENDCNTIRQSTAT);
++	tmp &= mask;
++	writel(tmp, dmac + S6_DMA_PENDCNTIRQCLR);
++	ret |= (tmp >> channel) << 1;
++
++	tmp = readl(dmac + S6_DMA_LOWWMRKIRQSTAT);
++	tmp &= mask;
++	writel(tmp, dmac + S6_DMA_LOWWMRKIRQCLR);
++	ret |= (tmp >> channel) << 2;
++
++	tmp = readl(dmac + S6_DMA_INTRAW0);
++	tmp &= (mask << S6_DMA_INT0_OVER) | (mask << S6_DMA_INT0_UNDER);
++	writel(tmp, dmac + S6_DMA_INTCLEAR0);
++
++	if (tmp & (mask << S6_DMA_INT0_UNDER))
++		ret |= 1 << 3;
++	if (tmp & (mask << S6_DMA_INT0_OVER))
++		ret |= 1 << 4;
++
++	tmp = readl(dmac + S6_DMA_MASTERERRINFO);
++	mask <<= S6_DMA_INT1_CHANNEL;
++	if (((tmp >> S6_DMA_MASTERERR_CHAN(0)) & S6_DMA_MASTERERR_CHAN_MASK)
++			== channel)
++		mask |= 1 << S6_DMA_INT1_MASTER;
++	if (((tmp >> S6_DMA_MASTERERR_CHAN(1)) & S6_DMA_MASTERERR_CHAN_MASK)
++			== channel)
++		mask |= 1 << (S6_DMA_INT1_MASTER + 1);
++	if (((tmp >> S6_DMA_MASTERERR_CHAN(2)) & S6_DMA_MASTERERR_CHAN_MASK)
++			== channel)
++		mask |= 1 << (S6_DMA_INT1_MASTER + 2);
++
++	tmp = readl(dmac + S6_DMA_INTRAW1) & mask;
++	writel(tmp, dmac + S6_DMA_INTCLEAR1);
++	ret |= ((tmp >> channel) & 1) << 5;
++	ret |= ((tmp >> S6_DMA_INT1_MASTER) & S6_DMA_INT1_MASTER_MASK) << 6;
++
++	return ret;
++}
++
++void s6dmac_release_chan(u32 dmac, int chan)
++{
++	if (chan >= 0)
++		s6dmac_disable_chan(dmac, chan);
++}
++
++
++/* global init */
++
++static inline void __init dmac_init(u32 dmac, u8 chan_nb)
++{
++	s6dmac_ctrl[S6_DMAC_INDEX(dmac)].dmac = dmac;
++	spin_lock_init(&s6dmac_ctrl[S6_DMAC_INDEX(dmac)].lock);
++	s6dmac_ctrl[S6_DMAC_INDEX(dmac)].chan_nb = chan_nb;
++	writel(S6_DMA_INT1_MASTER_MASK << S6_DMA_INT1_MASTER,
++		dmac + S6_DMA_INTCLEAR1);
++}
++
++static inline void __init dmac_master(u32 dmac,
++	u32 m0start, u32 m0end, u32 m1start, u32 m1end)
++{
++	writel(m0start, dmac + S6_DMA_MASTER0START);
++	writel(m0end - 1, dmac + S6_DMA_MASTER0END);
++	writel(m1start, dmac + S6_DMA_MASTER1START);
++	writel(m1end - 1, dmac + S6_DMA_MASTER1END);
++}
++
++static void __init s6_dmac_init(void)
++{
++	dmac_init(S6_REG_LMSDMA, S6_LMSDMA_NB);
++	dmac_master(S6_REG_LMSDMA,
++		S6_MEM_DDR, S6_MEM_PCIE_APER, S6_MEM_EFI, S6_MEM_GMAC);
++	dmac_init(S6_REG_NIDMA, S6_NIDMA_NB);
++	dmac_init(S6_REG_DPDMA, S6_DPDMA_NB);
++	dmac_master(S6_REG_DPDMA,
++		S6_MEM_DDR, S6_MEM_PCIE_APER, S6_REG_DP, S6_REG_DPDMA);
++	dmac_init(S6_REG_HIFDMA, S6_HIFDMA_NB);
++	dmac_master(S6_REG_HIFDMA,
++		S6_MEM_GMAC, S6_MEM_PCIE_CFG, S6_MEM_PCIE_APER, S6_MEM_AUX);
++}
++
++arch_initcall(s6_dmac_init);
+diff --git a/arch/xtensa/variants/s6000/include/variant/dmac.h b/arch/xtensa/variants/s6000/include/variant/dmac.h
+new file mode 100644
+index 0000000..89ab948
+--- /dev/null
++++ b/arch/xtensa/variants/s6000/include/variant/dmac.h
+@@ -0,0 +1,387 @@
++/*
++ * include/asm-xtensa/variant-s6000/dmac.h
++ *
++ * This file is subject to the terms and conditions of the GNU General Public
++ * License.  See the file "COPYING" in the main directory of this archive
++ * for more details.
++ *
++ * Copyright (C) 2006 Tensilica Inc.
++ * Copyright (C) 2008 Emlix GmbH <info@emlix.com>
++ * Authors:	Fabian Godehardt <fg@emlix.com>
++ *		Oskar Schirmer <os@emlix.com>
++ *		Daniel Gloeckner <dg@emlix.com>
++ */
++
++#ifndef __ASM_XTENSA_S6000_DMAC_H
++#define __ASM_XTENSA_S6000_DMAC_H
++#include <linux/io.h>
++#include <variant/hardware.h>
++
++/* DMA global */
++
++#define S6_DMA_INTSTAT0		0x000
++#define S6_DMA_INTSTAT1		0x004
++#define S6_DMA_INTENABLE0	0x008
++#define S6_DMA_INTENABLE1	0x00C
++#define S6_DMA_INTRAW0		0x010
++#define S6_DMA_INTRAW1		0x014
++#define S6_DMA_INTCLEAR0	0x018
++#define S6_DMA_INTCLEAR1	0x01C
++#define S6_DMA_INTSET0		0x020
++#define S6_DMA_INTSET1		0x024
++#define S6_DMA_INT0_UNDER		0
++#define S6_DMA_INT0_OVER		16
++#define S6_DMA_INT1_CHANNEL		0
++#define S6_DMA_INT1_MASTER		16
++#define S6_DMA_INT1_MASTER_MASK			7
++#define S6_DMA_TERMCNTIRQSTAT	0x028
++#define S6_DMA_TERMCNTIRQCLR	0x02C
++#define S6_DMA_TERMCNTIRQSET	0x030
++#define S6_DMA_PENDCNTIRQSTAT	0x034
++#define S6_DMA_PENDCNTIRQCLR	0x038
++#define S6_DMA_PENDCNTIRQSET	0x03C
++#define S6_DMA_LOWWMRKIRQSTAT	0x040
++#define S6_DMA_LOWWMRKIRQCLR	0x044
++#define S6_DMA_LOWWMRKIRQSET	0x048
++#define S6_DMA_MASTERERRINFO	0x04C
++#define S6_DMA_MASTERERR_CHAN(n)	(4*(n))
++#define S6_DMA_MASTERERR_CHAN_MASK		0xF
++#define S6_DMA_DESCRFIFO0	0x050
++#define S6_DMA_DESCRFIFO1	0x054
++#define S6_DMA_DESCRFIFO2	0x058
++#define S6_DMA_DESCRFIFO2_AUTODISABLE	24
++#define S6_DMA_DESCRFIFO3	0x05C
++#define S6_DMA_MASTER0START	0x060
++#define S6_DMA_MASTER0END	0x064
++#define S6_DMA_MASTER1START	0x068
++#define S6_DMA_MASTER1END	0x06C
++#define S6_DMA_NEXTFREE		0x070
++#define S6_DMA_NEXTFREE_CHAN		0
++#define S6_DMA_NEXTFREE_CHAN_MASK	0x1F
++#define S6_DMA_NEXTFREE_ENA		16
++#define S6_DMA_NEXTFREE_ENA_MASK	((1 << 16) - 1)
++#define S6_DMA_DPORTCTRLGRP(p)	((p) * 4 + 0x074)
++#define S6_DMA_DPORTCTRLGRP_FRAMEREP	0
++#define S6_DMA_DPORTCTRLGRP_NRCHANS	1
++#define S6_DMA_DPORTCTRLGRP_NRCHANS_1		0
++#define S6_DMA_DPORTCTRLGRP_NRCHANS_3		1
++#define S6_DMA_DPORTCTRLGRP_NRCHANS_4		2
++#define S6_DMA_DPORTCTRLGRP_NRCHANS_2		3
++#define S6_DMA_DPORTCTRLGRP_ENA		31
++
++
++/* DMA per channel */
++
++#define DMA_CHNL(dmac, n)	((dmac) + 0x1000 + (n) * 0x100)
++#define DMA_INDEX_CHNL(addr)	(((addr) >> 8) & 0xF)
++#define DMA_MASK_DMAC(addr)	((addr) & 0xFFFF0000)
++#define S6_DMA_CHNCTRL		0x000
++#define S6_DMA_CHNCTRL_ENABLE		0
++#define S6_DMA_CHNCTRL_PAUSE		1
++#define S6_DMA_CHNCTRL_PRIO		2
++#define S6_DMA_CHNCTRL_PRIO_MASK		3
++#define S6_DMA_CHNCTRL_PERIPHXFER	4
++#define S6_DMA_CHNCTRL_PERIPHENA	5
++#define S6_DMA_CHNCTRL_SRCINC		6
++#define S6_DMA_CHNCTRL_DSTINC		7
++#define S6_DMA_CHNCTRL_BURSTLOG		8
++#define S6_DMA_CHNCTRL_BURSTLOG_MASK		7
++#define S6_DMA_CHNCTRL_DESCFIFODEPTH	12
++#define S6_DMA_CHNCTRL_DESCFIFODEPTH_MASK	0x1F
++#define S6_DMA_CHNCTRL_DESCFIFOFULL	17
++#define S6_DMA_CHNCTRL_BWCONSEL		18
++#define S6_DMA_CHNCTRL_BWCONENA		19
++#define S6_DMA_CHNCTRL_PENDGCNTSTAT	20
++#define S6_DMA_CHNCTRL_PENDGCNTSTAT_MASK	0x3F
++#define S6_DMA_CHNCTRL_LOWWMARK		26
++#define S6_DMA_CHNCTRL_LOWWMARK_MASK		0xF
++#define S6_DMA_CHNCTRL_TSTAMP		30
++#define S6_DMA_TERMCNTNB	0x004
++#define S6_DMA_TERMCNTNB_MASK			0xFFFF
++#define S6_DMA_TERMCNTTMO	0x008
++#define S6_DMA_TERMCNTSTAT	0x00C
++#define S6_DMA_TERMCNTSTAT_MASK		0xFF
++#define S6_DMA_CMONCHUNK	0x010
++#define S6_DMA_SRCSKIP		0x014
++#define S6_DMA_DSTSKIP		0x018
++#define S6_DMA_CUR_SRC		0x024
++#define S6_DMA_CUR_DST		0x028
++#define S6_DMA_TIMESTAMP	0x030
++
++/* DMA channel lists */
++
++#define S6_DPDMA_CHAN(stream, channel)	(4 * (stream) + (channel))
++#define S6_DPDMA_NB	16
++
++#define S6_HIFDMA_GMACTX	0
++#define S6_HIFDMA_GMACRX	1
++#define S6_HIFDMA_I2S0		2
++#define S6_HIFDMA_I2S1		3
++#define S6_HIFDMA_EGIB		4
++#define S6_HIFDMA_PCITX		5
++#define S6_HIFDMA_PCIRX		6
++#define S6_HIFDMA_NB	7
++
++#define S6_NIDMA_NB	4
++
++#define S6_LMSDMA_NB	12
++
++/* controller access */
++
++#define S6_DMAC_NB	4
++#define S6_DMAC_INDEX(dmac)	(((unsigned)(dmac) >> 18) % S6_DMAC_NB)
++
++struct s6dmac_ctrl {
++	u32 dmac;
++	spinlock_t lock;
++	u8 chan_nb;
++};
++
++extern struct s6dmac_ctrl s6dmac_ctrl[S6_DMAC_NB];
++
++
++/* DMA control, per channel */
++
++static inline int s6dmac_fifo_full(u32 dmac, int chan)
++{
++	return (readl(DMA_CHNL(dmac, chan) + S6_DMA_CHNCTRL)
++		& (1 << S6_DMA_CHNCTRL_DESCFIFOFULL)) && 1;
++}
++
++static inline int s6dmac_termcnt_irq(u32 dmac, int chan)
++{
++	u32 m = 1 << chan;
++	int r = (readl(dmac + S6_DMA_TERMCNTIRQSTAT) & m) && 1;
++	if (r)
++		writel(m, dmac + S6_DMA_TERMCNTIRQCLR);
 +	return r;
 +}
 +
-+static inline u32 xtensa_get_dtlb1(u32 addr)
++static inline int s6dmac_pendcnt_irq(u32 dmac, int chan)
 +{
-+	u32 r = addr & XTENSA_CACHEBLK_MASK;
-+	return r | ((xtensa_get_cacheattr() >> (r >> (XTENSA_CACHEBLK_LOG2-2)))
-+			& 0xF);
-+}
-+#else
-+static inline u32 xtensa_get_dtlb1(u32 addr)
-+{
-+	u32 r;
-+	asm volatile("	rdtlb1 %0, %1" : "=a"(r) : "a"(addr));
-+	asm volatile("	dsync");
++	u32 m = 1 << chan;
++	int r = (readl(dmac + S6_DMA_PENDCNTIRQSTAT) & m) && 1;
++	if (r)
++		writel(m, dmac + S6_DMA_PENDCNTIRQCLR);
 +	return r;
 +}
 +
-+static inline u32 xtensa_get_cacheattr(void)
++static inline int s6dmac_lowwmark_irq(u32 dmac, int chan)
 +{
-+	u32 r = 0;
-+	u32 a = 0;
-+	do {
-+		a -= XTENSA_CACHEBLK_SIZE;
-+		r = (r << 4) | (xtensa_get_dtlb1(a) & 0xF);
-+	} while (a);
++	int r = (readl(dmac + S6_DMA_LOWWMRKIRQSTAT) & (1 << chan)) ? 1 : 0;
++	if (r)
++		writel(1 << chan, dmac + S6_DMA_LOWWMRKIRQCLR);
 +	return r;
 +}
-+#endif
 +
-+static inline int xtensa_need_flush_dma_source(u32 addr)
++static inline u32 s6dmac_pending_count(u32 dmac, int chan)
 +{
-+	return (xtensa_get_dtlb1(addr) & ((1 << XCHAL_CA_BITS) - 1)) >= 4;
++	return (readl(DMA_CHNL(dmac, chan) + S6_DMA_CHNCTRL)
++			>> S6_DMA_CHNCTRL_PENDGCNTSTAT)
++		& S6_DMA_CHNCTRL_PENDGCNTSTAT_MASK;
 +}
 +
-+static inline int xtensa_need_invalidate_dma_destination(u32 addr)
++static inline void s6dmac_set_terminal_count(u32 dmac, int chan, u32 n)
 +{
-+	return (xtensa_get_dtlb1(addr) & ((1 << XCHAL_CA_BITS) - 1)) != 2;
++	n &= S6_DMA_TERMCNTNB_MASK;
++	n |= readl(DMA_CHNL(dmac, chan) + S6_DMA_TERMCNTNB)
++	      & ~S6_DMA_TERMCNTNB_MASK;
++	writel(n, DMA_CHNL(dmac, chan) + S6_DMA_TERMCNTNB);
 +}
 +
-+static inline void flush_dcache_unaligned(u32 addr, u32 size)
++static inline u32 s6dmac_get_terminal_count(u32 dmac, int chan)
 +{
-+	u32 cnt;
-+	if (size) {
-+		cnt = (size + ((XCHAL_DCACHE_LINESIZE - 1) & addr)
-+			+ XCHAL_DCACHE_LINESIZE - 1) / XCHAL_DCACHE_LINESIZE;
-+		while (cnt--) {
-+			asm volatile("	dhwb %0, 0" : : "a"(addr));
-+			addr += XCHAL_DCACHE_LINESIZE;
-+		}
-+		asm volatile("	dsync");
++	return (readl(DMA_CHNL(dmac, chan) + S6_DMA_TERMCNTNB))
++		& S6_DMA_TERMCNTNB_MASK;
++}
++
++static inline u32 s6dmac_timestamp(u32 dmac, int chan)
++{
++	return readl(DMA_CHNL(dmac, chan) + S6_DMA_TIMESTAMP);
++}
++
++static inline u32 s6dmac_cur_src(u32 dmac, int chan)
++{
++	return readl(DMA_CHNL(dmac, chan) + S6_DMA_CUR_SRC);
++}
++
++static inline u32 s6dmac_cur_dst(u32 dmac, int chan)
++{
++	return readl(DMA_CHNL(dmac, chan) + S6_DMA_CUR_DST);
++}
++
++static inline void s6dmac_disable_chan(u32 dmac, int chan)
++{
++	u32 ctrl;
++	writel(readl(DMA_CHNL(dmac, chan) + S6_DMA_CHNCTRL)
++		& ~(1 << S6_DMA_CHNCTRL_ENABLE),
++		DMA_CHNL(dmac, chan) + S6_DMA_CHNCTRL);
++	do
++		ctrl = readl(DMA_CHNL(dmac, chan) + S6_DMA_CHNCTRL);
++	while (ctrl & (1 << S6_DMA_CHNCTRL_ENABLE));
++}
++
++static inline void s6dmac_set_stride_skip(u32 dmac, int chan,
++	int comchunk,		/* 0: disable scatter/gather */
++	int srcskip, int dstskip)
++{
++	writel(comchunk, DMA_CHNL(dmac, chan) + S6_DMA_CMONCHUNK);
++	writel(srcskip, DMA_CHNL(dmac, chan) + S6_DMA_SRCSKIP);
++	writel(dstskip, DMA_CHNL(dmac, chan) + S6_DMA_DSTSKIP);
++}
++
++static inline void s6dmac_enable_chan(u32 dmac, int chan,
++	int prio,               /* 0 (highest) .. 3 (lowest) */
++	int periphxfer,         /* <0: disable p.req.line, 0..1: mode */
++	int srcinc, int dstinc, /* 0: dont increment src/dst address */
++	int comchunk,		/* 0: disable scatter/gather */
++	int srcskip, int dstskip,
++	int burstsize,		/* 4 for I2S, 7 for everything else */
++	int bandwidthconserve,  /* <0: disable, 0..1: select */
++	int lowwmark,           /* 0..15 */
++	int timestamp,		/* 0: disable timestamp */
++	int enable)		/* 0: disable for now */
++{
++	writel(1, DMA_CHNL(dmac, chan) + S6_DMA_TERMCNTNB);
++	writel(0, DMA_CHNL(dmac, chan) + S6_DMA_TERMCNTTMO);
++	writel(lowwmark << S6_DMA_CHNCTRL_LOWWMARK,
++		DMA_CHNL(dmac, chan) + S6_DMA_CHNCTRL);
++	s6dmac_set_stride_skip(dmac, chan, comchunk, srcskip, dstskip);
++	writel(((enable ? 1 : 0) << S6_DMA_CHNCTRL_ENABLE) |
++		(prio << S6_DMA_CHNCTRL_PRIO) |
++		(((periphxfer > 0) ? 1 : 0) << S6_DMA_CHNCTRL_PERIPHXFER) |
++		(((periphxfer < 0) ? 0 : 1) << S6_DMA_CHNCTRL_PERIPHENA) |
++		((srcinc ? 1 : 0) << S6_DMA_CHNCTRL_SRCINC) |
++		((dstinc ? 1 : 0) << S6_DMA_CHNCTRL_DSTINC) |
++		(burstsize << S6_DMA_CHNCTRL_BURSTLOG) |
++		(((bandwidthconserve > 0) ? 1 : 0) << S6_DMA_CHNCTRL_BWCONSEL) |
++		(((bandwidthconserve < 0) ? 0 : 1) << S6_DMA_CHNCTRL_BWCONENA) |
++		(lowwmark << S6_DMA_CHNCTRL_LOWWMARK) |
++		((timestamp ? 1 : 0) << S6_DMA_CHNCTRL_TSTAMP),
++		DMA_CHNL(dmac, chan) + S6_DMA_CHNCTRL);
++}
++
++
++/* DMA control, per engine */
++
++static inline unsigned _dmac_addr_index(u32 dmac)
++{
++	unsigned i = S6_DMAC_INDEX(dmac);
++	if (s6dmac_ctrl[i].dmac != dmac)
++		BUG();
++	return i;
++}
++
++static inline void _s6dmac_disable_error_irqs(u32 dmac, u32 mask)
++{
++	writel(mask, dmac + S6_DMA_TERMCNTIRQCLR);
++	writel(mask, dmac + S6_DMA_PENDCNTIRQCLR);
++	writel(mask, dmac + S6_DMA_LOWWMRKIRQCLR);
++	writel(readl(dmac + S6_DMA_INTENABLE0)
++		& ~((mask << S6_DMA_INT0_UNDER) | (mask << S6_DMA_INT0_OVER)),
++		dmac + S6_DMA_INTENABLE0);
++	writel(readl(dmac + S6_DMA_INTENABLE1) & ~(mask << S6_DMA_INT1_CHANNEL),
++		dmac + S6_DMA_INTENABLE1);
++	writel((mask << S6_DMA_INT0_UNDER) | (mask << S6_DMA_INT0_OVER),
++		dmac + S6_DMA_INTCLEAR0);
++	writel(mask << S6_DMA_INT1_CHANNEL, dmac + S6_DMA_INTCLEAR1);
++}
++
++/*
++ * request channel from specified engine
++ * with chan<0, accept any channel
++ * further parameters see s6dmac_enable_chan
++ * returns < 0 upon error, channel nb otherwise
++ */
++static inline int s6dmac_request_chan(u32 dmac, int chan,
++	int prio,
++	int periphxfer,
++	int srcinc, int dstinc,
++	int comchunk,
++	int srcskip, int dstskip,
++	int burstsize,
++	int bandwidthconserve,
++	int lowwmark,
++	int timestamp,
++	int enable)
++{
++	int r = chan;
++	unsigned long flags;
++	spinlock_t *spinl = &s6dmac_ctrl[_dmac_addr_index(dmac)].lock;
++	spin_lock_irqsave(spinl, flags);
++	if (r < 0) {
++		r = (readl(dmac + S6_DMA_NEXTFREE) >> S6_DMA_NEXTFREE_CHAN)
++			& S6_DMA_NEXTFREE_CHAN_MASK;
 +	}
-+}
-+
-+static inline void invalidate_dcache_unaligned(u32 addr, u32 size)
-+{
-+	int cnt;
-+	if (size) {
-+		asm volatile("	dhwbi %0, 0 ;" : : "a"(addr));
-+		cnt = (size + ((XCHAL_DCACHE_LINESIZE - 1) & addr)
-+			- XCHAL_DCACHE_LINESIZE - 1) / XCHAL_DCACHE_LINESIZE;
-+		while (cnt-- > 0) {
-+			asm volatile("	dhi %0, %1" : : "a"(addr),
-+						"n"(XCHAL_DCACHE_LINESIZE));
-+			addr += XCHAL_DCACHE_LINESIZE;
-+		}
-+		asm volatile("	dhwbi %0, %1" : : "a"(addr),
-+						"n"(XCHAL_DCACHE_LINESIZE));
-+		asm volatile("	dsync");
++	if (r >= s6dmac_ctrl[_dmac_addr_index(dmac)].chan_nb) {
++		if (chan < 0)
++			r = -EBUSY;
++		else
++			r = -ENXIO;
++	} else if (((readl(dmac + S6_DMA_NEXTFREE) >> S6_DMA_NEXTFREE_ENA)
++			>> r) & 1) {
++		r = -EBUSY;
++	} else {
++		s6dmac_enable_chan(dmac, r, prio, periphxfer,
++			srcinc, dstinc, comchunk, srcskip, dstskip, burstsize,
++			bandwidthconserve, lowwmark, timestamp, enable);
 +	}
++	spin_unlock_irqrestore(spinl, flags);
++	return r;
 +}
 +
-+static inline void flush_invalidate_dcache_unaligned(u32 addr, u32 size)
++static inline void s6dmac_put_fifo(u32 dmac, int chan,
++	u32 src, u32 dst, u32 size)
 +{
-+	u32 cnt;
-+	if (size) {
-+		cnt = (size + ((XCHAL_DCACHE_LINESIZE - 1) & addr)
-+			+ XCHAL_DCACHE_LINESIZE - 1) / XCHAL_DCACHE_LINESIZE;
-+		while (cnt--) {
-+			asm volatile("	dhwbi %0, 0" : : "a"(addr));
-+			addr += XCHAL_DCACHE_LINESIZE;
-+		}
-+		asm volatile("	dsync");
-+	}
++	unsigned long flags;
++	spinlock_t *spinl = &s6dmac_ctrl[_dmac_addr_index(dmac)].lock;
++	spin_lock_irqsave(spinl, flags);
++	writel(src, dmac + S6_DMA_DESCRFIFO0);
++	writel(dst, dmac + S6_DMA_DESCRFIFO1);
++	writel(size, dmac + S6_DMA_DESCRFIFO2);
++	writel(chan, dmac + S6_DMA_DESCRFIFO3);
++	spin_unlock_irqrestore(spinl, flags);
 +}
 +
- #endif /* __KERNEL__ */
- #endif /* _XTENSA_CACHEFLUSH_H */
++static inline u32 s6dmac_channel_enabled(u32 dmac, int chan)
++{
++	return readl(DMA_CHNL(dmac, chan) + S6_DMA_CHNCTRL) &
++			(1 << S6_DMA_CHNCTRL_ENABLE);
++}
++
++/*
++ * group 1-4 data port channels
++ * with port=0..3, nrch=1-4 channels,
++ * frrep=0/1 (dis- or enable frame repeat)
++ */
++static inline void s6dmac_dp_setup_group(u32 dmac, int port,
++			int nrch, int frrep)
++{
++	const static u8 mask[4] = {0, 3, 1, 2};
++	BUG_ON(dmac != S6_REG_DPDMA);
++	if ((port < 0) || (port > 3) || (nrch < 1) || (nrch > 4))
++		return;
++	writel((mask[nrch - 1] << S6_DMA_DPORTCTRLGRP_NRCHANS)
++		| ((frrep ? 1 : 0) << S6_DMA_DPORTCTRLGRP_FRAMEREP),
++		dmac + S6_DMA_DPORTCTRLGRP(port));
++}
++
++static inline void s6dmac_dp_switch_group(u32 dmac, int port, int enable)
++{
++	u32 tmp;
++	BUG_ON(dmac != S6_REG_DPDMA);
++	tmp = readl(dmac + S6_DMA_DPORTCTRLGRP(port));
++	if (enable)
++		tmp |= (1 << S6_DMA_DPORTCTRLGRP_ENA);
++	else
++		tmp &= ~(1 << S6_DMA_DPORTCTRLGRP_ENA);
++	writel(tmp, dmac + S6_DMA_DPORTCTRLGRP(port));
++}
++
++extern void s6dmac_put_fifo_cache(u32 dmac, int chan,
++	u32 src, u32 dst, u32 size);
++extern void s6dmac_disable_error_irqs(u32 dmac, u32 mask);
++extern u32 s6dmac_int_sources(u32 dmac, u32 channel);
++extern void s6dmac_release_chan(u32 dmac, int chan);
++
++#endif /* __ASM_XTENSA_S6000_DMAC_H */
 -- 
 1.6.2.107.ge47ee
 
