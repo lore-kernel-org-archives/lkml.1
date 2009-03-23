@@ -1,203 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759383AbZCWTDz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759868AbZCWTFG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759383AbZCWTDz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Mar 2009 15:03:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758014AbZCWTDn
+	id S1759868AbZCWTFG (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Mar 2009 15:05:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758190AbZCWTEx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Mar 2009 15:03:43 -0400
-Received: from e28smtp05.in.ibm.com ([59.145.155.5]:57220 "EHLO
-	e28smtp05.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756528AbZCWTDm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Mar 2009 15:03:42 -0400
-Date: Tue, 24 Mar 2009 00:33:28 +0530
-From: "K.Prasad" <prasad@linux.vnet.ibm.com>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Benjamin Herrenschmidt <benh@au1.ibm.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Maneesh Soni <maneesh@in.ibm.com>, Roland McGrath <roland@redhat.com>,
-       Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: [Patch 01/11] Introducing generic hardware breakpoint handler
-	interfaces
-Message-ID: <20090323190328.GA23426@in.ibm.com>
-Reply-To: prasad@linux.vnet.ibm.com
-References: <20090321172618.GB9906@in.ibm.com> <Pine.LNX.4.44L0.0903211712040.27294-100000@netrider.rowland.org>
+	Mon, 23 Mar 2009 15:04:53 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:39232 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754943AbZCWTEx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Mar 2009 15:04:53 -0400
+Message-ID: <49C7DD3C.2020401@redhat.com>
+Date: Mon, 23 Mar 2009 14:04:28 -0500
+From: Eric Sandeen <sandeen@redhat.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.0903211712040.27294-100000@netrider.rowland.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: device-mapper development <dm-devel@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+CC: Jens Axboe <jens.axboe@oracle.com>, Andi Kleen <ak@suse.de>,
+       "MASON,CHRISTOPHER" <CHRIS.MASON@oracle.com>
+Subject: Barriers still not passing on simple dm devices...
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Mar 21, 2009 at 05:39:59PM -0400, Alan Stern wrote:
-> On Sat, 21 Mar 2009, K.Prasad wrote:
-> 
-> > > > + * Kernel breakpoints grow downwards, starting from HB_NUM
-> > > > + * 'hbkpt_kernel_pos' denotes lowest numbered breakpoint register occupied for
-> > > > + * kernel-space request
-> > > > + */
-> > > > +unsigned int hbkpt_kernel_pos;
-> > > 
-> > > This doesn't make much sense.  All you need to know is which registers
-> > > are in use; all others are available.
-> > > 
-> > 
-> > As explained by Maneesh earlier, we compact the kernel-space requests
-> > into registers (HB_NUM - 1) to hbkpt_kernel_pos. The kernel-space
-> > requests aren't specific to any given register number too, and so
-> > compaction would be suitable for this case (unlike when implemented for
-> > user-space which might need virtualisation of registers).
-> 
-> Okay, that makes sense.  Perhaps you could add a short comment here
-> explaining that the register allocations get compacted when a kernel
-> breakpoint is unregistered, so they will always be contiguous.
-> 
-> > > It's also a poor choice of name.  Everywhere else (in my patches,
-> > > anyway) the code refers to hardware breakpoints using the abbreviation
-> > > "hwbp" or "hw_breakpoint".  There's no reason suddenly to start using
-> > > "hbkpt".
-> > > 
-> > 
-> > I began using 'hbkpt' as a shorter naming convention (the longer one
-> > being hw_breakpoint) without being really conscious of the 'hwbkpt'
-> > usage by you (even some of the previous iterations contained them in
-> > samples/hw_breakpoint and ftrace-plugin).
-> > 
-> > Well, I will rename my shorter name to 'hwbkpt' for uniformity.
-> 
-> My patch never used "hwbkpt".  Besides "hw_breakpoint", it used only 
-> "bp".  On going back and checking, I found that it didn't even use 
-> "hwbp".  Some other abbreviations it did use were "kbp" for kernel 
-> breakpoint, "chbi" for per-CPU hardware breakpoint info, and "thbi" for 
-> per-thread hardware breakpoint info.
-> 
-> If you're looking for a good short name, and if you want to keep 
-> hardware breakpoints distinct from software breakpoints, I suggest 
-> "hbp" instead of "hbkpt".  But it's up to you, and it's worth noticing 
-> that the code already contains lots of variables named just "bp".
-> 
+I've noticed that on 2.6.29-rcX, with Andi's patch
+(ab4c1424882be9cd70b89abf2b484add355712fa, dm: support barriers on
+simple devices) barriers are still getting rejected on these simple devices.
 
-I am renaming all 'hbkpt' strings to 'hbp'.
+The problem is in __generic_make_request():
 
-> > > > +/* One higher than the highest counted user-space breakpoint register */
-> > > > +unsigned int hbkpt_user_max;
-> > > 
-> > > Likewise, this variable isn't really needed.  It's just one more than
-> > > the largest i such that hbkpt_user_max_refcount[i] > 0.
-> > > 
-> > 
-> > It acts like a cache for determining the user-space breakpoint boundary.
-> > It is used for sanity checks and in its absence we will have to compute from
-> > hbkpt_user_max_refcount[] everytime.
-> 
-> That's right.  Isn't it simpler to check
-> 
-> 	kernel_pos > 0 && hbkpt_user_refcount[kernel_pos - 1] == 0
-> 
-> than to check
-> 
-> 	kernel_pos - 1 >= hbkpt_user_max
-> 
-> _and_ to keep hbkpt_user_max set to the correct value at all times?
->
+                if (bio_barrier(bio) && bio_has_data(bio) &&
+                    (q->next_ordered == QUEUE_ORDERED_NONE)) {
+                        err = -EOPNOTSUPP;
+                        goto end_io;
+                }
 
-Unfortunately the lines of code required to maintain the variable comes
-close to the amount of lines it would potentially save. I will change to
-code to compute it from hbkpt_user_refcount[] everytime.
- 
-> > > > +/*
-> > > > + * Load the debug registers during startup of a CPU.
-> > > > + */
-> > > > +void load_debug_registers(void)
-> > > > +{
-> > > > +	int i;
-> > > > +	unsigned long flags;
-> > > > +
-> > > > +	/* Prevent IPIs for new kernel breakpoint updates */
-> > > > +	local_irq_save(flags);
-> > > > +
-> > > > +	for (i = hbkpt_kernel_pos; i < HB_NUM; i++)
-> > > > +		if (hbkpt_kernel[i])
-> > > > +			on_each_cpu(arch_install_kernel_hbkpt,
-> > > > +				(void *)hbkpt_kernel[i], 0);
-> > > 
-> > > This is completely wrong.  First of all, it's dumb to send multiple
-> > > IPIs (one for each iteration through the loop).  Second, this routine
-> > > shouldn't send any IPIs at all!  It gets invoked when a CPU is
-> > > starting up and wants to load its _own_ debug registers -- not tell
-> > > another CPU to load anything.
-> > > 
-> > 
-> > As I agreed before, it is an overkill (given the design of
-> > arch_install_kernel_hbkpt()). I will create a new
-> > arch_update_kernel_hbkpt(pos, bp) that will install breakpoints only
-> > on the CPU starting up.
-> 
-> Doesn't arch_install_kernel_hbkpt() already install breakpoints
-> on only the current CPU?  So why do you need a new function?
->
+and dm isn't flagging its queue as supporting ordered writes, so it's
+rejected here.
 
-There will be a few more changes to arch_install_kernel_hbkpt() along
-with this. Please find the changes in the ensuing patchset.
- 
-> > > > +	/* Check that the virtual address is in the proper range */
-> > > > +	if (tsk) {
-> > > > +		if (!arch_check_va_in_userspace(bp->info.address, tsk))
-> > > > +			return -EFAULT;
-> > > > +	} else {
-> > > > +		if (!arch_check_va_in_kernelspace(bp->info.address))
-> > > > +			return -EFAULT;
-> > > > +	}
-> > > 
-> > > Roland pointed out that these checks need to take into account the
-> > > length of the breakpoint.  For example, in
-> > > arch_check_va_in_userspace() it isn't sufficient for the start of the
-> > > breakpoint region to be a userspace address; the end of the
-> > > breakpoint region must also be in userspace.
-> > > 
-> > 
-> > Ok. Will do something like:
-> > return (va <= (TASK_SIZE - (hw_breakpoint_length * word_size)));
-> 
-> What is the purpose of word_size here?  The breakpoint length should be 
-> specified in bytes, not words.
-> 
-> Don't forget that that in arch_check_va_in_kernelspace() you need to 
-> check both for values that are too low and values that are too high 
-> (they overflow and wrap around back to a user address).
-> 
+Doing something like this:
 
-While I understand the user-space checking using the length of the HW
-Breakpoint, I don't really see how I can check for an upper-bound for
-kernel-space virtual addresses. Most usage in the kernel only checks for
-the address >= TASK_SIZE (while they check for add + len if the length
-of the memory is known). I will be glad to have any suggestions in this
-regard.
++ if (t->barriers_supported)
++         blk_queue_ordered(q, QUEUE_ORDERED_DRAIN, NULL);
 
-> > We don't keep track of the thread (in the sense the task_struct) but
-> > 'hbkpt_user_max' is used for validating requests and book-keeping. As
-> > Maneesh mentioned before flush_thread_hw_breakpoint() updates
-> > 'hbkpt_user_max'.
-> > 
-> > I can change it to read like the one below if it sounds better to you.
-> > 
-> > /* 
-> >  * 'tsk' uses more number of registers than 'hbkpt_user_max'. Update
-> >  * the same.
-> >  */
-> 
-> My preference is simply to eliminate hbkpt_user_max entirely.
-> 
-> Alan Stern
->
+somewhere in dm (I stuck it in dm_table_set_restrictions() - almost
+certainly the wrong thing to do) did get my dm-linear device to mount
+with xfs, w/o xfs complaining that its mount-time barrier tests failed.
 
-Done.
+So what's the right way around this?  What should dm (or md for that
+matter) advertise on their queues about ordered-ness?  Should there be
+some sort of "QUEUE_ORDERED_PASSTHROUGH" or something to say "this level
+doesn't care, ask the next level" or somesuch?  Or should it inherit the
+flag from the next level down?  Ideas?
 
 Thanks,
-K.Prasad
- 
+-Eric
