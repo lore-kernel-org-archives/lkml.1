@@ -1,132 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757941AbZCWWWR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757494AbZCWWXr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757941AbZCWWWR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Mar 2009 18:22:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752457AbZCWWV7
+	id S1757494AbZCWWXr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Mar 2009 18:23:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750972AbZCWWXf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Mar 2009 18:21:59 -0400
-Received: from e35.co.us.ibm.com ([32.97.110.153]:56395 "EHLO
-	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752183AbZCWWV6 (ORCPT
+	Mon, 23 Mar 2009 18:23:35 -0400
+Received: from outbound-mail-302.bluehost.com ([67.222.53.9]:48885 "HELO
+	outbound-mail-302.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752244AbZCWWXe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Mar 2009 18:21:58 -0400
-Subject: Re: [BUG,2.6.28,s390] Fails to boot in Hercules S/390 emulator -
- hang traced
-From: John Stultz <johnstul@us.ibm.com>
-To: Frans Pop <elendil@planet.nl>, Thomas Gleixner <tglx@linutronix.de>
-Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>, linux-s390@vger.kernel.org,
-       Roman Zippel <zippel@linux-m68k.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <200903230111.08814.elendil@planet.nl>
-References: <200903080230.10099.elendil@planet.nl>
-	 <200903181307.44867.elendil@planet.nl>
-	 <1237391338.32698.9.camel@jstultz-laptop>
-	 <200903230111.08814.elendil@planet.nl>
-Content-Type: text/plain
-Date: Mon, 23 Mar 2009 15:19:00 -0700
-Message-Id: <1237846740.7068.15.camel@jstultz-laptop>
+	Mon, 23 Mar 2009 18:23:34 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
+	b=gRvouH1GVTke+7A0JiiRGEsSMjxElO/OJORXo1HNmo/AdjQo7MnvvO2k4ulBoFnE//Ly/GlrdoRY3L02YMn/fs4wJt86CxKZoRJCv1b1C0lXrCF7fycrMrOEacrcrBfi;
+Date: Mon, 23 Mar 2009 15:23:30 -0700
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Linux PCI <linux-pci@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [RFC][PATCH 0/2] Export platform_pci_set_power_state() and make
+ radeonfb use it
+Message-ID: <20090323152330.536a5a1c@hobbes.virtuouswap>
+In-Reply-To: <200903232230.10831.rjw@sisk.pl>
+References: <200903210003.55161.rjw@sisk.pl>
+	<200903222208.22434.rjw@sisk.pl>
+	<200903232230.10831.rjw@sisk.pl>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-03-23 at 01:11 +0100, Frans Pop wrote:
-> On Wednesday 18 March 2009, John Stultz wrote:
-> > > Ever increasing error with tod on 2.6.28.8 (with Martin's patch
-> > > applied):
-> > > 0.672655! timekeeping: clock source changed from jiffies to tod (shift: 12)
-> > > 0.676889! tod/12 (150): xtime.tv: 1237377507/55524946 -> 1237377507/55524947
-> > > 0.677020!    clock->xtime: 0 -> -4096, error: 0 -> -4294967296
-> > > 0.680788! tod/12 (151): xtime.tv: 1237377507/55524947 -> 1237377507/55524948
-> [...]
-> > > 491.860765! tod/12 (37189): xtime.tv: 1237377998/55561985 -> 1237377998/55561986
-> > > 491.860886!  clock->xtime: -4096 -> -4096, error: -159081293676544 -> -159085588643840
-> >
-> > Hrm. Is the box otherwise working ok? The TOD clock should not be
-> > affected by the second issue (one shot mode) discussed.
+On Mon, 23 Mar 2009 22:30:09 +0100
+"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+
+> On Sunday 22 March 2009, Rafael J. Wysocki wrote:
+> > On Saturday 21 March 2009, Rafael J. Wysocki wrote:
+> > > From: Rafael J. Wysocki <rjw@sisk.pl>
+> > > 
+> > > The story in http://bugzilla.kernel.org/show_bug.cgi?id=12846
+> > > shows that setting the power state of a PCI device by
+> > > pci_raw_set_power_state() may sometimes fail.  For this reason,
+> > > pci_raw_set_power_state() should not assume that the power state
+> > > of the device has actually changed after writing into its PMCSR.
+> > > Instead, it should read the value from there and use it to update
+> > > dev->current_state.  It also is useful to print a warning if the
+> > > device's power state hasn't changed as expected.
+> > > 
+> > > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> > > ---
+> > OK, since the Ben's radeonfb fix for bug #12846 has been merged,
+> > I'd like to do something a bit different.
+> > 
+> > Patch 1/2 introduces __pci_set_power_state() that will allow the
+> > radeonfb driver not to open code PCI PM operations.
+> > 
+> > Patch 2/2 makes the driver use __pci_set_power_state().
+> > 
+> > Comments welcome.
 > 
-> Yes, the box^Wsystem works fine. I've now also seen the eventual correction
-> of the error in action: after 35 mins of uptime clock->multi changed from
-> 1000 to 999 (with tod).
+> Well, Jesse doesn't like these patches very much, so here's an
+> alternative.
 > 
-> So the only issue left, though only indirectly related to the hang, is
-> the initial behavior with clocksource jiffies where clocksource_bigadjust
-> gets called every time update_wall_time is called (I've confirmed that).
+> 1/2 changes platform_pci_set_power_state() into an exported function
+> (and uses it to simplify pci_set_power_state() a bit) so that the
+> radeonfb driver can use it.
 > 
-> And possibly the cleanup change of clock->xtime_nsec to S64.
-> 
-> I'll happily leave those to you as I readily admit my understanding of the
-> whole timekeeping thing is still very limited. But if you'd like patches
-> tested, feel free to CC me.
+> 2/2 modifies the radeonfb driver itself.
 
-Here's the fix to the tick_handle_periodic() tripping into an infinite
-loop. Again, this was only triggered because the divide error that
-caused jiffies to be skewed enough that the clock-steering code
-increased the ns per jiffy conversion value enough that any slack we had
-in the loop before was lost.
+The thing I didn't like was that it made the radeon driver use an
+internal interface; I'd really prefer a proper return value from
+pci_set_power_state, which in turn means auditing all its current
+callers. But that doesn't seem worth it unless we see other drivers
+needing something similar...
 
-Fixing the divide issue avoids the problem (and is pretty important to
-get upstream), but the underlying issue that we allow ONESHOT clockevent
-mode to be used while the jiffies clocksource is in use is a concern.
+And if we did go with something like your first patch, I'd still rather
+see the timeout done in the driver, rather than having the attempts &
+delay included in the function...
 
-Thomas had pointed out that ppc and other arches that do not have
-PERIODIC mode clockevents don't trip over this, but I believe this has
-been just luck so far, as we do not enable clocksource switching till
-bootup is almost finished (to avoid clocksource churn), so after
-interrupts are enabled, but before clocksource switching is allowed,
-there is a chance (albeit very very small) that clock steering could
-cause a similar problem on other arches.
-
-Thomas, what do you think about this? With it s390 runs fine even
-without the do_div() fix.
-
-thanks
--john
-
-
-
-The following patch avoids and endless loop issue by requiring that a
-highres valid clocksource be installed before we call tick_periodic() in
-a loop when using ONESHOT mode. The result is we will only increment
-jiffies once per interrupt until a continuous hardware clocksource is
-available.
-
-Without this, we can run into a endless loop, where each cycle through
-the loop, jiffies is updated which increments time by tick_period or
-more (due to clock steering), which can cause the event programming to
-think the next event was before the newly incremented time and fail
-causing tick_periodic() to be called again and the whole process loops
-forever.
-
-Signed-off-by: John Stultz <johnstul@us.ibm.com>
-
-diff --git a/kernel/time/tick-common.c b/kernel/time/tick-common.c
-index 21a5ca8..83c4417 100644
---- a/kernel/time/tick-common.c
-+++ b/kernel/time/tick-common.c
-@@ -93,7 +93,17 @@ void tick_handle_periodic(struct clock_event_device *dev)
- 	for (;;) {
- 		if (!clockevents_program_event(dev, next, ktime_get()))
- 			return;
--		tick_periodic(cpu);
-+		/*
-+		 * Have to be careful here. If we're in oneshot mode,
-+		 * before we call tick_periodic() in a loop, we need
-+		 * to be sure we're using a real hardware clocksource.
-+		 * Otherwise we could get trapped in an infinite
-+		 * loop, as the tick_periodic() increments jiffies,
-+		 * when then will increment time, posibly causing
-+		 * the loop to trigger again and again.
-+		 */
-+		if (timekeeping_valid_for_hres())
-+			tick_periodic(cpu);
- 		next = ktime_add(next, tick_period);
- 	}
- }
-
-
-
-
-
+-- 
+Jesse Barnes, Intel Open Source Technology Center
