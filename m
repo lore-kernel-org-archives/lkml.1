@@ -1,81 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760172AbZCWRQ1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760207AbZCWRRr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760172AbZCWRQ1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Mar 2009 13:16:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759365AbZCWRQN
+	id S1760207AbZCWRRr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Mar 2009 13:17:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758703AbZCWRRg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Mar 2009 13:16:13 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:33338 "EHLO mx2.mail.elte.hu"
+	Mon, 23 Mar 2009 13:17:36 -0400
+Received: from sabe.cs.wisc.edu ([128.105.6.20]:58737 "EHLO sabe.cs.wisc.edu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759241AbZCWRQL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Mar 2009 13:16:11 -0400
-Date: Mon, 23 Mar 2009 18:15:36 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       rostedt@goodmis.org, tglx@linutronix.de, daniel@caiaq.de,
-       linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:tracing/ftrace] kernel/trace/trace_functions_graph.c: fix
-	nsecs_str buffer size
-Message-ID: <20090323171536.GA6848@elte.hu>
-References: <1237824637-28190-1-git-send-email-daniel@caiaq.de> <tip-603b9b9081ae0a1af986b9059a0a5055876ddea9@git.kernel.org> <20090323164745.GB5988@nowhere>
+	id S1757326AbZCWRRf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Mar 2009 13:17:35 -0400
+Message-ID: <49C7C423.5010202@cs.wisc.edu>
+Date: Mon, 23 Mar 2009 12:17:23 -0500
+From: Mike Christie <michaelc@cs.wisc.edu>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090323164745.GB5988@nowhere>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Jing Huang <huangj@Brocade.COM>
+CC: James.Bottomley@HansenPartnership.com,
+       Krishna Gudipati <kgudipat@Brocade.COM>, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org, Ramkumar Vadivelu <rvadivel@Brocade.COM>,
+       Vinodh Ravindran <vravindr@Brocade.COM>
+Subject: Re: [PATCH 1/5] bfa: Brocade BFA FC SCSI driver (bfad)
+References: <200903142003.n2EK39r4031547@blc-10-6.brocade.com> <49C27E95.4050401@cs.wisc.edu> <4C94DE2070B172459E4F1EE14BD2364E02B4B4A2@HQ-EXCH-5.corp.brocade.com>
+In-Reply-To: <4C94DE2070B172459E4F1EE14BD2364E02B4B4A2@HQ-EXCH-5.corp.brocade.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Frederic Weisbecker <fweisbec@gmail.com> wrote:
-
-> On Mon, Mar 23, 2009 at 04:42:27PM +0000, Daniel Mack wrote:
-> > Commit-ID:  603b9b9081ae0a1af986b9059a0a5055876ddea9
-> > Gitweb:     http://git.kernel.org/tip/603b9b9081ae0a1af986b9059a0a5055876ddea9
-> > Author:     Daniel Mack <daniel@caiaq.de>
-> > AuthorDate: Mon, 23 Mar 2009 17:10:37 +0100
-> > Committer:  Ingo Molnar <mingo@elte.hu>
-> > CommitDate: Mon, 23 Mar 2009 17:40:51 +0100
-> > 
-> > kernel/trace/trace_functions_graph.c: fix nsecs_str buffer size
-> > 
-> > Impact: fix currently inactive buffer-overflow
-> > 
-> > In kernel/trace/trace_functions_graph.c, print_graph_duration(),
-> > len can be as low as 1 or 2, which could make snprintf() write
-> > beyond the buffer bounds. (Found by cppcheck, no real-world bug
-> > occured)
-> > 
-> > Signed-off-by: Daniel Mack <daniel@caiaq.de>
-> > Cc: Steven Rostedt <rostedt@goodmis.org>
-> > Cc: Frederic Weisbecker <fweisbec@gmail.com>
-> > LKML-Reference: <1237824637-28190-1-git-send-email-daniel@caiaq.de>
-> > Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> > 
-> > 
-> > ---
-> >  kernel/trace/trace_functions_graph.c |    2 +-
-> >  1 files changed, 1 insertions(+), 1 deletions(-)
+Jing Huang wrote:
+>>> +
+>>> +	im_port->shost->hostdata[0] = (unsigned long)im_port;
+>>
+>>
+>> I think I asked about this before. Why do you just not allocate the
+> bfad
+>> or im_port in the hostdata? What is the struct hierarchy? Do you have
+>> one bfad for the entire HBA/pci_device then have a im_port for each
+> port
+>> on the hba?
+>>
 > 
-> 
-> 
-> Ingo, as I explained to Daniel before (I should have Cc you),
-> there is no overflow to protect here, so this patch will not
-> change anything.
-> 
-> This is my bad, I should better comment my code.
+> Thanks for review the code again. Yes, we have one bfad for each HBA
+> port/pci device, and one im_port (im stands for initiator mode) for each
+> scsi_host/vport. We can certainly allocate im_port in scsi_host_alloc()
+> as you suggest, but currently we allocate all possible fc4 port
+> (initiator/tgt/ipfc) in one function, and it is just more convenient to
+> do it in one place.
 
-Yeah - saw your reply, and zapped the commit already. Please add a 
-comment in any case.
-
-	Ingo
+I think the refcounting is off though. For example in the shutdown case, 
+if someone is accessing a scsi host sysfs attr, bfad_im_scsi_host_free 
+would release the drivers refcounts on the scsi_host and free the 
+im_port, but the sysfs code could still be accessing the im port. The 
+shost would still be there because the sysfs code took a refcount on 
+kobject/kref, but the im port is now gone. When you allocate the port 
+struct in the hostdata with scsi_host_alloc this type of issue is 
+handled for you.
