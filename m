@@ -1,133 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756990AbZCWB7o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756284AbZCWCFj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756990AbZCWB7o (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Mar 2009 21:59:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754867AbZCWB7a
+	id S1756284AbZCWCFj (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Mar 2009 22:05:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752740AbZCWCF2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Mar 2009 21:59:30 -0400
-Received: from extu-mxob-1.symantec.com ([216.10.194.28]:49053 "EHLO
-	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753585AbZCWB73 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Mar 2009 21:59:29 -0400
-Date: Mon, 23 Mar 2009 01:57:26 +0000 (GMT)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.anvils
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Nick Piggin <npiggin@suse.de>,
-       Lin Ming <ming.m.lin@intel.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Rik van Riel <riel@redhat.com>,
-       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
-       Christoph Rohland <hans-christoph.rohland@sap.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH] shmem: writepage directly to swap
-Message-ID: <Pine.LNX.4.64.0903230151140.11883@blonde.anvils>
+	Sun, 22 Mar 2009 22:05:28 -0400
+Received: from THUNK.ORG ([69.25.196.29]:59393 "EHLO thunker.thunk.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752392AbZCWCF1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Mar 2009 22:05:27 -0400
+Date: Sun, 22 Mar 2009 22:05:22 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Richard <richard@r-selected.de>
+Cc: linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org
+Subject: Re: Severe data corruption with ext4
+Message-ID: <20090323020522.GF29466@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Richard <richard@r-selected.de>, linux-kernel@vger.kernel.org,
+	linux-ext4@vger.kernel.org
+References: <b2080d80903200244u7fbcc150g6724a84c9b3b2054@mail.gmail.com> <20090320030121.1fa8e6d3.akpm@linux-foundation.org> <b2080d80903220626s5fffdbf3i907cb4b215670ce6@mail.gmail.com> <b2080d80903200244u7fbcc150g6724a84c9b3b2054@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <b2080d80903220626s5fffdbf3i907cb4b215670ce6@mail.gmail.com> <b2080d80903200244u7fbcc150g6724a84c9b3b2054@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Synopsis: if shmem_writepage calls swap_writepage directly, most shmem swap
-loads benefit, and a catastrophic interaction between SLUB and some flash
-storage is avoided.
+On Fri, Mar 20, 2009 at 10:44:02AM +0100, Richard wrote:
+> Mar 19 08:42:43 bakunin kernel: BUG: scheduling while atomic:
+> install-info/27020/0x00000002
 
-shmem_writepage() has always been peculiar in making no attempt to write:
-it has just transferred a shmem page from file cache to swap cache, then let
-that page make its way around the LRU again before being written and freed.
+This was casued by the call to ext4_error(); the "scheduling while
+atomic" BUG error was fixed in 2.6.29-rc1:
 
-The idea was that people use tmpfs because they want those pages to stay in
-RAM; so although we give it an overflow to swap, we should resist writing
-too soon, giving those pages a second chance before they can be reclaimed.
+commit 5d1b1b3f492f8696ea18950a454a141381b0f926
+Author: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+Date:   Mon Jan 5 22:19:52 2009 -0500
 
-That was always questionable, and I've toyed with this patch for years;
-but never had a clear justification to depart from the original design.
+    ext4: fix BUG when calling ext4_error with locked block group
+    
+    The mballoc code likes to call ext4_error while it is holding locked
+    block groups.  This can causes a scheduling in atomic context BUG.  We
+    can't just unlock the block group and relock it after/if ext4_error
+    returns since that might result in race conditions in the case where
+    the filesystem is set to continue after finding errors.
+    
+    Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+    Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
 
-It became more questionable in 2.6.28, when the split LRU patches classed
-shmem and tmpfs pages as SwapBacked rather than as file_cache: that in
-itself gives them more resistance to reclaim than normal file pages.
-I prepared this patch for 2.6.29, but the merge window arrived before
-I'd completed gathering statistics to justify sending it in.
 
-Then while comparing SLQB against SLUB, running SLUB on a laptop I'd
-habitually used with SLAB, I found SLUB to run my tmpfs kbuild swapping
-tests five times slower than SLAB or SLQB - other machines slower too,
-but nowhere near so bad.  Simpler "cp -a" swapping tests showed the same.
+It's going to be moderately painful to backport this to 2.6.28 and
+2.6.27, but we can look into it.
 
-slub_max_order=0 brings sanity to all, but heavy swapping is too far from
-normal to justify such a tuning.  The crucial factor on that laptop turns
-out to be that I'm using an SD card for swap.  What happens is this:
+> Looking into /var/log/kernel.log, I found the following message:
+> 
+> Mar 19 08:42:43 bakunin kernel: EXT4-fs error (device dm-13):
+> ext4_mb_generate_buddy: EXT4-fs: group 0: 16470 blocks in bitmap, 4354
+> in gd
 
-By default, SLUB uses order-2 pages for shmem_inode_cache (and many other
-fs inodes), so creating tmpfs files under memory pressure brings lumpy
-reclaim into play.  One subpage of the order is chosen from the bottom
-of the LRU as usual, then the other three picked out from their random
-positions on the LRUs.
+This was caused by an on-disk filesystme corruption which mballoc
+detected, which flagged an EXT4 error, which then triggered the BUG.
 
-In a tmpfs load, many of these pages will be ones which already passed
-through shmem_writepage, so already have swap allocated.  And though
-their offsets on swap were probably allocated sequentially, now that
-the pages are picked off at random, their swap offsets are scattered.
+> Mar 19 08:42:48 bakunin kernel: EXT4-fs error (device dm-13):
+> mb_free_blocks: double-free of inode 0's block 11457(bit 11457 in
+> group 0)
+> Mar 19 08:42:48 bakunin kernel:
 
-But the flash storage on the SD card is very sensitive to having its
-writes merged: once swap is written at scattered offsets, performance
-falls apart.  Rotating disk seeks increase too, but less disastrously.
+More evidence of on-disk filesystem corruption....
 
-So: stop giving shmem/tmpfs pages a second pass around the LRU,
-write them out to swap as soon as their swap has been allocated.
+> Using "dmsetup ls", I figured that dm-13 was /usr; so I fsck'd it.
+> fsck revealed hundreds of errors, which I let "fsck -y" fix automatically.
+> Now there's plenty (more than 250) of files and directories in /usr/lost+found.
 
-It's surely possible to devise an artificial load which runs faster
-the old way, one whose sizing is such that the tmpfs pages on their
-second pass are the ones that are wanted again, and other pages not.
+Sounds like an inode table got corrupted.
 
-But I've not yet found such a load: on all machines, under the loads
-I've tried, immediate swap_writepage speeds up shmem swapping: especially
-when using the SLUB allocator (and more effectively than slub_max_order=0),
-but also with the others; and it also reduces the variance between runs.
-How much faster varies widely: a factor of five is rare, 5% is common.
+> Mar 19 00:04:51 bakunin kernel: init_special_inode: bogus i_mode (336)
 
-One load which might have suffered: imagine a swapping shmem load in a
-limited mem_cgroup on a machine with plenty of memory.  Before 2.6.29
-the swapcache was not charged, and such a load would have run quickest
-with the shmem swapcache never written to swap.  But now swapcache is
-charged, so even this load benefits from shmem_writepage directly to swap.
+Yeah, we have a patch queued up so we can identified the bad inode
+number that caused that, but it points to more inode table corruption.
 
-Apologies for the #ifndef CONFIG_SWAP swap_writepage() stub in swap.h:
-it's silly because that will never get called; but refactoring shmem.c
-sensibly according to CONFIG_SWAP will be a separate task.
+> Hello again,
+> 
+> now on the same system (hardware configuration unchanged, except that
+> I attached a DVD burner yesterday), I got dozens of errors like these:
+> 
+> ----------
+> Mar 22 13:47:33 bakunin kernel: __find_get_block_slow() failed.
+> block=197478301302784, b_blocknr=0
+> Mar 22 13:47:33 bakunin kernel: b_state=0x00188021, b_size=4096
+> Mar 22 13:47:33 bakunin kernel: device blocksize: 4096
+> Mar 22 13:47:33 bakunin kernel: __find_get_block_slow() failed.
+> block=197478301302784, b_blocknr=0
+> Mar 22 13:47:33 bakunin kernel: b_state=0x00188021, b_size=4096
+> Mar 22 13:47:33 bakunin kernel: device blocksize: 4096
+> Mar 22 13:47:33 bakunin kernel: grow_buffers: requested out-of-range
+> block 197478301302784 for device dm-14
+> Mar 22 13:47:33 bakunin kernel: EXT4-fs error (device dm-14):
+> ext4_xattr_delete_inode: inode 1022: block 197478301302784 read error
 
-Signed-off-by: Hugh Dickins <hugh@veritas.com>
----
+That's another indication of data corruption in inode 1022.  This
+could be hardware induced corruption; or it could be a software
+induced error.  There's been one other user with a RAID that had
+reported a strange corruption near the beginning of the filesystem, in
+the inode table.  How big is your filesystem, exactly?  It could be
+something that only shows up with sufficiently large filesystems, or
+it could be a hardware problem.
 
- include/linux/swap.h |    5 +++++
- mm/shmem.c           |    3 +--
- 2 files changed, 6 insertions(+), 2 deletions(-)
+Can you send me the output of dumpe2fs of the filesystem in question?
+And something that would be worth doing is to use debugfs like this:
 
---- 2.6.29-rc8/include/linux/swap.h	2009-01-11 01:33:38.000000000 +0000
-+++ linux/include/linux/swap.h	2009-03-22 20:52:03.000000000 +0000
-@@ -382,6 +382,11 @@ static inline struct page *swapin_readah
- 	return NULL;
- }
- 
-+static inline int swap_writepage(struct page *p, struct writeback_control *wbc)
-+{
-+	return 0;
-+}
-+
- static inline struct page *lookup_swap_cache(swp_entry_t swp)
- {
- 	return NULL;
---- 2.6.29-rc8/mm/shmem.c	2009-03-04 10:04:43.000000000 +0000
-+++ linux/mm/shmem.c	2009-03-22 20:52:03.000000000 +0000
-@@ -1067,8 +1067,7 @@ static int shmem_writepage(struct page *
- 		swap_duplicate(swap);
- 		BUG_ON(page_mapped(page));
- 		page_cache_release(page);	/* pagecache ref */
--		set_page_dirty(page);
--		unlock_page(page);
-+		swap_writepage(page, wbc);
- 		if (inode) {
- 			mutex_lock(&shmem_swaplist_mutex);
- 			/* move instead of add in case we're racing */
+debugfs /dev/XXXX
+
+debugfs: imap <1022>
+
+you'll see something like this:
+
+Inode 1022 is part of block group 0
+      located at block 128, offset 0x0d00
+
+Take the block number, and then use it as follows:
+
+dd if=/dev/XXXX of=itable.img bs=4k count=1 skip=128
+
+Where the parameter to "skip=NNN" should be replaced with the block
+number reported by debugfs's imap command.
+
+Thanks,
+
+						- Ted
