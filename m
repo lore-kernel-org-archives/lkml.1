@@ -1,195 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758187AbZCWIlp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758408AbZCWIm2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758187AbZCWIlp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Mar 2009 04:41:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757869AbZCWIlK
+	id S1758408AbZCWIm2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Mar 2009 04:42:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758235AbZCWIlz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Mar 2009 04:41:10 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:60788
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1757404AbZCWIlG convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Mar 2009 04:41:06 -0400
-Date: Mon, 23 Mar 2009 01:40:53 -0700 (PDT)
-Message-Id: <20090323.014053.100569459.davem@davemloft.net>
-To: torvalds@linux-foundation.org
-CC: akpm@linux-foundation.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: [GIT]: Networking
-From: David Miller <davem@davemloft.net>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8BIT
+	Mon, 23 Mar 2009 04:41:55 -0400
+Received: from fg-out-1718.google.com ([72.14.220.156]:57720 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758374AbZCWIlx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Mar 2009 04:41:53 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:subject:references
+         :in-reply-to:content-type:content-transfer-encoding;
+        b=ZjJ2TE0T1cJS9pmVt8+J9qc5Hl+ti0dbWyAtaQ8gn/lX+UfdRUMf41+PVM6W8lrM83
+         oyCggaVnNsf3ka49TYaO1JaPnfs5AUehCxpPAU9rz4mEyDhIgn1vcUy803ypXfx7JjaJ
+         MPOkkOLZSPqeOsBzppPQVhDHIlK5+DrvPTz3c=
+Message-ID: <49C74B4D.2060003@gmail.com>
+Date: Mon, 23 Mar 2009 10:41:49 +0200
+From: roma1390 <roma1390@gmail.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090212)
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+Subject: Re: raid6 grow "hangs" on 2.6.27 with mounted FS
+References: <b410963b0903211329v3c4d787ep2f7a0587bee77789@mail.gmail.com> <18887.6136.84328.602390@notabene.brown>
+In-Reply-To: <18887.6136.84328.602390@notabene.brown>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Neil Brown wrote:
+ > On Saturday March 21, roma1390@gmail.com wrote:
+ > I can almost reproduce this.
+ > However when I run it, the "mdadm --grow" prints     mdadm: Need to 
+backup 384K of critical section..
+ > (as expected) and then hangs.
+ >
+ > If I interrupt it and proceed, then the umount hangs.
+ >
+ > Is this the case for you?
 
-1) Driver bug fixes:
+Yes, mdadm hangs by itself, If i start mdadm in background and wait some 
+time for reconstrucion, umount still hangs. I didn't touch mdadm, and 
+mdadm likes to stop...
 
-   ucc_geth OOPS fix from Anton Vorontsov
-   dm9000 IRQ locking fix from David Brownell
-   IRQ handler selection fix in bnx2 from Michael Chan
-   sh_eth IRQ handler and register address fix from Nobuhiro Iwamatsu
-   tulip crash on interface up with shirq debug, from Kyle McMartin
-   be2net RX ring replenish under OOM fix from Sathya Perla
-   dnet build fix from Stephen Rothwell
-   sungem netdev_ops conversion regression fix from Stephen Hemminger
-   bas_gigaset USB transfer buffer allocation fix from Tilman Schmidt
+ > The umount hangs because there is something important that mdadm needs
+ > to do which it didn't do because it was interrupted.  During the
+ > 'critical section', mdadm causes all writes to the start of the device
+ > to be blocked.  The umount tries to write the filesystem superblock
+ > and hangs.
+ > You can test if this is the problem by running the command
+ >
+ >  cat /sys/block/md2/md/suspend_hi > /sys/block/md2/md/suspend_lo
 
-2) SCTP byte swapping fix from Al Viro.
+First try was:
 
-3) IP fragmentation network namespace OOPS fix from Jorge Boncompte
+   mdadm --grow /dev/md2 --raid-devices=5 &
+   sleep 3
+   cat /sys/block/md2/md/suspend_hi
+   # output: 768
+   cat /sys/block/md2/md/suspend_lo
+   # output: 0
+   cat /sys/block/md2/md/suspend_hi > /sys/block/md2/md/suspend_lo
+   sleep 20
+   umount /dev/md2
 
-4) Legacy GRO input path crash fix from Herbert Xu.
+And this works! mdadm unhangs, and umount doesn't block any more.
 
-5) Bonding speed/duplex update fix from Jay Vosburgh
+ > That should allow the 'umount' to complete.
+ >
+ > This will only happen on very small arrays that take less than a
+ > couple of seconds for the reshape to complete.  I have a patch for
+ > mdadm which makes it more robust in this situation.  It will be in
+ > future releases.
+ >
+ > Does this explain what is happening to you?
 
-6) kfree(skb) == OOPS fix from Roel Kluin
+Yes, thanks. May be if I retest this situation with same kernel and 
+limited recovery bandwith, then may be i can't hit same problem again?
 
-7) SIT ipv6 tunnel regression fix wrt. netdev_ops conversion
-   from Bjørn Mork
+ > Thanks,
+ > NeilBrown
 
-8) Wireless bug fixes from John Linville and the wireless crew.
+Thanks.
 
-9) Netfilter bug fixes from Christoph Paasch (conntrack packet dropping
-   and sanity check errors) and Pablo Neira Ayuso (conntrack netlink).
 
-Please pull, thanks a lot!
-
-The following changes since commit ee568b25ee9e160b32d1aef73d8b2ee9c05d34db:
-  Linus Torvalds (1):
-        Avoid 64-bit "switch()" statements on 32-bit architectures
-
-are available in the git repository at:
-
-  master.kernel.org:/pub/scm/linux/kernel/git/davem/net-2.6.git master
-
-Al Viro (1):
-      net: fix sctp breakage
-
-Anton Vorontsov (1):
-      ucc_geth: Fix oops when using fixed-link support
-
-Bjørn Mork (1):
-      ipv6: fix display of local and remote sit endpoints
-
-Christoph Paasch (2):
-      netfilter: conntrack: fix dropping packet after l4proto->packet()
-      netfilter: conntrack: check for NEXTHDR_NONE before header sanity checking
-
-David Brownell (1):
-      dm9000: locking bugfix
-
-David S. Miller (3):
-      Merge branch 'master' of git://git.kernel.org/.../kaber/nf-2.6
-      Merge branch 'master' of git://git.kernel.org/.../linville/wireless-2.6
-      Merge branch 'master' of git://git.kernel.org/.../linville/wireless-2.6
-
-Herbert Xu (1):
-      gro: Fix legacy path napi_complete crash
-
-Ilya Yanok (1):
-      dnet: DNET should depend on HAS_IOMEM
-
-Jay Vosburgh (1):
-      bonding: Fix updating of speed/duplex changes
-
-John W. Linville (1):
-      lib80211: silence excessive crypto debugging messages
-
-Jorge Boncompte [DTI2] (1):
-      netns: oops in ip[6]_frag_reasm incrementing stats
-
-Jouni Malinen (3):
-      mac80211: Fix panic on fragmentation with power saving
-      zd1211rw: Do not panic on device eject when associated
-      nl80211: Check that function pointer != NULL before using it
-
-Kyle McMartin (1):
-      tulip: fix crash on iface up with shirq debug
-
-Luis R. Rodriguez (2):
-      ath9k: implement IO serialization
-      ath9k: AR9280 PCI devices must serialize IO as well
-
-Maciej Sosnowski (1):
-      dca: add missing copyright/license headers
-
-Michael Chan (1):
-      bnx2: Fix problem of using wrong IRQ handler.
-
-Nobuhiro Iwamatsu (2):
-      sh_eth: Change handling of IRQ
-      sh_eth: Fix mistake of the address of SH7763
-
-Pablo Neira Ayuso (2):
-      netfilter: conntrack: don't deliver events for racy packets
-      netfilter: ctnetlink: fix crash during expectation creation
-
-Pantelis Koukousoulas (1):
-      virtio_net: Make virtio_net support carrier detection
-
-Roel Kluin (1):
-      net: kfree(napi->skb) => kfree_skb
-
-Sathya Perla (2):
-      be2net: replenish when posting to rx-queue is starved in out of mem conditions
-      be2net: fix to restore vlan ids into BE2 during a IF DOWN->UP cycle
-
-Stanislaw Gruszka (1):
-      net: Document /proc/sys/net/core/netdev_budget
-
-Stephen Hemminger (1):
-      sungem: missing net_device_ops
-
-Stephen Rothwell (1):
-      net: update dnet.c for bus_id removal
-
-Steve Glendinning (1):
-      smsc911x: reset last known duplex and carrier on open
-
-Tilman Schmidt (1):
-      bas_gigaset: correctly allocate USB interrupt transfer buffer
-
- Documentation/filesystems/proc.txt        |    7 +++
- drivers/dca/dca-sysfs.c                   |   21 ++++++++++
- drivers/isdn/gigaset/bas-gigaset.c        |   16 ++++++-
- drivers/net/Kconfig                       |    2 +-
- drivers/net/benet/be.h                    |    1 +
- drivers/net/benet/be_main.c               |   60 ++++++++++++++++------------
- drivers/net/bnx2.c                        |   12 +++---
- drivers/net/bonding/bond_main.c           |   25 ++++++++++--
- drivers/net/dm9000.c                      |    6 ++-
- drivers/net/dnet.c                        |    6 +-
- drivers/net/sh_eth.c                      |   20 ++++++++-
- drivers/net/sh_eth.h                      |    4 +-
- drivers/net/smsc911x.c                    |    4 ++
- drivers/net/sungem.c                      |    9 ++--
- drivers/net/tulip/tulip_core.c            |   45 ++++++++++++++--------
- drivers/net/ucc_geth.c                    |   34 +++++-----------
- drivers/net/ucc_geth.h                    |    3 +-
- drivers/net/virtio_net.c                  |    3 +
- drivers/net/wireless/ath9k/ath9k.h        |    4 +-
- drivers/net/wireless/ath9k/core.h         |   33 ++++++++++++++++
- drivers/net/wireless/ath9k/hw.c           |   22 ++++++++++-
- drivers/net/wireless/ath9k/main.c         |    1 +
- drivers/net/wireless/zd1211rw/zd_mac.c    |    8 +++-
- include/linux/dca.h                       |   20 ++++++++++
- include/net/netfilter/nf_conntrack_core.h |    3 +-
- net/core/dev.c                            |    7 ++-
- net/ipv4/ip_fragment.c                    |    3 +-
- net/ipv6/netfilter/nf_conntrack_reasm.c   |    8 ++--
- net/ipv6/reassembly.c                     |    7 +--
- net/ipv6/sit.c                            |    2 +-
- net/mac80211/tx.c                         |    2 +
- net/netfilter/nf_conntrack_core.c         |    2 +-
- net/netfilter/nf_conntrack_netlink.c      |    1 +
- net/netfilter/nf_conntrack_proto_tcp.c    |    4 +-
- net/sctp/endpointola.c                    |    3 +-
- net/wireless/Kconfig                      |   10 +++++
- net/wireless/lib80211_crypt_ccmp.c        |    2 +
- net/wireless/lib80211_crypt_tkip.c        |    4 ++
- net/wireless/nl80211.c                    |   11 +++++
- 39 files changed, 314 insertions(+), 121 deletions(-)
