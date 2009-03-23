@@ -1,85 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758885AbZCWTeL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759330AbZCWTff@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758885AbZCWTeL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Mar 2009 15:34:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754941AbZCWTdy
+	id S1759330AbZCWTff (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Mar 2009 15:35:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755990AbZCWTfX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Mar 2009 15:33:54 -0400
-Received: from mail-ew0-f165.google.com ([209.85.219.165]:56300 "EHLO
-	mail-ew0-f165.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754543AbZCWTdx (ORCPT
+	Mon, 23 Mar 2009 15:35:23 -0400
+Received: from moutng.kundenserver.de ([212.227.126.177]:51239 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753773AbZCWTfW convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Mar 2009 15:33:53 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=h+4ExCqBjfhd+kCfdMe380uFQ5i4eUcD5dkshXOaoGQvyvVaTIeHHz/82cjEs4t/1B
-         +YrTHbdH8IVLGBKmyhwis+ITn3Ng5MtVGZ9yYDQw/jHb0564PD3Q+R5xrI7RK2iHEOWe
-         u7cfPCbmZwermUsUBGaN4Y52zVehhmPIZ1IO8=
-Date: Mon, 23 Mar 2009 20:33:46 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       tglx@linutronix.de, mingo@elte.hu, linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:tracing/filters] tracing/events: don't use wake up for
-	events
-Message-ID: <20090323193345.GD5988@nowhere>
-References: <1237759847-21025-4-git-send-email-fweisbec@gmail.com> <tip-07edf7121374609709ef1b0889f6e7b8d6a62ec1@git.kernel.org> <alpine.DEB.2.00.0903231520330.3578@gandalf.stny.rr.com>
+	Mon, 23 Mar 2009 15:35:22 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: monstr@monstr.eu
+Subject: Re: [PATCH 07/57] microblaze_v7: Signal support
+Date: Mon, 23 Mar 2009 20:35:14 +0100
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org, john.williams@petalogix.com
+References: <1237408284-8674-1-git-send-email-monstr@monstr.eu> <fbef554ff1d05fa50312d91e61a0d63d3207076c.1237407249.git.monstr@monstr.eu> <dad2353f129217470f0595eeed98412b4c84ed6b.1237407249.git.monstr@monstr.eu>
+In-Reply-To: <dad2353f129217470f0595eeed98412b4c84ed6b.1237407249.git.monstr@monstr.eu>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.0903231520330.3578@gandalf.stny.rr.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200903232035.15100.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX1/GmjHrsrcqVqJOyvpa9NSorsI7Ubjjrgk9SZN
+ YiAY1zzIyuNImkOGFWkKoe/D/LQtYgeICloSOhK32W7FfzpARe
+ f4kBb+i3SB1/cZsPYeD/A==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 23, 2009 at 03:21:55PM -0400, Steven Rostedt wrote:
+On Wednesday 18 March 2009, monstr@monstr.eu wrote:
+> From: Michal Simek <monstr@monstr.eu>
 > 
-> On Mon, 23 Mar 2009, Frederic Weisbecker wrote:
-> > tracing/events: don't use wake up for events
-> > 
-> > Impact: fix hard-lockup with sched switch events
-> > 
-> > Some ftrace events, such as sched wakeup, can be traced
-> > while the runqueue lock is hold. Since they are using
-> > trace_current_buffer_unlock_commit(), they call wake_up()
-> > which can try to grab the runqueue lock too, resulting in
-> > a deadlock.
-> > 
-> > Now for all event, we call a new helper:
-> > trace_nowake_buffer_unlock_commit() which do pretty the same than
 > 
-> Ug, that's an ugly name. It should at least be:
-> 
->   trace_buffer_unlock_commit_nowake
-> 
-> to be more in line with kernel conventions. That is where the derivitive
-> has the same name as the original, like preempt_enable_noresched.
-> 
-> -- Steve
+> Signed-off-by: Michal Simek <monstr@monstr.eu>
+> ---
+>  arch/microblaze/include/asm/signal.h |  165 +++++++++++
+>  arch/microblaze/kernel/signal.c      |  536 ++++++++++++++++++++++++++++++++++
+>  2 files changed, 701 insertions(+), 0 deletions(-)
+>  create mode 100644 arch/microblaze/include/asm/signal.h
+>  create mode 100644 arch/microblaze/kernel/signal.c
 
+> From: Michal Simek <monstr@monstr.eu>
+>
+>
+> Signed-off-by: Michal Simek <monstr@monstr.eu>
+> ---
+>  arch/microblaze/include/asm/ipc.h       |    1 +
+>  arch/microblaze/include/asm/ipcbuf.h    |   36 +++++
+>  arch/microblaze/kernel/sys_microblaze.c |  226 +++++++++++++++++++++++++++++++
+>  3 files changed, 263 insertions(+), 0 deletions(-)
+>  create mode 100644 arch/microblaze/include/asm/ipc.h
+>  create mode 100644 arch/microblaze/include/asm/ipcbuf.h
+>  create mode 100644 arch/microblaze/kernel/sys_microblaze.c
 
-Indeed.
+I don't quite remember what the outcome of this discussion was the last
+time, but what is your plan for the deprecated syscalls like the
+legacy syscalls you add here?
 
-I scratched my head the evening long to find a name that could mean:
-trace_current_buffer_unlock_commit_nowake()  ;-)
+Have you tried changing uClibc and/or glibc so you don't need them?
+Are you planning to remove them soon once they are not needed any
+more?
 
-I think my headache brought me to this silly trace_nowake....
+What about the syscalls that are not needed but you just get from
+common code (e.g. oldumount, time, old_readdir, ...)?
 
-I will fix the name.
-Thanks.
-
-> 
-> > trace_current_buffer_unlock_commit() except than it doesn't call
-> > trace_wake_up().
-> > 
-> > Reported-by: Ingo Molnar <mingo@elte.hu>
-> > Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
-> > Cc: Steven Rostedt <rostedt@goodmis.org>
-> > LKML-Reference: <1237759847-21025-4-git-send-email-fweisbec@gmail.com>
-> > Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> > 
-> > 
-
+	Arnd <><
