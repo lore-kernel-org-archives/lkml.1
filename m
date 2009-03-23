@@ -1,41 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760763AbZCWWNk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760833AbZCWWOX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760763AbZCWWNk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Mar 2009 18:13:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758334AbZCWWNL
+	id S1760833AbZCWWOX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Mar 2009 18:14:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758226AbZCWWNO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Mar 2009 18:13:11 -0400
-Received: from kroah.org ([198.145.64.141]:41582 "EHLO coco.kroah.org"
+	Mon, 23 Mar 2009 18:13:14 -0400
+Received: from kroah.org ([198.145.64.141]:41589 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751706AbZCWWNF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Mar 2009 18:13:05 -0400
-Date: Mon, 23 Mar 2009 15:09:47 -0700
+	id S1751467AbZCWWNH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Mar 2009 18:13:07 -0400
+Date: Mon, 23 Mar 2009 15:10:31 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
        torvalds@linux-foundation.org, stable@kernel.org
-Subject: Re: Linux 2.6.28.9
-Message-ID: <20090323220947.GB11563@kroah.com>
-References: <20090323220927.GA11563@kroah.com>
+Subject: Re: Linux 2.6.27.21
+Message-ID: <20090323221031.GD11563@kroah.com>
+References: <20090323221017.GC11563@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090323220927.GA11563@kroah.com>
+In-Reply-To: <20090323221017.GC11563@kroah.com>
 User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 diff --git a/Makefile b/Makefile
-index 2b46f70..17bfe08 100644
+index 9f4860d..0664c76 100644
 --- a/Makefile
 +++ b/Makefile
 @@ -1,7 +1,7 @@
  VERSION = 2
  PATCHLEVEL = 6
- SUBLEVEL = 28
--EXTRAVERSION = .8
-+EXTRAVERSION = .9
- NAME = Erotic Pickled Herring
+ SUBLEVEL = 27
+-EXTRAVERSION = .20
++EXTRAVERSION = .21
+ NAME = Trembling Tortoise
  
  # *DOCUMENTATION*
 @@ -555,6 +555,9 @@ KBUILD_CFLAGS += $(call cc-option,-Wdeclaration-after-statement,)
@@ -49,10 +49,10 @@ index 2b46f70..17bfe08 100644
  # But warn user when we do so
  warn-assign = \
 diff --git a/arch/ia64/Kconfig b/arch/ia64/Kconfig
-index 0429d3e..4d19a0b 100644
+index fb7e69c..48dfb6f 100644
 --- a/arch/ia64/Kconfig
 +++ b/arch/ia64/Kconfig
-@@ -479,8 +479,7 @@ config HOLES_IN_ZONE
+@@ -444,8 +444,7 @@ config HOLES_IN_ZONE
  	default y if VIRTUAL_MEM_MAP
  
  config HAVE_ARCH_EARLY_PFN_TO_NID
@@ -63,10 +63,10 @@ index 0429d3e..4d19a0b 100644
  config HAVE_ARCH_NODEDATA_EXTENSION
  	def_bool y
 diff --git a/arch/powerpc/sysdev/fsl_soc.c b/arch/powerpc/sysdev/fsl_soc.c
-index 26ecb96..507fc15 100644
+index 214388e..dd1d7ed 100644
 --- a/arch/powerpc/sysdev/fsl_soc.c
 +++ b/arch/powerpc/sysdev/fsl_soc.c
-@@ -257,7 +257,7 @@ static int __init gfar_mdio_of_init(void)
+@@ -255,7 +255,7 @@ static int __init gfar_mdio_of_init(void)
  		gfar_mdio_of_init_one(np);
  
  	/* try the deprecated version */
@@ -88,51 +88,35 @@ index a5f8300..d9e62c0 100644
  		"0:\n"
  		: "+d" (reg2), "+d" (reg3), "=d" (tmp)
  		: "d" (base), "2" (1UL) : "cc" );
-diff --git a/arch/x86/include/asm/msr-index.h b/arch/x86/include/asm/msr-index.h
-index e38859d..07684f8 100644
---- a/arch/x86/include/asm/msr-index.h
-+++ b/arch/x86/include/asm/msr-index.h
-@@ -200,6 +200,35 @@
- #define MSR_IA32_THERM_STATUS		0x0000019c
- #define MSR_IA32_MISC_ENABLE		0x000001a0
- 
-+/* MISC_ENABLE bits: architectural */
-+#define MSR_IA32_MISC_ENABLE_FAST_STRING	(1ULL << 0)
-+#define MSR_IA32_MISC_ENABLE_TCC		(1ULL << 1)
-+#define MSR_IA32_MISC_ENABLE_EMON		(1ULL << 7)
-+#define MSR_IA32_MISC_ENABLE_BTS_UNAVAIL	(1ULL << 11)
-+#define MSR_IA32_MISC_ENABLE_PEBS_UNAVAIL	(1ULL << 12)
-+#define MSR_IA32_MISC_ENABLE_ENHANCED_SPEEDSTEP	(1ULL << 16)
-+#define MSR_IA32_MISC_ENABLE_MWAIT		(1ULL << 18)
-+#define MSR_IA32_MISC_ENABLE_LIMIT_CPUID	(1ULL << 22)
-+#define MSR_IA32_MISC_ENABLE_XTPR_DISABLE	(1ULL << 23)
-+#define MSR_IA32_MISC_ENABLE_XD_DISABLE		(1ULL << 34)
-+
-+/* MISC_ENABLE bits: model-specific, meaning may vary from core to core */
-+#define MSR_IA32_MISC_ENABLE_X87_COMPAT		(1ULL << 2)
-+#define MSR_IA32_MISC_ENABLE_TM1		(1ULL << 3)
-+#define MSR_IA32_MISC_ENABLE_SPLIT_LOCK_DISABLE	(1ULL << 4)
-+#define MSR_IA32_MISC_ENABLE_L3CACHE_DISABLE	(1ULL << 6)
-+#define MSR_IA32_MISC_ENABLE_SUPPRESS_LOCK	(1ULL << 8)
-+#define MSR_IA32_MISC_ENABLE_PREFETCH_DISABLE	(1ULL << 9)
-+#define MSR_IA32_MISC_ENABLE_FERR		(1ULL << 10)
-+#define MSR_IA32_MISC_ENABLE_FERR_MULTIPLEX	(1ULL << 10)
-+#define MSR_IA32_MISC_ENABLE_TM2		(1ULL << 13)
-+#define MSR_IA32_MISC_ENABLE_ADJ_PREF_DISABLE	(1ULL << 19)
-+#define MSR_IA32_MISC_ENABLE_SPEEDSTEP_LOCK	(1ULL << 20)
-+#define MSR_IA32_MISC_ENABLE_L1D_CONTEXT	(1ULL << 24)
-+#define MSR_IA32_MISC_ENABLE_DCU_PREF_DISABLE	(1ULL << 37)
-+#define MSR_IA32_MISC_ENABLE_TURBO_DISABLE	(1ULL << 38)
-+#define MSR_IA32_MISC_ENABLE_IP_PREF_DISABLE	(1ULL << 39)
-+
- /* Intel Model 6 */
- #define MSR_P6_EVNTSEL0			0x00000186
- #define MSR_P6_EVNTSEL1			0x00000187
 diff --git a/arch/x86/kernel/cpu/intel.c b/arch/x86/kernel/cpu/intel.c
-index 57e3fba..d8cfe54 100644
+index b75f256..31027aa 100644
 --- a/arch/x86/kernel/cpu/intel.c
 +++ b/arch/x86/kernel/cpu/intel.c
-@@ -30,6 +30,19 @@
+@@ -32,6 +32,19 @@ struct movsl_mask movsl_mask __read_mostly;
+ 
+ static void __cpuinit early_init_intel(struct cpuinfo_x86 *c)
+ {
++	/* Unmask CPUID levels if masked: */
++	if (c->x86 == 6 && c->x86_model >= 15) {
++		u64 misc_enable;
++
++		rdmsrl(MSR_IA32_MISC_ENABLE, misc_enable);
++
++		if (misc_enable & MSR_IA32_MISC_ENABLE_LIMIT_CPUID) {
++			misc_enable &= ~MSR_IA32_MISC_ENABLE_LIMIT_CPUID;
++			wrmsrl(MSR_IA32_MISC_ENABLE, misc_enable);
++			c->cpuid_level = cpuid_eax(0);
++		}
++	}
++
+ 	/* Netburst reports 64 bytes clflush size, but does IO in 128 bytes */
+ 	if (c->x86 == 15 && c->x86_cache_alignment == 64)
+ 		c->x86_cache_alignment = 128;
+diff --git a/arch/x86/kernel/cpu/intel_64.c b/arch/x86/kernel/cpu/intel_64.c
+index 1019c58..7ccd551 100644
+--- a/arch/x86/kernel/cpu/intel_64.c
++++ b/arch/x86/kernel/cpu/intel_64.c
+@@ -9,6 +9,19 @@
  
  static void __cpuinit early_init_intel(struct cpuinfo_x86 *c)
  {
@@ -150,13 +134,13 @@ index 57e3fba..d8cfe54 100644
 +	}
 +
  	if ((c->x86 == 0xf && c->x86_model >= 0x03) ||
- 		(c->x86 == 0x6 && c->x86_model >= 0x0e))
+ 	    (c->x86 == 0x6 && c->x86_model >= 0x0e))
  		set_cpu_cap(c, X86_FEATURE_CONSTANT_TSC);
 diff --git a/drivers/ata/ata_piix.c b/drivers/ata/ata_piix.c
-index c11936e..458532d 100644
+index e6b4606..d78a5b2 100644
 --- a/drivers/ata/ata_piix.c
 +++ b/drivers/ata/ata_piix.c
-@@ -1294,6 +1294,39 @@ static const int *__devinit piix_init_sata_map(struct pci_dev *pdev,
+@@ -1363,6 +1363,39 @@ static const int *__devinit piix_init_sata_map(struct pci_dev *pdev,
  	return map;
  }
  
@@ -193,152 +177,25 @@ index c11936e..458532d 100644
 +	return false;
 +}
 +
- static int __devinit piix_init_sidpr(struct ata_host *host)
+ static void __devinit piix_init_sidpr(struct ata_host *host)
  {
  	struct pci_dev *pdev = to_pci_dev(host->dev);
-@@ -1307,6 +1340,10 @@ static int __devinit piix_init_sidpr(struct ata_host *host)
+@@ -1376,6 +1409,10 @@ static void __devinit piix_init_sidpr(struct ata_host *host)
  		if (hpriv->map[i] == IDE)
- 			return 0;
+ 			return;
  
 +	/* is it blacklisted? */
 +	if (piix_no_sidpr(host))
-+		return 0;
++		return;
 +
  	if (!(host->ports[0]->flags & PIIX_FLAG_SIDPR))
- 		return 0;
+ 		return;
  
-diff --git a/drivers/gpu/drm/drm_irq.c b/drivers/gpu/drm/drm_irq.c
-index 1e787f8..e2f5d23 100644
---- a/drivers/gpu/drm/drm_irq.c
-+++ b/drivers/gpu/drm/drm_irq.c
-@@ -259,7 +259,8 @@ EXPORT_SYMBOL(drm_irq_install);
-  */
- int drm_irq_uninstall(struct drm_device * dev)
- {
--	int irq_enabled;
-+	unsigned long irqflags;
-+	int irq_enabled, i;
- 
- 	if (!drm_core_check_feature(dev, DRIVER_HAVE_IRQ))
- 		return -EINVAL;
-@@ -269,6 +270,16 @@ int drm_irq_uninstall(struct drm_device * dev)
- 	dev->irq_enabled = 0;
- 	mutex_unlock(&dev->struct_mutex);
- 
-+	/*
-+	 * Wake up any waiters so they don't hang.
-+	 */
-+	spin_lock_irqsave(&dev->vbl_lock, irqflags);
-+	for (i = 0; i < dev->num_crtcs; i++) {
-+		DRM_WAKEUP(&dev->vbl_queue[i]);
-+		dev->vblank_enabled[i] = 0;
-+	}
-+	spin_unlock_irqrestore(&dev->vbl_lock, irqflags);
-+
- 	if (!irq_enabled)
- 		return -EINVAL;
- 
-@@ -617,8 +628,9 @@ int drm_wait_vblank(struct drm_device *dev, void *data,
- 		DRM_DEBUG("waiting on vblank count %d, crtc %d\n",
- 			  vblwait->request.sequence, crtc);
- 		DRM_WAIT_ON(ret, dev->vbl_queue[crtc], 3 * DRM_HZ,
--			    ((drm_vblank_count(dev, crtc)
--			      - vblwait->request.sequence) <= (1 << 23)));
-+			    (((drm_vblank_count(dev, crtc) -
-+			       vblwait->request.sequence) <= (1 << 23)) ||
-+			     !dev->irq_enabled));
- 
- 		if (ret != -EINTR) {
- 			struct timeval now;
-diff --git a/drivers/gpu/drm/i915/i915_gem.c b/drivers/gpu/drm/i915/i915_gem.c
-index 24fe8c1..7247824 100644
---- a/drivers/gpu/drm/i915/i915_gem.c
-+++ b/drivers/gpu/drm/i915/i915_gem.c
-@@ -1161,6 +1161,8 @@ i915_gem_object_bind_to_gtt(struct drm_gem_object *obj, unsigned alignment)
- 	struct drm_mm_node *free_space;
- 	int page_count, ret;
- 
-+	if (dev_priv->mm.suspended)
-+		return -EBUSY;
- 	if (alignment == 0)
- 		alignment = PAGE_SIZE;
- 	if (alignment & (PAGE_SIZE - 1)) {
-@@ -2029,13 +2031,15 @@ i915_gem_execbuffer(struct drm_device *dev, void *data,
- 
- 		/* error other than GTT full, or we've already tried again */
- 		if (ret != -ENOMEM || pin_tries >= 1) {
--			DRM_ERROR("Failed to pin buffers %d\n", ret);
-+			if (ret != -ERESTARTSYS)
-+				DRM_ERROR("Failed to pin buffers %d\n", ret);
- 			goto err;
- 		}
- 
- 		/* unpin all of our buffers */
- 		for (i = 0; i < pinned; i++)
- 			i915_gem_object_unpin(object_list[i]);
-+		pinned = 0;
- 
- 		/* evict everyone we can from the aperture */
- 		ret = i915_gem_evict_everything(dev);
-@@ -2178,7 +2182,8 @@ i915_gem_object_pin(struct drm_gem_object *obj, uint32_t alignment)
- 	if (obj_priv->gtt_space == NULL) {
- 		ret = i915_gem_object_bind_to_gtt(obj, alignment);
- 		if (ret != 0) {
--			DRM_ERROR("Failure to bind: %d", ret);
-+			if (ret != -EBUSY && ret != -ERESTARTSYS)
-+				DRM_ERROR("Failure to bind: %d", ret);
- 			return ret;
- 		}
- 	}
-@@ -2700,20 +2705,21 @@ i915_gem_entervt_ioctl(struct drm_device *dev, void *data,
- 		dev_priv->mm.wedged = 0;
- 	}
- 
--	ret = i915_gem_init_ringbuffer(dev);
--	if (ret != 0)
--		return ret;
--
- 	dev_priv->mm.gtt_mapping = io_mapping_create_wc(dev->agp->base,
- 							dev->agp->agp_info.aper_size
- 							* 1024 * 1024);
- 
- 	mutex_lock(&dev->struct_mutex);
-+	dev_priv->mm.suspended = 0;
-+
-+	ret = i915_gem_init_ringbuffer(dev);
-+	if (ret != 0)
-+		return ret;
-+
- 	BUG_ON(!list_empty(&dev_priv->mm.active_list));
- 	BUG_ON(!list_empty(&dev_priv->mm.flushing_list));
- 	BUG_ON(!list_empty(&dev_priv->mm.inactive_list));
- 	BUG_ON(!list_empty(&dev_priv->mm.request_list));
--	dev_priv->mm.suspended = 0;
- 	mutex_unlock(&dev->struct_mutex);
- 
- 	drm_irq_install(dev);
-diff --git a/drivers/gpu/drm/i915/i915_irq.c b/drivers/gpu/drm/i915/i915_irq.c
-index 69b9a42..81ac2bd 100644
---- a/drivers/gpu/drm/i915/i915_irq.c
-+++ b/drivers/gpu/drm/i915/i915_irq.c
-@@ -400,6 +400,12 @@ int i915_enable_vblank(struct drm_device *dev, int pipe)
- {
- 	drm_i915_private_t *dev_priv = (drm_i915_private_t *) dev->dev_private;
- 	unsigned long irqflags;
-+	int pipeconf_reg = (pipe == 0) ? PIPEACONF : PIPEBCONF;
-+	u32 pipeconf;
-+
-+	pipeconf = I915_READ(pipeconf_reg);
-+	if (!(pipeconf & PIPEACONF_ENABLE))
-+		return -EINVAL;
- 
- 	spin_lock_irqsave(&dev_priv->user_irq_lock, irqflags);
- 	if (IS_I965G(dev))
 diff --git a/drivers/md/dm-crypt.c b/drivers/md/dm-crypt.c
-index ce26c84..51047d3 100644
+index 1395643..8ac02cf 100644
 --- a/drivers/md/dm-crypt.c
 +++ b/drivers/md/dm-crypt.c
-@@ -60,6 +60,7 @@ struct dm_crypt_io {
+@@ -59,6 +59,7 @@ struct dm_crypt_io {
  };
  
  struct dm_crypt_request {
@@ -346,8 +203,8 @@ index ce26c84..51047d3 100644
  	struct scatterlist sg_in;
  	struct scatterlist sg_out;
  };
-@@ -335,6 +336,18 @@ static void crypt_convert_init(struct crypt_config *cc,
- 	init_completion(&ctx->restart);
+@@ -336,6 +337,18 @@ static void crypt_convert_init(struct crypt_config *cc,
+ 	atomic_set(&ctx->pending, 1);
  }
  
 +static struct dm_crypt_request *dmreq_of_req(struct crypt_config *cc,
@@ -365,7 +222,7 @@ index ce26c84..51047d3 100644
  static int crypt_convert_block(struct crypt_config *cc,
  			       struct convert_context *ctx,
  			       struct ablkcipher_request *req)
-@@ -345,10 +358,11 @@ static int crypt_convert_block(struct crypt_config *cc,
+@@ -346,10 +359,11 @@ static int crypt_convert_block(struct crypt_config *cc,
  	u8 *iv;
  	int r = 0;
  
@@ -378,7 +235,7 @@ index ce26c84..51047d3 100644
  	sg_init_table(&dmreq->sg_in, 1);
  	sg_set_page(&dmreq->sg_in, bv_in->bv_page, 1 << SECTOR_SHIFT,
  		    bv_in->bv_offset + ctx->offset_in);
-@@ -395,8 +409,9 @@ static void crypt_alloc_req(struct crypt_config *cc,
+@@ -396,8 +410,9 @@ static void crypt_alloc_req(struct crypt_config *cc,
  		cc->req = mempool_alloc(cc->req_pool, GFP_NOIO);
  	ablkcipher_request_set_tfm(cc->req, cc->tfm);
  	ablkcipher_request_set_callback(cc->req, CRYPTO_TFM_REQ_MAY_BACKLOG |
@@ -390,37 +247,7 @@ index ce26c84..51047d3 100644
  }
  
  /*
-@@ -553,19 +568,22 @@ static void crypt_inc_pending(struct dm_crypt_io *io)
- static void crypt_dec_pending(struct dm_crypt_io *io)
- {
- 	struct crypt_config *cc = io->target->private;
-+	struct bio *base_bio = io->base_bio;
-+	struct dm_crypt_io *base_io = io->base_io;
-+	int error = io->error;
- 
- 	if (!atomic_dec_and_test(&io->pending))
- 		return;
- 
--	if (likely(!io->base_io))
--		bio_endio(io->base_bio, io->error);
-+	mempool_free(io, cc->io_pool);
-+
-+	if (likely(!base_io))
-+		bio_endio(base_bio, error);
- 	else {
--		if (io->error && !io->base_io->error)
--			io->base_io->error = io->error;
--		crypt_dec_pending(io->base_io);
-+		if (error && !base_io->error)
-+			base_io->error = error;
-+		crypt_dec_pending(base_io);
- 	}
--
--	mempool_free(io, cc->io_pool);
- }
- 
- /*
-@@ -821,7 +839,8 @@ static void kcryptd_crypt_read_convert(struct dm_crypt_io *io)
+@@ -757,7 +772,8 @@ static void kcryptd_crypt_read_convert(struct dm_crypt_io *io)
  static void kcryptd_async_done(struct crypto_async_request *async_req,
  			       int error)
  {
@@ -430,7 +257,7 @@ index ce26c84..51047d3 100644
  	struct dm_crypt_io *io = container_of(ctx, struct dm_crypt_io, ctx);
  	struct crypt_config *cc = io->target->private;
  
-@@ -830,7 +849,7 @@ static void kcryptd_async_done(struct crypto_async_request *async_req,
+@@ -766,7 +782,7 @@ static void kcryptd_async_done(struct crypto_async_request *async_req,
  		return;
  	}
  
@@ -440,7 +267,7 @@ index ce26c84..51047d3 100644
  	if (!atomic_dec_and_test(&ctx->pending))
  		return;
 diff --git a/drivers/md/dm-io.c b/drivers/md/dm-io.c
-index 2fd6d44..657e1dd 100644
+index 4789c42..427e5ed 100644
 --- a/drivers/md/dm-io.c
 +++ b/drivers/md/dm-io.c
 @@ -292,6 +292,8 @@ static void do_region(int rw, unsigned region, struct dm_io_region *where,
@@ -453,7 +280,7 @@ index 2fd6d44..657e1dd 100644
  		bio->bi_sector = where->sector + (where->count - remaining);
  		bio->bi_bdev = where->bdev;
 diff --git a/drivers/md/dm-ioctl.c b/drivers/md/dm-ioctl.c
-index 777c948..c4819b6 100644
+index b262c00..b8ab11f 100644
 --- a/drivers/md/dm-ioctl.c
 +++ b/drivers/md/dm-ioctl.c
 @@ -704,7 +704,8 @@ static int dev_rename(struct dm_ioctl *param, size_t param_size)
@@ -466,94 +293,12 @@ index 777c948..c4819b6 100644
  		DMWARN("Invalid new logical volume name supplied.");
  		return -EINVAL;
  	}
-diff --git a/drivers/md/dm.c b/drivers/md/dm.c
-index c99e472..b798bd3 100644
---- a/drivers/md/dm.c
-+++ b/drivers/md/dm.c
-@@ -480,9 +480,12 @@ static int __noflush_suspending(struct mapped_device *md)
- static void dec_pending(struct dm_io *io, int error)
- {
- 	unsigned long flags;
-+	int io_error;
-+	struct bio *bio;
-+	struct mapped_device *md = io->md;
- 
- 	/* Push-back supersedes any I/O errors */
--	if (error && !(io->error > 0 && __noflush_suspending(io->md)))
-+	if (error && !(io->error > 0 && __noflush_suspending(md)))
- 		io->error = error;
- 
- 	if (atomic_dec_and_test(&io->io_count)) {
-@@ -492,25 +495,28 @@ static void dec_pending(struct dm_io *io, int error)
- 			 * This must be handled before the sleeper on
- 			 * suspend queue merges the pushback list.
- 			 */
--			spin_lock_irqsave(&io->md->pushback_lock, flags);
--			if (__noflush_suspending(io->md))
--				bio_list_add(&io->md->pushback, io->bio);
-+			spin_lock_irqsave(&md->pushback_lock, flags);
-+			if (__noflush_suspending(md))
-+				bio_list_add(&md->pushback, io->bio);
- 			else
- 				/* noflush suspend was interrupted. */
- 				io->error = -EIO;
--			spin_unlock_irqrestore(&io->md->pushback_lock, flags);
-+			spin_unlock_irqrestore(&md->pushback_lock, flags);
- 		}
- 
- 		end_io_acct(io);
- 
--		if (io->error != DM_ENDIO_REQUEUE) {
--			blk_add_trace_bio(io->md->queue, io->bio,
-+		io_error = io->error;
-+		bio = io->bio;
-+
-+		free_io(md, io);
-+
-+		if (io_error != DM_ENDIO_REQUEUE) {
-+			blk_add_trace_bio(md->queue, io->bio,
- 					  BLK_TA_COMPLETE);
- 
--			bio_endio(io->bio, io->error);
-+			bio_endio(bio, io_error);
- 		}
--
--		free_io(io->md, io);
- 	}
- }
- 
-@@ -518,6 +524,7 @@ static void clone_endio(struct bio *bio, int error)
- {
- 	int r = 0;
- 	struct dm_target_io *tio = bio->bi_private;
-+	struct dm_io *io = tio->io;
- 	struct mapped_device *md = tio->io->md;
- 	dm_endio_fn endio = tio->ti->type->end_io;
- 
-@@ -541,15 +548,14 @@ static void clone_endio(struct bio *bio, int error)
- 		}
- 	}
- 
--	dec_pending(tio->io, error);
--
- 	/*
- 	 * Store md for cleanup instead of tio which is about to get freed.
- 	 */
- 	bio->bi_private = md->bs;
- 
--	bio_put(bio);
- 	free_tio(md, tio);
-+	bio_put(bio);
-+	dec_pending(io, error);
- }
- 
- static sector_t max_io_len(struct mapped_device *md,
 diff --git a/drivers/media/video/cx23885/cx23885-417.c b/drivers/media/video/cx23885/cx23885-417.c
-index 00831f3..c388579 100644
+index 7b0e8c0..b2c68bc 100644
 --- a/drivers/media/video/cx23885/cx23885-417.c
 +++ b/drivers/media/video/cx23885/cx23885-417.c
 @@ -1585,7 +1585,8 @@ static int mpeg_open(struct inode *inode, struct file *file)
- 	lock_kernel();
+ 
  	list_for_each(list, &cx23885_devlist) {
  		h = list_entry(list, struct cx23885_dev, devlist);
 -		if (h->v4l_device->minor == minor) {
@@ -563,11 +308,11 @@ index 00831f3..c388579 100644
  			break;
  		}
 diff --git a/drivers/media/video/cx23885/cx23885-video.c b/drivers/media/video/cx23885/cx23885-video.c
-index c742a10..0aabc53 100644
+index 6047c78..7d2802a 100644
 --- a/drivers/media/video/cx23885/cx23885-video.c
 +++ b/drivers/media/video/cx23885/cx23885-video.c
-@@ -730,12 +730,13 @@ static int video_open(struct inode *inode, struct file *file)
- 	lock_kernel();
+@@ -733,12 +733,13 @@ static int video_open(struct inode *inode, struct file *file)
+ 
  	list_for_each(list, &cx23885_devlist) {
  		h = list_entry(list, struct cx23885_dev, devlist);
 -		if (h->video_dev->minor == minor) {
@@ -583,10 +328,10 @@ index c742a10..0aabc53 100644
  			type = V4L2_BUF_TYPE_VBI_CAPTURE;
  		}
 diff --git a/drivers/misc/thinkpad_acpi.c b/drivers/misc/thinkpad_acpi.c
-index 899766e..36b88e7 100644
+index 6b93007..34bb0e4 100644
 --- a/drivers/misc/thinkpad_acpi.c
 +++ b/drivers/misc/thinkpad_acpi.c
-@@ -6927,7 +6927,7 @@ MODULE_ALIAS(TPACPI_DRVR_SHORTNAME);
+@@ -6826,7 +6826,7 @@ MODULE_ALIAS(TPACPI_DRVR_SHORTNAME);
   * if it is not there yet.
   */
  #define IBM_BIOS_MODULE_ALIAS(__type) \
@@ -595,7 +340,7 @@ index 899766e..36b88e7 100644
  
  /* Non-ancient thinkpads */
  MODULE_ALIAS("dmi:bvnIBM:*:svnIBM:*:pvrThinkPad*:rvnIBM:*");
-@@ -6936,9 +6936,9 @@ MODULE_ALIAS("dmi:bvnLENOVO:*:svnLENOVO:*:pvrThinkPad*:rvnLENOVO:*");
+@@ -6835,9 +6835,9 @@ MODULE_ALIAS("dmi:bvnLENOVO:*:svnLENOVO:*:pvrThinkPad*:rvnLENOVO:*");
  /* Ancient thinkpad BIOSes have to be identified by
   * BIOS type or model number, and there are far less
   * BIOS types than model numbers... */
@@ -608,35 +353,8 @@ index 899766e..36b88e7 100644
  
  MODULE_AUTHOR("Borislav Deianov, Henrique de Moraes Holschuh");
  MODULE_DESCRIPTION(TPACPI_DESC);
-diff --git a/drivers/usb/class/usbtmc.c b/drivers/usb/class/usbtmc.c
-index 43a863c..aeb188a 100644
---- a/drivers/usb/class/usbtmc.c
-+++ b/drivers/usb/class/usbtmc.c
-@@ -49,6 +49,7 @@
- 
- static struct usb_device_id usbtmc_devices[] = {
- 	{ USB_INTERFACE_INFO(USB_CLASS_APP_SPEC, 3, 0), },
-+	{ USB_INTERFACE_INFO(USB_CLASS_APP_SPEC, 3, 1), },
- 	{ 0, } /* terminating entry */
- };
- MODULE_DEVICE_TABLE(usb, usbtmc_devices);
-@@ -105,12 +106,13 @@ static int usbtmc_open(struct inode *inode, struct file *filp)
- {
- 	struct usb_interface *intf;
- 	struct usbtmc_device_data *data;
--	int retval = -ENODEV;
-+	int retval = 0;
- 
- 	intf = usb_find_interface(&usbtmc_driver, iminor(inode));
- 	if (!intf) {
- 		printk(KERN_ERR KBUILD_MODNAME
- 		       ": can not find device for minor %d", iminor(inode));
-+		retval = -ENODEV;
- 		goto exit;
- 	}
- 
 diff --git a/drivers/usb/core/devio.c b/drivers/usb/core/devio.c
-index c7e5339..7d6611a 100644
+index e52e54e..8d2d79e 100644
 --- a/drivers/usb/core/devio.c
 +++ b/drivers/usb/core/devio.c
 @@ -359,11 +359,6 @@ static void destroy_async(struct dev_state *ps, struct list_head *list)
@@ -651,7 +369,7 @@ index c7e5339..7d6611a 100644
  }
  
  static void destroy_async_on_interface(struct dev_state *ps,
-@@ -642,6 +637,7 @@ static int usbdev_release(struct inode *inode, struct file *file)
+@@ -639,6 +634,7 @@ static int usbdev_release(struct inode *inode, struct file *file)
  	struct dev_state *ps = file->private_data;
  	struct usb_device *dev = ps->dev;
  	unsigned int ifnum;
@@ -659,7 +377,7 @@ index c7e5339..7d6611a 100644
  
  	usb_lock_device(dev);
  
-@@ -660,6 +656,12 @@ static int usbdev_release(struct inode *inode, struct file *file)
+@@ -657,6 +653,12 @@ static int usbdev_release(struct inode *inode, struct file *file)
  	usb_unlock_device(dev);
  	usb_put_dev(dev);
  	put_pid(ps->disc_pid);
@@ -743,10 +461,10 @@ index 07bcb93..1d0b49e 100644
  	sitd->stream = NULL;
  	list_move(&sitd->sitd_list, &stream->free_list);
 diff --git a/drivers/usb/serial/cp2101.c b/drivers/usb/serial/cp2101.c
-index cfaf1f0..4294e6e 100644
+index 1279553..69e6687 100644
 --- a/drivers/usb/serial/cp2101.c
 +++ b/drivers/usb/serial/cp2101.c
-@@ -79,6 +79,7 @@ static struct usb_device_id id_table [] = {
+@@ -77,6 +77,7 @@ static struct usb_device_id id_table [] = {
  	{ USB_DEVICE(0x10C4, 0x814A) }, /* West Mountain Radio RIGblaster P&P */
  	{ USB_DEVICE(0x10C4, 0x814B) }, /* West Mountain Radio RIGtalk */
  	{ USB_DEVICE(0x10C4, 0x815E) }, /* Helicomm IP-Link 1220-DVM */
@@ -755,10 +473,10 @@ index cfaf1f0..4294e6e 100644
  	{ USB_DEVICE(0x10C4, 0x81AC) }, /* MSD Dash Hawk */
  	{ USB_DEVICE(0x10C4, 0x81C8) }, /* Lipowsky Industrie Elektronik GmbH, Baby-JTAG */
 diff --git a/drivers/usb/serial/ftdi_sio.c b/drivers/usb/serial/ftdi_sio.c
-index fb6f293..aa21adb 100644
+index 3dc93b5..2d78712 100644
 --- a/drivers/usb/serial/ftdi_sio.c
 +++ b/drivers/usb/serial/ftdi_sio.c
-@@ -660,6 +660,11 @@ static struct usb_device_id id_table_combined [] = {
+@@ -657,6 +657,11 @@ static struct usb_device_id id_table_combined [] = {
  	{ USB_DEVICE(PAPOUCH_VID, PAPOUCH_QUIDO4x4_PID) },
  	{ USB_DEVICE(FTDI_VID, FTDI_DOMINTELL_DGQG_PID) },
  	{ USB_DEVICE(FTDI_VID, FTDI_DOMINTELL_DUSB_PID) },
@@ -771,10 +489,10 @@ index fb6f293..aa21adb 100644
  	{ }					/* Terminating entry */
  };
 diff --git a/drivers/usb/serial/ftdi_sio.h b/drivers/usb/serial/ftdi_sio.h
-index 373ee09..171a97c 100644
+index 8a5b6df..80fa76e 100644
 --- a/drivers/usb/serial/ftdi_sio.h
 +++ b/drivers/usb/serial/ftdi_sio.h
-@@ -881,6 +881,26 @@
+@@ -870,6 +870,26 @@
  #define RATOC_PRODUCT_ID_USB60F	0xb020
  
  /*
@@ -802,7 +520,7 @@ index 373ee09..171a97c 100644
   *   bRequest:       FTDI_E2_READ
   *   wValue:         0
 diff --git a/drivers/usb/serial/option.c b/drivers/usb/serial/option.c
-index 5c3da3f..be88c84 100644
+index 9930150..211cd61 100644
 --- a/drivers/usb/serial/option.c
 +++ b/drivers/usb/serial/option.c
 @@ -89,6 +89,7 @@ static int  option_send_setup(struct tty_struct *tty, struct usb_serial_port *po
@@ -874,7 +592,7 @@ index 5c3da3f..be88c84 100644
  	{ USB_DEVICE(0x1da5, 0x4515) }, /* BenQ H20 */
  	{ } /* Terminating entry */
 diff --git a/drivers/usb/storage/unusual_devs.h b/drivers/usb/storage/unusual_devs.h
-index 781d581..f89549f 100644
+index 019bd62..d21995a 100644
 --- a/drivers/usb/storage/unusual_devs.h
 +++ b/drivers/usb/storage/unusual_devs.h
 @@ -219,7 +219,7 @@ UNUSUAL_DEV(  0x0421, 0x047c, 0x0370, 0x0610,
@@ -886,7 +604,7 @@ index 781d581..f89549f 100644
  		"Nokia",
  		"Nokia 6233",
  		US_SC_DEVICE, US_PR_DEVICE, NULL,
-@@ -913,7 +913,9 @@ UNUSUAL_DEV( 0x066f, 0x8000, 0x0001, 0x0001,
+@@ -990,7 +990,9 @@ UNUSUAL_DEV( 0x066f, 0x8000, 0x0001, 0x0001,
  		US_FL_FIX_CAPACITY ),
  
  /* Reported by Richard -=[]=- <micro_flyer@hotmail.com> */
@@ -897,7 +615,7 @@ index 781d581..f89549f 100644
  		"Prolific Technology Inc.",
  		"Mass Storage Device",
  		US_SC_DEVICE, US_PR_DEVICE, NULL,
-@@ -1328,6 +1330,16 @@ UNUSUAL_DEV( 0x0af0, 0x7401, 0x0000, 0x0000,
+@@ -1405,6 +1407,16 @@ UNUSUAL_DEV( 0x0af0, 0x7401, 0x0000, 0x0000,
  		US_SC_DEVICE, US_PR_DEVICE, NULL,
  		0 ),
  
@@ -1010,113 +728,11 @@ index 048648d..c1174b5 100644
  			goto out_put_req;
  		}
  	}
-diff --git a/fs/ecryptfs/crypto.c b/fs/ecryptfs/crypto.c
-index 6046239..50b0a30 100644
---- a/fs/ecryptfs/crypto.c
-+++ b/fs/ecryptfs/crypto.c
-@@ -1310,14 +1310,13 @@ static int ecryptfs_write_headers_virt(char *page_virt, size_t max,
- }
- 
- static int
--ecryptfs_write_metadata_to_contents(struct ecryptfs_crypt_stat *crypt_stat,
--				    struct dentry *ecryptfs_dentry,
--				    char *virt)
-+ecryptfs_write_metadata_to_contents(struct dentry *ecryptfs_dentry,
-+				    char *virt, size_t virt_len)
- {
- 	int rc;
- 
- 	rc = ecryptfs_write_lower(ecryptfs_dentry->d_inode, virt,
--				  0, crypt_stat->num_header_bytes_at_front);
-+				  0, virt_len);
- 	if (rc)
- 		printk(KERN_ERR "%s: Error attempting to write header "
- 		       "information to lower file; rc = [%d]\n", __func__,
-@@ -1327,7 +1326,6 @@ ecryptfs_write_metadata_to_contents(struct ecryptfs_crypt_stat *crypt_stat,
- 
- static int
- ecryptfs_write_metadata_to_xattr(struct dentry *ecryptfs_dentry,
--				 struct ecryptfs_crypt_stat *crypt_stat,
- 				 char *page_virt, size_t size)
- {
- 	int rc;
-@@ -1337,6 +1335,17 @@ ecryptfs_write_metadata_to_xattr(struct dentry *ecryptfs_dentry,
- 	return rc;
- }
- 
-+static unsigned long ecryptfs_get_zeroed_pages(gfp_t gfp_mask,
-+					       unsigned int order)
-+{
-+	struct page *page;
-+
-+	page = alloc_pages(gfp_mask | __GFP_ZERO, order);
-+	if (page)
-+		return (unsigned long) page_address(page);
-+	return 0;
-+}
-+
- /**
-  * ecryptfs_write_metadata
-  * @ecryptfs_dentry: The eCryptfs dentry
-@@ -1353,7 +1362,9 @@ int ecryptfs_write_metadata(struct dentry *ecryptfs_dentry)
- {
- 	struct ecryptfs_crypt_stat *crypt_stat =
- 		&ecryptfs_inode_to_private(ecryptfs_dentry->d_inode)->crypt_stat;
-+	unsigned int order;
- 	char *virt;
-+	size_t virt_len;
- 	size_t size = 0;
- 	int rc = 0;
- 
-@@ -1369,33 +1380,35 @@ int ecryptfs_write_metadata(struct dentry *ecryptfs_dentry)
- 		rc = -EINVAL;
- 		goto out;
- 	}
-+	virt_len = crypt_stat->num_header_bytes_at_front;
-+	order = get_order(virt_len);
- 	/* Released in this function */
--	virt = (char *)get_zeroed_page(GFP_KERNEL);
-+	virt = (char *)ecryptfs_get_zeroed_pages(GFP_KERNEL, order);
- 	if (!virt) {
- 		printk(KERN_ERR "%s: Out of memory\n", __func__);
- 		rc = -ENOMEM;
- 		goto out;
- 	}
--	rc = ecryptfs_write_headers_virt(virt, PAGE_CACHE_SIZE, &size,
--					 crypt_stat, ecryptfs_dentry);
-+	rc = ecryptfs_write_headers_virt(virt, virt_len, &size, crypt_stat,
-+					 ecryptfs_dentry);
- 	if (unlikely(rc)) {
- 		printk(KERN_ERR "%s: Error whilst writing headers; rc = [%d]\n",
- 		       __func__, rc);
- 		goto out_free;
- 	}
- 	if (crypt_stat->flags & ECRYPTFS_METADATA_IN_XATTR)
--		rc = ecryptfs_write_metadata_to_xattr(ecryptfs_dentry,
--						      crypt_stat, virt, size);
-+		rc = ecryptfs_write_metadata_to_xattr(ecryptfs_dentry, virt,
-+						      size);
- 	else
--		rc = ecryptfs_write_metadata_to_contents(crypt_stat,
--							 ecryptfs_dentry, virt);
-+		rc = ecryptfs_write_metadata_to_contents(ecryptfs_dentry, virt,
-+							 virt_len);
- 	if (rc) {
- 		printk(KERN_ERR "%s: Error writing metadata out to lower file; "
- 		       "rc = [%d]\n", __func__, rc);
- 		goto out_free;
- 	}
- out_free:
--	free_page((unsigned long)virt);
-+	free_pages((unsigned long)virt, order);
- out:
- 	return rc;
- }
 diff --git a/fs/nfsd/nfs4xdr.c b/fs/nfsd/nfs4xdr.c
-index afcdf4b..cc76b64 100644
+index 14ba4d9..b0b07df 100644
 --- a/fs/nfsd/nfs4xdr.c
 +++ b/fs/nfsd/nfs4xdr.c
-@@ -2598,6 +2598,7 @@ static nfsd4_enc nfsd4_enc_ops[] = {
+@@ -2593,6 +2593,7 @@ static nfsd4_enc nfsd4_enc_ops[] = {
  	[OP_LOOKUPP]		= (nfsd4_enc)nfsd4_encode_noop,
  	[OP_NVERIFY]		= (nfsd4_enc)nfsd4_encode_noop,
  	[OP_OPEN]		= (nfsd4_enc)nfsd4_encode_open,
@@ -1124,6 +740,46 @@ index afcdf4b..cc76b64 100644
  	[OP_OPEN_CONFIRM]	= (nfsd4_enc)nfsd4_encode_open_confirm,
  	[OP_OPEN_DOWNGRADE]	= (nfsd4_enc)nfsd4_encode_open_downgrade,
  	[OP_PUTFH]		= (nfsd4_enc)nfsd4_encode_noop,
+diff --git a/include/asm-x86/msr-index.h b/include/asm-x86/msr-index.h
+index 44bce77..d3a20f3 100644
+--- a/include/asm-x86/msr-index.h
++++ b/include/asm-x86/msr-index.h
+@@ -196,6 +196,35 @@
+ #define MSR_IA32_THERM_STATUS		0x0000019c
+ #define MSR_IA32_MISC_ENABLE		0x000001a0
+ 
++/* MISC_ENABLE bits: architectural */
++#define MSR_IA32_MISC_ENABLE_FAST_STRING	(1ULL << 0)
++#define MSR_IA32_MISC_ENABLE_TCC		(1ULL << 1)
++#define MSR_IA32_MISC_ENABLE_EMON		(1ULL << 7)
++#define MSR_IA32_MISC_ENABLE_BTS_UNAVAIL	(1ULL << 11)
++#define MSR_IA32_MISC_ENABLE_PEBS_UNAVAIL	(1ULL << 12)
++#define MSR_IA32_MISC_ENABLE_ENHANCED_SPEEDSTEP	(1ULL << 16)
++#define MSR_IA32_MISC_ENABLE_MWAIT		(1ULL << 18)
++#define MSR_IA32_MISC_ENABLE_LIMIT_CPUID	(1ULL << 22)
++#define MSR_IA32_MISC_ENABLE_XTPR_DISABLE	(1ULL << 23)
++#define MSR_IA32_MISC_ENABLE_XD_DISABLE		(1ULL << 34)
++
++/* MISC_ENABLE bits: model-specific, meaning may vary from core to core */
++#define MSR_IA32_MISC_ENABLE_X87_COMPAT		(1ULL << 2)
++#define MSR_IA32_MISC_ENABLE_TM1		(1ULL << 3)
++#define MSR_IA32_MISC_ENABLE_SPLIT_LOCK_DISABLE	(1ULL << 4)
++#define MSR_IA32_MISC_ENABLE_L3CACHE_DISABLE	(1ULL << 6)
++#define MSR_IA32_MISC_ENABLE_SUPPRESS_LOCK	(1ULL << 8)
++#define MSR_IA32_MISC_ENABLE_PREFETCH_DISABLE	(1ULL << 9)
++#define MSR_IA32_MISC_ENABLE_FERR		(1ULL << 10)
++#define MSR_IA32_MISC_ENABLE_FERR_MULTIPLEX	(1ULL << 10)
++#define MSR_IA32_MISC_ENABLE_TM2		(1ULL << 13)
++#define MSR_IA32_MISC_ENABLE_ADJ_PREF_DISABLE	(1ULL << 19)
++#define MSR_IA32_MISC_ENABLE_SPEEDSTEP_LOCK	(1ULL << 20)
++#define MSR_IA32_MISC_ENABLE_L1D_CONTEXT	(1ULL << 24)
++#define MSR_IA32_MISC_ENABLE_DCU_PREF_DISABLE	(1ULL << 37)
++#define MSR_IA32_MISC_ENABLE_TURBO_DISABLE	(1ULL << 38)
++#define MSR_IA32_MISC_ENABLE_IP_PREF_DISABLE	(1ULL << 39)
++
+ /* Intel Model 6 */
+ #define MSR_P6_EVNTSEL0			0x00000186
+ #define MSR_P6_EVNTSEL1			0x00000187
 diff --git a/include/linux/capability.h b/include/linux/capability.h
 index 9d1fe30..28863f4 100644
 --- a/include/linux/capability.h
@@ -1141,73 +797,11 @@ index 9d1fe30..28863f4 100644
  
  #endif /* _KERNEL_CAPABILITY_U32S != 2 */
  
-diff --git a/init/Kconfig b/init/Kconfig
-index f763762..83b6905 100644
---- a/init/Kconfig
-+++ b/init/Kconfig
-@@ -538,6 +538,9 @@ config CC_OPTIMIZE_FOR_SIZE
- config SYSCTL
- 	bool
- 
-+config ANON_INODES
-+	bool
-+
- menuconfig EMBEDDED
- 	bool "Configure standard kernel features (for small systems)"
- 	help
-@@ -643,18 +646,6 @@ config PCSPKR_PLATFORM
-           This option allows to disable the internal PC-Speaker
-           support, saving some memory.
- 
--config COMPAT_BRK
--	bool "Disable heap randomization"
--	default y
--	help
--	  Randomizing heap placement makes heap exploits harder, but it
--	  also breaks ancient binaries (including anything libc5 based).
--	  This option changes the bootup default to heap randomization
--	  disabled, and can be overriden runtime by setting
--	  /proc/sys/kernel/randomize_va_space to 2.
--
--	  On non-ancient distros (post-2000 ones) N is usually a safe choice.
--
- config BASE_FULL
- 	default y
- 	bool "Enable full-sized data structures for core" if EMBEDDED
-@@ -672,9 +663,6 @@ config FUTEX
- 	  support for "fast userspace mutexes".  The resulting kernel may not
- 	  run glibc-based applications correctly.
- 
--config ANON_INODES
--	bool
--
- config EPOLL
- 	bool "Enable eventpoll support" if EMBEDDED
- 	default y
-@@ -760,6 +748,18 @@ config SLUB_DEBUG
- 	  SLUB sysfs support. /sys/slab will not exist and there will be
- 	  no support for cache validation etc.
- 
-+config COMPAT_BRK
-+	bool "Disable heap randomization"
-+	default y
-+	help
-+	  Randomizing heap placement makes heap exploits harder, but it
-+	  also breaks ancient binaries (including anything libc5 based).
-+	  This option changes the bootup default to heap randomization
-+	  disabled, and can be overriden runtime by setting
-+	  /proc/sys/kernel/randomize_va_space to 2.
-+
-+	  On non-ancient distros (post-2000 ones) N is usually a safe choice.
-+
- choice
- 	prompt "Choose SLAB allocator"
- 	default SLUB
 diff --git a/sound/core/oss/pcm_oss.c b/sound/core/oss/pcm_oss.c
-index e178366..f04ff35 100644
+index 4c601b1..35afb41 100644
 --- a/sound/core/oss/pcm_oss.c
 +++ b/sound/core/oss/pcm_oss.c
-@@ -2872,7 +2872,7 @@ static void snd_pcm_oss_proc_write(struct snd_info_entry *entry,
+@@ -2854,7 +2854,7 @@ static void snd_pcm_oss_proc_write(struct snd_info_entry *entry,
  			setup = kmalloc(sizeof(*setup), GFP_KERNEL);
  			if (! setup) {
  				buffer->error = -ENOMEM;
@@ -1216,7 +810,7 @@ index e178366..f04ff35 100644
  				return;
  			}
  			if (pstr->oss.setup_list == NULL)
-@@ -2886,7 +2886,7 @@ static void snd_pcm_oss_proc_write(struct snd_info_entry *entry,
+@@ -2868,7 +2868,7 @@ static void snd_pcm_oss_proc_write(struct snd_info_entry *entry,
  			if (! template.task_name) {
  				kfree(setup);
  				buffer->error = -ENOMEM;
@@ -1226,7 +820,7 @@ index e178366..f04ff35 100644
  			}
  		}
 diff --git a/sound/core/sgbuf.c b/sound/core/sgbuf.c
-index d4564ed..4e7ec2b 100644
+index cefd228..91f16ac 100644
 --- a/sound/core/sgbuf.c
 +++ b/sound/core/sgbuf.c
 @@ -38,6 +38,10 @@ int snd_free_sgbuf_pages(struct snd_dma_buffer *dmab)
@@ -1240,8 +834,8 @@ index d4564ed..4e7ec2b 100644
  	tmpb.dev.type = SNDRV_DMA_TYPE_DEV;
  	tmpb.dev.dev = sgbuf->dev;
  	for (i = 0; i < sgbuf->pages; i++) {
-@@ -48,9 +52,6 @@ int snd_free_sgbuf_pages(struct snd_dma_buffer *dmab)
- 		tmpb.bytes = (sgbuf->table[i].addr & ~PAGE_MASK) << PAGE_SHIFT;
+@@ -46,9 +50,6 @@ int snd_free_sgbuf_pages(struct snd_dma_buffer *dmab)
+ 		tmpb.bytes = PAGE_SIZE;
  		snd_dma_free_pages(&tmpb);
  	}
 -	if (dmab->area)
@@ -1250,94 +844,11 @@ index d4564ed..4e7ec2b 100644
  
  	kfree(sgbuf->table);
  	kfree(sgbuf->page_table);
-diff --git a/sound/isa/opl3sa2.c b/sound/isa/opl3sa2.c
-index 58c972b..b848d10 100644
---- a/sound/isa/opl3sa2.c
-+++ b/sound/isa/opl3sa2.c
-@@ -550,21 +550,27 @@ static int __devinit snd_opl3sa2_mixer(struct snd_card *card)
- #ifdef CONFIG_PM
- static int snd_opl3sa2_suspend(struct snd_card *card, pm_message_t state)
- {
--	struct snd_opl3sa2 *chip = card->private_data;
-+	if (card) {
-+		struct snd_opl3sa2 *chip = card->private_data;
- 
--	snd_power_change_state(card, SNDRV_CTL_POWER_D3hot);
--	chip->wss->suspend(chip->wss);
--	/* power down */
--	snd_opl3sa2_write(chip, OPL3SA2_PM_CTRL, OPL3SA2_PM_D3);
-+		snd_power_change_state(card, SNDRV_CTL_POWER_D3hot);
-+		chip->wss->suspend(chip->wss);
-+		/* power down */
-+		snd_opl3sa2_write(chip, OPL3SA2_PM_CTRL, OPL3SA2_PM_D3);
-+	}
- 
- 	return 0;
- }
- 
- static int snd_opl3sa2_resume(struct snd_card *card)
- {
--	struct snd_opl3sa2 *chip = card->private_data;
-+	struct snd_opl3sa2 *chip;
- 	int i;
- 
-+	if (!card)
-+		return 0;
-+
-+	chip = card->private_data;
- 	/* power up */
- 	snd_opl3sa2_write(chip, OPL3SA2_PM_CTRL, OPL3SA2_PM_D0);
- 
 diff --git a/sound/pci/hda/hda_intel.c b/sound/pci/hda/hda_intel.c
-index 35722ec..34a5b69 100644
+index 0f014b1..0b93ef6 100644
 --- a/sound/pci/hda/hda_intel.c
 +++ b/sound/pci/hda/hda_intel.c
-@@ -2063,26 +2063,31 @@ static int __devinit check_position_fix(struct azx *chip, int fix)
- {
- 	const struct snd_pci_quirk *q;
- 
--	/* Check VIA HD Audio Controller exist */
--	if (chip->pci->vendor == PCI_VENDOR_ID_VIA &&
--	    chip->pci->device == VIA_HDAC_DEVICE_ID) {
-+	switch (fix) {
-+	case POS_FIX_LPIB:
-+	case POS_FIX_POSBUF:
-+		return fix;
-+	}
-+
-+	/* Check VIA/ATI HD Audio Controller exist */
-+	switch (chip->driver_type) {
-+	case AZX_DRIVER_VIA:
-+	case AZX_DRIVER_ATI:
- 		chip->via_dmapos_patch = 1;
- 		/* Use link position directly, avoid any transfer problem. */
- 		return POS_FIX_LPIB;
- 	}
- 	chip->via_dmapos_patch = 0;
- 
--	if (fix == POS_FIX_AUTO) {
--		q = snd_pci_quirk_lookup(chip->pci, position_fix_list);
--		if (q) {
--			printk(KERN_INFO
--				    "hda_intel: position_fix set to %d "
--				    "for device %04x:%04x\n",
--				    q->value, q->subvendor, q->subdevice);
--			return q->value;
--		}
-+	q = snd_pci_quirk_lookup(chip->pci, position_fix_list);
-+	if (q) {
-+		printk(KERN_INFO
-+		       "hda_intel: position_fix set to %d "
-+		       "for device %04x:%04x\n",
-+		       q->value, q->subvendor, q->subdevice);
-+		return q->value;
- 	}
--	return fix;
-+	return POS_FIX_AUTO;
- }
- 
- /*
-@@ -2208,9 +2213,17 @@ static int __devinit azx_create(struct snd_card *card, struct pci_dev *pci,
+@@ -2110,9 +2110,17 @@ static int __devinit azx_create(struct snd_card *card, struct pci_dev *pci,
  	gcap = azx_readw(chip, GCAP);
  	snd_printdd("chipset global capabilities = 0x%x\n", gcap);
  
@@ -1356,7 +867,7 @@ index 35722ec..34a5b69 100644
  	/* read number of streams from GCAP register instead of using
  	 * hardcoded value
 diff --git a/sound/pci/mixart/mixart.c b/sound/pci/mixart/mixart.c
-index ae7601f..f342def 100644
+index 3dd0c79..7e83131 100644
 --- a/sound/pci/mixart/mixart.c
 +++ b/sound/pci/mixart/mixart.c
 @@ -607,6 +607,7 @@ static int snd_mixart_hw_params(struct snd_pcm_substream *subs,
