@@ -1,85 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759679AbZCWQDJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759639AbZCWQEQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759679AbZCWQDJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Mar 2009 12:03:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759215AbZCWQBQ
+	id S1759639AbZCWQEQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Mar 2009 12:04:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759439AbZCWQBU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Mar 2009 12:01:16 -0400
-Received: from isrv.corpit.ru ([81.13.33.159]:57985 "EHLO isrv.corpit.ru"
+	Mon, 23 Mar 2009 12:01:20 -0400
+Received: from cantor.suse.de ([195.135.220.2]:57172 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759394AbZCWQAz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Mar 2009 12:00:55 -0400
-Message-ID: <49C7B30D.9030608@msgid.tls.msk.ru>
-Date: Mon, 23 Mar 2009 19:04:29 +0300
-From: Michael Tokarev <mjt@tls.msk.ru>
-Organization: Telecom Service, JSC
-User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
+	id S1759395AbZCWQBO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Mar 2009 12:01:14 -0400
+Date: Mon, 23 Mar 2009 08:58:42 -0700
+From: Greg KH <gregkh@suse.de>
+To: Philipp Reisner <philipp.reisner@linbit.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 01/12] DRBD: lru_cache
+Message-ID: <20090323155842.GA7568@suse.de>
+References: <1237823287-12734-1-git-send-email-philipp.reisner@linbit.com> <1237823287-12734-2-git-send-email-philipp.reisner@linbit.com>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Avi Kivity <avi@redhat.com>, John Stultz <johnstul@us.ibm.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux-kernel <linux-kernel@vger.kernel.org>,
-       KVM list <kvm@vger.kernel.org>
-Subject: Re: phenom, amd780g, tsc, hpet, kvm, kernel -- who's at fault?
-References: <49BACABE.7060003@msgid.tls.msk.ru> <20090323080441.GA27170@elte.hu> <49C748EA.6040809@msgid.tls.msk.ru> <20090323154137.GA1259@elte.hu>
-In-Reply-To: <20090323154137.GA1259@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1237823287-12734-2-git-send-email-philipp.reisner@linbit.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Michael Tokarev <mjt@tls.msk.ru> wrote:
-> 
->> Now, after quite some googling around, I tried to disable hpet, 
->> booting with hpet=disable parameter.  And that one fixed all the 
->> problems at once. 7 days uptime, I stress-tested it several times, 
->> it works with TSC as timesource (still a problem within guests as 
->> those shows unstable TSC anyway) since boot, no issues logged.  
->> Even cpufreq works as expected...
-[]
-> It could again go bad like it did before - those messages are signs 
-> of HPET weirdnesses.
-> 
-> Probably your box's hpet needs to be blacklisted, so that it gets 
-> disabled automatically on bootup.
+On Mon, Mar 23, 2009 at 04:47:56PM +0100, Philipp Reisner wrote:
+> The lru_cache is a fixed size cache of equal sized objects. It allows its
+> users to do arbitrary transactions in case an element in the cache needs to
+> be replaced. Its replacement policy is LRU.
 
-Well, I'm not convinced at all... at least not yet ;)
+You forgot to add a "Signed-off-by:" line to each patch :(
 
-The reason is simple: this box was rock solid a few months back.
-With 2.6.25 and 2.6.26 kernels I think.  It had probs with kvm
-(bugs), and lacked in general hardware support (both the chipset
-and phenom cpu were still too new to be fully supported).  At
-that time I installed the thing (was a test install with a random
-hdd, so I added real drives and installed real distro), with quite
-a lot of data copying back and forth (were rearranging partitions,
-raid arrays, guests and so on, copying data to another disk, to
-another machine and back).  There was no single issue, no single
-mention of tsc or hpet instabilities, and system time was stable
-too.  But since some time, -- unfortunately I don't know when
-exactly, and sure thing it'd be very interesting to know, I'll
-try to figure it out -- first it started showing system clock
-weirdness, and finally come to this Friday the 13 incident.
+Also, a general description of what drbd is, and why we want it would be
+good to have.
 
-That all to say: it was stable with earlier kernel.  Now it's not.
-Maybe, just maybe, at that time hpet wasn't supported, or maybe
-wasn't used, or supported not in full to rely on it - I've no
-idea.  If that's the case, I'll just shut up now because the
-whole point becomes moot.
+> ---
+> diff -uNrp linux-2.6.29-rc8/drivers/block/drbd/lru_cache.h linux-2.6.29-rc8-drbd/drivers/block/drbd/lru_cache.h
+> --- linux-2.6.29-rc8/drivers/block/drbd/lru_cache.h	1970-01-01 01:00:00.000000000 +0100
+> +++ linux-2.6.29-rc8-drbd/drivers/block/drbd/lru_cache.h	2009-03-23 11:25:50.991276000 +0100
+> @@ -0,0 +1,118 @@
+> +/*
+> +-*- linux-c -*-
 
-Maybe it was due to somehow broken bios -- I did several bios
-updates there, mostly because linux complained about something
-scary (something akin "wasting so much megs memory due to bios
-not set up something (GART? IOMMU?)") and I was hoping to fix that.
-And it will be fixed someday in bios...
+I think you can delete these lines from all of your files.
 
-(By the way: how bad the lack of hpet is?  It's used for
-something, and having it malfunctioning and disabled does
-not sound good, esp. on a machine which is running close
-to its maximum...  Maybe I should return the mobo back? :)
+thanks,
 
-Thanks!
-
-/mjt
+greg k-h
