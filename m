@@ -1,49 +1,203 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759677AbZCWTD2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759383AbZCWTDz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759677AbZCWTD2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Mar 2009 15:03:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756250AbZCWTDT
+	id S1759383AbZCWTDz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Mar 2009 15:03:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758014AbZCWTDn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Mar 2009 15:03:19 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:37179 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755250AbZCWTDS (ORCPT
+	Mon, 23 Mar 2009 15:03:43 -0400
+Received: from e28smtp05.in.ibm.com ([59.145.155.5]:57220 "EHLO
+	e28smtp05.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756528AbZCWTDm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Mar 2009 15:03:18 -0400
-Message-ID: <49C7DC04.9060006@cs.helsinki.fi>
-Date: Mon, 23 Mar 2009 20:59:16 +0200
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-User-Agent: Thunderbird 2.0.0.21 (Macintosh/20090302)
-MIME-Version: 1.0
-To: Christoph Lameter <cl@linux-foundation.org>
-CC: Ingo Molnar <mingo@elte.hu>, Lai Jiangshan <laijs@cn.fujitsu.com>,
+	Mon, 23 Mar 2009 15:03:42 -0400
+Date: Tue, 24 Mar 2009 00:33:28 +0530
+From: "K.Prasad" <prasad@linux.vnet.ibm.com>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Manfred Spraul <manfred@colorfullife.com>,
-       Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH -mm 1/6] slab: introduce __kfree_rcu
-References: <49AD3433.9000001@cn.fujitsu.com>  <1237794502.6313.21.camel@penberg-laptop>  <alpine.DEB.1.10.0903230931570.4095@qirst.com>  <20090323155938.GA27151@elte.hu>  <alpine.DEB.1.10.0903231234110.11796@qirst.com>  <20090323165639.GA6841@elte.hu> <84144f020903231049o11de5287w7bdb5c28e866dafb@mail.gmail.com> <alpine.DEB.1.10.0903231404330.29908@qirst.com>
-In-Reply-To: <alpine.DEB.1.10.0903231404330.29908@qirst.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+       Benjamin Herrenschmidt <benh@au1.ibm.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Maneesh Soni <maneesh@in.ibm.com>, Roland McGrath <roland@redhat.com>,
+       Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: [Patch 01/11] Introducing generic hardware breakpoint handler
+	interfaces
+Message-ID: <20090323190328.GA23426@in.ibm.com>
+Reply-To: prasad@linux.vnet.ibm.com
+References: <20090321172618.GB9906@in.ibm.com> <Pine.LNX.4.44L0.0903211712040.27294-100000@netrider.rowland.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.44L0.0903211712040.27294-100000@netrider.rowland.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 23 Mar 2009, Pekka Enberg wrote:
->> Well, like I said, it was a minor nitpick, that's all. I would prefer
->> it the way I and Ingo suggested but if you don't want to change it,
->> that's fine as well.
+On Sat, Mar 21, 2009 at 05:39:59PM -0400, Alan Stern wrote:
+> On Sat, 21 Mar 2009, K.Prasad wrote:
+> 
+> > > > + * Kernel breakpoints grow downwards, starting from HB_NUM
+> > > > + * 'hbkpt_kernel_pos' denotes lowest numbered breakpoint register occupied for
+> > > > + * kernel-space request
+> > > > + */
+> > > > +unsigned int hbkpt_kernel_pos;
+> > > 
+> > > This doesn't make much sense.  All you need to know is which registers
+> > > are in use; all others are available.
+> > > 
+> > 
+> > As explained by Maneesh earlier, we compact the kernel-space requests
+> > into registers (HB_NUM - 1) to hbkpt_kernel_pos. The kernel-space
+> > requests aren't specific to any given register number too, and so
+> > compaction would be suitable for this case (unlike when implemented for
+> > user-space which might need virtualisation of registers).
+> 
+> Okay, that makes sense.  Perhaps you could add a short comment here
+> explaining that the register allocations get compacted when a kernel
+> breakpoint is unregistered, so they will always be contiguous.
+> 
+> > > It's also a poor choice of name.  Everywhere else (in my patches,
+> > > anyway) the code refers to hardware breakpoints using the abbreviation
+> > > "hwbp" or "hw_breakpoint".  There's no reason suddenly to start using
+> > > "hbkpt".
+> > > 
+> > 
+> > I began using 'hbkpt' as a shorter naming convention (the longer one
+> > being hw_breakpoint) without being really conscious of the 'hwbkpt'
+> > usage by you (even some of the previous iterations contained them in
+> > samples/hw_breakpoint and ftrace-plugin).
+> > 
+> > Well, I will rename my shorter name to 'hwbkpt' for uniformity.
+> 
+> My patch never used "hwbkpt".  Besides "hw_breakpoint", it used only 
+> "bp".  On going back and checking, I found that it didn't even use 
+> "hwbp".  Some other abbreviations it did use were "kbp" for kernel 
+> breakpoint, "chbi" for per-CPU hardware breakpoint info, and "thbi" for 
+> per-thread hardware breakpoint info.
+> 
+> If you're looking for a good short name, and if you want to keep 
+> hardware breakpoints distinct from software breakpoints, I suggest 
+> "hbp" instead of "hbkpt".  But it's up to you, and it's worth noticing 
+> that the code already contains lots of variables named just "bp".
+> 
 
-Christoph Lameter wrote:
-> Maybe put some macros in to make these "pickup the context" thingies more
-> readable. Or would a macro obfuscate things?
-> 
-> #define GET_SLAB_CONTEXT(pointer, slab, cache, page)
-> 
-> 	and
-> 
-> #define GET_OBJECT_CONTEXT(pointer, slab, index, offset) ?
+I am renaming all 'hbkpt' strings to 'hbp'.
 
-It would obfuscate things :-)
+> > > > +/* One higher than the highest counted user-space breakpoint register */
+> > > > +unsigned int hbkpt_user_max;
+> > > 
+> > > Likewise, this variable isn't really needed.  It's just one more than
+> > > the largest i such that hbkpt_user_max_refcount[i] > 0.
+> > > 
+> > 
+> > It acts like a cache for determining the user-space breakpoint boundary.
+> > It is used for sanity checks and in its absence we will have to compute from
+> > hbkpt_user_max_refcount[] everytime.
+> 
+> That's right.  Isn't it simpler to check
+> 
+> 	kernel_pos > 0 && hbkpt_user_refcount[kernel_pos - 1] == 0
+> 
+> than to check
+> 
+> 	kernel_pos - 1 >= hbkpt_user_max
+> 
+> _and_ to keep hbkpt_user_max set to the correct value at all times?
+>
+
+Unfortunately the lines of code required to maintain the variable comes
+close to the amount of lines it would potentially save. I will change to
+code to compute it from hbkpt_user_refcount[] everytime.
+ 
+> > > > +/*
+> > > > + * Load the debug registers during startup of a CPU.
+> > > > + */
+> > > > +void load_debug_registers(void)
+> > > > +{
+> > > > +	int i;
+> > > > +	unsigned long flags;
+> > > > +
+> > > > +	/* Prevent IPIs for new kernel breakpoint updates */
+> > > > +	local_irq_save(flags);
+> > > > +
+> > > > +	for (i = hbkpt_kernel_pos; i < HB_NUM; i++)
+> > > > +		if (hbkpt_kernel[i])
+> > > > +			on_each_cpu(arch_install_kernel_hbkpt,
+> > > > +				(void *)hbkpt_kernel[i], 0);
+> > > 
+> > > This is completely wrong.  First of all, it's dumb to send multiple
+> > > IPIs (one for each iteration through the loop).  Second, this routine
+> > > shouldn't send any IPIs at all!  It gets invoked when a CPU is
+> > > starting up and wants to load its _own_ debug registers -- not tell
+> > > another CPU to load anything.
+> > > 
+> > 
+> > As I agreed before, it is an overkill (given the design of
+> > arch_install_kernel_hbkpt()). I will create a new
+> > arch_update_kernel_hbkpt(pos, bp) that will install breakpoints only
+> > on the CPU starting up.
+> 
+> Doesn't arch_install_kernel_hbkpt() already install breakpoints
+> on only the current CPU?  So why do you need a new function?
+>
+
+There will be a few more changes to arch_install_kernel_hbkpt() along
+with this. Please find the changes in the ensuing patchset.
+ 
+> > > > +	/* Check that the virtual address is in the proper range */
+> > > > +	if (tsk) {
+> > > > +		if (!arch_check_va_in_userspace(bp->info.address, tsk))
+> > > > +			return -EFAULT;
+> > > > +	} else {
+> > > > +		if (!arch_check_va_in_kernelspace(bp->info.address))
+> > > > +			return -EFAULT;
+> > > > +	}
+> > > 
+> > > Roland pointed out that these checks need to take into account the
+> > > length of the breakpoint.  For example, in
+> > > arch_check_va_in_userspace() it isn't sufficient for the start of the
+> > > breakpoint region to be a userspace address; the end of the
+> > > breakpoint region must also be in userspace.
+> > > 
+> > 
+> > Ok. Will do something like:
+> > return (va <= (TASK_SIZE - (hw_breakpoint_length * word_size)));
+> 
+> What is the purpose of word_size here?  The breakpoint length should be 
+> specified in bytes, not words.
+> 
+> Don't forget that that in arch_check_va_in_kernelspace() you need to 
+> check both for values that are too low and values that are too high 
+> (they overflow and wrap around back to a user address).
+> 
+
+While I understand the user-space checking using the length of the HW
+Breakpoint, I don't really see how I can check for an upper-bound for
+kernel-space virtual addresses. Most usage in the kernel only checks for
+the address >= TASK_SIZE (while they check for add + len if the length
+of the memory is known). I will be glad to have any suggestions in this
+regard.
+
+> > We don't keep track of the thread (in the sense the task_struct) but
+> > 'hbkpt_user_max' is used for validating requests and book-keeping. As
+> > Maneesh mentioned before flush_thread_hw_breakpoint() updates
+> > 'hbkpt_user_max'.
+> > 
+> > I can change it to read like the one below if it sounds better to you.
+> > 
+> > /* 
+> >  * 'tsk' uses more number of registers than 'hbkpt_user_max'. Update
+> >  * the same.
+> >  */
+> 
+> My preference is simply to eliminate hbkpt_user_max entirely.
+> 
+> Alan Stern
+>
+
+Done.
+
+Thanks,
+K.Prasad
+ 
