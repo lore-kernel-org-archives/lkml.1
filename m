@@ -1,75 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758721AbZCWVpV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760112AbZCWVwq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758721AbZCWVpV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Mar 2009 17:45:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754818AbZCWVpA
+	id S1760112AbZCWVwq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Mar 2009 17:52:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755230AbZCWVwg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Mar 2009 17:45:00 -0400
-Received: from thunk.org ([69.25.196.29]:53072 "EHLO thunker.thunk.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752866AbZCWVo7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Mar 2009 17:44:59 -0400
-Date: Mon, 23 Mar 2009 17:44:17 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: Oleg Nesterov <oleg@redhat.com>
-Cc: Alexey Dobriyan <adobriyan@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Roland McGrath <roland@redhat.com>,
-       Steven Rostedt <rostedt@goodmis.org>, utrace-devel@redhat.com,
-       linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH 3/3] utrace-based ftrace "process" engine, v2
-Message-ID: <20090323214417.GD5814@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Oleg Nesterov <oleg@redhat.com>,
-	Alexey Dobriyan <adobriyan@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	"Frank Ch. Eigler" <fche@redhat.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Roland McGrath <roland@redhat.com>,
-	Steven Rostedt <rostedt@goodmis.org>, utrace-devel@redhat.com,
-	linux-kernel@vger.kernel.org,
-	Peter Zijlstra <a.p.zijlstra@chello.nl>,
-	Thomas Gleixner <tglx@linutronix.de>
-References: <20090321041954.72b99e69.akpm@linux-foundation.org> <20090321115141.GA3566@redhat.com> <20090321050422.d1d99eec.akpm@linux-foundation.org> <20090321154501.GA2707@elte.hu> <20090321143413.75ead1aa.akpm@linux-foundation.org> <20090321215145.GB5262@redhat.com> <alpine.LFD.2.00.0903211501060.3030@localhost.localdomain> <20090322123749.GF19826@elte.hu> <20090323134813.GA18219@x200.localdomain> <20090323151400.GA3413@redhat.com>
+	Mon, 23 Mar 2009 17:52:36 -0400
+Received: from mail-in-06.arcor-online.net ([151.189.21.46]:33992 "EHLO
+	mail-in-06.arcor-online.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751706AbZCWVwf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Mar 2009 17:52:35 -0400
+X-DKIM: Sendmail DKIM Filter v2.8.2 mail-in-07.arcor-online.net 7169C3CA5F9
+From: Bodo Eggert <7eggert@gmx.de>
+Subject: Re: Barriers still not passing on simple dm devices...
+To: Eric Sandeen <sandeen@redhat.com>,
+       device-mapper development <dm-devel@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jens Axboe <jens.axboe@oracle.com>, Andi Kleen <andi@firstfloor.org>,
+       ?missing.closing.'"' in token?"MASON",
+	CHRISTOPHER <CHRIS.MASON@oracle.com>"@vax.1wt.eu
+Illegal-Object: Syntax error in To: address found on vger.kernel.org:
+	To:	?missing closing '"' in token?"MASON", CHRISTOPHER <CHRIS.MASON@oracle.com>"
+			^				    ^-missing closing '"' in token
+		 \-extraneous tokens in address
+Illegal-Object: Syntax error in To: address found on vger.kernel.org:
+	To:	?missing closing '"' in token?"MASON", CHRISTOPHER <CHRIS.MASON@oracle.com>"
+			^				    ^-missing closing '"' in token
+		 \-extraneous tokens in address
+Reply-To: 7eggert@gmx.de
+Date: Mon, 23 Mar 2009 22:52:31 +0100
+References: <ciXHh-39c-37@gated-at.bofh.it>
+User-Agent: KNode/0.10.4
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090323151400.GA3413@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+Content-Transfer-Encoding: 7Bit
+Message-Id: <E1Lls4N-0001LL-Pz@be1.7eggert.dyndns.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 23, 2009 at 04:14:00PM +0100, Oleg Nesterov wrote:
-> 
-> Yes, ptrace-over-utrace needs more work. But your message looks as if
-> utrace core is buggy, imho this is a bit unfair ;)
-> 
-> As Roland said, ptrace-over-utrace is not ready yet. If you mean that
-> utrace core should not be merged alone - this is another story.
-> 
-> But personally I understand why Roland sends utrace core before changing
-> ptrace.
+Eric Sandeen <sandeen@redhat.com> wrote:
 
-Yes, but if it's going to be merged this during 2.6.x cycle, we need
-to have a user for the kernel interface along with the new kernel
-interface.  This is true for any body trying to add some new
-infrastructure to the kernel; you have to have an in-tree user of said
-interface.
+> I've noticed that on 2.6.29-rcX, with Andi's patch
+> (ab4c1424882be9cd70b89abf2b484add355712fa, dm: support barriers on
+> simple devices) barriers are still getting rejected on these simple devices.
 
-I mean, if some device manufacturer were to go to Red Hat's kernel
-team, and say, "we need this interface for our uber expensive RDMA
-interface card", and there was no in-kernel user for the interface, we
-know what Red Hat would tell that device manufacturer, right?  So why
-is the SystemTap team trying to get an exception for utrace?  It just
-seems a little hypocritical.
+> So what's the right way around this?  What should dm (or md for that
+> matter) advertise on their queues about ordered-ness?  Should there be
+> some sort of "QUEUE_ORDERED_PASSTHROUGH" or something to say "this level
+> doesn't care, ask the next level" or somesuch?  Or should it inherit the
+> flag from the next level down?  Ideas?
 
-So what about the ftrace user of utrace?  Is that ready to be merged?
+IMO each block device SHOULD provide barriers - either native or emulated,
+and each meta device MUST provide emulated barriers if it provides dynamic
+device binding and barriers.
 
-   	      	  	      	 	     - Ted
