@@ -1,140 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756387AbZCWHCx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755250AbZCWHGu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756387AbZCWHCx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Mar 2009 03:02:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754634AbZCWHCm
+	id S1755250AbZCWHGu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Mar 2009 03:06:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751412AbZCWHGk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Mar 2009 03:02:42 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:45545 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754301AbZCWHCl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Mar 2009 03:02:41 -0400
-Date: Mon, 23 Mar 2009 16:01:12 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: bharata@linux.vnet.ibm.com
-Cc: linux-kernel@vger.kernel.org, Balaji Rao <balajirrao@gmail.com>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Li Zefan <lizf@cn.fujitsu.com>, Paul Menage <menage@google.com>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [PATCH -tip] cpuacct: per-cgroup utime/stime statistics - v4
-Message-Id: <20090323160112.a66aeb87.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20090323063603.GA15360@in.ibm.com>
-References: <20090323043538.GB3306@in.ibm.com>
-	<20090323135528.ddf795f6.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090323063603.GA15360@in.ibm.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 23 Mar 2009 03:06:40 -0400
+Received: from smtp.mei.co.jp ([133.183.100.20]:62974 "EHLO smtp.mei.co.jp"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751305AbZCWHGk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Mar 2009 03:06:40 -0400
+X-Greylist: delayed 1731 seconds by postgrey-1.27 at vger.kernel.org; Mon, 23 Mar 2009 03:06:39 EDT
+Date: Mon, 23 Mar 2009 15:34:45 +0900
+From: =?ISO-2022-JP?B?GyRCOzM6aiEhQDpGcxsoQg==?= 
+	<yamazaki.seiji@kk.jp.panasonic.com>
+To: avorontsov@ru.mvista.com
+Subject: Re: [PATCH 11/11] mmc: Add OpenFirmware bindings for SDHCI driver
+Cc: yamazaki <yamazaki-seiji@jcom.home.ne.jp>, sdhci-devel@list.drzeus.cx,
+       Arnd Bergmann <arnd@arndb.de>, Liu Dave <DaveLiu@freescale.com>,
+       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       Ben Dooks <ben-linux@fluff.org>, Pierre Ossman <drzeus-sdhci@drzeus.cx>
+In-Reply-To: <20090321004506.GA13031@oksana.dev.rtsoft.ru>
+References: <200903210015.AA00742@cj3020122-b.jcom.home.ne.jp> <20090321004506.GA13031@oksana.dev.rtsoft.ru>
+Message-Id: <20090323152051.D2F9.YAMAZAKI.SEIJI@kk.jp.panasonic.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="ISO-2022-JP"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.25.02 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 23 Mar 2009 12:06:03 +0530
-Bharata B Rao <bharata@linux.vnet.ibm.com> wrote:
+Hi 
 
-> On Mon, Mar 23, 2009 at 01:55:28PM +0900, KAMEZAWA Hiroyuki wrote:
-> > On Mon, 23 Mar 2009 10:05:38 +0530
-> > Bharata B Rao <bharata@linux.vnet.ibm.com> wrote:
+I downloaded linux-2.6.29-rc8.tar.bz2,and I patched .
+I was succeeded. Thank you very match.
+But I have the other problem.
+
+Compile was not succeeded.
+
+Message is ...
+
+ CALL    arch/powerpc/kernel/prom_init_check.sh
+  CC      drivers/mmc/host/sdhci-of.o
+drivers/mmc/host/sdhci-of.c:163: error: 'SDHCI_QUIRK_FORCE_BLK_SZ_2048' undeclared here (not in a function)
+drivers/mmc/host/sdhci-of.c:164: error: 'SDHCI_QUIRK_BROKEN_CARD_DETECTION' undeclared here (not in a function)
+drivers/mmc/host/sdhci-of.c:165: error: 'SDHCI_QUIRK_INVERTED_WRITE_PROTECT' undeclared here (not in a function)
+drivers/mmc/host/sdhci-of.c:167: error: 'SDHCI_QUIRK_NONSTANDARD_CLOCK' undeclared here (not in a function)
+drivers/mmc/host/sdhci-of.c:168: error: 'SDHCI_QUIRK_PIO_NEEDS_DELAY' undeclared here (not in a function)
+drivers/mmc/host/sdhci-of.c:169: error: 'SDHCI_QUIRK_RESTORE_IRQS_AFTER_RESET' undeclared here (not in a function)
+drivers/mmc/host/sdhci-of.c:172: error: unknown field 'readl' specified in initializer
+drivers/mmc/host/sdhci-of.c:172: warning: initialization from incompatible pointer type
+drivers/mmc/host/sdhci-of.c:173: error: unknown field 'readw' specified in initializer
+drivers/mmc/host/sdhci-of.c:173: warning: excess elements in struct initializer
+drivers/mmc/host/sdhci-of.c:173: warning: (near initialization for 'sdhci_esdhc.ops')
+drivers/mmc/host/sdhci-of.c:174: error: unknown field 'readb' specified in initializer
+drivers/mmc/host/sdhci-of.c:174: warning: excess elements in struct initializer
+drivers/mmc/host/sdhci-of.c:174: warning: (near initialization for 'sdhci_esdhc.ops')
+drivers/mmc/host/sdhci-of.c:175: error: unknown field 'writel' specified in initializer
+drivers/mmc/host/sdhci-of.c:175: warning: excess elements in struct initializer
+drivers/mmc/host/sdhci-of.c:175: warning: (near initialization for 'sdhci_esdhc.ops')
+drivers/mmc/host/sdhci-of.c:176: error: unknown field 'writew' specified in initializer
+drivers/mmc/host/sdhci-of.c:176: warning: excess elements in struct initializer
+drivers/mmc/host/sdhci-of.c:176: warning: (near initialization for 'sdhci_esdhc.ops')
+drivers/mmc/host/sdhci-of.c:177: error: unknown field 'writeb' specified in initializer
+drivers/mmc/host/sdhci-of.c:177: warning: excess elements in struct initializer
+drivers/mmc/host/sdhci-of.c:177: warning: (near initialization for 'sdhci_esdhc.ops')
+drivers/mmc/host/sdhci-of.c:178: error: unknown field 'set_clock' specified in initializer
+drivers/mmc/host/sdhci-of.c:178: warning: excess elements in struct initializer
+drivers/mmc/host/sdhci-of.c:178: warning: (near initialization for 'sdhci_esdhc.ops')
+drivers/mmc/host/sdhci-of.c:180: error: unknown field 'get_max_clock' specified in initializer
+drivers/mmc/host/sdhci-of.c:180: warning: excess elements in struct initializer
+drivers/mmc/host/sdhci-of.c:180: warning: (near initialization for 'sdhci_esdhc.ops')
+drivers/mmc/host/sdhci-of.c:181: error: unknown field 'get_timeout_clock' specified in initializer
+drivers/mmc/host/sdhci-of.c:181: warning: excess elements in struct initializer
+drivers/mmc/host/sdhci-of.c:181: warning: (near initialization for 'sdhci_esdhc.ops')
+make[3]: *** [drivers/mmc/host/sdhci-of.o] Error 1
+make[2]: *** [drivers/mmc/host] Error 2
+make[1]: *** [drivers/mmc] Error 2
+make: *** [drivers] Error 2
+
+I do not know why. Could you please tell us why.
+Thanks.
+
+On Sat, 21 Mar 2009 03:45:06 +0300
+Anton Vorontsov <avorontsov@ru.mvista.com> wrote:
+
+> On Sat, Mar 21, 2009 at 09:15:25AM +0900, yamazaki wrote:
+> > Hi 
 > > 
-> > > Hi Ingo,
-> > > 
-> > > Here is the v4 of the cpuacct statistics patch to obtain per-cgroup
-> > > system and user times  with appropriate tags and complete changelog.
-> > > This applies against the latest -tip plus the cpuacct hierarchy fix v2
-> > > which I posted just now. Could you please include this in -tip ?
-> > > 
-> > > Changelog:
-> > > 
-> > > v4
-> > > - Remove comments in cpuacct_update_stats() which explained why rcu_read_lock()
-> > >   was needed (as per Peter Zijlstra's review comments).
-> > > - Don't say that percpu_counter_read() is broken in Documentation/cpuacct.txt
-> > >   as per KAMEZAWA Hiroyuki's review comments.
-> > > 
-> > Broken -> isn't safe ? no difference ;)
+> > Thank you for your reply.
+> > I know RICOH has PCI SD/MMC controller. But R5C807 RICOH is not the PCI device
+> > which is probably new product.
 > 
-> From your comment last time, I thought you meant calling it broken would
-> be harsh.
+> Ah, then it must be connected via MPC8347's localbus.
 > 
-> > Can't this help you ?
-> > 
-> > 
-> > Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> > ---
-> > Index: mmotm-2.6.29-Mar21/include/linux/percpu_counter.h
-> > ===================================================================
-> > --- mmotm-2.6.29-Mar21.orig/include/linux/percpu_counter.h
-> > +++ mmotm-2.6.29-Mar21/include/linux/percpu_counter.h
-> > @@ -62,6 +62,16 @@ static inline s64 percpu_counter_read(st
-> >  	return fbc->count;
-> >  }
-> > 
-> > +static inline s64 percpu_counter_read_safe(struct percpu_counter *fbc)
-> > +{
-> > +	s64 ret;
-> > +
-> > +	spin_lock(&fbc->lock);
-> > +	ret = fbc->count;
-> > +	spin_unlock(&fbc->lock);
-> > +	return ret;
-> > +}
-> > +
-> >  /*
-> >   * It is possible for the percpu_counter_read() to return a small negative
-> >   * number for some counter which should never be negative.
-> > @@ -114,6 +124,11 @@ static inline s64 percpu_counter_read(st
-> >  	return fbc->count;
-> >  }
-> > 
-> > +static inline s64 percpu_counter_read_safe(struct percpu_counter *fbc)
-> > +{
-> > +	return fbc->count;
-> > +}
-> > +
-> >  static inline s64 percpu_counter_read_positive(struct percpu_counter *fbc)
-> >  {
-> >  	return fbc->count;
+> Well, then you need 2.6.29-rcX kernels, for example
+> http://www.kernel.org/pub/linux/kernel/v2.6/testing/linux-2.6.29-rc8.tar.bz2
+> is suitable.
 > 
-> Yes it helps, but for the records, let me note that it makes the readside
-> ~20% slower.
+> Untar it and apply the patches (they'll apply fine on that
+> kernel). Then you'll need some device tree additions for
+> your MPC8347 board, something like this:
 > 
-> [I measured time spent by cpuacct_stats_show(), which is part of
-> the read routine for cpuacct.stat by using kretprobe and for 100 reads
-> (or 100 executions of cpuacct_stats_show()), I get the following numbers:
-> percpu_counter_read() - 3166367 ns
-> percpu_counter_read_safe() - 3793546 ns which is ~20% slower. ]
+>         localbus@e0005000 {
+>                 #address-cells = <2>;
+>                 #size-cells = <1>;
+>                 compatible = "fsl,mpc8347-localbus",
+>                              "fsl,pq2pro-localbus";
+>                 reg = <0xe0005000 0xd8>;
+>                 ranges = <0x1 0x0 0xf0000000 0x1000>;
+> 		// ^^ change the 0xf0000000 to the actual address
+>                 sdhci@1,0 {
+>                         compatible = "ricoh,r5c807", "generic-sdhci";
+>                         reg = <0x1 0x0 0x1000>;
+>                         interrupts = <ricoh-interrupt-here 0x8>;
+>                         interrupt-parent = <&ipic>;
+>                         // if needed, clock-frequency = <freq-in-HZ-here>;
+>                 };
+>         };
 > 
-> I would prefer that this patch should be included in its current form
-> and we could separately fix percpu_counter_read() given that there
-> has been an attempt in the past to fix this (http://lkml.org/lkml/2008/8/27/303)
+> Note that I'm not sure what endiannes you'll get when connecting
+> the ricoh chip to the big-endinan host...
 > 
-> Moreover, I don't know how much acceptable it is to work around the problem
-> in percpu_counter_read() by introducing another variant
-> percpu_counter_read_safe().
-> 
+> -- 
+> Anton Vorontsov
+> email: cbouatmailru@gmail.com
+> irc://irc.freenode.net/bd2
 
-Hmm, ok, how about this way ?
-
-Removet this.
-
-+- It is possible to see slightly outdated values for stime and utime
-+  due to the batch processing nature of percpu_counter.
-
-Anyway, we get overhead of vfs_read(), interrupts, at el ;)
-
-put into todo list.
-
-+TODO:
-+- It is theoretically possible to see wrong values for stime and utime.
-+  This is because percpu_counter_read() on 32bit systems isn't safe
-+  against concurrent writes. needs to be fixed.
-
-
-Thanks,
--Kame
+-- 
+山崎　精二 <yamazaki.seiji@kk.jp.panasonic.com>
 
