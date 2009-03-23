@@ -1,54 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757980AbZCWO7e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758016AbZCWPBW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757980AbZCWO7e (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Mar 2009 10:59:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752173AbZCWO7Z
+	id S1758016AbZCWPBW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Mar 2009 11:01:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751283AbZCWPBN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Mar 2009 10:59:25 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:45486 "EHLO gir.skynet.ie"
+	Mon, 23 Mar 2009 11:01:13 -0400
+Received: from mx1.emlix.com ([193.175.82.87]:37753 "EHLO mx1.emlix.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751283AbZCWO7Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Mar 2009 10:59:24 -0400
-Date: Mon, 23 Mar 2009 14:59:21 +0000
-From: Mel Gorman <mel@csn.ul.ie>
-To: Christoph Lameter <cl@linux-foundation.org>
-Cc: Linux Memory Management List <linux-mm@kvack.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Nick Piggin <npiggin@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Lin Ming <ming.m.lin@intel.com>,
-       Zhang Yanmin <yanmin_zhang@linux.intel.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 00/25] Cleanup and optimise the page allocator V5
-Message-ID: <20090323145921.GC15416@csn.ul.ie>
-References: <1237543392-11797-1-git-send-email-mel@csn.ul.ie> <alpine.DEB.1.10.0903201059240.3740@qirst.com> <20090320153723.GO24586@csn.ul.ie> <alpine.DEB.1.10.0903201205260.18010@qirst.com> <20090320162716.GP24586@csn.ul.ie> <alpine.DEB.1.10.0903201503040.11746@qirst.com> <20090323115213.GC6484@csn.ul.ie> <alpine.DEB.1.10.0903230929440.7254@qirst.com>
+	id S1752173AbZCWPBM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Mar 2009 11:01:12 -0400
+From: =?utf-8?q?Daniel=20Gl=C3=B6ckner?= <dg@emlix.com>
+To: Chris Zankel <chris@zankel.net>
+Cc: linux-kernel@vger.kernel.org,
+       =?utf-8?q?Daniel=20Gl=C3=B6ckner?= <dg@emlix.com>
+Subject: [patch] xtensa: implement CLK API
+Date: Mon, 23 Mar 2009 16:02:13 +0100
+Message-Id: <1237820533-30543-1-git-send-email-dg@emlix.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0903230929440.7254@qirst.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+Organization: emlix gmbh, Goettingen, Germany"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 23, 2009 at 09:30:26AM -0400, Christoph Lameter wrote:
-> On Mon, 23 Mar 2009, Mel Gorman wrote:
-> 
-> > This came up again. There was some evidence when it was introduced that
-> > it worked and micro-benchmarks can show it to be of some use. It's
-> > not-obvious-enough that I'd be wary of deleting it.
-> 
-> Certainly there is some minimal benefit. But maybe that benefit will
-> vanish if you drop the doubly linked list?
-> 
+Implement access to the peripheral clock (half of cpu clock) by means
+of the generic CLK API.
 
-Extremely difficult to tell. It only makes a difference if you are not
-over a cache-line boundary using a singly linked list. If the structure
-is within a cache-line boundary with either single or double linked
-lists, it probably makes no measurable difference.
+Signed-off-by: Daniel Glöckner <dg@emlix.com>
+---
+ arch/xtensa/platforms/s6105/Makefile |    2 +-
+ arch/xtensa/platforms/s6105/clocks.c |   49 ++++++++++++++++++++++++++++++++++
+ 2 files changed, 50 insertions(+), 1 deletions(-)
+ create mode 100644 arch/xtensa/platforms/s6105/clocks.c
 
+diff --git a/arch/xtensa/platforms/s6105/Makefile b/arch/xtensa/platforms/s6105/Makefile
+index 0be6194..294427b 100644
+--- a/arch/xtensa/platforms/s6105/Makefile
++++ b/arch/xtensa/platforms/s6105/Makefile
+@@ -1,3 +1,3 @@
+ # Makefile for the Stretch S6105 eval board
+ 
+-obj-y		:= setup.o device.o
++obj-y		:= setup.o device.o clocks.o
+diff --git a/arch/xtensa/platforms/s6105/clocks.c b/arch/xtensa/platforms/s6105/clocks.c
+new file mode 100644
+index 0000000..fcd3bad
+--- /dev/null
++++ b/arch/xtensa/platforms/s6105/clocks.c
+@@ -0,0 +1,49 @@
++/*
++ * Copyright (c) 2009 emlix GmbH
++ * Author:	Daniel Gloeckner <dg@emlix.com>
++ */
++
++#include <linux/clk.h>
++#include <linux/err.h>
++#include <linux/module.h>
++#include <linux/string.h>
++#include <asm/param.h>
++#include <asm/timex.h>
++
++struct clk {
++	unsigned long rate;
++};
++
++static struct clk pclk;
++
++struct clk *clk_get(struct device *dev, const char *id)
++{
++	if (!strcmp(id, "PCLK")) {
++		pclk.rate = CCOUNT_PER_JIFFY * HZ / 2;
++		return &pclk;
++	}
++	return ERR_PTR(-ENODEV);
++}
++EXPORT_SYMBOL(clk_get);
++
++int clk_enable(struct clk *clk)
++{
++	return 0;
++}
++EXPORT_SYMBOL(clk_enable);
++
++void clk_disable(struct clk *clk)
++{
++}
++EXPORT_SYMBOL(clk_disable);
++
++unsigned long clk_get_rate(struct clk *clk)
++{
++	return clk->rate;
++}
++EXPORT_SYMBOL(clk_get_rate);
++
++void clk_put(struct clk *clk)
++{
++}
++EXPORT_SYMBOL(clk_put);
 -- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+1.6.2.107.ge47ee
+
