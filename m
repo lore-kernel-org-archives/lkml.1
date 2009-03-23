@@ -1,96 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755937AbZCWKPS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756343AbZCWKQX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755937AbZCWKPS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Mar 2009 06:15:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754485AbZCWKO5
+	id S1756343AbZCWKQX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Mar 2009 06:16:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755858AbZCWKQJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Mar 2009 06:14:57 -0400
-Received: from systemlinux.org ([83.151.29.59]:43409 "EHLO m18s25.vlinux.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753102AbZCWKO4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Mar 2009 06:14:56 -0400
-Date: Mon, 23 Mar 2009 11:11:21 +0100
-From: Andre Noll <maan@systemlinux.org>
-To: Dan Williams <dan.j.williams@intel.com>
-Cc: linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org, neilb@suse.de,
-       maciej.sosnowski@intel.com, Ilya Yanok <yanok@emcraft.com>,
-       Yuri Tikhonov <yur@emcraft.com>
-Subject: Re: [PATCH 07/13] async_tx: add support for asynchronous RAID6 recovery operations
-Message-ID: <20090323101121.GO17185@skl-net.de>
-References: <20090318191248.20375.40560.stgit@dwillia2-linux.ch.intel.com> <20090318192052.20375.68157.stgit@dwillia2-linux.ch.intel.com>
+	Mon, 23 Mar 2009 06:16:09 -0400
+Received: from mailsit.unilogicnetworks.net ([62.133.206.125]:52763 "EHLO
+	mail.unilogicnetworks.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755197AbZCWKQH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Mar 2009 06:16:07 -0400
+Subject: [PATCH] alsa: Intel HDA output and align Ids.
+From: "Pascal de Bruijn | Unilogic Networks B.V." 
+	<pascal@unilogicnetworks.net>
+To: linux-kernel@vger.kernel.org
+Cc: alsa-devel@alsa-project.org
+Content-Type: text/plain
+Organization: Unilogic Networks B.V.
+Date: Mon, 23 Mar 2009 11:15:59 +0100
+Message-Id: <1237803359.11871.23.camel@carnifex>
 Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="u3NPeJodHuZECfqv"
-Content-Disposition: inline
-In-Reply-To: <20090318192052.20375.68157.stgit@dwillia2-linux.ch.intel.com>
-User-Agent: Mutt/1.5.9i
+X-Mailer: Evolution 2.24.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This patch does two things:
+ Output Intel HDA Function Id in /proc/asound/cardX/codec#X
+ Align Vendor/Subsystem/Revision Ids to 8 characters, front-padded with zeros
 
---u3NPeJodHuZECfqv
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Before:
+ Vendor Id: 0x11d41884
+ Subsystem Id: 0x103c281a
+ Revision Id: 0x100100
 
-On 12:20, Dan Williams wrote:
-> +struct dma_async_tx_descriptor *
-> +async_r6_dd_recov(int disks, size_t bytes, int faila, int failb,
-> +		  struct page **ptrs, enum async_tx_flags flags,
-> +		  struct dma_async_tx_descriptor *depend_tx,
-> +		  dma_async_tx_callback cb, void *cb_param)
-> +{
-> +	struct dma_async_tx_descriptor *tx =3D NULL;
-> +	struct page *lptrs[disks];
-> +	unsigned char lcoef[disks-4];
+After:
+ Function Id: 0x1
+ Vendor Id: 0x11d41884
+ Subsystem Id: 0x103c281a
+ Revision Id: 0x0100100
 
-This probably needs a BUG_ON(disks < 4).
+As report on the Kernel Bugzilla #12888
 
-> +	 * B =3D (2^(y-x))*((2^(y-x) + {01})^(-1))
+Signed-off-by: Pascal de Bruijn <pascal@unilogicnetworks.net>
 
-Minor optimization suggestion: As B depends only on y-x, there are
-255 possible values for B, so a lookup table for all these values
-would only occupy 255 bytes.
+diff -Nurp linux-2.6.29-rc8-orig/sound/pci/hda/hda_codec.c linux-2.6.29-rc8-func/sound/pci/hda/hda_codec.c
+--- linux-2.6.29-rc8-orig/sound/pci/hda/hda_codec.c	2009-03-20 16:05:15.000000000 +0100
++++ linux-2.6.29-rc8-func/sound/pci/hda/hda_codec.c	2009-03-23 10:37:30.000000000 +0100
+@@ -647,9 +647,9 @@ static void /*__devinit*/ setup_fg_nodes
+ 
+ 	total_nodes = snd_hda_get_sub_nodes(codec, AC_NODE_ROOT, &nid);
+ 	for (i = 0; i < total_nodes; i++, nid++) {
+-		unsigned int func;
+-		func = snd_hda_param_read(codec, nid, AC_PAR_FUNCTION_TYPE);
+-		switch (func & 0xff) {
++		codec->function_id = snd_hda_param_read(codec, nid,
++						AC_PAR_FUNCTION_TYPE) & 0xff;
++		switch (codec->function_id) {
+ 		case AC_GRP_AUDIO_FUNCTION:
+ 			codec->afg = nid;
+ 			break;
+diff -Nurp linux-2.6.29-rc8-orig/sound/pci/hda/hda_codec.h linux-2.6.29-rc8-func/sound/pci/hda/hda_codec.h
+--- linux-2.6.29-rc8-orig/sound/pci/hda/hda_codec.h	2009-03-20 16:05:15.000000000 +0100
++++ linux-2.6.29-rc8-func/sound/pci/hda/hda_codec.h	2009-03-20 16:10:07.000000000 +0100
+@@ -739,6 +739,7 @@ struct hda_codec {
+ 	hda_nid_t mfg;	/* MFG node id */
+ 
+ 	/* ids */
++	u32 function_id;
+ 	u32 vendor_id;
+ 	u32 subsystem_id;
+ 	u32 revision_id;
+diff -Nurp linux-2.6.29-rc8-orig/sound/pci/hda/hda_proc.c linux-2.6.29-rc8-func/sound/pci/hda/hda_proc.c
+--- linux-2.6.29-rc8-orig/sound/pci/hda/hda_proc.c	2009-03-20 16:05:15.000000000 +0100
++++ linux-2.6.29-rc8-func/sound/pci/hda/hda_proc.c	2009-03-20 16:10:07.000000000 +0100
+@@ -467,8 +467,9 @@ static void print_codec_info(struct snd_
+ 	snd_iprintf(buffer, "Codec: %s\n",
+ 		    codec->name ? codec->name : "Not Set");
+ 	snd_iprintf(buffer, "Address: %d\n", codec->addr);
+-	snd_iprintf(buffer, "Vendor Id: 0x%x\n", codec->vendor_id);
+-	snd_iprintf(buffer, "Subsystem Id: 0x%x\n", codec->subsystem_id);
++	snd_iprintf(buffer, "Function Id: 0x%x\n", codec->function_id);
++	snd_iprintf(buffer, "Vendor Id: 0x%08x\n", codec->vendor_id);
++	snd_iprintf(buffer, "Subsystem Id: 0x%08x\n", codec->subsystem_id);
+ 	snd_iprintf(buffer, "Revision Id: 0x%x\n", codec->revision_id);
+ 
+ 	if (codec->mfg)
 
-> +ddr_sync:
-> +	{
-> +		void **sptrs =3D (void **)lptrs;
 
-unnecessary cast
-
-> +struct dma_async_tx_descriptor *
-> +async_r6_dp_recov(int disks, size_t bytes, int faila, struct page **ptrs,
-> +		  enum async_tx_flags flags,
-> +		  struct dma_async_tx_descriptor *depend_tx,
-> +		  dma_async_tx_callback cb, void *cb_param)
-> +{
-> +	struct dma_async_tx_descriptor *tx =3D NULL;
-
-unnecessary initialization.
-
-> +	struct page *lptrs[disks];
-> +	unsigned char lcoef[disks-2];
-> +	int i =3D 0, k =3D 0;
-
-again. I'd suggest to init i and k in the for() loop.
-
-Regards
-Andre
---=20
-The only person who always got his work done by Friday was Robinson Crusoe
-
---u3NPeJodHuZECfqv
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.1 (GNU/Linux)
-
-iD8DBQFJx2BJWto1QDEAkw8RAgW1AJ9SkTvDbhj8HoAidqQiFHKRbFOv7ACeMcr+
-C9C/nRCfl2E8vQEm2v4Ebps=
-=TmX4
------END PGP SIGNATURE-----
-
---u3NPeJodHuZECfqv--
