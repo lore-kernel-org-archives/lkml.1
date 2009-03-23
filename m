@@ -1,22 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758126AbZCWPEv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758150AbZCWPFM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758126AbZCWPEv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Mar 2009 11:04:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757048AbZCWPEZ
+	id S1758150AbZCWPFM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Mar 2009 11:05:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756734AbZCWPE0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Mar 2009 11:04:25 -0400
-Received: from mx1.emlix.com ([193.175.82.87]:40935 "EHLO mx1.emlix.com"
+	Mon, 23 Mar 2009 11:04:26 -0400
+Received: from mx1.emlix.com ([193.175.82.87]:36568 "EHLO mx1.emlix.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754700AbZCWPEX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1754717AbZCWPEX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 23 Mar 2009 11:04:23 -0400
 From: =?utf-8?q?Daniel=20Gl=C3=B6ckner?= <dg@emlix.com>
 To: Chris Zankel <chris@zankel.net>, Ben Dooks <ben-linux@fluff.org>
 Cc: linux-i2c@vger.kernel.org, linux-kernel@vger.kernel.org,
-       =?utf-8?q?Daniel=20Gl=C3=B6ckner?= <dg@emlix.com>,
-       Oskar Schirmer <os@emlix.com>
-Subject: [patch 2/5] xtensa: s6105 specific configuration for the s6000 i2c host
-Date: Mon, 23 Mar 2009 16:05:15 +0100
-Message-Id: <1237820718-30607-2-git-send-email-dg@emlix.com>
+       =?utf-8?q?Daniel=20Gl=C3=B6ckner?= <dg@emlix.com>
+Subject: [patch 4/5] xtensa: enable s6000 i2c host driver in s6105_defconfig
+Date: Mon, 23 Mar 2009 16:05:17 +0100
+Message-Id: <1237820718-30607-4-git-send-email-dg@emlix.com>
 In-Reply-To: <1237820718-30607-1-git-send-email-dg@emlix.com>
 References: <1237820718-30607-1-git-send-email-dg@emlix.com>
 MIME-Version: 1.0
@@ -28,111 +27,97 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Signed-off-by: Daniel Glöckner <dg@emlix.com>
-Signed-off-by: Oskar Schirmer <os@emlix.com>
 ---
- arch/xtensa/platforms/s6105/device.c |   51 ++++++++++++++++++++++++++++++++++
- 1 files changed, 51 insertions(+), 0 deletions(-)
+ arch/xtensa/configs/s6105_defconfig |   54 +++++++++++++++++++++++++++++++++-
+ 1 files changed, 52 insertions(+), 2 deletions(-)
 
-diff --git a/arch/xtensa/platforms/s6105/device.c b/arch/xtensa/platforms/s6105/device.c
-index 963634a..00f52ee 100644
---- a/arch/xtensa/platforms/s6105/device.c
-+++ b/arch/xtensa/platforms/s6105/device.c
-@@ -6,6 +6,8 @@
- 
- #include <linux/kernel.h>
- #include <linux/gpio.h>
-+#include <linux/i2c.h>
-+#include <linux/i2c/s6000.h>
- #include <linux/init.h>
- #include <linux/irq.h>
- #include <linux/phy.h>
-@@ -21,6 +23,7 @@
- #define GPIO3_INTNUM		3
- #define UART_INTNUM		4
- #define GMAC_INTNUM		5
-+#define I2C_INTNUM		6
- 
- static const signed char gpio3_irq_mappings[] = {
- 	S6_INTC_GPIO(3),
-@@ -41,10 +44,16 @@ static const signed char gmac_irq_mappings[] = {
- 	-1
- };
- 
-+static const signed char i2c_irq_mappings[] = {
-+	S6_INTC_I2C,
-+	-1
-+};
+diff --git a/arch/xtensa/configs/s6105_defconfig b/arch/xtensa/configs/s6105_defconfig
+index a130c8d..a9a0de9 100644
+--- a/arch/xtensa/configs/s6105_defconfig
++++ b/arch/xtensa/configs/s6105_defconfig
+@@ -1,7 +1,7 @@
+ #
+ # Automatically generated make config: don't edit
+ # Linux kernel version: 2.6.29-rc7-s6
+-# Tue Mar 10 11:09:26 2009
++# Wed Mar 11 13:38:31 2009
+ #
+ # CONFIG_FRAME_POINTER is not set
+ CONFIG_ZONE_DMA=y
+@@ -357,7 +357,48 @@ CONFIG_UNIX98_PTYS=y
+ # CONFIG_R3964 is not set
+ # CONFIG_RAW_DRIVER is not set
+ # CONFIG_TCG_TPM is not set
+-# CONFIG_I2C is not set
++CONFIG_I2C=y
++CONFIG_I2C_BOARDINFO=y
++# CONFIG_I2C_CHARDEV is not set
++CONFIG_I2C_HELPER_AUTO=y
 +
- const signed char *platform_irq_mappings[NR_IRQS] = {
- 	[GPIO3_INTNUM] = gpio3_irq_mappings,
- 	[UART_INTNUM] = uart_irq_mappings,
- 	[GMAC_INTNUM] = gmac_irq_mappings,
-+	[I2C_INTNUM] = i2c_irq_mappings,
- };
- 
- static struct plat_serial8250_port serial_platform_data[] = {
-@@ -129,6 +138,38 @@ fail:
- 	return PHY_POLL;
- }
- 
-+#define S6_I2C_BUS_NUM 0
++#
++# I2C Hardware Bus support
++#
 +
-+static __devinitdata struct s6_i2c_platform_data s6_i2c_pdata = {
-+	.bus_num = S6_I2C_BUS_NUM,
-+	.clock = "PCLK",
-+};
++#
++# I2C system bus drivers (mostly embedded / system-on-chip)
++#
++# CONFIG_I2C_GPIO is not set
++# CONFIG_I2C_OCORES is not set
++CONFIG_I2C_S6000=y
++# CONFIG_I2C_SIMTEC is not set
 +
-+static struct resource s6_i2c_resource[] = {
-+	{
-+		.name   = "mem",
-+		.start  = (resource_size_t)S6_REG_I2C,
-+		.end    = (resource_size_t)S6_REG_I2C + 0x1000 - 1,
-+		.flags  = IORESOURCE_MEM,
-+	},
-+	{
-+		.name   = "irq",
-+		.start  = (resource_size_t)I2C_INTNUM,
-+		.flags  = IORESOURCE_IRQ,
-+	},
-+};
++#
++# External I2C/SMBus adapter drivers
++#
++# CONFIG_I2C_PARPORT_LIGHT is not set
++# CONFIG_I2C_TAOS_EVM is not set
 +
-+#define S6I2C_ADDR_TLV320AIC31	0x18
-+#define S6I2C_ADDR_SAA7121	0x44
-+#define S6I2C_ADDR_MT9D131	0x48
-+#define S6I2C_ADDR_AT24HC02B	0x57
-+#define S6I2C_ADDR_M41T62	0x68
-+#define S6I2C_ADDR_CDCE906	0x69
-+#define S6I2C_ADDR_PCA9543	0x73
++#
++# Other I2C/SMBus bus drivers
++#
++# CONFIG_I2C_PCA_PLATFORM is not set
 +
-+static struct i2c_board_info __initdata s6_i2c_devices[] = {
-+};
-+
- static struct platform_device platform_devices[] = {
- 	{
- 		.name = "serial8250",
-@@ -143,12 +184,22 @@ static struct platform_device platform_devices[] = {
- 		.resource = s6_gmac_resource,
- 		.num_resources = ARRAY_SIZE(s6_gmac_resource),
- 	},
-+	{
-+		.name = "i2c-s6000",
-+		.resource = s6_i2c_resource,
-+		.num_resources = ARRAY_SIZE(s6_i2c_resource),
-+		.dev = {
-+			.platform_data = &s6_i2c_pdata,
-+		},
-+	},
- };
++#
++# Miscellaneous I2C Chip support
++#
++# CONFIG_DS1682 is not set
++# CONFIG_SENSORS_PCF8574 is not set
++# CONFIG_PCF8575 is not set
++# CONFIG_SENSORS_PCA9539 is not set
++# CONFIG_SENSORS_PCF8591 is not set
++# CONFIG_SENSORS_MAX6875 is not set
++# CONFIG_SENSORS_TSL2550 is not set
++# CONFIG_I2C_DEBUG_CORE is not set
++# CONFIG_I2C_DEBUG_ALGO is not set
++# CONFIG_I2C_DEBUG_BUS is not set
++# CONFIG_I2C_DEBUG_CHIP is not set
+ # CONFIG_SPI is not set
+ CONFIG_ARCH_REQUIRE_GPIOLIB=y
+ CONFIG_GPIOLIB=y
+@@ -371,6 +412,9 @@ CONFIG_GPIOLIB=y
+ #
+ # I2C GPIO expanders:
+ #
++# CONFIG_GPIO_MAX732X is not set
++# CONFIG_GPIO_PCA953X is not set
++# CONFIG_GPIO_PCF857X is not set
  
- static int __init device_init(void)
- {
- 	int i;
+ #
+ # PCI GPIO expanders:
+@@ -398,7 +442,13 @@ CONFIG_SSB_POSSIBLE=y
+ # CONFIG_MFD_CORE is not set
+ # CONFIG_MFD_SM501 is not set
+ # CONFIG_HTC_PASIC3 is not set
++# CONFIG_TPS65010 is not set
++# CONFIG_TWL4030_CORE is not set
+ # CONFIG_MFD_TMIO is not set
++# CONFIG_PMIC_DA903X is not set
++# CONFIG_MFD_WM8400 is not set
++# CONFIG_MFD_WM8350_I2C is not set
++# CONFIG_MFD_PCF50633 is not set
+ # CONFIG_REGULATOR is not set
  
-+	i2c_register_board_info(S6_I2C_BUS_NUM, s6_i2c_devices,
-+				ARRAY_SIZE(s6_i2c_devices));
- 	s6_gmac_resource[5].start = prepare_phy_irq(GPIO_PHY_IRQ);
- 
- 	for (i = 0; i < ARRAY_SIZE(platform_devices); i++)
+ #
 -- 
 1.6.2.107.ge47ee
 
