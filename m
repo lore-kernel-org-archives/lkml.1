@@ -1,56 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755383AbZCWHQU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755229AbZCWHrt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755383AbZCWHQU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Mar 2009 03:16:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751876AbZCWHQA
+	id S1755229AbZCWHrt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Mar 2009 03:47:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752043AbZCWHrj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Mar 2009 03:16:00 -0400
-Received: from wf-out-1314.google.com ([209.85.200.171]:53092 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755286AbZCWHP7 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Mar 2009 03:15:59 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=Rx1cVwb0v/LzDzUUn3IbQ4o8eCs7bsr/kxoHedg0HmUbmnNcX771MG3iXpzWNvCKnq
-         O1/TNkCRjHWgn26tN1r2WVFu7Jm7CHAHy66kXxgkh8fNRySUwDUh5uw6yNguGtNAQM3p
-         77tjVRjYMX9OwTGLqYSd7+oMCJvIMyhj3txl4=
+	Mon, 23 Mar 2009 03:47:39 -0400
+Received: from e2.ny.us.ibm.com ([32.97.182.142]:60175 "EHLO e2.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750972AbZCWHrj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Mar 2009 03:47:39 -0400
+Date: Mon, 23 Mar 2009 13:17:50 +0530
+From: Bharata B Rao <bharata@linux.vnet.ibm.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: linux-kernel@vger.kernel.org, Balaji Rao <balajirrao@gmail.com>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Li Zefan <lizf@cn.fujitsu.com>, Paul Menage <menage@google.com>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [PATCH -tip] cpuacct: per-cgroup utime/stime statistics - v4
+Message-ID: <20090323074750.GB15360@in.ibm.com>
+Reply-To: bharata@linux.vnet.ibm.com
+References: <20090323043538.GB3306@in.ibm.com> <20090323135528.ddf795f6.kamezawa.hiroyu@jp.fujitsu.com> <20090323063603.GA15360@in.ibm.com> <20090323160112.a66aeb87.kamezawa.hiroyu@jp.fujitsu.com>
 MIME-Version: 1.0
-In-Reply-To: <20090320185851.GB1418@ucw.cz>
-References: <2a27d3730903172325w16ec329cp872ec35d100f6506@mail.gmail.com>
-	 <20090320185851.GB1418@ucw.cz>
-Date: Mon, 23 Mar 2009 15:15:57 +0800
-X-Google-Sender-Auth: d11980922ce466d4
-Message-ID: <2a27d3730903230015h6cc320bek423764eb496d6b30@mail.gmail.com>
-Subject: Re: nonboot cpu on SMP suspend
-From: Li Yang <leoli@freescale.com>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090323160112.a66aeb87.kamezawa.hiroyu@jp.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Mar 21, 2009 at 2:58 AM, Pavel Machek <pavel@ucw.cz> wrote:
-> On Wed 2009-03-18 14:25:32, Li Yang wrote:
->> Hi all,
->>
->> I'm curious why we need to un-plug all the nonboot cpus before suspend
->> and start them all over again after the suspend(ACPI sleep)?  I mean
->> if we can bring the booting cpu back to the exact state as before
->> suspend, why can't we just do the same for non-booting cpus?  And that
->> will be much faster.  Any thought?  Thanks.
->
-> Why do you think it will be faster?
+On Mon, Mar 23, 2009 at 04:01:12PM +0900, KAMEZAWA Hiroyuki wrote:
+> 
+> Removet this.
+> 
+> +- It is possible to see slightly outdated values for stime and utime
+> +  due to the batch processing nature of percpu_counter.
 
-_cpu_down() and _cpu_up() are surely complex functions, involving
-work_queues and synchronization between boot cpu and non-boot cpu.  On
-the contrary, to bring the cpu back to previous state is much simpler.
- For standby state, you barely need to do anything.  For mem state,
-you only need to restore the registers and states of the CPU.
+This will explain why the stime and utime values for the top cgroup is
+different from the ones seen from /proc/stat. Hence I would prefer to have a
+mention of it in the documentation.
 
-- Leo
+[root@llm11 cgroups]# cat cpuacct.stat ; cat /proc/stat | grep cpu
+utime 3110
+stime 8410
+cpu  3151 2 8336 4051594 2189 0 133 0 0
+...
+
+Regards,
+Bharata.
