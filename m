@@ -1,13 +1,13 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760861AbZCWSM1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759593AbZCWSMs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760861AbZCWSM1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Mar 2009 14:12:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760584AbZCWSKP
+	id S1759593AbZCWSMs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Mar 2009 14:12:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760336AbZCWSKQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Mar 2009 14:10:15 -0400
-Received: from adsl-69-107-72-54.dsl.pltn13.pacbell.net ([69.107.72.54]:60883
+	Mon, 23 Mar 2009 14:10:16 -0400
+Received: from adsl-69-107-72-54.dsl.pltn13.pacbell.net ([69.107.72.54]:60880
 	"EHLO abulafia.goop.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1760518AbZCWSKI (ORCPT
+	with ESMTP id S1760454AbZCWSKI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 23 Mar 2009 14:10:08 -0400
 From: Jeremy Fitzhardinge <jeremy@goop.org>
@@ -15,11 +15,10 @@ To: "H. Peter Anvin" <hpa@zytor.com>
 Cc: the arch/x86 maintainers <x86@kernel.org>, Ingo Molnar <mingo@elte.hu>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Xen-devel <xen-devel@lists.xensource.com>,
-       Ian Campbell <ian.campbell@citrix.com>,
-       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Subject: [PATCH 10/15] xen: clear reserved bits in l3 entries given in the initial pagetables
-Date: Mon, 23 Mar 2009 11:09:54 -0700
-Message-Id: <1237831799-6568-11-git-send-email-jeremy@goop.org>
+       Ian Campbell <ian.campbell@citrix.com>
+Subject: [PATCH 06/15] xen: disable PAT
+Date: Mon, 23 Mar 2009 11:09:50 -0700
+Message-Id: <1237831799-6568-7-git-send-email-jeremy@goop.org>
 X-Mailer: git-send-email 1.6.0.6
 In-Reply-To: <49C45238.7050007@zytor.com>
 References: <49C45238.7050007@zytor.com>
@@ -29,59 +28,75 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Ian Campbell <ian.campbell@citrix.com>
 
-Impact: workaround Xen bug in 32-on-64 dom0
+Impact: disable PAT under Xen
 
-In native PAE, the only flag that may be legitimately set in an L3
-entry is Present.  When Xen grafts the top-level PAE L3 pagetable
-entries into the L4 pagetable, it must also set the other permissions
-flags so that the mapped pages are actually accessible.
+Xen imposes a particular PAT layout on all paravirtual guests which
+does not match the layout Linux would like to use.
 
-However, due to a bug in the hypervisor, it validates update to the L3
-entries as formal PAE entries, so it will refuse to validate these
-entries with the extra bits requires for 4-level pagetables.
-
-This patch simply masks the entries back to the bare PAE level,
-leaving Xen to add whatever bits it feels are necessary.
+Force PAT to be disabled until this is resolved.
 
 Signed-off-by: Ian Campbell <ian.campbell@citrix.com>
-Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 ---
- arch/x86/xen/mmu.c |   15 +++++++++++++++
- 1 files changed, 15 insertions(+), 0 deletions(-)
+ arch/x86/include/asm/pat.h |    5 +++++
+ arch/x86/mm/pat.c          |    5 -----
+ arch/x86/xen/enlighten.c   |    3 +++
+ 3 files changed, 8 insertions(+), 5 deletions(-)
 
-diff --git a/arch/x86/xen/mmu.c b/arch/x86/xen/mmu.c
-index 2834852..463a819 100644
---- a/arch/x86/xen/mmu.c
-+++ b/arch/x86/xen/mmu.c
-@@ -1855,6 +1855,7 @@ __init pgd_t *xen_setup_kernel_pagetable(pgd_t *pgd,
- 					 unsigned long max_pfn)
- {
- 	pmd_t *kernel_pmd;
-+	int i;
+diff --git a/arch/x86/include/asm/pat.h b/arch/x86/include/asm/pat.h
+index 2cd07b9..d434a4e 100644
+--- a/arch/x86/include/asm/pat.h
++++ b/arch/x86/include/asm/pat.h
+@@ -6,8 +6,13 @@
  
- 	max_pfn_mapped = PFN_DOWN(__pa(xen_start_info->pt_base) +
- 				  xen_start_info->nr_pt_frames * PAGE_SIZE +
-@@ -1866,6 +1867,20 @@ __init pgd_t *xen_setup_kernel_pagetable(pgd_t *pgd,
- 	xen_map_identity_early(level2_kernel_pgt, max_pfn);
+ #ifdef CONFIG_X86_PAT
+ extern int pat_enabled;
++extern void pat_disable(const char *reason);
+ #else
+ static const int pat_enabled;
++static inline void pat_disable(const char *reason)
++{
++	(void)reason;
++}
+ #endif
  
- 	memcpy(swapper_pg_dir, pgd, sizeof(pgd_t) * PTRS_PER_PGD);
+ extern void pat_init(void);
+diff --git a/arch/x86/mm/pat.c b/arch/x86/mm/pat.c
+index 640339e..4d2a4df 100644
+--- a/arch/x86/mm/pat.c
++++ b/arch/x86/mm/pat.c
+@@ -43,11 +43,6 @@ static int __init nopat(char *str)
+ 	return 0;
+ }
+ early_param("nopat", nopat);
+-#else
+-static inline void pat_disable(const char *reason)
+-{
+-	(void)reason;
+-}
+ #endif
+ 
+ 
+diff --git a/arch/x86/xen/enlighten.c b/arch/x86/xen/enlighten.c
+index 19af31b..731c096 100644
+--- a/arch/x86/xen/enlighten.c
++++ b/arch/x86/xen/enlighten.c
+@@ -48,6 +48,7 @@
+ #include <asm/pgtable.h>
+ #include <asm/tlbflush.h>
+ #include <asm/reboot.h>
++#include <asm/pat.h>
+ 
+ #include "xen-ops.h"
+ #include "mmu.h"
+@@ -1029,6 +1030,8 @@ asmlinkage void __init xen_start_kernel(void)
+ 		add_preferred_console("hvc", 0, NULL);
+ 	}
+ 
++	pat_disable("PAT disabled on Xen");
 +
-+	/*
-+	 * When running a 32 bit domain 0 on a 64 bit hypervisor a
-+	 * pinned L3 (such as the initial pgd here) contains bits
-+	 * which are reserved in the PAE layout but not in the 64 bit
-+	 * layout. Unfortunately some versions of the hypervisor
-+	 * (incorrectly) validate compat mode guests against the PAE
-+	 * layout and hence will not allow such a pagetable to be
-+	 * pinned by the guest. Therefore we mask off only the PFN and
-+	 * Present bits of the supplied L3.
-+	 */
-+	for (i = 0; i < PTRS_PER_PGD; i++)
-+		swapper_pg_dir[i].pgd &= (PTE_PFN_MASK | _PAGE_PRESENT);
-+
- 	set_pgd(&swapper_pg_dir[KERNEL_PGD_BOUNDARY],
- 			__pgd(__pa(level2_kernel_pgt) | _PAGE_PRESENT));
+ 	xen_raw_console_write("about to get started...\n");
  
+ 	/* Start the world */
 -- 
 1.6.0.6
 
