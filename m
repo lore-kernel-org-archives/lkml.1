@@ -1,77 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757523AbZCWI1P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757694AbZCWI3Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757523AbZCWI1P (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Mar 2009 04:27:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757187AbZCWI0r
+	id S1757694AbZCWI3Y (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Mar 2009 04:29:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753164AbZCWI3N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Mar 2009 04:26:47 -0400
-Received: from an-out-0708.google.com ([209.85.132.243]:25360 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757143AbZCWI0q (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Mar 2009 04:26:46 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:content-type:date:message-id:mime-version
-         :x-mailer:content-transfer-encoding;
-        b=lruVhWN0od3enTvnV8SqoqUZT+EvxeEYatacGsZrPZo7rQ111D2gPZ1JXawyvqCube
-         sqgmGws37JS/fRuYFO2UpPz6OUdB3dnxXoe89qaSzy1dCUEOhmCggzH2bxtLiqh44zuz
-         Jd7tTo1aU342Bx06EyOSjQsNf6upDS1V2vF2E=
-Subject: [PATCH] tracing/filters: fix bug in copy_pred()
-From: Tom Zanussi <tzanussi@gmail.com>
-To: linux-kernel <linux-kernel@vger.kernel.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
-       =?ISO-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>
-Content-Type: text/plain
-Date: Mon, 23 Mar 2009 03:26:42 -0500
-Message-Id: <1237796802.7527.39.camel@charm-linux>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
+	Mon, 23 Mar 2009 04:29:13 -0400
+Received: from isrv.corpit.ru ([81.13.33.159]:59074 "EHLO isrv.corpit.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753086AbZCWI3M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Mar 2009 04:29:12 -0400
+Message-ID: <49C748EA.6040809@msgid.tls.msk.ru>
+Date: Mon, 23 Mar 2009 11:31:38 +0300
+From: Michael Tokarev <mjt@tls.msk.ru>
+Organization: Telecom Service, JSC
+User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: Avi Kivity <avi@redhat.com>, John Stultz <johnstul@us.ibm.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linux-kernel <linux-kernel@vger.kernel.org>,
+       KVM list <kvm@vger.kernel.org>
+Subject: Re: phenom, amd780g, tsc, hpet, kvm, kernel -- who's at fault?
+References: <49BACABE.7060003@msgid.tls.msk.ru> <20090323080441.GA27170@elte.hu>
+In-Reply-To: <20090323080441.GA27170@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When making a copy of the predicate, pred->field_name needs to be
-duplicated in the copy as well, otherwise bad things can happen due to
-later multiple frees of the same string.
+Ingo, I lost any hope already to hear anything about this one..
+Surprise.  Thank you for replying!
 
-This affects only per-subsystem event filtering.
+Ingo Molnar wrote:
+[]
+>> top/strace, but nothing interesting shows.  I captured Sysrq+T of this situation
+>> here: http://www.corpit.ru/mjt/host-high-la -- everything I was able to find
+>> in kern.log.
+> 
+> 403
 
-Signed-off-by: Tom Zanussi <tzanussi@gmail.com>
+Fixed both.  Didn't notice it was 0640 (i copied the kern.log).  I just
+checked my apache access.log - no one but several bots even looked at
+those pages before you.  Oh well.
 
----
- kernel/trace/trace_events_filter.c |   12 ++++++++++--
- 1 files changed, 10 insertions(+), 2 deletions(-)
+[]
+>> So, to the hell out of it all, and ignoring the magical Friday the 13th --
+>> who's fault it is?
+>>
+>>  o why it declares tsc is unstable while phenom supposed to keep it ok?
+> 
+> the TSC can drift slowly between cores, and it might not be in sync 
+> at bootup time already. You check check the TSC from user-space (on 
+> any kernel) via time-warp-test:
+> 
+>     http://redhat.com/~mingo/time-warp-test/MINI-HOWTO
 
-diff --git a/kernel/trace/trace_events_filter.c b/kernel/trace/trace_events_filter.c
-index c4a413b..fd01d80 100644
---- a/kernel/trace/trace_events_filter.c
-+++ b/kernel/trace/trace_events_filter.c
-@@ -276,11 +276,19 @@ static struct filter_pred *copy_pred(struct filter_pred *pred)
- 		return NULL;
- 
- 	memcpy(new_pred, pred, sizeof(*pred));
-+
-+	if (pred->field_name) {
-+		new_pred->field_name = kstrdup(pred->field_name, GFP_KERNEL);
-+		if (!new_pred->field_name) {
-+			kfree(new_pred);
-+			return NULL;
-+		}
-+	}
-+
- 	if (pred->str_val) {
- 		new_pred->str_val = kstrdup(pred->str_val, GFP_KERNEL);
--		new_pred->field_name = kstrdup(pred->field_name, GFP_KERNEL);
- 		if (!new_pred->str_val) {
--			kfree(new_pred);
-+			filter_free_pred(new_pred);
- 			return NULL;
- 		}
- 	}
--- 
-1.5.6.3
+Aha.  Will do.  But see below.
 
+>>  o why hpet is malfunctioning?
+> 
+> That's a question for Thomas i guess.
+> 
+>>  o why the system time on this machine is dog slow without special
+>>    adjtimex adjustments, while it worked before (circa 2.6.26) and
+>>    windows works ok here?
+>>
+>> For reference:
+>>
+>>  https://sourceforge.net/tracker/?func=detail&atid=893831&aid=2351676&group_id=180599
+>>   -- kvm bug on sourceforge, without any visible interest in even looking at it
+>>
+>>  http://www.google.com/search?q=CE%3A+hpet+increasing+min_delta_ns
+>>   -- numerous references to that "CE: hpet increasing min_delta_ns" on the 'net,
+>>   mostly for C2Ds, mentioning various lockup issues
+>>
+>>  http://marc.info/?t=123246270000002&r=1&w=2 --
+>>   "slow clock on AMD 740G chipset" -- it's about the clock issue, also without
+>>   any visible interest.
+>>
+>> What's the next thing to do here?  I for one don't want to see 
+>> todays failures again, it was very, and I mean *very* difficult 
+>> day to restore the functionality of this system that (and it isn't 
+>> restored at full because of the slowness of its current state).
+> 
+> it's not clear which kernel you tried - if you tried a recent enough 
+> one then i'd chalk this up as a yet-unfixed timekeeping problem - 
+> which probably had ripple effects on KVM and the rest of the system.
 
+It is 2.6.28.7 compiled for x86-64 (64 bits).
+Config is at http://www.corpit.ru/mjt/2.6.28.7-x86-64.config
 
+> What would be helpful is to debug the problem :-) First verify that 
+> basic timekeeping is OK: does 'time sleep 10' really take precisely 
+> 10 seconds? Does 'date' advance precisely one second per physical 
+> second?
+[...]
+
+I'll try - maybe today.  The thing is that this is a production machine
+running quite several of various (virtual) servers which are all our
+infrastructure.  When it started misbehaving at 13th (just because there
+was high load, not because of failures or any other changes), all our
+office was stopped... ;)
+
+Now, after quite some googling around, I tried to disable hpet, booting
+with hpet=disable parameter.  And that one fixed all the problems at once.
+7 days uptime, I stress-tested it several times, it works with TSC as
+timesource (still a problem within guests as those shows unstable TSC
+anyway) since boot, no issues logged.  Even cpufreq works as expected...
+
+Note that i tried to disable hpet as clocksource several times but without
+any noticeable effect - kernel still used hpet and hpet2 for something,
+and printed that scary "increasing min_delay" message on a semi-regular
+basis usually after the next 'stuck' state....
+
+> A generic hw/sw state output of:
+> 
+>   http://people.redhat.com/mingo/cfs-scheduler/tools/cfs-debug-info.sh
+> 
+> would also help people taking a look at this problem.
+> 
+> If the problem persists, there might be a chance to debug it without 
+> rebooting the system. Rebooting and trying out various patches wont 
+> really work well for a server i guess.
+
+..so it has to be rebooted back to enable hpet.  Hence I'll do it not
+before evening.  But I really want to debug and fix the issue, as it
+gave me quite some headaches and I want to kill it once and for all ;)
+
+Thanks for noticing this!
+
+/mjt
