@@ -1,61 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755956AbZCWFcV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756477AbZCWFfr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755956AbZCWFcV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Mar 2009 01:32:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751891AbZCWFcA
+	id S1756477AbZCWFfr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Mar 2009 01:35:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753700AbZCWFfh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Mar 2009 01:32:00 -0400
-Received: from ozlabs.org ([203.10.76.45]:38773 "EHLO ozlabs.org"
+	Mon, 23 Mar 2009 01:35:37 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:50410 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752686AbZCWFb7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Mar 2009 01:31:59 -0400
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       peterz@infradead.org, tglx@linutronix.de, mingo@elte.hu
-Subject: Re: [tip:core/stacktrace] symbols, stacktrace: look up init symbols after module symbols
-Date: Mon, 23 Mar 2009 16:01:50 +1030
-User-Agent: KMail/1.11.1 (Linux/2.6.27-11-generic; KDE/4.2.1; i686; ; )
-Cc: linux-tip-commits@vger.kernel.org
-References: <new-discussion> <tip-4a44bac1f98223ed77e47bf3b42fcfd10cddd85f@git.kernel.org>
-In-Reply-To: <tip-4a44bac1f98223ed77e47bf3b42fcfd10cddd85f@git.kernel.org>
+	id S1750983AbZCWFfh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Mar 2009 01:35:37 -0400
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200903231601.51648.rusty@rustcorp.com.au>
+From: Roland McGrath <roland@redhat.com>
+To: Ingo Molnar <mingo@elte.hu>
+X-Fcc: ~/Mail/utrace
+X-Fcc: ~/Mail/linus
+Cc: "Frank Ch. Eigler" <fche@redhat.com>,
+       Alexey Dobriyan <adobriyan@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Steven Rostedt <rostedt@goodmis.org>, utrace-devel@redhat.com,
+       linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH 3/3] utrace-based ftrace "process" engine, v2
+In-Reply-To: Ingo Molnar's message of  Sunday, 22 March 2009 11:25:34 +0100 <20090322102534.GC19826@elte.hu>
+References: <20090321041954.72b99e69.akpm@linux-foundation.org>
+	<20090321115141.GA3566@redhat.com>
+	<20090321050422.d1d99eec.akpm@linux-foundation.org>
+	<20090321154501.GA2707@elte.hu>
+	<20090321143413.75ead1aa.akpm@linux-foundation.org>
+	<20090321215145.GB5262@redhat.com>
+	<alpine.LFD.2.00.0903211501060.3030@localhost.localdomain>
+	<20090321222030.GA5157@redhat.com>
+	<20090321223759.GA22770@x200.localdomain>
+	<20090321233839.GB5157@redhat.com>
+	<20090322102534.GC19826@elte.hu>
+X-Antipastobozoticataclysm: Bariumenemanilow
+Message-Id: <20090323053323.2F28DFC3AB@magilla.sf.frob.com>
+Date: Sun, 22 Mar 2009 22:33:23 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 19 March 2009 22:24:35 Ingo Molnar wrote:
->   a2da405: module: Don't report discarded init pages as kernel text.
-> 
-> The reason is this check added to core_kernel_text():
-> 
-> -       if (addr >= (unsigned long)_sinittext &&
-> +       if (system_state == SYSTEM_BOOTING &&
-> +           addr >= (unsigned long)_sinittext &&
->             addr <= (unsigned long)_einittext)
->                 return 1;
-> 
-> This will discard inittext symbols even though their symbol table
-> is still present and even though stacktraces done while the system
-> was booting up might still be relevant.
-> 
-> To not reintroduce the (not well-specified) bug addressed in that
-> commit, first do a module symbols lookup, then a final init-symbols
-> lookup.
-> 
-> This will work fine on architectures that have separate address
-> spaces for modules (such as x86) - and should not crash any other
-> architectures either.
+> And i think the ptrace-via-utrace engine is actually fully ready, 
+> just perhaps it was not submitted out of caution to keep the 
+> logistics simple.
 
-Returning "1" all the time won't crash them either, AFAICT, but it's still
-misleading if kernel_text_address() isn't reliable.  It makes me
-uncomfortable.
+That's not so.  There is a clumsy prototype version.  Much of the work to
+do it properly is really just plain ptrace clean-up and not specifically
+about using utrace.  Oleg and I are ready to work on it as soon as our time
+is not monopolized by trying to get the core utrace code to be accepted.
 
-Does every kernel_text_address() caller want this behavior, or should we
-have a was_ever_text_address()?
+This ptrace work really buys nothing with immediate pay-off at all.  It's a
+real shame if its lack keeps people from actually looking at utrace itself.
+(This has been a long conversation so far with zero discussion of the code.)
+A collaboration with focus on what new things can be built, rather than on
+reasons not to let the foundations be poured, would be a lovely thing.
 
-Rusty.
+
+Thanks,
+Roland
