@@ -1,103 +1,313 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758975AbZCWQDa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759887AbZCWQEg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758975AbZCWQDa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Mar 2009 12:03:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758202AbZCWQBR
+	id S1759887AbZCWQEg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Mar 2009 12:04:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759416AbZCWQBW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Mar 2009 12:01:17 -0400
-Received: from hera.kernel.org ([140.211.167.34]:59391 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759410AbZCWQBI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Mar 2009 12:01:08 -0400
-Date: Mon, 23 Mar 2009 15:57:45 GMT
-From: Bharata B Rao <bharata@linux.vnet.ibm.com>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       a.p.zijlstra@chello.nl, lizf@cn.fujitsu.com, menage@google.com,
-       dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
-       bharata@linux.vnet.ibm.com, tglx@linutronix.de,
-       kamezawa.hiroyu@jp.fujitsu.com, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       lizf@cn.fujitsu.com, a.p.zijlstra@chello.nl, dhaval@linux.vnet.ibm.com,
-       menage@google.com, balbir@linux.vnet.ibm.com,
-       bharata@linux.vnet.ibm.com, tglx@linutronix.de,
-       kamezawa.hiroyu@jp.fujitsu.com, mingo@elte.hu
-In-Reply-To: <20090323043253.GA3306@in.ibm.com>
-References: <20090323043253.GA3306@in.ibm.com>
-Subject: [tip:core/percpu] cpuacct: make cpuacct hierarchy walk in cpuacct_charge() safe when rcupreempt is used -v2
-Message-ID: <tip-0d8ba94c48dc07d1c47f18b24826cbafcc4d7282@git.kernel.org>
-Git-Commit-ID: 0d8ba94c48dc07d1c47f18b24826cbafcc4d7282
-X-Mailer: tip-git-log-daemon
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 23 Mar 2009 15:57:47 +0000 (UTC)
+	Mon, 23 Mar 2009 12:01:22 -0400
+Received: from mail09.linbit.com ([212.69.161.110]:52246 "EHLO
+	mail09.linbit.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759412AbZCWQBL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Mar 2009 12:01:11 -0400
+From: Philipp Reisner <philipp.reisner@linbit.com>
+To: linux-kernel@vger.kernel.org
+Cc: philipp.reisner@linbit.com, gregkh@suse.de
+Subject: [PATCH 09/12] DRBD: proc
+Date: Mon, 23 Mar 2009 16:48:04 +0100
+Message-Id: <1237823287-12734-10-git-send-email-philipp.reisner@linbit.com>
+X-Mailer: git-send-email 1.5.6.3
+In-Reply-To: <1237823287-12734-9-git-send-email-philipp.reisner@linbit.com>
+References: <1237823287-12734-1-git-send-email-philipp.reisner@linbit.com>
+ <1237823287-12734-2-git-send-email-philipp.reisner@linbit.com>
+ <1237823287-12734-3-git-send-email-philipp.reisner@linbit.com>
+ <1237823287-12734-4-git-send-email-philipp.reisner@linbit.com>
+ <1237823287-12734-5-git-send-email-philipp.reisner@linbit.com>
+ <1237823287-12734-6-git-send-email-philipp.reisner@linbit.com>
+ <1237823287-12734-7-git-send-email-philipp.reisner@linbit.com>
+ <1237823287-12734-8-git-send-email-philipp.reisner@linbit.com>
+ <1237823287-12734-9-git-send-email-philipp.reisner@linbit.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  0d8ba94c48dc07d1c47f18b24826cbafcc4d7282
-Gitweb:     http://git.kernel.org/tip/0d8ba94c48dc07d1c47f18b24826cbafcc4d7282
-Author:     Bharata B Rao <bharata@linux.vnet.ibm.com>
-AuthorDate: Mon, 23 Mar 2009 10:02:53 +0530
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Mon, 23 Mar 2009 16:55:26 +0100
-
-cpuacct: make cpuacct hierarchy walk in cpuacct_charge() safe when rcupreempt is used -v2
-
-Impact: fix cgroups race under rcu-preempt
-
-cpuacct_charge() obtains task's ca and does a hierarchy walk upwards.
-This can race with the task's movement between cgroups. This race
-can cause an access to freed ca pointer in cpuacct_charge() or access
-to invalid cgroups pointer of the task. This will not happen with rcu or
-tree rcu as cpuacct_charge() is called with preemption disabled. However if
-rcupreempt is used, the race is seen. Thanks to Li Zefan for explaining this.
-
-Fix this race by explicitly protecting ca and the hierarchy walk with
-rcu_read_lock().
-
-Changes for v2:
-
- - Update patch descrition (as per Li Zefan's review comments).
-
- - Remove comments in cpuacct_charge() which explained why rcu_read_lock()
-   was needed (as per Peter Zijlstra's review comments).
-
-Signed-off-by: Bharata B Rao <bharata@linux.vnet.ibm.com>
-Cc: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-Cc: Li Zefan <lizf@cn.fujitsu.com>
-Cc: Paul Menage <menage@google.com>
-Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Acked-by: Balbir Singh <balbir@linux.vnet.ibm.com>
-Tested-by: Balbir Singh <balbir@linux.vnet.ibm.com>
-LKML-Reference: <20090323043253.GA3306@in.ibm.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
+The /proc/drbd interface.
 
 ---
- kernel/sched.c |    3 +++
- 1 files changed, 3 insertions(+), 0 deletions(-)
-
-diff --git a/kernel/sched.c b/kernel/sched.c
-index 61e6356..ebadc7a 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -9597,6 +9597,8 @@ static void cpuacct_charge(struct task_struct *tsk, u64 cputime)
- 		return;
- 
- 	cpu = task_cpu(tsk);
+diff -uNrp linux-2.6.29-rc8/drivers/block/drbd/drbd_proc.c linux-2.6.29-rc8-drbd/drivers/block/drbd/drbd_proc.c
+--- linux-2.6.29-rc8/drivers/block/drbd/drbd_proc.c	1970-01-01 01:00:00.000000000 +0100
++++ linux-2.6.29-rc8-drbd/drivers/block/drbd/drbd_proc.c	2009-03-23 11:25:50.360135000 +0100
+@@ -0,0 +1,273 @@
++/*
++-*- linux-c -*-
++   drbd_proc.c
++   Kernel module for 2.6.x Kernels
 +
-+	rcu_read_lock();
- 	ca = task_ca(tsk);
- 
- 	do {
-@@ -9604,6 +9606,7 @@ static void cpuacct_charge(struct task_struct *tsk, u64 cputime)
- 		*cpuusage += cputime;
- 		ca = ca->parent;
- 	} while (ca);
-+	rcu_read_unlock();
- }
- 
- struct cgroup_subsys cpuacct_subsys = {
++   This file is part of DRBD by Philipp Reisner and Lars Ellenberg.
++
++   Copyright (C) 2001-2008, LINBIT Information Technologies GmbH.
++   Copyright (C) 1999-2008, Philipp Reisner <philipp.reisner@linbit.com>.
++   Copyright (C) 2002-2008, Lars Ellenberg <lars.ellenberg@linbit.com>.
++
++   drbd is free software; you can redistribute it and/or modify
++   it under the terms of the GNU General Public License as published by
++   the Free Software Foundation; either version 2, or (at your option)
++   any later version.
++
++   drbd is distributed in the hope that it will be useful,
++   but WITHOUT ANY WARRANTY; without even the implied warranty of
++   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++   GNU General Public License for more details.
++
++   You should have received a copy of the GNU General Public License
++   along with drbd; see the file COPYING.  If not, write to
++   the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
++
++ */
++
++#include <linux/autoconf.h>
++#include <linux/module.h>
++
++#include <asm/uaccess.h>
++#include <linux/fs.h>
++#include <linux/file.h>
++#include <linux/slab.h>
++#include <linux/proc_fs.h>
++#include <linux/seq_file.h>
++#include <linux/drbd.h>
++#include "drbd_int.h"
++#include "lru_cache.h" /* for lc_sprintf_stats */
++
++STATIC int drbd_proc_open(struct inode *inode, struct file *file);
++
++
++struct proc_dir_entry *drbd_proc;
++struct file_operations drbd_proc_fops = {
++	.owner		= THIS_MODULE,
++	.open		= drbd_proc_open,
++	.read		= seq_read,
++	.llseek		= seq_lseek,
++	.release	= single_release,
++};
++
++
++/*lge
++ * progress bars shamelessly adapted from driver/md/md.c
++ * output looks like
++ *	[=====>..............] 33.5% (23456/123456)
++ *	finish: 2:20:20 speed: 6,345 (6,456) K/sec
++ */
++STATIC void drbd_syncer_progress(struct drbd_conf *mdev, struct seq_file *seq)
++{
++	unsigned long db, dt, dbdt, rt, rs_left;
++	unsigned int res;
++	int i, x, y;
++
++	drbd_get_syncer_progress(mdev, &rs_left, &res);
++
++	x = res/50;
++	y = 20-x;
++	seq_printf(seq, "\t[");
++	for (i = 1; i < x; i++)
++		seq_printf(seq, "=");
++	seq_printf(seq, ">");
++	for (i = 0; i < y; i++)
++		seq_printf(seq, ".");
++	seq_printf(seq, "] ");
++
++	seq_printf(seq, "sync'ed:%3u.%u%% ", res / 10, res % 10);
++	/* if more than 1 GB display in MB */
++	if (mdev->rs_total > 0x100000L)
++		seq_printf(seq, "(%lu/%lu)M\n\t",
++			    (unsigned long) Bit2KB(rs_left >> 10),
++			    (unsigned long) Bit2KB(mdev->rs_total >> 10));
++	else
++		seq_printf(seq, "(%lu/%lu)K\n\t",
++			    (unsigned long) Bit2KB(rs_left),
++			    (unsigned long) Bit2KB(mdev->rs_total));
++
++	/* see drivers/md/md.c
++	 * We do not want to overflow, so the order of operands and
++	 * the * 100 / 100 trick are important. We do a +1 to be
++	 * safe against division by zero. We only estimate anyway.
++	 *
++	 * dt: time from mark until now
++	 * db: blocks written from mark until now
++	 * rt: remaining time
++	 */
++	dt = (jiffies - mdev->rs_mark_time) / HZ;
++
++	if (dt > 20) {
++		/* if we made no update to rs_mark_time for too long,
++		 * we are stalled. show that. */
++		seq_printf(seq, "stalled\n");
++		return;
++	}
++
++	if (!dt)
++		dt++;
++	db = mdev->rs_mark_left - rs_left;
++	rt = (dt * (rs_left / (db/100+1)))/100; /* seconds */
++
++	seq_printf(seq, "finish: %lu:%02lu:%02lu",
++		rt / 3600, (rt % 3600) / 60, rt % 60);
++
++	/* current speed average over (SYNC_MARKS * SYNC_MARK_STEP) jiffies */
++	dbdt = Bit2KB(db/dt);
++	if (dbdt > 1000)
++		seq_printf(seq, " speed: %ld,%03ld",
++			dbdt/1000, dbdt % 1000);
++	else
++		seq_printf(seq, " speed: %ld", dbdt);
++
++	/* mean speed since syncer started
++	 * we do account for PausedSync periods */
++	dt = (jiffies - mdev->rs_start - mdev->rs_paused) / HZ;
++	if (dt <= 0)
++		dt = 1;
++	db = mdev->rs_total - rs_left;
++	dbdt = Bit2KB(db/dt);
++	if (dbdt > 1000)
++		seq_printf(seq, " (%ld,%03ld)",
++			dbdt/1000, dbdt % 1000);
++	else
++		seq_printf(seq, " (%ld)", dbdt);
++
++	seq_printf(seq, " K/sec\n");
++}
++
++#ifdef ENABLE_DYNAMIC_TRACE
++STATIC void resync_dump_detail(struct seq_file *seq, struct lc_element *e)
++{
++	struct bm_extent *bme = (struct bm_extent *)e;
++
++	seq_printf(seq, "%5d %s %s\n", bme->rs_left,
++		   bme->flags & BME_NO_WRITES ? "NO_WRITES" : "---------",
++		   bme->flags & BME_LOCKED ? "LOCKED" : "------"
++		   );
++}
++#endif
++
++STATIC int drbd_seq_show(struct seq_file *seq, void *v)
++{
++	int i, hole = 0;
++	const char *sn;
++	struct drbd_conf *mdev;
++
++	static char write_ordering_chars[] = {
++		[WO_none] = 'n',
++		[WO_drain_io] = 'd',
++		[WO_bdev_flush] = 'f',
++		[WO_bio_barrier] = 'b',
++	};
++
++	seq_printf(seq, "version: " REL_VERSION " (api:%d/proto:%d-%d)\n%s\n",
++		   API_VERSION, PRO_VERSION_MIN, PRO_VERSION_MAX, drbd_buildtag());
++
++	/*
++	  cs .. connection state
++	  ro .. node role (local/remote)
++	  ds .. disk state (local/remote)
++	     protocol
++	     various flags
++	  ns .. network send
++	  nr .. network receive
++	  dw .. disk write
++	  dr .. disk read
++	  al .. activity log write count
++	  bm .. bitmap update write count
++	  pe .. pending (waiting for ack or data reply)
++	  ua .. unack'd (still need to send ack or data reply)
++	  ap .. application requests accepted, but not yet completed
++	  ep .. number of epochs currently "on the fly", BarrierAck pending
++	  wo .. write ordering mode currently in use
++	 oos .. known out-of-sync kB
++	*/
++
++	for (i = 0; i < minor_count; i++) {
++		mdev = minor_to_mdev(i);
++		if (!mdev) {
++			hole = 1;
++			continue;
++		}
++		if (hole) {
++			hole = 0;
++			seq_printf(seq, "\n");
++		}
++
++		sn = conns_to_name(mdev->state.conn);
++
++		if (mdev->state.conn == StandAlone &&
++		    mdev->state.disk == Diskless &&
++		    mdev->state.role == Secondary) {
++			seq_printf(seq, "%2d: cs:Unconfigured\n", i);
++		} else {
++			seq_printf(seq,
++			   "%2d: cs:%s ro:%s/%s ds:%s/%s %c %c%c%c%c%c\n"
++			   "    ns:%u nr:%u dw:%u dr:%u al:%u bm:%u "
++			   "lo:%d pe:%d ua:%d ap:%d ep:%d wo:%c",
++			   i, sn,
++			   roles_to_name(mdev->state.role),
++			   roles_to_name(mdev->state.peer),
++			   disks_to_name(mdev->state.disk),
++			   disks_to_name(mdev->state.pdsk),
++			   (mdev->net_conf == NULL ? ' ' :
++			    (mdev->net_conf->wire_protocol - DRBD_PROT_A+'A')),
++			   mdev->state.susp ? 's' : 'r',
++			   mdev->state.aftr_isp ? 'a' : '-',
++			   mdev->state.peer_isp ? 'p' : '-',
++			   mdev->state.user_isp ? 'u' : '-',
++			   mdev->congestion_reason,
++			   mdev->send_cnt/2,
++			   mdev->recv_cnt/2,
++			   mdev->writ_cnt/2,
++			   mdev->read_cnt/2,
++			   mdev->al_writ_cnt,
++			   mdev->bm_writ_cnt,
++			   atomic_read(&mdev->local_cnt),
++			   atomic_read(&mdev->ap_pending_cnt) +
++			   atomic_read(&mdev->rs_pending_cnt),
++			   atomic_read(&mdev->unacked_cnt),
++			   atomic_read(&mdev->ap_bio_cnt),
++			   mdev->epochs,
++			   write_ordering_chars[mdev->write_ordering]
++			);
++			seq_printf(seq, " oos:%lu\n",
++				   Bit2KB(drbd_bm_total_weight(mdev)));
++		}
++		if (mdev->state.conn == SyncSource ||
++		    mdev->state.conn == SyncTarget)
++			drbd_syncer_progress(mdev, seq);
++
++		if (mdev->state.conn == VerifyS || mdev->state.conn == VerifyT)
++			seq_printf(seq, "\t%3d%%      %lu/%lu\n",
++				   (int)((mdev->rs_total-mdev->ov_left) /
++					 (mdev->rs_total/100+1)),
++				   mdev->rs_total - mdev->ov_left,
++				   mdev->rs_total);
++
++#ifdef ENABLE_DYNAMIC_TRACE
++		if (proc_details >= 1 && inc_local_if_state(mdev, Failed)) {
++			lc_printf_stats(seq, mdev->resync);
++			lc_printf_stats(seq, mdev->act_log);
++			dec_local(mdev);
++		}
++
++		if (proc_details >= 2) {
++			if (mdev->resync) {
++				lc_dump(mdev->resync, seq, "rs_left",
++					resync_dump_detail);
++			}
++		}
++#endif
++	}
++
++	return 0;
++}
++
++STATIC int drbd_proc_open(struct inode *inode, struct file *file)
++{
++	return single_open(file, drbd_seq_show, PDE(inode)->data);
++}
++
++/* PROC FS stuff end */
