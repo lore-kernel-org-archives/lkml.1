@@ -1,37 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754506AbZCWXjB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754335AbZCWXlN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754506AbZCWXjB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Mar 2009 19:39:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752246AbZCWXiv
+	id S1754335AbZCWXlN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Mar 2009 19:41:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753343AbZCWXk4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Mar 2009 19:38:51 -0400
-Received: from kroah.org ([198.145.64.141]:57603 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751875AbZCWXiu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Mar 2009 19:38:50 -0400
-Date: Mon, 23 Mar 2009 16:28:49 -0700
-From: Greg KH <greg@kroah.com>
-To: Dragoslav Zaric <dragoslav.zaric.kd@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Otus Devel <otus-devel@venema.h4ckr.net>,
-       Luis Rodriguez <Luis.Rodriguez@Atheros.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: Re: [PATCH 2.6.29-rc8] drivers/staging/otus/80211core/ccmd.c: Fix
-	Coding Style
-Message-ID: <20090323232849.GA24033@kroah.com>
-References: <alpine.DEB.2.00.0903211956560.13051@Sentinel>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.0903211956560.13051@Sentinel>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Mon, 23 Mar 2009 19:40:56 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:58856 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752399AbZCWXkz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Mar 2009 19:40:55 -0400
+Date: Mon, 23 Mar 2009 20:40:57 -0300
+From: Mauro Carvalho Chehab <mchehab@redhat.com>
+To: LINUX NEWBIE <lnxnewbie@gmail.com>
+Cc: linux-kernel@vger.kernel.org, linux-media@vger.kernel.org
+Subject: Re: cx88 audio input change
+Message-ID: <20090323204057.7c400a8e@pedra.chehab.org>
+In-Reply-To: <55fdf7050901271437o7afafa42j1db0fd18ca1ce915@mail.gmail.com>
+References: <55fdf7050901261409h67f581f1ib6951ecb60eb8e8@mail.gmail.com>
+	<20090127102421.06bfd4c1@caramujo.chehab.org>
+	<55fdf7050901271437o7afafa42j1db0fd18ca1ce915@mail.gmail.com>
+Organization: Red Hat
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Care to resend both of these, you forgot a "Signed-off-by:" to your
-patch :(
 
-thanks,
+On Tue, 27 Jan 2009 14:37:23 -0800
+LINUX NEWBIE <lnxnewbie@gmail.com> wrote:
 
-greg k-h
+> In Linux cx88 driver, is it possible to stream audio only without
+> video Risc engine running?  If so, what tools/players and commands can
+> I use to stream audio only from cx88 card?
+> 
+Sorry for not answer before. I got flooded of emails.
+
+AFAIK, the cx88 internal RISC processor is responsible for moving the sampling
+data. I don't think you can have the device working without uploading the risc
+firmware.
+
+-- 
+
+Cheers,
+Mauro
