@@ -1,62 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757540AbZCWOrg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757599AbZCWOsf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757540AbZCWOrg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Mar 2009 10:47:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756456AbZCWOrZ
+	id S1757599AbZCWOsf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Mar 2009 10:48:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756757AbZCWOsZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Mar 2009 10:47:25 -0400
-Received: from yw-out-2324.google.com ([74.125.46.28]:45082 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756557AbZCWOrX (ORCPT
+	Mon, 23 Mar 2009 10:48:25 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:54515 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756955AbZCWOsZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Mar 2009 10:47:23 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=ZwqRC/yBU2Uy6Gud4zYJqI5s6NwafscdpKZ/FwIod7mfEjrF4ktuR78WLTXMGO9UvV
-         5Md2nAt6UUuMsgJMJxLwbDAHI2A8V8j9cbdOaTKgxzNW9dxqMGiViCZ+fAnwQnlCA6Qb
-         6HkNPBKSGTH4ZKQopSei6kMYu+LxuqjI6krus=
+	Mon, 23 Mar 2009 10:48:25 -0400
+Date: Mon, 23 Mar 2009 10:48:21 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Ingo Molnar <mingo@elte.hu>
+cc: Li Zefan <lizf@cn.fujitsu.com>, Jens Axboe <jens.axboe@oracle.com>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 0/7] blktrace: various cleanups and fixes
+In-Reply-To: <20090320110921.GA10840@elte.hu>
+Message-ID: <alpine.DEB.2.00.0903231047460.3578@gandalf.stny.rr.com>
+References: <49C2F599.3060306@cn.fujitsu.com> <20090320102058.GC6256@elte.hu> <20090320110921.GA10840@elte.hu>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-In-Reply-To: <1237816050.3833.20.camel@T60p>
-References: <1237575285.26159.2.camel@T60p>
-	 <412bdbff0903201228t4cb4b6c8m17763c27878434ed@mail.gmail.com>
-	 <1237578912.26159.13.camel@T60p>
-	 <412bdbff0903201302ib6758a8ue76a8dd235cfa4cb@mail.gmail.com>
-	 <1237579738.26159.16.camel@T60p>
-	 <412bdbff0903201314r5105d373ofe6614ee08431d4b@mail.gmail.com>
-	 <1237816050.3833.20.camel@T60p>
-Date: Mon, 23 Mar 2009 10:47:21 -0400
-Message-ID: <412bdbff0903230747i1ebc4487x2636369e6b20ce8f@mail.gmail.com>
-Subject: Re: [PATCH] V4L: em28xx: add support for Digitus/Plextor PX-AV200U 
-	grabbers
-From: Devin Heitmueller <devin.heitmueller@gmail.com>
-To: Mikhail Jiline <misha@epiphan.com>
-Cc: mchehab@infradead.org, linux-kernel@vger.kernel.org,
-       video4linux-list@redhat.com
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 23, 2009 at 9:47 AM, Mikhail Jiline <misha@epiphan.com> wrote:
-> Here is the output from the version with em28xx_i2c_hash hint. Update patch is below.
-<snip>
 
-Ok, that looks better.  You should no longer need the "card=" line
-with that patch.
+On Fri, 20 Mar 2009, Ingo Molnar wrote:
 
-Did you verify that both video inputs were working as expected?  Also,
-did you confirm the audio support works?  If so, please remove the
-"valid        = EM28XX_BOARD_NOT_VALIDATED", submit a final patch, and
-I will check it in.
+> 
+> * Ingo Molnar <mingo@elte.hu> wrote:
+> 
+> > 
+> > * Li Zefan <lizf@cn.fujitsu.com> wrote:
+> > 
+> > > While trying to use blktrace in -tip tree, I encounted kernel NULL 
+> > > dereference, so I looked into the code, and then found some other 
+> > > bugs.
+> > > 
+> > > This patchset is part 1, and I have some other pending fixes.
+> > > 
+> > > Each patch is small and straightforward, and should be easy to review:
+> > > 
+> > > [PATCH 1/7] blktrace: fix possible memory leak
+> > > [PATCH 2/7] blktrace: make blk_tracer_enabled a bool flag
+> > > [PATCH 3/7] blktrace: remove blk_probe_mutex
+> > > [PATCH 4/7] blktrace: don't increase blk_probes_ref if failed to setup blk trace
+> > > [PATCH 5/7] blktrace: report EBUSY correctly
+> > > [PATCH 6/7] blktrace: remove sysfs_blk_trace_enable_show/store()
+> > > [PATCH 7/7] blktrace: avoid accessing NULL bdev->bd_disk
+> > > ---
+> > >  blktrace.c |  154 +++++++++++++++++--------------------------------------------
+> > >  1 file changed, 45 insertions(+), 109 deletions(-)
+> > > 
+> > > Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+> > 
+> > Nice fixes. Applied to tip:tracing/blktrace, thanks!
+> 
+> Which would go upstream in the .30 merge window (unless Jens or 
+> Steve objects of course).
 
-Thanks,
+I didn't see anything wrong with these patches. (sorry for the late reply, 
+I'm still going through emails).
 
-Devin
+Acked-by: Steven Rostedt <srostedt@redhat.com>
 
--- 
-Devin J. Heitmueller
-http://www.devinheitmueller.com
-AIM: devinheitmueller
+-- Steve
+
