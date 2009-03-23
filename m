@@ -1,106 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757471AbZCWS4c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757926AbZCWTA0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757471AbZCWS4c (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Mar 2009 14:56:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754943AbZCWS4X
+	id S1757926AbZCWTA0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Mar 2009 15:00:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755250AbZCWTAL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Mar 2009 14:56:23 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:47492 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754271AbZCWS4X (ORCPT
+	Mon, 23 Mar 2009 15:00:11 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:32811 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752976AbZCWTAK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Mar 2009 14:56:23 -0400
-Date: Mon, 23 Mar 2009 14:56:18 -0400
-From: Christoph Hellwig <hch@infradead.org>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Christoph Hellwig <hch@infradead.org>,
-       Arjan van de Veen <arjan@infradead.org>,
-       Jon Masters <jonathan@jonmasters.org>,
-       Sven Dietrich <sdietrich@suse.de>, David Brownell <david-b@pacbell.net>
-Subject: Re: [patch 1/2] genirq: add threaded interrupt handler support
-Message-ID: <20090323185618.GA11432@infradead.org>
-References: <20090323172814.548471871@linutronix.de> <20090323172835.250505802@linutronix.de>
+	Mon, 23 Mar 2009 15:00:10 -0400
+Date: Mon, 23 Mar 2009 15:00:08 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Jaswinder Singh Rajput <jaswinder@kernel.org>
+cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH -tip] trace: ring_buffer.c fix various signedness
+ issues
+In-Reply-To: <1237747471.8713.1.camel@ht.satnam>
+Message-ID: <alpine.DEB.2.00.0903231458490.3578@gandalf.stny.rr.com>
+References: <1237747471.8713.1.camel@ht.satnam>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090323172835.250505802@linutronix.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I like the API and concept of the patch a lot.
 
-some minor comments:
+You're a little late:
 
-> +		switch (ret) {
-> +		case IRQ_WAKE_THREAD:
-> +			/*
-> +			 * Wake up the handler thread for this
-> +			 * action. In case the thread crashed and was
-> +			 * killed we just pretend that we handled the
-> +			 * interrupt. The hardirq handler above has
-> +			 * disabled the device interrupt, so no irq
-> +			 * storm is lurking.
-> +			 */
+  http://lkml.org/lkml/2009/2/10/262
 
-We probably wants some sort of error check to catch drivers returning
-IRQ_WAKE_THREAD without actually defining a threaded handler here.
+-- Steve
 
-> +static inline int irq_thread_should_run(struct irqaction *action)
-> +{
-> +	return test_and_clear_bit(IRQTF_RUNTHREAD, &action->thread_flags);
-> +}
-> +
-> +static int irq_wait_for_interrupt(struct irqaction *action)
-> +{
-> +	while (!kthread_should_stop()) {
-> +		set_current_state(TASK_INTERRUPTIBLE);
-> +		if (irq_thread_should_run(action)) {
 
-Does adding the helper for one use really help readability?
 
-> +			__set_current_state(TASK_RUNNING);
-> +			return 0;
-> +		} else
-> +			schedule();
+On Mon, 23 Mar 2009, Jaswinder Singh Rajput wrote:
 
-No need for the else here :)
-
-> +	if (new->thread_fn) {
-> +		struct task_struct *t;
-> +
-> +		t = kthread_create(irq_thread, new, "irq/%d-%s", irq,
-> +				   new->name);
-> +		if (IS_ERR(t))
-> +			return PTR_ERR(t);
-> +		/*
-> +		 * We keep the reference to the task struct even if
-> +		 * the thread dies to avoid that the interrupt code
-> +		 * references an already freed task_struct.
-> +		 */
-> +		get_task_struct(t);
-> +		new->thread = t;
-> +		wake_up_process(t);
-> +	}
-
-We should really introduce a refcounted variant of the kthread helpers.
-Not an argument against the patch, just a public mental note.
-
+> From: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+> Date: Mon, 23 Mar 2009 00:02:38 +0530
+> Subject: [PATCH] trace: ring_buffer.c fix various signedness issues
+> 
+> Impact:cleanup
+> 
+> Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+> ---
+>  kernel/trace/ring_buffer.c |    8 ++++----
+>  1 files changed, 4 insertions(+), 4 deletions(-)
+> 
+> diff --git a/kernel/trace/ring_buffer.c b/kernel/trace/ring_buffer.c
+> index bd38c5c..114811b 100644
+> --- a/kernel/trace/ring_buffer.c
+> +++ b/kernel/trace/ring_buffer.c
+> @@ -57,7 +57,7 @@ enum {
+>  	RB_BUFFERS_DISABLED	= 1 << RB_BUFFERS_DISABLED_BIT,
+>  };
+>  
+> -static long ring_buffer_flags __read_mostly = RB_BUFFERS_ON;
+> +static unsigned long ring_buffer_flags __read_mostly = RB_BUFFERS_ON;
+>  
 >  /**
-> - *	request_irq - allocate an interrupt line
-> + *	request_threaded_irq - allocate an interrupt line
->   *	@irq: Interrupt line to allocate
-> - *	@handler: Function to be called when the IRQ occurs
-> + *	@handler: Function to be called when the IRQ occurs.
-> + *		  Primary handler for threaded interrupts
-> + *      @thread_fn: Function called from the irq handler thread
-> + *                  If NULL, no irq thread is created
-
-The indentation is messed up here.
-
+>   * tracing_on - enable all tracing buffers
+> @@ -2466,7 +2466,7 @@ static ssize_t
+>  rb_simple_read(struct file *filp, char __user *ubuf,
+>  	       size_t cnt, loff_t *ppos)
+>  {
+> -	long *p = filp->private_data;
+> +	unsigned long *p = filp->private_data;
+>  	char buf[64];
+>  	int r;
+>  
+> @@ -2482,9 +2482,9 @@ static ssize_t
+>  rb_simple_write(struct file *filp, const char __user *ubuf,
+>  		size_t cnt, loff_t *ppos)
+>  {
+> -	long *p = filp->private_data;
+> +	unsigned long *p = filp->private_data;
+> +	unsigned long val;
+>  	char buf[64];
+> -	long val;
+>  	int ret;
+>  
+>  	if (cnt >= sizeof(buf))
+> -- 
+> 1.6.0.6
+> 
+> 
+> 
+> 
