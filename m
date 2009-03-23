@@ -1,78 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760927AbZCWVUl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760992AbZCWVYy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760927AbZCWVUl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Mar 2009 17:20:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760831AbZCWVUa
+	id S1760992AbZCWVYy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Mar 2009 17:24:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754678AbZCWVYp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Mar 2009 17:20:30 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:43158 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1758428AbZCWVU3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Mar 2009 17:20:29 -0400
-Date: Mon, 23 Mar 2009 17:20:27 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: "K.Prasad" <prasad@linux.vnet.ibm.com>
-cc: Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Benjamin Herrenschmidt <benh@au1.ibm.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Maneesh Soni <maneesh@in.ibm.com>, Roland McGrath <roland@redhat.com>,
-       Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: [Patch 01/11] Introducing generic hardware breakpoint handler
- interfaces
-In-Reply-To: <20090323204220.GA19602@in.ibm.com>
-Message-ID: <Pine.LNX.4.44L0.0903231713360.3610-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 23 Mar 2009 17:24:45 -0400
+Received: from smtp2.ono.com ([62.42.230.20]:14041 "EHLO resmaa12.ono.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751674AbZCWVYo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Mar 2009 17:24:44 -0400
+Date: Mon, 23 Mar 2009 22:24:27 +0100
+From: "J.A. =?UTF-8?B?TWFnYWxsw7Nu?=" <jamagallon@ono.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: Problems with default ACLs over NFS
+Message-ID: <20090323222427.00bb24e7@werewolf.home>
+X-Mailer: Claws Mail 3.7.1cvs22 (GTK+ 2.16.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 24 Mar 2009, K.Prasad wrote:
+Hi all...
 
-> > Isn't that exactly the check you need to implement?
-> > 
-> > 	addr >= TASK_SIZE && (addr + len) >= TASK_SIZE,
-> > 
-> > or perhaps better,
-> > 
-> > 	addr >= TASK_SIZE && (addr + len) >= addr.
-> > 
-> > In this case you _do_ know the length of the breakpoint.
-> > 
-> > Alan Stern
-> >
-> 
-> Aren't we just checking if len is a positive number through the above
-> checks? The validation checks in the patchset should take care of
-> negative lengths. Or am I missing something?
+I have a strange problem with 2.6.29-rc8-git3.
+It looks like a kernel bug... ?
 
-Well, 0x60000000 is a positive number, and 0xd0000000 is >= TASK_SIZE.  
-But their sum is 0x30000000, which lies in userspace.  In other words, 
-you are missing the possibility that the addition might overflow and 
-wrap around.
+I have a box with NFS autofs-mounted home directories. Server is a
+Solaris 10 system. This worked in previous kernel versions, so I
+don't blame Solaris, at this moment.
 
-> I thought you wanted the code to check for an upper sane limit for addr
-> in kernel-space, say something like this:
-> 
-> TASK_SIZE <= addr <= (Upper limit for Kernel Virtual Address)
+With this acls set in my home:
 
-No, the test should be
 
-    TASK_SIZE <= addr <= addr + (len-1) <= (Upper limit for Kernel VA)
+prometeo:~> getfacl .  
 
-By the way, is TASK_SIZE the correct lower bound for kernel virtual
-addresses on x86-64?
+# file: .
+# owner: magallon
+# group: giga
+user::rwx
+user:webservd:r-x       #effective:r-x
+group::--x      #effective:--x
+mask:r-x
+other:--x
+default:user::rwx
+default:group::--x
+default:other:--x
 
-> When I referred to 'len' in my previous mail, it meant the length
-> of the kernel virtual memory area (which can be used to find the upper
-> bound).
+I get this strange message in the linux client:
 
-Oh, sorry, I misunderstood.  Isn't that limit always 0xffffffff on 
-x86-32?
+cicely:~> mkdir kk  
+mkdir: cannot create directory `kk': Invalid argument
 
-Alan Stern
+But the directory is created, and its ACLs are correct:
 
+prometeo:~> getfacl kk  
+
+# file: kk
+# owner: magallon
+# group: giga
+user::rwx
+group::--x      #effective:--x
+other:--x
+default:user::rwx
+default:group::--x
+default:other:--x
+
+If I remove the 'default' entries, the error message goes away.
+
+With strace, I get this:
+
+mkdir("kk", 0777)                       = -1 EINVAL (Invalid argument)
+
+Mount info from /proc/mounts:
+
+ldap:danae-nfs:automountMapName=auto_home,o=diis /home autofs rw,fd=7,pgrp=3165,timeout=600,minproto=5,maxproto=5,indirect 0 0
+
+danae-nfs:/export/home/usuarios/giga/magallon /home/magallon nfs rw,vers=3,rsize=1048576,wsize=1048576,namlen=255,hard,nointr,proto=tcp,timeo=600,retrans=2,sec=sys,mountaddr=155.210.152.202,mountvers=3,mountproto=tcp,addr=155.210.152.202 0 0
+
+It happens the same If I try to create a file with "> kk", or try to cp -r one
+other dir, but "touch kk" works.
+
+Any idea ?
+
+TIA
+
+-- 
+J.A. Magallon <jamagallon()ono!com>     \               Software is like sex:
+                                         \         It's better when it's free
+Mandriva Linux release 2009.1 (Cooker) for x86_64
+Linux 2.6.28.2-desktop-1mnb (gcc 4.3.2 (GCC) #1 Wed Jan
