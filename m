@@ -1,45 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759769AbZCWUkY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756678AbZCWUmp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759769AbZCWUkY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Mar 2009 16:40:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755264AbZCWUkG
+	id S1756678AbZCWUmp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Mar 2009 16:42:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752264AbZCWUme
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Mar 2009 16:40:06 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:38760 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754717AbZCWUkF (ORCPT
+	Mon, 23 Mar 2009 16:42:34 -0400
+Received: from e23smtp08.au.ibm.com ([202.81.31.141]:37268 "EHLO
+	e23smtp08.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752079AbZCWUmd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Mar 2009 16:40:05 -0400
-Date: Mon, 23 Mar 2009 16:39:58 -0400
-From: Kyle McMartin <kyle@mcmartin.ca>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Kyle McMartin <kyle@mcmartin.ca>, Ingo Molnar <mingo@elte.hu>,
-       mingo@redhat.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] degrade severity of lockdep printk
-Message-ID: <20090323203958.GD19208@bombadil.infradead.org>
-References: <20090323201628.GB19208@bombadil.infradead.org> <20090323202054.GA6395@elte.hu> <20090323202831.GC19208@bombadil.infradead.org> <1237840355.24918.80.camel@twins>
+	Mon, 23 Mar 2009 16:42:33 -0400
+Date: Tue, 24 Mar 2009 02:12:20 +0530
+From: "K.Prasad" <prasad@linux.vnet.ibm.com>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Benjamin Herrenschmidt <benh@au1.ibm.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Maneesh Soni <maneesh@in.ibm.com>, Roland McGrath <roland@redhat.com>,
+       Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: [Patch 01/11] Introducing generic hardware breakpoint handler
+	interfaces
+Message-ID: <20090323204220.GA19602@in.ibm.com>
+Reply-To: prasad@linux.vnet.ibm.com
+References: <20090323190328.GA23426@in.ibm.com> <Pine.LNX.4.44L0.0903231514350.3610-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1237840355.24918.80.camel@twins>
+In-Reply-To: <Pine.LNX.4.44L0.0903231514350.3610-100000@iolanthe.rowland.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 23, 2009 at 09:32:35PM +0100, Peter Zijlstra wrote:
-> > Although I don't really see how this can be particularly fixed, since
-> > any workload that allocates a struct with a lock, initializes, and then
-> > eventually frees it a whole bunch of times will run out of lock_lists
-> > won't it?
+On Mon, Mar 23, 2009 at 03:21:49PM -0400, Alan Stern wrote:
+> On Tue, 24 Mar 2009, K.Prasad wrote:
 > 
-> Not if the lock init site doesn't change. Modules are the big exception,
-> cycling modules will run you out of lockdep space..
+> > > > Ok. Will do something like:
+> > > > return (va <= (TASK_SIZE - (hw_breakpoint_length * word_size)));
+> > > 
+> > > What is the purpose of word_size here?  The breakpoint length should be 
+> > > specified in bytes, not words.
+> > > 
+> > > Don't forget that that in arch_check_va_in_kernelspace() you need to 
+> > > check both for values that are too low and values that are too high 
+> > > (they overflow and wrap around back to a user address).
+> > > 
+> > 
+> > While I understand the user-space checking using the length of the HW
+> > Breakpoint, I don't really see how I can check for an upper-bound for
+> > kernel-space virtual addresses. Most usage in the kernel only checks for
+> > the address >= TASK_SIZE (while they check for add + len if the length
+> > of the memory is known). I will be glad to have any suggestions in this
+> > regard.
 > 
+> Isn't that exactly the check you need to implement?
+> 
+> 	addr >= TASK_SIZE && (addr + len) >= TASK_SIZE,
+> 
+> or perhaps better,
+> 
+> 	addr >= TASK_SIZE && (addr + len) >= addr.
+> 
+> In this case you _do_ know the length of the breakpoint.
+> 
+> Alan Stern
+>
 
-Somewhat confused by this... possibly I'm just being thick and missing
-some subtlety though, but surely the context is equally important?
-I mean, the locks held on entry to, say, a fs_operations struct member
-function could be different on every different possible callpath...
+Aren't we just checking if len is a positive number through the above
+checks? The validation checks in the patchset should take care of
+negative lengths. Or am I missing something?
 
-regards, Kyle
+I thought you wanted the code to check for an upper sane limit for addr
+in kernel-space, say something like this:
+
+TASK_SIZE <= addr <= (Upper limit for Kernel Virtual Address)
+
+When I referred to 'len' in my previous mail, it meant the length
+of the kernel virtual memory area (which can be used to find the upper
+bound).
+
+Thanks,
+K.Prasad
+
