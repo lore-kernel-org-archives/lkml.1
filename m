@@ -1,68 +1,168 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759288AbZCWUpu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759132AbZCWUsA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759288AbZCWUpu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Mar 2009 16:45:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753266AbZCWUpl
+	id S1759132AbZCWUsA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Mar 2009 16:48:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758074AbZCWUru
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Mar 2009 16:45:41 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:58684 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750711AbZCWUpk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Mar 2009 16:45:40 -0400
-Date: Mon, 23 Mar 2009 13:39:22 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: "Frank Ch. Eigler" <fche@redhat.com>
-cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Roland McGrath <roland@redhat.com>,
-       Steven Rostedt <rostedt@goodmis.org>, utrace-devel@redhat.com,
-       linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH 3/3] utrace-based ftrace "process" engine, v2
-In-Reply-To: <20090323202503.GD18774@redhat.com>
-Message-ID: <alpine.LFD.2.00.0903231334500.3030@localhost.localdomain>
-References: <20090321014244.9ADF1FC3AB@magilla.sf.frob.com> <20090321074301.GA19384@elte.hu> <20090321013912.ed6039c9.akpm@linux-foundation.org> <20090321091235.GA29678@elte.hu> <20090321041954.72b99e69.akpm@linux-foundation.org> <20090321115141.GA3566@redhat.com>
- <20090321050422.d1d99eec.akpm@linux-foundation.org> <20090321154501.GA2707@elte.hu> <20090321214852.GA5262@redhat.com> <20090322120811.GD19826@elte.hu> <20090323202503.GD18774@redhat.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Mon, 23 Mar 2009 16:47:50 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:56626 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757655AbZCWUrt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Mar 2009 16:47:49 -0400
+Message-ID: <49C7F577.3010400@redhat.com>
+Date: Mon, 23 Mar 2009 16:47:51 -0400
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Bharata B Rao <bharata@linux.vnet.ibm.com>
+CC: Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       systemtap-ml <systemtap@sources.redhat.com>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+Subject: Re: [BUGFIX][PATCH -tip] x86: kretprobe-booster interrupt	emulation
+ code fix
+References: <49C7995C.2010601@redhat.com> <20090323163910.GB3858@in.ibm.com>
+In-Reply-To: <20090323163910.GB3858@in.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Mon, 23 Mar 2009, Frank Ch. Eigler wrote:
-> > I have CONFIG_DEBUG_INFO turned off in 99.9% of my kernel builds, 
-> > because it slows down the kernel build times significantly: [...]
+Bharata B Rao wrote:
+> On Mon, Mar 23, 2009 at 10:14:52AM -0400, Masami Hiramatsu wrote:
+>> Fix interrupt emulation code in kretprobe-booster according to
+>> pt_regs update (es/ds change and gs adding).
+>>
+>> This issue has been reported on systemtap-bugzilla:
+>> http://sources.redhat.com/bugzilla/show_bug.cgi?id=9965
 > 
-> OK, 15% longer time.
+> Do you want to put some of the details from the bugzilla entry
+> to this patch description so that one is not forced to look
+> at the bugzilla in future when git log is done ?
 
-It's way more than that if you don't have tons of memory and excessive 
-amounts of CPU power.
+Oh, sure. I picked up related part of this bug.
 
-> > 2)
-> > 
-> > When the kernel build becomes IO-bound [...]
-> >   without:   870.36 user 292.79 system 3:32.10 elapsed  548% CPU
-> >   with:      929.65 user 384.55 system 8:28.70 elapsed  258% CPU
+---
+On a -tip kernel on x86_32, kretprobe_example (from samples) triggers the
+following backtrace when its retprobing a class of functions that cause a
+copy_from/to_user().
+
+BUG: sleeping function called from invalid context at mm/memory.c:3196
+in_atomic(): 0, irqs_disabled(): 1, pid: 2286, name: cat
+1 lock held by cat/2286:
+ #0:  (&p->lock){+.+.+.}, at: [<c04b4eb1>] seq_read+0x35/0x31d
+irq event stamp: 1613
+hardirqs last  enabled at (1613): [<c06b5914>] _spin_unlock_irqrestore+0x3c/0x48
+hardirqs last disabled at (1612): [<c06b5a7f>] _spin_lock_irqsave+0x1a/0x3f
+softirqs last  enabled at (1610): [<c04348c5>] __do_softirq+0x164/0x183
+softirqs last disabled at (1603): [<c0404d2c>] do_softirq+0x68/0xc8
+Pid: 2286, comm: cat Not tainted 2.6.29-rc8-tip-acde #1
+Call Trace:
+ [<c0429017>] __might_sleep+0xde/0xe3
+ [<c048c6e1>] might_fault+0x1f/0x80
+ [<c0535b87>] copy_to_user+0x2f/0x106
+ [<c04b5120>] seq_read+0x2a4/0x31d
+ [<c04d4882>] proc_reg_read+0x6a/0x84
+ [<c04b4e7c>] ? seq_read+0x0/0x31d
+ [<c04d4882>] ? proc_reg_read+0x6a/0x84
+ [<c04d4818>] ? proc_reg_read+0x0/0x84
+ [<c04a1f73>] vfs_read+0x90/0xef
+ [<c04a208b>] sys_read+0x4e/0x75
+ [<c044d338>] ? trace_hardirqs_on_caller+0x11d/0x141
+ [<c0402fc4>] sysenter_do_call+0x12/0x38
+ [<c0402fc4>] ? sysenter_do_call+0x12/0x38
+
+Steps to recreate:
+1. put kretprobe on meminfo_proc_show.
+2. cat /proc/meminfo
+3. Your dmesg should have the above trace.
+
+Problem doesn't happen with 2.6.29-rc8.
+
+This is a kretprobe booster bug on x86_32. Commit ccbeed3a modifies the
+pt_regs, the kretprobe_trampoline() part of the kretprobe booster needs to be
+updated to handle the gs register.
+
+---
+
+Thank you,
+
 > 
-> OK, lots of network traffic.
+>> Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
+>> Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+>> ---
+>>  arch/x86/kernel/kprobes.c |   17 +++++++++--------
+>>  1 files changed, 9 insertions(+), 8 deletions(-)
+>>
+>> diff --git a/arch/x86/kernel/kprobes.c b/arch/x86/kernel/kprobes.c
+>> index 55b9461..64dba72 100644
+>> --- a/arch/x86/kernel/kprobes.c
+>> +++ b/arch/x86/kernel/kprobes.c
+>> @@ -638,13 +638,13 @@ static void __used __kprobes kretprobe_trampoline_holder(void)
+>>  #else
+>>  			"	pushf\n"
+>>  			/*
+>> -			 * Skip cs, ip, orig_ax.
+>> +			 * Skip cs, ip, orig_ax and gs.
+>>  			 * trampoline_handler() will plug in these values
+>>  			 */
+>> -			"	subl $12, %esp\n"
+>> +			"	subl $16, %esp\n"
+>>  			"	pushl %fs\n"
+>> -			"	pushl %ds\n"
+>>  			"	pushl %es\n"
+>> +			"	pushl %ds\n"
+>>  			"	pushl %eax\n"
+>>  			"	pushl %ebp\n"
+>>  			"	pushl %edi\n"
+>> @@ -655,10 +655,10 @@ static void __used __kprobes kretprobe_trampoline_holder(void)
+>>  			"	movl %esp, %eax\n"
+>>  			"	call trampoline_handler\n"
+>>  			/* Move flags to cs */
+>> -			"	movl 52(%esp), %edx\n"
+>> -			"	movl %edx, 48(%esp)\n"
+>> +			"	movl 56(%esp), %edx\n"
+>> +			"	movl %edx, 52(%esp)\n"
+>>  			/* Replace saved flags with true return address. */
+>> -			"	movl %eax, 52(%esp)\n"
+>> +			"	movl %eax, 56(%esp)\n"
+>>  			"	popl %ebx\n"
+>>  			"	popl %ecx\n"
+>>  			"	popl %edx\n"
+>> @@ -666,8 +666,8 @@ static void __used __kprobes kretprobe_trampoline_holder(void)
+>>  			"	popl %edi\n"
+>>  			"	popl %ebp\n"
+>>  			"	popl %eax\n"
+>> -			/* Skip ip, orig_ax, es, ds, fs */
+>> -			"	addl $20, %esp\n"
+>> +			/* Skip ds, es, fs, gs, orig_ax and ip */
+>> +			"	addl $24, %esp\n"
+>>  			"	popf\n"
+>>  #endif
+>>  			"	ret\n");
+>> @@ -694,6 +694,7 @@ static __used __kprobes void *trampoline_handler(struct pt_regs *regs)
+>>  #endif
+>>  	regs->ip = trampoline_address;
+>>  	regs->orig_ax = ~0UL;
+>> +	regs->gs = 0;
+>>
+>>  	/*
+>>  	 * It is possible to have multiple instances associated with a given
+>>
+> 
+> This change works for me. I no longer see "BUG: sleeping from invalid context"
+> messages with kretprobe after this change.
+> 
+> Regards,
+> Bharata.
 
-This is the _normal_ situation for a debug info build.  If it's not 
-network traffic (distcc), it's just disk IO. Have you tried it on a 
-laptop? Ingo is not the only one that turns off DEBUG_INFO in disgust. 
-It's totally useless for any sane kernel developer - the costs are 
-excessive.
+-- 
+Masami Hiramatsu
 
-Adn that's totally ignoring the disk usage of multiple debug info kernels.
+Software Engineer
+Hitachi Computer Products (America) Inc.
+Software Solutions Division
 
-> Note that this backs away from earlier claims that we can make do
-> without debuginfo, or that the compiler can't be trusted to build the
-> stuff.  We all agree it'd be nice if made it better and made a little
-> less.
+e-mail: mhiramat@redhat.com
 
-Gaah. I'd wish you all agreed that DEBUG_INFO is just TOTALLY UNREALISTIC.
-
-			Linus
