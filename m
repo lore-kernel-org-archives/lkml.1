@@ -1,66 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755924AbZCWHu2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756000AbZCWHuq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755924AbZCWHu2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Mar 2009 03:50:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752385AbZCWHuP
+	id S1756000AbZCWHuq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Mar 2009 03:50:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755332AbZCWHua
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Mar 2009 03:50:15 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:47758 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750972AbZCWHuN (ORCPT
+	Mon, 23 Mar 2009 03:50:30 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:33062 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755942AbZCWHu3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Mar 2009 03:50:13 -0400
-Date: Mon, 23 Mar 2009 16:48:42 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: bharata@linux.vnet.ibm.com
-Cc: linux-kernel@vger.kernel.org, Balaji Rao <balajirrao@gmail.com>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Li Zefan <lizf@cn.fujitsu.com>, Paul Menage <menage@google.com>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [PATCH -tip] cpuacct: per-cgroup utime/stime statistics - v4
-Message-Id: <20090323164842.78212757.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20090323074750.GB15360@in.ibm.com>
-References: <20090323043538.GB3306@in.ibm.com>
-	<20090323135528.ddf795f6.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090323063603.GA15360@in.ibm.com>
-	<20090323160112.a66aeb87.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090323074750.GB15360@in.ibm.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+	Mon, 23 Mar 2009 03:50:29 -0400
+Subject: Re: [PATCH -mm 3/6] slub: introduce __kfree_rcu
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: Lai Jiangshan <laijs@cn.fujitsu.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Manfred Spraul <manfred@colorfullife.com>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org
+In-Reply-To: <49AD343E.6010903@cn.fujitsu.com>
+References: <49AD343E.6010903@cn.fujitsu.com>
+Date: Mon, 23 Mar 2009 09:50:26 +0200
+Message-Id: <1237794626.6313.24.camel@penberg-laptop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=iso-8859-1
 Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.22.3.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 23 Mar 2009 13:17:50 +0530
-Bharata B Rao <bharata@linux.vnet.ibm.com> wrote:
+On Tue, 2009-03-03 at 21:44 +0800, Lai Jiangshan wrote:
+> Introduce __kfree_rcu() for kfree_rcu()
+> 
+> It like __kfree_rcu() in slab.c.
+> We can calculate the object poiter from a poiter inside this
+> object in slub.c, so we can use it for rcu callback and free
+> the object.
+> 
+> Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
+> ---
+> diff --git a/mm/slub.c b/mm/slub.c
+> index 0280eee..b438ec5 100644
+> --- a/mm/slub.c
+> +++ b/mm/slub.c
+> @@ -2756,6 +2756,30 @@ void kfree(const void *x)
+>  }
+>  EXPORT_SYMBOL(kfree);
+>  
+> +static void kfree_rcu_callback(struct rcu_head *rcu)
+> +{
+> +	void *portion = rcu;
+> +	struct page *page = virt_to_head_page(portion);
+> +
+> +	if (unlikely(!PageSlab(page))) {
+> +		BUG_ON(!PageCompound(page));
 
-> On Mon, Mar 23, 2009 at 04:01:12PM +0900, KAMEZAWA Hiroyuki wrote:
-> > 
-> > Removet this.
-> > 
-> > +- It is possible to see slightly outdated values for stime and utime
-> > +  due to the batch processing nature of percpu_counter.
-> 
-> This will explain why the stime and utime values for the top cgroup is
-> different from the ones seen from /proc/stat. Hence I would prefer to have a
-> mention of it in the documentation.
-> 
-i see.
+I'd prefer you did a WARN_ON() to increase the likelihood that people
+will be able to copy-paste the oops for a bug report.
 
-Thanks,
--Kame
-> [root@llm11 cgroups]# cat cpuacct.stat ; cat /proc/stat | grep cpu
-> utime 3110
-> stime 8410
-> cpu  3151 2 8336 4051594 2189 0 133 0 0
-> ...
+> +		put_page(page);
+> +	} else {
+> +		struct kmem_cache *s = page->slab;
+> +		void *start = page_address(page);
+> +		unsigned int index = (portion - start) / s->size;
+> +		void *object = start + s->size * index;
+> +
+
+Again, I think the above would be more readable if you split the
+variable initialization from the declaration.
+
+> +		slab_free(s, page, object, _RET_IP_);
+> +	}
+> +}
+> +
+> +void __kfree_rcu(const void *x, struct rcu_head *rcu)
+> +{
+> +	call_rcu(rcu, kfree_rcu_callback);
+> +}
+> +EXPORT_SYMBOL(__kfree_rcu);
+> +
+>  /*
+>   * kmem_cache_shrink removes empty slabs from the partial lists and sorts
+>   * the remaining slabs by the number of items in use. The slabs with the
 > 
-> Regards,
-> Bharata.
+> 
+> 
+> 
+> 
+> 
+> 
+> 
+> 
 > 
 
