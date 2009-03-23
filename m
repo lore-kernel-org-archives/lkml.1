@@ -1,153 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760685AbZCWVBw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760181AbZCWVET@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760685AbZCWVBw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Mar 2009 17:01:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754122AbZCWVBn
+	id S1760181AbZCWVET (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Mar 2009 17:04:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758808AbZCWVEB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Mar 2009 17:01:43 -0400
-Received: from www.tglx.de ([62.245.132.106]:55443 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753698AbZCWVBm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Mar 2009 17:01:42 -0400
-Date: Mon, 23 Mar 2009 21:59:37 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Christoph Hellwig <hch@infradead.org>
-cc: LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Arjan van de Veen <arjan@infradead.org>,
-       Jon Masters <jonathan@jonmasters.org>,
-       Sven Dietrich <sdietrich@suse.de>, David Brownell <david-b@pacbell.net>
-Subject: genirq: add threaded interrupt handler support - review fixups
-In-Reply-To: <alpine.LFD.2.00.0903232005380.29264@localhost.localdomain>
-Message-ID: <alpine.LFD.2.00.0903232156140.29264@localhost.localdomain>
-References: <20090323172814.548471871@linutronix.de> <20090323172835.250505802@linutronix.de> <20090323185618.GA11432@infradead.org> <alpine.LFD.2.00.0903232005380.29264@localhost.localdomain>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Mon, 23 Mar 2009 17:04:01 -0400
+Received: from smtp-vbr6.xs4all.nl ([194.109.24.26]:4339 "EHLO
+	smtp-vbr6.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758393AbZCWVEA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Mar 2009 17:04:00 -0400
+From: Hans Verkuil <hverkuil@xs4all.nl>
+To: Janne Grunau <j@jannau.net>
+Subject: Re: linux-next: Tree for March 23 (media/video/hdpvr)
+Date: Mon, 23 Mar 2009 22:04:15 +0100
+User-Agent: KMail/1.9.9
+Cc: Randy Dunlap <randy.dunlap@oracle.com>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, linux-media@vger.kernel.org
+References: <20090323205454.d0cbf721.sfr@canb.auug.org.au> <49C7D965.5080202@oracle.com> <20090323204940.GA5079@aniel>
+In-Reply-To: <20090323204940.GA5079@aniel>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200903232204.15457.hverkuil@xs4all.nl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Delta patch to address the review comments.
+On Monday 23 March 2009 21:49:40 Janne Grunau wrote:
+> Hi,
+> 
+> On Mon, Mar 23, 2009 at 11:48:05AM -0700, Randy Dunlap wrote:
+> > Stephen Rothwell wrote:
+> > > 
+> > > Changes since 20090320:
+> > 
+> > > The v4l-dvb tree gained a build failure for which I have reverted 3 commits.
+> > 
+> > drivers/built-in.o: In function `hdpvr_disconnect':
+> > hdpvr-core.c:(.text+0xf3894): undefined reference to `i2c_del_adapter'
+> > drivers/built-in.o: In function `hdpvr_register_i2c_adapter':
+> > (.text+0xf4145): undefined reference to `i2c_add_adapter'
+> > 
+> > 
+> > CONFIG_I2C is not enabled.
+> 
+> following patch should fix that.
+> 
+> Janne
+> 
+> ps: Mauro, I'll send a pull request shortly
+> 
 
-      - Implement warning when IRQ_WAKE_THREAD is requested and no
-        thread handler installed
-      - coding style fixes
 
-Pointed-out-by: Christoph Hellwig <hch@infradead.org>
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-LKML-Reference: <20090323185618.GA11432@infradead.org>
+> diff --git a/drivers/media/video/hdpvr/hdpvr-core.c
+> b/drivers/media/video/hdpvr/hdpvr-core.c index e7300b5..dadb2e7 100644
+> --- a/drivers/media/video/hdpvr/hdpvr-core.c
+> +++ b/drivers/media/video/hdpvr/hdpvr-core.c
+> @@ -21,6 +21,7 @@
+>  #include <linux/usb.h>
+>  #include <linux/mutex.h>
+>  #include <linux/i2c.h>
+> +#include <linux/autoconf.h>
+>
+>  #include <linux/videodev2.h>
+>  #include <media/v4l2-dev.h>
 
-Index: linux-2.6-tip/include/linux/interrupt.h
-===================================================================
---- linux-2.6-tip.orig/include/linux/interrupt.h
-+++ linux-2.6-tip/include/linux/interrupt.h
-@@ -63,10 +63,12 @@
-  * Bits used by threaded handlers:
-  * IRQTF_RUNTHREAD - signals that the interrupt handler thread should run
-  * IRQTF_DIED      - handler thread died
-+ * IRQTF_WARNED    - warning "IRQ_WAKE_THREAD w/o thread_fn" has been printed
-  */
- enum {
- 	IRQTF_RUNTHREAD,
- 	IRQTF_DIED,
-+	IRQTF_WARNED,
- };
- 
- typedef irqreturn_t (*irq_handler_t)(int, void *);
-Index: linux-2.6-tip/kernel/irq/handle.c
-===================================================================
---- linux-2.6-tip.orig/kernel/irq/handle.c
-+++ linux-2.6-tip/kernel/irq/handle.c
-@@ -338,6 +338,15 @@ irqreturn_t no_action(int cpl, void *dev
- 	return IRQ_NONE;
- }
- 
-+static void warn_no_thread(unsigned int irq, struct irqaction *action)
-+{
-+	if (test_and_set_bit(IRQTF_WARNED, &action->thread_flags))
-+		return;
-+
-+	printk(KERN_WARNING "IRQ %d device %s returned IRQ_WAKE_THREAD "
-+	       "but no thread function available.", irq, action->name);
-+}
-+
- /**
-  * handle_IRQ_event - irq action chain handler
-  * @irq:	the interrupt number
-@@ -361,6 +370,21 @@ irqreturn_t handle_IRQ_event(unsigned in
- 		switch (ret) {
- 		case IRQ_WAKE_THREAD:
- 			/*
-+			 * Set result to handled so the spurious check
-+			 * does not trigger.
-+			 */
-+			ret = IRQ_HANDLED;
-+
-+			/*
-+			 * Catch drivers which return WAKE_THREAD but
-+			 * did not set up a thread function
-+			 */
-+			if (unlikely(!action->thread_fn)) {
-+				warn_no_thread(irq, action);
-+				break;
-+			}
-+
-+			/*
- 			 * Wake up the handler thread for this
- 			 * action. In case the thread crashed and was
- 			 * killed we just pretend that we handled the
-@@ -374,11 +398,6 @@ irqreturn_t handle_IRQ_event(unsigned in
- 				wake_up_process(action->thread);
- 			}
- 
--			/*
--			 * Set it to handled so the spurious check
--			 * does not trigger.
--			 */
--			ret = IRQ_HANDLED;
- 			/* Fall through to add to randomness */
- 		case IRQ_HANDLED:
- 			status |= action->flags;
-Index: linux-2.6-tip/kernel/irq/manage.c
-===================================================================
---- linux-2.6-tip.orig/kernel/irq/manage.c
-+++ linux-2.6-tip/kernel/irq/manage.c
-@@ -407,20 +407,17 @@ int __irq_set_trigger(struct irq_desc *d
- 	return ret;
- }
- 
--static inline int irq_thread_should_run(struct irqaction *action)
--{
--	return test_and_clear_bit(IRQTF_RUNTHREAD, &action->thread_flags);
--}
--
- static int irq_wait_for_interrupt(struct irqaction *action)
- {
- 	while (!kthread_should_stop()) {
- 		set_current_state(TASK_INTERRUPTIBLE);
--		if (irq_thread_should_run(action)) {
-+
-+		if (test_and_clear_bit(IRQTF_RUNTHREAD,
-+				       &action->thread_flags)) {
- 			__set_current_state(TASK_RUNNING);
- 			return 0;
--		} else
--			schedule();
-+		}
-+		schedule();
- 	}
- 	return -1;
- }
-@@ -820,8 +817,8 @@ EXPORT_SYMBOL(free_irq);
-  *	@irq: Interrupt line to allocate
-  *	@handler: Function to be called when the IRQ occurs.
-  *		  Primary handler for threaded interrupts
-- *      @thread_fn: Function called from the irq handler thread
-- *                  If NULL, no irq thread is created
-+ *	@thread_fn: Function called from the irq handler thread
-+ *		    If NULL, no irq thread is created
-  *	@irqflags: Interrupt type flags
-  *	@devname: An ascii name for the claiming device
-  *	@dev_id: A cookie passed back to the handler function
+Hi Janne,
+
+Don't include autoconf.h! It's preloaded for you already and shouldn't be
+included manually. Esp. since the v4l-dvb tree creates and preloads a custom
+version. Loading it manually will overwrite that.
+
+Other than that it's fine.
+
+Regards,
+
+	Hans
+
+-- 
+Hans Verkuil - video4linux developer - sponsored by TANDBERG
