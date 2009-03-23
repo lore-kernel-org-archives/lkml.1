@@ -1,50 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758626AbZCWPh7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757289AbZCWPlf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758626AbZCWPh7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Mar 2009 11:37:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755559AbZCWPhu
+	id S1757289AbZCWPlf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Mar 2009 11:41:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750786AbZCWPl1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Mar 2009 11:37:50 -0400
-Received: from mx1.emlix.com ([193.175.82.87]:56000 "EHLO mx1.emlix.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753536AbZCWPht (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Mar 2009 11:37:49 -0400
-Message-ID: <49C7ACCA.2080602@emlix.com>
-Date: Mon, 23 Mar 2009 16:37:46 +0100
-From: =?ISO-8859-15?Q?Daniel_Gl=F6ckner?= <dg@emlix.com>
-Organization: emlix GmbH
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Mon, 23 Mar 2009 11:41:27 -0400
+Received: from buzzloop.caiaq.de ([212.112.241.133]:53310 "EHLO
+	buzzloop.caiaq.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753257AbZCWPl0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Mar 2009 11:41:26 -0400
+Date: Mon, 23 Mar 2009 16:41:20 +0100
+From: Daniel Mack <daniel@caiaq.de>
+To: =?iso-8859-1?Q?=C9ric?= Piel <eric.piel@tremplin-utc.net>
+Cc: linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 5/5] lis3: SPI transport layer
+Message-ID: <20090323154120.GB5393@buzzloop.caiaq.de>
+References: <49AD8B0A.90901@tremplin-utc.net> <1236131099-8082-1-git-send-email-daniel@caiaq.de> <1236131099-8082-2-git-send-email-daniel@caiaq.de> <1236131099-8082-3-git-send-email-daniel@caiaq.de> <49C6CA44.5080405@tremplin-utc.net>
 MIME-Version: 1.0
-To: Chris Zankel <chris@zankel.net>,
-       David Brownell <dbrownell@users.sourceforge.net>
-CC: spi-devel-general@lists.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: Re: [patch 5/6] xtensa: enable s6000 spi host in s6105_defconfig
-References: <1237822462-32109-1-git-send-email-dg@emlix.com> <1237822462-32109-5-git-send-email-dg@emlix.com>
-In-Reply-To: <1237822462-32109-5-git-send-email-dg@emlix.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-15
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
+In-Reply-To: <49C6CA44.5080405@tremplin-utc.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"
-
-On 03/23/2009 04:34 PM, Daniel Glöckner wrote:
-> ---
->  arch/xtensa/configs/s6105_defconfig |   20 +++++++++++++++++++-
->  1 files changed, 19 insertions(+), 1 deletions(-)
+On Mon, Mar 23, 2009 at 12:31:16AM +0100, Éric Piel wrote:
+> Daniel Mack schreef:
+> > Make use of the new abstraction layer and add a new transport layer for
+> > spi. Works fine on a PXA based board.
+> Tested with a HP laptop, no problem on this part.
 > 
-> diff --git a/arch/xtensa/configs/s6105_defconfig b/arch/xtensa/configs/s6105_defconfig
-> index e398710..02bab6e 100644
+> > Signed-off-by: Daniel Mack <daniel@caiaq.de>
+> > Cc: Pavel Machek <pavel@ucw.cz>
+> > Cc: Eric Piel <eric.piel@tremplin-utc.net>
+> Acked-by: Eric Piel <eric.piel@tremplin-utc.net>
 
-Signed-off-by: Daniel Glöckner <dg@emlix.com>
+Thanks Eric! However, I guess you wanted to ack the latest version
+rather than the one you replied to ;)
 
+Just to make sure, these are the references to the patches we want:
 
--- 
-Dipl.-Math. Daniel Glöckner, emlix GmbH, http://www.emlix.com
-Fon +49 551 30664-0, Fax -11, Bahnhofsallee 1b, 37081 Göttingen, Germany
-Geschäftsführung: Dr. Uwe Kracke, Dr. Cord Seele, Ust-IdNr.: DE 205 198 055
-Sitz der Gesellschaft: Göttingen, Amtsgericht Göttingen HR B 3160
+	http://lkml.org/lkml/2009/3/22/194
+	http://lkml.org/lkml/2009/3/22/195
+	http://lkml.org/lkml/2009/3/22/196
 
-emlix - your embedded linux partner
+Andrew, could you add them to your tree?
+
+Thanks,
+Daniel
+
