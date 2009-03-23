@@ -1,66 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757847AbZCWIwe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757479AbZCWIyj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757847AbZCWIwe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Mar 2009 04:52:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756233AbZCWIwX
+	id S1757479AbZCWIyj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Mar 2009 04:54:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755860AbZCWIy3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Mar 2009 04:52:23 -0400
-Received: from mail-fx0-f158.google.com ([209.85.220.158]:44381 "EHLO
-	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755210AbZCWIwX (ORCPT
+	Mon, 23 Mar 2009 04:54:29 -0400
+Received: from wa-out-1112.google.com ([209.85.146.182]:28765 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756061AbZCWIy3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Mar 2009 04:52:23 -0400
+	Mon, 23 Mar 2009 04:54:29 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :content-type:content-transfer-encoding;
-        b=rRrazOym0fpTAauXxsiZN/XujwntPv8HQao0lx3SYEgAiyFx86cpX9uADCnbZz6FH3
-         wf528QXcRm2hqZ9x+TD+U3tAoz+3diDMLNLBmImukmEkJ40VUQ3pvxjd+HMk6xuwIZ9N
-         3azJofHcosgY2ZCF57ZHe92va4KSCiYUj0ECM=
+        h=date:from:to:subject:message-id:user-agent:mime-version
+         :content-type;
+        b=LLuquMA27uXnUEtBJnlpsQp4kuhnpDLy4PpEliUmAGlUe55bVTAW5kqk1+4NQ6yXIH
+         vp4GD5NXc2UUo03dq1Fn6ctBSJ2BN6JjAvXfxFTdxCQ/RdpliST72sHbd0IIzV4dgGYf
+         GrUx8Qyi0NeWhIaPqucqHlpOdPsb2wnAMDbeo=
+Date: Mon, 23 Mar 2009 01:54:25 -0700 (PDT)
+From: justinmattock@gmail.com
+To: linux-kernel@vger.kernel.org
+Subject: ACPI: I/O resource 0000:00:1f.3 [0xefa0-0xefbf] conflicts with ACPI
+ region SMBI [0xefa0-0xefaf]
+Message-ID: <alpine.LNX.2.00.0903230150110.2409@havk>
+User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
 MIME-Version: 1.0
-In-Reply-To: <2d05c4580903230151n20c8fc7kb47a5e2bb2480591@mail.gmail.com>
-References: <2d05c4580903220343l4b1359fx79f18b56203bd463@mail.gmail.com>
-	 <alpine.LNX.2.00.0903222124580.7175@swampdragon.chaosbits.net>
-	 <2d05c4580903230151n20c8fc7kb47a5e2bb2480591@mail.gmail.com>
-Date: Mon, 23 Mar 2009 09:52:19 +0100
-Message-ID: <2d05c4580903230152q24c1625bu3b13a8a3c0fd3ce0@mail.gmail.com>
-Subject: Re: Test some kernel feature without recompile
-From: Dragoslav Zaric <dragoslav.zaric.kd@gmail.com>
-To: LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Well it looks like I didn't read about "make" command a lot :)
-This is what I found :
 
---------------------------------------------------------------------------------------------------------------------------------------------------------
-| Once a suitable Makefile exists, each time you change some source
-files, this simple shell command:
-|
-|    make
-|
-| suffices to perform all necessary recompilations. The make program
-uses the makefile data base and
-| the last-modification times of the files to decide which of the
-files need to be updated. For each of those
-| files, it issues the commands recorded in the data base.
---------------------------------------------------------------------------------------------------------------------------------------------------------
+Any suggestions on what this might be:
+(dmesg):
 
-So this is what I would (will) do if I want to debug, change or add
-some kernel feature and don't want to wait a
-lot of time every time :) :
+[    6.940280] power_supply ADP1: 1 dynamic props
+[    6.940283] power_supply ADP1: prop ONLINE=1
+[    6.940340] input: Sleep Button (CM) as 
+/devices/LNXSYSTM:00/device:00/PNP0C0E:00/input/input5
+[    6.968564] i801_smbus 0000:00:1f.3: PCI INT B -> GSI 19 (level, low) 
+-> IRQ 19
+[    6.977814] ACPI: I/O resource 0000:00:1f.3 [0xefa0-0xefbf] conflicts 
+with ACPI region SMBI [0xefa0-0xefaf]
+[    6.987218] ACPI: Device needs an ACPI driver
+[    7.000114] ath9k: 0.1
+[    7.000163] ACPI: Sleep Button (CM) [SLPB]
+[    7.018052] ath9k 0000:03:00.0: PCI INT A -> GSI 17 (level, low) -> IRQ 
+17
+[    7.027094] ath9k 0000:03:00.0: setting latency timer to 64
 
-Build version of kernel that has minimum modules (and other stuff) to
-run your machine (unchecked things in
-.config file will decrease time) and when work on some feature, then
-add just stuff you wanna debug or
-change and then run
+either i801_smbus(to me) is the issue, or it's something else.
 
-make
+any ideas?
 
-thanks,
-
-dragoslav
+-- Justin P. Mattock
