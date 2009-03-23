@@ -1,85 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760559AbZCWTrX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760065AbZCWTuT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760559AbZCWTrX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Mar 2009 15:47:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757885AbZCWTrN
+	id S1760065AbZCWTuT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Mar 2009 15:50:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754771AbZCWTuD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Mar 2009 15:47:13 -0400
-Received: from mail-bw0-f169.google.com ([209.85.218.169]:56642 "EHLO
-	mail-bw0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757923AbZCWTrM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Mar 2009 15:47:12 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=JqpJlSoQ30BPRDMj83TTeru56zVSZSI8tFaSxiJJ2Y5+3QIKRSUL4fDj7eG/vKyA3b
-         +jTI6U0oJbuvdE+ZOglmYvB+roVFBlNGB7SQLgM/dZf4m1ODFapUmvHPsGVGKg+jaxcs
-         Y2ZlAqPX3IkQnpG4bn4Wlpze9hsClSZgoV28I=
-Date: Mon, 23 Mar 2009 20:47:07 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: Re: [PATCH 3/5] tracing/ftrace: check if debugfs is registered
-	before creating files
-Message-ID: <20090323194705.GE5988@nowhere>
-References: <1237759847-21025-1-git-send-email-fweisbec@gmail.com> <1237759847-21025-3-git-send-email-fweisbec@gmail.com> <alpine.DEB.2.00.0903231517410.3578@gandalf.stny.rr.com>
+	Mon, 23 Mar 2009 15:50:03 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:57091 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753061AbZCWTuC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Mar 2009 15:50:02 -0400
+Date: Mon, 23 Mar 2009 20:48:28 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Nick Piggin <npiggin@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: Kevin Winchester <kjwinchester@gmail.com>,
+       Dave Airlie <airlied@redhat.com>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Error: freeing invalid memtype
+Message-ID: <20090323194828.GC29478@elte.hu>
+References: <49C03208.6050603@gmail.com> <1237399938.4529.208.camel@localhost.localdomain> <49C572CC.6090704@gmail.com> <20090323190720.GA16831@linux-os.sc.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.0903231517410.3578@gandalf.stny.rr.com>
+In-Reply-To: <20090323190720.GA16831@linux-os.sc.intel.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 23, 2009 at 03:18:49PM -0400, Steven Rostedt wrote:
-> 
-> On Sun, 22 Mar 2009, Frederic Weisbecker wrote:
-> 
-> > Impact: fix a crash with ftrace={nop,boot} parameter
-> > 
-> > If the nop or initcall tracers are launched as boot tracers,
-> > they will attempt to create their option directory and files.
-> > But these tracers are registered very early and then assigned
-> > as "boot tracers" very early if asked to.
-> > 
-> > Since they do this before debugfs has been registered (core initcall),
-> > a crash is triggered.
-> > 
-> > Another early tracers could also come later. So we fix it by
-> > checking if debugfs is initialized before creating the root
-> > tracing directory.
-> > 
-> > Cc: Greg Kroah-Hartman <gregkh@suse.de>
-> > Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
-> > ---
-> >  kernel/trace/trace.c |    3 +++
-> >  1 files changed, 3 insertions(+), 0 deletions(-)
-> > 
-> > diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
-> > index ace685c..f0e1337 100644
-> > --- a/kernel/trace/trace.c
-> > +++ b/kernel/trace/trace.c
-> > @@ -3513,6 +3513,9 @@ struct dentry *tracing_init_dentry(void)
-> >  	if (d_tracer)
-> >  		return d_tracer;
-> >  
-> > +	if (!debugfs_initialized())
-> > +		return NULL;
-> > +
-> >  	d_tracer = debugfs_create_dir("tracing", NULL);
-> >  
-> 
-> Hmm, those tracers should separate out the debugfs code, and put it into 
-> a fs_initcall(), where debugfs should already initialized.
-> 
-> -- Steve
-> 
 
-Indeed, I lacked a bit of imagination here :-)
+* Pallipadi, Venkatesh <venkatesh.pallipadi@intel.com> wrote:
 
-Thanks!
+> On Sat, Mar 21, 2009 at 04:05:48PM -0700, Kevin Winchester wrote:
+> > Pallipadi, Venkatesh wrote:
+> > > Kevin,
+> > > 
+> > > Can you please send me the output of
+> > > # cat /debug/x86/pat_memtype_list
+> > > 
+> > > (with debugfs mounted at /debug) as soon as you login into X and also
+> > > when you start seeing these errors with etracer and glxinfo.
+> > > 
+> > 
+> > Here is the output before attempting to run glxinfo:
+> > : :
+> > : :
+> > 
+> > Does that help track down the problem?  I am about to try disabling PAT
+> > in my config to see if that fixes things.
+> > 
+> 
+> Can you please try the patch below and let me whether it helps.
+> 
+> Thanks,
+> Venki
+> 
+> x86, PAT: Change vma prot in pci_mmap to reflect inherited prot
+>     
+> While looking at the issue in the thread
+> http://marc.info/?l=dri-devel&m=123606627824556&w=2
+> noticed a bug in pci PAT code and memory type setting.
+>     
+> pci mmap code did not set the proper protection in vma, when it
+> inherited protection in reserve_memtype. This bug only affects
+> the case where there exists a WC mapping before X does an mmap
+> with /proc or /sys pci interface. This will cause X userlevel
+> mmap from /proc or /sysfs to fail on fork.
+>     
+> Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+> Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
+> 
+> diff --git a/arch/x86/pci/i386.c b/arch/x86/pci/i386.c
+> index 5ead808..f234a37 100644
+> --- a/arch/x86/pci/i386.c
+> +++ b/arch/x86/pci/i386.c
+> @@ -319,6 +319,9 @@ int pci_mmap_page_range(struct pci_dev *dev, struct vm_area_struct *vma,
+>  			return -EINVAL;
+>  		}
+>  		flags = new_flags;
+> +		vma->vm_page_prot = __pgprot(
+> +			(pgprot_val(vma->vm_page_prot) & ~_PAGE_CACHE_MASK) |
+> +			flags);
 
+If it solves the problem it will be for -stable too, right?
+
+It could be done a bit cleaner i think: is the ~_PAGE_CACHE_MASK 
+really needed? Does ->vm_page_prot ever have page frame bits set?
+
+	Ingo
