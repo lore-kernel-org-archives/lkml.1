@@ -1,244 +1,413 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751913AbZCWNIY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756460AbZCWNK3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751913AbZCWNIY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Mar 2009 09:08:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751992AbZCWNIK
+	id S1756460AbZCWNK3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Mar 2009 09:10:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754074AbZCWNKO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Mar 2009 09:08:10 -0400
-Received: from gw-ca.panasas.com ([209.116.51.66]:17614 "EHLO
-	laguna.int.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751408AbZCWNIH (ORCPT
+	Mon, 23 Mar 2009 09:10:14 -0400
+Received: from fg-out-1718.google.com ([72.14.220.153]:57815 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754610AbZCWNKK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Mar 2009 09:08:07 -0400
-Message-ID: <49C78959.4040109@panasas.com>
-Date: Mon, 23 Mar 2009 15:06:33 +0200
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Mon, 23 Mar 2009 09:10:10 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent;
+        b=icn5zfxo18hzCEPT5z3uSLMRk4ovxT/mS2zjaWxTrL/UhtUNvITADi9whSoyNyzVgE
+         OrY1KVyvw+48ZuWltQjVRO2db0GQZ88y15vPAMkmkHTd1FlQT7tIJZFa+mrYCzDKIhk8
+         Uf072H+ZYMzdl4XLBSk91CkrP8lFGMU6nHJ+A=
+Date: Mon, 23 Mar 2009 16:17:26 +0300
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: akpm@linux-foundation.org
+Cc: dhowells@redhat.com, matthltc@us.ibm.com, linux-kernel@vger.kernel.org
+Subject: [PATCH] Remove struct mm_struct::exe_file et al
+Message-ID: <20090323131725.GA4089@x200.localdomain>
 MIME-Version: 1.0
-To: Jeff Garzik <jeff@garzik.org>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       open-osd <osd-dev@open-osd.org>, Evgeniy Polyakov <zbr@ioremap.net>,
-       Marcin Slusarz <marcin.slusarz@gmail.com>
-CC: James Bottomley <James.Bottomley@HansenPartnership.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Subject: Re: [PATCHSET 0/8 version 4] exofs for kernel 2.6.30
-References: <49C1331D.1080805@panasas.com>
-In-Reply-To: <49C1331D.1080805@panasas.com>
-Content-Type: multipart/mixed;
- boundary="------------070602070604040801080005"
-X-OriginalArrivalTime: 23 Mar 2009 13:08:01.0471 (UTC) FILETIME=[6510ECF0:01C9ABB8]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------070602070604040801080005
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Commit 925d1c401fa6cfd0df5d2e37da8981494ccdec07 aka "procfs task exe symlink".
+introduced struct mm_struct::exe_file and struct
+mm_struct::num_exe_file_vmas.
 
-Boaz Harrosh wrote:
-> What's new since last iteration:
-> 
-> * I completely re-wrote the [PATCH 4/8] exofs: address_space_operations
->   in which we actually write/read to/from osd-storage. The difference is
->   that now we try to accumulate as many contiguous pages as possible and
->   send them as one large request. As opposed to writing each page at a
->   time, in the previous patchset.
-> 
-> * [PATCH 5/8] exofs: dir_inode and directory operations received lots
->   of love thanks to Evgeniy Polyakov's grate comments.
-> 
-> exofs is a file system that uses an OSD device as it's back store.
-> 
-> OSD is a new T10 command set that views storage devices not as a large/flat
-> array of sectors but as a container of objects, each having a length, quota,
-> time attributes and more. Each object is addressed by a 64bit ID, and is
-> contained in a 64bit ID partition. Each object has associated attributes
-> attached to it, which are integral part of the object and provide metadata about
-> the object. The standard defines some common obligatory attributes, but user
-> attributes can be added as needed.
-> 
-> Here is the list of patches
-> [PATCH 1/8] exofs: Kbuild, Headers and osd utils
+The rationale is weak: unifying MMU and no-MMU version of /proc/*/exe code.
+For this a) struct mm_struct becomes bigger, b) mmap/munmap/exit become slower,
+c) patch adds more code than removes in fact.
 
-   I have updated this patch on git.open-osd.org
-   Kbuild fallout
+->exe_file maybe well defined, but doesn't make sense always. After original
+executable is unmapped, /proc/*/exe will still report it and, more importantly,
+pin corresponding struct file.
+
+->num_exe_file_vmas is even worse -- it just counts number of executable
+file-backed VMAs even if those VMAs aren't related to ->exe_file.
+
+After commit 8feae13110d60cc6287afabc2887366b0eb226c2 aka
+"NOMMU: Make VMAs per MM as for MMU-mode linux" no-MMU kernels also
+maintain list of VMAs in ->mmap, so we can switch back for MMU version
+of /proc/*/exe.
+
+Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
+---
+
+ fs/binfmt_flat.c         |    3 -
+ fs/exec.c                |    2 
+ fs/proc/base.c           |  105 +++++++++++++----------------------------------
+ include/linux/mm.h       |   12 -----
+ include/linux/mm_types.h |    6 --
+ include/linux/proc_fs.h  |   20 --------
+ kernel/fork.c            |    3 -
+ mm/mmap.c                |   22 +--------
+ mm/nommu.c               |   16 -------
+ 9 files changed, 37 insertions(+), 152 deletions(-)
+
+--- a/fs/binfmt_flat.c
++++ b/fs/binfmt_flat.c
+@@ -531,8 +531,7 @@ static int load_flat_file(struct linux_binprm * bprm,
+ 		DBG_FLT("BINFMT_FLAT: ROM mapping of file (we hope)\n");
  
-> [PATCH 2/8] exofs: file and file_inode operations
-> [PATCH 3/8] exofs: symlink_inode and fast_symlink_inode operations
-> [PATCH 4/8] exofs: address_space_operations
-
-  I have posted a new version of this patch
-
-> [PATCH 5/8] exofs: dir_inode and directory operations
-> [PATCH 6/8] exofs: super_operations and file_system_type
-
-  Minor clean-up to this patch 
-  (moved local structures to c file from header, remove unused function)
-
-> [PATCH 7/8] exofs: Documentation
-> [PATCH 8/8] fs: Add exofs to Kernel build
-> 
-
-Revised patchset can be found on link below
-Attached the total diff from last HEAD
-
-> This patchset is also available on:
->   git-clone git://git.open-osd.org/linux-open-osd.git linux-next
-> or on the web at:
->   http://git.open-osd.org/gitweb.cgi?p=linux-open-osd.git;a=shortlog;h=refs/heads/linux-next
-> 
-> (Above tree is based on Linus v2.6.29-rc8-212-g8144737)
-> 
-> If anyone wants to actually run this code and test it
-> then please start reading at:
->     http://open-osd.org
-> You will need to checkout the out-of-tree git (below) for the user-mode utilities.
-> Also the exofs.txt file in patch 7/8 should help
-> 
-> If you want to review the user-mode library and supporting plumbings,
->   git-clone git://git.open-osd.org/open-osd.git
-> or on the web at:
->   http://git.open-osd.org/gitweb.cgi?p=open-osd.git;a=summary
-> 
-> Boaz
-> 
-
-Thanks
-Boaz
-
---------------070602070604040801080005
-Content-Type: text/plain;
- name="exofs-ver5-to-ver4.diff"
-Content-Transfer-Encoding: base64
-Content-Disposition: inline;
- filename="exofs-ver5-to-ver4.diff"
-
-Z2l0IGRpZmYgLS1zdGF0IC1wIDY5MGRkNWU5ZTczOWNiMGM2NmE3OTJjNWQ3OTQ5ZjZlOTcx
-MTM0MjcuLmxpbnV4LW5leHQgLS0gZnMvZXhvZnMvCiBmcy9leG9mcy9LYnVpbGQgIHwgICAg
-MiArLQogZnMvZXhvZnMvZXhvZnMuaCB8ICAgMTcgLS0tLS0tLS0tLS0tLS0tLS0KIGZzL2V4
-b2ZzL2ZpbGUuYyAgfCAgICA0ICsrKysKIGZzL2V4b2ZzL2lub2RlLmMgfCAgIDQ1ICsrKysr
-KysrKysrKysrKysrKysrKystLS0tLS0tLS0tLS0tLS0tLS0tLS0tLQogZnMvZXhvZnMvc3Vw
-ZXIuYyB8ICAgIDkgKysrKysrKysrCiA1IGZpbGVzIGNoYW5nZWQsIDM2IGluc2VydGlvbnMo
-KyksIDQxIGRlbGV0aW9ucygtKQoKZGlmZiAtLWdpdCBhL2ZzL2V4b2ZzL0tidWlsZCBiL2Zz
-L2V4b2ZzL0tidWlsZAppbmRleCA1OTJmNDBkLi44YzUyNTNlIDEwMDY0NAotLS0gYS9mcy9l
-eG9mcy9LYnVpbGQKKysrIGIvZnMvZXhvZnMvS2J1aWxkCkBAIC0yMiw3ICsyMiw3IEBAIGNj
-ZmxhZ3MteSArPSAtRENPTkZJR19FWE9GU19GUyAtRENPTkZJR19FWE9GU19GU19NT0RVTEUK
-ICMgaWYgd2UgYXJlIGJ1aWx0IG91dC1vZi10cmVlIGFuZCB0aGUgaG9zdGluZyBrZXJuZWwg
-aGFzIE9TRCBoZWFkZXJzCiAjIHRoZW4gImNjZmxhZ3MteSArPSIgd2lsbCBub3QgcGljayB0
-aGUgb3V0LW9mZi10cmVlIGhlYWRlcnMuIE9ubHkgYnkgZG9pbmcKICMgdGhpcyBpdCB3aWxs
-IHdvcmsuIFRoaXMgbWlnaHQgYnJlYWsgaW4gZnV0dXJlIGtlcm5lbHMKLUtCVUlMRF9DUFBG
-TEFHUyA6PSAtSSQoT1NEX0lOQykgJChLQlVJTERfQ1BQRkxBR1MpCitMSU5VWElOQ0xVREUg
-Oj0gLUkkKE9TRF9JTkMpICQoTElOVVhJTkNMVURFKQogCiBlbmRpZgogCmRpZmYgLS1naXQg
-YS9mcy9leG9mcy9leG9mcy5oIGIvZnMvZXhvZnMvZXhvZnMuaAppbmRleCA3NjE1NWQ3Li5k
-NTQ3NTNkIDEwMDY0NAotLS0gYS9mcy9leG9mcy9leG9mcy5oCisrKyBiL2ZzL2V4b2ZzL2V4
-b2ZzLmgKQEAgLTU0LDE1ICs1NCw2IEBACiAjZGVmaW5lIF9MTFUoeCkgKHVuc2lnbmVkIGxv
-bmcgbG9uZykoeCkKIAogLyoKLSAqIHN0cnVjdCB0byBob2xkIHdoYXQgd2UgZ2V0IGZyb20g
-bW91bnQgb3B0aW9ucwotICovCi1zdHJ1Y3QgZXhvZnNfbW91bnRvcHQgewotCWNvbnN0IGNo
-YXIgKmRldl9uYW1lOwotCXVpbnQ2NF90IHBpZDsKLQlpbnQgdGltZW91dDsKLX07Ci0KLS8q
-CiAgKiBvdXIgZXh0ZW5zaW9uIHRvIHRoZSBpbi1tZW1vcnkgc3VwZXJibG9jawogICovCiBz
-dHJ1Y3QgZXhvZnNfc2JfaW5mbyB7CkBAIC0xMzQsMTQgKzEyNSw2IEBAIHN0YXRpYyBpbmxp
-bmUgc3RydWN0IGV4b2ZzX2lfaW5mbyAqZXhvZnNfaShzdHJ1Y3QgaW5vZGUgKmlub2RlKQog
-fQogCiAvKgotICogdWdseSBzdHJ1Y3Qgc28gdGhhdCB3ZSBjYW4gcGFzcyB0d28gYXJndW1l
-bnRzIHRvIHVwZGF0ZV9pbm9kZSdzIGNhbGxiYWNrCi0gKi8KLXN0cnVjdCB1cGRhdGVpX2Fy
-Z3MgewotCXN0cnVjdCBleG9mc19zYl9pbmZvCSpzYmk7Ci0Jc3RydWN0IGV4b2ZzX2ZjYglm
-Y2I7Ci19OwotCi0vKgogICogTWF4aW11bSBjb3VudCBvZiBsaW5rcyB0byBhIGZpbGUKICAq
-LwogI2RlZmluZSBFWE9GU19MSU5LX01BWCAgICAgICAgICAgMzIwMDAKZGlmZiAtLWdpdCBh
-L2ZzL2V4b2ZzL2ZpbGUuYyBiL2ZzL2V4b2ZzL2ZpbGUuYwppbmRleCA0NzM4YzNmLi4yNzEy
-ZjY4IDEwMDY0NAotLS0gYS9mcy9leG9mcy9maWxlLmMKKysrIGIvZnMvZXhvZnMvZmlsZS5j
-CkBAIC00OSw2ICs0OSwxMCBAQCBzdGF0aWMgaW50IGV4b2ZzX2ZpbGVfZnN5bmMoc3RydWN0
-IGZpbGUgKmZpbHAsIHN0cnVjdCBkZW50cnkgKmRlbnRyeSwKIAlzdHJ1Y3QgYWRkcmVzc19z
-cGFjZSAqbWFwcGluZyA9IGZpbHAtPmZfbWFwcGluZzsKIAogCXJldDEgPSBmaWxlbWFwX3dy
-aXRlX2FuZF93YWl0KG1hcHBpbmcpOworCS8qTm90ZTogZmlsZV9mc3luYyBiZWxvdyBhbHNv
-IGNhbGxlcyBzeW5jX2Jsb2NrZGV2LCB3aGljaCBpcyBhIG5vLW9wCisJICogICAgICBmb3Ig
-ZXhvZnMsIGJ1dCBvdGhlciB0aGVuIHRoYXQgaXQgZG9lcyBzeW5jX2lub2RlIGFuZAorCSAq
-ICAgICAgc3luY19zdXBlcmJsb2NrIHdoaWNoIGlzIHdoYXQgd2UgbmVlZCBoZXJlLgorCSAq
-LwogCXJldDIgPSBmaWxlX2ZzeW5jKGZpbHAsIGRlbnRyeSwgZGF0YXN5bmMpOwogCiAJcmV0
-dXJuIHJldDEgPyByZXQxIDogcmV0MjsKZGlmZiAtLWdpdCBhL2ZzL2V4b2ZzL2lub2RlLmMg
-Yi9mcy9leG9mcy9pbm9kZS5jCmluZGV4IDBmNTJlNzYuLjczOTYyOWEgMTAwNjQ0Ci0tLSBh
-L2ZzL2V4b2ZzL2lub2RlLmMKKysrIGIvZnMvZXhvZnMvaW5vZGUuYwpAQCAtNTUsNyArNTUs
-NyBAQCBzdHJ1Y3QgcGFnZV9jb2xsZWN0IHsKIAlsb25nIHBnX2ZpcnN0OwogfTsKIAotdm9p
-ZCBfcGNvbF9pbml0KHN0cnVjdCBwYWdlX2NvbGxlY3QgKnBjb2wsIHVuc2lnbmVkIGV4cGVj
-dGVkX3BhZ2VzLAorc3RhdGljIHZvaWQgX3Bjb2xfaW5pdChzdHJ1Y3QgcGFnZV9jb2xsZWN0
-ICpwY29sLCB1bnNpZ25lZCBleHBlY3RlZF9wYWdlcywKIAkJc3RydWN0IGlub2RlICppbm9k
-ZSkKIHsKIAlzdHJ1Y3QgZXhvZnNfc2JfaW5mbyAqc2JpID0gaW5vZGUtPmlfc2ItPnNfZnNf
-aW5mbzsKQEAgLTc1LDcgKzc1LDcgQEAgdm9pZCBfcGNvbF9pbml0KHN0cnVjdCBwYWdlX2Nv
-bGxlY3QgKnBjb2wsIHVuc2lnbmVkIGV4cGVjdGVkX3BhZ2VzLAogCQkgICAgIGV4cGVjdGVk
-X3BhZ2VzKTsKIH0KIAotdm9pZCBfcGNvbF9yZXNldChzdHJ1Y3QgcGFnZV9jb2xsZWN0ICpw
-Y29sKQorc3RhdGljIHZvaWQgX3Bjb2xfcmVzZXQoc3RydWN0IHBhZ2VfY29sbGVjdCAqcGNv
-bCkKIHsKIAlwY29sLT5leHBlY3RlZF9wYWdlcyAtPSBtaW4ocGNvbC0+bnJfcGFnZXMsIHBj
-b2wtPmV4cGVjdGVkX3BhZ2VzKTsKIApAQCAtOTMsNyArOTMsNyBAQCB2b2lkIF9wY29sX3Jl
-c2V0KHN0cnVjdCBwYWdlX2NvbGxlY3QgKnBjb2wpCiAJCXBjb2wtPmV4cGVjdGVkX3BhZ2Vz
-ID0gMTI4OwogfQogCi1pbnQgcGNvbF90cnlfYWxsb2Moc3RydWN0IHBhZ2VfY29sbGVjdCAq
-cGNvbCkKK3N0YXRpYyBpbnQgcGNvbF90cnlfYWxsb2Moc3RydWN0IHBhZ2VfY29sbGVjdCAq
-cGNvbCkKIHsKIAlpbnQgcGFnZXMgPSBtaW5fdCh1bnNpZ25lZCwgcGNvbC0+ZXhwZWN0ZWRf
-cGFnZXMsIEJJT19NQVhfUEFHRVMpOwogCkBAIC0xMDMsMTggKzEwMywxOSBAQCBpbnQgcGNv
-bF90cnlfYWxsb2Moc3RydWN0IHBhZ2VfY29sbGVjdCAqcGNvbCkKIAkJCXJldHVybiAwOwog
-CX0KIAotCUVYT0ZTX0VSUigiRmFpbGVkIHRvIGtjYWxsb2MgZXhwZWN0ZWRfcGFnZXM9JWRc
-biIsCisJRVhPRlNfRVJSKCJGYWlsZWQgdG8ga2NhbGxvYyBleHBlY3RlZF9wYWdlcz0ldVxu
-IiwKIAkJICBwY29sLT5leHBlY3RlZF9wYWdlcyk7CiAJcmV0dXJuIC1FTk9NRU07CiB9CiAK
-LXZvaWQgcGNvbF9mcmVlKHN0cnVjdCBwYWdlX2NvbGxlY3QgKnBjb2wpCitzdGF0aWMgdm9p
-ZCBwY29sX2ZyZWUoc3RydWN0IHBhZ2VfY29sbGVjdCAqcGNvbCkKIHsKIAliaW9fcHV0KHBj
-b2wtPmJpbyk7CiAJcGNvbC0+YmlvID0gTlVMTDsKIH0KIAotaW50IHBjb2xfYWRkX3BhZ2Uo
-c3RydWN0IHBhZ2VfY29sbGVjdCAqcGNvbCwgc3RydWN0IHBhZ2UgKnBhZ2UsIHVuc2lnbmVk
-IGxlbikKK3N0YXRpYyBpbnQgcGNvbF9hZGRfcGFnZShzdHJ1Y3QgcGFnZV9jb2xsZWN0ICpw
-Y29sLCBzdHJ1Y3QgcGFnZSAqcGFnZSwKKwkJCSB1bnNpZ25lZCBsZW4pCiB7CiAJaW50IGFk
-ZGVkX2xlbiA9IGJpb19hZGRfcGNfcGFnZShwY29sLT5yZXFfcSwgcGNvbC0+YmlvLCBwYWdl
-LCBsZW4sIDApOwogCWlmICh1bmxpa2VseShsZW4gIT0gYWRkZWRfbGVuKSkKQEAgLTE3Myw5
-ICsxNzQsOSBAQCBzdGF0aWMgaW50IF9fcmVhZHBhZ2VzX2RvbmUoc3RydWN0IG9zZF9yZXF1
-ZXN0ICpvciwgc3RydWN0IHBhZ2VfY29sbGVjdCAqcGNvbCwKIAogCW9zZF9lbmRfcmVxdWVz
-dChvcik7CiAKLQlpZiAoIXJldCkKKwlpZiAobGlrZWx5KCFyZXQpKQogCQlnb29kX2J5dGVz
-ID0gcGNvbC0+bGVuZ3RoOwotCWVsc2UgaWYgKHJldCAmJiAhcmVzaWQpCisJZWxzZSBpZiAo
-IXJlc2lkKQogCQlnb29kX2J5dGVzID0gMDsKIAllbHNlCiAJCWdvb2RfYnl0ZXMgPSBwY29s
-LT5sZW5ndGggLSByZXNpZDsKQEAgLTIyNyw3ICsyMjgsNyBAQCBzdGF0aWMgdm9pZCByZWFk
-cGFnZXNfZG9uZShzdHJ1Y3Qgb3NkX3JlcXVlc3QgKm9yLCB2b2lkICpwKQogCWtmcmVlKHAp
-OwogfQogCi12b2lkIF91bmxvY2tfcGNvbF9wYWdlcyhzdHJ1Y3QgcGFnZV9jb2xsZWN0ICpw
-Y29sLCBpbnQgcmV0LCBpbnQgcncpCitzdGF0aWMgdm9pZCBfdW5sb2NrX3Bjb2xfcGFnZXMo
-c3RydWN0IHBhZ2VfY29sbGVjdCAqcGNvbCwgaW50IHJldCwgaW50IHJ3KQogewogCXN0cnVj
-dCBiaW9fdmVjICpidmVjOwogCWludCBpOwpAQCAtMjQ1LDcgKzI0Niw3IEBAIHZvaWQgX3Vu
-bG9ja19wY29sX3BhZ2VzKHN0cnVjdCBwYWdlX2NvbGxlY3QgKnBjb2wsIGludCByZXQsIGlu
-dCBydykKIAlwY29sX2ZyZWUocGNvbCk7CiB9CiAKLWludCByZWFkX2V4ZWMoc3RydWN0IHBh
-Z2VfY29sbGVjdCAqcGNvbCwgYm9vbCBpc19zeW5jKQorc3RhdGljIGludCByZWFkX2V4ZWMo
-c3RydWN0IHBhZ2VfY29sbGVjdCAqcGNvbCwgYm9vbCBpc19zeW5jKQogewogCXN0cnVjdCBl
-eG9mc19pX2luZm8gKm9pID0gZXhvZnNfaShwY29sLT5pbm9kZSk7CiAJc3RydWN0IG9zZF9v
-YmpfaWQgb2JqID0ge3Bjb2wtPnNiaS0+c19waWQsCkBAIC00NTIsNyArNDUzLDcgQEAgc3Rh
-dGljIHZvaWQgd3JpdGVwYWdlc19kb25lKHN0cnVjdCBvc2RfcmVxdWVzdCAqb3IsIHZvaWQg
-KnApCiAKIAlpZiAobGlrZWx5KCFyZXQpKQogCQlnb29kX2J5dGVzID0gcGNvbC0+bGVuZ3Ro
-OwotCWVsc2UgaWYgKHJldCAmJiAhcmVzaWQpCisJZWxzZSBpZiAoIXJlc2lkKQogCQlnb29k
-X2J5dGVzID0gMDsKIAllbHNlCiAJCWdvb2RfYnl0ZXMgPSBwY29sLT5sZW5ndGggLSByZXNp
-ZDsKQEAgLTQ5Myw3ICs0OTQsNyBAQCBzdGF0aWMgdm9pZCB3cml0ZXBhZ2VzX2RvbmUoc3Ry
-dWN0IG9zZF9yZXF1ZXN0ICpvciwgdm9pZCAqcCkKIAlFWE9GU19EQkdNU0coIndyaXRlcGFn
-ZXNfZG9uZSBFTkRcbiIpOwogfQogCi1pbnQgd3JpdGVfZXhlYyhzdHJ1Y3QgcGFnZV9jb2xs
-ZWN0ICpwY29sKQorc3RhdGljIGludCB3cml0ZV9leGVjKHN0cnVjdCBwYWdlX2NvbGxlY3Qg
-KnBjb2wpCiB7CiAJc3RydWN0IGV4b2ZzX2lfaW5mbyAqb2kgPSBleG9mc19pKHBjb2wtPmlu
-b2RlKTsKIAlzdHJ1Y3Qgb3NkX29ial9pZCBvYmogPSB7cGNvbC0+c2JpLT5zX3BpZCwKQEAg
-LTYzMSw3ICs2MzIsNyBAQCBmYWlsOgogCXJldHVybiByZXQ7CiB9CiAKLWludCBleG9mc193
-cml0ZXBhZ2VzKHN0cnVjdCBhZGRyZXNzX3NwYWNlICptYXBwaW5nLAorc3RhdGljIGludCBl
-eG9mc193cml0ZXBhZ2VzKHN0cnVjdCBhZGRyZXNzX3NwYWNlICptYXBwaW5nLAogCQkgICAg
-ICAgc3RydWN0IHdyaXRlYmFja19jb250cm9sICp3YmMpCiB7CiAJc3RydWN0IHBhZ2VfY29s
-bGVjdCBwY29sOwpAQCAtMTExMCw2ICsxMTExLDE0IEBAIHN0cnVjdCBpbm9kZSAqZXhvZnNf
-bmV3X2lub2RlKHN0cnVjdCBpbm9kZSAqZGlyLCBpbnQgbW9kZSkKIH0KIAogLyoKKyAqIHN0
-cnVjdCB0byBwYXNzIHR3byBhcmd1bWVudHMgdG8gdXBkYXRlX2lub2RlJ3MgY2FsbGJhY2sK
-KyAqLworc3RydWN0IHVwZGF0ZWlfYXJncyB7CisJc3RydWN0IGV4b2ZzX3NiX2luZm8JKnNi
-aTsKKwlzdHJ1Y3QgZXhvZnNfZmNiCWZjYjsKK307CisKKy8qCiAgKiBDYWxsYmFjayBmdW5j
-dGlvbiBmcm9tIGV4b2ZzX3VwZGF0ZV9pbm9kZSgpLgogICovCiBzdGF0aWMgdm9pZCB1cGRh
-dGVpX2RvbmUoc3RydWN0IG9zZF9yZXF1ZXN0ICpvciwgdm9pZCAqcCkKQEAgLTEyMTgsMTYg
-KzEyMjcsNiBAQCBpbnQgZXhvZnNfd3JpdGVfaW5vZGUoc3RydWN0IGlub2RlICppbm9kZSwg
-aW50IHdhaXQpCiAJcmV0dXJuIGV4b2ZzX3VwZGF0ZV9pbm9kZShpbm9kZSwgd2FpdCk7CiB9
-CiAKLWludCBleG9mc19zeW5jX2lub2RlKHN0cnVjdCBpbm9kZSAqaW5vZGUpCi17Ci0Jc3Ry
-dWN0IHdyaXRlYmFja19jb250cm9sIHdiYyA9IHsKLQkJLnN5bmNfbW9kZSA9IFdCX1NZTkNf
-QUxMLAotCQkubnJfdG9fd3JpdGUgPSAwLAkvKiBzeXNfZnN5bmMgZGlkIHRoaXMgKi8KLQl9
-OwotCi0JcmV0dXJuIHN5bmNfaW5vZGUoaW5vZGUsICZ3YmMpOwotfQotCiAvKgogICogQ2Fs
-bGJhY2sgZnVuY3Rpb24gZnJvbSBleG9mc19kZWxldGVfaW5vZGUoKSAtIGRvbid0IGhhdmUg
-bXVjaCBjbGVhbmluZyB1cCB0bwogICogZG8uCmRpZmYgLS1naXQgYS9mcy9leG9mcy9zdXBl
-ci5jIGIvZnMvZXhvZnMvc3VwZXIuYwppbmRleCA5MTUzZGIyLi45ODk5NTJiIDEwMDY0NAot
-LS0gYS9mcy9leG9mcy9zdXBlci5jCisrKyBiL2ZzL2V4b2ZzL3N1cGVyLmMKQEAgLTQ1LDYg
-KzQ1LDE1IEBACiAgKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioq
-KioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKiovCiAKIC8qCisgKiBzdHJ1Y3Qg
-dG8gaG9sZCB3aGF0IHdlIGdldCBmcm9tIG1vdW50IG9wdGlvbnMKKyAqLworc3RydWN0IGV4
-b2ZzX21vdW50b3B0IHsKKwljb25zdCBjaGFyICpkZXZfbmFtZTsKKwl1aW50NjRfdCBwaWQ7
-CisJaW50IHRpbWVvdXQ7Cit9OworCisvKgogICogZXhvZnMtc3BlY2lmaWMgbW91bnQtdGlt
-ZSBvcHRpb25zLgogICovCiBlbnVtIHsgT3B0X3BpZCwgT3B0X3RvLCBPcHRfbWtmcywgT3B0
-X2Zvcm1hdCwgT3B0X2VyciB9Owo=
---------------070602070604040801080005--
+ 		down_write(&current->mm->mmap_sem);
+-		textpos = do_mmap(bprm->file, 0, text_len, PROT_READ|PROT_EXEC,
+-				  MAP_PRIVATE|MAP_EXECUTABLE, 0);
++		textpos = do_mmap(bprm->file, 0, text_len, PROT_READ|PROT_EXEC, MAP_PRIVATE, 0);
+ 		up_write(&current->mm->mmap_sem);
+ 		if (!textpos  || textpos >= (unsigned long) -4096) {
+ 			if (!textpos)
+--- a/fs/exec.c
++++ b/fs/exec.c
+@@ -958,8 +958,6 @@ int flush_old_exec(struct linux_binprm * bprm)
+ 	if (retval)
+ 		goto out;
+ 
+-	set_mm_exe_file(bprm->mm, bprm->file);
+-
+ 	/*
+ 	 * Release all of the old mmap stuff
+ 	 */
+--- a/fs/proc/base.c
++++ b/fs/proc/base.c
+@@ -211,6 +211,36 @@ static int proc_root_link(struct inode *inode, struct path *path)
+ 	return result;
+ }
+ 
++static int proc_exe_link(struct inode *inode, struct path *path)
++{
++	struct task_struct *tsk;
++	struct mm_struct *mm;
++	struct vm_area_struct *vma;
++
++	tsk = get_proc_task(inode);
++	if (!tsk)
++		return -ENOENT;
++	mm = get_task_mm(tsk);
++	put_task_struct(tsk);
++	if (!mm)
++		return -ENOENT;
++
++	down_read(&mm->mmap_sem);
++	for (vma = mm->mmap; vma; vma = vma->vm_next) {
++		if ((vma->vm_flags & VM_EXECUTABLE) && vma->vm_file) {
++			*path = vma->vm_file->f_path;
++			path_get(&vma->vm_file->f_path);
++
++			up_read(&mm->mmap_sem);
++			mmput(mm);
++			return 0;
++		}
++	}
++	up_read(&mm->mmap_sem);
++	mmput(mm);
++	return -ENOENT;
++}
++
+ /*
+  * Return zero if current may access user memory in @task, -error if not.
+  */
+@@ -1265,81 +1295,6 @@ static const struct file_operations proc_pid_sched_operations = {
+ 
+ #endif
+ 
+-/*
+- * We added or removed a vma mapping the executable. The vmas are only mapped
+- * during exec and are not mapped with the mmap system call.
+- * Callers must hold down_write() on the mm's mmap_sem for these
+- */
+-void added_exe_file_vma(struct mm_struct *mm)
+-{
+-	mm->num_exe_file_vmas++;
+-}
+-
+-void removed_exe_file_vma(struct mm_struct *mm)
+-{
+-	mm->num_exe_file_vmas--;
+-	if ((mm->num_exe_file_vmas == 0) && mm->exe_file){
+-		fput(mm->exe_file);
+-		mm->exe_file = NULL;
+-	}
+-
+-}
+-
+-void set_mm_exe_file(struct mm_struct *mm, struct file *new_exe_file)
+-{
+-	if (new_exe_file)
+-		get_file(new_exe_file);
+-	if (mm->exe_file)
+-		fput(mm->exe_file);
+-	mm->exe_file = new_exe_file;
+-	mm->num_exe_file_vmas = 0;
+-}
+-
+-struct file *get_mm_exe_file(struct mm_struct *mm)
+-{
+-	struct file *exe_file;
+-
+-	/* We need mmap_sem to protect against races with removal of
+-	 * VM_EXECUTABLE vmas */
+-	down_read(&mm->mmap_sem);
+-	exe_file = mm->exe_file;
+-	if (exe_file)
+-		get_file(exe_file);
+-	up_read(&mm->mmap_sem);
+-	return exe_file;
+-}
+-
+-void dup_mm_exe_file(struct mm_struct *oldmm, struct mm_struct *newmm)
+-{
+-	/* It's safe to write the exe_file pointer without exe_file_lock because
+-	 * this is called during fork when the task is not yet in /proc */
+-	newmm->exe_file = get_mm_exe_file(oldmm);
+-}
+-
+-static int proc_exe_link(struct inode *inode, struct path *exe_path)
+-{
+-	struct task_struct *task;
+-	struct mm_struct *mm;
+-	struct file *exe_file;
+-
+-	task = get_proc_task(inode);
+-	if (!task)
+-		return -ENOENT;
+-	mm = get_task_mm(task);
+-	put_task_struct(task);
+-	if (!mm)
+-		return -ENOENT;
+-	exe_file = get_mm_exe_file(mm);
+-	mmput(mm);
+-	if (exe_file) {
+-		*exe_path = exe_file->f_path;
+-		path_get(&exe_file->f_path);
+-		fput(exe_file);
+-		return 0;
+-	} else
+-		return -ENOENT;
+-}
+-
+ static void *proc_pid_follow_link(struct dentry *dentry, struct nameidata *nd)
+ {
+ 	struct inode *inode = dentry->d_inode;
+--- a/include/linux/mm.h
++++ b/include/linux/mm.h
+@@ -1118,18 +1118,6 @@ extern void exit_mmap(struct mm_struct *);
+ extern int mm_take_all_locks(struct mm_struct *mm);
+ extern void mm_drop_all_locks(struct mm_struct *mm);
+ 
+-#ifdef CONFIG_PROC_FS
+-/* From fs/proc/base.c. callers must _not_ hold the mm's exe_file_lock */
+-extern void added_exe_file_vma(struct mm_struct *mm);
+-extern void removed_exe_file_vma(struct mm_struct *mm);
+-#else
+-static inline void added_exe_file_vma(struct mm_struct *mm)
+-{}
+-
+-static inline void removed_exe_file_vma(struct mm_struct *mm)
+-{}
+-#endif /* CONFIG_PROC_FS */
+-
+ extern int may_expand_vm(struct mm_struct *mm, unsigned long npages);
+ extern int install_special_mapping(struct mm_struct *mm,
+ 				   unsigned long addr, unsigned long len,
+--- a/include/linux/mm_types.h
++++ b/include/linux/mm_types.h
+@@ -265,12 +265,6 @@ struct mm_struct {
+ 	 */
+ 	struct task_struct *owner;
+ #endif
+-
+-#ifdef CONFIG_PROC_FS
+-	/* store ref to file /proc/<pid>/exe symlink points to */
+-	struct file *exe_file;
+-	unsigned long num_exe_file_vmas;
+-#endif
+ #ifdef CONFIG_MMU_NOTIFIER
+ 	struct mmu_notifier_mm *mmu_notifier_mm;
+ #endif
+--- a/include/linux/proc_fs.h
++++ b/include/linux/proc_fs.h
+@@ -192,12 +192,6 @@ extern void proc_net_remove(struct net *net, const char *name);
+ extern struct proc_dir_entry *proc_net_mkdir(struct net *net, const char *name,
+ 	struct proc_dir_entry *parent);
+ 
+-/* While the {get|set|dup}_mm_exe_file functions are for mm_structs, they are
+- * only needed to implement /proc/<pid>|self/exe so we define them here. */
+-extern void set_mm_exe_file(struct mm_struct *mm, struct file *new_exe_file);
+-extern struct file *get_mm_exe_file(struct mm_struct *mm);
+-extern void dup_mm_exe_file(struct mm_struct *oldmm, struct mm_struct *newmm);
+-
+ #else
+ 
+ #define proc_net_fops_create(net, name, mode, fops)  ({ (void)(mode), NULL; })
+@@ -244,20 +238,6 @@ static inline int pid_ns_prepare_proc(struct pid_namespace *ns)
+ static inline void pid_ns_release_proc(struct pid_namespace *ns)
+ {
+ }
+-
+-static inline void set_mm_exe_file(struct mm_struct *mm,
+-				   struct file *new_exe_file)
+-{}
+-
+-static inline struct file *get_mm_exe_file(struct mm_struct *mm)
+-{
+-	return NULL;
+-}
+-
+-static inline void dup_mm_exe_file(struct mm_struct *oldmm,
+-	       			   struct mm_struct *newmm)
+-{}
+-
+ #endif /* CONFIG_PROC_FS */
+ 
+ #if !defined(CONFIG_PROC_KCORE)
+--- a/kernel/fork.c
++++ b/kernel/fork.c
+@@ -482,7 +482,6 @@ void mmput(struct mm_struct *mm)
+ 	if (atomic_dec_and_test(&mm->mm_users)) {
+ 		exit_aio(mm);
+ 		exit_mmap(mm);
+-		set_mm_exe_file(mm, NULL);
+ 		if (!list_empty(&mm->mmlist)) {
+ 			spin_lock(&mmlist_lock);
+ 			list_del(&mm->mmlist);
+@@ -605,8 +604,6 @@ struct mm_struct *dup_mm(struct task_struct *tsk)
+ 	if (init_new_context(tsk, mm))
+ 		goto fail_nocontext;
+ 
+-	dup_mm_exe_file(oldmm, mm);
+-
+ 	err = dup_mmap(mm, oldmm);
+ 	if (err)
+ 		goto free_pt;
+--- a/mm/mmap.c
++++ b/mm/mmap.c
+@@ -235,11 +235,8 @@ static struct vm_area_struct *remove_vma(struct vm_area_struct *vma)
+ 	might_sleep();
+ 	if (vma->vm_ops && vma->vm_ops->close)
+ 		vma->vm_ops->close(vma);
+-	if (vma->vm_file) {
++	if (vma->vm_file)
+ 		fput(vma->vm_file);
+-		if (vma->vm_flags & VM_EXECUTABLE)
+-			removed_exe_file_vma(vma->vm_mm);
+-	}
+ 	mpol_put(vma_policy(vma));
+ 	kmem_cache_free(vm_area_cachep, vma);
+ 	return next;
+@@ -636,11 +633,8 @@ again:			remove_next = 1 + (end > next->vm_end);
+ 		spin_unlock(&mapping->i_mmap_lock);
+ 
+ 	if (remove_next) {
+-		if (file) {
++		if (file)
+ 			fput(file);
+-			if (next->vm_flags & VM_EXECUTABLE)
+-				removed_exe_file_vma(mm);
+-		}
+ 		mm->map_count--;
+ 		mpol_put(vma_policy(next));
+ 		kmem_cache_free(vm_area_cachep, next);
+@@ -1192,8 +1186,6 @@ munmap_back:
+ 		error = file->f_op->mmap(file, vma);
+ 		if (error)
+ 			goto unmap_and_free_vma;
+-		if (vm_flags & VM_EXECUTABLE)
+-			added_exe_file_vma(mm);
+ 	} else if (vm_flags & VM_SHARED) {
+ 		error = shmem_zero_setup(vma);
+ 		if (error)
+@@ -1849,11 +1841,8 @@ int split_vma(struct mm_struct * mm, struct vm_area_struct * vma,
+ 	}
+ 	vma_set_policy(new, pol);
+ 
+-	if (new->vm_file) {
++	if (new->vm_file)
+ 		get_file(new->vm_file);
+-		if (vma->vm_flags & VM_EXECUTABLE)
+-			added_exe_file_vma(mm);
+-	}
+ 
+ 	if (new->vm_ops && new->vm_ops->open)
+ 		new->vm_ops->open(new);
+@@ -2200,11 +2189,8 @@ struct vm_area_struct *copy_vma(struct vm_area_struct **vmap,
+ 			new_vma->vm_start = addr;
+ 			new_vma->vm_end = addr + len;
+ 			new_vma->vm_pgoff = pgoff;
+-			if (new_vma->vm_file) {
++			if (new_vma->vm_file)
+ 				get_file(new_vma->vm_file);
+-				if (vma->vm_flags & VM_EXECUTABLE)
+-					added_exe_file_vma(mm);
+-			}
+ 			if (new_vma->vm_ops && new_vma->vm_ops->open)
+ 				new_vma->vm_ops->open(new_vma);
+ 			vma_link(mm, new_vma, prev, rb_link, rb_parent);
+--- a/mm/nommu.c
++++ b/mm/nommu.c
+@@ -726,11 +726,8 @@ static void delete_vma(struct mm_struct *mm, struct vm_area_struct *vma)
+ 	kenter("%p", vma);
+ 	if (vma->vm_ops && vma->vm_ops->close)
+ 		vma->vm_ops->close(vma);
+-	if (vma->vm_file) {
++	if (vma->vm_file)
+ 		fput(vma->vm_file);
+-		if (vma->vm_flags & VM_EXECUTABLE)
+-			removed_exe_file_vma(mm);
+-	}
+ 	put_nommu_region(vma->vm_region);
+ 	kmem_cache_free(vm_area_cachep, vma);
+ }
+@@ -1223,10 +1220,6 @@ unsigned long do_mmap_pgoff(struct file *file,
+ 		get_file(file);
+ 		vma->vm_file = file;
+ 		get_file(file);
+-		if (vm_flags & VM_EXECUTABLE) {
+-			added_exe_file_vma(current->mm);
+-			vma->vm_mm = current->mm;
+-		}
+ 	}
+ 
+ 	down_write(&nommu_region_sem);
+@@ -1364,11 +1357,8 @@ share:
+ error_put_region:
+ 	__put_nommu_region(region);
+ 	if (vma) {
+-		if (vma->vm_file) {
++		if (vma->vm_file)
+ 			fput(vma->vm_file);
+-			if (vma->vm_flags & VM_EXECUTABLE)
+-				removed_exe_file_vma(vma->vm_mm);
+-		}
+ 		kmem_cache_free(vm_area_cachep, vma);
+ 	}
+ 	kleave(" = %d [pr]", ret);
+@@ -1380,8 +1370,6 @@ error:
+ 	fput(region->vm_file);
+ 	kmem_cache_free(vm_region_jar, region);
+ 	fput(vma->vm_file);
+-	if (vma->vm_flags & VM_EXECUTABLE)
+-		removed_exe_file_vma(vma->vm_mm);
+ 	kmem_cache_free(vm_area_cachep, vma);
+ 	kleave(" = %d", ret);
+ 	return ret;
