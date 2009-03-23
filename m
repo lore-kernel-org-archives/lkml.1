@@ -1,87 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760022AbZCWWZp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760298AbZCWW0i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760022AbZCWWZp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Mar 2009 18:25:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758612AbZCWWZP
+	id S1760298AbZCWW0i (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Mar 2009 18:26:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756692AbZCWW03
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Mar 2009 18:25:15 -0400
-Received: from hera.kernel.org ([140.211.167.34]:52282 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758895AbZCWWZN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Mar 2009 18:25:13 -0400
-Date: Mon, 23 Mar 2009 22:24:28 GMT
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       avorontsov@ru.mvista.com, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       avorontsov@ru.mvista.com, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <20090323220724.GA9851@oksana.dev.rtsoft.ru>
-References: <20090323220724.GA9851@oksana.dev.rtsoft.ru>
-Subject: [tip:tracing/ftrace] tracing: Fix TRACING_SUPPORT dependency for PPC32
-Message-ID: <tip-45b9560895b07a4a09d55d49235c984db512c5aa@git.kernel.org>
-Git-Commit-ID: 45b9560895b07a4a09d55d49235c984db512c5aa
-X-Mailer: tip-git-log-daemon
+	Mon, 23 Mar 2009 18:26:29 -0400
+Received: from mail09.linbit.com ([212.69.161.110]:38595 "EHLO
+	mail09.linbit.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754586AbZCWW02 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Mar 2009 18:26:28 -0400
+From: Philipp Reisner <philipp.reisner@linbit.com>
+To: Alexey Dobriyan <adobriyan@gmail.com>
+Subject: Re: [PATCH 07/12] DRBD: main
+Date: Mon, 23 Mar 2009 23:26:31 +0100
+User-Agent: KMail/1.11.0 (Linux/2.6.27-9-generic; KDE/4.2.0; i686; ; )
+Cc: linux-kernel@vger.kernel.org, gregkh@suse.de
+References: <1237823287-12734-1-git-send-email-philipp.reisner@linbit.com> <1237823287-12734-8-git-send-email-philipp.reisner@linbit.com> <20090323165126.GA2649@x200.localdomain>
+In-Reply-To: <20090323165126.GA2649@x200.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 23 Mar 2009 22:24:30 +0000 (UTC)
+Message-Id: <200903232326.31962.philipp.reisner@linbit.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  45b9560895b07a4a09d55d49235c984db512c5aa
-Gitweb:     http://git.kernel.org/tip/45b9560895b07a4a09d55d49235c984db512c5aa
-Author:     Anton Vorontsov <avorontsov@ru.mvista.com>
-AuthorDate: Tue, 24 Mar 2009 01:07:24 +0300
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Mon, 23 Mar 2009 23:23:03 +0100
+Am Montag 23 März 2009 17:51:26 schrieb Alexey Dobriyan:
+> On Mon, Mar 23, 2009 at 04:48:02PM +0100, Philipp Reisner wrote:
+> > +#if CONFIG_PROC_FS
+> > +	/*
+> > +	 * register with procfs
+> > +	 */
+> > +	drbd_proc = create_proc_entry("drbd",  S_IFREG | S_IRUGO , NULL);
+> > +
+> > +	if (!drbd_proc)	{
+> > +		printk(KERN_ERR "drbd: unable to register proc file\n");
+> > +		goto Enomem;
+> > +	}
+> > +
+> > +	drbd_proc->proc_fops = &drbd_proc_fops;
+>
+> Use proc_create().
+>
+> > +	drbd_proc->owner = THIS_MODULE;
+>
+> Unnecessary now.
+>
+> > +#else
+> > +# error "Currently drbd depends on the proc file system
+> > (CONFIG_PROC_FS)" +#endif
+>
+> You should "depends on PROC_FS" then and remove this #error.
+> #ifdef would also become unnecessary.
 
-tracing: Fix TRACING_SUPPORT dependency for PPC32
+Thanks!
+I have updated my code and the patches.
+http://oss.linbit.com/drbd/mainline_submission/03-23/
 
-commit 40ada30f9621fbd831ac2437b9a2a399aa ("tracing: clean up menu"),
-despite the "clean up" in its purpose, introduced a behavioural
-change for Kconfig symbols: we no longer able to select tracing
-support on PPC32 (because IRQFLAGS_SUPPORT isn't yet implemented).
+I will repost in a few days, after potentially more reviews
 
-The IRQFLAGS_SUPPORT is not mandatory for most tracers, tracing core
-has a special case for platforms w/o irqflags (which, by the way, has
-become useless as of the commit above).
-
-Though according to Ingo Molnar, there was periodic build failures on
-weird, unmaintained architectures that had no irqflags-tracing support
-and hence didn't know the raw_irqs_save/restore primitives. Thus we'd
-better not enable irqflags-less tracing for all architectures.
-
-This patch restores the old behaviour for PPC32, and thus brings the
-tracing back. Other architectures can either add themselves to the
-exception list or (better) implement TRACE_IRQFLAGS_SUPPORT.
-
-Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
-Acked-b: Steven Rostedt <rostedt@goodmis.org>
-Cc: linuxppc-dev@ozlabs.org
-LKML-Reference: <20090323220724.GA9851@oksana.dev.rtsoft.ru>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-
----
- kernel/trace/Kconfig |    6 +++++-
- 1 files changed, 5 insertions(+), 1 deletions(-)
-
-diff --git a/kernel/trace/Kconfig b/kernel/trace/Kconfig
-index b0a46f8..8a4d729 100644
---- a/kernel/trace/Kconfig
-+++ b/kernel/trace/Kconfig
-@@ -63,7 +63,11 @@ config TRACING
- #
- config TRACING_SUPPORT
- 	bool
--	depends on TRACE_IRQFLAGS_SUPPORT
-+	# PPC32 has no irqflags tracing support, but it can use most of the
-+	# tracers anyway, they were tested to build and work. Note that new
-+	# exceptions to this list aren't welcomed, better implement the
-+	# irqflags tracing for your architecture.
-+	depends on TRACE_IRQFLAGS_SUPPORT || PPC32
- 	depends on STACKTRACE_SUPPORT
- 	default y
- 
