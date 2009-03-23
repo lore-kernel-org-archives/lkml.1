@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757000AbZCWKn3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757275AbZCWKnr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757000AbZCWKn3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Mar 2009 06:43:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756975AbZCWKm6
+	id S1757275AbZCWKnr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Mar 2009 06:43:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757127AbZCWKnL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Mar 2009 06:42:58 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:34826 "EHLO
+	Mon, 23 Mar 2009 06:43:11 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:34829 "EHLO
 	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756974AbZCWKm5 (ORCPT
+	with ESMTP id S1757044AbZCWKnK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Mar 2009 06:42:57 -0400
+	Mon, 23 Mar 2009 06:43:10 -0400
 From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: [PATCH 1/2] arm: twl4030 - leak fix
+Subject: [PATCH 2/2] arm: fix leak in iop13xx/pci
 To: linux-kernel@vger.kernel.org, rmk@arm.linux.org.uk
-Date: Mon, 23 Mar 2009 10:43:54 +0000
-Message-ID: <20090323104347.32524.76448.stgit@localhost.localdomain>
+Date: Mon, 23 Mar 2009 10:44:07 +0000
+Message-ID: <20090323104359.32524.58254.stgit@localhost.localdomain>
 In-Reply-To: <20090323103834.32524.65397.stgit@localhost.localdomain>
 References: <20090323103834.32524.65397.stgit@localhost.localdomain>
 User-Agent: StGIT/0.14.3
@@ -25,26 +25,37 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Trivial error path leak fix. Problem found by Daniel Marjamäki using
-cppcheck
+Another leak found by Daniel Marjamäki
 
 Signed-off-by: Alan Cox <alan@lxorguk.ukuu.org.uk>
 ---
 
- arch/arm/mach-omap2/mmc-twl4030.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+ arch/arm/mach-iop13xx/pci.c |    5 ++++-
+ 1 files changed, 4 insertions(+), 1 deletions(-)
 
 
-diff --git a/arch/arm/mach-omap2/mmc-twl4030.c b/arch/arm/mach-omap2/mmc-twl4030.c
-index 437f520..e1dadf7 100644
---- a/arch/arm/mach-omap2/mmc-twl4030.c
-+++ b/arch/arm/mach-omap2/mmc-twl4030.c
-@@ -397,6 +397,7 @@ void __init twl4030_mmc_init(struct twl4030_hsmmc_info *controllers)
- 			break;
- 		default:
- 			pr_err("MMC%d configuration not supported!\n", c->mmc);
-+			kfree(mmc);
- 			continue;
- 		}
- 		hsmmc_data[c->mmc - 1] = mmc;
+diff --git a/arch/arm/mach-iop13xx/pci.c b/arch/arm/mach-iop13xx/pci.c
+index 673b0db..4873f26 100644
+--- a/arch/arm/mach-iop13xx/pci.c
++++ b/arch/arm/mach-iop13xx/pci.c
+@@ -1026,8 +1026,10 @@ int iop13xx_pci_setup(int nr, struct pci_sys_data *sys)
+ 		which_atu = 0;
+ 	}
+ 
+-	if (!which_atu)
++	if (!which_atu) {
++		kfree(res);
+ 		return 0;
++	}
+ 
+ 	switch(which_atu) {
+ 	case IOP13XX_INIT_ATU_ATUX:
+@@ -1074,6 +1076,7 @@ int iop13xx_pci_setup(int nr, struct pci_sys_data *sys)
+ 		sys->map_irq = iop13xx_pcie_map_irq;
+ 		break;
+ 	default:
++		kfree(res);
+ 		return 0;
+ 	}
+ 
 
