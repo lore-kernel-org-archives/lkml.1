@@ -1,24 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759941AbZCWSGm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759468AbZCWSHf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759941AbZCWSGm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Mar 2009 14:06:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758282AbZCWSEa
+	id S1759468AbZCWSHf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Mar 2009 14:07:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758368AbZCWSEc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Mar 2009 14:04:30 -0400
-Received: from adsl-69-107-72-54.dsl.pltn13.pacbell.net ([69.107.72.54]:35008
+	Mon, 23 Mar 2009 14:04:32 -0400
+Received: from adsl-69-107-72-54.dsl.pltn13.pacbell.net ([69.107.72.54]:35011
 	"EHLO abulafia.goop.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757852AbZCWSE0 (ORCPT
+	with ESMTP id S1758022AbZCWSE1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Mar 2009 14:04:26 -0400
+	Mon, 23 Mar 2009 14:04:27 -0400
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: "H. Peter Anvin" <hpa@zytor.com>
 Cc: the arch/x86 maintainers <x86@kernel.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Xen-devel <xen-devel@lists.xensource.com>,
-       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Subject: [PATCH 07/11] xen/sys/hypervisor: change writable_pt to features
-Date: Mon, 23 Mar 2009 10:55:07 -0700
-Message-Id: <1237830911-6249-8-git-send-email-jeremy@goop.org>
+       Xen-devel <xen-devel@lists.xensource.com>
+Subject: [GIT PULL] xen domU control interfaces
+Date: Mon, 23 Mar 2009 10:55:00 -0700
+Message-Id: <1237830911-6249-1-git-send-email-jeremy@goop.org>
 X-Mailer: git-send-email 1.6.0.6
 In-Reply-To: <49C45238.7050007@zytor.com>
 References: <49C45238.7050007@zytor.com>
@@ -26,84 +25,63 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 
-/sys/hypervisor/properties/writable_pt was misnamed.  Rename to features,
-expressed as a bit array in hex.
+This series adds some usermode interfaces for interfacing with Xen from
+an unprivileged domain:
+	- Xen support for /sys/hypervisor
+	- /dev/evtchn, to allow usermode to block on and send events via
+	  event channels
+	- updates to xenfs (/proc/xen)
+	- updates to the xenbus interface
 
-Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
----
- drivers/xen/sys-hypervisor.c |   41 ++++++++++++++++++++++++++---------------
- 1 files changed, 26 insertions(+), 15 deletions(-)
+Thanks,
+	J
 
-diff --git a/drivers/xen/sys-hypervisor.c b/drivers/xen/sys-hypervisor.c
-index cb29d1c..1267d6f 100644
---- a/drivers/xen/sys-hypervisor.c
-+++ b/drivers/xen/sys-hypervisor.c
-@@ -293,37 +293,48 @@ static ssize_t pagesize_show(struct hyp_sysfs_attr *attr, char *buffer)
- 
- HYPERVISOR_ATTR_RO(pagesize);
- 
--/* eventually there will be several more features to export */
- static ssize_t xen_feature_show(int index, char *buffer)
- {
--	int ret = -ENOMEM;
--	struct xen_feature_info *info;
-+	ssize_t ret;
-+	struct xen_feature_info info;
- 
--	info = kmalloc(sizeof(struct xen_feature_info), GFP_KERNEL);
--	if (info) {
--		info->submap_idx = index;
--		ret = HYPERVISOR_xen_version(XENVER_get_features, info);
--		if (!ret)
--			ret = sprintf(buffer, "%d\n", info->submap);
--		kfree(info);
--	}
-+	info.submap_idx = index;
-+	ret = HYPERVISOR_xen_version(XENVER_get_features, &info);
-+	if (!ret)
-+		ret = sprintf(buffer, "%08x", info.submap);
- 
- 	return ret;
- }
- 
--static ssize_t writable_pt_show(struct hyp_sysfs_attr *attr, char *buffer)
-+static ssize_t features_show(struct hyp_sysfs_attr *attr, char *buffer)
- {
--	return xen_feature_show(XENFEAT_writable_page_tables, buffer);
-+	ssize_t len;
-+	int i;
-+
-+	len = 0;
-+	for (i = XENFEAT_NR_SUBMAPS-1; i >= 0; i--) {
-+		int ret = xen_feature_show(i, buffer + len);
-+		if (ret < 0) {
-+			if (len == 0)
-+				len = ret;
-+			break;
-+		}
-+		len += ret;
-+	}
-+	if (len > 0)
-+		buffer[len++] = '\n';
-+
-+	return len;
- }
- 
--HYPERVISOR_ATTR_RO(writable_pt);
-+HYPERVISOR_ATTR_RO(features);
- 
- static struct attribute *xen_properties_attrs[] = {
- 	&capabilities_attr.attr,
- 	&changeset_attr.attr,
- 	&virtual_start_attr.attr,
- 	&pagesize_attr.attr,
--	&writable_pt_attr.attr,
-+	&features_attr.attr,
- 	NULL
- };
- 
--- 
-1.6.0.6
+The following changes since commit 627b11ca44b334e201c35bf1a1582dc10efaf4a8:
+  Jeremy Fitzhardinge (1):
+        xen/mmu: weaken flush_tlb_other test
+
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/jeremy/xen.git push2/xen/control
+
+Ian Campbell (6):
+      xen: add irq_from_evtchn
+      xen: add /dev/xen/evtchn driver
+      xen: export ioctl headers to userspace
+      xen: drop kexec bits from /sys/hypervisor since kexec isn't implemented yet
+      xen: remove suspend_cancel hook
+      xen: use device model for suspending xenbus devices
+
+Jeremy Fitzhardinge (9):
+      xen/dev-evtchn: clean up locking in evtchn
+      xen: add "capabilities" file
+      xen: add /sys/hypervisor support
+      xen/sys/hypervisor: change writable_pt to features
+      xen/xenbus: export xenbus_dev_changed
+      Merge branch 'push2/xen/xenbus' into push2/xen/control
+      Merge branch 'push2/xen/dev-evtchn' into push2/xen/control
+      Merge branch 'push2/xen/sys-hypervisor' into push2/xen/control
+      Merge branch 'push2/xen/xenfs' into push2/xen/control
+
+ drivers/xen/Kconfig               |   20 ++
+ drivers/xen/Makefile              |    4 +-
+ drivers/xen/events.c              |    6 +
+ drivers/xen/evtchn.c              |  507 +++++++++++++++++++++++++++++++++++++
+ drivers/xen/manage.c              |    9 +-
+ drivers/xen/sys-hypervisor.c      |  445 ++++++++++++++++++++++++++++++++
+ drivers/xen/xenbus/xenbus_probe.c |   61 +----
+ drivers/xen/xenbus/xenbus_xs.c    |    2 +
+ drivers/xen/xenfs/super.c         |   19 ++-
+ include/Kbuild                    |    1 +
+ include/xen/Kbuild                |    1 +
+ include/xen/events.h              |    3 +
+ include/xen/evtchn.h              |   88 +++++++
+ include/xen/interface/version.h   |    3 +
+ include/xen/xenbus.h              |    3 +-
+ 15 files changed, 1112 insertions(+), 60 deletions(-)
+ create mode 100644 drivers/xen/evtchn.c
+ create mode 100644 drivers/xen/sys-hypervisor.c
+ create mode 100644 include/xen/Kbuild
+ create mode 100644 include/xen/evtchn.h
 
