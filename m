@@ -1,85 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760181AbZCWVET@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758755AbZCWVKY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760181AbZCWVET (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Mar 2009 17:04:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758808AbZCWVEB
+	id S1758755AbZCWVKY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Mar 2009 17:10:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754870AbZCWVKI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Mar 2009 17:04:01 -0400
-Received: from smtp-vbr6.xs4all.nl ([194.109.24.26]:4339 "EHLO
-	smtp-vbr6.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758393AbZCWVEA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Mar 2009 17:04:00 -0400
-From: Hans Verkuil <hverkuil@xs4all.nl>
-To: Janne Grunau <j@jannau.net>
-Subject: Re: linux-next: Tree for March 23 (media/video/hdpvr)
-Date: Mon, 23 Mar 2009 22:04:15 +0100
-User-Agent: KMail/1.9.9
-Cc: Randy Dunlap <randy.dunlap@oracle.com>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>, linux-media@vger.kernel.org
-References: <20090323205454.d0cbf721.sfr@canb.auug.org.au> <49C7D965.5080202@oracle.com> <20090323204940.GA5079@aniel>
-In-Reply-To: <20090323204940.GA5079@aniel>
+	Mon, 23 Mar 2009 17:10:08 -0400
+Received: from ozlabs.org ([203.10.76.45]:50824 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753326AbZCWVKH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Mar 2009 17:10:07 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Jaswinder Singh Rajput <jaswinder@kernel.org>
+Subject: Re: [git-pull -tip] x86: cleanup patches 20090322
+Date: Tue, 24 Mar 2009 07:40:02 +1030
+User-Agent: KMail/1.11.1 (Linux/2.6.27-11-generic; KDE/4.2.1; i686; ; )
+Cc: Ingo Molnar <mingo@elte.hu>, x86 maintainers <x86@kernel.org>,
+       Sam Ravnborg <sam@ravnborg.org>, Yinghai Lu <yinghai@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+References: <1237755176.5417.16.camel@ht.satnam> <200903231845.05394.rusty@rustcorp.com.au> <1237801506.2485.7.camel@ht.satnam>
+In-Reply-To: <1237801506.2485.7.camel@ht.satnam>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200903232204.15457.hverkuil@xs4all.nl>
+Message-Id: <200903240740.03281.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 23 March 2009 21:49:40 Janne Grunau wrote:
-> Hi,
-> 
-> On Mon, Mar 23, 2009 at 11:48:05AM -0700, Randy Dunlap wrote:
-> > Stephen Rothwell wrote:
-> > > 
-> > > Changes since 20090320:
+On Monday 23 March 2009 20:15:06 Jaswinder Singh Rajput wrote:
+> On Mon, 2009-03-23 at 18:45 +1030, Rusty Russell wrote:
+> > On Monday 23 March 2009 07:22:56 Jaswinder Singh Rajput wrote:
+> > >       x86: e820.h fix various signedness issues in setup.c and e820.c
 > > 
-> > > The v4l-dvb tree gained a build failure for which I have reverted 3 commits.
-> > 
-> > drivers/built-in.o: In function `hdpvr_disconnect':
-> > hdpvr-core.c:(.text+0xf3894): undefined reference to `i2c_del_adapter'
-> > drivers/built-in.o: In function `hdpvr_register_i2c_adapter':
-> > (.text+0xf4145): undefined reference to `i2c_add_adapter'
-> > 
-> > 
-> > CONFIG_I2C is not enabled.
+> > Wouldn't fixing the users be better than changing the header?  Esp. since
+> > it could well now cause similar warnings in userspace programs.
+...
+> Is this OK, or should I go more further:
 > 
-> following patch should fix that.
+> From: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+> Date: Mon, 23 Mar 2009 02:13:01 +0530
+> Subject: [PATCH] x86: e820 fix various signedness issues in setup.c and e820.c
 > 
-> Janne
+> Impact: cleanup
 > 
-> ps: Mauro, I'll send a pull request shortly
-> 
+> This fixed various signedness issues in setup.c and e820.c:
+> arch/x86/kernel/setup.c:455:53: warning: incorrect type in argument 3 (different signedness)
 
+This looks fine (assuming it fixes the warnings).
 
-> diff --git a/drivers/media/video/hdpvr/hdpvr-core.c
-> b/drivers/media/video/hdpvr/hdpvr-core.c index e7300b5..dadb2e7 100644
-> --- a/drivers/media/video/hdpvr/hdpvr-core.c
-> +++ b/drivers/media/video/hdpvr/hdpvr-core.c
-> @@ -21,6 +21,7 @@
->  #include <linux/usb.h>
->  #include <linux/mutex.h>
->  #include <linux/i2c.h>
-> +#include <linux/autoconf.h>
->
->  #include <linux/videodev2.h>
->  #include <media/v4l2-dev.h>
+In future it would be nice to explicitly mention that these are "sparse"
+warnings, not actual "signedness issues" ("Impact: cleanup" implies that,
+but the subject makes it sound like there's a pressing problem).
 
-Hi Janne,
-
-Don't include autoconf.h! It's preloaded for you already and shouldn't be
-included manually. Esp. since the v4l-dvb tree creates and preloads a custom
-version. Loading it manually will overwrite that.
-
-Other than that it's fine.
-
-Regards,
-
-	Hans
-
--- 
-Hans Verkuil - video4linux developer - sponsored by TANDBERG
+Thanks,
+Rusty.
