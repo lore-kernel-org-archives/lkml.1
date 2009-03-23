@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757009AbZCWH7g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757210AbZCWH74@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757009AbZCWH7g (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Mar 2009 03:59:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753764AbZCWH61
+	id S1757210AbZCWH74 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Mar 2009 03:59:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756624AbZCWH6a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Mar 2009 03:58:27 -0400
-Received: from mga09.intel.com ([134.134.136.24]:44378 "EHLO mga09.intel.com"
+	Mon, 23 Mar 2009 03:58:30 -0400
+Received: from mga09.intel.com ([134.134.136.24]:1727 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755599AbZCWH6X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Mar 2009 03:58:23 -0400
+	id S1756369AbZCWH61 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Mar 2009 03:58:27 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.38,407,1233561600"; 
-   d="scan'208";a="396704188"
+   d="scan'208";a="396704221"
 From: Yu Zhao <yu.zhao@intel.com>
 To: dwmw2@infradead.org, jbarnes@virtuousgeek.org
 Cc: linux-pci@vger.kernel.org, iommu@lists.linux-foundation.org,
        kvm@vger.kernel.org, linux-kernel@vger.kernel.org,
        Yu Zhao <yu.zhao@intel.com>
-Subject: [PATCH v4 1/6] PCI: support the ATS capability
-Date: Mon, 23 Mar 2009 15:58:57 +0800
-Message-Id: <1237795142-6606-2-git-send-email-yu.zhao@intel.com>
+Subject: [PATCH v4 3/6] VT-d: parse ATSR in DMA Remapping Reporting Structure
+Date: Mon, 23 Mar 2009 15:58:59 +0800
+Message-Id: <1237795142-6606-4-git-send-email-yu.zhao@intel.com>
 X-Mailer: git-send-email 1.6.1
 In-Reply-To: <1237795142-6606-1-git-send-email-yu.zhao@intel.com>
 References: <1237795142-6606-1-git-send-email-yu.zhao@intel.com>
@@ -27,249 +27,214 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The PCIe ATS capability makes the Endpoint be able to request the
-DMA address translation from the IOMMU and cache the translation
-in the device side, thus alleviate IOMMU TLB pressure and improve
-the hardware performance in the I/O virtualization environment.
+Parse the Root Port ATS Capability Reporting Structure in the DMA
+Remapping Reporting Structure ACPI table.
 
 Signed-off-by: Yu Zhao <yu.zhao@intel.com>
 ---
- drivers/pci/iov.c        |  105 ++++++++++++++++++++++++++++++++++++++++++++++
- drivers/pci/pci.h        |   37 ++++++++++++++++
- include/linux/pci.h      |    2 +
- include/linux/pci_regs.h |   10 ++++
- 4 files changed, 154 insertions(+), 0 deletions(-)
+ drivers/pci/dmar.c          |  112 ++++++++++++++++++++++++++++++++++++++++--
+ include/linux/dmar.h        |    9 ++++
+ include/linux/intel-iommu.h |    1 +
+ 3 files changed, 116 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/pci/iov.c b/drivers/pci/iov.c
-index 7227efc..8a9817c 100644
---- a/drivers/pci/iov.c
-+++ b/drivers/pci/iov.c
-@@ -5,6 +5,7 @@
-  *
-  * PCI Express I/O Virtualization (IOV) support.
-  *   Single Root IOV 1.0
-+ *   Address Translation Service 1.0
-  */
- 
- #include <linux/pci.h>
-@@ -678,3 +679,107 @@ irqreturn_t pci_sriov_migration(struct pci_dev *dev)
- 	return sriov_migration(dev) ? IRQ_HANDLED : IRQ_NONE;
+diff --git a/drivers/pci/dmar.c b/drivers/pci/dmar.c
+index 26c536b..106bc45 100644
+--- a/drivers/pci/dmar.c
++++ b/drivers/pci/dmar.c
+@@ -254,6 +254,84 @@ rmrr_parse_dev(struct dmar_rmrr_unit *rmrru)
+ 	}
+ 	return ret;
  }
- EXPORT_SYMBOL_GPL(pci_sriov_migration);
 +
-+static int ats_alloc_one(struct pci_dev *dev, int pgshift)
++static LIST_HEAD(dmar_atsr_units);
++
++static int __init dmar_parse_one_atsr(struct acpi_dmar_header *hdr)
 +{
-+	int pos;
-+	u16 cap;
-+	struct pci_ats *ats;
++	struct acpi_dmar_atsr *atsr;
++	struct dmar_atsr_unit *atsru;
 +
-+	pos = pci_find_ext_capability(dev, PCI_EXT_CAP_ID_ATS);
-+	if (!pos)
-+		return -ENODEV;
-+
-+	ats = kzalloc(sizeof(*ats), GFP_KERNEL);
-+	if (!ats)
++	atsr = container_of(hdr, struct acpi_dmar_atsr, header);
++	atsru = kzalloc(sizeof(*atsru), GFP_KERNEL);
++	if (!atsru)
 +		return -ENOMEM;
 +
-+	ats->pos = pos;
-+	ats->stu = pgshift;
-+	pci_read_config_word(dev, pos + PCI_ATS_CAP, &cap);
-+	ats->qdep = PCI_ATS_CAP_QDEP(cap) ? PCI_ATS_CAP_QDEP(cap) :
-+					    PCI_ATS_MAX_QDEP;
-+	dev->ats = ats;
++	atsru->hdr = hdr;
++	atsru->include_all = atsr->flags & 0x1;
++
++	list_add(&atsru->list, &dmar_atsr_units);
 +
 +	return 0;
 +}
 +
-+static void ats_free_one(struct pci_dev *dev)
-+{
-+	kfree(dev->ats);
-+	dev->ats = NULL;
-+}
-+
-+/**
-+ * pci_enable_ats - enable the ATS capability
-+ * @dev: the PCI device
-+ * @pgshift: the IOMMU page shift
-+ *
-+ * Returns 0 on success, or negative on failure.
-+ */
-+int pci_enable_ats(struct pci_dev *dev, int pgshift)
++static int __init atsr_parse_dev(struct dmar_atsr_unit *atsru)
 +{
 +	int rc;
-+	u16 ctrl;
++	struct acpi_dmar_atsr *atsr;
 +
-+	BUG_ON(dev->ats);
++	if (atsru->include_all)
++		return 0;
 +
-+	if (pgshift < PCI_ATS_MIN_STU)
-+		return -EINVAL;
++	atsr = container_of(atsru->hdr, struct acpi_dmar_atsr, header);
++	rc = dmar_parse_dev_scope((void *)(atsr + 1),
++				(void *)atsr + atsr->header.length,
++				&atsru->devices_cnt, &atsru->devices,
++				atsr->segment);
++	if (rc || !atsru->devices_cnt) {
++		list_del(&atsru->list);
++		kfree(atsru);
++	}
 +
-+	rc = ats_alloc_one(dev, pgshift);
-+	if (rc)
-+		return rc;
++	return rc;
++}
 +
-+	ctrl = PCI_ATS_CTRL_ENABLE;
-+	ctrl |= PCI_ATS_CTRL_STU(pgshift - PCI_ATS_MIN_STU);
-+	pci_write_config_word(dev, dev->ats->pos + PCI_ATS_CTRL, ctrl);
++int dmar_find_matched_atsr_unit(struct pci_dev *dev)
++{
++	int i;
++	struct pci_bus *bus;
++	struct acpi_dmar_atsr *atsr;
++	struct dmar_atsr_unit *atsru;
++
++	list_for_each_entry(atsru, &dmar_atsr_units, list) {
++		atsr = container_of(atsru->hdr, struct acpi_dmar_atsr, header);
++		if (atsr->segment == pci_domain_nr(dev->bus))
++			goto found;
++	}
++
++	return 0;
++
++found:
++	for (bus = dev->bus; bus; bus = bus->parent) {
++		struct pci_dev *bridge = bus->self;
++
++		if (!bridge || !bridge->is_pcie ||
++		    bridge->pcie_type == PCI_EXP_TYPE_PCI_BRIDGE)
++			return 0;
++
++		if (bridge->pcie_type == PCI_EXP_TYPE_ROOT_PORT) {
++			for (i = 0; i < atsru->devices_cnt; i++)
++				if (atsru->devices[i] == bridge)
++					return 1;
++			break;
++		}
++	}
++
++	if (atsru->include_all)
++		return 1;
 +
 +	return 0;
 +}
-+
-+/**
-+ * pci_disable_ats - disable the ATS capability
-+ * @dev: the PCI device
-+ */
-+void pci_disable_ats(struct pci_dev *dev)
-+{
-+	u16 ctrl;
-+
-+	BUG_ON(!dev->ats);
-+
-+	pci_read_config_word(dev, dev->ats->pos + PCI_ATS_CTRL, &ctrl);
-+	ctrl &= ~PCI_ATS_CTRL_ENABLE;
-+	pci_write_config_word(dev, dev->ats->pos + PCI_ATS_CTRL, ctrl);
-+
-+	ats_free_one(dev);
-+}
-+
-+/**
-+ * pci_ats_queue_depth - query the ATS Invalidate Queue Depth
-+ * @dev: the PCI device
-+ *
-+ * Returns the queue depth on success, or negative on failure.
-+ *
-+ * The ATS spec uses 0 in the Invalidate Queue Depth field to
-+ * indicate that the function can accept 32 Invalidate Request.
-+ * But here we use the `real' values (i.e. 1~32) for the Queue
-+ * Depth.
-+ */
-+int pci_ats_queue_depth(struct pci_dev *dev)
-+{
-+	int pos;
-+	u16 cap;
-+
-+	if (dev->ats)
-+		return dev->ats->qdep;
-+
-+	pos = pci_find_ext_capability(dev, PCI_EXT_CAP_ID_ATS);
-+	if (!pos)
-+		return -ENODEV;
-+
-+	pci_read_config_word(dev, pos + PCI_ATS_CAP, &cap);
-+
-+	return PCI_ATS_CAP_QDEP(cap) ? PCI_ATS_CAP_QDEP(cap) :
-+				       PCI_ATS_MAX_QDEP;
-+}
-diff --git a/drivers/pci/pci.h b/drivers/pci/pci.h
-index dd7c63f..9f0db6a 100644
---- a/drivers/pci/pci.h
-+++ b/drivers/pci/pci.h
-@@ -218,6 +218,13 @@ struct pci_sriov {
- 	u8 __iomem *mstate;	/* VF Migration State Array */
- };
+ #endif
  
-+/* Address Translation Service */
-+struct pci_ats {
-+	int pos;	/* capability position */
-+	int stu;	/* Smallest Translation Unit */
-+	int qdep;	/* Invalidate Queue Depth */
+ static void __init
+@@ -261,22 +339,28 @@ dmar_table_print_dmar_entry(struct acpi_dmar_header *header)
+ {
+ 	struct acpi_dmar_hardware_unit *drhd;
+ 	struct acpi_dmar_reserved_memory *rmrr;
++	struct acpi_dmar_atsr *atsr;
+ 
+ 	switch (header->type) {
+ 	case ACPI_DMAR_TYPE_HARDWARE_UNIT:
+-		drhd = (struct acpi_dmar_hardware_unit *)header;
++		drhd = container_of(header, struct acpi_dmar_hardware_unit,
++				    header);
+ 		printk (KERN_INFO PREFIX
+-			"DRHD (flags: 0x%08x)base: 0x%016Lx\n",
+-			drhd->flags, (unsigned long long)drhd->address);
++			"DRHD base: %#016Lx flags: %#x\n",
++			(unsigned long long)drhd->address, drhd->flags);
+ 		break;
+ 	case ACPI_DMAR_TYPE_RESERVED_MEMORY:
+-		rmrr = (struct acpi_dmar_reserved_memory *)header;
+-
++		rmrr = container_of(header, struct acpi_dmar_reserved_memory,
++				    header);
+ 		printk (KERN_INFO PREFIX
+-			"RMRR base: 0x%016Lx end: 0x%016Lx\n",
++			"RMRR base: %#016Lx end: %#016Lx\n",
+ 			(unsigned long long)rmrr->base_address,
+ 			(unsigned long long)rmrr->end_address);
+ 		break;
++	case ACPI_DMAR_TYPE_ATSR:
++		atsr = container_of(header, struct acpi_dmar_atsr, header);
++		printk(KERN_INFO PREFIX "ATSR flags: %#x\n", atsr->flags);
++		break;
+ 	}
+ }
+ 
+@@ -349,6 +433,11 @@ parse_dmar_table(void)
+ 			ret = dmar_parse_one_rmrr(entry_header);
+ #endif
+ 			break;
++		case ACPI_DMAR_TYPE_ATSR:
++#ifdef CONFIG_DMAR
++			ret = dmar_parse_one_atsr(entry_header);
++#endif
++			break;
+ 		default:
+ 			printk(KERN_WARNING PREFIX
+ 				"Unknown DMAR structure type\n");
+@@ -417,11 +506,19 @@ int __init dmar_dev_scope_init(void)
+ #ifdef CONFIG_DMAR
+ 	{
+ 		struct dmar_rmrr_unit *rmrr, *rmrr_n;
++		struct dmar_atsr_unit *atsr, *atsr_n;
++
+ 		list_for_each_entry_safe(rmrr, rmrr_n, &dmar_rmrr_units, list) {
+ 			ret = rmrr_parse_dev(rmrr);
+ 			if (ret)
+ 				return ret;
+ 		}
++
++		list_for_each_entry_safe(atsr, atsr_n, &dmar_atsr_units, list) {
++			ret = atsr_parse_dev(atsr);
++			if (ret)
++				return ret;
++		}
+ 	}
+ #endif
+ 
+@@ -454,6 +551,9 @@ int __init dmar_table_init(void)
+ #ifdef CONFIG_DMAR
+ 	if (list_empty(&dmar_rmrr_units))
+ 		printk(KERN_INFO PREFIX "No RMRR found\n");
++
++	if (list_empty(&dmar_atsr_units))
++		printk(KERN_INFO PREFIX "No ATSR found\n");
+ #endif
+ 
+ #ifdef CONFIG_INTR_REMAP
+diff --git a/include/linux/dmar.h b/include/linux/dmar.h
+index f284407..d3a1234 100644
+--- a/include/linux/dmar.h
++++ b/include/linux/dmar.h
+@@ -142,6 +142,15 @@ struct dmar_rmrr_unit {
+ 
+ #define for_each_rmrr_units(rmrr) \
+ 	list_for_each_entry(rmrr, &dmar_rmrr_units, list)
++
++struct dmar_atsr_unit {
++	struct list_head list;		/* list of ATSR units */
++	struct acpi_dmar_header *hdr;	/* ACPI header */
++	struct pci_dev **devices;	/* target devices */
++	int devices_cnt;		/* target device count */
++	u8 include_all:1;		/* include all ports */
 +};
 +
- #ifdef CONFIG_PCI_IOV
- extern int pci_iov_init(struct pci_dev *dev);
- extern void pci_iov_release(struct pci_dev *dev);
-@@ -225,6 +232,20 @@ extern int pci_iov_resource_bar(struct pci_dev *dev, int resno,
- 				enum pci_bar_type *type);
- extern void pci_restore_iov_state(struct pci_dev *dev);
- extern int pci_iov_bus_range(struct pci_bus *bus);
-+
-+extern int pci_enable_ats(struct pci_dev *dev, int pgshift);
-+extern void pci_disable_ats(struct pci_dev *dev);
-+extern int pci_ats_queue_depth(struct pci_dev *dev);
-+/**
-+ * pci_ats_enabled - query the ATS status
-+ * @dev: the PCI device
-+ *
-+ * Returns 1 if ATS capability is enabled, or 0 if not.
-+ */
-+static inline int pci_ats_enabled(struct pci_dev *dev)
-+{
-+	return !!dev->ats;
-+}
+ /* Intel DMAR  initialization functions */
+ extern int intel_iommu_init(void);
  #else
- static inline int pci_iov_init(struct pci_dev *dev)
- {
-@@ -246,6 +267,22 @@ static inline int pci_iov_bus_range(struct pci_bus *bus)
- {
- 	return 0;
+diff --git a/include/linux/intel-iommu.h b/include/linux/intel-iommu.h
+index d2e3cbf..660a7f4 100644
+--- a/include/linux/intel-iommu.h
++++ b/include/linux/intel-iommu.h
+@@ -317,6 +317,7 @@ static inline void __iommu_flush_cache(
  }
-+
-+static inline int pci_enable_ats(struct pci_dev *dev, int pgshift)
-+{
-+	return -ENODEV;
-+}
-+static inline void pci_disable_ats(struct pci_dev *dev)
-+{
-+}
-+static inline int pci_ats_queue_depth(struct pci_dev *dev)
-+{
-+	return -ENODEV;
-+}
-+static inline int pci_ats_enabled(struct pci_dev *dev)
-+{
-+	return 0;
-+}
- #endif /* CONFIG_PCI_IOV */
  
- #endif /* DRIVERS_PCI_H */
-diff --git a/include/linux/pci.h b/include/linux/pci.h
-index df78327..de80acd 100644
---- a/include/linux/pci.h
-+++ b/include/linux/pci.h
-@@ -188,6 +188,7 @@ struct pci_cap_saved_state {
- struct pcie_link_state;
- struct pci_vpd;
- struct pci_sriov;
-+struct pci_ats;
+ extern struct dmar_drhd_unit * dmar_find_matched_drhd_unit(struct pci_dev *dev);
++extern int dmar_find_matched_atsr_unit(struct pci_dev *dev);
  
- /*
-  * The pci_dev structure is used to describe PCI devices.
-@@ -285,6 +286,7 @@ struct pci_dev {
- 		struct pci_sriov *sriov;	/* SR-IOV capability related */
- 		struct pci_dev *physfn;	/* the PF this VF is associated with */
- 	};
-+	struct pci_ats	*ats;	/* Address Translation Service */
- #endif
- };
- 
-diff --git a/include/linux/pci_regs.h b/include/linux/pci_regs.h
-index 4ce5eb0..999de5f 100644
---- a/include/linux/pci_regs.h
-+++ b/include/linux/pci_regs.h
-@@ -499,6 +499,7 @@
- #define PCI_EXT_CAP_ID_DSN	3
- #define PCI_EXT_CAP_ID_PWR	4
- #define PCI_EXT_CAP_ID_ARI	14
-+#define PCI_EXT_CAP_ID_ATS	15
- #define PCI_EXT_CAP_ID_SRIOV	16
- 
- /* Advanced Error Reporting */
-@@ -617,6 +618,15 @@
- #define  PCI_ARI_CTRL_ACS	0x0002	/* ACS Function Groups Enable */
- #define  PCI_ARI_CTRL_FG(x)	(((x) >> 4) & 7) /* Function Group */
- 
-+/* Address Translation Service */
-+#define PCI_ATS_CAP		0x04	/* ATS Capability Register */
-+#define  PCI_ATS_CAP_QDEP(x)	((x) & 0x1f)	/* Invalidate Queue Depth */
-+#define  PCI_ATS_MAX_QDEP	32	/* Max Invalidate Queue Depth */
-+#define PCI_ATS_CTRL		0x06	/* ATS Control Register */
-+#define  PCI_ATS_CTRL_ENABLE	0x8000	/* ATS Enable */
-+#define  PCI_ATS_CTRL_STU(x)	((x) & 0x1f)	/* Smallest Translation Unit */
-+#define  PCI_ATS_MIN_STU	12	/* shift of minimum STU block */
-+
- /* Single Root I/O Virtualization */
- #define PCI_SRIOV_CAP		0x04	/* SR-IOV Capabilities */
- #define  PCI_SRIOV_CAP_VFM	0x01	/* VF Migration Capable */
+ extern int alloc_iommu(struct dmar_drhd_unit *drhd);
+ extern void free_iommu(struct intel_iommu *iommu);
 -- 
 1.5.6.4
 
