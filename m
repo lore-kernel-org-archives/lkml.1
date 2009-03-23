@@ -1,46 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758272AbZCWIgF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756869AbZCWIiX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758272AbZCWIgF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Mar 2009 04:36:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756686AbZCWIfv
+	id S1756869AbZCWIiX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Mar 2009 04:38:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753164AbZCWIiG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Mar 2009 04:35:51 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:43252 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756243AbZCWIfu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Mar 2009 04:35:50 -0400
-Date: Mon, 23 Mar 2009 09:35:33 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Nikanth Karthikesan <knikanth@suse.de>,
-       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>
-Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org
-Subject: Re: ftrace not working?
-Message-ID: <20090323083533.GE18837@elte.hu>
-References: <200903231208.03723.knikanth@suse.de> <20090323170234.6A12.A69D9226@jp.fujitsu.com> <200903231357.41130.knikanth@suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200903231357.41130.knikanth@suse.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Mon, 23 Mar 2009 04:38:06 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:48407
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1752245AbZCWIiC (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Mar 2009 04:38:02 -0400
+Date: Mon, 23 Mar 2009 01:37:49 -0700 (PDT)
+Message-Id: <20090323.013749.122944803.davem@davemloft.net>
+To: dada1@cosmosbay.com
+Cc: jarkao2@gmail.com, vernux@us.ibm.com, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org
+Subject: Re: High contention on the sk_buff_head.lock
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <49C74927.7020008@cosmosbay.com>
+References: <20090320232943.GA3024@ami.dom.local>
+	<49C74927.7020008@cosmosbay.com>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Eric Dumazet <dada1@cosmosbay.com>
+Date: Mon, 23 Mar 2009 09:32:39 +0100
 
-one thing to note:
+> I dont understand, doesnt it defeat the ticket spinlock thing and fairness ?
+> 
+> Thread doing __qdisc_run() already owns the __QDISC_STATE_RUNNING bit.
 
-| CPU0: Intel QEMU Virtual CPU version 0.9.1 stepping 03
-| Testing tracer nop: PASSED
+Right.
 
-so it's a Qemu session, right?
+Remember, the way this is designed is that if there is a busy
+cpu taking packets out of the queue and putting them into the
+device then other cpus will simply add to the queue and immediately
+return.  This effectively keeps the queue running there processing
+all the new work that other cpus are adding to the qdisc.
 
-	Ingo
+Those other cpus make these decisions by looking at that
+__QDISC_STATE_RUNNING bit, which the queue runner grabs before
+it does any work.
