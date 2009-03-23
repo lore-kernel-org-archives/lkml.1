@@ -1,247 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760464AbZCWSYf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760176AbZCWSYu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760464AbZCWSYf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Mar 2009 14:24:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757645AbZCWSYY
+	id S1760176AbZCWSYu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Mar 2009 14:24:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759881AbZCWSY3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Mar 2009 14:24:24 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:50135 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758797AbZCWSYX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Mar 2009 14:24:23 -0400
-Date: Mon, 23 Mar 2009 14:24:21 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Tom Zanussi <tzanussi@gmail.com>
-cc: linux-kernel <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       =?ISO-8859-15?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>
-Subject: Re: [PATCH 4/4] tracing: add per-subsystem filtering
-In-Reply-To: <1237710677.7703.49.camel@charm-linux>
-Message-ID: <alpine.DEB.2.00.0903231413270.3578@gandalf.stny.rr.com>
-References: <1237710677.7703.49.camel@charm-linux>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 23 Mar 2009 14:24:29 -0400
+Received: from www.tglx.de ([62.245.132.106]:57626 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760186AbZCWSY1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Mar 2009 14:24:27 -0400
+Message-Id: <20090323172814.548471871@linutronix.de>
+User-Agent: quilt/0.47-1
+Date: Mon, 23 Mar 2009 18:23:04 -0000
+From: Thomas Gleixner <tglx@linutronix.de>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Christoph Hellwig <hch@infradead.org>,
+       Arjan van de Veen <arjan@infradead.org>,
+       Jon Masters <jonathan@jonmasters.org>,
+       Sven Dietrich <sdietrich@suse.de>, David Brownell <david-b@pacbell.net>
+Subject: [patch 0/2] Add support for threaded interrupt handlers - V3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This patch series implements support for threaded irq handlers for the
+generic IRQ layer.
 
-On Sun, 22 Mar 2009, Tom Zanussi wrote:
->  
-> +struct event_subsystem {
-> +	struct list_head	list;
-> +	const char		*name;
-> +	struct dentry		*entry;
-> +	struct filter_pred	**preds;
-> +};
-> +
-> +#define events_for_each(event)						\
-> +	for (event = __start_ftrace_events;				\
-> +	     (unsigned long)event < (unsigned long)__stop_ftrace_events; \
-> +	     event++)
-> +
->  #define MAX_FILTER_PRED 8
->  
->  struct filter_pred;
-> @@ -832,6 +844,9 @@ extern int filter_add_pred(struct ftrace_event_call *call,
->  			   struct filter_pred *pred);
->  extern void filter_free_preds(struct ftrace_event_call *call);
->  extern int filter_match_preds(struct ftrace_event_call *call, void *rec);
-> +extern void filter_free_subsystem_preds(struct event_subsystem *system);
-> +extern int filter_add_subsystem_pred(struct event_subsystem *system,
-> +				     struct filter_pred *pred);
->  
->  void event_trace_printk(unsigned long ip, const char *fmt, ...);
->  extern struct ftrace_event_call __start_ftrace_events[];
-> diff --git a/kernel/trace/trace_events.c b/kernel/trace/trace_events.c
-> index 97470c4..97d4daa 100644
-> --- a/kernel/trace/trace_events.c
-> +++ b/kernel/trace/trace_events.c
-> @@ -524,6 +524,71 @@ event_filter_write(struct file *filp, const char __user *ubuf, size_t cnt,
->  	return cnt;
->  }
->  
-> +static ssize_t
-> +subsystem_filter_read(struct file *filp, char __user *ubuf, size_t cnt,
-> +		      loff_t *ppos)
-> +{
-> +	struct event_subsystem *system = filp->private_data;
-> +	struct trace_seq *s;
+Changes vs. V2:
+	- review comments addressed
+	- simplified design
+	- synchronize_irq adapted to threaded handlers
 
-Again, trace_seq is not used, might as well use your own buffer.
+Threaded interrupt handlers are not only interesting in the preempt-rt
+context. Threaded interrupt handlers can help to address common
+problems in the interrupt handling code:
 
-> +	int r;
-> +
-> +	if (*ppos)
-> +		return 0;
-> +
-> +	s = kmalloc(sizeof(*s), GFP_KERNEL);
-> +	if (!s)
-> +		return -ENOMEM;
-> +
-> +	trace_seq_init(s);
-> +
-> +	r = filter_print_preds(system->preds, s->buffer);
-> +	r = simple_read_from_buffer(ubuf, cnt, ppos, s->buffer, r);
-> +
-> +	kfree(s);
-> +
-> +	return r;
-> +}
-> +
-> +static ssize_t
-> +subsystem_filter_write(struct file *filp, const char __user *ubuf, size_t cnt,
-> +		       loff_t *ppos)
-> +{
-> +	struct event_subsystem *system = filp->private_data;
-> +	char buf[64], *pbuf = buf;
-> +	struct filter_pred *pred;
-> +	int err;
-> +
-> +	if (cnt >= sizeof(buf))
-> +		return -EINVAL;
-> +
-> +	if (copy_from_user(&buf, ubuf, cnt))
-> +		return -EFAULT;
-> +
-> +	pred = kzalloc(sizeof(*pred), GFP_KERNEL);
-> +	if (!pred)
-> +		return -ENOMEM;
-> +
-> +	err = filter_parse(&pbuf, pred);
-> +	if (err < 0) {
-> +		filter_free_pred(pred);
-> +		return err;
-> +	}
-> +
-> +	if (pred->clear) {
-> +		filter_free_subsystem_preds(system);
+ - move long running handlers out of the hard interrupt context
 
-is "system" correct here?
+ - avoid complex hardirq -> tasklet/softirq interaction and locking
+   problems by integration of this functionality into the threaded
+   handler code
 
-> +		return cnt;
-> +	}
-> +
-> +	if (filter_add_subsystem_pred(system, pred)) {
-> +		filter_free_pred(pred);
-> +		return -EINVAL;
-> +	}
-> +
-> +	*ppos += cnt;
-> +
-> +	return cnt;
-> +}
-> +
->  static const struct seq_operations show_event_seq_ops = {
->  	.start = t_start,
->  	.next = t_next,
-> @@ -575,6 +640,12 @@ static const struct file_operations ftrace_event_filter_fops = {
->  	.write = event_filter_write,
->  };
->  
-> +static const struct file_operations ftrace_subsystem_filter_fops = {
-> +	.open = tracing_open_generic,
-> +	.read = subsystem_filter_read,
-> +	.write = subsystem_filter_write,
-> +};
-> +
->  static struct dentry *event_trace_events_dir(void)
->  {
->  	static struct dentry *d_tracer;
-> @@ -595,18 +666,13 @@ static struct dentry *event_trace_events_dir(void)
->  	return d_events;
->  }
->  
-> -struct event_subsystem {
-> -	struct list_head	list;
-> -	const char		*name;
-> -	struct dentry		*entry;
-> -};
-> -
->  static LIST_HEAD(event_subsystems);
->  
->  static struct dentry *
->  event_subsystem_dir(const char *name, struct dentry *d_events)
->  {
->  	struct event_subsystem *system;
-> +	struct dentry *entry;
->  
->  	/* First see if we did not already create this dir */
->  	list_for_each_entry(system, &event_subsystems, list) {
-> @@ -633,6 +699,14 @@ event_subsystem_dir(const char *name, struct dentry *d_events)
->  	system->name = name;
->  	list_add(&system->list, &event_subsystems);
->  
-> +	system->preds = NULL;
-> +
-> +	entry = debugfs_create_file("filter", 0444, system->entry, system,
-> +				    &ftrace_subsystem_filter_fops);
-> +	if (!entry)
-> +		pr_warning("Could not create debugfs "
-> +			   "'%s/filter' entry\n", name);
-> +
->  	return system->entry;
->  }
->  
-> diff --git a/kernel/trace/trace_events_filter.c b/kernel/trace/trace_events_filter.c
-> index 8e8c5fa..1ab20ce 100644
-> --- a/kernel/trace/trace_events_filter.c
-> +++ b/kernel/trace/trace_events_filter.c
-> @@ -181,6 +181,27 @@ void filter_free_preds(struct ftrace_event_call *call)
->  	}
->  }
->  
-> +void filter_free_subsystem_preds(struct event_subsystem *system)
-> +{
-> +	struct ftrace_event_call *call = __start_ftrace_events;
-> +	int i;
-> +
-> +	if (system->preds) {
-> +		for (i = 0; i < MAX_FILTER_PRED; i++)
-> +			filter_free_pred(system->preds[i]);
-> +		kfree(system->preds);
-> +		system->preds = NULL;
-> +	}
-> +
-> +	events_for_each(call) {
-> +		if (!call->name || !call->regfunc)
-> +			continue;
-> +
-> +		if (!strcmp(call->system, system->name))
-> +			filter_free_preds(call);
-> +	}
-> +}
-> +
->  static int __filter_add_pred(struct ftrace_event_call *call,
->  			     struct filter_pred *pred)
->  {
-> @@ -250,6 +271,65 @@ int filter_add_pred(struct ftrace_event_call *call, struct filter_pred *pred)
->  	return __filter_add_pred(call, pred);
->  }
->  
-> +static struct filter_pred *copy_pred(struct filter_pred *pred)
-> +{
-> +	struct filter_pred *new_pred = kmalloc(sizeof(*pred), GFP_KERNEL);
-> +	if (!new_pred)
-> +		return NULL;
-> +
-> +	memcpy(new_pred, pred, sizeof(*pred));
-> +	if (pred->str_val) {
-> +		new_pred->str_val = kstrdup(pred->str_val, GFP_KERNEL);
-> +		new_pred->field_name = kstrdup(pred->field_name, GFP_KERNEL);
-> +		if (!new_pred->str_val) {
-> +			kfree(new_pred);
+ - improved debugability of the kernel: faulty handlers do not take
+   down the system.
 
-Shouldn't there be a check for field_name too?
+ - allows prioritizing of the handlers which share an interrupt line
 
--- Steve
+The implementation provides an opt-in mechanism to convert drivers to
+the threaded interrupt handler model contrary to the preempt-rt patch
+where the threaded handlers are enabled by a brute force switch. The
+brute force switch is suboptimal as it does not change the interrupt
+handler -> tasklet/softirq interaction problems, but was the only way
+which was possible for the limited man power of the preempt-rt
+developers.
 
-> +			return NULL;
-> +		}
-> +	}
-> +
-> +	return new_pred;
-> +}
-> +
+Converting an interrupt to threaded makes only sense when the handler
+code takes advantage of it by integrating tasklet/softirq
+functionality and simplifying the locking.
+
+When a driver wants to use threaded interrupt handlers it needs to
+provide a separate thread function, which is called from the per
+device thread created in irq_request_threaded(). The primary handler
+still needs to be supplied. It checks whether the interrupt was
+originated from the device or not.
+
+In case it was originated from the device the primary handler must
+disable the interrupt at the device level and return
+IRQ_WAKE_THREAD. The generic interrupt handling core then sets the
+IRQF_RUNTHREAD in the irqaction of the handler and wakes the
+associated thread.
+
+The irqaction is referenced in the threads task_struct. The reference
+is used to prevent further referencing of the thread in the interrupt
+code in the case of segfault to make sure that the system (minus the
+now dead interrupt handler) survives and debug information can be
+retrieved. In the best case the driver can be restarted, but dont
+expect that as a given.
+
+The code was tested with a converted USB EHCI driver. The EHCI shares
+an interrupt line with another device and both the threaded and the
+non threaded handlers coexist nicely. 
+
+Further the AHCI driver for ICH chipsets was converted and
+tested. Interestingly enough this conversion did not cause worse
+benchmark results with iobench and fio compared to the non threaded
+mainline handler.
+
+I'm still looking into a clean solution for the threaded demultiplex
+handler case which was brought up by Dave to allow both the handling
+of the demultiplexed devices in the context of the demultiplexer
+interrupt thread and the wakeup of separate handler threads. But this
+is an orthogonal extension of the existing patch set and does not
+change the general design.
+
+The patches apply on 
+    git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git irq/threaded
+
+The irq/threaded branch contains the generic irq related changes which are
+already queued for .30
+
+Thanks,
+
+	tglx
+
