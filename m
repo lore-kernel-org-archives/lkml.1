@@ -1,58 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758755AbZCWVKY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759170AbZCWVMM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758755AbZCWVKY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Mar 2009 17:10:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754870AbZCWVKI
+	id S1759170AbZCWVMM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Mar 2009 17:12:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753697AbZCWVLz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Mar 2009 17:10:08 -0400
-Received: from ozlabs.org ([203.10.76.45]:50824 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753326AbZCWVKH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Mar 2009 17:10:07 -0400
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Jaswinder Singh Rajput <jaswinder@kernel.org>
-Subject: Re: [git-pull -tip] x86: cleanup patches 20090322
-Date: Tue, 24 Mar 2009 07:40:02 +1030
-User-Agent: KMail/1.11.1 (Linux/2.6.27-11-generic; KDE/4.2.1; i686; ; )
-Cc: Ingo Molnar <mingo@elte.hu>, x86 maintainers <x86@kernel.org>,
-       Sam Ravnborg <sam@ravnborg.org>, Yinghai Lu <yinghai@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-References: <1237755176.5417.16.camel@ht.satnam> <200903231845.05394.rusty@rustcorp.com.au> <1237801506.2485.7.camel@ht.satnam>
-In-Reply-To: <1237801506.2485.7.camel@ht.satnam>
+	Mon, 23 Mar 2009 17:11:55 -0400
+Received: from cpsmtpm-eml102.kpnxchange.com ([195.121.3.6]:58750 "EHLO
+	CPSMTPM-EML102.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752392AbZCWVLy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Mar 2009 17:11:54 -0400
+From: Frans Pop <elendil@planet.nl>
+To: linux-usb@vger.kernel.org
+Subject: [PATCH] usb: avoid PM error messages during resume if a device was disconnected
+Date: Mon, 23 Mar 2009 22:11:49 +0100
+User-Agent: KMail/1.9.9
+Cc: Alan Stern <stern@rowland.harvard.edu>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       linux-pm@lists.linux-foundation.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-15"
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200903240740.03281.rusty@rustcorp.com.au>
+Message-Id: <200903232211.51154.elendil@planet.nl>
+X-OriginalArrivalTime: 23 Mar 2009 21:11:52.0067 (UTC) FILETIME=[FCA65530:01C9ABFB]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 23 March 2009 20:15:06 Jaswinder Singh Rajput wrote:
-> On Mon, 2009-03-23 at 18:45 +1030, Rusty Russell wrote:
-> > On Monday 23 March 2009 07:22:56 Jaswinder Singh Rajput wrote:
-> > >       x86: e820.h fix various signedness issues in setup.c and e820.c
-> > 
-> > Wouldn't fixing the users be better than changing the header?  Esp. since
-> > it could well now cause similar warnings in userspace programs.
-...
-> Is this OK, or should I go more further:
-> 
-> From: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
-> Date: Mon, 23 Mar 2009 02:13:01 +0530
-> Subject: [PATCH] x86: e820 fix various signedness issues in setup.c and e820.c
-> 
-> Impact: cleanup
-> 
-> This fixed various signedness issues in setup.c and e820.c:
-> arch/x86/kernel/setup.c:455:53: warning: incorrect type in argument 3 (different signedness)
+Currently if a laptop is suspended e.g. while docked and then resumed after
+undocking it, the following errors get generated because the USB hub in the
+docking station and the devices connected to it are no longer available:
+pm_op(): usb_dev_resume+0x0/0x10 returns -19
+PM: Device 1-2 failed to resume: error -19
+pm_op(): usb_dev_resume+0x0/0x10 returns -19
+PM: Device 1-2.2 failed to resume: error -19
+pm_op(): usb_dev_resume+0x0/0x10 returns -19
+PM: Device 1-2.3 failed to resume: error -19
 
-This looks fine (assuming it fixes the warnings).
+As the removal of USB devices while a system is suspended is a relatively
+common use case and in most cases not an error, just return success on
+-ENODEV. The user gets informed anyway as the USB subsystem generates
+regular disconnect messages for the devices shortly afterwards:
+usb 1-2: USB disconnect, address 3
+usb 1-2.2: USB disconnect, address 4
+usblp0: removed
+usb 1-2.3: USB disconnect, address 5
 
-In future it would be nice to explicitly mention that these are "sparse"
-warnings, not actual "signedness issues" ("Impact: cleanup" implies that,
-but the subject makes it sound like there's a pressing problem).
+Signed-off-by: Frans Pop <elendil@planet.nl>
+Cc: Alan Stern <stern@rowland.harvard.edu>
+Cc: Rafael J. Wysocki <rjw@sisk.pl>
+---
 
-Thanks,
-Rusty.
+I've walked through the code and AFAICT just returning 0 does not make any
+difference for the PM core code.
+
+In a first version of this patch I had the following included just before
+the 'return 0':
+	pr_info("usb %s: failed to resume: no longer connected\n",
+						dev_name(&udev->dev));
+
+Problem with that was that the message got printed twice for each device,
+once for .resume and once for .complete. Given that the disconnects are
+reported shortly after anyway, I decided the simpler patch might do just
+as well.
+
+Cheers,
+FJP
+
+diff --git a/drivers/usb/core/driver.c b/drivers/usb/core/driver.c
+index d0a21a5..97ea69b 100644
+--- a/drivers/usb/core/driver.c
++++ b/drivers/usb/core/driver.c
+@@ -1727,6 +1727,10 @@ int usb_external_resume_device(struct usb_device *udev, pm_message_t msg)
+ 	status = usb_resume_both(udev, msg);
+ 	udev->last_busy = jiffies;
+ 	usb_pm_unlock(udev);
++
++	if (status == -ENODEV)
++		return 0;
++
+ 	if (status == 0)
+ 		do_unbind_rebind(udev, DO_REBIND);
+ 
