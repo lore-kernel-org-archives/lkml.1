@@ -1,23 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760603AbZCWSKf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760681AbZCWSKv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760603AbZCWSKf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Mar 2009 14:10:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760463AbZCWSKF
+	id S1760681AbZCWSKv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Mar 2009 14:10:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760547AbZCWSKH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Mar 2009 14:10:05 -0400
-Received: from adsl-69-107-72-54.dsl.pltn13.pacbell.net ([69.107.72.54]:60833
+	Mon, 23 Mar 2009 14:10:07 -0400
+Received: from adsl-69-107-72-54.dsl.pltn13.pacbell.net ([69.107.72.54]:60835
 	"EHLO abulafia.goop.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755028AbZCWSKB (ORCPT
+	with ESMTP id S1759782AbZCWSKC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Mar 2009 14:10:01 -0400
+	Mon, 23 Mar 2009 14:10:02 -0400
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: "H. Peter Anvin" <hpa@zytor.com>
 Cc: the arch/x86 maintainers <x86@kernel.org>, Ingo Molnar <mingo@elte.hu>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Xen-devel <xen-devel@lists.xensource.com>
-Subject: [GIT PULL] xen/dom0: core dom0 support
-Date: Mon, 23 Mar 2009 11:09:44 -0700
-Message-Id: <1237831799-6568-1-git-send-email-jeremy@goop.org>
+       Xen-devel <xen-devel@lists.xensource.com>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>,
+       Juan Quintela <quintela@redhat.com>
+Subject: [PATCH 01/15] xen dom0: Make hvc_xen console work for dom0.
+Date: Mon, 23 Mar 2009 11:09:45 -0700
+Message-Id: <1237831799-6568-2-git-send-email-jeremy@goop.org>
 X-Mailer: git-send-email 1.6.0.6
 In-Reply-To: <49C45238.7050007@zytor.com>
 References: <49C45238.7050007@zytor.com>
@@ -25,87 +28,226 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This series adds core dom0 support for Xen, allowing the kernel to boot
-as Xen's control domain.  It isn't much use on its own (it doesn't result
-in a booting dom0 kernel), but it lays the foundations for later changes.
-Native booting is unaffected.
+Impact: Add Xen dom0 console
 
-This is largely unchanged from the last posting, other than being rebased
-to a newer version of tip/master (or, more precisely, the other Xen topic
-branches which themselves have been rebased).
+Use the console hypercalls for dom0 console.
 
-Thanks,
-	J
+Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+Signed-off-by: Juan Quintela <quintela@redhat.com>
+---
+ drivers/char/hvc_xen.c |  101 ++++++++++++++++++++++++++++++++----------------
+ drivers/xen/events.c   |    2 +-
+ include/xen/events.h   |    2 +
+ 3 files changed, 70 insertions(+), 35 deletions(-)
 
-The following changes since commit 627b11ca44b334e201c35bf1a1582dc10efaf4a8:
-  Jeremy Fitzhardinge (1):
-        xen/mmu: weaken flush_tlb_other test
-
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/jeremy/xen.git push2/xen/dom0/core
-
-Christophe Saout (1):
-      paravirtualize IO permission bitmap
-
-Ian Campbell (4):
-      xen: disable PAT
-      xen/dom0: Use host E820 map
-      xen: implement XENMEM_machphys_mapping
-      xen: clear reserved bits in l3 entries given in the initial pagetables
-
-Jeremy Fitzhardinge (6):
-      xen dom0: Make hvc_xen console work for dom0.
-      xen/dom0: use _PAGE_IOMAP in ioremap to do machine mappings
-      xen: allow enable use of VGA console on dom0
-      xen/dom0: add XEN_DOM0 config option
-      x86: make /dev/mem mappings _PAGE_IOMAP
-      x86: don't need "changed" parameter for set_io_bitmap()
-
-Juan Quintela (2):
-      xen dom0: Initialize xenbus for dom0.
-      xen dom0: Set up basic IO permissions for dom0.
-
-Stephen Tweedie (2):
-      xen dom0: Add support for the platform_ops hypercall
-      xen mtrr: Add mtrr_ops support for Xen mtrr
-
- arch/x86/include/asm/paravirt.h         |    9 ++
- arch/x86/include/asm/pat.h              |    5 +
- arch/x86/include/asm/processor.h        |    4 +
- arch/x86/include/asm/xen/hypercall.h    |    8 +
- arch/x86/include/asm/xen/interface.h    |    6 +-
- arch/x86/include/asm/xen/interface_32.h |    5 +
- arch/x86/include/asm/xen/interface_64.h |   13 +--
- arch/x86/include/asm/xen/page.h         |   15 +--
- arch/x86/kernel/cpu/mtrr/Makefile       |    1 +
- arch/x86/kernel/cpu/mtrr/amd.c          |    1 +
- arch/x86/kernel/cpu/mtrr/centaur.c      |    1 +
- arch/x86/kernel/cpu/mtrr/cyrix.c        |    1 +
- arch/x86/kernel/cpu/mtrr/generic.c      |    1 +
- arch/x86/kernel/cpu/mtrr/main.c         |   11 +-
- arch/x86/kernel/cpu/mtrr/mtrr.h         |    5 +
- arch/x86/kernel/cpu/mtrr/xen.c          |   59 ++++++++
- arch/x86/kernel/ioport.c                |   29 +++-
- arch/x86/kernel/paravirt.c              |    1 +
- arch/x86/kernel/process.c               |   27 +---
- arch/x86/mm/pat.c                       |    7 +-
- arch/x86/xen/Kconfig                    |   26 ++++
- arch/x86/xen/Makefile                   |    3 +-
- arch/x86/xen/enlighten.c                |   51 ++++++-
- arch/x86/xen/mmu.c                      |  123 ++++++++++++++++-
- arch/x86/xen/setup.c                    |   51 ++++++-
- arch/x86/xen/vga.c                      |   67 +++++++++
- arch/x86/xen/xen-ops.h                  |   12 ++
- drivers/char/hvc_xen.c                  |  101 +++++++++-----
- drivers/xen/events.c                    |    2 +-
- drivers/xen/xenbus/xenbus_probe.c       |   30 ++++-
- include/xen/events.h                    |    2 +
- include/xen/interface/memory.h          |   42 ++++++
- include/xen/interface/platform.h        |  232 +++++++++++++++++++++++++++++++
- include/xen/interface/xen.h             |   41 ++++++
- 34 files changed, 885 insertions(+), 107 deletions(-)
- create mode 100644 arch/x86/kernel/cpu/mtrr/xen.c
- create mode 100644 arch/x86/xen/vga.c
- create mode 100644 include/xen/interface/platform.h
+diff --git a/drivers/char/hvc_xen.c b/drivers/char/hvc_xen.c
+index eba999f..81d9186 100644
+--- a/drivers/char/hvc_xen.c
++++ b/drivers/char/hvc_xen.c
+@@ -55,7 +55,7 @@ static inline void notify_daemon(void)
+ 	notify_remote_via_evtchn(xen_start_info->console.domU.evtchn);
+ }
+ 
+-static int write_console(uint32_t vtermno, const char *data, int len)
++static int domU_write_console(uint32_t vtermno, const char *data, int len)
+ {
+ 	struct xencons_interface *intf = xencons_interface();
+ 	XENCONS_RING_IDX cons, prod;
+@@ -76,7 +76,7 @@ static int write_console(uint32_t vtermno, const char *data, int len)
+ 	return sent;
+ }
+ 
+-static int read_console(uint32_t vtermno, char *buf, int len)
++static int domU_read_console(uint32_t vtermno, char *buf, int len)
+ {
+ 	struct xencons_interface *intf = xencons_interface();
+ 	XENCONS_RING_IDX cons, prod;
+@@ -97,28 +97,63 @@ static int read_console(uint32_t vtermno, char *buf, int len)
+ 	return recv;
+ }
+ 
+-static struct hv_ops hvc_ops = {
+-	.get_chars = read_console,
+-	.put_chars = write_console,
++static struct hv_ops domU_hvc_ops = {
++	.get_chars = domU_read_console,
++	.put_chars = domU_write_console,
+ 	.notifier_add = notifier_add_irq,
+ 	.notifier_del = notifier_del_irq,
+ 	.notifier_hangup = notifier_hangup_irq,
+ };
+ 
+-static int __init xen_init(void)
++static int dom0_read_console(uint32_t vtermno, char *buf, int len)
++{
++	return HYPERVISOR_console_io(CONSOLEIO_read, len, buf);
++}
++
++/*
++ * Either for a dom0 to write to the system console, or a domU with a
++ * debug version of Xen
++ */
++static int dom0_write_console(uint32_t vtermno, const char *str, int len)
++{
++	int rc = HYPERVISOR_console_io(CONSOLEIO_write, len, (char *)str);
++	if (rc < 0)
++		return 0;
++
++	return len;
++}
++
++static struct hv_ops dom0_hvc_ops = {
++	.get_chars = dom0_read_console,
++	.put_chars = dom0_write_console,
++	.notifier_add = notifier_add_irq,
++	.notifier_del = notifier_del_irq,
++	.notifier_hangup = notifier_hangup_irq,
++};
++
++static int __init xen_hvc_init(void)
+ {
+ 	struct hvc_struct *hp;
++	struct hv_ops *ops;
+ 
+-	if (!xen_pv_domain() ||
+-	    xen_initial_domain() ||
+-	    !xen_start_info->console.domU.evtchn)
+-		return -ENODEV;
++	if (!xen_pv_domain())
++ 		return -ENODEV;
++
++	if (xen_initial_domain()) {
++		ops = &dom0_hvc_ops;
++		xencons_irq = bind_virq_to_irq(VIRQ_CONSOLE, 0);
++	} else {
++		if (!xen_start_info->console.domU.evtchn)
++			return -ENODEV;
++
++		ops = &domU_hvc_ops;
++		xencons_irq = bind_evtchn_to_irq(xen_start_info->console.domU.evtchn);
++	}
+ 
+-	xencons_irq = bind_evtchn_to_irq(xen_start_info->console.domU.evtchn);
+ 	if (xencons_irq < 0)
+ 		xencons_irq = 0; /* NO_IRQ */
+ 
+-	hp = hvc_alloc(HVC_COOKIE, xencons_irq, &hvc_ops, 256);
++	hp = hvc_alloc(HVC_COOKIE, xencons_irq, ops, 256);
+ 	if (IS_ERR(hp))
+ 		return PTR_ERR(hp);
+ 
+@@ -135,7 +170,7 @@ void xen_console_resume(void)
+ 		rebind_evtchn_irq(xen_start_info->console.domU.evtchn, xencons_irq);
+ }
+ 
+-static void __exit xen_fini(void)
++static void __exit xen_hvc_fini(void)
+ {
+ 	if (hvc)
+ 		hvc_remove(hvc);
+@@ -143,29 +178,24 @@ static void __exit xen_fini(void)
+ 
+ static int xen_cons_init(void)
+ {
++	struct hv_ops *ops;
++
+ 	if (!xen_pv_domain())
+ 		return 0;
+ 
+-	hvc_instantiate(HVC_COOKIE, 0, &hvc_ops);
++	ops = &domU_hvc_ops;
++	if (xen_initial_domain())
++		ops = &dom0_hvc_ops;
++
++	hvc_instantiate(HVC_COOKIE, 0, ops);
++
+ 	return 0;
+ }
+ 
+-module_init(xen_init);
+-module_exit(xen_fini);
++module_init(xen_hvc_init);
++module_exit(xen_hvc_fini);
+ console_initcall(xen_cons_init);
+ 
+-static void raw_console_write(const char *str, int len)
+-{
+-	while(len > 0) {
+-		int rc = HYPERVISOR_console_io(CONSOLEIO_write, len, (char *)str);
+-		if (rc <= 0)
+-			break;
+-
+-		str += rc;
+-		len -= rc;
+-	}
+-}
+-
+ #ifdef CONFIG_EARLY_PRINTK
+ static void xenboot_write_console(struct console *console, const char *string,
+ 				  unsigned len)
+@@ -173,19 +203,22 @@ static void xenboot_write_console(struct console *console, const char *string,
+ 	unsigned int linelen, off = 0;
+ 	const char *pos;
+ 
+-	raw_console_write(string, len);
++	dom0_write_console(0, string, len);
++
++	if (xen_initial_domain())
++		return;
+ 
+-	write_console(0, "(early) ", 8);
++	domU_write_console(0, "(early) ", 8);
+ 	while (off < len && NULL != (pos = strchr(string+off, '\n'))) {
+ 		linelen = pos-string+off;
+ 		if (off + linelen > len)
+ 			break;
+-		write_console(0, string+off, linelen);
+-		write_console(0, "\r\n", 2);
++		domU_write_console(0, string+off, linelen);
++		domU_write_console(0, "\r\n", 2);
+ 		off += linelen + 1;
+ 	}
+ 	if (off < len)
+-		write_console(0, string+off, len-off);
++		domU_write_console(0, string+off, len-off);
+ }
+ 
+ struct console xenboot_console = {
+@@ -197,7 +230,7 @@ struct console xenboot_console = {
+ 
+ void xen_raw_console_write(const char *str)
+ {
+-	raw_console_write(str, strlen(str));
++	dom0_write_console(0, str, strlen(str));
+ }
+ 
+ void xen_raw_printk(const char *fmt, ...)
+diff --git a/drivers/xen/events.c b/drivers/xen/events.c
+index 30963af..f46e880 100644
+--- a/drivers/xen/events.c
++++ b/drivers/xen/events.c
+@@ -404,7 +404,7 @@ static int bind_ipi_to_irq(unsigned int ipi, unsigned int cpu)
+ }
+ 
+ 
+-static int bind_virq_to_irq(unsigned int virq, unsigned int cpu)
++int bind_virq_to_irq(unsigned int virq, unsigned int cpu)
+ {
+ 	struct evtchn_bind_virq bind_virq;
+ 	int evtchn, irq;
+diff --git a/include/xen/events.h b/include/xen/events.h
+index 0d5f1ad..0397ba1 100644
+--- a/include/xen/events.h
++++ b/include/xen/events.h
+@@ -12,6 +12,8 @@ int bind_evtchn_to_irqhandler(unsigned int evtchn,
+ 			      irq_handler_t handler,
+ 			      unsigned long irqflags, const char *devname,
+ 			      void *dev_id);
++int bind_virq_to_irq(unsigned int virq, unsigned int cpu);
++
+ int bind_virq_to_irqhandler(unsigned int virq, unsigned int cpu,
+ 			    irq_handler_t handler,
+ 			    unsigned long irqflags, const char *devname,
+-- 
+1.6.0.6
 
