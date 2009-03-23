@@ -1,78 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759040AbZCWPet@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758626AbZCWPh7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759040AbZCWPet (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Mar 2009 11:34:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757519AbZCWPd2
+	id S1758626AbZCWPh7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Mar 2009 11:37:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755559AbZCWPhu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Mar 2009 11:33:28 -0400
-Received: from mx1.emlix.com ([193.175.82.87]:45438 "EHLO mx1.emlix.com"
+	Mon, 23 Mar 2009 11:37:50 -0400
+Received: from mx1.emlix.com ([193.175.82.87]:56000 "EHLO mx1.emlix.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755831AbZCWPdZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Mar 2009 11:33:25 -0400
-From: =?utf-8?q?Daniel=20Gl=C3=B6ckner?= <dg@emlix.com>
+	id S1753536AbZCWPht (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Mar 2009 11:37:49 -0400
+Message-ID: <49C7ACCA.2080602@emlix.com>
+Date: Mon, 23 Mar 2009 16:37:46 +0100
+From: =?ISO-8859-15?Q?Daniel_Gl=F6ckner?= <dg@emlix.com>
+Organization: emlix GmbH
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+MIME-Version: 1.0
 To: Chris Zankel <chris@zankel.net>,
        David Brownell <dbrownell@users.sourceforge.net>
-Cc: spi-devel-general@lists.sourceforge.net, linux-kernel@vger.kernel.org,
-       =?utf-8?q?Daniel=20Gl=C3=B6ckner?= <dg@emlix.com>
-Subject: [patch 6/6] xtensa: enable spi mmc host in s6105_defconfig
-Date: Mon, 23 Mar 2009 16:34:22 +0100
-Message-Id: <1237822462-32109-6-git-send-email-dg@emlix.com>
-In-Reply-To: <1237822462-32109-1-git-send-email-dg@emlix.com>
-References: <1237822462-32109-1-git-send-email-dg@emlix.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+CC: spi-devel-general@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: Re: [patch 5/6] xtensa: enable s6000 spi host in s6105_defconfig
+References: <1237822462-32109-1-git-send-email-dg@emlix.com> <1237822462-32109-5-git-send-email-dg@emlix.com>
+In-Reply-To: <1237822462-32109-5-git-send-email-dg@emlix.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-15
 Content-Transfer-Encoding: 8bit
-Organization: emlix gmbh, Goettingen, Germany"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Daniel GlÃ¶ckner <dg@emlix.com>
----
- arch/xtensa/configs/s6105_defconfig |   22 +++++++++++++++++++---
- 1 files changed, 19 insertions(+), 3 deletions(-)
+"
 
-diff --git a/arch/xtensa/configs/s6105_defconfig b/arch/xtensa/configs/s6105_defconfig
-index 02bab6e..c5ea056 100644
---- a/arch/xtensa/configs/s6105_defconfig
-+++ b/arch/xtensa/configs/s6105_defconfig
-@@ -509,7 +509,23 @@ CONFIG_SSB_POSSIBLE=y
- # CONFIG_DISPLAY_SUPPORT is not set
- # CONFIG_SOUND is not set
- # CONFIG_USB_SUPPORT is not set
--# CONFIG_MMC is not set
-+CONFIG_MMC=y
-+# CONFIG_MMC_DEBUG is not set
-+# CONFIG_MMC_UNSAFE_RESUME is not set
-+
-+#
-+# MMC/SD/SDIO Card Drivers
-+#
-+CONFIG_MMC_BLOCK=y
-+# CONFIG_MMC_BLOCK_BOUNCE is not set
-+# CONFIG_SDIO_UART is not set
-+# CONFIG_MMC_TEST is not set
-+
-+#
-+# MMC/SD/SDIO Host Controller Drivers
-+#
-+# CONFIG_MMC_SDHCI is not set
-+CONFIG_MMC_SPI=y
- # CONFIG_MEMSTICK is not set
- # CONFIG_NEW_LEDS is not set
- # CONFIG_ACCESSIBILITY is not set
-@@ -646,9 +662,9 @@ CONFIG_GENERIC_FIND_LAST_BIT=y
- # CONFIG_CRC_CCITT is not set
- # CONFIG_CRC16 is not set
- # CONFIG_CRC_T10DIF is not set
--# CONFIG_CRC_ITU_T is not set
-+CONFIG_CRC_ITU_T=y
- # CONFIG_CRC32 is not set
--# CONFIG_CRC7 is not set
-+CONFIG_CRC7=y
- # CONFIG_LIBCRC32C is not set
- CONFIG_PLIST=y
- CONFIG_HAS_IOMEM=y
+On 03/23/2009 04:34 PM, Daniel Glöckner wrote:
+> ---
+>  arch/xtensa/configs/s6105_defconfig |   20 +++++++++++++++++++-
+>  1 files changed, 19 insertions(+), 1 deletions(-)
+> 
+> diff --git a/arch/xtensa/configs/s6105_defconfig b/arch/xtensa/configs/s6105_defconfig
+> index e398710..02bab6e 100644
+
+Signed-off-by: Daniel Glöckner <dg@emlix.com>
+
+
 -- 
-1.6.2.107.ge47ee
+Dipl.-Math. Daniel Glöckner, emlix GmbH, http://www.emlix.com
+Fon +49 551 30664-0, Fax -11, Bahnhofsallee 1b, 37081 Göttingen, Germany
+Geschäftsführung: Dr. Uwe Kracke, Dr. Cord Seele, Ust-IdNr.: DE 205 198 055
+Sitz der Gesellschaft: Göttingen, Amtsgericht Göttingen HR B 3160
 
+emlix - your embedded linux partner
