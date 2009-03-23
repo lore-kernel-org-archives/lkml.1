@@ -1,72 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757414AbZCWJBk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756890AbZCWJE2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757414AbZCWJBk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Mar 2009 05:01:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756964AbZCWJBR
+	id S1756890AbZCWJE2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Mar 2009 05:04:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756213AbZCWJES
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Mar 2009 05:01:17 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:51657 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756383AbZCWJBQ (ORCPT
+	Mon, 23 Mar 2009 05:04:18 -0400
+Received: from webbox687.server-home.net ([195.149.74.151]:47793 "EHLO
+	webbox687.server-home.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752043AbZCWJER (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Mar 2009 05:01:16 -0400
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Johannes Weiner <hannes@cmpxchg.org>
-Subject: Re: [patch 3/3] mm: keep pages from unevictable mappings off the LRU  lists
-Cc: kosaki.motohiro@jp.fujitsu.com, Minchan Kim <minchan.kim@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, David Howells <dhowells@redhat.com>,
-       Nick Piggin <npiggin@suse.de>, Rik van Riel <riel@redhat.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-In-Reply-To: <20090323084254.GA1685@cmpxchg.org>
-References: <20090323111615.69F3.A69D9226@jp.fujitsu.com> <20090323084254.GA1685@cmpxchg.org>
-Message-Id: <20090323175507.6A18.A69D9226@jp.fujitsu.com>
+	Mon, 23 Mar 2009 05:04:17 -0400
+Message-ID: <49C7505B.2010205@systec-electronic.com>
+Date: Mon, 23 Mar 2009 10:03:23 +0100
+From: =?ISO-8859-1?Q?Daniel_Kr=FCger?= 
+	<daniel.krueger@systec-electronic.com>
+User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+To: david@lang.hm
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Robert Schwebel <r.schwebel@pengutronix.de>, Greg KH <greg@kroah.com>,
+       linux-kernel@vger.kernel.org, Michael Olbrich <mol@pengutronix.de>,
+       Wolfram Sang <wsa@pengutronix.de>,
+       Marc Kleine-Budde <mkl@pengutronix.de>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: The Linux Staging tree, what it is and is not.
+References: <20090318183232.GA11594@kroah.com> <20090320005808.GM5367@pengutronix.de> <20090320100146.6599f671@lxorguk.ukuu.org.uk> <20090320103545.GQ5367@pengutronix.de> <20090320105556.4375176d@lxorguk.ukuu.org.uk> <20090320111552.GS5367@pengutronix.de> <49C3B33F.1020905@systec-electronic.com> <20090320153713.65bf8e2d@lxorguk.ukuu.org.uk> <alpine.DEB.1.10.0903201332130.16753@asgard.lang.hm>
+In-Reply-To: <alpine.DEB.1.10.0903201332130.16753@asgard.lang.hm>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50 [ja]
-Date: Mon, 23 Mar 2009 18:01:07 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Mon, Mar 23, 2009 at 11:21:36AM +0900, KOSAKI Motohiro wrote:
-> > > Hmm,,
-> > > 
-> > > This patch is another thing unlike previous series patches.
-> > > Firstly, It looked good to me.
-> > > 
-> > > I think add_to_page_cache_lru have to become a fast path.
-> > > But, how often would ramfs and shmem function be called ?
-> > > 
-> > > I have a concern for this patch to add another burden.
-> > > so, we need any numbers for getting pros and cons.
-> > > 
-> > > Any thoughts ?
-> > 
-> > this is the just reason why current code don't call add_page_to_unevictable_list().
-> > add_page_to_unevictable_list() don't use pagevec. it is needed for avoiding race.
-> > 
-> > then, if readahead path (i.e. add_to_page_cache_lru()) use add_page_to_unevictable_list(),
-> > it can cause zone->lru_lock contention storm.
+david@lang.hm schrieb:
+> On Fri, 20 Mar 2009, Alan Cox wrote:
 > 
-> How is it different then shrink_page_list()?  If readahead put a
-> contiguous chunk of unevictable pages to the file lru, then
-> shrink_page_list() will as well call add_page_to_unevictable_list() in
-> a loop.
+>>> information of what to copy to where comes from the object dictionary.
+>>> But it is possible to extract this information from the objdict and pass
+>>> it via generic structures (e.g. something like IO vectors) to the PDO
+>>> module in kernel. The information flow of the configuration data is
+>>> one-way only, from userspace to kernel. This is what I plan to implement
+>>> in openPOWERLINK, because the copy information can also be passed to a
+>>> special hardware like a DMA controller.
+>>
+>> Ok so your hardware in fact really is oriented around an mmap type
+>> interface ?
+> 
+> what I understand from this thread is that the hardware is a standard 
+> ethernet card.
 
-it's probability issue.
+It may be a standard Ethernet controller. But it could also be a 
+controller with a special hardware acceleration.
 
-readahead: we need to concern
-	(1) readahead vs readahead
-	(2) readahead vs reclaim
+cu,
+   Daniel
 
-vmscan: we need to concern
-	(3) background reclaim vs foreground reclaim
+--
+SYS TEC electronic GmbH
+August-Bebel-Str. 29
+D-07973 Greiz
 
-So, (3) is rarely event than (1) and (2).
-Am I missing anything?
+Telefon  : +49 (0) 3661 6279 0
+Fax      : +49 (0) 3661 6279 99
+Email    : daniel.krueger@systec-electronic.com
+Internet : http://www.systec-electronic.com
 
-
-
+Managing Director   : Dipl.-Phys. Siegmar Schmidt
+Commercial registry : Amtsgericht Jena, HRB 205563
