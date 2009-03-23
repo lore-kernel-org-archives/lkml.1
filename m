@@ -1,47 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756856AbZCWIP3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757402AbZCWIPr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756856AbZCWIP3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Mar 2009 04:15:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755134AbZCWIPN
+	id S1757402AbZCWIPr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Mar 2009 04:15:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756719AbZCWIPW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Mar 2009 04:15:13 -0400
-Received: from ozlabs.org ([203.10.76.45]:52493 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754917AbZCWIPL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Mar 2009 04:15:11 -0400
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Jaswinder Singh Rajput <jaswinder@kernel.org>
-Subject: Re: [git-pull -tip] x86: cleanup patches 20090322
-Date: Mon, 23 Mar 2009 18:45:04 +1030
-User-Agent: KMail/1.11.1 (Linux/2.6.27-11-generic; KDE/4.2.1; i686; ; )
-Cc: Ingo Molnar <mingo@elte.hu>, x86 maintainers <x86@kernel.org>,
-       Sam Ravnborg <sam@ravnborg.org>, Yinghai Lu <yinghai@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-References: <1237755176.5417.16.camel@ht.satnam>
-In-Reply-To: <1237755176.5417.16.camel@ht.satnam>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+	Mon, 23 Mar 2009 04:15:22 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:51904
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1756606AbZCWIPV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Mar 2009 04:15:21 -0400
+Date: Mon, 23 Mar 2009 01:15:08 -0700 (PDT)
+Message-Id: <20090323.011508.140910146.davem@davemloft.net>
+To: jarkao2@gmail.com
+Cc: mpm@selenic.com, marcin.slusarz@gmail.com, netdev@vger.kernel.org,
+       k-keiichi@bx.jp.nec.com, stable@kernel.org, rjw@sisk.pl,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] netconsole: fix BUG during net device "upping"
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20090323081158.GB4976@ff.dom.local>
+References: <20090323080455.GA4976@ff.dom.local>
+	<20090323.010541.94308473.davem@davemloft.net>
+	<20090323081158.GB4976@ff.dom.local>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200903231845.05394.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 23 March 2009 07:22:56 Jaswinder Singh Rajput wrote:
->       x86: e820.h fix various signedness issues in setup.c and e820.c
+From: Jarek Poplawski <jarkao2@gmail.com>
+Date: Mon, 23 Mar 2009 08:11:58 +0000
 
-Wouldn't fixing the users be better than changing the header?  Esp. since
-it could well now cause similar warnings in userspace programs.
+> On Mon, Mar 23, 2009 at 01:05:41AM -0700, David Miller wrote:
+> > From: Jarek Poplawski <jarkao2@gmail.com>
+> > Date: Mon, 23 Mar 2009 08:04:55 +0000
+> > 
+> > > What is the rationale of this decision? printk is a basic tool,
+> > > especially designed to work in as many places as possible, and
+> > > netconsole is rather something secondary (sorry Matt)?!
+> > 
+> > And this basic tool cannot work from the drivers ->open() method.
+> 
+> And in any function used in the drivers ->open(). BTW, with Marcin's
+> patch it can...
 
->  struct e820map {
-> -	__u32 nr_map;
-> +	__s32 nr_map;
->  	struct e820entry map[E820_X_MAX];
->  };
+This issue came up before, and after we added the netif_running()
+check we hit this IIF_UP one and at the time we looked into it
+and the result we came up with is that you just can't do it in
+a network driver's ->open()
 
-This number can't be negative!
+Look up the thread, I'm too lazy...
 
-Cheers,
-Rusty.
