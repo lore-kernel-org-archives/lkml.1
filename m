@@ -1,82 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756400AbZCWK5Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757042AbZCWK5v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756400AbZCWK5Y (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Mar 2009 06:57:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753061AbZCWK5P
+	id S1757042AbZCWK5v (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Mar 2009 06:57:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754633AbZCWK5i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Mar 2009 06:57:15 -0400
-Received: from mail-bw0-f169.google.com ([209.85.218.169]:35817 "EHLO
-	mail-bw0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750828AbZCWK5O convert rfc822-to-8bit (ORCPT
+	Mon, 23 Mar 2009 06:57:38 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:57888 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756063AbZCWK5h (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Mar 2009 06:57:14 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=xRPTd1KUHRG4kR11ldMhiKLiNhDT1K/JKeUD0cOwHrDIRYVxwWjij/tqQybj+cdSzb
-         RuyFDGzopiHrRuzq8WkLELlSyW2JPK2nzbqKuqLh1bQtAJYI3DYSMdFkkk0Iq4KKQGiM
-         BvNT3mpt7AdGNBlWHwy3y2ix5fzrYiJ3vLm2E=
+	Mon, 23 Mar 2009 06:57:37 -0400
+Date: Mon, 23 Mar 2009 12:00:19 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Sitsofe Wheeler <sitsofe@yahoo.com>
+Cc: Rob Landley <rob@landley.net>, kernel list <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@osdl.org>, mtk.manpages@gmail.com, tytso@mit.edu,
+       rdunlap@xenotime.net, linux-doc@vger.kernel.org,
+       linux-ext4@vger.kernel.org
+Subject: Re: ext2/3: document conditions when reliable operation is possible
+Message-ID: <20090323110019.GD17681@elf.ucw.cz>
+References: <20090312092114.GC6949@elf.ucw.cz> <200903121413.04434.rob@landley.net> <20090316123051.GJ2405@elf.ucw.cz> <20090316194057.GA27897@silver.sucs.org>
 MIME-Version: 1.0
-In-Reply-To: <20090321014909.6b654f55.akpm@linux-foundation.org>
-References: <20090321013946.890F4FC3AB@magilla.sf.frob.com>
-	 <20090321014140.AA4F5FC3AB@magilla.sf.frob.com>
-	 <20090321014909.6b654f55.akpm@linux-foundation.org>
-Date: Mon, 23 Mar 2009 10:57:11 +0000
-Message-ID: <87a5b0800903230357n3eedaac1u6c70c22fedea5ffc@mail.gmail.com>
-Subject: Re: [PATCH 2/3] utrace core
-From: Will Newton <will.newton@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Roland McGrath <roland@redhat.com>, utrace-devel@redhat.com,
-       linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090316194057.GA27897@silver.sucs.org>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Mar 21, 2009 at 8:49 AM, Andrew Morton
-<akpm@linux-foundation.org> wrote:
-> On Fri, 20 Mar 2009 18:41:40 -0700 (PDT) Roland McGrath <roland@redhat.com> wrote:
->
->> This adds the utrace facility, a new modular interface in the kernel for
->> implementing user thread tracing and debugging.  This fits on top of the
->> tracehook_* layer, so the new code is well-isolated.
->>
->> The new interface is in <linux/utrace.h> and the DocBook utrace book
->> describes it.  It allows for multiple separate tracing engines to work in
->> parallel without interfering with each other.  Higher-level tracing
->> facilities can be implemented as loadable kernel modules using this layer.
->>
->> The new facility is made optional under CONFIG_UTRACE.
->> When this is not enabled, no new code is added.
->> It can only be enabled on machines that have all the
->> prerequisites and select CONFIG_HAVE_ARCH_TRACEHOOK.
->>
->> In this initial version, utrace and ptrace do not play together at all.
->> If ptrace is attached to a thread, the attach calls in the utrace kernel
->> API return -EBUSY.  If utrace is attached to a thread, the PTRACE_ATTACH
->> or PTRACE_TRACEME request will return EBUSY to userland.  The old ptrace
->> code is otherwise unchanged and nothing using ptrace should be affected
->> by this patch as long as utrace is not used at the same time.  In the
->> future we can clean up the ptrace implementation and rework it to use
->> the utrace API.
->
-> I'd be interested in seeing a bit of discussion regarding the overall value
-> of utrace - it has been quite a while since it floated past.
->
-> I assume that redoing ptrace to be a client of utrace _will_ happen, and
-> that this is merely a cleanup exercise with no new user-visible features?
->
-> The "prototype utrace-ftrace interface" seems to be more a cool toy rather
-> than a serious new kernel feature (yes?)
->
-> If so, what are the new killer utrace clients which would justify all these
-> changes?
+On Mon 2009-03-16 19:40:57, Sitsofe Wheeler wrote:
+> On Mon, Mar 16, 2009 at 01:30:51PM +0100, Pavel Machek wrote:
+> > +	Unfortunately, none of the cheap USB/SD flash cards I've seen
+> > +	do behave like this, and are thus unsuitable for all Linux
+> > +	filesystems I know.
+> 
+> When you say Linux filesystems do you mean "filesystems originally
+> designed on Linux" or do you mean "filesystems that Linux supports"?
 
-It looks like utrace could provide a nice way to do low latency
-tracing of userspace processes via a hardware interface (e.g. JTAG or
-custom trace hardware). The only way to do that at present is to
-scatter bits of instrumentation throughout the kernel.
+"Linux filesystems I know" :-). No filesystem that Linux supports,
+AFAICT.
 
-I would like to see utrace merged so I can work on that type of feature.
+> Additionally whatever the answer, people are going to need help
+> answering the "which is the least bad?" question and saying what's not
+> good without offering alternatives is only half helpful... People need
+> to put SOMETHING on these cheap (and not quite so cheap)
+> devices... The
+
+According to me, people should just AVOID those devices. I don't plan
+to point the "least bad"; its still bad.
+
+> > +	   hdparm -I reports disk features. If you have "Native
+> > +	   Command Queueing" is the feature you are looking for.
+> 
+> The document makes it sound like nearly everything bar battery backed
+> hardware RAIDed SCSI disks (with perfect firmware) is bad  - is this
+> the intent?
+
+Battery backed RAID should be ok, as should be plain single SATA drive.
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
