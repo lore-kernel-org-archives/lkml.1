@@ -1,104 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759990AbZCWQn6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760014AbZCWQoY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759990AbZCWQn6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Mar 2009 12:43:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758210AbZCWQnr
+	id S1760014AbZCWQoY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Mar 2009 12:44:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757311AbZCWQoH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Mar 2009 12:43:47 -0400
-Received: from smtp.ultrahosting.com ([74.213.174.254]:49119 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758425AbZCWQnq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Mar 2009 12:43:46 -0400
-Date: Mon, 23 Mar 2009 12:40:14 -0400 (EDT)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@qirst.com
-To: Ingo Molnar <mingo@elte.hu>
-cc: Pekka Enberg <penberg@cs.helsinki.fi>,
-       Lai Jiangshan <laijs@cn.fujitsu.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
-       Manfred Spraul <manfred@colorfullife.com>,
-       Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH -mm 1/6] slab: introduce __kfree_rcu
-In-Reply-To: <20090323155938.GA27151@elte.hu>
-Message-ID: <alpine.DEB.1.10.0903231234110.11796@qirst.com>
-References: <49AD3433.9000001@cn.fujitsu.com> <1237794502.6313.21.camel@penberg-laptop> <alpine.DEB.1.10.0903230931570.4095@qirst.com> <20090323155938.GA27151@elte.hu>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Mon, 23 Mar 2009 12:44:07 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:46414 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756528AbZCWQoG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Mar 2009 12:44:06 -0400
+Date: Mon, 23 Mar 2009 17:43:41 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Oleg Nesterov <oleg@redhat.com>
+Cc: Peter Lojkin <ia6432@inbox.ru>, linux-kernel@vger.kernel.org,
+       Peter Zijlstra <peterz@infradead.org>, rjw@sisk.pl
+Subject: Re: 2.6.28, limiting cpu time doesn't work
+Message-ID: <20090323164341.GA1304@elte.hu>
+References: <20090322201436.GA12838@redhat.com> <E1LlVpr-0000Rv-00.ia6432-inbox-ru@f62.mail.ru> <20090322231111.GA21775@redhat.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090322231111.GA21775@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 23 Mar 2009, Ingo Molnar wrote:
 
->
-> * Christoph Lameter <cl@linux-foundation.org> wrote:
->
-> > On Mon, 23 Mar 2009, Pekka Enberg wrote:
+* Oleg Nesterov <oleg@redhat.com> wrote:
+
+> On 03/23, Peter Lojkin wrote:
 > >
-> > > > +static inline void *portion_to_obj(void *portion)
-> > > > +{
-> > > > +	struct page *page = virt_to_head_page(portion);
-> > > > +	struct slab *slab = page_get_slab(page);
-> > > > +	struct kmem_cache *cache = page_get_cache(page);
-> > > > +	unsigned int offset = portion - slab->s_mem;
-> > > > +	unsigned int index = offset / cache->buffer_size;
-> > > > +
-> > > > +	return index_to_obj(cache, slab, index);
-> > > > +}
+> > Oleg Nesterov wrote:
+> >
+> > > Found this message on http://bugzilla.kernel.org/show_bug.cgi?id=12911 ...
 > > >
-> > > A minor nit: I think this would be more readable if you separated
-> > > variable declarations from the initializations. Also, you can probably
-> > > drop the inline from the function declaration and let GCC decide what to
-> > > do.
+> > > I _think_ posix_cpu_timers_init_group() is not right, it should copy
+> > > cputime_expires->prof_exp.
+> > >
+> > > Peter, any chance you can test the (uncompiled/untested) patch below?
 > >
-> > Thats debatable. I find the setting up a number of variables that
-> > are all dependend in the above manner very readable. They are
-> > usually repetitive. Multiple functions use similar
-> > initializations.
->
-> I agree with Pekka, it's clearly more readable when separated out
-> nicely:
->
-> 	struct kmem_cache *cache;
-> 	unsigned int offset;
-> 	unsigned int index;
-> 	struct page *page;
-> 	struct slab *slab;
->
-> 	page	= virt_to_head_page(portion);
-> 	slab	= page_get_slab(page);
-> 	cache	= page_get_cache(page);
->
-> 	offset	= portion - slab->s_mem;
-> 	index	= offset / cache->buffer_size;
->
-> The original form is hard to read due to lack of structure.
+> > yes, with this patch 2.6.28.8 works as expected, thank you!
+> 
+> Great, thanks!
+> 
+> > if you need to test any more patches on the subject i'm ready to do it.
+> > regression test system for our project depends on ability to limit cpu time,
+> > so it's major problem for us...
+> 
+> I am not sure what should we do, this needs more discussion.
+> 
+> Probably the most simple patch for -stable and 2.6.29 is below.
+> (with this patch we don't even need update_rlimit_cpu(), afaics).
+> 
+> Oleg.
+> 
+> --- a/kernel/posix-cpu-timers.c
+> +++ b/kernel/posix-cpu-timers.c
+> @@ -1263,7 +1263,8 @@ static inline int fastpath_timer_check(s
+>  		if (task_cputime_expired(&group_sample, &sig->cputime_expires))
+>  			return 1;
+>  	}
+> -	return 0;
+> +
+> +	return sig->rlim[RLIMIT_CPU].rlim_cur != RLIM_INFINITY;
 
-Structure can also be established differently:
+Once this version of the patch is confirmed to fix the bug, please 
+send a full patch with a full changelog, SOB, Reported-by and 
+Tested-by lines.
 
-static inline void *portion_to_obj(void *portion)
-{
-	struct page *page = virt_to_head_page(portion);
-	struct slab *slab = page_get_slab(page);
-	struct kmem_cache *cache = page_get_cache(page);
+Thanks,
 
-	unsigned int offset = portion - slab->s_mem;
-	unsigned int index = offset / cache->buffer_size;
-
-	return index_to_obj(cache, slab, index);
-}
-
-It would be good if the whole series of actions that need to be taken in
-order for the function to "get to know" the slab the object parms would be
-simpler. Like its done in ruby
-
-	(page, slab, cache) = get_slab_info(portion)
-
-	(offset, index) = get_position_info(slab, portion)
-
-But how can this be done in C without weird pointer passing?
-
+	Ingo
