@@ -1,65 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759563AbZCWTWE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760554AbZCWTWY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759563AbZCWTWE (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Mar 2009 15:22:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755852AbZCWTVw
+	id S1760554AbZCWTWY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Mar 2009 15:22:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759973AbZCWTV6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Mar 2009 15:21:52 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:46104 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1754881AbZCWTVw (ORCPT
+	Mon, 23 Mar 2009 15:21:58 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:58405 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759863AbZCWTV5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Mar 2009 15:21:52 -0400
-Date: Mon, 23 Mar 2009 15:21:49 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: "K.Prasad" <prasad@linux.vnet.ibm.com>
-cc: Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Benjamin Herrenschmidt <benh@au1.ibm.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Maneesh Soni <maneesh@in.ibm.com>, Roland McGrath <roland@redhat.com>,
-       Steven Rostedt <rostedt@goodmis.org>
-Subject: Re: [Patch 01/11] Introducing generic hardware breakpoint handler
- interfaces
-In-Reply-To: <20090323190328.GA23426@in.ibm.com>
-Message-ID: <Pine.LNX.4.44L0.0903231514350.3610-100000@iolanthe.rowland.org>
+	Mon, 23 Mar 2009 15:21:57 -0400
+Date: Mon, 23 Mar 2009 15:21:55 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       fweisbec@gmail.com, tglx@linutronix.de, mingo@elte.hu
+cc: linux-tip-commits@vger.kernel.org
+Subject: Re: [tip:tracing/filters] tracing/events: don't use wake up for
+ events
+In-Reply-To: <tip-07edf7121374609709ef1b0889f6e7b8d6a62ec1@git.kernel.org>
+Message-ID: <alpine.DEB.2.00.0903231520330.3578@gandalf.stny.rr.com>
+References: <1237759847-21025-4-git-send-email-fweisbec@gmail.com> <tip-07edf7121374609709ef1b0889f6e7b8d6a62ec1@git.kernel.org>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 24 Mar 2009, K.Prasad wrote:
 
-> > > Ok. Will do something like:
-> > > return (va <= (TASK_SIZE - (hw_breakpoint_length * word_size)));
-> > 
-> > What is the purpose of word_size here?  The breakpoint length should be 
-> > specified in bytes, not words.
-> > 
-> > Don't forget that that in arch_check_va_in_kernelspace() you need to 
-> > check both for values that are too low and values that are too high 
-> > (they overflow and wrap around back to a user address).
-> > 
+On Mon, 23 Mar 2009, Frederic Weisbecker wrote:
+> tracing/events: don't use wake up for events
 > 
-> While I understand the user-space checking using the length of the HW
-> Breakpoint, I don't really see how I can check for an upper-bound for
-> kernel-space virtual addresses. Most usage in the kernel only checks for
-> the address >= TASK_SIZE (while they check for add + len if the length
-> of the memory is known). I will be glad to have any suggestions in this
-> regard.
+> Impact: fix hard-lockup with sched switch events
+> 
+> Some ftrace events, such as sched wakeup, can be traced
+> while the runqueue lock is hold. Since they are using
+> trace_current_buffer_unlock_commit(), they call wake_up()
+> which can try to grab the runqueue lock too, resulting in
+> a deadlock.
+> 
+> Now for all event, we call a new helper:
+> trace_nowake_buffer_unlock_commit() which do pretty the same than
 
-Isn't that exactly the check you need to implement?
+Ug, that's an ugly name. It should at least be:
 
-	addr >= TASK_SIZE && (addr + len) >= TASK_SIZE,
+  trace_buffer_unlock_commit_nowake
 
-or perhaps better,
+to be more in line with kernel conventions. That is where the derivitive
+has the same name as the original, like preempt_enable_noresched.
 
-	addr >= TASK_SIZE && (addr + len) >= addr.
+-- Steve
 
-In this case you _do_ know the length of the breakpoint.
-
-Alan Stern
-
+> trace_current_buffer_unlock_commit() except than it doesn't call
+> trace_wake_up().
+> 
+> Reported-by: Ingo Molnar <mingo@elte.hu>
+> Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+> Cc: Steven Rostedt <rostedt@goodmis.org>
+> LKML-Reference: <1237759847-21025-4-git-send-email-fweisbec@gmail.com>
+> Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> 
+> 
