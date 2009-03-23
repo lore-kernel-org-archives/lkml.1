@@ -1,164 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760431AbZCWWN7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757941AbZCWWWR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760431AbZCWWN7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Mar 2009 18:13:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756899AbZCWWNM
+	id S1757941AbZCWWWR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Mar 2009 18:22:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752457AbZCWWV7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Mar 2009 18:13:12 -0400
-Received: from kroah.org ([198.145.64.141]:41585 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751082AbZCWWNG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Mar 2009 18:13:06 -0400
-Date: Mon, 23 Mar 2009 15:10:17 -0700
-From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org, stable@kernel.org
-Subject: Linux 2.6.27.21
-Message-ID: <20090323221017.GC11563@kroah.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Mon, 23 Mar 2009 18:21:59 -0400
+Received: from e35.co.us.ibm.com ([32.97.110.153]:56395 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752183AbZCWWV6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Mar 2009 18:21:58 -0400
+Subject: Re: [BUG,2.6.28,s390] Fails to boot in Hercules S/390 emulator -
+ hang traced
+From: John Stultz <johnstul@us.ibm.com>
+To: Frans Pop <elendil@planet.nl>, Thomas Gleixner <tglx@linutronix.de>
+Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>, linux-s390@vger.kernel.org,
+       Roman Zippel <zippel@linux-m68k.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <200903230111.08814.elendil@planet.nl>
+References: <200903080230.10099.elendil@planet.nl>
+	 <200903181307.44867.elendil@planet.nl>
+	 <1237391338.32698.9.camel@jstultz-laptop>
+	 <200903230111.08814.elendil@planet.nl>
+Content-Type: text/plain
+Date: Mon, 23 Mar 2009 15:19:00 -0700
+Message-Id: <1237846740.7068.15.camel@jstultz-laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I'm announcing the release of the 2.6.27.21 kernel.
+On Mon, 2009-03-23 at 01:11 +0100, Frans Pop wrote:
+> On Wednesday 18 March 2009, John Stultz wrote:
+> > > Ever increasing error with tod on 2.6.28.8 (with Martin's patch
+> > > applied):
+> > > 0.672655! timekeeping: clock source changed from jiffies to tod (shift: 12)
+> > > 0.676889! tod/12 (150): xtime.tv: 1237377507/55524946 -> 1237377507/55524947
+> > > 0.677020!    clock->xtime: 0 -> -4096, error: 0 -> -4294967296
+> > > 0.680788! tod/12 (151): xtime.tv: 1237377507/55524947 -> 1237377507/55524948
+> [...]
+> > > 491.860765! tod/12 (37189): xtime.tv: 1237377998/55561985 -> 1237377998/55561986
+> > > 491.860886!  clock->xtime: -4096 -> -4096, error: -159081293676544 -> -159085588643840
+> >
+> > Hrm. Is the box otherwise working ok? The TOD clock should not be
+> > affected by the second issue (one shot mode) discussed.
+> 
+> Yes, the box^Wsystem works fine. I've now also seen the eventual correction
+> of the error in action: after 35 mins of uptime clock->multi changed from
+> 1000 to 999 (with tod).
+> 
+> So the only issue left, though only indirectly related to the hang, is
+> the initial behavior with clocksource jiffies where clocksource_bigadjust
+> gets called every time update_wall_time is called (I've confirmed that).
+> 
+> And possibly the cleanup change of clock->xtime_nsec to S64.
+> 
+> I'll happily leave those to you as I readily admit my understanding of the
+> whole timekeeping thing is still very limited. But if you'd like patches
+> tested, feel free to CC me.
 
-I'll also be replying to this message with a copy of the patch between
-2.6.27.20 and 2.6.27.21
+Here's the fix to the tick_handle_periodic() tripping into an infinite
+loop. Again, this was only triggered because the divide error that
+caused jiffies to be skewed enough that the clock-steering code
+increased the ns per jiffy conversion value enough that any slack we had
+in the loop before was lost.
 
-The updated 2.6.27.y git tree can be found at:
-        git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-2.6.27.y.git
-and can be browsed at the normal kernel.org git web browser:
-        http://git.kernel.org/?p=linux/kernel/git/stable/linux-2.6.27.y.git;a=summary
+Fixing the divide issue avoids the problem (and is pretty important to
+get upstream), but the underlying issue that we allow ONESHOT clockevent
+mode to be used while the jiffies clocksource is in use is a concern.
 
-thanks,
+Thomas had pointed out that ppc and other arches that do not have
+PERIODIC mode clockevents don't trip over this, but I believe this has
+been just luck so far, as we do not enable clocksource switching till
+bootup is almost finished (to avoid clocksource churn), so after
+interrupts are enabled, but before clocksource switching is allowed,
+there is a chance (albeit very very small) that clock steering could
+cause a similar problem on other arches.
 
-greg k-h
+Thomas, what do you think about this? With it s390 runs fine even
+without the do_div() fix.
 
-------------
-
- Makefile                                    |    5 +++
- arch/ia64/Kconfig                           |    3 --
- arch/powerpc/sysdev/fsl_soc.c               |    2 -
- arch/s390/lib/div64.c                       |    2 -
- arch/x86/kernel/cpu/intel.c                 |   13 +++++++++
- arch/x86/kernel/cpu/intel_64.c              |   13 +++++++++
- drivers/ata/ata_piix.c                      |   37 ++++++++++++++++++++++++++++
- drivers/md/dm-crypt.c                       |   26 +++++++++++++++----
- drivers/md/dm-io.c                          |    2 +
- drivers/md/dm-ioctl.c                       |    3 +-
- drivers/media/video/cx23885/cx23885-417.c   |    3 +-
- drivers/media/video/cx23885/cx23885-video.c |    5 ++-
- drivers/misc/thinkpad_acpi.c                |    8 +++---
- drivers/usb/core/devio.c                    |   12 +++++----
- drivers/usb/host/ehci-q.c                   |    3 +-
- drivers/usb/host/ehci-sched.c               |   10 +++----
- drivers/usb/serial/cp2101.c                 |    1 
- drivers/usb/serial/ftdi_sio.c               |    5 +++
- drivers/usb/serial/ftdi_sio.h               |   20 +++++++++++++++
- drivers/usb/serial/option.c                 |   12 ++++-----
- drivers/usb/storage/unusual_devs.h          |   16 ++++++++++--
- fs/aio.c                                    |   37 ++++++++++++++++++++--------
- fs/nfsd/nfs4xdr.c                           |    1 
- include/asm-x86/msr-index.h                 |   29 +++++++++++++++++++++
- include/linux/capability.h                  |    6 +++-
- sound/core/oss/pcm_oss.c                    |    4 +--
- sound/core/sgbuf.c                          |    7 +++--
- sound/pci/hda/hda_intel.c                   |    8 ++++++
- sound/pci/mixart/mixart.c                   |    1 
- 29 files changed, 239 insertions(+), 55 deletions(-)
+thanks
+-john
 
 
-Achilleas Kotsis (1):
-      USB: Add device id for Option GTM380 to option driver
 
-Alan Stern (2):
-      USB: EHCI: expedite unlinks when the root hub is suspended
-      USB: usbfs: keep async URBs until the device file is closed
+The following patch avoids and endless loop issue by requiring that a
+highres valid clocksource be installed before we call tick_periodic() in
+a loop when using ONESHOT mode. The result is we will only increment
+jiffies once per interrupt until a continuous hardware clocksource is
+available.
 
-Albert Pauw (1):
-      USB: option.c: add ZTE 622 modem device
+Without this, we can run into a endless loop, where each cycle through
+the loop, jiffies is updated which increments time by tick_period or
+more (due to clock steering), which can cause the event programming to
+think the next event was before the newly incremented time and fail
+causing tick_periodic() to be called again and the whole process loops
+forever.
 
-Andy Walls (1):
-      V4L/DVB (10218): cx23885: Fix Oops for mixed install of analog and digital only cards
+Signed-off-by: John Stultz <johnstul@us.ibm.com>
 
-Axel Wachtler (1):
-      USB: serial: add FTDI USB/Serial converter devices
+diff --git a/kernel/time/tick-common.c b/kernel/time/tick-common.c
+index 21a5ca8..83c4417 100644
+--- a/kernel/time/tick-common.c
++++ b/kernel/time/tick-common.c
+@@ -93,7 +93,17 @@ void tick_handle_periodic(struct clock_event_device *dev)
+ 	for (;;) {
+ 		if (!clockevents_program_event(dev, next, ktime_get()))
+ 			return;
+-		tick_periodic(cpu);
++		/*
++		 * Have to be careful here. If we're in oneshot mode,
++		 * before we call tick_periodic() in a loop, we need
++		 * to be sure we're using a real hardware clocksource.
++		 * Otherwise we could get trapped in an infinite
++		 * loop, as the tick_periodic() increments jiffies,
++		 * when then will increment time, posibly causing
++		 * the loop to trigger again and again.
++		 */
++		if (timekeeping_valid_for_hres())
++			tick_periodic(cpu);
+ 		next = ktime_add(next, tick_period);
+ 	}
+ }
 
-Benny Halevy (1):
-      NFSD: provide encode routine for OP_OPENATTR
 
-Dan Williams (1):
-      USB: Option: let cdc-acm handle Sony Ericsson F3507g / Dell 5530
 
-Davide Libenzi (1):
-      eventfd: remove fput() call from possible IRQ context
 
-Dirk Hohndel (1):
-      USB: Add Vendor/Product ID for new CDMA U727 to option driver
-
-Greg Kroah-Hartman (1):
-      Linux 2.6.27.21
-
-Huang Ying (1):
-      dm crypt: fix kcryptd_async_done parameter
-
-J. Bruce Fields (1):
-      nfsd: nfsd should drop CAP_MKNOD for non-root
-
-Jan Dumon (1):
-      USB: unusual_devs: Add support for GI 0431 SD-Card interface
-
-Jiri Slaby (2):
-      ALSA: mixart, fix lock imbalance
-      ALSA: pcm_oss, fix locking typo
-
-Joe Korty (1):
-      Fix misreporting of #cores as #hyperthreads for Q9550
-
-Johns Daniel (1):
-      powerpc: Remove extra semicolon in fsl_soc.c
-
-Karsten Wiese (1):
-      USB: EHCI: Fix isochronous URB leak
-
-Linus Torvalds (2):
-      Add '-fwrapv' to gcc CFLAGS
-      Move cc-option to below arch-specific setup
-
-Martin Schwidefsky (1):
-      S390: __div64_31 broken for CONFIG_MARCH_G5
-
-Mathieu Chouquet-Stringer (1):
-      thinkpad-acpi: fix module autoloading for older models
-
-Michael Hennerich (1):
-      USB: serial: ftdi: enable UART detection on gnICE JTAG adaptors blacklist interface0
-
-Mikulas Patocka (1):
-      dm io: respect BIO_MAX_PAGES limit
-
-Milan Broz (1):
-      dm ioctl: validate name length when renaming
-
-Moritz Muehlenhoff (1):
-      USB: Updated unusual-devs entry for USB mass storage on Nokia 6233
-
-Robert M. Kenney (1):
-      USB: serial: new cp2101 device id
-
-Takashi Iwai (2):
-      ALSA: Fix vunmap and free order in snd_free_sgbuf_pages()
-      ALSA: hda - Fix DMA mask for ATI controllers
-
-Tejun Heo (1):
-      ata_piix: add workaround for Samsung DB-P70
-
-Thomas Bartosik (1):
-      USB: storage: Unusual USB device Prolific 2507 variation added
-
-Tony Luck (1):
-      Build fix for __early_pfn_to_nid() undefined link error
 
