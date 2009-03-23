@@ -1,76 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759359AbZCWUsZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757269AbZCWUxU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759359AbZCWUsZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Mar 2009 16:48:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758778AbZCWUsE
+	id S1757269AbZCWUxU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Mar 2009 16:53:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752079AbZCWUxK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Mar 2009 16:48:04 -0400
-Received: from 130.120.124.202.static.snap.net.nz ([202.124.120.130]:38569
-	"EHLO hayes.bluewaternz.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1758892AbZCWUsB (ORCPT
+	Mon, 23 Mar 2009 16:53:10 -0400
+Received: from [213.79.90.228] ([213.79.90.228]:48198 "EHLO
+	buildserver.ru.mvista.com" rhost-flags-FAIL-FAIL-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752074AbZCWUxJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Mar 2009 16:48:01 -0400
-X-Greylist: delayed 399 seconds by postgrey-1.27 at vger.kernel.org; Mon, 23 Mar 2009 16:48:01 EDT
-Message-ID: <49C7F446.50803@bluewatersys.com>
-Date: Tue, 24 Mar 2009 09:42:46 +1300
-From: Ryan Mallon <ryan@bluewatersys.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Mon, 23 Mar 2009 16:53:09 -0400
+Date: Mon, 23 Mar 2009 23:53:05 +0300
+From: Anton Vorontsov <avorontsov@ru.mvista.com>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: monstr@monstr.eu, linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+       john.williams@petalogix.com
+Subject: Re: [PATCH 04/57] microblaze_v7: Open firmware files
+Message-ID: <20090323205305.GA10576@oksana.dev.rtsoft.ru>
+Reply-To: avorontsov@ru.mvista.com
+References: <1237408284-8674-1-git-send-email-monstr@monstr.eu> <4b5aee01d11fc790c7842838ea63a82ee3273003.1237407249.git.monstr@monstr.eu> <af309ba8e95f503b7990461384d9f8453f45dbbd.1237407249.git.monstr@monstr.eu> <200903231951.23902.arnd@arndb.de>
 MIME-Version: 1.0
-To: arm kernel <linux-arm-kernel@lists.arm.linux.org.uk>,
-       dbrownell@users.sourceforge.net, linux-kernel@vger.kernel.org
-Subject: [RFC PATCH] Use gpiochip label for sysfs entries
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <200903231951.23902.arnd@arndb.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-At least on the ep93xx, the gpio banks have names (A, B, etc), which are
-used for gpiochip->label. However, banks C and F are swapped which makes
-the names of the gpiochip directories in /sys/class/gpio confusing. For
-many SoC chips, it would be useful to have the gpio label on the sysfs
-entries.
+On Mon, Mar 23, 2009 at 07:51:23PM +0100, Arnd Bergmann wrote:
+> On Wednesday 18 March 2009, monstr@monstr.eu wrote:
+> > From: Michal Simek <monstr@monstr.eu>
+> > 
+> > 
+> > Signed-off-by: Michal Simek <monstr@monstr.eu>
+> > ---
+> >  arch/microblaze/include/asm/of_device.h   |   45 ++
+> >  arch/microblaze/include/asm/of_platform.h |   64 ++
+> >  arch/microblaze/include/asm/prom.h        |  313 ++++++++
+> >  arch/microblaze/kernel/of_device.c        |  115 +++
+> >  arch/microblaze/kernel/of_platform.c      |  201 +++++
+> >  arch/microblaze/kernel/prom.c             | 1147 +++++++++++++++++++++++++++++
+> >  arch/microblaze/kernel/prom_parse.c       | 1025 ++++++++++++++++++++++++++
+> >  7 files changed, 2910 insertions(+), 0 deletions(-)
+> >  create mode 100644 arch/microblaze/include/asm/of_device.h
+> >  create mode 100644 arch/microblaze/include/asm/of_platform.h
+> >  create mode 100644 arch/microblaze/include/asm/prom.h
+> >  create mode 100644 arch/microblaze/kernel/of_device.c
+> >  create mode 100644 arch/microblaze/kernel/of_platform.c
+> >  create mode 100644 arch/microblaze/kernel/prom.c
+> >  create mode 100644 arch/microblaze/kernel/prom_parse.c
+> 
+> Since these files are derived from the powerpc versions, what is the
+> plan on them? IIRC, you had them in a common directory in an earlier
+> version. Are you planning to merge them at some point in the future
+> or do you intend to maintain a fork?
 
-The following patch registers the gpiochip devices using
-gpiochip->label. If label is not set, or the registration fails, it
-falls back to using gpiochip->base.
+Actually, it's trivial to factor out all the common code out of
+arch/powerpc/ to drivers/of/.
 
-Signed-off-by: Ryan Mallon <ryan@bluewatersys.com>
+It took me approx. 4 hours to factor out the code and make a
+proof-of-concept FDT support for a little-endian ARM platform. ;-)
+(The device tree was only describing a cpu and a nor flash, though.
+No support for interrupt- and gpio-controllers. And no support for
+U-Boot, I just built the dtb file into the kernel).
 
----
+I never got around to clean it up and send though, but for sure,
+there is absolutely no reason to duplicate the code across the
+platforms.
 
-diff --git a/drivers/gpio/gpiolib.c b/drivers/gpio/gpiolib.c
-index 42fb2fd..698481c 100644
---- a/drivers/gpio/gpiolib.c
-+++ b/drivers/gpio/gpiolib.c
-@@ -536,7 +536,7 @@ EXPORT_SYMBOL_GPL(gpio_unexport);
- static int gpiochip_export(struct gpio_chip *chip)
- {
- 	int		status;
--	struct device	*dev;
-+	struct device	*dev = NULL;
- 
- 	/* Many systems register gpio chips for SOC support very early,
- 	 * before driver model support is available.  In those cases we
-@@ -546,10 +546,16 @@ static int gpiochip_export(struct gpio_chip *chip)
- 	if (!gpio_class.p)
- 		return 0;
- 
--	/* use chip->base for the ID; it's already known to be unique */
- 	mutex_lock(&sysfs_lock);
--	dev = device_create(&gpio_class, chip->dev, MKDEV(0, 0), chip,
--				"gpiochip%d", chip->base);
-+	if (chip->label) 
-+		/* Attempt to register the device using the gpiochip label */
-+		dev = device_create(&gpio_class, chip->dev, MKDEV(0, 0), chip,
-+				    "gpiochip-%s", chip->label);
-+	
-+	if (!dev) 
-+		/* Use chip->base for the ID; it's already known to be unique */
-+		dev = device_create(&gpio_class, chip->dev, MKDEV(0, 0), chip,
-+				    "gpiochip%d", chip->base);
- 	if (dev) {
- 		status = sysfs_create_group(&dev->kobj,
- 				&gpiochip_attr_group);
+Thanks,
 
+-- 
+Anton Vorontsov
+email: cbouatmailru@gmail.com
+irc://irc.freenode.net/bd2
