@@ -1,91 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757926AbZCWTA0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759345AbZCWTBr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757926AbZCWTA0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Mar 2009 15:00:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755250AbZCWTAL
+	id S1759345AbZCWTBr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Mar 2009 15:01:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755250AbZCWTBi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Mar 2009 15:00:11 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:32811 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752976AbZCWTAK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Mar 2009 15:00:10 -0400
-Date: Mon, 23 Mar 2009 15:00:08 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Jaswinder Singh Rajput <jaswinder@kernel.org>
-cc: Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH -tip] trace: ring_buffer.c fix various signedness
- issues
-In-Reply-To: <1237747471.8713.1.camel@ht.satnam>
-Message-ID: <alpine.DEB.2.00.0903231458490.3578@gandalf.stny.rr.com>
-References: <1237747471.8713.1.camel@ht.satnam>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Mon, 23 Mar 2009 15:01:38 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:59597 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753902AbZCWTBh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Mar 2009 15:01:37 -0400
+Message-ID: <49C7DC8B.4020904@suse.de>
+Date: Mon, 23 Mar 2009 20:01:31 +0100
+From: Stefan Seyfried <seife@suse.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-GB; rv:1.8.1.19) Gecko/20081227 SUSE/2.0.0.19-1.31 Thunderbird/2.0.0.19 Mnenhy/0.7.6.666
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       "John W. Linville" <linville@tuxdriver.com>,
+       Reinette Chatre <reinette.chatre@intel.com>,
+       Tomas Winkler <tomas.winkler@intel.com>, Zhu Yi <yi.zhu@intel.com>
+Subject: Re: [Bug #12818] iwlagn broken after suspend to RAM (iwlagn: MAC
+ is in deep sleep!)
+References: <HPkmj74uawF.A.iqE.M8TxJB@chimera> <fnEpM0mQZjO.A.L_E.W8TxJB@chimera>
+In-Reply-To: <fnEpM0mQZjO.A.L_E.W8TxJB@chimera>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-You're a little late:
-
-  http://lkml.org/lkml/2009/2/10/262
-
--- Steve
-
-
-
-On Mon, 23 Mar 2009, Jaswinder Singh Rajput wrote:
-
-> From: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
-> Date: Mon, 23 Mar 2009 00:02:38 +0530
-> Subject: [PATCH] trace: ring_buffer.c fix various signedness issues
+Rafael J. Wysocki wrote:
+> This message has been generated automatically as a part of a report
+> of regressions introduced between 2.6.27 and 2.6.28.
 > 
-> Impact:cleanup
-> 
-> Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
-> ---
->  kernel/trace/ring_buffer.c |    8 ++++----
->  1 files changed, 4 insertions(+), 4 deletions(-)
-> 
-> diff --git a/kernel/trace/ring_buffer.c b/kernel/trace/ring_buffer.c
-> index bd38c5c..114811b 100644
-> --- a/kernel/trace/ring_buffer.c
-> +++ b/kernel/trace/ring_buffer.c
-> @@ -57,7 +57,7 @@ enum {
->  	RB_BUFFERS_DISABLED	= 1 << RB_BUFFERS_DISABLED_BIT,
->  };
->  
-> -static long ring_buffer_flags __read_mostly = RB_BUFFERS_ON;
-> +static unsigned long ring_buffer_flags __read_mostly = RB_BUFFERS_ON;
->  
->  /**
->   * tracing_on - enable all tracing buffers
-> @@ -2466,7 +2466,7 @@ static ssize_t
->  rb_simple_read(struct file *filp, char __user *ubuf,
->  	       size_t cnt, loff_t *ppos)
->  {
-> -	long *p = filp->private_data;
-> +	unsigned long *p = filp->private_data;
->  	char buf[64];
->  	int r;
->  
-> @@ -2482,9 +2482,9 @@ static ssize_t
->  rb_simple_write(struct file *filp, const char __user *ubuf,
->  		size_t cnt, loff_t *ppos)
->  {
-> -	long *p = filp->private_data;
-> +	unsigned long *p = filp->private_data;
-> +	unsigned long val;
->  	char buf[64];
-> -	long val;
->  	int ret;
->  
->  	if (cnt >= sizeof(buf))
-> -- 
-> 1.6.0.6
-> 
-> 
-> 
-> 
+> The following bug entry is on the current list of known regressions
+> introduced between 2.6.27 and 2.6.28.  Please verify if it still should
+> be listed and let me know (either way).
+
+It still does not work with 2.6.29-rc8.
+
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12818
+> Subject		: iwlagn broken after suspend to RAM (iwlagn: MAC is in deep sleep!)
+> Submitter	: Stefan Seyfried <seife@suse.de>
+> Date		: 2009-03-04 08:32 (18 days old)
+-- 
+Stefan Seyfried
+R&D Team Mobile Devices            |              "Any ideas, John?"
+SUSE LINUX Products GmbH, Nürnberg | "Well, surrounding them's out."
+
+This footer brought to you by insane German lawmakers:
+SUSE Linux Products GmbH, GF: Markus Rex, HRB 16746 (AG Nürnberg)
