@@ -1,13 +1,13 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761167AbZCWSPm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759068AbZCWSPL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761167AbZCWSPm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Mar 2009 14:15:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759736AbZCWSK1
+	id S1759068AbZCWSPL (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Mar 2009 14:15:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755583AbZCWSKZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Mar 2009 14:10:27 -0400
-Received: from adsl-69-107-72-54.dsl.pltn13.pacbell.net ([69.107.72.54]:60880
+	Mon, 23 Mar 2009 14:10:25 -0400
+Received: from adsl-69-107-72-54.dsl.pltn13.pacbell.net ([69.107.72.54]:60881
 	"EHLO abulafia.goop.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1760565AbZCWSKL (ORCPT
+	with ESMTP id S1760580AbZCWSKL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 23 Mar 2009 14:10:11 -0400
 From: Jeremy Fitzhardinge <jeremy@goop.org>
@@ -15,11 +15,10 @@ To: "H. Peter Anvin" <hpa@zytor.com>
 Cc: the arch/x86 maintainers <x86@kernel.org>, Ingo Molnar <mingo@elte.hu>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Xen-devel <xen-devel@lists.xensource.com>,
-       Ian Campbell <ian.campbell@citrix.com>,
        Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Subject: [PATCH 08/15] xen/dom0: Use host E820 map
-Date: Mon, 23 Mar 2009 11:09:52 -0700
-Message-Id: <1237831799-6568-9-git-send-email-jeremy@goop.org>
+Subject: [PATCH 15/15] x86: don't need "changed" parameter for set_io_bitmap()
+Date: Mon, 23 Mar 2009 11:09:59 -0700
+Message-Id: <1237831799-6568-16-git-send-email-jeremy@goop.org>
 X-Mailer: git-send-email 1.6.0.6
 In-Reply-To: <49C45238.7050007@zytor.com>
 References: <49C45238.7050007@zytor.com>
@@ -27,132 +26,142 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Ian Campbell <ian.campbell@citrix.com>
+From: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 
-Impact: synthesize virtual E820 using real one as template
+Impact: cleanup
 
-Unlike the non-paravirt Xen port we do not have distinct psuedo-physical
-and I/O memory resource-spaces and therefore resources in the two
-can clash. Fix this by registering a memory map which matches the
-underlying I/O map. Currently this wastes the memory in the reserved
-regions. Eventually we should remap this memory to the end of the
-address space.
+The "changed" parameter isn't really used, so don't bother passing it.
+(xen_set_io_bitmap can keep track of it for itself, if it wants.)
 
-Signed-off-by: Ian Campbell <ian.campbell@citrix.com>
 Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 ---
- arch/x86/xen/setup.c           |   45 +++++++++++++++++++++++++++++++++++++--
- include/xen/interface/memory.h |   29 +++++++++++++++++++++++++
- 2 files changed, 71 insertions(+), 3 deletions(-)
+ arch/x86/include/asm/paravirt.h  |    6 +++---
+ arch/x86/include/asm/processor.h |    2 +-
+ arch/x86/kernel/ioport.c         |    9 +++------
+ arch/x86/kernel/process.c        |    4 ++--
+ arch/x86/xen/enlighten.c         |    5 +----
+ 5 files changed, 10 insertions(+), 16 deletions(-)
 
-diff --git a/arch/x86/xen/setup.c b/arch/x86/xen/setup.c
-index 3e4cf46..175396c 100644
---- a/arch/x86/xen/setup.c
-+++ b/arch/x86/xen/setup.c
-@@ -19,6 +19,7 @@
+diff --git a/arch/x86/include/asm/paravirt.h b/arch/x86/include/asm/paravirt.h
+index fd2c31b..56acbe8 100644
+--- a/arch/x86/include/asm/paravirt.h
++++ b/arch/x86/include/asm/paravirt.h
+@@ -157,7 +157,7 @@ struct pv_cpu_ops {
  
- #include <xen/page.h>
- #include <xen/interface/callback.h>
-+#include <xen/interface/memory.h>
- #include <xen/interface/physdev.h>
- #include <xen/features.h>
+ 	void (*set_iopl_mask)(unsigned mask);
+ 	void (*set_io_bitmap)(struct thread_struct *thread,
+-	                      int changed, unsigned long bytes_updated);
++	                      unsigned long bytes_updated);
  
-@@ -36,16 +37,54 @@ extern void xen_syscall32_target(void);
- /**
-  * machine_specific_memory_setup - Hook for machine specific memory setup.
-  **/
--
- char * __init xen_memory_setup(void)
+ 	void (*wbinvd)(void);
+ 	void (*io_delay)(void);
+@@ -1005,9 +1005,9 @@ static inline void set_iopl_mask(unsigned mask)
+ }
+ 
+ static inline void set_io_bitmap(struct thread_struct *thread,
+-                                 int changed, unsigned long bytes_updated)
++                                 unsigned long bytes_updated)
  {
- 	unsigned long max_pfn = xen_start_info->nr_pages;
-+	unsigned long long mem_end;
-+	int rc;
-+	struct xen_memory_map memmap;
-+	/*
-+	 * This is rather large for a stack variable but this early in
-+	 * the boot process we know we have plenty slack space.
-+	 */
-+	struct e820entry map[E820MAX];
-+	int op = xen_initial_domain() ?
-+		XENMEM_machine_memory_map :
-+		XENMEM_memory_map;
-+	int i;
+-	PVOP_VCALL3(pv_cpu_ops.set_io_bitmap, thread, changed, bytes_updated);
++	PVOP_VCALL2(pv_cpu_ops.set_io_bitmap, thread, bytes_updated);
+ }
  
- 	max_pfn = min(MAX_DOMAIN_PAGES, max_pfn);
-+	mem_end = PFN_PHYS((u64)max_pfn);
-+
-+	memmap.nr_entries = E820MAX;
-+	set_xen_guest_handle(memmap.buffer, map);
-+
-+	rc = HYPERVISOR_memory_op(op, &memmap);
-+	if (rc == -ENOSYS) {
-+		memmap.nr_entries = 1;
-+		map[0].addr = 0ULL;
-+		map[0].size = mem_end;
-+		/* 8MB slack (to balance backend allocations). */
-+		map[0].size += 8ULL << 20;
-+		map[0].type = E820_RAM;
-+		rc = 0;
-+	}
-+	BUG_ON(rc);
+ /* The paravirtualized I/O functions */
+diff --git a/arch/x86/include/asm/processor.h b/arch/x86/include/asm/processor.h
+index 0ed4cba..15d0769 100644
+--- a/arch/x86/include/asm/processor.h
++++ b/arch/x86/include/asm/processor.h
+@@ -539,7 +539,7 @@ static inline void native_set_iopl_mask(unsigned mask)
+ }
  
- 	e820.nr_map = 0;
--
--	e820_add_region(0, PFN_PHYS((u64)max_pfn), E820_RAM);
-+	for (i = 0; i < memmap.nr_entries; i++) {
-+		unsigned long long end = map[i].addr + map[i].size;
-+		if (map[i].type == E820_RAM) {
-+			if (map[i].addr > mem_end)
-+				continue;
-+			if (end > mem_end) {
-+				/* Truncate region to max_mem. */
-+				map[i].size -= end - mem_end;
-+			}
-+		}
-+		if (map[i].size > 0)
-+			e820_add_region(map[i].addr, map[i].size, map[i].type);
+ extern void native_set_io_bitmap(struct thread_struct *thread,
+-                                 int changed, unsigned long updated_bytes);
++                                 unsigned long updated_bytes);
+ 
+ static inline void
+ native_load_sp0(struct tss_struct *tss, struct thread_struct *thread)
+diff --git a/arch/x86/kernel/ioport.c b/arch/x86/kernel/ioport.c
+index 5a12c9f..642660f 100644
+--- a/arch/x86/kernel/ioport.c
++++ b/arch/x86/kernel/ioport.c
+@@ -31,7 +31,7 @@ static void set_bitmap(unsigned long *bitmap, unsigned int base,
+ }
+ 
+ void native_set_io_bitmap(struct thread_struct *t,
+-                          int changed, unsigned long bytes_updated)
++                          unsigned long bytes_updated)
+ {
+ 	struct tss_struct *tss;
+ 
+@@ -54,7 +54,6 @@ asmlinkage long sys_ioperm(unsigned long from, unsigned long num, int turn_on)
+ {
+ 	struct thread_struct *t = &current->thread;
+ 	unsigned int i, max_long, bytes, bytes_updated;
+-	int changed;
+ 
+ 	if ((from + num <= from) || (from + num > IO_BITMAP_BITS))
+ 		return -EINVAL;
+@@ -75,9 +74,7 @@ asmlinkage long sys_ioperm(unsigned long from, unsigned long num, int turn_on)
+ 		memset(bitmap, 0xff, IO_BITMAP_BYTES);
+ 		t->io_bitmap_ptr = bitmap;
+ 		set_thread_flag(TIF_IO_BITMAP);
+-		changed = 1;
+-	} else
+-		changed = 0;
 +	}
  
  	/*
- 	 * Even though this is normal, usable memory under Xen, reserve
-diff --git a/include/xen/interface/memory.h b/include/xen/interface/memory.h
-index af36ead..e6c6bcb 100644
---- a/include/xen/interface/memory.h
-+++ b/include/xen/interface/memory.h
-@@ -142,4 +142,33 @@ struct xen_translate_gpfn_list {
- };
- DEFINE_GUEST_HANDLE_STRUCT(xen_translate_gpfn_list);
+ 	 * do it in the per-thread copy
+@@ -104,7 +101,7 @@ asmlinkage long sys_ioperm(unsigned long from, unsigned long num, int turn_on)
  
-+/*
-+ * Returns the pseudo-physical memory map as it was when the domain
-+ * was started (specified by XENMEM_set_memory_map).
-+ * arg == addr of struct xen_memory_map.
-+ */
-+#define XENMEM_memory_map           9
-+struct xen_memory_map {
-+    /*
-+     * On call the number of entries which can be stored in buffer. On
-+     * return the number of entries which have been stored in
-+     * buffer.
-+     */
-+    unsigned int nr_entries;
-+
-+    /*
-+     * Entries in the buffer are in the same format as returned by the
-+     * BIOS INT 0x15 EAX=0xE820 call.
-+     */
-+    GUEST_HANDLE(void) buffer;
-+};
-+DEFINE_GUEST_HANDLE_STRUCT(xen_memory_map);
-+
-+/*
-+ * Returns the real physical memory map. Passes the same structure as
-+ * XENMEM_memory_map.
-+ * arg == addr of struct xen_memory_map.
-+ */
-+#define XENMEM_machine_memory_map   10
-+
- #endif /* __XEN_PUBLIC_MEMORY_H__ */
+ 	t->io_bitmap_max = bytes;
+ 
+-	set_io_bitmap(t, changed, bytes_updated);
++	set_io_bitmap(t, bytes_updated);
+ 
+ 	preempt_enable();
+ 
+diff --git a/arch/x86/kernel/process.c b/arch/x86/kernel/process.c
+index 174ab04..f1be97f 100644
+--- a/arch/x86/kernel/process.c
++++ b/arch/x86/kernel/process.c
+@@ -74,7 +74,7 @@ void exit_thread(void)
+ 		preempt_disable();
+ 		t->io_bitmap_ptr = NULL;
+ 		clear_thread_flag(TIF_IO_BITMAP);
+-		set_io_bitmap(t, 1, t->io_bitmap_max);
++		set_io_bitmap(t, t->io_bitmap_max);
+ 		t->io_bitmap_max = 0;
+ 		preempt_enable();
+ 		kfree(bp);
+@@ -209,7 +209,7 @@ void __switch_to_xtra(struct task_struct *prev_p, struct task_struct *next_p,
+ 
+ 	if (test_tsk_thread_flag(next_p, TIF_IO_BITMAP) ||
+ 	    test_tsk_thread_flag(prev_p, TIF_IO_BITMAP))
+-		set_io_bitmap(next, 1,
++		set_io_bitmap(next,
+ 		              max(prev->io_bitmap_max, next->io_bitmap_max));
+ }
+ 
+diff --git a/arch/x86/xen/enlighten.c b/arch/x86/xen/enlighten.c
+index 61ce3ae..f673cd8 100644
+--- a/arch/x86/xen/enlighten.c
++++ b/arch/x86/xen/enlighten.c
+@@ -569,13 +569,10 @@ static void xen_set_iopl_mask(unsigned mask)
+ }
+ 
+ static void xen_set_io_bitmap(struct thread_struct *thread,
+-                              int changed, unsigned long bytes_updated)
++                              unsigned long bytes_updated)
+ {
+ 	struct physdev_set_iobitmap set_iobitmap;
+ 
+-	if (!changed)
+-		return;
+-
+ 	set_xen_guest_handle(set_iobitmap.bitmap,
+ 	                     (char *)thread->io_bitmap_ptr);
+ 	set_iobitmap.nr_ports = thread->io_bitmap_ptr ? IO_BITMAP_BITS : 0;
 -- 
 1.6.0.6
 
