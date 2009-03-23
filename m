@@ -1,74 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759820AbZCWQnU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759990AbZCWQn6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759820AbZCWQnU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Mar 2009 12:43:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757355AbZCWQnG
+	id S1759990AbZCWQn6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Mar 2009 12:43:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758210AbZCWQnr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Mar 2009 12:43:06 -0400
-Received: from hera.kernel.org ([140.211.167.34]:40045 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757435AbZCWQnF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Mar 2009 12:43:05 -0400
-Date: Mon, 23 Mar 2009 16:42:27 GMT
-From: Daniel Mack <daniel@caiaq.de>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       fweisbec@gmail.com, rostedt@goodmis.org, daniel@caiaq.de,
-       tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       fweisbec@gmail.com, rostedt@goodmis.org, tglx@linutronix.de,
-       daniel@caiaq.de, mingo@elte.hu
-In-Reply-To: <1237824637-28190-1-git-send-email-daniel@caiaq.de>
-References: <1237824637-28190-1-git-send-email-daniel@caiaq.de>
-Subject: [tip:tracing/ftrace] kernel/trace/trace_functions_graph.c: fix nsecs_str buffer size
-Message-ID: <tip-603b9b9081ae0a1af986b9059a0a5055876ddea9@git.kernel.org>
-Git-Commit-ID: 603b9b9081ae0a1af986b9059a0a5055876ddea9
-X-Mailer: tip-git-log-daemon
+	Mon, 23 Mar 2009 12:43:47 -0400
+Received: from smtp.ultrahosting.com ([74.213.174.254]:49119 "EHLO
+	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758425AbZCWQnq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Mar 2009 12:43:46 -0400
+Date: Mon, 23 Mar 2009 12:40:14 -0400 (EDT)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@qirst.com
+To: Ingo Molnar <mingo@elte.hu>
+cc: Pekka Enberg <penberg@cs.helsinki.fi>,
+       Lai Jiangshan <laijs@cn.fujitsu.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Manfred Spraul <manfred@colorfullife.com>,
+       Peter Zijlstra <peterz@infradead.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH -mm 1/6] slab: introduce __kfree_rcu
+In-Reply-To: <20090323155938.GA27151@elte.hu>
+Message-ID: <alpine.DEB.1.10.0903231234110.11796@qirst.com>
+References: <49AD3433.9000001@cn.fujitsu.com> <1237794502.6313.21.camel@penberg-laptop> <alpine.DEB.1.10.0903230931570.4095@qirst.com> <20090323155938.GA27151@elte.hu>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 23 Mar 2009 16:42:30 +0000 (UTC)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  603b9b9081ae0a1af986b9059a0a5055876ddea9
-Gitweb:     http://git.kernel.org/tip/603b9b9081ae0a1af986b9059a0a5055876ddea9
-Author:     Daniel Mack <daniel@caiaq.de>
-AuthorDate: Mon, 23 Mar 2009 17:10:37 +0100
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Mon, 23 Mar 2009 17:40:51 +0100
+On Mon, 23 Mar 2009, Ingo Molnar wrote:
 
-kernel/trace/trace_functions_graph.c: fix nsecs_str buffer size
+>
+> * Christoph Lameter <cl@linux-foundation.org> wrote:
+>
+> > On Mon, 23 Mar 2009, Pekka Enberg wrote:
+> >
+> > > > +static inline void *portion_to_obj(void *portion)
+> > > > +{
+> > > > +	struct page *page = virt_to_head_page(portion);
+> > > > +	struct slab *slab = page_get_slab(page);
+> > > > +	struct kmem_cache *cache = page_get_cache(page);
+> > > > +	unsigned int offset = portion - slab->s_mem;
+> > > > +	unsigned int index = offset / cache->buffer_size;
+> > > > +
+> > > > +	return index_to_obj(cache, slab, index);
+> > > > +}
+> > >
+> > > A minor nit: I think this would be more readable if you separated
+> > > variable declarations from the initializations. Also, you can probably
+> > > drop the inline from the function declaration and let GCC decide what to
+> > > do.
+> >
+> > Thats debatable. I find the setting up a number of variables that
+> > are all dependend in the above manner very readable. They are
+> > usually repetitive. Multiple functions use similar
+> > initializations.
+>
+> I agree with Pekka, it's clearly more readable when separated out
+> nicely:
+>
+> 	struct kmem_cache *cache;
+> 	unsigned int offset;
+> 	unsigned int index;
+> 	struct page *page;
+> 	struct slab *slab;
+>
+> 	page	= virt_to_head_page(portion);
+> 	slab	= page_get_slab(page);
+> 	cache	= page_get_cache(page);
+>
+> 	offset	= portion - slab->s_mem;
+> 	index	= offset / cache->buffer_size;
+>
+> The original form is hard to read due to lack of structure.
 
-Impact: fix currently inactive buffer-overflow
+Structure can also be established differently:
 
-In kernel/trace/trace_functions_graph.c, print_graph_duration(),
-len can be as low as 1 or 2, which could make snprintf() write
-beyond the buffer bounds. (Found by cppcheck, no real-world bug
-occured)
+static inline void *portion_to_obj(void *portion)
+{
+	struct page *page = virt_to_head_page(portion);
+	struct slab *slab = page_get_slab(page);
+	struct kmem_cache *cache = page_get_cache(page);
 
-Signed-off-by: Daniel Mack <daniel@caiaq.de>
-Cc: Steven Rostedt <rostedt@goodmis.org>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>
-LKML-Reference: <1237824637-28190-1-git-send-email-daniel@caiaq.de>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+	unsigned int offset = portion - slab->s_mem;
+	unsigned int index = offset / cache->buffer_size;
 
+	return index_to_obj(cache, slab, index);
+}
 
----
- kernel/trace/trace_functions_graph.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+It would be good if the whole series of actions that need to be taken in
+order for the function to "get to know" the slab the object parms would be
+simpler. Like its done in ruby
 
-diff --git a/kernel/trace/trace_functions_graph.c b/kernel/trace/trace_functions_graph.c
-index e876816..a305472 100644
---- a/kernel/trace/trace_functions_graph.c
-+++ b/kernel/trace/trace_functions_graph.c
-@@ -430,7 +430,7 @@ print_graph_duration(unsigned long long duration, struct trace_seq *s)
- 	unsigned long nsecs_rem = do_div(duration, 1000);
- 	/* log10(ULONG_MAX) + '\0' */
- 	char msecs_str[21];
--	char nsecs_str[5];
-+	char nsecs_str[8];
- 	int ret, len;
- 	int i;
- 
+	(page, slab, cache) = get_slab_info(portion)
+
+	(offset, index) = get_position_info(slab, portion)
+
+But how can this be done in C without weird pointer passing?
+
