@@ -1,99 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757917AbZCWKLe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755937AbZCWKPS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757917AbZCWKLe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Mar 2009 06:11:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757573AbZCWKKw
+	id S1755937AbZCWKPS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Mar 2009 06:15:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754485AbZCWKO5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Mar 2009 06:10:52 -0400
-Received: from mail.gmx.net ([213.165.64.20]:48558 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1757553AbZCWKKv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Mar 2009 06:10:51 -0400
-X-Authenticated: #20450766
-X-Provags-ID: V01U2FsdGVkX18gKw8CJ4QgL+LmnmwuGV8Laca9SmkLpCzqh5GPvb
-	7aCkW6CSIGL79t
-Date: Mon, 23 Mar 2009 11:10:56 +0100 (CET)
-From: Guennadi Liakhovetski <lg@denx.de>
-X-X-Sender: lyakh@axis700.grange
+	Mon, 23 Mar 2009 06:14:57 -0400
+Received: from systemlinux.org ([83.151.29.59]:43409 "EHLO m18s25.vlinux.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753102AbZCWKO4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Mar 2009 06:14:56 -0400
+Date: Mon, 23 Mar 2009 11:11:21 +0100
+From: Andre Noll <maan@systemlinux.org>
 To: Dan Williams <dan.j.williams@intel.com>
-cc: linux-kernel@vger.kernel.org, Sascha Hauer <s.hauer@pengutronix.de>
-Subject: [PATCH 2/3 v2] dma: improve section assignment in i.MX31 IPU DMA
- driver
-In-Reply-To: <Pine.LNX.4.64.0903231106060.4871@axis700.grange>
-Message-ID: <Pine.LNX.4.64.0903231109020.4871@axis700.grange>
-References: <Pine.LNX.4.64.0903130837040.4653@axis700.grange>
- <e9c3a7c20903161459n8ad3c6qd705d146703b28a1@mail.gmail.com>
- <Pine.LNX.4.64.0903231106060.4871@axis700.grange>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.5
+Cc: linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org, neilb@suse.de,
+       maciej.sosnowski@intel.com, Ilya Yanok <yanok@emcraft.com>,
+       Yuri Tikhonov <yur@emcraft.com>
+Subject: Re: [PATCH 07/13] async_tx: add support for asynchronous RAID6 recovery operations
+Message-ID: <20090323101121.GO17185@skl-net.de>
+References: <20090318191248.20375.40560.stgit@dwillia2-linux.ch.intel.com> <20090318192052.20375.68157.stgit@dwillia2-linux.ch.intel.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="u3NPeJodHuZECfqv"
+Content-Disposition: inline
+In-Reply-To: <20090318192052.20375.68157.stgit@dwillia2-linux.ch.intel.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The i.MX31 IPU DMA driver is a platform driver, but doesn't need hotplug, so we
-can use __init and __exit function attributes.
 
-Signed-off-by: Guennadi Liakhovetski <lg@denx.de>
----
- drivers/dma/ipu/ipu_idmac.c |    8 ++++----
- drivers/dma/ipu/ipu_irq.c   |    2 +-
- 2 files changed, 5 insertions(+), 5 deletions(-)
+--u3NPeJodHuZECfqv
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-diff --git a/drivers/dma/ipu/ipu_idmac.c b/drivers/dma/ipu/ipu_idmac.c
-index e929ef3..1040730 100644
---- a/drivers/dma/ipu/ipu_idmac.c
-+++ b/drivers/dma/ipu/ipu_idmac.c
-@@ -1576,7 +1576,7 @@ static int __init ipu_idmac_init(struct ipu *ipu)
- 	return dma_async_device_register(&idmac->dma);
- }
- 
--static void ipu_idmac_exit(struct ipu *ipu)
-+static void __exit ipu_idmac_exit(struct ipu *ipu)
- {
- 	int i;
- 	struct idmac *idmac = &ipu->idmac;
-@@ -1595,7 +1595,7 @@ static void ipu_idmac_exit(struct ipu *ipu)
-  * IPU common probe / remove
-  */
- 
--static int ipu_probe(struct platform_device *pdev)
-+static int __init ipu_probe(struct platform_device *pdev)
- {
- 	struct ipu_platform_data *pdata = pdev->dev.platform_data;
- 	struct resource *mem_ipu, *mem_ic;
-@@ -1695,7 +1695,7 @@ err_noirq:
- 	return ret;
- }
- 
--static int ipu_remove(struct platform_device *pdev)
-+static int __exit ipu_remove(struct platform_device *pdev)
- {
- 	struct ipu *ipu = platform_get_drvdata(pdev);
- 
-@@ -1720,7 +1720,7 @@ static struct platform_driver ipu_platform_driver = {
- 		.name	= "ipu-core",
- 		.owner	= THIS_MODULE,
- 	},
--	.remove		= ipu_remove,
-+	.remove		= __exit_p(ipu_remove),
- };
- 
- static int __init ipu_init(void)
-diff --git a/drivers/dma/ipu/ipu_irq.c b/drivers/dma/ipu/ipu_irq.c
-index 83f532c..dd8ebc7 100644
---- a/drivers/dma/ipu/ipu_irq.c
-+++ b/drivers/dma/ipu/ipu_irq.c
-@@ -352,7 +352,7 @@ static struct irq_chip ipu_irq_chip = {
- };
- 
- /* Install the IRQ handler */
--int ipu_irq_attach_irq(struct ipu *ipu, struct platform_device *dev)
-+int __init ipu_irq_attach_irq(struct ipu *ipu, struct platform_device *dev)
- {
- 	struct ipu_platform_data *pdata = dev->dev.platform_data;
- 	unsigned int irq, irq_base, i;
--- 
-1.5.4
+On 12:20, Dan Williams wrote:
+> +struct dma_async_tx_descriptor *
+> +async_r6_dd_recov(int disks, size_t bytes, int faila, int failb,
+> +		  struct page **ptrs, enum async_tx_flags flags,
+> +		  struct dma_async_tx_descriptor *depend_tx,
+> +		  dma_async_tx_callback cb, void *cb_param)
+> +{
+> +	struct dma_async_tx_descriptor *tx =3D NULL;
+> +	struct page *lptrs[disks];
+> +	unsigned char lcoef[disks-4];
 
+This probably needs a BUG_ON(disks < 4).
+
+> +	 * B =3D (2^(y-x))*((2^(y-x) + {01})^(-1))
+
+Minor optimization suggestion: As B depends only on y-x, there are
+255 possible values for B, so a lookup table for all these values
+would only occupy 255 bytes.
+
+> +ddr_sync:
+> +	{
+> +		void **sptrs =3D (void **)lptrs;
+
+unnecessary cast
+
+> +struct dma_async_tx_descriptor *
+> +async_r6_dp_recov(int disks, size_t bytes, int faila, struct page **ptrs,
+> +		  enum async_tx_flags flags,
+> +		  struct dma_async_tx_descriptor *depend_tx,
+> +		  dma_async_tx_callback cb, void *cb_param)
+> +{
+> +	struct dma_async_tx_descriptor *tx =3D NULL;
+
+unnecessary initialization.
+
+> +	struct page *lptrs[disks];
+> +	unsigned char lcoef[disks-2];
+> +	int i =3D 0, k =3D 0;
+
+again. I'd suggest to init i and k in the for() loop.
+
+Regards
+Andre
+--=20
+The only person who always got his work done by Friday was Robinson Crusoe
+
+--u3NPeJodHuZECfqv
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.1 (GNU/Linux)
+
+iD8DBQFJx2BJWto1QDEAkw8RAgW1AJ9SkTvDbhj8HoAidqQiFHKRbFOv7ACeMcr+
+C9C/nRCfl2E8vQEm2v4Ebps=
+=TmX4
+-----END PGP SIGNATURE-----
+
+--u3NPeJodHuZECfqv--
