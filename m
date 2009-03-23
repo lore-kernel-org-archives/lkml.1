@@ -1,56 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757716AbZCWOLX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757768AbZCWOMp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757716AbZCWOLX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Mar 2009 10:11:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753610AbZCWOLN
+	id S1757768AbZCWOMp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Mar 2009 10:12:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756992AbZCWOMZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Mar 2009 10:11:13 -0400
-Received: from casper.infradead.org ([85.118.1.10]:49529 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751779AbZCWOLM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Mar 2009 10:11:12 -0400
-Date: Mon, 23 Mar 2009 07:12:18 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: =?UTF-8?B?5bCP5aSp?= <xtfeng@gmail.com>, Markus <M4rkusXXL@web.de>,
-       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-Subject: Re: [Bug #12872] pwc mmap always fails with EAGAIN
-Message-ID: <20090323071218.286c10e0@infradead.org>
-In-Reply-To: <20090323104945.0fc497e6@lxorguk.ukuu.org.uk>
-References: <GPBuLTara4J.A.3kH.TZTxJB@chimera>
-	<20090322142837.2df0d93d@lxorguk.ukuu.org.uk>
-	<20090322144516.GA13129@elte.hu>
-	<200903222058.12924.M4rkusXXL@web.de>
-	<7b6bb4a50903230341r6ab4a910l401a49d41aa289c7@mail.gmail.com>
-	<20090323104945.0fc497e6@lxorguk.ukuu.org.uk>
-Organization: Intel
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Mon, 23 Mar 2009 10:12:25 -0400
+Received: from mx1.emlix.com ([193.175.82.87]:54682 "EHLO mx1.emlix.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755559AbZCWOMZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Mar 2009 10:12:25 -0400
+From: Oskar Schirmer <os@emlix.com>
+To: Jeff Garzik <jgarzik@pobox.com>, Chris Zankel <chris@zankel.net>
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       =?utf-8?q?Daniel=20Gl=C3=B6ckner?= <dg@emlix.com>
+Subject: [patch 3/3] xtensa: enable s6gmac in s6105_defconfig
+Date: Mon, 23 Mar 2009 15:13:20 +0100
+Message-Id: <1237817600-29471-3-git-send-email-os@emlix.com>
+In-Reply-To: <1237817600-29471-1-git-send-email-os@emlix.com>
+References: <1237817600-29471-1-git-send-email-os@emlix.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+Organization: emlix gmbh, Goettingen, Germany"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 23 Mar 2009 10:49:45 +0000
-Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+From: Daniel Glöckner <dg@emlix.com>
 
-> > >    Rename the pagerange_is_ram() to pat_pagerange_is_ram() and
-> > > add the "track legacy 1MB region as non RAM" condition.
-> 
-> But the lowest 640K are most definitely RAM.
+Signed-off-by: Daniel Glöckner <dg@emlix.com>
+---
+ arch/xtensa/configs/s6105_defconfig |   49 ++++++++++++++++++++++++++++++++++-
+ 1 files changed, 48 insertions(+), 1 deletions(-)
 
-not all of it ;)
-
-"ram" is defined as "the kernel memory allocator knows about it and
-would hand it out" in this context; BIOS owned areas are not "ram" in
-this context.
+diff --git a/arch/xtensa/configs/s6105_defconfig b/arch/xtensa/configs/s6105_defconfig
+index 6e1deff..a130c8d 100644
+--- a/arch/xtensa/configs/s6105_defconfig
++++ b/arch/xtensa/configs/s6105_defconfig
+@@ -264,7 +264,54 @@ CONFIG_HAVE_IDE=y
+ # CONFIG_SCSI_NETLINK is not set
+ # CONFIG_ATA is not set
+ # CONFIG_MD is not set
+-# CONFIG_NETDEVICES is not set
++CONFIG_NETDEVICES=y
++# CONFIG_DUMMY is not set
++# CONFIG_BONDING is not set
++# CONFIG_MACVLAN is not set
++# CONFIG_EQUALIZER is not set
++# CONFIG_TUN is not set
++# CONFIG_VETH is not set
++CONFIG_PHYLIB=y
++
++#
++# MII PHY device drivers
++#
++# CONFIG_MARVELL_PHY is not set
++# CONFIG_DAVICOM_PHY is not set
++# CONFIG_QSEMI_PHY is not set
++# CONFIG_LXT_PHY is not set
++# CONFIG_CICADA_PHY is not set
++# CONFIG_VITESSE_PHY is not set
++CONFIG_SMSC_PHY=y
++# CONFIG_BROADCOM_PHY is not set
++# CONFIG_ICPLUS_PHY is not set
++# CONFIG_REALTEK_PHY is not set
++# CONFIG_NATIONAL_PHY is not set
++# CONFIG_STE10XP is not set
++# CONFIG_LSI_ET1011C_PHY is not set
++# CONFIG_FIXED_PHY is not set
++# CONFIG_MDIO_BITBANG is not set
++# CONFIG_NET_ETHERNET is not set
++CONFIG_NETDEV_1000=y
++CONFIG_S6GMAC=y
++# CONFIG_NETDEV_10000 is not set
++
++#
++# Wireless LAN
++#
++# CONFIG_WLAN_PRE80211 is not set
++# CONFIG_WLAN_80211 is not set
++# CONFIG_IWLWIFI_LEDS is not set
++
++#
++# Enable WiMAX (Networking options) to see the WiMAX drivers
++#
++# CONFIG_WAN is not set
++# CONFIG_PPP is not set
++# CONFIG_SLIP is not set
++# CONFIG_NETCONSOLE is not set
++# CONFIG_NETPOLL is not set
++# CONFIG_NET_POLL_CONTROLLER is not set
+ # CONFIG_ISDN is not set
+ # CONFIG_PHONE is not set
+ 
 -- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+1.6.2.107.ge47ee
+
