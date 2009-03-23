@@ -1,59 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757413AbZCWPFy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758467AbZCWPGW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757413AbZCWPFy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Mar 2009 11:05:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757851AbZCWPE3
+	id S1758467AbZCWPGW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Mar 2009 11:06:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758118AbZCWPEt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Mar 2009 11:04:29 -0400
-Received: from mx1.emlix.com ([193.175.82.87]:46584 "EHLO mx1.emlix.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757600AbZCWPE2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Mar 2009 11:04:28 -0400
-From: =?utf-8?q?Daniel=20Gl=C3=B6ckner?= <dg@emlix.com>
-To: Chris Zankel <chris@zankel.net>, Ben Dooks <ben-linux@fluff.org>
-Cc: linux-i2c@vger.kernel.org, linux-kernel@vger.kernel.org,
-       =?utf-8?q?Daniel=20Gl=C3=B6ckner?= <dg@emlix.com>
-Subject: [patch 5/5] xtensa: enable at24 driver in s6105_defconfig
-Date: Mon, 23 Mar 2009 16:05:18 +0100
-Message-Id: <1237820718-30607-5-git-send-email-dg@emlix.com>
-In-Reply-To: <1237820718-30607-1-git-send-email-dg@emlix.com>
-References: <1237820718-30607-1-git-send-email-dg@emlix.com>
+	Mon, 23 Mar 2009 11:04:49 -0400
+Received: from michelle.daybyday.de ([85.183.245.167]:44751 "EHLO
+	michelle.daybyday.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758073AbZCWPEs convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Mar 2009 11:04:48 -0400
+From: Michael =?iso-8859-1?q?B=FCker?= <m.bueker@berlin.de>
+To: Rui Santos <rsantos@grupopie.com>
+Subject: Re: 2.6.27.19 + 28.7: network timeouts for r8169 and 8139too
+Date: Mon, 23 Mar 2009 16:04:40 +0100
+User-Agent: KMail/1.9.7
+Cc: Francois Romieu <romieu@fr.zoreil.com>, linux-kernel@vger.kernel.org,
+       Michael Buesch <mb@bu3sch.de>
+References: <200903041828.49972.m.bueker@berlin.de> <200903231529.18064.m.bueker@berlin.de> <49C7A370.9070601@grupopie.com>
+In-Reply-To: <49C7A370.9070601@grupopie.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
-Organization: emlix gmbh, Goettingen, Germany"
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Content-Disposition: inline
+Message-Id: <200903231604.40691.m.bueker@berlin.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Daniel Glöckner <dg@emlix.com>
----
- arch/xtensa/configs/s6105_defconfig |   12 +++++++++++-
- 1 files changed, 11 insertions(+), 1 deletions(-)
+On Monday 23 March 2009, Rui Santos wrote:
+> 3) If I compile the kernel without MSI/MSI-X support, I can't also
+> reproduce the problem. You may test it by booting with pci=nomsi
 
-diff --git a/arch/xtensa/configs/s6105_defconfig b/arch/xtensa/configs/s6105_defconfig
-index a9a0de9..e398710 100644
---- a/arch/xtensa/configs/s6105_defconfig
-+++ b/arch/xtensa/configs/s6105_defconfig
-@@ -251,7 +251,17 @@ CONFIG_BLK_DEV_RAM_SIZE=4096
- # CONFIG_CDROM_PKTCDVD is not set
- # CONFIG_ATA_OVER_ETH is not set
- # CONFIG_BLK_DEV_HD is not set
--# CONFIG_MISC_DEVICES is not set
-+CONFIG_MISC_DEVICES=y
-+# CONFIG_ICS932S401 is not set
-+# CONFIG_ENCLOSURE_SERVICES is not set
-+# CONFIG_C2PORT is not set
-+
-+#
-+# EEPROM support
-+#
-+CONFIG_EEPROM_AT24=y
-+# CONFIG_EEPROM_LEGACY is not set
-+# CONFIG_EEPROM_93CX6 is not set
- CONFIG_HAVE_IDE=y
- # CONFIG_IDE is not set
- 
+I hate to make things more complicated, but my laptop doesn't use MSI (in 
+fact, it doesn't even seem to support it), but still I see our error occur.
+
+Michael
+
 -- 
-1.6.2.107.ge47ee
+Num mihi dolebit hoc?
+// This isn't going to hurt, is it?
 
+>From "Practical Latin" by Henry Beard
