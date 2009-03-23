@@ -1,63 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757009AbZCWOcp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756780AbZCWOff@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757009AbZCWOcp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Mar 2009 10:32:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755790AbZCWOch
+	id S1756780AbZCWOff (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Mar 2009 10:35:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755850AbZCWOf1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Mar 2009 10:32:37 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:35852 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755534AbZCWOcg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Mar 2009 10:32:36 -0400
-Date: Mon, 23 Mar 2009 15:32:26 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Nikanth Karthikesan <knikanth@suse.de>,
-       =?utf-8?B?RnLpppjpp7tpYw==?= Weisbecker <fweisbec@gmail.com>,
-       Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org
-Subject: Re: ftrace not working?
-Message-ID: <20090323143226.GA18439@elte.hu>
-References: <20090323083533.GE18837@elte.hu> <200903231408.35405.knikanth@suse.de> <20090323200057.9027.A69D9226@jp.fujitsu.com>
+	Mon, 23 Mar 2009 10:35:27 -0400
+Received: from outbound-sin.frontbridge.com ([207.46.51.80]:38928 "EHLO
+	SG2EHSOBE005.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755250AbZCWOf0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Mar 2009 10:35:26 -0400
+X-BigFish: VPS3(zzzz1202hzzz32i43j62h)
+X-Spam-TCS-SCL: 1:0
+X-WSS-ID: 0KGYR6G-02-BUK-01
+From: Joerg Roedel <joerg.roedel@amd.com>
+To: Ingo Molnar <mingo@redhat.com>
+CC: linux-kernel@vger.kernel.org, iommu@lists.linux-foundation.org,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       Joerg Roedel <joerg.roedel@amd.com>
+Subject: [PATCH] dma-debug: make memory range checks more consistent
+Date: Mon, 23 Mar 2009 15:35:08 +0100
+Message-ID: <1237818908-26516-1-git-send-email-joerg.roedel@amd.com>
+X-Mailer: git-send-email 1.5.6.4
+X-OriginalArrivalTime: 23 Mar 2009 14:35:09.0027 (UTC) FILETIME=[90EEAB30:01C9ABC4]
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090323200057.9027.A69D9226@jp.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Impact: do range checks always when a page is mapped
 
-* KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
+Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
+---
+ lib/dma-debug.c |   13 ++++++++-----
+ 1 files changed, 8 insertions(+), 5 deletions(-)
 
-> > On Monday 23 March 2009 14:05:33 Ingo Molnar wrote:
-> > > one thing to note:
-> > > | CPU0: Intel QEMU Virtual CPU version 0.9.1 stepping 03
-> > > | Testing tracer nop: PASSED
-> > >
-> > > so it's a Qemu session, right?
-> > >
-> > 
-> > Yes. qemu-kvm.
-> 
-> Ah, sorry. I don't know qemu and kvm at all ;)
+diff --git a/lib/dma-debug.c b/lib/dma-debug.c
+index f9e6d38..1a99208 100644
+--- a/lib/dma-debug.c
++++ b/lib/dma-debug.c
+@@ -722,10 +722,11 @@ void debug_dma_map_page(struct device *dev, struct page *page, size_t offset,
+ 	entry->size      = size;
+ 	entry->direction = direction;
+ 
+-	if (map_single) {
+-		void *addr = ((char *)page_address(page)) + offset;
+-
++	if (map_single)
+ 		entry->type = dma_debug_single;
++
++	if (!PageHighMem(page)) {
++		void *addr = ((char *)page_address(page)) + offset;
+ 		check_for_stack(dev, addr);
+ 		check_for_illegal_area(dev, addr, size);
+ 	}
+@@ -779,8 +780,10 @@ void debug_dma_map_sg(struct device *dev, struct scatterlist *sg,
+ 		entry->sg_call_ents   = nents;
+ 		entry->sg_mapped_ents = mapped_ents;
+ 
+-		check_for_stack(dev, sg_virt(s));
+-		check_for_illegal_area(dev, sg_virt(s), s->length);
++		if (!PageHighMem(sg_page(s))) {
++			check_for_stack(dev, sg_virt(s));
++			check_for_illegal_area(dev, sg_virt(s), s->length);
++		}
+ 
+ 		add_dma_entry(entry);
+ 	}
+-- 
+1.5.6.4
 
-In terms of tracing it should just look like some weird old CPU with 
-few capabilities and long delays. Nothing in ftrace depends on CPU 
-capabilities (that wasnt present in pentia) so this is weird. 
-Perhaps some timestamping problem? Virtual machines tend to have 
-trouble with the TSC. Or code patching problems? But that does not 
-explain the lack of explicit scheduler events.
 
-Or perhaps the fact that qemu sessions tend to boot with barely any 
-RAM. Maybe the ringbuffer size is very low?
-
-	Ingo
