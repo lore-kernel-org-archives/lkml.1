@@ -1,266 +1,201 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760255AbZCWR02@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759332AbZCWR0A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760255AbZCWR02 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Mar 2009 13:26:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758759AbZCWRZQ
+	id S1759332AbZCWR0A (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Mar 2009 13:26:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758353AbZCWRZP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Mar 2009 13:25:16 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:35507 "EHLO
+	Mon, 23 Mar 2009 13:25:15 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:35505 "EHLO
 	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753768AbZCWRZL (ORCPT
+	with ESMTP id S1753266AbZCWRZK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Mar 2009 13:25:11 -0400
-Message-Id: <20090323172417.059499915@chello.nl>
+	Mon, 23 Mar 2009 13:25:10 -0400
+Message-Id: <20090323172417.677932499@chello.nl>
 References: <20090323172205.389341032@chello.nl>
 User-Agent: quilt/0.46-1
-Date: Mon, 23 Mar 2009 18:22:06 +0100
+Date: Mon, 23 Mar 2009 18:22:12 +0100
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: Paul Mackerras <paulus@samba.org>, Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: [PATCH 1/7] perf_counter: remove the event config bitfields
-Content-Disposition: inline; filename=perf_counter-kill-bitfield-union.patch
+Cc: linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Wu Fengguang <fengguang.wu@intel.com>
+Subject: [PATCH 7/7] kerneltop: use mmap() output
+Content-Disposition: inline; filename=kerneltop-mmap.patch
 X-Bad-Reply: References but no 'Re:' in Subject.
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Since the bitfields turned into a bit of a mess, remove them and rely on
-good old masks.
+update kerneltop to use the mmap() output to gather overflow information
 
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+CC: Wu Fengguang <fengguang.wu@intel.com>
 ---
- arch/powerpc/kernel/perf_counter.c |    6 +--
- arch/x86/kernel/cpu/perf_counter.c |    8 ++--
- include/linux/perf_counter.h       |   74 +++++++++++++++++++++++++------------
- kernel/perf_counter.c              |   22 ++++++-----
- 4 files changed, 70 insertions(+), 40 deletions(-)
+ kerneltop.c |   93 ++++++++++++++++++++++++++++++++++++++++++++++++++----------
+ 1 file changed, 79 insertions(+), 14 deletions(-)
 
-Index: linux-2.6/arch/powerpc/kernel/perf_counter.c
+Index: linux-2.6/kerneltop.c
 ===================================================================
---- linux-2.6.orig/arch/powerpc/kernel/perf_counter.c
-+++ linux-2.6/arch/powerpc/kernel/perf_counter.c
-@@ -602,13 +602,13 @@ hw_perf_counter_init(struct perf_counter
- 		return NULL;
- 	if ((s64)counter->hw_event.irq_period < 0)
- 		return NULL;
--	if (!counter->hw_event.raw_type) {
--		ev = counter->hw_event.event_id;
-+	if (!perf_event_raw(&counter->hw_event)) {
-+		ev = perf_event_id(&counter->hw_event);
- 		if (ev >= ppmu->n_generic || ppmu->generic_events[ev] == 0)
- 			return NULL;
- 		ev = ppmu->generic_events[ev];
- 	} else {
--		ev = counter->hw_event.raw_event_id;
-+		ev = perf_event_config(&counter->hw_event);
- 	}
- 	counter->hw.config_base = ev;
- 	counter->hw.idx = 0;
-Index: linux-2.6/arch/x86/kernel/cpu/perf_counter.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/cpu/perf_counter.c
-+++ linux-2.6/arch/x86/kernel/cpu/perf_counter.c
-@@ -217,15 +217,15 @@ static int __hw_perf_counter_init(struct
- 	/*
- 	 * Raw event type provide the config in the event structure
- 	 */
--	if (hw_event->raw_type) {
--		hwc->config |= pmc_ops->raw_event(hw_event->raw_event_id);
-+	if (perf_event_raw(hw_event)) {
-+		hwc->config |= pmc_ops->raw_event(perf_event_config(hw_event));
- 	} else {
--		if (hw_event->event_id >= pmc_ops->max_events)
-+		if (perf_event_id(hw_event) >= pmc_ops->max_events)
- 			return -EINVAL;
- 		/*
- 		 * The generic map:
- 		 */
--		hwc->config |= pmc_ops->event_map(hw_event->event_id);
-+		hwc->config |= pmc_ops->event_map(perf_event_id(hw_event));
- 	}
- 	counter->wakeup_pending = 0;
+--- linux-2.6.orig/kerneltop.c
++++ linux-2.6/kerneltop.c
+@@ -84,6 +84,7 @@
+ #include <sys/prctl.h>
+ #include <sys/wait.h>
+ #include <sys/uio.h>
++#include <sys/mman.h>
  
-Index: linux-2.6/include/linux/perf_counter.h
-===================================================================
---- linux-2.6.orig/include/linux/perf_counter.h
-+++ linux-2.6/include/linux/perf_counter.h
-@@ -82,32 +82,37 @@ enum perf_counter_record_type {
- 	PERF_RECORD_GROUP		= 2,
- };
+ #include <linux/unistd.h>
  
-+#define __PERF_COUNTER_MASK(name) 			\
-+	(((1ULL << PERF_COUNTER_##name##_BITS) - 1) <<	\
-+	 PERF_COUNTER_##name##_SHIFT)
-+
-+#define PERF_COUNTER_RAW_BITS		1
-+#define PERF_COUNTER_RAW_SHIFT		63
-+#define PERF_COUNTER_RAW_MASK		__PERF_COUNTER_MASK(RAW)
-+
-+#define PERF_COUNTER_CONFIG_BITS	63
-+#define PERF_COUNTER_CONFIG_SHIFT	0
-+#define PERF_COUNTER_CONFIG_MASK	__PERF_COUNTER_MASK(CONFIG)
-+
-+#define PERF_COUNTER_TYPE_BITS		7
-+#define PERF_COUNTER_TYPE_SHIFT		56
-+#define PERF_COUNTER_TYPE_MASK		__PERF_COUNTER_MASK(TYPE)
-+
-+#define PERF_COUNTER_EVENT_BITS		56
-+#define PERF_COUNTER_EVENT_SHIFT	0
-+#define PERF_COUNTER_EVENT_MASK		__PERF_COUNTER_MASK(EVENT)
-+
- /*
-  * Hardware event to monitor via a performance monitoring counter:
-  */
- struct perf_counter_hw_event {
--	union {
--#ifndef __BIG_ENDIAN_BITFIELD
--		struct {
--			__u64			event_id	: 56,
--						type		:  8;
--		};
--		struct {
--			__u64			raw_event_id	: 63,
--						raw_type	:  1;
--		};
--#else
--		struct {
--			__u64			type		:  8,
--						event_id	: 56;
--		};
--		struct {
--			__u64			raw_type	:  1,
--						raw_event_id	: 63;
--		};
--#endif /* __BIT_ENDIAN_BITFIELD */
--		__u64		event_config;
--	};
-+	/*
-+	 * The MSB of the config word signifies if the rest contains cpu
-+	 * specific (raw) counter configuration data, if unset, the next
-+	 * 7 bits are an event type and the rest of the bits are the event
-+	 * identifier.
-+	 */
-+	__u64			config;
+@@ -119,17 +120,25 @@ typedef long long               __s64;
  
- 	__u64			irq_period;
- 	__u64			record_type;
-@@ -157,6 +162,27 @@ struct perf_counter_hw_event {
  
- struct task_struct;
+ #ifdef __x86_64__
+-# define __NR_perf_counter_open 295
++#define __NR_perf_counter_open 295
++#define rmb()		asm volatile("lfence" ::: "memory")
++#define cpu_relax()	asm volatile("rep; nop" ::: "memory");
+ #endif
  
-+static inline u64 perf_event_raw(struct perf_counter_hw_event *hw_event)
-+{
-+	return hw_event->config & PERF_COUNTER_RAW_MASK;
-+}
-+
-+static inline u64 perf_event_config(struct perf_counter_hw_event *hw_event)
-+{
-+	return hw_event->config & PERF_COUNTER_CONFIG_MASK;
-+}
-+
-+static inline u64 perf_event_type(struct perf_counter_hw_event *hw_event)
-+{
-+	return (hw_event->config & PERF_COUNTER_TYPE_MASK) >>
-+		PERF_COUNTER_TYPE_SHIFT;
-+}
-+
-+static inline u64 perf_event_id(struct perf_counter_hw_event *hw_event)
-+{
-+	return hw_event->config & PERF_COUNTER_EVENT_MASK;
-+}
-+
- /**
-  * struct hw_perf_counter - performance counter hardware details:
-  */
-@@ -336,8 +362,8 @@ extern void perf_counter_output(struct p
-  */
- static inline int is_software_counter(struct perf_counter *counter)
- {
--	return !counter->hw_event.raw_type &&
--		counter->hw_event.type != PERF_TYPE_HARDWARE;
-+	return !perf_event_raw(&counter->hw_event) &&
-+		perf_event_type(&counter->hw_event) != PERF_TYPE_HARDWARE;
- }
+ #ifdef __i386__
+-# define __NR_perf_counter_open 333
++#define __NR_perf_counter_open 333
++#define rmb()		asm volatile("lfence" ::: "memory")
++#define cpu_relax()	asm volatile("rep; nop" ::: "memory");
+ #endif
  
- extern void perf_swcounter_event(u32, u64, int, struct pt_regs *);
-Index: linux-2.6/kernel/perf_counter.c
-===================================================================
---- linux-2.6.orig/kernel/perf_counter.c
-+++ linux-2.6/kernel/perf_counter.c
-@@ -1379,7 +1379,7 @@ static void perf_counter_handle_group(st
- 	list_for_each_entry(sub, &leader->sibling_list, list_entry) {
- 		if (sub != counter)
- 			sub->hw_ops->read(sub);
--		perf_counter_store_irq(counter, sub->hw_event.event_config);
-+		perf_counter_store_irq(counter, sub->hw_event.config);
- 		perf_counter_store_irq(counter, atomic64_read(&sub->count));
+ #ifdef __powerpc__
+ #define __NR_perf_counter_open 319
++#define rmb() 		asm volatile ("sync" ::: "memory")
++#define cpu_relax()	asm volatile ("" ::: "memory");
+ #endif
+ 
++#define unlikely(x)	__builtin_expect(!!(x), 0)
++
+ asmlinkage int sys_perf_counter_open(
+         struct perf_counter_hw_event    *hw_event_uptr          __user,
+         pid_t                           pid,
+@@ -181,6 +190,7 @@ static int			profile_cpu			= -1;
+ static int			nr_cpus				=  0;
+ static int			nmi				=  1;
+ static int			group				=  0;
++static unsigned int		page_size;
+ 
+ static char			*vmlinux;
+ 
+@@ -1117,16 +1127,68 @@ static void process_options(int argc, ch
  	}
  }
-@@ -1489,13 +1489,13 @@ static int perf_swcounter_match(struct p
- 	if (counter->state != PERF_COUNTER_STATE_ACTIVE)
- 		return 0;
  
--	if (counter->hw_event.raw_type)
-+	if (perf_event_raw(&counter->hw_event))
- 		return 0;
- 
--	if (counter->hw_event.type != type)
-+	if (perf_event_type(&counter->hw_event) != type)
- 		return 0;
- 
--	if (counter->hw_event.event_id != event)
-+	if (perf_event_id(&counter->hw_event) != event)
- 		return 0;
- 
- 	if (counter->hw_event.exclude_user && user_mode(regs))
-@@ -1757,13 +1757,13 @@ extern void ftrace_profile_disable(int);
- 
- static void tp_perf_counter_destroy(struct perf_counter *counter)
- {
--	ftrace_profile_disable(counter->hw_event.event_id);
-+	ftrace_profile_disable(perf_event_id(&counter->hw_event));
- }
- 
- static const struct hw_perf_counter_ops *
- tp_perf_counter_init(struct perf_counter *counter)
- {
--	int event_id = counter->hw_event.event_id;
-+	int event_id = perf_event_id(&counter->hw_event);
- 	int ret;
- 
- 	ret = ftrace_profile_enable(event_id);
-@@ -1797,7 +1797,7 @@ sw_perf_counter_init(struct perf_counter
- 	 * to be kernel events, and page faults are never hypervisor
- 	 * events.
- 	 */
--	switch (counter->hw_event.event_id) {
-+	switch (perf_event_id(&counter->hw_event)) {
- 	case PERF_COUNT_CPU_CLOCK:
- 		hw_ops = &perf_ops_cpu_clock;
- 
-@@ -1882,9 +1882,12 @@ perf_counter_alloc(struct perf_counter_h
- 
- 	hw_ops = NULL;
- 
--	if (hw_event->raw_type)
-+	if (perf_event_raw(hw_event)) {
- 		hw_ops = hw_perf_counter_init(counter);
--	else switch (hw_event->type) {
-+		goto done;
++struct mmap_data {
++	int counter;
++	void *base;
++	unsigned int mask;
++	unsigned int prev;
++};
++
++static unsigned int mmap_read_head(struct mmap_data *md)
++{
++	struct perf_counter_mmap_page *pc = md->base;
++	unsigned int seq, head;
++
++repeat:
++	rmb();
++	seq = pc->lock;
++
++	if (unlikely(seq & 1)) {
++		cpu_relax();
++		goto repeat;
 +	}
 +
-+	switch (perf_event_type(hw_event)) {
- 	case PERF_TYPE_HARDWARE:
- 		hw_ops = hw_perf_counter_init(counter);
- 		break;
-@@ -1902,6 +1905,7 @@ perf_counter_alloc(struct perf_counter_h
- 		kfree(counter);
- 		return NULL;
- 	}
-+done:
- 	counter->hw_ops = hw_ops;
++	head = pc->data_head;
++
++	rmb();
++	if (pc->lock != seq)
++		goto repeat;
++
++	return head;
++}
++
++static void mmap_read(struct mmap_data *md)
++{
++	unsigned int head = mmap_read_head(md);
++	unsigned int old = md->prev;
++	unsigned char *data = md->base + page_size;
++
++	if (head - old > md->mask) {
++		printf("ERROR: failed to keep up with mmap data\n");
++		exit(-1);
++	}
++
++	for (; old != head;) {
++		__u64 *ptr = (__u64 *)&data[old & md->mask];
++		old += sizeof(__u64);
++
++		process_event(*ptr, md->counter);
++	}
++
++	md->prev = old;
++}
++
+ int main(int argc, char *argv[])
+ {
+ 	struct pollfd event_array[MAX_NR_CPUS][MAX_COUNTERS];
++	struct mmap_data mmap_array[MAX_NR_CPUS][MAX_COUNTERS];
+ 	struct perf_counter_hw_event hw_event;
+ 	int i, counter, group_fd;
+ 	unsigned int cpu;
+-	uint64_t ip;
+-	ssize_t res;
+ 	int ret;
  
- 	return counter;
++	page_size = sysconf(_SC_PAGE_SIZE);
++
+ 	process_options(argc, argv);
+ 
+ 	nr_cpus = sysconf(_SC_NPROCESSORS_ONLN);
+@@ -1153,8 +1215,6 @@ int main(int argc, char *argv[])
+ 			hw_event.record_type	= PERF_RECORD_IRQ;
+ 			hw_event.nmi		= nmi;
+ 
+-			printf("FOO: %d %llx %llx\n", counter, event_id[counter], event_count[counter]);
+-
+ 			fd[i][counter] = sys_perf_counter_open(&hw_event, tid, cpu, group_fd, 0);
+ 			fcntl(fd[i][counter], F_SETFL, O_NONBLOCK);
+ 			if (fd[i][counter] < 0) {
+@@ -1174,6 +1234,17 @@ int main(int argc, char *argv[])
+ 
+ 			event_array[i][counter].fd = fd[i][counter];
+ 			event_array[i][counter].events = POLLIN;
++
++			mmap_array[i][counter].counter = counter;
++			mmap_array[i][counter].prev = 0;
++			mmap_array[i][counter].mask = 2*page_size - 1;
++			mmap_array[i][counter].base = mmap(NULL, 3*page_size,
++					PROT_READ, MAP_SHARED, fd[i][counter], 0);
++			if (mmap_array[i][counter].base == MAP_FAILED) {
++				printf("kerneltop error: failed to mmap with %d (%s)\n",
++						errno, strerror(errno));
++				exit(-1);
++			}
+ 		}
+ 	}
+ 
+@@ -1188,14 +1259,8 @@ int main(int argc, char *argv[])
+ 		int hits = events;
+ 
+ 		for (i = 0; i < nr_cpus; i++) {
+-			for (counter = 0; counter < nr_counters; counter++) {
+-				res = read(fd[i][counter], (char *) &ip, sizeof(ip));
+-				if (res > 0) {
+-					assert(res == sizeof(ip));
+-
+-					process_event(ip, counter);
+-				}
+-			}
++			for (counter = 0; counter < nr_counters; counter++)
++				mmap_read(&mmap_array[i][counter]);
+ 		}
+ 
+ 		if (time(NULL) >= last_refresh + delay_secs) {
 
 -- 
 
