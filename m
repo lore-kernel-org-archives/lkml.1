@@ -1,41 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759206AbZCWP72@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758851AbZCWP6m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759206AbZCWP72 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Mar 2009 11:59:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754818AbZCWP7M
+	id S1758851AbZCWP6m (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Mar 2009 11:58:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757786AbZCWP6b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Mar 2009 11:59:12 -0400
-Received: from kroah.org ([198.145.64.141]:60385 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755089AbZCWP7L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Mar 2009 11:59:11 -0400
-Date: Mon, 23 Mar 2009 08:32:56 -0700
-From: Greg KH <greg@kroah.com>
-To: Martin Wilck <martin.wilck@fujitsu-siemens.com>
-Cc: Corey Minyard <minyard@acm.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "openipmi-developer@lists.sourceforge.net" 
-	<openipmi-developer@lists.sourceforge.net>
-Subject: Re: [PATCH] limit CPU time spent in kipmid (PREVIOUS WAS BROKEN)
-Message-ID: <20090323153256.GA7528@kroah.com>
-References: <49C27281.4040207@fujitsu-siemens.com> <49C2B994.7040808@acm.org> <20090319235114.GA18182@kroah.com> <49C3B6A5.5030408@acm.org> <20090320174701.GA14823@kroah.com> <49C3E03E.10506@acm.org> <49C78BE0.9090107@fujitsu-siemens.com>
+	Mon, 23 Mar 2009 11:58:31 -0400
+Received: from hera.kernel.org ([140.211.167.34]:48382 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757000AbZCWP6a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Mar 2009 11:58:30 -0400
+Date: Mon, 23 Mar 2009 15:57:36 GMT
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       fweisbec@gmail.com, rostedt@goodmis.org, gregkh@suse.de,
+       tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       fweisbec@gmail.com, rostedt@goodmis.org, gregkh@suse.de,
+       tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <1237759847-21025-3-git-send-email-fweisbec@gmail.com>
+References: <1237759847-21025-3-git-send-email-fweisbec@gmail.com>
+Subject: [tip:tracing/ftrace] tracing/ftrace: check if debugfs is registered before creating files
+Message-ID: <tip-3e1f60b80cafcb5d7e8d3665b35962fbb8fb9efa@git.kernel.org>
+Git-Commit-ID: 3e1f60b80cafcb5d7e8d3665b35962fbb8fb9efa
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-In-Reply-To: <49C78BE0.9090107@fujitsu-siemens.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 23 Mar 2009 15:57:38 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 23, 2009 at 02:17:20PM +0100, Martin Wilck wrote:
-> +module_param(kipmid_max_busy, uint, 0);
+Commit-ID:  3e1f60b80cafcb5d7e8d3665b35962fbb8fb9efa
+Gitweb:     http://git.kernel.org/tip/3e1f60b80cafcb5d7e8d3665b35962fbb8fb9efa
+Author:     Frederic Weisbecker <fweisbec@gmail.com>
+AuthorDate: Sun, 22 Mar 2009 23:10:45 +0100
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Mon, 23 Mar 2009 16:25:47 +0100
 
-Can you make this modifiable at runtime by setting the mode to 0644?
-That way people would not have to unload and then reload the module in
-order to be able to fix their machines, as they usually don't know they
-have a problem until they run their system for a while.
+tracing/ftrace: check if debugfs is registered before creating files
 
-thanks,
+Impact: fix a crash with ftrace={nop,boot} parameter
 
-greg k-h
+If the nop or initcall tracers are launched as boot tracers,
+they will attempt to create their option directory and files.
+But these tracers are registered very early and then assigned
+as "boot tracers" very early if asked to.
+
+Since they do this before debugfs has been registered (core initcall),
+a crash is triggered.
+
+Another early tracers could also come later. So we fix it by
+checking if debugfs is initialized before creating the root
+tracing directory.
+
+Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>
+Cc: Steven Rostedt <rostedt@goodmis.org>
+LKML-Reference: <1237759847-21025-3-git-send-email-fweisbec@gmail.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+
+---
+ kernel/trace/trace.c |    3 +++
+ 1 files changed, 3 insertions(+), 0 deletions(-)
+
+diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
+index ace685c..f0e1337 100644
+--- a/kernel/trace/trace.c
++++ b/kernel/trace/trace.c
+@@ -3513,6 +3513,9 @@ struct dentry *tracing_init_dentry(void)
+ 	if (d_tracer)
+ 		return d_tracer;
+ 
++	if (!debugfs_initialized())
++		return NULL;
++
+ 	d_tracer = debugfs_create_dir("tracing", NULL);
+ 
+ 	if (!d_tracer && !once) {
