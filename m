@@ -1,76 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757604AbZCWIcU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757812AbZCWIcj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757604AbZCWIcU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Mar 2009 04:32:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757913AbZCWIbo
+	id S1757812AbZCWIcj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Mar 2009 04:32:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757914AbZCWIbt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Mar 2009 04:31:44 -0400
-Received: from hera.kernel.org ([140.211.167.34]:51630 "EHLO hera.kernel.org"
+	Mon, 23 Mar 2009 04:31:49 -0400
+Received: from hera.kernel.org ([140.211.167.34]:51634 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757898AbZCWIbn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Mar 2009 04:31:43 -0400
-Date: Mon, 23 Mar 2009 08:31:02 GMT
+	id S1757910AbZCWIbr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Mar 2009 04:31:47 -0400
+Date: Mon, 23 Mar 2009 08:31:11 GMT
 From: Frederic Weisbecker <fweisbec@gmail.com>
 To: linux-tip-commits@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       fweisbec@gmail.com, rostedt@goodmis.org, tglx@linutronix.de,
-       mingo@elte.hu
+       tzanussi@gmail.com, fweisbec@gmail.com, rostedt@goodmis.org,
+       tglx@linutronix.de, mingo@elte.hu
 Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       fweisbec@gmail.com, rostedt@goodmis.org, tglx@linutronix.de,
-       mingo@elte.hu
-In-Reply-To: <1237759847-21025-5-git-send-email-fweisbec@gmail.com>
-References: <1237759847-21025-5-git-send-email-fweisbec@gmail.com>
-Subject: [tip:tracing/filters] tracing/ftrace: make nop-tracer use polling wait for events on pipe
-Message-ID: <tip-7e6ea92df3fd7cbe74e7985c6f3e40255c44b201@git.kernel.org>
-Git-Commit-ID: 7e6ea92df3fd7cbe74e7985c6f3e40255c44b201
+       fweisbec@gmail.com, tzanussi@gmail.com, rostedt@goodmis.org,
+       tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <1237763919-21505-1-git-send-email-fweisbec@gmail.com>
+References: <1237763919-21505-1-git-send-email-fweisbec@gmail.com>
+Subject: [tip:tracing/filters] tracing/events: don't discard an event after commit
+Message-ID: <tip-b118415bfad6d75792a85ac999e25149db8e6919@git.kernel.org>
+Git-Commit-ID: b118415bfad6d75792a85ac999e25149db8e6919
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 23 Mar 2009 08:31:04 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 23 Mar 2009 08:31:13 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  7e6ea92df3fd7cbe74e7985c6f3e40255c44b201
-Gitweb:     http://git.kernel.org/tip/7e6ea92df3fd7cbe74e7985c6f3e40255c44b201
+Commit-ID:  b118415bfad6d75792a85ac999e25149db8e6919
+Gitweb:     http://git.kernel.org/tip/b118415bfad6d75792a85ac999e25149db8e6919
 Author:     Frederic Weisbecker <fweisbec@gmail.com>
-AuthorDate: Sun, 22 Mar 2009 23:10:47 +0100
+AuthorDate: Mon, 23 Mar 2009 00:18:39 +0100
 Committer:  Ingo Molnar <mingo@elte.hu>
 CommitDate: Mon, 23 Mar 2009 09:22:15 +0100
 
-tracing/ftrace: make nop-tracer use polling wait for events on pipe
+tracing/events: don't discard an event after commit
 
-Impact: display events when they arrive
+When we want to filter an event, the filter test is done after
+the event is commited to the ring-buffer to be discarded later if
+needed.
 
-Now that the events don't use wake_up() anymore, we need the nop
-tracer to poll waiting for events on the pipe. Especially because
-nop is useful to look at orphan traces types (traces types that
-don't rely on specific tracers) because it doesn't produce traces
-itself.
+But a reader could be reading this event while we are trying to discard
+it. Other kind of racy events can even happen because the event is
+commited and can be read and/or consumed.
 
-And unlike other tracers that trigger specific traces periodically,
-nop triggers no traces by itself that can wake him.
+What we want is to discard the event before committing it.
 
+Reported-by: Steven Rostedt <rostedt@goodmis.org>
 Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>
-LKML-Reference: <1237759847-21025-5-git-send-email-fweisbec@gmail.com>
+Cc: Tom Zanussi <tzanussi@gmail.com>
+LKML-Reference: <1237763919-21505-1-git-send-email-fweisbec@gmail.com>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
 ---
- kernel/trace/trace_nop.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+ kernel/trace/trace_events_stage_3.h |    5 +++--
+ 1 files changed, 3 insertions(+), 2 deletions(-)
 
-diff --git a/kernel/trace/trace_nop.c b/kernel/trace/trace_nop.c
-index 9aa84bd..394f944 100644
---- a/kernel/trace/trace_nop.c
-+++ b/kernel/trace/trace_nop.c
-@@ -91,6 +91,7 @@ struct tracer nop_trace __read_mostly =
- 	.name		= "nop",
- 	.init		= nop_trace_init,
- 	.reset		= nop_trace_reset,
-+	.wait_pipe	= poll_wait_pipe,
- #ifdef CONFIG_FTRACE_SELFTEST
- 	.selftest	= trace_selftest_startup_nop,
- #endif
+diff --git a/kernel/trace/trace_events_stage_3.h b/kernel/trace/trace_events_stage_3.h
+index 9a3bd49..9d2fa78 100644
+--- a/kernel/trace/trace_events_stage_3.h
++++ b/kernel/trace/trace_events_stage_3.h
+@@ -222,10 +222,11 @@ static void ftrace_raw_event_##call(proto)				\
+ 									\
+ 	assign;								\
+ 									\
+-	trace_nowake_buffer_unlock_commit(event, irq_flags, pc);	\
+-									\
+ 	if (call->preds && !filter_match_preds(call, entry))		\
+ 		ring_buffer_event_discard(event);			\
++									\
++	trace_nowake_buffer_unlock_commit(event, irq_flags, pc);	\
++									\
+ }									\
+ 									\
+ static int ftrace_raw_reg_event_##call(void)				\
