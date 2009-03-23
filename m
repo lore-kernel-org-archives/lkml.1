@@ -1,44 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754650AbZCWKlu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756698AbZCWKms@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754650AbZCWKlu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Mar 2009 06:41:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753971AbZCWKlh
+	id S1756698AbZCWKms (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Mar 2009 06:42:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754938AbZCWKmg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Mar 2009 06:41:37 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:33498 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751687AbZCWKlh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Mar 2009 06:41:37 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <1237752784-1989-2-git-send-email-hannes@cmpxchg.org>
-References: <1237752784-1989-2-git-send-email-hannes@cmpxchg.org> <20090321102044.GA3427@cmpxchg.org>
-To: Johannes Weiner <hannes@cmpxchg.org>
-Cc: dhowells@redhat.com, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       Nick Piggin <npiggin@suse.de>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Rik van Riel <riel@redhat.com>, Peter Zijlstra <peterz@infradead.com>,
-       MinChan Kim <minchan.kim@gmail.com>,
-       Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-Subject: Re: [patch 2/3] ramfs-nommu: use generic lru cache
-Date: Mon, 23 Mar 2009 10:40:42 +0000
-Message-ID: <11989.1237804842@redhat.com>
+	Mon, 23 Mar 2009 06:42:36 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:44875 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752964AbZCWKmf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Mar 2009 06:42:35 -0400
+Date: Mon, 23 Mar 2009 11:45:25 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Rob Landley <rob@landley.net>
+Cc: kernel list <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>,
+       mtk.manpages@gmail.com, tytso@mit.edu, rdunlap@xenotime.net,
+       linux-doc@vger.kernel.org, linux-ext4@vger.kernel.org
+Subject: Re: ext2/3: document conditions when reliable operation is possible
+Message-ID: <20090323104525.GA17969@elf.ucw.cz>
+References: <20090312092114.GC6949@elf.ucw.cz> <200903121413.04434.rob@landley.net> <20090316122847.GI2405@elf.ucw.cz> <200903161426.24904.rob@landley.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200903161426.24904.rob@landley.net>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Johannes Weiner <hannes@cmpxchg.org> wrote:
-
-> Instead of open-coding the lru-list-add pagevec batching when
-> expanding a file mapping from zero, defer to the appropriate page
-> cache function that also takes care of adding the page to the lru
-> list.
+On Mon 2009-03-16 14:26:23, Rob Landley wrote:
+> On Monday 16 March 2009 07:28:47 Pavel Machek wrote:
+> > Hi!
+> > > > +	Fortunately writes failing are very uncommon on traditional
+> > > > +	spinning disks, as they have spare sectors they use when write
+> > > > +	fails.
+> > >
+> > > I vaguely recall that the behavior of when a write error _does_ occur is
+> > > to remount the filesystem read only?  (Is this VFS or per-fs?)
+> >
+> > Per-fs.
 > 
-> This is cleaner, saves code and reduces the stack footprint by 16
-> words worth of pagevec.
+> Might be nice to note that in the doc.
 
-Acked-by: David Howells <dhowells@redhat.com>
+Ok, can you suggest a patch? I believe remount-ro is already
+documented ... somewhere :-).
+
+> > > I'm aware write errors shouldn't happen, and by the time they do it's too
+> > > late to gracefully handle them, and all we can do is fail.  So how do we
+> > > fail?
+> >
+> > Well, even remount-ro may be too late, IIRC.
+> 
+> Care to elaborate?  (When a filesystem is mounted RO, I'm not sure what 
+> happens to the pages that have already been dirtied...)
+
+Well, fsync() error reporting does not really work properly, but I
+guess it will save you for the remount-ro case. So the data will be in
+the journal, but it will be impossible to replay it...
+
+> > > (Writes aren't always cleanly at the start of an erase block, so critical
+> > > data _before_ what you touch is endangered too.)
+> >
+> > Well, flashes do remap, so it is actually "random blocks".
+> 
+> Fun.
+
+Yes.
+
+> > > > +	otherwise, disks may write garbage during powerfail.
+> > > > +	Not sure how common that problem is on generic PC machines.
+> > > > +
+> > > > +	Note that atomic write is very hard to guarantee for RAID-4/5/6,
+> > > > +	because it needs to write both changed data, and parity, to
+> > > > +	different disks.
+> > >
+> > > These days instead of "atomic" it's better to think in terms of
+> > > "barriers".
+> >
+> > This is not about barriers (that should be different topic). Atomic
+> > write means that either whole sector is written, or nothing at all is
+> > written. Because raid5 needs to update both master data and parity at
+> > the same time, I don't think it can guarantee this during powerfail.
+> 
+> Good point, but I thought that's what journaling was for?
+
+I believe journaling operates on assumption that "either whole sector
+is written, or nothing at all is written".
+
+> I'm aware that any flash filesystem _must_ be journaled in order to work 
+> sanely, and must be able to view the underlying erase granularity down to the 
+> bare metal, through any remapping the hardware's doing.  Possibly what's 
+> really needed is a "flash is weird" section, since flash filesystems can't be 
+> mounted on arbitrary block devices.
+
+> Although an "-O erase_size=128" option so they _could_ would be nice.  There's 
+> "mtdram" which seems to be the only remaining use for ram disks, but why there 
+> isn't an "mtdwrap" that works with arbitrary underlying block devices, I have 
+> no idea.  (Layering it on top of a loopback device would be most
+> useful.)
+
+I don't think that works. Compactflash (etc) cards basically randomly
+remap the data, so you can't really run flash filesystem over
+compactflash/usb/SD card -- you don't know the details of remapping.
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
