@@ -1,176 +1,160 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757172AbZCWA7X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757054AbZCWBFi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757172AbZCWA7X (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Mar 2009 20:59:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756861AbZCWA7H
+	id S1757054AbZCWBFi (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Mar 2009 21:05:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756065AbZCWBF3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Mar 2009 20:59:07 -0400
-Received: from rcsinet11.oracle.com ([148.87.113.123]:28053 "EHLO
-	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753608AbZCWA7E (ORCPT
+	Sun, 22 Mar 2009 21:05:29 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:55420 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753720AbZCWBF2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Mar 2009 20:59:04 -0400
-Message-ID: <49C6DF39.1020509@oracle.com>
-Date: Sun, 22 Mar 2009 18:00:41 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Organization: Oracle Linux Engineering
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
-MIME-Version: 1.0
-To: Christian Lamparter <chunkeey@web.de>
-CC: Michael Buesch <mb@bu3sch.de>, Stephen Rothwell <sfr@canb.auug.org.au>,
-       linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
-       "John W. Linville" <linville@tuxdriver.com>
-Subject: Re: [PATCH] p54: fix SoftLED compile dependencies
-References: <20090319221024.5e2ad6e5.sfr@canb.auug.org.au> <49C293CC.6020009@oracle.com> <200903191955.00718.mb@bu3sch.de> <200903210057.47067.chunkeey@web.de>
-In-Reply-To: <200903210057.47067.chunkeey@web.de>
-Content-Type: text/plain; charset=UTF-8
+	Sun, 22 Mar 2009 21:05:28 -0400
+Date: Mon, 23 Mar 2009 10:03:56 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: "linux-mm@kvack.org" <linux-mm@kvack.org>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "kosaki.motohiro@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>, mel@csn.ul.ie,
+       riel@redhat.com,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
+Subject: [PATCH] fix vmscan to take care of nodemask
+Message-Id: <20090323100356.e980d266.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt701.oracle.com [141.146.40.71]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090205.49C6DEAA.014C:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christian Lamparter wrote:
-> This patch fixes a compile problem when the MAC80211_LEDS
-> triggers are enabled but not LED class itself. 
-> (which is sort of pointless, but anyway...)
-> 
-> Signed-off-by: Christian Lamparter <chunkeey@web.de>
-> ---
-> mb, thank you for the tips!
-> 
-> Randy Dunlap can you please give this patch a try?
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 
-Acked-by: Randy Dunlap <randy.dunlap@oracle.com>
+try_to_free_pages() scans zonelist but doesn't take care of nodemask which is
+passed to alloc_pages_nodemask(). This makes try_to_free_pages() less effective.
 
-Thanks.
+Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+---
+ fs/buffer.c          |    2 +-
+ include/linux/swap.h |    2 +-
+ mm/page_alloc.c      |    3 ++-
+ mm/vmscan.c          |   14 ++++++++++++--
+ 4 files changed, 16 insertions(+), 5 deletions(-)
 
-> John, do you know where the patch form 
-> Geert Uytterhoeven <geert@linux-m68k.org> went?
-> ---
-> diff --git a/drivers/net/wireless/p54/Kconfig b/drivers/net/wireless/p54/Kconfig
-> index 0e344ac..ee1aaca 100644
-> --- a/drivers/net/wireless/p54/Kconfig
-> +++ b/drivers/net/wireless/p54/Kconfig
-> @@ -1,9 +1,10 @@
->  config P54_COMMON
->  	tristate "Softmac Prism54 support"
-> -	depends on MAC80211 && WLAN_80211 && FW_LOADER && EXPERIMENTAL
-> +	depends on MAC80211 && WLAN_80211 && EXPERIMENTAL
-> +	select FW_LOADER
->  	---help---
-> -	  This is common code for isl38xx based cards.
-> -	  This module does nothing by itself - the USB/PCI frontends
-> +	  This is common code for isl38xx/stlc45xx based modules.
-> +	  This module does nothing by itself - the USB/PCI/SPI frontends
->  	  also need to be enabled in order to support any devices.
->  
->  	  These devices require softmac firmware which can be found at
-> @@ -17,31 +18,6 @@ config P54_USB
->  	select CRC32
->  	---help---
->  	  This driver is for USB isl38xx based wireless cards.
-> -	  These are USB based adapters found in devices such as:
-> -
-> -	  3COM 3CRWE254G72
-> -	  SMC 2862W-G
-> -	  Accton 802.11g WN4501 USB
-> -	  Siemens Gigaset USB
-> -	  Netgear WG121
-> -	  Netgear WG111
-> -	  Medion 40900, Roper Europe
-> -	  Shuttle PN15, Airvast WM168g, IOGear GWU513
-> -	  Linksys WUSB54G
-> -	  Linksys WUSB54G Portable
-> -	  DLink DWL-G120 Spinnaker
-> -	  DLink DWL-G122
-> -	  Belkin F5D7050 ver 1000
-> -	  Cohiba Proto board
-> -	  SMC 2862W-G version 2
-> -	  U.S. Robotics U5 802.11g Adapter
-> -	  FUJITSU E-5400 USB D1700
-> -	  Sagem XG703A
-> -	  DLink DWL-G120 Cohiba
-> -	  Spinnaker Proto board
-> -	  Linksys WUSB54AG
-> -	  Inventel UR054G
-> -	  Spinnaker DUT
->  
->  	  These devices require softmac firmware which can be found at
->  	  http://prism54.org/
-> @@ -71,3 +47,8 @@ config P54_SPI
->  	  Nokia's N800/N810 Portable Internet Tablet.
->  
->  	  If you choose to build a module, it'll be called p54spi.
-> +
-> +config P54_LEDS
-> +	bool
-> +	depends on P54_COMMON && MAC80211_LEDS && (LEDS_CLASS = y || LEDS_CLASS = P54_COMMON)
-> +	default y
-> diff --git a/drivers/net/wireless/p54/p54common.c b/drivers/net/wireless/p54/p54common.c
-> index 0a98983..0c1b057 100644
-> --- a/drivers/net/wireless/p54/p54common.c
-> +++ b/drivers/net/wireless/p54/p54common.c
-> @@ -21,9 +21,9 @@
->  #include <linux/etherdevice.h>
->  
->  #include <net/mac80211.h>
-> -#ifdef CONFIG_MAC80211_LEDS
-> +#ifdef CONFIG_P54_LEDS
->  #include <linux/leds.h>
-> -#endif /* CONFIG_MAC80211_LEDS */
-> +#endif /* CONFIG_P54_LEDS */
->  
->  #include "p54.h"
->  #include "p54common.h"
-> @@ -2420,7 +2420,7 @@ static int p54_set_key(struct ieee80211_hw *dev, enum set_key_cmd cmd,
->  	return 0;
->  }
->  
-> -#ifdef CONFIG_MAC80211_LEDS
-> +#ifdef CONFIG_P54_LEDS
->  static void p54_led_brightness_set(struct led_classdev *led_dev,
->  				   enum led_brightness brightness)
->  {
-> @@ -2508,7 +2508,7 @@ static void p54_unregister_leds(struct ieee80211_hw *dev)
->  	if (priv->assoc_led.registered)
->  		led_classdev_unregister(&priv->assoc_led.led_dev);
->  }
-> -#endif /* CONFIG_MAC80211_LEDS */
-> +#endif /* CONFIG_P54_LEDS */
->  
->  static const struct ieee80211_ops p54_ops = {
->  	.tx			= p54_tx,
-> @@ -2592,11 +2592,11 @@ int p54_register_common(struct ieee80211_hw *dev, struct device *pdev)
->  		return err;
->  	}
->  
-> -	#ifdef CONFIG_MAC80211_LEDS
-> +#ifdef CONFIG_P54_LEDS
->  	err = p54_init_leds(dev);
->  	if (err)
->  		return err;
-> -	#endif /* CONFIG_MAC80211_LEDS */
-> +#endif /* CONFIG_P54_LEDS */
->  
->  	dev_info(pdev, "is registered as '%s'\n", wiphy_name(dev->wiphy));
->  	return 0;
-> @@ -2610,9 +2610,9 @@ void p54_free_common(struct ieee80211_hw *dev)
->  	kfree(priv->output_limit);
->  	kfree(priv->curve_data);
->  
-> -	#ifdef CONFIG_MAC80211_LEDS
-> +#ifdef CONFIG_P54_LEDS
->  	p54_unregister_leds(dev);
-> -	#endif /* CONFIG_MAC80211_LEDS */
-> +#endif /* CONFIG_P54_LEDS */
->  }
->  EXPORT_SYMBOL_GPL(p54_free_common);
->  
+Index: mmotm-2.6.29-Mar21/mm/vmscan.c
+===================================================================
+--- mmotm-2.6.29-Mar21.orig/mm/vmscan.c
++++ mmotm-2.6.29-Mar21/mm/vmscan.c
+@@ -79,6 +79,9 @@ struct scan_control {
+ 	/* Which cgroup do we reclaim from */
+ 	struct mem_cgroup *mem_cgroup;
+ 
++	/* Nodemask */
++	nodemask_t	*nodemask;
++
+ 	/* Pluggable isolate pages callback */
+ 	unsigned long (*isolate_pages)(unsigned long nr, struct list_head *dst,
+ 			unsigned long *scanned, int order, int mode,
+@@ -1544,7 +1547,9 @@ static void shrink_zones(int priority, s
+ 	struct zone *zone;
+ 
+ 	sc->all_unreclaimable = 1;
+-	for_each_zone_zonelist(zone, z, zonelist, high_zoneidx) {
++	/* Note: sc->nodemask==NULL means scan all node */
++	for_each_zone_zonelist_nodemask(zone, z, zonelist, high_zoneidx,
++					sc->nodemask) {
+ 		if (!populated_zone(zone))
+ 			continue;
+ 		/*
+@@ -1689,7 +1694,7 @@ out:
+ }
+ 
+ unsigned long try_to_free_pages(struct zonelist *zonelist, int order,
+-								gfp_t gfp_mask)
++				gfp_t gfp_mask, nodemask_t *nodemask)
+ {
+ 	struct scan_control sc = {
+ 		.gfp_mask = gfp_mask,
+@@ -1700,6 +1705,7 @@ unsigned long try_to_free_pages(struct z
+ 		.order = order,
+ 		.mem_cgroup = NULL,
+ 		.isolate_pages = isolate_pages_global,
++		.nodemask = nodemask,
+ 	};
+ 
+ 	return do_try_to_free_pages(zonelist, &sc);
+@@ -1720,6 +1726,7 @@ unsigned long try_to_free_mem_cgroup_pag
+ 		.order = 0,
+ 		.mem_cgroup = mem_cont,
+ 		.isolate_pages = mem_cgroup_isolate_pages,
++		.nodemask = NULL,
+ 	};
+ 	struct zonelist *zonelist;
+ 
+@@ -1769,6 +1776,7 @@ static unsigned long balance_pgdat(pg_da
+ 		.order = order,
+ 		.mem_cgroup = NULL,
+ 		.isolate_pages = isolate_pages_global,
++		.nodemask = NULL,
+ 	};
+ 	/*
+ 	 * temp_priority is used to remember the scanning priority at which
+@@ -2112,6 +2120,7 @@ unsigned long shrink_all_memory(unsigned
+ 		.may_unmap = 0,
+ 		.may_writepage = 1,
+ 		.isolate_pages = isolate_pages_global,
++		.nodemask = NULL,
+ 	};
+ 
+ 	current->reclaim_state = &reclaim_state;
+@@ -2298,6 +2307,7 @@ static int __zone_reclaim(struct zone *z
+ 		.swappiness = vm_swappiness,
+ 		.order = order,
+ 		.isolate_pages = isolate_pages_global,
++		.nodemask = NULL,
+ 	};
+ 	unsigned long slab_reclaimable;
+ 
+Index: mmotm-2.6.29-Mar21/include/linux/swap.h
+===================================================================
+--- mmotm-2.6.29-Mar21.orig/include/linux/swap.h
++++ mmotm-2.6.29-Mar21/include/linux/swap.h
+@@ -213,7 +213,7 @@ static inline void lru_cache_add_active_
+ 
+ /* linux/mm/vmscan.c */
+ extern unsigned long try_to_free_pages(struct zonelist *zonelist, int order,
+-					gfp_t gfp_mask);
++					gfp_t gfp_mask, nodemask_t *mask);
+ extern unsigned long try_to_free_mem_cgroup_pages(struct mem_cgroup *mem,
+ 						  gfp_t gfp_mask, bool noswap,
+ 						  unsigned int swappiness);
+Index: mmotm-2.6.29-Mar21/mm/page_alloc.c
+===================================================================
+--- mmotm-2.6.29-Mar21.orig/mm/page_alloc.c
++++ mmotm-2.6.29-Mar21/mm/page_alloc.c
+@@ -1598,7 +1598,8 @@ nofail_alloc:
+ 	reclaim_state.reclaimed_slab = 0;
+ 	p->reclaim_state = &reclaim_state;
+ 
+-	did_some_progress = try_to_free_pages(zonelist, order, gfp_mask);
++	did_some_progress = try_to_free_pages(zonelist, order,
++						gfp_mask, nodemask);
+ 
+ 	p->reclaim_state = NULL;
+ 	lockdep_clear_current_reclaim_state();
+Index: mmotm-2.6.29-Mar21/fs/buffer.c
+===================================================================
+--- mmotm-2.6.29-Mar21.orig/fs/buffer.c
++++ mmotm-2.6.29-Mar21/fs/buffer.c
+@@ -476,7 +476,7 @@ static void free_more_memory(void)
+ 						&zone);
+ 		if (zone)
+ 			try_to_free_pages(node_zonelist(nid, GFP_NOFS), 0,
+-						GFP_NOFS);
++						GFP_NOFS, NULL);
+ 	}
+ }
+ 
 
-
--- 
-~Randy
