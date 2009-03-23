@@ -1,68 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753232AbZCWFVl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756631AbZCWFXJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753232AbZCWFVl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Mar 2009 01:21:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753601AbZCWFV2
+	id S1756631AbZCWFXJ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Mar 2009 01:23:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751687AbZCWFWy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Mar 2009 01:21:28 -0400
-Received: from mga02.intel.com ([134.134.136.20]:64280 "EHLO mga02.intel.com"
+	Mon, 23 Mar 2009 01:22:54 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:59850 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751687AbZCWFV1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Mar 2009 01:21:27 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.38,406,1233561600"; 
-   d="scan'208";a="499961793"
-Date: Mon, 23 Mar 2009 13:22:08 +0800
-From: Yu Zhao <yu.zhao@intel.com>
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: Jesse Barnes <jbarnes@virtuousgeek.org>,
-       "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
-       "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>,
-       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH v3 0/6] ATS capability support for Intel IOMMU
-Message-ID: <20090323052208.GA1803@yzhao-otc.sh.intel.com>
-References: <1234443038-15437-1-git-send-email-yu.zhao@intel.com> <20090319193043.583ad601@hobbes.lan> <49C303B5.5040707@intel.com> <1237547751.16570.27.camel@macbook.infradead.org>
+	id S1751431AbZCWFWx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Mar 2009 01:22:53 -0400
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1237547751.16570.27.camel@macbook.infradead.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: "Frank Ch. Eigler" <fche@redhat.com>
+X-Fcc: ~/Mail/linus
+X-Fcc: ~/Mail/utrace
+Cc: Alexey Dobriyan <adobriyan@gmail.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Steven Rostedt <rostedt@goodmis.org>, utrace-devel@redhat.com,
+       linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH 3/3] utrace-based ftrace "process" engine, v2
+In-Reply-To: Frank Ch. Eigler's message of  Saturday, 21 March 2009 19:38:39 -0400 <20090321233839.GB5157@redhat.com>
+References: <20090321091235.GA29678@elte.hu>
+	<20090321041954.72b99e69.akpm@linux-foundation.org>
+	<20090321115141.GA3566@redhat.com>
+	<20090321050422.d1d99eec.akpm@linux-foundation.org>
+	<20090321154501.GA2707@elte.hu>
+	<20090321143413.75ead1aa.akpm@linux-foundation.org>
+	<20090321215145.GB5262@redhat.com>
+	<alpine.LFD.2.00.0903211501060.3030@localhost.localdomain>
+	<20090321222030.GA5157@redhat.com>
+	<20090321223759.GA22770@x200.localdomain>
+	<20090321233839.GB5157@redhat.com>
+X-Windows: all the problems and twice the bugs.
+Message-Id: <20090323052050.D3F61FC3AB@magilla.sf.frob.com>
+Date: Sun, 22 Mar 2009 22:20:50 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 20, 2009 at 07:15:51PM +0800, David Woodhouse wrote:
-> On Fri, 2009-03-20 at 10:47 +0800, Zhao, Yu wrote:
-> > If it's possible, I'd like it go through the PCI tree because the ATS 
-> > depends on the SR-IOV. This dependency is not reflected in this v3 
-> > series since the SR-IOV is not in-tree and I don't want to break the 
-> > build after people apply the ATS on their tree.
-> 
-> In what way will it depend on SR-IOV?
+> Yes, I believe that is Roland's intent.  I believe it was separated
+> from the current suite of patches for staging purposes, to merge the
+> most solid code up first.  The code is available from the utrace git
+> tree in the utrace-ptrace branch.
 
-The SR-IOV spec section 3.7.4 says that the Smallest Translation Unit and
-the Invalidate Queue Depth fields in the Virtual Function's ATS capability
-are hard-wired to 0. So we need some special handling when enabling the ATS
-capability for the Virtual Function.
+More than just "staging".  The utrace-ptrace code there today is really not
+very nice to look at, and it's not ready for prime time.  As has been
+mentioned, it is a "pure clean-up exercise".  As such, it's not the top
+priority.  It also didn't seem to me like much of an argument for merging
+utrace: "Look, more code and now it still does the same thing!"
 
-                  Table 3-26: ATS Capability Register
--------------+-----------------------------------------+---------------+--------------
-Bit Location | PF and VF Register Differences From ATS | PF Attributes | VF Attributes
--------------+-----------------------------------------+---------------+--------------
-             |    Smallest Translation Unit (STU)      |               |
-   20:16     |    Hardwired to 0 for VFs.              |      ATS      |      RO
-             |    PF value applies to all VFs.         |               |
--------------+-----------------------------------------+---------------+--------------
-             |    Invalidate Queue Depth               |               |
-   28:24     |    Hardwired to 0 for VFs.              |      ATS      |      RO
-             |    Depth of shared PF input queue.      |               |
--------------+-----------------------------------------+---------------+--------------
+Instead, I figured we should merge utrace in a way that lets everybody beat
+on it for new features and hash out details, without immediate risk of
+regressions in ptrace (which are severely annoying to everyone when they
+happen).  The proper clean-ups for ptrace can proceed in parallel with work
+using utrace for things that are actually new and interesting, and at least
+the first half of that clean-up work is orthogonal to utrace.
 
-> > So Dave, can I get an ack from you and let Jesse pull the IOMMU change
-> > to his tree? Or let this ATS go to 2.6.31?
-> 
-> Want to show the latest version of the patches which depend on SR-IOV,
-> and I can ack them?
+This seems like the normal way that new optional CONFIG_FOOBAR features
+(marked EXPERIMENTAL, even) are handled.  We don't jump over ourselves to
+make existing crucial code paths subject to a new subsystem that is getting
+its first rounds of shake-out.
 
-Sure, thanks!
+
+Thanks,
+Roland
