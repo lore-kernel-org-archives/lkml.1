@@ -1,135 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756284AbZCWCFj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754881AbZCWCGu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756284AbZCWCFj (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Mar 2009 22:05:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752740AbZCWCF2
+	id S1754881AbZCWCGu (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Mar 2009 22:06:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752603AbZCWCGl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Mar 2009 22:05:28 -0400
-Received: from THUNK.ORG ([69.25.196.29]:59393 "EHLO thunker.thunk.org"
+	Sun, 22 Mar 2009 22:06:41 -0400
+Received: from mga14.intel.com ([143.182.124.37]:44609 "EHLO mga14.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752392AbZCWCF1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Mar 2009 22:05:27 -0400
-Date: Sun, 22 Mar 2009 22:05:22 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: Richard <richard@r-selected.de>
-Cc: linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org
-Subject: Re: Severe data corruption with ext4
-Message-ID: <20090323020522.GF29466@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Richard <richard@r-selected.de>, linux-kernel@vger.kernel.org,
-	linux-ext4@vger.kernel.org
-References: <b2080d80903200244u7fbcc150g6724a84c9b3b2054@mail.gmail.com> <20090320030121.1fa8e6d3.akpm@linux-foundation.org> <b2080d80903220626s5fffdbf3i907cb4b215670ce6@mail.gmail.com> <b2080d80903200244u7fbcc150g6724a84c9b3b2054@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <b2080d80903220626s5fffdbf3i907cb4b215670ce6@mail.gmail.com> <b2080d80903200244u7fbcc150g6724a84c9b3b2054@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+	id S1752668AbZCWCGk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Mar 2009 22:06:40 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.38,404,1233561600"; 
+   d="asc'?scan'208";a="123005353"
+Subject: Re: [PATCH] efifb: dmi set video type
+From: Huang Ying <ying.huang@intel.com>
+To: Brian Maly <bmaly@redhat.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <49C56754.4080909@redhat.com>
+References: <49C56754.4080909@redhat.com>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-R255YMi/bs8t6QJuKGTI"
+Date: Mon, 23 Mar 2009 10:06:24 +0800
+Message-Id: <1237773984.24215.312.camel@yhuang-dev.sh.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 20, 2009 at 10:44:02AM +0100, Richard wrote:
-> Mar 19 08:42:43 bakunin kernel: BUG: scheduling while atomic:
-> install-info/27020/0x00000002
 
-This was casued by the call to ext4_error(); the "scheduling while
-atomic" BUG error was fixed in 2.6.29-rc1:
+--=-R255YMi/bs8t6QJuKGTI
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-commit 5d1b1b3f492f8696ea18950a454a141381b0f926
-Author: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-Date:   Mon Jan 5 22:19:52 2009 -0500
+Hi, Brian,
 
-    ext4: fix BUG when calling ext4_error with locked block group
-    
-    The mballoc code likes to call ext4_error while it is holding locked
-    block groups.  This can causes a scheduling in atomic context BUG.  We
-    can't just unlock the block group and relock it after/if ext4_error
-    returns since that might result in race conditions in the case where
-    the filesystem is set to continue after finding errors.
-    
-    Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
-    Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
+The patch is OK for me.
 
+Please cc linux-fbdev-devel@lists.sourceforge.net and "Antonino A.
+Daplas" <adaplas@pol.net> on framebuffer driver patches.
 
-It's going to be moderately painful to backport this to 2.6.28 and
-2.6.27, but we can look into it.
+Best Regards,
+Huang Ying
 
-> Looking into /var/log/kernel.log, I found the following message:
-> 
-> Mar 19 08:42:43 bakunin kernel: EXT4-fs error (device dm-13):
-> ext4_mb_generate_buddy: EXT4-fs: group 0: 16470 blocks in bitmap, 4354
-> in gd
+On Sun, 2009-03-22 at 06:16 +0800, Brian Maly wrote:
+> The current logic for dmi matching in efifb does not allow efifb to load=20
+> on all hardware that we can dmi match for.
+>=20
+> For a real world example, boot with elilo (3.7 or 3.8 vanilla) and on a=20
+> Apple (MacBook) and EFI framebuffer driver will not load (you will have=20
+> no video).
+> This specific hardware is efi v1.10, so we have UGA and not GOP. Without=20
+> special bootloader magic (i.e. extra elilo patches for UGA graphics=20
+> detection) no screen info will be passed to the kernel and as a result=20
+> efifb will not load.
+>=20
+> This patch allows the dmi match to happen by moving it to earlier in=20
+> efifb_init, and sets the video type (in set_system) so that efifb can=20
+> load when we have a valid dmi match and already know the specifics of=20
+> the hardware.
+>=20
+> Without this patch the efifb driver will fail to load in the event=20
+> screen info is not found and passed in by the bootloader, being that we=20
+> will never get to look for a dmi match. A primary reason for matching=20
+> with dmi is because not all bootloaders detect the video info properly.=20
+> The solution is that in the event of a dmi match, we should set=20
+> screen_info.orig_video_isVGA. Most bootloaders fail to set screen info=20
+> on Apple hardware, and this is a big problem for people who use Apple=20
+> hardware.
+>=20
+> Tested on a MacBook SantaRosa with elilo-3.8 (vanilla) and resolves the=20
+> issue, the dmi match now works, EFI framebuffer now loads and video works=
+.
+>=20
+>=20
+> Signed-off-by: Brian Maly <bmaly@redhat>
+>=20
+>=20
 
-This was caused by an on-disk filesystme corruption which mballoc
-detected, which flagged an EXT4 error, which then triggered the BUG.
+--=-R255YMi/bs8t6QJuKGTI
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
 
-> Mar 19 08:42:48 bakunin kernel: EXT4-fs error (device dm-13):
-> mb_free_blocks: double-free of inode 0's block 11457(bit 11457 in
-> group 0)
-> Mar 19 08:42:48 bakunin kernel:
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
-More evidence of on-disk filesystem corruption....
+iEYEABECAAYFAknG7pgACgkQKhFGF+eHlpj6OQCcCQH1LIdgvSPUqGy7OGR3QKUR
+DIUAnidLok/Zdgn034p/mhGsWkRg2VDv
+=q+ZK
+-----END PGP SIGNATURE-----
 
-> Using "dmsetup ls", I figured that dm-13 was /usr; so I fsck'd it.
-> fsck revealed hundreds of errors, which I let "fsck -y" fix automatically.
-> Now there's plenty (more than 250) of files and directories in /usr/lost+found.
+--=-R255YMi/bs8t6QJuKGTI--
 
-Sounds like an inode table got corrupted.
-
-> Mar 19 00:04:51 bakunin kernel: init_special_inode: bogus i_mode (336)
-
-Yeah, we have a patch queued up so we can identified the bad inode
-number that caused that, but it points to more inode table corruption.
-
-> Hello again,
-> 
-> now on the same system (hardware configuration unchanged, except that
-> I attached a DVD burner yesterday), I got dozens of errors like these:
-> 
-> ----------
-> Mar 22 13:47:33 bakunin kernel: __find_get_block_slow() failed.
-> block=197478301302784, b_blocknr=0
-> Mar 22 13:47:33 bakunin kernel: b_state=0x00188021, b_size=4096
-> Mar 22 13:47:33 bakunin kernel: device blocksize: 4096
-> Mar 22 13:47:33 bakunin kernel: __find_get_block_slow() failed.
-> block=197478301302784, b_blocknr=0
-> Mar 22 13:47:33 bakunin kernel: b_state=0x00188021, b_size=4096
-> Mar 22 13:47:33 bakunin kernel: device blocksize: 4096
-> Mar 22 13:47:33 bakunin kernel: grow_buffers: requested out-of-range
-> block 197478301302784 for device dm-14
-> Mar 22 13:47:33 bakunin kernel: EXT4-fs error (device dm-14):
-> ext4_xattr_delete_inode: inode 1022: block 197478301302784 read error
-
-That's another indication of data corruption in inode 1022.  This
-could be hardware induced corruption; or it could be a software
-induced error.  There's been one other user with a RAID that had
-reported a strange corruption near the beginning of the filesystem, in
-the inode table.  How big is your filesystem, exactly?  It could be
-something that only shows up with sufficiently large filesystems, or
-it could be a hardware problem.
-
-Can you send me the output of dumpe2fs of the filesystem in question?
-And something that would be worth doing is to use debugfs like this:
-
-debugfs /dev/XXXX
-
-debugfs: imap <1022>
-
-you'll see something like this:
-
-Inode 1022 is part of block group 0
-      located at block 128, offset 0x0d00
-
-Take the block number, and then use it as follows:
-
-dd if=/dev/XXXX of=itable.img bs=4k count=1 skip=128
-
-Where the parameter to "skip=NNN" should be replaced with the block
-number reported by debugfs's imap command.
-
-Thanks,
-
-						- Ted
