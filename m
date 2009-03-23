@@ -1,56 +1,248 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757479AbZCWIyj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757531AbZCWJBZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757479AbZCWIyj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Mar 2009 04:54:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755860AbZCWIy3
+	id S1757531AbZCWJBZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Mar 2009 05:01:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755759AbZCWJBN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Mar 2009 04:54:29 -0400
-Received: from wa-out-1112.google.com ([209.85.146.182]:28765 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756061AbZCWIy3 (ORCPT
+	Mon, 23 Mar 2009 05:01:13 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:36539 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753764AbZCWJBM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Mar 2009 04:54:29 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:subject:message-id:user-agent:mime-version
-         :content-type;
-        b=LLuquMA27uXnUEtBJnlpsQp4kuhnpDLy4PpEliUmAGlUe55bVTAW5kqk1+4NQ6yXIH
-         vp4GD5NXc2UUo03dq1Fn6ctBSJ2BN6JjAvXfxFTdxCQ/RdpliST72sHbd0IIzV4dgGYf
-         GrUx8Qyi0NeWhIaPqucqHlpOdPsb2wnAMDbeo=
-Date: Mon, 23 Mar 2009 01:54:25 -0700 (PDT)
-From: justinmattock@gmail.com
-To: linux-kernel@vger.kernel.org
-Subject: ACPI: I/O resource 0000:00:1f.3 [0xefa0-0xefbf] conflicts with ACPI
- region SMBI [0xefa0-0xefaf]
-Message-ID: <alpine.LNX.2.00.0903230150110.2409@havk>
-User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
+	Mon, 23 Mar 2009 05:01:12 -0400
+Message-ID: <49C74FCC.7070308@jp.fujitsu.com>
+Date: Mon, 23 Mar 2009 18:01:00 +0900
+From: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
+To: Alex Chiang <achiang@hp.com>
+CC: jbarnes@virtuousgeek.org, linux-pci@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Trent Piepho <xyzzy@speakeasy.org>
+Subject: Re: [PATCH v5 09/13] PCI: Introduce /sys/bus/pci/devices/.../remove
+References: <20090320204327.12275.43010.stgit@bob.kio> <20090320205636.12275.1825.stgit@bob.kio>
+In-Reply-To: <20090320205636.12275.1825.stgit@bob.kio>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Alex Chiang wrote:
+> This patch adds an attribute named "remove" to a PCI device's sysfs
+> directory.  Writing a non-zero value to this attribute will remove the PCI
+> device and any children of it.
+> 
+> Trent Piepho wrote the original implementation and documentation.
+> 
+> Thanks to Vegard Nossum for testing under kmemcheck and finding locking
+> issues with the sysfs interface.
+> 
+> Cc: Trent Piepho <xyzzy@speakeasy.org>
+> Signed-off-by: Alex Chiang <achiang@hp.com>
+> ---
+> 
+>  Documentation/ABI/testing/sysfs-bus-pci |    8 +++++++
+>  Documentation/filesystems/sysfs-pci.txt |   10 +++++++++
+>  drivers/pci/pci-sysfs.c                 |   36 +++++++++++++++++++++++++++++++
+>  3 files changed, 54 insertions(+), 0 deletions(-)
+> 
+> diff --git a/Documentation/ABI/testing/sysfs-bus-pci b/Documentation/ABI/testing/sysfs-bus-pci
+> index 1697a16..1350fa6 100644
+> --- a/Documentation/ABI/testing/sysfs-bus-pci
+> +++ b/Documentation/ABI/testing/sysfs-bus-pci
+> @@ -66,6 +66,14 @@ Description:
+>  		re-discover previously removed devices.
+>  		Depends on CONFIG_HOTPLUG.
+>  
+> +What:		/sys/bus/pci/devices/.../remove
+> +Date:		January 2009
+> +Contact:	Linux PCI developers <linux-pci@vger.kernel.org>
+> +Description:
+> +		Writing a non-zero value to this attribute will
+> +		hot-remove the PCI device and any of its children.
+> +		Depends on CONFIG_HOTPLUG.
+> +
+>  What:		/sys/bus/pci/devices/.../vpd
+>  Date:		February 2008
+>  Contact:	Ben Hutchings <bhutchings@solarflare.com>
+> diff --git a/Documentation/filesystems/sysfs-pci.txt b/Documentation/filesystems/sysfs-pci.txt
+> index 9f8740c..26e4b8b 100644
+> --- a/Documentation/filesystems/sysfs-pci.txt
+> +++ b/Documentation/filesystems/sysfs-pci.txt
+> @@ -12,6 +12,7 @@ that support it.  For example, a given bus might look like this:
+>       |   |-- enable
+>       |   |-- irq
+>       |   |-- local_cpus
+> +     |   |-- remove
+>       |   |-- resource
+>       |   |-- resource0
+>       |   |-- resource1
+> @@ -36,6 +37,7 @@ files, each with their own function.
+>         enable	           Whether the device is enabled (ascii, rw)
+>         irq		   IRQ number (ascii, ro)
+>         local_cpus	   nearby CPU mask (cpumask, ro)
+> +       remove		   remove device from kernel's list (ascii, wo)
+>         resource		   PCI resource host addresses (ascii, ro)
+>         resource0..N	   PCI resource N, if present (binary, mmap)
+>         resource0_wc..N_wc  PCI WC map resource N, if prefetchable (binary, mmap)
+> @@ -46,6 +48,7 @@ files, each with their own function.
+>  
+>    ro - read only file
+>    rw - file is readable and writable
+> +  wo - write only file
+>    mmap - file is mmapable
+>    ascii - file contains ascii text
+>    binary - file contains binary data
+> @@ -73,6 +76,13 @@ that the device must be enabled for a rom read to return data succesfully.
+>  In the event a driver is not bound to the device, it can be enabled using the
+>  'enable' file, documented above.
+>  
+> +The 'remove' file is used to remove the PCI device, by writing a non-zero
+> +integer to the file.  This does not involve any kind of hot-plug functionality,
+> +e.g. powering off the device.  The device is removed from the kernel's list of
+> +PCI devices, the sysfs directory for it is removed, and the device will be
+> +removed from any drivers attached to it. Removal of PCI root buses is
+> +disallowed.
+> +
+>  Accessing legacy resources through sysfs
+>  ----------------------------------------
+>  
+> diff --git a/drivers/pci/pci-sysfs.c b/drivers/pci/pci-sysfs.c
+> index be7468a..e16990e 100644
+> --- a/drivers/pci/pci-sysfs.c
+> +++ b/drivers/pci/pci-sysfs.c
+> @@ -243,6 +243,39 @@ struct bus_attribute pci_bus_attrs[] = {
+>  	__ATTR(rescan, (S_IWUSR|S_IWGRP), NULL, bus_rescan_store),
+>  	__ATTR_NULL
+>  };
+> +
+> +static void remove_callback(struct device *dev)
+> +{
+> +	struct pci_dev *pdev = to_pci_dev(dev);
+> +
+> +	mutex_lock(&pci_remove_rescan_mutex);
+> +	pci_remove_bus_device(pdev);
+> +	mutex_unlock(&pci_remove_rescan_mutex);
+> +}
+> +
+> +static ssize_t
+> +remove_store(struct device *dev, struct device_attribute *dummy,
+> +	     const char *buf, size_t count)
+> +{
+> +	int ret = 0;
+> +	unsigned long val;
+> +	struct pci_dev *pdev = to_pci_dev(dev);
+> +
+> +	if (strict_strtoul(buf, 0, &val) < 0)
+> +		return -EINVAL;
+> +
+> +	if (pci_is_root_bus(pdev->bus))
+> +		return -EBUSY;
+> +
+> +	/* An attribute cannot be unregistered by one of its own methods,
+> +	 * so we have to use this roundabout approach.
+> +	 */
+> +	if (val)
+> +		ret = device_schedule_callback(dev, remove_callback);
+> +	if (ret)
+> +		count = ret;
+> +	return count;
+> +}
+>  #endif
+>  
 
-Any suggestions on what this might be:
-(dmesg):
+I still have the following kernel error messages in testing with your
+latest set of patches (Jesse's linux-next). The test case is removing
+e1000e device or its parent bridge by "echo 1 > /sys/bus/pci/devices/
+.../remove".
 
-[    6.940280] power_supply ADP1: 1 dynamic props
-[    6.940283] power_supply ADP1: prop ONLINE=1
-[    6.940340] input: Sleep Button (CM) as 
-/devices/LNXSYSTM:00/device:00/PNP0C0E:00/input/input5
-[    6.968564] i801_smbus 0000:00:1f.3: PCI INT B -> GSI 19 (level, low) 
--> IRQ 19
-[    6.977814] ACPI: I/O resource 0000:00:1f.3 [0xefa0-0xefbf] conflicts 
-with ACPI region SMBI [0xefa0-0xefaf]
-[    6.987218] ACPI: Device needs an ACPI driver
-[    7.000114] ath9k: 0.1
-[    7.000163] ACPI: Sleep Button (CM) [SLPB]
-[    7.018052] ath9k 0000:03:00.0: PCI INT A -> GSI 17 (level, low) -> IRQ 
-17
-[    7.027094] ath9k 0000:03:00.0: setting latency timer to 64
+[  537.379995] =============================================
+[  537.380124] [ INFO: possible recursive locking detected ]
+[  537.380128] 2.6.29-rc8-kk #1
+[  537.380128] ---------------------------------------------
+[  537.380128] events/4/56 is trying to acquire lock:
+[  537.380128]  (events){--..}, at: [<ffffffff80257fc0>] flush_workqueue+0x0/0xa0
+[  537.380128]
+[  537.380128] but task is already holding lock:
+[  537.380128]  (events){--..}, at: [<ffffffff80257648>] run_workqueue+0x108/0x230
+[  537.380128]
+[  537.380128] other info that might help us debug this:
+[  537.380128] 3 locks held by events/4/56:
+[  537.380128]  #0:  (events){--..}, at: [<ffffffff80257648>] run_workqueue+0x108/0x230
+[  537.380128]  #1:  (&ss->work){--..}, at: [<ffffffff80257648>] run_workqueue+0x108/0x230
+[  537.380128]  #2:  (pci_remove_rescan_mutex){--..}, at: [<ffffffff803c10d1>] remove_callback+0x21/0x40
+[  537.380128]
+[  537.380128] stack backtrace:
+[  537.380128] Pid: 56, comm: events/4 Not tainted 2.6.29-rc8-kk #1
+[  537.380128] Call Trace:
+[  537.380128]  [<ffffffff8026dfcd>] validate_chain+0xb7d/0x1260
+[  537.380128]  [<ffffffff8026eade>] __lock_acquire+0x42e/0xa40
+[  537.380128]  [<ffffffff8026f148>] lock_acquire+0x58/0x80
+[  537.380128]  [<ffffffff80257fc0>] ? flush_workqueue+0x0/0xa0
+[  537.380128]  [<ffffffff8025800d>] flush_workqueue+0x4d/0xa0
+[  537.380128]  [<ffffffff80257fc0>] ? flush_workqueue+0x0/0xa0
+[  537.383380]  [<ffffffff80258070>] flush_scheduled_work+0x10/0x20
+[  537.383380]  [<ffffffffa0144065>] e1000_remove+0x55/0xfe [e1000e]
+[  537.383380]  [<ffffffff8033ee30>] ? sysfs_schedule_callback_work+0x0/0x50
+[  537.383380]  [<ffffffff803bfeb2>] pci_device_remove+0x32/0x70
+[  537.383380]  [<ffffffff80441da9>] __device_release_driver+0x59/0x90
+[  537.383380]  [<ffffffff80441edb>] device_release_driver+0x2b/0x40
+[  537.383380]  [<ffffffff804419d6>] bus_remove_device+0xa6/0x120
+[  537.384382]  [<ffffffff8043e46b>] device_del+0x12b/0x190
+[  537.384382]  [<ffffffff8043e4f6>] device_unregister+0x26/0x70
+[  537.384382]  [<ffffffff803ba969>] pci_stop_dev+0x49/0x60
+[  537.384382]  [<ffffffff803baab0>] pci_remove_bus_device+0x40/0xc0
+[  537.384382]  [<ffffffff803c10d9>] remove_callback+0x29/0x40
+[  537.384382]  [<ffffffff8033ee4f>] sysfs_schedule_callback_work+0x1f/0x50
+[  537.384382]  [<ffffffff8025769a>] run_workqueue+0x15a/0x230
+[  537.384382]  [<ffffffff80257648>] ? run_workqueue+0x108/0x230
+[  537.384382]  [<ffffffff8025846f>] worker_thread+0x9f/0x100
+[  537.384382]  [<ffffffff8025bce0>] ? autoremove_wake_function+0x0/0x40
+[  537.384382]  [<ffffffff802583d0>] ? worker_thread+0x0/0x100
+[  537.384382]  [<ffffffff8025b89d>] kthread+0x4d/0x80
+[  537.384382]  [<ffffffff8020d4ba>] child_rip+0xa/0x20
+[  537.386380]  [<ffffffff8020cebc>] ? restore_args+0x0/0x30
+[  537.386380]  [<ffffffff8025b850>] ? kthread+0x0/0x80
+[  537.386380]  [<ffffffff8020d4b0>] ? child_rip+0x0/0x20
 
-either i801_smbus(to me) is the issue, or it's something else.
+I think the cause of this error message is flush_workqueue() from the
+work of keventd. When removing device using "/sys/bus/pci/devices/.../
+remove", pci_remove_bus_device() is executed by the keventd's work
+through device_schedule_callback(), and it invokes e1000e's remove
+callback. And then, e1000e's remove callback invokes flush_workqueue().
+Actually, the kernel error messages are not displayed when I changed
+e1000e driver to not call flush_workqueue(). In my understanding, flush_workqueue() from the work must be avoided because it can cause
+a deadlock. Please note that this is not a problem of e1000e driver.
+Drivers can use flush_workqueue(), of course.
 
-any ideas?
+BTW, I also have another worry about executing pci_remove_bus_device()
+by the work of keventd. The pci_remove_bus_device() will take a long
+time  especially when the bridge device near the root bus is specified.
+The long delay of keventd's work will have bad effects to other works
+on the workqueue.
 
--- Justin P. Mattock
+Thanks,
+Kenji Kaneshige
+
+
+
+>  struct device_attribute pci_dev_attrs[] = {
+> @@ -263,6 +296,9 @@ struct device_attribute pci_dev_attrs[] = {
+>  	__ATTR(broken_parity_status,(S_IRUGO|S_IWUSR),
+>  		broken_parity_status_show,broken_parity_status_store),
+>  	__ATTR(msi_bus, 0644, msi_bus_show, msi_bus_store),
+> +#ifdef CONFIG_HOTPLUG
+> +	__ATTR(remove, (S_IWUSR|S_IWGRP), NULL, remove_store),
+> +#endif
+>  	__ATTR_NULL,
+>  };
+>  
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pci" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
+> 
+
+
