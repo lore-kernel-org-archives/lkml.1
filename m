@@ -1,45 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758560AbZCWInN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758162AbZCWIoZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758560AbZCWInN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Mar 2009 04:43:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758331AbZCWImw
+	id S1758162AbZCWIoZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Mar 2009 04:44:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757048AbZCWIoN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Mar 2009 04:42:52 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:43247 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758327AbZCWImv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Mar 2009 04:42:51 -0400
-Subject: Re: SLOB lockup (was: Re: [tip:core/locking] lockdep: annotate
-	reclaim context (__GFP_NOFS), fix SLOB)
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: Matt Mackall <mpm@selenic.com>
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>, Ingo Molnar <mingo@elte.hu>,
-       linux-tip-commits@vger.kernel.org, Nick Piggin <npiggin@suse.de>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
-       hpa@zytor.com, mingo@redhat.com, tglx@linutronix.de
-In-Reply-To: <1237215129.3213.193.camel@calx>
-References: <20090128135457.350751756@chello.nl>
-	 <200903152006.21160.nickpiggin@yahoo.com.au>
-	 <1237128960.3213.133.camel@calx>
-	 <200903162100.30029.nickpiggin@yahoo.com.au>
-	 <1237215129.3213.193.camel@calx>
-Date: Mon, 23 Mar 2009 10:42:47 +0200
-Message-Id: <1237797767.6313.35.camel@penberg-laptop>
+	Mon, 23 Mar 2009 04:44:13 -0400
+Received: from cmpxchg.org ([85.214.51.133]:54634 "EHLO cmpxchg.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756102AbZCWIoM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Mar 2009 04:44:12 -0400
+Date: Mon, 23 Mar 2009 09:42:54 +0100
+From: Johannes Weiner <hannes@cmpxchg.org>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Minchan Kim <minchan.kim@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, David Howells <dhowells@redhat.com>,
+       Nick Piggin <npiggin@suse.de>, Rik van Riel <riel@redhat.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+Subject: Re: [patch 3/3] mm: keep pages from unevictable mappings off the LRU  lists
+Message-ID: <20090323084254.GA1685@cmpxchg.org>
+References: <1237752784-1989-3-git-send-email-hannes@cmpxchg.org> <28c262360903221744r6d275294gdc8ad3a12b8c5361@mail.gmail.com> <20090323111615.69F3.A69D9226@jp.fujitsu.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 7bit
-X-Mailer: Evolution 2.22.3.1 
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090323111615.69F3.A69D9226@jp.fujitsu.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-03-16 at 09:52 -0500, Matt Mackall wrote:
-> > Don't hold SLOB lock when freeing the page. Reduces lock hold width.
+On Mon, Mar 23, 2009 at 11:21:36AM +0900, KOSAKI Motohiro wrote:
+> > Hmm,,
 > > 
-> > Signed-off-by: Nick Piggin <npiggin@suse.de>
+> > This patch is another thing unlike previous series patches.
+> > Firstly, It looked good to me.
+> > 
+> > I think add_to_page_cache_lru have to become a fast path.
+> > But, how often would ramfs and shmem function be called ?
+> > 
+> > I have a concern for this patch to add another burden.
+> > so, we need any numbers for getting pros and cons.
+> > 
+> > Any thoughts ?
 > 
-> Acked-by: Matt Mackall <mpm@selenic.com>
+> this is the just reason why current code don't call add_page_to_unevictable_list().
+> add_page_to_unevictable_list() don't use pagevec. it is needed for avoiding race.
+> 
+> then, if readahead path (i.e. add_to_page_cache_lru()) use add_page_to_unevictable_list(),
+> it can cause zone->lru_lock contention storm.
 
-Applied, thanks!
-
+How is it different then shrink_page_list()?  If readahead put a
+contiguous chunk of unevictable pages to the file lru, then
+shrink_page_list() will as well call add_page_to_unevictable_list() in
+a loop.
