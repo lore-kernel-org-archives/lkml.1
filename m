@@ -1,119 +1,176 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756939AbZCWA6c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757172AbZCWA7X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756939AbZCWA6c (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 22 Mar 2009 20:58:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756844AbZCWA6P
+	id S1757172AbZCWA7X (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 22 Mar 2009 20:59:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756861AbZCWA7H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 22 Mar 2009 20:58:15 -0400
-Received: from mga03.intel.com ([143.182.124.21]:32780 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754316AbZCWA6N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 22 Mar 2009 20:58:13 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.38,404,1233561600"; 
-   d="scan'208";a="122993815"
-Date: Mon, 23 Mar 2009 08:57:38 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Adrian Bunk <bunk@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Natalie Protasevich <protasnb@gmail.com>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Network Development <netdev@vger.kernel.org>,
-       Linux ACPI <linux-acpi@vger.kernel.org>,
-       Linux PM List <linux-pm@lists.linux-foundation.org>,
-       Linux SCSI List <linux-scsi@vger.kernel.org>,
-       Nick Piggin <npiggin@suse.de>, Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: 2.6.29-rc8-git5: Reported regressions from 2.6.28
-Message-ID: <20090323005738.GB6003@localhost>
-References: <GPBuLTara4J.A.3kH.TZTxJB@chimera> <20090321200534.GA30238@elte.hu>
+	Sun, 22 Mar 2009 20:59:07 -0400
+Received: from rcsinet11.oracle.com ([148.87.113.123]:28053 "EHLO
+	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753608AbZCWA7E (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 22 Mar 2009 20:59:04 -0400
+Message-ID: <49C6DF39.1020509@oracle.com>
+Date: Sun, 22 Mar 2009 18:00:41 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+Organization: Oracle Linux Engineering
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090321200534.GA30238@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Christian Lamparter <chunkeey@web.de>
+CC: Michael Buesch <mb@bu3sch.de>, Stephen Rothwell <sfr@canb.auug.org.au>,
+       linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
+       "John W. Linville" <linville@tuxdriver.com>
+Subject: Re: [PATCH] p54: fix SoftLED compile dependencies
+References: <20090319221024.5e2ad6e5.sfr@canb.auug.org.au> <49C293CC.6020009@oracle.com> <200903191955.00718.mb@bu3sch.de> <200903210057.47067.chunkeey@web.de>
+In-Reply-To: <200903210057.47067.chunkeey@web.de>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt701.oracle.com [141.146.40.71]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090205.49C6DEAA.014C:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Mar 22, 2009 at 04:05:34AM +0800, Ingo Molnar wrote:
+Christian Lamparter wrote:
+> This patch fixes a compile problem when the MAC80211_LEDS
+> triggers are enabled but not LED class itself. 
+> (which is sort of pointless, but anyway...)
 > 
-> * Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> Signed-off-by: Christian Lamparter <chunkeey@web.de>
+> ---
+> mb, thank you for the tips!
 > 
-> > Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12809
-> > Subject		: iozone regression with 2.6.29-rc6
-> > Submitter	: Lin Ming <ming.m.lin@intel.com>
-> > Date		: 2009-02-27 9:13 (23 days old)
-> > First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=1cf6e7d83bf334cc5916137862c920a97aabc018
-> > References	: http://marc.info/?l=linux-kernel&m=123572630504360&w=4
-> > 		  http://lkml.org/lkml/2009/3/14/265
-> > Handled-By	: Wu Fengguang <fengguang.wu@intel.com>
-> 
-> I think this was tracked back to the effective halving of 
-> dirty_ratio by 1cf6e7d83 ("mm: task dirty accounting fix") and 
-> doubling the ratio fixed the iozone regression.
+> Randy Dunlap can you please give this patch a try?
 
-Yes, exactly. The patch for fixing this regression is trivial.
+Acked-by: Randy Dunlap <randy.dunlap@oracle.com>
 
-However it may be better to revert 1cf6e7d83 for 2.6.29,
-and merge 1cf6e7d83 together with this patch for 2.6.30-rc1.
-This allows a larger window for testing out the possible impacts
-on other workloads.
- 
-Thanks,
-Fengguang
----
-writeback: double the dirty thresholds
+Thanks.
 
-Enlarge default dirty ratios from 5/10 to 10/20.
-This fixes [Bug #12809] iozone regression with 2.6.29-rc6.
+> John, do you know where the patch form 
+> Geert Uytterhoeven <geert@linux-m68k.org> went?
+> ---
+> diff --git a/drivers/net/wireless/p54/Kconfig b/drivers/net/wireless/p54/Kconfig
+> index 0e344ac..ee1aaca 100644
+> --- a/drivers/net/wireless/p54/Kconfig
+> +++ b/drivers/net/wireless/p54/Kconfig
+> @@ -1,9 +1,10 @@
+>  config P54_COMMON
+>  	tristate "Softmac Prism54 support"
+> -	depends on MAC80211 && WLAN_80211 && FW_LOADER && EXPERIMENTAL
+> +	depends on MAC80211 && WLAN_80211 && EXPERIMENTAL
+> +	select FW_LOADER
+>  	---help---
+> -	  This is common code for isl38xx based cards.
+> -	  This module does nothing by itself - the USB/PCI frontends
+> +	  This is common code for isl38xx/stlc45xx based modules.
+> +	  This module does nothing by itself - the USB/PCI/SPI frontends
+>  	  also need to be enabled in order to support any devices.
+>  
+>  	  These devices require softmac firmware which can be found at
+> @@ -17,31 +18,6 @@ config P54_USB
+>  	select CRC32
+>  	---help---
+>  	  This driver is for USB isl38xx based wireless cards.
+> -	  These are USB based adapters found in devices such as:
+> -
+> -	  3COM 3CRWE254G72
+> -	  SMC 2862W-G
+> -	  Accton 802.11g WN4501 USB
+> -	  Siemens Gigaset USB
+> -	  Netgear WG121
+> -	  Netgear WG111
+> -	  Medion 40900, Roper Europe
+> -	  Shuttle PN15, Airvast WM168g, IOGear GWU513
+> -	  Linksys WUSB54G
+> -	  Linksys WUSB54G Portable
+> -	  DLink DWL-G120 Spinnaker
+> -	  DLink DWL-G122
+> -	  Belkin F5D7050 ver 1000
+> -	  Cohiba Proto board
+> -	  SMC 2862W-G version 2
+> -	  U.S. Robotics U5 802.11g Adapter
+> -	  FUJITSU E-5400 USB D1700
+> -	  Sagem XG703A
+> -	  DLink DWL-G120 Cohiba
+> -	  Spinnaker Proto board
+> -	  Linksys WUSB54AG
+> -	  Inventel UR054G
+> -	  Spinnaker DUT
+>  
+>  	  These devices require softmac firmware which can be found at
+>  	  http://prism54.org/
+> @@ -71,3 +47,8 @@ config P54_SPI
+>  	  Nokia's N800/N810 Portable Internet Tablet.
+>  
+>  	  If you choose to build a module, it'll be called p54spi.
+> +
+> +config P54_LEDS
+> +	bool
+> +	depends on P54_COMMON && MAC80211_LEDS && (LEDS_CLASS = y || LEDS_CLASS = P54_COMMON)
+> +	default y
+> diff --git a/drivers/net/wireless/p54/p54common.c b/drivers/net/wireless/p54/p54common.c
+> index 0a98983..0c1b057 100644
+> --- a/drivers/net/wireless/p54/p54common.c
+> +++ b/drivers/net/wireless/p54/p54common.c
+> @@ -21,9 +21,9 @@
+>  #include <linux/etherdevice.h>
+>  
+>  #include <net/mac80211.h>
+> -#ifdef CONFIG_MAC80211_LEDS
+> +#ifdef CONFIG_P54_LEDS
+>  #include <linux/leds.h>
+> -#endif /* CONFIG_MAC80211_LEDS */
+> +#endif /* CONFIG_P54_LEDS */
+>  
+>  #include "p54.h"
+>  #include "p54common.h"
+> @@ -2420,7 +2420,7 @@ static int p54_set_key(struct ieee80211_hw *dev, enum set_key_cmd cmd,
+>  	return 0;
+>  }
+>  
+> -#ifdef CONFIG_MAC80211_LEDS
+> +#ifdef CONFIG_P54_LEDS
+>  static void p54_led_brightness_set(struct led_classdev *led_dev,
+>  				   enum led_brightness brightness)
+>  {
+> @@ -2508,7 +2508,7 @@ static void p54_unregister_leds(struct ieee80211_hw *dev)
+>  	if (priv->assoc_led.registered)
+>  		led_classdev_unregister(&priv->assoc_led.led_dev);
+>  }
+> -#endif /* CONFIG_MAC80211_LEDS */
+> +#endif /* CONFIG_P54_LEDS */
+>  
+>  static const struct ieee80211_ops p54_ops = {
+>  	.tx			= p54_tx,
+> @@ -2592,11 +2592,11 @@ int p54_register_common(struct ieee80211_hw *dev, struct device *pdev)
+>  		return err;
+>  	}
+>  
+> -	#ifdef CONFIG_MAC80211_LEDS
+> +#ifdef CONFIG_P54_LEDS
+>  	err = p54_init_leds(dev);
+>  	if (err)
+>  		return err;
+> -	#endif /* CONFIG_MAC80211_LEDS */
+> +#endif /* CONFIG_P54_LEDS */
+>  
+>  	dev_info(pdev, "is registered as '%s'\n", wiphy_name(dev->wiphy));
+>  	return 0;
+> @@ -2610,9 +2610,9 @@ void p54_free_common(struct ieee80211_hw *dev)
+>  	kfree(priv->output_limit);
+>  	kfree(priv->curve_data);
+>  
+> -	#ifdef CONFIG_MAC80211_LEDS
+> +#ifdef CONFIG_P54_LEDS
+>  	p54_unregister_leds(dev);
+> -	#endif /* CONFIG_MAC80211_LEDS */
+> +#endif /* CONFIG_P54_LEDS */
+>  }
+>  EXPORT_SYMBOL_GPL(p54_free_common);
+>  
 
-The iozone benchmarks are performed on a 1200M file, with 8GB ram.
 
-iozone -i 0 -i 1 -i 2 -i 3 -i 4 -r 4k -s 64k -s 512m -s 1200m -b tmp.xls
-iozone -B -r 4k -s 64k -s 512m -s 1200m -b tmp.xls
-
-The performance regression is triggered by commit 1cf6e7d83bf3(mm: task
-dirty accounting fix), which makes more correct/thorough dirty accounting.
-
-The default 5/10 dirty ratios were picked (a) with the old dirty
-logic and (b) largely at random and (c) designed to be aggressive. In
-particular, that (a) means that having fixed some of the dirty accounting,
-maybe the real bug is now that it was always too aggressive, just hidden
-by an accounting issue.
-
-The enlarged 10/20 dirty ratios are just about enough to fix the regression.
-
-Cc: Nick Piggin <npiggin@suse.de>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>
-Reported-by: "Lin, Ming M" <ming.m.lin@intel.com>
-Tested-by: "Lin, Ming M" <ming.m.lin@intel.com>
-Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
----
- mm/page-writeback.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
---- mm.orig/mm/page-writeback.c
-+++ mm/mm/page-writeback.c
-@@ -66,7 +66,7 @@ static inline long sync_writeback_pages(
- /*
-  * Start background writeback (via pdflush) at this percentage
-  */
--int dirty_background_ratio = 5;
-+int dirty_background_ratio = 10;
- 
- /*
-  * dirty_background_bytes starts at 0 (disabled) so that it is a function of
-@@ -83,7 +83,7 @@ int vm_highmem_is_dirtyable;
- /*
-  * The generator of dirty data starts writeback at this percentage
-  */
--int vm_dirty_ratio = 10;
-+int vm_dirty_ratio = 20;
- 
- /*
-  * vm_dirty_bytes starts at 0 (disabled) so that it is a function of
+-- 
+~Randy
