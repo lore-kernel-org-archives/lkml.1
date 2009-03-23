@@ -1,109 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759287AbZCWQlP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759183AbZCWQlb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759287AbZCWQlP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Mar 2009 12:41:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758868AbZCWQk2
+	id S1759183AbZCWQlb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Mar 2009 12:41:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759185AbZCWQkk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Mar 2009 12:40:28 -0400
-Received: from hera.kernel.org ([140.211.167.34]:39949 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758838AbZCWQk1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Mar 2009 12:40:27 -0400
-Date: Mon, 23 Mar 2009 16:39:34 GMT
-From: Miklos Szeredi <miklos@szeredi.hu>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       mszeredi@suse.cz, miklos@szeredi.hu, stable@kernel.org,
-       tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       mszeredi@suse.cz, miklos@szeredi.hu, stable@kernel.org,
-       tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <E1LllkK-0000zF-1h@pomaz-ex.szeredi.hu>
-References: <E1LllkK-0000zF-1h@pomaz-ex.szeredi.hu>
-Subject: [tip:sched/urgent] sched, ptrace: fix UML and ptrace slowness
-Message-ID: <tip-84eef8ca758fa4a68c29f7d752376f6ca6872383@git.kernel.org>
-Git-Commit-ID: 84eef8ca758fa4a68c29f7d752376f6ca6872383
-X-Mailer: tip-git-log-daemon
+	Mon, 23 Mar 2009 12:40:40 -0400
+Received: from mail-ew0-f165.google.com ([209.85.219.165]:62899 "EHLO
+	mail-ew0-f165.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759181AbZCWQki (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Mar 2009 12:40:38 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=grBylvm/RG5LSDJJAKDwIDJQyxEDo1ZOl/B+hlSHaJOe3nXvf6oJUT6Tbzo7qmrL52
+         D+K2GB/c/WGG9KVqx3j92VuO0Aj74l/6sHslWccqH0ebs6dBHwKpvBVJq3H2E+Yoc0KE
+         3c+yLoMLth7hUGmArIVuKxajb/sf4r9ZplX8k=
+Date: Mon, 23 Mar 2009 17:40:31 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Daniel Mack <daniel@caiaq.de>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] kernel/trace/trace_functions_graph.c: fix nsecs_str
+	buffer size
+Message-ID: <20090323164030.GA5988@nowhere>
+References: <1237824637-28190-1-git-send-email-daniel@caiaq.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 23 Mar 2009 16:39:37 +0000 (UTC)
+In-Reply-To: <1237824637-28190-1-git-send-email-daniel@caiaq.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  84eef8ca758fa4a68c29f7d752376f6ca6872383
-Gitweb:     http://git.kernel.org/tip/84eef8ca758fa4a68c29f7d752376f6ca6872383
-Author:     Miklos Szeredi <miklos@szeredi.hu>
-AuthorDate: Mon, 23 Mar 2009 16:07:24 +0100
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Mon, 23 Mar 2009 17:37:38 +0100
-
-sched, ptrace: fix UML and ptrace slowness
-
-This patch fixes bug #12208:
-
-  Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=12208
-  Subject         : uml is very slow on 2.6.28 host
-
-This turned out to be not a scheduler regression, but an already
-existing problem in ptrace being triggered by subtle scheduler
-changes.
-
-The problem is this:
-
- - task A is ptracing task B
- - task B stops on a trace event
- - task A is woken up and preempts task B
- - task A calls ptrace on task B, which does ptrace_check_attach()
- - this calls wait_task_inactive(), which sees that task B is still on the runq
- - task A goes to sleep for a jiffy
- - ...
-
-Since UML does lots of the above sequences, those jiffies quickly add
-up to make it slow as hell.
-
-This patch solves this by not rescheduling in read_unlock() after
-ptrace_stop() has woken up the tracer.
-
-Thanks to Oleg Nesterov and Ingo Molnar for the feedback.
-
-Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
-Cc: oleg@redhat.com
-Cc: peterz@infradead.org
-Cc: roland@redhat.com
-Cc: efault@gmx.de
-Cc: rjw@sisk.pl
-Cc: jdike@addtoit.com
-Cc: user-mode-linux-devel@lists.sourceforge.net
-Cc: torvalds@linux-foundation.org
-Cc: akpm@linux-foundation.org
-Cc: <stable@kernel.org>
-LKML-Reference: <E1LllkK-0000zF-1h@pomaz-ex.szeredi.hu>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+On Mon, Mar 23, 2009 at 05:10:37PM +0100, Daniel Mack wrote:
+> In kernel/trace/trace_functions_graph.c, print_graph_duration(), len can
+> be as low as 1 or 2, which could make snprintf() write beyond the
+> buffer bounds. (Found by cppcheck, no real-world bug occured)
+> 
+> Signed-off-by: Daniel Mack <daniel@caiaq.de>
 
 
----
- kernel/signal.c |    8 ++++++++
- 1 files changed, 8 insertions(+), 0 deletions(-)
+Hi Daniel,
 
-diff --git a/kernel/signal.c b/kernel/signal.c
-index 2a74fe8..1c88144 100644
---- a/kernel/signal.c
-+++ b/kernel/signal.c
-@@ -1575,7 +1575,15 @@ static void ptrace_stop(int exit_code, int clear_code, siginfo_t *info)
- 	read_lock(&tasklist_lock);
- 	if (may_ptrace_stop()) {
- 		do_notify_parent_cldstop(current, CLD_TRAPPED);
-+		/*
-+		 * Don't want to allow preemption here, because
-+		 * sys_ptrace() needs this task to be inactive.
-+		 *
-+		 * XXX: implement read_unlock_no_resched().
-+		 */
-+		preempt_disable();
- 		read_unlock(&tasklist_lock);
-+		preempt_enable_no_resched();
- 		schedule();
- 	} else {
- 		/*
+
+It can't really happen because nsecs_rem is a rest of a division
+per 1000, so it will not exceed 3 digits (so it should be [4] and not
+[5], btw).
+
+I must confess I should have added a better comment on this
+area.
+
+We are printing a duration in usec with a part in nsec with the following
+constraints:
+
+_ never exceed 7 characters unless we are are upper 9999999 usecs
+_ always keep the usecs consistants
+
+Which means that while we have 4 or lesser digits for the usecs, we can
+print the 3 digits of the nanosecs.
+
+If we need 5 for usecs, drop the least significant nanosec digit.
+If we need 6 for usecs, drop the two least significant nanosec digits
+
+6754.543 is correct
+67545.543 must become 67545.54
+etc...
+
+That's why we have:
+
+len = strlen(msecs_str);
+
+	/* Print nsecs (we don't want to exceed 7 numbers) */
+	if (len < 7) {
+		snprintf(nsecs_str, 8 - len, "%03lu", nsecs_rem);
+
+The 8 - len inside snprintf is not a security against overflow but a
+precision set. We know that it will never go upper 3 digits, but if we
+have 6 digits for usecs, we want only 8 - 6 = 2 nsecs
+
+Hmm, may be it should be 7 -len. I don't remember. Anyway, this part
+must be fixed to handle msecs and align the row to the left...
+
+
+Frederic.
+
+
+> ---
+>  kernel/trace/trace_functions_graph.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/kernel/trace/trace_functions_graph.c b/kernel/trace/trace_functions_graph.c
+> index 930c08e..7533b25 100644
+> --- a/kernel/trace/trace_functions_graph.c
+> +++ b/kernel/trace/trace_functions_graph.c
+> @@ -281,7 +281,7 @@ print_graph_duration(unsigned long long duration, struct trace_seq *s)
+>  	unsigned long nsecs_rem = do_div(duration, 1000);
+>  	/* log10(ULONG_MAX) + '\0' */
+>  	char msecs_str[21];
+> -	char nsecs_str[5];
+> +	char nsecs_str[8];
+>  	int ret, len;
+>  	int i;
+>  
+> -- 
+> 1.6.2
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+
