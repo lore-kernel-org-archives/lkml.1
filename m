@@ -1,13 +1,13 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760743AbZCWSLs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760810AbZCWSME@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760743AbZCWSLs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Mar 2009 14:11:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760591AbZCWSKM
+	id S1760810AbZCWSME (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Mar 2009 14:12:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760595AbZCWSKO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Mar 2009 14:10:12 -0400
-Received: from adsl-69-107-72-54.dsl.pltn13.pacbell.net ([69.107.72.54]:60838
+	Mon, 23 Mar 2009 14:10:14 -0400
+Received: from adsl-69-107-72-54.dsl.pltn13.pacbell.net ([69.107.72.54]:60879
 	"EHLO abulafia.goop.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755583AbZCWSKG (ORCPT
+	with ESMTP id S1760426AbZCWSKG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 23 Mar 2009 14:10:06 -0400
 From: Jeremy Fitzhardinge <jeremy@goop.org>
@@ -17,9 +17,9 @@ Cc: the arch/x86 maintainers <x86@kernel.org>, Ingo Molnar <mingo@elte.hu>,
        Xen-devel <xen-devel@lists.xensource.com>,
        Stephen Tweedie <sct@redhat.com>,
        Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Subject: [PATCH 04/15] xen dom0: Add support for the platform_ops hypercall
-Date: Mon, 23 Mar 2009 11:09:48 -0700
-Message-Id: <1237831799-6568-5-git-send-email-jeremy@goop.org>
+Subject: [PATCH 05/15] xen mtrr: Add mtrr_ops support for Xen mtrr
+Date: Mon, 23 Mar 2009 11:09:49 -0700
+Message-Id: <1237831799-6568-6-git-send-email-jeremy@goop.org>
 X-Mailer: git-send-email 1.6.0.6
 In-Reply-To: <49C45238.7050007@zytor.com>
 References: <49C45238.7050007@zytor.com>
@@ -29,297 +29,229 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Stephen Tweedie <sct@redhat.com>
 
-Impact: add hypercall definitions
+Impact: add basic MTRR support (enough to get started)
 
-Minimal changes to get platform ops (renamed dom0_ops on pv_ops) working
-on pv_ops builds.  Pulls in upstream linux-2.6.18-xen.hg's platform.h
+Add a Xen mtrr type, and reorganise mtrr initialisation slightly to
+allow the mtrr driver to set up num_var_ranges (Xen needs to do this by
+querying the hypervisor itself.)
+
+Only the boot path is handled for now: we set up a xen-specific mtrr_if
+and set up the mtrr tables based on hypervisor information, but we don't
+yet handle mtrr entry add/delete.
 
 Signed-off-by: Stephen Tweedie <sct@redhat.com>
 Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 ---
- arch/x86/include/asm/xen/hypercall.h |    8 ++
- include/xen/interface/platform.h     |  232 ++++++++++++++++++++++++++++++++++
- include/xen/interface/xen.h          |    2 +
- 3 files changed, 242 insertions(+), 0 deletions(-)
- create mode 100644 include/xen/interface/platform.h
+ arch/x86/kernel/cpu/mtrr/Makefile  |    1 +
+ arch/x86/kernel/cpu/mtrr/amd.c     |    1 +
+ arch/x86/kernel/cpu/mtrr/centaur.c |    1 +
+ arch/x86/kernel/cpu/mtrr/cyrix.c   |    1 +
+ arch/x86/kernel/cpu/mtrr/generic.c |    1 +
+ arch/x86/kernel/cpu/mtrr/main.c    |   11 +++++--
+ arch/x86/kernel/cpu/mtrr/mtrr.h    |    5 +++
+ arch/x86/kernel/cpu/mtrr/xen.c     |   59 ++++++++++++++++++++++++++++++++++++
+ 8 files changed, 77 insertions(+), 3 deletions(-)
+ create mode 100644 arch/x86/kernel/cpu/mtrr/xen.c
 
-diff --git a/arch/x86/include/asm/xen/hypercall.h b/arch/x86/include/asm/xen/hypercall.h
-index 9c371e4..6528f3b 100644
---- a/arch/x86/include/asm/xen/hypercall.h
-+++ b/arch/x86/include/asm/xen/hypercall.h
-@@ -45,6 +45,7 @@
- #include <xen/interface/xen.h>
- #include <xen/interface/sched.h>
- #include <xen/interface/physdev.h>
-+#include <xen/interface/platform.h>
+diff --git a/arch/x86/kernel/cpu/mtrr/Makefile b/arch/x86/kernel/cpu/mtrr/Makefile
+index f4361b5..404e458 100644
+--- a/arch/x86/kernel/cpu/mtrr/Makefile
++++ b/arch/x86/kernel/cpu/mtrr/Makefile
+@@ -1,3 +1,4 @@
+ obj-y		:= main.o if.o generic.o state.o cleanup.o
+ obj-$(CONFIG_X86_32) += amd.o cyrix.o centaur.o
++obj-$(CONFIG_XEN_DOM0) += xen.o
  
- /*
-  * The hypercall asms have to meet several constraints:
-@@ -282,6 +283,13 @@ HYPERVISOR_set_timer_op(u64 timeout)
+diff --git a/arch/x86/kernel/cpu/mtrr/amd.c b/arch/x86/kernel/cpu/mtrr/amd.c
+index ee2331b..7bf23de 100644
+--- a/arch/x86/kernel/cpu/mtrr/amd.c
++++ b/arch/x86/kernel/cpu/mtrr/amd.c
+@@ -108,6 +108,7 @@ static struct mtrr_ops amd_mtrr_ops = {
+ 	.get_free_region   = generic_get_free_region,
+ 	.validate_add_page = amd_validate_add_page,
+ 	.have_wrcomb       = positive_have_wrcomb,
++	.num_var_ranges	   = common_num_var_ranges,
+ };
+ 
+ int __init amd_init_mtrr(void)
+diff --git a/arch/x86/kernel/cpu/mtrr/centaur.c b/arch/x86/kernel/cpu/mtrr/centaur.c
+index cb9aa3a..7e3f74f 100644
+--- a/arch/x86/kernel/cpu/mtrr/centaur.c
++++ b/arch/x86/kernel/cpu/mtrr/centaur.c
+@@ -213,6 +213,7 @@ static struct mtrr_ops centaur_mtrr_ops = {
+ 	.get_free_region   = centaur_get_free_region,
+ 	.validate_add_page = centaur_validate_add_page,
+ 	.have_wrcomb       = positive_have_wrcomb,
++	.num_var_ranges	   = common_num_var_ranges,
+ };
+ 
+ int __init centaur_init_mtrr(void)
+diff --git a/arch/x86/kernel/cpu/mtrr/cyrix.c b/arch/x86/kernel/cpu/mtrr/cyrix.c
+index ff14c32..c7bb5e3 100644
+--- a/arch/x86/kernel/cpu/mtrr/cyrix.c
++++ b/arch/x86/kernel/cpu/mtrr/cyrix.c
+@@ -263,6 +263,7 @@ static struct mtrr_ops cyrix_mtrr_ops = {
+ 	.get_free_region   = cyrix_get_free_region,
+ 	.validate_add_page = generic_validate_add_page,
+ 	.have_wrcomb       = positive_have_wrcomb,
++	.num_var_ranges	   = common_num_var_ranges,
+ };
+ 
+ int __init cyrix_init_mtrr(void)
+diff --git a/arch/x86/kernel/cpu/mtrr/generic.c b/arch/x86/kernel/cpu/mtrr/generic.c
+index 37f28fc..9fd8ebf 100644
+--- a/arch/x86/kernel/cpu/mtrr/generic.c
++++ b/arch/x86/kernel/cpu/mtrr/generic.c
+@@ -725,4 +725,5 @@ struct mtrr_ops generic_mtrr_ops = {
+ 	.set               = generic_set_mtrr,
+ 	.validate_add_page = generic_validate_add_page,
+ 	.have_wrcomb       = generic_have_wrcomb,
++	.num_var_ranges	   = common_num_var_ranges,
+ };
+diff --git a/arch/x86/kernel/cpu/mtrr/main.c b/arch/x86/kernel/cpu/mtrr/main.c
+index 03cda01..fd5ac04 100644
+--- a/arch/x86/kernel/cpu/mtrr/main.c
++++ b/arch/x86/kernel/cpu/mtrr/main.c
+@@ -99,7 +99,7 @@ static int have_wrcomb(void)
  }
  
- static inline int
-+HYPERVISOR_dom0_op(struct xen_platform_op *platform_op)
+ /*  This function returns the number of variable MTRRs  */
+-static void __init set_num_var_ranges(void)
++int __init common_num_var_ranges(void)
+ {
+ 	unsigned long config = 0, dummy;
+ 
+@@ -109,7 +109,7 @@ static void __init set_num_var_ranges(void)
+ 		config = 2;
+ 	else if (is_cpu(CYRIX) || is_cpu(CENTAUR))
+ 		config = 8;
+-	num_var_ranges = config & 0xff;
++	return config & 0xff;
+ }
+ 
+ static void __init init_table(void)
+@@ -622,12 +622,17 @@ int __initdata changed_by_mtrr_cleanup;
+ void __init mtrr_bp_init(void)
+ {
+ 	u32 phys_addr;
++
+ 	init_ifs();
+ 
+ 	phys_addr = 32;
+ 
+ 	if (cpu_has_mtrr) {
+ 		mtrr_if = &generic_mtrr_ops;
++#ifdef CONFIG_XEN_DOM0
++		xen_init_mtrr();
++#endif
++
+ 		size_or_mask = 0xff000000;	/* 36 bits */
+ 		size_and_mask = 0x00f00000;
+ 		phys_addr = 36;
+@@ -685,7 +690,7 @@ void __init mtrr_bp_init(void)
+ 	}
+ 
+ 	if (mtrr_if) {
+-		set_num_var_ranges();
++		num_var_ranges = mtrr_if->num_var_ranges();
+ 		init_table();
+ 		if (use_intel()) {
+ 			get_mtrr_state();
+diff --git a/arch/x86/kernel/cpu/mtrr/mtrr.h b/arch/x86/kernel/cpu/mtrr/mtrr.h
+index 77f67f7..3502f6c 100644
+--- a/arch/x86/kernel/cpu/mtrr/mtrr.h
++++ b/arch/x86/kernel/cpu/mtrr/mtrr.h
+@@ -41,6 +41,8 @@ struct mtrr_ops {
+ 	int	(*validate_add_page)(unsigned long base, unsigned long size,
+ 				     unsigned int type);
+ 	int	(*have_wrcomb)(void);
++
++	int	(*num_var_ranges)(void);
+ };
+ 
+ extern int generic_get_free_region(unsigned long base, unsigned long size,
+@@ -52,6 +54,8 @@ extern struct mtrr_ops generic_mtrr_ops;
+ 
+ extern int positive_have_wrcomb(void);
+ 
++extern int __init common_num_var_ranges(void);
++
+ /* library functions for processor-specific routines */
+ struct set_mtrr_context {
+ 	unsigned long flags;
+@@ -89,6 +93,7 @@ void mtrr_wrmsr(unsigned, unsigned, unsigned);
+ int amd_init_mtrr(void);
+ int cyrix_init_mtrr(void);
+ int centaur_init_mtrr(void);
++void xen_init_mtrr(void);
+ 
+ extern int changed_by_mtrr_cleanup;
+ extern int mtrr_cleanup(unsigned address_bits);
+diff --git a/arch/x86/kernel/cpu/mtrr/xen.c b/arch/x86/kernel/cpu/mtrr/xen.c
+new file mode 100644
+index 0000000..db3ef39
+--- /dev/null
++++ b/arch/x86/kernel/cpu/mtrr/xen.c
+@@ -0,0 +1,59 @@
++#include <linux/init.h>
++#include <linux/proc_fs.h>
++#include <linux/ctype.h>
++#include <linux/module.h>
++#include <linux/seq_file.h>
++#include <asm/uaccess.h>
++#include <linux/mutex.h>
++
++#include <asm/mtrr.h>
++#include "mtrr.h"
++
++#include <xen/interface/platform.h>
++#include <asm/xen/hypervisor.h>
++#include <asm/xen/hypercall.h>
++
++static int __init xen_num_var_ranges(void);
++
++/* DOM0 TODO: Need to fill in the remaining mtrr methods to have full
++ * working userland mtrr support. */
++static struct mtrr_ops xen_mtrr_ops = {
++	.vendor            = X86_VENDOR_UNKNOWN,
++//	.set               = xen_set_mtrr,
++//	.get               = xen_get_mtrr,
++	.get_free_region   = generic_get_free_region,
++//	.validate_add_page = xen_validate_add_page,
++	.have_wrcomb       = positive_have_wrcomb,
++	.use_intel_if	   = 0,
++	.num_var_ranges	   = xen_num_var_ranges,
++};
++
++static int __init xen_num_var_ranges(void)
 +{
-+	platform_op->interface_version = XENPF_INTERFACE_VERSION;
-+	return _hypercall1(int, dom0_op, platform_op);
++	int ranges;
++	struct xen_platform_op op;
++
++	for (ranges = 0; ; ranges++) {
++		op.cmd = XENPF_read_memtype;
++		op.u.read_memtype.reg = ranges;
++		if (HYPERVISOR_dom0_op(&op) != 0)
++			break;
++	}
++	return ranges;
 +}
 +
-+static inline int
- HYPERVISOR_set_debugreg(int reg, unsigned long value)
- {
- 	return _hypercall2(int, set_debugreg, reg, value);
-diff --git a/include/xen/interface/platform.h b/include/xen/interface/platform.h
-new file mode 100644
-index 0000000..da548f3
---- /dev/null
-+++ b/include/xen/interface/platform.h
-@@ -0,0 +1,232 @@
-+/******************************************************************************
-+ * platform.h
-+ *
-+ * Hardware platform operations. Intended for use by domain-0 kernel.
-+ *
-+ * Permission is hereby granted, free of charge, to any person obtaining a copy
-+ * of this software and associated documentation files (the "Software"), to
-+ * deal in the Software without restriction, including without limitation the
-+ * rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
-+ * sell copies of the Software, and to permit persons to whom the Software is
-+ * furnished to do so, subject to the following conditions:
-+ *
-+ * The above copyright notice and this permission notice shall be included in
-+ * all copies or substantial portions of the Software.
-+ *
-+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
-+ * DEALINGS IN THE SOFTWARE.
-+ *
-+ * Copyright (c) 2002-2006, K Fraser
-+ */
++void __init xen_init_mtrr(void)
++{
++	struct cpuinfo_x86 *c = &boot_cpu_data;
 +
-+#ifndef __XEN_PUBLIC_PLATFORM_H__
-+#define __XEN_PUBLIC_PLATFORM_H__
++	if (!xen_initial_domain())
++		return;
 +
-+#include "xen.h"
++	if ((!cpu_has(c, X86_FEATURE_MTRR)) &&
++	    (!cpu_has(c, X86_FEATURE_K6_MTRR)) &&
++	    (!cpu_has(c, X86_FEATURE_CYRIX_ARR)) &&
++	    (!cpu_has(c, X86_FEATURE_CENTAUR_MCR)))
++		return;
 +
-+#define XENPF_INTERFACE_VERSION 0x03000001
-+
-+/*
-+ * Set clock such that it would read <secs,nsecs> after 00:00:00 UTC,
-+ * 1 January, 1970 if the current system time was <system_time>.
-+ */
-+#define XENPF_settime             17
-+struct xenpf_settime {
-+    /* IN variables. */
-+    uint32_t secs;
-+    uint32_t nsecs;
-+    uint64_t system_time;
-+};
-+typedef struct xenpf_settime xenpf_settime_t;
-+DEFINE_GUEST_HANDLE_STRUCT(xenpf_settime_t);
-+
-+/*
-+ * Request memory range (@mfn, @mfn+@nr_mfns-1) to have type @type.
-+ * On x86, @type is an architecture-defined MTRR memory type.
-+ * On success, returns the MTRR that was used (@reg) and a handle that can
-+ * be passed to XENPF_DEL_MEMTYPE to accurately tear down the new setting.
-+ * (x86-specific).
-+ */
-+#define XENPF_add_memtype         31
-+struct xenpf_add_memtype {
-+    /* IN variables. */
-+    unsigned long mfn;
-+    uint64_t nr_mfns;
-+    uint32_t type;
-+    /* OUT variables. */
-+    uint32_t handle;
-+    uint32_t reg;
-+};
-+typedef struct xenpf_add_memtype xenpf_add_memtype_t;
-+DEFINE_GUEST_HANDLE_STRUCT(xenpf_add_memtype_t);
-+
-+/*
-+ * Tear down an existing memory-range type. If @handle is remembered then it
-+ * should be passed in to accurately tear down the correct setting (in case
-+ * of overlapping memory regions with differing types). If it is not known
-+ * then @handle should be set to zero. In all cases @reg must be set.
-+ * (x86-specific).
-+ */
-+#define XENPF_del_memtype         32
-+struct xenpf_del_memtype {
-+    /* IN variables. */
-+    uint32_t handle;
-+    uint32_t reg;
-+};
-+typedef struct xenpf_del_memtype xenpf_del_memtype_t;
-+DEFINE_GUEST_HANDLE_STRUCT(xenpf_del_memtype_t);
-+
-+/* Read current type of an MTRR (x86-specific). */
-+#define XENPF_read_memtype        33
-+struct xenpf_read_memtype {
-+    /* IN variables. */
-+    uint32_t reg;
-+    /* OUT variables. */
-+    unsigned long mfn;
-+    uint64_t nr_mfns;
-+    uint32_t type;
-+};
-+typedef struct xenpf_read_memtype xenpf_read_memtype_t;
-+DEFINE_GUEST_HANDLE_STRUCT(xenpf_read_memtype_t);
-+
-+#define XENPF_microcode_update    35
-+struct xenpf_microcode_update {
-+    /* IN variables. */
-+    GUEST_HANDLE(void) data;          /* Pointer to microcode data */
-+    uint32_t length;                  /* Length of microcode data. */
-+};
-+typedef struct xenpf_microcode_update xenpf_microcode_update_t;
-+DEFINE_GUEST_HANDLE_STRUCT(xenpf_microcode_update_t);
-+
-+#define XENPF_platform_quirk      39
-+#define QUIRK_NOIRQBALANCING      1 /* Do not restrict IO-APIC RTE targets */
-+#define QUIRK_IOAPIC_BAD_REGSEL   2 /* IO-APIC REGSEL forgets its value    */
-+#define QUIRK_IOAPIC_GOOD_REGSEL  3 /* IO-APIC REGSEL behaves properly     */
-+struct xenpf_platform_quirk {
-+    /* IN variables. */
-+    uint32_t quirk_id;
-+};
-+typedef struct xenpf_platform_quirk xenpf_platform_quirk_t;
-+DEFINE_GUEST_HANDLE_STRUCT(xenpf_platform_quirk_t);
-+
-+#define XENPF_firmware_info       50
-+#define XEN_FW_DISK_INFO          1 /* from int 13 AH=08/41/48 */
-+#define XEN_FW_DISK_MBR_SIGNATURE 2 /* from MBR offset 0x1b8 */
-+#define XEN_FW_VBEDDC_INFO        3 /* from int 10 AX=4f15 */
-+struct xenpf_firmware_info {
-+    /* IN variables. */
-+    uint32_t type;
-+    uint32_t index;
-+    /* OUT variables. */
-+    union {
-+        struct {
-+            /* Int13, Fn48: Check Extensions Present. */
-+            uint8_t device;                   /* %dl: bios device number */
-+            uint8_t version;                  /* %ah: major version      */
-+            uint16_t interface_support;       /* %cx: support bitmap     */
-+            /* Int13, Fn08: Legacy Get Device Parameters. */
-+            uint16_t legacy_max_cylinder;     /* %cl[7:6]:%ch: max cyl # */
-+            uint8_t legacy_max_head;          /* %dh: max head #         */
-+            uint8_t legacy_sectors_per_track; /* %cl[5:0]: max sector #  */
-+            /* Int13, Fn41: Get Device Parameters (as filled into %ds:%esi). */
-+            /* NB. First uint16_t of buffer must be set to buffer size.      */
-+            GUEST_HANDLE(void) edd_params;
-+        } disk_info; /* XEN_FW_DISK_INFO */
-+        struct {
-+            uint8_t device;                   /* bios device number  */
-+            uint32_t mbr_signature;           /* offset 0x1b8 in mbr */
-+        } disk_mbr_signature; /* XEN_FW_DISK_MBR_SIGNATURE */
-+        struct {
-+            /* Int10, AX=4F15: Get EDID info. */
-+            uint8_t capabilities;
-+            uint8_t edid_transfer_time;
-+            /* must refer to 128-byte buffer */
-+            GUEST_HANDLE(uchar) edid;
-+        } vbeddc_info; /* XEN_FW_VBEDDC_INFO */
-+    } u;
-+};
-+typedef struct xenpf_firmware_info xenpf_firmware_info_t;
-+DEFINE_GUEST_HANDLE_STRUCT(xenpf_firmware_info_t);
-+
-+#define XENPF_enter_acpi_sleep    51
-+struct xenpf_enter_acpi_sleep {
-+    /* IN variables */
-+    uint16_t pm1a_cnt_val;      /* PM1a control value. */
-+    uint16_t pm1b_cnt_val;      /* PM1b control value. */
-+    uint32_t sleep_state;       /* Which state to enter (Sn). */
-+    uint32_t flags;             /* Must be zero. */
-+};
-+typedef struct xenpf_enter_acpi_sleep xenpf_enter_acpi_sleep_t;
-+DEFINE_GUEST_HANDLE_STRUCT(xenpf_enter_acpi_sleep_t);
-+
-+#define XENPF_change_freq         52
-+struct xenpf_change_freq {
-+    /* IN variables */
-+    uint32_t flags; /* Must be zero. */
-+    uint32_t cpu;   /* Physical cpu. */
-+    uint64_t freq;  /* New frequency (Hz). */
-+};
-+typedef struct xenpf_change_freq xenpf_change_freq_t;
-+DEFINE_GUEST_HANDLE_STRUCT(xenpf_change_freq_t);
-+
-+/*
-+ * Get idle times (nanoseconds since boot) for physical CPUs specified in the
-+ * @cpumap_bitmap with range [0..@cpumap_nr_cpus-1]. The @idletime array is
-+ * indexed by CPU number; only entries with the corresponding @cpumap_bitmap
-+ * bit set are written to. On return, @cpumap_bitmap is modified so that any
-+ * non-existent CPUs are cleared. Such CPUs have their @idletime array entry
-+ * cleared.
-+ */
-+#define XENPF_getidletime         53
-+struct xenpf_getidletime {
-+    /* IN/OUT variables */
-+    /* IN: CPUs to interrogate; OUT: subset of IN which are present */
-+    GUEST_HANDLE(uchar) cpumap_bitmap;
-+    /* IN variables */
-+    /* Size of cpumap bitmap. */
-+    uint32_t cpumap_nr_cpus;
-+    /* Must be indexable for every cpu in cpumap_bitmap. */
-+    GUEST_HANDLE(uint64_t) idletime;
-+    /* OUT variables */
-+    /* System time when the idletime snapshots were taken. */
-+    uint64_t now;
-+};
-+typedef struct xenpf_getidletime xenpf_getidletime_t;
-+DEFINE_GUEST_HANDLE_STRUCT(xenpf_getidletime_t);
-+
-+struct xen_platform_op {
-+    uint32_t cmd;
-+    uint32_t interface_version; /* XENPF_INTERFACE_VERSION */
-+    union {
-+        struct xenpf_settime           settime;
-+        struct xenpf_add_memtype       add_memtype;
-+        struct xenpf_del_memtype       del_memtype;
-+        struct xenpf_read_memtype      read_memtype;
-+        struct xenpf_microcode_update  microcode;
-+        struct xenpf_platform_quirk    platform_quirk;
-+        struct xenpf_firmware_info     firmware_info;
-+        struct xenpf_enter_acpi_sleep  enter_acpi_sleep;
-+        struct xenpf_change_freq       change_freq;
-+        struct xenpf_getidletime       getidletime;
-+        uint8_t                        pad[128];
-+    } u;
-+};
-+typedef struct xen_platform_op xen_platform_op_t;
-+DEFINE_GUEST_HANDLE_STRUCT(xen_platform_op_t);
-+
-+#endif /* __XEN_PUBLIC_PLATFORM_H__ */
-+
-+/*
-+ * Local variables:
-+ * mode: C
-+ * c-set-style: "BSD"
-+ * c-basic-offset: 4
-+ * tab-width: 4
-+ * indent-tabs-mode: nil
-+ * End:
-+ */
-diff --git a/include/xen/interface/xen.h b/include/xen/interface/xen.h
-index 2befa3e..18b5599 100644
---- a/include/xen/interface/xen.h
-+++ b/include/xen/interface/xen.h
-@@ -461,6 +461,8 @@ typedef uint8_t xen_domain_handle_t[16];
- #define __mk_unsigned_long(x) x ## UL
- #define mk_unsigned_long(x) __mk_unsigned_long(x)
- 
-+DEFINE_GUEST_HANDLE(uint64_t);
-+
- #else /* __ASSEMBLY__ */
- 
- /* In assembly code we cannot use C numeric constant suffixes. */
++	mtrr_if = &xen_mtrr_ops;
++}
 -- 
 1.6.0.6
 
