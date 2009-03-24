@@ -1,21 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757909AbZCXOCo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756971AbZCXODN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757909AbZCXOCo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 10:02:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757554AbZCXOB5
+	id S1756971AbZCXODN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 10:03:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755906AbZCXOCE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 10:01:57 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:48927 "EHLO
+	Tue, 24 Mar 2009 10:02:04 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:48930 "EHLO
 	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757551AbZCXOB4 (ORCPT
+	with ESMTP id S1757590AbZCXOCB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 10:01:56 -0400
+	Tue, 24 Mar 2009 10:02:01 -0400
 From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: [PATCH 03/30] serial: Update PNP IDs
+Subject: [PATCH 04/30] jsm: Fix the return variable and removing the unused
+	retval.
 To: linux-kernel@vger.kernel.org, linux-serial@vger.kernel.org,
        torvalds@linux-foundation.org
-Date: Tue, 24 Mar 2009 14:02:12 +0000
-Message-ID: <20090324140208.12735.29637.stgit@localhost.localdomain>
+Date: Tue, 24 Mar 2009 14:02:23 +0000
+Message-ID: <20090324140217.12735.2780.stgit@localhost.localdomain>
 In-Reply-To: <20090324135930.12735.7827.stgit@localhost.localdomain>
 References: <20090324135930.12735.7827.stgit@localhost.localdomain>
 User-Agent: StGIT/0.14.3
@@ -26,44 +27,57 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Matthew Garrett <mjg59@srcf.ucam.org>
+From: Breno Leitao <leitao@linux.vnet.ibm.com>
 
-Add new Wacom device IDs to the 8250_pnp serial driver, to support
-autoconfig on some newer tablet PCs.  Also add a comment to clarify that
-the FUJ02E6 device is a custom protocol, not a Wacom tablet.
+As it was, the retval was never returned, so its assignments were silly.
+Just consolidate everything to rc, and remove the unused retval variable.
 
-Signed-off-by: Matthew Garrett <mjg@redhat.com>
+Signed-off-by: Breno Leitao <leitao@linux.vnet.ibm.com>
 Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Alan Cox <alan@etchedpixels.co.uk>
 ---
 
- drivers/serial/8250_pnp.c |    6 +++++-
- 1 files changed, 5 insertions(+), 1 deletions(-)
+ drivers/serial/jsm/jsm_driver.c |    7 +++----
+ 1 files changed, 3 insertions(+), 4 deletions(-)
 
 
-diff --git a/drivers/serial/8250_pnp.c b/drivers/serial/8250_pnp.c
-index 6db9f13..d71dfe3 100644
---- a/drivers/serial/8250_pnp.c
-+++ b/drivers/serial/8250_pnp.c
-@@ -334,6 +334,9 @@ static const struct pnp_device_id pnp_dev_table[] = {
- 	{       "WACF007",              0       },
- 	{       "WACF008",              0       },
- 	{       "WACF009",              0       },
-+	{       "WACF00A",              0       },
-+	{       "WACF00B",              0       },
-+	{       "WACF00C",              0       },
- 	/* Compaq touchscreen */
- 	{       "FPI2002",              0 },
- 	/* Fujitsu Stylistic touchscreens */
-@@ -347,8 +350,9 @@ static const struct pnp_device_id pnp_dev_table[] = {
- 	{       "FUJ02B8",              0 },
- 	{       "FUJ02B9",              0 },
- 	{       "FUJ02BC",              0 },
--	/* Fujitsu Wacom Tablet PC devices */
-+	/* Fujitsu Wacom Tablet PC device */
- 	{	"FUJ02E5",		0	},
-+	/* Fujitsu P-series tablet PC device */
- 	{	"FUJ02E6",		0	},
- 	/*
- 	 * LG C1 EXPRESS DUAL (C1-PB11A3) touch screen (actually a FUJ02E6 in
+diff --git a/drivers/serial/jsm/jsm_driver.c b/drivers/serial/jsm/jsm_driver.c
+index ac79cbe..e8da2f9 100644
+--- a/drivers/serial/jsm/jsm_driver.c
++++ b/drivers/serial/jsm/jsm_driver.c
+@@ -57,7 +57,6 @@ static int jsm_probe_one(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 	int rc = 0;
+ 	struct jsm_board *brd;
+ 	static int adapter_count = 0;
+-	int retval;
+ 
+ 	rc = pci_enable_device(pdev);
+ 	if (rc) {
+@@ -134,7 +133,7 @@ static int jsm_probe_one(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 	rc = jsm_tty_init(brd);
+ 	if (rc < 0) {
+ 		dev_err(&pdev->dev, "Can't init tty devices (%d)\n", rc);
+-		retval = -ENXIO;
++		rc = -ENXIO;
+ 		goto out_free_irq;
+ 	}
+ 
+@@ -142,7 +141,7 @@ static int jsm_probe_one(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 	if (rc < 0) {
+ 		/* XXX: leaking all resources from jsm_tty_init here! */
+ 		dev_err(&pdev->dev, "Can't init uart port (%d)\n", rc);
+-		retval = -ENXIO;
++		rc = -ENXIO;
+ 		goto out_free_irq;
+ 	}
+ 
+@@ -161,7 +160,7 @@ static int jsm_probe_one(struct pci_dev *pdev, const struct pci_device_id *ent)
+ 		/* XXX: leaking all resources from jsm_tty_init and
+ 		 	jsm_uart_port_init here! */
+ 		dev_err(&pdev->dev, "memory allocation for flipbuf failed\n");
+-		retval = -ENOMEM;
++		rc = -ENOMEM;
+ 		goto out_free_irq;
+ 	}
+ 
 
