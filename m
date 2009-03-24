@@ -1,46 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759283AbZCXSV2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759729AbZCXSVn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759283AbZCXSV2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 14:21:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757389AbZCXSUR
+	id S1759729AbZCXSVn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 14:21:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755855AbZCXSU5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 14:20:17 -0400
-Received: from rtr.ca ([76.10.145.34]:33636 "EHLO mail.rtr.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757144AbZCXSUP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 14:20:15 -0400
-Message-ID: <49C9245C.9040400@rtr.ca>
-Date: Tue, 24 Mar 2009 14:20:12 -0400
-From: Mark Lord <lkml@rtr.ca>
-Organization: Real-Time Remedies Inc.
-User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
+	Tue, 24 Mar 2009 14:20:57 -0400
+Received: from mail.gmx.net ([213.165.64.20]:36671 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751201AbZCXSU4 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Mar 2009 14:20:56 -0400
+X-Authenticated: #8359428
+X-Provags-ID: V01U2FsdGVkX1+EWAYlyW+EXFayXkwBPjtm60t0tXcgiMfjgLWkEo
+	kvqORtNmK+l+3n
+From: sinter <sinter.salt@gmx.de>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: BUG in 2.6.29 final: broken network connection
+Date: Tue, 24 Mar 2009 19:18:29 +0100
+User-Agent: KMail/1.11.1 (Linux/2.6.29; KDE/4.2.1; i686; ; )
+References: <200903241812.14577.sinter.salt@gmx.de> <20090324172503.1627a3ef@lxorguk.ukuu.org.uk>
+In-Reply-To: <20090324172503.1627a3ef@lxorguk.ukuu.org.uk>
+Cc: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-To: Theodore Tso <tytso@mit.edu>, Ingo Molnar <mingo@elte.hu>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Nick Piggin <npiggin@suse.de>,
-       Jens Axboe <jens.axboe@oracle.com>, David Rees <drees76@gmail.com>,
-       Jesper Krogh <jesper@krogh.cc>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.29
-References: <alpine.LFD.2.00.0903231617550.3032@localhost.localdomain> <49C87B87.4020108@krogh.cc> <72dbd3150903232346g5af126d7sb5ad4949a7b5041f@mail.gmail.com> <20090324091545.758d00f5@lxorguk.ukuu.org.uk> <20090324093245.GA22483@elte.hu> <20090324101011.6555a0b9@lxorguk.ukuu.org.uk> <20090324103111.GA26691@elte.hu> <20090324132032.GK5814@mit.edu> <20090324133011.GB21720@elte.hu> <20090324135112.GM5814@mit.edu>
-In-Reply-To: <20090324135112.GM5814@mit.edu>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200903241918.29929.sinter.salt@gmx.de>
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.7
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Theodore Tso wrote:
-> So the question is how quickly can you *dirty* 1.6GB of memory?
-..
+Am Dienstag 24 März 2009 18:25:03 schrieben Sie:
+> > It cost me almost 1 complete day
+>
+> Wouldn't it have been simpler to wait when you found a problem and read
+> Ingo's email on the subject from a few hours ago ?
 
-MythTV:   rm /some/really/huge/video/file ; sync
-          ## disk light stays on for several minutes..
+Wouldn't it be simpler to restrictively avoid crap code in final kernel 
+versions? And if that does not work by appeal shouldn't the netdev maintainer 
+simply be substituted?
 
-Note quite the same thing, I suppose, but it does break
-the shutdown scripts of every major Linux distribution.
+Who needs a maintainer adding his SOB with closed eyes under untested crap 
+code? Who needs someone like that for kernel development?
 
-Simple solution for MythTV is what people already do: use xfs instead.
