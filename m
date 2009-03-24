@@ -1,69 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755972AbZCXVql@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756082AbZCXVqz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755972AbZCXVql (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 17:46:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755443AbZCXVoi
+	id S1756082AbZCXVqz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 17:46:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751706AbZCXVot
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 17:44:38 -0400
-Received: from hera.kernel.org ([140.211.167.34]:57739 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755419AbZCXVoh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 17:44:37 -0400
-Message-ID: <49C953D0.5000104@kernel.org>
-Date: Tue, 24 Mar 2009 14:42:40 -0700
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Tue, 24 Mar 2009 17:44:49 -0400
+Received: from smtp123.sbc.mail.sp1.yahoo.com ([69.147.64.96]:47720 "HELO
+	smtp123.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1755467AbZCXVos (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Mar 2009 17:44:48 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=1aqwIqrXa75htkJTEsN1cIUNTtNYEJtrYerSwwpqhABMHrd8R8i4TbGO0O6jwGpw/YKmfutsTfm4kN2ICc7UC1E07D9JbCRG2ffWQ/AvhbCwxXlk7mKliVMPes2WVY94Ros/Qk6ZYt2E62lKMWI/abxRxrs7MJtFS+t4jzEF7CE=  ;
+X-YMail-OSG: RWV2rdwVM1n0kL.R0lUBwBMdywFaOcHtXtcGhrRei5T671Jt.JG3e6KaQQ7NX24yJ5b9ZEsRFZV9n_E5IMqPLO.AO6NPUqDoWKpDDXiQT5oMNBvNH9qvM6sZB7hNUF.ad4._cu.Yhw6wwEm9VmLaw2zoBNcVYKVXiT5oBHSlZ11DpLCea11I4DnV0OQ1XNry48sB4FWgT2QQ59p5BSe.0Mc_e2pMzg--
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [patch 0/2] Add support for threaded interrupt handlers - V3
+Date: Tue, 24 Mar 2009 14:44:44 -0700
+User-Agent: KMail/1.9.10
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Christoph Hellwig <hch@infradead.org>,
+       Arjan van de Veen <arjan@infradead.org>,
+       Jon Masters <jonathan@jonmasters.org>,
+       Sven Dietrich <sdietrich@suse.de>
+References: <20090323172814.548471871@linutronix.de>
+In-Reply-To: <20090323172814.548471871@linutronix.de>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: linux-tip-commits@vger.kernel.org, linux-kernel@vger.kernel.org,
-       hpa@zytor.com, mingo@redhat.com, rusty@rustcorp.com.au,
-       ebiederm@xmission.com, akpm@linux-foundation.org, tglx@linutronix.de
-Subject: [PATCH 3/3] x86: Correct behaviour of irq affinity -v2
-References: <49C94DAE.9070300@kernel.org> <tip-f56e5034121c4911a155ba907076ab920754626d@git.kernel.org> <20090324213458.GA29440@elte.hu>
-In-Reply-To: <20090324213458.GA29440@elte.hu>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200903241444.44644.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Rusty Russell <rusty@rustcorp.com.au>
+It still looks OK as a basic extension handling one
+common model.
 
-Impact: get correct smp_affinity as user requested
+Once this is on track to merge (when?), I'd hope various
+I2C and SPI device drivers would start to convert.  The
+most common example might be handling RTC alarms from the
+numerous I2C and SPI based RTCs. 
 
-The effect of setting desc->affinity (ie. from userspace via sysfs) has varied
-over time.  In 2.6.27, the 32-bit code anded the value with cpu_online_map,
-and both 32 and 64-bit did that anding whenever a cpu was unplugged.
+(The ones that don't need to manage an irq_chip across
+that queued-message bus, and demux its IRQs.  PMICs are
+a bit more likely to need to demux lots of IRQs.)
 
-2.6.29 consolidated this into one routine (and fixed hotplug) but introduced
-another variation: anding the affinity with cfg->domain.  Is this right, or
-should we just set it to what the user said?  Or as now, indicate that we're
-restricting it.
 
-If we should change it, here's what the patch looks like against x86 tip
-(cpu_mask_to_apicid_and already takes cpu_online_mask into account)
+On Monday 23 March 2009, Thomas Gleixner wrote:
+> I'm still looking into a clean solution for the threaded demultiplex
+> handler case which was brought up by Dave to allow both the handling
+> of the demultiplexed devices in the context of the demultiplexer
+> interrupt thread and the wakeup of separate handler threads. But this
+> is an orthogonal extension of the existing patch set and does not
+> change the general design.
 
-Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-Acked-by: "Eric W. Biederman" <ebiederm@xmission.com>
+No comments on the patch I sent?
 
----
- arch/x86/kernel/apic/io_apic.c |    5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+  http://marc.info/?l=linux-kernel&m=123734579014392&w=2
 
-Index: linux-2.6/arch/x86/kernel/apic/io_apic.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/apic/io_apic.c
-+++ linux-2.6/arch/x86/kernel/apic/io_apic.c
-@@ -594,9 +594,10 @@ set_desc_affinity(struct irq_desc *desc,
- 
- 	/* check that before desc->addinity get updated */
- 	set_extra_move_desc(desc, mask);
--	cpumask_and(desc->affinity, cfg->domain, mask);
- 
--	return apic->cpu_mask_to_apicid_and(desc->affinity, cpu_online_mask);
-+	cpumask_copy(desc->affinity, mask);
-+
-+	return apic->cpu_mask_to_apicid_and(desc->affinity, cfg->domain);
- }
- 
- static void
+Or is that what you meant by "orthogonal"?  Admittedly that
+patch sort of begs the question about which request_irq()
+variant should be used for such demuxed IRQs; the "current"
+assumption is that request_irq() suffices, but that could
+be improved so the handle_threaded_irq() flow handler could
+use the action->thread_fn not action->handler.
+
+- Dave
