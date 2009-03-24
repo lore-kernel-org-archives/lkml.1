@@ -1,152 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761714AbZCXPrT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757037AbZCXPru@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761714AbZCXPrT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 11:47:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754788AbZCXPrD
+	id S1757037AbZCXPru (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 11:47:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754788AbZCXPri
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 11:47:03 -0400
-Received: from gw-ca.panasas.com ([209.116.51.66]:9494 "EHLO
-	laguna.int.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754500AbZCXPrB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 11:47:01 -0400
-Message-ID: <49C90012.50009@panasas.com>
-Date: Tue, 24 Mar 2009 17:45:22 +0200
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Tue, 24 Mar 2009 11:47:38 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:41577 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753430AbZCXPrh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Mar 2009 11:47:37 -0400
+Date: Tue, 24 Mar 2009 16:47:17 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Herbert Xu <herbert@gondor.apana.org.au>
+Cc: Robert Schwebel <r.schwebel@pengutronix.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Frank Blaschka <blaschka@linux.vnet.ibm.com>,
+       "David S. Miller" <davem@davemloft.net>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       kernel@pengutronix.de
+Subject: Re: Revert "gro: Fix legacy path napi_complete crash", (was: Re:
+	Linux 2.6.29)
+Message-ID: <20090324154717.GA7506@elte.hu>
+References: <alpine.LFD.2.00.0903231617550.3032@localhost.localdomain> <20090324130202.GA32469@elte.hu> <20090324143303.GP5367@pengutronix.de> <20090324143942.GA20462@elte.hu> <20090324150928.GB30224@gondor.apana.org.au> <20090324153616.GA31143@elte.hu>
 MIME-Version: 1.0
-To: Hannes Reinecke <hare@suse.de>
-CC: James Bottomley <James.Bottomley@HansenPartnership.com>,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
-Subject: Re: [PATCH] Driver 'sd' needs updating
-References: <20090324141428.31E5118C7A3@pentland.suse.de>
-In-Reply-To: <20090324141428.31E5118C7A3@pentland.suse.de>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 24 Mar 2009 15:46:56.0895 (UTC) FILETIME=[C308E8F0:01C9AC97]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090324153616.GA31143@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hannes Reinecke wrote:
-> If a driver sets blk_queue_prep_rq() it should clean up itself
-> and not rely on the bus callbacks to handle this. This removes
-> the need to hook into bus->remove() as these should not be used
-> at the same time as driver->remove().
+
+* Ingo Molnar <mingo@elte.hu> wrote:
+
 > 
-> Signed-off-by: Hannes Reinecke <hare@suse.de>
-> Signed-off-by: Kay Sievers <kay.sievers@vrfy.org>
-
-I spoke too soon please see below
-
-> ---
->  drivers/scsi/scsi_lib.c    |    6 ++++++
->  drivers/scsi/scsi_sysfs.c  |   17 -----------------
->  drivers/scsi/sd.c          |    2 ++
->  drivers/scsi/sr.c          |    1 +
->  include/scsi/scsi_driver.h |    1 +
->  5 files changed, 10 insertions(+), 17 deletions(-)
+> * Herbert Xu <herbert@gondor.apana.org.au> wrote:
 > 
-> diff --git a/drivers/scsi/scsi_lib.c b/drivers/scsi/scsi_lib.c
-> index 4b13e36..73df41b 100644
-> --- a/drivers/scsi/scsi_lib.c
-> +++ b/drivers/scsi/scsi_lib.c
-> @@ -1222,6 +1222,12 @@ int scsi_prep_fn(struct request_queue *q, struct request *req)
->  	return scsi_prep_return(q, req, ret);
->  }
->  
-> +void scsi_reset_prep_fn(struct request_queue *q)
+> > On Tue, Mar 24, 2009 at 03:39:42PM +0100, Ingo Molnar wrote:
+> > >
+> > > Subject: [PATCH] net: Fix netpoll lockup in legacy receive path
+> > 
+> > Actually, this patch is still racy.  If some interrupt comes in
+> > and we suddenly get the maximum amount of backlog we can still
+> > hang when we call __napi_complete incorrectly.  It's unlikely
+> > but we certainly shouldn't allow that.  Here's a better version.
+> > 
+> > net: Fix netpoll lockup in legacy receive path
+> 
+> ok - i'm testing with this now.
 
-Here it is declared void
-but
+test failure on one of the boxes, interface got stuck after ~100K 
+packets:
 
-> +{
-> +	blk_queue_prep_rq(q, scsi_prep_fn);
-> +}
-> +EXPORT_SYMBOL(scsi_reset_prep_fn);
-> +
->  /*
->   * scsi_dev_queue_ready: if we can send requests to sdev, return 1 else
->   * return 0.
-> diff --git a/drivers/scsi/scsi_sysfs.c b/drivers/scsi/scsi_sysfs.c
-> index fa4711d..91482f2 100644
-> --- a/drivers/scsi/scsi_sysfs.c
-> +++ b/drivers/scsi/scsi_sysfs.c
-> @@ -420,29 +420,12 @@ static int scsi_bus_resume(struct device * dev)
->  	return err;
->  }
->  
-> -static int scsi_bus_remove(struct device *dev)
-> -{
-> -	struct device_driver *drv = dev->driver;
-> -	struct scsi_device *sdev = to_scsi_device(dev);
-> -	int err = 0;
-> -
-> -	/* reset the prep_fn back to the default since the
-> -	 * driver may have altered it and it's being removed */
-> -	blk_queue_prep_rq(sdev->request_queue, scsi_prep_fn);
-> -
-> -	if (drv && drv->remove)
-> -		err = drv->remove(dev);
-> -
-> -	return 0;
-> -}
-> -
->  struct bus_type scsi_bus_type = {
->          .name		= "scsi",
->          .match		= scsi_bus_match,
->  	.uevent		= scsi_bus_uevent,
->  	.suspend	= scsi_bus_suspend,
->  	.resume		= scsi_bus_resume,
-> -	.remove		= scsi_bus_remove,
->  };
->  EXPORT_SYMBOL_GPL(scsi_bus_type);
->  
-> diff --git a/drivers/scsi/sd.c b/drivers/scsi/sd.c
-> index aeab5d9..64e88e2 100644
-> --- a/drivers/scsi/sd.c
-> +++ b/drivers/scsi/sd.c
-> @@ -2068,6 +2068,8 @@ static int sd_remove(struct device *dev)
->  {
->  	struct scsi_disk *sdkp = dev_get_drvdata(dev);
->  
-> +	scsi_reset_prep_fn(sdkp->device->request_queue);
-> +
->  	device_del(&sdkp->dev);
->  	del_gendisk(sdkp->disk);
->  	sd_shutdown(dev);
-> diff --git a/drivers/scsi/sr.c b/drivers/scsi/sr.c
-> index e7fa3ca..914733a 100644
-> --- a/drivers/scsi/sr.c
-> +++ b/drivers/scsi/sr.c
-> @@ -889,6 +889,7 @@ static int sr_remove(struct device *dev)
->  {
->  	struct scsi_cd *cd = dev_get_drvdata(dev);
->  
-> +	scsi_reset_prep_fn(cd->device->request_queue);
->  	del_gendisk(cd->disk);
->  
->  	mutex_lock(&sr_ref_mutex);
-> diff --git a/include/scsi/scsi_driver.h b/include/scsi/scsi_driver.h
-> index 1f5ca7f..2e22929 100644
-> --- a/include/scsi/scsi_driver.h
-> +++ b/include/scsi/scsi_driver.h
-> @@ -32,5 +32,6 @@ int scsi_setup_blk_pc_cmnd(struct scsi_device *sdev, struct request *req);
->  int scsi_setup_fs_cmnd(struct scsi_device *sdev, struct request *req);
->  int scsi_prep_state_check(struct scsi_device *sdev, struct request *req);
->  int scsi_prep_return(struct request_queue *q, struct request *req, int ret);
-> +int scsi_reset_prep_fn(struct request_queue *);
+eth1      Link encap:Ethernet  HWaddr 00:13:D4:DC:41:12  
+          inet addr:10.0.1.13  Bcast:10.0.1.255  Mask:255.255.255.0
+          inet6 addr: fe80::213:d4ff:fedc:4112/64 Scope:Link
+          UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
+          RX packets:22555 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:1897 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:1000 
+          RX bytes:2435071 (2.3 MiB)  TX bytes:503790 (491.9 KiB)
+          Interrupt:11 Base address:0x4000 
 
-Here it is returning int.
+i'm going back to your previous version for now - it might still be 
+racy but it worked well for about 1.5 hours of test-time.
 
-My FC10 compiler does not like that:
-  drivers/scsi/scsi_lib.c:1415: error: conflicting types for 'scsi_reset_prep_fn'
-  include/scsi/scsi_driver.h:35: error: previous declaration of 'scsi_reset_prep_fn' was here
-
->  
->  #endif /* _SCSI_SCSI_DRIVER_H */
-
-I fixed it to be void, will test later
-
-Thanks
-Boaz
+	Ingo
