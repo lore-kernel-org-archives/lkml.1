@@ -1,76 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758843AbZCXOFN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758201AbZCXOHZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758843AbZCXOFN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 10:05:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757597AbZCXOCb
+	id S1758201AbZCXOHZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 10:07:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758042AbZCXOC6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 10:02:31 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:48939 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757421AbZCXOC3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 10:02:29 -0400
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: [PATCH 07/30] cpm_uart: fix non-console port startup bug
-To: linux-kernel@vger.kernel.org, linux-serial@vger.kernel.org,
-       torvalds@linux-foundation.org
-Date: Tue, 24 Mar 2009 14:02:51 +0000
-Message-ID: <20090324140245.12735.29499.stgit@localhost.localdomain>
-In-Reply-To: <20090324135930.12735.7827.stgit@localhost.localdomain>
-References: <20090324135930.12735.7827.stgit@localhost.localdomain>
-User-Agent: StGIT/0.14.3
+	Tue, 24 Mar 2009 10:02:58 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:40410 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757856AbZCXOCx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Mar 2009 10:02:53 -0400
+Date: Tue, 24 Mar 2009 10:02:43 -0400 (EDT)
+From: Mikulas Patocka <mpatocka@redhat.com>
+X-X-Sender: mpatocka@hs20-bc2-1.build.redhat.com
+To: device-mapper development <dm-devel@redhat.com>
+cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andi Kleen <ak@suse.de>, "MASON, CHRISTOPHER" <CHRIS.MASON@oracle.com>,
+       Jens Axboe <jens.axboe@oracle.com>
+Subject: Re: [dm-devel] Barriers still not passing on simple dm devices...
+In-Reply-To: <49C7DD3C.2020401@redhat.com>
+Message-ID: <Pine.LNX.4.64.0903241000010.29968@hs20-bc2-1.build.redhat.com>
+References: <49C7DD3C.2020401@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Xiaotian Feng <Xiaotian.Feng@windriver.com>
 
-After UART interrupt handler is installed and rx is enabled, if an rx
-interrupt comes before hardware init, rx->cur will be updated. Then the
-hardware init will reset BD and make rx->cur out of sync, move the hardware
-init code before request_irq.
 
-Signed-off-by: Xiaotian Feng <xiaotian.feng@windriver.com>
-Signed-off-by: Alan Cox <alan@lxorguk.ukuu.org.uk>
+On Mon, 23 Mar 2009, Eric Sandeen wrote:
+
+> I've noticed that on 2.6.29-rcX, with Andi's patch
+> (ab4c1424882be9cd70b89abf2b484add355712fa, dm: support barriers on
+> simple devices) barriers are still getting rejected on these simple devices.
+> 
+> The problem is in __generic_make_request():
+> 
+>                 if (bio_barrier(bio) && bio_has_data(bio) &&
+>                     (q->next_ordered == QUEUE_ORDERED_NONE)) {
+>                         err = -EOPNOTSUPP;
+>                         goto end_io;
+>                 }
+> 
+> and dm isn't flagging its queue as supporting ordered writes, so it's
+> rejected here.
+> 
+> Doing something like this:
+> 
+> + if (t->barriers_supported)
+> +         blk_queue_ordered(q, QUEUE_ORDERED_DRAIN, NULL);
+> 
+> somewhere in dm (I stuck it in dm_table_set_restrictions() - almost
+> certainly the wrong thing to do) did get my dm-linear device to mount
+> with xfs, w/o xfs complaining that its mount-time barrier tests failed.
+> 
+> So what's the right way around this?  What should dm (or md for that
+> matter) advertise on their queues about ordered-ness?  Should there be
+> some sort of "QUEUE_ORDERED_PASSTHROUGH" or something to say "this level
+> doesn't care, ask the next level" or somesuch?  Or should it inherit the
+> flag from the next level down?  Ideas?
+> 
+> Thanks,
+> -Eric
+> 
+> --
+> dm-devel mailing list
+> dm-devel@redhat.com
+> https://www.redhat.com/mailman/listinfo/dm-devel
+
+Hi
+
+This is misdesign in generic bio layer and it should be fixed there. I 
+think it is blocking barrier support in md-raid1 too. Jens, pls apply the 
+attached patch.
+
+Mikulas
+
+----
+
+Move test for not-supported barriers to __make_request.
+
+This test prevents barriers from being dispatched to device mapper
+and md.
+
+This test is sensible only for drivers that use requests (such as disk
+drivers), not for drivers that use bios.
+
+It is better to fix it in generic code than to make workaround for it
+in device mapper and md.
+
+Signed-off-by: Mikulas Patocka <mpatocka@redhat.com>
+
 ---
+ block/blk-core.c |   11 ++++++-----
+ 1 file changed, 6 insertions(+), 5 deletions(-)
 
- drivers/serial/cpm_uart/cpm_uart_core.c |   14 ++++++++++++--
- 1 files changed, 12 insertions(+), 2 deletions(-)
-
-
-diff --git a/drivers/serial/cpm_uart/cpm_uart_core.c b/drivers/serial/cpm_uart/cpm_uart_core.c
-index bde4b4b..5c6ef51 100644
---- a/drivers/serial/cpm_uart/cpm_uart_core.c
-+++ b/drivers/serial/cpm_uart/cpm_uart_core.c
-@@ -406,6 +406,18 @@ static int cpm_uart_startup(struct uart_port *port)
+Index: linux-2.6.29-rc6-devel/block/blk-core.c
+===================================================================
+--- linux-2.6.29-rc6-devel.orig/block/blk-core.c	2009-02-23 18:43:37.000000000 +0100
++++ linux-2.6.29-rc6-devel/block/blk-core.c	2009-02-23 18:44:27.000000000 +0100
+@@ -1145,6 +1145,12 @@ static int __make_request(struct request
+ 	const int unplug = bio_unplug(bio);
+ 	int rw_flags;
  
- 	pr_debug("CPM uart[%d]:startup\n", port->line);
- 
-+	/* If the port is not the console, make sure rx is disabled. */
-+	if (!(pinfo->flags & FLAG_CONSOLE)) {
-+		/* Disable UART rx */
-+		if (IS_SMC(pinfo)) {
-+			clrbits16(&pinfo->smcp->smc_smcmr, SMCMR_REN);
-+			clrbits8(&pinfo->smcp->smc_smcm, SMCM_RX);
-+		} else {
-+			clrbits32(&pinfo->sccp->scc_gsmrl, SCC_GSMRL_ENR);
-+			clrbits16(&pinfo->sccp->scc_sccm, UART_SCCM_RX);
-+		}
-+		cpm_line_cr_cmd(pinfo, CPM_CR_INIT_TRX);
++	if (bio_barrier(bio) && bio_has_data(bio) &&
++	    (q->next_ordered == QUEUE_ORDERED_NONE)) {
++		bio_endio(bio, -EOPNOTSUPP);
++		return 0;
 +	}
- 	/* Install interrupt handler. */
- 	retval = request_irq(port->irq, cpm_uart_int, 0, "cpm_uart", port);
- 	if (retval)
-@@ -420,8 +432,6 @@ static int cpm_uart_startup(struct uart_port *port)
- 		setbits32(&pinfo->sccp->scc_gsmrl, (SCC_GSMRL_ENR | SCC_GSMRL_ENT));
- 	}
++
+ 	nr_sectors = bio_sectors(bio);
  
--	if (!(pinfo->flags & FLAG_CONSOLE))
--		cpm_line_cr_cmd(pinfo, CPM_CR_INIT_TRX);
- 	return 0;
- }
+ 	/*
+@@ -1450,11 +1456,6 @@ static inline void __generic_make_reques
+ 			err = -EOPNOTSUPP;
+ 			goto end_io;
+ 		}
+-		if (bio_barrier(bio) && bio_has_data(bio) &&
+-		    (q->next_ordered == QUEUE_ORDERED_NONE)) {
+-			err = -EOPNOTSUPP;
+-			goto end_io;
+-		}
  
-
+ 		ret = q->make_request_fn(q, bio);
+ 	} while (ret);
+> 
