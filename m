@@ -1,220 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761623AbZCXPwu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760857AbZCXPzI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761623AbZCXPwu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 11:52:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755621AbZCXPwi
+	id S1760857AbZCXPzI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 11:55:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755813AbZCXPy4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 11:52:38 -0400
-Received: from cantor.suse.de ([195.135.220.2]:35835 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754051AbZCXPwh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 11:52:37 -0400
-Message-ID: <49C901C1.5080902@suse.de>
-Date: Tue, 24 Mar 2009 16:52:33 +0100
-From: Hannes Reinecke <hare@suse.de>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	Tue, 24 Mar 2009 11:54:56 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:40399 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755825AbZCXPyy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Mar 2009 11:54:54 -0400
+Date: Tue, 24 Mar 2009 11:54:52 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Zhaolei <zhaolei@cn.fujitsu.com>
+cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] ftrace: Avoid double-free of dyn_ftrace
+In-Reply-To: <18199AAD941A4071B7FD8A0D6C67733A@zhaoleiwin>
+Message-ID: <alpine.DEB.2.00.0903241152020.22830@gandalf.stny.rr.com>
+References: <49BA23D9.1050900@cn.fujitsu.com> <20090313092558.GD2571@elte.hu> <18199AAD941A4071B7FD8A0D6C67733A@zhaoleiwin>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-To: Boaz Harrosh <bharrosh@panasas.com>
-Cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
-Subject: Re: [PATCH] Driver 'sd' needs updating
-References: <20090324141428.31E5118C7A3@pentland.suse.de> <49C90012.50009@panasas.com>
-In-Reply-To: <49C90012.50009@panasas.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: multipart/mixed;
- boundary="------------010200020109000809080607"
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------010200020109000809080607
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
 
-Hi Boaz,
+On Fri, 13 Mar 2009, Zhaolei wrote:
 
-Boaz Harrosh wrote:
-> Hannes Reinecke wrote:
->> If a driver sets blk_queue_prep_rq() it should clean up itself
->> and not rely on the bus callbacks to handle this. This removes
->> the need to hook into bus->remove() as these should not be used
->> at the same time as driver->remove().
->>
->> Signed-off-by: Hannes Reinecke <hare@suse.de>
->> Signed-off-by: Kay Sievers <kay.sievers@vrfy.org>
+> * From: "Ingo Molnar" <mingo@elte.hu>
+> > 
+> > * Zhaolei <zhaolei@cn.fujitsu.com> wrote:
+> > 
+> >> If dyn_ftrace is free before ftrace_release(), 
+> >> ftrace_release() will free it again and make 
+> >> ftrace_free_records wrong.
+> >> 
+> >> Signed-off-by: Zhao Lei <zhaolei@cn.fujitsu.com>
+> >> ---
+> >>  kernel/trace/ftrace.c |    3 ++-
+> >>  1 files changed, 2 insertions(+), 1 deletions(-)
+> >> 
+> >> diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
+> >> index d33d306..26c45aa 100644
+> >> --- a/kernel/trace/ftrace.c
+> >> +++ b/kernel/trace/ftrace.c
+> >> @@ -356,7 +356,8 @@ void ftrace_release(void *start, unsigned long size)
+> >>  
+> >>  mutex_lock(&ftrace_lock);
+> >>  do_for_each_ftrace_rec(pg, rec) {
+> >> - if ((rec->ip >= s) && (rec->ip < e))
+> >> + if ((rec->ip >= s) && (rec->ip < e) &&
+> >> +     !(rec->flags & FTRACE_FL_FREE))
+> >>  ftrace_free_rec(rec);
+> > 
+> > Applied to tip:tracing/ftrace, thanks!
+> > 
+> > I'm wondering, did you trigger this in practice (if yes, how?), 
+> > or have you found it via code review?
+> Hello, Ingo
 > 
-> I spoke too soon please see below
-> 
->> ---
->>  drivers/scsi/scsi_lib.c    |    6 ++++++
->>  drivers/scsi/scsi_sysfs.c  |   17 -----------------
->>  drivers/scsi/sd.c          |    2 ++
->>  drivers/scsi/sr.c          |    1 +
->>  include/scsi/scsi_driver.h |    1 +
->>  5 files changed, 10 insertions(+), 17 deletions(-)
->>
->> diff --git a/drivers/scsi/scsi_lib.c b/drivers/scsi/scsi_lib.c
->> index 4b13e36..73df41b 100644
->> --- a/drivers/scsi/scsi_lib.c
->> +++ b/drivers/scsi/scsi_lib.c
->> @@ -1222,6 +1222,12 @@ int scsi_prep_fn(struct request_queue *q, struct request *req)
->>  	return scsi_prep_return(q, req, ret);
->>  }
->>  
->> +void scsi_reset_prep_fn(struct request_queue *q)
-> 
-> Here it is declared void
-> but
-> 
->> diff --git a/include/scsi/scsi_driver.h b/include/scsi/scsi_driver.h
->> index 1f5ca7f..2e22929 100644
->> --- a/include/scsi/scsi_driver.h
->> +++ b/include/scsi/scsi_driver.h
->> @@ -32,5 +32,6 @@ int scsi_setup_blk_pc_cmnd(struct scsi_device *sdev, struct request *req);
->>  int scsi_setup_fs_cmnd(struct scsi_device *sdev, struct request *req);
->>  int scsi_prep_state_check(struct scsi_device *sdev, struct request *req);
->>  int scsi_prep_return(struct request_queue *q, struct request *req, int ret);
->> +int scsi_reset_prep_fn(struct request_queue *);
-> 
-> Here it is returning int.
-> 
-> My FC10 compiler does not like that:
->   drivers/scsi/scsi_lib.c:1415: error: conflicting types for 'scsi_reset_prep_fn'
->   include/scsi/scsi_driver.h:35: error: previous declaration of 'scsi_reset_prep_fn' was here
-> 
->>  
->>  #endif /* _SCSI_SCSI_DRIVER_H */
-> 
-> I fixed it to be void, will test later
-> 
-Argl. You are correct. New patch attached.
+> It is found via code review.
 
-Cheers,
+Hmm, could you explain this more. I'm thinking that this scenario should 
+not happen, and if it does, it should probably be a bug.
 
-Hannes
--- 
-Dr. Hannes Reinecke		      zSeries & Storage
-hare@suse.de			      +49 911 74053 688
-SUSE LINUX Products GmbH, Maxfeldstr. 5, 90409 Nürnberg
-GF: Markus Rex, HRB 16746 (AG Nürnberg)
+Because when we call ftrace_free_rec we change the rec->ip to point to the 
+next record in the chain. Something is very wrong if rec->ip >= s && 
+rec->ip < e and the record is already free.
 
---------------010200020109000809080607
-Content-Type: text/x-patch;
- name="0001-Driver-sd-needs-updating.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="0001-Driver-sd-needs-updating.patch"
+We can add a:
 
->From 6c8f63205c81922581ebd9a73d5ff92f50910064 Mon Sep 17 00:00:00 2001
-From: Hannes Reinecke <hare@suse.de>
-Date: Tue, 24 Mar 2009 15:13:43 +0100
-Subject: [PATCH] Driver 'sd' needs updating
+	WARN_ON(rec->flags & FTRACE_FL_FREE);
 
-If a driver sets blk_queue_prep_rq() it should clean up itself
-and not rely on the bus callbacks to handle this. This removes
-the need to hook into bus->remove() as these should not be used
-at the same time as driver->remove().
+in ftrace_free_rec if you are worried about this happening.
 
-Signed-off-by: Hannes Reinecke <hare@suse.de>
-Signed-off-by: Kay Sievers <kay.sievers@vrfy.org>
----
- drivers/scsi/scsi_lib.c    |    6 ++++++
- drivers/scsi/scsi_sysfs.c  |   17 -----------------
- drivers/scsi/sd.c          |    2 ++
- drivers/scsi/sr.c          |    1 +
- include/scsi/scsi_driver.h |    1 +
- 5 files changed, 10 insertions(+), 17 deletions(-)
+-- Steve
 
-diff --git a/drivers/scsi/scsi_lib.c b/drivers/scsi/scsi_lib.c
-index 4b13e36..73df41b 100644
---- a/drivers/scsi/scsi_lib.c
-+++ b/drivers/scsi/scsi_lib.c
-@@ -1222,6 +1222,12 @@ int scsi_prep_fn(struct request_queue *q, struct request *req)
- 	return scsi_prep_return(q, req, ret);
- }
- 
-+void scsi_reset_prep_fn(struct request_queue *q)
-+{
-+	blk_queue_prep_rq(q, scsi_prep_fn);
-+}
-+EXPORT_SYMBOL(scsi_reset_prep_fn);
-+
- /*
-  * scsi_dev_queue_ready: if we can send requests to sdev, return 1 else
-  * return 0.
-diff --git a/drivers/scsi/scsi_sysfs.c b/drivers/scsi/scsi_sysfs.c
-index fa4711d..91482f2 100644
---- a/drivers/scsi/scsi_sysfs.c
-+++ b/drivers/scsi/scsi_sysfs.c
-@@ -420,29 +420,12 @@ static int scsi_bus_resume(struct device * dev)
- 	return err;
- }
- 
--static int scsi_bus_remove(struct device *dev)
--{
--	struct device_driver *drv = dev->driver;
--	struct scsi_device *sdev = to_scsi_device(dev);
--	int err = 0;
--
--	/* reset the prep_fn back to the default since the
--	 * driver may have altered it and it's being removed */
--	blk_queue_prep_rq(sdev->request_queue, scsi_prep_fn);
--
--	if (drv && drv->remove)
--		err = drv->remove(dev);
--
--	return 0;
--}
--
- struct bus_type scsi_bus_type = {
-         .name		= "scsi",
-         .match		= scsi_bus_match,
- 	.uevent		= scsi_bus_uevent,
- 	.suspend	= scsi_bus_suspend,
- 	.resume		= scsi_bus_resume,
--	.remove		= scsi_bus_remove,
- };
- EXPORT_SYMBOL_GPL(scsi_bus_type);
- 
-diff --git a/drivers/scsi/sd.c b/drivers/scsi/sd.c
-index aeab5d9..64e88e2 100644
---- a/drivers/scsi/sd.c
-+++ b/drivers/scsi/sd.c
-@@ -2068,6 +2068,8 @@ static int sd_remove(struct device *dev)
- {
- 	struct scsi_disk *sdkp = dev_get_drvdata(dev);
- 
-+	scsi_reset_prep_fn(sdkp->device->request_queue);
-+
- 	device_del(&sdkp->dev);
- 	del_gendisk(sdkp->disk);
- 	sd_shutdown(dev);
-diff --git a/drivers/scsi/sr.c b/drivers/scsi/sr.c
-index e7fa3ca..914733a 100644
---- a/drivers/scsi/sr.c
-+++ b/drivers/scsi/sr.c
-@@ -889,6 +889,7 @@ static int sr_remove(struct device *dev)
- {
- 	struct scsi_cd *cd = dev_get_drvdata(dev);
- 
-+	scsi_reset_prep_fn(cd->device->request_queue);
- 	del_gendisk(cd->disk);
- 
- 	mutex_lock(&sr_ref_mutex);
-diff --git a/include/scsi/scsi_driver.h b/include/scsi/scsi_driver.h
-index 1f5ca7f..1f06be0 100644
---- a/include/scsi/scsi_driver.h
-+++ b/include/scsi/scsi_driver.h
-@@ -32,5 +32,6 @@ int scsi_setup_blk_pc_cmnd(struct scsi_device *sdev, struct request *req);
- int scsi_setup_fs_cmnd(struct scsi_device *sdev, struct request *req);
- int scsi_prep_state_check(struct scsi_device *sdev, struct request *req);
- int scsi_prep_return(struct request_queue *q, struct request *req, int ret);
-+void scsi_reset_prep_fn(struct request_queue *);
- 
- #endif /* _SCSI_SCSI_DRIVER_H */
--- 
-1.5.3.2
-
-
---------------010200020109000809080607--
