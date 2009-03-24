@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755471AbZCXIEk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754819AbZCXIFK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755471AbZCXIEk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 04:04:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755114AbZCXIEP
+	id S1754819AbZCXIFK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 04:05:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756068AbZCXIEm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 04:04:15 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:57325 "EHLO song.cn.fujitsu.com"
+	Tue, 24 Mar 2009 04:04:42 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:52981 "EHLO song.cn.fujitsu.com"
 	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1754503AbZCXIEN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 04:04:13 -0400
-Message-ID: <49C89415.5080503@cn.fujitsu.com>
-Date: Tue, 24 Mar 2009 16:04:37 +0800
+	id S1755257AbZCXIEk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Mar 2009 04:04:40 -0400
+Message-ID: <49C89432.8010805@cn.fujitsu.com>
+Date: Tue, 24 Mar 2009 16:05:06 +0800
 From: Li Zefan <lizf@cn.fujitsu.com>
 User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
@@ -19,7 +19,7 @@ CC: Jens Axboe <jens.axboe@oracle.com>, Steven Rostedt <rostedt@goodmis.org>,
        Frederic Weisbecker <fweisbec@gmail.com>,
        Arnaldo Carvalho de Melo <acme@redhat.com>,
        LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH 1/5] blktrace: mark ddir_act and what2act const
+Subject: [PATCH 2/5] blktrace: fix wrong calculation of RWBS
 References: <49C893FC.9080905@cn.fujitsu.com>
 In-Reply-To: <49C893FC.9080905@cn.fujitsu.com>
 Content-Type: text/plain; charset=UTF-8
@@ -28,41 +28,48 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-ddir_act and what2act are always stay immutable.
+Trace categories are the upper 16 bits, not the lower 16 bits.
 
 Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
 ---
- kernel/trace/blktrace.c |    8 ++++----
- 1 files changed, 4 insertions(+), 4 deletions(-)
+ kernel/trace/blktrace.c |   13 +++++++------
+ 1 files changed, 7 insertions(+), 6 deletions(-)
 
 diff --git a/kernel/trace/blktrace.c b/kernel/trace/blktrace.c
-index 108f4f7..1ffcbd4 100644
+index 1ffcbd4..9af4143 100644
 --- a/kernel/trace/blktrace.c
 +++ b/kernel/trace/blktrace.c
-@@ -147,8 +147,8 @@ static int act_log_check(struct blk_trace *bt, u32 what, sector_t sector,
- /*
-  * Data direction bit lookup
-  */
--static u32 ddir_act[2] __read_mostly = { BLK_TC_ACT(BLK_TC_READ),
--					 BLK_TC_ACT(BLK_TC_WRITE) };
-+static const u32 ddir_act[2] = { BLK_TC_ACT(BLK_TC_READ),
-+				 BLK_TC_ACT(BLK_TC_WRITE) };
+@@ -922,23 +922,24 @@ static void blk_unregister_tracepoints(void)
+ static void fill_rwbs(char *rwbs, const struct blk_io_trace *t)
+ {
+ 	int i = 0;
++	int tc = t->action >> BLK_TC_SHIFT;
  
- /* The ilog2() calls fall out because they're constant */
- #define MASK_TC_BIT(rw, __name) ((rw & (1 << BIO_RW_ ## __name)) << \
-@@ -1116,10 +1116,10 @@ static void blk_tracer_reset(struct trace_array *tr)
- 	blk_tracer_stop(tr);
- }
+-	if (t->action & BLK_TC_DISCARD)
++	if (tc & BLK_TC_DISCARD)
+ 		rwbs[i++] = 'D';
+-	else if (t->action & BLK_TC_WRITE)
++	else if (tc & BLK_TC_WRITE)
+ 		rwbs[i++] = 'W';
+ 	else if (t->bytes)
+ 		rwbs[i++] = 'R';
+ 	else
+ 		rwbs[i++] = 'N';
  
--static struct {
-+static const struct {
- 	const char *act[2];
- 	int	   (*print)(struct trace_seq *s, const struct trace_entry *ent);
--} what2act[] __read_mostly = {
-+} what2act[] = {
- 	[__BLK_TA_QUEUE]	= {{  "Q", "queue" },	   blk_log_generic },
- 	[__BLK_TA_BACKMERGE]	= {{  "M", "backmerge" },  blk_log_generic },
- 	[__BLK_TA_FRONTMERGE]	= {{  "F", "frontmerge" }, blk_log_generic },
+-	if (t->action & BLK_TC_AHEAD)
++	if (tc & BLK_TC_AHEAD)
+ 		rwbs[i++] = 'A';
+-	if (t->action & BLK_TC_BARRIER)
++	if (tc & BLK_TC_BARRIER)
+ 		rwbs[i++] = 'B';
+-	if (t->action & BLK_TC_SYNC)
++	if (tc & BLK_TC_SYNC)
+ 		rwbs[i++] = 'S';
+-	if (t->action & BLK_TC_META)
++	if (tc & BLK_TC_META)
+ 		rwbs[i++] = 'M';
+ 
+ 	rwbs[i] = '\0';
 -- 
 1.5.4.rc3
 
