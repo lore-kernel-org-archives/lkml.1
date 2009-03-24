@@ -1,60 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759627AbZCXOPr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761458AbZCXOSY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759627AbZCXOPr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 10:15:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759458AbZCXOGm
+	id S1761458AbZCXOSY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 10:18:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760831AbZCXOLr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 10:06:42 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:34004 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1758481AbZCXOGl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 10:06:41 -0400
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: [PATCH 28/30] mux: fix build problem
-To: linux-kernel@vger.kernel.org, linux-serial@vger.kernel.org,
-       torvalds@linux-foundation.org
-Date: Tue, 24 Mar 2009 14:06:45 +0000
-Message-ID: <20090324140639.12735.38520.stgit@localhost.localdomain>
-In-Reply-To: <20090324135930.12735.7827.stgit@localhost.localdomain>
-References: <20090324135930.12735.7827.stgit@localhost.localdomain>
-User-Agent: StGIT/0.14.3
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+	Tue, 24 Mar 2009 10:11:47 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:37594 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760771AbZCXOLq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Mar 2009 10:11:46 -0400
+From: David Teigland <teigland@redhat.com>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH 0/7] dlm patches for 2.6.30
+Date: Tue, 24 Mar 2009 09:07:45 -0500
+Message-Id: <1237903672-18913-1-git-send-email-teigland@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Alexander Beregalov <a.beregalov@gmail.com>
+Hi,
 
-Fixes:
-
-In file included from drivers/serial/mux.c:37:
-include/linux/serial_core.h: In function 'uart_handle_sysrq_char':
-include/linux/serial_core.h:467: error: 'struct uart_port' has no member named 'sysrq'
-include/linux/serial_core.h:468: error: 'struct uart_port' has no member named 'sysrq'
+These are the pending dlm patches for the 2.6.30 merge.  They have all been in
+linux-next for quite a while.  The notable fixes come from using the dlm with
+ocfs2 and relate to handling lock cancelation and large nodeids.
+Dave
 
 
-Signed-off-by: Alexander Beregalov <a.beregalov@gmail.com>
-Signed-off-by: Alan Cox <alan@lxorguk.ukuu.org.uk>
----
+ fs/dlm/dir.c          |   18 +++---
+ fs/dlm/dlm_internal.h |    2 +-
+ fs/dlm/lock.c         |   60 ++++++++++++++--
+ fs/dlm/lockspace.c    |    2 +-
+ fs/dlm/lowcomms.c     |  181 ++++++++++++++++++++++++++-----------------------
+ fs/dlm/user.c         |   24 ++++---
+ 6 files changed, 175 insertions(+), 112 deletions(-)
 
- include/linux/serial_core.h |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
 
+Christine Caulfield (1):
+      dlm: replace idr with hash table for connections
 
-diff --git a/include/linux/serial_core.h b/include/linux/serial_core.h
-index df9245c..83e4b3f 100644
---- a/include/linux/serial_core.h
-+++ b/include/linux/serial_core.h
-@@ -277,7 +277,7 @@ struct uart_port {
- 	struct uart_icount	icount;			/* statistics */
- 
- 	struct console		*cons;			/* struct console, if any */
--#ifdef CONFIG_SERIAL_CORE_CONSOLE
-+#if defined(CONFIG_SERIAL_CORE_CONSOLE) || defined(SUPPORT_SYSRQ)
- 	unsigned long		sysrq;			/* sysrq timeout */
- #endif
- 
+David Teigland (3):
+      dlm: clear defunct cancel state
+      dlm: ignore cancel on granted lock
+      dlm: fix length calculation in compat code
+
+Joe Perches (2):
+      dlm: use ipv6_addr_copy
+      dlm: comment typo fixes
+
+Steven Whitehouse (1):
+      dlm: Change rwlock which is only used in write mode to a spinlock
 
