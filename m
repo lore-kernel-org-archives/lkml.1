@@ -1,73 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759040AbZCXKT1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759131AbZCXKUG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759040AbZCXKT1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 06:19:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757685AbZCXKSv
+	id S1759131AbZCXKUG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 06:20:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758845AbZCXKTw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 06:18:51 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:51004 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756958AbZCXKSt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 06:18:49 -0400
-Date: Tue, 24 Mar 2009 11:18:47 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Jerome Marchand <jmarchan@redhat.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] block: forbid to re-enable I/O stat accounting
-Message-ID: <20090324101847.GF27476@kernel.dk>
-References: <200903201333.n2KDXONh023780@dhcp-0-152.brq.redhat.com> <20090321030309.f783ec8c.akpm@linux-foundation.org>
+	Tue, 24 Mar 2009 06:19:52 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:39823 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1757685AbZCXKTu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Mar 2009 06:19:50 -0400
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: [PATCH 1/4] pata_artop: Serializing support
+To: jeff@garzik.org, linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+Date: Tue, 24 Mar 2009 10:19:46 +0000
+Message-ID: <20090324101945.9116.12872.stgit@localhost.localdomain>
+User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090321030309.f783ec8c.akpm@linux-foundation.org>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Mar 21 2009, Andrew Morton wrote:
-> 
-> Please fix your email headers - what I received was
-> 
-> From: Jerome Marchand <jmarchan@redhat.com>
-> To: unlisted-recipients:;;@imap1.linux-foundation.org (no To-header on input)
-> Cc: Jens Axboe <axboe@kernel.dk>
-> 
-> 
-> On Thu, 19 Mar 2009 11:36:50 +0100 Jerome Marchand <jmarchan@redhat.com> wrote:
-> 
-> > When we stop I/O stat accounting we stop to update the in-flight
-> > requests counter and we need this counter to be reliable for
-> > accounting I/O stats. Unfortunately updating in_flight field may
-> > affect performance. So, until we have a better solution, just forbid
-> > to re-enable I/O stat accounting after it has been disabled.
-> 
-> hm.  Is it really so hard to just quiesce the device until all in-flight
-> requests have drained?  freeze_bdev() might be a suitable starting point?
+From: Alan Cox <alan@redhat.com>
 
-freeze_bdev() is too far up, I think. It would be better to just reuse
-the quiscing code we use for switching io schedulers on-the-fly.
-Basically something ala:
+Enable both ports on the 6210 and serialize them
 
-        spin_lock_irq(q->queue_lock);
-        queue_flag_set(QUEUE_FLAG_ELVSWITCH, q);
-        elv_drain_elevator(q);
-        while (q->rq.elvpriv) {
-                blk_start_queueing(q);
-                spin_unlock_irq(q->queue_lock);
-                msleep(10);
-                spin_lock_irq(q->queue_lock);
-                elv_drain_elevator(q);
-        }
+Signed-off-by: Alan Cox <alan@redhat.com>
+---
 
-        re-enable IO accounting;
-        spin_unlock_irq(q->queue_lock);
+ block/blk-settings.c     |    2 +-
+ drivers/ata/pata_artop.c |   33 +++++++++++++++++++++++++++------
+ 2 files changed, 28 insertions(+), 7 deletions(-)
 
-and then don't account requests that don't have REQ_ELVPRIV set. I think
-that should be acceptable. I was pretty sure I had a patch for something
-else that yanked this logic into start/stop helpers... Ah, found it:
 
-http://git.kernel.dk/?p=linux-2.6-block.git;a=commitdiff;h=8cb9f793b82024cd43ed5d4583a5287d002abdf8
-
--- 
-Jens Axboe
+diff --git a/block/blk-settings.c b/block/blk-settings.c
+index 59fd05d..69c42ad 100644
+--- a/block/blk-settings.c
++++ b/block/blk-settings.c
+@@ -431,7 +431,7 @@ EXPORT_SYMBOL(blk_queue_segment_boundary);
+  *
+  * description:
+  *    set required memory and length alignment for direct dma transactions.
+- *    this is used when buiding direct io requests for the queue.
++ *    this is used when building direct io requests for the queue.
+  *
+  **/
+ void blk_queue_dma_alignment(struct request_queue *q, int mask)
+diff --git a/drivers/ata/pata_artop.c b/drivers/ata/pata_artop.c
+index 6b3092c..eee4287 100644
+--- a/drivers/ata/pata_artop.c
++++ b/drivers/ata/pata_artop.c
+@@ -12,7 +12,6 @@
+  *		performance Alessandro Zummo <alessandro.zummo@towertech.it>
+  *
+  *	TODO
+- *	850 serialization once the core supports it
+  *	Investigate no_dsc on 850R
+  *	Clock detect
+  */
+@@ -29,7 +28,7 @@
+ #include <linux/ata.h>
+ 
+ #define DRV_NAME	"pata_artop"
+-#define DRV_VERSION	"0.4.4"
++#define DRV_VERSION	"0.4.5"
+ 
+ /*
+  *	The ARTOP has 33 Mhz and "over clocked" timing tables. Until we
+@@ -283,6 +282,31 @@ static void artop6260_set_dmamode (struct ata_port *ap, struct ata_device *adev)
+ 	pci_write_config_byte(pdev, 0x44 + ap->port_no, ultra);
+ }
+ 
++/**
++ *	artop_6210_qc_defer	-	implement serialization
++ *	@qc: command
++ *
++ *	Issue commands per host on this chip.
++ */
++
++static int artop6210_qc_defer(struct ata_queued_cmd *qc)
++{
++	struct ata_host *host = qc->ap->host;
++	struct ata_port *alt = host->ports[1 ^ qc->ap->port_no];
++	int rc;
++
++	/* First apply the usual rules */
++	rc = ata_std_qc_defer(qc);
++	if (rc != 0)
++		return rc;
++
++	/* Now apply serialization rules. Only allow a command if the
++	   other channel state machine is idle */
++	if (alt && alt->qc_active)
++		return	ATA_DEFER_PORT;
++	return 0;
++}
++
+ static struct scsi_host_template artop_sht = {
+ 	ATA_BMDMA_SHT(DRV_NAME),
+ };
+@@ -293,6 +317,7 @@ static struct ata_port_operations artop6210_ops = {
+ 	.set_piomode		= artop6210_set_piomode,
+ 	.set_dmamode		= artop6210_set_dmamode,
+ 	.prereset		= artop6210_pre_reset,
++	.qc_defer		= artop6210_qc_defer,
+ };
+ 
+ static struct ata_port_operations artop6260_ops = {
+@@ -362,12 +387,8 @@ static int artop_init_one (struct pci_dev *pdev, const struct pci_device_id *id)
+ 
+ 	if (id->driver_data == 0) {	/* 6210 variant */
+ 		ppi[0] = &info_6210;
+-		ppi[1] = &ata_dummy_port_info;
+ 		/* BIOS may have left us in UDMA, clear it before libata probe */
+ 		pci_write_config_byte(pdev, 0x54, 0);
+-		/* For the moment (also lacks dsc) */
+-		printk(KERN_WARNING "ARTOP 6210 requires serialize functionality not yet supported by libata.\n");
+-		printk(KERN_WARNING "Secondary ATA ports will not be activated.\n");
+ 	}
+ 	else if (id->driver_data == 1)	/* 6260 */
+ 		ppi[0] = &info_626x;
 
