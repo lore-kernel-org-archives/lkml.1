@@ -1,49 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759713AbZCXScU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760328AbZCXSch@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759713AbZCXScU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 14:32:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753703AbZCXScE
+	id S1760328AbZCXSch (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 14:32:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757326AbZCXScO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 14:32:04 -0400
-Received: from ms01.sssup.it ([193.205.80.99]:55490 "EHLO sssup.it"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753160AbZCXScD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 14:32:03 -0400
-Date: Tue, 24 Mar 2009 19:41:01 +0100
-From: Fabio Checconi <fchecconi@gmail.com>
-To: Vivek Goyal <vgoyal@redhat.com>
-Cc: Nauman Rafique <nauman@google.com>,
-       Gui Jianfeng <guijianfeng@cn.fujitsu.com>,
+	Tue, 24 Mar 2009 14:32:14 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:51995 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755540AbZCXScN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Mar 2009 14:32:13 -0400
+Date: Tue, 24 Mar 2009 14:29:06 -0400
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Nauman Rafique <nauman@google.com>
+Cc: Gui Jianfeng <guijianfeng@cn.fujitsu.com>,
        Dhaval Giani <dhaval@linux.vnet.ibm.com>, dpshah@google.com,
-       lizf@cn.fujitsu.com, mikew@google.com, paolo.valente@unimore.it,
-       jens.axboe@oracle.com, ryov@valinux.co.jp, fernando@intellilink.co.jp,
-       s-uchida@ap.jp.nec.com, taka@valinux.co.jp, arozansk@redhat.com,
-       jmoyer@redhat.com, oz-kernel@redhat.com, balbir@linux.vnet.ibm.com,
-       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       akpm@linux-foundation.org, menage@google.com, peterz@infradead.org
+       lizf@cn.fujitsu.com, mikew@google.com, fchecconi@gmail.com,
+       paolo.valente@unimore.it, jens.axboe@oracle.com, ryov@valinux.co.jp,
+       fernando@intellilink.co.jp, s-uchida@ap.jp.nec.com, taka@valinux.co.jp,
+       arozansk@redhat.com, jmoyer@redhat.com, oz-kernel@redhat.com,
+       balbir@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
+       containers@lists.linux-foundation.org, akpm@linux-foundation.org,
+       menage@google.com, peterz@infradead.org
 Subject: Re: [PATCH 01/10] Documentation
-Message-ID: <20090324184101.GO18554@gandalf.sssup.it>
-References: <1236823015-4183-1-git-send-email-vgoyal@redhat.com> <1236823015-4183-2-git-send-email-vgoyal@redhat.com> <20090312100054.GA8024@linux.vnet.ibm.com> <20090312140450.GE10919@redhat.com> <49C0A171.8060009@cn.fujitsu.com> <20090318215529.GA3338@redhat.com> <e98e18940903232232i432f62c5r9dfd74268e1b2684@mail.gmail.com> <20090324125842.GA21389@redhat.com> <e98e18940903241114u1e03ae7dhf654d7d8d0fc0302@mail.gmail.com> <20090324182906.GF21389@redhat.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Message-ID: <20090324182906.GF21389@redhat.com>
+References: <1236823015-4183-1-git-send-email-vgoyal@redhat.com> <1236823015-4183-2-git-send-email-vgoyal@redhat.com> <20090312100054.GA8024@linux.vnet.ibm.com> <20090312140450.GE10919@redhat.com> <49C0A171.8060009@cn.fujitsu.com> <20090318215529.GA3338@redhat.com> <e98e18940903232232i432f62c5r9dfd74268e1b2684@mail.gmail.com> <20090324125842.GA21389@redhat.com> <e98e18940903241114u1e03ae7dhf654d7d8d0fc0302@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <20090324182906.GF21389@redhat.com>
-User-Agent: Mutt/1.4.2.3i
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <e98e18940903241114u1e03ae7dhf654d7d8d0fc0302@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> From: Vivek Goyal <vgoyal@redhat.com>
-> Date: Tue, Mar 24, 2009 02:29:06PM -0400
->
-...
-> > Does keeping the sync queue in ready tree solves the problem too? Is
-> > it because it avoid a virtual time jump?
-> > 
+On Tue, Mar 24, 2009 at 11:14:13AM -0700, Nauman Rafique wrote:
+> On Tue, Mar 24, 2009 at 5:58 AM, Vivek Goyal <vgoyal@redhat.com> wrote:
+> > On Mon, Mar 23, 2009 at 10:32:41PM -0700, Nauman Rafique wrote:
+> >
+> > [..]
+> >> > DESC
+> >> > io-controller: idle for sometime on sync queue before expiring it
+> >> > EDESC
+> >> >
+> >> > o When a sync queue expires, in many cases it might be empty and then
+> >> > áit will be deleted from the active tree. This will lead to a scenario
+> >> > áwhere out of two competing queues, only one is on the tree and when a
+> >> > ánew queue is selected, vtime jump takes place and we don't see services
+> >> > áprovided in proportion to weight.
+> >> >
+> >> > o In general this is a fundamental problem with fairness of sync queues
+> >> > áwhere queues are not continuously backlogged. Looks like idling is
+> >> > áonly solution to make sure such kind of queues can get some decent amount
+> >> > áof disk bandwidth in the face of competion from continusouly backlogged
+> >> > áqueues. But excessive idling has potential to reduce performance on SSD
+> >> > áand disks with commnad queuing.
+> >> >
+> >> > o This patch experiments with waiting for next request to come before a
+> >> > áqueue is expired after it has consumed its time slice. This can ensure
+> >> > ámore accurate fairness numbers in some cases.
+> >>
+> >> Vivek, have you introduced this option just to play with it, or you
+> >> are planning to make it a part of the patch set. Waiting for a new
+> >> request to come before expiring time slice sounds problematic.
+> >
+> > Why are the issues you forsee with it. This is just an extra 8ms idling
+> > on the sync queue that is also if think time of the queue is not high.
+> >
+> > We already do idling on sync queues. In this case we are doing an extra
+> > idle even if queue has consumed its allocated quota. It helps me get
+> > fairness numbers and I have put it under a tunable "fairness". So by
+> > default this code will not kick in.
+> >
+> > Other possible option could be that when expiring a sync queue, don't
+> > remove the queue immediately from the tree and remove it later if there
+> > is no request from the queue in 8ms or so. I am not sure with BFQ, is it
+> > feasible to do that without creating issues with current implementation.
+> > Current implementation was simple, so I stick to it to begin with.
 > 
-> I have not tried the second approch yet. But that also should solve the
-> vtime jump issue.
+> If the maximum wait is bounded by 8ms, then it should be fine. The
+> comments on the patch did not talk about such limit; it sounded like
+> unbounded wait to me.
+> 
+> Does keeping the sync queue in ready tree solves the problem too? Is
+> it because it avoid a virtual time jump?
 > 
 
-Do you mean that you intend to keep a queue with no backlog in the
-active tree?
+I have not tried the second approch yet. But that also should solve the
+vtime jump issue.
+
+Thanks
+Vivek
