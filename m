@@ -1,91 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758506AbZCXTWz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757727AbZCXTYv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758506AbZCXTWz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 15:22:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754147AbZCXTW3
+	id S1757727AbZCXTYv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 15:24:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756188AbZCXTYk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 15:22:29 -0400
-Received: from ausc60ps301.us.dell.com ([143.166.148.206]:25687 "EHLO
-	ausc60ps301.us.dell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752826AbZCXTW2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 15:22:28 -0400
-Date: Tue, 24 Mar 2009 14:22:25 -0500
-From: Matt Domsch <Matt_Domsch@dell.com>
-To: david@lang.hm
-Cc: netdev@vger.kernel.org, linux-hotplug@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: Network Device Naming mechanism and policy
-Message-ID: <20090324192225.GC22700@auslistsprd01.us.dell.com>
-References: <20090324154617.GA16332@auslistsprd01.us.dell.com> <alpine.DEB.1.10.0903241140530.16753@asgard.lang.hm>
+	Tue, 24 Mar 2009 15:24:40 -0400
+Received: from cantor.suse.de ([195.135.220.2]:42791 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754491AbZCXTYj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Mar 2009 15:24:39 -0400
+Date: Tue, 24 Mar 2009 12:05:39 -0700
+From: Mark Fasheh <mfasheh@suse.com>
+To: Theodore Tso <tytso@mit.edu>, Greg KH <greg@kroah.com>,
+       Randy Dunlap <randy.dunlap@oracle.com>, Jan Kara <jack@suse.cz>,
+       Greg KH <gregkh@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
+       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       stable@kernel.org, Dan Carpenter <error27@gmail.com>,
+       linux-ext4@vger.kernel.org, ocfs2-devel@oss.oracle.com
+Subject: Re: [stable] Linux 2.6.28.8 (ocfs2 build failure)
+Message-ID: <20090324190539.GG13065@wotan.suse.de>
+Reply-To: Mark Fasheh <mfasheh@suse.com>
+References: <20090317012028.GA32410@kroah.com> <49C00787.6060401@oracle.com> <20090317205518.GA4442@kroah.com> <49C00FE9.9040407@oracle.com> <20090320221750.GA32416@kroah.com> <20090323024404.GA14082@mit.edu>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0903241140530.16753@asgard.lang.hm>
-User-Agent: Mutt/1.5.11
+In-Reply-To: <20090323024404.GA14082@mit.edu>
+Organization: SUSE Labs, Novell, Inc
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 24, 2009 at 11:49:26AM -0700, david@lang.hm wrote:
-> On Tue, 24 Mar 2009, Matt Domsch wrote:
+On Sun, Mar 22, 2009 at 10:44:04PM -0400, Theodore Tso wrote:
+> On Fri, Mar 20, 2009 at 03:17:50PM -0700, Greg KH wrote:
+> > 
+> > I tracked this down to commit 54dc90 in the 2.6.28.8 tree.
+> > 
+> > I've included it below.  Jan and Ted, any ideas on how to fix this
+> > error?
 > 
-> >You may recall http://lkml.org/lkml/2006/9/29/268, wherein I described
-> >network device enumeration and naming challenges, and several possible
-> >fixes.  Of these, Fix #1 (fix the PCI device list to be sorted
-> >breadth-first) has been implemented in the kernel, and Fix #3 (system
-> >board routing rules) have been implemented on Dell PowerEdge 10G and
-> >11G servers (11G begin selling RSN).
-> >
-> >However, these have not been completely satisfactory.  In particular,
-> >it keeps getting harder and harder to route PCI-Express lanes to
-> >guarantee the same ordering between a depth-first and breadth-first
-> >walk, and it turns out, that isn't sufficient anyhow.
-> >
-> >
-> >Problem:  Users expect on-motherboard NICs to be named eth0..ethN.  This 
-> >can be difficult to achieve.
+> 2.6.29 dropped the CONFIG_OCFS2_COMPAT_JBD option; if you enable it,
+> causes a compile failure in 2.6.28.8.  This should fix it...
 > 
-> I dispute this statement.
+> diff --git a/fs/ocfs2/ocfs2_jbd_compat.h b/fs/ocfs2/ocfs2_jbd_compat.h
+> index b91c78f..268949b 100644
+> --- a/fs/ocfs2/ocfs2_jbd_compat.h
+> +++ b/fs/ocfs2/ocfs2_jbd_compat.h
+> @@ -60,7 +60,8 @@ static inline int jbd2_journal_file_inode(handle_t *handle,
+>  	return 0;
+>  }
+>  
+> -static inline int jbd2_journal_begin_ordered_truncate(struct jbd2_inode *inode,
+> +static inline int jbd2_journal_begin_ordered_truncate(journal_t *journal,
+> +						      struct jbd2_inode *inode,
+>  						      loff_t new_size)
+>  {
+>  	return 0;
 > 
-> I have several hundred servers that have the on-motherboard NICs as the 
-> last ones.
+> > Should I just revert this from the 2.6.28 tree?  Or does no one really
+> > care about ocfs2 in the stable tree?
 > 
-> anyone who's been making the assumption you describe will have been 
-> running into problems for many years.
-> 
-> it's just not a valid assumption.
+> I'm not sure how much people will care about CONFIG_OCFS2_COMPAT_JBD,
+> given that it disappears in 2.6.29, but the above patch should fix
+> things.
 
-I agree it's not a valid assumption.
+CONFIG_OCFS2_COMPAT_JBD is off by default, and existed for a really short
+time so I don't think it'll matter much if it's broken (obviously fixing it
+is better). Btw, people definitely use Ocfs2 in the stable tree - I've
+submitted Ocfs2 patches to stable in the past.
+	--Mark
 
-People seem to want two things with names:
-1) that devices be named deterministically
-2) that the determinism doesn't change on a per-platform or
-   per-configuration-of-a-platform basis.
-
-This tends to mean they want the onboard devices named first, then the
-add-in devices named.  But not necessarily.  I would hope to have a
-deterministic naming method that would work for most people by
-default, but that could be changed (in userspace) as necessary.
-
-> >4) When adding a network card to an existing system, what should the
-> >  ports on the new card be named?  If it is added, they will be named
-> >  ethN+1... above the existing named cards.  This means a (new)
-> >  add-in card in PCI slot 3 may have ports named eth5 and eth6, while
-> >  an add-in card in PCI slot 5 may have ports named eth2 and eth3.
-> >  This is not intuitive.
-> 
-> this approach causes serious problems in a few cases, including
-> 
-> 1. a NIC goes bad and you replace it. now all the configs change
-> 
-> 2. you reinstall a box and it's interface names change.
-
-Right.  These cases are only deterministic because they start from a
-known state; change or remove that state, and you're back to
-non-deterministic.
-
--- 
-Matt Domsch
-Linux Technology Strategist, Dell Office of the CTO
-linux.dell.com & www.dell.com/linux
+--
+Mark Fasheh
