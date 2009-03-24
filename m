@@ -1,46 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762754AbZCXQ2t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762079AbZCXQ31@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762754AbZCXQ2t (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 12:28:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762950AbZCXQ0q
+	id S1762079AbZCXQ31 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 12:29:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762989AbZCXQ0r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 12:26:46 -0400
-Received: from smtp.polymtl.ca ([132.207.4.11]:41916 "EHLO smtp.polymtl.ca"
+	Tue, 24 Mar 2009 12:26:47 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:41917 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932158AbZCXQ0m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 12:26:42 -0400
-Message-Id: <20090324160148.080628193@polymtl.ca>
+	id S932181AbZCXQ0n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Mar 2009 12:26:43 -0400
+Message-Id: <20090324160149.188175023@polymtl.ca>
 References: <20090324155625.420966314@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Tue, 24 Mar 2009 11:56:27 -0400
+Date: Tue, 24 Mar 2009 11:56:34 -0400
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
        linux-kernel@vger.kernel.org, ltt-dev@lists.casi.polymtl.ca
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Jason Baron <jbaron@redhat.com>, Peter Zijlstra <peterz@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Russell King <rmk+lkml@arm.linux.org.uk>,
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>, linux-mm@kvack.org,
+       Dave Hansen <haveblue@us.ibm.com>,
        Masami Hiramatsu <mhiramat@redhat.com>,
-       "Frank Ch. Eigler" <fche@redhat.com>, Hideo AOKI <haoki@redhat.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       "Frank Ch. Eigler" <fche@redhat.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>, Hideo AOKI <haoki@redhat.com>,
        Takashi Nishiie <t-nishiie@np.css.fujitsu.com>,
        Steven Rostedt <rostedt@goodmis.org>,
        Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-Subject: [patch 2/9] LTTng instrumentation - irq
-Content-Disposition: inline; filename=lttng-instrumentation-irq.patch
-X-Poly-FromMTA: (test.casi.polymtl.ca [132.207.72.60]) at Tue, 24 Mar 2009 16:22:03 +0000
+Subject: [patch 9/9] LTTng instrumentation - swap
+Content-Disposition: inline; filename=lttng-instrumentation-swap.patch
+X-Poly-FromMTA: (test.casi.polymtl.ca [132.207.72.60]) at Tue, 24 Mar 2009 16:22:04 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Instrumentation of IRQ related events : irq_entry, irq_exit and
-irq_next_handler.
-
-It allows tracers to perform latency analysis on those various types of
-interrupts and to detect interrupts with max/min/avg duration. It helps
-detecting driver or hardware problems which cause an ISR to take ages to
-execute. It has been shown to be the case with bogus hardware causing an mmio
-read to take a few milliseconds.
+Instrumentation of waits caused by swap activity. Also instrumentation
+swapon/swapoff events to keep track of active swap partitions.
 
 Those tracepoints are used by LTTng.
 
@@ -50,168 +43,138 @@ show no regression. His test case was using hackbench on a kernel where
 scheduler instrumentation (about 5 events in code scheduler code) was added.
 See the "Tracepoints" patch header for performance result detail.
 
-irq_entry and irq_exit not declared static because they appear in x86 arch code.
-
-The idea behind logging irq/softirq/tasklet/(and eventually syscall) entry and
-exit events is to be able to recreate the kernel execution state at a given
-point in time. Knowing which execution context is responsible for a given trace
-event is _very_ valuable in trace data analysis.
-
-The IRQ instrumentation instruments the IRQ handler entry and exit. Jason
-instrumented the irq notifier chain calls (irq_handler_entry/exit). His approach
-provides information about which handler is being called, but does not map
-correctly to the fact that _multiple_ handlers are being called from within the
-same interrupt handler. From an interrupt latency analysis POV, this is
-incorrect.
-
-I propose we save the "action" in the irq_entry, and use the irq exit "retval"
-to know the return value of the last interrupt handler. So in common cases where
-only one interrupt handler is connected to an interrupt line, we only have 2
-events. Then we also add a irq_next_handler, which saves the previous interrupt
-handler return value and the next handler action when there are more than 1
-handler called. That would generate the minimum amount of traffic to save all
-the information both Jason and I need.
-
 Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+CC: linux-mm@kvack.org
+CC: Dave Hansen <haveblue@us.ibm.com>
+CC: Masami Hiramatsu <mhiramat@redhat.com>
+CC: 'Peter Zijlstra' <peterz@infradead.org>
+CC: "Frank Ch. Eigler" <fche@redhat.com>
 CC: 'Ingo Molnar' <mingo@elte.hu>
 CC: Frederic Weisbecker <fweisbec@gmail.com>
-CC: Jason Baron <jbaron@redhat.com>
-CC: 'Peter Zijlstra' <peterz@infradead.org>
-CC: Thomas Gleixner <tglx@linutronix.de>
-CC: Russell King <rmk+lkml@arm.linux.org.uk>
-CC: Masami Hiramatsu <mhiramat@redhat.com>
-CC: "Frank Ch. Eigler" <fche@redhat.com>
 CC: 'Hideo AOKI' <haoki@redhat.com>
 CC: Takashi Nishiie <t-nishiie@np.css.fujitsu.com>
 CC: 'Steven Rostedt' <rostedt@goodmis.org>
 CC: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
 ---
- include/trace/irq.h |   22 ++++++++++++++++++++++
- kernel/irq/handle.c |   45 +++++++++++++++++++++++++++++++++++++--------
- 2 files changed, 59 insertions(+), 8 deletions(-)
+ include/trace/swap.h |   20 ++++++++++++++++++++
+ mm/memory.c          |    4 ++++
+ mm/page_io.c         |    4 ++++
+ mm/swapfile.c        |    6 ++++++
+ 4 files changed, 34 insertions(+)
 
-Index: linux-2.6-lttng/kernel/irq/handle.c
+Index: linux-2.6-lttng/mm/memory.c
 ===================================================================
---- linux-2.6-lttng.orig/kernel/irq/handle.c	2009-03-24 10:10:36.000000000 -0400
-+++ linux-2.6-lttng/kernel/irq/handle.c	2009-03-24 11:35:55.000000000 -0400
-@@ -17,10 +17,18 @@
- #include <linux/kernel_stat.h>
- #include <linux/rculist.h>
- #include <linux/hash.h>
-+#include <trace/irq.h>
+--- linux-2.6-lttng.orig/mm/memory.c	2009-03-24 09:09:55.000000000 -0400
++++ linux-2.6-lttng/mm/memory.c	2009-03-24 09:32:15.000000000 -0400
+@@ -55,6 +55,7 @@
+ #include <linux/kallsyms.h>
+ #include <linux/swapops.h>
+ #include <linux/elf.h>
++#include <trace/swap.h>
  
- #include "internals.h"
+ #include <asm/pgalloc.h>
+ #include <asm/uaccess.h>
+@@ -64,6 +65,8 @@
  
- /*
-+ * Also used in architecture-specific code.
-+ */
-+DEFINE_TRACE(irq_entry);
-+DEFINE_TRACE(irq_exit);
-+DEFINE_TRACE(irq_next_handler);
-+
-+/*
-  * lockdep: we want to handle all irq_desc locks as a single lock-class:
-  */
- struct lock_class_key irq_desc_lock_class;
-@@ -316,6 +324,19 @@ irqreturn_t no_action(int cpl, void *dev
- 	return IRQ_NONE;
- }
+ #include "internal.h"
  
-+static irqreturn_t __handle_irq_next_handler(unsigned int irq,
-+	struct irqaction **action, irqreturn_t *retval, unsigned int *status)
-+{
-+	irqreturn_t ret;
++DEFINE_TRACE(swap_in);
 +
-+	ret = (*action)->handler(irq, (*action)->dev_id);
-+	if (ret == IRQ_HANDLED)
-+		*status |= (*action)->flags;
-+	*retval |= ret;
-+	*action = (*action)->next;
-+	return ret;
-+}
+ #ifndef CONFIG_NEED_MULTIPLE_NODES
+ /* use the per-pgdat data instead for discontigmem - mbligh */
+ unsigned long max_mapnr;
+@@ -2431,6 +2434,7 @@ static int do_swap_page(struct mm_struct
+ 		/* Had to read the page from swap area: Major fault */
+ 		ret = VM_FAULT_MAJOR;
+ 		count_vm_event(PGMAJFAULT);
++		trace_swap_in(page, entry);
+ 	}
+ 
+ 	mark_page_accessed(page);
+Index: linux-2.6-lttng/mm/page_io.c
+===================================================================
+--- linux-2.6-lttng.orig/mm/page_io.c	2009-03-24 09:09:52.000000000 -0400
++++ linux-2.6-lttng/mm/page_io.c	2009-03-24 09:32:15.000000000 -0400
+@@ -17,8 +17,11 @@
+ #include <linux/bio.h>
+ #include <linux/swapops.h>
+ #include <linux/writeback.h>
++#include <trace/swap.h>
+ #include <asm/pgtable.h>
+ 
++DEFINE_TRACE(swap_out);
 +
- static irqreturn_t _handle_IRQ_event(unsigned int irq, struct irqaction *action)
+ static struct bio *get_swap_bio(gfp_t gfp_flags, pgoff_t index,
+ 				struct page *page, bio_end_io_t end_io)
  {
- 	irqreturn_t ret, retval = IRQ_NONE;
-@@ -324,13 +345,12 @@ static irqreturn_t _handle_IRQ_event(uns
- 	if (!(action->flags & IRQF_DISABLED))
- 		local_irq_enable_in_hardirq();
+@@ -114,6 +117,7 @@ int swap_writepage(struct page *page, st
+ 		rw |= (1 << BIO_RW_SYNCIO) | (1 << BIO_RW_UNPLUG);
+ 	count_vm_event(PSWPOUT);
+ 	set_page_writeback(page);
++	trace_swap_out(page);
+ 	unlock_page(page);
+ 	submit_bio(rw, bio);
+ out:
+Index: linux-2.6-lttng/mm/swapfile.c
+===================================================================
+--- linux-2.6-lttng.orig/mm/swapfile.c	2009-03-24 09:09:52.000000000 -0400
++++ linux-2.6-lttng/mm/swapfile.c	2009-03-24 09:32:15.000000000 -0400
+@@ -29,12 +29,16 @@
+ #include <linux/capability.h>
+ #include <linux/syscalls.h>
+ #include <linux/memcontrol.h>
++#include <trace/swap.h>
  
--	do {
--		ret = action->handler(irq, action->dev_id);
--		if (ret == IRQ_HANDLED)
--			status |= action->flags;
--		retval |= ret;
--		action = action->next;
--	} while (action);
-+	ret = __handle_irq_next_handler(irq, &action, &retval, &status);
+ #include <asm/pgtable.h>
+ #include <asm/tlbflush.h>
+ #include <linux/swapops.h>
+ #include <linux/page_cgroup.h>
+ 
++DEFINE_TRACE(swap_file_open);
++DEFINE_TRACE(swap_file_close);
 +
-+	while (action) {
-+		trace_irq_next_handler(irq, action, ret);
-+		ret = __handle_irq_next_handler(irq, &action, &retval, &status);
-+	}
- 
- 	if (status & IRQF_SAMPLE_RANDOM)
- 		add_interrupt_randomness(irq);
-@@ -348,7 +368,12 @@ static irqreturn_t _handle_IRQ_event(uns
-  */
- irqreturn_t handle_IRQ_event(unsigned int irq, struct irqaction *action)
- {
--	return _handle_IRQ_event(irq, action);
-+	irqreturn_t ret;
-+
-+	trace_irq_entry(irq, NULL, action);
-+	ret = _handle_IRQ_event(irq, action);
-+	trace_irq_exit(ret);
-+	return ret;
- }
- 
- #ifndef CONFIG_GENERIC_HARDIRQS_NO__DO_IRQ
-@@ -383,7 +408,9 @@ unsigned int __do_IRQ(unsigned int irq)
- 			desc = irq_remap_to_desc(irq, desc);
- 		}
- 		if (likely(!(desc->status & IRQ_DISABLED))) {
-+			trace_irq_entry(irq, NULL, desc->action);
- 			action_ret = _handle_IRQ_event(irq, desc->action);
-+			trace_irq_exit(action_ret);
- 			if (!noirqdebug)
- 				note_interrupt(irq, desc, action_ret);
- 		}
-@@ -439,7 +466,9 @@ unsigned int __do_IRQ(unsigned int irq)
- 
- 		spin_unlock(&desc->lock);
- 
-+		trace_irq_entry(irq, NULL, action);
- 		action_ret = _handle_IRQ_event(irq, action);
-+		trace_irq_exit(action_ret);
- 		if (!noirqdebug)
- 			note_interrupt(irq, desc, action_ret);
- 
-Index: linux-2.6-lttng/include/trace/irq.h
+ static DEFINE_SPINLOCK(swap_lock);
+ static unsigned int nr_swapfiles;
+ long nr_swap_pages;
+@@ -1497,6 +1501,7 @@ SYSCALL_DEFINE1(swapoff, const char __us
+ 	swap_map = p->swap_map;
+ 	p->swap_map = NULL;
+ 	p->flags = 0;
++	trace_swap_file_close(swap_file);
+ 	spin_unlock(&swap_lock);
+ 	mutex_unlock(&swapon_mutex);
+ 	vfree(swap_map);
+@@ -1886,6 +1891,7 @@ SYSCALL_DEFINE2(swapon, const char __use
+ 	} else {
+ 		swap_info[prev].next = p - swap_info;
+ 	}
++	trace_swap_file_open(swap_file, name);
+ 	spin_unlock(&swap_lock);
+ 	mutex_unlock(&swapon_mutex);
+ 	error = 0;
+Index: linux-2.6-lttng/include/trace/swap.h
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6-lttng/include/trace/irq.h	2009-03-24 11:48:58.000000000 -0400
-@@ -0,0 +1,22 @@
-+#ifndef _TRACE_IRQ_H
-+#define _TRACE_IRQ_H
++++ linux-2.6-lttng/include/trace/swap.h	2009-03-24 09:32:26.000000000 -0400
+@@ -0,0 +1,20 @@
++#ifndef _TRACE_SWAP_H
++#define _TRACE_SWAP_H
 +
-+#include <linux/kdebug.h>
-+#include <linux/interrupt.h>
++#include <linux/swap.h>
 +#include <linux/tracepoint.h>
 +
-+/*
-+ * action can be NULL if not available.
-+ */
-+DECLARE_TRACE(irq_entry,
-+	TPPROTO(unsigned int id, struct pt_regs *regs,
-+			struct irqaction *action),
-+		TPARGS(id, regs, action));
-+DECLARE_TRACE(irq_exit,
-+	TPPROTO(irqreturn_t retval),
-+		TPARGS(retval));
-+DECLARE_TRACE(irq_next_handler,
-+	TPPROTO(unsigned int id, struct irqaction *action, irqreturn_t ret),
-+		TPARGS(id, action, ret));
++DECLARE_TRACE(swap_in,
++	TPPROTO(struct page *page, swp_entry_t entry),
++		TPARGS(page, entry));
++DECLARE_TRACE(swap_out,
++	TPPROTO(struct page *page),
++		TPARGS(page));
++DECLARE_TRACE(swap_file_open,
++	TPPROTO(struct file *file, char *filename),
++		TPARGS(file, filename));
++DECLARE_TRACE(swap_file_close,
++	TPPROTO(struct file *file),
++		TPARGS(file));
 +
 +#endif
 
