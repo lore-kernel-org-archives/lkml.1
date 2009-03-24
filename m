@@ -1,72 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755555AbZCXVko@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754811AbZCXVno@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755555AbZCXVko (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 17:40:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755488AbZCXVkZ
+	id S1754811AbZCXVno (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 17:43:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751084AbZCXVnf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 17:40:25 -0400
-Received: from va3ehsobe001.messaging.microsoft.com ([216.32.180.11]:45646
-	"EHLO VA3EHSOBE001.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1755484AbZCXVkX (ORCPT
+	Tue, 24 Mar 2009 17:43:35 -0400
+Received: from cavan.codon.org.uk ([93.93.128.6]:40469 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750868AbZCXVne (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 17:40:23 -0400
-X-BigFish: VPS-25(zz1432R98dR1805Mzz1202hzzz2fh6bh61h)
-X-Spam-TCS-SCL: 0:0
-X-FB-SS: 5,
-Message-ID: <49C95334.5040106@am.sony.com>
-Date: Tue, 24 Mar 2009 14:40:04 -0700
-From: Tim Bird <tim.bird@am.sony.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Tue, 24 Mar 2009 17:43:34 -0400
+Date: Tue, 24 Mar 2009 21:43:21 +0000
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Andrey Panin <pazke@donpac.ru>, linux-kernel@vger.kernel.org,
+       linux-serial@vger.kernel.org, torvalds@linux-foundation.org
+Subject: Re: [PATCH 01/30] disallow SERIAL_8250_PNP with SERIAL_8250_CONSOLE
+Message-ID: <20090324214321.GA29671@srcf.ucam.org>
+References: <20090324135930.12735.7827.stgit@localhost.localdomain> <20090324140145.12735.29459.stgit@localhost.localdomain> <20090324151034.GC6859@ports.donpac.ru> <20090324152203.6a989d06@lxorguk.ukuu.org.uk> <20090324205945.GA28394@srcf.ucam.org> <20090324212653.77d6e70c@lxorguk.ukuu.org.uk> <20090324213416.GA29507@srcf.ucam.org> <20090324213841.59d6b299@lxorguk.ukuu.org.uk>
 MIME-Version: 1.0
-To: Frederic Weisbecker <fweisbec@gmail.com>
-CC: linux-arm-kernel <linux-arm-kernel@lists.arm.linux.org.uk>,
-       linux kernel <linux-kernel@vger.kernel.org>,
-       Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@redhat.com>,
-       Abhishek Sagar <sagar.abhishek@gmail.com>,
-       Russell King <rmk@arm.linux.org.uk>,
-       =?UTF-8?B?VXdlIEtsZWluZS1Lw7ZuaWc=?= 
-	<u.kleine-koenig@pengutronix.de>
-Subject: Re: Anyone working on ftrace function graph support on ARM?
-References: <49C936CA.8070800@am.sony.com> <20090324213618.GC5975@nowhere>
-In-Reply-To: <20090324213618.GC5975@nowhere>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 24 Mar 2009 21:40:05.0894 (UTC) FILETIME=[18A99260:01C9ACC9]
-X-SEL-encryption-scan: scanned
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090324213841.59d6b299@lxorguk.ukuu.org.uk>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Frederic Weisbecker wrote:
-> Yes, ie:
+On Tue, Mar 24, 2009 at 09:38:41PM +0000, Alan Cox wrote:
+> > > Since the conversion to drivers/serial - so years.
+> > 
+> > So everyone using serial console with 8250_PNP enabled gets a crash on 
+> > boot, and has done for years? Really?
 > 
-> _Before jumping to the function entry hook, you must save
-> the arguments for the traced function on the stack.
-> On x86, its eax, edx and ecx.
-> On arm, it will be r0-r3.
-> Then you have to transmit the address of the traced function
-> (it's on r14) and it's parent (must rely on fp for that).
-> Then you call the entry hook and restore the old scratch/arg
-> registers.
-> 
-> 
-> _ On return hook it's pretty the same, (saving the scratch
-> registers, especially the return value which should be on r0
-> and r1 if I'm not wrong).
-> But you'll have to get the original return address from the
-> return handler and then put it on pc.
-> 
-> Well it's a very naive listing, there are sometimes some problems.
-> For example on x86-64, I had to save even some non-scratch registers
-> before calling the return hook, I still don't know why.
+> If their console port is PnP listed yes.
 
-Thanks - this is very helpful.  I'll send patches around when
-I get something going. Hopefully in the next week or two.
- -- Tim
+So this patch breaks the case where a kernel with PNP support is booted 
+on a system without PNP-listed serial ports? Do we know the ratio of 
+machines fixed by this compared to the machines broken?
 
-=============================
-Tim Bird
-Architecture Group Chair, CE Linux Forum
-Senior Staff Engineer, Sony Corporation of America
-=============================
-
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
