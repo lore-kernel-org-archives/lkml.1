@@ -1,119 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759355AbZCXPsp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762024AbZCXPt1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759355AbZCXPsp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 11:48:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761258AbZCXPsW
+	id S1762024AbZCXPt1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 11:49:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756617AbZCXPtP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 11:48:22 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:51419 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760186AbZCXPsV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 11:48:21 -0400
-Date: Tue, 24 Mar 2009 11:48:19 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Li Zefan <lizf@cn.fujitsu.com>
-cc: Ingo Molnar <mingo@elte.hu>, Jens Axboe <jens.axboe@oracle.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 5/5] blktrace: print human-readable act_mask
-In-Reply-To: <49C89488.4030604@cn.fujitsu.com>
-Message-ID: <alpine.DEB.2.00.0903241139460.22830@gandalf.stny.rr.com>
-References: <49C893FC.9080905@cn.fujitsu.com> <49C89488.4030604@cn.fujitsu.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Tue, 24 Mar 2009 11:49:15 -0400
+Received: from hera.kernel.org ([140.211.167.34]:38718 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754733AbZCXPtN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Mar 2009 11:49:13 -0400
+Date: Tue, 24 Mar 2009 15:48:36 GMT
+From: Lai Jiangshan <laijs@cn.fujitsu.com>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       fweisbec@gmail.com, srostedt@redhat.com, tglx@linutronix.de,
+       laijs@cn.fujitsu.com, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       fweisbec@gmail.com, srostedt@redhat.com, tglx@linutronix.de,
+       laijs@cn.fujitsu.com, mingo@elte.hu
+In-Reply-To: <49C871BE.3080405@cn.fujitsu.com>
+References: <49C871BE.3080405@cn.fujitsu.com>
+Subject: [tip:tracing/ftrace] tracing: use union for multi-usages field
+Message-ID: <tip-ee000b7f9fe429d2470c674ccec8d344f6789e0d@git.kernel.org>
+Git-Commit-ID: ee000b7f9fe429d2470c674ccec8d344f6789e0d
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 24 Mar 2009 15:48:38 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Commit-ID:  ee000b7f9fe429d2470c674ccec8d344f6789e0d
+Gitweb:     http://git.kernel.org/tip/ee000b7f9fe429d2470c674ccec8d344f6789e0d
+Author:     Lai Jiangshan <laijs@cn.fujitsu.com>
+AuthorDate: Tue, 24 Mar 2009 13:38:06 +0800
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Tue, 24 Mar 2009 16:43:12 +0100
 
-On Tue, 24 Mar 2009, Li Zefan wrote:
-> +static ssize_t blk_trace_mask2str(char *buf, int mask)
-> +{
-> +	int i;
-> +	char *p = buf;
-> +
-> +	for (i = 0; i < ARRAY_SIZE(mask_maps); i++) {
-> +		if (mask & mask_maps[i].mask) {
-> +			p += sprintf(p, "%s%s",
-> +				    (p == buf) ? "" : ",", mask_maps[i].str);
-> +		}
-> +	}
-> +	*p++ = '\n';
-> +
-> +	return (p - buf);
+tracing: use union for multi-usages field
 
-The above is still simple, but if it starts to ge complex, you might want 
-to convert it to the trace_seq functions. That can make moving to a buffer
-easier.
+Impact: cleanup
 
-#include "trace_output.h"
+struct dyn_ftrace::ip has different usages in his lifecycle,
+we use union for it. And also for struct dyn_ftrace::flags.
 
-static bool blk_trace_mask2str(struct trace_seq *s, int mask)
-{
-	bool comma = false;
-	int i;
-
-	for (i = 0; i < ARRAY_SIZE(mask_maps); i++) {
-		if (mask & mask_maps[i].mask) {
-			trace_print_seq(s, "%s%s",
-				comma ? "," : "",
-				mask_maps[i].str);
-			comma = 1;
-		}
-	}
-}
+Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
+Cc: Steven Rostedt <srostedt@redhat.com>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>
+LKML-Reference: <49C871BE.3080405@cn.fujitsu.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
-	struct trace_seq *s;
+---
+ include/linux/ftrace.h |   12 +++++++++---
+ kernel/trace/ftrace.c  |    8 ++++----
+ 2 files changed, 13 insertions(+), 7 deletions(-)
 
-	s = kmalloc(sizeof(*s), GFP_KERNEL);
-	if (!s)
-		do error;
-
-	
-	blk_trace_str2mask(s, mask);
-
-This would put the data into s->buffer and have a length too.
-
-Just letting you know about this. It may come in handy. Most of the code 
-in kernel/trace*.c uses this.
-
--- Steve
-	
-	
-> +}
-> +
->  static struct request_queue *blk_trace_get_queue(struct block_device *bdev)
->  {
->  	if (bdev->bd_disk == NULL)
-> @@ -1399,7 +1423,7 @@ static ssize_t sysfs_blk_trace_attr_show(struct device *dev,
->  	if (q->blk_trace == NULL)
->  		ret = sprintf(buf, "disabled\n");
->  	else if (attr == &dev_attr_act_mask)
-> -		ret = sprintf(buf, "%#x\n", q->blk_trace->act_mask);
-> +		ret = blk_trace_mask2str(buf, q->blk_trace->act_mask);
->  	else if (attr == &dev_attr_pid)
->  		ret = sprintf(buf, "%u\n", q->blk_trace->pid);
->  	else if (attr == &dev_attr_start_lba)
-> @@ -1432,9 +1456,11 @@ static ssize_t sysfs_blk_trace_attr_store(struct device *dev,
->  	if (attr == &dev_attr_act_mask) {
->  		if (sscanf(buf, "%llx", &value) != 1) {
->  			/* Assume it is a list of trace category names */
-> -			value = blk_str2act_mask(buf);
-> -			if (value < 0)
-> +			value = blk_trace_str2mask(buf);
-> +			if (value < 0) {
-> +				ret = value;
->  				goto out;
-> +			}
->  		}
->  	} else if (sscanf(buf, "%llu", &value) != 1)
->  		goto out;
-> -- 
-> 1.5.4.rc3
-> 
-> 
+diff --git a/include/linux/ftrace.h b/include/linux/ftrace.h
+index 1141248..015a3d2 100644
+--- a/include/linux/ftrace.h
++++ b/include/linux/ftrace.h
+@@ -145,9 +145,15 @@ enum {
+ };
+ 
+ struct dyn_ftrace {
+-	unsigned long		ip; /* address of mcount call-site */
+-	unsigned long		flags;
+-	struct dyn_arch_ftrace	arch;
++	union {
++		unsigned long		ip; /* address of mcount call-site */
++		struct dyn_ftrace	*freelist;
++	};
++	union {
++		unsigned long		flags;
++		struct dyn_ftrace	*newlist;
++	};
++	struct dyn_arch_ftrace		arch;
+ };
+ 
+ int ftrace_force_update(void);
+diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
+index bb37711..7b8722b 100644
+--- a/kernel/trace/ftrace.c
++++ b/kernel/trace/ftrace.c
+@@ -341,7 +341,7 @@ static inline int record_frozen(struct dyn_ftrace *rec)
+ 
+ static void ftrace_free_rec(struct dyn_ftrace *rec)
+ {
+-	rec->ip = (unsigned long)ftrace_free_records;
++	rec->freelist = ftrace_free_records;
+ 	ftrace_free_records = rec;
+ 	rec->flags |= FTRACE_FL_FREE;
+ }
+@@ -379,7 +379,7 @@ static struct dyn_ftrace *ftrace_alloc_dyn_node(unsigned long ip)
+ 			return NULL;
+ 		}
+ 
+-		ftrace_free_records = (void *)rec->ip;
++		ftrace_free_records = rec->freelist;
+ 		memset(rec, 0, sizeof(*rec));
+ 		return rec;
+ 	}
+@@ -411,7 +411,7 @@ ftrace_record_ip(unsigned long ip)
+ 		return NULL;
+ 
+ 	rec->ip = ip;
+-	rec->flags = (unsigned long)ftrace_new_addrs;
++	rec->newlist = ftrace_new_addrs;
+ 	ftrace_new_addrs = rec;
+ 
+ 	return rec;
+@@ -731,7 +731,7 @@ static int ftrace_update_code(struct module *mod)
+ 			return -1;
+ 
+ 		p = ftrace_new_addrs;
+-		ftrace_new_addrs = (struct dyn_ftrace *)p->flags;
++		ftrace_new_addrs = p->newlist;
+ 		p->flags = 0L;
+ 
+ 		/* convert record (i.e, patch mcount-call with NOP) */
