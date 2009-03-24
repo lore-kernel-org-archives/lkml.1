@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754575AbZCXFaG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751958AbZCXFaw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754575AbZCXFaG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 01:30:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751909AbZCXF3u
+	id S1751958AbZCXFaw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 01:30:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753929AbZCXFaO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 01:29:50 -0400
-Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:34500 "EHLO
+	Tue, 24 Mar 2009 01:30:14 -0400
+Received: from BISCAYNE-ONE-STATION.MIT.EDU ([18.7.7.80]:34524 "EHLO
 	biscayne-one-station.mit.edu" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750880AbZCXF3t (ORCPT
+	by vger.kernel.org with ESMTP id S1753225AbZCXFaM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 01:29:49 -0400
+	Tue, 24 Mar 2009 01:30:12 -0400
 From: Tim Abbott <tabbott@MIT.EDU>
 To: Linus Torvalds <torvalds@linux-foundation.org>
 Cc: Linux kernel mailing list <linux-kernel@vger.kernel.org>,
@@ -18,129 +18,347 @@ Cc: Linux kernel mailing list <linux-kernel@vger.kernel.org>,
        Denys Vlasenko <vda.linux@googlemail.com>,
        Rusty Russell <rusty@rustcorp.com.au>, Andi Kleen <andi@firstfloor.org>,
        "H. Peter Anvin" <hpa@zytor.com>
-Subject: [PATCH 2/4] modpost: Check the section flags, not name, to catch missing "ax"/"aw"
-Date: Tue, 24 Mar 2009 01:28:43 -0400
-Message-Id: <1237872525-31014-3-git-send-email-tabbott@mit.edu>
+Subject: [PATCH 3/4] modpost: Support objects with more than 64k sections
+Date: Tue, 24 Mar 2009 01:28:44 -0400
+Message-Id: <1237872525-31014-4-git-send-email-tabbott@mit.edu>
 X-Mailer: git-send-email 1.6.2.1
-In-Reply-To: <1237872525-31014-2-git-send-email-tabbott@mit.edu>
+In-Reply-To: <1237872525-31014-3-git-send-email-tabbott@mit.edu>
 References: <1237872525-31014-1-git-send-email-tabbott@mit.edu>
  <1237872525-31014-2-git-send-email-tabbott@mit.edu>
+ <1237872525-31014-3-git-send-email-tabbott@mit.edu>
 X-Spam-Flag: NO
 X-Spam-Score: 0.00
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Anders Kaseorg <andersk@mit.edu>
+From: Denys Vlasenko <vda.linux@googlemail.com>
 
-When you put
-  .section ".foo"
-in an assembly file instead of
-  .section "foo", "ax"
-, one of the possible symptoms is that modpost will see an
-ld-generated section name ".foo.1" in section_rel() or section_rela().
-But this heuristic has two problems: it will miss a bad section that
-has no relocations, and it will incorrectly flag many gcc-generated
-sections as bad when compiling with -ffunction-sections
--fdata-sections.
+This patch makes modpost able to process object files with more than
+64k sections. Needed for huge kernel builds (allyesconfig, for example)
+with -ffunction-sections.
 
-So instead of checking whether the section name matches a particular
-pattern, we directly check for a missing SHF_ALLOC in the section
-flags.
-
+Signed-off-by: Denys Vlasenko <vda.linux@googlemail.com>
+[andersk@mit.edu: updated for 2.6.29]
 Signed-off-by: Anders Kaseorg <andersk@mit.edu>
 ---
- scripts/mod/modpost.c |   49 ++++++++++++++++++-------------------------------
- 1 files changed, 18 insertions(+), 31 deletions(-)
+ scripts/mod/file2alias.c |    6 +-
+ scripts/mod/modpost.c    |   94 ++++++++++++++++++++++++++++++++-------------
+ scripts/mod/modpost.h    |   43 +++++++++++++++++++++
+ 3 files changed, 113 insertions(+), 30 deletions(-)
 
+diff --git a/scripts/mod/file2alias.c b/scripts/mod/file2alias.c
+index 4eea60b..7d3ebb5 100644
+--- a/scripts/mod/file2alias.c
++++ b/scripts/mod/file2alias.c
+@@ -753,16 +753,16 @@ void handle_moddevtable(struct module *mod, struct elf_info *info,
+ 	char *zeros = NULL;
+ 
+ 	/* We're looking for a section relative symbol */
+-	if (!sym->st_shndx || sym->st_shndx >= info->hdr->e_shnum)
++	if (!sym->st_shndx || get_secindex(info, sym) >= info->num_sections)
+ 		return;
+ 
+ 	/* Handle all-NULL symbols allocated into .bss */
+-	if (info->sechdrs[sym->st_shndx].sh_type & SHT_NOBITS) {
++	if (info->sechdrs[get_secindex(info, sym)].sh_type & SHT_NOBITS) {
+ 		zeros = calloc(1, sym->st_size);
+ 		symval = zeros;
+ 	} else {
+ 		symval = (void *)info->hdr
+-			+ info->sechdrs[sym->st_shndx].sh_offset
++			+ info->sechdrs[get_secindex(info, sym)].sh_offset
+ 			+ sym->st_value;
+ 	}
+ 
 diff --git a/scripts/mod/modpost.c b/scripts/mod/modpost.c
-index a7e282e..fba468a 100644
+index fba468a..8ee2034 100644
 --- a/scripts/mod/modpost.c
 +++ b/scripts/mod/modpost.c
-@@ -713,41 +713,27 @@ int match(const char *sym, const char * const pat[])
- 
- /* sections that we do not want to do full section mismatch check on */
- static const char *section_white_list[] =
--	{ ".debug*", ".stab*", ".note*", ".got*", ".toc*", NULL };
-+	{ ".comment", ".debug*", ".stab*", ".note*", ".got*", ".toc*", NULL };
- 
- /*
-- * Is this section one we do not want to check?
-- * This is often debug sections.
-- * If we are going to check this section then
-- * test if section name ends with a dot and a number.
-- * This is used to find sections where the linker have
-- * appended a dot-number to make the name unique.
-+ * This is used to find sections missing the SHF_ALLOC flag.
-  * The cause of this is often a section specified in assembler
-- * without "ax" / "aw" and the same section used in .c
-- * code where gcc add these.
-+ * without "ax" / "aw".
-  */
--static int check_section(const char *modname, const char *sec)
--{
--	const char *e = sec + strlen(sec) - 1;
--	if (match(sec, section_white_list))
--		return 1;
--
--	if (*e && isdigit(*e)) {
--		/* consume all digits */
--		while (*e && e != sec && isdigit(*e))
--			e--;
--		if (*e == '.' && !strstr(sec, ".linkonce")) {
--			warn("%s (%s): unexpected section name.\n"
--			     "The (.[number]+) following section name are "
--			     "ld generated and not expected.\n"
--			     "Did you forget to use \"ax\"/\"aw\" "
--			     "in a .S file?\n"
--			     "Note that for example <linux/init.h> contains\n"
--			     "section definitions for use in .S files.\n\n",
--			     modname, sec);
--		}
-+static void check_section(const char *modname, struct elf_info *elf,
-+                          Elf_Shdr *sechdr)
-+{
-+	const char *sec = sech_name(elf, sechdr);
-+
-+	if (sechdr->sh_type == SHT_PROGBITS &&
-+	    !(sechdr->sh_flags & SHF_ALLOC) &&
-+	    !match(sec, section_white_list)) {
-+		warn("%s (%s): unexpected non-allocatable section.\n"
-+		     "Did you forget to use \"ax\"/\"aw\" in a .S file?\n"
-+		     "Note that for example <linux/init.h> contains\n"
-+		     "section definitions for use in .S files.\n\n",
-+		     modname, sec);
- 	}
--	return 0;
+@@ -244,7 +244,7 @@ static enum export export_no(const char *s)
+ 	return export_unknown;
  }
  
+-static enum export export_from_sec(struct elf_info *elf, Elf_Section sec)
++static enum export export_from_sec(struct elf_info *elf, unsigned int sec)
+ {
+ 	if (sec == elf->export_sec)
+ 		return export_plain;
+@@ -364,6 +364,8 @@ static int parse_elf(struct elf_info *info, const char *filename)
+ 	Elf_Ehdr *hdr;
+ 	Elf_Shdr *sechdrs;
+ 	Elf_Sym  *sym;
++	const char *secstrings;
++	unsigned int symtab_idx = ~0U, symtab_shndx_idx = ~0U;
  
-@@ -1374,7 +1360,7 @@ static void section_rela(const char *modname, struct elf_info *elf,
- 	fromsec = sech_name(elf, sechdr);
- 	fromsec += strlen(".rela");
- 	/* if from section (name) is know good then skip it */
--	if (check_section(modname, fromsec))
-+	if (match(fromsec, section_white_list))
- 		return;
+ 	hdr = grab_file(filename, &info->size);
+ 	if (!hdr) {
+@@ -400,8 +402,19 @@ static int parse_elf(struct elf_info *info, const char *filename)
+ 		return 0;
+ 	}
  
- 	for (rela = start; rela < stop; rela++) {
-@@ -1418,7 +1404,7 @@ static void section_rel(const char *modname, struct elf_info *elf,
- 	fromsec = sech_name(elf, sechdr);
- 	fromsec += strlen(".rel");
- 	/* if from section (name) is know good then skip it */
--	if (check_section(modname, fromsec))
-+	if (match(fromsec, section_white_list))
- 		return;
++	/* Fixups for more than 64k sections */
++	info->num_sections = hdr->e_shnum;
++	if (info->num_sections == 0) { /* more than 64k sections? */
++		/* doesn't need shndx2secindex() */
++		info->num_sections = TO_NATIVE(sechdrs[0].sh_size);
++	}
++	info->secindex_strings = hdr->e_shstrndx;
++	if (info->secindex_strings == SHN_XINDEX)
++		info->secindex_strings =
++		    shndx2secindex(TO_NATIVE(sechdrs[0].sh_link));
++
+ 	/* Fix endianness in section headers */
+-	for (i = 0; i < hdr->e_shnum; i++) {
++	for (i = 0; i < info->num_sections; i++) {
+ 		sechdrs[i].sh_type   = TO_NATIVE(sechdrs[i].sh_type);
+ 		sechdrs[i].sh_offset = TO_NATIVE(sechdrs[i].sh_offset);
+ 		sechdrs[i].sh_size   = TO_NATIVE(sechdrs[i].sh_size);
+@@ -411,9 +424,8 @@ static int parse_elf(struct elf_info *info, const char *filename)
+ 		sechdrs[i].sh_addr   = TO_NATIVE(sechdrs[i].sh_addr);
+ 	}
+ 	/* Find symbol table. */
+-	for (i = 1; i < hdr->e_shnum; i++) {
+-		const char *secstrings
+-			= (void *)hdr + sechdrs[hdr->e_shstrndx].sh_offset;
++	secstrings = (void *)hdr + sechdrs[info->secindex_strings].sh_offset;
++	for (i = 1; i < info->num_sections; i++) {
+ 		const char *secname;
  
- 	for (rel = start; rel < stop; rel++) {
-@@ -1481,6 +1467,7 @@ static void check_sec_ref(struct module *mod, const char *modname,
+ 		if (sechdrs[i].sh_offset > info->size) {
+@@ -440,14 +452,24 @@ static int parse_elf(struct elf_info *info, const char *filename)
+ 		else if (strcmp(secname, "__markers_strings") == 0)
+ 			info->markers_strings_sec = i;
+ 
+-		if (sechdrs[i].sh_type != SHT_SYMTAB)
+-			continue;
++		if (sechdrs[i].sh_type == SHT_SYMTAB) {
++			symtab_idx = i;
++			info->symtab_start = (void *)hdr +
++			    sechdrs[i].sh_offset;
++			info->symtab_stop  = (void *)hdr +
++			    sechdrs[i].sh_offset + sechdrs[i].sh_size;
++			info->strtab       = (void *)hdr +
++			    sechdrs[shndx2secindex(sechdrs[i].sh_link)].sh_offset;
++		}
+ 
+-		info->symtab_start = (void *)hdr + sechdrs[i].sh_offset;
+-		info->symtab_stop  = (void *)hdr + sechdrs[i].sh_offset
+-			                         + sechdrs[i].sh_size;
+-		info->strtab       = (void *)hdr +
+-			             sechdrs[sechdrs[i].sh_link].sh_offset;
++		/* 32bit section no. table? ("more than 64k sections") */
++		if (sechdrs[i].sh_type == SHT_SYMTAB_SHNDX) {
++			symtab_shndx_idx = i;
++			info->symtab_shndx_start = (void *)hdr +
++			    sechdrs[i].sh_offset;
++			info->symtab_shndx_stop  = (void *)hdr +
++			    sechdrs[i].sh_offset + sechdrs[i].sh_size;
++		}
+ 	}
+ 	if (!info->symtab_start)
+ 		fatal("%s has no symtab?\n", filename);
+@@ -459,6 +481,21 @@ static int parse_elf(struct elf_info *info, const char *filename)
+ 		sym->st_value = TO_NATIVE(sym->st_value);
+ 		sym->st_size  = TO_NATIVE(sym->st_size);
+ 	}
++
++	if (symtab_shndx_idx != ~0U) {
++		Elf32_Word *p;
++		if (symtab_idx !=
++		    shndx2secindex(sechdrs[symtab_shndx_idx].sh_link))
++			fatal("%s: SYMTAB_SHNDX has bad sh_link: %u!=%u\n",
++			      filename,
++			      shndx2secindex(sechdrs[symtab_shndx_idx].sh_link),
++			      symtab_idx);
++		/* Fix endianness */
++		for (p = info->symtab_shndx_start; p < info->symtab_shndx_stop;
++		     p++)
++			*p = TO_NATIVE(*p);
++	}
++
+ 	return 1;
+ }
+ 
+@@ -493,7 +530,7 @@ static void handle_modversions(struct module *mod, struct elf_info *info,
+ 			       Elf_Sym *sym, const char *symname)
+ {
+ 	unsigned int crc;
+-	enum export export = export_from_sec(info, sym->st_shndx);
++	enum export export = export_from_sec(info, get_secindex(info, sym));
+ 
+ 	switch (sym->st_shndx) {
+ 	case SHN_COMMON:
+@@ -635,18 +672,18 @@ static const char *sym_name(struct elf_info *elf, Elf_Sym *sym)
+ 		return "(unknown)";
+ }
+ 
+-static const char *sec_name(struct elf_info *elf, int shndx)
++static const char *sec_name(struct elf_info *elf, int secindex)
+ {
+ 	Elf_Shdr *sechdrs = elf->sechdrs;
+ 	return (void *)elf->hdr +
+-	        elf->sechdrs[elf->hdr->e_shstrndx].sh_offset +
+-	        sechdrs[shndx].sh_name;
++	        elf->sechdrs[elf->secindex_strings].sh_offset +
++	        sechdrs[secindex].sh_name;
+ }
+ 
+ static const char *sech_name(struct elf_info *elf, Elf_Shdr *sechdr)
+ {
+ 	return (void *)elf->hdr +
+-	        elf->sechdrs[elf->hdr->e_shstrndx].sh_offset +
++	        elf->sechdrs[elf->secindex_strings].sh_offset +
+ 	        sechdr->sh_name;
+ }
+ 
+@@ -983,11 +1020,14 @@ static Elf_Sym *find_elf_symbol(struct elf_info *elf, Elf64_Sword addr,
+ 	Elf_Sym *near = NULL;
+ 	Elf64_Sword distance = 20;
+ 	Elf64_Sword d;
++	unsigned int relsym_secindex;
+ 
+ 	if (relsym->st_name != 0)
+ 		return relsym;
++
++	relsym_secindex = get_secindex(elf, relsym);
+ 	for (sym = elf->symtab_start; sym < elf->symtab_stop; sym++) {
+-		if (sym->st_shndx != relsym->st_shndx)
++		if (get_secindex(elf, sym) != relsym_secindex)
+ 			continue;
+ 		if (ELF_ST_TYPE(sym->st_info) == STT_SECTION)
+ 			continue;
+@@ -1049,9 +1089,9 @@ static Elf_Sym *find_elf_symbol2(struct elf_info *elf, Elf_Addr addr,
+ 	for (sym = elf->symtab_start; sym < elf->symtab_stop; sym++) {
+ 		const char *symsec;
+ 
+-		if (sym->st_shndx >= SHN_LORESERVE)
++		if (is_shndx_special(sym->st_shndx))
+ 			continue;
+-		symsec = sec_name(elf, sym->st_shndx);
++		symsec = sec_name(elf, get_secindex(elf, sym));
+ 		if (strcmp(symsec, sec) != 0)
+ 			continue;
+ 		if (!is_valid_name(elf, sym))
+@@ -1248,7 +1288,7 @@ static void check_section_mismatch(const char *modname, struct elf_info *elf,
+ 	const char *tosec;
+ 	enum mismatch mismatch;
+ 
+-	tosec = sec_name(elf, sym->st_shndx);
++	tosec = sec_name(elf, get_secindex(elf, sym));
+ 	mismatch = section_mismatch(fromsec, tosec);
+ 	if (mismatch != NO_MISMATCH) {
+ 		Elf_Sym *to;
+@@ -1275,7 +1315,7 @@ static unsigned int *reloc_location(struct elf_info *elf,
+ 				    Elf_Shdr *sechdr, Elf_Rela *r)
+ {
+ 	Elf_Shdr *sechdrs = elf->sechdrs;
+-	int section = sechdr->sh_info;
++	int section = shndx2secindex(sechdr->sh_info);
+ 
+ 	return (void *)elf->hdr + sechdrs[section].sh_offset +
+ 		(r->r_offset - sechdrs[section].sh_addr);
+@@ -1383,7 +1423,7 @@ static void section_rela(const char *modname, struct elf_info *elf,
+ 		r.r_addend = TO_NATIVE(rela->r_addend);
+ 		sym = elf->symtab_start + r_sym;
+ 		/* Skip special sections */
+-		if (sym->st_shndx >= SHN_LORESERVE)
++		if (is_shndx_special(sym->st_shndx))
+ 			continue;
+ 		check_section_mismatch(modname, elf, &r, sym, fromsec);
+ 	}
+@@ -1441,7 +1481,7 @@ static void section_rel(const char *modname, struct elf_info *elf,
+ 		}
+ 		sym = elf->symtab_start + r_sym;
+ 		/* Skip special sections */
+-		if (sym->st_shndx >= SHN_LORESERVE)
++		if (is_shndx_special(sym->st_shndx))
+ 			continue;
+ 		check_section_mismatch(modname, elf, &r, sym, fromsec);
+ 	}
+@@ -1466,7 +1506,7 @@ static void check_sec_ref(struct module *mod, const char *modname,
+ 	Elf_Shdr *sechdrs = elf->sechdrs;
  
  	/* Walk through all sections */
- 	for (i = 0; i < elf->hdr->e_shnum; i++) {
-+		check_section(modname, elf, &elf->sechdrs[i]);
+-	for (i = 0; i < elf->hdr->e_shnum; i++) {
++	for (i = 0; i < elf->num_sections; i++) {
+ 		check_section(modname, elf, &elf->sechdrs[i]);
  		/* We want to process only relocation sections and not .init */
  		if (sechdrs[i].sh_type == SHT_RELA)
- 			section_rela(modname, elf, &elf->sechdrs[i]);
+@@ -1496,7 +1536,7 @@ static void get_markers(struct elf_info *info, struct module *mod)
+ 	n = 0;
+ 	for (sym = info->symtab_start; sym < info->symtab_stop; sym++)
+ 		if (ELF_ST_TYPE(sym->st_info) == STT_OBJECT &&
+-		    sym->st_shndx == info->markers_strings_sec &&
++		    get_secindex(info, sym) == info->markers_strings_sec &&
+ 		    !strncmp(info->strtab + sym->st_name,
+ 			     "__mstrtab_", sizeof "__mstrtab_" - 1)) {
+ 			if (first_sym == NULL)
+@@ -1520,7 +1560,7 @@ static void get_markers(struct elf_info *info, struct module *mod)
+ 	n = 0;
+ 	for (sym = first_sym; sym <= last_sym; sym++)
+ 		if (ELF_ST_TYPE(sym->st_info) == STT_OBJECT &&
+-		    sym->st_shndx == info->markers_strings_sec &&
++		    get_secindex(info, sym) == info->markers_strings_sec &&
+ 		    !strncmp(info->strtab + sym->st_name,
+ 			     "__mstrtab_", sizeof "__mstrtab_" - 1)) {
+ 			const char *name = strings + sym->st_value;
+diff --git a/scripts/mod/modpost.h b/scripts/mod/modpost.h
+index 09f58e3..dbde650 100644
+--- a/scripts/mod/modpost.h
++++ b/scripts/mod/modpost.h
+@@ -132,8 +132,51 @@ struct elf_info {
+ 	const char   *strtab;
+ 	char	     *modinfo;
+ 	unsigned int modinfo_len;
++
++	/* support for 32bit section numbers */
++
++	unsigned int num_sections; /* max_secindex + 1 */
++	unsigned int secindex_strings;
++	/* if Nth symbol table entry has .st_shndx = SHN_XINDEX,
++	 * take shndx from symtab_shndx_start[N] instead */
++	Elf32_Word   *symtab_shndx_start;
++	Elf32_Word   *symtab_shndx_stop;
+ };
+ 
++static inline int is_shndx_special(unsigned int i)
++{
++	return i != SHN_XINDEX && i >= SHN_LORESERVE && i <= SHN_HIRESERVE;
++}
++
++/* shndx is in [0..SHN_LORESERVE) U (SHN_HIRESERVE, 0xfffffff], thus:
++ * shndx == 0               <=> sechdrs[0]
++ * ......
++ * shndx == SHN_LORESERVE-1 <=> sechdrs[SHN_LORESERVE-1]
++ * shndx == SHN_HIRESERVE+1 <=> sechdrs[SHN_LORESERVE]
++ * shndx == SHN_HIRESERVE+2 <=> sechdrs[SHN_LORESERVE+1]
++ * ......
++ * fyi: sym->st_shndx is uint16, SHN_LORESERVE = ff00, SHN_HIRESERVE = ffff,
++ * so basically we map  0000..feff -> 0000..feff
++ *                      ff00..ffff -> (you are a bad boy, dont do it)
++ *                     10000..xxxx -> ff00..(xxxx-0x100)
++ */
++static inline unsigned int shndx2secindex(unsigned int i)
++{
++	if (i <= SHN_HIRESERVE)
++		return i;
++	return i - (SHN_HIRESERVE + 1 - SHN_LORESERVE);
++}
++
++/* Accessor for sym->st_shndx, hides ugliness of "64k sections" */
++static inline unsigned int get_secindex(const struct elf_info *info,
++					const Elf_Sym *sym)
++{
++	if (sym->st_shndx != SHN_XINDEX)
++		return sym->st_shndx;
++	return shndx2secindex(info->symtab_shndx_start[sym -
++						       info->symtab_start]);
++}
++
+ /* file2alias.c */
+ extern unsigned int cross_build;
+ void handle_moddevtable(struct module *mod, struct elf_info *info,
 -- 
 1.6.2
 
