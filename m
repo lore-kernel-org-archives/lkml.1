@@ -1,108 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755520AbZCXWit@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753909AbZCXWmU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755520AbZCXWit (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 18:38:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753819AbZCXWig
+	id S1753909AbZCXWmU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 18:42:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751335AbZCXWmK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 18:38:36 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:33252
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752826AbZCXWif (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 18:38:35 -0400
-Date: Tue, 24 Mar 2009 15:38:22 -0700 (PDT)
-Message-Id: <20090324.153822.75287783.davem@davemloft.net>
-To: shemminger@vyatta.com
-Cc: netdev@vger.kernel.org, linux-net@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [ANNOUNCE] iproute2 v2.6.29
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20090324153427.3ff0dfdb@nehalam>
-References: <20090324153427.3ff0dfdb@nehalam>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Tue, 24 Mar 2009 18:42:10 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:54097 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751298AbZCXWmJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Mar 2009 18:42:09 -0400
+Date: Wed, 25 Mar 2009 09:41:59 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Nico -telmich- Schottelius <nico-linux-next@schottelius.org>
+Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Invalid module format: Re: linux-next: Tree for March 24
+Message-Id: <20090325094159.8dad1d49.sfr@canb.auug.org.au>
+In-Reply-To: <20090324170215.GB5495@denkbrett.schottelius.org>
+References: <20090324183024.59260457.sfr@canb.auug.org.au>
+	<20090324170215.GB5495@denkbrett.schottelius.org>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.14.7; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=utf-8
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Wed__25_Mar_2009_09_41_59_+1100_Y+mtD0Rt+/qMpnk3"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id n2OMdMqu027050
 
-From: Stephen Hemminger <shemminger@vyatta.com>
-Date: Tue, 24 Mar 2009 15:34:27 -0700
+--Signature=_Wed__25_Mar_2009_09_41_59_+1100_Y+mtD0Rt+/qMpnk3
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> Trying to stay on top of things (for a change).
-> 
-> New version of iproute2 utilities that includes bug fixes and
-> support for all the new features in kernel 2.6.29.
-> 
->   http://devresources.linux-foundation.org/dev/iproute2/download/iproute2-2.6.29.tar.bz2
+Hi Nico,
 
-Some build failures here:
+On Tue, 24 Mar 2009 18:02:15 +0100 Nico -telmich- Schottelius <nico-linux-n=
+ext@schottelius.org> wrote:
+>
+>=20
+> My system does not bootup, as I cannot load the crypto modules,
+> because it says
+>=20
+>   Invalid module format
 
-gcc -D_GNU_SOURCE -O2 -Wstrict-prototypes -Wall -I../include -DRESOLVE_HOSTNAMES -DLIBDIR=\"/usr/lib/\"   -c -o link_gre.o link_gre.c
-In file included from link_gre.c:15:
-../include/linux/if_tunnel.h:33: error: field â€˜iphâ€™ has incomplete type
-link_gre.c: In function â€˜gre_parse_optâ€™:
-link_gre.c:136: warning: implicit declaration of function â€˜__constant_htonsâ€™
+Architecture? config? any other boot messages? Is it just the crypto
+modules?
 
-I seem to remember messing with the kernel headers in this
-area recently... yes, indeed:
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-commit 0afd4a21ba7d75e93fa79cf05d7a21774e149c0f
-Author: David S. Miller <davem@davemloft.net>
-Date:   Mon Feb 2 13:27:44 2009 -0800
+--Signature=_Wed__25_Mar_2009_09_41_59_+1100_Y+mtD0Rt+/qMpnk3
+Content-Type: application/pgp-signature
 
-    net: Fix userland breakage wrt. linux/if_tunnel.h
-    
-    Reported by Andrew Walrond <andrew@walrond.org>
-    
-    Changeset c19e654ddbe3831252f61e76a74d661e1a755530
-    ("gre: Add netlink interface") added an include
-    of linux/ip.h to linux/if_tunnel.h
-    
-    We can't really let that get exposed to userspace
-    because this conflicts with types defined in netinet/ip.h
-    which userland is almost certainly going to have included
-    either explicitly or implicitly.
-    
-    So guard this include with a __KERNEL__ ifdef.
-    
-    Signed-off-by: David S. Miller <davem@davemloft.net>
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
-diff --git a/include/linux/Kbuild b/include/linux/Kbuild
-index 12e9a29..6a9bb97 100644
---- a/include/linux/Kbuild
-+++ b/include/linux/Kbuild
-@@ -89,7 +89,6 @@ header-y += if_ppp.h
- header-y += if_slip.h
- header-y += if_strip.h
- header-y += if_tun.h
--header-y += if_tunnel.h
- header-y += in_route.h
- header-y += ioctl.h
- header-y += ip6_tunnel.h
-@@ -235,6 +234,7 @@ unifdef-y += if_phonet.h
- unifdef-y += if_pppol2tp.h
- unifdef-y += if_pppox.h
- unifdef-y += if_tr.h
-+unifdef-y += if_tunnel.h
- unifdef-y += if_vlan.h
- unifdef-y += igmp.h
- unifdef-y += inet_diag.h
-diff --git a/include/linux/if_tunnel.h b/include/linux/if_tunnel.h
-index aeab2cb..82c4362 100644
---- a/include/linux/if_tunnel.h
-+++ b/include/linux/if_tunnel.h
-@@ -2,7 +2,10 @@
- #define _IF_TUNNEL_H_
- 
- #include <linux/types.h>
-+
-+#ifdef __KERNEL__
- #include <linux/ip.h>
-+#endif
- 
- #define SIOCGETTUNNEL   (SIOCDEVPRIVATE + 0)
- #define SIOCADDTUNNEL   (SIOCDEVPRIVATE + 1)
-ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
+iEYEARECAAYFAknJYbgACgkQjjKRsyhoI8yD7gCeNXt52rfyf4UbazQRnzLVGtsr
+DMwAoIjLBUgcuq+Z4oAPfg2sdP9UxWme
+=zuXw
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__25_Mar_2009_09_41_59_+1100_Y+mtD0Rt+/qMpnk3--
