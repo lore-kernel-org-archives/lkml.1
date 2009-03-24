@@ -1,28 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758883AbZCXJsq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755190AbZCXJyT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758883AbZCXJsq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 05:48:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756641AbZCXJsf
+	id S1755190AbZCXJyT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 05:54:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753553AbZCXJyD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 05:48:35 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:50912 "EHLO mx3.mail.elte.hu"
+	Tue, 24 Mar 2009 05:54:03 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:51031 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755518AbZCXJse (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 05:48:34 -0400
-Date: Tue, 24 Mar 2009 10:48:14 +0100
+	id S1752300AbZCXJyB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Mar 2009 05:54:01 -0400
+Date: Tue, 24 Mar 2009 10:53:46 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Li Zefan <lizf@cn.fujitsu.com>
-Cc: Jens Axboe <jens.axboe@oracle.com>, Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 5/5] blktrace: print human-readable act_mask
-Message-ID: <20090324094814.GA23208@elte.hu>
-References: <49C893FC.9080905@cn.fujitsu.com> <49C89488.4030604@cn.fujitsu.com> <49C8AB42.1000802@cn.fujitsu.com>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: eduard.munteanu@linux360.ro, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] kmemtrace: fix build breakage in befs
+Message-ID: <20090324095346.GB23208@elte.hu>
+References: <20090324085128.GF13016@elte.hu> <1237884846.25315.37.camel@penberg-laptop> <20090324085658.GG13016@elte.hu> <1237885074.25315.43.camel@penberg-laptop> <20090324090757.GH13016@elte.hu> <1237886113.25315.49.camel@penberg-laptop> <20090324091742.GB6605@elte.hu> <1237886559.25315.60.camel@penberg-laptop> <20090324093103.GA19463@elte.hu> <1237887513.25315.65.camel@penberg-laptop>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <49C8AB42.1000802@cn.fujitsu.com>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <1237887513.25315.65.camel@penberg-laptop>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -37,28 +35,74 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Li Zefan <lizf@cn.fujitsu.com> wrote:
+* Pekka Enberg <penberg@cs.helsinki.fi> wrote:
 
-> > @@ -1432,9 +1456,11 @@ static ssize_t sysfs_blk_trace_attr_store(struct device *dev,
-> >  	if (attr == &dev_attr_act_mask) {
-> >  		if (sscanf(buf, "%llx", &value) != 1) {
-> >  			/* Assume it is a list of trace category names */
-> > -			value = blk_str2act_mask(buf);
-> > -			if (value < 0)
-> > +			value = blk_trace_str2mask(buf);
-> > +			if (value < 0) {
-> > +				ret = value;
-> >  				goto out;
-> > +			}
+> On Tue, 2009-03-24 at 10:31 +0100, Ingo Molnar wrote:
+> > * Pekka Enberg <penberg@cs.helsinki.fi> wrote:
+> > 
+> > > On Tue, 2009-03-24 at 10:17 +0100, Ingo Molnar wrote:
+> > > > > OK, I think all of them are now fixed. I haven't yet been able to 
+> > > > > complete a build so help is still appreciated. ;-)
+> > > > 
+> > > > unless there's a mail delay, we still have:
+> > > > 
+> > > > lib/decompress_unlzma.c:122: error: implicit declaration of function ‘kfree’
+> > > > lib/decompress_unlzma.c:551: error: implicit declaration of function ‘kmalloc’
+> > > 
+> > > Sorry, I missed that. I was testing the .config you sent in the 
+> > > initial mail, not allyesconfig. I sent you a patch to fix that as 
+> > > well now.
+> > 
+> > no problem, i missed it too - computer reminded us that it's still 
+> > there ;-)
+> > 
+> > there's a new headers-export-check failure:
+> > 
+> > /home/mingo/tip/usr/include/linux/bsg.h:11: found __[us]{8,16,32,64} type without #include <linux/types.h>
+> > /home/mingo/tip/usr/include/linux/fs.h:11: included file 'linux/gfp.h' is not exported
+> > make[3]: *** [/home/mingo/tip/usr/include/linux/.check] Error 1
+> > make[2]: *** [linux] Error 2
+> > 
+> > (CONFIG_HEADERS_CHECK)
 > 
-> value is u64, it can < 0.
+> Hmm, I wonder what is the best way to fix this, though. I think we
+> better use macros there (like rest of linux/fs.h) does because of
+> dependency issues. What do you think?
+> 
+> 			Pekka
+> 
+> diff --git a/include/linux/fs.h b/include/linux/fs.h
+> index add95da..4dda05d 100644
+> --- a/include/linux/fs.h
+> +++ b/include/linux/fs.h
+> @@ -8,7 +8,6 @@
+>  
+>  #include <linux/limits.h>
+>  #include <linux/ioctl.h>
+> -#include <linux/gfp.h>
+>  
+>  /*
+>   * It's silly to have NR_OPEN bigger than NR_FILE, but you can change
+> @@ -2233,15 +2232,8 @@ ssize_t simple_attr_write(struct file *file, const char __user *buf,
+>  
+>  
+>  #ifdef CONFIG_SECURITY
+> -static inline char *alloc_secdata(void)
+> -{
+> -       return (char *)get_zeroed_page(GFP_KERNEL);
+> -}
+> -
+> -static inline void free_secdata(void *secdata)
+> -{
+> -       free_page((unsigned long)secdata);
+> -}
+> +#define alloc_secdata() (char *)get_zeroed_page(GFP_KERNEL)
+> +#define free_secdata()  free_page((unsigned long) secdata)
 
-Ok. Small nit: please in such cases change the subject line back to 
-something like:
+yep, that would be fine - but please add a comment about why they 
+are macros and what would have to be done to fix it.
 
-  [PATCH 5/5, v2] blktrace: print human-readable act_mask
-
-So that's it's easy to see which is the latest version, in thread 
-view.
+(the real fix would be to separate fs.h into fs_types.h and 
+fs_apis.h - like we did it with spinlock.h. Similarly with slab.h.)
 
 	Ingo
