@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754355AbZCXVQZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754592AbZCXVRA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754355AbZCXVQZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 17:16:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752861AbZCXVN1
+	id S1754592AbZCXVRA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 17:17:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751887AbZCXVNa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 17:13:27 -0400
-Received: from an-out-0708.google.com ([209.85.132.244]:13159 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753004AbZCXVNW (ORCPT
+	Tue, 24 Mar 2009 17:13:30 -0400
+Received: from wf-out-1314.google.com ([209.85.200.168]:10497 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753106AbZCXVNY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 17:13:22 -0400
+	Tue, 24 Mar 2009 17:13:24 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer;
-        b=s+B0pk84nUGPe0UjkvLvImYVQaozdJigXk8wJfYOrVSQDF1BFBtWl4zd1bfH4f58tz
-         c4rU4IXdOwapiheNKbtggNvi1leizWoHizjhkuPuXcaL4MJVeu/K7IcXAy4O+pHUSPCv
-         jADFVf6vyWKXUULlRWUGbGF5EWHhhQ4a/Wr2o=
+        b=WpuWCuljYVWmy0CbN6/pKwtsJ3bpUk8DPUoqVbrB9G4J/XpHZzUmHmmhuu/A0/1bMq
+         bFawvUAvn8PoTKRwxnRoQjlK2iDx1HvC34NOLK2j8ltOei4Yg1YN3hsS+ksYCz5+A+g4
+         qka/wzcJmlIckxd0MQx5vm0MoyBQiVWIN1ECs=
 From: stoyboyker@gmail.com
 To: linux-kernel@vger.kernel.org
-Cc: Stoyan Gaydarov <stoyboyker@gmail.com>, wim@iguana.be
-Subject: [PATCH 08/13] [watchdog] changed ioctls to unlocked
-Date: Tue, 24 Mar 2009 16:12:43 -0500
-Message-Id: <1237929168-15341-9-git-send-email-stoyboyker@gmail.com>
+Cc: Stoyan Gaydarov <stoyboyker@gmail.com>, hdegoede@redhat.com
+Subject: [PATCH 11/13] [hwmon] changed ioctls to unlocked
+Date: Tue, 24 Mar 2009 16:12:46 -0500
+Message-Id: <1237929168-15341-12-git-send-email-stoyboyker@gmail.com>
 X-Mailer: git-send-email 1.6.2.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -31,108 +31,62 @@ From: Stoyan Gaydarov <stoyboyker@gmail.com>
 
 Signed-off-by: Stoyan Gaydarov <stoyboyker@gmail.com>
 ---
- drivers/watchdog/riowd.c |   37 +++++++++++++++++++++++++++----------
- 1 files changed, 27 insertions(+), 10 deletions(-)
+ drivers/hwmon/fschmd.c |   15 +++++++++++----
+ 1 files changed, 11 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/watchdog/riowd.c b/drivers/watchdog/riowd.c
-index 09cb183..44058c1 100644
---- a/drivers/watchdog/riowd.c
-+++ b/drivers/watchdog/riowd.c
-@@ -86,9 +86,10 @@ static int riowd_release(struct inode *inode, struct file *filp)
- 	return 0;
+diff --git a/drivers/hwmon/fschmd.c b/drivers/hwmon/fschmd.c
+index d07f4ef..79efb7b 100644
+--- a/drivers/hwmon/fschmd.c
++++ b/drivers/hwmon/fschmd.c
+@@ -40,6 +40,7 @@
+ #include <linux/hwmon-sysfs.h>
+ #include <linux/err.h>
+ #include <linux/mutex.h>
++#include <linux/smp_lock.h>
+ #include <linux/sysfs.h>
+ #include <linux/dmi.h>
+ #include <linux/fs.h>
+@@ -769,15 +770,17 @@ static ssize_t watchdog_write(struct file *filp, const char __user *buf,
+ 	return count;
  }
  
--static int riowd_ioctl(struct inode *inode, struct file *filp,
--		       unsigned int cmd, unsigned long arg)
-+static long riowd_ioctl(struct file *filp, unsigned int cmd,
-+		       unsigned long arg)
+-static int watchdog_ioctl(struct inode *inode, struct file *filp,
+-	unsigned int cmd, unsigned long arg)
++static long watchdog_ioctl(struct file *filp, unsigned int cmd, unsigned long arg)
  {
+ 	static struct watchdog_info ident = {
+ 		.options = WDIOF_KEEPALIVEPING | WDIOF_SETTIMEOUT |
+ 				WDIOF_CARDRESET,
+ 		.identity = "FSC watchdog"
+ 	};
+-	int i, ret = 0;
++
 +	lock_kernel();
- 	static struct watchdog_info info = {
- 		.options		= WDIOF_SETTIMEOUT,
- 		.firmware_version	= 1,
-@@ -101,14 +102,18 @@ static int riowd_ioctl(struct inode *inode, struct file *filp,
++
++	int i, ret;
+ 	struct fschmd_data *data = filp->private_data;
  
  	switch (cmd) {
- 	case WDIOC_GETSUPPORT:
--		if (copy_to_user(argp, &info, sizeof(info)))
-+		if (copy_to_user(argp, &info, sizeof(info))) {
-+			unlock_kernel();
- 			return -EFAULT;
-+		}
- 		break;
+@@ -837,6 +840,10 @@ static int watchdog_ioctl(struct inode *inode, struct file *filp,
+ 		ret = -ENOTTY;
+ 	}
  
- 	case WDIOC_GETSTATUS:
- 	case WDIOC_GETBOOTSTATUS:
--		if (put_user(0, (int __user *)argp))
-+		if (put_user(0, (int __user *)argp)) {
-+			unlock_kernel();
- 			return -EFAULT;
-+		}
- 		break;
- 
- 	case WDIOC_KEEPALIVE:
-@@ -116,34 +121,46 @@ static int riowd_ioctl(struct inode *inode, struct file *filp,
- 		break;
- 
- 	case WDIOC_SETOPTIONS:
--		if (copy_from_user(&options, argp, sizeof(options)))
-+		if (copy_from_user(&options, argp, sizeof(options))) {
-+			unlock_kernel();
- 			return -EFAULT;
-+		}
- 
- 		if (options & WDIOS_DISABLECARD)
- 			riowd_writereg(p, 0, WDTO_INDEX);
- 		else if (options & WDIOS_ENABLECARD)
- 			riowd_writereg(p, riowd_timeout, WDTO_INDEX);
--		else
-+		else {
-+			unlock_kernel();
- 			return -EINVAL;
-+		}
- 
- 		break;
- 
- 	case WDIOC_SETTIMEOUT:
--		if (get_user(new_margin, (int __user *)argp))
-+		if (get_user(new_margin, (int __user *)argp)) {
-+			unlock_kernel();
- 			return -EFAULT;
--		if ((new_margin < 60) || (new_margin > (255 * 60)))
-+		}
-+		if ((new_margin < 60) || (new_margin > (255 * 60))) {
-+			unlock_kernel();
- 			return -EINVAL;
-+		}
- 		riowd_timeout = (new_margin + 59) / 60;
- 		riowd_writereg(p, riowd_timeout, WDTO_INDEX);
- 		/* Fall */
- 
- 	case WDIOC_GETTIMEOUT:
--		return put_user(riowd_timeout * 60, (int __user *)argp);
-+		long ret = put_user(riowd_timeout * 60, (int __user *)argp);
-+		unlock_kernel();
-+		return ret;
- 
- 	default:
-+		unlock_kernel();
- 		return -EINVAL;
- 	};
- 
++	if(!ret)
++		ret = -ENOTTY;
++
 +	unlock_kernel();
- 	return 0;
+ 	return ret;
  }
  
-@@ -162,7 +179,7 @@ static ssize_t riowd_write(struct file *file, const char __user *buf, size_t cou
- static const struct file_operations riowd_fops = {
- 	.owner =	THIS_MODULE,
- 	.llseek =	no_llseek,
--	.ioctl =	riowd_ioctl,
-+	.unlocked_ioctl =	riowd_ioctl,
- 	.open =		riowd_open,
- 	.write =	riowd_write,
- 	.release =	riowd_release,
+@@ -846,7 +853,7 @@ static struct file_operations watchdog_fops = {
+ 	.open = watchdog_open,
+ 	.release = watchdog_release,
+ 	.write = watchdog_write,
+-	.ioctl = watchdog_ioctl,
++	.unlocked_ioctl = watchdog_ioctl,
+ };
+ 
+ 
 -- 
 1.6.2
 
