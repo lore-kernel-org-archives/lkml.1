@@ -1,65 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758078AbZCXLUl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759629AbZCXLVV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758078AbZCXLUl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 07:20:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756664AbZCXLUc
+	id S1759629AbZCXLVV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 07:21:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758297AbZCXLVK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 07:20:32 -0400
-Received: from mail-bw0-f169.google.com ([209.85.218.169]:36269 "EHLO
-	mail-bw0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755847AbZCXLUb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 07:20:31 -0400
-Message-ID: <49C8C1FB.2090608@monstr.eu>
-Date: Tue, 24 Mar 2009 12:20:27 +0100
-From: Michal Simek <monstr@monstr.eu>
-Reply-To: monstr@monstr.eu
-User-Agent: Thunderbird 2.0.0.17 (X11/20081001)
+	Tue, 24 Mar 2009 07:21:10 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:42007 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758107AbZCXLVJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Mar 2009 07:21:09 -0400
+Date: Tue, 24 Mar 2009 12:20:50 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Lai Jiangshan <laijs@cn.fujitsu.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>, LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>
+Subject: Re: [PATCH][GIT PULL] tracing: fix memory leak in trace_stat
+Message-ID: <20090324112050.GC6386@elte.hu>
+References: <alpine.DEB.2.00.0903210251100.13615@gandalf.stny.rr.com> <20090321094348.GB5594@elte.hu> <49C88F0B.7070901@cn.fujitsu.com>
 MIME-Version: 1.0
-To: Arnd Bergmann <arnd@arndb.de>
-CC: linux-kernel@vger.kernel.org, john.williams@petalogix.com
-Subject: Re: [PATCH 44/57] microblaze_v7: termbits.h termios.h
-References: <1237408284-8674-1-git-send-email-monstr@monstr.eu> <7342f6af4eb95f5bc2cd89a196ab33a3ddc4d5c1.1237407249.git.monstr@monstr.eu> <46a9b066a95fad763f6c12044dbc3cd580681fb9.1237407249.git.monstr@monstr.eu> <200903232037.23768.arnd@arndb.de>
-In-Reply-To: <200903232037.23768.arnd@arndb.de>
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49C88F0B.7070901@cn.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arnd Bergmann wrote:
-> On Wednesday 18 March 2009, monstr@monstr.eu wrote:
->> From: Michal Simek <monstr@monstr.eu>
->>
->>
->> Signed-off-by: Michal Simek <monstr@monstr.eu>
->> ---
->>  arch/microblaze/include/asm/termbits.h |  203 ++++++++++++++++++++++++++++++++
->>  arch/microblaze/include/asm/termios.h  |   88 ++++++++++++++
->>  2 files changed, 291 insertions(+), 0 deletions(-)
->>  create mode 100644 arch/microblaze/include/asm/termbits.h
->>  create mode 100644 arch/microblaze/include/asm/termios.h
+
+* Lai Jiangshan <laijs@cn.fujitsu.com> wrote:
+
+> Ingo Molnar wrote:
+> > * Steven Rostedt <rostedt@goodmis.org> wrote:
+> > 
+> >> Ingo,
+> >>
+> >> Please pull the latest tip/tracing/ftrace tree, which can be found at:
+> >>
+> >>   git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
+> >> tip/tracing/ftrace
+> >>
+> >>
+> >> Steven Rostedt (1):
+> >>       tracing: fix memory leak in trace_stat
+> >>
+> >> ----
+> >>  kernel/trace/trace_stat.c |   23 +++++++++++++----------
+> >>  1 files changed, 13 insertions(+), 10 deletions(-)
+> > 
+> > Pulled, thanks Steve!
+> > 
+> > 	Ingo
+> >
 > 
-> Did you take at the header files I have in git://git.kernel.org/pub/scm/linux/kernel/git/arnd/playground.git/#generic-headers?
+> Hi, Ingo
+> 
+> I found this patch is not in the tip tree.
 
+It was tied to the function profiler which is still being debated. 
+Steve, mind re-anchoring that commit?
 
-> I haven't gotten around to posting them for review, but I still think
-> it would be great if we can at least make sure they are identical
-> so we can remove your versions as soon as we have the asm-generic ones.
-
-I tested it some min ago. I just take your termios.h and termbits.h from
-asm-generic folder. I miss there only #include <asm/uaccess.h> in termion.h.
-
-Compilation is OK and kernel works with your files too. For me is easy to use
-your version. If they are there, I'll use them.
-
-Thanks,
-Michal
-
-
-> 	Arnd <><
-
-
--- 
-Michal Simek, Ing. (M.Eng)
-w: www.monstr.eu p: +42-0-721842854
+	Ingo
