@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756917AbZCXIFw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755782AbZCXIGV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756917AbZCXIFw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 04:05:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756572AbZCXIFG
+	id S1755782AbZCXIGV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 04:06:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756842AbZCXIF2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 04:05:06 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:57921 "EHLO song.cn.fujitsu.com"
+	Tue, 24 Mar 2009 04:05:28 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:62334 "EHLO song.cn.fujitsu.com"
 	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1756587AbZCXIFC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 04:05:02 -0400
-Message-ID: <49C89447.5060303@cn.fujitsu.com>
-Date: Tue, 24 Mar 2009 16:05:27 +0800
+	id S1756740AbZCXIFZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Mar 2009 04:05:25 -0400
+Message-ID: <49C8945F.5020802@cn.fujitsu.com>
+Date: Tue, 24 Mar 2009 16:05:51 +0800
 From: Li Zefan <lizf@cn.fujitsu.com>
 User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
@@ -19,7 +19,7 @@ CC: Jens Axboe <jens.axboe@oracle.com>, Steven Rostedt <rostedt@goodmis.org>,
        Frederic Weisbecker <fweisbec@gmail.com>,
        Arnaldo Carvalho de Melo <acme@redhat.com>,
        LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH 3/5] blktrace: fix off-by-one bug
+Subject: [PATCH 4/5] blktrace: fix t_error()
 References: <49C893FC.9080905@cn.fujitsu.com>
 In-Reply-To: <49C893FC.9080905@cn.fujitsu.com>
 Content-Type: text/plain; charset=UTF-8
@@ -28,35 +28,26 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-'what' is used as the index of array what2act, so it can't >= the array size.
+t_error() should return t->error but not t->sector.
 
 Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
 ---
- kernel/trace/blktrace.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ kernel/trace/blktrace.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
 diff --git a/kernel/trace/blktrace.c b/kernel/trace/blktrace.c
-index 9af4143..0e91caa 100644
+index 0e91caa..f33c176 100644
 --- a/kernel/trace/blktrace.c
 +++ b/kernel/trace/blktrace.c
-@@ -1149,7 +1149,7 @@ static enum print_line_t blk_trace_event_print(struct trace_iterator *iter,
- 	if (!trace_print_context(iter))
- 		return TRACE_TYPE_PARTIAL_LINE;
+@@ -968,7 +968,7 @@ static inline unsigned long long t_sector(const struct trace_entry *ent)
  
--	if (unlikely(what == 0 || what > ARRAY_SIZE(what2act)))
-+	if (unlikely(what == 0 || what >= ARRAY_SIZE(what2act)))
- 		ret = trace_seq_printf(s, "Bad pc action %x\n", what);
- 	else {
- 		const bool long_act = !!(trace_flags & TRACE_ITER_VERBOSE);
-@@ -1196,7 +1196,7 @@ static enum print_line_t blk_tracer_print_line(struct trace_iterator *iter)
- 	t = (const struct blk_io_trace *)iter->ent;
- 	what = t->action & ((1 << BLK_TC_SHIFT) - 1);
+ static inline __u16 t_error(const struct trace_entry *ent)
+ {
+-	return te_blk_io_trace(ent)->sector;
++	return te_blk_io_trace(ent)->error;
+ }
  
--	if (unlikely(what == 0 || what > ARRAY_SIZE(what2act)))
-+	if (unlikely(what == 0 || what >= ARRAY_SIZE(what2act)))
- 		ret = trace_seq_printf(&iter->seq, "Bad pc action %x\n", what);
- 	else {
- 		const bool long_act = !!(trace_flags & TRACE_ITER_VERBOSE);
+ static __u64 get_pdu_int(const struct trace_entry *ent)
 -- 
 1.5.4.rc3
 
