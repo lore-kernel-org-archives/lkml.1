@@ -1,77 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755988AbZCXGH3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753766AbZCXGKm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755988AbZCXGH3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 02:07:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752908AbZCXGHM
+	id S1753766AbZCXGKm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 02:10:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752705AbZCXGKc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 02:07:12 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:32973 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752495AbZCXGHK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 02:07:10 -0400
-Date: Tue, 24 Mar 2009 17:07:00 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Tim Abbott <tabbott@MIT.EDU>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux kernel mailing list <linux-kernel@vger.kernel.org>,
-       Tim Abbott <tabbott@MIT.EDU>, Anders Kaseorg <andersk@MIT.EDU>,
-       Waseem Daher <wdaher@MIT.EDU>,
-       Denys Vlasenko <vda.linux@googlemail.com>,
-       Rusty Russell <rusty@rustcorp.com.au>, Andi Kleen <andi@firstfloor.org>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH 0/4] Add support for compiling with -ffunction-sections
- -fdata-sections
-Message-Id: <20090324170700.6029f6ce.sfr@canb.auug.org.au>
-In-Reply-To: <1237872525-31014-1-git-send-email-tabbott@mit.edu>
-References: <1237872525-31014-1-git-send-email-tabbott@mit.edu>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.14.7; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Tue__24_Mar_2009_17_07_00_+1100_iG.AUBB3e3ev1n.c"
+	Tue, 24 Mar 2009 02:10:32 -0400
+Received: from e31.co.us.ibm.com ([32.97.110.149]:50309 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752017AbZCXGKb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Mar 2009 02:10:31 -0400
+Date: Tue, 24 Mar 2009 11:40:24 +0530
+From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: "Frank Ch. Eigler" <fche@redhat.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
+       Rostedt <rostedt@goodmis.org>, Steven@e28smtp08.in.ibm.com,
+       utrace-devel@redhat.com, Linus Torvalds <torvalds@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Christoph Hellwig <hch@infradead.org>,
+       Jim Keniston <jkenisto@us.ibm.com>
+Subject: Re: [PATCH 3/3] utrace-based ftrace "process" engine, v2
+Message-ID: <20090324061024.GD24018@in.ibm.com>
+Reply-To: ananth@in.ibm.com
+References: <20090321013946.890F4FC3AB@magilla.sf.frob.com> <20090321014244.9ADF1FC3AB@magilla.sf.frob.com> <20090321074301.GA19384@elte.hu> <20090321013912.ed6039c9.akpm@linux-foundation.org> <20090321091235.GA29678@elte.hu> <20090321041954.72b99e69.akpm@linux-foundation.org> <20090321115141.GA3566@redhat.com> <20090321050422.d1d99eec.akpm@linux-foundation.org> <20090324052926.GC24018@in.ibm.com> <20090323225409.07bdcbf7.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090323225409.07bdcbf7.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Tue__24_Mar_2009_17_07_00_+1100_iG.AUBB3e3ev1n.c
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Mon, Mar 23, 2009 at 10:54:09PM -0700, Andrew Morton wrote:
+> On Tue, 24 Mar 2009 10:59:26 +0530 Ananth N Mavinakayanahalli <ananth@in.ibm.com> wrote:
+> 
+> > On Sat, Mar 21, 2009 at 05:04:22AM -0700, Andrew Morton wrote:
+> > > On Sat, 21 Mar 2009 07:51:41 -0400 "Frank Ch. Eigler" <fche@redhat.com> wrote:
+> > > > On Sat, Mar 21, 2009 at 04:19:54AM -0700, Andrew Morton wrote:
+> > > 
+> > > I have strong memories of being traumatised by reading the uprobes code. 
+> > 
+> > That was a long time ago wasn't it? :-)
+> > 
+> > That approach was a carry over from an implementation from dprobes that
+> > used readdir hooks. Yes, that was not the most elegant approach, as such
+> > has long been shelved.
+> > 
+> > > What's the story on all of that nowadays?
+> > 
+> > Utrace makes implementing uprobes more cleaner. We have a prototype that
+> > implements uprobes over utrace. Its per process, doesn't use any
+> > in-kernel hooks, etc. It currently has a kprobes like interface (needs a
+> > kernel module), but it shouldn't be difficult to adapt it to use
+> > utrace's user interfaces (syscalls?) when those come around. The current
+> > generation of uprobes that has all the bells and whistles can be found at
+> > http://sources.redhat.com/git/gitweb.cgi?p=systemtap.git;a=tree;f=runtime/uprobes2
+> > 
+> > However, there are aspects of the current uprobes that can be useful to
+> > any other userspace tracer: instruction analysis, breakpoint insertion
+> > and removal, single-stepping support. With these layered on top of
+> > utrace, building userspace debug/trace tools that depend on utrace
+> > should be easier, outside of ptrace.
+> > 
+> > Work is currently on to factor these layers out. The intention is to
+> > upstream all the bits required for userspace tracing once utrace gets
+> > in, along with an easy to use interface for userspace developers
+> > (a /proc or /debugfs interface?) -- one should be able to use it on
+> > its own or with SystemTap, whatever they prefer. Details are still hazy
+> > at the moment.
+> > 
+> > But, utrace is the foundation to do all of that.
+> > 
+> 
+> The sticking point was uprobes's modification of live pagecache.  We said
+> "ick, COW the pages" and you said "too expensive".  And there things
+> remained.
+> 
+> Is that all going to happen again?
 
-Hi Tim,
+No. All modifications are via access_process_vm().
 
-On Tue, 24 Mar 2009 01:28:41 -0400 Tim Abbott <tabbott@MIT.EDU> wrote:
->
-> I'd like to see this patch series merged for 2.6.30.  It applies on
-> top of your current master (aka v2.6.29).  Patch 1/4 would benefit
-> from special treatment during the merge window, since it makes many
-> small changes in lots of files, and thus is likely to conflict with
-> other changes; the other patches are fairly small.
-
-Indeed.  I just did a merge of your changes with next-20090323 and it
-conflicted with changes in 10 files across 4 architectures.  There has
-been work on several areas that you are changing here (some of which will
-make your life easier - like the percpu changes).  I suspect that at
-least some of patch 1/4 could have bee split out and sent to the
-appropriate maintainers.
-
-As it is, It looks like this will need to be rebased on top of (say)
-2.6.30-rc1 (at least) in order not to inflict too much pain on others.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Tue__24_Mar_2009_17_07_00_+1100_iG.AUBB3e3ev1n.c
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAknIeIQACgkQjjKRsyhoI8z56QCgv9pdzXREe8/9vuJh2BnKWuv/
-ZEMAni/uHitdQZfKxqCXACCW+EEvbzE0
-=uEaT
------END PGP SIGNATURE-----
-
---Signature=_Tue__24_Mar_2009_17_07_00_+1100_iG.AUBB3e3ev1n.c--
+Ananth
