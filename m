@@ -1,123 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754785AbZCXVRo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752788AbZCXVSA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754785AbZCXVRo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 17:17:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753046AbZCXVNc
+	id S1752788AbZCXVSA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 17:18:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754243AbZCXVPs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 17:13:32 -0400
-Received: from mail-qy0-f118.google.com ([209.85.221.118]:37968 "EHLO
-	mail-qy0-f118.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753040AbZCXVN0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 17:13:26 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        b=Z0kQRTrBibQXIfBAG1+mc5V1VS2UvKbCPkimOwcqhma0bN6ckHqUCLQNt6Dol7GTuO
-         1R7OJNinxLsyCtuYOWoEn6hJzjT8DjLSR8FEjZqY7lDgxOEuDuwLq2IDehcUZMMkyih7
-         aMyvVJecxuaouHHATvyNTU8zEC2iy5dYGuz68=
-From: stoyboyker@gmail.com
-To: linux-kernel@vger.kernel.org
-Cc: Stoyan Gaydarov <stoyboyker@gmail.com>, linux-media@vger.kernel.org
-Subject: [PATCH 12/13] [drivers/media] changed ioctls to unlocked
-Date: Tue, 24 Mar 2009 16:12:47 -0500
-Message-Id: <1237929168-15341-13-git-send-email-stoyboyker@gmail.com>
-X-Mailer: git-send-email 1.6.2.1
+	Tue, 24 Mar 2009 17:15:48 -0400
+Received: from gate.crashing.org ([63.228.1.57]:56903 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753786AbZCXVPr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Mar 2009 17:15:47 -0400
+Subject: Re: [RFC][PATCH 0/2] Export platform_pci_set_power_state() and
+ make radeonfb use it
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Linux PCI <linux-pci@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Alex Deucher <alexdeucher@gmail.com>
+In-Reply-To: <200903241200.37982.rjw@sisk.pl>
+References: <200903210003.55161.rjw@sisk.pl>
+	 <1237856239.25062.696.camel@pasglop>
+	 <20090323181420.30125d59@hobbes.virtuouswap>
+	 <200903241200.37982.rjw@sisk.pl>
+Content-Type: text/plain
+Date: Wed, 25 Mar 2009 08:12:55 +1100
+Message-Id: <1237929175.25062.727.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Stoyan Gaydarov <stoyboyker@gmail.com>
+On Tue, 2009-03-24 at 12:00 +0100, Rafael J. Wysocki wrote:
 
-Signed-off-by: Stoyan Gaydarov <stoyboyker@gmail.com>
----
- drivers/media/dvb/bt8xx/dst_ca.c |    7 +++++--
- drivers/media/video/dabusb.c     |   11 ++++++++---
- 2 files changed, 13 insertions(+), 5 deletions(-)
+> In fact I have yet another idea.  If we use the "retransmission with exponential
+> backoff" algorithm in pci_raw_set_power_state(), we won't have to add any
+> extra parameters to pci_set_power_state() and the radeon case will be covered
+> automatically.  That should also cover any other devices having similar
+> problems IMO.
+> 
+> A patch to implement that is appended, please tell me what you think.
 
-diff --git a/drivers/media/dvb/bt8xx/dst_ca.c b/drivers/media/dvb/bt8xx/dst_ca.c
-index 0258451..d3487c5 100644
---- a/drivers/media/dvb/bt8xx/dst_ca.c
-+++ b/drivers/media/dvb/bt8xx/dst_ca.c
-@@ -552,8 +552,10 @@ free_mem_and_exit:
- 	return result;
- }
- 
--static int dst_ca_ioctl(struct inode *inode, struct file *file, unsigned int cmd, unsigned long ioctl_arg)
-+static long dst_ca_ioctl(struct file *file, unsigned int cmd, unsigned long ioctl_arg)
- {
-+	lock_kernel();
-+
- 	struct dvb_device* dvbdev = (struct dvb_device*) file->private_data;
- 	struct dst_state* state = (struct dst_state*) dvbdev->priv;
- 	struct ca_slot_info *p_ca_slot_info;
-@@ -647,6 +649,7 @@ static int dst_ca_ioctl(struct inode *inode, struct file *file, unsigned int cmd
- 	kfree (p_ca_slot_info);
- 	kfree (p_ca_caps);
- 
-+	unlock_kernel();
- 	return result;
- }
- 
-@@ -684,7 +687,7 @@ static ssize_t dst_ca_write(struct file *file, const char __user *buffer, size_t
- 
- static struct file_operations dst_ca_fops = {
- 	.owner = THIS_MODULE,
--	.ioctl = dst_ca_ioctl,
-+	.unlocked_ioctl = dst_ca_ioctl,
- 	.open = dst_ca_open,
- 	.release = dst_ca_release,
- 	.read = dst_ca_read,
-diff --git a/drivers/media/video/dabusb.c b/drivers/media/video/dabusb.c
-index 298810d..ae4cd79 100644
---- a/drivers/media/video/dabusb.c
-+++ b/drivers/media/video/dabusb.c
-@@ -657,8 +657,9 @@ static int dabusb_release (struct inode *inode, struct file *file)
- 	return 0;
- }
- 
--static int dabusb_ioctl (struct inode *inode, struct file *file, unsigned int cmd, unsigned long arg)
-+static long dabusb_ioctl (struct file *file, unsigned int cmd, unsigned long arg)
- {
-+	lock_kernel();
- 	pdabusb_t s = (pdabusb_t) file->private_data;
- 	pbulk_transfer_t pbulk;
- 	int ret = 0;
-@@ -666,13 +667,16 @@ static int dabusb_ioctl (struct inode *inode, struct file *file, unsigned int cm
- 
- 	dbg("dabusb_ioctl");
- 
--	if (s->remove_pending)
-+	if (s->remove_pending) {
-+		unlock_kernel();
- 		return -EIO;
-+	}
- 
- 	mutex_lock(&s->mutex);
- 
- 	if (!s->usbdev) {
- 		mutex_unlock(&s->mutex);
-+		unlock_kernel();
- 		return -EIO;
- 	}
- 
-@@ -713,6 +717,7 @@ static int dabusb_ioctl (struct inode *inode, struct file *file, unsigned int cm
- 		break;
- 	}
- 	mutex_unlock(&s->mutex);
-+	unlock_kernel();
- 	return ret;
- }
- 
-@@ -721,7 +726,7 @@ static const struct file_operations dabusb_fops =
- 	.owner =	THIS_MODULE,
- 	.llseek =	no_llseek,
- 	.read =		dabusb_read,
--	.ioctl =	dabusb_ioctl,
-+	.unlocked_ioctl =	dabusb_ioctl,
- 	.open =		dabusb_open,
- 	.release =	dabusb_release,
- };
--- 
-1.6.2
+This is crazy....
+
+Most devices don't need that and those who are a bit "touchy" may well
+puke on being written to too fast while they are in the middle of
+the transition.
+
+Let's wait to see if Alex from ATI has an answer here, and if not, I
+would suggest keeping the dirt inside radeonfb.
+
+Ben.
+
 
