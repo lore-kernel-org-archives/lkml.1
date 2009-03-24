@@ -1,95 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760482AbZCXNWo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760464AbZCXN0y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760482AbZCXNWo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 09:22:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759761AbZCXNWc
+	id S1760464AbZCXN0y (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 09:26:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753270AbZCXN0n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 09:22:32 -0400
-Received: from xc.sipsolutions.net ([83.246.72.84]:58426 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757479AbZCXNWb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 09:22:31 -0400
-Subject: Re: [PATCH v5 09/13] PCI: Introduce /sys/bus/pci/devices/.../remove
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Alex Chiang <achiang@hp.com>, Oleg Nesterov <oleg@redhat.com>,
-       jbarnes@virtuousgeek.org, linux-pci@vger.kernel.org,
-       linux-kernel@vger.kernel.org, kaneshige.kenji@jp.fujitsu.com,
-       Lai Jiangshan <laijs@cn.fujitsu.com>
-In-Reply-To: <1237893427.24918.174.camel@twins>
-References: <20090320204327.12275.43010.stgit@bob.kio>
-	 <20090320205636.12275.1825.stgit@bob.kio> <49C74FCC.7070308@jp.fujitsu.com>
-	 <20090324032304.GB6175@ldl.fc.hp.com> <20090324092525.GE6605@elte.hu>
-	 <20090324034659.9e1f97dc.akpm@linux-foundation.org>
-	 <1237893427.24918.174.camel@twins>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-i4dQKk/V9Oj8Tf87nSTZ"
-Date: Tue, 24 Mar 2009 14:21:13 +0100
-Message-Id: <1237900873.4320.91.camel@johannes.local>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 
+	Tue, 24 Mar 2009 09:26:43 -0400
+Received: from cantor.suse.de ([195.135.220.2]:58852 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751645AbZCXN0m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Mar 2009 09:26:42 -0400
+Date: Tue, 24 Mar 2009 14:26:37 +0100
+From: Jan Kara <jack@suse.cz>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: "Martin J. Bligh" <mbligh@mbligh.org>, linux-ext4@vger.kernel.org,
+       Ying Han <yinghan@google.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-mm <linux-mm@kvack.org>, guichaz@gmail.com,
+       Alex Khesin <alexk@google.com>, Mike Waychison <mikew@google.com>,
+       Rohit Seth <rohitseth@google.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: ftruncate-mmap: pages are lost after writing to mmaped file.
+Message-ID: <20090324132637.GA14607@duck.suse.cz>
+References: <604427e00903181244w360c5519k9179d5c3e5cd6ab3@mail.gmail.com> <200903200248.22623.nickpiggin@yahoo.com.au> <20090319164638.GB3899@duck.suse.cz> <200903241844.22851.nickpiggin@yahoo.com.au> <20090324123935.GD23439@duck.suse.cz> <20090324125510.GA9434@duck.suse.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090324125510.GA9434@duck.suse.cz>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue 24-03-09 13:55:10, Jan Kara wrote:
+> On Tue 24-03-09 13:39:36, Jan Kara wrote:
+> >   Hi,
+> > 
+> > On Tue 24-03-09 18:44:21, Nick Piggin wrote:
+> > > On Friday 20 March 2009 03:46:39 Jan Kara wrote:
+> > > > On Fri 20-03-09 02:48:21, Nick Piggin wrote:
+> > > 
+> > > > > Holding mapping->private_lock over the __set_page_dirty should
+> > > > > fix it, although I guess you'd want to release it before calling
+> > > > > __mark_inode_dirty so as not to put inode_lock under there. I
+> > > > > have a patch for this if it sounds reasonable.
+> > > >
+> > > >   Yes, that seems to be a bug - the function actually looked suspitious to
+> > > > me yesterday but I somehow convinced myself that it's fine. Probably
+> > > > because fsx-linux is single-threaded.
+> > > 
+> > > 
+> > > After a whole lot of chasing my own tail in the VM and buffer layers,
+> > > I think it is a problem in ext2 (and I haven't been able to reproduce
+> > > with ext3 yet, which might lend weight to that, although as we have
+> > > seen, it is very timing dependent).
+> > > 
+> > > That would be slightly unfortunate because we still have Jan's ext3
+> > > problem, and also another reported problem of corruption on ext3 (on
+> > > brd driver).
+> > > 
+> > > Anyway, when I have reproduced the problem with the test case, the
+> > > "lost" writes are all reported to be holes. Unfortunately, that doesn't
+> > > point straight to the filesystem, because ext2 allocates blocks in this
+> > > case at writeout time, so if dirty bits are getting lost, then it would
+> > > be normal to see holes.
+> > > 
+> > > I then put in a whole lot of extra infrastructure to track metadata about
+> > > each struct page (when it was last written out, when it last had the number
+> > > of writable ptes reach 0, when the dirty bits were last cleared etc). And
+> > > none of the normal asertions were triggering: eg. when any page is removed
+> > > from pagecache (except truncates), it has always had all its buffers
+> > > written out *after* all ptes were made readonly or unmapped. Lots of other
+> > > tests and crap like that.
+> >   I see we're going the same way ;)
+> > 
+> > > So I tried what I should have done to start with and did an e2fsck after
+> > > seeing corruption. Yes, it comes up with errors. Now that is unusual
+> > > because that should be largely insulated from the vm: if a dirty bit gets
+> > > lost, then the filesystem image should be quite happy and error-free with
+> > > a hole or unwritten data there.
+> >   This is different for me. I see no corruption on the filesystem with
+> > ext3. Anyway, errors from fsck would be useful to see what kind of
+> > corruption you saw.
+> > 
+> > > I don't know ext? locking very well, except that it looks pretty overly
+> > > complex and crufty.
+> > > 
+> > > Usually, blocks are instantiated by write(2), under i_mutex, serialising
+> > > the allocator somewhat. mmap-write blocks are instantiated at writeout
+> > > time, unserialised. I moved truncate_mutex to cover the entire get_blocks
+> > > function, and can no longer trigger the problem. Might be a timing issue
+> > > though -- Ying, can you try this and see if you can still reproduce?
+> > > 
+> > > I close my eyes and pick something out of a hat. a686cd89. Search for XXX.
+> > > Nice. Whether or not this cased the problem, can someone please tell me
+> > > why it got merged in that state?
+> >   Maybe, I see it did some changes to ext2_get_blocks() which could be
+> > where the problem was introduced...
+> > 
+> > > I'm leaving ext3 running for now. It looks like a nasty task to bisect
+> > > ext2 down to that commit :( and I would be more interested in trying to
+> > > reproduce Jan's ext3 problem, however, because I'm not too interested in
+> > > diving into ext2 locking to work out exactly what is racing and how to
+> > > fix it properly. I suspect it would be most productive to wire up some
+> > > ioctls right into the block allocator/lookup and code up a userspace
+> > > tester for it that could probably stress it a lot harder than kernel
+> > > writeout can.
+> >   Yes, what I observed with ext3 so far is that data is properly copied and
+> > page marked dirty when the data is copied in. But then at some point dirty
+> > bit is cleared via block_write_full_page() but we don't get to submitting
+> > at least one buffer in that page. I'm now debugging which path we take so
+> > that this happens...
+>   And one more interesting thing I don't yet fully understand - I see pages
+> having PageError() set when they are removed from page cache (and they have
+> been faulted in before). It's probably some interaction with pagecache
+> readahead...
+  Argh... So the problem seems to be that get_block() occasionally returns
+ENOSPC and we then discard the dirty data (hmm, we could give at least a
+warning for that). I'm not yet sure why getblock behaves like this because
+the filesystem seems to have enough space but anyway this seems to be some
+strange fs trouble as well.
 
---=-i4dQKk/V9Oj8Tf87nSTZ
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
-
-On Tue, 2009-03-24 at 12:17 +0100, Peter Zijlstra wrote:
-
-> > But I don't think we've seen a coherent description of what's actually
-> > _wrong_ with the current code.  flush_cpu_workqueue() has been handling
-> > this case for many years with no problems reported as far as I know.
->=20
-> Might be sheer luck, but afaik we did have some actual deadlocks due to
-> workqueue flushing -- a particular one I can remember was cpu-hotplug vs
-> cpufreq.
-
-Two cases are relevant here actually -- the recursion which hasn't ever
-shown up before, and a number of possible deadlocks of e.g. some people
-doing, effectively:
-
-	rtnl_lock();
-	flush_scheduled_work();
-	rtnl_unlock();
-
-vs. the linkwatch work that can, at this point in time, still be queued,
-and needs the rtnl as well.
-
-
-A little digging through git logs finds more references, e.g. commits
-f90d4118bacef87894621a3e8aba853fa0c89abc and
-fd781fa25c9e9c6fd1599df060b05e7c4ad724e5.
-
-Some others were fixed that I remember, but apparently without putting
-the lockdep report into the commit log.
-
-johannes
-
---=-i4dQKk/V9Oj8Tf87nSTZ
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iQIcBAABAgAGBQJJyN5EAAoJEKVg1VMiehFYTpYQALt2bAq/+IJUgO54AU4NhvJS
-komsNZ30deG4n2CAZjnwTq/Tg7EJKTI1QBPrsY4SnHvdBs/Cfq443iIxnR3KejCM
-4Ytuzs9n5cwfWWx8Yedujkkr5YFyC+dCD7s+68KpCjH37k3e4LZuB9Tb/8iuLQhE
-jQsXxR0HWvlyi7gN55qbzKaJnV+1buc0O1ah8Xj6xBpvx5gMzu0XwbpnlOadOn7Z
-j+veAvGGNuTjCNfhJzLNfG1/quP8ppK1xM2+dayfeF1n8yAN3flVyP2Pt58U8jyo
-5A3qY6OAzVa1Q1dpPw2BoFGLtqOqfRqASYdU6uDxJv/ykhL2v5X80kiUeWMq20iW
-oYj58XuqRwPw0BfwB16uI18DTQpZX0hvC33TYvMX9hrxKRSJpgyon7o2vBte+Op2
-GX4Pf6N4bsWU/YACIJWTl7LV+G6N3nvvbyfhe5v7FMFTWOIziYi0xCukscupah46
-U9WV7ZYiYMrU8xLPhRfwKjExqeHE6m8hA+9qTmxUZOClavXaJnA4AzL9OiBxx/Ju
-a0PrF0gCzgui++7f7wHcMZ/WxPgpptRl3pUkxqk2Spy1qZYyFnaGqjE7DPLl+MAn
-FPvP56C+tA4bFVd5otIrIpKzj9YEyy7xBAigR2lAfRvPKJQS0F1/zNOZqZSuG6XP
-LZWGHsbLG6jGW4R7Y4wk
-=SzIu
------END PGP SIGNATURE-----
-
---=-i4dQKk/V9Oj8Tf87nSTZ--
-
+								Honza
+-- 
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
