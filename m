@@ -1,85 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754880AbZCXVcm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755145AbZCXVdU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754880AbZCXVcm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 17:32:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753967AbZCXVcA
+	id S1755145AbZCXVdU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 17:33:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753933AbZCXVdH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 17:32:00 -0400
-Received: from hera.kernel.org ([140.211.167.34]:50343 "EHLO hera.kernel.org"
+	Tue, 24 Mar 2009 17:33:07 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:42916 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754495AbZCXVb6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 17:31:58 -0400
-Date: Tue, 24 Mar 2009 21:30:38 GMT
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       yinghai@kernel.org, rusty@rustcorp.com.au, ebiederm@xmission.com,
-       akpm@linux-foundation.org, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       yinghai@kernel.org, rusty@rustcorp.com.au, ebiederm@xmission.com,
-       akpm@linux-foundation.org, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <49C94DDF.2010703@kernel.org>
-References: <49C94DDF.2010703@kernel.org>
-Subject: [tip:x86/apic] x86: Correct behaviour of irq affinity
-Message-ID: <tip-85a328f27b927e3f42563c76e1a6992068100433@git.kernel.org>
-Git-Commit-ID: 85a328f27b927e3f42563c76e1a6992068100433
-X-Mailer: tip-git-log-daemon
+	id S1753960AbZCXVdE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Mar 2009 17:33:04 -0400
+Date: Tue, 24 Mar 2009 22:32:43 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Jody McIntyre <scjody@sun.com>, Steven Rostedt <rostedt@goodmis.org>,
+       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>
+Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Subject: Re: [PATCH] Documentation / sample code fixes for tracepoints
+Message-ID: <20090324213243.GA20469@elte.hu>
+References: <20090324200027.GH8294@clouds>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 24 Mar 2009 21:30:40 +0000 (UTC)
+In-Reply-To: <20090324200027.GH8294@clouds>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  85a328f27b927e3f42563c76e1a6992068100433
-Gitweb:     http://git.kernel.org/tip/85a328f27b927e3f42563c76e1a6992068100433
-Author:     Rusty Russell <rusty@rustcorp.com.au>
-AuthorDate: Tue, 24 Mar 2009 14:17:19 -0700
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Tue, 24 Mar 2009 22:28:39 +0100
 
-x86: Correct behaviour of irq affinity
+* Jody McIntyre <scjody@sun.com> wrote:
 
-Impact: get correct smp_affinity as user requested
+> Fix the tracepoint documentation to refer to "tracepoint-sample" 
+> instead of "tracepoint-example" to match what actually exists; fix 
+> the directory, and clarify how to compile.
+> 
+> Change every instance of "example" in the sample tracepoint code 
+> to "sample" for consistency.
+> 
+> Signed-off-by: Jody McIntyre <scjody@sun.com>
 
-The effect of setting desc->affinity (ie. from userspace via sysfs) has
-varied over time.  In 2.6.27, the 32-bit code anded the value with
-cpu_online_map, and both 32 and 64-bit did that anding whenever a cpu
-was unplugged.
+Applied to -tip:tracing/docs, thanks Jody! The latest tracing tree 
+can be found at:
 
-2.6.29 consolidated this into one routine (and fixed hotplug) but
-introduced another variation: anding the affinity with cfg->domain.
+  http://people.redhat.com/mingo/tip.git/README
 
-We should just set it to what the user said - if possible.
+Note, the tracepoint examples are a bit outdated - they should 
+probably include examples of full-blown field-enumeated 'combo' 
+tracepoints like TRACE_EVENT().
 
-(cpu_mask_to_apicid_and already takes cpu_online_mask into account)
+Thanks,
 
-Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-Acked-by: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-LKML-Reference: <49C94DDF.2010703@kernel.org>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-
----
- arch/x86/kernel/apic/io_apic.c |    5 +++--
- 1 files changed, 3 insertions(+), 2 deletions(-)
-
-diff --git a/arch/x86/kernel/apic/io_apic.c b/arch/x86/kernel/apic/io_apic.c
-index 1ed6c06..91476aa 100644
---- a/arch/x86/kernel/apic/io_apic.c
-+++ b/arch/x86/kernel/apic/io_apic.c
-@@ -594,9 +594,10 @@ set_desc_affinity(struct irq_desc *desc, const struct cpumask *mask)
- 
- 	/* check that before desc->addinity get updated */
- 	set_extra_move_desc(desc, mask);
--	cpumask_and(desc->affinity, cfg->domain, mask);
- 
--	return apic->cpu_mask_to_apicid_and(desc->affinity, cpu_online_mask);
-+	cpumask_copy(desc->affinity, mask);
-+
-+	return apic->cpu_mask_to_apicid_and(desc->affinity, cfg->cpu_domain);
- }
- 
- static void
+	Ingo
