@@ -1,58 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756498AbZCXIWu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756958AbZCXIXP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756498AbZCXIWu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 04:22:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754898AbZCXIW1
+	id S1756958AbZCXIXP (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 04:23:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754899AbZCXIW3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 04:22:27 -0400
-Received: from mail-gx0-f208.google.com ([209.85.217.208]:52943 "EHLO
-	mail-gx0-f208.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754346AbZCXIWZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Mar 2009 04:22:29 -0400
+Received: from hera.kernel.org ([140.211.167.34]:48879 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754441AbZCXIWZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 24 Mar 2009 04:22:25 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=ceFQefzFKfoXjN5UspsSbH16kGMdOk8p9WqXVeAfS+VLNIrpESIpGZYSQL/rb91wAc
-         k18/r7iBYwLVGSC7uwjFXUmLu7NRURv+WtFUHgivq+4NJlW3upZOh/LPDZb6hToLfUJm
-         cAc3Kj6dlwXPa3UpBto/IuQMvAz659kLIn4qA=
-Date: Tue, 24 Mar 2009 08:22:14 +0000
-From: Jarek Poplawski <jarkao2@gmail.com>
-To: David Miller <davem@davemloft.net>
-Cc: mpm@selenic.com, marcin.slusarz@gmail.com, netdev@vger.kernel.org,
-       k-keiichi@bx.jp.nec.com, stable@kernel.org, rjw@sisk.pl,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] netconsole: fix BUG during net device "upping"
-Message-ID: <20090324082214.GA4776@ff.dom.local>
-References: <20090322.212107.55546529.davem@davemloft.net> <20090323080455.GA4976@ff.dom.local> <20090323.010541.94308473.davem@davemloft.net> <20090323081158.GB4976@ff.dom.local>
+Date: Tue, 24 Mar 2009 08:21:28 GMT
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       penberg@cs.helsinki.fi, eduard.munteanu@linux360.ro, tglx@linutronix.de,
+       mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       penberg@cs.helsinki.fi, eduard.munteanu@linux360.ro, tglx@linutronix.de,
+       mingo@elte.hu
+In-Reply-To: <1237882470.25315.30.camel@penberg-laptop>
+References: <1237882470.25315.30.camel@penberg-laptop>
+Subject: [tip:tracing/kmemtrace] kmemtrace: fix tracepoint declarations
+Message-ID: <tip-9d47aa18654e4344b1d20b14463addee676e9ea4@git.kernel.org>
+Git-Commit-ID: 9d47aa18654e4344b1d20b14463addee676e9ea4
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-In-Reply-To: <20090323081158.GB4976@ff.dom.local>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 24 Mar 2009 08:21:31 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 23, 2009 at 08:11:58AM +0000, Jarek Poplawski wrote:
-> On Mon, Mar 23, 2009 at 01:05:41AM -0700, David Miller wrote:
-> > From: Jarek Poplawski <jarkao2@gmail.com>
-> > Date: Mon, 23 Mar 2009 08:04:55 +0000
-> > 
-> > > What is the rationale of this decision? printk is a basic tool,
-> > > especially designed to work in as many places as possible, and
-> > > netconsole is rather something secondary (sorry Matt)?!
-> > 
-> > And this basic tool cannot work from the drivers ->open() method.
-> 
-> And in any function used in the drivers ->open(). BTW, with Marcin's
-> patch it can...
+Commit-ID:  9d47aa18654e4344b1d20b14463addee676e9ea4
+Gitweb:     http://git.kernel.org/tip/9d47aa18654e4344b1d20b14463addee676e9ea4
+Author:     Pekka Enberg <penberg@cs.helsinki.fi>
+AuthorDate: Tue, 24 Mar 2009 10:14:30 +0200
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Tue, 24 Mar 2009 09:19:52 +0100
 
-And from any function called anywhere on another cpu while driver's
-->open() is running.
+kmemtrace: fix tracepoint declarations
 
-BTW, I've had a look at this and it seems the main problem is
-netif_tx_stopped() isn't handled properly by the driver(s).
+Impact: build fix
 
-Jarek P.
+Use the new TP_PROTO and TP_ARGS to fix the build.
+
+Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
+LKML-Reference: <1237882470.25315.30.camel@penberg-laptop>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+
+---
+ include/trace/kmemtrace.h |   24 ++++++++++++------------
+ 1 files changed, 12 insertions(+), 12 deletions(-)
+
+diff --git a/include/trace/kmemtrace.h b/include/trace/kmemtrace.h
+index 9e28ae1..7514476 100644
+--- a/include/trace/kmemtrace.h
++++ b/include/trace/kmemtrace.h
+@@ -15,41 +15,41 @@
+ extern void kmemtrace_init(void);
+ 
+ DECLARE_TRACE(kmalloc,
+-	      TPPROTO(unsigned long call_site,
++	      TP_PROTO(unsigned long call_site,
+ 		      const void *ptr,
+ 		      size_t bytes_req,
+ 		      size_t bytes_alloc,
+ 		      gfp_t gfp_flags),
+-	      TPARGS(call_site, ptr, bytes_req, bytes_alloc, gfp_flags));
++	      TP_ARGS(call_site, ptr, bytes_req, bytes_alloc, gfp_flags));
+ DECLARE_TRACE(kmem_cache_alloc,
+-	      TPPROTO(unsigned long call_site,
++	      TP_PROTO(unsigned long call_site,
+ 		      const void *ptr,
+ 		      size_t bytes_req,
+ 		      size_t bytes_alloc,
+ 		      gfp_t gfp_flags),
+-	      TPARGS(call_site, ptr, bytes_req, bytes_alloc, gfp_flags));
++	      TP_ARGS(call_site, ptr, bytes_req, bytes_alloc, gfp_flags));
+ DECLARE_TRACE(kmalloc_node,
+-	      TPPROTO(unsigned long call_site,
++	      TP_PROTO(unsigned long call_site,
+ 		      const void *ptr,
+ 		      size_t bytes_req,
+ 		      size_t bytes_alloc,
+ 		      gfp_t gfp_flags,
+ 		      int node),
+-	      TPARGS(call_site, ptr, bytes_req, bytes_alloc, gfp_flags, node));
++	      TP_ARGS(call_site, ptr, bytes_req, bytes_alloc, gfp_flags, node));
+ DECLARE_TRACE(kmem_cache_alloc_node,
+-	      TPPROTO(unsigned long call_site,
++	      TP_PROTO(unsigned long call_site,
+ 		      const void *ptr,
+ 		      size_t bytes_req,
+ 		      size_t bytes_alloc,
+ 		      gfp_t gfp_flags,
+ 		      int node),
+-	      TPARGS(call_site, ptr, bytes_req, bytes_alloc, gfp_flags, node));
++	      TP_ARGS(call_site, ptr, bytes_req, bytes_alloc, gfp_flags, node));
+ DECLARE_TRACE(kfree,
+-	      TPPROTO(unsigned long call_site, const void *ptr),
+-	      TPARGS(call_site, ptr));
++	      TP_PROTO(unsigned long call_site, const void *ptr),
++	      TP_ARGS(call_site, ptr));
+ DECLARE_TRACE(kmem_cache_free,
+-	      TPPROTO(unsigned long call_site, const void *ptr),
+-	      TPARGS(call_site, ptr));
++	      TP_PROTO(unsigned long call_site, const void *ptr),
++	      TP_ARGS(call_site, ptr));
+ 
+ #endif /* __KERNEL__ */
+ 
