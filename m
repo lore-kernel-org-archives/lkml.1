@@ -1,58 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754586AbZCXD7d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752017AbZCXElm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754586AbZCXD7d (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Mar 2009 23:59:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752422AbZCXD7X
+	id S1752017AbZCXElm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 00:41:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750781AbZCXEl3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Mar 2009 23:59:23 -0400
-Received: from mail.sunnorth.com.cn ([124.42.0.200]:15478 "EHLO
-	bjmsw01.sunnorth.com.cn" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751408AbZCXD7X (ORCPT
+	Tue, 24 Mar 2009 00:41:29 -0400
+Received: from out2.smtp.messagingengine.com ([66.111.4.26]:45907 "EHLO
+	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750753AbZCXEl2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Mar 2009 23:59:23 -0400
-X-Greylist: delayed 612 seconds by postgrey-1.27 at vger.kernel.org; Mon, 23 Mar 2009 23:59:22 EDT
-To: linux-kernel@vger.kernel.org
-Cc: torvalds@linux-foundation.org
-Subject: [PATCH] score - New architecure port to SunplusCT S+CORE processor
+	Tue, 24 Mar 2009 00:41:28 -0400
+X-Sasl-enc: 93pXmQwNCE8gJU/g6CEZ0AXkvlVPb8Zev51gvAmDABSi 1237869685
+Date: Tue, 24 Mar 2009 13:41:13 +0900 (WST)
+From: Ian Kent <raven@themaw.net>
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-fsdevel <linux-fsdevel@vger.kernel.org>, jens.axboe@oracle.com,
+       Christoph Hellwig <hch@infradead.org>, Jeff Layton <jlayton@redhat.com>
+Subject: Re: [PATCH] writeback: reset inode dirty time when adding it back
+ to empty s_dirty list
+In-Reply-To: <1237840233-11045-1-git-send-email-jlayton@redhat.com>
+Message-ID: <alpine.LFD.2.00.0903241334330.3248@zeus.themaw.net>
+References: <1237840233-11045-1-git-send-email-jlayton@redhat.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-X-Mailer: Lotus Notes Release 6.5 September 26, 2003
-Message-ID: <OF4CC8EBC2.BDA9C1A9-ON48257583.0014767E-48257583.0014EE2B@sunnorth.com.cn>
-From: liqin@sunnorth.com.cn
-Date: Tue, 24 Mar 2009 11:46:48 +0800
-X-MIMETrack: Serialize by Router on ntns1cn/Sunnorth(Release 7.0.2FP2|May 14, 2007) at
- 03/24/2009 11:46:49 AM,
-	Serialize complete at 03/24/2009 11:46:49 AM
-Content-Type: text/plain; charset="US-ASCII"
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello, Linus and folks,
+On Mon, 23 Mar 2009, Jeff Layton wrote:
 
-We have ported Linux to the S+CORE processor, which is a 32-bit RISC 
-embedded
-microprocessor of Sunplus Core Technology.
+> This may be a problem on other filesystems too, but the reproducer I
+> have involves NFS.
+> 
+> On NFS, the __mark_inode_dirty() call after writing back the inode is
+> done in the rpc_release handler for COMMIT calls. This call is done
+> asynchronously after the call completes.
+> 
+> Because there's no real coordination between __mark_inode_dirty() and
+> __sync_single_inode(), it's often the case that these two calls will
+> race and __mark_inode_dirty() will get called while I_SYNC is still set.
+> When this happens, __sync_single_inode() should detect that the inode
+> was redirtied while we were flushing it and call redirty_tail() to put
+> it back on the s_dirty list.
+> 
+> When redirty_tail() puts it back on the list, it only resets the
+> dirtied_when value if it's necessary to maintain the list order. Given
+> the right situation (the right I/O patterns and a lot of luck), this
+> could result in dirtied_when never getting updated on an inode that's
+> constantly being redirtied while pdflush is writing it back.
+> 
+> Since dirtied_when is based on jiffies, it's possible for it to persist
+> across 2 sign-bit flips of jiffies. When that happens, the time_after()
+> check in sync_sb_inodes no longer works correctly and writeouts by
+> pdflush of this inode and any inodes after it on the list stop.
+> 
+> This patch fixes this by resetting the dirtied_when value on an inode
+> when we're adding it back onto an empty s_dirty list. Since we generally
+> write inodes from oldest to newest dirtied_when values, this has the
+> effect of making it so that these inodes don't end up with dirtied_when
+> values that are frozen.
+> 
+> I've also taken the liberty of fixing up the comments a bit and changed
+> the !time_after_eq() check in redirty_tail to be time_before().  That
+> should be functionally equivalent but I think it's more readable.
+> 
+> I wish this were just a theoretical problem, but we've had a customer
+> hit a variant of it in an older kernel. Newer upstream kernels have a
+> number of changes that make this problem less likely. As best I can tell
+> though, there is nothing that really prevents it.
+> 
+> Signed-off-by: Jeff Layton <jlayton@redhat.com>
+Acked-by: Ian Kent <raven@themaw.net>
 
-SPG29X, SPG300(score core) processor have been used in game products.
-and score toolchain have commit to gnu in 2006. We have a team to maintain
-score code for linux kernel.
+The assumption is that all inodes heading for the s_dirty list will get 
+their by calling redirty_tail(). It looks like that's the case but, Andrew 
+do you agree the assumption holds?
 
-We would like to release a patch for kernel 2.6.29-rc8.
-This patch include score header files, arch files and serial driver for 
-spct6600(score core) platform.
-
-For the other driver patches, I'll send them one by one in
-small size latter. Thanks!
-
-Would you merge them to the stock kernel? 
-
-Patch information is slightly bigger, so I placed it on our SunplusCT web 
-site.
-http://www.sunplusct.com/images/linux-score-patch/linux-score-20090324.patch
-
-Signed off by: Chen Liqin <liqin.chen@sunplusct.com, 
-liqin@sunnorth.com.cn>
-
-Thank you.
---
-Liqin
+> ---
+>  fs/fs-writeback.c |   22 +++++++++++++++++-----
+>  1 files changed, 17 insertions(+), 5 deletions(-)
+> 
+> diff --git a/fs/fs-writeback.c b/fs/fs-writeback.c
+> index e3fe991..bd2a7ff 100644
+> --- a/fs/fs-writeback.c
+> +++ b/fs/fs-writeback.c
+> @@ -184,19 +184,31 @@ static int write_inode(struct inode *inode, int sync)
+>   * furthest end of its superblock's dirty-inode list.
+>   *
+>   * Before stamping the inode's ->dirtied_when, we check to see whether it is
+> - * already the most-recently-dirtied inode on the s_dirty list.  If that is
+> - * the case then the inode must have been redirtied while it was being written
+> - * out and we don't reset its dirtied_when.
+> + * "newer" or equal to that of the most-recently-dirtied inode on the s_dirty
+> + * list. If that is the case then we don't need to restamp it to maintain the
+> + * order of the list.
+> + *
+> + * If s_dirty is empty however, then we need to go ahead and update
+> + * dirtied_when for the inode. Not doing so will mean that inodes that are
+> + * constantly being redirtied can end up with "stuck" dirtied_when values if
+> + * they happen to consistently be the first one to go back on the list.
+> + *
+> + * Since we're using jiffies values in that field, letting dirtied_when grow
+> + * too old will be problematic if jiffies wraps. It may also be causing
+> + * pdflush to flush the inode too often since it'll always look like it was
+> + * dirtied a long time ago.
+>   */
+>  static void redirty_tail(struct inode *inode)
+>  {
+>  	struct super_block *sb = inode->i_sb;
+>  
+> -	if (!list_empty(&sb->s_dirty)) {
+> +	if (list_empty(&sb->s_dirty)) {
+> +		inode->dirtied_when = jiffies;
+> +	} else {
+>  		struct inode *tail_inode;
+>  
+>  		tail_inode = list_entry(sb->s_dirty.next, struct inode, i_list);
+> -		if (!time_after_eq(inode->dirtied_when,
+> +		if (time_before(inode->dirtied_when,
+>  				tail_inode->dirtied_when))
+>  			inode->dirtied_when = jiffies;
+>  	}
+> -- 
+> 1.6.0.6
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
