@@ -1,50 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757404AbZCXJzO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758427AbZCXJ7e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757404AbZCXJzO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 05:55:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755233AbZCXJy7
+	id S1758427AbZCXJ7e (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 05:59:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755579AbZCXJ7Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 05:54:59 -0400
-Received: from mailhub.sw.ru ([195.214.232.25]:27966 "EHLO relay.sw.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753553AbZCXJy7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 05:54:59 -0400
-Message-ID: <49C8ADEE.3000606@gmail.com>
-Date: Tue, 24 Mar 2009 12:54:54 +0300
-From: Stanichenko Marat <mstanichenko@gmail.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] bonding: allow bond in mode balance-alb to work properly
- in bridge
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+	Tue, 24 Mar 2009 05:59:25 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:50729 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755561AbZCXJ7Y (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Mar 2009 05:59:24 -0400
+Subject: [PATCH 1/2] kmemtrace: fix build breakage in mm/failslab.c
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: mingo@elte.hu
+Cc: eduard.munteanu@linux360.ro, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Date: Tue, 24 Mar 2009 11:59:21 +0200
+Message-Id: <1237888761.25315.69.camel@penberg-laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Thu, Mar 19, 2009 at 11:21:43AM CET, davem@davemloft.net wrote:
->>From: Jiri Pirko <jpirko@redhat.com>
->>Date: Thu, 19 Mar 2009 09:44:45 +0100
->>
->>> Yes I was looking at this thing yesterday (uc_list). But this list serves
->>> to different purpose. Do you think that it will be correct to use it for this? I
->>> would maybe like to make a new list similar to this for our purpose
->>> (say addr_list). I think it would be more correct.
->>
->>Whatever you do with that list privately inside of the bonding
->>driver should be fine.
-> Well I do not need it only inside the bonding driver. I want bridge to use this
-> list when adding a device in it and get mac addresses from there into its
-> hashlist (to recognize these addresses as local).
-Please correct me if I understand you improperly. You're going to mark all mac 
-addresses that belong to slaves as "local" when adding a bond device to the 
-bridge, aren't you? The only thing I'd like to notice (this might be an obvious 
-one): a packet that is pushed out from one slave might reach the host through 
-another slave. Considering all slaves as "local" in bridge code might lead to 
-numerous messages "received packet with own address as source address".
+From: Pekka Enberg <penberg@cs.helsinki.fi>
 
-Please CC me personally when answering this message.
+Impact: fix build
 
-Thanks,
-Marat.
+This patch fixes up the following build breakage caused by commit
+e251ea2fa52321009940fad02238ef1c369531ae ("rcu: don't include unnecessary
+headers, allow kmemtrace w/ tracepoints"):
+
+    CC      mm/failslab.o
+  mm/failslab.c: In function ‘should_failslab’:
+  mm/failslab.c:16: error: ‘__GFP_NOFAIL’ undeclared (first use in this function)
+  mm/failslab.c:16: error: (Each undeclared identifier is reported only once
+  mm/failslab.c:16: error: for each function it appears in.)
+  mm/failslab.c:19: error: ‘__GFP_WAIT’ undeclared (first use in this function)
+  make[1]: *** [mm/failslab.o] Error 1
+  make: *** [mm] Error 2
+
+Cc: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
+Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
+---
+ mm/failslab.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
+
+diff --git a/mm/failslab.c b/mm/failslab.c
+index 7c6ea64..9339de5 100644
+--- a/mm/failslab.c
++++ b/mm/failslab.c
+@@ -1,4 +1,5 @@
+ #include <linux/fault-inject.h>
++#include <linux/gfp.h>
+ 
+ static struct {
+ 	struct fault_attr attr;
+-- 
+1.5.4.3
+
+
+
