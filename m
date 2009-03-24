@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754717AbZCXWqj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754939AbZCXWqy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754717AbZCXWqj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 18:46:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752179AbZCXWqa
+	id S1754939AbZCXWqy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 18:46:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753546AbZCXWqc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 18:46:30 -0400
-Received: from hrndva-commlb.mail.rr.com ([71.74.57.9]:33286 "EHLO
+	Tue, 24 Mar 2009 18:46:32 -0400
+Received: from hrndva-commlb.mail.rr.com ([71.74.57.9]:33310 "EHLO
 	hrndva-commlb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750699AbZCXWq3 (ORCPT
+	with ESMTP id S1753134AbZCXWqb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 18:46:29 -0400
-Message-Id: <7h9gbp$cjcsd1@rrcs-agw-01b.hrndva.rr.com>
+	Tue, 24 Mar 2009 18:46:31 -0400
+Message-Id: <7h9gbp$cjcsd6@rrcs-agw-01b.hrndva.rr.com>
 X-Mailer: Openwave WebEngine, version 2.8.17 (webedge20-101-1107-20041027)
 From: Siemens News Center <tuscoffice@rrbiznet.com>
 Reply-To: sosiemens3@gmail.com
