@@ -1,82 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755636AbZCXQnn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762100AbZCXQsU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755636AbZCXQnn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 12:43:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762928AbZCXQnO
+	id S1762100AbZCXQsU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 12:48:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760973AbZCXQro
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 12:43:14 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:35310 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762363AbZCXQnL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 12:43:11 -0400
-Subject: Re: Network Device Naming mechanism and policy
-From: Dan Williams <dcbw@redhat.com>
-To: Patrick McHardy <kaber@trash.net>
-Cc: Matt Domsch <Matt_Domsch@dell.com>, netdev@vger.kernel.org,
-       linux-hotplug@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <49C9087C.5070907@trash.net>
-References: <20090324154617.GA16332@auslistsprd01.us.dell.com>
-	 <49C9087C.5070907@trash.net>
-Content-Type: text/plain
-Date: Tue, 24 Mar 2009 12:40:58 -0400
-Message-Id: <1237912858.9082.39.camel@localhost.localdomain>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+	Tue, 24 Mar 2009 12:47:44 -0400
+Received: from mx3.schottelius.org ([77.109.138.221]:39533 "EHLO
+	mx3.schottelius.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760466AbZCXQrj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Mar 2009 12:47:39 -0400
+Date: Tue, 24 Mar 2009 17:47:36 +0100
+From: Nico -telmich- Schottelius 
+	<nico-linux-ipw3945-devel@schottelius.org>
+To: Nico Schottelius <nico-linux-20090313@schottelius.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       ipw3945-devel@lists.sourceforge.net
+Subject: Re: [ipw3945-devel] Strange reboots on 2.6.29-rc6-wl
+Message-ID: <20090324164735.GA5495@denkbrett.schottelius.org>
+Mail-Followup-To: Nico -telmich- Schottelius <nico-linux-ipw3945-devel@schottelius.org>,
+	Nico Schottelius <nico-linux-20090313@schottelius.org>,
+	LKML <linux-kernel@vger.kernel.org>,
+	ipw3945-devel@lists.sourceforge.net
+References: <20090313200657.GA4907@denkbrett.schottelius.org>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="yrj/dFKFPuw6o+aM"
+Content-Disposition: inline
+In-Reply-To: <20090313200657.GA4907@denkbrett.schottelius.org>
+User-Agent: echo $message | gpg -e $sender  -s | netcat mailhost 25
+X-Unix-Info: http://unix.schottelius.org/
+X-Netzseite: http://nico.schottelius.org/
+X-System-Info: ikn (Linux 2.6.29 x86_64)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-03-24 at 17:21 +0100, Patrick McHardy wrote:
-> Matt Domsch wrote:
-> > 2) udev may have rules to change the device names.  This is most often
-> >    seen in the '70-persistent-net.rules' file.  Here we have
-> >    additional challenges:
-> > 
-> > ...
-> > 
-> >    c) udev may not always be able to change a device's name.  If udev
-> >       uses the kernel assignment namespace (ethN), then a rename of
-> >       eth0->eth1 may require renaming eth1->eth0 (or something else).
-> >       Udev operates on a single device instance at a time, it becomes
-> >       difficult to switch names around for multiple devices, within
-> >       the single namespace.
-> 
-> I would classify this as a bug, especially the fact that udev doesn't
-> undo a failed rename, so you end up with ethX_rename. Virtual devices
-> using the same MAC address trigger this reliably unless you add
-> exceptions to the udev rules.
 
-Any particular reason the MAC addresses are the same?  This came up a
-while ago with the 'dnet' device in the thread "Dave DNET ethernet
-controller".
+--yrj/dFKFPuw6o+aM
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-If the MAC address isn't a UUID for the device, then *what* is?
 
-If there isn't one, then certainly udev can't be blamed for getting
-ordering or names wrong, because there's nothing to use to actually
-match up the device to a name, uniquely.  Note that combinations
-including bus IDs or device positions in the bus don't work for any type
-of hotplug case, because you can plug another adapter into the same
-location but it's a different adapter.
+Nico Schottelius [Fri, Mar 13, 2009 at 09:06:57PM +0100]:
+>=20
+> I've two Lenovo X200 here, same config and same kernel version
+> (2.6.29-rc7-wl-ikn, from wireless-testing, v2.6.29-rc7-17155-g2f7ab92).
+>=20
+> One reboots after half a second after displaying a message Probing for edd
+> (or similar). I tried with and without edd=3Doff, no changes.
+>=20
+> The same happens with v2.6.29-rc7-32930-g5434dd7 (iwlwifi-2.6).
 
-Either people want (a) a name assigned to a specific device (which
-implies a UUID like a MAC address stored on that device somewhere
-accessible to the driver at plug/boot time), or they want (b) to assign
-a name to a *position* on the PCI or USB or firewire or whatever bus, or
-they (c) don't care about this at all.
+It works again with 2.6.29 (linux-2.6) and next-20090324 (which
+is otherwise broken)!
 
-The answer is really 'all of the above'.  Most of the people Matt cares
-about are probably in the (b) camp.  But most desktop/laptop users are
-in the (a) camp because they use hotplug so much.
+Will test iwlwifi & wireless-testing in the next days.
 
-Dan
+So it was definitely a kernel issue and not userspace.
 
-> You state that it only operates on one device at a time. If that is
-> correct, I'm not sure why the _rename suffix is used at all instead
-> of simply trying to assign the final name, which would avoid this
-> problem.
-> --
-> To unsubscribe from this list: send the line "unsubscribe netdev" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Nico
 
+--=20
+Think about Free and Open Source Software (FOSS).
+http://nico.schottelius.org/documentations/foss/the-term-foss/
+
+PGP: BFE4 C736 ABE5 406F 8F42  F7CF B8BE F92A 9885 188C
+
+--yrj/dFKFPuw6o+aM
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAknJDqYACgkQuL75KpiFGIx8tgCfaIGIoatdR1Vlfcu57xmlNPyT
+DqgAoJcBSM5CLuSumq6FbLYNLzdMZrQS
+=79O3
+-----END PGP SIGNATURE-----
+
+--yrj/dFKFPuw6o+aM--
