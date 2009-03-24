@@ -1,55 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759391AbZCXOIN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760318AbZCXOKh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759391AbZCXOIN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 10:08:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757799AbZCXODA
+	id S1760318AbZCXOKh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 10:10:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756892AbZCXOEf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 10:03:00 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:48949 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1758098AbZCXOC7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 10:02:59 -0400
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: [PATCH 10/30] blackfin: BF538/9 serial uart support
-To: linux-kernel@vger.kernel.org, linux-serial@vger.kernel.org,
-       torvalds@linux-foundation.org
-Date: Tue, 24 Mar 2009 14:03:23 +0000
-Message-ID: <20090324140321.12735.55366.stgit@localhost.localdomain>
-In-Reply-To: <20090324135930.12735.7827.stgit@localhost.localdomain>
-References: <20090324135930.12735.7827.stgit@localhost.localdomain>
-User-Agent: StGIT/0.14.3
+	Tue, 24 Mar 2009 10:04:35 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:39276 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757468AbZCXOEc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Mar 2009 10:04:32 -0400
+Date: Tue, 24 Mar 2009 15:04:19 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Luis Henriques <henrix@sapo.pt>
+Cc: Peter Zijlstra <peterz@infradead.org>,
+       Gregory Haskins <ghaskins@novell.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v3 -tip] sched: Clean unused fields from struct rq
+Message-ID: <20090324140419.GD32043@elte.hu>
+References: <20090318225137.GA3766@hades.domain.com> <20090323175224.GA3938@hades.domain.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090323175224.GA3938@hades.domain.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Michael Hennerich <michael.hennerich@analog.com>
 
-Enable third UART on BF538/9
+* Luis Henriques <henrix@sapo.pt> wrote:
 
-Signed-off-by: Michael Hennerich <michael.hennerich@analog.com>
-Signed-off-by: Bryan Wu <cooloney@kernel.org>
-Signed-off-by: Alan Cox <alan@lxorguk.ukuu.org.uk>
----
+> On Wed, Mar 18, 2009 at 10:51:37PM +0000, Luis Henriques wrote:
+> > Since they are used on in statistics and are always set to zero, the following
+> > fields from struct rq have been removed: yld_exp_empty, yld_act_empty and
+> > yld_both_empty.
+> > 
+> > Both Sched Debug and SCHEDSTAT_VERSION versions has also been incremented since
+> > ABIs have been changed.
+> > 
+> 
+> Hi Ingo,
+> 
+> Sorry to bother you but I can not find this patch in -tip.  Just 
+> would like to confirm with you that it was NACK'ed or you just 
+> forgot to merge it to the tree.
 
- drivers/serial/Kconfig |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+Was held up by the schedstat tool discussions. Please resend the 
+patch with a link to the updated tool in the commit log perhaps (if 
+such a link exists), and with Gregory's ack in place.
 
+Thanks,
 
-diff --git a/drivers/serial/Kconfig b/drivers/serial/Kconfig
-index 451b64f..46d4321 100644
---- a/drivers/serial/Kconfig
-+++ b/drivers/serial/Kconfig
-@@ -770,7 +770,7 @@ config UART1_RTS_PIN
- 
- config SERIAL_BFIN_UART2
- 	bool "Enable UART2"
--	depends on SERIAL_BFIN && (BF54x)
-+	depends on SERIAL_BFIN && (BF54x || BF538 || BF539)
- 	help
- 	  Enable UART2
- 
-
+	Ingo
