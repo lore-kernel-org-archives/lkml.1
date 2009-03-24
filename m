@@ -1,86 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761403AbZCXP4k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757685AbZCXP5p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761403AbZCXP4k (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 11:56:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757863AbZCXP43
+	id S1757685AbZCXP5p (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 11:57:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758905AbZCXP5U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 11:56:29 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:33393 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757543AbZCXP41 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 11:56:27 -0400
-Date: Tue, 24 Mar 2009 16:56:09 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Li Zefan <lizf@cn.fujitsu.com>, Jens Axboe <jens.axboe@oracle.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 5/5] blktrace: print human-readable act_mask
-Message-ID: <20090324155609.GA10365@elte.hu>
-References: <49C893FC.9080905@cn.fujitsu.com> <49C89488.4030604@cn.fujitsu.com> <alpine.DEB.2.00.0903241148240.22830@gandalf.stny.rr.com>
+	Tue, 24 Mar 2009 11:57:20 -0400
+Received: from ey-out-2122.google.com ([74.125.78.24]:36920 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752937AbZCXP5T convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Mar 2009 11:57:19 -0400
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.0903241148240.22830@gandalf.stny.rr.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20090324153329.GA13705@kroah.com>
+References: <20090320004539.GF18781@kroah.com>
+	 <20090320024249.GA19989@kroah.com> <4443.1237517709@jrobl>
+	 <20090320030608.GA2638@kroah.com> <5142.1237521581@jrobl>
+	 <20090320041811.GA3352@kroah.com> <6218.1237526149@jrobl>
+	 <20090320054437.GC3993@kroah.com> <2778.1237882600@jrobl>
+	 <20090324153329.GA13705@kroah.com>
+Date: Tue, 24 Mar 2009 16:57:16 +0100
+Message-ID: <ac3eb2510903240857l2b072ffay7c3e2e5683527a4f@mail.gmail.com>
+Subject: Re: Q. DEBUG_FS and SYSFS config (Re: [RFC Aufs2 #3 2/2] split 'xino' 
+	entry under sysfs)
+From: Kay Sievers <kay.sievers@vrfy.org>
+To: Greg KH <greg@kroah.com>
+Cc: hooanon05@yahoo.co.jp, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Mar 24, 2009 at 16:33, Greg KH <greg@kroah.com> wrote:
 
-* Steven Rostedt <rostedt@goodmis.org> wrote:
+>> First, configure "normaly".
+>> General setup
+>>   [ ] Configure standard kernel features (for small systems)  --->
+>>
+>> $ egrep -i '(sysfs|debug_fs)' .config
+>> CONFIG_SYSFS_DEPRECATED=y
+>> CONFIG_SYSFS_DEPRECATED_V2=y
+>
+> You should disable those two options, no modern distro needs them
+> anymore.
 
-> 
-> 
-> On Tue, 24 Mar 2009, Li Zefan wrote:
-> >  
-> > +static ssize_t blk_trace_mask2str(char *buf, int mask)
-> > +{
-> > +	int i;
-> > +	char *p = buf;
-> > +
-> > +	for (i = 0; i < ARRAY_SIZE(mask_maps); i++) {
-> > +		if (mask & mask_maps[i].mask) {
-> > +			p += sprintf(p, "%s%s",
-> > +				    (p == buf) ? "" : ",", mask_maps[i].str);
-> > +		}
-> > +	}
-> > +	*p++ = '\n';
-> > +
-> > +	return (p - buf);
-> > +}
-> > +
-> >  static struct request_queue *blk_trace_get_queue(struct block_device *bdev)
-> >  {
-> >  	if (bdev->bd_disk == NULL)
-> > @@ -1399,7 +1423,7 @@ static ssize_t sysfs_blk_trace_attr_show(struct device *dev,
-> >  	if (q->blk_trace == NULL)
-> >  		ret = sprintf(buf, "disabled\n");
-> >  	else if (attr == &dev_attr_act_mask)
-> > -		ret = sprintf(buf, "%#x\n", q->blk_trace->act_mask);
-> > +		ret = blk_trace_mask2str(buf, q->blk_trace->act_mask);
-> >  	else if (attr == &dev_attr_pid)
-> >  		ret = sprintf(buf, "%u\n", q->blk_trace->pid);
-> >  	else if (attr == &dev_attr_start_lba)
-> > @@ -1432,9 +1456,11 @@ static ssize_t sysfs_blk_trace_attr_store(struct device *dev,
-> >  	if (attr == &dev_attr_act_mask) {
-> >  		if (sscanf(buf, "%llx", &value) != 1) {
-> >  			/* Assume it is a list of trace category names */
-> > -			value = blk_str2act_mask(buf);
-> > -			if (value < 0)
-> > +			value = blk_trace_str2mask(buf);
-> 
-> Hmm, does this compile? Doesn't blk_trace_str2mask need two parameters?
+In fact, all recent distros will no longer work correctly, because
+DEPRECATED disables features which are expected to be there today. I
+guess it's time to remove the *_V2 hack to reset the default value,
+and set the default of CONFIG_SYSFS_DEPRECATED=n?
 
-No, it needs one parameter.
-
-	Ingo
+Thanks,
+Kay
