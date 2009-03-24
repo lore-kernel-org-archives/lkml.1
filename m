@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757146AbZCXRmT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756822AbZCXRoK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757146AbZCXRmT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 13:42:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753714AbZCXRmH
+	id S1756822AbZCXRoK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 13:44:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753532AbZCXRn4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 13:42:07 -0400
-Received: from gw.goop.org ([64.81.55.164]:38980 "EHLO mail.goop.org"
+	Tue, 24 Mar 2009 13:43:56 -0400
+Received: from gw.goop.org ([64.81.55.164]:39001 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752145AbZCXRmE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 13:42:04 -0400
-Message-ID: <49C91B6A.1090504@goop.org>
-Date: Tue, 24 Mar 2009 10:42:02 -0700
+	id S1752647AbZCXRnz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Mar 2009 13:43:55 -0400
+Message-ID: <49C91BD8.4030304@goop.org>
+Date: Tue, 24 Mar 2009 10:43:52 -0700
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
@@ -20,7 +20,7 @@ CC: Linus Torvalds <torvalds@linux-foundation.org>,
        Xen-devel <xen-devel@lists.xensource.com>,
        Andrew Morton <akpm@linux-foundation.org>,
        Dave Airlie <airlied@linux.ie>
-Subject: [GIT PULL] xen.git 2.6.30: xen dom0 apic changes
+Subject: [GIT PULL] xen.git 2.6.30: xen dom0 PCI device support
 References: <49C915A3.3020809@goop.org>
 In-Reply-To: <49C915A3.3020809@goop.org>
 X-Enigmail-Version: 0.95.6
@@ -36,48 +36,58 @@ The following changes since commit 6b36d6251e178636a3c032611948a5c7af44582e:
 
 are available in the git repository at:
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/jeremy/xen.git push2/xen/dom0/apic
+  git://git.kernel.org/pub/scm/linux/kernel/git/jeremy/xen.git push2/xen/dom0/pci
 
-Gerd Hoffmann (2):
-      xen: set pirq name to something useful.
-      xen: fix legacy irq setup, make ioapic-less machines work.
+Alex Nixon (7):
+      xen: Don't disable the I/O space
+      xen: Allow unprivileged Xen domains to create iomap pages
+      Xen: Rename the balloon lock
+      xen: Add xen_create_contiguous_region
+      x86/PCI: Clean up pci_cache_line_size
+      x86/PCI: Enable scanning of all pci functions
+      Xen/x86/PCI: Add support for the Xen PCI subsytem
 
-Ian Campbell (1):
-      xen: pre-initialize legacy irqs early
+Ian Campbell (4):
+      xen swiotlb: fixup swiotlb is chunks smaller than MAX_CONTIG_ORDER
+      xen: add hooks for mapping phys<->bus addresses in swiotlb
+      xen/swiotlb: add hook for swiotlb_arch_range_needs_mapping
+      xen: enable swiotlb for xen domain 0.
 
-Jeremy Fitzhardinge (13):
-      xen/dom0: handle acpi lapic parsing in Xen dom0
-      xen: hook io_apic read/write operations
-      xen: create dummy ioapic mapping
-      xen: implement pirq type event channels
-      x86/io_apic: add get_nr_irqs_gsi()
-      xen/apic: identity map gsi->irqs
-      xen: direct irq registration to pirq event channels
-      xen: bind pirq to vector and event channel
-      xen: don't setup acpi interrupt unless there is one
-      xen: use acpi_get_override_irq() to get triggering for legacy irqs
-      xen: initialize irq 0 too
-      xen: dynamically allocate irq & event structures
-      xen: disable MSI
+Jeremy Fitzhardinge (7):
+      x86/pci: make sure _PAGE_IOMAP it set on pci mappings
+      xen/pci: clean up Kconfig a bit
+      xen: make sure swiotlb allocation is physically contigious
+      xen/swiotlb: use dma_alloc_from_coherent to get device coherent memory
+      swiotlb: use swiotlb_alloc_boot to allocate emergency pool
+      xen/swiotlb: improve comment on gfp flags in xen_alloc_coherent()
+      xen/swiotlb: add sync functions
 
- arch/x86/include/asm/io_apic.h |    7 +
- arch/x86/include/asm/xen/pci.h |   13 ++
- arch/x86/kernel/acpi/boot.c    |   18 +++-
- arch/x86/kernel/apic/io_apic.c |   37 +++++-
- arch/x86/xen/Kconfig           |   11 ++
- arch/x86/xen/Makefile          |    3 +-
- arch/x86/xen/apic.c            |   60 +++++++++
- arch/x86/xen/enlighten.c       |    2 +
- arch/x86/xen/mmu.c             |   10 ++
- arch/x86/xen/pci.c             |   86 +++++++++++++
- arch/x86/xen/xen-ops.h         |    6 +
- drivers/pci/pci.h              |    2 -
- drivers/xen/events.c           |  273 ++++++++++++++++++++++++++++++++++++++--
- include/linux/pci.h            |    6 +
- include/xen/events.h           |   22 ++++
- 15 files changed, 541 insertions(+), 15 deletions(-)
- create mode 100644 arch/x86/include/asm/xen/pci.h
- create mode 100644 arch/x86/xen/apic.c
- create mode 100644 arch/x86/xen/pci.c
+ arch/x86/Kconfig                 |    4 +
+ arch/x86/include/asm/pci.h       |    8 +-
+ arch/x86/include/asm/pci_x86.h   |    2 +
+ arch/x86/include/asm/xen/iommu.h |   12 ++
+ arch/x86/kernel/pci-dma.c        |    4 +-
+ arch/x86/kernel/pci-swiotlb.c    |   28 +++-
+ arch/x86/pci/Makefile            |    1 +
+ arch/x86/pci/common.c            |   18 ++-
+ arch/x86/pci/i386.c              |    3 +
+ arch/x86/pci/init.c              |    6 +
+ arch/x86/pci/xen.c               |   52 ++++++
+ arch/x86/xen/Kconfig             |    3 +
+ arch/x86/xen/enlighten.c         |    6 +-
+ arch/x86/xen/mmu.c               |  225 +++++++++++++++++++++++++-
+ arch/x86/xen/setup.c             |    3 -
+ drivers/pci/Makefile             |    2 +
+ drivers/pci/xen-iommu.c          |  331 ++++++++++++++++++++++++++++++++++++++
+ drivers/xen/balloon.c            |   15 +--
+ include/xen/interface/memory.h   |   50 ++++++
+ include/xen/swiotlb.h            |   19 +++
+ include/xen/xen-ops.h            |    6 +
+ lib/swiotlb.c                    |    3 +-
+ 22 files changed, 770 insertions(+), 31 deletions(-)
+ create mode 100644 arch/x86/include/asm/xen/iommu.h
+ create mode 100644 arch/x86/pci/xen.c
+ create mode 100644 drivers/pci/xen-iommu.c
+ create mode 100644 include/xen/swiotlb.h
 
 
