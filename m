@@ -1,97 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756195AbZCXIDK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753631AbZCXIEM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756195AbZCXIDK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 04:03:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754461AbZCXICs
+	id S1753631AbZCXIEM (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 04:04:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753942AbZCXID4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 04:02:48 -0400
-Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:57612 "EHLO
-	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754434AbZCXICq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 04:02:46 -0400
-Date: Tue, 24 Mar 2009 16:57:43 +0900
-From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-Subject: [BUGFIX][PATCH(resend) mmotm] memcg:
- try_get_mem_cgroup_from_swapcache fix (Re: 2.6.30 -mm merge plans)
-Message-Id: <20090324165743.bfaefecb.nishimura@mxp.nes.nec.co.jp>
-In-Reply-To: <20090323224615.cd29edfd.akpm@linux-foundation.org>
-References: <20090323224615.cd29edfd.akpm@linux-foundation.org>
-Organization: NEC Soft, Ltd.
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 24 Mar 2009 04:03:56 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:49538 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1753171AbZCXIDy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Mar 2009 04:03:54 -0400
+Message-ID: <49C893FC.9080905@cn.fujitsu.com>
+Date: Tue, 24 Mar 2009 16:04:12 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: Jens Axboe <jens.axboe@oracle.com>, Steven Rostedt <rostedt@goodmis.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH 0/5] blktrace: various cleanups and fixes, part 2
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->     memcg-use-css-id.patch
->     memcg-hierarchical-stat.patch
->     memcg-fix-shrinking-memory-to-return-ebusy-by-fixing-retry-algorithm.patch
->     memcg-fix-oom-killer-under-memcg.patch
->     memcg-fix-oom-killer-under-memcg-fix2.patch
->     memcg-fix-oom-killer-under-memcg-fix.patch
->     memcg-show-memcg-information-during-oom.patch
->     memcg-show-memcg-information-during-oom-fix2.patch
->     memcg-show-memcg-information-during-oom-fix.patch
->     memcg-show-memcg-information-during-oom-fix-fix.patch
->     memcg-show-memcg-information-during-oom-fix-fix-checkpatch-fixes.patch
->     memcg-remove-mem_cgroup_calc_mapped_ratio-take2.patch
->     memcg-remove-mem_cgroup_reclaim_imbalance-remnants.patch
->     memcg-charge-swapcache-to-proper-memcg.patch
->     cgroups-use-css-id-in-swap-cgroup-for-saving-memory-v5.patch
->     memcg-remove-redundant-message-at-swapon.patch
-> 
->  Merge
-> 
-This patch is fix for cgroups-use-css-id-in-swap-cgroup-for-saving-memory-v5.patch.
+The first part is here:
+	http://lkml.org/lkml/2009/3/19/475
 
-I think it would be better to fold them.
+And this is the 2nd part, and I still have some pending fixes..
 
-===
-From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+Each patch is a small one, except the last one, which is still not big.
 
-css_tryget can be called twice in !PageCgroupUsed case.
+[PATCH 1/5] blktrace: mark ddir_act and what2act const
+[PATCH 2/5] blktrace: fix wrong calculation of RWBS
+[PATCH 3/5] blktrace: fix off-by-one bug
+[PATCH 4/5] blktrace: fix t_error()
+[PATCH 5/5] blktrace: print human-readable act_mask
 
-Signed-off-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-Acked-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujtsu.com>
----
+ blktrace.c |  127 ++++++++++++++++++++++++++++++++++++-------------------------
+ 1 file changed, 77 insertions(+), 50 deletions(-)
 
- mm/memcontrol.c |   10 ++++------
- 1 files changed, 4 insertions(+), 6 deletions(-)
-
-diff --git a/mm/memcontrol.c b/mm/memcontrol.c
-index 5de6be9..55dea59 100644
---- a/mm/memcontrol.c
-+++ b/mm/memcontrol.c
-@@ -1027,9 +1027,11 @@ static struct mem_cgroup *try_get_mem_cgroup_from_swapcache(struct page *page)
- 	/*
- 	 * Used bit of swapcache is solid under page lock.
- 	 */
--	if (PageCgroupUsed(pc))
-+	if (PageCgroupUsed(pc)) {
- 		mem = pc->mem_cgroup;
--	else {
-+		if (mem && !css_tryget(&mem->css))
-+			mem = NULL;
-+	} else {
- 		ent.val = page_private(page);
- 		id = lookup_swap_cgroup(ent);
- 		rcu_read_lock();
-@@ -1038,10 +1040,6 @@ static struct mem_cgroup *try_get_mem_cgroup_from_swapcache(struct page *page)
- 			mem = NULL;
- 		rcu_read_unlock();
- 	}
--	if (!mem)
--		return NULL;
--	if (!css_tryget(&mem->css))
--		return NULL;
- 	return mem;
- }
- 
+Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
