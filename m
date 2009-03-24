@@ -1,57 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756267AbZCXH5t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756195AbZCXIDK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756267AbZCXH5t (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 03:57:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753290AbZCXH5j
+	id S1756195AbZCXIDK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 04:03:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754461AbZCXICs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 03:57:39 -0400
-Received: from viefep15-int.chello.at ([62.179.121.35]:15855 "EHLO
-	viefep15-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751700AbZCXH5i (ORCPT
+	Tue, 24 Mar 2009 04:02:48 -0400
+Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:57612 "EHLO
+	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754434AbZCXICq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 03:57:38 -0400
-X-SourceIP: 213.93.53.227
-Subject: Re: [PATCH] perf_counter tools: remove glib dependency and fix
- bugs in kerneltop.c
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Paul Mackerras <paulus@samba.org>
-Cc: mingo@elte.hu, tglx@linutronix.de, fengguang.wu@intel.com, hpa@zytor.com,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <18888.29986.340328.540512@cargo.ozlabs.ibm.com>
-References: <18888.29986.340328.540512@cargo.ozlabs.ibm.com>
-Content-Type: text/plain
-Date: Tue, 24 Mar 2009 08:57:15 +0100
-Message-Id: <1237881435.24918.120.camel@twins>
+	Tue, 24 Mar 2009 04:02:46 -0400
+Date: Tue, 24 Mar 2009 16:57:43 +0900
+From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+Subject: [BUGFIX][PATCH(resend) mmotm] memcg:
+ try_get_mem_cgroup_from_swapcache fix (Re: 2.6.30 -mm merge plans)
+Message-Id: <20090324165743.bfaefecb.nishimura@mxp.nes.nec.co.jp>
+In-Reply-To: <20090323224615.cd29edfd.akpm@linux-foundation.org>
+References: <20090323224615.cd29edfd.akpm@linux-foundation.org>
+Organization: NEC Soft, Ltd.
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.10.14; i686-pc-mingw32)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.0 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-03-24 at 16:52 +1100, Paul Mackerras wrote:
-> The glib dependency in kerneltop.c is only for a little bit of list
-> manipulation, and I find it inconvenient.  This adds a 'next' field to
-> struct source_line, which lets us link them together into a list.  The
-> code to do the linking ourselves turns out to be no longer or more
-> difficult than using glib.
+>     memcg-use-css-id.patch
+>     memcg-hierarchical-stat.patch
+>     memcg-fix-shrinking-memory-to-return-ebusy-by-fixing-retry-algorithm.patch
+>     memcg-fix-oom-killer-under-memcg.patch
+>     memcg-fix-oom-killer-under-memcg-fix2.patch
+>     memcg-fix-oom-killer-under-memcg-fix.patch
+>     memcg-show-memcg-information-during-oom.patch
+>     memcg-show-memcg-information-during-oom-fix2.patch
+>     memcg-show-memcg-information-during-oom-fix.patch
+>     memcg-show-memcg-information-during-oom-fix-fix.patch
+>     memcg-show-memcg-information-during-oom-fix-fix-checkpatch-fixes.patch
+>     memcg-remove-mem_cgroup_calc_mapped_ratio-take2.patch
+>     memcg-remove-mem_cgroup_reclaim_imbalance-remnants.patch
+>     memcg-charge-swapcache-to-proper-memcg.patch
+>     cgroups-use-css-id-in-swap-cgroup-for-saving-memory-v5.patch
+>     memcg-remove-redundant-message-at-swapon.patch
+> 
+>  Merge
+> 
+This patch is fix for cgroups-use-css-id-in-swap-cgroup-for-saving-memory-v5.patch.
 
-Awesome!! now I can compile on my test machine as well (yum got stuck,
-it doesn't want to go fwd nor backwards, and I can't find time to
-reinstall the thing).
+I think it would be better to fold them.
 
-> This also fixes a few other problems:
+===
+From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
 
-> - We had two CPU migration counters in the default set, which seems
->   unnecessary; I changed one of them to a context switch counter.
+css_tryget can be called twice in !PageCgroupUsed case.
 
-Ooh, my bad, copy/paste trouble I imagine.
+Signed-off-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+Acked-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujtsu.com>
+---
 
-> - On a test machine here, parse_symbols() and parse_vmlinux() were
->   taking long enough (almost 0.5 seconds) for the mmap buffer to
->   overflow before we got to the first mmap_read() call, so this moves
->   them before we open all the counters.
+ mm/memcontrol.c |   10 ++++------
+ 1 files changed, 4 insertions(+), 6 deletions(-)
 
-Ah, thanks for looking into that!
-
-
+diff --git a/mm/memcontrol.c b/mm/memcontrol.c
+index 5de6be9..55dea59 100644
+--- a/mm/memcontrol.c
++++ b/mm/memcontrol.c
+@@ -1027,9 +1027,11 @@ static struct mem_cgroup *try_get_mem_cgroup_from_swapcache(struct page *page)
+ 	/*
+ 	 * Used bit of swapcache is solid under page lock.
+ 	 */
+-	if (PageCgroupUsed(pc))
++	if (PageCgroupUsed(pc)) {
+ 		mem = pc->mem_cgroup;
+-	else {
++		if (mem && !css_tryget(&mem->css))
++			mem = NULL;
++	} else {
+ 		ent.val = page_private(page);
+ 		id = lookup_swap_cgroup(ent);
+ 		rcu_read_lock();
+@@ -1038,10 +1040,6 @@ static struct mem_cgroup *try_get_mem_cgroup_from_swapcache(struct page *page)
+ 			mem = NULL;
+ 		rcu_read_unlock();
+ 	}
+-	if (!mem)
+-		return NULL;
+-	if (!css_tryget(&mem->css))
+-		return NULL;
+ 	return mem;
+ }
+ 
