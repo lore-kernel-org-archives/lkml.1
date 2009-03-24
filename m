@@ -1,164 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762168AbZCXT75@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762944AbZCXUBz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762168AbZCXT75 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 15:59:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760350AbZCXT7s
+	id S1762944AbZCXUBz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 16:01:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755170AbZCXUBr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 15:59:48 -0400
-Received: from fg-out-1718.google.com ([72.14.220.154]:7416 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759880AbZCXT7q (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 15:59:46 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=tDDFFMcDxHjbS97l9SP7yCYoigCD4od685uhpEBdffXWGjPmQD3gpQeGgyivUHZBok
-         BsArn1jU0l1HinR2VNL8KoDinHUgr/8flual03SH7h8XmOhEtXz/A8+O7FAfaVZNOVyS
-         4tpQHygBGah3fyLeJ9LH8xyTVy7gevfRSzWSw=
-Date: Tue, 24 Mar 2009 20:59:40 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [PATCH][GIT PULL] function-graph: add option for include sleep
-	times
-Message-ID: <20090324195939.GA5975@nowhere>
-References: <20090324135422.026619569@goodmis.org> <20090324135610.441707783@goodmis.org> <20090324135833.GB32043@elte.hu> <alpine.DEB.2.00.0903241127290.22830@gandalf.stny.rr.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.0903241127290.22830@gandalf.stny.rr.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 24 Mar 2009 16:01:47 -0400
+Received: from 82-117-125-11.tcdsl.calypso.net ([82.117.125.11]:36500 "EHLO
+	smtp.ossman.eu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754704AbZCXUBq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Mar 2009 16:01:46 -0400
+Date: Tue, 24 Mar 2009 21:01:38 +0100
+From: Pierre Ossman <drzeus@drzeus.cx>
+To: Manuel Lauss <mano@roarinelk.homelinux.net>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: MMC layer regression with single-block controllers
+Message-ID: <20090324210138.71029c2c@mjolnir.ossman.eu>
+In-Reply-To: <20090323092802.GA30122@roarinelk.homelinux.net>
+References: <20090323092802.GA30122@roarinelk.homelinux.net>
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.15.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=PGP-SHA1; protocol="application/pgp-signature"; boundary="=_freyr.ossman.eu-18683-1237924900-0001-2"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 24, 2009 at 11:28:09AM -0400, Steven Rostedt wrote:
-> 
-> Ingo,
-> 
-> Please pull the latest tip/tracing/ftrace tree, which can be found at:
-> 
->   git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
-> tip/tracing/ftrace
-> 
-> 
-> Steven Rostedt (1):
->       function-graph: add option for include sleep times
-> 
-> ----
->  kernel/trace/ftrace.c |    7 +++++++
->  kernel/trace/trace.c  |    3 ++-
->  kernel/trace/trace.h  |    1 +
->  3 files changed, 10 insertions(+), 1 deletions(-)
-> ---------------------------
-> commit be6f164a02f394675e2ac2077dd354cebef5b4c0
-> Author: Steven Rostedt <srostedt@redhat.com>
-> Date:   Tue Mar 24 11:06:24 2009 -0400
-> 
->     function-graph: add option for include sleep times
->     
->     Impact: give user a choice to show times spent while sleeping
->     
->     The user may want to see the time a function spent sleeping.
->     This patch adds the trace option "sleep-time" to allow that.
->     The "sleep-time" option is default on.
->     
->      echo sleep-time > /debug/tracing/trace_options
+This is a MIME-formatted message.  If you see this text it means that your
+E-mail software does not support MIME-formatted messages.
 
+--=_freyr.ossman.eu-18683-1237924900-0001-2
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-Yeah, I thinks it's better to let it be chosen.
-Thanks for this series!
+On Mon, 23 Mar 2009 10:28:02 +0100
+Manuel Lauss <mano@roarinelk.homelinux.net> wrote:
 
-Frederic.
+> Hello Pierre,
+>=20
+> Since about 2.6.28-rc1, I hit the following BUG_ON() in mmc/core.c
+> (line 155):
+>=20
+>         if (mrq->data) {
+>                 BUG_ON(mrq->data->blksz > host->max_blk_size);
+> >>>>>>>>>       BUG_ON(mrq->data->blocks > host->max_blk_count);  <<<<<<
+>                 BUG_ON(mrq->data->blocks * mrq->data->blksz >
+>                         host->max_req_size);
+>=20
+> It's easy to reproduce; just set your favorite host controllers'
+> mmc->max_blk_cnt to 1 (or anything smaller than 4).  As far as I can
+> tell it was introduced with some block layer changes before 2.6.28-rc1
+> was released.
+>=20
 
+Ouch. Have you determined that it is the block layer that isn't
+respecting its settings? If so, the we probably need to notify Jens
+Axboe.
 
-     
->     produces:
->     
->      ------------------------------------------
->      2)  avahi-d-3428  =>    <idle>-0
->      ------------------------------------------
->     
->      2)               |      finish_task_switch() {
->      2)   0.621 us    |        _spin_unlock_irq();
->      2)   2.202 us    |      }
->      2) ! 1002.197 us |    }
->      2) ! 1003.521 us |  }
->     
->     where as,
->     
->      echo nosleep-time > /debug/tracing/trace_options
->     
->     produces:
->     
->      0)    <idle>-0    =>  yum-upd-3416
->      ------------------------------------------
->     
->      0)               |              finish_task_switch() {
->      0)   0.643 us    |                _spin_unlock_irq();
->      0)   2.342 us    |              }
->      0) + 41.302 us   |            }
->      0) + 42.453 us   |          }
->     
->     Signed-off-by: Steven Rostedt <srostedt@redhat.com>
-> 
-> diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
-> index 0b90364..02d2de9 100644
-> --- a/kernel/trace/ftrace.c
-> +++ b/kernel/trace/ftrace.c
-> @@ -2599,6 +2599,13 @@ ftrace_graph_probe_sched_switch(struct rq *__rq, struct task_struct *prev,
->  	unsigned long long timestamp;
->  	int index;
->  
-> +	/*
-> +	 * Does the user want to count the time a function was asleep.
-> +	 * If so, do not update the time stamps.
-> +	 */
-> +	if (trace_flags & TRACE_ITER_SLEEP_TIME)
-> +		return;
-> +
->  	timestamp = trace_clock_local();
->  
->  	prev->ftrace_timestamp = timestamp;
-> diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
-> index f0e1337..67c6a21 100644
-> --- a/kernel/trace/trace.c
-> +++ b/kernel/trace/trace.c
-> @@ -255,7 +255,7 @@ static DECLARE_WAIT_QUEUE_HEAD(trace_wait);
->  
->  /* trace_flags holds trace_options default values */
->  unsigned long trace_flags = TRACE_ITER_PRINT_PARENT | TRACE_ITER_PRINTK |
-> -	TRACE_ITER_ANNOTATE | TRACE_ITER_CONTEXT_INFO;
-> +	TRACE_ITER_ANNOTATE | TRACE_ITER_CONTEXT_INFO | TRACE_ITER_SLEEP_TIME;
->  
->  /**
->   * trace_wake_up - wake up tasks waiting for trace input
-> @@ -316,6 +316,7 @@ static const char *trace_options[] = {
->  	"context-info",
->  	"latency-format",
->  	"global-clock",
-> +	"sleep-time",
->  	NULL
->  };
->  
-> diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
-> index 7cfb741..d7410bb 100644
-> --- a/kernel/trace/trace.h
-> +++ b/kernel/trace/trace.h
-> @@ -683,6 +683,7 @@ enum trace_iterator_flags {
->  	TRACE_ITER_CONTEXT_INFO		= 0x20000, /* Print pid/cpu/time */
->  	TRACE_ITER_LATENCY_FMT		= 0x40000,
->  	TRACE_ITER_GLOBAL_CLK		= 0x80000,
-> +	TRACE_ITER_SLEEP_TIME		= 0x100000,
->  };
->  
->  /*
-> 
-> 
+Rgds
+--=20
+     -- Pierre Ossman
 
+  WARNING: This correspondence is being monitored by the
+  Swedish government. Make sure your server uses encryption
+  for SMTP traffic and consider using PGP for end-to-end
+  encryption.
+
+--=_freyr.ossman.eu-18683-1237924900-0001-2
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename=signature.asc
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.11 (GNU/Linux)
+
+iEYEARECAAYFAknJPCUACgkQ7b8eESbyJLhsmQCglENHOS24DwD6w1ZSUwr4THqY
+cXsAoLBOZj9G2U3y2YhmKhQ51hDH4MfA
+=DIjy
+-----END PGP SIGNATURE-----
+
+--=_freyr.ossman.eu-18683-1237924900-0001-2--
