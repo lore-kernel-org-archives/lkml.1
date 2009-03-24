@@ -1,68 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760208AbZCXUbA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763704AbZCXUdv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760208AbZCXUbA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 16:31:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760291AbZCXUas
+	id S1763704AbZCXUdv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 16:33:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758352AbZCXUdm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 16:30:48 -0400
-Received: from fg-out-1718.google.com ([72.14.220.154]:13057 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757019AbZCXUar (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 16:30:47 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent;
-        b=kisIFTla8OyVqRRAAYQZnwZ4lZ2wpB12BIP9UEuzezUDVOMZaipWIue8RWL7NNlMNQ
-         5ZYOoRlwGZWoMFf6CkchqdbA0xKbr+gPVZ0RQcmcfIztVwMZiquCJSOSuRXdPJip6/aD
-         2OVrILowuVVTttDHTo1AWRBWesDOjZYXMARO0=
-Date: Tue, 24 Mar 2009 23:38:06 +0300
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: x86@kernel.org
-Cc: linux-kernel@vger.kernel.org, jeremy@goop.org
-Subject: [PATCH] i386: remove struct thread_struct::fs
-Message-ID: <20090324203805.GA24382@x200.localdomain>
+	Tue, 24 Mar 2009 16:33:42 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:57867 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757427AbZCXUdl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Mar 2009 16:33:41 -0400
+Date: Tue, 24 Mar 2009 21:32:59 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Andrew Lutomirski <amluto@gmail.com>,
+       David Woodhouse <dwmw2@infradead.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Kyle McMartin <kyle@redhat.com>, Fenghua Yu <fenghua.yu@intel.com>,
+       Suresh Siddha <suresh.b.siddha@intel.com>,
+       Yinghai Lu <yinghai@kernel.org>,
+       David Woodhouse <David.Woodhouse@intel.com>,
+       Mark Gross <mgross@linux.intel.com>
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.29: can't resume from suspend with DMAR (intel iommu)
+	enabled
+Message-ID: <20090324203259.GC26930@elte.hu>
+References: <cb0375e10903241258x32c9d0f3g35a4f56793eb8677@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <cb0375e10903241258x32c9d0f3g35a4f56793eb8677@mail.gmail.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-After commit 464d1a78fbf8cf6c7fd970e7b3e2db50a320ce28 aka
-"[PATCH] i386: Convert i386 PDA code to use %fs"
-%fs saved during context switch moved from thread_struct to pt_regs.
 
-Ifdef it on i386.
+(Cc:s added)
 
-I don't understand why .fs (OK, .gs first) initializer was added, kernel
-clearly stopped touching it after the patch.
+* Andrew Lutomirski <amluto@gmail.com> wrote:
 
-Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
----
+> On vanilla 2.6.29 (on Ubuntu 8.10), on a Lenovo x200s, my system 
+> is completely hosed on resume.  It appears that even hard disk IO 
+> didn't work (trying to do *anything* including getting a dmesg 
+> trace just spewed sda io errors to the console).  Hence no trace.  
+> I did an alt-sysrq-b and the screen went blank and the machine 
+> just started beeping at me.
+> 
+> Resume works much better with intel_iommu=off.  (I remember seeing 
+> a patch go by that purported to fix resume with IOMMU enabled, but 
+> it didn't work for me.)
+> 
+> I'd be happy to try to make a better bug report if anyone has any 
+> bright ideas.
 
- arch/x86/include/asm/processor.h |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+i have a Lenovo T500 that does not even boot with with DMAR enabled 
+in the BIOS (it's default-off), i get this panic in early bootup:
 
---- a/arch/x86/include/asm/processor.h
-+++ b/arch/x86/include/asm/processor.h
-@@ -403,7 +403,9 @@ struct thread_struct {
- 	unsigned short		gsindex;
- #endif
- 	unsigned long		ip;
-+#ifdef CONFIG_X86_64
- 	unsigned long		fs;
-+#endif
- 	unsigned long		gs;
- 	/* Hardware debugging registers: */
- 	unsigned long		debugreg0;
-@@ -847,7 +849,6 @@ static inline void spin_lock_prefetch(const void *x)
- 	.vm86_info		= NULL,					  \
- 	.sysenter_cs		= __KERNEL_CS,				  \
- 	.io_bitmap_ptr		= NULL,					  \
--	.fs			= __KERNEL_PERCPU,			  \
- }
- 
- /*
+    DMAR hardware is malfunctioning
+
+So i dont get to test suspend/resume ;-)
+
+	Ingo
