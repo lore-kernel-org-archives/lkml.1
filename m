@@ -1,67 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761272AbZCXSCi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761522AbZCXSDO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761272AbZCXSCi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 14:02:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759889AbZCXSCO
+	id S1761522AbZCXSDO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 14:03:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755543AbZCXSCz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 14:02:14 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:60322 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758982AbZCXSCN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 14:02:13 -0400
-Date: Tue, 24 Mar 2009 19:01:23 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       ltt-dev@lists.casi.polymtl.ca, Frederic Weisbecker <fweisbec@gmail.com>,
-       Jason Baron <jbaron@redhat.com>, Peter Zijlstra <peterz@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Russell King <rmk+lkml@arm.linux.org.uk>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       "Frank Ch. Eigler" <fche@redhat.com>, Hideo AOKI <haoki@redhat.com>,
-       Takashi Nishiie <t-nishiie@np.css.fujitsu.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-Subject: Re: [patch 4/9] LTTng instrumentation softirq
-Message-ID: <20090324180123.GF31117@elte.hu>
-References: <20090324155625.420966314@polymtl.ca> <20090324160148.396496293@polymtl.ca>
+	Tue, 24 Mar 2009 14:02:55 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:46491 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754990AbZCXSCy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Mar 2009 14:02:54 -0400
+Date: Tue, 24 Mar 2009 10:55:40 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Theodore Tso <tytso@mit.edu>
+cc: Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Nick Piggin <npiggin@suse.de>,
+       Jens Axboe <jens.axboe@oracle.com>, David Rees <drees76@gmail.com>,
+       Jesper Krogh <jesper@krogh.cc>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.29
+In-Reply-To: <20090324132032.GK5814@mit.edu>
+Message-ID: <alpine.LFD.2.00.0903241053200.3032@localhost.localdomain>
+References: <alpine.LFD.2.00.0903231617550.3032@localhost.localdomain> <49C87B87.4020108@krogh.cc> <72dbd3150903232346g5af126d7sb5ad4949a7b5041f@mail.gmail.com> <20090324091545.758d00f5@lxorguk.ukuu.org.uk> <20090324093245.GA22483@elte.hu>
+ <20090324101011.6555a0b9@lxorguk.ukuu.org.uk> <20090324103111.GA26691@elte.hu> <20090324132032.GK5814@mit.edu>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090324160148.396496293@polymtl.ca>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
 
-> Compared to Jason's patch, this patch also instruments softirq raise event.
+On Tue, 24 Mar 2009, Theodore Tso wrote:
+> 
+> Try ext4, I think you'll like it.  :-)
+> 
+> Failing that, data=writeback for single-user machines is probably your
+> best bet.
 
-Mind sending this on top of Jason's patch, which is already applied 
-to the tracing tree?
+Isn't that the same fix? ext4 just defaults to the crappy "writeback" 
+behavior, which is insane.
 
-Note, your instrumentation misses one source of softirq raise 
-events:
+Sure, it makes things _much_ smoother, since now the actual data is no 
+longer in the critical path for any journal writes, but anybody who thinks 
+that's a solution is just incompetent. 
 
-> @@ -300,6 +306,7 @@ void irq_exit(void)
->   */
->  inline void raise_softirq_irqoff(unsigned int nr)
->  {
-> +	trace_irq_softirq_raise(nr);
->  	__raise_softirq_irqoff(nr);
+We might as well go back to ext2 then. If your data gets written out long 
+after the metadata hit the disk, you are going to hit all kinds of bad 
+issues if the machine ever goes down.
 
-__raise_softirq_irqoff() is used in the networking tree. It makes 
-little sense to instrument raise_softirq_irqoff() while not 
-instrumenting __raise_softirq_irqoff().
-
-	Ingo
+			Linus
