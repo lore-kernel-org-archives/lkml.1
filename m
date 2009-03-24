@@ -1,59 +1,138 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752788AbZCXVSA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754355AbZCXVQZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752788AbZCXVSA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 17:18:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754243AbZCXVPs
+	id S1754355AbZCXVQZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 17:16:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752861AbZCXVN1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 17:15:48 -0400
-Received: from gate.crashing.org ([63.228.1.57]:56903 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753786AbZCXVPr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 17:15:47 -0400
-Subject: Re: [RFC][PATCH 0/2] Export platform_pci_set_power_state() and
- make radeonfb use it
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Linux PCI <linux-pci@vger.kernel.org>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Alex Deucher <alexdeucher@gmail.com>
-In-Reply-To: <200903241200.37982.rjw@sisk.pl>
-References: <200903210003.55161.rjw@sisk.pl>
-	 <1237856239.25062.696.camel@pasglop>
-	 <20090323181420.30125d59@hobbes.virtuouswap>
-	 <200903241200.37982.rjw@sisk.pl>
-Content-Type: text/plain
-Date: Wed, 25 Mar 2009 08:12:55 +1100
-Message-Id: <1237929175.25062.727.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
-Content-Transfer-Encoding: 7bit
+	Tue, 24 Mar 2009 17:13:27 -0400
+Received: from an-out-0708.google.com ([209.85.132.244]:13159 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753004AbZCXVNW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Mar 2009 17:13:22 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=s+B0pk84nUGPe0UjkvLvImYVQaozdJigXk8wJfYOrVSQDF1BFBtWl4zd1bfH4f58tz
+         c4rU4IXdOwapiheNKbtggNvi1leizWoHizjhkuPuXcaL4MJVeu/K7IcXAy4O+pHUSPCv
+         jADFVf6vyWKXUULlRWUGbGF5EWHhhQ4a/Wr2o=
+From: stoyboyker@gmail.com
+To: linux-kernel@vger.kernel.org
+Cc: Stoyan Gaydarov <stoyboyker@gmail.com>, wim@iguana.be
+Subject: [PATCH 08/13] [watchdog] changed ioctls to unlocked
+Date: Tue, 24 Mar 2009 16:12:43 -0500
+Message-Id: <1237929168-15341-9-git-send-email-stoyboyker@gmail.com>
+X-Mailer: git-send-email 1.6.2.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-03-24 at 12:00 +0100, Rafael J. Wysocki wrote:
+From: Stoyan Gaydarov <stoyboyker@gmail.com>
 
-> In fact I have yet another idea.  If we use the "retransmission with exponential
-> backoff" algorithm in pci_raw_set_power_state(), we won't have to add any
-> extra parameters to pci_set_power_state() and the radeon case will be covered
-> automatically.  That should also cover any other devices having similar
-> problems IMO.
-> 
-> A patch to implement that is appended, please tell me what you think.
+Signed-off-by: Stoyan Gaydarov <stoyboyker@gmail.com>
+---
+ drivers/watchdog/riowd.c |   37 +++++++++++++++++++++++++++----------
+ 1 files changed, 27 insertions(+), 10 deletions(-)
 
-This is crazy....
-
-Most devices don't need that and those who are a bit "touchy" may well
-puke on being written to too fast while they are in the middle of
-the transition.
-
-Let's wait to see if Alex from ATI has an answer here, and if not, I
-would suggest keeping the dirt inside radeonfb.
-
-Ben.
-
+diff --git a/drivers/watchdog/riowd.c b/drivers/watchdog/riowd.c
+index 09cb183..44058c1 100644
+--- a/drivers/watchdog/riowd.c
++++ b/drivers/watchdog/riowd.c
+@@ -86,9 +86,10 @@ static int riowd_release(struct inode *inode, struct file *filp)
+ 	return 0;
+ }
+ 
+-static int riowd_ioctl(struct inode *inode, struct file *filp,
+-		       unsigned int cmd, unsigned long arg)
++static long riowd_ioctl(struct file *filp, unsigned int cmd,
++		       unsigned long arg)
+ {
++	lock_kernel();
+ 	static struct watchdog_info info = {
+ 		.options		= WDIOF_SETTIMEOUT,
+ 		.firmware_version	= 1,
+@@ -101,14 +102,18 @@ static int riowd_ioctl(struct inode *inode, struct file *filp,
+ 
+ 	switch (cmd) {
+ 	case WDIOC_GETSUPPORT:
+-		if (copy_to_user(argp, &info, sizeof(info)))
++		if (copy_to_user(argp, &info, sizeof(info))) {
++			unlock_kernel();
+ 			return -EFAULT;
++		}
+ 		break;
+ 
+ 	case WDIOC_GETSTATUS:
+ 	case WDIOC_GETBOOTSTATUS:
+-		if (put_user(0, (int __user *)argp))
++		if (put_user(0, (int __user *)argp)) {
++			unlock_kernel();
+ 			return -EFAULT;
++		}
+ 		break;
+ 
+ 	case WDIOC_KEEPALIVE:
+@@ -116,34 +121,46 @@ static int riowd_ioctl(struct inode *inode, struct file *filp,
+ 		break;
+ 
+ 	case WDIOC_SETOPTIONS:
+-		if (copy_from_user(&options, argp, sizeof(options)))
++		if (copy_from_user(&options, argp, sizeof(options))) {
++			unlock_kernel();
+ 			return -EFAULT;
++		}
+ 
+ 		if (options & WDIOS_DISABLECARD)
+ 			riowd_writereg(p, 0, WDTO_INDEX);
+ 		else if (options & WDIOS_ENABLECARD)
+ 			riowd_writereg(p, riowd_timeout, WDTO_INDEX);
+-		else
++		else {
++			unlock_kernel();
+ 			return -EINVAL;
++		}
+ 
+ 		break;
+ 
+ 	case WDIOC_SETTIMEOUT:
+-		if (get_user(new_margin, (int __user *)argp))
++		if (get_user(new_margin, (int __user *)argp)) {
++			unlock_kernel();
+ 			return -EFAULT;
+-		if ((new_margin < 60) || (new_margin > (255 * 60)))
++		}
++		if ((new_margin < 60) || (new_margin > (255 * 60))) {
++			unlock_kernel();
+ 			return -EINVAL;
++		}
+ 		riowd_timeout = (new_margin + 59) / 60;
+ 		riowd_writereg(p, riowd_timeout, WDTO_INDEX);
+ 		/* Fall */
+ 
+ 	case WDIOC_GETTIMEOUT:
+-		return put_user(riowd_timeout * 60, (int __user *)argp);
++		long ret = put_user(riowd_timeout * 60, (int __user *)argp);
++		unlock_kernel();
++		return ret;
+ 
+ 	default:
++		unlock_kernel();
+ 		return -EINVAL;
+ 	};
+ 
++	unlock_kernel();
+ 	return 0;
+ }
+ 
+@@ -162,7 +179,7 @@ static ssize_t riowd_write(struct file *file, const char __user *buf, size_t cou
+ static const struct file_operations riowd_fops = {
+ 	.owner =	THIS_MODULE,
+ 	.llseek =	no_llseek,
+-	.ioctl =	riowd_ioctl,
++	.unlocked_ioctl =	riowd_ioctl,
+ 	.open =		riowd_open,
+ 	.write =	riowd_write,
+ 	.release =	riowd_release,
+-- 
+1.6.2
 
