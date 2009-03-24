@@ -1,94 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756504AbZCXHnX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757016AbZCXHos@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756504AbZCXHnX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 03:43:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754571AbZCXHnI
+	id S1757016AbZCXHos (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 03:44:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753813AbZCXHoh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 03:43:08 -0400
-Received: from hera.kernel.org ([140.211.167.34]:56058 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753807AbZCXHnH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 03:43:07 -0400
-Date: Tue, 24 Mar 2009 07:42:26 GMT
-From: Joerg Roedel <joerg.roedel@amd.com>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       joerg.roedel@amd.com, fujita.tomonori@lab.ntt.co.jp, tglx@linutronix.de,
-       mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       joerg.roedel@amd.com, fujita.tomonori@lab.ntt.co.jp, tglx@linutronix.de,
-       mingo@elte.hu
-In-Reply-To: <1237818908-26516-1-git-send-email-joerg.roedel@amd.com>
-References: <1237818908-26516-1-git-send-email-joerg.roedel@amd.com>
-Subject: [tip:core/iommu] dma-debug: make memory range checks more consistent
-Message-ID: <tip-9537a48ed4b9e4b738943d6da0a0fd4278adf905@git.kernel.org>
-Git-Commit-ID: 9537a48ed4b9e4b738943d6da0a0fd4278adf905
-X-Mailer: tip-git-log-daemon
+	Tue, 24 Mar 2009 03:44:37 -0400
+Received: from smtp106.mail.mud.yahoo.com ([209.191.85.216]:45835 "HELO
+	smtp106.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753290AbZCXHog (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Mar 2009 03:44:36 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=Oj7WJNSpT5Oi9Z+/2dhnjT4n8zItTThTwVqCvvs+E0gXMpaJ6KX64IMGL9gGMrR4vIuoA4S00/DAqCI1Pd6KLYrVjaSoc03ZZ7sNZRas6+4/uP23JddMj5CY5bOyjoG8Eh/QRpeVomxRcwGCt/iLyx9zmHpc5evH9wgVrDa8pOU=  ;
+X-YMail-OSG: d51yn6wVM1kf2TudIHV9DmtxPXRqCf6ILcI0GT39VG2eWY5SiRLtrgm_56Kexy9_LEYBtYH1gESsCMjnqPl2WtM.Kn15YgWq7rMnS2tpcYZpT04C9derbcHj8nzdtMLfK3pJe8zgZKLdt_ZwTFsR1PNbz5.amdlG.jh7WiqC7OdjHwBNpqjipmdpb03HwQ--
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Jan Kara <jack@suse.cz>, "Martin J. Bligh" <mbligh@mbligh.org>,
+       linux-ext4@vger.kernel.org
+Subject: Re: ftruncate-mmap: pages are lost after writing to mmaped file.
+Date: Tue, 24 Mar 2009 18:44:21 +1100
+User-Agent: KMail/1.9.51 (KDE/4.0.4; ; )
+Cc: Ying Han <yinghan@google.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "linux-kernel" <linux-kernel@vger.kernel.org>,
+       "linux-mm" <linux-mm@kvack.org>, guichaz@gmail.com,
+       Alex Khesin <alexk@google.com>, Mike Waychison <mikew@google.com>,
+       Rohit Seth <rohitseth@google.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+References: <604427e00903181244w360c5519k9179d5c3e5cd6ab3@mail.gmail.com> <200903200248.22623.nickpiggin@yahoo.com.au> <20090319164638.GB3899@duck.suse.cz>
+In-Reply-To: <20090319164638.GB3899@duck.suse.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 24 Mar 2009 07:42:28 +0000 (UTC)
+Message-Id: <200903241844.22851.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  9537a48ed4b9e4b738943d6da0a0fd4278adf905
-Gitweb:     http://git.kernel.org/tip/9537a48ed4b9e4b738943d6da0a0fd4278adf905
-Author:     Joerg Roedel <joerg.roedel@amd.com>
-AuthorDate: Mon, 23 Mar 2009 15:35:08 +0100
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Tue, 24 Mar 2009 08:39:32 +0100
+On Friday 20 March 2009 03:46:39 Jan Kara wrote:
+> On Fri 20-03-09 02:48:21, Nick Piggin wrote:
 
-dma-debug: make memory range checks more consistent
-
-Impact: extend on-kernel-stack DMA debug checks to all !highmem pages
-
-We only checked dma_map_single() - extend it to dma_map_page()
-and dma_map_sg() as well.
-
-Also, fix dma_map_single() corner case bug: make sure we dont
-stack-check highmem (not mapped) pages.
-
-Reported-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
-Cc: iommu@lists.linux-foundation.org
-LKML-Reference: <1237818908-26516-1-git-send-email-joerg.roedel@amd.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> > Holding mapping->private_lock over the __set_page_dirty should
+> > fix it, although I guess you'd want to release it before calling
+> > __mark_inode_dirty so as not to put inode_lock under there. I
+> > have a patch for this if it sounds reasonable.
+>
+>   Yes, that seems to be a bug - the function actually looked suspitious to
+> me yesterday but I somehow convinced myself that it's fine. Probably
+> because fsx-linux is single-threaded.
 
 
----
- lib/dma-debug.c |   13 ++++++++-----
- 1 files changed, 8 insertions(+), 5 deletions(-)
+After a whole lot of chasing my own tail in the VM and buffer layers,
+I think it is a problem in ext2 (and I haven't been able to reproduce
+with ext3 yet, which might lend weight to that, although as we have
+seen, it is very timing dependent).
 
-diff --git a/lib/dma-debug.c b/lib/dma-debug.c
-index f9e6d38..1a99208 100644
---- a/lib/dma-debug.c
-+++ b/lib/dma-debug.c
-@@ -722,10 +722,11 @@ void debug_dma_map_page(struct device *dev, struct page *page, size_t offset,
- 	entry->size      = size;
- 	entry->direction = direction;
- 
--	if (map_single) {
--		void *addr = ((char *)page_address(page)) + offset;
--
-+	if (map_single)
- 		entry->type = dma_debug_single;
-+
-+	if (!PageHighMem(page)) {
-+		void *addr = ((char *)page_address(page)) + offset;
- 		check_for_stack(dev, addr);
- 		check_for_illegal_area(dev, addr, size);
- 	}
-@@ -779,8 +780,10 @@ void debug_dma_map_sg(struct device *dev, struct scatterlist *sg,
- 		entry->sg_call_ents   = nents;
- 		entry->sg_mapped_ents = mapped_ents;
- 
--		check_for_stack(dev, sg_virt(s));
--		check_for_illegal_area(dev, sg_virt(s), s->length);
-+		if (!PageHighMem(sg_page(s))) {
-+			check_for_stack(dev, sg_virt(s));
-+			check_for_illegal_area(dev, sg_virt(s), s->length);
-+		}
- 
- 		add_dma_entry(entry);
- 	}
+That would be slightly unfortunate because we still have Jan's ext3
+problem, and also another reported problem of corruption on ext3 (on
+brd driver).
+
+Anyway, when I have reproduced the problem with the test case, the
+"lost" writes are all reported to be holes. Unfortunately, that doesn't
+point straight to the filesystem, because ext2 allocates blocks in this
+case at writeout time, so if dirty bits are getting lost, then it would
+be normal to see holes.
+
+I then put in a whole lot of extra infrastructure to track metadata about
+each struct page (when it was last written out, when it last had the number
+of writable ptes reach 0, when the dirty bits were last cleared etc). And
+none of the normal asertions were triggering: eg. when any page is removed
+from pagecache (except truncates), it has always had all its buffers
+written out *after* all ptes were made readonly or unmapped. Lots of other
+tests and crap like that.
+
+So I tried what I should have done to start with and did an e2fsck after
+seeing corruption. Yes, it comes up with errors. Now that is unusual
+because that should be largely insulated from the vm: if a dirty bit gets
+lost, then the filesystem image should be quite happy and error-free with
+a hole or unwritten data there.
+
+I don't know ext? locking very well, except that it looks pretty overly
+complex and crufty.
+
+Usually, blocks are instantiated by write(2), under i_mutex, serialising
+the allocator somewhat. mmap-write blocks are instantiated at writeout
+time, unserialised. I moved truncate_mutex to cover the entire get_blocks
+function, and can no longer trigger the problem. Might be a timing issue
+though -- Ying, can you try this and see if you can still reproduce?
+
+I close my eyes and pick something out of a hat. a686cd89. Search for XXX.
+Nice. Whether or not this cased the problem, can someone please tell me
+why it got merged in that state?
+
+I'm leaving ext3 running for now. It looks like a nasty task to bisect
+ext2 down to that commit :( and I would be more interested in trying to
+reproduce Jan's ext3 problem, however, because I'm not too interested in
+diving into ext2 locking to work out exactly what is racing and how to
+fix it properly. I suspect it would be most productive to wire up some
+ioctls right into the block allocator/lookup and code up a userspace
+tester for it that could probably stress it a lot harder than kernel
+writeout can.
+
