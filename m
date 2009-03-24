@@ -1,55 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759016AbZCXMLp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757098AbZCXMN0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759016AbZCXMLp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 08:11:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753805AbZCXMLf
+	id S1757098AbZCXMN0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 08:13:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753442AbZCXMNQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 08:11:35 -0400
-Received: from smtp.nokia.com ([192.100.122.233]:58348 "EHLO
-	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752992AbZCXMLf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 08:11:35 -0400
-Message-ID: <49C8CE1B.7000802@nokia.com>
-Date: Tue, 24 Mar 2009 14:12:11 +0200
-From: Adrian Hunter <adrian.hunter@nokia.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Tue, 24 Mar 2009 08:13:16 -0400
+Received: from hera.kernel.org ([140.211.167.34]:44724 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751887AbZCXMNP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Mar 2009 08:13:15 -0400
+Date: Tue, 24 Mar 2009 12:12:28 GMT
+From: Li Zefan <lizf@cn.fujitsu.com>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, acme@redhat.com, hpa@zytor.com,
+       mingo@redhat.com, lizf@cn.fujitsu.com, jens.axboe@oracle.com,
+       fweisbec@gmail.com, rostedt@goodmis.org, tglx@linutronix.de,
+       mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, acme@redhat.com,
+       linux-kernel@vger.kernel.org, lizf@cn.fujitsu.com,
+       jens.axboe@oracle.com, fweisbec@gmail.com, rostedt@goodmis.org,
+       tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <49C89415.5080503@cn.fujitsu.com>
+References: <49C89415.5080503@cn.fujitsu.com>
+Subject: [tip:tracing/blktrace] blktrace: mark ddir_act[] const
+Message-ID: <tip-e4955c9986a27bb47ddeb6cd55803053f547e2e9@git.kernel.org>
+Git-Commit-ID: e4955c9986a27bb47ddeb6cd55803053f547e2e9
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-To: Pierre Ossman <drzeus-mmc@drzeus.cx>
-CC: "Lavinen Jarkko (Nokia-M/Helsinki)" <jarkko.lavinen@nokia.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: MMC: Accept EXT_CSD rev 1.3 assuming it is backwards compatible with
- 1.2
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 24 Mar 2009 12:11:24.0445 (UTC) FILETIME=[A6B1A4D0:01C9AC79]
-X-Nokia-AV: Clean
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 24 Mar 2009 12:12:30 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From a939998e34cbc263317d51b21ab52c8d5863a913 Mon Sep 17 00:00:00 2001
-From: Jarkko Lavinen <jarkko.lavinen@nokia.com>
-Date: Thu, 27 Nov 2008 14:30:32 +0200
-Subject: MMC: Accept EXT_CSD rev 1.3 assuming it is backwards compatible with 1.2
+Commit-ID:  e4955c9986a27bb47ddeb6cd55803053f547e2e9
+Gitweb:     http://git.kernel.org/tip/e4955c9986a27bb47ddeb6cd55803053f547e2e9
+Author:     Li Zefan <lizf@cn.fujitsu.com>
+AuthorDate: Tue, 24 Mar 2009 16:04:37 +0800
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Tue, 24 Mar 2009 13:08:59 +0100
 
-Signed-off-by: Jarkko Lavinen <jarkko.lavinen@nokia.com>
+blktrace: mark ddir_act[] const
+
+Impact: cleanup
+
+ddir_act and what2act always stay immutable.
+
+Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+Acked-by: Jens Axboe <jens.axboe@oracle.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
+LKML-Reference: <49C89415.5080503@cn.fujitsu.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+
 ---
- drivers/mmc/core/mmc.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ kernel/trace/blktrace.c |    8 ++++----
+ 1 files changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/mmc/core/mmc.c b/drivers/mmc/core/mmc.c
-index fdd7c76..3f5b089 100644
---- a/drivers/mmc/core/mmc.c
-+++ b/drivers/mmc/core/mmc.c
-@@ -208,7 +208,7 @@ static int mmc_read_ext_csd(struct mmc_card *card)
- 	}
+diff --git a/kernel/trace/blktrace.c b/kernel/trace/blktrace.c
+index 108f4f7..1ffcbd4 100644
+--- a/kernel/trace/blktrace.c
++++ b/kernel/trace/blktrace.c
+@@ -147,8 +147,8 @@ static int act_log_check(struct blk_trace *bt, u32 what, sector_t sector,
+ /*
+  * Data direction bit lookup
+  */
+-static u32 ddir_act[2] __read_mostly = { BLK_TC_ACT(BLK_TC_READ),
+-					 BLK_TC_ACT(BLK_TC_WRITE) };
++static const u32 ddir_act[2] = { BLK_TC_ACT(BLK_TC_READ),
++				 BLK_TC_ACT(BLK_TC_WRITE) };
  
- 	ext_csd_struct = ext_csd[EXT_CSD_REV];
--	if (ext_csd_struct > 2) {
-+	if (ext_csd_struct > 3) {
- 		printk(KERN_ERR "%s: unrecognised EXT_CSD structure "
- 			"version %d\n", mmc_hostname(card->host),
- 			ext_csd_struct);
--- 
-1.5.4.3
+ /* The ilog2() calls fall out because they're constant */
+ #define MASK_TC_BIT(rw, __name) ((rw & (1 << BIO_RW_ ## __name)) << \
+@@ -1116,10 +1116,10 @@ static void blk_tracer_reset(struct trace_array *tr)
+ 	blk_tracer_stop(tr);
+ }
+ 
+-static struct {
++static const struct {
+ 	const char *act[2];
+ 	int	   (*print)(struct trace_seq *s, const struct trace_entry *ent);
+-} what2act[] __read_mostly = {
++} what2act[] = {
+ 	[__BLK_TA_QUEUE]	= {{  "Q", "queue" },	   blk_log_generic },
+ 	[__BLK_TA_BACKMERGE]	= {{  "M", "backmerge" },  blk_log_generic },
+ 	[__BLK_TA_FRONTMERGE]	= {{  "F", "frontmerge" }, blk_log_generic },
