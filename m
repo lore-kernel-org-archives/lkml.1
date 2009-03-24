@@ -1,44 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756019AbZCXXVr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755910AbZCXXXT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756019AbZCXXVr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 19:21:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753994AbZCXXVi
+	id S1755910AbZCXXXT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 19:23:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753994AbZCXXXI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 19:21:38 -0400
-Received: from mail-bw0-f169.google.com ([209.85.218.169]:48911 "EHLO
-	mail-bw0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753940AbZCXXVh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 19:21:37 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:user-agent:x-accept-language:mime-version:to
-         :subject:x-enigmail-version:content-type:content-transfer-encoding;
-        b=I48hzu9nHfRli9hBf4dlfXtc7IUvnzMDJ1GtzZGGjUZf+k1oUs7Kc0aqrEJ/3X6nWU
-         BeDnbTK079dsSI6PZbQWfgyxNxUUKuUEx26fhJHH3DmRii/RrIUXaY2WNbPdlnbB4jr8
-         /ta0peejtg/nKqvhY36o9ilrJGMHjByXacBis=
-Message-ID: <49C96AFC.2030508@googlemail.com>
-Date: Wed, 25 Mar 2009 00:21:32 +0100
-From: Michael Riepe <michael.riepe@googlemail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686 (x86_64); en-US; rv:1.7.13) Gecko/20060417
-X-Accept-Language: de-de, de, en-us, en
-MIME-Version: 1.0
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Where did struct user_regs_struct{,32} go?
-X-Enigmail-Version: 0.91.0.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Tue, 24 Mar 2009 19:23:08 -0400
+Received: from givry.fdupont.fr ([91.121.26.85]:64446 "EHLO givry.fdupont.fr"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753107AbZCXXXH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Mar 2009 19:23:07 -0400
+X-Greylist: delayed 1242 seconds by postgrey-1.27 at vger.kernel.org; Tue, 24 Mar 2009 19:23:06 EDT
+Message-Id: <200903242302.n2ON25u4024288@givry.fdupont.fr>
+From: Francis Dupont <Francis.Dupont@fdupont.fr>
+To: linux-kernel@vger.kernel.org
+Cc: coreteam@netfilter.org, Francis_Dupont@isc.org
+Subject: netfilter spurious ELOOP
+Date: Wed, 25 Mar 2009 00:02:05 +0100
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-It seems that 2.6.29 (and maybe also 2.6.28) doesn't export the
-structures any longer (they used to reside in <asm/user_{32,64}.h>).
-<linux/user.h> is gone as well. There is only <sys/user.h>, but it
-doesn't define struct user_regs_struct32. Am I supposed to roll my own
-when I want to ptrace(PTRACE_GETREGS) the registers of a 32-bit process
-from 64-bit land?
+summary: iptables command gets spurious ELOOP errors
 
--- 
-Michael "Tired" Riepe <michael.riepe@googlemail.com>
-X-Tired: Each morning I get up I die a little
+report: when a rule with a target like MARK --set-mark 0x80000001
+then adding new other rules can failed with "Too many levels of symbolic
+links" (aka ELOOP) error.
+The problem is in kernel net/ipv4/netfilter/ip_tables.c in the 
+mark_source_chains() routine which checks the verdict field of
+targets even for not standard targets.
+
+keywords: netfilter target eloop
+
+environment: recent gentoo and fedora. Problem not fixed in
+linux-2.6.29 (last stable version taken from kernel.org some minutes ago).
+
+proposed fix (checked):
+diff --unified=10 net/ipv4/netfilter/ip_tables.c*
+at the end of the message.
+
+request: can you send to me at both my personal and professional addresses
+a bug/ticket number as soon as possible?
+
+Request
+
+Francis.Dupont@fdupont.fr
+
+PS: the patch:
+
+--- net/ipv4/netfilter/ip_tables.c	2009-03-23 16:12:14.000000000 -0700
++++ net/ipv4/netfilter/ip_tables.c+fix	2009-03-24 15:55:45.000000000 -0700
+@@ -489,21 +489,23 @@
+ 			e->comefrom |= ((1 << hook) | (1 << NF_INET_NUMHOOKS));
+ 
+ 			/* Unconditional return/END. */
+ 			if ((e->target_offset == sizeof(struct ipt_entry)
+ 			    && (strcmp(t->target.u.user.name,
+ 				       IPT_STANDARD_TARGET) == 0)
+ 			    && t->verdict < 0
+ 			    && unconditional(&e->ip)) || visited) {
+ 				unsigned int oldpos, size;
+ 
+-				if (t->verdict < -NF_MAX_VERDICT - 1) {
++				if ((t->verdict < -NF_MAX_VERDICT - 1) &&
++				    (strcmp(t->target.u.user.name,
++					    IPT_STANDARD_TARGET) == 0)) {
+ 					duprintf("mark_source_chains: bad "
+ 						"negative verdict (%i)\n",
+ 								t->verdict);
+ 					return 0;
+ 				}
+ 
+ 				/* Return: backtrack through the last
+ 				   big jump. */
+ 				do {
+ 					e->comefrom ^= (1<<NF_INET_NUMHOOKS);
