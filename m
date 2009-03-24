@@ -1,63 +1,141 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761334AbZCXOQu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761481AbZCXOSl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761334AbZCXOQu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 10:16:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757963AbZCXOH2
+	id S1761481AbZCXOSl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 10:18:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759953AbZCXOLt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 10:07:28 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:54869 "EHLO mx2.suse.de"
+	Tue, 24 Mar 2009 10:11:49 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:37595 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758256AbZCXOHZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 10:07:25 -0400
-Date: Tue, 24 Mar 2009 15:07:21 +0100
-From: Jan Kara <jack@suse.cz>
-To: Chris Mason <chris.mason@oracle.com>
-Cc: Jan Kara <jack@suse.cz>, Nick Piggin <nickpiggin@yahoo.com.au>,
-       "Martin J. Bligh" <mbligh@mbligh.org>, linux-ext4@vger.kernel.org,
-       Ying Han <yinghan@google.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-mm <linux-mm@kvack.org>, guichaz@gmail.com,
-       Alex Khesin <alexk@google.com>, Mike Waychison <mikew@google.com>,
-       Rohit Seth <rohitseth@google.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: ftruncate-mmap: pages are lost after writing to mmaped file.
-Message-ID: <20090324140720.GE23439@duck.suse.cz>
-References: <604427e00903181244w360c5519k9179d5c3e5cd6ab3@mail.gmail.com> <200903200248.22623.nickpiggin@yahoo.com.au> <20090319164638.GB3899@duck.suse.cz> <200903241844.22851.nickpiggin@yahoo.com.au> <20090324123935.GD23439@duck.suse.cz> <20090324125510.GA9434@duck.suse.cz> <20090324132637.GA14607@duck.suse.cz> <1237903305.17910.4.camel@think.oraclecorp.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1237903305.17910.4.camel@think.oraclecorp.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	id S1760842AbZCXOLq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Mar 2009 10:11:46 -0400
+From: David Teigland <teigland@redhat.com>
+To: linux-kernel@vger.kernel.org
+Cc: Steven Whitehouse <swhiteho@redhat.com>
+Subject: [PATCH 1/7] dlm: Change rwlock which is only used in write mode to a spinlock
+Date: Tue, 24 Mar 2009 09:07:46 -0500
+Message-Id: <1237903672-18913-2-git-send-email-teigland@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue 24-03-09 10:01:45, Chris Mason wrote:
-> On Tue, 2009-03-24 at 14:26 +0100, Jan Kara wrote:
-> > On Tue 24-03-09 13:55:10, Jan Kara wrote:
-> 
-> > >   And one more interesting thing I don't yet fully understand - I see pages
-> > > having PageError() set when they are removed from page cache (and they have
-> > > been faulted in before). It's probably some interaction with pagecache
-> > > readahead...
-> >   Argh... So the problem seems to be that get_block() occasionally returns
-> > ENOSPC and we then discard the dirty data (hmm, we could give at least a
-> > warning for that). I'm not yet sure why getblock behaves like this because
-> > the filesystem seems to have enough space but anyway this seems to be some
-> > strange fs trouble as well.
-> > 
-> 
-> Ouch.  Perhaps the free space is waiting on a journal commit?
-  Yes, exactly. I've already found there's lot of space hold by the
-committing transaction (it can easily hold a few hundred megs or a few gigs
-with larger journal and my UML images aren't that big...). And writepage()
-implementation in ext3 does not have a logic to retry. Also
-block_write_full_page() clears buffers dirty bits so it's not easy to retry
-even if we did it. I'm now looking into how to fix this...
+From: Steven Whitehouse <swhiteho@redhat.com>
 
-									Honza
+The ls_dirtbl[].lock was an rwlock, but since it was only used in write
+mode a spinlock will suffice.
+
+Signed-off-by: Steven Whitehouse <swhiteho@redhat.com>
+Signed-off-by: David Teigland <teigland@redhat.com>
+---
+ fs/dlm/dir.c          |   18 +++++++++---------
+ fs/dlm/dlm_internal.h |    2 +-
+ fs/dlm/lockspace.c    |    2 +-
+ 3 files changed, 11 insertions(+), 11 deletions(-)
+
+diff --git a/fs/dlm/dir.c b/fs/dlm/dir.c
+index 92969f8..858fba1 100644
+--- a/fs/dlm/dir.c
++++ b/fs/dlm/dir.c
+@@ -156,7 +156,7 @@ void dlm_dir_remove_entry(struct dlm_ls *ls, int nodeid, char *name, int namelen
+ 
+ 	bucket = dir_hash(ls, name, namelen);
+ 
+-	write_lock(&ls->ls_dirtbl[bucket].lock);
++	spin_lock(&ls->ls_dirtbl[bucket].lock);
+ 
+ 	de = search_bucket(ls, name, namelen, bucket);
+ 
+@@ -173,7 +173,7 @@ void dlm_dir_remove_entry(struct dlm_ls *ls, int nodeid, char *name, int namelen
+ 	list_del(&de->list);
+ 	kfree(de);
+  out:
+-	write_unlock(&ls->ls_dirtbl[bucket].lock);
++	spin_unlock(&ls->ls_dirtbl[bucket].lock);
+ }
+ 
+ void dlm_dir_clear(struct dlm_ls *ls)
+@@ -185,14 +185,14 @@ void dlm_dir_clear(struct dlm_ls *ls)
+ 	DLM_ASSERT(list_empty(&ls->ls_recover_list), );
+ 
+ 	for (i = 0; i < ls->ls_dirtbl_size; i++) {
+-		write_lock(&ls->ls_dirtbl[i].lock);
++		spin_lock(&ls->ls_dirtbl[i].lock);
+ 		head = &ls->ls_dirtbl[i].list;
+ 		while (!list_empty(head)) {
+ 			de = list_entry(head->next, struct dlm_direntry, list);
+ 			list_del(&de->list);
+ 			put_free_de(ls, de);
+ 		}
+-		write_unlock(&ls->ls_dirtbl[i].lock);
++		spin_unlock(&ls->ls_dirtbl[i].lock);
+ 	}
+ }
+ 
+@@ -307,17 +307,17 @@ static int get_entry(struct dlm_ls *ls, int nodeid, char *name,
+ 
+ 	bucket = dir_hash(ls, name, namelen);
+ 
+-	write_lock(&ls->ls_dirtbl[bucket].lock);
++	spin_lock(&ls->ls_dirtbl[bucket].lock);
+ 	de = search_bucket(ls, name, namelen, bucket);
+ 	if (de) {
+ 		*r_nodeid = de->master_nodeid;
+-		write_unlock(&ls->ls_dirtbl[bucket].lock);
++		spin_unlock(&ls->ls_dirtbl[bucket].lock);
+ 		if (*r_nodeid == nodeid)
+ 			return -EEXIST;
+ 		return 0;
+ 	}
+ 
+-	write_unlock(&ls->ls_dirtbl[bucket].lock);
++	spin_unlock(&ls->ls_dirtbl[bucket].lock);
+ 
+ 	if (namelen > DLM_RESNAME_MAXLEN)
+ 		return -EINVAL;
+@@ -330,7 +330,7 @@ static int get_entry(struct dlm_ls *ls, int nodeid, char *name,
+ 	de->length = namelen;
+ 	memcpy(de->name, name, namelen);
+ 
+-	write_lock(&ls->ls_dirtbl[bucket].lock);
++	spin_lock(&ls->ls_dirtbl[bucket].lock);
+ 	tmp = search_bucket(ls, name, namelen, bucket);
+ 	if (tmp) {
+ 		kfree(de);
+@@ -339,7 +339,7 @@ static int get_entry(struct dlm_ls *ls, int nodeid, char *name,
+ 		list_add_tail(&de->list, &ls->ls_dirtbl[bucket].list);
+ 	}
+ 	*r_nodeid = de->master_nodeid;
+-	write_unlock(&ls->ls_dirtbl[bucket].lock);
++	spin_unlock(&ls->ls_dirtbl[bucket].lock);
+ 	return 0;
+ }
+ 
+diff --git a/fs/dlm/dlm_internal.h b/fs/dlm/dlm_internal.h
+index 076e86f..d01ca0a 100644
+--- a/fs/dlm/dlm_internal.h
++++ b/fs/dlm/dlm_internal.h
+@@ -99,7 +99,7 @@ struct dlm_direntry {
+ 
+ struct dlm_dirtable {
+ 	struct list_head	list;
+-	rwlock_t		lock;
++	spinlock_t		lock;
+ };
+ 
+ struct dlm_rsbtable {
+diff --git a/fs/dlm/lockspace.c b/fs/dlm/lockspace.c
+index aa32e5f..cd8e2df 100644
+--- a/fs/dlm/lockspace.c
++++ b/fs/dlm/lockspace.c
+@@ -487,7 +487,7 @@ static int new_lockspace(char *name, int namelen, void **lockspace,
+ 		goto out_lkbfree;
+ 	for (i = 0; i < size; i++) {
+ 		INIT_LIST_HEAD(&ls->ls_dirtbl[i].list);
+-		rwlock_init(&ls->ls_dirtbl[i].lock);
++		spin_lock_init(&ls->ls_dirtbl[i].lock);
+ 	}
+ 
+ 	INIT_LIST_HEAD(&ls->ls_waiters);
 -- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
+1.5.5.6
+
