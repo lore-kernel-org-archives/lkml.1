@@ -1,281 +1,321 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759937AbZCXM5f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756698AbZCXNCV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759937AbZCXM5f (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 08:57:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757387AbZCXM50
+	id S1756698AbZCXNCV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 09:02:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753444AbZCXNCH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 08:57:26 -0400
-Received: from e36.co.us.ibm.com ([32.97.110.154]:43579 "EHLO
-	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756591AbZCXM5Z (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 08:57:25 -0400
-Date: Tue, 24 Mar 2009 18:27:10 +0530
-From: Bharata B Rao <bharata@linux.vnet.ibm.com>
-To: linux-kernel@vger.kernel.org
-Cc: Balaji Rao <balajirrao@gmail.com>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Li Zefan <lizf@cn.fujitsu.com>, Paul Menage <menage@google.com>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Subject: [PATCH -tip] cpuacct: per-cgroup utime/stime statistics - v5
-Message-ID: <20090324125710.GG3891@in.ibm.com>
-Reply-To: bharata@linux.vnet.ibm.com
+	Tue, 24 Mar 2009 09:02:07 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:49690 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753237AbZCXNCF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Mar 2009 09:02:05 -0400
+Date: Tue, 24 Mar 2009 08:58:42 -0400
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Nauman Rafique <nauman@google.com>
+Cc: Gui Jianfeng <guijianfeng@cn.fujitsu.com>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>, dpshah@google.com,
+       lizf@cn.fujitsu.com, mikew@google.com, fchecconi@gmail.com,
+       paolo.valente@unimore.it, jens.axboe@oracle.com, ryov@valinux.co.jp,
+       fernando@intellilink.co.jp, s-uchida@ap.jp.nec.com, taka@valinux.co.jp,
+       arozansk@redhat.com, jmoyer@redhat.com, oz-kernel@redhat.com,
+       balbir@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
+       containers@lists.linux-foundation.org, akpm@linux-foundation.org,
+       menage@google.com, peterz@infradead.org
+Subject: Re: [PATCH 01/10] Documentation
+Message-ID: <20090324125842.GA21389@redhat.com>
+References: <1236823015-4183-1-git-send-email-vgoyal@redhat.com> <1236823015-4183-2-git-send-email-vgoyal@redhat.com> <20090312100054.GA8024@linux.vnet.ibm.com> <20090312140450.GE10919@redhat.com> <49C0A171.8060009@cn.fujitsu.com> <20090318215529.GA3338@redhat.com> <e98e18940903232232i432f62c5r9dfd74268e1b2684@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <e98e18940903232232i432f62c5r9dfd74268e1b2684@mail.gmail.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Mon, Mar 23, 2009 at 10:32:41PM -0700, Nauman Rafique wrote:
 
-Here is the next and hopefully final version of the cpuacct
-statistics patch to obtain per-cgroup system and user times.
+[..]
+> > DESC
+> > io-controller: idle for sometime on sync queue before expiring it
+> > EDESC
+> >
+> > o When a sync queue expires, in many cases it might be empty and then
+> >  it will be deleted from the active tree. This will lead to a scenario
+> >  where out of two competing queues, only one is on the tree and when a
+> >  new queue is selected, vtime jump takes place and we don't see services
+> >  provided in proportion to weight.
+> >
+> > o In general this is a fundamental problem with fairness of sync queues
+> >  where queues are not continuously backlogged. Looks like idling is
+> >  only solution to make sure such kind of queues can get some decent amount
+> >  of disk bandwidth in the face of competion from continusouly backlogged
+> >  queues. But excessive idling has potential to reduce performance on SSD
+> >  and disks with commnad queuing.
+> >
+> > o This patch experiments with waiting for next request to come before a
+> >  queue is expired after it has consumed its time slice. This can ensure
+> >  more accurate fairness numbers in some cases.
+> 
+> Vivek, have you introduced this option just to play with it, or you
+> are planning to make it a part of the patch set. Waiting for a new
+> request to come before expiring time slice sounds problematic.
 
-Thanks for reviewing and tolerating so many iterations :)
+Why are the issues you forsee with it. This is just an extra 8ms idling
+on the sync queue that is also if think time of the queue is not high.
 
-Regards,
-Bharata.
+We already do idling on sync queues. In this case we are doing an extra
+idle even if queue has consumed its allocated quota. It helps me get
+fairness numbers and I have put it under a tunable "fairness". So by
+default this code will not kick in.
 
-cpuacct: Add stime and utime statistics
+Other possible option could be that when expiring a sync queue, don't
+remove the queue immediately from the tree and remove it later if there
+is no request from the queue in 8ms or so. I am not sure with BFQ, is it
+feasible to do that without creating issues with current implementation. 
+Current implementation was simple, so I stick to it to begin with.
 
-Add per-cgroup cpuacct controller statistics like the system and user
-time consumed by the group of tasks.
+So yes, I am planning to keep it under tunable, unless there are
+significant issues in doing that.
 
-Changelog:
+Thanks
+Vivek
 
-v5
-- In cpuacct_stats_show(), use cputime64_to_clock_t() since we are
-  operating on a 64bit variable here.
-
-v4
-- Remove comments in cpuacct_update_stats() which explained why rcu_read_lock()
-  was needed (as per Peter Zijlstra's review comments).
-- Don't say that percpu_counter_read() is broken in Documentation/cpuacct.txt
-  as per KAMEZAWA Hiroyuki's review comments.
-
-v3
-- Fix a small race in the cpuacct hierarchy walk.
-
-v2
-- stime and utime now exported in clock_t units instead of msecs.
-- Addressed the code review comments from Balbir and Li Zefan.
-- Moved to -tip tree.
-
-v1
-- Moved the stime/utime accounting to cpuacct controller.
-
-Earlier versions
-- http://lkml.org/lkml/2009/2/25/129
-
-Signed-off-by: Bharata B Rao <bharata@linux.vnet.ibm.com>
-Signed-off-by: Balaji Rao <balajirrao@gmail.com>
-Cc: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-Cc: Li Zefan <lizf@cn.fujitsu.com>
-Cc: Paul Menage <menage@google.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Acked-by: Balbir Singh <balbir@linux.vnet.ibm.com>
-Tested-by: Balbir Singh <balbir@linux.vnet.ibm.com>
----
- Documentation/cgroups/cpuacct.txt |   18 +++++++
- kernel/sched.c                    |   88 +++++++++++++++++++++++++++++++++++---
- 2 files changed, 100 insertions(+), 6 deletions(-)
-
---- a/Documentation/cgroups/cpuacct.txt
-+++ b/Documentation/cgroups/cpuacct.txt
-@@ -30,3 +30,21 @@ The above steps create a new group g1 an
- process (bash) into it. CPU time consumed by this bash and its children
- can be obtained from g1/cpuacct.usage and the same is accumulated in
- /cgroups/cpuacct.usage also.
-+
-+cpuacct.stat file lists a few statistics which further divide the
-+CPU time obtained by the cgroup into user and system times. Currently
-+the following statistics are supported:
-+
-+utime: Time spent by tasks of the cgroup in user mode.
-+stime: Time spent by tasks of the cgroup in kernel mode.
-+
-+utime and stime are in USER_HZ unit.
-+
-+cpuacct controller uses percpu_counter interface to collect utime and
-+stime. This causes two side effects:
-+
-+- It is theoretically possible to see wrong values for stime and utime.
-+  This is because percpu_counter_read() on 32bit systems isn't safe
-+  against concurrent writes.
-+- It is possible to see slightly outdated values for stime and utime
-+  due to the batch processing nature of percpu_counter.
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -1442,10 +1442,22 @@ iter_move_one_task(struct rq *this_rq, i
- 		   struct rq_iterator *iterator);
- #endif
- 
-+/* Time spent by the tasks of the cpu accounting group executing in ... */
-+enum cpuacct_stat_index {
-+	CPUACCT_STAT_UTIME,	/* ... user mode */
-+	CPUACCT_STAT_STIME,	/* ... kernel mode */
-+
-+	CPUACCT_STAT_NSTATS,
-+};
-+
- #ifdef CONFIG_CGROUP_CPUACCT
- static void cpuacct_charge(struct task_struct *tsk, u64 cputime);
-+static void cpuacct_update_stats(struct task_struct *tsk,
-+		enum cpuacct_stat_index idx, cputime_t val);
- #else
- static inline void cpuacct_charge(struct task_struct *tsk, u64 cputime) {}
-+static inline void cpuacct_update_stats(struct task_struct *tsk,
-+		enum cpuacct_stat_index idx, cputime_t val) {}
- #endif
- 
- static inline void inc_cpu_load(struct rq *rq, unsigned long load)
-@@ -4375,6 +4387,8 @@ void account_user_time(struct task_struc
- 		cpustat->nice = cputime64_add(cpustat->nice, tmp);
- 	else
- 		cpustat->user = cputime64_add(cpustat->user, tmp);
-+
-+	cpuacct_update_stats(p, CPUACCT_STAT_UTIME, cputime);
- 	/* Account for user time used */
- 	acct_update_integrals(p);
- }
-@@ -4436,6 +4450,8 @@ void account_system_time(struct task_str
- 	else
- 		cpustat->system = cputime64_add(cpustat->system, tmp);
- 
-+	cpuacct_update_stats(p, CPUACCT_STAT_STIME, cputime);
-+
- 	/* Account for system time used */
- 	acct_update_integrals(p);
- }
-@@ -9724,6 +9740,7 @@ struct cpuacct {
- 	struct cgroup_subsys_state css;
- 	/* cpuusage holds pointer to a u64-type object on every cpu */
- 	u64 *cpuusage;
-+	struct percpu_counter cpustat[CPUACCT_STAT_NSTATS];
- 	struct cpuacct *parent;
- };
- 
-@@ -9748,20 +9765,33 @@ static struct cgroup_subsys_state *cpuac
- 	struct cgroup_subsys *ss, struct cgroup *cgrp)
- {
- 	struct cpuacct *ca = kzalloc(sizeof(*ca), GFP_KERNEL);
-+	int i;
- 
- 	if (!ca)
--		return ERR_PTR(-ENOMEM);
-+		goto out;
- 
- 	ca->cpuusage = alloc_percpu(u64);
--	if (!ca->cpuusage) {
--		kfree(ca);
--		return ERR_PTR(-ENOMEM);
--	}
-+	if (!ca->cpuusage)
-+		goto out_free_ca;
-+
-+	for (i = 0; i < CPUACCT_STAT_NSTATS; i++)
-+		if (percpu_counter_init(&ca->cpustat[i], 0))
-+			goto out_free_counters;
- 
- 	if (cgrp->parent)
- 		ca->parent = cgroup_ca(cgrp->parent);
- 
- 	return &ca->css;
-+
-+out_free_counters:
-+	i--;
-+	while (i-- >= 0)
-+		percpu_counter_destroy(&ca->cpustat[i]);
-+	free_percpu(ca->cpuusage);
-+out_free_ca:
-+	kfree(ca);
-+out:
-+	return ERR_PTR(-ENOMEM);
- }
- 
- /* destroy an existing cpu accounting group */
-@@ -9769,7 +9799,10 @@ static void
- cpuacct_destroy(struct cgroup_subsys *ss, struct cgroup *cgrp)
- {
- 	struct cpuacct *ca = cgroup_ca(cgrp);
-+	int i;
- 
-+	for (i = 0; i < CPUACCT_STAT_NSTATS; i++)
-+		percpu_counter_destroy(&ca->cpustat[i]);
- 	free_percpu(ca->cpuusage);
- 	kfree(ca);
- }
-@@ -9856,6 +9889,25 @@ static int cpuacct_percpu_seq_read(struc
- 	return 0;
- }
- 
-+static const char *cpuacct_stat_desc[] = {
-+	[CPUACCT_STAT_UTIME] = "utime",
-+	[CPUACCT_STAT_STIME] = "stime",
-+};
-+
-+static int cpuacct_stats_show(struct cgroup *cgrp, struct cftype *cft,
-+		struct cgroup_map_cb *cb)
-+{
-+	struct cpuacct *ca = cgroup_ca(cgrp);
-+	int i;
-+
-+	for (i = 0; i < CPUACCT_STAT_NSTATS; i++) {
-+		s64 val = percpu_counter_read(&ca->cpustat[i]);
-+		val = cputime64_to_clock_t(val);
-+		cb->fill(cb, cpuacct_stat_desc[i], val);
-+	}
-+	return 0;
-+}
-+
- static struct cftype files[] = {
- 	{
- 		.name = "usage",
-@@ -9866,7 +9918,10 @@ static struct cftype files[] = {
- 		.name = "usage_percpu",
- 		.read_seq_string = cpuacct_percpu_seq_read,
- 	},
--
-+	{
-+		.name = "stat",
-+		.read_map = cpuacct_stats_show,
-+	},
- };
- 
- static int cpuacct_populate(struct cgroup_subsys *ss, struct cgroup *cgrp)
-@@ -9900,6 +9955,27 @@ static void cpuacct_charge(struct task_s
- 	rcu_read_unlock();
- }
- 
-+/*
-+ * Charge the system/user time to the task's accounting group.
-+ */
-+static void cpuacct_update_stats(struct task_struct *tsk,
-+		enum cpuacct_stat_index idx, cputime_t val)
-+{
-+	struct cpuacct *ca;
-+
-+	if (unlikely(!cpuacct_subsys.active))
-+		return;
-+
-+	rcu_read_lock();
-+	ca = task_ca(tsk);
-+
-+	do {
-+		percpu_counter_add(&ca->cpustat[idx], val);
-+		ca = ca->parent;
-+	} while (ca);
-+	rcu_read_unlock();
-+}
-+
- struct cgroup_subsys cpuacct_subsys = {
- 	.name = "cpuacct",
- 	.create = cpuacct_create,
+> 
+> >
+> > o Introduced a tunable "fairness". If set, io-controller will put more
+> >  focus on getting fairness right than getting throughput right.
+> >
+> >
+> > ---
+> >  block/blk-sysfs.c   |    7 ++++
+> >  block/elevator-fq.c |   85 +++++++++++++++++++++++++++++++++++++++++++++-------
+> >  block/elevator-fq.h |   12 +++++++
+> >  3 files changed, 94 insertions(+), 10 deletions(-)
+> >
+> > Index: linux1/block/elevator-fq.h
+> > ===================================================================
+> > --- linux1.orig/block/elevator-fq.h     2009-03-18 17:34:46.000000000 -0400
+> > +++ linux1/block/elevator-fq.h  2009-03-18 17:34:53.000000000 -0400
+> > @@ -318,6 +318,13 @@ struct elv_fq_data {
+> >        unsigned long long rate_sampling_start; /*sampling window start jifies*/
+> >        /* number of sectors finished io during current sampling window */
+> >        unsigned long rate_sectors_current;
+> > +
+> > +       /*
+> > +        * If set to 1, will disable many optimizations done for boost
+> > +        * throughput and focus more on providing fairness for sync
+> > +        * queues.
+> > +        */
+> > +       int fairness;
+> >  };
+> >
+> >  extern int elv_slice_idle;
+> > @@ -340,6 +347,7 @@ enum elv_queue_state_flags {
+> >        ELV_QUEUE_FLAG_idle_window,       /* elevator slice idling enabled */
+> >        ELV_QUEUE_FLAG_wait_request,      /* waiting for a request */
+> >        ELV_QUEUE_FLAG_slice_new,         /* no requests dispatched in slice */
+> > +       ELV_QUEUE_FLAG_wait_busy,         /* wait for this queue to get busy */
+> >        ELV_QUEUE_FLAG_NR,
+> >  };
+> >
+> > @@ -362,6 +370,7 @@ ELV_IO_QUEUE_FLAG_FNS(sync)
+> >  ELV_IO_QUEUE_FLAG_FNS(wait_request)
+> >  ELV_IO_QUEUE_FLAG_FNS(idle_window)
+> >  ELV_IO_QUEUE_FLAG_FNS(slice_new)
+> > +ELV_IO_QUEUE_FLAG_FNS(wait_busy)
+> >
+> >  static inline struct io_service_tree *
+> >  io_entity_service_tree(struct io_entity *entity)
+> > @@ -554,6 +563,9 @@ static inline struct io_queue *elv_looku
+> >  extern ssize_t elv_slice_idle_show(struct request_queue *q, char *name);
+> >  extern ssize_t elv_slice_idle_store(struct request_queue *q, const char *name,
+> >                                                size_t count);
+> > +extern ssize_t elv_fairness_show(struct request_queue *q, char *name);
+> > +extern ssize_t elv_fairness_store(struct request_queue *q, const char *name,
+> > +                                               size_t count);
+> >
+> >  /* Functions used by elevator.c */
+> >  extern int elv_init_fq_data(struct request_queue *q, struct elevator_queue *e);
+> > Index: linux1/block/elevator-fq.c
+> > ===================================================================
+> > --- linux1.orig/block/elevator-fq.c     2009-03-18 17:34:46.000000000 -0400
+> > +++ linux1/block/elevator-fq.c  2009-03-18 17:34:53.000000000 -0400
+> > @@ -1837,6 +1837,44 @@ void elv_ioq_served(struct io_queue *ioq
+> >                        ioq->total_service);
+> >  }
+> >
+> > +/* Functions to show and store fairness value through sysfs */
+> > +ssize_t elv_fairness_show(struct request_queue *q, char *name)
+> > +{
+> > +       struct elv_fq_data *efqd;
+> > +       unsigned int data;
+> > +       unsigned long flags;
+> > +
+> > +       spin_lock_irqsave(q->queue_lock, flags);
+> > +       efqd = &q->elevator->efqd;
+> > +       data = efqd->fairness;
+> > +       spin_unlock_irqrestore(q->queue_lock, flags);
+> > +       return sprintf(name, "%d\n", data);
+> > +}
+> > +
+> > +ssize_t elv_fairness_store(struct request_queue *q, const char *name,
+> > +                         size_t count)
+> > +{
+> > +       struct elv_fq_data *efqd;
+> > +       unsigned int data;
+> > +       unsigned long flags;
+> > +
+> > +       char *p = (char *)name;
+> > +
+> > +       data = simple_strtoul(p, &p, 10);
+> > +
+> > +       if (data < 0)
+> > +               data = 0;
+> > +       else if (data > INT_MAX)
+> > +               data = INT_MAX;
+> > +
+> > +       spin_lock_irqsave(q->queue_lock, flags);
+> > +       efqd = &q->elevator->efqd;
+> > +       efqd->fairness = data;
+> > +       spin_unlock_irqrestore(q->queue_lock, flags);
+> > +
+> > +       return count;
+> > +}
+> > +
+> >  /* Functions to show and store elv_idle_slice value through sysfs */
+> >  ssize_t elv_slice_idle_show(struct request_queue *q, char *name)
+> >  {
+> > @@ -2263,10 +2301,11 @@ void __elv_ioq_slice_expired(struct requ
+> >        assert_spin_locked(q->queue_lock);
+> >        elv_log_ioq(efqd, ioq, "slice expired upd=%d", budget_update);
+> >
+> > -       if (elv_ioq_wait_request(ioq))
+> > +       if (elv_ioq_wait_request(ioq) || elv_ioq_wait_busy(ioq))
+> >                del_timer(&efqd->idle_slice_timer);
+> >
+> >        elv_clear_ioq_wait_request(ioq);
+> > +       elv_clear_ioq_wait_busy(ioq);
+> >
+> >        /*
+> >         * if ioq->slice_end = 0, that means a queue was expired before first
+> > @@ -2482,8 +2521,9 @@ void elv_ioq_request_add(struct request_
+> >                 * immediately and flag that we must not expire this queue
+> >                 * just now
+> >                 */
+> > -               if (elv_ioq_wait_request(ioq)) {
+> > +               if (elv_ioq_wait_request(ioq) || elv_ioq_wait_busy(ioq)) {
+> >                        del_timer(&efqd->idle_slice_timer);
+> > +                       elv_clear_ioq_wait_busy(ioq);
+> >                        blk_start_queueing(q);
+> >                }
+> >        } else if (elv_should_preempt(q, ioq, rq)) {
+> > @@ -2519,6 +2559,9 @@ void elv_idle_slice_timer(unsigned long
+> >
+> >        if (ioq) {
+> >
+> > +               if (elv_ioq_wait_busy(ioq))
+> > +                       goto expire;
+> > +
+> >                /*
+> >                 * expired
+> >                 */
+> > @@ -2546,7 +2589,7 @@ out_cont:
+> >        spin_unlock_irqrestore(q->queue_lock, flags);
+> >  }
+> >
+> > -void elv_ioq_arm_slice_timer(struct request_queue *q)
+> > +void elv_ioq_arm_slice_timer(struct request_queue *q, int wait_for_busy)
+> >  {
+> >        struct elv_fq_data *efqd = &q->elevator->efqd;
+> >        struct io_queue *ioq = elv_active_ioq(q->elevator);
+> > @@ -2563,15 +2606,27 @@ void elv_ioq_arm_slice_timer(struct requ
+> >                return;
+> >
+> >        /*
+> > -        * still requests with the driver, don't idle
+> > +        * idle is disabled, either manually or by past process history
+> >         */
+> > -       if (efqd->rq_in_driver)
+> > +       if (!efqd->elv_slice_idle || !elv_ioq_idle_window(ioq))
+> >                return;
+> >
+> >        /*
+> > -        * idle is disabled, either manually or by past process history
+> > +        * This queue has consumed its time slice. We are waiting only for
+> > +        * it to become busy before we select next queue for dispatch.
+> >         */
+> > -       if (!efqd->elv_slice_idle || !elv_ioq_idle_window(ioq))
+> > +       if (efqd->fairness && wait_for_busy) {
+> > +               elv_mark_ioq_wait_busy(ioq);
+> > +               sl = efqd->elv_slice_idle;
+> > +               mod_timer(&efqd->idle_slice_timer, jiffies + sl);
+> > +               elv_log(efqd, "arm idle: %lu wait busy=1", sl);
+> > +               return;
+> > +       }
+> > +
+> > +       /*
+> > +        * still requests with the driver, don't idle
+> > +        */
+> > +       if (efqd->rq_in_driver)
+> >                return;
+> >
+> >        /*
+> > @@ -2628,6 +2683,12 @@ void *elv_fq_select_ioq(struct request_q
+> >                }
+> >        }
+> >
+> > +       /* We are waiting for this queue to become busy before it expires.*/
+> > +       if (efqd->fairness && elv_ioq_wait_busy(ioq)) {
+> > +               ioq = NULL;
+> > +               goto keep_queue;
+> > +       }
+> > +
+> >        /*
+> >         * The active queue has run out of time, expire it and select new.
+> >         */
+> > @@ -2802,10 +2863,14 @@ void elv_ioq_completed_request(struct re
+> >                        elv_ioq_set_prio_slice(q, ioq);
+> >                        elv_clear_ioq_slice_new(ioq);
+> >                }
+> > -               if (elv_ioq_slice_used(ioq) || elv_ioq_class_idle(ioq))
+> > +               if (elv_ioq_class_idle(ioq))
+> >                        elv_ioq_slice_expired(q, 1);
+> > -               else if (sync && !ioq->nr_queued)
+> > -                       elv_ioq_arm_slice_timer(q);
+> > +               else if (sync && !ioq->nr_queued) {
+> > +                       if (elv_ioq_slice_used(ioq))
+> > +                               elv_ioq_arm_slice_timer(q, 1);
+> > +                       else
+> > +                               elv_ioq_arm_slice_timer(q, 0);
+> > +               }
+> >        }
+> >
+> >        if (!efqd->rq_in_driver)
+> > Index: linux1/block/blk-sysfs.c
+> > ===================================================================
+> > --- linux1.orig/block/blk-sysfs.c       2009-03-18 17:34:28.000000000 -0400
+> > +++ linux1/block/blk-sysfs.c    2009-03-18 17:34:53.000000000 -0400
+> > @@ -282,6 +282,12 @@ static struct queue_sysfs_entry queue_sl
+> >        .show = elv_slice_idle_show,
+> >        .store = elv_slice_idle_store,
+> >  };
+> > +
+> > +static struct queue_sysfs_entry queue_fairness_entry = {
+> > +       .attr = {.name = "fairness", .mode = S_IRUGO | S_IWUSR },
+> > +       .show = elv_fairness_show,
+> > +       .store = elv_fairness_store,
+> > +};
+> >  #endif
+> >  static struct attribute *default_attrs[] = {
+> >        &queue_requests_entry.attr,
+> > @@ -296,6 +302,7 @@ static struct attribute *default_attrs[]
+> >        &queue_iostats_entry.attr,
+> >  #ifdef CONFIG_ELV_FAIR_QUEUING
+> >        &queue_slice_idle_entry.attr,
+> > +       &queue_fairness_entry.attr,
+> >  #endif
+> >        NULL,
+> >  };
+> >
