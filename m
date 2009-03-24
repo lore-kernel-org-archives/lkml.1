@@ -1,49 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761758AbZCXOU7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761501AbZCXOV5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761758AbZCXOU7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 10:20:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760825AbZCXOLy
+	id S1761501AbZCXOV5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 10:21:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761069AbZCXOOc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 10:11:54 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:37597 "EHLO mx2.redhat.com"
+	Tue, 24 Mar 2009 10:14:32 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:55330 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760846AbZCXOLq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 10:11:46 -0400
-From: David Teigland <teigland@redhat.com>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH 6/7] dlm: ignore cancel on granted lock
-Date: Tue, 24 Mar 2009 09:07:51 -0500
-Message-Id: <1237903672-18913-7-git-send-email-teigland@redhat.com>
+	id S1761124AbZCXOOb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Mar 2009 10:14:31 -0400
+Date: Tue, 24 Mar 2009 15:14:28 +0100
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
+Subject: [PATCH] Driver 'sd' needs updating
+User-Agent: Heirloom mailx 12.2 01/07/07
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-Id: <20090324141428.31E5118C7A3@pentland.suse.de>
+From: hare@suse.de (Hannes Reinecke)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Return immediately from dlm_unlock(CANCEL) if the lock is
-granted and not being converted; there's nothing to cancel.
 
-Signed-off-by: David Teigland <teigland@redhat.com>
+If a driver sets blk_queue_prep_rq() it should clean up itself
+and not rely on the bus callbacks to handle this. This removes
+the need to hook into bus->remove() as these should not be used
+at the same time as driver->remove().
+
+Signed-off-by: Hannes Reinecke <hare@suse.de>
+Signed-off-by: Kay Sievers <kay.sievers@vrfy.org>
 ---
- fs/dlm/lock.c |    7 +++++++
- 1 files changed, 7 insertions(+), 0 deletions(-)
+ drivers/scsi/scsi_lib.c    |    6 ++++++
+ drivers/scsi/scsi_sysfs.c  |   17 -----------------
+ drivers/scsi/sd.c          |    2 ++
+ drivers/scsi/sr.c          |    1 +
+ include/scsi/scsi_driver.h |    1 +
+ 5 files changed, 10 insertions(+), 17 deletions(-)
 
-diff --git a/fs/dlm/lock.c b/fs/dlm/lock.c
-index 8cb9204..205ec95 100644
---- a/fs/dlm/lock.c
-+++ b/fs/dlm/lock.c
-@@ -2186,6 +2186,13 @@ static int validate_unlock_args(struct dlm_lkb *lkb, struct dlm_args *args)
- 			goto out;
- 		}
+diff --git a/drivers/scsi/scsi_lib.c b/drivers/scsi/scsi_lib.c
+index 4b13e36..73df41b 100644
+--- a/drivers/scsi/scsi_lib.c
++++ b/drivers/scsi/scsi_lib.c
+@@ -1222,6 +1222,12 @@ int scsi_prep_fn(struct request_queue *q, struct request *req)
+ 	return scsi_prep_return(q, req, ret);
+ }
  
-+		/* there's nothing to cancel */
-+		if (lkb->lkb_status == DLM_LKSTS_GRANTED &&
-+		    !lkb->lkb_wait_type) {
-+			rv = -EBUSY;
-+			goto out;
-+		}
++void scsi_reset_prep_fn(struct request_queue *q)
++{
++	blk_queue_prep_rq(q, scsi_prep_fn);
++}
++EXPORT_SYMBOL(scsi_reset_prep_fn);
 +
- 		switch (lkb->lkb_wait_type) {
- 		case DLM_MSG_LOOKUP:
- 		case DLM_MSG_REQUEST:
+ /*
+  * scsi_dev_queue_ready: if we can send requests to sdev, return 1 else
+  * return 0.
+diff --git a/drivers/scsi/scsi_sysfs.c b/drivers/scsi/scsi_sysfs.c
+index fa4711d..91482f2 100644
+--- a/drivers/scsi/scsi_sysfs.c
++++ b/drivers/scsi/scsi_sysfs.c
+@@ -420,29 +420,12 @@ static int scsi_bus_resume(struct device * dev)
+ 	return err;
+ }
+ 
+-static int scsi_bus_remove(struct device *dev)
+-{
+-	struct device_driver *drv = dev->driver;
+-	struct scsi_device *sdev = to_scsi_device(dev);
+-	int err = 0;
+-
+-	/* reset the prep_fn back to the default since the
+-	 * driver may have altered it and it's being removed */
+-	blk_queue_prep_rq(sdev->request_queue, scsi_prep_fn);
+-
+-	if (drv && drv->remove)
+-		err = drv->remove(dev);
+-
+-	return 0;
+-}
+-
+ struct bus_type scsi_bus_type = {
+         .name		= "scsi",
+         .match		= scsi_bus_match,
+ 	.uevent		= scsi_bus_uevent,
+ 	.suspend	= scsi_bus_suspend,
+ 	.resume		= scsi_bus_resume,
+-	.remove		= scsi_bus_remove,
+ };
+ EXPORT_SYMBOL_GPL(scsi_bus_type);
+ 
+diff --git a/drivers/scsi/sd.c b/drivers/scsi/sd.c
+index aeab5d9..64e88e2 100644
+--- a/drivers/scsi/sd.c
++++ b/drivers/scsi/sd.c
+@@ -2068,6 +2068,8 @@ static int sd_remove(struct device *dev)
+ {
+ 	struct scsi_disk *sdkp = dev_get_drvdata(dev);
+ 
++	scsi_reset_prep_fn(sdkp->device->request_queue);
++
+ 	device_del(&sdkp->dev);
+ 	del_gendisk(sdkp->disk);
+ 	sd_shutdown(dev);
+diff --git a/drivers/scsi/sr.c b/drivers/scsi/sr.c
+index e7fa3ca..914733a 100644
+--- a/drivers/scsi/sr.c
++++ b/drivers/scsi/sr.c
+@@ -889,6 +889,7 @@ static int sr_remove(struct device *dev)
+ {
+ 	struct scsi_cd *cd = dev_get_drvdata(dev);
+ 
++	scsi_reset_prep_fn(cd->device->request_queue);
+ 	del_gendisk(cd->disk);
+ 
+ 	mutex_lock(&sr_ref_mutex);
+diff --git a/include/scsi/scsi_driver.h b/include/scsi/scsi_driver.h
+index 1f5ca7f..2e22929 100644
+--- a/include/scsi/scsi_driver.h
++++ b/include/scsi/scsi_driver.h
+@@ -32,5 +32,6 @@ int scsi_setup_blk_pc_cmnd(struct scsi_device *sdev, struct request *req);
+ int scsi_setup_fs_cmnd(struct scsi_device *sdev, struct request *req);
+ int scsi_prep_state_check(struct scsi_device *sdev, struct request *req);
+ int scsi_prep_return(struct request_queue *q, struct request *req, int ret);
++int scsi_reset_prep_fn(struct request_queue *);
+ 
+ #endif /* _SCSI_SCSI_DRIVER_H */
 -- 
-1.5.5.6
+1.5.3.2
 
