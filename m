@@ -1,158 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758542AbZCXPfd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761627AbZCXPgW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758542AbZCXPfd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 11:35:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757273AbZCXPfQ
+	id S1761627AbZCXPgW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 11:36:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756772AbZCXPgK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 11:35:16 -0400
-Received: from smtp104.mail.mud.yahoo.com ([209.191.85.214]:47451 "HELO
-	smtp104.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1755924AbZCXPfO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 11:35:14 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=xs+7coLp+tslaq0zUla1VvfPiCASgJbgDfnQ4ChkuAnDZShsvZzP1zp7S4I4MaaCYjRuJ7repxPND4jOYuf9KvUPfhqWnf46ZHAK9y0kUY4hMFW3d2uO8uypERcbKBBYqLU0TEIwdVGInZ4JDRZ5yU35wOsr8LLH6mGwKw72NVg=  ;
-X-YMail-OSG: G62wY64VM1kHX5ZLDnl0PQWCD5CvI423_Hg1P64g_Y0dpGTPpJrCn8EEAxG4dQ2NkWI.083XtKyRCfCeEoynzkzci_0JFMfW2zBZVrTCRuM7QjElA1tfq33x2WRRM83op2QnJuvw9KOlPKsPoYT7qncs2oQTuBw05ovAGY3PbS8TlO68.H.uJyKAC3rqEGyldtoCN8NvX5bleXEWzYth.sckRKOy0DwS4fw-
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: ftruncate-mmap: pages are lost after writing to mmaped file.
-Date: Wed, 25 Mar 2009 02:35:01 +1100
-User-Agent: KMail/1.9.51 (KDE/4.0.4; ; )
-Cc: Jan Kara <jack@suse.cz>, "Martin J. Bligh" <mbligh@mbligh.org>,
-       linux-ext4@vger.kernel.org, Ying Han <yinghan@google.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "linux-kernel" <linux-kernel@vger.kernel.org>,
-       "linux-mm" <linux-mm@kvack.org>, guichaz@gmail.com,
-       Alex Khesin <alexk@google.com>, Mike Waychison <mikew@google.com>,
-       Rohit Seth <rohitseth@google.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-References: <604427e00903181244w360c5519k9179d5c3e5cd6ab3@mail.gmail.com> <200903241844.22851.nickpiggin@yahoo.com.au> <20090324033204.64f3da9d.akpm@linux-foundation.org>
-In-Reply-To: <20090324033204.64f3da9d.akpm@linux-foundation.org>
+	Tue, 24 Mar 2009 11:36:10 -0400
+Received: from kroah.org ([198.145.64.141]:57660 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1757226AbZCXPgJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Mar 2009 11:36:09 -0400
+Date: Tue, 24 Mar 2009 08:33:29 -0700
+From: Greg KH <greg@kroah.com>
+To: hooanon05@yahoo.co.jp
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: Q. DEBUG_FS and SYSFS config (Re: [RFC Aufs2 #3 2/2] split
+	'xino' entry under sysfs)
+Message-ID: <20090324153329.GA13705@kroah.com>
+References: <20090320004539.GF18781@kroah.com> <3934.1237515949@jrobl> <20090320024249.GA19989@kroah.com> <4443.1237517709@jrobl> <20090320030608.GA2638@kroah.com> <5142.1237521581@jrobl> <20090320041811.GA3352@kroah.com> <6218.1237526149@jrobl> <20090320054437.GC3993@kroah.com> <2778.1237882600@jrobl>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200903250235.02816.nickpiggin@yahoo.com.au>
+In-Reply-To: <2778.1237882600@jrobl>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 24 March 2009 21:32:04 Andrew Morton wrote:
-> On Tue, 24 Mar 2009 18:44:21 +1100 Nick Piggin <nickpiggin@yahoo.com.au> 
-wrote:
-> > On Friday 20 March 2009 03:46:39 Jan Kara wrote:
-> > > On Fri 20-03-09 02:48:21, Nick Piggin wrote:
-> > > > Holding mapping->private_lock over the __set_page_dirty should
-> > > > fix it, although I guess you'd want to release it before calling
-> > > > __mark_inode_dirty so as not to put inode_lock under there. I
-> > > > have a patch for this if it sounds reasonable.
-> > >
-> > >   Yes, that seems to be a bug - the function actually looked suspitious
-> > > to me yesterday but I somehow convinced myself that it's fine. Probably
-> > > because fsx-linux is single-threaded.
-> >
-> > After a whole lot of chasing my own tail in the VM and buffer layers,
-> > I think it is a problem in ext2 (and I haven't been able to reproduce
-> > with ext3 yet, which might lend weight to that, although as we have
-> > seen, it is very timing dependent).
-> >
-> > That would be slightly unfortunate because we still have Jan's ext3
-> > problem, and also another reported problem of corruption on ext3 (on
-> > brd driver).
-> >
-> > Anyway, when I have reproduced the problem with the test case, the
-> > "lost" writes are all reported to be holes. Unfortunately, that doesn't
-> > point straight to the filesystem, because ext2 allocates blocks in this
-> > case at writeout time, so if dirty bits are getting lost, then it would
-> > be normal to see holes.
-> >
-> > I then put in a whole lot of extra infrastructure to track metadata about
-> > each struct page (when it was last written out, when it last had the
-> > number of writable ptes reach 0, when the dirty bits were last cleared
-> > etc). And none of the normal asertions were triggering: eg. when any page
-> > is removed from pagecache (except truncates), it has always had all its
-> > buffers written out *after* all ptes were made readonly or unmapped. Lots
-> > of other tests and crap like that.
-> >
-> > So I tried what I should have done to start with and did an e2fsck after
-> > seeing corruption. Yes, it comes up with errors.
->
-> Do you recall what the errors were?
+On Tue, Mar 24, 2009 at 05:16:40PM +0900, hooanon05@yahoo.co.jp wrote:
+> 
+> Greg KH:
+> > No one disables sysfs that I know of.  Heck, my phone enables sysfs...
+> > 
+> > > Addition to set limit, there is one more reason to adopt seq_file.
+> > > Because the printed string is a path, it may contain unprintable
+> > > characters. seq_file has a good interface seq_path() which supports
+> > > escaping such characters.
+> > 
+> > That is true.  Ok, let's see the final result and I'll be glad to look
+> > at it.
+> 
+> Hi Greg,
+> 
+> Currently I am testing locally about new aufs entries under debugfs, and
+> I found a strange issue about configuration.
+> 
+> First, configure "normaly".
+> General setup
+>   [ ] Configure standard kernel features (for small systems)  --->
+> 
+> $ egrep -i '(sysfs|debug_fs)' .config
+> CONFIG_SYSFS_DEPRECATED=y
+> CONFIG_SYSFS_DEPRECATED_V2=y
 
-OK, after running several tests in parallel and having 3 of them
-blow up, I unmounted the fs (so error-case files are still intact).
+You should disable those two options, no modern distro needs them
+anymore.
 
-# e2fsck -fn /dev/ram0
-e2fsck 1.41.3 (12-Oct-2008)
-Pass 1: Checking inodes, blocks, and sizes
-Inode 16, i_blocks is 131594, should be 131566.  Fix? no
+> CONFIG_SYSFS=y
+> CONFIG_DEBUG_FS=y
+> # CONFIG_FAULT_INJECTION_DEBUG_FS is not set
+> 
+> Next, enable EMBEDED, and then disable SYSFS.
+> General setup
+>   [*] Configure standard kernel features (for small systems)  --->
+> File systems
+>   Pseudo filesystems  --->
+>     [ ] sysfs file system support
+> 
+> $ egrep -i '(sysfs|debug_fs)' .config
+> # CONFIG_SYSFS is not set
+> CONFIG_DEBUG_FS=y
+> 
+> SYSFS is disabled expectedly, but DEBUG_FS is still enabled,
+> while "depends on SYSFS" is specified for DEBUG_FS.
+> 
+> Is this expected behaviour?
+> In other words, can I assume "when DEBUG_FS is enabled, SYSFS must be
+> enabled too" safely?
 
-Inode 18, i_blocks is 131588, should be 131576.  Fix? no
+Your code should not worry about either of these, it will "just work"
+either way.
 
-Inode 21, i_blocks is 131594, should be 131552.  Fix? no
+As for if there is a bug here, I don't know, the kbuild dependancies
+should fix it up if you run "make oldconfig" right?
 
-Pass 2: Checking directory structure
-Pass 3: Checking directory connectivity
-Pass 4: Checking reference counts
-Pass 5: Checking group summary information
-Block bitmap differences:  -(628209--628220) -628231 -628233 -(638751--638755) 
--638765 -(646271--646295) -(646301--646304) -647609 -(651501--651505) -651509 
--(651719--651726) -(651732--651733) -(665666--665670)
-Fix? no
+thanks,
 
-
-/dev/ram0: ********** WARNING: Filesystem still has errors **********
-
-/dev/ram0: 21/229376 files (4.8% non-contiguous), 407105/3670016 blocks
-
-ino 16, 18, 21 of course are the files with errors.
-
-
-inode 18 is the simplest case with just one hole, so let's look at that:
-
-#hexdump file9
-0000000 ffff ffff ffff ffff ffff ffff ffff ffff
-*
-3c8c000 0000 0000 0000 0000 0000 0000 0000 0000
-*
-3c8d400 ffff ffff ffff ffff ffff ffff ffff ffff
-*
-4000000
-
-
-Let's take a look at our hole then:
-
-#./bmap file9  // bmap is modified to print hex offsets
-[... lots of stuff ...]
-3c82000-3c82c00: 26fd0400-26fd1000 (1000)
-3c83000-3c83c00: 26fd3400-26fd4000 (1000)
-3c84000-3c84c00: 26fc9c00-26fca800 (1000)
-3c85000-3c85c00: 26fcc400-26fcd000 (1000)
-3c86000-3c86c00: 26fcf400-26fd0000 (1000)
-3c87000-3c87c00: 26fd2400-26fd3000 (1000)
-3c88000-3c88c00: 26fd5400-26fd6000 (1000)
-3c89000-3c8bc00: 26fd7400-26fda000 (3000)
-3c8c000-3c8c000: 0-0 (400)
-3c8c400-3c8c400: 0-0 (400)
-3c8c800-3c8c800: 0-0 (400)
-3c8cc00-3c8cc00: 0-0 (400)
-3c8d000-3c8d000: 0-0 (400)
-3c8d400-3c8dc00: 26fcb800-26fcc000 (c00)
-3c8e000-3c8ec00: 26fce400-26fcf000 (1000)
-3c8f000-3c8fc00: 26fd1400-26fd2000 (1000)
-3c90000-3c99c00: 27924400-2792e000 (a000)
-3c9a000-3c9ac00: 2792f000-2792fc00 (1000)
-3c9b000-3c9bc00: 27931000-27931c00 (1000)
-3c9c000-3c9cc00: 27933000-27933c00 (1000)
-3c9d000-3c9dc00: 27935000-27935c00 (1000)
-3c9e000-3c9ec00: 27938000-27938c00 (1000)
-3c9f000-3c9fc00: 2793a000-2793ac00 (1000)
-[... lots more stuff ...]
-
-3.5G filesystem image bzip2s down to 500K if anybody wants it I
-can send it privately.
-
+greg k-h
