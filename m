@@ -1,73 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753283AbZCXVHe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752151AbZCXVNX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753283AbZCXVHe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 17:07:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752166AbZCXVHW
+	id S1752151AbZCXVNX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 17:13:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750911AbZCXVNI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 17:07:22 -0400
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:51621 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752009AbZCXVHU (ORCPT
+	Tue, 24 Mar 2009 17:13:08 -0400
+Received: from wf-out-1314.google.com ([209.85.200.168]:10497 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750849AbZCXVNF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 17:07:20 -0400
-Date: Tue, 24 Mar 2009 22:07:15 +0100
-From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
-	<u.kleine-koenig@pengutronix.de>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>,
-       rt-users <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Peter Zijlstra <peterz@infradead.org>, Carsten Emde <ce@ceag.ch>,
-       Clark Williams <williams@redhat.com>,
-       Frank Rowand <frank.rowand@am.sony.com>
-Subject: Re: [Announce] 2.6.29-rc8-rt3
-Message-ID: <20090324210715.GA10130@pengutronix.de>
-References: <alpine.LFD.2.00.0902112332370.415@localhost.localdomain> <alpine.LFD.2.00.0902122353050.16972@localhost.localdomain> <alpine.LFD.2.00.0902231854360.3523@localhost.localdomain> <alpine.LFD.2.00.0902241849230.3523@localhost.localdomain> <alpine.LFD.2.00.0902241856480.9135@localhost.localdomain> <alpine.LFD.2.00.0903122013230.29264@localhost.localdomain> <alpine.LFD.2.00.0903200014320.29264@localhost.localdomain> <alpine.LFD.2.00.0903201832590.29264@localhost.localdomain> <alpine.LFD.2.00.0903231723090.29264@localhost.localdomain> <20090324110431.GA6058@nowhere>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20090324110431.GA6058@nowhere>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
-X-SA-Exim-Mail-From: ukl@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
+	Tue, 24 Mar 2009 17:13:05 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=V9i3GTSOYUYMcBm09btjKs+C4rR5jQyzWwbZbCNuo/Yzpr56RdU0cipC7vUzhCAYys
+         RnA9Yno55DUPF0EH8GFOzXpolkBKxSSkz/Qxedufgz5i9X+HztcW5kmyX1KkV3vxq5+d
+         o1OPGauY2e9YcZWwcvTkCX1lsTXimYBLFcvBI=
+From: stoyboyker@gmail.com
+To: linux-kernel@vger.kernel.org
+Cc: Stoyan Gaydarov <stoyboyker@gmail.com>
+Subject: [PATCH 00/13] changes for ioctls to unlocked
+Date: Tue, 24 Mar 2009 16:12:35 -0500
+Message-Id: <1237929168-15341-1-git-send-email-stoyboyker@gmail.com>
+X-Mailer: git-send-email 1.6.2.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+From: Stoyan Gaydarov <stoyboyker@gmail.com>
 
-> >     http://www.kernel.org/pub/linux/kernel/v2.6/testing/linux-2.6.29-rc8.tar.bz2
-> >     http://www.kernel.org/pub/linux/kernel/projects/rt/patch-2.6.29-rc8-rt3.bz2
-> 
-> 
-> Hi,
-> 
-> It doesn't seem to be available (404).
-> But I can see a 2.6.29-rc8-rt4.bz2 downloadable.
-> 
-> Thanks.
-This is a channel log from #linux-rt
+This patch set changes some ioctl over to unlocked and adds all the necessary locks.
 
-19:57 < clark|w> tglx, just how small was the -rt3 window (which I hit btw)?
-19:58 < tglx> you mean how long -rt3 was up on the web ?
-19:58 < clark|w> yeah
-19:58 < tglx> half an hour or so
-19:59 < clark|w> because I got it, built/booted it (64-bit) and was running it 
-                 up til thismorning when I saw that you'd released -rt4 :)
-19:59 < tglx> 64bit was fine
-19:59 < tglx> I fixed a 32bit PAE bug in -rt2 and when I pushed out -rt3 I did 
-              not notice that half of the fix was lost
-20:00 < tglx> so I zapped it and pushed out rt4
-20:00 < clark|w> cool
-20:00 < clark|w> good think I'm 64bit clean :)
-20:00 < tglx> but I was too tired to send out another mail
+Stoyan Gaydarov (13):
+  [staging] changed ioctls to unlocked
+  [cris/arch-v10] changed ioctls to unlocked
+  [oss] changed ioctls to unlocked
+  [blackfin] changed ioctls to unlocked
+  [s390] changed ioctls to unlocked
+  [scsi] changed ioctls to unlocked
+  [usb] changed ioctls to unlocked
+  [watchdog] changed ioctls to unlocked
+  [sbus] changed ioctls to unlocked
+  [drivers/char] changed ioctls to unlocked
+  [hwmon] changed ioctls to unlocked
+  [drivers/media] changed ioctls to unlocked
+  [drivers] changed ioctls to unlocked
 
-Just FYI
-Uwe
+ arch/blackfin/mach-bf561/coreb.c         |    8 +-
+ arch/cris/arch-v10/drivers/ds1302.c      |   59 ++++++++++----
+ arch/cris/arch-v10/drivers/gpio.c        |   28 ++++---
+ arch/cris/arch-v10/drivers/pcf8563.c     |   33 ++++++--
+ arch/cris/arch-v10/drivers/sync_serial.c |   18 +++--
+ drivers/char/applicom.c                  |   16 +++-
+ drivers/char/hpet.c                      |   12 ++-
+ drivers/hwmon/fschmd.c                   |   15 +++-
+ drivers/media/dvb/bt8xx/dst_ca.c         |    7 +-
+ drivers/media/video/dabusb.c             |   11 ++-
+ drivers/message/i2o/i2o_config.c         |   13 ++--
+ drivers/parisc/eisa_eeprom.c             |    5 +-
+ drivers/s390/char/tape_char.c            |   47 ++++++++----
+ drivers/s390/char/vmwatchdog.c           |   57 +++++++++-----
+ drivers/sbus/char/jsflash.c              |   15 +++-
+ drivers/sbus/char/uctrl.c                |    7 +-
+ drivers/scsi/osst.c                      |   12 ++-
+ drivers/staging/epl/EplApiLinuxKernel.c  |   10 ++-
+ drivers/staging/meilhaus/memain.c        |  124 ++++++++++++++++++++----------
+ drivers/staging/poch/poch.c              |   25 +++++--
+ drivers/usb/mon/mon_bin.c                |   53 +++++++++----
+ drivers/watchdog/riowd.c                 |   37 +++++++---
+ sound/oss/sh_dac_audio.c                 |   60 ++++++++++-----
+ 23 files changed, 454 insertions(+), 218 deletions(-)
 
--- 
-Pengutronix e.K.                              | Uwe Kleine-König            |
-Industrial Linux Solutions                    | http://www.pengutronix.de/  |
