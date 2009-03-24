@@ -1,89 +1,147 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761226AbZCXP3g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761209AbZCXP3z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761226AbZCXP3g (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 11:29:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760565AbZCXP1x
+	id S1761209AbZCXP3z (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 11:29:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760639AbZCXP2N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 11:27:53 -0400
-Received: from e28smtp06.in.ibm.com ([59.145.155.6]:34822 "EHLO
-	e28smtp06.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760538AbZCXP1v (ORCPT
+	Tue, 24 Mar 2009 11:28:13 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:39719 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760680AbZCXP2L (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 11:27:51 -0400
-Date: Tue, 24 Mar 2009 20:57:17 +0530
-From: "K.Prasad" <prasad@linux.vnet.ibm.com>
-To: Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Cc: Alan Stern <stern@rowland.harvard.edu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Benjamin Herrenschmidt <benh@au1.ibm.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>, maneesh@linux.vnet.ibm.com,
-       Roland McGrath <roland@redhat.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       "K.Prasad" <prasad@linux.vnet.ibm.com>
-Subject: [Patch 09/11] Cleanup HW Breakpoint registers before kexec
-Message-ID: <20090324152717.GJ17918@in.ibm.com>
-References: <20090324152028.754123712@K.Prasad>
+	Tue, 24 Mar 2009 11:28:11 -0400
+Date: Tue, 24 Mar 2009 11:28:09 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Ingo Molnar <mingo@elte.hu>
+cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: [PATCH][GIT PULL] function-graph: add option for include sleep
+ times
+In-Reply-To: <20090324135833.GB32043@elte.hu>
+Message-ID: <alpine.DEB.2.00.0903241127290.22830@gandalf.stny.rr.com>
+References: <20090324135422.026619569@goodmis.org> <20090324135610.441707783@goodmis.org> <20090324135833.GB32043@elte.hu>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename=9
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Alan Stern <stern@rowland.harvard.edu>
 
-This patch disables Hardware breakpoints before doing a 'kexec' on the machine.
+Ingo,
 
-[K.Prasad: Split-out from the bigger patch and minor changes following
-           re-basing]
+Please pull the latest tip/tracing/ftrace tree, which can be found at:
 
-Signed-off-by: K.Prasad <prasad@linux.vnet.ibm.com>
-Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
----
- arch/x86/kernel/machine_kexec_32.c |    2 ++
- arch/x86/kernel/machine_kexec_64.c |    2 ++
- 2 files changed, 4 insertions(+)
+  git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
+tip/tracing/ftrace
 
-Index: linux-2.6-tip/arch/x86/kernel/machine_kexec_32.c
-===================================================================
---- linux-2.6-tip.orig/arch/x86/kernel/machine_kexec_32.c
-+++ linux-2.6-tip/arch/x86/kernel/machine_kexec_32.c
-@@ -25,6 +25,7 @@
- #include <asm/desc.h>
- #include <asm/system.h>
- #include <asm/cacheflush.h>
-+#include <asm/debugreg.h>
+
+Steven Rostedt (1):
+      function-graph: add option for include sleep times
+
+----
+ kernel/trace/ftrace.c |    7 +++++++
+ kernel/trace/trace.c  |    3 ++-
+ kernel/trace/trace.h  |    1 +
+ 3 files changed, 10 insertions(+), 1 deletions(-)
+---------------------------
+commit be6f164a02f394675e2ac2077dd354cebef5b4c0
+Author: Steven Rostedt <srostedt@redhat.com>
+Date:   Tue Mar 24 11:06:24 2009 -0400
+
+    function-graph: add option for include sleep times
+    
+    Impact: give user a choice to show times spent while sleeping
+    
+    The user may want to see the time a function spent sleeping.
+    This patch adds the trace option "sleep-time" to allow that.
+    The "sleep-time" option is default on.
+    
+     echo sleep-time > /debug/tracing/trace_options
+    
+    produces:
+    
+     ------------------------------------------
+     2)  avahi-d-3428  =>    <idle>-0
+     ------------------------------------------
+    
+     2)               |      finish_task_switch() {
+     2)   0.621 us    |        _spin_unlock_irq();
+     2)   2.202 us    |      }
+     2) ! 1002.197 us |    }
+     2) ! 1003.521 us |  }
+    
+    where as,
+    
+     echo nosleep-time > /debug/tracing/trace_options
+    
+    produces:
+    
+     0)    <idle>-0    =>  yum-upd-3416
+     ------------------------------------------
+    
+     0)               |              finish_task_switch() {
+     0)   0.643 us    |                _spin_unlock_irq();
+     0)   2.342 us    |              }
+     0) + 41.302 us   |            }
+     0) + 42.453 us   |          }
+    
+    Signed-off-by: Steven Rostedt <srostedt@redhat.com>
+
+diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
+index 0b90364..02d2de9 100644
+--- a/kernel/trace/ftrace.c
++++ b/kernel/trace/ftrace.c
+@@ -2599,6 +2599,13 @@ ftrace_graph_probe_sched_switch(struct rq *__rq, struct task_struct *prev,
+ 	unsigned long long timestamp;
+ 	int index;
  
- static void set_idt(void *newidt, __u16 limit)
- {
-@@ -202,6 +203,7 @@ void machine_kexec(struct kimage *image)
++	/*
++	 * Does the user want to count the time a function was asleep.
++	 * If so, do not update the time stamps.
++	 */
++	if (trace_flags & TRACE_ITER_SLEEP_TIME)
++		return;
++
+ 	timestamp = trace_clock_local();
  
- 	/* Interrupts aren't acceptable while we reboot */
- 	local_irq_disable();
-+	hw_breakpoint_disable();
+ 	prev->ftrace_timestamp = timestamp;
+diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
+index f0e1337..67c6a21 100644
+--- a/kernel/trace/trace.c
++++ b/kernel/trace/trace.c
+@@ -255,7 +255,7 @@ static DECLARE_WAIT_QUEUE_HEAD(trace_wait);
  
- 	if (image->preserve_context) {
- #ifdef CONFIG_X86_IO_APIC
-Index: linux-2.6-tip/arch/x86/kernel/machine_kexec_64.c
-===================================================================
---- linux-2.6-tip.orig/arch/x86/kernel/machine_kexec_64.c
-+++ linux-2.6-tip/arch/x86/kernel/machine_kexec_64.c
-@@ -18,6 +18,7 @@
- #include <asm/pgtable.h>
- #include <asm/tlbflush.h>
- #include <asm/mmu_context.h>
-+#include <asm/debugreg.h>
+ /* trace_flags holds trace_options default values */
+ unsigned long trace_flags = TRACE_ITER_PRINT_PARENT | TRACE_ITER_PRINTK |
+-	TRACE_ITER_ANNOTATE | TRACE_ITER_CONTEXT_INFO;
++	TRACE_ITER_ANNOTATE | TRACE_ITER_CONTEXT_INFO | TRACE_ITER_SLEEP_TIME;
  
- static int init_one_level2_page(struct kimage *image, pgd_t *pgd,
- 				unsigned long addr)
-@@ -282,6 +283,7 @@ void machine_kexec(struct kimage *image)
+ /**
+  * trace_wake_up - wake up tasks waiting for trace input
+@@ -316,6 +316,7 @@ static const char *trace_options[] = {
+ 	"context-info",
+ 	"latency-format",
+ 	"global-clock",
++	"sleep-time",
+ 	NULL
+ };
  
- 	/* Interrupts aren't acceptable while we reboot */
- 	local_irq_disable();
-+	hw_breakpoint_disable();
+diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
+index 7cfb741..d7410bb 100644
+--- a/kernel/trace/trace.h
++++ b/kernel/trace/trace.h
+@@ -683,6 +683,7 @@ enum trace_iterator_flags {
+ 	TRACE_ITER_CONTEXT_INFO		= 0x20000, /* Print pid/cpu/time */
+ 	TRACE_ITER_LATENCY_FMT		= 0x40000,
+ 	TRACE_ITER_GLOBAL_CLK		= 0x80000,
++	TRACE_ITER_SLEEP_TIME		= 0x100000,
+ };
  
- 	if (image->preserve_context) {
- #ifdef CONFIG_X86_IO_APIC
+ /*
+
 
