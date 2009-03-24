@@ -1,59 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755279AbZCXXTl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754710AbZCXXUN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755279AbZCXXTl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 19:19:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753866AbZCXXTc
+	id S1754710AbZCXXUN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 19:20:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754218AbZCXXT5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 19:19:32 -0400
-Received: from vena.lwn.net ([206.168.112.25]:38229 "EHLO vena.lwn.net"
+	Tue, 24 Mar 2009 19:19:57 -0400
+Received: from leb.cs.unibo.it ([130.136.1.102]:54105 "EHLO leb.cs.unibo.it"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753848AbZCXXTb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 19:19:31 -0400
-Date: Tue, 24 Mar 2009 17:19:27 -0600
-From: Jonathan Corbet <corbet@lwn.net>
-To: Greg KH <gregkh@suse.de>
-Cc: stoyboyker@gmail.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 01/13] [staging] changed ioctls to unlocked
-Message-ID: <20090324171927.724da2f5@bike.lwn.net>
-In-Reply-To: <20090324220136.GA12128@suse.de>
-References: <1237929168-15341-2-git-send-email-stoyboyker@gmail.com>
-	<20090324220136.GA12128@suse.de>
-Organization: LWN.net
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.15.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8bit
+	id S1754158AbZCXXT4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Mar 2009 19:19:56 -0400
+Date: Wed, 25 Mar 2009 00:19:50 +0100
+From: Renzo Davoli <renzo@cs.unibo.it>
+To: Am??rico Wang <xiyou.wangcong@gmail.com>
+Cc: linux-kernel@vger.kernel.org, Jeff Dike <jdike@addtoit.com>,
+       user-mode-linux-devel@lists.sourceforge.net
+Subject: Re: [PATCH 1/2] ptrace_vm: ptrace for syscall emulation virtual
+	machines
+Message-ID: <20090324231950.GF22695@cs.unibo.it>
+References: <20090204080248.GB17452@cs.unibo.it> <20090310214450.GD5213@cs.unibo.it> <20090311134103.GC12753@cs.unibo.it> <20090316075113.GD3360@hack>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090316075113.GD3360@hack>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 24 Mar 2009 15:01:36 -0700
-Greg KH <gregkh@suse.de> wrote:
+patch #1. Rebased on 2.6.29 and Cong's objections fixed.
 
-> Hm, why?  What does this patch accomplish becides just pushing the
-> lock_kernel into the driver?  Shouldn't you fix the code to not need
-> the lock_kernel at all instead?
+	renzo 
 
-Having done a lot of this myself, I can attest to what is going on
-here.  If you're trying to push the BKL out of the core, there's not
-much choice except to shove it down into the drivers and such below
-it.  In very simple cases you can tell that the lock isn't needed.  
-But going messing around with the locking in random drivers is a sure
-way to create nasty subtle problems.
-
-So, if a specific driver's situation is not obvious, or if it's clear
-that some sort of fix is required, it's generally best to just make the
-lock_kernel() (which has always been there) explicit.  Then people who
-actually know the driver and have the hardware to test changes can
-eliminate it at their leisure.  Pushing the BKL down gets it out of the
-core, keeps the semantics the same, and sticks a red flag on code which
-needs examination by suitably clueful maintainers.
-
-I've not looked in depth at this series of patches, but I understand
-where it's coming from.  Stoyan, if you want, I'd be happy to take
-these through the BKL-removal tree once the maintainers are happy with
-it.  OTOH, it looks like the locked ioctl() isn't going anywhere
-anytime soon, so it might be best to just send these individually
-through the appropriate subsystem trees.
-
-jon
+Signed-off-by: Renzo Davoli <renzo@cs.unibo.it>
+---
+diff -Naur linux-2.6.29/include/linux/ptrace.h linux-2.6.29-vm/include/linux/ptrace.h
+--- linux-2.6.29/include/linux/ptrace.h	2009-03-24 00:12:14.000000000 +0100
++++ linux-2.6.29-vm/include/linux/ptrace.h	2009-03-24 22:10:23.000000000 +0100
+@@ -46,6 +46,11 @@
+ #define PTRACE_EVENT_VFORK_DONE	5
+ #define PTRACE_EVENT_EXIT	6
+ 
++/* options for new PTRACE_SYSCALL syntax*/
++#define PTRACE_SYSCALL_SKIPEXIT  0x2
++#define PTRACE_SYSCALL_SKIPCALL  0x6
++#define PTRACE_SYSCALL_MASK    0x00000006
++
+ #include <asm/ptrace.h>
+ 
+ #ifdef __KERNEL__
+@@ -68,6 +73,11 @@
+ #define PT_TRACE_VFORK_DONE	0x00000100
+ #define PT_TRACE_EXIT	0x00000200
+ 
++#define PT_SYSCALL_SKIPEXIT  0x60000000
++#define PT_SYSCALL_SKIPCALL  0x40000000
++#define PT_SYSCALL_MASK      0x60000000
++#define PTRACE2PT_SYSCALL(X)	(((X) & PTRACE_SYSCALL_MASK) << 28)
++
+ #define PT_TRACE_MASK	0x000003f4
+ 
+ /* single stepping state bits (used on ARM and PA-RISC) */
+diff -Naur linux-2.6.29/include/linux/tracehook.h linux-2.6.29-vm/include/linux/tracehook.h
+--- linux-2.6.29/include/linux/tracehook.h	2009-03-24 00:12:14.000000000 +0100
++++ linux-2.6.29-vm/include/linux/tracehook.h	2009-03-24 22:04:39.000000000 +0100
+@@ -112,7 +112,7 @@
+ 	struct pt_regs *regs)
+ {
+ 	ptrace_report_syscall(regs);
+-	return 0;
++	return (task_ptrace(current) & PT_SYSCALL_SKIPCALL) ? 1 : 0;
+ }
+ 
+ /**
+@@ -134,7 +134,8 @@
+  */
+ static inline void tracehook_report_syscall_exit(struct pt_regs *regs, int step)
+ {
+-	ptrace_report_syscall(regs);
++	if (!(task_ptrace(current) & PT_SYSCALL_SKIPEXIT))
++		ptrace_report_syscall(regs);
+ }
+ 
+ /**
+diff -Naur linux-2.6.29/kernel/ptrace.c linux-2.6.29-vm/kernel/ptrace.c
+--- linux-2.6.29/kernel/ptrace.c	2009-03-24 00:12:14.000000000 +0100
++++ linux-2.6.29-vm/kernel/ptrace.c	2009-03-24 22:09:46.000000000 +0100
+@@ -396,7 +396,8 @@
+ #define is_sysemu_singlestep(request)	0
+ #endif
+ 
+-static int ptrace_resume(struct task_struct *child, long request, long data)
++static int ptrace_resume(struct task_struct *child, long request, 
++		   long addr, long data)
+ {
+ 	if (!valid_signal(data))
+ 		return -EIO;
+@@ -425,6 +426,9 @@
+ 	else
+ 		user_disable_single_step(child);
+ 
++	child->ptrace &= ~PT_SYSCALL_MASK;
++	child->ptrace |= PTRACE2PT_SYSCALL(addr);
++
+ 	child->exit_code = data;
+ 	wake_up_process(child);
+ 
+@@ -486,12 +490,12 @@
+ #endif
+ 	case PTRACE_SYSCALL:
+ 	case PTRACE_CONT:
+-		return ptrace_resume(child, request, data);
++		return ptrace_resume(child, request, addr, data);
+ 
+ 	case PTRACE_KILL:
+ 		if (child->exit_state)	/* already dead */
+ 			return 0;
+-		return ptrace_resume(child, request, SIGKILL);
++		return ptrace_resume(child, request, addr, SIGKILL);
+ 
+ 	default:
+ 		break;
