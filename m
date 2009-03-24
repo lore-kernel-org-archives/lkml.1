@@ -1,95 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758238AbZCXST2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757645AbZCXSVN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758238AbZCXST2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 14:19:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754564AbZCXSTT
+	id S1757645AbZCXSVN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 14:21:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755818AbZCXSUI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 14:19:19 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:42865 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754411AbZCXSTS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 14:19:18 -0400
-Date: Tue, 24 Mar 2009 13:57:50 -0400
-From: Jason Baron <jbaron@redhat.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       ltt-dev@lists.casi.polymtl.ca, Frederic Weisbecker <fweisbec@gmail.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Russell King <rmk+lkml@arm.linux.org.uk>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       "Frank Ch. Eigler" <fche@redhat.com>, Hideo AOKI <haoki@redhat.com>,
-       Takashi Nishiie <t-nishiie@np.css.fujitsu.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-Subject: Re: [patch 2/9] LTTng instrumentation - irq
-Message-ID: <20090324175750.GE3129@redhat.com>
-References: <20090324155625.420966314@polymtl.ca> <20090324160148.080628193@polymtl.ca> <20090324173354.GC3129@redhat.com> <20090324175049.GC31117@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090324175049.GC31117@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 24 Mar 2009 14:20:08 -0400
+Received: from zelda.netsplit.com ([87.194.19.211]:42281 "EHLO
+	zelda.netsplit.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755125AbZCXSUG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Mar 2009 14:20:06 -0400
+Subject: Re: Network Device Naming mechanism and policy
+From: Scott James Remnant <scott@ubuntu.com>
+To: Bill Nottingham <notting@redhat.com>
+Cc: Matt Domsch <Matt_Domsch@dell.com>, netdev@vger.kernel.org,
+       linux-hotplug@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20090324181202.GE5925@nostromo.devel.redhat.com>
+References: <20090324154617.GA16332@auslistsprd01.us.dell.com>
+	 <1237914139.22009.18.camel@quest>
+	 <20090324175203.GB22700@auslistsprd01.us.dell.com>
+	 <20090324181202.GE5925@nostromo.devel.redhat.com>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-7PNCfW4uU1knhl0bvuTK"
+Date: Tue, 24 Mar 2009 18:20:07 +0000
+Message-Id: <1237918807.22009.47.camel@quest>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 24, 2009 at 06:50:49PM +0100, Ingo Molnar wrote:
-> * Jason Baron <jbaron@redhat.com> wrote:
-> 
-> > On Tue, Mar 24, 2009 at 11:56:27AM -0400, Mathieu Desnoyers wrote:
-> > > Instrumentation of IRQ related events : irq_entry, irq_exit and
-> > > irq_next_handler.
-> > > 
-> > > It allows tracers to perform latency analysis on those various types of
-> > > interrupts and to detect interrupts with max/min/avg duration. It helps
-> > > detecting driver or hardware problems which cause an ISR to take ages to
-> > > execute. It has been shown to be the case with bogus hardware causing an mmio
-> > > read to take a few milliseconds.
-> > > 
-> > > Those tracepoints are used by LTTng.
-> > > 
-> > > About the performance impact of tracepoints (which is comparable to markers),
-> > > even without immediate values optimizations, tests done by Hideo Aoki on ia64
-> > > show no regression. His test case was using hackbench on a kernel where
-> > > scheduler instrumentation (about 5 events in code scheduler code) was added.
-> > > See the "Tracepoints" patch header for performance result detail.
-> > > 
-> > > irq_entry and irq_exit not declared static because they appear in x86 arch code.
-> > > 
-> > > The idea behind logging irq/softirq/tasklet/(and eventually syscall) entry and
-> > > exit events is to be able to recreate the kernel execution state at a given
-> > > point in time. Knowing which execution context is responsible for a given trace
-> > > event is _very_ valuable in trace data analysis.
-> > > 
-> > > The IRQ instrumentation instruments the IRQ handler entry and exit. Jason
-> > > instrumented the irq notifier chain calls (irq_handler_entry/exit). His approach
-> > > provides information about which handler is being called, but does not map
-> > > correctly to the fact that _multiple_ handlers are being called from within the
-> > > same interrupt handler. From an interrupt latency analysis POV, this is
-> > > incorrect.
-> > > 
-> > 
-> > Since we are passing back the irq number, and we can not be 
-> > interrupted by the same irq, I think it should be pretty clear we 
-> > are in the same handler. That said, the extra entry/exit 
-> > tracepoints could make the sequence of events simpler to decipher, 
-> > which is important. The code looks good, and provides at least as 
-> > much information as the patch that I proposed. So i'll be happy 
-> > either way :)
-> 
-> We already have your patch merged up in the tracing tree and it 
-> gives entry+exit tracepoints.
-> 
-> 	Ingo
 
-maybe i wasn't clear. Entry and exit as I proposed and as in the tracing
-tree are for entry and exit into each handler per irq. Mathieu is
-proposing an entry/exit tracepoint per irq, and a 3rd tracepoint to
-tell us which handler is being called and its return code. hope this is
-clear.
+--=-7PNCfW4uU1knhl0bvuTK
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-thanks,
+On Tue, 2009-03-24 at 14:12 -0400, Bill Nottingham wrote:
 
--Jason
+> Matt Domsch (Matt_Domsch@dell.com) said:=20
+> > > Now consider USB.  Would the device name change depending on which US=
+B
+> > > port you plugged it into?  Or is USB just a single slot, in which cas=
+e
+> > > what happens when you have two USB ethernet devices?
+> > >=20
+> > > The Apple USB Ethernet device in my iPhone is not the USB Wireless
+> > > adapter I own, both have very different networking configurations.
+> >=20
+> > we would obviously need a solution.  eth_usb_{something} perhaps.
+>=20
+> Right, but having biosdevname chase each new bus that comes along
+> sounds iffy. I'd prefer /dev/net/by-name symlinks, if at all
+> possible. But that's a lot of code that I'm not prepared to write.
+>=20
+Not to mention that All The World Is Not x86
+
+Scott
+--=20
+Scott James Remnant
+scott@ubuntu.com
+
+--=-7PNCfW4uU1knhl0bvuTK
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAknJJFcACgkQSnQiFMl4yK4t0QCfXmptkOlElpU/lt7RVDXiBBRP
+64gAnivtt8kf+GBOkfh3ddJ0Ql9kpuBH
+=k0vJ
+-----END PGP SIGNATURE-----
+
+--=-7PNCfW4uU1knhl0bvuTK--
+
