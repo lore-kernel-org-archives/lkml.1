@@ -1,75 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763454AbZCXQjj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755636AbZCXQnn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763454AbZCXQjj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 12:39:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758995AbZCXQjC
+	id S1755636AbZCXQnn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 12:43:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762928AbZCXQnO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 12:39:02 -0400
-Received: from stinky.trash.net ([213.144.137.162]:38322 "EHLO
-	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762811AbZCXQi5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 12:38:57 -0400
-Message-ID: <49C90C99.30805@trash.net>
-Date: Tue, 24 Mar 2009 17:38:49 +0100
-From: Patrick McHardy <kaber@trash.net>
-User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
-MIME-Version: 1.0
-To: Kay Sievers <kay.sievers@vrfy.org>
-CC: Matt Domsch <Matt_Domsch@dell.com>, netdev@vger.kernel.org,
-       linux-hotplug@vger.kernel.org, linux-kernel@vger.kernel.org
+	Tue, 24 Mar 2009 12:43:14 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:35310 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1762363AbZCXQnL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Mar 2009 12:43:11 -0400
 Subject: Re: Network Device Naming mechanism and policy
-References: <20090324154617.GA16332@auslistsprd01.us.dell.com>	 <49C9087C.5070907@trash.net> <ac3eb2510903240928s6c42bc32pa0cd8a7f0e69b731@mail.gmail.com>
-In-Reply-To: <ac3eb2510903240928s6c42bc32pa0cd8a7f0e69b731@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+From: Dan Williams <dcbw@redhat.com>
+To: Patrick McHardy <kaber@trash.net>
+Cc: Matt Domsch <Matt_Domsch@dell.com>, netdev@vger.kernel.org,
+       linux-hotplug@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <49C9087C.5070907@trash.net>
+References: <20090324154617.GA16332@auslistsprd01.us.dell.com>
+	 <49C9087C.5070907@trash.net>
+Content-Type: text/plain
+Date: Tue, 24 Mar 2009 12:40:58 -0400
+Message-Id: <1237912858.9082.39.camel@localhost.localdomain>
+Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kay Sievers wrote:
-> On Tue, Mar 24, 2009 at 17:21, Patrick McHardy <kaber@trash.net> wrote:
->> Matt Domsch wrote:
->>>   c) udev may not always be able to change a device's name.  If udev
->>>      uses the kernel assignment namespace (ethN), then a rename of
->>>      eth0->eth1 may require renaming eth1->eth0 (or something else).
->>>      Udev operates on a single device instance at a time, it becomes
->>>      difficult to switch names around for multiple devices, within
->>>      the single namespace.
->> I would classify this as a bug, especially the fact that udev doesn't
->> undo a failed rename, so you end up with ethX_rename. Virtual devices
->> using the same MAC address trigger this reliably unless you add
->> exceptions to the udev rules.
+On Tue, 2009-03-24 at 17:21 +0100, Patrick McHardy wrote:
+> Matt Domsch wrote:
+> > 2) udev may have rules to change the device names.  This is most often
+> >    seen in the '70-persistent-net.rules' file.  Here we have
+> >    additional challenges:
+> > 
+> > ...
+> > 
+> >    c) udev may not always be able to change a device's name.  If udev
+> >       uses the kernel assignment namespace (ethN), then a rename of
+> >       eth0->eth1 may require renaming eth1->eth0 (or something else).
+> >       Udev operates on a single device instance at a time, it becomes
+> >       difficult to switch names around for multiple devices, within
+> >       the single namespace.
 > 
-> This is handled in most cases. Virtual interfaces claiming a
-> configured name and created before the "hardware" interface are not
-> handled, that's right, but pretty uncommon.
+> I would classify this as a bug, especially the fact that udev doesn't
+> undo a failed rename, so you end up with ethX_rename. Virtual devices
+> using the same MAC address trigger this reliably unless you add
+> exceptions to the udev rules.
 
-I don't remember the exact circumstances, but I've seen it quite a few
-times. I'll gather some information next time.
+Any particular reason the MAC addresses are the same?  This came up a
+while ago with the 'dnet' device in the thread "Dave DNET ethernet
+controller".
 
->> You state that it only operates on one device at a time. If that is
->> correct, I'm not sure why the _rename suffix is used at all instead
->> of simply trying to assign the final name, which would avoid this
->> problem.
-> 
-> How? The kernel assignes the names and the configured names may
-> conflict. So you possibly can not rename a device to the target name
-> when it's name is already taken. I don't see how to avoid this.
+If the MAC address isn't a UUID for the device, then *what* is?
 
-Sure, you can't rename it when the name is taken. But what udev
-apparently does when renaming a device is:
+If there isn't one, then certainly udev can't be blamed for getting
+ordering or names wrong, because there's nothing to use to actually
+match up the device to a name, uniquely.  Note that combinations
+including bus IDs or device positions in the bus don't work for any type
+of hotplug case, because you can plug another adapter into the same
+location but it's a different adapter.
 
-- rename eth0 to eth0_rename
-- rename eth0_rename to eth2
-- rename returns -EEXISTS: udev keeps eth0_rename
+Either people want (a) a name assigned to a specific device (which
+implies a UUID like a MAC address stored on that device somewhere
+accessible to the driver at plug/boot time), or they want (b) to assign
+a name to a *position* on the PCI or USB or firewire or whatever bus, or
+they (c) don't care about this at all.
 
-What it could do is:
+The answer is really 'all of the above'.  Most of the people Matt cares
+about are probably in the (b) camp.  But most desktop/laptop users are
+in the (a) camp because they use hotplug so much.
 
-- rename eth0 to eth2
-- rename returns -EEXISTS: device at least still has a proper name
+Dan
 
-Alternatively it should unroll the rename and hope that the
-old name is still free. But I don't see why the _rename step
-would do any good, assuming only a single device is handled at
-a time, it can't prevent clashes.
+> You state that it only operates on one device at a time. If that is
+> correct, I'm not sure why the _rename suffix is used at all instead
+> of simply trying to assign the final name, which would avoid this
+> problem.
+> --
+> To unsubscribe from this list: send the line "unsubscribe netdev" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+
