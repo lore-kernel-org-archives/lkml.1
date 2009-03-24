@@ -1,83 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758779AbZCXJ7v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758755AbZCXKBt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758779AbZCXJ7v (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 05:59:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757126AbZCXJ70
+	id S1758755AbZCXKBt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 06:01:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756605AbZCXKBj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 05:59:26 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:55703 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755561AbZCXJ70 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 05:59:26 -0400
-Subject: [PATCH 2/2] fs: don't include <linux/gfp.h> to fix
-	headers-export-check
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: mingo@elte.hu
-Cc: eduard.munteanu@linux360.ro, linux-kernel@vger.kernel.org
-Date: Tue, 24 Mar 2009 11:59:23 +0200
-Message-Id: <1237888763.25315.70.camel@penberg-laptop>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 7bit
-X-Mailer: Evolution 2.22.3.1 
+	Tue, 24 Mar 2009 06:01:39 -0400
+Received: from hera.kernel.org ([140.211.167.34]:58625 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755912AbZCXKBi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Mar 2009 06:01:38 -0400
+Date: Tue, 24 Mar 2009 10:00:30 GMT
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, paulus@samba.org, hpa@zytor.com,
+       mingo@redhat.com, arjan@linux.intel.com, a.p.zijlstra@chello.nl,
+       efault@gmx.de, tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org,
+       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
+       arjan@linux.intel.com, efault@gmx.de, tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <18888.29986.340328.540512@cargo.ozlabs.ibm.com>
+References: <18888.29986.340328.540512@cargo.ozlabs.ibm.com>
+Subject: [tip:perfcounters/core] perf_counter tools: remove glib dependency and fix bugs in kerneltop.c, fix poll()
+Message-ID: <tip-afc2a3523fc6664f3713b594daa1857f37ad87df@git.kernel.org>
+Git-Commit-ID: afc2a3523fc6664f3713b594daa1857f37ad87df
+X-Mailer: tip-git-log-daemon
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 24 Mar 2009 10:00:32 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Pekka Enberg <penberg@cs.helsinki.fi>
+Commit-ID:  afc2a3523fc6664f3713b594daa1857f37ad87df
+Gitweb:     http://git.kernel.org/tip/afc2a3523fc6664f3713b594daa1857f37ad87df
+Author:     Peter Zijlstra <a.p.zijlstra@chello.nl>
+AuthorDate: Tue, 24 Mar 2009 10:50:24 +0100
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Tue, 24 Mar 2009 10:56:18 +0100
 
-Impact: fix build
+perf_counter tools: remove glib dependency and fix bugs in kerneltop.c, fix poll()
 
-This patch fixes a headers-export-check failure:
+Paul Mackerras wrote:
 
-  /home/mingo/tip/usr/include/linux/bsg.h:11: found __[us]{8,16,32,64} type without #include <linux/types.h>
-  /home/mingo/tip/usr/include/linux/fs.h:11: included file 'linux/gfp.h' is not exported
-  make[3]: *** [/home/mingo/tip/usr/include/linux/.check] Error 1
-  make[2]: *** [linux] Error 2
+> I noticed the poll stuff is bogus - we have a 2D array of struct
+> pollfds (MAX_NR_CPUS x MAX_COUNTERS), we fill in a sub-array (with the
+> rest being uninitialized, since the array is on the stack) and then
+> pass the first nr_cpus elements to poll.  Not what we really meant, I
+> suspect. :)  Not even if we only have one counter, since it's the
+> counter dimension that varies fastest.
 
-Cc: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
+This should fix the most obvious poll fubar.. not enough to fix the
+full problem though..
+
+Reported-by: Paul Mackerras <paulus@samba.org>
+Reported-by: Mike Galbraith <efault@gmx.de>
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Arjan van de Ven <arjan@linux.intel.com>
+LKML-Reference: <18888.29986.340328.540512@cargo.ozlabs.ibm.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+
 ---
- include/linux/fs.h |   16 ++++++----------
- 1 files changed, 6 insertions(+), 10 deletions(-)
+ Documentation/perf_counter/kerneltop.c |   11 ++++++-----
+ 1 files changed, 6 insertions(+), 5 deletions(-)
 
-diff --git a/include/linux/fs.h b/include/linux/fs.h
-index add95da..11fdc57 100644
---- a/include/linux/fs.h
-+++ b/include/linux/fs.h
-@@ -8,7 +8,6 @@
+diff --git a/Documentation/perf_counter/kerneltop.c b/Documentation/perf_counter/kerneltop.c
+index ea13e4e..7ebde7a 100644
+--- a/Documentation/perf_counter/kerneltop.c
++++ b/Documentation/perf_counter/kerneltop.c
+@@ -1157,10 +1157,10 @@ static void mmap_read(struct mmap_data *md)
  
- #include <linux/limits.h>
- #include <linux/ioctl.h>
--#include <linux/gfp.h>
- 
- /*
-  * It's silly to have NR_OPEN bigger than NR_FILE, but you can change
-@@ -2233,15 +2232,12 @@ ssize_t simple_attr_write(struct file *file, const char __user *buf,
- 
- 
- #ifdef CONFIG_SECURITY
--static inline char *alloc_secdata(void)
--{
--	return (char *)get_zeroed_page(GFP_KERNEL);
--}
--
--static inline void free_secdata(void *secdata)
--{
--	free_page((unsigned long)secdata);
--}
-+/*
-+ * These need to be macros because we cannot include <linux/gfp.h> in this
-+ * header file.
-+ */
-+#define alloc_secdata()       (char *)get_zeroed_page(GFP_KERNEL)
-+#define free_secdata(secdata) free_page((unsigned long) secdata)
- #else
- static inline char *alloc_secdata(void)
+ int main(int argc, char *argv[])
  {
--- 
-1.5.4.3
-
-
-
+-	struct pollfd event_array[MAX_NR_CPUS][MAX_COUNTERS];
++	struct pollfd event_array[MAX_NR_CPUS * MAX_COUNTERS];
+ 	struct mmap_data mmap_array[MAX_NR_CPUS][MAX_COUNTERS];
+ 	struct perf_counter_hw_event hw_event;
+-	int i, counter, group_fd;
++	int i, counter, group_fd, nr_poll = 0;
+ 	unsigned int cpu;
+ 	int ret;
+ 
+@@ -1214,8 +1214,9 @@ int main(int argc, char *argv[])
+ 			if (group && group_fd == -1)
+ 				group_fd = fd[i][counter];
+ 
+-			event_array[i][counter].fd = fd[i][counter];
+-			event_array[i][counter].events = POLLIN;
++			event_array[nr_poll].fd = fd[i][counter];
++			event_array[nr_poll].events = POLLIN;
++			nr_poll++;
+ 
+ 			mmap_array[i][counter].counter = counter;
+ 			mmap_array[i][counter].prev = 0;
+@@ -1247,7 +1248,7 @@ int main(int argc, char *argv[])
+ 		}
+ 
+ 		if (hits == events)
+-			ret = poll(event_array[0], nr_cpus, 1000);
++			ret = poll(event_array, nr_poll, 1000);
+ 		hits = events;
+ 	}
+ 
