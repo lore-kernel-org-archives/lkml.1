@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760561AbZCXOOI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759777AbZCXONp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760561AbZCXOOI (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 10:14:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758357AbZCXOGJ
+	id S1759777AbZCXONp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 10:13:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756344AbZCXOF4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 10:06:09 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:48996 "EHLO
+	Tue, 24 Mar 2009 10:05:56 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:48993 "EHLO
 	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755980AbZCXOGH (ORCPT
+	with ESMTP id S1755980AbZCXOFv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 10:06:07 -0400
+	Tue, 24 Mar 2009 10:05:51 -0400
 From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: [PATCH 25/30] tty: moxa, fix refcounting in moxa_poll_port
+Subject: [PATCH 24/30] isicom: isicom kref leak fix
 To: linux-kernel@vger.kernel.org, linux-serial@vger.kernel.org,
        torvalds@linux-foundation.org
-Date: Tue, 24 Mar 2009 14:06:01 +0000
-Message-ID: <20090324140557.12735.48589.stgit@localhost.localdomain>
+Date: Tue, 24 Mar 2009 14:05:51 +0000
+Message-ID: <20090324140548.12735.37948.stgit@localhost.localdomain>
 In-Reply-To: <20090324135930.12735.7827.stgit@localhost.localdomain>
 References: <20090324135930.12735.7827.stgit@localhost.localdomain>
 User-Agent: StGIT/0.14.3
@@ -26,56 +26,26 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jiri Slaby <jirislaby@gmail.com>
+The isicom driver leaks a kref on the shutdown path. Drop the additional
+kref we took
 
-There is missing tty_kref_put on some paths in moxa_poll_port,
-although the reference is always taken. Fix it.
-
-Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
-Reported-by: Jan 'Yenya' Kasprzak <kas@fi.muni.cz>
 Signed-off-by: Alan Cox <alan@lxorguk.ukuu.org.uk>
 ---
 
- drivers/char/moxa.c |    9 +++++----
- 1 files changed, 5 insertions(+), 4 deletions(-)
+ drivers/char/isicom.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
 
-diff --git a/drivers/char/moxa.c b/drivers/char/moxa.c
-index 8b0da97..4a4cab7 100644
---- a/drivers/char/moxa.c
-+++ b/drivers/char/moxa.c
-@@ -1486,11 +1486,11 @@ static int moxa_poll_port(struct moxa_port *p, unsigned int handle,
+diff --git a/drivers/char/isicom.c b/drivers/char/isicom.c
+index 24aa6e8..a59eac5 100644
+--- a/drivers/char/isicom.c
++++ b/drivers/char/isicom.c
+@@ -925,6 +925,7 @@ static void isicom_shutdown_port(struct isi_port *port)
+ 		if (!card->count)
+ 			isicom_shutdown_board(card);
  	}
- 
- 	if (!handle) /* nothing else to do */
--		return 0;
-+		goto put;
- 
- 	intr = readw(ip); /* port irq status */
- 	if (intr == 0)
--		return 0;
-+		goto put;
- 
- 	writew(0, ip); /* ACK port */
- 	ofsAddr = p->tableAddr;
-@@ -1499,16 +1499,17 @@ static int moxa_poll_port(struct moxa_port *p, unsigned int handle,
- 				ofsAddr + HostStat);
- 
- 	if (!inited)
--		return 0;
-+		goto put;
- 
- 	if (tty && (intr & IntrBreak) && !I_IGNBRK(tty)) { /* BREAK */
- 		tty_insert_flip_char(tty, 0, TTY_BREAK);
- 		tty_schedule_flip(tty);
- 	}
--	tty_kref_put(tty);
- 
- 	if (intr & IntrLine)
- 		moxa_new_dcdstate(p, readb(ofsAddr + FlagStat) & DCD_state);
-+put:
 +	tty_kref_put(tty);
- 
- 	return 0;
  }
+ 
+ static void isicom_flush_buffer(struct tty_struct *tty)
 
