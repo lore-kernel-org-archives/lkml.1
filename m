@@ -1,62 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758300AbZCXSo3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759045AbZCXSqU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758300AbZCXSo3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 14:44:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751841AbZCXSoV
+	id S1759045AbZCXSqU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 14:46:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754924AbZCXSpv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 14:44:21 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:41136 "EHLO mx2.redhat.com"
+	Tue, 24 Mar 2009 14:45:51 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:41111 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751232AbZCXSoU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 14:44:20 -0400
-Message-ID: <49C92963.1090505@sandeen.net>
-Date: Tue, 24 Mar 2009 13:41:39 -0500
-From: Eric Sandeen <sandeen@sandeen.net>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	id S1753808AbZCXSpu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Mar 2009 14:45:50 -0400
+Date: Tue, 24 Mar 2009 19:45:48 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Jan Kara <jack@suse.cz>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       chris.mason@oracle.com, david@fromorbit.com, npiggin@suse.de
+Subject: Re: [PATCH 1/7] writeback: move dirty inodes from super_block to
+	backing_dev_info
+Message-ID: <20090324184548.GY27476@kernel.dk>
+References: <1236868428-20408-1-git-send-email-jens.axboe@oracle.com> <1236868428-20408-2-git-send-email-jens.axboe@oracle.com> <20090324161724.GA15524@atrey.karlin.mff.cuni.cz>
 MIME-Version: 1.0
-To: Mark Lord <lkml@rtr.ca>
-CC: Theodore Tso <tytso@mit.edu>, Ingo Molnar <mingo@elte.hu>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Nick Piggin <npiggin@suse.de>,
-       Jens Axboe <jens.axboe@oracle.com>, David Rees <drees76@gmail.com>,
-       Jesper Krogh <jesper@krogh.cc>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.29
-References: <alpine.LFD.2.00.0903231617550.3032@localhost.localdomain> <49C87B87.4020108@krogh.cc> <72dbd3150903232346g5af126d7sb5ad4949a7b5041f@mail.gmail.com> <20090324091545.758d00f5@lxorguk.ukuu.org.uk> <20090324093245.GA22483@elte.hu> <20090324101011.6555a0b9@lxorguk.ukuu.org.uk> <20090324103111.GA26691@elte.hu> <20090324132032.GK5814@mit.edu> <20090324133011.GB21720@elte.hu> <20090324135112.GM5814@mit.edu> <49C9245C.9040400@rtr.ca>
-In-Reply-To: <49C9245C.9040400@rtr.ca>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090324161724.GA15524@atrey.karlin.mff.cuni.cz>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mark Lord wrote:
-> Theodore Tso wrote:
->> So the question is how quickly can you *dirty* 1.6GB of memory?
-> ..
-> 
-> MythTV:   rm /some/really/huge/video/file ; sync
->           ## disk light stays on for several minutes..
-> 
-> Note quite the same thing, I suppose, but it does break
-> the shutdown scripts of every major Linux distribution.
+On Tue, Mar 24 2009, Jan Kara wrote:
+> > This is a first step at introducing per-bdi flusher threads. We should
+> > have no change in behaviour, although sb_has_dirty_inodes() is now
+> > ridiculously expensive, as there's no easy way to answer that question.
+> > Not a huge problem, since it'll be deleted in subsequent patches.
+>   Could you maybe expand the changelog a bit? If I read the patch right
+> the only thing it does is that it moves from per-sb inode lists to
+> per-bdi inode lists, right? Also sync_sb_inodes() now writes all the
+> inodes in the system, not just the ones for that superblock, doesn't it?
 
-It is indeed a different issue.  ext3 does a fair bit of IO on a (here
-60G file) delete:
+That is correct, it just moves the dirty lists to the bdi instead of
+keeping them in the superblock. It does appear that this intermediate
+step doesn't honor the sb passed in, later in the series it works
+though. I'll get that fixed up, as the changelog mentions we should not
+have much change in behaviour at this point :-)
 
-http://people.redhat.com/~esandeen/rm_test/ext3_rm.png
+-- 
+Jens Axboe
 
-ext4 is much better:
-
-http://people.redhat.com/~esandeen/rm_test/ext4_rm.png
-
-> Simple solution for MythTV is what people already do: use xfs instead.
-
-and yes, xfs does it very quickly:
-
-http://people.redhat.com/~esandeen/rm_test/xfs_rm.png
-
--Eric
