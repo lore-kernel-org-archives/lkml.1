@@ -1,108 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757016AbZCXHos@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755387AbZCXHp3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757016AbZCXHos (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 03:44:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753813AbZCXHoh
+	id S1755387AbZCXHp3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 03:45:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753813AbZCXHpK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 03:44:37 -0400
-Received: from smtp106.mail.mud.yahoo.com ([209.191.85.216]:45835 "HELO
-	smtp106.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753290AbZCXHog (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 03:44:36 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=Oj7WJNSpT5Oi9Z+/2dhnjT4n8zItTThTwVqCvvs+E0gXMpaJ6KX64IMGL9gGMrR4vIuoA4S00/DAqCI1Pd6KLYrVjaSoc03ZZ7sNZRas6+4/uP23JddMj5CY5bOyjoG8Eh/QRpeVomxRcwGCt/iLyx9zmHpc5evH9wgVrDa8pOU=  ;
-X-YMail-OSG: d51yn6wVM1kf2TudIHV9DmtxPXRqCf6ILcI0GT39VG2eWY5SiRLtrgm_56Kexy9_LEYBtYH1gESsCMjnqPl2WtM.Kn15YgWq7rMnS2tpcYZpT04C9derbcHj8nzdtMLfK3pJe8zgZKLdt_ZwTFsR1PNbz5.amdlG.jh7WiqC7OdjHwBNpqjipmdpb03HwQ--
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Jan Kara <jack@suse.cz>, "Martin J. Bligh" <mbligh@mbligh.org>,
-       linux-ext4@vger.kernel.org
-Subject: Re: ftruncate-mmap: pages are lost after writing to mmaped file.
-Date: Tue, 24 Mar 2009 18:44:21 +1100
-User-Agent: KMail/1.9.51 (KDE/4.0.4; ; )
-Cc: Ying Han <yinghan@google.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel" <linux-kernel@vger.kernel.org>,
-       "linux-mm" <linux-mm@kvack.org>, guichaz@gmail.com,
-       Alex Khesin <alexk@google.com>, Mike Waychison <mikew@google.com>,
-       Rohit Seth <rohitseth@google.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-References: <604427e00903181244w360c5519k9179d5c3e5cd6ab3@mail.gmail.com> <200903200248.22623.nickpiggin@yahoo.com.au> <20090319164638.GB3899@duck.suse.cz>
-In-Reply-To: <20090319164638.GB3899@duck.suse.cz>
+	Tue, 24 Mar 2009 03:45:10 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:60076 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1756268AbZCXHpJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Mar 2009 03:45:09 -0400
+Message-ID: <49C88F0B.7070901@cn.fujitsu.com>
+Date: Tue, 24 Mar 2009 15:43:07 +0800
+From: Lai Jiangshan <laijs@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Ingo Molnar <mingo@elte.hu>
+CC: Steven Rostedt <rostedt@goodmis.org>, LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       =?UTF-8?B?RnLDqWTDqXJpYyBXZWlz?= =?UTF-8?B?YmVja2Vy?= 
+	<fweisbec@gmail.com>
+Subject: Re: [PATCH][GIT PULL] tracing: fix memory leak in trace_stat
+References: <alpine.DEB.2.00.0903210251100.13615@gandalf.stny.rr.com> <20090321094348.GB5594@elte.hu>
+In-Reply-To: <20090321094348.GB5594@elte.hu>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200903241844.22851.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 20 March 2009 03:46:39 Jan Kara wrote:
-> On Fri 20-03-09 02:48:21, Nick Piggin wrote:
-
-> > Holding mapping->private_lock over the __set_page_dirty should
-> > fix it, although I guess you'd want to release it before calling
-> > __mark_inode_dirty so as not to put inode_lock under there. I
-> > have a patch for this if it sounds reasonable.
+Ingo Molnar wrote:
+> * Steven Rostedt <rostedt@goodmis.org> wrote:
+> 
+>> Ingo,
+>>
+>> Please pull the latest tip/tracing/ftrace tree, which can be found at:
+>>
+>>   git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
+>> tip/tracing/ftrace
+>>
+>>
+>> Steven Rostedt (1):
+>>       tracing: fix memory leak in trace_stat
+>>
+>> ----
+>>  kernel/trace/trace_stat.c |   23 +++++++++++++----------
+>>  1 files changed, 13 insertions(+), 10 deletions(-)
+> 
+> Pulled, thanks Steve!
+> 
+> 	Ingo
 >
->   Yes, that seems to be a bug - the function actually looked suspitious to
-> me yesterday but I somehow convinced myself that it's fine. Probably
-> because fsx-linux is single-threaded.
 
+Hi, Ingo
 
-After a whole lot of chasing my own tail in the VM and buffer layers,
-I think it is a problem in ext2 (and I haven't been able to reproduce
-with ext3 yet, which might lend weight to that, although as we have
-seen, it is very timing dependent).
+I found this patch is not in the tip tree.
 
-That would be slightly unfortunate because we still have Jan's ext3
-problem, and also another reported problem of corruption on ext3 (on
-brd driver).
-
-Anyway, when I have reproduced the problem with the test case, the
-"lost" writes are all reported to be holes. Unfortunately, that doesn't
-point straight to the filesystem, because ext2 allocates blocks in this
-case at writeout time, so if dirty bits are getting lost, then it would
-be normal to see holes.
-
-I then put in a whole lot of extra infrastructure to track metadata about
-each struct page (when it was last written out, when it last had the number
-of writable ptes reach 0, when the dirty bits were last cleared etc). And
-none of the normal asertions were triggering: eg. when any page is removed
-from pagecache (except truncates), it has always had all its buffers
-written out *after* all ptes were made readonly or unmapped. Lots of other
-tests and crap like that.
-
-So I tried what I should have done to start with and did an e2fsck after
-seeing corruption. Yes, it comes up with errors. Now that is unusual
-because that should be largely insulated from the vm: if a dirty bit gets
-lost, then the filesystem image should be quite happy and error-free with
-a hole or unwritten data there.
-
-I don't know ext? locking very well, except that it looks pretty overly
-complex and crufty.
-
-Usually, blocks are instantiated by write(2), under i_mutex, serialising
-the allocator somewhat. mmap-write blocks are instantiated at writeout
-time, unserialised. I moved truncate_mutex to cover the entire get_blocks
-function, and can no longer trigger the problem. Might be a timing issue
-though -- Ying, can you try this and see if you can still reproduce?
-
-I close my eyes and pick something out of a hat. a686cd89. Search for XXX.
-Nice. Whether or not this cased the problem, can someone please tell me
-why it got merged in that state?
-
-I'm leaving ext3 running for now. It looks like a nasty task to bisect
-ext2 down to that commit :( and I would be more interested in trying to
-reproduce Jan's ext3 problem, however, because I'm not too interested in
-diving into ext2 locking to work out exactly what is racing and how to
-fix it properly. I suspect it would be most productive to wire up some
-ioctls right into the block allocator/lookup and code up a userspace
-tester for it that could probably stress it a lot harder than kernel
-writeout can.
+Thanks, Lai
 
