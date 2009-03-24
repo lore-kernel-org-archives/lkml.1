@@ -1,59 +1,228 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758198AbZCXJjE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757110AbZCXJnY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758198AbZCXJjE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 05:39:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758554AbZCXJim
+	id S1757110AbZCXJnY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 05:43:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756549AbZCXJnO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 05:38:42 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:39652 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758531AbZCXJik (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 05:38:40 -0400
-Date: Tue, 24 Mar 2009 10:38:17 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Paul Mackerras <paulus@samba.org>
-Cc: linux-tip-commits@vger.kernel.org, linux-kernel@vger.kernel.org,
-       hpa@zytor.com, mingo@redhat.com, arjan@linux.intel.com,
-       a.p.zijlstra@chello.nl, efault@gmx.de, tglx@linutronix.de
-Subject: Re: [tip:perfcounters/core] perf_counter tools: remove glib
-	dependency and fix bugs in kerneltop.c
-Message-ID: <20090324093817.GA1772@elte.hu>
-References: <18888.29986.340328.540512@cargo.ozlabs.ibm.com> <tip-6357003d6c8bc0056d79768692955da6d151880f@git.kernel.org>
+	Tue, 24 Mar 2009 05:43:14 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:63805 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1755037AbZCXJnN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Mar 2009 05:43:13 -0400
+Message-ID: <49C8AB42.1000802@cn.fujitsu.com>
+Date: Tue, 24 Mar 2009 17:43:30 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <tip-6357003d6c8bc0056d79768692955da6d151880f@git.kernel.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Ingo Molnar <mingo@elte.hu>
+CC: Jens Axboe <jens.axboe@oracle.com>, Steven Rostedt <rostedt@goodmis.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 5/5] blktrace: print human-readable act_mask
+References: <49C893FC.9080905@cn.fujitsu.com> <49C89488.4030604@cn.fujitsu.com>
+In-Reply-To: <49C89488.4030604@cn.fujitsu.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> @@ -1432,9 +1456,11 @@ static ssize_t sysfs_blk_trace_attr_store(struct device *dev,
+>  	if (attr == &dev_attr_act_mask) {
+>  		if (sscanf(buf, "%llx", &value) != 1) {
+>  			/* Assume it is a list of trace category names */
+> -			value = blk_str2act_mask(buf);
+> -			if (value < 0)
+> +			value = blk_trace_str2mask(buf);
+> +			if (value < 0) {
+> +				ret = value;
+>  				goto out;
+> +			}
 
-btw.,:
+value is u64, it can < 0.
 
-| Performance counter stats for 'ls':
-|
-|        1915281  task clock ticks     (events)
-|
-|              6  CPU migrations       (events)
-|              6  CPU migrations       (events)
-|            284  pagefaults           (events)
-|       4.333761  CPU cycles           (msecs)
-|       1.544153  instructions         (msecs)
-|         620030  cache references     (events)
-|          17632  cache misses         (events)
-|
-| Wall-clock time elapsed:     1.868138 msecs
 
-the 'instructions' field is weird - it should not be millisecs but 
-'events'.
+===================
 
-	Ingo
+
+From: Li Zefan <lizf@cn.fujitsu.com>
+Subject: [PATCH] blktrace: print human-readable act_mask
+
+Print stringified act_mask instead of hex value:
+ # cat act_mask
+ read,write,barrier,sync,queue,requeue,issue,complete,fs,pc,ahead,meta,
+ discard,drv_data
+ # echo "meta,write" > act_mask
+ # cat act_mask
+ write,meta
+
+Also:
+ - make act_mask accept "ahead", "meta", "discard" and "drv_data"
+ - use strsep() instead of strchr() to parse user input
+ - return -EINVAL if a token is not found in the mask map
+ - fix a bug that 'value' is unsigned, so it can < 0
+ - propagate error value of blk_trace_mask2str() to userspace, but not
+   always return -ENXIO.
+
+Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+---
+ kernel/trace/blktrace.c |  103 +++++++++++++++++++++++++++++-----------------
+ 1 files changed, 65 insertions(+), 38 deletions(-)
+
+diff --git a/kernel/trace/blktrace.c b/kernel/trace/blktrace.c
+index f33c176..9691b42 100644
+--- a/kernel/trace/blktrace.c
++++ b/kernel/trace/blktrace.c
+@@ -1316,53 +1316,77 @@ struct attribute_group blk_trace_attr_group = {
+ 	.attrs = blk_trace_attrs,
+ };
+ 
+-static int blk_str2act_mask(const char *str)
++static const struct {
++	int mask;
++	const char *str;
++} mask_maps[] = {
++	{ BLK_TC_READ,		"read"		},
++	{ BLK_TC_WRITE,		"write"		},
++	{ BLK_TC_BARRIER,	"barrier"	},
++	{ BLK_TC_SYNC,		"sync"		},
++	{ BLK_TC_QUEUE,		"queue"		},
++	{ BLK_TC_REQUEUE,	"requeue"	},
++	{ BLK_TC_ISSUE,		"issue"		},
++	{ BLK_TC_COMPLETE,	"complete"	},
++	{ BLK_TC_FS,		"fs"		},
++	{ BLK_TC_PC,		"pc"		},
++	{ BLK_TC_AHEAD,		"ahead"		},
++	{ BLK_TC_META,		"meta"		},
++	{ BLK_TC_DISCARD,	"discard"	},
++	{ BLK_TC_DRV_DATA,	"drv_data"	},
++};
++
++static int blk_trace_str2mask(const char *str)
+ {
++	int i;
+ 	int mask = 0;
+-	char *copy = kstrdup(str, GFP_KERNEL), *s;
++	char *s, *token;
+ 
+-	if (copy == NULL)
++	s = kstrdup(str, GFP_KERNEL);
++	if (s == NULL)
+ 		return -ENOMEM;
+-
+-	s = strstrip(copy);
++	s = strstrip(s);
+ 
+ 	while (1) {
+-		char *sep = strchr(s, ',');
+-
+-		if (sep != NULL)
+-			*sep = '\0';
+-
+-		if (strcasecmp(s, "barrier") == 0)
+-			mask |= BLK_TC_BARRIER;
+-		else if (strcasecmp(s, "complete") == 0)
+-			mask |= BLK_TC_COMPLETE;
+-		else if (strcasecmp(s, "fs") == 0)
+-			mask |= BLK_TC_FS;
+-		else if (strcasecmp(s, "issue") == 0)
+-			mask |= BLK_TC_ISSUE;
+-		else if (strcasecmp(s, "pc") == 0)
+-			mask |= BLK_TC_PC;
+-		else if (strcasecmp(s, "queue") == 0)
+-			mask |= BLK_TC_QUEUE;
+-		else if (strcasecmp(s, "read") == 0)
+-			mask |= BLK_TC_READ;
+-		else if (strcasecmp(s, "requeue") == 0)
+-			mask |= BLK_TC_REQUEUE;
+-		else if (strcasecmp(s, "sync") == 0)
+-			mask |= BLK_TC_SYNC;
+-		else if (strcasecmp(s, "write") == 0)
+-			mask |= BLK_TC_WRITE;
+-
+-		if (sep == NULL)
++		token = strsep(&s, ",");
++		if (token == NULL)
+ 			break;
+ 
+-		s = sep + 1;
++		if (*token == '\0')
++			continue;
++
++		for (i = 0; i < ARRAY_SIZE(mask_maps); i++) {
++			if (strcasecmp(token, mask_maps[i].str) == 0) {
++				mask |= mask_maps[i].mask;
++				break;
++			}
++		}
++		if (i == ARRAY_SIZE(mask_maps)) {
++			mask = -EINVAL;
++			break;
++		}
+ 	}
+-	kfree(copy);
++	kfree(s);
+ 
+ 	return mask;
+ }
+ 
++static ssize_t blk_trace_mask2str(char *buf, int mask)
++{
++	int i;
++	char *p = buf;
++
++	for (i = 0; i < ARRAY_SIZE(mask_maps); i++) {
++		if (mask & mask_maps[i].mask) {
++			p += sprintf(p, "%s%s",
++				    (p == buf) ? "" : ",", mask_maps[i].str);
++		}
++	}
++	*p++ = '\n';
++
++	return p - buf;
++}
++
+ static struct request_queue *blk_trace_get_queue(struct block_device *bdev)
+ {
+ 	if (bdev->bd_disk == NULL)
+@@ -1399,7 +1423,7 @@ static ssize_t sysfs_blk_trace_attr_show(struct device *dev,
+ 	if (q->blk_trace == NULL)
+ 		ret = sprintf(buf, "disabled\n");
+ 	else if (attr == &dev_attr_act_mask)
+-		ret = sprintf(buf, "%#x\n", q->blk_trace->act_mask);
++		ret = blk_trace_mask2str(buf, q->blk_trace->act_mask);
+ 	else if (attr == &dev_attr_pid)
+ 		ret = sprintf(buf, "%u\n", q->blk_trace->pid);
+ 	else if (attr == &dev_attr_start_lba)
+@@ -1424,7 +1448,7 @@ static ssize_t sysfs_blk_trace_attr_store(struct device *dev,
+ 	struct request_queue *q;
+ 	struct hd_struct *p;
+ 	u64 value;
+-	ssize_t ret = -ENXIO;
++	ssize_t ret = -EINVAL;
+ 
+ 	if (count == 0)
+ 		goto out;
+@@ -1432,13 +1456,16 @@ static ssize_t sysfs_blk_trace_attr_store(struct device *dev,
+ 	if (attr == &dev_attr_act_mask) {
+ 		if (sscanf(buf, "%llx", &value) != 1) {
+ 			/* Assume it is a list of trace category names */
+-			value = blk_str2act_mask(buf);
+-			if (value < 0)
++			ret = blk_trace_str2mask(buf);
++			if (ret < 0)
+ 				goto out;
++			value = ret;
+ 		}
+ 	} else if (sscanf(buf, "%llu", &value) != 1)
+ 		goto out;
+ 
++	ret = -ENXIO;
++
+ 	lock_kernel();
+ 	p = dev_to_part(dev);
+ 	bdev = bdget(part_devt(p));
+-- 
+1.5.4.rc3
+
