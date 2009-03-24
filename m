@@ -1,92 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757180AbZCXIRd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756498AbZCXIWu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757180AbZCXIRd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 04:17:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757187AbZCXIRP
+	id S1756498AbZCXIWu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 04:22:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754898AbZCXIW1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 04:17:15 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:42990 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752151AbZCXIRN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 04:17:13 -0400
-Date: Tue, 24 Mar 2009 09:16:59 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Jesper Krogh <jesper@krogh.cc>
-Cc: David Rees <drees76@gmail.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.29
-Message-ID: <20090324081659.GA9730@elte.hu>
-References: <alpine.LFD.2.00.0903231617550.3032@localhost.localdomain> <49C87B87.4020108@krogh.cc> <72dbd3150903232346g5af126d7sb5ad4949a7b5041f@mail.gmail.com> <49C88C80.5010803@krogh.cc>
+	Tue, 24 Mar 2009 04:22:27 -0400
+Received: from mail-gx0-f208.google.com ([209.85.217.208]:52943 "EHLO
+	mail-gx0-f208.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754346AbZCXIWZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Mar 2009 04:22:25 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=ceFQefzFKfoXjN5UspsSbH16kGMdOk8p9WqXVeAfS+VLNIrpESIpGZYSQL/rb91wAc
+         k18/r7iBYwLVGSC7uwjFXUmLu7NRURv+WtFUHgivq+4NJlW3upZOh/LPDZb6hToLfUJm
+         cAc3Kj6dlwXPa3UpBto/IuQMvAz659kLIn4qA=
+Date: Tue, 24 Mar 2009 08:22:14 +0000
+From: Jarek Poplawski <jarkao2@gmail.com>
+To: David Miller <davem@davemloft.net>
+Cc: mpm@selenic.com, marcin.slusarz@gmail.com, netdev@vger.kernel.org,
+       k-keiichi@bx.jp.nec.com, stable@kernel.org, rjw@sisk.pl,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] netconsole: fix BUG during net device "upping"
+Message-ID: <20090324082214.GA4776@ff.dom.local>
+References: <20090322.212107.55546529.davem@davemloft.net> <20090323080455.GA4976@ff.dom.local> <20090323.010541.94308473.davem@davemloft.net> <20090323081158.GB4976@ff.dom.local>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <49C88C80.5010803@krogh.cc>
+In-Reply-To: <20090323081158.GB4976@ff.dom.local>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, Mar 23, 2009 at 08:11:58AM +0000, Jarek Poplawski wrote:
+> On Mon, Mar 23, 2009 at 01:05:41AM -0700, David Miller wrote:
+> > From: Jarek Poplawski <jarkao2@gmail.com>
+> > Date: Mon, 23 Mar 2009 08:04:55 +0000
+> > 
+> > > What is the rationale of this decision? printk is a basic tool,
+> > > especially designed to work in as many places as possible, and
+> > > netconsole is rather something secondary (sorry Matt)?!
+> > 
+> > And this basic tool cannot work from the drivers ->open() method.
+> 
+> And in any function used in the drivers ->open(). BTW, with Marcin's
+> patch it can...
 
-* Jesper Krogh <jesper@krogh.cc> wrote:
+And from any function called anywhere on another cpu while driver's
+->open() is running.
 
-> David Rees wrote:
->> On Mon, Mar 23, 2009 at 11:19 PM, Jesper Krogh <jesper@krogh.cc> wrote:
->>> I know this has been discussed before:
->>>
->>> [129401.996244] INFO: task updatedb.mlocat:31092 blocked for more than 480
->>> seconds.
->>
->> Ouch - 480 seconds, how much memory is in that machine, and how slow
->> are the disks? 
->
-> The 480 secondes is not the "wait time" but the time gone before 
-> the message is printed. It the kernel-default it was earlier 120 
-> seconds but thats changed by Ingo Molnar back in september. I do 
-> get a lot of less noise but it really doesn't tell anything about 
-> the nature of the problem.
+BTW, I've had a look at this and it seems the main problem is
+netif_tx_stopped() isn't handled properly by the driver(s).
 
-That's true - the detector is really simple and only tries to flag 
-suspiciously long uninterruptible waits. It prints out the context 
-it finds but otherwise does not try to go deep about exactly why 
-that delay happened.
-
-Would you agree that the message is correct, and that there is some 
-sort of "tasks wait way too long" problem on your system?
-
-Considering:
-
-> The systes spec:
-> 32GB of memory. The disks are a Nexsan SataBeast with 42 SATA drives in  
-> Raid10 connected using 4Gbit fibre-channel. I'll let it up to you to  
-> decide if thats fast or slow?
-[...]
-> Yes, I've hit 120s+ penalties just by saving a file in vim.
-
-i think it's fair to say that an almost 10 minutes uninterruptible 
-sleep sucks to the user, by any reasonable standard. It is the year 
-2009, not 1959.
-
-The delay might be difficult to fix, but it's still reality - and 
-that's the purpose of this particular debug helper: to rub reality 
-under our noses, whether we like it or not.
-
-( _My_ personal pain threshold for waiting for the computer is 
-  around 1 _second_. If any command does something that i cannot
-  Ctrl-C or Ctrl-Z my way out of i get annoyed. So the historic 
-  limit for the hung tasks check was 10 seconds, then 60 seconds. 
-  But people argued that it's too low so it was raised to 120 then 
-  480 seconds. If almost 10 minutes of uninterruptible wait is still 
-  acceptable then the watchdog can be turned off (because it's 
-  basically pointless to run it in that case - no amount of delay 
-  will be 'bad'). )
-
-	Ingo
+Jarek P.
