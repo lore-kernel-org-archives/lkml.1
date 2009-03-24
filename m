@@ -1,25 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755449AbZCXX2e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755853AbZCXXgy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755449AbZCXX2e (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 19:28:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754286AbZCXX2W
+	id S1755853AbZCXXgy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 19:36:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754769AbZCXXgn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 19:28:22 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:35137
+	Tue, 24 Mar 2009 19:36:43 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:48796
 	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1753569AbZCXX2U (ORCPT
+	by vger.kernel.org with ESMTP id S1754712AbZCXXgn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 19:28:20 -0400
-Date: Tue, 24 Mar 2009 16:28:08 -0700 (PDT)
-Message-Id: <20090324.162808.114465835.davem@davemloft.net>
-To: Francis.Dupont@fdupont.fr
-Cc: linux-kernel@vger.kernel.org, coreteam@netfilter.org,
-       Francis_Dupont@isc.org, netfilter-devel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: netfilter spurious ELOOP
+	Tue, 24 Mar 2009 19:36:43 -0400
+Date: Tue, 24 Mar 2009 16:36:30 -0700 (PDT)
+Message-Id: <20090324.163630.226102764.davem@davemloft.net>
+To: pazke@donpac.ru
+Cc: thierry.reding@avionic-design.de, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] net: Add support for the OpenCores 10/100 Mbps
+ Ethernet MAC.
 From: David Miller <davem@davemloft.net>
-In-Reply-To: <200903242302.n2ON25u4024288@givry.fdupont.fr>
-References: <200903242302.n2ON25u4024288@givry.fdupont.fr>
+In-Reply-To: <20090324111359.GA6859@ports.donpac.ru>
+References: <1237889923-32257-1-git-send-email-thierry.reding@avionic-design.de>
+	<20090324111359.GA6859@ports.donpac.ru>
 X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
@@ -28,67 +29,29 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Francis Dupont <Francis.Dupont@fdupont.fr>
-Date: Wed, 25 Mar 2009 00:02:05 +0100
+From: Andrey Panin <pazke@donpac.ru>
+Date: Tue, 24 Mar 2009 14:13:59 +0300
 
-Adding correct CC:'s
+> On 083, 03 24, 2009 at 11:18:43AM +0100, Thierry Reding wrote:
+> > +static void ethoc_copy_to_io(void __iomem *dest, struct sk_buff *src)
+> > +{
+> > +	size_t size = (src->len & 0x3) ? (src->len & ~0x3) + 4 : src->len;
+> > +	u8 buffer[ETHOC_BUFSIZ];
+> 
+> Using 1536 bytes of stack is not very nice.
 
-> summary: iptables command gets spurious ELOOP errors
-> 
-> report: when a rule with a target like MARK --set-mark 0x80000001
-> then adding new other rules can failed with "Too many levels of symbolic
-> links" (aka ELOOP) error.
-> The problem is in kernel net/ipv4/netfilter/ip_tables.c in the 
-> mark_source_chains() routine which checks the verdict field of
-> targets even for not standard targets.
-> 
-> keywords: netfilter target eloop
-> 
-> environment: recent gentoo and fedora. Problem not fixed in
-> linux-2.6.29 (last stable version taken from kernel.org some minutes ago).
-> 
-> proposed fix (checked):
-> diff --unified=10 net/ipv4/netfilter/ip_tables.c*
-> at the end of the message.
-> 
-> request: can you send to me at both my personal and professional addresses
-> a bug/ticket number as soon as possible?
-> 
-> Request
-> 
-> Francis.Dupont@fdupont.fr
-> 
-> PS: the patch:
-> 
-> --- net/ipv4/netfilter/ip_tables.c	2009-03-23 16:12:14.000000000 -0700
-> +++ net/ipv4/netfilter/ip_tables.c+fix	2009-03-24 15:55:45.000000000 -0700
-> @@ -489,21 +489,23 @@
->  			e->comefrom |= ((1 << hook) | (1 << NF_INET_NUMHOOKS));
->  
->  			/* Unconditional return/END. */
->  			if ((e->target_offset == sizeof(struct ipt_entry)
->  			    && (strcmp(t->target.u.user.name,
->  				       IPT_STANDARD_TARGET) == 0)
->  			    && t->verdict < 0
->  			    && unconditional(&e->ip)) || visited) {
->  				unsigned int oldpos, size;
->  
-> -				if (t->verdict < -NF_MAX_VERDICT - 1) {
-> +				if ((t->verdict < -NF_MAX_VERDICT - 1) &&
-> +				    (strcmp(t->target.u.user.name,
-> +					    IPT_STANDARD_TARGET) == 0)) {
->  					duprintf("mark_source_chains: bad "
->  						"negative verdict (%i)\n",
->  								t->verdict);
->  					return 0;
->  				}
->  
->  				/* Return: backtrack through the last
->  				   big jump. */
->  				do {
->  					e->comefrom ^= (1<<NF_INET_NUMHOOKS);
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+Agreed, this stuff must be fixed.
+
+You could use skb_copy_and_csum_dev() directly into your buffer, then
+pad out the end of the buffer with a memset() call, if necessary.
+
+Actually, no you can't...
+
+You should not be using memcpy() to store things into I/O memory.
+That's what memcpy_io() is for.
+
+I think because of all of these special padding cases and the use
+of I/O memory instead of DMA, there is no real gain by using
+skb_copy_and_csum_dev() in this driver.  Just let the network
+stack checksum the packet, and use memcpy_io() here which is
+the currect interface for copying data into I/O memory.
