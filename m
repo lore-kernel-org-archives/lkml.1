@@ -1,75 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763306AbZCXRDQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763527AbZCXREx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763306AbZCXRDQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 13:03:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763173AbZCXRCY
+	id S1763527AbZCXREx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 13:04:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762872AbZCXRE0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 13:02:24 -0400
-Received: from mx3.schottelius.org ([77.109.138.221]:46484 "EHLO
-	mx3.schottelius.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761344AbZCXRCT (ORCPT
+	Tue, 24 Mar 2009 13:04:26 -0400
+Received: from stinky.trash.net ([213.144.137.162]:38895 "EHLO
+	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762359AbZCXREX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 13:02:19 -0400
-Date: Tue, 24 Mar 2009 18:02:15 +0100
-From: Nico -telmich- Schottelius <nico-linux-next@schottelius.org>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Invalid module format: Re: linux-next: Tree for March 24
-Message-ID: <20090324170215.GB5495@denkbrett.schottelius.org>
-Mail-Followup-To: Nico -telmich- Schottelius <nico-linux-next@schottelius.org>,
-	Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-	LKML <linux-kernel@vger.kernel.org>
-References: <20090324183024.59260457.sfr@canb.auug.org.au>
+	Tue, 24 Mar 2009 13:04:23 -0400
+Message-ID: <49C9128E.6040202@trash.net>
+Date: Tue, 24 Mar 2009 18:04:14 +0100
+From: Patrick McHardy <kaber@trash.net>
+User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="oLBj+sq0vYjzfsbl"
-Content-Disposition: inline
-In-Reply-To: <20090324183024.59260457.sfr@canb.auug.org.au>
-User-Agent: echo $message | gpg -e $sender  -s | netcat mailhost 25
-X-Unix-Info: http://unix.schottelius.org/
-X-Netzseite: http://nico.schottelius.org/
-X-System-Info: ikn (Linux 2.6.29 x86_64)
+To: Dan Williams <dcbw@redhat.com>
+CC: Matt Domsch <Matt_Domsch@dell.com>, netdev@vger.kernel.org,
+       linux-hotplug@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: Network Device Naming mechanism and policy
+References: <20090324154617.GA16332@auslistsprd01.us.dell.com>	 <49C9087C.5070907@trash.net> <1237912858.9082.39.camel@localhost.localdomain>
+In-Reply-To: <1237912858.9082.39.camel@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Dan Williams wrote:
+> On Tue, 2009-03-24 at 17:21 +0100, Patrick McHardy wrote:
+>> I would classify this as a bug, especially the fact that udev doesn't
+>> undo a failed rename, so you end up with ethX_rename. Virtual devices
+>> using the same MAC address trigger this reliably unless you add
+>> exceptions to the udev rules.
+> 
+> Any particular reason the MAC addresses are the same?  This came up a
+> while ago with the 'dnet' device in the thread "Dave DNET ethernet
+> controller".
+> 
+> If the MAC address isn't a UUID for the device, then *what* is?
 
---oLBj+sq0vYjzfsbl
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Sometimes (I was referring to virtual devices) there may not be
+one, thats correct.
 
+> If there isn't one, then certainly udev can't be blamed for getting
+> ordering or names wrong, because there's nothing to use to actually
+> match up the device to a name, uniquely. 
 
-Stephen Rothwell [Tue, Mar 24, 2009 at 06:30:24PM +1100]:
-> Hi all,
->=20
-> Changes since 20090323:
+I agree that udev can't do anything useful in that case. I would
+prefer it it wouldn't even try though instead of messing with the
+names and leaving a bunch of _rename devices around. Sure, I can
+add a rule to disable it, but that shouldn't be necessary.
 
-My system does not bootup, as I cannot load the crypto modules,
-because it says
+Generally, I'm wondering whether it should touch virtual network
+devices at all since the MAC addresses are often not persistent,
+sometimes not unique and the name might have already been chosen
+explicitly by the administrator when creating the device.
 
-  Invalid module format
+Currently there are some rules to ignore a couple of known virtual
+devices types. Are there actually cases where renaming virtual
+devices is desired? Otherwise a more future-proof way than
+blacklisting each type individually would be to add some attribute
+informing udev that the device has no unique key and should be
+ignored.
 
-Nico
-
-
---=20
-Think about Free and Open Source Software (FOSS).
-http://nico.schottelius.org/documentations/foss/the-term-foss/
-
-PGP: BFE4 C736 ABE5 406F 8F42  F7CF B8BE F92A 9885 188C
-
---oLBj+sq0vYjzfsbl
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAknJEhYACgkQuL75KpiFGIyHyQCeJfaY90kJcrPTI0xUXpKNWKCr
-MbwAoNMrMpAZdGT84w+zIioJu0dGBBZw
-=m+V8
------END PGP SIGNATURE-----
-
---oLBj+sq0vYjzfsbl--
