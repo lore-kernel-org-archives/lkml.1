@@ -1,50 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754455AbZCXXOb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755409AbZCXXOv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754455AbZCXXOb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 19:14:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753625AbZCXXOV
+	id S1755409AbZCXXOv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 19:14:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753967AbZCXXOk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 19:14:21 -0400
-Received: from devils.ext.ti.com ([198.47.26.153]:45143 "EHLO
-	devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752359AbZCXXOU convert rfc822-to-8bit (ORCPT
+	Tue, 24 Mar 2009 19:14:40 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:46325 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753684AbZCXXOj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 19:14:20 -0400
-From: "Aguirre Rodriguez, Sergio Alberto" <saaguirre@ti.com>
-To: "Aguirre Rodriguez, Sergio Alberto" <saaguirre@ti.com>,
-       "stoyboyker@gmail.com" <stoyboyker@gmail.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-CC: "linux-media@vger.kernel.org" <linux-media@vger.kernel.org>
-Date: Tue, 24 Mar 2009 18:14:12 -0500
-Subject: RE: [PATCH 12/13][Resubmit][drivers/media] changed ioctls to
- unlocked
-Thread-Topic: [PATCH 12/13][Resubmit][drivers/media] changed ioctls to
- unlocked
-Thread-Index: AcmsyX0UswqWUmK5RL6pt0JK2Hk9bQAC9MegAAA1nFA=
-Message-ID: <A24693684029E5489D1D202277BE89442E804BDD@dlee02.ent.ti.com>
-In-Reply-To: <A24693684029E5489D1D202277BE89442E804BDB@dlee02.ent.ti.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Tue, 24 Mar 2009 19:14:39 -0400
+Message-ID: <49C96728.8070808@zytor.com>
+Date: Tue, 24 Mar 2009 16:05:12 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       Xen-devel <xen-devel@lists.xensource.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Dave Airlie <airlied@linux.ie>
+Subject: Re: 2.6.30 Xen merge plan (what's in xen.git)
+References: <49C915A3.3020809@goop.org> <20090324174859.GB31117@elte.hu> <49C921A8.3090200@goop.org>
+In-Reply-To: <49C921A8.3090200@goop.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> >  {
-> > +	lock_kernel();
-> > +
+Jeremy Fitzhardinge wrote:
+>>
+>> hpa wanted dom0 changes in some cleaner fashion - he knows the 
+>> details. (he'll be back in a few days)
 > 
-> Why moving to unlocked_ioctl if you're acquiring the Big Kernel Lock
-> anyways?
+> When I spoke to him last week about this he said he was OK with it.  He 
+> didn't make any specific (or even general) objections.  Do you know 
+> which subsystem he was referring to?
+> 
 
-Ok, forget it, just saw Alexey mail chain...
+I was mostly objecting to the apic patches -- I'm okay with the latest 
+version, as long as they aren't in hot code (I never got the time to 
+measure it.)
 
-Understood.
+Other than that: the x86-touching bits seemed okay, the pure xen code... 
+well, it's not my problem.
 
-Regards,
-Sergio
+I'll be back on Saturday.
+
+	-hpa
