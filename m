@@ -1,83 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757741AbZCXSks@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758300AbZCXSo3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757741AbZCXSks (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 14:40:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754837AbZCXSkk
+	id S1758300AbZCXSo3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 14:44:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751841AbZCXSoV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 14:40:40 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:45471 "EHLO mx3.mail.elte.hu"
+	Tue, 24 Mar 2009 14:44:21 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:41136 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754299AbZCXSkj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 14:40:39 -0400
-Date: Tue, 24 Mar 2009 19:39:40 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       ltt-dev@lists.casi.polymtl.ca, linux-mm@kvack.org,
-       Dave Hansen <haveblue@us.ibm.com>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>, Hideo AOKI <haoki@redhat.com>,
-       Takashi Nishiie <t-nishiie@np.css.fujitsu.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-Subject: Re: [patch 8/9] LTTng instrumentation - filemap
-Message-ID: <20090324183940.GI31117@elte.hu>
-References: <20090324155625.420966314@polymtl.ca> <20090324160149.029092843@polymtl.ca>
+	id S1751232AbZCXSoU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Mar 2009 14:44:20 -0400
+Message-ID: <49C92963.1090505@sandeen.net>
+Date: Tue, 24 Mar 2009 13:41:39 -0500
+From: Eric Sandeen <sandeen@sandeen.net>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090324160149.029092843@polymtl.ca>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Mark Lord <lkml@rtr.ca>
+CC: Theodore Tso <tytso@mit.edu>, Ingo Molnar <mingo@elte.hu>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Nick Piggin <npiggin@suse.de>,
+       Jens Axboe <jens.axboe@oracle.com>, David Rees <drees76@gmail.com>,
+       Jesper Krogh <jesper@krogh.cc>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.29
+References: <alpine.LFD.2.00.0903231617550.3032@localhost.localdomain> <49C87B87.4020108@krogh.cc> <72dbd3150903232346g5af126d7sb5ad4949a7b5041f@mail.gmail.com> <20090324091545.758d00f5@lxorguk.ukuu.org.uk> <20090324093245.GA22483@elte.hu> <20090324101011.6555a0b9@lxorguk.ukuu.org.uk> <20090324103111.GA26691@elte.hu> <20090324132032.GK5814@mit.edu> <20090324133011.GB21720@elte.hu> <20090324135112.GM5814@mit.edu> <49C9245C.9040400@rtr.ca>
+In-Reply-To: <49C9245C.9040400@rtr.ca>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Mark Lord wrote:
+> Theodore Tso wrote:
+>> So the question is how quickly can you *dirty* 1.6GB of memory?
+> ..
+> 
+> MythTV:   rm /some/really/huge/video/file ; sync
+>           ## disk light stays on for several minutes..
+> 
+> Note quite the same thing, I suppose, but it does break
+> the shutdown scripts of every major Linux distribution.
 
-* Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
+It is indeed a different issue.  ext3 does a fair bit of IO on a (here
+60G file) delete:
 
-> Index: linux-2.6-lttng/mm/filemap.c
+http://people.redhat.com/~esandeen/rm_test/ext3_rm.png
 
-> +DEFINE_TRACE(wait_on_page_start);
-> +DEFINE_TRACE(wait_on_page_end);
+ext4 is much better:
 
-These are extremely incomplete - to the level of being useless.
+http://people.redhat.com/~esandeen/rm_test/ext4_rm.png
 
-To understand the lifetime of the pagecache, the following basic 
-events have to be observed and instrumented:
+> Simple solution for MythTV is what people already do: use xfs instead.
 
- - create a new page
- - fill in a new page
- - dirty a page [when we know this]
- - request writeout of a page
- - clean a page / complete writeout
- - free a page due to MM pressure
- - free a page due to truncation/delete
+and yes, xfs does it very quickly:
 
-The following additional events are useful as well:
+http://people.redhat.com/~esandeen/rm_test/xfs_rm.png
 
- - mmap a page to a user-space address
- - copy a page to a user-space address (read)
- - write to a page from a user-space address (write)
- - unmap a page from a user-space address
- - fault in a user-space mapped pagecache page
-
-optional:
-   - shmem attach/detach events
-   - shmem map/unmap events
-   - hugetlb map/unmap events
-
-I'm sure i havent listed them all. Have a look at the function-graph 
-tracer output to see what kind of basic events can happen to a 
-pagecache page.
-
-	Ingo
+-Eric
