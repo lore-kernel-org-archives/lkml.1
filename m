@@ -1,61 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757248AbZCXRxi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757997AbZCXRyT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757248AbZCXRxi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 13:53:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755789AbZCXRwr
+	id S1757997AbZCXRyT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 13:54:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754782AbZCXRyE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 13:52:47 -0400
-Received: from ausc60ps301.us.dell.com ([143.166.148.206]:48897 "EHLO
-	ausc60ps301.us.dell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754223AbZCXRwH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 13:52:07 -0400
-Date: Tue, 24 Mar 2009 12:52:03 -0500
-From: Matt Domsch <Matt_Domsch@dell.com>
-To: Scott James Remnant <scott@ubuntu.com>
-Cc: netdev@vger.kernel.org, linux-hotplug@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: Network Device Naming mechanism and policy
-Message-ID: <20090324175203.GB22700@auslistsprd01.us.dell.com>
-References: <20090324154617.GA16332@auslistsprd01.us.dell.com> <1237914139.22009.18.camel@quest>
-Mime-Version: 1.0
+	Tue, 24 Mar 2009 13:54:04 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:36534 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754798AbZCXRyB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Mar 2009 13:54:01 -0400
+Date: Tue, 24 Mar 2009 18:53:17 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       ltt-dev@lists.casi.polymtl.ca, Frederic Weisbecker <fweisbec@gmail.com>,
+       Jason Baron <jbaron@redhat.com>, Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [patch 5/9] LTTng instrumentation scheduler fix task migration
+Message-ID: <20090324175317.GD31117@elte.hu>
+References: <20090324155625.420966314@polymtl.ca> <20090324160148.554127249@polymtl.ca>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1237914139.22009.18.camel@quest>
-User-Agent: Mutt/1.5.11
+In-Reply-To: <20090324160148.554127249@polymtl.ca>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 24, 2009 at 05:02:19PM +0000, Scott James Remnant wrote:
-> On Tue, 2009-03-24 at 10:46 -0500, Matt Domsch wrote:
-> > biosdevname (http://linux.dell.com/projects.shtml#biosdevname) takes a
-> > stab at this.  It can be integrated into udev, such that the
-> > 70-persistent-net.rules file is never used, and the naming for each
-> > device comes from several different policies.  Its primary drawback is
-> > that it changes the device namespace, which some sysadmins, and tools,
-> > may not like.  Names for devices become eth_s0_0 for the first
-> > onboard NIC, eth_s0_1 for the second; eth_s3_3 for the fourth port
-> > on PCI Slot #3, etc.
-> > 
-> While this works for PCI slots, it already doesn't scale to other buses.
-> For example what slot number is the pccard slot?  If you have two
-> different pccard devices, would they get assigned the same name (udev
-> currently assigns them different names).
 
-actually biosdevname handles this already, using eth_pccard_X.Y where
-X = socket and Y = function.
+* Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
 
-> Now consider USB.  Would the device name change depending on which USB
-> port you plugged it into?  Or is USB just a single slot, in which case
-> what happens when you have two USB ethernet devices?
-> 
-> The Apple USB Ethernet device in my iPhone is not the USB Wireless
-> adapter I own, both have very different networking configurations.
+> The scheduler migration only needs to pass the task struct pointer 
+> and the destination CPU. The source CPU can be found by using 
+> task_cpu(p) in the probe.
 
-we would obviously need a solution.  eth_usb_{something} perhaps.
+> +++ linux-2.6-lttng/include/trace/sched.h	2009-01-30 10:43:19.000000000 -0500
+> @@ -30,8 +30,8 @@ DECLARE_TRACE(sched_switch,
+>  		TPARGS(rq, prev, next));
+>  
+>  DECLARE_TRACE(sched_migrate_task,
+> -	TPPROTO(struct task_struct *p, int orig_cpu, int dest_cpu),
+> -		TPARGS(p, orig_cpu, dest_cpu));
+> +	TPPROTO(struct task_struct *p, int dest_cpu),
+> +		TPARGS(p, dest_cpu));
 
--- 
-Matt Domsch
-Linux Technology Strategist, Dell Office of the CTO
-linux.dell.com & www.dell.com/linux
+Makes sense. Since this tracepoint has been changed in the tracing 
+tree already, mind doing this change in that context?
+
+Thanks,
+
+	Ingo
