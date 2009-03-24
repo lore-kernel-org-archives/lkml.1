@@ -1,73 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756358AbZCXHkY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756504AbZCXHnX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756358AbZCXHkY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 03:40:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754804AbZCXHkJ
+	id S1756504AbZCXHnX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 03:43:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754571AbZCXHnI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 03:40:09 -0400
-Received: from mail-ew0-f165.google.com ([209.85.219.165]:38029 "EHLO
-	mail-ew0-f165.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754227AbZCXHkH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 03:40:07 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:content-type:date:message-id:mime-version
-         :x-mailer:content-transfer-encoding;
-        b=yAk/zrT36UXmnoT98/JpuJ/2OiFH32np1/BNWjnCkZ2zUiUKuaE1intDWNyXQpaD7P
-         aGBnBI3TPpcskF0Fq2Ymgb5KGtAAz+jFUKif8gKUXhj3JQhPo+b1GaKlvLD7y6w8A36j
-         EC1ZPPITD7sWmH0RPmVuF5TTb23ffZt7Nw/dw=
-Subject: fastboot: unpacking initramfs faster
-From: Andreas Robinson <andr345@gmail.com>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: linux-kernel@vger.kernel.org
-Content-Type: text/plain
-Date: Tue, 24 Mar 2009 08:39:08 +0100
-Message-Id: <1237880348.7725.17.camel@andreas-desktop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
-Content-Transfer-Encoding: 7bit
+	Tue, 24 Mar 2009 03:43:08 -0400
+Received: from hera.kernel.org ([140.211.167.34]:56058 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753807AbZCXHnH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Mar 2009 03:43:07 -0400
+Date: Tue, 24 Mar 2009 07:42:26 GMT
+From: Joerg Roedel <joerg.roedel@amd.com>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       joerg.roedel@amd.com, fujita.tomonori@lab.ntt.co.jp, tglx@linutronix.de,
+       mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       joerg.roedel@amd.com, fujita.tomonori@lab.ntt.co.jp, tglx@linutronix.de,
+       mingo@elte.hu
+In-Reply-To: <1237818908-26516-1-git-send-email-joerg.roedel@amd.com>
+References: <1237818908-26516-1-git-send-email-joerg.roedel@amd.com>
+Subject: [tip:core/iommu] dma-debug: make memory range checks more consistent
+Message-ID: <tip-9537a48ed4b9e4b738943d6da0a0fd4278adf905@git.kernel.org>
+Git-Commit-ID: 9537a48ed4b9e4b738943d6da0a0fd4278adf905
+X-Mailer: tip-git-log-daemon
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 24 Mar 2009 07:42:28 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Commit-ID:  9537a48ed4b9e4b738943d6da0a0fd4278adf905
+Gitweb:     http://git.kernel.org/tip/9537a48ed4b9e4b738943d6da0a0fd4278adf905
+Author:     Joerg Roedel <joerg.roedel@amd.com>
+AuthorDate: Mon, 23 Mar 2009 15:35:08 +0100
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Tue, 24 Mar 2009 08:39:32 +0100
 
-here's a quick update on what can be done to make initramfs unpacking
-faster that I suggested a few weeks ago. There results are mixed.
+dma-debug: make memory range checks more consistent
 
+Impact: extend on-kernel-stack DMA debug checks to all !highmem pages
 
-The bad:
+We only checked dma_map_single() - extend it to dma_map_page()
+and dma_map_sg() as well.
 
-I tried running the initramfs unpacking asynchronously (and earlier) but
-ran into a curious problem: The parent thread stalled until
-decompression was done. I don't know why - I made sure that the two
-threads ran on different cores. Perhaps the parent was cache starved.
+Also, fix dma_map_single() corner case bug: make sure we dont
+stack-check highmem (not mapped) pages.
 
-I then looked at multithreaded decompression and found that neither gzip
-files nor deflate streams provide enough information (eg block lengths)
-to let you share the decompression among threads.
-
-It can be done of course, but obviously not without modifying file
-formats and userspace tools. 
-
-(Thoughts of snowballs and hell presented themselves at this point.)
-
-
-The good:
-
-LZO compression is roughly twice as fast as gunzip while files are only
-about 7% bigger. The file format is multiprocessing friendly and the
-decompressor is already in the mainline kernel.
-
-I estimate that single-threaded LZO would cut the unpacking time almost
-in half even on a low-end PC with a slow drive, like the Eee 901.
-
-Finally, someone already wrote support for bzip2 and lzma compressed
-initramfs. It's in the -tip tree. Adding LZO to that list should be
-straightforward so that's where I'm going next.
-
-Cheers,
-Andreas
+Reported-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
+Cc: iommu@lists.linux-foundation.org
+LKML-Reference: <1237818908-26516-1-git-send-email-joerg.roedel@amd.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
+---
+ lib/dma-debug.c |   13 ++++++++-----
+ 1 files changed, 8 insertions(+), 5 deletions(-)
+
+diff --git a/lib/dma-debug.c b/lib/dma-debug.c
+index f9e6d38..1a99208 100644
+--- a/lib/dma-debug.c
++++ b/lib/dma-debug.c
+@@ -722,10 +722,11 @@ void debug_dma_map_page(struct device *dev, struct page *page, size_t offset,
+ 	entry->size      = size;
+ 	entry->direction = direction;
+ 
+-	if (map_single) {
+-		void *addr = ((char *)page_address(page)) + offset;
+-
++	if (map_single)
+ 		entry->type = dma_debug_single;
++
++	if (!PageHighMem(page)) {
++		void *addr = ((char *)page_address(page)) + offset;
+ 		check_for_stack(dev, addr);
+ 		check_for_illegal_area(dev, addr, size);
+ 	}
+@@ -779,8 +780,10 @@ void debug_dma_map_sg(struct device *dev, struct scatterlist *sg,
+ 		entry->sg_call_ents   = nents;
+ 		entry->sg_mapped_ents = mapped_ents;
+ 
+-		check_for_stack(dev, sg_virt(s));
+-		check_for_illegal_area(dev, sg_virt(s), s->length);
++		if (!PageHighMem(sg_page(s))) {
++			check_for_stack(dev, sg_virt(s));
++			check_for_illegal_area(dev, sg_virt(s), s->length);
++		}
+ 
+ 		add_dma_entry(entry);
+ 	}
