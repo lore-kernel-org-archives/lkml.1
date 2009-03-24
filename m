@@ -1,88 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761627AbZCXPgW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761711AbZCXPgz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761627AbZCXPgW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 11:36:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756772AbZCXPgK
+	id S1761711AbZCXPgz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 11:36:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758289AbZCXPgq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 11:36:10 -0400
-Received: from kroah.org ([198.145.64.141]:57660 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1757226AbZCXPgJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 11:36:09 -0400
-Date: Tue, 24 Mar 2009 08:33:29 -0700
-From: Greg KH <greg@kroah.com>
-To: hooanon05@yahoo.co.jp
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: Q. DEBUG_FS and SYSFS config (Re: [RFC Aufs2 #3 2/2] split
-	'xino' entry under sysfs)
-Message-ID: <20090324153329.GA13705@kroah.com>
-References: <20090320004539.GF18781@kroah.com> <3934.1237515949@jrobl> <20090320024249.GA19989@kroah.com> <4443.1237517709@jrobl> <20090320030608.GA2638@kroah.com> <5142.1237521581@jrobl> <20090320041811.GA3352@kroah.com> <6218.1237526149@jrobl> <20090320054437.GC3993@kroah.com> <2778.1237882600@jrobl>
+	Tue, 24 Mar 2009 11:36:46 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:33067 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754989AbZCXPgp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Mar 2009 11:36:45 -0400
+Date: Tue, 24 Mar 2009 16:36:16 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Herbert Xu <herbert@gondor.apana.org.au>
+Cc: Robert Schwebel <r.schwebel@pengutronix.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Frank Blaschka <blaschka@linux.vnet.ibm.com>,
+       "David S. Miller" <davem@davemloft.net>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       kernel@pengutronix.de
+Subject: Re: Revert "gro: Fix legacy path napi_complete crash", (was: Re:
+	Linux 2.6.29)
+Message-ID: <20090324153616.GA31143@elte.hu>
+References: <alpine.LFD.2.00.0903231617550.3032@localhost.localdomain> <20090324130202.GA32469@elte.hu> <20090324143303.GP5367@pengutronix.de> <20090324143942.GA20462@elte.hu> <20090324150928.GB30224@gondor.apana.org.au>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <2778.1237882600@jrobl>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <20090324150928.GB30224@gondor.apana.org.au>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 24, 2009 at 05:16:40PM +0900, hooanon05@yahoo.co.jp wrote:
-> 
-> Greg KH:
-> > No one disables sysfs that I know of.  Heck, my phone enables sysfs...
-> > 
-> > > Addition to set limit, there is one more reason to adopt seq_file.
-> > > Because the printed string is a path, it may contain unprintable
-> > > characters. seq_file has a good interface seq_path() which supports
-> > > escaping such characters.
-> > 
-> > That is true.  Ok, let's see the final result and I'll be glad to look
-> > at it.
-> 
-> Hi Greg,
-> 
-> Currently I am testing locally about new aufs entries under debugfs, and
-> I found a strange issue about configuration.
-> 
-> First, configure "normaly".
-> General setup
->   [ ] Configure standard kernel features (for small systems)  --->
-> 
-> $ egrep -i '(sysfs|debug_fs)' .config
-> CONFIG_SYSFS_DEPRECATED=y
-> CONFIG_SYSFS_DEPRECATED_V2=y
 
-You should disable those two options, no modern distro needs them
-anymore.
+* Herbert Xu <herbert@gondor.apana.org.au> wrote:
 
-> CONFIG_SYSFS=y
-> CONFIG_DEBUG_FS=y
-> # CONFIG_FAULT_INJECTION_DEBUG_FS is not set
+> On Tue, Mar 24, 2009 at 03:39:42PM +0100, Ingo Molnar wrote:
+> >
+> > Subject: [PATCH] net: Fix netpoll lockup in legacy receive path
 > 
-> Next, enable EMBEDED, and then disable SYSFS.
-> General setup
->   [*] Configure standard kernel features (for small systems)  --->
-> File systems
->   Pseudo filesystems  --->
->     [ ] sysfs file system support
+> Actually, this patch is still racy.  If some interrupt comes in
+> and we suddenly get the maximum amount of backlog we can still
+> hang when we call __napi_complete incorrectly.  It's unlikely
+> but we certainly shouldn't allow that.  Here's a better version.
 > 
-> $ egrep -i '(sysfs|debug_fs)' .config
-> # CONFIG_SYSFS is not set
-> CONFIG_DEBUG_FS=y
-> 
-> SYSFS is disabled expectedly, but DEBUG_FS is still enabled,
-> while "depends on SYSFS" is specified for DEBUG_FS.
-> 
-> Is this expected behaviour?
-> In other words, can I assume "when DEBUG_FS is enabled, SYSFS must be
-> enabled too" safely?
+> net: Fix netpoll lockup in legacy receive path
 
-Your code should not worry about either of these, it will "just work"
-either way.
+ok - i'm testing with this now.
 
-As for if there is a bug here, I don't know, the kbuild dependancies
-should fix it up if you run "make oldconfig" right?
-
-thanks,
-
-greg k-h
+	Ingo
