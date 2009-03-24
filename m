@@ -1,144 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758646AbZCXQH0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760586AbZCXQHp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758646AbZCXQH0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 12:07:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761580AbZCXQGc
+	id S1760586AbZCXQHp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 12:07:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762132AbZCXQGe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 12:06:32 -0400
-Received: from hera.kernel.org ([140.211.167.34]:41792 "EHLO hera.kernel.org"
+	Tue, 24 Mar 2009 12:06:34 -0400
+Received: from hera.kernel.org ([140.211.167.34]:41798 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760464AbZCXQG3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 12:06:29 -0400
+	id S1755825AbZCXQGa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Mar 2009 12:06:30 -0400
 From: Tejun Heo <tj@kernel.org>
 To: bzolnier@gmail.com, linux-kernel@vger.kernel.org, axboe@kernel.dk,
        linux-ide@vger.kernel.org
 Cc: Tejun Heo <tj@kernel.org>
-Subject: [PATCH 02/14] block: reorganize [__]bio_map_kern()
-Date: Wed, 25 Mar 2009 01:06:04 +0900
-Message-Id: <1237910776-10983-3-git-send-email-tj@kernel.org>
+Subject: [PATCH 01/14] block: clear req->errors on bio completion only for fs requests
+Date: Wed, 25 Mar 2009 01:06:03 +0900
+Message-Id: <1237910776-10983-2-git-send-email-tj@kernel.org>
 X-Mailer: git-send-email 1.6.0.2
 In-Reply-To: <1237910776-10983-1-git-send-email-tj@kernel.org>
 References: <1237910776-10983-1-git-send-email-tj@kernel.org>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 24 Mar 2009 16:06:25 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 24 Mar 2009 16:06:26 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: code reorganization, cleanup
+Impact: subtle behavior change
 
-Reorganize [__]bio_map_kern() such that __bio_map_kern() only maps the
-pages while bio_map_kern() handles allocation.  Also, if not all pages
-can be mapped, __bio_map_kern() fails directly instead of doing
-partial mapping and letting bio_map_kern() detect it and fail.
+For fs requests, rq is only carrier of bios and rq error status as a
+whole doesn't mean much.  This is the reason why rq->errors is being
+cleared on each partial completion of a request as on each partial
+completion the error status is transferred to the respective bios.
 
-While at it, convert to PFN_*() macros for page number calculations.
+For pc requests, rq->errors is used to carry error status to the
+issuer and thus __end_that_request_first() doesn't clear it on such
+cases.
 
-The reorganized __bio_map_kern() will be used in the next patch for
-bio_map_kern_prealloc().
+The condition was fine till now as only fs and pc requests have used
+bio and thus the bio completion path.  However, future changes will
+unify data accesses to bio and all non fs users care about rq error
+status.  Clear rq->errors on bio completion only for fs requests.
+
+In general, the implicit clearing is a bit too subtle especially as
+the meaning of rq->errors is completely dependent on low level
+drivers.  Unifying / cleaning up rq->errors usage and letting llds
+manage it would be better.  TODO comment added.
 
 Signed-off-by: Tejun Heo <tj@kernel.org>
 Cc: Jens Axboe <axboe@kernel.dk>
 ---
- fs/bio.c |   56 +++++++++++++++++++++++---------------------------------
- 1 files changed, 23 insertions(+), 33 deletions(-)
+ block/blk-core.c |   10 +++++++---
+ 1 files changed, 7 insertions(+), 3 deletions(-)
 
-diff --git a/fs/bio.c b/fs/bio.c
-index d4f0632..746b566 100644
---- a/fs/bio.c
-+++ b/fs/bio.c
-@@ -26,6 +26,7 @@
- #include <linux/mempool.h>
- #include <linux/workqueue.h>
- #include <linux/blktrace_api.h>
-+#include <linux/pfn.h>
- #include <trace/block.h>
- #include <scsi/sg.h>		/* for struct sg_iovec */
+diff --git a/block/blk-core.c b/block/blk-core.c
+index 29bcfac..beb597d 100644
+--- a/block/blk-core.c
++++ b/block/blk-core.c
+@@ -1735,10 +1735,14 @@ static int __end_that_request_first(struct request *req, int error,
+ 	trace_block_rq_complete(req->q, req);
  
-@@ -1109,41 +1110,27 @@ static void bio_map_kern_endio(struct bio *bio, int err)
- }
+ 	/*
+-	 * for a REQ_TYPE_BLOCK_PC request, we want to carry any eventual
+-	 * sense key with us all the way through
++	 * For fs requests, rq is just carrier of independent bio's
++	 * and each partial completion should be handled separately.
++	 * Reset per-request error on each partial completion.
++	 *
++	 * TODO: tj: This is too subtle.  It would be better to let
++	 * low level drivers do what they see fit.
+ 	 */
+-	if (!blk_pc_request(req))
++	if (blk_fs_request(req))
+ 		req->errors = 0;
  
- 
--static struct bio *__bio_map_kern(struct request_queue *q, void *data,
--				  unsigned int len, gfp_t gfp_mask)
-+static int __bio_map_kern(struct request_queue *q, struct bio *bio,
-+			  void *data, unsigned int len)
- {
--	unsigned long kaddr = (unsigned long)data;
--	unsigned long end = (kaddr + len + PAGE_SIZE - 1) >> PAGE_SHIFT;
--	unsigned long start = kaddr >> PAGE_SHIFT;
--	const int nr_pages = end - start;
- 	int offset, i;
--	struct bio *bio;
--
--	bio = bio_alloc(gfp_mask, nr_pages);
--	if (!bio)
--		return ERR_PTR(-ENOMEM);
--
--	offset = offset_in_page(kaddr);
--	for (i = 0; i < nr_pages; i++) {
--		unsigned int bytes = PAGE_SIZE - offset;
- 
--		if (len <= 0)
--			break;
--
--		if (bytes > len)
--			bytes = len;
-+	offset = offset_in_page(data);
-+	for (i = 0; len; i++) {
-+		unsigned int bytes = min_t(unsigned int,
-+					   len, PAGE_SIZE - offset);
- 
-+		/* don't support partial mapping */
- 		if (bio_add_pc_page(q, bio, virt_to_page(data), bytes,
- 				    offset) < bytes)
--			break;
-+			return -EINVAL;
- 
- 		data += bytes;
- 		len -= bytes;
- 		offset = 0;
- 	}
- 
--	bio->bi_end_io = bio_map_kern_endio;
--	return bio;
-+	return 0;
- }
- 
- /**
-@@ -1159,20 +1146,23 @@ static struct bio *__bio_map_kern(struct request_queue *q, void *data,
- struct bio *bio_map_kern(struct request_queue *q, void *data, unsigned int len,
- 			 gfp_t gfp_mask)
- {
-+	const unsigned long kaddr = (unsigned long)data;
-+	const int nr_pages = PFN_UP(kaddr + len) - PFN_DOWN(kaddr);
- 	struct bio *bio;
-+	int error;
- 
--	bio = __bio_map_kern(q, data, len, gfp_mask);
--	if (IS_ERR(bio))
--		return bio;
-+	bio = bio_alloc(gfp_mask, nr_pages);
-+	if (unlikely(!bio))
-+		return ERR_PTR(-ENOMEM);
-+	bio->bi_end_io = bio_map_kern_endio;
- 
--	if (bio->bi_size == len)
--		return bio;
-+	error = __bio_map_kern(q, bio, data, len);
-+	if (unlikely(error)) {
-+		bio_put(bio);
-+		return ERR_PTR(error);
-+	}
- 
--	/*
--	 * Don't support partial mappings.
--	 */
--	bio_put(bio);
--	return ERR_PTR(-EINVAL);
-+	return bio;
- }
- 
- static void bio_copy_kern_endio(struct bio *bio, int err)
+ 	if (error && (blk_fs_request(req) && !(req->cmd_flags & REQ_QUIET))) {
 -- 
 1.6.0.2
 
