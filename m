@@ -1,101 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760566AbZCXNge@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760757AbZCXNhn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760566AbZCXNge (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 09:36:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754533AbZCXNgZ
+	id S1760757AbZCXNhn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 09:37:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754630AbZCXNhe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 09:36:25 -0400
-Received: from rhun.apana.org.au ([64.62.148.172]:36283 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753666AbZCXNgZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 09:36:25 -0400
-Date: Tue, 24 Mar 2009 21:35:42 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Frank Blaschka <blaschka@linux.vnet.ibm.com>,
-       "David S. Miller" <davem@davemloft.net>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+	Tue, 24 Mar 2009 09:37:34 -0400
+Received: from THUNK.ORG ([69.25.196.29]:45355 "EHLO thunker.thunk.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753444AbZCXNhd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Mar 2009 09:37:33 -0400
+Date: Tue, 24 Mar 2009 09:37:06 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Nick Piggin <npiggin@suse.de>,
+       Jens Axboe <jens.axboe@oracle.com>, David Rees <drees76@gmail.com>,
+       Jesper Krogh <jesper@krogh.cc>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Revert "gro: Fix legacy path napi_complete crash", (was: Re:
-	Linux 2.6.29)
-Message-ID: <20090324133542.GA29046@gondor.apana.org.au>
-References: <alpine.LFD.2.00.0903231617550.3032@localhost.localdomain> <20090324130202.GA32469@elte.hu>
+Subject: Re: Linux 2.6.29
+Message-ID: <20090324133706.GL5814@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+	Arjan van de Ven <arjan@infradead.org>,
+	Peter Zijlstra <a.p.zijlstra@chello.nl>,
+	Nick Piggin <npiggin@suse.de>, Jens Axboe <jens.axboe@oracle.com>,
+	David Rees <drees76@gmail.com>, Jesper Krogh <jesper@krogh.cc>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <alpine.LFD.2.00.0903231617550.3032@localhost.localdomain> <49C87B87.4020108@krogh.cc> <72dbd3150903232346g5af126d7sb5ad4949a7b5041f@mail.gmail.com> <20090324091545.758d00f5@lxorguk.ukuu.org.uk> <20090324093245.GA22483@elte.hu> <20090324101011.6555a0b9@lxorguk.ukuu.org.uk> <20090324103111.GA26691@elte.hu> <20090324041249.1133efb6.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090324130202.GA32469@elte.hu>
+In-Reply-To: <20090324041249.1133efb6.akpm@linux-foundation.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 24, 2009 at 02:02:02PM +0100, Ingo Molnar wrote:
+On Tue, Mar 24, 2009 at 04:12:49AM -0700, Andrew Morton wrote:
+> But mainly because the problem lies elsewhere - in an area of contention
+> between the committing and running transactions which we knowingly and
+> reluctantly added to fix a bug in "[PATCH] fix ext3 buffer-stealing"
+
+Well, let's be clear here.  The contention between committing and
+running transaction is an issue, even if we solved this problem, it
+wouldn't solve the issue of fsync() taking a long time in ext3's
+data=ordered mode in the case of massive write starvation caused by a
+read-heavy workload, or a vast number of dirty buffers associated with
+an inode which is about to be committed, and a process triggers an
+fsync().  So fixing this issue wouldn't have solved the problem which
+Ingo complained about (which was an editor calling fsync() leading to
+long delay when saving a file during or right after a
+distcc-accelerated kernel compile) or the infamous Firefox 3.0 bug.
+
+Fixing this contention *would* fix the problem where a normal process
+which is doing normal file I/O could end up getting stalled
+unnecessarily, but that's not what most people are complaining about
+--- and shortening the amount of time that it takes do a commit
+(either with ext4's delayed allocation or ext3's data=writeback mount
+option) would also address this problem.  That doesn't mean that it's
+not worth it to fix this particular contention, but there are multiple
+issues going on here.
+
+(Basically we're here:
+
+http://www.kernel.org/pub/linux/kernel/people/paulmck/Confessions/FOSSElephant.html
+
+... in Paul Mckenney's version of parable of the blind men and the elephant:
+
+http://www.kernel.org/pub/linux/kernel/people/paulmck/Confessions/
+
+:-)
+
+> Now this:
 > 
-> Yesterday about half of my testboxes (3 out of 7) started getting 
-> weird networking failures: their network interface just got stuck 
-> completely - no rx and no tx at all. Restarting the interface did 
-> not help.
+> > Resolution was that Tytso indicated it went into some sort of ext4 
+> > patch queue:
+> 
+> was not a fix at all.  It was a known-buggy hack which I proposed simply to
+> remove that contention point to let us find out if we're on the right
+> track.  IIRC Ric was going to ask someone to do some performance testing of
+> that hack, but we never heard back.
 
-Darn, does this patch help?
+Ric did do some preliminary performance testing, and it wasn't
+encouraging.  It's still in the unstable portion of the ext4 patch
+queue, and it's in my "wish I had more time to look at it; I don't get
+to work on ext3/4 full-time" queue.
 
-net: Fix netpoll lockup in legacy receive path
+> The bottom line is that someone needs to do some serious rooting through
+> the very heart of JBD transaction logic and nobody has yet put their hand
+> up.  If we do that, and it turns out to be just too hard to fix then yes,
+> perhaps that's the time to start looking at palliative bandaids.
 
-When I fixed the GRO crash in the legacy receive path I used
-napi_complete to replace __napi_complete.  Unfortunately they're
-not the same when NETPOLL is enabled, which may result in us
-not calling __napi_complete at all.
+I disagree that they are _just_ palliative bandaids, because you need
+these in order to make sure fsync() completes in a reasonable time, so
+that people like Ingo don't get cranky.  :-)   Fixing the contention
+between the running and committing transaction is a good thing, and I
+hope someone puts up their hand or I magically get the time I need to
+really dive into the jbd layer, but it won't help the Firefox 3.0
+problem or Ingo's problem with saving files during a distcc run.
 
-While this is fishy in itself, let's make the obvious fix right
-now of reverting to the previous state where we always called
-__napi_complete.
+						- Ted
 
-Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
-
-diff --git a/net/core/dev.c b/net/core/dev.c
-index e3fe5c7..523f53e 100644
---- a/net/core/dev.c
-+++ b/net/core/dev.c
-@@ -2580,24 +2580,26 @@ static int process_backlog(struct napi_struct *napi, int quota)
- 	int work = 0;
- 	struct softnet_data *queue = &__get_cpu_var(softnet_data);
- 	unsigned long start_time = jiffies;
-+	struct sk_buff *skb;
- 
- 	napi->weight = weight_p;
- 	do {
--		struct sk_buff *skb;
--
- 		local_irq_disable();
- 		skb = __skb_dequeue(&queue->input_pkt_queue);
--		if (!skb) {
--			local_irq_enable();
--			napi_complete(napi);
--			goto out;
--		}
- 		local_irq_enable();
-+		if (!skb)
-+			break;
- 
- 		napi_gro_receive(napi, skb);
- 	} while (++work < quota && jiffies == start_time);
- 
- 	napi_gro_flush(napi);
-+	if (skb)
-+		goto out;
-+
-+	local_irq_disable();
-+	__napi_complete(napi);
-+	local_irq_enable();
- 
- out:
- 	return work;
-
-Thanks,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
