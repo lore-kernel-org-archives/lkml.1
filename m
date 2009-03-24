@@ -1,42 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753211AbZCXVjd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755490AbZCXVkZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753211AbZCXVjd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 17:39:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752392AbZCXVjT
+	id S1755490AbZCXVkZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 17:40:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754303AbZCXVji
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 17:39:19 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:33033 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751706AbZCXVjS (ORCPT
+	Tue, 24 Mar 2009 17:39:38 -0400
+Received: from rv-out-0506.google.com ([209.85.198.235]:52847 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754584AbZCXVjg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 17:39:18 -0400
-Date: Tue, 24 Mar 2009 21:38:41 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Cc: Andrey Panin <pazke@donpac.ru>, linux-kernel@vger.kernel.org,
-       linux-serial@vger.kernel.org, torvalds@linux-foundation.org
-Subject: Re: [PATCH 01/30] disallow SERIAL_8250_PNP with SERIAL_8250_CONSOLE
-Message-ID: <20090324213841.59d6b299@lxorguk.ukuu.org.uk>
-In-Reply-To: <20090324213416.GA29507@srcf.ucam.org>
-References: <20090324135930.12735.7827.stgit@localhost.localdomain>
-	<20090324140145.12735.29459.stgit@localhost.localdomain>
-	<20090324151034.GC6859@ports.donpac.ru>
-	<20090324152203.6a989d06@lxorguk.ukuu.org.uk>
-	<20090324205945.GA28394@srcf.ucam.org>
-	<20090324212653.77d6e70c@lxorguk.ukuu.org.uk>
-	<20090324213416.GA29507@srcf.ucam.org>
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 24 Mar 2009 17:39:36 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=vK4yoGzIiV2YBpA2qZ6iYlNFGDS10IE5pmIEka+WSMaNpY2fTTodUKSqHG+h3y7ulx
+         nsPpzUu1IguxtgXLPEsEl5kfbG6Vx5XBpM3aCOgQncAYwuHxgm5o25L+m1t5T6T1+R8a
+         FqcZPxo+RgDjb2bK3tQoWmBqpP2FINWo7f+jc=
+From: stoyboyker@gmail.com
+To: linux-kernel@vger.kernel.org
+Cc: Stoyan Gaydarov <stoyboyker@gmail.com>, linux-media@vger.kernel.org
+Subject: [PATCH 12/13][Resubmit][drivers/media] changed ioctls to unlocked
+Date: Tue, 24 Mar 2009 16:38:31 -0500
+Message-Id: <1237930711-16200-1-git-send-email-stoyboyker@gmail.com>
+X-Mailer: git-send-email 1.6.2.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > Since the conversion to drivers/serial - so years.
-> 
-> So everyone using serial console with 8250_PNP enabled gets a crash on 
-> boot, and has done for years? Really?
+From: Stoyan Gaydarov <stoyboyker@gmail.com>
 
-If their console port is PnP listed yes.
+Signed-off-by: Stoyan Gaydarov <stoyboyker@gmail.com>
+---
+ drivers/media/dvb/bt8xx/dst_ca.c |    7 +++++--
+ drivers/media/video/dabusb.c     |   11 ++++++++---
+ 2 files changed, 13 insertions(+), 5 deletions(-)
+
+diff --git a/drivers/media/dvb/bt8xx/dst_ca.c b/drivers/media/dvb/bt8xx/dst_ca.c
+index 0258451..d3487c5 100644
+--- a/drivers/media/dvb/bt8xx/dst_ca.c
++++ b/drivers/media/dvb/bt8xx/dst_ca.c
+@@ -552,8 +552,10 @@ free_mem_and_exit:
+ 	return result;
+ }
+ 
+-static int dst_ca_ioctl(struct inode *inode, struct file *file, unsigned int cmd, unsigned long ioctl_arg)
++static long dst_ca_ioctl(struct file *file, unsigned int cmd, unsigned long ioctl_arg)
+ {
++	lock_kernel();
++
+ 	struct dvb_device* dvbdev = (struct dvb_device*) file->private_data;
+ 	struct dst_state* state = (struct dst_state*) dvbdev->priv;
+ 	struct ca_slot_info *p_ca_slot_info;
+@@ -647,6 +649,7 @@ static int dst_ca_ioctl(struct inode *inode, struct file *file, unsigned int cmd
+ 	kfree (p_ca_slot_info);
+ 	kfree (p_ca_caps);
+ 
++	unlock_kernel();
+ 	return result;
+ }
+ 
+@@ -684,7 +687,7 @@ static ssize_t dst_ca_write(struct file *file, const char __user *buffer, size_t
+ 
+ static struct file_operations dst_ca_fops = {
+ 	.owner = THIS_MODULE,
+-	.ioctl = dst_ca_ioctl,
++	.unlocked_ioctl = dst_ca_ioctl,
+ 	.open = dst_ca_open,
+ 	.release = dst_ca_release,
+ 	.read = dst_ca_read,
+diff --git a/drivers/media/video/dabusb.c b/drivers/media/video/dabusb.c
+index 298810d..c31e76f 100644
+--- a/drivers/media/video/dabusb.c
++++ b/drivers/media/video/dabusb.c
+@@ -657,22 +657,26 @@ static int dabusb_release (struct inode *inode, struct file *file)
+ 	return 0;
+ }
+ 
+-static int dabusb_ioctl (struct inode *inode, struct file *file, unsigned int cmd, unsigned long arg)
++static long dabusb_ioctl (struct file *file, unsigned int cmd, unsigned long arg)
+ {
+ 	pdabusb_t s = (pdabusb_t) file->private_data;
+ 	pbulk_transfer_t pbulk;
+ 	int ret = 0;
+ 	int version = DABUSB_VERSION;
+ 
++	lock_kernel();
+ 	dbg("dabusb_ioctl");
+ 
+-	if (s->remove_pending)
++	if (s->remove_pending) {
++		unlock_kernel();
+ 		return -EIO;
++	}
+ 
+ 	mutex_lock(&s->mutex);
+ 
+ 	if (!s->usbdev) {
+ 		mutex_unlock(&s->mutex);
++		unlock_kernel();
+ 		return -EIO;
+ 	}
+ 
+@@ -713,6 +717,7 @@ static int dabusb_ioctl (struct inode *inode, struct file *file, unsigned int cm
+ 		break;
+ 	}
+ 	mutex_unlock(&s->mutex);
++	unlock_kernel();
+ 	return ret;
+ }
+ 
+@@ -721,7 +726,7 @@ static const struct file_operations dabusb_fops =
+ 	.owner =	THIS_MODULE,
+ 	.llseek =	no_llseek,
+ 	.read =		dabusb_read,
+-	.ioctl =	dabusb_ioctl,
++	.unlocked_ioctl =	dabusb_ioctl,
+ 	.open =		dabusb_open,
+ 	.release =	dabusb_release,
+ };
+-- 
+1.6.2.1
 
