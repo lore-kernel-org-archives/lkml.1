@@ -1,54 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761916AbZCXUO7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762281AbZCXUSI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761916AbZCXUO7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 16:14:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758352AbZCXUOt
+	id S1762281AbZCXUSI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 16:18:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755043AbZCXURz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 16:14:49 -0400
-Received: from mail.parknet.ad.jp ([210.171.162.6]:60313 "EHLO
-	mail.officemail.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756102AbZCXUOs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 16:14:48 -0400
-From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-To: Jan Kara <jack@suse.cz>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       "Martin J. Bligh" <mbligh@mbligh.org>, linux-ext4@vger.kernel.org,
-       Ying Han <yinghan@google.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-mm <linux-mm@kvack.org>, guichaz@gmail.com,
-       Alex Khesin <alexk@google.com>, Mike Waychison <mikew@google.com>,
-       Rohit Seth <rohitseth@google.com>
-Subject: Re: ftruncate-mmap: pages are lost after writing to mmaped file.
-References: <604427e00903181244w360c5519k9179d5c3e5cd6ab3@mail.gmail.com>
-	<20090324125510.GA9434@duck.suse.cz>
-	<20090324132637.GA14607@duck.suse.cz>
-	<200903250130.02485.nickpiggin@yahoo.com.au>
-	<20090324144709.GF23439@duck.suse.cz>
-	<1237906563.24918.184.camel@twins>
-	<20090324152959.GG23439@duck.suse.cz>
-Date: Wed, 25 Mar 2009 05:14:34 +0900
-In-Reply-To: <20090324152959.GG23439@duck.suse.cz> (Jan Kara's message of
-	"Tue, 24 Mar 2009 16:29:59 +0100")
-Message-ID: <873ad2znit.fsf@devron.myhome.or.jp>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.91 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-Anti-Virus: Kaspersky Anti-Virus for MailServers 5.5.10/RELEASE, bases: 24052007 #308098, status: clean
+	Tue, 24 Mar 2009 16:17:55 -0400
+Received: from 82-117-125-11.tcdsl.calypso.net ([82.117.125.11]:59244 "EHLO
+	smtp.ossman.eu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753017AbZCXURy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Mar 2009 16:17:54 -0400
+Date: Tue, 24 Mar 2009 21:17:48 +0100
+From: Pierre Ossman <drzeus-list@drzeus.cx>
+To: =?UTF-8?B?Sm9zw6kgTWFyw63CrWEgRmVybsOhbmRleiBHb256w6FsZXo=?= 
+	<josemariafg@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/1] mmc: Some microSD cards are not recognized by
+ PCIxx12 SDA controller
+Message-ID: <20090324211748.30cd7429@mjolnir.ossman.eu>
+In-Reply-To: <49B5C091.3090303@gmail.com>
+References: <49B5C091.3090303@gmail.com>
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.15.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=PGP-SHA1; protocol="application/pgp-signature"; boundary="=_freyr.ossman.eu-18827-1237925869-0001-2"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Kara <jack@suse.cz> writes:
+This is a MIME-formatted message.  If you see this text it means that your
+E-mail software does not support MIME-formatted messages.
 
->   BTW: Note that there's a plenty of filesystems that don't implement
-> mkwrite() (e.g. ext2, UDF, VFAT...) and thus have the same problem with
-> ENOSPC. So I'd not speak too much about consistency ;).
+--=_freyr.ossman.eu-18827-1237925869-0001-2
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-FWIW, fatfs doesn't allow sparse file (mmap the non-allocated region),
-so I guess there is no problem.
--- 
-OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+On Tue, 10 Mar 2009 02:21:21 +0100
+Jos=C3=A9 Mar=C3=AD=C2=ADa Fern=C3=A1ndez Gonz=C3=A1lez <josemariafg@gmail.=
+com> wrote:
+
+>=20
+> I don't know whether this patch can break something in the behavior of ot=
+her
+> SD controllers, but at least it works for my laptop.
+>=20
+
+Should be fairly safe, it just slows things down.
+
+> diff -Nrpu linux-2.6.28.5/drivers/mmc/core/core.c.orig linux-2.6.28.5/dri=
+vers/mmc/core/core.c
+> --- linux-2.6.28.5/drivers/mmc/core/core.c.orig	2009-03-10 01:30:19.00000=
+0000 +0100
+> +++ linux-2.6.28.5/drivers/mmc/core/core.c	2009-03-10 01:29:44.000000000 =
++0100
+> @@ -514,7 +514,7 @@ static void mmc_power_up(struct mmc_host
+>  	 * This delay should be sufficient to allow the power supply
+>  	 * to reach the minimum voltage.
+>  	 */
+> -	mmc_delay(2);
+> +	mmc_delay(10);
+> =20
+
+A delay of 10 is just enough to trigger a sleep on most kernels
+(HZ=3D100). Have you determined the lower bound of these two values?
+
+--=20
+     -- Pierre Ossman
+
+  Linux kernel, MMC maintainer        http://www.kernel.org
+  rdesktop, core developer          http://www.rdesktop.org
+
+  WARNING: This correspondence is being monitored by the
+  Swedish government. Make sure your server uses encryption
+  for SMTP traffic and consider using PGP for end-to-end
+  encryption.
+
+--=_freyr.ossman.eu-18827-1237925869-0001-2
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename=signature.asc
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.11 (GNU/Linux)
+
+iEYEARECAAYFAknJP+4ACgkQ7b8eESbyJLgaiwCeN+A9Qg+HtC/Olb+eztQZ5TAl
+x8QAoOTdPl6EBydnPRW0nLaN56/0acHK
+=SoEO
+-----END PGP SIGNATURE-----
+
+--=_freyr.ossman.eu-18827-1237925869-0001-2--
