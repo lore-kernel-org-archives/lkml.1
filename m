@@ -1,39 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760417AbZCXNNS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760553AbZCXNOa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760417AbZCXNNS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 09:13:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759981AbZCXNMx
+	id S1760553AbZCXNOa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 09:14:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751965AbZCXNOU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 09:12:53 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:36367 "EHLO mx2.mail.elte.hu"
+	Tue, 24 Mar 2009 09:14:20 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:43107 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758095AbZCXNMw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 09:12:52 -0400
-Date: Tue, 24 Mar 2009 14:12:08 +0100
+	id S1751958AbZCXNOT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Mar 2009 09:14:19 -0400
+Date: Tue, 24 Mar 2009 14:13:59 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Herbert Xu <herbert@gondor.apana.org.au>,
-       Frank Blaschka <blaschka@linux.vnet.ibm.com>,
-       "David S. Miller" <davem@davemloft.net>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       netdev@vger.kernel.org
-Subject: Re: Revert "gro: Fix legacy path napi_complete crash", (was: Re:
-	Linux 2.6.29)
-Message-ID: <20090324131208.GA10157@elte.hu>
-References: <alpine.LFD.2.00.0903231617550.3032@localhost.localdomain> <20090324130202.GA32469@elte.hu>
+To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       ananth@in.ibm.com, bharata@linux.vnet.ibm.com, tglx@linutronix.de,
+       mhiramat@redhat.com, systemtap@sources.redhat.com
+Cc: linux-tip-commits@vger.kernel.org
+Subject: Re: [tip:tracing/kprobes] x86: kretprobe-booster interrupt
+	emulation code fix
+Message-ID: <20090324131359.GA13210@elte.hu>
+References: <49C7995C.2010601@redhat.com> <tip-b9dad0d2955db059cd92c81c37ddcbef0abc8bf8@git.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090324130202.GA32469@elte.hu>
+In-Reply-To: <tip-b9dad0d2955db059cd92c81c37ddcbef0abc8bf8@git.kernel.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
 X-ELTE-SpamLevel: 
 X-ELTE-SpamCheck: no
 X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
 	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
 	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
@@ -41,24 +37,12 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-(netdev Cc:-ed)
+* Masami Hiramatsu <mhiramat@redhat.com> wrote:
 
-* Ingo Molnar <mingo@elte.hu> wrote:
+>  	regs->ip = trampoline_address;
+>  	regs->orig_ax = ~0UL;
+> +	regs->gs = 0;
 
-> Yesterday about half of my testboxes (3 out of 7) started getting 
-> weird networking failures: their network interface just got stuck 
-> completely - no rx and no tx at all. Restarting the interface did 
-> not help.
-
-> I've attached the reproducer (non-SMP) .config. The system has:
-
-Note, the .config is randconfig derived. There was a stage of the 
-tests when about every ~5-10th randconfig was failing, so i dont 
-think it's a rare config combo that triggers this. (but there were 
-other stages where 30 randconfig in a row went fine so it's hard to 
-tell.)
-
-In the worst case the hang needed 2 million packets to trigger - 
-that's why i set the limit in the tests to 6 million packets.
+hm, this wont build on 32-bit.
 
 	Ingo
