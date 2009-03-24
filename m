@@ -1,122 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759700AbZCXRyy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759075AbZCXR54@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759700AbZCXRyy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 13:54:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755316AbZCXRym
+	id S1759075AbZCXR54 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 13:57:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759369AbZCXRy5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 13:54:42 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:35055 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754782AbZCXRyk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 13:54:40 -0400
-Date: Tue, 24 Mar 2009 18:35:11 +0100
-From: Jan Kara <jack@suse.cz>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: Jan Kara <jack@suse.cz>, "Martin J. Bligh" <mbligh@mbligh.org>,
-       linux-ext4@vger.kernel.org, Ying Han <yinghan@google.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-mm <linux-mm@kvack.org>, guichaz@gmail.com,
-       Alex Khesin <alexk@google.com>, Mike Waychison <mikew@google.com>,
-       Rohit Seth <rohitseth@google.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: ftruncate-mmap: pages are lost after writing to mmaped file.
-Message-ID: <20090324173511.GJ23439@duck.suse.cz>
-References: <604427e00903181244w360c5519k9179d5c3e5cd6ab3@mail.gmail.com> <200903250130.02485.nickpiggin@yahoo.com.au> <20090324144709.GF23439@duck.suse.cz> <200903250203.55520.nickpiggin@yahoo.com.au> <20090324154813.GH23439@duck.suse.cz>
-MIME-Version: 1.0
+	Tue, 24 Mar 2009 13:54:57 -0400
+Received: from ausxippc101.us.dell.com ([143.166.85.207]:12401 "EHLO
+	ausxippc101.us.dell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759458AbZCXRyx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Mar 2009 13:54:53 -0400
+X-Greylist: delayed 576 seconds by postgrey-1.27 at vger.kernel.org; Tue, 24 Mar 2009 13:54:52 EDT
+Date: Tue, 24 Mar 2009 12:45:14 -0500
+From: Matt Domsch <Matt_Domsch@dell.com>
+To: "Karl O. Pinc" <kop@meme.com>
+Cc: netdev@vger.kernel.org, linux-hotplug@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: Network Device Naming mechanism and policy
+Message-ID: <20090324174514.GA22700@auslistsprd01.us.dell.com>
+References: <20090324154617.GA16332@auslistsprd01.us.dell.com> <1237912977l.501l.10l@mofo>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090324154813.GH23439@duck.suse.cz>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <1237912977l.501l.10l@mofo>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue 24-03-09 16:48:14, Jan Kara wrote:
-> On Wed 25-03-09 02:03:54, Nick Piggin wrote:
-> > On Wednesday 25 March 2009 01:47:09 Jan Kara wrote:
-> > > On Wed 25-03-09 01:30:00, Nick Piggin wrote:
-> > 
-> > > > I don't think it is a very good idea for block_write_full_page recovery
-> > > > to do clear_buffer_dirty for !mapped buffers. I think that should rather
-> > > > be a redirty_page_for_writepage in the case that the buffer is dirty.
-> > > >
-> > > > Perhaps not the cleanest way to solve the problem if it is just due to
-> > > > transient shortage of space in ext3, but generic code shouldn't be
-> > > > allowed to throw away dirty data even if it can't be written back due
-> > > > to some software or hardware error.
-> > >
-> > >   Well, that would be one possibility. But then we'd be left with dirty
-> > > pages we cannot ever release since they are constantly dirty (when the
-> > > filesystem really becomes out of space). So what I
-> > 
-> > If the filesystem becomes out of space and we have over-committed these
-> > dirty mmapped blocks, then we most definitely want to keep them around.
-> > An error of the system losing a few pages (or if it happens an insanely
-> > large number of times, then slowly dying due to memory leak) is better
-> > than an app suddenly seeing the contents of the page change to nulls
-> > under it when the kernel decides to do some page reclaim.
->   Hmm, probably you're right. Definitely it would be much easier to track
-> the problem down than it is now... Thinking a bit more... But couldn't a
-> malicious user bring the machine easily to OOM this way? That would be
-> unfortunate.
-  OK, below is the patch which makes things work for me (i.e. no data
-lost). What do you think?
+On Tue, Mar 24, 2009 at 11:42:57AM -0500, Karl O. Pinc wrote:
+> My thoughts on the subject; from someone who is not
+> particularly qualified to have opinions.
+> 
+> Reading over your post, I searched for a single sentence describing
+> the problem you're trying to solve.  What I came up with was
+> this:
+> 
+> On 03/24/2009 10:46:17 AM, Matt Domsch wrote:
+> 
+> > Users continue to have to figure out, for each system type
+> >and
+> >potentially for each boot, which NIC is connected to which name.  This
+> >has been the #1 customer complaint about Linux on Dell servers for
+> >several years.  I'd prefer not to keep it this way.
 
-									Honza
+yeah, that's pretty much it.
+
+> Perhaps a little magic in the udev rule that creates the
+> z70_persistent-net-rules file would solve the basic problem.
+> It could sort the nics by mac address when creating the
+> names.  It need only run when the z70 file does not exist.
+> I presume this would produce consistent results in most cases
+> and it feels technically feasible; although I am not
+> fully qualified to make that judgment.
+> 
+> Rather that put the onus on udev to make the above
+> change Dell could just run a little program at first
+> boot that mungs the z70 file as desired.  (It could then
+> force a reboot; I forget if this would be needed.)
+> I imagine Dell boots the boxes once at the factory,
+
+nearly all dell systems running linux in the world were not
+factory-installed with that os.  this isn't something i can simply
+patch in our factories.  it needs to be fixed as far upstream as
+possible.
+
+> but if not then the user has to suffer with a longer
+> boot process at first boot.  because this is driven
+> by dell, dell would know exactly what nic has what
+> name.  and dell knows what nics are on the mobo and
+> what are not, and so can control the mac address sort
+> order as desired.
+
+well, there is no "mac address sort" anywhere.  (nor is that really a
+good algorithm to use).
+
+
+> The other solution that screams out at me is to ditch
+> those legacy BIOSes and go to something like LinuxBIOS.
+> Again, I'm not really qualified, but it sure feels like
+> there's an answer in this approach.
+
+It's not a BIOS problem.  BIOS can inform the OS of what it thinks
+about hardware location, names, etc.  And our PowerEdge (9G and newer)
+servers do - using SMBIOS 2.6 standard features we added (types 9, 10,
+and 41) to the specification - exactly to allow such.  Now something
+needs to use that information.  That something today is biosdevname,
+which could be more cleanly integrated with udev.
+
+> The other point that struck me was that sometimes, it seems,
+> users want persistence in the naming of their network devices
+> and sometimes they want device names based on bus position.
+
+indeed
+ 
+> The sucky thing is that symlinks and nics don't mix well
+> and so it seems impossible to satisfy both the above
+> requirements at the same time.  This is an area that
+> IMHO could be better addressed by the Linux community.
+
+correct.
+
 -- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
-
->From f423c2964dd5afbcc40c47731724d48675dd2822 Mon Sep 17 00:00:00 2001
-From: Jan Kara <jack@suse.cz>
-Date: Tue, 24 Mar 2009 16:38:22 +0100
-Subject: [PATCH] fs: Don't clear dirty bits in block_write_full_page()
-
-If getblock() fails in block_write_full_page(), we don't want to clear
-dirty bits on buffers. Actually, we even want to redirty the page. This
-way we just won't silently discard users data (written e.g. through mmap)
-in case of ENOSPC, EDQUOT, EIO or other write error. The downside of this
-approach is that if the error is persistent we have this page pinned in
-memory forever and if there are lots of such pages, we can bring the
-machine OOM.
-
-Signed-off-by: Jan Kara <jack@suse.cz>
----
- fs/buffer.c |   10 +++-------
- 1 files changed, 3 insertions(+), 7 deletions(-)
-
-diff --git a/fs/buffer.c b/fs/buffer.c
-index 891e1c7..ae779a0 100644
---- a/fs/buffer.c
-+++ b/fs/buffer.c
-@@ -1833,9 +1833,11 @@ recover:
- 	/*
- 	 * ENOSPC, or some other error.  We may already have added some
- 	 * blocks to the file, so we need to write these out to avoid
--	 * exposing stale data.
-+	 * exposing stale data. We redirty the page so that we don't
-+	 * loose data we are unable to write.
- 	 * The page is currently locked and not marked for writeback
- 	 */
-+	redirty_page_for_writepage(wbc, page);
- 	bh = head;
- 	/* Recovery: lock and submit the mapped buffers */
- 	do {
-@@ -1843,12 +1845,6 @@ recover:
- 		    !buffer_delay(bh)) {
- 			lock_buffer(bh);
- 			mark_buffer_async_write(bh);
--		} else {
--			/*
--			 * The buffer may have been set dirty during
--			 * attachment to a dirty page.
--			 */
--			clear_buffer_dirty(bh);
- 		}
- 	} while ((bh = bh->b_this_page) != head);
- 	SetPageError(page);
--- 
-1.6.0.2
-
+Matt Domsch
+Linux Technology Strategist, Dell Office of the CTO
+linux.dell.com & www.dell.com/linux
