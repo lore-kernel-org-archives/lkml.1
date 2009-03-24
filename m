@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763752AbZCXRhy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759671AbZCXRj1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763752AbZCXRhy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 13:37:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757675AbZCXRho
+	id S1759671AbZCXRj1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 13:39:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752370AbZCXRjS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 13:37:44 -0400
-Received: from gw.goop.org ([64.81.55.164]:37565 "EHLO mail.goop.org"
+	Tue, 24 Mar 2009 13:39:18 -0400
+Received: from gw.goop.org ([64.81.55.164]:37588 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755265AbZCXRhm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 13:37:42 -0400
-Message-ID: <49C91A64.7040407@goop.org>
-Date: Tue, 24 Mar 2009 10:37:40 -0700
+	id S1752260AbZCXRjR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Mar 2009 13:39:17 -0400
+Message-ID: <49C91AC3.6080506@goop.org>
+Date: Tue, 24 Mar 2009 10:39:15 -0700
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
@@ -20,7 +20,7 @@ CC: Linus Torvalds <torvalds@linux-foundation.org>,
        Xen-devel <xen-devel@lists.xensource.com>,
        Andrew Morton <akpm@linux-foundation.org>,
        Dave Airlie <airlied@linux.ie>
-Subject: [GIT PULL] xen.git 2.6.30: core Xen updates
+Subject: [GIT PULL] xen.git 2.6.30: usermode control interfaces
 References: <49C915A3.3020809@goop.org>
 In-Reply-To: <49C915A3.3020809@goop.org>
 X-Enigmail-Version: 0.95.6
@@ -30,45 +30,52 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The following changes since commit 8d336ed83a87149bcae6b872fff1aed8be268342:
+The following changes since commit 627b11ca44b334e201c35bf1a1582dc10efaf4a8:
   Jeremy Fitzhardinge (1):
-        x86/paravirt: use percpu_ rather than __get_cpu_var
+        xen/mmu: weaken flush_tlb_other test
 
 are available in the git repository at:
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/jeremy/xen.git push2/xen/core
+  git://git.kernel.org/pub/scm/linux/kernel/git/jeremy/xen.git push2/xen/control
 
-Alex Nixon (1):
-      Xen: Add virt_to_pfn helper function
+Ian Campbell (6):
+      xen: add irq_from_evtchn
+      xen: add /dev/xen/evtchn driver
+      xen: export ioctl headers to userspace
+      xen: drop kexec bits from /sys/hypervisor since kexec isn't implemented yet
+      xen: remove suspend_cancel hook
+      xen: use device model for suspending xenbus devices
 
-Hannes Eder (1):
-      NULL noise: arch/x86/xen/smp.c
+Jeremy Fitzhardinge (9):
+      xen/dev-evtchn: clean up locking in evtchn
+      xen: add "capabilities" file
+      xen: add /sys/hypervisor support
+      xen/sys/hypervisor: change writable_pt to features
+      xen/xenbus: export xenbus_dev_changed
+      Merge branch 'push2/xen/xenbus' into push2/xen/control
+      Merge branch 'push2/xen/dev-evtchn' into push2/xen/control
+      Merge branch 'push2/xen/sys-hypervisor' into push2/xen/control
+      Merge branch 'push2/xen/xenfs' into push2/xen/control
 
-Jeremy Fitzhardinge (15):
-      xen: disable preempt for leave_lazy_mmu
-      xen: separate p2m allocation from setting
-      xen: dynamically allocate p2m tables
-      xen: split construction of p2m mfn tables from registration
-      xen: clean up xen_load_gdt
-      xen: make xen_load_gdt simpler
-      xen: remove xen_load_gdt debug
-      xen: reserve i386 Xen pagetables
-      xen: mask XSAVE from cpuid
-      xen: add FIX_TEXT_POKE to fixmap
-      x86-64: remove PGE from must-have feature list
-      x86-64: non-paravirt systems always has PSE and PGE
-      xen/mmu: some early pagetable cleanups
-      Revert "x86: create a non-zero sized bm_pte only when needed"
-      xen/mmu: weaken flush_tlb_other test
-
- arch/x86/include/asm/required-features.h |    8 ++-
- arch/x86/include/asm/xen/page.h          |    3 +-
- arch/x86/mm/ioremap.c                    |   19 +---
- arch/x86/xen/enlighten.c                 |   76 +++++++++++---
- arch/x86/xen/mmu.c                       |  160 ++++++++++++++++++++++--------
- arch/x86/xen/mmu.h                       |    3 +
- arch/x86/xen/smp.c                       |    4 +-
- arch/x86/xen/xen-ops.h                   |    2 -
- 8 files changed, 196 insertions(+), 79 deletions(-)
+ drivers/xen/Kconfig               |   20 ++
+ drivers/xen/Makefile              |    4 +-
+ drivers/xen/events.c              |    6 +
+ drivers/xen/evtchn.c              |  507 +++++++++++++++++++++++++++++++++++++
+ drivers/xen/manage.c              |    9 +-
+ drivers/xen/sys-hypervisor.c      |  445 ++++++++++++++++++++++++++++++++
+ drivers/xen/xenbus/xenbus_probe.c |   61 +----
+ drivers/xen/xenbus/xenbus_xs.c    |    2 +
+ drivers/xen/xenfs/super.c         |   19 ++-
+ include/Kbuild                    |    1 +
+ include/xen/Kbuild                |    1 +
+ include/xen/events.h              |    3 +
+ include/xen/evtchn.h              |   88 +++++++
+ include/xen/interface/version.h   |    3 +
+ include/xen/xenbus.h              |    3 +-
+ 15 files changed, 1112 insertions(+), 60 deletions(-)
+ create mode 100644 drivers/xen/evtchn.c
+ create mode 100644 drivers/xen/sys-hypervisor.c
+ create mode 100644 include/xen/Kbuild
+ create mode 100644 include/xen/evtchn.h
 
 
