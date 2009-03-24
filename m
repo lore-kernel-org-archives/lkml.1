@@ -1,86 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755811AbZCXPpp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761809AbZCXPqZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755811AbZCXPpp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 11:45:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755218AbZCXPpg
+	id S1761809AbZCXPqZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 11:46:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757863AbZCXPqP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 11:45:36 -0400
-Received: from smtp01.pevnalinka.cz ([89.31.40.2]:58952 "HELO
-	mail.pevnalinka.cz" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with SMTP id S1753100AbZCXPpf (ORCPT
+	Tue, 24 Mar 2009 11:46:15 -0400
+Received: from mail-ew0-f165.google.com ([209.85.219.165]:35506 "EHLO
+	mail-ew0-f165.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755218AbZCXPqN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 11:45:35 -0400
-X-Greylist: delayed 1114 seconds by postgrey-1.27 at vger.kernel.org; Tue, 24 Mar 2009 11:45:24 EDT
-Message-ID: <49C8FBB5.5010107@monstr.eu>
-Date: Tue, 24 Mar 2009 16:26:45 +0100
-From: Michal Simek <monstr@monstr.eu>
-Reply-To: monstr@monstr.eu
-User-Agent: Thunderbird 2.0.0.17 (X11/20081001)
+	Tue, 24 Mar 2009 11:46:13 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=lpyojX0IDKNc7KgVCCqPi+XGIqI+gPiOSC4HeAURmfIcUz70e+VQ+ZbfVF47YksJUR
+         5WGWXmI1cD4PZKglmZaQ9KSW7wC7X5idb1TB7xQ1pwzl0IPd6K7QWlJUd3jjd/Q+Vhck
+         lS4NaF/Ovyfj5GT70x0TNjt3toRryR4yCMJac=
 MIME-Version: 1.0
-To: monstr@monstr.eu
-CC: linux-kernel@vger.kernel.org, john.williams@petalogix.com,
-       John Linn <John.Linn@xilinx.com>, Arnd Bergmann <arnd@arndb.de>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Randy Dunlap <randy.dunlap@oracle.com>, Ingo Molnar <mingo@elte.hu>,
-       microblaze-uclinux@itee.uq.edu.au
-Subject: Re: Microblaze linux support
-References: <1237408284-8674-1-git-send-email-monstr@monstr.eu>
-In-Reply-To: <1237408284-8674-1-git-send-email-monstr@monstr.eu>
-Content-Type: text/plain; charset=ISO-8859-1
+In-Reply-To: <a4423d670903240432m1a4e8e08x9c97a0947d89800a@mail.gmail.com>
+References: <a4423d670903180958j4847717eh99a41534633dd314@mail.gmail.com>
+	 <20090318.234451.38898787.davem@davemloft.net>
+	 <a4423d670903190116p157b2ebfl69d270e0576c6d9a@mail.gmail.com>
+	 <20090322.215110.261185328.davem@davemloft.net>
+	 <a4423d670903240432m1a4e8e08x9c97a0947d89800a@mail.gmail.com>
+Date: Tue, 24 Mar 2009 18:46:09 +0300
+Message-ID: <a4423d670903240846j252a825cy1e8a50b5ac3a11ef@mail.gmail.com>
+Subject: Re: next-20090318: sunhme does not transmit packets
+From: Alexander Beregalov <a.beregalov@gmail.com>
+To: David Miller <davem@davemloft.net>, Roel Kluin <roel.kluin@gmail.com>
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       linux-next@vger.kernel.org,
+       Kernel Testers List <kernel-testers@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
-> Hi all,
+2009/3/24 Alexander Beregalov <a.beregalov@gmail.com>:
+>>> 2009/3/19 David Miller <davem@davemloft.net>:
+>>> > Does the current vanilla kernel work fine?
+>>>
+>>> Yes. The problem happens only with -next tree.
+>>
+>> I have one of my ultra10s up and will try to reproduce and diagnose
+>> this locally.
 >
-> I think that is the right time to send you next pack with 
-> Microblaze support. It is seventh pack - some previous packs
-> was review by community and I hope there are not any big faults.
+> Hi David
 >
-> We tested this kernel on some boards.
-> We have GIT server up and gitweb is available at http://developer.petalogix.com/git/gitweb.cgi
+> 2.6.29 also does not work.
 >
-> All information about git clone you can find on gitweb.
-> This pack is available in for-linus branch. Information about other branches are on gitweb too.
+> The guilty patch should be between 2.6.29-rc8 and final 2.6.29
 >
-> More information about microblaze fdt kernel you can find at www.monstr.eu/fdt/
-> If you want to test kernel with microblaze toolchain let me know.
+> even more narrow - 59fcbdd..v2.6.29
 >
-> I added only uart16550 and uartlite support - that's enought for first merge.
->
->
-> Thanks for you comments and especially for your ACK,
-> Michal
->   
-It is a week ago when I sent v7 pack to LKML for reviewing.
+> I can try to bisect.
 
-I have got ACK from John Williams who is the best person from microblaze
-linux community.
-I got ACK from Randy Dunlap for Kconfig and Makefile patches.
-Thomas Gleixner reviewed IRQ and Timer code.
-Ingo Molnar confirms me that all coding style violation (checking with
-checkpatch.pl) are false positive.
+e4a389a9b5c892446b5de2038bdc0cca8703c615 is first bad commit
+commit e4a389a9b5c892446b5de2038bdc0cca8703c615
+Author: Roel Kluin <roel.kluin@gmail.com>
+Date:   Wed Mar 18 23:12:13 2009 -0700
 
-John L: Could you give me ACK from Xilinx?
-
-Thanks,
-Michal
-
-
-
->
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->   
-
-
--- 
-Michal Simek, Ing. (M.Eng)
-w: www.monstr.eu p: +42-0-721842854
-
+    net: kfree(napi->skb) => kfree_skb
