@@ -1,63 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763052AbZCXUYZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760996AbZCXUYk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763052AbZCXUYZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 16:24:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757958AbZCXUYH
+	id S1760996AbZCXUYk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 16:24:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761142AbZCXUYJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Tue, 24 Mar 2009 16:24:09 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:53297
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1758806AbZCXUYH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 24 Mar 2009 16:24:07 -0400
-Received: from hera.kernel.org ([140.211.167.34]:44383 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756916AbZCXUYF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 16:24:05 -0400
-Message-ID: <49C94134.4000408@kernel.org>
-Date: Tue, 24 Mar 2009 13:23:16 -0700
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
-MIME-Version: 1.0
-To: x86@kernel.org, Ingo Molnar <mingo@elte.hu>
-CC: "Eric W. Biederman" <ebiederm@xmission.com>,
-       Rusty Russell <rusty@rustcorp.com.au>, linux-kernel@vger.kernel.org
-Subject: [PATCH] x86: fix set_extra_move_desc calling
-References: <200903241619.03517.rusty@rustcorp.com.au> <m1k56frt6e.fsf@fess.ebiederm.org>
-In-Reply-To: <m1k56frt6e.fsf@fess.ebiederm.org>
-Content-Type: text/plain; charset=us-ascii
+Date: Tue, 24 Mar 2009 13:23:55 -0700 (PDT)
+Message-Id: <20090324.132355.234010341.davem@davemloft.net>
+To: a.beregalov@gmail.com
+Cc: roel.kluin@gmail.com, linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       linux-next@vger.kernel.org, kernel-testers@vger.kernel.org
+Subject: Re: next-20090318: sunhme does not transmit packets
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <a4423d670903240850w223cdb74k7165ffd70cd7b357@mail.gmail.com>
+References: <a4423d670903240432m1a4e8e08x9c97a0947d89800a@mail.gmail.com>
+	<a4423d670903240846j252a825cy1e8a50b5ac3a11ef@mail.gmail.com>
+	<a4423d670903240850w223cdb74k7165ffd70cd7b357@mail.gmail.com>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Alexander Beregalov <a.beregalov@gmail.com>
+Date: Tue, 24 Mar 2009 18:50:55 +0300
 
-Impact: fix bug with desc moving when logical flat
+> 2009/3/24 Alexander Beregalov <a.beregalov@gmail.com>:
+> > e4a389a9b5c892446b5de2038bdc0cca8703c615 is first bad commit
+> 
+> No, it is wrong, sorry.
+> I will do more tests tomorrow.
 
-Eric pointed out that we should compare with old affinity.
-acctually this bug is introduced by:
-| commit 22f65d31b25a320a5246592160bcb102d2791c45
-|
-| Author: Mike Travis <travis@sgi.com>
-| Date:   Tue Dec 16 17:33:56 2008 -0800
-|
-|    x86: Update io_apic.c to use new cpumask API
-|
-|    Impact: cleanup, consolidate patches, use new API
+I bet it is the problem we are discussing here:
 
-so need to move that before...
+	http://marc.info/?l=linux-kernel&m=123789980524715&w=2
 
----
- arch/x86/kernel/apic/io_apic.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
-
-Index: linux-2.6/arch/x86/kernel/apic/io_apic.c
-===================================================================
---- linux-2.6.orig/arch/x86/kernel/apic/io_apic.c
-+++ linux-2.6/arch/x86/kernel/apic/io_apic.c
-@@ -592,8 +592,9 @@ set_desc_affinity(struct irq_desc *desc,
- 	if (assign_irq_vector(irq, cfg, mask))
- 		return BAD_APICID;
- 
--	cpumask_and(desc->affinity, cfg->domain, mask);
-+	/* check that before desc->addinity get updated */
- 	set_extra_move_desc(desc, mask);
-+	cpumask_and(desc->affinity, cfg->domain, mask);
- 
- 	return apic->cpu_mask_to_apicid_and(desc->affinity, cpu_online_mask);
- }
+Herbert has posted two patches to try and fix this issue,
+you can try the second one to see if it solves your bug
+too.
