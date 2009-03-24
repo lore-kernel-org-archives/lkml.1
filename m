@@ -1,85 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758099AbZCXJa1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758166AbZCXJb0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758099AbZCXJa1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 05:30:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754642AbZCXJaQ
+	id S1758166AbZCXJb0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 05:31:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756371AbZCXJbR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 05:30:16 -0400
-Received: from dgate20.fujitsu-siemens.com ([80.70.172.51]:43442 "EHLO
-	dgate20.fujitsu-siemens.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754102AbZCXJaO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 05:30:14 -0400
-DomainKey-Signature: s=s768; d=fujitsu-siemens.com; c=nofws; q=dns;
-  h=X-SBRSScore:X-IronPort-AV:Received:X-IronPort-AV:
-   Received:Received:Message-ID:Date:From:Organization:
-   User-Agent:MIME-Version:To:CC:Subject:References:
-   In-Reply-To:X-Enigmail-Version:Content-Type:
-   Content-Transfer-Encoding;
-  b=bzCl15WjNCh20SGuwnsjp5XcvexXY0xx9ywlefvf6IfKX1zYZy+I9cl6
-   xy1JjPHlqRs3mw7/rrcKlbNaUMG+TBdl5WPOdfTUQvyjn3EFit301WnQq
-   dML9UktZLM+tK5I;
-X-SBRSScore: None
-X-IronPort-AV: E=Sophos;i="4.38,411,1233529200"; 
-   d="scan'208";a="57396218"
-X-IronPort-AV: E=Sophos;i="4.38,411,1233529200"; 
-   d="scan'208";a="45468627"
-Message-ID: <49C8A823.6020809@fujitsu-siemens.com>
-Date: Tue, 24 Mar 2009 10:30:11 +0100
-From: Martin Wilck <martin.wilck@fujitsu-siemens.com>
-Organization: Fujitsu Siemens Computers
-User-Agent: Thunderbird 2.0.0.15pre (X11/20080508)
+	Tue, 24 Mar 2009 05:31:17 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:49213 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752300AbZCXJbQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Mar 2009 05:31:16 -0400
+Date: Tue, 24 Mar 2009 10:31:03 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: eduard.munteanu@linux360.ro, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] kmemtrace: fix build breakage in befs
+Message-ID: <20090324093103.GA19463@elte.hu>
+References: <1237884230.25315.33.camel@penberg-laptop> <20090324085128.GF13016@elte.hu> <1237884846.25315.37.camel@penberg-laptop> <20090324085658.GG13016@elte.hu> <1237885074.25315.43.camel@penberg-laptop> <20090324090757.GH13016@elte.hu> <1237886113.25315.49.camel@penberg-laptop> <20090324091742.GB6605@elte.hu> <1237886559.25315.60.camel@penberg-laptop>
 MIME-Version: 1.0
-To: Corey Minyard <minyard@acm.org>
-CC: Greg KH <greg@kroah.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "openipmi-developer@lists.sourceforge.net" 
-	<openipmi-developer@lists.sourceforge.net>
-Subject: Improving IPMI performance under load
-References: <49C27281.4040207@fujitsu-siemens.com> <49C2B994.7040808@acm.org> <20090319235114.GA18182@kroah.com> <49C3B6A5.5030408@acm.org> <20090320174701.GA14823@kroah.com> <49C3E03E.10506@acm.org> <49C78BE0.9090107@fujitsu-siemens.com> <49C7F368.5040304@acm.org>
-In-Reply-To: <49C7F368.5040304@acm.org>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <1237886559.25315.60.camel@penberg-laptop>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Corey,
 
-yesterday I posted some results about the IPMI performance under CPU 
-load, which can be up to 25 times slower than in an idle system. I think 
-it might be worthwhile to try to improve that behavior as well.
+* Pekka Enberg <penberg@cs.helsinki.fi> wrote:
 
-I made a variation of my patch which introduces a second parameter 
-(kipmid_min_busy) that causes kipmid not to call schedule() for a 
-certain amount of time. Thus if there's IPMI traffic pending, kipmid 
-will busy-loop for kipmid_min_busy seconds, then starting to schedule() 
-in each loop as it does now, and finally go to sleep when 
-kipmid_max_busy is reached. At the same time, I changed the nice value 
-of kipmid from 19 to 0.
+> On Tue, 2009-03-24 at 10:17 +0100, Ingo Molnar wrote:
+> > > OK, I think all of them are now fixed. I haven't yet been able to 
+> > > complete a build so help is still appreciated. ;-)
+> > 
+> > unless there's a mail delay, we still have:
+> > 
+> > lib/decompress_unlzma.c:122: error: implicit declaration of function ‘kfree’
+> > lib/decompress_unlzma.c:551: error: implicit declaration of function ‘kmalloc’
+> 
+> Sorry, I missed that. I was testing the .config you sent in the 
+> initial mail, not allyesconfig. I sent you a patch to fix that as 
+> well now.
 
-With this patch and e.g. min_busy=100 and max_busy=200, there is no 
-noticeable difference any more between IPMI performance with and without 
-CPU load.
+no problem, i missed it too - computer reminded us that it's still 
+there ;-)
 
-The patch + results still need cleanup, therefore I am not sending it 
-right now. Just wanted to hear what you think.
+there's a new headers-export-check failure:
 
-Martin
+/home/mingo/tip/usr/include/linux/bsg.h:11: found __[us]{8,16,32,64} type without #include <linux/types.h>
+/home/mingo/tip/usr/include/linux/fs.h:11: included file 'linux/gfp.h' is not exported
+make[3]: *** [/home/mingo/tip/usr/include/linux/.check] Error 1
+make[2]: *** [linux] Error 2
 
--- 
-Martin Wilck
-PRIMERGY System Software Engineer
-FSC IP ESP DEV 6
+(CONFIG_HEADERS_CHECK)
 
-Fujitsu Siemens Computers GmbH
-Heinz-Nixdorf-Ring 1
-33106 Paderborn
-Germany
-
-Tel:			++49 5251 525 2796
-Fax:			++49 5251 525 2820
-Email:			mailto:martin.wilck@fujitsu-siemens.com
-Internet:		http://www.fujitsu-siemens.com
-Company Details:	http://www.fujitsu-siemens.com/imprint.html
+	Ingo
