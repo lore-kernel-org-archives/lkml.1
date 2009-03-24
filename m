@@ -1,64 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763290AbZCXToH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763363AbZCXTol@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763290AbZCXToH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 15:44:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762619AbZCXTnh
+	id S1763363AbZCXTol (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 15:44:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760589AbZCXTo1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 15:43:37 -0400
-Received: from juliette.telenet-ops.be ([195.130.137.74]:51499 "EHLO
-	juliette.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762731AbZCXTnf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 15:43:35 -0400
-Date: Tue, 24 Mar 2009 20:43:25 +0100 (CET)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: "David S. Miller" <davem@davemloft.net>, Ilya Yanok <yanok@emcraft.com>
-cc: netdev@vger.kernel.org,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>
-Subject: [PATCH] drivers/net/dnet.c needs <linux/io.h>
-Message-ID: <Pine.LNX.4.64.0903242042060.19647@anakin>
+	Tue, 24 Mar 2009 15:44:27 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:52094 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757101AbZCXTo0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Mar 2009 15:44:26 -0400
+Message-ID: <49C9372F.3070504@redhat.com>
+Date: Tue, 24 Mar 2009 15:40:31 -0400
+From: Ric Wheeler <rwheeler@redhat.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Theodore Tso <tytso@mit.edu>, Ingo Molnar <mingo@elte.hu>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Nick Piggin <npiggin@suse.de>,
+       Jens Axboe <jens.axboe@oracle.com>, David Rees <drees76@gmail.com>,
+       Jesper Krogh <jesper@krogh.cc>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.29
+References: <alpine.LFD.2.00.0903231617550.3032@localhost.localdomain> <49C87B87.4020108@krogh.cc> <72dbd3150903232346g5af126d7sb5ad4949a7b5041f@mail.gmail.com> <20090324091545.758d00f5@lxorguk.ukuu.org.uk> <20090324093245.GA22483@elte.hu> <20090324101011.6555a0b9@lxorguk.ukuu.org.uk> <20090324103111.GA26691@elte.hu> <20090324132032.GK5814@mit.edu> <alpine.LFD.2.00.0903241053200.3032@localhost.localdomain> <20090324184549.GE32307@mit.edu> <alpine.LFD.2.00.0903241218130.3032@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.0903241218130.3032@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On m68k:
-| drivers/net/dnet.c: In function 'dnet_readw_mac':
-| drivers/net/dnet.c:36: error: implicit declaration of function 'writel'
-| drivers/net/dnet.c:43: error: implicit declaration of function 'readl'
-| drivers/net/dnet.c: In function 'dnet_probe':
-| drivers/net/dnet.c:873: error: implicit declaration of function 'ioremap'
-| drivers/net/dnet.c:873: warning: assignment makes pointer from integer without a cast
-| drivers/net/dnet.c:939: error: implicit declaration of function 'iounmap'
+Linus Torvalds wrote:
+> On Tue, 24 Mar 2009, Theodore Tso wrote:
+>   
+>> With ext2 after a system crash you need to run fsck.  With ext4, fsck
+>> isn't an issue,
+>>     
+>
+> Bah. A corrupt filesystem is a corrupt filesystem. Whether you have to 
+> fsck it or not should be a secondary concern.
+>
+> I personally find silent corruption to be _worse_ than the non-silent one. 
+> At least if there's some program that says "oops, your inode so-and-so 
+> seems to be scrogged" that's better than just silently having bad data in 
+> it.
+>
+> Of course, never having bad data _nor_ needing fsck is clearly optimal. 
+> data=ordered gets pretty close (and data=journal is unacceptable for 
+> performance reasons).
+>
+> But I really don't understand filesystem people who think that "fsck" is 
+> the important part, regardless of whether the data is valid or not. That's 
+> just stupid and _obviously_ bogus.
+>
+> 			Linus
+>   
+It is always interesting to try to explain to users that just because 
+fsck ran cleanly does not mean anything that they care about is actually 
+safely on disk. The speed that fsck can run at is important when you are 
+trying to recover data from a really hosed file system, but that is 
+thankfully relatively rare for most people.
 
-Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
----
- drivers/net/dnet.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+Having been involved in many calls with customers after crashes, what 
+they really want to know is pretty routine - do you have all of the data 
+I wrote? can you prove that it is the same data that I wrote? if not, 
+what data is missing and needs to be restored?
 
-diff --git a/drivers/net/dnet.c b/drivers/net/dnet.c
-index 1b40632..edf23c9 100644
---- a/drivers/net/dnet.c
-+++ b/drivers/net/dnet.c
-@@ -9,6 +9,7 @@
-  * published by the Free Software Foundation.
-  */
- #include <linux/version.h>
-+#include <linux/io.h>
- #include <linux/module.h>
- #include <linux/moduleparam.h>
- #include <linux/kernel.h>
--- 
-1.6.2
+We can get help answer those questions with checksums or digital hashes 
+to validate the actual user data of files (open question is when to 
+compute it, where to store, would the SCSI T10 DIF/DIX stuff be 
+sufficient), putting in place some background scrubbers to detect 
+corruptions (which can happen even without an IO error), etc.
 
-Gr{oetje,eeting}s,
+Being able to pin point what was impacted is actually enormously useful 
+- for example, being able to map a bad sector back into some meaningful 
+object like a user file, meta-data (translation, run fsck) or so on. 
 
-						Geert
+Ric
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+
