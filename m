@@ -1,183 +1,171 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758975AbZCXPBp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755912AbZCXPEU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758975AbZCXPBp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 11:01:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757978AbZCXPB2
+	id S1755912AbZCXPEU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 11:04:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755307AbZCXPEH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 11:01:28 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:57059 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757607AbZCXPB0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 11:01:26 -0400
-Message-ID: <49C8F5C0.7030308@suse.de>
-Date: Tue, 24 Mar 2009 16:01:20 +0100
-From: Hannes Reinecke <hare@suse.de>
-User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+	Tue, 24 Mar 2009 11:04:07 -0400
+Received: from smtp103.mail.mud.yahoo.com ([209.191.85.213]:26201 "HELO
+	smtp103.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1755008AbZCXPEG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Mar 2009 11:04:06 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=C6Me/iAAQIR/VobkhmlC+fkUmz8lhSc7ESUDP1P+AcS7Rh2ucZyXhuc/PRyJlapcjYz5Izoe57QXPCORQWohDSmQvf8/DqPK6u0jC9rj63S6BhURRIo8PqsgBq+92d/U/iBju5uS1Fnja1ch/Sj5Bpc1dfAnSQ6AMyv9TxGMl5s=  ;
+X-YMail-OSG: ivtGQ38VM1lJrsuSdrJFfDvfRFHnu0SUNTMxvgk7evxAF8tiD4tUxFJIIOQ_J4RyYotktNHlj7Eb7ykOvmeLNvfr1zkBarmlU6352mV5XfplOUmBsaHEYwvKe7P5CIJVWJDWJBnuSkNeM_UZOTUBMpt4_4UgMKckv0ugnKj9V2bIgVgKLSGGOvh7igU6cg--
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Jan Kara <jack@suse.cz>
+Subject: Re: ftruncate-mmap: pages are lost after writing to mmaped file.
+Date: Wed, 25 Mar 2009 02:03:54 +1100
+User-Agent: KMail/1.9.51 (KDE/4.0.4; ; )
+Cc: "Martin J. Bligh" <mbligh@mbligh.org>, linux-ext4@vger.kernel.org,
+       Ying Han <yinghan@google.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "linux-kernel" <linux-kernel@vger.kernel.org>,
+       "linux-mm" <linux-mm@kvack.org>, guichaz@gmail.com,
+       Alex Khesin <alexk@google.com>, Mike Waychison <mikew@google.com>,
+       Rohit Seth <rohitseth@google.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+References: <604427e00903181244w360c5519k9179d5c3e5cd6ab3@mail.gmail.com> <200903250130.02485.nickpiggin@yahoo.com.au> <20090324144709.GF23439@duck.suse.cz>
+In-Reply-To: <20090324144709.GF23439@duck.suse.cz>
 MIME-Version: 1.0
-To: Boaz Harrosh <bharrosh@panasas.com>
-Cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
-Subject: Re: [PATCH] Driver 'sd' needs updating
-References: <20090324141428.31E5118C7A3@pentland.suse.de> <49C8F186.2080705@panasas.com>
-In-Reply-To: <49C8F186.2080705@panasas.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200903250203.55520.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Boaz,
+On Wednesday 25 March 2009 01:47:09 Jan Kara wrote:
+> On Wed 25-03-09 01:30:00, Nick Piggin wrote:
 
-Boaz Harrosh wrote:
-> Hannes Reinecke wrote:
->> If a driver sets blk_queue_prep_rq() it should clean up itself
->> and not rely on the bus callbacks to handle this. This removes
->> the need to hook into bus->remove() as these should not be used
->> at the same time as driver->remove().
->>
->> Signed-off-by: Hannes Reinecke <hare@suse.de>
->> Signed-off-by: Kay Sievers <kay.sievers@vrfy.org>
-> 
-> Hi Hannes, please I do not understand this patch.
-> 
-> I was always under the impression that the scsi ULD
-> remove() function is called from inside scsi_bus_remove()
-> at the very end, please see below.
-> 
->> ---
->>  drivers/scsi/scsi_lib.c    |    6 ++++++
->>  drivers/scsi/scsi_sysfs.c  |   17 -----------------
->>  drivers/scsi/sd.c          |    2 ++
->>  drivers/scsi/sr.c          |    1 +
->>  include/scsi/scsi_driver.h |    1 +
->>  5 files changed, 10 insertions(+), 17 deletions(-)
->>
->> diff --git a/drivers/scsi/scsi_lib.c b/drivers/scsi/scsi_lib.c
->> index 4b13e36..73df41b 100644
->> --- a/drivers/scsi/scsi_lib.c
->> +++ b/drivers/scsi/scsi_lib.c
->> @@ -1222,6 +1222,12 @@ int scsi_prep_fn(struct request_queue *q, struct request *req)
->>  	return scsi_prep_return(q, req, ret);
->>  }
->>  
->> +void scsi_reset_prep_fn(struct request_queue *q)
->> +{
->> +	blk_queue_prep_rq(q, scsi_prep_fn);
->> +}
->> +EXPORT_SYMBOL(scsi_reset_prep_fn);
->> +
->>  /*
->>   * scsi_dev_queue_ready: if we can send requests to sdev, return 1 else
->>   * return 0.
->> diff --git a/drivers/scsi/scsi_sysfs.c b/drivers/scsi/scsi_sysfs.c
->> index fa4711d..91482f2 100644
->> --- a/drivers/scsi/scsi_sysfs.c
->> +++ b/drivers/scsi/scsi_sysfs.c
->> @@ -420,29 +420,12 @@ static int scsi_bus_resume(struct device * dev)
->>  	return err;
->>  }
->>  
->> -static int scsi_bus_remove(struct device *dev)
->> -{
->> -	struct device_driver *drv = dev->driver;
->> -	struct scsi_device *sdev = to_scsi_device(dev);
->> -	int err = 0;
->> -
->> -	/* reset the prep_fn back to the default since the
->> -	 * driver may have altered it and it's being removed */
->> -	blk_queue_prep_rq(sdev->request_queue, scsi_prep_fn);
->> -
->> -	if (drv && drv->remove)
->> -		err = drv->remove(dev);
-> 
-> This here is where my osd_uld.c::osd_remove() is called.
-> 
-> If this vector is not used will the drv-core call drv->remove(dev)
-> in behalf of scsi?
-> 
->From drivers/base/dd.c:__device_release_driver()
+> > I don't think it is a very good idea for block_write_full_page recovery
+> > to do clear_buffer_dirty for !mapped buffers. I think that should rather
+> > be a redirty_page_for_writepage in the case that the buffer is dirty.
+> >
+> > Perhaps not the cleanest way to solve the problem if it is just due to
+> > transient shortage of space in ext3, but generic code shouldn't be
+> > allowed to throw away dirty data even if it can't be written back due
+> > to some software or hardware error.
+>
+>   Well, that would be one possibility. But then we'd be left with dirty
+> pages we cannot ever release since they are constantly dirty (when the
+> filesystem really becomes out of space). So what I
 
-		if (dev->bus && dev->bus->remove)
-			dev->bus->remove(dev);
-		else if (drv->remove)
-			drv->remove(dev);
+If the filesystem becomes out of space and we have over-committed these
+dirty mmapped blocks, then we most definitely want to keep them around.
+An error of the system losing a few pages (or if it happens an insanely
+large number of times, then slowly dying due to memory leak) is better
+than an app suddenly seeing the contents of the page change to nulls
+under it when the kernel decides to do some page reclaim.
 
-So the answer will be yes.
 
->> -
->> -	return 0;
->> -}
->> -
->>  struct bus_type scsi_bus_type = {
->>          .name		= "scsi",
->>          .match		= scsi_bus_match,
->>  	.uevent		= scsi_bus_uevent,
->>  	.suspend	= scsi_bus_suspend,
->>  	.resume		= scsi_bus_resume,
->> -	.remove		= scsi_bus_remove,
->>  };
->>  EXPORT_SYMBOL_GPL(scsi_bus_type);
->>  
->> diff --git a/drivers/scsi/sd.c b/drivers/scsi/sd.c
->> index aeab5d9..64e88e2 100644
->> --- a/drivers/scsi/sd.c
->> +++ b/drivers/scsi/sd.c
->> @@ -2068,6 +2068,8 @@ static int sd_remove(struct device *dev)
-> 
-> Until today this was called from within scsi_bus_remove
-> what happens after your patch?
-> 
-Driver core calls it (see above).
+> rather want to do is something like below:
+>
+> diff --git a/fs/ext3/inode.c b/fs/ext3/inode.c
+> index d351eab..77c526f 100644
+> --- a/fs/ext3/inode.c
+> +++ b/fs/ext3/inode.c
+> @@ -1440,6 +1440,40 @@ static int journal_dirty_data_fn(handle_t *handle,
+> struct buffer_head *bh) }
+>
+>  /*
+> + * Decides whether it's worthwhile to wait for transaction commit and
+> + * retry allocation. If it is, function waits 1 is returns, otherwise
+> + * 0 is returned. In both cases we redirty page and it's buffers so that
+> + * data is not lost. In case we've retried too many times, we also return
+> + * 0 and don't redirty the page. Data gets discarded but we cannot hang
+> + * writepage forever...
+> + */
+> +static int ext3_writepage_retry_alloc(struct page *page, int *retries,
+> +				      struct writeback_control *wbc)
+> +{
+> +	struct super_block *sb = ((struct inode *)page->mapping->host)->i_sb;
+> +	int ret = 0;
+> +
+> +	/*
+> +	 * We don't want to slow down background writeback too much. On the
+> +	 * other hand if most of the dirty data needs allocation, we better
+> +	 * wait to make some progress
+> +	 */
+> +	if (wbc->sync_mode == WB_SYNC_NONE && !wbc->for_reclaim &&
+> +	    wbc->pages_skipped < wbc->nr_to_write / 2)
+> +		goto redirty;
+> +	/*
+> +	 * Now wait if commit can free some space and we haven't retried
+> +	 * too much
+> +	 */
+> +	if (!ext3_should_retry_alloc(sb, retries))
+> +		return 0;
+> +	ret = 1;
+> +redirty:
+> +	set_page_dirty(page);
+> +	return ret;
+> +}
+> +
+> +/*
+>   * Note that we always start a transaction even if we're not journalling
+>   * data.  This is to preserve ordering: any hole instantiation within
+>   * __block_write_full_page -> ext3_get_block() should be journalled
+> @@ -1564,10 +1598,12 @@ static int ext3_writeback_writepage(struct page
+> *page, handle_t *handle = NULL;
+>  	int ret = 0;
+>  	int err;
+> +	int retries;
+>
+>  	if (ext3_journal_current_handle())
+>  		goto out_fail;
+>
+> +restart:
+>  	handle = ext3_journal_start(inode, ext3_writepage_trans_blocks(inode));
+>  	if (IS_ERR(handle)) {
+>  		ret = PTR_ERR(handle);
+> @@ -1580,8 +1616,13 @@ static int ext3_writeback_writepage(struct page
+> *page, ret = block_write_full_page(page, ext3_get_block, wbc);
+>
+>  	err = ext3_journal_stop(handle);
+> -	if (!ret)
+> +	if (!ret) {
+>  		ret = err;
+> +	} else {
+> +		if (ret == -ENOSPC &&
+> +		    ext3_writepage_retry_alloc(page, &retries, wbc))
+> +			goto restart;
+> +	}
+>  	return ret;
+>
+>  out_fail:
+>
+>   And similarly for the other two writepage implementations in ext3...
+> But it currently gives me:
+> WARNING: at fs/buffer.c:781 __set_page_dirty+0x8d/0x145()
+> probably because of that set_page_dirty() in ext3_writepage_retry_alloc().
 
->>  {
->>  	struct scsi_disk *sdkp = dev_get_drvdata(dev);
->>  
->> +	scsi_reset_prep_fn(sdkp->device->request_queue);
->> +
->>  	device_del(&sdkp->dev);
->>  	del_gendisk(sdkp->disk);
->>  	sd_shutdown(dev);
->> diff --git a/drivers/scsi/sr.c b/drivers/scsi/sr.c
->> index e7fa3ca..914733a 100644
->> --- a/drivers/scsi/sr.c
->> +++ b/drivers/scsi/sr.c
->> @@ -889,6 +889,7 @@ static int sr_remove(struct device *dev)
->>  {
->>  	struct scsi_cd *cd = dev_get_drvdata(dev);
->>  
->> +	scsi_reset_prep_fn(cd->device->request_queue);
->>  	del_gendisk(cd->disk);
->>  
->>  	mutex_lock(&sr_ref_mutex);
->> diff --git a/include/scsi/scsi_driver.h b/include/scsi/scsi_driver.h
->> index 1f5ca7f..2e22929 100644
->> --- a/include/scsi/scsi_driver.h
->> +++ b/include/scsi/scsi_driver.h
->> @@ -32,5 +32,6 @@ int scsi_setup_blk_pc_cmnd(struct scsi_device *sdev, struct request *req);
->>  int scsi_setup_fs_cmnd(struct scsi_device *sdev, struct request *req);
->>  int scsi_prep_state_check(struct scsi_device *sdev, struct request *req);
->>  int scsi_prep_return(struct request_queue *q, struct request *req, int ret);
->> +int scsi_reset_prep_fn(struct request_queue *);
->>  
->>  #endif /* _SCSI_SCSI_DRIVER_H */
-> 
-> I did not test this patch with osd_uld yet, but I will tomorrow. If my assumption
-> is right then drv-core should call my osd_remove just the same, right?
-> 
-Yes, correct.
+And this is a valid warning because we don't know that all buffers are
+uptodate or which ones to set as dirty, I think. Unless it is impossible
+to have dirty && !uptodate pages come thought this path.
 
-> Are there any different timing issue for example the presence of scsi_device
-> is still true?
-> 
-No. Or rather, none you'll notice. (We're effectively saving on indirection here,
-but I doubt it'll be measureable)
+But you shouldn't need to redirty the page at all if we change
+block_write_full_page in the way I suggested. Because then it won't
+have cleaned the buffer, and it will have done redirty_page_for_writepage.
 
-Cheers,
 
-Hannes
--- 
-Dr. Hannes Reinecke		      zSeries & Storage
-hare@suse.de			      +49 911 74053 688
-SUSE LINUX Products GmbH, Maxfeldstr. 5, 90409 Nürnberg
-GF: Markus Rex, HRB 16746 (AG Nürnberg)
+> Or we could implement ext3_mkwrite() to allocate buffers already when we
+> make page writeable. But it costs some performace (we have to write page
+> full of zeros when allocating those buffers, where previously we didn't
+> have to do anything) and it's not trivial to make it work if pagesize >
+> blocksize (we should not allocate buffers outside of i_size so if i_size
+> = 1024, we create just one block in ext3_mkwrite() but then we need to
+> allocate more when we extend the file).
+
+Well the core page_mkwrite function doesn't care about that case
+properly either (it just doesn't allocate buffers on extend). I agree it
+should be fixed, but it is a little hard (I need to fix it in fsblock
+and I think what is required is a setattr helper for that).
+
