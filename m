@@ -1,152 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755517AbZCXWZ6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754980AbZCXW2L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755517AbZCXWZ6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 18:25:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754893AbZCXWZp
+	id S1754980AbZCXW2L (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 18:28:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752137AbZCXW15
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 18:25:45 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:42628 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755338AbZCXWZn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 18:25:43 -0400
-Date: Tue, 24 Mar 2009 23:25:16 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Kevin Winchester <kjwinchester@gmail.com>
-Cc: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       Dave Airlie <airlied@redhat.com>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Error: freeing invalid memtype
-Message-ID: <20090324222516.GA4292@elte.hu>
-References: <49C03208.6050603@gmail.com> <1237399938.4529.208.camel@localhost.localdomain> <49C572CC.6090704@gmail.com> <20090323190720.GA16831@linux-os.sc.intel.com> <49C95C66.2050100@gmail.com>
+	Tue, 24 Mar 2009 18:27:57 -0400
+Received: from mail-gx0-f208.google.com ([209.85.217.208]:64979 "EHLO
+	mail-gx0-f208.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750771AbZCXW14 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Mar 2009 18:27:56 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=QeHGrncHt6UhyzJIk2OLF/FodGBsPBkRG3cBFGKdzeeF1wxnHCAwmqJXbDlfDjve9l
+         8FeVE5WU1j90WkDiV4IoBeE54gImsy8crWjPinAKm+FMIbLN6ql4B5O/CC96YWBKhOHL
+         P/tdr+V3mloIezmiJ5X5aOfxDKUwydKP3rNZE=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49C95C66.2050100@gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <49C919B9.70302@msgid.tls.msk.ru>
+References: <874ozu2hcl.fsf@divinity.mikat.iki.fi>
+	 <20090310101807.GD20716@alberich.amd.com>
+	 <20090311100525.GE20716@alberich.amd.com>
+	 <49B7A79A.6090008@msgid.tls.msk.ru>
+	 <87ocw8qfwg.fsf@divinity.mikat.iki.fi>
+	 <49C919B9.70302@msgid.tls.msk.ru>
+Date: Tue, 24 Mar 2009 15:27:53 -0700
+X-Google-Sender-Auth: cec030fadcf92cd1
+Message-ID: <1f1b08da0903241527y4191b504k1b5aa0a02f136f7e@mail.gmail.com>
+Subject: Re: Slow clock on AMD 740G chipset
+From: john stultz <johnstul@us.ibm.com>
+To: Michael Tokarev <mjt@tls.msk.ru>
+Cc: Mika Tiainen <mikat@iki.fi>, Andreas Herrmann <andreas.herrmann3@amd.com>,
+       linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Mar 24, 2009 at 10:34 AM, Michael Tokarev <mjt@tls.msk.ru> wrote:
+> [resurrecting (hopefully) an old thread.
+>  Top-posting to keep old mess around for reference.]
+>
+> To refresh what has been said.  Several people observed slow clock
+> on their - mostly AMD 780g, 740g and 690g-based systems with 2.6.28
+> 2.6.27 kernels.  Slow to a point when ntpd wasn't successful to
+> keep up with the drift.  It has been said that the motherboards are
+> flaky or something and that the clocks has to be calibrated, for
+> which there are known procedures available (adjtimex).  Which helped.
+> Before the "calibration" the clock were off by ~15 minutes per day.
+>
+> But today I tried newly released 2.6.29 kernel on one of the affected
+> systems - just because I wanted to test something else.  And noticed
+> that the clock is running too fast.  After some calculation I see that
+> it will run away for about 15 minutes per day, that is, exactly the
+> number which was used to compensate for slow clock on 2.6.2[78].
+>
+> So it seems that with 2.6.29, all the motherboards suddenly become
+> non-flaky and the timers need no calibration anymore, working just
+> fine.  Other operating systems and kernel versions also agree with
+> this conclusion of 2.6.29.
+>
+> Any comments on this strange phenomenon ? :)
 
-* Kevin Winchester <kjwinchester@gmail.com> wrote:
+This sounds like the Fast PIT TSC calibration fix that Linus included
+fairly late in 2.6.29-rc (commit
+a6a80e1d8cf82b46a69f88e659da02749231eb36). The Fast PIT method was
+causing some error on some systems, such that the TSC calibrated more
+then 500ppm off of its actual value, causing NTP to not be able to
+compensate (the adjtimex tick manipulation folks in this thread are
+doing just pulls that value back into range where NTP can correct).
 
-> Pallipadi, Venkatesh wrote:
-> > On Sat, Mar 21, 2009 at 04:05:48PM -0700, Kevin Winchester wrote:
-> >> Pallipadi, Venkatesh wrote:
-> >>> Kevin,
-> >>>
-> >>> Can you please send me the output of
-> >>> # cat /debug/x86/pat_memtype_list
-> >>>
-> >>> (with debugfs mounted at /debug) as soon as you login into X and also
-> >>> when you start seeing these errors with etracer and glxinfo.
-> >>>
-> >> Here is the output before attempting to run glxinfo:
-> >> : :
-> >> : :
-> >>
-> >> Does that help track down the problem?  I am about to try disabling PAT
-> >> in my config to see if that fixes things.
-> >>
-> > 
-> > Can you please try the patch below and let me whether it helps.
-> > 
-> > Thanks,
-> > Venki
-> > 
-> > x86, PAT: Change vma prot in pci_mmap to reflect inherited prot
-> >     
-> > While looking at the issue in the thread
-> > http://marc.info/?l=dri-devel&m=123606627824556&w=2
-> > noticed a bug in pci PAT code and memory type setting.
-> >     
-> > pci mmap code did not set the proper protection in vma, when it
-> > inherited protection in reserve_memtype. This bug only affects
-> > the case where there exists a WC mapping before X does an mmap
-> > with /proc or /sys pci interface. This will cause X userlevel
-> > mmap from /proc or /sysfs to fail on fork.
-> >     
-> > Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-> > Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
-> > 
-> > diff --git a/arch/x86/pci/i386.c b/arch/x86/pci/i386.c
-> > index 5ead808..f234a37 100644
-> > --- a/arch/x86/pci/i386.c
-> > +++ b/arch/x86/pci/i386.c
-> > @@ -319,6 +319,9 @@ int pci_mmap_page_range(struct pci_dev *dev, struct vm_area_struct *vma,
-> >  			return -EINVAL;
-> >  		}
-> >  		flags = new_flags;
-> > +		vma->vm_page_prot = __pgprot(
-> > +			(pgprot_val(vma->vm_page_prot) & ~_PAGE_CACHE_MASK) |
-> > +			flags);
-> >  	}
-> >  
-> >  	if (((vma->vm_pgoff < max_low_pfn_mapped) ||
-> 
-> This patch fixes the problem for me - no more errors in my dmesg.  
-> I suppose that I also did update to the latest mainline as well, 
-> so it could possibly have been some other patch instead.  If you 
-> think there is a big risk of that, let me know and I'll repeat the 
-> test and make sure that this patch is the only difference.
+See the "Linux 2.6.29-rc6" thread for details.
 
-No, there was no fix in this area mainline, so it's this patch. I've 
-queued up the fix for the .30 merge window with a -stable backport 
-tag - so it will show up in .29.1 or .29.2 if it remains 
-problem-free.
-
-Thanks a lot for your testing! Below is the final commit.
-
-	Ingo
-
----------------->
->From 9cdec049389ce2c324fd1ec508a71528a27d4a07 Mon Sep 17 00:00:00 2001
-From: Pallipadi, Venkatesh <venkatesh.pallipadi@intel.com>
-Date: Mon, 23 Mar 2009 12:07:20 -0700
-Subject: [PATCH] x86, PAT, PCI: Change vma prot in pci_mmap to reflect inherited prot
-
-While looking at the issue in the thread:
-
-  http://marc.info/?l=dri-devel&m=123606627824556&w=2
-
-noticed a bug in pci PAT code and memory type setting.
-
-PCI mmap code did not set the proper protection in vma, when it
-inherited protection in reserve_memtype. This bug only affects
-the case where there exists a WC mapping before X does an mmap
-with /proc or /sys pci interface. This will cause X userlevel
-mmap from /proc or /sysfs to fail on fork.
-
-Reported-by: Kevin Winchester <kjwinchester@gmail.com>
-Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
-Cc: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: Dave Airlie <airlied@redhat.com>
-Cc: <stable@kernel.org>
-LKML-Reference: <20090323190720.GA16831@linux-os.sc.intel.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- arch/x86/pci/i386.c |    3 +++
- 1 files changed, 3 insertions(+), 0 deletions(-)
-
-diff --git a/arch/x86/pci/i386.c b/arch/x86/pci/i386.c
-index 5ead808..f234a37 100644
---- a/arch/x86/pci/i386.c
-+++ b/arch/x86/pci/i386.c
-@@ -319,6 +319,9 @@ int pci_mmap_page_range(struct pci_dev *dev, struct vm_area_struct *vma,
- 			return -EINVAL;
- 		}
- 		flags = new_flags;
-+		vma->vm_page_prot = __pgprot(
-+			(pgprot_val(vma->vm_page_prot) & ~_PAGE_CACHE_MASK) |
-+			flags);
- 	}
- 
- 	if (((vma->vm_pgoff < max_low_pfn_mapped) ||
+thanks
+-john
