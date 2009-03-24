@@ -1,65 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761324AbZCXSw1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761857AbZCXSwp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761324AbZCXSw1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 14:52:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755448AbZCXSvw
+	id S1761857AbZCXSwp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 14:52:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761014AbZCXSwW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 14:51:52 -0400
-Received: from mail.lang.hm ([64.81.33.126]:40544 "EHLO bifrost.lang.hm"
+	Tue, 24 Mar 2009 14:52:22 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:56369 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752698AbZCXSvv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 14:51:51 -0400
-Date: Tue, 24 Mar 2009 11:51:29 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: Dan Williams <dcbw@redhat.com>
-cc: Patrick McHardy <kaber@trash.net>, Matt Domsch <Matt_Domsch@dell.com>,
-       netdev@vger.kernel.org, linux-hotplug@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: Network Device Naming mechanism and policy
-In-Reply-To: <1237912858.9082.39.camel@localhost.localdomain>
-Message-ID: <alpine.DEB.1.10.0903241150020.16753@asgard.lang.hm>
-References: <20090324154617.GA16332@auslistsprd01.us.dell.com>  <49C9087C.5070907@trash.net> <1237912858.9082.39.camel@localhost.localdomain>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	id S1759867AbZCXSwU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Mar 2009 14:52:20 -0400
+Date: Tue, 24 Mar 2009 19:51:28 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       ltt-dev@lists.casi.polymtl.ca, linux-mm@kvack.org,
+       Dave Hansen <haveblue@us.ibm.com>,
+       Masami Hiramatsu <mhiramat@redhat.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       "Frank Ch. Eigler" <fche@redhat.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>, Hideo AOKI <haoki@redhat.com>,
+       Takashi Nishiie <t-nishiie@np.css.fujitsu.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
+Subject: Re: [patch 9/9] LTTng instrumentation - swap
+Message-ID: <20090324185128.GJ31117@elte.hu>
+References: <20090324155625.420966314@polymtl.ca> <20090324160149.188175023@polymtl.ca>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090324160149.188175023@polymtl.ca>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 24 Mar 2009, Dan Williams wrote:
 
-> On Tue, 2009-03-24 at 17:21 +0100, Patrick McHardy wrote:
->> Matt Domsch wrote:
->>> 2) udev may have rules to change the device names.  This is most often
->>>    seen in the '70-persistent-net.rules' file.  Here we have
->>>    additional challenges:
->>>
->>> ...
->>>
->>>    c) udev may not always be able to change a device's name.  If udev
->>>       uses the kernel assignment namespace (ethN), then a rename of
->>>       eth0->eth1 may require renaming eth1->eth0 (or something else).
->>>       Udev operates on a single device instance at a time, it becomes
->>>       difficult to switch names around for multiple devices, within
->>>       the single namespace.
->>
->> I would classify this as a bug, especially the fact that udev doesn't
->> undo a failed rename, so you end up with ethX_rename. Virtual devices
->> using the same MAC address trigger this reliably unless you add
->> exceptions to the udev rules.
->
-> Any particular reason the MAC addresses are the same?  This came up a
-> while ago with the 'dnet' device in the thread "Dave DNET ethernet
-> controller".
->
-> If the MAC address isn't a UUID for the device, then *what* is?
+* Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
 
-I have seen systems (I think they were Sun boxes) where the _machine_ had 
-a MAC address, and it used that same MAC on all interfaces.
+> +DECLARE_TRACE(swap_in,
+> +	TPPROTO(struct page *page, swp_entry_t entry),
+> +		TPARGS(page, entry));
+> +DECLARE_TRACE(swap_out,
+> +	TPPROTO(struct page *page),
+> +		TPARGS(page));
+> +DECLARE_TRACE(swap_file_open,
+> +	TPPROTO(struct file *file, char *filename),
+> +		TPARGS(file, filename));
+> +DECLARE_TRACE(swap_file_close,
+> +	TPPROTO(struct file *file),
+> +		TPARGS(file));
 
-this is convienient for some things, but not for others.
+These are more complete than the pagecache tracepoints, but still 
+incomplete to make a comprehensive picture about swap activities.
 
-what's unique and reproducable is the discovery order
+Firstly, the swap_file_open/close events seem quite pointless. Most 
+systems enable swap during bootup and never close it. These 
+tracepoints just wont be excercised in practice.
 
-David Lang
+Also, to _really_ help with debugging VM pressure problems, the 
+whole LRU state-machine should be instrumented, and linked up with 
+pagecache instrumentation via page frame numbers and (inode,offset) 
+[file] and (pgd,addr) [anon] pairs.
+
+Not just the fact that something got swapped out is interesting, but 
+also the whole decision chain that leads up to it. The lifetime of a 
+page how it jumps between the various stages of eviction and LRU 
+scores.
+
+a minor nit:
+
+> +DECLARE_TRACE(swap_file_open,
+> +	TPPROTO(struct file *file, char *filename),
+> +		TPARGS(file, filename));
+
+there's no need to pass in the filename - it can be deducted in the 
+probe from struct file.
+
+a small inconsistency:
+
+> +DECLARE_TRACE(swap_in,
+> +	TPPROTO(struct page *page, swp_entry_t entry),
+> +		TPARGS(page, entry));
+> +DECLARE_TRACE(swap_out,
+> +	TPPROTO(struct page *page),
+> +		TPARGS(page));
+
+you pass in swp_entry to trace_swap_in(), which encodes the offset - 
+but that parameter is not needed, the page already represents the 
+offset at that stage in do_swap_page(). (the actual data is not read 
+in yet from swap, but the page is already linked up in the 
+swap-cache and has the offset available - which a probe can 
+recover.)
+
+So this suffices:
+
+ DECLARE_TRACE(swap_in,
+	TPPROTO(struct page *page),
+		TPARGS(page));
+
+ DECLARE_TRACE(swap_out,
+	TPPROTO(struct page *page),
+		TPARGS(page));
+
+And here again i'd like to see actual meaningful probe contents via 
+a TRACE_EVENT() construct. That shows and proves that it's all part 
+of a comprehensive framework, and the data that is recovered is 
+understood and put into a coherent whole - upstream. That makes it 
+immediately useful to the built-in tracers, and will also cause 
+fewer surprises downstream.
+
+	Ingo
