@@ -1,73 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755782AbZCXINb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756597AbZCXIOw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755782AbZCXINb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 04:13:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751919AbZCXINQ
+	id S1756597AbZCXIOw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 04:14:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751919AbZCXIOf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 04:13:16 -0400
-Received: from www.tglx.de ([62.245.132.106]:40157 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751408AbZCXINP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 04:13:15 -0400
-Date: Tue, 24 Mar 2009 09:12:58 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Fernando Lopez-Lezcano <nando@ccrma.Stanford.EDU>
-cc: Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [Announce] 2.6.29-rc8-rt2
-In-Reply-To: <alpine.LFD.2.00.0903240907390.29264@localhost.localdomain>
-Message-ID: <alpine.LFD.2.00.0903240912360.29264@localhost.localdomain>
-References: <1235619922.31774.17.camel@localhost.localdomain>  <1236984825.10748.17.camel@localhost.localdomain>  <alpine.LFD.2.00.0903140845430.29264@localhost.localdomain>  <1237661053.3196.10.camel@localhost.localdomain>  <20090321184904.GA19352@elte.hu>
-  <1237662372.3574.2.camel@localhost.localdomain>  <1237663624.3200.3.camel@localhost.localdomain>  <1237687635.3424.1.camel@localhost.localdomain>  <20090322130937.GA22848@elte.hu>  <1237758228.18021.8.camel@localhost.localdomain>  <20090323080724.GA13569@elte.hu>
- <1237864404.3441.8.camel@localhost.localdomain> <alpine.LFD.2.00.0903240907390.29264@localhost.localdomain>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 24 Mar 2009 04:14:35 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:34335 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751038AbZCXIOe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Mar 2009 04:14:34 -0400
+Subject: [PATCH 1/2] kmemtrace: fix tracepoint declarations
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: mingo@elte.hu
+Cc: eduard.munteanu@linux360.ro, linux-kernel@vger.kernel.org
+Date: Tue, 24 Mar 2009 10:14:30 +0200
+Message-Id: <1237882470.25315.30.camel@penberg-laptop>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.22.3.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 24 Mar 2009, Thomas Gleixner wrote:
+From: Pekka Enberg <penberg@cs.helsinki.fi>
 
-> On Mon, 23 Mar 2009, Fernando Lopez-Lezcano wrote:
-> > without all the funny numbers this is what remains on screen:
-> >
-> >   native_cpu_die
-> >   _cpu_down
-> >   disable_nonboot_cpus
-> >   kernel_power_off
-> >   sys_reboot
-> >   __hrtimer_start_range_ns
-> >   default_spin_lock_flags
-> >   __spin_lock_irqsave
-> >   __spin_lock_irqrestore
-> >   hrtimer_try_to_cancel
-> >   hrtimer_cancel
-> >   do_nanosleep
-> >   hrtimer_nanosleep
-> >   hrtimer_wakeup
-> >   path_put
-> >   audit_syscall_entry
-> >   audit_syscall_exit
-> >   sysenter_do_call
-> > Code: 00 00 6a 00 ff 15 08 49 85 c0 58 etc etc etc
-> > EIP [<c06f2549>] text_poke+0x163/0x181 SS:ESP 0068:f4567ddc
-> 
-> Hmm. Do you have CONFIG_HAVE_DYNAMIC_FTRACE=y in your config ? If yes,
+Impact: fix build
 
-  CONFIG_DYNAMIC_FTRACE=y of course.
+Use the new TP_PROTO and TP_ARGS to fix the build.
 
-> can you please disable it ?
-> 
-> > -- [end trace db3e80122adba82c ]---
-> > init: rc0 main process (3047) killed by SEGV signal
-> > 
-> > (I can take a picture if that would help - I don't have a second machine
-> > with a serial port to try to capture the whole thing)
-> 
-> That'd be very helpful.
->  
-> Thanks,
-> 
-> 	tglx
-> 
+Cc: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
+Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
+---
+ include/trace/kmemtrace.h |   24 ++++++++++++------------
+ 1 files changed, 12 insertions(+), 12 deletions(-)
+
+diff --git a/include/trace/kmemtrace.h b/include/trace/kmemtrace.h
+index 9e28ae1..7514476 100644
+--- a/include/trace/kmemtrace.h
++++ b/include/trace/kmemtrace.h
+@@ -15,41 +15,41 @@
+ extern void kmemtrace_init(void);
+ 
+ DECLARE_TRACE(kmalloc,
+-	      TPPROTO(unsigned long call_site,
++	      TP_PROTO(unsigned long call_site,
+ 		      const void *ptr,
+ 		      size_t bytes_req,
+ 		      size_t bytes_alloc,
+ 		      gfp_t gfp_flags),
+-	      TPARGS(call_site, ptr, bytes_req, bytes_alloc, gfp_flags));
++	      TP_ARGS(call_site, ptr, bytes_req, bytes_alloc, gfp_flags));
+ DECLARE_TRACE(kmem_cache_alloc,
+-	      TPPROTO(unsigned long call_site,
++	      TP_PROTO(unsigned long call_site,
+ 		      const void *ptr,
+ 		      size_t bytes_req,
+ 		      size_t bytes_alloc,
+ 		      gfp_t gfp_flags),
+-	      TPARGS(call_site, ptr, bytes_req, bytes_alloc, gfp_flags));
++	      TP_ARGS(call_site, ptr, bytes_req, bytes_alloc, gfp_flags));
+ DECLARE_TRACE(kmalloc_node,
+-	      TPPROTO(unsigned long call_site,
++	      TP_PROTO(unsigned long call_site,
+ 		      const void *ptr,
+ 		      size_t bytes_req,
+ 		      size_t bytes_alloc,
+ 		      gfp_t gfp_flags,
+ 		      int node),
+-	      TPARGS(call_site, ptr, bytes_req, bytes_alloc, gfp_flags, node));
++	      TP_ARGS(call_site, ptr, bytes_req, bytes_alloc, gfp_flags, node));
+ DECLARE_TRACE(kmem_cache_alloc_node,
+-	      TPPROTO(unsigned long call_site,
++	      TP_PROTO(unsigned long call_site,
+ 		      const void *ptr,
+ 		      size_t bytes_req,
+ 		      size_t bytes_alloc,
+ 		      gfp_t gfp_flags,
+ 		      int node),
+-	      TPARGS(call_site, ptr, bytes_req, bytes_alloc, gfp_flags, node));
++	      TP_ARGS(call_site, ptr, bytes_req, bytes_alloc, gfp_flags, node));
+ DECLARE_TRACE(kfree,
+-	      TPPROTO(unsigned long call_site, const void *ptr),
+-	      TPARGS(call_site, ptr));
++	      TP_PROTO(unsigned long call_site, const void *ptr),
++	      TP_ARGS(call_site, ptr));
+ DECLARE_TRACE(kmem_cache_free,
+-	      TPPROTO(unsigned long call_site, const void *ptr),
+-	      TPARGS(call_site, ptr));
++	      TP_PROTO(unsigned long call_site, const void *ptr),
++	      TP_ARGS(call_site, ptr));
+ 
+ #endif /* __KERNEL__ */
+ 
+-- 
+1.5.4.3
+
+
+
