@@ -1,309 +1,165 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759523AbZCXOQK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761038AbZCXOUm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759523AbZCXOQK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 10:16:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759375AbZCXOGx
+	id S1761038AbZCXOUm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 10:20:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760035AbZCXOLx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 10:06:53 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:34005 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1759391AbZCXOGt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 10:06:49 -0400
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: [PATCH 29/30] 8250_pci: add support for National Instruments 843x
-	RS232 devices
-To: linux-kernel@vger.kernel.org, linux-serial@vger.kernel.org,
-       torvalds@linux-foundation.org
-Date: Tue, 24 Mar 2009 14:06:57 +0000
-Message-ID: <20090324140650.12735.10486.stgit@localhost.localdomain>
-In-Reply-To: <20090324135930.12735.7827.stgit@localhost.localdomain>
-References: <20090324135930.12735.7827.stgit@localhost.localdomain>
-User-Agent: StGIT/0.14.3
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+	Tue, 24 Mar 2009 10:11:53 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:37601 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1760828AbZCXOLr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Mar 2009 10:11:47 -0400
+From: David Teigland <teigland@redhat.com>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH 5/7] dlm: clear defunct cancel state
+Date: Tue, 24 Mar 2009 09:07:50 -0500
+Message-Id: <1237903672-18913-6-git-send-email-teigland@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Shawn Bohrer <shawn.bohrer@ni.com>
+When a conversion completes successfully and finds that a cancel
+of the convert is still in progress (which is now a moot point),
+preemptively clear the state associated with outstanding cancel.
+That state could cause a subsequent conversion to be ignored.
 
-This implements basic support for all 843x RS232 devices, but does not
-add DMA support.  This means that sustained data transfers at high baud
-rates may not be possible on multiple ports simultaneously.
+Also, improve the consistency and content of error and debug
+messages in this area.
 
-Signed-off-by: Shawn Bohrer <shawn.bohrer@ni.com>
-Signed-off-by: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Signed-off-by: David Teigland <teigland@redhat.com>
 ---
+ fs/dlm/lock.c |   53 +++++++++++++++++++++++++++++++++++++++++++++--------
+ 1 files changed, 45 insertions(+), 8 deletions(-)
 
- drivers/serial/8250_pci.c |  193 +++++++++++++++++++++++++++++++++++++++++++++
- include/linux/pci_ids.h   |   14 +++
- 2 files changed, 207 insertions(+), 0 deletions(-)
-
-
-diff --git a/drivers/serial/8250_pci.c b/drivers/serial/8250_pci.c
-index 533f820..2f570c7 100644
---- a/drivers/serial/8250_pci.c
-+++ b/drivers/serial/8250_pci.c
-@@ -306,6 +306,36 @@ static void __devexit pci_plx9050_exit(struct pci_dev *dev)
- 	}
- }
+diff --git a/fs/dlm/lock.c b/fs/dlm/lock.c
+index 01e7d39..8cb9204 100644
+--- a/fs/dlm/lock.c
++++ b/fs/dlm/lock.c
+@@ -835,7 +835,7 @@ static int add_to_waiters(struct dlm_lkb *lkb, int mstype)
+ 		lkb->lkb_wait_count++;
+ 		hold_lkb(lkb);
  
-+/* MITE registers */
-+#define MITE_IOWBSR1	0xc4
-+#define MITE_IOWCR1	0xf4
-+#define MITE_LCIMR1	0x08
-+#define MITE_LCIMR2	0x10
-+
-+#define MITE_LCIMR2_CLR_CPU_IE	(1 << 30)
-+
-+static void __devexit pci_ni8430_exit(struct pci_dev *dev)
-+{
-+	void __iomem *p;
-+	unsigned long base, len;
-+	unsigned int bar = 0;
-+
-+	if ((pci_resource_flags(dev, bar) & IORESOURCE_MEM) == 0) {
-+		moan_device("no memory in bar", dev);
-+		return;
-+	}
-+
-+	base = pci_resource_start(dev, bar);
-+	len =  pci_resource_len(dev, bar);
-+	p = ioremap_nocache(base, len);
-+	if (p == NULL)
-+		return;
-+
-+	/* Disable the CPU Interrupt */
-+	writel(MITE_LCIMR2_CLR_CPU_IE, p + MITE_LCIMR2);
-+	iounmap(p);
-+}
-+
- /* SBS Technologies Inc. PMC-OCTPRO and P-OCTAL cards */
- static int
- sbs_setup(struct serial_private *priv, const struct pciserial_board *board,
-@@ -597,6 +627,82 @@ static int pci_xircom_init(struct pci_dev *dev)
- 	return 0;
- }
+-		log_debug(ls, "add overlap %x cur %d new %d count %d flags %x",
++		log_debug(ls, "addwait %x cur %d overlap %d count %d f %x",
+ 			  lkb->lkb_id, lkb->lkb_wait_type, mstype,
+ 			  lkb->lkb_wait_count, lkb->lkb_flags);
+ 		goto out;
+@@ -851,7 +851,7 @@ static int add_to_waiters(struct dlm_lkb *lkb, int mstype)
+ 	list_add(&lkb->lkb_wait_reply, &ls->ls_waiters);
+  out:
+ 	if (error)
+-		log_error(ls, "add_to_waiters %x error %d flags %x %d %d %s",
++		log_error(ls, "addwait error %x %d flags %x %d %d %s",
+ 			  lkb->lkb_id, error, lkb->lkb_flags, mstype,
+ 			  lkb->lkb_wait_type, lkb->lkb_resource->res_name);
+ 	mutex_unlock(&ls->ls_waiters_mutex);
+@@ -863,23 +863,55 @@ static int add_to_waiters(struct dlm_lkb *lkb, int mstype)
+    request reply on the requestqueue) between dlm_recover_waiters_pre() which
+    set RESEND and dlm_recover_waiters_post() */
  
-+#define MITE_IOWBSR1_WSIZE	0xa
-+#define MITE_IOWBSR1_WIN_OFFSET	0x800
-+#define MITE_IOWBSR1_WENAB	(1 << 7)
-+#define MITE_LCIMR1_IO_IE_0	(1 << 24)
-+#define MITE_LCIMR2_SET_CPU_IE	(1 << 31)
-+#define MITE_IOWCR1_RAMSEL_MASK	0xfffffffe
-+
-+static int pci_ni8430_init(struct pci_dev *dev)
-+{
-+	void __iomem *p;
-+	unsigned long base, len;
-+	u32 device_window;
-+	unsigned int bar = 0;
-+
-+	if ((pci_resource_flags(dev, bar) & IORESOURCE_MEM) == 0) {
-+		moan_device("no memory in bar", dev);
-+		return 0;
-+	}
-+
-+	base = pci_resource_start(dev, bar);
-+	len =  pci_resource_len(dev, bar);
-+	p = ioremap_nocache(base, len);
-+	if (p == NULL)
-+		return -ENOMEM;
-+
-+	/* Set device window address and size in BAR0 */
-+	device_window = ((base + MITE_IOWBSR1_WIN_OFFSET) & 0xffffff00)
-+	                | MITE_IOWBSR1_WENAB | MITE_IOWBSR1_WSIZE;
-+	writel(device_window, p + MITE_IOWBSR1);
-+
-+	/* Set window access to go to RAMSEL IO address space */
-+	writel((readl(p + MITE_IOWCR1) & MITE_IOWCR1_RAMSEL_MASK),
-+	       p + MITE_IOWCR1);
-+
-+	/* Enable IO Bus Interrupt 0 */
-+	writel(MITE_LCIMR1_IO_IE_0, p + MITE_LCIMR1);
-+
-+	/* Enable CPU Interrupt */
-+	writel(MITE_LCIMR2_SET_CPU_IE, p + MITE_LCIMR2);
-+
-+	iounmap(p);
-+	return 0;
-+}
-+
-+/* UART Port Control Register */
-+#define NI8430_PORTCON	0x0f
-+#define NI8430_PORTCON_TXVR_ENABLE	(1 << 3)
-+
-+static int
-+pci_ni8430_setup(struct serial_private *priv, struct pciserial_board *board,
-+		 struct uart_port *port, int idx)
-+{
-+	void __iomem *p;
-+	unsigned long base, len;
-+	unsigned int bar, offset = board->first_offset;
-+
-+	if (idx >= board->num_ports)
-+		return 1;
-+
-+	bar = FL_GET_BASE(board->flags);
-+	offset += idx * board->uart_offset;
-+
-+	base = pci_resource_start(priv->dev, bar);
-+	len =  pci_resource_len(priv->dev, bar);
-+	p = ioremap_nocache(base, len);
-+
-+	/* enable the transciever */
-+	writeb(readb(p + offset + NI8430_PORTCON) | NI8430_PORTCON_TXVR_ENABLE,
-+	       p + offset + NI8430_PORTCON);
-+
-+	iounmap(p);
-+
-+	return setup_port(priv, port, bar, offset, board->reg_shift);
-+}
-+
-+
- static int pci_netmos_init(struct pci_dev *dev)
+-static int _remove_from_waiters(struct dlm_lkb *lkb, int mstype)
++static int _remove_from_waiters(struct dlm_lkb *lkb, int mstype,
++				struct dlm_message *ms)
  {
- 	/* subdevice 0x00PS means <P> parallel, <S> serial */
-@@ -913,6 +1019,18 @@ static struct pci_serial_quirk pci_serial_quirks[] __refdata = {
- 		.exit		= __devexit_p(pci_ite887x_exit),
- 	},
- 	/*
-+	 * National Instruments
-+	 */
-+	{
-+		.vendor		= PCI_VENDOR_ID_NI,
-+		.device		= PCI_ANY_ID,
-+		.subvendor	= PCI_ANY_ID,
-+		.subdevice	= PCI_ANY_ID,
-+		.init		= pci_ni8430_init,
-+		.setup		= pci_ni8430_setup,
-+		.exit		= __devexit_p(pci_ni8430_exit),
-+	},
-+	/*
- 	 * Panacom
- 	 */
- 	{
-@@ -1280,6 +1398,10 @@ enum pci_board_num_t {
- 	pbn_exar_XR17C154,
- 	pbn_exar_XR17C158,
- 	pbn_pasemi_1682M,
-+	pbn_ni8430_2,
-+	pbn_ni8430_4,
-+	pbn_ni8430_8,
-+	pbn_ni8430_16,
- };
+ 	struct dlm_ls *ls = lkb->lkb_resource->res_ls;
+ 	int overlap_done = 0;
  
- /*
-@@ -1850,6 +1972,37 @@ static struct pciserial_board pci_boards[] __devinitdata = {
- 		.num_ports	= 1,
- 		.base_baud	= 8333333,
- 	},
-+	/*
-+	 * National Instruments 843x
-+	 */
-+	[pbn_ni8430_16] = {
-+		.flags		= FL_BASE0,
-+		.num_ports	= 16,
-+		.base_baud	= 3686400,
-+		.uart_offset	= 0x10,
-+		.first_offset	= 0x800,
-+	},
-+	[pbn_ni8430_8] = {
-+		.flags		= FL_BASE0,
-+		.num_ports	= 8,
-+		.base_baud	= 3686400,
-+		.uart_offset	= 0x10,
-+		.first_offset	= 0x800,
-+	},
-+	[pbn_ni8430_4] = {
-+		.flags		= FL_BASE0,
-+		.num_ports	= 4,
-+		.base_baud	= 3686400,
-+		.uart_offset	= 0x10,
-+		.first_offset	= 0x800,
-+	},
-+	[pbn_ni8430_2] = {
-+		.flags		= FL_BASE0,
-+		.num_ports	= 2,
-+		.base_baud	= 3686400,
-+		.uart_offset	= 0x10,
-+		.first_offset	= 0x800,
-+	},
- };
+ 	if (is_overlap_unlock(lkb) && (mstype == DLM_MSG_UNLOCK_REPLY)) {
++		log_debug(ls, "remwait %x unlock_reply overlap", lkb->lkb_id);
+ 		lkb->lkb_flags &= ~DLM_IFL_OVERLAP_UNLOCK;
+ 		overlap_done = 1;
+ 		goto out_del;
+ 	}
  
- static const struct pci_device_id softmodem_blacklist[] = {
-@@ -3052,6 +3205,46 @@ static struct pci_device_id serial_pci_tbl[] = {
- 		pbn_pasemi_1682M },
+ 	if (is_overlap_cancel(lkb) && (mstype == DLM_MSG_CANCEL_REPLY)) {
++		log_debug(ls, "remwait %x cancel_reply overlap", lkb->lkb_id);
+ 		lkb->lkb_flags &= ~DLM_IFL_OVERLAP_CANCEL;
+ 		overlap_done = 1;
+ 		goto out_del;
+ 	}
  
- 	/*
-+	 * National Instruments
-+	 */
-+	{	PCI_VENDOR_ID_NI, PCI_DEVICE_ID_NI_PXI8430_2322,
-+		PCI_ANY_ID, PCI_ANY_ID, 0, 0,
-+		pbn_ni8430_2 },
-+	{	PCI_VENDOR_ID_NI, PCI_DEVICE_ID_NI_PCI8430_2322,
-+		PCI_ANY_ID, PCI_ANY_ID, 0, 0,
-+		pbn_ni8430_2 },
-+	{	PCI_VENDOR_ID_NI, PCI_DEVICE_ID_NI_PXI8430_2324,
-+		PCI_ANY_ID, PCI_ANY_ID, 0, 0,
-+		pbn_ni8430_4 },
-+	{	PCI_VENDOR_ID_NI, PCI_DEVICE_ID_NI_PCI8430_2324,
-+		PCI_ANY_ID, PCI_ANY_ID, 0, 0,
-+		pbn_ni8430_4 },
-+	{	PCI_VENDOR_ID_NI, PCI_DEVICE_ID_NI_PXI8430_2328,
-+		PCI_ANY_ID, PCI_ANY_ID, 0, 0,
-+		pbn_ni8430_8 },
-+	{	PCI_VENDOR_ID_NI, PCI_DEVICE_ID_NI_PCI8430_2328,
-+		PCI_ANY_ID, PCI_ANY_ID, 0, 0,
-+		pbn_ni8430_8 },
-+	{	PCI_VENDOR_ID_NI, PCI_DEVICE_ID_NI_PXI8430_23216,
-+		PCI_ANY_ID, PCI_ANY_ID, 0, 0,
-+		pbn_ni8430_16 },
-+	{	PCI_VENDOR_ID_NI, PCI_DEVICE_ID_NI_PCI8430_23216,
-+		PCI_ANY_ID, PCI_ANY_ID, 0, 0,
-+		pbn_ni8430_16 },
-+	{	PCI_VENDOR_ID_NI, PCI_DEVICE_ID_NI_PXI8432_2322,
-+		PCI_ANY_ID, PCI_ANY_ID, 0, 0,
-+		pbn_ni8430_2 },
-+	{	PCI_VENDOR_ID_NI, PCI_DEVICE_ID_NI_PCI8432_2322,
-+		PCI_ANY_ID, PCI_ANY_ID, 0, 0,
-+		pbn_ni8430_2 },
-+	{	PCI_VENDOR_ID_NI, PCI_DEVICE_ID_NI_PXI8432_2324,
-+		PCI_ANY_ID, PCI_ANY_ID, 0, 0,
-+		pbn_ni8430_4 },
-+	{	PCI_VENDOR_ID_NI, PCI_DEVICE_ID_NI_PCI8432_2324,
-+		PCI_ANY_ID, PCI_ANY_ID, 0, 0,
-+		pbn_ni8430_4 },
++	/* Cancel state was preemptively cleared by a successful convert,
++	   see next comment, nothing to do. */
 +
-+	/*
- 	* ADDI-DATA GmbH communication cards <info@addi-data.com>
- 	*/
- 	{	PCI_VENDOR_ID_ADDIDATA,
-diff --git a/include/linux/pci_ids.h b/include/linux/pci_ids.h
-index aca8c45..b3676fe 100644
---- a/include/linux/pci_ids.h
-+++ b/include/linux/pci_ids.h
-@@ -941,6 +941,20 @@
- #define PCI_DEVICE_ID_SUN_TOMATILLO	0xa801
- #define PCI_DEVICE_ID_SUN_CASSINI	0xabba
- 
-+#define PCI_VENDOR_ID_NI		0x1093
-+#define PCI_DEVICE_ID_NI_PXI8430_2322	0x7080
-+#define PCI_DEVICE_ID_NI_PCI8430_2322	0x70db
-+#define PCI_DEVICE_ID_NI_PXI8430_2324	0x70dd
-+#define PCI_DEVICE_ID_NI_PCI8430_2324	0x70df
-+#define PCI_DEVICE_ID_NI_PXI8430_2328	0x70e2
-+#define PCI_DEVICE_ID_NI_PCI8430_2328	0x70e4
-+#define PCI_DEVICE_ID_NI_PXI8430_23216	0x70e6
-+#define PCI_DEVICE_ID_NI_PCI8430_23216	0x70e7
-+#define PCI_DEVICE_ID_NI_PXI8432_2322	0x70e8
-+#define PCI_DEVICE_ID_NI_PCI8432_2322	0x70ea
-+#define PCI_DEVICE_ID_NI_PXI8432_2324	0x70ec
-+#define PCI_DEVICE_ID_NI_PCI8432_2324	0x70ee
++	if ((mstype == DLM_MSG_CANCEL_REPLY) &&
++	    (lkb->lkb_wait_type != DLM_MSG_CANCEL)) {
++		log_debug(ls, "remwait %x cancel_reply wait_type %d",
++			  lkb->lkb_id, lkb->lkb_wait_type);
++		return -1;
++	}
 +
- #define PCI_VENDOR_ID_CMD		0x1095
- #define PCI_DEVICE_ID_CMD_643		0x0643
- #define PCI_DEVICE_ID_CMD_646		0x0646
++	/* Remove for the convert reply, and premptively remove for the
++	   cancel reply.  A convert has been granted while there's still
++	   an outstanding cancel on it (the cancel is moot and the result
++	   in the cancel reply should be 0).  We preempt the cancel reply
++	   because the app gets the convert result and then can follow up
++	   with another op, like convert.  This subsequent op would see the
++	   lingering state of the cancel and fail with -EBUSY. */
++
++	if ((mstype == DLM_MSG_CONVERT_REPLY) &&
++	    (lkb->lkb_wait_type == DLM_MSG_CONVERT) &&
++	    is_overlap_cancel(lkb) && ms && !ms->m_result) {
++		log_debug(ls, "remwait %x convert_reply zap overlap_cancel",
++			  lkb->lkb_id);
++		lkb->lkb_wait_type = 0;
++		lkb->lkb_flags &= ~DLM_IFL_OVERLAP_CANCEL;
++		lkb->lkb_wait_count--;
++		goto out_del;
++	}
++
+ 	/* N.B. type of reply may not always correspond to type of original
+ 	   msg due to lookup->request optimization, verify others? */
+ 
+@@ -888,8 +920,8 @@ static int _remove_from_waiters(struct dlm_lkb *lkb, int mstype)
+ 		goto out_del;
+ 	}
+ 
+-	log_error(ls, "remove_from_waiters lkid %x flags %x types %d %d",
+-		  lkb->lkb_id, lkb->lkb_flags, mstype, lkb->lkb_wait_type);
++	log_error(ls, "remwait error %x reply %d flags %x no wait_type",
++		  lkb->lkb_id, mstype, lkb->lkb_flags);
+ 	return -1;
+ 
+  out_del:
+@@ -899,7 +931,7 @@ static int _remove_from_waiters(struct dlm_lkb *lkb, int mstype)
+ 	   this would happen */
+ 
+ 	if (overlap_done && lkb->lkb_wait_type) {
+-		log_error(ls, "remove_from_waiters %x reply %d give up on %d",
++		log_error(ls, "remwait error %x reply %d wait_type %d overlap",
+ 			  lkb->lkb_id, mstype, lkb->lkb_wait_type);
+ 		lkb->lkb_wait_count--;
+ 		lkb->lkb_wait_type = 0;
+@@ -921,7 +953,7 @@ static int remove_from_waiters(struct dlm_lkb *lkb, int mstype)
+ 	int error;
+ 
+ 	mutex_lock(&ls->ls_waiters_mutex);
+-	error = _remove_from_waiters(lkb, mstype);
++	error = _remove_from_waiters(lkb, mstype, NULL);
+ 	mutex_unlock(&ls->ls_waiters_mutex);
+ 	return error;
+ }
+@@ -936,7 +968,7 @@ static int remove_from_waiters_ms(struct dlm_lkb *lkb, struct dlm_message *ms)
+ 
+ 	if (ms != &ls->ls_stub_ms)
+ 		mutex_lock(&ls->ls_waiters_mutex);
+-	error = _remove_from_waiters(lkb, ms->m_type);
++	error = _remove_from_waiters(lkb, ms->m_type, ms);
+ 	if (ms != &ls->ls_stub_ms)
+ 		mutex_unlock(&ls->ls_waiters_mutex);
+ 	return error;
+@@ -2083,6 +2115,11 @@ static int validate_lock_args(struct dlm_ls *ls, struct dlm_lkb *lkb,
+ 	lkb->lkb_timeout_cs = args->timeout;
+ 	rv = 0;
+  out:
++	if (rv)
++		log_debug(ls, "validate_lock_args %d %x %x %x %d %d %s",
++			  rv, lkb->lkb_id, lkb->lkb_flags, args->flags,
++			  lkb->lkb_status, lkb->lkb_wait_type,
++			  lkb->lkb_resource->res_name);
+ 	return rv;
+ }
+ 
+-- 
+1.5.5.6
 
