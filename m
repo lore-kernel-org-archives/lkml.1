@@ -1,106 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759140AbZCXStW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760448AbZCXStw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759140AbZCXStW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 14:49:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755312AbZCXStN
+	id S1760448AbZCXStw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 14:49:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755312AbZCXStk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 14:49:13 -0400
-Received: from yw-out-2324.google.com ([74.125.46.30]:8430 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754390AbZCXStM convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 14:49:12 -0400
+	Tue, 24 Mar 2009 14:49:40 -0400
+Received: from mail.lang.hm ([64.81.33.126]:46169 "EHLO bifrost.lang.hm"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754566AbZCXStj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Mar 2009 14:49:39 -0400
+Date: Tue, 24 Mar 2009 11:49:26 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: Matt Domsch <Matt_Domsch@dell.com>
+cc: netdev@vger.kernel.org, linux-hotplug@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: Network Device Naming mechanism and policy
+In-Reply-To: <20090324154617.GA16332@auslistsprd01.us.dell.com>
+Message-ID: <alpine.DEB.1.10.0903241140530.16753@asgard.lang.hm>
+References: <20090324154617.GA16332@auslistsprd01.us.dell.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-In-Reply-To: <alpine.LFD.2.00.0903241053200.3032@localhost.localdomain>
-References: <alpine.LFD.2.00.0903231617550.3032@localhost.localdomain>
-	 <49C87B87.4020108@krogh.cc>
-	 <72dbd3150903232346g5af126d7sb5ad4949a7b5041f@mail.gmail.com>
-	 <20090324091545.758d00f5@lxorguk.ukuu.org.uk>
-	 <20090324093245.GA22483@elte.hu>
-	 <20090324101011.6555a0b9@lxorguk.ukuu.org.uk>
-	 <20090324103111.GA26691@elte.hu> <20090324132032.GK5814@mit.edu>
-	 <alpine.LFD.2.00.0903241053200.3032@localhost.localdomain>
-Date: Tue, 24 Mar 2009 14:41:59 -0400
-Message-ID: <f73f7ab80903241141t358ab241qa377e709752a3cbf@mail.gmail.com>
-Subject: Re: Linux 2.6.29
-From: Kyle Moffett <kyle@moffetthome.net>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Theodore Tso <tytso@mit.edu>, Ingo Molnar <mingo@elte.hu>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Nick Piggin <npiggin@suse.de>,
-       Jens Axboe <jens.axboe@oracle.com>, David Rees <drees76@gmail.com>,
-       Jesper Krogh <jesper@krogh.cc>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 24, 2009 at 1:55 PM, Linus Torvalds
-<torvalds@linux-foundation.org> wrote:
-> On Tue, 24 Mar 2009, Theodore Tso wrote:
->> Try ext4, I think you'll like it.  :-)
->>
->> Failing that, data=writeback for single-user machines is probably your
->> best bet.
+On Tue, 24 Mar 2009, Matt Domsch wrote:
+
+> You may recall http://lkml.org/lkml/2006/9/29/268, wherein I described
+> network device enumeration and naming challenges, and several possible
+> fixes.  Of these, Fix #1 (fix the PCI device list to be sorted
+> breadth-first) has been implemented in the kernel, and Fix #3 (system
+> board routing rules) have been implemented on Dell PowerEdge 10G and
+> 11G servers (11G begin selling RSN).
 >
-> Isn't that the same fix? ext4 just defaults to the crappy "writeback"
-> behavior, which is insane.
+> However, these have not been completely satisfactory.  In particular,
+> it keeps getting harder and harder to route PCI-Express lanes to
+> guarantee the same ordering between a depth-first and breadth-first
+> walk, and it turns out, that isn't sufficient anyhow.
 >
-> Sure, it makes things _much_ smoother, since now the actual data is no
-> longer in the critical path for any journal writes, but anybody who thinks
-> that's a solution is just incompetent.
 >
-> We might as well go back to ext2 then. If your data gets written out long
-> after the metadata hit the disk, you are going to hit all kinds of bad
-> issues if the machine ever goes down.
+> Problem:  Users expect on-motherboard NICs to be named eth0..ethN.  This can be difficult to achieve.
 
-Not really...
+I dispute this statement.
 
-Regardless of any journalling, a power-fail or a crash is almost
-certainly going to cause "data loss" of some variety.  We simply
-didn't get to sync everything we needed to (otherwise we'd all be
-shutting down our computers with the SCRAM switches just for kicks).
-The difference is, with ext3/4 (in any journal mode) we guarantee our
-metadata is consistent.  This means that we won't double-allocate or
-leak inodes or blocks, which means that we can safely *write* to the
-filesystem as soon as we replay the journal.  With ext2 you *CAN'T* do
-that at all, as somebody may have allocated an inode but not yet
-marked it as in use.  The only way to safely figure all that out
-without journalling is an fsck run.
+I have several hundred servers that have the on-motherboard NICs as the 
+last ones.
 
-That difference between ext4 and ext3-in-writeback-mode is this:  If
-you get a crash in the narrow window *after* writing initial metadata
-and before writing the data, ext4 will give you a zero length file,
-whereas ext3-in-writeback-mode will give you a proper-length file
-filled with whatever used to be on disk (might be the contents of a
-previous /etc/shadow, or maybe somebody's finance files).
+anyone who's been making the assumption you describe will have been 
+running into problems for many years.
 
-In that same situation, ext3 in data-ordered or data-journal mode will
-"close" the window by preventing anybody else from making forward
-progress until the data and the metadata are both updated.  The thing
-is, even on ext3 I can get exactly the same kind of behavior with an
-appropriately timed "kill -STOP $dumb_program", followed by a power
-failure 60 seconds later.  It's a relatively obvious race condition...
+it's just not a valid assumption.
 
-When you create a file, you can't guarantee that all of that file's
-data and metadata has hit disk until after an fsync() call returns.
-The only *possible* exceptions are in cases like the
-previously-mentioned (and now patched)
-open(A)+write(A)+close(A)+rename(A,B), where the
-rename-over-existing-file should act as an implicit filesystem
-barrier.  It should ensure that all writes to the file get flushed
-before it is renamed on top of an existing file, simply because so
-much UNIX software expects it to act that way.
+> Ethernet device names are initially assigned by the kernel, and may be
+> changed by udev or nameif in userspace.  The initial name assigned by
+> the kernel is in monotonically increasing order, starting with eth0.
+> In this instance, the enumeration directly leads to an assigned name.
+>
+> Complications:
+>
+> 1) Devices are discovered, and presented to the kernel for name
+>   assignment, based on several factors:
+>
+>   a) the kernel hotplug mechanism emits events for udev to catch, to
+>
+>
+>   b) udev may run modprobes in parallel.  It guarantees that the
+>
+>      To get any consistent ordering now, one of two things must
+>      happen:
+>
+>      i) drivers must be loaded before udev begins loading drivers
+>         (either very early in initscripts, or in the inital ramdisk).
+>     ii) something must "fix up" the kernel-assigned names after
+>         udev's modprobes complete.  udev does this as well.
+>
+> 2) udev may have rules to change the device names.  This is most often
+>   seen in the '70-persistent-net.rules' file.  Here we have
+>   additional challenges:
+>
+>   a) this does not exist the first time devices are discovered; the
+>
+>   b) it introduces state (MAC addresses) to the system, on a system
+>
+>   c) udev may not always be able to change a device's name.  If udev
+>
 
-When you're dealing with programs that simply
-open()+ftruncate()+write()+close(), however... there's always going to
-be a window in-between the ftruncate and the write where the file *is*
-an empty file, and in that case no amount of operating-system-level
-cleverness can deal with application-level bugs.
+not everyone uses udev. I compile the nessasary drivers into the kernel 
+and don't need udev to get interfaces.
 
-Cheers,
-Kyle Moffett
+> 3) End users have the (reasonable?) expectation that NIC ports
+
+as noted above, only some users have this unrealistic expectation.
+
+> 4) When adding a network card to an existing system, what should the
+>   ports on the new card be named?  If it is added, they will be named
+>   ethN+1... above the existing named cards.  This means a (new)
+>   add-in card in PCI slot 3 may have ports named eth5 and eth6, while
+>   an add-in card in PCI slot 5 may have ports named eth2 and eth3.
+>   This is not intuitive.
+
+this approach causes serious problems in a few cases, including
+
+1. a NIC goes bad and you replace it. now all the configs change
+
+2. you reinstall a box and it's interface names change.
+
+David Lang
