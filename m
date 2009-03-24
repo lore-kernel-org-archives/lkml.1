@@ -1,67 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756591AbZCXMjq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755979AbZCXMkG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756591AbZCXMjq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 08:39:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753793AbZCXMje
+	id S1755979AbZCXMkG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 08:40:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757806AbZCXMjm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 08:39:34 -0400
-Received: from mail-fx0-f158.google.com ([209.85.220.158]:57183 "EHLO
-	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751645AbZCXMjc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 08:39:32 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=Lp15DdxW6zcfE4xb4YiOFuQRnObc/9JaUYSZIr0yy2pQ/a6X97hzwZ9V4rSCdP7Vlq
-         ZGhCidwy+z47itRxHLeP3PKYacTWaa+9fIo0d3uVbRxeZi9jb9n9J5/UCPqo95EAavqJ
-         Rd7S7whDM4yNRaq9bgFjLq3cKeq2Wedhswh8Q=
+	Tue, 24 Mar 2009 08:39:42 -0400
+Received: from cantor.suse.de ([195.135.220.2]:57386 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758802AbZCXMjl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Mar 2009 08:39:41 -0400
+Date: Tue, 24 Mar 2009 13:39:36 +0100
+From: Jan Kara <jack@suse.cz>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: "Martin J. Bligh" <mbligh@mbligh.org>, linux-ext4@vger.kernel.org,
+       Ying Han <yinghan@google.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-mm <linux-mm@kvack.org>, guichaz@gmail.com,
+       Alex Khesin <alexk@google.com>, Mike Waychison <mikew@google.com>,
+       Rohit Seth <rohitseth@google.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: ftruncate-mmap: pages are lost after writing to mmaped file.
+Message-ID: <20090324123935.GD23439@duck.suse.cz>
+References: <604427e00903181244w360c5519k9179d5c3e5cd6ab3@mail.gmail.com> <200903200248.22623.nickpiggin@yahoo.com.au> <20090319164638.GB3899@duck.suse.cz> <200903241844.22851.nickpiggin@yahoo.com.au>
 MIME-Version: 1.0
-In-Reply-To: <20090227132740.GF1482@ucw.cz>
-References: <alpine.LFD.2.00.0902040042570.9833@localhost.localdomain>
-	 <498953DF.5050306@redhat.com> <20090204131708.GA2739@srcf.ucam.org>
-	 <20090204142606.1823661b@hyperion.delvare>
-	 <20090204142015.GB3923@srcf.ucam.org>
-	 <20090210145716.105ab58b@hyperion.delvare>
-	 <20090210140829.GA25397@srcf.ucam.org> <49919E08.5050002@redhat.com>
-	 <20090210172408.400cacee@hyperion.delvare>
-	 <20090227132740.GF1482@ucw.cz>
-Date: Tue, 24 Mar 2009 13:39:29 +0100
-Message-ID: <68676e00903240539i119b6d26j516ee131d4cd6781@mail.gmail.com>
-Subject: Re: [PATCH] ACPI: add "auto" to acpi_enforce_resources
-From: Luca Tettamanti <kronos.it@gmail.com>
-To: linux-kernel@vger.kernel.org
-Cc: Jean Delvare <khali@linux-fr.org>, Hans de Goede <hdegoede@redhat.com>,
-       Matthew Garrett <mjg@redhat.com>, Len Brown <lenb@kernel.org>,
-       Thomas Renninger <trenn@suse.de>, linux-acpi@vger.kernel.org,
-       Pavel Machek <pavel@ucw.cz>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200903241844.22851.nickpiggin@yahoo.com.au>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Feb 27, 2009 at 2:27 PM, Pavel Machek <pavel@ucw.cz> wrote:
-> Hi!
->
->> > For the record we have changed the default to strict in Fedora's
->> > development branch, for 2 weeks or so now, including in the recently
->> > released Fedora 11 release and we've had 0 complaints so far.
->>
->> Well, if the number of affected systems is small, this is good news.
->> But this is only 2 weeks and one distribution, coverage isn't
->> sufficient to claim anything yet IMHO.
->>
->> That being said... if there's a common consensus that switching to
->> strict and dealing with fallouts is the best thing to do, and I'm the
->> only one objecting to this, then I am ready to admit that I was wrong
->> and let you proceed.
->
-> I believe that 'enable strict, deal with fallout' is the best
-> long-term strategy...
+  Hi,
 
-Hello,
-the merge window for .30 is now open, what are we going to do with this issue?
+On Tue 24-03-09 18:44:21, Nick Piggin wrote:
+> On Friday 20 March 2009 03:46:39 Jan Kara wrote:
+> > On Fri 20-03-09 02:48:21, Nick Piggin wrote:
+> 
+> > > Holding mapping->private_lock over the __set_page_dirty should
+> > > fix it, although I guess you'd want to release it before calling
+> > > __mark_inode_dirty so as not to put inode_lock under there. I
+> > > have a patch for this if it sounds reasonable.
+> >
+> >   Yes, that seems to be a bug - the function actually looked suspitious to
+> > me yesterday but I somehow convinced myself that it's fine. Probably
+> > because fsx-linux is single-threaded.
+> 
+> 
+> After a whole lot of chasing my own tail in the VM and buffer layers,
+> I think it is a problem in ext2 (and I haven't been able to reproduce
+> with ext3 yet, which might lend weight to that, although as we have
+> seen, it is very timing dependent).
+> 
+> That would be slightly unfortunate because we still have Jan's ext3
+> problem, and also another reported problem of corruption on ext3 (on
+> brd driver).
+> 
+> Anyway, when I have reproduced the problem with the test case, the
+> "lost" writes are all reported to be holes. Unfortunately, that doesn't
+> point straight to the filesystem, because ext2 allocates blocks in this
+> case at writeout time, so if dirty bits are getting lost, then it would
+> be normal to see holes.
+> 
+> I then put in a whole lot of extra infrastructure to track metadata about
+> each struct page (when it was last written out, when it last had the number
+> of writable ptes reach 0, when the dirty bits were last cleared etc). And
+> none of the normal asertions were triggering: eg. when any page is removed
+> from pagecache (except truncates), it has always had all its buffers
+> written out *after* all ptes were made readonly or unmapped. Lots of other
+> tests and crap like that.
+  I see we're going the same way ;)
 
-Luca
+> So I tried what I should have done to start with and did an e2fsck after
+> seeing corruption. Yes, it comes up with errors. Now that is unusual
+> because that should be largely insulated from the vm: if a dirty bit gets
+> lost, then the filesystem image should be quite happy and error-free with
+> a hole or unwritten data there.
+  This is different for me. I see no corruption on the filesystem with
+ext3. Anyway, errors from fsck would be useful to see what kind of
+corruption you saw.
+
+> I don't know ext? locking very well, except that it looks pretty overly
+> complex and crufty.
+> 
+> Usually, blocks are instantiated by write(2), under i_mutex, serialising
+> the allocator somewhat. mmap-write blocks are instantiated at writeout
+> time, unserialised. I moved truncate_mutex to cover the entire get_blocks
+> function, and can no longer trigger the problem. Might be a timing issue
+> though -- Ying, can you try this and see if you can still reproduce?
+> 
+> I close my eyes and pick something out of a hat. a686cd89. Search for XXX.
+> Nice. Whether or not this cased the problem, can someone please tell me
+> why it got merged in that state?
+  Maybe, I see it did some changes to ext2_get_blocks() which could be
+where the problem was introduced...
+
+> I'm leaving ext3 running for now. It looks like a nasty task to bisect
+> ext2 down to that commit :( and I would be more interested in trying to
+> reproduce Jan's ext3 problem, however, because I'm not too interested in
+> diving into ext2 locking to work out exactly what is racing and how to
+> fix it properly. I suspect it would be most productive to wire up some
+> ioctls right into the block allocator/lookup and code up a userspace
+> tester for it that could probably stress it a lot harder than kernel
+> writeout can.
+  Yes, what I observed with ext3 so far is that data is properly copied and
+page marked dirty when the data is copied in. But then at some point dirty
+bit is cleared via block_write_full_page() but we don't get to submitting
+at least one buffer in that page. I'm now debugging which path we take so
+that this happens...
+
+									Honza
+-- 
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
