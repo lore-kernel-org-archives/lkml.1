@@ -1,95 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757487AbZCXPK3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755827AbZCXPKw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757487AbZCXPK3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 11:10:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752846AbZCXPKV
+	id S1755827AbZCXPKw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 11:10:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753692AbZCXPKl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 11:10:21 -0400
-Received: from rhun.apana.org.au ([64.62.148.172]:46307 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751525AbZCXPKU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 11:10:20 -0400
-Date: Tue, 24 Mar 2009 23:09:28 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Robert Schwebel <r.schwebel@pengutronix.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Frank Blaschka <blaschka@linux.vnet.ibm.com>,
-       "David S. Miller" <davem@davemloft.net>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       kernel@pengutronix.de
-Subject: Re: Revert "gro: Fix legacy path napi_complete crash", (was: Re:
-	Linux 2.6.29)
-Message-ID: <20090324150928.GB30224@gondor.apana.org.au>
-References: <alpine.LFD.2.00.0903231617550.3032@localhost.localdomain> <20090324130202.GA32469@elte.hu> <20090324143303.GP5367@pengutronix.de> <20090324143942.GA20462@elte.hu>
+	Tue, 24 Mar 2009 11:10:41 -0400
+Received: from ports.donpac.ru ([80.254.111.81]:58505 "EHLO ports.donpac.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753548AbZCXPKl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Mar 2009 11:10:41 -0400
+Date: Tue, 24 Mar 2009 18:10:34 +0300
+From: Andrey Panin <pazke@donpac.ru>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: linux-kernel@vger.kernel.org, linux-serial@vger.kernel.org,
+       torvalds@linux-foundation.org
+Subject: Re: [PATCH 01/30] disallow SERIAL_8250_PNP with SERIAL_8250_CONSOLE
+Message-ID: <20090324151034.GC6859@ports.donpac.ru>
+Mail-Followup-To: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+	linux-kernel@vger.kernel.org, linux-serial@vger.kernel.org,
+	torvalds@linux-foundation.org
+References: <20090324135930.12735.7827.stgit@localhost.localdomain> <20090324140145.12735.29459.stgit@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090324143942.GA20462@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090324140145.12735.29459.stgit@localhost.localdomain>
+X-Uname: Linux 2.6.18-4-powerpc64 ppc64
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 24, 2009 at 03:39:42PM +0100, Ingo Molnar wrote:
->
-> Subject: [PATCH] net: Fix netpoll lockup in legacy receive path
+On 083, 03 24, 2009 at 02:01:52PM +0000, Alan Cox wrote:
+> From: Clark Williams <williams@redhat.com>
+> 
+> There are known (but hard to fix issues) with using SERIAL_8250_PNP with
+> SERIAL_8250_CONSOLE. This patch just sidesteps that by not allowing PNP
+> when CONSOLE is selected.
 
-Actually, this patch is still racy.  If some interrupt comes in
-and we suddenly get the maximum amount of backlog we can still
-hang when we call __napi_complete incorrectly.  It's unlikely
-but we certainly shouldn't allow that.  Here's a better version.
+This patch looks very controversial from my POV. Now distro people must decide
+what to enable SERIAL_8250_PNP or SERIAL_8250_CONSOLE. And no matter what you 
+choose you'll get a regression, non-working serial console vs broken detection of
+perfectly working hardware like additional serial ports on industrial computers,
+notebook touchpads and finally old and dusty ISA PnP modems.
 
-net: Fix netpoll lockup in legacy receive path
+How widespread are these "known but hard to fix issues", to justify such drastic
+change ?
 
-When I fixed the GRO crash in the legacy receive path I used
-napi_complete to replace __napi_complete.  Unfortunately they're
-not the same when NETPOLL is enabled, which may result in us
-not calling __napi_complete at all.
-
-What's more, we really do need to keep the __napi_complete call
-within the IRQ-off section since in theory an IRQ can occur in
-between and fill up the backlog to the maximum, causing us to
-lock up.
-
-This patch fixes this by essentially open-coding __napi_complete.
-
-Note we no longer need the memory barrier because this function
-is per-cpu.
-
-Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
-
-diff --git a/net/core/dev.c b/net/core/dev.c
-index e3fe5c7..2a7f6b3 100644
---- a/net/core/dev.c
-+++ b/net/core/dev.c
-@@ -2588,9 +2588,10 @@ static int process_backlog(struct napi_struct *napi, int quota)
- 		local_irq_disable();
- 		skb = __skb_dequeue(&queue->input_pkt_queue);
- 		if (!skb) {
-+			list_del(&napi->poll_list);
-+			clear_bit(NAPI_STATE_SCHED, &napi->state);
- 			local_irq_enable();
--			napi_complete(napi);
--			goto out;
-+			break;
- 		}
- 		local_irq_enable();
- 
-@@ -2599,7 +2600,6 @@ static int process_backlog(struct napi_struct *napi, int quota)
- 
- 	napi_gro_flush(napi);
- 
--out:
- 	return work;
- }
-
-Thanks,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+> Signed-off-by: Clark Williams <williams@redhat.com>
+> Signed-off-by: Alan Cox <number6@the-village.bc.nu>
+> ---
+> 
+>  drivers/serial/Kconfig |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> 
+> diff --git a/drivers/serial/Kconfig b/drivers/serial/Kconfig
+> index 7d7f576..451b64f 100644
+> --- a/drivers/serial/Kconfig
+> +++ b/drivers/serial/Kconfig
+> @@ -91,7 +91,7 @@ config SERIAL_8250_PCI
+>  
+>  config SERIAL_8250_PNP
+>  	tristate "8250/16550 PNP device support" if EMBEDDED
+> -	depends on SERIAL_8250 && PNP
+> +	depends on SERIAL_8250 && PNP && ! SERIAL_8250_CONSOLE
+>  	default SERIAL_8250
+>  	help
+>  	  This builds standard PNP serial support. You may be able to
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
