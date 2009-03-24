@@ -1,73 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753230AbZCXW6X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753509AbZCXW6g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753230AbZCXW6X (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 18:58:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751298AbZCXW6K
+	id S1753509AbZCXW6g (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 18:58:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754646AbZCXW6X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 18:58:10 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:37294
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751250AbZCXW6J (ORCPT
+	Tue, 24 Mar 2009 18:58:23 -0400
+Received: from cavan.codon.org.uk ([93.93.128.6]:53082 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753739AbZCXW6W (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 18:58:09 -0400
-Date: Tue, 24 Mar 2009 15:57:56 -0700 (PDT)
-Message-Id: <20090324.155756.214460004.davem@davemloft.net>
-To: Matt_Domsch@dell.com
-Cc: netdev@vger.kernel.org, linux-hotplug@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: Network Device Naming mechanism and policy
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20090324154617.GA16332@auslistsprd01.us.dell.com>
-References: <20090324154617.GA16332@auslistsprd01.us.dell.com>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Tue, 24 Mar 2009 18:58:22 -0400
+Date: Tue, 24 Mar 2009 22:58:12 +0000
+From: Matthew Garrett <mjg@redhat.com>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Andrey Panin <pazke@donpac.ru>, linux-kernel@vger.kernel.org,
+       linux-serial@vger.kernel.org, torvalds@linux-foundation.org,
+       williams@redhat.com
+Subject: Re: [PATCH 01/30] disallow SERIAL_8250_PNP with SERIAL_8250_CONSOLE
+Message-ID: <20090324225812.GA30827@srcf.ucam.org>
+References: <20090324151034.GC6859@ports.donpac.ru> <20090324152203.6a989d06@lxorguk.ukuu.org.uk> <20090324205945.GA28394@srcf.ucam.org> <20090324212653.77d6e70c@lxorguk.ukuu.org.uk> <20090324213416.GA29507@srcf.ucam.org> <20090324213841.59d6b299@lxorguk.ukuu.org.uk> <20090324214321.GA29671@srcf.ucam.org> <20090324221816.50e7ccc2@lxorguk.ukuu.org.uk> <20090324222934.GA30503@srcf.ucam.org> <20090324223632.66680ebd@lxorguk.ukuu.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090324223632.66680ebd@lxorguk.ukuu.org.uk>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Matt Domsch <Matt_Domsch@dell.com>
-Date: Tue, 24 Mar 2009 10:46:17 -0500
+On Tue, Mar 24, 2009 at 10:36:32PM +0000, Alan Cox wrote:
+> On Tue, 24 Mar 2009 22:29:34 +0000
+> Matthew Garrett <mjg59@srcf.ucam.org> wrote:
+> > I'd prefer not to go with this approach unless we've got a convincing 
+> > number of bugs filed. It's guaranteed to reduce hardware support in 
+> > favour of fixing an unknown number of machines.
+> 
+> I get a regular stream of complaints. But as I said Red Hat is the patch
+> originator, Red Hat has the distro bugzilla so perhaps Red Hat folks can
+> comment ?
 
-> Problem: Users expect on-motherboard NICs to be named eth0..ethN.
-> This can be difficult to achieve.
+I've had a dig through Bugzilla but couldn't find it, and it doesn't 
+seem to be in anything we're shipping right now. Clark, do you have a 
+pointer to a bug that this patch came from?
 
-I learned a long time ago that eth0 et al. have zero meaning.
-
-If the system firmware folks gave us topology information with respect
-to these things, we could export something that tools such as
-NetworkManager, iproute2, etc. could use.
-
-For example, if we were told that PCI device "domain:bus:dev:fn" has
-string label "Onboard Ethernet 0" then we could present that to the
-user.
-
-Changing how the actual network device name is determined is going to
-have zero traction.
-
-So, please, put mapping tables into the ACPI or similar and then
-programs can go:
-
-	for_each_network_device(name) {
-		fd = open(name);
-		label = get_system_label(fd, name);
-		present_to_user(label, name);
-	}
-
-This "get_system_label()" thing can be an ethtool ioctl, some
-rtnetlink call, or similar.  In the kernel, a generic routine would
-exist for major bus types to make the mapping translation, and drivers
-would call these.
-
-For PCI it might take the PCI device pointer and try to fish
-out a string from the ACPI layer.
-
-For OpenFirmware we might just simply give the full device path,
-or a matching device alias name.
-
-That's the only model which allows a smooth transition and
-no major infrastructure changes.
-
-I guess it's easier to spew about MAC addresses and other
-irrelevant topics than try to solve this problem properly. :-)
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
