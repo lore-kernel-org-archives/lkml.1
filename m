@@ -1,41 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752496AbZCXWTT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754345AbZCXWTf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752496AbZCXWTT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 18:19:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751190AbZCXWTC
+	id S1754345AbZCXWTf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 18:19:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752491AbZCXWTE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 18:19:02 -0400
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:55245 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750879AbZCXWTA (ORCPT
+	Tue, 24 Mar 2009 18:19:04 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:38535 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751006AbZCXWTC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 18:19:00 -0400
-Date: Tue, 24 Mar 2009 22:18:41 +0000
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-To: Luotao Fu <l.fu@pengutronix.de>
-Cc: alsa-devel@alsa-project.org, dbaryshkov@gmail.com,
-       linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org,
-       broonie@opensource.wolfsonmicro.com
-Subject: Re: [RESEND] [PATCH] pxa2xx-ac97: fix displaying GSR after reset
-	timeout
-Message-ID: <20090324221841.GC15455@n2100.arm.linux.org.uk>
-References: <gq8unj$6og$1@ger.gmane.org> <1237911929-29895-1-git-send-email-l.fu@pengutronix.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1237911929-29895-1-git-send-email-l.fu@pengutronix.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 24 Mar 2009 18:19:02 -0400
+Date: Tue, 24 Mar 2009 22:18:16 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+Cc: Andrey Panin <pazke@donpac.ru>, linux-kernel@vger.kernel.org,
+       linux-serial@vger.kernel.org, torvalds@linux-foundation.org
+Subject: Re: [PATCH 01/30] disallow SERIAL_8250_PNP with SERIAL_8250_CONSOLE
+Message-ID: <20090324221816.50e7ccc2@lxorguk.ukuu.org.uk>
+In-Reply-To: <20090324214321.GA29671@srcf.ucam.org>
+References: <20090324135930.12735.7827.stgit@localhost.localdomain>
+	<20090324140145.12735.29459.stgit@localhost.localdomain>
+	<20090324151034.GC6859@ports.donpac.ru>
+	<20090324152203.6a989d06@lxorguk.ukuu.org.uk>
+	<20090324205945.GA28394@srcf.ucam.org>
+	<20090324212653.77d6e70c@lxorguk.ukuu.org.uk>
+	<20090324213416.GA29507@srcf.ucam.org>
+	<20090324213841.59d6b299@lxorguk.ukuu.org.uk>
+	<20090324214321.GA29671@srcf.ucam.org>
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 24, 2009 at 05:25:28PM +0100, Luotao Fu wrote:
-> the variable gsr_bit is set in isr. It is however set to 0 and interrupts are
-> disabled prior to reset on pxa27x and pxa3xx. Hence it doesn't make a lot of
-> sense to show the content of gsr_bit in case of a reset timeout.
+On Tue, 24 Mar 2009 21:43:21 +0000
+Matthew Garrett <mjg59@srcf.ucam.org> wrote:
 
-It would make more sense to put "GSR | gsr_bits" into a temporary variable
-for testing, and then printing so that the value printed is the exact
-value which was tested, not somehting that may have changed.
+> On Tue, Mar 24, 2009 at 09:38:41PM +0000, Alan Cox wrote:
+> > > > Since the conversion to drivers/serial - so years.
+> > > 
+> > > So everyone using serial console with 8250_PNP enabled gets a crash on 
+> > > boot, and has done for years? Really?
+> > 
+> > If their console port is PnP listed yes.
+> 
+> So this patch breaks the case where a kernel with PNP support is booted 
+> on a system without PNP-listed serial ports? Do we know the ratio of 
+> machines fixed by this compared to the machines broken?
 
-Also, you've resent your patch but omitted the ALSA mailing list.
+Well the original patch came from Red Hat so perhaps they can provide
+data based on their userbase ?
