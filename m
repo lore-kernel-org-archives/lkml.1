@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759806AbZCXP1M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760046AbZCXP0s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759806AbZCXP1M (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 11:27:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759697AbZCXP00
+	id S1760046AbZCXP0s (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 11:26:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758706AbZCXP0M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 11:26:26 -0400
-Received: from e23smtp06.au.ibm.com ([202.81.31.148]:34874 "EHLO
-	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759659AbZCXP0Z (ORCPT
+	Tue, 24 Mar 2009 11:26:12 -0400
+Received: from e23smtp04.au.ibm.com ([202.81.31.146]:56166 "EHLO
+	e23smtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758622AbZCXP0K (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 11:26:25 -0400
-Date: Tue, 24 Mar 2009 20:56:13 +0530
+	Tue, 24 Mar 2009 11:26:10 -0400
+Date: Tue, 24 Mar 2009 20:55:59 +0530
 From: "K.Prasad" <prasad@linux.vnet.ibm.com>
 To: Ingo Molnar <mingo@elte.hu>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
@@ -21,99 +21,135 @@ Cc: Alan Stern <stern@rowland.harvard.edu>,
        Roland McGrath <roland@redhat.com>,
        Steven Rostedt <rostedt@goodmis.org>,
        "K.Prasad" <prasad@linux.vnet.ibm.com>
-Subject: [Patch 04/11] Introduce user-space debug registers
-Message-ID: <20090324152613.GE17918@in.ibm.com>
+Subject: [Patch 03/11] Modifying generic debug exception to use
+	thread-specific debug registers
+Message-ID: <20090324152559.GD17918@in.ibm.com>
 References: <20090324152028.754123712@K.Prasad>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename=4
+Content-Disposition: inline; filename=3
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch introduces debug registers to used by the per-thread
-structure and wrapper routines to manage debug registers by process-related
-functions.
+From: Alan Stern <stern@rowland.harvard.edu>
+
+This patch modifies the breakpoint exception handler code to use the abstract
+register names.
+
+[K.Prasad: Split-out from the bigger patch and minor changes following
+           re-basing]
 
 Signed-off-by: K.Prasad <prasad@linux.vnet.ibm.com>
 Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
 ---
- arch/x86/include/asm/debugreg.h  |   23 +++++++++++++++++++++++
- arch/x86/include/asm/processor.h |   16 +++++++++-------
- 2 files changed, 32 insertions(+), 7 deletions(-)
+ arch/x86/kernel/traps.c |   73 ++++++++++++++++--------------------------------
+ 1 file changed, 25 insertions(+), 48 deletions(-)
 
-Index: linux-2.6-tip/arch/x86/include/asm/debugreg.h
+Index: linux-2.6-tip/arch/x86/kernel/traps.c
 ===================================================================
---- linux-2.6-tip.orig/arch/x86/include/asm/debugreg.h
-+++ linux-2.6-tip/arch/x86/include/asm/debugreg.h
-@@ -49,6 +49,8 @@
+--- linux-2.6-tip.orig/arch/x86/kernel/traps.c
++++ linux-2.6-tip/arch/x86/kernel/traps.c
+@@ -530,13 +530,14 @@ asmlinkage __kprobes struct pt_regs *syn
+ dotraplinkage void __kprobes do_debug(struct pt_regs *regs, long error_code)
+ {
+ 	struct task_struct *tsk = current;
+-	unsigned long condition;
++	unsigned long dr6;
+ 	int si_code;
  
- #define DR_LOCAL_ENABLE_SHIFT 0    /* Extra shift to the local enable bit */
- #define DR_GLOBAL_ENABLE_SHIFT 1   /* Extra shift to the global enable bit */
-+#define DR_LOCAL_ENABLE (0x1)      /* Local enable for reg 0 */
-+#define DR_GLOBAL_ENABLE (0x2)     /* Global enable for reg 0 */
- #define DR_ENABLE_SIZE 2           /* 2 enable bits per register */
+-	get_debugreg(condition, 6);
++	get_debugreg(dr6, 6);
++	set_debugreg(0, 6);	/* DR6 may or may not be cleared by the CPU */
  
- #define DR_LOCAL_ENABLE_MASK (0x55)  /* Set  local bits for all 4 regs */
-@@ -67,4 +69,25 @@
- #define DR_LOCAL_SLOWDOWN (0x100)   /* Local slow the pipeline */
- #define DR_GLOBAL_SLOWDOWN (0x200)  /* Global slow the pipeline */
+ 	/* Catch kmemcheck conditions first of all! */
+-	if (condition & DR_STEP && kmemcheck_trap(regs))
++	if (dr6 & DR_STEP && kmemcheck_trap(regs))
+ 		return;
  
-+/*
-+ * HW breakpoint additions
-+ */
-+#ifdef __KERNEL__
-+
-+/* For process management */
-+void flush_thread_hw_breakpoint(struct task_struct *tsk);
-+int copy_thread_hw_breakpoint(struct task_struct *tsk,
-+		struct task_struct *child, unsigned long clone_flags);
-+void dump_thread_hw_breakpoint(struct task_struct *tsk, int u_debugreg[8]);
-+void switch_to_thread_hw_breakpoint(struct task_struct *tsk);
-+
-+/* For CPU management */
-+void load_debug_registers(void);
-+static inline void hw_breakpoint_disable(void)
-+{
-+	set_debugreg(0UL, 7);
-+}
-+
-+#endif	/* __KERNEL__ */
-+
- #endif /* _ASM_X86_DEBUGREG_H */
-Index: linux-2.6-tip/arch/x86/include/asm/processor.h
-===================================================================
---- linux-2.6-tip.orig/arch/x86/include/asm/processor.h
-+++ linux-2.6-tip/arch/x86/include/asm/processor.h
-@@ -29,6 +29,7 @@ struct mm_struct;
- #include <linux/threads.h>
- #include <linux/init.h>
+ 	/*
+@@ -545,61 +546,37 @@ dotraplinkage void __kprobes do_debug(st
+ 	clear_tsk_thread_flag(tsk, TIF_DEBUGCTLMSR);
+ 	tsk->thread.debugctlmsr = 0;
  
-+#define HB_NUM 4
- /*
-  * Default implementation of macro that returns current
-  * instruction pointer ("program counter").
-@@ -424,13 +425,14 @@ struct thread_struct {
- 	unsigned long		ip;
- 	unsigned long		fs;
- 	unsigned long		gs;
--	/* Hardware debugging registers: */
--	unsigned long		debugreg0;
--	unsigned long		debugreg1;
--	unsigned long		debugreg2;
--	unsigned long		debugreg3;
--	unsigned long		debugreg6;
--	unsigned long		debugreg7;
-+	/* Hardware breakpoint info */
-+	struct hw_breakpoint	*hbp[HB_NUM];
-+	unsigned int		hbp_num_installed;
-+	/* Thread's view of debug reg 6 */
-+	unsigned long		dr6;
-+	/* Thread's view of debug reg 7 */
-+	unsigned long		dr7;
+-	if (notify_die(DIE_DEBUG, "debug", regs, condition, error_code,
++	/* Store the virtualized DR6 value */
++	tsk->thread.dr6 = dr6;
 +
- 	/* Fault info: */
- 	unsigned long		cr2;
- 	unsigned long		trap_no;
++	if (notify_die(DIE_DEBUG, "debug", regs, dr6, error_code,
+ 						SIGTRAP) == NOTIFY_STOP)
+ 		return;
+ 
+ 	/* It's safe to allow irq's after DR6 has been saved */
+ 	preempt_conditional_sti(regs);
+ 
+-	/* Mask out spurious debug traps due to lazy DR7 setting */
+-	if (condition & (DR_TRAP0|DR_TRAP1|DR_TRAP2|DR_TRAP3)) {
+-		if (!tsk->thread.debugreg7)
+-			goto clear_dr7;
+-	}
+-
+-#ifdef CONFIG_X86_32
+-	if (regs->flags & X86_VM_MASK)
+-		goto debug_vm86;
+-#endif
+-
+-	/* Save debug status register where ptrace can see it */
+-	tsk->thread.debugreg6 = condition;
+-
+-	/*
+-	 * Single-stepping through TF: make sure we ignore any events in
+-	 * kernel space (but re-enable TF when returning to user mode).
+-	 */
+-	if (condition & DR_STEP) {
+-		if (!user_mode(regs))
+-			goto clear_TF_reenable;
++	if (regs->flags & X86_VM_MASK) {
++		handle_vm86_trap((struct kernel_vm86_regs *) regs,
++				error_code, 1);
++		return;
+ 	}
+ 
+-	si_code = get_si_code(condition);
+-	/* Ok, finally something we can handle */
+-	send_sigtrap(tsk, regs, error_code, si_code);
+-
+ 	/*
+-	 * Disable additional traps. They'll be re-enabled when
+-	 * the signal is delivered.
++	 * Single-stepping through system calls: ignore any exceptions in
++	 * kernel space, but re-enable TF when returning to user mode.
++	 *
++	 * We already checked v86 mode above, so we can check for kernel mode
++	 * by just checking the CPL of CS.
+ 	 */
+-clear_dr7:
+-	set_debugreg(0, 7);
+-	preempt_conditional_cli(regs);
+-	return;
+-
+-#ifdef CONFIG_X86_32
+-debug_vm86:
+-	/* reenable preemption: handle_vm86_trap() might sleep */
+-	dec_preempt_count();
+-	handle_vm86_trap((struct kernel_vm86_regs *) regs, error_code, 1);
+-	conditional_cli(regs);
+-	return;
+-#endif
+-
+-clear_TF_reenable:
+-	set_tsk_thread_flag(tsk, TIF_SINGLESTEP);
+-	regs->flags &= ~X86_EFLAGS_TF;
++	if ((dr6 & DR_STEP) && !user_mode(regs)) {
++		tsk->thread.dr6 &= ~DR_STEP;
++		set_tsk_thread_flag(tsk, TIF_SINGLESTEP);
++		regs->flags &= ~X86_EFLAGS_TF;
++	}
++	si_code = get_si_code(dr6);
++	if (tsk->thread.dr6 & (DR_STEP|DR_TRAP0|DR_TRAP1|DR_TRAP2|DR_TRAP3))
++		send_sigtrap(tsk, regs, error_code, si_code);
+ 	preempt_conditional_cli(regs);
+ 	return;
+ }
 
