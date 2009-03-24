@@ -1,73 +1,220 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761742AbZCXPvw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761623AbZCXPwu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761742AbZCXPvw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 11:51:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754557AbZCXPvl
+	id S1761623AbZCXPwu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 11:52:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755621AbZCXPwi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 11:51:41 -0400
-Received: from ausc60ps301.us.dell.com ([143.166.148.206]:58949 "EHLO
-	ausc60ps301.us.dell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753791AbZCXPvk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 11:51:40 -0400
-X-Greylist: delayed 320 seconds by postgrey-1.27 at vger.kernel.org; Tue, 24 Mar 2009 11:51:40 EDT
-Date: Tue, 24 Mar 2009 10:50:35 -0500
-From: Matt Domsch <Matt_Domsch@dell.com>
-To: Corey Minyard <minyard@acm.org>
-Cc: Martin Wilck <martin.wilck@fujitsu-siemens.com>, Greg KH <greg@kroah.com>,
-       "openipmi-developer@lists.sourceforge.net" 
-	<openipmi-developer@lists.sourceforge.net>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [Openipmi-developer] Improving IPMI performance under load
-Message-ID: <20090324155035.GB16332@auslistsprd01.us.dell.com>
-References: <49C27281.4040207@fujitsu-siemens.com> <49C2B994.7040808@acm.org> <20090319235114.GA18182@kroah.com> <49C3B6A5.5030408@acm.org> <20090320174701.GA14823@kroah.com> <49C3E03E.10506@acm.org> <49C78BE0.9090107@fujitsu-siemens.com> <49C7F368.5040304@acm.org> <49C8A823.6020809@fujitsu-siemens.com> <49C8DB54.4010200@acm.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49C8DB54.4010200@acm.org>
-User-Agent: Mutt/1.5.11
+	Tue, 24 Mar 2009 11:52:38 -0400
+Received: from cantor.suse.de ([195.135.220.2]:35835 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754051AbZCXPwh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Mar 2009 11:52:37 -0400
+Message-ID: <49C901C1.5080902@suse.de>
+Date: Tue, 24 Mar 2009 16:52:33 +0100
+From: Hannes Reinecke <hare@suse.de>
+User-Agent: Thunderbird 2.0.0.12 (X11/20080226)
+MIME-Version: 1.0
+To: Boaz Harrosh <bharrosh@panasas.com>
+Cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
+       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
+Subject: Re: [PATCH] Driver 'sd' needs updating
+References: <20090324141428.31E5118C7A3@pentland.suse.de> <49C90012.50009@panasas.com>
+In-Reply-To: <49C90012.50009@panasas.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: multipart/mixed;
+ boundary="------------010200020109000809080607"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 24, 2009 at 08:08:36AM -0500, Corey Minyard wrote:
-> Martin Wilck wrote:
-> >Hi Corey,
-> >
-> >yesterday I posted some results about the IPMI performance under CPU 
-> >load, which can be up to 25 times slower than in an idle system. I think 
-> >it might be worthwhile to try to improve that behavior as well.
-> >  
-> Yes, that would be expected, as kipmid would never be scheduled in a 
-> busy system, and it would just be the timer driving things.
-> 
-> >I made a variation of my patch which introduces a second parameter 
-> >(kipmid_min_busy) that causes kipmid not to call schedule() for a 
-> >certain amount of time. Thus if there's IPMI traffic pending, kipmid 
-> >will busy-loop for kipmid_min_busy seconds, then starting to schedule() 
-> >in each loop as it does now, and finally go to sleep when 
-> >kipmid_max_busy is reached. At the same time, I changed the nice value 
-> >of kipmid from 19 to 0.
-> >  
-> I would guess that changing the nice value is the main thing that caused 
-> the difference.  The other changes probably didn't make as big a difference.
-> 
-> >With this patch and e.g. min_busy=100 and max_busy=200, there is no 
-> >noticeable difference any more between IPMI performance with and without 
-> >CPU load.
-> >
-> >The patch + results still need cleanup, therefore I am not sending it 
-> >right now. Just wanted to hear what you think.
-> >  
-> I'm ok with tuning like this, but most users are probably not going to 
-> want this type of behavior.
+This is a multi-part message in MIME format.
+--------------010200020109000809080607
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 
-I still get complaints from users who see their CPU utilization spike
-attributed to kipmi0 when userspace throws a lot of requests down to
-the controller.  I've seen them want to limit kipmi0 even further, not
-speed it up.
+Hi Boaz,
 
+Boaz Harrosh wrote:
+> Hannes Reinecke wrote:
+>> If a driver sets blk_queue_prep_rq() it should clean up itself
+>> and not rely on the bus callbacks to handle this. This removes
+>> the need to hook into bus->remove() as these should not be used
+>> at the same time as driver->remove().
+>>
+>> Signed-off-by: Hannes Reinecke <hare@suse.de>
+>> Signed-off-by: Kay Sievers <kay.sievers@vrfy.org>
+> 
+> I spoke too soon please see below
+> 
+>> ---
+>>  drivers/scsi/scsi_lib.c    |    6 ++++++
+>>  drivers/scsi/scsi_sysfs.c  |   17 -----------------
+>>  drivers/scsi/sd.c          |    2 ++
+>>  drivers/scsi/sr.c          |    1 +
+>>  include/scsi/scsi_driver.h |    1 +
+>>  5 files changed, 10 insertions(+), 17 deletions(-)
+>>
+>> diff --git a/drivers/scsi/scsi_lib.c b/drivers/scsi/scsi_lib.c
+>> index 4b13e36..73df41b 100644
+>> --- a/drivers/scsi/scsi_lib.c
+>> +++ b/drivers/scsi/scsi_lib.c
+>> @@ -1222,6 +1222,12 @@ int scsi_prep_fn(struct request_queue *q, struct request *req)
+>>  	return scsi_prep_return(q, req, ret);
+>>  }
+>>  
+>> +void scsi_reset_prep_fn(struct request_queue *q)
+> 
+> Here it is declared void
+> but
+> 
+>> diff --git a/include/scsi/scsi_driver.h b/include/scsi/scsi_driver.h
+>> index 1f5ca7f..2e22929 100644
+>> --- a/include/scsi/scsi_driver.h
+>> +++ b/include/scsi/scsi_driver.h
+>> @@ -32,5 +32,6 @@ int scsi_setup_blk_pc_cmnd(struct scsi_device *sdev, struct request *req);
+>>  int scsi_setup_fs_cmnd(struct scsi_device *sdev, struct request *req);
+>>  int scsi_prep_state_check(struct scsi_device *sdev, struct request *req);
+>>  int scsi_prep_return(struct request_queue *q, struct request *req, int ret);
+>> +int scsi_reset_prep_fn(struct request_queue *);
+> 
+> Here it is returning int.
+> 
+> My FC10 compiler does not like that:
+>   drivers/scsi/scsi_lib.c:1415: error: conflicting types for 'scsi_reset_prep_fn'
+>   include/scsi/scsi_driver.h:35: error: previous declaration of 'scsi_reset_prep_fn' was here
+> 
+>>  
+>>  #endif /* _SCSI_SCSI_DRIVER_H */
+> 
+> I fixed it to be void, will test later
+> 
+Argl. You are correct. New patch attached.
+
+Cheers,
+
+Hannes
 -- 
-Matt Domsch
-Linux Technology Strategist, Dell Office of the CTO
-linux.dell.com & www.dell.com/linux
+Dr. Hannes Reinecke		      zSeries & Storage
+hare@suse.de			      +49 911 74053 688
+SUSE LINUX Products GmbH, Maxfeldstr. 5, 90409 Nürnberg
+GF: Markus Rex, HRB 16746 (AG Nürnberg)
+
+--------------010200020109000809080607
+Content-Type: text/x-patch;
+ name="0001-Driver-sd-needs-updating.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="0001-Driver-sd-needs-updating.patch"
+
+>From 6c8f63205c81922581ebd9a73d5ff92f50910064 Mon Sep 17 00:00:00 2001
+From: Hannes Reinecke <hare@suse.de>
+Date: Tue, 24 Mar 2009 15:13:43 +0100
+Subject: [PATCH] Driver 'sd' needs updating
+
+If a driver sets blk_queue_prep_rq() it should clean up itself
+and not rely on the bus callbacks to handle this. This removes
+the need to hook into bus->remove() as these should not be used
+at the same time as driver->remove().
+
+Signed-off-by: Hannes Reinecke <hare@suse.de>
+Signed-off-by: Kay Sievers <kay.sievers@vrfy.org>
+---
+ drivers/scsi/scsi_lib.c    |    6 ++++++
+ drivers/scsi/scsi_sysfs.c  |   17 -----------------
+ drivers/scsi/sd.c          |    2 ++
+ drivers/scsi/sr.c          |    1 +
+ include/scsi/scsi_driver.h |    1 +
+ 5 files changed, 10 insertions(+), 17 deletions(-)
+
+diff --git a/drivers/scsi/scsi_lib.c b/drivers/scsi/scsi_lib.c
+index 4b13e36..73df41b 100644
+--- a/drivers/scsi/scsi_lib.c
++++ b/drivers/scsi/scsi_lib.c
+@@ -1222,6 +1222,12 @@ int scsi_prep_fn(struct request_queue *q, struct request *req)
+ 	return scsi_prep_return(q, req, ret);
+ }
+ 
++void scsi_reset_prep_fn(struct request_queue *q)
++{
++	blk_queue_prep_rq(q, scsi_prep_fn);
++}
++EXPORT_SYMBOL(scsi_reset_prep_fn);
++
+ /*
+  * scsi_dev_queue_ready: if we can send requests to sdev, return 1 else
+  * return 0.
+diff --git a/drivers/scsi/scsi_sysfs.c b/drivers/scsi/scsi_sysfs.c
+index fa4711d..91482f2 100644
+--- a/drivers/scsi/scsi_sysfs.c
++++ b/drivers/scsi/scsi_sysfs.c
+@@ -420,29 +420,12 @@ static int scsi_bus_resume(struct device * dev)
+ 	return err;
+ }
+ 
+-static int scsi_bus_remove(struct device *dev)
+-{
+-	struct device_driver *drv = dev->driver;
+-	struct scsi_device *sdev = to_scsi_device(dev);
+-	int err = 0;
+-
+-	/* reset the prep_fn back to the default since the
+-	 * driver may have altered it and it's being removed */
+-	blk_queue_prep_rq(sdev->request_queue, scsi_prep_fn);
+-
+-	if (drv && drv->remove)
+-		err = drv->remove(dev);
+-
+-	return 0;
+-}
+-
+ struct bus_type scsi_bus_type = {
+         .name		= "scsi",
+         .match		= scsi_bus_match,
+ 	.uevent		= scsi_bus_uevent,
+ 	.suspend	= scsi_bus_suspend,
+ 	.resume		= scsi_bus_resume,
+-	.remove		= scsi_bus_remove,
+ };
+ EXPORT_SYMBOL_GPL(scsi_bus_type);
+ 
+diff --git a/drivers/scsi/sd.c b/drivers/scsi/sd.c
+index aeab5d9..64e88e2 100644
+--- a/drivers/scsi/sd.c
++++ b/drivers/scsi/sd.c
+@@ -2068,6 +2068,8 @@ static int sd_remove(struct device *dev)
+ {
+ 	struct scsi_disk *sdkp = dev_get_drvdata(dev);
+ 
++	scsi_reset_prep_fn(sdkp->device->request_queue);
++
+ 	device_del(&sdkp->dev);
+ 	del_gendisk(sdkp->disk);
+ 	sd_shutdown(dev);
+diff --git a/drivers/scsi/sr.c b/drivers/scsi/sr.c
+index e7fa3ca..914733a 100644
+--- a/drivers/scsi/sr.c
++++ b/drivers/scsi/sr.c
+@@ -889,6 +889,7 @@ static int sr_remove(struct device *dev)
+ {
+ 	struct scsi_cd *cd = dev_get_drvdata(dev);
+ 
++	scsi_reset_prep_fn(cd->device->request_queue);
+ 	del_gendisk(cd->disk);
+ 
+ 	mutex_lock(&sr_ref_mutex);
+diff --git a/include/scsi/scsi_driver.h b/include/scsi/scsi_driver.h
+index 1f5ca7f..1f06be0 100644
+--- a/include/scsi/scsi_driver.h
++++ b/include/scsi/scsi_driver.h
+@@ -32,5 +32,6 @@ int scsi_setup_blk_pc_cmnd(struct scsi_device *sdev, struct request *req);
+ int scsi_setup_fs_cmnd(struct scsi_device *sdev, struct request *req);
+ int scsi_prep_state_check(struct scsi_device *sdev, struct request *req);
+ int scsi_prep_return(struct request_queue *q, struct request *req, int ret);
++void scsi_reset_prep_fn(struct request_queue *);
+ 
+ #endif /* _SCSI_SCSI_DRIVER_H */
+-- 
+1.5.3.2
+
+
+--------------010200020109000809080607--
