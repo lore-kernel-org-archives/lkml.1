@@ -1,83 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758892AbZCXKgs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759217AbZCXKhL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758892AbZCXKgs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 06:36:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756337AbZCXKgi
+	id S1759217AbZCXKhL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 06:37:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758878AbZCXKgr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 06:36:38 -0400
-Received: from www.tglx.de ([62.245.132.106]:48314 "EHLO www.tglx.de"
+	Tue, 24 Mar 2009 06:36:47 -0400
+Received: from www.tglx.de ([62.245.132.106]:48316 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754210AbZCXKgh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 06:36:37 -0400
-Message-Id: <20090324102516.459441533@linutronix.de>
+	id S1758507AbZCXKgp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Mar 2009 06:36:45 -0400
+Message-Id: <20090324102523.731851892@linutronix.de>
 User-Agent: quilt/0.47-1
-Date: Tue, 24 Mar 2009 10:35:04 -0000
+Date: Tue, 24 Mar 2009 10:35:15 -0000
 From: Thomas Gleixner <tglx@linutronix.de>
 To: LKML <linux-kernel@vger.kernel.org>
 Cc: Roland McGrath <roland@redhat.com>, Oleg Nesterov <oleg@redhat.com>,
        Michael Kerrisk <mtk.manpages@googlemail.com>,
        Ulrich Drepper <drepper@redhat.com>,
        Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
-Subject: [patch 0/3] add rt_tgsigqueueinfo syscall -V2
+Subject: [patch 2/3] signals: implement sys_rt_tgsigqueueinfo
+References: <20090324102516.459441533@linutronix.de>
+Content-Disposition: inline; filename=signals-implement-rt-tgsigqueueinfo.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-sys_kill has a counterpart sys_tgkill which allows to send signals to
-a particular thread. sys_rt_sigqueueinfo is lacking such a counterpart.
+sys_kill has the per thread counterpart sys_tgkill. sigqueueinfo is
+missing a thread directed counterpart. Such an interface is important
+for migrating applications from other OSes which have the per thread
+delivery implemented.
 
-Aside of the asymetry it is a show stopper for migrating applications
-from other unix-alike RTOSes.
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+---
+ include/linux/compat.h |    2 ++
+ include/linux/signal.h |    2 ++
+ kernel/compat.c        |   11 +++++++++++
+ kernel/signal.c        |   26 ++++++++++++++++++++++++++
+ 4 files changed, 41 insertions(+)
 
-The following patch series implements rt_tgsigqueueinfo and hooks it
-up for x86.
-
-Changes since V1:
-    - match rt_siqqueueinfo and rt_tgsigqueueinfo handling of 
-      info.si_pid/si_uid
-
-
-Find below the raw documentation.
-
-Thanks,
-
-        tglx
-----
-
-NAME
-       rt_tgsigqueueinfo - Send signal information to a signal to a thread
-
-SYNOPSIS
-       long sys_rt_tgsigqueueinfo (int tgid, int tid, int sig, siginfo_t *uinfo);
-
-DESCRIPTION
-
-       rt_tgsigqueueinfo sends signal sig information uinfo to the
-       thread with the thread ID tid in the thread group tgid.  (By
-       contrast, rt_sigqueueinfo(2) can only be used to send a signal
-       info to a process (i.e., thread group) as a whole, and the
-       signal will be delivered to an arbitrary thread within that
-       process.)
-
-RETURN VALUE
-
-       rt_tgsigqueueinfo returns 0 on success; otherwise,
-       rt_sigqueueinfo returns one of the errors listed in the
-       "Errors" section.
-
-ERRORS
-       -EFAULT
-              An invalid value for uinfo was specified.
-
-       -EINVAL
-              An invalid TID, TGID or signal was specified.
-
-       -EPERM
-              Permission denied.  For the required permissions,
-              see rt_sigqueueinfo(2).
-
-       -ESRCH
-              No process with the specified thread ID and thread group
-              ID exists. 
+Index: linux-2.6/include/linux/compat.h
+===================================================================
+--- linux-2.6.orig/include/linux/compat.h
++++ linux-2.6/include/linux/compat.h
+@@ -208,6 +208,8 @@ int copy_siginfo_from_user32(siginfo_t *
+ int copy_siginfo_to_user32(struct compat_siginfo __user *to, siginfo_t *from);
+ int get_compat_sigevent(struct sigevent *event,
+ 		const struct compat_sigevent __user *u_event);
++long compat_sys_rt_tgsigqueueinfo(compat_pid_t tgid, compat_pid_t pid, int sig,
++				  struct compat_siginfo __user *uinfo);
+ 
+ static inline int compat_timeval_compare(struct compat_timeval *lhs,
+ 					struct compat_timeval *rhs)
+Index: linux-2.6/include/linux/signal.h
+===================================================================
+--- linux-2.6.orig/include/linux/signal.h
++++ linux-2.6/include/linux/signal.h
+@@ -235,6 +235,8 @@ static inline int valid_signal(unsigned 
+ extern int next_signal(struct sigpending *pending, sigset_t *mask);
+ extern int group_send_sig_info(int sig, struct siginfo *info, struct task_struct *p);
+ extern int __group_send_sig_info(int, struct siginfo *, struct task_struct *);
++extern long do_rt_tgsigqueueinfo(pid_t tgid, pid_t pid, int sig,
++				 siginfo_t *info);
+ extern long do_sigpending(void __user *, unsigned long);
+ extern int sigprocmask(int, sigset_t *, sigset_t *);
+ extern int show_unhandled_signals;
+Index: linux-2.6/kernel/compat.c
+===================================================================
+--- linux-2.6.orig/kernel/compat.c
++++ linux-2.6/kernel/compat.c
+@@ -882,6 +882,17 @@ compat_sys_rt_sigtimedwait (compat_sigse
+ 
+ }
+ 
++asmlinkage long
++compat_sys_rt_tgsigqueueinfo(compat_pid_t tgid, compat_pid_t pid, int sig,
++			     struct compat_siginfo __user *uinfo)
++{
++	siginfo_t info;
++
++	if (copy_siginfo_from_user32(&info, uinfo))
++		return -EFAULT;
++	return do_rt_tgsigqueueinfo(tgid, pid, sig, &info);
++}
++
+ #ifdef __ARCH_WANT_COMPAT_SYS_TIME
+ 
+ /* compat_time_t is a 32 bit "long" and needs to get converted. */
+Index: linux-2.6/kernel/signal.c
+===================================================================
+--- linux-2.6.orig/kernel/signal.c
++++ linux-2.6/kernel/signal.c
+@@ -2326,6 +2326,32 @@ SYSCALL_DEFINE3(rt_sigqueueinfo, pid_t, 
+ 	return kill_proc_info(sig, &info, pid);
+ }
+ 
++long do_rt_tgsigqueueinfo(pid_t tgid, pid_t pid, int sig, siginfo_t *info)
++{
++	/* This is only valid for single tasks */
++	if (pid <= 0 || tgid <= 0)
++		return -EINVAL;
++
++	/* Not even root can pretend to send signals from the kernel.
++	   Nor can they impersonate a kill(), which adds source info.  */
++	if (info->si_code >= 0)
++		return -EPERM;
++	info->si_signo = sig;
++
++	return do_send_specific(tgid, pid, sig, info);
++}
++
++SYSCALL_DEFINE4(rt_tgsigqueueinfo, pid_t, tgid, pid_t, pid, int, sig,
++		siginfo_t __user *, uinfo)
++{
++	siginfo_t info;
++
++	if (copy_from_user(&info, uinfo, sizeof(siginfo_t)))
++		return -EFAULT;
++
++	return do_rt_tgsigqueueinfo(tgid, pid, sig, &info);
++}
++
+ int do_sigaction(int sig, struct k_sigaction *act, struct k_sigaction *oact)
+ {
+ 	struct task_struct *t = current;
 
 
