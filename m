@@ -1,27 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753106AbZCXVNl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753799AbZCXVO3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753106AbZCXVNl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 17:13:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751534AbZCXVNL
+	id S1753799AbZCXVO3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 17:14:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752571AbZCXVNQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 17:13:11 -0400
+	Tue, 24 Mar 2009 17:13:16 -0400
 Received: from mail-gx0-f208.google.com ([209.85.217.208]:34854 "EHLO
 	mail-gx0-f208.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750880AbZCXVNI (ORCPT
+	with ESMTP id S1752392AbZCXVNO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 17:13:08 -0400
+	Tue, 24 Mar 2009 17:13:14 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer;
-        b=iQsfP2tbrDGXYBwxTkrB9iBkQ9wthq3vfxjBEyQPD/lQiGzdwM4NhUe7quEFJOR64O
-         CRtBsonJOLIQKKDu0BdHYX70DE6u2ja/f9wnK8NnRed+sh7nU+/o3vqCis6oFx5YLBk2
-         nUeL12pNifKRKcsnMfvjIPJJvpiAtDw/yPvgI=
+        b=vyQjU66+eBkisjN9FZE6d97+58V/z34oSn/FgpSsnFebPjv4pRyEJDdCu4Z5hqKCM3
+         PijEhHXo3uQzI7CRrwFSNAUn0F776k+fEPxzMBuuHtgHCN7t327sD3VPw+csnVBuZqjI
+         ZoZ2Bwb9gsqt9AFJ8aY7lripPwrIRVfOkPhF0=
 From: stoyboyker@gmail.com
 To: linux-kernel@vger.kernel.org
-Cc: Stoyan Gaydarov <stoyboyker@gmail.com>, gregkh@suse.de
-Subject: [PATCH 01/13] [staging] changed ioctls to unlocked
-Date: Tue, 24 Mar 2009 16:12:36 -0500
-Message-Id: <1237929168-15341-2-git-send-email-stoyboyker@gmail.com>
+Cc: Stoyan Gaydarov <stoyboyker@gmail.com>, schwidefsky@de.ibm.com,
+       heiko.carstens@de.ibm.com, linux-s390@vger.kernel.org
+Subject: [PATCH 05/13] [s390] changed ioctls to unlocked
+Date: Tue, 24 Mar 2009 16:12:40 -0500
+Message-Id: <1237929168-15341-6-git-send-email-stoyboyker@gmail.com>
 X-Mailer: git-send-email 1.6.2.1
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -31,395 +32,235 @@ From: Stoyan Gaydarov <stoyboyker@gmail.com>
 
 Signed-off-by: Stoyan Gaydarov <stoyboyker@gmail.com>
 ---
- drivers/staging/epl/EplApiLinuxKernel.c |   10 ++-
- drivers/staging/meilhaus/memain.c       |  124 +++++++++++++++++++++----------
- drivers/staging/poch/poch.c             |   25 +++++--
- 3 files changed, 107 insertions(+), 52 deletions(-)
+ drivers/s390/char/tape_char.c  |   47 +++++++++++++++++++++++----------
+ drivers/s390/char/vmwatchdog.c |   57 ++++++++++++++++++++++++++--------------
+ 2 files changed, 70 insertions(+), 34 deletions(-)
 
-diff --git a/drivers/staging/epl/EplApiLinuxKernel.c b/drivers/staging/epl/EplApiLinuxKernel.c
-index 05ca062..9517da2 100644
---- a/drivers/staging/epl/EplApiLinuxKernel.c
-+++ b/drivers/staging/epl/EplApiLinuxKernel.c
-@@ -219,7 +219,7 @@ static ssize_t EplLinRead(struct file *pInstance_p, char *pDstBuff_p,
- 			  size_t BuffSize_p, loff_t * pFileOffs_p);
- static ssize_t EplLinWrite(struct file *pInstance_p, const char *pSrcBuff_p,
- 			   size_t BuffSize_p, loff_t * pFileOffs_p);
--static int EplLinIoctl(struct inode *pDeviceFile_p, struct file *pInstance_p,
-+static long EplLinIoctl(struct file *pInstance_p,
- 		       unsigned int uiIoctlCmd_p, unsigned long ulArg_p);
+diff --git a/drivers/s390/char/tape_char.c b/drivers/s390/char/tape_char.c
+index be0ce22..158564f 100644
+--- a/drivers/s390/char/tape_char.c
++++ b/drivers/s390/char/tape_char.c
+@@ -35,8 +35,7 @@ static ssize_t tapechar_read(struct file *, char __user *, size_t, loff_t *);
+ static ssize_t tapechar_write(struct file *, const char __user *, size_t, loff_t *);
+ static int tapechar_open(struct inode *,struct file *);
+ static int tapechar_release(struct inode *,struct file *);
+-static int tapechar_ioctl(struct inode *, struct file *, unsigned int,
+-			  unsigned long);
++static long tapechar_ioctl(struct file *, unsigned int, unsigned long);
+ static long tapechar_compat_ioctl(struct file *, unsigned int,
+ 			  unsigned long);
  
- //---------------------------------------------------------------------------
-@@ -237,7 +237,7 @@ static struct file_operations EplLinFileOps_g = {
- 	.release = EplLinRelease,
- 	.read = EplLinRead,
- 	.write = EplLinWrite,
--	.ioctl = EplLinIoctl,
-+	.unlocked_ioctl = EplLinIoctl,
- 
- };
- 
-@@ -551,12 +551,13 @@ static ssize_t EplLinWrite(struct file *pInstance_p,	// information about driver
- //  -> ioctl(...)
- //---------------------------------------------------------------------------
- 
--static int EplLinIoctl(struct inode *pDeviceFile_p,	// information about the device to open
--		       struct file *pInstance_p,	// information about driver instance
-+static long EplLinIoctl(struct file *pInstance_p,	// information about driver instance
- 		       unsigned int uiIoctlCmd_p,	// Ioctl command to execute
- 		       unsigned long ulArg_p)	// Ioctl command specific argument/parameter
+@@ -45,7 +44,7 @@ static const struct file_operations tape_fops =
+ 	.owner = THIS_MODULE,
+ 	.read = tapechar_read,
+ 	.write = tapechar_write,
+-	.ioctl = tapechar_ioctl,
++	.unlocked_ioctl = tapechar_ioctl,
+ 	.compat_ioctl = tapechar_compat_ioctl,
+ 	.open = tapechar_open,
+ 	.release = tapechar_release,
+@@ -354,13 +353,14 @@ tapechar_release(struct inode *inode, struct file *filp)
+ /*
+  * Tape device io controls.
+  */
+-static int
+-tapechar_ioctl(struct inode *inp, struct file *filp,
+-	       unsigned int no, unsigned long data)
++static long
++tapechar_ioctl(struct file *filp, unsigned int no, unsigned long data)
  {
+ 	struct tape_device *device;
+ 	int rc;
  
 +	lock_kernel();
 +
- 	tEplKernel EplRet;
- 	int iErr;
- 	int iRet;
-@@ -1148,6 +1149,7 @@ static int EplLinIoctl(struct inode *pDeviceFile_p,	// information about the dev
-       Exit:
+ 	DBF_EVENT(6, "TCHAR:ioct\n");
  
- //    TRACE1("EPL: - EplLinIoctl (iRet=%d)\n", iRet);
-+	unlock_kernel();
- 	return (iRet);
+ 	device = (struct tape_device *) filp->private_data;
+@@ -368,10 +368,14 @@ tapechar_ioctl(struct inode *inp, struct file *filp,
+ 	if (no == MTIOCTOP) {
+ 		struct mtop op;
  
- }
-diff --git a/drivers/staging/meilhaus/memain.c b/drivers/staging/meilhaus/memain.c
-index b09d1a6..9a1706b 100644
---- a/drivers/staging/meilhaus/memain.c
-+++ b/drivers/staging/meilhaus/memain.c
-@@ -95,7 +95,7 @@ static int replace_with_dummy(int vendor_id, int device_id, int serial_no);
- static void clear_device_list(void);
- static int me_open(struct inode *inode_ptr, struct file *filep);
- static int me_release(struct inode *, struct file *);
--static int me_ioctl(struct inode *, struct file *, unsigned int, unsigned long);
-+static long me_ioctl(struct file *, unsigned int, unsigned long);
- //static int me_probe_usb(struct usb_interface *interface, const struct usb_device_id *id);
- //static void me_disconnect_usb(struct usb_interface *interface);
+-		if (copy_from_user(&op, (char __user *) data, sizeof(op)) != 0)
++		if (copy_from_user(&op, (char __user *) data, sizeof(op)) != 0) {
++			unlock_kernel();
+ 			return -EFAULT;
+-		if (op.mt_count < 0)
++		}
++		if (op.mt_count < 0) {
++			unlock_kernel();
+ 			return -EINVAL;
++		}
  
-@@ -109,7 +109,7 @@ static struct cdev *cdevp;
- 
- static struct file_operations me_file_operations = {
- 	.owner = THIS_MODULE,
--	.ioctl = me_ioctl,
-+	.unlocked_ioctl = me_ioctl,
- 	.open = me_open,
- 	.release = me_release,
- };
-@@ -1751,14 +1751,17 @@ static void me_disconnect_usb(struct usb_interface *interface)
- }
- */
- 
--static int me_ioctl(struct inode *inodep,
--		    struct file *filep, unsigned int service, unsigned long arg)
-+static long me_ioctl(struct file *filep, unsigned int service,
-+		    unsigned long arg)
- {
-+	lock_kernel();
-+	long ret;
- 
- 	PDEBUG("executed.\n");
- 
- 	if (_IOC_TYPE(service) != MEMAIN_MAGIC) {
- 		PERROR("Invalid magic number.\n");
-+		unlock_kernel();
- 		return -ENOTTY;
- 	}
- 
-@@ -1766,147 +1769,186 @@ static int me_ioctl(struct inode *inodep,
- 
- 	switch (service) {
- 	case ME_IO_IRQ_ENABLE:
--		return me_io_irq_start(filep, (me_io_irq_start_t *) arg);
-+		ret = me_io_irq_start(filep, (me_io_irq_start_t *) arg);
-+		break;
- 
- 	case ME_IO_IRQ_WAIT:
--		return me_io_irq_wait(filep, (me_io_irq_wait_t *) arg);
-+		ret = me_io_irq_wait(filep, (me_io_irq_wait_t *) arg);
-+		break;
- 
- 	case ME_IO_IRQ_DISABLE:
--		return me_io_irq_stop(filep, (me_io_irq_stop_t *) arg);
-+		ret = me_io_irq_stop(filep, (me_io_irq_stop_t *) arg);
-+		break;
- 
- 	case ME_IO_RESET_DEVICE:
--		return me_io_reset_device(filep, (me_io_reset_device_t *) arg);
-+		ret =  me_io_reset_device(filep, (me_io_reset_device_t *) arg);
-+		break;
- 
- 	case ME_IO_RESET_SUBDEVICE:
--		return me_io_reset_subdevice(filep,
-+		ret =  me_io_reset_subdevice(filep,
- 					     (me_io_reset_subdevice_t *) arg);
-+		break;
- 
- 	case ME_IO_SINGLE_CONFIG:
--		return me_io_single_config(filep,
-+		ret = me_io_single_config(filep,
- 					   (me_io_single_config_t *) arg);
-+		break;
- 
- 	case ME_IO_SINGLE:
--		return me_io_single(filep, (me_io_single_t *) arg);
-+		ret =  me_io_single(filep, (me_io_single_t *) arg);
-+		break;
- 
- 	case ME_IO_STREAM_CONFIG:
--		return me_io_stream_config(filep,
-+		ret = me_io_stream_config(filep,
- 					   (me_io_stream_config_t *) arg);
-+		break;
- 
- 	case ME_IO_STREAM_NEW_VALUES:
--		return me_io_stream_new_values(filep,
-+		ret =  me_io_stream_new_values(filep,
- 					       (me_io_stream_new_values_t *)
- 					       arg);
-+		break;
- 
- 	case ME_IO_STREAM_READ:
--		return me_io_stream_read(filep, (me_io_stream_read_t *) arg);
-+		ret = me_io_stream_read(filep, (me_io_stream_read_t *) arg);
-+		break;
- 
- 	case ME_IO_STREAM_START:
--		return me_io_stream_start(filep, (me_io_stream_start_t *) arg);
-+		ret = me_io_stream_start(filep, (me_io_stream_start_t *) arg);
-+		break;
- 
- 	case ME_IO_STREAM_STATUS:
--		return me_io_stream_status(filep,
-+		ret =  me_io_stream_status(filep,
- 					   (me_io_stream_status_t *) arg);
-+		break;
- 
- 	case ME_IO_STREAM_STOP:
--		return me_io_stream_stop(filep, (me_io_stream_stop_t *) arg);
-+		ret = me_io_stream_stop(filep, (me_io_stream_stop_t *) arg);
-+		break;
- 
- 	case ME_IO_STREAM_WRITE:
--		return me_io_stream_write(filep, (me_io_stream_write_t *) arg);
-+		ret = me_io_stream_write(filep, (me_io_stream_write_t *) arg);
-+		break;
- 
- 	case ME_LOCK_DRIVER:
--		return me_lock_driver(filep, (me_lock_driver_t *) arg);
-+		ret = me_lock_driver(filep, (me_lock_driver_t *) arg);
-+		break;
- 
- 	case ME_LOCK_DEVICE:
--		return me_lock_device(filep, (me_lock_device_t *) arg);
-+		ret = me_lock_device(filep, (me_lock_device_t *) arg);
-+		break;
- 
- 	case ME_LOCK_SUBDEVICE:
--		return me_lock_subdevice(filep, (me_lock_subdevice_t *) arg);
-+		ret = me_lock_subdevice(filep, (me_lock_subdevice_t *) arg);
-+		break;
- 
- 	case ME_QUERY_INFO_DEVICE:
--		return me_query_info_device(filep,
-+		ret = me_query_info_device(filep,
- 					    (me_query_info_device_t *) arg);
-+		break;
- 
- 	case ME_QUERY_DESCRIPTION_DEVICE:
--		return me_query_description_device(filep,
-+		ret = me_query_description_device(filep,
- 						   (me_query_description_device_t
- 						    *) arg);
-+		break;
- 
- 	case ME_QUERY_NAME_DEVICE:
--		return me_query_name_device(filep,
-+		ret = me_query_name_device(filep,
- 					    (me_query_name_device_t *) arg);
-+		break;
- 
- 	case ME_QUERY_NAME_DEVICE_DRIVER:
--		return me_query_name_device_driver(filep,
-+		ret = me_query_name_device_driver(filep,
- 						   (me_query_name_device_driver_t
- 						    *) arg);
-+		break;
- 
- 	case ME_QUERY_NUMBER_DEVICES:
--		return me_query_number_devices(filep,
-+		ret = me_query_number_devices(filep,
- 					       (me_query_number_devices_t *)
- 					       arg);
-+		break;
- 
- 	case ME_QUERY_NUMBER_SUBDEVICES:
--		return me_query_number_subdevices(filep,
-+		ret =  me_query_number_subdevices(filep,
- 						  (me_query_number_subdevices_t
- 						   *) arg);
-+		break;
- 
- 	case ME_QUERY_NUMBER_CHANNELS:
--		return me_query_number_channels(filep,
-+		ret = me_query_number_channels(filep,
- 						(me_query_number_channels_t *)
- 						arg);
-+		break;
- 
- 	case ME_QUERY_NUMBER_RANGES:
--		return me_query_number_ranges(filep,
-+		ret = me_query_number_ranges(filep,
- 					      (me_query_number_ranges_t *) arg);
-+		break;
- 
- 	case ME_QUERY_RANGE_BY_MIN_MAX:
--		return me_query_range_by_min_max(filep,
-+		ret = me_query_range_by_min_max(filep,
- 						 (me_query_range_by_min_max_t *)
- 						 arg);
-+		break;
- 
- 	case ME_QUERY_RANGE_INFO:
--		return me_query_range_info(filep,
-+		ret = me_query_range_info(filep,
- 					   (me_query_range_info_t *) arg);
-+		break;
- 
- 	case ME_QUERY_SUBDEVICE_BY_TYPE:
--		return me_query_subdevice_by_type(filep,
-+		ret = me_query_subdevice_by_type(filep,
- 						  (me_query_subdevice_by_type_t
- 						   *) arg);
-+		break;
- 
- 	case ME_QUERY_SUBDEVICE_TYPE:
--		return me_query_subdevice_type(filep,
-+		ret = me_query_subdevice_type(filep,
- 					       (me_query_subdevice_type_t *)
- 					       arg);
-+		break;
- 
- 	case ME_QUERY_SUBDEVICE_CAPS:
--		return me_query_subdevice_caps(filep,
-+		ret = me_query_subdevice_caps(filep,
- 					       (me_query_subdevice_caps_t *)
- 					       arg);
-+		break;
- 
- 	case ME_QUERY_SUBDEVICE_CAPS_ARGS:
--		return me_query_subdevice_caps_args(filep,
-+		ret = me_query_subdevice_caps_args(filep,
- 						    (me_query_subdevice_caps_args_t
- 						     *) arg);
-+		break;
- 
- 	case ME_QUERY_TIMER:
--		return me_query_timer(filep, (me_query_timer_t *) arg);
-+		ret = me_query_timer(filep, (me_query_timer_t *) arg);
-+		break;
- 
- 	case ME_QUERY_VERSION_MAIN_DRIVER:
--		return me_query_version_main_driver(filep,
-+		ret = me_query_version_main_driver(filep,
- 						    (me_query_version_main_driver_t
- 						     *) arg);
-+		break;
- 
- 	case ME_QUERY_VERSION_DEVICE_DRIVER:
--		return me_query_version_device_driver(filep,
-+		ret = me_query_version_device_driver(filep,
- 						      (me_query_version_device_driver_t
- 						       *) arg);
-+		break;
- 
- 	case ME_CONFIG_LOAD:
--		return me_config_load(filep, (me_config_load_t *) arg);
-+		ret = me_config_load(filep, (me_config_load_t *) arg);
-+		break;
-+	}
-+	if(!ret) {
-+	    PERROR("Invalid ioctl number.\n");
-+	    ret = -ENOTTY;
- 	}
- 
--	PERROR("Invalid ioctl number.\n");
--	return -ENOTTY;
-+	unlock_kernel();
-+	return ret;
- }
- 
- // Init and exit of module.
-diff --git a/drivers/staging/poch/poch.c b/drivers/staging/poch/poch.c
-index 0d111dd..03cc5b7 100644
---- a/drivers/staging/poch/poch.c
-+++ b/drivers/staging/poch/poch.c
-@@ -979,9 +979,10 @@ static unsigned int poch_poll(struct file *filp, poll_table *pt)
- 	return ret;
- }
- 
--static int poch_ioctl(struct inode *inode, struct file *filp,
--		      unsigned int cmd, unsigned long arg)
-+static long poch_ioctl(struct file *filp, unsigned int cmd,
-+		      unsigned long arg)
- {
-+	lock_kernel();
- 	struct channel_info *channel = filp->private_data;
- 	void __iomem *fpga = channel->fpga_iomem;
- 	void __iomem *bridge = channel->bridge_iomem;
-@@ -1026,8 +1027,10 @@ static int poch_ioctl(struct inode *inode, struct file *filp,
+ 		/*
+ 		 * Operations that change tape position should write final
+@@ -405,6 +409,7 @@ tapechar_ioctl(struct inode *inp, struct file *filp,
+ 			else
+ 				device->required_tapemarks -= op.mt_count;
  		}
- 		break;
- 	case POCH_IOC_GET_COUNTERS:
--		if (!access_ok(VERIFY_WRITE, argp, sizeof(struct poch_counters)))
-+		if (!access_ok(VERIFY_WRITE, argp, sizeof(struct poch_counters))) {
++		unlock_kernel();
+ 		return rc;
+ 	}
+ 	if (no == MTIOCPOS) {
+@@ -412,11 +417,16 @@ tapechar_ioctl(struct inode *inp, struct file *filp,
+ 		struct mtpos pos;
+ 
+ 		rc = tape_mtop(device, MTTELL, 1);
+-		if (rc < 0)
++		if (rc < 0) {
++			unlock_kernel();
+ 			return rc;
++		}
+ 		pos.mt_blkno = rc;
+-		if (copy_to_user((char __user *) data, &pos, sizeof(pos)) != 0)
++		if (copy_to_user((char __user *) data, &pos, sizeof(pos)) != 0) {
++			unlock_kernel();
+ 			return -EFAULT;
++		}
++		unlock_kernel();
+ 		return 0;
+ 	}
+ 	if (no == MTIOCGET) {
+@@ -436,8 +446,10 @@ tapechar_ioctl(struct inode *inp, struct file *filp,
+ 		if (device->medium_state == MS_LOADED) {
+ 			rc = tape_mtop(device, MTTELL, 1);
+ 
+-			if (rc < 0)
++			if (rc < 0) {
++				unlock_kernel();
+ 				return rc;
++			}
+ 
+ 			if (rc == 0)
+ 				get.mt_gstat |= GMT_BOT(~0);
+@@ -445,15 +457,22 @@ tapechar_ioctl(struct inode *inp, struct file *filp,
+ 			get.mt_blkno = rc;
+ 		}
+ 
+-		if (copy_to_user((char __user *) data, &get, sizeof(get)) != 0)
++		if (copy_to_user((char __user *) data, &get, sizeof(get)) != 0) {
 +			unlock_kernel();
  			return -EFAULT;
 +		}
  
- 		spin_lock_irq(&channel->counters_lock);
- 		counters = channel->counters;
-@@ -1036,23 +1039,31 @@ static int poch_ioctl(struct inode *inode, struct file *filp,
- 
- 		ret = copy_to_user(argp, &counters,
- 				   sizeof(struct poch_counters));
--		if (ret)
-+		if (ret) {
-+			unlock_kernel();
- 			return ret;
-+		}
- 
- 		break;
- 	case POCH_IOC_SYNC_GROUP_FOR_USER:
- 	case POCH_IOC_SYNC_GROUP_FOR_DEVICE:
- 		vms = find_vma(current->mm, arg);
--		if (!vms)
-+		if (!vms) {
-+			unlock_kernel();
- 			/* Address not mapped. */
- 			return -EINVAL;
--		if (vms->vm_file != filp)
-+		}
-+		if (vms->vm_file != filp) {
-+			unlock_kernel();
- 			/* Address mapped from different device/file. */
- 			return -EINVAL;
-+		}
- 
- 		flush_cache_range(vms, arg, arg + channel->group_size);
- 		break;
++		unlock_kernel();
+ 		return 0;
  	}
-+
+ 	/* Try the discipline ioctl function. */
+-	if (device->discipline->ioctl_fn == NULL)
++	if (device->discipline->ioctl_fn == NULL) {
++		unlock_kernel();
+ 		return -EINVAL;
+-	return device->discipline->ioctl_fn(device, no, data);
++	}
++	long ret = device->discipline->ioctl_fn(device, no, data);
 +	unlock_kernel();
- 	return 0;
++	return ret;
  }
  
-@@ -1060,7 +1071,7 @@ static struct file_operations poch_fops = {
- 	.owner = THIS_MODULE,
- 	.open = poch_open,
- 	.release = poch_release,
--	.ioctl = poch_ioctl,
-+	.unlocked_ioctl = poch_ioctl,
- 	.poll = poch_poll,
- 	.mmap = poch_mmap
+ static long
+diff --git a/drivers/s390/char/vmwatchdog.c b/drivers/s390/char/vmwatchdog.c
+index 21a2a82..de39c40 100644
+--- a/drivers/s390/char/vmwatchdog.c
++++ b/drivers/s390/char/vmwatchdog.c
+@@ -149,53 +149,70 @@ static struct watchdog_info vmwdt_info = {
+ 	.identity = "z/VM Watchdog Timer",
+ };
+ 
+-static int vmwdt_ioctl(struct inode *i, struct file *f,
+-			  unsigned int cmd, unsigned long arg)
++static long vmwdt_ioctl(struct file *f, unsigned int cmd, unsigned long arg)
+ {
++	lock_kernel();
++	long ret;
+ 	switch (cmd) {
+ 	case WDIOC_GETSUPPORT:
+ 		if (copy_to_user((void __user *)arg, &vmwdt_info,
+ 					sizeof(vmwdt_info)))
+-			return -EFAULT;
+-		return 0;
++			ret = -EFAULT;
++		else
++			ret = 0;
++		break;
+ 	case WDIOC_GETSTATUS:
+ 	case WDIOC_GETBOOTSTATUS:
+-		return put_user(0, (int __user *)arg);
++		ret = put_user(0, (int __user *)arg);
++		break;
+ 	case WDIOC_GETTEMP:
+-		return -EINVAL;
++		ret = -EINVAL;
++		break;
+ 	case WDIOC_SETOPTIONS:
+ 		{
+-			int options, ret;
+-			if (get_user(options, (int __user *)arg))
+-				return -EFAULT;
++			int options;
++			if (get_user(options, (int __user *)arg)) {
++				ret = -EFAULT;
++				break;
++			}
+ 			ret = -EINVAL;
+ 			if (options & WDIOS_DISABLECARD) {
+ 				ret = vmwdt_disable();
+ 				if (ret)
+-					return ret;
++					break;
+ 			}
+ 			if (options & WDIOS_ENABLECARD) {
+ 				ret = vmwdt_keepalive();
+ 			}
+-			return ret;
++			break;
+ 		}
+ 	case WDIOC_GETTIMEOUT:
+-		return put_user(vmwdt_interval, (int __user *)arg);
++		ret = put_user(vmwdt_interval, (int __user *)arg);
++		break;
+ 	case WDIOC_SETTIMEOUT:
+ 		{
+ 			int interval;
+-			if (get_user(interval, (int __user *)arg))
+-				return -EFAULT;
+-			if (interval < MIN_INTERVAL)
+-				return -EINVAL;
++			if (get_user(interval, (int __user *)arg)) {
++				ret = -EFAULT;
++				break;
++			}
++			if (interval < MIN_INTERVAL) {
++				ret = -EINVAL;
++				break;
++			}
+ 			vmwdt_interval = interval;
+ 		}
+-		return vmwdt_keepalive();
++		ret = vmwdt_keepalive();
++		break;
+ 	case WDIOC_KEEPALIVE:
+-		return vmwdt_keepalive();
++		ret = vmwdt_keepalive();
++		break;
+ 	}
++	if(!ret)
++		ret = -EINVAL;
+ 
+-	return -EINVAL;
++	unlock_kernel();
++	return ret;
+ }
+ 
+ static ssize_t vmwdt_write(struct file *f, const char __user *buf,
+@@ -226,7 +243,7 @@ static ssize_t vmwdt_write(struct file *f, const char __user *buf,
+ static const struct file_operations vmwdt_fops = {
+ 	.open    = &vmwdt_open,
+ 	.release = &vmwdt_close,
+-	.ioctl   = &vmwdt_ioctl,
++	.unlocked_ioctl   = &vmwdt_ioctl,
+ 	.write   = &vmwdt_write,
+ 	.owner   = THIS_MODULE,
  };
 -- 
 1.6.2
