@@ -1,120 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756158AbZCXSkG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757741AbZCXSks@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756158AbZCXSkG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 14:40:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754299AbZCXSjz
+	id S1757741AbZCXSks (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 14:40:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754837AbZCXSkk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 14:39:55 -0400
-Received: from smtp131.sat.emailsrvr.com ([66.216.121.131]:36270 "EHLO
-	smtp131.sat.emailsrvr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754017AbZCXSjy (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 14:39:54 -0400
-X-Greylist: delayed 516 seconds by postgrey-1.27 at vger.kernel.org; Tue, 24 Mar 2009 14:39:54 EDT
-From: "Christopher Harrer" <charrer@alacritech.com>
-To: "'Lior Dotan'" <liodot@gmail.com>, <gregkh@suse.de>
-Cc: <linux-kernel@vger.kernel.org>
-References: <4992B7EE.8020601@gmail.com>
-Subject: RE: [PATCH]  SLICOSS - use gfp_kernel where possible
-Date: Tue, 24 Mar 2009 14:31:14 -0400
-Message-ID: <019E07F7ABD24C5A9F79702ADD7F8230@exton.alacritech.com>
+	Tue, 24 Mar 2009 14:40:40 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:45471 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754299AbZCXSkj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Mar 2009 14:40:39 -0400
+Date: Tue, 24 Mar 2009 19:39:40 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       ltt-dev@lists.casi.polymtl.ca, linux-mm@kvack.org,
+       Dave Hansen <haveblue@us.ibm.com>,
+       Masami Hiramatsu <mhiramat@redhat.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       "Frank Ch. Eigler" <fche@redhat.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>, Hideo AOKI <haoki@redhat.com>,
+       Takashi Nishiie <t-nishiie@np.css.fujitsu.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
+Subject: Re: [patch 8/9] LTTng instrumentation - filemap
+Message-ID: <20090324183940.GI31117@elte.hu>
+References: <20090324155625.420966314@polymtl.ca> <20090324160149.029092843@polymtl.ca>
 MIME-Version: 1.0
-Content-Type: multipart/mixed;
-	boundary="----=_NextPart_000_0004_01C9AC8D.305FF110"
-X-Mailer: Microsoft Office Outlook 11
-In-Reply-To: <4992B7EE.8020601@gmail.com>
-Thread-Index: AcmMPMbrEGqCKe6uSRK9WNnzd3AKOggcciow
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.5579
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090324160149.029092843@polymtl.ca>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
 
-------=_NextPart_000_0004_01C9AC8D.305FF110
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+* Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
 
-> -----Original Message-----
-> From: Lior Dotan [mailto:liodot@gmail.com] 
-> Sent: Wednesday, February 11, 2009 6:35 AM
-> To: gregkh@suse.de
-> Cc: Christopher Harrer; linux-kernel@vger.kernel.org
-> Subject: [PATCH] SLICOSS - use gfp_kernel where possible
-> 
-> Use GFP_KERNEL instead of GFP_ATOMIC where possible.
-> 
-> Signed_off-by: Lior Dotan <liodot@gmail.com>
-> 
-> 
-> 
-Hi Greg,
+> Index: linux-2.6-lttng/mm/filemap.c
 
-In speaking with Lior, would it be possible to revert this patch?  It's
-causing:
+> +DEFINE_TRACE(wait_on_page_start);
+> +DEFINE_TRACE(wait_on_page_end);
 
-> Mar 24 11:50:31 linuxdev kernel: BUG: sleeping function called from 
-> invalid context at mm/slub.c:1599 Mar 24 11:50:31 linuxdev kernel: 
-> in_atomic(): 1, irqs_disabled(): 0, pid:
-> 3251, name: avahi-daemon
+These are extremely incomplete - to the level of being useless.
 
-Please let me know if you need any additional information or have any
-questions.
+To understand the lifetime of the pagecache, the following basic 
+events have to be observed and instrumented:
 
-Cheers,
+ - create a new page
+ - fill in a new page
+ - dirty a page [when we know this]
+ - request writeout of a page
+ - clean a page / complete writeout
+ - free a page due to MM pressure
+ - free a page due to truncation/delete
 
-Chris
+The following additional events are useful as well:
 
-------=_NextPart_000_0004_01C9AC8D.305FF110
-Content-Type: application/octet-stream;
-	name="slicoss-gfp-kernel.patch"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: attachment;
-	filename="slicoss-gfp-kernel.patch"
+ - mmap a page to a user-space address
+ - copy a page to a user-space address (read)
+ - write to a page from a user-space address (write)
+ - unmap a page from a user-space address
+ - fault in a user-space mapped pagecache page
 
-diff -X /usr/src/linux/Documentation/dontdiff -purN =
-a/drivers/staging/slicoss/slicoss.c b/drivers/staging/slicoss/slicoss.c
---- a/drivers/staging/slicoss/slicoss.c	2009-02-11 13:33:18.000000000 =
-+0200
-+++ b/drivers/staging/slicoss/slicoss.c	2009-02-11 13:32:53.000000000 =
-+0200
-@@ -1492,7 +1492,7 @@ static int slic_mcast_add_list(struct ad
- 	}
-=20
- 	/* Doesn't already exist.  Allocate a structure to hold it */
--	mcaddr =3D kmalloc(sizeof(struct mcast_address), GFP_ATOMIC);
-+	mcaddr =3D kmalloc(sizeof(struct mcast_address), GFP_KERNEL);
- 	if (mcaddr =3D=3D NULL)
- 		return 1;
-=20
-@@ -2648,7 +2648,7 @@ static int slic_card_init(struct sliccar
-=20
- #if SLIC_DUMP_ENABLED
- 	if (!card->dumpbuffer) {
--		card->dumpbuffer =3D kmalloc(DUMP_PAGE_SIZE, GFP_ATOMIC);
-+		card->dumpbuffer =3D kmalloc(DUMP_PAGE_SIZE, GFP_KERNEL);
-=20
- 		ASSERT(card->dumpbuffer);
- 		if (card->dumpbuffer =3D=3D NULL)
-@@ -2667,7 +2667,7 @@ static int slic_card_init(struct sliccar
- 	 *  Allocate COMMAND BUFFER
- 	 */
- 	if (!card->cmdbuffer) {
--		card->cmdbuffer =3D kmalloc(sizeof(struct dump_cmd), GFP_ATOMIC);
-+		card->cmdbuffer =3D kmalloc(sizeof(struct dump_cmd), GFP_KERNEL);
-=20
- 		ASSERT(card->cmdbuffer);
- 		if (card->cmdbuffer =3D=3D NULL)
-@@ -2808,7 +2808,7 @@ static u32 slic_card_locate(struct adapt
- 	}
- 	if (!physcard) {
- 		/* no structure allocated for this physical card yet */
--		physcard =3D kzalloc(sizeof(struct physcard), GFP_ATOMIC);
-+		physcard =3D kzalloc(sizeof(struct physcard), GFP_KERNEL);
- 		ASSERT(physcard);
-=20
- 		DBG_MSG
+optional:
+   - shmem attach/detach events
+   - shmem map/unmap events
+   - hugetlb map/unmap events
 
-------=_NextPart_000_0004_01C9AC8D.305FF110--
+I'm sure i havent listed them all. Have a look at the function-graph 
+tracer output to see what kind of basic events can happen to a 
+pagecache page.
 
+	Ingo
