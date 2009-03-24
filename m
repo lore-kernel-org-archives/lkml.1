@@ -1,83 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760393AbZCXSwH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761324AbZCXSw1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760393AbZCXSwH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 14:52:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759032AbZCXStp
+	id S1761324AbZCXSw1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 14:52:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755448AbZCXSvw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 14:49:45 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:22681 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753960AbZCXStm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 14:49:42 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
-	cc:content-type:content-transfer-encoding:x-system-of-record;
-	b=rxVdDaFTNuSLgYy1X67UrzGVLuwULjfDFgQVZ3xoASS9AJFXMAFVmBoz/6IeM3i6D
-	ICWWfUD7/m5U8B4Dr16NQ==
+	Tue, 24 Mar 2009 14:51:52 -0400
+Received: from mail.lang.hm ([64.81.33.126]:40544 "EHLO bifrost.lang.hm"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752698AbZCXSvv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Mar 2009 14:51:51 -0400
+Date: Tue, 24 Mar 2009 11:51:29 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: Dan Williams <dcbw@redhat.com>
+cc: Patrick McHardy <kaber@trash.net>, Matt Domsch <Matt_Domsch@dell.com>,
+       netdev@vger.kernel.org, linux-hotplug@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: Network Device Naming mechanism and policy
+In-Reply-To: <1237912858.9082.39.camel@localhost.localdomain>
+Message-ID: <alpine.DEB.1.10.0903241150020.16753@asgard.lang.hm>
+References: <20090324154617.GA16332@auslistsprd01.us.dell.com>  <49C9087C.5070907@trash.net> <1237912858.9082.39.camel@localhost.localdomain>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-In-Reply-To: <20090324183532.GG21389@redhat.com>
-References: <1236823015-4183-2-git-send-email-vgoyal@redhat.com>
-	 <20090312140450.GE10919@redhat.com> <49C0A171.8060009@cn.fujitsu.com>
-	 <20090318215529.GA3338@redhat.com>
-	 <e98e18940903232232i432f62c5r9dfd74268e1b2684@mail.gmail.com>
-	 <20090324125842.GA21389@redhat.com>
-	 <e98e18940903241114u1e03ae7dhf654d7d8d0fc0302@mail.gmail.com>
-	 <20090324182906.GF21389@redhat.com>
-	 <20090324184101.GO18554@gandalf.sssup.it>
-	 <20090324183532.GG21389@redhat.com>
-Date: Tue, 24 Mar 2009 11:49:35 -0700
-Message-ID: <e98e18940903241149s71701c3fpb4c62a7848c1f170@mail.gmail.com>
-Subject: Re: [PATCH 01/10] Documentation
-From: Nauman Rafique <nauman@google.com>
-To: Vivek Goyal <vgoyal@redhat.com>
-Cc: Fabio Checconi <fchecconi@gmail.com>,
-       Gui Jianfeng <guijianfeng@cn.fujitsu.com>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>, dpshah@google.com,
-       lizf@cn.fujitsu.com, mikew@google.com, paolo.valente@unimore.it,
-       jens.axboe@oracle.com, ryov@valinux.co.jp, fernando@intellilink.co.jp,
-       s-uchida@ap.jp.nec.com, taka@valinux.co.jp, arozansk@redhat.com,
-       jmoyer@redhat.com, oz-kernel@redhat.com, balbir@linux.vnet.ibm.com,
-       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       akpm@linux-foundation.org, menage@google.com, peterz@infradead.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-System-Of-Record: true
+Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 24, 2009 at 11:35 AM, Vivek Goyal <vgoyal@redhat.com> wrote:
-> On Tue, Mar 24, 2009 at 07:41:01PM +0100, Fabio Checconi wrote:
->> > From: Vivek Goyal <vgoyal@redhat.com>
->> > Date: Tue, Mar 24, 2009 02:29:06PM -0400
->> >
->> ...
->> > > Does keeping the sync queue in ready tree solves the problem too? Is
->> > > it because it avoid a virtual time jump?
->> > >
->> >
->> > I have not tried the second approch yet. But that also should solve the
->> > vtime jump issue.
->> >
+On Tue, 24 Mar 2009, Dan Williams wrote:
+
+> On Tue, 2009-03-24 at 17:21 +0100, Patrick McHardy wrote:
+>> Matt Domsch wrote:
+>>> 2) udev may have rules to change the device names.  This is most often
+>>>    seen in the '70-persistent-net.rules' file.  Here we have
+>>>    additional challenges:
+>>>
+>>> ...
+>>>
+>>>    c) udev may not always be able to change a device's name.  If udev
+>>>       uses the kernel assignment namespace (ethN), then a rename of
+>>>       eth0->eth1 may require renaming eth1->eth0 (or something else).
+>>>       Udev operates on a single device instance at a time, it becomes
+>>>       difficult to switch names around for multiple devices, within
+>>>       the single namespace.
 >>
->> Do you mean that you intend to keep a queue with no backlog in the
->> active tree?
+>> I would classify this as a bug, especially the fact that udev doesn't
+>> undo a failed rename, so you end up with ethX_rename. Virtual devices
+>> using the same MAC address trigger this reliably unless you add
+>> exceptions to the udev rules.
 >
-> Yes. Is it possible to keep a not-backlogged queue in the tree for later
-> expiry. So that we don't actively wait/idle for next request to come and
-> hope queue will become backlogged soon. Otherwise, it will be deleted from
-> the active queue. This is just a thought, I am not even sure how would it
-> interefere with bfq code.
+> Any particular reason the MAC addresses are the same?  This came up a
+> while ago with the 'dnet' device in the thread "Dave DNET ethernet
+> controller".
 >
-> All this to solve the vtime jump issue for sync queues.
+> If the MAC address isn't a UUID for the device, then *what* is?
 
-If only vtime jump is an issue, can we solve it by delaying vtime
-jump? That is, even if we serve an entity with a bigger vtime, we
-don't update the reference vtime of the service tree until after some
-time?
+I have seen systems (I think they were Sun boxes) where the _machine_ had 
+a MAC address, and it used that same MAC on all interfaces.
 
->
-> Thanks
-> Vivek
->
+this is convienient for some things, but not for others.
+
+what's unique and reproducable is the discovery order
+
+David Lang
