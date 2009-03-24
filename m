@@ -1,69 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752340AbZCXUtH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752292AbZCXUvR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752340AbZCXUtH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 16:49:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751934AbZCXUst
+	id S1752292AbZCXUvR (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 16:51:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751080AbZCXUu7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 16:48:49 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:51623 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751068AbZCXUss (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 16:48:48 -0400
-Date: Tue, 24 Mar 2009 16:40:28 -0400
-From: Kyle McMartin <kyle@redhat.com>
-To: "Yu, Fenghua" <fenghua.yu@intel.com>
-Cc: "'Ingo Molnar'" <mingo@elte.hu>, "'Andrew Lutomirski'" <amluto@gmail.com>,
-       "'David Woodhouse'" <dwmw2@infradead.org>,
-       "'Jesse Barnes'" <jbarnes@virtuousgeek.org>,
-       "'Kyle McMartin'" <kyle@redhat.com>,
-       "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       "'Yinghai Lu'" <yinghai@kernel.org>,
-       "Woodhouse, David" <david.woodhouse@intel.com>,
-       "'Mark Gross'" <mgross@linux.intel.com>,
-       "'LKML'" <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.29: can't resume from suspend with DMAR (intel iommu) enabled
-Message-ID: <20090324204028.GE11771@kibblesnbits.boston.devel.redhat.com>
-References: <cb0375e10903241258x32c9d0f3g35a4f56793eb8677@mail.gmail.com> <20090324203259.GC26930@elte.hu> <A6AD88C3F2289247BE726C37303E1EB8A04DB530@orsmsx505.amr.corp.intel.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <A6AD88C3F2289247BE726C37303E1EB8A04DB530@orsmsx505.amr.corp.intel.com>
-User-Agent: Mutt/1.4.2.2i
+	Tue, 24 Mar 2009 16:50:59 -0400
+Received: from smtp-04.mandic.com.br ([200.225.81.151]:34232 "EHLO
+	smtp-04.mandic.com.br" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750796AbZCXUu6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Mar 2009 16:50:58 -0400
+X-Greylist: delayed 396 seconds by postgrey-1.27 at vger.kernel.org; Tue, 24 Mar 2009 16:50:58 EDT
+Message-ID: <49C94620.8040309@diamondcut.com.br>
+Date: Tue, 24 Mar 2009 17:44:16 -0300
+From: "Renato S. Yamane" <yamane@diamondcut.com.br>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; pt-BR; rv:1.9.1b3pre) Gecko/20090223 Thunderbird/3.0b2
+MIME-Version: 1.0
+To: LKML <linux-kernel@vger.kernel.org>
+CC: hmh@hmh.eng.br, borislav@users.sf.net
+Subject: Thinkpad T61 - Fan running a lot of time
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 24, 2009 at 01:36:46PM -0700, Yu, Fenghua wrote:
-> >
-> >(Cc:s added)
-> >
-> >* Andrew Lutomirski <amluto@gmail.com> wrote:
-> >
-> >> On vanilla 2.6.29 (on Ubuntu 8.10), on a Lenovo x200s, my system
-> >> is completely hosed on resume.  It appears that even hard disk IO
-> >> didn't work (trying to do *anything* including getting a dmesg
-> >> trace just spewed sda io errors to the console).  Hence no trace.
-> >> I did an alt-sysrq-b and the screen went blank and the machine
-> >> just started beeping at me.
-> >>
-> >> Resume works much better with intel_iommu=off.  (I remember seeing
-> >> a patch go by that purported to fix resume with IOMMU enabled, but
-> >> it didn't work for me.)
-> >>
-> >> I'd be happy to try to make a better bug report if anyone has any
-> >> bright ideas.
-> >
-> >i have a Lenovo T500 that does not even boot with with DMAR enabled
-> >in the BIOS (it's default-off), i get this panic in early bootup:
-> >
-> >    DMAR hardware is malfunctioning
-> >
-> >So i dont get to test suspend/resume ;-)
-> >
-> Current kernel doesn't have iommu suspend/resume support yet. I'll send out suspend/resume patches today or tomorrow. Hope that will help.
-> 
+Hi,
 
-Heh, awesome, someone could have brought this, uhm, subtle, weakness when
-things were getting defaulted on...
+Anyone have seen fan turned-on in 90% of the time?
 
-regards, Kyle
+I see that fan power-on when processor is up than 45°C and power-off 
+when is under 45°C.
+
+Temperature difference between 2 cores is 5°C in idle (Core1=45°C and 
+Core2=40°C)
+
+Local temperature is ~25°C, kpowersave is in "dynamic mode", my 2 cores 
+(Intel T7500) is running 94% of the time in idle (checked with "top"), 
+with clock in 800MHz.
+
+The fan speed is ~2600RPM (always under 3000RPM), and I think that is 
+not enough to cooling the processor, because is necessary 3min to 
+decrease 1°C in Core1 and only 40sec to increase 1°C.
+
+I think that is necessary a higher fan speed.
+
+I see this in Debian Lenny (2.6.26-1) and 2.6.28.8 kernel... Maybe in 
+other versions too.
+
+Regards,
+Renato
