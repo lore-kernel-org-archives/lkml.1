@@ -1,174 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761936AbZCXPsb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759355AbZCXPsp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761936AbZCXPsb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 11:48:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752531AbZCXPsT
+	id S1759355AbZCXPsp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 11:48:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761258AbZCXPsW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 11:48:19 -0400
-Received: from cantor.suse.de ([195.135.220.2]:35653 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753951AbZCXPsS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 11:48:18 -0400
-Date: Tue, 24 Mar 2009 16:48:14 +0100
-From: Jan Kara <jack@suse.cz>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: Jan Kara <jack@suse.cz>, "Martin J. Bligh" <mbligh@mbligh.org>,
-       linux-ext4@vger.kernel.org, Ying Han <yinghan@google.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-mm <linux-mm@kvack.org>, guichaz@gmail.com,
-       Alex Khesin <alexk@google.com>, Mike Waychison <mikew@google.com>,
-       Rohit Seth <rohitseth@google.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: ftruncate-mmap: pages are lost after writing to mmaped file.
-Message-ID: <20090324154813.GH23439@duck.suse.cz>
-References: <604427e00903181244w360c5519k9179d5c3e5cd6ab3@mail.gmail.com> <200903250130.02485.nickpiggin@yahoo.com.au> <20090324144709.GF23439@duck.suse.cz> <200903250203.55520.nickpiggin@yahoo.com.au>
+	Tue, 24 Mar 2009 11:48:22 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:51419 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760186AbZCXPsV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Mar 2009 11:48:21 -0400
+Date: Tue, 24 Mar 2009 11:48:19 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Li Zefan <lizf@cn.fujitsu.com>
+cc: Ingo Molnar <mingo@elte.hu>, Jens Axboe <jens.axboe@oracle.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 5/5] blktrace: print human-readable act_mask
+In-Reply-To: <49C89488.4030604@cn.fujitsu.com>
+Message-ID: <alpine.DEB.2.00.0903241139460.22830@gandalf.stny.rr.com>
+References: <49C893FC.9080905@cn.fujitsu.com> <49C89488.4030604@cn.fujitsu.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200903250203.55520.nickpiggin@yahoo.com.au>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed 25-03-09 02:03:54, Nick Piggin wrote:
-> On Wednesday 25 March 2009 01:47:09 Jan Kara wrote:
-> > On Wed 25-03-09 01:30:00, Nick Piggin wrote:
-> 
-> > > I don't think it is a very good idea for block_write_full_page recovery
-> > > to do clear_buffer_dirty for !mapped buffers. I think that should rather
-> > > be a redirty_page_for_writepage in the case that the buffer is dirty.
-> > >
-> > > Perhaps not the cleanest way to solve the problem if it is just due to
-> > > transient shortage of space in ext3, but generic code shouldn't be
-> > > allowed to throw away dirty data even if it can't be written back due
-> > > to some software or hardware error.
-> >
-> >   Well, that would be one possibility. But then we'd be left with dirty
-> > pages we cannot ever release since they are constantly dirty (when the
-> > filesystem really becomes out of space). So what I
-> 
-> If the filesystem becomes out of space and we have over-committed these
-> dirty mmapped blocks, then we most definitely want to keep them around.
-> An error of the system losing a few pages (or if it happens an insanely
-> large number of times, then slowly dying due to memory leak) is better
-> than an app suddenly seeing the contents of the page change to nulls
-> under it when the kernel decides to do some page reclaim.
-  Hmm, probably you're right. Definitely it would be much easier to track
-the problem down than it is now... Thinking a bit more... But couldn't a
-malicious user bring the machine easily to OOM this way? That would be
-unfortunate.
 
-> > rather want to do is something like below:
-> >
-> > diff --git a/fs/ext3/inode.c b/fs/ext3/inode.c
-> > index d351eab..77c526f 100644
-> > --- a/fs/ext3/inode.c
-> > +++ b/fs/ext3/inode.c
-> > @@ -1440,6 +1440,40 @@ static int journal_dirty_data_fn(handle_t *handle,
-> > struct buffer_head *bh) }
-> >
-> >  /*
-> > + * Decides whether it's worthwhile to wait for transaction commit and
-> > + * retry allocation. If it is, function waits 1 is returns, otherwise
-> > + * 0 is returned. In both cases we redirty page and it's buffers so that
-> > + * data is not lost. In case we've retried too many times, we also return
-> > + * 0 and don't redirty the page. Data gets discarded but we cannot hang
-> > + * writepage forever...
-> > + */
-> > +static int ext3_writepage_retry_alloc(struct page *page, int *retries,
-> > +				      struct writeback_control *wbc)
-> > +{
-> > +	struct super_block *sb = ((struct inode *)page->mapping->host)->i_sb;
-> > +	int ret = 0;
-> > +
-> > +	/*
-> > +	 * We don't want to slow down background writeback too much. On the
-> > +	 * other hand if most of the dirty data needs allocation, we better
-> > +	 * wait to make some progress
-> > +	 */
-> > +	if (wbc->sync_mode == WB_SYNC_NONE && !wbc->for_reclaim &&
-> > +	    wbc->pages_skipped < wbc->nr_to_write / 2)
-> > +		goto redirty;
-> > +	/*
-> > +	 * Now wait if commit can free some space and we haven't retried
-> > +	 * too much
-> > +	 */
-> > +	if (!ext3_should_retry_alloc(sb, retries))
-> > +		return 0;
-> > +	ret = 1;
-> > +redirty:
-> > +	set_page_dirty(page);
-> > +	return ret;
-> > +}
-> > +
-> > +/*
-> >   * Note that we always start a transaction even if we're not journalling
-> >   * data.  This is to preserve ordering: any hole instantiation within
-> >   * __block_write_full_page -> ext3_get_block() should be journalled
-> > @@ -1564,10 +1598,12 @@ static int ext3_writeback_writepage(struct page
-> > *page, handle_t *handle = NULL;
-> >  	int ret = 0;
-> >  	int err;
-> > +	int retries;
-> >
-> >  	if (ext3_journal_current_handle())
-> >  		goto out_fail;
-> >
-> > +restart:
-> >  	handle = ext3_journal_start(inode, ext3_writepage_trans_blocks(inode));
-> >  	if (IS_ERR(handle)) {
-> >  		ret = PTR_ERR(handle);
-> > @@ -1580,8 +1616,13 @@ static int ext3_writeback_writepage(struct page
-> > *page, ret = block_write_full_page(page, ext3_get_block, wbc);
-> >
-> >  	err = ext3_journal_stop(handle);
-> > -	if (!ret)
-> > +	if (!ret) {
-> >  		ret = err;
-> > +	} else {
-> > +		if (ret == -ENOSPC &&
-> > +		    ext3_writepage_retry_alloc(page, &retries, wbc))
-> > +			goto restart;
-> > +	}
-> >  	return ret;
-> >
-> >  out_fail:
-> >
-> >   And similarly for the other two writepage implementations in ext3...
-> > But it currently gives me:
-> > WARNING: at fs/buffer.c:781 __set_page_dirty+0x8d/0x145()
-> > probably because of that set_page_dirty() in ext3_writepage_retry_alloc().
-> 
-> And this is a valid warning because we don't know that all buffers are
-> uptodate or which ones to set as dirty, I think. Unless it is impossible
-> to have dirty && !uptodate pages come thought this path.
-  Ah, OK, thanks for explanation.
+On Tue, 24 Mar 2009, Li Zefan wrote:
+> +static ssize_t blk_trace_mask2str(char *buf, int mask)
+> +{
+> +	int i;
+> +	char *p = buf;
+> +
+> +	for (i = 0; i < ARRAY_SIZE(mask_maps); i++) {
+> +		if (mask & mask_maps[i].mask) {
+> +			p += sprintf(p, "%s%s",
+> +				    (p == buf) ? "" : ",", mask_maps[i].str);
+> +		}
+> +	}
+> +	*p++ = '\n';
+> +
+> +	return (p - buf);
 
-> But you shouldn't need to redirty the page at all if we change
-> block_write_full_page in the way I suggested. Because then it won't
-> have cleaned the buffer, and it will have done redirty_page_for_writepage.
->
-> > Or we could implement ext3_mkwrite() to allocate buffers already when we
-> > make page writeable. But it costs some performace (we have to write page
-> > full of zeros when allocating those buffers, where previously we didn't
-> > have to do anything) and it's not trivial to make it work if pagesize >
-> > blocksize (we should not allocate buffers outside of i_size so if i_size
-> > = 1024, we create just one block in ext3_mkwrite() but then we need to
-> > allocate more when we extend the file).
-> 
-> Well the core page_mkwrite function doesn't care about that case
-> properly either (it just doesn't allocate buffers on extend). I agree it
-> should be fixed, but it is a little hard (I need to fix it in fsblock
-> and I think what is required is a setattr helper for that).
-  Won't it be enough, if extending truncate called page_mkwrite() on the
-page which used to be the last one in the file? That would be enough for
-my use although it seems a bit hacky I agree...
-  
+The above is still simple, but if it starts to ge complex, you might want 
+to convert it to the trace_seq functions. That can make moving to a buffer
+easier.
 
-									Honza
--- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
+#include "trace_output.h"
+
+static bool blk_trace_mask2str(struct trace_seq *s, int mask)
+{
+	bool comma = false;
+	int i;
+
+	for (i = 0; i < ARRAY_SIZE(mask_maps); i++) {
+		if (mask & mask_maps[i].mask) {
+			trace_print_seq(s, "%s%s",
+				comma ? "," : "",
+				mask_maps[i].str);
+			comma = 1;
+		}
+	}
+}
+
+
+	struct trace_seq *s;
+
+	s = kmalloc(sizeof(*s), GFP_KERNEL);
+	if (!s)
+		do error;
+
+	
+	blk_trace_str2mask(s, mask);
+
+This would put the data into s->buffer and have a length too.
+
+Just letting you know about this. It may come in handy. Most of the code 
+in kernel/trace*.c uses this.
+
+-- Steve
+	
+	
+> +}
+> +
+>  static struct request_queue *blk_trace_get_queue(struct block_device *bdev)
+>  {
+>  	if (bdev->bd_disk == NULL)
+> @@ -1399,7 +1423,7 @@ static ssize_t sysfs_blk_trace_attr_show(struct device *dev,
+>  	if (q->blk_trace == NULL)
+>  		ret = sprintf(buf, "disabled\n");
+>  	else if (attr == &dev_attr_act_mask)
+> -		ret = sprintf(buf, "%#x\n", q->blk_trace->act_mask);
+> +		ret = blk_trace_mask2str(buf, q->blk_trace->act_mask);
+>  	else if (attr == &dev_attr_pid)
+>  		ret = sprintf(buf, "%u\n", q->blk_trace->pid);
+>  	else if (attr == &dev_attr_start_lba)
+> @@ -1432,9 +1456,11 @@ static ssize_t sysfs_blk_trace_attr_store(struct device *dev,
+>  	if (attr == &dev_attr_act_mask) {
+>  		if (sscanf(buf, "%llx", &value) != 1) {
+>  			/* Assume it is a list of trace category names */
+> -			value = blk_str2act_mask(buf);
+> -			if (value < 0)
+> +			value = blk_trace_str2mask(buf);
+> +			if (value < 0) {
+> +				ret = value;
+>  				goto out;
+> +			}
+>  		}
+>  	} else if (sscanf(buf, "%llu", &value) != 1)
+>  		goto out;
+> -- 
+> 1.5.4.rc3
+> 
+> 
