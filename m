@@ -1,348 +1,309 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754059AbZCXOS6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759523AbZCXOQK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754059AbZCXOS6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 10:18:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755001AbZCXOLu
+	id S1759523AbZCXOQK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 10:16:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759375AbZCXOGx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 10:11:50 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:37596 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760841AbZCXOLq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 10:11:46 -0400
-From: David Teigland <teigland@redhat.com>
-To: linux-kernel@vger.kernel.org
-Cc: Christine Caulfield <ccaulfie@redhat.com>
-Subject: [PATCH 4/7] dlm: replace idr with hash table for connections
-Date: Tue, 24 Mar 2009 09:07:49 -0500
-Message-Id: <1237903672-18913-5-git-send-email-teigland@redhat.com>
+	Tue, 24 Mar 2009 10:06:53 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:34005 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1759391AbZCXOGt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Mar 2009 10:06:49 -0400
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: [PATCH 29/30] 8250_pci: add support for National Instruments 843x
+	RS232 devices
+To: linux-kernel@vger.kernel.org, linux-serial@vger.kernel.org,
+       torvalds@linux-foundation.org
+Date: Tue, 24 Mar 2009 14:06:57 +0000
+Message-ID: <20090324140650.12735.10486.stgit@localhost.localdomain>
+In-Reply-To: <20090324135930.12735.7827.stgit@localhost.localdomain>
+References: <20090324135930.12735.7827.stgit@localhost.localdomain>
+User-Agent: StGIT/0.14.3
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Christine Caulfield <ccaulfie@redhat.com>
+From: Shawn Bohrer <shawn.bohrer@ni.com>
 
-Integer nodeids can be too large for the idr code; use a hash
-table instead.
+This implements basic support for all 843x RS232 devices, but does not
+add DMA support.  This means that sustained data transfers at high baud
+rates may not be possible on multiple ports simultaneously.
 
-Signed-off-by: Christine Caulfield <ccaulfie@redhat.com>
-Signed-off-by: David Teigland <teigland@redhat.com>
+Signed-off-by: Shawn Bohrer <shawn.bohrer@ni.com>
+Signed-off-by: Alan Cox <alan@lxorguk.ukuu.org.uk>
 ---
- fs/dlm/lowcomms.c |  171 ++++++++++++++++++++++++++++------------------------
- 1 files changed, 92 insertions(+), 79 deletions(-)
 
-diff --git a/fs/dlm/lowcomms.c b/fs/dlm/lowcomms.c
-index 982314c..609108a 100644
---- a/fs/dlm/lowcomms.c
-+++ b/fs/dlm/lowcomms.c
-@@ -2,7 +2,7 @@
- *******************************************************************************
- **
- **  Copyright (C) Sistina Software, Inc.  1997-2003  All rights reserved.
--**  Copyright (C) 2004-2007 Red Hat, Inc.  All rights reserved.
-+**  Copyright (C) 2004-2009 Red Hat, Inc.  All rights reserved.
- **
- **  This copyrighted material is made available to anyone wishing to use,
- **  modify, copy, or redistribute it subject to the terms and conditions
-@@ -48,7 +48,6 @@
- #include <net/sock.h>
- #include <net/tcp.h>
- #include <linux/pagemap.h>
--#include <linux/idr.h>
- #include <linux/file.h>
- #include <linux/mutex.h>
- #include <linux/sctp.h>
-@@ -61,6 +60,7 @@
- #include "config.h"
- 
- #define NEEDED_RMEM (4*1024*1024)
-+#define CONN_HASH_SIZE 32
- 
- struct cbuf {
- 	unsigned int base;
-@@ -115,6 +115,7 @@ struct connection {
- 	int retries;
- #define MAX_CONNECT_RETRIES 3
- 	int sctp_assoc;
-+	struct hlist_node list;
- 	struct connection *othercon;
- 	struct work_struct rwork; /* Receive workqueue */
- 	struct work_struct swork; /* Send workqueue */
-@@ -139,14 +140,37 @@ static int dlm_local_count;
- static struct workqueue_struct *recv_workqueue;
- static struct workqueue_struct *send_workqueue;
- 
--static DEFINE_IDR(connections_idr);
-+static struct hlist_head connection_hash[CONN_HASH_SIZE];
- static DEFINE_MUTEX(connections_lock);
--static int max_nodeid;
- static struct kmem_cache *con_cache;
- 
- static void process_recv_sockets(struct work_struct *work);
- static void process_send_sockets(struct work_struct *work);
- 
-+
-+/* This is deliberately very simple because most clusters have simple
-+   sequential nodeids, so we should be able to go straight to a connection
-+   struct in the array */
-+static inline int nodeid_hash(int nodeid)
-+{
-+	return nodeid & (CONN_HASH_SIZE-1);
-+}
-+
-+static struct connection *__find_con(int nodeid)
-+{
-+	int r;
-+	struct hlist_node *h;
-+	struct connection *con;
-+
-+	r = nodeid_hash(nodeid);
-+
-+	hlist_for_each_entry(con, h, &connection_hash[r], list) {
-+		if (con->nodeid == nodeid)
-+			return con;
-+	}
-+	return NULL;
-+}
-+
- /*
-  * If 'allocation' is zero then we don't attempt to create a new
-  * connection structure for this node.
-@@ -155,31 +179,17 @@ static struct connection *__nodeid2con(int nodeid, gfp_t alloc)
- {
- 	struct connection *con = NULL;
- 	int r;
--	int n;
- 
--	con = idr_find(&connections_idr, nodeid);
-+	con = __find_con(nodeid);
- 	if (con || !alloc)
- 		return con;
- 
--	r = idr_pre_get(&connections_idr, alloc);
--	if (!r)
--		return NULL;
--
- 	con = kmem_cache_zalloc(con_cache, alloc);
- 	if (!con)
- 		return NULL;
- 
--	r = idr_get_new_above(&connections_idr, con, nodeid, &n);
--	if (r) {
--		kmem_cache_free(con_cache, con);
--		return NULL;
--	}
--
--	if (n != nodeid) {
--		idr_remove(&connections_idr, n);
--		kmem_cache_free(con_cache, con);
--		return NULL;
--	}
-+	r = nodeid_hash(nodeid);
-+	hlist_add_head(&con->list, &connection_hash[r]);
- 
- 	con->nodeid = nodeid;
- 	mutex_init(&con->sock_mutex);
-@@ -190,19 +200,30 @@ static struct connection *__nodeid2con(int nodeid, gfp_t alloc)
- 
- 	/* Setup action pointers for child sockets */
- 	if (con->nodeid) {
--		struct connection *zerocon = idr_find(&connections_idr, 0);
-+		struct connection *zerocon = __find_con(0);
- 
- 		con->connect_action = zerocon->connect_action;
- 		if (!con->rx_action)
- 			con->rx_action = zerocon->rx_action;
+ drivers/serial/8250_pci.c |  193 +++++++++++++++++++++++++++++++++++++++++++++
+ include/linux/pci_ids.h   |   14 +++
+ 2 files changed, 207 insertions(+), 0 deletions(-)
+
+
+diff --git a/drivers/serial/8250_pci.c b/drivers/serial/8250_pci.c
+index 533f820..2f570c7 100644
+--- a/drivers/serial/8250_pci.c
++++ b/drivers/serial/8250_pci.c
+@@ -306,6 +306,36 @@ static void __devexit pci_plx9050_exit(struct pci_dev *dev)
  	}
- 
--	if (nodeid > max_nodeid)
--		max_nodeid = nodeid;
--
- 	return con;
  }
  
-+/* Loop round all connections */
-+static void foreach_conn(void (*conn_func)(struct connection *c))
-+{
-+	int i;
-+	struct hlist_node *h, *n;
-+	struct connection *con;
++/* MITE registers */
++#define MITE_IOWBSR1	0xc4
++#define MITE_IOWCR1	0xf4
++#define MITE_LCIMR1	0x08
++#define MITE_LCIMR2	0x10
 +
-+	for (i = 0; i < CONN_HASH_SIZE; i++) {
-+		hlist_for_each_entry_safe(con, h, n, &connection_hash[i], list){
-+			conn_func(con);
-+		}
++#define MITE_LCIMR2_CLR_CPU_IE	(1 << 30)
++
++static void __devexit pci_ni8430_exit(struct pci_dev *dev)
++{
++	void __iomem *p;
++	unsigned long base, len;
++	unsigned int bar = 0;
++
++	if ((pci_resource_flags(dev, bar) & IORESOURCE_MEM) == 0) {
++		moan_device("no memory in bar", dev);
++		return;
 +	}
++
++	base = pci_resource_start(dev, bar);
++	len =  pci_resource_len(dev, bar);
++	p = ioremap_nocache(base, len);
++	if (p == NULL)
++		return;
++
++	/* Disable the CPU Interrupt */
++	writel(MITE_LCIMR2_CLR_CPU_IE, p + MITE_LCIMR2);
++	iounmap(p);
 +}
 +
- static struct connection *nodeid2con(int nodeid, gfp_t allocation)
- {
- 	struct connection *con;
-@@ -218,14 +239,17 @@ static struct connection *nodeid2con(int nodeid, gfp_t allocation)
- static struct connection *assoc2con(int assoc_id)
- {
- 	int i;
-+	struct hlist_node *h;
- 	struct connection *con;
- 
- 	mutex_lock(&connections_lock);
--	for (i=0; i<=max_nodeid; i++) {
--		con = __nodeid2con(i, 0);
--		if (con && con->sctp_assoc == assoc_id) {
--			mutex_unlock(&connections_lock);
--			return con;
-+
-+	for (i = 0 ; i < CONN_HASH_SIZE; i++) {
-+		hlist_for_each_entry(con, h, &connection_hash[i], list) {
-+			if (con && con->sctp_assoc == assoc_id) {
-+				mutex_unlock(&connections_lock);
-+				return con;
-+			}
- 		}
- 	}
- 	mutex_unlock(&connections_lock);
-@@ -376,25 +400,23 @@ static void sctp_send_shutdown(sctp_assoc_t associd)
- 		log_print("send EOF to node failed: %d", ret);
- }
- 
-+static void sctp_init_failed_foreach(struct connection *con)
-+{
-+	con->sctp_assoc = 0;
-+	if (test_and_clear_bit(CF_CONNECT_PENDING, &con->flags)) {
-+		if (!test_and_set_bit(CF_WRITE_PENDING, &con->flags))
-+			queue_work(send_workqueue, &con->swork);
-+	}
-+}
-+
- /* INIT failed but we don't know which node...
-    restart INIT on all pending nodes */
- static void sctp_init_failed(void)
- {
--	int i;
--	struct connection *con;
--
- 	mutex_lock(&connections_lock);
--	for (i=1; i<=max_nodeid; i++) {
--		con = __nodeid2con(i, 0);
--		if (!con)
--			continue;
--		con->sctp_assoc = 0;
--		if (test_and_clear_bit(CF_CONNECT_PENDING, &con->flags)) {
--			if (!test_and_set_bit(CF_WRITE_PENDING, &con->flags)) {
--				queue_work(send_workqueue, &con->swork);
--			}
--		}
--	}
-+
-+	foreach_conn(sctp_init_failed_foreach);
-+
- 	mutex_unlock(&connections_lock);
- }
- 
-@@ -1313,13 +1335,10 @@ out_connect:
- 
- static void clean_one_writequeue(struct connection *con)
- {
--	struct list_head *list;
--	struct list_head *temp;
-+	struct writequeue_entry *e, *safe;
- 
- 	spin_lock(&con->writequeue_lock);
--	list_for_each_safe(list, temp, &con->writequeue) {
--		struct writequeue_entry *e =
--			list_entry(list, struct writequeue_entry, list);
-+	list_for_each_entry_safe(e, safe, &con->writequeue, list) {
- 		list_del(&e->list);
- 		free_entry(e);
- 	}
-@@ -1369,14 +1388,7 @@ static void process_send_sockets(struct work_struct *work)
- /* Discard all entries on the write queues */
- static void clean_writequeues(void)
- {
--	int nodeid;
--
--	for (nodeid = 1; nodeid <= max_nodeid; nodeid++) {
--		struct connection *con = __nodeid2con(nodeid, 0);
--
--		if (con)
--			clean_one_writequeue(con);
--	}
-+	foreach_conn(clean_one_writequeue);
- }
- 
- static void work_stop(void)
-@@ -1406,23 +1418,29 @@ static int work_start(void)
+ /* SBS Technologies Inc. PMC-OCTPRO and P-OCTAL cards */
+ static int
+ sbs_setup(struct serial_private *priv, const struct pciserial_board *board,
+@@ -597,6 +627,82 @@ static int pci_xircom_init(struct pci_dev *dev)
  	return 0;
  }
  
--void dlm_lowcomms_stop(void)
-+static void stop_conn(struct connection *con)
- {
--	int i;
--	struct connection *con;
-+	con->flags |= 0x0F;
-+	if (con->sock)
-+		con->sock->sk->sk_user_data = NULL;
-+}
- 
-+static void free_conn(struct connection *con)
++#define MITE_IOWBSR1_WSIZE	0xa
++#define MITE_IOWBSR1_WIN_OFFSET	0x800
++#define MITE_IOWBSR1_WENAB	(1 << 7)
++#define MITE_LCIMR1_IO_IE_0	(1 << 24)
++#define MITE_LCIMR2_SET_CPU_IE	(1 << 31)
++#define MITE_IOWCR1_RAMSEL_MASK	0xfffffffe
++
++static int pci_ni8430_init(struct pci_dev *dev)
 +{
-+	close_connection(con, true);
-+	if (con->othercon)
-+		kmem_cache_free(con_cache, con->othercon);
-+	hlist_del(&con->list);
-+	kmem_cache_free(con_cache, con);
++	void __iomem *p;
++	unsigned long base, len;
++	u32 device_window;
++	unsigned int bar = 0;
++
++	if ((pci_resource_flags(dev, bar) & IORESOURCE_MEM) == 0) {
++		moan_device("no memory in bar", dev);
++		return 0;
++	}
++
++	base = pci_resource_start(dev, bar);
++	len =  pci_resource_len(dev, bar);
++	p = ioremap_nocache(base, len);
++	if (p == NULL)
++		return -ENOMEM;
++
++	/* Set device window address and size in BAR0 */
++	device_window = ((base + MITE_IOWBSR1_WIN_OFFSET) & 0xffffff00)
++	                | MITE_IOWBSR1_WENAB | MITE_IOWBSR1_WSIZE;
++	writel(device_window, p + MITE_IOWBSR1);
++
++	/* Set window access to go to RAMSEL IO address space */
++	writel((readl(p + MITE_IOWCR1) & MITE_IOWCR1_RAMSEL_MASK),
++	       p + MITE_IOWCR1);
++
++	/* Enable IO Bus Interrupt 0 */
++	writel(MITE_LCIMR1_IO_IE_0, p + MITE_LCIMR1);
++
++	/* Enable CPU Interrupt */
++	writel(MITE_LCIMR2_SET_CPU_IE, p + MITE_LCIMR2);
++
++	iounmap(p);
++	return 0;
 +}
 +
-+void dlm_lowcomms_stop(void)
++/* UART Port Control Register */
++#define NI8430_PORTCON	0x0f
++#define NI8430_PORTCON_TXVR_ENABLE	(1 << 3)
++
++static int
++pci_ni8430_setup(struct serial_private *priv, struct pciserial_board *board,
++		 struct uart_port *port, int idx)
 +{
- 	/* Set all the flags to prevent any
- 	   socket activity.
++	void __iomem *p;
++	unsigned long base, len;
++	unsigned int bar, offset = board->first_offset;
++
++	if (idx >= board->num_ports)
++		return 1;
++
++	bar = FL_GET_BASE(board->flags);
++	offset += idx * board->uart_offset;
++
++	base = pci_resource_start(priv->dev, bar);
++	len =  pci_resource_len(priv->dev, bar);
++	p = ioremap_nocache(base, len);
++
++	/* enable the transciever */
++	writeb(readb(p + offset + NI8430_PORTCON) | NI8430_PORTCON_TXVR_ENABLE,
++	       p + offset + NI8430_PORTCON);
++
++	iounmap(p);
++
++	return setup_port(priv, port, bar, offset, board->reg_shift);
++}
++
++
+ static int pci_netmos_init(struct pci_dev *dev)
+ {
+ 	/* subdevice 0x00PS means <P> parallel, <S> serial */
+@@ -913,6 +1019,18 @@ static struct pci_serial_quirk pci_serial_quirks[] __refdata = {
+ 		.exit		= __devexit_p(pci_ite887x_exit),
+ 	},
+ 	/*
++	 * National Instruments
++	 */
++	{
++		.vendor		= PCI_VENDOR_ID_NI,
++		.device		= PCI_ANY_ID,
++		.subvendor	= PCI_ANY_ID,
++		.subdevice	= PCI_ANY_ID,
++		.init		= pci_ni8430_init,
++		.setup		= pci_ni8430_setup,
++		.exit		= __devexit_p(pci_ni8430_exit),
++	},
++	/*
+ 	 * Panacom
+ 	 */
+ 	{
+@@ -1280,6 +1398,10 @@ enum pci_board_num_t {
+ 	pbn_exar_XR17C154,
+ 	pbn_exar_XR17C158,
+ 	pbn_pasemi_1682M,
++	pbn_ni8430_2,
++	pbn_ni8430_4,
++	pbn_ni8430_8,
++	pbn_ni8430_16,
+ };
+ 
+ /*
+@@ -1850,6 +1972,37 @@ static struct pciserial_board pci_boards[] __devinitdata = {
+ 		.num_ports	= 1,
+ 		.base_baud	= 8333333,
+ 	},
++	/*
++	 * National Instruments 843x
++	 */
++	[pbn_ni8430_16] = {
++		.flags		= FL_BASE0,
++		.num_ports	= 16,
++		.base_baud	= 3686400,
++		.uart_offset	= 0x10,
++		.first_offset	= 0x800,
++	},
++	[pbn_ni8430_8] = {
++		.flags		= FL_BASE0,
++		.num_ports	= 8,
++		.base_baud	= 3686400,
++		.uart_offset	= 0x10,
++		.first_offset	= 0x800,
++	},
++	[pbn_ni8430_4] = {
++		.flags		= FL_BASE0,
++		.num_ports	= 4,
++		.base_baud	= 3686400,
++		.uart_offset	= 0x10,
++		.first_offset	= 0x800,
++	},
++	[pbn_ni8430_2] = {
++		.flags		= FL_BASE0,
++		.num_ports	= 2,
++		.base_baud	= 3686400,
++		.uart_offset	= 0x10,
++		.first_offset	= 0x800,
++	},
+ };
+ 
+ static const struct pci_device_id softmodem_blacklist[] = {
+@@ -3052,6 +3205,46 @@ static struct pci_device_id serial_pci_tbl[] = {
+ 		pbn_pasemi_1682M },
+ 
+ 	/*
++	 * National Instruments
++	 */
++	{	PCI_VENDOR_ID_NI, PCI_DEVICE_ID_NI_PXI8430_2322,
++		PCI_ANY_ID, PCI_ANY_ID, 0, 0,
++		pbn_ni8430_2 },
++	{	PCI_VENDOR_ID_NI, PCI_DEVICE_ID_NI_PCI8430_2322,
++		PCI_ANY_ID, PCI_ANY_ID, 0, 0,
++		pbn_ni8430_2 },
++	{	PCI_VENDOR_ID_NI, PCI_DEVICE_ID_NI_PXI8430_2324,
++		PCI_ANY_ID, PCI_ANY_ID, 0, 0,
++		pbn_ni8430_4 },
++	{	PCI_VENDOR_ID_NI, PCI_DEVICE_ID_NI_PCI8430_2324,
++		PCI_ANY_ID, PCI_ANY_ID, 0, 0,
++		pbn_ni8430_4 },
++	{	PCI_VENDOR_ID_NI, PCI_DEVICE_ID_NI_PXI8430_2328,
++		PCI_ANY_ID, PCI_ANY_ID, 0, 0,
++		pbn_ni8430_8 },
++	{	PCI_VENDOR_ID_NI, PCI_DEVICE_ID_NI_PCI8430_2328,
++		PCI_ANY_ID, PCI_ANY_ID, 0, 0,
++		pbn_ni8430_8 },
++	{	PCI_VENDOR_ID_NI, PCI_DEVICE_ID_NI_PXI8430_23216,
++		PCI_ANY_ID, PCI_ANY_ID, 0, 0,
++		pbn_ni8430_16 },
++	{	PCI_VENDOR_ID_NI, PCI_DEVICE_ID_NI_PCI8430_23216,
++		PCI_ANY_ID, PCI_ANY_ID, 0, 0,
++		pbn_ni8430_16 },
++	{	PCI_VENDOR_ID_NI, PCI_DEVICE_ID_NI_PXI8432_2322,
++		PCI_ANY_ID, PCI_ANY_ID, 0, 0,
++		pbn_ni8430_2 },
++	{	PCI_VENDOR_ID_NI, PCI_DEVICE_ID_NI_PCI8432_2322,
++		PCI_ANY_ID, PCI_ANY_ID, 0, 0,
++		pbn_ni8430_2 },
++	{	PCI_VENDOR_ID_NI, PCI_DEVICE_ID_NI_PXI8432_2324,
++		PCI_ANY_ID, PCI_ANY_ID, 0, 0,
++		pbn_ni8430_4 },
++	{	PCI_VENDOR_ID_NI, PCI_DEVICE_ID_NI_PCI8432_2324,
++		PCI_ANY_ID, PCI_ANY_ID, 0, 0,
++		pbn_ni8430_4 },
++
++	/*
+ 	* ADDI-DATA GmbH communication cards <info@addi-data.com>
  	*/
- 	mutex_lock(&connections_lock);
--	for (i = 0; i <= max_nodeid; i++) {
--		con = __nodeid2con(i, 0);
--		if (con) {
--			con->flags |= 0x0F;
--			if (con->sock)
--				con->sock->sk->sk_user_data = NULL;
--		}
--	}
-+	foreach_conn(stop_conn);
- 	mutex_unlock(&connections_lock);
+ 	{	PCI_VENDOR_ID_ADDIDATA,
+diff --git a/include/linux/pci_ids.h b/include/linux/pci_ids.h
+index aca8c45..b3676fe 100644
+--- a/include/linux/pci_ids.h
++++ b/include/linux/pci_ids.h
+@@ -941,6 +941,20 @@
+ #define PCI_DEVICE_ID_SUN_TOMATILLO	0xa801
+ #define PCI_DEVICE_ID_SUN_CASSINI	0xabba
  
- 	work_stop();
-@@ -1430,25 +1448,20 @@ void dlm_lowcomms_stop(void)
- 	mutex_lock(&connections_lock);
- 	clean_writequeues();
- 
--	for (i = 0; i <= max_nodeid; i++) {
--		con = __nodeid2con(i, 0);
--		if (con) {
--			close_connection(con, true);
--			if (con->othercon)
--				kmem_cache_free(con_cache, con->othercon);
--			kmem_cache_free(con_cache, con);
--		}
--	}
--	max_nodeid = 0;
-+	foreach_conn(free_conn);
++#define PCI_VENDOR_ID_NI		0x1093
++#define PCI_DEVICE_ID_NI_PXI8430_2322	0x7080
++#define PCI_DEVICE_ID_NI_PCI8430_2322	0x70db
++#define PCI_DEVICE_ID_NI_PXI8430_2324	0x70dd
++#define PCI_DEVICE_ID_NI_PCI8430_2324	0x70df
++#define PCI_DEVICE_ID_NI_PXI8430_2328	0x70e2
++#define PCI_DEVICE_ID_NI_PCI8430_2328	0x70e4
++#define PCI_DEVICE_ID_NI_PXI8430_23216	0x70e6
++#define PCI_DEVICE_ID_NI_PCI8430_23216	0x70e7
++#define PCI_DEVICE_ID_NI_PXI8432_2322	0x70e8
++#define PCI_DEVICE_ID_NI_PCI8432_2322	0x70ea
++#define PCI_DEVICE_ID_NI_PXI8432_2324	0x70ec
++#define PCI_DEVICE_ID_NI_PCI8432_2324	0x70ee
 +
- 	mutex_unlock(&connections_lock);
- 	kmem_cache_destroy(con_cache);
--	idr_init(&connections_idr);
- }
- 
- int dlm_lowcomms_start(void)
- {
- 	int error = -EINVAL;
- 	struct connection *con;
-+	int i;
-+
-+	for (i = 0; i < CONN_HASH_SIZE; i++)
-+		INIT_HLIST_HEAD(&connection_hash[i]);
- 
- 	init_local();
- 	if (!dlm_local_count) {
--- 
-1.5.5.6
+ #define PCI_VENDOR_ID_CMD		0x1095
+ #define PCI_DEVICE_ID_CMD_643		0x0643
+ #define PCI_DEVICE_ID_CMD_646		0x0646
 
