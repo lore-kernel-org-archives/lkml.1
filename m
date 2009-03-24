@@ -1,108 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755190AbZCXJyT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757404AbZCXJzO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755190AbZCXJyT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 05:54:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753553AbZCXJyD
+	id S1757404AbZCXJzO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 05:55:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755233AbZCXJy7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 05:54:03 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:51031 "EHLO mx3.mail.elte.hu"
+	Tue, 24 Mar 2009 05:54:59 -0400
+Received: from mailhub.sw.ru ([195.214.232.25]:27966 "EHLO relay.sw.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752300AbZCXJyB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 05:54:01 -0400
-Date: Tue, 24 Mar 2009 10:53:46 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: eduard.munteanu@linux360.ro, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] kmemtrace: fix build breakage in befs
-Message-ID: <20090324095346.GB23208@elte.hu>
-References: <20090324085128.GF13016@elte.hu> <1237884846.25315.37.camel@penberg-laptop> <20090324085658.GG13016@elte.hu> <1237885074.25315.43.camel@penberg-laptop> <20090324090757.GH13016@elte.hu> <1237886113.25315.49.camel@penberg-laptop> <20090324091742.GB6605@elte.hu> <1237886559.25315.60.camel@penberg-laptop> <20090324093103.GA19463@elte.hu> <1237887513.25315.65.camel@penberg-laptop>
+	id S1753553AbZCXJy7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Mar 2009 05:54:59 -0400
+Message-ID: <49C8ADEE.3000606@gmail.com>
+Date: Tue, 24 Mar 2009 12:54:54 +0300
+From: Stanichenko Marat <mstanichenko@gmail.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1237887513.25315.65.camel@penberg-laptop>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] bonding: allow bond in mode balance-alb to work properly
+ in bridge
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> Thu, Mar 19, 2009 at 11:21:43AM CET, davem@davemloft.net wrote:
+>>From: Jiri Pirko <jpirko@redhat.com>
+>>Date: Thu, 19 Mar 2009 09:44:45 +0100
+>>
+>>> Yes I was looking at this thing yesterday (uc_list). But this list serves
+>>> to different purpose. Do you think that it will be correct to use it for this? I
+>>> would maybe like to make a new list similar to this for our purpose
+>>> (say addr_list). I think it would be more correct.
+>>
+>>Whatever you do with that list privately inside of the bonding
+>>driver should be fine.
+> Well I do not need it only inside the bonding driver. I want bridge to use this
+> list when adding a device in it and get mac addresses from there into its
+> hashlist (to recognize these addresses as local).
+Please correct me if I understand you improperly. You're going to mark all mac 
+addresses that belong to slaves as "local" when adding a bond device to the 
+bridge, aren't you? The only thing I'd like to notice (this might be an obvious 
+one): a packet that is pushed out from one slave might reach the host through 
+another slave. Considering all slaves as "local" in bridge code might lead to 
+numerous messages "received packet with own address as source address".
 
-* Pekka Enberg <penberg@cs.helsinki.fi> wrote:
+Please CC me personally when answering this message.
 
-> On Tue, 2009-03-24 at 10:31 +0100, Ingo Molnar wrote:
-> > * Pekka Enberg <penberg@cs.helsinki.fi> wrote:
-> > 
-> > > On Tue, 2009-03-24 at 10:17 +0100, Ingo Molnar wrote:
-> > > > > OK, I think all of them are now fixed. I haven't yet been able to 
-> > > > > complete a build so help is still appreciated. ;-)
-> > > > 
-> > > > unless there's a mail delay, we still have:
-> > > > 
-> > > > lib/decompress_unlzma.c:122: error: implicit declaration of function ‘kfree’
-> > > > lib/decompress_unlzma.c:551: error: implicit declaration of function ‘kmalloc’
-> > > 
-> > > Sorry, I missed that. I was testing the .config you sent in the 
-> > > initial mail, not allyesconfig. I sent you a patch to fix that as 
-> > > well now.
-> > 
-> > no problem, i missed it too - computer reminded us that it's still 
-> > there ;-)
-> > 
-> > there's a new headers-export-check failure:
-> > 
-> > /home/mingo/tip/usr/include/linux/bsg.h:11: found __[us]{8,16,32,64} type without #include <linux/types.h>
-> > /home/mingo/tip/usr/include/linux/fs.h:11: included file 'linux/gfp.h' is not exported
-> > make[3]: *** [/home/mingo/tip/usr/include/linux/.check] Error 1
-> > make[2]: *** [linux] Error 2
-> > 
-> > (CONFIG_HEADERS_CHECK)
-> 
-> Hmm, I wonder what is the best way to fix this, though. I think we
-> better use macros there (like rest of linux/fs.h) does because of
-> dependency issues. What do you think?
-> 
-> 			Pekka
-> 
-> diff --git a/include/linux/fs.h b/include/linux/fs.h
-> index add95da..4dda05d 100644
-> --- a/include/linux/fs.h
-> +++ b/include/linux/fs.h
-> @@ -8,7 +8,6 @@
->  
->  #include <linux/limits.h>
->  #include <linux/ioctl.h>
-> -#include <linux/gfp.h>
->  
->  /*
->   * It's silly to have NR_OPEN bigger than NR_FILE, but you can change
-> @@ -2233,15 +2232,8 @@ ssize_t simple_attr_write(struct file *file, const char __user *buf,
->  
->  
->  #ifdef CONFIG_SECURITY
-> -static inline char *alloc_secdata(void)
-> -{
-> -       return (char *)get_zeroed_page(GFP_KERNEL);
-> -}
-> -
-> -static inline void free_secdata(void *secdata)
-> -{
-> -       free_page((unsigned long)secdata);
-> -}
-> +#define alloc_secdata() (char *)get_zeroed_page(GFP_KERNEL)
-> +#define free_secdata()  free_page((unsigned long) secdata)
-
-yep, that would be fine - but please add a comment about why they 
-are macros and what would have to be done to fix it.
-
-(the real fix would be to separate fs.h into fs_types.h and 
-fs_apis.h - like we did it with spinlock.h. Similarly with slab.h.)
-
-	Ingo
+Thanks,
+Marat.
