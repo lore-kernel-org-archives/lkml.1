@@ -1,61 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760318AbZCXOKh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756593AbZCXONX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760318AbZCXOKh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 10:10:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756892AbZCXOEf
+	id S1756593AbZCXONX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 10:13:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756760AbZCXOFe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 10:04:35 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:39276 "EHLO mx3.mail.elte.hu"
+	Tue, 24 Mar 2009 10:05:34 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:47789 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757468AbZCXOEc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 10:04:32 -0400
-Date: Tue, 24 Mar 2009 15:04:19 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Luis Henriques <henrix@sapo.pt>
-Cc: Peter Zijlstra <peterz@infradead.org>,
-       Gregory Haskins <ghaskins@novell.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v3 -tip] sched: Clean unused fields from struct rq
-Message-ID: <20090324140419.GD32043@elte.hu>
-References: <20090318225137.GA3766@hades.domain.com> <20090323175224.GA3938@hades.domain.com>
+	id S1759264AbZCXOF1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Mar 2009 10:05:27 -0400
+Date: Tue, 24 Mar 2009 15:05:24 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Mikulas Patocka <mpatocka@redhat.com>
+Cc: device-mapper development <dm-devel@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andi Kleen <ak@suse.de>, "MASON, CHRISTOPHER" <CHRIS.MASON@oracle.com>
+Subject: Re: [dm-devel] Barriers still not passing on simple dm devices...
+Message-ID: <20090324140524.GV27476@kernel.dk>
+References: <49C7DD3C.2020401@redhat.com> <Pine.LNX.4.64.0903241000010.29968@hs20-bc2-1.build.redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090323175224.GA3938@hades.domain.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <Pine.LNX.4.64.0903241000010.29968@hs20-bc2-1.build.redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Luis Henriques <henrix@sapo.pt> wrote:
-
-> On Wed, Mar 18, 2009 at 10:51:37PM +0000, Luis Henriques wrote:
-> > Since they are used on in statistics and are always set to zero, the following
-> > fields from struct rq have been removed: yld_exp_empty, yld_act_empty and
-> > yld_both_empty.
-> > 
-> > Both Sched Debug and SCHEDSTAT_VERSION versions has also been incremented since
-> > ABIs have been changed.
-> > 
+On Tue, Mar 24 2009, Mikulas Patocka wrote:
 > 
-> Hi Ingo,
 > 
-> Sorry to bother you but I can not find this patch in -tip.  Just 
-> would like to confirm with you that it was NACK'ed or you just 
-> forgot to merge it to the tree.
+> On Mon, 23 Mar 2009, Eric Sandeen wrote:
+> 
+> > I've noticed that on 2.6.29-rcX, with Andi's patch
+> > (ab4c1424882be9cd70b89abf2b484add355712fa, dm: support barriers on
+> > simple devices) barriers are still getting rejected on these simple devices.
+> > 
+> > The problem is in __generic_make_request():
+> > 
+> >                 if (bio_barrier(bio) && bio_has_data(bio) &&
+> >                     (q->next_ordered == QUEUE_ORDERED_NONE)) {
+> >                         err = -EOPNOTSUPP;
+> >                         goto end_io;
+> >                 }
+> > 
+> > and dm isn't flagging its queue as supporting ordered writes, so it's
+> > rejected here.
+> > 
+> > Doing something like this:
+> > 
+> > + if (t->barriers_supported)
+> > +         blk_queue_ordered(q, QUEUE_ORDERED_DRAIN, NULL);
+> > 
+> > somewhere in dm (I stuck it in dm_table_set_restrictions() - almost
+> > certainly the wrong thing to do) did get my dm-linear device to mount
+> > with xfs, w/o xfs complaining that its mount-time barrier tests failed.
+> > 
+> > So what's the right way around this?  What should dm (or md for that
+> > matter) advertise on their queues about ordered-ness?  Should there be
+> > some sort of "QUEUE_ORDERED_PASSTHROUGH" or something to say "this level
+> > doesn't care, ask the next level" or somesuch?  Or should it inherit the
+> > flag from the next level down?  Ideas?
+> > 
+> > Thanks,
+> > -Eric
+> > 
+> > --
+> > dm-devel mailing list
+> > dm-devel@redhat.com
+> > https://www.redhat.com/mailman/listinfo/dm-devel
+> 
+> Hi
+> 
+> This is misdesign in generic bio layer and it should be fixed there. I 
+> think it is blocking barrier support in md-raid1 too. Jens, pls apply the 
+> attached patch.
+> 
+> Mikulas
+> 
+> ----
+> 
+> Move test for not-supported barriers to __make_request.
+> 
+> This test prevents barriers from being dispatched to device mapper
+> and md.
+> 
+> This test is sensible only for drivers that use requests (such as disk
+> drivers), not for drivers that use bios.
+> 
+> It is better to fix it in generic code than to make workaround for it
+> in device mapper and md.
 
-Was held up by the schedstat tool discussions. Please resend the 
-patch with a link to the updated tool in the commit log perhaps (if 
-such a link exists), and with Gregory's ack in place.
+So you audited any ->make_request_fn style driver and made sure they
+rejected barriers?
 
-Thanks,
+> 
+> Signed-off-by: Mikulas Patocka <mpatocka@redhat.com>
+> 
+> ---
+>  block/blk-core.c |   11 ++++++-----
+>  1 file changed, 6 insertions(+), 5 deletions(-)
+> 
+> Index: linux-2.6.29-rc6-devel/block/blk-core.c
+> ===================================================================
+> --- linux-2.6.29-rc6-devel.orig/block/blk-core.c	2009-02-23 18:43:37.000000000 +0100
+> +++ linux-2.6.29-rc6-devel/block/blk-core.c	2009-02-23 18:44:27.000000000 +0100
+> @@ -1145,6 +1145,12 @@ static int __make_request(struct request
+>  	const int unplug = bio_unplug(bio);
+>  	int rw_flags;
+>  
+> +	if (bio_barrier(bio) && bio_has_data(bio) &&
+> +	    (q->next_ordered == QUEUE_ORDERED_NONE)) {
+> +		bio_endio(bio, -EOPNOTSUPP);
+> +		return 0;
+> +	}
+> +
+>  	nr_sectors = bio_sectors(bio);
+>  
+>  	/*
+> @@ -1450,11 +1456,6 @@ static inline void __generic_make_reques
+>  			err = -EOPNOTSUPP;
+>  			goto end_io;
+>  		}
+> -		if (bio_barrier(bio) && bio_has_data(bio) &&
+> -		    (q->next_ordered == QUEUE_ORDERED_NONE)) {
+> -			err = -EOPNOTSUPP;
+> -			goto end_io;
+> -		}
+>  
+>  		ret = q->make_request_fn(q, bio);
+>  	} while (ret);
+> > 
 
-	Ingo
+-- 
+Jens Axboe
+
