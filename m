@@ -1,119 +1,281 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758476AbZCXMzg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759937AbZCXM5f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758476AbZCXMzg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 08:55:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753237AbZCXMzY
+	id S1759937AbZCXM5f (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 08:57:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757387AbZCXM50
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 08:55:24 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:52817 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751006AbZCXMzX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 08:55:23 -0400
-Date: Tue, 24 Mar 2009 13:55:11 +0100
-From: Jan Kara <jack@suse.cz>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: "Martin J. Bligh" <mbligh@mbligh.org>, linux-ext4@vger.kernel.org,
-       Ying Han <yinghan@google.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-mm <linux-mm@kvack.org>, guichaz@gmail.com,
-       Alex Khesin <alexk@google.com>, Mike Waychison <mikew@google.com>,
-       Rohit Seth <rohitseth@google.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: ftruncate-mmap: pages are lost after writing to mmaped file.
-Message-ID: <20090324125510.GA9434@duck.suse.cz>
-References: <604427e00903181244w360c5519k9179d5c3e5cd6ab3@mail.gmail.com> <200903200248.22623.nickpiggin@yahoo.com.au> <20090319164638.GB3899@duck.suse.cz> <200903241844.22851.nickpiggin@yahoo.com.au> <20090324123935.GD23439@duck.suse.cz>
+	Tue, 24 Mar 2009 08:57:26 -0400
+Received: from e36.co.us.ibm.com ([32.97.110.154]:43579 "EHLO
+	e36.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756591AbZCXM5Z (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Mar 2009 08:57:25 -0400
+Date: Tue, 24 Mar 2009 18:27:10 +0530
+From: Bharata B Rao <bharata@linux.vnet.ibm.com>
+To: linux-kernel@vger.kernel.org
+Cc: Balaji Rao <balajirrao@gmail.com>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Li Zefan <lizf@cn.fujitsu.com>, Paul Menage <menage@google.com>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Subject: [PATCH -tip] cpuacct: per-cgroup utime/stime statistics - v5
+Message-ID: <20090324125710.GG3891@in.ibm.com>
+Reply-To: bharata@linux.vnet.ibm.com
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090324123935.GD23439@duck.suse.cz>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue 24-03-09 13:39:36, Jan Kara wrote:
->   Hi,
-> 
-> On Tue 24-03-09 18:44:21, Nick Piggin wrote:
-> > On Friday 20 March 2009 03:46:39 Jan Kara wrote:
-> > > On Fri 20-03-09 02:48:21, Nick Piggin wrote:
-> > 
-> > > > Holding mapping->private_lock over the __set_page_dirty should
-> > > > fix it, although I guess you'd want to release it before calling
-> > > > __mark_inode_dirty so as not to put inode_lock under there. I
-> > > > have a patch for this if it sounds reasonable.
-> > >
-> > >   Yes, that seems to be a bug - the function actually looked suspitious to
-> > > me yesterday but I somehow convinced myself that it's fine. Probably
-> > > because fsx-linux is single-threaded.
-> > 
-> > 
-> > After a whole lot of chasing my own tail in the VM and buffer layers,
-> > I think it is a problem in ext2 (and I haven't been able to reproduce
-> > with ext3 yet, which might lend weight to that, although as we have
-> > seen, it is very timing dependent).
-> > 
-> > That would be slightly unfortunate because we still have Jan's ext3
-> > problem, and also another reported problem of corruption on ext3 (on
-> > brd driver).
-> > 
-> > Anyway, when I have reproduced the problem with the test case, the
-> > "lost" writes are all reported to be holes. Unfortunately, that doesn't
-> > point straight to the filesystem, because ext2 allocates blocks in this
-> > case at writeout time, so if dirty bits are getting lost, then it would
-> > be normal to see holes.
-> > 
-> > I then put in a whole lot of extra infrastructure to track metadata about
-> > each struct page (when it was last written out, when it last had the number
-> > of writable ptes reach 0, when the dirty bits were last cleared etc). And
-> > none of the normal asertions were triggering: eg. when any page is removed
-> > from pagecache (except truncates), it has always had all its buffers
-> > written out *after* all ptes were made readonly or unmapped. Lots of other
-> > tests and crap like that.
->   I see we're going the same way ;)
-> 
-> > So I tried what I should have done to start with and did an e2fsck after
-> > seeing corruption. Yes, it comes up with errors. Now that is unusual
-> > because that should be largely insulated from the vm: if a dirty bit gets
-> > lost, then the filesystem image should be quite happy and error-free with
-> > a hole or unwritten data there.
->   This is different for me. I see no corruption on the filesystem with
-> ext3. Anyway, errors from fsck would be useful to see what kind of
-> corruption you saw.
-> 
-> > I don't know ext? locking very well, except that it looks pretty overly
-> > complex and crufty.
-> > 
-> > Usually, blocks are instantiated by write(2), under i_mutex, serialising
-> > the allocator somewhat. mmap-write blocks are instantiated at writeout
-> > time, unserialised. I moved truncate_mutex to cover the entire get_blocks
-> > function, and can no longer trigger the problem. Might be a timing issue
-> > though -- Ying, can you try this and see if you can still reproduce?
-> > 
-> > I close my eyes and pick something out of a hat. a686cd89. Search for XXX.
-> > Nice. Whether or not this cased the problem, can someone please tell me
-> > why it got merged in that state?
->   Maybe, I see it did some changes to ext2_get_blocks() which could be
-> where the problem was introduced...
-> 
-> > I'm leaving ext3 running for now. It looks like a nasty task to bisect
-> > ext2 down to that commit :( and I would be more interested in trying to
-> > reproduce Jan's ext3 problem, however, because I'm not too interested in
-> > diving into ext2 locking to work out exactly what is racing and how to
-> > fix it properly. I suspect it would be most productive to wire up some
-> > ioctls right into the block allocator/lookup and code up a userspace
-> > tester for it that could probably stress it a lot harder than kernel
-> > writeout can.
->   Yes, what I observed with ext3 so far is that data is properly copied and
-> page marked dirty when the data is copied in. But then at some point dirty
-> bit is cleared via block_write_full_page() but we don't get to submitting
-> at least one buffer in that page. I'm now debugging which path we take so
-> that this happens...
-  And one more interesting thing I don't yet fully understand - I see pages
-having PageError() set when they are removed from page cache (and they have
-been faulted in before). It's probably some interaction with pagecache
-readahead...
+Hi,
 
- 									Honza
+Here is the next and hopefully final version of the cpuacct
+statistics patch to obtain per-cgroup system and user times.
+
+Thanks for reviewing and tolerating so many iterations :)
+
+Regards,
+Bharata.
+
+cpuacct: Add stime and utime statistics
+
+Add per-cgroup cpuacct controller statistics like the system and user
+time consumed by the group of tasks.
+
+Changelog:
+
+v5
+- In cpuacct_stats_show(), use cputime64_to_clock_t() since we are
+  operating on a 64bit variable here.
+
+v4
+- Remove comments in cpuacct_update_stats() which explained why rcu_read_lock()
+  was needed (as per Peter Zijlstra's review comments).
+- Don't say that percpu_counter_read() is broken in Documentation/cpuacct.txt
+  as per KAMEZAWA Hiroyuki's review comments.
+
+v3
+- Fix a small race in the cpuacct hierarchy walk.
+
+v2
+- stime and utime now exported in clock_t units instead of msecs.
+- Addressed the code review comments from Balbir and Li Zefan.
+- Moved to -tip tree.
+
+v1
+- Moved the stime/utime accounting to cpuacct controller.
+
+Earlier versions
+- http://lkml.org/lkml/2009/2/25/129
+
+Signed-off-by: Bharata B Rao <bharata@linux.vnet.ibm.com>
+Signed-off-by: Balaji Rao <balajirrao@gmail.com>
+Cc: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+Cc: Li Zefan <lizf@cn.fujitsu.com>
+Cc: Paul Menage <menage@google.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Acked-by: Balbir Singh <balbir@linux.vnet.ibm.com>
+Tested-by: Balbir Singh <balbir@linux.vnet.ibm.com>
+---
+ Documentation/cgroups/cpuacct.txt |   18 +++++++
+ kernel/sched.c                    |   88 +++++++++++++++++++++++++++++++++++---
+ 2 files changed, 100 insertions(+), 6 deletions(-)
+
+--- a/Documentation/cgroups/cpuacct.txt
++++ b/Documentation/cgroups/cpuacct.txt
+@@ -30,3 +30,21 @@ The above steps create a new group g1 an
+ process (bash) into it. CPU time consumed by this bash and its children
+ can be obtained from g1/cpuacct.usage and the same is accumulated in
+ /cgroups/cpuacct.usage also.
++
++cpuacct.stat file lists a few statistics which further divide the
++CPU time obtained by the cgroup into user and system times. Currently
++the following statistics are supported:
++
++utime: Time spent by tasks of the cgroup in user mode.
++stime: Time spent by tasks of the cgroup in kernel mode.
++
++utime and stime are in USER_HZ unit.
++
++cpuacct controller uses percpu_counter interface to collect utime and
++stime. This causes two side effects:
++
++- It is theoretically possible to see wrong values for stime and utime.
++  This is because percpu_counter_read() on 32bit systems isn't safe
++  against concurrent writes.
++- It is possible to see slightly outdated values for stime and utime
++  due to the batch processing nature of percpu_counter.
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -1442,10 +1442,22 @@ iter_move_one_task(struct rq *this_rq, i
+ 		   struct rq_iterator *iterator);
+ #endif
+ 
++/* Time spent by the tasks of the cpu accounting group executing in ... */
++enum cpuacct_stat_index {
++	CPUACCT_STAT_UTIME,	/* ... user mode */
++	CPUACCT_STAT_STIME,	/* ... kernel mode */
++
++	CPUACCT_STAT_NSTATS,
++};
++
+ #ifdef CONFIG_CGROUP_CPUACCT
+ static void cpuacct_charge(struct task_struct *tsk, u64 cputime);
++static void cpuacct_update_stats(struct task_struct *tsk,
++		enum cpuacct_stat_index idx, cputime_t val);
+ #else
+ static inline void cpuacct_charge(struct task_struct *tsk, u64 cputime) {}
++static inline void cpuacct_update_stats(struct task_struct *tsk,
++		enum cpuacct_stat_index idx, cputime_t val) {}
+ #endif
+ 
+ static inline void inc_cpu_load(struct rq *rq, unsigned long load)
+@@ -4375,6 +4387,8 @@ void account_user_time(struct task_struc
+ 		cpustat->nice = cputime64_add(cpustat->nice, tmp);
+ 	else
+ 		cpustat->user = cputime64_add(cpustat->user, tmp);
++
++	cpuacct_update_stats(p, CPUACCT_STAT_UTIME, cputime);
+ 	/* Account for user time used */
+ 	acct_update_integrals(p);
+ }
+@@ -4436,6 +4450,8 @@ void account_system_time(struct task_str
+ 	else
+ 		cpustat->system = cputime64_add(cpustat->system, tmp);
+ 
++	cpuacct_update_stats(p, CPUACCT_STAT_STIME, cputime);
++
+ 	/* Account for system time used */
+ 	acct_update_integrals(p);
+ }
+@@ -9724,6 +9740,7 @@ struct cpuacct {
+ 	struct cgroup_subsys_state css;
+ 	/* cpuusage holds pointer to a u64-type object on every cpu */
+ 	u64 *cpuusage;
++	struct percpu_counter cpustat[CPUACCT_STAT_NSTATS];
+ 	struct cpuacct *parent;
+ };
+ 
+@@ -9748,20 +9765,33 @@ static struct cgroup_subsys_state *cpuac
+ 	struct cgroup_subsys *ss, struct cgroup *cgrp)
+ {
+ 	struct cpuacct *ca = kzalloc(sizeof(*ca), GFP_KERNEL);
++	int i;
+ 
+ 	if (!ca)
+-		return ERR_PTR(-ENOMEM);
++		goto out;
+ 
+ 	ca->cpuusage = alloc_percpu(u64);
+-	if (!ca->cpuusage) {
+-		kfree(ca);
+-		return ERR_PTR(-ENOMEM);
+-	}
++	if (!ca->cpuusage)
++		goto out_free_ca;
++
++	for (i = 0; i < CPUACCT_STAT_NSTATS; i++)
++		if (percpu_counter_init(&ca->cpustat[i], 0))
++			goto out_free_counters;
+ 
+ 	if (cgrp->parent)
+ 		ca->parent = cgroup_ca(cgrp->parent);
+ 
+ 	return &ca->css;
++
++out_free_counters:
++	i--;
++	while (i-- >= 0)
++		percpu_counter_destroy(&ca->cpustat[i]);
++	free_percpu(ca->cpuusage);
++out_free_ca:
++	kfree(ca);
++out:
++	return ERR_PTR(-ENOMEM);
+ }
+ 
+ /* destroy an existing cpu accounting group */
+@@ -9769,7 +9799,10 @@ static void
+ cpuacct_destroy(struct cgroup_subsys *ss, struct cgroup *cgrp)
+ {
+ 	struct cpuacct *ca = cgroup_ca(cgrp);
++	int i;
+ 
++	for (i = 0; i < CPUACCT_STAT_NSTATS; i++)
++		percpu_counter_destroy(&ca->cpustat[i]);
+ 	free_percpu(ca->cpuusage);
+ 	kfree(ca);
+ }
+@@ -9856,6 +9889,25 @@ static int cpuacct_percpu_seq_read(struc
+ 	return 0;
+ }
+ 
++static const char *cpuacct_stat_desc[] = {
++	[CPUACCT_STAT_UTIME] = "utime",
++	[CPUACCT_STAT_STIME] = "stime",
++};
++
++static int cpuacct_stats_show(struct cgroup *cgrp, struct cftype *cft,
++		struct cgroup_map_cb *cb)
++{
++	struct cpuacct *ca = cgroup_ca(cgrp);
++	int i;
++
++	for (i = 0; i < CPUACCT_STAT_NSTATS; i++) {
++		s64 val = percpu_counter_read(&ca->cpustat[i]);
++		val = cputime64_to_clock_t(val);
++		cb->fill(cb, cpuacct_stat_desc[i], val);
++	}
++	return 0;
++}
++
+ static struct cftype files[] = {
+ 	{
+ 		.name = "usage",
+@@ -9866,7 +9918,10 @@ static struct cftype files[] = {
+ 		.name = "usage_percpu",
+ 		.read_seq_string = cpuacct_percpu_seq_read,
+ 	},
+-
++	{
++		.name = "stat",
++		.read_map = cpuacct_stats_show,
++	},
+ };
+ 
+ static int cpuacct_populate(struct cgroup_subsys *ss, struct cgroup *cgrp)
+@@ -9900,6 +9955,27 @@ static void cpuacct_charge(struct task_s
+ 	rcu_read_unlock();
+ }
+ 
++/*
++ * Charge the system/user time to the task's accounting group.
++ */
++static void cpuacct_update_stats(struct task_struct *tsk,
++		enum cpuacct_stat_index idx, cputime_t val)
++{
++	struct cpuacct *ca;
++
++	if (unlikely(!cpuacct_subsys.active))
++		return;
++
++	rcu_read_lock();
++	ca = task_ca(tsk);
++
++	do {
++		percpu_counter_add(&ca->cpustat[idx], val);
++		ca = ca->parent;
++	} while (ca);
++	rcu_read_unlock();
++}
++
+ struct cgroup_subsys cpuacct_subsys = {
+ 	.name = "cpuacct",
+ 	.create = cpuacct_create,
