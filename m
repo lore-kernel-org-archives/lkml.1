@@ -1,136 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756593AbZCXONX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760561AbZCXOOI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756593AbZCXONX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 10:13:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756760AbZCXOFe
+	id S1760561AbZCXOOI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 10:14:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758357AbZCXOGJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 10:05:34 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:47789 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759264AbZCXOF1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 10:05:27 -0400
-Date: Tue, 24 Mar 2009 15:05:24 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Mikulas Patocka <mpatocka@redhat.com>
-Cc: device-mapper development <dm-devel@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andi Kleen <ak@suse.de>, "MASON, CHRISTOPHER" <CHRIS.MASON@oracle.com>
-Subject: Re: [dm-devel] Barriers still not passing on simple dm devices...
-Message-ID: <20090324140524.GV27476@kernel.dk>
-References: <49C7DD3C.2020401@redhat.com> <Pine.LNX.4.64.0903241000010.29968@hs20-bc2-1.build.redhat.com>
+	Tue, 24 Mar 2009 10:06:09 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:48996 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755980AbZCXOGH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Mar 2009 10:06:07 -0400
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: [PATCH 25/30] tty: moxa, fix refcounting in moxa_poll_port
+To: linux-kernel@vger.kernel.org, linux-serial@vger.kernel.org,
+       torvalds@linux-foundation.org
+Date: Tue, 24 Mar 2009 14:06:01 +0000
+Message-ID: <20090324140557.12735.48589.stgit@localhost.localdomain>
+In-Reply-To: <20090324135930.12735.7827.stgit@localhost.localdomain>
+References: <20090324135930.12735.7827.stgit@localhost.localdomain>
+User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0903241000010.29968@hs20-bc2-1.build.redhat.com>
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 24 2009, Mikulas Patocka wrote:
-> 
-> 
-> On Mon, 23 Mar 2009, Eric Sandeen wrote:
-> 
-> > I've noticed that on 2.6.29-rcX, with Andi's patch
-> > (ab4c1424882be9cd70b89abf2b484add355712fa, dm: support barriers on
-> > simple devices) barriers are still getting rejected on these simple devices.
-> > 
-> > The problem is in __generic_make_request():
-> > 
-> >                 if (bio_barrier(bio) && bio_has_data(bio) &&
-> >                     (q->next_ordered == QUEUE_ORDERED_NONE)) {
-> >                         err = -EOPNOTSUPP;
-> >                         goto end_io;
-> >                 }
-> > 
-> > and dm isn't flagging its queue as supporting ordered writes, so it's
-> > rejected here.
-> > 
-> > Doing something like this:
-> > 
-> > + if (t->barriers_supported)
-> > +         blk_queue_ordered(q, QUEUE_ORDERED_DRAIN, NULL);
-> > 
-> > somewhere in dm (I stuck it in dm_table_set_restrictions() - almost
-> > certainly the wrong thing to do) did get my dm-linear device to mount
-> > with xfs, w/o xfs complaining that its mount-time barrier tests failed.
-> > 
-> > So what's the right way around this?  What should dm (or md for that
-> > matter) advertise on their queues about ordered-ness?  Should there be
-> > some sort of "QUEUE_ORDERED_PASSTHROUGH" or something to say "this level
-> > doesn't care, ask the next level" or somesuch?  Or should it inherit the
-> > flag from the next level down?  Ideas?
-> > 
-> > Thanks,
-> > -Eric
-> > 
-> > --
-> > dm-devel mailing list
-> > dm-devel@redhat.com
-> > https://www.redhat.com/mailman/listinfo/dm-devel
-> 
-> Hi
-> 
-> This is misdesign in generic bio layer and it should be fixed there. I 
-> think it is blocking barrier support in md-raid1 too. Jens, pls apply the 
-> attached patch.
-> 
-> Mikulas
-> 
-> ----
-> 
-> Move test for not-supported barriers to __make_request.
-> 
-> This test prevents barriers from being dispatched to device mapper
-> and md.
-> 
-> This test is sensible only for drivers that use requests (such as disk
-> drivers), not for drivers that use bios.
-> 
-> It is better to fix it in generic code than to make workaround for it
-> in device mapper and md.
+From: Jiri Slaby <jirislaby@gmail.com>
 
-So you audited any ->make_request_fn style driver and made sure they
-rejected barriers?
+There is missing tty_kref_put on some paths in moxa_poll_port,
+although the reference is always taken. Fix it.
 
-> 
-> Signed-off-by: Mikulas Patocka <mpatocka@redhat.com>
-> 
-> ---
->  block/blk-core.c |   11 ++++++-----
->  1 file changed, 6 insertions(+), 5 deletions(-)
-> 
-> Index: linux-2.6.29-rc6-devel/block/blk-core.c
-> ===================================================================
-> --- linux-2.6.29-rc6-devel.orig/block/blk-core.c	2009-02-23 18:43:37.000000000 +0100
-> +++ linux-2.6.29-rc6-devel/block/blk-core.c	2009-02-23 18:44:27.000000000 +0100
-> @@ -1145,6 +1145,12 @@ static int __make_request(struct request
->  	const int unplug = bio_unplug(bio);
->  	int rw_flags;
->  
-> +	if (bio_barrier(bio) && bio_has_data(bio) &&
-> +	    (q->next_ordered == QUEUE_ORDERED_NONE)) {
-> +		bio_endio(bio, -EOPNOTSUPP);
-> +		return 0;
-> +	}
-> +
->  	nr_sectors = bio_sectors(bio);
->  
->  	/*
-> @@ -1450,11 +1456,6 @@ static inline void __generic_make_reques
->  			err = -EOPNOTSUPP;
->  			goto end_io;
->  		}
-> -		if (bio_barrier(bio) && bio_has_data(bio) &&
-> -		    (q->next_ordered == QUEUE_ORDERED_NONE)) {
-> -			err = -EOPNOTSUPP;
-> -			goto end_io;
-> -		}
->  
->  		ret = q->make_request_fn(q, bio);
->  	} while (ret);
-> > 
+Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+Reported-by: Jan 'Yenya' Kasprzak <kas@fi.muni.cz>
+Signed-off-by: Alan Cox <alan@lxorguk.ukuu.org.uk>
+---
 
--- 
-Jens Axboe
+ drivers/char/moxa.c |    9 +++++----
+ 1 files changed, 5 insertions(+), 4 deletions(-)
+
+
+diff --git a/drivers/char/moxa.c b/drivers/char/moxa.c
+index 8b0da97..4a4cab7 100644
+--- a/drivers/char/moxa.c
++++ b/drivers/char/moxa.c
+@@ -1486,11 +1486,11 @@ static int moxa_poll_port(struct moxa_port *p, unsigned int handle,
+ 	}
+ 
+ 	if (!handle) /* nothing else to do */
+-		return 0;
++		goto put;
+ 
+ 	intr = readw(ip); /* port irq status */
+ 	if (intr == 0)
+-		return 0;
++		goto put;
+ 
+ 	writew(0, ip); /* ACK port */
+ 	ofsAddr = p->tableAddr;
+@@ -1499,16 +1499,17 @@ static int moxa_poll_port(struct moxa_port *p, unsigned int handle,
+ 				ofsAddr + HostStat);
+ 
+ 	if (!inited)
+-		return 0;
++		goto put;
+ 
+ 	if (tty && (intr & IntrBreak) && !I_IGNBRK(tty)) { /* BREAK */
+ 		tty_insert_flip_char(tty, 0, TTY_BREAK);
+ 		tty_schedule_flip(tty);
+ 	}
+-	tty_kref_put(tty);
+ 
+ 	if (intr & IntrLine)
+ 		moxa_new_dcdstate(p, readb(ofsAddr + FlagStat) & DCD_state);
++put:
++	tty_kref_put(tty);
+ 
+ 	return 0;
+ }
 
