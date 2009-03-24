@@ -1,321 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756698AbZCXNCV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757387AbZCXNCj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756698AbZCXNCV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 09:02:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753444AbZCXNCH
+	id S1757387AbZCXNCj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 09:02:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754461AbZCXNCI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Tue, 24 Mar 2009 09:02:08 -0400
+Received: from fg-out-1718.google.com ([72.14.220.154]:56182 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753984AbZCXNCH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 24 Mar 2009 09:02:07 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:49690 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753237AbZCXNCF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 09:02:05 -0400
-Date: Tue, 24 Mar 2009 08:58:42 -0400
-From: Vivek Goyal <vgoyal@redhat.com>
-To: Nauman Rafique <nauman@google.com>
-Cc: Gui Jianfeng <guijianfeng@cn.fujitsu.com>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>, dpshah@google.com,
-       lizf@cn.fujitsu.com, mikew@google.com, fchecconi@gmail.com,
-       paolo.valente@unimore.it, jens.axboe@oracle.com, ryov@valinux.co.jp,
-       fernando@intellilink.co.jp, s-uchida@ap.jp.nec.com, taka@valinux.co.jp,
-       arozansk@redhat.com, jmoyer@redhat.com, oz-kernel@redhat.com,
-       balbir@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
-       containers@lists.linux-foundation.org, akpm@linux-foundation.org,
-       menage@google.com, peterz@infradead.org
-Subject: Re: [PATCH 01/10] Documentation
-Message-ID: <20090324125842.GA21389@redhat.com>
-References: <1236823015-4183-1-git-send-email-vgoyal@redhat.com> <1236823015-4183-2-git-send-email-vgoyal@redhat.com> <20090312100054.GA8024@linux.vnet.ibm.com> <20090312140450.GE10919@redhat.com> <49C0A171.8060009@cn.fujitsu.com> <20090318215529.GA3338@redhat.com> <e98e18940903232232i432f62c5r9dfd74268e1b2684@mail.gmail.com>
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=rDPeNh/ht/AMmVy+USiNmIYUlG9zPxLr+mXCZG9WtpShN0ax6c24DpyAuiotX0LdOQ
+         jUb9tQ734nSRDzAFx6YY7biRKbZ3916LOFjIlDz91ed99lQ8w61SfRGgn62TSxtJbR9v
+         ehfFeHt1TShyVsuJqUyOYoI54bwS6Fz+lyUyI=
+Date: Tue, 24 Mar 2009 16:09:26 +0300
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>, eduard.munteanu@linux360.ro,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] kmemtrace: fix build breakage in befs
+Message-ID: <20090324130926.GA11358@x200.localdomain>
+References: <1237884846.25315.37.camel@penberg-laptop> <20090324085658.GG13016@elte.hu> <1237885074.25315.43.camel@penberg-laptop> <20090324090757.GH13016@elte.hu> <1237886113.25315.49.camel@penberg-laptop> <20090324091742.GB6605@elte.hu> <1237886559.25315.60.camel@penberg-laptop> <20090324093103.GA19463@elte.hu> <1237887513.25315.65.camel@penberg-laptop> <20090324095346.GB23208@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <e98e18940903232232i432f62c5r9dfd74268e1b2684@mail.gmail.com>
+In-Reply-To: <20090324095346.GB23208@elte.hu>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 23, 2009 at 10:32:41PM -0700, Nauman Rafique wrote:
-
-[..]
-> > DESC
-> > io-controller: idle for sometime on sync queue before expiring it
-> > EDESC
-> >
-> > o When a sync queue expires, in many cases it might be empty and then
-> >  it will be deleted from the active tree. This will lead to a scenario
-> >  where out of two competing queues, only one is on the tree and when a
-> >  new queue is selected, vtime jump takes place and we don't see services
-> >  provided in proportion to weight.
-> >
-> > o In general this is a fundamental problem with fairness of sync queues
-> >  where queues are not continuously backlogged. Looks like idling is
-> >  only solution to make sure such kind of queues can get some decent amount
-> >  of disk bandwidth in the face of competion from continusouly backlogged
-> >  queues. But excessive idling has potential to reduce performance on SSD
-> >  and disks with commnad queuing.
-> >
-> > o This patch experiments with waiting for next request to come before a
-> >  queue is expired after it has consumed its time slice. This can ensure
-> >  more accurate fairness numbers in some cases.
+On Tue, Mar 24, 2009 at 10:53:46AM +0100, Ingo Molnar wrote:
+> > -static inline char *alloc_secdata(void)
+> > -{
+> > -       return (char *)get_zeroed_page(GFP_KERNEL);
+> > -}
+> > -
+> > -static inline void free_secdata(void *secdata)
+> > -{
+> > -       free_page((unsigned long)secdata);
+> > -}
+> > +#define alloc_secdata() (char *)get_zeroed_page(GFP_KERNEL)
+> > +#define free_secdata()  free_page((unsigned long) secdata)
 > 
-> Vivek, have you introduced this option just to play with it, or you
-> are planning to make it a part of the patch set. Waiting for a new
-> request to come before expiring time slice sounds problematic.
+> yep, that would be fine - but please add a comment about why they 
+> are macros and what would have to be done to fix it.
 
-Why are the issues you forsee with it. This is just an extra 8ms idling
-on the sync queue that is also if think time of the queue is not high.
+Nooo!
 
-We already do idling on sync queues. In this case we are doing an extra
-idle even if queue has consumed its allocated quota. It helps me get
-fairness numbers and I have put it under a tunable "fairness". So by
-default this code will not kick in.
+Stick it into security.h!
 
-Other possible option could be that when expiring a sync queue, don't
-remove the queue immediately from the tree and remove it later if there
-is no request from the queue in 8ms or so. I am not sure with BFQ, is it
-feasible to do that without creating issues with current implementation. 
-Current implementation was simple, so I stick to it to begin with.
-
-So yes, I am planning to keep it under tunable, unless there are
-significant issues in doing that.
-
-Thanks
-Vivek
-
-> 
-> >
-> > o Introduced a tunable "fairness". If set, io-controller will put more
-> >  focus on getting fairness right than getting throughput right.
-> >
-> >
-> > ---
-> >  block/blk-sysfs.c   |    7 ++++
-> >  block/elevator-fq.c |   85 +++++++++++++++++++++++++++++++++++++++++++++-------
-> >  block/elevator-fq.h |   12 +++++++
-> >  3 files changed, 94 insertions(+), 10 deletions(-)
-> >
-> > Index: linux1/block/elevator-fq.h
-> > ===================================================================
-> > --- linux1.orig/block/elevator-fq.h     2009-03-18 17:34:46.000000000 -0400
-> > +++ linux1/block/elevator-fq.h  2009-03-18 17:34:53.000000000 -0400
-> > @@ -318,6 +318,13 @@ struct elv_fq_data {
-> >        unsigned long long rate_sampling_start; /*sampling window start jifies*/
-> >        /* number of sectors finished io during current sampling window */
-> >        unsigned long rate_sectors_current;
-> > +
-> > +       /*
-> > +        * If set to 1, will disable many optimizations done for boost
-> > +        * throughput and focus more on providing fairness for sync
-> > +        * queues.
-> > +        */
-> > +       int fairness;
-> >  };
-> >
-> >  extern int elv_slice_idle;
-> > @@ -340,6 +347,7 @@ enum elv_queue_state_flags {
-> >        ELV_QUEUE_FLAG_idle_window,       /* elevator slice idling enabled */
-> >        ELV_QUEUE_FLAG_wait_request,      /* waiting for a request */
-> >        ELV_QUEUE_FLAG_slice_new,         /* no requests dispatched in slice */
-> > +       ELV_QUEUE_FLAG_wait_busy,         /* wait for this queue to get busy */
-> >        ELV_QUEUE_FLAG_NR,
-> >  };
-> >
-> > @@ -362,6 +370,7 @@ ELV_IO_QUEUE_FLAG_FNS(sync)
-> >  ELV_IO_QUEUE_FLAG_FNS(wait_request)
-> >  ELV_IO_QUEUE_FLAG_FNS(idle_window)
-> >  ELV_IO_QUEUE_FLAG_FNS(slice_new)
-> > +ELV_IO_QUEUE_FLAG_FNS(wait_busy)
-> >
-> >  static inline struct io_service_tree *
-> >  io_entity_service_tree(struct io_entity *entity)
-> > @@ -554,6 +563,9 @@ static inline struct io_queue *elv_looku
-> >  extern ssize_t elv_slice_idle_show(struct request_queue *q, char *name);
-> >  extern ssize_t elv_slice_idle_store(struct request_queue *q, const char *name,
-> >                                                size_t count);
-> > +extern ssize_t elv_fairness_show(struct request_queue *q, char *name);
-> > +extern ssize_t elv_fairness_store(struct request_queue *q, const char *name,
-> > +                                               size_t count);
-> >
-> >  /* Functions used by elevator.c */
-> >  extern int elv_init_fq_data(struct request_queue *q, struct elevator_queue *e);
-> > Index: linux1/block/elevator-fq.c
-> > ===================================================================
-> > --- linux1.orig/block/elevator-fq.c     2009-03-18 17:34:46.000000000 -0400
-> > +++ linux1/block/elevator-fq.c  2009-03-18 17:34:53.000000000 -0400
-> > @@ -1837,6 +1837,44 @@ void elv_ioq_served(struct io_queue *ioq
-> >                        ioq->total_service);
-> >  }
-> >
-> > +/* Functions to show and store fairness value through sysfs */
-> > +ssize_t elv_fairness_show(struct request_queue *q, char *name)
-> > +{
-> > +       struct elv_fq_data *efqd;
-> > +       unsigned int data;
-> > +       unsigned long flags;
-> > +
-> > +       spin_lock_irqsave(q->queue_lock, flags);
-> > +       efqd = &q->elevator->efqd;
-> > +       data = efqd->fairness;
-> > +       spin_unlock_irqrestore(q->queue_lock, flags);
-> > +       return sprintf(name, "%d\n", data);
-> > +}
-> > +
-> > +ssize_t elv_fairness_store(struct request_queue *q, const char *name,
-> > +                         size_t count)
-> > +{
-> > +       struct elv_fq_data *efqd;
-> > +       unsigned int data;
-> > +       unsigned long flags;
-> > +
-> > +       char *p = (char *)name;
-> > +
-> > +       data = simple_strtoul(p, &p, 10);
-> > +
-> > +       if (data < 0)
-> > +               data = 0;
-> > +       else if (data > INT_MAX)
-> > +               data = INT_MAX;
-> > +
-> > +       spin_lock_irqsave(q->queue_lock, flags);
-> > +       efqd = &q->elevator->efqd;
-> > +       efqd->fairness = data;
-> > +       spin_unlock_irqrestore(q->queue_lock, flags);
-> > +
-> > +       return count;
-> > +}
-> > +
-> >  /* Functions to show and store elv_idle_slice value through sysfs */
-> >  ssize_t elv_slice_idle_show(struct request_queue *q, char *name)
-> >  {
-> > @@ -2263,10 +2301,11 @@ void __elv_ioq_slice_expired(struct requ
-> >        assert_spin_locked(q->queue_lock);
-> >        elv_log_ioq(efqd, ioq, "slice expired upd=%d", budget_update);
-> >
-> > -       if (elv_ioq_wait_request(ioq))
-> > +       if (elv_ioq_wait_request(ioq) || elv_ioq_wait_busy(ioq))
-> >                del_timer(&efqd->idle_slice_timer);
-> >
-> >        elv_clear_ioq_wait_request(ioq);
-> > +       elv_clear_ioq_wait_busy(ioq);
-> >
-> >        /*
-> >         * if ioq->slice_end = 0, that means a queue was expired before first
-> > @@ -2482,8 +2521,9 @@ void elv_ioq_request_add(struct request_
-> >                 * immediately and flag that we must not expire this queue
-> >                 * just now
-> >                 */
-> > -               if (elv_ioq_wait_request(ioq)) {
-> > +               if (elv_ioq_wait_request(ioq) || elv_ioq_wait_busy(ioq)) {
-> >                        del_timer(&efqd->idle_slice_timer);
-> > +                       elv_clear_ioq_wait_busy(ioq);
-> >                        blk_start_queueing(q);
-> >                }
-> >        } else if (elv_should_preempt(q, ioq, rq)) {
-> > @@ -2519,6 +2559,9 @@ void elv_idle_slice_timer(unsigned long
-> >
-> >        if (ioq) {
-> >
-> > +               if (elv_ioq_wait_busy(ioq))
-> > +                       goto expire;
-> > +
-> >                /*
-> >                 * expired
-> >                 */
-> > @@ -2546,7 +2589,7 @@ out_cont:
-> >        spin_unlock_irqrestore(q->queue_lock, flags);
-> >  }
-> >
-> > -void elv_ioq_arm_slice_timer(struct request_queue *q)
-> > +void elv_ioq_arm_slice_timer(struct request_queue *q, int wait_for_busy)
-> >  {
-> >        struct elv_fq_data *efqd = &q->elevator->efqd;
-> >        struct io_queue *ioq = elv_active_ioq(q->elevator);
-> > @@ -2563,15 +2606,27 @@ void elv_ioq_arm_slice_timer(struct requ
-> >                return;
-> >
-> >        /*
-> > -        * still requests with the driver, don't idle
-> > +        * idle is disabled, either manually or by past process history
-> >         */
-> > -       if (efqd->rq_in_driver)
-> > +       if (!efqd->elv_slice_idle || !elv_ioq_idle_window(ioq))
-> >                return;
-> >
-> >        /*
-> > -        * idle is disabled, either manually or by past process history
-> > +        * This queue has consumed its time slice. We are waiting only for
-> > +        * it to become busy before we select next queue for dispatch.
-> >         */
-> > -       if (!efqd->elv_slice_idle || !elv_ioq_idle_window(ioq))
-> > +       if (efqd->fairness && wait_for_busy) {
-> > +               elv_mark_ioq_wait_busy(ioq);
-> > +               sl = efqd->elv_slice_idle;
-> > +               mod_timer(&efqd->idle_slice_timer, jiffies + sl);
-> > +               elv_log(efqd, "arm idle: %lu wait busy=1", sl);
-> > +               return;
-> > +       }
-> > +
-> > +       /*
-> > +        * still requests with the driver, don't idle
-> > +        */
-> > +       if (efqd->rq_in_driver)
-> >                return;
-> >
-> >        /*
-> > @@ -2628,6 +2683,12 @@ void *elv_fq_select_ioq(struct request_q
-> >                }
-> >        }
-> >
-> > +       /* We are waiting for this queue to become busy before it expires.*/
-> > +       if (efqd->fairness && elv_ioq_wait_busy(ioq)) {
-> > +               ioq = NULL;
-> > +               goto keep_queue;
-> > +       }
-> > +
-> >        /*
-> >         * The active queue has run out of time, expire it and select new.
-> >         */
-> > @@ -2802,10 +2863,14 @@ void elv_ioq_completed_request(struct re
-> >                        elv_ioq_set_prio_slice(q, ioq);
-> >                        elv_clear_ioq_slice_new(ioq);
-> >                }
-> > -               if (elv_ioq_slice_used(ioq) || elv_ioq_class_idle(ioq))
-> > +               if (elv_ioq_class_idle(ioq))
-> >                        elv_ioq_slice_expired(q, 1);
-> > -               else if (sync && !ioq->nr_queued)
-> > -                       elv_ioq_arm_slice_timer(q);
-> > +               else if (sync && !ioq->nr_queued) {
-> > +                       if (elv_ioq_slice_used(ioq))
-> > +                               elv_ioq_arm_slice_timer(q, 1);
-> > +                       else
-> > +                               elv_ioq_arm_slice_timer(q, 0);
-> > +               }
-> >        }
-> >
-> >        if (!efqd->rq_in_driver)
-> > Index: linux1/block/blk-sysfs.c
-> > ===================================================================
-> > --- linux1.orig/block/blk-sysfs.c       2009-03-18 17:34:28.000000000 -0400
-> > +++ linux1/block/blk-sysfs.c    2009-03-18 17:34:53.000000000 -0400
-> > @@ -282,6 +282,12 @@ static struct queue_sysfs_entry queue_sl
-> >        .show = elv_slice_idle_show,
-> >        .store = elv_slice_idle_store,
-> >  };
-> > +
-> > +static struct queue_sysfs_entry queue_fairness_entry = {
-> > +       .attr = {.name = "fairness", .mode = S_IRUGO | S_IWUSR },
-> > +       .show = elv_fairness_show,
-> > +       .store = elv_fairness_store,
-> > +};
-> >  #endif
-> >  static struct attribute *default_attrs[] = {
-> >        &queue_requests_entry.attr,
-> > @@ -296,6 +302,7 @@ static struct attribute *default_attrs[]
-> >        &queue_iostats_entry.attr,
-> >  #ifdef CONFIG_ELV_FAIR_QUEUING
-> >        &queue_slice_idle_entry.attr,
-> > +       &queue_fairness_entry.attr,
-> >  #endif
-> >        NULL,
-> >  };
-> >
+> (the real fix would be to separate fs.h into fs_types.h and 
+> fs_apis.h - like we did it with spinlock.h. Similarly with slab.h.)
