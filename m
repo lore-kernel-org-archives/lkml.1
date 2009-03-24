@@ -1,73 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760014AbZCXM00@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760056AbZCXM2K@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760014AbZCXM00 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 08:26:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759016AbZCXM0R
+	id S1760056AbZCXM2K (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 08:28:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757913AbZCXM1z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 08:26:17 -0400
-Received: from mail-ausfall.charite.de ([193.175.70.131]:47356 "EHLO
-	mail-ausfall.charite.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755238AbZCXM0N (ORCPT
+	Tue, 24 Mar 2009 08:27:55 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:53517 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753572AbZCXM1y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 08:26:13 -0400
-Date: Tue, 24 Mar 2009 13:26:11 +0100
-From: Ralf Hildebrandt <Ralf.Hildebrandt@charite.de>
-To: linux-kernel@vger.kernel.org
-Subject: Re: tg3 driver fails to load firmware (2.6.29)
-Message-ID: <20090324122611.GU12613@charite.de>
-Mail-Followup-To: linux-kernel@vger.kernel.org
-References: <20090324120948.GO12613@charite.de> <49C8D09A.2010006@msgid.tls.msk.ru> <20090324122331.GT12613@charite.de>
+	Tue, 24 Mar 2009 08:27:54 -0400
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Ingo Molnar <mingo@elte.hu>, David Rees <drees76@gmail.com>,
+       Jesper Krogh <jesper@krogh.cc>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.29
+From: Andi Kleen <andi@firstfloor.org>
+References: <alpine.LFD.2.00.0903231617550.3032@localhost.localdomain>
+	<49C87B87.4020108@krogh.cc>
+	<72dbd3150903232346g5af126d7sb5ad4949a7b5041f@mail.gmail.com>
+	<20090324091545.758d00f5@lxorguk.ukuu.org.uk>
+	<20090324093245.GA22483@elte.hu>
+	<20090324101011.6555a0b9@lxorguk.ukuu.org.uk>
+In-Reply-To: <20090324101011.6555a0b9@lxorguk.ukuu.org.uk> (Alan Cox's message of "Tue, 24 Mar 2009 10:10:11 +0000")
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/22.3 (gnu/linux)
+Date: Tue, 24 Mar 2009 13:27:44 +0100
+Message-ID: <87d4c7hzr3.fsf@basil.nowhere.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20090324122331.GT12613@charite.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Ralf Hildebrandt <Ralf.Hildebrandt@charite.de>:
-> * Michael Tokarev <mjt@tls.msk.ru>:
-> > Ralf Hildebrandt wrote:
-> >> From the log:
-> >>
-> >> Mar 24 09:02:42 proxy-cvk-2 kernel: [   40.600196] tg3 0000:02:02.1: firmware: requesting tigon/tg3_tso.bin
-> >> Mar 24 09:02:42 proxy-cvk-2 kernel: [  100.599130] eth1: Failed to load firmware "tigon/tg3_tso.bin"
-> >
-> >> # ll /lib/firmware/2.6.29/tigon/tg3_tso.bin
-> >> -rw-r--r-- 1 root root 7004 Mar 24 09:24 /lib/firmware/2.6.29/tigon/tg3_tso.bin
-> >
-> > Shouldn't it be in /lib/firmware/tigon/tg3_tso.bin ?
-> 
-> Well, who knows...
-> 
-> proxy-cvk-1:/lib/firmware# cp -a 2.6.29/tigon .  
-> proxy-cvk-1:/lib/firmware# ll
-> total 12
-> drwxr-xr-x 3 root root 4096 Mar 24 09:24 2.6.29
-> drwxr-xr-x 3 root root 4096 Mar 17 16:31 2.6.29-rc8-git2
-> drwxr-xr-x 2 root root 4096 Mar 24 09:24 tigon
-> 
-> Let's see if that work.s
+Alan Cox <alan@lxorguk.ukuu.org.uk> writes:
 
-Nope, doesn't. Still the same.
+>> > I have not had this problem since I applied Arjan's (for some reason
+>> > repeatedly rejected) patch to change the ioprio of the various writeback
+>> > daemons. Under some loads changing to the noop I/O scheduler also seems
+>> > to help (as do most of the non default ones)
+>> 
+>> (link would be useful)
+>
+>
+> "Give kjournald a IOPRIO_CLASS_RT io priority"
+>
+> October 2007 (yes its that old)
 
-[    6.637970] tg3 0000:02:02.0: PME# disabled
-[    8.175091] tg3 0000:02:02.1: firmware: requesting tigon/tg3_tso.bin
-[    9.198453] tg3: eth0: Link is up at 1000 Mbps, full duplex.
-[    9.198507] tg3: eth0: Flow control is on for TX and on for RX.
-[   68.174144] eth1: Failed to load firmware "tigon/tg3_tso.bin"
-[   68.174206] eth1: TSO capability disabled.
-[   68.174274] tg3 0000:02:02.1: PME# disabled
-[   71.070553] tg3: eth1: Link is up at 1000 Mbps, full duplex.
-[   71.070608] tg3: eth1: Flow control is on for TX and on for RX.
+One issue discussed back then (also for a similar XFS patch) was
+that having the kernel use the RT priorities by default makes
+them useless as user override.
+
+The proposal was to have a new priority level between normal and RT
+for this, but noone implemented this.
+
+-Andi
 
 -- 
-Ralf Hildebrandt
-  Geschäftsbereich IT | Abteilung Netzwerk
-  Charité - Universitätsmedizin Berlin
-  Campus Benjamin Franklin
-  Hindenburgdamm 30 | D-12200 Berlin
-  Tel. +49 30 450 570 155 | Fax: +49 30 450 570 962
-  Ralf.Hildebrandt@charite.de | http://www.charite.de
+ak@linux.intel.com -- Speaking for myself only.
