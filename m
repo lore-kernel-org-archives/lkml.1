@@ -1,53 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758749AbZCXK17@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758805AbZCXKcT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758749AbZCXK17 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 06:27:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757548AbZCXK1s
+	id S1758805AbZCXKcT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 06:32:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755728AbZCXKcF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 06:27:48 -0400
-Received: from smtp112.mail.mud.yahoo.com ([209.191.84.65]:37803 "HELO
-	smtp112.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1757525AbZCXK1r (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 06:27:47 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com.au;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=J53oERgt/iEMpSNGRxmsQtnRCeosKtYQpP8TTX6b6INaUKdQlphoahH6+Yyqk7MUbUVeowP+R+/Jwuav0yXeSqJ3jcSVbkDgLx+5WdF7p+JuMUthXx5vxXKqcPzf1q9tmni0mkPhdCl0epD5B8ILeEfcx6CQHgD/Guh3OvEec38=  ;
-X-YMail-OSG: wKc.0N8VM1mGXaHWP3EctOhW8z2yLA43d9ITyl9VogL231Ub.3M7KIAHG1kCR.lXZvibpAo3OshMIj1lTthfguEVwT9EnJT1Nzr1zq2lLQis.VF6NFgTFHFnRT2jz10.4dfvopiaDWEAKDXw7f8BK96sizfXSDXzLwK11NCjaUTHCjZyR6T.spVmI.8OqQ--
-X-Yahoo-Newman-Property: ymail-3
-From: Nick Piggin <nickpiggin@yahoo.com.au>
-To: Jan Kara <jack@suse.cz>
-Subject: Re: ftruncate-mmap: pages are lost after writing to mmaped file.
-Date: Tue, 24 Mar 2009 21:27:35 +1100
-User-Agent: KMail/1.9.51 (KDE/4.0.4; ; )
-Cc: "Martin J. Bligh" <mbligh@mbligh.org>, linux-ext4@vger.kernel.org,
-       Ying Han <yinghan@google.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
+	Tue, 24 Mar 2009 06:32:05 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:35397 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755334AbZCXKcD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Mar 2009 06:32:03 -0400
+Date: Tue, 24 Mar 2009 11:31:11 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Arjan van de Ven <arjan@infradead.org>,
        Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel" <linux-kernel@vger.kernel.org>,
-       "linux-mm" <linux-mm@kvack.org>, guichaz@gmail.com,
-       Alex Khesin <alexk@google.com>, Mike Waychison <mikew@google.com>,
-       Rohit Seth <rohitseth@google.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-References: <604427e00903181244w360c5519k9179d5c3e5cd6ab3@mail.gmail.com> <20090319164638.GB3899@duck.suse.cz> <200903241844.22851.nickpiggin@yahoo.com.au>
-In-Reply-To: <200903241844.22851.nickpiggin@yahoo.com.au>
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Nick Piggin <npiggin@suse.de>,
+       Theodore Tso <tytso@mit.edu>, Jens Axboe <jens.axboe@oracle.com>
+Cc: David Rees <drees76@gmail.com>, Jesper Krogh <jesper@krogh.cc>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.29
+Message-ID: <20090324103111.GA26691@elte.hu>
+References: <alpine.LFD.2.00.0903231617550.3032@localhost.localdomain> <49C87B87.4020108@krogh.cc> <72dbd3150903232346g5af126d7sb5ad4949a7b5041f@mail.gmail.com> <20090324091545.758d00f5@lxorguk.ukuu.org.uk> <20090324093245.GA22483@elte.hu> <20090324101011.6555a0b9@lxorguk.ukuu.org.uk>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200903242127.36541.nickpiggin@yahoo.com.au>
+In-Reply-To: <20090324101011.6555a0b9@lxorguk.ukuu.org.uk>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 24 March 2009 18:44:21 Nick Piggin wrote:
 
-> I close my eyes and pick something out of a hat. a686cd89. Search for XXX.
-> Nice. Whether or not this cased the problem, can someone please tell me
-> why it got merged in that state?
+* Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
 
-Actually I must be wrong about this if the problem was reproduced in
-2.6.18. Question still stands, though.
+> > > I have not had this problem since I applied Arjan's (for some reason
+> > > repeatedly rejected) patch to change the ioprio of the various writeback
+> > > daemons. Under some loads changing to the noop I/O scheduler also seems
+> > > to help (as do most of the non default ones)
+> > 
+> > (link would be useful)
+> 
+> 
+> "Give kjournald a IOPRIO_CLASS_RT io priority"
+> 
+> October 2007 (yes its that old)
 
+thx. A more recent submission from Arjan would be:
+
+    http://lkml.org/lkml/2008/10/1/405
+
+Resolution was that Tytso indicated it went into some sort of ext4 
+patch queue:
+
+| I've ported the patch to the ext4 filesystem, and dropped it into 
+| the unstable portion of the ext4 patch queue.
+|
+|   ext4: akpm's locking hack to fix locking delays
+
+but 6 months down the line and i can find no trace of this upstream 
+anywhere.
+
+<let-me-rant-too>
+
+The thing is ... this is a _bad_ ext3 design bug affecting ext3 
+users in the last decade or so of ext3 existence. Why is this issue 
+not handled with the utmost high priority and why wasnt it fixed 5 
+years ago already? :-)
+
+It does not matter whether we have extents or htrees when there are 
+_trivially reproducible_ basic usability problems with ext3.
+
+	Ingo
