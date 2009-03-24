@@ -1,57 +1,348 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761605AbZCXOTo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754059AbZCXOS6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761605AbZCXOTo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 10:19:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760259AbZCXOLw
+	id S1754059AbZCXOS6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 10:18:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755001AbZCXOLu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 10:11:52 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:37605 "EHLO mx2.redhat.com"
+	Tue, 24 Mar 2009 10:11:50 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:37596 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760806AbZCXOLs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 10:11:48 -0400
+	id S1760841AbZCXOLq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Mar 2009 10:11:46 -0400
 From: David Teigland <teigland@redhat.com>
 To: linux-kernel@vger.kernel.org
-Cc: Joe Perches <joe@perches.com>
-Subject: [PATCH 3/7] dlm: comment typo fixes
-Date: Tue, 24 Mar 2009 09:07:48 -0500
-Message-Id: <1237903672-18913-4-git-send-email-teigland@redhat.com>
+Cc: Christine Caulfield <ccaulfie@redhat.com>
+Subject: [PATCH 4/7] dlm: replace idr with hash table for connections
+Date: Tue, 24 Mar 2009 09:07:49 -0500
+Message-Id: <1237903672-18913-5-git-send-email-teigland@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Joe Perches <joe@perches.com>
+From: Christine Caulfield <ccaulfie@redhat.com>
 
-Signed-off-by: Joe Perches <joe@perches.com>
+Integer nodeids can be too large for the idr code; use a hash
+table instead.
+
+Signed-off-by: Christine Caulfield <ccaulfie@redhat.com>
 Signed-off-by: David Teigland <teigland@redhat.com>
 ---
- fs/dlm/lowcomms.c |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
+ fs/dlm/lowcomms.c |  171 ++++++++++++++++++++++++++++------------------------
+ 1 files changed, 92 insertions(+), 79 deletions(-)
 
 diff --git a/fs/dlm/lowcomms.c b/fs/dlm/lowcomms.c
-index bf09262..982314c 100644
+index 982314c..609108a 100644
 --- a/fs/dlm/lowcomms.c
 +++ b/fs/dlm/lowcomms.c
-@@ -21,7 +21,7 @@
-  *
-  * Cluster nodes are referred to by their nodeids. nodeids are
-  * simply 32 bit numbers to the locking module - if they need to
-- * be expanded for the cluster infrastructure then that is it's
-+ * be expanded for the cluster infrastructure then that is its
-  * responsibility. It is this layer's
-  * responsibility to resolve these into IP address or
-  * whatever it needs for inter-node communication.
-@@ -36,9 +36,9 @@
-  * of high load. Also, this way, the sending thread can collect together
-  * messages bound for one node and send them in one block.
-  *
-- * lowcomms will choose to use wither TCP or SCTP as its transport layer
-+ * lowcomms will choose to use either TCP or SCTP as its transport layer
-  * depending on the configuration variable 'protocol'. This should be set
-- * to 0 (default) for TCP or 1 for SCTP. It shouldbe configured using a
-+ * to 0 (default) for TCP or 1 for SCTP. It should be configured using a
-  * cluster-wide mechanism as it must be the same on all nodes of the cluster
-  * for the DLM to function.
-  *
+@@ -2,7 +2,7 @@
+ *******************************************************************************
+ **
+ **  Copyright (C) Sistina Software, Inc.  1997-2003  All rights reserved.
+-**  Copyright (C) 2004-2007 Red Hat, Inc.  All rights reserved.
++**  Copyright (C) 2004-2009 Red Hat, Inc.  All rights reserved.
+ **
+ **  This copyrighted material is made available to anyone wishing to use,
+ **  modify, copy, or redistribute it subject to the terms and conditions
+@@ -48,7 +48,6 @@
+ #include <net/sock.h>
+ #include <net/tcp.h>
+ #include <linux/pagemap.h>
+-#include <linux/idr.h>
+ #include <linux/file.h>
+ #include <linux/mutex.h>
+ #include <linux/sctp.h>
+@@ -61,6 +60,7 @@
+ #include "config.h"
+ 
+ #define NEEDED_RMEM (4*1024*1024)
++#define CONN_HASH_SIZE 32
+ 
+ struct cbuf {
+ 	unsigned int base;
+@@ -115,6 +115,7 @@ struct connection {
+ 	int retries;
+ #define MAX_CONNECT_RETRIES 3
+ 	int sctp_assoc;
++	struct hlist_node list;
+ 	struct connection *othercon;
+ 	struct work_struct rwork; /* Receive workqueue */
+ 	struct work_struct swork; /* Send workqueue */
+@@ -139,14 +140,37 @@ static int dlm_local_count;
+ static struct workqueue_struct *recv_workqueue;
+ static struct workqueue_struct *send_workqueue;
+ 
+-static DEFINE_IDR(connections_idr);
++static struct hlist_head connection_hash[CONN_HASH_SIZE];
+ static DEFINE_MUTEX(connections_lock);
+-static int max_nodeid;
+ static struct kmem_cache *con_cache;
+ 
+ static void process_recv_sockets(struct work_struct *work);
+ static void process_send_sockets(struct work_struct *work);
+ 
++
++/* This is deliberately very simple because most clusters have simple
++   sequential nodeids, so we should be able to go straight to a connection
++   struct in the array */
++static inline int nodeid_hash(int nodeid)
++{
++	return nodeid & (CONN_HASH_SIZE-1);
++}
++
++static struct connection *__find_con(int nodeid)
++{
++	int r;
++	struct hlist_node *h;
++	struct connection *con;
++
++	r = nodeid_hash(nodeid);
++
++	hlist_for_each_entry(con, h, &connection_hash[r], list) {
++		if (con->nodeid == nodeid)
++			return con;
++	}
++	return NULL;
++}
++
+ /*
+  * If 'allocation' is zero then we don't attempt to create a new
+  * connection structure for this node.
+@@ -155,31 +179,17 @@ static struct connection *__nodeid2con(int nodeid, gfp_t alloc)
+ {
+ 	struct connection *con = NULL;
+ 	int r;
+-	int n;
+ 
+-	con = idr_find(&connections_idr, nodeid);
++	con = __find_con(nodeid);
+ 	if (con || !alloc)
+ 		return con;
+ 
+-	r = idr_pre_get(&connections_idr, alloc);
+-	if (!r)
+-		return NULL;
+-
+ 	con = kmem_cache_zalloc(con_cache, alloc);
+ 	if (!con)
+ 		return NULL;
+ 
+-	r = idr_get_new_above(&connections_idr, con, nodeid, &n);
+-	if (r) {
+-		kmem_cache_free(con_cache, con);
+-		return NULL;
+-	}
+-
+-	if (n != nodeid) {
+-		idr_remove(&connections_idr, n);
+-		kmem_cache_free(con_cache, con);
+-		return NULL;
+-	}
++	r = nodeid_hash(nodeid);
++	hlist_add_head(&con->list, &connection_hash[r]);
+ 
+ 	con->nodeid = nodeid;
+ 	mutex_init(&con->sock_mutex);
+@@ -190,19 +200,30 @@ static struct connection *__nodeid2con(int nodeid, gfp_t alloc)
+ 
+ 	/* Setup action pointers for child sockets */
+ 	if (con->nodeid) {
+-		struct connection *zerocon = idr_find(&connections_idr, 0);
++		struct connection *zerocon = __find_con(0);
+ 
+ 		con->connect_action = zerocon->connect_action;
+ 		if (!con->rx_action)
+ 			con->rx_action = zerocon->rx_action;
+ 	}
+ 
+-	if (nodeid > max_nodeid)
+-		max_nodeid = nodeid;
+-
+ 	return con;
+ }
+ 
++/* Loop round all connections */
++static void foreach_conn(void (*conn_func)(struct connection *c))
++{
++	int i;
++	struct hlist_node *h, *n;
++	struct connection *con;
++
++	for (i = 0; i < CONN_HASH_SIZE; i++) {
++		hlist_for_each_entry_safe(con, h, n, &connection_hash[i], list){
++			conn_func(con);
++		}
++	}
++}
++
+ static struct connection *nodeid2con(int nodeid, gfp_t allocation)
+ {
+ 	struct connection *con;
+@@ -218,14 +239,17 @@ static struct connection *nodeid2con(int nodeid, gfp_t allocation)
+ static struct connection *assoc2con(int assoc_id)
+ {
+ 	int i;
++	struct hlist_node *h;
+ 	struct connection *con;
+ 
+ 	mutex_lock(&connections_lock);
+-	for (i=0; i<=max_nodeid; i++) {
+-		con = __nodeid2con(i, 0);
+-		if (con && con->sctp_assoc == assoc_id) {
+-			mutex_unlock(&connections_lock);
+-			return con;
++
++	for (i = 0 ; i < CONN_HASH_SIZE; i++) {
++		hlist_for_each_entry(con, h, &connection_hash[i], list) {
++			if (con && con->sctp_assoc == assoc_id) {
++				mutex_unlock(&connections_lock);
++				return con;
++			}
+ 		}
+ 	}
+ 	mutex_unlock(&connections_lock);
+@@ -376,25 +400,23 @@ static void sctp_send_shutdown(sctp_assoc_t associd)
+ 		log_print("send EOF to node failed: %d", ret);
+ }
+ 
++static void sctp_init_failed_foreach(struct connection *con)
++{
++	con->sctp_assoc = 0;
++	if (test_and_clear_bit(CF_CONNECT_PENDING, &con->flags)) {
++		if (!test_and_set_bit(CF_WRITE_PENDING, &con->flags))
++			queue_work(send_workqueue, &con->swork);
++	}
++}
++
+ /* INIT failed but we don't know which node...
+    restart INIT on all pending nodes */
+ static void sctp_init_failed(void)
+ {
+-	int i;
+-	struct connection *con;
+-
+ 	mutex_lock(&connections_lock);
+-	for (i=1; i<=max_nodeid; i++) {
+-		con = __nodeid2con(i, 0);
+-		if (!con)
+-			continue;
+-		con->sctp_assoc = 0;
+-		if (test_and_clear_bit(CF_CONNECT_PENDING, &con->flags)) {
+-			if (!test_and_set_bit(CF_WRITE_PENDING, &con->flags)) {
+-				queue_work(send_workqueue, &con->swork);
+-			}
+-		}
+-	}
++
++	foreach_conn(sctp_init_failed_foreach);
++
+ 	mutex_unlock(&connections_lock);
+ }
+ 
+@@ -1313,13 +1335,10 @@ out_connect:
+ 
+ static void clean_one_writequeue(struct connection *con)
+ {
+-	struct list_head *list;
+-	struct list_head *temp;
++	struct writequeue_entry *e, *safe;
+ 
+ 	spin_lock(&con->writequeue_lock);
+-	list_for_each_safe(list, temp, &con->writequeue) {
+-		struct writequeue_entry *e =
+-			list_entry(list, struct writequeue_entry, list);
++	list_for_each_entry_safe(e, safe, &con->writequeue, list) {
+ 		list_del(&e->list);
+ 		free_entry(e);
+ 	}
+@@ -1369,14 +1388,7 @@ static void process_send_sockets(struct work_struct *work)
+ /* Discard all entries on the write queues */
+ static void clean_writequeues(void)
+ {
+-	int nodeid;
+-
+-	for (nodeid = 1; nodeid <= max_nodeid; nodeid++) {
+-		struct connection *con = __nodeid2con(nodeid, 0);
+-
+-		if (con)
+-			clean_one_writequeue(con);
+-	}
++	foreach_conn(clean_one_writequeue);
+ }
+ 
+ static void work_stop(void)
+@@ -1406,23 +1418,29 @@ static int work_start(void)
+ 	return 0;
+ }
+ 
+-void dlm_lowcomms_stop(void)
++static void stop_conn(struct connection *con)
+ {
+-	int i;
+-	struct connection *con;
++	con->flags |= 0x0F;
++	if (con->sock)
++		con->sock->sk->sk_user_data = NULL;
++}
+ 
++static void free_conn(struct connection *con)
++{
++	close_connection(con, true);
++	if (con->othercon)
++		kmem_cache_free(con_cache, con->othercon);
++	hlist_del(&con->list);
++	kmem_cache_free(con_cache, con);
++}
++
++void dlm_lowcomms_stop(void)
++{
+ 	/* Set all the flags to prevent any
+ 	   socket activity.
+ 	*/
+ 	mutex_lock(&connections_lock);
+-	for (i = 0; i <= max_nodeid; i++) {
+-		con = __nodeid2con(i, 0);
+-		if (con) {
+-			con->flags |= 0x0F;
+-			if (con->sock)
+-				con->sock->sk->sk_user_data = NULL;
+-		}
+-	}
++	foreach_conn(stop_conn);
+ 	mutex_unlock(&connections_lock);
+ 
+ 	work_stop();
+@@ -1430,25 +1448,20 @@ void dlm_lowcomms_stop(void)
+ 	mutex_lock(&connections_lock);
+ 	clean_writequeues();
+ 
+-	for (i = 0; i <= max_nodeid; i++) {
+-		con = __nodeid2con(i, 0);
+-		if (con) {
+-			close_connection(con, true);
+-			if (con->othercon)
+-				kmem_cache_free(con_cache, con->othercon);
+-			kmem_cache_free(con_cache, con);
+-		}
+-	}
+-	max_nodeid = 0;
++	foreach_conn(free_conn);
++
+ 	mutex_unlock(&connections_lock);
+ 	kmem_cache_destroy(con_cache);
+-	idr_init(&connections_idr);
+ }
+ 
+ int dlm_lowcomms_start(void)
+ {
+ 	int error = -EINVAL;
+ 	struct connection *con;
++	int i;
++
++	for (i = 0; i < CONN_HASH_SIZE; i++)
++		INIT_HLIST_HEAD(&connection_hash[i]);
+ 
+ 	init_local();
+ 	if (!dlm_local_count) {
 -- 
 1.5.5.6
 
