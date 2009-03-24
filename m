@@ -1,123 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755490AbZCXVkZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755555AbZCXVko@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755490AbZCXVkZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 17:40:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754303AbZCXVji
+	id S1755555AbZCXVko (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 17:40:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755488AbZCXVkZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 17:39:38 -0400
-Received: from rv-out-0506.google.com ([209.85.198.235]:52847 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754584AbZCXVjg (ORCPT
+	Tue, 24 Mar 2009 17:40:25 -0400
+Received: from va3ehsobe001.messaging.microsoft.com ([216.32.180.11]:45646
+	"EHLO VA3EHSOBE001.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1755484AbZCXVkX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 17:39:36 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        b=vK4yoGzIiV2YBpA2qZ6iYlNFGDS10IE5pmIEka+WSMaNpY2fTTodUKSqHG+h3y7ulx
-         nsPpzUu1IguxtgXLPEsEl5kfbG6Vx5XBpM3aCOgQncAYwuHxgm5o25L+m1t5T6T1+R8a
-         FqcZPxo+RgDjb2bK3tQoWmBqpP2FINWo7f+jc=
-From: stoyboyker@gmail.com
-To: linux-kernel@vger.kernel.org
-Cc: Stoyan Gaydarov <stoyboyker@gmail.com>, linux-media@vger.kernel.org
-Subject: [PATCH 12/13][Resubmit][drivers/media] changed ioctls to unlocked
-Date: Tue, 24 Mar 2009 16:38:31 -0500
-Message-Id: <1237930711-16200-1-git-send-email-stoyboyker@gmail.com>
-X-Mailer: git-send-email 1.6.2.1
+	Tue, 24 Mar 2009 17:40:23 -0400
+X-BigFish: VPS-25(zz1432R98dR1805Mzz1202hzzz2fh6bh61h)
+X-Spam-TCS-SCL: 0:0
+X-FB-SS: 5,
+Message-ID: <49C95334.5040106@am.sony.com>
+Date: Tue, 24 Mar 2009 14:40:04 -0700
+From: Tim Bird <tim.bird@am.sony.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Frederic Weisbecker <fweisbec@gmail.com>
+CC: linux-arm-kernel <linux-arm-kernel@lists.arm.linux.org.uk>,
+       linux kernel <linux-kernel@vger.kernel.org>,
+       Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@redhat.com>,
+       Abhishek Sagar <sagar.abhishek@gmail.com>,
+       Russell King <rmk@arm.linux.org.uk>,
+       =?UTF-8?B?VXdlIEtsZWluZS1Lw7ZuaWc=?= 
+	<u.kleine-koenig@pengutronix.de>
+Subject: Re: Anyone working on ftrace function graph support on ARM?
+References: <49C936CA.8070800@am.sony.com> <20090324213618.GC5975@nowhere>
+In-Reply-To: <20090324213618.GC5975@nowhere>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 24 Mar 2009 21:40:05.0894 (UTC) FILETIME=[18A99260:01C9ACC9]
+X-SEL-encryption-scan: scanned
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Stoyan Gaydarov <stoyboyker@gmail.com>
+Frederic Weisbecker wrote:
+> Yes, ie:
+> 
+> _Before jumping to the function entry hook, you must save
+> the arguments for the traced function on the stack.
+> On x86, its eax, edx and ecx.
+> On arm, it will be r0-r3.
+> Then you have to transmit the address of the traced function
+> (it's on r14) and it's parent (must rely on fp for that).
+> Then you call the entry hook and restore the old scratch/arg
+> registers.
+> 
+> 
+> _ On return hook it's pretty the same, (saving the scratch
+> registers, especially the return value which should be on r0
+> and r1 if I'm not wrong).
+> But you'll have to get the original return address from the
+> return handler and then put it on pc.
+> 
+> Well it's a very naive listing, there are sometimes some problems.
+> For example on x86-64, I had to save even some non-scratch registers
+> before calling the return hook, I still don't know why.
 
-Signed-off-by: Stoyan Gaydarov <stoyboyker@gmail.com>
----
- drivers/media/dvb/bt8xx/dst_ca.c |    7 +++++--
- drivers/media/video/dabusb.c     |   11 ++++++++---
- 2 files changed, 13 insertions(+), 5 deletions(-)
+Thanks - this is very helpful.  I'll send patches around when
+I get something going. Hopefully in the next week or two.
+ -- Tim
 
-diff --git a/drivers/media/dvb/bt8xx/dst_ca.c b/drivers/media/dvb/bt8xx/dst_ca.c
-index 0258451..d3487c5 100644
---- a/drivers/media/dvb/bt8xx/dst_ca.c
-+++ b/drivers/media/dvb/bt8xx/dst_ca.c
-@@ -552,8 +552,10 @@ free_mem_and_exit:
- 	return result;
- }
- 
--static int dst_ca_ioctl(struct inode *inode, struct file *file, unsigned int cmd, unsigned long ioctl_arg)
-+static long dst_ca_ioctl(struct file *file, unsigned int cmd, unsigned long ioctl_arg)
- {
-+	lock_kernel();
-+
- 	struct dvb_device* dvbdev = (struct dvb_device*) file->private_data;
- 	struct dst_state* state = (struct dst_state*) dvbdev->priv;
- 	struct ca_slot_info *p_ca_slot_info;
-@@ -647,6 +649,7 @@ static int dst_ca_ioctl(struct inode *inode, struct file *file, unsigned int cmd
- 	kfree (p_ca_slot_info);
- 	kfree (p_ca_caps);
- 
-+	unlock_kernel();
- 	return result;
- }
- 
-@@ -684,7 +687,7 @@ static ssize_t dst_ca_write(struct file *file, const char __user *buffer, size_t
- 
- static struct file_operations dst_ca_fops = {
- 	.owner = THIS_MODULE,
--	.ioctl = dst_ca_ioctl,
-+	.unlocked_ioctl = dst_ca_ioctl,
- 	.open = dst_ca_open,
- 	.release = dst_ca_release,
- 	.read = dst_ca_read,
-diff --git a/drivers/media/video/dabusb.c b/drivers/media/video/dabusb.c
-index 298810d..c31e76f 100644
---- a/drivers/media/video/dabusb.c
-+++ b/drivers/media/video/dabusb.c
-@@ -657,22 +657,26 @@ static int dabusb_release (struct inode *inode, struct file *file)
- 	return 0;
- }
- 
--static int dabusb_ioctl (struct inode *inode, struct file *file, unsigned int cmd, unsigned long arg)
-+static long dabusb_ioctl (struct file *file, unsigned int cmd, unsigned long arg)
- {
- 	pdabusb_t s = (pdabusb_t) file->private_data;
- 	pbulk_transfer_t pbulk;
- 	int ret = 0;
- 	int version = DABUSB_VERSION;
- 
-+	lock_kernel();
- 	dbg("dabusb_ioctl");
- 
--	if (s->remove_pending)
-+	if (s->remove_pending) {
-+		unlock_kernel();
- 		return -EIO;
-+	}
- 
- 	mutex_lock(&s->mutex);
- 
- 	if (!s->usbdev) {
- 		mutex_unlock(&s->mutex);
-+		unlock_kernel();
- 		return -EIO;
- 	}
- 
-@@ -713,6 +717,7 @@ static int dabusb_ioctl (struct inode *inode, struct file *file, unsigned int cm
- 		break;
- 	}
- 	mutex_unlock(&s->mutex);
-+	unlock_kernel();
- 	return ret;
- }
- 
-@@ -721,7 +726,7 @@ static const struct file_operations dabusb_fops =
- 	.owner =	THIS_MODULE,
- 	.llseek =	no_llseek,
- 	.read =		dabusb_read,
--	.ioctl =	dabusb_ioctl,
-+	.unlocked_ioctl =	dabusb_ioctl,
- 	.open =		dabusb_open,
- 	.release =	dabusb_release,
- };
--- 
-1.6.2.1
+=============================
+Tim Bird
+Architecture Group Chair, CE Linux Forum
+Senior Staff Engineer, Sony Corporation of America
+=============================
 
