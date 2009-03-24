@@ -1,26 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758166AbZCXJb0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757645AbZCXJdU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758166AbZCXJb0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 05:31:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756371AbZCXJbR
+	id S1757645AbZCXJdU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 05:33:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755487AbZCXJdJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 05:31:17 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:49213 "EHLO mx3.mail.elte.hu"
+	Tue, 24 Mar 2009 05:33:09 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:38066 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752300AbZCXJbQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 05:31:16 -0400
-Date: Tue, 24 Mar 2009 10:31:03 +0100
+	id S1753651AbZCXJdJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Mar 2009 05:33:09 -0400
+Date: Tue, 24 Mar 2009 10:32:45 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: eduard.munteanu@linux360.ro, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] kmemtrace: fix build breakage in befs
-Message-ID: <20090324093103.GA19463@elte.hu>
-References: <1237884230.25315.33.camel@penberg-laptop> <20090324085128.GF13016@elte.hu> <1237884846.25315.37.camel@penberg-laptop> <20090324085658.GG13016@elte.hu> <1237885074.25315.43.camel@penberg-laptop> <20090324090757.GH13016@elte.hu> <1237886113.25315.49.camel@penberg-laptop> <20090324091742.GB6605@elte.hu> <1237886559.25315.60.camel@penberg-laptop>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: David Rees <drees76@gmail.com>, Jesper Krogh <jesper@krogh.cc>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.29
+Message-ID: <20090324093245.GA22483@elte.hu>
+References: <alpine.LFD.2.00.0903231617550.3032@localhost.localdomain> <49C87B87.4020108@krogh.cc> <72dbd3150903232346g5af126d7sb5ad4949a7b5041f@mail.gmail.com> <20090324091545.758d00f5@lxorguk.ukuu.org.uk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1237886559.25315.60.camel@penberg-laptop>
+In-Reply-To: <20090324091545.758d00f5@lxorguk.ukuu.org.uk>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -35,31 +36,19 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Pekka Enberg <penberg@cs.helsinki.fi> wrote:
+* Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
 
-> On Tue, 2009-03-24 at 10:17 +0100, Ingo Molnar wrote:
-> > > OK, I think all of them are now fixed. I haven't yet been able to 
-> > > complete a build so help is still appreciated. ;-)
-> > 
-> > unless there's a mail delay, we still have:
-> > 
-> > lib/decompress_unlzma.c:122: error: implicit declaration of function ‘kfree’
-> > lib/decompress_unlzma.c:551: error: implicit declaration of function ‘kmalloc’
+> > posted to the list earlier trying to see if there was anything that
+> > could be done to help my specific case.  I've got a system where if
+> > someone starts writing out a large file, it kills client NFS writes.
+> > Makes the system unusable:
+> > http://marc.info/?l=linux-kernel&m=123732127919368&w=2
 > 
-> Sorry, I missed that. I was testing the .config you sent in the 
-> initial mail, not allyesconfig. I sent you a patch to fix that as 
-> well now.
+> I have not had this problem since I applied Arjan's (for some reason
+> repeatedly rejected) patch to change the ioprio of the various writeback
+> daemons. Under some loads changing to the noop I/O scheduler also seems
+> to help (as do most of the non default ones)
 
-no problem, i missed it too - computer reminded us that it's still 
-there ;-)
-
-there's a new headers-export-check failure:
-
-/home/mingo/tip/usr/include/linux/bsg.h:11: found __[us]{8,16,32,64} type without #include <linux/types.h>
-/home/mingo/tip/usr/include/linux/fs.h:11: included file 'linux/gfp.h' is not exported
-make[3]: *** [/home/mingo/tip/usr/include/linux/.check] Error 1
-make[2]: *** [linux] Error 2
-
-(CONFIG_HEADERS_CHECK)
+(link would be useful)
 
 	Ingo
