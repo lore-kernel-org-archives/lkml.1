@@ -1,110 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760448AbZCXStw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760393AbZCXSwH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760448AbZCXStw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 14:49:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755312AbZCXStk
+	id S1760393AbZCXSwH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 14:52:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759032AbZCXStp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 14:49:40 -0400
-Received: from mail.lang.hm ([64.81.33.126]:46169 "EHLO bifrost.lang.hm"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754566AbZCXStj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 14:49:39 -0400
-Date: Tue, 24 Mar 2009 11:49:26 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: Matt Domsch <Matt_Domsch@dell.com>
-cc: netdev@vger.kernel.org, linux-hotplug@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: Network Device Naming mechanism and policy
-In-Reply-To: <20090324154617.GA16332@auslistsprd01.us.dell.com>
-Message-ID: <alpine.DEB.1.10.0903241140530.16753@asgard.lang.hm>
-References: <20090324154617.GA16332@auslistsprd01.us.dell.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Tue, 24 Mar 2009 14:49:45 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:22681 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753960AbZCXStm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Mar 2009 14:49:42 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding:x-system-of-record;
+	b=rxVdDaFTNuSLgYy1X67UrzGVLuwULjfDFgQVZ3xoASS9AJFXMAFVmBoz/6IeM3i6D
+	ICWWfUD7/m5U8B4Dr16NQ==
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+In-Reply-To: <20090324183532.GG21389@redhat.com>
+References: <1236823015-4183-2-git-send-email-vgoyal@redhat.com>
+	 <20090312140450.GE10919@redhat.com> <49C0A171.8060009@cn.fujitsu.com>
+	 <20090318215529.GA3338@redhat.com>
+	 <e98e18940903232232i432f62c5r9dfd74268e1b2684@mail.gmail.com>
+	 <20090324125842.GA21389@redhat.com>
+	 <e98e18940903241114u1e03ae7dhf654d7d8d0fc0302@mail.gmail.com>
+	 <20090324182906.GF21389@redhat.com>
+	 <20090324184101.GO18554@gandalf.sssup.it>
+	 <20090324183532.GG21389@redhat.com>
+Date: Tue, 24 Mar 2009 11:49:35 -0700
+Message-ID: <e98e18940903241149s71701c3fpb4c62a7848c1f170@mail.gmail.com>
+Subject: Re: [PATCH 01/10] Documentation
+From: Nauman Rafique <nauman@google.com>
+To: Vivek Goyal <vgoyal@redhat.com>
+Cc: Fabio Checconi <fchecconi@gmail.com>,
+       Gui Jianfeng <guijianfeng@cn.fujitsu.com>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>, dpshah@google.com,
+       lizf@cn.fujitsu.com, mikew@google.com, paolo.valente@unimore.it,
+       jens.axboe@oracle.com, ryov@valinux.co.jp, fernando@intellilink.co.jp,
+       s-uchida@ap.jp.nec.com, taka@valinux.co.jp, arozansk@redhat.com,
+       jmoyer@redhat.com, oz-kernel@redhat.com, balbir@linux.vnet.ibm.com,
+       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       akpm@linux-foundation.org, menage@google.com, peterz@infradead.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 24 Mar 2009, Matt Domsch wrote:
+On Tue, Mar 24, 2009 at 11:35 AM, Vivek Goyal <vgoyal@redhat.com> wrote:
+> On Tue, Mar 24, 2009 at 07:41:01PM +0100, Fabio Checconi wrote:
+>> > From: Vivek Goyal <vgoyal@redhat.com>
+>> > Date: Tue, Mar 24, 2009 02:29:06PM -0400
+>> >
+>> ...
+>> > > Does keeping the sync queue in ready tree solves the problem too? Is
+>> > > it because it avoid a virtual time jump?
+>> > >
+>> >
+>> > I have not tried the second approch yet. But that also should solve the
+>> > vtime jump issue.
+>> >
+>>
+>> Do you mean that you intend to keep a queue with no backlog in the
+>> active tree?
+>
+> Yes. Is it possible to keep a not-backlogged queue in the tree for later
+> expiry. So that we don't actively wait/idle for next request to come and
+> hope queue will become backlogged soon. Otherwise, it will be deleted from
+> the active queue. This is just a thought, I am not even sure how would it
+> interefere with bfq code.
+>
+> All this to solve the vtime jump issue for sync queues.
 
-> You may recall http://lkml.org/lkml/2006/9/29/268, wherein I described
-> network device enumeration and naming challenges, and several possible
-> fixes.  Of these, Fix #1 (fix the PCI device list to be sorted
-> breadth-first) has been implemented in the kernel, and Fix #3 (system
-> board routing rules) have been implemented on Dell PowerEdge 10G and
-> 11G servers (11G begin selling RSN).
->
-> However, these have not been completely satisfactory.  In particular,
-> it keeps getting harder and harder to route PCI-Express lanes to
-> guarantee the same ordering between a depth-first and breadth-first
-> walk, and it turns out, that isn't sufficient anyhow.
->
->
-> Problem:  Users expect on-motherboard NICs to be named eth0..ethN.  This can be difficult to achieve.
+If only vtime jump is an issue, can we solve it by delaying vtime
+jump? That is, even if we serve an entity with a bigger vtime, we
+don't update the reference vtime of the service tree until after some
+time?
 
-I dispute this statement.
-
-I have several hundred servers that have the on-motherboard NICs as the 
-last ones.
-
-anyone who's been making the assumption you describe will have been 
-running into problems for many years.
-
-it's just not a valid assumption.
-
-> Ethernet device names are initially assigned by the kernel, and may be
-> changed by udev or nameif in userspace.  The initial name assigned by
-> the kernel is in monotonically increasing order, starting with eth0.
-> In this instance, the enumeration directly leads to an assigned name.
 >
-> Complications:
+> Thanks
+> Vivek
 >
-> 1) Devices are discovered, and presented to the kernel for name
->   assignment, based on several factors:
->
->   a) the kernel hotplug mechanism emits events for udev to catch, to
->
->
->   b) udev may run modprobes in parallel.  It guarantees that the
->
->      To get any consistent ordering now, one of two things must
->      happen:
->
->      i) drivers must be loaded before udev begins loading drivers
->         (either very early in initscripts, or in the inital ramdisk).
->     ii) something must "fix up" the kernel-assigned names after
->         udev's modprobes complete.  udev does this as well.
->
-> 2) udev may have rules to change the device names.  This is most often
->   seen in the '70-persistent-net.rules' file.  Here we have
->   additional challenges:
->
->   a) this does not exist the first time devices are discovered; the
->
->   b) it introduces state (MAC addresses) to the system, on a system
->
->   c) udev may not always be able to change a device's name.  If udev
->
-
-not everyone uses udev. I compile the nessasary drivers into the kernel 
-and don't need udev to get interfaces.
-
-> 3) End users have the (reasonable?) expectation that NIC ports
-
-as noted above, only some users have this unrealistic expectation.
-
-> 4) When adding a network card to an existing system, what should the
->   ports on the new card be named?  If it is added, they will be named
->   ethN+1... above the existing named cards.  This means a (new)
->   add-in card in PCI slot 3 may have ports named eth5 and eth6, while
->   an add-in card in PCI slot 5 may have ports named eth2 and eth3.
->   This is not intuitive.
-
-this approach causes serious problems in a few cases, including
-
-1. a NIC goes bad and you replace it. now all the configs change
-
-2. you reinstall a box and it's interface names change.
-
-David Lang
