@@ -1,178 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754705AbZCXGOp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755327AbZCXGU0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754705AbZCXGOp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 02:14:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753244AbZCXGOf
+	id S1755327AbZCXGU0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 02:20:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753204AbZCXGUO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 02:14:35 -0400
-Received: from byss.tchmachines.com ([208.76.80.75]:60035 "EHLO
-	byss.tchmachines.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752724AbZCXGOe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 02:14:34 -0400
-Date: Mon, 23 Mar 2009 23:14:29 -0700
-From: Ravikiran G Thirumalai <kiran@scalex86.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Yinghai Lu <yinghai@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       shai@scalex86.org
-Subject: Re: [PATCH] x86: don't compile vsmp_64 for 32bit
-Message-ID: <20090324061429.GH7278@localdomain>
-References: <49A626B2.8090205@kernel.org> <20090226064806.GC27240@localdomain> <20090226114457.GB6651@elte.hu> <20090227001757.GE27240@localdomain> <20090228094430.GH12095@elte.hu> <20090302235120.GF27240@localdomain> <20090322124818.GA31466@elte.hu>
+	Tue, 24 Mar 2009 02:20:14 -0400
+Received: from 2605ds1-ynoe.1.fullrate.dk ([90.184.12.24]:52858 "EHLO
+	shrek.krogh.cc" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752890AbZCXGUM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Mar 2009 02:20:12 -0400
+Message-ID: <49C87B87.4020108@krogh.cc>
+Date: Tue, 24 Mar 2009 07:19:51 +0100
+From: Jesper Krogh <jesper@krogh.cc>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090322124818.GA31466@elte.hu>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - byss.tchmachines.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - scalex86.org
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.29
+References: <alpine.LFD.2.00.0903231617550.3032@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.0903231617550.3032@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Mar 22, 2009 at 01:48:18PM +0100, Ingo Molnar wrote:
->
->* Ravikiran G Thirumalai <kiran@scalex86.org> wrote:
->
->> On Sat, Feb 28, 2009 at 10:44:30AM +0100, Ingo Molnar wrote:
->> >
->> >* Ravikiran G Thirumalai <kiran@scalex86.org> wrote:
->> >
->> >> 
->> >> True, but by how much? 212 bytes, out of 7285943 bytes which 
->> >> is very very small percentage wise.
->> >
->> >How does this eliminate the validity of the patch?
->> >
->> 
->> It costs 212 bytes to leave is_vsmp_box() to not just be a dummy 
->> no-op. Having is_vsmp_box() detect if the hardware is indeed vSMP, 
->> is meaningful even when CONFIG_VSMP is not turned on.  This is 
->> because is_vsmp_box() is used to tell the kernel, that although 
->> the cpus being used are supposed to have TSCs in sync, they are 
->> not really in sync.  This is because you cannot ensure TSCs won't 
->> drift between multiple boards being aggregated on vSMP systems. 
->> Take the case of distro kernels.  Distro kernels typically do not 
->> have CONFIG_X86_VSMP on.  Due to the large internode cacheline 
->> setting, CONFIG_VSMP would not be on on the generic distro 
->> installer kernels. If is_vsmp_box() is a no-op, the generic distro 
->> installer kernels will assume TSCs to be synched, which is bad.  
->> Hence, it will be nice if, for the cost of 212 bytes, vsmp64.o be 
->> compiled either unconditionally, OR conditionally for 64bit 
->> architectures only.  The question is, is 212 bytes out of 7285943 
->> bytes too expensive for the generic kernels?  I hope not.
->
->Sorry - got distracted and forgot about this thread. The TSC quirk 
->indeed looks required for your systems - you dont have a reliable 
->TSC due to virtualization, right?
->
+Linus Torvalds wrote:
+> This obviously starts the merge window for 2.6.30, although as usual, I'll 
+> probably wait a day or two before I start actively merging. I do that in 
+> order to hopefully result in people testing the final plain 2.6.29 a bit 
+> more before all the crazy changes start up again.
 
-Yes. Also, because  there is no way to avoid tsc drift on
-multiple boards/nodes.
+I know this has been discussed before:
 
+[129401.996244] INFO: task updatedb.mlocat:31092 blocked for more than 
+480 seconds.
+[129402.084667] "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" 
+disables this message.
+[129402.179331] updatedb.mloc D 0000000000000000     0 31092  31091
+[129402.179335]  ffff8805ffa1d900 0000000000000082 ffff8803ff5688a8 
+0000000000001000
+[129402.179338]  ffffffff806cc000 ffffffff806cc000 ffffffff806d3e80 
+ffffffff806d3e80
+[129402.179341]  ffffffff806cfe40 ffffffff806d3e80 ffff8801fb9f87e0 
+000000000000ffff
+[129402.179343] Call Trace:
+[129402.179353]  [<ffffffff802d3ff0>] sync_buffer+0x0/0x50
+[129402.179358]  [<ffffffff80493a50>] io_schedule+0x20/0x30
+[129402.179360]  [<ffffffff802d402b>] sync_buffer+0x3b/0x50
+[129402.179362]  [<ffffffff80493d2f>] __wait_on_bit+0x4f/0x80
+[129402.179364]  [<ffffffff802d3ff0>] sync_buffer+0x0/0x50
+[129402.179366]  [<ffffffff80493dda>] out_of_line_wait_on_bit+0x7a/0xa0
+[129402.179369]  [<ffffffff80252730>] wake_bit_function+0x0/0x30
+[129402.179396]  [<ffffffffa0264346>] ext3_find_entry+0xf6/0x610 [ext3]
+[129402.179399]  [<ffffffff802d3453>] __find_get_block+0x83/0x170
+[129402.179403]  [<ffffffff802c4a90>] ifind_fast+0x50/0xa0
+[129402.179405]  [<ffffffff802c5874>] iget_locked+0x44/0x180
+[129402.179412]  [<ffffffffa0266435>] ext3_lookup+0x55/0x100 [ext3]
+[129402.179415]  [<ffffffff802c32a7>] d_alloc+0x127/0x1c0
+[129402.179417]  [<ffffffff802ba2a7>] do_lookup+0x1b7/0x250
+[129402.179419]  [<ffffffff802bc51d>] __link_path_walk+0x76d/0xd60
+[129402.179421]  [<ffffffff802ba17f>] do_lookup+0x8f/0x250
+[129402.179424]  [<ffffffff802c8b37>] mntput_no_expire+0x27/0x150
+[129402.179426]  [<ffffffff802bcb64>] path_walk+0x54/0xb0
+[129402.179428]  [<ffffffff802bfd10>] filldir+0x0/0xf0
+[129402.179430]  [<ffffffff802bcc8a>] do_path_lookup+0x7a/0x150
+[129402.179432]  [<ffffffff802bbb55>] getname+0xe5/0x1f0
+[129402.179434]  [<ffffffff802bd8d4>] user_path_at+0x44/0x80
+[129402.179437]  [<ffffffff802b53b5>] cp_new_stat+0xe5/0x100
+[129402.179440]  [<ffffffff802b56d0>] vfs_lstat_fd+0x20/0x60
+[129402.179442]  [<ffffffff802b5737>] sys_newlstat+0x27/0x50
+[129402.179445]  [<ffffffff8020c35b>] system_call_fastpath+0x16/0x1b
 
->Mind sending a patch (partial revert or so) against latest -tip that 
->fixes that?
->
+Consensus seems to be something with large memory machines, lots of 
+dirty pages and a long writeout time due to ext3.
 
-Sure.  Here's  a revert, it is a partial revert which compiles vsmp64.c only
-for 64bit architectures.
+At the moment this the largest "usabillity" issue in the serversetup I'm 
+working with. Can there be done something to "autotune" it .. or perhaps 
+even fix it? .. or is it just to shift to xfs or wait for ext4?
 
-Thanks,
-Kiran
-
-
-Partial revert of commit 129d8bc828e011bda0b7110a097bf3a0167f966e
-titled 'x86: don't compile vsmp_64 for 32bit'
-Commit reverted to compile vsmp_64.c if CONFIG_X86_64 is defined,
-since is_vsmp_box() needs to indicate that TSCs are not synchronized, and
-hence, not a valid time source, even when CONFIG_X86_VSMP is not defined.
-
-Signed-off-by: Ravikiran Thirumalai <kiran@scalex86.org>
-
-Index: git.tip/arch/x86/include/asm/apic.h
-===================================================================
---- git.tip.orig/arch/x86/include/asm/apic.h	2009-03-23 12:50:37.000000000 -0800
-+++ git.tip/arch/x86/include/asm/apic.h	2009-03-23 20:21:02.000000000 -0800
-@@ -75,7 +75,7 @@ static inline void default_inquire_remot
- #define setup_secondary_clock setup_secondary_APIC_clock
- #endif
- 
--#ifdef CONFIG_X86_VSMP
-+#ifdef CONFIG_X86_64
- extern int is_vsmp_box(void);
- #else
- static inline int is_vsmp_box(void)
-Index: git.tip/arch/x86/include/asm/setup.h
-===================================================================
---- git.tip.orig/arch/x86/include/asm/setup.h	2009-03-23 12:50:37.000000000 -0800
-+++ git.tip/arch/x86/include/asm/setup.h	2009-03-23 20:19:18.000000000 -0800
-@@ -64,7 +64,7 @@ extern void x86_quirk_time_init(void);
- #include <asm/bootparam.h>
- 
- /* Interrupt control for vSMPowered x86_64 systems */
--#ifdef CONFIG_X86_VSMP
-+#ifdef CONFIG_X86_64
- void vsmp_init(void);
- #else
- static inline void vsmp_init(void) { }
-Index: git.tip/arch/x86/kernel/Makefile
-===================================================================
---- git.tip.orig/arch/x86/kernel/Makefile	2009-03-23 12:50:37.000000000 -0800
-+++ git.tip/arch/x86/kernel/Makefile	2009-03-23 20:29:34.000000000 -0800
-@@ -71,7 +71,6 @@ obj-$(CONFIG_FTRACE_SYSCALLS)	+= ftrace.
- obj-$(CONFIG_KEXEC)		+= machine_kexec_$(BITS).o
- obj-$(CONFIG_KEXEC)		+= relocate_kernel_$(BITS).o crash.o
- obj-$(CONFIG_CRASH_DUMP)	+= crash_dump_$(BITS).o
--obj-$(CONFIG_X86_VSMP)		+= vsmp_64.o
- obj-$(CONFIG_KPROBES)		+= kprobes.o
- obj-$(CONFIG_MODULES)		+= module_$(BITS).o
- obj-$(CONFIG_EFI) 		+= efi.o efi_$(BITS).o efi_stub_$(BITS).o
-@@ -121,4 +120,5 @@ ifeq ($(CONFIG_X86_64),y)
- 	obj-$(CONFIG_AMD_IOMMU)		+= amd_iommu_init.o amd_iommu.o
- 
- 	obj-$(CONFIG_PCI_MMCONFIG)	+= mmconf-fam10h_64.o
-+	obj-y				+= vsmp_64.o
- endif
-Index: git.tip/arch/x86/kernel/vsmp_64.c
-===================================================================
---- git.tip.orig/arch/x86/kernel/vsmp_64.c	2009-03-23 12:50:37.000000000 -0800
-+++ git.tip/arch/x86/kernel/vsmp_64.c	2009-03-23 21:09:34.000000000 -0800
-@@ -22,7 +22,7 @@
- #include <asm/paravirt.h>
- #include <asm/setup.h>
- 
--#ifdef CONFIG_PARAVIRT
-+#if defined CONFIG_PCI && defined CONFIG_PARAVIRT
- /*
-  * Interrupt control on vSMPowered systems:
-  * ~AC is a shadow of IF.  If IF is 'on' AC should be 'off'
-@@ -114,6 +114,7 @@ static void __init set_vsmp_pv_ops(void)
- }
- #endif
- 
-+#ifdef CONFIG_PCI
- static int is_vsmp = -1;
- 
- static void __init detect_vsmp_box(void)
-@@ -139,6 +140,15 @@ int is_vsmp_box(void)
- 	}
- }
- 
-+#else
-+static void __init detect_vsmp_box(void)
-+{
-+}
-+int is_vsmp_box(void)
-+{
-+	return 0;
-+}
-+#endif
- void __init vsmp_init(void)
- {
- 	detect_vsmp_box();
+Jesper
+-- 
+Jesper
