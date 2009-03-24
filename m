@@ -1,67 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755853AbZCXNIw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759363AbZCXNKq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755853AbZCXNIw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 09:08:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754750AbZCXNIl
+	id S1759363AbZCXNKq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 09:10:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753924AbZCXNKh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 09:08:41 -0400
-Received: from vms173001pub.verizon.net ([206.46.173.1]:27222 "EHLO
-	vms173001pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752465AbZCXNIk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 09:08:40 -0400
-Message-id: <49C8DB54.4010200@acm.org>
-Date: Tue, 24 Mar 2009 08:08:36 -0500
-From: Corey Minyard <minyard@acm.org>
-User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
-MIME-version: 1.0
-To: Martin Wilck <martin.wilck@fujitsu-siemens.com>
-Cc: Greg KH <greg@kroah.com>,
-       "openipmi-developer@lists.sourceforge.net" 
-	<openipmi-developer@lists.sourceforge.net>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [Openipmi-developer] Improving IPMI performance under load
-References: <49C27281.4040207@fujitsu-siemens.com> <49C2B994.7040808@acm.org>
- <20090319235114.GA18182@kroah.com> <49C3B6A5.5030408@acm.org>
- <20090320174701.GA14823@kroah.com> <49C3E03E.10506@acm.org>
- <49C78BE0.9090107@fujitsu-siemens.com> <49C7F368.5040304@acm.org>
- <49C8A823.6020809@fujitsu-siemens.com>
-In-reply-to: <49C8A823.6020809@fujitsu-siemens.com>
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Content-transfer-encoding: 7bit
+	Tue, 24 Mar 2009 09:10:37 -0400
+Received: from hera.kernel.org ([140.211.167.34]:36006 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751645AbZCXNKg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Mar 2009 09:10:36 -0400
+Message-ID: <49C8DB12.8090709@kernel.org>
+Date: Tue, 24 Mar 2009 22:07:30 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+MIME-Version: 1.0
+To: Jens Axboe <jens.axboe@oracle.com>
+CC: linux-kernel@vger.kernel.org, bzolnier@gmail.com,
+       =?ISO-8859-1?Q?J=F6?= =?ISO-8859-1?Q?rg_Dorchain?= 
+	<joerg@dorchain.net>,
+       Geert Uytterhoeven <geert@linux-m68k.org>, Tim Waugh <tim@cyberelk.net>,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       Paul Mackerras <paulus@samba.org>,
+       Jeremy Fitzhardinge <jeremy@xensource.com>,
+       Grant Likely <grant.likely@secretlab.ca>,
+       Markus Lidel <Markus.Lidel@shadowconnect.com>,
+       David Woodhouse <dwmw2@infradead.org>,
+       Pete Zaitcev <zaitcev@redhat.com>
+Subject: Re: [PATCH 15/17] block: kill end_request()
+References: <1237170540-19130-1-git-send-email-tj@kernel.org> <1237170540-19130-16-git-send-email-tj@kernel.org> <49C457C3.6080909@kernel.org> <20090324113701.GL27476@kernel.dk>
+In-Reply-To: <20090324113701.GL27476@kernel.dk>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 24 Mar 2009 13:07:35 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Martin Wilck wrote:
-> Hi Corey,
->
-> yesterday I posted some results about the IPMI performance under CPU 
-> load, which can be up to 25 times slower than in an idle system. I think 
-> it might be worthwhile to try to improve that behavior as well.
->   
-Yes, that would be expected, as kipmid would never be scheduled in a 
-busy system, and it would just be the timer driving things.
+Hello, Jens.
 
-> I made a variation of my patch which introduces a second parameter 
-> (kipmid_min_busy) that causes kipmid not to call schedule() for a 
-> certain amount of time. Thus if there's IPMI traffic pending, kipmid 
-> will busy-loop for kipmid_min_busy seconds, then starting to schedule() 
-> in each loop as it does now, and finally go to sleep when 
-> kipmid_max_busy is reached. At the same time, I changed the nice value 
-> of kipmid from 19 to 0.
->   
-I would guess that changing the nice value is the main thing that caused 
-the difference.  The other changes probably didn't make as big a difference.
+Jens Axboe wrote:
+> The patchset is no longer in the for-2.6.30 upstream branch of the block
+> git repo, due to the this glitch and the debate on ide conflicts (which
+> I still find extremely silly and an over reaction).
+> 
+> I trust you will resend it when you are ready!
 
-> With this patch and e.g. min_busy=100 and max_busy=200, there is no 
-> noticeable difference any more between IPMI performance with and without 
-> CPU load.
->
-> The patch + results still need cleanup, therefore I am not sending it 
-> right now. Just wanted to hear what you think.
->   
-I'm ok with tuning like this, but most users are probably not going to 
-want this type of behavior.
+Yeap, everything is falling into places.  I'm reshuffling patches and
+testing stuff.  I'll post refreshed patchsets including IDE updates,
+rq->data_len, *nr_sectors consolidation followed by peek/fetch
+patchset in a few days.
 
--corey
+Thanks.
+
+-- 
+tejun
