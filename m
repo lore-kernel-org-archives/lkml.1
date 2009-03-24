@@ -1,96 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758692AbZCXKHk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757836AbZCXKK1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758692AbZCXKHk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 06:07:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755912AbZCXKHb
+	id S1757836AbZCXKK1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 06:10:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756673AbZCXKKQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 06:07:31 -0400
-Received: from hera.kernel.org ([140.211.167.34]:58163 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754678AbZCXKHa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 06:07:30 -0400
-Date: Tue, 24 Mar 2009 10:06:38 GMT
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       penberg@cs.helsinki.fi, eduard.munteanu@linux360.ro, tglx@linutronix.de,
-       mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       penberg@cs.helsinki.fi, eduard.munteanu@linux360.ro, tglx@linutronix.de,
-       mingo@elte.hu
-In-Reply-To: <1237888763.25315.70.camel@penberg-laptop>
-References: <1237888763.25315.70.camel@penberg-laptop>
-Subject: [tip:tracing/kmemtrace] fs: don't include <linux/gfp.h> to fix headers-export-check
-Message-ID: <tip-f9ebc8b5fa7b574df0f8d39643879edc77cb2fe2@git.kernel.org>
-Git-Commit-ID: f9ebc8b5fa7b574df0f8d39643879edc77cb2fe2
-X-Mailer: tip-git-log-daemon
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 24 Mar 2009 10:06:40 +0000 (UTC)
+	Tue, 24 Mar 2009 06:10:16 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:54767 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755518AbZCXKKP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Mar 2009 06:10:15 -0400
+Date: Tue, 24 Mar 2009 10:10:11 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: David Rees <drees76@gmail.com>, Jesper Krogh <jesper@krogh.cc>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.29
+Message-ID: <20090324101011.6555a0b9@lxorguk.ukuu.org.uk>
+In-Reply-To: <20090324093245.GA22483@elte.hu>
+References: <alpine.LFD.2.00.0903231617550.3032@localhost.localdomain>
+	<49C87B87.4020108@krogh.cc>
+	<72dbd3150903232346g5af126d7sb5ad4949a7b5041f@mail.gmail.com>
+	<20090324091545.758d00f5@lxorguk.ukuu.org.uk>
+	<20090324093245.GA22483@elte.hu>
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  f9ebc8b5fa7b574df0f8d39643879edc77cb2fe2
-Gitweb:     http://git.kernel.org/tip/f9ebc8b5fa7b574df0f8d39643879edc77cb2fe2
-Author:     Pekka Enberg <penberg@cs.helsinki.fi>
-AuthorDate: Tue, 24 Mar 2009 11:59:23 +0200
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Tue, 24 Mar 2009 11:04:19 +0100
-
-fs: don't include <linux/gfp.h> to fix headers-export-check
-
-Impact: fix build
-
-This patch fixes a headers-export-check failure:
-
-  /home/mingo/tip/usr/include/linux/bsg.h:11: found __[us]{8,16,32,64} type without #include <linux/types.h>
-  /home/mingo/tip/usr/include/linux/fs.h:11: included file 'linux/gfp.h' is not exported
-  make[3]: *** [/home/mingo/tip/usr/include/linux/.check] Error 1
-  make[2]: *** [linux] Error 2
-
-Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-LKML-Reference: <1237888763.25315.70.camel@penberg-laptop>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> > I have not had this problem since I applied Arjan's (for some reason
+> > repeatedly rejected) patch to change the ioprio of the various writeback
+> > daemons. Under some loads changing to the noop I/O scheduler also seems
+> > to help (as do most of the non default ones)
+> 
+> (link would be useful)
 
 
----
- include/linux/fs.h |   16 ++++++----------
- 1 files changed, 6 insertions(+), 10 deletions(-)
+"Give kjournald a IOPRIO_CLASS_RT io priority"
 
-diff --git a/include/linux/fs.h b/include/linux/fs.h
-index add95da..11fdc57 100644
---- a/include/linux/fs.h
-+++ b/include/linux/fs.h
-@@ -8,7 +8,6 @@
- 
- #include <linux/limits.h>
- #include <linux/ioctl.h>
--#include <linux/gfp.h>
- 
- /*
-  * It's silly to have NR_OPEN bigger than NR_FILE, but you can change
-@@ -2233,15 +2232,12 @@ ssize_t simple_attr_write(struct file *file, const char __user *buf,
- 
- 
- #ifdef CONFIG_SECURITY
--static inline char *alloc_secdata(void)
--{
--	return (char *)get_zeroed_page(GFP_KERNEL);
--}
--
--static inline void free_secdata(void *secdata)
--{
--	free_page((unsigned long)secdata);
--}
-+/*
-+ * These need to be macros because we cannot include <linux/gfp.h> in this
-+ * header file.
-+ */
-+#define alloc_secdata()       (char *)get_zeroed_page(GFP_KERNEL)
-+#define free_secdata(secdata) free_page((unsigned long) secdata)
- #else
- static inline char *alloc_secdata(void)
- {
+October 2007 (yes its that old)
+
+And do the same as per discussion to the writeback tasks.
+
+
+Which isn't to say there are not also vm problems - look at the I/O
+patterns with any kernel after about 2.6.18/19 and there seems to be a
+serious problem with writeback from the mm and fs writes falling over
+each other and turning the smooth writeout into thrashing back and forth
+as both try to write out different bits of the same stuff.
+
+<Rant>
+Really someone needs to sit down and actually build a proper model of the
+VM behaviour in a tool like netlogo rather than continually keep adding
+ever more complex and thus unpredictable hacks to it. That way we might
+better understand what is occurring and why.
+</Rant>
+
+Alan
+
