@@ -1,52 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754878AbZCXCjS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754599AbZCXDFY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754878AbZCXCjS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Mar 2009 22:39:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752748AbZCXCjE
+	id S1754599AbZCXDFY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Mar 2009 23:05:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753343AbZCXDFI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Mar 2009 22:39:04 -0400
-Received: from anchor-post-2.mail.demon.net ([195.173.77.133]:49276 "EHLO
-	anchor-post-2.mail.demon.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752533AbZCXCjD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Mar 2009 22:39:03 -0400
-Message-ID: <49C847C6.4030904@lougher.demon.co.uk>
-Date: Tue, 24 Mar 2009 02:39:02 +0000
-From: Phillip Lougher <phillip@lougher.demon.co.uk>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081125)
+	Mon, 23 Mar 2009 23:05:08 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:56179 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1753244AbZCXDFH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 23 Mar 2009 23:05:07 -0400
+Message-ID: <49C84D65.9050606@cn.fujitsu.com>
+Date: Tue, 24 Mar 2009 11:03:01 +0800
+From: Lai Jiangshan <laijs@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
-To: Stephen Hemminger <shemminger@vyatta.com>
-CC: linux-kernel@vger.kernel.org, squashfs-devel@lists.sourceforge.net
-Subject: Re: Squashfs 4.0 tools
-References: <20090323180808.2c2ef1a7@nehalam>
-In-Reply-To: <20090323180808.2c2ef1a7@nehalam>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Steven Rostedt <srostedt@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>
+Subject: [PATCH] ftrace: show virtual PID
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stephen Hemminger wrote:
-> It is great that squashfs is finally in mainline kernel. But the
-> squashfs tools are tightly bound to the version of the squashfs filesystem.
-> The latest tools in Debian (and the download page) are limited to 
-> version 3.4 but the upstream kernel version is 4.0!
-> 
-> Do we have a cart with no horse here?
-> 
 
-The horse is currently in training, or to put it more mundanely, the
-squashfs 4.0 tools are currently in Squashfs CVS :-)
+When current namespace is not the global namespace,
+pid read from set_ftrace_pid is no correct.
 
-I have been working on the 4.0 squashfs tools for the last couple of
-months making them (mksquashfs and unsquashfs) ready for a supported
-release.  Now that Linux 2.6.29 has been released (3 hours ago), I
-need to make this release ASAP, which as everything is almost finished,
-should be sometime this week.
+# ~/newpid_namespace_run bash
+# echo $$
+1
+# echo 1 > set_ftrace_pid
+# cat set_ftrace_pid
+3756
 
-Phillip
+Since we write virtual PID to set_ftrace_pid, we need get
+virtual PID when we read it.
 
-
-
-
+Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
+---
+diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
+index 7847806..7d7f201 100644
+--- a/kernel/trace/ftrace.c
++++ b/kernel/trace/ftrace.c
+@@ -2262,7 +2262,7 @@ ftrace_pid_read(struct file *file, char __user *ubuf,
+ 	if (ftrace_pid_trace == ftrace_swapper_pid)
+ 		r = sprintf(buf, "swapper tasks\n");
+ 	else if (ftrace_pid_trace)
+-		r = sprintf(buf, "%u\n", pid_nr(ftrace_pid_trace));
++		r = sprintf(buf, "%u\n", pid_vnr(ftrace_pid_trace));
+ 	else
+ 		r = sprintf(buf, "no pid\n");
+ 
 
