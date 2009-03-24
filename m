@@ -1,100 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761566AbZCXT3U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759624AbZCXTjl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761566AbZCXT3U (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 15:29:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753335AbZCXT3J
+	id S1759624AbZCXTjl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 15:39:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755314AbZCXTao
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 15:29:09 -0400
-Received: from g4t0015.houston.hp.com ([15.201.24.18]:3607 "EHLO
-	g4t0015.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753160AbZCXT3I (ORCPT
+	Tue, 24 Mar 2009 15:30:44 -0400
+Received: from wf-out-1314.google.com ([209.85.200.175]:50300 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756182AbZCXTam (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 15:29:08 -0400
-Date: Tue, 24 Mar 2009 13:29:05 -0600
-From: Alex Chiang <achiang@hp.com>
-To: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
-Cc: jbarnes@virtuousgeek.org, linux-pci@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Trent Piepho <xyzzy@speakeasy.org>
-Subject: Re: [PATCH v5 09/13] PCI: Introduce /sys/bus/pci/devices/.../remove
-Message-ID: <20090324192905.GA25984@ldl.fc.hp.com>
-References: <20090320204327.12275.43010.stgit@bob.kio> <20090320205636.12275.1825.stgit@bob.kio> <49C74FCC.7070308@jp.fujitsu.com>
+	Tue, 24 Mar 2009 15:30:42 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=Hg5Uf3PcM/WZ2lU5zS14Gz/glRzMvIGkXR1sBdkNnzDQNOA+6/LtPDCbcni3XwbwV8
+         laOctuSfNbAfnEm1R3rFyHnKrBl2xKMkdTC1oShd7c8tjBxwGY9+o5pVPoOLQGUdWk1K
+         0uT/H/RGqueJAeFcN2RzmYhKSftEMhtW/Yqa0=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49C74FCC.7070308@jp.fujitsu.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Date: Tue, 24 Mar 2009 12:30:25 -0700
+Message-ID: <43e72e890903241230y32a317cfga5f809748c5ab978@mail.gmail.com>
+Subject: [RFC] Removing CONFIG_WIRELESS_OLD_REGULATORY plan
+From: "Luis R. Rodriguez" <mcgrof@gmail.com>
+To: linux-wireless <linux-wireless@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Cc: Al Viro <viro@ftp.linux.org.uk>, k roy <kroykroy@gmail.com>,
+       Till Kamppeter <till.kamppeter@gmail.com>,
+       Jussi Kukkonen <jku@linux.intel.com>,
+       Marcel Holtmann <marcel@holtmann.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>:
->
-> I still have the following kernel error messages in testing with your
-> latest set of patches (Jesse's linux-next). The test case is removing
-> e1000e device or its parent bridge by "echo 1 > /sys/bus/pci/devices/
-> .../remove".
->
-> [  537.379995] =============================================
-> [  537.380124] [ INFO: possible recursive locking detected ]
-> [  537.380128] 2.6.29-rc8-kk #1
-> [  537.380128] ---------------------------------------------
-> [  537.380128] events/4/56 is trying to acquire lock:
-> [  537.380128]  (events){--..}, at: [<ffffffff80257fc0>] flush_workqueue+0x0/0xa0
-> [  537.380128]
-> [  537.380128] but task is already holding lock:
-> [  537.380128]  (events){--..}, at: [<ffffffff80257648>] run_workqueue+0x108/0x230
-> [  537.380128]
-> [  537.380128] other info that might help us debug this:
-> [  537.380128] 3 locks held by events/4/56:
-> [  537.380128]  #0:  (events){--..}, at: [<ffffffff80257648>] run_workqueue+0x108/0x230
-> [  537.380128]  #1:  (&ss->work){--..}, at: [<ffffffff80257648>] run_workqueue+0x108/0x230
-> [  537.380128]  #2:  (pci_remove_rescan_mutex){--..}, at: [<ffffffff803c10d1>] remove_callback+0x21/0x40
+As a lot of you know we have a new regulatory implementation for Linux
+wireless now [1]. We have kept the old regulatory implementation
+through a Kconfig option, CONFIG_WIRELESS_OLD_REGULATORY.
+Distributions are slowly converging to start setting this to "N" -- as
+of 2.6.28. Distributions are also now shipping wireless-regdb [2] and
+CRDA [3]. In the case of the absence of either of these we world roam.
+For the 2.6.30 kernel we have added a new set of world roaming
+improvements which include the ability to enable active scanning when
+a beacon from an AP is found [4], and to also default to do passive
+scan on the 5 GHz band [6].
 
-I still cannot reproduce this lockdep issue, even using your
-.config with an e1000e device on an x86_64 kernel. :(
+We have had CONFIG_WIRELESS_OLD_REGULATORY in the feature removal
+schedule marked for 2.6.29 but we have avoided doing so due to the the
+distribution-catchup game and OLD_REG was still being set to default
+to "Y".
 
-I tried removing the endpoint, an intermediate bridge device, and
-the parent bus. I don't know what I'm doing wrong...
+Now with 2.6.29 released 2.6.30 merge window is closing, and I'd like
+to review our current updated plans for the feature removal of the old
+regulatory infrastructure. The plan is to ship 2.6.30 with OLD_REG
+defaulting to "N", move along the ieee80211_regdom module parameter to
+be available when OLD_REG is set to "N" and to not remove OLD_REG
+until distributions being shipped start carrying decent userspace
+replacements to provide regulatory hint information to the kernel.
 
-Can you please try this patch though, and see if it fixes the
-warning? It applies on top of my other sysfs patch that
-introduces a mutex in sysfs_schedule_callback.
+For example, the cheap way to do this is to simply pick your country
+someway and use iw to set the regulatory domain from part of an init
+script. The next best thing is to get Network Manager to support
+country selection and then pass that to wpa_supplicant to inform the
+kernel. The impressive solution will be to integrate GeoClue [6] to
+the standard Linux desktop and to make use of all location-aware
+inputs on the desktop to determine your location. To this end the
+GNOME and the Linux Foundation have Google Summer of Code projects [6]
+to accomplish this. We will work with the GNOME folks to work together
+on this so we can each help mentor each component involved
+respectively. For details of the current ideas please see the links to
+the project.
 
-Thanks.
+I should briefly note that this helps mostly Linux wireless drivers
+which completely lack regulatory information or which rely on it
+completely from userspace (examples are drivers which rely on the
+Windows registry files for regdomain information). For drivers which
+already have regulatory information that is always respected of
+course, but we still let users help compliance even further. For
+further details please to our regulatory implementation documentation
+[1].
 
-/ac
+Our plan then is to not remove OLD_REG completely until we see some
+decent userspace replacement on the Linux desktop being shipped and
+help mentor the Linux wireless GeoClue GSoC 2009 project [8] (hint:
+applications were opened yesterday, deadline is April 03).
 
-diff --git a/fs/sysfs/file.c b/fs/sysfs/file.c
-index 289c43a..7cc4dc0 100644
---- a/fs/sysfs/file.c
-+++ b/fs/sysfs/file.c
-@@ -667,6 +667,7 @@ struct sysfs_schedule_callback_struct {
- 	struct work_struct	work;
- };
- 
-+static struct workqueue_struct *sysfs_workqueue;
- static DEFINE_MUTEX(sysfs_workq_mutex);
- static LIST_HEAD(sysfs_workq);
- static void sysfs_schedule_callback_work(struct work_struct *work)
-@@ -720,6 +721,12 @@ int sysfs_schedule_callback(struct kobject *kobj, void (*func)(void *),
- 		}
- 	mutex_unlock(&sysfs_workq_mutex);
- 
-+	if (sysfs_workqueue == NULL) {
-+		sysfs_workqueue = create_workqueue("sysfsqueue");
-+		if (sysfs_workqueue == NULL)
-+			return -ENOMEM;
-+	}
-+
- 	ss = kmalloc(sizeof(*ss), GFP_KERNEL);
- 	if (!ss) {
- 		module_put(owner);
-@@ -735,7 +742,7 @@ int sysfs_schedule_callback(struct kobject *kobj, void (*func)(void *),
- 	mutex_lock(&sysfs_workq_mutex);
- 	list_add_tail(&ss->workq_list, &sysfs_workq);
- 	mutex_unlock(&sysfs_workq_mutex);
--	schedule_work(&ss->work);
-+	queue_work(sysfs_workqueue, &ss->work);
- 	return 0;
- }
- EXPORT_SYMBOL_GPL(sysfs_schedule_callback);
+For those still not clear exactly on what
+CONFIG_WIRELESS_OLD_REGULATORY means please see our documentation [9]
+on this.
+
+So this is the plan... if there are any questions, hate mail or
+comments please let me know.
+
+  Luis
+
+[1] http://wireless.kernel.org/en/developers/Regulatory
+[2] http://wireless.kernel.org/en/developers/Regulatory#Theregulatorydatabase
+[3] http://wireless.kernel.org/en/developers/Regulatory/CRDA
+[4] http://marc.info/?l=linux-wireless&m=123519365605046&w=2
+[5] http://marc.info/?l=linux-wireless&m=123519439405554&w=2
+[6] http://www.freedesktop.org/wiki/Software/GeoClue
+[7] https://www.linuxfoundation.org/en/Google_Summer_of_Code_2009#802.11_Wireless
+[8] https://www.linuxfoundation.org/en/Google_Summer_of_Code_2009#802.11_Wireless
+[9] http://wireless.kernel.org/en/developers/Regulatory#Oldregulatoryimplementation
