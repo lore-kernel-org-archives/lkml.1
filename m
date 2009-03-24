@@ -1,110 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760757AbZCXNhn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760432AbZCXNkb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760757AbZCXNhn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 09:37:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754630AbZCXNhe
+	id S1760432AbZCXNkb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 09:40:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754798AbZCXNkW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 09:37:34 -0400
-Received: from THUNK.ORG ([69.25.196.29]:45355 "EHLO thunker.thunk.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753444AbZCXNhd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 09:37:33 -0400
-Date: Tue, 24 Mar 2009 09:37:06 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Nick Piggin <npiggin@suse.de>,
-       Jens Axboe <jens.axboe@oracle.com>, David Rees <drees76@gmail.com>,
-       Jesper Krogh <jesper@krogh.cc>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.29
-Message-ID: <20090324133706.GL5814@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-	Arjan van de Ven <arjan@infradead.org>,
-	Peter Zijlstra <a.p.zijlstra@chello.nl>,
-	Nick Piggin <npiggin@suse.de>, Jens Axboe <jens.axboe@oracle.com>,
-	David Rees <drees76@gmail.com>, Jesper Krogh <jesper@krogh.cc>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <alpine.LFD.2.00.0903231617550.3032@localhost.localdomain> <49C87B87.4020108@krogh.cc> <72dbd3150903232346g5af126d7sb5ad4949a7b5041f@mail.gmail.com> <20090324091545.758d00f5@lxorguk.ukuu.org.uk> <20090324093245.GA22483@elte.hu> <20090324101011.6555a0b9@lxorguk.ukuu.org.uk> <20090324103111.GA26691@elte.hu> <20090324041249.1133efb6.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090324041249.1133efb6.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+	Tue, 24 Mar 2009 09:40:22 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:39303 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753856AbZCXNkV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Mar 2009 09:40:21 -0400
+Subject: [PATCH] kmemtrace: define tracepoints when CONFIG_TRACEPOINTS is
+	enabled
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: mingo@elte.hu
+Cc: eduard.munteanu@linux360.ro, linux-kernel@vger.kernel.org
+Date: Tue, 24 Mar 2009 15:40:17 +0200
+Message-Id: <1237902017.25315.90.camel@penberg-laptop>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.22.3.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 24, 2009 at 04:12:49AM -0700, Andrew Morton wrote:
-> But mainly because the problem lies elsewhere - in an area of contention
-> between the committing and running transactions which we knowingly and
-> reluctantly added to fix a bug in "[PATCH] fix ext3 buffer-stealing"
+From: Pekka Enberg <penberg@cs.helsinki.fi>
 
-Well, let's be clear here.  The contention between committing and
-running transaction is an issue, even if we solved this problem, it
-wouldn't solve the issue of fsync() taking a long time in ext3's
-data=ordered mode in the case of massive write starvation caused by a
-read-heavy workload, or a vast number of dirty buffers associated with
-an inode which is about to be committed, and a process triggers an
-fsync().  So fixing this issue wouldn't have solved the problem which
-Ingo complained about (which was an editor calling fsync() leading to
-long delay when saving a file during or right after a
-distcc-accelerated kernel compile) or the infamous Firefox 3.0 bug.
+Impact: fix build
 
-Fixing this contention *would* fix the problem where a normal process
-which is doing normal file I/O could end up getting stalled
-unnecessarily, but that's not what most people are complaining about
---- and shortening the amount of time that it takes do a commit
-(either with ext4's delayed allocation or ext3's data=writeback mount
-option) would also address this problem.  That doesn't mean that it's
-not worth it to fix this particular contention, but there are multiple
-issues going on here.
+If CONFIG_KMEMTRACE is disabled but CONFIG_TRACEPOINTS is enabled, we need to
+define the tracepoints; otherwise linkage fails:
 
-(Basically we're here:
+    LD      .tmp_vmlinux1
+  arch/x86/kernel/built-in.o: In function `sys_ioperm':
+  (.text+0x3743): undefined reference to `__tracepoint_kmalloc'
+  arch/x86/kernel/built-in.o: In function `sys_ioperm':
+  (.text+0x3784): undefined reference to `__tracepoint_kmalloc'
+  arch/x86/kernel/built-in.o: In function `cache_sysfs_init':
+  intel_cacheinfo.c:(.cpuinit.text+0x5f3): undefined reference to `__tracepoint_kmalloc'
+  intel_cacheinfo.c:(.cpuinit.text+0x768): undefined reference to `__tracepoint_kmalloc'
+  arch/x86/mm/built-in.o: In function `reserve_memtype':
+  (.text+0x2fb3): undefined reference to `__tracepoint_kmalloc'
 
-http://www.kernel.org/pub/linux/kernel/people/paulmck/Confessions/FOSSElephant.html
+Cc: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
+Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
+---
+ kernel/trace/kmemtrace.c |   15 ---------------
+ mm/util.c                |   16 ++++++++++++++++
+ 2 files changed, 16 insertions(+), 15 deletions(-)
 
-... in Paul Mckenney's version of parable of the blind men and the elephant:
+diff --git a/kernel/trace/kmemtrace.c b/kernel/trace/kmemtrace.c
+index 53b9c7c..5011f4d 100644
+--- a/kernel/trace/kmemtrace.c
++++ b/kernel/trace/kmemtrace.c
+@@ -17,21 +17,6 @@
+ #include "trace_output.h"
+ #include "trace.h"
+ 
+-/* Tracepoints definitions. */
+-DEFINE_TRACE(kmalloc);
+-DEFINE_TRACE(kmem_cache_alloc);
+-DEFINE_TRACE(kmalloc_node);
+-DEFINE_TRACE(kmem_cache_alloc_node);
+-DEFINE_TRACE(kfree);
+-DEFINE_TRACE(kmem_cache_free);
+-
+-EXPORT_TRACEPOINT_SYMBOL(kmalloc);
+-EXPORT_TRACEPOINT_SYMBOL(kmem_cache_alloc);
+-EXPORT_TRACEPOINT_SYMBOL(kmalloc_node);
+-EXPORT_TRACEPOINT_SYMBOL(kmem_cache_alloc_node);
+-EXPORT_TRACEPOINT_SYMBOL(kfree);
+-EXPORT_TRACEPOINT_SYMBOL(kmem_cache_free);
+-
+ /* Select an alternative, minimalistic output than the original one */
+ #define TRACE_KMEM_OPT_MINIMAL	0x1
+ 
+diff --git a/mm/util.c b/mm/util.c
+index 37eaccd..8d4b900 100644
+--- a/mm/util.c
++++ b/mm/util.c
+@@ -4,6 +4,7 @@
+ #include <linux/module.h>
+ #include <linux/err.h>
+ #include <linux/sched.h>
++#include <linux/tracepoint.h>
+ #include <asm/uaccess.h>
+ 
+ /**
+@@ -206,3 +207,18 @@ int __attribute__((weak)) get_user_pages_fast(unsigned long start,
+ 	return ret;
+ }
+ EXPORT_SYMBOL_GPL(get_user_pages_fast);
++
++/* Tracepoints definitions. */
++DEFINE_TRACE(kmalloc);
++DEFINE_TRACE(kmem_cache_alloc);
++DEFINE_TRACE(kmalloc_node);
++DEFINE_TRACE(kmem_cache_alloc_node);
++DEFINE_TRACE(kfree);
++DEFINE_TRACE(kmem_cache_free);
++
++EXPORT_TRACEPOINT_SYMBOL(kmalloc);
++EXPORT_TRACEPOINT_SYMBOL(kmem_cache_alloc);
++EXPORT_TRACEPOINT_SYMBOL(kmalloc_node);
++EXPORT_TRACEPOINT_SYMBOL(kmem_cache_alloc_node);
++EXPORT_TRACEPOINT_SYMBOL(kfree);
++EXPORT_TRACEPOINT_SYMBOL(kmem_cache_free);
+-- 
+1.5.4.3
 
-http://www.kernel.org/pub/linux/kernel/people/paulmck/Confessions/
 
-:-)
-
-> Now this:
-> 
-> > Resolution was that Tytso indicated it went into some sort of ext4 
-> > patch queue:
-> 
-> was not a fix at all.  It was a known-buggy hack which I proposed simply to
-> remove that contention point to let us find out if we're on the right
-> track.  IIRC Ric was going to ask someone to do some performance testing of
-> that hack, but we never heard back.
-
-Ric did do some preliminary performance testing, and it wasn't
-encouraging.  It's still in the unstable portion of the ext4 patch
-queue, and it's in my "wish I had more time to look at it; I don't get
-to work on ext3/4 full-time" queue.
-
-> The bottom line is that someone needs to do some serious rooting through
-> the very heart of JBD transaction logic and nobody has yet put their hand
-> up.  If we do that, and it turns out to be just too hard to fix then yes,
-> perhaps that's the time to start looking at palliative bandaids.
-
-I disagree that they are _just_ palliative bandaids, because you need
-these in order to make sure fsync() completes in a reasonable time, so
-that people like Ingo don't get cranky.  :-)   Fixing the contention
-between the running and committing transaction is a good thing, and I
-hope someone puts up their hand or I magically get the time I need to
-really dive into the jbd layer, but it won't help the Firefox 3.0
-problem or Ingo's problem with saving files during a distcc run.
-
-						- Ted
 
