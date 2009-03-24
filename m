@@ -1,76 +1,151 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759481AbZCXLRU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758800AbZCXLSV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759481AbZCXLRU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 07:17:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758122AbZCXLRL
+	id S1758800AbZCXLSV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 07:18:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758496AbZCXLSL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 07:17:11 -0400
-Received: from fg-out-1718.google.com ([72.14.220.155]:39864 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757552AbZCXLRK (ORCPT
+	Tue, 24 Mar 2009 07:18:11 -0400
+Received: from viefep11-int.chello.at ([62.179.121.31]:52294 "EHLO
+	viefep11-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753148AbZCXLSK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 07:17:10 -0400
-Message-ID: <49C8C130.9040002@monstr.eu>
-Date: Tue, 24 Mar 2009 12:17:04 +0100
-From: Michal Simek <monstr@monstr.eu>
-Reply-To: monstr@monstr.eu
-User-Agent: Thunderbird 2.0.0.17 (X11/20081001)
-MIME-Version: 1.0
-To: Arnd Bergmann <arnd@arndb.de>
-CC: linux-kernel@vger.kernel.org, john.williams@petalogix.com,
-       linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 04/57] microblaze_v7: Open firmware files
-References: <1237408284-8674-1-git-send-email-monstr@monstr.eu> <4b5aee01d11fc790c7842838ea63a82ee3273003.1237407249.git.monstr@monstr.eu> <af309ba8e95f503b7990461384d9f8453f45dbbd.1237407249.git.monstr@monstr.eu> <200903231951.23902.arnd@arndb.de>
-In-Reply-To: <200903231951.23902.arnd@arndb.de>
-Content-Type: text/plain; charset=ISO-8859-15
+	Tue, 24 Mar 2009 07:18:10 -0400
+X-SourceIP: 213.93.53.227
+Subject: Re: [PATCH v5 09/13] PCI: Introduce /sys/bus/pci/devices/.../remove
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Alex Chiang <achiang@hp.com>,
+       Oleg Nesterov <oleg@redhat.com>,
+       Johannes Berg <johannes@sipsolutions.net>, jbarnes@virtuousgeek.org,
+       linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
+       kaneshige.kenji@jp.fujitsu.com, Lai Jiangshan <laijs@cn.fujitsu.com>
+In-Reply-To: <20090324034659.9e1f97dc.akpm@linux-foundation.org>
+References: <20090320204327.12275.43010.stgit@bob.kio>
+	 <20090320205636.12275.1825.stgit@bob.kio> <49C74FCC.7070308@jp.fujitsu.com>
+	 <20090324032304.GB6175@ldl.fc.hp.com> <20090324092525.GE6605@elte.hu>
+	 <20090324034659.9e1f97dc.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Tue, 24 Mar 2009 12:17:07 +0100
+Message-Id: <1237893427.24918.174.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.0 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arnd Bergmann wrote:
-> On Wednesday 18 March 2009, monstr@monstr.eu wrote:
->> From: Michal Simek <monstr@monstr.eu>
->>
->>
->> Signed-off-by: Michal Simek <monstr@monstr.eu>
->> ---
->>  arch/microblaze/include/asm/of_device.h   |   45 ++
->>  arch/microblaze/include/asm/of_platform.h |   64 ++
->>  arch/microblaze/include/asm/prom.h        |  313 ++++++++
->>  arch/microblaze/kernel/of_device.c        |  115 +++
->>  arch/microblaze/kernel/of_platform.c      |  201 +++++
->>  arch/microblaze/kernel/prom.c             | 1147 +++++++++++++++++++++++++++++
->>  arch/microblaze/kernel/prom_parse.c       | 1025 ++++++++++++++++++++++++++
->>  7 files changed, 2910 insertions(+), 0 deletions(-)
->>  create mode 100644 arch/microblaze/include/asm/of_device.h
->>  create mode 100644 arch/microblaze/include/asm/of_platform.h
->>  create mode 100644 arch/microblaze/include/asm/prom.h
->>  create mode 100644 arch/microblaze/kernel/of_device.c
->>  create mode 100644 arch/microblaze/kernel/of_platform.c
->>  create mode 100644 arch/microblaze/kernel/prom.c
->>  create mode 100644 arch/microblaze/kernel/prom_parse.c
+On Tue, 2009-03-24 at 03:46 -0700, Andrew Morton wrote:
 > 
-> Since these files are derived from the powerpc versions, what is the
-> plan on them? IIRC, you had them in a common directory in an earlier
-> version. Are you planning to merge them at some point in the future
-> or do you intend to maintain a fork?
+> Thing is, we've always supported kevetnd-calls-flush_work().  That's what
+> "morton gets to eat his hat" in run_workqueue() is all about.
 
-yes, these files are defived from PPC version. Yes, I added them to generic
-location and in this version are in arch folder. It is easier for me to have
-them in arch folder till Microblaze will be in linus tree.
-And then create patch which will synchronize them.
+Supported as in not complained about it, but its always presented a
+deadlock scenario.
 
-I prefer to have this code in generic location as much as possible but first
-stage from my perspective should be add microblaze code to tree and then add it
-to generic location and remove it from all archs which use it.
+> Now, -mm's workqueue-avoid-recursion-in-run_workqueue.patch changes all of
+> that.
 
-Thanks,
-Michal
+See the discussions around that patch, Lai Jiangshan discovered that it
+had more deadlock potential than we even suspected.
 
-> 	Arnd <><
+To quote:
 
+---
+On 02/06, Lai Jiangshan wrote:
+>
+> Oleg Nesterov wrote:
+> > On 02/05, Lai Jiangshan wrote:
+> >> DEADLOCK EXAMPLE for explain my above option:
+> >>
+> >> (work_func0() and work_func1() are work callback, and they
+> >> calls flush_workqueue())
+> >>
+> >> CPU#0                                      CPU#1
+> >> run_workqueue()                         run_workqueue()
+> >>   work_func0()                            work_func1()
+> >>     flush_workqueue()                       flush_workqueue()
+> >>       flush_cpu_workqueue(0)                  .
+> >>       flush_cpu_workqueue(cpu#1)              flush_cpu_workqueue(cpu#0)
+> >>         waiting work_func1() in cpu#1           waiting work_func0 in cpu#0
+> >>
+> >> DEADLOCK!
+> >
+> > I am not sure. Note that when work_func0() calls run_workqueue(),
+> > it will clear cwq->current_work, so another flush_ on CPU#1 will
+> > not wait for work_func0, no?
+>
+> cwq->current_work is changed only when
+> !list_empty(&cwq->worklist)
+> in run_workqueue().
+>
+> so cwq->current_work may not be changed.
 
--- 
-Michal Simek, Ing. (M.Eng)
-w: www.monstr.eu p: +42-0-721842854
+Ah, indeed.
+
+Thanks for correcting me!
+---
+
+>   And that patch recently triggered a warning due to some games which
+> USB was playing.  I was told this is because USB is being bad.
+> 
+> But I don't think we've seen a coherent description of what's actually
+> _wrong_ with the current code.  flush_cpu_workqueue() has been handling
+> this case for many years with no problems reported as far as I know.
+
+Might be sheer luck, but afaik we did have some actual deadlocks due to
+workqueue flushing -- a particular one I can remember was cpu-hotplug vs
+cpufreq.
+
+> So what has caused this sudden flurry of reports?  Did something change in
+> lockdep?  What is this
+> 
+> [  537.380128]  (events){--..}, at: [<ffffffff80257fc0>] flush_workqueue+0x0/0xa0
+> [  537.380128]
+> [  537.380128] but task is already holding lock:
+> [  537.380128]  (events){--..}, at: [<ffffffff80257648>] run_workqueue+0x108/0x230
+> 
+> supposed to mean?  "events" isn't a lock - it's the name of a kernel
+> thread, isn't it?
+
+No workqueue lockdep support has been in there for a while now. /me
+pokes at git for a bit..
+
+4e6045f134784f4b158b3c0f7a282b04bd816887 -- Oct 2007, ca. 2.6.24-rc1
+
+What it does it gives the workqueue a lock-object and each worklet. It
+then validates that you only get:
+
+ workqueue
+   worklet
+
+nestings, eg. calling flush_workqueue() from a worklet will generate
+
+ workqueue    <-.
+   worklet      |
+     workqueue -'
+
+recursion, IOW the above splat.
+
+Another thing it does is connect the lockchains of workqueue callers
+with those of the worklet. eg.
+
+---
+    code path 1:
+      my_function() -> lock(L1); ...; flush_workqueue(); ...
+    
+    code path 2:
+      run_workqueue() -> my_work() -> ...; lock(L1); ...
+    
+    you can get a deadlock when my_work() is queued or running
+    but my_function() has acquired L1 already.
+---
+
+>   If this is supposed to be deadlockable then how?
+> 
+> Because I don't immediately see what's wrong with e1000_remove() calling
+> flush_work().  It's undesirable, and we can perhaps improve it via some
+> means, but where is the bug?
+
+I hope the above answers why flushing a workqueue from within that same
+workqueue is a very bad thing.
+
