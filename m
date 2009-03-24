@@ -1,184 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756118AbZCXPOo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756878AbZCXPTt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756118AbZCXPOo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 11:14:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751815AbZCXPOd
+	id S1756878AbZCXPTt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 11:19:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753461AbZCXPTi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 11:14:33 -0400
-Received: from outbound.icp-qv1-irony-out1.iinet.net.au ([203.59.1.106]:56167
-	"EHLO outbound.icp-qv1-irony-out1.iinet.net.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751766AbZCXPOb (ORCPT
+	Tue, 24 Mar 2009 11:19:38 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:38587 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753430AbZCXPTh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 11:14:31 -0400
-X-Greylist: delayed 615 seconds by postgrey-1.27 at vger.kernel.org; Tue, 24 Mar 2009 11:14:30 EDT
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ApoEAECTyEl8qXHv/2dsb2JhbADTXIN2Bg
-X-IronPort-AV: E=Sophos;i="4.38,413,1233500400"; 
-   d="scan'208";a="471220153"
-Message-ID: <49C8F66B.3060401@themaw.net>
-Date: Wed, 25 Mar 2009 00:04:11 +0900
-From: Ian Kent <raven@themaw.net>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
-MIME-Version: 1.0
-To: Jeff Layton <jlayton@redhat.com>
-CC: Wu Fengguang <fengguang.wu@intel.com>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, jens.axboe@oracle.com,
-       akpm@linux-foundation.org, hch@infradead.org
-Subject: Re: [PATCH] writeback: reset inode dirty time when adding it back
- to empty s_dirty list
-References: <1237840233-11045-1-git-send-email-jlayton@redhat.com>	<20090324135720.GA25314@localhost>	<20090324102806.4f38fd26@tleilax.poochiereds.net> <20090324104657.6907b19e@tleilax.poochiereds.net>
-In-Reply-To: <20090324104657.6907b19e@tleilax.poochiereds.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Tue, 24 Mar 2009 11:19:37 -0400
+Date: Tue, 24 Mar 2009 15:18:25 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Theodore Tso <tytso@mit.edu>
+Cc: Ingo Molnar <mingo@elte.hu>, Arjan van de Ven <arjan@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Nick Piggin <npiggin@suse.de>,
+       Jens Axboe <jens.axboe@oracle.com>, David Rees <drees76@gmail.com>,
+       Jesper Krogh <jesper@krogh.cc>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.29
+Message-ID: <20090324151825.0570f37a@lxorguk.ukuu.org.uk>
+In-Reply-To: <20090324142837.GN5814@mit.edu>
+References: <alpine.LFD.2.00.0903231617550.3032@localhost.localdomain>
+	<49C87B87.4020108@krogh.cc>
+	<72dbd3150903232346g5af126d7sb5ad4949a7b5041f@mail.gmail.com>
+	<20090324091545.758d00f5@lxorguk.ukuu.org.uk>
+	<20090324093245.GA22483@elte.hu>
+	<20090324101011.6555a0b9@lxorguk.ukuu.org.uk>
+	<20090324103111.GA26691@elte.hu>
+	<20090324132032.GK5814@mit.edu>
+	<20090324135249.02e2caa2@lxorguk.ukuu.org.uk>
+	<20090324142837.GN5814@mit.edu>
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Layton wrote:
-> On Tue, 24 Mar 2009 10:28:06 -0400
-> Jeff Layton <jlayton@redhat.com> wrote:
-> 
->> On Tue, 24 Mar 2009 21:57:20 +0800
->> Wu Fengguang <fengguang.wu@intel.com> wrote:
->>
->>> Hi Jeff,
->>>
->>> On Mon, Mar 23, 2009 at 04:30:33PM -0400, Jeff Layton wrote:
->>>> This may be a problem on other filesystems too, but the reproducer I
->>>> have involves NFS.
->>>>
->>>> On NFS, the __mark_inode_dirty() call after writing back the inode is
->>>> done in the rpc_release handler for COMMIT calls. This call is done
->>>> asynchronously after the call completes.
->>>>
->>>> Because there's no real coordination between __mark_inode_dirty() and
->>>> __sync_single_inode(), it's often the case that these two calls will
->>>> race and __mark_inode_dirty() will get called while I_SYNC is still set.
->>>> When this happens, __sync_single_inode() should detect that the inode
->>>> was redirtied while we were flushing it and call redirty_tail() to put
->>>> it back on the s_dirty list.
->>>>
->>>> When redirty_tail() puts it back on the list, it only resets the
->>>> dirtied_when value if it's necessary to maintain the list order. Given
->>>> the right situation (the right I/O patterns and a lot of luck), this
->>>> could result in dirtied_when never getting updated on an inode that's
->>>> constantly being redirtied while pdflush is writing it back.
->>>>
->>>> Since dirtied_when is based on jiffies, it's possible for it to persist
->>>> across 2 sign-bit flips of jiffies. When that happens, the time_after()
->>>> check in sync_sb_inodes no longer works correctly and writeouts by
->>>> pdflush of this inode and any inodes after it on the list stop.
->>>>
->>>> This patch fixes this by resetting the dirtied_when value on an inode
->>>> when we're adding it back onto an empty s_dirty list. Since we generally
->>>> write inodes from oldest to newest dirtied_when values, this has the
->>>> effect of making it so that these inodes don't end up with dirtied_when
->>>> values that are frozen.
->>>>
->>>> I've also taken the liberty of fixing up the comments a bit and changed
->>>> the !time_after_eq() check in redirty_tail to be time_before().  That
->>>> should be functionally equivalent but I think it's more readable.
->>>>
->>>> I wish this were just a theoretical problem, but we've had a customer
->>>> hit a variant of it in an older kernel. Newer upstream kernels have a
->>>> number of changes that make this problem less likely. As best I can tell
->>>> though, there is nothing that really prevents it.
->>>>
->>>> Signed-off-by: Jeff Layton <jlayton@redhat.com>
->>>> ---
->>>>  fs/fs-writeback.c |   22 +++++++++++++++++-----
->>>>  1 files changed, 17 insertions(+), 5 deletions(-)
->>>>
->>>> diff --git a/fs/fs-writeback.c b/fs/fs-writeback.c
->>>> index e3fe991..bd2a7ff 100644
->>>> --- a/fs/fs-writeback.c
->>>> +++ b/fs/fs-writeback.c
->>>> @@ -184,19 +184,31 @@ static int write_inode(struct inode *inode, int sync)
->>>>   * furthest end of its superblock's dirty-inode list.
->>>>   *
->>>>   * Before stamping the inode's ->dirtied_when, we check to see whether it is
->>>> - * already the most-recently-dirtied inode on the s_dirty list.  If that is
->>>> - * the case then the inode must have been redirtied while it was being written
->>>> - * out and we don't reset its dirtied_when.
->>>> + * "newer" or equal to that of the most-recently-dirtied inode on the s_dirty
->>>> + * list. If that is the case then we don't need to restamp it to maintain the
->>>> + * order of the list.
->>>> + *
->>>> + * If s_dirty is empty however, then we need to go ahead and update
->>>> + * dirtied_when for the inode. Not doing so will mean that inodes that are
->>>> + * constantly being redirtied can end up with "stuck" dirtied_when values if
->>>> + * they happen to consistently be the first one to go back on the list.
->>>> + *
->>>> + * Since we're using jiffies values in that field, letting dirtied_when grow
->>>> + * too old will be problematic if jiffies wraps. It may also be causing
->>>> + * pdflush to flush the inode too often since it'll always look like it was
->>>> + * dirtied a long time ago.
->>>>   */
->>>>  static void redirty_tail(struct inode *inode)
->>>>  {
->>>>  	struct super_block *sb = inode->i_sb;
->>>>  
->>>> -	if (!list_empty(&sb->s_dirty)) {
->>>> +	if (list_empty(&sb->s_dirty)) {
->>>> +		inode->dirtied_when = jiffies;
->>>> +	} else {
->>>>  		struct inode *tail_inode;
->>>>  
->>>>  		tail_inode = list_entry(sb->s_dirty.next, struct inode, i_list);
->>>> -		if (!time_after_eq(inode->dirtied_when,
->>>> +		if (time_before(inode->dirtied_when,
->>>>  				tail_inode->dirtied_when))
->>>>  			inode->dirtied_when = jiffies;
->>>>  	}
->>> I'm afraid you patch is equivalent to the following one.
->>> Because once the first inode's dirtied_when is set to jiffies,
->>> in order to keep the list in order, the following ones (mostly)
->>> will also be updated. A domino effect.
->>>
->>> Thanks,
->>> Fengguang
->>>
->> Good point. One of our other engineers proposed a similar patch
->> originally. I considered it but wasn't clear whether there could be a
->> situation where unconditionally resetting dirtied_when would be a
->> problem. Now that I think about it though, I think you're right...
->>
->> So maybe something like the patch below is the right thing to do? Or,
->> maybe when we believe that the inode was fully cleaned and then
->> redirtied, we'd just unconditionally stamp dirtied_when. Something like
->> this maybe?
->>
->> diff --git a/fs/fs-writeback.c b/fs/fs-writeback.c
->> index bd2a7ff..596c96e 100644
->> --- a/fs/fs-writeback.c
->> +++ b/fs/fs-writeback.c
->> @@ -364,7 +364,8 @@ __sync_single_inode(struct inode *inode, struct writeback_control *wbc)
->>  			 * Someone redirtied the inode while were writing back
->>  			 * the pages.
->>  			 */
->> -			redirty_tail(inode);
->> +			inode->dirtied_when = jiffies;
->> +			list_move(&inode->i_list, &sb->s_dirty);
->>  		} else if (atomic_read(&inode->i_count)) {
->>  			/*
->>  			 * The inode is clean, inuse
-> 
-> Hmm...though it is still possible that you could consistently race in
-> such a way that after writepages(), I_DIRTY is never set but the
-> PAGECACHE_TAG_DIRTY is still set on the mapping. And then we'd be back
-> to the same problem of a stuck dirtied_when value.
-> 
-> So maybe someone can explain to me why we take such great pains to
-> preserve the dirtied_when value when we're putting the inode back on
-> the tail of s_dirty? Why not just unconditionally reset it?
+> Surely the elevator should have reordered the writes reasonably?  (Or
+> is that what you meant by "the other one -- #8636 (I assume this is a
+> kernel Bugzilla #?) seems to be a bug in the I/O schedulers as it goes
+> away if you use a different I/O sched.?")
 
-I think that redirty_tail() is the best place for this as it is a 
-central location where dirtied_when can be updated. Then all we have to 
-worry about is making sure it is called from all the locations needed.
+There are two cases there. One is a bug #8636 (kernel bugzilla) which is
+where things like dump show awful performance with certain I/O scheduler
+settings. That seems to be totally not connected to the fs but it is a
+problem (and has a patch)
 
-I'm not sure that removing the comment is a good idea (the Wu Fengguang 
-patch) but it probably needs to be revised to explain why dirtied_when 
-is forcing a rewrite of the list entry times.
+The second one the elevator is clearly trying to sort out but its
+behaving as if someone is writing the file starting at say 0 and someone
+else is trying to write it back starting some large distance further down
+the file. The elevator can only do so much then.
 
-Ian
+> Yeah, I could see that doing it.  How big is the image, and out of
+> curiosity, can you run the fsync-tester.c program I posted while
 
+150MB+ for the pnm files from gimp used as temporaries by Eve (Etch
+Validation Engine), more like 10MB for xcf/tif files.
+
+> saving the gimp image, and tell me how much of a delay you end up
+> seeing?
+
+Added to the TODO list once I can set up a suitable test box (my new dev
+box is somewhere between Dell and my desk right now)
+
+> More testing would be appreciated --- and yeah, we need to groom the
+> bugzilla.  
+
+I'm currently doing this on a large scale (closed about 300 so far this
+run). Bug 8147 might be worth a look as its a case where the jbd locking
+and the jbd comments seem to disagree (the comments say you must hold a
+lock but we don't seem to)
