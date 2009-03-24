@@ -1,84 +1,330 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758588AbZCXLEu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759192AbZCXLGW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758588AbZCXLEu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 07:04:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754558AbZCXLEk
+	id S1759192AbZCXLGW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 07:06:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756165AbZCXLGK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 07:04:40 -0400
-Received: from mail-ew0-f165.google.com ([209.85.219.165]:52742 "EHLO
-	mail-ew0-f165.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754341AbZCXLEj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 07:04:39 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=o8iHdf5bw6ja6AaJZ98XmqCXlm9d43bis4NdV+VZuhxD8qXhwSOzo3F8UPHbNyHODE
-         4xfgOwtYjogFsGwHh7SNDG6tNtzuCi75sA41icrYxXNzgp24bKNPfZS3HJMWUs5pVH4Z
-         AUv0FsfEY8Q0bTDHILYQXe3+YzNycOA3B1ypY=
-Date: Tue, 24 Mar 2009 12:04:32 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       rt-users <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Peter Zijlstra <peterz@infradead.org>, Carsten Emde <ce@ceag.ch>,
-       Clark Williams <williams@redhat.com>,
-       Frank Rowand <frank.rowand@am.sony.com>
-Subject: Re: [Announce] 2.6.29-rc8-rt3
-Message-ID: <20090324110431.GA6058@nowhere>
-References: <alpine.LFD.2.00.0902112332370.415@localhost.localdomain> <alpine.LFD.2.00.0902122353050.16972@localhost.localdomain> <alpine.LFD.2.00.0902231854360.3523@localhost.localdomain> <alpine.LFD.2.00.0902241849230.3523@localhost.localdomain> <alpine.LFD.2.00.0902241856480.9135@localhost.localdomain> <alpine.LFD.2.00.0903122013230.29264@localhost.localdomain> <alpine.LFD.2.00.0903200014320.29264@localhost.localdomain> <alpine.LFD.2.00.0903201832590.29264@localhost.localdomain> <alpine.LFD.2.00.0903231723090.29264@localhost.localdomain>
+	Tue, 24 Mar 2009 07:06:10 -0400
+Received: from mail.sf-mail.de ([62.27.20.61]:54286 "EHLO mail.sf-mail.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754341AbZCXLGI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Mar 2009 07:06:08 -0400
+From: Rolf Eike Beer <eike-kernel@sf-tec.de>
+To: Krishna Gudipati <kgudipat@brocade.com>
+Subject: Re: [PATCH 1/5] bfa: Brocade BFA FC SCSI driver (bfad)
+Date: Tue, 24 Mar 2009 12:05:41 +0100
+User-Agent: KMail/1.9.10
+Cc: James.Bottomley@hansenpartnership.com, huangj@brocade.com,
+       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+       rvadivel@brocade.com, vravindr@brocade.com
+References: <200903240010.n2O0Ap68013744@blc-10-2.brocade.com>
+In-Reply-To: <200903240010.n2O0Ap68013744@blc-10-2.brocade.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0903231723090.29264@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: multipart/signed;
+  boundary="nextPart10234548.fJnlCyaSZD";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <200903241205.55028.eike-kernel@sf-tec.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 23, 2009 at 05:26:52PM +0100, Thomas Gleixner wrote:
-> We are pleased to announce the next update to our new preempt-rt
-> series.
-> 
->     - fix a x86 32bit PAE pagetable corruption caused by a hard to
->       trigger race.
-> 
->     - update to latest linus and tip
-> 
-> Download locations:
-> 
->     http://rt.et.redhat.com/download/
->     http://www.kernel.org/pub/linux/kernel/projects/rt/
->  
-> Information on the RT patch can be found at:
-> 
->     http://rt.wiki.kernel.org/index.php/Main_Page
-> 
-> to build the 2.6.29-rc8-rt3 tree, the following patches should be
-> applied:
-> 
->     http://www.kernel.org/pub/linux/kernel/v2.6/testing/linux-2.6.29-rc8.tar.bz2
->     http://www.kernel.org/pub/linux/kernel/projects/rt/patch-2.6.29-rc8-rt3.bz2
+--nextPart10234548.fJnlCyaSZD
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
+Krishna Gudipati wrote:
+> From: Krishna Chaitanya Gudipati <kgudipat@brocade.com>
+>
+> This patch contains Brocade linux driver specific code that interfaces to
+> upper layer linux kernel for PCI, SCSI mid-layer, sysfs related stuff. The
+> code handles things such as module load/unload, PCI probe/release, handli=
+ng
+> interrupts, interfacing with sysfs etc. It interacts with the
+> firmware/hardware via the code under files with prefix bfa_*.
+>
+> Signed-off-by: Krishna Chaitanya Gudipati <kgudipat@brocade.com>
 
-Hi,
+> +int
+> +bfad_pci_init(struct pci_dev *pdev, struct bfad_s *bfad)
+> +{
+> +       unsigned long   bar0_len;
+> +       int             rc =3D -ENODEV;
+> +
+> +       if (pci_enable_device(pdev)) {
+> +               BFA_PRINTF(BFA_ERR, "pci_enable_device fail %p\n", pdev);
+> +               goto out;
+> +       }
+> +
+> +       if (pci_request_regions(pdev, BFAD_DRIVER_NAME))
+> +               goto out_disable_device;
+> +
+> +       pci_set_master(pdev);
+> +
+> +
+> +       if (pci_set_dma_mask(pdev, DMA_64BIT_MASK) !=3D 0)
+> +               if (pci_set_dma_mask(pdev, DMA_32BIT_MASK) !=3D 0) {
+> +                       BFA_PRINTF(BFA_ERR, "pci_set_dma_mask fail %p\n",
+> pdev); +                       goto out_release_region;
+> +               }
 
-It doesn't seem to be available (404).
-But I can see a 2.6.29-rc8-rt4.bz2 downloadable.
+Save the return value of pci_set_dma_mask() to rc and use this as error cod=
+e.
 
-Thanks.
- 
+> +#ifdef SUPPORT_PCI_AER
+> +       /*
+> +        * Enable PCIE Advanced Error Recovery (AER) if the kernel version
+> +        * supports.
+> +        */
+> +       BFAD_ENABLE_PCIE_AER(pdev);
+> +#endif
+> +
+> +       bfad->pci_bar0_map =3D pci_resource_start(pdev, 0);
+> +       bar0_len =3D pci_resource_len(pdev, 0);
+> +       bfad->pci_bar0_kva =3D ioremap(bfad->pci_bar0_map, bar0_len);
 
-> The broken out patches are also available at the same download
-> locations.
-> 
-> Enjoy !
-> 
->        tglx
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-rt-users" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+bfad->pci_bar0_kva =3D pci_iomap(pdev, 0, 0);
 
+> +       if (bfad->pci_bar0_kva =3D=3D NULL) {
+> +               BFA_PRINTF(BFA_ERR, "Fail to map bar0\n");
+> +               goto out_release_region;
+> +       }
+> +
+> +       bfad->hal_pcidev.pci_slot =3D PCI_SLOT(pdev->devfn);
+> +       bfad->hal_pcidev.pci_func =3D PCI_FUNC(pdev->devfn);
+> +       bfad->hal_pcidev.pci_bar_kva =3D bfad->pci_bar0_kva;
+> +       bfad->hal_pcidev.device_id =3D pdev->device;
+> +       bfad->pci_name =3D pci_name(pdev);
+> +
+> +       bfad->pci_attr.vendor_id =3D pdev->vendor;
+> +       bfad->pci_attr.device_id =3D pdev->device;
+> +       bfad->pci_attr.ssid =3D pdev->subsystem_device;
+> +       bfad->pci_attr.ssvid =3D pdev->subsystem_vendor;
+> +       bfad->pci_attr.pcifn =3D PCI_FUNC(pdev->devfn);
+> +
+> +       bfad->pcidev =3D pdev;
+> +       return 0;
+> +
+> +out_release_region:
+> +       pci_release_regions(pdev);
+> +out_disable_device:
+> +       pci_disable_device(pdev);
+> +out:
+> +       return rc;
+> +}
+
+What about using devres for your driver? (See=20
+Documentation/driver-model/devres.txt) This would take care of the=20
+release_regions and disable device in the error paths here and also in the=
+=20
+remove handler.
+
+> +/**
+> + *  bfa_isr BFA driver interrupt functions
+> + */
+> +irqreturn_t bfad_intx(int irq, void *dev_id);
+
+This declaration isn't needed at all as the function follows directly after=
+=20
+that.
+
+> +/**
+> + * Line based interrupt handler.
+> + */
+> +irqreturn_t
+> +bfad_intx(int irq, void *dev_id)
+> +{
+
+[...]
+
+> +static int
+> +bfad_install_msix_handler(struct bfad_s *bfad)
+> +{
+> +	int             i, error =3D 0;
+           ^^^^^^^^^^^^^
+
+One space.
+
+> +	for (i =3D 0; i < bfad->nvec; i++) {
+> +		error =3D request_irq(bfad->msix_tab[i].msix.vector,
+> +				    bfad->msix_tab[i].handler, 0,
+> +				    BFAD_DRIVER_NAME, bfad);
+> +		printk(KERN_WARNING "%s: bfad%d irq %d\n", __FUNCTION__,
+> +			 bfad->inst_no, bfad->msix_tab[i].msix.vector);
+> +
+> +		if (error) {
+> +			int             j;
+> +
+> +			for (j =3D 0; j < i; j++)
+> +				free_irq(bfad->msix_tab[j].msix.vector, bfad);
+> +
+> +			return 1;
+
+"return error" would allow doint something useful with this value later (e.=
+g.=20
+printing them in your warning) so one can actually see what went wrong.
+
+> +		}
+> +	}
+> +
+> +	return 0;
+> +}
+> +
+> +/**
+> + * Setup MSIX based interrupt.
+> + */
+> +int
+> +bfad_setup_intr(struct bfad_s *bfad)
+> +{
+> +	int             error =3D 0;
+> +
+> +	if (!msix_disable) {
+> +		u32 mask =3D 0, i, num_bit =3D 0, max_bit =3D 0;
+> +		struct msix_entry msix_entries[MAX_MSIX_ENTRY];
+> +
+> +		/* Call BFA to get the msix map for this PCI function.  */
+> +		bfa_msix_getvecs(&bfad->bfa, &mask, &num_bit, &max_bit);
+> +
+> +		/* Set up the msix entry table */
+> +		bfad_init_msix_entry(bfad, msix_entries, mask, max_bit);
+> +
+> +		error =3D pci_enable_msix(bfad->pcidev, msix_entries, bfad->nvec);
+> +		if (error) {
+> +			/*
+> +			 * Only error number of vector is available.
+
+"of vectors are"
+
+> +			 * We don't have a mechanism to map multiple
+> +			 * interrupts into one vector, so even if we
+> +			 * can try to request less vectors, we don't
+> +			 * know how to associate interrupt events to
+> +			 *  vectors. Linux doesn't dupicate vectors
+> +			 * in the MSIX table for this case.
+> +			 */
+> +
+> +			printk(KERN_WARNING
+> +				"%s: enable_msix failed, %d bfad%d\n",
+> +			       __FUNCTION__, error, bfad->inst_no);
+
+Also the message should really be more descriptive, like "enable_msix for %=
+i=20
+vectors failed, only %i vectors available". And if you use dev_warn() that=
+=20
+function will add the correct device description for you (You should use it=
+=20
+whereever possible).
+
+__FUNCTION__ should not be used anymore, use __func__. Or remove it=20
+completely, it's rather obvious where this message actually comes from.
+
+> +
+> +			goto line_based;
+> +		}
+> +
+> +		/* Save the vectors */
+> +		for (i =3D 0; i < bfad->nvec; i++)
+> +			bfad->msix_tab[i].msix.vector =3D msix_entries[i].vector;
+> +
+> +		/* Set up interrupt handler for each vectors */
+> +		if (bfad_install_msix_handler(bfad)) {
+> +			printk(KERN_WARNING "%s: install_msix failed, bfad%d\n",
+> +			       __FUNCTION__, bfad->inst_no);
+> +			goto line_based;
+> +		}
+
+This is just your choice, but when MSI was requested and the number of=20
+interrupts were reserved successfully and now installing the IRQ handler=20
+fails this should IMHO be an error and not a situation to fallback to line=
+=20
+based. YMMV.
+
+> +		bfad->bfad_flags |=3D BFAD_MSIX_ON;
+> +
+> +		goto success;
+> +	}
+> +
+> +line_based:
+> +	error =3D 0;
+> +	if (request_irq
+> +	    (bfad->pcidev->irq, (irq_handler_t) bfad_intx, BFAD_IRQ_FLAGS,
+
+Cast not needed, bfad_intx() should be of the correct signature.
+
+> +	     BFAD_DRIVER_NAME, bfad) !=3D 0) {
+> +		/* Enable interrupt handler failed */
+> +		return 1;
+> +	}
+> +success:
+> +	return error;
+> +}
+> +
+> +void
+> +bfad_remove_intr(struct bfad_s *bfad)
+> +{
+> +	int             i;
+> +
+> +	if (bfad->bfad_flags & BFAD_MSIX_ON) {
+> +		for (i =3D 0; i < bfad->nvec; i++)
+> +			free_irq(bfad->msix_tab[i].msix.vector, bfad);
+> +
+> +		pci_disable_msix(bfad->pcidev);
+> +		bfad->bfad_flags &=3D ~BFAD_MSIX_ON;
+> +	} else {
+> +		free_irq(bfad->pcidev->irq, bfad);
+> +	}
+> +}
+> +
+> +#else /* CONFIG_PCI_MSI */
+> +/**
+> + * Setup line-based interrupt.
+> + */
+> +int
+> +bfad_setup_intr(struct bfad_s *bfad)
+> +{
+> +	if (request_irq
+> +	    (bfad->pcidev->irq, (irq_handler_t) bfad_intx, SA_SHIRQ,
+
+Same here.
+
+> +	     BFAD_DRIVER_NAME, bfad) !=3D 0) {
+> +		/* Enable interrupt handler failed */
+> +		return 1;
+> +	}
+> +
+> +	return 0;
+> +}
+> +
+> +void
+> +bfad_remove_intr(struct bfad_s *bfad)
+> +{
+> +	bfa_trc(bfad, bfad->pcidev->irq);
+> +	free_irq(bfad->pcidev->irq, bfad);
+> +}
+> +
+> +#endif /* CONFIG_PCI_MSI */
+> +
+> +
+
+Remove trailing empty lines.
+
+Greetings,
+
+Eike
+
+--nextPart10234548.fJnlCyaSZD
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
+
+iEYEABECAAYFAknIvpIACgkQXKSJPmm5/E7IpgCeMWepkzUKlB1ZuS7Mdyp0T208
+rV8An1xCWduIqS+Y5YmwP0I5cHIyWCAv
+=bgJj
+-----END PGP SIGNATURE-----
+
+--nextPart10234548.fJnlCyaSZD--
