@@ -1,89 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760791AbZCXSAQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759121AbZCXSCV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760791AbZCXSAQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 14:00:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759673AbZCXR7n
+	id S1759121AbZCXSCV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 14:02:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755924AbZCXSCM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 13:59:43 -0400
-Received: from gw.goop.org ([64.81.55.164]:44005 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760214AbZCXR7l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 13:59:41 -0400
-Message-ID: <49C91F8B.4000406@goop.org>
-Date: Tue, 24 Mar 2009 10:59:39 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Tue, 24 Mar 2009 14:02:12 -0400
+Received: from va3ehsobe005.messaging.microsoft.com ([216.32.180.15]:37498
+	"EHLO VA3EHSOBE006.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1755391AbZCXSCK convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Mar 2009 14:02:10 -0400
+X-Greylist: delayed 905 seconds by postgrey-1.27 at vger.kernel.org; Tue, 24 Mar 2009 14:02:10 EDT
+X-BigFish: VPS-41(zz542N1418M1432R14ffO4015M1805M936fK9371Pzz1202hzzz2dh6bh95p61h)
+X-Spam-TCS-SCL: 0:0
+X-FB-SS: 5,
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-Class: urn:content-classes:message
 MIME-Version: 1.0
-To: Dave Airlie <airlied@linux.ie>
-CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       dri-devel <dri-devel@lists.sourceforge.net>
-Subject: [PATCH 2/2] agp/intel: use dma_alloc_coherent for special cursor
- memory
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [microblaze-uclinux] Re: Microblaze linux support
+Date: Tue, 24 Mar 2009 10:46:59 -0700
+In-Reply-To: <49C8FBB5.5010107@monstr.eu>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [microblaze-uclinux] Re: Microblaze linux support
+Thread-Index: Acmsl0arwHfyesoqRzKwrT9pojBNpAAERt7Q
+References: <1237408284-8674-1-git-send-email-monstr@monstr.eu> <49C8FBB5.5010107@monstr.eu>
+From: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
+To: <microblaze-uclinux@itee.uq.edu.au>
+CC: <linux-kernel@vger.kernel.org>, <john.williams@petalogix.com>,
+       "John Linn" <linnj@xilinx.com>, "Arnd Bergmann" <arnd@arndb.de>,
+       "Thomas Gleixner" <tglx@linutronix.de>,
+       "Randy Dunlap" <randy.dunlap@oracle.com>, "Ingo Molnar" <mingo@elte.hu>
+X-OriginalArrivalTime: 24 Mar 2009 17:46:59.0538 (UTC) FILETIME=[88250320:01C9ACA8]
+Message-ID: <20090324174700.5C9B91A10058@mail196-va3.bigfish.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: make i810 work under Xen
 
-Given that i810 wants special physically contiguous memory for its
-cursor, we should allocate it with dma_alloc_coherent, which will
-give us memory with the right properties.  This is particularly for
-Xen, which won't normally give us physically contiuous memory.
+> -----Original Message-----
+> From: owner-microblaze-uclinux@itee.uq.edu.au 
+> [mailto:owner-microblaze-uclinux@itee.uq.edu.au] On Behalf Of 
+> Michal Simek
+> Sent: Tuesday, March 24, 2009 8:27 AM
+> To: monstr@monstr.eu
+> Cc: linux-kernel@vger.kernel.org; 
+> john.williams@petalogix.com; John Linn; Arnd Bergmann; Thomas 
+> Gleixner; Randy Dunlap; Ingo Molnar; microblaze-uclinux@itee.uq.edu.au
+> Subject: [microblaze-uclinux] Re: Microblaze linux support
+> 
+> Hi all,
+> > Hi all,
+> >
+> > I think that is the right time to send you next pack with 
+> > Microblaze support. It is seventh pack - some previous packs
+> > was review by community and I hope there are not any big faults.
+> >
+> > We tested this kernel on some boards.
+> > We have GIT server up and gitweb is available at 
+> http://developer.petalogix.com/git/gitweb.cgi
+> >
+> > All information about git clone you can find on gitweb.
+> > This pack is available in for-linus branch. Information 
+> about other branches are on gitweb too.
+> >
+> > More information about microblaze fdt kernel you can find 
+> at www.monstr.eu/fdt/
+> > If you want to test kernel with microblaze toolchain let me know.
+> >
+> > I added only uart16550 and uartlite support - that's 
+> enought for first merge.
+> >
+> >
+> > Thanks for you comments and especially for your ACK,
+> > Michal
+> >   
+> It is a week ago when I sent v7 pack to LKML for reviewing.
+> 
+> I have got ACK from John Williams who is the best person from 
+> microblaze
+> linux community.
+> I got ACK from Randy Dunlap for Kconfig and Makefile patches.
+> Thomas Gleixner reviewed IRQ and Timer code.
+> Ingo Molnar confirms me that all coding style violation (checking with
+> checkpatch.pl) are false positive.
+> 
+> John L: Could you give me ACK from Xilinx?
+> 
+> Thanks,
+> Michal
 
-Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Cc: David Airlie <airlied@linux.ie>
 
-diff --git a/drivers/char/agp/intel-agp.c b/drivers/char/agp/intel-agp.c
-index 4373adb..8ba6808 100644
---- a/drivers/char/agp/intel-agp.c
-+++ b/drivers/char/agp/intel-agp.c
-@@ -244,33 +244,29 @@ static void intel_i810_agp_enable(struct agp_bridge_data *bridge, u32 mode)
- /* Exists to support ARGB cursors */
- static void *i8xx_alloc_pages(void)
- {
--	struct page *page;
--
--	page = alloc_pages(GFP_KERNEL | GFP_DMA32, 2);
--	if (page == NULL)
-+	void *addr;
-+	dma_addr_t _d;
-+	
-+	addr = dma_alloc_coherent(NULL, 4 * PAGE_SIZE, &_d, GFP_KERNEL);
-+	if (addr == NULL)
- 		return NULL;
- 
--	if (set_pages_uc(page, 4) < 0) {
--		set_pages_wb(page, 4);
--		__free_pages(page, 2);
-+	if (set_memory_uc((unsigned long)addr, 4) < 0) {
-+		set_memory_wb((unsigned long)addr, 4);
-+		dma_free_coherent(NULL, 4 * PAGE_SIZE, addr, _d);
- 		return NULL;
- 	}
--	get_page(page);
- 	atomic_inc(&agp_bridge->current_memory_agp);
--	return page_address(page);
-+	return addr;
- }
- 
- static void i8xx_destroy_pages(void *addr)
- {
--	struct page *page;
--
- 	if (addr == NULL)
- 		return;
- 
--	page = virt_to_page(addr);
--	set_pages_wb(page, 4);
--	put_page(page);
--	__free_pages(page, 2);
-+	set_memory_wb((unsigned long)addr, 4);
-+	dma_free_coherent(NULL, 4 * PAGE_SIZE, addr, virt_to_bus(addr));
- 	atomic_dec(&agp_bridge->current_memory_agp);
- }
- 
+Acked-by: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
+
+Steve
+
+This email and any attachments are intended for the sole use of the named recipient(s) and contain(s) confidential information that may be proprietary, privileged or copyrighted under applicable law. If you are not the intended recipient, do not read, copy, or forward this email message or any attachments. Delete this email message and any attachments immediately.
 
 
