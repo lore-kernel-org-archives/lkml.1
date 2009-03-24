@@ -1,75 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757645AbZCXSVN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759283AbZCXSV2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757645AbZCXSVN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 14:21:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755818AbZCXSUI
+	id S1759283AbZCXSV2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 14:21:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757389AbZCXSUR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 14:20:08 -0400
-Received: from zelda.netsplit.com ([87.194.19.211]:42281 "EHLO
-	zelda.netsplit.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755125AbZCXSUG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 14:20:06 -0400
-Subject: Re: Network Device Naming mechanism and policy
-From: Scott James Remnant <scott@ubuntu.com>
-To: Bill Nottingham <notting@redhat.com>
-Cc: Matt Domsch <Matt_Domsch@dell.com>, netdev@vger.kernel.org,
-       linux-hotplug@vger.kernel.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20090324181202.GE5925@nostromo.devel.redhat.com>
-References: <20090324154617.GA16332@auslistsprd01.us.dell.com>
-	 <1237914139.22009.18.camel@quest>
-	 <20090324175203.GB22700@auslistsprd01.us.dell.com>
-	 <20090324181202.GE5925@nostromo.devel.redhat.com>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-7PNCfW4uU1knhl0bvuTK"
-Date: Tue, 24 Mar 2009 18:20:07 +0000
-Message-Id: <1237918807.22009.47.camel@quest>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
+	Tue, 24 Mar 2009 14:20:17 -0400
+Received: from rtr.ca ([76.10.145.34]:33636 "EHLO mail.rtr.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757144AbZCXSUP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Mar 2009 14:20:15 -0400
+Message-ID: <49C9245C.9040400@rtr.ca>
+Date: Tue, 24 Mar 2009 14:20:12 -0400
+From: Mark Lord <lkml@rtr.ca>
+Organization: Real-Time Remedies Inc.
+User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
+MIME-Version: 1.0
+To: Theodore Tso <tytso@mit.edu>, Ingo Molnar <mingo@elte.hu>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Nick Piggin <npiggin@suse.de>,
+       Jens Axboe <jens.axboe@oracle.com>, David Rees <drees76@gmail.com>,
+       Jesper Krogh <jesper@krogh.cc>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.29
+References: <alpine.LFD.2.00.0903231617550.3032@localhost.localdomain> <49C87B87.4020108@krogh.cc> <72dbd3150903232346g5af126d7sb5ad4949a7b5041f@mail.gmail.com> <20090324091545.758d00f5@lxorguk.ukuu.org.uk> <20090324093245.GA22483@elte.hu> <20090324101011.6555a0b9@lxorguk.ukuu.org.uk> <20090324103111.GA26691@elte.hu> <20090324132032.GK5814@mit.edu> <20090324133011.GB21720@elte.hu> <20090324135112.GM5814@mit.edu>
+In-Reply-To: <20090324135112.GM5814@mit.edu>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Theodore Tso wrote:
+> So the question is how quickly can you *dirty* 1.6GB of memory?
+..
 
---=-7PNCfW4uU1knhl0bvuTK
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+MythTV:   rm /some/really/huge/video/file ; sync
+          ## disk light stays on for several minutes..
 
-On Tue, 2009-03-24 at 14:12 -0400, Bill Nottingham wrote:
+Note quite the same thing, I suppose, but it does break
+the shutdown scripts of every major Linux distribution.
 
-> Matt Domsch (Matt_Domsch@dell.com) said:=20
-> > > Now consider USB.  Would the device name change depending on which US=
-B
-> > > port you plugged it into?  Or is USB just a single slot, in which cas=
-e
-> > > what happens when you have two USB ethernet devices?
-> > >=20
-> > > The Apple USB Ethernet device in my iPhone is not the USB Wireless
-> > > adapter I own, both have very different networking configurations.
-> >=20
-> > we would obviously need a solution.  eth_usb_{something} perhaps.
->=20
-> Right, but having biosdevname chase each new bus that comes along
-> sounds iffy. I'd prefer /dev/net/by-name symlinks, if at all
-> possible. But that's a lot of code that I'm not prepared to write.
->=20
-Not to mention that All The World Is Not x86
-
-Scott
---=20
-Scott James Remnant
-scott@ubuntu.com
-
---=-7PNCfW4uU1knhl0bvuTK
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAknJJFcACgkQSnQiFMl4yK4t0QCfXmptkOlElpU/lt7RVDXiBBRP
-64gAnivtt8kf+GBOkfh3ddJ0Ql9kpuBH
-=k0vJ
------END PGP SIGNATURE-----
-
---=-7PNCfW4uU1knhl0bvuTK--
-
+Simple solution for MythTV is what people already do: use xfs instead.
