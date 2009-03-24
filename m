@@ -1,68 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761383AbZCXORj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756216AbZCXORQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761383AbZCXORj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 10:17:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759557AbZCXOHf
+	id S1756216AbZCXORQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 10:17:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755776AbZCXOHd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 10:07:35 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:48953 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755346AbZCXOD0 (ORCPT
+	Tue, 24 Mar 2009 10:07:33 -0400
+Received: from rcsinet12.oracle.com ([148.87.113.124]:65517 "EHLO
+	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758224AbZCXODa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 10:03:26 -0400
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: [PATCH 12/30] blackfin: Fix tty compile error in PIO mode
-To: linux-kernel@vger.kernel.org, linux-serial@vger.kernel.org,
-       torvalds@linux-foundation.org
-Date: Tue, 24 Mar 2009 14:03:47 +0000
-Message-ID: <20090324140340.12735.44126.stgit@localhost.localdomain>
-In-Reply-To: <20090324135930.12735.7827.stgit@localhost.localdomain>
-References: <20090324135930.12735.7827.stgit@localhost.localdomain>
-User-Agent: StGIT/0.14.3
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+	Tue, 24 Mar 2009 10:03:30 -0400
+Subject: Re: ftruncate-mmap: pages are lost after writing to mmaped file.
+From: Chris Mason <chris.mason@oracle.com>
+To: Jan Kara <jack@suse.cz>
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>,
+       "Martin J. Bligh" <mbligh@mbligh.org>, linux-ext4@vger.kernel.org,
+       Ying Han <yinghan@google.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-mm <linux-mm@kvack.org>, guichaz@gmail.com,
+       Alex Khesin <alexk@google.com>, Mike Waychison <mikew@google.com>,
+       Rohit Seth <rohitseth@google.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+In-Reply-To: <20090324132637.GA14607@duck.suse.cz>
+References: <604427e00903181244w360c5519k9179d5c3e5cd6ab3@mail.gmail.com>
+	 <200903200248.22623.nickpiggin@yahoo.com.au>
+	 <20090319164638.GB3899@duck.suse.cz>
+	 <200903241844.22851.nickpiggin@yahoo.com.au>
+	 <20090324123935.GD23439@duck.suse.cz> <20090324125510.GA9434@duck.suse.cz>
+	 <20090324132637.GA14607@duck.suse.cz>
+Content-Type: text/plain
+Date: Tue, 24 Mar 2009 10:01:45 -0400
+Message-Id: <1237903305.17910.4.camel@think.oraclecorp.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 
 Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt700.oracle.com [141.146.40.70]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090206.49C8E7D0.01A0:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Sonic Zhang <sonic.zhang@analog.com>
+On Tue, 2009-03-24 at 14:26 +0100, Jan Kara wrote:
+> On Tue 24-03-09 13:55:10, Jan Kara wrote:
 
-drivers/serial/bfin_5xx.c: In function bfin_serial_rx_chars:
-drivers/serial/bfin_5xx.c:178: error: struct uart_info has no
-member
-named tty
-make[3]: *** [drivers/serial/bfin_5xx.o] Error 1
-make[2]: *** [drivers/serial] Error 2
-make[1]: *** [drivers] Error 2
-make[1]: *** Waiting for unfinished jobs....
-make[1]: Leaving directory `/root/projects/uClinux-dist/linux-2.6.x'
-make: *** [linux] Error 1
+> >   And one more interesting thing I don't yet fully understand - I see pages
+> > having PageError() set when they are removed from page cache (and they have
+> > been faulted in before). It's probably some interaction with pagecache
+> > readahead...
+>   Argh... So the problem seems to be that get_block() occasionally returns
+> ENOSPC and we then discard the dirty data (hmm, we could give at least a
+> warning for that). I'm not yet sure why getblock behaves like this because
+> the filesystem seems to have enough space but anyway this seems to be some
+> strange fs trouble as well.
+> 
 
-Signed-off-by: Sonic Zhang <sonic.zhang@analog.com>
-Signed-off-by: Bryan Wu <cooloney@kernel.org>
-Signed-off-by: Alan Cox <alan@lxorguk.ukuu.org.uk>
----
+Ouch.  Perhaps the free space is waiting on a journal commit?
 
- drivers/serial/bfin_5xx.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+-chris
 
-
-diff --git a/drivers/serial/bfin_5xx.c b/drivers/serial/bfin_5xx.c
-index 6bd9016..1e08e36 100644
---- a/drivers/serial/bfin_5xx.c
-+++ b/drivers/serial/bfin_5xx.c
-@@ -174,10 +174,10 @@ static void bfin_serial_rx_chars(struct bfin_serial_port *uart)
- 			return;
- 		}
- 
--	if (!uart->port.info || !uart->port.info->tty)
-+	if (!uart->port.info || !uart->port.info->port.tty)
- 		return;
- #endif
--	tty = uart->port.info->tty;
-+	tty = uart->port.info->port.tty;
- 
- 	if (ANOMALY_05000363) {
- 		/* The BF533 (and BF561) family of processors have a nice anomaly
 
