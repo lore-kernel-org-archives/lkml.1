@@ -1,54 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758153AbZCXI6S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757578AbZCXI7Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758153AbZCXI6S (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 04:58:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757529AbZCXI56
+	id S1757578AbZCXI7Y (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 04:59:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756787AbZCXI7M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 04:57:58 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:49488 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756414AbZCXI55 (ORCPT
+	Tue, 24 Mar 2009 04:59:12 -0400
+Received: from posthamster.phnxsoft.com ([195.227.45.4]:1503 "EHLO
+	posthamster.phnxsoft.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755259AbZCXI7L (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 04:57:57 -0400
-Subject: Re: [PATCH] kmemtrace: fix build breakage in befs
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: eduard.munteanu@linux360.ro, linux-kernel@vger.kernel.org
-In-Reply-To: <20090324085658.GG13016@elte.hu>
-References: <1237884230.25315.33.camel@penberg-laptop>
-	 <20090324085128.GF13016@elte.hu> <1237884846.25315.37.camel@penberg-laptop>
-	 <20090324085658.GG13016@elte.hu>
-Date: Tue, 24 Mar 2009 10:57:54 +0200
-Message-Id: <1237885074.25315.43.camel@penberg-laptop>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 7bit
-X-Mailer: Evolution 2.22.3.1 
+	Tue, 24 Mar 2009 04:59:11 -0400
+Message-ID: <49C89FC8.9080904@imap.cc>
+Date: Tue, 24 Mar 2009 10:54:32 +0200
+From: Tilman Schmidt <tilman@imap.cc>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; de-AT; rv:1.8.1.19) Gecko/20081204 SeaMonkey/1.1.14 Mnenhy/0.7.6.0
+MIME-Version: 1.0
+To: David Miller <davem@davemloft.net>
+CC: stable@kernel.org, kawk@users.sourceforge.net, hjlipp@web.de,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: [PATCH 2.6.27/28-stable] bas_gigaset: correctly allocate USB
+ interrupt transfer buffer
+References: <20090323-patch-01.tilman@imap.cc> <20090323.150005.113220590.davem@davemloft.net>
+In-Reply-To: <20090323.150005.113220590.davem@davemloft.net>
+X-Enigmail-Version: 0.95.7
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enigF0F76293D8EDB051E04E63F4"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-03-24 at 09:56 +0100, Ingo Molnar wrote:
-> * Pekka Enberg <penberg@cs.helsinki.fi> wrote:
-> 
-> > On Tue, 2009-03-24 at 09:51 +0100, Ingo Molnar wrote:
-> > > there's another build problem as well, in squashfs, and in key.h:
-> > > 
-> > >  include/linux/key.h:128: error: field 'sem' has incomplete type
-> > >  fs/squashfs/export.c:133: error: implicit declaration of function 'kmalloc'
-> > >  fs/squashfs/export.c:143: error: implicit declaration of function 'kfree'
-> > > 
-> > > And i suspect there's more as well. Is there really no unintrusive 
-> > > way to solve this - or do you think the RCU change reduces the 
-> > > include file spaghetti?
-> > 
-> > I don't think there is and yes, I do think the RCU change cleans 
-> > up things as well.
-> 
-> Okay. Note, you'll have to test tip:tracing/kmemtrace explicitly as 
-> i had to exclude it from tip:master due to test failures. Will put 
-> it back in once fixes arrive :)
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enigF0F76293D8EDB051E04E63F4
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-That's what I am testing right now. It's just that I am working on an
-old laptop where building the kernel takes a looong time.... :-)
+On Mon, 23 Mar 2009 15:00:05 -0700 (PDT), David Miller wrote:
+> From: Tilman Schmidt <tilman@imap.cc>
+> Date: Mon, 23 Mar 2009 22:47:06 +0100 (CET)
+>=20
+>> the following patch backports the Gigaset driver bugfix merged for
+>> 2.6.29 as commit 170ebf85160dd128e1c4206cc197cce7d1424705 to both
+>> v2.6.27.x and v2.6.28.x. I would appreciate to see it included in
+>> your stable series.
+>=20
+> If you ask me I can and will do it during my networking patch
+> -stable submission.
 
+Thanks. Please do so.
+
+Regards,
+Tilman
+
+--=20
+Tilman Schmidt                    E-Mail: tilman@imap.cc
+Bonn, Germany
+Diese Nachricht besteht zu 100% aus wiederverwerteten Bits.
+Unge=F6ffnet mindestens haltbar bis: (siehe R=FCckseite)
+
+
+--------------enigF0F76293D8EDB051E04E63F4
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.4 (MingW32)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+
+iD8DBQFJyJ/TQ3+did9BuFsRAuRkAJ0UU27JivQR/wea8k8X5oCFYaCnMQCfSsHY
+/blVuLAGB/4H/q5K2MLx5fA=
+=wXEu
+-----END PGP SIGNATURE-----
+
+--------------enigF0F76293D8EDB051E04E63F4--
