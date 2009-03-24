@@ -1,65 +1,152 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761809AbZCXPqZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761714AbZCXPrT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761809AbZCXPqZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 11:46:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757863AbZCXPqP
+	id S1761714AbZCXPrT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 11:47:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754788AbZCXPrD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 11:46:15 -0400
-Received: from mail-ew0-f165.google.com ([209.85.219.165]:35506 "EHLO
-	mail-ew0-f165.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755218AbZCXPqN (ORCPT
+	Tue, 24 Mar 2009 11:47:03 -0400
+Received: from gw-ca.panasas.com ([209.116.51.66]:9494 "EHLO
+	laguna.int.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754500AbZCXPrB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 11:46:13 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=lpyojX0IDKNc7KgVCCqPi+XGIqI+gPiOSC4HeAURmfIcUz70e+VQ+ZbfVF47YksJUR
-         5WGWXmI1cD4PZKglmZaQ9KSW7wC7X5idb1TB7xQ1pwzl0IPd6K7QWlJUd3jjd/Q+Vhck
-         lS4NaF/Ovyfj5GT70x0TNjt3toRryR4yCMJac=
+	Tue, 24 Mar 2009 11:47:01 -0400
+Message-ID: <49C90012.50009@panasas.com>
+Date: Tue, 24 Mar 2009 17:45:22 +0200
+From: Boaz Harrosh <bharrosh@panasas.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-In-Reply-To: <a4423d670903240432m1a4e8e08x9c97a0947d89800a@mail.gmail.com>
-References: <a4423d670903180958j4847717eh99a41534633dd314@mail.gmail.com>
-	 <20090318.234451.38898787.davem@davemloft.net>
-	 <a4423d670903190116p157b2ebfl69d270e0576c6d9a@mail.gmail.com>
-	 <20090322.215110.261185328.davem@davemloft.net>
-	 <a4423d670903240432m1a4e8e08x9c97a0947d89800a@mail.gmail.com>
-Date: Tue, 24 Mar 2009 18:46:09 +0300
-Message-ID: <a4423d670903240846j252a825cy1e8a50b5ac3a11ef@mail.gmail.com>
-Subject: Re: next-20090318: sunhme does not transmit packets
-From: Alexander Beregalov <a.beregalov@gmail.com>
-To: David Miller <davem@davemloft.net>, Roel Kluin <roel.kluin@gmail.com>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       linux-next@vger.kernel.org,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
+To: Hannes Reinecke <hare@suse.de>
+CC: James Bottomley <James.Bottomley@HansenPartnership.com>,
+       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
+Subject: Re: [PATCH] Driver 'sd' needs updating
+References: <20090324141428.31E5118C7A3@pentland.suse.de>
+In-Reply-To: <20090324141428.31E5118C7A3@pentland.suse.de>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 24 Mar 2009 15:46:56.0895 (UTC) FILETIME=[C308E8F0:01C9AC97]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/3/24 Alexander Beregalov <a.beregalov@gmail.com>:
->>> 2009/3/19 David Miller <davem@davemloft.net>:
->>> > Does the current vanilla kernel work fine?
->>>
->>> Yes. The problem happens only with -next tree.
->>
->> I have one of my ultra10s up and will try to reproduce and diagnose
->> this locally.
->
-> Hi David
->
-> 2.6.29 also does not work.
->
-> The guilty patch should be between 2.6.29-rc8 and final 2.6.29
->
-> even more narrow - 59fcbdd..v2.6.29
->
-> I can try to bisect.
+Hannes Reinecke wrote:
+> If a driver sets blk_queue_prep_rq() it should clean up itself
+> and not rely on the bus callbacks to handle this. This removes
+> the need to hook into bus->remove() as these should not be used
+> at the same time as driver->remove().
+> 
+> Signed-off-by: Hannes Reinecke <hare@suse.de>
+> Signed-off-by: Kay Sievers <kay.sievers@vrfy.org>
 
-e4a389a9b5c892446b5de2038bdc0cca8703c615 is first bad commit
-commit e4a389a9b5c892446b5de2038bdc0cca8703c615
-Author: Roel Kluin <roel.kluin@gmail.com>
-Date:   Wed Mar 18 23:12:13 2009 -0700
+I spoke too soon please see below
 
-    net: kfree(napi->skb) => kfree_skb
+> ---
+>  drivers/scsi/scsi_lib.c    |    6 ++++++
+>  drivers/scsi/scsi_sysfs.c  |   17 -----------------
+>  drivers/scsi/sd.c          |    2 ++
+>  drivers/scsi/sr.c          |    1 +
+>  include/scsi/scsi_driver.h |    1 +
+>  5 files changed, 10 insertions(+), 17 deletions(-)
+> 
+> diff --git a/drivers/scsi/scsi_lib.c b/drivers/scsi/scsi_lib.c
+> index 4b13e36..73df41b 100644
+> --- a/drivers/scsi/scsi_lib.c
+> +++ b/drivers/scsi/scsi_lib.c
+> @@ -1222,6 +1222,12 @@ int scsi_prep_fn(struct request_queue *q, struct request *req)
+>  	return scsi_prep_return(q, req, ret);
+>  }
+>  
+> +void scsi_reset_prep_fn(struct request_queue *q)
+
+Here it is declared void
+but
+
+> +{
+> +	blk_queue_prep_rq(q, scsi_prep_fn);
+> +}
+> +EXPORT_SYMBOL(scsi_reset_prep_fn);
+> +
+>  /*
+>   * scsi_dev_queue_ready: if we can send requests to sdev, return 1 else
+>   * return 0.
+> diff --git a/drivers/scsi/scsi_sysfs.c b/drivers/scsi/scsi_sysfs.c
+> index fa4711d..91482f2 100644
+> --- a/drivers/scsi/scsi_sysfs.c
+> +++ b/drivers/scsi/scsi_sysfs.c
+> @@ -420,29 +420,12 @@ static int scsi_bus_resume(struct device * dev)
+>  	return err;
+>  }
+>  
+> -static int scsi_bus_remove(struct device *dev)
+> -{
+> -	struct device_driver *drv = dev->driver;
+> -	struct scsi_device *sdev = to_scsi_device(dev);
+> -	int err = 0;
+> -
+> -	/* reset the prep_fn back to the default since the
+> -	 * driver may have altered it and it's being removed */
+> -	blk_queue_prep_rq(sdev->request_queue, scsi_prep_fn);
+> -
+> -	if (drv && drv->remove)
+> -		err = drv->remove(dev);
+> -
+> -	return 0;
+> -}
+> -
+>  struct bus_type scsi_bus_type = {
+>          .name		= "scsi",
+>          .match		= scsi_bus_match,
+>  	.uevent		= scsi_bus_uevent,
+>  	.suspend	= scsi_bus_suspend,
+>  	.resume		= scsi_bus_resume,
+> -	.remove		= scsi_bus_remove,
+>  };
+>  EXPORT_SYMBOL_GPL(scsi_bus_type);
+>  
+> diff --git a/drivers/scsi/sd.c b/drivers/scsi/sd.c
+> index aeab5d9..64e88e2 100644
+> --- a/drivers/scsi/sd.c
+> +++ b/drivers/scsi/sd.c
+> @@ -2068,6 +2068,8 @@ static int sd_remove(struct device *dev)
+>  {
+>  	struct scsi_disk *sdkp = dev_get_drvdata(dev);
+>  
+> +	scsi_reset_prep_fn(sdkp->device->request_queue);
+> +
+>  	device_del(&sdkp->dev);
+>  	del_gendisk(sdkp->disk);
+>  	sd_shutdown(dev);
+> diff --git a/drivers/scsi/sr.c b/drivers/scsi/sr.c
+> index e7fa3ca..914733a 100644
+> --- a/drivers/scsi/sr.c
+> +++ b/drivers/scsi/sr.c
+> @@ -889,6 +889,7 @@ static int sr_remove(struct device *dev)
+>  {
+>  	struct scsi_cd *cd = dev_get_drvdata(dev);
+>  
+> +	scsi_reset_prep_fn(cd->device->request_queue);
+>  	del_gendisk(cd->disk);
+>  
+>  	mutex_lock(&sr_ref_mutex);
+> diff --git a/include/scsi/scsi_driver.h b/include/scsi/scsi_driver.h
+> index 1f5ca7f..2e22929 100644
+> --- a/include/scsi/scsi_driver.h
+> +++ b/include/scsi/scsi_driver.h
+> @@ -32,5 +32,6 @@ int scsi_setup_blk_pc_cmnd(struct scsi_device *sdev, struct request *req);
+>  int scsi_setup_fs_cmnd(struct scsi_device *sdev, struct request *req);
+>  int scsi_prep_state_check(struct scsi_device *sdev, struct request *req);
+>  int scsi_prep_return(struct request_queue *q, struct request *req, int ret);
+> +int scsi_reset_prep_fn(struct request_queue *);
+
+Here it is returning int.
+
+My FC10 compiler does not like that:
+  drivers/scsi/scsi_lib.c:1415: error: conflicting types for 'scsi_reset_prep_fn'
+  include/scsi/scsi_driver.h:35: error: previous declaration of 'scsi_reset_prep_fn' was here
+
+>  
+>  #endif /* _SCSI_SCSI_DRIVER_H */
+
+I fixed it to be void, will test later
+
+Thanks
+Boaz
