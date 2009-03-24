@@ -1,77 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756878AbZCXPTt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755769AbZCXPUK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756878AbZCXPTt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 11:19:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753461AbZCXPTi
+	id S1755769AbZCXPUK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 11:20:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755741AbZCXPTn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 11:19:38 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:38587 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753430AbZCXPTh (ORCPT
+	Tue, 24 Mar 2009 11:19:43 -0400
+Received: from victor.provo.novell.com ([137.65.250.26]:41087 "EHLO
+	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755420AbZCXPTm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 11:19:37 -0400
-Date: Tue, 24 Mar 2009 15:18:25 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Theodore Tso <tytso@mit.edu>
-Cc: Ingo Molnar <mingo@elte.hu>, Arjan van de Ven <arjan@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Nick Piggin <npiggin@suse.de>,
-       Jens Axboe <jens.axboe@oracle.com>, David Rees <drees76@gmail.com>,
-       Jesper Krogh <jesper@krogh.cc>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.29
-Message-ID: <20090324151825.0570f37a@lxorguk.ukuu.org.uk>
-In-Reply-To: <20090324142837.GN5814@mit.edu>
-References: <alpine.LFD.2.00.0903231617550.3032@localhost.localdomain>
-	<49C87B87.4020108@krogh.cc>
-	<72dbd3150903232346g5af126d7sb5ad4949a7b5041f@mail.gmail.com>
-	<20090324091545.758d00f5@lxorguk.ukuu.org.uk>
-	<20090324093245.GA22483@elte.hu>
-	<20090324101011.6555a0b9@lxorguk.ukuu.org.uk>
-	<20090324103111.GA26691@elte.hu>
-	<20090324132032.GK5814@mit.edu>
-	<20090324135249.02e2caa2@lxorguk.ukuu.org.uk>
-	<20090324142837.GN5814@mit.edu>
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 24 Mar 2009 11:19:42 -0400
+Message-ID: <49C8FA99.9030503@novell.com>
+Date: Tue, 24 Mar 2009 11:22:01 -0400
+From: Gregory Haskins <ghaskins@novell.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: Luis Henriques <henrix@sapo.pt>, Peter Zijlstra <peterz@infradead.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v3 -tip] sched: Clean unused fields from struct rq
+References: <20090318225137.GA3766@hades.domain.com> <20090323175224.GA3938@hades.domain.com> <20090324140419.GD32043@elte.hu>
+In-Reply-To: <20090324140419.GD32043@elte.hu>
+X-Enigmail-Version: 0.95.7
+OpenPGP: id=D8195319
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig98C887835BF8B5120EDDA9D3"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Surely the elevator should have reordered the writes reasonably?  (Or
-> is that what you meant by "the other one -- #8636 (I assume this is a
-> kernel Bugzilla #?) seems to be a bug in the I/O schedulers as it goes
-> away if you use a different I/O sched.?")
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig98C887835BF8B5120EDDA9D3
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-There are two cases there. One is a bug #8636 (kernel bugzilla) which is
-where things like dump show awful performance with certain I/O scheduler
-settings. That seems to be totally not connected to the fs but it is a
-problem (and has a patch)
+Ingo Molnar wrote:
+> * Luis Henriques <henrix@sapo.pt> wrote:
+>
+>  =20
+>> On Wed, Mar 18, 2009 at 10:51:37PM +0000, Luis Henriques wrote:
+>>    =20
+>>> Since they are used on in statistics and are always set to zero, the =
+following
+>>> fields from struct rq have been removed: yld_exp_empty, yld_act_empty=
+ and
+>>> yld_both_empty.
+>>>
+>>> Both Sched Debug and SCHEDSTAT_VERSION versions has also been increme=
+nted since
+>>> ABIs have been changed.
+>>>
+>>>      =20
+>> Hi Ingo,
+>>
+>> Sorry to bother you but I can not find this patch in -tip.  Just=20
+>> would like to confirm with you that it was NACK'ed or you just=20
+>> forgot to merge it to the tree.
+>>    =20
+>
+> Was held up by the schedstat tool discussions. Please resend the=20
+> patch with a link to the updated tool in the commit log perhaps (if=20
+> such a link exists), and with Gregory's ack in place.
+>
+> Thanks,
+>
+> 	Ingo
+>  =20
+Hi Ingo,
+  I was waiting to merge the tool patch until I was sure this would be
+your blessed v15 of the ABI.  If you are comfy with the kernel patch but
+want the tool updated before the kernel, I can do that, no problem.  The
+only thing that I ask is that if for some reason this kernel patch
+doesn't make it in, please require any future patches that change this
+ABI to be versioned > 15 ;)
 
-The second one the elevator is clearly trying to sort out but its
-behaving as if someone is writing the file starting at say 0 and someone
-else is trying to write it back starting some large distance further down
-the file. The elevator can only do so much then.
+Thanks!
+-Greg
 
-> Yeah, I could see that doing it.  How big is the image, and out of
-> curiosity, can you run the fsync-tester.c program I posted while
 
-150MB+ for the pnm files from gimp used as temporaries by Eve (Etch
-Validation Engine), more like 10MB for xcf/tif files.
+--------------enig98C887835BF8B5120EDDA9D3
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
-> saving the gimp image, and tell me how much of a delay you end up
-> seeing?
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
+Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
 
-Added to the TODO list once I can set up a suitable test box (my new dev
-box is somewhere between Dell and my desk right now)
+iEYEARECAAYFAknI+pkACgkQlOSOBdgZUxmiqACfbZdQSilvsPO7wOcyNMdU7ha4
+SH0AoIKPetvKKGY2GgFI1okrQ2QlzuJR
+=EC4I
+-----END PGP SIGNATURE-----
 
-> More testing would be appreciated --- and yeah, we need to groom the
-> bugzilla.  
-
-I'm currently doing this on a large scale (closed about 300 so far this
-run). Bug 8147 might be worth a look as its a case where the jbd locking
-and the jbd comments seem to disagree (the comments say you must hold a
-lock but we don't seem to)
+--------------enig98C887835BF8B5120EDDA9D3--
