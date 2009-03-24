@@ -1,89 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761408AbZCXT1g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761992AbZCXT21@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761408AbZCXT1g (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 15:27:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755694AbZCXT1M
+	id S1761992AbZCXT21 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 15:28:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759427AbZCXT2M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 15:27:12 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:59940 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753096AbZCXT1L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 15:27:11 -0400
-Date: Tue, 24 Mar 2009 20:26:47 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: =?iso-8859-1?Q?Am=E9rico?= Wang <xiyou.wangcong@gmail.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, Rusty Russell <rusty@rustcorp.com.au>,
-       Andrew Morton <akpm@osdl.org>
-Subject: Re: [Patch] kernel/module.c: fix an unused goto label
-Message-ID: <20090324192647.GA26930@elte.hu>
-References: <20090324160719.GE9686@hack>
+	Tue, 24 Mar 2009 15:28:12 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:46776 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756212AbZCXT2K (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Mar 2009 15:28:10 -0400
+Date: Tue, 24 Mar 2009 12:21:11 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Theodore Tso <tytso@mit.edu>
+cc: Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Nick Piggin <npiggin@suse.de>,
+       Jens Axboe <jens.axboe@oracle.com>, David Rees <drees76@gmail.com>,
+       Jesper Krogh <jesper@krogh.cc>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.29
+In-Reply-To: <20090324184549.GE32307@mit.edu>
+Message-ID: <alpine.LFD.2.00.0903241218130.3032@localhost.localdomain>
+References: <alpine.LFD.2.00.0903231617550.3032@localhost.localdomain> <49C87B87.4020108@krogh.cc> <72dbd3150903232346g5af126d7sb5ad4949a7b5041f@mail.gmail.com> <20090324091545.758d00f5@lxorguk.ukuu.org.uk> <20090324093245.GA22483@elte.hu>
+ <20090324101011.6555a0b9@lxorguk.ukuu.org.uk> <20090324103111.GA26691@elte.hu> <20090324132032.GK5814@mit.edu> <alpine.LFD.2.00.0903241053200.3032@localhost.localdomain> <20090324184549.GE32307@mit.edu>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20090324160719.GE9686@hack>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Américo Wang <xiyou.wangcong@gmail.com> wrote:
 
-> Label 'free_init' is only used when defined(CONFIG_MODULE_UNLOAD) &&
-> defined(CONFIG_SMP), so move it inside to shut up gcc.
-> 
-> Signed-off-by: WANG Cong <xiyou.wangcong@gmail.com>
-> Cc: Rusty Russell <rusty@rustcorp.com.au>
+On Tue, 24 Mar 2009, Theodore Tso wrote:
+>
+> With ext2 after a system crash you need to run fsck.  With ext4, fsck
+> isn't an issue,
 
-was already sent a week ago - see below.
+Bah. A corrupt filesystem is a corrupt filesystem. Whether you have to 
+fsck it or not should be a secondary concern.
 
-	Ingo
+I personally find silent corruption to be _worse_ than the non-silent one. 
+At least if there's some program that says "oops, your inode so-and-so 
+seems to be scrogged" that's better than just silently having bad data in 
+it.
 
-------------->
->From 67f5ca081c6ace125e8ccc76b8a7d99b091abaa7 Mon Sep 17 00:00:00 2001
-From: Dmitri Vorobiev <dmitri.vorobiev@movial.com>
-Date: Wed, 18 Mar 2009 23:49:26 +0200
-Subject: [PATCH] modules: Restrict definition of a label in kernel/module.c
+Of course, never having bad data _nor_ needing fsck is clearly optimal. 
+data=ordered gets pretty close (and data=journal is unacceptable for 
+performance reasons).
 
-Impact: cleanup
+But I really don't understand filesystem people who think that "fsck" is 
+the important part, regardless of whether the data is valid or not. That's 
+just stupid and _obviously_ bogus.
 
-In function 'load_module' in kernel/module.c, the label 'free_init'
-is used if and only if both CONFIG_MODULE_UNLOAD and CONFIG_SMP are
-defined. However, the label itself is defined unconditionally,
-which may produce the following warning:
-
-kernel/module.c:2291: warning: label 'free_init' defined but not used
-
-This patch fixes the warning by moving the label definition under an
-appropriate preprocessor construct.
-
-Signed-off-by: Dmitri Vorobiev <dmitri.vorobiev@movial.com>
-Cc: akpm@linux-foundation.org
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
----
- kernel/module.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/kernel/module.c b/kernel/module.c
-index 1196f5d..df00a1b 100644
---- a/kernel/module.c
-+++ b/kernel/module.c
-@@ -2288,8 +2288,8 @@ static noinline struct module *load_module(void __user *umod,
- 	ftrace_release(mod->module_core, mod->core_size);
-  free_unload:
- 	module_unload_free(mod);
-- free_init:
- #if defined(CONFIG_MODULE_UNLOAD) && defined(CONFIG_SMP)
-+ free_init:
- 	percpu_modfree(mod->refptr);
- #endif
- 	module_free(mod, mod->module_init);
+			Linus
