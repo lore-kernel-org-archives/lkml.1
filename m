@@ -1,318 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758631AbZCXPdW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760472AbZCXPdi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758631AbZCXPdW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 11:33:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755098AbZCXPdJ
+	id S1760472AbZCXPdi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 11:33:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759202AbZCXPdT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 11:33:09 -0400
-Received: from 124x34x33x190.ap124.ftth.ucom.ne.jp ([124.34.33.190]:60550 "EHLO
-	master.linux-sh.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753430AbZCXPdG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 11:33:06 -0400
-Date: Wed, 25 Mar 2009 00:28:38 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [GIT PULL] sh updates for 2.6.30-rc1
-Message-ID: <20090324152838.GA1325@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	linux-sh@vger.kernel.org, linux-kernel@vger.kernel.org
+	Tue, 24 Mar 2009 11:33:19 -0400
+Received: from wa4ehsobe005.messaging.microsoft.com ([216.32.181.15]:21740
+	"EHLO WA4EHSOBE005.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1760784AbZCXPdS convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Mar 2009 11:33:18 -0400
+X-BigFish: VPS-46(zz542N1418M1432R14ffO1b0aM4015M1805M936fK9371Pzz1202hzzz2dh6bh95p61h)
+X-Spam-TCS-SCL: 0:0
+X-FB-SS: 5,
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-Class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: Microblaze linux support
+Date: Tue, 24 Mar 2009 09:33:13 -0600
+In-Reply-To: <49C8FBB5.5010107@monstr.eu>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: Microblaze linux support
+Thread-Index: AcmslPXlJ1kPM91DSJeVJWNoKUMeHgAAIQGA
+References: <1237408284-8674-1-git-send-email-monstr@monstr.eu> <49C8FBB5.5010107@monstr.eu>
+From: John Linn <John.Linn@xilinx.com>
+To: <monstr@monstr.eu>
+CC: <linux-kernel@vger.kernel.org>, <john.williams@petalogix.com>,
+       "Arnd Bergmann" <arnd@arndb.de>, "Thomas Gleixner" <tglx@linutronix.de>,
+       "Randy Dunlap" <randy.dunlap@oracle.com>, "Ingo Molnar" <mingo@elte.hu>,
+       <microblaze-uclinux@itee.uq.edu.au>
+X-OriginalArrivalTime: 24 Mar 2009 15:33:13.0681 (UTC) FILETIME=[D85C6C10:01C9AC95]
+Message-ID: <20090324153314.C8BD144806B@mail135-wa4.bigfish.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Please pull from:
+> -----Original Message-----
+> From: Michal Simek [mailto:monstr@monstr.eu]
+> Sent: Tuesday, March 24, 2009 9:27 AM
+> To: monstr@monstr.eu
+> Cc: linux-kernel@vger.kernel.org; john.williams@petalogix.com; John
+Linn; Arnd Bergmann; Thomas
+> Gleixner; Randy Dunlap; Ingo Molnar; microblaze-uclinux@itee.uq.edu.au
+> Subject: Re: Microblaze linux support
+> 
+> Hi all,
+> > Hi all,
+> >
+> > I think that is the right time to send you next pack with
+> > Microblaze support. It is seventh pack - some previous packs
+> > was review by community and I hope there are not any big faults.
+> >
+> > We tested this kernel on some boards.
+> > We have GIT server up and gitweb is available at
+http://developer.petalogix.com/git/gitweb.cgi
+> >
+> > All information about git clone you can find on gitweb.
+> > This pack is available in for-linus branch. Information about other
+branches are on gitweb too.
+> >
+> > More information about microblaze fdt kernel you can find at
+www.monstr.eu/fdt/
+> > If you want to test kernel with microblaze toolchain let me know.
+> >
+> > I added only uart16550 and uartlite support - that's enought for
+first merge.
+> >
+> >
+> > Thanks for you comments and especially for your ACK,
+> > Michal
+> >
+> It is a week ago when I sent v7 pack to LKML for reviewing.
+> 
+> I have got ACK from John Williams who is the best person from
+microblaze
+> linux community.
+> I got ACK from Randy Dunlap for Kconfig and Makefile patches.
+> Thomas Gleixner reviewed IRQ and Timer code.
+> Ingo Molnar confirms me that all coding style violation (checking with
+> checkpatch.pl) are false positive.
+> 
+> John L: Could you give me ACK from Xilinx?
 
-	master.kernel.org:/pub/scm/linux/kernel/git/lethal/sh-2.6.git
+Acked-by: John Linn <john.linn@xilinx.com>
 
-Which contains:
+Thanks for all your work to move this forward.
 
-Adrian McMenamin (2):
-      sh: maple: Support block reads and writes.
-      mtd: flash mapping support for Dreamcast VMU.
+-- John
 
-Francesco VIRLINZI (4):
-      sh: clkfwk: add clk_set_parent/clk_get_parent
-      sh: clkfwk: Add resume from hibernation support.
-      sh: PMB hibernation support
-      sh: clkfwk: Safer resume from hibernation.
+> 
+> Thanks,
+> Michal
+> 
+> 
+> 
+> >
+> >
+> > --
+> > To unsubscribe from this list: send the line "unsubscribe
+linux-kernel" in
+> > the body of a message to majordomo@vger.kernel.org
+> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> > Please read the FAQ at  http://www.tux.org/lkml/
+> >
+> 
+> 
+> --
+> Michal Simek, Ing. (M.Eng)
+> w: www.monstr.eu p: +42-0-721842854
+> 
 
-Kay Sievers (1):
-      sh: struct device - replace bus_id with dev_name(), dev_set_name()
 
-Kuninori Morimoto (4):
-      sh: Add support for SH7786 CPU subtype.
-      sh: Urquell board support.
-      sh: urquell: Add smc91x support and update defconfig accordingly.
-      sh: Add OHCI USB support for SH7786
+This email and any attachments are intended for the sole use of the named recipient(s) and contain(s) confidential information that may be proprietary, privileged or copyrighted under applicable law. If you are not the intended recipient, do not read, copy, or forward this email message or any attachments. Delete this email message and any attachments immediately.
 
-Magnus Damm (36):
-      sh: make gpio_get/set_value() O(1)
-      sh: lockless gpio_get_value()
-      sh: lockless gpio_set_value()
-      sh: use gpiolib
-      sh: rework clocksource and sched_clock
-      sh: tmu disable support
-      sh: fix no sys_timer case
-      sh: CMT clockevent platform driver
-      sh: CMT platform data for sh7723/sh7722/sh7366/sh7343
-      sh: shared register saving code for sh3/sh4/sh4a
-      sh: rework register restore code for sh3/sh4/sh4a
-      sh: remove EXPEVT vector from stack on sh3/sh4/sh4a
-      sh: prefetch early exception data on sh4/sh4a.
-      serial: sh-sci: console drainage
-      rtc: sh-rtc: Add Single IRQ Support
-      sh: fix P4 iounmap() pass-through
-      sh: multiple vectors per irq - base
-      sh: multiple vectors per irq - sh7750
-      sh: multiple vectors per irq - sh7780
-      sh: multiple vectors per irq - sh7785
-      sh: hibernation support
-      video: deferred io cleanup fix for sh_mobile_lcdcfb
-      sh: Show sleep state with Migo-R LEDs
-      input: add suspend wakeup support to sh_keysc
-      input: sh_keysc suspend can use to_platform_device()
-      sh: improve sh7785lcr power off code
-      sh: SuperH Mobile suspend support
-      sh: add ap325 lcd power off support
-      video: sh_mobile_lcdcfb suspend/resume support
-      sh: simplify kexec vbr code
-      sh: rework kexec segment code
-      sh: add kexec jump support
-      sh: disallow kexec virtual entry
-      sh: sh-rtc carry interrupt rework
-      sh: sh-rtc invalid time rework
-      sh: sh-rtc wakeup support
 
-Matt Fleming (2):
-      sh: Relax inline assembly constraints
-      sh: Use the atomic_t "counter" member
-
-Nobuhiro Iwamatsu (10):
-      sh: multiple vectors per irq - sh7763
-      sh: Restore RTC IRQ setting for SH7763 setup.
-      sh: Add media/soc_camera.h to board setup of Renesas AP325RXA
-      sh: dma-sh updates for multi IRQ and new SH-4A CPUs.
-      sh: Revert CONFIG_NR_ONCHIP_DMA_CHANNELS to MAX_DMA_CHANNELS
-      sh: Disable get_dma_error_irq for non-SH4 targets.
-      sh: Fix compile error by operands(mov.l) in sh3/entry.S
-      sh: Move IRQ multi definition of DMAC to defconfig
-      sh: espt-giga board support
-      sh: sh7763rdp: Change IRQ number for sh_eth of sh7763rdp
-
-Paul Mundt (33):
-      sh: Fix up GENERIC_GPIO build for ARCH_WANT_OPTIONAL_GPIO cases.
-      sh: mach-highlander and mach-rsk require gpiolib.
-      sh: Use SYS_SUPPORTS_CMT for managing CMT timer dependencies.
-      sh: Fix up MTU2 support for SH7203.
-      sh: Don't enable GENERIC_TIME for the CMT clockevent driver yet.
-      sh: Restrict old CMT timer code to SH-2/SH-2A.
-      sh: Disable unsupportable prefetching on SH-3.
-      sh: Fix up SH-X3 general exception handler build.
-      sh: SH7786 is an SH-X3 core, select CPU_SHX3.
-      sh: Set a sensible default for the SH7786 pclk.
-      sh: intc: Make missing unique IRQ mask warning more verbose.
-      sh: multiple vectors per irq - sh7203.
-      sh: multiple vectors per irq - sh7263.
-      sh: multiple vectors per irq - sh7201.
-      sh: multiple vectors per irq - sh7206.
-      rtc: rtc-sh: Bump version up to reflect single IRQ support changes.
-      sh: multiple vectors per irq - sh7619.
-      sh: multiple vectors per irq - mxg.
-      sh: multiple vectors per irq - sh770x.
-      sh: multiple vectors per irq - sh7705.
-      sh: multiple vectors per irq - sh7710.
-      sh: multiple vectors per irq - sh7720.
-      sh: Define ARCH_SHMOBILE for SH-Mobile CPUs.
-      sh: Generate uImage by default on Urquell board.
-      sh: Consolidate SH-Mobile CPU code in arch/sh/kernel/cpu/shmobile/.
-      sh: dma: Make PVR2 DMA configurable.
-      sh: dma: Make G2 DMA configurable.
-      sh: Support for extended ASIDs on PTEAEX-capable SH-X3 cores.
-      sh: tlb-pteaex: Kill off legacy PTEA updates.
-      sh: Update debugfs ASID dumping for 16-bit ASID support.
-      sh: Flush only the needed range when unmapping a VMA.
-      sh: kexec: Drop SR.BL bit toggling.
-      sh: kexec jump: fix for ftrace.
-
-Rafael Ignacio Zurita (1):
-      sh: fix the HD64461 level-triggered interrupts handling
-
-Roel Kluin (1):
-      SH: fix start_thread and user_stack_pointer macros
-
-Steve Glendinning (1):
-      sh: add support for SMSC Polaris platform
-
-Yoshihiro Shimoda (3):
-      sh: Support fixed 32-bit PMB mappings from bootloader.
-      sh: sh7785lcr: Updates for fixed PMB.
-      sh: pci-sh7780: fix pci memory address for fixed PMB
-
- arch/sh/Kconfig                            |   63 +-
- arch/sh/Kconfig.cpu                        |    3 +
- arch/sh/Makefile                           |    1 +
- arch/sh/boards/Kconfig                     |   27 +-
- arch/sh/boards/Makefile                    |    3 +
- arch/sh/boards/board-ap325rxa.c            |   12 +
- arch/sh/boards/board-espt.c                |  102 ++
- arch/sh/boards/board-polaris.c             |  149 +++
- arch/sh/boards/board-sh7785lcr.c           |   13 +-
- arch/sh/boards/board-urquell.c             |  162 +++
- arch/sh/boards/mach-highlander/Kconfig     |    2 +-
- arch/sh/boards/mach-hp6xx/pm_wakeup.S      |   31 +-
- arch/sh/boards/mach-hp6xx/setup.c          |    1 -
- arch/sh/boards/mach-migor/setup.c          |    9 +
- arch/sh/boards/mach-rsk/Kconfig            |    2 +-
- arch/sh/boards/mach-sh7763rdp/setup.c      |   10 +-
- arch/sh/boot/Makefile                      |   20 +-
- arch/sh/cchips/hd6446x/hd64461.c           |   30 +-
- arch/sh/configs/espt_defconfig             | 1190 +++++++++++++++++++++
- arch/sh/configs/polaris_defconfig          |  969 +++++++++++++++++
- arch/sh/configs/sh7785lcr_32bit_defconfig  | 1553 ++++++++++++++++++++++++++++
- arch/sh/configs/urquell_defconfig          | 1332 ++++++++++++++++++++++++
- arch/sh/drivers/dma/Kconfig                |   40 +-
- arch/sh/drivers/dma/Makefile               |    3 +-
- arch/sh/drivers/dma/dma-sh.c               |  169 ++-
- arch/sh/drivers/dma/dma-sh.h               |   75 --
- arch/sh/drivers/pci/pci-sh7780.c           |    4 +-
- arch/sh/include/asm/addrspace.h            |    4 +-
- arch/sh/include/asm/atomic-irq.h           |   16 +-
- arch/sh/include/asm/bitops-llsc.h          |   72 +-
- arch/sh/include/asm/clock.h                |    1 +
- arch/sh/include/asm/cmpxchg-llsc.h         |   38 +-
- arch/sh/include/asm/cpu-features.h         |    1 +
- arch/sh/include/asm/dma-sh.h               |  118 +++
- arch/sh/include/asm/dma.h                  |    4 +-
- arch/sh/include/asm/entry-macros.S         |    5 +
- arch/sh/include/asm/gpio.h                 |   70 +-
- arch/sh/include/asm/hd64461.h              |    1 -
- arch/sh/include/asm/io.h                   |    4 +-
- arch/sh/include/asm/kprobes.h              |    2 +-
- arch/sh/include/asm/mmu_context.h          |   15 +-
- arch/sh/include/asm/mmu_context_32.h       |   12 +
- arch/sh/include/asm/page.h                 |    7 +-
- arch/sh/include/asm/processor.h            |    2 +-
- arch/sh/include/asm/processor_32.h         |   15 +-
- arch/sh/include/asm/processor_64.h         |   14 +-
- arch/sh/include/asm/ptrace.h               |    8 +-
- arch/sh/include/asm/sections.h             |    1 +
- arch/sh/include/asm/suspend.h              |   22 +
- arch/sh/include/asm/timer.h                |    4 +-
- arch/sh/include/asm/tlb.h                  |  100 ++-
- arch/sh/include/cpu-sh3/cpu/dma.h          |   17 +-
- arch/sh/include/cpu-sh4/cpu/dma-sh4a.h     |   94 ++
- arch/sh/include/cpu-sh4/cpu/dma-sh7780.h   |   39 -
- arch/sh/include/cpu-sh4/cpu/dma.h          |   30 +-
- arch/sh/include/cpu-sh4/cpu/freq.h         |    4 +
- arch/sh/include/cpu-sh4/cpu/mmu_context.h  |   35 +-
- arch/sh/include/cpu-sh4/cpu/sh7786.h       |  192 ++++
- arch/sh/include/mach-common/mach/urquell.h |   68 ++
- arch/sh/kernel/Makefile_32                 |    1 +
- arch/sh/kernel/asm-offsets.c               |    8 +
- arch/sh/kernel/cpu/Makefile                |    1 +
- arch/sh/kernel/cpu/clock.c                 |   95 ++
- arch/sh/kernel/cpu/sh2/setup-sh7619.c      |   34 +-
- arch/sh/kernel/cpu/sh2a/setup-mxg.c        |   65 +-
- arch/sh/kernel/cpu/sh2a/setup-sh7201.c     |  224 ++---
- arch/sh/kernel/cpu/sh2a/setup-sh7203.c     |  236 ++---
- arch/sh/kernel/cpu/sh2a/setup-sh7206.c     |  154 +--
- arch/sh/kernel/cpu/sh3/Makefile            |    2 +
- arch/sh/kernel/cpu/sh3/entry.S             |  357 ++++---
- arch/sh/kernel/cpu/sh3/setup-sh7705.c      |   61 +-
- arch/sh/kernel/cpu/sh3/setup-sh770x.c      |   68 +-
- arch/sh/kernel/cpu/sh3/setup-sh7710.c      |   69 +-
- arch/sh/kernel/cpu/sh3/setup-sh7720.c      |   68 +-
- arch/sh/kernel/cpu/sh3/swsusp.S            |  147 +++
- arch/sh/kernel/cpu/sh4/Makefile            |    1 +
- arch/sh/kernel/cpu/sh4/probe.c             |    7 +
- arch/sh/kernel/cpu/sh4/setup-sh7750.c      |   87 +--
- arch/sh/kernel/cpu/sh4a/Makefile           |    3 +
- arch/sh/kernel/cpu/sh4a/clock-sh7786.c     |  148 +++
- arch/sh/kernel/cpu/sh4a/pinmux-sh7786.c    |  950 +++++++++++++++++
- arch/sh/kernel/cpu/sh4a/setup-sh7343.c     |   34 +
- arch/sh/kernel/cpu/sh4a/setup-sh7366.c     |   34 +
- arch/sh/kernel/cpu/sh4a/setup-sh7722.c     |   34 +
- arch/sh/kernel/cpu/sh4a/setup-sh7723.c     |   34 +
- arch/sh/kernel/cpu/sh4a/setup-sh7763.c     |  114 +--
- arch/sh/kernel/cpu/sh4a/setup-sh7780.c     |   97 +--
- arch/sh/kernel/cpu/sh4a/setup-sh7785.c     |   95 +--
- arch/sh/kernel/cpu/sh4a/setup-sh7786.c     |  490 +++++++++
- arch/sh/kernel/cpu/shmobile/Makefile       |    6 +
- arch/sh/kernel/cpu/shmobile/pm.c           |   92 ++
- arch/sh/kernel/cpu/shmobile/sleep.S        |  125 +++
- arch/sh/kernel/gpio.c                      |  338 ++++---
- arch/sh/kernel/irq.c                       |    2 +-
- arch/sh/kernel/machine_kexec.c             |   74 ++-
- arch/sh/kernel/relocate_kernel.S           |  203 +++-
- arch/sh/kernel/setup.c                     |    3 +-
- arch/sh/kernel/swsusp.c                    |   38 +
- arch/sh/kernel/time_32.c                   |   71 +-
- arch/sh/kernel/timers/timer-mtu2.c         |    3 +-
- arch/sh/kernel/timers/timer-tmu.c          |   21 +-
- arch/sh/kernel/vmlinux_32.lds.S            |    5 +-
- arch/sh/mm/Kconfig                         |   29 +-
- arch/sh/mm/Makefile_32                     |    7 +-
- arch/sh/mm/asids-debugfs.c                 |    4 +-
- arch/sh/mm/ioremap_32.c                    |    8 +-
- arch/sh/mm/pmb-fixed.c                     |   45 +
- arch/sh/mm/pmb.c                           |   38 +
- arch/sh/mm/tlb-pteaex.c                    |   96 ++
- arch/sh/oprofile/common.c                  |    1 +
- arch/sh/tools/mach-types                   |    3 +
- drivers/clocksource/Makefile               |    1 +
- drivers/clocksource/sh_cmt.c               |  615 +++++++++++
- drivers/input/joystick/maplecontrol.c      |    4 +-
- drivers/input/keyboard/maple_keyb.c        |   37 +-
- drivers/input/keyboard/sh_keysc.c          |   26 +-
- drivers/mtd/maps/Kconfig                   |   12 +-
- drivers/mtd/maps/Makefile                  |    1 +
- drivers/mtd/maps/vmu-flash.c               |  832 +++++++++++++++
- drivers/rtc/rtc-sh.c                       |  246 +++--
- drivers/serial/sh-sci.c                    |   12 +-
- drivers/serial/sh-sci.h                    |   15 +-
- drivers/sh/intc.c                          |   47 +
- drivers/sh/maple/maple.c                   |  472 +++++-----
- drivers/sh/superhyway/superhyway.c         |    4 +-
- drivers/usb/Kconfig                        |    1 +
- drivers/usb/host/ohci-hcd.c                |    3 +-
- drivers/video/pvr2fb.c                     |   16 +-
- drivers/video/sh_mobile_lcdcfb.c           |   70 ++-
- include/linux/maple.h                      |   62 +-
- include/linux/sh_cmt.h                     |   13 +
- include/linux/sh_intc.h                    |    1 +
- sound/sh/Kconfig                           |    1 +
- 133 files changed, 12277 insertions(+), 2134 deletions(-)
- create mode 100644 arch/sh/boards/board-espt.c
- create mode 100644 arch/sh/boards/board-polaris.c
- create mode 100644 arch/sh/boards/board-urquell.c
- create mode 100644 arch/sh/configs/espt_defconfig
- create mode 100644 arch/sh/configs/polaris_defconfig
- create mode 100644 arch/sh/configs/sh7785lcr_32bit_defconfig
- create mode 100644 arch/sh/configs/urquell_defconfig
- delete mode 100644 arch/sh/drivers/dma/dma-sh.h
- create mode 100644 arch/sh/include/asm/dma-sh.h
- create mode 100644 arch/sh/include/asm/suspend.h
- create mode 100644 arch/sh/include/cpu-sh4/cpu/dma-sh4a.h
- delete mode 100644 arch/sh/include/cpu-sh4/cpu/dma-sh7780.h
- create mode 100644 arch/sh/include/cpu-sh4/cpu/sh7786.h
- create mode 100644 arch/sh/include/mach-common/mach/urquell.h
- create mode 100644 arch/sh/kernel/cpu/sh3/swsusp.S
- create mode 100644 arch/sh/kernel/cpu/sh4a/clock-sh7786.c
- create mode 100644 arch/sh/kernel/cpu/sh4a/pinmux-sh7786.c
- create mode 100644 arch/sh/kernel/cpu/sh4a/setup-sh7786.c
- create mode 100644 arch/sh/kernel/cpu/shmobile/Makefile
- create mode 100644 arch/sh/kernel/cpu/shmobile/pm.c
- create mode 100644 arch/sh/kernel/cpu/shmobile/sleep.S
- create mode 100644 arch/sh/kernel/swsusp.c
- create mode 100644 arch/sh/mm/pmb-fixed.c
- create mode 100644 arch/sh/mm/tlb-pteaex.c
- create mode 100644 drivers/clocksource/sh_cmt.c
- create mode 100644 drivers/mtd/maps/vmu-flash.c
- create mode 100644 include/linux/sh_cmt.h
