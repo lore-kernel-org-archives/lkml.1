@@ -1,165 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757166AbZCXSes@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756158AbZCXSkG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757166AbZCXSes (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 14:34:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753338AbZCXSej
+	id S1756158AbZCXSkG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 14:40:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754299AbZCXSjz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 14:34:39 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:56231 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752848AbZCXSeh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 14:34:37 -0400
-Date: Tue, 24 Mar 2009 19:33:13 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Rusty Russell <rusty@rustcorp.com.au>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       ltt-dev@lists.casi.polymtl.ca, Frederic Weisbecker <fweisbec@gmail.com>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>, Hideo AOKI <haoki@redhat.com>,
-       Takashi Nishiie <t-nishiie@np.css.fujitsu.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-Subject: Re: [patch 7/9] LTTng instrumentation - kernel
-Message-ID: <20090324183313.GH31117@elte.hu>
-References: <20090324155625.420966314@polymtl.ca> <20090324160148.872305963@polymtl.ca>
+	Tue, 24 Mar 2009 14:39:55 -0400
+Received: from smtp131.sat.emailsrvr.com ([66.216.121.131]:36270 "EHLO
+	smtp131.sat.emailsrvr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754017AbZCXSjy (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Mar 2009 14:39:54 -0400
+X-Greylist: delayed 516 seconds by postgrey-1.27 at vger.kernel.org; Tue, 24 Mar 2009 14:39:54 EDT
+From: "Christopher Harrer" <charrer@alacritech.com>
+To: "'Lior Dotan'" <liodot@gmail.com>, <gregkh@suse.de>
+Cc: <linux-kernel@vger.kernel.org>
+References: <4992B7EE.8020601@gmail.com>
+Subject: RE: [PATCH]  SLICOSS - use gfp_kernel where possible
+Date: Tue, 24 Mar 2009 14:31:14 -0400
+Message-ID: <019E07F7ABD24C5A9F79702ADD7F8230@exton.alacritech.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090324160148.872305963@polymtl.ca>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: multipart/mixed;
+	boundary="----=_NextPart_000_0004_01C9AC8D.305FF110"
+X-Mailer: Microsoft Office Outlook 11
+In-Reply-To: <4992B7EE.8020601@gmail.com>
+Thread-Index: AcmMPMbrEGqCKe6uSRK9WNnzd3AKOggcciow
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.5579
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This is a multi-part message in MIME format.
 
-(Rusty Cc:-ed - for the module.c tracepoints below)
+------=_NextPart_000_0004_01C9AC8D.305FF110
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 
-* Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
-
-> Instrument the core kernel : module load/free and printk events. It helps the
-> tracer to keep track of module related events and to export valuable printk
-> information into the traces.
+> -----Original Message-----
+> From: Lior Dotan [mailto:liodot@gmail.com] 
+> Sent: Wednesday, February 11, 2009 6:35 AM
+> To: gregkh@suse.de
+> Cc: Christopher Harrer; linux-kernel@vger.kernel.org
+> Subject: [PATCH] SLICOSS - use gfp_kernel where possible
 > 
-> Those tracepoints are used by LTTng.
+> Use GFP_KERNEL instead of GFP_ATOMIC where possible.
 > 
-> About the performance impact of tracepoints (which is comparable to markers),
-> even without immediate values optimizations, tests done by Hideo Aoki on ia64
-> show no regression. His test case was using hackbench on a kernel where
-> scheduler instrumentation (about 5 events in code scheduler code) was added.
-> See the "Tracepoints" patch header for performance result detail.
+> Signed_off-by: Lior Dotan <liodot@gmail.com>
 > 
-> Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-> CC: 'Ingo Molnar' <mingo@elte.hu>
-> CC: Frederic Weisbecker <fweisbec@gmail.com>
-> CC: Andrew Morton <akpm@linux-foundation.org>
-> CC: Masami Hiramatsu <mhiramat@redhat.com>
-> CC: 'Peter Zijlstra' <peterz@infradead.org>
-> CC: "Frank Ch. Eigler" <fche@redhat.com>
-> CC: 'Hideo AOKI' <haoki@redhat.com>
-> CC: Takashi Nishiie <t-nishiie@np.css.fujitsu.com>
-> CC: 'Steven Rostedt' <rostedt@goodmis.org>
-> CC: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-> ---
->  include/trace/kernel.h |   19 +++++++++++++++++++
->  kernel/module.c        |    8 ++++++++
->  kernel/printk.c        |    7 +++++++
->  3 files changed, 34 insertions(+)
 > 
-> Index: linux-2.6-lttng/kernel/printk.c
-> ===================================================================
-> --- linux-2.6-lttng.orig/kernel/printk.c	2009-03-24 09:09:52.000000000 -0400
-> +++ linux-2.6-lttng/kernel/printk.c	2009-03-24 09:31:53.000000000 -0400
-> @@ -32,6 +32,7 @@
->  #include <linux/security.h>
->  #include <linux/bootmem.h>
->  #include <linux/syscalls.h>
-> +#include <trace/kernel.h>
->  
->  #include <asm/uaccess.h>
->  
-> @@ -59,6 +60,7 @@ int console_printk[4] = {
->  	MINIMUM_CONSOLE_LOGLEVEL,	/* minimum_console_loglevel */
->  	DEFAULT_CONSOLE_LOGLEVEL,	/* default_console_loglevel */
->  };
-> +EXPORT_SYMBOL_GPL(console_printk);
->  
->  /*
->   * Low level drivers may need that to know if they can schedule in
-> @@ -128,6 +130,9 @@ EXPORT_SYMBOL(console_set_on_cmdline);
->  /* Flag: console code may call schedule() */
->  static int console_may_schedule;
->  
-> +DEFINE_TRACE(kernel_printk);
-> +DEFINE_TRACE(kernel_vprintk);
-> +
->  #ifdef CONFIG_PRINTK
->  
->  static char __log_buf[__LOG_BUF_LEN];
-> @@ -560,6 +565,7 @@ asmlinkage int printk(const char *fmt, .
->  	int r;
->  
->  	va_start(args, fmt);
-> +	trace_kernel_printk(_RET_IP_);
->  	r = vprintk(fmt, args);
->  	va_end(args);
->
-> @@ -667,6 +673,7 @@ asmlinkage int vprintk(const char *fmt, 
->  	printed_len += vscnprintf(printk_buf + printed_len,
->  				  sizeof(printk_buf) - printed_len, fmt, args);
->  
-> +	trace_kernel_vprintk(_RET_IP_, printk_buf, printed_len);
+> 
+Hi Greg,
 
-So here we pass in the formatted output. What sense does it make to 
-have the above printk tracepoint? Little i think.
+In speaking with Lior, would it be possible to revert this patch?  It's
+causing:
 
-Also, i'm not entirely convinced about the wiseness of instrumenting 
-an essential debug facility like printk(). Lets keep this one at the 
-tail portion of the patch-queue, ok?
+> Mar 24 11:50:31 linuxdev kernel: BUG: sleeping function called from 
+> invalid context at mm/slub.c:1599 Mar 24 11:50:31 linuxdev kernel: 
+> in_atomic(): 1, irqs_disabled(): 0, pid:
+> 3251, name: avahi-daemon
 
-> Index: linux-2.6-lttng/kernel/module.c
-> ===================================================================
-> --- linux-2.6-lttng.orig/kernel/module.c	2009-03-24 09:09:59.000000000 -0400
-> +++ linux-2.6-lttng/kernel/module.c	2009-03-24 09:31:53.000000000 -0400
-> @@ -51,6 +51,7 @@
->  #include <linux/tracepoint.h>
->  #include <linux/ftrace.h>
->  #include <linux/async.h>
-> +#include <trace/kernel.h>
->  
->  #if 0
->  #define DEBUGP printk
-> @@ -78,6 +79,9 @@ static BLOCKING_NOTIFIER_HEAD(module_not
->  /* Bounds of module allocation, for speeding __module_text_address */
->  static unsigned long module_addr_min = -1UL, module_addr_max = 0;
->  
-> +DEFINE_TRACE(kernel_module_load);
-> +DEFINE_TRACE(kernel_module_free);
+Please let me know if you need any additional information or have any
+questions.
 
-I believe that to have a complete picture of module usage, module 
-refcount get/put events should be included as well, beyond the basic 
-load/free events.
+Cheers,
 
-These both have performance impact (a module get/put in a fastpath 
-hurts scalability), and are informative in terms of establishing the 
-module dependency graph.
+Chris
 
-Another thing that is iteresting and which is not covered here are 
-module request events and usermode helper callouts. These too have 
-instrumentation and performance analysis uses.
+------=_NextPart_000_0004_01C9AC8D.305FF110
+Content-Type: application/octet-stream;
+	name="slicoss-gfp-kernel.patch"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: attachment;
+	filename="slicoss-gfp-kernel.patch"
 
-Plus, here too it would be desired to put in default probes as well, 
-via TRACE_EVENT().
+diff -X /usr/src/linux/Documentation/dontdiff -purN =
+a/drivers/staging/slicoss/slicoss.c b/drivers/staging/slicoss/slicoss.c
+--- a/drivers/staging/slicoss/slicoss.c	2009-02-11 13:33:18.000000000 =
++0200
++++ b/drivers/staging/slicoss/slicoss.c	2009-02-11 13:32:53.000000000 =
++0200
+@@ -1492,7 +1492,7 @@ static int slic_mcast_add_list(struct ad
+ 	}
+=20
+ 	/* Doesn't already exist.  Allocate a structure to hold it */
+-	mcaddr =3D kmalloc(sizeof(struct mcast_address), GFP_ATOMIC);
++	mcaddr =3D kmalloc(sizeof(struct mcast_address), GFP_KERNEL);
+ 	if (mcaddr =3D=3D NULL)
+ 		return 1;
+=20
+@@ -2648,7 +2648,7 @@ static int slic_card_init(struct sliccar
+=20
+ #if SLIC_DUMP_ENABLED
+ 	if (!card->dumpbuffer) {
+-		card->dumpbuffer =3D kmalloc(DUMP_PAGE_SIZE, GFP_ATOMIC);
++		card->dumpbuffer =3D kmalloc(DUMP_PAGE_SIZE, GFP_KERNEL);
+=20
+ 		ASSERT(card->dumpbuffer);
+ 		if (card->dumpbuffer =3D=3D NULL)
+@@ -2667,7 +2667,7 @@ static int slic_card_init(struct sliccar
+ 	 *  Allocate COMMAND BUFFER
+ 	 */
+ 	if (!card->cmdbuffer) {
+-		card->cmdbuffer =3D kmalloc(sizeof(struct dump_cmd), GFP_ATOMIC);
++		card->cmdbuffer =3D kmalloc(sizeof(struct dump_cmd), GFP_KERNEL);
+=20
+ 		ASSERT(card->cmdbuffer);
+ 		if (card->cmdbuffer =3D=3D NULL)
+@@ -2808,7 +2808,7 @@ static u32 slic_card_locate(struct adapt
+ 	}
+ 	if (!physcard) {
+ 		/* no structure allocated for this physical card yet */
+-		physcard =3D kzalloc(sizeof(struct physcard), GFP_ATOMIC);
++		physcard =3D kzalloc(sizeof(struct physcard), GFP_KERNEL);
+ 		ASSERT(physcard);
+=20
+ 		DBG_MSG
 
-Thanks,
+------=_NextPart_000_0004_01C9AC8D.305FF110--
 
-	Ingo
