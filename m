@@ -1,92 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763009AbZCXRSB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763710AbZCXRYd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763009AbZCXRSB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 13:18:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758340AbZCXRRb
+	id S1763710AbZCXRYd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 13:24:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761607AbZCXRYF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 13:17:31 -0400
-Received: from gw.goop.org ([64.81.55.164]:46008 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762944AbZCXRR0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 13:17:26 -0400
-Message-ID: <49C915A3.3020809@goop.org>
-Date: Tue, 24 Mar 2009 10:17:23 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Tue, 24 Mar 2009 13:24:05 -0400
+Received: from g1t0026.austin.hp.com ([15.216.28.33]:6047 "EHLO
+	g1t0026.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761264AbZCXRX6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Mar 2009 13:23:58 -0400
+Date: Tue, 24 Mar 2009 11:23:54 -0600
+From: Alex Chiang <achiang@hp.com>
+To: Johannes Berg <johannes@sipsolutions.net>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Oleg Nesterov <oleg@redhat.com>, jbarnes@virtuousgeek.org,
+       linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
+       kaneshige.kenji@jp.fujitsu.com, Lai Jiangshan <laijs@cn.fujitsu.com>
+Subject: Re: [PATCH v5 09/13] PCI: Introduce /sys/bus/pci/devices/.../remove
+Message-ID: <20090324172354.GB17297@ldl.fc.hp.com>
+References: <20090320204327.12275.43010.stgit@bob.kio> <20090320205636.12275.1825.stgit@bob.kio> <49C74FCC.7070308@jp.fujitsu.com> <20090324032304.GB6175@ldl.fc.hp.com> <20090324092525.GE6605@elte.hu> <20090324034659.9e1f97dc.akpm@linux-foundation.org> <1237897972.4320.79.camel@johannes.local>
 MIME-Version: 1.0
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, the arch/x86 maintainers <x86@kernel.org>,
-       Xen-devel <xen-devel@lists.xensource.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Dave Airlie <airlied@linux.ie>
-Subject: 2.6.30 Xen merge plan (what's in xen.git)
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1237897972.4320.79.camel@johannes.local>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Ingo, Linus,
+* Johannes Berg <johannes@sipsolutions.net>:
+> On Tue, 2009-03-24 at 03:46 -0700, Andrew Morton wrote:
+> 
+> > But I don't think we've seen a coherent description of what's actually
+> > _wrong_ with the current code.  flush_cpu_workqueue() has been handling
+> > this case for many years with no problems reported as far as I know.
+> > 
+> > So what has caused this sudden flurry of reports?  Did something change in
+> > lockdep?  What is this
+> > 
+> > [  537.380128]  (events){--..}, at: [<ffffffff80257fc0>] flush_workqueue+0x0/0xa0
+> > [  537.380128]
+> > [  537.380128] but task is already holding lock:
+> > [  537.380128]  (events){--..}, at: [<ffffffff80257648>] run_workqueue+0x108/0x230
+> > 
+> > supposed to mean?  "events" isn't a lock - it's the name of a kernel
+> > thread, isn't it?  If this is supposed to be deadlockable then how?
+> 
+> events is indeed the schedule_work workqueue thread name -- I just used
+> that for lack of a better name.
+> 
+> > Because I don't immediately see what's wrong with e1000_remove() calling
+> > flush_work().  It's undesirable, and we can perhaps improve it via some
+> > means, but where is the bug?
+> 
+> There is no bug -- it's a false positive in a way. I've pointed this out
+> in the original thread, see
+> http://thread.gmane.org/gmane.linux.kernel/550877/focus=550932
 
-I have several topic branches which I'd like to merge in this merge 
-window.  They fall into two classes: those which make significant 
-changes to arch/x86 files, and those which just touch Xen-specific files.
+I'm actually a bit confused now.
 
-The x86-touching ones should definitely go via tip.git, just to keep 
-things sane and orderly.
+Peter explained why flushing a workqueue from the same queue is
+bad, and in general I agree, but what do you mean by "false
+positive"?
 
-How should we handle the rest?  Should I send them directly to Linus, or 
-put them via x86.git too?  Either way, they'll generally need to go 
-after the non-Xen changes.
+By the way, this scenario:
 
-(I'll post full pull-requests with diffstats as followups to this mail.)
+	code path 1:
+	  my_function() -> lock(L1); ...; flush_workqueue(); ...
 
-All branches in git://git.kernel.org/pub/scm/linux/kernel/git/jeremy/xen.git
+	code path 2:
+	  run_workqueue() -> my_work() -> ...; lock(L1); ...
 
+is _not_ what is happening here.
 
-Branches which mostly or entirely Xen (only trivial non-Xen changes):
+sysfs_schedule_callback() is an ugly piece of code that exists
+because a sysfs attribute cannot remove itself without
+deadlocking. So the callback mechanism was created to allow a
+different kernel thread to remove the sysfs attribute and avoid
+deadlock.
 
-push2/xen/core
+So what you really have going on is:
 
-    Updates to existing Xen support, features, optimisations, etc.
+	sysfs callback -> add remove callback to global workqueue
+	remove callback fires off (pci_remove_bus_device) and we do...
+	    device_unregister
+	    driver's ->remove method called
+	    driver's ->remove method calls flush_scheduled_work
 
-push2/xen/control
+Yes, after read the thread I agree that generically calling
+flush_workqueue in the middle of run_workqueue is bad, but the
+lockdep warning that Kenji showed us really won't deadlock.
 
-    A set of usermode interfaces for Xen (/sys/hypervisor, /dev/evtchn,
-    updates to xenbus and xenfs)
+This is because pci_remove_bus_device() will not acquire any lock
+L1 that an individual device driver will attempt to acquire in
+the remove path. If that were the case, we would deadlock every
+time you rmmod'ed a device driver's module or every time you shut
+your machine down.
 
-push2/xen/dom0/core
+I think from my end, there are 2 things I need to do:
 
-    Core set of changes to add Xen dom0 functionality.  (Mostly
-    Xen-only, but adds a new Xen mtrr driver.)
+	a) make sysfs_schedule_callback() use its own work queue
+	   instead of global work queue, because too many drivers
+	   call flush_scheduled_work in their remove path
 
+	b) give sysfs attributes the ability to commit suicide
 
-Branches with non-trivial non-Xen changes:
+(a) is short term work, 2.6.30 timeframe, since it doesn't
+involve any large conceptual changes.
 
-push2/x86/paravirt
+(b) is picking up Tejun Heo's existing work, but that was a bit
+controversial last time, and I'm not sure it will make it during
+this merge window.
 
-    Allow preemption while doing a lazy mmu update.
+Question for the lockdep folks though -- given what I described,
+do you agree that the warning we saw was a false positive? Or am
+I off in left field?
 
-push2/xen/dom0/apic
+Thanks.
 
-    Changes to hook the Xen dom0 apic model into the standard platform
-    apic code.  HPA reviewed and OKed this.
+/ac
 
-push2/xen/dom0/pci
-
-    Add a Xen pci driver and dma_ops implementations.  Small changes to
-    x86 pci+swiotlb code to add some function calls.
-
-push2/xen/dom0/agp
-
-    Change the AGP driver to allocate its memory using the
-    pci_alloc_coherent to get guaranteed physically contiguous memory,
-    and use proper phys<->bus functions so that Xen's pseudo-phys <->
-    machine mappings are handled properly.
-
-
-
-Thanks,
-    J
