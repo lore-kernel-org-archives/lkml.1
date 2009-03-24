@@ -1,66 +1,164 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760844AbZCXP2g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761086AbZCXP3T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760844AbZCXP2g (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 11:28:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760120AbZCXP1P
+	id S1761086AbZCXP3T (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 11:29:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760163AbZCXP1q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 11:27:15 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:58118 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757428AbZCXP1O (ORCPT
+	Tue, 24 Mar 2009 11:27:46 -0400
+Received: from e23smtp02.au.ibm.com ([202.81.31.144]:39945 "EHLO
+	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760285AbZCXP1o (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 11:27:14 -0400
-Date: Tue, 24 Mar 2009 11:27:10 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Ingo Molnar <mingo@elte.hu>
-cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [PATCH 3/3] function-graph: ignore times across schedule
-In-Reply-To: <20090324135833.GB32043@elte.hu>
-Message-ID: <alpine.DEB.2.00.0903241126340.22830@gandalf.stny.rr.com>
-References: <20090324135422.026619569@goodmis.org> <20090324135610.441707783@goodmis.org> <20090324135833.GB32043@elte.hu>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Tue, 24 Mar 2009 11:27:44 -0400
+Date: Tue, 24 Mar 2009 20:57:32 +0530
+From: "K.Prasad" <prasad@linux.vnet.ibm.com>
+To: Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: Alan Stern <stern@rowland.harvard.edu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Benjamin Herrenschmidt <benh@au1.ibm.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>, maneesh@linux.vnet.ibm.com,
+       Roland McGrath <roland@redhat.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       "K.Prasad" <prasad@linux.vnet.ibm.com>
+Subject: [Patch 10/11] Sample HW breakpoint over kernel data address
+Message-ID: <20090324152732.GK17918@in.ibm.com>
+References: <20090324152028.754123712@K.Prasad>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline; filename=10
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This patch introduces a sample kernel module to demonstrate the use of Hardware
+Breakpoint feature. It places a breakpoint over the kernel variable 'pid_max'
+to monitor all write operations and emits a function-backtrace when done.
 
-On Tue, 24 Mar 2009, Ingo Molnar wrote:
+Signed-off-by: K.Prasad <prasad@linux.vnet.ibm.com>
+---
+ samples/Kconfig                         |    6 ++
+ samples/Makefile                        |    4 +
+ samples/hw_breakpoint/Makefile          |    1 
+ samples/hw_breakpoint/data_breakpoint.c |   79 ++++++++++++++++++++++++++++++++
+ 4 files changed, 89 insertions(+), 1 deletion(-)
 
-> * Steven Rostedt <rostedt@goodmis.org> wrote:
-> 
-> > From: Steven Rostedt <srostedt@redhat.com>
-> > 
-> > Impact: more accurate timings
-> > 
-> > The current method of function graph tracing does not take into
-> > account the time spent when a task is not running. This shows functions
-> > that call schedule have increased costs:
-> > 
-> >  3) + 18.664 us   |      }
-> >  ------------------------------------------
-> >  3)    <idle>-0    =>  kblockd-123
-> >  ------------------------------------------
-> > 
-> >  3)               |      finish_task_switch() {
-> >  3)   1.441 us    |        _spin_unlock_irq();
-> >  3)   3.966 us    |      }
-> >  3) ! 2959.433 us |    }
-> >  3) ! 2961.465 us |  }
-> 
-> dunno - i actually like how it shows the _real_ elapsed time. Why is 
-> this wrong?
-
-OK,
-
-I'll include a trace option called "sleep-time" to allow the user to 
-decide to show this or not.
-
--- Steve
+Index: linux-2.6-tip/samples/Kconfig
+===================================================================
+--- linux-2.6-tip.orig/samples/Kconfig
++++ linux-2.6-tip/samples/Kconfig
+@@ -39,5 +39,11 @@ config SAMPLE_KRETPROBES
+ 	default m
+ 	depends on SAMPLE_KPROBES && KRETPROBES
+ 
++config SAMPLE_HW_BREAKPOINT
++	tristate "Build kernel hardware breakpoint examples -- loadable modules only"
++	depends on HAVE_HW_BREAKPOINT && m
++	help
++	  This builds kernel hardware breakpoint example modules.
++
+ endif # SAMPLES
+ 
+Index: linux-2.6-tip/samples/Makefile
+===================================================================
+--- linux-2.6-tip.orig/samples/Makefile
++++ linux-2.6-tip/samples/Makefile
+@@ -1,3 +1,5 @@
+ # Makefile for Linux samples code
+ 
+-obj-$(CONFIG_SAMPLES)	+= markers/ kobject/ kprobes/ tracepoints/
++obj-$(CONFIG_SAMPLES)	+= markers/ kobject/ kprobes/ tracepoints/ \
++			   hw_breakpoint/
++
+Index: linux-2.6-tip/samples/hw_breakpoint/Makefile
+===================================================================
+--- /dev/null
++++ linux-2.6-tip/samples/hw_breakpoint/Makefile
+@@ -0,0 +1 @@
++obj-$(CONFIG_SAMPLE_HW_BREAKPOINT) += data_breakpoint.o
+Index: linux-2.6-tip/samples/hw_breakpoint/data_breakpoint.c
+===================================================================
+--- /dev/null
++++ linux-2.6-tip/samples/hw_breakpoint/data_breakpoint.c
+@@ -0,0 +1,79 @@
++/*
++ * data_breakpoint.c - Sample HW Breakpoint file to watch kernel data address
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
++ *
++ * This file is a kernel module that places a breakpoint over 'pid_max' kernel
++ * variable using Hardware Breakpoint register. The corresponding handler which
++ * prints a backtrace is invoked everytime a write operation is performed on
++ * that variable.
++ *
++ * After inserting this module, invoke a write operation using
++ * 'echo <desired_value> > /proc/sys/kernel/pid_max'
++ * to find the function-call backtrace.
++ *
++ * Copyright (C) IBM Corporation, 2009
++ */
++#include <linux/module.h>	/* Needed by all modules */
++#include <linux/kernel.h>	/* Needed for KERN_INFO */
++#include <linux/init.h>		/* Needed for the macros */
++
++#include <asm/hw_breakpoint.h>
++
++struct hw_breakpoint pid_max_hbp;
++
++void pid_max_hbp_handler(struct hw_breakpoint *temp, struct pt_regs
++								*temp_regs)
++{
++	printk(KERN_INFO "pid_max value is changed\n");
++	dump_stack();
++	printk(KERN_INFO "Dump stack from pid_max_hbp_handler\n");
++}
++
++static int __init hw_break_module_init(void)
++{
++	int ret;
++
++#ifdef CONFIG_X86
++	pid_max_hbp.info.name = "pid_max";
++	pid_max_hbp.info.type = HW_BREAKPOINT_WRITE;
++	pid_max_hbp.info.len = HW_BREAKPOINT_LEN_4;
++
++	pid_max_hbp.triggered = (void *)pid_max_hbp_handler;
++#endif /* CONFIG_X86 */
++
++	ret = register_kernel_hw_breakpoint(&pid_max_hbp);
++
++	if (ret < 0) {
++		printk(KERN_INFO "Breakpoint registration failed\n");
++		return ret;
++	} else
++		printk(KERN_INFO "HW Breakpoint for pid_max write installed\n");
++
++	return 0;
++}
++
++static void __exit hw_break_module_exit(void)
++{
++	unregister_kernel_hw_breakpoint(&pid_max_hbp);
++	printk(KERN_INFO "HW Breakpoint for pid_max write uninstalled\n");
++}
++
++module_init(hw_break_module_init);
++module_exit(hw_break_module_exit);
++
++MODULE_LICENSE("GPL");
++MODULE_AUTHOR("K.Prasad");
++MODULE_DESCRIPTION("pid_max breakpoint");
 
