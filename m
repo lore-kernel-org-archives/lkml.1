@@ -1,208 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754706AbZCXWiT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755520AbZCXWit@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754706AbZCXWiT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 18:38:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753193AbZCXWh6
+	id S1755520AbZCXWit (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 18:38:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753819AbZCXWig
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 18:37:58 -0400
-Received: from hera.kernel.org ([140.211.167.34]:34742 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752937AbZCXWh5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 18:37:57 -0400
-Message-ID: <49C96042.8040909@kernel.org>
-Date: Tue, 24 Mar 2009 15:35:46 -0700
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
-MIME-Version: 1.0
-To: "Rafael J. Wysocki" <rjw@sisk.pl>, David Miller <davem@davemloft.net>
-CC: Jesse Brandeburg <jesse.brandeburg@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       NetDev <netdev@vger.kernel.org>,
-       Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Subject: Re: [Updated patch] Re: [PATCH] igb: fix kexec with igb
-References: <49B1F934.5050006@kernel.org> <200903082232.36660.rjw@sisk.pl> <49B84B2E.6080701@kernel.org> <200903212305.00077.rjw@sisk.pl>
-In-Reply-To: <200903212305.00077.rjw@sisk.pl>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Tue, 24 Mar 2009 18:38:36 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:33252
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1752826AbZCXWif (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Mar 2009 18:38:35 -0400
+Date: Tue, 24 Mar 2009 15:38:22 -0700 (PDT)
+Message-Id: <20090324.153822.75287783.davem@davemloft.net>
+To: shemminger@vyatta.com
+Cc: netdev@vger.kernel.org, linux-net@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [ANNOUNCE] iproute2 v2.6.29
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20090324153427.3ff0dfdb@nehalam>
+References: <20090324153427.3ff0dfdb@nehalam>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=utf-8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id n2OMdMqu027050
 
-Rafael J. Wysocki wrote:
-> On Thursday 12 March 2009, Yinghai Lu wrote:
->> Rafael J. Wysocki wrote:
->>> On Sunday 08 March 2009, Rafael J. Wysocki wrote:
->>>> On Sunday 08 March 2009, Yinghai Lu wrote:
->>>>> Rafael J. Wysocki wrote:
->>>>>> On Saturday 07 March 2009, Yinghai Lu wrote:
->>>>>>> On Fri, Mar 6, 2009 at 11:18 PM, Jesse Brandeburg
->>>>>>> <jesse.brandeburg@gmail.com> wrote:
->>>>>>>> On Fri, Mar 6, 2009 at 8:33 PM, Yinghai Lu <yinghai@kernel.org> wrote:
->>>>>>>>> Impact: could probe igb
->>>>>>>>>
->>>>>>>>> Found one system with 82575EB, in the kernel that is kexeced, probe igb
->>>>>>>>> failed with -2.
->>>>>>>>>
->>>>>>>>> it looks like the same behavior happened on forcedeth.
->>>>>>>>>
->>>>>>>>> try to check system_state to make sure if put it on D3
->>>>>>>>>
->>>>>>>>> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
->>>>>>>>>
->>>>>>>>> ---
->>>>>>>>>  drivers/net/igb/igb_main.c |   19 ++++++++++++++-----
->>>>>>>>>  1 file changed, 14 insertions(+), 5 deletions(-)
->>>>>>>> I see the point of the patch, but I know for a fact that ixgbe when
->>>>>>>> enabled for MSI-X also doesn't work with kexec.
->>>>>>>>
->>>>>>>> so my questions are:
->>>>>>>> are you going to change every driver?
->>>>>>> i tend to only change driver that i have related HW.
->>>>>>>
->>>>>>>> why can't this be fixed in core kernel code instead?
->>>>>>> will check it.
->>>>>>>
->>>>>>>> Shouldn't pci_enable_device take it out of D3?
->>>>>>>> Or maybe it should be taken out of D3 immediately if someone tries to
->>>>>>>> ioremap any of the BARx registers?
->>>>>>> looks like second kernel can not detect the state any more.
->>>>>> In fact pci_enable_device() calls pci_set_power_state(dev, PCI_D0) as the first
->>>>>> thing.  The question is why it doesn't work as expected.
->>>>> not sure... please check the version for forcedeth that you made.
->>>>>
->>>>> commit 3cb5599a84c557c0dd9a19feb63a3788268cf249
->>>>> Author: Rafael J. Wysocki <rjw@sisk.pl>
->>>>> Date:   Fri Sep 5 14:00:19 2008 -0700
->>>>>
->>>>>     forcedeth: fix kexec regression
->>>>>     
->>>>>     Fix regression tracked as http://bugzilla.kernel.org/show_bug.cgi?id=11361
->>>>>     and caused by commit f735a2a1a4f2a0f5cd823ce323e82675990469e2 ("[netdrvr]
->>>>>     forcedeth: setup wake-on-lan before shutting down") that makes network
->>>>>     adapters integrated into the NVidia MCP55 chipsets fail to work in kexeced
->>>>>     kernels.  The problem appears to be that if the adapter is put into D3_hot
->>>>>     during ->shutdown(), it cannot be brought back into D0 after kexec (ref.
->>>>>     http://marc.info/?l=linux-kernel&m=121900062814967&w=4).  Therefore, only
->>>>>     put forcedeth into D3 during ->shutdown() if the system is to be powered
->>>>>     off.
->>>> Thanks, I remember now.
->>> In which case you need to rework igb_shutdown() rather than igb_suspend().
->>>
->>> Something like the patch below, perhaps (totally untested).
->> it works, David, can you picked it up
-> 
-> Still, Yinghai, can you please also test the patch below?  It fixes all
-> shortcomings in the driver's suspend and shutdown methods I was talking about
-> in one of the previous messages.  If it works, IMO it will be a preferable fix
-> (in particular, it would be good to check if WoL still works with it,
-> but I don't have the hardware).
-> 
-> Thanks,
-> Rafael
-> 
-> ---
-> From: Rafael J. Wysocki <rjw@sisk.pl>
-> Subject: net/igb: Fix kexec with igb (rev. 3)
-> Impact: Fix
-> 
-> Yinghai Lu found one system with 82575EB where, in the kernel that is
-> kexeced, probe igb failed with -2, the reason being that the adapter
-> could not be brought back from D3 by the kexec kernel, most probably
-> due to quirky hardware (it looks like the same behavior happened on
-> forcedeth).
-> 
-> Prevent igb from putting the adapter into D3 during shutdown except
-> when we going to power off the system.  For this purpose, seperate
-> igb_shutdown() from igb_suspend() and use the appropriate PCI PM
-> callbacks in both of them.
-> 
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> Reported-by: Yinghai Lu <yinghai@kernel.org>
-> ---
->  drivers/net/igb/igb_main.c |   42 ++++++++++++++++++++++++++++++------------
->  1 file changed, 30 insertions(+), 12 deletions(-)
-> 
-> Index: linux-2.6/drivers/net/igb/igb_main.c
-> ===================================================================
-> --- linux-2.6.orig/drivers/net/igb/igb_main.c
-> +++ linux-2.6/drivers/net/igb/igb_main.c
-> @@ -4277,7 +4277,7 @@ int igb_set_spd_dplx(struct igb_adapter 
->  }
->  
->  
-> -static int igb_suspend(struct pci_dev *pdev, pm_message_t state)
-> +static int __igb_shutdown(struct pci_dev *pdev, bool *enable_wake)
->  {
->  	struct net_device *netdev = pci_get_drvdata(pdev);
->  	struct igb_adapter *adapter = netdev_priv(netdev);
-> @@ -4336,15 +4336,9 @@ static int igb_suspend(struct pci_dev *p
->  		wr32(E1000_WUFC, 0);
->  	}
->  
-> -	/* make sure adapter isn't asleep if manageability/wol is enabled */
-> -	if (wufc || adapter->en_mng_pt) {
-> -		pci_enable_wake(pdev, PCI_D3hot, 1);
-> -		pci_enable_wake(pdev, PCI_D3cold, 1);
-> -	} else {
-> +	*enable_wake = wufc || adapter->en_mng_pt;
-> +	if (!*enable_wake)
->  		igb_shutdown_fiber_serdes_link_82575(hw);
-> -		pci_enable_wake(pdev, PCI_D3hot, 0);
-> -		pci_enable_wake(pdev, PCI_D3cold, 0);
-> -	}
->  
->  	/* Release control of h/w to f/w.  If f/w is AMT enabled, this
->  	 * would have already happened in close and is redundant. */
-> @@ -4352,12 +4346,29 @@ static int igb_suspend(struct pci_dev *p
->  
->  	pci_disable_device(pdev);
->  
-> -	pci_set_power_state(pdev, pci_choose_state(pdev, state));
-> -
->  	return 0;
->  }
->  
->  #ifdef CONFIG_PM
-> +static int igb_suspend(struct pci_dev *pdev, pm_message_t state)
-> +{
-> +	int retval;
-> +	bool wake;
-> +
-> +	retval = __igb_shutdown(pdev, &wake);
-> +	if (retval)
-> +		return retval;
-> +
-> +	if (wake) {
-> +		pci_prepare_to_sleep(pdev);
-> +	} else {
-> +		pci_wake_from_d3(pdev, false);
-> +		pci_set_power_state(pdev, PCI_D3hot);
-> +	}
-> +
-> +	return 0;
-> +}
-> +
->  static int igb_resume(struct pci_dev *pdev)
->  {
->  	struct net_device *netdev = pci_get_drvdata(pdev);
-> @@ -4412,7 +4423,14 @@ static int igb_resume(struct pci_dev *pd
->  
->  static void igb_shutdown(struct pci_dev *pdev)
->  {
-> -	igb_suspend(pdev, PMSG_SUSPEND);
-> +	bool wake;
-> +
-> +	__igb_shutdown(pdev, &wake);
-> +
-> +	if (system_state == SYSTEM_POWER_OFF) {
-> +		pci_wake_from_d3(pdev, wake);
-> +		pci_set_power_state(pdev, PCI_D3hot);
-> +	}
->  }
->  
->  #ifdef CONFIG_NET_POLL_CONTROLLER
+From: Stephen Hemminger <shemminger@vyatta.com>
+Date: Tue, 24 Mar 2009 15:34:27 -0700
 
-it works too.
+> Trying to stay on top of things (for a change).
+> 
+> New version of iproute2 utilities that includes bug fixes and
+> support for all the new features in kernel 2.6.29.
+> 
+>   http://devresources.linux-foundation.org/dev/iproute2/download/iproute2-2.6.29.tar.bz2
 
-YH
+Some build failures here:
+
+gcc -D_GNU_SOURCE -O2 -Wstrict-prototypes -Wall -I../include -DRESOLVE_HOSTNAMES -DLIBDIR=\"/usr/lib/\"   -c -o link_gre.o link_gre.c
+In file included from link_gre.c:15:
+../include/linux/if_tunnel.h:33: error: field â€˜iphâ€™ has incomplete type
+link_gre.c: In function â€˜gre_parse_optâ€™:
+link_gre.c:136: warning: implicit declaration of function â€˜__constant_htonsâ€™
+
+I seem to remember messing with the kernel headers in this
+area recently... yes, indeed:
+
+commit 0afd4a21ba7d75e93fa79cf05d7a21774e149c0f
+Author: David S. Miller <davem@davemloft.net>
+Date:   Mon Feb 2 13:27:44 2009 -0800
+
+    net: Fix userland breakage wrt. linux/if_tunnel.h
+    
+    Reported by Andrew Walrond <andrew@walrond.org>
+    
+    Changeset c19e654ddbe3831252f61e76a74d661e1a755530
+    ("gre: Add netlink interface") added an include
+    of linux/ip.h to linux/if_tunnel.h
+    
+    We can't really let that get exposed to userspace
+    because this conflicts with types defined in netinet/ip.h
+    which userland is almost certainly going to have included
+    either explicitly or implicitly.
+    
+    So guard this include with a __KERNEL__ ifdef.
+    
+    Signed-off-by: David S. Miller <davem@davemloft.net>
+
+diff --git a/include/linux/Kbuild b/include/linux/Kbuild
+index 12e9a29..6a9bb97 100644
+--- a/include/linux/Kbuild
++++ b/include/linux/Kbuild
+@@ -89,7 +89,6 @@ header-y += if_ppp.h
+ header-y += if_slip.h
+ header-y += if_strip.h
+ header-y += if_tun.h
+-header-y += if_tunnel.h
+ header-y += in_route.h
+ header-y += ioctl.h
+ header-y += ip6_tunnel.h
+@@ -235,6 +234,7 @@ unifdef-y += if_phonet.h
+ unifdef-y += if_pppol2tp.h
+ unifdef-y += if_pppox.h
+ unifdef-y += if_tr.h
++unifdef-y += if_tunnel.h
+ unifdef-y += if_vlan.h
+ unifdef-y += igmp.h
+ unifdef-y += inet_diag.h
+diff --git a/include/linux/if_tunnel.h b/include/linux/if_tunnel.h
+index aeab2cb..82c4362 100644
+--- a/include/linux/if_tunnel.h
++++ b/include/linux/if_tunnel.h
+@@ -2,7 +2,10 @@
+ #define _IF_TUNNEL_H_
+ 
+ #include <linux/types.h>
++
++#ifdef __KERNEL__
+ #include <linux/ip.h>
++#endif
+ 
+ #define SIOCGETTUNNEL   (SIOCDEVPRIVATE + 0)
+ #define SIOCADDTUNNEL   (SIOCDEVPRIVATE + 1)
+ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
