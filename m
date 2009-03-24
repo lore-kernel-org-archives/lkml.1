@@ -1,91 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763707AbZCXR0g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763875AbZCXR2z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763707AbZCXR0g (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 13:26:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763593AbZCXR0K
+	id S1763875AbZCXR2z (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 13:28:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761942AbZCXR2f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 13:26:10 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:34107 "EHLO mx2.suse.de"
+	Tue, 24 Mar 2009 13:28:35 -0400
+Received: from isrv.corpit.ru ([81.13.33.159]:45168 "EHLO isrv.corpit.ru"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763499AbZCXR0G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 13:26:06 -0400
-From: Nikanth Karthikesan <knikanth@suse.de>
-Organization: suse.de
-To: Steven Rostedt <rostedt@goodmis.org>, Steven Rostedt <srostedt@redhat.com>
-Subject: Re: ftrace not working?
-Date: Tue, 24 Mar 2009 22:53:35 +0530
-User-Agent: KMail/1.10.3 (Linux/2.6.27.19-3.2-default; KDE/4.1.3; x86_64; ; )
-Cc: rusty@rustcorp.com.au, Ingo Molnar <mingo@elte.hu>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       =?utf-8?q?Fr=E9=A6=98=E9=A7=BBic_Weisbecker?= <fweisbec@gmail.com>,
-       linux-kernel@vger.kernel.org
-References: <20090323083533.GE18837@elte.hu> <20090323200057.9027.A69D9226@jp.fujitsu.com> <20090323143226.GA18439@elte.hu>
-In-Reply-To: <20090323143226.GA18439@elte.hu>
+	id S1755426AbZCXR2b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Mar 2009 13:28:31 -0400
+Message-ID: <49C919B9.70302@msgid.tls.msk.ru>
+Date: Tue, 24 Mar 2009 20:34:49 +0300
+From: Michael Tokarev <mjt@tls.msk.ru>
+Organization: Telecom Service, JSC
+User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
 MIME-Version: 1.0
-Content-Disposition: inline
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Mika Tiainen <mikat@iki.fi>
+CC: Andreas Herrmann <andreas.herrmann3@amd.com>, linux-kernel@vger.kernel.org
+Subject: Re: Slow clock on AMD 740G chipset
+References: <874ozu2hcl.fsf@divinity.mikat.iki.fi>	<20090310101807.GD20716@alberich.amd.com>	<20090311100525.GE20716@alberich.amd.com>	<49B7A79A.6090008@msgid.tls.msk.ru> <87ocw8qfwg.fsf@divinity.mikat.iki.fi>
+In-Reply-To: <87ocw8qfwg.fsf@divinity.mikat.iki.fi>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Message-Id: <200903242253.36794.knikanth@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 23 March 2009 20:02:26 Ingo Molnar wrote:
-> * KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
-> > > On Monday 23 March 2009 14:05:33 Ingo Molnar wrote:
-> > > > one thing to note:
-> > > > | CPU0: Intel QEMU Virtual CPU version 0.9.1 stepping 03
-> > > > | Testing tracer nop: PASSED
-> > > >
-> > > > so it's a Qemu session, right?
-> > >
-> > > Yes. qemu-kvm.
-> >
-> > Ah, sorry. I don't know qemu and kvm at all ;)
->
-> In terms of tracing it should just look like some weird old CPU with
-> few capabilities and long delays. Nothing in ftrace depends on CPU
-> capabilities (that wasnt present in pentia) so this is weird.
-> Perhaps some timestamping problem? Virtual machines tend to have
-> trouble with the TSC. Or code patching problems? But that does not
-> explain the lack of explicit scheduler events.
->
-> Or perhaps the fact that qemu sessions tend to boot with barely any
-> RAM. Maybe the ringbuffer size is very low?
->
+[resurrecting (hopefully) an old thread.
+  Top-posting to keep old mess around for reference.]
 
-Nope, it is not a qemu problem, but ftrace. Most probably, it shouldn't work on
-real hardware as well with my config. i.e., CONFIG_CPUMASK_OFFSTACK = y
-and NR_CPUS = 4096 via CONFIG_MAXSMP.
+To refresh what has been said.  Several people observed slow clock
+on their - mostly AMD 780g, 740g and 690g-based systems with 2.6.28
+2.6.27 kernels.  Slow to a point when ntpd wasn't successful to
+keep up with the drift.  It has been said that the motherboards are
+flaky or something and that the clocks has to be calibrated, for
+which there are known procedures available (adjtimex).  Which helped.
+Before the "calibration" the clock were off by ~15 minutes per day.
 
-The tracing_buffer_mask was getting freed and the bitmask was all zeros. And
-for_each_tracing_cpu() never looped. Here is the patch that fixes the issue
-for me. Tested only on qemu-kvm. ;)
+But today I tried newly released 2.6.29 kernel on one of the affected
+systems - just because I wanted to test something else.  And noticed
+that the clock is running too fast.  After some calculation I see that
+it will run away for about 15 minutes per day, that is, exactly the
+number which was used to compensate for slow clock on 2.6.2[78].
 
-Steve, Can you merge this.
+So it seems that with 2.6.29, all the motherboards suddenly become
+non-flaky and the timers need no calibration anymore, working just
+fine.  Other operating systems and kernel versions also agree with
+this conclusion of 2.6.29.
 
-Thanks
-Nikanth
+Any comments on this strange phenomenon ? :)
 
-In tracer_alloc_buffers(), do not free tracing_cpumask and tracing_buffer_mask
-on success.
+Thanks!
 
-Signed-off-by: Nikanth Karthikesan <knikanth@suse.de>
+/mjt
 
----
-
-diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
-index 17bb88d..98f609d 100644
---- a/kernel/trace/trace.c
-+++ b/kernel/trace/trace.c
-@@ -3887,6 +3887,7 @@ __init static int tracer_alloc_buffers(void)
- 
- 	register_die_notifier(&trace_die_notifier);
- 	ret = 0;
-+	goto out;
- 
- out_free_cpumask:
- 	free_cpumask_var(tracing_cpumask);
-
+Mika Tiainen wrote at Wed, 11 Mar 2009 16:43:11 +0200:
+> On 11 Mar 2009, Michael Tokarev wrote:
+> 
+>>> On Tue, Mar 10, 2009 at 11:18:07AM +0100, Andreas Herrmann wrote:
+>>>> On Tue, Jan 20, 2009 at 04:16:10PM +0200, Mika Tiainen wrote:
+>>>>> Hi,
+>>>>>
+>>>>> I built a new machine with Gigabyte GA-MA74GM-S2H motherboard that
+>>>>> ntpd can't keep synced. Could this be a kernel bug or is it a
+>>>>> hardware problem?
+>>>>>
+>>>>> Installed with Debian 2.6.27 kernel and currently running a self
+>>>>> built 2.6.28.1, both have the problem. It's falling behind over
+>>>>> 2s/15min:
+>>>> That's annoying but I can't really help you with this. Maybe using
+>>>> adjtimex as described in section 9.1.6 in
+>>>> http://support.ntp.org/bin/view/Support/KnownHardwareIssues is an
+>>>> option for you.
+>> And adjtimex helped me on all 3 machines.
+>> Running it in self-calibrate mode (that 70 sec thing)
+>> plus running ntpd was enough for me for now.
+> 
+> Yes, I'm also using adjtimex+ntpd now with 10024 tick for adjtimex.
+> 
+>> What's interesting is that some time ago it worked just fine,
+>> and, which is even more interesting, windows on this very
+>> hardware shows quite good time stability (WITHOUT setting
+>> the time using [s]ntp, its ntp client is disabled).
+> 
+> Something weird is definitely going on under Linux. I got it working by
+> chance in 2.6.28 _exactly_ once. Just booted normally and ntpd kept it
+> in time without any resets for the week that it was up, next boot with
+> the same kernel and it was again falling behind so I installed adjtimex.
+> 
+> There was no difference in dmesg between working and not working.
+> 
 
