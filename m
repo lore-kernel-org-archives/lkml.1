@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762679AbZCXQLj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753096AbZCXQMz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762679AbZCXQLj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 12:11:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755391AbZCXQGt
+	id S1753096AbZCXQMz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 12:12:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761178AbZCXQGw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 12:06:49 -0400
-Received: from hera.kernel.org ([140.211.167.34]:41840 "EHLO hera.kernel.org"
+	Tue, 24 Mar 2009 12:06:52 -0400
+Received: from hera.kernel.org ([140.211.167.34]:41837 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760755AbZCXQGk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 12:06:40 -0400
+	id S1762209AbZCXQGj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Mar 2009 12:06:39 -0400
 From: Tejun Heo <tj@kernel.org>
 To: bzolnier@gmail.com, linux-kernel@vger.kernel.org, axboe@kernel.dk,
        linux-ide@vger.kernel.org
 Cc: Tejun Heo <tj@kernel.org>
-Subject: [PATCH 12/14] ide-pm: don't abuse rq->data
-Date: Wed, 25 Mar 2009 01:06:14 +0900
-Message-Id: <1237910776-10983-13-git-send-email-tj@kernel.org>
+Subject: [PATCH 13/14] ide-atapi: use bio for request sense
+Date: Wed, 25 Mar 2009 01:06:15 +0900
+Message-Id: <1237910776-10983-14-git-send-email-tj@kernel.org>
 X-Mailer: git-send-email 1.6.0.2
 In-Reply-To: <1237910776-10983-1-git-send-email-tj@kernel.org>
 References: <1237910776-10983-1-git-send-email-tj@kernel.org>
@@ -24,160 +24,179 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: cleanup rq->data usage
+Impact: unify request data buffer handling
 
-ide-pm uses rq->data to carry pointer to struct request_pm_state
-through request queue and rq->special is used to carray pointer to
-local struct ide_cmd, which isn't necessary.  Use rq->special for
-request_pm_state instead and use local ide_cmd in
-ide_start_power_step().
+rq->data is used mostly to pass kernel buffer through request queue
+without using bio.  There are only a couple of places which still do
+this in kernel and converting to bio isn't difficult.
+
+This patch converts ide-atapi to use bio instead of rq->data.  For
+ide_queue_pc_tail() which can block, blk_rq_map_kern() is used.  For
+ide_queue_pc_head() which is used for request sense and called from
+atomic context, drive->request_sense_bio and ->request_sense_bvec[2]
+are added and used via bio_map_kern_prealloc().
+
+ide-tape is updated to map sg for special requests.
+
+This change makes all ide-atapi commands except for tape bh ones use
+bio.  Drop tp_ops->output/input_data path from ide_pc_intr().
 
 Signed-off-by: Tejun Heo <tj@kernel.org>
 Cc: Jens Axboe <axboe@kernel.dk>
 ---
- drivers/ide/ide-io.c |    2 +-
- drivers/ide/ide-pm.c |   36 ++++++++++++++----------------------
- 2 files changed, 15 insertions(+), 23 deletions(-)
+ drivers/ide/ide-atapi.c |   38 ++++++++++++++++++++++----------------
+ drivers/ide/ide-tape.c  |    8 +++++---
+ include/linux/ide.h     |    3 +++
+ 3 files changed, 30 insertions(+), 19 deletions(-)
 
-diff --git a/drivers/ide/ide-io.c b/drivers/ide/ide-io.c
-index c2e622f..9ad9bc1 100644
---- a/drivers/ide/ide-io.c
-+++ b/drivers/ide/ide-io.c
-@@ -364,7 +364,7 @@ static ide_startstop_t start_request (ide_drive_t *drive, struct request *rq)
- 		if (rq->cmd_type == REQ_TYPE_ATA_TASKFILE)
- 			return execute_drive_cmd(drive, rq);
- 		else if (blk_pm_request(rq)) {
--			struct request_pm_state *pm = rq->data;
-+			struct request_pm_state *pm = rq->special;
- #ifdef DEBUG_PM
- 			printk("%s: start_power_step(step: %d)\n",
- 				drive->name, pm->pm_step);
-diff --git a/drivers/ide/ide-pm.c b/drivers/ide/ide-pm.c
-index bb7858e..84b8df4 100644
---- a/drivers/ide/ide-pm.c
-+++ b/drivers/ide/ide-pm.c
-@@ -7,7 +7,6 @@ int generic_ide_suspend(struct device *dev, pm_message_t mesg)
- 	ide_hwif_t *hwif = drive->hwif;
- 	struct request *rq;
- 	struct request_pm_state rqpm;
--	struct ide_cmd cmd;
- 	int ret;
- 
- 	/* call ACPI _GTM only once */
-@@ -15,11 +14,9 @@ int generic_ide_suspend(struct device *dev, pm_message_t mesg)
- 		ide_acpi_get_timing(hwif);
- 
- 	memset(&rqpm, 0, sizeof(rqpm));
--	memset(&cmd, 0, sizeof(cmd));
- 	rq = blk_get_request(drive->queue, READ, __GFP_WAIT);
- 	rq->cmd_type = REQ_TYPE_PM_SUSPEND;
--	rq->special = &cmd;
--	rq->data = &rqpm;
-+	rq->special = &rqpm;
- 	rqpm.pm_step = IDE_PM_START_SUSPEND;
- 	if (mesg.event == PM_EVENT_PRETHAW)
- 		mesg.event = PM_EVENT_FREEZE;
-@@ -41,7 +38,6 @@ int generic_ide_resume(struct device *dev)
- 	ide_hwif_t *hwif = drive->hwif;
- 	struct request *rq;
- 	struct request_pm_state rqpm;
--	struct ide_cmd cmd;
- 	int err;
- 
- 	/* call ACPI _PS0 / _STM only once */
-@@ -53,12 +49,10 @@ int generic_ide_resume(struct device *dev)
- 	ide_acpi_exec_tfs(drive);
- 
- 	memset(&rqpm, 0, sizeof(rqpm));
--	memset(&cmd, 0, sizeof(cmd));
- 	rq = blk_get_request(drive->queue, READ, __GFP_WAIT);
- 	rq->cmd_type = REQ_TYPE_PM_RESUME;
- 	rq->cmd_flags |= REQ_PREEMPT;
--	rq->special = &cmd;
--	rq->data = &rqpm;
-+	rq->special = &rqpm;
- 	rqpm.pm_step = IDE_PM_START_RESUME;
- 	rqpm.pm_state = PM_EVENT_ON;
- 
-@@ -77,7 +71,7 @@ int generic_ide_resume(struct device *dev)
- 
- void ide_complete_power_step(ide_drive_t *drive, struct request *rq)
+diff --git a/drivers/ide/ide-atapi.c b/drivers/ide/ide-atapi.c
+index 5ab3014..bc7dfcf 100644
+--- a/drivers/ide/ide-atapi.c
++++ b/drivers/ide/ide-atapi.c
+@@ -83,7 +83,9 @@ EXPORT_SYMBOL_GPL(ide_init_pc);
+  * pass through the driver.
+  */
+ static void ide_queue_pc_head(ide_drive_t *drive, struct gendisk *disk,
+-			      struct ide_atapi_pc *pc, struct request *rq)
++			      struct ide_atapi_pc *pc, struct request *rq,
++			      struct bio *bio, struct bio_vec *bvec,
++			      unsigned short bvec_len)
  {
--	struct request_pm_state *pm = rq->data;
-+	struct request_pm_state *pm = rq->special;
+ 	blk_rq_init(NULL, rq);
+ 	rq->cmd_type = REQ_TYPE_SPECIAL;
+@@ -92,8 +94,12 @@ static void ide_queue_pc_head(ide_drive_t *drive, struct gendisk *disk,
+ 	rq->rq_disk = disk;
  
- #ifdef DEBUG_PM
- 	printk(KERN_INFO "%s: complete_power_step(step: %d)\n",
-@@ -107,10 +101,8 @@ void ide_complete_power_step(ide_drive_t *drive, struct request *rq)
+ 	if (pc->req_xfer) {
+-		rq->data = pc->buf;
+-		rq->data_len = pc->req_xfer;
++		int error;
++
++		error = blk_rq_map_kern_prealloc(drive->queue, rq, bio,
++						 bvec, bvec_len,
++						 pc->buf, pc->req_xfer, true);
++		BUG_ON(error);
+ 	}
  
- ide_startstop_t ide_start_power_step(ide_drive_t *drive, struct request *rq)
- {
--	struct request_pm_state *pm = rq->data;
--	struct ide_cmd *cmd = rq->special;
--
--	memset(cmd, 0, sizeof(*cmd));
-+	struct request_pm_state *pm = rq->special;
-+	struct ide_cmd cmd = { };
+ 	memcpy(rq->cmd, pc->c, 12);
+@@ -120,16 +126,19 @@ int ide_queue_pc_tail(ide_drive_t *drive, struct gendisk *disk,
+ 	rq->special = (char *)pc;
  
- 	switch (pm->pm_step) {
- 	case IDE_PM_FLUSH_CACHE:	/* Suspend step 1 (flush cache) */
-@@ -123,12 +115,12 @@ ide_startstop_t ide_start_power_step(ide_drive_t *drive, struct request *rq)
- 			return ide_stopped;
- 		}
- 		if (ata_id_flush_ext_enabled(drive->id))
--			cmd->tf.command = ATA_CMD_FLUSH_EXT;
-+			cmd.tf.command = ATA_CMD_FLUSH_EXT;
- 		else
--			cmd->tf.command = ATA_CMD_FLUSH;
-+			cmd.tf.command = ATA_CMD_FLUSH;
- 		goto out_do_tf;
- 	case IDE_PM_STANDBY:		/* Suspend step 2 (standby) */
--		cmd->tf.command = ATA_CMD_STANDBYNOW1;
-+		cmd.tf.command = ATA_CMD_STANDBYNOW1;
- 		goto out_do_tf;
- 	case IDE_PM_RESTORE_PIO:	/* Resume step 1 (restore PIO) */
- 		ide_set_max_pio(drive);
-@@ -141,7 +133,7 @@ ide_startstop_t ide_start_power_step(ide_drive_t *drive, struct request *rq)
- 			ide_complete_power_step(drive, rq);
- 		return ide_stopped;
- 	case IDE_PM_IDLE:		/* Resume step 2 (idle) */
--		cmd->tf.command = ATA_CMD_IDLEIMMEDIATE;
-+		cmd.tf.command = ATA_CMD_IDLEIMMEDIATE;
- 		goto out_do_tf;
- 	case IDE_PM_RESTORE_DMA:	/* Resume step 3 (restore DMA) */
- 		/*
-@@ -163,10 +155,10 @@ ide_startstop_t ide_start_power_step(ide_drive_t *drive, struct request *rq)
- 	return ide_stopped;
+ 	if (pc->req_xfer) {
+-		rq->data = pc->buf;
+-		rq->data_len = pc->req_xfer;
++		error = blk_rq_map_kern(drive->queue, rq, pc->buf, pc->req_xfer,
++					__GFP_WAIT);
++		if (error)
++			goto put_req;
+ 	}
  
- out_do_tf:
--	cmd->tf_flags = IDE_TFLAG_TF | IDE_TFLAG_DEVICE;
--	cmd->protocol = ATA_PROT_NODATA;
-+	cmd.tf_flags = IDE_TFLAG_TF | IDE_TFLAG_DEVICE;
-+	cmd.protocol = ATA_PROT_NODATA;
+ 	memcpy(rq->cmd, pc->c, 12);
+ 	if (drive->media == ide_tape)
+ 		rq->cmd[13] = REQ_IDETAPE_PC1;
+ 	error = blk_execute_rq(drive->queue, disk, rq, 0);
+-	blk_put_request(rq);
  
--	return do_rw_taskfile(drive, cmd);
-+	return do_rw_taskfile(drive, &cmd);
++put_req:
++	blk_put_request(rq);
+ 	return error;
  }
- 
- /**
-@@ -180,7 +172,7 @@ out_do_tf:
- void ide_complete_pm_rq(ide_drive_t *drive, struct request *rq)
+ EXPORT_SYMBOL_GPL(ide_queue_pc_tail);
+@@ -196,13 +205,16 @@ EXPORT_SYMBOL_GPL(ide_create_request_sense_cmd);
+ void ide_retry_pc(ide_drive_t *drive, struct gendisk *disk)
  {
- 	struct request_queue *q = drive->queue;
--	struct request_pm_state *pm = rq->data;
-+	struct request_pm_state *pm = rq->special;
- 	unsigned long flags;
+ 	struct request *rq = &drive->request_sense_rq;
++	struct bio *bio = &drive->request_sense_bio;
++	struct bio_vec *bvec = drive->request_sense_bvec;
+ 	struct ide_atapi_pc *pc = &drive->request_sense_pc;
++	unsigned short bvec_len = ARRAY_SIZE(drive->request_sense_bvec);
  
- 	ide_complete_power_step(drive, rq);
-@@ -206,7 +198,7 @@ void ide_complete_pm_rq(ide_drive_t *drive, struct request *rq)
+ 	(void)ide_read_error(drive);
+ 	ide_create_request_sense_cmd(drive, pc);
+ 	if (drive->media == ide_tape)
+ 		set_bit(IDE_AFLAG_IGNORE_DSC, &drive->atapi_flags);
+-	ide_queue_pc_head(drive, disk, pc, rq);
++	ide_queue_pc_head(drive, disk, pc, rq, bio, bvec, bvec_len);
+ }
+ EXPORT_SYMBOL_GPL(ide_retry_pc);
  
- void ide_check_pm_state(ide_drive_t *drive, struct request *rq)
- {
--	struct request_pm_state *pm = rq->data;
-+	struct request_pm_state *pm = rq->special;
+@@ -277,7 +289,6 @@ static ide_startstop_t ide_pc_intr(ide_drive_t *drive)
+ 	struct ide_cmd *cmd = &hwif->cmd;
+ 	struct request *rq = hwif->rq;
+ 	const struct ide_tp_ops *tp_ops = hwif->tp_ops;
+-	xfer_func_t *xferfunc;
+ 	unsigned int timeout, done;
+ 	u16 bcount;
+ 	u8 stat, ireason, dsc = 0;
+@@ -409,16 +420,11 @@ static ide_startstop_t ide_pc_intr(ide_drive_t *drive)
+ 		return ide_do_reset(drive);
+ 	}
  
- 	if (blk_pm_suspend_request(rq) &&
- 	    pm->pm_step == IDE_PM_START_SUSPEND)
+-	xferfunc = write ? tp_ops->output_data : tp_ops->input_data;
+-
+-	if (drive->media == ide_floppy && pc->buf == NULL) {
++	if (drive->media == ide_tape && pc->bh)
++		done = drive->pc_io_buffers(drive, pc, bcount, write);
++	else {
+ 		done = min_t(unsigned int, bcount, cmd->nleft);
+ 		ide_pio_bytes(drive, cmd, write, done);
+-	} else if (drive->media == ide_tape && pc->bh) {
+-		done = drive->pc_io_buffers(drive, pc, bcount, write);
+-	} else {
+-		done = min_t(unsigned int, bcount, pc->req_xfer - pc->xferred);
+-		xferfunc(drive, NULL, pc->cur_pos, done);
+ 	}
+ 
+ 	/* Update the current position */
+diff --git a/drivers/ide/ide-tape.c b/drivers/ide/ide-tape.c
+index 3d16c77..d52f8b3 100644
+--- a/drivers/ide/ide-tape.c
++++ b/drivers/ide/ide-tape.c
+@@ -750,7 +750,7 @@ static ide_startstop_t idetape_do_request(ide_drive_t *drive,
+ 	idetape_tape_t *tape = drive->driver_data;
+ 	struct ide_atapi_pc *pc = NULL;
+ 	struct request *postponed_rq = tape->postponed_rq;
+-	struct ide_cmd cmd;
++	struct ide_cmd cmd = { };
+ 	u8 stat;
+ 
+ 	debug_log(DBG_SENSE, "sector: %llu, nr_sectors: %lu,"
+@@ -837,6 +837,10 @@ static ide_startstop_t idetape_do_request(ide_drive_t *drive,
+ 		pc = (struct ide_atapi_pc *)rq->special;
+ 		rq->cmd[13] &= ~(REQ_IDETAPE_PC1);
+ 		rq->cmd[13] |= REQ_IDETAPE_PC2;
++		if (pc->req_xfer) {
++			ide_init_sg_cmd(&cmd, pc->req_xfer);
++			ide_map_sg(drive, &cmd);
++		}
+ 		goto out;
+ 	}
+ 	if (rq->cmd[13] & REQ_IDETAPE_PC2) {
+@@ -846,8 +850,6 @@ static ide_startstop_t idetape_do_request(ide_drive_t *drive,
+ 	BUG();
+ 
+ out:
+-	memset(&cmd, 0, sizeof(cmd));
+-
+ 	if (rq_data_dir(rq))
+ 		cmd.tf_flags |= IDE_TFLAG_WRITE;
+ 
+diff --git a/include/linux/ide.h b/include/linux/ide.h
+index 662ea26..8d3bb27 100644
+--- a/include/linux/ide.h
++++ b/include/linux/ide.h
+@@ -638,8 +638,11 @@ struct ide_drive_s {
+ 
+ 	unsigned long atapi_flags;
+ 
++	/* for request sense */
+ 	struct ide_atapi_pc request_sense_pc;
+ 	struct request request_sense_rq;
++	struct bio request_sense_bio;
++	struct bio_vec request_sense_bvec[2];
+ };
+ 
+ typedef struct ide_drive_s ide_drive_t;
 -- 
 1.6.0.2
 
