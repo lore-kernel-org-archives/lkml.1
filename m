@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756862AbZCXH2r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756986AbZCXH3Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756862AbZCXH2r (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 03:28:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756266AbZCXH2a
+	id S1756986AbZCXH3Z (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 03:29:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756786AbZCXH2l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 03:28:30 -0400
-Received: from hera.kernel.org ([140.211.167.34]:37695 "EHLO hera.kernel.org"
+	Tue, 24 Mar 2009 03:28:41 -0400
+Received: from hera.kernel.org ([140.211.167.34]:37702 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755469AbZCXH22 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 03:28:28 -0400
-Date: Tue, 24 Mar 2009 07:27:55 GMT
+	id S1756290AbZCXH2k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Mar 2009 03:28:40 -0400
+Date: Tue, 24 Mar 2009 07:28:04 GMT
 From: Tom Zanussi <tzanussi@gmail.com>
 To: linux-tip-commits@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
@@ -18,145 +18,62 @@ Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
 Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
        tzanussi@gmail.com, fweisbec@gmail.com, rostedt@goodmis.org,
        tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <1237878871.8339.59.camel@charm-linux>
-References: <1237878871.8339.59.camel@charm-linux>
-Subject: [tip:tracing/filters] tracing/filters: use trace_seq_printf() to print filters
-Message-ID: <tip-4bda2d517bfa3ce3d7044e06988cdddae7adffe2@git.kernel.org>
-Git-Commit-ID: 4bda2d517bfa3ce3d7044e06988cdddae7adffe2
+In-Reply-To: <1237878882.8339.61.camel@charm-linux>
+References: <1237878882.8339.61.camel@charm-linux>
+Subject: [tip:tracing/filters] tracing/filters: disallow integer values for string filters and vice versa
+Message-ID: <tip-9f58a159d022c8f2533a27708aa267adf4f0e3ce@git.kernel.org>
+Git-Commit-ID: 9f58a159d022c8f2533a27708aa267adf4f0e3ce
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 24 Mar 2009 07:27:57 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 24 Mar 2009 07:28:05 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  4bda2d517bfa3ce3d7044e06988cdddae7adffe2
-Gitweb:     http://git.kernel.org/tip/4bda2d517bfa3ce3d7044e06988cdddae7adffe2
+Commit-ID:  9f58a159d022c8f2533a27708aa267adf4f0e3ce
+Gitweb:     http://git.kernel.org/tip/9f58a159d022c8f2533a27708aa267adf4f0e3ce
 Author:     Tom Zanussi <tzanussi@gmail.com>
-AuthorDate: Tue, 24 Mar 2009 02:14:31 -0500
+AuthorDate: Tue, 24 Mar 2009 02:14:42 -0500
 Committer:  Ingo Molnar <mingo@elte.hu>
 CommitDate: Tue, 24 Mar 2009 08:26:52 +0100
 
-tracing/filters: use trace_seq_printf() to print filters
+tracing/filters: disallow integer values for string filters and vice versa
 
-Impact: cleanup
+Impact: fix filter use boundary condition / crash
 
-Instead of just using the trace_seq buffer to print the filters, use
-trace_seq_printf() as it was intended to be used.
+Make sure filters for string fields don't use integer values and vice
+versa.  Getting it wrong can crash the system or produce bogus
+results.
 
-Reported-by: Steven Rostedt <rostedt@goodmis.org>
 Signed-off-by: Tom Zanussi <tzanussi@gmail.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>
 Cc: =?ISO-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>
-LKML-Reference: <1237878871.8339.59.camel@charm-linux>
+LKML-Reference: <1237878882.8339.61.camel@charm-linux>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
 ---
- kernel/trace/trace.h               |    3 ++-
- kernel/trace/trace_events.c        |    8 ++++----
- kernel/trace/trace_events_filter.c |   25 +++++++++----------------
- 3 files changed, 15 insertions(+), 21 deletions(-)
+ kernel/trace/trace_events_filter.c |    5 +++++
+ 1 files changed, 5 insertions(+), 0 deletions(-)
 
-diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
-index 54fd9bc..90a848d 100644
---- a/kernel/trace/trace.h
-+++ b/kernel/trace/trace.h
-@@ -840,7 +840,8 @@ struct filter_pred {
- int trace_define_field(struct ftrace_event_call *call, char *type,
- 		       char *name, int offset, int size);
- extern void filter_free_pred(struct filter_pred *pred);
--extern int filter_print_preds(struct filter_pred **preds, char *buf);
-+extern void filter_print_preds(struct filter_pred **preds,
-+			       struct trace_seq *s);
- extern int filter_parse(char **pbuf, struct filter_pred *pred);
- extern int filter_add_pred(struct ftrace_event_call *call,
- 			   struct filter_pred *pred);
-diff --git a/kernel/trace/trace_events.c b/kernel/trace/trace_events.c
-index a938138..d132997 100644
---- a/kernel/trace/trace_events.c
-+++ b/kernel/trace/trace_events.c
-@@ -481,8 +481,8 @@ event_filter_read(struct file *filp, char __user *ubuf, size_t cnt,
- 
- 	trace_seq_init(s);
- 
--	r = filter_print_preds(call->preds, s->buffer);
--	r = simple_read_from_buffer(ubuf, cnt, ppos, s->buffer, r);
-+	filter_print_preds(call->preds, s);
-+	r = simple_read_from_buffer(ubuf, cnt, ppos, s->buffer, s->len);
- 
- 	kfree(s);
- 
-@@ -547,8 +547,8 @@ subsystem_filter_read(struct file *filp, char __user *ubuf, size_t cnt,
- 
- 	trace_seq_init(s);
- 
--	r = filter_print_preds(system->preds, s->buffer);
--	r = simple_read_from_buffer(ubuf, cnt, ppos, s->buffer, r);
-+	filter_print_preds(system->preds, s);
-+	r = simple_read_from_buffer(ubuf, cnt, ppos, s->buffer, s->len);
- 
- 	kfree(s);
- 
 diff --git a/kernel/trace/trace_events_filter.c b/kernel/trace/trace_events_filter.c
-index 3f0b79f..9fca8bb 100644
+index 9fca8bb..026be41 100644
 --- a/kernel/trace/trace_events_filter.c
 +++ b/kernel/trace/trace_events_filter.c
-@@ -24,6 +24,7 @@
- #include <linux/ctype.h>
+@@ -237,9 +237,14 @@ int filter_add_pred(struct ftrace_event_call *call, struct filter_pred *pred)
+ 	pred->offset = field->offset;
  
- #include "trace.h"
-+#include "trace_output.h"
- 
- static int filter_pred_64(struct filter_pred *pred, void *event)
- {
-@@ -108,16 +109,15 @@ int filter_match_preds(struct ftrace_event_call *call, void *rec)
- 	return 1;
- }
- 
--int filter_print_preds(struct filter_pred **preds, char *buf)
-+void filter_print_preds(struct filter_pred **preds, struct trace_seq *s)
- {
--	ssize_t this_len = 0;
- 	char *field_name;
- 	struct filter_pred *pred;
- 	int i;
- 
- 	if (!preds) {
--		this_len += sprintf(buf + this_len, "none\n");
--		return this_len;
-+		trace_seq_printf(s, "none\n");
-+		return;
+ 	if (is_string_field(field->type)) {
++		if (!pred->str_val)
++			return -EINVAL;
+ 		pred->fn = filter_pred_string;
+ 		pred->str_len = field->size;
+ 		return __filter_add_pred(call, pred);
++	} else {
++		if (pred->str_val)
++			return -EINVAL;
  	}
  
- 	for (i = 0; i < MAX_FILTER_PRED; i++) {
-@@ -125,23 +125,16 @@ int filter_print_preds(struct filter_pred **preds, char *buf)
- 			pred = preds[i];
- 			field_name = pred->field_name;
- 			if (i)
--				this_len += sprintf(buf + this_len,
--					    pred->or ? "|| " : "&& ");
--			this_len += sprintf(buf + this_len,
--					    "%s ", field_name);
--			this_len += sprintf(buf + this_len,
--					    pred->not ? "!= " : "== ");
-+				trace_seq_printf(s, pred->or ? "|| " : "&& ");
-+			trace_seq_printf(s, "%s ", field_name);
-+			trace_seq_printf(s, pred->not ? "!= " : "== ");
- 			if (pred->str_val)
--				this_len += sprintf(buf + this_len,
--						    "%s\n", pred->str_val);
-+				trace_seq_printf(s, "%s\n", pred->str_val);
- 			else
--				this_len += sprintf(buf + this_len,
--						    "%llu\n", pred->val);
-+				trace_seq_printf(s, "%llu\n", pred->val);
- 		} else
- 			break;
- 	}
--
--	return this_len;
- }
- 
- static struct ftrace_event_field *
+ 	switch (field->size) {
