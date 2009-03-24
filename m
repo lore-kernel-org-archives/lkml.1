@@ -1,191 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760395AbZCXQ0w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763057AbZCXQ1a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760395AbZCXQ0w (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 12:26:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762893AbZCXQYa
+	id S1763057AbZCXQ1a (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 12:27:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932085AbZCXQZg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 12:24:30 -0400
-Received: from smtp.polymtl.ca ([132.207.4.11]:41084 "EHLO smtp.polymtl.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757968AbZCXQY1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 12:24:27 -0400
-Message-Id: <20090324160148.754766083@polymtl.ca>
-References: <20090324155625.420966314@polymtl.ca>
-User-Agent: quilt/0.46-1
-Date: Tue, 24 Mar 2009 11:56:31 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, ltt-dev@lists.casi.polymtl.ca
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       "David S. Miller" <davem@davemloft.net>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>, Hideo AOKI <haoki@redhat.com>,
-       Takashi Nishiie <t-nishiie@np.css.fujitsu.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-Subject: [patch 6/9] LTTng instrumentation - timer
-Content-Disposition: inline; filename=lttng-instrumentation-timer.patch
-X-Poly-FromMTA: (test.casi.polymtl.ca [132.207.72.60]) at Tue, 24 Mar 2009 16:22:03 +0000
+	Tue, 24 Mar 2009 12:25:36 -0400
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:56014 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762949AbZCXQZc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Mar 2009 12:25:32 -0400
+From: Luotao Fu <l.fu@pengutronix.de>
+To: alsa-devel@alsa-project.org
+Cc: dbaryshkov@gmail.com, linux-arm-kernel@lists.arm.linux.org.uk,
+       linux-kernel@vger.kernel.org, broonie@opensource.wolfsonmicro.com,
+       Luotao Fu <l.fu@pengutronix.de>
+Subject: [RESEND] [PATCH] pxa2xx-ac97: fix displaying GSR after reset timeout
+Date: Tue, 24 Mar 2009 17:25:28 +0100
+Message-Id: <1237911929-29895-1-git-send-email-l.fu@pengutronix.de>
+X-Mailer: git-send-email 1.6.2
+In-Reply-To: <gq8unj$6og$1@ger.gmane.org>
+References: <gq8unj$6og$1@ger.gmane.org>
+X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
+X-SA-Exim-Mail-From: l.fu@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Instrument timer activity (timer set, expired, current time updates) to keep
-information about the "real time" flow within the kernel. It can be used by a
-trace analysis tool to synchronize information coming from various sources, e.g.
-to merge traces with system logs.
+the variable gsr_bit is set in isr. It is however set to 0 and interrupts are
+disabled prior to reset on pxa27x and pxa3xx. Hence it doesn't make a lot of
+sense to show the content of gsr_bit in case of a reset timeout.
 
-Those tracepoints are used by LTTng.
-
-About the performance impact of tracepoints (which is comparable to markers),
-even without immediate values optimizations, tests done by Hideo Aoki on ia64
-show no regression. His test case was using hackbench on a kernel where
-scheduler instrumentation (about 5 events in code scheduler code) was added.
-See the "Tracepoints" patch header for performance result detail.
-
-Note : do_setitimer instrumentation could potentially be done with a more
-generic system call instrumentation.
-
-Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: 'Ingo Molnar' <mingo@elte.hu>
-CC: Frederic Weisbecker <fweisbec@gmail.com>
-CC: "David S. Miller" <davem@davemloft.net>
-CC: Masami Hiramatsu <mhiramat@redhat.com>
-CC: 'Peter Zijlstra' <peterz@infradead.org>
-CC: "Frank Ch. Eigler" <fche@redhat.com>
-CC: 'Hideo AOKI' <haoki@redhat.com>
-CC: Takashi Nishiie <t-nishiie@np.css.fujitsu.com>
-CC: 'Steven Rostedt' <rostedt@goodmis.org>
-CC: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
+Signed-off-by: Luotao Fu <l.fu@pengutronix.de>
 ---
- include/trace/timer.h |   24 ++++++++++++++++++++++++
- kernel/itimer.c       |    8 ++++++++
- kernel/timer.c        |   12 +++++++++++-
- 3 files changed, 43 insertions(+), 1 deletion(-)
+ sound/arm/pxa2xx-ac97-lib.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-Index: linux-2.6-lttng/kernel/itimer.c
-===================================================================
---- linux-2.6-lttng.orig/kernel/itimer.c	2009-03-24 09:30:50.000000000 -0400
-+++ linux-2.6-lttng/kernel/itimer.c	2009-03-24 09:31:39.000000000 -0400
-@@ -12,9 +12,13 @@
- #include <linux/time.h>
- #include <linux/posix-timers.h>
- #include <linux/hrtimer.h>
-+#include <trace/timer.h>
+diff --git a/sound/arm/pxa2xx-ac97-lib.c b/sound/arm/pxa2xx-ac97-lib.c
+index 35afd0c..25933ba 100644
+--- a/sound/arm/pxa2xx-ac97-lib.c
++++ b/sound/arm/pxa2xx-ac97-lib.c
+@@ -218,7 +218,7 @@ bool pxa2xx_ac97_try_warm_reset(struct snd_ac97 *ac97)
  
- #include <asm/uaccess.h>
+ 	if (!((GSR | gsr_bits) & (GSR_PCR | GSR_SCR))) {
+ 		printk(KERN_INFO "%s: warm reset timeout (GSR=%#lx)\n",
+-				 __func__, gsr_bits);
++				 __func__, GSR | gsr_bits);
  
-+DEFINE_TRACE(timer_itimer_expired);
-+DEFINE_TRACE(timer_itimer_set);
-+
- /**
-  * itimer_get_remtime - get remaining time for the timer
-  *
-@@ -123,6 +127,8 @@ enum hrtimer_restart it_real_fn(struct h
- 	struct signal_struct *sig =
- 		container_of(timer, struct signal_struct, real_timer);
- 
-+	trace_timer_itimer_expired(sig);
-+
- 	kill_pid_info(SIGALRM, SEND_SIG_PRIV, sig->leader_pid);
- 
- 	return HRTIMER_NORESTART;
-@@ -148,6 +154,8 @@ int do_setitimer(int which, struct itime
- 	    !timeval_valid(&value->it_interval))
- 		return -EINVAL;
- 
-+	trace_timer_itimer_set(which, value);
-+
- 	switch (which) {
- 	case ITIMER_REAL:
- again:
-Index: linux-2.6-lttng/kernel/timer.c
-===================================================================
---- linux-2.6-lttng.orig/kernel/timer.c	2009-03-24 09:30:50.000000000 -0400
-+++ linux-2.6-lttng/kernel/timer.c	2009-03-24 09:31:39.000000000 -0400
-@@ -37,17 +37,23 @@
- #include <linux/delay.h>
- #include <linux/tick.h>
- #include <linux/kallsyms.h>
-+#include <trace/timer.h>
- 
- #include <asm/uaccess.h>
- #include <asm/unistd.h>
- #include <asm/div64.h>
- #include <asm/timex.h>
- #include <asm/io.h>
-+#include <asm/irq_regs.h>
- 
- u64 jiffies_64 __cacheline_aligned_in_smp = INITIAL_JIFFIES;
- 
- EXPORT_SYMBOL(jiffies_64);
- 
-+DEFINE_TRACE(timer_set);
-+DEFINE_TRACE(timer_update_time);
-+DEFINE_TRACE(timer_timeout);
-+
- /*
-  * per-CPU timer vector definitions:
-  */
-@@ -357,6 +363,7 @@ static void internal_add_timer(struct tv
- 		i = (expires >> (TVR_BITS + 3 * TVN_BITS)) & TVN_MASK;
- 		vec = base->tv5.vec + i;
+ 		return false;
  	}
-+	trace_timer_set(timer);
- 	/*
- 	 * Timers are FIFO:
- 	 */
-@@ -1121,6 +1128,7 @@ void do_timer(unsigned long ticks)
- {
- 	jiffies_64 += ticks;
- 	update_times(ticks);
-+	trace_timer_update_time(&xtime, &wall_to_monotonic);
- }
+@@ -248,7 +248,7 @@ bool pxa2xx_ac97_try_cold_reset(struct snd_ac97 *ac97)
  
- #ifdef __ARCH_WANT_SYS_ALARM
-@@ -1202,7 +1210,9 @@ SYSCALL_DEFINE0(getegid)
+ 	if (!((GSR | gsr_bits) & (GSR_PCR | GSR_SCR))) {
+ 		printk(KERN_INFO "%s: cold reset timeout (GSR=%#lx)\n",
+-				 __func__, gsr_bits);
++				 __func__, GSR | gsr_bits);
  
- static void process_timeout(unsigned long __data)
- {
--	wake_up_process((struct task_struct *)__data);
-+	struct task_struct *task = (struct task_struct *)__data;
-+	trace_timer_timeout(task);
-+	wake_up_process(task);
- }
- 
- /**
-Index: linux-2.6-lttng/include/trace/timer.h
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6-lttng/include/trace/timer.h	2009-03-24 09:31:51.000000000 -0400
-@@ -0,0 +1,24 @@
-+#ifndef _TRACE_TIMER_H
-+#define _TRACE_TIMER_H
-+
-+#include <linux/tracepoint.h>
-+
-+DECLARE_TRACE(timer_itimer_expired,
-+	TPPROTO(struct signal_struct *sig),
-+		TPARGS(sig));
-+DECLARE_TRACE(timer_itimer_set,
-+	TPPROTO(int which, struct itimerval *value),
-+		TPARGS(which, value));
-+DECLARE_TRACE(timer_set,
-+	TPPROTO(struct timer_list *timer),
-+		TPARGS(timer));
-+/*
-+ * xtime_lock is taken when kernel_timer_update_time tracepoint is reached.
-+ */
-+DECLARE_TRACE(timer_update_time,
-+	TPPROTO(struct timespec *_xtime, struct timespec *_wall_to_monotonic),
-+		TPARGS(_xtime, _wall_to_monotonic));
-+DECLARE_TRACE(timer_timeout,
-+	TPPROTO(struct task_struct *p),
-+		TPARGS(p));
-+#endif
-
+ 		return false;
+ 	}
 -- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+1.5.6.5
+
