@@ -1,106 +1,342 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761533AbZCXOT1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761425AbZCXOR6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761533AbZCXOT1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 10:19:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760815AbZCXOLv
+	id S1761425AbZCXOR6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 10:17:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759123AbZCXOII
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 10:11:51 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:37598 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760847AbZCXOLq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 10:11:46 -0400
-From: David Teigland <teigland@redhat.com>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH 7/7] dlm: fix length calculation in compat code
-Date: Tue, 24 Mar 2009 09:07:52 -0500
-Message-Id: <1237903672-18913-8-git-send-email-teigland@redhat.com>
+	Tue, 24 Mar 2009 10:08:08 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:34008 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1758401AbZCXOIB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Mar 2009 10:08:01 -0400
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: [PATCH 30/30] 8250_pci: ni8420 support
+To: linux-kernel@vger.kernel.org, linux-serial@vger.kernel.org,
+       torvalds@linux-foundation.org
+Date: Tue, 24 Mar 2009 14:07:55 +0000
+Message-ID: <20090324140702.12735.53908.stgit@localhost.localdomain>
+In-Reply-To: <20090324135930.12735.7827.stgit@localhost.localdomain>
+References: <20090324135930.12735.7827.stgit@localhost.localdomain>
+User-Agent: StGIT/0.14.3
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Using offsetof() to calculate name length does not work because
-it does not produce consistent results with with structure packing.
-This caused memcpy to corrupt memory by copying 4 extra bytes off
-the end of the buffer on 64 bit kernels with 32 bit userspace
-(the only case where this 32/64 compat code is used).
+From: Will Page <will.page@ni.com>
 
-The fix is to calculate name length directly from the start instead
-of trying to derive it later using count and offsetof.
-
-Signed-off-by: David Teigland <teigland@redhat.com>
+Signed-off-by: Will Page <will.page@ni.com>
+Signed-off-by: Shawn Bohrer <shawn.bohrer@ni.com>
+Signed-off-by: Alan Cox <alan@lxorguk.ukuu.org.uk>
 ---
- fs/dlm/user.c |   24 +++++++++++++++---------
- 1 files changed, 15 insertions(+), 9 deletions(-)
 
-diff --git a/fs/dlm/user.c b/fs/dlm/user.c
-index 065149e..ebce994 100644
---- a/fs/dlm/user.c
-+++ b/fs/dlm/user.c
-@@ -1,5 +1,5 @@
- /*
-- * Copyright (C) 2006-2008 Red Hat, Inc.  All rights reserved.
-+ * Copyright (C) 2006-2009 Red Hat, Inc.  All rights reserved.
-  *
-  * This copyrighted material is made available to anyone wishing to use,
-  * modify, copy, or redistribute it subject to the terms and conditions
-@@ -84,7 +84,7 @@ struct dlm_lock_result32 {
- 
- static void compat_input(struct dlm_write_request *kb,
- 			 struct dlm_write_request32 *kb32,
--			 size_t count)
-+			 int namelen)
- {
- 	kb->version[0] = kb32->version[0];
- 	kb->version[1] = kb32->version[1];
-@@ -96,8 +96,7 @@ static void compat_input(struct dlm_write_request *kb,
- 	    kb->cmd == DLM_USER_REMOVE_LOCKSPACE) {
- 		kb->i.lspace.flags = kb32->i.lspace.flags;
- 		kb->i.lspace.minor = kb32->i.lspace.minor;
--		memcpy(kb->i.lspace.name, kb32->i.lspace.name, count -
--			offsetof(struct dlm_write_request32, i.lspace.name));
-+		memcpy(kb->i.lspace.name, kb32->i.lspace.name, namelen);
- 	} else if (kb->cmd == DLM_USER_PURGE) {
- 		kb->i.purge.nodeid = kb32->i.purge.nodeid;
- 		kb->i.purge.pid = kb32->i.purge.pid;
-@@ -115,8 +114,7 @@ static void compat_input(struct dlm_write_request *kb,
- 		kb->i.lock.bastaddr = (void *)(long)kb32->i.lock.bastaddr;
- 		kb->i.lock.lksb = (void *)(long)kb32->i.lock.lksb;
- 		memcpy(kb->i.lock.lvb, kb32->i.lock.lvb, DLM_USER_LVB_LEN);
--		memcpy(kb->i.lock.name, kb32->i.lock.name, count -
--			offsetof(struct dlm_write_request32, i.lock.name));
-+		memcpy(kb->i.lock.name, kb32->i.lock.name, namelen);
+ drivers/serial/8250_pci.c |  218 +++++++++++++++++++++++++++++++++++++++++++++
+ include/linux/pci_ids.h   |   12 ++
+ 2 files changed, 230 insertions(+), 0 deletions(-)
+
+
+diff --git a/drivers/serial/8250_pci.c b/drivers/serial/8250_pci.c
+index 2f570c7..5b0e80d 100644
+--- a/drivers/serial/8250_pci.c
++++ b/drivers/serial/8250_pci.c
+@@ -306,6 +306,33 @@ static void __devexit pci_plx9050_exit(struct pci_dev *dev)
  	}
  }
  
-@@ -539,9 +537,16 @@ static ssize_t device_write(struct file *file, const char __user *buf,
- #ifdef CONFIG_COMPAT
- 	if (!kbuf->is64bit) {
- 		struct dlm_write_request32 *k32buf;
-+		int namelen = 0;
++#define NI8420_INT_ENABLE_REG	0x38
++#define NI8420_INT_ENABLE_BIT	0x2000
 +
-+		if (count > sizeof(struct dlm_write_request32))
-+			namelen = count - sizeof(struct dlm_write_request32);
++static void __devexit pci_ni8420_exit(struct pci_dev *dev)
++{
++	void __iomem *p;
++	unsigned long base, len;
++	unsigned int bar = 0;
 +
- 		k32buf = (struct dlm_write_request32 *)kbuf;
--		kbuf = kmalloc(count + 1 + (sizeof(struct dlm_write_request) -
--			       sizeof(struct dlm_write_request32)), GFP_KERNEL);
++	if ((pci_resource_flags(dev, bar) & IORESOURCE_MEM) == 0) {
++		moan_device("no memory in bar", dev);
++		return;
++	}
 +
-+		/* add 1 after namelen so that the name string is terminated */
-+		kbuf = kzalloc(sizeof(struct dlm_write_request) + namelen + 1,
-+			       GFP_KERNEL);
- 		if (!kbuf) {
- 			kfree(k32buf);
- 			return -ENOMEM;
-@@ -549,7 +554,8 @@ static ssize_t device_write(struct file *file, const char __user *buf,
++	base = pci_resource_start(dev, bar);
++	len =  pci_resource_len(dev, bar);
++	p = ioremap_nocache(base, len);
++	if (p == NULL)
++		return;
++
++	/* Disable the CPU Interrupt */
++	writel(readl(p + NI8420_INT_ENABLE_REG) & ~(NI8420_INT_ENABLE_BIT),
++	       p + NI8420_INT_ENABLE_REG);
++	iounmap(p);
++}
++
++
+ /* MITE registers */
+ #define MITE_IOWBSR1	0xc4
+ #define MITE_IOWCR1	0xf4
+@@ -627,6 +654,31 @@ static int pci_xircom_init(struct pci_dev *dev)
+ 	return 0;
+ }
  
- 		if (proc)
- 			set_bit(DLM_PROC_FLAGS_COMPAT, &proc->flags);
--		compat_input(kbuf, k32buf, count + 1);
++static int pci_ni8420_init(struct pci_dev *dev)
++{
++	void __iomem *p;
++	unsigned long base, len;
++	unsigned int bar = 0;
 +
-+		compat_input(kbuf, k32buf, namelen);
- 		kfree(k32buf);
- 	}
- #endif
--- 
-1.5.5.6
++	if ((pci_resource_flags(dev, bar) & IORESOURCE_MEM) == 0) {
++		moan_device("no memory in bar", dev);
++		return 0;
++	}
++
++	base = pci_resource_start(dev, bar);
++	len =  pci_resource_len(dev, bar);
++	p = ioremap_nocache(base, len);
++	if (p == NULL)
++		return -ENOMEM;
++
++	/* Enable CPU Interrupt */
++	writel(readl(p + NI8420_INT_ENABLE_REG) | NI8420_INT_ENABLE_BIT,
++	       p + NI8420_INT_ENABLE_REG);
++
++	iounmap(p);
++	return 0;
++}
++
+ #define MITE_IOWBSR1_WSIZE	0xa
+ #define MITE_IOWBSR1_WIN_OFFSET	0x800
+ #define MITE_IOWBSR1_WENAB	(1 << 7)
+@@ -1023,6 +1075,114 @@ static struct pci_serial_quirk pci_serial_quirks[] __refdata = {
+ 	 */
+ 	{
+ 		.vendor		= PCI_VENDOR_ID_NI,
++		.device		= PCI_DEVICE_ID_NI_PCI23216,
++		.subvendor	= PCI_ANY_ID,
++		.subdevice	= PCI_ANY_ID,
++		.init		= pci_ni8420_init,
++		.setup		= pci_default_setup,
++		.exit		= __devexit_p(pci_ni8420_exit),
++	},
++	{
++		.vendor		= PCI_VENDOR_ID_NI,
++		.device		= PCI_DEVICE_ID_NI_PCI2328,
++		.subvendor	= PCI_ANY_ID,
++		.subdevice	= PCI_ANY_ID,
++		.init		= pci_ni8420_init,
++		.setup		= pci_default_setup,
++		.exit		= __devexit_p(pci_ni8420_exit),
++	},
++	{
++		.vendor		= PCI_VENDOR_ID_NI,
++		.device		= PCI_DEVICE_ID_NI_PCI2324,
++		.subvendor	= PCI_ANY_ID,
++		.subdevice	= PCI_ANY_ID,
++		.init		= pci_ni8420_init,
++		.setup		= pci_default_setup,
++		.exit		= __devexit_p(pci_ni8420_exit),
++	},
++	{
++		.vendor		= PCI_VENDOR_ID_NI,
++		.device		= PCI_DEVICE_ID_NI_PCI2322,
++		.subvendor	= PCI_ANY_ID,
++		.subdevice	= PCI_ANY_ID,
++		.init		= pci_ni8420_init,
++		.setup		= pci_default_setup,
++		.exit		= __devexit_p(pci_ni8420_exit),
++	},
++	{
++		.vendor		= PCI_VENDOR_ID_NI,
++		.device		= PCI_DEVICE_ID_NI_PCI2324I,
++		.subvendor	= PCI_ANY_ID,
++		.subdevice	= PCI_ANY_ID,
++		.init		= pci_ni8420_init,
++		.setup		= pci_default_setup,
++		.exit		= __devexit_p(pci_ni8420_exit),
++	},
++	{
++		.vendor		= PCI_VENDOR_ID_NI,
++		.device		= PCI_DEVICE_ID_NI_PCI2322I,
++		.subvendor	= PCI_ANY_ID,
++		.subdevice	= PCI_ANY_ID,
++		.init		= pci_ni8420_init,
++		.setup		= pci_default_setup,
++		.exit		= __devexit_p(pci_ni8420_exit),
++	},
++	{
++		.vendor		= PCI_VENDOR_ID_NI,
++		.device		= PCI_DEVICE_ID_NI_PXI8420_23216,
++		.subvendor	= PCI_ANY_ID,
++		.subdevice	= PCI_ANY_ID,
++		.init		= pci_ni8420_init,
++		.setup		= pci_default_setup,
++		.exit		= __devexit_p(pci_ni8420_exit),
++	},
++	{
++		.vendor		= PCI_VENDOR_ID_NI,
++		.device		= PCI_DEVICE_ID_NI_PXI8420_2328,
++		.subvendor	= PCI_ANY_ID,
++		.subdevice	= PCI_ANY_ID,
++		.init		= pci_ni8420_init,
++		.setup		= pci_default_setup,
++		.exit		= __devexit_p(pci_ni8420_exit),
++	},
++	{
++		.vendor		= PCI_VENDOR_ID_NI,
++		.device		= PCI_DEVICE_ID_NI_PXI8420_2324,
++		.subvendor	= PCI_ANY_ID,
++		.subdevice	= PCI_ANY_ID,
++		.init		= pci_ni8420_init,
++		.setup		= pci_default_setup,
++		.exit		= __devexit_p(pci_ni8420_exit),
++	},
++	{
++		.vendor		= PCI_VENDOR_ID_NI,
++		.device		= PCI_DEVICE_ID_NI_PXI8420_2322,
++		.subvendor	= PCI_ANY_ID,
++		.subdevice	= PCI_ANY_ID,
++		.init		= pci_ni8420_init,
++		.setup		= pci_default_setup,
++		.exit		= __devexit_p(pci_ni8420_exit),
++	},
++	{
++		.vendor		= PCI_VENDOR_ID_NI,
++		.device		= PCI_DEVICE_ID_NI_PXI8422_2324,
++		.subvendor	= PCI_ANY_ID,
++		.subdevice	= PCI_ANY_ID,
++		.init		= pci_ni8420_init,
++		.setup		= pci_default_setup,
++		.exit		= __devexit_p(pci_ni8420_exit),
++	},
++	{
++		.vendor		= PCI_VENDOR_ID_NI,
++		.device		= PCI_DEVICE_ID_NI_PXI8422_2322,
++		.subvendor	= PCI_ANY_ID,
++		.subdevice	= PCI_ANY_ID,
++		.init		= pci_ni8420_init,
++		.setup		= pci_default_setup,
++		.exit		= __devexit_p(pci_ni8420_exit),
++	},
++	{
++		.vendor		= PCI_VENDOR_ID_NI,
+ 		.device		= PCI_ANY_ID,
+ 		.subvendor	= PCI_ANY_ID,
+ 		.subdevice	= PCI_ANY_ID,
+@@ -1334,6 +1494,7 @@ enum pci_board_num_t {
+ 	pbn_b1_2_115200,
+ 	pbn_b1_4_115200,
+ 	pbn_b1_8_115200,
++	pbn_b1_16_115200,
+ 
+ 	pbn_b1_1_921600,
+ 	pbn_b1_2_921600,
+@@ -1343,6 +1504,9 @@ enum pci_board_num_t {
+ 	pbn_b1_2_1250000,
+ 
+ 	pbn_b1_bt_1_115200,
++	pbn_b1_bt_2_115200,
++	pbn_b1_bt_4_115200,
++
+ 	pbn_b1_bt_2_921600,
+ 
+ 	pbn_b1_1_1382400,
+@@ -1609,6 +1773,12 @@ static struct pciserial_board pci_boards[] __devinitdata = {
+ 		.base_baud	= 115200,
+ 		.uart_offset	= 8,
+ 	},
++	[pbn_b1_16_115200] = {
++		.flags		= FL_BASE1,
++		.num_ports	= 16,
++		.base_baud	= 115200,
++		.uart_offset	= 8,
++	},
+ 
+ 	[pbn_b1_1_921600] = {
+ 		.flags		= FL_BASE1,
+@@ -1647,6 +1817,18 @@ static struct pciserial_board pci_boards[] __devinitdata = {
+ 		.base_baud	= 115200,
+ 		.uart_offset	= 8,
+ 	},
++	[pbn_b1_bt_2_115200] = {
++		.flags		= FL_BASE1|FL_BASE_BARS,
++		.num_ports	= 2,
++		.base_baud	= 115200,
++		.uart_offset	= 8,
++	},
++	[pbn_b1_bt_4_115200] = {
++		.flags		= FL_BASE1|FL_BASE_BARS,
++		.num_ports	= 4,
++		.base_baud	= 115200,
++		.uart_offset	= 8,
++	},
+ 
+ 	[pbn_b1_bt_2_921600] = {
+ 		.flags		= FL_BASE1|FL_BASE_BARS,
+@@ -3207,6 +3389,42 @@ static struct pci_device_id serial_pci_tbl[] = {
+ 	/*
+ 	 * National Instruments
+ 	 */
++	{	PCI_VENDOR_ID_NI, PCI_DEVICE_ID_NI_PCI23216,
++		PCI_ANY_ID, PCI_ANY_ID, 0, 0,
++		pbn_b1_16_115200 },
++	{	PCI_VENDOR_ID_NI, PCI_DEVICE_ID_NI_PCI2328,
++		PCI_ANY_ID, PCI_ANY_ID, 0, 0,
++		pbn_b1_8_115200 },
++	{	PCI_VENDOR_ID_NI, PCI_DEVICE_ID_NI_PCI2324,
++		PCI_ANY_ID, PCI_ANY_ID, 0, 0,
++		pbn_b1_bt_4_115200 },
++	{	PCI_VENDOR_ID_NI, PCI_DEVICE_ID_NI_PCI2322,
++		PCI_ANY_ID, PCI_ANY_ID, 0, 0,
++		pbn_b1_bt_2_115200 },
++	{	PCI_VENDOR_ID_NI, PCI_DEVICE_ID_NI_PCI2324I,
++		PCI_ANY_ID, PCI_ANY_ID, 0, 0,
++		pbn_b1_bt_4_115200 },
++	{	PCI_VENDOR_ID_NI, PCI_DEVICE_ID_NI_PCI2322I,
++		PCI_ANY_ID, PCI_ANY_ID, 0, 0,
++		pbn_b1_bt_2_115200 },
++	{	PCI_VENDOR_ID_NI, PCI_DEVICE_ID_NI_PXI8420_23216,
++		PCI_ANY_ID, PCI_ANY_ID, 0, 0,
++		pbn_b1_16_115200 },
++	{	PCI_VENDOR_ID_NI, PCI_DEVICE_ID_NI_PXI8420_2328,
++		PCI_ANY_ID, PCI_ANY_ID, 0, 0,
++		pbn_b1_8_115200 },
++	{	PCI_VENDOR_ID_NI, PCI_DEVICE_ID_NI_PXI8420_2324,
++		PCI_ANY_ID, PCI_ANY_ID, 0, 0,
++		pbn_b1_bt_4_115200 },
++	{	PCI_VENDOR_ID_NI, PCI_DEVICE_ID_NI_PXI8420_2322,
++		PCI_ANY_ID, PCI_ANY_ID, 0, 0,
++		pbn_b1_bt_2_115200 },
++	{	PCI_VENDOR_ID_NI, PCI_DEVICE_ID_NI_PXI8422_2324,
++		PCI_ANY_ID, PCI_ANY_ID, 0, 0,
++		pbn_b1_bt_4_115200 },
++	{	PCI_VENDOR_ID_NI, PCI_DEVICE_ID_NI_PXI8422_2322,
++		PCI_ANY_ID, PCI_ANY_ID, 0, 0,
++		pbn_b1_bt_2_115200 },
+ 	{	PCI_VENDOR_ID_NI, PCI_DEVICE_ID_NI_PXI8430_2322,
+ 		PCI_ANY_ID, PCI_ANY_ID, 0, 0,
+ 		pbn_ni8430_2 },
+diff --git a/include/linux/pci_ids.h b/include/linux/pci_ids.h
+index b3676fe..0e4f1ed 100644
+--- a/include/linux/pci_ids.h
++++ b/include/linux/pci_ids.h
+@@ -942,6 +942,18 @@
+ #define PCI_DEVICE_ID_SUN_CASSINI	0xabba
+ 
+ #define PCI_VENDOR_ID_NI		0x1093
++#define PCI_DEVICE_ID_NI_PCI2322	0xd130
++#define PCI_DEVICE_ID_NI_PCI2324	0xd140
++#define PCI_DEVICE_ID_NI_PCI2328	0xd150
++#define PCI_DEVICE_ID_NI_PXI8422_2322	0xd190
++#define PCI_DEVICE_ID_NI_PXI8422_2324	0xd1a0
++#define PCI_DEVICE_ID_NI_PXI8420_2322	0xd1d0
++#define PCI_DEVICE_ID_NI_PXI8420_2324	0xd1e0
++#define PCI_DEVICE_ID_NI_PXI8420_2328	0xd1f0
++#define PCI_DEVICE_ID_NI_PXI8420_23216	0xd1f1
++#define PCI_DEVICE_ID_NI_PCI2322I	0xd250
++#define PCI_DEVICE_ID_NI_PCI2324I	0xd270
++#define PCI_DEVICE_ID_NI_PCI23216	0xd2b0
+ #define PCI_DEVICE_ID_NI_PXI8430_2322	0x7080
+ #define PCI_DEVICE_ID_NI_PCI8430_2322	0x70db
+ #define PCI_DEVICE_ID_NI_PXI8430_2324	0x70dd
 
