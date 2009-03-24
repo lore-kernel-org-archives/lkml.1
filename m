@@ -1,103 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759834AbZCXMwk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758476AbZCXMzg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759834AbZCXMwk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 08:52:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756051AbZCXMwa
+	id S1758476AbZCXMzg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 08:55:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753237AbZCXMzY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 08:52:30 -0400
-Received: from ozlabs.org ([203.10.76.45]:36899 "EHLO ozlabs.org"
+	Tue, 24 Mar 2009 08:55:24 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:52817 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755474AbZCXMwa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 08:52:30 -0400
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Yinghai Lu <yinghai@kernel.org>
-Subject: Re: [RFC] Correct behaviour of irq affinity?
-Date: Tue, 24 Mar 2009 23:22:23 +1030
-User-Agent: KMail/1.11.1 (Linux/2.6.27-11-generic; KDE/4.2.1; i686; ; )
-Cc: Ingo Molnar <mingo@elte.hu>, "Eric W. Biederman" <ebiederm@xmission.com>,
-       x86@kernel.org, linux-kernel@vger.kernel.org
-References: <200903241619.03517.rusty@rustcorp.com.au> <86802c440903240021y20abab87j3a780f8a17574716@mail.gmail.com>
-In-Reply-To: <86802c440903240021y20abab87j3a780f8a17574716@mail.gmail.com>
+	id S1751006AbZCXMzX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Mar 2009 08:55:23 -0400
+Date: Tue, 24 Mar 2009 13:55:11 +0100
+From: Jan Kara <jack@suse.cz>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: "Martin J. Bligh" <mbligh@mbligh.org>, linux-ext4@vger.kernel.org,
+       Ying Han <yinghan@google.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-mm <linux-mm@kvack.org>, guichaz@gmail.com,
+       Alex Khesin <alexk@google.com>, Mike Waychison <mikew@google.com>,
+       Rohit Seth <rohitseth@google.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: ftruncate-mmap: pages are lost after writing to mmaped file.
+Message-ID: <20090324125510.GA9434@duck.suse.cz>
+References: <604427e00903181244w360c5519k9179d5c3e5cd6ab3@mail.gmail.com> <200903200248.22623.nickpiggin@yahoo.com.au> <20090319164638.GB3899@duck.suse.cz> <200903241844.22851.nickpiggin@yahoo.com.au> <20090324123935.GD23439@duck.suse.cz>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200903242322.24943.rusty@rustcorp.com.au>
+In-Reply-To: <20090324123935.GD23439@duck.suse.cz>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 24 March 2009 17:51:43 Yinghai Lu wrote:
-> On Mon, Mar 23, 2009 at 10:49 PM, Rusty Russell <rusty@rustcorp.com.au> wrote:
-> > The effect of setting desc->affinity (ie. from userspace via sysfs) has varied
-> > over time.  In 2.6.27, the 32-bit code anded the value with cpu_online_map,
-> > and both 32 and 64-bit did that anding whenever a cpu was unplugged.
-> >
-> > 2.6.29 consolidated this into one routine (and fixed hotplug) but introduced
-> > another variation: anding the affinity with cfg->domain.  Is this right, or
-> > should we just set it to what the user said?  Or as now, indicate that we're
-> > restricting it.
-> >
-> > If we should change it, here's what the patch looks like against x86 tip
-> > (cpu_mask_to_apicid_and already takes cpu_online_mask into account):
-> >
-> > diff --git a/arch/x86/kernel/apic/io_apic.c b/arch/x86/kernel/apic/io_apic.c
-> > index 86827d8..30906cd 100644
-> > --- a/arch/x86/kernel/apic/io_apic.c
-> > +++ b/arch/x86/kernel/apic/io_apic.c
-> > @@ -592,10 +592,10 @@ set_desc_affinity(struct irq_desc *desc, const struct cpumask *mask)
-> >        if (assign_irq_vector(irq, cfg, mask))
-> >                return BAD_APICID;
-> >
-> > -       cpumask_and(desc->affinity, cfg->domain, mask);
-> > +       cpumask_copy(desc->affinity, mask);
-> >        set_extra_move_desc(desc, mask);
-> >
-> > -       return apic->cpu_mask_to_apicid_and(desc->affinity, cpu_online_mask);
-> > +       return apic->cpu_mask_to_apicid_and(desc->affinity, cfg->domain);
-> >  }
-> >
-> >  static void
-> >
-> cfg->domain for logical flat: will be ALL_CPUS
-> for phys flat (aka bigsmp on 32bit) will be one cpu set mask.
+On Tue 24-03-09 13:39:36, Jan Kara wrote:
+>   Hi,
 > 
-> so desc->affinity: for logical will be not changed, but
-> set_desc_affinity() return will be changed. ( not add with
-> cpu_online_mask anymore)
-
-No, internally cpu_mask_to_apicid_and() does and with cpu_online_mask
-already, eg in include/asm/bigsmp/apic.h:
-
-static inline unsigned int cpu_mask_to_apicid_and(const struct cpumask *cpumask,
-						  const struct cpumask *andmask)
-{
-	int cpu;
-
-	/*
-	 * We're using fixed IRQ delivery, can only return one phys APIC ID.
-	 * May as well be the first.
-	 */
-	for_each_cpu_and(cpu, cpumask, andmask)
-		if (cpumask_test_cpu(cpu, cpu_online_mask))
-			break;
-	if (cpu < nr_cpu_ids)
-		return cpu_to_logical_apicid(cpu);
-
-	return BAD_APICID;
-}
-
-> when mask is 0x0f
-> for phys flat, desc->affinity will be changed to 0x0f from
-> 0x01/0x02/0x04/08, return set_desc_affinity is not changed.
-> so /proc/irq/xx/smp_affinity will be changed. and it does reflect that
-> actually affinity.
+> On Tue 24-03-09 18:44:21, Nick Piggin wrote:
+> > On Friday 20 March 2009 03:46:39 Jan Kara wrote:
+> > > On Fri 20-03-09 02:48:21, Nick Piggin wrote:
+> > 
+> > > > Holding mapping->private_lock over the __set_page_dirty should
+> > > > fix it, although I guess you'd want to release it before calling
+> > > > __mark_inode_dirty so as not to put inode_lock under there. I
+> > > > have a patch for this if it sounds reasonable.
+> > >
+> > >   Yes, that seems to be a bug - the function actually looked suspitious to
+> > > me yesterday but I somehow convinced myself that it's fine. Probably
+> > > because fsx-linux is single-threaded.
+> > 
+> > 
+> > After a whole lot of chasing my own tail in the VM and buffer layers,
+> > I think it is a problem in ext2 (and I haven't been able to reproduce
+> > with ext3 yet, which might lend weight to that, although as we have
+> > seen, it is very timing dependent).
+> > 
+> > That would be slightly unfortunate because we still have Jan's ext3
+> > problem, and also another reported problem of corruption on ext3 (on
+> > brd driver).
+> > 
+> > Anyway, when I have reproduced the problem with the test case, the
+> > "lost" writes are all reported to be holes. Unfortunately, that doesn't
+> > point straight to the filesystem, because ext2 allocates blocks in this
+> > case at writeout time, so if dirty bits are getting lost, then it would
+> > be normal to see holes.
+> > 
+> > I then put in a whole lot of extra infrastructure to track metadata about
+> > each struct page (when it was last written out, when it last had the number
+> > of writable ptes reach 0, when the dirty bits were last cleared etc). And
+> > none of the normal asertions were triggering: eg. when any page is removed
+> > from pagecache (except truncates), it has always had all its buffers
+> > written out *after* all ptes were made readonly or unmapped. Lots of other
+> > tests and crap like that.
+>   I see we're going the same way ;)
 > 
-> so this patch looks not right.
+> > So I tried what I should have done to start with and did an e2fsck after
+> > seeing corruption. Yes, it comes up with errors. Now that is unusual
+> > because that should be largely insulated from the vm: if a dirty bit gets
+> > lost, then the filesystem image should be quite happy and error-free with
+> > a hole or unwritten data there.
+>   This is different for me. I see no corruption on the filesystem with
+> ext3. Anyway, errors from fsck would be useful to see what kind of
+> corruption you saw.
+> 
+> > I don't know ext? locking very well, except that it looks pretty overly
+> > complex and crufty.
+> > 
+> > Usually, blocks are instantiated by write(2), under i_mutex, serialising
+> > the allocator somewhat. mmap-write blocks are instantiated at writeout
+> > time, unserialised. I moved truncate_mutex to cover the entire get_blocks
+> > function, and can no longer trigger the problem. Might be a timing issue
+> > though -- Ying, can you try this and see if you can still reproduce?
+> > 
+> > I close my eyes and pick something out of a hat. a686cd89. Search for XXX.
+> > Nice. Whether or not this cased the problem, can someone please tell me
+> > why it got merged in that state?
+>   Maybe, I see it did some changes to ext2_get_blocks() which could be
+> where the problem was introduced...
+> 
+> > I'm leaving ext3 running for now. It looks like a nasty task to bisect
+> > ext2 down to that commit :( and I would be more interested in trying to
+> > reproduce Jan's ext3 problem, however, because I'm not too interested in
+> > diving into ext2 locking to work out exactly what is racing and how to
+> > fix it properly. I suspect it would be most productive to wire up some
+> > ioctls right into the block allocator/lookup and code up a userspace
+> > tester for it that could probably stress it a lot harder than kernel
+> > writeout can.
+>   Yes, what I observed with ext3 so far is that data is properly copied and
+> page marked dirty when the data is copied in. But then at some point dirty
+> bit is cleared via block_write_full_page() but we don't get to submitting
+> at least one buffer in that page. I'm now debugging which path we take so
+> that this happens...
+  And one more interesting thing I don't yet fully understand - I see pages
+having PageError() set when they are removed from page cache (and they have
+been faulted in before). It's probably some interaction with pagecache
+readahead...
 
-Only change should be that smp_affinity will reflect actual affinity, not
-affinity user set.
-
-Thanks,
-Rusty.
+ 									Honza
