@@ -1,70 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755793AbZCXVrY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755815AbZCXVso@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755793AbZCXVrY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 17:47:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755300AbZCXVpw
+	id S1755815AbZCXVso (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 17:48:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750862AbZCXVse
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 17:45:52 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:44707 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753160AbZCXVpv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 17:45:51 -0400
-Date: Tue, 24 Mar 2009 22:45:36 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: sinter <sinter.salt@gmx.de>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
-       "David S. Miller" <davem@davemloft.net>,
-       Herbert Xu <herbert@gondor.apana.org.au>, netdev@vger.kernel.org
-Subject: Re: BUG in 2.6.29 final: broken network connection
-Message-ID: <20090324214536.GA29509@elte.hu>
-References: <200903241812.14577.sinter.salt@gmx.de> <200903241918.29929.sinter.salt@gmx.de> <20090324194254.GB26930@elte.hu> <200903242149.59640.sinter.salt@gmx.de>
+	Tue, 24 Mar 2009 17:48:34 -0400
+Received: from mail-ew0-f165.google.com ([209.85.219.165]:32813 "EHLO
+	mail-ew0-f165.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750771AbZCXVsd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Mar 2009 17:48:33 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=KndFswV0ONuxfNaPXZHgumawO2qZqDKzO8lhIePUZko1vagu0BAUiYnUHp5VbD9n9n
+         tKH5cTZ+vQSZ1LnNk2mivm5D35OqAmntiz+yc/dxZWFG2ErwXJ3y4vORdr3qrEv3zCJH
+         VOzoQEoXGJX3/lJeP27KW9Q5q4Ww4tZup44L0=
+Message-ID: <49C9552B.1090701@gmail.com>
+Date: Tue, 24 Mar 2009 22:48:27 +0100
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; cs-CZ; rv:1.9.1b3pre) Gecko/20090223 SUSE/3.0b2-8.1 Thunderbird/3.0b2
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200903242149.59640.sinter.salt@gmx.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: linux-kernel@vger.kernel.org, Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: one more tty reference leak [Was: 2.6.30 -mm merge plans]
+References: <20090323224615.cd29edfd.akpm@linux-foundation.org>
+In-Reply-To: <20090323224615.cd29edfd.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 24.3.2009 06:46, Andrew Morton wrote:
+>      isicom-isicom-kref-leak-fix.patch
+>      isicom-isicom-kref-leak-fix-fix.patch
+...
+>   Merge, backport to 2.6.29.x
 
-* sinter <sinter.salt@gmx.de> wrote:
-
-> > And there's an easy solution for you in any case: you can wait 
-> > for .29.1 which i'm sure will be out quickly.
-> 
-> And what top-class advice would you give me if I would have found 
-> that serious bug in .29.8 or in .29.9? Due to your answer every 
-> shit is possible and nothing is impossible, or did I get something 
-> wrong?
-
-You got it exactly right.
-
-This world is ruled by probabilities, and generally everything is 
-possible - even a bug slipping into a .0 release that you could 
-trigger personally, even though -rc1 through -rc8 worked just fine 
-for you.
-
-Such things happened before, and they can happen again. Yes, it can 
-hit you - and it did hit me too and i'm not complaining.
-
-We still try our best to reduce the probabilities. We cannot, 
-however, unfortunately, bring them down to zero. The fix looked 
-reasonable and the justification of it fixing a live crash looked 
-reasonable too.
-
-What we can do, and what we did do, was to provide people (you 
-included) with a fix within 12 hours after the code having been 
-released.
-
-That's the deal really.
-
-	Ingo
+Could you (or Alan) also pick
+http://lkml.org/lkml/2009/3/16/159
+up and merge?
