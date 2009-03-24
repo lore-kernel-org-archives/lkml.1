@@ -1,117 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755979AbZCXMkG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759393AbZCXMkh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755979AbZCXMkG (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 08:40:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757806AbZCXMjm
+	id S1759393AbZCXMkh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 08:40:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759146AbZCXMjw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 08:39:42 -0400
-Received: from cantor.suse.de ([195.135.220.2]:57386 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758802AbZCXMjl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 08:39:41 -0400
-Date: Tue, 24 Mar 2009 13:39:36 +0100
-From: Jan Kara <jack@suse.cz>
-To: Nick Piggin <nickpiggin@yahoo.com.au>
-Cc: "Martin J. Bligh" <mbligh@mbligh.org>, linux-ext4@vger.kernel.org,
-       Ying Han <yinghan@google.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-mm <linux-mm@kvack.org>, guichaz@gmail.com,
-       Alex Khesin <alexk@google.com>, Mike Waychison <mikew@google.com>,
-       Rohit Seth <rohitseth@google.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: ftruncate-mmap: pages are lost after writing to mmaped file.
-Message-ID: <20090324123935.GD23439@duck.suse.cz>
-References: <604427e00903181244w360c5519k9179d5c3e5cd6ab3@mail.gmail.com> <200903200248.22623.nickpiggin@yahoo.com.au> <20090319164638.GB3899@duck.suse.cz> <200903241844.22851.nickpiggin@yahoo.com.au>
+	Tue, 24 Mar 2009 08:39:52 -0400
+Received: from out01.mta.xmission.com ([166.70.13.231]:36406 "EHLO
+	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756142AbZCXMju (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Mar 2009 08:39:50 -0400
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: x86@kernel.org, linux-kernel@vger.kernel.org,
+       Yinghai Lu <yinghai@kernel.org>, Ingo Molnar <mingo@elte.hu>
+References: <200903241619.03517.rusty@rustcorp.com.au>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Tue, 24 Mar 2009 05:39:37 -0700
+In-Reply-To: <200903241619.03517.rusty@rustcorp.com.au> (Rusty Russell's message of "Tue\, 24 Mar 2009 16\:19\:03 +1030")
+Message-ID: <m1k56frt6e.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200903241844.22851.nickpiggin@yahoo.com.au>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=67.169.126.145;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 67.169.126.145
+X-SA-Exim-Rcpt-To: rusty@rustcorp.com.au, mingo@elte.hu, yinghai@kernel.org, linux-kernel@vger.kernel.org, x86@kernel.org
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-Spam-DCC: XMission; sa01 1397; Body=1 Fuz1=1 Fuz2=1 
+X-Spam-Combo: ;Rusty Russell <rusty@rustcorp.com.au>
+X-Spam-Relay-Country: 
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
+	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
+	*      [score: 0.0000]
+	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
+	*      [sa01 1397; Body=1 Fuz1=1 Fuz2=1]
+	*  0.0 XM_SPF_Neutral SPF-Neutral
+	*  1.0 XMSolicitRefs_1 XMSolicitRefs_1
+Subject: Re: [RFC] Correct behaviour of irq affinity?
+X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
+X-SA-Exim-Scanned: Yes (on in02.mta.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  Hi,
+Rusty Russell <rusty@rustcorp.com.au> writes:
 
-On Tue 24-03-09 18:44:21, Nick Piggin wrote:
-> On Friday 20 March 2009 03:46:39 Jan Kara wrote:
-> > On Fri 20-03-09 02:48:21, Nick Piggin wrote:
-> 
-> > > Holding mapping->private_lock over the __set_page_dirty should
-> > > fix it, although I guess you'd want to release it before calling
-> > > __mark_inode_dirty so as not to put inode_lock under there. I
-> > > have a patch for this if it sounds reasonable.
-> >
-> >   Yes, that seems to be a bug - the function actually looked suspitious to
-> > me yesterday but I somehow convinced myself that it's fine. Probably
-> > because fsx-linux is single-threaded.
-> 
-> 
-> After a whole lot of chasing my own tail in the VM and buffer layers,
-> I think it is a problem in ext2 (and I haven't been able to reproduce
-> with ext3 yet, which might lend weight to that, although as we have
-> seen, it is very timing dependent).
-> 
-> That would be slightly unfortunate because we still have Jan's ext3
-> problem, and also another reported problem of corruption on ext3 (on
-> brd driver).
-> 
-> Anyway, when I have reproduced the problem with the test case, the
-> "lost" writes are all reported to be holes. Unfortunately, that doesn't
-> point straight to the filesystem, because ext2 allocates blocks in this
-> case at writeout time, so if dirty bits are getting lost, then it would
-> be normal to see holes.
-> 
-> I then put in a whole lot of extra infrastructure to track metadata about
-> each struct page (when it was last written out, when it last had the number
-> of writable ptes reach 0, when the dirty bits were last cleared etc). And
-> none of the normal asertions were triggering: eg. when any page is removed
-> from pagecache (except truncates), it has always had all its buffers
-> written out *after* all ptes were made readonly or unmapped. Lots of other
-> tests and crap like that.
-  I see we're going the same way ;)
+> The effect of setting desc->affinity (ie. from userspace via sysfs) has varied
+> over time.  In 2.6.27, the 32-bit code anded the value with cpu_online_map,
+> and both 32 and 64-bit did that anding whenever a cpu was unplugged.
+>
+> 2.6.29 consolidated this into one routine (and fixed hotplug) but introduced
+> another variation: anding the affinity with cfg->domain.  Is this right, or
+> should we just set it to what the user said?  Or as now, indicate that we're
+> restricting it.
+>
+> If we should change it, here's what the patch looks like against x86 tip
+> (cpu_mask_to_apicid_and already takes cpu_online_mask into account):
 
-> So I tried what I should have done to start with and did an e2fsck after
-> seeing corruption. Yes, it comes up with errors. Now that is unusual
-> because that should be largely insulated from the vm: if a dirty bit gets
-> lost, then the filesystem image should be quite happy and error-free with
-> a hole or unwritten data there.
-  This is different for me. I see no corruption on the filesystem with
-ext3. Anyway, errors from fsck would be useful to see what kind of
-corruption you saw.
+desc->affinity should be what the user requested, if it is at all
+possible to honor the user space request.  YH the fact that we do not
+currently exercise the full freedom that user space gives us is
+irrelevant.
 
-> I don't know ext? locking very well, except that it looks pretty overly
-> complex and crufty.
-> 
-> Usually, blocks are instantiated by write(2), under i_mutex, serialising
-> the allocator somewhat. mmap-write blocks are instantiated at writeout
-> time, unserialised. I moved truncate_mutex to cover the entire get_blocks
-> function, and can no longer trigger the problem. Might be a timing issue
-> though -- Ying, can you try this and see if you can still reproduce?
-> 
-> I close my eyes and pick something out of a hat. a686cd89. Search for XXX.
-> Nice. Whether or not this cased the problem, can someone please tell me
-> why it got merged in that state?
-  Maybe, I see it did some changes to ext2_get_blocks() which could be
-where the problem was introduced...
+Further setting desc->affinity to the user space request is what
+x86_64 did before the grand merger. 
 
-> I'm leaving ext3 running for now. It looks like a nasty task to bisect
-> ext2 down to that commit :( and I would be more interested in trying to
-> reproduce Jan's ext3 problem, however, because I'm not too interested in
-> diving into ext2 locking to work out exactly what is racing and how to
-> fix it properly. I suspect it would be most productive to wire up some
-> ioctls right into the block allocator/lookup and code up a userspace
-> tester for it that could probably stress it a lot harder than kernel
-> writeout can.
-  Yes, what I observed with ext3 so far is that data is properly copied and
-page marked dirty when the data is copied in. But then at some point dirty
-bit is cleared via block_write_full_page() but we don't get to submitting
-at least one buffer in that page. I'm now debugging which path we take so
-that this happens...
+Likewise desc->affinity & cfg->domain & cpu_online_map going into the
+selection of apic id, is what the code did before the grand merger,
+and what the code is currently doing.  So logically that looks good.
 
-									Honza
--- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
+YH has a point that several of the implementations of
+cpu_mask_to_apic_id do not take cpu_online_map into account and should
+probably be fixed.  flat_cpu_mask_to_apicid was the one I could find.
+
+Also now that I look at it there is one other bug in this routine
+that you have missed.  set_extra_move_desc should be called before
+we set desc->affinity, as it compares that with the new value to
+see if we are going to be running on a new cpu, and if so we may
+need to reallocate irq_desc onto a new numa node.  set_extra_move_desc
+looks a little fishy but it doesn't stand a chance if it is called
+with the wrong data.
+
+Overall I like it.
+
+Do you think you could fix those two issues and regenerate the patch?
+
+> diff --git a/arch/x86/kernel/apic/io_apic.c b/arch/x86/kernel/apic/io_apic.c
+> index 86827d8..30906cd 100644
+> --- a/arch/x86/kernel/apic/io_apic.c
+> +++ b/arch/x86/kernel/apic/io_apic.c
+> @@ -592,10 +592,10 @@ set_desc_affinity(struct irq_desc *desc, const struct cpumask *mask)
+>  	if (assign_irq_vector(irq, cfg, mask))
+>  		return BAD_APICID;
+>  
+> -	cpumask_and(desc->affinity, cfg->domain, mask);
+> +	cpumask_copy(desc->affinity, mask);
+>  	set_extra_move_desc(desc, mask);
+>  
+> -	return apic->cpu_mask_to_apicid_and(desc->affinity, cpu_online_mask);
+> +	return apic->cpu_mask_to_apicid_and(desc->affinity, cfg->domain);
+>  }
+>  
+>  static void
+
+Eric
