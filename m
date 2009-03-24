@@ -1,66 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763527AbZCXREx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763357AbZCXROw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763527AbZCXREx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 13:04:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762872AbZCXRE0
+	id S1763357AbZCXROw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 13:14:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762715AbZCXRO1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 13:04:26 -0400
-Received: from stinky.trash.net ([213.144.137.162]:38895 "EHLO
-	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762359AbZCXREX (ORCPT
+	Tue, 24 Mar 2009 13:14:27 -0400
+Received: from janus.meme.com ([69.17.73.118]:52918 "EHLO smtp.meme.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761349AbZCXROW convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 13:04:23 -0400
-Message-ID: <49C9128E.6040202@trash.net>
-Date: Tue, 24 Mar 2009 18:04:14 +0100
-From: Patrick McHardy <kaber@trash.net>
-User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
-MIME-Version: 1.0
-To: Dan Williams <dcbw@redhat.com>
-CC: Matt Domsch <Matt_Domsch@dell.com>, netdev@vger.kernel.org,
-       linux-hotplug@vger.kernel.org, linux-kernel@vger.kernel.org
+	Tue, 24 Mar 2009 13:14:22 -0400
+X-Greylist: delayed 1877 seconds by postgrey-1.27 at vger.kernel.org; Tue, 24 Mar 2009 13:14:22 EDT
+Date: Tue, 24 Mar 2009 11:42:57 -0500
+From: "Karl O. Pinc" <kop@meme.com>
 Subject: Re: Network Device Naming mechanism and policy
-References: <20090324154617.GA16332@auslistsprd01.us.dell.com>	 <49C9087C.5070907@trash.net> <1237912858.9082.39.camel@localhost.localdomain>
-In-Reply-To: <1237912858.9082.39.camel@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+To: Matt Domsch <Matt_Domsch@dell.com>
+Cc: netdev@vger.kernel.org, linux-hotplug@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+References: <20090324154617.GA16332@auslistsprd01.us.dell.com>
+In-Reply-To: <20090324154617.GA16332@auslistsprd01.us.dell.com> (from
+	Matt_Domsch@dell.com on Tue Mar 24 10:46:17 2009)
+X-Mailer: Balsa 2.3.13
+Message-Id: <1237912977l.501l.10l@mofo>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii; DelSp=Yes; Format=Flowed
+Content-Disposition: inline
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dan Williams wrote:
-> On Tue, 2009-03-24 at 17:21 +0100, Patrick McHardy wrote:
->> I would classify this as a bug, especially the fact that udev doesn't
->> undo a failed rename, so you end up with ethX_rename. Virtual devices
->> using the same MAC address trigger this reliably unless you add
->> exceptions to the udev rules.
-> 
-> Any particular reason the MAC addresses are the same?  This came up a
-> while ago with the 'dnet' device in the thread "Dave DNET ethernet
-> controller".
-> 
-> If the MAC address isn't a UUID for the device, then *what* is?
+My thoughts on the subject; from someone who is not
+particularly qualified to have opinions.
 
-Sometimes (I was referring to virtual devices) there may not be
-one, thats correct.
+Reading over your post, I searched for a single sentence describing
+the problem you're trying to solve.  What I came up with was
+this:
 
-> If there isn't one, then certainly udev can't be blamed for getting
-> ordering or names wrong, because there's nothing to use to actually
-> match up the device to a name, uniquely. 
+On 03/24/2009 10:46:17 AM, Matt Domsch wrote:
 
-I agree that udev can't do anything useful in that case. I would
-prefer it it wouldn't even try though instead of messing with the
-names and leaving a bunch of _rename devices around. Sure, I can
-add a rule to disable it, but that shouldn't be necessary.
+>  Users continue to have to figure out, for each system type
+> and
+> potentially for each boot, which NIC is connected to which name.  This
+> has been the #1 customer complaint about Linux on Dell servers for
+> several years.  I'd prefer not to keep it this way.
 
-Generally, I'm wondering whether it should touch virtual network
-devices at all since the MAC addresses are often not persistent,
-sometimes not unique and the name might have already been chosen
-explicitly by the administrator when creating the device.
+Perhaps a little magic in the udev rule that creates the
+z70_persistent-net-rules file would solve the basic problem.
+It could sort the nics by mac address when creating the
+names.  It need only run when the z70 file does not exist.
+I presume this would produce consistent results in most cases
+and it feels technically feasible; although I am not
+fully qualified to make that judgment.
 
-Currently there are some rules to ignore a couple of known virtual
-devices types. Are there actually cases where renaming virtual
-devices is desired? Otherwise a more future-proof way than
-blacklisting each type individually would be to add some attribute
-informing udev that the device has no unique key and should be
-ignored.
+Rather that put the onus on udev to make the above
+change Dell could just run a little program at first
+boot that mungs the z70 file as desired.  (It could then
+force a reboot; I forget if this would be needed.)
+I imagine Dell boots the boxes once at the factory,
+but if not then the user has to suffer with a longer
+boot process at first boot.  Because this is driven
+by Dell, Dell would know exactly what nic has what
+name.  And Dell knows what nics are on the mobo and
+what are not, and so can control the mac address sort
+order as desired.
 
+The other solution that screams out at me is to ditch
+those legacy BIOSes and go to something like LinuxBIOS.
+Again, I'm not really qualified, but it sure feels like
+there's an answer in this approach.
+
+The other point that struck me was that sometimes, it seems,
+users want persistence in the naming of their network devices
+and sometimes they want device names based on bus position.
+
+The sucky thing is that symlinks and nics don't mix well
+and so it seems impossible to satisfy both the above
+requirements at the same time.  This is an area that
+IMHO could be better addressed by the Linux community.
+
+Karl <kop@meme.com>
+Free Software:  "You don't pay back, you pay forward."
+                  -- Robert A. Heinlein
