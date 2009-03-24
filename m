@@ -1,72 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753638AbZCXVhE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753933AbZCXViq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753638AbZCXVhE (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 17:37:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753471AbZCXVgg
+	id S1753933AbZCXViq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 17:38:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751706AbZCXVih
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 17:36:36 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:50855
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1754898AbZCXVge (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 17:36:34 -0400
-Date: Tue, 24 Mar 2009 14:36:22 -0700 (PDT)
-Message-Id: <20090324.143622.186562202.davem@davemloft.net>
-To: herbert@gondor.apana.org.au
-Cc: mingo@elte.hu, r.schwebel@pengutronix.de, torvalds@linux-foundation.org,
-       blaschka@linux.vnet.ibm.com, tglx@linutronix.de, a.p.zijlstra@chello.nl,
-       linux-kernel@vger.kernel.org, kernel@pengutronix.de
-Subject: Re: Revert "gro: Fix legacy path napi_complete crash",
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20090324150928.GB30224@gondor.apana.org.au>
-References: <20090324143303.GP5367@pengutronix.de>
-	<20090324143942.GA20462@elte.hu>
-	<20090324150928.GB30224@gondor.apana.org.au>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Tue, 24 Mar 2009 17:38:37 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:58766 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751298AbZCXVig (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Mar 2009 17:38:36 -0400
+Date: Tue, 24 Mar 2009 22:34:36 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-tip-commits@vger.kernel.org, linux-kernel@vger.kernel.org,
+       hpa@zytor.com, mingo@redhat.com, peterz@infradead.org, ia6432@inbox.ru,
+       roland@redhat.com, tglx@linutronix.de
+Subject: Re: [tip:timers/urgent] posix timers: fix RLIMIT_CPU && fork()
+Message-ID: <20090324213436.GA22254@redhat.com>
+References: <20090323193411.GA17514@redhat.com> <tip-37bebc70d7ad4144c571d74500db3bb26ec0c0eb@git.kernel.org> <20090324182651.GA13408@redhat.com> <20090324210536.GB14067@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090324210536.GB14067@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Herbert Xu <herbert@gondor.apana.org.au>
-Date: Tue, 24 Mar 2009 23:09:28 +0800
-
-> On Tue, Mar 24, 2009 at 03:39:42PM +0100, Ingo Molnar wrote:
+On 03/24, Ingo Molnar wrote:
+>
+> * Oleg Nesterov <oleg@redhat.com> wrote:
+>
+> > On 03/23, Oleg Nesterov wrote:
+> > >
+> > > Commit-ID:  37bebc70d7ad4144c571d74500db3bb26ec0c0eb
+> > > Gitweb:     http://git.kernel.org/tip/37bebc70d7ad4144c571d74500db3bb26ec0c0eb
+> > > Author:     Oleg Nesterov <oleg@redhat.com>
+> > > AuthorDate: Mon, 23 Mar 2009 20:34:11 +0100
+> > > Committer:  Ingo Molnar <mingo@elte.hu>
+> > > CommitDate: Mon, 23 Mar 2009 20:43:35 +0100
+> > >
+> > > posix timers: fix RLIMIT_CPU && fork()
+> > >
+> > > See http://bugzilla.kernel.org/show_bug.cgi?id=12911
+> > >
+> > > copy_signal() copies signal->rlim, but RLIMIT_CPU is "lost". Because
+> > > posix_cpu_timers_init_group() sets cputime_expires.prof_exp = 0 and thus
+> > > fastpath_timer_check() returns false unless we have other cpu timers.
+> > >
+> > > This is the minimal fix for 2.6.29 (tested) and 2.6.28. The patch is not
+> > > optimal,
 > >
-> > Subject: [PATCH] net: Fix netpoll lockup in legacy receive path
-> 
-> Actually, this patch is still racy.  If some interrupt comes in
-> and we suddenly get the maximum amount of backlog we can still
-> hang when we call __napi_complete incorrectly.  It's unlikely
-> but we certainly shouldn't allow that.  Here's a better version.
-> 
-> net: Fix netpoll lockup in legacy receive path
+> > Ingo, please drop this patch, it is very suboptimal.
+>
+> suboptimal why?
 
-Hmmm...
+Because this patch provokes the slow path on every tick if this process
+has rlim[RLIMIT_CPU].rlim_cur != RLIM_INFINITY, even if RLIMIT_CPU is
+not expired yet.
 
-> @@ -2588,9 +2588,10 @@ static int process_backlog(struct napi_struct *napi, int quota)
->  		local_irq_disable();
->  		skb = __skb_dequeue(&queue->input_pkt_queue);
->  		if (!skb) {
-> +			list_del(&napi->poll_list);
-> +			clear_bit(NAPI_STATE_SCHED, &napi->state);
->  			local_irq_enable();
-> -			napi_complete(napi);
-> -			goto out;
-> +			break;
->  		}
->  		local_irq_enable();
+So I think the initial patch I sent (which modifies copy_signal) is better,
+but first I'd like to re-check the code once again.
 
-I think the problem is that we need to do the GRO flush before the
-list delete and clearing the NAPI_STATE_SCHED bit.
+Oleg.
 
-You can't disown the NAPI context until you've squared away the GRO
-state, I think.
-
-Ingo's case stresses TCP a lot so I think he's hitting these GRO
-cases a lot as well as hitting the backlog maximum.
-
-So this mis-ordering of completion operations could explain why
-he still sees problems.
