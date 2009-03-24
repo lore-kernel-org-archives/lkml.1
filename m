@@ -1,236 +1,143 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755757AbZCXBdV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755978AbZCXBfU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755757AbZCXBdV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 23 Mar 2009 21:33:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750745AbZCXBdM
+	id S1755978AbZCXBfU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 23 Mar 2009 21:35:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752856AbZCXBfF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 23 Mar 2009 21:33:12 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:49892 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750782AbZCXBdL (ORCPT
+	Mon, 23 Mar 2009 21:35:05 -0400
+Received: from e38.co.us.ibm.com ([32.97.110.159]:57818 "EHLO
+	e38.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750882AbZCXBfE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 23 Mar 2009 21:33:11 -0400
-Date: Tue, 24 Mar 2009 10:31:39 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Mel Gorman <mel@csn.ul.ie>
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "kosaki.motohiro@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       riel@redhat.com,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>
-Subject: Re: [PATCH] fix vmscan to take care of nodemask
-Message-Id: <20090324103139.07af98f1.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20090323114814.GB6484@csn.ul.ie>
-References: <20090323100356.e980d266.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090323114814.GB6484@csn.ul.ie>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+	Mon, 23 Mar 2009 21:35:04 -0400
+Subject: [RFC][PATCH] Logarithmic Timekeeping Accumulation
+From: John Stultz <johnstul@us.ibm.com>
+To: Linux-kernel <linux-kernel@vger.kernel.org>
+Cc: Clark Williams <williams@redhat.com>, Steven Rostedt <srostedt@redhat.com>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Roman Zippel <zippel@linux-m68k.org>
+Content-Type: text/plain
+Date: Mon, 23 Mar 2009 18:28:22 -0700
+Message-Id: <1237858102.7068.20.camel@jstultz-laptop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.24.3 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 23 Mar 2009 11:48:14 +0000
-Mel Gorman <mel@csn.ul.ie> wrote:
+Accumulating one tick at a time works well unless we're using NOHZ. Then
+it can be an issue, since we may have to run through the loop a few
+thousand times, which can increase timer interrupt caused latency.
 
-> On Mon, Mar 23, 2009 at 10:03:56AM +0900, KAMEZAWA Hiroyuki wrote:
-> > From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> > 
-> > try_to_free_pages() scans zonelist but doesn't take care of nodemask which is
-> > passed to alloc_pages_nodemask(). This makes try_to_free_pages() less effective.
-> > 
-> 
-> Hmm, do you mind if I try expanding that changelog a bit?
-> 
-> ====
-> 
-> try_to_free_pages() is used for the direct reclaim of up to
-> SWAP_CLUSTER_MAX pages when watermarks are low. The caller to
-> alloc_pages_nodemask() can specify a nodemask of nodes that are allowed
-> to be used but this is not passed to try_to_free_pages(). This can lead
-> to the unnecessary reclaim of pages that are unusable by the caller and
-> in the worst case lead to allocation failure as progress was not been
-> made where it is needed.
-> 
-> This patch passes the nodemask used for alloc_pages_nodemask() to
-> try_to_free_pages().
-> 
-> ====
-> 
-> ?
+The current solution was to accumulate in half-second intervals with
+NOHZ. This kept the number of loops down, however it did slightly change
+how we make NTP adjustments. While not an issue with NTPd users, as NTPd
+makes adjustments over a longer period of time, other adjtimex() users
+have noticed the half-second granularity with which we can apply
+frequency changes to the clock.
 
-Thank you. I gradly use your text :)
+For instance, if a application tries to apply a 100ppm frequency
+correction for 20ms to correct a 2us offset, with NOHZ they either get
+no correction, or a 50us correction.
 
-> 
-> > Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> > ---
-> >  fs/buffer.c          |    2 +-
-> >  include/linux/swap.h |    2 +-
-> >  mm/page_alloc.c      |    3 ++-
-> >  mm/vmscan.c          |   14 ++++++++++++--
-> >  4 files changed, 16 insertions(+), 5 deletions(-)
-> > 
-> > Index: mmotm-2.6.29-Mar21/mm/vmscan.c
-> > ===================================================================
-> > --- mmotm-2.6.29-Mar21.orig/mm/vmscan.c
-> > +++ mmotm-2.6.29-Mar21/mm/vmscan.c
-> > @@ -79,6 +79,9 @@ struct scan_control {
-> >  	/* Which cgroup do we reclaim from */
-> >  	struct mem_cgroup *mem_cgroup;
-> >  
-> > +	/* Nodemask */
-> > +	nodemask_t	*nodemask;
-> > +
-> 
-> That comment is not a whole pile of help
-> 
-> /*
->  * nodemask of nodes allowed by the caller. Note that nodemask==NULL
->  * means scal all nods
->  */
-> 
-> ?
-> 
-ok.
+Now, there will always be some granularity error for applying frequency
+corrections. However with users sensitive to this error have seen a
+50-500x increase with NOHZ compared to running without NOHZ.
 
-> >  	/* Pluggable isolate pages callback */
-> >  	unsigned long (*isolate_pages)(unsigned long nr, struct list_head *dst,
-> >  			unsigned long *scanned, int order, int mode,
-> > @@ -1544,7 +1547,9 @@ static void shrink_zones(int priority, s
-> >  	struct zone *zone;
-> >  
-> >  	sc->all_unreclaimable = 1;
-> > -	for_each_zone_zonelist(zone, z, zonelist, high_zoneidx) {
-> > +	/* Note: sc->nodemask==NULL means scan all node */
-> 
-> Your choice, but I moved this comment to scan_control. I don't mind
-> where it is really.
-> 
-ok.
+So I figured I'd try another approach then just simply increasing the
+interval. My approach is to consume the time interval logarithmically.
+This reduces the number of times  through the loop needed keeping
+latency down, while still preserving the original granularity error for
+adjtimex() changes.
+
+This has been lightly tested and appears to work correctly, but I'd
+appreciate any feedback or comments on the idea and code. 
+
+Signed-off-by: John Stultz <johnstul@us.ibm.com>
 
 
-> > +	for_each_zone_zonelist_nodemask(zone, z, zonelist, high_zoneidx,
-> > +					sc->nodemask) {
-> >  		if (!populated_zone(zone))
-> >  			continue;
-> >  		/*
-> > @@ -1689,7 +1694,7 @@ out:
-> >  }
-> >  
-> >  unsigned long try_to_free_pages(struct zonelist *zonelist, int order,
-> > -								gfp_t gfp_mask)
-> > +				gfp_t gfp_mask, nodemask_t *nodemask)
-> >  {
-> >  	struct scan_control sc = {
-> >  		.gfp_mask = gfp_mask,
-> > @@ -1700,6 +1705,7 @@ unsigned long try_to_free_pages(struct z
-> >  		.order = order,
-> >  		.mem_cgroup = NULL,
-> >  		.isolate_pages = isolate_pages_global,
-> > +		.nodemask = nodemask,
-> >  	};
-> >  
-> >  	return do_try_to_free_pages(zonelist, &sc);
-> > @@ -1720,6 +1726,7 @@ unsigned long try_to_free_mem_cgroup_pag
-> >  		.order = 0,
-> >  		.mem_cgroup = mem_cont,
-> >  		.isolate_pages = mem_cgroup_isolate_pages,
-> > +		.nodemask = NULL,
-> 
-> While strictly speaking, this is unnecessary, I prefer it because it
-> tells a reader that "yes, I really meant it to be NULL".
-> 
-> >  	};
-> >  	struct zonelist *zonelist;
-> >  
-> > @@ -1769,6 +1776,7 @@ static unsigned long balance_pgdat(pg_da
-> >  		.order = order,
-> >  		.mem_cgroup = NULL,
-> >  		.isolate_pages = isolate_pages_global,
-> > +		.nodemask = NULL,
-> >  	};
-> >  	/*
-> >  	 * temp_priority is used to remember the scanning priority at which
-> > @@ -2112,6 +2120,7 @@ unsigned long shrink_all_memory(unsigned
-> >  		.may_unmap = 0,
-> >  		.may_writepage = 1,
-> >  		.isolate_pages = isolate_pages_global,
-> > +		.nodemask = NULL,
-> >  	};
-> >  
-> >  	current->reclaim_state = &reclaim_state;
-> > @@ -2298,6 +2307,7 @@ static int __zone_reclaim(struct zone *z
-> >  		.swappiness = vm_swappiness,
-> >  		.order = order,
-> >  		.isolate_pages = isolate_pages_global,
-> > +		.nodemask = NULL,
-> >  	};
-> >  	unsigned long slab_reclaimable;
-> >  
-> > Index: mmotm-2.6.29-Mar21/include/linux/swap.h
-> > ===================================================================
-> > --- mmotm-2.6.29-Mar21.orig/include/linux/swap.h
-> > +++ mmotm-2.6.29-Mar21/include/linux/swap.h
-> > @@ -213,7 +213,7 @@ static inline void lru_cache_add_active_
-> >  
-> >  /* linux/mm/vmscan.c */
-> >  extern unsigned long try_to_free_pages(struct zonelist *zonelist, int order,
-> > -					gfp_t gfp_mask);
-> > +					gfp_t gfp_mask, nodemask_t *mask);
-> >  extern unsigned long try_to_free_mem_cgroup_pages(struct mem_cgroup *mem,
-> >  						  gfp_t gfp_mask, bool noswap,
-> >  						  unsigned int swappiness);
-> > Index: mmotm-2.6.29-Mar21/mm/page_alloc.c
-> > ===================================================================
-> > --- mmotm-2.6.29-Mar21.orig/mm/page_alloc.c
-> > +++ mmotm-2.6.29-Mar21/mm/page_alloc.c
-> > @@ -1598,7 +1598,8 @@ nofail_alloc:
-> >  	reclaim_state.reclaimed_slab = 0;
-> >  	p->reclaim_state = &reclaim_state;
-> >  
-> > -	did_some_progress = try_to_free_pages(zonelist, order, gfp_mask);
-> > +	did_some_progress = try_to_free_pages(zonelist, order,
-> > +						gfp_mask, nodemask);
-> >  
-> >  	p->reclaim_state = NULL;
-> >  	lockdep_clear_current_reclaim_state();
-> > Index: mmotm-2.6.29-Mar21/fs/buffer.c
-> > ===================================================================
-> > --- mmotm-2.6.29-Mar21.orig/fs/buffer.c
-> > +++ mmotm-2.6.29-Mar21/fs/buffer.c
-> > @@ -476,7 +476,7 @@ static void free_more_memory(void)
-> >  						&zone);
-> >  		if (zone)
-> >  			try_to_free_pages(node_zonelist(nid, GFP_NOFS), 0,
-> > -						GFP_NOFS);
-> > +						GFP_NOFS, NULL);
-> >  	}
-> >  }
-> >  
-> 
-> Otherwise looks good. With a better changelog and a comment other than "/*
-> nodemask */" explaining what nodemask is;
-> 
-> Acked-by: Mel Gorman <mel@csn.ul.ie>
-> 
+diff --git a/include/linux/timex.h b/include/linux/timex.h
+index 998a55d..680c412 100644
+--- a/include/linux/timex.h
++++ b/include/linux/timex.h
+@@ -241,11 +241,7 @@ static inline int ntp_synced(void)
+ 
+ #define NTP_SCALE_SHIFT		32
+ 
+-#ifdef CONFIG_NO_HZ
+-#define NTP_INTERVAL_FREQ  (2)
+-#else
+ #define NTP_INTERVAL_FREQ  (HZ)
+-#endif
+ #define NTP_INTERVAL_LENGTH (NSEC_PER_SEC/NTP_INTERVAL_FREQ)
+ 
+ /* Returns how long ticks are at present, in ns / 2^NTP_SCALE_SHIFT. */
+diff --git a/kernel/time/timekeeping.c b/kernel/time/timekeeping.c
+index 900f1b6..dffe668 100644
+--- a/kernel/time/timekeeping.c
++++ b/kernel/time/timekeeping.c
+@@ -480,6 +480,7 @@ static void clocksource_adjust(s64 offset)
+ void update_wall_time(void)
+ {
+ 	cycle_t offset;
++	int shift = 1;
+ 
+ 	/* Make sure we're fully resumed: */
+ 	if (unlikely(timekeeping_suspended))
+@@ -492,30 +493,47 @@ void update_wall_time(void)
+ #endif
+ 	clock->xtime_nsec = (s64)xtime.tv_nsec << clock->shift;
+ 
++
++	/*
++	 * If NO_HZ is enabled, we may spend too much time in the
++	 * accumulation loop. So try to accumulate logrithmically
++	 */
++	while (offset > (clock->cycle_interval << shift))
++		shift++;
++	shift--;
++
+ 	/* normally this loop will run just once, however in the
+ 	 * case of lost or late ticks, it will accumulate correctly.
+ 	 */
+ 	while (offset >= clock->cycle_interval) {
++		if (offset < clock->cycle_interval<<shift) {
++			shift--;
++			continue;
++		}
+ 		/* accumulate one interval */
+-		offset -= clock->cycle_interval;
+-		clock->cycle_last += clock->cycle_interval;
++		offset -= clock->cycle_interval << shift;
++		clock->cycle_last += clock->cycle_interval << shift;
+ 
+-		clock->xtime_nsec += clock->xtime_interval;
++		clock->xtime_nsec += clock->xtime_interval << shift;
+ 		if (clock->xtime_nsec >= (u64)NSEC_PER_SEC << clock->shift) {
+ 			clock->xtime_nsec -= (u64)NSEC_PER_SEC << clock->shift;
+ 			xtime.tv_sec++;
+ 			second_overflow();
+ 		}
+ 
+-		clock->raw_time.tv_nsec += clock->raw_interval;
++		clock->raw_time.tv_nsec += clock->raw_interval << shift;
+ 		if (clock->raw_time.tv_nsec >= NSEC_PER_SEC) {
+ 			clock->raw_time.tv_nsec -= NSEC_PER_SEC;
+ 			clock->raw_time.tv_sec++;
+ 		}
+ 
+ 		/* accumulate error between NTP and clock interval */
+-		clock->error += tick_length;
+-		clock->error -= clock->xtime_interval << (NTP_SCALE_SHIFT - clock->shift);
++		clock->error += tick_length << shift;
++		clock->error -= (clock->xtime_interval
++				<< (NTP_SCALE_SHIFT - clock->shift))
++					<< shift;
++		if (shift > 0) /*don't roll under!*/
++			shift--;
+ 	}
+ 
+ 	/* correct the clock when NTP error is too big */
 
-Thank you for review !
-
-Regards,
--Kame
-
-
-> -- 
-> Mel Gorman
-> Part-time Phd Student                          Linux Technology Center
-> University of Limerick                         IBM Dublin Software Lab
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
 
