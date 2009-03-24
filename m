@@ -1,166 +1,180 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757348AbZCXOpM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759385AbZCXOpi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757348AbZCXOpM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 10:45:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753951AbZCXOoy
+	id S1759385AbZCXOpi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 10:45:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756512AbZCXOpV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 10:44:54 -0400
-Received: from mail-ew0-f165.google.com ([209.85.219.165]:51060 "EHLO
-	mail-ew0-f165.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753837AbZCXOox (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 10:44:53 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=vbZCfxolzZjgp/JQWCEYuXxcNAP2cOgTlKKRNJ75vNI4yDJW2FZ+l0lgvCIO6jXMoR
-         oZxZS9jLEXFtII7tmCjXmtNwzSfbzUbMxZ4nCc5j3kENbQMmgvP3Oggom7pCPVZJFkSQ
-         x8w2TVAswF9/+G2+LMOGBuVikfkYf+yWnfIzE=
-Message-ID: <49C8F186.2080705@panasas.com>
-Date: Tue, 24 Mar 2009 16:43:18 +0200
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Tue, 24 Mar 2009 10:45:21 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:51566 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753951AbZCXOpU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Mar 2009 10:45:20 -0400
+Date: Tue, 24 Mar 2009 10:45:13 -0400 (EDT)
+From: Mikulas Patocka <mpatocka@redhat.com>
+X-X-Sender: mpatocka@hs20-bc2-1.build.redhat.com
+To: Jens Axboe <jens.axboe@oracle.com>
+cc: device-mapper development <dm-devel@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andi Kleen <ak@suse.de>, "MASON, CHRISTOPHER" <CHRIS.MASON@oracle.com>
+Subject: Re: [dm-devel] Barriers still not passing on simple dm devices...
+In-Reply-To: <20090324143034.GW27476@kernel.dk>
+Message-ID: <Pine.LNX.4.64.0903241033070.4088@hs20-bc2-1.build.redhat.com>
+References: <49C7DD3C.2020401@redhat.com> <Pine.LNX.4.64.0903241000010.29968@hs20-bc2-1.build.redhat.com>
+ <20090324140524.GV27476@kernel.dk> <Pine.LNX.4.64.0903241010490.29968@hs20-bc2-1.build.redhat.com>
+ <20090324143034.GW27476@kernel.dk>
 MIME-Version: 1.0
-To: Hannes Reinecke <hare@suse.de>
-CC: James Bottomley <James.Bottomley@HansenPartnership.com>,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
-Subject: Re: [PATCH] Driver 'sd' needs updating
-References: <20090324141428.31E5118C7A3@pentland.suse.de>
-In-Reply-To: <20090324141428.31E5118C7A3@pentland.suse.de>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hannes Reinecke wrote:
-> If a driver sets blk_queue_prep_rq() it should clean up itself
-> and not rely on the bus callbacks to handle this. This removes
-> the need to hook into bus->remove() as these should not be used
-> at the same time as driver->remove().
+
+
+On Tue, 24 Mar 2009, Jens Axboe wrote:
+
+> On Tue, Mar 24 2009, Mikulas Patocka wrote:
+> > 
+> > 
+> > On Tue, 24 Mar 2009, Jens Axboe wrote:
+> > 
+> > > On Tue, Mar 24 2009, Mikulas Patocka wrote:
+> > > > 
+> > > > 
+> > > > On Mon, 23 Mar 2009, Eric Sandeen wrote:
+> > > > 
+> > > > > I've noticed that on 2.6.29-rcX, with Andi's patch
+> > > > > (ab4c1424882be9cd70b89abf2b484add355712fa, dm: support barriers on
+> > > > > simple devices) barriers are still getting rejected on these simple devices.
+> > > > > 
+> > > > > The problem is in __generic_make_request():
+> > > > > 
+> > > > >                 if (bio_barrier(bio) && bio_has_data(bio) &&
+> > > > >                     (q->next_ordered == QUEUE_ORDERED_NONE)) {
+> > > > >                         err = -EOPNOTSUPP;
+> > > > >                         goto end_io;
+> > > > >                 }
+> > > > > 
+> > > > > and dm isn't flagging its queue as supporting ordered writes, so it's
+> > > > > rejected here.
+> > > > > 
+> > > > > Doing something like this:
+> > > > > 
+> > > > > + if (t->barriers_supported)
+> > > > > +         blk_queue_ordered(q, QUEUE_ORDERED_DRAIN, NULL);
+> > > > > 
+> > > > > somewhere in dm (I stuck it in dm_table_set_restrictions() - almost
+> > > > > certainly the wrong thing to do) did get my dm-linear device to mount
+> > > > > with xfs, w/o xfs complaining that its mount-time barrier tests failed.
+> > > > > 
+> > > > > So what's the right way around this?  What should dm (or md for that
+> > > > > matter) advertise on their queues about ordered-ness?  Should there be
+> > > > > some sort of "QUEUE_ORDERED_PASSTHROUGH" or something to say "this level
+> > > > > doesn't care, ask the next level" or somesuch?  Or should it inherit the
+> > > > > flag from the next level down?  Ideas?
+> > > > > 
+> > > > > Thanks,
+> > > > > -Eric
+> > > > > 
+> > > > > --
+> > > > > dm-devel mailing list
+> > > > > dm-devel@redhat.com
+> > > > > https://www.redhat.com/mailman/listinfo/dm-devel
+> > > > 
+> > > > Hi
+> > > > 
+> > > > This is misdesign in generic bio layer and it should be fixed there. I 
+> > > > think it is blocking barrier support in md-raid1 too. Jens, pls apply the 
+> > > > attached patch.
+> > > > 
+> > > > Mikulas
+> > > > 
+> > > > ----
+> > > > 
+> > > > Move test for not-supported barriers to __make_request.
+> > > > 
+> > > > This test prevents barriers from being dispatched to device mapper
+> > > > and md.
+> > > > 
+> > > > This test is sensible only for drivers that use requests (such as disk
+> > > > drivers), not for drivers that use bios.
+> > > > 
+> > > > It is better to fix it in generic code than to make workaround for it
+> > > > in device mapper and md.
+> > > 
+> > > So you audited any ->make_request_fn style driver and made sure they
+> > > rejected barriers?
+> > 
+> > I didn't.
+> > 
+> > If you grep for it, you get:
+> > 
+> > ./arch/powerpc/sysdev/axonram.c:
+> > doesn't reject barriers, but it is not needed, it ends all bios in 
+> > make_request routine
+> > 
+> > ./drivers/block/aoe/aoeblk.c:
+> > * doesn't reject barriers, should be modified to do so
+> > 
+> > ./drivers/block/brd.c
+> > doesn't reject barriers, doesn't need to, ends all bios in make_request
+> > 
+> > ./drivers/block/loop.c:
+> > doesn't reject barriers, it's ok because it doesn't reorder requests
+> > 
+> > ./drivers/block/pktcdvd.c
+> > * doesn't reject barriers, should be modified to do so
+> > 
+> > ./drivers/block/umem.c
+> > * doesn't reject barriers, I don't know if it reorders requests or not.
+> > 
+> > ./drivers/s390/block/xpram.c
+> > doesn't reject barriers, doesn't need, ends bios immediatelly
+> > 
+> > ./drivers/md/raid0.c
+> > rejects barriers
+> > 
+> > ./drivers/md/raid1.c
+> > supports barriers
+> > 
+> > ./drivers/md/raid10.c
+> > rejects barriers
+> > 
+> > ./drivers/md/raid5.c
+> > rejects barriers
+> > 
+> > ./drivers/md/linear.c
+> > rejects barriers
+> > 
+> > ./drivers/md/dm.c
+> > supports barriers partially
 > 
-> Signed-off-by: Hannes Reinecke <hare@suse.de>
-> Signed-off-by: Kay Sievers <kay.sievers@vrfy.org>
+> Not reordering is not enough to support the barrier primitive, unless
+> you always go to the same device and pass the barrier flag down with it.
 
-Hi Hannes, please I do not understand this patch.
+For single-device drivers (not md/dm), not reordering should be good 
+enough to claim barrier support.
 
-I was always under the impression that the scsi ULD
-remove() function is called from inside scsi_bus_remove()
-at the very end, please see below.
+> I think having the check in generic_make_request() is perfectly fine,
+> even if the value doesn't completely apply to stacked devices. Perhaps
+> we can add such a value, then. My main point is that barrier support
+> should be opt-in, not a default thing.
 
-> ---
->  drivers/scsi/scsi_lib.c    |    6 ++++++
->  drivers/scsi/scsi_sysfs.c  |   17 -----------------
->  drivers/scsi/sd.c          |    2 ++
->  drivers/scsi/sr.c          |    1 +
->  include/scsi/scsi_driver.h |    1 +
->  5 files changed, 10 insertions(+), 17 deletions(-)
+So make some flag for these bio-based devices, so that they don't have to 
+use one of those request-based options (which are meaningless for 
+non-request based device).
+
+> Over time we should have support everywhere, but it needs to be checked, 
+> audited, and trusted.
+
+BTW. What is the rule for barriers if the device can't prevent the 
+requests from being delayed or reordered? (for example ATA<=3 disks with 
+cache that lack cache-flush command ... or flash cards that do 
+write-caching anyway and it can't be turned off). Should they support 
+barriers and try to make best effort? Or should they reject barriers to 
+inform the caller code that they have no data consistency?
+
+Mikulas
+
+> -- 
+> Jens Axboe
 > 
-> diff --git a/drivers/scsi/scsi_lib.c b/drivers/scsi/scsi_lib.c
-> index 4b13e36..73df41b 100644
-> --- a/drivers/scsi/scsi_lib.c
-> +++ b/drivers/scsi/scsi_lib.c
-> @@ -1222,6 +1222,12 @@ int scsi_prep_fn(struct request_queue *q, struct request *req)
->  	return scsi_prep_return(q, req, ret);
->  }
->  
-> +void scsi_reset_prep_fn(struct request_queue *q)
-> +{
-> +	blk_queue_prep_rq(q, scsi_prep_fn);
-> +}
-> +EXPORT_SYMBOL(scsi_reset_prep_fn);
-> +
->  /*
->   * scsi_dev_queue_ready: if we can send requests to sdev, return 1 else
->   * return 0.
-> diff --git a/drivers/scsi/scsi_sysfs.c b/drivers/scsi/scsi_sysfs.c
-> index fa4711d..91482f2 100644
-> --- a/drivers/scsi/scsi_sysfs.c
-> +++ b/drivers/scsi/scsi_sysfs.c
-> @@ -420,29 +420,12 @@ static int scsi_bus_resume(struct device * dev)
->  	return err;
->  }
->  
-> -static int scsi_bus_remove(struct device *dev)
-> -{
-> -	struct device_driver *drv = dev->driver;
-> -	struct scsi_device *sdev = to_scsi_device(dev);
-> -	int err = 0;
-> -
-> -	/* reset the prep_fn back to the default since the
-> -	 * driver may have altered it and it's being removed */
-> -	blk_queue_prep_rq(sdev->request_queue, scsi_prep_fn);
-> -
-> -	if (drv && drv->remove)
-> -		err = drv->remove(dev);
-
-This here is where my osd_uld.c::osd_remove() is called.
-
-If this vector is not used will the drv-core call drv->remove(dev)
-in behalf of scsi?
-
-> -
-> -	return 0;
-> -}
-> -
->  struct bus_type scsi_bus_type = {
->          .name		= "scsi",
->          .match		= scsi_bus_match,
->  	.uevent		= scsi_bus_uevent,
->  	.suspend	= scsi_bus_suspend,
->  	.resume		= scsi_bus_resume,
-> -	.remove		= scsi_bus_remove,
->  };
->  EXPORT_SYMBOL_GPL(scsi_bus_type);
->  
-> diff --git a/drivers/scsi/sd.c b/drivers/scsi/sd.c
-> index aeab5d9..64e88e2 100644
-> --- a/drivers/scsi/sd.c
-> +++ b/drivers/scsi/sd.c
-> @@ -2068,6 +2068,8 @@ static int sd_remove(struct device *dev)
-
-Until today this was called from within scsi_bus_remove
-what happens after your patch?
-
->  {
->  	struct scsi_disk *sdkp = dev_get_drvdata(dev);
->  
-> +	scsi_reset_prep_fn(sdkp->device->request_queue);
-> +
->  	device_del(&sdkp->dev);
->  	del_gendisk(sdkp->disk);
->  	sd_shutdown(dev);
-> diff --git a/drivers/scsi/sr.c b/drivers/scsi/sr.c
-> index e7fa3ca..914733a 100644
-> --- a/drivers/scsi/sr.c
-> +++ b/drivers/scsi/sr.c
-> @@ -889,6 +889,7 @@ static int sr_remove(struct device *dev)
->  {
->  	struct scsi_cd *cd = dev_get_drvdata(dev);
->  
-> +	scsi_reset_prep_fn(cd->device->request_queue);
->  	del_gendisk(cd->disk);
->  
->  	mutex_lock(&sr_ref_mutex);
-> diff --git a/include/scsi/scsi_driver.h b/include/scsi/scsi_driver.h
-> index 1f5ca7f..2e22929 100644
-> --- a/include/scsi/scsi_driver.h
-> +++ b/include/scsi/scsi_driver.h
-> @@ -32,5 +32,6 @@ int scsi_setup_blk_pc_cmnd(struct scsi_device *sdev, struct request *req);
->  int scsi_setup_fs_cmnd(struct scsi_device *sdev, struct request *req);
->  int scsi_prep_state_check(struct scsi_device *sdev, struct request *req);
->  int scsi_prep_return(struct request_queue *q, struct request *req, int ret);
-> +int scsi_reset_prep_fn(struct request_queue *);
->  
->  #endif /* _SCSI_SCSI_DRIVER_H */
-
-I did not test this patch with osd_uld yet, but I will tomorrow. If my assumption
-is right then drv-core should call my osd_remove just the same, right?
-
-Are there any different timing issue for example the presence of scsi_device
-is still true?
-
-Thanks
-Boaz
-
