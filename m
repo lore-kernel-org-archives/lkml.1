@@ -1,172 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760807AbZCXOs0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760693AbZCXOr4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760807AbZCXOs0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 10:48:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760443AbZCXOrm
+	id S1760693AbZCXOr4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 10:47:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760291AbZCXOra
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 10:47:42 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:59004 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760132AbZCXOrl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 10:47:41 -0400
-Date: Tue, 24 Mar 2009 10:46:57 -0400
-From: Jeff Layton <jlayton@redhat.com>
-To: Jeff Layton <jlayton@redhat.com>
-Cc: Wu Fengguang <fengguang.wu@intel.com>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, jens.axboe@oracle.com,
-       akpm@linux-foundation.org, hch@infradead.org
-Subject: Re: [PATCH] writeback: reset inode dirty time when adding it back
- to empty s_dirty list
-Message-ID: <20090324104657.6907b19e@tleilax.poochiereds.net>
-In-Reply-To: <20090324102806.4f38fd26@tleilax.poochiereds.net>
-References: <1237840233-11045-1-git-send-email-jlayton@redhat.com>
-	<20090324135720.GA25314@localhost>
-	<20090324102806.4f38fd26@tleilax.poochiereds.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 24 Mar 2009 10:47:30 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:48563 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760597AbZCXOr3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Mar 2009 10:47:29 -0400
+Message-ID: <49C8F24D.6000603@zytor.com>
+Date: Tue, 24 Mar 2009 07:46:37 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+MIME-Version: 1.0
+To: Tim Abbott <tabbott@MIT.EDU>
+CC: Stephen Rothwell <sfr@canb.auug.org.au>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux kernel mailing list <linux-kernel@vger.kernel.org>,
+       Anders Kaseorg <andersk@MIT.EDU>, Waseem Daher <wdaher@MIT.EDU>,
+       Denys Vlasenko <vda.linux@googlemail.com>,
+       Rusty Russell <rusty@rustcorp.com.au>, Andi Kleen <andi@firstfloor.org>,
+       Jeff Arnold <jbarnold@MIT.EDU>
+Subject: Re: [PATCH 0/4] Add support for compiling with -ffunction-sections
+ -fdata-sections
+References: <1237872525-31014-1-git-send-email-tabbott@mit.edu> <20090324170700.6029f6ce.sfr@canb.auug.org.au> <alpine.DEB.1.10.0903240210410.21037@vinegar-pot.mit.edu>
+In-Reply-To: <alpine.DEB.1.10.0903240210410.21037@vinegar-pot.mit.edu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 24 Mar 2009 10:28:06 -0400
-Jeff Layton <jlayton@redhat.com> wrote:
-
-> On Tue, 24 Mar 2009 21:57:20 +0800
-> Wu Fengguang <fengguang.wu@intel.com> wrote:
+Tim Abbott wrote:
 > 
-> > Hi Jeff,
-> > 
-> > On Mon, Mar 23, 2009 at 04:30:33PM -0400, Jeff Layton wrote:
-> > > This may be a problem on other filesystems too, but the reproducer I
-> > > have involves NFS.
-> > > 
-> > > On NFS, the __mark_inode_dirty() call after writing back the inode is
-> > > done in the rpc_release handler for COMMIT calls. This call is done
-> > > asynchronously after the call completes.
-> > > 
-> > > Because there's no real coordination between __mark_inode_dirty() and
-> > > __sync_single_inode(), it's often the case that these two calls will
-> > > race and __mark_inode_dirty() will get called while I_SYNC is still set.
-> > > When this happens, __sync_single_inode() should detect that the inode
-> > > was redirtied while we were flushing it and call redirty_tail() to put
-> > > it back on the s_dirty list.
-> > > 
-> > > When redirty_tail() puts it back on the list, it only resets the
-> > > dirtied_when value if it's necessary to maintain the list order. Given
-> > > the right situation (the right I/O patterns and a lot of luck), this
-> > > could result in dirtied_when never getting updated on an inode that's
-> > > constantly being redirtied while pdflush is writing it back.
-> > > 
-> > > Since dirtied_when is based on jiffies, it's possible for it to persist
-> > > across 2 sign-bit flips of jiffies. When that happens, the time_after()
-> > > check in sync_sb_inodes no longer works correctly and writeouts by
-> > > pdflush of this inode and any inodes after it on the list stop.
-> > > 
-> > > This patch fixes this by resetting the dirtied_when value on an inode
-> > > when we're adding it back onto an empty s_dirty list. Since we generally
-> > > write inodes from oldest to newest dirtied_when values, this has the
-> > > effect of making it so that these inodes don't end up with dirtied_when
-> > > values that are frozen.
-> > > 
-> > > I've also taken the liberty of fixing up the comments a bit and changed
-> > > the !time_after_eq() check in redirty_tail to be time_before().  That
-> > > should be functionally equivalent but I think it's more readable.
-> > > 
-> > > I wish this were just a theoretical problem, but we've had a customer
-> > > hit a variant of it in an older kernel. Newer upstream kernels have a
-> > > number of changes that make this problem less likely. As best I can tell
-> > > though, there is nothing that really prevents it.
-> > > 
-> > > Signed-off-by: Jeff Layton <jlayton@redhat.com>
-> > > ---
-> > >  fs/fs-writeback.c |   22 +++++++++++++++++-----
-> > >  1 files changed, 17 insertions(+), 5 deletions(-)
-> > > 
-> > > diff --git a/fs/fs-writeback.c b/fs/fs-writeback.c
-> > > index e3fe991..bd2a7ff 100644
-> > > --- a/fs/fs-writeback.c
-> > > +++ b/fs/fs-writeback.c
-> > > @@ -184,19 +184,31 @@ static int write_inode(struct inode *inode, int sync)
-> > >   * furthest end of its superblock's dirty-inode list.
-> > >   *
-> > >   * Before stamping the inode's ->dirtied_when, we check to see whether it is
-> > > - * already the most-recently-dirtied inode on the s_dirty list.  If that is
-> > > - * the case then the inode must have been redirtied while it was being written
-> > > - * out and we don't reset its dirtied_when.
-> > > + * "newer" or equal to that of the most-recently-dirtied inode on the s_dirty
-> > > + * list. If that is the case then we don't need to restamp it to maintain the
-> > > + * order of the list.
-> > > + *
-> > > + * If s_dirty is empty however, then we need to go ahead and update
-> > > + * dirtied_when for the inode. Not doing so will mean that inodes that are
-> > > + * constantly being redirtied can end up with "stuck" dirtied_when values if
-> > > + * they happen to consistently be the first one to go back on the list.
-> > > + *
-> > > + * Since we're using jiffies values in that field, letting dirtied_when grow
-> > > + * too old will be problematic if jiffies wraps. It may also be causing
-> > > + * pdflush to flush the inode too often since it'll always look like it was
-> > > + * dirtied a long time ago.
-> > >   */
-> > >  static void redirty_tail(struct inode *inode)
-> > >  {
-> > >  	struct super_block *sb = inode->i_sb;
-> > >  
-> > > -	if (!list_empty(&sb->s_dirty)) {
-> > > +	if (list_empty(&sb->s_dirty)) {
-> > > +		inode->dirtied_when = jiffies;
-> > > +	} else {
-> > >  		struct inode *tail_inode;
-> > >  
-> > >  		tail_inode = list_entry(sb->s_dirty.next, struct inode, i_list);
-> > > -		if (!time_after_eq(inode->dirtied_when,
-> > > +		if (time_before(inode->dirtied_when,
-> > >  				tail_inode->dirtied_when))
-> > >  			inode->dirtied_when = jiffies;
-> > >  	}
-> > 
-> > I'm afraid you patch is equivalent to the following one.
-> > Because once the first inode's dirtied_when is set to jiffies,
-> > in order to keep the list in order, the following ones (mostly)
-> > will also be updated. A domino effect.
-> > 
-> > Thanks,
-> > Fengguang
-> > 
+> Yeah, unfortunately, because people are always modifying the kernel's 
+> "magic" sections, a version of the patch that applies to master will 
+> basically always conflict with something in linux-next (at least, this has 
+> been my experience updating it during the 2.6.29 release cycle).  As Rusty 
+> Russell said last month about this patch, there's no good time for this 
+> kind of change.
 > 
-> Good point. One of our other engineers proposed a similar patch
-> originally. I considered it but wasn't clear whether there could be a
-> situation where unconditionally resetting dirtied_when would be a
-> problem. Now that I think about it though, I think you're right...
-> 
-> So maybe something like the patch below is the right thing to do? Or,
-> maybe when we believe that the inode was fully cleaned and then
-> redirtied, we'd just unconditionally stamp dirtied_when. Something like
-> this maybe?
-> 
-> diff --git a/fs/fs-writeback.c b/fs/fs-writeback.c
-> index bd2a7ff..596c96e 100644
-> --- a/fs/fs-writeback.c
-> +++ b/fs/fs-writeback.c
-> @@ -364,7 +364,8 @@ __sync_single_inode(struct inode *inode, struct writeback_control *wbc)
->  			 * Someone redirtied the inode while were writing back
->  			 * the pages.
->  			 */
-> -			redirty_tail(inode);
-> +			inode->dirtied_when = jiffies;
-> +			list_move(&inode->i_list, &sb->s_dirty);
->  		} else if (atomic_read(&inode->i_count)) {
->  			/*
->  			 * The inode is clean, inuse
 
-Hmm...though it is still possible that you could consistently race in
-such a way that after writepages(), I_DIRTY is never set but the
-PAGECACHE_TAG_DIRTY is still set on the mapping. And then we'd be back
-to the same problem of a stuck dirtied_when value.
+"Just before -rc1" is pretty much the only time to do this kind of 
+changes.  It's not the first time we have had this issue.
 
-So maybe someone can explain to me why we take such great pains to
-preserve the dirtied_when value when we're putting the inode back on
-the tail of s_dirty? Why not just unconditionally reset it?
+	-hpa
 
--- 
-Jeff Layton <jlayton@redhat.com>
