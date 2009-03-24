@@ -1,41 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759097AbZCXMbt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760031AbZCXMcn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759097AbZCXMbt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 08:31:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753837AbZCXMbk
+	id S1760031AbZCXMcn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 08:32:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753719AbZCXMcd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 08:31:40 -0400
-Received: from mail-ausfall.charite.de ([193.175.70.131]:56446 "EHLO
+	Tue, 24 Mar 2009 08:32:33 -0400
+Received: from mail-ausfall.charite.de ([193.175.70.131]:48198 "EHLO
 	mail-ausfall.charite.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752992AbZCXMbj (ORCPT
+	with ESMTP id S1753837AbZCXMcc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 08:31:39 -0400
-Date: Tue, 24 Mar 2009 13:31:37 +0100
+	Tue, 24 Mar 2009 08:32:32 -0400
+Date: Tue, 24 Mar 2009 13:32:29 +0100
 From: Ralf Hildebrandt <Ralf.Hildebrandt@charite.de>
 To: linux-kernel@vger.kernel.org
 Subject: Re: tg3 driver fails to load firmware (2.6.29)
-Message-ID: <20090324123137.GV12613@charite.de>
+Message-ID: <20090324123229.GW12613@charite.de>
 Mail-Followup-To: linux-kernel@vger.kernel.org
-References: <20090324120948.GO12613@charite.de> <20090324121608.19f71ce2@lxorguk.ukuu.org.uk> <20090324122211.GS12613@charite.de> <20090324122900.06efc50d@lxorguk.ukuu.org.uk>
+References: <20090324120948.GO12613@charite.de> <20090324121608.19f71ce2@lxorguk.ukuu.org.uk> <20090324122211.GS12613@charite.de> <20090324122900.06efc50d@lxorguk.ukuu.org.uk> <20090324123137.GV12613@charite.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <20090324122900.06efc50d@lxorguk.ukuu.org.uk>
+In-Reply-To: <20090324123137.GV12613@charite.de>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Alan Cox <alan@lxorguk.ukuu.org.uk>:
-> > > Is your userspace configured to use /lib/firmware/2.6.29 or the more
-> > > usual /lib/firmware/ ?
+* Ralf Hildebrandt <Ralf.Hildebrandt@charite.de>:
+> * Alan Cox <alan@lxorguk.ukuu.org.uk>:
+> > > > Is your userspace configured to use /lib/firmware/2.6.29 or the more
+> > > > usual /lib/firmware/ ?
+> > > 
+> > > Which leads to the next question: How to I find out?
 > > 
-> > Which leads to the next question: How to I find out?
+> > Consult your distribution ? or stick it in both places and see 8)
 > 
-> Consult your distribution ? or stick it in both places and see 8)
+> Did that. No workee.
 
-Did that. No workee.
+I mean, loading the firmware is not SOOO important. The thing that
+annoys me is the 60 delay introduced by that.
 
 -- 
 Ralf Hildebrandt
