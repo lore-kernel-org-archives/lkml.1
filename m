@@ -1,76 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757578AbZCXI7Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757164AbZCXJAF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757578AbZCXI7Y (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 04:59:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756787AbZCXI7M
+	id S1757164AbZCXJAF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 05:00:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754493AbZCXI7r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 04:59:12 -0400
-Received: from posthamster.phnxsoft.com ([195.227.45.4]:1503 "EHLO
-	posthamster.phnxsoft.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755259AbZCXI7L (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 04:59:11 -0400
-Message-ID: <49C89FC8.9080904@imap.cc>
-Date: Tue, 24 Mar 2009 10:54:32 +0200
-From: Tilman Schmidt <tilman@imap.cc>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; de-AT; rv:1.8.1.19) Gecko/20081204 SeaMonkey/1.1.14 Mnenhy/0.7.6.0
-MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-CC: stable@kernel.org, kawk@users.sourceforge.net, hjlipp@web.de,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [PATCH 2.6.27/28-stable] bas_gigaset: correctly allocate USB
- interrupt transfer buffer
-References: <20090323-patch-01.tilman@imap.cc> <20090323.150005.113220590.davem@davemloft.net>
-In-Reply-To: <20090323.150005.113220590.davem@davemloft.net>
-X-Enigmail-Version: 0.95.7
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enigF0F76293D8EDB051E04E63F4"
+	Tue, 24 Mar 2009 04:59:47 -0400
+Received: from hera.kernel.org ([140.211.167.34]:38745 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754192AbZCXI7q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Mar 2009 04:59:46 -0400
+Subject: [PATCH -tip] mutex: fix compilation warning
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: Ingo Molnar <mingo@elte.hu>, x86 maintainers <x86@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Tue, 24 Mar 2009 14:29:21 +0530
+Message-Id: <1237885161.5477.1.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.4 (2.24.4-1.fc10) 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enigF0F76293D8EDB051E04E63F4
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+From: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+Date: Tue, 24 Mar 2009 14:21:57 +0530
+Subject: [PATCH] mutex: fix compilation warning
 
-On Mon, 23 Mar 2009 15:00:05 -0700 (PDT), David Miller wrote:
-> From: Tilman Schmidt <tilman@imap.cc>
-> Date: Mon, 23 Mar 2009 22:47:06 +0100 (CET)
->=20
->> the following patch backports the Gigaset driver bugfix merged for
->> 2.6.29 as commit 170ebf85160dd128e1c4206cc197cce7d1424705 to both
->> v2.6.27.x and v2.6.28.x. I would appreciate to see it included in
->> your stable series.
->=20
-> If you ask me I can and will do it during my networking patch
-> -stable submission.
+  CC      kernel/mutex.o
+include/linux/mutex.h:136: warning: ‘mutex_lock’ declared inline after being called
+include/linux/mutex.h:136: warning: previous declaration of ‘mutex_lock’ was here
 
-Thanks. Please do so.
+Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+---
+ include/linux/mutex.h |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-Regards,
-Tilman
+diff --git a/include/linux/mutex.h b/include/linux/mutex.h
+index 93054fc..c8c384c 100644
+--- a/include/linux/mutex.h
++++ b/include/linux/mutex.h
+@@ -133,7 +133,7 @@ extern int __must_check mutex_lock_killable_nested(struct mutex *lock,
+ #define mutex_lock_interruptible(lock) mutex_lock_interruptible_nested(lock, 0)
+ #define mutex_lock_killable(lock) mutex_lock_killable_nested(lock, 0)
+ #else
+-extern void mutex_lock(struct mutex *lock);
++extern inline void mutex_lock(struct mutex *lock);
+ extern int __must_check mutex_lock_interruptible(struct mutex *lock);
+ extern int __must_check mutex_lock_killable(struct mutex *lock);
+ 
+-- 
+1.6.0.6
 
---=20
-Tilman Schmidt                    E-Mail: tilman@imap.cc
-Bonn, Germany
-Diese Nachricht besteht zu 100% aus wiederverwerteten Bits.
-Unge=F6ffnet mindestens haltbar bis: (siehe R=FCckseite)
 
 
---------------enigF0F76293D8EDB051E04E63F4
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.4 (MingW32)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-
-iD8DBQFJyJ/TQ3+did9BuFsRAuRkAJ0UU27JivQR/wea8k8X5oCFYaCnMQCfSsHY
-/blVuLAGB/4H/q5K2MLx5fA=
-=wXEu
------END PGP SIGNATURE-----
-
---------------enigF0F76293D8EDB051E04E63F4--
