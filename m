@@ -1,189 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758174AbZCXPFa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757487AbZCXPK3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758174AbZCXPFa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 11:05:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755238AbZCXPFV
+	id S1757487AbZCXPK3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 11:10:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752846AbZCXPKV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 11:05:21 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:47640 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752846AbZCXPFU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 11:05:20 -0400
-Date: Tue, 24 Mar 2009 16:05:17 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Mikulas Patocka <mpatocka@redhat.com>
-Cc: device-mapper development <dm-devel@redhat.com>,
+	Tue, 24 Mar 2009 11:10:21 -0400
+Received: from rhun.apana.org.au ([64.62.148.172]:46307 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751525AbZCXPKU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Mar 2009 11:10:20 -0400
+Date: Tue, 24 Mar 2009 23:09:28 +0800
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Robert Schwebel <r.schwebel@pengutronix.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Frank Blaschka <blaschka@linux.vnet.ibm.com>,
+       "David S. Miller" <davem@davemloft.net>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andi Kleen <ak@suse.de>, "MASON, CHRISTOPHER" <CHRIS.MASON@oracle.com>
-Subject: Re: [dm-devel] Barriers still not passing on simple dm devices...
-Message-ID: <20090324150517.GX27476@kernel.dk>
-References: <49C7DD3C.2020401@redhat.com> <Pine.LNX.4.64.0903241000010.29968@hs20-bc2-1.build.redhat.com> <20090324140524.GV27476@kernel.dk> <Pine.LNX.4.64.0903241010490.29968@hs20-bc2-1.build.redhat.com> <20090324143034.GW27476@kernel.dk> <Pine.LNX.4.64.0903241033070.4088@hs20-bc2-1.build.redhat.com>
+       kernel@pengutronix.de
+Subject: Re: Revert "gro: Fix legacy path napi_complete crash", (was: Re:
+	Linux 2.6.29)
+Message-ID: <20090324150928.GB30224@gondor.apana.org.au>
+References: <alpine.LFD.2.00.0903231617550.3032@localhost.localdomain> <20090324130202.GA32469@elte.hu> <20090324143303.GP5367@pengutronix.de> <20090324143942.GA20462@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0903241033070.4088@hs20-bc2-1.build.redhat.com>
+In-Reply-To: <20090324143942.GA20462@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 24 2009, Mikulas Patocka wrote:
-> 
-> 
-> On Tue, 24 Mar 2009, Jens Axboe wrote:
-> 
-> > On Tue, Mar 24 2009, Mikulas Patocka wrote:
-> > > 
-> > > 
-> > > On Tue, 24 Mar 2009, Jens Axboe wrote:
-> > > 
-> > > > On Tue, Mar 24 2009, Mikulas Patocka wrote:
-> > > > > 
-> > > > > 
-> > > > > On Mon, 23 Mar 2009, Eric Sandeen wrote:
-> > > > > 
-> > > > > > I've noticed that on 2.6.29-rcX, with Andi's patch
-> > > > > > (ab4c1424882be9cd70b89abf2b484add355712fa, dm: support barriers on
-> > > > > > simple devices) barriers are still getting rejected on these simple devices.
-> > > > > > 
-> > > > > > The problem is in __generic_make_request():
-> > > > > > 
-> > > > > >                 if (bio_barrier(bio) && bio_has_data(bio) &&
-> > > > > >                     (q->next_ordered == QUEUE_ORDERED_NONE)) {
-> > > > > >                         err = -EOPNOTSUPP;
-> > > > > >                         goto end_io;
-> > > > > >                 }
-> > > > > > 
-> > > > > > and dm isn't flagging its queue as supporting ordered writes, so it's
-> > > > > > rejected here.
-> > > > > > 
-> > > > > > Doing something like this:
-> > > > > > 
-> > > > > > + if (t->barriers_supported)
-> > > > > > +         blk_queue_ordered(q, QUEUE_ORDERED_DRAIN, NULL);
-> > > > > > 
-> > > > > > somewhere in dm (I stuck it in dm_table_set_restrictions() - almost
-> > > > > > certainly the wrong thing to do) did get my dm-linear device to mount
-> > > > > > with xfs, w/o xfs complaining that its mount-time barrier tests failed.
-> > > > > > 
-> > > > > > So what's the right way around this?  What should dm (or md for that
-> > > > > > matter) advertise on their queues about ordered-ness?  Should there be
-> > > > > > some sort of "QUEUE_ORDERED_PASSTHROUGH" or something to say "this level
-> > > > > > doesn't care, ask the next level" or somesuch?  Or should it inherit the
-> > > > > > flag from the next level down?  Ideas?
-> > > > > > 
-> > > > > > Thanks,
-> > > > > > -Eric
-> > > > > > 
-> > > > > > --
-> > > > > > dm-devel mailing list
-> > > > > > dm-devel@redhat.com
-> > > > > > https://www.redhat.com/mailman/listinfo/dm-devel
-> > > > > 
-> > > > > Hi
-> > > > > 
-> > > > > This is misdesign in generic bio layer and it should be fixed there. I 
-> > > > > think it is blocking barrier support in md-raid1 too. Jens, pls apply the 
-> > > > > attached patch.
-> > > > > 
-> > > > > Mikulas
-> > > > > 
-> > > > > ----
-> > > > > 
-> > > > > Move test for not-supported barriers to __make_request.
-> > > > > 
-> > > > > This test prevents barriers from being dispatched to device mapper
-> > > > > and md.
-> > > > > 
-> > > > > This test is sensible only for drivers that use requests (such as disk
-> > > > > drivers), not for drivers that use bios.
-> > > > > 
-> > > > > It is better to fix it in generic code than to make workaround for it
-> > > > > in device mapper and md.
-> > > > 
-> > > > So you audited any ->make_request_fn style driver and made sure they
-> > > > rejected barriers?
-> > > 
-> > > I didn't.
-> > > 
-> > > If you grep for it, you get:
-> > > 
-> > > ./arch/powerpc/sysdev/axonram.c:
-> > > doesn't reject barriers, but it is not needed, it ends all bios in 
-> > > make_request routine
-> > > 
-> > > ./drivers/block/aoe/aoeblk.c:
-> > > * doesn't reject barriers, should be modified to do so
-> > > 
-> > > ./drivers/block/brd.c
-> > > doesn't reject barriers, doesn't need to, ends all bios in make_request
-> > > 
-> > > ./drivers/block/loop.c:
-> > > doesn't reject barriers, it's ok because it doesn't reorder requests
-> > > 
-> > > ./drivers/block/pktcdvd.c
-> > > * doesn't reject barriers, should be modified to do so
-> > > 
-> > > ./drivers/block/umem.c
-> > > * doesn't reject barriers, I don't know if it reorders requests or not.
-> > > 
-> > > ./drivers/s390/block/xpram.c
-> > > doesn't reject barriers, doesn't need, ends bios immediatelly
-> > > 
-> > > ./drivers/md/raid0.c
-> > > rejects barriers
-> > > 
-> > > ./drivers/md/raid1.c
-> > > supports barriers
-> > > 
-> > > ./drivers/md/raid10.c
-> > > rejects barriers
-> > > 
-> > > ./drivers/md/raid5.c
-> > > rejects barriers
-> > > 
-> > > ./drivers/md/linear.c
-> > > rejects barriers
-> > > 
-> > > ./drivers/md/dm.c
-> > > supports barriers partially
-> > 
-> > Not reordering is not enough to support the barrier primitive, unless
-> > you always go to the same device and pass the barrier flag down with it.
-> 
-> For single-device drivers (not md/dm), not reordering should be good 
-> enough to claim barrier support.
+On Tue, Mar 24, 2009 at 03:39:42PM +0100, Ingo Molnar wrote:
+>
+> Subject: [PATCH] net: Fix netpoll lockup in legacy receive path
 
-Not reordering is what the barrier is all about, the problem is how far
-down you extend that guarantee. For the linux barrier, it's ALL the way
-down to and including the hardware. So it's only good enough, if it
-includes the device not reordering the write. And signalling completion
-when it's safe. "Good enough" is not an option, it's all or nothing.
+Actually, this patch is still racy.  If some interrupt comes in
+and we suddenly get the maximum amount of backlog we can still
+hang when we call __napi_complete incorrectly.  It's unlikely
+but we certainly shouldn't allow that.  Here's a better version.
 
-> > I think having the check in generic_make_request() is perfectly fine,
-> > even if the value doesn't completely apply to stacked devices. Perhaps
-> > we can add such a value, then. My main point is that barrier support
-> > should be opt-in, not a default thing.
-> 
-> So make some flag for these bio-based devices, so that they don't have to 
-> use one of those request-based options (which are meaningless for 
-> non-request based device).
+net: Fix netpoll lockup in legacy receive path
 
-Sure, but as I said, I think it's mainly a cosmetic issue. Signalling
-simple barrier support is just fine.
+When I fixed the GRO crash in the legacy receive path I used
+napi_complete to replace __napi_complete.  Unfortunately they're
+not the same when NETPOLL is enabled, which may result in us
+not calling __napi_complete at all.
 
-> > Over time we should have support everywhere, but it needs to be checked, 
-> > audited, and trusted.
-> 
-> BTW. What is the rule for barriers if the device can't prevent the 
-> requests from being delayed or reordered? (for example ATA<=3 disks with 
-> cache that lack cache-flush command ... or flash cards that do 
-> write-caching anyway and it can't be turned off). Should they support 
-> barriers and try to make best effort? Or should they reject barriers to 
-> inform the caller code that they have no data consistency?
+What's more, we really do need to keep the __napi_complete call
+within the IRQ-off section since in theory an IRQ can occur in
+between and fill up the backlog to the maximum, causing us to
+lock up.
 
-If they can't flush cache, then they must reject barriers unless they
-have write through caching.
+This patch fixes this by essentially open-coding __napi_complete.
 
+Note we no longer need the memory barrier because this function
+is per-cpu.
+
+Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
+
+diff --git a/net/core/dev.c b/net/core/dev.c
+index e3fe5c7..2a7f6b3 100644
+--- a/net/core/dev.c
++++ b/net/core/dev.c
+@@ -2588,9 +2588,10 @@ static int process_backlog(struct napi_struct *napi, int quota)
+ 		local_irq_disable();
+ 		skb = __skb_dequeue(&queue->input_pkt_queue);
+ 		if (!skb) {
++			list_del(&napi->poll_list);
++			clear_bit(NAPI_STATE_SCHED, &napi->state);
+ 			local_irq_enable();
+-			napi_complete(napi);
+-			goto out;
++			break;
+ 		}
+ 		local_irq_enable();
+ 
+@@ -2599,7 +2600,6 @@ static int process_backlog(struct napi_struct *napi, int quota)
+ 
+ 	napi_gro_flush(napi);
+ 
+-out:
+ 	return work;
+ }
+
+Thanks,
 -- 
-Jens Axboe
-
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
