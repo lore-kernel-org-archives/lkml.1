@@ -1,267 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756636AbZCXHTy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756772AbZCXHVz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756636AbZCXHTy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 03:19:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751133AbZCXHTo
+	id S1756772AbZCXHVz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 03:21:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753545AbZCXHVr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 03:19:44 -0400
-Received: from an-out-0708.google.com ([209.85.132.246]:47575 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750978AbZCXHTo (ORCPT
+	Tue, 24 Mar 2009 03:21:47 -0400
+Received: from rv-out-0506.google.com ([209.85.198.237]:40355 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753336AbZCXHVq convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 03:19:44 -0400
+	Tue, 24 Mar 2009 03:21:46 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=eKf6K7+O0PvcMH39ciLztjnSqKzsgj/LC/9JSlpNhnEn8JEcvIFxPgjRuGKa/iEvBy
-         51Dvo4NawcokQexD5cI7cCc5OEaP+yQhT9B1fSEcArcF2R7nWJxc3rXKJB+7tnJQLdZ2
-         /ImSSTaUusueNhXZx7somS+8OfQpcIZs4g+1Q=
-Subject: Re: [PATCH 4/4] tracing: add per-subsystem filtering
-From: Tom Zanussi <tzanussi@gmail.com>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       =?ISO-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>
-In-Reply-To: <alpine.DEB.2.00.0903231413270.3578@gandalf.stny.rr.com>
-References: <1237710677.7703.49.camel@charm-linux>
-	 <alpine.DEB.2.00.0903231413270.3578@gandalf.stny.rr.com>
-Content-Type: text/plain
-Date: Tue, 24 Mar 2009 02:19:39 -0500
-Message-Id: <1237879179.8339.67.camel@charm-linux>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.0 
-Content-Transfer-Encoding: 7bit
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=vF9Y9jsQc2HKE7nK6Hz1mJ5t3SkGmeDFbF8wG2ma/KPodqfKdqO/Xl1yVqnpr4r8ZI
+         r/Z1eSsuSqiJXPBsD/WbLJgObPI+D/voxNe1F7xElcmxEtT6NQAqT3vUdHkT5ldWd+EH
+         qoC/w5Wpe6POzccB+MKMKIfW3I+Rr2qKCmWzw=
+MIME-Version: 1.0
+In-Reply-To: <200903241619.03517.rusty@rustcorp.com.au>
+References: <200903241619.03517.rusty@rustcorp.com.au>
+Date: Tue, 24 Mar 2009 00:21:43 -0700
+X-Google-Sender-Auth: cdecbab01a21edf9
+Message-ID: <86802c440903240021y20abab87j3a780f8a17574716@mail.gmail.com>
+Subject: Re: [RFC] Correct behaviour of irq affinity?
+From: Yinghai Lu <yinghai@kernel.org>
+To: Rusty Russell <rusty@rustcorp.com.au>, Ingo Molnar <mingo@elte.hu>,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: x86@kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Mon, Mar 23, 2009 at 10:49 PM, Rusty Russell <rusty@rustcorp.com.au> wrote:
+> The effect of setting desc->affinity (ie. from userspace via sysfs) has varied
+> over time.  In 2.6.27, the 32-bit code anded the value with cpu_online_map,
+> and both 32 and 64-bit did that anding whenever a cpu was unplugged.
+>
+> 2.6.29 consolidated this into one routine (and fixed hotplug) but introduced
+> another variation: anding the affinity with cfg->domain.  Is this right, or
+> should we just set it to what the user said?  Or as now, indicate that we're
+> restricting it.
+>
+> If we should change it, here's what the patch looks like against x86 tip
+> (cpu_mask_to_apicid_and already takes cpu_online_mask into account):
+>
+> diff --git a/arch/x86/kernel/apic/io_apic.c b/arch/x86/kernel/apic/io_apic.c
+> index 86827d8..30906cd 100644
+> --- a/arch/x86/kernel/apic/io_apic.c
+> +++ b/arch/x86/kernel/apic/io_apic.c
+> @@ -592,10 +592,10 @@ set_desc_affinity(struct irq_desc *desc, const struct cpumask *mask)
+>        if (assign_irq_vector(irq, cfg, mask))
+>                return BAD_APICID;
+>
+> -       cpumask_and(desc->affinity, cfg->domain, mask);
+> +       cpumask_copy(desc->affinity, mask);
+>        set_extra_move_desc(desc, mask);
+>
+> -       return apic->cpu_mask_to_apicid_and(desc->affinity, cpu_online_mask);
+> +       return apic->cpu_mask_to_apicid_and(desc->affinity, cfg->domain);
+>  }
+>
+>  static void
+>
+cfg->domain for logical flat: will be ALL_CPUS
+for phys flat (aka bigsmp on 32bit) will be one cpu set mask.
 
-On Mon, 2009-03-23 at 14:24 -0400, Steven Rostedt wrote:
-> On Sun, 22 Mar 2009, Tom Zanussi wrote:
-> >  
-> > +struct event_subsystem {
-> > +	struct list_head	list;
-> > +	const char		*name;
-> > +	struct dentry		*entry;
-> > +	struct filter_pred	**preds;
-> > +};
-> > +
-> > +#define events_for_each(event)						\
-> > +	for (event = __start_ftrace_events;				\
-> > +	     (unsigned long)event < (unsigned long)__stop_ftrace_events; \
-> > +	     event++)
-> > +
-> >  #define MAX_FILTER_PRED 8
-> >  
-> >  struct filter_pred;
-> > @@ -832,6 +844,9 @@ extern int filter_add_pred(struct ftrace_event_call *call,
-> >  			   struct filter_pred *pred);
-> >  extern void filter_free_preds(struct ftrace_event_call *call);
-> >  extern int filter_match_preds(struct ftrace_event_call *call, void *rec);
-> > +extern void filter_free_subsystem_preds(struct event_subsystem *system);
-> > +extern int filter_add_subsystem_pred(struct event_subsystem *system,
-> > +				     struct filter_pred *pred);
-> >  
-> >  void event_trace_printk(unsigned long ip, const char *fmt, ...);
-> >  extern struct ftrace_event_call __start_ftrace_events[];
-> > diff --git a/kernel/trace/trace_events.c b/kernel/trace/trace_events.c
-> > index 97470c4..97d4daa 100644
-> > --- a/kernel/trace/trace_events.c
-> > +++ b/kernel/trace/trace_events.c
-> > @@ -524,6 +524,71 @@ event_filter_write(struct file *filp, const char __user *ubuf, size_t cnt,
-> >  	return cnt;
-> >  }
-> >  
-> > +static ssize_t
-> > +subsystem_filter_read(struct file *filp, char __user *ubuf, size_t cnt,
-> > +		      loff_t *ppos)
-> > +{
-> > +	struct event_subsystem *system = filp->private_data;
-> > +	struct trace_seq *s;
-> 
-> Again, trace_seq is not used, might as well use your own buffer.
-> 
-> > +	int r;
-> > +
-> > +	if (*ppos)
-> > +		return 0;
-> > +
-> > +	s = kmalloc(sizeof(*s), GFP_KERNEL);
-> > +	if (!s)
-> > +		return -ENOMEM;
-> > +
-> > +	trace_seq_init(s);
-> > +
-> > +	r = filter_print_preds(system->preds, s->buffer);
-> > +	r = simple_read_from_buffer(ubuf, cnt, ppos, s->buffer, r);
-> > +
-> > +	kfree(s);
-> > +
-> > +	return r;
-> > +}
-> > +
-> > +static ssize_t
-> > +subsystem_filter_write(struct file *filp, const char __user *ubuf, size_t cnt,
-> > +		       loff_t *ppos)
-> > +{
-> > +	struct event_subsystem *system = filp->private_data;
-> > +	char buf[64], *pbuf = buf;
-> > +	struct filter_pred *pred;
-> > +	int err;
-> > +
-> > +	if (cnt >= sizeof(buf))
-> > +		return -EINVAL;
-> > +
-> > +	if (copy_from_user(&buf, ubuf, cnt))
-> > +		return -EFAULT;
-> > +
-> > +	pred = kzalloc(sizeof(*pred), GFP_KERNEL);
-> > +	if (!pred)
-> > +		return -ENOMEM;
-> > +
-> > +	err = filter_parse(&pbuf, pred);
-> > +	if (err < 0) {
-> > +		filter_free_pred(pred);
-> > +		return err;
-> > +	}
-> > +
-> > +	if (pred->clear) {
-> > +		filter_free_subsystem_preds(system);
-> 
-> is "system" correct here?
+so desc->affinity: for logical will be not changed, but
+set_desc_affinity() return will be changed. ( not add with
+cpu_online_mask anymore)
+when mask is 0x0f
+for phys flat, desc->affinity will be changed to 0x0f from
+0x01/0x02/0x04/08, return set_desc_affinity is not changed.
+so /proc/irq/xx/smp_affinity will be changed. and it does reflect that
+actually affinity.
 
-Do you mean the naming i.e. would be better as "subsystem"?  Otherwise,
-I think it's correct.
+so this patch looks not right.
 
-> 
-> > +		return cnt;
-> > +	}
-> > +
-> > +	if (filter_add_subsystem_pred(system, pred)) {
-> > +		filter_free_pred(pred);
-> > +		return -EINVAL;
-> > +	}
-> > +
-> > +	*ppos += cnt;
-> > +
-> > +	return cnt;
-> > +}
-> > +
-> >  static const struct seq_operations show_event_seq_ops = {
-> >  	.start = t_start,
-> >  	.next = t_next,
-> > @@ -575,6 +640,12 @@ static const struct file_operations ftrace_event_filter_fops = {
-> >  	.write = event_filter_write,
-> >  };
-> >  
-> > +static const struct file_operations ftrace_subsystem_filter_fops = {
-> > +	.open = tracing_open_generic,
-> > +	.read = subsystem_filter_read,
-> > +	.write = subsystem_filter_write,
-> > +};
-> > +
-> >  static struct dentry *event_trace_events_dir(void)
-> >  {
-> >  	static struct dentry *d_tracer;
-> > @@ -595,18 +666,13 @@ static struct dentry *event_trace_events_dir(void)
-> >  	return d_events;
-> >  }
-> >  
-> > -struct event_subsystem {
-> > -	struct list_head	list;
-> > -	const char		*name;
-> > -	struct dentry		*entry;
-> > -};
-> > -
-> >  static LIST_HEAD(event_subsystems);
-> >  
-> >  static struct dentry *
-> >  event_subsystem_dir(const char *name, struct dentry *d_events)
-> >  {
-> >  	struct event_subsystem *system;
-> > +	struct dentry *entry;
-> >  
-> >  	/* First see if we did not already create this dir */
-> >  	list_for_each_entry(system, &event_subsystems, list) {
-> > @@ -633,6 +699,14 @@ event_subsystem_dir(const char *name, struct dentry *d_events)
-> >  	system->name = name;
-> >  	list_add(&system->list, &event_subsystems);
-> >  
-> > +	system->preds = NULL;
-> > +
-> > +	entry = debugfs_create_file("filter", 0444, system->entry, system,
-> > +				    &ftrace_subsystem_filter_fops);
-> > +	if (!entry)
-> > +		pr_warning("Could not create debugfs "
-> > +			   "'%s/filter' entry\n", name);
-> > +
-> >  	return system->entry;
-> >  }
-> >  
-> > diff --git a/kernel/trace/trace_events_filter.c b/kernel/trace/trace_events_filter.c
-> > index 8e8c5fa..1ab20ce 100644
-> > --- a/kernel/trace/trace_events_filter.c
-> > +++ b/kernel/trace/trace_events_filter.c
-> > @@ -181,6 +181,27 @@ void filter_free_preds(struct ftrace_event_call *call)
-> >  	}
-> >  }
-> >  
-> > +void filter_free_subsystem_preds(struct event_subsystem *system)
-> > +{
-> > +	struct ftrace_event_call *call = __start_ftrace_events;
-> > +	int i;
-> > +
-> > +	if (system->preds) {
-> > +		for (i = 0; i < MAX_FILTER_PRED; i++)
-> > +			filter_free_pred(system->preds[i]);
-> > +		kfree(system->preds);
-> > +		system->preds = NULL;
-> > +	}
-> > +
-> > +	events_for_each(call) {
-> > +		if (!call->name || !call->regfunc)
-> > +			continue;
-> > +
-> > +		if (!strcmp(call->system, system->name))
-> > +			filter_free_preds(call);
-> > +	}
-> > +}
-> > +
-> >  static int __filter_add_pred(struct ftrace_event_call *call,
-> >  			     struct filter_pred *pred)
-> >  {
-> > @@ -250,6 +271,65 @@ int filter_add_pred(struct ftrace_event_call *call, struct filter_pred *pred)
-> >  	return __filter_add_pred(call, pred);
-> >  }
-> >  
-> > +static struct filter_pred *copy_pred(struct filter_pred *pred)
-> > +{
-> > +	struct filter_pred *new_pred = kmalloc(sizeof(*pred), GFP_KERNEL);
-> > +	if (!new_pred)
-> > +		return NULL;
-> > +
-> > +	memcpy(new_pred, pred, sizeof(*pred));
-> > +	if (pred->str_val) {
-> > +		new_pred->str_val = kstrdup(pred->str_val, GFP_KERNEL);
-> > +		new_pred->field_name = kstrdup(pred->field_name, GFP_KERNEL);
-> > +		if (!new_pred->str_val) {
-> > +			kfree(new_pred);
-> 
-> Shouldn't there be a check for field_name too?
-> 
-
-Yes - I posted a patch to copy_pred() yesterday to fix that.
-
-Tom
-
-> -- Steve
-> 
-> > +			return NULL;
-> > +		}
-> > +	}
-> > +
-> > +	return new_pred;
-> > +}
-> > +
-
+YH
