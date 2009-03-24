@@ -1,59 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761992AbZCXT21@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762005AbZCXT1x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761992AbZCXT21 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 15:28:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759427AbZCXT2M
+	id S1762005AbZCXT1x (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 15:27:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757215AbZCXT1U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 15:28:12 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:46776 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756212AbZCXT2K (ORCPT
+	Tue, 24 Mar 2009 15:27:20 -0400
+Received: from cluster-a.mailcontrol.com ([85.115.52.190]:53127 "EHLO
+	cluster-a.mailcontrol.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761154AbZCXT1T convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 15:28:10 -0400
-Date: Tue, 24 Mar 2009 12:21:11 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Theodore Tso <tytso@mit.edu>
-cc: Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Nick Piggin <npiggin@suse.de>,
-       Jens Axboe <jens.axboe@oracle.com>, David Rees <drees76@gmail.com>,
-       Jesper Krogh <jesper@krogh.cc>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.29
-In-Reply-To: <20090324184549.GE32307@mit.edu>
-Message-ID: <alpine.LFD.2.00.0903241218130.3032@localhost.localdomain>
-References: <alpine.LFD.2.00.0903231617550.3032@localhost.localdomain> <49C87B87.4020108@krogh.cc> <72dbd3150903232346g5af126d7sb5ad4949a7b5041f@mail.gmail.com> <20090324091545.758d00f5@lxorguk.ukuu.org.uk> <20090324093245.GA22483@elte.hu>
- <20090324101011.6555a0b9@lxorguk.ukuu.org.uk> <20090324103111.GA26691@elte.hu> <20090324132032.GK5814@mit.edu> <alpine.LFD.2.00.0903241053200.3032@localhost.localdomain> <20090324184549.GE32307@mit.edu>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Tue, 24 Mar 2009 15:27:19 -0400
+X-Greylist: delayed 2511 seconds by postgrey-1.27 at vger.kernel.org; Tue, 24 Mar 2009 15:27:18 EDT
+From: Train05 <Train05@EU.NEC.COM>
+To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Date: Tue, 24 Mar 2009 18:45:16 +0000
+Subject: Re: Revert "gro: Fix legacy path napi_complete crash", (was: Re:
+	Linux 2.6.29)
+Thread-Topic: Revert "gro: Fix legacy path napi_complete crash", (was: Re:
+	Linux 2.6.29)
+Thread-Index: AQHJrLCs1OjWMmoTgkqMawF0c/Nopg==
+Message-ID: <0ECEF3AEFC6FB34EB441B6010BE685EF58211083DD@EUEXCLU01.EU.NEC.COM>
+Accept-Language: en-US, en-GB
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US, en-GB
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello Ingo,
 
+I experienced identical issues with the network stack hanging after a very short period with 2.6.29 and forcedeth (transferring a few megabytes was normally enough).  I applied your patch and it is now working correctly.
 
-On Tue, 24 Mar 2009, Theodore Tso wrote:
->
-> With ext2 after a system crash you need to run fsck.  With ext4, fsck
-> isn't an issue,
+Many thanks
 
-Bah. A corrupt filesystem is a corrupt filesystem. Whether you have to 
-fsck it or not should be a secondary concern.
+Ross
 
-I personally find silent corruption to be _worse_ than the non-silent one. 
-At least if there's some program that says "oops, your inode so-and-so 
-seems to be scrogged" that's better than just silently having bad data in 
-it.
-
-Of course, never having bad data _nor_ needing fsck is clearly optimal. 
-data=ordered gets pretty close (and data=journal is unacceptable for 
-performance reasons).
-
-But I really don't understand filesystem people who think that "fsck" is 
-the important part, regardless of whether the data is valid or not. That's 
-just stupid and _obviously_ bogus.
-
-			Linus
+Ross Alexander
+SAP Basis
+NEC Europe Ltd
+Corporate IT Centre
+Tel:     +44 20 8752 3394
