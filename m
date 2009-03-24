@@ -1,155 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760368AbZCXO3X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761186AbZCXO3j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760368AbZCXO3X (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 10:29:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757922AbZCXO3F
+	id S1761186AbZCXO3j (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 10:29:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758876AbZCXO3J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 10:29:05 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:40415 "EHLO mx2.redhat.com"
+	Tue, 24 Mar 2009 10:29:09 -0400
+Received: from THUNK.ORG ([69.25.196.29]:43262 "EHLO thunker.thunk.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756079AbZCXO3D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 10:29:03 -0400
-Date: Tue, 24 Mar 2009 10:28:06 -0400
-From: Jeff Layton <jlayton@redhat.com>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
-       jens.axboe@oracle.com, akpm@linux-foundation.org, hch@infradead.org
-Subject: Re: [PATCH] writeback: reset inode dirty time when adding it back
- to empty s_dirty list
-Message-ID: <20090324102806.4f38fd26@tleilax.poochiereds.net>
-In-Reply-To: <20090324135720.GA25314@localhost>
-References: <1237840233-11045-1-git-send-email-jlayton@redhat.com>
-	<20090324135720.GA25314@localhost>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1758299AbZCXO3G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Mar 2009 10:29:06 -0400
+Date: Tue, 24 Mar 2009 10:28:37 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Ingo Molnar <mingo@elte.hu>, Arjan van de Ven <arjan@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Nick Piggin <npiggin@suse.de>,
+       Jens Axboe <jens.axboe@oracle.com>, David Rees <drees76@gmail.com>,
+       Jesper Krogh <jesper@krogh.cc>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.29
+Message-ID: <20090324142837.GN5814@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Alan Cox <alan@lxorguk.ukuu.org.uk>, Ingo Molnar <mingo@elte.hu>,
+	Arjan van de Ven <arjan@infradead.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Peter Zijlstra <a.p.zijlstra@chello.nl>,
+	Nick Piggin <npiggin@suse.de>, Jens Axboe <jens.axboe@oracle.com>,
+	David Rees <drees76@gmail.com>, Jesper Krogh <jesper@krogh.cc>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <alpine.LFD.2.00.0903231617550.3032@localhost.localdomain> <49C87B87.4020108@krogh.cc> <72dbd3150903232346g5af126d7sb5ad4949a7b5041f@mail.gmail.com> <20090324091545.758d00f5@lxorguk.ukuu.org.uk> <20090324093245.GA22483@elte.hu> <20090324101011.6555a0b9@lxorguk.ukuu.org.uk> <20090324103111.GA26691@elte.hu> <20090324132032.GK5814@mit.edu> <20090324135249.02e2caa2@lxorguk.ukuu.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090324135249.02e2caa2@lxorguk.ukuu.org.uk>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 24 Mar 2009 21:57:20 +0800
-Wu Fengguang <fengguang.wu@intel.com> wrote:
-
-> Hi Jeff,
+On Tue, Mar 24, 2009 at 01:52:49PM +0000, Alan Cox wrote:
 > 
-> On Mon, Mar 23, 2009 at 04:30:33PM -0400, Jeff Layton wrote:
-> > This may be a problem on other filesystems too, but the reproducer I
-> > have involves NFS.
-> > 
-> > On NFS, the __mark_inode_dirty() call after writing back the inode is
-> > done in the rpc_release handler for COMMIT calls. This call is done
-> > asynchronously after the call completes.
-> > 
-> > Because there's no real coordination between __mark_inode_dirty() and
-> > __sync_single_inode(), it's often the case that these two calls will
-> > race and __mark_inode_dirty() will get called while I_SYNC is still set.
-> > When this happens, __sync_single_inode() should detect that the inode
-> > was redirtied while we were flushing it and call redirty_tail() to put
-> > it back on the s_dirty list.
-> > 
-> > When redirty_tail() puts it back on the list, it only resets the
-> > dirtied_when value if it's necessary to maintain the list order. Given
-> > the right situation (the right I/O patterns and a lot of luck), this
-> > could result in dirtied_when never getting updated on an inode that's
-> > constantly being redirtied while pdflush is writing it back.
-> > 
-> > Since dirtied_when is based on jiffies, it's possible for it to persist
-> > across 2 sign-bit flips of jiffies. When that happens, the time_after()
-> > check in sync_sb_inodes no longer works correctly and writeouts by
-> > pdflush of this inode and any inodes after it on the list stop.
-> > 
-> > This patch fixes this by resetting the dirtied_when value on an inode
-> > when we're adding it back onto an empty s_dirty list. Since we generally
-> > write inodes from oldest to newest dirtied_when values, this has the
-> > effect of making it so that these inodes don't end up with dirtied_when
-> > values that are frozen.
-> > 
-> > I've also taken the liberty of fixing up the comments a bit and changed
-> > the !time_after_eq() check in redirty_tail to be time_before().  That
-> > should be functionally equivalent but I think it's more readable.
-> > 
-> > I wish this were just a theoretical problem, but we've had a customer
-> > hit a variant of it in an older kernel. Newer upstream kernels have a
-> > number of changes that make this problem less likely. As best I can tell
-> > though, there is nothing that really prevents it.
-> > 
-> > Signed-off-by: Jeff Layton <jlayton@redhat.com>
-> > ---
-> >  fs/fs-writeback.c |   22 +++++++++++++++++-----
-> >  1 files changed, 17 insertions(+), 5 deletions(-)
-> > 
-> > diff --git a/fs/fs-writeback.c b/fs/fs-writeback.c
-> > index e3fe991..bd2a7ff 100644
-> > --- a/fs/fs-writeback.c
-> > +++ b/fs/fs-writeback.c
-> > @@ -184,19 +184,31 @@ static int write_inode(struct inode *inode, int sync)
-> >   * furthest end of its superblock's dirty-inode list.
-> >   *
-> >   * Before stamping the inode's ->dirtied_when, we check to see whether it is
-> > - * already the most-recently-dirtied inode on the s_dirty list.  If that is
-> > - * the case then the inode must have been redirtied while it was being written
-> > - * out and we don't reset its dirtied_when.
-> > + * "newer" or equal to that of the most-recently-dirtied inode on the s_dirty
-> > + * list. If that is the case then we don't need to restamp it to maintain the
-> > + * order of the list.
-> > + *
-> > + * If s_dirty is empty however, then we need to go ahead and update
-> > + * dirtied_when for the inode. Not doing so will mean that inodes that are
-> > + * constantly being redirtied can end up with "stuck" dirtied_when values if
-> > + * they happen to consistently be the first one to go back on the list.
-> > + *
-> > + * Since we're using jiffies values in that field, letting dirtied_when grow
-> > + * too old will be problematic if jiffies wraps. It may also be causing
-> > + * pdflush to flush the inode too often since it'll always look like it was
-> > + * dirtied a long time ago.
-> >   */
-> >  static void redirty_tail(struct inode *inode)
-> >  {
-> >  	struct super_block *sb = inode->i_sb;
-> >  
-> > -	if (!list_empty(&sb->s_dirty)) {
-> > +	if (list_empty(&sb->s_dirty)) {
-> > +		inode->dirtied_when = jiffies;
-> > +	} else {
-> >  		struct inode *tail_inode;
-> >  
-> >  		tail_inode = list_entry(sb->s_dirty.next, struct inode, i_list);
-> > -		if (!time_after_eq(inode->dirtied_when,
-> > +		if (time_before(inode->dirtied_when,
-> >  				tail_inode->dirtied_when))
-> >  			inode->dirtied_when = jiffies;
-> >  	}
-> 
-> I'm afraid you patch is equivalent to the following one.
-> Because once the first inode's dirtied_when is set to jiffies,
-> in order to keep the list in order, the following ones (mostly)
-> will also be updated. A domino effect.
-> 
-> Thanks,
-> Fengguang
-> 
+> At very high rates other things seem to go pear shaped. I've not traced
+> it back far enough to be sure but what I suspect occurs from the I/O at
+> disk level is that two people are writing stuff out at once - presumably
+> the vm paging pressure and the file system - as I see two streams of I/O
+> that are each reasonably ordered but are interleaved.
 
-Good point. One of our other engineers proposed a similar patch
-originally. I considered it but wasn't clear whether there could be a
-situation where unconditionally resetting dirtied_when would be a
-problem. Now that I think about it though, I think you're right...
+Surely the elevator should have reordered the writes reasonably?  (Or
+is that what you meant by "the other one -- #8636 (I assume this is a
+kernel Bugzilla #?) seems to be a bug in the I/O schedulers as it goes
+away if you use a different I/O sched.?")
 
-So maybe something like the patch below is the right thing to do? Or,
-maybe when we believe that the inode was fully cleaned and then
-redirtied, we'd just unconditionally stamp dirtied_when. Something like
-this maybe?
+> > don't get *that* bad, even with ext3.  At least, I haven't found a
+> > workload that doesn't involve either dd if=/dev/zero or a massive
+> > amount of data coming in over the network that will cause fsync()
+> > delays in the > 1-2 second category.  Ext3 has been around for a long
+> 
+> I see it with a desktop when it pages hard and also when doing heavy
+> desktop I/O (in my case the repeatable every time case is saving large
+> images in the gimp - A4 at 600-1200dpi).
 
-diff --git a/fs/fs-writeback.c b/fs/fs-writeback.c
-index bd2a7ff..596c96e 100644
---- a/fs/fs-writeback.c
-+++ b/fs/fs-writeback.c
-@@ -364,7 +364,8 @@ __sync_single_inode(struct inode *inode, struct writeback_control *wbc)
- 			 * Someone redirtied the inode while were writing back
- 			 * the pages.
- 			 */
--			redirty_tail(inode);
-+			inode->dirtied_when = jiffies;
-+			list_move(&inode->i_list, &sb->s_dirty);
- 		} else if (atomic_read(&inode->i_count)) {
- 			/*
- 			 * The inode is clean, inuse
+Yeah, I could see that doing it.  How big is the image, and out of
+curiosity, can you run the fsync-tester.c program I posted while
+saving the gimp image, and tell me how much of a delay you end up
+seeing?
+
+> > solve.  Simply mounting an ext3 filesystem using ext4, without making
+> > any change to the filesystem format, should solve the problem.
+> 
+> I will try this experiment but not with production data just yet 8)
+
+Where's your bravery, man?  :-)
+
+I've been using it on my laptop since July, and haven't lost
+significant amounts of data yet.  (The only thing I did lose was bits
+of a git repository fairly early on, and I was able to repair by
+replacing the missing objects.)
+
+> > some other users' data files.  This was the reason for Stephen Tweedie
+> > implementing the data=ordered mode, and making it the default.
+> 
+> Yes and in the server environment or for typical enterprise customers
+> this is a *big issue*, especially the risk of it being undetected that
+> they just inadvertently did something like put your medical data into the
+> end of something public during a crash.
+
+True enough; changing the defaults to be data=writeback for the server
+environment is probably not a good idea.  (Then again, in the server
+environment most of the workloads generally don't end up hitting the
+nasty data=ordered failure modes; they tend to be
+transaction-oriented, and fsync().)
+
+> > Try ext4, I think you'll like it.  :-)
+> 
+> I need to, so that I can double check none of the open jbd locking bugs
+> are there and close more bugzilla entries (#8147)
+
+More testing would be appreciated --- and yeah, we need to groom the
+bugzilla.  For a long time no one in ext3 land was paying attention to
+bugzilla, and more recently I've been trying to keep up with the
+ext4-related bugs, but I don't get to do ext4 work full-time, and
+occasionally Stacey gets annoyed at me when I work late into night...
+
+> Thanks for the reply - I hadn't realised a lot of this was getting fixed
+> but in ext4 and quietly
+
+Yeah, there are a bunch of things, like the barrier=1 default, which
+akpm has rejected for ext3, but which we've fixed in ext4.  More help
+in shaking down the bugs would definitely be appreciated.
+
+   	   	    	       		     - Ted
