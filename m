@@ -1,310 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759373AbZCXKXv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758749AbZCXK17@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759373AbZCXKXv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 06:23:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758141AbZCXKXl
+	id S1758749AbZCXK17 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 06:27:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757548AbZCXK1s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 06:23:41 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:46154 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757911AbZCXKXi (ORCPT
+	Tue, 24 Mar 2009 06:27:48 -0400
+Received: from smtp112.mail.mud.yahoo.com ([209.191.84.65]:37803 "HELO
+	smtp112.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1757525AbZCXK1r (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 06:23:38 -0400
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: [PATCH 4/4] libata: Improve timeout handling
-To: jeff@garzik.org, linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
-Date: Tue, 24 Mar 2009 10:23:46 +0000
-Message-ID: <20090324102324.9152.78865.stgit@localhost.localdomain>
-In-Reply-To: <20090324101952.9152.30261.stgit@localhost.localdomain>
-References: <20090324101952.9152.30261.stgit@localhost.localdomain>
-User-Agent: StGIT/0.14.3
+	Tue, 24 Mar 2009 06:27:47 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com.au;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=J53oERgt/iEMpSNGRxmsQtnRCeosKtYQpP8TTX6b6INaUKdQlphoahH6+Yyqk7MUbUVeowP+R+/Jwuav0yXeSqJ3jcSVbkDgLx+5WdF7p+JuMUthXx5vxXKqcPzf1q9tmni0mkPhdCl0epD5B8ILeEfcx6CQHgD/Guh3OvEec38=  ;
+X-YMail-OSG: wKc.0N8VM1mGXaHWP3EctOhW8z2yLA43d9ITyl9VogL231Ub.3M7KIAHG1kCR.lXZvibpAo3OshMIj1lTthfguEVwT9EnJT1Nzr1zq2lLQis.VF6NFgTFHFnRT2jz10.4dfvopiaDWEAKDXw7f8BK96sizfXSDXzLwK11NCjaUTHCjZyR6T.spVmI.8OqQ--
+X-Yahoo-Newman-Property: ymail-3
+From: Nick Piggin <nickpiggin@yahoo.com.au>
+To: Jan Kara <jack@suse.cz>
+Subject: Re: ftruncate-mmap: pages are lost after writing to mmaped file.
+Date: Tue, 24 Mar 2009 21:27:35 +1100
+User-Agent: KMail/1.9.51 (KDE/4.0.4; ; )
+Cc: "Martin J. Bligh" <mbligh@mbligh.org>, linux-ext4@vger.kernel.org,
+       Ying Han <yinghan@google.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "linux-kernel" <linux-kernel@vger.kernel.org>,
+       "linux-mm" <linux-mm@kvack.org>, guichaz@gmail.com,
+       Alex Khesin <alexk@google.com>, Mike Waychison <mikew@google.com>,
+       Rohit Seth <rohitseth@google.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+References: <604427e00903181244w360c5519k9179d5c3e5cd6ab3@mail.gmail.com> <20090319164638.GB3899@duck.suse.cz> <200903241844.22851.nickpiggin@yahoo.com.au>
+In-Reply-To: <200903241844.22851.nickpiggin@yahoo.com.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200903242127.36541.nickpiggin@yahoo.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Alan Cox <alan@redhat.com>
+On Tuesday 24 March 2009 18:44:21 Nick Piggin wrote:
 
-On a timeout call a device specific handler early in the recovery so that
-we can complete and process successful commands which timed out due to IRQ
-loss or the like rather more elegantly.
+> I close my eyes and pick something out of a hat. a686cd89. Search for XXX.
+> Nice. Whether or not this cased the problem, can someone please tell me
+> why it got merged in that state?
 
-[Revised to exclude the timeout handling on a few devices that inherit from
- SFF but are not SFF enough to use the default timeout handler]
-
-Signed-off-by: Alan Cox <alan@redhat.com>
----
-
- drivers/ata/libata-eh.c    |   19 ++++++++++++++++--
- drivers/ata/libata-sff.c   |   46 +++++++++++++++++++++++++++++++++++++++++++-
- drivers/ata/pata_isapnp.c  |   12 ++++++++++-
- drivers/ata/pdc_adma.c     |    2 ++
- drivers/ata/sata_mv.c      |    2 ++
- drivers/ata/sata_nv.c      |    1 +
- drivers/ata/sata_promise.c |    2 ++
- drivers/ata/sata_qstor.c   |    1 +
- drivers/ata/sata_vsc.c     |    3 +++
- include/linux/libata.h     |    2 ++
- 10 files changed, 85 insertions(+), 5 deletions(-)
-
-
-diff --git a/drivers/ata/libata-eh.c b/drivers/ata/libata-eh.c
-index ea89091..0183131 100644
---- a/drivers/ata/libata-eh.c
-+++ b/drivers/ata/libata-eh.c
-@@ -547,7 +547,7 @@ void ata_scsi_error(struct Scsi_Host *host)
- 
- 	/* For new EH, all qcs are finished in one of three ways -
- 	 * normal completion, error completion, and SCSI timeout.
--	 * Both cmpletions can race against SCSI timeout.  When normal
-+	 * Both completions can race against SCSI timeout.  When normal
- 	 * completion wins, the qc never reaches EH.  When error
- 	 * completion wins, the qc has ATA_QCFLAG_FAILED set.
- 	 *
-@@ -562,7 +562,19 @@ void ata_scsi_error(struct Scsi_Host *host)
- 		int nr_timedout = 0;
- 
- 		spin_lock_irqsave(ap->lock, flags);
--
-+		
-+		/* This must occur under the ap->lock as we don't want
-+		   a polled recovery to race the real interrupt handler
-+		   
-+		   The lost_interrupt handler checks for any completed but
-+		   non-notified command and completes much like an IRQ handler.
-+		   
-+		   We then fall into the error recovery code which will treat
-+		   this as if normal completion won the race */
-+
-+		if (ap->ops->lost_interrupt)
-+			ap->ops->lost_interrupt(ap);
-+			
- 		list_for_each_entry_safe(scmd, tmp, &host->eh_cmd_q, eh_entry) {
- 			struct ata_queued_cmd *qc;
- 
-@@ -606,6 +618,9 @@ void ata_scsi_error(struct Scsi_Host *host)
- 		ap->eh_tries = ATA_EH_MAX_TRIES;
- 	} else
- 		spin_unlock_wait(ap->lock);
-+		
-+	/* If we timed raced normal completion and there is nothing to
-+	   recover nr_timedout == 0 why exactly are we doing error recovery ? */
- 
-  repeat:
- 	/* invoke error handler */
-diff --git a/drivers/ata/libata-sff.c b/drivers/ata/libata-sff.c
-index 9a10cb0..8332e97 100644
---- a/drivers/ata/libata-sff.c
-+++ b/drivers/ata/libata-sff.c
-@@ -65,6 +65,8 @@ const struct ata_port_operations ata_sff_port_ops = {
- 	.sff_irq_on		= ata_sff_irq_on,
- 	.sff_irq_clear		= ata_sff_irq_clear,
- 
-+	.lost_interrupt		= ata_sff_lost_interrupt,
-+
- 	.port_start		= ata_sff_port_start,
- };
- EXPORT_SYMBOL_GPL(ata_sff_port_ops);
-@@ -1647,7 +1649,7 @@ EXPORT_SYMBOL_GPL(ata_sff_qc_fill_rtf);
-  *	RETURNS:
-  *	One if interrupt was handled, zero if not (shared irq).
-  */
--inline unsigned int ata_sff_host_intr(struct ata_port *ap,
-+unsigned int ata_sff_host_intr(struct ata_port *ap,
- 				      struct ata_queued_cmd *qc)
- {
- 	struct ata_eh_info *ehi = &ap->link.eh_info;
-@@ -1776,6 +1778,48 @@ irqreturn_t ata_sff_interrupt(int irq, void *dev_instance)
- EXPORT_SYMBOL_GPL(ata_sff_interrupt);
- 
- /**
-+ *	ata_sff_lost_interrupt	-	Check for an apparent lost interrupt
-+ *	@ap: port that appears to have timed out
-+ *
-+ *	Called from the libata error handlers when the core code suspects
-+ *	an interrupt has been lost. If it has complete anything we can and
-+ *	then return. Interface must support altstatus for this faster
-+ *	recovery to occur.
-+ *
-+ *	Locking:
-+ *	Caller holds host lock
-+ */
-+
-+void ata_sff_lost_interrupt(struct ata_port *ap)
-+{
-+	u8 status;
-+	struct ata_queued_cmd *qc;
-+
-+	/* Only one outstanding command per SFF channel */
-+	qc = ata_qc_from_tag(ap, ap->link.active_tag);
-+	/* Check we have a live one.. */
-+	if (qc == NULL ||  !(qc->flags & ATA_QCFLAG_ACTIVE))
-+		return;
-+	/* We cannot lose an interrupt on a polled command */
-+	if (qc->tf.flags & ATA_TFLAG_POLLING)
-+		return;
-+	/* See if the controller thinks it is still busy - if so the command
-+	   isn't a lost IRQ but is still in progress */
-+	status = ata_sff_altstatus(ap);
-+	if (status & ATA_BUSY)
-+		return;
-+
-+	/* There was a command running, we are no longer busy and we have
-+	   no interrupt. */
-+	ata_port_printk(ap, KERN_WARNING, "lost interrupt (Status 0x%x)\n",
-+								status);
-+	/* Run the host interrupt logic as if the interrupt had not been
-+	   lost */
-+	ata_sff_host_intr(ap, qc);
-+}
-+EXPORT_SYMBOL_GPL(ata_sff_lost_interrupt);
-+
-+/**
-  *	ata_sff_freeze - Freeze SFF controller port
-  *	@ap: port to freeze
-  *
-diff --git a/drivers/ata/pata_isapnp.c b/drivers/ata/pata_isapnp.c
-index 15cdb91..eb50be8 100644
---- a/drivers/ata/pata_isapnp.c
-+++ b/drivers/ata/pata_isapnp.c
-@@ -17,7 +17,7 @@
- #include <linux/libata.h>
- 
- #define DRV_NAME "pata_isapnp"
--#define DRV_VERSION "0.2.2"
-+#define DRV_VERSION "0.2.5"
- 
- static struct scsi_host_template isapnp_sht = {
- 	ATA_PIO_SHT(DRV_NAME),
-@@ -28,6 +28,13 @@ static struct ata_port_operations isapnp_port_ops = {
- 	.cable_detect	= ata_cable_40wire,
- };
- 
-+static struct ata_port_operations isapnp_noalt_port_ops = {
-+	.inherits	= &ata_sff_port_ops,
-+	.cable_detect	= ata_cable_40wire,
-+	/* No altstatus so we don't want to use the lost interrupt poll */
-+	.lost_interrupt = ATA_OP_NULL,
-+};
-+
- /**
-  *	isapnp_init_one		-	attach an isapnp interface
-  *	@idev: PnP device
-@@ -65,7 +72,7 @@ static int isapnp_init_one(struct pnp_dev *idev, const struct pnp_device_id *dev
- 
- 	ap = host->ports[0];
- 
--	ap->ops = &isapnp_port_ops;
-+	ap->ops = &isapnp_noalt_port_ops;
- 	ap->pio_mask = 1;
- 	ap->flags |= ATA_FLAG_SLAVE_POSS;
- 
-@@ -76,6 +83,7 @@ static int isapnp_init_one(struct pnp_dev *idev, const struct pnp_device_id *dev
- 					   pnp_port_start(idev, 1), 1);
- 		ap->ioaddr.altstatus_addr = ctl_addr;
- 		ap->ioaddr.ctl_addr = ctl_addr;
-+		ap->ops = &isapnp_port_ops;
- 	}
- 
- 	ata_sff_std_ports(&ap->ioaddr);
-diff --git a/drivers/ata/pdc_adma.c b/drivers/ata/pdc_adma.c
-index be53545..51b4081 100644
---- a/drivers/ata/pdc_adma.c
-+++ b/drivers/ata/pdc_adma.c
-@@ -148,6 +148,8 @@ static struct scsi_host_template adma_ata_sht = {
- static struct ata_port_operations adma_ata_ops = {
- 	.inherits		= &ata_sff_port_ops,
- 
-+	.lost_interrupt		= ATA_OP_NULL,
-+
- 	.check_atapi_dma	= adma_check_atapi_dma,
- 	.qc_prep		= adma_qc_prep,
- 	.qc_issue		= adma_qc_issue,
-diff --git a/drivers/ata/sata_mv.c b/drivers/ata/sata_mv.c
-index 74b1080..4110a29 100644
---- a/drivers/ata/sata_mv.c
-+++ b/drivers/ata/sata_mv.c
-@@ -566,6 +566,8 @@ static struct scsi_host_template mv6_sht = {
- static struct ata_port_operations mv5_ops = {
- 	.inherits		= &ata_sff_port_ops,
- 
-+	.lost_interrupt		= ATA_OP_NULL,
-+
- 	.qc_defer		= mv_qc_defer,
- 	.qc_prep		= mv_qc_prep,
- 	.qc_issue		= mv_qc_issue,
-diff --git a/drivers/ata/sata_nv.c b/drivers/ata/sata_nv.c
-index f65b537..776e3dc 100644
---- a/drivers/ata/sata_nv.c
-+++ b/drivers/ata/sata_nv.c
-@@ -408,6 +408,7 @@ static struct scsi_host_template nv_swncq_sht = {
- 
- static struct ata_port_operations nv_common_ops = {
- 	.inherits		= &ata_bmdma_port_ops,
-+	.lost_interrupt		= ATA_OP_NULL,
- 	.scr_read		= nv_scr_read,
- 	.scr_write		= nv_scr_write,
- };
-diff --git a/drivers/ata/sata_promise.c b/drivers/ata/sata_promise.c
-index ba9a257..7fe3da2 100644
---- a/drivers/ata/sata_promise.c
-+++ b/drivers/ata/sata_promise.c
-@@ -176,7 +176,9 @@ static const struct ata_port_operations pdc_common_ops = {
- 	.check_atapi_dma	= pdc_check_atapi_dma,
- 	.qc_prep		= pdc_qc_prep,
- 	.qc_issue		= pdc_qc_issue,
-+
- 	.sff_irq_clear		= pdc_irq_clear,
-+	.lost_interrupt		= ATA_OP_NULL,
- 
- 	.post_internal_cmd	= pdc_post_internal_cmd,
- 	.error_handler		= pdc_error_handler,
-diff --git a/drivers/ata/sata_qstor.c b/drivers/ata/sata_qstor.c
-index a000c86..7a9349a 100644
---- a/drivers/ata/sata_qstor.c
-+++ b/drivers/ata/sata_qstor.c
-@@ -147,6 +147,7 @@ static struct ata_port_operations qs_ata_ops = {
- 	.softreset		= ATA_OP_NULL,
- 	.error_handler		= qs_error_handler,
- 	.post_internal_cmd	= ATA_OP_NULL,
-+	.lost_interrupt		= ATA_OP_NULL,
- 
- 	.scr_read		= qs_scr_read,
- 	.scr_write		= qs_scr_write,
-diff --git a/drivers/ata/sata_vsc.c b/drivers/ata/sata_vsc.c
-index c57cdff..07baeef 100644
---- a/drivers/ata/sata_vsc.c
-+++ b/drivers/ata/sata_vsc.c
-@@ -308,6 +308,9 @@ static struct scsi_host_template vsc_sata_sht = {
- 
- static struct ata_port_operations vsc_sata_ops = {
- 	.inherits		= &ata_bmdma_port_ops,
-+	/* The IRQ handling is not quite standard SFF behaviour so we
-+	   cannot use the default lost interrupt handler */
-+	.lost_interrupt		= ATA_OP_NULL,
- 	.sff_tf_load		= vsc_sata_tf_load,
- 	.sff_tf_read		= vsc_sata_tf_read,
- 	.freeze			= vsc_freeze,
-diff --git a/include/linux/libata.h b/include/linux/libata.h
-index ffcef1f..ef2eda9 100644
---- a/include/linux/libata.h
-+++ b/include/linux/libata.h
-@@ -795,6 +795,7 @@ struct ata_port_operations {
- 	ata_reset_fn_t		pmp_hardreset;
- 	ata_postreset_fn_t	pmp_postreset;
- 	void (*error_handler)(struct ata_port *ap);
-+	void (*lost_interrupt)(struct ata_port *ap);
- 	void (*post_internal_cmd)(struct ata_queued_cmd *qc);
- 
- 	/*
-@@ -1574,6 +1575,7 @@ extern bool ata_sff_qc_fill_rtf(struct ata_queued_cmd *qc);
- extern unsigned int ata_sff_host_intr(struct ata_port *ap,
- 				      struct ata_queued_cmd *qc);
- extern irqreturn_t ata_sff_interrupt(int irq, void *dev_instance);
-+extern void ata_sff_lost_interrupt(struct ata_port *ap);
- extern void ata_sff_freeze(struct ata_port *ap);
- extern void ata_sff_thaw(struct ata_port *ap);
- extern int ata_sff_prereset(struct ata_link *link, unsigned long deadline);
+Actually I must be wrong about this if the problem was reproduced in
+2.6.18. Question still stands, though.
 
