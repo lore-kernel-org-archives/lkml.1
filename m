@@ -1,124 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761934AbZCXP5a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760501AbZCXP75@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761934AbZCXP5a (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 11:57:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754842AbZCXP5T
+	id S1760501AbZCXP75 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 11:59:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751988AbZCXP7s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 11:57:19 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:51932 "EHLO
-	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753900AbZCXP5S (ORCPT
+	Tue, 24 Mar 2009 11:59:48 -0400
+Received: from rhun.apana.org.au ([64.62.148.172]:42223 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751729AbZCXP7r (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 11:57:18 -0400
-Message-ID: <49C90366.2000905@novell.com>
-Date: Tue, 24 Mar 2009 11:59:34 -0400
-From: Gregory Haskins <ghaskins@novell.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
-MIME-Version: 1.0
+	Tue, 24 Mar 2009 11:59:47 -0400
+Date: Tue, 24 Mar 2009 23:59:11 +0800
+From: Herbert Xu <herbert@gondor.apana.org.au>
 To: Ingo Molnar <mingo@elte.hu>
-CC: Luis Henriques <henrix@sapo.pt>, Peter Zijlstra <peterz@infradead.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v3 -tip] sched: Clean unused fields from struct rq
-References: <20090318225137.GA3766@hades.domain.com> <20090323175224.GA3938@hades.domain.com> <20090324140419.GD32043@elte.hu> <49C8FA99.9030503@novell.com> <20090324154130.GC31143@elte.hu>
-In-Reply-To: <20090324154130.GC31143@elte.hu>
-X-Enigmail-Version: 0.95.7
-OpenPGP: id=D8195319
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig1C972C276C3AE8525686E246"
+Cc: Robert Schwebel <r.schwebel@pengutronix.de>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Frank Blaschka <blaschka@linux.vnet.ibm.com>,
+       "David S. Miller" <davem@davemloft.net>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       kernel@pengutronix.de
+Subject: Re: Revert "gro: Fix legacy path napi_complete crash", (was: Re:
+	Linux 2.6.29)
+Message-ID: <20090324155911.GA30824@gondor.apana.org.au>
+References: <alpine.LFD.2.00.0903231617550.3032@localhost.localdomain> <20090324130202.GA32469@elte.hu> <20090324143303.GP5367@pengutronix.de> <20090324143942.GA20462@elte.hu> <20090324150928.GB30224@gondor.apana.org.au> <20090324153616.GA31143@elte.hu> <20090324154717.GA7506@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090324154717.GA7506@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig1C972C276C3AE8525686E246
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+On Tue, Mar 24, 2009 at 04:47:17PM +0100, Ingo Molnar wrote:
+> 
+> test failure on one of the boxes, interface got stuck after ~100K 
+> packets:
+> 
+> eth1      Link encap:Ethernet  HWaddr 00:13:D4:DC:41:12  
+>           inet addr:10.0.1.13  Bcast:10.0.1.255  Mask:255.255.255.0
+>           inet6 addr: fe80::213:d4ff:fedc:4112/64 Scope:Link
+>           UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
+>           RX packets:22555 errors:0 dropped:0 overruns:0 frame:0
+>           TX packets:1897 errors:0 dropped:0 overruns:0 carrier:0
+>           collisions:0 txqueuelen:1000 
+>           RX bytes:2435071 (2.3 MiB)  TX bytes:503790 (491.9 KiB)
+>           Interrupt:11 Base address:0x4000 
 
-Ingo Molnar wrote:
-> * Gregory Haskins <ghaskins@novell.com> wrote:
->
->  =20
->> Ingo Molnar wrote:
->>    =20
->>> * Luis Henriques <henrix@sapo.pt> wrote:
->>>
->>>  =20
->>>      =20
->>>> On Wed, Mar 18, 2009 at 10:51:37PM +0000, Luis Henriques wrote:
->>>>    =20
->>>>        =20
->>>>> Since they are used on in statistics and are always set to zero, th=
-e following
->>>>> fields from struct rq have been removed: yld_exp_empty, yld_act_emp=
-ty and
->>>>> yld_both_empty.
->>>>>
->>>>> Both Sched Debug and SCHEDSTAT_VERSION versions has also been incre=
-mented since
->>>>> ABIs have been changed.
->>>>>
->>>>>      =20
->>>>>          =20
->>>> Hi Ingo,
->>>>
->>>> Sorry to bother you but I can not find this patch in -tip.  Just=20
->>>> would like to confirm with you that it was NACK'ed or you just=20
->>>> forgot to merge it to the tree.
->>>>    =20
->>>>        =20
->>> Was held up by the schedstat tool discussions. Please resend the=20
->>> patch with a link to the updated tool in the commit log perhaps (if=20
->>> such a link exists), and with Gregory's ack in place.
->>>
->>> Thanks,
->>>
->>> 	Ingo
->>>  =20
->>>      =20
->> Hi Ingo,
->>   I was waiting to merge the tool patch until I was sure this would be=
+What's the NIC and config on this one? If it's still using the
+legacy/netif_rx path, where GRO is off by default, this patch
+should make it exactly the same as with my original patch reverted.
 
->> your blessed v15 of the ABI.  If you are comfy with the kernel patch b=
-ut
->> want the tool updated before the kernel, I can do that, no problem.  T=
-he
->> only thing that I ask is that if for some reason this kernel patch
->> doesn't make it in, please require any future patches that change this=
-
->> ABI to be versioned > 15 ;)
->>    =20
->
-> How about moving schedstat to Documentation/sched/schedstat.c or so?=20
-> It's small and trivial enough, and that way changes would go hand in=20
-> hand with the app.
->  =20
-Oh, I misunderstood.  The tool patch I was referencing is for my
-schedtop tool that is in a separate tree and written in C++.   In
-retrospect, you probably don't care about the relative state of my tool
-coincident with the kernel side change, then.  I agree that this other
-schedstat tool should probably be in-tree and patched at the same time
-as Luis' kernel patch.
-
-FWIW: I have no problem with schedtop.cc going into the kernel as well
-if that is what you would like, but I figured I would be burned at the
-stake for suggestion such heresy as C++ in the tree ;)
-
--Greg
-
-
---------------enig1C972C276C3AE8525686E246
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
-Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
-
-iEYEARECAAYFAknJA2YACgkQlOSOBdgZUxnP+ACfd5br/sLxh7xVoZ2+lUc8Slu6
-exYAnjRacCRdOhvIOggKsowwdlxYwx6w
-=O3i3
------END PGP SIGNATURE-----
-
---------------enig1C972C276C3AE8525686E246--
+Cheers,
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
