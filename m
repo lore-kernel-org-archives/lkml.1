@@ -1,73 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754617AbZCYFyh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754884AbZCYGFh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754617AbZCYFyh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 01:54:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753417AbZCYFy2
+	id S1754884AbZCYGFh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 02:05:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752977AbZCYGFY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 01:54:28 -0400
-Received: from out02.mta.xmission.com ([166.70.13.232]:32964 "EHLO
-	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753296AbZCYFy1 (ORCPT
+	Wed, 25 Mar 2009 02:05:24 -0400
+Received: from smtp119.sbc.mail.sp1.yahoo.com ([69.147.64.92]:39874 "HELO
+	smtp119.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752585AbZCYGFY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 01:54:27 -0400
-To: Alex Chiang <achiang@hp.com>
-Cc: htejun@gmail.com, greg@kroah.com, cornelia.huck@de.ibm.com,
-       stern@rowland.harvard.edu, kay.sievers@vrfy.org, rusty@rustcorp.com.au,
-       linux-kernel@vger.kernel.org
-References: <20090325035707.15921.42150.stgit@bob.kio>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Tue, 24 Mar 2009 22:54:17 -0700
-In-Reply-To: <20090325035707.15921.42150.stgit@bob.kio> (Alex Chiang's message of "Tue\, 24 Mar 2009 22\:16\:46 -0600")
-Message-ID: <m13ad2xi46.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=67.169.126.145;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 67.169.126.145
-X-SA-Exim-Rcpt-To: achiang@hp.com, linux-kernel@vger.kernel.org, rusty@rustcorp.com.au, kay.sievers@vrfy.org, stern@rowland.harvard.edu, cornelia.huck@de.ibm.com, greg@kroah.com, htejun@gmail.com
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa01 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Combo: ;Alex Chiang <achiang@hp.com>
-X-Spam-Relay-Country: 
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  3.0 XMNoVowels Alpha-numberic number with no vowels
-	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
-	*      [score: 0.0000]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa01 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-Subject: Re: [RFC PATCH 0/3] sysfs: allow suicide
-X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
-X-SA-Exim-Scanned: Yes (on in02.mta.xmission.com)
+	Wed, 25 Mar 2009 02:05:24 -0400
+X-YMail-OSG: Kv5EXeAVM1k9_7pnEJ7RWtTi1YZVVr8F2mTdaUKcx8xKbSNDsCp1bLEnZHP_BEXm2yhm5DYWUZIrgAWeRrP7J3__YvJ1C2Af0i4FywORm0W8uvDdI1P36NNkRYnAvzc5WbCzNg.Du1A3KnHW8WEG57f8PdKTPZgS97dH0NtSEtubsjKWrefkds9XIOkPh6pm6pqn_0E8zQmC4TATvupfKoyME6qkJBE-
+X-Yahoo-Newman-Property: ymail-3
+Subject: [PATCH 0/2] [Target_Core_Mod]: Add support for UNIT_ATTENTION with
+	SPC-3 PR
+From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
+To: LKML <linux-kernel@vger.kernel.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>
+Cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Douglas Gilbert <dgilbert@interlog.com>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       Mike Christie <michaelc@cs.wisc.edu>, Hannes Reinecke <hare@suse.de>,
+       Boaz Harrosh <bharrosh@panasas.com>,
+       "Martin K. Petersen" <martin.petersen@oracle.com>
+Content-Type: text/plain
+Date: Tue, 24 Mar 2009 23:05:20 -0700
+Message-Id: <1237961120.4138.416.camel@haakon2.linux-iscsi.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Greetings all,
 
-Interesting.
+This patch adds support for SAM4/SPC4 compliant UNIT_ATTENTION with ua_intlck_ctrl 
+control mode page value 00b, 10b and 11b.  The default has been set to 0 in configfs,
+which is to clear the UNIT ATTENTION with a CHECK_CONDITION+Sense data with a
+corresponding ASC+ASCQ.  Currently, Linux/SCSI midlayer clients require a manual sg_request
+to clear the UNIT ATTENTION with a REQUEST_SENSE for modes 10b and 11b.  These values can be
+changed (without active $FABRIC_MOD target ports) for a given target_core_mod storage object
+with ConfigFS via /sys/kernel/config/target/core/$HBA/$DEV/attrib/emulated_ua_intlck_ctrl.
+The echoed values for the attribute into ConfigFS are 0, 1, and 2 respectively for the
+interlock codes 00b, 10b, and 11b.
 
-Fixing a read/writer deadlock by allowing the writers to nest
-inside the readers.
+These patches are made against lio-core-2.6.git/master and tested on
+v2.6.29 x86 32-bit HVM using sg_persist from sg3_utils.  The lio-core-2.6.git tree
+can be found at: 
 
-My first impression is that it is too clever.
+http://git.kernel.org/?p=linux/kernel/git/nab/lio-core-2.6.git;a=summary
 
-Furthermore I think this is walking around the edges of a more
-general problem.   How should we serial hotplug and hotunplug
-in general.  In what context should remove methods run in.
+Subject: [PATCH 1/2] [Target_Core_Mod]: Add support for UNIT_ATTENTION conditions
+Subject: [PATCH 2/2] [Target_Core_Mod/Persistent_Reservations]: Add UNIT ATTENTION support for PROUT SAs 
 
-My impression is that we have a huge hole in our infrastructure
-for hotplug drivers.  Problems like how do we get a user space
-context for the code to run in and how do we handle
-multiple hotplug actions for overlapping device trees from
-stomping on each other.
+ drivers/lio-core/Makefile                |    1 +
+ drivers/lio-core/target_core_base.h      |   13 ++
+ drivers/lio-core/target_core_configfs.c  |    4 +
+ drivers/lio-core/target_core_device.c    |   27 +++-
+ drivers/lio-core/target_core_device.h    |    1 +
+ drivers/lio-core/target_core_pr.c        |  107 +++++++++-
+ drivers/lio-core/target_core_tpg.c       |   10 +
+ drivers/lio-core/target_core_transport.c |  127 ++++++++++--
+ drivers/lio-core/target_core_transport.h |    2 +
+ drivers/lio-core/target_core_ua.c        |  333 ++++++++++++++++++++++++++++++
+ drivers/lio-core/target_core_ua.h        |   36 ++++
+ 11 files changed, 632 insertions(+), 29 deletions(-)
 
-My hypothesis is once we solve this for the general case of
-device hotplug and removal we won't need special support from
-sysfs.  At least not in the suicidal way.
 
-We still have very weird cases such as the lock inversion that
-we have today between rtnl_lock and active reference count,
-coming from the networking code.
-
-Eric
