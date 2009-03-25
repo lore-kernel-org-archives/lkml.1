@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757079AbZCYAbX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754783AbZCYAbk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757079AbZCYAbX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 20:31:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756371AbZCYA3h
+	id S1754783AbZCYAbk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 20:31:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755122AbZCYA3i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 20:29:37 -0400
-Received: from kroah.org ([198.145.64.141]:54040 "EHLO coco.kroah.org"
+	Tue, 24 Mar 2009 20:29:38 -0400
+Received: from kroah.org ([198.145.64.141]:54042 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755211AbZCYA3g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 20:29:36 -0400
+	id S1756106AbZCYA3h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Mar 2009 20:29:37 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
-Cc: Kay Sievers <kay.sievers@vrfy.org>
-Subject: [PATCH 04/61] zorro: struct device - replace bus_id with dev_name(), dev_set_name()
-Date: Tue, 24 Mar 2009 17:26:08 -0700
-Message-Id: <1237940825-22904-4-git-send-email-gregkh@suse.de>
+Cc: Kay Sievers <kay.sievers@vrfy.org>, drzeus-mmc@drzeus.cx
+Subject: [PATCH 05/61] mmc: struct device - replace bus_id with dev_name(), dev_set_name()
+Date: Tue, 24 Mar 2009 17:26:09 -0700
+Message-Id: <1237940825-22904-5-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.6.2
 In-Reply-To: <20090325001659.GA22461@kroah.com>
 References: <20090325001659.GA22461@kroah.com>
@@ -24,34 +24,40 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Kay Sievers <kay.sievers@vrfy.org>
 
+Cc: drzeus-mmc@drzeus.cx
 Acked-by: Greg Kroah-Hartman <gregkh@suse.de>
 Signed-off-by: Kay Sievers <kay.sievers@vrfy.org>
 ---
- drivers/zorro/zorro.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ drivers/mmc/host/atmel-mci.c  |    2 +-
+ drivers/mmc/host/of_mmc_spi.c |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/zorro/zorro.c b/drivers/zorro/zorro.c
-index a1585d6..d45fb34 100644
---- a/drivers/zorro/zorro.c
-+++ b/drivers/zorro/zorro.c
-@@ -140,7 +140,7 @@ static int __init zorro_init(void)
+diff --git a/drivers/mmc/host/atmel-mci.c b/drivers/mmc/host/atmel-mci.c
+index 2b1196e..e94e920 100644
+--- a/drivers/mmc/host/atmel-mci.c
++++ b/drivers/mmc/host/atmel-mci.c
+@@ -1603,7 +1603,7 @@ static int __init atmci_probe(struct platform_device *pdev)
  
-     /* Initialize the Zorro bus */
-     INIT_LIST_HEAD(&zorro_bus.devices);
--    strcpy(zorro_bus.dev.bus_id, "zorro");
-+    dev_set_name(&zorro_bus.dev, "zorro");
-     error = device_register(&zorro_bus.dev);
-     if (error) {
- 	pr_err("Zorro: Error registering zorro_bus\n");
-@@ -167,7 +167,7 @@ static int __init zorro_init(void)
- 	if (request_resource(zorro_find_parent_resource(z), &z->resource))
- 	    pr_err("Zorro: Address space collision on device %s %pR\n",
- 		   z->name, &z->resource);
--	sprintf(z->dev.bus_id, "%02x", i);
-+	dev_set_name(&z->dev, "%02x", i);
- 	z->dev.parent = &zorro_bus.dev;
- 	z->dev.bus = &zorro_bus_type;
- 	error = device_register(&z->dev);
+ 	tasklet_init(&host->tasklet, atmci_tasklet_func, (unsigned long)host);
+ 
+-	ret = request_irq(irq, atmci_interrupt, 0, pdev->dev.bus_id, host);
++	ret = request_irq(irq, atmci_interrupt, 0, dev_name(&pdev->dev), host);
+ 	if (ret)
+ 		goto err_request_irq;
+ 
+diff --git a/drivers/mmc/host/of_mmc_spi.c b/drivers/mmc/host/of_mmc_spi.c
+index fb2921f..0c44d56 100644
+--- a/drivers/mmc/host/of_mmc_spi.c
++++ b/drivers/mmc/host/of_mmc_spi.c
+@@ -103,7 +103,7 @@ struct mmc_spi_platform_data *mmc_spi_get_pdata(struct spi_device *spi)
+ 		if (!gpio_is_valid(oms->gpios[i]))
+ 			continue;
+ 
+-		ret = gpio_request(oms->gpios[i], dev->bus_id);
++		ret = gpio_request(oms->gpios[i], dev_name(dev));
+ 		if (ret < 0) {
+ 			oms->gpios[i] = -EINVAL;
+ 			continue;
 -- 
 1.6.2
 
