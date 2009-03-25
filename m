@@ -1,67 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761558AbZCYN0V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760845AbZCYNar@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761558AbZCYN0V (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 09:26:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756686AbZCYN0E
+	id S1760845AbZCYNar (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 09:30:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756157AbZCYNai
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 09:26:04 -0400
-Received: from mtagate8.de.ibm.com ([195.212.29.157]:40239 "EHLO
-	mtagate8.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756505AbZCYN0C (ORCPT
+	Wed, 25 Mar 2009 09:30:38 -0400
+Received: from mail-ew0-f165.google.com ([209.85.219.165]:47481 "EHLO
+	mail-ew0-f165.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752396AbZCYNah (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 09:26:02 -0400
-Date: Wed, 25 Mar 2009 14:25:25 +0100
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-To: Tejun Heo <tj@kernel.org>
-Cc: Ingo Molnar <mingo@elte.hu>, rusty@rustcorp.com.au, tglx@linutronix.de,
-       x86@kernel.org, linux-kernel@vger.kernel.org, hpa@zytor.com,
-       Paul Mundt <lethal@linux-sh.org>, rmk@arm.linux.org.uk,
-       starvik@axis.com, ralf@linux-mips.org, davem@davemloft.net,
-       cooloney@kernel.org, kyle@mcmartin.ca, matthew@wil.cx,
-       grundler@parisc-linux.org, takata@linux-m32r.org,
-       benh@kernel.crashing.org, rth@twiddle.net, ink@jurassic.park.msu.ru,
-       heiko.carstens@de.ibm.com
-Subject: Re: [GIT RFC] percpu: use dynamic percpu allocator as the default
- percpu allocator
-Message-ID: <20090325142525.2d31c522@skybase>
-In-Reply-To: <49CA2FBF.9000207@kernel.org>
-References: <1236671631-9305-1-git-send-email-tj@kernel.org>
-	<20090316190132.7965a49a@skybase>
-	<49C300D8.5080204@kernel.org>
-	<49C8FAC4.6060508@kernel.org>
-	<20090325122738.42d105b7@skybase>
-	<49CA1AC3.9080908@kernel.org>
-	<20090325122241.GE11571@elte.hu>
-	<49CA2345.70204@kernel.org>
-	<20090325141330.2717dc97@skybase>
-	<49CA2FBF.9000207@kernel.org>
-Organization: IBM Corporation
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.14.7; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 25 Mar 2009 09:30:37 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=kdoXaRd65bHQCRINRIbh++ZTUXBEsWfibvCPME9+Pbp9x2w1ubmQcCRdlobawAoAev
+         94jPL8TZ1qM5qFOFMEx5vO0hvMCMEf81HJ4QezNvO5tsKUwhJ9Li1YMNbhFSye3Mo4zL
+         sttb4Ro24OZtYQbtY5T3dIWwDQeHIuTmI/kao=
+Date: Wed, 25 Mar 2009 14:30:29 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Lai Jiangshan <laijs@cn.fujitsu.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <srostedt@redhat.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/2] trace_stat: keep original order
+Message-ID: <20090325133028.GE5976@nowhere>
+References: <49C9F23F.5040307@cn.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49C9F23F.5040307@cn.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 25 Mar 2009 22:21:03 +0900
-Tejun Heo <tj@kernel.org> wrote:
-
-> Martin Schwidefsky wrote:
-> >> Martin's original patch should do the trick although it would be
-> >> slower for static symbols.  I'll merge it and post the tree.
-> > 
-> > No, my original patch doesn't work. It will break modules that use
-> > static per-cpu variables.
+On Wed, Mar 25, 2009 at 04:58:39PM +0800, Lai Jiangshan wrote:
 > 
-> Oops.  Even with the default offset adding macros?  Heh... I think it
-> would be best to wait for your fix then.
+> Impact: make trace_stat files show items with the original order
+> 
+> trace_stat tracer reverse the items, it makes the output
+> looks a little ugly.
+> 
+> Example, when we read trace_stat/workqueues, we get cpu#7's stat.
+> at first, and then cpu#6... cpu#0.
+> 
+> Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
+> ---
+> diff --git a/kernel/trace/trace_stat.c b/kernel/trace/trace_stat.c
+> index f71b85b..c08e7f1 100644
+> --- a/kernel/trace/trace_stat.c
+> +++ b/kernel/trace/trace_stat.c
+> @@ -125,23 +125,21 @@ static int stat_seq_init(struct tracer_stat_session *session)
+>  		INIT_LIST_HEAD(&new_entry->list);
+>  		new_entry->stat = stat;
+>  
+> -		list_for_each_entry(iter_entry, &session->stat_list, list) {
+> +		list_for_each_entry_reverse(iter_entry, &session->stat_list,
+> +				list) {
+>  
+>  			/* Insertion with a descendent sorting */
+> -			if (ts->stat_cmp(new_entry->stat,
+> -						iter_entry->stat) > 0) {
+> +			if (ts->stat_cmp(iter_entry->stat,
+> +					new_entry->stat) >= 0) {
+>  
+> -				list_add_tail(&new_entry->list,
+> -						&iter_entry->list);
+> -				break;
+> -
+> -			/* The current smaller value */
+> -			} else if (list_is_last(&iter_entry->list,
+> -						&session->stat_list)) {
+>  				list_add(&new_entry->list, &iter_entry->list);
+>  				break;
+>  			}
+>  		}
+> +
+> +		/* The current larger value */
+> +		if (list_empty(&new_entry->list))
+> +			list_add(&new_entry->list, &session->stat_list);
+>  	}
+>  exit:
+>  	mutex_unlock(&session->stat_mutex);
+> 
+> 
 
-We could use HAVE_LEGACY_PER_CPU_AREA for the time being. 
 
--- 
-blue skies,
-   Martin.
+Nice!
 
-"Reality continues to ruin my life." - Calvin.
+Acked-by: Frederic Weisbecker <fweisbec@gmail.com>
 
