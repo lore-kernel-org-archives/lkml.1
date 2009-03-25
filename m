@@ -1,96 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759161AbZCYJxR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752943AbZCYJ5Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759161AbZCYJxR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 05:53:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753233AbZCYJw7
+	id S1752943AbZCYJ5Y (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 05:57:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752693AbZCYJ5Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 05:52:59 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:42358 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752681AbZCYJw6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 05:52:58 -0400
-Date: Wed, 25 Mar 2009 10:52:29 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Tim Bird <tim.bird@am.sony.com>
-Subject: Re: [PATCH 0/5][RFC] [RFC] function profiler
-Message-ID: <20090325095229.GG2341@elte.hu>
-References: <20090325035646.662994901@goodmis.org>
+	Wed, 25 Mar 2009 05:57:16 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:53551 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1752734AbZCYJ5P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Mar 2009 05:57:15 -0400
+Message-ID: <49C9FFEA.7060908@cn.fujitsu.com>
+Date: Wed, 25 Mar 2009 17:56:58 +0800
+From: Wang Chen <wangchen@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090325035646.662994901@goodmis.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
+CC: mingo@elte.hu, linux-kernel@vger.kernel.org, sfr@canb.auug.org.au
+Subject: Re: linux-next-20090324: undefined reference to `__this_fixmap_does_not_exist\'
+References: <200903250324.n2P3OwX0098272@www262.sakura.ne.jp> <49C9BA02.9070706@cn.fujitsu.com> <49C9F0CB.2000807@cn.fujitsu.com>
+In-Reply-To: <49C9F0CB.2000807@cn.fujitsu.com>
+Content-Type: text/plain; charset=ISO-2022-JP
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Wang Chen said the following on 2009-3-25 16:52:
+> Wang Chen said the following on 2009-3-25 12:58:
+>> Tetsuo Handa said the following on 2009-3-25 11:24:
+>>> Hello.
+>>>
+>>> I encountered below error.
+>>>
+>>> arch/x86/mm/built-in.o(.init.text+0x1831): In function `early_ioremap_init':
+>>> : undefined reference to `__this_fixmap_does_not_exist'
+>>> make: *** [.tmp_vmlinux1] Error 1
+>>>
+>>> Config is at http://I-love.SAKURA.ne.jp/tmp/config-2.6.29-next-20090324
+>>>
+>> Tetsuo, I've tried the latest tip, it's OK.
+>> I can't trigger the same problem as you do.
+>> So I will try linux-next later.
+>>
+> 
+> Tetsuo
+> 
+> I've "make" tested linux-next-20090324 with your config.
+> Still can't trigger the error.
+> It's strange :(
+> 
 
-* Steven Rostedt <rostedt@goodmis.org> wrote:
+Maybe we use different gcc versions.
+Please try following patch.
 
-> The following patches are RFC, and to discuss is this work would be
-> useful.
-> 
-> This patch series adds a function profiler hook to the function tracer
-> and function graph tracer. That is, it uses the mcount calls to track the
-> functions being called. Now with the function graph tracer it also
-> keeps track of the times the functions have been executing.
-> 
-> Note, this is similar to oprofile, but is not a sampling approach, but
-> a true recorder. Of course, by recording every function the overhead
-> compared to oprofile is higher. With the use of dynamic ftrace, you could
-> just trace certain functions, or just a certain module. The flexibility
-> is a bit greater with this profiling.
-> 
-> The last patch adds another feature to the function graph. It gives
-> the ability to only trace the amount of time inside a function and
-> not the amount spent in sub functions that are also recorded. That is,
-> if A calls B, you can decide if the time spent in A should include the
-> time spent in B. This is an option added to trace_options.
-> 
-> Again, this is all RFC, but if there is any interest in having this
-> feature, prehaps we should include it.
-> 
-> -- Steve
-> 
-> 
-> The following patches are in:
-> 
->   git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
-> 
->     branch: rfc/tip/tracing/function-profiler
-> 
-> 
-> Steven Rostedt (5):
->       tracing: add function profiler
->       tracing: move function profiler data out of function struct
->       tracing: adding function timings to function profiler
->       tracing: make the function profiler per cpu
->       function-graph: add option to calculate graph time or not
-> 
-> ----
->  include/linux/ftrace.h               |    3 +-
->  kernel/trace/Kconfig                 |   15 +
->  kernel/trace/ftrace.c                |  558 +++++++++++++++++++++++++++++++++-
->  kernel/trace/trace.c                 |   15 +-
->  kernel/trace/trace.h                 |    4 +-
->  kernel/trace/trace_functions_graph.c |   25 ++-
->  kernel/trace/trace_output.c          |   10 +
->  kernel/trace/trace_output.h          |    2 +
->  8 files changed, 608 insertions(+), 24 deletions(-)
+From: Wang Chen <wangchen@cn.fujitsu.com>
+Subject: [PATCH] use __fix_to_virt(), because we are sure it's safe
 
-Pulled into tip:tracing/profiling, thanks Steve!
+Commit:8827247ffcc9e880cbe4705655065cf011265157 used a variable(which would be
+optimized to constant) as fix_to_virt()'s parameter.
+It's depended on gcc's optimization and maybe failed on old gcc.
 
-	Ingo
+We can use __fix_to_vir() insteadly, because we know it's safe and don't need
+link time error reporting.
+
+Signed-off-by: Wang Chen <wangchen@cn.fujitsu.com>
+Reported-by: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
+---
+ ioremap.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--- arch/x86/mm/ioremap.c.orig	2009-03-25 17:36:01.000000000 +0800
++++ arch/x86/mm/ioremap.c	2009-03-25 17:36:54.000000000 +0800
+@@ -523,7 +523,7 @@ void __init early_ioremap_init(void)
+ 		printk(KERN_INFO "early_ioremap_init()\n");
+ 
+ 	for (i = 0; i < FIX_BTMAPS_SLOTS; i++)
+-		slot_virt[i] = fix_to_virt(FIX_BTMAP_BEGIN - NR_FIX_BTMAPS*i);
++		slot_virt[i] = __fix_to_virt(FIX_BTMAP_BEGIN - NR_FIX_BTMAPS*i);
+ 
+ 	pmd = early_ioremap_pmd(fix_to_virt(FIX_BTMAP_BEGIN));
+ 	if (sizeof(bm_pte)) {
+
