@@ -1,44 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757523AbZCYQBs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761551AbZCYQEY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757523AbZCYQBs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 12:01:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753641AbZCYQBj
+	id S1761551AbZCYQEY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 12:04:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754312AbZCYQEL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 12:01:39 -0400
-Received: from cantor.suse.de ([195.135.220.2]:48094 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753196AbZCYQBi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 12:01:38 -0400
-Date: Wed, 25 Mar 2009 17:01:30 +0100 (CET)
-From: Jiri Kosina <jkosina@suse.cz>
-X-X-Sender: jikos@twin.jikos.cz
-To: Gene Heskett <gene.heskett@verizon.net>
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Bluetooth Q?
-In-Reply-To: <200903210150.46294.gene.heskett@verizon.net>
-Message-ID: <alpine.LRH.2.00.0903251700440.8561@twin.jikos.cz>
-References: <200903210150.46294.gene.heskett@verizon.net>
-User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
+	Wed, 25 Mar 2009 12:04:11 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:12447 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753527AbZCYQEK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Mar 2009 12:04:10 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding:x-system-of-record;
+	b=vGRizxUiE9+Tttl3viXW3OGCtzfU4itrk5+Cjs88wy6ZH8k9+ffuXqRtedCrrtbEz
+	XDb7E/LHFAySG8TYghB2Q==
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <1237990673-8358-3-git-send-email-tj@kernel.org>
+References: <1237990673-8358-1-git-send-email-tj@kernel.org>
+	 <1237990673-8358-3-git-send-email-tj@kernel.org>
+Date: Wed, 25 Mar 2009 09:04:04 -0700
+Message-ID: <da824cf30903250904n211b157eje2db99b0bdb1f33a@mail.gmail.com>
+Subject: Re: [PATCH 02/10] ide-tape: use single continuous buffer
+From: Grant Grundler <grundler@google.com>
+To: Tejun Heo <tj@kernel.org>
+Cc: bzolnier@gmail.com, linux-kernel@vger.kernel.org, axboe@kernel.dk,
+       linux-ide@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id n2PG4Rqu004796
 
-On Sat, 21 Mar 2009, Gene Heskett wrote:
+On Wed, Mar 25, 2009 at 7:17 AM, Tejun Heo <tj@kernel.org> wrote:> Impact: simpler buffer allocation and handling, fix DMA transfers...> +               atomic_set(&bh->b_count, bcount);>                if (atomic_read(&bh->b_count) == bh->b_size)...
+I'm failing to see why bh->b_count is an atomic_t.I always assumed tapes were exclusive access devicesand would be serialized at a higher level.
 
-> Where can I find the status of support for a usb-bt module that answers to 
-> this:
-> Mar 21 00:55:29 coyote kernel: [97026.014221] usb 2-5.1: new full speed USB device using ohci_hcd and address 8
-> Mar 21 00:55:29 coyote kernel: [97026.103223] usb 2-5.1: New USB device found, idVendor=0e5e, idProduct=6622
-> Mar 21 00:55:29 coyote kernel: [97026.103226] usb 2-5.1: New USB device strings: Mfr=0, Product=0, SerialNumber=0
-> Mar 21 00:55:29 coyote kernel: [97026.103308] usb 2-5.1: configuration #1 chosen from 1 choice
 
-This device should be driven by btusb driver:
-
-drivers/bluetooth/btusb.c:      { USB_DEVICE(0x0e5e, 0x6622), .driver_info = BTUSB_BROKEN_ISOC },
-
--- 
-Jiri Kosina
-SUSE Labs
-
+>  /*> - * The function below uses __get_free_pages to allocate a data buffer of size> - * tape->buffer_size (or a bit more). We attempt to combine sequential pages as> - * much as possible.> - *> - * It returns a pointer to the newly allocated buffer, or NULL in case of> - * failure.> + * It returns a pointer to the newly allocated buffer, or NULL in case> + * of failure.>  */>  static struct idetape_bh *ide_tape_kmalloc_buffer(idetape_tape_t *tape,> -                                                 int full, int clear)> -{...> -abort:> -       ide_tape_kfree_buffer(tape);> -       return NULL;> +       bh->b_size = tape->buffer_size;> +       atomic_set(&bh->b_count, full ? bh->b_size : 0);
+No one else could possibly be referencing bh->count at thispoint...I like that it's consistent though.
+The use of atomic won't hurt correctness and this patch looks fine to me.Please add "Reviewed-by: Grant Grundler <grundler@google.com>"
+thanks,grant
+...> @@ -977,30 +872,20 @@ static int idetape_copy_stage_to_user(idetape_tape_t *tape, char __user *buf,>                                      int n)>  {>        struct idetape_bh *bh = tape->bh;> -       int count;>        int ret = 0;>> -       while (n) {> -               if (bh == NULL) {> +       if (n) {> +               if (bh == NULL || n > tape->b_count) {>                        printk(KERN_ERR "ide-tape: bh == NULL in %s\n",>                                        __func__);>                        return 1;>                }> -               count = min(tape->b_count, n);> -               if  (copy_to_user(buf, tape->b_data, count))> +               if (copy_to_user(buf, tape->b_data, n))>                        ret = 1;> -               n -= count;> -               tape->b_data += count;> -               tape->b_count -= count;> -               buf += count;> -               if (!tape->b_count) {> -                       bh = bh->b_reqnext;> -                       tape->bh = bh;> -                       if (bh) {> -                               tape->b_data = bh->b_data;> -                               tape->b_count = atomic_read(&bh->b_count);> -                       }> -               }> +               tape->b_data += n;> +               tape->b_count -= n;> +               if (!tape->b_count)> +                       tape->bh = NULL;>        }>        return ret;>  }> @@ -1252,7 +1137,7 @@ static int idetape_add_chrdev_write_request(ide_drive_t *drive, int blocks)>  static void ide_tape_flush_merge_buffer(ide_drive_t *drive)>  {>        idetape_tape_t *tape = drive->driver_data;> -       int blocks, min;> +       int blocks;>        struct idetape_bh *bh;>>        if (tape->chrdev_dir != IDETAPE_DIR_WRITE) {> @@ -1267,31 +1152,16 @@ static void ide_tape_flush_merge_buffer(ide_drive_t *drive)>        if (tape->merge_bh_size) {>                blocks = tape->merge_bh_size / tape->blk_size;>                if (tape->merge_bh_size % tape->blk_size) {> -                       unsigned int i;> -> +                       unsigned int i = tape->blk_size -> +                               tape->merge_bh_size % tape->blk_size;>                        blocks++;> -                       i = tape->blk_size - tape->merge_bh_size %> -                               tape->blk_size;> -                       bh = tape->bh->b_reqnext;> -                       while (bh) {> -                               atomic_set(&bh->b_count, 0);> -                               bh = bh->b_reqnext;> -                       }>                        bh = tape->bh;> -                       while (i) {> -                               if (bh == NULL) {> -                                       printk(KERN_INFO "ide-tape: bug,"> -                                                        " bh NULL\n");> -                                       break;> -                               }> -                               min = min(i, (unsigned int)(bh->b_size -> -                                               atomic_read(&bh->b_count)));> +                       if (bh) {>                                memset(bh->b_data + atomic_read(&bh->b_count),> -                                               0, min);> -                               atomic_add(min, &bh->b_count);> -                               i -= min;> -                               bh = bh->b_reqnext;> -                       }> +                                      0, i);> +                               atomic_add(i, &bh->b_count);> +                       } else> +                               printk(KERN_INFO "ide-tape: bug, bh NULL\n");>                }>                (void) idetape_add_chrdev_write_request(drive, blocks);>                tape->merge_bh_size = 0;> @@ -1319,7 +1189,7 @@ static int idetape_init_read(ide_drive_t *drive)>                                         " 0 now\n");>                        tape->merge_bh_size = 0;>                }> -               tape->merge_bh = ide_tape_kmalloc_buffer(tape, 0, 0);> +               tape->merge_bh = ide_tape_kmalloc_buffer(tape, 0);>                if (!tape->merge_bh)>                        return -ENOMEM;>                tape->chrdev_dir = IDETAPE_DIR_READ;> @@ -1366,23 +1236,18 @@ static int idetape_add_chrdev_read_request(ide_drive_t *drive, int blocks)>  static void idetape_pad_zeros(ide_drive_t *drive, int bcount)>  {>        idetape_tape_t *tape = drive->driver_data;> -       struct idetape_bh *bh;> +       struct idetape_bh *bh = tape->merge_bh;>        int blocks;>>        while (bcount) {>                unsigned int count;>> -               bh = tape->merge_bh;>                count = min(tape->buffer_size, bcount);>                bcount -= count;>                blocks = count / tape->blk_size;> -               while (count) {> -                       atomic_set(&bh->b_count,> -                                  min(count, (unsigned int)bh->b_size));> -                       memset(bh->b_data, 0, atomic_read(&bh->b_count));> -                       count -= atomic_read(&bh->b_count);> -                       bh = bh->b_reqnext;> -               }> +               atomic_set(&bh->b_count, count);> +               memset(bh->b_data, 0, atomic_read(&bh->b_count));> +>                idetape_queue_rw_tail(drive, REQ_IDETAPE_WRITE, blocks,>                                      tape->merge_bh);>        }> @@ -1594,7 +1459,7 @@ static ssize_t idetape_chrdev_write(struct file *file, const char __user *buf,>                                "should be 0 now\n");>                        tape->merge_bh_size = 0;>                }> -               tape->merge_bh = ide_tape_kmalloc_buffer(tape, 0, 0);> +               tape->merge_bh = ide_tape_kmalloc_buffer(tape, 0);>                if (!tape->merge_bh)>                        return -ENOMEM;>                tape->chrdev_dir = IDETAPE_DIR_WRITE;> @@ -1968,7 +1833,7 @@ static void idetape_write_release(ide_drive_t *drive, unsigned int minor)>        idetape_tape_t *tape = drive->driver_data;>>        ide_tape_flush_merge_buffer(drive);> -       tape->merge_bh = ide_tape_kmalloc_buffer(tape, 1, 0);> +       tape->merge_bh = ide_tape_kmalloc_buffer(tape, 1);>        if (tape->merge_bh != NULL) {>                idetape_pad_zeros(drive, tape->blk_size *>                                (tape->user_bs_factor - 1));> @@ -2199,11 +2064,6 @@ static void idetape_setup(ide_drive_t *drive, idetape_tape_t *tape, int minor)>                tape->buffer_size = *ctl * tape->blk_size;>        }>        buffer_size = tape->buffer_size;> -       tape->pages_per_buffer = buffer_size / PAGE_SIZE;> -       if (buffer_size % PAGE_SIZE) {> -               tape->pages_per_buffer++;> -               tape->excess_bh_size = PAGE_SIZE - buffer_size % PAGE_SIZE;> -       }>>        /* select the "best" DSC read/write polling freq */>        speed = max(*(u16 *)&tape->caps[14], *(u16 *)&tape->caps[8]);> --> 1.6.0.2>> --> To unsubscribe from this list: send the line "unsubscribe linux-ide" in> the body of a message to majordomo@vger.kernel.org> More majordomo info at  http://vger.kernel.org/majordomo-info.html>���{.n�+�������+%�����ݶ��w��{.n�+����{��G�����{ay�ʇڙ�,j��f���h��������z_�(�階�ݢj"���m������G������?����&���~��iO��z��v�^�m����������?�I�
