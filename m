@@ -1,123 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756357AbZCYAO5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756637AbZCYAQS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756357AbZCYAO5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 20:14:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755895AbZCYAOs
+	id S1756637AbZCYAQS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 20:16:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755842AbZCYAQC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 20:14:48 -0400
-Received: from e38.co.us.ibm.com ([32.97.110.159]:59551 "EHLO
-	e38.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755898AbZCYAOr (ORCPT
+	Tue, 24 Mar 2009 20:16:02 -0400
+Received: from ftp.linux-mips.org ([213.58.128.207]:51597 "EHLO
+	ftp.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753802AbZCYAQB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 20:14:47 -0400
-Subject: Re: [RFC][PATCH] Logarithmic Timekeeping Accumulation
-From: john stultz <johnstul@us.ibm.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Linux-kernel <linux-kernel@vger.kernel.org>,
-       Clark Williams <williams@redhat.com>,
-       Steven Rostedt <srostedt@redhat.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Roman Zippel <zippel@linux-m68k.org>
-In-Reply-To: <20090324141338.GF32043@elte.hu>
-References: <1237858102.7068.20.camel@jstultz-laptop>
-	 <20090324141338.GF32043@elte.hu>
-Content-Type: text/plain
-Date: Tue, 24 Mar 2009 17:14:37 -0700
-Message-Id: <1237940077.6065.3.camel@localhost>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
-Content-Transfer-Encoding: 7bit
+	Tue, 24 Mar 2009 20:16:01 -0400
+Date: Wed, 25 Mar 2009 01:15:55 +0100
+From: Ralf Baechle <ralf@linux-mips.org>
+To: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: dann frazier <dannf@dannf.org>, linux-mips@linux-mips.org
+Subject: [PATCH 2/2] MIPS: o32: Get rid of useless wrapper for llseek
+Message-ID: <20090325001555.GA1357@linux-mips.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-03-24 at 15:13 +0100, Ingo Molnar wrote:
-> * John Stultz <johnstul@us.ibm.com> wrote:
-> 
-> > Accumulating one tick at a time works well unless we're using 
-> > NOHZ. Then it can be an issue, since we may have to run through 
-> > the loop a few thousand times, which can increase timer interrupt 
-> > caused latency.
-> > 
-> > The current solution was to accumulate in half-second intervals 
-> > with NOHZ. This kept the number of loops down, however it did 
-> > slightly change how we make NTP adjustments. While not an issue 
-> > with NTPd users, as NTPd makes adjustments over a longer period of 
-> > time, other adjtimex() users have noticed the half-second 
-> > granularity with which we can apply frequency changes to the 
-> > clock.
-> > 
-> > For instance, if a application tries to apply a 100ppm frequency 
-> > correction for 20ms to correct a 2us offset, with NOHZ they either 
-> > get no correction, or a 50us correction.
-> > 
-> > Now, there will always be some granularity error for applying 
-> > frequency corrections. However with users sensitive to this error 
-> > have seen a 50-500x increase with NOHZ compared to running without 
-> > NOHZ.
-> > 
-> > So I figured I'd try another approach then just simply increasing 
-> > the interval. My approach is to consume the time interval 
-> > logarithmically. This reduces the number of times through the loop 
-> > needed keeping latency down, while still preserving the original 
-> > granularity error for adjtimex() changes.
-> > 
-> > This has been lightly tested and appears to work correctly, but 
-> > I'd appreciate any feedback or comments on the idea and code.
-> > 
-> > Signed-off-by: John Stultz <johnstul@us.ibm.com>
-> 
-> Hm, we used to have some sort of problem with a similar patch in the 
-> past. 
+Signed-off-by: Ralf Baechle <ralf@linux-mips.org>
 
-Do you recall any details about the problem? I don't.
+ arch/mips/kernel/linux32.c     |    7 -------
+ arch/mips/kernel/scall64-o32.S |    2 +-
+ 2 files changed, 1 insertions(+), 8 deletions(-)
 
-
-> >  		/* accumulate error between NTP and clock interval */
-> > -		clock->error += tick_length;
-> > -		clock->error -= clock->xtime_interval << (NTP_SCALE_SHIFT - clock->shift);
-> > +		clock->error += tick_length << shift;
-> > +		clock->error -= (clock->xtime_interval
-> > +				<< (NTP_SCALE_SHIFT - clock->shift))
-> > +					<< shift;
-> 
-> Why not:
-> 
-> 		clock->error -= clock->xtime_interval
-> 				<< (NTP_SCALE_SHIFT - clock->shift + shift);
-> 
-> ?
-
-Yep. Much cleaner.
-
-
-> > +		if (shift > 0) /*don't roll under!*/
-> > +			shift--;
-> 
-> (nit: watch out the comment style)
-
-Good point.
-
-> that bit looks a bit messy. We estimated the shift:
-> 
-> +	while (offset > (clock->cycle_interval << shift))
-> +               shift++;
-> +	shift--;
-> 
-> can it really ever roll under in this loop:
-
-It probably can't. I just haven't sat down to work out the full math to
-prove it to myself, so I've been cautious. 
-
-
-Thanks for the suggestions, I'll roll those fixes up into the next
-version.
-
-
-So the basic approach seems ok by you?
-
-thanks
--john
-
-
-
+diff --git a/arch/mips/kernel/linux32.c b/arch/mips/kernel/linux32.c
+index 49aac6e..ab2da41 100644
+--- a/arch/mips/kernel/linux32.c
++++ b/arch/mips/kernel/linux32.c
+@@ -133,13 +133,6 @@ SYSCALL_DEFINE4(32_ftruncate64, unsigned long, fd, unsigned long, __dummy,
+ 	return sys_ftruncate(fd, merge_64(a2, a3));
+ }
+ 
+-SYSCALL_DEFINE5(32_llseek, unsigned long, fd, unsigned long, offset_high,
+-	unsigned long, offset_low, loff_t __user *, result,
+-	unsigned long, origin)
+-{
+-	return sys_llseek(fd, offset_high, offset_low, result, origin);
+-}
+-
+ /* From the Single Unix Spec: pread & pwrite act like lseek to pos + op +
+    lseek back to original location.  They fail just like lseek does on
+    non-seekable files.  */
+diff --git a/arch/mips/kernel/scall64-o32.S b/arch/mips/kernel/scall64-o32.S
+index b0fef4f..d928614 100644
+--- a/arch/mips/kernel/scall64-o32.S
++++ b/arch/mips/kernel/scall64-o32.S
+@@ -343,7 +343,7 @@ sys_call_table:
+ 	PTR	sys_ni_syscall	 		/* for afs_syscall */
+ 	PTR	sys_setfsuid
+ 	PTR	sys_setfsgid
+-	PTR	sys_32_llseek			/* 4140 */
++	PTR	sys_llseek			/* 4140 */
+ 	PTR	compat_sys_getdents
+ 	PTR	compat_sys_select
+ 	PTR	sys_flock
