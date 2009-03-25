@@ -1,189 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758878AbZCYNHc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757692AbZCYNID@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758878AbZCYNHc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 09:07:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754783AbZCYNHP
+	id S1757692AbZCYNID (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 09:08:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753966AbZCYNHv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 09:07:15 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:35944 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753934AbZCYNHN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 09:07:13 -0400
-Date: Wed, 25 Mar 2009 14:04:43 +0100
-From: Jiri Pirko <jpirko@redhat.com>
-To: linux-kernel@vger.kernel.org
-Cc: netdev@vger.kernel.org, jgarzik@pobox.com, davem@davemloft.net,
-       shemminger@linux-foundation.org, bridge@lists.linux-foundation.org,
-       fubar@us.ibm.com, bonding-devel@lists.sourceforge.net, kaber@trash.net,
-       mschmidt@redhat.com
-Subject: [PATCH] bonding: allow bond in mode balance-alb to work properly
-	in bridge -try2
-Message-ID: <20090325130443.GG3437@psychotron.englab.brq.redhat.com>
-References: <20090313183303.GF3436@psychotron.englab.brq.redhat.com>
+	Wed, 25 Mar 2009 09:07:51 -0400
+Received: from e23smtp05.au.ibm.com ([202.81.31.147]:60390 "EHLO
+	e23smtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752108AbZCYNHu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Mar 2009 09:07:50 -0400
+Date: Wed, 25 Mar 2009 18:37:38 +0530
+From: Gautham R Shenoy <ego@in.ibm.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+       linux-kernel@vger.kernel.org, Suresh Siddha <suresh.b.siddha@intel.com>,
+       Balbir Singh <balbir@in.ibm.com>, Nick Piggin <nickpiggin@yahoo.com.au>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       Bharata B Rao <bharata@linux.vnet.ibm.com>
+Subject: Re: [RFC PATCH 11/11] sched: Add comments to find_busiest_group()
+	function.
+Message-ID: <20090325130738.GD11302@in.ibm.com>
+Reply-To: ego@in.ibm.com
+References: <20090325091239.13992.96090.stgit@sofia.in.ibm.com> <20090325091427.13992.18933.stgit@sofia.in.ibm.com> <20090325114314.GC11302@in.ibm.com> <20090325122913.GA28639@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090313183303.GF3436@psychotron.englab.brq.redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090325122913.GA28639@elte.hu>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(resend)
+On Wed, Mar 25, 2009 at 01:29:13PM +0100, Ingo Molnar wrote:
+> 
+> * Gautham R Shenoy <ego@in.ibm.com> wrote:
+> 
+> > On Wed, Mar 25, 2009 at 02:44:27PM +0530, Gautham R Shenoy wrote:
+> > > Add /** style comments around find_busiest_group(). Also add a few explanatory
+> > >   */
+> > 
+> > <snip>
+> > 
+> > >  static struct sched_group *
+> > >  find_busiest_group(struct sched_domain *sd, int this_cpu,
+> > > @@ -3593,17 +3613,31 @@ find_busiest_group(struct sched_domain *sd, int this_cpu,
+> > >  	update_sd_lb_stats(sd, this_cpu, idle, sd_idle, cpus,
+> > >  					balance, &sds);
+> > > 
+> > > +	/* Cases where imbalance does not exist from POV of this_cpu */
+> > > +	/* 1) this_cpu is not the appropriate cpu to perform load balancing
+> > > +	 *    at this level.
+> > > +	 * 2) There is no busy sibling group to pull from.
+> > > +	 * 3) This group is the busiest group.
+> > > +	 * 4) This group is more busy than the avg busieness at this
+> > > +	 *    sched_domain.
+> > > +	 * 5) The imbalance is within the specified limit.
+> > > +	 * 6) Any rebalance would lead to ping-pong
+> > > +	 */
+> > >  	if (balance && !(*balance))
+> > >  		goto ret;
+> > > 
+> > > -	if (!sds.busiest || sds.this_load >= sds.max_load
+> > > -		|| sds.busiest_nr_running == 0)
+> > > +	if (!sds.busiest || sd.busiest_nr_running == 0)
+> > 			    ^^^^^^^^^^^^^^^^^^^^
+> > should have been sds.busiest_nr_running. Hence the build failure on tip.
+> > 
+> > I think I missed compile testing this last patch.
+> > 
+> > Ingo, could you revert commit 7b6340ef884aff69a54f8a530c73ad9da0a7c388 in
+> > tip/balancing and commit the following patch instead?
+> 
+> sure - i've amended it and started testing it locally. If it passes 
+> testing it should show up in tip:master.
 
-Hi all.
+Thanks!
 
-The problem is described in following bugzilla:
-https://bugzilla.redhat.com/show_bug.cgi?id=487763
+Meanwhile I'll see if there are any regressions in 2.6.29 with
+this patchset.
 
-Basically here's what's going on. In every mode, bonding interface uses the same
-mac address for all enslaved devices. Except for mode balance-alb. When you put
-this kind of bond device into a bridge it will only add one of mac adresses into
-a hash list of mac addresses, say X. This mac address is marked as local. But
-this bonding interface also has mac address Y. Now then packet arrives with
-destination address Y, this address is not marked as local and the packed looks
-like it needs to be forwarded. This packet is then lost which is wrong.
+> 
+> 	Ingo
 
-Notice that interfaces can be added and removed from bond while it is in bridge.
-
-This patch solves the situation in the bonding without touching bridge code,
-as Patrick suggested. For every incoming frame to bonding it searches the
-destination address in slaves list and if any of slave addresses matches, it
-rewrites the address in frame by the adress of bonding master. This ensures that
-all frames comming thru the bonding in alb mode have the same address.
-
-Jirka
-
-
-Signed-off-by: Jiri Pirko <jpirko@redhat.com>
-
-diff --git a/drivers/net/bonding/bond_alb.c b/drivers/net/bonding/bond_alb.c
-index 27fb7f5..2838be0 100644
---- a/drivers/net/bonding/bond_alb.c
-+++ b/drivers/net/bonding/bond_alb.c
-@@ -1762,6 +1762,26 @@ int bond_alb_set_mac_address(struct net_device *bond_dev, void *addr)
- 	return 0;
- }
- 
-+void bond_alb_change_dest(struct sk_buff *skb)
-+{
-+	struct net_device *bond_dev = skb->dev;
-+	struct bonding *bond = netdev_priv(bond_dev);
-+	unsigned char *dest = eth_hdr(skb)->h_dest;
-+	struct slave *slave;
-+	int i;
-+
-+	if (!memcmp(dest, bond_dev->dev_addr, ETH_ALEN))
-+		return;
-+	read_lock(&bond->lock);
-+	bond_for_each_slave(bond, slave, i) {
-+		if (!memcmp(slave->dev->dev_addr, dest, ETH_ALEN)) {
-+			memcpy(dest, bond_dev->dev_addr, ETH_ALEN);
-+			break;
-+		}
-+	}
-+	read_unlock(&bond->lock);
-+}
-+
- void bond_alb_clear_vlan(struct bonding *bond, unsigned short vlan_id)
- {
- 	if (bond->alb_info.current_alb_vlan &&
-diff --git a/drivers/net/bonding/bond_alb.h b/drivers/net/bonding/bond_alb.h
-index 50968f8..77f36fb 100644
---- a/drivers/net/bonding/bond_alb.h
-+++ b/drivers/net/bonding/bond_alb.h
-@@ -127,6 +127,7 @@ void bond_alb_handle_active_change(struct bonding *bond, struct slave *new_slave
- int bond_alb_xmit(struct sk_buff *skb, struct net_device *bond_dev);
- void bond_alb_monitor(struct work_struct *);
- int bond_alb_set_mac_address(struct net_device *bond_dev, void *addr);
-+void bond_alb_change_dest(struct sk_buff *skb);
- void bond_alb_clear_vlan(struct bonding *bond, unsigned short vlan_id);
- #endif /* __BOND_ALB_H__ */
- 
-diff --git a/drivers/net/bonding/bond_main.c b/drivers/net/bonding/bond_main.c
-index 3d76686..b62fdc4 100644
---- a/drivers/net/bonding/bond_main.c
-+++ b/drivers/net/bonding/bond_main.c
-@@ -4294,6 +4294,19 @@ unwind:
- 	return res;
- }
- 
-+/*
-+ * Called via bond_change_dest_hook.
-+ * note: already called with rcu_read_lock (preempt_disabled)
-+ */
-+void bond_change_dest(struct sk_buff *skb)
-+{
-+	struct net_device *bond_dev = skb->dev;
-+	struct bonding *bond = netdev_priv(bond_dev);
-+
-+	if (bond->params.mode == BOND_MODE_ALB)
-+		bond_alb_change_dest(skb);
-+}
-+
- static int bond_xmit_roundrobin(struct sk_buff *skb, struct net_device *bond_dev)
- {
- 	struct bonding *bond = netdev_priv(bond_dev);
-@@ -5243,6 +5256,8 @@ static int __init bonding_init(void)
- 	register_inetaddr_notifier(&bond_inetaddr_notifier);
- 	bond_register_ipv6_notifier();
- 
-+	bond_change_dest_hook = bond_change_dest;
-+
- 	goto out;
- err:
- 	list_for_each_entry(bond, &bond_dev_list, bond_list) {
-@@ -5266,6 +5281,8 @@ static void __exit bonding_exit(void)
- 	unregister_inetaddr_notifier(&bond_inetaddr_notifier);
- 	bond_unregister_ipv6_notifier();
- 
-+	bond_change_dest_hook = NULL;
-+
- 	bond_destroy_sysfs();
- 
- 	rtnl_lock();
-diff --git a/drivers/net/bonding/bonding.h b/drivers/net/bonding/bonding.h
-index ca849d2..df92b70 100644
---- a/drivers/net/bonding/bonding.h
-+++ b/drivers/net/bonding/bonding.h
-@@ -375,5 +375,7 @@ static inline void bond_unregister_ipv6_notifier(void)
- }
- #endif
- 
-+extern void (*bond_change_dest_hook)(struct sk_buff *skb);
-+
- #endif /* _LINUX_BONDING_H */
- 
-diff --git a/net/core/dev.c b/net/core/dev.c
-index e3fe5c7..abe68d9 100644
---- a/net/core/dev.c
-+++ b/net/core/dev.c
-@@ -2061,6 +2061,13 @@ static inline int deliver_skb(struct sk_buff *skb,
- 	return pt_prev->func(skb, skb->dev, pt_prev, orig_dev);
- }
- 
-+#if defined(CONFIG_BONDING) || defined(CONFIG_BONDING_MODULE)
-+void (*bond_change_dest_hook)(struct sk_buff *skb) __read_mostly;
-+EXPORT_SYMBOL(bond_change_dest_hook);
-+#else
-+#define bond_change_dest_hook(skb) do {} while (0)
-+#endif
-+
- #if defined(CONFIG_BRIDGE) || defined (CONFIG_BRIDGE_MODULE)
- /* These hooks defined here for ATM */
- struct net_bridge;
-@@ -2251,10 +2258,12 @@ int netif_receive_skb(struct sk_buff *skb)
- 	null_or_orig = NULL;
- 	orig_dev = skb->dev;
- 	if (orig_dev->master) {
--		if (skb_bond_should_drop(skb))
-+		if (skb_bond_should_drop(skb)) {
- 			null_or_orig = orig_dev; /* deliver only exact match */
--		else
-+		} else {
- 			skb->dev = orig_dev->master;
-+			bond_change_dest_hook(skb);
-+		}
- 	}
- 
- 	__get_cpu_var(netdev_rx_stat).total++;
+-- 
+Thanks and Regards
+gautham
