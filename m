@@ -1,80 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755730AbZCYWy0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756155AbZCYW4S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755730AbZCYWy0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 18:54:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752853AbZCYWyS
+	id S1756155AbZCYW4S (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 18:56:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753931AbZCYW4E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 18:54:18 -0400
-Received: from g5t0008.atlanta.hp.com ([15.192.0.45]:41390 "EHLO
-	g5t0008.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752475AbZCYWyR (ORCPT
+	Wed, 25 Mar 2009 18:56:04 -0400
+Received: from mail-bw0-f169.google.com ([209.85.218.169]:34500 "EHLO
+	mail-bw0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753971AbZCYW4D (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 18:54:17 -0400
-Date: Wed, 25 Mar 2009 16:54:14 -0600
-From: Alex Chiang <achiang@hp.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: htejun@gmail.com, greg@kroah.com, cornelia.huck@de.ibm.com,
-       stern@rowland.harvard.edu, kay.sievers@vrfy.org, rusty@rustcorp.com.au,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC PATCH 0/3] sysfs: allow suicide
-Message-ID: <20090325225414.GA11447@ldl.fc.hp.com>
-References: <20090325035707.15921.42150.stgit@bob.kio> <m13ad2xi46.fsf@fess.ebiederm.org>
+	Wed, 25 Mar 2009 18:56:03 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:in-reply-to:user-agent;
+        b=jRxHj2Vu4GHTwApKPKtZU5s9NUxD5H2/AaGGsOhmiqNvhYkYcubWOBHFhhGpuxgeeU
+         d17tz6FeoCi68DK6RWfPK2XwgrhmlewMJJ3Am0BO+zzZ+V6C1uJ7Jpngop6C42WnEMa8
+         GzEBcxU6NkA9SG0I+dnvI7QMrQeUnX2ilqPwQ=
+Date: Wed, 25 Mar 2009 23:54:56 +0100
+From: Jarek Poplawski <jarkao2@gmail.com>
+To: Herbert Xu <herbert@gondor.apana.org.au>
+Cc: Ingo Molnar <mingo@elte.hu>, David Miller <davem@davemloft.net>,
+       r.schwebel@pengutronix.de, torvalds@linux-foundation.org,
+       blaschka@linux.vnet.ibm.com, tglx@linutronix.de, a.p.zijlstra@chello.nl,
+       linux-kernel@vger.kernel.org, kernel@pengutronix.de
+Subject: Re: Revert "gro: Fix legacy path napi_complete crash",
+Message-ID: <20090325225456.GA3271@ami.dom.local>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <m13ad2xi46.fsf@fess.ebiederm.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <20090325122635.GA6489@gondor.apana.org.au>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Eric W. Biederman <ebiederm@xmission.com>:
+Herbert Xu wrote, On 03/25/2009 01:26 PM:
+
+> On Wed, Mar 25, 2009 at 01:20:46PM +0100, Ingo Molnar wrote:
+>> ok - i have started testing the delta below, on top of the plain 
+>> revert.
 > 
-> Interesting.
-> 
-> Fixing a read/writer deadlock by allowing the writers to nest
-> inside the readers.
-> 
-> My first impression is that it is too clever.
+> Thanks! BTW Ingo, any chance you could help us identify the problem
+> with the previous patch? I don't have a forcedeth machine here
+> and the hang you had with my patch that open-coded __napi_complete
+> appears intimately connected to forcedeth (with NAPI enabled).
 
-Clever points go to Tejun. All I did was refresh the series
-slightly. :)
+Of course it's too late for verifying this now, but (for the future)
+I think, this scenario could be considered:
 
-> Furthermore I think this is walking around the edges of a more
-> general problem.   How should we serial hotplug and hotunplug
-> in general.  In what context should remove methods run in.
-> 
-> My impression is that we have a huge hole in our infrastructure
-> for hotplug drivers.  Problems like how do we get a user space
-> context for the code to run in and how do we handle
-> multiple hotplug actions for overlapping device trees from
-> stomping on each other.
-> 
-> My hypothesis is once we solve this for the general case of
-> device hotplug and removal we won't need special support from
-> sysfs.  At least not in the suicidal way.
+process_backlog()			netif_rx()
 
-I agree that we have problems in our infrastructure, especially,
-as you point out, overlapping device trees, etc.
+if (!skb)
+local_irq_enable()
+					if (queue.qlen) //NO
+					napi_schedule() //NOTHING
+					__skb_queue_tail() //qlen > 0
+napi_complete()
+...					...
+					Every next netif_rx() sees
+					qlen > 0, so napi is never
+					scheduled again.
 
-I see your point about adding extra cruft into sysfs to work
-around a special case while leaving the hard problem unsolved.
+Then, something like this might work...
 
-Perhaps the status quo is better. I do think that getting
-suicidal sysfs attributes off the global workqueue is a band-aid
-that actually helps, vs. the proposed patches here which are
-questionable in nature.
+Jarek P.
+--- (2.6.29)
+ net/core/dev.c |    6 +++++-
+ 1 files changed, 5 insertions(+), 1 deletions(-)
 
-Oh well.
-
-Thanks for the comments.
-
-/ac
-
-> 
-> We still have very weird cases such as the lock inversion that
-> we have today between rtnl_lock and active reference count,
-> coming from the networking code.
-> 
-> Eric
-> 
+diff --git a/net/core/dev.c b/net/core/dev.c
+index e3fe5c7..cf53c24 100644
+--- a/net/core/dev.c
++++ b/net/core/dev.c
+@@ -2589,7 +2589,11 @@ static int process_backlog(struct napi_struct *napi, int quota)
+ 		skb = __skb_dequeue(&queue->input_pkt_queue);
+ 		if (!skb) {
+ 			local_irq_enable();
+-			napi_complete(napi);
++			napi_gro_flush(napi);
++			local_irq_disable();
++			if (skb_queue_empty(&queue->input_pkt_queue))
++				__napi_complete(napi);
++			local_irq_enable();
+ 			goto out;
+ 		}
+ 		local_irq_enable();
