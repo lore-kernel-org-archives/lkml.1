@@ -1,118 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760831AbZCYN6W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761560AbZCYN7L@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760831AbZCYN6W (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 09:58:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756412AbZCYN6J
+	id S1761560AbZCYN7L (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 09:59:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756412AbZCYN6z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 09:58:09 -0400
-Received: from e8.ny.us.ibm.com ([32.97.182.138]:46168 "EHLO e8.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752901AbZCYN6H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 09:58:07 -0400
-From: Subrata Modak <tosubrata@gmail.com>
-To: "David S. Miller" <davem@davemloft.net>
-Cc: Sachin Sant <sachinp@in.ibm.com>, Subrata Modak <tosubrata@gmail.com>,
-       netdev <netdev@vger.kernel.org>, linux-next@vger.kernel.org,
-       Stephen Rothwell <sfr@canb.auug.org.au>,
-       LKML <linux-kernel@vger.kernel.org>
-Date: Wed, 25 Mar 2009 19:27:59 +0530
-Message-Id: <20090325135759.4397.53055.sendpatchset@subratamodak.linux.ibm.com>
-Subject: [PATCH] Re: Next March 25: net/netfilter/xt_LED build failure.
+	Wed, 25 Mar 2009 09:58:55 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:45290 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752585AbZCYN6y (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Mar 2009 09:58:54 -0400
+Date: Wed, 25 Mar 2009 09:58:52 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: LKML <linux-kernel@vger.kernel.org>
+cc: =?ISO-8859-15?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>,
+       Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Credit for vsprintk work
+Message-ID: <alpine.DEB.2.00.0903250949420.5675@gandalf.stny.rr.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi David,
 
->Today's next randconfig build on x86 failed with following error.
->
->net/netfilter/xt_LED.c:40: error: field netfilter_led_trigger has incomplete type
->net/netfilter/xt_LED.c: In function led_timeout_callback:
->net/netfilter/xt_LED.c:78: warning: unused variable ledinternal
->net/netfilter/xt_LED.c: In function led_tg_check:
->net/netfilter/xt_LED.c:102: error: implicit declaration of function led_trigger_register
->net/netfilter/xt_LED.c: In function led_tg_destroy:
->net/netfilter/xt_LED.c:135: error: implicit declaration of function led_trigger_unregister
->
->CONFIG_LED_TRIGGER is not set.
->
->complete .config attached.
+Frederic,
 
-The following patch will solve the build problem reported by Sachin.
-But would leave the following warnings. I hope we can ignore them:
+ $ git blame lib/vsprintf.c |grep 'Frederic Weisbecker' | wc -l
+542
 
-net/netfilter/xt_LED.c: In function ‘led_timeout_callback’:
-net/netfilter/xt_LED.c:78: warning: unused variable ‘ledinternal’
-net/netfilter/xt_LED.c: In function ‘led_tg_check’:
-net/netfilter/xt_LED.c:87: warning: unused variable ‘err’
+You did a hell of a lot of work on vsprintf.c, and you are still too 
+modest to put in a copyright at the top.
 
-Signed-Off-By: Subrata Modak<subrata@linux.vnet.ibm.com>
----
+I know some people think that git is good enough for ownership. But 
+really, the amount of changes that you did in vsprintf.c deserves a bit of 
+credit in the source file.
 
---- a/linux-2.6.29/include/linux/leds.h	2009-03-25 18:38:07.000000000 +0530
-+++ b/linux-2.6.29/include/linux/leds.h	2009-03-25 18:24:55.000000000 +0530
-@@ -73,9 +73,6 @@ extern void led_classdev_resume(struct l
- /*
-  * LED Triggers
-  */
--#ifdef CONFIG_LEDS_TRIGGERS
--
--#define TRIG_NAME_MAX 50
- 
- struct led_trigger {
- 	/* Trigger Properties */
-@@ -91,6 +88,10 @@ struct led_trigger {
- 	struct list_head  next_trig;
- };
- 
-+#ifdef CONFIG_LEDS_TRIGGERS
-+
-+#define TRIG_NAME_MAX 50
-+
- /* Registration functions for complex triggers */
- extern int led_trigger_register(struct led_trigger *trigger);
- extern void led_trigger_unregister(struct led_trigger *trigger);
---- a/linux-2.6.29/net/netfilter/xt_LED.c	2009-03-25 18:38:08.000000000 +0530
-+++ b/linux-2.6.29/net/netfilter/xt_LED.c	2009-03-25 18:26:55.000000000 +0530
-@@ -99,6 +99,7 @@ static bool led_tg_check(const struct xt
- 
- 	ledinternal->netfilter_led_trigger.name = ledinfo->id;
- 
-+#ifdef CONFIG_LEDS_TRIGGERS
- 	err = led_trigger_register(&ledinternal->netfilter_led_trigger);
- 	if (err) {
- 		printk(KERN_CRIT KBUILD_MODNAME
-@@ -108,7 +109,7 @@ static bool led_tg_check(const struct xt
- 				": Trigger name is already in use.\n");
- 		goto exit_alloc;
- 	}
--
-+#endif
- 	/* See if we need to set up a timer */
- 	if (ledinfo->delay > 0)
- 		setup_timer(&ledinternal->timer, led_timeout_callback,
-@@ -118,8 +119,10 @@ static bool led_tg_check(const struct xt
- 
- 	return true;
- 
-+#ifdef CONFIG_LEDS_TRIGGERS
- exit_alloc:
- 	kfree(ledinternal);
-+#endif
- 
- 	return false;
- }
-@@ -132,7 +135,9 @@ static void led_tg_destroy(const struct 
- 	if (ledinfo->delay > 0)
- 		del_timer_sync(&ledinternal->timer);
- 
-+#ifdef CONFIG_LEDS_TRIGGERS
- 	led_trigger_unregister(&ledinternal->netfilter_led_trigger);
-+#endif
- 	kfree(ledinternal);
- }
+Is everyone OK if a copyright goes at the top of this file giving credit 
+to Frederic?  If for anything else, it will facilitate people to find who 
+broke it if it breaks ;-)
 
---
-Regards--
-Subrata
- 
+I think Frederic should send one more patch to add his copyright. That is, 
+of course, if Frederic wants too.
+
+Note, Frederic did not ask me to post this. In fact, this is the first 
+time he's seen this complaint. I'm posting this because I was showing this 
+code to some students at a University and when I wanted to point out 
+who wrote it, I was surprised that Frederic's name was not mentioned.
+I was looking at the code via LXR so git was not helpful here.
+
+-- Steve
+
