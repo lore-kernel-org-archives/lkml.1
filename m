@@ -1,64 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760914AbZCYQ6O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759142AbZCYQ6u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760914AbZCYQ6O (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 12:58:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751909AbZCYQ56
+	id S1759142AbZCYQ6u (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 12:58:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755266AbZCYQ6m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 12:57:58 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:40579 "EHLO mx3.mail.elte.hu"
+	Wed, 25 Mar 2009 12:58:42 -0400
+Received: from clausfischer.com ([78.46.66.52]:48519 "EHLO clausfischer.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751756AbZCYQ55 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 12:57:57 -0400
-Date: Wed, 25 Mar 2009 17:57:13 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: linux-tip-commits@vger.kernel.org, linux-kernel@vger.kernel.org,
-       hpa@zytor.com, mingo@redhat.com, penberg@cs.helsinki.fi,
-       eduard.munteanu@linux360.ro, tglx@linutronix.de
-Subject: Re: [tip:tracing/kmemtrace] rcutree: fix rcu_tree_trace.c data
-	structure dependencies
-Message-ID: <20090325165713.GA14250@elte.hu>
-References: <1237898630.25315.83.camel@penberg-laptop> <tip-5d957021d326fbfdc1d7a4f11a3da1f6f82d6a36@git.kernel.org> <20090325161147.GA18738@elte.hu> <20090325165204.GG7297@linux.vnet.ibm.com>
+	id S1751909AbZCYQ6l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Mar 2009 12:58:41 -0400
+X-Greylist: delayed 1433 seconds by postgrey-1.27 at vger.kernel.org; Wed, 25 Mar 2009 12:58:40 EDT
+Date: Wed, 25 Mar 2009 17:34:41 +0100
+From: Claus Fischer <claus.fischer@clausfischer.com>
+To: linux-kernel@vger.kernel.org
+Subject: Irritating USB Flash Memory LED behaviour (usb_storage related?)
+Message-ID: <20090325163441.GA17166@clausfischer.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="/9DWx/yDrRhgMJTb"
 Content-Disposition: inline
-In-Reply-To: <20090325165204.GG7297@linux.vnet.ibm.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
+--/9DWx/yDrRhgMJTb
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> > I think many of the data definitions (and the resulting include 
-> > file dependencies) in include/linux/rcu*.h could move into 
-> > kernel/rcu*.h and be privatized that way. 'struct rcu_state' 
-> > would be an example.
-> > 
-> > Agreed?
-> 
-> In principle, yes.  In practice, my attempts to make headway in 
-> this direction have usually collided with the desire to inline 
-> some of the functions that appear on fastpaths, so I would prefer 
-> caution when moving in this direction, especially given my 
-> treercu-related todos, to which "speeding up synchronize_rcu()" 
-> just got added.
 
-I think there's a solution, for example the quiescent-state inlines 
-could still be offered in a kernel/rcupdate_internals.h header to be 
-included by kernel/softirq.c et al directly.
+Summary: Some new USB memory sticks will not stop blinking the LED.
+         Behaviour varies across distributions and OS's.
+         Any helpful hints appreciated.
 
-Otherwise ... i think it generally is not worth the trouble to put 
-huge data types into common headers just to be able to inline into a 
-small number of callsites.
 
-	Ingo
+On a system that we use for mass erasure of USB sticks (64 sticks),
+based on Debian with automatical udev-handling of USB sticks disabled,
+we have a problem with a batch of new USB sticks: They will continue
+blinking for as long as they are plugged in, independent of data
+access.
+
+The sticks however stop blinking (as they should) on a SuSE based
+desktop system with the usual KDE software. They also stop blinking
+when attached to a Windows system.
+
+
+Good behaviour:
+***************
+
+Previously, (good) USB sticks would behave like this:
+ -  blink while the usb_storage module identifies them
+    and maps them to an SCSI device
+ -  then stop blinking
+ -  blink again while being formatted via our script
+ -  stop blinking after being unmounted
+Together with a visual program display, the blinking LED has always
+been a good indicator for operating personnel of the stick's status.
+
+Bad behaviour:
+**************
+The new sticks will start blinking when the usb_storage module kicks
+in use, and continue blinking throughout idle phases, mounts, writes,
+umounts etc.; an eject command will change the blinking to
+a permanently lighted LED, but it will never go off.
+
+
+
+
+I'm at a loss looking for the reason of the continued blinking,
+and how to get rid of it (it's a large batch of sticks, and
+returning them is out of the question).
+
+Possible causes:
+ - Kernel
+   But: the "good" SuSE kernel 2.6.25 is between "bad" Debian 2.6.16
+   and "bad" Debian 2.6.26.
+   Also, old USB sticks work fine with each machine.
+ - Bad USB controller
+   The new batch of sticks uses a different internal USB
+   controller from old batches.
+   But: Windows and SuSE work fine.
+ - Interaction of KDE components with the USB stick
+   that is missing on our batch formatting system.
+   But: Why do old sticks work fine without such interaction?
+
+
+Questions:
+ - I always thought that USB stick LEDs cannot be controlled by the
+   operating system. They just indicates "write accesses".
+   Is that correct?
+ - If USB stick leds are not OS-accessible, why do the new
+   sticks behave differently on different systems?
+ - If USB stick leds are OS-accessible, has there been any change
+   in policy of kernel/modules that leave them blinking?
+ - Can anyone point me to information how SuSE/KDE control the
+   blinking light, and how I can (write code to) let the LED
+   react similarly on our Debian-based batch system?
+   [ For various reasons beyond the scope of this mail,
+     automatically mounting the sticks is out of the question. ]
+
+
+Any helpful hints, pointers to knowledge/information etc. are
+greatly appreciated.
+
+Best regards,
+
+Claus
+
+
+--=20
+Claus Fischer <claus.fischer@clausfischer.com>
+http://www.clausfischer.com/
+
+--/9DWx/yDrRhgMJTb
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iD8DBQFJyl0hm6yxRhwvRIsRAp94AJ0QRQC/dxUigkz1Rbipe5hTjdKykwCeKXcG
+4Ou1yHq0l4E0N0YIIye2GjU=
+=SPJu
+-----END PGP SIGNATURE-----
+
+--/9DWx/yDrRhgMJTb--
