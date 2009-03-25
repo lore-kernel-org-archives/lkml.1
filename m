@@ -1,82 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758086AbZCYELF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758033AbZCYEKq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758086AbZCYELF (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 00:11:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754710AbZCYEIz
+	id S1758033AbZCYEKq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 00:10:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753611AbZCYEIl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 00:08:55 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:64291 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1755840AbZCYEIy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 00:08:54 -0400
-Message-ID: <49C9ADAD.7070303@cn.fujitsu.com>
-Date: Wed, 25 Mar 2009 12:06:05 +0800
-From: Zhaolei <zhaolei@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Wed, 25 Mar 2009 00:08:41 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:50364 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752039AbZCYEIh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Mar 2009 00:08:37 -0400
+From: Nikanth Karthikesan <knikanth@suse.de>
+Organization: suse.de
+To: Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: ftrace not working?
+Date: Wed, 25 Mar 2009 09:36:05 +0530
+User-Agent: KMail/1.10.3 (Linux/2.6.27.19-3.2-default; KDE/4.1.3; x86_64; ; )
+Cc: Frederic Weisbecker <fweisbec@gmail.com>,
+       Steven Rostedt <srostedt@redhat.com>, rusty@rustcorp.com.au,
+       Ingo Molnar <mingo@elte.hu>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       linux-kernel@vger.kernel.org, stable@kernel.org
+References: <20090323083533.GE18837@elte.hu> <20090324201357.GB5975@nowhere> <alpine.DEB.2.00.0903242220140.22830@gandalf.stny.rr.com>
+In-Reply-To: <alpine.DEB.2.00.0903242220140.22830@gandalf.stny.rr.com>
 MIME-Version: 1.0
-To: "Steven Rostedt ;" <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>
-CC: linux-kernel@vger.kernel.org
-Subject: [PATCH] ftrace: Using FTRACE_WARN_ON() to check "freed record" in
- ftrace_release()
-Content-Type: text/plain; charset=GB2312
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200903250936.06349.knikanth@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* From Steven Rostedt <rostedt@goodmis.org>
-> > Hmm, could you explain this more. I'm thinking that this scenario should
-> > not happen, and if it does, it should probably be a bug.
+On Wednesday 25 March 2009 07:51:34 Steven Rostedt wrote:
+> On Tue, 24 Mar 2009, Frederic Weisbecker wrote:
+> > > Steve, Can you merge this.
+> > >
+> > > Thanks
+> > > Nikanth
+> > >
+> > > In tracer_alloc_buffers(), do not free tracing_cpumask and
+> > > tracing_buffer_mask on success.
+> > >
+> > > Signed-off-by: Nikanth Karthikesan <knikanth@suse.de>
+> > >
+> > > ---
+> > >
+> > > diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
+> > > index 17bb88d..98f609d 100644
+> > > --- a/kernel/trace/trace.c
+> > > +++ b/kernel/trace/trace.c
+> > > @@ -3887,6 +3887,7 @@ __init static int tracer_alloc_buffers(void)
+> > >
+> > >  	register_die_notifier(&trace_die_notifier);
+> > >  	ret = 0;
+> > > +	goto out;
 > >
-> > Because when we call ftrace_free_rec we change the rec->ip to point to the
-> > next record in the chain. Something is very wrong if rec->ip >= s &&
-> > rec->ip < e and the record is already free.
-> Hello, Steven
+> > Ah I see.
+> > I've sent a fix for that already, it's on latest -tip
+> > http://git.kernel.org/?p=linux/kernel/git/tip/linux-2.6-tip.git;a=commit;
+> >h=2fc1dfbe17e7705c55b7a99da995fa565e26f151
 >
-> Thanks for your comment.
-> I got your meaning, and I agree that if rec->ip >= s && rec->ip < e,
-> this record is not freed.
-> But IMHO, "if rec->ip >= s && rec->ip < e" is used to select records in the
-> module,
-> and function of ignore "freed record" is only its side-effect.
-> So, add a special judgement to avoid "freed record" is not a bad idea.
-> And I also agree your suggestion of add a WARN_ON, because this should not
-> happened.
+> Nikanth,
+>
+> Could you varify that tip is not an issue for you.
+>
+>   http://people.redhat.com/~mingo/tip.git/readme.txt
+>
 
-Hi Zhaolei,
+Oh. That should fix it. It would be nice to have it in stable 2.6.29.1.
 
-Great! Feel free to send another patch ;-)
-
-Note, use FTRACE_WARN_ON() macro. This way it shuts down ftrace if it is hit and
-helps to avoid further damage later.
-
-Signed-off-by: Zhao Lei <zhaolei@cn.fujitsu.com>
----
- kernel/trace/ftrace.c |    9 +++++++--
- 1 files changed, 7 insertions(+), 2 deletions(-)
-
-diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
-index 7b8722b..1752a63 100644
---- a/kernel/trace/ftrace.c
-+++ b/kernel/trace/ftrace.c
-@@ -358,9 +358,14 @@ void ftrace_release(void *start, unsigned long size)
- 
- 	mutex_lock(&ftrace_lock);
- 	do_for_each_ftrace_rec(pg, rec) {
--		if ((rec->ip >= s) && (rec->ip < e) &&
--		    !(rec->flags & FTRACE_FL_FREE))
-+		if ((rec->ip >= s) && (rec->ip < e)) {
-+			/*
-+			 * rec->ip is changed in ftrace_free_rec()
-+			 * It should not between s and e if record was freed.
-+			 */
-+			FTRACE_WARN_ON(rec->flags & FTRACE_FL_FREE);
- 			ftrace_free_rec(rec);
-+		}
- 	} while_for_each_ftrace_rec();
- 	mutex_unlock(&ftrace_lock);
- }
--- 
-1.5.5.3
-
-
+Thanks
+Nikanth
