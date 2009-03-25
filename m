@@ -1,61 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756214AbZCYVh3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756312AbZCYVho@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756214AbZCYVh3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 17:37:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752763AbZCYVhS
+	id S1756312AbZCYVho (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 17:37:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756139AbZCYVh1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 17:37:18 -0400
-Received: from fk-out-0910.google.com ([209.85.128.186]:39506 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752734AbZCYVhR convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 17:37:17 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=GpCmaXHDSQNdL/n4z3ZEVfo+Rq/wi6ei8S2mJcJiOR0Y2PjCkDstqhu6/iQJzVsPiz
-         Wl5Jt1q6Q6YkYmFPBCTpdjQDn8Vs58sSJp1efVb7Lcgt8tJdOh8XOZdD2C6AWyFZ+GL7
-         jaMYullrVeajVRwfKlkMkFzH2tpTs+qsvJVnk=
+	Wed, 25 Mar 2009 17:37:27 -0400
+Received: from pipapo.org ([217.140.77.75]:47421 "EHLO mail.pipapo.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756064AbZCYVh0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Mar 2009 17:37:26 -0400
+X-Greylist: delayed 563 seconds by postgrey-1.27 at vger.kernel.org; Wed, 25 Mar 2009 17:37:25 EDT
+Message-ID: <49CAA1DF.8060109@pipapo.org>
+Date: Wed, 25 Mar 2009 22:27:59 +0100
+From: Christian Thaeter <ct@pipapo.org>
+User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
 MIME-Version: 1.0
-In-Reply-To: <49CAA055.5060603@goop.org>
-References: <84a01a8b0903250545n799a8727o1faad60c8eaf372e@mail.gmail.com>
-	 <49CAA055.5060603@goop.org>
-Date: Wed, 25 Mar 2009 22:37:14 +0100
-Message-ID: <84a01a8b0903251437l9f9059s3c548b5d35ea47d4@mail.gmail.com>
-Subject: Re: epoll_ctl and const correctness
-From: nicolas sitbon <nicolas.sitbon@gmail.com>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+To: linux-kernel@vger.kernel.org
+CC: Pavel Machek <pavel@ucw.cz>, eric.piel@tremplin-utc.net
+Subject: [PATCH] hpfall.c improvements, thoughts
+References: <49C8F338.7030901@pipapo.org> <20090324211555.GA24172@elf.ucw.cz>
+In-Reply-To: <20090324211555.GA24172@elf.ucw.cz>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-You don't teach me anything, I know that, the fact is the
-documentation is incomplete, so rather saying that, please answer my
-questions. For the moment, only the documenation and the prototype of
-epoll are buggy.
+Some conversation I had with Pavel,
 
-2009/3/25 Jeremy Fitzhardinge <jeremy@goop.org>:
-> nicolas sitbon wrote:
+imo the example code should be at least barely useable as in not causing
+harm like I sketched in (1.). Maybe someone else picks that up and
+improves it later on. Patch at the end, quite sketchy and imature as it
+doesn't check for errors, but certainly better than before.
+
+
+	Christian
+
+
+Pavel Machek wrote:
+> Hi!
+> 
+>> I just hacked and installed the hpfall utility a little bit. By that I
+>> thought I should share some ideas with you. (made no patch since this is
+>> trivial, but important)
 >>
->> valgrind confirms this
->> behaviour, so am I wrong?
->
-> That doesn't prove very much.  Unlike usermode code, Valgrind doesn't
-> instrument the kernel, so it computes the side-effects of kernel operations
-> by parsing the syscall stream and simulating the effect.  (That is to say,
-> it strengthens your argument somewhat, but valgrind's handling of this
-> syscall could be buggy.)
->
->>  or the good prototype is
+>> 1. hpfall *MUST* mlockall(MCL_CURRENT|MCL_FUTURE); itself!
+>> Since the Program sits and waits most of the time it becomes very likely
+>> swapped out. If it gets woken up when the laptop drops from the table
+>> while it is swapped out it actually triggers harddrive activity!
 >>
->> int epoll_ctl(int epfd, int op, int fd, struct epoll_event const *event);
+>> 2. daemon(0, 0);  ... Quick and dirty way to daemonize it
 >>
+>> 3. Realtime priority:
+>>  param.sched_priority = sched_get_priority_max(SCHED_FIFO);
+>>  sched_setscheduler(0, SCHED_FIFO, &param);
+>> Should give a chance that it has less latency when woken up.
+> 
+> Good ideas. I ommited them, thinking that someone else will do it. Can
+> you submit a patch? (akpm, cc: lk, Eric Piel) I no longer have the
+> hardware, and would prefer not to patch code I can't test.
+> 
+>> .. another thing is that I still use the old IDE driver, I just changed
+>> sda to hda, maybe a bandaid is to use argv[1] for defining the drive
+>> (well I understand that it is very basic example code, so maybe someday
+>> someone adds a better option parser)
+> 
+> Option parser would indeed be nice.
+> 								Pavel
 >
-> Putting "const" first is conventional.
->
->   J
->
+
+
+Signed-off-by: Christian Thaeter <ct@pipapo.org>
+---
+
+diff --git a/Documentation/hwmon/hpfall.c b/Documentation/hwmon/hpfall.c
+index bbea1cc..f3cde67 100644
+--- a/Documentation/hwmon/hpfall.c
++++ b/Documentation/hwmon/hpfall.c
+@@ -16,6 +16,8 @@
+ #include <stdint.h>
+ #include <errno.h>
+ #include <signal.h>
++#include <sys/mman.h>
++#include <sched.h>
+
+ void write_int(char *path, int i)
+ {
+@@ -63,6 +65,7 @@ void ignore_me(void)
+ int main(int argc, char* argv[])
+ {
+        int fd, ret;
++       struct sched_param param;
+
+        fd = open("/dev/freefall", O_RDONLY);
+        if (fd < 0) {
+@@ -70,7 +73,12 @@ int main(int argc, char* argv[])
+                return EXIT_FAILURE;
+        }
+
+-	signal(SIGALRM, ignore_me);
++       daemon(0,0);
++       param.sched_priority = sched_get_priority_max(SCHED_FIFO);
++       sched_setscheduler(0, SCHED_FIFO, &param);
++       mlockall(MCL_CURRENT|MCL_FUTURE);
++
++       signal(SIGALRM, ignore_me);
+
+        for (;;) {
+ 	       unsigned char count;
+
