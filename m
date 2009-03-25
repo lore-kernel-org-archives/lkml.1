@@ -1,83 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758141AbZCYOHa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759071AbZCYOIL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758141AbZCYOHa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 10:07:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753768AbZCYOHV
+	id S1759071AbZCYOIL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 10:08:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753768AbZCYOH4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 10:07:21 -0400
-Received: from e8.ny.us.ibm.com ([32.97.182.138]:48221 "EHLO e8.ny.us.ibm.com"
+	Wed, 25 Mar 2009 10:07:56 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:44229 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752734AbZCYOHU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 10:07:20 -0400
-From: Subrata Modak <tosubrata@gmail.com>
-To: Greg Kroah-Hartman <gregkh@suse.de>
-Cc: Sachin Sant <sachinp@in.ibm.com>, Subrata Modak <tosubrata@gmail.com>,
-       linux-next@vger.kernel.org, Stephen Rothwell <sfr@canb.auug.org.au>,
-       Greg KH <greg@kroah.com>, LKML <linux-kernel@vger.kernel.org>
-Date: Wed, 25 Mar 2009 19:37:13 +0530
-Message-Id: <20090325140713.4919.64147.sendpatchset@subratamodak.linux.ibm.com>
-Subject: [PATCH] Re: Next March 25: staging/epl build break.
+	id S1751756AbZCYOHz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Mar 2009 10:07:55 -0400
+Date: Wed, 25 Mar 2009 11:07:25 -0300
+From: Arnaldo Carvalho de Melo <acme@redhat.com>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Li Zefan <lizf@cn.fujitsu.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 3/3] blktrace: fix the original blktrace
+Message-ID: <20090325140725.GE10928@ghostprotocols.net>
+References: <49C9F700.9070609@cn.fujitsu.com> <49C9F796.9040503@cn.fujitsu.com> <20090325101451.GK2341@elte.hu> <20090325101747.GL27476@kernel.dk> <20090325114720.GA9762@elte.hu> <20090325135142.GD10928@ghostprotocols.net> <20090325135639.GU27476@kernel.dk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090325135639.GU27476@kernel.dk>
+X-Url: http://oops.ghostprotocols.net:81/blog
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Greg,
+Em Wed, Mar 25, 2009 at 02:56:39PM +0100, Jens Axboe escreveu:
+> On Wed, Mar 25 2009, Arnaldo Carvalho de Melo wrote:
+> > Em Wed, Mar 25, 2009 at 12:47:20PM +0100, Ingo Molnar escreveu:
+> > > 
+> > > * Jens Axboe <jens.axboe@oracle.com> wrote:
+> > > 
+> > > > On Wed, Mar 25 2009, Ingo Molnar wrote:
+> > > > > 
+> > > > > * Li Zefan <lizf@cn.fujitsu.com> wrote:
+> > > > > 
+> > > > > > Currently the original blktrace, which is using relay and is used 
+> > > > > > via ioctl, is broken. You can use ftrace to see the output of 
+> > > > > > blktrace, but user-space blktrace is unusable.
+> > > > > 
+> > > > > good catch, thanks Li!
+> > > > > 
+> > > > > Jens, Arnaldo, do these fixes look good to you too?
+> > > > 
+> > > > Look fine, but I'm very worried about the state of the current 
+> > > > code. I mean, this last round of fixes got the timestamp correct 
+> > > > and made blktrace work again. [...]
+> > > 
+> > > Correct. I tested it on a 16way box (see the blkparse output below). 
+> > > If you can see any sort of anomaly please let us know so we can fix 
+> > > it.
+> > > 
+> > > > [...] Those are something that should have been caught even before 
+> > > > the whole thing was posted, let alone merged. When do you plan on 
+> > > > pushing this upstream? Looks like 2.6.31 to me, it's clearly not 
+> > > > ready for 2.6.30 by any stretch.
+> > > 
+> > > Well, apparently nobody tried ioctl based blktrace+blkparse on -tip 
+> > > or linux-next in the past ~1 month. The relayfs portion was (meant 
+> > > to be) kept largely untouched but this bug still crept in.
+> > > 
+> > > Li started looking into it and found the bug. I tested the ftrace 
+> > > plugin side regularly, but you are right that this bug took too long 
+> > > to find (over a month) - from now on i'll check the ioctl side more 
+> > > regularly too, for all tracing and relayfs changes as well.
+> > 
+> > I got sidetracked by other stuff and didn't managed to continue working
+> > on it, but at the same time testing by somebody else is needed. There is
+> > no bug-free code, let alone in the first iteration, even less for
+> > something I wasn't familiar with and depended on people like Li to do a
+> > careful review.
+> > 
+> > Li fixed bugs and continued the work, getting things I wanted working
+> > and made the initial steps to get done, like being able to just fed
+> > trace_pipe into blkparse and get the same result as btrace.
+> > 
+> > So I apologise for not having continued working on it more often to
+> > catch myself the bugs I introduced, and give a big thank you to Li for
+> > the thorough review, bugfixes and improvements.
+> 
+> Dont apologise, there's nothing wrong with that. The only thing wrong
+> would be for the unfinished code to get merged, when it clearly wasn't
+> ready.
 
->Today's next x86 randconfig build failed with
->
->drivers/staging/epl/VirtualEthernetLinux.c: In function VEthAddInstance:
->drivers/staging/epl/VirtualEthernetLinux.c:302: error: struct net_device has no member named open
->drivers/staging/epl/VirtualEthernetLinux.c:303: error: struct net_device has no member named stop
->drivers/staging/epl/VirtualEthernetLinux.c:304: error: struct net_device has no member named get_stats
->drivers/staging/epl/VirtualEthernetLinux.c:305: error: struct net_device has no member named hard_start_xmit
->drivers/staging/epl/VirtualEthernetLinux.c:306: error: struct net_device has no member named tx_timeout
->
+So in this case I guess the right approach is to keep this on a -tip
+branch and delay it getting merged to .31?
 
-The above build problem reported by Sachin can be fixed with the
-patch below. However, it still will leave with the following
-warnings, which i think can be ignored:
-
-drivers/staging/epl/VirtualEthernetLinux.c:164: warning: ‘VEthOpen’ defined but not used
-drivers/staging/epl/VirtualEthernetLinux.c:183: warning: ‘VEthClose’ defined but not used
-drivers/staging/epl/VirtualEthernetLinux.c:196: warning: ‘VEthXmit’ defined but not used
-drivers/staging/epl/VirtualEthernetLinux.c:231: warning: ‘VEthGetStats’ defined but not used
-drivers/staging/epl/VirtualEthernetLinux.c:238: warning: ‘VEthTimeout’ defined but not used
-
->.config attached.
->
->Thanks
->-Sachin
-
-Signed-Off-By: Subrata Modak <subrata@linux.vnet.ibm.com>
----
-
---- a/linux-2.6.29/drivers/staging/epl/Kconfig	2009-03-24 04:42:14.000000000 +0530
-+++ b/linux-2.6.29/drivers/staging/epl/Kconfig	2009-03-25 19:01:18.000000000 +0530
-@@ -1,6 +1,7 @@
- config EPL
- 	tristate "openPOWERLINK protocol stack"
- 	depends on NET && HIGH_RES_TIMERS && X86
-+        depends on COMPAT_NET_DEV_OPS
- 	default N
- 	---help---
- 	  Enable support for the openPOWERLINK network protocol stack.
---- a/linux-2.6.29/drivers/staging/epl/VirtualEthernetLinux.c	2009-03-25 18:38:06.000000000 +0530
-+++ b/linux-2.6.29/drivers/staging/epl/VirtualEthernetLinux.c	2009-03-25 19:03:16.000000000 +0530
-@@ -299,11 +299,13 @@ tEplKernel VEthAddInstance(tEplDllkInitP
- 		goto Exit;
- 	}
- 
-+#ifdef CONFIG_COMPAT_NET_DEV_OPS
- 	pVEthNetDevice_g->open = VEthOpen;
- 	pVEthNetDevice_g->stop = VEthClose;
- 	pVEthNetDevice_g->get_stats = VEthGetStats;
- 	pVEthNetDevice_g->hard_start_xmit = VEthXmit;
- 	pVEthNetDevice_g->tx_timeout = VEthTimeout;
-+#endif
- 	pVEthNetDevice_g->watchdog_timeo = EPL_VETH_TX_TIMEOUT;
- 	pVEthNetDevice_g->destructor = free_netdev;
-
---
-Regards--
-Subrata
- 
+- Arnaldo
