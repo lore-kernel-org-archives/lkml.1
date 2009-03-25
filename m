@@ -1,114 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757964AbZCYPwq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763316AbZCYPxu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757964AbZCYPwq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 11:52:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755356AbZCYPwh
+	id S1763316AbZCYPxu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 11:53:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756694AbZCYPxj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 11:52:37 -0400
-Received: from hera.kernel.org ([140.211.167.34]:42261 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753877AbZCYPwg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 11:52:36 -0400
-Date: Wed, 25 Mar 2009 15:51:29 GMT
-From: Ingo Molnar <mingo@elte.hu>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       penberg@cs.helsinki.fi, eduard.munteanu@linux360.ro, tglx@linutronix.de,
-       mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       penberg@cs.helsinki.fi, eduard.munteanu@linux360.ro, tglx@linutronix.de,
-       mingo@elte.hu
-In-Reply-To: <1237898630.25315.83.camel@penberg-laptop>
-References: <1237898630.25315.83.camel@penberg-laptop>
-Subject: [tip:tracing/kmemtrace] rcutree: fix rcu_tree_trace.c data structure dependencies
-Message-ID: <tip-5d957021d326fbfdc1d7a4f11a3da1f6f82d6a36@git.kernel.org>
-Git-Commit-ID: 5d957021d326fbfdc1d7a4f11a3da1f6f82d6a36
-X-Mailer: tip-git-log-daemon
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 25 Mar 2009 15:51:31 +0000 (UTC)
+	Wed, 25 Mar 2009 11:53:39 -0400
+Received: from 82-117-125-11.tcdsl.calypso.net ([82.117.125.11]:60499 "EHLO
+	smtp.ossman.eu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756250AbZCYPxi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Mar 2009 11:53:38 -0400
+Date: Wed, 25 Mar 2009 16:53:28 +0100
+From: Pierre Ossman <drzeus@drzeus.cx>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Manuel Lauss <mano@roarinelk.homelinux.net>, linux-kernel@vger.kernel.org
+Subject: Re: MMC layer regression with single-block controllers
+Message-ID: <20090325165328.251daabb@mjolnir.ossman.eu>
+In-Reply-To: <20090325114248.GN27476@kernel.dk>
+References: <20090323092802.GA30122@roarinelk.homelinux.net>
+	<20090324210138.71029c2c@mjolnir.ossman.eu>
+	<20090325104837.GA18389@roarinelk.homelinux.net>
+	<20090325110401.GM27476@kernel.dk>
+	<20090325123613.06404b17@mjolnir.ossman.eu>
+	<20090325114248.GN27476@kernel.dk>
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.15.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=PGP-SHA1; protocol="application/pgp-signature"; boundary="=_freyr.ossman.eu-28722-1237996412-0001-2"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  5d957021d326fbfdc1d7a4f11a3da1f6f82d6a36
-Gitweb:     http://git.kernel.org/tip/5d957021d326fbfdc1d7a4f11a3da1f6f82d6a36
-Author:     Ingo Molnar <mingo@elte.hu>
-AuthorDate: Wed, 25 Mar 2009 16:42:24 +0100
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Wed, 25 Mar 2009 16:42:24 +0100
+This is a MIME-formatted message.  If you see this text it means that your
+E-mail software does not support MIME-formatted messages.
 
-rcutree: fix rcu_tree_trace.c data structure dependencies
+--=_freyr.ossman.eu-28722-1237996412-0001-2
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-Impact: build fix
+On Wed, 25 Mar 2009 12:42:48 +0100
+Jens Axboe <jens.axboe@oracle.com> wrote:
 
-We removed rcutree internals from the public rcutree.h file - but
-kernel/rcutree_trace.c depends on them.
+> On Wed, Mar 25 2009, Pierre Ossman wrote:
+> >=20
+> > That's an annoying limitation and sort of defeats the purpose of
+> > specifying a maximum sector count. Why can't it go below 8?
+>=20
+> Because it would add all sorts of complexity for handling 4kb block size
+> file systems on top of the block device. The bio_add_page() api depends
+> on being able to add a single page at least, it has to or you would need
+> to push that complexity to the callers.
+>=20
 
-Introduce kernel/rcutree.h for internal definitions. (Probably all
-the other data types from include/linux/rcutree.h could be
-moved here too - except rcu_data.)
+Requests going in into the block layer and requests coming out aren't
+that strongly coupled, so I don't see it of that much of a stretch to
+expect this to be handled.
 
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-Cc: paulmck@linux.vnet.ibm.com
-LKML-Reference: <1237898630.25315.83.camel@penberg-laptop>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> So it's annoying, but you have to do the incremental completions
+> yourself for the (obscure) device that doesn't do more than 512b
+> transfers. It's really not that difficult, and it would be simpler than
+> supporting partial completions generically in the block layer.
 
+The code was there previously, but it seemed a bit redundant to have
+functionality like that in the block driver since we've already told
+the block layer about the restrictions.
 
----
- kernel/rcutree.c       |    8 ++++----
- kernel/rcutree.h       |   10 ++++++++++
- kernel/rcutree_trace.c |    2 ++
- 3 files changed, 16 insertions(+), 4 deletions(-)
+The code was pretty simple. Basically it just cropped the sg list at
+the correct place. Couldn't that be as easily done in the block layer?
 
-diff --git a/kernel/rcutree.c b/kernel/rcutree.c
-index a2015ed..7f32669 100644
---- a/kernel/rcutree.c
-+++ b/kernel/rcutree.c
-@@ -72,11 +72,11 @@ EXPORT_SYMBOL_GPL(rcu_lock_map);
- 	.n_force_qs_ngp = 0, \
- }
- 
--static struct rcu_state rcu_state = RCU_STATE_INITIALIZER(rcu_state);
--static DEFINE_PER_CPU(struct rcu_data, rcu_data);
-+struct rcu_state rcu_state = RCU_STATE_INITIALIZER(rcu_state);
-+DEFINE_PER_CPU(struct rcu_data, rcu_data);
- 
--static struct rcu_state rcu_bh_state = RCU_STATE_INITIALIZER(rcu_bh_state);
--static DEFINE_PER_CPU(struct rcu_data, rcu_bh_data);
-+struct rcu_state rcu_bh_state = RCU_STATE_INITIALIZER(rcu_bh_state);
-+DEFINE_PER_CPU(struct rcu_data, rcu_bh_data);
- 
- /*
-  * Increment the quiescent state counter.
-diff --git a/kernel/rcutree.h b/kernel/rcutree.h
-new file mode 100644
-index 0000000..5e872bb
---- /dev/null
-+++ b/kernel/rcutree.h
-@@ -0,0 +1,10 @@
-+
-+/*
-+ * RCU implementation internal declarations:
-+ */
-+extern struct rcu_state rcu_state;
-+DECLARE_PER_CPU(struct rcu_data, rcu_data);
-+
-+extern struct rcu_state rcu_bh_state;
-+DECLARE_PER_CPU(struct rcu_data, rcu_bh_data);
-+
-diff --git a/kernel/rcutree_trace.c b/kernel/rcutree_trace.c
-index d6db3e8..4ee954f 100644
---- a/kernel/rcutree_trace.c
-+++ b/kernel/rcutree_trace.c
-@@ -43,6 +43,8 @@
- #include <linux/debugfs.h>
- #include <linux/seq_file.h>
- 
-+#include "rcutree.h"
-+
- static void print_one_rcu_data(struct seq_file *m, struct rcu_data *rdp)
- {
- 	if (!rdp->beenonline)
+>=20
+> Saying that it defeats the purpose of the setting is missing the bigger
+> picture - basically all other devices, that have sane limits (like 128k,
+> or whatnot).
+>=20
+
+I suppose. But it makes the feature completely useless for MMC as it
+has to implement it's own cropping of requests anyway.
+
+Rgds
+--=20
+     -- Pierre Ossman
+
+  WARNING: This correspondence is being monitored by the
+  Swedish government. Make sure your server uses encryption
+  for SMTP traffic and consider using PGP for end-to-end
+  encryption.
+
+--=_freyr.ossman.eu-28722-1237996412-0001-2
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename=signature.asc
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.11 (GNU/Linux)
+
+iEYEARECAAYFAknKU3oACgkQ7b8eESbyJLiuDgCgxqVjrbesmriJNYGmxOwEBguP
+XBYAnjsRFGWMEN6p3I4r3hroOQRwrswv
+=kRpR
+-----END PGP SIGNATURE-----
+
+--=_freyr.ossman.eu-28722-1237996412-0001-2--
