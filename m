@@ -1,75 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759144AbZCYLAi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757356AbZCYLES@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759144AbZCYLAi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 07:00:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756723AbZCYLA3
+	id S1757356AbZCYLES (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 07:04:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753416AbZCYLEE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 07:00:29 -0400
-Received: from mail09.linbit.com ([212.69.161.110]:45545 "EHLO
-	mail09.linbit.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754368AbZCYLA3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 07:00:29 -0400
-From: Philipp Reisner <philipp.reisner@linbit.com>
-Organization: LINBIT
-To: Andi Kleen <andi@firstfloor.org>
-Subject: Re: [PATCH 02/12] DRBD: activity_log
-Date: Wed, 25 Mar 2009 11:57:27 +0100
-User-Agent: KMail/1.11.0 (Linux/2.6.27-11-generic; KDE/4.2.0; i686; ; )
-Cc: linux-kernel@vger.kernel.org, gregkh@suse.de
-References: <1237823287-12734-1-git-send-email-philipp.reisner@linbit.com> <200903251127.23287.philipp.reisner@linbit.com> <20090325104641.GB11935@one.firstfloor.org>
-In-Reply-To: <20090325104641.GB11935@one.firstfloor.org>
-X-OTRS-FollowUp-SenderType: agent
+	Wed, 25 Mar 2009 07:04:04 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:33058 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753611AbZCYLED (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Mar 2009 07:04:03 -0400
+Date: Wed, 25 Mar 2009 12:04:01 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Manuel Lauss <mano@roarinelk.homelinux.net>
+Cc: Pierre Ossman <drzeus@drzeus.cx>, linux-kernel@vger.kernel.org
+Subject: Re: MMC layer regression with single-block controllers
+Message-ID: <20090325110401.GM27476@kernel.dk>
+References: <20090323092802.GA30122@roarinelk.homelinux.net> <20090324210138.71029c2c@mjolnir.ossman.eu> <20090325104837.GA18389@roarinelk.homelinux.net>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200903251157.27549.philipp.reisner@linbit.com>
+In-Reply-To: <20090325104837.GA18389@roarinelk.homelinux.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 25 March 2009 11:46:41 Andi Kleen wrote:
-> > > > +	mutex_lock(&mdev->md_io_mutex); /* protects md_io_buffer,
-> > > > al_tr_cycle, ... */
-> > >
-> > > Doing checksumming inside a lock looks nasty.
-> >
-> > Well, that is a mutex, not a spinlock. We need to hold that lock here,
->
-> Yes it's independent. If it takes a lot of CPU time you'll likely have
-> a bottle neck. It's normally a bad idea to do anything CPU intensive
-> under a lock covering more than your current limited object.
->
+On Wed, Mar 25 2009, Manuel Lauss wrote:
+> Hello Pierre, Jens,
+> 
+> On Tue, Mar 24, 2009 at 09:01:38PM +0100, Pierre Ossman wrote:
+> > On Mon, 23 Mar 2009 10:28:02 +0100
+> > Manuel Lauss <mano@roarinelk.homelinux.net> wrote:
+> > 
+> > > Hello Pierre,
+> > > 
+> > > Since about 2.6.28-rc1, I hit the following BUG_ON() in mmc/core.c
+> > > (line 155):
+> > > 
+> > >         if (mrq->data) {
+> > >                 BUG_ON(mrq->data->blksz > host->max_blk_size);
+> > > >>>>>>>>>       BUG_ON(mrq->data->blocks > host->max_blk_count);  <<<<<<
+> > >                 BUG_ON(mrq->data->blocks * mrq->data->blksz >
+> > >                         host->max_req_size);
+> > > 
+> > > It's easy to reproduce; just set your favorite host controllers'
+> > > mmc->max_blk_cnt to 1 (or anything smaller than 4).  As far as I can
+> > > tell it was introduced with some block layer changes before 2.6.28-rc1
+> > > was released.
+> > > 
+> > 
+> > Ouch. Have you determined that it is the block layer that isn't
+> > respecting its settings? If so, the we probably need to notify Jens
+> > Axboe.
+> 
+> (Added Jens to CC).
+> 
+> Yes, it seems the block layer doesn't honor the one-sector request made
+> in drivers/mmc/card/queue.c:187 (and 161).  The debug log says:
+> 
+> mmc0: new SD card at address aaaa
+> blk_queue_max_sectors: set to minimum 8
+> mmc0: starting CMD16 arg 00000200 flags 00000095
+> mmc0: req done (CMD16): 0: 00000900 00000000 00000000 00000000
+> mmcblk0: mmc0:aaaa SD01G 968 MiB
+>  mmcblk0:<7>mmc0: starting CMD18 arg 00000000 flags 000000b5
+> mmc0:     blksz 512 blocks 8 flags 00000200 tsac 100 ms nsac 0
+> mmc0:     CMD12 arg 00000000 flags 0000049d
+> ------------[ cut here ]------------
+> kernel BUG at /mnt/work/sh7760/kernel/linux-2.6.git/drivers/mmc/core/core.c:155!
+> 
+> 
+> This "blk_queue_max_sectors: set to minimum 8" is what's haunting my
+> mmc host driver (hardware has enormous problems doing multiblock writes,
+> hence the limitation to a single block per request).
 
-We are talking about this checksum and copy to IO page loop:
+Well, as the warning tells you, it's not supported. But that doesn't
+mean you can't do single sector transfers and complete the IO when you
+have done all of them.
 
-	for (i = 0; i < mx; i++) {
-		extent_nr = lc_entry(mdev->act_log,
-				     mdev->al_tr_cycle+i)->lc_number;
-		buffer->updates[i+1].pos = cpu_to_be32(mdev->al_tr_cycle+i);
-		buffer->updates[i+1].extent = cpu_to_be32(extent_nr);
-		xor_sum ^= extent_nr;
-	}
-	for (; i < AL_EXTENTS_PT; i++) {
-		buffer->updates[i+1].pos = __constant_cpu_to_be32(-1);
-		buffer->updates[i+1].extent = __constant_cpu_to_be32(LC_FREE);
-		xor_sum ^= LC_FREE;
-	}
-
-Without being a CPU expert, my guess is that the single XOR instruction
-is carried out while the CPU stalls waiting for the next load instruction
-to complete.
-
-Sorry, I still do not take the argument that this is "CPU intensive".
-
--Phil
 -- 
-: Dipl-Ing Philipp Reisner
-: LINBIT | Your Way to High Availability
-: Tel: +43-1-8178292-50, Fax: +43-1-8178292-82
-: http://www.linbit.com
-
-DRBD(R) and LINBIT(R) are registered trademarks of LINBIT, Austria.
+Jens Axboe
 
