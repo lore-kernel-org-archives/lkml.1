@@ -1,89 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754541AbZCYN4v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760831AbZCYN6W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754541AbZCYN4v (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 09:56:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752585AbZCYN4m
+	id S1760831AbZCYN6W (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 09:58:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756412AbZCYN6J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 09:56:42 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:35497 "EHLO kernel.dk"
+	Wed, 25 Mar 2009 09:58:09 -0400
+Received: from e8.ny.us.ibm.com ([32.97.182.138]:46168 "EHLO e8.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751323AbZCYN4m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 09:56:42 -0400
-Date: Wed, 25 Mar 2009 14:56:39 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Arnaldo Carvalho de Melo <acme@redhat.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Li Zefan <lizf@cn.fujitsu.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
+	id S1752901AbZCYN6H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Mar 2009 09:58:07 -0400
+From: Subrata Modak <tosubrata@gmail.com>
+To: "David S. Miller" <davem@davemloft.net>
+Cc: Sachin Sant <sachinp@in.ibm.com>, Subrata Modak <tosubrata@gmail.com>,
+       netdev <netdev@vger.kernel.org>, linux-next@vger.kernel.org,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
        LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 3/3] blktrace: fix the original blktrace
-Message-ID: <20090325135639.GU27476@kernel.dk>
-References: <49C9F700.9070609@cn.fujitsu.com> <49C9F796.9040503@cn.fujitsu.com> <20090325101451.GK2341@elte.hu> <20090325101747.GL27476@kernel.dk> <20090325114720.GA9762@elte.hu> <20090325135142.GD10928@ghostprotocols.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090325135142.GD10928@ghostprotocols.net>
+Date: Wed, 25 Mar 2009 19:27:59 +0530
+Message-Id: <20090325135759.4397.53055.sendpatchset@subratamodak.linux.ibm.com>
+Subject: [PATCH] Re: Next March 25: net/netfilter/xt_LED build failure.
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 25 2009, Arnaldo Carvalho de Melo wrote:
-> Em Wed, Mar 25, 2009 at 12:47:20PM +0100, Ingo Molnar escreveu:
-> > 
-> > * Jens Axboe <jens.axboe@oracle.com> wrote:
-> > 
-> > > On Wed, Mar 25 2009, Ingo Molnar wrote:
-> > > > 
-> > > > * Li Zefan <lizf@cn.fujitsu.com> wrote:
-> > > > 
-> > > > > Currently the original blktrace, which is using relay and is used 
-> > > > > via ioctl, is broken. You can use ftrace to see the output of 
-> > > > > blktrace, but user-space blktrace is unusable.
-> > > > 
-> > > > good catch, thanks Li!
-> > > > 
-> > > > Jens, Arnaldo, do these fixes look good to you too?
-> > > 
-> > > Look fine, but I'm very worried about the state of the current 
-> > > code. I mean, this last round of fixes got the timestamp correct 
-> > > and made blktrace work again. [...]
-> > 
-> > Correct. I tested it on a 16way box (see the blkparse output below). 
-> > If you can see any sort of anomaly please let us know so we can fix 
-> > it.
-> > 
-> > > [...] Those are something that should have been caught even before 
-> > > the whole thing was posted, let alone merged. When do you plan on 
-> > > pushing this upstream? Looks like 2.6.31 to me, it's clearly not 
-> > > ready for 2.6.30 by any stretch.
-> > 
-> > Well, apparently nobody tried ioctl based blktrace+blkparse on -tip 
-> > or linux-next in the past ~1 month. The relayfs portion was (meant 
-> > to be) kept largely untouched but this bug still crept in.
-> > 
-> > Li started looking into it and found the bug. I tested the ftrace 
-> > plugin side regularly, but you are right that this bug took too long 
-> > to find (over a month) - from now on i'll check the ioctl side more 
-> > regularly too, for all tracing and relayfs changes as well.
-> 
-> I got sidetracked by other stuff and didn't managed to continue working
-> on it, but at the same time testing by somebody else is needed. There is
-> no bug-free code, let alone in the first iteration, even less for
-> something I wasn't familiar with and depended on people like Li to do a
-> careful review.
-> 
-> Li fixed bugs and continued the work, getting things I wanted working
-> and made the initial steps to get done, like being able to just fed
-> trace_pipe into blkparse and get the same result as btrace.
-> 
-> So I apologise for not having continued working on it more often to
-> catch myself the bugs I introduced, and give a big thank you to Li for
-> the thorough review, bugfixes and improvements.
+Hi David,
 
-Dont apologise, there's nothing wrong with that. The only thing wrong
-would be for the unfinished code to get merged, when it clearly wasn't
-ready.
+>Today's next randconfig build on x86 failed with following error.
+>
+>net/netfilter/xt_LED.c:40: error: field netfilter_led_trigger has incomplete type
+>net/netfilter/xt_LED.c: In function led_timeout_callback:
+>net/netfilter/xt_LED.c:78: warning: unused variable ledinternal
+>net/netfilter/xt_LED.c: In function led_tg_check:
+>net/netfilter/xt_LED.c:102: error: implicit declaration of function led_trigger_register
+>net/netfilter/xt_LED.c: In function led_tg_destroy:
+>net/netfilter/xt_LED.c:135: error: implicit declaration of function led_trigger_unregister
+>
+>CONFIG_LED_TRIGGER is not set.
+>
+>complete .config attached.
 
--- 
-Jens Axboe
+The following patch will solve the build problem reported by Sachin.
+But would leave the following warnings. I hope we can ignore them:
 
+net/netfilter/xt_LED.c: In function ‘led_timeout_callback’:
+net/netfilter/xt_LED.c:78: warning: unused variable ‘ledinternal’
+net/netfilter/xt_LED.c: In function ‘led_tg_check’:
+net/netfilter/xt_LED.c:87: warning: unused variable ‘err’
+
+Signed-Off-By: Subrata Modak<subrata@linux.vnet.ibm.com>
+---
+
+--- a/linux-2.6.29/include/linux/leds.h	2009-03-25 18:38:07.000000000 +0530
++++ b/linux-2.6.29/include/linux/leds.h	2009-03-25 18:24:55.000000000 +0530
+@@ -73,9 +73,6 @@ extern void led_classdev_resume(struct l
+ /*
+  * LED Triggers
+  */
+-#ifdef CONFIG_LEDS_TRIGGERS
+-
+-#define TRIG_NAME_MAX 50
+ 
+ struct led_trigger {
+ 	/* Trigger Properties */
+@@ -91,6 +88,10 @@ struct led_trigger {
+ 	struct list_head  next_trig;
+ };
+ 
++#ifdef CONFIG_LEDS_TRIGGERS
++
++#define TRIG_NAME_MAX 50
++
+ /* Registration functions for complex triggers */
+ extern int led_trigger_register(struct led_trigger *trigger);
+ extern void led_trigger_unregister(struct led_trigger *trigger);
+--- a/linux-2.6.29/net/netfilter/xt_LED.c	2009-03-25 18:38:08.000000000 +0530
++++ b/linux-2.6.29/net/netfilter/xt_LED.c	2009-03-25 18:26:55.000000000 +0530
+@@ -99,6 +99,7 @@ static bool led_tg_check(const struct xt
+ 
+ 	ledinternal->netfilter_led_trigger.name = ledinfo->id;
+ 
++#ifdef CONFIG_LEDS_TRIGGERS
+ 	err = led_trigger_register(&ledinternal->netfilter_led_trigger);
+ 	if (err) {
+ 		printk(KERN_CRIT KBUILD_MODNAME
+@@ -108,7 +109,7 @@ static bool led_tg_check(const struct xt
+ 				": Trigger name is already in use.\n");
+ 		goto exit_alloc;
+ 	}
+-
++#endif
+ 	/* See if we need to set up a timer */
+ 	if (ledinfo->delay > 0)
+ 		setup_timer(&ledinternal->timer, led_timeout_callback,
+@@ -118,8 +119,10 @@ static bool led_tg_check(const struct xt
+ 
+ 	return true;
+ 
++#ifdef CONFIG_LEDS_TRIGGERS
+ exit_alloc:
+ 	kfree(ledinternal);
++#endif
+ 
+ 	return false;
+ }
+@@ -132,7 +135,9 @@ static void led_tg_destroy(const struct 
+ 	if (ledinfo->delay > 0)
+ 		del_timer_sync(&ledinternal->timer);
+ 
++#ifdef CONFIG_LEDS_TRIGGERS
+ 	led_trigger_unregister(&ledinternal->netfilter_led_trigger);
++#endif
+ 	kfree(ledinternal);
+ }
+
+--
+Regards--
+Subrata
+ 
