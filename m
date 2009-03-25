@@ -1,257 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754996AbZCYGHs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758256AbZCYGIH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754996AbZCYGHs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 02:07:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757950AbZCYGHc
+	id S1758256AbZCYGIH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 02:08:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755254AbZCYGHi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 02:07:32 -0400
-Received: from smtp128.sbc.mail.sp1.yahoo.com ([69.147.65.187]:47934 "HELO
-	smtp128.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1757827AbZCYGHa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 02:07:30 -0400
-X-YMail-OSG: R9hiJV8VM1lzOi7mGNLWNZxMIjf7m8VQFxLS3Xl2jFaeVILha3SmS46U4Hh5WSRJ_.fwDDWc.vyivGWTwEZdENKPHCIoTHKqx_UamgUeI8_XBvWlrmcTUv_2vn7hU3aI5EiGnAk7X.h7.4lqX4s91P5LojlxFaWeOcxAiyt49H7LbxcFf0wfgIrb83_gn5s9IAXpeqeeh0K0JEkM9EqUxrexTE3k9OTgUszSDuuy8SaG9KsWVQg-
-X-Yahoo-Newman-Property: ymail-3
-Subject: [PATCH 2/2] [Target_Core_Mod/Persistent_Reservations]: Add UNIT
-	ATTENTION support for PROUT SAs
-From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
-To: LKML <linux-kernel@vger.kernel.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>
-Cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Douglas Gilbert <dgilbert@interlog.com>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       Mike Christie <michaelc@cs.wisc.edu>, Hannes Reinecke <hare@suse.de>,
-       Boaz Harrosh <bharrosh@panasas.com>,
-       "Martin K. Petersen" <martin.petersen@oracle.com>
-Content-Type: text/plain
-Date: Tue, 24 Mar 2009 23:07:26 -0700
-Message-Id: <1237961246.4138.421.camel@haakon2.linux-iscsi.org>
+	Wed, 25 Mar 2009 02:07:38 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:54840 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755184AbZCYGHh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Mar 2009 02:07:37 -0400
+Date: Wed, 25 Mar 2009 17:07:30 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Nicolas Pitre <nico@cam.org>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       =?UTF-8?B?Ik1hcmVrIFZhxaF1dCI=?= <marek.vasut@gmail.com>,
+       Russell King <rmk@arm.linux.org.uk>
+Subject: [PATCH] input: ucb1400_ts: move single use function from header
+Message-Id: <20090325170730.e9b80106.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.14.7; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From d3aed0204976bffa99505e606f2909fd61b3b8f3 Mon Sep 17 00:00:00 2001
-From: Nicholas Bellinger <nab@linux-iscsi.org>
-Date: Tue, 24 Mar 2009 22:25:36 -0700
-Subject: [PATCH 2/2] [Target_Core_Mod/Persistent_Reservations]: Add UNIT ATTENTION support for PROUT SAs
+The function ucb1400_adc_read is only used in
+drivers/input/touchscreen/ucb1400_ts.c, so move it there from
+include/linux/ucb1400.h.
 
-This patch adds support for SAM4 defined UNIT ATTENTION conditions in SPC-3 compliant
-Persistent Reservations PROUT Service Actions REGISTER + SARK=0 (UNREGISTER), RELEASE,
-and CLEAR.
+This fixes this build warning:
 
-The respective UNIT ATTENTION ASCQs for the non PROUT SA calling I_T Nexus
-ports are ASCQ_2AH_RESERVATIONS_RELEASED, ASCQ_2AH_RESERVATIONS_RELEASED,
-and ASCQ_2AH_RESERVATIONS_PREEMPTED.
+  CC [M]  drivers/mfd/ucb1400_core.o
+include/linux/ucb1400.h:139: warning: 'ucb1400_adc_read' defined but not used
 
-Signed-off-by: Nicholas A. Bellinger <nab@linux-iscsi.org>
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
 ---
- drivers/lio-core/target_core_pr.c |  107 +++++++++++++++++++++++++++++++++---
- 1 files changed, 98 insertions(+), 9 deletions(-)
+ drivers/input/touchscreen/ucb1400_ts.c |   19 +++++++++++++++++++
+ include/linux/ucb1400.h                |   19 -------------------
+ 2 files changed, 19 insertions(+), 19 deletions(-)
 
-diff --git a/drivers/lio-core/target_core_pr.c b/drivers/lio-core/target_core_pr.c
-index d733bae..0ddf54c 100644
---- a/drivers/lio-core/target_core_pr.c
-+++ b/drivers/lio-core/target_core_pr.c
-@@ -38,6 +38,7 @@
- #include <target_core_hba.h>
- #include <target_core_transport.h>
- #include <target_core_pr.h>
-+#include <target_core_ua.h>
- #include <target_core_transport_plugin.h>
- #include <target_core_fabric_ops.h>
- #include <target_core_configfs.h>
-@@ -532,12 +533,13 @@ static void core_scsi3_put_pr_reg(t10_pr_registration_t *pr_reg)
- 	smp_mb__after_atomic_dec();
+diff --git a/drivers/input/touchscreen/ucb1400_ts.c b/drivers/input/touchscreen/ucb1400_ts.c
+index 5498662..f4393e3 100644
+--- a/drivers/input/touchscreen/ucb1400_ts.c
++++ b/drivers/input/touchscreen/ucb1400_ts.c
+@@ -44,6 +44,25 @@ static inline void ucb1400_ts_mode_int(struct snd_ac97 *ac97)
+ 			UCB_TS_CR_MODE_INT);
  }
  
--static void core_scsi3_check_implict_release(
-+static int core_scsi3_check_implict_release(
- 	se_device_t *dev,
- 	t10_pr_registration_t *pr_reg)
- {
- 	se_node_acl_t *nacl = pr_reg->pr_reg_nacl;
- 	t10_pr_registration_t *pr_res_holder;
-+	int ret = 0;
- 
- 	spin_lock(&dev->dev_reservation_lock);
- 	pr_res_holder = dev->dev_pr_res_holder;
-@@ -556,10 +558,12 @@ static void core_scsi3_check_implict_release(
- 		 *    field set to zero (see 5.7.11.3).
- 		 */
- 		__core_scsi3_complete_pro_release(dev, nacl, pr_reg, 0);
--#warning FIXME: Registrants only, UA + RESERVATIONS RELEASED
-+		ret = 1;
- #warning FIXME: All Registrants, only release reservation when last registration is freed.
- 	}
- 	spin_unlock(&dev->dev_reservation_lock);
++static unsigned int ucb1400_adc_read(struct snd_ac97 *ac97, u16 adc_channel,
++					int adcsync)
++{
++	unsigned int val;
 +
-+	return ret;
- }
- 
++	if (adcsync)
++		adc_channel |= UCB_ADC_SYNC_ENA;
++
++	ucb1400_reg_write(ac97, UCB_ADC_CR, UCB_ADC_ENA | adc_channel);
++	ucb1400_reg_write(ac97, UCB_ADC_CR, UCB_ADC_ENA | adc_channel |
++				UCB_ADC_START);
++
++	while (!((val = ucb1400_reg_read(ac97, UCB_ADC_DATA))
++			& UCB_ADC_DAT_VALID))
++		schedule_timeout_uninterruptible(1);
++
++	return val & UCB_ADC_DAT_MASK;
++}
++
  /*
-@@ -681,9 +685,9 @@ static int core_scsi3_emulate_pro_register(
- 	se_dev_entry_t *se_deve;
- 	se_lun_t *se_lun = SE_LUN(cmd);
- 	se_portal_group_t *se_tpg;
--	t10_pr_registration_t *pr_reg;
-+	t10_pr_registration_t *pr_reg, *pr_reg_p;
- 	t10_reservation_template_t *pr_tmpl = &SU_DEV(dev)->t10_reservation;
--	int ret = 0;
-+	int pr_holder = 0, ret = 0, type;
- 
- 	if (!(se_sess) || !(se_lun)) {
- 		printk(KERN_ERR "SPC-3 PR: se_sess || se_lun_t is NULL!\n");
-@@ -748,6 +752,8 @@ static int core_scsi3_emulate_pro_register(
- 			core_scsi3_put_pr_reg(pr_reg);
- 			return PYX_TRANSPORT_LOGICAL_UNIT_COMMUNICATION_FAILURE;
- 		}
-+		type = pr_reg->pr_res_type;
-+
- 		if (!(ignore_key)) {
- 			if (res_key != pr_reg->pr_res_key) {
- 				printk(KERN_ERR "SPC-3 PR REGISTER: Received"
-@@ -771,9 +777,38 @@ static int core_scsi3_emulate_pro_register(
- 		 * Nexus.
- 		 */
- 		if (!(sa_res_key)) {
--			core_scsi3_check_implict_release(SE_DEV(cmd), pr_reg);
-+			pr_holder = core_scsi3_check_implict_release(
-+					SE_DEV(cmd), pr_reg);
-+
- 			spin_lock(&pr_tmpl->registration_lock);
-+			/*
-+			 * Release the calling I_T Nexus registration now..
-+			 */
- 			__core_scsi3_free_registration(SE_DEV(cmd), pr_reg, 1);
-+			/*
-+			 * From spc4r17, section 5.7.11.3 Unregistering
-+			 *
-+			 * If the persistent reservation is a registrants only
-+			 * type, the device server shall establish a unit
-+			 * attention condition for the initiator port associated
-+			 * with every registered I_T nexus except for the I_T
-+			 * nexus on which the PERSISTENT RESERVE OUT command was
-+			 * received, with the additional sense code set to
-+			 * RESERVATIONS RELEASED.
-+			 */
-+			if (pr_holder &&
-+			   ((type == PR_TYPE_WRITE_EXCLUSIVE_REGONLY) ||
-+			    (type == PR_TYPE_EXCLUSIVE_ACCESS_REGONLY))) {
-+				list_for_each_entry(pr_reg_p,
-+						&pr_tmpl->registration_list,
-+						pr_reg_list) {
-+
-+					core_scsi3_ua_allocate(
-+						pr_reg_p->pr_reg_nacl,
-+						cmd->orig_fe_lun, 0x2A,
-+						ASCQ_2AH_RESERVATIONS_RELEASED);
-+				}
-+			}
- 			spin_unlock(&pr_tmpl->registration_lock);
- 		} else {
- 			/*
-@@ -1047,7 +1082,8 @@ static int core_scsi3_emulate_pro_release(
- 	se_device_t *dev = cmd->se_dev;
- 	se_session_t *se_sess = SE_SESS(cmd);
- 	se_lun_t *se_lun = SE_LUN(cmd);
--	t10_pr_registration_t *pr_reg, *pr_res_holder;
-+	t10_pr_registration_t *pr_reg, *pr_reg_p, *pr_res_holder;
-+	t10_reservation_template_t *pr_tmpl = &SU_DEV(dev)->t10_reservation;
- 
- 	if (!(se_sess) || !(se_lun)) {
- 		printk(KERN_ERR "SPC-3 PR: se_sess || se_lun_t is NULL!\n");
-@@ -1137,10 +1173,50 @@ static int core_scsi3_emulate_pro_release(
- 		core_scsi3_put_pr_reg(pr_reg);
- 		return PYX_TRANSPORT_RESERVATION_CONFLICT;
- 	}
-+	/*
-+	 * In response to a persistent reservation release request from the
-+	 * persistent reservation holder the device server shall perform a
-+	 * release by doing the following as an uninterrupted series of actions:
-+	 * a) Release the persistent reservation;
-+	 * b) Not remove any registration(s);
-+	 * c) If the released persistent reservation is a registrants only type
-+	 * or all registrants type persistent reservation,
-+	 *    the device server shall establish a unit attention condition for
-+	 *    the initiator port associated with every regis-
-+	 *    tered I_T nexus other than I_T nexus on which the PERSISTENT
-+	 *    RESERVE OUT command with RELEASE service action was received,
-+	 *    with the additional sense code set to RESERVATIONS RELEASED; and
-+	 * d) If the persistent reservation is of any other type, the device
-+	 *    server shall not establish a unit attention condition.
-+	 */
- 	__core_scsi3_complete_pro_release(dev, se_sess->se_node_acl,
- 			pr_reg, 1);
-+
-+	if ((type != PR_TYPE_WRITE_EXCLUSIVE_REGONLY) &&
-+	    (type != PR_TYPE_EXCLUSIVE_ACCESS_REGONLY) &&
-+	    (type != PR_TYPE_WRITE_EXCLUSIVE_ALLREG) &&
-+	    (type != PR_TYPE_EXCLUSIVE_ACCESS_ALLREG)) {
-+		spin_unlock(&dev->dev_reservation_lock);
-+		core_scsi3_put_pr_reg(pr_reg);
-+		return 0;
-+	}
- 	spin_unlock(&dev->dev_reservation_lock);
- 
-+	spin_lock(&pr_tmpl->registration_lock);
-+	list_for_each_entry(pr_reg_p, &pr_tmpl->registration_list,
-+			pr_reg_list) {
-+		/*
-+		 * Do not establish a UNIT ATTENTION condition
-+		 * for the calling I_T Nexus
-+		 */
-+		if (pr_reg_p == pr_reg)
-+			continue;
-+
-+		core_scsi3_ua_allocate(pr_reg_p->pr_reg_nacl, cmd->orig_fe_lun,
-+				0x2A, ASCQ_2AH_RESERVATIONS_RELEASED);
-+	}
-+	spin_unlock(&pr_tmpl->registration_lock);
-+
- 	core_scsi3_put_pr_reg(pr_reg);
- 	return 0;
+  * Switch to pressure mode, and read pressure.  We don't need to wait
+  * here, since both plates are being driven.
+diff --git a/include/linux/ucb1400.h b/include/linux/ucb1400.h
+index 970473b..bf4f547 100644
+--- a/include/linux/ucb1400.h
++++ b/include/linux/ucb1400.h
+@@ -134,25 +134,6 @@ static inline void ucb1400_adc_enable(struct snd_ac97 *ac97)
+ 	ucb1400_reg_write(ac97, UCB_ADC_CR, UCB_ADC_ENA);
  }
-@@ -1150,9 +1226,11 @@ static int core_scsi3_emulate_pro_clear(
- 	u64 res_key)
- {
- 	se_device_t *dev = cmd->se_dev;
-+	se_node_acl_t *pr_reg_nacl;
- 	se_session_t *se_sess = SE_SESS(cmd);
- 	t10_reservation_template_t *pr_tmpl = &SU_DEV(dev)->t10_reservation;
- 	t10_pr_registration_t *pr_reg, *pr_reg_tmp, *pr_reg_n, *pr_res_holder;
-+	int calling_it_nexus = 0;
- 	/*
- 	 * Locate the existing *pr_reg via se_node_acl_t pointers
- 	 */
-@@ -1199,9 +1277,20 @@ static int core_scsi3_emulate_pro_clear(
- 	spin_lock(&pr_tmpl->registration_lock);
- 	list_for_each_entry_safe(pr_reg, pr_reg_tmp,
- 			&pr_tmpl->registration_list, pr_reg_list) {
--#warning FIXME: UA + RESERVATIONS PREEMPTED for all other registered I_T nexuses
--		__core_scsi3_free_registration(dev, pr_reg,
--					(pr_reg_n == pr_reg) ? 1 : 0);
-+
-+		calling_it_nexus = (pr_reg_n == pr_reg) ? 1 : 0;
-+		pr_reg_nacl = pr_reg->pr_reg_nacl;
-+		__core_scsi3_free_registration(dev, pr_reg, calling_it_nexus);
-+		/*
-+		 * e) Establish a unit attention condition for the initiator
-+		 *    port associated with every registered I_T nexus other
-+		 *    than the I_T nexus on which the PERSISTENT RESERVE OUT
-+		 *    command with CLEAR service action was received, with the
-+		 *    additional sense code set to RESERVATIONS PREEMPTED.
-+		 */
-+		if (!(calling_it_nexus))
-+			core_scsi3_ua_allocate(pr_reg_nacl, cmd->orig_fe_lun,
-+				0x2A, ASCQ_2AH_RESERVATIONS_PREEMPTED);
- 	}
- 	spin_unlock(&pr_tmpl->registration_lock);
  
+-static unsigned int ucb1400_adc_read(struct snd_ac97 *ac97, u16 adc_channel,
+-					int adcsync)
+-{
+-	unsigned int val;
+-
+-	if (adcsync)
+-		adc_channel |= UCB_ADC_SYNC_ENA;
+-
+-	ucb1400_reg_write(ac97, UCB_ADC_CR, UCB_ADC_ENA | adc_channel);
+-	ucb1400_reg_write(ac97, UCB_ADC_CR, UCB_ADC_ENA | adc_channel |
+-				UCB_ADC_START);
+-
+-	while (!((val = ucb1400_reg_read(ac97, UCB_ADC_DATA))
+-			& UCB_ADC_DAT_VALID))
+-		schedule_timeout_uninterruptible(1);
+-
+-	return val & UCB_ADC_DAT_MASK;
+-}
+-
+ static inline void ucb1400_adc_disable(struct snd_ac97 *ac97)
+ {
+ 	ucb1400_reg_write(ac97, UCB_ADC_CR, 0);
 -- 
-1.5.4.1
+1.6.2.1
 
-
-
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
