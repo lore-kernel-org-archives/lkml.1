@@ -1,55 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755172AbZCYURa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757108AbZCYUSo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755172AbZCYURa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 16:17:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752429AbZCYURW
+	id S1757108AbZCYUSo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 16:18:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753900AbZCYUSg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 16:17:22 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:36264 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751401AbZCYURV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 16:17:21 -0400
-Message-ID: <49CA9114.3040205@garzik.org>
-Date: Wed, 25 Mar 2009 16:16:20 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Wed, 25 Mar 2009 16:18:36 -0400
+Received: from n27.bullet.mail.mud.yahoo.com ([68.142.206.222]:43799 "HELO
+	n27.bullet.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753649AbZCYUSf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Mar 2009 16:18:35 -0400
+X-Yahoo-Newman-Id: 780084.62564.bm@omp408.mail.mud.yahoo.com
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=FKqj+MtPtclGf07DXs3Kb/lvJPrmiq4zhATnZTTPrtcn9cOJaXA0s49Ztzh3pnqYD8WzheXNUeJsZBqlFqrwb7CHbtIWHecC0SPPLSmeYyogoINtIeIJbPNFO/GlzCEM5JWGCNAxsseJBfxsmthO6eXU9LOe3rna0PeM2XYe6aY=  ;
+X-YMail-OSG: qRvZ2U8VM1kTK9relOU1.IFhrdlJuVyqWpbh5uSR694i3oQutWaqUAPb7pRN9SMIyCMdT250b9OxiID9Q4OxmUTknqIxD0E5jfBLx63jClaqO72Ee8VO_B_MKGwbjoxiint9E2QYyAeHocD946FhtFVL.QroqNvOlGVsrfde0sUIH6zzBaMpKdvSuEcx
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [patch 0/2] Add support for threaded interrupt handlers - V3
+Date: Wed, 25 Mar 2009 13:18:31 -0700
+User-Agent: KMail/1.9.10
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Christoph Hellwig <hch@infradead.org>,
+       Arjan van de Veen <arjan@infradead.org>,
+       Jon Masters <jonathan@jonmasters.org>,
+       Sven Dietrich <sdietrich@suse.de>
+References: <20090323172814.548471871@linutronix.de> <200903241638.11724.david-b@pacbell.net> <alpine.LFD.2.00.0903250833260.29264@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.0903250833260.29264@localhost.localdomain>
 MIME-Version: 1.0
-To: Ric Wheeler <rwheeler@redhat.com>
-CC: Jens Axboe <jens.axboe@oracle.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Theodore Tso <tytso@mit.edu>, Ingo Molnar <mingo@elte.hu>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Nick Piggin <npiggin@suse.de>,
-       David Rees <drees76@gmail.com>, Jesper Krogh <jesper@krogh.cc>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.29
-References: <20090324093245.GA22483@elte.hu> <20090324101011.6555a0b9@lxorguk.ukuu.org.uk> <20090324103111.GA26691@elte.hu> <20090324132032.GK5814@mit.edu> <alpine.LFD.2.00.0903241053200.3032@localhost.localdomain> <20090324184549.GE32307@mit.edu> <alpine.LFD.2.00.0903241218130.3032@localhost.localdomain> <49C93AB0.6070300@garzik.org> <20090325093913.GJ27476@kernel.dk> <49CA86BD.6060205@garzik.org> <20090325194341.GB27476@kernel.dk> <49CA8ADA.3040709@redhat.com>
-In-Reply-To: <49CA8ADA.3040709@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Disposition: inline
+Message-Id: <200903251318.31301.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ric Wheeler wrote:> And, as I am sure that you do know, to add insult to 
-injury, FLUSH_CACHE
-> is per device (not file system).
+On Wednesday 25 March 2009, Thomas Gleixner wrote:
+> > I have no need for the latter, at least in current systems.
 > 
-> When you issue an fsync() on a disk with multiple partitions, you will 
-> flush the data for all of its partitions from the write cache....
+> Groan, the fact that you do not need it is definitely _not_ a good
+> reason to just add a irq_is_sufficient_for_dave_handler.
 
-SCSI'S SYNCHRONIZE CACHE command already accepts an (LBA, length) pair. 
-  We could make use of that.
+Groan ... don't *you* be puttin' words in *my* mouth.
 
-And I bet we could convince T13 to add FLUSH CACHE RANGE, if we could 
-demonstrate clear benefit.
+When I've been in the position you're now in, I've
+found it useful to know the actual requirements of
+interface users.  Without knowing that, it's kind of
+hard to deliver a usable solution, n'est-ce pas?
 
-	Jeff
+I'm fairly certain you've seen systems that needlessly
+pulled in complicating requirements, and thereby caused
+trouble.  If you can provide something to efficiently
+address both modes, fine.  But "the latter" seems like
+one of those needless complicating additions, which
+could easily slow progress.
 
+
+> > > I don't want to special case that. See above.
+> > 
+> > What's a special case though?  If you're serious about
+> > wanting to support more than one case, it's always going
+> > to be possible to call some of them "special".  As in,
+> > "threaded IRQs are a special case in genirq".  That should
+> > not mean they don't get handled.
+> 
+> I don't like the idea of another action dispatcher in a special case
+> handler. The goal is to reuse the code i.e. simple_handler and
+> handle_IRQ_event. It just needs some thoughts to implement it in a
+> sane way.
+
+You were the one to suggest a flow handler specifically
+for cases like this, though ... you seem to have changed
+your mind on this topic.  ISTR the rationale was to get
+past the current IRQF_DISABLED special casing found in
+handle_IRQ_event(), by using a flow handler which didn't
+call that routine.
+
+- Dave
 
 
