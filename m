@@ -1,151 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761624AbZCYQx3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761044AbZCYQw6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761624AbZCYQx3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 12:53:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761006AbZCYQwy
+	id S1761044AbZCYQw6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 12:52:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758726AbZCYQw0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 12:52:54 -0400
-Received: from smtp-outbound-2.vmware.com ([65.115.85.73]:33667 "EHLO
-	smtp-outbound-2.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1761433AbZCYQww (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 12:52:52 -0400
-Subject: Re: [PATCH -tip] x86: move vmware to hypervisor
-From: Alok Kataria <akataria@vmware.com>
-Reply-To: akataria@vmware.com
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Jaswinder Singh Rajput <jaswinder@kernel.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, x86 maintainers <x86@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20090325125955.GB516@elte.hu>
-References: <1237281581.7907.2.camel@ht.satnam>
-	 <20090317093919.GD6477@elte.hu> <1237283318.7907.9.camel@ht.satnam>
-	 <49BFC6CB.9070603@zytor.com>
-	 <1237958994.5556.5.camel@localhost.localdomain>
-	 <20090325125955.GB516@elte.hu>
-Content-Type: text/plain
-Organization: VMware INC.
-Date: Wed, 25 Mar 2009 09:52:51 -0700
-Message-Id: <1237999971.32497.12.camel@alok-dev1>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.0 (2.8.0-40.el5_1.1) 
-Content-Transfer-Encoding: 7bit
+	Wed, 25 Mar 2009 12:52:26 -0400
+Received: from hera.kernel.org ([140.211.167.34]:53721 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759260AbZCYQwY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Mar 2009 12:52:24 -0400
+Date: Wed, 25 Mar 2009 16:51:28 GMT
+From: Ingo Molnar <mingo@elte.hu>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       penberg@cs.helsinki.fi, eduard.munteanu@linux360.ro,
+       viro@zeniv.linux.org.uk, tglx@linutronix.de, mingo@elte.hu,
+       adobriyan@gmail.com
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       penberg@cs.helsinki.fi, eduard.munteanu@linux360.ro,
+       viro@zeniv.linux.org.uk, tglx@linutronix.de, mingo@elte.hu,
+       adobriyan@gmail.com
+In-Reply-To: <1237898630.25315.83.camel@penberg-laptop>
+References: <1237898630.25315.83.camel@penberg-laptop>
+Subject: [tip:tracing/kmemtrace] fs.h: uninline simple_transaction_set()
+Message-ID: <tip-44eea45ca9e25d6dd660d4806ef4c11209609e03@git.kernel.org>
+Git-Commit-ID: 44eea45ca9e25d6dd660d4806ef4c11209609e03
+X-Mailer: tip-git-log-daemon
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 25 Mar 2009 16:51:30 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-03-25 at 05:59 -0700, Ingo Molnar wrote:
-> * Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
-> 
-> > On Tue, 2009-03-17 at 08:50 -0700, H. Peter Anvin wrote:
-> > > Jaswinder Singh Rajput wrote:
-> > > >> I dont really like this one. KVM is a hypervisor too, and so is 
-> > > >> Xen and lguest. VMware is one of the many types of a 
-> > > >> hypervisors.
-> > > > 
-> > > > Can we use common hypervisor for Xen, lguest, vmware, etc.
-> > > > And Xen, lguest, vmware will be the sub-options.
-> > > 
-> > > Obviously.  We spent a lot of time breaking up the cpu stuff into common
-> > > and vendor-specific portions, we shouldn't go backwards w.r.t. hypervisors.
-> > > 	
-> > 
-> > OK, agreed.
-> > 
-> > But atleast give freedom to users to disable this who are not willing to
-> > use it.
-> > 
-> > Currently hypervisor is used only used by VMWARE, so is I prepare this
-> > freedom patch:
-> > 
-> > From: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
-> > Date: Wed, 25 Mar 2009 10:40:01 +0530
-> > Subject: [PATCH] x86: Introduce CONFIG_X86_VMWARE option
-> > 
-> > Impact: freedom to choose
-> > 
-> > Gives freedom to users to select or suppress CONFIG_X86_VMWARE option.
-> > 
-> > Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
-> > ---
-> >  arch/x86/Kconfig                  |    7 +++++++
-> >  arch/x86/include/asm/hypervisor.h |    9 +++++++++
-> >  arch/x86/kernel/cpu/Makefile      |    2 +-
-> >  3 files changed, 17 insertions(+), 1 deletions(-)
-> > 
-> > diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-> > index f5d7d29..56e1a9c 100644
-> > --- a/arch/x86/Kconfig
-> > +++ b/arch/x86/Kconfig
-> > @@ -554,6 +554,13 @@ config HPET_EMULATE_RTC
-> >  	def_bool y
-> >  	depends on HPET_TIMER && (RTC=y || RTC=m || RTC_DRV_CMOS=m || RTC_DRV_CMOS=y)
-> >  
-> > +config X86_VMWARE
-> > +	bool
-> > +	default n
-> > +	prompt "X86 VMware support"
-> > +	---help---
-> > +	 Enable X86 VMware Hypervisor support.
-> > +
-> >  # Mark as embedded because too many people got it wrong.
-> >  # The code disables itself when not needed.
-> >  config DMI
-> > diff --git a/arch/x86/include/asm/hypervisor.h b/arch/x86/include/asm/hypervisor.h
-> > index 369f5c5..c08ae75 100644
-> > --- a/arch/x86/include/asm/hypervisor.h
-> > +++ b/arch/x86/include/asm/hypervisor.h
-> > @@ -20,7 +20,16 @@
-> >  #ifndef ASM_X86__HYPERVISOR_H
-> >  #define ASM_X86__HYPERVISOR_H
-> >  
-> > +#ifdef CONFIG_X86_VMWARE
-> >  extern unsigned long get_hypervisor_tsc_freq(void);
-> >  extern void init_hypervisor(struct cpuinfo_x86 *c);
-> > +#else
-> > +static inline unsigned long get_hypervisor_tsc_freq(void)
-> > +{
-> > +	return 0;
-> > +}
-> > +
-> > +static inline void init_hypervisor(struct cpuinfo_x86 *c) {}
-> > +#endif
-> >  
-> >  #endif
-> > diff --git a/arch/x86/kernel/cpu/Makefile b/arch/x86/kernel/cpu/Makefile
-> > index 3efcb2b..24372f7 100644
-> > --- a/arch/x86/kernel/cpu/Makefile
-> > +++ b/arch/x86/kernel/cpu/Makefile
-> > @@ -9,11 +9,11 @@ endif
-> >  
-> >  obj-y			:= intel_cacheinfo.o addon_cpuid_features.o
-> >  obj-y			+= proc.o capflags.o powerflags.o common.o
-> > -obj-y			+= vmware.o hypervisor.o
-> >  
-> >  obj-$(CONFIG_X86_32)	+= bugs.o cmpxchg.o
-> >  obj-$(CONFIG_X86_64)	+= bugs_64.o
-> >  
-> > +obj-$(CONFIG_X86_VMWARE)		+= vmware.o hypervisor.o
-> >  obj-$(CONFIG_X86_CPU_DEBUG)		+= cpu_debug.o
-> 
-> vmware can be considered a CPU here, so i think making the disabling 
-> also depend on PROCESSOR_SELECT.
+Commit-ID:  44eea45ca9e25d6dd660d4806ef4c11209609e03
+Gitweb:     http://git.kernel.org/tip/44eea45ca9e25d6dd660d4806ef4c11209609e03
+Author:     Ingo Molnar <mingo@elte.hu>
+AuthorDate: Wed, 25 Mar 2009 16:48:35 +0100
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Wed, 25 Mar 2009 17:48:14 +0100
 
-Ingo, this code is not just to be used by VMware, the reason we did this
-generically was so that a guest could run unaltered on *any* fully
-virtualized hypervisor.
-And give that this code is just a boot setup thing, the only thing this
-patch saves over here is not running the detection code on native
-systems. All the rest of the code is guarded by the
-"boot_cpu_data.x86_hyper_vendor" checks anyways.  
+fs.h: uninline simple_transaction_set()
 
-I don't really see the point of adding one more config option just for
-this. 
+Move simple_transaction_set() to the other simple-transaction
+file helpers in fs/libfs.c.
 
-Thanks,
-Alok
+This removes an implicit asm/page.h PAGE_SIZE dependency from
+fs.h (asm/page.h is not an exported header so HEADERS_CHECK fils),
+and also reduces kernel size a bit.
+
+Cc: Al Viro <viro@zeniv.linux.org.uk>
+Cc: Alexey Dobriyan <adobriyan@gmail.com>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
+Cc: paulmck@linux.vnet.ibm.com
+LKML-Reference: <1237898630.25315.83.camel@penberg-laptop>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
-> 
-> 	Ingo
+---
+ fs/libfs.c         |   15 +++++++++++++++
+ include/linux/fs.h |   16 +---------------
+ 2 files changed, 16 insertions(+), 15 deletions(-)
 
+diff --git a/fs/libfs.c b/fs/libfs.c
+index 49b4409..a1db380 100644
+--- a/fs/libfs.c
++++ b/fs/libfs.c
+@@ -574,6 +574,21 @@ ssize_t memory_read_from_buffer(void *to, size_t count, loff_t *ppos,
+  * possibly a read which collects the result - which is stored in a
+  * file-local buffer.
+  */
++
++void simple_transaction_set(struct file *file, size_t n)
++{
++	struct simple_transaction_argresp *ar = file->private_data;
++
++	BUG_ON(n > SIMPLE_TRANSACTION_LIMIT);
++
++	/*
++	 * The barrier ensures that ar->size will really remain zero until
++	 * ar->data is ready for reading.
++	 */
++	smp_mb();
++	ar->size = n;
++}
++
+ char *simple_transaction_get(struct file *file, const char __user *buf, size_t size)
+ {
+ 	struct simple_transaction_argresp *ar;
+diff --git a/include/linux/fs.h b/include/linux/fs.h
+index 79be937..2ebe3ce 100644
+--- a/include/linux/fs.h
++++ b/include/linux/fs.h
+@@ -9,8 +9,6 @@
+ #include <linux/limits.h>
+ #include <linux/ioctl.h>
+ 
+-#include <asm/page.h> /* for PAGE_SIZE */
+-
+ /*
+  * It's silly to have NR_OPEN bigger than NR_FILE, but you can change
+  * the file limit at runtime and only root can increase the per-process
+@@ -2173,19 +2171,7 @@ ssize_t simple_transaction_read(struct file *file, char __user *buf,
+ 				size_t size, loff_t *pos);
+ int simple_transaction_release(struct inode *inode, struct file *file);
+ 
+-static inline void simple_transaction_set(struct file *file, size_t n)
+-{
+-	struct simple_transaction_argresp *ar = file->private_data;
+-
+-	BUG_ON(n > SIMPLE_TRANSACTION_LIMIT);
+-
+-	/*
+-	 * The barrier ensures that ar->size will really remain zero until
+-	 * ar->data is ready for reading.
+-	 */
+-	smp_mb();
+-	ar->size = n;
+-}
++void simple_transaction_set(struct file *file, size_t n);
+ 
+ /*
+  * simple attribute files
