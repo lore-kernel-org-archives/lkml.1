@@ -1,82 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763556AbZCYSKh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756573AbZCYSNO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763556AbZCYSKh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 14:10:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753333AbZCYSK1
+	id S1756573AbZCYSNO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 14:13:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754024AbZCYSMy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 14:10:27 -0400
-Received: from casper.infradead.org ([85.118.1.10]:56891 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756175AbZCYSKZ (ORCPT
+	Wed, 25 Mar 2009 14:12:54 -0400
+Received: from stinky.trash.net ([213.144.137.162]:36353 "EHLO
+	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753896AbZCYSMx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 14:10:25 -0400
-Subject: Re: 2.6.29: can't resume from suspend with DMAR (intel iommu)
- enabled
-From: David Woodhouse <dwmw2@infradead.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Andrew Lutomirski <amluto@gmail.com>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Kyle McMartin <kyle@redhat.com>, Fenghua Yu <fenghua.yu@intel.com>,
-       Suresh Siddha <suresh.b.siddha@intel.com>,
-       Yinghai Lu <yinghai@kernel.org>, Mark Gross <mgross@linux.intel.com>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20090325180720.GA28366@elte.hu>
-References: <cb0375e10903241258x32c9d0f3g35a4f56793eb8677@mail.gmail.com>
-	 <20090324203259.GC26930@elte.hu>
-	 <1238003581.2085.53.camel@macbook.infradead.org>
-	 <20090325175908.GA25518@elte.hu>
-	 <1238004228.2085.56.camel@macbook.infradead.org>
-	 <20090325180720.GA28366@elte.hu>
-Content-Type: text/plain
-Date: Wed, 25 Mar 2009 18:10:01 +0000
-Message-Id: <1238004601.2085.57.camel@macbook.infradead.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+	Wed, 25 Mar 2009 14:12:53 -0400
+Message-ID: <49CA741D.3080705@trash.net>
+Date: Wed, 25 Mar 2009 19:12:45 +0100
+From: Patrick McHardy <kaber@trash.net>
+User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
+MIME-Version: 1.0
+To: Francis Dupont <Francis_Dupont@isc.org>
+CC: David Miller <davem@davemloft.net>, Francis.Dupont@fdupont.fr,
+       linux-kernel@vger.kernel.org, coreteam@netfilter.org,
+       netfilter-devel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: netfilter spurious ELOOP
+References: <200903242302.n2ON25u4024288@givry.fdupont.fr> <20090324.162808.114465835.davem@davemloft.net> <49CA64D8.9040602@trash.net> <20090325173742.3C509E601C@farside.isc.org>
+In-Reply-To: <20090325173742.3C509E601C@farside.isc.org>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-03-25 at 19:07 +0100, Ingo Molnar wrote:
-> * David Woodhouse <dwmw2@infradead.org> wrote:
+Francis Dupont wrote:
+>> Just to clarify: does the problem happens when you have the MARK rule
+>> above in a user-defined chain that has more then one jump leading to
+>> it or does it also happen in other cases?
 > 
-> > On Wed, 2009-03-25 at 18:59 +0100, Ingo Molnar wrote:
-> > > 
-> > > that's not easy - i use it right now :)
-> > > 
-> > > That's another reason why warnings and non-panic() behavior are 
-> > > better for developers too. Had it not crashed i could have sent you 
-> > > my dmesg and i would not have turned off DMAR in the BIOS.
-> > > 
-> > > Now it's turned off in my BIOS (first barrier) and i need to reboot 
-> > > the kernel (second barrier) and i need to hack up a kernel in a 
-> > > certain way to produce debug info (third barrier) - in the merge 
-> > > window (fourth barrier ;-).
-> > 
-> > Yeah, trusting BIOS monkeys for this was always going to be a bad 
-> > plan. We should have just known how to set/read the damn hardware 
-> > BARs -- the most likely explanation for this is that your BIOS is 
-> > just lying to you about where it put the registers, I believe.
-> > 
-> > I'd like to put in a basic sanity check when we first ioremap the 
-> > (alleged) DMAR registers. Hopefully, the output I asked for will 
-> > confirm that there's a simple way to do that...
+> => I triggered the bug with a real world example:
+>  - first add a rule with a MARK target using a set mark with the first/sign
+>   bit set to one. This target is coded with this mark put at the same
+>   place than the verdict field of standard targets. (note this should
+>   be triggered by a lot of targets but I got it with MARK)
+>  - try to add another rule (with -A or -I but this works too with restore,
+>   the idea is to get a replace ioctl with an illegal value in a verdict
+>   position).
+>  - if you are (un?)lucky you get the ELOOP error.
+>
+> PS: I really need a bug-ticket-etc number because some business is implied
+
+I'm not a service center, sorry :) Feel free to create an entry in
+the netfilter bugzilla, I'll mark it resolved once the patch is
+upstream.
+
+> PPS: here I've cut & paste the config I used to track the bug:#
+> ....
+> :MARKOUT1 - [0:0]
+> -A PREROUTING -d 10.0.200.2/32 -p tcp -m tcp --dport 5001 -j MARKOUT1 
+> -A MARKOUT1 -j MARK --set-xmark 0x80000001/0xffffffff 
+> -A MARKOUT1 -j CONNMARK --save-mark --nfmask 0x3fffffff --ctmask 0x3fffffff 
+> -A MARKOUT1 -j ACCEPT 
 > 
-> Could you please fix the panic() and add the debug output you'd like 
-> to see? That would give me a kernel to run straight away. Without me 
-> having to think much about what i should run and when.
-
-That's distinctly non-trivial. I need to bail out early.
-
-> (unless you really need this pr_debug info to proceed)
+> I got the bug with the UDP counterpart:
 > 
-> But it will be some time really. The laptop has 8 days uptime and is 
-> not set up to run custom kernels at all.
+> iptables -t mangle -A PREROUTING -d 10.0.200.2/32 -p udp --dport 5001 \
+> -j MARKOUT1
 
-Anyone else got a similar machine?
-
--- 
-dwmw2
-
+Thanks, that answers my question. I'll apply your patch and send it to
+-stable once its in the mainline kernel.
