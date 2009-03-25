@@ -1,87 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759589AbZCYNez@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761601AbZCYNhG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759589AbZCYNez (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 09:34:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756503AbZCYNer
+	id S1761601AbZCYNhG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 09:37:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756524AbZCYNgy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 09:34:47 -0400
-Received: from fg-out-1718.google.com ([72.14.220.154]:62997 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756458AbZCYNeq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 09:34:46 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=KYNMGRfzofd9tt1sbiYig6GnnuiUD80d/g2QrItP9LrrEXfpTsZN87RFNJc/rriK9E
-         SGoECkpjw/pKhQtCSksp8hgHhNgqqKKx67MkAgnM8vuEi6yTiHbFEylJSkt/WwNgdvL4
-         ITyQUecm9eeyh2cruNdJydyYvwMkvl4XVnSNo=
-Date: Wed, 25 Mar 2009 14:34:40 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Lai Jiangshan <laijs@cn.fujitsu.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <srostedt@redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 2/2] trace_workqueues: fix empty line's output
-Message-ID: <20090325133439.GF5976@nowhere>
-References: <49C9F266.2060706@cn.fujitsu.com>
+	Wed, 25 Mar 2009 09:36:54 -0400
+Received: from hera.kernel.org ([140.211.167.34]:48473 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755346AbZCYNgy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Mar 2009 09:36:54 -0400
+Message-ID: <49CA32F6.2030408@kernel.org>
+Date: Wed, 25 Mar 2009 22:34:46 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49C9F266.2060706@cn.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Martin Schwidefsky <schwidefsky@de.ibm.com>
+CC: Ingo Molnar <mingo@elte.hu>, rusty@rustcorp.com.au, tglx@linutronix.de,
+       x86@kernel.org, linux-kernel@vger.kernel.org, hpa@zytor.com,
+       Paul Mundt <lethal@linux-sh.org>, rmk@arm.linux.org.uk,
+       starvik@axis.com, ralf@linux-mips.org, davem@davemloft.net,
+       cooloney@kernel.org, kyle@mcmartin.ca, matthew@wil.cx,
+       grundler@parisc-linux.org, takata@linux-m32r.org,
+       benh@kernel.crashing.org, rth@twiddle.net, ink@jurassic.park.msu.ru,
+       heiko.carstens@de.ibm.com
+Subject: Re: [GIT RFC] percpu: use dynamic percpu allocator as the default
+ percpu allocator
+References: <1236671631-9305-1-git-send-email-tj@kernel.org>	<20090316190132.7965a49a@skybase>	<49C300D8.5080204@kernel.org>	<49C8FAC4.6060508@kernel.org>	<20090325122738.42d105b7@skybase>	<49CA1AC3.9080908@kernel.org>	<20090325122241.GE11571@elte.hu>	<49CA2345.70204@kernel.org>	<20090325141330.2717dc97@skybase>	<49CA2FBF.9000207@kernel.org> <20090325142525.2d31c522@skybase>
+In-Reply-To: <20090325142525.2d31c522@skybase>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 25 Mar 2009 13:34:50 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 25, 2009 at 04:59:18PM +0800, Lai Jiangshan wrote:
+Martin Schwidefsky wrote:
+> On Wed, 25 Mar 2009 22:21:03 +0900
+> Tejun Heo <tj@kernel.org> wrote:
 > 
-> Empty lines separate cpus stat. After previous
-> fix(trace_stat: keep original order) applied, the empty lines
-> are displayed at incorrect position.
+>> Martin Schwidefsky wrote:
+>>>> Martin's original patch should do the trick although it would be
+>>>> slower for static symbols.  I'll merge it and post the tree.
+>>> No, my original patch doesn't work. It will break modules that use
+>>> static per-cpu variables.
+>> Oops.  Even with the default offset adding macros?  Heh... I think it
+>> would be best to wait for your fix then.
 > 
-> Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
-> ---
-> diff --git a/kernel/trace/trace_workqueue.c b/kernel/trace/trace_workqueue.c
-> index 9ab035b..797201e 100644
-> --- a/kernel/trace/trace_workqueue.c
-> +++ b/kernel/trace/trace_workqueue.c
-> @@ -196,6 +196,11 @@ static int workqueue_stat_show(struct seq_file *s, void *p)
->  	struct pid *pid;
->  	struct task_struct *tsk;
->  
-> +	spin_lock_irqsave(&workqueue_cpu_stat(cpu)->lock, flags);
-> +	if (&cws->list == workqueue_cpu_stat(cpu)->list.next)
-> +		seq_printf(s, "\n");
-> +	spin_unlock_irqrestore(&workqueue_cpu_stat(cpu)->lock, flags);
-> +
->  	pid = find_get_pid(cws->pid);
->  	if (pid) {
->  		tsk = get_pid_task(pid, PIDTYPE_PID);
-> @@ -208,18 +213,13 @@ static int workqueue_stat_show(struct seq_file *s, void *p)
->  		put_pid(pid);
->  	}
->  
-> -	spin_lock_irqsave(&workqueue_cpu_stat(cpu)->lock, flags);
-> -	if (&cws->list == workqueue_cpu_stat(cpu)->list.next)
-> -		seq_printf(s, "\n");
-> -	spin_unlock_irqrestore(&workqueue_cpu_stat(cpu)->lock, flags);
-> -
->  	return 0;
->  }
->  
->  static int workqueue_stat_headers(struct seq_file *s)
->  {
->  	seq_printf(s, "# CPU  INSERTED  EXECUTED   NAME\n");
-> -	seq_printf(s, "# |      |         |          |\n\n");
-> +	seq_printf(s, "# |      |         |          |\n");
->  	return 0;
->  }
->  
-> 
-> 
+> We could use HAVE_LEGACY_PER_CPU_AREA for the time being. 
 
-Looks good.
+Eh...  The thing is that the patch kills the legacy default allocator.
+We can move it into arch/s390 for the time being but it would be
+simpler if the constant_p thing or something else could work.  :-) Do
+you think figuring out how to fix it will take long?
 
-Acked-by: Frederic Weisbecker <fweisbec@gmail.com>
+Thanks.
 
+-- 
+tejun
