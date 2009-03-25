@@ -1,58 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756167AbZCYXia@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754768AbZCYXk0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756167AbZCYXia (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 19:38:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752475AbZCYXiV
+	id S1754768AbZCYXk0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 19:40:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752108AbZCYXkL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 19:38:21 -0400
-Received: from www.tglx.de ([62.245.132.106]:40511 "EHLO www.tglx.de"
+	Wed, 25 Mar 2009 19:40:11 -0400
+Received: from gw.goop.org ([64.81.55.164]:34874 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751943AbZCYXiU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 19:38:20 -0400
-Date: Thu, 26 Mar 2009 00:36:11 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Ravikiran G Thirumalai <kiran@scalex86.org>
-cc: Jeremy Fitzhardinge <jeremy@goop.org>, Ingo Molnar <mingo@elte.hu>,
-       Yinghai Lu <yinghai@kernel.org>, "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       shai@scalex86.org
-Subject: Re: [PATCH] x86: don't compile vsmp_64 for 32bit
-In-Reply-To: <20090325232921.GL7278@localdomain>
-Message-ID: <alpine.LFD.2.00.0903260034200.3397@localhost.localdomain>
-References: <20090227001757.GE27240@localdomain> <20090228094430.GH12095@elte.hu> <20090302235120.GF27240@localdomain> <20090322124818.GA31466@elte.hu> <20090324061429.GH7278@localdomain> <20090324091035.GA6605@elte.hu> <20090325185138.GI7278@localdomain>
- <49CAAD2E.3060904@goop.org> <20090325223642.GK7278@localdomain> <49CABB25.8040106@goop.org> <20090325232921.GL7278@localdomain>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	id S1751943AbZCYXkK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Mar 2009 19:40:10 -0400
+Message-ID: <49CAC0D6.3040301@goop.org>
+Date: Wed, 25 Mar 2009 16:40:06 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Ian Campbell <Ian.Campbell@citrix.com>
+CC: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Ingo Molnar <mingo@elte.hu>, "Alex.Zeffertt" <Alex.Zeffertt@citrix.com>,
+       stable@kernel.org
+Subject: Re: [PATCH] clockevent: on resume program the next oneshot tick	with
+ the next actual event
+References: <1237988429-26474-1-git-send-email-Ian.Campbell@citrix.com>	 <49CA678A.30606@goop.org> <1238003202.3691.174.camel@zakaz.uk.xensource.com>
+In-Reply-To: <1238003202.3691.174.camel@zakaz.uk.xensource.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 25 Mar 2009, Ravikiran G Thirumalai wrote:
-> > Sure, but it would be cleaner if the whole file were controlled by 
-> > CONFIG_X86_VSMP.  is_vsmp_box() is already defined as const inline 
-> > returning 0 if !CONFIG_X86_VSMP.
-> >
-> 
-> The point in this thread was, is_vsmp_box() needs to be meaningful even when
-> CONFIG_X86_VSMP is not on.  This is needed because is_vsmp_box() is used to
-> determine if the platform has reliable tscs.
+Ian Campbell wrote:
+> Hmm, yes I think so too. I misread tick_dev_program_event(), it seems
+> like it Does The Right Thing and I do see the Xen set_next_event hook
+> get called which I thought wasn't getting called earlier.
+>
+> Turns out the virtual timer IRQ isn't getting reinitialised before
+> tick_oneshot_resume runs so we are just missing the interrupt, doh!
+>   
 
-Did you even read what Jeremy wrote or bother to look at the code in
-arch/x86/include/asm/apic.h ?
+While that ordering is a bug, I'm still not sure it completely explains 
+what we're seeing here.
 
-#ifdef CONFIG_X86_VSMP
-extern int is_vsmp_box(void);
-#else
-static inline int is_vsmp_box(void)
-{
-        return 0;
-}
-#endif
+In drivers/xen/manage.c:do_suspend() we call clock_was_set(), which has 
+the specific effect of causing all the timer events to get retriggered 
+on all cpus.  This is necessary because we don't unplug/replug all the 
+cpus, and the normal sysdev_resume() timer resume only resumes the 
+current cpu (which is cpu 0 in this case).  It also deals with the 
+clocksource timebase shifting, as it will over suspend/resume (esp 
+suspend/reboot/resume, or suspend/migrate/resume).  Your patch will only 
+re-trigger the next cpu0 timer event, and leave the rest hanging without 
+a next event.
 
-So the .c file is completely useless if CONFIG_X86_VSMP=n.
+So the question is why does your patch help?
 
-Thanks,
+I'm seeing much worse symptoms on my test machine: the resumed domain is 
+just sitting there spinning dead with 100% cpu use.  I don't know if 
+this is related or something else.
 
-	tglx
+    J
+
+> Subject: xen: resume interrupts before system devices.
+>
+> otherwise the first timer interrupt after resume is missed and we never
+> get another.
+>
+> Signed-off-by: Ian Campbell <ian.campbell@citrix.com>
+>
+> diff --git a/drivers/xen/manage.c b/drivers/xen/manage.c
+> index 0489ea2..5269bb4 100644
+> --- a/drivers/xen/manage.c
+> +++ b/drivers/xen/manage.c
+> @@ -68,15 +68,15 @@ static int xen_suspend(void *data)
+>  	gnttab_resume();
+>  	xen_mm_unpin_all();
+>  
+> -	sysdev_resume();
+> -	device_power_up(PMSG_RESUME);
+> -
+>  	if (!*cancelled) {
+>  		xen_irq_resume();
+>  		xen_console_resume();
+>  		xen_timer_resume();
+>  	}
+>  
+> +	sysdev_resume();
+> +	device_power_up(PMSG_RESUME);
+> +
+>  	return 0;
+>  }
+>  
+>
+> Ian.
+>
+>
+>
+>   
+>>     J
+>> --
+>> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+>> the body of a message to majordomo@vger.kernel.org
+>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>> Please read the FAQ at  http://www.tux.org/lkml/
+>>
+>>     
+>
+>   
+
