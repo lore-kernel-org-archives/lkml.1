@@ -1,98 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755985AbZCYEby@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757818AbZCYEci@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755985AbZCYEby (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 00:31:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754272AbZCYEbb
+	id S1757818AbZCYEci (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 00:32:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754272AbZCYEc1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 00:31:31 -0400
-Received: from ozlabs.org ([203.10.76.45]:41001 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751135AbZCYEb3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 00:31:29 -0400
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: [PATCH] sched_rt: don't allocate cpumask in fastpath
-Date: Wed, 25 Mar 2009 15:01:22 +1030
-User-Agent: KMail/1.11.1 (Linux/2.6.27-11-generic; KDE/4.2.1; i686; ; )
-Cc: Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org
+	Wed, 25 Mar 2009 00:32:27 -0400
+Received: from 219-87-157-169.static.tfn.net.tw ([219.87.157.169]:44093 "EHLO
+	mswedge2.sunplus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755205AbZCYEc0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Mar 2009 00:32:26 -0400
+X-Greylist: delayed 1147 seconds by postgrey-1.27 at vger.kernel.org; Wed, 25 Mar 2009 00:32:26 EDT
+To: linux-kernel@vger.kernel.org, Will Newton <will.newton@gmail.com>
+Cc: torvalds@linux-foundation.org
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200903251501.22664.rusty@rustcorp.com.au>
+Subject: Re: [PATCH] score - New architecure port to SunplusCT S+CORE  processor
+X-Mailer: Lotus Notes Release 6.5 September 26, 2003
+Message-ID: <OFF2006E59.395DC6C3-ON48257584.001642FB-48257584.0017258D@sunplusct.com>
+From: liqin.chen@sunplusct.com
+Date: Wed, 25 Mar 2009 12:11:08 +0800
+X-MIMETrack: Serialize by Router on ctmail01/SunplusCT(Release 7.0.3FP1|February 24, 2008) at 2009/03/25 ?? 12:11:13,
+	Serialize complete at 2009/03/25 ?? 12:11:13
+Content-Type: text/plain; charset="GB2312"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id n2P4Wqqu030456
 
-Impact: cleanup
+> 
+> To allow people to more easily review your patches it is recommended
+> to spit them up into smaller pieces and submit them to the mailing
+> list.
 
-As pointed out by Steven Rostedt.  Since the arg in question is
-unused, we simply change cpupri_find() to accept NULL.
+According to the "The linux-kernel mailing list FAQ" and 
+"Documentation/SubmittingPatches", 
+E-mail size exceeds 40 kB, "it is preferred that you store 
+your patch on an Internet-accessibleserver, and provide
+ instead a URL (link) pointing to your patch."
+linux/score patch size over 400 kB, so we only provide 
+the URL (link) in mail.
 
-Cc: Steven Rostedt <srostedt@redhat.com>
-Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
----
- kernel/sched_cpupri.c |    5 +++--
- kernel/sched_rt.c     |   15 ++++-----------
- 2 files changed, 7 insertions(+), 13 deletions(-)
+But if other person or Linus also think we should spit them up
+into smaller pieces, we will do it.
 
-diff --git a/kernel/sched_cpupri.c b/kernel/sched_cpupri.c
---- a/kernel/sched_cpupri.c
-+++ b/kernel/sched_cpupri.c
-@@ -55,7 +55,7 @@ static int convert_prio(int prio)
-  * cpupri_find - find the best (lowest-pri) CPU in the system
-  * @cp: The cpupri context
-  * @p: The task
-- * @lowest_mask: A mask to fill in with selected CPUs
-+ * @lowest_mask: A mask to fill in with selected CPUs (or NULL)
-  *
-  * Note: This function returns the recommended CPUs as calculated during the
-  * current invokation.  By the time the call returns, the CPUs may have in
-@@ -81,7 +81,8 @@ int cpupri_find(struct cpupri *cp, struc
- 		if (cpumask_any_and(&p->cpus_allowed, vec->mask) >= nr_cpu_ids)
- 			continue;
- 
--		cpumask_and(lowest_mask, &p->cpus_allowed, vec->mask);
-+		if (lowest_mask)
-+			cpumask_and(lowest_mask, &p->cpus_allowed, vec->mask);
- 		return 1;
- 	}
- 
-diff --git a/kernel/sched_rt.c b/kernel/sched_rt.c
---- a/kernel/sched_rt.c
-+++ b/kernel/sched_rt.c
-@@ -805,20 +805,15 @@ static int select_task_rq_rt(struct task
- 
- static void check_preempt_equal_prio(struct rq *rq, struct task_struct *p)
- {
--	cpumask_var_t mask;
--
- 	if (rq->curr->rt.nr_cpus_allowed == 1)
- 		return;
- 
--	if (!alloc_cpumask_var(&mask, GFP_ATOMIC))
-+	if (p->rt.nr_cpus_allowed != 1
-+	    && cpupri_find(&rq->rd->cpupri, p, NULL))
- 		return;
- 
--	if (p->rt.nr_cpus_allowed != 1
--	    && cpupri_find(&rq->rd->cpupri, p, mask))
--		goto free;
--
--	if (!cpupri_find(&rq->rd->cpupri, rq->curr, mask))
--		goto free;
-+	if (!cpupri_find(&rq->rd->cpupri, rq->curr, NULL))
-+		return;
- 
- 	/*
- 	 * There appears to be other cpus that can accept
-@@ -827,8 +822,6 @@ static void check_preempt_equal_prio(str
- 	 */
- 	requeue_task_rt(rq, p, 1);
- 	resched_task(rq->curr);
--free:
--	free_cpumask_var(mask);
- }
- 
- #endif /* CONFIG_SMP */
+> 
+> Your port looks relatively clean but it looks like it is borrowing
+> heavily from the mips port and you may have a few leftovers from that
+> e.g.:
+> 
+
+Yes, we use linux/mips as reference for linux/score platform.
+In order to make the patch clear, we used more C code instead of 
+assembler code. After patch merge to the mainline, 
+we will provide optimized assembler code one by one.
+
+> - mentions of o32 (unless S+CORE has an o32 ABI?)
+> - does SCORE+ have ll/sc instructions or is that another leftover from 
+MIPS?
+
+No, I had removed these leftover code.
+
+> - compatibility syscalls, sys_ipc, old-style signal handling. Are
+> these really needed for a new arch?
+
+Because we use glibc-2.3.6 as base library, LTP and many applications
+are all running on it. so we leave many old syscall in score code,
+once we are sure it's not necessary, we will remove these syscall.
+
+> - does your port support SMP?
+
+No, but we consider todo it next step.
+
+We have updated the patch use the same URL(link)
+http://www.sunplusct.com/images/linux-score-patch/linux-score-20090324.patch
+if other person think it should be splited into smaller pieces, 
+please let me know.
+
+Thanks Will Newton
+--
+liqin
+
+Will Newton <will.newton@gmail.com> Ğ´ÓÚ 2009-03-24 19:00:05:
+
+> On Tue, Mar 24, 2009 at 3:46 AM,  <liqin@sunnorth.com.cn> wrote:
+> > Hello, Linus and folks,
+> >
+> > We have ported Linux to the S+CORE processor, which is a 32-bit RISC
+> > embedded
+> > microprocessor of Sunplus Core Technology.
+> >
+> > SPG29X, SPG300(score core) processor have been used in game products.
+> > and score toolchain have commit to gnu in 2006. We have a team to 
+maintain
+> > score code for linux kernel.
+> >
+> > We would like to release a patch for kernel 2.6.29-rc8.
+> > This patch include score header files, arch files and serial driver 
+for
+> > spct6600(score core) platform.
+> >
+> > For the other driver patches, I'll send them one by one in
+> > small size latter. Thanks!
+> >
+> > Would you merge them to the stock kernel?
+> >
+> > Patch information is slightly bigger, so I placed it on our SunplusCT 
+web
+> > site.
+> > 
+http://www.sunplusct.com/images/linux-score-patch/linux-score-20090324.patch
+> >
+> > Signed off by: Chen Liqin <liqin.chen@sunplusct.com,
+> > liqin@sunnorth.com.cn>
+ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
