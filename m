@@ -1,80 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760645AbZCYNQV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759704AbZCYNTU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760645AbZCYNQV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 09:16:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756202AbZCYNQM
+	id S1759704AbZCYNTU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 09:19:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755001AbZCYNTE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 09:16:12 -0400
-Received: from hera.kernel.org ([140.211.167.34]:37378 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756168AbZCYNQL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 09:16:11 -0400
-Date: Wed, 25 Mar 2009 13:15:29 GMT
-From: Li Zefan <lizf@cn.fujitsu.com>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, acme@redhat.com, hpa@zytor.com,
-       mingo@redhat.com, lizf@cn.fujitsu.com, jens.axboe@oracle.com,
-       rostedt@goodmis.org, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, acme@redhat.com,
-       linux-kernel@vger.kernel.org, lizf@cn.fujitsu.com,
-       jens.axboe@oracle.com, rostedt@goodmis.org, tglx@linutronix.de,
-       mingo@elte.hu
-In-Reply-To: <49C89447.5060303@cn.fujitsu.com>
-References: <49C89447.5060303@cn.fujitsu.com>
-Subject: [tip:tracing/blktrace] blktrace: fix off-by-one bug
-Message-ID: <tip-89b0d8901c251548ee4d835da184dd08af67a3a7@git.kernel.org>
-Git-Commit-ID: 89b0d8901c251548ee4d835da184dd08af67a3a7
-X-Mailer: tip-git-log-daemon
+	Wed, 25 Mar 2009 09:19:04 -0400
+Received: from outbound.icp-qv1-irony-out2.iinet.net.au ([203.59.1.107]:3892
+	"EHLO outbound.icp-qv1-irony-out2.iinet.net.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753824AbZCYNTB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Mar 2009 09:19:01 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApoEAF/MyUl8qXHv/2dsb2JhbADSUoN1Bg
+X-IronPort-AV: E=Sophos;i="4.38,419,1233500400"; 
+   d="scan'208";a="456055380"
+Message-ID: <49CA2F41.8030804@themaw.net>
+Date: Wed, 25 Mar 2009 22:18:57 +0900
+From: Ian Kent <raven@themaw.net>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 25 Mar 2009 13:15:31 +0000 (UTC)
+To: Jeff Layton <jlayton@redhat.com>
+CC: Wu Fengguang <fengguang.wu@intel.com>, Dave Chinner <david@fromorbit.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
+       "jens.axboe@oracle.com" <jens.axboe@oracle.com>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "hch@infradead.org" <hch@infradead.org>,
+       "linux-nfs@vger.kernel.org" <linux-nfs@vger.kernel.org>
+Subject: Re: [PATCH] writeback: reset inode dirty time when adding it back
+ to empty s_dirty list
+References: <1237840233-11045-1-git-send-email-jlayton@redhat.com>	<20090324135720.GA25314@localhost>	<20090324102806.4f38fd26@tleilax.poochiereds.net>	<20090324104657.6907b19e@tleilax.poochiereds.net>	<20090325012829.GA7506@localhost>	<20090324221528.2bb7c50b@tleilax.poochiereds.net>	<20090325025037.GA17374@localhost>	<20090325075110.028f0d1d@tleilax.poochiereds.net>	<20090325121742.GA22869@localhost> <20090325091325.17c997fd@tleilax.poochiereds.net>
+In-Reply-To: <20090325091325.17c997fd@tleilax.poochiereds.net>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  89b0d8901c251548ee4d835da184dd08af67a3a7
-Gitweb:     http://git.kernel.org/tip/89b0d8901c251548ee4d835da184dd08af67a3a7
-Author:     Li Zefan <lizf@cn.fujitsu.com>
-AuthorDate: Tue, 24 Mar 2009 16:05:27 +0800
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Wed, 25 Mar 2009 14:13:11 +0100
+Jeff Layton wrote:
+> On Wed, 25 Mar 2009 20:17:43 +0800
+> Wu Fengguang <fengguang.wu@intel.com> wrote:
+> 
+>> On Wed, Mar 25, 2009 at 07:51:10PM +0800, Jeff Layton wrote:
+>>> On Wed, 25 Mar 2009 10:50:37 +0800
+>>> Wu Fengguang <fengguang.wu@intel.com> wrote:
+>>>
+>>>>> Given the right situation though (or maybe the right filesystem), it's
+>>>>> not too hard to imagine this problem occurring even in current mainline
+>>>>> code with an inode that's frequently being redirtied.
+>>>> My reasoning with recent kernel is: for kupdate, s_dirty enqueues only
+>>>> happen in __mark_inode_dirty() and redirty_tail().  Newly dirtied
+>>>> inodes will be parked in s_dirty for 30s. During which time the
+>>>> actively being-redirtied inodes, if their dirtied_when is an old stuck
+>>>> value, will be retried for writeback and then re-inserted into a
+>>>> non-empty s_dirty queue and have their dirtied_when refreshed.
+>>>>
+>>> Doesn't that assume that there are new inodes that are being dirtied?
+>>> If you only have the same inodes being redirtied and never any new
+>>> ones, the problem still occurs, right?
+>> Yes. But will a production server run months without making one single
+>> new dirtied inode? (Just out of curiosity. Not that I'm not willing to
+>> fix this possible issue.:)
+>>
+> 
+> Yes. It's not that the box will run that long without creating a
+> single new dirtied inode, but rather that it won't necessarily create
+> one on all of its mounts. It's often the case that someone has a
+> mountpoint for a dedicated purpose.
+> 
+> Consider a host that has a mountpoint that contains logfiles that are
+> being heavily written. There's nothing that says that they must rotate
+> those logs over a particular period (assuming the fs has enough space,
+> etc). If the same ones are constantly being redirtied and no new
+> ones are created, then I think this problem can easily happen.
+> 
+>>>>>> ...I see no obvious reasons against unconditionally resetting dirtied_when.
+>>>>>>
+>>>>>> (a) Delaying an inode's writeback for 30s maybe too long - its blocking
+>>>>>> condition may well go away within 1s. (b) And it would be very undesirable
+>>>>>> if one big file is repeatedly redirtied hence its writeback being
+>>>>>> delayed considerably.
+>>>>>>
+>>>>>> However, redirty_tail() currently only tries to speedup writeback-after-redirty
+>>>>>> in a _best effort_ way. It at best partially hides the above issues,
+>>>>>> if there are any. In particular, if (b) is possible, the bug should
+>>>>>> already show up at least in some situations.
+>>>>>>
+>>>>>> For XFS, immediately sync of redirtied inode is actually discouraged:
+>>>>>>
+>>>>>>         http://lkml.org/lkml/2008/1/16/491
+>>>>>>
+>>>>>>
+>>>>> Ok, those are good points that I need to think about.
+>>>>>
+>>>>> Thanks for the help so far. I'd welcome any suggestions you have on
+>>>>> how best to fix this.
+>>>> For NFS, is it desirable to retry a redirtied inode after 30s, or
+>>>> after a shorter 5s, or after 0.1~5s? Or the exact timing simply
+>>>> doesn't matter?
+>>>>
+>>> I don't really consider NFS to be a special case here. It just happens
+>>> to be where we saw the problem originally. Some of its characteristics
+>>> might make it easier to hit this, but I'm not certain of that.
+>> Now there are now two possible solutions:
+>> - unconditionally update dirtied_when in redirty_tail();
+>> - keep dirtied_when and redirty inodes to a new dedicated queue.
+>> The first one involves less code, the second one allows more flexible timing.
+>>
+>> NFS/XFS could be a good starting point for discussing the
+>> requirements, so that we can reach a suitable solution.
+>>
+> 
+> It sounds like it, yes. I saw that you posted some patches in January
+> (including your s_more_io_wait patch). I'll give those a closer look.
+> Adding the new s_more_io_wait queue is interesting and might sidestep
+> this problem nicely.
+> 
 
-blktrace: fix off-by-one bug
+Yes, I was looking at that bit of code but, so far, I think it won't be
+called for the case we are trying to describe.
 
-'what' is used as the index of array what2act, so it can't >= the array size.
-
-Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
-Acked-by: Jens Axboe <jens.axboe@oracle.com>
-Acked-by: Arnaldo Carvalho de Melo <acme@redhat.com>
-Acked-by: Steven Rostedt <rostedt@goodmis.org>
-LKML-Reference: <49C89447.5060303@cn.fujitsu.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-
----
- kernel/trace/blktrace.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/kernel/trace/blktrace.c b/kernel/trace/blktrace.c
-index a7f7ff5..d43cdac 100644
---- a/kernel/trace/blktrace.c
-+++ b/kernel/trace/blktrace.c
-@@ -1152,7 +1152,7 @@ static enum print_line_t blk_trace_event_print(struct trace_iterator *iter,
- 	if (!trace_print_context(iter))
- 		return TRACE_TYPE_PARTIAL_LINE;
- 
--	if (unlikely(what == 0 || what > ARRAY_SIZE(what2act)))
-+	if (unlikely(what == 0 || what >= ARRAY_SIZE(what2act)))
- 		ret = trace_seq_printf(s, "Bad pc action %x\n", what);
- 	else {
- 		const bool long_act = !!(trace_flags & TRACE_ITER_VERBOSE);
-@@ -1199,7 +1199,7 @@ static enum print_line_t blk_tracer_print_line(struct trace_iterator *iter)
- 	t = (const struct blk_io_trace *)iter->ent;
- 	what = t->action & ((1 << BLK_TC_SHIFT) - 1);
- 
--	if (unlikely(what == 0 || what > ARRAY_SIZE(what2act)))
-+	if (unlikely(what == 0 || what >= ARRAY_SIZE(what2act)))
- 		ret = trace_seq_printf(&iter->seq, "Bad pc action %x\n", what);
- 	else {
- 		const bool long_act = !!(trace_flags & TRACE_ITER_VERBOSE);
+Ian
