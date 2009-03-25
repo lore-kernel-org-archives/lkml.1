@@ -1,21 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758885AbZCYAmR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758946AbZCYAmq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758885AbZCYAmR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 20:42:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756878AbZCYAaP
+	id S1758946AbZCYAmq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 20:42:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753091AbZCYAaQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 20:30:15 -0400
-Received: from kroah.org ([198.145.64.141]:54131 "EHLO coco.kroah.org"
+	Tue, 24 Mar 2009 20:30:16 -0400
+Received: from kroah.org ([198.145.64.141]:54135 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756863AbZCYAaH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 20:30:07 -0400
+	id S1755027AbZCYAaI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Mar 2009 20:30:08 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
-Cc: Eric Miao <eric.miao@marvell.com>, Kay Sievers <kay.sievers@vrfy.org>,
-       Ben Dooks <ben-linux@fluff.org>, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 34/61] platform: introduce module id table for platform devices
-Date: Tue, 24 Mar 2009 17:26:38 -0700
-Message-Id: <1237940825-22904-34-git-send-email-gregkh@suse.de>
+Cc: "Hans J. Koch" <hjk@linutronix.de>, Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [PATCH 35/61] UIO: Add name attributes for mappings and port regions
+Date: Tue, 24 Mar 2009 17:26:39 -0700
+Message-Id: <1237940825-22904-35-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.6.2
 In-Reply-To: <20090325001659.GA22461@kroah.com>
 References: <20090325001659.GA22461@kroah.com>
@@ -23,162 +22,194 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Eric Miao <eric.miao@marvell.com>
+From: Hans J. Koch <hjk@linutronix.de>
 
-Now platform_device is being widely used on SoC processors where the
-peripherals are attached to the system bus, which is simple enough.
+If a UIO device has several memory mappings, it can be difficult for userspace
+to find the right one. The situation becomes even worse if the UIO driver can
+handle different versions of a card that have different numbers of mappings.
+Benedikt Spranger has such cards and pointed this out to me. Thanks, Bene!
 
-However, silicon IPs for these SoCs are usually shared heavily across
-a family of processors, even products from different companies.  This
-makes the original simple driver name based matching insufficient, or
-simply not straight-forward.
+To address this problem, this patch adds "name" sysfs attributes for each
+mapping. Userspace can use these to clearly identify each mapping. The name
+string is optional. If a driver doesn't set it, an empty string will be
+returned, so this patch won't break existing drivers.
 
-Introduce a module id table for platform devices, and makes it clear
-that a platform driver is able to support some shared IP and handle
-slight differences across different platforms (by 'driver_data').
-Module alias is handled automatically when a MODULE_DEVICE_TABLE()
-is defined.
+The same problem exists for port region information, so a "name" attribute is
+added there, too.
 
-To not disturb the current platform drivers too much, the matched id
-entry is recorded and can be retrieved by platform_get_device_id().
-
-Signed-off-by: Eric Miao <eric.miao@marvell.com>
-Cc: Kay Sievers <kay.sievers@vrfy.org>
-Cc: Ben Dooks <ben-linux@fluff.org>
+Signed-off-by: Hans J. Koch <hjk@linutronix.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/base/platform.c         |   23 ++++++++++++++++++++++-
- include/linux/mod_devicetable.h |    9 +++++++++
- include/linux/platform_device.h |    6 ++++++
- scripts/mod/file2alias.c        |   12 ++++++++++++
- 4 files changed, 49 insertions(+), 1 deletions(-)
+ Documentation/DocBook/uio-howto.tmpl |   29 +++++++++++++++++++++++++----
+ drivers/uio/uio.c                    |   22 ++++++++++++++++++++++
+ include/linux/uio_driver.h           |    4 ++++
+ 3 files changed, 51 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/base/platform.c b/drivers/base/platform.c
-index 62a8768..ec993aa 100644
---- a/drivers/base/platform.c
-+++ b/drivers/base/platform.c
-@@ -584,10 +584,25 @@ static int platform_uevent(struct device *dev, struct kobj_uevent_env *env)
- {
- 	struct platform_device	*pdev = to_platform_device(dev);
+diff --git a/Documentation/DocBook/uio-howto.tmpl b/Documentation/DocBook/uio-howto.tmpl
+index 52e1b79..8f6e3b2 100644
+--- a/Documentation/DocBook/uio-howto.tmpl
++++ b/Documentation/DocBook/uio-howto.tmpl
+@@ -42,6 +42,13 @@ GPL version 2.
  
--	add_uevent_var(env, "MODALIAS=platform:%s", pdev->name);
-+	add_uevent_var(env, "MODALIAS=%s%s", PLATFORM_MODULE_PREFIX,
-+		(pdev->id_entry) ? pdev->id_entry->name : pdev->name);
- 	return 0;
- }
+ <revhistory>
+ 	<revision>
++	<revnumber>0.8</revnumber>
++	<date>2008-12-24</date>
++	<authorinitials>hjk</authorinitials>
++	<revremark>Added name attributes in mem and portio sysfs directories.
++		</revremark>
++	</revision>
++	<revision>
+ 	<revnumber>0.7</revnumber>
+ 	<date>2008-12-23</date>
+ 	<authorinitials>hjk</authorinitials>
+@@ -303,12 +310,19 @@ interested in translating it, please email me
+ 	appear if the size of the mapping is not 0.
+ </para>
+ <para>
+-	Each <filename>mapX/</filename> directory contains two read-only files
+-	that show start address and size of the memory:
++	Each <filename>mapX/</filename> directory contains four read-only files
++	that show attributes of the memory:
+ </para>
+ <itemizedlist>
+ <listitem>
+ 	<para>
++	<filename>name</filename>: A string identifier for this mapping. This
++	is optional, the string can be empty. Drivers can set this to make it
++	easier for userspace to find the correct mapping.
++	</para>
++</listitem>
++<listitem>
++	<para>
+ 	<filename>addr</filename>: The address of memory that can be mapped.
+ 	</para>
+ </listitem>
+@@ -366,12 +380,19 @@ offset = N * getpagesize();
+ 	<filename>/sys/class/uio/uioX/portio/</filename>.
+ </para>
+ <para>
+-	Each <filename>portX/</filename> directory contains three read-only
+-	files that show start, size, and type of the port region:
++	Each <filename>portX/</filename> directory contains four read-only
++	files that show name, start, size, and type of the port region:
+ </para>
+ <itemizedlist>
+ <listitem>
+ 	<para>
++	<filename>name</filename>: A string identifier for this port region.
++	The string is optional and can be empty. Drivers can set it to make it
++	easier for userspace to find a certain port region.
++	</para>
++</listitem>
++<listitem>
++	<para>
+ 	<filename>start</filename>: The first port of this region.
+ 	</para>
+ </listitem>
+diff --git a/drivers/uio/uio.c b/drivers/uio/uio.c
+index 4ca85a1..68a4965 100644
+--- a/drivers/uio/uio.c
++++ b/drivers/uio/uio.c
+@@ -61,6 +61,14 @@ struct uio_map {
+ };
+ #define to_map(map) container_of(map, struct uio_map, kobj)
  
-+static const struct platform_device_id *platform_match_id(
-+			struct platform_device_id *id,
-+			struct platform_device *pdev)
++static ssize_t map_name_show(struct uio_mem *mem, char *buf)
 +{
-+	while (id->name[0]) {
-+		if (strcmp(pdev->name, id->name) == 0) {
-+			pdev->id_entry = id;
-+			return id;
-+		}
-+		id++;
-+	}
-+	return NULL;
++	if (unlikely(!mem->name))
++		mem->name = "";
++
++	return sprintf(buf, "%s\n", mem->name);
 +}
 +
+ static ssize_t map_addr_show(struct uio_mem *mem, char *buf)
+ {
+ 	return sprintf(buf, "0x%lx\n", mem->addr);
+@@ -82,6 +90,8 @@ struct map_sysfs_entry {
+ 	ssize_t (*store)(struct uio_mem *, const char *, size_t);
+ };
+ 
++static struct map_sysfs_entry name_attribute =
++	__ATTR(name, S_IRUGO, map_name_show, NULL);
+ static struct map_sysfs_entry addr_attribute =
+ 	__ATTR(addr, S_IRUGO, map_addr_show, NULL);
+ static struct map_sysfs_entry size_attribute =
+@@ -90,6 +100,7 @@ static struct map_sysfs_entry offset_attribute =
+ 	__ATTR(offset, S_IRUGO, map_offset_show, NULL);
+ 
+ static struct attribute *attrs[] = {
++	&name_attribute.attr,
+ 	&addr_attribute.attr,
+ 	&size_attribute.attr,
+ 	&offset_attribute.attr,
+@@ -133,6 +144,14 @@ struct uio_portio {
+ };
+ #define to_portio(portio) container_of(portio, struct uio_portio, kobj)
+ 
++static ssize_t portio_name_show(struct uio_port *port, char *buf)
++{
++	if (unlikely(!port->name))
++		port->name = "";
++
++	return sprintf(buf, "%s\n", port->name);
++}
++
+ static ssize_t portio_start_show(struct uio_port *port, char *buf)
+ {
+ 	return sprintf(buf, "0x%lx\n", port->start);
+@@ -159,6 +178,8 @@ struct portio_sysfs_entry {
+ 	ssize_t (*store)(struct uio_port *, const char *, size_t);
+ };
+ 
++static struct portio_sysfs_entry portio_name_attribute =
++	__ATTR(name, S_IRUGO, portio_name_show, NULL);
+ static struct portio_sysfs_entry portio_start_attribute =
+ 	__ATTR(start, S_IRUGO, portio_start_show, NULL);
+ static struct portio_sysfs_entry portio_size_attribute =
+@@ -167,6 +188,7 @@ static struct portio_sysfs_entry portio_porttype_attribute =
+ 	__ATTR(porttype, S_IRUGO, portio_porttype_show, NULL);
+ 
+ static struct attribute *portio_attrs[] = {
++	&portio_name_attribute.attr,
+ 	&portio_start_attribute.attr,
+ 	&portio_size_attribute.attr,
+ 	&portio_porttype_attribute.attr,
+diff --git a/include/linux/uio_driver.h b/include/linux/uio_driver.h
+index a0bb6bd..5dcc9ff 100644
+--- a/include/linux/uio_driver.h
++++ b/include/linux/uio_driver.h
+@@ -22,6 +22,7 @@ struct uio_map;
+ 
  /**
-  * platform_match - bind platform device to platform driver.
-  * @dev: device.
-@@ -604,7 +619,13 @@ static int platform_uevent(struct device *dev, struct kobj_uevent_env *env)
- static int platform_match(struct device *dev, struct device_driver *drv)
- {
- 	struct platform_device *pdev = to_platform_device(dev);
-+	struct platform_driver *pdrv = to_platform_driver(drv);
-+
-+	/* match against the id table first */
-+	if (pdrv->id_table)
-+		return platform_match_id(pdrv->id_table, pdev) != NULL;
+  * struct uio_mem - description of a UIO memory region
++ * @name:		name of the memory region for identification
+  * @addr:		address of the device's memory
+  * @size:		size of IO
+  * @memtype:		type of memory addr points to
+@@ -29,6 +30,7 @@ struct uio_map;
+  * @map:		for use by the UIO core only.
+  */
+ struct uio_mem {
++	const char		*name;
+ 	unsigned long		addr;
+ 	unsigned long		size;
+ 	int			memtype;
+@@ -42,12 +44,14 @@ struct uio_portio;
  
-+	/* fall-back to driver name match */
- 	return (strcmp(pdev->name, drv->name) == 0);
- }
- 
-diff --git a/include/linux/mod_devicetable.h b/include/linux/mod_devicetable.h
-index fde8667..1bf5900 100644
---- a/include/linux/mod_devicetable.h
-+++ b/include/linux/mod_devicetable.h
-@@ -454,4 +454,13 @@ struct dmi_system_id {
- 
- #define DMI_MATCH(a, b)	{ a, b }
- 
-+#define PLATFORM_NAME_SIZE	20
-+#define PLATFORM_MODULE_PREFIX	"platform:"
-+
-+struct platform_device_id {
-+	char name[PLATFORM_NAME_SIZE];
-+	kernel_ulong_t driver_data
-+			__attribute__((aligned(sizeof(kernel_ulong_t))));
-+};
-+
- #endif /* LINUX_MOD_DEVICETABLE_H */
-diff --git a/include/linux/platform_device.h b/include/linux/platform_device.h
-index 9a34269..76aef7b 100644
---- a/include/linux/platform_device.h
-+++ b/include/linux/platform_device.h
-@@ -12,6 +12,7 @@
- #define _PLATFORM_DEVICE_H_
- 
- #include <linux/device.h>
-+#include <linux/mod_devicetable.h>
- 
- struct platform_device {
- 	const char	* name;
-@@ -19,8 +20,12 @@ struct platform_device {
- 	struct device	dev;
- 	u32		num_resources;
- 	struct resource	* resource;
-+
-+	struct platform_device_id	*id_entry;
- };
- 
-+#define platform_get_device_id(pdev)	((pdev)->id_entry)
-+
- #define to_platform_device(x) container_of((x), struct platform_device, dev)
- 
- extern int platform_device_register(struct platform_device *);
-@@ -56,6 +61,7 @@ struct platform_driver {
- 	int (*resume_early)(struct platform_device *);
- 	int (*resume)(struct platform_device *);
- 	struct device_driver driver;
-+	struct platform_device_id *id_table;
- };
- 
- extern int platform_driver_register(struct platform_driver *);
-diff --git a/scripts/mod/file2alias.c b/scripts/mod/file2alias.c
-index 4eea60b..a334428 100644
---- a/scripts/mod/file2alias.c
-+++ b/scripts/mod/file2alias.c
-@@ -710,6 +710,14 @@ static int do_dmi_entry(const char *filename, struct dmi_system_id *id,
- 	strcat(alias, ":");
- 	return 1;
- }
-+
-+static int do_platform_entry(const char *filename,
-+			     struct platform_device_id *id, char *alias)
-+{
-+	sprintf(alias, PLATFORM_MODULE_PREFIX "%s", id->name);
-+	return 1;
-+}
-+
- /* Ignore any prefix, eg. some architectures prepend _ */
- static inline int sym_is(const char *symbol, const char *name)
- {
-@@ -849,6 +857,10 @@ void handle_moddevtable(struct module *mod, struct elf_info *info,
- 		do_table(symval, sym->st_size,
- 			 sizeof(struct dmi_system_id), "dmi",
- 			 do_dmi_entry, mod);
-+	else if (sym_is(symname, "__mod_platform_device_table"))
-+		do_table(symval, sym->st_size,
-+			 sizeof(struct platform_device_id), "platform",
-+			 do_platform_entry, mod);
- 	free(zeros);
- }
- 
+ /**
+  * struct uio_port - description of a UIO port region
++ * @name:		name of the port region for identification
+  * @start:		start of port region
+  * @size:		size of port region
+  * @porttype:		type of port (see UIO_PORT_* below)
+  * @portio:		for use by the UIO core only.
+  */
+ struct uio_port {
++	const char		*name;
+ 	unsigned long		start;
+ 	unsigned long		size;
+ 	int			porttype;
 -- 
 1.6.2
 
