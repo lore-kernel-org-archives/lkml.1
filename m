@@ -1,127 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757729AbZCYFac@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755374AbZCYFjY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757729AbZCYFac (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 01:30:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752662AbZCYFaY
+	id S1755374AbZCYFjY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 01:39:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753439AbZCYFjM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 01:30:24 -0400
-Received: from hera.kernel.org ([140.211.167.34]:44739 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751374AbZCYFaX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 01:30:23 -0400
-Subject: Re: [PATCH -tip] x86: move vmware to hypervisor
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Ingo Molnar <mingo@elte.hu>, x86 maintainers <x86@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>, akataria@vmware.com
-In-Reply-To: <49BFC6CB.9070603@zytor.com>
-References: <1237281581.7907.2.camel@ht.satnam>
-	 <20090317093919.GD6477@elte.hu> <1237283318.7907.9.camel@ht.satnam>
-	 <49BFC6CB.9070603@zytor.com>
-Content-Type: text/plain
-Date: Wed, 25 Mar 2009 10:59:54 +0530
-Message-Id: <1237958994.5556.5.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.4 (2.24.4-1.fc10) 
+	Wed, 25 Mar 2009 01:39:12 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:50486 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752665AbZCYFjL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Mar 2009 01:39:11 -0400
+Message-ID: <49C9C375.6060306@jp.fujitsu.com>
+Date: Wed, 25 Mar 2009 14:39:01 +0900
+From: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
+MIME-Version: 1.0
+To: Alex Chiang <achiang@hp.com>
+CC: jbarnes@virtuousgeek.org, linux-pci@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Trent Piepho <xyzzy@speakeasy.org>
+Subject: Re: [PATCH v5 09/13] PCI: Introduce /sys/bus/pci/devices/.../remove
+References: <20090320204327.12275.43010.stgit@bob.kio> <20090320205636.12275.1825.stgit@bob.kio> <49C74FCC.7070308@jp.fujitsu.com> <20090324192905.GA25984@ldl.fc.hp.com> <49C9BBD7.4040705@jp.fujitsu.com> <20090325052048.GA1584@ldl.fc.hp.com>
+In-Reply-To: <20090325052048.GA1584@ldl.fc.hp.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-03-17 at 08:50 -0700, H. Peter Anvin wrote:
-> Jaswinder Singh Rajput wrote:
-> >> I dont really like this one. KVM is a hypervisor too, and so is 
-> >> Xen and lguest. VMware is one of the many types of a 
-> >> hypervisors.
-> > 
-> > Can we use common hypervisor for Xen, lguest, vmware, etc.
-> > And Xen, lguest, vmware will be the sub-options.
+Alex Chiang wrote:
+> * Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>:
+>> Alex Chiang wrote:
+>>> * Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>:
+>>>> I still have the following kernel error messages in testing with your
+>>>> latest set of patches (Jesse's linux-next). The test case is removing
+>>>> e1000e device or its parent bridge by "echo 1 > /sys/bus/pci/devices/
+>>>> .../remove".
+>>>>
+>>>> [  537.379995] =============================================
+>>>> [  537.380124] [ INFO: possible recursive locking detected ]
+>>>> [  537.380128] 2.6.29-rc8-kk #1
+>>>> [  537.380128] ---------------------------------------------
+>>>> [  537.380128] events/4/56 is trying to acquire lock:
+>>>> [  537.380128]  (events){--..}, at: [<ffffffff80257fc0>] flush_workqueue+0x0/0xa0
+>>>> [  537.380128]
+>>>> [  537.380128] but task is already holding lock:
+>>>> [  537.380128]  (events){--..}, at: [<ffffffff80257648>] run_workqueue+0x108/0x230
+>>>> [  537.380128]
+>>>> [  537.380128] other info that might help us debug this:
+>>>> [  537.380128] 3 locks held by events/4/56:
+>>>> [  537.380128]  #0:  (events){--..}, at: [<ffffffff80257648>] run_workqueue+0x108/0x230
+>>>> [  537.380128]  #1:  (&ss->work){--..}, at: [<ffffffff80257648>] run_workqueue+0x108/0x230
+>>>> [  537.380128]  #2:  (pci_remove_rescan_mutex){--..}, at: [<ffffffff803c10d1>] remove_callback+0x21/0x40
+>>> I still cannot reproduce this lockdep issue, even using your
+>>> .config with an e1000e device on an x86_64 kernel. :(
+>>>
+>>> I tried removing the endpoint, an intermediate bridge device, and
+>>> the parent bus. I don't know what I'm doing wrong...
+>>>
+>> I don't know either...
+>> The reproducibility is 100% on my environment. The steps are
+>> just boot the system and remove the device.
+>>
+>>> Can you please try this patch though, and see if it fixes the
+>>> warning? It applies on top of my other sysfs patch that
+>>> introduces a mutex in sysfs_schedule_callback.
+>> Anyway, I confirmed the kernel error messages were gone with
+>> the patch against sysfs. Note that I used the following patch
+>> I made for testing instead since your patch could not be
+>> applied to Jesse's linux-next. 
 > 
-> Obviously.  We spent a lot of time breaking up the cpu stuff into common
-> and vendor-specific portions, we shouldn't go backwards w.r.t. hypervisors.
-> 	
+> Great, thank you for testing Kenji-san.
+>
 
-OK, agreed.
+You're welcome.
 
-But atleast give freedom to users to disable this who are not willing to
-use it.
+Just in case, my patch is just for testing, and it is very buggy
+(no destroy operation, lack of module_put() in error code path,
+and so on). Please consider it as just for testing.
 
-Currently hypervisor is used only used by VMWARE, so is I prepare this
-freedom patch:
-
-From: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
-Date: Wed, 25 Mar 2009 10:40:01 +0530
-Subject: [PATCH] x86: Introduce CONFIG_X86_VMWARE option
-
-Impact: freedom to choose
-
-Gives freedom to users to select or suppress CONFIG_X86_VMWARE option.
-
-Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
----
- arch/x86/Kconfig                  |    7 +++++++
- arch/x86/include/asm/hypervisor.h |    9 +++++++++
- arch/x86/kernel/cpu/Makefile      |    2 +-
- 3 files changed, 17 insertions(+), 1 deletions(-)
-
-diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-index f5d7d29..56e1a9c 100644
---- a/arch/x86/Kconfig
-+++ b/arch/x86/Kconfig
-@@ -554,6 +554,13 @@ config HPET_EMULATE_RTC
- 	def_bool y
- 	depends on HPET_TIMER && (RTC=y || RTC=m || RTC_DRV_CMOS=m || RTC_DRV_CMOS=y)
- 
-+config X86_VMWARE
-+	bool
-+	default n
-+	prompt "X86 VMware support"
-+	---help---
-+	 Enable X86 VMware Hypervisor support.
-+
- # Mark as embedded because too many people got it wrong.
- # The code disables itself when not needed.
- config DMI
-diff --git a/arch/x86/include/asm/hypervisor.h b/arch/x86/include/asm/hypervisor.h
-index 369f5c5..c08ae75 100644
---- a/arch/x86/include/asm/hypervisor.h
-+++ b/arch/x86/include/asm/hypervisor.h
-@@ -20,7 +20,16 @@
- #ifndef ASM_X86__HYPERVISOR_H
- #define ASM_X86__HYPERVISOR_H
- 
-+#ifdef CONFIG_X86_VMWARE
- extern unsigned long get_hypervisor_tsc_freq(void);
- extern void init_hypervisor(struct cpuinfo_x86 *c);
-+#else
-+static inline unsigned long get_hypervisor_tsc_freq(void)
-+{
-+	return 0;
-+}
-+
-+static inline void init_hypervisor(struct cpuinfo_x86 *c) {}
-+#endif
- 
- #endif
-diff --git a/arch/x86/kernel/cpu/Makefile b/arch/x86/kernel/cpu/Makefile
-index 3efcb2b..24372f7 100644
---- a/arch/x86/kernel/cpu/Makefile
-+++ b/arch/x86/kernel/cpu/Makefile
-@@ -9,11 +9,11 @@ endif
- 
- obj-y			:= intel_cacheinfo.o addon_cpuid_features.o
- obj-y			+= proc.o capflags.o powerflags.o common.o
--obj-y			+= vmware.o hypervisor.o
- 
- obj-$(CONFIG_X86_32)	+= bugs.o cmpxchg.o
- obj-$(CONFIG_X86_64)	+= bugs_64.o
- 
-+obj-$(CONFIG_X86_VMWARE)		+= vmware.o hypervisor.o
- obj-$(CONFIG_X86_CPU_DEBUG)		+= cpu_debug.o
- 
- obj-$(CONFIG_CPU_SUP_INTEL)		+= intel.o
--- 
-1.6.0.6
+Thanks,
+Kenji Kaneshige
 
 
 
