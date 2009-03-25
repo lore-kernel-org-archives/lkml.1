@@ -1,44 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761344AbZCYTB0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756041AbZCYTBx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761344AbZCYTB0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 15:01:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754343AbZCYTAy
+	id S1756041AbZCYTBx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 15:01:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754711AbZCYTBk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 15:00:54 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:44995 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753490AbZCYTAw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 15:00:52 -0400
-From: Bill Nottingham <notting@redhat.com>
-To: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
-Cc: Bill Nottingham <notting@redhat.com>
-Subject: [PATCH] Declare PIO_CMAP/GIO_CMAP as compatbile ioctls.
-Date: Wed, 25 Mar 2009 15:00:47 -0400
-Message-Id: <1238007647-25752-2-git-send-email-notting@redhat.com>
-In-Reply-To: <1238007647-25752-1-git-send-email-notting@redhat.com>
+	Wed, 25 Mar 2009 15:01:40 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:49693 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753576AbZCYTBj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Mar 2009 15:01:39 -0400
+Date: Wed, 25 Mar 2009 15:01:37 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: Bill Nottingham <notting@redhat.com>
+Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
+Subject: Re: [PATCH] Add a 'wait-scan' command to /proc/scsi/scsi.
+Message-ID: <20090325190137.GA8509@infradead.org>
 References: <1238007647-25752-1-git-send-email-notting@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1238007647-25752-1-git-send-email-notting@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Otherwise, these don't work when called from 32-bit userspace on 64-bit kernels.
----
- fs/compat_ioctl.c |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
+On Wed, Mar 25, 2009 at 03:00:46PM -0400, Bill Nottingham wrote:
+> scsi_wait_scan.ko is a bad interface for a variety of reasons:
+> - once you load it, it stays in memory doing nothing
+> - if you need to call it again, you first need to check for the module
+>   and unload it first
+> - waiting for scsi scans shouldn't require module loading privleges in
+>   any case
+> 
+> This creates a simpler interface that doesn't require as much
+> scaffolding in userspace.
 
-diff --git a/fs/compat_ioctl.c b/fs/compat_ioctl.c
-index 5235c67..9ee71a0 100644
---- a/fs/compat_ioctl.c
-+++ b/fs/compat_ioctl.c
-@@ -1937,6 +1937,8 @@ ULONG_IOCTL(SET_BITMAP_FILE)
- /* Big K */
- COMPATIBLE_IOCTL(PIO_FONT)
- COMPATIBLE_IOCTL(GIO_FONT)
-+COMPATIBLE_IOCTL(PIO_CMAP)
-+COMPATIBLE_IOCTL(GIO_CMAP)
- ULONG_IOCTL(KDSIGACCEPT)
- COMPATIBLE_IOCTL(KDGETKEYCODE)
- COMPATIBLE_IOCTL(KDSETKEYCODE)
--- 
-1.6.1.2
+/proc/scsi/scsi is deprecated, plese don't add more features to it.
 
