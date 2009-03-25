@@ -1,77 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760646AbZCYQEi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761201AbZCYQF2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760646AbZCYQEi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 12:04:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759305AbZCYQEX
+	id S1761201AbZCYQF2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 12:05:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757408AbZCYQFJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 12:04:23 -0400
-Received: from rv-out-0506.google.com ([209.85.198.229]:21464 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760855AbZCYQEW convert rfc822-to-8bit (ORCPT
+	Wed, 25 Mar 2009 12:05:09 -0400
+Received: from acsinet12.oracle.com ([141.146.126.234]:22301 "EHLO
+	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754700AbZCYQFH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 12:04:22 -0400
+	Wed, 25 Mar 2009 12:05:07 -0400
+Message-ID: <49CA55F0.9030203@oracle.com>
+Date: Wed, 25 Mar 2009 09:04:00 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+Organization: Oracle Linux Engineering
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-In-Reply-To: <tip-b7bb4c9bb01941fe8feb653f3410e7ed0c9bb786@git.kernel.org>
-References: <20090325091427.13992.18933.stgit@sofia.in.ibm.com> 
-	<tip-b7bb4c9bb01941fe8feb653f3410e7ed0c9bb786@git.kernel.org>
-Date: Wed, 25 Mar 2009 09:04:05 -0700
-Message-ID: <2c0942db0903250904x799271b5s78a1007d0fdbbb77@mail.gmail.com>
-Subject: Re: [tip:sched/balancing] sched: Add comments to find_busiest_group() 
-	function
-From: Ray Lee <ray-lk@madrabbit.org>
-To: mingo@redhat.com, hpa@zytor.com, ego@in.ibm.com,
-       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
-       dhaval@linux.vnet.ibm.com, balbir@in.ibm.com,
-       bharata@linux.vnet.ibm.com, suresh.b.siddha@intel.com,
-       tglx@linutronix.de, nickpiggin@yahoo.com.au, svaidy@linux.vnet.ibm.com,
-       mingo@elte.hu
-Cc: linux-tip-commits@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+To: Sachin Sant <sachinp@in.ibm.com>
+CC: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, Greg KH <greg@kroah.com>,
+       netdev@vger.kernel.org
+Subject: Re: Next March 25: staging/epl build break.
+References: <20090325191229.0e17eaf6.sfr@canb.auug.org.au> <49CA18D9.6080302@in.ibm.com>
+In-Reply-To: <49CA18D9.6080302@in.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt707.oracle.com [141.146.40.85]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090204.49CA5622.01A7:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This commit says it's just adding comments, but...
+Sachin Sant wrote:
+> Today's next x86 randconfig build failed with
+> 
+> drivers/staging/epl/VirtualEthernetLinux.c: In function VEthAddInstance:
+> drivers/staging/epl/VirtualEthernetLinux.c:302: error: struct net_device
+> has no member named open
+> drivers/staging/epl/VirtualEthernetLinux.c:303: error: struct net_device
+> has no member named stop
+> drivers/staging/epl/VirtualEthernetLinux.c:304: error: struct net_device
+> has no member named get_stats
+> drivers/staging/epl/VirtualEthernetLinux.c:305: error: struct net_device
+> has no member named hard_start_xmit
+> drivers/staging/epl/VirtualEthernetLinux.c:306: error: struct net_device
+> has no member named tx_timeout
 
-On Wed, Mar 25, 2009 at 5:30 AM, Gautham R Shenoy <ego@in.ibm.com> wrote:
-> Commit-ID:  b7bb4c9bb01941fe8feb653f3410e7ed0c9bb786
-> Gitweb:     http://git.kernel.org/tip/b7bb4c9bb01941fe8feb653f3410e7ed0c9bb786
-> Author:     Gautham R Shenoy <ego@in.ibm.com>
-> AuthorDate: Wed, 25 Mar 2009 14:44:27 +0530
-> Committer:  Ingo Molnar <mingo@elte.hu>
-> CommitDate: Wed, 25 Mar 2009 13:28:30 +0100
->
-> sched: Add comments to find_busiest_group() function
->
-> Impact: cleanup
->
-> Add /** style comments around find_busiest_group(). Also add a few
-> explanatory comments.
 
-...but there are actual code changes. Hard to know if you intended to
-do that and forgot to changelog it, or if it's an unexpected hunk that
-accidentally got included:
+There are lots of build errors similar to this, in appletalk, irda,
+tokenring, etc etc...
 
->        if (balance && !(*balance))
->                goto ret;
->
-> -       if (!sds.busiest || sds.this_load >= sds.max_load
-> -               || sds.busiest_nr_running == 0)
-> +       if (!sds.busiest || sds.busiest_nr_running == 0)
-> +               goto out_balanced;
-> +
-> +       if (sds.this_load >= sds.max_load)
->                goto out_balanced;
->
->        sds.avg_load = (SCHED_LOAD_SCALE * sds.total_load) / sds.total_pwr;
->
-> -       if (sds.this_load >= sds.avg_load ||
-> -                       100*sds.max_load <= sd->imbalance_pct * sds.this_load)
-> +       if (sds.this_load >= sds.avg_load)
-> +               goto out_balanced;
-> +
-> +       if (100 * sds.max_load <= sd->imbalance_pct * sds.this_load)
->                goto out_balanced;
->
->        sds.busiest_load_per_task /= sds.busiest_nr_running;
+
+-- 
+~Randy
