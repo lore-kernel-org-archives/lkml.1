@@ -1,46 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763122AbZCYQVN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759232AbZCYQYp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763122AbZCYQVN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 12:21:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754947AbZCYQU5
+	id S1759232AbZCYQYp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 12:24:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755308AbZCYQYg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 12:20:57 -0400
-Received: from mail.gmx.net ([213.165.64.20]:49959 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1754732AbZCYQU4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 12:20:56 -0400
-X-Authenticated: #2025681
-X-Provags-ID: V01U2FsdGVkX1/qYatqyOLq0Q/fO8Cm6MXudOX0OE9hmd9WPEiuLw
-	7cnzJTekfg0vEJ
-Message-ID: <49CA59E8.7080201@gmx.de>
-Date: Wed, 25 Mar 2009 17:20:56 +0100
-From: Stefan Sassenberg <stefan.sassenberg@gmx.de>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081209)
+	Wed, 25 Mar 2009 12:24:36 -0400
+Received: from x35.xmailserver.org ([64.71.152.41]:34161 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752879AbZCYQYg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Mar 2009 12:24:36 -0400
+X-AuthUser: davidel@xmailserver.org
+Date: Wed, 25 Mar 2009 09:23:21 -0700 (PDT)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@makko.or.mcafeemobile.com
+To: nicolas sitbon <nicolas.sitbon@gmail.com>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: epoll_ctl and const correctness
+In-Reply-To: <84a01a8b0903250545n799a8727o1faad60c8eaf372e@mail.gmail.com>
+Message-ID: <alpine.DEB.1.10.0903250921230.15216@makko.or.mcafeemobile.com>
+References: <84a01a8b0903250545n799a8727o1faad60c8eaf372e@mail.gmail.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
 MIME-Version: 1.0
-To: LKML <linux-kernel@vger.kernel.org>
-Subject: /proc/bus/input/devices changing while booting
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.71
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On Wed, 25 Mar 2009, nicolas sitbon wrote:
 
-while booting, an init-script on my machine greps the Handlers entry of 
-a certain device (USB touchscreen) from /proc/bus/input/devices. It ends 
-with "event2", so I configure my software to listen for events in 
-/dev/input/event2. A few seconds later /proc/bus/input/devices changes, 
-the order of the devices is different and the Handlers entry for my 
-device ends with event1 making my device misconfigured and thus unusable.
+> Currently, the prototype of epoll_ctl is :
+> 
+> int epoll_ctl(int epfd, int op, int fd, struct epoll_event *event);
+> 
+> I searched in the man of epoll_ctl and google, and it seems that the
+> structure pointed to by event isn't modify, valgrind confirms this
+> behaviour, so am I wrong? or the good prototype is
+> 
+> int epoll_ctl(int epfd, int op, int fd, struct epoll_event const *event);
 
-Can anybody explain that behaviour? How can I get the final eventX 
-device file?
+According to the current ctl operations, yes. But doing that would prevent 
+other non-const operations to be added later on.
 
-I'm using kernel 2.6.28.8 on an Intel Celeron, chipset ICH5.
 
-Regards
+- Davide
 
-Stefan
+
