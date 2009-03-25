@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759327AbZCYAoi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759393AbZCYAoy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759327AbZCYAoi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 20:44:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755622AbZCYAaZ
+	id S1759393AbZCYAoy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 20:44:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756874AbZCYAa0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 20:30:25 -0400
-Received: from kroah.org ([198.145.64.141]:54150 "EHLO coco.kroah.org"
+	Tue, 24 Mar 2009 20:30:26 -0400
+Received: from kroah.org ([198.145.64.141]:54157 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755438AbZCYAaM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 20:30:12 -0400
+	id S1756743AbZCYAaO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Mar 2009 20:30:14 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>,
-       Ming Lei <tom.leiming@gmail.com>, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 39/61] scsi/m68k: Kill NCR_700_detect() warnings
-Date: Tue, 24 Mar 2009 17:26:43 -0700
-Message-Id: <1237940825-22904-39-git-send-email-gregkh@suse.de>
+Cc: Alex Chiang <achiang@hp.com>, Alex Williamson <alex.williamson@hp.com>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [PATCH 41/61] sysfs: sysfs_add_one WARNs with full path to duplicate filename
+Date: Tue, 24 Mar 2009 17:26:45 -0700
+Message-Id: <1237940825-22904-41-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.6.2
 In-Reply-To: <20090325001659.GA22461@kroah.com>
 References: <20090325001659.GA22461@kroah.com>
@@ -23,70 +23,88 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Geert Uytterhoeven <geert@linux-m68k.org>
+From: Alex Chiang <achiang@hp.com>
 
-The patch from Ming Lei <tom.leiming@gmail.com> entitled:
-    platform driver: fix incorrect use of 'platform_bus_type' with 'struct devic
-introduced the following warnings on m68k, as `dev' is now a `struct
-platform_device *' instead of a `struct device *':
+sysfs: sysfs_add_one WARNs with full path to duplicate filename
 
-| drivers/scsi/a4000t.c:64: warning: passing argument 3 of 'NCR_700_detect' from incompatible pointer type
-| drivers/scsi/mvme16x_scsi.c:67: warning: passing argument 3 of 'NCR_700_detect' from incompatible pointer type
-| drivers/scsi/bvme6000_scsi.c:61: warning: passing argument 3 of 'NCR_700_detect' from incompatible pointer type
+As a debugging aid, it can be useful to know the full path to a
+duplicate file being created in sysfs.
 
-I think the below is missing (untested on real hardware).
+We now will display warnings such as:
 
-Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Ming Lei <tom.leiming@gmail.com>
+	sysfs: cannot create duplicate filename '/foo'
+
+when attempting to create multiple files named 'foo' in the sysfs
+root, or:
+
+	sysfs: cannot create duplicate filename '/bus/pci/slots/5/foo'
+
+when attempting to create multiple files named 'foo' under a
+given directory in sysfs.
+
+The path displayed is always a relative path to sysfs_root. The
+leading '/' in the path name refers to the sysfs_root mount
+point, and should not be confused with the "real" '/'.
+
+Thanks to Alex Williamson for essentially writing sysfs_pathname.
+
+Cc: Alex Williamson <alex.williamson@hp.com>
+Signed-off-by: Alex Chiang <achiang@hp.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/scsi/a4000t.c        |    3 ++-
- drivers/scsi/bvme6000_scsi.c |    3 ++-
- drivers/scsi/mvme16x_scsi.c  |    3 ++-
- 3 files changed, 6 insertions(+), 3 deletions(-)
+ fs/sysfs/dir.c |   32 ++++++++++++++++++++++++++++++--
+ 1 files changed, 30 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/scsi/a4000t.c b/drivers/scsi/a4000t.c
-index 6d25aca..61af3d9 100644
---- a/drivers/scsi/a4000t.c
-+++ b/drivers/scsi/a4000t.c
-@@ -61,7 +61,8 @@ static int __devinit a4000t_probe(struct platform_device *dev)
- 	hostdata->dcntl_extra = EA_710;
+diff --git a/fs/sysfs/dir.c b/fs/sysfs/dir.c
+index 82d3b79..f13d852 100644
+--- a/fs/sysfs/dir.c
++++ b/fs/sysfs/dir.c
+@@ -434,6 +434,26 @@ int __sysfs_add_one(struct sysfs_addrm_cxt *acxt, struct sysfs_dirent *sd)
+ }
  
- 	/* and register the chip */
--	host = NCR_700_detect(&a4000t_scsi_driver_template, hostdata, dev);
-+	host = NCR_700_detect(&a4000t_scsi_driver_template, hostdata,
-+			      &dev->dev);
- 	if (!host) {
- 		printk(KERN_ERR "a4000t-scsi: No host detected; "
- 				"board configuration problem?\n");
-diff --git a/drivers/scsi/bvme6000_scsi.c b/drivers/scsi/bvme6000_scsi.c
-index 9e9a82b..5799cb5 100644
---- a/drivers/scsi/bvme6000_scsi.c
-+++ b/drivers/scsi/bvme6000_scsi.c
-@@ -58,7 +58,8 @@ bvme6000_probe(struct platform_device *dev)
- 	hostdata->ctest7_extra = CTEST7_TT1;
+ /**
++ *	sysfs_pathname - return full path to sysfs dirent
++ *	@sd: sysfs_dirent whose path we want
++ *	@path: caller allocated buffer
++ *
++ *	Gives the name "/" to the sysfs_root entry; any path returned
++ *	is relative to wherever sysfs is mounted.
++ *
++ *	XXX: does no error checking on @path size
++ */
++static char *sysfs_pathname(struct sysfs_dirent *sd, char *path)
++{
++	if (sd->s_parent) {
++		sysfs_pathname(sd->s_parent, path);
++		strcat(path, "/");
++	}
++	strcat(path, sd->s_name);
++	return path;
++}
++
++/**
+  *	sysfs_add_one - add sysfs_dirent to parent
+  *	@acxt: addrm context to use
+  *	@sd: sysfs_dirent to be added
+@@ -458,8 +478,16 @@ int sysfs_add_one(struct sysfs_addrm_cxt *acxt, struct sysfs_dirent *sd)
+ 	int ret;
  
- 	/* and register the chip */
--	host = NCR_700_detect(&bvme6000_scsi_driver_template, hostdata, dev);
-+	host = NCR_700_detect(&bvme6000_scsi_driver_template, hostdata,
-+			      &dev->dev);
- 	if (!host) {
- 		printk(KERN_ERR "bvme6000-scsi: No host detected; "
- 				"board configuration problem?\n");
-diff --git a/drivers/scsi/mvme16x_scsi.c b/drivers/scsi/mvme16x_scsi.c
-index 7794fc1..b5fbfd6 100644
---- a/drivers/scsi/mvme16x_scsi.c
-+++ b/drivers/scsi/mvme16x_scsi.c
-@@ -64,7 +64,8 @@ mvme16x_probe(struct platform_device *dev)
- 	hostdata->ctest7_extra = CTEST7_TT1;
+ 	ret = __sysfs_add_one(acxt, sd);
+-	WARN(ret == -EEXIST, KERN_WARNING "sysfs: duplicate filename '%s' "
+-		       "can not be created\n", sd->s_name);
++	if (ret == -EEXIST) {
++		char *path = kzalloc(PATH_MAX, GFP_KERNEL);
++		WARN(1, KERN_WARNING
++		     "sysfs: cannot create duplicate filename '%s'\n",
++		     (path == NULL) ? sd->s_name :
++		     strcat(strcat(sysfs_pathname(acxt->parent_sd, path), "/"),
++		            sd->s_name));
++		kfree(path);
++	}
++
+ 	return ret;
+ }
  
- 	/* and register the chip */
--	host = NCR_700_detect(&mvme16x_scsi_driver_template, hostdata, dev);
-+	host = NCR_700_detect(&mvme16x_scsi_driver_template, hostdata,
-+			      &dev->dev);
- 	if (!host) {
- 		printk(KERN_ERR "mvme16x-scsi: No host detected; "
- 				"board configuration problem?\n");
 -- 
 1.6.2
 
