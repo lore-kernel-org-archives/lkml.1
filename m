@@ -1,59 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757267AbZCYVwX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756504AbZCYVys@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757267AbZCYVwX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 17:52:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755196AbZCYVwP
+	id S1756504AbZCYVys (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 17:54:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752685AbZCYVyj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 17:52:15 -0400
-Received: from THUNK.ORG ([69.25.196.29]:38910 "EHLO thunker.thunk.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753667AbZCYVwO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 17:52:14 -0400
-Date: Wed, 25 Mar 2009 17:51:37 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Jan Kara <jack@suse.cz>, Andrew Morton <akpm@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Nick Piggin <npiggin@suse.de>,
-       Jens Axboe <jens.axboe@oracle.com>, David Rees <drees76@gmail.com>,
-       Jesper Krogh <jesper@krogh.cc>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.29
-Message-ID: <20090325215137.GQ32307@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Jan Kara <jack@suse.cz>, Andrew Morton <akpm@linux-foundation.org>,
-	Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-	Arjan van de Ven <arjan@infradead.org>,
-	Peter Zijlstra <a.p.zijlstra@chello.nl>,
-	Nick Piggin <npiggin@suse.de>, Jens Axboe <jens.axboe@oracle.com>,
-	David Rees <drees76@gmail.com>, Jesper Krogh <jesper@krogh.cc>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <20090324091545.758d00f5@lxorguk.ukuu.org.uk> <20090324093245.GA22483@elte.hu> <20090324101011.6555a0b9@lxorguk.ukuu.org.uk> <20090324103111.GA26691@elte.hu> <20090324041249.1133efb6.akpm@linux-foundation.org> <20090325123744.GK23439@duck.suse.cz> <20090325150041.GM32307@mit.edu> <alpine.LFD.2.00.0903251008120.3032@localhost.localdomain> <20090325185824.GO32307@mit.edu> <alpine.LFD.2.00.0903251341050.3032@localhost.localdomain>
+	Wed, 25 Mar 2009 17:54:39 -0400
+Received: from mu-out-0910.google.com ([209.85.134.188]:22691 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752251AbZCYVyi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Mar 2009 17:54:38 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=ROLjjdQUimyIm+vjDpvG0qwO19IXkMdWeI6V7tXm9lzyLgUELwgzAoQu/JA+fK52Xk
+         4eGzz/rEHfV177AlgbPuTCdaof4yPBJmPfMz7zKQjQzR5eiMtMv9MmF1HEnZsbzt1WzS
+         FFPzH5/PgD+yVQ4Y0W6pa5Yq+dlQUph36E/rE=
+Message-ID: <49CAA819.2010102@gmail.com>
+Date: Wed, 25 Mar 2009 22:54:33 +0100
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; cs-CZ; rv:1.9.1b3pre) Gecko/20090223 SUSE/3.0b2-8.1 Thunderbird/3.0b2
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0903251341050.3032@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+To: Evgeniy Ivanov <lolkaantimat@gmail.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: Linux and FPU
+References: <200903251409.27827.lolkaantimat@gmail.com>
+In-Reply-To: <200903251409.27827.lolkaantimat@gmail.com>
+X-Enigmail-Version: 0.96a
+Content-Type: text/plain; charset=ISO-8859-2
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 25, 2009 at 01:45:43PM -0700, Linus Torvalds wrote:
-> > The third potential solution we can try doing is to make some tuning
-> > adjustments to the VM so that we start pushing out these data blocks
-> > much more aggressively out to the disk.
+On 03/25/2009 12:09 PM, Evgeniy Ivanov wrote:
+> Hello,
 > 
-> Yes. but at least one problem is, as mentioned, that when the VM calls 
-> writepage[s]() to start async writeback, many filesystems do seem to just 
-> _block_ on it.
+> Can somebody point me to some general places, where I can look on how FPU 
+> support is implemented. I understand that there is not one place, where things 
+> done, the only I know, that there should be places for detecting FPU hardware 
+> and places with assembly routines for pushing around floating point registers, 
 
-Um, no, ext3 shouldn't block on writepage().  Since it doesn't do
-delayed allocation, it should always be able to push out a dirty page
-to the disk.
+I think you want to start with
+arch/x86/kernel/i387.c
+arch/x86/math-emu/
 
-						- Ted
+> assembly/C-hybrid code for handling floating point exceptions.
+
+and arch/x86/kernel/traps.c
+
