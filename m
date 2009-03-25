@@ -1,68 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756231AbZCYG7r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756750AbZCYHHh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756231AbZCYG7r (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 02:59:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755453AbZCYG7h
+	id S1756750AbZCYHHh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 03:07:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756115AbZCYHH3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 02:59:37 -0400
-Received: from mail00d.mail.t-online.hu ([84.2.42.5]:64741 "EHLO
-	mail00d.mail.t-online.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755449AbZCYG7g (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 02:59:36 -0400
-Message-ID: <49C9D652.5040104@freemail.hu>
-Date: Wed, 25 Mar 2009 07:59:30 +0100
-From: =?UTF-8?B?TsOpbWV0aCBNw6FydG9u?= <nm127@freemail.hu>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; hu-HU; rv:1.8.1.16) Gecko/20080702 SeaMonkey/1.1.11
+	Wed, 25 Mar 2009 03:07:29 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:52441 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754626AbZCYHH3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Mar 2009 03:07:29 -0400
+Date: Wed, 25 Mar 2009 08:07:26 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC][PATCH] blktrace: fix original blktrace
+Message-ID: <20090325070726.GD27476@kernel.dk>
+References: <49C99BD2.9090503@cn.fujitsu.com>
 MIME-Version: 1.0
-To: Laurent Pinchart <laurent.pinchart@skynet.be>, linux-media@vger.kernel.org
-CC: LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] uvcvideo: add zero fill for VIDIOC_ENUM_FMT
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-DCC-mail.t-online.hu-Metrics: mail00d.mail.t-online.hu 32720; Body=3 Fuz1=3
-	Fuz2=3
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49C99BD2.9090503@cn.fujitsu.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Márton Németh <nm127@freemail.hu>
+On Wed, Mar 25 2009, Li Zefan wrote:
+> I'm wondering what we are going to do with the original blktrace which
+> is using relay and is used via ioctl.
+> 
+> The problem is currently it's totally broken. You can use ftrace to see
+> the output of blktrace, but user-space blktrace is unusable.
+> 
+> With this patch, both ioctl and ftrace can be used, but of course you
+> can't use both of them at the same time.
 
-When enumerating formats with VIDIOC_ENUM_FMT the uvcvideo driver does not
-fill the reserved fields of the struct v4l2_fmtdesc with zeros as required by
-V4L2 API revision 0.24 [1]. Add the missing initializations.
+Even if ftrace was as fast as storing huge amounts of data as blktrace,
+it's still of utmost importance that nothing is broken there. There are
+people actually USING this tracing to do real work, it's not a
+playground.
 
-The patch was tested with v4l-test 0.10 [2] with CNF7129 webcam found on EeePC
-901.
+I appreciate the efforts to unify and improve our tracing, but we must
+not be breaking blktrace along the way. Otherwise the whole thing goes
+back to block/blktrace.c, period.
 
-References:
-[1] V4L2 API specification, revision 0.24
-    http://v4l2spec.bytesex.org/spec/r8367.htm
+-- 
+Jens Axboe
 
-[2] v4l-test: Test environment for Video For Linux Two API
-    http://v4l-test.sourceforge.net/
-
-Signed-off-by: Márton Németh <nm127@freemail.hu>
----
---- linux-2.6.29/drivers/media/video/uvc/uvc_v4l2.c.orig	2009-03-24 00:12:14.000000000 +0100
-+++ linux-2.6.29/drivers/media/video/uvc/uvc_v4l2.c	2009-03-25 07:24:42.000000000 +0100
-@@ -673,11 +673,19 @@ static long uvc_v4l2_do_ioctl(struct fil
- 	{
- 		struct v4l2_fmtdesc *fmt = arg;
- 		struct uvc_format *format;
-+		__u32 index;
-+		enum v4l2_buf_type type;
-
- 		if (fmt->type != video->streaming->type ||
- 		    fmt->index >= video->streaming->nformats)
- 			return -EINVAL;
-
-+		index = fmt->index;
-+		type = fmt->type;
-+		memset(fmt, 0, sizeof(*fmt));
-+		fmt->index = index;
-+		fmt->type = type;
-+
- 		format = &video->streaming->format[fmt->index];
- 		fmt->flags = 0;
- 		if (format->flags & UVC_FMT_FLAG_COMPRESSED)
