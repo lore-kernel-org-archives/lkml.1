@@ -1,60 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757237AbZCYU1j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756328AbZCYU1x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757237AbZCYU1j (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 16:27:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754323AbZCYU1a
+	id S1756328AbZCYU1x (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 16:27:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755821AbZCYU1e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 16:27:30 -0400
-Received: from hera.kernel.org ([140.211.167.34]:51471 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752260AbZCYU1a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 16:27:30 -0400
-Message-ID: <49CA9365.9090003@kernel.org>
-Date: Wed, 25 Mar 2009 13:26:13 -0700
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Wed, 25 Mar 2009 16:27:34 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:35580 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757342AbZCYU1d (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Mar 2009 16:27:33 -0400
+Date: Wed, 25 Mar 2009 16:27:29 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: linux kernel <linux-kernel@vger.kernel.org>
+cc: Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Tim Bird <tim.bird@am.sony.com>, Ingo Molnar <mingo@redhat.com>,
+       Abhishek Sagar <sagar.abhishek@gmail.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: [PATCH][GIT PULL] x86, function-graph: only save return values on
+ x86_64
+In-Reply-To: <alpine.DEB.2.00.0903251153500.5675@gandalf.stny.rr.com>
+Message-ID: <alpine.DEB.2.00.0903251625490.5675@gandalf.stny.rr.com>
+References: <49C936CA.8070800@am.sony.com> <20090324213618.GC5975@nowhere> <20090324214846.GB29509@elte.hu> <20090324215738.GD5975@nowhere> <alpine.DEB.2.00.0903251153500.5675@gandalf.stny.rr.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-To: Jesse Barnes <jbarnes@virtuousgeek.org>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: [PATCH] x86/pci: make pci=lastbus=255 work when acpi is on
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Impact: scan more peer root buses even acpi is used
+Ingo,
 
-move out pci_bios_fixup_peer_bridges of pci_legacy_init.
-so pci_bios_fixup_peer_bridges could be called even pci_apci_init is called.
+Please pull the latest tip/tracing/function-graph tree, which can be found at:
 
-Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+  git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
+tip/tracing/function-graph
 
----
- arch/x86/pci/legacy.c |    3 +--
- 1 file changed, 1 insertion(+), 2 deletions(-)
 
-Index: linux-2.6/arch/x86/pci/legacy.c
-===================================================================
---- linux-2.6.orig/arch/x86/pci/legacy.c
-+++ linux-2.6/arch/x86/pci/legacy.c
-@@ -50,8 +50,6 @@ static int __init pci_legacy_init(void)
- 	if (pci_root_bus)
- 		pci_bus_add_devices(pci_root_bus);
+Steven Rostedt (1):
+      x86, function-graph: only save return values on x86_64
+
+----
+ arch/x86/kernel/entry_64.S |   19 +++----------------
+ 1 files changed, 3 insertions(+), 16 deletions(-)
+---------------------------
+commit d5b754b2208b1c22691a7cd5d1a65398b5973d74
+Author: Steven Rostedt <srostedt@redhat.com>
+Date:   Wed Mar 25 14:30:04 2009 -0400
+
+    x86, function-graph: only save return values on x86_64
+    
+    Impact: speed up
+    
+    The return to handler portion of the function graph tracer should only
+    need to save the return values. The caller already saved off the
+    registers that the callee can modify. The returning function already
+    saved the registers it modified. When we call our own trace function
+    it too will save the registers that the callee must restore.
+    
+    There's no reason to save off anything more that the registers used
+    to return the values.
+    
+    Note, I did a complete kernel build with this modification and the
+    function graph tracer running on x86_64.
+    
+    Signed-off-by: Steven Rostedt <srostedt@redhat.com>
+
+diff --git a/arch/x86/kernel/entry_64.S b/arch/x86/kernel/entry_64.S
+index a331ec3..1ac9986 100644
+--- a/arch/x86/kernel/entry_64.S
++++ b/arch/x86/kernel/entry_64.S
+@@ -147,27 +147,14 @@ END(ftrace_graph_caller)
+ GLOBAL(return_to_handler)
+ 	subq  $80, %rsp
  
--	pcibios_fixup_peer_bridges();
--
- 	return 0;
- }
++	/* Save the return values */
+ 	movq %rax, (%rsp)
+-	movq %rcx, 8(%rsp)
+-	movq %rdx, 16(%rsp)
+-	movq %rsi, 24(%rsp)
+-	movq %rdi, 32(%rsp)
+-	movq %r8, 40(%rsp)
+-	movq %r9, 48(%rsp)
+-	movq %r10, 56(%rsp)
+-	movq %r11, 64(%rsp)
++	movq %rdx, 8(%rsp)
  
-@@ -67,6 +65,7 @@ int __init pci_subsys_init(void)
- 	pci_visws_init();
- #endif
- 	pci_legacy_init();
-+	pcibios_fixup_peer_bridges();
- 	pcibios_irq_init();
- 	pcibios_init();
+ 	call ftrace_return_to_handler
  
+ 	movq %rax, 72(%rsp)
+-	movq 64(%rsp), %r11
+-	movq 56(%rsp), %r10
+-	movq 48(%rsp), %r9
+-	movq 40(%rsp), %r8
+-	movq 32(%rsp), %rdi
+-	movq 24(%rsp), %rsi
+-	movq 16(%rsp), %rdx
+-	movq 8(%rsp), %rcx
++	movq 8(%rsp), %rdx
+ 	movq (%rsp), %rax
+ 	addq $72, %rsp
+ 	retq
