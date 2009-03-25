@@ -1,84 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758318AbZCYFZA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758128AbZCYFZa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758318AbZCYFZA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 01:25:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752662AbZCYFYv
+	id S1758128AbZCYFZa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 01:25:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758024AbZCYFZM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 01:24:51 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:60866 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752512AbZCYFYu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 01:24:50 -0400
-Date: Wed, 25 Mar 2009 01:24:47 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: linux-kernel@vger.kernel.org
-cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Roland McGrath <roland@redhat.com>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [PATCH 3/5] sched: remove unlikely in pre_schedule_rt
-In-Reply-To: <20090325052023.387662292@goodmis.org>
-Message-ID: <alpine.DEB.2.00.0903250124080.5675@gandalf.stny.rr.com>
-References: <20090325051920.406564281@goodmis.org> <20090325052023.387662292@goodmis.org>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Wed, 25 Mar 2009 01:25:12 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:52163 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755308AbZCYFZK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Mar 2009 01:25:10 -0400
+Message-ID: <49C9C163.8040502@suse.de>
+Date: Wed, 25 Mar 2009 13:30:11 +0800
+From: Coly Li <coly.li@suse.de>
+Reply-To: coly.li@suse.de
+Organization: SuSE Labs
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: mmotm 2009-03-23-22-34 uploaded (reiserfs)
+References: <200903240539.n2O5d6A8018954@imap1.linux-foundation.org> <49C9483B.1030905@oracle.com>
+In-Reply-To: <49C9483B.1030905@oracle.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Randy,
 
+Randy Dunlap Wrote:
+> akpm@linux-foundation.org wrote:
+>> The mm-of-the-moment snapshot 2009-03-23-22-34 has been uploaded to
+>>
+>>    http://userweb.kernel.org/~akpm/mmotm/
+>>
+>> and will soon be available at
+>>
+>>    git://git.zen-sources.org/zen/mmotm.git
+>>
+>> It contains the following patches against 2.6.29-rc8:
+> 
+> 
+>> fs-reiserfs-return-f_fsid-for-statfs2-v2.patch
+> 
+> fs/built-in.o: In function `reiserfs_statfs':
+> super.c:(.text+0x7332b): undefined reference to `crc32_le'
+> super.c:(.text+0x7333f): undefined reference to `crc32_le'
+> 
+Hmm, it should not be. The v2 patch includes linux/crc32.h, and I tested without
+any error. Now I am downloading mmotm to verify.
 
-On Wed, 25 Mar 2009, Steven Rostedt wrote:
+BTW, from series file of mmotm, I see two version patches,
+fs-reiserfs-return-f_fsid-for-statfs2.patch
+fs-reiserfs-return-f_fsid-for-statfs2-v2.patch
+are all included. I suspect whether this is a proper behavior.
 
-> From: Steven Rostedt <rostedt@goodmis.org>
-> 
-> Impact: clean up
-> 
-> The annotated branch profiler shows that the unlikely used by
-> pre_schedule_rt is always incorrect. This makes sense because in
-> sched.c we have:
-> 
-> 	if (prev->sched_class->pre_schedule)
-> 		prev->sched_class->pre_schedule(rq, prev);
-> 
-> And we are saying that prev is unlikely to be an rt task. This looks
-> more like a likely candidate to me.
-
-I forgot to add the profiler output:
-
- correct incorrect  %        Function                  File              Line
- ------- ---------  -        --------                  ----              ----
-       0     2248 100 pre_schedule_rt                sched_rt.c           1263
- 
-
--- Steve
-
-> 
-> Signed-off-by: Steven Rostedt <srostedt@redhat.com>
-> ---
->  kernel/sched_rt.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/kernel/sched_rt.c b/kernel/sched_rt.c
-> index bac1061..537af77 100644
-> --- a/kernel/sched_rt.c
-> +++ b/kernel/sched_rt.c
-> @@ -1260,7 +1260,7 @@ static int pull_rt_task(struct rq *this_rq)
->  static void pre_schedule_rt(struct rq *rq, struct task_struct *prev)
->  {
->  	/* Try to pull RT tasks here if we lower this rq's prio */
-> -	if (unlikely(rt_task(prev)) && rq->rt.highest_prio > prev->prio)
-> +	if (rt_task(prev) && rq->rt.highest_prio > prev->prio)
->  		pull_rt_task(rq);
->  }
->  
-> -- 
-> 1.6.2
-> 
-> -- 
-> 
+Thanks.
+-- 
+Coly Li
+SuSE Labs
