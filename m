@@ -1,112 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760913AbZCYMVf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761146AbZCYMVv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760913AbZCYMVf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 08:21:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759968AbZCYMVR
+	id S1761146AbZCYMVv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 08:21:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758870AbZCYMVb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 08:21:17 -0400
-Received: from viefep12-int.chello.at ([62.179.121.32]:53614 "EHLO
-	viefep12-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757981AbZCYMVQ (ORCPT
+	Wed, 25 Mar 2009 08:21:31 -0400
+Received: from sca-es-mail-2.Sun.COM ([192.18.43.133]:46320 "EHLO
+	sca-es-mail-2.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760763AbZCYMVa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 08:21:16 -0400
-X-SourceIP: 213.93.53.227
-Subject: Re: [PATCH v3] perfcounters: record time running and time enabled
- for each counter
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Paul Mackerras <paulus@samba.org>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <18890.6578.728637.139402@cargo.ozlabs.ibm.com>
-References: <18890.6578.728637.139402@cargo.ozlabs.ibm.com>
-Content-Type: text/plain
-Date: Wed, 25 Mar 2009 13:21:08 +0100
-Message-Id: <1237983668.7972.847.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.0 
-Content-Transfer-Encoding: 7bit
+	Wed, 25 Mar 2009 08:21:30 -0400
+MIME-version: 1.0
+Content-transfer-encoding: 7BIT
+Content-disposition: inline
+Content-type: text/plain; charset=us-ascii
+Date: Wed, 25 Mar 2009 08:25:15 -0400
+From: Jody McIntyre <scjody@sun.com>
+Subject: Re: [PATCH] Documentation / sample code fixes for tracepoints
+In-reply-to: <20090324213243.GA20469@elte.hu>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Steven Rostedt <rostedt@goodmis.org>,
+       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
+       torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Message-id: <20090325122515.GI8294@clouds>
+References: <20090324200027.GH8294@clouds> <20090324213243.GA20469@elte.hu>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-03-25 at 22:46 +1100, Paul Mackerras wrote:
-> Impact: new functionality
-> 
-> Currently, if there are more counters enabled than can fit on the CPU,
-> the kernel will multiplex the counters on to the hardware using
-> round-robin scheduling.  That isn't too bad for sampling counters, but
-> for counting counters it means that the value read from a counter
-> represents some unknown fraction of the true count of events that
-> occurred while the counter was enabled.
-> 
-> This remedies the situation by keeping track of how long each counter
-> is enabled for, and how long it is actually on the cpu and counting
-> events.  These times are recorded in nanoseconds using the task clock
-> for per-task counters and the cpu clock for per-cpu counters.
-> 
-> These values can be supplied to userspace on a read from the counter.
-> Userspace requests that they be supplied after the counter value by
-> setting the PERF_FORMAT_TOTAL_TIME_ENABLED and/or
-> PERF_FORMAT_TOTAL_TIME_RUNNING bits in the hw_event.read_format field
-> when creating the counter.  (There is no way to change the read format
-> after the counter is created, though it would be possible to add some
-> way to do that.)
-> 
-> Using this information it is possible for userspace to scale the count
-> it reads from the counter to get an estimate of the true count:
-> 
-> true_count_estimate = count * total_time_enabled / total_time_running
-> 
-> This also lets userspace detect the situation where the counter never
-> got to go on the cpu: total_time_running == 0.
-> 
-> This functionality has been requested by the PAPI developers, and will
-> be generally needed for interpreting the count values from counting
-> counters correctly.
-> 
-> In the implementation, this keeps 5 time values (in nanoseconds) for
-> each counter: total_time_enabled and total_time_running are used when
-> the counter is in state OFF or ERROR and for reporting back to
-> userspace.  When the counter is in state INACTIVE or ACTIVE, it is the
-> tstamp_enabled, tstamp_running and tstamp_stopped values that are
-> relevant, and total_time_enabled and total_time_running are determined
-> from them.  (tstamp_stopped is only used in INACTIVE state.)  The
-> reason for doing it like this is that it means that only counters
-> being enabled or disabled at sched-in and sched-out time need to be
-> updated.  There are no new loops that iterate over all counters to
-> update total_time_enabled or total_time_running.
-> 
-> This also keeps separate child_total_time_running and
-> child_total_time_enabled fields that get added in when reporting the
-> totals to userspace.  They are separate fields so that they can be
-> atomic.  We don't want to use atomics for total_time_running,
-> total_time_enabled etc., because then we would have to use atomic
-> sequences to update them, which are slower than regular arithmetic and
-> memory accesses.
-> 
-> It is possible to measure total_time_running by adding a task_clock
-> counter to each group of counters, and total_time_enabled can be
-> measured approximately with a top-level task_clock counter (though
-> inaccuracies will creep in if you need to disable and enable groups
-> since it is not possible in general to disable/enable the top-level
-> task_clock counter simultaneously with another group).  However, that
-> adds extra overhead - I measured around 15% increase in the context
-> switch latency reported by lat_ctx (from lmbench) when a task_clock
-> counter was added to each of 2 groups, and around 25% increase when a
-> task_clock counter was added to each of 4 groups.  (In both cases a
-> top-level task-clock counter was also added.)
-> 
-> In contrast, the code added in this commit gives better information
-> with no overhead that I could measure (in fact in some cases I
-> measured lower times with this code, but the differences were all less
-> than one standard deviation).
-> 
-> Signed-off-by: Paul Mackerras <paulus@samba.org>
+Hi Ingo,
 
-Looks good,
+On Tue, Mar 24, 2009 at 10:32:43PM +0100, Ingo Molnar wrote:
 
-Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> Applied to -tip:tracing/docs, thanks Jody! The latest tracing tree 
+> can be found at:
+> 
+>   http://people.redhat.com/mingo/tip.git/README
 
-Paul, should we perhaps also put a format header in the sys_read()
-output?
+OK, I was not aware of this tree or that you were responsible.  Perhaps
+a TRACING entry should be added to MAINTAINERS.
 
+Cheers,
+Jody
