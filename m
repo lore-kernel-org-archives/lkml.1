@@ -1,271 +1,230 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756256AbZCYOuJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756269AbZCYOx1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756256AbZCYOuJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 10:50:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754381AbZCYOt5
+	id S1756269AbZCYOx1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 10:53:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752357AbZCYOxG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 10:49:57 -0400
-Received: from kotten8a.marieberg.ac ([213.238.238.22]:45475 "HELO
-	iluvatar.nyren.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1754116AbZCYOt4 (ORCPT
+	Wed, 25 Mar 2009 10:53:06 -0400
+Received: from casper.infradead.org ([85.118.1.10]:35900 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752103AbZCYOxD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 10:49:56 -0400
-Date: Wed, 25 Mar 2009 15:49:42 +0100 (CET)
-From: Ralf Nyren <ralf@nyren.net>
-X-X-Sender: plumbum@fujje.iml.umu.se
-To: Rory Filer <rfiler@SierraWireless.com>
-cc: Greg KH <greg@kroah.com>, Stephen Clark <sclark46@earthlink.net>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Kevin Lloyd <klloyd@SierraWireless.com>
-Subject: RE: Sierra Wireless (MC8780) HSDPA speed issue
-In-Reply-To: <8F90F944E50427428C60E12A34A309D21C40221E0A@carmd-exchmb01.sierrawireless.local>
-Message-ID: <alpine.DEB.1.10.0903251532280.12220@fujje.iml.umu.se>
-References: <alpine.DEB.1.10.0903131551310.5791@fujje.iml.umu.se> <20090314040322.GB3417@kroah.com> <alpine.DEB.1.10.0903142021580.5797@fujje.iml.umu.se> <20090314203256.GA7487@kroah.com> <49BC5A90.7070004@earthlink.net> <alpine.DEB.1.10.0903152040030.5825@fujje.iml.umu.se>
- <8F90F944E50427428C60E12A34A309D21C401BAA8D@carmd-exchmb01.sierrawireless.local> <20090316043359.GA24632@kroah.com> <alpine.DEB.1.10.0903161324440.32709@fujje.iml.umu.se> <8F90F944E50427428C60E12A34A309D21C401BAB03@carmd-exchmb01.sierrawireless.local>
- <alpine.DEB.1.10.0903171642030.10762@fujje.iml.umu.se> <8F90F944E50427428C60E12A34A309D21C40221D59@carmd-exchmb01.sierrawireless.local> <alpine.DEB.1.10.0903171725560.10762@fujje.iml.umu.se>
- <8F90F944E50427428C60E12A34A309D21C40221E0A@carmd-exchmb01.sierrawireless.local>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+	Wed, 25 Mar 2009 10:53:03 -0400
+Subject: Re: [PATCH 5/6] perf_counter: kerneltop: mmap_pages argument
+From: Peter Zijlstra <peterz@infradead.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
+       Wu Fengguang <fengguang.wu@intel.com>
+In-Reply-To: <1237985832.7972.930.camel@twins>
+References: <20090325113021.781490788@chello.nl>
+	 <20090325113317.104545398@chello.nl> <20090325121811.GC11571@elte.hu>
+	 <1237984033.7972.865.camel@twins> <20090325123514.GB28639@elte.hu>
+	 <1237984864.7972.896.camel@twins>  <20090325125407.GA32744@elte.hu>
+	 <1237985832.7972.930.camel@twins>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Wed, 25 Mar 2009 15:52:54 +0100
+Message-Id: <1237992774.7972.1178.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.0 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi again,
+On Wed, 2009-03-25 at 13:57 +0100, Peter Zijlstra wrote:
+> On Wed, 2009-03-25 at 13:54 +0100, Ingo Molnar wrote:
+> > * Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
+> > 
+> > > On Wed, 2009-03-25 at 13:35 +0100, Ingo Molnar wrote:
+> > > 
+> > > > > Also, when mixing streams (events,mmap) is a single: you missed 
+> > > > > 'n' events still good?
+> > > > 
+> > > > How would such mixing work? Multiple counters streaming into the 
+> > > > same mmap area?
+> > > 
+> > > No basically having overflow events and mmap-vma changed events in 
+> > > a single output stream.
+> > 
+> > ah, and i missed the impact of variable size records - that too 
+> > makes it somewhat impractical to emit overflow records in situ. (the 
+> > kernel does not really know the precise start of the previous 
+> > record, typically.)
+> 
+> Alternatively, we could simply not emit new events until the read
+> position increases,. that's much simpler.
+> 
+> Still don't like mapping the stuff writable though..
 
-Thanks for all valuable information. The explanation on how the modem uses a
-simple AT command parser on the data device made everything crystal clear. If
-you have time it would be great to put this kind of information on some
-resource page on your website. A bit of knowledge on how the hardware works and
-is supposed to be used can make a big difference when you are trying to debug
-things.
+This is what it would look like I suppose...
 
-I have solved the modem hangup issues when using the AT control device (ttyUSB2)
-now as well. By default minicom issues the following modem init string:
-  AT S7=45 S0=0 L1 V1 X4 &c1 E1 Q0
-The problem appears to be the AT&C1 command. Sending AT&C0 stops the modem from
-hanging up while issuing other AT commands. Silly thing which I should have
-spotted but I was fooled by the fact that this setting remains set while the
-modem is turned on.
+Any thoughts?
 
-I did try sending AT commands by just writing to the device (to eliminate any
-potential issues with minicom) e.g.
-  echo -e 'AT+CSQ\r' > /dev/ttyUSB2
-but since I had already started minicom since the last boot AT&C was already 1
-and things didn't work. Wasn't until recently when I tried writing directly to
-the device after boot and noticed the modem stayed connected.
+Not-signed-off-by: me
+---
+ include/linux/perf_counter.h |    4 ++
+ kernel/perf_counter.c        |   67 +++++++++++++++++++++++++++++++++++++----
+ 2 files changed, 64 insertions(+), 7 deletions(-)
 
-Many thanks for all your support and I hope this thread might help others in
-the future.
+diff --git a/include/linux/perf_counter.h b/include/linux/perf_counter.h
+index 6bf67ce..d5a599c 100644
+--- a/include/linux/perf_counter.h
++++ b/include/linux/perf_counter.h
+@@ -165,6 +165,8 @@ struct perf_counter_mmap_page {
+ 	__s64	offset;			/* add to hardware counter value */
+ 
+ 	__u32   data_head;		/* head in the data section */
++	__u32	data_tail;		/* user-space written tail */
++	__u32	overflow;		/* number of lost events */
+ };
+ 
+ struct perf_event_header {
+@@ -269,8 +271,10 @@ struct file;
+ struct perf_mmap_data {
+ 	struct rcu_head			rcu_head;
+ 	int				nr_pages;
++	int				writable;
+ 	atomic_t			wakeup;
+ 	atomic_t			head;
++	atomic_t			overflow;
+ 	struct perf_counter_mmap_page   *user_page;
+ 	void 				*data_pages[0];
+ };
+diff --git a/kernel/perf_counter.c b/kernel/perf_counter.c
+index 3b862a7..1f5c515 100644
+--- a/kernel/perf_counter.c
++++ b/kernel/perf_counter.c
+@@ -1330,6 +1330,7 @@ static void __perf_counter_update_userpage(struct perf_counter *counter,
+ 		userpg->offset -= atomic64_read(&counter->hw.prev_count);
+ 
+ 	userpg->data_head = atomic_read(&data->head);
++	userpg->overflow = atomic_read(&data->overflow);
+ 	smp_wmb();
+ 	++userpg->lock;
+ 	preempt_enable();
+@@ -1375,6 +1376,28 @@ unlock:
+ 	return ret;
+ }
+ 
++static int perf_mmap_mkwrite(struct vm_area_struct *vma, struct page *page)
++{
++	int ret = -EINVAL;
++
++	rcu_read_lock();
++	data = rcu_dereference(counter->data);
++	if (!data)
++		goto unlock;
++
++	/*
++	 * Only allow writes to the control page.
++	 */
++	if (page != virt_to_page(data->user_page))
++		goto unlock;
++
++	ret = 0;
++unlock:
++	rcu_read_unlock();
++
++	return ret;
++}
++
+ static int perf_mmap_data_alloc(struct perf_counter *counter, int nr_pages)
+ {
+ 	struct perf_mmap_data *data;
+@@ -1463,6 +1486,7 @@ static struct vm_operations_struct perf_mmap_vmops = {
+ 	.open = perf_mmap_open,
+ 	.close = perf_mmap_close,
+ 	.fault = perf_mmap_fault,
++	.page_mkwrite = perf_mmap_mkwrite,
+ };
+ 
+ static int perf_mmap(struct file *file, struct vm_area_struct *vma)
+@@ -1473,7 +1497,7 @@ static int perf_mmap(struct file *file, struct vm_area_struct *vma)
+ 	unsigned long locked, lock_limit;
+ 	int ret = 0;
+ 
+-	if (!(vma->vm_flags & VM_SHARED) || (vma->vm_flags & VM_WRITE))
++	if (!(vma->vm_flags & VM_SHARED))
+ 		return -EINVAL;
+ 
+ 	vma_size = vma->vm_end - vma->vm_start;
+@@ -1503,16 +1527,19 @@ static int perf_mmap(struct file *file, struct vm_area_struct *vma)
+ 
+ 	mutex_lock(&counter->mmap_mutex);
+ 	if (atomic_inc_not_zero(&counter->mmap_count))
+-		goto out;
++		goto unlock;
+ 
+ 	WARN_ON(counter->data);
+ 	ret = perf_mmap_data_alloc(counter, nr_pages);
+-	if (!ret)
+-		atomic_set(&counter->mmap_count, 1);
+-out:
++	if (ret)
++		goto unlock;
++
++	atomic_set(&counter->mmap_count, 1);
++	if (vma->vm_flags & VM_WRITE)
++		counter->data->writable = 1;
++unlock:
+ 	mutex_unlock(&counter->mmap_mutex);
+ 
+-	vma->vm_flags &= ~VM_MAYWRITE;
+ 	vma->vm_flags |= VM_RESERVED;
+ 	vma->vm_ops = &perf_mmap_vmops;
+ 
+@@ -1540,6 +1567,28 @@ struct perf_output_handle {
+ 	int			wakeup;
+ };
+ 
++static int perf_output_overflow(struct perf_mmap_data *data,
++				unsigned int offset, unsigned int head)
++{
++	unsigned int tail;
++	unsigned int mask;
++
++	if (!data->writable)
++		return 0;
++       
++	mask = (data->nr_pages << PAGE_SHIFT) - 1;
++	smp_rmb();
++	tail = ACCESS_ONCE(data->user_page->data_tail);
++
++	offset = (offset - tail) & mask;
++	head   = (head   - tail) & mask;
++
++	if ((int)(head - offset) < 0)
++		return 1;
++
++	return 0;
++}
++
+ static int perf_output_begin(struct perf_output_handle *handle,
+ 			     struct perf_counter *counter, unsigned int size)
+ {
+@@ -1552,11 +1601,13 @@ static int perf_output_begin(struct perf_output_handle *handle,
+ 		goto out;
+ 
+ 	if (!data->nr_pages)
+-		goto out;
++		goto fail;
+ 
+ 	do {
+ 		offset = head = atomic_read(&data->head);
+ 		head += size;
++		if (unlikely(perf_output_overflow(data, offset, head)))
++			goto fail;
+ 	} while (atomic_cmpxchg(&data->head, offset, head) != offset);
+ 
+ 	handle->counter	= counter;
+@@ -1567,6 +1618,8 @@ static int perf_output_begin(struct perf_output_handle *handle,
+ 
+ 	return 0;
+ 
++fail:
++	atomic_inc(&data->overflow);
+ out:
+ 	rcu_read_unlock();
+ 
 
-Best regards, Ralf
-
-
-On Tue, 17 Mar 2009, Rory Filer wrote:
-
-> Hi Ralf
->
-> Yes, that's exactly what I was looking for. Thanks. I should have asked this question in the first place, but we have two flavours of modem now, one which requires a non-composite USB driver and one which requires a composite one. Until this morning I have been thinking your modem is the composite version and there's a big difference in the underlying USB hardware which I will try to explain below.
->
-> The modem uses a MUXing protocol when Windows is in charge and all the traffic between it and the modem is carried over the USB interface which shows up in Linux on /dev/ttyUSB0; (Note: if you have any other USB serial-type devices, then the port numbers in this email could be wrong, I'm assuming the Sierra modem is the only such device connected to your computer in this email). The other two interfaces are not used when the modem is running on a Windows machine. On Linux the muxing protocol is not being used and so all data exchange (of various types) happens over all the available USB interfaces. By far the most efficient interface is the one that shows up on /dev/ttyUSB0 and you will get the best throughput if you use that interface.
->
-> Since PPP needs to issue an AT command as part of its procedure for establishing a data connection, the interface used for data exchange has a simple-minded AT command parser on it. This interface recognizes a few AT commands and the ones I know of are ATI and ATD*99#. The data port's ATI command provides less information than the one on the real AT command port, which matches your findings below. Your data port is /dev/ttyUSB0. These days data requires much higher throughput than AT commands, and your real AT command port lives on /dev/ttyUSB2. Note that the real AT command port will also establish a dialup connection with the network, but its USB interface is a bottleneck, as you have discovered.
->
-> You should definitely be able to open a minicom session on /dev/ttyUSB2 while you have an active data connection on /dev/ttyUSB0. Your note that the modem immediately hangs up when you try it sounds like a bug to me. You should be able to issue any AT command at any time, regardless of what your data port is doing. I'm on vacation this week, but I'll look into whether this is a known problem on your modem and f/w version when I return.
->
-> As a final note, our newer products provide 7 USB interfaces and all interfaces are just as efficient, so there is no need to worry about which one to map the data ports to. Just so our readers know, the data ports are on /dev/ttyUSB4, 5 and 6 on these products. The AT port is on /dev/ttyUSB3. The data ports have the same dumb AT parser as the 3-port devices, but on some carriers' networks and plans you can establish multiple dialup sessions, one on each of the ports, but YMMV.
->
-> Regards,
->
-> Rory
->
->
-> -----Original Message-----
-> From: Ralf Nyren [mailto:ralf@nyren.net]
-> Sent: Tuesday, March 17, 2009 9:38 AM
-> To: Rory Filer
-> Cc: Greg KH; Stephen Clark; linux-kernel@vger.kernel.org; Kevin Lloyd
-> Subject: RE: Sierra Wireless (MC8780) HSDPA speed issue
->
-> Hi,
->
-> Three devices appear, ttyUSB0, ttyUSB1, ttyUSB2.
->
-> Response from ATI command is as follows:
->
-> ttyUSB0:  (this is the device providing high speed connection)
-> Sierra Wireless, Inc.
-> MC8780
-> APP1
->
-> ttyUSB1: no response here, I understand this device is for the proprietary
-> protocol...
->
-> ttyUSB2:  (this is the device with the speed "problem")
-> Manufacturer: Sierra Wireless, Inc.
-> Model: MC8780
-> Revision: F1_0_0_10AP C:/WS/FW/F1_0_0_10AP/MSM7200R3/SRC/AMSS 2007/11/08 10:51:15
-> IMEI: 354219010190864
-> IMEI SV: 7
-> FSN: D332567166610
-> 3GPP Release 6
-> +GCAP: +CGSM,+DS,+ES
->
-> From my experience there are very few commands which gives any output at all on
-> ttyUSB0.  AT+CSQ and AT+COPS? gives output on ttyUSB0 but commands like
-> AT*CNTI=0 only give output on ttyUSB2.
->
-> Hope that's the information you're looking for.
->
-> Best regards, Ralf
->
-> On Tue, 17 Mar 2009, Rory Filer wrote:
->
->> Hi Ralf,
->>
->> I wonder whether you could do a little experiment for me. Issue the following AT command to both ports you've identified:
->>
->> ATI
->>
->> And note which of the AT ports provides the most information. They will both respond, but one will be more verbose than the others.
->>
->> Another thing of interest is to record how many files appear in response to the following command:
->>
->> ls /dev/ttyU*
->>
->> when the modem is running, of course.
->>
->> Question - at what point should we stop including linux-kernel in this thread, if at all?
->>
->> Regards
->>
->> Rory
->>
->> -----Original Message-----
->> From: Ralf Nyren [mailto:ralf@nyren.net]
->> Sent: Tuesday, March 17, 2009 8:54 AM
->> To: Rory Filer
->> Cc: Greg KH; Stephen Clark; linux-kernel@vger.kernel.org; Kevin Lloyd
->> Subject: RE: Sierra Wireless (MC8780) HSDPA speed issue
->>
->> Hi again,
->>
->> Problem solved this time, well sort of anyway.
->>
->> This is a bit embarrassing, was quite sure I had tested this before but oh well...
->>
->> According to the FAQ at sierrawireless.com you should make the data connection
->> on /dev/ttyUSB2 when using a MC8780 modem, /dev/ttyUSB0 is used for AT commands
->> queries. This works nicely except for the speed problem. Now _changing_ so the
->> data connection is established on /dev/ttyUSB0 instead solves the speed
->> problem. I have successfully reached average download speeds above 400KB/s.
->>
->> Just to make sure I tried this fix using both 1.3.2 and 1.6.0 driver. I also
->> tried the modified ppp_async.c with OBUFSIZE=4096. The cell appeared to be
->> rather busy during the tests but as far as I can see both drivers and OBUFSIZE
->> gave about the same speed, i.e. 300-400KB/s at my current location. No issue
->> with the kernel that is.
->>
->> My only remaining problem is that I can't issue commands like AT+CSQ, AT+COPS?
->> to determine signal strength and ISP while the connection is up and running.
->> Any AT command sent to /dev/ttyUSB2 while pppd runs on /dev/ttyUSB0 causes an
->> immediate modem hangup. Not a big issue but it would be nice if it worked.
->>
->> The card is a builtin card in the laptop and all tests reported so far have
->> been performed with the same machine. Have a dual boot setup with Debian Lenny
->> and Windows XP. Firmware on the MC8780 card is reported as follows:
->>
->> AT+GMR
->> F1_0_0_10AP C:/WS/FW/F1_0_0_10AP/MSM7200R3/SRC/AMSS 2007/11/08 10:51:15
->> OK
->>
->> If you think this problem could affect others as well an update to the table on
->> the FAQ page would be nice:
->>  http://www.sierrawireless.com/faq/ShowFAQ.aspx?ID=607
->>
->> Thanks for all valuable help and support. Just let me know if you need someone
->> to test future firmware/driver updates.
->>
->> Best regards, Ralf
->>
->>
->> On Mon, 16 Mar 2009, Rory Filer wrote:
->>
->>> Hi Ralf,
->>>
->>> Actually the Windows and Linux models are the same from the modem's point of view, but the PPP client is inside the NDIS driver.
->>>
->>> I've pasted in the response from our UMTS engineer below, but I'm not sure how much help it will be; here it is:
->>>
->>> -----Begin Included...
->>> There is no specific AT command that would limit the data rate on the device - except for AT!HSDCAT but I do not think that he would be using this. Other commands such as AT+CGEQREQ probably would not help, so they should clear them.
->>>
->>> From the email below it seems that he used the same device on Windows so the device configuration should be OK. The location could be an issue but I would assume that he tried using the device with Windows at the same location.
->>>
->>> One problem that I have seen with USB is that the USB modem throughput will be low if there are other devices on the same USB hub of the laptop
->>> ----End Included
->>>
->>> There it is. If you could get your hands on another machine and put Linux on it - or maybe temporarily make your windows machine into Dual Boot with Ubuntu (using wubi) and see how that compares that might help, but I am out of useful ideas at this point.
->>>
->>> Regards
->>>
->>> Rory
->>>
->>>
->>>
->>> -----Original Message-----
->>> From: Ralf Nyren [mailto:ralf@nyren.net]
->>> Sent: Monday, March 16, 2009 5:48 AM
->>> To: Greg KH
->>> Cc: Rory Filer; Stephen Clark; linux-kernel@vger.kernel.org; Kevin Lloyd
->>> Subject: Re: Sierra Wireless (MC8780) HSDPA speed issue
->>>
->>> Thanks Rory,
->>>
->>> I have tried changing OBUFSIZE in ppp_async.c (still kernel 2.6.28.7), first
->>> 512 and then 4096. However the speed "limit" of about 100KB/s remains the same.
->>> So perhaps there's some setup/firmware issue with the hardware. If I understand
->>> things correctly the Windows driver uses a proprietary protocol to init the card
->>> while in Linux you use the AT command interface. Could be something there which
->>> makes a difference I guess.
->>>
->>> Best regards, Ralf
->>>
->>> On Sun, 15 Mar 2009, Greg KH wrote:
->>>
->>>> On Sun, Mar 15, 2009 at 03:30:54PM -0700, Rory Filer wrote:
->>>>> Hi Ralf
->>>>>
->>>>> Using the driver we sent you on a call-box (i.e. with a "perfect"
->>>>> simulated network connection) on Ubuntu 8.04 we were seeing ~4 Mbps on
->>>>> the downlink. So I would rule out any problem with the driver and
->>>>> conclude it must be something in either PPP/Linux or in the modem. In
->>>>> order to rule out the modem, I've got a question into one of our UMTS
->>>>> engineers and will send you a reply when we get the answer.
->>>>>
->>>>> We did play around a little with 2.4 kernels of Linux and discovered
->>>>> there is a buffer in PPP_ASYNC.C which, when its size is increased,
->>>>> doubled the throughput. If you are savvy enough with Linux, you might
->>>>> want to try playing with that. We stopped short of any thorough
->>>>> testing of changing this array size, but were pleased with the result.
->>>>> If I recall properly, the size of this array is (was, in 2.4) 256
->>>>> bytes. Doubling it gave an immediate improvement. We were guessing
->>>>> that the small size of this buffer was fine in the "old days" when
->>>>> modems peaked at ~56 kbps. Even 8 years ago that was the fastest you
->>>>> could go with a GPRS product, now our new HSPA+ products yields 21
->>>>> Mbps on Telstra's network! Quite a difference.
->>>>
->>>> Ah, the OBUFSIZE #define in drivers/net/ppp_async.c?
->>>>
->>>> Anyone care to bump this size up and see if that helps out?
->>>>
->>>> thanks,
->>>>
->>>> greg k-h
->>>>
->>>
->>>
->>
->>
->
->
