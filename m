@@ -1,75 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754650AbZCYICQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755100AbZCYIDh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754650AbZCYICQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 04:02:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752242AbZCYIBz
+	id S1755100AbZCYIDh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 04:03:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753426AbZCYIDR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 04:01:55 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:42664 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751420AbZCYIBy (ORCPT
+	Wed, 25 Mar 2009 04:03:17 -0400
+Received: from wf-out-1314.google.com ([209.85.200.171]:52219 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752242AbZCYIDP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 04:01:54 -0400
-Subject: Re: [PATCH 2/5] mm: remove unlikly NULL from kfree
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Roland McGrath <roland@redhat.com>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       Steven Rostedt <srostedt@redhat.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Matt Mackall <mpm@selenic.com>
-In-Reply-To: <alpine.LFD.2.00.0903250840440.29264@localhost.localdomain>
-References: <20090325051920.406564281@goodmis.org>
-	 <20090325052023.071564146@goodmis.org>
-	 <84144f020903250034j24e1782bt5f73809b9349346c@mail.gmail.com>
-	 <alpine.LFD.2.00.0903250840440.29264@localhost.localdomain>
-Date: Wed, 25 Mar 2009 10:01:51 +0200
-Message-Id: <1237968111.30175.9.camel@penberg-laptop>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+	Wed, 25 Mar 2009 04:03:15 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:references:in-reply-to:subject:date:message-id
+         :mime-version:content-type:content-transfer-encoding:x-mailer
+         :thread-index:content-language;
+        b=VulZQUxGbeQuLEwPvPqeG8omX0IRU0x5mx0sUa2dRQ4lz9LiTKlkCTIvWkKpWgcMT6
+         V4nk5rSL2hfBDPX1OMD3HMz/SU9/PXKt2myIs3CH9fJYNEurQconhkai5LP/Xx+foFQU
+         /AgwKuJtJNRNVEwSAnkRmTvycGbjtPORt72mM=
+From: "Hua Zhong" <hzhong@gmail.com>
+To: "'Pekka Enberg'" <penberg@cs.helsinki.fi>,
+       "'Steven Rostedt'" <rostedt@goodmis.org>
+Cc: <linux-kernel@vger.kernel.org>, "'Ingo Molnar'" <mingo@elte.hu>,
+       "'Andrew Morton'" <akpm@linux-foundation.org>,
+       "'Thomas Gleixner'" <tglx@linutronix.de>,
+       "'Peter Zijlstra'" <peterz@infradead.org>,
+       "'Roland McGrath'" <roland@redhat.com>,
+       "'Nick Piggin'" <nickpiggin@yahoo.com.au>,
+       "'Steven Rostedt'" <srostedt@redhat.com>,
+       "'Christoph Lameter'" <cl@linux-foundation.org>,
+       "'Matt Mackall'" <mpm@selenic.com>
+References: <20090325051920.406564281@goodmis.org>	 <20090325052023.071564146@goodmis.org> <84144f020903250034j24e1782bt5f73809b9349346c@mail.gmail.com>
+In-Reply-To: <84144f020903250034j24e1782bt5f73809b9349346c@mail.gmail.com>
+Subject: RE: [PATCH 2/5] mm: remove unlikly NULL from kfree
+Date: Wed, 25 Mar 2009 01:02:54 -0700
+Message-ID: <009101c9ad20$1ae231c0$50a69540$@com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
-X-Mailer: Evolution 2.22.3.1 
+X-Mailer: Microsoft Office Outlook 12.0
+Thread-Index: AcmtHCxCVLnLkePDQ9aupRJGqHXj7wAA7Cmg
+Content-Language: en-us
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Thomas,
+> But those are _error handling paths_ (at least supposed to be). I
+> wonder which call-sites are responsible for this. Can frtrace help us
+> here?
 
-On Wed, Mar 25, 2009 at 7:19 AM, Steven Rostedt <rostedt@goodmis.org> wrote:
-> > > This makes sense, since we now encourage developers to just call kfree
-> > > without checking for NULL.
+I am not sure why you call these error paths.
 
-On Wed, 25 Mar 2009, Pekka Enberg wrote: 
-> > But those are _error handling paths_ (at least supposed to be). I
-> > wonder which call-sites are responsible for this. Can frtrace help us
-> > here?
+I submitted the same patch two years ago, and you are still holding the same
+argument.
 
-On Wed, 2009-03-25 at 08:50 +0100, Thomas Gleixner wrote:
-> Why is this an error handler. We replaced tons of 
-> 
->     if (obj)
->        kfree(obj);
-> 
-> constructs all over the kernel with kfree(obj); and let kfree deal
-> with the NULL pointer.
+http://www.archivum.info/linux.kernel/2006-04/msg06042.html
 
-We encourage developers not to check for kfree() in the common
-out-of-memory error handling paths. But what Steven's results suggest is
-that the common case is something like this:
+Have you used likely profiler? These are real numbers. If you insist on
+calling them error paths then error paths are obviously the norm.
 
-   void *p = NULL;
+Hua
 
-   if (/* unlikely condition */)
-       p = kmalloc(...);
-
-   kfree(p);
-
-which, quite frankly, doesn't make much sense to me. That's why I would
-really want to know which call-sites are causing this before applying
-the patch.
-
-			Pekka
 
