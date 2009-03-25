@@ -1,202 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762581AbZCYQHl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763154AbZCYQHz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762581AbZCYQHl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 12:07:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753130AbZCYQH1
+	id S1763154AbZCYQHz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 12:07:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762026AbZCYQHd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 12:07:27 -0400
-Received: from hera.kernel.org ([140.211.167.34]:46663 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753107AbZCYQH0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 12:07:26 -0400
-Date: Wed, 25 Mar 2009 16:06:29 GMT
-From: Ingo Molnar <mingo@elte.hu>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       penberg@cs.helsinki.fi, eduard.munteanu@linux360.ro, tglx@linutronix.de,
-       mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       penberg@cs.helsinki.fi, eduard.munteanu@linux360.ro, tglx@linutronix.de,
-       mingo@elte.hu
-In-Reply-To: <1237898630.25315.83.camel@penberg-laptop>
-References: <1237898630.25315.83.camel@penberg-laptop>
-Subject: [tip:tracing/kmemtrace] rcutree: fix rcupreempt.c data structure dependencies
-Message-ID: <tip-778ed34693a18b211e0ece9ceeeddd0cc51046d8@git.kernel.org>
-Git-Commit-ID: 778ed34693a18b211e0ece9ceeeddd0cc51046d8
-X-Mailer: tip-git-log-daemon
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 25 Mar 2009 16:06:31 +0000 (UTC)
+	Wed, 25 Mar 2009 12:07:33 -0400
+Received: from casper.infradead.org ([85.118.1.10]:54092 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762793AbZCYQHc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Mar 2009 12:07:32 -0400
+Subject: RE: [PATCH] Suspend and Resume Support for Intel IOMMU
+From: David Woodhouse <dwmw2@infradead.org>
+To: "Yu, Fenghua" <fenghua.yu@intel.com>
+Cc: "'Ingo Molnar'" <mingo@elte.hu>,
+       "'Linus Torvalds'" <torvalds@linux-foundation.org>,
+       "'Stephen Rothwell'" <sfr@canb.auug.org.au>,
+       "'iommu@lists.linux-foundation.org'" 
+	<iommu@lists.linux-foundation.org>,
+       "'LKML'" <linux-kernel@vger.kernel.org>
+In-Reply-To: <A6AD88C3F2289247BE726C37303E1EB894F11D64@orsmsx505.amr.corp.intel.com>
+References: <20090218165633.GA20167@linux-os.sc.intel.com>
+	 <alpine.LFD.2.00.0902180910160.21686@localhost.localdomain>
+	 <20090218171935.GA14625@elte.hu>
+	 <A6AD88C3F2289247BE726C37303E1EB894F11D64@orsmsx505.amr.corp.intel.com>
+Content-Type: text/plain
+Date: Wed, 25 Mar 2009 16:06:42 +0000
+Message-Id: <1237997202.2085.25.camel@macbook.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  778ed34693a18b211e0ece9ceeeddd0cc51046d8
-Gitweb:     http://git.kernel.org/tip/778ed34693a18b211e0ece9ceeeddd0cc51046d8
-Author:     Ingo Molnar <mingo@elte.hu>
-AuthorDate: Wed, 25 Mar 2009 16:42:24 +0100
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Wed, 25 Mar 2009 17:02:53 +0100
+On Wed, 2009-02-18 at 09:28 -0800, Yu, Fenghua wrote:
+> >> On Wed, 18 Feb 2009, Fenghua Yu wrote:
+> >> >
+> >> > +static int vtd_enabled;
+> >> ..
+> >> > +static int iommu_resume(struct sys_device *dev)
+> >> > +{
+> >> ..
+> >> > +	if (!vtd_enabled)
+> >> > +		return 0;
+> >> 
+> >> Hmm. Why do this?
+> >> 
+> >> Wouldn't it be much more logical to only register the 
+> >> iommu_sysdev if the thing is enabled, rather than having an 
+> >> odd flag that gets tested at runtime?
+> >
+> >The sysdev_class_register() could be done straight in 
+> >intel_iommu_init(), because that gets called by pci_iommu_init() 
+> >which is an fs_initcall() - so all the sysdev facilities should 
+> >be up and running already.
+> 
+> That was my original concern. I'll remove the vtd_enabled flag and
+> register device_iommu in intel_iommu_init() in an updated patch.
 
-rcutree: fix rcupreempt.c data structure dependencies
+For some reason most of this thread is missing from my mailbox. Did you
+ever submit this 'updated patch' that you threatened...?
 
-Impact: build fix
+-- 
+David Woodhouse                            Open Source Technology Centre
+David.Woodhouse@intel.com                              Intel Corporation
 
-With percpu.h gone from rcupreempt.h, the percpu primitives
-there wont build anymore. Move them to the .c file instead.
-
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-Cc: paulmck@linux.vnet.ibm.com
-LKML-Reference: <1237898630.25315.83.camel@penberg-laptop>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-
----
- include/linux/rcupreempt.h |   51 +++++++------------------------------------
- kernel/rcupreempt.c        |   48 +++++++++++++++++++++++++++++++++++++---
- 2 files changed, 53 insertions(+), 46 deletions(-)
-
-diff --git a/include/linux/rcupreempt.h b/include/linux/rcupreempt.h
-index 5ff2d23..fce5227 100644
---- a/include/linux/rcupreempt.h
-+++ b/include/linux/rcupreempt.h
-@@ -40,30 +40,15 @@
- #include <linux/cpumask.h>
- #include <linux/seqlock.h>
- 
--struct rcu_dyntick_sched {
--	int dynticks;
--	int dynticks_snap;
--	int sched_qs;
--	int sched_qs_snap;
--	int sched_dynticks_snap;
--};
--
--DECLARE_PER_CPU(struct rcu_dyntick_sched, rcu_dyntick_sched);
--
--static inline void rcu_qsctr_inc(int cpu)
--{
--	struct rcu_dyntick_sched *rdssp = &per_cpu(rcu_dyntick_sched, cpu);
--
--	rdssp->sched_qs++;
--}
--#define rcu_bh_qsctr_inc(cpu)
-+extern void rcu_qsctr_inc(int cpu);
-+static inline void rcu_bh_qsctr_inc(int cpu) { }
- 
- /*
-  * Someone might want to pass call_rcu_bh as a function pointer.
-  * So this needs to just be a rename and not a macro function.
-  *  (no parentheses)
-  */
--#define call_rcu_bh	 	call_rcu
-+#define call_rcu_bh		call_rcu
- 
- /**
-  * call_rcu_sched - Queue RCU callback for invocation after sched grace period.
-@@ -117,30 +102,12 @@ extern struct rcupreempt_trace *rcupreempt_trace_cpu(int cpu);
- struct softirq_action;
- 
- #ifdef CONFIG_NO_HZ
--
--static inline void rcu_enter_nohz(void)
--{
--	static DEFINE_RATELIMIT_STATE(rs, 10 * HZ, 1);
--
--	smp_mb(); /* CPUs seeing ++ must see prior RCU read-side crit sects */
--	__get_cpu_var(rcu_dyntick_sched).dynticks++;
--	WARN_ON_RATELIMIT(__get_cpu_var(rcu_dyntick_sched).dynticks & 0x1, &rs);
--}
--
--static inline void rcu_exit_nohz(void)
--{
--	static DEFINE_RATELIMIT_STATE(rs, 10 * HZ, 1);
--
--	__get_cpu_var(rcu_dyntick_sched).dynticks++;
--	smp_mb(); /* CPUs seeing ++ must see later RCU read-side crit sects */
--	WARN_ON_RATELIMIT(!(__get_cpu_var(rcu_dyntick_sched).dynticks & 0x1),
--				&rs);
--}
--
--#else /* CONFIG_NO_HZ */
--#define rcu_enter_nohz()	do { } while (0)
--#define rcu_exit_nohz()		do { } while (0)
--#endif /* CONFIG_NO_HZ */
-+extern void rcu_enter_nohz(void);
-+extern void rcu_exit_nohz(void);
-+#else
-+# define rcu_enter_nohz()	do { } while (0)
-+# define rcu_exit_nohz()	do { } while (0)
-+#endif
- 
- /*
-  * A context switch is a grace period for rcupreempt synchronize_rcu()
-diff --git a/kernel/rcupreempt.c b/kernel/rcupreempt.c
-index 5d59e85..ce97a4d 100644
---- a/kernel/rcupreempt.c
-+++ b/kernel/rcupreempt.c
-@@ -147,7 +147,51 @@ struct rcu_ctrlblk {
- 	wait_queue_head_t sched_wq;	/* Place for rcu_sched to sleep. */
- };
- 
-+struct rcu_dyntick_sched {
-+	int dynticks;
-+	int dynticks_snap;
-+	int sched_qs;
-+	int sched_qs_snap;
-+	int sched_dynticks_snap;
-+};
-+
-+static DEFINE_PER_CPU_SHARED_ALIGNED(struct rcu_dyntick_sched, rcu_dyntick_sched) = {
-+	.dynticks = 1,
-+};
-+
-+void rcu_qsctr_inc(int cpu)
-+{
-+	struct rcu_dyntick_sched *rdssp = &per_cpu(rcu_dyntick_sched, cpu);
-+
-+	rdssp->sched_qs++;
-+}
-+
-+#ifdef CONFIG_NO_HZ
-+
-+void rcu_enter_nohz(void)
-+{
-+	static DEFINE_RATELIMIT_STATE(rs, 10 * HZ, 1);
-+
-+	smp_mb(); /* CPUs seeing ++ must see prior RCU read-side crit sects */
-+	__get_cpu_var(rcu_dyntick_sched).dynticks++;
-+	WARN_ON_RATELIMIT(__get_cpu_var(rcu_dyntick_sched).dynticks & 0x1, &rs);
-+}
-+
-+void rcu_exit_nohz(void)
-+{
-+	static DEFINE_RATELIMIT_STATE(rs, 10 * HZ, 1);
-+
-+	__get_cpu_var(rcu_dyntick_sched).dynticks++;
-+	smp_mb(); /* CPUs seeing ++ must see later RCU read-side crit sects */
-+	WARN_ON_RATELIMIT(!(__get_cpu_var(rcu_dyntick_sched).dynticks & 0x1),
-+				&rs);
-+}
-+
-+#endif /* CONFIG_NO_HZ */
-+
-+
- static DEFINE_PER_CPU(struct rcu_data, rcu_data);
-+
- static struct rcu_ctrlblk rcu_ctrlblk = {
- 	.fliplock = __SPIN_LOCK_UNLOCKED(rcu_ctrlblk.fliplock),
- 	.completed = 0,
-@@ -427,10 +471,6 @@ static void __rcu_advance_callbacks(struct rcu_data *rdp)
- 	}
- }
- 
--DEFINE_PER_CPU_SHARED_ALIGNED(struct rcu_dyntick_sched, rcu_dyntick_sched) = {
--	.dynticks = 1,
--};
--
- #ifdef CONFIG_NO_HZ
- static DEFINE_PER_CPU(int, rcu_update_flag);
- 
