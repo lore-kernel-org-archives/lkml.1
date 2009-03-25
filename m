@@ -1,258 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762339AbZCYPPo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762501AbZCYPP6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762339AbZCYPPo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 11:15:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762100AbZCYPPV
+	id S1762501AbZCYPP6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 11:15:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762178AbZCYPPZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 11:15:21 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:45452 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762186AbZCYPPS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 11:15:18 -0400
-Date: Wed, 25 Mar 2009 16:15:16 +0100
-From: Jan Kara <jack@suse.cz>
-To: Alexander Beregalov <a.beregalov@gmail.com>
-Cc: Theodore Tso <tytso@mit.edu>,
-       "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>,
-       linux-ext4@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: next-20090310: ext4 hangs
-Message-ID: <20090325151516.GB14881@atrey.karlin.mff.cuni.cz>
-References: <a4423d670903100517y42f342d4pd73c4c36f5c64dd7@mail.gmail.com> <20090310124658.GE8840@mit.edu> <a4423d670903100718w1a532143he767782ae598d0fb@mail.gmail.com> <20090310154745.GF23075@mit.edu> <a4423d670903110907o7041f4eof92278835aa0c71c@mail.gmail.com> <20090325151122.GA14881@atrey.karlin.mff.cuni.cz>
+	Wed, 25 Mar 2009 11:15:25 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:46807 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1762186AbZCYPPW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Mar 2009 11:15:22 -0400
+Date: Wed, 25 Mar 2009 11:15:14 -0400 (EDT)
+From: Mikulas Patocka <mpatocka@redhat.com>
+X-X-Sender: mpatocka@hs20-bc2-1.build.redhat.com
+To: Jens Axboe <jens.axboe@oracle.com>
+cc: device-mapper development <dm-devel@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andi Kleen <ak@suse.de>, "MASON, CHRISTOPHER" <CHRIS.MASON@oracle.com>
+Subject: Re: [dm-devel] Barriers still not passing on simple dm devices...
+In-Reply-To: <20090324150517.GX27476@kernel.dk>
+Message-ID: <Pine.LNX.4.64.0903251106520.27750@hs20-bc2-1.build.redhat.com>
+References: <49C7DD3C.2020401@redhat.com> <Pine.LNX.4.64.0903241000010.29968@hs20-bc2-1.build.redhat.com>
+ <20090324140524.GV27476@kernel.dk> <Pine.LNX.4.64.0903241010490.29968@hs20-bc2-1.build.redhat.com>
+ <20090324143034.GW27476@kernel.dk> <Pine.LNX.4.64.0903241033070.4088@hs20-bc2-1.build.redhat.com>
+ <20090324150517.GX27476@kernel.dk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-2
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20090325151122.GA14881@atrey.karlin.mff.cuni.cz>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > 2009/3/10 Theodore Tso <tytso@mit.edu>:
-> > > On Tue, Mar 10, 2009 at 05:18:55PM +0300, Alexander Beregalov wrote:
-> > >> > Thanks for reporting this; does it show up on stock 2.6.29-rc7?
-> > >> No, I can not reproduce it.
-> > >> It is a slow system, I would not like to bisect it, only if it is the
-> > >> last possibility.
-> > >
-> > > Just to be clear; you weren't able to reproduce it on stock 2.6.29-rc7
-> > > ---- does it reproduce easily on linux-next?
-> > Right.
-> > But now I am not sure 2.6.29-rc7 is not affected, I will try to
-> > reproduce it again.
+> > > Over time we should have support everywhere, but it needs to be checked, 
+> > > audited, and trusted.
 > > 
-> > >
-> > > Next question --- does the system hang completely, or just the dbench
-> > > process (and probably any process that tries touching the filesystem
-> > System is responsible.
-> > > that's hung up)?  Do you have a serial console, or someone of
-> > > recording all of the dumps coming from sysrq-t?  The two stack traces
-> > I can read dmesg.
-> > > you gave weren't the ones causing the problem, but rather the ones
-> > > waiting for the journal lock.
-> > 
-> > SysRq : Show State
-> > 
-> > <..>
-> > 
-> > kjournald2    D 0000000000557a0c     0  1547      2
-> > Call Trace:
-> >  [0000000000768bcc] schedule+0x18/0x40
-> >  [0000000000557a0c] jbd2_journal_commit_transaction+0x208/0x1718
-> >  [000000000055d758] kjournald2+0x14c/0x318
-> >  [0000000000465d34] kthread+0x48/0x7c
-> >  [000000000042b364] kernel_thread+0x3c/0x54
-> >  [0000000000465c88] kthreadd+0xc8/0x12c
-> > pdflush       D 000000000055716c     0  2021      2
-> > Call Trace:
-> >  [0000000000768bcc] schedule+0x18/0x40
-> >  [000000000055716c] start_this_handle+0x374/0x508
-> >  [0000000000557500] jbd2_journal_start+0xbc/0x11c
-> >  [000000000053a438] ext4_journal_start_sb+0x5c/0x84
-> >  [000000000052dd84] ext4_da_writepages+0x1a8/0x404
-> >  [0000000000490ec0] do_writepages+0x40/0x78
-> >  [00000000004d0ff8] __writeback_single_inode+0x198/0x330
-> >  [00000000004d15d8] generic_sync_sb_inodes+0x238/0x3c4
-> >  [00000000004d1984] writeback_inodes+0xb0/0x114
-> >  [00000000004915c0] background_writeout+0xc8/0x114
-> >  [0000000000492004] pdflush+0x128/0x1e0
-> >  [0000000000465d34] kthread+0x48/0x7c
-> >  [000000000042b364] kernel_thread+0x3c/0x54
-> >  [0000000000465c88] kthreadd+0xc8/0x12c
-> > dbench        D 000000000055716c     0  2024      1
-> > Call Trace:
-> >  [0000000000768bcc] schedule+0x18/0x40
-> >  [000000000055716c] start_this_handle+0x374/0x508
-> >  [0000000000557500] jbd2_journal_start+0xbc/0x11c
-> >  [000000000053a438] ext4_journal_start_sb+0x5c/0x84
-> >  [000000000052a9b8] ext4_dirty_inode+0xd4/0xf0
-> >  [00000000004d1a14] __mark_inode_dirty+0x2c/0x188
-> >  [00000000004c7714] touch_atime+0x160/0x178
-> >  [00000000004c2a3c] vfs_readdir+0x88/0xb0
-> >  [00000000004eab90] compat_sys_getdents+0x3c/0x8c
-> >  [0000000000406154] linux_sparc_syscall32+0x34/0x40
-> > dbench        D 000000000055716c     0  2025      1
-> > Call Trace:
-> >  [0000000000768bcc] schedule+0x18/0x40
-> >  [000000000055716c] start_this_handle+0x374/0x508
-> >  [0000000000557500] jbd2_journal_start+0xbc/0x11c
-> >  [000000000053a438] ext4_journal_start_sb+0x5c/0x84
-> >  [000000000052a9b8] ext4_dirty_inode+0xd4/0xf0
-> >  [00000000004d1a14] __mark_inode_dirty+0x2c/0x188
-> >  [00000000004c7714] touch_atime+0x160/0x178
-> >  [00000000004c2a3c] vfs_readdir+0x88/0xb0
-> >  [00000000004eab90] compat_sys_getdents+0x3c/0x8c
-> >  [0000000000406154] linux_sparc_syscall32+0x34/0x40
-> > dbench        D 000000000055716c     0  2026      1
-> > Call Trace:
-> >  [0000000000768bcc] schedule+0x18/0x40
-> >  [000000000055716c] start_this_handle+0x374/0x508
-> >  [0000000000557500] jbd2_journal_start+0xbc/0x11c
-> >  [000000000053a438] ext4_journal_start_sb+0x5c/0x84
-> >  [000000000052a9b8] ext4_dirty_inode+0xd4/0xf0
-> >  [00000000004d1a14] __mark_inode_dirty+0x2c/0x188
-> >  [00000000004c7714] touch_atime+0x160/0x178
-> >  [000000000048b56c] generic_file_aio_read+0x578/0x620
-> >  [00000000004b5254] do_sync_read+0x90/0xe0
-> >  [00000000004b5c40] vfs_read+0x7c/0x11c
-> >  [00000000004b5d30] SyS_pread64+0x50/0x7c
-> >  [000000000043f778] sys32_pread64+0x20/0x34
-> >  [0000000000406154] linux_sparc_syscall32+0x34/0x40
-> > dbench        D 000000000055716c     0  2027      1
-> > Call Trace:
-> >  [0000000000768bcc] schedule+0x18/0x40
-> >  [000000000055716c] start_this_handle+0x374/0x508
-> >  [0000000000557500] jbd2_journal_start+0xbc/0x11c
-> >  [000000000053a438] ext4_journal_start_sb+0x5c/0x84
-> >  [000000000052a9b8] ext4_dirty_inode+0xd4/0xf0
-> >  [00000000004d1a14] __mark_inode_dirty+0x2c/0x188
-> >  [00000000004c757c] file_update_time+0xe0/0x118
-> >  [000000000048aef4] __generic_file_aio_write_nolock+0x280/0x380
-> >  [000000000048b930] generic_file_aio_write+0x58/0xc8
-> >  [0000000000526274] ext4_file_write+0xa8/0x15c
-> >  [00000000004b5174] do_sync_write+0x90/0xe0
-> >  [00000000004b5a40] vfs_write+0x7c/0x11c
-> >  [00000000004b5b30] SyS_pwrite64+0x50/0x7c
-> >  [000000000043f744] sys32_pwrite64+0x20/0x34
-> >  [0000000000406154] linux_sparc_syscall32+0x34/0x40
-> > dbench        D 000000000055716c     0  2028      1
-> > Call Trace:
-> >  [0000000000768bcc] schedule+0x18/0x40
-> >  [000000000055716c] start_this_handle+0x374/0x508
-> >  [0000000000557500] jbd2_journal_start+0xbc/0x11c
-> >  [000000000053a438] ext4_journal_start_sb+0x5c/0x84
-> >  [000000000052b958] ext4_da_write_begin+0x98/0x1a0
-> >  [000000000048a8dc] generic_file_buffered_write+0xe4/0x2b8
-> >  [000000000048afd0] __generic_file_aio_write_nolock+0x35c/0x380
-> >  [000000000048b930] generic_file_aio_write+0x58/0xc8
-> >  [0000000000526274] ext4_file_write+0xa8/0x15c
-> >  [00000000004b5174] do_sync_write+0x90/0xe0
-> >  [00000000004b5a40] vfs_write+0x7c/0x11c
-> >  [00000000004b5b30] SyS_pwrite64+0x50/0x7c
-> >  [000000000043f744] sys32_pwrite64+0x20/0x34
-> >  [0000000000406154] linux_sparc_syscall32+0x34/0x40
-> > dbench        D 000000000055c010     0  2029      1
-> > Call Trace:
-> >  [0000000000768bcc] schedule+0x18/0x40
-> >  [000000000055c010] jbd2_journal_release_jbd_inode+0x94/0xd8
-> >  [0000000000535bb4] ext4_clear_inode+0x2c/0x3c
-> >  [00000000004c7b1c] clear_inode+0xac/0x124
-> >  [0000000000527e48] ext4_free_inode+0x7c/0x3d4
-> >  [000000000052f884] ext4_delete_inode+0x218/0x29c
-> >  [00000000004c86b4] generic_delete_inode+0x8c/0x124
-> >  [00000000004c876c] generic_drop_inode+0x20/0x19c
-> >  [00000000004c77a4] iput+0x78/0x88
-> >  [00000000004c0200] do_unlinkat+0xf8/0x154
-> >  [00000000004c0270] SyS_unlink+0x14/0x24
-> >  [0000000000406154] linux_sparc_syscall32+0x34/0x40
-> > dbench        D 000000000055cf84     0  2030      1
-> > Call Trace:
-> >  [0000000000768bcc] schedule+0x18/0x40
-> >  [000000000055cf84] jbd2_log_wait_commit+0x144/0x1a8
-> >  [0000000000555cdc] jbd2_journal_stop+0x32c/0x37c
-> >  [0000000000557594] jbd2_journal_force_commit+0x34/0x48
-> >  [0000000000536d14] ext4_force_commit+0x30/0x50
-> >  [00000000005296b8] ext4_write_inode+0x80/0xa0
-> >  [00000000004d1044] __writeback_single_inode+0x1e4/0x330
-> >  [00000000004d11b0] sync_inode+0x20/0x40
-> >  [00000000005263ec] ext4_sync_file+0xc4/0x118
-> >  [00000000004d46f0] vfs_fsync+0x6c/0xa0
-> >  [00000000004d474c] do_fsync+0x28/0x44
-> >  [00000000004d47a4] SyS_fsync+0x14/0x28
-> >  [0000000000406154] linux_sparc_syscall32+0x34/0x40
-> > dbench        D 000000000055716c     0  2031      1
-> > Call Trace:
-> >  [0000000000768bcc] schedule+0x18/0x40
-> >  [000000000055716c] start_this_handle+0x374/0x508
-> >  [0000000000557500] jbd2_journal_start+0xbc/0x11c
-> >  [000000000053a438] ext4_journal_start_sb+0x5c/0x84
-> >  [000000000052b958] ext4_da_write_begin+0x98/0x1a0
-> >  [000000000048a8dc] generic_file_buffered_write+0xe4/0x2b8
-> >  [000000000048afd0] __generic_file_aio_write_nolock+0x35c/0x380
-> >  [000000000048b930] generic_file_aio_write+0x58/0xc8
-> >  [0000000000526274] ext4_file_write+0xa8/0x15c
-> >  [00000000004b5174] do_sync_write+0x90/0xe0
-> >  [00000000004b5a40] vfs_write+0x7c/0x11c
-> >  [00000000004b5b30] SyS_pwrite64+0x50/0x7c
-> >  [000000000043f744] sys32_pwrite64+0x20/0x34
-> >  [0000000000406154] linux_sparc_syscall32+0x34/0x40
-> > dbench        D 000000000055716c     0  2032      1
-> > Call Trace:
-> >  [0000000000768bcc] schedule+0x18/0x40
-> >  [000000000055716c] start_this_handle+0x374/0x508
-> >  [0000000000557500] jbd2_journal_start+0xbc/0x11c
-> >  [000000000053a438] ext4_journal_start_sb+0x5c/0x84
-> >  [000000000052a9b8] ext4_dirty_inode+0xd4/0xf0
-> >  [00000000004d1a14] __mark_inode_dirty+0x2c/0x188
-> >  [00000000004c7714] touch_atime+0x160/0x178
-> >  [00000000004c2a3c] vfs_readdir+0x88/0xb0
-> >  [00000000004eab90] compat_sys_getdents+0x3c/0x8c
-> >  [0000000000406154] linux_sparc_syscall32+0x34/0x40
-> > dbench        D 000000000055716c     0  2033      1
-> > Call Trace:
-> >  [0000000000768bcc] schedule+0x18/0x40
-> >  [000000000055716c] start_this_handle+0x374/0x508
-> >  [0000000000557500] jbd2_journal_start+0xbc/0x11c
-> >  [000000000053a438] ext4_journal_start_sb+0x5c/0x84
-> >  [000000000052a9b8] ext4_dirty_inode+0xd4/0xf0
-> >  [00000000004d1a14] __mark_inode_dirty+0x2c/0x188
-> >  [00000000004c7714] touch_atime+0x160/0x178
-> >  [000000000048b56c] generic_file_aio_read+0x578/0x620
-> >  [00000000004b5254] do_sync_read+0x90/0xe0
-> >  [00000000004b5c40] vfs_read+0x7c/0x11c
-> >  [00000000004b5d30] SyS_pread64+0x50/0x7c
-> >  [000000000043f778] sys32_pread64+0x20/0x34
-> >  [0000000000406154] linux_sparc_syscall32+0x34/0x40
-> > 
-> > 
-> > >
-> > > I don't think is related to BZ #12579, although some of the symptoms
-> > > look superficially the same.
-> > >
-> > >                                                        - Ted
-> > >
-> > > P.S.  What are your dbench parameters, and how big is your filesystem,
-> > > so I can try to reproduce it on my side?  And how long do you
-> > > typically need to run before this triggers?  Thanks!
-> > 
-> > It is 2G filesystem, I run
-> > `dbench -c /usr/share/dbench/client.txt 10` or 5 clients.
-> > 
-> > Yesterday it happened when I run it for the first time, but today I
-> > run it 10 times before I got the deadlock.
-> > 
-> > So, I think I need to try it on 2.6.29-rc7 again.
->   I've looked into this. Obviously, what's happenning is that we delete
-> an inode and jbd2_journal_release_jbd_inode() finds inode is just under
-> writeout in transaction commit and thus it waits. But it gets never woken
-> up and because it has a handle from the transaction, every one eventually
-> blocks on waiting for a transaction to finish.
->   But I don't really see how that can happen. The code is really
-> straightforward and everything happens under j_list_lock... Strange.
-  BTW: Is the system SMP?
+> > BTW. What is the rule for barriers if the device can't prevent the 
+> > requests from being delayed or reordered? (for example ATA<=3 disks with 
+> > cache that lack cache-flush command ... or flash cards that do 
+> > write-caching anyway and it can't be turned off). Should they support 
+> > barriers and try to make best effort? Or should they reject barriers to 
+> > inform the caller code that they have no data consistency?
+> 
+> If they can't flush cache, then they must reject barriers unless they
+> have write through caching.
 
-								Honza
--- 
-Jan Kara <jack@suse.cz>
-SuSE CR Labs
+... and you suppose that journaled filesystems will use this error and 
+mark filesystem for fsck if they are running over a device that doesn't 
+support consistency?
+
+In theory it would be nice, in practice it doesn't work this way because 
+many devices *DO* support data consistency don't support barriers (the 
+most common are DM and MD when run over disk without write cache).
+
+
+So I think there should be flag (this device does/doesn't support data 
+consistency) that the journaled filesystems can use to mark the disk dirty 
+for fsck. And if you implement this flag, you can accept barriers always 
+to all kind of devices regardless of whether they support consistency. You 
+can then get rid of that -EOPNOTSUPP and simplify filesystem code because 
+they'd no longer need two commit paths and a clumsy way to restart 
+-EOPNOTSUPPed requests.
+
+Mikulas
+
+> -- 
+> Jens Axboe
+> 
