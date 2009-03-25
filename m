@@ -1,76 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762659AbZCYR1T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763380AbZCYR2g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762659AbZCYR1T (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 13:27:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756877AbZCYR1J
+	id S1763380AbZCYR2g (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 13:28:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756877AbZCYR21
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 13:27:09 -0400
-Received: from mail-fx0-f158.google.com ([209.85.220.158]:52208 "EHLO
-	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756326AbZCYR1I (ORCPT
+	Wed, 25 Mar 2009 13:28:27 -0400
+Received: from mga05.intel.com ([192.55.52.89]:4137 "EHLO
+	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753558AbZCYR20 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 13:27:08 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=h8mWewSVHHoi9gRaQZmqmAVH29p9DpdVfM71YrPEPujMSCDmQZRtCZm0HUbOev22SP
-         YwwzuKBB9D1f1DLdf+NcrAh73SW+Rlgi1xCj/ykrmLFn6Rum4hjhDeffzyjz9sJ+xcoO
-         Ue0qDJBwynZtsj6VxVkrfMctSsrHWqHw5oCqM=
+	Wed, 25 Mar 2009 13:28:26 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.38,420,1233561600"; 
+   d="scan'208";a="441979676"
+Date: Wed, 25 Mar 2009 10:32:12 -0700
+From: mark gross <mgross@linux.intel.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Andrew Lutomirski <amluto@gmail.com>,
+       David Woodhouse <dwmw2@infradead.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Kyle McMartin <kyle@redhat.com>, Fenghua Yu <fenghua.yu@intel.com>,
+       Suresh Siddha <suresh.b.siddha@intel.com>,
+       Yinghai Lu <yinghai@kernel.org>,
+       David Woodhouse <David.Woodhouse@intel.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.29: can't resume from suspend with DMAR (intel iommu)
+	enabled
+Message-ID: <20090325173212.GA30701@linux.intel.com>
+Reply-To: mgross@linux.intel.com
+References: <cb0375e10903241258x32c9d0f3g35a4f56793eb8677@mail.gmail.com> <20090324203259.GC26930@elte.hu>
 MIME-Version: 1.0
-In-Reply-To: <alpine.DEB.1.10.0903250921230.15216@makko.or.mcafeemobile.com>
-References: <84a01a8b0903250545n799a8727o1faad60c8eaf372e@mail.gmail.com>
-	 <alpine.DEB.1.10.0903250921230.15216@makko.or.mcafeemobile.com>
-Date: Wed, 25 Mar 2009 18:27:03 +0100
-Message-ID: <84a01a8b0903251027p18fceee4h813f4d9616245a2d@mail.gmail.com>
-Subject: Re: epoll_ctl and const correctness
-From: nicolas sitbon <nicolas.sitbon@gmail.com>
-To: Davide Libenzi <davidel@xmailserver.org>
-Cc: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090324203259.GC26930@elte.hu>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ok for "const correctness", but:
-do you keep track of the structure event after the call to epoll_ctl or no?
-I mean I found some codes that reuse this structure for multiple call
-to epoll_ctl but with different file descriptor, is this allowed?
+On Tue, Mar 24, 2009 at 09:32:59PM +0100, Ingo Molnar wrote:
+> 
+> (Cc:s added)
+> 
+> * Andrew Lutomirski <amluto@gmail.com> wrote:
+> 
+> > On vanilla 2.6.29 (on Ubuntu 8.10), on a Lenovo x200s, my system 
+> > is completely hosed on resume.  It appears that even hard disk IO 
+> > didn't work (trying to do *anything* including getting a dmesg 
+> > trace just spewed sda io errors to the console).  Hence no trace.  
+> > I did an alt-sysrq-b and the screen went blank and the machine 
+> > just started beeping at me.
+> > 
+> > Resume works much better with intel_iommu=off.  (I remember seeing 
+> > a patch go by that purported to fix resume with IOMMU enabled, but 
+> > it didn't work for me.)
+> > 
+> > I'd be happy to try to make a better bug report if anyone has any 
+> > bright ideas.
+> 
+> i have a Lenovo T500 that does not even boot with with DMAR enabled 
+> in the BIOS (it's default-off), i get this panic in early bootup:
+> 
+>     DMAR hardware is malfunctioning
 
-struct epoll_event ev = {.fd = STDIN_FILENO, .data.fd = STDIN_FILENO};
-/* <= one structure for 2 calls */
-epoll_ctl(epfd, EPOLL_CTL_ADD, STDIN_FILENO, &ev);
-ev.fd = STDOUT_FILENO;
-ev.data.fd = STDOUT_FILENO;
-epoll_ctl(epfd, EPOLL_CTL_ADD, STDOUT_FILENO, &ev);
+That happens when the polling of the IOMMU registers fail to behave as
+expected in the VT-d specification.  Typically its been a bios issue
+when this happens.
 
-Other question:
-int epoll_create(int size);
-
-can you please, explain me why size is an int and not a size_t or at
-least an unsigned integer?
-
-thanks.
-
-2009/3/25 Davide Libenzi <davidel@xmailserver.org>:
-> On Wed, 25 Mar 2009, nicolas sitbon wrote:
->
->> Currently, the prototype of epoll_ctl is :
->>
->> int epoll_ctl(int epfd, int op, int fd, struct epoll_event *event);
->>
->> I searched in the man of epoll_ctl and google, and it seems that the
->> structure pointed to by event isn't modify, valgrind confirms this
->> behaviour, so am I wrong? or the good prototype is
->>
->> int epoll_ctl(int epfd, int op, int fd, struct epoll_event const *event);
->
-> According to the current ctl operations, yes. But doing that would prevent
-> other non-const operations to be added later on.
->
->
-> - Davide
->
->
->
+> 
+> So i dont get to test suspend/resume ;-)
+> 
+> 	Ingo
