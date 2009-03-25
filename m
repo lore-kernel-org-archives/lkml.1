@@ -1,97 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755884AbZCYSb1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757134AbZCYSeU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755884AbZCYSb1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 14:31:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752239AbZCYSaa
+	id S1757134AbZCYSeU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 14:34:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751591AbZCYSeA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 14:30:30 -0400
-Received: from tomts36-srv.bellnexxia.net ([209.226.175.93]:49789 "EHLO
-	tomts36-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752429AbZCYSa2 (ORCPT
+	Wed, 25 Mar 2009 14:34:00 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:39991 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751007AbZCYSeA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 14:30:28 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AtYEAEMVyklMQW1W/2dsb2JhbACBUNIIg3UG
-Date: Wed, 25 Mar 2009 14:30:24 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Peter Zijlstra <peterz@infradead.org>,
-       Christoph Hellwig <hch@infradead.org>, Jason Baron <jbaron@redhat.com>,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       ltt-dev@lists.casi.polymtl.ca, Frederic Weisbecker <fweisbec@gmail.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Russell King <rmk+lkml@arm.linux.org.uk>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       "Frank Ch. Eigler" <fche@redhat.com>, Hideo AOKI <haoki@redhat.com>,
-       Takashi Nishiie <t-nishiie@np.css.fujitsu.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-Subject: Re: [patch 2/9] LTTng instrumentation - irq
-Message-ID: <20090325183024.GA6746@Krystal>
-References: <20090324155625.420966314@polymtl.ca> <20090324160148.080628193@polymtl.ca> <20090324173354.GC3129@redhat.com> <20090324175049.GC31117@elte.hu> <20090324175750.GE3129@redhat.com> <20090324191252.GA11665@elte.hu> <20090324201146.GA4350@Krystal> <20090324205120.GB24320@elte.hu> <20090325084724.GA28171@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <20090325084724.GA28171@elte.hu>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 14:25:26 up 25 days, 14:51,  1 user,  load average: 1.46, 0.77,
-	0.78
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 25 Mar 2009 14:34:00 -0400
+Date: Wed, 25 Mar 2009 11:26:57 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: David Rees <drees76@gmail.com>
+cc: Theodore Tso <tytso@mit.edu>, Jan Kara <jack@suse.cz>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Nick Piggin <npiggin@suse.de>,
+       Jens Axboe <jens.axboe@oracle.com>, Jesper Krogh <jesper@krogh.cc>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.29
+In-Reply-To: <alpine.LFD.2.00.0903251117380.3032@localhost.localdomain>
+Message-ID: <alpine.LFD.2.00.0903251122250.3032@localhost.localdomain>
+References: <alpine.LFD.2.00.0903231617550.3032@localhost.localdomain>  <72dbd3150903232346g5af126d7sb5ad4949a7b5041f@mail.gmail.com>  <20090324091545.758d00f5@lxorguk.ukuu.org.uk>  <20090324093245.GA22483@elte.hu>  <20090324101011.6555a0b9@lxorguk.ukuu.org.uk>
+  <20090324103111.GA26691@elte.hu>  <20090324041249.1133efb6.akpm@linux-foundation.org>  <20090325123744.GK23439@duck.suse.cz> <20090325150041.GM32307@mit.edu>  <alpine.LFD.2.00.0903251008120.3032@localhost.localdomain> <72dbd3150903251109x75aa5d8ke8277247c2f292f9@mail.gmail.com>
+ <alpine.LFD.2.00.0903251117380.3032@localhost.localdomain>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Ingo Molnar (mingo@elte.hu) wrote:
+
+
+On Wed, 25 Mar 2009, Linus Torvalds wrote:
 > 
-> * Ingo Molnar <mingo@elte.hu> wrote:
-> 
-> > 
-> > * Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
-> > 
-> > > If we want to do this logically, without thinking about tracer 
-> > > performance impact, we could/should do :
-> > > 
-> > > trace_irq_entry(irqno, pt_regs)
-> > >   for_each_handler() {
-> > >     trace_irq_handler_entry(action)
-> > >     action->handler()
-> > >     trace_irq_handler_exit(ret)
-> > >   }
-> > > trace_irq_exit(retval)
-> > 
-> > Not really.
-> 
-> Put differently: we seem to agree on handler invocation entry/exit 
-> events (and those are handled by Jason's patch already), and that's 
-> good.
-> 
+> Even a suck-ass laptop drive can write streaming data fast enough that 
+> people don't care. The problem is invariably that writes from different 
+> sources (much of it being metadata) interact and cause seeking.
 
-Yes, we need to get this information into the trace stream somehow.
+Actually, not just writes.
 
-> I dont think we need two events for physical IRQ events though. One 
-> is enough: entry event. What meaning does 'retval' have in your 
-> pseudo-code above? None typically.
-> 
+The IO priority thing is almost certainly that _reads_ (which get higher 
+priority by default due to being synchronous) get interspersed with the 
+writes, and then even if you _could_ be having streaming writes, what you 
+actually end up with is lots of seeking.
 
-Hrm, an event means more that the "payload" it has. Just saving "here is
-a return from interrupt handler" without any return value is valuable
-per se because it lets the trace analyzer know when the hardirq handler
-ended.
+Again, good SSD's don't care. Disks do. It doesn't matter if you have a FC 
+disk array that can eat 300MB/s when streaming - once you start seeking, 
+that 300MB/s goes down like a rock. Battery-protected write caches will 
+help - but not a whole lot when streaming more data than they have RAM. 
+Basic queuing theory.
 
-e.g., if we instrument the x86 local apic irq handler only with an "irq
-entry" event, we would not be able to detect if the following events are
-nested on top of the IRQ handler or are executed in thread context.
-
-Having those two hardirq entry/exit events is also especially useful to
-figure out the maximum interrupt latency caused by long interrupt
-handlers (or that could be many handlers hooked on the same interrupt
-line).
-
-Mathieu
-
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+			Linus
