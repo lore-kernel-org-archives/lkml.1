@@ -1,138 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757007AbZCYLWV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757786AbZCYL2B@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757007AbZCYLWV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 07:22:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754124AbZCYLV4
+	id S1757786AbZCYL2B (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 07:28:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753803AbZCYL1w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 07:21:56 -0400
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:32986 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754050AbZCYLVy (ORCPT
+	Wed, 25 Mar 2009 07:27:52 -0400
+Received: from mtagate3.de.ibm.com ([195.212.29.152]:58899 "EHLO
+	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752891AbZCYL1u (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 07:21:54 -0400
-Date: Wed, 25 Mar 2009 11:21:15 +0000
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-To: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
-	<u.kleine-koenig@pengutronix.de>
-Cc: Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
-       Abhishek Sagar <sagar.abhishek@gmail.com>,
-       Tim Bird <tim.bird@am.sony.com>,
-       linux-arm-kernel <linux-arm-kernel@lists.arm.linux.org.uk>,
-       linux kernel <linux-kernel@vger.kernel.org>,
-       Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@redhat.com>
-Subject: Re: Anyone working on ftrace function graph support on ARM?
-Message-ID: <20090325112115.GB31464@n2100.arm.linux.org.uk>
-References: <49C936CA.8070800@am.sony.com> <20090324213618.GC5975@nowhere> <49C95EAF.7030901@gmail.com> <20090324224857.GE5975@nowhere> <20090325084248.GF4697@n2100.arm.linux.org.uk> <20090325085418.GA2341@elte.hu> <20090325095751.GA31464@n2100.arm.linux.org.uk> <20090325104505.GA27803@pengutronix.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20090325104505.GA27803@pengutronix.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 25 Mar 2009 07:27:50 -0400
+Date: Wed, 25 Mar 2009 12:27:38 +0100
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+To: Tejun Heo <tj@kernel.org>
+Cc: mingo@elte.hu, rusty@rustcorp.com.au, tglx@linutronix.de, x86@kernel.org,
+       linux-kernel@vger.kernel.org, hpa@zytor.com,
+       Paul Mundt <lethal@linux-sh.org>, rmk@arm.linux.org.uk,
+       starvik@axis.com, ralf@linux-mips.org, davem@davemloft.net,
+       cooloney@kernel.org, kyle@mcmartin.ca, matthew@wil.cx,
+       grundler@parisc-linux.org, takata@linux-m32r.org,
+       benh@kernel.crashing.org, rth@twiddle.net, ink@jurassic.park.msu.ru,
+       heiko.carstens@de.ibm.com
+Subject: Re: [GIT RFC] percpu: use dynamic percpu allocator as the default
+ percpu allocator
+Message-ID: <20090325122738.42d105b7@skybase>
+In-Reply-To: <49C8FAC4.6060508@kernel.org>
+References: <1236671631-9305-1-git-send-email-tj@kernel.org>
+ <20090316190132.7965a49a@skybase>
+ <49C300D8.5080204@kernel.org>
+ <49C8FAC4.6060508@kernel.org>
+Organization: IBM Corporation
+X-Mailer: Claws Mail 3.7.1 (GTK+ 2.14.7; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 25, 2009 at 11:45:05AM +0100, Uwe Kleine-König wrote:
-> Hi Russell,
-> 
-> On Wed, Mar 25, 2009 at 09:57:51AM +0000, Russell King - ARM Linux wrote:
-> > On Wed, Mar 25, 2009 at 09:54:18AM +0100, Ingo Molnar wrote:
-> > > Unwinding is not realistic or desired for the function tracer - it 
-> > > runs in every kernel function so performance is paramount.
-> > 
-> > Which would also include the unwinder itself as well.
-> > 
-> > > So, if i understood you correctly, an OABI_COMPAT and FRAME_POINTERS 
-> > > dependency has to be added to the ARM HAVE_FUNCTION_GRAPH_TRACER 
-> > > Kconfig rule.
-> > 
-> > If we have frame pointers enabled with EABI, then it looks like it will
-> > work as well.  So the dependency should be on FRAME_POINTERS for _every_
-> > feature using the mcount code.
-> > 
-> > Hmm, and it looks like the ftrace code is rather crap:
-> > 
-> > ENTRY(mcount)
-> >         stmdb sp!, {r0-r3, lr}
-> >         ldr r0, =ftrace_trace_function
-> >         ldr r2, [r0]
-> >         adr r0, ftrace_stub
-> >         cmp r0, r2
-> >         bne trace
-> >         ldr lr, [fp, #-4]                       @ restore lr
-> >         ldmia sp!, {r0-r3, pc}
-> > 
-> > trace:
-> >         ldr r1, [fp, #-4]                       @ lr of instrumented routine
-> >         mov r0, lr
-> >         sub r0, r0, #MCOUNT_INSN_SIZE
-> >         mov lr, pc
-> >         mov pc, r2
-> >  XXX calling a C function results in r0-r3,ip,lr being clobbered XXX
-> > 
-> >         mov lr, r1                              @ restore lr
-> >  XXX not necessarily, r1 might be some other random value
-> > 
-> >         ldmia sp!, {r0-r3, pc}
-> > 
-> > In fact, to me the above code looks totally crap, because it's checking
-> > whether the caller is 'ftrace_stub'.  It can never be 'ftrace_stub'
-> > because that is an assembly function:
-> > 
-> >         .globl ftrace_stub
-> > ftrace_stub:
-> >         mov pc, lr
-> > 
-> > and therefore gcc has no hand in adding a mcount call to it.
-> Hhhm.  Isn't the equivalent C-Code ~ as follows:
-> 
-> 	if (ftrace_trace_function != ftrace_stub)
-> 		trace(some, args);
-> 	return;
-> ?  ftrace_trace_function is initialised to ftrace_stub at compile time
-> and is changed when a tracerfunction is registered.
+On Wed, 25 Mar 2009 00:22:44 +0900
+Tejun Heo <tj@kernel.org> wrote:
 
-Correct.  But my point is that there's no way for ftrace_stub to ever call
-mcount.  So the check there is pointless.
+> Tejun Heo wrote:
+> > Hello, Martin.
+> > 
+> > Sorry about the delay.
 
-> > Moreover, the _dynamic_ ftrace code does this:
-> > 
-> > ENTRY(mcount)
-> >         stmdb sp!, {r0-r3, lr}
-> >         mov r0, lr
-> >         sub r0, r0, #MCOUNT_INSN_SIZE
-> > 
-> >         .globl mcount_call
-> > mcount_call:
-> >         bl ftrace_stub
-> >         ldr lr, [fp, #-4]                       @ restore lr
-> >         ldmia sp!, {r0-r3, pc}
-> > 
-> > ENTRY(ftrace_caller)
-> >         stmdb sp!, {r0-r3, lr}
-> >         ldr r1, [fp, #-4]
-> >         mov r0, lr
-> >         sub r0, r0, #MCOUNT_INSN_SIZE
-> > 
-> >         .globl ftrace_call
-> > ftrace_call:
-> >         bl ftrace_stub
-> >         ldr lr, [fp, #-4]                       @ restore lr
-> >         ldmia sp!, {r0-r3, pc}
-> > 
-> > In other words, it pushes some words onto the stack, sets r0, calls
-> > an assembly function which does nothing but just returns, reloads lr,
-> > restores the stack and returns.  This ftrace implementation looks like
-> > an exercise in slowing down execution to me with no added value.
-> The idea is that the instruction at address mcount_call (and
-> ftrace_call IIRC) is rewritten at run time.
-> Still the code is not active currently (because CONFIG_DYNAMIC_FTRACE
-> isn't selectable for ARM) and needs some care anyhow on reactivation
-> because the way how dynamic ftrace works changed somehow.  Didn't look
-> at it up to now though.
+Yes, dito..
 
-Ok - it would be nice if there was a comment to explain that.
+> > Martin Schwidefsky wrote:
+> >> We do have a problem with #2, the dynamic percpu patches currently
+> >> breaks s390. But the nice thing is that we can now get rid of the GOTENT
+> >> relocation for the percpu symbols. If the code is changed to use
+> >> RELOC_HIDE for the SHIFT_PERCPU_PTR define, everything works just fine.
+> >> Patch attached. Nice works guys.
+> >>
+> >> Subject: [PATCH] s390: percpu access.
+> >>
+> >> From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+> >>
+> >> With the dynamic percpu allocator there is no need anymore to play
+> >> tricks with the GOTENT relocation for the access to the percpu
+> >> symbols. A simple RELOC_HIDE gets the job done.
+> > 
+> > Hmm... I don't quite get it.  The GOTENT was to work around large
+> > offsets for modules, right?  Can you please explain what changed by
+> > the dynamic percpu allocator?
 
-Is someone going to fix the existing ftrace before trying to build stuff
-on top of it?
+Unfortunately it didn't change. The problem is still there, only with
+my particular configuration (and the correct patch) the system did
+work because the problematic modules were not in use. But in general it
+won't work.
+
+The reason for the GOTENT indirection are static per-cpu variables that
+are defined inside a module. The compiler considers these to be local.
+For locally defined per_cpu__#var symbols the compiler uses an
+instruction that is limited to the scope of a single object, which is
++-4 GB. The trick with GOTENT introduced an indirection which hid the
+problem.
+
+Without the GOTENT indirection the access to a static per cpu variable
+will look like this:
+
+0000000000000000 <test_fn>:
+   0:   e3 30 03 30 00 04       lg      %r3,816
+   6:   c0 10 00 00 00 00       larl    %r1,6 <test_fn+0x6>
+                        8: R_390_PC32DBL        .data.percpu+0x2
+   c:   e3 23 10 00 00 04       lg      %r2,0(%r3,%r1)
+
+The R_390_PC32DBL relocation in the module relocation will fail if the
+per-cpu area is farther than 4GB away from the vmalloc area.
+
+With your patches and a RELOC_HIDE version that uses the GOTENT
+indirection the kernel won't compile because the "X" constraint for
+the GOTENT access needs a symbol and there are quite a few users that
+pass a pointer. I do not see a simple solution for that problem yet.
+
+> >> +#define SHIFT_PERCPU_PTR(var, offset) RELOC_HIDE(&per_cpu_var(var), (offset))
+> > 
+> > Hmm... @var already has per_cpu__ prefix when the above macro is
+> > invoked, so doing per_cpu_var() on it again wouldn't work.  If simple
+> > RELOC_HIDE works, you should be able to simply drop the above
+> > definition.  The generic percpu.h will define it.
+
+That is true, in my working version of the oatch the second
+per_cpu_var() wasn't there.
+
+-- 
+blue skies,
+   Martin.
+
+"Reality continues to ruin my life." - Calvin.
+
