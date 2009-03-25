@@ -1,63 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756853AbZCYExv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755854AbZCYE7U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756853AbZCYExv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 00:53:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751544AbZCYExm
+	id S1755854AbZCYE7U (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 00:59:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752019AbZCYE7K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 00:53:42 -0400
-Received: from cantor.suse.de ([195.135.220.2]:57492 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750867AbZCYExl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 00:53:41 -0400
-From: Nikanth Karthikesan <knikanth@novell.com>
-Organization: Novell
-To: rusty@rustcorp.com.au
-Subject: Strange code in include/linux/cpumask.h
-Date: Wed, 25 Mar 2009 10:21:13 +0530
-User-Agent: KMail/1.10.3 (Linux/2.6.27.19-3.2-default; KDE/4.1.3; x86_64; ; )
-Cc: nikanth@gmail.com, linux-kernel@vger.kernel.org
+	Wed, 25 Mar 2009 00:59:10 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:49910 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751591AbZCYE7J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Mar 2009 00:59:09 -0400
+Message-ID: <49C9BA02.9070706@cn.fujitsu.com>
+Date: Wed, 25 Mar 2009 12:58:42 +0800
+From: Wang Chen <wangchen@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+To: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
+CC: mingo@elte.hu, linux-kernel@vger.kernel.org
+Subject: Re: linux-next-20090324: undefined reference to `__this_fixmap_does_not_exist\'
+References: <200903250324.n2P3OwX0098272@www262.sakura.ne.jp>
+In-Reply-To: <200903250324.n2P3OwX0098272@www262.sakura.ne.jp>
+Content-Type: text/plain; charset=ISO-2022-JP
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200903251021.13811.knikanth@novell.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Rusty
+Tetsuo Handa said the following on 2009-3-25 11:24:
+> Hello.
+> 
+> I encountered below error.
+> 
+> arch/x86/mm/built-in.o(.init.text+0x1831): In function `early_ioremap_init':
+> : undefined reference to `__this_fixmap_does_not_exist'
+> make: *** [.tmp_vmlinux1] Error 1
+> 
+> Config is at http://I-love.SAKURA.ne.jp/tmp/config-2.6.29-next-20090324
+> 
 
-I do not understand this code.
+Tetsuo, I've tried the latest tip, it's OK.
+I can't trigger the same problem as you do.
+So I will try linux-next later.
 
-/**
- * to_cpumask - convert an NR_CPUS bitmap to a struct cpumask *
- * @bitmap: the bitmap
- *
- * There are a few places where cpumask_var_t isn't appropriate and
- * static cpumasks must be used (eg. very early boot), yet we don't
- * expose the definition of 'struct cpumask'.
- *
- * This does the conversion, and can be used as a constant initializer.
- */
-#define to_cpumask(bitmap)                                              \
-        ((struct cpumask *)(1 ? (bitmap)                                \
-                            : (void *)sizeof(__check_is_bitmap(bitmap))))
-
-static inline int __check_is_bitmap(const unsigned long *bitmap)
-{
-        return 1;
-}
-
-The conditional operator would always evaluates to true and return bitmap. So 
-all it seems to does is
-#define to_cpumansk(bitmap) (struct cpumask *)(bitmap)
-
-Even If it would return (void *)sizeof(__check_is_bitmap(bitmap)), wouldn't it 
-be always
-(struct cpumask *) (sizeof(1))!?
-
-Is this some magic for type safety?
-
-Thanks
-Nikanth
