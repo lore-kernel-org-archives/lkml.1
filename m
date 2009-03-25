@@ -1,44 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753663AbZCYEVi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755857AbZCYEbk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753663AbZCYEVi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 00:21:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752327AbZCYEV2
+	id S1755857AbZCYEbk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 00:31:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752693AbZCYEb2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 00:21:28 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:35372 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751544AbZCYEV1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 00:21:27 -0400
-Date: Tue, 24 Mar 2009 22:21:09 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: stoyboyker@gmail.com
-Cc: linux-kernel@vger.kernel.org, James.Bottomley@HansenPartnership.com,
-       linux-scsi@vger.kernel.org
-Subject: Re: [PATCH 06/13] [scsi] changed ioctls to unlocked
-Message-ID: <20090325042109.GP14127@parisc-linux.org>
-References: <1237929168-15341-7-git-send-email-stoyboyker@gmail.com>
+	Wed, 25 Mar 2009 00:31:28 -0400
+Received: from cantor.suse.de ([195.135.220.2]:57063 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752589AbZCYEb1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Mar 2009 00:31:27 -0400
+Date: Tue, 24 Mar 2009 21:18:39 -0700
+From: Greg KH <gregkh@suse.de>
+To: Stephen Hemminger <shemminger@vyatta.com>
+Cc: linux-kernel@vger.kernel.org, Kay Sievers <kay.sievers@vrfy.org>,
+       davem@davemloft.net, netdev@vger.kernel.org
+Subject: Re: [PATCH 15/61] net: struct device - replace bus_id with
+	dev_name(), dev_set_name()
+Message-ID: <20090325041839.GB27737@suse.de>
+References: <20090325001659.GA22461@kroah.com> <1237940825-22904-15-git-send-email-gregkh@suse.de> <20090324203111.0d3f5de1@nehalam>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1237929168-15341-7-git-send-email-stoyboyker@gmail.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20090324203111.0d3f5de1@nehalam>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 24, 2009 at 04:12:41PM -0500, stoyboyker@gmail.com wrote:
-> +static long osst_ioctl(struct file * file, unsigned int cmd_in,
-> +	unsigned long arg)
->  {
-> +	lock_kernel();
->  	int		      i, cmd_nr, cmd_type, blk, retval = 0;
+On Tue, Mar 24, 2009 at 08:31:11PM -0700, Stephen Hemminger wrote:
+> On Tue, 24 Mar 2009 17:26:19 -0700
+> Greg Kroah-Hartman <gregkh@suse.de> wrote:
+> 
+> > From: Kay Sievers <kay.sievers@vrfy.org>
+> > 
+> > Cc: davem@davemloft.net
+> > Cc: netdev@vger.kernel.org
+> > Acked-by: Greg Kroah-Hartman <gregkh@suse.de>
+> > Signed-off-by: Kay Sievers <kay.sievers@vrfy.org>
+> > ---
+> >  drivers/net/arm/ks8695net.c  |    2 +-
+> >  drivers/net/au1000_eth.c     |    8 ++++----
+> >  drivers/net/bfin_mac.c       |   12 ++++++------
+> >  drivers/net/bmac.c           |    2 +-
+> >  drivers/net/cpmac.c          |    2 +-
+> >  drivers/net/declance.c       |    6 +++---
+> >  drivers/net/depca.c          |    6 +++---
+> >  drivers/net/ehea/ehea_main.c |    2 +-
+> >  drivers/net/jazzsonic.c      |    6 ++++--
+> >  drivers/net/macb.c           |   10 +++++-----
+> >  drivers/net/macsonic.c       |   15 ++++++++-------
+> >  drivers/net/mv643xx_eth.c    |    2 +-
+> >  drivers/net/sb1250-mac.c     |   10 +++++-----
+> >  drivers/net/smc911x.c        |    2 +-
+> >  drivers/net/smc91x.c         |    2 +-
+> >  drivers/net/smsc911x.c       |    7 ++++---
+> >  drivers/net/smsc9420.c       |    4 ++--
+> >  drivers/net/tc35815.c        |    4 ++--
+> >  drivers/net/xtsonic.c        |    2 +-
+> >  19 files changed, 54 insertions(+), 50 deletions(-)
+> > 
+> 
+> I know this is needed, but could please put some more explicit rational
+> in changelog.
 
-Did you try compiling this?  If so, what compiler did you use?  You
-*should* have got an error about mixing code and declarations.
+bus_id is going away, much more rational isn't really needed :)
 
--- 
-Matthew Wilcox				Intel Open Source Technology Centre
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+thanks,
+
+greg k-h
