@@ -1,61 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756925AbZCYJfP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758204AbZCYJfx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756925AbZCYJfP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 05:35:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755880AbZCYJe5
+	id S1758204AbZCYJfx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 05:35:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758943AbZCYJfc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 05:34:57 -0400
-Received: from ey-out-2122.google.com ([74.125.78.26]:15423 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754995AbZCYJe4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 05:34:56 -0400
+	Wed, 25 Mar 2009 05:35:32 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:52049 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758900AbZCYJfa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Mar 2009 05:35:30 -0400
+Date: Wed, 25 Mar 2009 10:34:56 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Herbert Xu <herbert@gondor.apana.org.au>
+Cc: David Miller <davem@davemloft.net>, r.schwebel@pengutronix.de,
+       torvalds@linux-foundation.org, blaschka@linux.vnet.ibm.com,
+       tglx@linutronix.de, a.p.zijlstra@chello.nl,
+       linux-kernel@vger.kernel.org, kernel@pengutronix.de
+Subject: Re: Revert "gro: Fix legacy path napi_complete crash",
+Message-ID: <20090325093456.GE2341@elte.hu>
+References: <20090324143303.GP5367@pengutronix.de> <20090324143942.GA20462@elte.hu> <20090324150928.GB30224@gondor.apana.org.au> <20090324.143622.186562202.davem@davemloft.net> <20090325002303.GA2219@gondor.apana.org.au>
 MIME-Version: 1.0
-In-Reply-To: <20090324.232931.65484505.davem@davemloft.net>
-References: <20090325001659.GA22461@kroah.com>
-	 <1237940825-22904-15-git-send-email-gregkh@suse.de>
-	 <20090324.232931.65484505.davem@davemloft.net>
-Date: Wed, 25 Mar 2009 10:34:53 +0100
-Message-ID: <ac3eb2510903250234r3d648b94xb34e5b0f3b34ef6d@mail.gmail.com>
-Subject: Re: [PATCH 15/61] net: struct device - replace bus_id with 
-	dev_name(), dev_set_name()
-From: Kay Sievers <kay.sievers@vrfy.org>
-To: David Miller <davem@davemloft.net>
-Cc: gregkh@suse.de, linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090325002303.GA2219@gondor.apana.org.au>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 25, 2009 at 07:29, David Miller <davem@davemloft.net> wrote:
-> From: Greg Kroah-Hartman <gregkh@suse.de>
-> Date: Tue, 24 Mar 2009 17:26:19 -0700
->
->> From: Kay Sievers <kay.sievers@vrfy.org>
->>
->> Cc: davem@davemloft.net
->> Cc: netdev@vger.kernel.org
->> Acked-by: Greg Kroah-Hartman <gregkh@suse.de>
->> Signed-off-by: Kay Sievers <kay.sievers@vrfy.org>
->
-> None of this patch applies to net-next-2.6
->
-> Probably because, just like the wimax case, these changes
-> are already there.
 
-Yeah, I think -next handles duplicate and completely indentical
-patches from differnt trees just fine, so that all has been in -next
-for a while, and while it was still in Greg's tree when the other tree
-merged it.
+* Herbert Xu <herbert@gondor.apana.org.au> wrote:
 
-This patch is in your -next tree:
-  http://git.kernel.org/?p=linux/kernel/git/davem/net-next-2.6.git;a=commit;h=db1d7bf70f42124f73675fca62fe32f3ab1111b4
+> On Tue, Mar 24, 2009 at 02:36:22PM -0700, David Miller wrote:
+> >
+> > I think the problem is that we need to do the GRO flush before the
+> > list delete and clearing the NAPI_STATE_SCHED bit.
+> 
+> Well first of all GRO shouldn't even be on in Ingo's case, unless
+> he enabled it by hand with ethtool. [...]
 
-The problem with -next is that if some tree is dropped because of a
-non-trivial conflict, and Greg removes merged patches, later patches
-in Greg's tree may fail because of missing changes. Maybe we need some
-kind of annotation with the -next logic to handle such cases better?
+i didnt. (But it's randconfig - so please have a good look at all 
+.config details - maybe something has an unexpected side-effect?)
 
-Thanks,
-Kay
+	Ingo
