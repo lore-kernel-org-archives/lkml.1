@@ -1,88 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761659AbZCYNiS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760733AbZCYNjM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761659AbZCYNiS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 09:38:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754835AbZCYNiG
+	id S1760733AbZCYNjM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 09:39:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759136AbZCYNiy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 09:38:06 -0400
-Received: from rtr.ca ([76.10.145.34]:55944 "EHLO mail.rtr.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756524AbZCYNiF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 09:38:05 -0400
-Message-ID: <49CA33B8.5050503@rtr.ca>
-Date: Wed, 25 Mar 2009 09:38:00 -0400
-From: Mark Lord <lkml@rtr.ca>
-Organization: Real-Time Remedies Inc.
-User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
+	Wed, 25 Mar 2009 09:38:54 -0400
+Received: from outbound.icp-qv1-irony-out1.iinet.net.au ([203.59.1.106]:53158
+	"EHLO outbound.icp-qv1-irony-out1.iinet.net.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757681AbZCYNix (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Mar 2009 09:38:53 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApoEAA/RyUl8qXHv/2dsb2JhbADSYIN1Bg
+X-IronPort-AV: E=Sophos;i="4.38,419,1233500400"; 
+   d="scan'208";a="471682675"
+Message-ID: <49CA33E7.6090309@themaw.net>
+Date: Wed, 25 Mar 2009 22:38:47 +0900
+From: Ian Kent <raven@themaw.net>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-To: Jaswinder Singh Rajput <jaswinder@kernel.org>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
-       x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
-       akataria@vmware.com
-Subject: Re: [PATCH -tip] x86: move vmware to hypervisor
-References: <1237281581.7907.2.camel@ht.satnam>	 <20090317093919.GD6477@elte.hu> <1237283318.7907.9.camel@ht.satnam>	 <49BFC6CB.9070603@zytor.com> <1237958994.5556.5.camel@localhost.localdomain>
-In-Reply-To: <1237958994.5556.5.camel@localhost.localdomain>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: Jeff Layton <jlayton@redhat.com>
+CC: Wu Fengguang <fengguang.wu@intel.com>, Dave Chinner <david@fromorbit.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
+       "jens.axboe@oracle.com" <jens.axboe@oracle.com>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "hch@infradead.org" <hch@infradead.org>,
+       "linux-nfs@vger.kernel.org" <linux-nfs@vger.kernel.org>
+Subject: Re: [PATCH] writeback: reset inode dirty time when adding it back
+ to empty s_dirty list
+References: <1237840233-11045-1-git-send-email-jlayton@redhat.com>	<20090324135720.GA25314@localhost>	<20090324102806.4f38fd26@tleilax.poochiereds.net>	<20090324104657.6907b19e@tleilax.poochiereds.net>	<20090325012829.GA7506@localhost>	<20090324221528.2bb7c50b@tleilax.poochiereds.net>	<20090325025037.GA17374@localhost>	<20090325075110.028f0d1d@tleilax.poochiereds.net>	<20090325121742.GA22869@localhost> <20090325091325.17c997fd@tleilax.poochiereds.net> <49CA2F41.8030804@themaw.net>
+In-Reply-To: <49CA2F41.8030804@themaw.net>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jaswinder Singh Rajput wrote:
-> On Tue, 2009-03-17 at 08:50 -0700, H. Peter Anvin wrote:
->> Jaswinder Singh Rajput wrote:
->>>> I dont really like this one. KVM is a hypervisor too, and so is 
->>>> Xen and lguest. VMware is one of the many types of a 
->>>> hypervisors.
->>> Can we use common hypervisor for Xen, lguest, vmware, etc.
->>> And Xen, lguest, vmware will be the sub-options.
->> Obviously.  We spent a lot of time breaking up the cpu stuff into common
->> and vendor-specific portions, we shouldn't go backwards w.r.t. hypervisors.
->> 	
+Ian Kent wrote:
+> Jeff Layton wrote:
+>> On Wed, 25 Mar 2009 20:17:43 +0800
+>> Wu Fengguang <fengguang.wu@intel.com> wrote:
+>>
+>>> On Wed, Mar 25, 2009 at 07:51:10PM +0800, Jeff Layton wrote:
+>>>> On Wed, 25 Mar 2009 10:50:37 +0800
+>>>> Wu Fengguang <fengguang.wu@intel.com> wrote:
+>>>>
+>>>>>> Given the right situation though (or maybe the right filesystem), it's
+>>>>>> not too hard to imagine this problem occurring even in current mainline
+>>>>>> code with an inode that's frequently being redirtied.
+>>>>> My reasoning with recent kernel is: for kupdate, s_dirty enqueues only
+>>>>> happen in __mark_inode_dirty() and redirty_tail().  Newly dirtied
+>>>>> inodes will be parked in s_dirty for 30s. During which time the
+>>>>> actively being-redirtied inodes, if their dirtied_when is an old stuck
+>>>>> value, will be retried for writeback and then re-inserted into a
+>>>>> non-empty s_dirty queue and have their dirtied_when refreshed.
+>>>>>
+>>>> Doesn't that assume that there are new inodes that are being dirtied?
+>>>> If you only have the same inodes being redirtied and never any new
+>>>> ones, the problem still occurs, right?
+>>> Yes. But will a production server run months without making one single
+>>> new dirtied inode? (Just out of curiosity. Not that I'm not willing to
+>>> fix this possible issue.:)
+>>>
+>> Yes. It's not that the box will run that long without creating a
+>> single new dirtied inode, but rather that it won't necessarily create
+>> one on all of its mounts. It's often the case that someone has a
+>> mountpoint for a dedicated purpose.
+>>
+>> Consider a host that has a mountpoint that contains logfiles that are
+>> being heavily written. There's nothing that says that they must rotate
+>> those logs over a particular period (assuming the fs has enough space,
+>> etc). If the same ones are constantly being redirtied and no new
+>> ones are created, then I think this problem can easily happen.
+>>
+>>>>>>> ...I see no obvious reasons against unconditionally resetting dirtied_when.
+>>>>>>>
+>>>>>>> (a) Delaying an inode's writeback for 30s maybe too long - its blocking
+>>>>>>> condition may well go away within 1s. (b) And it would be very undesirable
+>>>>>>> if one big file is repeatedly redirtied hence its writeback being
+>>>>>>> delayed considerably.
+>>>>>>>
+>>>>>>> However, redirty_tail() currently only tries to speedup writeback-after-redirty
+>>>>>>> in a _best effort_ way. It at best partially hides the above issues,
+>>>>>>> if there are any. In particular, if (b) is possible, the bug should
+>>>>>>> already show up at least in some situations.
+>>>>>>>
+>>>>>>> For XFS, immediately sync of redirtied inode is actually discouraged:
+>>>>>>>
+>>>>>>>         http://lkml.org/lkml/2008/1/16/491
+>>>>>>>
+>>>>>>>
+>>>>>> Ok, those are good points that I need to think about.
+>>>>>>
+>>>>>> Thanks for the help so far. I'd welcome any suggestions you have on
+>>>>>> how best to fix this.
+>>>>> For NFS, is it desirable to retry a redirtied inode after 30s, or
+>>>>> after a shorter 5s, or after 0.1~5s? Or the exact timing simply
+>>>>> doesn't matter?
+>>>>>
+>>>> I don't really consider NFS to be a special case here. It just happens
+>>>> to be where we saw the problem originally. Some of its characteristics
+>>>> might make it easier to hit this, but I'm not certain of that.
+>>> Now there are now two possible solutions:
+>>> - unconditionally update dirtied_when in redirty_tail();
+>>> - keep dirtied_when and redirty inodes to a new dedicated queue.
+>>> The first one involves less code, the second one allows more flexible timing.
+>>>
+>>> NFS/XFS could be a good starting point for discussing the
+>>> requirements, so that we can reach a suitable solution.
+>>>
+>> It sounds like it, yes. I saw that you posted some patches in January
+>> (including your s_more_io_wait patch). I'll give those a closer look.
+>> Adding the new s_more_io_wait queue is interesting and might sidestep
+>> this problem nicely.
+>>
 > 
-> OK, agreed.
-> 
-> But atleast give freedom to users to disable this who are not willing to
-> use it.
-> 
-> Currently hypervisor is used only used by VMWARE, so is I prepare this
-> freedom patch:
-> 
-> From: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
-> Date: Wed, 25 Mar 2009 10:40:01 +0530
-> Subject: [PATCH] x86: Introduce CONFIG_X86_VMWARE option
-> 
-> Impact: freedom to choose
-> 
-> Gives freedom to users to select or suppress CONFIG_X86_VMWARE option.
-> 
-> Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
-> ---
->  arch/x86/Kconfig                  |    7 +++++++
->  arch/x86/include/asm/hypervisor.h |    9 +++++++++
->  arch/x86/kernel/cpu/Makefile      |    2 +-
->  3 files changed, 17 insertions(+), 1 deletions(-)
-> 
-> diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-> index f5d7d29..56e1a9c 100644
-> --- a/arch/x86/Kconfig
-> +++ b/arch/x86/Kconfig
-> @@ -554,6 +554,13 @@ config HPET_EMULATE_RTC
->  	def_bool y
->  	depends on HPET_TIMER && (RTC=y || RTC=m || RTC_DRV_CMOS=m || RTC_DRV_CMOS=y)
->  
-> +config X86_VMWARE
-> +	bool
-> +	default n
-> +	prompt "X86 VMware support"
-> +	---help---
-> +	 Enable X86 VMware Hypervisor support.
->
-..
+> Yes, I was looking at that bit of code but, so far, I think it won't be
+> called for the case we are trying to describe.
 
+I take that back.
+As Jeff pointed out I haven't seen these patches and can't seem to find
+them in my fsdevel list folder, Wu can you send me a copy please?
 
-Could that perhaps be clarified somewhat, changing the prompt
-string to either "X86 VMware host support"
-or "X86 VMware guest support", to remove any confusion ?
+Ian
 
-thanks
