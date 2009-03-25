@@ -1,74 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757132AbZCYX3c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757592AbZCYX3r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757132AbZCYX3c (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 19:29:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752178AbZCYX3Y
+	id S1757592AbZCYX3r (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 19:29:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755737AbZCYX31
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 19:29:24 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:58517 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750849AbZCYX3X (ORCPT
+	Wed, 25 Mar 2009 19:29:27 -0400
+Received: from byss.tchmachines.com ([208.76.80.75]:55508 "EHLO
+	byss.tchmachines.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756755AbZCYX30 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 19:29:23 -0400
-Date: Wed, 25 Mar 2009 16:21:56 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Theodore Tso <tytso@mit.edu>
-cc: Jan Kara <jack@suse.cz>, Andrew Morton <akpm@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Nick Piggin <npiggin@suse.de>,
-       Jens Axboe <jens.axboe@oracle.com>, David Rees <drees76@gmail.com>,
-       Jesper Krogh <jesper@krogh.cc>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.29
-In-Reply-To: <20090325215137.GQ32307@mit.edu>
-Message-ID: <alpine.LFD.2.00.0903251613300.3032@localhost.localdomain>
-References: <20090324091545.758d00f5@lxorguk.ukuu.org.uk> <20090324093245.GA22483@elte.hu> <20090324101011.6555a0b9@lxorguk.ukuu.org.uk> <20090324103111.GA26691@elte.hu> <20090324041249.1133efb6.akpm@linux-foundation.org> <20090325123744.GK23439@duck.suse.cz>
- <20090325150041.GM32307@mit.edu> <alpine.LFD.2.00.0903251008120.3032@localhost.localdomain> <20090325185824.GO32307@mit.edu> <alpine.LFD.2.00.0903251341050.3032@localhost.localdomain> <20090325215137.GQ32307@mit.edu>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Wed, 25 Mar 2009 19:29:26 -0400
+Date: Wed, 25 Mar 2009 16:29:21 -0700
+From: Ravikiran G Thirumalai <kiran@scalex86.org>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Yinghai Lu <yinghai@kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       shai@scalex86.org
+Subject: Re: [PATCH] x86: don't compile vsmp_64 for 32bit
+Message-ID: <20090325232921.GL7278@localdomain>
+References: <20090227001757.GE27240@localdomain> <20090228094430.GH12095@elte.hu> <20090302235120.GF27240@localdomain> <20090322124818.GA31466@elte.hu> <20090324061429.GH7278@localdomain> <20090324091035.GA6605@elte.hu> <20090325185138.GI7278@localdomain> <49CAAD2E.3060904@goop.org> <20090325223642.GK7278@localdomain> <49CABB25.8040106@goop.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49CABB25.8040106@goop.org>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - byss.tchmachines.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - scalex86.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Mar 25, 2009 at 04:15:49PM -0700, Jeremy Fitzhardinge wrote:
+> Ravikiran G Thirumalai wrote:
+>> On Wed, Mar 25, 2009 at 03:16:14PM -0700, Jeremy Fitzhardinge wrote:
+>>   
+>>> Ravikiran G Thirumalai wrote:
+>>>     
+>>>> It is already there, and has been there!  But we still need to make
+>>>> vsmp64.c compile only when CONFIG_X86_64 is defined no?
+>>>>         
+>>> I still think you should restructure it so that vsmp_64.c only gets 
+>>> compiled with CONFIG_X86_VSMP enabled.  Having all that stuff compiled 
+>>> into every kernel seems pretty pointless.
+>>>
+>>>     
+>>
+>> Well, not everything gets compiled in.  Only the is_vsmp_box() logic and
+>> related stuff gets compiled in.  Other paravirt related stuff in vsmp64.c
+>> depends on CONFIG_PARAVIRT.
+>>   
+>
+> Sure, but it would be cleaner if the whole file were controlled by 
+> CONFIG_X86_VSMP.  is_vsmp_box() is already defined as const inline 
+> returning 0 if !CONFIG_X86_VSMP.
+>
 
-
-On Wed, 25 Mar 2009, Theodore Tso wrote:
-> 
-> Um, no, ext3 shouldn't block on writepage().  Since it doesn't do
-> delayed allocation, it should always be able to push out a dirty page
-> to the disk.
-
-Umm. Maybe I'm mis-reading something, but they seem to all synchronize 
-with the journal with "ext3_journal_start/stop".
-
-Which will at a minimum wait for 'j_barrier_count == 0' and 't_state != 
-T_LOCKED'. Along with making sure that there are enough transaction 
-buffers.
-
-Do I understand _why_ ext3 does that? Hell no. The code makes no sense to 
-me. But I don't think I'm wrong.
-
-Look at the sane case (data=ordered): it still does
-
-	handle = ext3_journal_start(inode, ext3_writepage_trans_blocks(inode));
-	...
-	err = ext3_journal_stop(handle);
-
-around all the IO starting. Never mind that the IO shouldn't be needing 
-any journal activity at all afaik in any common case. 
-
-Yes, yes, it may need to allocate backing store (a page that was dirtied 
-by mmap), and I'm sure that's the reason for it all, but the point is, 
-most of the time there should be no journal activity at all, yet it looks 
-very much like a simple writepage() will synchronize with a full journal 
-and wait for the journal to get space.
-
-No?
-
-So tell me again how the VM can rely on the filesystem not blocking at 
-random points.
-
-			Linus
+The point in this thread was, is_vsmp_box() needs to be meaningful even when
+CONFIG_X86_VSMP is not on.  This is needed because is_vsmp_box() is used to
+determine if the platform has reliable tscs.
