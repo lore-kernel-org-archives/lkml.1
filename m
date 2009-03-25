@@ -1,65 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756067AbZCYV2f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756278AbZCYV2w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756067AbZCYV2f (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 17:28:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755283AbZCYV2P
+	id S1756278AbZCYV2w (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 17:28:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752879AbZCYV2l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 17:28:15 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:46478 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753094AbZCYV2O (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 17:28:14 -0400
-Date: Wed, 25 Mar 2009 14:20:06 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
-       Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
-       Roland McGrath <roland@redhat.com>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       Steven Rostedt <srostedt@redhat.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Matt Mackall <mpm@selenic.com>
-Subject: Re: [PATCH 2/5] mm: remove unlikly NULL from kfree
-Message-Id: <20090325142006.3ba0ee10.akpm@linux-foundation.org>
-In-Reply-To: <alpine.LFD.2.00.0903250840440.29264@localhost.localdomain>
-References: <20090325051920.406564281@goodmis.org>
-	<20090325052023.071564146@goodmis.org>
-	<84144f020903250034j24e1782bt5f73809b9349346c@mail.gmail.com>
-	<alpine.LFD.2.00.0903250840440.29264@localhost.localdomain>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 25 Mar 2009 17:28:41 -0400
+Received: from mail.gmx.net ([213.165.64.20]:32827 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1755283AbZCYV2k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Mar 2009 17:28:40 -0400
+X-Authenticated: #24941321
+X-Provags-ID: V01U2FsdGVkX1+5UWUf/ue5PY1eAOS3cZMCLq2gOgWXpEG6KrbwQb
+	r2pk7qGl23vzae
+Date: Wed, 25 Mar 2009 22:28:29 +0100 (CET)
+From: Detlef Tschirschky <detlef.tschirschky@gmx.de>
+To: linux-kernel@vger.kernel.org
+Subject: pppoe over ethernet
+Message-ID: <alpine.LNX.2.00.0903252206520.7962@speedy.coe.org>
+User-Agent: Alpine 2.00 (LNX 1167 2008-08-23)
+X-gpg-Key: 30BACD55
+X-gpg-fingerprint: EC55 B795 94FC 5D0C DD51  FFC1 A6F9 CA5E 30BA CD55
+Org: Centre of Excellence
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 25 Mar 2009 08:50:44 +0100 (CET) Thomas Gleixner <tglx@linutronix.de> wrote:
-
-> On Wed, 25 Mar 2009, Pekka Enberg wrote:
-> > On Wed, Mar 25, 2009 at 7:19 AM, Steven Rostedt <rostedt@goodmis.org> wrote:
-> > > This makes sense, since we now encourage developers to just call kfree
-> > > without checking for NULL.
-> > 
-> > But those are _error handling paths_ (at least supposed to be). I
-> > wonder which call-sites are responsible for this. Can frtrace help us
-> > here?
-> 
-
--mm's profile-likely-unlikely-macros.patch gives the backtraces you're
-looking for.
-
-I agree, probably some particular callsite is doing something silly and
-is skewing all the instrumentation.
-
-We have at times identified callsites where kfree(0) is so likely that
-"remove the NULL test" was an undesirable change.
-
-Many many many kfree() callsites _know_ that the pointer isn't NULL. 
-Having that test in kfree() was always stupid.  What we should do is to
-have a kfree_it_isnt_null() for those callsites so they can omit the test
-altogether.
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA512
 
 
+
+Hi Peoples,
+
+after update kernel 2.6.29 i got disconnects to my ISP.
+This happens 5 - 7 times in 12 hours.
+Reconnect fails only reboot solve that.
+Never before i have this kind of problems so i did a
+downgrade to 2.6.28.8 and all works fine again.
+
+Internet:	t-online in germany, dsl 6000.
+Connectiontype:	pppoe over ethernet
+Netcard:	3c905B 100BaseTX [Cy3c905B 100BaseTX [Cyclone] (rev 30)
+
+Hope that helps
+
+regards
+Pauli
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEAREKAAYFAknKof4ACgkQTdcxRo7lKJ2w9gCfWGw67eyF355qXrWVOdTTMuXu
+EEsAn3UetAaNwC1H55sSU7CelWxCfWXq
+=BCOK
+-----END PGP SIGNATURE-----
