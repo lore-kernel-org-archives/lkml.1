@@ -1,567 +1,248 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760229AbZCYLrY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760567AbZCYLrz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760229AbZCYLrY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 07:47:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755346AbZCYLrQ
+	id S1760567AbZCYLrz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 07:47:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758141AbZCYLrp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 07:47:16 -0400
-Received: from bilbo.ozlabs.org ([203.10.76.25]:35188 "EHLO bilbo.ozlabs.org"
+	Wed, 25 Mar 2009 07:47:45 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:35376 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752891AbZCYLrO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 07:47:14 -0400
+	id S1758658AbZCYLro (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Mar 2009 07:47:44 -0400
+Date: Wed, 25 Mar 2009 12:47:20 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Li Zefan <lizf@cn.fujitsu.com>, Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 3/3] blktrace: fix the original blktrace
+Message-ID: <20090325114720.GA9762@elte.hu>
+References: <49C9F700.9070609@cn.fujitsu.com> <49C9F796.9040503@cn.fujitsu.com> <20090325101451.GK2341@elte.hu> <20090325101747.GL27476@kernel.dk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18890.6578.728637.139402@cargo.ozlabs.ibm.com>
-Date: Wed, 25 Mar 2009 22:46:58 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>
-CC: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH v3] perfcounters: record time running and time enabled for each counter
-X-Mailer: VM 8.0.9 under Emacs 22.2.1 (i486-pc-linux-gnu)
+Content-Disposition: inline
+In-Reply-To: <20090325101747.GL27476@kernel.dk>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: new functionality
 
-Currently, if there are more counters enabled than can fit on the CPU,
-the kernel will multiplex the counters on to the hardware using
-round-robin scheduling.  That isn't too bad for sampling counters, but
-for counting counters it means that the value read from a counter
-represents some unknown fraction of the true count of events that
-occurred while the counter was enabled.
+* Jens Axboe <jens.axboe@oracle.com> wrote:
 
-This remedies the situation by keeping track of how long each counter
-is enabled for, and how long it is actually on the cpu and counting
-events.  These times are recorded in nanoseconds using the task clock
-for per-task counters and the cpu clock for per-cpu counters.
+> On Wed, Mar 25 2009, Ingo Molnar wrote:
+> > 
+> > * Li Zefan <lizf@cn.fujitsu.com> wrote:
+> > 
+> > > Currently the original blktrace, which is using relay and is used 
+> > > via ioctl, is broken. You can use ftrace to see the output of 
+> > > blktrace, but user-space blktrace is unusable.
+> > 
+> > good catch, thanks Li!
+> > 
+> > Jens, Arnaldo, do these fixes look good to you too?
+> 
+> Look fine, but I'm very worried about the state of the current 
+> code. I mean, this last round of fixes got the timestamp correct 
+> and made blktrace work again. [...]
 
-These values can be supplied to userspace on a read from the counter.
-Userspace requests that they be supplied after the counter value by
-setting the PERF_FORMAT_TOTAL_TIME_ENABLED and/or
-PERF_FORMAT_TOTAL_TIME_RUNNING bits in the hw_event.read_format field
-when creating the counter.  (There is no way to change the read format
-after the counter is created, though it would be possible to add some
-way to do that.)
+Correct. I tested it on a 16way box (see the blkparse output below). 
+If you can see any sort of anomaly please let us know so we can fix 
+it.
 
-Using this information it is possible for userspace to scale the count
-it reads from the counter to get an estimate of the true count:
+> [...] Those are something that should have been caught even before 
+> the whole thing was posted, let alone merged. When do you plan on 
+> pushing this upstream? Looks like 2.6.31 to me, it's clearly not 
+> ready for 2.6.30 by any stretch.
 
-true_count_estimate = count * total_time_enabled / total_time_running
+Well, apparently nobody tried ioctl based blktrace+blkparse on -tip 
+or linux-next in the past ~1 month. The relayfs portion was (meant 
+to be) kept largely untouched but this bug still crept in.
 
-This also lets userspace detect the situation where the counter never
-got to go on the cpu: total_time_running == 0.
+Li started looking into it and found the bug. I tested the ftrace 
+plugin side regularly, but you are right that this bug took too long 
+to find (over a month) - from now on i'll check the ioctl side more 
+regularly too, for all tracing and relayfs changes as well.
 
-This functionality has been requested by the PAPI developers, and will
-be generally needed for interpreting the count values from counting
-counters correctly.
+	Ingo
 
-In the implementation, this keeps 5 time values (in nanoseconds) for
-each counter: total_time_enabled and total_time_running are used when
-the counter is in state OFF or ERROR and for reporting back to
-userspace.  When the counter is in state INACTIVE or ACTIVE, it is the
-tstamp_enabled, tstamp_running and tstamp_stopped values that are
-relevant, and total_time_enabled and total_time_running are determined
-from them.  (tstamp_stopped is only used in INACTIVE state.)  The
-reason for doing it like this is that it means that only counters
-being enabled or disabled at sched-in and sched-out time need to be
-updated.  There are no new loops that iterate over all counters to
-update total_time_enabled or total_time_running.
+---------------->
+  8,0   13        1     0.000000000  6219  A   R 20475199 + 128 <- (8,1) 20475136
+  8,0   13        2     0.000000721  6219  Q   R 20475199 + 128 [cc1]
+  8,0   13        3     0.000008680  6219  G   R 20475199 + 128 [cc1]
+  8,0   13        4     0.000010792  6219  P   N [cc1]
+  8,0   13        5     0.000012401  6219  I   R 20475199 + 128 [cc1]
+  8,0   13        6     0.000016097  6219  U   N [cc1] 1
+  8,0   13        7     0.000023499  6219  D   R 20475199 + 128 [cc1]
+  8,0   10        1     0.018127785     0  C   R 20475199 + 128 [0]
+  8,0   10        2     0.347266011  1059  A   W 20423 + 8 <- (8,1) 20360
+  8,0   10        3     0.347266724  1059  Q   W 20423 + 8 [kjournald]
+  8,0   10        4     0.347271298  1059  G   W 20423 + 8 [kjournald]
+  8,0   10        5     0.347273197  1059  P   N [kjournald]
+  8,0   10        6     0.347274678  1059  I   W 20423 + 8 [kjournald]
+  8,0   10        7     0.347315501  1059  A   W 20431 + 8 <- (8,1) 20368
+  8,0   10        8     0.347315665  1059  Q   W 20431 + 8 [kjournald]
+  [...]
+  8,0   10    17481    16.338721149  1059  M   W 22047 + 8 [kjournald]
+  8,0   10    17482    16.338721545  1059  A   W 22055 + 8 <- (8,1) 21992
+  8,0   10    17483    16.338721701  1059  Q   W 22055 + 8 [kjournald]
+  8,0   10    17484    16.338721887  1059  M   W 22055 + 8 [kjournald]
+  8,0   10    17485    16.338722389  1059  A   W 22063 + 8 <- (8,1) 22000
+  8,0   10    17486    16.338722551  1059  Q   W 22063 + 8 [kjournald]
+  8,0   10    17487    16.338722810  1059  M   W 22063 + 8 [kjournald]
+  8,0   10    17488    16.338723586  1059  A   W 22071 + 8 <- (8,1) 22008
+  8,0   10    17489    16.338723764  1059  Q   W 22071 + 8 [kjournald]
+  8,0   10    17490    16.338723989  1059  M   W 22071 + 8 [kjournald]
+  8,0   10    17491    16.338724547  1059  A   W 22079 + 8 <- (8,1) 22016
+  8,0   10    17492    16.338724724  1059  Q   W 22079 + 8 [kjournald]
+  8,0   10    17493    16.338724989  1059  M   W 22079 + 8 [kjournald]
+  8,0   10    17494    16.338725489  1059  A   W 22087 + 8 <- (8,1) 22024
+  8,0   10    17495    16.338725656  1059  Q   W 22087 + 8 [kjournald]
+  8,0   10    17496    16.338725863  1059  M   W 22087 + 8 [kjournald]
+  8,0   10    17497    16.338726383  1059  A   W 22095 + 8 <- (8,1) 22032
+  8,0   10    17498    16.338726540  1059  Q   W 22095 + 8 [kjournald]
+  8,0   10    17499    16.338726819  1059  M   W 22095 + 8 [kjournald]
+  8,0   10    17500    16.338727300  1059  A   W 22103 + 8 <- (8,1) 22040
+  8,0   10    17501    16.338727448  1059  Q   W 22103 + 8 [kjournald]
+  8,0   10    17502    16.338727651  1059  M   W 22103 + 8 [kjournald]
+  8,0   10    17503    16.338728145  1059  A   W 22111 + 8 <- (8,1) 22048
+  8,0   10    17504    16.338728304  1059  Q   W 22111 + 8 [kjournald]
+  8,0   10    17505    16.338728568  1059  M   W 22111 + 8 [kjournald]
+  8,0   10    17506    16.338729100  1059  A   W 22119 + 8 <- (8,1) 22056
+  8,0   10    17507    16.338729251  1059  Q   W 22119 + 8 [kjournald]
+  8,0   10    17508    16.338729469  1059  M   W 22119 + 8 [kjournald]
+  8,0   10    17509    16.338729980  1059  A   W 22127 + 8 <- (8,1) 22064
+  8,0   10    17510    16.338730133  1059  Q   W 22127 + 8 [kjournald]
+  8,0   10    17511    16.338730381  1059  M   W 22127 + 8 [kjournald]
+  8,0   10    17512    16.338731606  1059  U   N [kjournald] 1
+  8,0   10    17513    16.338740396  1059  D   W 21679 + 456 [kjournald]
+  8,0   10    17514    16.341011279  7516  C   W 21679 + 456 [0]
+  8,0   10    17515    16.341075110  1059  A   W 22135 + 8 <- (8,1) 22072
+  8,0   10    17516    16.341075415  1059  Q   W 22135 + 8 [kjournald]
+  8,0   10    17517    16.341077704  1059  G   W 22135 + 8 [kjournald]
+  8,0   10    17518    16.341079074  1059  P   N [kjournald]
+  8,0   10    17519    16.341079897  1059  I   W 22135 + 8 [kjournald]
+  8,0   10    17520    16.341082865  1059  U   N [kjournald] 1
+  8,0   10    17521    16.341088012  1059  D   W 22135 + 8 [kjournald]
+  8,0   10    17522    16.341507489  7516  C   W 22135 + 8 [0]
+  8,0    0        1    16.849527724  6225  U   N [distccd] 0
+CPU0 (sda):
+ Reads Queued:           0,        0KiB	 Writes Queued:           0,        0KiB
+ Read Dispatches:        0,        0KiB	 Write Dispatches:        0,        0KiB
+ Reads Requeued:         0		 Writes Requeued:         0
+ Reads Completed:        0,        0KiB	 Writes Completed:        0,        0KiB
+ Read Merges:            0,        0KiB	 Write Merges:            0,        0KiB
+ Read depth:             1        	 Write depth:            32
+ IO unplugs:             1        	 Timer unplugs:           0
+CPU1 (sda):
+ Reads Queued:           0,        0KiB	 Writes Queued:           0,        0KiB
+ Read Dispatches:        0,        0KiB	 Write Dispatches:        0,        0KiB
+ Reads Requeued:         0		 Writes Requeued:         0
+ Reads Completed:        0,        0KiB	 Writes Completed:        0,        0KiB
+ Read Merges:            0,        0KiB	 Write Merges:            0,        0KiB
+ Read depth:             1        	 Write depth:            32
+ IO unplugs:             2        	 Timer unplugs:           0
+CPU5 (sda):
+ Reads Queued:           0,        0KiB	 Writes Queued:           0,        0KiB
+ Read Dispatches:        0,        0KiB	 Write Dispatches:        0,        0KiB
+ Reads Requeued:         0		 Writes Requeued:         0
+ Reads Completed:        0,        0KiB	 Writes Completed:        0,        0KiB
+ Read Merges:            0,        0KiB	 Write Merges:            0,        0KiB
+ Read depth:             1        	 Write depth:            32
+ IO unplugs:             1        	 Timer unplugs:           0
+CPU6 (sda):
+ Reads Queued:           0,        0KiB	 Writes Queued:           0,        0KiB
+ Read Dispatches:        0,        0KiB	 Write Dispatches:        0,        0KiB
+ Reads Requeued:         0		 Writes Requeued:         0
+ Reads Completed:        0,        0KiB	 Writes Completed:        0,        0KiB
+ Read Merges:            0,        0KiB	 Write Merges:            0,        0KiB
+ Read depth:             1        	 Write depth:            32
+ IO unplugs:             3        	 Timer unplugs:           0
+CPU8 (sda):
+ Reads Queued:           0,        0KiB	 Writes Queued:           0,        0KiB
+ Read Dispatches:        0,        0KiB	 Write Dispatches:        0,        0KiB
+ Reads Requeued:         0		 Writes Requeued:         0
+ Reads Completed:        0,        0KiB	 Writes Completed:        0,        0KiB
+ Read Merges:            0,        0KiB	 Write Merges:            0,        0KiB
+ Read depth:             1        	 Write depth:            32
+ IO unplugs:             8        	 Timer unplugs:           0
+CPU9 (sda):
+ Reads Queued:           1,        4KiB	 Writes Queued:           0,        0KiB
+ Read Dispatches:        1,        4KiB	 Write Dispatches:        0,        0KiB
+ Reads Requeued:         0		 Writes Requeued:         0
+ Reads Completed:        0,        0KiB	 Writes Completed:        0,        0KiB
+ Read Merges:            0,        0KiB	 Write Merges:            0,        0KiB
+ Read depth:             1        	 Write depth:            32
+ IO unplugs:            20        	 Timer unplugs:           0
+CPU10 (sda):
+ Reads Queued:           1,       24KiB	 Writes Queued:       5,647,   22,588KiB
+ Read Dispatches:        1,       24KiB	 Write Dispatches:      160,   22,588KiB
+ Reads Requeued:         0		 Writes Requeued:         0
+ Reads Completed:        4,      108KiB	 Writes Completed:      184,   22,684KiB
+ Read Merges:            0,        0KiB	 Write Merges:        5,487,   21,948KiB
+ Read depth:             1        	 Write depth:            32
+ IO unplugs:            35        	 Timer unplugs:           0
+CPU11 (sda):
+ Reads Queued:           0,        0KiB	 Writes Queued:          24,       96KiB
+ Read Dispatches:        0,        0KiB	 Write Dispatches:       24,       96KiB
+ Reads Requeued:         0		 Writes Requeued:         0
+ Reads Completed:        0,        0KiB	 Writes Completed:        0,        0KiB
+ Read Merges:            0,        0KiB	 Write Merges:            0,        0KiB
+ Read depth:             1        	 Write depth:            32
+ IO unplugs:             1        	 Timer unplugs:           0
+CPU12 (sda):
+ Reads Queued:           0,        0KiB	 Writes Queued:           0,        0KiB
+ Read Dispatches:        0,        0KiB	 Write Dispatches:        0,        0KiB
+ Reads Requeued:         0		 Writes Requeued:         0
+ Reads Completed:        0,        0KiB	 Writes Completed:        0,        0KiB
+ Read Merges:            0,        0KiB	 Write Merges:            0,        0KiB
+ Read depth:             1        	 Write depth:            32
+ IO unplugs:             3        	 Timer unplugs:           0
+CPU13 (sda):
+ Reads Queued:           2,       80KiB	 Writes Queued:           0,        0KiB
+ Read Dispatches:        2,       80KiB	 Write Dispatches:        0,        0KiB
+ Reads Requeued:         0		 Writes Requeued:         0
+ Reads Completed:        0,        0KiB	 Writes Completed:        0,        0KiB
+ Read Merges:            0,        0KiB	 Write Merges:            0,        0KiB
+ Read depth:             1        	 Write depth:            32
+ IO unplugs:            15        	 Timer unplugs:           0
+CPU15 (sda):
+ Reads Queued:           0,        0KiB	 Writes Queued:           0,        0KiB
+ Read Dispatches:        0,        0KiB	 Write Dispatches:        0,        0KiB
+ Reads Requeued:         0		 Writes Requeued:         0
+ Reads Completed:        0,        0KiB	 Writes Completed:        0,        0KiB
+ Read Merges:            0,        0KiB	 Write Merges:            0,        0KiB
+ Read depth:             1        	 Write depth:            32
+ IO unplugs:             3        	 Timer unplugs:           0
 
-This also keeps separate child_total_time_running and
-child_total_time_enabled fields that get added in when reporting the
-totals to userspace.  They are separate fields so that they can be
-atomic.  We don't want to use atomics for total_time_running,
-total_time_enabled etc., because then we would have to use atomic
-sequences to update them, which are slower than regular arithmetic and
-memory accesses.
+Total (sda):
+ Reads Queued:           4,      108KiB	 Writes Queued:       5,671,   22,684KiB
+ Read Dispatches:        4,      108KiB	 Write Dispatches:      184,   22,684KiB
+ Reads Requeued:         0		 Writes Requeued:         0
+ Reads Completed:        4,      108KiB	 Writes Completed:      184,   22,684KiB
+ Read Merges:            0,        0KiB	 Write Merges:        5,487,   21,948KiB
+ IO unplugs:            92        	 Timer unplugs:           0
 
-It is possible to measure total_time_running by adding a task_clock
-counter to each group of counters, and total_time_enabled can be
-measured approximately with a top-level task_clock counter (though
-inaccuracies will creep in if you need to disable and enable groups
-since it is not possible in general to disable/enable the top-level
-task_clock counter simultaneously with another group).  However, that
-adds extra overhead - I measured around 15% increase in the context
-switch latency reported by lat_ctx (from lmbench) when a task_clock
-counter was added to each of 2 groups, and around 25% increase when a
-task_clock counter was added to each of 4 groups.  (In both cases a
-top-level task-clock counter was also added.)
-
-In contrast, the code added in this commit gives better information
-with no overhead that I could measure (in fact in some cases I
-measured lower times with this code, but the differences were all less
-than one standard deviation).
-
-Signed-off-by: Paul Mackerras <paulus@samba.org>
----
-Hopefully it's now clear from the comments and the commit message that
-all the times are in units of approximately 1/pi attocenturies.  8-)
-
- arch/powerpc/kernel/perf_counter.c |    2 +
- include/linux/perf_counter.h       |   53 ++++++++++++
- kernel/perf_counter.c              |  157 +++++++++++++++++++++++++++++++-----
- 3 files changed, 191 insertions(+), 21 deletions(-)
-
-diff --git a/arch/powerpc/kernel/perf_counter.c b/arch/powerpc/kernel/perf_counter.c
-index d48596a..df007fe 100644
---- a/arch/powerpc/kernel/perf_counter.c
-+++ b/arch/powerpc/kernel/perf_counter.c
-@@ -455,6 +455,8 @@ static void counter_sched_in(struct perf_counter *counter, int cpu)
- {
- 	counter->state = PERF_COUNTER_STATE_ACTIVE;
- 	counter->oncpu = cpu;
-+	counter->tstamp_running += counter->ctx->time_now -
-+		counter->tstamp_stopped;
- 	if (is_software_counter(counter))
- 		counter->hw_ops->enable(counter);
- }
-diff --git a/include/linux/perf_counter.h b/include/linux/perf_counter.h
-index 48212c1..8317a30 100644
---- a/include/linux/perf_counter.h
-+++ b/include/linux/perf_counter.h
-@@ -103,6 +103,16 @@ enum perf_counter_record_type {
- #define PERF_COUNTER_EVENT_MASK		__PERF_COUNTER_MASK(EVENT)
- 
- /*
-+ * Bits that can be set in hw_event.read_format to request that
-+ * reads on the counter should return the indicated quantities,
-+ * in increasing order of bit value, after the counter value.
-+ */
-+enum perf_counter_read_format {
-+	PERF_FORMAT_TOTAL_TIME_ENABLED	=  1,
-+	PERF_FORMAT_TOTAL_TIME_RUNNING	=  2,
-+};
-+
-+/*
-  * Hardware event to monitor via a performance monitoring counter:
-  */
- struct perf_counter_hw_event {
-@@ -267,6 +277,32 @@ struct perf_counter {
- 	enum perf_counter_active_state	prev_state;
- 	atomic64_t			count;
- 
-+	/*
-+	 * These are the total time in nanoseconds that the counter
-+	 * has been enabled (i.e. eligible to run, and the task has
-+	 * been scheduled in, if this is a per-task counter)
-+	 * and running (scheduled onto the CPU), respectively.
-+	 *
-+	 * They are computed from tstamp_enabled, tstamp_running and
-+	 * tstamp_stopped when the counter is in INACTIVE or ACTIVE state.
-+	 */
-+	u64				total_time_enabled;
-+	u64				total_time_running;
-+
-+	/*
-+	 * These are timestamps used for computing total_time_enabled
-+	 * and total_time_running when the counter is in INACTIVE or
-+	 * ACTIVE state, measured in nanoseconds from an arbitrary point
-+	 * in time.
-+	 * tstamp_enabled: the notional time when the counter was enabled
-+	 * tstamp_running: the notional time when the counter was scheduled on
-+	 * tstamp_stopped: in INACTIVE state, the notional time when the
-+	 *	counter was scheduled off.
-+	 */
-+	u64				tstamp_enabled;
-+	u64				tstamp_running;
-+	u64				tstamp_stopped;
-+
- 	struct perf_counter_hw_event	hw_event;
- 	struct hw_perf_counter		hw;
- 
-@@ -278,6 +314,13 @@ struct perf_counter {
- 	struct list_head		child_list;
- 
- 	/*
-+	 * These accumulate total time (in nanoseconds) that children
-+	 * counters have been enabled and running, respectively.
-+	 */
-+	atomic64_t			child_total_time_enabled;
-+	atomic64_t			child_total_time_running;
-+
-+	/*
- 	 * Protect attach/detach and child_list:
- 	 */
- 	struct mutex			mutex;
-@@ -325,6 +368,16 @@ struct perf_counter_context {
- 	int			nr_active;
- 	int			is_active;
- 	struct task_struct	*task;
-+
-+	/*
-+	 * time_now is the current time in nanoseconds since an arbitrary
-+	 * point in the past.  For per-task counters, this is based on the
-+	 * task clock, and for per-cpu counters it is based on the cpu clock.
-+	 * time_lost is an offset from the task/cpu clock, used to make it
-+	 * appear that time only passes while the context is scheduled in.
-+	 */
-+	u64			time_now;
-+	u64			time_lost;
- #endif
- };
- 
-diff --git a/kernel/perf_counter.c b/kernel/perf_counter.c
-index 0412c7c..e8a6ae0 100644
---- a/kernel/perf_counter.c
-+++ b/kernel/perf_counter.c
-@@ -111,6 +111,7 @@ counter_sched_out(struct perf_counter *counter,
- 		return;
- 
- 	counter->state = PERF_COUNTER_STATE_INACTIVE;
-+	counter->tstamp_stopped = ctx->time_now;
- 	counter->hw_ops->disable(counter);
- 	counter->oncpu = -1;
- 
-@@ -247,6 +248,60 @@ retry:
- }
- 
- /*
-+ * Get the current time for this context.
-+ * If this is a task context, we use the task's task clock,
-+ * or for a per-cpu context, we use the cpu clock.
-+ */
-+static u64 get_context_time(struct perf_counter_context *ctx, int update)
-+{
-+	struct task_struct *curr = ctx->task;
-+
-+	if (!curr)
-+		return cpu_clock(smp_processor_id());
-+
-+	return __task_delta_exec(curr, update) + curr->se.sum_exec_runtime;
-+}
-+
-+/*
-+ * Update the record of the current time in a context.
-+ */
-+static void update_context_time(struct perf_counter_context *ctx, int update)
-+{
-+	ctx->time_now = get_context_time(ctx, update) - ctx->time_lost;
-+}
-+
-+/*
-+ * Update the total_time_enabled and total_time_running fields for a counter.
-+ */
-+static void update_counter_times(struct perf_counter *counter)
-+{
-+	struct perf_counter_context *ctx = counter->ctx;
-+	u64 run_end;
-+
-+	if (counter->state >= PERF_COUNTER_STATE_INACTIVE) {
-+		counter->total_time_enabled = ctx->time_now -
-+			counter->tstamp_enabled;
-+		if (counter->state == PERF_COUNTER_STATE_INACTIVE)
-+			run_end = counter->tstamp_stopped;
-+		else
-+			run_end = ctx->time_now;
-+		counter->total_time_running = run_end - counter->tstamp_running;
-+	}
-+}
-+
-+/*
-+ * Update total_time_enabled and total_time_running for all counters in a group.
-+ */
-+static void update_group_times(struct perf_counter *leader)
-+{
-+	struct perf_counter *counter;
-+
-+	update_counter_times(leader);
-+	list_for_each_entry(counter, &leader->sibling_list, list_entry)
-+		update_counter_times(counter);
-+}
-+
-+/*
-  * Cross CPU call to disable a performance counter
-  */
- static void __perf_counter_disable(void *info)
-@@ -271,6 +326,8 @@ static void __perf_counter_disable(void *info)
- 	 * If it is in error state, leave it in error state.
- 	 */
- 	if (counter->state >= PERF_COUNTER_STATE_INACTIVE) {
-+		update_context_time(ctx, 1);
-+		update_counter_times(counter);
- 		if (counter == counter->group_leader)
- 			group_sched_out(counter, cpuctx, ctx);
- 		else
-@@ -315,8 +372,10 @@ static void perf_counter_disable(struct perf_counter *counter)
- 	 * Since we have the lock this context can't be scheduled
- 	 * in, so we can change the state safely.
- 	 */
--	if (counter->state == PERF_COUNTER_STATE_INACTIVE)
-+	if (counter->state == PERF_COUNTER_STATE_INACTIVE) {
-+		update_counter_times(counter);
- 		counter->state = PERF_COUNTER_STATE_OFF;
-+	}
- 
- 	spin_unlock_irq(&ctx->lock);
- }
-@@ -361,6 +420,8 @@ counter_sched_in(struct perf_counter *counter,
- 		return -EAGAIN;
- 	}
- 
-+	counter->tstamp_running += ctx->time_now - counter->tstamp_stopped;
-+
- 	if (!is_software_counter(counter))
- 		cpuctx->active_oncpu++;
- 	ctx->nr_active++;
-@@ -418,6 +479,17 @@ static int group_can_go_on(struct perf_counter *counter,
- 	return can_add_hw;
- }
- 
-+static void add_counter_to_ctx(struct perf_counter *counter,
-+			       struct perf_counter_context *ctx)
-+{
-+	list_add_counter(counter, ctx);
-+	ctx->nr_counters++;
-+	counter->prev_state = PERF_COUNTER_STATE_OFF;
-+	counter->tstamp_enabled = ctx->time_now;
-+	counter->tstamp_running = ctx->time_now;
-+	counter->tstamp_stopped = ctx->time_now;
-+}
-+
- /*
-  * Cross CPU call to install and enable a performance counter
-  */
-@@ -442,6 +514,7 @@ static void __perf_install_in_context(void *info)
- 
- 	curr_rq_lock_irq_save(&flags);
- 	spin_lock(&ctx->lock);
-+	update_context_time(ctx, 1);
- 
- 	/*
- 	 * Protect the list operation against NMI by disabling the
-@@ -449,9 +522,7 @@ static void __perf_install_in_context(void *info)
- 	 */
- 	perf_flags = hw_perf_save_disable();
- 
--	list_add_counter(counter, ctx);
--	ctx->nr_counters++;
--	counter->prev_state = PERF_COUNTER_STATE_OFF;
-+	add_counter_to_ctx(counter, ctx);
- 
- 	/*
- 	 * Don't put the counter on if it is disabled or if
-@@ -479,8 +550,10 @@ static void __perf_install_in_context(void *info)
- 		 */
- 		if (leader != counter)
- 			group_sched_out(leader, cpuctx, ctx);
--		if (leader->hw_event.pinned)
-+		if (leader->hw_event.pinned) {
-+			update_group_times(leader);
- 			leader->state = PERF_COUNTER_STATE_ERROR;
-+		}
- 	}
- 
- 	if (!err && !ctx->task && cpuctx->max_pertask)
-@@ -541,10 +614,8 @@ retry:
- 	 * can add the counter safely, if it the call above did not
- 	 * succeed.
- 	 */
--	if (list_empty(&counter->list_entry)) {
--		list_add_counter(counter, ctx);
--		ctx->nr_counters++;
--	}
-+	if (list_empty(&counter->list_entry))
-+		add_counter_to_ctx(counter, ctx);
- 	spin_unlock_irq(&ctx->lock);
- }
- 
-@@ -569,11 +640,13 @@ static void __perf_counter_enable(void *info)
- 
- 	curr_rq_lock_irq_save(&flags);
- 	spin_lock(&ctx->lock);
-+	update_context_time(ctx, 1);
- 
- 	counter->prev_state = counter->state;
- 	if (counter->state >= PERF_COUNTER_STATE_INACTIVE)
- 		goto unlock;
- 	counter->state = PERF_COUNTER_STATE_INACTIVE;
-+	counter->tstamp_enabled = ctx->time_now - counter->total_time_enabled;
- 
- 	/*
- 	 * If the counter is in a group and isn't the group leader,
-@@ -595,8 +668,10 @@ static void __perf_counter_enable(void *info)
- 		 */
- 		if (leader != counter)
- 			group_sched_out(leader, cpuctx, ctx);
--		if (leader->hw_event.pinned)
-+		if (leader->hw_event.pinned) {
-+			update_group_times(leader);
- 			leader->state = PERF_COUNTER_STATE_ERROR;
-+		}
- 	}
- 
-  unlock:
-@@ -652,8 +727,11 @@ static void perf_counter_enable(struct perf_counter *counter)
- 	 * Since we have the lock this context can't be scheduled
- 	 * in, so we can change the state safely.
- 	 */
--	if (counter->state == PERF_COUNTER_STATE_OFF)
-+	if (counter->state == PERF_COUNTER_STATE_OFF) {
- 		counter->state = PERF_COUNTER_STATE_INACTIVE;
-+		counter->tstamp_enabled = ctx->time_now -
-+			counter->total_time_enabled;
-+	}
-  out:
- 	spin_unlock_irq(&ctx->lock);
- }
-@@ -686,6 +764,7 @@ void __perf_counter_sched_out(struct perf_counter_context *ctx,
- 	ctx->is_active = 0;
- 	if (likely(!ctx->nr_counters))
- 		goto out;
-+	update_context_time(ctx, 0);
- 
- 	flags = hw_perf_save_disable();
- 	if (ctx->nr_active) {
-@@ -790,6 +869,13 @@ __perf_counter_sched_in(struct perf_counter_context *ctx,
- 	if (likely(!ctx->nr_counters))
- 		goto out;
- 
-+	/*
-+	 * Add any time since the last sched_out to the lost time
-+	 * so it doesn't get included in the total_time_enabled and
-+	 * total_time_running measures for counters in the context.
-+	 */
-+	ctx->time_lost = get_context_time(ctx, 0) - ctx->time_now;
-+
- 	flags = hw_perf_save_disable();
- 
- 	/*
-@@ -810,8 +896,10 @@ __perf_counter_sched_in(struct perf_counter_context *ctx,
- 		 * If this pinned group hasn't been scheduled,
- 		 * put it in error state.
- 		 */
--		if (counter->state == PERF_COUNTER_STATE_INACTIVE)
-+		if (counter->state == PERF_COUNTER_STATE_INACTIVE) {
-+			update_group_times(counter);
- 			counter->state = PERF_COUNTER_STATE_ERROR;
-+		}
- 	}
- 
- 	list_for_each_entry(counter, &ctx->counter_list, list_entry) {
-@@ -895,8 +983,10 @@ int perf_counter_task_disable(void)
- 	perf_flags = hw_perf_save_disable();
- 
- 	list_for_each_entry(counter, &ctx->counter_list, list_entry) {
--		if (counter->state != PERF_COUNTER_STATE_ERROR)
-+		if (counter->state != PERF_COUNTER_STATE_ERROR) {
-+			update_group_times(counter);
- 			counter->state = PERF_COUNTER_STATE_OFF;
-+		}
- 	}
- 
- 	hw_perf_restore(perf_flags);
-@@ -939,6 +1029,8 @@ int perf_counter_task_enable(void)
- 		if (counter->state > PERF_COUNTER_STATE_OFF)
- 			continue;
- 		counter->state = PERF_COUNTER_STATE_INACTIVE;
-+		counter->tstamp_enabled = ctx->time_now -
-+			counter->total_time_enabled;
- 		counter->hw_event.disabled = 0;
- 	}
- 	hw_perf_restore(perf_flags);
-@@ -1002,10 +1094,14 @@ void perf_counter_task_tick(struct task_struct *curr, int cpu)
- static void __read(void *info)
- {
- 	struct perf_counter *counter = info;
-+	struct perf_counter_context *ctx = counter->ctx;
- 	unsigned long flags;
- 
- 	curr_rq_lock_irq_save(&flags);
-+	if (ctx->is_active)
-+		update_context_time(ctx, 1);
- 	counter->hw_ops->read(counter);
-+	update_counter_times(counter);
- 	curr_rq_unlock_irq_restore(&flags);
- }
- 
-@@ -1018,6 +1114,8 @@ static u64 perf_counter_read(struct perf_counter *counter)
- 	if (counter->state == PERF_COUNTER_STATE_ACTIVE) {
- 		smp_call_function_single(counter->oncpu,
- 					 __read, counter, 1);
-+	} else if (counter->state == PERF_COUNTER_STATE_INACTIVE) {
-+		update_counter_times(counter);
- 	}
- 
- 	return atomic64_read(&counter->count);
-@@ -1130,10 +1228,8 @@ static int perf_release(struct inode *inode, struct file *file)
- static ssize_t
- perf_read_hw(struct perf_counter *counter, char __user *buf, size_t count)
- {
--	u64 cntval;
--
--	if (count < sizeof(cntval))
--		return -EINVAL;
-+	u64 values[3];
-+	int n;
- 
- 	/*
- 	 * Return end-of-file for a read on a counter that is in
-@@ -1144,10 +1240,24 @@ perf_read_hw(struct perf_counter *counter, char __user *buf, size_t count)
- 		return 0;
- 
- 	mutex_lock(&counter->mutex);
--	cntval = perf_counter_read(counter);
-+	values[0] = perf_counter_read(counter);
-+	n = 1;
-+	if (counter->hw_event.read_format & PERF_FORMAT_TOTAL_TIME_ENABLED)
-+		values[n++] = counter->total_time_enabled +
-+			atomic64_read(&counter->child_total_time_enabled);
-+	if (counter->hw_event.read_format & PERF_FORMAT_TOTAL_TIME_RUNNING)
-+		values[n++] = counter->total_time_running +
-+			atomic64_read(&counter->child_total_time_running);
- 	mutex_unlock(&counter->mutex);
- 
--	return put_user(cntval, (u64 __user *) buf) ? -EFAULT : sizeof(cntval);
-+	if (count < n * sizeof(u64))
-+		return -EINVAL;
-+	count = n * sizeof(u64);
-+
-+	if (copy_to_user(buf, values, count))
-+		return -EFAULT;
-+
-+	return count;
- }
- 
- static ssize_t
-@@ -2203,8 +2313,7 @@ inherit_counter(struct perf_counter *parent_counter,
- 	 * Link it up in the child's context:
- 	 */
- 	child_counter->task = child;
--	list_add_counter(child_counter, child_ctx);
--	child_ctx->nr_counters++;
-+	add_counter_to_ctx(child_counter, child_ctx);
- 
- 	child_counter->parent = parent_counter;
- 	/*
-@@ -2274,6 +2383,10 @@ static void sync_child_counter(struct perf_counter *child_counter,
- 	 * Add back the child's count to the parent's count:
- 	 */
- 	atomic64_add(child_val, &parent_counter->count);
-+	atomic64_add(child_counter->total_time_enabled,
-+		     &parent_counter->child_total_time_enabled);
-+	atomic64_add(child_counter->total_time_running,
-+		     &parent_counter->child_total_time_running);
- 
- 	/*
- 	 * Remove this counter from the parent's list
-@@ -2308,6 +2421,7 @@ __perf_counter_exit_task(struct task_struct *child,
- 	if (child != current) {
- 		wait_task_inactive(child, 0);
- 		list_del_init(&child_counter->list_entry);
-+		update_counter_times(child_counter);
- 	} else {
- 		struct perf_cpu_context *cpuctx;
- 		unsigned long flags;
-@@ -2325,6 +2439,7 @@ __perf_counter_exit_task(struct task_struct *child,
- 		cpuctx = &__get_cpu_var(perf_cpu_context);
- 
- 		group_sched_out(child_counter, cpuctx, child_ctx);
-+		update_counter_times(child_counter);
- 
- 		list_del_init(&child_counter->list_entry);
- 
--- 
-1.5.6.3
-
+Throughput (R/W): 6KiB/s / 1,346KiB/s
+Events (sda): 17,723 entries
+Skips: 0 forward (0 -   0.0%)
+Input file sda.blktrace.0 added
+Input file sda.blktrace.1 added
+Input file sda.blktrace.5 added
+Input file sda.blktrace.6 added
+Input file sda.blktrace.8 added
+Input file sda.blktrace.9 added
+Input file sda.blktrace.10 added
+Input file sda.blktrace.11 added
+Input file sda.blktrace.12 added
+Input file sda.blktrace.13 added
+Input file sda.blktrace.15 added
