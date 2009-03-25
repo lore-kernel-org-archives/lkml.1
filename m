@@ -1,160 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758846AbZCYU3m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756939AbZCYUgw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758846AbZCYU3m (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 16:29:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754234AbZCYU3e
+	id S1756939AbZCYUgw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 16:36:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753786AbZCYUgm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 16:29:34 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:48432 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752533AbZCYU3d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 16:29:33 -0400
-Date: Wed, 25 Mar 2009 21:28:30 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: fenghua.yu@intel.com
-Cc: dwmw2@infradead.org, amluto@gmail.com, kyle@redhat.com,
-       mgross@linux.intel.com, linux-kernel@vger.kernel.org,
-       iommu@lists.linux-foundation.org
-Subject: Re: [patch 2/2] Intel IOMMU Suspend/Resume Support for Queued
-	Invalidation.
-Message-ID: <20090325202830.GB26204@elte.hu>
-References: <20090325184548.012018000@intel.com> <20090325184635.523469000@intel.com>
+	Wed, 25 Mar 2009 16:36:42 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:40845 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752727AbZCYUgl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Mar 2009 16:36:41 -0400
+Date: Wed, 25 Mar 2009 14:36:24 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Christoph Hellwig <hch@infradead.org>, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org
+Subject: Re: [PATCH] Add a 'wait-scan' command to /proc/scsi/scsi.
+Message-ID: <20090325203624.GT14127@parisc-linux.org>
+References: <1238007647-25752-1-git-send-email-notting@redhat.com> <20090325190137.GA8509@infradead.org> <20090325190321.GB25176@nostromo.devel.redhat.com> <20090325192653.GS14127@parisc-linux.org> <20090325194756.GA26465@nostromo.devel.redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090325184635.523469000@intel.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20090325194756.GA26465@nostromo.devel.redhat.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Mar 25, 2009 at 03:47:56PM -0400, Bill Nottingham wrote:
+> Matthew Wilcox (matthew@wil.cx) said: 
+> > On Wed, Mar 25, 2009 at 03:03:21PM -0400, Bill Nottingham wrote:
+> > > Then where is a better place to put this, as scsi_wait_scan.ko is
+> > > a ridiculous interface for userspace?
+> > 
+> > It would be nice if people would comment on "ridiculous interface"s when
+> > they're asked for feedback, instead of waiting more than two years.
+> 
+> Sure, but asking all people who might eventually have to use it
+> to always watch any possible interface addition isn't practical.
 
-(only small style nits.)
+Right.  I asked several people at Red Hat about the interface and I got a
+"yeah, OK, whatever" kind of response.  Clearly you need to educate your
+colleagues to pass these kinds of interface questions along to you.
 
-* fenghua.yu@intel.com <fenghua.yu@intel.com> wrote:
+> I would have hoped that the fact that the interface required loading
+> a module and immediately removing it by hand is suboptimal enough
+> that it wouldn't have gotten in in the first place.
 
->  /*
-> + * Enable queued invalidation.
-> + */
-> +static void __dmar_enable_qi(struct intel_iommu *iommu)
+It seems pretty elegant to me, actually.  There's no overhead after
+you're done (unlike having a sysfs file, or even including a new ability
+in a procfs file).
 
-nice helper function.
+> > I think you're misunderstanding how to use scsi_wait_scan.  The idea was
+> > that the bit of userspace that probes all the device drivers would do:
+> > 
+> > modprobe fusion.ko
+> > modprobe aic79xx.ko
+> > modprobe sym53c8xx.ko
+> > modprobe scsi_wait_scan
+> > rmmod scsi_wait_scan
+> > 
+> > et voila, you're done.  It seems like you want random other bits of
+> > userspace to wait for scsi scanning to be done, and that wasn't the
+> > original intent.
+> 
+> Well, in the case I'm looking at, udev is what's loading the host
+> controllers, and there needs to be some sort of synchronization point
+> between that and LVM invocations, fsck, mount, etc. Since scans
+> aren't sent over as events for udev to catch, 'udevadm settle'
+> isn't enough.
 
-> +{
-> +	u32 cmd, sts;
-> +	unsigned long flags;
-> +	struct q_inval *qi = iommu->qi;
-> +
-> +	qi->free_head = qi->free_tail = 0;
-> +	qi->free_cnt = QI_LENGTH;
-> +
-> +	spin_lock_irqsave(&iommu->register_lock, flags);
-> +	/* write zero to the tail reg */
-> +	writel(0, iommu->reg + DMAR_IQT_REG);
+So ... if we sent a udev event when the scan list was empty, you'd be OK?
 
-( small nit: critical sections are important to see at a glance, and 
-  they are easier to recognize if there's a newline before and after 
-  the spin_lock_irqsave() call. That will also make the comment 
-  after that stand out more. )
+> Removing, loading, and removing scsi_wait_scan works
+> here, but it just seems like a kludge.
 
-> +
-> +	dmar_writeq(iommu->reg + DMAR_IQA_REG, virt_to_phys(qi->desc));
-> +
-> +	cmd = iommu->gcmd | DMA_GCMD_QIE;
-> +	iommu->gcmd |= DMA_GCMD_QIE;
-> +	writel(cmd, iommu->reg + DMAR_GCMD_REG);
-> +
-> +	/* Make sure hardware complete it */
-> +	IOMMU_WAIT_OP(iommu, DMAR_GSTS_REG, readl, (sts & DMA_GSTS_QIES), sts);
-> +	spin_unlock_irqrestore(&iommu->register_lock, flags);
+I don't quite understand why it was loaded, and not unloaded immediately.
 
-(ditto.)
+> I can trigger a load of scsi_wait_scan when hosts are registered
+> in udev, but that's still ugly, and sort of overkill.
 
-> +}
-> +
-> +/*
->   * Enable Queued Invalidation interface. This is a must to support
->   * interrupt-remapping. Also used by DMA-remapping, which replaces
->   * register based IOTLB invalidation.
->   */
->  int dmar_enable_qi(struct intel_iommu *iommu)
->  {
-> -	u32 cmd, sts;
-> -	unsigned long flags;
->  	struct q_inval *qi;
->  
->  	if (!ecap_qis(iommu->ecap))
-> @@ -835,19 +860,7 @@ int dmar_enable_qi(struct intel_iommu *iommu)
->  
->  	spin_lock_init(&qi->q_lock);
->  
-> -	spin_lock_irqsave(&iommu->register_lock, flags);
-> -	/* write zero to the tail reg */
-> -	writel(0, iommu->reg + DMAR_IQT_REG);
-> -
-> -	dmar_writeq(iommu->reg + DMAR_IQA_REG, virt_to_phys(qi->desc));
-> -
-> -	cmd = iommu->gcmd | DMA_GCMD_QIE;
-> -	iommu->gcmd |= DMA_GCMD_QIE;
-> -	writel(cmd, iommu->reg + DMAR_GCMD_REG);
-> -
-> -	/* Make sure hardware complete it */
-> -	IOMMU_WAIT_OP(iommu, DMAR_GSTS_REG, readl, (sts & DMA_GSTS_QIES), sts);
-> -	spin_unlock_irqrestore(&iommu->register_lock, flags);
-> +	__dmar_enable_qi(iommu);
->  
->  	return 0;
->  }
-> @@ -1102,3 +1115,27 @@ int __init enable_drhd_fault_handling(void)
->  
->  	return 0;
->  }
-> +
-> +/*
-> + * Re-enable Queued Invalidation interface.
-> + */
-> +int dmar_reenable_qi(struct intel_iommu *iommu)
-> +{
-> +	if (!ecap_qis(iommu->ecap))
-> +		return -ENOENT;
-> +
-> +	if (!iommu->qi)
-> +		return -ENOENT;
+That would rather miss the point, yes.
 
-> +
-> +	/*
-> +	 * First disable queued invalidation.
-> +	 */
-> +	dmar_disable_qi(iommu);
-> +	/* Then enable queued invalidation again. Since there is no pending
-> +	 * invalidation requests now, it's safe to re-enable queued
-> +	 * invalidation.
-> +	 */
-> +	__dmar_enable_qi(iommu);
-
-the comment style looks a bit inconsistent here - the second 
-one should be full winged comments as well, i.e.:
-
-> +	/*
-> +	 * First disable queued invalidation.
-> +	 */
-> +	dmar_disable_qi(iommu);
-> +
-> +	/*
-> +	 * Then enable queued invalidation again. Since there is no pending
-> +	 * invalidation requests now, it's safe to re-enable queued
-> +	 * invalidation.
-> +	 */
-> +	__dmar_enable_qi(iommu);
-
-Thanks,
-
-	Ingo
+-- 
+Matthew Wilcox				Intel Open Source Technology Centre
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
