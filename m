@@ -1,82 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756074AbZCYRwq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762542AbZCYRxm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756074AbZCYRwq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 13:52:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755266AbZCYRwi
+	id S1762542AbZCYRxm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 13:53:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753966AbZCYRxd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 13:52:38 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:51049 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754534AbZCYRwh (ORCPT
+	Wed, 25 Mar 2009 13:53:33 -0400
+Received: from casper.infradead.org ([85.118.1.10]:44126 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752811AbZCYRxc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 13:52:37 -0400
-Date: Wed, 25 Mar 2009 13:52:33 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Chetan.Loke@Emulex.Com
-cc: peterz@infradead.org, mingo@elte.hu, mathieu.desnoyers@polymtl.ca,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       ltt-dev@lists.casi.polymtl.ca, fweisbec@gmail.com, jbaron@redhat.com,
-       tglx@linutronix.de, rmk+lkml@arm.linux.org.uk, mhiramat@redhat.com,
-       fche@redhat.com, haoki@redhat.com, t-nishiie@np.css.fujitsu.com,
-       eduard.munteanu@linux360.ro
-Subject: RE: [patch 3/9] LTTng instrumentation tasklets
-In-Reply-To: <BD597E014482714090555A6376F9CA8B771BE5A25D@EXMAIL.ad.emulex.com>
-Message-ID: <alpine.DEB.2.00.0903251351440.5675@gandalf.stny.rr.com>
-References: <20090324155625.420966314@polymtl.ca>  <20090324160148.238795468@polymtl.ca> <20090324175621.GE31117@elte.hu>  <BD597E014482714090555A6376F9CA8B771BE5A0BD@EXMAIL.ad.emulex.com> <1237990678.7972.1094.camel@twins>
- <BD597E014482714090555A6376F9CA8B771BE5A25D@EXMAIL.ad.emulex.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 25 Mar 2009 13:53:32 -0400
+Subject: Re: 2.6.29: can't resume from suspend with DMAR (intel iommu)
+ enabled
+From: David Woodhouse <dwmw2@infradead.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Andrew Lutomirski <amluto@gmail.com>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Kyle McMartin <kyle@redhat.com>, Fenghua Yu <fenghua.yu@intel.com>,
+       Suresh Siddha <suresh.b.siddha@intel.com>,
+       Yinghai Lu <yinghai@kernel.org>, Mark Gross <mgross@linux.intel.com>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20090324203259.GC26930@elte.hu>
+References: <cb0375e10903241258x32c9d0f3g35a4f56793eb8677@mail.gmail.com>
+	 <20090324203259.GC26930@elte.hu>
+Content-Type: text/plain
+Date: Wed, 25 Mar 2009 17:53:01 +0000
+Message-Id: <1238003581.2085.53.camel@macbook.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Wed, 25 Mar 2009, Chetan.Loke@Emulex.Com wrote:
-
->  
+On Tue, 2009-03-24 at 21:32 +0100, Ingo Molnar wrote:
+> (Cc:s added)
 > 
-> > -----Original Message-----
-> > From: Peter Zijlstra [mailto:peterz@infradead.org] 
-> > Sent: Wednesday, March 25, 2009 10:18 AM
-> > To: Loke,Chetan
-> > Cc: mingo@elte.hu; mathieu.desnoyers@polymtl.ca; 
-> > akpm@linux-foundation.org; linux-kernel@vger.kernel.org; 
-> > ltt-dev@lists.casi.polymtl.ca; fweisbec@gmail.com; 
-> > jbaron@redhat.com; tglx@linutronix.de; 
-> > rmk+lkml@arm.linux.org.uk; mhiramat@redhat.com; 
-> > fche@redhat.com; haoki@redhat.com; 
-> > t-nishiie@np.css.fujitsu.com; rostedt@goodmis.org; 
-> > eduard.munteanu@linux360.ro
-> > Subject: RE: [patch 3/9] LTTng instrumentation tasklets
-> > 
-> > On Wed, 2009-03-25 at 06:52 -0700, Chetan.Loke@Emulex.Com wrote:
-> > > Quick question. I understand this is unrelated to this patch. So I 
-> > > apologize in advance.
-> > > Ingo - you mentioned "tasklets are a legacy mechanism". Is there a 
-> > > plan to phase them out ? Let me draw a small picture as to what's 
-> > > bothering me.
-> > > 
-> > > With the SR-IOV support if there are 'N' virtual functions 
-> > then there 
-> > > will be 'N' driver instances(actually N+1, 1 for the PF). If that 
-> > > driver drains the responses in the interrupt context then all such 
-> > > VF-instances could virtually block everyone else(because 
-> > SR-IOV guys 
-> > > might also have MSI-X enabled).
-> > > So now all such drivers should alter their Rx path.Driver's 
-> > can queue 
-> > > tasklets and can also get the performance they want.
-> > > 
-> > > Any suggestions?
-> > 
-> > Threaded interrupts?
-> > 
+> * Andrew Lutomirski <amluto@gmail.com> wrote:
 > 
-> If we truly need to address performance and scalability for the SCSI-subsystem then we need something lightweight.
+> > On vanilla 2.6.29 (on Ubuntu 8.10), on a Lenovo x200s, my system 
+> > is completely hosed on resume.  It appears that even hard disk IO 
+> > didn't work (trying to do *anything* including getting a dmesg 
+> > trace just spewed sda io errors to the console).  Hence no trace.  
+> > I did an alt-sysrq-b and the screen went blank and the machine 
+> > just started beeping at me.
+> > 
+> > Resume works much better with intel_iommu=off.  (I remember seeing 
+> > a patch go by that purported to fix resume with IOMMU enabled, but 
+> > it didn't work for me.)
+> > 
+> > I'd be happy to try to make a better bug report if anyone has any 
+> > bright ideas.
+> 
+> i have a Lenovo T500 that does not even boot with with DMAR enabled 
+> in the BIOS (it's default-off), i get this panic in early bootup:
+> 
+>     DMAR hardware is malfunctioning
 
-Threaded interrupts are actually quite light.
+Can you show me the output of the pr_debug() statement at dmar.c:543 (in
+alloc_iommu()? 
 
--- Steve
+And bring me the head of a BIOS author.
+
+-- 
+David Woodhouse                            Open Source Technology Centre
+David.Woodhouse@intel.com                              Intel Corporation
 
