@@ -1,99 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754783AbZCYXEN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756741AbZCYXEl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754783AbZCYXEN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 19:04:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752098AbZCYXD6
+	id S1756741AbZCYXEl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 19:04:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751949AbZCYXE2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 19:03:58 -0400
-Received: from g1t0028.austin.hp.com ([15.216.28.35]:21809 "EHLO
-	g1t0028.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750849AbZCYXD5 (ORCPT
+	Wed, 25 Mar 2009 19:04:28 -0400
+Received: from g5t0006.atlanta.hp.com ([15.192.0.43]:19557 "EHLO
+	g5t0006.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752098AbZCYXE1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 19:03:57 -0400
-Date: Wed, 25 Mar 2009 17:03:54 -0600
-From: Alex Chiang <achiang@hp.com>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: htejun@gmail.com, greg@kroah.com, cornelia.huck@de.ibm.com,
-       kay.sievers@vrfy.org, rusty@rustcorp.com.au, ebiederm@xmission.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC PATCH 0/3] sysfs: allow suicide
-Message-ID: <20090325230354.GB11447@ldl.fc.hp.com>
-References: <20090325035707.15921.42150.stgit@bob.kio> <Pine.LNX.4.44L0.0903251036450.3462-100000@iolanthe.rowland.org>
+	Wed, 25 Mar 2009 19:04:27 -0400
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+To: Matthew Garrett <mjg@redhat.com>
+Subject: Re: [PATCH 01/30] disallow SERIAL_8250_PNP with SERIAL_8250_CONSOLE
+Date: Wed, 25 Mar 2009 17:04:21 -0600
+User-Agent: KMail/1.9.10
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Andrey Panin <pazke@donpac.ru>,
+       linux-kernel@vger.kernel.org, linux-serial@vger.kernel.org,
+       torvalds@linux-foundation.org, williams@redhat.com
+References: <20090324151034.GC6859@ports.donpac.ru> <20090324223632.66680ebd@lxorguk.ukuu.org.uk> <20090324225812.GA30827@srcf.ucam.org>
+In-Reply-To: <20090324225812.GA30827@srcf.ucam.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.0903251036450.3462-100000@iolanthe.rowland.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Message-Id: <200903251704.22377.bjorn.helgaas@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Alan Stern <stern@rowland.harvard.edu>:
-> On Tue, 24 Mar 2009, Alex Chiang wrote:
+On Tuesday 24 March 2009 04:58:12 pm Matthew Garrett wrote:
+> On Tue, Mar 24, 2009 at 10:36:32PM +0000, Alan Cox wrote:
+> > On Tue, 24 Mar 2009 22:29:34 +0000
+> > Matthew Garrett <mjg59@srcf.ucam.org> wrote:
+> > > I'd prefer not to go with this approach unless we've got a convincing 
+> > > number of bugs filed. It's guaranteed to reduce hardware support in 
+> > > favour of fixing an unknown number of machines.
+> > 
+> > I get a regular stream of complaints. But as I said Red Hat is the patch
+> > originator, Red Hat has the distro bugzilla so perhaps Red Hat folks can
+> > comment ?
 > 
-> > Hi all,
-> > 
-> > This is a refreshed version of the patch series Tejun posted quite a while
-> > ago that allowed sysfs attributes to commit suicide directly:
-> > 
-> > 	http://thread.gmane.org/gmane.linux.kernel/582130/
-> 
-> > The most contentious part is patch 1/3, wherein sysfs abuses the
-> > module notifier call chain, and basically prevents all module unloads
-> > until suicidal sysfs attributes have completed.
-> > 
-> > This is poison of a different flavor from last time. The earlier version
-> > of this series modified the module API and created an interface that
-> > allowed anyone to inhibit module unload.
-> > 
-> > This time, only sysfs is allowed to be so... special. Which is a slight
-> > improvement, but the question as to whether sysfs should be allowed to
-> > do something like this is unresolved.
-> 
-> I tend to agree with Eric that this feels a little like a band-aid, and 
-> a more general solution would be preferable.  But I don't have one to 
-> offer, and getting the immediate problems fixed is also important.
+> I've had a dig through Bugzilla but couldn't find it, and it doesn't 
+> seem to be in anything we're shipping right now. Clark, do you have a 
+> pointer to a bug that this patch came from?
 
-Well, getting the sysfs callback off the global workqueue is an
-immediate fix that:
+This patch is a major problem for ia64.  ia64 doesn't have any legacy
+serial port probing, so if we turn off SERIAL_8250_PNP, we won't find
+any of the non-PCI built-in ports.  Many of these machines have only
+serial consoles, so turning off either SERIAL_8250_PNP or SERIAL_8250_CONSOLE
+is a problem.
 
-	- introduces no conceptual change
-	- fixes the lockdep false positive
-	- doesn't try to be clever with references
+Red Hat has been shipping with ia64 kernels with CONFIG_SERIAL_8250_CONSOLE=y
+and CONFIG_SERIAL_8250_PNP=y (or its predecessor CONFIG_SERIAL_8250_ACPI=y)
+since at least RHEL4.
 
-If the consensus here is that this suicide patch series is simply
-a band-aid, then I think my other patch will have solved the
-problem as much as possible without getting mired in a
-conversation about truth and beauty.
-
-> Why change the inhibit-module-unload interface?  This new approach
-> seems a lot more complicated than needed; a simple rwsem should work
-> okay.  Exposing it to the entire kernel when only sysfs uses it doesn't 
-> matter -- there must be plenty of EXPORTed symbols with only one user.
-
-My concern was more the other way around, that exposing a
-sledgehammer interface to anyone who wants to inhibit module
-unload might not seem like such a wise choice.
-
-I felt that going through the blocking notifier call chain was a
-little more proper, in the sense of, "ok well we're going to
-allow this inhibit-unload but we know exactly who's doing it".
-
-But that seems irrelevant now.
- 
-> Which reminds me...  What happens if two different processes write to
-> the same suicidal sysfs attribute at the same time?
-
-Good question; I didn't test that with Tejun's patches.
-
-Using the callback mechanism, and a recent patch I wrote that
-Greg accepted for 2.6.30, we only allow one in-flight callback
-per sysfs attribute/kobject at a time. The loser of the race gets
--EAGAIN while the remove is occurring, and then when the
-attribute goes away, gets "file not found" (or something
-similar).
-
-Thanks.
-
-/ac
-
+Bjorn
