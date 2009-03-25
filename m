@@ -1,179 +1,189 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757868AbZCYNGU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758878AbZCYNHc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757868AbZCYNGU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 09:06:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754725AbZCYNGM
+	id S1758878AbZCYNHc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 09:07:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754783AbZCYNHP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 09:06:12 -0400
-Received: from ey-out-2122.google.com ([74.125.78.24]:29805 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754294AbZCYNGL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 09:06:11 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=ZkhkaSOtideloGVV0RJbQ5N/FYl06NutAEIwxfI0Me5znbi3jGFugp3wm+EgOYajUi
-         QeYBlQ0+PYAPOo2FLZDbCBuuFUCB2xgUO9QFVAWodfwvIbX85sf/xnwar7MrUguaAmrS
-         lSo2dAvL0fbPOB64SgMvh7vFx/fGwnTu4hi1c=
-Date: Wed, 25 Mar 2009 14:06:04 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Rusty Russell <rusty@rustcorp.com.au>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, ltt-dev@lists.casi.polymtl.ca,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       "Frank Ch. Eigler" <fche@redhat.com>, Hideo AOKI <haoki@redhat.com>,
-       Takashi Nishiie <t-nishiie@np.css.fujitsu.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-Subject: Re: [patch 7/9] LTTng instrumentation - kernel
-Message-ID: <20090325130603.GD5976@nowhere>
-References: <20090324155625.420966314@polymtl.ca> <20090324160148.872305963@polymtl.ca> <20090324183313.GH31117@elte.hu>
+	Wed, 25 Mar 2009 09:07:15 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:35944 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753934AbZCYNHN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Mar 2009 09:07:13 -0400
+Date: Wed, 25 Mar 2009 14:04:43 +0100
+From: Jiri Pirko <jpirko@redhat.com>
+To: linux-kernel@vger.kernel.org
+Cc: netdev@vger.kernel.org, jgarzik@pobox.com, davem@davemloft.net,
+       shemminger@linux-foundation.org, bridge@lists.linux-foundation.org,
+       fubar@us.ibm.com, bonding-devel@lists.sourceforge.net, kaber@trash.net,
+       mschmidt@redhat.com
+Subject: [PATCH] bonding: allow bond in mode balance-alb to work properly
+	in bridge -try2
+Message-ID: <20090325130443.GG3437@psychotron.englab.brq.redhat.com>
+References: <20090313183303.GF3436@psychotron.englab.brq.redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090324183313.GH31117@elte.hu>
+In-Reply-To: <20090313183303.GF3436@psychotron.englab.brq.redhat.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 24, 2009 at 07:33:13PM +0100, Ingo Molnar wrote:
-> 
-> (Rusty Cc:-ed - for the module.c tracepoints below)
-> 
-> * Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
-> 
-> > Instrument the core kernel : module load/free and printk events. It helps the
-> > tracer to keep track of module related events and to export valuable printk
-> > information into the traces.
-> > 
-> > Those tracepoints are used by LTTng.
-> > 
-> > About the performance impact of tracepoints (which is comparable to markers),
-> > even without immediate values optimizations, tests done by Hideo Aoki on ia64
-> > show no regression. His test case was using hackbench on a kernel where
-> > scheduler instrumentation (about 5 events in code scheduler code) was added.
-> > See the "Tracepoints" patch header for performance result detail.
-> > 
-> > Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-> > CC: 'Ingo Molnar' <mingo@elte.hu>
-> > CC: Frederic Weisbecker <fweisbec@gmail.com>
-> > CC: Andrew Morton <akpm@linux-foundation.org>
-> > CC: Masami Hiramatsu <mhiramat@redhat.com>
-> > CC: 'Peter Zijlstra' <peterz@infradead.org>
-> > CC: "Frank Ch. Eigler" <fche@redhat.com>
-> > CC: 'Hideo AOKI' <haoki@redhat.com>
-> > CC: Takashi Nishiie <t-nishiie@np.css.fujitsu.com>
-> > CC: 'Steven Rostedt' <rostedt@goodmis.org>
-> > CC: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-> > ---
-> >  include/trace/kernel.h |   19 +++++++++++++++++++
-> >  kernel/module.c        |    8 ++++++++
-> >  kernel/printk.c        |    7 +++++++
-> >  3 files changed, 34 insertions(+)
-> > 
-> > Index: linux-2.6-lttng/kernel/printk.c
-> > ===================================================================
-> > --- linux-2.6-lttng.orig/kernel/printk.c	2009-03-24 09:09:52.000000000 -0400
-> > +++ linux-2.6-lttng/kernel/printk.c	2009-03-24 09:31:53.000000000 -0400
-> > @@ -32,6 +32,7 @@
-> >  #include <linux/security.h>
-> >  #include <linux/bootmem.h>
-> >  #include <linux/syscalls.h>
-> > +#include <trace/kernel.h>
-> >  
-> >  #include <asm/uaccess.h>
-> >  
-> > @@ -59,6 +60,7 @@ int console_printk[4] = {
-> >  	MINIMUM_CONSOLE_LOGLEVEL,	/* minimum_console_loglevel */
-> >  	DEFAULT_CONSOLE_LOGLEVEL,	/* default_console_loglevel */
-> >  };
-> > +EXPORT_SYMBOL_GPL(console_printk);
-> >  
-> >  /*
-> >   * Low level drivers may need that to know if they can schedule in
-> > @@ -128,6 +130,9 @@ EXPORT_SYMBOL(console_set_on_cmdline);
-> >  /* Flag: console code may call schedule() */
-> >  static int console_may_schedule;
-> >  
-> > +DEFINE_TRACE(kernel_printk);
-> > +DEFINE_TRACE(kernel_vprintk);
-> > +
-> >  #ifdef CONFIG_PRINTK
-> >  
-> >  static char __log_buf[__LOG_BUF_LEN];
-> > @@ -560,6 +565,7 @@ asmlinkage int printk(const char *fmt, .
-> >  	int r;
-> >  
-> >  	va_start(args, fmt);
-> > +	trace_kernel_printk(_RET_IP_);
-> >  	r = vprintk(fmt, args);
-> >  	va_end(args);
-> >
-> > @@ -667,6 +673,7 @@ asmlinkage int vprintk(const char *fmt, 
-> >  	printed_len += vscnprintf(printk_buf + printed_len,
-> >  				  sizeof(printk_buf) - printed_len, fmt, args);
-> >  
-> > +	trace_kernel_vprintk(_RET_IP_, printk_buf, printed_len);
-> 
-> So here we pass in the formatted output. What sense does it make to 
-> have the above printk tracepoint? Little i think.
-> 
-> Also, i'm not entirely convinced about the wiseness of instrumenting 
-> an essential debug facility like printk(). Lets keep this one at the 
-> tail portion of the patch-queue, ok?
+(resend)
+
+Hi all.
+
+The problem is described in following bugzilla:
+https://bugzilla.redhat.com/show_bug.cgi?id=487763
+
+Basically here's what's going on. In every mode, bonding interface uses the same
+mac address for all enslaved devices. Except for mode balance-alb. When you put
+this kind of bond device into a bridge it will only add one of mac adresses into
+a hash list of mac addresses, say X. This mac address is marked as local. But
+this bonding interface also has mac address Y. Now then packet arrives with
+destination address Y, this address is not marked as local and the packed looks
+like it needs to be forwarded. This packet is then lost which is wrong.
+
+Notice that interfaces can be added and removed from bond while it is in bridge.
+
+This patch solves the situation in the bonding without touching bridge code,
+as Patrick suggested. For every incoming frame to bonding it searches the
+destination address in slaves list and if any of slave addresses matches, it
+rewrites the address in frame by the adress of bonding master. This ensures that
+all frames comming thru the bonding in alb mode have the same address.
+
+Jirka
 
 
-Especially the trace_kernel_printk hook which only probes the printk callers.
-I don't think a performance measurement of a printk call in that relevant.
+Signed-off-by: Jiri Pirko <jpirko@redhat.com>
 
-Concerning trace_kernel_vprintk(), if the goal is to capture the printk messages,
-I would rather see it through the dynamic printk facility or setting a console which
-route printk output to trace_printk(). If that is useful for someone.
-
-Thanks,
-Frederic.
-
+diff --git a/drivers/net/bonding/bond_alb.c b/drivers/net/bonding/bond_alb.c
+index 27fb7f5..2838be0 100644
+--- a/drivers/net/bonding/bond_alb.c
++++ b/drivers/net/bonding/bond_alb.c
+@@ -1762,6 +1762,26 @@ int bond_alb_set_mac_address(struct net_device *bond_dev, void *addr)
+ 	return 0;
+ }
  
-> > Index: linux-2.6-lttng/kernel/module.c
-> > ===================================================================
-> > --- linux-2.6-lttng.orig/kernel/module.c	2009-03-24 09:09:59.000000000 -0400
-> > +++ linux-2.6-lttng/kernel/module.c	2009-03-24 09:31:53.000000000 -0400
-> > @@ -51,6 +51,7 @@
-> >  #include <linux/tracepoint.h>
-> >  #include <linux/ftrace.h>
-> >  #include <linux/async.h>
-> > +#include <trace/kernel.h>
-> >  
-> >  #if 0
-> >  #define DEBUGP printk
-> > @@ -78,6 +79,9 @@ static BLOCKING_NOTIFIER_HEAD(module_not
-> >  /* Bounds of module allocation, for speeding __module_text_address */
-> >  static unsigned long module_addr_min = -1UL, module_addr_max = 0;
-> >  
-> > +DEFINE_TRACE(kernel_module_load);
-> > +DEFINE_TRACE(kernel_module_free);
-> 
-> I believe that to have a complete picture of module usage, module 
-> refcount get/put events should be included as well, beyond the basic 
-> load/free events.
-> 
-> These both have performance impact (a module get/put in a fastpath 
-> hurts scalability), and are informative in terms of establishing the 
-> module dependency graph.
-> 
-> Another thing that is iteresting and which is not covered here are 
-> module request events and usermode helper callouts. These too have 
-> instrumentation and performance analysis uses.
-> 
-> Plus, here too it would be desired to put in default probes as well, 
-> via TRACE_EVENT().
-> 
-> Thanks,
-> 
-> 	Ingo
-
++void bond_alb_change_dest(struct sk_buff *skb)
++{
++	struct net_device *bond_dev = skb->dev;
++	struct bonding *bond = netdev_priv(bond_dev);
++	unsigned char *dest = eth_hdr(skb)->h_dest;
++	struct slave *slave;
++	int i;
++
++	if (!memcmp(dest, bond_dev->dev_addr, ETH_ALEN))
++		return;
++	read_lock(&bond->lock);
++	bond_for_each_slave(bond, slave, i) {
++		if (!memcmp(slave->dev->dev_addr, dest, ETH_ALEN)) {
++			memcpy(dest, bond_dev->dev_addr, ETH_ALEN);
++			break;
++		}
++	}
++	read_unlock(&bond->lock);
++}
++
+ void bond_alb_clear_vlan(struct bonding *bond, unsigned short vlan_id)
+ {
+ 	if (bond->alb_info.current_alb_vlan &&
+diff --git a/drivers/net/bonding/bond_alb.h b/drivers/net/bonding/bond_alb.h
+index 50968f8..77f36fb 100644
+--- a/drivers/net/bonding/bond_alb.h
++++ b/drivers/net/bonding/bond_alb.h
+@@ -127,6 +127,7 @@ void bond_alb_handle_active_change(struct bonding *bond, struct slave *new_slave
+ int bond_alb_xmit(struct sk_buff *skb, struct net_device *bond_dev);
+ void bond_alb_monitor(struct work_struct *);
+ int bond_alb_set_mac_address(struct net_device *bond_dev, void *addr);
++void bond_alb_change_dest(struct sk_buff *skb);
+ void bond_alb_clear_vlan(struct bonding *bond, unsigned short vlan_id);
+ #endif /* __BOND_ALB_H__ */
+ 
+diff --git a/drivers/net/bonding/bond_main.c b/drivers/net/bonding/bond_main.c
+index 3d76686..b62fdc4 100644
+--- a/drivers/net/bonding/bond_main.c
++++ b/drivers/net/bonding/bond_main.c
+@@ -4294,6 +4294,19 @@ unwind:
+ 	return res;
+ }
+ 
++/*
++ * Called via bond_change_dest_hook.
++ * note: already called with rcu_read_lock (preempt_disabled)
++ */
++void bond_change_dest(struct sk_buff *skb)
++{
++	struct net_device *bond_dev = skb->dev;
++	struct bonding *bond = netdev_priv(bond_dev);
++
++	if (bond->params.mode == BOND_MODE_ALB)
++		bond_alb_change_dest(skb);
++}
++
+ static int bond_xmit_roundrobin(struct sk_buff *skb, struct net_device *bond_dev)
+ {
+ 	struct bonding *bond = netdev_priv(bond_dev);
+@@ -5243,6 +5256,8 @@ static int __init bonding_init(void)
+ 	register_inetaddr_notifier(&bond_inetaddr_notifier);
+ 	bond_register_ipv6_notifier();
+ 
++	bond_change_dest_hook = bond_change_dest;
++
+ 	goto out;
+ err:
+ 	list_for_each_entry(bond, &bond_dev_list, bond_list) {
+@@ -5266,6 +5281,8 @@ static void __exit bonding_exit(void)
+ 	unregister_inetaddr_notifier(&bond_inetaddr_notifier);
+ 	bond_unregister_ipv6_notifier();
+ 
++	bond_change_dest_hook = NULL;
++
+ 	bond_destroy_sysfs();
+ 
+ 	rtnl_lock();
+diff --git a/drivers/net/bonding/bonding.h b/drivers/net/bonding/bonding.h
+index ca849d2..df92b70 100644
+--- a/drivers/net/bonding/bonding.h
++++ b/drivers/net/bonding/bonding.h
+@@ -375,5 +375,7 @@ static inline void bond_unregister_ipv6_notifier(void)
+ }
+ #endif
+ 
++extern void (*bond_change_dest_hook)(struct sk_buff *skb);
++
+ #endif /* _LINUX_BONDING_H */
+ 
+diff --git a/net/core/dev.c b/net/core/dev.c
+index e3fe5c7..abe68d9 100644
+--- a/net/core/dev.c
++++ b/net/core/dev.c
+@@ -2061,6 +2061,13 @@ static inline int deliver_skb(struct sk_buff *skb,
+ 	return pt_prev->func(skb, skb->dev, pt_prev, orig_dev);
+ }
+ 
++#if defined(CONFIG_BONDING) || defined(CONFIG_BONDING_MODULE)
++void (*bond_change_dest_hook)(struct sk_buff *skb) __read_mostly;
++EXPORT_SYMBOL(bond_change_dest_hook);
++#else
++#define bond_change_dest_hook(skb) do {} while (0)
++#endif
++
+ #if defined(CONFIG_BRIDGE) || defined (CONFIG_BRIDGE_MODULE)
+ /* These hooks defined here for ATM */
+ struct net_bridge;
+@@ -2251,10 +2258,12 @@ int netif_receive_skb(struct sk_buff *skb)
+ 	null_or_orig = NULL;
+ 	orig_dev = skb->dev;
+ 	if (orig_dev->master) {
+-		if (skb_bond_should_drop(skb))
++		if (skb_bond_should_drop(skb)) {
+ 			null_or_orig = orig_dev; /* deliver only exact match */
+-		else
++		} else {
+ 			skb->dev = orig_dev->master;
++			bond_change_dest_hook(skb);
++		}
+ 	}
+ 
+ 	__get_cpu_var(netdev_rx_stat).total++;
