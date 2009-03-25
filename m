@@ -1,74 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755793AbZCYV2T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756067AbZCYV2f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755793AbZCYV2T (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 17:28:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752098AbZCYV2E
+	id S1756067AbZCYV2f (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 17:28:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755283AbZCYV2P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 17:28:04 -0400
-Received: from mail-fx0-f158.google.com ([209.85.220.158]:37342 "EHLO
-	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751215AbZCYV2C (ORCPT
+	Wed, 25 Mar 2009 17:28:15 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:46478 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753094AbZCYV2O (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 17:28:02 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=t4oVpDLelObDtW7XZnZkLwugk9M2fGSLtVZMG2I5IWk0qsp1MSeB4Ys3M5CUTve+sn
-         ey4rRj7CLuf16M5mA6H6YgykV/m9KmOZWTPIEZv8lf7/L6IRpcG86IH78q7eXxoB+hYH
-         ol3+kgrv6qHY+2aY3i3lZS+rGa8kyCi7p0yIU=
-Message-ID: <49CAA1D6.4080407@panasas.com>
-Date: Wed, 25 Mar 2009 23:27:50 +0200
-From: Benny Halevy <bhalevy@panasas.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686 (x86_64); en-US; rv:1.9.1b3pre) Gecko/20090223 Thunderbird/3.0b2
-MIME-Version: 1.0
-To: Jeff Garzik <jeff@garzik.org>
-CC: Ric Wheeler <rwheeler@redhat.com>, Jens Axboe <jens.axboe@oracle.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Theodore Tso <tytso@mit.edu>, Ingo Molnar <mingo@elte.hu>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Nick Piggin <npiggin@suse.de>,
-       David Rees <drees76@gmail.com>, Jesper Krogh <jesper@krogh.cc>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.29
-References: <20090324093245.GA22483@elte.hu> <20090324101011.6555a0b9@lxorguk.ukuu.org.uk> <20090324103111.GA26691@elte.hu> <20090324132032.GK5814@mit.edu> <alpine.LFD.2.00.0903241053200.3032@localhost.localdomain> <20090324184549.GE32307@mit.edu> <alpine.LFD.2.00.0903241218130.3032@localhost.localdomain> <49C93AB0.6070300@garzik.org> <20090325093913.GJ27476@kernel.dk> <49CA86BD.6060205@garzik.org> <20090325194341.GB27476@kernel.dk> <49CA8ADA.3040709@redhat.com> <49CA9114.3040205@garzik.org>
-In-Reply-To: <49CA9114.3040205@garzik.org>
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 25 Mar 2009 17:28:14 -0400
+Date: Wed, 25 Mar 2009 14:20:06 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
+       Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
+       Roland McGrath <roland@redhat.com>,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       Steven Rostedt <srostedt@redhat.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Matt Mackall <mpm@selenic.com>
+Subject: Re: [PATCH 2/5] mm: remove unlikly NULL from kfree
+Message-Id: <20090325142006.3ba0ee10.akpm@linux-foundation.org>
+In-Reply-To: <alpine.LFD.2.00.0903250840440.29264@localhost.localdomain>
+References: <20090325051920.406564281@goodmis.org>
+	<20090325052023.071564146@goodmis.org>
+	<84144f020903250034j24e1782bt5f73809b9349346c@mail.gmail.com>
+	<alpine.LFD.2.00.0903250840440.29264@localhost.localdomain>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mar. 25, 2009, 22:16 +0200, Jeff Garzik <jeff@garzik.org> wrote:
-> Ric Wheeler wrote:> And, as I am sure that you do know, to add insult to 
-> injury, FLUSH_CACHE
->> is per device (not file system).
->>
->> When you issue an fsync() on a disk with multiple partitions, you will 
->> flush the data for all of its partitions from the write cache....
-> 
-> SCSI'S SYNCHRONIZE CACHE command already accepts an (LBA, length) pair. 
->   We could make use of that.
-> 
-> And I bet we could convince T13 to add FLUSH CACHE RANGE, if we could 
-> demonstrate clear benefit.
+On Wed, 25 Mar 2009 08:50:44 +0100 (CET) Thomas Gleixner <tglx@linutronix.de> wrote:
 
-One more example of flexible, fine grain flush (though quite far out) are
-T10 OSDs with which you can flush a byte range of a single object
-(or collection, partition, or the whole device LUN)
+> On Wed, 25 Mar 2009, Pekka Enberg wrote:
+> > On Wed, Mar 25, 2009 at 7:19 AM, Steven Rostedt <rostedt@goodmis.org> wrote:
+> > > This makes sense, since we now encourage developers to just call kfree
+> > > without checking for NULL.
+> > 
+> > But those are _error handling paths_ (at least supposed to be). I
+> > wonder which call-sites are responsible for this. Can frtrace help us
+> > here?
+> 
 
-Benny
+-mm's profile-likely-unlikely-macros.patch gives the backtraces you're
+looking for.
 
-> 
-> 	Jeff
-> 
-> 
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+I agree, probably some particular callsite is doing something silly and
+is skewing all the instrumentation.
+
+We have at times identified callsites where kfree(0) is so likely that
+"remove the NULL test" was an undesirable change.
+
+Many many many kfree() callsites _know_ that the pointer isn't NULL. 
+Having that test in kfree() was always stupid.  What we should do is to
+have a kfree_it_isnt_null() for those callsites so they can omit the test
+altogether.
+
 
