@@ -1,51 +1,1222 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762004AbZCYO4N@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762169AbZCYO50@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762004AbZCYO4N (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 10:56:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753635AbZCYOzx
+	id S1762169AbZCYO50 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 10:57:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755356AbZCYO5O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 10:55:53 -0400
-Received: from mail-bw0-f169.google.com ([209.85.218.169]:64690 "EHLO
-	mail-bw0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753110AbZCYOzt (ORCPT
+	Wed, 25 Mar 2009 10:57:14 -0400
+Received: from moutng.kundenserver.de ([212.227.126.188]:63595 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753086AbZCYO5L (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 10:55:49 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=coV4HgdwG5lNUYL8HnjI3adRxCLBsEVPeWi0Hf77yJ47Concc+IZJUIB8onPQbPuac
-         S9XX5NA+Xp4Tl5V0qamhSwPuM0on0SXwduz8AKyClfHlDKZOI7X3VbGgypLgNvUdByd1
-         DiDp/+boQeDK9LkwnBSVtK5b0l/NC38Z6LrFA=
-MIME-Version: 1.0
-In-Reply-To: <1235899275-23630-4-git-send-email-geert@linux-m68k.org>
-References: <1235899275-23630-1-git-send-email-geert@linux-m68k.org>
-	 <1235899275-23630-2-git-send-email-geert@linux-m68k.org>
-	 <1235899275-23630-3-git-send-email-geert@linux-m68k.org>
-	 <1235899275-23630-4-git-send-email-geert@linux-m68k.org>
-Date: Wed, 25 Mar 2009 15:55:44 +0100
-X-Google-Sender-Auth: c3fcc8f8339fe5ae
-Message-ID: <10f740e80903250755o5b0e0315g2c3c27d3d0af1be0@mail.gmail.com>
-Subject: Re: [PATCH 3/6] m68k: mac - Add SWIM floppy support
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Jens Axboe <axboe@kernel.dk>
-Cc: linux-kernel@vger.kernel.org, Laurent Vivier <laurent@lvivier.info>,
-       linux-m68k@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
+	Wed, 25 Mar 2009 10:57:11 -0400
+From: Thierry Reding <thierry.reding@avionic-design.de>
+To: netdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH v2] net: Add support for the OpenCores 10/100 Mbps Ethernet MAC.
+Date: Wed, 25 Mar 2009 15:57:07 +0100
+Message-Id: <1237993027-12702-1-git-send-email-thierry.reding@avionic-design.de>
+X-Mailer: git-send-email 1.6.2.1
+In-Reply-To: <1237889923-32257-1-git-send-email-thierry.reding@avionic-design.de>
+References: <1237889923-32257-1-git-send-email-thierry.reding@avionic-design.de>
+X-Provags-ID: V01U2FsdGVkX19/4HwbmxjwwbDjiLQNedhcsVEoX2Jt5Yr/0Zd
+ s8mHGcng1l5gwioJKTAYL4UbsNBg3DNFm1zR4RXyfqXfz6Wv39
+ /P+7FmHZEN8vp+3ETYV4g==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id n2PEuLqu004162
 
-Hi Jens,
-Is this OK for you to go in through the m68k tree?
-Thanks!
-On Sun, Mar 1, 2009 at 10:21, Geert Uytterhoeven <geert@linux-m68k.org> wrote:> From: Laurent Vivier <laurent@lvivier.info>>> It allows to read data from a floppy, but not to write to, and to eject the> floppy (useful on our Mac without eject button).>> Signed-off-by: Laurent Vivier <Laurent@lvivier.info>> Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>> Cc: Jens Axboe <axboe@kernel.dk>> --->  arch/m68k/mac/config.c   |   44 ++>  arch/m68k/mac/via.c      |    9 +>  drivers/block/Kconfig    |    7 +>  drivers/block/Makefile   |    3 +>  drivers/block/swim.c     |  995 ++++++++++++++++++++++++++++++++++++++++++++++>  drivers/block/swim_asm.S |  247 ++++++++++++>  6 files changed, 1305 insertions(+), 0 deletions(-)>  create mode 100644 drivers/block/swim.c>  create mode 100644 drivers/block/swim_asm.S>> diff --git a/arch/m68k/mac/config.c b/arch/m68k/mac/config.c> index 3a1c0b2..be01798 100644> --- a/arch/m68k/mac/config.c> +++ b/arch/m68k/mac/config.c> @@ -22,6 +22,7 @@>  /* keyb */>  #include <linux/init.h>>  #include <linux/vt_kern.h>> +#include <linux/platform_device.h>>>  #define BOOTINFO_COMPAT_1_0>  #include <asm/setup.h>> @@ -43,6 +44,10 @@>  #include <asm/mac_oss.h>>  #include <asm/mac_psc.h>>> +/* platform device info */> +> +#define SWIM_IO_SIZE 0x2000    /* SWIM IO resource size */> +>  /* Mac bootinfo struct */>>  struct mac_booter_data mac_bi_data;> @@ -870,3 +875,42 @@ static void mac_get_model(char *str)>        strcpy(str, "Macintosh ");>        strcat(str, macintosh_config->name);>  }> +> +static struct resource swim_resources[1];> +> +static struct platform_device swim_device = {> +       .name           = "swim",> +       .id             = -1,> +       .num_resources  = ARRAY_SIZE(swim_resources),> +       .resource       = swim_resources,> +};> +> +static struct platform_device *mac_platform_devices[] __initdata = {> +       &swim_device> +};> +> +int __init mac_platform_init(void)> +{> +       u8 *swim_base;> +> +       switch (macintosh_config->floppy_type) {> +       case MAC_FLOPPY_SWIM_ADDR1:> +               swim_base = (u8 *)(VIA1_BASE + 0x1E000);> +               break;> +       case MAC_FLOPPY_SWIM_ADDR2:> +               swim_base = (u8 *)(VIA1_BASE + 0x16000);> +               break;> +       default:> +               return 0;> +       }> +> +       swim_resources[0].name = "swim-regs";> +       swim_resources[0].start = (resource_size_t)swim_base;> +       swim_resources[0].end = (resource_size_t)(swim_base + SWIM_IO_SIZE);> +       swim_resources[0].flags = IORESOURCE_MEM;> +> +       return platform_add_devices(mac_platform_devices,> +                                   ARRAY_SIZE(mac_platform_devices));> +}> +> +arch_initcall(mac_platform_init);> diff --git a/arch/m68k/mac/via.c b/arch/m68k/mac/via.c> index 7d97ba5..11bce3c 100644> --- a/arch/m68k/mac/via.c> +++ b/arch/m68k/mac/via.c> @@ -645,3 +645,12 @@ int via_irq_pending(int irq)>        }>        return 0;>  }> +> +void via1_set_head(int head)> +{> +       if (head == 0)> +               via1[vBufA] &= ~VIA1A_vHeadSel;> +       else> +               via1[vBufA] |= VIA1A_vHeadSel;> +}> +EXPORT_SYMBOL(via1_set_head);> diff --git a/drivers/block/Kconfig b/drivers/block/Kconfig> index 0344a8a..e7b8aa0 100644> --- a/drivers/block/Kconfig> +++ b/drivers/block/Kconfig> @@ -45,6 +45,13 @@ config MAC_FLOPPY>          If you have a SWIM-3 (Super Woz Integrated Machine 3; from Apple)>          floppy controller, say Y here. Most commonly found in PowerMacs.>> +config BLK_DEV_SWIM> +       tristate "Support for SWIM Macintosh floppy"> +       depends on M68K && MAC> +       help> +         You should select this option if you want floppy support> +         and you don't have a II, IIfx, Q900, Q950 or AV series.> +>  config AMIGA_Z2RAM>        tristate "Amiga Zorro II ramdisk support">        depends on ZORRO> diff --git a/drivers/block/Makefile b/drivers/block/Makefile> index 204332b..b32b7f9 100644> --- a/drivers/block/Makefile> +++ b/drivers/block/Makefile> @@ -6,6 +6,7 @@>  #>>  obj-$(CONFIG_MAC_FLOPPY)       += swim3.o> +obj-$(CONFIG_BLK_DEV_SWIM)     += swim_mod.o>  obj-$(CONFIG_BLK_DEV_FD)       += floppy.o>  obj-$(CONFIG_AMIGA_FLOPPY)     += amiflop.o>  obj-$(CONFIG_PS3_DISK)         += ps3disk.o> @@ -32,3 +33,5 @@ obj-$(CONFIG_BLK_DEV_UB)      += ub.o>  obj-$(CONFIG_BLK_DEV_HD)       += hd.o>>  obj-$(CONFIG_XEN_BLKDEV_FRONTEND)      += xen-blkfront.o> +> +swim_mod-objs  := swim.o swim_asm.o> diff --git a/drivers/block/swim.c b/drivers/block/swim.c> new file mode 100644> index 0000000..d22cc38> --- /dev/null> +++ b/drivers/block/swim.c> @@ -0,0 +1,995 @@> +/*> + * Driver for SWIM (Sander Woz Integrated Machine) floppy controller> + *> + * Copyright (C) 2004,2008 Laurent Vivier <Laurent@lvivier.info>> + *> + * based on Alastair Bridgewater SWIM analysis, 2001> + * based on SWIM3 driver (c) Paul Mackerras, 1996> + * based on netBSD IWM driver (c) 1997, 1998 Hauke Fath.> + *> + * This program is free software; you can redistribute it and/or> + * modify it under the terms of the GNU General Public License> + * as published by the Free Software Foundation; either version> + * 2 of the License, or (at your option) any later version.> + *> + * 2004-08-21 (lv) - Initial implementation> + * 2008-10-30 (lv) - Port to 2.6> + */> +> +#include <linux/module.h>> +#include <linux/fd.h>> +#include <linux/blkdev.h>> +#include <linux/hdreg.h>> +#include <linux/kernel.h>> +#include <linux/delay.h>> +#include <linux/platform_device.h>> +> +#include <asm/macintosh.h>> +#include <asm/mac_via.h>> +> +#define CARDNAME "swim"> +> +struct sector_header {> +       unsigned char side;> +       unsigned char track;> +       unsigned char sector;> +       unsigned char size;> +       unsigned char crc0;> +       unsigned char crc1;> +} __attribute__((packed));> +> +#define DRIVER_VERSION "Version 0.2 (2008-10-30)"> +> +#define REG(x) unsigned char x, x ## _pad[0x200 - 1];> +> +struct swim {> +       REG(write_data)> +       REG(write_mark)> +       REG(write_CRC)> +       REG(write_parameter)> +       REG(write_phase)> +       REG(write_setup)> +       REG(write_mode0)> +       REG(write_mode1)> +> +       REG(read_data)> +       REG(read_mark)> +       REG(read_error)> +       REG(read_parameter)> +       REG(read_phase)> +       REG(read_setup)> +       REG(read_status)> +       REG(read_handshake)> +} __attribute__((packed));> +> +#define swim_write(base, reg, v)       out_8(&(base)->write_##reg, (v))> +#define swim_read(base, reg)           in_8(&(base)->read_##reg)> +> +/* IWM registers */> +> +struct iwm {> +       REG(ph0L)> +       REG(ph0H)> +       REG(ph1L)> +       REG(ph1H)> +       REG(ph2L)> +       REG(ph2H)> +       REG(ph3L)> +       REG(ph3H)> +       REG(mtrOff)> +       REG(mtrOn)> +       REG(intDrive)> +       REG(extDrive)> +       REG(q6L)> +       REG(q6H)> +       REG(q7L)> +       REG(q7H)> +} __attribute__((packed));> +> +#define iwm_write(base, reg, v)        out_8(&(base)->reg, (v))> +#define iwm_read(base, reg)            in_8(&(base)->reg)> +> +/* bits in phase register */> +> +#define SEEK_POSITIVE  0x070> +#define SEEK_NEGATIVE  0x074> +#define STEP           0x071> +#define MOTOR_ON       0x072> +#define MOTOR_OFF      0x076> +#define INDEX          0x073> +#define EJECT          0x077> +#define SETMFM         0x171> +#define SETGCR         0x175> +> +#define RELAX          0x033> +#define LSTRB          0x008> +> +#define CA_MASK                0x077> +> +/* Select values for swim_select and swim_readbit */> +> +#define READ_DATA_0    0x074> +#define TWOMEG_DRIVE   0x075> +#define SINGLE_SIDED   0x076> +#define DRIVE_PRESENT  0x077> +#define DISK_IN                0x170> +#define WRITE_PROT     0x171> +#define TRACK_ZERO     0x172> +#define TACHO          0x173> +#define READ_DATA_1    0x174> +#define MFM_MODE       0x175> +#define SEEK_COMPLETE  0x176> +#define ONEMEG_MEDIA   0x177> +> +/* Bits in handshake register */> +> +#define MARK_BYTE      0x01> +#define CRC_ZERO       0x02> +#define RDDATA         0x04> +#define SENSE          0x08> +#define MOTEN          0x10> +#define ERROR          0x20> +#define DAT2BYTE       0x40> +#define DAT1BYTE       0x80> +> +/* bits in setup register */> +> +#define S_INV_WDATA    0x01> +#define S_3_5_SELECT   0x02> +#define S_GCR          0x04> +#define S_FCLK_DIV2    0x08> +#define S_ERROR_CORR   0x10> +#define S_IBM_DRIVE    0x20> +#define S_GCR_WRITE    0x40> +#define S_TIMEOUT      0x80> +> +/* bits in mode register */> +> +#define CLFIFO         0x01> +#define ENBL1          0x02> +#define ENBL2          0x04> +#define ACTION         0x08> +#define WRITE_MODE     0x10> +#define HEDSEL         0x20> +#define MOTON          0x80> +> +/*----------------------------------------------------------------------------*/> +> +enum drive_location {> +       INTERNAL_DRIVE = 0x02,> +       EXTERNAL_DRIVE = 0x04,> +};> +> +enum media_type {> +       DD_MEDIA,> +       HD_MEDIA,> +};> +> +struct floppy_state {> +> +       /* physical properties */> +> +       enum drive_location location;   /* internal or external drive */> +       int              head_number;   /* single- or double-sided drive */> +> +       /* media */> +> +       int              disk_in;> +       int              ejected;> +       enum media_type  type;> +       int              write_protected;> +> +       int              total_secs;> +       int              secpercyl;> +       int              secpertrack;> +> +       /* in-use information */> +> +       int             track;> +       int             ref_count;> +> +       struct gendisk *disk;> +> +       /* parent controller */> +> +       struct swim_priv *swd;> +};> +> +enum motor_action {> +       OFF,> +       ON,> +};> +> +enum head {> +       LOWER_HEAD = 0,> +       UPPER_HEAD = 1,> +};> +> +#define FD_MAX_UNIT    2> +> +struct swim_priv {> +       struct swim __iomem *base;> +       spinlock_t lock;> +       struct request_queue *queue;> +       int floppy_count;> +       struct floppy_state unit[FD_MAX_UNIT];> +};> +> +extern int swim_read_sector_header(struct swim __iomem *base,> +                                  struct sector_header *header);> +extern int swim_read_sector_data(struct swim __iomem *base,> +                                unsigned char *data);> +> +static inline void set_swim_mode(struct swim __iomem *base, int enable)> +{> +       struct iwm __iomem *iwm_base;> +       unsigned long flags;> +> +       if (!enable) {> +               swim_write(base, mode0, 0xf8);> +               return;> +       }> +> +       iwm_base = (struct iwm __iomem *)base;> +       local_irq_save(flags);> +> +       iwm_read(iwm_base, q7L);> +       iwm_read(iwm_base, mtrOff);> +       iwm_read(iwm_base, q6H);> +> +       iwm_write(iwm_base, q7H, 0x57);> +       iwm_write(iwm_base, q7H, 0x17);> +       iwm_write(iwm_base, q7H, 0x57);> +       iwm_write(iwm_base, q7H, 0x57);> +> +       local_irq_restore(flags);> +}> +> +static inline int get_swim_mode(struct swim __iomem *base)> +{> +       unsigned long flags;> +> +       local_irq_save(flags);> +> +       swim_write(base, phase, 0xf5);> +       if (swim_read(base, phase) != 0xf5)> +               goto is_iwm;> +       swim_write(base, phase, 0xf6);> +       if (swim_read(base, phase) != 0xf6)> +               goto is_iwm;> +       swim_write(base, phase, 0xf7);> +       if (swim_read(base, phase) != 0xf7)> +               goto is_iwm;> +       local_irq_restore(flags);> +       return 1;> +is_iwm:> +       local_irq_restore(flags);> +       return 0;> +}> +> +static inline void swim_select(struct swim __iomem *base, int sel)> +{> +       swim_write(base, phase, RELAX);> +> +       via1_set_head(sel & 0x100);> +> +       swim_write(base, phase, sel & CA_MASK);> +}> +> +static inline void swim_action(struct swim __iomem *base, int action)> +{> +       unsigned long flags;> +> +       local_irq_save(flags);> +> +       swim_select(base, action);> +       udelay(1);> +       swim_write(base, phase, (LSTRB<<4) | LSTRB);> +       udelay(1);> +       swim_write(base, phase, (LSTRB<<4) | ((~LSTRB) & 0x0F));> +       udelay(1);> +> +       local_irq_restore(flags);> +}> +> +static inline int swim_readbit(struct swim __iomem *base, int bit)> +{> +       int stat;> +> +       swim_select(base, bit);> +> +       udelay(10);> +> +       stat = swim_read(base, handshake);> +> +       return (stat & SENSE) == 0;> +}> +> +static inline void swim_drive(struct swim __iomem *base,> +                             enum drive_location location)> +{> +       if (location == INTERNAL_DRIVE) {> +               swim_write(base, mode0, EXTERNAL_DRIVE); /* clear drive 1 bit */> +               swim_write(base, mode1, INTERNAL_DRIVE); /* set drive 0 bit */> +       } else if (location == EXTERNAL_DRIVE) {> +               swim_write(base, mode0, INTERNAL_DRIVE); /* clear drive 0 bit */> +               swim_write(base, mode1, EXTERNAL_DRIVE); /* set drive 1 bit */> +       }> +}> +> +static inline void swim_motor(struct swim __iomem *base,> +                             enum motor_action action)> +{> +       if (action == ON) {> +               int i;> +> +               swim_action(base, MOTOR_ON);> +> +               for (i = 0; i < 2*HZ; i++) {> +                       swim_select(base, RELAX);> +                       if (swim_readbit(base, MOTOR_ON))> +                               break;> +                       current->state = TASK_INTERRUPTIBLE;> +                       schedule_timeout(1);> +               }> +       } else if (action == OFF) {> +               swim_action(base, MOTOR_OFF);> +               swim_select(base, RELAX);> +       }> +}> +> +static inline void swim_eject(struct swim __iomem *base)> +{> +       int i;> +> +       swim_action(base, EJECT);> +> +       for (i = 0; i < 2*HZ; i++) {> +               swim_select(base, RELAX);> +               if (!swim_readbit(base, DISK_IN))> +                       break;> +               current->state = TASK_INTERRUPTIBLE;> +               schedule_timeout(1);> +       }> +       swim_select(base, RELAX);> +}> +> +static inline void swim_head(struct swim __iomem *base, enum head head)> +{> +       /* wait drive is ready */> +> +       if (head == UPPER_HEAD)> +               swim_select(base, READ_DATA_1);> +       else if (head == LOWER_HEAD)> +               swim_select(base, READ_DATA_0);> +}> +> +static inline int swim_step(struct swim __iomem *base)> +{> +       int wait;> +> +       swim_action(base, STEP);> +> +       for (wait = 0; wait < HZ; wait++) {> +> +               current->state = TASK_INTERRUPTIBLE;> +               schedule_timeout(1);> +> +               swim_select(base, RELAX);> +               if (!swim_readbit(base, STEP))> +                       return 0;> +       }> +       return -1;> +}> +> +static inline int swim_track00(struct swim __iomem *base)> +{> +       int try;> +> +       swim_action(base, SEEK_NEGATIVE);> +> +       for (try = 0; try < 100; try++) {> +> +               swim_select(base, RELAX);> +               if (swim_readbit(base, TRACK_ZERO))> +                       break;> +> +               if (swim_step(base))> +                       return -1;> +       }> +> +       if (swim_readbit(base, TRACK_ZERO))> +               return 0;> +> +       return -1;> +}> +> +static inline int swim_seek(struct swim __iomem *base, int step)> +{> +       if (step == 0)> +               return 0;> +> +       if (step < 0) {> +               swim_action(base, SEEK_NEGATIVE);> +               step = -step;> +       } else> +               swim_action(base, SEEK_POSITIVE);> +> +       for ( ; step > 0; step--) {> +               if (swim_step(base))> +                       return -1;> +       }> +> +       return 0;> +}> +> +static inline int swim_track(struct floppy_state *fs,  int track)> +{> +       struct swim __iomem *base = fs->swd->base;> +       int ret;> +> +       ret = swim_seek(base, track - fs->track);> +> +       if (ret == 0)> +               fs->track = track;> +       else {> +               swim_track00(base);> +               fs->track = 0;> +       }> +> +       return ret;> +}> +> +static int floppy_eject(struct floppy_state *fs)> +{> +       struct swim __iomem *base = fs->swd->base;> +> +       swim_drive(base, fs->location);> +       swim_motor(base, OFF);> +       swim_eject(base);> +> +       fs->disk_in = 0;> +       fs->ejected = 1;> +> +       return 0;> +}> +> +static inline int swim_read_sector(struct floppy_state *fs,> +                                  int side, int track,> +                                  int sector, unsigned char *buffer)> +{> +       struct swim __iomem *base = fs->swd->base;> +       unsigned long flags;> +       struct sector_header header;> +       int ret = -1;> +       short i;> +> +       swim_track(fs, track);> +> +       swim_write(base, mode1, MOTON);> +       swim_head(base, side);> +       swim_write(base, mode0, side);> +> +       local_irq_save(flags);> +       for (i = 0; i < 36; i++) {> +               ret = swim_read_sector_header(base, &header);> +               if (!ret && (header.sector == sector)) {> +                       /* found */> +> +                       ret = swim_read_sector_data(base, buffer);> +                       break;> +               }> +       }> +       local_irq_restore(flags);> +> +       swim_write(base, mode0, MOTON);> +> +       if ((header.side != side)  || (header.track != track) ||> +            (header.sector != sector))> +               return 0;> +> +       return ret;> +}> +> +static int floppy_read_sectors(struct floppy_state *fs,> +                              int req_sector, int sectors_nb,> +                              unsigned char *buffer)> +{> +       struct swim __iomem *base = fs->swd->base;> +       int ret;> +       int side, track, sector;> +       int i, try;> +> +> +       swim_drive(base, fs->location);> +       for (i = req_sector; i < req_sector + sectors_nb; i++) {> +               int x;> +               track = i / fs->secpercyl;> +               x = i % fs->secpercyl;> +               side = x / fs->secpertrack;> +               sector = x % fs->secpertrack + 1;> +> +               try = 5;> +               do {> +                       ret = swim_read_sector(fs, side, track, sector,> +                                               buffer);> +                       if (try-- == 0)> +                               return -1;> +               } while (ret != 512);> +> +               buffer += ret;> +       }> +> +       return 0;> +}> +> +static void redo_fd_request(struct request_queue *q)> +{> +       struct request *req;> +       struct floppy_state *fs;> +> +       while ((req = elv_next_request(q))) {> +> +               fs = req->rq_disk->private_data;> +               if (req->sector < 0 || req->sector >= fs->total_secs) {> +                       end_request(req, 0);> +                       continue;> +               }> +               if (req->current_nr_sectors == 0) {> +                       end_request(req, 1);> +                       continue;> +               }> +               if (!fs->disk_in) {> +                       end_request(req, 0);> +                       continue;> +               }> +               if (rq_data_dir(req) == WRITE) {> +                       if (fs->write_protected) {> +                               end_request(req, 0);> +                               continue;> +                       }> +               }> +               switch (rq_data_dir(req)) {> +               case WRITE:> +                       /* NOT IMPLEMENTED */> +                       end_request(req, 0);> +                       break;> +               case READ:> +                       if (floppy_read_sectors(fs, req->sector,> +                                               req->current_nr_sectors,> +                                               req->buffer)) {> +                               end_request(req, 0);> +                               continue;> +                       }> +                       req->nr_sectors -= req->current_nr_sectors;> +                       req->sector += req->current_nr_sectors;> +                       req->buffer += req->current_nr_sectors * 512;> +                       end_request(req, 1);> +                       break;> +               }> +       }> +}> +> +static void do_fd_request(struct request_queue *q)> +{> +       redo_fd_request(q);> +}> +> +static struct floppy_struct floppy_type[4] = {> +       {    0,  0, 0,  0, 0, 0x00, 0x00, 0x00, 0x00, NULL }, /* no testing   */> +       {  720,  9, 1, 80, 0, 0x2A, 0x02, 0xDF, 0x50, NULL }, /* 360KB SS 3.5"*/> +       { 1440,  9, 2, 80, 0, 0x2A, 0x02, 0xDF, 0x50, NULL }, /* 720KB 3.5"   */> +       { 2880, 18, 2, 80, 0, 0x1B, 0x00, 0xCF, 0x6C, NULL }, /* 1.44MB 3.5"  */> +};> +> +static int get_floppy_geometry(struct floppy_state *fs, int type,> +                              struct floppy_struct **g)> +{> +       if (type >= ARRAY_SIZE(floppy_type))> +               return -EINVAL;> +> +       if (type)> +               *g = &floppy_type[type];> +       else if (fs->type == HD_MEDIA) /* High-Density media */> +               *g = &floppy_type[3];> +       else if (fs->head_number == 2) /* double-sided */> +               *g = &floppy_type[2];> +       else> +               *g = &floppy_type[1];> +> +       return 0;> +}> +> +static void setup_medium(struct floppy_state *fs)> +{> +       struct swim __iomem *base = fs->swd->base;> +> +       if (swim_readbit(base, DISK_IN)) {> +               struct floppy_struct *g;> +               fs->disk_in = 1;> +               fs->write_protected = swim_readbit(base, WRITE_PROT);> +               fs->type = swim_readbit(base, ONEMEG_MEDIA);> +> +               if (swim_track00(base))> +                       printk(KERN_ERR> +                               "SWIM: cannot move floppy head to track 0\n");> +> +               swim_track00(base);> +> +               get_floppy_geometry(fs, 0, &g);> +               fs->total_secs = g->size;> +               fs->secpercyl = g->head * g->sect;> +               fs->secpertrack = g->sect;> +               fs->track = 0;> +       } else {> +               fs->disk_in = 0;> +       }> +}> +> +static int floppy_open(struct block_device *bdev, fmode_t mode)> +{> +       struct floppy_state *fs = bdev->bd_disk->private_data;> +       struct swim __iomem *base = fs->swd->base;> +       int err;> +> +       if (fs->ref_count == -1 || (fs->ref_count && mode & FMODE_EXCL))> +               return -EBUSY;> +> +       if (mode & FMODE_EXCL)> +               fs->ref_count = -1;> +       else> +               fs->ref_count++;> +> +       swim_write(base, setup, S_IBM_DRIVE  | S_FCLK_DIV2);> +       udelay(10);> +       swim_drive(base, INTERNAL_DRIVE);> +       swim_motor(base, ON);> +       swim_action(base, SETMFM);> +       if (fs->ejected)> +               setup_medium(fs);> +       if (!fs->disk_in) {> +               err = -ENXIO;> +               goto out;> +       }> +> +       if (mode & FMODE_NDELAY)> +               return 0;> +> +       if (mode & (FMODE_READ|FMODE_WRITE)) {> +               check_disk_change(bdev);> +               if ((mode & FMODE_WRITE) && fs->write_protected) {> +                       err = -EROFS;> +                       goto out;> +               }> +       }> +       return 0;> +out:> +       if (fs->ref_count < 0)> +               fs->ref_count = 0;> +       else if (fs->ref_count > 0)> +               --fs->ref_count;> +> +       if (fs->ref_count == 0)> +               swim_motor(base, OFF);> +       return err;> +}> +> +static int floppy_release(struct gendisk *disk, fmode_t mode)> +{> +       struct floppy_state *fs = disk->private_data;> +       struct swim __iomem *base = fs->swd->base;> +> +       if (fs->ref_count < 0)> +               fs->ref_count = 0;> +       else if (fs->ref_count > 0)> +               --fs->ref_count;> +> +       if (fs->ref_count == 0)> +               swim_motor(base, OFF);> +> +       return 0;> +}> +> +static int floppy_ioctl(struct block_device *bdev, fmode_t mode,> +                       unsigned int cmd, unsigned long param)> +{> +       struct floppy_state *fs = bdev->bd_disk->private_data;> +       int err;> +> +       if ((cmd & 0x80) && !capable(CAP_SYS_ADMIN))> +                       return -EPERM;> +> +       switch (cmd) {> +       case FDEJECT:> +               if (fs->ref_count != 1)> +                       return -EBUSY;> +               err = floppy_eject(fs);> +               return err;> +> +       case FDGETPRM:> +               if (copy_to_user((void __user *) param, (void *) &floppy_type,> +                                sizeof(struct floppy_struct)))> +                       return -EFAULT;> +               break;> +> +       default:> +               printk(KERN_DEBUG "SWIM floppy_ioctl: unknown cmd %d\n",> +                      cmd);> +               return -ENOSYS;> +       }> +       return 0;> +}> +> +static int floppy_getgeo(struct block_device *bdev, struct hd_geometry *geo)> +{> +       struct floppy_state *fs = bdev->bd_disk->private_data;> +       struct floppy_struct *g;> +       int ret;> +> +       ret = get_floppy_geometry(fs, 0, &g);> +       if (ret)> +               return ret;> +> +       geo->heads = g->head;> +       geo->sectors = g->sect;> +       geo->cylinders = g->track;> +> +       return 0;> +}> +> +static int floppy_check_change(struct gendisk *disk)> +{> +       struct floppy_state *fs = disk->private_data;> +> +       return fs->ejected;> +}> +> +static int floppy_revalidate(struct gendisk *disk)> +{> +       struct floppy_state *fs = disk->private_data;> +       struct swim __iomem *base = fs->swd->base;> +> +       swim_drive(base, fs->location);> +> +       if (fs->ejected)> +               setup_medium(fs);> +> +       if (!fs->disk_in)> +               swim_motor(base, OFF);> +       else> +               fs->ejected = 0;> +> +       return !fs->disk_in;> +}> +> +static struct block_device_operations floppy_fops = {> +       .owner           = THIS_MODULE,> +       .open            = floppy_open,> +       .release         = floppy_release,> +       .locked_ioctl    = floppy_ioctl,> +       .getgeo          = floppy_getgeo,> +       .media_changed   = floppy_check_change,> +       .revalidate_disk = floppy_revalidate,> +};> +> +static struct kobject *floppy_find(dev_t dev, int *part, void *data)> +{> +       struct swim_priv *swd = data;> +       int drive = (*part & 3);> +> +       if (drive > swd->floppy_count)> +               return NULL;> +> +       *part = 0;> +       return get_disk(swd->unit[drive].disk);> +}> +> +static int __devinit swim_add_floppy(struct swim_priv *swd,> +                                    enum drive_location location)> +{> +       struct floppy_state *fs = &swd->unit[swd->floppy_count];> +       struct swim __iomem *base = swd->base;> +> +       fs->location = location;> +> +       swim_drive(base, location);> +> +       swim_motor(base, OFF);> +> +       if (swim_readbit(base, SINGLE_SIDED))> +               fs->head_number = 1;> +       else> +               fs->head_number = 2;> +       fs->ref_count = 0;> +       fs->ejected = 1;> +> +       swd->floppy_count++;> +> +       return 0;> +}> +> +static int __devinit swim_floppy_init(struct swim_priv *swd)> +{> +       int err;> +       int drive;> +       struct swim __iomem *base = swd->base;> +> +       /* scan floppy drives */> +> +       swim_drive(base, INTERNAL_DRIVE);> +       if (swim_readbit(base, DRIVE_PRESENT))> +               swim_add_floppy(swd, INTERNAL_DRIVE);> +       swim_drive(base, EXTERNAL_DRIVE);> +       if (swim_readbit(base, DRIVE_PRESENT))> +               swim_add_floppy(swd, EXTERNAL_DRIVE);> +> +       /* register floppy drives */> +> +       err = register_blkdev(FLOPPY_MAJOR, "fd");> +       if (err) {> +               printk(KERN_ERR "Unable to get major %d for SWIM floppy\n",> +                      FLOPPY_MAJOR);> +               return -EBUSY;> +       }> +> +       for (drive = 0; drive < swd->floppy_count; drive++) {> +               swd->unit[drive].disk = alloc_disk(1);> +               if (swd->unit[drive].disk == NULL) {> +                       err = -ENOMEM;> +                       goto exit_put_disks;> +               }> +               swd->unit[drive].swd = swd;> +       }> +> +       swd->queue = blk_init_queue(do_fd_request, &swd->lock);> +       if (!swd->queue) {> +               err = -ENOMEM;> +               goto exit_put_disks;> +       }> +> +       for (drive = 0; drive < swd->floppy_count; drive++) {> +               swd->unit[drive].disk->flags = GENHD_FL_REMOVABLE;> +               swd->unit[drive].disk->major = FLOPPY_MAJOR;> +               swd->unit[drive].disk->first_minor = drive;> +               sprintf(swd->unit[drive].disk->disk_name, "fd%d", drive);> +               swd->unit[drive].disk->fops = &floppy_fops;> +               swd->unit[drive].disk->private_data = &swd->unit[drive];> +               swd->unit[drive].disk->queue = swd->queue;> +               set_capacity(swd->unit[drive].disk, 2880);> +               add_disk(swd->unit[drive].disk);> +       }> +> +       blk_register_region(MKDEV(FLOPPY_MAJOR, 0), 256, THIS_MODULE,> +                           floppy_find, NULL, swd);> +> +       return 0;> +> +exit_put_disks:> +       unregister_blkdev(FLOPPY_MAJOR, "fd");> +       while (drive--)> +               put_disk(swd->unit[drive].disk);> +       return err;> +}> +> +static int __devinit swim_probe(struct platform_device *dev)> +{> +       struct resource *res;> +       struct swim __iomem *swim_base;> +       struct swim_priv *swd;> +       int ret;> +> +       res = platform_get_resource_byname(dev, IORESOURCE_MEM, "swim-regs");> +       if (!res) {> +               ret = -ENODEV;> +               goto out;> +       }> +> +       if (!request_mem_region(res->start, resource_size(res), CARDNAME)) {> +               ret = -EBUSY;> +               goto out;> +       }> +> +       swim_base = ioremap(res->start, resource_size(res));> +       if (!swim_base) {> +               return -ENOMEM;> +               goto out_release_io;> +       }> +> +       /* probe device */> +> +       set_swim_mode(swim_base, 1);> +       if (!get_swim_mode(swim_base)) {> +               printk(KERN_INFO "SWIM device not found !\n");> +               ret = -ENODEV;> +               goto out_iounmap;> +       }> +> +       /* set platform driver data */> +> +       swd = kzalloc(sizeof(struct swim_priv), GFP_KERNEL);> +       if (!swd) {> +               ret = -ENOMEM;> +               goto out_iounmap;> +       }> +       platform_set_drvdata(dev, swd);> +> +       swd->base = swim_base;> +> +       ret = swim_floppy_init(swd);> +       if (ret)> +               goto out_kfree;> +> +       return 0;> +> +out_kfree:> +       platform_set_drvdata(dev, NULL);> +       kfree(swd);> +out_iounmap:> +       iounmap(swim_base);> +out_release_io:> +       release_mem_region(res->start, resource_size(res));> +out:> +       return ret;> +}> +> +static int __devexit swim_remove(struct platform_device *dev)> +{> +       struct swim_priv *swd = platform_get_drvdata(dev);> +       int drive;> +       struct resource *res;> +> +       blk_unregister_region(MKDEV(FLOPPY_MAJOR, 0), 256);> +> +       for (drive = 0; drive < swd->floppy_count; drive++) {> +               del_gendisk(swd->unit[drive].disk);> +               put_disk(swd->unit[drive].disk);> +       }> +> +       unregister_blkdev(FLOPPY_MAJOR, "fd");> +> +       blk_cleanup_queue(swd->queue);> +> +       /* eject floppies */> +> +       for (drive = 0; drive < swd->floppy_count; drive++)> +               floppy_eject(&swd->unit[drive]);> +> +       iounmap(swd->base);> +> +       res = platform_get_resource_byname(dev, IORESOURCE_MEM, "swim-regs");> +       if (res)> +               release_mem_region(res->start, resource_size(res));> +> +       platform_set_drvdata(dev, NULL);> +       kfree(swd);> +> +       return 0;> +}> +> +static struct platform_driver swim_driver = {> +       .probe  = swim_probe,> +       .remove = __devexit_p(swim_remove),> +       .driver   = {> +               .name   = CARDNAME,> +               .owner  = THIS_MODULE,> +       },> +};> +> +static int __init swim_init(void)> +{> +       printk(KERN_INFO "SWIM floppy driver %s\n", DRIVER_VERSION);> +> +       return platform_driver_register(&swim_driver);> +}> +module_init(swim_init);> +> +static void __exit swim_exit(void)> +{> +       platform_driver_unregister(&swim_driver);> +}> +module_exit(swim_exit);> +> +MODULE_DESCRIPTION("Driver for SWIM floppy controller");> +MODULE_LICENSE("GPL");> +MODULE_AUTHOR("Laurent Vivier <laurent@lvivier.info>");> +MODULE_ALIAS_BLOCKDEV_MAJOR(FLOPPY_MAJOR);> diff --git a/drivers/block/swim_asm.S b/drivers/block/swim_asm.S> new file mode 100644> index 0000000..c966820> --- /dev/null> +++ b/drivers/block/swim_asm.S> @@ -0,0 +1,247 @@> +/*> + * low-level functions for the SWIM floppy controller> + *> + * needs assembly language because is very timing dependent> + * this controller exists only on macintosh 680x0 based> + *> + * Copyright (C) 2004,2008 Laurent Vivier <Laurent@lvivier.info>> + *> + * based on Alastair Bridgewater SWIM analysis, 2001> + * based on netBSD IWM driver (c) 1997, 1998 Hauke Fath.> + *> + * This program is free software; you can redistribute it and/or> + * modify it under the terms of the GNU General Public License> + * as published by the Free Software Foundation; either version> + * 2 of the License, or (at your option) any later version.> + *> + * 2004-08-21 (lv) - Initial implementation> + * 2008-11-05 (lv) - add get_swim_mode> + */> +> +       .equ    write_data,     0x0000> +       .equ    write_mark,     0x0200> +       .equ    write_CRC,      0x0400> +       .equ    write_parameter,0x0600> +       .equ    write_phase,    0x0800> +       .equ    write_setup,    0x0a00> +       .equ    write_mode0,    0x0c00> +       .equ    write_mode1,    0x0e00> +       .equ    read_data,      0x1000> +       .equ    read_mark,      0x1200> +       .equ    read_error,     0x1400> +       .equ    read_parameter, 0x1600> +       .equ    read_phase,     0x1800> +       .equ    read_setup,     0x1a00> +       .equ    read_status,    0x1c00> +       .equ    read_handshake, 0x1e00> +> +       .equ    o_side, 0> +       .equ    o_track, 1> +       .equ    o_sector, 2> +       .equ    o_size, 3> +       .equ    o_crc0, 4> +       .equ    o_crc1, 5> +> +       .equ    seek_time, 30000> +       .equ    max_retry, 40> +       .equ    sector_size, 512> +> +       .global swim_read_sector_header> +swim_read_sector_header:> +       link    %a6, #0> +       moveml  %d1-%d5/%a0-%a4,%sp@-> +       movel   %a6@(0x0c), %a4> +       bsr     mfm_read_addrmark> +       moveml  %sp@+, %d1-%d5/%a0-%a4> +       unlk    %a6> +       rts> +> +sector_address_mark:> +       .byte   0xa1, 0xa1, 0xa1, 0xfe> +sector_data_mark:> +       .byte   0xa1, 0xa1, 0xa1, 0xfb> +> +mfm_read_addrmark:> +       movel   %a6@(0x08), %a3> +       lea     %a3@(read_handshake), %a2> +       lea     %a3@(read_mark), %a3> +       moveq   #-1, %d0> +       movew   #seek_time, %d2> +> +wait_header_init:> +       tstb    %a3@(read_error - read_mark)> +       moveb   #0x18, %a3@(write_mode0 - read_mark)> +       moveb   #0x01, %a3@(write_mode1 - read_mark)> +       moveb   #0x01, %a3@(write_mode0 - read_mark)> +       tstb    %a3@(read_error - read_mark)> +       moveb   #0x08, %a3@(write_mode1 - read_mark)> +> +       lea     sector_address_mark, %a0> +       moveq   #3, %d1> +> +wait_addr_mark_byte:> +> +       tstb    %a2@> +       dbmi    %d2, wait_addr_mark_byte> +       bpl     header_exit> +> +       moveb   %a3@, %d3> +       cmpb    %a0@+, %d3> +       dbne    %d1, wait_addr_mark_byte> +       bne     wait_header_init> +> +       moveq   #max_retry, %d2> +> +amark0:        tstb    %a2@> +       dbmi    %d2, amark0> +       bpl     signal_nonyb> +> +       moveb   %a3@, %a4@(o_track)> +> +       moveq   #max_retry, %d2> +> +amark1:        tstb    %a2@> +       dbmi    %d2, amark1> +       bpl     signal_nonyb> +> +       moveb   %a3@, %a4@(o_side)> +> +       moveq   #max_retry, %d2> +> +amark2:        tstb    %a2@> +       dbmi    %d2, amark2> +       bpl     signal_nonyb> +> +       moveb   %a3@, %a4@(o_sector)> +> +       moveq   #max_retry, %d2> +> +amark3:        tstb    %a2@> +       dbmi    %d2, amark3> +       bpl     signal_nonyb> +> +       moveb   %a3@, %a4@(o_size)> +> +       moveq   #max_retry, %d2> +> +crc0:  tstb    %a2@> +       dbmi    %d2, crc0> +       bpl     signal_nonyb> +> +       moveb   %a3@, %a4@(o_crc0)> +> +       moveq   #max_retry, %d2> +> +crc1:  tstb    %a2@> +       dbmi    %d2, crc1> +       bpl     signal_nonyb> +> +       moveb   %a3@, %a4@(o_crc1)> +> +       tstb    %a3@(read_error - read_mark)> +> +header_exit:> +       moveq   #0, %d0> +       moveb   #0x18, %a3@(write_mode0 - read_mark)> +       rts> +signal_nonyb:> +       moveq   #-1, %d0> +       moveb   #0x18, %a3@(write_mode0 - read_mark)> +       rts> +> +       .global swim_read_sector_data> +swim_read_sector_data:> +       link    %a6, #0> +       moveml  %d1-%d5/%a0-%a5,%sp@-> +       movel   %a6@(0x0c), %a4> +       bsr     mfm_read_data> +       moveml  %sp@+, %d1-%d5/%a0-%a5> +       unlk    %a6> +       rts> +> +mfm_read_data:> +       movel   %a6@(0x08), %a3> +       lea     %a3@(read_handshake), %a2> +       lea     %a3@(read_data), %a5> +       lea     %a3@(read_mark), %a3> +       movew   #seek_time, %d2> +> +wait_data_init:> +       tstb    %a3@(read_error - read_mark)> +       moveb   #0x18, %a3@(write_mode0 - read_mark)> +       moveb   #0x01, %a3@(write_mode1 - read_mark)> +       moveb   #0x01, %a3@(write_mode0 - read_mark)> +       tstb    %a3@(read_error - read_mark)> +       moveb   #0x08, %a3@(write_mode1 - read_mark)> +> +       lea     sector_data_mark, %a0> +       moveq   #3, %d1> +> +       /* wait data address mark */> +> +wait_data_mark_byte:> +> +       tstb    %a2@> +       dbmi    %d2, wait_data_mark_byte> +       bpl     data_exit> +> +       moveb   %a3@, %d3> +       cmpb    %a0@+, %d3> +       dbne    %d1, wait_data_mark_byte> +       bne     wait_data_init> +> +       /* read data */> +> +       tstb    %a3@(read_error - read_mark)> +> +       movel   #sector_size-1, %d4             /* sector size */> +read_new_data:> +       movew   #max_retry, %d2> +read_data_loop:> +       moveb   %a2@, %d5> +       andb    #0xc0, %d5> +       dbne    %d2, read_data_loop> +       beq     data_exit> +       moveb   %a5@, %a4@+> +       andb    #0x40, %d5> +       dbne    %d4, read_new_data> +       beq     exit_loop> +       moveb   %a5@, %a4@+> +       dbra    %d4, read_new_data> +exit_loop:> +> +       /* read CRC */> +> +       movew   #max_retry, %d2> +data_crc0:> +> +       tstb    %a2@> +       dbmi    %d2, data_crc0> +       bpl     data_exit> +> +       moveb   %a3@, %d5> +> +       moveq   #max_retry, %d2> +> +data_crc1:> +> +       tstb    %a2@> +       dbmi    %d2, data_crc1> +       bpl     data_exit> +> +       moveb   %a3@, %d5> +> +       tstb    %a3@(read_error - read_mark)> +> +       moveb   #0x18, %a3@(write_mode0 - read_mark)> +> +       /* return number of bytes read */> +> +       movel   #sector_size, %d0> +       addw    #1, %d4> +       subl    %d4, %d0> +       rts> +data_exit:> +       moveb   #0x18, %a3@(write_mode0 - read_mark)> +       moveq   #-1, %d0> +       rts> --> 1.6.1.3>>
+This patch adds a platform device driver that supports the OpenCores 10/100
+Mbps Ethernet MAC.
 
+The driver expects three resources: one IORESOURCE_MEM resource defines the
+memory region for the core's memory-mapped registers while a second
+IORESOURCE_MEM resource defines the network packet buffer space. The third
+resource, of type IORESOURCE_IRQ, associates an interrupt with the driver.
 
--- Gr{oetje,eeting}s,
-						Geert
---Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-In personal conversations with technical people, I call myself a hacker. Butwhen I'm talking to journalists I just say "programmer" or something like that.							    -- Linus Torvalds���{.n�+�������+%�����ݶ��w��{.n�+����{��G�����{ay�ʇڙ�,j��f���h��������z_�(�階�ݢj"���m������G������?����&���~��iO��z��v�^�m����������?�I�
+Signed-off-by: Thierry Reding <thierry.reding@avionic-design.de>
+Acked-by: Florian Fainelli <florian@openwrt.org>
+
+---
+ drivers/net/Kconfig  |    7 +
+ drivers/net/Makefile |    1 +
+ drivers/net/ethoc.c  | 1110 ++++++++++++++++++++++++++++++++++++++++++++++++++
+ include/net/ethoc.h  |   22 +
+ 4 files changed, 1140 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/net/Kconfig b/drivers/net/Kconfig
+index 62d732a..fab21ca 100644
+--- a/drivers/net/Kconfig
++++ b/drivers/net/Kconfig
+@@ -963,6 +963,13 @@ config ENC28J60_WRITEVERIFY
+ 	  Enable the verify after the buffer write useful for debugging purpose.
+ 	  If unsure, say N.
+ 
++config ETHOC
++	tristate "OpenCores 10/100 Mbps Ethernet MAC support"
++	depends on NET_ETHERNET
++	select PHYLIB
++	help
++	  Say Y here if you want to use the OpenCores 10/100 Mbps Ethernet MAC.
++
+ config SMC911X
+ 	tristate "SMSC LAN911[5678] support"
+ 	select CRC32
+diff --git a/drivers/net/Makefile b/drivers/net/Makefile
+index 471baaf..ac3d6f7 100644
+--- a/drivers/net/Makefile
++++ b/drivers/net/Makefile
+@@ -229,6 +229,7 @@ obj-$(CONFIG_PASEMI_MAC) += pasemi_mac_driver.o
+ pasemi_mac_driver-objs := pasemi_mac.o pasemi_mac_ethtool.o
+ obj-$(CONFIG_MLX4_CORE) += mlx4/
+ obj-$(CONFIG_ENC28J60) += enc28j60.o
++obj-$(CONFIG_ETHOC) += ethoc.o
+ 
+ obj-$(CONFIG_XTENSA_XT2000_SONIC) += xtsonic.o
+ 
+diff --git a/drivers/net/ethoc.c b/drivers/net/ethoc.c
+new file mode 100644
+index 0000000..38370ee
+--- /dev/null
++++ b/drivers/net/ethoc.c
+@@ -0,0 +1,1110 @@
++/*
++ * linux/drivers/net/ethoc.c
++ *
++ * Copyright (C) 2007-2008 Avionic Design Development GmbH
++ * Copyright (C) 2008-2009 Avionic Design GmbH
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ *
++ * Written by Thierry Reding <thierry.reding@avionic-design.de>
++ */
++
++#include <linux/etherdevice.h>
++#include <linux/crc32.h>
++#include <linux/io.h>
++#include <linux/mii.h>
++#include <linux/phy.h>
++#include <linux/platform_device.h>
++#include <net/ethoc.h>
++
++/* register offsets */
++#define	MODER		0x00
++#define	INT_SOURCE	0x04
++#define	INT_MASK	0x08
++#define	IPGT		0x0c
++#define	IPGR1		0x10
++#define	IPGR2		0x14
++#define	PACKETLEN	0x18
++#define	COLLCONF	0x1c
++#define	TX_BD_NUM	0x20
++#define	CTRLMODER	0x24
++#define	MIIMODER	0x28
++#define	MIICOMMAND	0x2c
++#define	MIIADDRESS	0x30
++#define	MIITX_DATA	0x34
++#define	MIIRX_DATA	0x38
++#define	MIISTATUS	0x3c
++#define	MAC_ADDR0	0x40
++#define	MAC_ADDR1	0x44
++#define	ETH_HASH0	0x48
++#define	ETH_HASH1	0x4c
++#define	ETH_TXCTRL	0x50
++
++/* mode register */
++#define	MODER_RXEN	(1 <<  0) /* receive enable */
++#define	MODER_TXEN	(1 <<  1) /* transmit enable */
++#define	MODER_NOPRE	(1 <<  2) /* no preamble */
++#define	MODER_BRO	(1 <<  3) /* broadcast address */
++#define	MODER_IAM	(1 <<  4) /* individual address mode */
++#define	MODER_PRO	(1 <<  5) /* promiscuous mode */
++#define	MODER_IFG	(1 <<  6) /* interframe gap for incoming frames */
++#define	MODER_LOOP	(1 <<  7) /* loopback */
++#define	MODER_NBO	(1 <<  8) /* no back-off */
++#define	MODER_EDE	(1 <<  9) /* excess defer enable */
++#define	MODER_FULLD	(1 << 10) /* full duplex */
++#define	MODER_RESET	(1 << 11) /* FIXME: reset (undocumented) */
++#define	MODER_DCRC	(1 << 12) /* delayed CRC enable */
++#define	MODER_CRC	(1 << 13) /* CRC enable */
++#define	MODER_HUGE	(1 << 14) /* huge packets enable */
++#define	MODER_PAD	(1 << 15) /* padding enabled */
++#define	MODER_RSM	(1 << 16) /* receive small packets */
++
++/* interrupt source and mask registers */
++#define	INT_MASK_TXF	(1 << 0) /* transmit frame */
++#define	INT_MASK_TXE	(1 << 1) /* transmit error */
++#define	INT_MASK_RXF	(1 << 2) /* receive frame */
++#define	INT_MASK_RXE	(1 << 3) /* receive error */
++#define	INT_MASK_BUSY	(1 << 4)
++#define	INT_MASK_TXC	(1 << 5) /* transmit control frame */
++#define	INT_MASK_RXC	(1 << 6) /* receive control frame */
++
++#define	INT_MASK_TX	(INT_MASK_TXF | INT_MASK_TXE)
++#define	INT_MASK_RX	(INT_MASK_RXF | INT_MASK_RXE)
++
++#define	INT_MASK_ALL ( \
++		INT_MASK_TXF | INT_MASK_TXE | \
++		INT_MASK_RXF | INT_MASK_RXE | \
++		INT_MASK_TXC | INT_MASK_RXC | \
++		INT_MASK_BUSY \
++	)
++
++/* packet length register */
++#define	PACKETLEN_MIN(min)		(((min) & 0xffff) << 16)
++#define	PACKETLEN_MAX(max)		(((max) & 0xffff) <<  0)
++#define	PACKETLEN_MIN_MAX(min, max)	(PACKETLEN_MIN(min) | \
++					PACKETLEN_MAX(max))
++
++/* transmit buffer number register */
++#define	TX_BD_NUM_VAL(x)	(((x) <= 0x80) ? (x) : 0x80)
++
++/* control module mode register */
++#define	CTRLMODER_PASSALL	(1 << 0) /* pass all receive frames */
++#define	CTRLMODER_RXFLOW	(1 << 1) /* receive control flow */
++#define	CTRLMODER_TXFLOW	(1 << 2) /* transmit control flow */
++
++/* MII mode register */
++#define	MIIMODER_CLKDIV(x)	((x) & 0xfe) /* needs to be an even number */
++#define	MIIMODER_NOPRE		(1 << 8) /* no preamble */
++
++/* MII command register */
++#define	MIICOMMAND_SCAN		(1 << 0) /* scan status */
++#define	MIICOMMAND_READ		(1 << 1) /* read status */
++#define	MIICOMMAND_WRITE	(1 << 2) /* write control data */
++
++/* MII address register */
++#define	MIIADDRESS_FIAD(x)		(((x) & 0x1f) << 0)
++#define	MIIADDRESS_RGAD(x)		(((x) & 0x1f) << 8)
++#define	MIIADDRESS_ADDR(phy, reg)	(MIIADDRESS_FIAD(phy) | \
++					MIIADDRESS_RGAD(reg))
++
++/* MII transmit data register */
++#define	MIITX_DATA_VAL(x)	((x) & 0xffff)
++
++/* MII receive data register */
++#define	MIIRX_DATA_VAL(x)	((x) & 0xffff)
++
++/* MII status register */
++#define	MIISTATUS_LINKFAIL	(1 << 0)
++#define	MIISTATUS_BUSY		(1 << 1)
++#define	MIISTATUS_INVALID	(1 << 2)
++
++/* TX buffer descriptor */
++#define	TX_BD_CS		(1 <<  0) /* carrier sense lost */
++#define	TX_BD_DF		(1 <<  1) /* defer indication */
++#define	TX_BD_LC		(1 <<  2) /* late collision */
++#define	TX_BD_RL		(1 <<  3) /* retransmission limit */
++#define	TX_BD_RETRY_MASK	(0x00f0)
++#define	TX_BD_RETRY(x)		(((x) & 0x00f0) >>  4)
++#define	TX_BD_UR		(1 <<  8) /* transmitter underrun */
++#define	TX_BD_CRC		(1 << 11) /* TX CRC enable */
++#define	TX_BD_PAD		(1 << 12) /* pad enable for short packets */
++#define	TX_BD_WRAP		(1 << 13)
++#define	TX_BD_IRQ		(1 << 14) /* interrupt request enable */
++#define	TX_BD_READY		(1 << 15) /* TX buffer ready */
++#define	TX_BD_LEN(x)		(((x) & 0xffff) << 16)
++#define	TX_BD_LEN_MASK		(0xffff << 16)
++
++#define	TX_BD_STATS		(TX_BD_CS | TX_BD_DF | TX_BD_LC | \
++				TX_BD_RL | TX_BD_RETRY_MASK | TX_BD_UR)
++
++/* RX buffer descriptor */
++#define	RX_BD_LC	(1 <<  0) /* late collision */
++#define	RX_BD_CRC	(1 <<  1) /* RX CRC error */
++#define	RX_BD_SF	(1 <<  2) /* short frame */
++#define	RX_BD_TL	(1 <<  3) /* too long */
++#define	RX_BD_DN	(1 <<  4) /* dribble nibble */
++#define	RX_BD_IS	(1 <<  5) /* invalid symbol */
++#define	RX_BD_OR	(1 <<  6) /* receiver overrun */
++#define	RX_BD_MISS	(1 <<  7)
++#define	RX_BD_CF	(1 <<  8) /* control frame */
++#define	RX_BD_WRAP	(1 << 13)
++#define	RX_BD_IRQ	(1 << 14) /* interrupt request enable */
++#define	RX_BD_EMPTY	(1 << 15)
++#define	RX_BD_LEN(x)	(((x) & 0xffff) << 16)
++
++#define	RX_BD_STATS	(RX_BD_LC | RX_BD_CRC | RX_BD_SF | RX_BD_TL | \
++			RX_BD_DN | RX_BD_IS | RX_BD_OR | RX_BD_MISS)
++
++#define	ETHOC_BUFSIZ	1536
++#define	ETHOC_ZLEN	64
++#define	ETHOC_BD_BASE	0x400
++#define	ETHOC_TIMEOUT	(HZ / 2)
++
++/**
++ * struct ethoc -
++ */
++struct ethoc {
++	void __iomem *iobase;
++	void __iomem *membase;
++
++	unsigned int num_tx;
++	unsigned int cur_tx;
++	unsigned int dty_tx;
++
++	unsigned int num_rx;
++	unsigned int cur_rx;
++
++	struct net_device *netdev;
++	struct napi_struct napi;
++	struct net_device_stats stats;
++	u32 msg_enable;
++
++	spinlock_t rx_lock;
++	spinlock_t lock;
++
++#ifdef CONFIG_MII
++	struct phy_device *phy;
++	struct mii_bus *mdio;
++	s8 phy_id;
++#endif
++};
++
++struct ethoc_bd {
++	u32 stat;
++	u32 addr;
++};
++
++static u32 ethoc_read(struct ethoc *dev, loff_t offset)
++{
++	return ioread32(dev->iobase + offset);
++}
++
++static void ethoc_write(struct ethoc *dev, loff_t offset, u32 data)
++{
++	iowrite32(data, dev->iobase + offset);
++}
++
++static void ethoc_read_bd(struct ethoc *dev, int index, struct ethoc_bd *bd)
++{
++	loff_t offset = ETHOC_BD_BASE + (index * sizeof(struct ethoc_bd));
++	bd->stat = ethoc_read(dev, offset + 0);
++	bd->addr = ethoc_read(dev, offset + 4);
++}
++
++static void ethoc_write_bd(struct ethoc *dev, int index,
++		const struct ethoc_bd *bd)
++{
++	loff_t offset = ETHOC_BD_BASE + (index * sizeof(struct ethoc_bd));
++	ethoc_write(dev, offset + 0, bd->stat);
++	ethoc_write(dev, offset + 4, bd->addr);
++}
++
++static void ethoc_enable_irq(struct ethoc *dev, u32 mask)
++{
++	u32 imask = ethoc_read(dev, INT_MASK);
++	imask |= mask;
++	ethoc_write(dev, INT_MASK, imask);
++}
++
++static void ethoc_disable_irq(struct ethoc *dev, u32 mask)
++{
++	u32 imask = ethoc_read(dev, INT_MASK);
++	imask &= ~mask;
++	ethoc_write(dev, INT_MASK, imask);
++}
++
++static void ethoc_ack_irq(struct ethoc *dev, u32 mask)
++{
++	ethoc_write(dev, INT_SOURCE, mask);
++}
++
++static void ethoc_enable_rx_and_tx(struct ethoc *dev)
++{
++	u32 mode = ethoc_read(dev, MODER);
++	mode |= MODER_RXEN | MODER_TXEN;
++	ethoc_write(dev, MODER, mode);
++}
++
++static void ethoc_disable_rx_and_tx(struct ethoc *dev)
++{
++	u32 mode = ethoc_read(dev, MODER);
++	mode &= ~(MODER_RXEN | MODER_TXEN);
++	ethoc_write(dev, MODER, mode);
++}
++
++static int ethoc_init_ring(struct ethoc *dev)
++{
++	struct ethoc_bd bd;
++	int i;
++
++	dev->cur_tx = 0;
++	dev->dty_tx = 0;
++	dev->cur_rx = 0;
++
++	/* setup transmission buffers */
++	bd.addr = 0;
++	bd.stat = TX_BD_IRQ | TX_BD_CRC;
++
++	for (i = 0; i < dev->num_tx; i++) {
++		if (i == dev->num_tx - 1)
++			bd.stat |= TX_BD_WRAP;
++
++		ethoc_write_bd(dev, i, &bd);
++		bd.addr += ETHOC_BUFSIZ;
++	}
++
++	bd.addr = dev->num_tx * ETHOC_BUFSIZ;
++	bd.stat = RX_BD_EMPTY | RX_BD_IRQ;
++
++	for (i = 0; i < dev->num_rx; i++) {
++		if (i == dev->num_rx - 1)
++			bd.stat |= RX_BD_WRAP;
++
++		ethoc_write_bd(dev, dev->num_tx + i, &bd);
++		bd.addr += ETHOC_BUFSIZ;
++	}
++
++	return 0;
++}
++
++static int ethoc_reset(struct ethoc *dev)
++{
++	u32 mode;
++
++	/* TODO: reset controller? */
++
++	ethoc_disable_rx_and_tx(dev);
++
++	/* TODO: setup registers */
++
++	/* enable FCS generation and automatic padding */
++	mode = ethoc_read(dev, MODER);
++	mode |= MODER_CRC | MODER_PAD;
++	ethoc_write(dev, MODER, mode);
++
++	/* set full-duplex mode */
++	mode = ethoc_read(dev, MODER);
++	mode |= MODER_FULLD;
++	ethoc_write(dev, MODER, mode);
++	ethoc_write(dev, IPGT, 0x15);
++
++	ethoc_ack_irq(dev, INT_MASK_ALL);
++	ethoc_enable_irq(dev, INT_MASK_ALL);
++	ethoc_enable_rx_and_tx(dev);
++	return 0;
++}
++
++static unsigned int ethoc_update_rx_stats(struct ethoc *dev,
++		struct ethoc_bd *bd)
++{
++	struct net_device *netdev = dev->netdev;
++	unsigned int ret = 0;
++
++	if (bd->stat & RX_BD_TL) {
++		dev_err(&netdev->dev, "RX: frame too long\n");
++		dev->stats.rx_length_errors++;
++		ret++;
++	}
++
++	if (bd->stat & RX_BD_SF) {
++		dev_err(&netdev->dev, "RX: frame too short\n");
++		dev->stats.rx_length_errors++;
++		ret++;
++	}
++
++	if (bd->stat & RX_BD_DN) {
++		dev_err(&netdev->dev, "RX: dribble nibble\n");
++		dev->stats.rx_frame_errors++;
++	}
++
++	if (bd->stat & RX_BD_CRC) {
++		dev_err(&netdev->dev, "RX: wrong CRC\n");
++		dev->stats.rx_crc_errors++;
++		ret++;
++	}
++
++	if (bd->stat & RX_BD_OR) {
++		dev_err(&netdev->dev, "RX: overrun\n");
++		dev->stats.rx_over_errors++;
++		ret++;
++	}
++
++	if (bd->stat & RX_BD_MISS)
++		dev->stats.rx_missed_errors++;
++
++	if (bd->stat & RX_BD_LC) {
++		dev_err(&netdev->dev, "RX: late collision\n");
++		dev->stats.collisions++;
++		ret++;
++	}
++
++	return ret;
++}
++
++static int ethoc_rx(struct net_device *dev, int limit)
++{
++	struct ethoc *priv = netdev_priv(dev);
++	int count;
++
++	for (count = 0; count < limit; ++count) {
++		unsigned int entry;
++		struct ethoc_bd bd;
++
++		entry = priv->num_tx + (priv->cur_rx % priv->num_rx);
++		ethoc_read_bd(priv, entry, &bd);
++		if (bd.stat & RX_BD_EMPTY)
++			break;
++
++		if (ethoc_update_rx_stats(priv, &bd) == 0) {
++			int size = bd.stat >> 16;
++			struct sk_buff *skb = netdev_alloc_skb(dev, size);
++			if (likely(skb)) {
++				void *src = priv->membase + bd.addr;
++				memcpy_fromio(skb_put(skb, size), src, size);
++				skb->protocol = eth_type_trans(skb, dev);
++				dev->last_rx = jiffies;
++				priv->stats.rx_packets++;
++				priv->stats.rx_bytes += size;
++				netif_receive_skb(skb);
++			} else {
++				if (net_ratelimit())
++					dev_warn(&dev->dev, "low on memory - "
++							"packet dropped\n");
++
++				priv->stats.rx_dropped++;
++				break;
++			}
++		}
++
++		/* clear the buffer descriptor so it can be reused */
++		bd.stat &= ~RX_BD_STATS;
++		bd.stat |=  RX_BD_EMPTY;
++		ethoc_write_bd(priv, entry, &bd);
++		priv->cur_rx++;
++	}
++
++	return count;
++}
++
++static int ethoc_update_tx_stats(struct ethoc *dev, struct ethoc_bd *bd)
++{
++	struct net_device *netdev = dev->netdev;
++
++	if (bd->stat & TX_BD_LC) {
++		dev_err(&netdev->dev, "TX: late collision\n");
++		dev->stats.tx_window_errors++;
++	}
++
++	if (bd->stat & TX_BD_RL) {
++		dev_err(&netdev->dev, "TX: retransmit limit\n");
++		dev->stats.tx_aborted_errors++;
++	}
++
++	if (bd->stat & TX_BD_UR) {
++		dev_err(&netdev->dev, "TX: underrun\n");
++		dev->stats.tx_fifo_errors++;
++	}
++
++	if (bd->stat & TX_BD_CS) {
++		dev_err(&netdev->dev, "TX: carrier sense lost\n");
++		dev->stats.tx_carrier_errors++;
++	}
++
++	if (bd->stat & TX_BD_STATS)
++		dev->stats.tx_errors++;
++
++	dev->stats.collisions += (bd->stat >> 4) & 0xf;
++	dev->stats.tx_bytes += bd->stat >> 16;
++	dev->stats.tx_packets++;
++	return 0;
++}
++
++static void ethoc_tx(struct net_device *dev)
++{
++	struct ethoc *priv = netdev_priv(dev);
++
++	spin_lock(&priv->lock);
++
++	while (priv->dty_tx != priv->cur_tx) {
++		unsigned int entry = priv->dty_tx % priv->num_tx;
++		struct ethoc_bd bd;
++
++		ethoc_read_bd(priv, entry, &bd);
++		if (bd.stat & TX_BD_READY)
++			break;
++
++		entry = (++priv->dty_tx) % priv->num_tx;
++		(void)ethoc_update_tx_stats(priv, &bd);
++	}
++
++	if ((priv->cur_tx - priv->dty_tx) <= (priv->num_tx / 2))
++		netif_wake_queue(dev);
++
++	ethoc_ack_irq(priv, INT_MASK_TX);
++	spin_unlock(&priv->lock);
++}
++
++static irqreturn_t ethoc_interrupt(int irq, void *dev_id)
++{
++	struct net_device *dev = (struct net_device *)dev_id;
++	struct ethoc *priv = netdev_priv(dev);
++	u32 pending;
++
++	ethoc_disable_irq(priv, INT_MASK_ALL);
++	pending = ethoc_read(priv, INT_SOURCE);
++	if (unlikely(pending == 0)) {
++		ethoc_enable_irq(priv, INT_MASK_ALL);
++		return IRQ_NONE;
++	}
++
++	ethoc_ack_irq(priv, INT_MASK_ALL);
++
++	if (pending & INT_MASK_BUSY) {
++		dev_err(&dev->dev, "packet dropped\n");
++		priv->stats.rx_dropped++;
++	}
++
++	if (pending & INT_MASK_RX) {
++		if (netif_rx_schedule_prep(&priv->napi))
++			__netif_rx_schedule(&priv->napi);
++	} else {
++		ethoc_enable_irq(priv, INT_MASK_RX);
++	}
++
++	if (pending & INT_MASK_TX)
++		ethoc_tx(dev);
++
++	ethoc_enable_irq(priv, INT_MASK_ALL & ~INT_MASK_RX);
++	return IRQ_HANDLED;
++}
++
++static int ethoc_get_mac_address(struct net_device *dev, void *addr)
++{
++	struct ethoc *priv = netdev_priv(dev);
++	u8 *mac = (u8 *)addr;
++	u32 reg;
++
++	reg = ethoc_read(priv, MAC_ADDR0);
++	mac[2] = (reg >> 24) & 0xff;
++	mac[3] = (reg >> 16) & 0xff;
++	mac[4] = (reg >>  8) & 0xff;
++	mac[5] = (reg >>  0) & 0xff;
++
++	reg = ethoc_read(priv, MAC_ADDR1);
++	mac[0] = (reg >>  8) & 0xff;
++	mac[1] = (reg >>  0) & 0xff;
++
++	return 0;
++}
++
++static int ethoc_poll(struct napi_struct *napi, int budget)
++{
++	struct ethoc *priv = container_of(napi, struct ethoc, napi);
++	int work_done = 0;
++
++	work_done = ethoc_rx(priv->netdev, budget);
++	if (work_done < budget) {
++		ethoc_enable_irq(priv, INT_MASK_RX);
++		netif_rx_complete(napi);
++	}
++
++	return work_done;
++}
++
++#ifdef CONFIG_MII
++#define	MII_TIMEOUT	(1 + (HZ / 5))
++
++static int ethoc_mdio_read(struct mii_bus *bus, int phy, int reg)
++{
++	unsigned long timeout = jiffies + MII_TIMEOUT;
++	struct ethoc *priv = bus->priv;
++
++	ethoc_write(priv, MIIADDRESS, MIIADDRESS_ADDR(phy, reg));
++	ethoc_write(priv, MIICOMMAND, MIICOMMAND_READ);
++
++	while (time_before(jiffies, timeout)) {
++		u32 status = ethoc_read(priv, MIISTATUS);
++		if (!(status & MIISTATUS_BUSY)) {
++			u32 data = ethoc_read(priv, MIIRX_DATA);
++			/* reset MII command register */
++			ethoc_write(priv, MIICOMMAND, 0);
++			return data;
++		}
++
++		schedule();
++	}
++
++	return -EBUSY;
++}
++
++static int ethoc_mdio_write(struct mii_bus *bus, int phy, int reg, u16 val)
++{
++	unsigned long timeout = jiffies + MII_TIMEOUT;
++	struct ethoc *priv = bus->priv;
++
++	ethoc_write(priv, MIIADDRESS, MIIADDRESS_ADDR(phy, reg));
++	ethoc_write(priv, MIITX_DATA, val);
++	ethoc_write(priv, MIICOMMAND, MIICOMMAND_WRITE);
++
++	while (time_before(jiffies, timeout)) {
++		u32 stat = ethoc_read(priv, MIISTATUS);
++		if (!(stat & MIISTATUS_BUSY))
++			return 0;
++
++		schedule();
++	}
++
++	return -EBUSY;
++}
++
++static int ethoc_mdio_reset(struct mii_bus *bus)
++{
++	return 0;
++}
++
++static void ethoc_mdio_poll(struct net_device *dev)
++{
++}
++
++static int ethoc_mdio_probe(struct net_device *dev)
++{
++	struct ethoc *priv = netdev_priv(dev);
++	struct phy_device *phy;
++	int i;
++
++	for (i = 0; i < PHY_MAX_ADDR; i++) {
++		phy = priv->mdio->phy_map[i];
++		if (phy) {
++			if (priv->phy_id != -1) {
++				/* attach to specified PHY */
++				if (priv->phy_id == phy->addr)
++					break;
++			} else {
++				/* autoselect PHY if none was specified */
++				if (phy->addr != 0)
++					break;
++			}
++		}
++	}
++
++	if (!phy) {
++		dev_err(&dev->dev, "no PHY found\n");
++		return -ENXIO;
++	}
++
++	phy = phy_connect(dev, phy->dev.bus_id, &ethoc_mdio_poll, 0,
++			PHY_INTERFACE_MODE_GMII);
++	if (IS_ERR(phy)) {
++		dev_err(&dev->dev, "could not attach to PHY\n");
++		return PTR_ERR(phy);
++	}
++
++	priv->phy = phy;
++	return 0;
++}
++#endif /* CONFIG_MII */
++
++static int ethoc_open(struct net_device *dev)
++{
++	struct ethoc *priv = netdev_priv(dev);
++	unsigned int min_tx = 2;
++	unsigned int num_bd;
++	int ret;
++
++	ret = request_irq(dev->irq, ethoc_interrupt, IRQF_SHARED,
++			dev->name, dev);
++	if (ret)
++		return ret;
++
++	/* calculate the number of TX/RX buffers */
++	num_bd = (dev->mem_end - dev->mem_start + 1) / ETHOC_BUFSIZ;
++	priv->num_tx = min(min_tx, num_bd / 4);
++	priv->num_rx = num_bd - priv->num_tx;
++	ethoc_write(priv, TX_BD_NUM, priv->num_tx);
++
++	ethoc_init_ring(priv);
++	ethoc_reset(priv);
++
++	if (netif_queue_stopped(dev)) {
++		dev_dbg(&dev->dev, " resuming queue\n");
++		netif_wake_queue(dev);
++	} else {
++		dev_dbg(&dev->dev, " starting queue\n");
++		netif_start_queue(dev);
++	}
++
++#ifdef CONFIG_MII
++	phy_start(priv->phy);
++#endif
++	napi_enable(&priv->napi);
++
++	if (netif_msg_ifup(priv)) {
++		dev_info(&dev->dev, "I/O: %08lx Memory: %08lx-%08lx\n",
++				dev->base_addr, dev->mem_start, dev->mem_end);
++	}
++
++	return 0;
++}
++
++static int ethoc_stop(struct net_device *dev)
++{
++	struct ethoc *priv = netdev_priv(dev);
++
++	napi_disable(&priv->napi);
++#ifdef CONFIG_MII
++	if (priv->phy)
++		phy_stop(priv->phy);
++#endif
++
++	ethoc_disable_rx_and_tx(priv);
++	free_irq(dev->irq, dev);
++
++	if (!netif_queue_stopped(dev))
++		netif_stop_queue(dev);
++
++	return 0;
++}
++
++#ifdef CONFIG_MII
++static int ethoc_ioctl(struct net_device *dev, struct ifreq *ifr, int cmd)
++{
++	struct ethoc *priv = netdev_priv(dev);
++	struct mii_ioctl_data *mdio = if_mii(ifr);
++	struct phy_device *phy = NULL;
++
++	if (!netif_running(dev))
++		return -EINVAL;
++
++	if (cmd != SIOCGMIIPHY) {
++		if (mdio->phy_id >= PHY_MAX_ADDR)
++			return -ERANGE;
++
++		phy = priv->mdio->phy_map[mdio->phy_id];
++		if (!phy)
++			return -ENODEV;
++	} else {
++		phy = priv->phy;
++	}
++
++	return phy_mii_ioctl(phy, mdio, cmd);
++}
++#else
++static int ethoc_ioctl(struct net_device *dev, struct ifreq *ifr, int cmd)
++{
++	return -ENOSYS;
++}
++#endif
++
++static int ethoc_config(struct net_device *dev, struct ifmap *map)
++{
++	return -ENOSYS;
++}
++
++static int ethoc_set_mac_address(struct net_device *dev, void *addr)
++{
++	struct ethoc *priv = netdev_priv(dev);
++	u8 *mac = (u8 *)addr;
++
++	ethoc_write(priv, MAC_ADDR0, (mac[2] << 24) | (mac[3] << 16) |
++				     (mac[4] <<  8) | (mac[5] <<  0));
++	ethoc_write(priv, MAC_ADDR1, (mac[0] <<  8) | (mac[1] <<  0));
++
++	return 0;
++}
++
++static void ethoc_set_multicast_list(struct net_device *dev)
++{
++	struct ethoc *priv = netdev_priv(dev);
++	u32 mode = ethoc_read(priv, MODER);
++	struct dev_mc_list *mc = NULL;
++	u32 hash[2] = { 0, 0 };
++
++	/* set loopback mode if requested */
++	if (dev->flags & IFF_LOOPBACK)
++		mode |=  MODER_LOOP;
++	else
++		mode &= ~MODER_LOOP;
++
++	/* receive broadcast frames if requested */
++	if (dev->flags & IFF_BROADCAST)
++		mode &= ~MODER_BRO;
++	else
++		mode |=  MODER_BRO;
++
++	/* enable promiscuous mode if requested */
++	if (dev->flags & IFF_PROMISC)
++		mode |=  MODER_PRO;
++	else
++		mode &= ~MODER_PRO;
++
++	ethoc_write(priv, MODER, mode);
++
++	/* receive multicast frames */
++	if (dev->flags & IFF_ALLMULTI) {
++		hash[0] = 0xffffffff;
++		hash[1] = 0xffffffff;
++	} else {
++		for (mc = dev->mc_list; mc; mc = mc->next) {
++			u32 crc = ether_crc(mc->dmi_addrlen, mc->dmi_addr);
++			int bit = (crc >> 26) & 0x3f;
++			hash[bit >> 5] |= 1 << (bit & 0x1f);
++		}
++	}
++
++	ethoc_write(priv, ETH_HASH0, hash[0]);
++	ethoc_write(priv, ETH_HASH1, hash[1]);
++}
++
++static int ethoc_change_mtu(struct net_device *dev, int new_mtu)
++{
++	return -ENOSYS;
++}
++
++static void ethoc_tx_timeout(struct net_device *dev)
++{
++	struct ethoc *priv = netdev_priv(dev);
++	u32 pending = ethoc_read(priv, INT_SOURCE);
++	if (likely(pending))
++		ethoc_interrupt(dev->irq, dev);
++}
++
++static struct net_device_stats *ethoc_stats(struct net_device *dev)
++{
++	struct ethoc *priv = netdev_priv(dev);
++	return &priv->stats;
++}
++
++static int ethoc_start_xmit(struct sk_buff *skb, struct net_device *dev)
++{
++	struct ethoc *priv = netdev_priv(dev);
++	struct ethoc_bd bd;
++	unsigned int entry;
++	void *dest;
++
++	if (unlikely(skb->len > ETHOC_BUFSIZ)) {
++		priv->stats.tx_errors++;
++		return -EMSGSIZE;
++	}
++
++	entry = priv->cur_tx % priv->num_tx;
++	spin_lock_irq(&priv->lock);
++	priv->cur_tx++;
++
++	ethoc_read_bd(priv, entry, &bd);
++	if (unlikely(skb->len < ETHOC_ZLEN))
++		bd.stat |=  TX_BD_PAD;
++	else
++		bd.stat &= ~TX_BD_PAD;
++
++	dest = priv->membase + bd.addr;
++	memcpy_toio(dest, skb->data, skb->len);
++
++	bd.stat &= ~(TX_BD_STATS | TX_BD_LEN_MASK);
++	bd.stat |= TX_BD_LEN(skb->len);
++	ethoc_write_bd(priv, entry, &bd);
++
++	bd.stat |= TX_BD_READY;
++	ethoc_write_bd(priv, entry, &bd);
++
++	if (priv->cur_tx == (priv->dty_tx + priv->num_tx)) {
++		dev_dbg(&dev->dev, "stopping queue\n");
++		netif_stop_queue(dev);
++	}
++
++	dev->trans_start = jiffies;
++	dev_kfree_skb(skb);
++
++	spin_unlock_irq(&priv->lock);
++	return NETDEV_TX_OK;
++}
++
++static const struct net_device_ops ethoc_netdev_ops = {
++	.ndo_open = ethoc_open,
++	.ndo_stop = ethoc_stop,
++	.ndo_do_ioctl = ethoc_ioctl,
++	.ndo_set_config = ethoc_config,
++	.ndo_set_mac_address = ethoc_set_mac_address,
++	.ndo_set_multicast_list = ethoc_set_multicast_list,
++	.ndo_change_mtu = ethoc_change_mtu,
++	.ndo_tx_timeout = ethoc_tx_timeout,
++	.ndo_get_stats = ethoc_stats,
++	.ndo_start_xmit = ethoc_start_xmit,
++};
++
++/**
++ * ethoc_probe() - initialize OpenCores ethernet MAC
++ * pdev:	platform device
++ */
++static int ethoc_probe(struct platform_device *pdev)
++{
++	struct net_device *netdev = NULL;
++	struct resource *res = NULL;
++	struct resource *mmio = NULL;
++	struct resource *mem = NULL;
++	struct ethoc *priv = NULL;
++	unsigned int phy;
++	int ret = 0;
++
++	/* allocate networking device */
++	netdev = alloc_etherdev(sizeof(struct ethoc));
++	if (!netdev) {
++		dev_err(&pdev->dev, "cannot allocate network device\n");
++		ret = -ENOMEM;
++		goto out;
++	}
++
++	SET_NETDEV_DEV(netdev, &pdev->dev);
++	platform_set_drvdata(pdev, netdev);
++
++	/* obtain I/O memory space */
++	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
++	if (!res) {
++		dev_err(&pdev->dev, "cannot obtain I/O memory space\n");
++		ret = -ENXIO;
++		goto free;
++	}
++
++	mmio = devm_request_mem_region(&pdev->dev, res->start,
++			res->end - res->start + 1, res->name);
++	if (!res) {
++		dev_err(&pdev->dev, "cannot request I/O memory space\n");
++		ret = -ENXIO;
++		goto free;
++	}
++
++	netdev->base_addr = mmio->start;
++
++	/* obtain buffer memory space */
++	res = platform_get_resource(pdev, IORESOURCE_MEM, 1);
++	if (!res) {
++		dev_err(&pdev->dev, "cannot obtain memory space\n");
++		ret = -ENXIO;
++		goto free;
++	}
++
++	mem = devm_request_mem_region(&pdev->dev, res->start,
++			res->end - res->start + 1, res->name);
++	if (!mem) {
++		dev_err(&pdev->dev, "cannot request memory space\n");
++		ret = -ENXIO;
++		goto free;
++	}
++
++	netdev->mem_start = mem->start;
++	netdev->mem_end   = mem->end;
++
++	/* obtain device IRQ number */
++	res = platform_get_resource(pdev, IORESOURCE_IRQ, 0);
++	if (!res) {
++		dev_err(&pdev->dev, "cannot obtain IRQ\n");
++		ret = -ENXIO;
++		goto free;
++	}
++
++	netdev->irq = res->start;
++
++	/* setup driver-private data */
++	priv = netdev_priv(netdev);
++	priv->netdev = netdev;
++
++	priv->iobase = devm_ioremap_nocache(&pdev->dev, netdev->base_addr,
++			mmio->end - mmio->start + 1);
++	if (!priv->iobase) {
++		dev_err(&pdev->dev, "cannot remap I/O memory space\n");
++		ret = -ENXIO;
++		goto error;
++	}
++
++	priv->membase = devm_ioremap_nocache(&pdev->dev, netdev->mem_start,
++			mem->end - mem->start + 1);
++	if (!priv->membase) {
++		dev_err(&pdev->dev, "cannot remap memory space\n");
++		ret = -ENXIO;
++		goto error;
++	}
++
++	/* Allow the platform setup code to pass in a MAC address. */
++	if (pdev->dev.platform_data) {
++		struct ethoc_platform_data *pdata =
++			(struct ethoc_platform_data *)pdev->dev.platform_data;
++		memcpy(netdev->dev_addr, pdata->hwaddr, IFHWADDRLEN);
++		priv->phy_id = pdata->phy_id;
++	}
++
++	/* Check that the given MAC address is valid. If it isn't, read the
++	 * current MAC from the controller. */
++	if (!is_valid_ether_addr(netdev->dev_addr))
++		ethoc_get_mac_address(netdev, netdev->dev_addr);
++
++	/* Check the MAC again for validity, if it still isn't choose and
++	 * program a random one. */
++	if (!is_valid_ether_addr(netdev->dev_addr))
++		random_ether_addr(netdev->dev_addr);
++
++	ethoc_set_mac_address(netdev, netdev->dev_addr);
++
++#ifdef CONFIG_MII
++	/* register MII bus */
++	priv->mdio = mdiobus_alloc();
++	if (!priv->mdio) {
++		ret = -ENOMEM;
++		goto free;
++	}
++
++	priv->mdio->name = "ethoc-mdio";
++	snprintf(priv->mdio->id, MII_BUS_ID_SIZE, "%s-%d",
++			priv->mdio->name, pdev->id);
++	priv->mdio->read = ethoc_mdio_read;
++	priv->mdio->write = ethoc_mdio_write;
++	priv->mdio->reset = ethoc_mdio_reset;
++	priv->mdio->priv = priv;
++
++	priv->mdio->irq = kmalloc(sizeof(int) * PHY_MAX_ADDR, GFP_KERNEL);
++	if (!priv->mdio->irq) {
++		ret = -ENOMEM;
++		goto free_mdio;
++	}
++
++	for (phy = 0; phy < PHY_MAX_ADDR; phy++)
++		priv->mdio->irq[phy] = PHY_POLL;
++
++	ret = mdiobus_register(priv->mdio);
++	if (ret) {
++		dev_err(&netdev->dev, "failed to register MDIO bus\n");
++		goto free_mdio;
++	}
++
++	ret = ethoc_mdio_probe(netdev);
++	if (ret) {
++		dev_err(&netdev->dev, "failed to probe MDIO bus\n");
++		goto error;
++	}
++#endif /* CONFIG_MII */
++
++	ether_setup(netdev);
++
++	/* setup the net_device structure */
++	netdev->netdev_ops = &ethoc_netdev_ops;
++	netdev->watchdog_timeo = ETHOC_TIMEOUT;
++	netdev->features |= 0;
++
++	/* setup NAPI */
++	memset(&priv->napi, 0, sizeof(priv->napi));
++	netif_napi_add(netdev, &priv->napi, ethoc_poll, 64);
++
++	spin_lock_init(&priv->rx_lock);
++	spin_lock_init(&priv->lock);
++
++	ret = register_netdev(netdev);
++	if (ret < 0) {
++		dev_err(&netdev->dev, "failed to register interface\n");
++		goto error;
++	}
++
++	goto out;
++
++error:
++	mdiobus_unregister(priv->mdio);
++free_mdio:
++	kfree(priv->mdio->irq);
++	mdiobus_free(priv->mdio);
++free:
++	free_netdev(netdev);
++out:
++	return ret;
++}
++
++/**
++ * ethoc_remove() - shutdown OpenCores ethernet MAC
++ * @pdev:	platform device
++ */
++static int ethoc_remove(struct platform_device *pdev)
++{
++	struct net_device *netdev = platform_get_drvdata(pdev);
++	struct ethoc *priv = netdev_priv(netdev);
++
++	platform_set_drvdata(pdev, NULL);
++
++	if (netdev) {
++#ifdef CONFIG_MII
++		phy_disconnect(priv->phy);
++		priv->phy = NULL;
++
++		if (priv->mdio) {
++			mdiobus_unregister(priv->mdio);
++			kfree(priv->mdio->irq);
++			mdiobus_free(priv->mdio);
++		}
++#endif
++
++		unregister_netdev(netdev);
++		free_netdev(netdev);
++	}
++
++	return 0;
++}
++
++#ifdef CONFIG_PM
++static int ethoc_suspend(struct platform_device *pdev, pm_message_t state)
++{
++	return -ENOSYS;
++}
++
++static int ethoc_resume(struct platform_device *pdev)
++{
++	return -ENOSYS;
++}
++#else
++# define ethoc_suspend NULL
++# define ethoc_resume  NULL
++#endif
++
++static struct platform_driver ethoc_driver = {
++	.probe   = ethoc_probe,
++	.remove  = ethoc_remove,
++	.suspend = ethoc_suspend,
++	.resume  = ethoc_resume,
++	.driver  = {
++		.name = "ethoc",
++	},
++};
++
++static int __init ethoc_init(void)
++{
++	return platform_driver_register(&ethoc_driver);
++}
++
++static void __exit ethoc_exit(void)
++{
++	platform_driver_unregister(&ethoc_driver);
++}
++
++module_init(ethoc_init);
++module_exit(ethoc_exit);
++
++MODULE_AUTHOR("Thierry Reding <thierry.reding@avionic-design.de>");
++MODULE_DESCRIPTION("OpenCores Ethernet MAC driver");
++MODULE_LICENSE("GPL v2");
++
+diff --git a/include/net/ethoc.h b/include/net/ethoc.h
+new file mode 100644
+index 0000000..96f3789
+--- /dev/null
++++ b/include/net/ethoc.h
+@@ -0,0 +1,22 @@
++/*
++ * linux/include/net/ethoc.h
++ *
++ * Copyright (C) 2008-2009 Avionic Design GmbH
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ *
++ * Written by Thierry Reding <thierry.reding@avionic-design.de>
++ */
++
++#ifndef LINUX_NET_ETHOC_H
++#define LINUX_NET_ETHOC_H 1
++
++struct ethoc_platform_data {
++	u8 hwaddr[IFHWADDRLEN];
++	s8 phy_id;
++};
++
++#endif /* !LINUX_NET_ETHOC_H */
++
+-- 
+tg: (8e0ee43..) adx/net/ethoc (depends on: adx/master)
