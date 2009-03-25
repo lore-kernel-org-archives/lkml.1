@@ -1,40 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757134AbZCYOfJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757389AbZCYOh3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757134AbZCYOfJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 10:35:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753409AbZCYOex
+	id S1757389AbZCYOh3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 10:37:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751966AbZCYOhS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 10:34:53 -0400
-Received: from stinky.trash.net ([213.144.137.162]:64330 "EHLO
-	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750882AbZCYOew (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 10:34:52 -0400
-Message-ID: <49CA4105.4030804@trash.net>
-Date: Wed, 25 Mar 2009 15:34:45 +0100
-From: Patrick McHardy <kaber@trash.net>
-User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
-MIME-Version: 1.0
-To: Subrata Modak <tosubrata@gmail.com>
-CC: Sachin Sant <sachinp@in.ibm.com>, netdev <netdev@vger.kernel.org>,
-       "David S. Miller" <davem@davemloft.net>, linux-next@vger.kernel.org,
-       Adam Nielsen <a.nielsen@shikadi.net>,
-       Stephen Rothwell <sfr@canb.auug.org.au>,
+	Wed, 25 Mar 2009 10:37:18 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:49322 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751351AbZCYOhR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Mar 2009 10:37:17 -0400
+Subject: Re: [PATCH 1/2] trace_stat: keep original order
+From: Steven Rostedt <srostedt@redhat.com>
+To: Lai Jiangshan <laijs@cn.fujitsu.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
        LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Re: Next March 25: net/netfilter/xt_LED build failure.
-References: <20090325143142.6171.24387.sendpatchset@subratamodak.linux.ibm.com>
-In-Reply-To: <20090325143142.6171.24387.sendpatchset@subratamodak.linux.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+In-Reply-To: <49C9F23F.5040307@cn.fujitsu.com>
+References: <49C9F23F.5040307@cn.fujitsu.com>
+Content-Type: text/plain
+Organization: Red Hat
+Date: Wed, 25 Mar 2009 10:36:38 -0400
+Message-Id: <1237991798.22033.7.camel@localhost.localdomain>
+Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Subrata Modak wrote:
-> Hi Patrick,
-> 
->> Does this patch fix it?
-> 
-> Sorry, yes it does for make. But i was executing:
 
-Thanks for testing.
+On Wed, 2009-03-25 at 16:58 +0800, Lai Jiangshan wrote:
+> Impact: make trace_stat files show items with the original order
+> 
+> trace_stat tracer reverse the items, it makes the output
+> looks a little ugly.
+> 
+> Example, when we read trace_stat/workqueues, we get cpu#7's stat.
+> at first, and then cpu#6... cpu#0.
+> 
+
+This doesn't reverse the order of the annotated branch profiler, does
+it?
+
+-- Steve
+
+> Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
+> ---
+> diff --git a/kernel/trace/trace_stat.c b/kernel/trace/trace_stat.c
+> index f71b85b..c08e7f1 100644
+> --- a/kernel/trace/trace_stat.c
+> +++ b/kernel/trace/trace_stat.c
+> @@ -125,23 +125,21 @@ static int stat_seq_init(struct tracer_stat_session *session)
+>  		INIT_LIST_HEAD(&new_entry->list);
+>  		new_entry->stat = stat;
+>  
+> -		list_for_each_entry(iter_entry, &session->stat_list, list) {
+> +		list_for_each_entry_reverse(iter_entry, &session->stat_list,
+> +				list) {
+>  
+>  			/* Insertion with a descendent sorting */
+> -			if (ts->stat_cmp(new_entry->stat,
+> -						iter_entry->stat) > 0) {
+> +			if (ts->stat_cmp(iter_entry->stat,
+> +					new_entry->stat) >= 0) {
+>  
+> -				list_add_tail(&new_entry->list,
+> -						&iter_entry->list);
+> -				break;
+> -
+> -			/* The current smaller value */
+> -			} else if (list_is_last(&iter_entry->list,
+> -						&session->stat_list)) {
+>  				list_add(&new_entry->list, &iter_entry->list);
+>  				break;
+>  			}
+>  		}
+> +
+> +		/* The current larger value */
+> +		if (list_empty(&new_entry->list))
+> +			list_add(&new_entry->list, &session->stat_list);
+>  	}
+>  exit:
+>  	mutex_unlock(&session->stat_mutex);
+> 
+> 
+
