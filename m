@@ -1,93 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763368AbZCYRVX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762934AbZCYRYX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763368AbZCYRVX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 13:21:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755664AbZCYRVO
+	id S1762934AbZCYRYX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 13:24:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754732AbZCYRYP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 13:21:14 -0400
-Received: from hera.kernel.org ([140.211.167.34]:40086 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753766AbZCYRVO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 13:21:14 -0400
-Subject: Re: [PATCH -tip] x86: cpu_debug.c remove some not required header
- files
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <1238000052.2500.43.camel@ht.satnam>
-References: <1238000052.2500.43.camel@ht.satnam>
+	Wed, 25 Mar 2009 13:24:15 -0400
+Received: from smtp-outbound-1.vmware.com ([65.115.85.69]:46430 "EHLO
+	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752737AbZCYRYP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Mar 2009 13:24:15 -0400
+Subject: Re: [PATCH -tip] x86: move vmware to hypervisor
+From: Alok Kataria <akataria@vmware.com>
+Reply-To: akataria@vmware.com
+To: Jaswinder Singh Rajput <jaswinder@kernel.org>
+Cc: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <1238000840.2500.49.camel@ht.satnam>
+References: <1237281581.7907.2.camel@ht.satnam>
+	 <20090317093919.GD6477@elte.hu> <1237283318.7907.9.camel@ht.satnam>
+	 <49BFC6CB.9070603@zytor.com>
+	 <1237958994.5556.5.camel@localhost.localdomain>
+	 <20090325125955.GB516@elte.hu>  <1237999971.32497.12.camel@alok-dev1>
+	 <1238000840.2500.49.camel@ht.satnam>
 Content-Type: text/plain
-Date: Wed, 25 Mar 2009 22:50:42 +0530
-Message-Id: <1238001642.2500.50.camel@ht.satnam>
+Organization: VMware INC.
+Date: Wed, 25 Mar 2009 10:24:13 -0700
+Message-Id: <1238001853.32497.22.camel@alok-dev1>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+X-Mailer: Evolution 2.8.0 (2.8.0-40.el5_1.1) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-03-25 at 22:24 +0530, Jaswinder Singh Rajput wrote:
-> From: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
-> Date: Wed, 25 Mar 2009 22:09:52 +0530
-> Subject: [PATCH] x86: cpu_debug.c remove some not required header files
+On Wed, 2009-03-25 at 10:07 -0700, Jaswinder Singh Rajput wrote:
+> On Wed, 2009-03-25 at 09:52 -0700, Alok Kataria wrote:
+> > > 
+> > > vmware can be considered a CPU here, so i think making the disabling 
+> > > also depend on PROCESSOR_SELECT.
+> > 
+> > Ingo, this code is not just to be used by VMware, the reason we did this
+> > generically was so that a guest could run unaltered on *any* fully
+> > virtualized hypervisor.
+> > And give that this code is just a boot setup thing, the only thing this
+> > patch saves over here is not running the detection code on native
+> > systems. All the rest of the code is guarded by the
+> > "boot_cpu_data.x86_hyper_vendor" checks anyways.  
+> > 
+> > I don't really see the point of adding one more config option just for
+> > this. 
+> > 
 > 
-> Impact: cleanup
+> Can you please explain what is the point of adding this support all the
+> time if this is useless for 99.9% of cases. IMHO, it should be optional.
+
+First of all, I don't know how did you get to the 99.9% number, though I
+think its not a point worth debating, just like to share some info with
+you. More and more people are adopting virtualization now a days and
+give the trend i don't see just 0.1% people running Linux on virtualized
+hardware. So though its not a common case there is still a large user
+base. 
+I am not saying we should not hide this behind a config at all. The
+point is there is nothing that we save by adding a new config, so what's
+the point at all. If you can give me a solid reason like, say, you save
+1% code space with this config option, or 'n' sec in the boottime,  I am
+all ears for such an argument.
+
+Thanks,
+Alok
+
 > 
-> Also fixed mode of cpu_debug files
-
-Here is updated patch:
-
-From: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
-Date: Wed, 25 Mar 2009 22:09:52 +0530
-Subject: [PATCH] x86: cpu_debug.c remove some not required header files
-
-Impact: cleanup
-
-Also fixed mode of cpu_debug files
-
-Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
----
- arch/x86/kernel/cpu/cpu_debug.c  |    5 -----
- 1 files changed, 0 insertions(+), 5 deletions(-)
- mode change 100755 => 100644 arch/x86/include/asm/cpu_debug.h
- mode change 100755 => 100644 arch/x86/kernel/cpu/cpu_debug.c
-
-diff --git a/arch/x86/include/asm/cpu_debug.h b/arch/x86/include/asm/cpu_debug.h
-old mode 100755
-new mode 100644
-diff --git a/arch/x86/kernel/cpu/cpu_debug.c b/arch/x86/kernel/cpu/cpu_debug.c
-old mode 100755
-new mode 100644
-index 46e29ab..871a4dc
---- a/arch/x86/kernel/cpu/cpu_debug.c
-+++ b/arch/x86/kernel/cpu/cpu_debug.c
-@@ -6,16 +6,12 @@
-  * For licencing details see kernel-base/COPYING
-  */
- 
--#include <linux/interrupt.h>
--#include <linux/compiler.h>
- #include <linux/seq_file.h>
- #include <linux/debugfs.h>
--#include <linux/kprobes.h>
- #include <linux/uaccess.h>
- #include <linux/kernel.h>
- #include <linux/module.h>
- #include <linux/percpu.h>
--#include <linux/signal.h>
- #include <linux/errno.h>
- #include <linux/sched.h>
- #include <linux/types.h>
-@@ -26,7 +22,6 @@
- #include <asm/cpu_debug.h>
- #include <asm/paravirt.h>
- #include <asm/system.h>
--#include <asm/traps.h>
- #include <asm/apic.h>
- #include <asm/desc.h>
- 
--- 
-1.6.0.6
-
-
+> --
+> JSR
+> 
+> 
+> 
+> 
+> 
 
