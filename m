@@ -1,66 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756573AbZCYSNO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762216AbZCYSQm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756573AbZCYSNO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 14:13:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754024AbZCYSMy
+	id S1762216AbZCYSQm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 14:16:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754379AbZCYSQd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 14:12:54 -0400
-Received: from stinky.trash.net ([213.144.137.162]:36353 "EHLO
-	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753896AbZCYSMx (ORCPT
+	Wed, 25 Mar 2009 14:16:33 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:49454 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753079AbZCYSQc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 14:12:53 -0400
-Message-ID: <49CA741D.3080705@trash.net>
-Date: Wed, 25 Mar 2009 19:12:45 +0100
-From: Patrick McHardy <kaber@trash.net>
-User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
+	Wed, 25 Mar 2009 14:16:32 -0400
+Date: Wed, 25 Mar 2009 14:16:29 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Ingo Molnar <mingo@elte.hu>
+cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Tim Bird <tim.bird@am.sony.com>, Steven Rostedt <srostedt@redhat.com>
+Subject: Re: [PATCH 2/5][RFC] tracing: move function profiler data out of
+ function struct
+In-Reply-To: <20090325180203.GB25518@elte.hu>
+Message-ID: <alpine.DEB.2.00.0903251411260.5675@gandalf.stny.rr.com>
+References: <20090325035646.662994901@goodmis.org> <20090325040832.443420395@goodmis.org> <20090325100746.GI2341@elte.hu> <alpine.DEB.2.00.0903251142470.5675@gandalf.stny.rr.com> <20090325174446.GE14250@elte.hu> <alpine.DEB.2.00.0903251354020.5675@gandalf.stny.rr.com>
+ <20090325180203.GB25518@elte.hu>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-To: Francis Dupont <Francis_Dupont@isc.org>
-CC: David Miller <davem@davemloft.net>, Francis.Dupont@fdupont.fr,
-       linux-kernel@vger.kernel.org, coreteam@netfilter.org,
-       netfilter-devel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: netfilter spurious ELOOP
-References: <200903242302.n2ON25u4024288@givry.fdupont.fr> <20090324.162808.114465835.davem@davemloft.net> <49CA64D8.9040602@trash.net> <20090325173742.3C509E601C@farside.isc.org>
-In-Reply-To: <20090325173742.3C509E601C@farside.isc.org>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Francis Dupont wrote:
->> Just to clarify: does the problem happens when you have the MARK rule
->> above in a user-defined chain that has more then one jump leading to
->> it or does it also happen in other cases?
-> 
-> => I triggered the bug with a real world example:
->  - first add a rule with a MARK target using a set mark with the first/sign
->   bit set to one. This target is coded with this mark put at the same
->   place than the verdict field of standard targets. (note this should
->   be triggered by a lot of targets but I got it with MARK)
->  - try to add another rule (with -A or -I but this works too with restore,
->   the idea is to get a replace ioctl with an illegal value in a verdict
->   position).
->  - if you are (un?)lucky you get the ELOOP error.
->
-> PS: I really need a bug-ticket-etc number because some business is implied
 
-I'm not a service center, sorry :) Feel free to create an entry in
-the netfilter bugzilla, I'll mark it resolved once the patch is
-upstream.
+On Wed, 25 Mar 2009, Ingo Molnar wrote:
 
-> PPS: here I've cut & paste the config I used to track the bug:#
-> ....
-> :MARKOUT1 - [0:0]
-> -A PREROUTING -d 10.0.200.2/32 -p tcp -m tcp --dport 5001 -j MARKOUT1 
-> -A MARKOUT1 -j MARK --set-xmark 0x80000001/0xffffffff 
-> -A MARKOUT1 -j CONNMARK --save-mark --nfmask 0x3fffffff --ctmask 0x3fffffff 
-> -A MARKOUT1 -j ACCEPT 
 > 
-> I got the bug with the UDP counterpart:
+> * Steven Rostedt <rostedt@goodmis.org> wrote:
 > 
-> iptables -t mangle -A PREROUTING -d 10.0.200.2/32 -p udp --dport 5001 \
-> -j MARKOUT1
+> > 
+> > On Wed, 25 Mar 2009, Ingo Molnar wrote:
+> > 
+> > > > The atomic_inc_return protects against NMIs, since this is the only place 
+> > > > the lock is taken.
+> > > 
+> > > i mean, if this code executes _ni_ an NMI. Or that cannot happen? We 
+> > > trace nmis too, dont we?
+> > 
+> > Yes, it can execute in an NMI, but we have no issues there. If the 
+> > lock was taken the atomic inc is set. If an NMI comes in, it will 
+> > fail the atomic inc counter test and never try to take the lock.
+> 
+> You are misunderstanding me. Can this bit:
 
-Thanks, that answers my question. I'll apply your patch and send it to
--stable once its in the mainline kernel.
+Ah thanks,
+
+> 
+> > > +   if (!profile_pages->next && alloc_safe)
+> > > +           profile_pages->next = (void *)get_zeroed_page(GFP_ATOMIC);
+> 
+> run in NMI context?
+> 
+> or is alloc_safe false in that case? Even if it's safe it looks 
+> really messy ...
+
+alloc_safe is true only if interrupts were enabled, preemption is enabled 
+and we are not in an interrupt or softirq.
+
+So, it should fail when in NMI.
+
+But I agree, it is messy, and I never liked it. I was trying to save 
+space, but the space saving is probably not worth the messy code.
+
+For every recorded function we have:
+
+struct ftrace_profile {
+	struct hlist_node	*node;
+	unsigned long		ip;
+	unsigned long		hit;
+	unsigned long long	calltime;
+};
+
+on x86_64 that is 40 bytes. (node is 16, ip is 8, hit is 8, calltime is 8)
+
+Thus, a normal distro kernel has 20,000 functions, and if we were to 
+allocate for every function per online cpu, we have:
+
+ 20K * 40 = 800K per online CPU.
+
+But we allocate only when we use it. Though it must be warned, because 
+when we use it we must always be able to reference it, that memory stays 
+allocated. If this becomes an issue, I can add a way to clean the results 
+and free the memory.
+
+I guess 800K per online CPU is not worth the messy code. I'll write up a 
+patch to fix that.
+
+-- Steve
+
