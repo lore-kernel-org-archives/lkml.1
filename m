@@ -1,127 +1,175 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759452AbZCYJri@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759537AbZCYJr6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759452AbZCYJri (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 05:47:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758921AbZCYJrM
+	id S1759537AbZCYJr6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 05:47:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758943AbZCYJrS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 05:47:12 -0400
-Received: from hera.kernel.org ([140.211.167.34]:46407 "EHLO hera.kernel.org"
+	Wed, 25 Mar 2009 05:47:18 -0400
+Received: from hera.kernel.org ([140.211.167.34]:46414 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757607AbZCYJrK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 05:47:10 -0400
-Date: Wed, 25 Mar 2009 09:45:54 GMT
-From: Pekka Enberg <penberg@cs.helsinki.fi>
+	id S1759017AbZCYJrP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Mar 2009 05:47:15 -0400
+Date: Wed, 25 Mar 2009 09:46:02 GMT
+From: Gautham R Shenoy <ego@in.ibm.com>
 To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       penberg@cs.helsinki.fi, eduard.munteanu@linux360.ro, tglx@linutronix.de,
+Cc: linux-kernel@vger.kernel.org, ego@in.ibm.com, hpa@zytor.com,
+       mingo@redhat.com, a.p.zijlstra@chello.nl, dhaval@linux.vnet.ibm.com,
+       balbir@in.ibm.com, bharata@linux.vnet.ibm.com,
+       suresh.b.siddha@intel.com, tglx@linutronix.de, mingo@elte.hu,
+       svaidy@linux.vnet.ibm.com, nickpiggin@yahoo.com.au
+Reply-To: mingo@redhat.com, hpa@zytor.com, ego@in.ibm.com,
+       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
+       dhaval@linux.vnet.ibm.com, balbir@in.ibm.com,
+       bharata@linux.vnet.ibm.com, suresh.b.siddha@intel.com,
+       tglx@linutronix.de, nickpiggin@yahoo.com.au, svaidy@linux.vnet.ibm.com,
        mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       penberg@cs.helsinki.fi, eduard.munteanu@linux360.ro, tglx@linutronix.de,
-       mingo@elte.hu
-In-Reply-To: <1237971957.30175.18.camel@penberg-laptop>
-References: <1237971957.30175.18.camel@penberg-laptop>
-Subject: [tip:tracing/kmemtrace] kmemtrace: trace kfree() calls with NULL or zero-length objects
-Message-ID: <tip-ceff33f2fe894601b5e6805f88ea2b6a9622ce75@git.kernel.org>
-Git-Commit-ID: ceff33f2fe894601b5e6805f88ea2b6a9622ce75
+In-Reply-To: <20090325091335.13992.55424.stgit@sofia.in.ibm.com>
+References: <20090325091335.13992.55424.stgit@sofia.in.ibm.com>
+Subject: [tip:sched/balancing] sched: Simple helper functions for find_busiest_group()
+Message-ID: <tip-67bb6c036d1fc3d332c8527a36a546e3e72e822c@git.kernel.org>
+Git-Commit-ID: 67bb6c036d1fc3d332c8527a36a546e3e72e822c
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 25 Mar 2009 09:45:56 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 25 Mar 2009 09:46:04 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  ceff33f2fe894601b5e6805f88ea2b6a9622ce75
-Gitweb:     http://git.kernel.org/tip/ceff33f2fe894601b5e6805f88ea2b6a9622ce75
-Author:     Pekka Enberg <penberg@cs.helsinki.fi>
-AuthorDate: Wed, 25 Mar 2009 11:05:57 +0200
+Commit-ID:  67bb6c036d1fc3d332c8527a36a546e3e72e822c
+Gitweb:     http://git.kernel.org/tip/67bb6c036d1fc3d332c8527a36a546e3e72e822c
+Author:     Gautham R Shenoy <ego@in.ibm.com>
+AuthorDate: Wed, 25 Mar 2009 14:43:35 +0530
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Wed, 25 Mar 2009 10:15:20 +0100
+CommitDate: Wed, 25 Mar 2009 10:30:44 +0100
 
-kmemtrace: trace kfree() calls with NULL or zero-length objects
+sched: Simple helper functions for find_busiest_group()
 
-Impact: also output kfree(NULL) entries
+Impact: cleanup
 
-This patch moves the trace_kfree() calls before the ZERO_OR_NULL_PTR
-check so that we can trace call-sites that call kfree() with NULL many
-times which might be an indication of a bug.
+Currently the load idx calculation code is in find_busiest_group().
+Move that to a static inline helper function.
 
-Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-LKML-Reference: <1237971957.30175.18.camel@penberg-laptop>
+Similary, to find the first cpu of a sched_group we use
+cpumask_first(sched_group_cpus(group))
+
+Use a helper to that. It improves readability in some cases.
+
+Signed-off-by: Gautham R Shenoy <ego@in.ibm.com>
+Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Suresh Siddha <suresh.b.siddha@intel.com>
+Cc: "Balbir Singh" <balbir@in.ibm.com>
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: "Dhaval Giani" <dhaval@linux.vnet.ibm.com>
+Cc: Bharata B Rao <bharata@linux.vnet.ibm.com>
+Cc: "Vaidyanathan Srinivasan" <svaidy@linux.vnet.ibm.com>
+LKML-Reference: <20090325091335.13992.55424.stgit@sofia.in.ibm.com>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
 ---
- mm/slab.c |    4 ++--
- mm/slob.c |    4 ++--
- mm/slub.c |    4 ++--
- 3 files changed, 6 insertions(+), 6 deletions(-)
+ kernel/sched.c |   55 +++++++++++++++++++++++++++++++++++++++++++------------
+ 1 files changed, 43 insertions(+), 12 deletions(-)
 
-diff --git a/mm/slab.c b/mm/slab.c
-index fa00fd6..b584002 100644
---- a/mm/slab.c
-+++ b/mm/slab.c
-@@ -3773,6 +3773,8 @@ void kfree(const void *objp)
- 	struct kmem_cache *c;
- 	unsigned long flags;
+diff --git a/kernel/sched.c b/kernel/sched.c
+index 7b389c7..6aec1e7 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -3189,6 +3189,43 @@ static int move_one_task(struct rq *this_rq, int this_cpu, struct rq *busiest,
  
-+	trace_kfree(_RET_IP_, objp);
-+
- 	if (unlikely(ZERO_OR_NULL_PTR(objp)))
- 		return;
- 	local_irq_save(flags);
-@@ -3782,8 +3784,6 @@ void kfree(const void *objp)
- 	debug_check_no_obj_freed(objp, obj_size(c));
- 	__cache_free(c, (void *)objp);
- 	local_irq_restore(flags);
--
--	trace_kfree(_RET_IP_, objp);
+ 	return 0;
  }
- EXPORT_SYMBOL(kfree);
- 
-diff --git a/mm/slob.c b/mm/slob.c
-index 2ccd31d..5bd7ecc 100644
---- a/mm/slob.c
-+++ b/mm/slob.c
-@@ -503,6 +503,8 @@ void kfree(const void *block)
- {
- 	struct slob_page *sp;
- 
-+	trace_kfree(_RET_IP_, block);
++/********** Helpers for find_busiest_group ************************/
 +
- 	if (unlikely(ZERO_OR_NULL_PTR(block)))
- 		return;
- 
-@@ -513,8 +515,6 @@ void kfree(const void *block)
- 		slob_free(m, *m + align);
- 	} else
- 		put_page(&sp->page);
--
--	trace_kfree(_RET_IP_, block);
- }
- EXPORT_SYMBOL(kfree);
- 
-diff --git a/mm/slub.c b/mm/slub.c
-index c3a905b..988ef33 100644
---- a/mm/slub.c
-+++ b/mm/slub.c
-@@ -2791,6 +2791,8 @@ void kfree(const void *x)
- 	struct page *page;
- 	void *object = (void *)x;
- 
-+	trace_kfree(_RET_IP_, x);
++/**
++ * group_first_cpu - Returns the first cpu in the cpumask of a sched_group.
++ * @group: The group whose first cpu is to be returned.
++ */
++static inline unsigned int group_first_cpu(struct sched_group *group)
++{
++	return cpumask_first(sched_group_cpus(group));
++}
 +
- 	if (unlikely(ZERO_OR_NULL_PTR(x)))
- 		return;
++/**
++ * get_sd_load_idx - Obtain the load index for a given sched domain.
++ * @sd: The sched_domain whose load_idx is to be obtained.
++ * @idle: The Idle status of the CPU for whose sd load_icx is obtained.
++ */
++static inline int get_sd_load_idx(struct sched_domain *sd,
++					enum cpu_idle_type idle)
++{
++	int load_idx;
++
++	switch (idle) {
++	case CPU_NOT_IDLE:
++		load_idx = sd->busy_idx;
++		break;
++
++	case CPU_NEWLY_IDLE:
++		load_idx = sd->newidle_idx;
++		break;
++	default:
++		load_idx = sd->idle_idx;
++		break;
++	}
++
++	return load_idx;
++}
++/******* find_busiest_group() helpers end here *********************/
  
-@@ -2801,8 +2803,6 @@ void kfree(const void *x)
- 		return;
+ /*
+  * find_busiest_group finds and returns the busiest CPU group within the
+@@ -3217,12 +3254,7 @@ find_busiest_group(struct sched_domain *sd, int this_cpu,
+ 	busiest_load_per_task = busiest_nr_running = 0;
+ 	this_load_per_task = this_nr_running = 0;
+ 
+-	if (idle == CPU_NOT_IDLE)
+-		load_idx = sd->busy_idx;
+-	else if (idle == CPU_NEWLY_IDLE)
+-		load_idx = sd->newidle_idx;
+-	else
+-		load_idx = sd->idle_idx;
++	load_idx = get_sd_load_idx(sd, idle);
+ 
+ 	do {
+ 		unsigned long load, group_capacity, max_cpu_load, min_cpu_load;
+@@ -3238,7 +3270,7 @@ find_busiest_group(struct sched_domain *sd, int this_cpu,
+ 					       sched_group_cpus(group));
+ 
+ 		if (local_group)
+-			balance_cpu = cpumask_first(sched_group_cpus(group));
++			balance_cpu = group_first_cpu(group);
+ 
+ 		/* Tally up the load of all CPUs in the group */
+ 		sum_weighted_load = sum_nr_running = avg_load = 0;
+@@ -3359,8 +3391,7 @@ find_busiest_group(struct sched_domain *sd, int this_cpu,
+ 		 */
+ 		if ((sum_nr_running < min_nr_running) ||
+ 		    (sum_nr_running == min_nr_running &&
+-		     cpumask_first(sched_group_cpus(group)) >
+-		     cpumask_first(sched_group_cpus(group_min)))) {
++		     group_first_cpu(group) > group_first_cpu(group_min))) {
+ 			group_min = group;
+ 			min_nr_running = sum_nr_running;
+ 			min_load_per_task = sum_weighted_load /
+@@ -3375,8 +3406,8 @@ find_busiest_group(struct sched_domain *sd, int this_cpu,
+ 		if (sum_nr_running <= group_capacity - 1) {
+ 			if (sum_nr_running > leader_nr_running ||
+ 			    (sum_nr_running == leader_nr_running &&
+-			     cpumask_first(sched_group_cpus(group)) <
+-			     cpumask_first(sched_group_cpus(group_leader)))) {
++			     group_first_cpu(group) <
++			     group_first_cpu(group_leader))) {
+ 				group_leader = group;
+ 				leader_nr_running = sum_nr_running;
+ 			}
+@@ -3504,7 +3535,7 @@ out_balanced:
+ 		*imbalance = min_load_per_task;
+ 		if (sched_mc_power_savings >= POWERSAVINGS_BALANCE_WAKEUP) {
+ 			cpu_rq(this_cpu)->rd->sched_mc_preferred_wakeup_cpu =
+-				cpumask_first(sched_group_cpus(group_leader));
++				group_first_cpu(group_leader);
+ 		}
+ 		return group_min;
  	}
- 	slab_free(page->slab, page, object, _RET_IP_);
--
--	trace_kfree(_RET_IP_, x);
- }
- EXPORT_SYMBOL(kfree);
- 
