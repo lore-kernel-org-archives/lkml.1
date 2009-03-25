@@ -1,79 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761626AbZCYO7V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761122AbZCYPBv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761626AbZCYO7V (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 10:59:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753291AbZCYO7K
+	id S1761122AbZCYPBv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 11:01:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753456AbZCYPBn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 10:59:10 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:54750 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752811AbZCYO7J (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 10:59:09 -0400
-Subject: Re: [PATCH 2/5] mm: remove unlikly NULL from kfree
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Hua Zhong <hzhong@gmail.com>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Roland McGrath <roland@redhat.com>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       Steven Rostedt <srostedt@redhat.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Matt Mackall <mpm@selenic.com>, Al Viro <viro@zeniv.linux.org.uk>
-In-Reply-To: <alpine.DEB.2.00.0903251039590.5675@gandalf.stny.rr.com>
-References: <20090325051920.406564281@goodmis.org>
-	 <20090325052023.071564146@goodmis.org>
-	 <84144f020903250034j24e1782bt5f73809b9349346c@mail.gmail.com>
-	 <009101c9ad20$1ae231c0$50a69540$@com>
-	 <1237968394.30175.12.camel@penberg-laptop>
-	 <84144f020903250651o13c723cgf64643091459a5ac@mail.gmail.com>
-	 <alpine.DEB.2.00.0903251039590.5675@gandalf.stny.rr.com>
-Date: Wed, 25 Mar 2009 16:59:05 +0200
-Message-Id: <1237993145.30175.34.camel@penberg-laptop>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 7bit
-X-Mailer: Evolution 2.22.3.1 
+	Wed, 25 Mar 2009 11:01:43 -0400
+Received: from THUNK.ORG ([69.25.196.29]:45580 "EHLO thunker.thunk.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750882AbZCYPBm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Mar 2009 11:01:42 -0400
+Date: Wed, 25 Mar 2009 11:00:41 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Jan Kara <jack@suse.cz>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Nick Piggin <npiggin@suse.de>,
+       Jens Axboe <jens.axboe@oracle.com>, David Rees <drees76@gmail.com>,
+       Jesper Krogh <jesper@krogh.cc>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.29
+Message-ID: <20090325150041.GM32307@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>, Jan Kara <jack@suse.cz>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+	Arjan van de Ven <arjan@infradead.org>,
+	Peter Zijlstra <a.p.zijlstra@chello.nl>,
+	Nick Piggin <npiggin@suse.de>, Jens Axboe <jens.axboe@oracle.com>,
+	David Rees <drees76@gmail.com>, Jesper Krogh <jesper@krogh.cc>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <alpine.LFD.2.00.0903231617550.3032@localhost.localdomain> <49C87B87.4020108@krogh.cc> <72dbd3150903232346g5af126d7sb5ad4949a7b5041f@mail.gmail.com> <20090324091545.758d00f5@lxorguk.ukuu.org.uk> <20090324093245.GA22483@elte.hu> <20090324101011.6555a0b9@lxorguk.ukuu.org.uk> <20090324103111.GA26691@elte.hu> <20090324041249.1133efb6.akpm@linux-foundation.org> <20090325123744.GK23439@duck.suse.cz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090325123744.GK23439@duck.suse.cz>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Steven,
+On Wed, Mar 25, 2009 at 01:37:44PM +0100, Jan Kara wrote:
+> >     Also, we do have to reliably get a lock on the buffer when moving it
+> >     between lists and inspecting its internal state.  Otherwise a competing
+> >     read from the underlying block device can trigger an assertion failure,
+> >     and a competing write to the underlying block device can confuse ext3
+> >     journalling state completely.
+>
+>   I've looked at this a bit. I suppose you mean the contention arising from
+> us taking the buffer lock in do_get_write_access()? But it's not obvious
+> to me why we'd be contending there... We call this function only for
+> metadata buffers (unless in data=journal mode) so there isn't huge amount
+> of these blocks.
 
-On Wed, 25 Mar 2009, Pekka Enberg wrote:
-> > OK, so according to Steven, audit_syscall_exit() is one such call-site
-> > that shows up in the traces. I don't really understand what's going on
-> > there but if it is sane, maybe that warrants the removal of unlikely()
-> > from kfree(). Hmm?
+There isn't a huge number of those blocks, but if inode #1220 was
+modified in the previous transaction which is now being committed, and
+we then need to modify and write out inode #1221 in the current
+contention, and they share the same inode table block, that would
+cause the contention.  That probably doesn't happen that often in a
+synchronous code path, but it probably happens more often that you're
+thinking.  I still think the fsync() problem is the much bigger deal,
+and solving the contention problem isn't going to solve the fsync()
+latency problem with ext3 data=ordered mode.
 
-On Wed, 2009-03-25 at 10:47 -0400, Steven Rostedt wrote:
-> After disabling AUDIT_SYSCALLS I have this:
-> 
->  # cat /debug/tracing/trace | sort -u
-> 
-> record_nulls: ptr=(null) (ext3_get_acl+0x1e0/0x3f0 [ext3])
-> record_nulls: ptr=(null) (free_bitmap+0x29/0x70)
-> record_nulls: ptr=(null) (free_tty_struct+0x1d/0x40)
-> record_nulls: ptr=(null) (ftrace_graph_exit_task+0x1e/0x20)
-> record_nulls: ptr=(null) (inet_sock_destruct+0x1cb/0x2a0)
-> record_nulls: ptr=(null) (ip_cork_release+0x24/0x50)
-> record_nulls: ptr=(null) (keyctl_join_session_keyring+0x5a/0x70)
-> record_nulls: ptr=(null) (key_user_lookup+0x183/0x220)
-> record_nulls: ptr=(null) (kobject_set_name_vargs+0x43/0x50)
-> record_nulls: ptr=(null) (netlink_release+0x1a4/0x2f0)
-> record_nulls: ptr=(null) (release_sysfs_dirent+0x20/0xc0)
-> record_nulls: ptr=(null) (sysfs_open_file+0x1c8/0x3e0)
-> record_nulls: ptr=(null) (tty_write+0x16a/0x290)
-> 
-> I added a hook to only record when NULL is passed into kfree.
-> 
-> Also note, that after disabling AUDIT_SYSCALLS I now only have roughly 7% 
-> NULL hit rate. Still, unlikely is probably not a benefit here.
+>   Also when I emailed with a few people about these sync problems, they
+> wrote that switching to data=writeback mode helps considerably so this
+> would indicate that handling of ordered mode data buffers is causing most
+> of the slowdown...
 
-Thanks for doing this. Do you mean that 93% hit ratio is not enough to
-be a performance gain?
+Yes, but we need to be clear whether this was an fsync() problem or
+some other random delay problem.  If it's the fsync() problem,
+obviously data=writeback will solve the fsync() latency delay problem.
+(As will using delayed allocation in ext4 or XFS.)
 
-			Pekka
-
+    	       	       		     	  - Ted
