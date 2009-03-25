@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755818AbZCYAZ1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755542AbZCYAZo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755818AbZCYAZ1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 20:25:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752340AbZCYAZL
+	id S1755542AbZCYAZo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 20:25:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754935AbZCYAZM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 20:25:11 -0400
-Received: from kroah.org ([198.145.64.141]:47199 "EHLO coco.kroah.org"
+	Tue, 24 Mar 2009 20:25:12 -0400
+Received: from kroah.org ([198.145.64.141]:47201 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752292AbZCYAZH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 20:25:07 -0400
-Date: Tue, 24 Mar 2009 17:16:59 -0700
+	id S1752691AbZCYAZJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Mar 2009 20:25:09 -0400
+Date: Tue, 24 Mar 2009 17:17:07 -0700
 From: Greg KH <gregkh@suse.de>
 To: Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: [GIT PATCH] driver core patches for 2.6.30 merge window
-Message-ID: <20090325001659.GA22461@kroah.com>
+Cc: linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org
+Subject: [GIT PATCH] USB patches for 2.6.30 merge window
+Message-ID: <20090325001707.GA22469@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -24,31 +24,23 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Here are the driver-core patches for the 2.6.30 merge window.
+Here's the main batch of USB patches for the 2.6.30 merge window.
 
-The final remanants of the big "bus_id" removal to use dev_name are in
-here, they have all been send to the different subsystem maintainers and
-either ignored for 6 months, or acked.
+Lots of little things in here, some new drivers, rework of the
+usb-storage drivers to be separate modules now, and lots of gadget work.
 
-There is a bit of rework of struct device, moving some private fields
-out of the public eye, so they don't get in trouble by using them
-improperly (parisc had to be fixed up here because of this, that change
-has been acked as well.)
-
-The dynamic debug code has also been reworked and merged with existing
-code, to hopefully make it easier for everyone to use properly.
-
-And there's a new UIO driver, for some video-timestamp hardware, that is
-already being used in the field by a number of crazy users.
+The phidget drivers have been deleted, as there is an opensource
+userspace library that supports them much easier and in more detail (the
+kernel drivers were quite limited.)  This also resolves the dynamic
+power management issues these drivers had posed, so Oliver will be happy :)
 
 Please pull from:
-	master.kernel.org:/pub/scm/linux/kernel/git/gregkh/driver-core-2.6.git/
+	master.kernel.org:/pub/scm/linux/kernel/git/gregkh/usb-2.6.git/
 
-All of these patches have been in the linux-next and mm trees for a
-while.
+All of these patches have been in the -next and -mm releases for a while.
 
-The patches will be sent as a follow-on to this message to lkml for people
-to see.
+The full patches will be sent to the linux-usb mailing list, if anyone
+wants to see them.
 
 thanks,
 
@@ -56,262 +48,372 @@ greg k-h
 
 ------------
 
- Documentation/DocBook/uio-howto.tmpl    |   29 +-
- Documentation/dynamic-debug-howto.txt   |  240 ++++++++++
- Documentation/kernel-parameters.txt     |    5 -
- arch/mips/basler/excite/excite_iodev.c  |   27 +-
- arch/powerpc/platforms/ps3/system-bus.c |    4 +-
- drivers/acpi/dock.c                     |    2 +-
- drivers/amba/bus.c                      |    4 +-
- drivers/base/base.h                     |   31 ++
- drivers/base/bus.c                      |   44 ++-
- drivers/base/core.c                     |  108 +++--
- drivers/base/dd.c                       |   40 +-
- drivers/base/driver.c                   |   15 +-
- drivers/base/firmware_class.c           |    4 +-
- drivers/base/platform.c                 |   60 ++-
- drivers/base/power/main.c               |   44 ++
- drivers/base/power/power.h              |    8 +
- drivers/base/sys.c                      |   54 ++--
- drivers/block/floppy.c                  |    3 +-
- drivers/char/tpm/tpm_atmel.c            |   28 +-
- drivers/char/tpm/tpm_tis.c              |   28 +-
- drivers/char/vc_screen.c                |   16 +-
- drivers/char/vt.c                       |    5 +-
- drivers/dio/dio.c                       |    4 +-
- drivers/dma/dw_dmac.c                   |    2 +-
- drivers/edac/cell_edac.c                |    2 +-
- drivers/edac/mpc85xx_edac.c             |    2 +-
- drivers/edac/mv64x60_edac.c             |    8 +-
- drivers/eisa/eisa-bus.c                 |    4 +-
- drivers/gpio/bt8xxgpio.c                |    2 +-
- drivers/gpu/drm/drm_sysfs.c             |    4 +-
- drivers/i2c/i2c-core.c                  |    2 +-
- drivers/ide/au1xxx-ide.c                |   36 +-
- drivers/isdn/gigaset/ser-gigaset.c      |    3 +-
- drivers/mca/mca-bus.c                   |    4 +-
- drivers/media/radio/radio-tea5764.c     |    3 +-
- drivers/media/video/v4l2-device.c       |    2 +-
- drivers/mfd/mcp-core.c                  |    2 +-
- drivers/mfd/ucb1x00-core.c              |    2 +-
- drivers/mmc/host/atmel-mci.c            |    2 +-
- drivers/mmc/host/of_mmc_spi.c           |    2 +-
- drivers/mtd/maps/pxa2xx-flash.c         |   37 +-
- drivers/mtd/nand/excite_nandflash.c     |   25 +-
- drivers/mtd/nand/ndfc.c                 |    2 +-
- drivers/mtd/onenand/generic.c           |   26 +-
- drivers/net/arm/ks8695net.c             |    2 +-
- drivers/net/au1000_eth.c                |    8 +-
- drivers/net/bfin_mac.c                  |   12 +-
- drivers/net/bmac.c                      |    2 +-
- drivers/net/cpmac.c                     |    2 +-
- drivers/net/declance.c                  |    6 +-
- drivers/net/depca.c                     |    6 +-
- drivers/net/ehea/ehea_main.c            |    2 +-
- drivers/net/jazzsonic.c                 |    6 +-
- drivers/net/macb.c                      |   10 +-
- drivers/net/macsonic.c                  |   15 +-
- drivers/net/mipsnet.c                   |   26 +-
- drivers/net/mv643xx_eth.c               |    2 +-
- drivers/net/sb1250-mac.c                |   10 +-
- drivers/net/smc911x.c                   |    2 +-
- drivers/net/smc91x.c                    |    2 +-
- drivers/net/smsc911x.c                  |    7 +-
- drivers/net/smsc9420.c                  |    4 +-
- drivers/net/tc35815.c                   |    4 +-
- drivers/net/wimax/i2400m/driver.c       |    2 +-
- drivers/net/wimax/i2400m/usb-notif.c    |    2 +-
- drivers/net/xtsonic.c                   |    2 +-
- drivers/pci/hotplug/cpqphp_sysfs.c      |    3 +-
- drivers/pcmcia/au1000_generic.c         |   37 +-
- drivers/pcmcia/i82365.c                 |   28 +-
- drivers/pcmcia/m32r_cfc.c               |   30 +-
- drivers/pcmcia/m32r_pcc.c               |   30 +-
- drivers/pcmcia/rsrc_mgr.c               |    2 +-
- drivers/pcmcia/sa1100_generic.c         |   38 ++-
- drivers/pcmcia/tcic.c                   |   30 +-
- drivers/pcmcia/vrc4171_card.c           |   34 +-
- drivers/rapidio/rio-driver.c            |    2 +-
- drivers/rtc/rtc-at91sam9.c              |    4 +-
- drivers/rtc/rtc-omap.c                  |    4 +-
- drivers/rtc/rtc-twl4030.c               |    2 +-
- drivers/s390/cio/ccwgroup.c             |    5 +-
- drivers/s390/cio/chsc_sch.c             |    4 +-
- drivers/s390/cio/css.c                  |    4 +-
- drivers/s390/cio/device.c               |   13 +-
- drivers/s390/net/qeth_l3_main.c         |    2 +-
- drivers/scsi/a4000t.c                   |   29 +-
- drivers/scsi/bvme6000_scsi.c            |   29 +-
- drivers/scsi/mvme16x_scsi.c             |   29 +-
- drivers/serial/sunzilog.c               |    4 +-
- drivers/sh/maple/maple.c                |    8 +-
- drivers/sh/superhyway/superhyway.c      |    4 +-
- drivers/spi/atmel_spi.c                 |    8 +-
- drivers/spi/mpc52xx_psc_spi.c           |    2 +-
- drivers/spi/omap2_mcspi.c               |    2 +-
- drivers/spi/omap_uwire.c                |   12 +-
- drivers/spi/orion_spi.c                 |    2 +-
- drivers/spi/pxa2xx_spi.c                |    4 +-
- drivers/spi/spi_bfin5xx.c               |    4 +-
- drivers/spi/spi_gpio.c                  |    2 +-
- drivers/spi/spi_imx.c                   |    5 +-
- drivers/spi/spi_mpc83xx.c               |    4 +-
- drivers/spi/spi_txx9.c                  |    3 +-
- drivers/tc/tc.c                         |    8 +-
- drivers/uio/Kconfig                     |   18 +
- drivers/uio/Makefile                    |    1 +
- drivers/uio/uio.c                       |   25 +-
- drivers/uio/uio_aec.c                   |  175 +++++++
- drivers/usb/gadget/ci13xxx_udc.c        |    2 +-
- drivers/usb/gadget/imx_udc.c            |    4 +-
- drivers/usb/host/fhci-dbg.c             |    2 +-
- drivers/usb/host/fhci-hcd.c             |    4 +-
- drivers/video/au1100fb.c                |   31 +-
- drivers/video/au1200fb.c                |   25 +-
- drivers/video/pmag-ba-fb.c              |   17 +-
- drivers/video/pmagb-b-fb.c              |   17 +-
- drivers/video/ps3fb.c                   |    2 +-
- drivers/video/sh_mobile_lcdcfb.c        |    2 +-
- drivers/video/tmiofb.c                  |    2 +-
- drivers/watchdog/rm9k_wdt.c             |   27 +-
- drivers/zorro/zorro.c                   |    4 +-
- fs/partitions/check.c                   |   10 +-
- fs/sysfs/bin.c                          |  253 ++++++++++-
- fs/sysfs/dir.c                          |   33 ++-
- fs/sysfs/file.c                         |   26 +-
- fs/sysfs/inode.c                        |   17 +
- fs/sysfs/mount.c                        |    6 +-
- fs/sysfs/sysfs.h                        |    3 +
- include/asm-generic/vmlinux.lds.h       |   15 +-
- include/linux/console.h                 |    4 +-
- include/linux/device.h                  |   38 +-
- include/linux/dynamic_debug.h           |   88 ++++
- include/linux/dynamic_printk.h          |   93 ----
- include/linux/kernel.h                  |    7 +-
- include/linux/kobject.h                 |    3 +
- include/linux/mod_devicetable.h         |    9 +
- include/linux/platform_device.h         |    7 +
- include/linux/pm.h                      |   11 +
- include/linux/uio_driver.h              |    4 +
- include/linux/wimax/debug.h             |    2 +-
- kernel/module.c                         |   25 +-
- lib/Kconfig.debug                       |   74 ++--
- lib/Makefile                            |    2 +-
- lib/dynamic_debug.c                     |  769 +++++++++++++++++++++++++++++++
- lib/dynamic_printk.c                    |  414 -----------------
- lib/kobject.c                           |    2 +-
- lib/kobject_uevent.c                    |    9 +-
- net/bluetooth/hci_sysfs.c               |    2 +-
- net/bluetooth/rfcomm/tty.c              |    5 +-
- net/netfilter/nf_conntrack_pptp.c       |    2 +-
- scripts/Makefile.lib                    |    2 +-
- scripts/mod/file2alias.c                |   12 +
- 150 files changed, 2670 insertions(+), 1175 deletions(-)
- create mode 100644 Documentation/dynamic-debug-howto.txt
- create mode 100644 drivers/uio/uio_aec.c
- create mode 100644 include/linux/dynamic_debug.h
- delete mode 100644 include/linux/dynamic_printk.h
- create mode 100644 lib/dynamic_debug.c
- delete mode 100644 lib/dynamic_printk.c
+ Documentation/usb/usbmon.txt                       |   27 +-
+ arch/arm/mach-s3c2410/usb-simtec.c                 |    3 +-
+ .../mach => plat-s3c/include/plat}/usb-control.h   |    6 +-
+ drivers/block/ub.c                                 |   11 +-
+ drivers/usb/Makefile                               |    1 +
+ drivers/usb/class/usblp.c                          |   11 +-
+ drivers/usb/core/devices.c                         |    2 +-
+ drivers/usb/core/devio.c                           |   21 +-
+ drivers/usb/core/endpoint.c                        |    9 +-
+ drivers/usb/core/hcd.c                             |   33 +-
+ drivers/usb/core/hub.c                             |   34 +-
+ drivers/usb/core/message.c                         |   11 +-
+ drivers/usb/core/quirks.c                          |    4 +
+ drivers/usb/core/sysfs.c                           |    4 +-
+ drivers/usb/core/urb.c                             |    4 +-
+ drivers/usb/gadget/Kconfig                         |    1 +
+ drivers/usb/gadget/amd5536udc.c                    |    2 +-
+ drivers/usb/gadget/atmel_usba_udc.c                |   20 +-
+ drivers/usb/gadget/cdc2.c                          |    8 +-
+ drivers/usb/gadget/ci13xxx_udc.c                   |    1 -
+ drivers/usb/gadget/composite.c                     |   13 +-
+ drivers/usb/gadget/dummy_hcd.c                     |    4 +-
+ drivers/usb/gadget/epautoconf.c                    |    2 +-
+ drivers/usb/gadget/ether.c                         |    8 +-
+ drivers/usb/gadget/f_acm.c                         |   10 +-
+ drivers/usb/gadget/f_ecm.c                         |   16 +-
+ drivers/usb/gadget/f_loopback.c                    |   10 +-
+ drivers/usb/gadget/f_obex.c                        |    8 +-
+ drivers/usb/gadget/f_phonet.c                      |    8 +-
+ drivers/usb/gadget/f_rndis.c                       |   12 +-
+ drivers/usb/gadget/f_serial.c                      |    4 +-
+ drivers/usb/gadget/f_sourcesink.c                  |   56 +--
+ drivers/usb/gadget/f_subset.c                      |   14 +-
+ drivers/usb/gadget/file_storage.c                  |   22 +-
+ drivers/usb/gadget/fsl_usb2_udc.c                  |    8 +-
+ drivers/usb/gadget/g_zero.h                        |    4 +-
+ drivers/usb/gadget/gmidi.c                         |   16 +-
+ drivers/usb/gadget/goku_udc.c                      |    8 +-
+ drivers/usb/gadget/imx_udc.c                       |  244 ++++---
+ drivers/usb/gadget/imx_udc.h                       |   49 +-
+ drivers/usb/gadget/inode.c                         |    4 +-
+ drivers/usb/gadget/lh7a40x_udc.c                   |   16 +-
+ drivers/usb/gadget/net2280.c                       |   16 +-
+ drivers/usb/gadget/printer.c                       |   18 +-
+ drivers/usb/gadget/pxa27x_udc.c                    |  272 ++++++--
+ drivers/usb/gadget/pxa27x_udc.h                    |   10 +
+ drivers/usb/gadget/serial.c                        |   12 +-
+ drivers/usb/gadget/u_serial.c                      |    2 +-
+ drivers/usb/gadget/zero.c                          |   78 ++-
+ drivers/usb/host/Kconfig                           |    7 +-
+ drivers/usb/host/ehci-hcd.c                        |   36 +
+ drivers/usb/host/ehci-q.c                          |   32 +
+ drivers/usb/host/ehci-sched.c                      |    2 +-
+ drivers/usb/host/ehci.h                            |   39 +-
+ drivers/usb/host/hwa-hc.c                          |    3 +-
+ drivers/usb/host/isp116x-hcd.c                     |    2 +-
+ drivers/usb/host/isp116x.h                         |    8 +-
+ drivers/usb/host/isp1760-hcd.c                     |   25 +-
+ drivers/usb/host/isp1760-hcd.h                     |    7 +-
+ drivers/usb/host/isp1760-if.c                      |   95 +++-
+ drivers/usb/host/ohci-hcd.c                        |    2 +-
+ drivers/usb/host/ohci-s3c2410.c                    |    6 +-
+ drivers/usb/host/oxu210hp-hcd.c                    |   24 +-
+ drivers/usb/host/oxu210hp.h                        |    8 +-
+ drivers/usb/host/pci-quirks.c                      |    2 +-
+ drivers/usb/host/r8a66597-hcd.c                    |  118 +++-
+ drivers/usb/host/r8a66597.h                        |    2 +
+ drivers/usb/host/sl811-hcd.c                       |    4 +-
+ drivers/usb/host/uhci-debug.c                      |    4 +-
+ drivers/usb/host/uhci-hcd.h                        |   10 +-
+ drivers/usb/host/uhci-q.c                          |   21 +-
+ drivers/usb/image/mdc800.c                         |    8 +-
+ drivers/usb/misc/Kconfig                           |   39 -
+ drivers/usb/misc/Makefile                          |    4 -
+ drivers/usb/misc/ftdi-elan.c                       |    6 +-
+ drivers/usb/misc/phidget.c                         |   43 --
+ drivers/usb/misc/phidget.h                         |   12 -
+ drivers/usb/misc/phidgetkit.c                      |  740 --------------------
+ drivers/usb/misc/phidgetmotorcontrol.c             |  465 ------------
+ drivers/usb/misc/phidgetservo.c                    |  375 ----------
+ drivers/usb/mon/mon_bin.c                          |  142 +++-
+ drivers/usb/musb/Kconfig                           |    6 +-
+ drivers/usb/musb/davinci.c                         |   63 ++-
+ drivers/usb/musb/davinci.h                         |   23 +-
+ drivers/usb/musb/musb_core.c                       |    2 +-
+ drivers/usb/musb/musb_core.h                       |    5 +-
+ drivers/usb/musb/musb_host.c                       |  140 +++--
+ drivers/usb/musb/musb_virthub.c                    |    2 +-
+ drivers/usb/otg/Kconfig                            |   10 +-
+ drivers/usb/otg/Makefile                           |    1 +
+ drivers/usb/otg/gpio_vbus.c                        |   42 +-
+ drivers/usb/otg/nop-usb-xceiv.c                    |  180 +++++
+ drivers/usb/otg/twl4030-usb.c                      |   73 ++-
+ drivers/usb/serial/Kconfig                         |   28 +-
+ drivers/usb/serial/Makefile                        |    4 +-
+ drivers/usb/serial/ch341.c                         |  396 +++++++++--
+ drivers/usb/serial/{cp2101.c => cp210x.c}          |  161 +++--
+ drivers/usb/serial/ftdi_sio.c                      |   29 +-
+ drivers/usb/serial/generic.c                       |    9 +-
+ drivers/usb/serial/ipaq.c                          |   43 +-
+ drivers/usb/serial/keyspan.c                       |    2 +-
+ drivers/usb/serial/opticon.c                       |  215 ++++++-
+ drivers/usb/serial/option.c                        |   86 +++-
+ drivers/usb/serial/qcserial.c                      |  147 ++++
+ drivers/usb/serial/symbolserial.c                  |  399 +++++++++++
+ drivers/usb/serial/usb-serial.c                    |   20 +-
+ drivers/usb/storage/Kconfig                        |   48 +-
+ drivers/usb/storage/Makefile                       |   41 +-
+ drivers/usb/storage/alauda.c                       |  192 +++++-
+ drivers/usb/storage/alauda.h                       |  100 ---
+ drivers/usb/storage/cypress_atacb.c                |  106 +++-
+ drivers/usb/storage/datafab.c                      |  104 +++-
+ drivers/usb/storage/datafab.h                      |   40 --
+ drivers/usb/storage/freecom.c                      |   99 +++-
+ drivers/usb/storage/isd200.c                       |   97 +++-
+ drivers/usb/storage/jumpshot.c                     |  103 +++-
+ drivers/usb/storage/jumpshot.h                     |   39 -
+ drivers/usb/storage/karma.c                        |  100 +++-
+ drivers/usb/storage/karma.h                        |    7 -
+ drivers/usb/storage/libusual.c                     |   33 +-
+ drivers/usb/storage/onetouch.c                     |   94 +++-
+ drivers/usb/storage/onetouch.h                     |    9 -
+ drivers/usb/storage/protocol.c                     |    3 +
+ drivers/usb/storage/scsiglue.c                     |    8 +-
+ drivers/usb/storage/sddr09.c                       |  147 ++++-
+ drivers/usb/storage/sddr09.h                       |   38 -
+ drivers/usb/storage/sddr55.c                       |   99 +++-
+ drivers/usb/storage/shuttle_usbat.c                |  202 +++++-
+ drivers/usb/storage/shuttle_usbat.h                |  123 ----
+ drivers/usb/storage/transport.c                    |   10 +
+ .../usb/storage/{freecom.h => unusual_alauda.h}    |   29 +-
+ .../usb/storage/{sddr55.h => unusual_cypress.h}    |   28 +-
+ drivers/usb/storage/unusual_datafab.h              |   98 +++
+ drivers/usb/storage/unusual_devs.h                 |  307 +--------
+ .../storage/{cypress_atacb.h => unusual_freecom.h} |   19 +-
+ drivers/usb/storage/unusual_isd200.h               |   57 ++
+ .../usb/storage/{sddr55.h => unusual_jumpshot.h}   |   23 +-
+ drivers/usb/storage/{isd200.h => unusual_karma.h}  |   21 +-
+ .../usb/storage/{sddr55.h => unusual_onetouch.h}   |   30 +-
+ drivers/usb/storage/unusual_sddr09.h               |   56 ++
+ drivers/usb/storage/unusual_sddr55.h               |   44 ++
+ drivers/usb/storage/unusual_usbat.h                |   43 ++
+ drivers/usb/storage/usb.c                          |  344 +++------
+ drivers/usb/storage/usb.h                          |   21 +
+ drivers/usb/storage/usual-tables.c                 |  116 +++
+ drivers/usb/usb-skeleton.c                         |    6 +-
+ drivers/usb/wusbcore/cbaf.c                        |    3 +-
+ drivers/usb/wusbcore/devconnect.c                  |    2 +
+ drivers/usb/wusbcore/security.c                    |    2 +
+ include/linux/usb.h                                |  184 +-----
+ include/linux/usb/ch9.h                            |  183 +++++-
+ include/linux/usb/composite.h                      |    8 +
+ include/linux/usb/gadget.h                         |    6 +-
+ include/linux/usb/otg.h                            |    8 +
+ include/linux/usb/quirks.h                         |    3 +
+ include/linux/usb/serial.h                         |    3 +-
+ include/linux/usb_usual.h                          |   21 +-
+ 157 files changed, 5188 insertions(+), 3853 deletions(-)
+ rename arch/arm/{mach-s3c2410/include/mach => plat-s3c/include/plat}/usb-control.h (84%)
+ delete mode 100644 drivers/usb/misc/phidget.c
+ delete mode 100644 drivers/usb/misc/phidget.h
+ delete mode 100644 drivers/usb/misc/phidgetkit.c
+ delete mode 100644 drivers/usb/misc/phidgetmotorcontrol.c
+ delete mode 100644 drivers/usb/misc/phidgetservo.c
+ create mode 100644 drivers/usb/otg/nop-usb-xceiv.c
+ rename drivers/usb/serial/{cp2101.c => cp210x.c} (85%)
+ create mode 100644 drivers/usb/serial/qcserial.c
+ create mode 100644 drivers/usb/serial/symbolserial.c
+ delete mode 100644 drivers/usb/storage/alauda.h
+ delete mode 100644 drivers/usb/storage/datafab.h
+ delete mode 100644 drivers/usb/storage/jumpshot.h
+ delete mode 100644 drivers/usb/storage/karma.h
+ delete mode 100644 drivers/usb/storage/onetouch.h
+ delete mode 100644 drivers/usb/storage/sddr09.h
+ delete mode 100644 drivers/usb/storage/shuttle_usbat.h
+ rename drivers/usb/storage/{freecom.h => unusual_alauda.h} (60%)
+ copy drivers/usb/storage/{sddr55.h => unusual_cypress.h} (54%)
+ create mode 100644 drivers/usb/storage/unusual_datafab.h
+ rename drivers/usb/storage/{cypress_atacb.h => unusual_freecom.h} (68%)
+ create mode 100644 drivers/usb/storage/unusual_isd200.h
+ copy drivers/usb/storage/{sddr55.h => unusual_jumpshot.h} (63%)
+ rename drivers/usb/storage/{isd200.h => unusual_karma.h} (63%)
+ rename drivers/usb/storage/{sddr55.h => unusual_onetouch.h} (52%)
+ create mode 100644 drivers/usb/storage/unusual_sddr09.h
+ create mode 100644 drivers/usb/storage/unusual_sddr55.h
+ create mode 100644 drivers/usb/storage/unusual_usbat.h
+ create mode 100644 drivers/usb/storage/usual-tables.c
 
 ---------------
 
-Alex Chiang (2):
-      sysfs: sysfs_add_one WARNs with full path to duplicate filename
-      sysfs: only allow one scheduled removal callback per kobj
+Ajay Kumar Gupta (3):
+      USB: otg: adding nop usb transceiver
+      USB: musb: NAK timeout scheme on bulk RX endpoint
+      USB: musb: only turn off vbus in OTG hosts
 
-Arjan van de Ven (1):
-      kobject: don't block for each kobject_uevent
+Alan Stern (19):
+      USB: add quirk to avoid config and interface strings
+      USB: usb-storage: increase max_sectors for tape drives
+      USB: EHCI: Make timer_action out-of-line
+      USB: EHCI: add software retry for transaction errors
+      usb-storage: prepare for subdriver separation
+      usb-storage: make sddr09 a separate module
+      usb-storage: make isd200 a separate module
+      usb-storage: make sddr55 a separate module
+      usb-storage: make cypress_atacb a separate module
+      usb-storage: make shuttle_usbat a separate module
+      usb-storage: make freecom a separate module
+      usb-storage: make datafab a separate module
+      usb-storage: make jumpshot a separate module
+      usb-storage: make alauda a separate module
+      usb-storage: make karma a separate module
+      usb-storage: make onetouch a separate module
+      USB: uhci: don't use pseudo negative values
+      USB: don't send Set-Interface after reset
+      USB: usbfs: remove unneeded "inline" annotations
 
-Brandon Philips (1):
-      uio: add the uio_aec driver
+Alex Stephens (1):
+      USB: CP2101 New Device ID
 
-Cornelia Huck (1):
-      Driver core: Fix device_move() vs. dpm list ordering, v2
+Alexander Shumakovitch (1):
+      USB: qcserial: add device id for HP devices
+
+Ben Dooks (4):
+      USB: ohci-s3c2410: remove <mach/hardware.h> include
+      USB: ohci-s3c2410: fix name of bus clock
+      USB: ohci-hcd: Add ARCH_S3C24XX to the ohci-s3c2410.c glue
+      USB: S3C: Move usb-control.h to platform include
+
+Boaz Harrosh (1):
+      USB: fix USB_STORAGE_CYPRESS_ATACB
+
+Borislav Petkov (1):
+      usb_storage: make Kconfig note visible in the console
+
+Catalin Marinas (3):
+      USB: Make the isp1760_register function prototype more generic
+      USB: Add platform device support for the ISP1760 USB chip
+      USB: isp1760: Add a delay before reading the SKIPMAP registers in isp1760-hcd.c
+
+Craig Shelley (2):
+      USB: CP2101 Support AN205 baud rates
+      USB: CP2101 Reduce Error Logging
+
+D.J. Capelis (1):
+      USB: pedantic: spelling correction in comment for ch9.h
+
+Daniel Mack (1):
+      USB: allow malformed LANGID descriptors
+
+Darius Augulis (4):
+      USB: imx_udc: Fix IMX UDC gadget bugs
+      USB: imx_udc: Fix IMX UDC gadget code style
+      USB: imx_udc: Fix IMX UDC gadget ep0 irq handling
+      USB: imx_udc: Fix IMX UDC gadget general irq handling
 
 Dave Young (1):
-      driver-core: do not register a driver with bus_type not registered
+      usb-serial: fix usb_serial_register bug when boot with nousb param
 
-Eric Miao (2):
-      platform: make better use of to_platform_{device,driver}() macros
-      platform: introduce module id table for platform devices
+David Brownell (5):
+      USB: gadget: fix rndis regression
+      USB: ftdi_sio: remove pointless syslog spew
+      USB: musb: partial DaVinci dm355 support
+      USB: gadget: composite device-level suspend/resume hooks
+      USB: gadget: gadget zero uses new suspend/resume hooks
 
-Eric W. Biederman (3):
-      sysfs: Take sysfs_mutex when fetching the root inode.
-      sysfs: reference sysfs_dirent from sysfs inodes
-      sysfs: don't block indefinitely for unmapped files.
+David Vrabel (1):
+      USB: allow libusb to talk to unauthenticated WUSB devices
 
-Geert Uytterhoeven (1):
-      scsi/m68k: Kill NCR_700_detect() warnings
+Felipe Balbi (1):
+      USB: composite: avoid inconsistent lock state
 
-Greg Banks (2):
-      Dynamic debug: allow simple quoting of words
-      Dynamic debug: fix pr_fmt() build error
+Frank Seidel (1):
+      USB: add missing KERN_* constants to printks
 
-Greg Kroah-Hartman (5):
-      PS3: replace bus_id usage
-      driver core: create a private portion of struct device
-      driver core: move klist_children into private structure
-      driver core: move knode_driver into private structure
-      driver core: move knode_bus into private structure
+Giuseppe GORGOGLIONE (1):
+      USB: musb: fix init oops crash with static FIFO config
 
-Hans J. Koch (1):
-      UIO: Add name attributes for mappings and port regions
+Greg Kroah-Hartman (9):
+      USB: serial: opticon: add write support
+      USB: serial: opticon: add serial line ioctls
+      USB: serial: add symbol serial driver
+      USB: symbolserial: log the ioctl commands
+      USB: serial: add qualcomm wireless modem driver
+      USB: make transfer_buffer_lengths in struct urb field u32
+      USB: make actual_length in struct urb field u32
+      USB: remove phidget drivers from kernel tree.
+      USB: serial: rename cp2101 driver to cp210x
 
-Hugh Dickins (1):
-      sysfs: fix some bin_vm_ops errors
+Hannes Eder (1):
+      USB: host: fix sparse warning: Using plain integer as NULL pointer
 
-Ian Abbott (1):
-      UIO: Take offset into account when determining number of pages that can be mapped
+Harvey Harrison (1):
+      USB: replace uses of __constant_{endian}
 
-Jason Baron (2):
-      dynamic debug: combine dprintk and dynamic printk
-      dynamic debug: update docs
+Huang Weiyi (1):
+      USB: gadget: remove duplicated #include
 
-Kay Sievers (28):
-      edac: struct device - replace bus_id with dev_name(), dev_set_name()
-      spi: struct device - replace bus_id with dev_name(), dev_set_name()
-      video: struct device - replace bus_id with dev_name(), dev_set_name()
-      zorro: struct device - replace bus_id with dev_name(), dev_set_name()
-      mmc: struct device - replace bus_id with dev_name(), dev_set_name()
-      mtd: struct device - replace bus_id with dev_name(), dev_set_name()
-      pci: struct device - replace bus_id with dev_name(), dev_set_name()
-      rapidio: struct device - replace bus_id with dev_name(), dev_set_name()
-      s390: struct device - replace bus_id with dev_name(), dev_set_name()
-      serial: struct device - replace bus_id with dev_name(), dev_set_name()
-      sh: struct device - replace bus_id with dev_name(), dev_set_name()
-      tc: struct device - replace bus_id with dev_name(), dev_set_name()
-      pcmcia: struct device - replace bus_id with dev_name(), dev_set_name()
-      rtc: struct device - replace bus_id with dev_name(), dev_set_name()
-      net: struct device - replace bus_id with dev_name(), dev_set_name()
-      drm: struct device - replace bus_id with dev_name(), dev_set_name()
-      v4l: struct device - replace bus_id with dev_name(), dev_set_name()
-      amba: struct device - replace bus_id with dev_name(), dev_set_name()
-      dio: struct device - replace bus_id with dev_name(), dev_set_name()
-      dma: struct device - replace bus_id with dev_name(), dev_set_name()
-      eisa: struct device - replace bus_id with dev_name(), dev_set_name()
-      gpio: struct device - replace bus_id with dev_name(), dev_set_name()
-      mca: struct device - replace bus_id with dev_name(), dev_set_name()
-      mfd: struct device - replace bus_id with dev_name(), dev_set_name()
-      wimax: struct device - replace bus_id with dev_name(), dev_set_name()
-      usb: struct device - replace bus_id with dev_name(), dev_set_name()
-      driver core: get rid of struct device's bus_id string array
-      vcs: hook sysfs devices into object lifetime instead of "binding"
+James Woodcock (1):
+      USB: serial: refuse to open recently removed USB Serial devices
 
-Ming Lei (6):
-      driver core: check bus->match without holding device lock
-      platform driver: fix incorrect use of 'platform_bus_type' with 'struct device_driver'
-      driver core: remove polling for driver_probe_done(v5)
-      driver core: move platform_data into platform_device
-      driver core: fix passing platform_data
-      Driver core: implement uevent suppress in kobject
+Johannes Weiner (1):
+      USB: use kzfree()
 
-Qinghuang Feng (1):
-      SYSFS: use standard magic.h for sysfs
+Jouni Hogander (1):
+      USB: TWL: disable VUSB regulators when cable unplugged
 
-Sachin Sant (1):
-      USB: FHCI: use dev_name() in place of bus_id.
+Julia Lawall (4):
+      USB: Move definitions from usb.h to usb/ch9.h
+      USB: ub: use USB API functions rather than constants
+      USB: Remove redundant test in pxa27x_udc and ftdi_sio
+      USB: drivers: use USB API functions rather than constants
 
-Zhenwen Xu (1):
-      Driver core: some cleanup on drivers/base/sys.c
+Maciej Grela (1):
+      USB: usb-storage: added missing MODULE_LICENSE("GPL") for usb-storage ums-* modules
+
+Mark Ellis (1):
+      USB: ipaq: handle 4 endpoint devices
+
+Matt Kraai (1):
+      USB: skeleton: Use dev_info instead of info
+
+Ming Lei (1):
+      USB: ch341 serial: fix port number changed after resume
+
+Oliver Neukum (7):
+      USB: suspend/resume support for option driver
+      USB: suspend/resume for opticon driver
+      USB: serial: introduce a flag into the usb serial layer to tell drivers that their URBs are killed due to suspension
+      USB: serial generic resume function fix
+      USB: serial: export symbol of usb_serial_generic_resume
+      USB: serial: use generic method if no alternative is provided in usb serial layer
+      USB: serial: remove recourse to generic method
+
+Pete Zaitcev (2):
+      usblp: continuously poll for status
+      USB: usbmon: Add binary API v1
+
+Randy Dunlap (1):
+      USB: fix ehci printk formats
+
+Robert Jarzmik (5):
+      USB: gpio_vbus: add delayed vbus_session calls
+      USB: pxa27x_udc: factor pullup code to prepare otg transceiver
+      USB: pxa27x_udc: add vbus session handling
+      USB: pxa27x_udc: add otg transceiver support
+      USB: pxa27x_udc: add vbus_draw callback
+
+Roel Kluin (2):
+      USB: count reaches -1, tested 0
+      USB: more u32 conversion after transfer_buffer_length and actual_length
+
+Sergei Shtylyov (1):
+      USB: musb: rewrite host periodic endpoint allocation
+
+Thierry Vignaud (1):
+      usb: kill prehistorical comments about USB_EHCI_HCD
+
+Vernon Sauder (1):
+      USB: pxa27x_udc: typo fixes and code cleanups
+
+VomLehn (1):
+      USB: Fix cp2101 USB serial device driver termios functions for console use
+
+Werner Cornelius (1):
+      USB: usb-serial ch341: support for DTR/RTS/CTS
+
+Yoshihiro Shimoda (1):
+      USB: r8a66597-hcd: suspend/resume support
 
