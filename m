@@ -1,141 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760481AbZCYMBT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754947AbZCYMF1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760481AbZCYMBT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 08:01:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753456AbZCYMBH
+	id S1754947AbZCYMF1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 08:05:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753094AbZCYMFM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 08:01:07 -0400
-Received: from mail-fx0-f158.google.com ([209.85.220.158]:60593 "EHLO
-	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752901AbZCYMBG convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 08:01:06 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=poWkDm4uTFmVnsTbBNHonKrmXKnPYRKKS2ZH6Mh81llR8rYcBll2shrIJhbMMwtBg+
-         7YFnIoe7SZEt7HeKHob1OZqbCTJ7Aef5jnUyiNwxJhKzOlqE5pKG6Y+O1rMUqUiWTTYX
-         5bLWqdrmO98JE4RBCLyXA6OFkkPuFuXQfZYjs=
+	Wed, 25 Mar 2009 08:05:12 -0400
+Received: from nat-warsl417-01.aon.at ([195.3.96.119]:12645 "EHLO email.aon.at"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752920AbZCYMFK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Mar 2009 08:05:10 -0400
+Message-ID: <49CA1DEB.5060007@eisendle.net>
+Date: Wed, 25 Mar 2009 13:04:59 +0100
+From: Christian Eisendle <lkml@eisendle.net>
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
 MIME-Version: 1.0
-In-Reply-To: <OFF2006E59.395DC6C3-ON48257584.001642FB-48257584.0017258D@sunplusct.com>
-References: <OFF2006E59.395DC6C3-ON48257584.001642FB-48257584.0017258D@sunplusct.com>
-Date: Wed, 25 Mar 2009 12:01:02 +0000
-Message-ID: <87a5b0800903250501k3884dfb5qa09c67d209f80a05@mail.gmail.com>
-Subject: Re: [PATCH] score - New architecure port to SunplusCT S+CORE 
-	processor
-From: Will Newton <will.newton@gmail.com>
-To: liqin.chen@sunplusct.com
-Cc: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org
-Content-Type: text/plain; charset=GB2312
-Content-Transfer-Encoding: 8BIT
+To: lanconelli.claudio@eptar.com
+CC: linux-kernel@vger.kernel.org
+Subject: [PATCH] enc28j60: spend separate worker thread
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/3/25  <liqin.chen@sunplusct.com>:
->>
->> To allow people to more easily review your patches it is recommended
->> to spit them up into smaller pieces and submit them to the mailing
->> list.
->
-> According to the "The linux-kernel mailing list FAQ" and
-> "Documentation/SubmittingPatches",
-> E-mail size exceeds 40 kB, "it is preferred that you store
-> your patch on an Internet-accessibleserver, and provide
->  instead a URL (link) pointing to your patch."
-> linux/score patch size over 400 kB, so we only provide
-> the URL (link) in mail.
+This patch modifies enc28j60 driver to use its own workqueue instead of 
+the default events worker thread for two reasons:
 
-Yes, that's true. However if you split that up into 10-20 separate
-emails then it's quite manageable. The advantage of posting to the
-list is that many more people will review your code.
+- There is a race condition between fb_flashcursor and con_open (vt.c)
+   when using framebuffer device, NFS as rootfs and enc28j60 as NIC:
+   fb_flashcursor as well as con_open acquires the console semaphore.
+   At system startup, when con_open is called, there are filesystem
+   accesses (e.g. vcs_make_sysfs) while the console semaphore is
+   being held.
+   fb_flashcursor, which is a work_struct handler of the
+   events worker thread, waits for the console semaphore to be
+   released and blocks the events worker thread meanwhile.
+   con_open will never return since NFS access will
+   never be successful as the enc28j60 uses also
+   the events worker thread.
 
-You could also cc the linux-arch mailing list.
+- IMHO enc28j60 should anyway use its own worker thread since all
+   work_structs in this driver (including tx work which always waits
+   for SPI) are blocking the defaults worker thread.
 
-> But if other person or Linus also think we should spit them up
-> into smaller pieces, we will do it.
->
->>
->> Your port looks relatively clean but it looks like it is borrowing
->> heavily from the mips port and you may have a few leftovers from that
->> e.g.:
->>
->
-> Yes, we use linux/mips as reference for linux/score platform.
-> In order to make the patch clear, we used more C code instead of
-> assembler code. After patch merge to the mainline,
-> we will provide optimized assembler code one by one.
->
->> - mentions of o32 (unless S+CORE has an o32 ABI?)
->> - does SCORE+ have ll/sc instructions or is that another leftover from
-> MIPS?
->
-> No, I had removed these leftover code.
->
->> - compatibility syscalls, sys_ipc, old-style signal handling. Are
->> these really needed for a new arch?
->
-> Because we use glibc-2.3.6 as base library, LTP and many applications
-> are all running on it. so we leave many old syscall in score code,
-> once we are sure it's not necessary, we will remove these syscall.
 
-Once code is merged into mainline it becomes a lot harder to justify
-making changes that break backwards compatibility such as removing
-system calls. It's easier in the long term to make sure your system
-call interface is cleaned up now rather than later.
+Signed-off-by: Christian Eisendle <lkml@eisendle.net>
+---
 
-Have you come across Arnd Bergmann's work on creating a generic arch
-for porting?
+--- linux-2.6.29/drivers/net/enc28j60.c.orig	2009-03-25 
+12:05:33.000000000 +0100
++++ linux-2.6.29/drivers/net/enc28j60.c	2009-03-25 12:05:46.000000000 +0100
+@@ -23,6 +23,7 @@
+  #include <linux/errno.h>
+  #include <linux/init.h>
+  #include <linux/netdevice.h>
++#include <linux/workqueue.h>
+  #include <linux/etherdevice.h>
+  #include <linux/ethtool.h>
+  #include <linux/tcp.h>
+@@ -61,6 +62,7 @@ struct enc28j60_net {
+  	struct spi_device *spi;
+  	struct mutex lock;
+  	struct sk_buff *tx_skb;
++	struct workqueue_struct	*workqueue;
+  	struct work_struct tx_work;
+  	struct work_struct irq_work;
+  	struct work_struct setrx_work;
+@@ -1297,7 +1299,7 @@ static int enc28j60_send_packet(struct s
+  	priv->netdev->trans_start = jiffies;
+  	/* Remember the skb for deferred processing */
+  	priv->tx_skb = skb;
+-	schedule_work(&priv->tx_work);
++	queue_work(priv->workqueue, &priv->tx_work);
 
-http://lwn.net/Articles/307713/
+  	return 0;
+  }
+@@ -1322,7 +1324,7 @@ static irqreturn_t enc28j60_irq(int irq,
+  	 * Remember that we access enc28j60 registers through SPI bus
+  	 * via spi_sync() call.
+  	 */
+-	schedule_work(&priv->irq_work);
++	queue_work(priv->workqueue, &priv->irq_work);
 
-It's a good reference to check which system calls are considered
-current and which headers are generic in new ports etc.
+  	return IRQ_HANDLED;
+  }
+@@ -1336,7 +1338,7 @@ static void enc28j60_tx_timeout(struct n
 
->> - does your port support SMP?
->
-> No, but we consider todo it next step.
->
-> We have updated the patch use the same URL(link)
-> http://www.sunplusct.com/images/linux-score-patch/linux-score-20090324.patch
-> if other person think it should be splited into smaller pieces,
-> please let me know.
->
-> Thanks Will Newton
-> --
-> liqin
->
-> Will Newton <will.newton@gmail.com> Ð´ÓÚ 2009-03-24 19:00:05:
->
->> On Tue, Mar 24, 2009 at 3:46 AM,  <liqin@sunnorth.com.cn> wrote:
->> > Hello, Linus and folks,
->> >
->> > We have ported Linux to the S+CORE processor, which is a 32-bit RISC
->> > embedded
->> > microprocessor of Sunplus Core Technology.
->> >
->> > SPG29X, SPG300(score core) processor have been used in game products.
->> > and score toolchain have commit to gnu in 2006. We have a team to
-> maintain
->> > score code for linux kernel.
->> >
->> > We would like to release a patch for kernel 2.6.29-rc8.
->> > This patch include score header files, arch files and serial driver
-> for
->> > spct6600(score core) platform.
->> >
->> > For the other driver patches, I'll send them one by one in
->> > small size latter. Thanks!
->> >
->> > Would you merge them to the stock kernel?
->> >
->> > Patch information is slightly bigger, so I placed it on our SunplusCT
-> web
->> > site.
->> >
-> http://www.sunplusct.com/images/linux-score-patch/linux-score-20090324.patch
->> >
->> > Signed off by: Chen Liqin <liqin.chen@sunplusct.com,
->> > liqin@sunnorth.com.cn>
->
+  	ndev->stats.tx_errors++;
+  	/* can't restart safely under softirq */
+-	schedule_work(&priv->restart_work);
++	queue_work(priv->workqueue, &priv->restart_work);
+  }
+
+  /*
+@@ -1424,7 +1426,7 @@ static void enc28j60_set_multicast_list(
+  	}
+
+  	if (oldfilter != priv->rxfilter)
+-		schedule_work(&priv->setrx_work);
++		queue_work(priv->workqueue, &priv->setrx_work);
+  }
+
+  static void enc28j60_setrx_work_handler(struct work_struct *work)
+@@ -1567,6 +1569,11 @@ static int __devinit enc28j60_probe(stru
+  	priv->msg_enable = netif_msg_init(debug.msg_enable,
+  						ENC28J60_MSG_DEFAULT);
+  	mutex_init(&priv->lock);
++	priv->workqueue = create_singlethread_workqueue(DRV_NAME);
++	if (priv->workqueue == NULL) {
++		dev_err(&spi->dev, "Unable to create work queue\n");
++		goto out_noqueue;
++	}
+  	INIT_WORK(&priv->tx_work, enc28j60_tx_work_handler);
+  	INIT_WORK(&priv->setrx_work, enc28j60_setrx_work_handler);
+  	INIT_WORK(&priv->irq_work, enc28j60_irq_work_handler);
+@@ -1616,6 +1623,8 @@ static int __devinit enc28j60_probe(stru
+  error_register:
+  	free_irq(spi->irq, priv);
+  error_irq:
++	destroy_workqueue(priv->workqueue);
++out_noqueue:
+  	free_netdev(dev);
+  error_alloc:
+  	return ret;
+@@ -1627,6 +1636,7 @@ static int __devexit enc28j60_remove(str
+
+  	if (netif_msg_drv(priv))
+  		printk(KERN_DEBUG DRV_NAME ": remove\n");
++	destroy_workqueue(priv->workqueue);
+
+  	unregister_netdev(priv->netdev);
+  	free_irq(spi->irq, priv);
