@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758823AbZCYAr6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756912AbZCYAs1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758823AbZCYAr6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 20:47:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756945AbZCYAag
+	id S1756912AbZCYAs1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 20:48:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756955AbZCYAai
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 20:30:36 -0400
-Received: from kroah.org ([198.145.64.141]:54188 "EHLO coco.kroah.org"
+	Tue, 24 Mar 2009 20:30:38 -0400
+Received: from kroah.org ([198.145.64.141]:54191 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755646AbZCYAaX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 20:30:23 -0400
+	id S1756857AbZCYAaY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Mar 2009 20:30:24 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
 Cc: Ming Lei <tom.leiming@gmail.com>, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 49/61] driver core: move platform_data into platform_device
-Date: Tue, 24 Mar 2009 17:26:53 -0700
-Message-Id: <1237940825-22904-49-git-send-email-gregkh@suse.de>
+Subject: [PATCH 50/61] driver core: fix passing platform_data
+Date: Tue, 24 Mar 2009 17:26:54 -0700
+Message-Id: <1237940825-22904-50-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.6.2
 In-Reply-To: <20090325001659.GA22461@kroah.com>
 References: <20090325001659.GA22461@kroah.com>
@@ -24,86 +24,48 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Ming Lei <tom.leiming@gmail.com>
 
-This patch moves platform_data from struct device into
-struct platform_device, based on the two ideas:
+We will remove platform_data field from struct device until
+all platform devices pass its specific data from platfom_device
+and all platform drivers use platform specific data passed by
+platform_device->platform_data. This kind of conversion will
+need a long time, for thousands of files is affected.
 
-1. Now all platform_driver is registered by platform_driver_register,
-   which makes probe()/release()/... of platform_driver passed parameter
-   of platform_device *, so platform driver can get platform_data from
-   platform_device;
-
-2. Other kind of devices do not need to use platform_data, we can
-   decrease size of device if moving it to platform_device.
-
-Taking into consideration of thousands of files to be fixed and they
-can't be finished in one night(maybe it will take a long time), so we
-keep platform_data in device to allow two kind of cases coexist until
-all platform devices pass its platfrom data from
-platform_device->platform_data.
-
-All patches to do this kind of conversion are welcome.
+To make the conversion easily, we allow platform specific data
+passed by struct device or struct platform_device and platform
+driver may use it from struct device or struct platform_device.
 
 Signed-off-by: Ming Lei <tom.leiming@gmail.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/base/platform.c         |    3 +++
- include/linux/device.h          |    9 +++++++--
- include/linux/platform_device.h |    1 +
- 3 files changed, 11 insertions(+), 2 deletions(-)
+ drivers/base/platform.c |   15 ++++++++++++++-
+ 1 files changed, 14 insertions(+), 1 deletions(-)
 
 diff --git a/drivers/base/platform.c b/drivers/base/platform.c
-index ec993aa..c5ac81d 100644
+index c5ac81d..d2198f6 100644
 --- a/drivers/base/platform.c
 +++ b/drivers/base/platform.c
-@@ -217,6 +217,7 @@ int platform_device_add_data(struct platform_device *pdev, const void *data,
- 	if (d) {
- 		memcpy(d, data, size);
- 		pdev->dev.platform_data = d;
-+		pdev->platform_data = d;
- 	}
- 	return d ? 0 : -ENOMEM;
- }
-@@ -246,6 +247,8 @@ int platform_device_add(struct platform_device *pdev)
+@@ -247,7 +247,20 @@ int platform_device_add(struct platform_device *pdev)
  	else
  		dev_set_name(&pdev->dev, pdev->name);
  
-+	pdev->platform_data = pdev->dev.platform_data;
-+
+-	pdev->platform_data = pdev->dev.platform_data;
++	/* We will remove platform_data field from struct device
++	* if all platform devices pass its platform specific data
++	* from platform_device. The conversion is going to be a
++	* long time, so we allow the two cases coexist to make
++	* this kind of fix more easily*/
++	if (pdev->platform_data && pdev->dev.platform_data) {
++		printk(KERN_ERR
++			       "%s: use which platform_data?\n",
++			       dev_name(&pdev->dev));
++	} else if (pdev->platform_data) {
++		pdev->dev.platform_data = pdev->platform_data;
++	} else if (pdev->dev.platform_data) {
++		pdev->platform_data = pdev->dev.platform_data;
++	}
+ 
  	for (i = 0; i < pdev->num_resources; i++) {
  		struct resource *p, *r = &pdev->resource[i];
- 
-diff --git a/include/linux/device.h b/include/linux/device.h
-index 5a64775..4bea53f 100644
---- a/include/linux/device.h
-+++ b/include/linux/device.h
-@@ -385,8 +385,13 @@ struct device {
- 	struct device_driver *driver;	/* which driver has allocated this
- 					   device */
- 	void		*driver_data;	/* data private to the driver */
--	void		*platform_data;	/* Platform specific data, device
--					   core doesn't touch it */
-+
-+	void		*platform_data;	/* We will remove platform_data
-+					   field if all platform devices
-+					   pass its platform specific data
-+					   from platform_device->platform_data,
-+					   other kind of devices should not
-+					   use platform_data. */
- 	struct dev_pm_info	power;
- 
- #ifdef CONFIG_NUMA
-diff --git a/include/linux/platform_device.h b/include/linux/platform_device.h
-index 76aef7b..76e470a 100644
---- a/include/linux/platform_device.h
-+++ b/include/linux/platform_device.h
-@@ -20,6 +20,7 @@ struct platform_device {
- 	struct device	dev;
- 	u32		num_resources;
- 	struct resource	* resource;
-+	void		*platform_data;
- 
- 	struct platform_device_id	*id_entry;
- };
 -- 
 1.6.2
 
