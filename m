@@ -1,108 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754768AbZCYXk0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757380AbZCYXky@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754768AbZCYXk0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 19:40:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752108AbZCYXkL
+	id S1757380AbZCYXky (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 19:40:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753805AbZCYXko
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 19:40:11 -0400
-Received: from gw.goop.org ([64.81.55.164]:34874 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751943AbZCYXkK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 19:40:10 -0400
-Message-ID: <49CAC0D6.3040301@goop.org>
-Date: Wed, 25 Mar 2009 16:40:06 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
-MIME-Version: 1.0
-To: Ian Campbell <Ian.Campbell@citrix.com>
-CC: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Ingo Molnar <mingo@elte.hu>, "Alex.Zeffertt" <Alex.Zeffertt@citrix.com>,
-       stable@kernel.org
-Subject: Re: [PATCH] clockevent: on resume program the next oneshot tick	with
- the next actual event
-References: <1237988429-26474-1-git-send-email-Ian.Campbell@citrix.com>	 <49CA678A.30606@goop.org> <1238003202.3691.174.camel@zakaz.uk.xensource.com>
-In-Reply-To: <1238003202.3691.174.camel@zakaz.uk.xensource.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+	Wed, 25 Mar 2009 19:40:44 -0400
+Received: from bowden.ucwb.org.au ([203.122.237.119]:36609 "EHLO
+	mail.ucwb.org.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752108AbZCYXkn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Mar 2009 19:40:43 -0400
+Subject: Re: [Bug #12465] KVM guests stalling on 2.6.28 (bisected)
+From: Kevin Shanahan <kmshanah@ucwb.org.au>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Avi Kivity <avi@redhat.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Mike Galbraith <efault@gmx.de>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+In-Reply-To: <20090324114409.GB6058@nowhere>
+References: <qm8_cedJGaP.A.-NH.CPCvJB@chimera>
+	 <1237107837.27699.27.camel@kulgan.wumi.org.au>
+	 <49BE20B2.9070804@redhat.com> <1237207595.4964.31.camel@kulgan.wumi.org.au>
+	 <20090316200736.GD8393@nowhere>
+	 <1237244137.4964.54.camel@kulgan.wumi.org.au>
+	 <20090318001955.GB5143@nowhere>
+	 <1237338986.4801.11.camel@kulgan.wumi.org.au>
+	 <1237411441.5211.5.camel@kulgan.wumi.org.au>
+	 <1237611639.4933.4.camel@kulgan.wumi.org.au>
+	 <20090324114409.GB6058@nowhere>
+Content-Type: text/plain
+Organization: UnitingCare Wesley Bowden
+Date: Thu, 26 Mar 2009 10:10:32 +1030
+Message-Id: <1238024432.8669.6.camel@kulgan>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ian Campbell wrote:
-> Hmm, yes I think so too. I misread tick_dev_program_event(), it seems
-> like it Does The Right Thing and I do see the Xen set_next_event hook
-> get called which I thought wasn't getting called earlier.
->
-> Turns out the virtual timer IRQ isn't getting reinitialised before
-> tick_oneshot_resume runs so we are just missing the interrupt, doh!
->   
+On Tue, 2009-03-24 at 12:44 +0100, Frederic Weisbecker wrote:
+> Sorry, I've been late to answer.
+> As I explained in my previous mail, you trace is only
+> a snapshot that happened in 10 msec.
+> 
+> I experimented different sizes for the ring buffer but even
+> a 1 second trace require 20 Mo of memory. And a so huge trace
+> would be impractical.
+> 
+> I think we should keep the trace filters we had previously.
+> If you don't minde, could you please retest against latest -tip
+> the following updated patch? Iadded the filters, fixed the python
+> subshell and also flushed the buffer more nicely according to
+> a recent feature in -tip:
+> 
+> echo > trace 
+> 
+> instead of switching to nop.
+> You will need to pull latest -tip again.
 
-While that ordering is a bug, I'm still not sure it completely explains 
-what we're seeing here.
+Ok, thanks for that. I'll get a new -tip kernel ready to test tonight.
+I'm not sure about the change to the python subshell though:
 
-In drivers/xen/manage.c:do_suspend() we call clock_was_set(), which has 
-the specific effect of causing all the timer events to get retriggered 
-on all cpus.  This is necessary because we don't unplug/replug all the 
-cpus, and the normal sysdev_resume() timer resume only resumes the 
-current cpu (which is cpu 0 in this case).  It also deals with the 
-clocksource timebase shifting, as it will over suspend/resume (esp 
-suspend/reboot/resume, or suspend/migrate/resume).  Your patch will only 
-re-trigger the next cpu0 timer event, and leave the rest hanging without 
-a next event.
+> while [ "$found" != "True" ]
+> do
+>         # Flush the previous buffer
+>         echo trace > $prefix/trace
+> 
+>         echo 1 > $prefix/tracing_enabled
+>         lat=$(ping -c 1 $addr | grep rtt | grep -Eo " [0-9]+.[0-9]+")
+>         echo 0 > $prefix/tracing_enabled
+> 
+> 	echo $lat
+> 	found=$(python -c "print float(str($lat).strip())")
+>         sleep 0.01
+> done
 
-So the question is why does your patch help?
+kmshanah@kulgan:~$ python -c "print float(str(1.234).strip())"
+1.234
 
-I'm seeing much worse symptoms on my test machine: the resumed domain is 
-just sitting there spinning dead with 100% cpu use.  I don't know if 
-this is related or something else.
+That's not going to evaluate to "True" at all is it? What happened to
+the test against the latency threshold value? Did you mean something
+like this?
 
-    J
+kmshanah@kulgan:~$ python -c "print float(str(1.234).strip()) > 5000"
+False
+kmshanah@kulgan:~$ python -c "print float(str(5001.234).strip()) > 5000"
+True
 
-> Subject: xen: resume interrupts before system devices.
->
-> otherwise the first timer interrupt after resume is missed and we never
-> get another.
->
-> Signed-off-by: Ian Campbell <ian.campbell@citrix.com>
->
-> diff --git a/drivers/xen/manage.c b/drivers/xen/manage.c
-> index 0489ea2..5269bb4 100644
-> --- a/drivers/xen/manage.c
-> +++ b/drivers/xen/manage.c
-> @@ -68,15 +68,15 @@ static int xen_suspend(void *data)
->  	gnttab_resume();
->  	xen_mm_unpin_all();
->  
-> -	sysdev_resume();
-> -	device_power_up(PMSG_RESUME);
-> -
->  	if (!*cancelled) {
->  		xen_irq_resume();
->  		xen_console_resume();
->  		xen_timer_resume();
->  	}
->  
-> +	sysdev_resume();
-> +	device_power_up(PMSG_RESUME);
-> +
->  	return 0;
->  }
->  
->
-> Ian.
->
->
->
->   
->>     J
->> --
->> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
->> the body of a message to majordomo@vger.kernel.org
->> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->> Please read the FAQ at  http://www.tux.org/lkml/
->>
->>     
->
->   
+Cheers,
+Kevin.
+
 
