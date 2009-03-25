@@ -1,68 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758223AbZCYHZp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758418AbZCYH1T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758223AbZCYHZp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 03:25:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757321AbZCYHZf
+	id S1758418AbZCYH1T (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 03:27:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756185AbZCYH1H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 03:25:35 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:46823 "EHLO mx3.mail.elte.hu"
+	Wed, 25 Mar 2009 03:27:07 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:56447 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757228AbZCYHZe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 03:25:34 -0400
-Date: Wed, 25 Mar 2009 08:25:01 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Steven Rostedt <rostedt@goodmis.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Roland McGrath <roland@redhat.com>,
-       Nick Piggin <nickpiggin@yahoo.com.au>
-Subject: Re: [PATCH 0/5] [PATCH][GIT PULL] remove unnecessary (un)likelys
-Message-ID: <20090325072501.GC25833@elte.hu>
-References: <20090325051920.406564281@goodmis.org>
+	id S1755168AbZCYH1G (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Mar 2009 03:27:06 -0400
+Date: Wed, 25 Mar 2009 08:27:04 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC][PATCH] blktrace: fix original blktrace
+Message-ID: <20090325072704.GF27476@kernel.dk>
+References: <49C99BD2.9090503@cn.fujitsu.com> <20090325070726.GD27476@kernel.dk> <49C9DC75.9080301@cn.fujitsu.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090325051920.406564281@goodmis.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <49C9DC75.9080301@cn.fujitsu.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Mar 25 2009, Li Zefan wrote:
+> Jens Axboe wrote:
+> > On Wed, Mar 25 2009, Li Zefan wrote:
+> >> I'm wondering what we are going to do with the original blktrace which
+> >> is using relay and is used via ioctl.
+> >>
+> >> The problem is currently it's totally broken. You can use ftrace to see
+> >> the output of blktrace, but user-space blktrace is unusable.
+> >>
+> >> With this patch, both ioctl and ftrace can be used, but of course you
+> >> can't use both of them at the same time.
+> > 
+> > Even if ftrace was as fast as storing huge amounts of data as blktrace,
+> > it's still of utmost importance that nothing is broken there. There are
+> 
+> agreed
+> 
+> > people actually USING this tracing to do real work, it's not a
+> > playground.
+> > 
+> 
+> and we are using blktrace to test the cgroup-based io controller
+> 
+> > I appreciate the efforts to unify and improve our tracing, but we must
+> > not be breaking blktrace along the way. Otherwise the whole thing goes
+> 
+> this patch fixes it.
+> 
+> it's broken by "blktrace: add ftrace plugin"
+> (c71a896154119f4ca9e89d6078f5f63ad60ef199)
+> 
+> @@ -131,13 +162,14 @@ static void __blk_add_trace()
+> - 	if (unlikely(bt->trace_state != Blktrace_running))
+> + 	if (unlikely(bt->trace_state != Blktrace_running || !blk_tracer_enabled))
+>  		return;
 
-* Steven Rostedt <rostedt@goodmis.org> wrote:
+Good, as long as it still works with blktrace, that's all I care about
+(for now, at least).
 
-> ----
->  arch/x86/kernel/ptrace.c |    4 ++--
->  kernel/sched.c           |    4 ++--
->  kernel/sched_rt.c        |    2 +-
->  mm/rmap.c                |    8 ++++----
->  mm/slab.c                |    2 +-
->  mm/slob.c                |    2 +-
->  mm/slub.c                |    2 +-
->  7 files changed, 12 insertions(+), 12 deletions(-)
+-- 
+Jens Axboe
 
-I commented on the ptrace one - i think we should take that one out 
-or at least wait for more info.
-
-The MM ones look correct. Maybe your kfree observation will be 
-debated - but i think it's probably right that we should not special 
-annotate kfree(NULL) anymore in any direction. But it's ultimately 
-up to the MM folks. (I've Cc:-ed Pekka too)
-
-The rmap and the scheduler ones definitely look correct. When you 
-rebase, please include the profiler output to 3/5 too.
-
-Thanks,
-
-	Ingo
