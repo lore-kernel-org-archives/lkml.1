@@ -1,65 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760459AbZCYRDo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756483AbZCYRFy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760459AbZCYRDo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 13:03:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753274AbZCYRDe
+	id S1756483AbZCYRFy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 13:05:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752420AbZCYRFq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 13:03:34 -0400
-Received: from n18.bullet.mail.mud.yahoo.com ([68.142.206.145]:35848 "HELO
-	n18.bullet.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752074AbZCYRDd (ORCPT
+	Wed, 25 Mar 2009 13:05:46 -0400
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:57716 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750940AbZCYRFp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 13:03:33 -0400
-X-Yahoo-Newman-Id: 367750.84592.bm@omp406.mail.mud.yahoo.com
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=GiccPiQ+ZErJGLffH46Ji+9YyMqACEuiMptY+rZ0SGjsIC1VsWJMOMuZOtCj58ALJVmkpnnvnyTCYm47FgYVUnWsiwVjWJFW0bkXzxRqr9/LcqGQbrQ/bAVfO2t2722cT2DuWDJf10zLCtDfpLuOjEIjnt7r3gTXo10/7vxjGLc=  ;
-X-YMail-OSG: 7eaAltsVM1llsrQGh4lEajIaQMcNpwOKXfXfWLBZHL4jtB2z.A75m9QZZjD7upBY_R4rNZs85Zv72mgnsW4T4mL204Av.4nXRSQU1xQC5Eb0vajiaPf1S1TVceEpes3jc.MZRvYVOsf0iqQnyt43T2jQ5oKVX6ikv1saX_VHITkLtZY13s_SCQ--
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: Adrian Hunter <adrian.hunter@nokia.com>
-Subject: Re: [PATCH] regulator: twl4030 VAUX3 supports 3.0V
-Date: Wed, 25 Mar 2009 10:03:29 -0700
-User-Agent: KMail/1.9.10
-Cc: Liam Girdwood <lrg@slimlogic.co.uk>, Mark Brown <broonie@sirena.org.uk>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "linux-omap Mailing List" <linux-omap@vger.kernel.org>
-References: <49B11EB0.30809@nokia.com> <1237290190.6781.313.camel@vega.slimlogic.co.uk> <49C9EB17.2020408@nokia.com>
-In-Reply-To: <49C9EB17.2020408@nokia.com>
+	Wed, 25 Mar 2009 13:05:45 -0400
+Date: Wed, 25 Mar 2009 18:05:33 +0100
+From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
+	<u.kleine-koenig@pengutronix.de>
+To: Tim Bird <tim.bird@am.sony.com>,
+       Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>,
+       Abhishek Sagar <sagar.abhishek@gmail.com>,
+       linux-arm-kernel <linux-arm-kernel@lists.arm.linux.org.uk>,
+       linux kernel <linux-kernel@vger.kernel.org>,
+       Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@redhat.com>
+Subject: Re: Anyone working on ftrace function graph support on ARM?
+Message-ID: <20090325170533.GA4667@pengutronix.de>
+References: <49C936CA.8070800@am.sony.com> <20090324213618.GC5975@nowhere> <49C95EAF.7030901@gmail.com> <20090324224857.GE5975@nowhere> <20090325084248.GF4697@n2100.arm.linux.org.uk> <49CA5CFF.8090908@am.sony.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-Message-Id: <200903251003.29340.david-b@pacbell.net>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <49CA5CFF.8090908@am.sony.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
+X-SA-Exim-Mail-From: ukl@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 25 March 2009, Adrian Hunter wrote:
-> >> http://community.ti.com/forums/p/3777/14574.aspx
-> >>
-> >> So how do we do it?
+On Wed, Mar 25, 2009 at 09:34:07AM -0700, Tim Bird wrote:
+> Russell King - ARM Linux wrote:
+> > As pointed out in my previous mail, identifying where on the stack the
+> > return address is stored is only possible for OABI with frame pointers.
 > > 
-> > I'd prefer seeing the reply from Ghandar to David's last question before
-> > accepting this patch again. It's still not 100% clear from TI, things
-> > seem a little bit muddled as to whether 3V will be guaranteed to work on
-> > *all* shipped devices.
-> 
-> Ghandar has responded.  What would you like to do?
+> > EABI will probably be possible with the stack unwinding code, but it
+> > probably won't be cheap.  The EABI unwinder is scheduled for merging
+> > during the present now-open merge window.
+EABI with frame pointers should work, too, shouldn't it?
 
-Update the patch to include a comment (by the table def)
-that TI says they're revising the twl5030/tps659x0 specs
-to support that 3.0V setting, then merge it.
+Best regards
+Uwe
 
-(Umm, though I'd be sure to find out specifically which
-selectors they're supporting that way, first...)
-
-I don't think they'll be revising specs on chips they've
-shipped already ... but this isn't likely to matter on
-those older systems, anyway; example, the 3430 SDP uses
-VAUX3, but at the always-supported 2.8V setting.
-
-
-
+-- 
+Pengutronix e.K.                              | Uwe Kleine-König            |
+Industrial Linux Solutions                    | http://www.pengutronix.de/  |
