@@ -1,148 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755606AbZCZAEg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757408AbZCZAEu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755606AbZCZAEg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 20:04:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755849AbZCZAEI
+	id S1757408AbZCZAEu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 20:04:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756061AbZCZAEb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 20:04:08 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:19216 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752730AbZCZAEF (ORCPT
+	Wed, 25 Mar 2009 20:04:31 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:42408 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756821AbZCZAEa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 20:04:05 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
-	cc:content-type:content-transfer-encoding:x-system-of-record;
-	b=hQ+ZiggwhjFlnTTqU4yOTHZDNRBZ19oBFtUMVxlReYNe0DqrtB2YWPwxbT+F+0Fte
-	8tmt+VmMnyNj0x+EqPZng==
+	Wed, 25 Mar 2009 20:04:30 -0400
+Date: Wed, 25 Mar 2009 16:57:21 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Theodore Tso <tytso@mit.edu>
+cc: Jan Kara <jack@suse.cz>, Andrew Morton <akpm@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Nick Piggin <npiggin@suse.de>,
+       Jens Axboe <jens.axboe@oracle.com>, David Rees <drees76@gmail.com>,
+       Jesper Krogh <jesper@krogh.cc>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.29
+In-Reply-To: <alpine.LFD.2.00.0903251613300.3032@localhost.localdomain>
+Message-ID: <alpine.LFD.2.00.0903251649450.3032@localhost.localdomain>
+References: <20090324091545.758d00f5@lxorguk.ukuu.org.uk> <20090324093245.GA22483@elte.hu> <20090324101011.6555a0b9@lxorguk.ukuu.org.uk> <20090324103111.GA26691@elte.hu> <20090324041249.1133efb6.akpm@linux-foundation.org> <20090325123744.GK23439@duck.suse.cz>
+ <20090325150041.GM32307@mit.edu> <alpine.LFD.2.00.0903251008120.3032@localhost.localdomain> <20090325185824.GO32307@mit.edu> <alpine.LFD.2.00.0903251341050.3032@localhost.localdomain> <20090325215137.GQ32307@mit.edu>
+ <alpine.LFD.2.00.0903251613300.3032@localhost.localdomain>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-In-Reply-To: <20090324033204.64f3da9d.akpm@linux-foundation.org>
-References: <604427e00903181244w360c5519k9179d5c3e5cd6ab3@mail.gmail.com>
-	 <200903200248.22623.nickpiggin@yahoo.com.au>
-	 <20090319164638.GB3899@duck.suse.cz>
-	 <200903241844.22851.nickpiggin@yahoo.com.au>
-	 <20090324033204.64f3da9d.akpm@linux-foundation.org>
-Date: Wed, 25 Mar 2009 17:03:58 -0700
-Message-ID: <604427e00903251703s62a62e7fkc81719503228626a@mail.gmail.com>
-Subject: Re: ftruncate-mmap: pages are lost after writing to mmaped file.
-From: Ying Han <yinghan@google.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>, Jan Kara <jack@suse.cz>,
-       "Martin J. Bligh" <mbligh@mbligh.org>, linux-ext4@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-mm <linux-mm@kvack.org>, guichaz@gmail.com,
-       Alex Khesin <alexk@google.com>, Mike Waychison <mikew@google.com>,
-       Rohit Seth <rohitseth@google.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-System-Of-Record: true
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 24, 2009 at 3:32 AM, Andrew Morton
-<akpm@linux-foundation.org> wrote:
-> On Tue, 24 Mar 2009 18:44:21 +1100 Nick Piggin <nickpiggin@yahoo.com.au> wrote:
->
->> On Friday 20 March 2009 03:46:39 Jan Kara wrote:
->> > On Fri 20-03-09 02:48:21, Nick Piggin wrote:
->>
->> > > Holding mapping->private_lock over the __set_page_dirty should
->> > > fix it, although I guess you'd want to release it before calling
->> > > __mark_inode_dirty so as not to put inode_lock under there. I
->> > > have a patch for this if it sounds reasonable.
->> >
->> >   Yes, that seems to be a bug - the function actually looked suspitious to
->> > me yesterday but I somehow convinced myself that it's fine. Probably
->> > because fsx-linux is single-threaded.
->>
->>
->> After a whole lot of chasing my own tail in the VM and buffer layers,
->> I think it is a problem in ext2 (and I haven't been able to reproduce
->> with ext3 yet, which might lend weight to that, although as we have
->> seen, it is very timing dependent).
->>
->> That would be slightly unfortunate because we still have Jan's ext3
->> problem, and also another reported problem of corruption on ext3 (on
->> brd driver).
->>
->> Anyway, when I have reproduced the problem with the test case, the
->> "lost" writes are all reported to be holes. Unfortunately, that doesn't
->> point straight to the filesystem, because ext2 allocates blocks in this
->> case at writeout time, so if dirty bits are getting lost, then it would
->> be normal to see holes.
->>
->> I then put in a whole lot of extra infrastructure to track metadata about
->> each struct page (when it was last written out, when it last had the number
->> of writable ptes reach 0, when the dirty bits were last cleared etc). And
->> none of the normal asertions were triggering: eg. when any page is removed
->> from pagecache (except truncates), it has always had all its buffers
->> written out *after* all ptes were made readonly or unmapped. Lots of other
->> tests and crap like that.
->>
->> So I tried what I should have done to start with and did an e2fsck after
->> seeing corruption. Yes, it comes up with errors.
->
-> Do you recall what the errors were?
-
-I run e2fsck on the partition after the failure happened and here is
-what i saw, not sure if that is the same message Jan looked at:
-
-e2fsck 1.41.3 (12-Oct-2008)
-Warning!  /dev/hda1 is mounted.
-/dev/hda1 contains a file system with errors, check forced.
-Pass 1: Checking inodes, blocks, and sizes
-Pass 2: Checking directory structure
-Pass 3: Checking directory connectivity
-Pass 4: Checking reference counts
-Pass 5: Checking group summary information
-Block bitmap differences:  +74915 -195111 -224680
-Fix? no
-
-Free blocks count wrong for group #6 (170, counted=169).
-Fix? no
-
-Free blocks count wrong (10120, counted=523).
-Fix? no
-
-Free inodes count wrong (95678, counted=95672).
-Fix? no
 
 
-/dev/hda1: ********** WARNING: Filesystem still has errors **********
+On Wed, 25 Mar 2009, Linus Torvalds wrote:
+> 
+> Yes, yes, it may need to allocate backing store (a page that was dirtied 
+> by mmap), and I'm sure that's the reason for it all,
 
-/dev/hda1: 35938/131616 files (1.5% non-contiguous), 252936/263056 blocks
+Hmm. Thinking about that, I'm not so sure. Shouldn't that backing store 
+allocation happen when the page is actually dirtied on ext3?
 
---Ying
+I _suspect_ that goes back to the fact that ext3 is older than the 
+"aops->set_page_dirty()" callback, and nobody taught ext3 to do the bmap's 
+at dirty time, so now it does it at writeout time.
 
+Anyway, there we are. Old filesystems do the wrong thing (block allocation 
+while doing writeout because they don't do it when dirtying), and newer 
+filesystems do the wrong thing (block allocations during writeout, because 
+they want to do delayed allocation to do the inode dirtying after doing 
+writeback).
 
->
->> Now that is unusual
->> because that should be largely insulated from the vm: if a dirty bit gets
->> lost, then the filesystem image should be quite happy and error-free with
->> a hole or unwritten data there.
->>
->> I don't know ext? locking very well, except that it looks pretty overly
->> complex and crufty.
->>
->> Usually, blocks are instantiated by write(2), under i_mutex, serialising
->> the allocator somewhat. mmap-write blocks are instantiated at writeout
->> time, unserialised. I moved truncate_mutex to cover the entire get_blocks
->> function, and can no longer trigger the problem. Might be a timing issue
->> though -- Ying, can you try this and see if you can still reproduce?
->>
->> I close my eyes and pick something out of a hat. a686cd89. Search for XXX.
->> Nice. Whether or not this cased the problem, can someone please tell me
->> why it got merged in that state?
->>
->> I'm leaving ext3 running for now. It looks like a nasty task to bisect
->> ext2 down to that commit :( and I would be more interested in trying to
->> reproduce Jan's ext3 problem, however, because I'm not too interested in
->> diving into ext2 locking to work out exactly what is racing and how to
->> fix it properly. I suspect it would be most productive to wire up some
->> ioctls right into the block allocator/lookup and code up a userspace
->> tester for it that could probably stress it a lot harder than kernel
->> writeout can.
->
+And in either case, the VM is screwed, and can't ask for writeout, because 
+it will be randomly throttled by the filesystem. So we do lots of async 
+bdflush threads, which then causes IO ordering problems because now the 
+writeout is all in random order.
+
+			Linus
