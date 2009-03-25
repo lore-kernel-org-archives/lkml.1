@@ -1,42 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754424AbZCYWQl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754312AbZCYWQz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754424AbZCYWQl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 18:16:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753069AbZCYWQa
+	id S1754312AbZCYWQz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 18:16:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754153AbZCYWQd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 18:16:30 -0400
-Received: from gw.goop.org ([64.81.55.164]:35075 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752810AbZCYWQ3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 18:16:29 -0400
-Message-ID: <49CAAD2E.3060904@goop.org>
-Date: Wed, 25 Mar 2009 15:16:14 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
-MIME-Version: 1.0
-To: Ravikiran G Thirumalai <kiran@scalex86.org>
-CC: Ingo Molnar <mingo@elte.hu>, Yinghai Lu <yinghai@kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       shai@scalex86.org
-Subject: Re: [PATCH] x86: don't compile vsmp_64 for 32bit
-References: <49A626B2.8090205@kernel.org> <20090226064806.GC27240@localdomain> <20090226114457.GB6651@elte.hu> <20090227001757.GE27240@localdomain> <20090228094430.GH12095@elte.hu> <20090302235120.GF27240@localdomain> <20090322124818.GA31466@elte.hu> <20090324061429.GH7278@localdomain> <20090324091035.GA6605@elte.hu> <20090325185138.GI7278@localdomain>
-In-Reply-To: <20090325185138.GI7278@localdomain>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 25 Mar 2009 18:16:33 -0400
+Received: from accolon.hansenpartnership.com ([76.243.235.52]:50657 "EHLO
+	accolon.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752770AbZCYWQb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Mar 2009 18:16:31 -0400
+Subject: Re: 2.6.29 regression: ATA bus errors on resume
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Niel Lambrechts <niel.lambrechts@gmail.com>,
+       "linux.kernel" <linux-kernel@vger.kernel.org>,
+       Linux IDE mailing list <linux-ide@vger.kernel.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       linux-scsi <linux-scsi@vger.kernel.org>
+In-Reply-To: <49C9CA03.7040603@garzik.org>
+References: <cjlqb-7sp-1@gated-at.bofh.it> <cjq6y-6sq-11@gated-at.bofh.it>
+	 <49C9BEC8.9020403@devnull.org>  <49C9CA03.7040603@garzik.org>
+Content-Type: text/plain
+Date: Wed, 25 Mar 2009 17:16:18 -0500
+Message-Id: <1238019378.3281.41.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ravikiran G Thirumalai wrote:
-> It is already there, and has been there!  But we still need to make
-> vsmp64.c compile only when CONFIG_X86_64 is defined no?
->   
+On Wed, 2009-03-25 at 02:06 -0400, Jeff Garzik wrote:
+> Niel Lambrechts wrote:
+> > On 03/25/2009 03:30 AM, Theodore Tso wrote:
+> >> On Tue, Mar 24, 2009 at 10:25:57PM +0200, Niel Lambrechts wrote:
+> >>> Hi,
+> >>>
+> >>> After upgrading to 2.6.29 I get the below errors after resuming from
+> >>> hibernating with s2disk. I ran fsck and tried doing the same thing again
+> >>> in 2.6.28.9-pae, but do not get any errors there.
+> >> The ext4 errors are interleaved with hardware errors, and the ext4
+> >> errors are about I/O errors.
+> >>
+> >> EXT4-fs error (device sda6): __ext4_get_inode_loc: unable to read inode block - inode=2346519
+> >> EXT4-fs error (device sda6) in ext4_reserve_inode_write: IO failure
+> >>
+> >> This looks more like a hibernation problem than an ext4 problem.
+> >> Looks like the hard drive is being left in some inconsistent state
+> >> after resuming from hibernation.
+> >>
+> >>      	   	       		   	   - Ted
+> > 
+> > Thanks for the info Theodore, this is definitely looks like some type of
+> > regression in 2.6.29, as the problem is not evident when I s2disk using
+> > 2.6.28.9, even after multiple suspend/resume cycles.
+> > 
+> > I found some 'ATA bus errors' and 'SError' messages in
+> > /var/log/messages, so I've attached the messages from both 2.6.29 and
+> > 2.6.28 for comparison.
+> 
+> Well, here is the interpretation of messages:
+> 
+> > ata1.00: irq_stat 0x00400008, PHY RDY changed
+> > ata1: SError: { PHYRdyChg CommWake }
+> 
+> Your SATA hardware flags a connect-or-disconnect event ("PHY RDY"), 
+> which requires us to abort a bunch of queued commands:
+> 
+> > ata1.00: cmd 60/18:00:77:88:6f/00:00:0e:00:00/40 tag 0 ncq 12288 in
+> >          res 50/00:30:07:b3:10/00:00:0c:00:00/40 Emask 0x10 (ATA bus error)
+> [...]
+> > ata1.00: cmd 60/30:68:07:b3:10/00:00:0c:00:00/40 tag 13 ncq 24576 in
+> >          res 50/00:30:07:b3:10/00:00:0c:00:00/40 Emask 0x10 (ATA bus error)
+> 
+>   ...through the 14th command (tag 13).
+> 
+> > Mar 24 21:29:14 linux-7vph kernel: ata1: hard resetting link
+> > Mar 24 21:29:14 linux-7vph kernel: ata1: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
+> > Mar 24 21:29:14 linux-7vph kernel: ata1.00: ACPI cmd ef/02:00:00:00:00:a0 succeeded
+> > Mar 24 21:29:14 linux-7vph kernel: ata1.00: ACPI cmd f5/00:00:00:00:00:a0 filtered out
+> > Mar 24 21:29:14 linux-7vph kernel: ata1.00: ACPI cmd ef/5f:00:00:00:00:a0 succeeded
+> > Mar 24 21:29:14 linux-7vph kernel: ata1.00: ACPI cmd ef/10:03:00:00:00:a0 filtered out
+> > Mar 24 21:29:14 linux-7vph kernel: ata1.00: ACPI cmd ef/02:00:00:00:00:a0 succeeded
+> > Mar 24 21:29:14 linux-7vph kernel: ata1.00: ACPI cmd f5/00:00:00:00:00:a0 filtered out
+> > Mar 24 21:29:14 linux-7vph kernel: ata1.00: ACPI cmd ef/5f:00:00:00:00:a0 succeeded
+> > Mar 24 21:29:14 linux-7vph kernel: ata1.00: ACPI cmd ef/10:03:00:00:00:a0 filtered out
+> > Mar 24 21:29:14 linux-7vph kernel: ata1.00: configured for UDMA/133
+> > Mar 24 21:29:14 linux-7vph kernel: ata1.00: configured for UDMA/133
+> 
+> 
+> SATA link is reset, and ACPI is re-run.
+> 
+> > Mar 24 21:29:14 linux-7vph kernel: sd 0:0:0:0: [sda] Result: hostbyte=DID_OK driverbyte=DRIVER_SENSE,SUGGEST_OK
+> > Mar 24 21:29:14 linux-7vph kernel: sd 0:0:0:0: [sda] Sense Key : Aborted Command [current] [descriptor]
+> > Mar 24 21:29:14 linux-7vph kernel: Descriptor sense data with sense descriptors (in hex):
+> > Mar 24 21:29:14 linux-7vph kernel:         72 0b 00 00 00 00 00 0c 00 0a 80 00 00 00 00 00 
+> > Mar 24 21:29:14 linux-7vph kernel:         0c 10 b3 07 
+> > Mar 24 21:29:14 linux-7vph kernel: sd 0:0:0:0: [sda] Add. Sense: No additional sense information
+> > Mar 24 21:29:14 linux-7vph kernel: end_request: I/O error, dev sda, sector 242190455
+> 
+> The SCSI subsystem aborts each of the queued commands.
 
-I still think you should restructure it so that vsmp_64.c only gets 
-compiled with CONFIG_X86_VSMP enabled.  Having all that stuff compiled 
-into every kernel seems pretty pointless.
+No .. this is the SCSI subsystem receives an ABORTED COMMAND return in
+sense data for each of the outstanding I/Os
 
-    J
+The only place these are generated is in ata_sense_to_error() which only
+occurs if there's some type of ata error.
+
+If I had to theorise, I'd say the system suspended with commands
+outstanding to the device.  On resume, the device gets reset and returns
+some type of ATA error which gets translated to ABORTED COMMAND which
+causes a failure.
+
+In the mid layer, we translate ABORTED_COMMAND into a retry until the
+command runs out of them ... could it be there's a race readying the
+device and we run through the retries before it can accept the command?
+
+James
+
+
