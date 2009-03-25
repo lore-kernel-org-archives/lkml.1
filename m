@@ -1,54 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753435AbZCYUW6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757347AbZCYUXp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753435AbZCYUW6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 16:22:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751601AbZCYUWn
+	id S1757347AbZCYUXp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 16:23:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753976AbZCYUXh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 16:22:43 -0400
-Received: from zrtps0kp.nortel.com ([47.140.192.56]:58872 "EHLO
-	zrtps0kp.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751133AbZCYUWm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 16:22:42 -0400
-Message-ID: <49CA927B.9080709@nortel.com>
-Date: Wed, 25 Mar 2009 14:22:19 -0600
-From: "Chris Friesen" <cfriesen@nortel.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090302)
-MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-CC: Matt_Domsch@dell.com, netdev@vger.kernel.org,
-       linux-hotplug@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: Network Device Naming mechanism and policy
-References: <20090324154617.GA16332@auslistsprd01.us.dell.com> <20090324.155756.214460004.davem@davemloft.net>
-In-Reply-To: <20090324.155756.214460004.davem@davemloft.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 25 Mar 2009 20:22:21.0010 (UTC) FILETIME=[66968320:01C9AD87]
+	Wed, 25 Mar 2009 16:23:37 -0400
+Received: from hera.kernel.org ([140.211.167.34]:47747 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752300AbZCYUXg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Mar 2009 16:23:36 -0400
+Subject: Re: [PATCH] module: Kill warning: label 'free_init' defined but
+ not used
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Masami Hiramatsu <mhiramat@redhat.com>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, dmitri.vorobiev@movial.com
+In-Reply-To: <10f740e80903251305t24529e6fl1d3c850c8e4ec819@mail.gmail.com>
+References: <Pine.LNX.4.64.0903252041190.14101@anakin>
+	 <1238010885.2500.65.camel@ht.satnam>
+	 <10f740e80903251305t24529e6fl1d3c850c8e4ec819@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Thu, 26 Mar 2009 01:52:30 +0530
+Message-Id: <1238012550.2500.76.camel@ht.satnam>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Miller wrote:
-> From: Matt Domsch <Matt_Domsch@dell.com>
-> Date: Tue, 24 Mar 2009 10:46:17 -0500
+On Wed, 2009-03-25 at 21:05 +0100, Geert Uytterhoeven wrote:
+> On Wed, Mar 25, 2009 at 20:54, Jaswinder Singh Rajput
+> <jaswinder@kernel.org> wrote:
+> > On Wed, 2009-03-25 at 20:43 +0100, Geert Uytterhoeven wrote:
+> >> On m68k (which doesn't do SMP), I get:
+> >>
+> >> | kernel/module.c:2291: warning: label 'free_init' defined but not used
+> >>
+> >> which was introduced by commit 6e2b75740bed35df98b8113300579e13ed2ce848
+> >> ("module: fix refptr allocation and release order").
+> >> Move the label inside the #ifdef, as the goto is protected by the same #ifdef.
+> >>
+> >> Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+> >> ---
+> >
+> > AFAIK, it is already fixed in -tip:
+> > http://git.kernel.org/?p=linux/kernel/git/x86/linux-2.6-tip.git;a=commit;h=67f5ca081c6ace125e8ccc76b8a7d99b091abaa7
 > 
->> Problem: Users expect on-motherboard NICs to be named eth0..ethN.
->> This can be difficult to achieve.
+> Interesting, as I noticed the problem in today's linux-next.
+> http://kisskb.ellerman.id.au/kisskb/buildresult/271602/
+> Or am I caught again by fake warnings from the bisection process?
 > 
-> I learned a long time ago that eth0 et al. have zero meaning.
+
+Yes, you are right linux-next is still having this problem.
+
+You are the third guy who came with this fix.
+
+Two of them are already applied in -tip and Rusty's tree:
+
+----------->
+On Wed, 2009-03-25 at 11:35 +1030, Rusty Russell wrote: 
+> On Wednesday 25 March 2009 02:37:19 Américo Wang wrote:
+> > 
+> > Label 'free_init' is only used when defined(CONFIG_MODULE_UNLOAD) &&
+> > defined(CONFIG_SMP), so move it inside to shut up gcc.
 > 
-> If the system firmware folks gave us topology information with respect
-> to these things, we could export something that tools such as
-> NetworkManager, iproute2, etc. could use.
+> Thanks, applied!
+> Rusty.
+<-----------
 
-<snip>
+May be you can also try linux-next tree ;-)
 
-> I guess it's easier to spew about MAC addresses and other
-> irrelevant topics than try to solve this problem properly. :-)
+--
+JSR
 
-What about things like USB network adapters where the topology is not 
-fixed?  Presumably we would want to use some sort of unique identifier, 
-and the MAC comes to mind.  Of course, then you run into the problem of 
-how to deal with duplicate MACs.
 
-Chris
