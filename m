@@ -1,67 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758562AbZCYH2u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758615AbZCYH2U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758562AbZCYH2u (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 03:28:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758444AbZCYH17
+	id S1758615AbZCYH2U (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 03:28:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758477AbZCYH1z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 03:27:59 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:47115 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756598AbZCYH15 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 03:27:57 -0400
-Date: Wed, 25 Mar 2009 08:27:29 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Nikanth Karthikesan <knikanth@suse.de>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Steven Rostedt <srostedt@redhat.com>, rusty@rustcorp.com.au,
-       =?utf-8?B?RnLpppjpp7tpYw==?= Weisbecker <fweisbec@gmail.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: ftrace not working?
-Message-ID: <20090325072729.GE25833@elte.hu>
-References: <20090323143226.GA18439@elte.hu> <200903242253.36794.knikanth@suse.de> <20090325121906.D2D6.A69D9226@jp.fujitsu.com>
+	Wed, 25 Mar 2009 03:27:55 -0400
+Received: from static-220-247-10-204.b-man.svips.gol.ne.jp ([220.247.10.204]:41133
+	"EHLO smtp.kamineko.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756598AbZCYH1x (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Mar 2009 03:27:53 -0400
+Date: Wed, 25 Mar 2009 16:27:51 +0900
+From: Mattia Dongili <malattia@linux.it>
+To: Abhi Kolekar <kolekar.a@gmail.com>
+Cc: linux-wireless@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       reinette.chatre@intel.com, yi.zhu@intel.com, linville@tuxdriver.com
+Subject: Re: iwl3945: Error sending REPLY_TX_PWR_TABLE_CMD: time out after
+	500ms
+Message-ID: <20090325072751.GC12447@kamineko.org>
+References: <20090321065006.GF3834@kamineko.org> <178fec830903211130x7aa2d266u5f249625c4436fd0@mail.gmail.com> <20090322011517.GA17905@kamineko.org> <20090325025944.GA12447@kamineko.org> <178fec830903242221l6c07f8a1k8c91be94bc70fc37@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090325121906.D2D6.A69D9226@jp.fujitsu.com>
+In-Reply-To: <178fec830903242221l6c07f8a1k8c91be94bc70fc37@mail.gmail.com>
+X-Message-Flag: Cranky? Try Free Software instead!
+X-Operating-System: Linux 2.6.26-1 i686
+X-Editor: Vim http://www.vim.org/
+X-Disclaimer: Buh!
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Mar 24, 2009 at 10:21:41PM -0700, Abhi Kolekar wrote:
+> Can you create a bug at http://www.intellinuxwireless.org/bugzilla/ ?
 
-* KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
+http://www.intellinuxwireless.org/bugzilla/show_bug.cgi?id=1944
 
-> > Signed-off-by: Nikanth Karthikesan <knikanth@suse.de>
-> > 
-> > ---
-> > 
-> > diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
-> > index 17bb88d..98f609d 100644
-> > --- a/kernel/trace/trace.c
-> > +++ b/kernel/trace/trace.c
-> > @@ -3887,6 +3887,7 @@ __init static int tracer_alloc_buffers(void)
-> >  
-> >  	register_die_notifier(&trace_die_notifier);
-> >  	ret = 0;
-> > +	goto out;
-> >  
-> >  out_free_cpumask:
-> >  	free_cpumask_var(tracing_cpumask);
-> 
-> Good catch!
-> 
-> I think this patch should send to 2.6.29.1 :)
-
-a fix for that was in the tracing tree already - and will be 
-forwarded to .29.1 or .29.2.
-
-	Ingo
+thanks
+-- 
+mattia
+:wq!
