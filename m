@@ -1,105 +1,148 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755013AbZCYV76@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755108AbZCYWCL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755013AbZCYV76 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 17:59:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754182AbZCYV7t
+	id S1755108AbZCYWCL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 18:02:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752770AbZCYWB5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 17:59:49 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:38793 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754122AbZCYV7s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 17:59:48 -0400
-Message-ID: <49CAA88B.1080102@sandeen.net>
-Date: Wed, 25 Mar 2009 16:56:27 -0500
-From: Eric Sandeen <sandeen@sandeen.net>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Wed, 25 Mar 2009 18:01:57 -0400
+Received: from mail-ew0-f165.google.com ([209.85.219.165]:52086 "EHLO
+	mail-ew0-f165.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751215AbZCYWB4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Mar 2009 18:01:56 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=tRC8ctYA5WCb3cPJDzktTU6O9xKPXpbjpJwwdfGeuDQLrz/22GQBN1A7Kqi1wvz/9q
+         MZmP+v0pNw0V/bsk2ebkV8N/d0Ki/ztigADfgPj/gk8l93X0trDNhmf8MwUy94aIZzbP
+         NufFZ0s4v2hPF1Ogbe2AuD/iSxJ5wfv/0t6xQ=
+Date: Wed, 25 Mar 2009 23:01:51 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH][GIT PULL] tracing: add handler to trace_stat
+Message-ID: <20090325220149.GK5932@nowhere>
+References: <alpine.DEB.2.00.0903242329350.22830@gandalf.stny.rr.com>
 MIME-Version: 1.0
-To: Jeff Garzik <jeff@garzik.org>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       Theodore Tso <tytso@mit.edu>, Ingo Molnar <mingo@elte.hu>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Nick Piggin <npiggin@suse.de>,
-       David Rees <drees76@gmail.com>, Jesper Krogh <jesper@krogh.cc>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] issue storage device flush via sync_blockdev() (was Re:
- Linux 2.6.29)
-References: <20090324132032.GK5814@mit.edu> <alpine.LFD.2.00.0903241053200.3032@localhost.localdomain> <20090324184549.GE32307@mit.edu> <alpine.LFD.2.00.0903241218130.3032@localhost.localdomain> <49C93AB0.6070300@garzik.org> <20090325093913.GJ27476@kernel.dk> <49CA86BD.6060205@garzik.org> <20090325194341.GB27476@kernel.dk> <49CA9346.6040108@garzik.org> <alpine.LFD.2.00.0903251337410.3032@localhost.localdomain> <20090325212923.GA5620@havoc.gtf.org>
-In-Reply-To: <20090325212923.GA5620@havoc.gtf.org>
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.2.00.0903242329350.22830@gandalf.stny.rr.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Garzik wrote:
-> On Wed, Mar 25, 2009 at 01:40:37PM -0700, Linus Torvalds wrote:
->> On Wed, 25 Mar 2009, Jeff Garzik wrote:
->>> It is clearly possible to implement an fsync(2) that causes FLUSH CACHE to be
->>> issued, without adding full barrier support to a filesystem.  It is likely
->>> doable to avoid touching per-filesystem code at all, if we issue the flush
->>> from a generic fsync(2) code path in the kernel.
->> We could easily do that. It would even work for most cases. The 
->> problematic ones are where filesystems do their own disk management, but I 
->> guess those people can do their own fsync() management too.
->>
->> Somebody send me the patch, we can try it out.
+On Tue, Mar 24, 2009 at 11:30:33PM -0400, Steven Rostedt wrote:
 > 
-> This is a simple step that would cover a lot of cases...  sync(2)
-> calls sync_blockdev(), and many filesystems do as well via the generic
-> filesystem helper file_fsync (fs/sync.c).
+> Ingo,
 > 
-> XFS code calls sync_blockdev() a "big hammer", so I hope my patch
-> follows with known practice.
+> Please pull the latest tip/tracing/ftrace tree, which can be found at:
 > 
-> Looking over every use of sync_blockdev(), its most frequent use is
-> through fsync(2), for the selected filesystems that use the generic
-> file_fsync helper.
+>   git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
+> tip/tracing/ftrace
 > 
-> Most callers of sync_blockdev() in the kernel do so infrequently,
-> when removing and invalidating volumes (MD) or storing the superblock
-> prior to release (put_super) in some filesystems.
 > 
-> Compile-tested only, of course :)  But it should be work :)
+> Steven Rostedt (1):
+>       tracing: add handler to trace_stat
 > 
-> My main concern is some hidden area that calls sync_blockdev() with
-> a high-enough frequency that the performance hit is bad.
+> ----
+>  kernel/trace/trace_branch.c    |    4 ++--
+>  kernel/trace/trace_stat.c      |    2 +-
+>  kernel/trace/trace_stat.h      |    2 +-
+>  kernel/trace/trace_workqueue.c |    2 +-
+>  4 files changed, 5 insertions(+), 5 deletions(-)
+> ---------------------------
+> commit 425480081e936d8725f0d44b8829d699bf088c6b
+> Author: Steven Rostedt <srostedt@redhat.com>
+> Date:   Tue Mar 24 13:38:36 2009 -0400
 > 
-> Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
+>     tracing: add handler to trace_stat
+>     
+>     Currently, if a trace_stat user wants a handle to some private data,
+>     the trace_stat infrastructure does not supply a way to do that.
+>     
+>     This patch passes the trace_stat structure to the start function of
+>     the trace_stat code.
+>     
+>     Signed-off-by: Steven Rostedt <srostedt@redhat.com>
 > 
-> diff --git a/fs/buffer.c b/fs/buffer.c
-> index 891e1c7..7b9f74a 100644
-> --- a/fs/buffer.c
-> +++ b/fs/buffer.c
-> @@ -173,9 +173,14 @@ int sync_blockdev(struct block_device *bdev)
->  {
->  	int ret = 0;
->  
-> -	if (bdev)
-> -		ret = filemap_write_and_wait(bdev->bd_inode->i_mapping);
-> -	return ret;
-> +	if (!bdev)
-> +		return 0;
-> +	
-> +	ret = filemap_write_and_wait(bdev->bd_inode->i_mapping);
-> +	if (ret)
-> +		return ret;
-> +	
-> +	return blkdev_issue_flush(bdev, NULL);
+> diff --git a/kernel/trace/trace_branch.c b/kernel/trace/trace_branch.c
+> index ad8c22e..e6e3291 100644
+> --- a/kernel/trace/trace_branch.c
+> +++ b/kernel/trace/trace_branch.c
+> @@ -263,7 +263,7 @@ static int branch_stat_show(struct seq_file *m, void *v)
+>  	return 0;
 >  }
->  EXPORT_SYMBOL(sync_blockdev);
+>  
+> -static void *annotated_branch_stat_start(void)
+> +static void *annotated_branch_stat_start(struct tracer_stat *trace)
+>  {
+>  	return __start_annotated_branch_profile;
+>  }
+> @@ -338,7 +338,7 @@ static int all_branch_stat_headers(struct seq_file *m)
+>  	return 0;
+>  }
+>  
+> -static void *all_branch_stat_start(void)
+> +static void *all_branch_stat_start(struct tracer_stat *trace)
+>  {
+>  	return __start_branch_profile;
+>  }
+> diff --git a/kernel/trace/trace_stat.c b/kernel/trace/trace_stat.c
+> index f71b85b..f8f48d8 100644
+> --- a/kernel/trace/trace_stat.c
+> +++ b/kernel/trace/trace_stat.c
+> @@ -85,7 +85,7 @@ static int stat_seq_init(struct tracer_stat_session *session)
+>  	if (!ts->stat_cmp)
+>  		ts->stat_cmp = dummy_cmp;
+>  
+> -	stat = ts->stat_start();
+> +	stat = ts->stat_start(ts);
+>  	if (!stat)
+>  		goto exit;
+>  
+> diff --git a/kernel/trace/trace_stat.h b/kernel/trace/trace_stat.h
+> index 202274c..f3546a2 100644
+> --- a/kernel/trace/trace_stat.h
+> +++ b/kernel/trace/trace_stat.h
+> @@ -12,7 +12,7 @@ struct tracer_stat {
+>  	/* The name of your stat file */
+>  	const char		*name;
+>  	/* Iteration over statistic entries */
+> -	void			*(*stat_start)(void);
+> +	void			*(*stat_start)(struct tracer_stat *trace);
 
-What about when you're running over a big raid device with
-battery-backed cache, and you trust the cache as much as much as the
-disks.  Wouldn't this unconditional cache flush be painful there on any
-of the callers even if they're rare?  (fs unmounts, freezes, unmounts,
-etc?  Or a fat filesystem on that device doing an fsync?)
 
-xfs, reiserfs, ext4 all avoid the blkdev flush on fsync if barriers are
-not enabled, I think for that reason...
 
-(I'm assuming these raid devices still honor a cache flush request even
-if they're battery-backed?  I dunno.)
+In that case, shoudn't we pass another thing than the struct tracer_stat?
+Because nothing really private can be stored in it. Moreover, most of the
+time the handler is dedicated to this tracer_stat so it is able to have
+an access to it.
 
--Eric
+May be we could add a void *private inside struct trace_stat and then pass
+it to stat_start() ?
+
+Thanks,
+Frederic.
+
+
+>  	void			*(*stat_next)(void *prev, int idx);
+>  	/* Compare two entries for stats sorting */
+>  	int			(*stat_cmp)(void *p1, void *p2);
+> diff --git a/kernel/trace/trace_workqueue.c b/kernel/trace/trace_workqueue.c
+> index 9ab035b..ee533c2 100644
+> --- a/kernel/trace/trace_workqueue.c
+> +++ b/kernel/trace/trace_workqueue.c
+> @@ -152,7 +152,7 @@ static struct cpu_workqueue_stats *workqueue_stat_start_cpu(int cpu)
+>  	return ret;
+>  }
+>  
+> -static void *workqueue_stat_start(void)
+> +static void *workqueue_stat_start(struct tracer_stat *trace)
+>  {
+>  	int cpu;
+>  	void *ret = NULL;
+> 
+
