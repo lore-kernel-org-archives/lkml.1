@@ -1,100 +1,140 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761994AbZCYNo1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762063AbZCYNpp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761994AbZCYNo1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 09:44:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761779AbZCYNn7
+	id S1762063AbZCYNpp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 09:45:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760143AbZCYNpc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 09:43:59 -0400
-Received: from gw1.cosmosbay.com ([212.99.114.194]:45872 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761093AbZCYNn5 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 09:43:57 -0400
-Message-ID: <49CA345B.3070103@cosmosbay.com>
-Date: Wed, 25 Mar 2009 14:40:43 +0100
-From: Eric Dumazet <dada1@cosmosbay.com>
-User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
+	Wed, 25 Mar 2009 09:45:32 -0400
+Received: from mga14.intel.com ([143.182.124.37]:64344 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758034AbZCYNpb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Mar 2009 09:45:31 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.38,419,1233561600"; 
+   d="scan'208";a="124032086"
+Date: Wed, 25 Mar 2009 21:44:57 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Ian Kent <raven@themaw.net>
+Cc: Jeff Layton <jlayton@redhat.com>, Dave Chinner <david@fromorbit.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
+       "jens.axboe@oracle.com" <jens.axboe@oracle.com>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "hch@infradead.org" <hch@infradead.org>,
+       "linux-nfs@vger.kernel.org" <linux-nfs@vger.kernel.org>
+Subject: Re: [PATCH] writeback: reset inode dirty time when adding it back
+	to empty s_dirty list
+Message-ID: <20090325134457.GA5222@localhost>
+References: <20090324102806.4f38fd26@tleilax.poochiereds.net> <20090324104657.6907b19e@tleilax.poochiereds.net> <20090325012829.GA7506@localhost> <20090324221528.2bb7c50b@tleilax.poochiereds.net> <20090325025037.GA17374@localhost> <20090325075110.028f0d1d@tleilax.poochiereds.net> <20090325121742.GA22869@localhost> <20090325091325.17c997fd@tleilax.poochiereds.net> <49CA2F41.8030804@themaw.net> <49CA33E7.6090309@themaw.net>
 MIME-Version: 1.0
-To: Jiri Pirko <jpirko@redhat.com>
-CC: linux-kernel@vger.kernel.org, netdev@vger.kernel.org, jgarzik@pobox.com,
-       davem@davemloft.net, shemminger@linux-foundation.org,
-       bridge@lists.linux-foundation.org, fubar@us.ibm.com,
-       bonding-devel@lists.sourceforge.net, kaber@trash.net,
-       mschmidt@redhat.com
-Subject: Re: [PATCH] bonding: allow bond in mode balance-alb to work properly
- in bridge -try2
-References: <20090313183303.GF3436@psychotron.englab.brq.redhat.com> <20090325130443.GG3437@psychotron.englab.brq.redhat.com>
-In-Reply-To: <20090325130443.GG3437@psychotron.englab.brq.redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Wed, 25 Mar 2009 14:40:47 +0100 (CET)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49CA33E7.6090309@themaw.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jiri Pirko a écrit :
-> (resend)
-> 
-> Hi all.
-> 
-> The problem is described in following bugzilla:
-> https://bugzilla.redhat.com/show_bug.cgi?id=487763
-> 
-> Basically here's what's going on. In every mode, bonding interface uses the same
-> mac address for all enslaved devices. Except for mode balance-alb. When you put
-> this kind of bond device into a bridge it will only add one of mac adresses into
-> a hash list of mac addresses, say X. This mac address is marked as local. But
-> this bonding interface also has mac address Y. Now then packet arrives with
-> destination address Y, this address is not marked as local and the packed looks
-> like it needs to be forwarded. This packet is then lost which is wrong.
-> 
-> Notice that interfaces can be added and removed from bond while it is in bridge.
-> 
-> This patch solves the situation in the bonding without touching bridge code,
-> as Patrick suggested. For every incoming frame to bonding it searches the
-> destination address in slaves list and if any of slave addresses matches, it
-> rewrites the address in frame by the adress of bonding master. This ensures that
-> all frames comming thru the bonding in alb mode have the same address.
-> 
-> Jirka
-> 
-> 
-> Signed-off-by: Jiri Pirko <jpirko@redhat.com>
-> 
-> diff --git a/drivers/net/bonding/bond_alb.c b/drivers/net/bonding/bond_alb.c
-> index 27fb7f5..2838be0 100644
-> --- a/drivers/net/bonding/bond_alb.c
-> +++ b/drivers/net/bonding/bond_alb.c
-> @@ -1762,6 +1762,26 @@ int bond_alb_set_mac_address(struct net_device *bond_dev, void *addr)
->  	return 0;
->  }
->  
-> +void bond_alb_change_dest(struct sk_buff *skb)
-> +{
-> +	struct net_device *bond_dev = skb->dev;
-> +	struct bonding *bond = netdev_priv(bond_dev);
-> +	unsigned char *dest = eth_hdr(skb)->h_dest;
-> +	struct slave *slave;
-> +	int i;
-> +
-> +	if (!memcmp(dest, bond_dev->dev_addr, ETH_ALEN))
-> +		return;
-> +	read_lock(&bond->lock);
+On Wed, Mar 25, 2009 at 09:38:47PM +0800, Ian Kent wrote:
+> Ian Kent wrote:
+> > Jeff Layton wrote:
+> >> On Wed, 25 Mar 2009 20:17:43 +0800
+> >> Wu Fengguang <fengguang.wu@intel.com> wrote:
+> >>
+> >>> On Wed, Mar 25, 2009 at 07:51:10PM +0800, Jeff Layton wrote:
+> >>>> On Wed, 25 Mar 2009 10:50:37 +0800
+> >>>> Wu Fengguang <fengguang.wu@intel.com> wrote:
+> >>>>
+> >>>>>> Given the right situation though (or maybe the right filesystem), it's
+> >>>>>> not too hard to imagine this problem occurring even in current mainline
+> >>>>>> code with an inode that's frequently being redirtied.
+> >>>>> My reasoning with recent kernel is: for kupdate, s_dirty enqueues only
+> >>>>> happen in __mark_inode_dirty() and redirty_tail().  Newly dirtied
+> >>>>> inodes will be parked in s_dirty for 30s. During which time the
+> >>>>> actively being-redirtied inodes, if their dirtied_when is an old stuck
+> >>>>> value, will be retried for writeback and then re-inserted into a
+> >>>>> non-empty s_dirty queue and have their dirtied_when refreshed.
+> >>>>>
+> >>>> Doesn't that assume that there are new inodes that are being dirtied?
+> >>>> If you only have the same inodes being redirtied and never any new
+> >>>> ones, the problem still occurs, right?
+> >>> Yes. But will a production server run months without making one single
+> >>> new dirtied inode? (Just out of curiosity. Not that I'm not willing to
+> >>> fix this possible issue.:)
+> >>>
+> >> Yes. It's not that the box will run that long without creating a
+> >> single new dirtied inode, but rather that it won't necessarily create
+> >> one on all of its mounts. It's often the case that someone has a
+> >> mountpoint for a dedicated purpose.
+> >>
+> >> Consider a host that has a mountpoint that contains logfiles that are
+> >> being heavily written. There's nothing that says that they must rotate
+> >> those logs over a particular period (assuming the fs has enough space,
+> >> etc). If the same ones are constantly being redirtied and no new
+> >> ones are created, then I think this problem can easily happen.
+> >>
+> >>>>>>> ...I see no obvious reasons against unconditionally resetting dirtied_when.
+> >>>>>>>
+> >>>>>>> (a) Delaying an inode's writeback for 30s maybe too long - its blocking
+> >>>>>>> condition may well go away within 1s. (b) And it would be very undesirable
+> >>>>>>> if one big file is repeatedly redirtied hence its writeback being
+> >>>>>>> delayed considerably.
+> >>>>>>>
+> >>>>>>> However, redirty_tail() currently only tries to speedup writeback-after-redirty
+> >>>>>>> in a _best effort_ way. It at best partially hides the above issues,
+> >>>>>>> if there are any. In particular, if (b) is possible, the bug should
+> >>>>>>> already show up at least in some situations.
+> >>>>>>>
+> >>>>>>> For XFS, immediately sync of redirtied inode is actually discouraged:
+> >>>>>>>
+> >>>>>>>         http://lkml.org/lkml/2008/1/16/491
+> >>>>>>>
+> >>>>>>>
+> >>>>>> Ok, those are good points that I need to think about.
+> >>>>>>
+> >>>>>> Thanks for the help so far. I'd welcome any suggestions you have on
+> >>>>>> how best to fix this.
+> >>>>> For NFS, is it desirable to retry a redirtied inode after 30s, or
+> >>>>> after a shorter 5s, or after 0.1~5s? Or the exact timing simply
+> >>>>> doesn't matter?
+> >>>>>
+> >>>> I don't really consider NFS to be a special case here. It just happens
+> >>>> to be where we saw the problem originally. Some of its characteristics
+> >>>> might make it easier to hit this, but I'm not certain of that.
+> >>> Now there are now two possible solutions:
+> >>> - unconditionally update dirtied_when in redirty_tail();
+> >>> - keep dirtied_when and redirty inodes to a new dedicated queue.
+> >>> The first one involves less code, the second one allows more flexible timing.
+> >>>
+> >>> NFS/XFS could be a good starting point for discussing the
+> >>> requirements, so that we can reach a suitable solution.
+> >>>
+> >> It sounds like it, yes. I saw that you posted some patches in January
+> >> (including your s_more_io_wait patch). I'll give those a closer look.
+> >> Adding the new s_more_io_wait queue is interesting and might sidestep
+> >> this problem nicely.
+> >>
+> > 
+> > Yes, I was looking at that bit of code but, so far, I think it won't be
+> > called for the case we are trying to describe.
 
+You mean this case?
 
-Its a pity bonding doesnt use RCU and needs this read_lock(&bond->lock)
+                } else if (inode->i_state & I_DIRTY) {
+                        /*
+                         * Someone redirtied the inode while were writing back
+                         * the pages.
+                         */
+                        redirty_tail(inode);
+                } else if (atomic_read(&inode->i_count)) {
 
+Sure we can replace the redirty_tail() with requeue_io_wait().
 
-> +	bond_for_each_slave(bond, slave, i) {
-> +		if (!memcmp(slave->dev->dev_addr, dest, ETH_ALEN)) {
+> I take that back.
+> As Jeff pointed out I haven't seen these patches and can't seem to find
+> them in my fsdevel list folder, Wu can you send me a copy please?
 
-compare_ether_addr() (or even better compare_ether_addr_64bits()) instead of memcmp() ?
+OK, wait a minute...
 
-> +			memcpy(dest, bond_dev->dev_addr, ETH_ALEN);
-> +			break;
-> +		}
-> +	}
-> +	read_unlock(&bond->lock);
-> +}
-> +
-
+Thanks,
+Fengguang
