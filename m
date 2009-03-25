@@ -1,98 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758218AbZCYNBt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754871AbZCYNFA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758218AbZCYNBt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 09:01:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752665AbZCYNBl
+	id S1754871AbZCYNFA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 09:05:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753277AbZCYNEw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 09:01:41 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:46294 "EHLO kernel.dk"
+	Wed, 25 Mar 2009 09:04:52 -0400
+Received: from gate.crashing.org ([63.228.1.57]:53512 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752501AbZCYNBl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 09:01:41 -0400
-Date: Wed, 25 Mar 2009 14:01:39 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
+	id S1753229AbZCYNEu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Mar 2009 09:04:50 -0400
+Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       linux-kernel@vger.kernel.org, ian.campbell@citrix.com, jeremy@goop.org
+Message-Id: <65B9DB8E-65E6-48AA-BC48-CC2083AD7F18@kernel.crashing.org>
+From: Becky Bruce <beckyb@kernel.crashing.org>
 To: Ingo Molnar <mingo@elte.hu>
-Cc: Li Zefan <lizf@cn.fujitsu.com>, Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC][PATCH] blktrace: fix original blktrace
-Message-ID: <20090325130138.GO27476@kernel.dk>
-References: <49C99BD2.9090503@cn.fujitsu.com> <20090325070726.GD27476@kernel.dk> <49C9DC75.9080301@cn.fujitsu.com> <20090325072704.GF27476@kernel.dk> <20090325125231.GE30755@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090325125231.GE30755@elte.hu>
+In-Reply-To: <20090325124503.GD30755@elte.hu>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Content-Transfer-Encoding: 7bit
+Mime-Version: 1.0 (Apple Message framework v930.3)
+Subject: Re: [PATCH 2/5] swiotlb: fix compile warning
+Date: Wed, 25 Mar 2009 08:03:11 -0500
+References: <1237930126-6741-3-git-send-email-beckyb@kernel.crashing.org> <20090325114023S.fujita.tomonori@lab.ntt.co.jp> <D375125B-E20E-47D9-87F5-EB9CBE927293@kernel.crashing.org> <20090325125227C.fujita.tomonori@lab.ntt.co.jp> <20090325124503.GD30755@elte.hu>
+X-Mailer: Apple Mail (2.930.3)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 25 2009, Ingo Molnar wrote:
-> 
-> * Jens Axboe <jens.axboe@oracle.com> wrote:
-> 
-> > On Wed, Mar 25 2009, Li Zefan wrote:
-> > > Jens Axboe wrote:
-> > > > On Wed, Mar 25 2009, Li Zefan wrote:
-> > > >> I'm wondering what we are going to do with the original blktrace which
-> > > >> is using relay and is used via ioctl.
-> > > >>
-> > > >> The problem is currently it's totally broken. You can use ftrace to see
-> > > >> the output of blktrace, but user-space blktrace is unusable.
-> > > >>
-> > > >> With this patch, both ioctl and ftrace can be used, but of course you
-> > > >> can't use both of them at the same time.
-> > > > 
-> > > > Even if ftrace was as fast as storing huge amounts of data as blktrace,
-> > > > it's still of utmost importance that nothing is broken there. There are
-> > > 
-> > > agreed
-> > > 
-> > > > people actually USING this tracing to do real work, it's not a
-> > > > playground.
-> > > > 
-> > > 
-> > > and we are using blktrace to test the cgroup-based io controller
-> > > 
-> > > > I appreciate the efforts to unify and improve our tracing, but we must
-> > > > not be breaking blktrace along the way. Otherwise the whole thing goes
-> > > 
-> > > this patch fixes it.
-> > > 
-> > > it's broken by "blktrace: add ftrace plugin"
-> > > (c71a896154119f4ca9e89d6078f5f63ad60ef199)
-> > > 
-> > > @@ -131,13 +162,14 @@ static void __blk_add_trace()
-> > > - 	if (unlikely(bt->trace_state != Blktrace_running))
-> > > + 	if (unlikely(bt->trace_state != Blktrace_running || !blk_tracer_enabled))
-> > >  		return;
-> > 
-> > Good, as long as it still works with blktrace, that's all I care 
-> > about (for now, at least).
-> 
-> Sorry about that. I've applied Li's fixes and double checked 
-> blktrace+blktrace functionality and pushed out a new tracing
-> tree to linux-next.
-> 
-> Btw., blktrace could be updated in the future to make use the
-> new per CPU buffering and sys_splice() code available in ftrace
-> plugin. [ splice is cool! =B-) ]
-> 
-> Plus blktrace could make use of built-in event filtering 
-> capabilities - for example to only trace events in a specific
-> sector range on the disk. Or to trace all IO of a given PID only.
-> 
-> But that is a different project that needs changes both on the 
-> kernel side and on the user-space side (.31-ish for sure) and the 
-> relayfs+ioctl method must work fine in any case.
 
-Don't get me wrong, I completely agree with the unification idea, it'll
-be awesome to have a single stream of info for several event types. My
-worry was just if it was going too fast, I just don't want a broken
-blktrace before the dust has even settled. And moving blktrace from
-relay to per-cpu buffering and splice definitely sounds like a good
-longer term direction.
+On Mar 25, 2009, at 7:45 AM, Ingo Molnar wrote:
 
--- 
-Jens Axboe
+>
+> * FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
+>
+>> On Tue, 24 Mar 2009 22:42:33 -0500
+>> Becky Bruce <beckyb@kernel.crashing.org> wrote:
+>>
+>>>
+>>> On Mar 24, 2009, at 9:58 PM, FUJITA Tomonori wrote:
+>>>
+>>>> On Tue, 24 Mar 2009 16:28:43 -0500
+>>>> Becky Bruce <beckyb@kernel.crashing.org> wrote:
+>>>>
+>>>>> Squash a build warning seen on 32-bit powerpc caused by calling  
+>>>>> min()
+>>>>> with 2 different types.  Cast the first arg to size_t, which is  
+>>>>> the
+>>>>> type of the second, and should be portable across architectures.
+>>>>>
+>>>>> Signed-off-by: Becky Bruce <beckyb@kernel.crashing.org>
+>>>>> ---
+>>>>> lib/swiotlb.c |    2 +-
+>>>>> 1 files changed, 1 insertions(+), 1 deletions(-)
+>>>>>
+>>>>> diff --git a/lib/swiotlb.c b/lib/swiotlb.c
+>>>>> index f59cf30..62f5f75 100644
+>>>>> --- a/lib/swiotlb.c
+>>>>> +++ b/lib/swiotlb.c
+>>>>> @@ -341,7 +341,7 @@ static void swiotlb_bounce(phys_addr_t phys,
+>>>>> char *dma_addr, size_t size,
+>>>>> 		unsigned long flags;
+>>>>>
+>>>>> 		while (size) {
+>>>>> -			sz = min(PAGE_SIZE - offset, size);
+>>>>> +			sz = min((size_t)(PAGE_SIZE - offset), size);
+>>>>>
+>>>>> 			local_irq_save(flags);
+>>>>> 			buffer = kmap_atomic(pfn_to_page(pfn),
+>>>>
+>>>> ?
+>>>>
+>>>> diff --git a/lib/swiotlb.c b/lib/swiotlb.c
+>>>> index f59cf30..fa62498 100644
+>>>> --- a/lib/swiotlb.c
+>>>> +++ b/lib/swiotlb.c
+>>>> @@ -341,7 +341,7 @@ static void swiotlb_bounce(phys_addr_t phys,
+>>>> char *dma_addr, size_t size,
+>>>> 		unsigned long flags;
+>>>>
+>>>> 		while (size) {
+>>>> -			sz = min(PAGE_SIZE - offset, size);
+>>>> +			sz = min_t(size_t, PAGE_SIZE - offset, size);
+>>>>
+>>>> 			local_irq_save(flags);
+>>>> 			buffer = kmap_atomic(pfn_to_page(pfn),
+>>>
+>>> OK, we're clearly pointed at different trees here, and it looks like
+>>> I'm behind - this patch is based on Ingo's master.  Which tree has
+>>> this change?
+>>
+>> I also use tip/master. I think that we are on the same page. No
+>> tree has this change. I just send it because I'm not sure why you
+>> don't use min_t().
+>
+> yes, min_t() is safer and cleaner than min()+cast.
 
+Ahh, then, that's just an oversight on my part, and I'll fix it.  I'll  
+send out a respun set of patches as soon as I'm out of today's endless  
+set of meetings.
+
+Thanks,
+Becky
