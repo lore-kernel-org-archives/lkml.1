@@ -1,93 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753300AbZCYJEG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756824AbZCYJGR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753300AbZCYJEG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 05:04:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752362AbZCYJDy
+	id S1756824AbZCYJGR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 05:06:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753233AbZCYJGD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 05:03:54 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:32843 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752171AbZCYJDx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 05:03:53 -0400
-Date: Wed, 25 Mar 2009 10:03:36 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Paul Mackerras <paulus@samba.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] perf_counter: allow and require one-page mmap on
-	counting counters
-Message-ID: <20090325090336.GC2341@elte.hu>
-References: <18889.59409.260586.87939@cargo.ozlabs.ibm.com> <20090325082844.GA11217@elte.hu> <18889.61903.636761.471281@cargo.ozlabs.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <18889.61903.636761.471281@cargo.ozlabs.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Wed, 25 Mar 2009 05:06:03 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:57638 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752567AbZCYJGA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Mar 2009 05:06:00 -0400
+Subject: [PATCH] kmemtrace: trace kfree() calls with NULL or zero-length
+	objects
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: mingo@elte.hu
+Cc: rostedt@goodmis.org, eduard.munteanu@linux360.ro,
+       linux-kernel@vger.kernel.org
+Date: Wed, 25 Mar 2009 11:05:57 +0200
+Message-Id: <1237971957.30175.18.camel@penberg-laptop>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.22.3.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Pekka Enberg <penberg@cs.helsinki.fi>
 
-* Paul Mackerras <paulus@samba.org> wrote:
+Impact: improve tracing
 
-> Ingo Molnar writes:
-> 
-> > * Paul Mackerras <paulus@samba.org> wrote:
-> > 
-> > > +++ b/kernel/perf_counter.c
-> > > @@ -1362,8 +1362,13 @@ static int perf_mmap(struct file *file, struct vm_area_struct *vma)
-> > >  	vma_size = vma->vm_end - vma->vm_start;
-> > >  	nr_pages = (vma_size / PAGE_SIZE) - 1;
-> 
-> To answer your question below... this:    ^^^
-> 
-> > >  
-> > > -	if (nr_pages == 0 || !is_power_of_2(nr_pages))
-> > > -		return -EINVAL;
-> > > +	if (counter->hw_event.record_type == PERF_RECORD_SIMPLE) {
-> > > +		if (nr_pages)
-> > > +			return -EINVAL;
-> > > +	} else {
-> > > +		if (nr_pages == 0 || !is_power_of_2(nr_pages))
-> > > +			return -EINVAL;
-> > > +	}
-> > 
-> > Hm, is_power_of_2() is buggy then as 1 page is a power of two as 
-> > well: 1 == 2^0.
-> > 
-> > Hm, it seems fine:
-> > 
-> >  static inline __attribute__((const))
-> >  bool is_power_of_2(unsigned long n)
-> >  {
-> >          return (n != 0 && ((n & (n - 1)) == 0));
-> >  }
-> > 
-> > that should return true for an input of 1.
-> > 
-> > What am i missing?
-> > 
-> > 	Ingo
-> 
-> We have one page as a header that contains the info for reading 
-> the counter value in userspace plus the head pointer, followed by 
-> (for a sampling counter) 2^N pages of ring buffer.
+This patch moves the trace_kfree() calls before the ZERO_OR_NULL_PTR
+check so that we can trace call-sites that call kfree() with NULL many
+times which might be an indication of a bug.
 
-ah - ok. Morning confusion. (any email from me that comes at single 
-digit hour local time should be considered fundamentally suspect ;-)
+Cc: Steven Rostedt <rostedt@goodmis.org>
+Cc: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
+Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
+---
+Eduard, does this require some changes in the user-space tools?
 
-Wouldnt it still be better to keep the symmetry between counting and 
-sampling counters? In theory we could transit between these stags 
-and 'switch off' a sampling counter or 'switch on' a counting 
-counter - via an ioctl or so. Shouldnt counting counters be sampling 
-counters that were created while disabled temporarily?
+ mm/slab.c |    4 ++--
+ mm/slob.c |    4 ++--
+ mm/slub.c |    4 ++--
+ 3 files changed, 6 insertions(+), 6 deletions(-)
 
-	Ingo
+diff --git a/mm/slab.c b/mm/slab.c
+index fa00fd6..b584002 100644
+--- a/mm/slab.c
++++ b/mm/slab.c
+@@ -3773,6 +3773,8 @@ void kfree(const void *objp)
+ 	struct kmem_cache *c;
+ 	unsigned long flags;
+ 
++	trace_kfree(_RET_IP_, objp);
++
+ 	if (unlikely(ZERO_OR_NULL_PTR(objp)))
+ 		return;
+ 	local_irq_save(flags);
+@@ -3782,8 +3784,6 @@ void kfree(const void *objp)
+ 	debug_check_no_obj_freed(objp, obj_size(c));
+ 	__cache_free(c, (void *)objp);
+ 	local_irq_restore(flags);
+-
+-	trace_kfree(_RET_IP_, objp);
+ }
+ EXPORT_SYMBOL(kfree);
+ 
+diff --git a/mm/slob.c b/mm/slob.c
+index 2ccd31d..5bd7ecc 100644
+--- a/mm/slob.c
++++ b/mm/slob.c
+@@ -503,6 +503,8 @@ void kfree(const void *block)
+ {
+ 	struct slob_page *sp;
+ 
++	trace_kfree(_RET_IP_, block);
++
+ 	if (unlikely(ZERO_OR_NULL_PTR(block)))
+ 		return;
+ 
+@@ -513,8 +515,6 @@ void kfree(const void *block)
+ 		slob_free(m, *m + align);
+ 	} else
+ 		put_page(&sp->page);
+-
+-	trace_kfree(_RET_IP_, block);
+ }
+ EXPORT_SYMBOL(kfree);
+ 
+diff --git a/mm/slub.c b/mm/slub.c
+index c3a905b..988ef33 100644
+--- a/mm/slub.c
++++ b/mm/slub.c
+@@ -2791,6 +2791,8 @@ void kfree(const void *x)
+ 	struct page *page;
+ 	void *object = (void *)x;
+ 
++	trace_kfree(_RET_IP_, x);
++
+ 	if (unlikely(ZERO_OR_NULL_PTR(x)))
+ 		return;
+ 
+@@ -2801,8 +2803,6 @@ void kfree(const void *x)
+ 		return;
+ 	}
+ 	slab_free(page->slab, page, object, _RET_IP_);
+-
+-	trace_kfree(_RET_IP_, x);
+ }
+ EXPORT_SYMBOL(kfree);
+ 
+-- 
+1.5.4.3
+
+
+
