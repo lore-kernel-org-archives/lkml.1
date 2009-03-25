@@ -1,70 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763093AbZCYPn5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763112AbZCYPr4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763093AbZCYPn5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 11:43:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758143AbZCYPns
+	id S1763112AbZCYPr4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 11:47:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756250AbZCYPrq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 11:43:48 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:40748 "EHLO
+	Wed, 25 Mar 2009 11:47:46 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:50191 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757055AbZCYPnr (ORCPT
+	with ESMTP id S1754024AbZCYPrp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 11:43:47 -0400
-Date: Wed, 25 Mar 2009 11:43:44 -0400 (EDT)
+	Wed, 25 Mar 2009 11:47:45 -0400
+Message-Id: <20090325154742.999233198@goodmis.org>
+References: <20090325154538.916038098@goodmis.org>
+User-Agent: quilt/0.46-1
+Date: Wed, 25 Mar 2009 11:45:40 -0400
 From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Ingo Molnar <mingo@elte.hu>
-cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+To: linux-kernel@vger.kernel.org
+Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
        Thomas Gleixner <tglx@linutronix.de>,
        Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Tim Bird <tim.bird@am.sony.com>, Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [PATCH 2/5][RFC] tracing: move function profiler data out of
- function struct
-In-Reply-To: <20090325100746.GI2341@elte.hu>
-Message-ID: <alpine.DEB.2.00.0903251142470.5675@gandalf.stny.rr.com>
-References: <20090325035646.662994901@goodmis.org> <20090325040832.443420395@goodmis.org> <20090325100746.GI2341@elte.hu>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+       Roland McGrath <roland@redhat.com>,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: [PATCH 2/3 v2] sched: remove unlikelys from sched_move_task
+Content-Disposition: inline; filename=0002-sched-remove-unlikelys-from-sched_move_task.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Steven Rostedt <rostedt@goodmis.org>
 
-On Wed, 25 Mar 2009, Ingo Molnar wrote:
+Impact: clean up
 
-> 
-> * Steven Rostedt <rostedt@goodmis.org> wrote:
-> 
-> > +/* Interrupts must be disabled calling this */
-> > +static struct ftrace_profile *
-> > +ftrace_profile_alloc(unsigned long ip, bool alloc_safe)
-> > +{
-> > +	struct ftrace_profile *rec = NULL;
-> > +
-> > +	/* prevent recursion */
-> > +	if (atomic_inc_return(&__get_cpu_var(ftrace_profile_disable)) != 1)
-> > +		goto out;
-> > +
-> > +	__raw_spin_lock(&ftrace_profile_rec_lock);
-> > +
-> > +	/* Try to always keep another page available */
-> > +	if (!profile_pages->next && alloc_safe)
-> > +		profile_pages->next = (void *)get_zeroed_page(GFP_ATOMIC);
-> 
-> this does not seem to be NMI safe.
+We seem to be moving running tasks more than non running tasks.
+I guess tasks like to move themselves.
 
-The atomic_inc_return protects against NMIs, since this is the only place 
-the lock is taken.
+These are also candidates for likely:
 
-> 
-> This all would be solved much more robustly by the function 
-> attributes hash approach i suggested in the previous mail. If 
-> percpu_alloc() is done for 20,000 functions the memory allocation 
-> overhead is no big deal.
+ correct incorrect  %        Function                  File              Line
+ ------- ---------  -        --------                  ----              ----
+       0    10027 100 sched_move_task                sched.c              8918
+       0    10027 100 sched_move_task                sched.c              8908
 
-Later patches create a per-cpu buffers and removes the lock.
+Signed-off-by: Steven Rostedt <srostedt@redhat.com>
+---
+ kernel/sched.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
--- Steve
+diff --git a/kernel/sched.c b/kernel/sched.c
+index 8e2558c..5a60745 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -8905,7 +8905,7 @@ void sched_move_task(struct task_struct *tsk)
+ 
+ 	if (on_rq)
+ 		dequeue_task(rq, tsk, 0);
+-	if (unlikely(running))
++	if (running)
+ 		tsk->sched_class->put_prev_task(rq, tsk);
+ 
+ 	set_task_rq(tsk, task_cpu(tsk));
+@@ -8915,7 +8915,7 @@ void sched_move_task(struct task_struct *tsk)
+ 		tsk->sched_class->moved_group(tsk);
+ #endif
+ 
+-	if (unlikely(running))
++	if (running)
+ 		tsk->sched_class->set_curr_task(rq);
+ 	if (on_rq)
+ 		enqueue_task(rq, tsk, 0);
+-- 
+1.6.2
 
+-- 
