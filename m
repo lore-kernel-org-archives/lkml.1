@@ -1,95 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757380AbZCYXky@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754892AbZCYXqW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757380AbZCYXky (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 19:40:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753805AbZCYXko
+	id S1754892AbZCYXqW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 19:46:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751670AbZCYXqO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 19:40:44 -0400
-Received: from bowden.ucwb.org.au ([203.122.237.119]:36609 "EHLO
-	mail.ucwb.org.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752108AbZCYXkn (ORCPT
+	Wed, 25 Mar 2009 19:46:14 -0400
+Received: from out2.smtp.messagingengine.com ([66.111.4.26]:54478 "EHLO
+	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751006AbZCYXqN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 19:40:43 -0400
-Subject: Re: [Bug #12465] KVM guests stalling on 2.6.28 (bisected)
-From: Kevin Shanahan <kmshanah@ucwb.org.au>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Avi Kivity <avi@redhat.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Mike Galbraith <efault@gmx.de>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-In-Reply-To: <20090324114409.GB6058@nowhere>
-References: <qm8_cedJGaP.A.-NH.CPCvJB@chimera>
-	 <1237107837.27699.27.camel@kulgan.wumi.org.au>
-	 <49BE20B2.9070804@redhat.com> <1237207595.4964.31.camel@kulgan.wumi.org.au>
-	 <20090316200736.GD8393@nowhere>
-	 <1237244137.4964.54.camel@kulgan.wumi.org.au>
-	 <20090318001955.GB5143@nowhere>
-	 <1237338986.4801.11.camel@kulgan.wumi.org.au>
-	 <1237411441.5211.5.camel@kulgan.wumi.org.au>
-	 <1237611639.4933.4.camel@kulgan.wumi.org.au>
-	 <20090324114409.GB6058@nowhere>
-Content-Type: text/plain
-Organization: UnitingCare Wesley Bowden
-Date: Thu, 26 Mar 2009 10:10:32 +1030
-Message-Id: <1238024432.8669.6.camel@kulgan>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 
-Content-Transfer-Encoding: 7bit
+	Wed, 25 Mar 2009 19:46:13 -0400
+Date: Thu, 26 Mar 2009 10:46:04 +1100
+From: Bron Gondwana <brong@fastmail.fm>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Theodore Tso <tytso@mit.edu>, David Rees <drees76@gmail.com>,
+       Jesper Krogh <jesper@krogh.cc>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.29
+Message-ID: <20090325234604.GA14828@brong.net>
+References: <alpine.LFD.2.00.0903231617550.3032@localhost.localdomain> <49C87B87.4020108@krogh.cc> <72dbd3150903232346g5af126d7sb5ad4949a7b5041f@mail.gmail.com> <49C88C80.5010803@krogh.cc> <72dbd3150903241200v38720ca0x392c381f295bdea@mail.gmail.com> <20090325183011.GN32307@mit.edu> <alpine.LFD.2.00.0903251139260.3032@localhost.localdomain> <20090325220530.GR32307@mit.edu> <alpine.LFD.2.00.0903251622420.3032@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.00.0903251622420.3032@localhost.localdomain>
+Organization: brong.net
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-03-24 at 12:44 +0100, Frederic Weisbecker wrote:
-> Sorry, I've been late to answer.
-> As I explained in my previous mail, you trace is only
-> a snapshot that happened in 10 msec.
+On Wed, Mar 25, 2009 at 04:23:08PM -0700, Linus Torvalds wrote:
 > 
-> I experimented different sizes for the ring buffer but even
-> a 1 second trace require 20 Mo of memory. And a so huge trace
-> would be impractical.
 > 
-> I think we should keep the trace filters we had previously.
-> If you don't minde, could you please retest against latest -tip
-> the following updated patch? Iadded the filters, fixed the python
-> subshell and also flushed the buffer more nicely according to
-> a recent feature in -tip:
+> On Wed, 25 Mar 2009, Theodore Tso wrote:
+> > > 
+> > > The problem being that unlike the ratio, there's no sane default value 
+> > > that you can at least argue is not _entirely_ pointless.
+> > 
+> > Well, if the maximum time that someone wants to wait for an fsync() to
+> > return is one second, and the RAID array can write 100MB/sec
 > 
-> echo > trace 
+> How are you going to tell the kernel that the RAID array can write 
+> 100MB/s?
 > 
-> instead of switching to nop.
-> You will need to pull latest -tip again.
+> The kernel has no idea.
 
-Ok, thanks for that. I'll get a new -tip kernel ready to test tonight.
-I'm not sure about the change to the python subshell though:
+Not at boot up, but after it's been using the RAID array for a little
+while it could...
 
-> while [ "$found" != "True" ]
-> do
->         # Flush the previous buffer
->         echo trace > $prefix/trace
-> 
->         echo 1 > $prefix/tracing_enabled
->         lat=$(ping -c 1 $addr | grep rtt | grep -Eo " [0-9]+.[0-9]+")
->         echo 0 > $prefix/tracing_enabled
-> 
-> 	echo $lat
-> 	found=$(python -c "print float(str($lat).strip())")
->         sleep 0.01
-> done
-
-kmshanah@kulgan:~$ python -c "print float(str(1.234).strip())"
-1.234
-
-That's not going to evaluate to "True" at all is it? What happened to
-the test against the latency threshold value? Did you mean something
-like this?
-
-kmshanah@kulgan:~$ python -c "print float(str(1.234).strip()) > 5000"
-False
-kmshanah@kulgan:~$ python -c "print float(str(5001.234).strip()) > 5000"
-True
-
-Cheers,
-Kevin.
-
-
+Bron (... imagining a tunable "max_fsync_wait_target_centisecs = 100" 
+      which caused the kernel to notice how long flushes were taking
+      and tune its buffer sizes to be approximately right over time )
