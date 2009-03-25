@@ -1,83 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763703AbZCYSHb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763873AbZCYSIT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763703AbZCYSHb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 14:07:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760137AbZCYSHK
+	id S1763873AbZCYSIT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 14:08:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756340AbZCYSIF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 14:07:10 -0400
-Received: from farside.isc.org ([204.152.187.5]:63412 "EHLO farside.isc.org"
+	Wed, 25 Mar 2009 14:08:05 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:35407 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755351AbZCYSHI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 14:07:08 -0400
-X-Greylist: delayed 1760 seconds by postgrey-1.27 at vger.kernel.org; Wed, 25 Mar 2009 14:07:08 EDT
-From: Francis Dupont <Francis_Dupont@isc.org>
-To: Patrick McHardy <kaber@trash.net>
-cc: David Miller <davem@davemloft.net>, Francis.Dupont@fdupont.fr,
-       linux-kernel@vger.kernel.org, coreteam@netfilter.org,
-       netfilter-devel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: netfilter spurious ELOOP 
-In-reply-to: <49CA64D8.9040602@trash.net> 
-References: <200903242302.n2ON25u4024288@givry.fdupont.fr> <20090324.162808.114465835.davem@davemloft.net> <49CA64D8.9040602@trash.net>
-Comments: In-reply-to Patrick McHardy <kaber@trash.net>
-   message dated "Wed, 25 Mar 2009 18:07:36 +0100."
-Date: Wed, 25 Mar 2009 17:37:42 +0000
-Message-Id: <20090325173742.3C509E601C@farside.isc.org>
+	id S1758899AbZCYSIE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Mar 2009 14:08:04 -0400
+Date: Wed, 25 Mar 2009 19:07:20 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: Andrew Lutomirski <amluto@gmail.com>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Kyle McMartin <kyle@redhat.com>, Fenghua Yu <fenghua.yu@intel.com>,
+       Suresh Siddha <suresh.b.siddha@intel.com>,
+       Yinghai Lu <yinghai@kernel.org>, Mark Gross <mgross@linux.intel.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.29: can't resume from suspend with DMAR (intel iommu)
+	enabled
+Message-ID: <20090325180720.GA28366@elte.hu>
+References: <cb0375e10903241258x32c9d0f3g35a4f56793eb8677@mail.gmail.com> <20090324203259.GC26930@elte.hu> <1238003581.2085.53.camel@macbook.infradead.org> <20090325175908.GA25518@elte.hu> <1238004228.2085.56.camel@macbook.infradead.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1238004228.2085.56.camel@macbook.infradead.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Just to clarify: does the problem happens when you have the MARK rule
-> above in a user-defined chain that has more then one jump leading to
-> it or does it also happen in other cases?
 
-=> I triggered the bug with a real world example:
- - first add a rule with a MARK target using a set mark with the first/sign
-  bit set to one. This target is coded with this mark put at the same
-  place than the verdict field of standard targets. (note this should
-  be triggered by a lot of targets but I got it with MARK)
- - try to add another rule (with -A or -I but this works too with restore,
-  the idea is to get a replace ioctl with an illegal value in a verdict
-  position).
- - if you are (un?)lucky you get the ELOOP error.
+* David Woodhouse <dwmw2@infradead.org> wrote:
 
-If you read my proposed fix the problem is pretty easy to understand.
-I asked diff to give enough context for human (i.e., more than needed
-to apply it as a patch).
+> On Wed, 2009-03-25 at 18:59 +0100, Ingo Molnar wrote:
+> > 
+> > that's not easy - i use it right now :)
+> > 
+> > That's another reason why warnings and non-panic() behavior are 
+> > better for developers too. Had it not crashed i could have sent you 
+> > my dmesg and i would not have turned off DMAR in the BIOS.
+> > 
+> > Now it's turned off in my BIOS (first barrier) and i need to reboot 
+> > the kernel (second barrier) and i need to hack up a kernel in a 
+> > certain way to produce debug info (third barrier) - in the merge 
+> > window (fourth barrier ;-).
+> 
+> Yeah, trusting BIOS monkeys for this was always going to be a bad 
+> plan. We should have just known how to set/read the damn hardware 
+> BARs -- the most likely explanation for this is that your BIOS is 
+> just lying to you about where it put the registers, I believe.
+> 
+> I'd like to put in a basic sanity check when we first ioremap the 
+> (alleged) DMAR registers. Hopefully, the output I asked for will 
+> confirm that there's a simple way to do that...
 
-Thanks
+Could you please fix the panic() and add the debug output you'd like 
+to see? That would give me a kernel to run straight away. Without me 
+having to think much about what i should run and when.
 
-Francis_Dupont@isc.org
+(unless you really need this pr_debug info to proceed)
 
-PS: I really need a bug-ticket-etc number because some business is implied
-(BTW IMHO you prefer to get the report once and by the most direct path,
-don't you?)
-PPS: here I've cut & paste the config I used to track the bug:
+But it will be some time really. The laptop has 8 days uptime and is 
+not set up to run custom kernels at all.
 
--------------------------------- save file --------------------------------
-# Generated by iptables-save v1.4.2 on Tue Mar 24 18:54:43 2009
-*filter
-:INPUT ACCEPT [11843:1222672]
-:FORWARD ACCEPT [0:0]
-:OUTPUT ACCEPT [7216:1221713]
-COMMIT
-# Completed on Tue Mar 24 18:54:43 2009
-# Generated by iptables-save v1.4.2 on Tue Mar 24 18:54:43 2009
-*mangle
-:PREROUTING ACCEPT [1209557:93278988]
-:INPUT ACCEPT [1209182:93208843]
-:FORWARD ACCEPT [0:0]
-:OUTPUT ACCEPT [668677:2806960697]
-:POSTROUTING ACCEPT [668677:2806960697]
-:MARKOUT1 - [0:0]
--A PREROUTING -d 10.0.200.2/32 -p tcp -m tcp --dport 5001 -j MARKOUT1 
--A MARKOUT1 -j MARK --set-xmark 0x80000001/0xffffffff 
--A MARKOUT1 -j CONNMARK --save-mark --nfmask 0x3fffffff --ctmask 0x3fffffff 
--A MARKOUT1 -j ACCEPT 
-COMMIT
-# Completed on Tue Mar 24 18:54:43 2009
--------------------------------- cut here  --------------------------------
-
-I got the bug with the UDP counterpart:
-
-iptables -t mangle -A PREROUTING -d 10.0.200.2/32 -p udp --dport 5001 \
--j MARKOUT1
+	Ingo
