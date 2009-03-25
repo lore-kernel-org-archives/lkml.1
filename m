@@ -1,80 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755865AbZCYNKW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760383AbZCYNLX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755865AbZCYNKW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 09:10:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753838AbZCYNKG
+	id S1760383AbZCYNLX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 09:11:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754995AbZCYNLO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 09:10:06 -0400
-Received: from hera.kernel.org ([140.211.167.34]:41010 "EHLO hera.kernel.org"
+	Wed, 25 Mar 2009 09:11:14 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:40631 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753700AbZCYNKF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 09:10:05 -0400
-Date: Wed, 25 Mar 2009 13:09:29 GMT
-From: Wang Chen <wangchen@cn.fujitsu.com>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       tglx@linutronix.de, wangchen@cn.fujitsu.com, mingo@elte.hu,
-       penguin-kernel@i-love.sakura.ne.jp
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       tglx@linutronix.de, wangchen@cn.fujitsu.com,
-       penguin-kernel@i-love.sakura.ne.jp, mingo@elte.hu
-In-Reply-To: <49C9FFEA.7060908@cn.fujitsu.com>
-References: <49C9FFEA.7060908@cn.fujitsu.com>
-Subject: [tip:x86/mm] x86: early_ioremap_init(), use __fix_to_virt(), because we are sure it's safe
-Message-ID: <tip-9f4f25c86ff2233dd98d4bd6968afb1ca66558a0@git.kernel.org>
-Git-Commit-ID: 9f4f25c86ff2233dd98d4bd6968afb1ca66558a0
-X-Mailer: tip-git-log-daemon
+	id S1754428AbZCYNLN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Mar 2009 09:11:13 -0400
+Date: Wed, 25 Mar 2009 14:10:46 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Gautham R Shenoy <ego@in.ibm.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+       linux-kernel@vger.kernel.org, Suresh Siddha <suresh.b.siddha@intel.com>,
+       Balbir Singh <balbir@in.ibm.com>, Nick Piggin <nickpiggin@yahoo.com.au>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       Bharata B Rao <bharata@linux.vnet.ibm.com>
+Subject: Re: [RFC PATCH 11/11] sched: Add comments to find_busiest_group()
+	function.
+Message-ID: <20090325131046.GF516@elte.hu>
+References: <20090325091239.13992.96090.stgit@sofia.in.ibm.com> <20090325091427.13992.18933.stgit@sofia.in.ibm.com> <20090325114314.GC11302@in.ibm.com> <20090325122913.GA28639@elte.hu> <20090325130738.GD11302@in.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 25 Mar 2009 13:09:31 +0000 (UTC)
+In-Reply-To: <20090325130738.GD11302@in.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  9f4f25c86ff2233dd98d4bd6968afb1ca66558a0
-Gitweb:     http://git.kernel.org/tip/9f4f25c86ff2233dd98d4bd6968afb1ca66558a0
-Author:     Wang Chen <wangchen@cn.fujitsu.com>
-AuthorDate: Wed, 25 Mar 2009 14:07:11 +0100
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Wed, 25 Mar 2009 14:07:11 +0100
 
-x86: early_ioremap_init(), use __fix_to_virt(), because we are sure it's safe
+* Gautham R Shenoy <ego@in.ibm.com> wrote:
 
-Tetsuo Handa reported this link bug:
+> On Wed, Mar 25, 2009 at 01:29:13PM +0100, Ingo Molnar wrote:
+> > 
+> > * Gautham R Shenoy <ego@in.ibm.com> wrote:
+> > 
+> > > On Wed, Mar 25, 2009 at 02:44:27PM +0530, Gautham R Shenoy wrote:
+> > > > Add /** style comments around find_busiest_group(). Also add a few explanatory
+> > > >   */
+> > > 
+> > > <snip>
+> > > 
+> > > >  static struct sched_group *
+> > > >  find_busiest_group(struct sched_domain *sd, int this_cpu,
+> > > > @@ -3593,17 +3613,31 @@ find_busiest_group(struct sched_domain *sd, int this_cpu,
+> > > >  	update_sd_lb_stats(sd, this_cpu, idle, sd_idle, cpus,
+> > > >  					balance, &sds);
+> > > > 
+> > > > +	/* Cases where imbalance does not exist from POV of this_cpu */
+> > > > +	/* 1) this_cpu is not the appropriate cpu to perform load balancing
+> > > > +	 *    at this level.
+> > > > +	 * 2) There is no busy sibling group to pull from.
+> > > > +	 * 3) This group is the busiest group.
+> > > > +	 * 4) This group is more busy than the avg busieness at this
+> > > > +	 *    sched_domain.
+> > > > +	 * 5) The imbalance is within the specified limit.
+> > > > +	 * 6) Any rebalance would lead to ping-pong
+> > > > +	 */
+> > > >  	if (balance && !(*balance))
+> > > >  		goto ret;
+> > > > 
+> > > > -	if (!sds.busiest || sds.this_load >= sds.max_load
+> > > > -		|| sds.busiest_nr_running == 0)
+> > > > +	if (!sds.busiest || sd.busiest_nr_running == 0)
+> > > 			    ^^^^^^^^^^^^^^^^^^^^
+> > > should have been sds.busiest_nr_running. Hence the build failure on tip.
+> > > 
+> > > I think I missed compile testing this last patch.
+> > > 
+> > > Ingo, could you revert commit 7b6340ef884aff69a54f8a530c73ad9da0a7c388 in
+> > > tip/balancing and commit the following patch instead?
+> > 
+> > sure - i've amended it and started testing it locally. If it passes 
+> > testing it should show up in tip:master.
+> 
+> Thanks!
+> 
+> Meanwhile I'll see if there are any regressions in 2.6.29 with 
+> this patchset.
 
- |  arch/x86/mm/built-in.o(.init.text+0x1831): In function `early_ioremap_init':
- |  : undefined reference to `__this_fixmap_does_not_exist'
- |  make: *** [.tmp_vmlinux1] Error 1
+Just try tip:master please - there's a number of other scheduler 
+changes and it would be nice to validate them together.
 
-Commit:8827247ffcc9e880cbe4705655065cf011265157 used a variable (which
-would be optimized to constant) as fix_to_virt()'s parameter.
-It's depended on gcc's optimization and fails on old gcc. (Tetsuo used gcc 3.3)
-
-We can use __fix_to_vir() instead, because we know it's safe and
-don't need link time error reporting.
-
-Reported-by: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
-Signed-off-by: Wang Chen <wangchen@cn.fujitsu.com>
-Cc: sfr@canb.auug.org.au
-LKML-Reference: <49C9FFEA.7060908@cn.fujitsu.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-
----
- arch/x86/mm/ioremap.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/arch/x86/mm/ioremap.c b/arch/x86/mm/ioremap.c
-index 83ed74a..0dfa09d 100644
---- a/arch/x86/mm/ioremap.c
-+++ b/arch/x86/mm/ioremap.c
-@@ -516,7 +516,7 @@ void __init early_ioremap_init(void)
- 		printk(KERN_INFO "early_ioremap_init()\n");
- 
- 	for (i = 0; i < FIX_BTMAPS_SLOTS; i++)
--		slot_virt[i] = fix_to_virt(FIX_BTMAP_BEGIN - NR_FIX_BTMAPS*i);
-+		slot_virt[i] = __fix_to_virt(FIX_BTMAP_BEGIN - NR_FIX_BTMAPS*i);
- 
- 	pmd = early_ioremap_pmd(fix_to_virt(FIX_BTMAP_BEGIN));
- 	memset(bm_pte, 0, sizeof(bm_pte));
+	Ingo
