@@ -1,66 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762082AbZCYSi4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761923AbZCYSk1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762082AbZCYSi4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 14:38:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754345AbZCYSiq
+	id S1761923AbZCYSk1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 14:40:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753416AbZCYSkN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 14:38:46 -0400
-Received: from tx2ehsobe004.messaging.microsoft.com ([65.55.88.14]:22195 "EHLO
-	TX2EHSOBE008.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1754335AbZCYSip convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 14:38:45 -0400
-X-BigFish: VPS-21(zz1432R98dR1805M936fK873fn7cf0izz1202hzzz2fh6bh63h)
-X-Spam-TCS-SCL: 2:0
-X-FB-SS: 5,
-Message-ID: <49CA79FA.8080906@am.sony.com>
-Date: Wed, 25 Mar 2009 11:37:46 -0700
-From: Tim Bird <tim.bird@am.sony.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-CC: =?UTF-8?B?VXdlIEtsZWluZS1Lw7ZuaWc=?= 
-	<u.kleine-koenig@pengutronix.de>,
+	Wed, 25 Mar 2009 14:40:13 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:62933 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752420AbZCYSkL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Mar 2009 14:40:11 -0400
+Date: Wed, 25 Mar 2009 14:40:08 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Ingo Molnar <mingo@elte.hu>
+cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
        Frederic Weisbecker <fweisbec@gmail.com>,
-       Abhishek Sagar <sagar.abhishek@gmail.com>,
-       linux-arm-kernel <linux-arm-kernel@lists.arm.linux.org.uk>,
-       linux kernel <linux-kernel@vger.kernel.org>,
-       Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@redhat.com>
-Subject: Re: Anyone working on ftrace function graph support on ARM?
-References: <49C936CA.8070800@am.sony.com> <20090324213618.GC5975@nowhere> <49C95EAF.7030901@gmail.com> <20090324224857.GE5975@nowhere> <20090325084248.GF4697@n2100.arm.linux.org.uk> <49CA5CFF.8090908@am.sony.com> <20090325170533.GA4667@pengutronix.de> <20090325171727.GH2952@n2100.arm.linux.org.uk>
-In-Reply-To: <20090325171727.GH2952@n2100.arm.linux.org.uk>
-Content-Type: text/plain; charset="UTF-8"
-X-OriginalArrivalTime: 25 Mar 2009 18:37:47.0544 (UTC) FILETIME=[CB4F9180:01C9AD78]
-X-SEL-encryption-scan: scanned
-Content-Transfer-Encoding: 8BIT
+       Tim Bird <tim.bird@am.sony.com>, Steven Rostedt <srostedt@redhat.com>
+Subject: Re: [PATCH 2/5][RFC] tracing: move function profiler data out of
+ function struct
+In-Reply-To: <20090325183513.GE28366@elte.hu>
+Message-ID: <alpine.DEB.2.00.0903251439180.5675@gandalf.stny.rr.com>
+References: <20090325035646.662994901@goodmis.org> <20090325040832.443420395@goodmis.org> <20090325100746.GI2341@elte.hu> <alpine.DEB.2.00.0903251142470.5675@gandalf.stny.rr.com> <20090325174446.GE14250@elte.hu> <alpine.DEB.2.00.0903251354020.5675@gandalf.stny.rr.com>
+ <20090325180203.GB25518@elte.hu> <alpine.DEB.2.00.0903251411260.5675@gandalf.stny.rr.com> <20090325183513.GE28366@elte.hu>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Russell King - ARM Linux wrote:
-> On Wed, Mar 25, 2009 at 06:05:33PM +0100, Uwe Kleine-K�nig wrote:
->> On Wed, Mar 25, 2009 at 09:34:07AM -0700, Tim Bird wrote:
->>> Russell King - ARM Linux wrote:
->>>> As pointed out in my previous mail, identifying where on the stack the
->>>> return address is stored is only possible for OABI with frame pointers.
->>>>
->>>> EABI will probably be possible with the stack unwinding code, but it
->>>> probably won't be cheap.  The EABI unwinder is scheduled for merging
->>>> during the present now-open merge window.
->> EABI with frame pointers should work, too, shouldn't it?
+
+On Wed, 25 Mar 2009, Ingo Molnar wrote:
+
 > 
-> Yes, as I said at the top of my reply dated Wed, 25 Mar 2009 09:57:51 +0000
+> * Steven Rostedt <rostedt@goodmis.org> wrote:
+> 
+> > struct ftrace_profile {
+> > 	struct hlist_node	*node;
+> > 	unsigned long		ip;
+> > 	unsigned long		hit;
+> > 	unsigned long long	calltime;
+> > };
+> > 
+> > on x86_64 that is 40 bytes. (node is 16, ip is 8, hit is 8, calltime is 8)
+> 
+> node is a pointer so it's 8 bytes - so the whole thing is 32 bytes. 
+> Acceptable IMO - and could be compressed further if needed.
 
-It turns out you can't use -pg and -fomit-frame-pointers at the same time.
-At least, my gcc complains about this:
-$ make
-arm-sony-linux-gnueabi-dev-gcc -g -pg -fomit-frame-pointer -o hello hello.c
-arm-sony-linux-gnueabi-dev-gcc: -pg and -fomit-frame-pointer are incompatible
-make: *** [hello] Error 1
+that was me doing the struct from memory. Because I had already switched 
+out of that branch :-/
 
-=============================
-Tim Bird
-Architecture Group Chair, CE Linux Forum
-Senior Staff Engineer, Sony Corporation of America
-=============================
+It is really a struct hlist_node node; not a pointer. My mistake.
+
+-- Steve
 
