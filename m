@@ -1,44 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755513AbZCYAMt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756340AbZCYANX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755513AbZCYAMt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 20:12:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752848AbZCYAMj
+	id S1756340AbZCYANX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 20:13:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753842AbZCYANM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 20:12:39 -0400
-Received: from rv-out-0506.google.com ([209.85.198.226]:63705 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751729AbZCYAMj (ORCPT
+	Tue, 24 Mar 2009 20:13:12 -0400
+Received: from ftp.linux-mips.org ([213.58.128.207]:51155 "EHLO
+	ftp.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752848AbZCYANL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 20:12:39 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=Ealc2fwGV23M2t4xx8ayG0qGvr8yNnXBftt5wXLHBkP7c9m/C/xGIk9kWao2nNwRfL
-         i+Taa5isB4/fgauuJQ028cM5KmLAZU1rPPUHgvvz1o/59AY6O971gsSmt92o5gXoZcsO
-         2nm7akvQJ/V50nmakD3y++uHnn5rBCSInfib0=
+	Tue, 24 Mar 2009 20:13:11 -0400
+Date: Wed, 25 Mar 2009 01:13:03 +0100
+From: Ralf Baechle <ralf@linux-mips.org>
+To: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org
+Cc: dann frazier <dannf@dannf.org>, linux-mips@linux-mips.org
+Subject: [PATCH 1/2] fs: Fix sign extension problem in sys_llseek
+Message-ID: <20090325001303.GB24026@linux-mips.org>
 MIME-Version: 1.0
-In-Reply-To: <20090324174057.47f7da3d@bike.lwn.net>
-References: <1237929168-15341-2-git-send-email-stoyboyker@gmail.com>
-	 <20090324174057.47f7da3d@bike.lwn.net>
-Date: Tue, 24 Mar 2009 19:12:36 -0500
-Message-ID: <6d291e080903241712y6d688bbfp753aae641617a5a7@mail.gmail.com>
-Subject: Re: [PATCH 01/13] [staging] changed ioctls to unlocked
-From: Stoyan Gaydarov <stoyboyker@gmail.com>
-To: Jonathan Corbet <corbet@lwn.net>
-Cc: linux-kernel@vger.kernel.org, gregkh@suse.de
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id n2P0Cqqu028013
 
-On Tue, Mar 24, 2009 at 6:40 PM, Jonathan Corbet <corbet@lwn.net> wrote:> OK, looking at the patch now...>>>  drivers/staging/epl/EplApiLinuxKernel.c |   10 ++->>  drivers/staging/meilhaus/memain.c       |  124 +++++++++++++++++++++---------->>  drivers/staging/poch/poch.c             |   25 +++++-->>  3 files changed, 107 insertions(+), 52 deletions(-)>>>> diff --git a/drivers/staging/epl/EplApiLinuxKernel.c b/drivers/staging/epl/EplApiLinuxKernel.c>> index 05ca062..9517da2 100644>> --- a/drivers/staging/epl/EplApiLinuxKernel.c>> +++ b/drivers/staging/epl/EplApiLinuxKernel.c>> @@ -219,7 +219,7 @@ static ssize_t EplLinRead(struct file *pInstance_p, char *pDstBuff_p,>>                         size_t BuffSize_p, loff_t * pFileOffs_p);>>  static ssize_t EplLinWrite(struct file *pInstance_p, const char *pSrcBuff_p,>>                          size_t BuffSize_p, loff_t * pFileOffs_p);>> -static int EplLinIoctl(struct inode *pDeviceFile_p, struct file *pInstance_p,>> +static long EplLinIoctl(struct file *pInstance_p,>>                      unsigned int uiIoctlCmd_p, unsigned long ulArg_p);>>>>  //--------------------------------------------------------------------------->> @@ -237,7 +237,7 @@ static struct file_operations EplLinFileOps_g = {>>       .release = EplLinRelease,>>       .read = EplLinRead,>>       .write = EplLinWrite,>> -     .ioctl = EplLinIoctl,>> +     .unlocked_ioctl = EplLinIoctl,>>>>  };>>>> @@ -551,12 +551,13 @@ static ssize_t EplLinWrite(struct file *pInstance_p,    // information about driver>>  //  -> ioctl(...)>>  //--------------------------------------------------------------------------->>>> -static int EplLinIoctl(struct inode *pDeviceFile_p,  // information about the device to open>> -                    struct file *pInstance_p,        // information about driver instance>> +static long EplLinIoctl(struct file *pInstance_p,    // information about driver instance>>                      unsigned int uiIoctlCmd_p,       // Ioctl command to execute>>                      unsigned long ulArg_p)   // Ioctl command specific argument/parameter>>  {>>>> +     lock_kernel();>> +>>       tEplKernel EplRet;>>       int iErr;>>       int iRet;>> @@ -1148,6 +1149,7 @@ static int EplLinIoctl(struct inode *pDeviceFile_p,     // information about the dev>>        Exit:>>>>  //    TRACE1("EPL: - EplLinIoctl (iRet=%d)\n", iRet);>> +     unlock_kernel();>>       return (iRet);>>>>  }>> Gee what ugly code you're working on here.  It's like...crap or> something...:)>> You should avoid making it worse by putting lock_kernel() above the> variable declarations, though.  That will set off alarms for sure, even in> -staging code.>>> diff --git a/drivers/staging/meilhaus/memain.c b/drivers/staging/meilhaus/memain.c>> index b09d1a6..9a1706b 100644>> --- a/drivers/staging/meilhaus/memain.c>> +++ b/drivers/staging/meilhaus/memain.c>> @@ -95,7 +95,7 @@ static int replace_with_dummy(int vendor_id, int device_id, int serial_no);>>  static void clear_device_list(void);>>  static int me_open(struct inode *inode_ptr, struct file *filep);>>  static int me_release(struct inode *, struct file *);>> -static int me_ioctl(struct inode *, struct file *, unsigned int, unsigned long);>> +static long me_ioctl(struct file *, unsigned int, unsigned long);>>  //static int me_probe_usb(struct usb_interface *interface, const struct usb_device_id *id);>>  //static void me_disconnect_usb(struct usb_interface *interface);>>>> @@ -109,7 +109,7 @@ static struct cdev *cdevp;>>>>  static struct file_operations me_file_operations = {>>       .owner = THIS_MODULE,>> -     .ioctl = me_ioctl,>> +     .unlocked_ioctl = me_ioctl,>>       .open = me_open,>>       .release = me_release,>>  };>> @@ -1751,14 +1751,17 @@ static void me_disconnect_usb(struct usb_interface *interface)>>  }>>  */>>>> -static int me_ioctl(struct inode *inodep,>> -                 struct file *filep, unsigned int service, unsigned long arg)>> +static long me_ioctl(struct file *filep, unsigned int service,>> +                 unsigned long arg)>>  {>> +     lock_kernel();>> +     long ret;>> Please declare the variable first.>>>       PDEBUG("executed.\n");>>>>       if (_IOC_TYPE(service) != MEMAIN_MAGIC) {>>               PERROR("Invalid magic number.\n");>> +             unlock_kernel();>>               return -ENOTTY;>>       }>> You also clearly do not need to do lock_kernel() before this test, so you> could move it down here and avoid one unlock/return sequence.>>> @@ -1766,147 +1769,186 @@ static int me_ioctl(struct inode *inodep,>>>>       switch (service) {>>       case ME_IO_IRQ_ENABLE:>> -             return me_io_irq_start(filep, (me_io_irq_start_t *) arg);>> +             ret = me_io_irq_start(filep, (me_io_irq_start_t *) arg);>> +             break;>>>>       case ME_IO_IRQ_WAIT:>> -             return me_io_irq_wait(filep, (me_io_irq_wait_t *) arg);>> +             ret = me_io_irq_wait(filep, (me_io_irq_wait_t *) arg);>> +             break;>>>>       case ME_IO_IRQ_DISABLE:>> -             return me_io_irq_stop(filep, (me_io_irq_stop_t *) arg);>> +             ret = me_io_irq_stop(filep, (me_io_irq_stop_t *) arg);>> +             break;>>>>       case ME_IO_RESET_DEVICE:>> -             return me_io_reset_device(filep, (me_io_reset_device_t *) arg);>> +             ret =  me_io_reset_device(filep, (me_io_reset_device_t *) arg);>> +             break;>>>>       case ME_IO_RESET_SUBDEVICE:>> -             return me_io_reset_subdevice(filep,>> +             ret =  me_io_reset_subdevice(filep,>>                                            (me_io_reset_subdevice_t *) arg);>> +             break;>>>>       case ME_IO_SINGLE_CONFIG:>> -             return me_io_single_config(filep,>> +             ret = me_io_single_config(filep,>>                                          (me_io_single_config_t *) arg);>> +             break;>>>>       case ME_IO_SINGLE:>> -             return me_io_single(filep, (me_io_single_t *) arg);>> +             ret =  me_io_single(filep, (me_io_single_t *) arg);>> +             break;>>>>       case ME_IO_STREAM_CONFIG:>> -             return me_io_stream_config(filep,>> +             ret = me_io_stream_config(filep,>>                                          (me_io_stream_config_t *) arg);>> +             break;>>>>       case ME_IO_STREAM_NEW_VALUES:>> -             return me_io_stream_new_values(filep,>> +             ret =  me_io_stream_new_values(filep,>>                                              (me_io_stream_new_values_t *)>>                                              arg);>> +             break;>>>>       case ME_IO_STREAM_READ:>> -             return me_io_stream_read(filep, (me_io_stream_read_t *) arg);>> +             ret = me_io_stream_read(filep, (me_io_stream_read_t *) arg);>> +             break;>>>>       case ME_IO_STREAM_START:>> -             return me_io_stream_start(filep, (me_io_stream_start_t *) arg);>> +             ret = me_io_stream_start(filep, (me_io_stream_start_t *) arg);>> +             break;>>>>       case ME_IO_STREAM_STATUS:>> -             return me_io_stream_status(filep,>> +             ret =  me_io_stream_status(filep,>>                                          (me_io_stream_status_t *) arg);>> +             break;>>>>       case ME_IO_STREAM_STOP:>> -             return me_io_stream_stop(filep, (me_io_stream_stop_t *) arg);>> +             ret = me_io_stream_stop(filep, (me_io_stream_stop_t *) arg);>> +             break;>>>>       case ME_IO_STREAM_WRITE:>> -             return me_io_stream_write(filep, (me_io_stream_write_t *) arg);>> +             ret = me_io_stream_write(filep, (me_io_stream_write_t *) arg);>> +             break;>>>>       case ME_LOCK_DRIVER:>> -             return me_lock_driver(filep, (me_lock_driver_t *) arg);>> +             ret = me_lock_driver(filep, (me_lock_driver_t *) arg);>> +             break;>>>>       case ME_LOCK_DEVICE:>> -             return me_lock_device(filep, (me_lock_device_t *) arg);>> +             ret = me_lock_device(filep, (me_lock_device_t *) arg);>> +             break;>>>>       case ME_LOCK_SUBDEVICE:>> -             return me_lock_subdevice(filep, (me_lock_subdevice_t *) arg);>> +             ret = me_lock_subdevice(filep, (me_lock_subdevice_t *) arg);>> +             break;>>>>       case ME_QUERY_INFO_DEVICE:>> -             return me_query_info_device(filep,>> +             ret = me_query_info_device(filep,>>                                           (me_query_info_device_t *) arg);>> +             break;>>>>       case ME_QUERY_DESCRIPTION_DEVICE:>> -             return me_query_description_device(filep,>> +             ret = me_query_description_device(filep,>>                                                  (me_query_description_device_t>>                                                   *) arg);>> +             break;>>>>       case ME_QUERY_NAME_DEVICE:>> -             return me_query_name_device(filep,>> +             ret = me_query_name_device(filep,>>                                           (me_query_name_device_t *) arg);>> +             break;>>>>       case ME_QUERY_NAME_DEVICE_DRIVER:>> -             return me_query_name_device_driver(filep,>> +             ret = me_query_name_device_driver(filep,>>                                                  (me_query_name_device_driver_t>>                                                   *) arg);>> +             break;>>>>       case ME_QUERY_NUMBER_DEVICES:>> -             return me_query_number_devices(filep,>> +             ret = me_query_number_devices(filep,>>                                              (me_query_number_devices_t *)>>                                              arg);>> +             break;>>>>       case ME_QUERY_NUMBER_SUBDEVICES:>> -             return me_query_number_subdevices(filep,>> +             ret =  me_query_number_subdevices(filep,>>                                                 (me_query_number_subdevices_t>>                                                  *) arg);>> +             break;>>>>       case ME_QUERY_NUMBER_CHANNELS:>> -             return me_query_number_channels(filep,>> +             ret = me_query_number_channels(filep,>>                                               (me_query_number_channels_t *)>>                                               arg);>> +             break;>>>>       case ME_QUERY_NUMBER_RANGES:>> -             return me_query_number_ranges(filep,>> +             ret = me_query_number_ranges(filep,>>                                             (me_query_number_ranges_t *) arg);>> +             break;>>>>       case ME_QUERY_RANGE_BY_MIN_MAX:>> -             return me_query_range_by_min_max(filep,>> +             ret = me_query_range_by_min_max(filep,>>                                                (me_query_range_by_min_max_t *)>>                                                arg);>> +             break;>>>>       case ME_QUERY_RANGE_INFO:>> -             return me_query_range_info(filep,>> +             ret = me_query_range_info(filep,>>                                          (me_query_range_info_t *) arg);>> +             break;>>>>       case ME_QUERY_SUBDEVICE_BY_TYPE:>> -             return me_query_subdevice_by_type(filep,>> +             ret = me_query_subdevice_by_type(filep,>>                                                 (me_query_subdevice_by_type_t>>                                                  *) arg);>> +             break;>>>>       case ME_QUERY_SUBDEVICE_TYPE:>> -             return me_query_subdevice_type(filep,>> +             ret = me_query_subdevice_type(filep,>>                                              (me_query_subdevice_type_t *)>>                                              arg);>> +             break;>>>>       case ME_QUERY_SUBDEVICE_CAPS:>> -             return me_query_subdevice_caps(filep,>> +             ret = me_query_subdevice_caps(filep,>>                                              (me_query_subdevice_caps_t *)>>                                              arg);>> +             break;>>>>       case ME_QUERY_SUBDEVICE_CAPS_ARGS:>> -             return me_query_subdevice_caps_args(filep,>> +             ret = me_query_subdevice_caps_args(filep,>>                                                   (me_query_subdevice_caps_args_t>>                                                    *) arg);>> +             break;>>>>       case ME_QUERY_TIMER:>> -             return me_query_timer(filep, (me_query_timer_t *) arg);>> +             ret = me_query_timer(filep, (me_query_timer_t *) arg);>> +             break;>>>>       case ME_QUERY_VERSION_MAIN_DRIVER:>> -             return me_query_version_main_driver(filep,>> +             ret = me_query_version_main_driver(filep,>>                                                   (me_query_version_main_driver_t>>                                                    *) arg);>> +             break;>>>>       case ME_QUERY_VERSION_DEVICE_DRIVER:>> -             return me_query_version_device_driver(filep,>> +             ret = me_query_version_device_driver(filep,>>                                                     (me_query_version_device_driver_t>>                                                      *) arg);>> +             break;>>>>       case ME_CONFIG_LOAD:>> -             return me_config_load(filep, (me_config_load_t *) arg);>> +             ret = me_config_load(filep, (me_config_load_t *) arg);>> +             break;>> +     }>> +     if(!ret) {>> +         PERROR("Invalid ioctl number.\n");>> +         ret = -ENOTTY;>>       }>> Actually, you've changed the control flow a bit, and probably broken the> function too.  If it's truly an invalid ioctl number, you'll just drop out> of the switch - there's no default branch.  But ret will be a random value> in that case.>> In every other case, you take a return code of zero (which means success)> and map it onto -ENOTTY.  Probably not the right thing to do.
-I have changed this to add a default so if its invalid it will do whatits supposed to
->>> -     PERROR("Invalid ioctl number.\n");>> -     return -ENOTTY;>> +     unlock_kernel();>> +     return ret;>>  }>>>>  // Init and exit of module.>> diff --git a/drivers/staging/poch/poch.c b/drivers/staging/poch/poch.c>> index 0d111dd..03cc5b7 100644>> --- a/drivers/staging/poch/poch.c>> +++ b/drivers/staging/poch/poch.c>> @@ -979,9 +979,10 @@ static unsigned int poch_poll(struct file *filp, poll_table *pt)>>       return ret;>>  }>>>> -static int poch_ioctl(struct inode *inode, struct file *filp,>> -                   unsigned int cmd, unsigned long arg)>> +static long poch_ioctl(struct file *filp, unsigned int cmd,>> +                   unsigned long arg)>>  {>> +     lock_kernel();>>       struct channel_info *channel = filp->private_data;>>       void __iomem *fpga = channel->fpga_iomem;>>       void __iomem *bridge = channel->bridge_iomem;>> After declarations, please.  If you're not sure about accesses to channel,> you need to separate the declarations and the initializations of the> variables.>>> @@ -1026,8 +1027,10 @@ static int poch_ioctl(struct inode *inode, struct file *filp,>>               }>>               break;>>       case POCH_IOC_GET_COUNTERS:>> -             if (!access_ok(VERIFY_WRITE, argp, sizeof(struct poch_counters)))>> +             if (!access_ok(VERIFY_WRITE, argp, sizeof(struct poch_counters))) {>> +                     unlock_kernel();>>                       return -EFAULT;>> +             }>> In general, you want to have a single unlock/return at the end, and use> goto to get there from inside the function.  Lots of returns from the> middle of a function which takes locks can lead to grief sooner or later.> If there's only one path out, things are harder to break.
-I understand that but since this patch was just to move the BKL intoview, i wanted to change as little about the functions as possible,thats why the flow is not changed as much
->>>               spin_lock_irq(&channel->counters_lock);>>               counters = channel->counters;>> @@ -1036,23 +1039,31 @@ static int poch_ioctl(struct inode *inode, struct file *filp,>>>>               ret = copy_to_user(argp, &counters,>>                                  sizeof(struct poch_counters));>> -             if (ret)>> +             if (ret) {>> +                     unlock_kernel();>>                       return ret;>> +             }>>>>               break;>>       case POCH_IOC_SYNC_GROUP_FOR_USER:>>       case POCH_IOC_SYNC_GROUP_FOR_DEVICE:>>               vms = find_vma(current->mm, arg);>> -             if (!vms)>> +             if (!vms) {>> +                     unlock_kernel();>>                       /* Address not mapped. */>>                       return -EINVAL;>> -             if (vms->vm_file != filp)>> +             }>> +             if (vms->vm_file != filp) {>> +                     unlock_kernel();>>                       /* Address mapped from different device/file. */>>                       return -EINVAL;>> +             }>>>>               flush_cache_range(vms, arg, arg + channel->group_size);>>               break;>>       }>> +>> +     unlock_kernel();>>       return 0;>>  }>> This driver looks like it has other locking problems, incidentally; it has> a spinlock for its counters, but there's nothing serializing access to the> device registers.>> jon>
-I have made some modifications and will resubmit this patch.
--- 
--Stoyan���{.n�+�������+%�����ݶ��w��{.n�+����{��G�����{ay�ʇڙ�,j��f���h��������z_�(�階�ݢj"���m������G������?����&���~��iO��z��v�^�m����������?�I�
+In fs/read_write.c:
+
+SYSCALL_DEFINE5(llseek, unsigned int, fd, unsigned long, offset_high,
+                unsigned long, offset_low, loff_t __user *, result,
+                unsigned int, origin)
+...
+   	offset = vfs_llseek(file, ((loff_t) offset_high << 32) | offset_low,
+                        origin);
+
+On a 64-bit system that define CONFIG_HAVE_SYSCALL_WRAPPERS SYSCALL_DEFINEx
+will truncate long arguments to 32-bit and on some architectures such as
+MIPS sign-extended to 64-bit again.  On such architectures passing a
+value with bit 31 in offset_low set will result in a huge 64-bit offset
+being passed to vfs_llseek() and it failiing with EINVAL.
+
+The issue was discovered on Debian's MIPS infrastructure machines running
+e2fsck:
+
+[...]
+                          This was noticed on one of the Debian
+infrastructure machines where, after an upgrade, e2fsck began failing
+with errors like:
+
+  Error reading block 524290 (Invalid argument) while getting next inode
+  from scan.  Ignore error<y>?
+[...]
+
+Fixed by changing the prototype to use 32-bit arguments for the higher
+and lower half of offset of sys_llseek.
+
+Signed-off-by: Ralf Baechle <ralf@linux-mips.org>
+
+ fs/read_write.c          |    4 ++--
+ include/linux/syscalls.h |    4 ++--
+ 2 files changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/fs/read_write.c b/fs/read_write.c
+index 400fe81..2fb171e 100644
+--- a/fs/read_write.c
++++ b/fs/read_write.c
+@@ -171,8 +171,8 @@ bad:
+ }
+ 
+ #ifdef __ARCH_WANT_SYS_LLSEEK
+-SYSCALL_DEFINE5(llseek, unsigned int, fd, unsigned long, offset_high,
+-		unsigned long, offset_low, loff_t __user *, result,
++SYSCALL_DEFINE5(llseek, unsigned int, fd, unsigned int, offset_high,
++		unsigned int, offset_low, loff_t __user *, result,
+ 		unsigned int, origin)
+ {
+ 	int retval;
+diff --git a/include/linux/syscalls.h b/include/linux/syscalls.h
+index f9f900c..5c593d4 100644
+--- a/include/linux/syscalls.h
++++ b/include/linux/syscalls.h
+@@ -444,8 +444,8 @@ asmlinkage long sys_utimes(char __user *filename,
+ 				struct timeval __user *utimes);
+ asmlinkage long sys_lseek(unsigned int fd, off_t offset,
+ 			  unsigned int origin);
+-asmlinkage long sys_llseek(unsigned int fd, unsigned long offset_high,
+-			unsigned long offset_low, loff_t __user *result,
++asmlinkage long sys_llseek(unsigned int fd, unsigned int offset_high,
++			unsigned int offset_low, loff_t __user *result,
+ 			unsigned int origin);
+ asmlinkage long sys_read(unsigned int fd, char __user *buf, size_t count);
+ asmlinkage long sys_readahead(int fd, loff_t offset, size_t count);
