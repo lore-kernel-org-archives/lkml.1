@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755579AbZCYFUv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757580AbZCYFVP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755579AbZCYFUv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 01:20:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753378AbZCYFU1
+	id S1757580AbZCYFVP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 01:21:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753446AbZCYFU1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Wed, 25 Mar 2009 01:20:27 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:59707 "EHLO
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:44403 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752734AbZCYFU0 (ORCPT
+	with ESMTP id S1752777AbZCYFU0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 25 Mar 2009 01:20:26 -0400
-Message-Id: <20090325052023.071564146@goodmis.org>
+Message-Id: <20090325052023.387662292@goodmis.org>
 References: <20090325051920.406564281@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Wed, 25 Mar 2009 01:19:22 -0400
+Date: Wed, 25 Mar 2009 01:19:23 -0400
 From: Steven Rostedt <rostedt@goodmis.org>
 To: linux-kernel@vger.kernel.org
 Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
@@ -22,8 +22,8 @@ Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
        Roland McGrath <roland@redhat.com>,
        Nick Piggin <nickpiggin@yahoo.com.au>,
        Steven Rostedt <srostedt@redhat.com>
-Subject: [PATCH 2/5] mm: remove unlikly NULL from kfree
-Content-Disposition: inline; filename=0002-mm-remove-unlikly-NULL-from-kfree.patch
+Subject: [PATCH 3/5] sched: remove unlikely in pre_schedule_rt
+Content-Disposition: inline; filename=0003-sched-remove-unlikely-in-pre_schedule_rt.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -32,62 +32,34 @@ From: Steven Rostedt <rostedt@goodmis.org>
 
 Impact: clean up
 
-A NULL pointer to kfree is no longer unlikely, as seen by the
-annotated branch profiler:
+The annotated branch profiler shows that the unlikely used by
+pre_schedule_rt is always incorrect. This makes sense because in
+sched.c we have:
 
- correct incorrect  %        Function                  File              Line
- ------- ---------  -        --------                  ----              ----
-  728571  1315540  64 kfree                          slab.c               3719
+	if (prev->sched_class->pre_schedule)
+		prev->sched_class->pre_schedule(rq, prev);
 
-This makes sense, since we now encourage developers to just call kfree
-without checking for NULL.
+And we are saying that prev is unlikely to be an rt task. This looks
+more like a likely candidate to me.
 
 Signed-off-by: Steven Rostedt <srostedt@redhat.com>
 ---
- mm/slab.c |    2 +-
- mm/slob.c |    2 +-
- mm/slub.c |    2 +-
- 3 files changed, 3 insertions(+), 3 deletions(-)
+ kernel/sched_rt.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/mm/slab.c b/mm/slab.c
-index 4d00855..0386c33 100644
---- a/mm/slab.c
-+++ b/mm/slab.c
-@@ -3716,7 +3716,7 @@ void kfree(const void *objp)
- 	struct kmem_cache *c;
- 	unsigned long flags;
- 
--	if (unlikely(ZERO_OR_NULL_PTR(objp)))
-+	if (ZERO_OR_NULL_PTR(objp))
- 		return;
- 	local_irq_save(flags);
- 	kfree_debugcheck(objp);
-diff --git a/mm/slob.c b/mm/slob.c
-index 52bc8a2..e077174 100644
---- a/mm/slob.c
-+++ b/mm/slob.c
-@@ -491,7 +491,7 @@ void kfree(const void *block)
+diff --git a/kernel/sched_rt.c b/kernel/sched_rt.c
+index bac1061..537af77 100644
+--- a/kernel/sched_rt.c
++++ b/kernel/sched_rt.c
+@@ -1260,7 +1260,7 @@ static int pull_rt_task(struct rq *this_rq)
+ static void pre_schedule_rt(struct rq *rq, struct task_struct *prev)
  {
- 	struct slob_page *sp;
+ 	/* Try to pull RT tasks here if we lower this rq's prio */
+-	if (unlikely(rt_task(prev)) && rq->rt.highest_prio > prev->prio)
++	if (rt_task(prev) && rq->rt.highest_prio > prev->prio)
+ 		pull_rt_task(rq);
+ }
  
--	if (unlikely(ZERO_OR_NULL_PTR(block)))
-+	if (ZERO_OR_NULL_PTR(block))
- 		return;
- 
- 	sp = (struct slob_page *)virt_to_page(block);
-diff --git a/mm/slub.c b/mm/slub.c
-index 0280eee..65dc436 100644
---- a/mm/slub.c
-+++ b/mm/slub.c
-@@ -2743,7 +2743,7 @@ void kfree(const void *x)
- 	struct page *page;
- 	void *object = (void *)x;
- 
--	if (unlikely(ZERO_OR_NULL_PTR(x)))
-+	if (ZERO_OR_NULL_PTR(x))
- 		return;
- 
- 	page = virt_to_head_page(x);
 -- 
 1.6.2
 
