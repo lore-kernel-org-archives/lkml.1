@@ -1,93 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759071AbZCYOIL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761163AbZCYOIi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759071AbZCYOIL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 10:08:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753768AbZCYOH4
+	id S1761163AbZCYOIi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 10:08:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753768AbZCYOI0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 10:07:56 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:44229 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751756AbZCYOHz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 10:07:55 -0400
-Date: Wed, 25 Mar 2009 11:07:25 -0300
-From: Arnaldo Carvalho de Melo <acme@redhat.com>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Li Zefan <lizf@cn.fujitsu.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 3/3] blktrace: fix the original blktrace
-Message-ID: <20090325140725.GE10928@ghostprotocols.net>
-References: <49C9F700.9070609@cn.fujitsu.com> <49C9F796.9040503@cn.fujitsu.com> <20090325101451.GK2341@elte.hu> <20090325101747.GL27476@kernel.dk> <20090325114720.GA9762@elte.hu> <20090325135142.GD10928@ghostprotocols.net> <20090325135639.GU27476@kernel.dk>
+	Wed, 25 Mar 2009 10:08:26 -0400
+Received: from stinky.trash.net ([213.144.137.162]:63715 "EHLO
+	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754865AbZCYOIZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Mar 2009 10:08:25 -0400
+Message-ID: <49CA3AD0.1090601@trash.net>
+Date: Wed, 25 Mar 2009 15:08:16 +0100
+From: Patrick McHardy <kaber@trash.net>
+User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090325135639.GU27476@kernel.dk>
-X-Url: http://oops.ghostprotocols.net:81/blog
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Subrata Modak <tosubrata@gmail.com>
+CC: "David S. Miller" <davem@davemloft.net>, Sachin Sant <sachinp@in.ibm.com>,
+       netdev <netdev@vger.kernel.org>, linux-next@vger.kernel.org,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Adam Nielsen <a.nielsen@shikadi.net>
+Subject: Re: [PATCH] Re: Next March 25: net/netfilter/xt_LED build failure.
+References: <20090325135759.4397.53055.sendpatchset@subratamodak.linux.ibm.com>
+In-Reply-To: <20090325135759.4397.53055.sendpatchset@subratamodak.linux.ibm.com>
+Content-Type: multipart/mixed;
+ boundary="------------050107060906090309050505"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Em Wed, Mar 25, 2009 at 02:56:39PM +0100, Jens Axboe escreveu:
-> On Wed, Mar 25 2009, Arnaldo Carvalho de Melo wrote:
-> > Em Wed, Mar 25, 2009 at 12:47:20PM +0100, Ingo Molnar escreveu:
-> > > 
-> > > * Jens Axboe <jens.axboe@oracle.com> wrote:
-> > > 
-> > > > On Wed, Mar 25 2009, Ingo Molnar wrote:
-> > > > > 
-> > > > > * Li Zefan <lizf@cn.fujitsu.com> wrote:
-> > > > > 
-> > > > > > Currently the original blktrace, which is using relay and is used 
-> > > > > > via ioctl, is broken. You can use ftrace to see the output of 
-> > > > > > blktrace, but user-space blktrace is unusable.
-> > > > > 
-> > > > > good catch, thanks Li!
-> > > > > 
-> > > > > Jens, Arnaldo, do these fixes look good to you too?
-> > > > 
-> > > > Look fine, but I'm very worried about the state of the current 
-> > > > code. I mean, this last round of fixes got the timestamp correct 
-> > > > and made blktrace work again. [...]
-> > > 
-> > > Correct. I tested it on a 16way box (see the blkparse output below). 
-> > > If you can see any sort of anomaly please let us know so we can fix 
-> > > it.
-> > > 
-> > > > [...] Those are something that should have been caught even before 
-> > > > the whole thing was posted, let alone merged. When do you plan on 
-> > > > pushing this upstream? Looks like 2.6.31 to me, it's clearly not 
-> > > > ready for 2.6.30 by any stretch.
-> > > 
-> > > Well, apparently nobody tried ioctl based blktrace+blkparse on -tip 
-> > > or linux-next in the past ~1 month. The relayfs portion was (meant 
-> > > to be) kept largely untouched but this bug still crept in.
-> > > 
-> > > Li started looking into it and found the bug. I tested the ftrace 
-> > > plugin side regularly, but you are right that this bug took too long 
-> > > to find (over a month) - from now on i'll check the ioctl side more 
-> > > regularly too, for all tracing and relayfs changes as well.
-> > 
-> > I got sidetracked by other stuff and didn't managed to continue working
-> > on it, but at the same time testing by somebody else is needed. There is
-> > no bug-free code, let alone in the first iteration, even less for
-> > something I wasn't familiar with and depended on people like Li to do a
-> > careful review.
-> > 
-> > Li fixed bugs and continued the work, getting things I wanted working
-> > and made the initial steps to get done, like being able to just fed
-> > trace_pipe into blkparse and get the same result as btrace.
-> > 
-> > So I apologise for not having continued working on it more often to
-> > catch myself the bugs I introduced, and give a big thank you to Li for
-> > the thorough review, bugfixes and improvements.
+This is a multi-part message in MIME format.
+--------------050107060906090309050505
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+
+Subrata Modak wrote:
+> The following patch will solve the build problem reported by Sachin.
+> But would leave the following warnings. I hope we can ignore them:
 > 
-> Dont apologise, there's nothing wrong with that. The only thing wrong
-> would be for the unfinished code to get merged, when it clearly wasn't
-> ready.
+> net/netfilter/xt_LED.c: In function â��led_timeout_callbackâ��:
+> net/netfilter/xt_LED.c:78: warning: unused variable â��ledinternalâ��
+> net/netfilter/xt_LED.c: In function â��led_tg_checkâ��:
+> net/netfilter/xt_LED.c:87: warning: unused variable â��errâ��
+> 
+> Signed-Off-By: Subrata Modak<subrata@linux.vnet.ibm.com>
+> ---
+> 
+> --- a/linux-2.6.29/net/netfilter/xt_LED.c	2009-03-25 18:38:08.000000000 +0530
+> +++ b/linux-2.6.29/net/netfilter/xt_LED.c	2009-03-25 18:26:55.000000000 +0530
+> @@ -99,6 +99,7 @@ static bool led_tg_check(const struct xt
+>  
+>  	ledinternal->netfilter_led_trigger.name = ledinfo->id;
+>  
+> +#ifdef CONFIG_LEDS_TRIGGERS
+...
 
-So in this case I guess the right approach is to keep this on a -tip
-branch and delay it getting merged to .31?
 
-- Arnaldo
+Does this patch fix it?
+
+--------------050107060906090309050505
+Content-Type: text/plain;
+ name="x"
+Content-Transfer-Encoding: base64
+Content-Disposition: inline;
+ filename="x"
+
+ZGlmZiAtLWdpdCBhL25ldC9uZXRmaWx0ZXIvS2NvbmZpZyBiL25ldC9uZXRmaWx0ZXIvS2Nv
+bmZpZwppbmRleCAyNTYyZDA1Li4yYzk2N2U0IDEwMDY0NAotLS0gYS9uZXQvbmV0ZmlsdGVy
+L0tjb25maWcKKysrIGIvbmV0L25ldGZpbHRlci9LY29uZmlnCkBAIC0zNzQsNyArMzc0LDcg
+QEAgY29uZmlnIE5FVEZJTFRFUl9YVF9UQVJHRVRfSEwKIAogY29uZmlnIE5FVEZJTFRFUl9Y
+VF9UQVJHRVRfTEVECiAJdHJpc3RhdGUgJyJMRUQiIHRhcmdldCBzdXBwb3J0JwotCWRlcGVu
+ZHMgb24gTEVEU19DTEFTUworCWRlcGVuZHMgb24gTEVEU19DTEFTUyAmJiBMRURfVFJJR0dF
+UlMKIAlkZXBlbmRzIG9uIE5FVEZJTFRFUl9BRFZBTkNFRAogCWhlbHAKIAkgIFRoaXMgb3B0
+aW9uIGFkZHMgYSBgTEVEJyB0YXJnZXQsIHdoaWNoIGFsbG93cyB5b3UgdG8gYmxpbmsgTEVE
+cyBpbgo=
+--------------050107060906090309050505--
