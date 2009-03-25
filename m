@@ -1,25 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754100AbZCYWtp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754477AbZCYWwa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754100AbZCYWtp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 18:49:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752860AbZCYWth
+	id S1754477AbZCYWwa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 18:52:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752108AbZCYWwW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 18:49:37 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:49459 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752853AbZCYWtg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 18:49:36 -0400
-Date: Wed, 25 Mar 2009 18:49:33 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Frederic Weisbecker <fweisbec@gmail.com>
-cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH][GIT PULL] tracing: add handler to trace_stat
-In-Reply-To: <20090325220149.GK5932@nowhere>
-Message-ID: <alpine.DEB.2.00.0903251846470.5675@gandalf.stny.rr.com>
-References: <alpine.DEB.2.00.0903242329350.22830@gandalf.stny.rr.com> <20090325220149.GK5932@nowhere>
+	Wed, 25 Mar 2009 18:52:22 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:43824 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752098AbZCYWwV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Mar 2009 18:52:21 -0400
+Date: Wed, 25 Mar 2009 22:52:17 +0000 (GMT)
+From: Dave Airlie <airlied@linux.ie>
+X-X-Sender: airlied@skynet.skynet.ie
+To: Eric Anholt <eric@anholt.net>
+cc: linux-kernel@vger.kernel.org, dri-devel@lists.sourceforge.net
+Subject: Re: [PATCH 2/6] drm/i915: Make GEM object's page lists refcounted
+ instead of get/free.
+In-Reply-To: <1238017510-26784-3-git-send-email-eric@anholt.net>
+Message-ID: <alpine.DEB.2.00.0903252251300.27027@skynet.skynet.ie>
+References: <1238017510-26784-1-git-send-email-eric@anholt.net> <1238017510-26784-2-git-send-email-eric@anholt.net> <1238017510-26784-3-git-send-email-eric@anholt.net>
 User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
@@ -28,52 +27,258 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Wed, 25 Mar 2009, Frederic Weisbecker wrote:
-> >  
-> > diff --git a/kernel/trace/trace_stat.h b/kernel/trace/trace_stat.h
-> > index 202274c..f3546a2 100644
-> > --- a/kernel/trace/trace_stat.h
-> > +++ b/kernel/trace/trace_stat.h
-> > @@ -12,7 +12,7 @@ struct tracer_stat {
-> >  	/* The name of your stat file */
-> >  	const char		*name;
-> >  	/* Iteration over statistic entries */
-> > -	void			*(*stat_start)(void);
-> > +	void			*(*stat_start)(struct tracer_stat *trace);
+> We've wanted this for a few consumers that touch the pages directly (such as
+> the following commit), which have been doing the refcounting outside of
+> get/put pages.
+
+No idea if this is a valid point or not but whenever I see refcount that 
+isn't a kref my internal, "should this be a kref" o-meter goes off.
+
+Dave.
+
+> ---
+>  drivers/gpu/drm/i915/i915_drv.h |    3 +-
+>  drivers/gpu/drm/i915/i915_gem.c |   70 ++++++++++++++++++++-------------------
+>  2 files changed, 38 insertions(+), 35 deletions(-)
 > 
+> diff --git a/drivers/gpu/drm/i915/i915_drv.h b/drivers/gpu/drm/i915/i915_drv.h
+> index d6cc986..75e3384 100644
+> --- a/drivers/gpu/drm/i915/i915_drv.h
+> +++ b/drivers/gpu/drm/i915/i915_drv.h
+> @@ -404,7 +404,8 @@ struct drm_i915_gem_object {
+>  	/** AGP memory structure for our GTT binding. */
+>  	DRM_AGP_MEM *agp_mem;
+>  
+> -	struct page **page_list;
+> +	struct page **pages;
+> +	int pages_refcount;
+>  
+>  	/**
+>  	 * Current offset of the object in GTT space.
+> diff --git a/drivers/gpu/drm/i915/i915_gem.c b/drivers/gpu/drm/i915/i915_gem.c
+> index 35f8c7b..b998d65 100644
+> --- a/drivers/gpu/drm/i915/i915_gem.c
+> +++ b/drivers/gpu/drm/i915/i915_gem.c
+> @@ -43,8 +43,8 @@ static int i915_gem_object_set_cpu_read_domain_range(struct drm_gem_object *obj,
+>  						     uint64_t offset,
+>  						     uint64_t size);
+>  static void i915_gem_object_set_to_full_cpu_read_domain(struct drm_gem_object *obj);
+> -static int i915_gem_object_get_page_list(struct drm_gem_object *obj);
+> -static void i915_gem_object_free_page_list(struct drm_gem_object *obj);
+> +static int i915_gem_object_get_pages(struct drm_gem_object *obj);
+> +static void i915_gem_object_put_pages(struct drm_gem_object *obj);
+>  static int i915_gem_object_wait_rendering(struct drm_gem_object *obj);
+>  static int i915_gem_object_bind_to_gtt(struct drm_gem_object *obj,
+>  					   unsigned alignment);
+> @@ -928,29 +928,30 @@ i915_gem_mmap_gtt_ioctl(struct drm_device *dev, void *data,
+>  }
+>  
+>  static void
+> -i915_gem_object_free_page_list(struct drm_gem_object *obj)
+> +i915_gem_object_put_pages(struct drm_gem_object *obj)
+>  {
+>  	struct drm_i915_gem_object *obj_priv = obj->driver_private;
+>  	int page_count = obj->size / PAGE_SIZE;
+>  	int i;
+>  
+> -	if (obj_priv->page_list == NULL)
+> -		return;
+> +	BUG_ON(obj_priv->pages_refcount == 0);
+>  
+> +	if (--obj_priv->pages_refcount != 0)
+> +		return;
+>  
+>  	for (i = 0; i < page_count; i++)
+> -		if (obj_priv->page_list[i] != NULL) {
+> +		if (obj_priv->pages[i] != NULL) {
+>  			if (obj_priv->dirty)
+> -				set_page_dirty(obj_priv->page_list[i]);
+> -			mark_page_accessed(obj_priv->page_list[i]);
+> -			page_cache_release(obj_priv->page_list[i]);
+> +				set_page_dirty(obj_priv->pages[i]);
+> +			mark_page_accessed(obj_priv->pages[i]);
+> +			page_cache_release(obj_priv->pages[i]);
+>  		}
+>  	obj_priv->dirty = 0;
+>  
+> -	drm_free(obj_priv->page_list,
+> +	drm_free(obj_priv->pages,
+>  		 page_count * sizeof(struct page *),
+>  		 DRM_MEM_DRIVER);
+> -	obj_priv->page_list = NULL;
+> +	obj_priv->pages = NULL;
+>  }
+>  
+>  static void
+> @@ -1402,7 +1403,7 @@ i915_gem_object_unbind(struct drm_gem_object *obj)
+>  	if (obj_priv->fence_reg != I915_FENCE_REG_NONE)
+>  		i915_gem_clear_fence_reg(obj);
+>  
+> -	i915_gem_object_free_page_list(obj);
+> +	i915_gem_object_put_pages(obj);
+>  
+>  	if (obj_priv->gtt_space) {
+>  		atomic_dec(&dev->gtt_count);
+> @@ -1521,7 +1522,7 @@ i915_gem_evict_everything(struct drm_device *dev)
+>  }
+>  
+>  static int
+> -i915_gem_object_get_page_list(struct drm_gem_object *obj)
+> +i915_gem_object_get_pages(struct drm_gem_object *obj)
+>  {
+>  	struct drm_i915_gem_object *obj_priv = obj->driver_private;
+>  	int page_count, i;
+> @@ -1530,18 +1531,19 @@ i915_gem_object_get_page_list(struct drm_gem_object *obj)
+>  	struct page *page;
+>  	int ret;
+>  
+> -	if (obj_priv->page_list)
+> +	if (obj_priv->pages_refcount++ != 0)
+>  		return 0;
+>  
+>  	/* Get the list of pages out of our struct file.  They'll be pinned
+>  	 * at this point until we release them.
+>  	 */
+>  	page_count = obj->size / PAGE_SIZE;
+> -	BUG_ON(obj_priv->page_list != NULL);
+> -	obj_priv->page_list = drm_calloc(page_count, sizeof(struct page *),
+> -					 DRM_MEM_DRIVER);
+> -	if (obj_priv->page_list == NULL) {
+> +	BUG_ON(obj_priv->pages != NULL);
+> +	obj_priv->pages = drm_calloc(page_count, sizeof(struct page *),
+> +				     DRM_MEM_DRIVER);
+> +	if (obj_priv->pages == NULL) {
+>  		DRM_ERROR("Faled to allocate page list\n");
+> +		obj_priv->pages_refcount--;
+>  		return -ENOMEM;
+>  	}
+>  
+> @@ -1552,10 +1554,10 @@ i915_gem_object_get_page_list(struct drm_gem_object *obj)
+>  		if (IS_ERR(page)) {
+>  			ret = PTR_ERR(page);
+>  			DRM_ERROR("read_mapping_page failed: %d\n", ret);
+> -			i915_gem_object_free_page_list(obj);
+> +			i915_gem_object_put_pages(obj);
+>  			return ret;
+>  		}
+> -		obj_priv->page_list[i] = page;
+> +		obj_priv->pages[i] = page;
+>  	}
+>  	return 0;
+>  }
+> @@ -1878,7 +1880,7 @@ i915_gem_object_bind_to_gtt(struct drm_gem_object *obj, unsigned alignment)
+>  	DRM_INFO("Binding object of size %d at 0x%08x\n",
+>  		 obj->size, obj_priv->gtt_offset);
+>  #endif
+> -	ret = i915_gem_object_get_page_list(obj);
+> +	ret = i915_gem_object_get_pages(obj);
+>  	if (ret) {
+>  		drm_mm_put_block(obj_priv->gtt_space);
+>  		obj_priv->gtt_space = NULL;
+> @@ -1890,12 +1892,12 @@ i915_gem_object_bind_to_gtt(struct drm_gem_object *obj, unsigned alignment)
+>  	 * into the GTT.
+>  	 */
+>  	obj_priv->agp_mem = drm_agp_bind_pages(dev,
+> -					       obj_priv->page_list,
+> +					       obj_priv->pages,
+>  					       page_count,
+>  					       obj_priv->gtt_offset,
+>  					       obj_priv->agp_type);
+>  	if (obj_priv->agp_mem == NULL) {
+> -		i915_gem_object_free_page_list(obj);
+> +		i915_gem_object_put_pages(obj);
+>  		drm_mm_put_block(obj_priv->gtt_space);
+>  		obj_priv->gtt_space = NULL;
+>  		return -ENOMEM;
+> @@ -1922,10 +1924,10 @@ i915_gem_clflush_object(struct drm_gem_object *obj)
+>  	 * to GPU, and we can ignore the cache flush because it'll happen
+>  	 * again at bind time.
+>  	 */
+> -	if (obj_priv->page_list == NULL)
+> +	if (obj_priv->pages == NULL)
+>  		return;
+>  
+> -	drm_clflush_pages(obj_priv->page_list, obj->size / PAGE_SIZE);
+> +	drm_clflush_pages(obj_priv->pages, obj->size / PAGE_SIZE);
+>  }
+>  
+>  /** Flushes any GPU write domain for the object if it's dirty. */
+> @@ -2270,7 +2272,7 @@ i915_gem_object_set_to_full_cpu_read_domain(struct drm_gem_object *obj)
+>  		for (i = 0; i <= (obj->size - 1) / PAGE_SIZE; i++) {
+>  			if (obj_priv->page_cpu_valid[i])
+>  				continue;
+> -			drm_clflush_pages(obj_priv->page_list + i, 1);
+> +			drm_clflush_pages(obj_priv->pages + i, 1);
+>  		}
+>  		drm_agp_chipset_flush(dev);
+>  	}
+> @@ -2336,7 +2338,7 @@ i915_gem_object_set_cpu_read_domain_range(struct drm_gem_object *obj,
+>  		if (obj_priv->page_cpu_valid[i])
+>  			continue;
+>  
+> -		drm_clflush_pages(obj_priv->page_list + i, 1);
+> +		drm_clflush_pages(obj_priv->pages + i, 1);
+>  
+>  		obj_priv->page_cpu_valid[i] = 1;
+>  	}
+> @@ -3304,7 +3306,7 @@ i915_gem_init_hws(struct drm_device *dev)
+>  
+>  	dev_priv->status_gfx_addr = obj_priv->gtt_offset;
+>  
+> -	dev_priv->hw_status_page = kmap(obj_priv->page_list[0]);
+> +	dev_priv->hw_status_page = kmap(obj_priv->pages[0]);
+>  	if (dev_priv->hw_status_page == NULL) {
+>  		DRM_ERROR("Failed to map status page.\n");
+>  		memset(&dev_priv->hws_map, 0, sizeof(dev_priv->hws_map));
+> @@ -3334,7 +3336,7 @@ i915_gem_cleanup_hws(struct drm_device *dev)
+>  	obj = dev_priv->hws_obj;
+>  	obj_priv = obj->driver_private;
+>  
+> -	kunmap(obj_priv->page_list[0]);
+> +	kunmap(obj_priv->pages[0]);
+>  	i915_gem_object_unpin(obj);
+>  	drm_gem_object_unreference(obj);
+>  	dev_priv->hws_obj = NULL;
+> @@ -3637,20 +3639,20 @@ void i915_gem_detach_phys_object(struct drm_device *dev,
+>  	if (!obj_priv->phys_obj)
+>  		return;
+>  
+> -	ret = i915_gem_object_get_page_list(obj);
+> +	ret = i915_gem_object_get_pages(obj);
+>  	if (ret)
+>  		goto out;
+>  
+>  	page_count = obj->size / PAGE_SIZE;
+>  
+>  	for (i = 0; i < page_count; i++) {
+> -		char *dst = kmap_atomic(obj_priv->page_list[i], KM_USER0);
+> +		char *dst = kmap_atomic(obj_priv->pages[i], KM_USER0);
+>  		char *src = obj_priv->phys_obj->handle->vaddr + (i * PAGE_SIZE);
+>  
+>  		memcpy(dst, src, PAGE_SIZE);
+>  		kunmap_atomic(dst, KM_USER0);
+>  	}
+> -	drm_clflush_pages(obj_priv->page_list, page_count);
+> +	drm_clflush_pages(obj_priv->pages, page_count);
+>  	drm_agp_chipset_flush(dev);
+>  out:
+>  	obj_priv->phys_obj->cur_obj = NULL;
+> @@ -3693,7 +3695,7 @@ i915_gem_attach_phys_object(struct drm_device *dev,
+>  	obj_priv->phys_obj = dev_priv->mm.phys_objs[id - 1];
+>  	obj_priv->phys_obj->cur_obj = obj;
+>  
+> -	ret = i915_gem_object_get_page_list(obj);
+> +	ret = i915_gem_object_get_pages(obj);
+>  	if (ret) {
+>  		DRM_ERROR("failed to get page list\n");
+>  		goto out;
+> @@ -3702,7 +3704,7 @@ i915_gem_attach_phys_object(struct drm_device *dev,
+>  	page_count = obj->size / PAGE_SIZE;
+>  
+>  	for (i = 0; i < page_count; i++) {
+> -		char *src = kmap_atomic(obj_priv->page_list[i], KM_USER0);
+> +		char *src = kmap_atomic(obj_priv->pages[i], KM_USER0);
+>  		char *dst = obj_priv->phys_obj->handle->vaddr + (i * PAGE_SIZE);
+>  
+>  		memcpy(dst, src, PAGE_SIZE);
 > 
-> 
-> In that case, shoudn't we pass another thing than the struct tracer_stat?
-> Because nothing really private can be stored in it. Moreover, most of the
-> time the handler is dedicated to this tracer_stat so it is able to have
-> an access to it.
-> 
-> May be we could add a void *private inside struct trace_stat and then pass
-> it to stat_start() ?
-> 
-
-
-Very few tracers need a private field so adding one would be a waste for 
-them. I just used the old container_of trick.
-
-
-struct ftrace_profile_stat {
-        atomic_t                        disabled;
-        struct hlist_head               *hash;
-        struct ftrace_profile_page      *pages;
-        struct ftrace_profile_page      *start;
-        struct tracer_stat              stat;
-};
-
-static void *function_stat_start(struct tracer_stat *trace)
-{
-        struct ftrace_profile_stat *stat =
-                container_of(trace, struct ftrace_profile_stat, stat);
-
-[...]
-
-And there you have it. I have everything I need unique to the tracer and 
-no need of a private pointer.
-
--- Steve
-
