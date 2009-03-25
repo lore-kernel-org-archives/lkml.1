@@ -1,74 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762035AbZCYPON@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761995AbZCYPP3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762035AbZCYPON (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 11:14:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754116AbZCYPN5
+	id S1761995AbZCYPP3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 11:15:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754116AbZCYPPM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 11:13:57 -0400
-Received: from rcsinet11.oracle.com ([148.87.113.123]:62602 "EHLO
-	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752739AbZCYPN5 (ORCPT
+	Wed, 25 Mar 2009 11:15:12 -0400
+Received: from wf-out-1314.google.com ([209.85.200.168]:10223 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751068AbZCYPPL convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 11:13:57 -0400
-Message-ID: <49CA48A0.6000404@oracle.com>
-Date: Wed, 25 Mar 2009 08:07:12 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Organization: Oracle Linux Engineering
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Wed, 25 Mar 2009 11:15:11 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=C83Olj2dUgklY3AEp8bLFiYIyFpA6b6WXFOUPYlD+9G5rdFzYRmxTgAkf/bTOKyA9i
+         c2wKjT4qOCDsPwszXQ2gq/jipsli25LX54+DMyyXw/Y6ym9wOv8ve+FUuym9ANJ7NGLu
+         qvFDMJ6N3QvoMK6pE24d1EVcuWv/56G7nGmDY=
 MIME-Version: 1.0
-To: coly.li@suse.de
-CC: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: mmotm 2009-03-23-22-34 uploaded (reiserfs)
-References: <200903240539.n2O5d6A8018954@imap1.linux-foundation.org> <49C9483B.1030905@oracle.com> <49C9C163.8040502@suse.de>
-In-Reply-To: <49C9C163.8040502@suse.de>
+In-Reply-To: <Pine.LNX.4.64.0903251117220.5795@axis700.grange>
+References: <1232458448-4412-1-git-send-email-tom.leiming@gmail.com>
+	 <Pine.LNX.4.64.0903250039160.4451@axis700.grange>
+	 <d82e647a0903241815l66abfc18ldbb26abd7d2c6b4@mail.gmail.com>
+	 <Pine.LNX.4.64.0903250817090.5590@axis700.grange>
+	 <d82e647a0903250313ka2d270ag78335e7c7f525f22@mail.gmail.com>
+	 <Pine.LNX.4.64.0903251117220.5795@axis700.grange>
+Date: Wed, 25 Mar 2009 23:15:09 +0800
+Message-ID: <d82e647a0903250815i3fd46b63x42b0355c0aeaedc8@mail.gmail.com>
+Subject: Re: [PATCH] driver core: check bus->match without holding device lock
+From: Ming Lei <tom.leiming@gmail.com>
+To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Cc: kay.sievers@vrfy.org, Greg KH <greg@kroah.com>,
+       linux-kernel@vger.kernel.org, arjan@linux.intel.com
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt707.oracle.com [141.146.40.85]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A010207.49CA49EE.00DD:SCFMA4539814,ss=1,fgs=0
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Coly Li wrote:
-> Hi Randy,
-> 
-> Randy Dunlap Wrote:
->> akpm@linux-foundation.org wrote:
->>> The mm-of-the-moment snapshot 2009-03-23-22-34 has been uploaded to
->>>
->>>    http://userweb.kernel.org/~akpm/mmotm/
->>>
->>> and will soon be available at
->>>
->>>    git://git.zen-sources.org/zen/mmotm.git
->>>
->>> It contains the following patches against 2.6.29-rc8:
+2009/3/25 Guennadi Liakhovetski <g.liakhovetski@gmx.de>:
+> On Wed, 25 Mar 2009, Ming Lei wrote:
+>
+>> >> > Now, without .match() no probing is done. Is this an intended change and
+>> >> > soc-camera has to be fixed or is this a bug?
+>> >>
+>> >> It is not a driver-core bug, and soc-camera should be fixed.
+>> >
+>> > So, you're saying this used to be a bug and it has been fixed by this
+>> > patch? Then why isn't this mentioned in the commit message? The commit
+>> > text seems to suggest, that this patch shouldn't introduce any change in
+>> > behaviour, but it does. So, before .match == NULL lead to .probe() being
+>> > called, and now it doesn't anymore?
 >>
->>> fs-reiserfs-return-f_fsid-for-statfs2-v2.patch
->> fs/built-in.o: In function `reiserfs_statfs':
->> super.c:(.text+0x7332b): undefined reference to `crc32_le'
->> super.c:(.text+0x7333f): undefined reference to `crc32_le'
->>
-> Hmm, it should not be. The v2 patch includes linux/crc32.h, and I tested without
-> any error. Now I am downloading mmotm to verify.
+>> Where is soc-camera  driver in kernel tree?
+>
+> drivers/media/video/soc_camera.c
+>
+>> Which bus  is soc-camera device (driver) attached to ?
+>
+> camera bus.
+>
+>> Why doesn't soc-camera  driver  have a match method?
+>
+> Why should it? Because there is only one driver on this bus by definition
+> (and I only register a device on the bus when I find a match between a
+> device and its parent / driver).
 
-CONFIG_CRC32=m
+I grep the drivers directory ( grep -r -n -I -A 5 -w "struct bus_type"
+./* ) and
+find soc-camera is the __only__ bus-type which have not implemented  match
+method, so it is better to define a match method(always return true)
+in soc-camera
+to solve the  problem, OK?
 
-Since reiserfs is built into the kernel image (CONFIG_REISERFS=y),
-CONFIG_CRC32 also needs to be =y.
-Probably just add
-	select CRC32
-	select BITREVERSE
-to the REISERFS_FS kconfig entry.
+Also, I will submit a patch to warn absence of match (maybe should
+return failed)
+in bus_register().
 
-> BTW, from series file of mmotm, I see two version patches,
-> fs-reiserfs-return-f_fsid-for-statfs2.patch
-> fs-reiserfs-return-f_fsid-for-statfs2-v2.patch
-> are all included. I suspect whether this is a proper behavior.
+>
+> What I in any case see wrong with this patch, is that it _silently_
+> changes kernel behaviour without even mentioning it in the commit log!
 
-The v2 patch mostly replaces the first one.  I don't see a
-problem with them.
+IMHO, the change should be reasonable, but it is missed carelessly in
+commit log.
+
+Thanks
+
+>
+> Thanks
+> Guennadi
+> ---
+> Guennadi Liakhovetski, Ph.D.
+> Freelance Open-Source Software Developer
+>
+
+
 
 -- 
-~Randy
+Lei Ming
