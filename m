@@ -1,277 +1,311 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756777AbZCYVpn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757104AbZCYVqX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756777AbZCYVpn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 17:45:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754787AbZCYVpR
+	id S1757104AbZCYVqX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 17:46:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756110AbZCYVpU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 17:45:17 -0400
-Received: from 69-30-77-85.dq1sn.easystreet.com ([69.30.77.85]:56426 "EHLO
+	Wed, 25 Mar 2009 17:45:20 -0400
+Received: from 69-30-77-85.dq1sn.easystreet.com ([69.30.77.85]:56425 "EHLO
 	kingsolver.anholt.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752810AbZCYVpO (ORCPT
+	with ESMTP id S1753890AbZCYVpO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 25 Mar 2009 17:45:14 -0400
 From: Eric Anholt <eric@anholt.net>
 To: linux-kernel@vger.kernel.org
 Cc: dri-devel@lists.sourceforge.net, Eric Anholt <eric@anholt.net>
-Subject: [PATCH 2/6] drm/i915: Make GEM object's page lists refcounted instead of get/free.
-Date: Wed, 25 Mar 2009 14:45:06 -0700
-Message-Id: <1238017510-26784-3-git-send-email-eric@anholt.net>
+Subject: [PATCH 3/6] drm/i915: Fix lock order reversal in shmem pwrite path.
+Date: Wed, 25 Mar 2009 14:45:07 -0700
+Message-Id: <1238017510-26784-4-git-send-email-eric@anholt.net>
 X-Mailer: git-send-email 1.6.2.1
-In-Reply-To: <1238017510-26784-2-git-send-email-eric@anholt.net>
+In-Reply-To: <1238017510-26784-3-git-send-email-eric@anholt.net>
 References: <1238017510-26784-1-git-send-email-eric@anholt.net>
  <1238017510-26784-2-git-send-email-eric@anholt.net>
+ <1238017510-26784-3-git-send-email-eric@anholt.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We've wanted this for a few consumers that touch the pages directly (such as
-the following commit), which have been doing the refcounting outside of
-get/put pages.
----
- drivers/gpu/drm/i915/i915_drv.h |    3 +-
- drivers/gpu/drm/i915/i915_gem.c |   70 ++++++++++++++++++++-------------------
- 2 files changed, 38 insertions(+), 35 deletions(-)
+Like the GTT pwrite path fix, this uses an optimistic path and a
+fallback to get_user_pages.  Note that this means we have to stop using
+vfs_write and roll it ourselves.
 
-diff --git a/drivers/gpu/drm/i915/i915_drv.h b/drivers/gpu/drm/i915/i915_drv.h
-index d6cc986..75e3384 100644
---- a/drivers/gpu/drm/i915/i915_drv.h
-+++ b/drivers/gpu/drm/i915/i915_drv.h
-@@ -404,7 +404,8 @@ struct drm_i915_gem_object {
- 	/** AGP memory structure for our GTT binding. */
- 	DRM_AGP_MEM *agp_mem;
- 
--	struct page **page_list;
-+	struct page **pages;
-+	int pages_refcount;
- 
- 	/**
- 	 * Current offset of the object in GTT space.
+Signed-off-by: Eric Anholt <eric@anholt.net>
+---
+ drivers/gpu/drm/i915/i915_gem.c |  225 +++++++++++++++++++++++++++++++++++----
+ 1 files changed, 205 insertions(+), 20 deletions(-)
+
 diff --git a/drivers/gpu/drm/i915/i915_gem.c b/drivers/gpu/drm/i915/i915_gem.c
-index 35f8c7b..b998d65 100644
+index b998d65..bdc7326 100644
 --- a/drivers/gpu/drm/i915/i915_gem.c
 +++ b/drivers/gpu/drm/i915/i915_gem.c
-@@ -43,8 +43,8 @@ static int i915_gem_object_set_cpu_read_domain_range(struct drm_gem_object *obj,
- 						     uint64_t offset,
- 						     uint64_t size);
- static void i915_gem_object_set_to_full_cpu_read_domain(struct drm_gem_object *obj);
--static int i915_gem_object_get_page_list(struct drm_gem_object *obj);
--static void i915_gem_object_free_page_list(struct drm_gem_object *obj);
-+static int i915_gem_object_get_pages(struct drm_gem_object *obj);
-+static void i915_gem_object_put_pages(struct drm_gem_object *obj);
- static int i915_gem_object_wait_rendering(struct drm_gem_object *obj);
- static int i915_gem_object_bind_to_gtt(struct drm_gem_object *obj,
- 					   unsigned alignment);
-@@ -928,29 +928,30 @@ i915_gem_mmap_gtt_ioctl(struct drm_device *dev, void *data,
- }
- 
- static void
--i915_gem_object_free_page_list(struct drm_gem_object *obj)
-+i915_gem_object_put_pages(struct drm_gem_object *obj)
- {
- 	struct drm_i915_gem_object *obj_priv = obj->driver_private;
- 	int page_count = obj->size / PAGE_SIZE;
- 	int i;
- 
--	if (obj_priv->page_list == NULL)
--		return;
-+	BUG_ON(obj_priv->pages_refcount == 0);
- 
-+	if (--obj_priv->pages_refcount != 0)
-+		return;
- 
- 	for (i = 0; i < page_count; i++)
--		if (obj_priv->page_list[i] != NULL) {
-+		if (obj_priv->pages[i] != NULL) {
- 			if (obj_priv->dirty)
--				set_page_dirty(obj_priv->page_list[i]);
--			mark_page_accessed(obj_priv->page_list[i]);
--			page_cache_release(obj_priv->page_list[i]);
-+				set_page_dirty(obj_priv->pages[i]);
-+			mark_page_accessed(obj_priv->pages[i]);
-+			page_cache_release(obj_priv->pages[i]);
- 		}
- 	obj_priv->dirty = 0;
- 
--	drm_free(obj_priv->page_list,
-+	drm_free(obj_priv->pages,
- 		 page_count * sizeof(struct page *),
- 		 DRM_MEM_DRIVER);
--	obj_priv->page_list = NULL;
-+	obj_priv->pages = NULL;
- }
- 
- static void
-@@ -1402,7 +1403,7 @@ i915_gem_object_unbind(struct drm_gem_object *obj)
- 	if (obj_priv->fence_reg != I915_FENCE_REG_NONE)
- 		i915_gem_clear_fence_reg(obj);
- 
--	i915_gem_object_free_page_list(obj);
-+	i915_gem_object_put_pages(obj);
- 
- 	if (obj_priv->gtt_space) {
- 		atomic_dec(&dev->gtt_count);
-@@ -1521,7 +1522,7 @@ i915_gem_evict_everything(struct drm_device *dev)
- }
- 
- static int
--i915_gem_object_get_page_list(struct drm_gem_object *obj)
-+i915_gem_object_get_pages(struct drm_gem_object *obj)
- {
- 	struct drm_i915_gem_object *obj_priv = obj->driver_private;
- 	int page_count, i;
-@@ -1530,18 +1531,19 @@ i915_gem_object_get_page_list(struct drm_gem_object *obj)
- 	struct page *page;
- 	int ret;
- 
--	if (obj_priv->page_list)
-+	if (obj_priv->pages_refcount++ != 0)
- 		return 0;
- 
- 	/* Get the list of pages out of our struct file.  They'll be pinned
- 	 * at this point until we release them.
- 	 */
- 	page_count = obj->size / PAGE_SIZE;
--	BUG_ON(obj_priv->page_list != NULL);
--	obj_priv->page_list = drm_calloc(page_count, sizeof(struct page *),
--					 DRM_MEM_DRIVER);
--	if (obj_priv->page_list == NULL) {
-+	BUG_ON(obj_priv->pages != NULL);
-+	obj_priv->pages = drm_calloc(page_count, sizeof(struct page *),
-+				     DRM_MEM_DRIVER);
-+	if (obj_priv->pages == NULL) {
- 		DRM_ERROR("Faled to allocate page list\n");
-+		obj_priv->pages_refcount--;
- 		return -ENOMEM;
- 	}
- 
-@@ -1552,10 +1554,10 @@ i915_gem_object_get_page_list(struct drm_gem_object *obj)
- 		if (IS_ERR(page)) {
- 			ret = PTR_ERR(page);
- 			DRM_ERROR("read_mapping_page failed: %d\n", ret);
--			i915_gem_object_free_page_list(obj);
-+			i915_gem_object_put_pages(obj);
- 			return ret;
- 		}
--		obj_priv->page_list[i] = page;
-+		obj_priv->pages[i] = page;
- 	}
+@@ -136,6 +136,33 @@ i915_gem_create_ioctl(struct drm_device *dev, void *data,
  	return 0;
  }
-@@ -1878,7 +1880,7 @@ i915_gem_object_bind_to_gtt(struct drm_gem_object *obj, unsigned alignment)
- 	DRM_INFO("Binding object of size %d at 0x%08x\n",
- 		 obj->size, obj_priv->gtt_offset);
- #endif
--	ret = i915_gem_object_get_page_list(obj);
-+	ret = i915_gem_object_get_pages(obj);
- 	if (ret) {
- 		drm_mm_put_block(obj_priv->gtt_space);
- 		obj_priv->gtt_space = NULL;
-@@ -1890,12 +1892,12 @@ i915_gem_object_bind_to_gtt(struct drm_gem_object *obj, unsigned alignment)
- 	 * into the GTT.
- 	 */
- 	obj_priv->agp_mem = drm_agp_bind_pages(dev,
--					       obj_priv->page_list,
-+					       obj_priv->pages,
- 					       page_count,
- 					       obj_priv->gtt_offset,
- 					       obj_priv->agp_type);
- 	if (obj_priv->agp_mem == NULL) {
--		i915_gem_object_free_page_list(obj);
-+		i915_gem_object_put_pages(obj);
- 		drm_mm_put_block(obj_priv->gtt_space);
- 		obj_priv->gtt_space = NULL;
- 		return -ENOMEM;
-@@ -1922,10 +1924,10 @@ i915_gem_clflush_object(struct drm_gem_object *obj)
- 	 * to GPU, and we can ignore the cache flush because it'll happen
- 	 * again at bind time.
- 	 */
--	if (obj_priv->page_list == NULL)
-+	if (obj_priv->pages == NULL)
- 		return;
  
--	drm_clflush_pages(obj_priv->page_list, obj->size / PAGE_SIZE);
-+	drm_clflush_pages(obj_priv->pages, obj->size / PAGE_SIZE);
++static inline int
++slow_shmem_copy(struct page *dst_page,
++		int dst_offset,
++		struct page *src_page,
++		int src_offset,
++		int length)
++{
++	char *dst_vaddr, *src_vaddr;
++
++	dst_vaddr = kmap_atomic(dst_page, KM_USER0);
++	if (dst_vaddr == NULL)
++		return -ENOMEM;
++
++	src_vaddr = kmap_atomic(src_page, KM_USER1);
++	if (src_vaddr == NULL) {
++		kunmap_atomic(dst_vaddr, KM_USER0);
++		return -ENOMEM;
++	}
++
++	memcpy(dst_vaddr + dst_offset, src_vaddr + src_offset, length);
++
++	kunmap_atomic(src_vaddr, KM_USER1);
++	kunmap_atomic(dst_vaddr, KM_USER0);
++
++	return 0;
++}
++
+ /**
+  * Reads data from the object referenced by handle.
+  *
+@@ -243,6 +270,23 @@ slow_kernel_write(struct io_mapping *mapping,
+ 	return 0;
  }
  
- /** Flushes any GPU write domain for the object if it's dirty. */
-@@ -2270,7 +2272,7 @@ i915_gem_object_set_to_full_cpu_read_domain(struct drm_gem_object *obj)
- 		for (i = 0; i <= (obj->size - 1) / PAGE_SIZE; i++) {
- 			if (obj_priv->page_cpu_valid[i])
- 				continue;
--			drm_clflush_pages(obj_priv->page_list + i, 1);
-+			drm_clflush_pages(obj_priv->pages + i, 1);
++static inline int
++fast_shmem_write(struct page **pages,
++		 loff_t page_base, int page_offset,
++		 char __user *data,
++		 int length)
++{
++	char __iomem *vaddr;
++
++	vaddr = kmap_atomic(pages[page_base >> PAGE_SHIFT], KM_USER0);
++	if (vaddr == NULL)
++		return -ENOMEM;
++	__copy_from_user_inatomic(vaddr + page_offset, data, length);
++	kunmap_atomic(vaddr, KM_USER0);
++
++	return 0;
++}
++
+ /**
+  * This is the fast pwrite path, where we copy the data directly from the
+  * user into the GTT, uncached.
+@@ -423,39 +467,175 @@ out_unpin_pages:
+ 	return ret;
+ }
+ 
++/**
++ * This is the fast shmem pwrite path, which attempts to directly
++ * copy_from_user into the kmapped pages backing the object.
++ */
+ static int
+-i915_gem_shmem_pwrite(struct drm_device *dev, struct drm_gem_object *obj,
+-		      struct drm_i915_gem_pwrite *args,
+-		      struct drm_file *file_priv)
++i915_gem_shmem_pwrite_fast(struct drm_device *dev, struct drm_gem_object *obj,
++			   struct drm_i915_gem_pwrite *args,
++			   struct drm_file *file_priv)
+ {
++	struct drm_i915_gem_object *obj_priv = obj->driver_private;
++	ssize_t remain;
++	loff_t offset, page_base;
++	char __user *user_data;
++	int page_offset, page_length;
+ 	int ret;
+-	loff_t offset;
+-	ssize_t written;
++
++	user_data = (char __user *) (uintptr_t) args->data_ptr;
++	remain = args->size;
+ 
+ 	mutex_lock(&dev->struct_mutex);
+ 
++	ret = i915_gem_object_get_pages(obj);
++	if (ret != 0)
++		goto fail_unlock;
++
+ 	ret = i915_gem_object_set_to_cpu_domain(obj, 1);
+-	if (ret) {
+-		mutex_unlock(&dev->struct_mutex);
+-		return ret;
++	if (ret != 0)
++		goto fail_put_pages;
++
++	obj_priv = obj->driver_private;
++	offset = args->offset;
++	obj_priv->dirty = 1;
++
++	while (remain > 0) {
++		/* Operation in this page
++		 *
++		 * page_base = page offset within aperture
++		 * page_offset = offset within page
++		 * page_length = bytes to copy for this page
++		 */
++		page_base = (offset & ~(PAGE_SIZE-1));
++		page_offset = offset & (PAGE_SIZE-1);
++		page_length = remain;
++		if ((page_offset + remain) > PAGE_SIZE)
++			page_length = PAGE_SIZE - page_offset;
++
++		ret = fast_shmem_write(obj_priv->pages,
++				       page_base, page_offset,
++				       user_data, page_length);
++		if (ret)
++			goto fail_put_pages;
++
++		remain -= page_length;
++		user_data += page_length;
++		offset += page_length;
+ 	}
+ 
++fail_put_pages:
++	i915_gem_object_put_pages(obj);
++fail_unlock:
++	mutex_unlock(&dev->struct_mutex);
++
++	return ret;
++}
++
++/**
++ * This is the fallback shmem pwrite path, which uses get_user_pages to pin
++ * the memory and maps it using kmap_atomic for copying.
++ *
++ * This avoids taking mmap_sem for faulting on the user's address while the
++ * struct_mutex is held.
++ */
++static int
++i915_gem_shmem_pwrite_slow(struct drm_device *dev, struct drm_gem_object *obj,
++			   struct drm_i915_gem_pwrite *args,
++			   struct drm_file *file_priv)
++{
++	struct drm_i915_gem_object *obj_priv = obj->driver_private;
++	struct mm_struct *mm = current->mm;
++	struct page **user_pages;
++	ssize_t remain;
++	loff_t offset, pinned_pages, i;
++	loff_t first_data_page, last_data_page, num_pages;
++	int shmem_page_index, shmem_page_offset;
++	int data_page_index,  data_page_offset;
++	int page_length;
++	int ret;
++	uint64_t data_ptr = args->data_ptr;
++
++	remain = args->size;
++
++	/* Pin the user pages containing the data.  We can't fault while
++	 * holding the struct mutex, and all of the pwrite implementations
++	 * want to hold it while dereferencing the user data.
++	 */
++	first_data_page = data_ptr / PAGE_SIZE;
++	last_data_page = (data_ptr + args->size - 1) / PAGE_SIZE;
++	num_pages = last_data_page - first_data_page + 1;
++
++	user_pages = kcalloc(num_pages, sizeof(struct page *), GFP_KERNEL);
++	if (user_pages == NULL)
++		return -ENOMEM;
++
++	down_read(&mm->mmap_sem);
++	pinned_pages = get_user_pages(current, mm, (uintptr_t)args->data_ptr,
++				      num_pages, 0, 0, user_pages, NULL);
++	up_read(&mm->mmap_sem);
++	if (pinned_pages < num_pages) {
++		ret = -EFAULT;
++		goto fail_put_user_pages;
++	}
++
++	mutex_lock(&dev->struct_mutex);
++
++	ret = i915_gem_object_get_pages(obj);
++	if (ret != 0)
++		goto fail_unlock;
++
++	ret = i915_gem_object_set_to_cpu_domain(obj, 1);
++	if (ret != 0)
++		goto fail_put_pages;
++
++	obj_priv = obj->driver_private;
+ 	offset = args->offset;
++	obj_priv->dirty = 1;
+ 
+-	written = vfs_write(obj->filp,
+-			    (char __user *)(uintptr_t) args->data_ptr,
+-			    args->size, &offset);
+-	if (written != args->size) {
+-		mutex_unlock(&dev->struct_mutex);
+-		if (written < 0)
+-			return written;
+-		else
+-			return -EINVAL;
++	while (remain > 0) {
++		/* Operation in this page
++		 *
++		 * shmem_page_index = page number within shmem file
++		 * shmem_page_offset = offset within page in shmem file
++		 * data_page_index = page number in get_user_pages return
++		 * data_page_offset = offset with data_page_index page.
++		 * page_length = bytes to copy for this page
++		 */
++		shmem_page_index = offset / PAGE_SIZE;
++		shmem_page_offset = offset & ~PAGE_MASK;
++		data_page_index = data_ptr / PAGE_SIZE - first_data_page;
++		data_page_offset = data_ptr & ~PAGE_MASK;
++
++		page_length = remain;
++		if ((shmem_page_offset + page_length) > PAGE_SIZE)
++			page_length = PAGE_SIZE - shmem_page_offset;
++		if ((data_page_offset + page_length) > PAGE_SIZE)
++			page_length = PAGE_SIZE - data_page_offset;
++
++		ret = slow_shmem_copy(obj_priv->pages[shmem_page_index],
++				      shmem_page_offset,
++				      user_pages[data_page_index],
++				      data_page_offset,
++				      page_length);
++		if (ret)
++			goto fail_put_pages;
++
++		remain -= page_length;
++		data_ptr += page_length;
++		offset += page_length;
+ 	}
+ 
++fail_put_pages:
++	i915_gem_object_put_pages(obj);
++fail_unlock:
+ 	mutex_unlock(&dev->struct_mutex);
++fail_put_user_pages:
++	for (i = 0; i < pinned_pages; i++)
++		page_cache_release(user_pages[i]);
++	kfree(user_pages);
+ 
+-	return 0;
++	return ret;
+ }
+ 
+ /**
+@@ -502,8 +682,13 @@ i915_gem_pwrite_ioctl(struct drm_device *dev, void *data,
+ 			ret = i915_gem_gtt_pwrite_slow(dev, obj, args,
+ 						       file_priv);
  		}
- 		drm_agp_chipset_flush(dev);
- 	}
-@@ -2336,7 +2338,7 @@ i915_gem_object_set_cpu_read_domain_range(struct drm_gem_object *obj,
- 		if (obj_priv->page_cpu_valid[i])
- 			continue;
+-	} else
+-		ret = i915_gem_shmem_pwrite(dev, obj, args, file_priv);
++	} else {
++		ret = i915_gem_shmem_pwrite_fast(dev, obj, args, file_priv);
++		if (ret == -EFAULT) {
++			ret = i915_gem_shmem_pwrite_slow(dev, obj, args,
++							 file_priv);
++		}
++	}
  
--		drm_clflush_pages(obj_priv->page_list + i, 1);
-+		drm_clflush_pages(obj_priv->pages + i, 1);
- 
- 		obj_priv->page_cpu_valid[i] = 1;
- 	}
-@@ -3304,7 +3306,7 @@ i915_gem_init_hws(struct drm_device *dev)
- 
- 	dev_priv->status_gfx_addr = obj_priv->gtt_offset;
- 
--	dev_priv->hw_status_page = kmap(obj_priv->page_list[0]);
-+	dev_priv->hw_status_page = kmap(obj_priv->pages[0]);
- 	if (dev_priv->hw_status_page == NULL) {
- 		DRM_ERROR("Failed to map status page.\n");
- 		memset(&dev_priv->hws_map, 0, sizeof(dev_priv->hws_map));
-@@ -3334,7 +3336,7 @@ i915_gem_cleanup_hws(struct drm_device *dev)
- 	obj = dev_priv->hws_obj;
- 	obj_priv = obj->driver_private;
- 
--	kunmap(obj_priv->page_list[0]);
-+	kunmap(obj_priv->pages[0]);
- 	i915_gem_object_unpin(obj);
- 	drm_gem_object_unreference(obj);
- 	dev_priv->hws_obj = NULL;
-@@ -3637,20 +3639,20 @@ void i915_gem_detach_phys_object(struct drm_device *dev,
- 	if (!obj_priv->phys_obj)
- 		return;
- 
--	ret = i915_gem_object_get_page_list(obj);
-+	ret = i915_gem_object_get_pages(obj);
+ #if WATCH_PWRITE
  	if (ret)
- 		goto out;
- 
- 	page_count = obj->size / PAGE_SIZE;
- 
- 	for (i = 0; i < page_count; i++) {
--		char *dst = kmap_atomic(obj_priv->page_list[i], KM_USER0);
-+		char *dst = kmap_atomic(obj_priv->pages[i], KM_USER0);
- 		char *src = obj_priv->phys_obj->handle->vaddr + (i * PAGE_SIZE);
- 
- 		memcpy(dst, src, PAGE_SIZE);
- 		kunmap_atomic(dst, KM_USER0);
- 	}
--	drm_clflush_pages(obj_priv->page_list, page_count);
-+	drm_clflush_pages(obj_priv->pages, page_count);
- 	drm_agp_chipset_flush(dev);
- out:
- 	obj_priv->phys_obj->cur_obj = NULL;
-@@ -3693,7 +3695,7 @@ i915_gem_attach_phys_object(struct drm_device *dev,
- 	obj_priv->phys_obj = dev_priv->mm.phys_objs[id - 1];
- 	obj_priv->phys_obj->cur_obj = obj;
- 
--	ret = i915_gem_object_get_page_list(obj);
-+	ret = i915_gem_object_get_pages(obj);
- 	if (ret) {
- 		DRM_ERROR("failed to get page list\n");
- 		goto out;
-@@ -3702,7 +3704,7 @@ i915_gem_attach_phys_object(struct drm_device *dev,
- 	page_count = obj->size / PAGE_SIZE;
- 
- 	for (i = 0; i < page_count; i++) {
--		char *src = kmap_atomic(obj_priv->page_list[i], KM_USER0);
-+		char *src = kmap_atomic(obj_priv->pages[i], KM_USER0);
- 		char *dst = obj_priv->phys_obj->handle->vaddr + (i * PAGE_SIZE);
- 
- 		memcpy(dst, src, PAGE_SIZE);
 -- 
 1.6.2.1
 
