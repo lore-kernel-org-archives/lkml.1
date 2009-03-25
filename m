@@ -1,57 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756252AbZCYTgS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757173AbZCYTn1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756252AbZCYTgS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 15:36:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752300AbZCYTgD
+	id S1757173AbZCYTn1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 15:43:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750940AbZCYTnQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 15:36:03 -0400
-Received: from 82-117-125-11.tcdsl.calypso.net ([82.117.125.11]:55850 "EHLO
-	smtp.ossman.eu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751891AbZCYTgA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 15:36:00 -0400
-Date: Wed, 25 Mar 2009 20:35:55 +0100
-From: Pierre Ossman <drzeus-mmc@drzeus.cx>
-To: Adrian Hunter <adrian.hunter@nokia.com>
-Cc: "Lavinen Jarkko (Nokia-D/Helsinki)" <jarkko.lavinen@nokia.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: MMC: Accept EXT_CSD rev 1.3 assuming it is backwards compatible
- with 1.2
-Message-ID: <20090325203555.51cfadba@mjolnir.ossman.eu>
-In-Reply-To: <49C9E5D1.8060900@nokia.com>
-References: <49C8CE1B.7000802@nokia.com>
-	<20090324211037.65cd05ea@mjolnir.ossman.eu>
-	<49C9E5D1.8060900@nokia.com>
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.15.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 25 Mar 2009 15:43:16 -0400
+Received: from jacques.telenet-ops.be ([195.130.132.50]:55639 "EHLO
+	jacques.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750738AbZCYTnP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Mar 2009 15:43:15 -0400
+Date: Wed, 25 Mar 2009 20:43:06 +0100 (CET)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Masami Hiramatsu <mhiramat@redhat.com>,
+       Rusty Russell <rusty@rustcorp.com.au>
+cc: Linux Kernel Development <linux-kernel@vger.kernel.org>
+Subject: [PATCH] module: Kill warning: label 'free_init' defined but not used
+Message-ID: <Pine.LNX.4.64.0903252041190.14101@anakin>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 25 Mar 2009 10:05:37 +0200
-Adrian Hunter <adrian.hunter@nokia.com> wrote:
+On m68k (which doesn't do SMP), I get:
 
-> Pierre Ossman wrote:
-> > 
-> > I don't like the whole "assuming" part. Do the specs back this up?
-> > 
-> > Rgds
-> 
-> Yes.
-> 
-> Please swap "assuming" for "because".
+| kernel/module.c:2291: warning: label 'free_init' defined but not used
 
-Ok then. Queued.
+which was introduced by commit 6e2b75740bed35df98b8113300579e13ed2ce848
+("module: fix refptr allocation and release order").
+Move the label inside the #ifdef, as the goto is protected by the same #ifdef.
 
-Thanks
+Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+---
+ kernel/module.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/kernel/module.c b/kernel/module.c
+index 1196f5d..df00a1b 100644
+--- a/kernel/module.c
++++ b/kernel/module.c
+@@ -2288,8 +2288,8 @@ static noinline struct module *load_module(void __user *umod,
+ 	ftrace_release(mod->module_core, mod->core_size);
+  free_unload:
+ 	module_unload_free(mod);
+- free_init:
+ #if defined(CONFIG_MODULE_UNLOAD) && defined(CONFIG_SMP)
++ free_init:
+ 	percpu_modfree(mod->refptr);
+ #endif
+ 	module_free(mod, mod->module_init);
 -- 
-     -- Pierre Ossman
+1.6.2
 
-  Linux kernel, MMC maintainer        http://www.kernel.org
-  rdesktop, core developer          http://www.rdesktop.org
 
-  WARNING: This correspondence is being monitored by the
-  Swedish government. Make sure your server uses encryption
-  for SMTP traffic and consider using PGP for end-to-end
-  encryption.
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
