@@ -1,66 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754621AbZCYBvS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755168AbZCYCBI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754621AbZCYBvS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 21:51:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753775AbZCYBvB
+	id S1755168AbZCYCBI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 22:01:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752959AbZCYCAy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 21:51:01 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:52987 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753449AbZCYBvB (ORCPT
+	Tue, 24 Mar 2009 22:00:54 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:62386 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752613AbZCYCAx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 21:51:01 -0400
-Message-ID: <49C98DEA.8060208@jp.fujitsu.com>
-Date: Wed, 25 Mar 2009 10:50:34 +0900
-From: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
+	Tue, 24 Mar 2009 22:00:53 -0400
+Date: Tue, 24 Mar 2009 22:00:49 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
+       Christoph Hellwig <hch@infradead.org>, Jason Baron <jbaron@redhat.com>,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       ltt-dev@lists.casi.polymtl.ca, Frederic Weisbecker <fweisbec@gmail.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Russell King <rmk+lkml@arm.linux.org.uk>,
+       Masami Hiramatsu <mhiramat@redhat.com>,
+       "Frank Ch. Eigler" <fche@redhat.com>, Hideo AOKI <haoki@redhat.com>,
+       Takashi Nishiie <t-nishiie@np.css.fujitsu.com>,
+       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
+Subject: Re: [patch 2/9] LTTng instrumentation - irq
+In-Reply-To: <20090324201146.GA4350@Krystal>
+Message-ID: <alpine.DEB.2.00.0903242153080.22830@gandalf.stny.rr.com>
+References: <20090324155625.420966314@polymtl.ca> <20090324160148.080628193@polymtl.ca> <20090324173354.GC3129@redhat.com> <20090324175049.GC31117@elte.hu> <20090324175750.GE3129@redhat.com> <20090324191252.GA11665@elte.hu> <20090324201146.GA4350@Krystal>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-CC: Ingo Molnar <mingo@elte.hu>, Jan Beulich <jbeulich@novell.com>
-Subject: [PATCH -tip] x86: smarten /proc/interrupts output for new counters
-Content-Type: text/plain; charset=ISO-2022-JP
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Now /proc/interrupts of tip tree has new counters:
-  CNT: Performance counter interrupts
-  PLT: Platform interrupts
 
-Format change of output, as like that by commit:
-  commit 7a81d9a7da03d2f27840d659f97ef140d032f609
-  x86: smarten /proc/interrupts output
-should be applied to these new counters too.
+On Tue, 24 Mar 2009, Mathieu Desnoyers wrote:
+> 
+> This is actually a very good example of what Christoph Hellwig, Peter
+> Zijlstra and myself have been trying to warn you about the TRACE_EVENT
+> macro : it exports the tracepoints to userspace, and thus makes them a
+> userspace-visible API, when those tracepoints should be tied to the
+> kernel code and nothing else. An adaptation layer should provide the
+> abstractions that makes the information presented to the user more
+> "logical".
 
-Signed-off-by: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Jan Beulich <jbeulich@novell.com>
----
- arch/x86/kernel/irq.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+Let me correct you here. TRACE_EVENT does ***NOT*** export anything to 
+userspace. There is no code what so ever in TRACE_EVENT that does so.
 
-diff --git a/arch/x86/kernel/irq.c b/arch/x86/kernel/irq.c
-index 9c27543..35b3725 100644
---- a/arch/x86/kernel/irq.c
-+++ b/arch/x86/kernel/irq.c
-@@ -63,13 +63,13 @@ static int show_other_interrupts(struct seq_file *p, int prec)
- 	for_each_online_cpu(j)
- 		seq_printf(p, "%10u ", irq_stats(j)->irq_spurious_count);
- 	seq_printf(p, "  Spurious interrupts\n");
--	seq_printf(p, "CNT: ");
-+	seq_printf(p, "%*s: ", prec, "CNT");
- 	for_each_online_cpu(j)
- 		seq_printf(p, "%10u ", irq_stats(j)->apic_perf_irqs);
- 	seq_printf(p, "  Performance counter interrupts\n");
- #endif
- 	if (generic_interrupt_extension) {
--		seq_printf(p, "PLT: ");
-+		seq_printf(p, "%*s: ", prec, "PLT");
- 		for_each_online_cpu(j)
- 			seq_printf(p, "%10u ", irq_stats(j)->generic_irqs);
- 		seq_printf(p, "  Platform interrupts\n");
--- 
-1.6.2.1
+Now, ftrace does export information using TRACE_EVENT to userspace. But 
+that is the way ftrace wants to handle it. There's nothing needed to 
+export to userspace. What is exported, is exported ***BECAUSE*** it can 
+change. I'll only try to keep the format that is exported the same. But 
+nothing should rely on what the format represents staying the same.
 
+If someone adds a TRACE_EVENT, you can uses it to record you data, anyway
+you like. Ftrace will use it to show how to read the binary data, which
+is only needed if you want to do that. It uses the print format to print
+to the console in case of failure. Or to the trace file, which by the way
+can also change without notice.
+
+
+-- Steve
 
