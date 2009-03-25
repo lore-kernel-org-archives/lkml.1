@@ -1,136 +1,250 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764043AbZCYSrv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764213AbZCYSsK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764043AbZCYSrv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 14:47:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760213AbZCYSrl
+	id S1764213AbZCYSsK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 14:48:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762369AbZCYSrm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 14:47:41 -0400
-Received: from mga02.intel.com ([134.134.136.20]:23571 "EHLO mga02.intel.com"
+	Wed, 25 Mar 2009 14:47:42 -0400
+Received: from mga09.intel.com ([134.134.136.24]:2685 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758451AbZCYSrk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1759508AbZCYSrk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 25 Mar 2009 14:47:40 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.38,420,1233561600"; 
-   d="scan'208";a="397511997"
-Message-Id: <20090325184635.523469000@intel.com>
+   d="scan'208";a="500786784"
+Message-Id: <20090325184635.374969000@intel.com>
 References: <20090325184548.012018000@intel.com>
 User-Agent: quilt/0.46-1
-Date: Wed, 25 Mar 2009 11:45:50 -0700
+Date: Wed, 25 Mar 2009 11:45:49 -0700
 From: fenghua.yu@intel.com
 To: mingo@elte.hu, dwmw2@infradead.org, amluto@gmail.com, kyle@redhat.com,
        mgross@linux.intel.com
 Cc: linux-kernel@vger.kernel.org, iommu@lists.linux-foundation.org,
        Fenghua Yu <fenghua.yu@intel.com>
-Subject: [patch 2/2] Intel IOMMU Suspend/Resume Support for Queued Invalidation.
-Content-Disposition: inline; filename=iommu_sr_2.patch
+Subject: [patch 1/2] Intel IOMMU Suspend/Resume Support for DMAR
+Content-Disposition: inline; filename=iommu_sr_1.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch supports queued invalidation suspend/resume.
+The attached patch implements the suspend and resume feature for DMAR. It hooks
+to kernel suspend and resume interface.  When suspend happens, it saves
+necessary hardware registers. When resume happens it restores the registers and
+restarts DMAR.
 
 Signed-off-by: Fenghua Yu <fenghua.yu@intel.com>
 
 ---
 
- dmar.c |   67 ++++++++++++++++++++++++++++++++++++++++++++++++++---------------
- 1 files changed, 52 insertions(+), 15 deletions(-)
+ drivers/pci/intel-iommu.c   |  158 ++++++++++++++++++++++++++++++++++++++++++++
+ include/linux/intel-iommu.h |    4 +
+ 2 files changed, 162 insertions(+)
 
-diff --git a/drivers/pci/dmar.c b/drivers/pci/dmar.c
-index d313039..b318bd1 100644
---- a/drivers/pci/dmar.c
-+++ b/drivers/pci/dmar.c
-@@ -790,14 +790,39 @@ end:
+diff --git a/drivers/pci/intel-iommu.c b/drivers/pci/intel-iommu.c
+index 49402c3..a969bc8 100644
+--- a/drivers/pci/intel-iommu.c
++++ b/drivers/pci/intel-iommu.c
+@@ -36,6 +36,8 @@
+ #include <linux/iova.h>
+ #include <linux/iommu.h>
+ #include <linux/intel-iommu.h>
++#include <linux/sysdev.h>
++#include <asm/i8259.h>
+ #include <asm/cacheflush.h>
+ #include <asm/iommu.h>
+ #include "pci.h"
+@@ -2563,6 +2565,161 @@ static void __init init_no_remapping_devices(void)
+ 	}
  }
  
- /*
-+ * Enable queued invalidation.
-+ */
-+static void __dmar_enable_qi(struct intel_iommu *iommu)
++#ifdef CONFIG_PM
++static int init_iommu_hw(void)
 +{
-+	u32 cmd, sts;
-+	unsigned long flags;
-+	struct q_inval *qi = iommu->qi;
++	struct dmar_drhd_unit *drhd;
++	struct intel_iommu *iommu;
 +
-+	qi->free_head = qi->free_tail = 0;
-+	qi->free_cnt = QI_LENGTH;
++	for_each_drhd_unit(drhd) {
++		if (drhd->ignored)
++			continue;
 +
-+	spin_lock_irqsave(&iommu->register_lock, flags);
-+	/* write zero to the tail reg */
-+	writel(0, iommu->reg + DMAR_IQT_REG);
++		iommu = drhd->iommu;
 +
-+	dmar_writeq(iommu->reg + DMAR_IQA_REG, virt_to_phys(qi->desc));
++		if (iommu->qi)
++			dmar_reenable_qi(iommu);
++	}
 +
-+	cmd = iommu->gcmd | DMA_GCMD_QIE;
-+	iommu->gcmd |= DMA_GCMD_QIE;
-+	writel(cmd, iommu->reg + DMAR_GCMD_REG);
++	for_each_drhd_unit(drhd) {
++		if (drhd->ignored)
++			continue;
 +
-+	/* Make sure hardware complete it */
-+	IOMMU_WAIT_OP(iommu, DMAR_GSTS_REG, readl, (sts & DMA_GSTS_QIES), sts);
-+	spin_unlock_irqrestore(&iommu->register_lock, flags);
-+}
++		iommu = drhd->iommu;
 +
-+/*
-  * Enable Queued Invalidation interface. This is a must to support
-  * interrupt-remapping. Also used by DMA-remapping, which replaces
-  * register based IOTLB invalidation.
-  */
- int dmar_enable_qi(struct intel_iommu *iommu)
- {
--	u32 cmd, sts;
--	unsigned long flags;
- 	struct q_inval *qi;
- 
- 	if (!ecap_qis(iommu->ecap))
-@@ -835,19 +860,7 @@ int dmar_enable_qi(struct intel_iommu *iommu)
- 
- 	spin_lock_init(&qi->q_lock);
- 
--	spin_lock_irqsave(&iommu->register_lock, flags);
--	/* write zero to the tail reg */
--	writel(0, iommu->reg + DMAR_IQT_REG);
--
--	dmar_writeq(iommu->reg + DMAR_IQA_REG, virt_to_phys(qi->desc));
--
--	cmd = iommu->gcmd | DMA_GCMD_QIE;
--	iommu->gcmd |= DMA_GCMD_QIE;
--	writel(cmd, iommu->reg + DMAR_GCMD_REG);
--
--	/* Make sure hardware complete it */
--	IOMMU_WAIT_OP(iommu, DMAR_GSTS_REG, readl, (sts & DMA_GSTS_QIES), sts);
--	spin_unlock_irqrestore(&iommu->register_lock, flags);
-+	__dmar_enable_qi(iommu);
- 
- 	return 0;
- }
-@@ -1102,3 +1115,27 @@ int __init enable_drhd_fault_handling(void)
- 
- 	return 0;
- }
++		iommu_flush_write_buffer(iommu);
 +
-+/*
-+ * Re-enable Queued Invalidation interface.
-+ */
-+int dmar_reenable_qi(struct intel_iommu *iommu)
-+{
-+	if (!ecap_qis(iommu->ecap))
-+		return -ENOENT;
++		iommu_set_root_entry(iommu);
 +
-+	if (!iommu->qi)
-+		return -ENOENT;
-+
-+	/*
-+	 * First disable queued invalidation.
-+	 */
-+	dmar_disable_qi(iommu);
-+	/* Then enable queued invalidation again. Since there is no pending
-+	 * invalidation requests now, it's safe to re-enable queued
-+	 * invalidation.
-+	 */
-+	__dmar_enable_qi(iommu);
++		iommu->flush.flush_context(iommu, 0, 0, 0, DMA_CCMD_GLOBAL_INVL,
++					   0);
++		iommu->flush.flush_iotlb(iommu, 0, 0, 0, DMA_TLB_GLOBAL_FLUSH,
++					 0);
++		iommu_disable_protect_mem_regions(iommu);
++		iommu_enable_translation(iommu);
++	}
 +
 +	return 0;
 +}
++
++static void iommu_flush_all(void)
++{
++	struct dmar_drhd_unit *drhd;
++	struct intel_iommu *iommu;
++
++	for_each_drhd_unit(drhd) {
++		if (drhd->ignored)
++			continue;
++
++		iommu = drhd->iommu;
++		iommu->flush.flush_context(iommu, 0, 0, 0, DMA_CCMD_GLOBAL_INVL,
++					   0);
++		iommu->flush.flush_iotlb(iommu, 0, 0, 0, DMA_TLB_GLOBAL_FLUSH,
++					 0);
++	}
++}
++
++static u32 iommu_state[MAX_IOMMUS][MAX_IOMMU_REGS];
++
++static int iommu_suspend(struct sys_device *dev, pm_message_t state)
++{
++	struct dmar_drhd_unit *drhd;
++	struct intel_iommu *iommu;
++	unsigned long flag;
++	int    i = 0;
++
++	iommu_flush_all();
++
++	for_each_drhd_unit(drhd) {
++		if (drhd->ignored)
++			continue;
++
++		iommu = drhd->iommu;
++
++		iommu_disable_translation(iommu);
++
++		spin_lock_irqsave(&iommu->register_lock, flag);
++
++		iommu_state[i][DMAR_FECTL_REG] =
++			(u32) readl(iommu->reg + DMAR_FECTL_REG);
++		iommu_state[i][DMAR_FEDATA_REG] =
++			(u32) readl(iommu->reg + DMAR_FEDATA_REG);
++		iommu_state[i][DMAR_FEADDR_REG] =
++			(u32) readl(iommu->reg + DMAR_FEADDR_REG);
++		iommu_state[i][DMAR_FEUADDR_REG] =
++			(u32) readl(iommu->reg + DMAR_FEUADDR_REG);
++
++		spin_unlock_irqrestore(&iommu->register_lock, flag);
++		i++;
++	}
++	return 0;
++}
++
++static int iommu_resume(struct sys_device *dev)
++{
++	struct dmar_drhd_unit *drhd;
++	struct intel_iommu *iommu;
++	unsigned long flag;
++	int i = 0;
++
++	if (init_iommu_hw())
++		panic("IOMMU setup failed, DMAR can not start!\n");
++
++	for_each_drhd_unit(drhd) {
++		if (drhd->ignored)
++			continue;
++
++		iommu = drhd->iommu;
++
++		spin_lock_irqsave(&iommu->register_lock, flag);
++
++		writel((u32) iommu_state[i][DMAR_FECTL_REG],
++			iommu->reg + DMAR_FECTL_REG);
++		writel((u32) iommu_state[i][DMAR_FEDATA_REG],
++			iommu->reg + DMAR_FEDATA_REG);
++		writel((u32) iommu_state[i][DMAR_FEADDR_REG],
++			iommu->reg + DMAR_FEADDR_REG);
++		writel((u32) iommu_state[i][DMAR_FEUADDR_REG],
++			iommu->reg + DMAR_FEUADDR_REG);
++
++		spin_unlock_irqrestore(&iommu->register_lock, flag);
++		i++;
++	}
++	return 0;
++}
++
++static struct sysdev_class iommu_sysclass = {
++	.name		= "iommu",
++	.resume		= iommu_resume,
++	.suspend	= iommu_suspend,
++};
++
++static struct sys_device device_iommu = {
++	.cls	= &iommu_sysclass,
++};
++
++static int __init init_iommu_sysfs(void)
++{
++	int error;
++
++	error = sysdev_class_register(&iommu_sysclass);
++	if (error)
++		return error;
++
++	error = sysdev_register(&device_iommu);
++	if (error)
++		sysdev_class_unregister(&iommu_sysclass);
++
++	return error;
++}
++
++#else
++static init __init init_iommu_sysfs(void)
++{
++	return 0;
++}
++#endif	/* CONFIG_PM */
++
+ int __init intel_iommu_init(void)
+ {
+ 	int ret = 0;
+@@ -2598,6 +2755,7 @@ int __init intel_iommu_init(void)
+ 	init_timer(&unmap_timer);
+ 	force_iommu = 1;
+ 	dma_ops = &intel_dma_ops;
++	init_iommu_sysfs();
+ 
+ 	register_iommu(&intel_iommu_ops);
+ 
+diff --git a/include/linux/intel-iommu.h b/include/linux/intel-iommu.h
+index 1d6c71d..5ec836b 100644
+--- a/include/linux/intel-iommu.h
++++ b/include/linux/intel-iommu.h
+@@ -205,6 +205,9 @@ static inline void dmar_writeq(void __iomem *addr, u64 val)
+ /* low 64 bit */
+ #define dma_frcd_page_addr(d) (d & (((u64)-1) << PAGE_SHIFT))
+ 
++#define MAX_IOMMUS      32
++#define MAX_IOMMU_REGS  0xc0
++
+ #define IOMMU_WAIT_OP(iommu, offset, op, cond, sts)			\
+ do {									\
+ 	cycles_t start_time = get_cycles();				\
+@@ -322,6 +325,7 @@ extern int alloc_iommu(struct dmar_drhd_unit *drhd);
+ extern void free_iommu(struct intel_iommu *iommu);
+ extern int dmar_enable_qi(struct intel_iommu *iommu);
+ extern void dmar_disable_qi(struct intel_iommu *iommu);
++extern int dmar_reenable_qi(struct intel_iommu *iommu);
+ extern void qi_global_iec(struct intel_iommu *iommu);
+ 
+ extern int qi_flush_context(struct intel_iommu *iommu, u16 did, u16 sid,
 
 -- 
 
