@@ -1,70 +1,143 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763612AbZCYRjL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763602AbZCYRjb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763612AbZCYRjL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 13:39:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759889AbZCYRix
+	id S1763602AbZCYRjb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 13:39:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763769AbZCYRi5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 13:38:53 -0400
-Received: from hera.kernel.org ([140.211.167.34]:54469 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753961AbZCYRiv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 13:38:51 -0400
-Subject: Re: [PATCH -tip] x86: move vmware to hypervisor
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: akataria@vmware.com
-Cc: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <1238001853.32497.22.camel@alok-dev1>
-References: <1237281581.7907.2.camel@ht.satnam>
-	 <20090317093919.GD6477@elte.hu> <1237283318.7907.9.camel@ht.satnam>
-	 <49BFC6CB.9070603@zytor.com>
-	 <1237958994.5556.5.camel@localhost.localdomain>
-	 <20090325125955.GB516@elte.hu>  <1237999971.32497.12.camel@alok-dev1>
-	 <1238000840.2500.49.camel@ht.satnam>  <1238001853.32497.22.camel@alok-dev1>
-Content-Type: text/plain
-Date: Wed, 25 Mar 2009 23:08:13 +0530
-Message-Id: <1238002693.2500.52.camel@ht.satnam>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
-Content-Transfer-Encoding: 7bit
+	Wed, 25 Mar 2009 13:38:57 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:51283 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763701AbZCYRiz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Mar 2009 13:38:55 -0400
+Date: Wed, 25 Mar 2009 13:38:53 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Ingo Molnar <mingo@elte.hu>
+cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Tim Bird <tim.bird@am.sony.com>, Steven Rostedt <srostedt@redhat.com>
+Subject: [PATCH][GIT PULL] tracing: clean up tracing profiler
+In-Reply-To: <alpine.DEB.2.00.0903251134310.5675@gandalf.stny.rr.com>
+Message-ID: <alpine.DEB.2.00.0903251337570.5675@gandalf.stny.rr.com>
+References: <20090325035646.662994901@goodmis.org> <20090325040832.251748832@goodmis.org> <20090325100252.GH2341@elte.hu> <alpine.DEB.2.00.0903251134310.5675@gandalf.stny.rr.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-03-25 at 10:24 -0700, Alok Kataria wrote:
-> On Wed, 2009-03-25 at 10:07 -0700, Jaswinder Singh Rajput wrote:
-> > On Wed, 2009-03-25 at 09:52 -0700, Alok Kataria wrote:
-> > > > 
-> > > > vmware can be considered a CPU here, so i think making the disabling 
-> > > > also depend on PROCESSOR_SELECT.
-> > > 
-> > > Ingo, this code is not just to be used by VMware, the reason we did this
-> > > generically was so that a guest could run unaltered on *any* fully
-> > > virtualized hypervisor.
-> > > And give that this code is just a boot setup thing, the only thing this
-> > > patch saves over here is not running the detection code on native
-> > > systems. All the rest of the code is guarded by the
-> > > "boot_cpu_data.x86_hyper_vendor" checks anyways.  
-> > > 
-> > > I don't really see the point of adding one more config option just for
-> > > this. 
-> > > 
-> > 
-> > Can you please explain what is the point of adding this support all the
-> > time if this is useless for 99.9% of cases. IMHO, it should be optional.
-> 
-> First of all, I don't know how did you get to the 99.9% number, though I
-> think its not a point worth debating, just like to share some info with
-> you. More and more people are adopting virtualization now a days and
-> give the trend i don't see just 0.1% people running Linux on virtualized
-> hardware. So though its not a common case there is still a large user
-> base. 
 
-I am agree with you there is no point for debate.
+Ingo,
 
-If someone need this option, she can enable it and use it.
+Please pull the latest rfc/tip/tracing/function-profiler tree, which can be found at:
 
-Thanks,
---
-JSR
+  git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
+rfc/tip/tracing/function-profiler
+
+
+Steven Rostedt (1):
+      tracing: clean up tracing profiler
+
+----
+ kernel/trace/ftrace.c |   28 +++++++++++++++-------------
+ 1 files changed, 15 insertions(+), 13 deletions(-)
+---------------------------
+commit fb9fb015e92123fa3a8e0c2e2fff491d4a56b470
+Author: Steven Rostedt <srostedt@redhat.com>
+Date:   Wed Mar 25 13:26:41 2009 -0400
+
+    tracing: clean up tracing profiler
+    
+    Ingo Molnar suggested clean ups for the profiling code. This patch
+    makes those updates.
+    
+    Reported-by: Ingo Molnar <mingo@elte.hu>
+    Signed-off-by: Steven Rostedt <srostedt@redhat.com>
+
+diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
+index 71e5fae..a141d84 100644
+--- a/kernel/trace/ftrace.c
++++ b/kernel/trace/ftrace.c
+@@ -69,7 +69,7 @@ static DEFINE_MUTEX(ftrace_lock);
+ 
+ static struct ftrace_ops ftrace_list_end __read_mostly =
+ {
+-	.func = ftrace_stub,
++	.func		= ftrace_stub,
+ };
+ 
+ static struct ftrace_ops *ftrace_list __read_mostly = &ftrace_list_end;
+@@ -271,8 +271,10 @@ struct ftrace_profile_stat {
+ #define PROFILES_PER_PAGE					\
+ 	(PROFILE_RECORDS_SIZE / sizeof(struct ftrace_profile))
+ 
+-static int ftrace_profile_bits;
+-static int ftrace_profile_enabled;
++static int ftrace_profile_bits __read_mostly;
++static int ftrace_profile_enabled __read_mostly;
++
++/* ftrace_profile_lock - synchronize the enable and disable of the profiler */
+ static DEFINE_MUTEX(ftrace_profile_lock);
+ 
+ static DEFINE_PER_CPU(struct ftrace_profile_stat, ftrace_profile_stats);
+@@ -651,7 +653,7 @@ static void unregister_ftrace_profiler(void)
+ #else
+ static struct ftrace_ops ftrace_profile_ops __read_mostly =
+ {
+-	.func = function_profile_call,
++	.func		= function_profile_call,
+ };
+ 
+ static int register_ftrace_profiler(void)
+@@ -670,7 +672,7 @@ ftrace_profile_write(struct file *filp, const char __user *ubuf,
+ 		     size_t cnt, loff_t *ppos)
+ {
+ 	unsigned long val;
+-	char buf[64];
++	char buf[64];		/* big enough to hold a number */
+ 	int ret;
+ 
+ 	if (cnt >= sizeof(buf))
+@@ -719,7 +721,7 @@ static ssize_t
+ ftrace_profile_read(struct file *filp, char __user *ubuf,
+ 		     size_t cnt, loff_t *ppos)
+ {
+-	char buf[64];
++	char buf[64];		/* big enough to hold a number */
+ 	int r;
+ 
+ 	r = sprintf(buf, "%u\n", ftrace_profile_enabled);
+@@ -734,12 +736,12 @@ static const struct file_operations ftrace_profile_fops = {
+ 
+ /* used to initialize the real stat files */
+ static struct tracer_stat function_stats __initdata = {
+-	.name = "functions",
+-	.stat_start = function_stat_start,
+-	.stat_next = function_stat_next,
+-	.stat_cmp = function_stat_cmp,
+-	.stat_headers = function_stat_headers,
+-	.stat_show = function_stat_show
++	.name		= "functions",
++	.stat_start	= function_stat_start,
++	.stat_next	= function_stat_next,
++	.stat_cmp	= function_stat_cmp,
++	.stat_headers	= function_stat_headers,
++	.stat_show	= function_stat_show
+ };
+ 
+ static void ftrace_profile_debugfs(struct dentry *d_tracer)
+@@ -1954,7 +1956,7 @@ function_trace_probe_call(unsigned long ip, unsigned long parent_ip)
+ 
+ static struct ftrace_ops trace_probe_ops __read_mostly =
+ {
+-	.func = function_trace_probe_call,
++	.func		= function_trace_probe_call,
+ };
+ 
+ static int ftrace_probe_registered;
+
 
