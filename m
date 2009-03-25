@@ -1,70 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755857AbZCYEbk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755985AbZCYEby@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755857AbZCYEbk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 00:31:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752693AbZCYEb2
+	id S1755985AbZCYEby (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 00:31:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754272AbZCYEbb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 00:31:28 -0400
-Received: from cantor.suse.de ([195.135.220.2]:57063 "EHLO mx1.suse.de"
+	Wed, 25 Mar 2009 00:31:31 -0400
+Received: from ozlabs.org ([203.10.76.45]:41001 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752589AbZCYEb1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 00:31:27 -0400
-Date: Tue, 24 Mar 2009 21:18:39 -0700
-From: Greg KH <gregkh@suse.de>
-To: Stephen Hemminger <shemminger@vyatta.com>
-Cc: linux-kernel@vger.kernel.org, Kay Sievers <kay.sievers@vrfy.org>,
-       davem@davemloft.net, netdev@vger.kernel.org
-Subject: Re: [PATCH 15/61] net: struct device - replace bus_id with
-	dev_name(), dev_set_name()
-Message-ID: <20090325041839.GB27737@suse.de>
-References: <20090325001659.GA22461@kroah.com> <1237940825-22904-15-git-send-email-gregkh@suse.de> <20090324203111.0d3f5de1@nehalam>
+	id S1751135AbZCYEb3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Mar 2009 00:31:29 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: [PATCH] sched_rt: don't allocate cpumask in fastpath
+Date: Wed, 25 Mar 2009 15:01:22 +1030
+User-Agent: KMail/1.11.1 (Linux/2.6.27-11-generic; KDE/4.2.1; i686; ; )
+Cc: Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090324203111.0d3f5de1@nehalam>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Message-Id: <200903251501.22664.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 24, 2009 at 08:31:11PM -0700, Stephen Hemminger wrote:
-> On Tue, 24 Mar 2009 17:26:19 -0700
-> Greg Kroah-Hartman <gregkh@suse.de> wrote:
-> 
-> > From: Kay Sievers <kay.sievers@vrfy.org>
-> > 
-> > Cc: davem@davemloft.net
-> > Cc: netdev@vger.kernel.org
-> > Acked-by: Greg Kroah-Hartman <gregkh@suse.de>
-> > Signed-off-by: Kay Sievers <kay.sievers@vrfy.org>
-> > ---
-> >  drivers/net/arm/ks8695net.c  |    2 +-
-> >  drivers/net/au1000_eth.c     |    8 ++++----
-> >  drivers/net/bfin_mac.c       |   12 ++++++------
-> >  drivers/net/bmac.c           |    2 +-
-> >  drivers/net/cpmac.c          |    2 +-
-> >  drivers/net/declance.c       |    6 +++---
-> >  drivers/net/depca.c          |    6 +++---
-> >  drivers/net/ehea/ehea_main.c |    2 +-
-> >  drivers/net/jazzsonic.c      |    6 ++++--
-> >  drivers/net/macb.c           |   10 +++++-----
-> >  drivers/net/macsonic.c       |   15 ++++++++-------
-> >  drivers/net/mv643xx_eth.c    |    2 +-
-> >  drivers/net/sb1250-mac.c     |   10 +++++-----
-> >  drivers/net/smc911x.c        |    2 +-
-> >  drivers/net/smc91x.c         |    2 +-
-> >  drivers/net/smsc911x.c       |    7 ++++---
-> >  drivers/net/smsc9420.c       |    4 ++--
-> >  drivers/net/tc35815.c        |    4 ++--
-> >  drivers/net/xtsonic.c        |    2 +-
-> >  19 files changed, 54 insertions(+), 50 deletions(-)
-> > 
-> 
-> I know this is needed, but could please put some more explicit rational
-> in changelog.
+Impact: cleanup
 
-bus_id is going away, much more rational isn't really needed :)
+As pointed out by Steven Rostedt.  Since the arg in question is
+unused, we simply change cpupri_find() to accept NULL.
 
-thanks,
+Cc: Steven Rostedt <srostedt@redhat.com>
+Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+---
+ kernel/sched_cpupri.c |    5 +++--
+ kernel/sched_rt.c     |   15 ++++-----------
+ 2 files changed, 7 insertions(+), 13 deletions(-)
 
-greg k-h
+diff --git a/kernel/sched_cpupri.c b/kernel/sched_cpupri.c
+--- a/kernel/sched_cpupri.c
++++ b/kernel/sched_cpupri.c
+@@ -55,7 +55,7 @@ static int convert_prio(int prio)
+  * cpupri_find - find the best (lowest-pri) CPU in the system
+  * @cp: The cpupri context
+  * @p: The task
+- * @lowest_mask: A mask to fill in with selected CPUs
++ * @lowest_mask: A mask to fill in with selected CPUs (or NULL)
+  *
+  * Note: This function returns the recommended CPUs as calculated during the
+  * current invokation.  By the time the call returns, the CPUs may have in
+@@ -81,7 +81,8 @@ int cpupri_find(struct cpupri *cp, struc
+ 		if (cpumask_any_and(&p->cpus_allowed, vec->mask) >= nr_cpu_ids)
+ 			continue;
+ 
+-		cpumask_and(lowest_mask, &p->cpus_allowed, vec->mask);
++		if (lowest_mask)
++			cpumask_and(lowest_mask, &p->cpus_allowed, vec->mask);
+ 		return 1;
+ 	}
+ 
+diff --git a/kernel/sched_rt.c b/kernel/sched_rt.c
+--- a/kernel/sched_rt.c
++++ b/kernel/sched_rt.c
+@@ -805,20 +805,15 @@ static int select_task_rq_rt(struct task
+ 
+ static void check_preempt_equal_prio(struct rq *rq, struct task_struct *p)
+ {
+-	cpumask_var_t mask;
+-
+ 	if (rq->curr->rt.nr_cpus_allowed == 1)
+ 		return;
+ 
+-	if (!alloc_cpumask_var(&mask, GFP_ATOMIC))
++	if (p->rt.nr_cpus_allowed != 1
++	    && cpupri_find(&rq->rd->cpupri, p, NULL))
+ 		return;
+ 
+-	if (p->rt.nr_cpus_allowed != 1
+-	    && cpupri_find(&rq->rd->cpupri, p, mask))
+-		goto free;
+-
+-	if (!cpupri_find(&rq->rd->cpupri, rq->curr, mask))
+-		goto free;
++	if (!cpupri_find(&rq->rd->cpupri, rq->curr, NULL))
++		return;
+ 
+ 	/*
+ 	 * There appears to be other cpus that can accept
+@@ -827,8 +822,6 @@ static void check_preempt_equal_prio(str
+ 	 */
+ 	requeue_task_rt(rq, p, 1);
+ 	resched_task(rq->curr);
+-free:
+-	free_cpumask_var(mask);
+ }
+ 
+ #endif /* CONFIG_SMP */
