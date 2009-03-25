@@ -1,93 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760310AbZCYLw7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759924AbZCYLxZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760310AbZCYLw7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 07:52:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756877AbZCYLwr
+	id S1759924AbZCYLxZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 07:53:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759051AbZCYLw4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 07:52:47 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:36819 "EHLO mx2.redhat.com"
+	Wed, 25 Mar 2009 07:52:56 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:48632 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757239AbZCYLwn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 07:52:43 -0400
-Date: Wed, 25 Mar 2009 07:51:10 -0400
-From: Jeff Layton <jlayton@redhat.com>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: Ian Kent <raven@themaw.net>, Dave Chinner <david@fromorbit.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       "jens.axboe@oracle.com" <jens.axboe@oracle.com>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "hch@infradead.org" <hch@infradead.org>,
-       "linux-nfs@vger.kernel.org" <linux-nfs@vger.kernel.org>
-Subject: Re: [PATCH] writeback: reset inode dirty time when adding it back
- to empty s_dirty list
-Message-ID: <20090325075110.028f0d1d@tleilax.poochiereds.net>
-In-Reply-To: <20090325025037.GA17374@localhost>
-References: <1237840233-11045-1-git-send-email-jlayton@redhat.com>
-	<20090324135720.GA25314@localhost>
-	<20090324102806.4f38fd26@tleilax.poochiereds.net>
-	<20090324104657.6907b19e@tleilax.poochiereds.net>
-	<20090325012829.GA7506@localhost>
-	<20090324221528.2bb7c50b@tleilax.poochiereds.net>
-	<20090325025037.GA17374@localhost>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1760818AbZCYLwz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Mar 2009 07:52:55 -0400
+Date: Wed, 25 Mar 2009 12:52:40 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] perf_counter: allow and require one-page mmap on
+	counting counters
+Message-ID: <20090325115240.GA11571@elte.hu>
+References: <18889.59409.260586.87939@cargo.ozlabs.ibm.com> <1237981712.7972.812.camel@twins>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1237981712.7972.812.camel@twins>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 25 Mar 2009 10:50:37 +0800
-Wu Fengguang <fengguang.wu@intel.com> wrote:
 
-> > Given the right situation though (or maybe the right filesystem), it's
-> > not too hard to imagine this problem occurring even in current mainline
-> > code with an inode that's frequently being redirtied.
-> 
-> My reasoning with recent kernel is: for kupdate, s_dirty enqueues only
-> happen in __mark_inode_dirty() and redirty_tail().  Newly dirtied
-> inodes will be parked in s_dirty for 30s. During which time the
-> actively being-redirtied inodes, if their dirtied_when is an old stuck
-> value, will be retried for writeback and then re-inserted into a
-> non-empty s_dirty queue and have their dirtied_when refreshed.
-> 
+* Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
 
-Doesn't that assume that there are new inodes that are being dirtied?
-If you only have the same inodes being redirtied and never any new
-ones, the problem still occurs, right?
-
-> > > 
-> > > ...I see no obvious reasons against unconditionally resetting dirtied_when.
-> > > 
-> > > (a) Delaying an inode's writeback for 30s maybe too long - its blocking
-> > > condition may well go away within 1s. (b) And it would be very undesirable
-> > > if one big file is repeatedly redirtied hence its writeback being
-> > > delayed considerably.
-> > > 
-> > > However, redirty_tail() currently only tries to speedup writeback-after-redirty
-> > > in a _best effort_ way. It at best partially hides the above issues,
-> > > if there are any. In particular, if (b) is possible, the bug should
-> > > already show up at least in some situations.
-> > > 
-> > > For XFS, immediately sync of redirtied inode is actually discouraged:
-> > > 
-> > >         http://lkml.org/lkml/2008/1/16/491
-> > > 
-> > > 
+> On Wed, 2009-03-25 at 19:15 +1100, Paul Mackerras wrote:
+> > Impact: bug fix
 > > 
-> > Ok, those are good points that I need to think about.
+> > Currently the mmap code requires that the length of the mmap be at least
+> > two pages.  That is fine for sampling counters, but for counting
+> > counters the second and subsequent pages are just wasted, since counting
+> > counters don't generate events.
 > > 
-> > Thanks for the help so far. I'd welcome any suggestions you have on
-> > how best to fix this.
+> > This changes the code to require that the mmap be one page in length
+> > for counting counters, and applies the existing check to sampling
+> > counters.
 > 
-> For NFS, is it desirable to retry a redirtied inode after 30s, or
-> after a shorter 5s, or after 0.1~5s? Or the exact timing simply
-> doesn't matter?
+> Does the below work for you Paul?
 > 
+> ---
+> Subject: perf_counter: allow one-page mmap on counters
+> From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> Date: Wed Mar 25 12:44:16 CET 2009
+> 
+> A brainfart stopped single page mmap()s working. The rest of the code
+> should be perfectly fine with not having any data pages.
+> 
+> Reported-by: Paul Mackerras <paulus@samba.org>
+> Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> ---
+>  kernel/perf_counter.c |    6 +++++-
+>  1 file changed, 5 insertions(+), 1 deletion(-)
+> 
+> Index: linux-2.6/kernel/perf_counter.c
+> ===================================================================
+> --- linux-2.6.orig/kernel/perf_counter.c
+> +++ linux-2.6/kernel/perf_counter.c
+> @@ -1369,7 +1369,11 @@ static int perf_mmap(struct file *file, 
+>  	vma_size = vma->vm_end - vma->vm_start;
+>  	nr_pages = (vma_size / PAGE_SIZE) - 1;
+>  
+> -	if (nr_pages == 0 || !is_power_of_2(nr_pages))
+> +	/*
+> +	 * If we have data pages ensure they're a power-of-two number, so we
+> +	 * can do bitmasks instead of modulo.
+> +	 */
+> +	if (nr_pages != 0 && !is_power_of_2(nr_pages))
+>  		return -EINVAL;
 
-I don't really consider NFS to be a special case here. It just happens
-to be where we saw the problem originally. Some of its characteristics
-might make it easier to hit this, but I'm not certain of that.
+Yeah - this is cleaner.
 
--- 
-Jeff Layton <jlayton@redhat.com>
+	Ingo
