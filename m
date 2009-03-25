@@ -1,102 +1,158 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763027AbZCYSQ6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763473AbZCYSR3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763027AbZCYSQ6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 14:16:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757380AbZCYSQf
+	id S1763473AbZCYSR3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 14:17:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756489AbZCYSRK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 14:16:35 -0400
-Received: from mail-qy0-f118.google.com ([209.85.221.118]:35619 "EHLO
-	mail-qy0-f118.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754534AbZCYSQd convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 14:16:33 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=dll1kw3MvBK2fcKb2xHIEA1k9d5cW/MtqhwI1qVfV3fyoewmlw5hwIHmo/wGWuEi0s
-         zd1GmufkC3EUnqD5SGPblaAxsKOZ0fkeAaAzo7Dsc1iXc710/d4OwV+/xHpqBpooDWeM
-         W1TSY2mJxw5bRlC7L8ThAfo5meA391/AVLbos=
-MIME-Version: 1.0
-In-Reply-To: <49CA6D09.1020401@krogh.cc>
-References: <alpine.LFD.2.00.0903231617550.3032@localhost.localdomain>
-	 <49C87B87.4020108@krogh.cc>
-	 <72dbd3150903232346g5af126d7sb5ad4949a7b5041f@mail.gmail.com>
-	 <49C88C80.5010803@krogh.cc>
-	 <72dbd3150903241200v38720ca0x392c381f295bdea@mail.gmail.com>
-	 <49CA6D09.1020401@krogh.cc>
-Date: Wed, 25 Mar 2009 11:16:30 -0700
-Message-ID: <72dbd3150903251116ie84b9e9ib998ac0283e6cfbb@mail.gmail.com>
-Subject: Re: Linux 2.6.29
-From: David Rees <drees76@gmail.com>
-To: Jesper Krogh <jesper@krogh.cc>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Wed, 25 Mar 2009 14:17:10 -0400
+Received: from hera.kernel.org ([140.211.167.34]:51500 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753281AbZCYSRI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Mar 2009 14:17:08 -0400
+Subject: [PATCH -tip] x86: syscalls.h cleanup
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: Ingo Molnar <mingo@elte.hu>, x86 maintainers <x86@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Wed, 25 Mar 2009 23:46:43 +0530
+Message-Id: <1238005003.2500.55.camel@ht.satnam>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 25, 2009 at 10:42 AM, Jesper Krogh <jesper@krogh.cc> wrote:
-> David Rees wrote:
->> On Tue, Mar 24, 2009 at 12:32 AM, Jesper Krogh <jesper@krogh.cc> wrote:
->>> David Rees wrote:
->>> The 480 secondes is not the "wait time" but the time gone before the
->>> message is printed. It the kernel-default it was earlier 120 seconds but
->>> thats changed by Ingo Molnar back in september. I do get a lot of less
->>> noise but it really doesn't tell anything about the nature of the
->>> problem.
->>>
->>> The systes spec:
->>> 32GB of memory. The disks are a Nexsan SataBeast with 42 SATA drives in
->>> Raid10 connected using 4Gbit fibre-channel. I'll let it up to you to
->>> decide
->>> if thats fast or slow?
->>
->> The drives should be fast enough to saturate 4Gbit FC in streaming
->> writes.  How fast is the array in practice?
->
-> Thats allways a good question.. This is by far not being the only user
-> of the array at the time of testing.. (there are 4 FC-channel connected to a
-> switch). Creating a fresh slice.. and just dd'ing onto it from /dev/zero
-> gives:
-> jk@hest:~$ sudo dd if=/dev/zero of=/dev/sdh bs=1M count=10000
-> 10000+0 records in
-> 10000+0 records out
-> 10485760000 bytes (10 GB) copied, 78.0557 s, 134 MB/s
-> jk@hest:~$ sudo dd if=/dev/zero of=/dev/sdh bs=1M count=1000
-> 1000+0 records in
-> 1000+0 records out
-> 1048576000 bytes (1.0 GB) copied, 8.11019 s, 129 MB/s
->
-> Watching using dstat while dd'ing it peaks at 220M/s
+From: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+Date: Wed, 25 Mar 2009 23:43:08 +0530
+Subject: [PATCH] x86: syscalls.h cleanup
 
-Hmm, not as fast as I expected.
+Impact: cleanup
 
-> It has 2GB of battery backed cache. I'm fairly sure that when it was new
-> (and I only had connected one host) I could get it up at around 350MB/s.
+Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+---
+ arch/x86/include/asm/syscalls.h |   45 ++++++++++++++++++++------------------
+ 1 files changed, 24 insertions(+), 21 deletions(-)
 
-With 2GB of BBC, I'm surprised you are seeing as much latency as you
-are.  It should be able to suck down writes as fast as you can throw
-at it.  Is the array configured in writeback mode?
+diff --git a/arch/x86/include/asm/syscalls.h b/arch/x86/include/asm/syscalls.h
+index 7043408..372b76e 100644
+--- a/arch/x86/include/asm/syscalls.h
++++ b/arch/x86/include/asm/syscalls.h
+@@ -1,7 +1,7 @@
+ /*
+  * syscalls.h - Linux syscall interfaces (arch-specific)
+  *
+- * Copyright (c) 2008 Jaswinder Singh
++ * Copyright (c) 2008 Jaswinder Singh Rajput
+  *
+  * This file is released under the GPLv2.
+  * See the file COPYING for more details.
+@@ -12,50 +12,55 @@
+ 
+ #include <linux/compiler.h>
+ #include <linux/linkage.h>
+-#include <linux/types.h>
+ #include <linux/signal.h>
++#include <linux/types.h>
+ 
+ /* Common in X86_32 and X86_64 */
+ /* kernel/ioport.c */
+ asmlinkage long sys_ioperm(unsigned long, unsigned long, int);
+ 
++/* kernel/process.c */
++int sys_fork(struct pt_regs *);
++int sys_vfork(struct pt_regs *);
++
+ /* kernel/ldt.c */
+ asmlinkage int sys_modify_ldt(int, void __user *, unsigned long);
+ 
++/* kernel/signal.c */
++long sys_rt_sigreturn(struct pt_regs *);
++
+ /* kernel/tls.c */
+ asmlinkage int sys_set_thread_area(struct user_desc __user *);
+ asmlinkage int sys_get_thread_area(struct user_desc __user *);
+ 
+ /* X86_32 only */
+ #ifdef CONFIG_X86_32
++/* kernel/ioport.c */
++long sys_iopl(struct pt_regs *);
++
+ /* kernel/process_32.c */
+-int sys_fork(struct pt_regs *);
+ int sys_clone(struct pt_regs *);
+-int sys_vfork(struct pt_regs *);
+ int sys_execve(struct pt_regs *);
+ 
+-/* kernel/signal_32.c */
++/* kernel/signal.c */
+ asmlinkage int sys_sigsuspend(int, int, old_sigset_t);
+ asmlinkage int sys_sigaction(int, const struct old_sigaction __user *,
+ 			     struct old_sigaction __user *);
+ int sys_sigaltstack(struct pt_regs *);
+ unsigned long sys_sigreturn(struct pt_regs *);
+-long sys_rt_sigreturn(struct pt_regs *);
+-
+-/* kernel/ioport.c */
+-long sys_iopl(struct pt_regs *);
+ 
+ /* kernel/sys_i386_32.c */
++struct mmap_arg_struct;
++struct sel_arg_struct;
++struct oldold_utsname;
++struct old_utsname;
++
+ asmlinkage long sys_mmap2(unsigned long, unsigned long, unsigned long,
+ 			  unsigned long, unsigned long, unsigned long);
+-struct mmap_arg_struct;
+ asmlinkage int old_mmap(struct mmap_arg_struct __user *);
+-struct sel_arg_struct;
+ asmlinkage int old_select(struct sel_arg_struct __user *);
+ asmlinkage int sys_ipc(uint, int, int, int, void __user *, long);
+-struct old_utsname;
+ asmlinkage int sys_uname(struct old_utsname __user *);
+-struct oldold_utsname;
+ asmlinkage int sys_olduname(struct oldold_utsname __user *);
+ 
+ /* kernel/vm86_32.c */
+@@ -65,29 +70,27 @@ int sys_vm86(struct pt_regs *);
+ #else /* CONFIG_X86_32 */
+ 
+ /* X86_64 only */
++/* kernel/ioport.c */
++asmlinkage long sys_iopl(unsigned int, struct pt_regs *);
++
+ /* kernel/process_64.c */
+-asmlinkage long sys_fork(struct pt_regs *);
+ asmlinkage long sys_clone(unsigned long, unsigned long,
+ 			  void __user *, void __user *,
+ 			  struct pt_regs *);
+-asmlinkage long sys_vfork(struct pt_regs *);
+ asmlinkage long sys_execve(char __user *, char __user * __user *,
+ 			   char __user * __user *,
+ 			   struct pt_regs *);
+ long sys_arch_prctl(int, unsigned long);
+ 
+-/* kernel/ioport.c */
+-asmlinkage long sys_iopl(unsigned int, struct pt_regs *);
+-
+-/* kernel/signal_64.c */
++/* kernel/signal.c */
+ asmlinkage long sys_sigaltstack(const stack_t __user *, stack_t __user *,
+ 				struct pt_regs *);
+-long sys_rt_sigreturn(struct pt_regs *);
+ 
+ /* kernel/sys_x86_64.c */
++struct new_utsname;
++
+ asmlinkage long sys_mmap(unsigned long, unsigned long, unsigned long,
+ 			 unsigned long, unsigned long, unsigned long);
+-struct new_utsname;
+ asmlinkage long sys_uname(struct new_utsname __user *);
+ 
+ #endif /* CONFIG_X86_32 */
+-- 
+1.6.0.6
 
->> On a 32GB system that's 1.6GB of dirty data, but your array should be
->> able to write that out fairly quickly (in a couple seconds) as long as
->> it's not too random.  If it's spread all over the disk, write
->> throughput will drop significantly - how fast is data being written to
->> disk when your system suffers from large write latency?
->
-> Thats another thing. I havent been debugging while hitting it (yet) but if I
-> go ind and do a sync on the system manually. Then it doesn't get above
-> 50MB/s in writeout (measured using dstat). But even that doesn't sum up to 8
-> minutes .. 1.6GB at 50MB/s ..=> 32 s.
 
-Have you also tried increasing the IO priority of the kjournald
-processes as a workaround as Arjan van de Ven suggests?
 
-You must have a significant amount of activity going to that FC array
-from other clients - it certainly doesn't seem to be performing as
-well as it could/should be.
-
--Dave
