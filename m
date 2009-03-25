@@ -1,92 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756340AbZCYANX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756357AbZCYAO5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756340AbZCYANX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 20:13:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753842AbZCYANM
+	id S1756357AbZCYAO5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 20:14:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755895AbZCYAOs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 20:13:12 -0400
-Received: from ftp.linux-mips.org ([213.58.128.207]:51155 "EHLO
-	ftp.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752848AbZCYANL (ORCPT
+	Tue, 24 Mar 2009 20:14:48 -0400
+Received: from e38.co.us.ibm.com ([32.97.110.159]:59551 "EHLO
+	e38.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755898AbZCYAOr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 20:13:11 -0400
-Date: Wed, 25 Mar 2009 01:13:03 +0100
-From: Ralf Baechle <ralf@linux-mips.org>
-To: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: dann frazier <dannf@dannf.org>, linux-mips@linux-mips.org
-Subject: [PATCH 1/2] fs: Fix sign extension problem in sys_llseek
-Message-ID: <20090325001303.GB24026@linux-mips.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 24 Mar 2009 20:14:47 -0400
+Subject: Re: [RFC][PATCH] Logarithmic Timekeeping Accumulation
+From: john stultz <johnstul@us.ibm.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Linux-kernel <linux-kernel@vger.kernel.org>,
+       Clark Williams <williams@redhat.com>,
+       Steven Rostedt <srostedt@redhat.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Roman Zippel <zippel@linux-m68k.org>
+In-Reply-To: <20090324141338.GF32043@elte.hu>
+References: <1237858102.7068.20.camel@jstultz-laptop>
+	 <20090324141338.GF32043@elte.hu>
+Content-Type: text/plain
+Date: Tue, 24 Mar 2009 17:14:37 -0700
+Message-Id: <1237940077.6065.3.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In fs/read_write.c:
+On Tue, 2009-03-24 at 15:13 +0100, Ingo Molnar wrote:
+> * John Stultz <johnstul@us.ibm.com> wrote:
+> 
+> > Accumulating one tick at a time works well unless we're using 
+> > NOHZ. Then it can be an issue, since we may have to run through 
+> > the loop a few thousand times, which can increase timer interrupt 
+> > caused latency.
+> > 
+> > The current solution was to accumulate in half-second intervals 
+> > with NOHZ. This kept the number of loops down, however it did 
+> > slightly change how we make NTP adjustments. While not an issue 
+> > with NTPd users, as NTPd makes adjustments over a longer period of 
+> > time, other adjtimex() users have noticed the half-second 
+> > granularity with which we can apply frequency changes to the 
+> > clock.
+> > 
+> > For instance, if a application tries to apply a 100ppm frequency 
+> > correction for 20ms to correct a 2us offset, with NOHZ they either 
+> > get no correction, or a 50us correction.
+> > 
+> > Now, there will always be some granularity error for applying 
+> > frequency corrections. However with users sensitive to this error 
+> > have seen a 50-500x increase with NOHZ compared to running without 
+> > NOHZ.
+> > 
+> > So I figured I'd try another approach then just simply increasing 
+> > the interval. My approach is to consume the time interval 
+> > logarithmically. This reduces the number of times through the loop 
+> > needed keeping latency down, while still preserving the original 
+> > granularity error for adjtimex() changes.
+> > 
+> > This has been lightly tested and appears to work correctly, but 
+> > I'd appreciate any feedback or comments on the idea and code.
+> > 
+> > Signed-off-by: John Stultz <johnstul@us.ibm.com>
+> 
+> Hm, we used to have some sort of problem with a similar patch in the 
+> past. 
 
-SYSCALL_DEFINE5(llseek, unsigned int, fd, unsigned long, offset_high,
-                unsigned long, offset_low, loff_t __user *, result,
-                unsigned int, origin)
-...
-   	offset = vfs_llseek(file, ((loff_t) offset_high << 32) | offset_low,
-                        origin);
+Do you recall any details about the problem? I don't.
 
-On a 64-bit system that define CONFIG_HAVE_SYSCALL_WRAPPERS SYSCALL_DEFINEx
-will truncate long arguments to 32-bit and on some architectures such as
-MIPS sign-extended to 64-bit again.  On such architectures passing a
-value with bit 31 in offset_low set will result in a huge 64-bit offset
-being passed to vfs_llseek() and it failiing with EINVAL.
 
-The issue was discovered on Debian's MIPS infrastructure machines running
-e2fsck:
+> >  		/* accumulate error between NTP and clock interval */
+> > -		clock->error += tick_length;
+> > -		clock->error -= clock->xtime_interval << (NTP_SCALE_SHIFT - clock->shift);
+> > +		clock->error += tick_length << shift;
+> > +		clock->error -= (clock->xtime_interval
+> > +				<< (NTP_SCALE_SHIFT - clock->shift))
+> > +					<< shift;
+> 
+> Why not:
+> 
+> 		clock->error -= clock->xtime_interval
+> 				<< (NTP_SCALE_SHIFT - clock->shift + shift);
+> 
+> ?
 
-[...]
-                          This was noticed on one of the Debian
-infrastructure machines where, after an upgrade, e2fsck began failing
-with errors like:
+Yep. Much cleaner.
 
-  Error reading block 524290 (Invalid argument) while getting next inode
-  from scan.  Ignore error<y>?
-[...]
 
-Fixed by changing the prototype to use 32-bit arguments for the higher
-and lower half of offset of sys_llseek.
+> > +		if (shift > 0) /*don't roll under!*/
+> > +			shift--;
+> 
+> (nit: watch out the comment style)
 
-Signed-off-by: Ralf Baechle <ralf@linux-mips.org>
+Good point.
 
- fs/read_write.c          |    4 ++--
- include/linux/syscalls.h |    4 ++--
- 2 files changed, 4 insertions(+), 4 deletions(-)
+> that bit looks a bit messy. We estimated the shift:
+> 
+> +	while (offset > (clock->cycle_interval << shift))
+> +               shift++;
+> +	shift--;
+> 
+> can it really ever roll under in this loop:
 
-diff --git a/fs/read_write.c b/fs/read_write.c
-index 400fe81..2fb171e 100644
---- a/fs/read_write.c
-+++ b/fs/read_write.c
-@@ -171,8 +171,8 @@ bad:
- }
- 
- #ifdef __ARCH_WANT_SYS_LLSEEK
--SYSCALL_DEFINE5(llseek, unsigned int, fd, unsigned long, offset_high,
--		unsigned long, offset_low, loff_t __user *, result,
-+SYSCALL_DEFINE5(llseek, unsigned int, fd, unsigned int, offset_high,
-+		unsigned int, offset_low, loff_t __user *, result,
- 		unsigned int, origin)
- {
- 	int retval;
-diff --git a/include/linux/syscalls.h b/include/linux/syscalls.h
-index f9f900c..5c593d4 100644
---- a/include/linux/syscalls.h
-+++ b/include/linux/syscalls.h
-@@ -444,8 +444,8 @@ asmlinkage long sys_utimes(char __user *filename,
- 				struct timeval __user *utimes);
- asmlinkage long sys_lseek(unsigned int fd, off_t offset,
- 			  unsigned int origin);
--asmlinkage long sys_llseek(unsigned int fd, unsigned long offset_high,
--			unsigned long offset_low, loff_t __user *result,
-+asmlinkage long sys_llseek(unsigned int fd, unsigned int offset_high,
-+			unsigned int offset_low, loff_t __user *result,
- 			unsigned int origin);
- asmlinkage long sys_read(unsigned int fd, char __user *buf, size_t count);
- asmlinkage long sys_readahead(int fd, loff_t offset, size_t count);
+It probably can't. I just haven't sat down to work out the full math to
+prove it to myself, so I've been cautious. 
+
+
+Thanks for the suggestions, I'll roll those fixes up into the next
+version.
+
+
+So the basic approach seems ok by you?
+
+thanks
+-john
+
+
+
