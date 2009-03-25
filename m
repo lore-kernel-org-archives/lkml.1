@@ -1,96 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758357AbZCYQwX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760257AbZCYQwk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758357AbZCYQwX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 12:52:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753971AbZCYQvv
+	id S1760257AbZCYQwk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 12:52:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757563AbZCYQwK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 12:51:51 -0400
-Received: from mail-bw0-f169.google.com ([209.85.218.169]:35152 "EHLO
-	mail-bw0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751756AbZCYQvs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 12:51:48 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type
-         :content-transfer-encoding;
-        b=FsZDuhAjzenxWcplSKuE9wx2KJE+fwm0P20M7FzDU5AYTfht+hU0hrYJWAE4vkvGe9
-         3NeNvocX+mTcqODfgYXm3JDVCSWz9901wbfVUTb3OqBV1fM118r+C69KuXMp9fI/2X04
-         fRc2V9PgBzBpMClxqAMTcamzX5EI/I8Ddi54Y=
+	Wed, 25 Mar 2009 12:52:10 -0400
+Received: from e9.ny.us.ibm.com ([32.97.182.139]:46973 "EHLO e9.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757332AbZCYQwI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Mar 2009 12:52:08 -0400
+Date: Wed, 25 Mar 2009 09:52:04 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: linux-tip-commits@vger.kernel.org, linux-kernel@vger.kernel.org,
+       hpa@zytor.com, mingo@redhat.com, penberg@cs.helsinki.fi,
+       eduard.munteanu@linux360.ro, tglx@linutronix.de
+Subject: Re: [tip:tracing/kmemtrace] rcutree: fix rcu_tree_trace.c data
+	structure dependencies
+Message-ID: <20090325165204.GG7297@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <1237898630.25315.83.camel@penberg-laptop> <tip-5d957021d326fbfdc1d7a4f11a3da1f6f82d6a36@git.kernel.org> <20090325161147.GA18738@elte.hu>
 MIME-Version: 1.0
-Date: Wed, 25 Mar 2009 12:51:44 -0400
-Message-ID: <8044b6ad0903250951w3b843e6etd6ec866404dbe455@mail.gmail.com>
-Subject: [PATCH] ioctl interface to wait on VT switch
-From: "D. Matt Placek" <dmattplacek@gmail.com>
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090325161147.GA18738@elte.hu>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a patch to the 2.6.29 kernel which adds an ioctl to the VT
-interface which allows an application to wait on any VT switch, rather
-than having to wait on switching to a specific VT.  This would be a
-big help for the ConsoleKit, which currently creates 60+ threads where
-each thread is asleep waiting for a switch to one of every possible
-VT.  It would be great if we could get this included in the kernel- or
-if there is a better approach feedback is invited.  It would simply be
-nice not to have to spawn 60 threads just to wait for a console
-switch, and this is a pretty minor addition to the VT system.
+On Wed, Mar 25, 2009 at 05:11:47PM +0100, Ingo Molnar wrote:
+> 
+> * Ingo Molnar <mingo@elte.hu> wrote:
+> 
+> > Commit-ID:  5d957021d326fbfdc1d7a4f11a3da1f6f82d6a36
+> > Gitweb:     http://git.kernel.org/tip/5d957021d326fbfdc1d7a4f11a3da1f6f82d6a36
+> > Author:     Ingo Molnar <mingo@elte.hu>
+> > AuthorDate: Wed, 25 Mar 2009 16:42:24 +0100
+> > Committer:  Ingo Molnar <mingo@elte.hu>
+> > CommitDate: Wed, 25 Mar 2009 16:42:24 +0100
+> > 
+> > rcutree: fix rcu_tree_trace.c data structure dependencies
+> > 
+> > Impact: build fix
+> > 
+> > We removed rcutree internals from the public rcutree.h file - but
+> > kernel/rcutree_trace.c depends on them.
+> > 
+> > Introduce kernel/rcutree.h for internal definitions. (Probably all
+> > the other data types from include/linux/rcutree.h could be
+> > moved here too - except rcu_data.)
+> 
+> Paul ... what do you think? This is just an interim measure to get 
+> the build going - i think we could do more cleanups here perhaps, if 
+> you agree.
 
+I am generally in favor of this.  I reviewed the above gitweb and it
+looks good to me, feel free to append:
 
-diff -U 3 -r linux-2.6.29-rc8/drivers/char/vt_ioctl.c
-patched-linux-2.6.29-rc8/drivers/char/vt_ioctl.c
---- linux-2.6.29-rc8/drivers/char/vt_ioctl.c	2009-03-12 22:39:28.000000000 -0400
-+++ patched-linux-2.6.29-rc8/drivers/char/vt_ioctl.c	2009-03-25
-12:35:42.000000000 -0400
-@@ -41,6 +41,8 @@
- #define VT_IS_IN_USE(i)	(console_driver->ttys[i] &&
-console_driver->ttys[i]->count)
- #define VT_BUSY(i)	(VT_IS_IN_USE(i) || i == fg_console ||
-vc_cons[i].d == sel_cons)
+Reviewed-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
 
-+#define WAIT_ANY_CONSOLE -1234
-+
- /*
-  * Console (vt and kd) routines, as defined by USL SVR4 manual, and by
-  * experimentation and study of X386 SYSV handling.
-@@ -846,6 +848,13 @@
- 			ret = vt_waitactive(arg - 1);
- 		break;
+> I think many of the data definitions (and the resulting include file 
+> dependencies) in include/linux/rcu*.h could move into kernel/rcu*.h 
+> and be privatized that way. 'struct rcu_state' would be an example.
+> 
+> Agreed?
 
-+
-+	case VT_WAITSWITCH:
-+		if (!perm)
-+			goto eperm;
-+      ret = vt_waitactive(WAIT_ANY_CONSOLE);
-+		break;
-+
- 	/*
- 	 * If a vt is under process control, the kernel will not switch to it
- 	 * immediately, but postpone the operation until the process calls this
-@@ -1202,6 +1211,11 @@
- 		if (signal_pending(current))
- 			break;
- 		schedule();
-+
-+      if (vt == WAIT_ANY_CONSOLE) {
-+         retval = 0;
-+         break;
-+      }
- 	}
- 	remove_wait_queue(&vt_activate_queue, &wait);
- 	__set_current_state(TASK_RUNNING);
-diff -U 3 -r linux-2.6.29-rc8/include/linux/vt.h
-patched-linux-2.6.29-rc8/include/linux/vt.h
---- linux-2.6.29-rc8/include/linux/vt.h	2009-03-12 22:39:28.000000000 -0400
-+++ patched-linux-2.6.29-rc8/include/linux/vt.h	2009-03-24
-11:16:31.000000000 -0400
-@@ -73,5 +73,6 @@
- #define VT_LOCKSWITCH   0x560B  /* disallow vt switching */
- #define VT_UNLOCKSWITCH 0x560C  /* allow vt switching */
- #define VT_GETHIFONTMASK 0x560D  /* return hi font mask */
-+#define VT_WAITSWITCH    0x560E	/* wait for change in active vt */
+In principle, yes.  In practice, my attempts to make headway in this
+direction have usually collided with the desire to inline some of the
+functions that appear on fastpaths, so I would prefer caution when moving
+in this direction, especially given my treercu-related todos, to which
+"speeding up synchronize_rcu()" just got added.
 
- #endif /* _LINUX_VT_H */
+							Thanx, Paul
