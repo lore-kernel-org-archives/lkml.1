@@ -1,26 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758802AbZCYJPO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758907AbZCYJPl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758802AbZCYJPO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 05:15:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757409AbZCYJOE
+	id S1758907AbZCYJPl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 05:15:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757932AbZCYJOO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 05:14:04 -0400
-Received: from e28smtp06.in.ibm.com ([59.145.155.6]:59972 "EHLO
-	e28smtp06.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758400AbZCYJOB (ORCPT
+	Wed, 25 Mar 2009 05:14:14 -0400
+Received: from e23smtp08.au.ibm.com ([202.81.31.141]:41264 "EHLO
+	e23smtp08.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758287AbZCYJOL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 05:14:01 -0400
+	Wed, 25 Mar 2009 05:14:11 -0400
 From: Gautham R Shenoy <ego@in.ibm.com>
-Subject: [RFC PATCH 00/11] sched: find_busiest_group() cleanup
+Subject: [RFC PATCH 06/11] sched: Create a helper function to calculate
+	sched_domain stats for fbg()
 To: "Ingo Molnar" <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
        "Vaidyanathan Srinivasan" <svaidy@linux.vnet.ibm.com>
 Cc: linux-kernel@vger.kernel.org, Suresh Siddha <suresh.b.siddha@intel.com>,
        "Balbir Singh" <balbir@in.ibm.com>,
        Nick Piggin <nickpiggin@yahoo.com.au>,
        "Dhaval Giani" <dhaval@linux.vnet.ibm.com>,
-       Bharata B Rao <bharata@linux.vnet.ibm.com>
-Date: Wed, 25 Mar 2009 14:43:30 +0530
-Message-ID: <20090325091239.13992.96090.stgit@sofia.in.ibm.com>
+       Bharata B Rao <bharata@linux.vnet.ibm.com>,
+       Gautham R Shenoy <ego@in.ibm.com>
+Date: Wed, 25 Mar 2009 14:44:01 +0530
+Message-ID: <20090325091401.13992.88737.stgit@sofia.in.ibm.com>
+In-Reply-To: <20090325091239.13992.96090.stgit@sofia.in.ibm.com>
+References: <20090325091239.13992.96090.stgit@sofia.in.ibm.com>
 User-Agent: StGIT/0.14.2
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -29,66 +33,201 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Create a helper function named update_sd_lb_stats() to update the various
+sched_domain related statistics in find_busiest_group(). With this
+we would have moved all the statistics computation out of
+find_busiest_group().
 
-This patchset contains the cleanup of the humongous find_busiest_group()
-function.
-
-Vaidy had  tried a hand at this before. His approach can be
-found here:
-http://lkml.org/lkml/2008/9/24/201 and
-http://lkml.org/lkml/2008/10/9/176
-
-Though the code in this patchset has been written from scratch I have
-reused some of the ideas that Vaidy had originally proposed.
-Credit has been given whereever it is due :)
-
-The patches in this series are incremental. Each one is a functional patch,
-which compiles fine.
-
-The steps followed in the cleanup are as follows:
-- Fix indentations.
-
-- Group variables that serve a common high-level purpose into a single
-  structure.
-
-- Use helper functions to perform all the calculatations, like calculating
-  the sched_domain and sched_group statistics, calculating the imbalance, etc.
-
-- Move the power_savings_balance part, which depends on
-  (CONFIG_SCHED_MC || CONFIG_SCHED_SMT) into a different section, thereby
-  eliminating the #ifdef jungle in helper functions.
-
-- Add /** style comments for all the functions, including find_busiest_group()
-
-- Add additional comments whereever appropriate.
-
-After applying all the patches, the size of find_busiest_group() goes down
-from 313 lines to 76 lines. Of course, there are the helpers, but effort
-has been put to keep all the helper functions within the 80 line limit.
-
-Any feedback on the patches and how the functionality can be tested is greatly
-appreciated.
-
+Credit: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+Signed-off-by: Gautham R Shenoy <ego@in.ibm.com>
 ---
 
-Gautham R Shenoy (11):
-      sched: Add comments to find_busiest_group() function.
-      sched: Refactor the power savings balance code.
-      sched: Optimize the !power_savings_balance during find_busiest_group.
-      sched: Create a helper function to calculate imbalance.
-      sched: Create helper to calculate small_imbalance in find_busiest_group.
-      sched: Create a helper function to calculate sched_domain stats for fbg()
-      sched: Define structure to store the sched_domain statistics for fbg()
-      sched: Create a helper function to calculate sched_group stats for fbg()
-      sched: Define structure to store the sched_group statistics for fbg()
-      sched: Fix indentations in find_busiest_group using gotos.
-      sched: Simple helper functions for find_busiest_group()
+ kernel/sched.c |  117 +++++++++++++++++++++++++++++++++++---------------------
+ 1 files changed, 73 insertions(+), 44 deletions(-)
 
+diff --git a/kernel/sched.c b/kernel/sched.c
+index c1b92da..5e01162 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -3261,32 +3261,33 @@ static inline void update_sg_lb_stats(struct sched_group *group, int this_cpu,
+ 	sgs->group_capacity = group->__cpu_power / SCHED_LOAD_SCALE;
+ 
+ }
+-/******* find_busiest_group() helpers end here *********************/
+ 
+-/*
+- * find_busiest_group finds and returns the busiest CPU group within the
+- * domain. It calculates and returns the amount of weighted load which
+- * should be moved to restore balance via the imbalance parameter.
++/**
++ * update_sd_lb_stats - Update sched_group's statistics for load balancing.
++ * @sd: sched_domain whose statistics are to be updated.
++ * @this_cpu: Cpu for which load balance is currently performed.
++ * @idle: Idle status of this_cpu
++ * @sd_idle: Idle status of the sched_domain containing group.
++ * @cpus: Set of cpus considered for load balancing.
++ * @balance: Should we balance.
++ * @sds: variable to hold the statistics for this sched_domain.
+  */
+-static struct sched_group *
+-find_busiest_group(struct sched_domain *sd, int this_cpu,
+-		   unsigned long *imbalance, enum cpu_idle_type idle,
+-		   int *sd_idle, const struct cpumask *cpus, int *balance)
++static inline void update_sd_lb_stats(struct sched_domain *sd, int this_cpu,
++			enum cpu_idle_type idle, int *sd_idle,
++			const struct cpumask *cpus, int *balance,
++			struct sd_lb_stats *sds)
+ {
+-	struct sd_lb_stats sds;
+ 	struct sched_group *group = sd->groups;
+-	unsigned long max_pull;
++	struct sg_lb_stats sgs;
+ 	int load_idx;
+ 
+-	memset(&sds, 0, sizeof(sds));
+ #if defined(CONFIG_SCHED_MC) || defined(CONFIG_SCHED_SMT)
+-	sds.power_savings_balance = 1;
+-	sds.min_nr_running = ULONG_MAX;
++	sds->power_savings_balance = 1;
++	sds->min_nr_running = ULONG_MAX;
+ #endif
+ 	load_idx = get_sd_load_idx(sd, idle);
+ 
+ 	do {
+-		struct sg_lb_stats sgs;
+ 		int local_group;
+ 
+ 		local_group = cpumask_test_cpu(this_cpu,
+@@ -3295,25 +3296,25 @@ find_busiest_group(struct sched_domain *sd, int this_cpu,
+ 		update_sg_lb_stats(group, this_cpu, idle, load_idx, sd_idle,
+ 				local_group, cpus, balance, &sgs);
+ 
+-		if (balance && !(*balance))
+-			goto ret;
++		if (local_group && balance && !(*balance))
++			return;
+ 
+-		sds.total_load += sgs.group_load;
+-		sds.total_pwr += group->__cpu_power;
++		sds->total_load += sgs.group_load;
++		sds->total_pwr += group->__cpu_power;
+ 
+ 		if (local_group) {
+-			sds.this_load = sgs.avg_load;
+-			sds.this = group;
+-			sds.this_nr_running = sgs.sum_nr_running;
+-			sds.this_load_per_task = sgs.sum_weighted_load;
+-		} else if (sgs.avg_load > sds.max_load &&
++			sds->this_load = sgs.avg_load;
++			sds->this = group;
++			sds->this_nr_running = sgs.sum_nr_running;
++			sds->this_load_per_task = sgs.sum_weighted_load;
++		} else if (sgs.avg_load > sds->max_load &&
+ 			   (sgs.sum_nr_running > sgs.group_capacity ||
+ 				sgs.group_imb)) {
+-			sds.max_load = sgs.avg_load;
+-			sds.busiest = group;
+-			sds.busiest_nr_running = sgs.sum_nr_running;
+-			sds.busiest_load_per_task = sgs.sum_weighted_load;
+-			sds.group_imb = sgs.group_imb;
++			sds->max_load = sgs.avg_load;
++			sds->busiest = group;
++			sds->busiest_nr_running = sgs.sum_nr_running;
++			sds->busiest_load_per_task = sgs.sum_weighted_load;
++			sds->group_imb = sgs.group_imb;
+ 		}
+ 
+ #if defined(CONFIG_SCHED_MC) || defined(CONFIG_SCHED_SMT)
+@@ -3330,15 +3331,15 @@ find_busiest_group(struct sched_domain *sd, int this_cpu,
+ 		 * no need to do power savings balance at this domain
+ 		 */
+ 		if (local_group &&
+-			(sds.this_nr_running >= sgs.group_capacity ||
+-			!sds.this_nr_running))
+-			sds.power_savings_balance = 0;
++			(sds->this_nr_running >= sgs.group_capacity ||
++			!sds->this_nr_running))
++			sds->power_savings_balance = 0;
+ 
+ 		/*
+ 		 * If a group is already running at full capacity or idle,
+ 		 * don't include that group in power savings calculations
+ 		 */
+-		if (!sds.power_savings_balance ||
++		if (!sds->power_savings_balance ||
+ 			sgs.sum_nr_running >= sgs.group_capacity ||
+ 			!sgs.sum_nr_running)
+ 			goto group_next;
+@@ -3348,13 +3349,13 @@ find_busiest_group(struct sched_domain *sd, int this_cpu,
+ 		 * This is the group from where we need to pick up the load
+ 		 * for saving power
+ 		 */
+-		if ((sgs.sum_nr_running < sds.min_nr_running) ||
+-		    (sgs.sum_nr_running == sds.min_nr_running &&
++		if ((sgs.sum_nr_running < sds->min_nr_running) ||
++		    (sgs.sum_nr_running == sds->min_nr_running &&
+ 		     group_first_cpu(group) >
+-			group_first_cpu(sds.group_min))) {
+-			sds.group_min = group;
+-			sds.min_nr_running = sgs.sum_nr_running;
+-			sds.min_load_per_task = sgs.sum_weighted_load /
++			group_first_cpu(sds->group_min))) {
++			sds->group_min = group;
++			sds->min_nr_running = sgs.sum_nr_running;
++			sds->min_load_per_task = sgs.sum_weighted_load /
+ 						sgs.sum_nr_running;
+ 		}
+ 
+@@ -3366,18 +3367,46 @@ find_busiest_group(struct sched_domain *sd, int this_cpu,
+ 		if (sgs.sum_nr_running > sgs.group_capacity - 1)
+ 			goto group_next;
+ 
+-		if (sgs.sum_nr_running > sds.leader_nr_running ||
+-		    (sgs.sum_nr_running == sds.leader_nr_running &&
++		if (sgs.sum_nr_running > sds->leader_nr_running ||
++		    (sgs.sum_nr_running == sds->leader_nr_running &&
+ 		     group_first_cpu(group) <
+-			group_first_cpu(sds.group_leader))) {
+-			sds.group_leader = group;
+-			sds.leader_nr_running = sgs.sum_nr_running;
++			group_first_cpu(sds->group_leader))) {
++			sds->group_leader = group;
++			sds->leader_nr_running = sgs.sum_nr_running;
+ 		}
+ group_next:
+ #endif
+ 		group = group->next;
+ 	} while (group != sd->groups);
+ 
++}
++/******* find_busiest_group() helpers end here *********************/
++
++/*
++ * find_busiest_group finds and returns the busiest CPU group within the
++ * domain. It calculates and returns the amount of weighted load which
++ * should be moved to restore balance via the imbalance parameter.
++ */
++static struct sched_group *
++find_busiest_group(struct sched_domain *sd, int this_cpu,
++		   unsigned long *imbalance, enum cpu_idle_type idle,
++		   int *sd_idle, const struct cpumask *cpus, int *balance)
++{
++	struct sd_lb_stats sds;
++	unsigned long max_pull;
++
++	memset(&sds, 0, sizeof(sds));
++
++	/*
++	 * Compute the various statistics relavent for load balancing at
++	 * this level.
++	 */
++	update_sd_lb_stats(sd, this_cpu, idle, sd_idle, cpus,
++					balance, &sds);
++
++	if (balance && !(*balance))
++		goto ret;
++
+ 	if (!sds.busiest || sds.this_load >= sds.max_load
+ 		|| sds.busiest_nr_running == 0)
+ 		goto out_balanced;
 
- kernel/sched.c |  765 ++++++++++++++++++++++++++++++++++++++------------------
- 1 files changed, 515 insertions(+), 250 deletions(-)
-
--- 
-Thanks and Regards
-gautham.
