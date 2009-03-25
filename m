@@ -1,92 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763523AbZCYReV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763457AbZCYRfj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763523AbZCYReV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 13:34:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758585AbZCYReN
+	id S1763457AbZCYRfj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 13:35:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756750AbZCYRfa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 13:34:13 -0400
-Received: from hera.kernel.org ([140.211.167.34]:56820 "EHLO hera.kernel.org"
+	Wed, 25 Mar 2009 13:35:30 -0400
+Received: from hera.kernel.org ([140.211.167.34]:54400 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758209AbZCYReM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 13:34:12 -0400
-Date: Wed, 25 Mar 2009 17:33:27 GMT
+	id S1753079AbZCYRf3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Mar 2009 13:35:29 -0400
+Date: Wed, 25 Mar 2009 17:33:44 GMT
 From: Lai Jiangshan <laijs@cn.fujitsu.com>
 To: linux-tip-commits@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       srostedt@redhat.com, tglx@linutronix.de, laijs@cn.fujitsu.com,
-       adobriyan@gmail.com, mingo@elte.hu
+       fweisbec@gmail.com, srostedt@redhat.com, tglx@linutronix.de,
+       laijs@cn.fujitsu.com, mingo@elte.hu
 Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       srostedt@redhat.com, tglx@linutronix.de, laijs@cn.fujitsu.com,
-       adobriyan@gmail.com, mingo@elte.hu
-In-Reply-To: <49C9EAE5.5070202@cn.fujitsu.com>
-References: <49C9EAE5.5070202@cn.fujitsu.com>
-Subject: [tip:tracing/ftrace] trace_stat: don't call seq_printf() in seq_operation->start()
-Message-ID: <tip-e6f489013b985b58d096a3091ece0ed579367232@git.kernel.org>
-Git-Commit-ID: e6f489013b985b58d096a3091ece0ed579367232
+       fweisbec@gmail.com, srostedt@redhat.com, tglx@linutronix.de,
+       laijs@cn.fujitsu.com, mingo@elte.hu
+In-Reply-To: <49C9F266.2060706@cn.fujitsu.com>
+References: <49C9F266.2060706@cn.fujitsu.com>
+Subject: [tip:tracing/ftrace] trace_workqueues: fix empty line's output
+Message-ID: <tip-2f63b840bc8a816ac879ee773b035cf3e433fae4@git.kernel.org>
+Git-Commit-ID: 2f63b840bc8a816ac879ee773b035cf3e433fae4
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 25 Mar 2009 17:33:29 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 25 Mar 2009 17:33:46 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  e6f489013b985b58d096a3091ece0ed579367232
-Gitweb:     http://git.kernel.org/tip/e6f489013b985b58d096a3091ece0ed579367232
+Commit-ID:  2f63b840bc8a816ac879ee773b035cf3e433fae4
+Gitweb:     http://git.kernel.org/tip/2f63b840bc8a816ac879ee773b035cf3e433fae4
 Author:     Lai Jiangshan <laijs@cn.fujitsu.com>
-AuthorDate: Wed, 25 Mar 2009 16:27:17 +0800
+AuthorDate: Wed, 25 Mar 2009 16:59:18 +0800
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Wed, 25 Mar 2009 18:32:34 +0100
+CommitDate: Wed, 25 Mar 2009 18:32:35 +0100
 
-trace_stat: don't call seq_printf() in seq_operation->start()
+trace_workqueues: fix empty line's output
 
-Impact: Fix incorrect way using seq_file's API
-
-Use SEQ_START_TOKEN instead of calling ->stat_headers()
-int seq_operation->start().
+Empty lines separate cpus stat. After previous
+fix(trace_stat: keep original order) applied, the empty lines
+are displayed at incorrect position.
 
 Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
 Acked-by: Steven Rostedt <srostedt@redhat.com>
-Cc: Alexey Dobriyan <adobriyan@gmail.com>
-LKML-Reference: <49C9EAE5.5070202@cn.fujitsu.com>
+Acked-by: Frederic Weisbecker <fweisbec@gmail.com>
+LKML-Reference: <49C9F266.2060706@cn.fujitsu.com>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
 ---
- kernel/trace/trace_stat.c |    8 +++++++-
- 1 files changed, 7 insertions(+), 1 deletions(-)
+ kernel/trace/trace_workqueue.c |   12 ++++++------
+ 1 files changed, 6 insertions(+), 6 deletions(-)
 
-diff --git a/kernel/trace/trace_stat.c b/kernel/trace/trace_stat.c
-index f71b85b..8c129dd 100644
---- a/kernel/trace/trace_stat.c
-+++ b/kernel/trace/trace_stat.c
-@@ -163,7 +163,7 @@ static void *stat_seq_start(struct seq_file *s, loff_t *pos)
+diff --git a/kernel/trace/trace_workqueue.c b/kernel/trace/trace_workqueue.c
+index 9ab035b..797201e 100644
+--- a/kernel/trace/trace_workqueue.c
++++ b/kernel/trace/trace_workqueue.c
+@@ -196,6 +196,11 @@ static int workqueue_stat_show(struct seq_file *s, void *p)
+ 	struct pid *pid;
+ 	struct task_struct *tsk;
  
- 	/* If we are in the beginning of the file, print the headers */
- 	if (!*pos && session->ts->stat_headers)
--		session->ts->stat_headers(s);
-+		return SEQ_START_TOKEN;
++	spin_lock_irqsave(&workqueue_cpu_stat(cpu)->lock, flags);
++	if (&cws->list == workqueue_cpu_stat(cpu)->list.next)
++		seq_printf(s, "\n");
++	spin_unlock_irqrestore(&workqueue_cpu_stat(cpu)->lock, flags);
++
+ 	pid = find_get_pid(cws->pid);
+ 	if (pid) {
+ 		tsk = get_pid_task(pid, PIDTYPE_PID);
+@@ -208,18 +213,13 @@ static int workqueue_stat_show(struct seq_file *s, void *p)
+ 		put_pid(pid);
+ 	}
  
- 	return seq_list_start(&session->stat_list, *pos);
+-	spin_lock_irqsave(&workqueue_cpu_stat(cpu)->lock, flags);
+-	if (&cws->list == workqueue_cpu_stat(cpu)->list.next)
+-		seq_printf(s, "\n");
+-	spin_unlock_irqrestore(&workqueue_cpu_stat(cpu)->lock, flags);
+-
+ 	return 0;
  }
-@@ -172,6 +172,9 @@ static void *stat_seq_next(struct seq_file *s, void *p, loff_t *pos)
+ 
+ static int workqueue_stat_headers(struct seq_file *s)
  {
- 	struct tracer_stat_session *session = s->private;
- 
-+	if (p == SEQ_START_TOKEN)
-+		return seq_list_start(&session->stat_list, *pos);
-+
- 	return seq_list_next(p, &session->stat_list, pos);
- }
- 
-@@ -186,6 +189,9 @@ static int stat_seq_show(struct seq_file *s, void *v)
- 	struct tracer_stat_session *session = s->private;
- 	struct trace_stat_list *l = list_entry(v, struct trace_stat_list, list);
- 
-+	if (v == SEQ_START_TOKEN)
-+		return session->ts->stat_headers(s);
-+
- 	return session->ts->stat_show(s, l->stat);
+ 	seq_printf(s, "# CPU  INSERTED  EXECUTED   NAME\n");
+-	seq_printf(s, "# |      |         |          |\n\n");
++	seq_printf(s, "# |      |         |          |\n");
+ 	return 0;
  }
  
