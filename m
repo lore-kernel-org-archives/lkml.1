@@ -1,20 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758946AbZCYAmq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757756AbZCYAnK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758946AbZCYAmq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 20:42:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753091AbZCYAaQ
+	id S1757756AbZCYAnK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 20:43:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756853AbZCYAaS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 20:30:16 -0400
-Received: from kroah.org ([198.145.64.141]:54135 "EHLO coco.kroah.org"
+	Tue, 24 Mar 2009 20:30:18 -0400
+Received: from kroah.org ([198.145.64.141]:54138 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755027AbZCYAaI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 20:30:08 -0400
+	id S1756884AbZCYAaJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Mar 2009 20:30:09 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
-Cc: "Hans J. Koch" <hjk@linutronix.de>, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 35/61] UIO: Add name attributes for mappings and port regions
-Date: Tue, 24 Mar 2009 17:26:39 -0700
-Message-Id: <1237940825-22904-35-git-send-email-gregkh@suse.de>
+Cc: Brandon Philips <brandon@ifup.org>, "Hans J. Koch" <hjk@linutronix.de>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [PATCH 36/61] uio: add the uio_aec driver
+Date: Tue, 24 Mar 2009 17:26:40 -0700
+Message-Id: <1237940825-22904-36-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.6.2
 In-Reply-To: <20090325001659.GA22461@kroah.com>
 References: <20090325001659.GA22461@kroah.com>
@@ -22,194 +23,251 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Hans J. Koch <hjk@linutronix.de>
+From: Brandon Philips <brandon@ifup.org>
 
-If a UIO device has several memory mappings, it can be difficult for userspace
-to find the right one. The situation becomes even worse if the UIO driver can
-handle different versions of a card that have different numbers of mappings.
-Benedikt Spranger has such cards and pointed this out to me. Thanks, Bene!
+UIO driver for the Adrienne Electronics Corporation PCI time code
+device.
 
-To address this problem, this patch adds "name" sysfs attributes for each
-mapping. Userspace can use these to clearly identify each mapping. The name
-string is optional. If a driver doesn't set it, an empty string will be
-returned, so this patch won't break existing drivers.
+This device differs from other UIO devices since it uses I/O ports instead of
+memory mapped I/O. In order to make it possible for UIO to work with this
+device a utility, uioport, can be used to read and write the ports.
 
-The same problem exists for port region information, so a "name" attribute is
-added there, too.
+uioport is designed to be a setuid program and checks the permissions of
+the /dev/uio* node and if the user has write permissions it will use
+iopl and out*/in* to access the device.
 
+[1] git clone git://ifup.org/philips/uioport.git
+
+Signed-off-by: Brandon Philips <brandon@ifup.org>
 Signed-off-by: Hans J. Koch <hjk@linutronix.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- Documentation/DocBook/uio-howto.tmpl |   29 +++++++++++++++++++++++++----
- drivers/uio/uio.c                    |   22 ++++++++++++++++++++++
- include/linux/uio_driver.h           |    4 ++++
- 3 files changed, 51 insertions(+), 4 deletions(-)
+ drivers/uio/Kconfig   |   18 +++++
+ drivers/uio/Makefile  |    1 +
+ drivers/uio/uio_aec.c |  175 +++++++++++++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 194 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/uio/uio_aec.c
 
-diff --git a/Documentation/DocBook/uio-howto.tmpl b/Documentation/DocBook/uio-howto.tmpl
-index 52e1b79..8f6e3b2 100644
---- a/Documentation/DocBook/uio-howto.tmpl
-+++ b/Documentation/DocBook/uio-howto.tmpl
-@@ -42,6 +42,13 @@ GPL version 2.
+diff --git a/drivers/uio/Kconfig b/drivers/uio/Kconfig
+index 04b954c..7f86534 100644
+--- a/drivers/uio/Kconfig
++++ b/drivers/uio/Kconfig
+@@ -58,6 +58,24 @@ config UIO_SMX
  
- <revhistory>
- 	<revision>
-+	<revnumber>0.8</revnumber>
-+	<date>2008-12-24</date>
-+	<authorinitials>hjk</authorinitials>
-+	<revremark>Added name attributes in mem and portio sysfs directories.
-+		</revremark>
-+	</revision>
-+	<revision>
- 	<revnumber>0.7</revnumber>
- 	<date>2008-12-23</date>
- 	<authorinitials>hjk</authorinitials>
-@@ -303,12 +310,19 @@ interested in translating it, please email me
- 	appear if the size of the mapping is not 0.
- </para>
- <para>
--	Each <filename>mapX/</filename> directory contains two read-only files
--	that show start address and size of the memory:
-+	Each <filename>mapX/</filename> directory contains four read-only files
-+	that show attributes of the memory:
- </para>
- <itemizedlist>
- <listitem>
- 	<para>
-+	<filename>name</filename>: A string identifier for this mapping. This
-+	is optional, the string can be empty. Drivers can set this to make it
-+	easier for userspace to find the correct mapping.
-+	</para>
-+</listitem>
-+<listitem>
-+	<para>
- 	<filename>addr</filename>: The address of memory that can be mapped.
- 	</para>
- </listitem>
-@@ -366,12 +380,19 @@ offset = N * getpagesize();
- 	<filename>/sys/class/uio/uioX/portio/</filename>.
- </para>
- <para>
--	Each <filename>portX/</filename> directory contains three read-only
--	files that show start, size, and type of the port region:
-+	Each <filename>portX/</filename> directory contains four read-only
-+	files that show name, start, size, and type of the port region:
- </para>
- <itemizedlist>
- <listitem>
- 	<para>
-+	<filename>name</filename>: A string identifier for this port region.
-+	The string is optional and can be empty. Drivers can set it to make it
-+	easier for userspace to find a certain port region.
-+	</para>
-+</listitem>
-+<listitem>
-+	<para>
- 	<filename>start</filename>: The first port of this region.
- 	</para>
- </listitem>
-diff --git a/drivers/uio/uio.c b/drivers/uio/uio.c
-index 4ca85a1..68a4965 100644
---- a/drivers/uio/uio.c
-+++ b/drivers/uio/uio.c
-@@ -61,6 +61,14 @@ struct uio_map {
- };
- #define to_map(map) container_of(map, struct uio_map, kobj)
+ 	  If you compile this as a module, it will be called uio_smx.
  
-+static ssize_t map_name_show(struct uio_mem *mem, char *buf)
-+{
-+	if (unlikely(!mem->name))
-+		mem->name = "";
++config UIO_AEC
++	tristate "AEC video timestamp device"
++	depends on PCI
++	default n
++	help
 +
-+	return sprintf(buf, "%s\n", mem->name);
++	  UIO driver for the Adrienne Electronics Corporation PCI time
++	  code device.
++
++	  This device differs from other UIO devices since it uses I/O
++	  ports instead of memory mapped I/O. In order to make it
++	  possible for UIO to work with this device a utility, uioport,
++	  can be used to read and write the ports:
++
++	    git clone git://ifup.org/philips/uioport.git
++
++	  If you compile this as a module, it will be called uio_aec.
++
+ config UIO_SERCOS3
+ 	tristate "Automata Sercos III PCI card driver"
+ 	default n
+diff --git a/drivers/uio/Makefile b/drivers/uio/Makefile
+index e695581..5c2586d 100644
+--- a/drivers/uio/Makefile
++++ b/drivers/uio/Makefile
+@@ -3,4 +3,5 @@ obj-$(CONFIG_UIO_CIF)	+= uio_cif.o
+ obj-$(CONFIG_UIO_PDRV)	+= uio_pdrv.o
+ obj-$(CONFIG_UIO_PDRV_GENIRQ)	+= uio_pdrv_genirq.o
+ obj-$(CONFIG_UIO_SMX)	+= uio_smx.o
++obj-$(CONFIG_UIO_AEC)	+= uio_aec.o
+ obj-$(CONFIG_UIO_SERCOS3)	+= uio_sercos3.o
+diff --git a/drivers/uio/uio_aec.c b/drivers/uio/uio_aec.c
+new file mode 100644
+index 0000000..b7830e9
+--- /dev/null
++++ b/drivers/uio/uio_aec.c
+@@ -0,0 +1,175 @@
++/*
++ * uio_aec.c -- simple driver for Adrienne Electronics Corp time code PCI device
++ *
++ * Copyright (C) 2008 Brandon Philips <brandon@ifup.org>
++ *
++ *   This program is free software; you can redistribute it and/or modify it
++ *   under the terms of the GNU General Public License version 2 as published
++ *   by the Free Software Foundation.
++ *
++ *   This program is distributed in the hope that it will be useful,
++ *   but WITHOUT ANY WARRANTY; without even the implied warranty of
++ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ *   GNU General Public License for more details.
++ *
++ *   You should have received a copy of the GNU General Public License along
++ *   with this program; if not, write to the Free Software Foundation, Inc., 59
++ *   Temple Place, Suite 330, Boston, MA 02111-1307, USA.
++ */
++
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/pci.h>
++#include <linux/init.h>
++#include <linux/interrupt.h>
++#include <linux/cdev.h>
++#include <linux/fs.h>
++#include <linux/io.h>
++#include <linux/uaccess.h>
++#include <linux/uio_driver.h>
++
++#define PCI_VENDOR_ID_AEC 0xaecb
++#define PCI_DEVICE_ID_AEC_VITCLTC 0x6250
++
++#define INT_ENABLE_ADDR		0xFC
++#define INT_ENABLE		0x10
++#define INT_DISABLE		0x0
++
++#define INT_MASK_ADDR		0x2E
++#define INT_MASK_ALL		0x3F
++
++#define INTA_DRVR_ADDR		0xFE
++#define INTA_ENABLED_FLAG	0x08
++#define INTA_FLAG		0x01
++
++#define MAILBOX			0x0F
++
++static struct pci_device_id ids[] = {
++	{ PCI_DEVICE(PCI_VENDOR_ID_AEC, PCI_DEVICE_ID_AEC_VITCLTC), },
++	{ 0, }
++};
++MODULE_DEVICE_TABLE(pci, ids);
++
++static irqreturn_t aectc_irq(int irq, struct uio_info *dev_info)
++{
++	void __iomem *int_flag = dev_info->priv + INTA_DRVR_ADDR;
++	unsigned char status = ioread8(int_flag);
++
++
++	if ((status & INTA_ENABLED_FLAG) && (status & INTA_FLAG)) {
++		/* application writes 0x00 to 0x2F to get next interrupt */
++		status = ioread8(dev_info->priv + MAILBOX);
++		return IRQ_HANDLED;
++	}
++
++	return IRQ_NONE;
 +}
 +
- static ssize_t map_addr_show(struct uio_mem *mem, char *buf)
- {
- 	return sprintf(buf, "0x%lx\n", mem->addr);
-@@ -82,6 +90,8 @@ struct map_sysfs_entry {
- 	ssize_t (*store)(struct uio_mem *, const char *, size_t);
- };
- 
-+static struct map_sysfs_entry name_attribute =
-+	__ATTR(name, S_IRUGO, map_name_show, NULL);
- static struct map_sysfs_entry addr_attribute =
- 	__ATTR(addr, S_IRUGO, map_addr_show, NULL);
- static struct map_sysfs_entry size_attribute =
-@@ -90,6 +100,7 @@ static struct map_sysfs_entry offset_attribute =
- 	__ATTR(offset, S_IRUGO, map_offset_show, NULL);
- 
- static struct attribute *attrs[] = {
-+	&name_attribute.attr,
- 	&addr_attribute.attr,
- 	&size_attribute.attr,
- 	&offset_attribute.attr,
-@@ -133,6 +144,14 @@ struct uio_portio {
- };
- #define to_portio(portio) container_of(portio, struct uio_portio, kobj)
- 
-+static ssize_t portio_name_show(struct uio_port *port, char *buf)
++static void print_board_data(struct pci_dev *pdev, struct uio_info *i)
 +{
-+	if (unlikely(!port->name))
-+		port->name = "";
-+
-+	return sprintf(buf, "%s\n", port->name);
++	dev_info(&pdev->dev, "PCI-TC board vendor: %x%x number: %x%x"
++		" revision: %c%c\n",
++		ioread8(i->priv + 0x01),
++		ioread8(i->priv + 0x00),
++		ioread8(i->priv + 0x03),
++		ioread8(i->priv + 0x02),
++		ioread8(i->priv + 0x06),
++		ioread8(i->priv + 0x07));
 +}
 +
- static ssize_t portio_start_show(struct uio_port *port, char *buf)
- {
- 	return sprintf(buf, "0x%lx\n", port->start);
-@@ -159,6 +178,8 @@ struct portio_sysfs_entry {
- 	ssize_t (*store)(struct uio_port *, const char *, size_t);
- };
- 
-+static struct portio_sysfs_entry portio_name_attribute =
-+	__ATTR(name, S_IRUGO, portio_name_show, NULL);
- static struct portio_sysfs_entry portio_start_attribute =
- 	__ATTR(start, S_IRUGO, portio_start_show, NULL);
- static struct portio_sysfs_entry portio_size_attribute =
-@@ -167,6 +188,7 @@ static struct portio_sysfs_entry portio_porttype_attribute =
- 	__ATTR(porttype, S_IRUGO, portio_porttype_show, NULL);
- 
- static struct attribute *portio_attrs[] = {
-+	&portio_name_attribute.attr,
- 	&portio_start_attribute.attr,
- 	&portio_size_attribute.attr,
- 	&portio_porttype_attribute.attr,
-diff --git a/include/linux/uio_driver.h b/include/linux/uio_driver.h
-index a0bb6bd..5dcc9ff 100644
---- a/include/linux/uio_driver.h
-+++ b/include/linux/uio_driver.h
-@@ -22,6 +22,7 @@ struct uio_map;
- 
- /**
-  * struct uio_mem - description of a UIO memory region
-+ * @name:		name of the memory region for identification
-  * @addr:		address of the device's memory
-  * @size:		size of IO
-  * @memtype:		type of memory addr points to
-@@ -29,6 +30,7 @@ struct uio_map;
-  * @map:		for use by the UIO core only.
-  */
- struct uio_mem {
-+	const char		*name;
- 	unsigned long		addr;
- 	unsigned long		size;
- 	int			memtype;
-@@ -42,12 +44,14 @@ struct uio_portio;
- 
- /**
-  * struct uio_port - description of a UIO port region
-+ * @name:		name of the port region for identification
-  * @start:		start of port region
-  * @size:		size of port region
-  * @porttype:		type of port (see UIO_PORT_* below)
-  * @portio:		for use by the UIO core only.
-  */
- struct uio_port {
-+	const char		*name;
- 	unsigned long		start;
- 	unsigned long		size;
- 	int			porttype;
++static int __devinit probe(struct pci_dev *pdev, const struct pci_device_id *id)
++{
++	struct uio_info *info;
++	int ret;
++
++	info = kzalloc(sizeof(struct uio_info), GFP_KERNEL);
++	if (!info)
++		return -ENOMEM;
++
++	if (pci_enable_device(pdev))
++		goto out_free;
++
++	if (pci_request_regions(pdev, "aectc"))
++		goto out_disable;
++
++	info->name = "aectc";
++	info->port[0].start = pci_resource_start(pdev, 0);
++	if (!info->port[0].start)
++		goto out_release;
++	info->priv = pci_iomap(pdev, 0, 0);
++	if (!info->priv)
++		goto out_release;
++	info->port[0].size = pci_resource_len(pdev, 0);
++	info->port[0].porttype = UIO_PORT_GPIO;
++
++	info->version = "0.0.1";
++	info->irq = pdev->irq;
++	info->irq_flags = IRQF_SHARED;
++	info->handler = aectc_irq;
++
++	print_board_data(pdev, info);
++	ret = uio_register_device(&pdev->dev, info);
++	if (ret)
++		goto out_unmap;
++
++	iowrite32(INT_ENABLE, info->priv + INT_ENABLE_ADDR);
++	iowrite8(INT_MASK_ALL, info->priv + INT_MASK_ADDR);
++	if (!(ioread8(info->priv + INTA_DRVR_ADDR)
++			& INTA_ENABLED_FLAG))
++		dev_err(&pdev->dev, "aectc: interrupts not enabled\n");
++
++	pci_set_drvdata(pdev, info);
++
++	return 0;
++
++out_unmap:
++	pci_iounmap(pdev, info->priv);
++out_release:
++	pci_release_regions(pdev);
++out_disable:
++	pci_disable_device(pdev);
++out_free:
++	kfree(info);
++	return -ENODEV;
++}
++
++static void remove(struct pci_dev *pdev)
++{
++	struct uio_info *info = pci_get_drvdata(pdev);
++
++	/* disable interrupts */
++	iowrite8(INT_DISABLE, info->priv + INT_MASK_ADDR);
++	iowrite32(INT_DISABLE, info->priv + INT_ENABLE_ADDR);
++	/* read mailbox to ensure board drops irq */
++	ioread8(info->priv + MAILBOX);
++
++	uio_unregister_device(info);
++	pci_release_regions(pdev);
++	pci_disable_device(pdev);
++	pci_set_drvdata(pdev, NULL);
++	iounmap(info->priv);
++
++	kfree(info);
++}
++
++static struct pci_driver pci_driver = {
++	.name = "aectc",
++	.id_table = ids,
++	.probe = probe,
++	.remove = remove,
++};
++
++static int __init aectc_init(void)
++{
++	return pci_register_driver(&pci_driver);
++}
++
++static void __exit aectc_exit(void)
++{
++	pci_unregister_driver(&pci_driver);
++}
++
++MODULE_LICENSE("GPL");
++
++module_init(aectc_init);
++module_exit(aectc_exit);
 -- 
 1.6.2
 
