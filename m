@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755171AbZCYKIh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757822AbZCYKM3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755171AbZCYKIh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 06:08:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752188AbZCYKI2
+	id S1757822AbZCYKM3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 06:12:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753086AbZCYKMU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 06:08:28 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:38607 "EHLO mx3.mail.elte.hu"
+	Wed, 25 Mar 2009 06:12:20 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:51260 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751616AbZCYKI1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 06:08:27 -0400
-Date: Wed, 25 Mar 2009 11:07:46 +0100
+	id S1752994AbZCYKMT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Mar 2009 06:12:19 -0400
+Date: Wed, 25 Mar 2009 11:11:39 +0100
 From: Ingo Molnar <mingo@elte.hu>
 To: Steven Rostedt <rostedt@goodmis.org>
 Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
@@ -17,14 +17,14 @@ Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
        Peter Zijlstra <peterz@infradead.org>,
        Frederic Weisbecker <fweisbec@gmail.com>,
        Tim Bird <tim.bird@am.sony.com>, Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [PATCH 2/5][RFC] tracing: move function profiler data out of
-	function struct
-Message-ID: <20090325100746.GI2341@elte.hu>
-References: <20090325035646.662994901@goodmis.org> <20090325040832.443420395@goodmis.org>
+Subject: Re: [PATCH 5/5][RFC] function-graph: add option to calculate graph
+	time or not
+Message-ID: <20090325101139.GJ2341@elte.hu>
+References: <20090325035646.662994901@goodmis.org> <20090325040833.213388591@goodmis.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090325040832.443420395@goodmis.org>
+In-Reply-To: <20090325040833.213388591@goodmis.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -41,27 +41,26 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 * Steven Rostedt <rostedt@goodmis.org> wrote:
 
-> +/* Interrupts must be disabled calling this */
-> +static struct ftrace_profile *
-> +ftrace_profile_alloc(unsigned long ip, bool alloc_safe)
-> +{
-> +	struct ftrace_profile *rec = NULL;
-> +
-> +	/* prevent recursion */
-> +	if (atomic_inc_return(&__get_cpu_var(ftrace_profile_disable)) != 1)
-> +		goto out;
-> +
-> +	__raw_spin_lock(&ftrace_profile_rec_lock);
-> +
-> +	/* Try to always keep another page available */
-> +	if (!profile_pages->next && alloc_safe)
-> +		profile_pages->next = (void *)get_zeroed_page(GFP_ATOMIC);
+> --- a/kernel/trace/trace_functions_graph.c
+> +++ b/kernel/trace/trace_functions_graph.c
+> @@ -104,9 +105,6 @@ ftrace_pop_return_trace(struct ftrace_graph_ret *trace, unsigned long *ret)
+>  	trace->calltime = current->ret_stack[index].calltime;
+>  	trace->overrun = atomic_read(&current->trace_overrun);
+>  	trace->depth = index;
+> -	barrier();
+> -	current->curr_ret_stack--;
+> -
+>  }
+>  
+>  /*
+> @@ -121,6 +119,8 @@ unsigned long ftrace_return_to_handler(void)
+>  	ftrace_pop_return_trace(&trace, &ret);
+>  	trace.rettime = trace_clock_local();
+>  	ftrace_graph_return(&trace);
+> +	barrier();
+> +	current->curr_ret_stack--;
 
-this does not seem to be NMI safe.
-
-This all would be solved much more robustly by the function 
-attributes hash approach i suggested in the previous mail. If 
-percpu_alloc() is done for 20,000 functions the memory allocation 
-overhead is no big deal.
+this will modify the regular graph tracer too. No discussion of this 
+change in the changelog - is it a fix?
 
 	Ingo
