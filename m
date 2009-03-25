@@ -1,134 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761106AbZCYRbb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763523AbZCYReV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761106AbZCYRbb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 13:31:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754804AbZCYRbX
+	id S1763523AbZCYReV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 13:34:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758585AbZCYReN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 13:31:23 -0400
-Received: from hera.kernel.org ([140.211.167.34]:56698 "EHLO hera.kernel.org"
+	Wed, 25 Mar 2009 13:34:13 -0400
+Received: from hera.kernel.org ([140.211.167.34]:56820 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753298AbZCYRbW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 13:31:22 -0400
-Date: Wed, 25 Mar 2009 17:30:29 GMT
-From: Ingo Molnar <mingo@elte.hu>
+	id S1758209AbZCYReM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Mar 2009 13:34:12 -0400
+Date: Wed, 25 Mar 2009 17:33:27 GMT
+From: Lai Jiangshan <laijs@cn.fujitsu.com>
 To: linux-tip-commits@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       penberg@cs.helsinki.fi, eduard.munteanu@linux360.ro,
-       viro@zeniv.linux.org.uk, tglx@linutronix.de, mingo@elte.hu,
-       adobriyan@gmail.com
+       srostedt@redhat.com, tglx@linutronix.de, laijs@cn.fujitsu.com,
+       adobriyan@gmail.com, mingo@elte.hu
 Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       penberg@cs.helsinki.fi, eduard.munteanu@linux360.ro,
-       viro@zeniv.linux.org.uk, tglx@linutronix.de, mingo@elte.hu,
-       adobriyan@gmail.com
-In-Reply-To: <1237898630.25315.83.camel@penberg-laptop>
-References: <1237898630.25315.83.camel@penberg-laptop>
-Subject: [tip:tracing/kmemtrace] fs.h: uninline simple_transaction_set()
-Message-ID: <tip-1a6ad03119ce01dd862b089b8b2d9d3848453b11@git.kernel.org>
-Git-Commit-ID: 1a6ad03119ce01dd862b089b8b2d9d3848453b11
+       srostedt@redhat.com, tglx@linutronix.de, laijs@cn.fujitsu.com,
+       adobriyan@gmail.com, mingo@elte.hu
+In-Reply-To: <49C9EAE5.5070202@cn.fujitsu.com>
+References: <49C9EAE5.5070202@cn.fujitsu.com>
+Subject: [tip:tracing/ftrace] trace_stat: don't call seq_printf() in seq_operation->start()
+Message-ID: <tip-e6f489013b985b58d096a3091ece0ed579367232@git.kernel.org>
+Git-Commit-ID: e6f489013b985b58d096a3091ece0ed579367232
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 25 Mar 2009 17:30:32 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 25 Mar 2009 17:33:29 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  1a6ad03119ce01dd862b089b8b2d9d3848453b11
-Gitweb:     http://git.kernel.org/tip/1a6ad03119ce01dd862b089b8b2d9d3848453b11
-Author:     Ingo Molnar <mingo@elte.hu>
-AuthorDate: Wed, 25 Mar 2009 16:48:35 +0100
+Commit-ID:  e6f489013b985b58d096a3091ece0ed579367232
+Gitweb:     http://git.kernel.org/tip/e6f489013b985b58d096a3091ece0ed579367232
+Author:     Lai Jiangshan <laijs@cn.fujitsu.com>
+AuthorDate: Wed, 25 Mar 2009 16:27:17 +0800
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Wed, 25 Mar 2009 18:27:56 +0100
+CommitDate: Wed, 25 Mar 2009 18:32:34 +0100
 
-fs.h: uninline simple_transaction_set()
+trace_stat: don't call seq_printf() in seq_operation->start()
 
-Move simple_transaction_set() to the other simple-transaction
-file helpers in fs/libfs.c.
+Impact: Fix incorrect way using seq_file's API
 
-This removes an implicit asm/page.h PAGE_SIZE dependency from
-fs.h (asm/page.h is not an exported header so HEADERS_CHECK fils),
-and also reduces kernel size a bit.
+Use SEQ_START_TOKEN instead of calling ->stat_headers()
+int seq_operation->start().
 
-Cc: Al Viro <viro@zeniv.linux.org.uk>
+Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
+Acked-by: Steven Rostedt <srostedt@redhat.com>
 Cc: Alexey Dobriyan <adobriyan@gmail.com>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-Cc: paulmck@linux.vnet.ibm.com
-LKML-Reference: <1237898630.25315.83.camel@penberg-laptop>
+LKML-Reference: <49C9EAE5.5070202@cn.fujitsu.com>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
 ---
- fs/libfs.c         |   16 ++++++++++++++++
- include/linux/fs.h |   16 +---------------
- 2 files changed, 17 insertions(+), 15 deletions(-)
+ kernel/trace/trace_stat.c |    8 +++++++-
+ 1 files changed, 7 insertions(+), 1 deletions(-)
 
-diff --git a/fs/libfs.c b/fs/libfs.c
-index 49b4409..c872c64 100644
---- a/fs/libfs.c
-+++ b/fs/libfs.c
-@@ -574,6 +574,21 @@ ssize_t memory_read_from_buffer(void *to, size_t count, loff_t *ppos,
-  * possibly a read which collects the result - which is stored in a
-  * file-local buffer.
-  */
-+
-+void simple_transaction_set(struct file *file, size_t n)
-+{
-+	struct simple_transaction_argresp *ar = file->private_data;
-+
-+	BUG_ON(n > SIMPLE_TRANSACTION_LIMIT);
-+
-+	/*
-+	 * The barrier ensures that ar->size will really remain zero until
-+	 * ar->data is ready for reading.
-+	 */
-+	smp_mb();
-+	ar->size = n;
-+}
-+
- char *simple_transaction_get(struct file *file, const char __user *buf, size_t size)
+diff --git a/kernel/trace/trace_stat.c b/kernel/trace/trace_stat.c
+index f71b85b..8c129dd 100644
+--- a/kernel/trace/trace_stat.c
++++ b/kernel/trace/trace_stat.c
+@@ -163,7 +163,7 @@ static void *stat_seq_start(struct seq_file *s, loff_t *pos)
+ 
+ 	/* If we are in the beginning of the file, print the headers */
+ 	if (!*pos && session->ts->stat_headers)
+-		session->ts->stat_headers(s);
++		return SEQ_START_TOKEN;
+ 
+ 	return seq_list_start(&session->stat_list, *pos);
+ }
+@@ -172,6 +172,9 @@ static void *stat_seq_next(struct seq_file *s, void *p, loff_t *pos)
  {
- 	struct simple_transaction_argresp *ar;
-@@ -819,6 +834,7 @@ EXPORT_SYMBOL(simple_sync_file);
- EXPORT_SYMBOL(simple_unlink);
- EXPORT_SYMBOL(simple_read_from_buffer);
- EXPORT_SYMBOL(memory_read_from_buffer);
-+EXPORT_SYMBOL(simple_transaction_set);
- EXPORT_SYMBOL(simple_transaction_get);
- EXPORT_SYMBOL(simple_transaction_read);
- EXPORT_SYMBOL(simple_transaction_release);
-diff --git a/include/linux/fs.h b/include/linux/fs.h
-index 79be937..2ebe3ce 100644
---- a/include/linux/fs.h
-+++ b/include/linux/fs.h
-@@ -9,8 +9,6 @@
- #include <linux/limits.h>
- #include <linux/ioctl.h>
+ 	struct tracer_stat_session *session = s->private;
  
--#include <asm/page.h> /* for PAGE_SIZE */
--
- /*
-  * It's silly to have NR_OPEN bigger than NR_FILE, but you can change
-  * the file limit at runtime and only root can increase the per-process
-@@ -2173,19 +2171,7 @@ ssize_t simple_transaction_read(struct file *file, char __user *buf,
- 				size_t size, loff_t *pos);
- int simple_transaction_release(struct inode *inode, struct file *file);
++	if (p == SEQ_START_TOKEN)
++		return seq_list_start(&session->stat_list, *pos);
++
+ 	return seq_list_next(p, &session->stat_list, pos);
+ }
  
--static inline void simple_transaction_set(struct file *file, size_t n)
--{
--	struct simple_transaction_argresp *ar = file->private_data;
--
--	BUG_ON(n > SIMPLE_TRANSACTION_LIMIT);
--
--	/*
--	 * The barrier ensures that ar->size will really remain zero until
--	 * ar->data is ready for reading.
--	 */
--	smp_mb();
--	ar->size = n;
--}
-+void simple_transaction_set(struct file *file, size_t n);
+@@ -186,6 +189,9 @@ static int stat_seq_show(struct seq_file *s, void *v)
+ 	struct tracer_stat_session *session = s->private;
+ 	struct trace_stat_list *l = list_entry(v, struct trace_stat_list, list);
  
- /*
-  * simple attribute files
++	if (v == SEQ_START_TOKEN)
++		return session->ts->stat_headers(s);
++
+ 	return session->ts->stat_show(s, l->stat);
+ }
+ 
