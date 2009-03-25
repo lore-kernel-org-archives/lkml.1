@@ -1,21 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759393AbZCYAoy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757946AbZCYApZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759393AbZCYAoy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 20:44:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756874AbZCYAa0
+	id S1757946AbZCYApZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 20:45:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756888AbZCYAa1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 20:30:26 -0400
-Received: from kroah.org ([198.145.64.141]:54157 "EHLO coco.kroah.org"
+	Tue, 24 Mar 2009 20:30:27 -0400
+Received: from kroah.org ([198.145.64.141]:54161 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756743AbZCYAaO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 20:30:14 -0400
+	id S1756879AbZCYAaP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Mar 2009 20:30:15 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
-Cc: Alex Chiang <achiang@hp.com>, Alex Williamson <alex.williamson@hp.com>,
+Cc: "Eric W. Biederman" <ebiederm@aristanetworks.com>,
+       Tejun Heo <tj@kernel.org>, Al Viro <viro@ZenIV.linux.org.uk>,
+       Cornelia Huck <cornelia.huck@de.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 41/61] sysfs: sysfs_add_one WARNs with full path to duplicate filename
-Date: Tue, 24 Mar 2009 17:26:45 -0700
-Message-Id: <1237940825-22904-41-git-send-email-gregkh@suse.de>
+Subject: [PATCH 42/61] sysfs: reference sysfs_dirent from sysfs inodes
+Date: Tue, 24 Mar 2009 17:26:46 -0700
+Message-Id: <1237940825-22904-42-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.6.2
 In-Reply-To: <20090325001659.GA22461@kroah.com>
 References: <20090325001659.GA22461@kroah.com>
@@ -23,88 +26,84 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Alex Chiang <achiang@hp.com>
+From: Eric W. Biederman <ebiederm@aristanetworks.com>
 
-sysfs: sysfs_add_one WARNs with full path to duplicate filename
+The sysfs_dirent serves as both an inode and a directory entry
+for sysfs.  To prevent the sysfs inode numbers from being freed
+prematurely hold a reference to sysfs_dirent from the sysfs inode.
 
-As a debugging aid, it can be useful to know the full path to a
-duplicate file being created in sysfs.
-
-We now will display warnings such as:
-
-	sysfs: cannot create duplicate filename '/foo'
-
-when attempting to create multiple files named 'foo' in the sysfs
-root, or:
-
-	sysfs: cannot create duplicate filename '/bus/pci/slots/5/foo'
-
-when attempting to create multiple files named 'foo' under a
-given directory in sysfs.
-
-The path displayed is always a relative path to sysfs_root. The
-leading '/' in the path name refers to the sysfs_root mount
-point, and should not be confused with the "real" '/'.
-
-Thanks to Alex Williamson for essentially writing sysfs_pathname.
-
-Cc: Alex Williamson <alex.williamson@hp.com>
-Signed-off-by: Alex Chiang <achiang@hp.com>
+[akpm@linux-foundation.org: add comment]
+Signed-off-by: Eric W. Biederman <ebiederm@aristanetworks.com>
+Cc: Tejun Heo <tj@kernel.org>
+Cc: Al Viro <viro@ZenIV.linux.org.uk>
+Cc: Cornelia Huck <cornelia.huck@de.ibm.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- fs/sysfs/dir.c |   32 ++++++++++++++++++++++++++++++--
- 1 files changed, 30 insertions(+), 2 deletions(-)
+ fs/sysfs/inode.c |   17 +++++++++++++++++
+ fs/sysfs/mount.c |    1 +
+ fs/sysfs/sysfs.h |    1 +
+ 3 files changed, 19 insertions(+), 0 deletions(-)
 
-diff --git a/fs/sysfs/dir.c b/fs/sysfs/dir.c
-index 82d3b79..f13d852 100644
---- a/fs/sysfs/dir.c
-+++ b/fs/sysfs/dir.c
-@@ -434,6 +434,26 @@ int __sysfs_add_one(struct sysfs_addrm_cxt *acxt, struct sysfs_dirent *sd)
+diff --git a/fs/sysfs/inode.c b/fs/sysfs/inode.c
+index dfa3d94..555f0ff 100644
+--- a/fs/sysfs/inode.c
++++ b/fs/sysfs/inode.c
+@@ -147,6 +147,7 @@ static void sysfs_init_inode(struct sysfs_dirent *sd, struct inode *inode)
+ {
+ 	struct bin_attribute *bin_attr;
+ 
++	inode->i_private = sysfs_get(sd);
+ 	inode->i_mapping->a_ops = &sysfs_aops;
+ 	inode->i_mapping->backing_dev_info = &sysfs_backing_dev_info;
+ 	inode->i_op = &sysfs_inode_operations;
+@@ -214,6 +215,22 @@ struct inode * sysfs_get_inode(struct sysfs_dirent *sd)
+ 	return inode;
  }
  
- /**
-+ *	sysfs_pathname - return full path to sysfs dirent
-+ *	@sd: sysfs_dirent whose path we want
-+ *	@path: caller allocated buffer
-+ *
-+ *	Gives the name "/" to the sysfs_root entry; any path returned
-+ *	is relative to wherever sysfs is mounted.
-+ *
-+ *	XXX: does no error checking on @path size
++/*
++ * The sysfs_dirent serves as both an inode and a directory entry for sysfs.
++ * To prevent the sysfs inode numbers from being freed prematurely we take a
++ * reference to sysfs_dirent from the sysfs inode.  A
++ * super_operations.delete_inode() implementation is needed to drop that
++ * reference upon inode destruction.
 + */
-+static char *sysfs_pathname(struct sysfs_dirent *sd, char *path)
++void sysfs_delete_inode(struct inode *inode)
 +{
-+	if (sd->s_parent) {
-+		sysfs_pathname(sd->s_parent, path);
-+		strcat(path, "/");
-+	}
-+	strcat(path, sd->s_name);
-+	return path;
++	struct sysfs_dirent *sd  = inode->i_private;
++
++	truncate_inode_pages(&inode->i_data, 0);
++	clear_inode(inode);
++	sysfs_put(sd);
 +}
 +
-+/**
-  *	sysfs_add_one - add sysfs_dirent to parent
-  *	@acxt: addrm context to use
-  *	@sd: sysfs_dirent to be added
-@@ -458,8 +478,16 @@ int sysfs_add_one(struct sysfs_addrm_cxt *acxt, struct sysfs_dirent *sd)
- 	int ret;
+ int sysfs_hash_and_remove(struct sysfs_dirent *dir_sd, const char *name)
+ {
+ 	struct sysfs_addrm_cxt acxt;
+diff --git a/fs/sysfs/mount.c b/fs/sysfs/mount.c
+index 84ef378..4974995 100644
+--- a/fs/sysfs/mount.c
++++ b/fs/sysfs/mount.c
+@@ -29,6 +29,7 @@ struct kmem_cache *sysfs_dir_cachep;
+ static const struct super_operations sysfs_ops = {
+ 	.statfs		= simple_statfs,
+ 	.drop_inode	= generic_delete_inode,
++	.delete_inode	= sysfs_delete_inode,
+ };
  
- 	ret = __sysfs_add_one(acxt, sd);
--	WARN(ret == -EEXIST, KERN_WARNING "sysfs: duplicate filename '%s' "
--		       "can not be created\n", sd->s_name);
-+	if (ret == -EEXIST) {
-+		char *path = kzalloc(PATH_MAX, GFP_KERNEL);
-+		WARN(1, KERN_WARNING
-+		     "sysfs: cannot create duplicate filename '%s'\n",
-+		     (path == NULL) ? sd->s_name :
-+		     strcat(strcat(sysfs_pathname(acxt->parent_sd, path), "/"),
-+		            sd->s_name));
-+		kfree(path);
-+	}
-+
- 	return ret;
- }
- 
+ struct sysfs_dirent sysfs_root = {
+diff --git a/fs/sysfs/sysfs.h b/fs/sysfs/sysfs.h
+index 93c6d6b..9055d04 100644
+--- a/fs/sysfs/sysfs.h
++++ b/fs/sysfs/sysfs.h
+@@ -145,6 +145,7 @@ static inline void __sysfs_put(struct sysfs_dirent *sd)
+  * inode.c
+  */
+ struct inode *sysfs_get_inode(struct sysfs_dirent *sd);
++void sysfs_delete_inode(struct inode *inode);
+ int sysfs_setattr(struct dentry *dentry, struct iattr *iattr);
+ int sysfs_hash_and_remove(struct sysfs_dirent *dir_sd, const char *name);
+ int sysfs_inode_init(void);
 -- 
 1.6.2
 
