@@ -1,170 +1,186 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758051AbZCYOY1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762182AbZCYOab@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758051AbZCYOY1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 10:24:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760368AbZCYOYQ
+	id S1762182AbZCYOab (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 10:30:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755555AbZCYOaQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 10:24:16 -0400
-Received: from hera.kernel.org ([140.211.167.34]:43341 "EHLO hera.kernel.org"
+	Wed, 25 Mar 2009 10:30:16 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:43163 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756923AbZCYOYP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 10:24:15 -0400
-Message-ID: <49CA3E87.8010308@kernel.org>
-Date: Wed, 25 Mar 2009 23:24:07 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
-MIME-Version: 1.0
-To: bzolnier@gmail.com, linux-kernel@vger.kernel.org, axboe@kernel.dk,
-       linux-ide@vger.kernel.org
-Subject: [PATCH 03/10 REPOST] ide-tape: use bio to carry data area
-References: <1237990673-8358-1-git-send-email-tj@kernel.org> <1237990673-8358-4-git-send-email-tj@kernel.org>
-In-Reply-To: <1237990673-8358-4-git-send-email-tj@kernel.org>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
+	id S1754282AbZCYOaO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Mar 2009 10:30:14 -0400
+Date: Wed, 25 Mar 2009 10:28:33 -0400
+From: Jeff Layton <jlayton@redhat.com>
+To: Wu Fengguang <fengguang.wu@intel.com>
+Cc: Ian Kent <raven@themaw.net>, Dave Chinner <david@fromorbit.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
+       "jens.axboe@oracle.com" <jens.axboe@oracle.com>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "hch@infradead.org" <hch@infradead.org>,
+       "linux-nfs@vger.kernel.org" <linux-nfs@vger.kernel.org>
+Subject: Re: [PATCH] writeback: reset inode dirty time when adding it back
+ to empty s_dirty list
+Message-ID: <20090325102833.138819d1@tleilax.poochiereds.net>
+In-Reply-To: <20090325141618.GA5684@localhost>
+References: <20090324104657.6907b19e@tleilax.poochiereds.net>
+	<20090325012829.GA7506@localhost>
+	<20090324221528.2bb7c50b@tleilax.poochiereds.net>
+	<20090325025037.GA17374@localhost>
+	<20090325075110.028f0d1d@tleilax.poochiereds.net>
+	<20090325121742.GA22869@localhost>
+	<20090325091325.17c997fd@tleilax.poochiereds.net>
+	<49CA2F41.8030804@themaw.net>
+	<49CA33E7.6090309@themaw.net>
+	<20090325100049.0cc4de87@tleilax.poochiereds.net>
+	<20090325141618.GA5684@localhost>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 25 Mar 2009 14:24:11 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: use standard way to carry data area in request
+On Wed, 25 Mar 2009 22:16:18 +0800
+Wu Fengguang <fengguang.wu@intel.com> wrote:
 
-ide-tape uses rq in an interesting way.  For r/w requests, rq->special
-is used to carry a private buffer management structure idetape_bh and
-rq->nr_sectors and current_nr_sectors are initialized to the number of
-idetape blocks which isn't necessary 512 bytes.  Also,
-rq->current_nr_sectors is used to report back the residual count in
-units of idetape blocks.
+> On Wed, Mar 25, 2009 at 10:00:49PM +0800, Jeff Layton wrote:
+> > On Wed, 25 Mar 2009 22:38:47 +0900
+> > Ian Kent <raven@themaw.net> wrote:
+> > 
+> > > Ian Kent wrote:
+> > > > Jeff Layton wrote:
+> > > >> On Wed, 25 Mar 2009 20:17:43 +0800
+> > > >> Wu Fengguang <fengguang.wu@intel.com> wrote:
+> > > >>
+> > > >>> On Wed, Mar 25, 2009 at 07:51:10PM +0800, Jeff Layton wrote:
+> > > >>>> On Wed, 25 Mar 2009 10:50:37 +0800
+> > > >>>> Wu Fengguang <fengguang.wu@intel.com> wrote:
+> > > >>>>
+> > > >>>>>> Given the right situation though (or maybe the right filesystem), it's
+> > > >>>>>> not too hard to imagine this problem occurring even in current mainline
+> > > >>>>>> code with an inode that's frequently being redirtied.
+> > > >>>>> My reasoning with recent kernel is: for kupdate, s_dirty enqueues only
+> > > >>>>> happen in __mark_inode_dirty() and redirty_tail().  Newly dirtied
+> > > >>>>> inodes will be parked in s_dirty for 30s. During which time the
+> > > >>>>> actively being-redirtied inodes, if their dirtied_when is an old stuck
+> > > >>>>> value, will be retried for writeback and then re-inserted into a
+> > > >>>>> non-empty s_dirty queue and have their dirtied_when refreshed.
+> > > >>>>>
+> > > >>>> Doesn't that assume that there are new inodes that are being dirtied?
+> > > >>>> If you only have the same inodes being redirtied and never any new
+> > > >>>> ones, the problem still occurs, right?
+> > > >>> Yes. But will a production server run months without making one single
+> > > >>> new dirtied inode? (Just out of curiosity. Not that I'm not willing to
+> > > >>> fix this possible issue.:)
+> > > >>>
+> > > >> Yes. It's not that the box will run that long without creating a
+> > > >> single new dirtied inode, but rather that it won't necessarily create
+> > > >> one on all of its mounts. It's often the case that someone has a
+> > > >> mountpoint for a dedicated purpose.
+> > > >>
+> > > >> Consider a host that has a mountpoint that contains logfiles that are
+> > > >> being heavily written. There's nothing that says that they must rotate
+> > > >> those logs over a particular period (assuming the fs has enough space,
+> > > >> etc). If the same ones are constantly being redirtied and no new
+> > > >> ones are created, then I think this problem can easily happen.
+> > > >>
+> > > >>>>>>> ...I see no obvious reasons against unconditionally resetting dirtied_when.
+> > > >>>>>>>
+> > > >>>>>>> (a) Delaying an inode's writeback for 30s maybe too long - its blocking
+> > > >>>>>>> condition may well go away within 1s. (b) And it would be very undesirable
+> > > >>>>>>> if one big file is repeatedly redirtied hence its writeback being
+> > > >>>>>>> delayed considerably.
+> > > >>>>>>>
+> > > >>>>>>> However, redirty_tail() currently only tries to speedup writeback-after-redirty
+> > > >>>>>>> in a _best effort_ way. It at best partially hides the above issues,
+> > > >>>>>>> if there are any. In particular, if (b) is possible, the bug should
+> > > >>>>>>> already show up at least in some situations.
+> > > >>>>>>>
+> > > >>>>>>> For XFS, immediately sync of redirtied inode is actually discouraged:
+> > > >>>>>>>
+> > > >>>>>>>         http://lkml.org/lkml/2008/1/16/491
+> > > >>>>>>>
+> > > >>>>>>>
+> > > >>>>>> Ok, those are good points that I need to think about.
+> > > >>>>>>
+> > > >>>>>> Thanks for the help so far. I'd welcome any suggestions you have on
+> > > >>>>>> how best to fix this.
+> > > >>>>> For NFS, is it desirable to retry a redirtied inode after 30s, or
+> > > >>>>> after a shorter 5s, or after 0.1~5s? Or the exact timing simply
+> > > >>>>> doesn't matter?
+> > > >>>>>
+> > > >>>> I don't really consider NFS to be a special case here. It just happens
+> > > >>>> to be where we saw the problem originally. Some of its characteristics
+> > > >>>> might make it easier to hit this, but I'm not certain of that.
+> > > >>> Now there are now two possible solutions:
+> > > >>> - unconditionally update dirtied_when in redirty_tail();
+> > > >>> - keep dirtied_when and redirty inodes to a new dedicated queue.
+> > > >>> The first one involves less code, the second one allows more flexible timing.
+> > > >>>
+> > > >>> NFS/XFS could be a good starting point for discussing the
+> > > >>> requirements, so that we can reach a suitable solution.
+> > > >>>
+> > > >> It sounds like it, yes. I saw that you posted some patches in January
+> > > >> (including your s_more_io_wait patch). I'll give those a closer look.
+> > > >> Adding the new s_more_io_wait queue is interesting and might sidestep
+> > > >> this problem nicely.
+> > > >>
+> > > > 
+> > > > Yes, I was looking at that bit of code but, so far, I think it won't be
+> > > > called for the case we are trying to describe.
+> > > 
+> > > I take that back.
+> > > As Jeff pointed out I haven't seen these patches and can't seem to find
+> > > them in my fsdevel list folder, Wu can you send me a copy please?
+> > > 
+> > 
+> > Actually, I think you were right. We still have this check in
+> > generic_sync_sb_inodes() even with Wu's January 2008 patches:
+> > 
+> > 	/* Was this inode dirtied after sync_sb_inodes was called? */
+> > 	if (time_after(inode->dirtied_when, start))
+> > 		break;
+> 
+> Yeah, ugly code. Jens' per-bdi flush daemons should eliminate it...
+> 
 
-This peculiarity taxes both block layer and ide.  ide-atapi has
-different paths and hooks to accomodate it and what a rq means becomes
-quite confusing and making changes at the block layer becomes quite
-difficult and error-prone.
+Ok, good to know. I need to look at those more closely I guess...
 
-This patch makes ide-tape use bio instead.  With the previous patch,
-ide-tape currently is using single contiguos buffer so replacing it is
-easy.  All that's necessary is doing blk_rq_map_kern() on issue, map
-bio to sg in idetape_do_request() and use rq->data_len for residual
-count instead of rq->current_nr_sectors.
+> > ...this check is the crux of the problem. We're assuming that the
+> > dirtied_when value will never appear to be in the future. If we change
+> > this check so that it's checking that dirtied_when is between "start"
+> > and "now", then this problem basically goes away.
+> 
+> Yeah that turns the problem into a temporary and tolerable one.
+> 
 
-This change also nicely removes the FIXME in ide_pc_intr() where
-ide-tape rqs need to be completed using ide_rq_bytes() instead of
-blk_rq_bytes() (although this didn't really matter as the request
-didn't have bio).
+Yes.
 
-Note that this patch only changes how the data areas are carried in
-requests.  Data transfer is still done using idetape_bh.
+> > We'll probably also need to change the test in move_expired_inodes
+> > too, unless Wu's changes go in.
+> 
+> So the most simple (and complete) solution is still this one ;-)
+> 
 
-Signed-off-by: Tejun Heo <tj@kernel.org>
-Cc: Jens Axboe <jens.axboe@oracle.com>
----
-Sorry, wrote description to the wrong file.  git tree updated as well.
+I suppose so. I guess that also takes care of the problem on XFS (and
+maybe other filesystems too?) of inodes getting flushed too frequently
+when they're redirtied.
 
- drivers/ide/ide-atapi.c |    5 +----
- drivers/ide/ide-tape.c  |   39 ++++++++++++++++++++++-----------------
- 2 files changed, 23 insertions(+), 21 deletions(-)
+The downside sounds like that it'll mean that big files that are being
+frequently redirtied might get less frequent writeout attempts. We can
+easily dirty pages faster than we can write them out (at least with
+most filesystems). Will that cause problem where we accumulate too many
+dirty pages for the inode? That also means that the I/O will be more
+"spiky"...
 
-diff --git a/drivers/ide/ide-atapi.c b/drivers/ide/ide-atapi.c
-index 2b456c4..53e811d 100644
---- a/drivers/ide/ide-atapi.c
-+++ b/drivers/ide/ide-atapi.c
-@@ -372,10 +372,7 @@ static ide_startstop_t ide_pc_intr(ide_drive_t *drive)
- 		 * ->pc_callback() might change rq->data_len for
- 		 * residual count, cache total length.
- 		 */
--		if (drive->media == ide_tape)
--			done = ide_rq_bytes(rq);	/* FIXME */
--		else
--			done = blk_rq_bytes(rq);
-+		done = blk_rq_bytes(rq);
- 
- 		/* Command finished - Call the callback function */
- 		uptodate = drive->pc_callback(drive, dsc);
-diff --git a/drivers/ide/ide-tape.c b/drivers/ide/ide-tape.c
-index 3a7bd98..bd0e839 100644
---- a/drivers/ide/ide-tape.c
-+++ b/drivers/ide/ide-tape.c
-@@ -458,7 +458,7 @@ static int ide_tape_callback(ide_drive_t *drive, int dsc)
- 		}
- 
- 		tape->first_frame += blocks;
--		rq->current_nr_sectors -= blocks;
-+		rq->data_len -= blocks * tape->blk_size;
- 
- 		if (pc->error) {
- 			uptodate = 0;
-@@ -799,10 +799,6 @@ static ide_startstop_t idetape_do_request(ide_drive_t *drive,
- 		pc = (struct ide_atapi_pc *)rq->special;
- 		rq->cmd[13] &= ~(REQ_IDETAPE_PC1);
- 		rq->cmd[13] |= REQ_IDETAPE_PC2;
--		if (pc->req_xfer) {
--			ide_init_sg_cmd(&cmd, pc->req_xfer);
--			ide_map_sg(drive, &cmd);
--		}
- 		goto out;
- 	}
- 	if (rq->cmd[13] & REQ_IDETAPE_PC2) {
-@@ -812,6 +808,10 @@ static ide_startstop_t idetape_do_request(ide_drive_t *drive,
- 	BUG();
- 
- out:
-+	if (pc->req_xfer) {
-+		ide_init_sg_cmd(&cmd, pc->req_xfer);
-+		ide_map_sg(drive, &cmd);
-+	}
- 	if (rq_data_dir(rq))
- 		cmd.tf_flags |= IDE_TFLAG_WRITE;
- 
-@@ -1061,32 +1061,37 @@ static int idetape_queue_rw_tail(ide_drive_t *drive, int cmd, int blocks,
- 				 struct idetape_bh *bh)
- {
- 	idetape_tape_t *tape = drive->driver_data;
-+	size_t size = blocks * tape->blk_size;
- 	struct request *rq;
--	int ret, errors;
-+	int ret;
- 
- 	debug_log(DBG_SENSE, "%s: cmd=%d\n", __func__, cmd);
-+	BUG_ON(cmd != REQ_IDETAPE_READ && cmd != REQ_IDETAPE_WRITE);
- 
- 	rq = blk_get_request(drive->queue, READ, __GFP_WAIT);
- 	rq->cmd_type = REQ_TYPE_SPECIAL;
- 	rq->cmd[13] = cmd;
- 	rq->rq_disk = tape->disk;
--	rq->special = (void *)bh;
- 	rq->sector = tape->first_frame;
--	rq->nr_sectors = blocks;
--	rq->current_nr_sectors = blocks;
--	blk_execute_rq(drive->queue, tape->disk, rq, 0);
- 
--	errors = rq->errors;
--	ret = tape->blk_size * (blocks - rq->current_nr_sectors);
--	blk_put_request(rq);
-+	if (size) {
-+		ret = blk_rq_map_kern(drive->queue, rq, bh->b_data, size,
-+				      __GFP_WAIT);
-+		if (ret)
-+			goto out_put;
-+	}
- 
--	if ((cmd & (REQ_IDETAPE_READ | REQ_IDETAPE_WRITE)) == 0)
--		return 0;
-+	blk_execute_rq(drive->queue, tape->disk, rq, 0);
-+
-+	size -= rq->data_len;
-+	ret = size;
-+	if (rq->errors == IDE_DRV_ERROR_GENERAL)
-+		ret = -EIO;
- 
- 	if (tape->merge_bh)
- 		idetape_init_merge_buffer(tape);
--	if (errors == IDE_DRV_ERROR_GENERAL)
--		return -EIO;
-+out_put:
-+	blk_put_request(rq);
- 	return ret;
- }
- 
+pdflush writes out some data
+inode goes back on s_dirty and dirtied_when gets restamped
+wait 30s...
+pdflush writes out more data
+etc...
+
+That seems sub-optimal.
+
 -- 
-1.6.0.2
-
+Jeff Layton <jlayton@redhat.com>
