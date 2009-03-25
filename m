@@ -1,83 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763472AbZCYSAG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763820AbZCYSAh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763472AbZCYSAG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 14:00:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754430AbZCYR7t
+	id S1763820AbZCYSAh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 14:00:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762876AbZCYSAE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 13:59:49 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:37099 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753059AbZCYR7s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 13:59:48 -0400
-Date: Wed, 25 Mar 2009 18:59:08 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: Andrew Lutomirski <amluto@gmail.com>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Kyle McMartin <kyle@redhat.com>, Fenghua Yu <fenghua.yu@intel.com>,
-       Suresh Siddha <suresh.b.siddha@intel.com>,
-       Yinghai Lu <yinghai@kernel.org>, Mark Gross <mgross@linux.intel.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.29: can't resume from suspend with DMAR (intel iommu)
-	enabled
-Message-ID: <20090325175908.GA25518@elte.hu>
-References: <cb0375e10903241258x32c9d0f3g35a4f56793eb8677@mail.gmail.com> <20090324203259.GC26930@elte.hu> <1238003581.2085.53.camel@macbook.infradead.org>
+	Wed, 25 Mar 2009 14:00:04 -0400
+Received: from wf-out-1314.google.com ([209.85.200.173]:44824 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762803AbZCYSAA convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Mar 2009 14:00:00 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=Q/3v7/1KOdhc7DGARZB6e+ih27m3yWxVqZBJCMpk4S0tdhxkRSmdybe/yzQ52NNooW
+         ig5kMPLjly1QMa7piBq3iFbRmJDuTjyKyLj+IjmaaHZLrN7fQxVRyGSMFKU4SLZmUxVq
+         KMMfcNoza2oFp/YU9yXkg16tEsa/Ra2rFc+is=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1238003581.2085.53.camel@macbook.infradead.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20090324170559.1667c847@infradead.org>
+References: <alpine.LFD.2.00.0903231617550.3032@localhost.localdomain>
+	 <49C87B87.4020108@krogh.cc>
+	 <72dbd3150903232346g5af126d7sb5ad4949a7b5041f@mail.gmail.com>
+	 <20090324091545.758d00f5@lxorguk.ukuu.org.uk>
+	 <20090324093245.GA22483@elte.hu>
+	 <20090324101011.6555a0b9@lxorguk.ukuu.org.uk>
+	 <20090324103111.GA26691@elte.hu> <20090324132032.GK5814@mit.edu>
+	 <20090324160353.06a4a5ed@hobbes.virtuouswap>
+	 <20090324170559.1667c847@infradead.org>
+Date: Wed, 25 Mar 2009 10:59:57 -0700
+Message-ID: <72dbd3150903251059xc1fbc04qb1335e33bb0a2732@mail.gmail.com>
+Subject: Re: Linux 2.6.29
+From: David Rees <drees76@gmail.com>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: Jesse Barnes <jbarnes@virtuousgeek.org>, Theodore Tso <tytso@mit.edu>,
+       Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Nick Piggin <npiggin@suse.de>,
+       Jens Axboe <jens.axboe@oracle.com>, Jesper Krogh <jesper@krogh.cc>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, Mar 24, 2009 at 5:05 PM, Arjan van de Ven <arjan@infradead.org> wrote:
+> On Tue, 24 Mar 2009 16:03:53 -0700
+> Jesse Barnes <jbarnes@virtuousgeek.org> wrote:
+>> I remember early in the 2.6.x days there was a lot of focus on making
+>> interactive performance good, and for a long time it was.  But this
+>> I/O problem has been around for a *long* time now... What happened?
+>> Do not many people run into this daily?  Do all the filesystem
+>> hackers run with special mount options to mitigate the problem?
+>
+> the people that care use my kernel patch on ext3 ;-)
+> (or the userland equivalent tweak in /etc/rc.local)
 
-* David Woodhouse <dwmw2@infradead.org> wrote:
+There's a couple of comments in bug 12309 [1] which confirm that
+increasing the priority of kjournald reduces latency significantly
+since I posted your tweak there yesterday.  I hope to do some testing
+today on my systems to see if it helps on them, too.
 
-> On Tue, 2009-03-24 at 21:32 +0100, Ingo Molnar wrote:
-> > (Cc:s added)
-> > 
-> > * Andrew Lutomirski <amluto@gmail.com> wrote:
-> > 
-> > > On vanilla 2.6.29 (on Ubuntu 8.10), on a Lenovo x200s, my system 
-> > > is completely hosed on resume.  It appears that even hard disk IO 
-> > > didn't work (trying to do *anything* including getting a dmesg 
-> > > trace just spewed sda io errors to the console).  Hence no trace.  
-> > > I did an alt-sysrq-b and the screen went blank and the machine 
-> > > just started beeping at me.
-> > > 
-> > > Resume works much better with intel_iommu=off.  (I remember seeing 
-> > > a patch go by that purported to fix resume with IOMMU enabled, but 
-> > > it didn't work for me.)
-> > > 
-> > > I'd be happy to try to make a better bug report if anyone has any 
-> > > bright ideas.
-> > 
-> > i have a Lenovo T500 that does not even boot with with DMAR enabled 
-> > in the BIOS (it's default-off), i get this panic in early bootup:
-> > 
-> >     DMAR hardware is malfunctioning
-> 
-> Can you show me the output of the pr_debug() statement at 
-> dmar.c:543 (in alloc_iommu()?
+-Dave
 
-that's not easy - i use it right now :)
-
-That's another reason why warnings and non-panic() behavior are 
-better for developers too. Had it not crashed i could have sent you 
-my dmesg and i would not have turned off DMAR in the BIOS.
-
-Now it's turned off in my BIOS (first barrier) and i need to reboot 
-the kernel (second barrier) and i need to hack up a kernel in a 
-certain way to produce debug info (third barrier) - in the merge 
-window (fourth barrier ;-).
-
-	Ingo
+[1] http://bugzilla.kernel.org/show_bug.cgi?id=12309
