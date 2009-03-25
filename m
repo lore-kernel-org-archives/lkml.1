@@ -1,261 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764337AbZCYStG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764348AbZCYSu5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764337AbZCYStG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 14:49:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764164AbZCYSsN
+	id S1764348AbZCYSu5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 14:50:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753744AbZCYSus
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 14:48:13 -0400
-Received: from mga09.intel.com ([134.134.136.24]:35306 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764068AbZCYSsK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 14:48:10 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.38,420,1233561600"; 
-   d="scan'208";a="397512102"
-Date: Tue, 24 Mar 2009 15:36:28 -0700
-From: Fenghua Yu <fenghua.yu@intel.com>
-To: Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       David Woodhouse <dwmw2@infradead.org>
-Cc: Andrew Lutomirski <amluto@gmail.com>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Kyle McMartin <kyle@redhat.com>, LKML <linux-kernel@vger.kernel.org>,
-       iommu@lists.linux-foundation.org
-Subject: [PATCH 1/2] Intel IOMMU Suspend/Resume Support for DMAR
-Message-ID: <20090324223628.GA22887@linux-os.sc.intel.com>
-References: <cb0375e10903241258x32c9d0f3g35a4f56793eb8677@mail.gmail.com> <20090324203259.GC26930@elte.hu>
+	Wed, 25 Mar 2009 14:50:48 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:56857 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752811AbZCYSur (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Mar 2009 14:50:47 -0400
+Date: Wed, 25 Mar 2009 18:49:12 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: David Rees <drees76@gmail.com>, Theodore Tso <tytso@mit.edu>,
+       Jan Kara <jack@suse.cz>, Andrew Morton <akpm@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Arjan van de Ven <arjan@infradead.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Nick Piggin <npiggin@suse.de>,
+       Jens Axboe <jens.axboe@oracle.com>, Jesper Krogh <jesper@krogh.cc>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.29
+Message-ID: <20090325184912.495124b6@lxorguk.ukuu.org.uk>
+In-Reply-To: <alpine.LFD.2.00.0903251122250.3032@localhost.localdomain>
+References: <alpine.LFD.2.00.0903231617550.3032@localhost.localdomain>
+	<72dbd3150903232346g5af126d7sb5ad4949a7b5041f@mail.gmail.com>
+	<20090324091545.758d00f5@lxorguk.ukuu.org.uk>
+	<20090324093245.GA22483@elte.hu>
+	<20090324101011.6555a0b9@lxorguk.ukuu.org.uk>
+	<20090324103111.GA26691@elte.hu>
+	<20090324041249.1133efb6.akpm@linux-foundation.org>
+	<20090325123744.GK23439@duck.suse.cz>
+	<20090325150041.GM32307@mit.edu>
+	<alpine.LFD.2.00.0903251008120.3032@localhost.localdomain>
+	<72dbd3150903251109x75aa5d8ke8277247c2f292f9@mail.gmail.com>
+	<alpine.LFD.2.00.0903251117380.3032@localhost.localdomain>
+	<alpine.LFD.2.00.0903251122250.3032@localhost.localdomain>
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090324203259.GC26930@elte.hu>
-User-Agent: Mutt/1.4.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> Again, good SSD's don't care. Disks do. It doesn't matter if you have a FC 
+> disk array that can eat 300MB/s when streaming - once you start seeking, 
+> that 300MB/s goes down like a rock. Battery-protected write caches will 
+> help - but not a whole lot when streaming more data than they have RAM. 
+> Basic queuing theory.
 
-Current Intel IOMMU does not support suspend and resume. In S3 event, kernel
-crashes when IOMMU is enabled. The attached patch implements the suspend and
-resume feature for Intel IOMMU. It hooks to kernel suspend and resume interface.
-When suspend happens, it saves necessary hardware registers. When resume happens
-it restores the registers and restarts IOMMU by enabling translation, setting
-up root entry, and re-enabling queued invalidation.
+Subtly more complex than that. If your mashed up I/O streams fit into the
+2GB or so of cache (minus one stream to disk) you win. You also win
+because you take a lot of fragmented OS I/O and turn it into bigger
+chunks of writing better scheduled. The latter win arguably shouldn't
+happen but it does occur (I guess in part that says we suck) and it
+occurs big time when you've got multiple accessors to a shared storage
+system (where the host OS's can't help)
 
-A seperate patch which is for interrupt remapping suspend/resume will be sent
-out in a day or two.
-
-This patch set is applied on top of the tip tree.
-
-Signed-off-by: Fenghua Yu <fenghua.yu@intel.com>
-
----
-
- drivers/pci/intel-iommu.c   |  158 ++++++++++++++++++++++++++++++++++++++++++++
- include/linux/intel-iommu.h |    4 +
- 2 files changed, 162 insertions(+)
-
-diff --git a/drivers/pci/intel-iommu.c b/drivers/pci/intel-iommu.c
-index 49402c3..a969bc8 100644
---- a/drivers/pci/intel-iommu.c
-+++ b/drivers/pci/intel-iommu.c
-@@ -36,6 +36,8 @@
- #include <linux/iova.h>
- #include <linux/iommu.h>
- #include <linux/intel-iommu.h>
-+#include <linux/sysdev.h>
-+#include <asm/i8259.h>
- #include <asm/cacheflush.h>
- #include <asm/iommu.h>
- #include "pci.h"
-@@ -2563,6 +2565,161 @@ static void __init init_no_remapping_devices(void)
- 	}
- }
- 
-+#ifdef CONFIG_PM
-+static int init_iommu_hw(void)
-+{
-+	struct dmar_drhd_unit *drhd;
-+	struct intel_iommu *iommu;
-+
-+	for_each_drhd_unit(drhd) {
-+		if (drhd->ignored)
-+			continue;
-+
-+		iommu = drhd->iommu;
-+
-+		if (iommu->qi)
-+			dmar_reenable_qi(iommu);
-+	}
-+
-+	for_each_drhd_unit(drhd) {
-+		if (drhd->ignored)
-+			continue;
-+
-+		iommu = drhd->iommu;
-+
-+		iommu_flush_write_buffer(iommu);
-+
-+		iommu_set_root_entry(iommu);
-+
-+		iommu->flush.flush_context(iommu, 0, 0, 0, DMA_CCMD_GLOBAL_INVL,
-+					   0);
-+		iommu->flush.flush_iotlb(iommu, 0, 0, 0, DMA_TLB_GLOBAL_FLUSH,
-+					 0);
-+		iommu_disable_protect_mem_regions(iommu);
-+		iommu_enable_translation(iommu);
-+	}
-+
-+	return 0;
-+}
-+
-+static void iommu_flush_all(void)
-+{
-+	struct dmar_drhd_unit *drhd;
-+	struct intel_iommu *iommu;
-+
-+	for_each_drhd_unit(drhd) {
-+		if (drhd->ignored)
-+			continue;
-+
-+		iommu = drhd->iommu;
-+		iommu->flush.flush_context(iommu, 0, 0, 0, DMA_CCMD_GLOBAL_INVL,
-+					   0);
-+		iommu->flush.flush_iotlb(iommu, 0, 0, 0, DMA_TLB_GLOBAL_FLUSH,
-+					 0);
-+	}
-+}
-+
-+static u32 iommu_state[MAX_IOMMUS][MAX_IOMMU_REGS];
-+
-+static int iommu_suspend(struct sys_device *dev, pm_message_t state)
-+{
-+	struct dmar_drhd_unit *drhd;
-+	struct intel_iommu *iommu;
-+	unsigned long flag;
-+	int    i = 0;
-+
-+	iommu_flush_all();
-+
-+	for_each_drhd_unit(drhd) {
-+		if (drhd->ignored)
-+			continue;
-+
-+		iommu = drhd->iommu;
-+
-+		iommu_disable_translation(iommu);
-+
-+		spin_lock_irqsave(&iommu->register_lock, flag);
-+
-+		iommu_state[i][DMAR_FECTL_REG] =
-+			(u32) readl(iommu->reg + DMAR_FECTL_REG);
-+		iommu_state[i][DMAR_FEDATA_REG] =
-+			(u32) readl(iommu->reg + DMAR_FEDATA_REG);
-+		iommu_state[i][DMAR_FEADDR_REG] =
-+			(u32) readl(iommu->reg + DMAR_FEADDR_REG);
-+		iommu_state[i][DMAR_FEUADDR_REG] =
-+			(u32) readl(iommu->reg + DMAR_FEUADDR_REG);
-+
-+		spin_unlock_irqrestore(&iommu->register_lock, flag);
-+		i++;
-+	}
-+	return 0;
-+}
-+
-+static int iommu_resume(struct sys_device *dev)
-+{
-+	struct dmar_drhd_unit *drhd;
-+	struct intel_iommu *iommu;
-+	unsigned long flag;
-+	int i = 0;
-+
-+	if (init_iommu_hw())
-+		panic("IOMMU setup failed, DMAR can not start!\n");
-+
-+	for_each_drhd_unit(drhd) {
-+		if (drhd->ignored)
-+			continue;
-+
-+		iommu = drhd->iommu;
-+
-+		spin_lock_irqsave(&iommu->register_lock, flag);
-+
-+		writel((u32) iommu_state[i][DMAR_FECTL_REG],
-+			iommu->reg + DMAR_FECTL_REG);
-+		writel((u32) iommu_state[i][DMAR_FEDATA_REG],
-+			iommu->reg + DMAR_FEDATA_REG);
-+		writel((u32) iommu_state[i][DMAR_FEADDR_REG],
-+			iommu->reg + DMAR_FEADDR_REG);
-+		writel((u32) iommu_state[i][DMAR_FEUADDR_REG],
-+			iommu->reg + DMAR_FEUADDR_REG);
-+
-+		spin_unlock_irqrestore(&iommu->register_lock, flag);
-+		i++;
-+	}
-+	return 0;
-+}
-+
-+static struct sysdev_class iommu_sysclass = {
-+	.name		= "iommu",
-+	.resume		= iommu_resume,
-+	.suspend	= iommu_suspend,
-+};
-+
-+static struct sys_device device_iommu = {
-+	.cls	= &iommu_sysclass,
-+};
-+
-+static int __init init_iommu_sysfs(void)
-+{
-+	int error;
-+
-+	error = sysdev_class_register(&iommu_sysclass);
-+	if (error)
-+		return error;
-+
-+	error = sysdev_register(&device_iommu);
-+	if (error)
-+		sysdev_class_unregister(&iommu_sysclass);
-+
-+	return error;
-+}
-+
-+#else
-+static init __init init_iommu_sysfs(void)
-+{
-+	return 0;
-+}
-+#endif	/* CONFIG_PM */
-+
- int __init intel_iommu_init(void)
- {
- 	int ret = 0;
-@@ -2598,6 +2755,7 @@ int __init intel_iommu_init(void)
- 	init_timer(&unmap_timer);
- 	force_iommu = 1;
- 	dma_ops = &intel_dma_ops;
-+	init_iommu_sysfs();
- 
- 	register_iommu(&intel_iommu_ops);
- 
-diff --git a/include/linux/intel-iommu.h b/include/linux/intel-iommu.h
-index 1d6c71d..5ec836b 100644
---- a/include/linux/intel-iommu.h
-+++ b/include/linux/intel-iommu.h
-@@ -205,6 +205,9 @@ static inline void dmar_writeq(void __iomem *addr, u64 val)
- /* low 64 bit */
- #define dma_frcd_page_addr(d) (d & (((u64)-1) << PAGE_SHIFT))
- 
-+#define MAX_IOMMUS      32
-+#define MAX_IOMMU_REGS  0xc0
-+
- #define IOMMU_WAIT_OP(iommu, offset, op, cond, sts)			\
- do {									\
- 	cycles_t start_time = get_cycles();				\
-@@ -322,6 +325,7 @@ extern int alloc_iommu(struct dmar_drhd_unit *drhd);
- extern void free_iommu(struct intel_iommu *iommu);
- extern int dmar_enable_qi(struct intel_iommu *iommu);
- extern void dmar_disable_qi(struct intel_iommu *iommu);
-+extern int dmar_reenable_qi(struct intel_iommu *iommu);
- extern void qi_global_iec(struct intel_iommu *iommu);
- 
- extern int qi_flush_context(struct intel_iommu *iommu, u16 did, u16 sid,
+Alan
