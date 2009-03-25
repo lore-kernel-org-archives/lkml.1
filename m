@@ -1,37 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754426AbZCYTP1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754199AbZCYTRy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754426AbZCYTP1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 15:15:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750797AbZCYTPN
+	id S1754199AbZCYTRy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 15:17:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752368AbZCYTRp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 15:15:13 -0400
-Received: from mail.tnnet.fi ([217.112.240.26]:32878 "EHLO mail.tnnet.fi"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750738AbZCYTPM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 15:15:12 -0400
-X-Greylist: delayed 584 seconds by postgrey-1.27 at vger.kernel.org; Wed, 25 Mar 2009 15:15:12 EDT
-Message-ID: <49CA806F.EE0D623D@users.sourceforge.net>
-Date: Wed, 25 Mar 2009 21:05:19 +0200
-From: Jari Ruusu <jariruusu@users.sourceforge.net>
-To: linux-crypto@nl.linux.org
-CC: linux-kernel@vger.kernel.org
-Subject: Announce loop-AES-v3.2f file/swap crypto package
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Wed, 25 Mar 2009 15:17:45 -0400
+Received: from e28smtp03.in.ibm.com ([59.145.155.3]:45665 "EHLO
+	e28smtp03.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752242AbZCYTRo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Mar 2009 15:17:44 -0400
+Date: Thu, 26 Mar 2009 00:47:08 +0530
+From: Gautham R Shenoy <ego@in.ibm.com>
+To: Ray Lee <ray-lk@madrabbit.org>
+Cc: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       a.p.zijlstra@chello.nl, dhaval@linux.vnet.ibm.com, balbir@in.ibm.com,
+       bharata@linux.vnet.ibm.com, suresh.b.siddha@intel.com,
+       tglx@linutronix.de, nickpiggin@yahoo.com.au, svaidy@linux.vnet.ibm.com,
+       mingo@elte.hu, linux-tip-commits@vger.kernel.org
+Subject: Re: [tip:sched/balancing] sched: Add comments to
+	find_busiest_group()  function
+Message-ID: <20090325191708.GA25896@in.ibm.com>
+Reply-To: ego@in.ibm.com
+References: <20090325091427.13992.18933.stgit@sofia.in.ibm.com> <tip-b7bb4c9bb01941fe8feb653f3410e7ed0c9bb786@git.kernel.org> <2c0942db0903250904x799271b5s78a1007d0fdbbb77@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <2c0942db0903250904x799271b5s78a1007d0fdbbb77@mail.gmail.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-loop-AES changes since previous release:
-- Work around kernel interface changes in 2.6.29-rc kernels
-- Maximum prealloc limit increased to 4096 pages.
+Hi Ray,
+On Wed, Mar 25, 2009 at 09:04:05AM -0700, Ray Lee wrote:
+> > sched: Add comments to find_busiest_group() function
+> >
+> > Impact: cleanup
+> >
+> > Add /** style comments around find_busiest_group(). Also add a few
+> > explanatory comments.
+> 
+> ...but there are actual code changes. Hard to know if you intended to
+> do that and forgot to changelog it, or if it's an unexpected hunk that
+> accidentally got included:
 
-bzip2 compressed tarball is here:
+These code changes are intentional. They improve readability and help us
+categorize the various cases for which we're pretty sure that we don't
+have a need to calculate the imbalance.
 
-    http://loop-aes.sourceforge.net/loop-AES/loop-AES-v3.2f.tar.bz2
-    md5sum 9f309e723bed7614533e24e8a0baa81e
+The fact that the code was reorganized should have been mentioned in the
+changelog. My bad. Sorry :(
 
-    http://loop-aes.sourceforge.net/loop-AES/loop-AES-v3.2f.tar.bz2.sign
+> 
+> >        if (balance && !(*balance))
+> >                goto ret;
+> >
+> > -       if (!sds.busiest || sds.this_load >= sds.max_load
+> > -               || sds.busiest_nr_running == 0)
+> > +       if (!sds.busiest || sds.busiest_nr_running == 0)
+> > +               goto out_balanced;
+> > +
+> > +       if (sds.this_load >= sds.max_load)
+> >                goto out_balanced;
+> >
+> >        sds.avg_load = (SCHED_LOAD_SCALE * sds.total_load) / sds.total_pwr;
+> >
+> > -       if (sds.this_load >= sds.avg_load ||
+> > -                       100*sds.max_load <= sd->imbalance_pct * sds.this_load)
+> > +       if (sds.this_load >= sds.avg_load)
+> > +               goto out_balanced;
+> > +
+> > +       if (100 * sds.max_load <= sd->imbalance_pct * sds.this_load)
+> >                goto out_balanced;
+> >
+> >        sds.busiest_load_per_task /= sds.busiest_nr_running;
 
 -- 
-Jari Ruusu  1024R/3A220F51 5B 4B F9 BB D3 3F 52 E9  DB 1D EB E3 24 0E A9 DD
+Thanks and Regards
+gautham
