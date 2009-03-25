@@ -1,61 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750838AbZCYIBU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754650AbZCYICQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750838AbZCYIBU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 04:01:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751420AbZCYIBI
+	id S1754650AbZCYICQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 04:02:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752242AbZCYIBz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 04:01:08 -0400
-Received: from mail-ew0-f165.google.com ([209.85.219.165]:61338 "EHLO
-	mail-ew0-f165.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750796AbZCYIBG (ORCPT
+	Wed, 25 Mar 2009 04:01:55 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:42664 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751420AbZCYIBy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 04:01:06 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=xv6jduGiu43apMaBLCw7tnYzT49xCmOInKnKP2ENsp1wVPXgq0QmaUT+tjhXSrQXjR
-         tRNJV6VbWmA+BZkyDhRyIMFKB7N91hCFcAOn+5DejmpOiLyagGIoe+iZJXjAyyh8uNCA
-         1clHCG2rZrAYomMfdjSqXJdv7dKCtn3feUbt4=
-Message-ID: <49C9E4B8.3000708@gmail.com>
-Date: Wed, 25 Mar 2009 09:00:56 +0100
-From: =?UTF-8?B?Sm9zw6kgTWFyw63CrWEgRmVybsOhbmRleiBHb256w6FsZXo=?= 
-	<josemariafg@gmail.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090323)
-MIME-Version: 1.0
-To: Pierre Ossman <drzeus-list@drzeus.cx>
-CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/1] mmc: Some microSD cards are not recognized by PCIxx12
- SDA controller
-References: <49B5C091.3090303@gmail.com> <20090324211748.30cd7429@mjolnir.ossman.eu>
-In-Reply-To: <20090324211748.30cd7429@mjolnir.ossman.eu>
-Content-Type: text/plain; charset=UTF-8
+	Wed, 25 Mar 2009 04:01:54 -0400
+Subject: Re: [PATCH 2/5] mm: remove unlikly NULL from kfree
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Roland McGrath <roland@redhat.com>,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       Steven Rostedt <srostedt@redhat.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Matt Mackall <mpm@selenic.com>
+In-Reply-To: <alpine.LFD.2.00.0903250840440.29264@localhost.localdomain>
+References: <20090325051920.406564281@goodmis.org>
+	 <20090325052023.071564146@goodmis.org>
+	 <84144f020903250034j24e1782bt5f73809b9349346c@mail.gmail.com>
+	 <alpine.LFD.2.00.0903250840440.29264@localhost.localdomain>
+Date: Wed, 25 Mar 2009 10:01:51 +0200
+Message-Id: <1237968111.30175.9.camel@penberg-laptop>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
 Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.22.3.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pierre Ossman wrote:
-> On Tue, 10 Mar 2009 02:21:21 +0100
->> diff -Nrpu linux-2.6.28.5/drivers/mmc/core/core.c.orig linux-2.6.28.5/drivers/mmc/core/core.c
->> --- linux-2.6.28.5/drivers/mmc/core/core.c.orig	2009-03-10 01:30:19.000000000 +0100
->> +++ linux-2.6.28.5/drivers/mmc/core/core.c	2009-03-10 01:29:44.000000000 +0100
->> @@ -514,7 +514,7 @@ static void mmc_power_up(struct mmc_host
->>  	 * This delay should be sufficient to allow the power supply
->>  	 * to reach the minimum voltage.
->>  	 */
->> -	mmc_delay(2);
->> +	mmc_delay(10);
->>  
+Hi Thomas,
+
+On Wed, Mar 25, 2009 at 7:19 AM, Steven Rostedt <rostedt@goodmis.org> wrote:
+> > > This makes sense, since we now encourage developers to just call kfree
+> > > without checking for NULL.
+
+On Wed, 25 Mar 2009, Pekka Enberg wrote: 
+> > But those are _error handling paths_ (at least supposed to be). I
+> > wonder which call-sites are responsible for this. Can frtrace help us
+> > here?
+
+On Wed, 2009-03-25 at 08:50 +0100, Thomas Gleixner wrote:
+> Why is this an error handler. We replaced tons of 
 > 
-> A delay of 10 is just enough to trigger a sleep on most kernels
-> (HZ=100). Have you determined the lower bound of these two values?
+>     if (obj)
+>        kfree(obj);
 > 
+> constructs all over the kernel with kfree(obj); and let kfree deal
+> with the NULL pointer.
 
-Well, I have been using the patch in a kernel with HZ=300, tickless (CONFIG_NO_HZ) and desktop preemption (CONFIG_PREEMPT_VOLUNTARY), but I didn't determine the lower bound. As I explained in the patch at -mm tree, I took as base the patch:
+We encourage developers not to check for kfree() in the common
+out-of-memory error handling paths. But what Steven's results suggest is
+that the common case is something like this:
 
-http://list.drzeus.cx/pipermail/sdhci-devel/2007-December/002089.html
+   void *p = NULL;
 
-and I only extrapolated the need for a higher delay just after MMC_POWER_UP to this one and after MMC_POWER_ON. When I was looking for a fix for the problem I was suffering with my microSD card and laptop, I remember I found some e-mails from two years ago pointing out to some change in the scheduler which uncovered the problem.
+   if (/* unlikely condition */)
+       p = kmalloc(...);
 
-As I'm going to install 2.6.29 today, I can test the patch with it and HZ=100.
+   kfree(p);
+
+which, quite frankly, doesn't make much sense to me. That's why I would
+really want to know which call-sites are causing this before applying
+the patch.
+
+			Pekka
+
