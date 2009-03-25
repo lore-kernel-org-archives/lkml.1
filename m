@@ -1,64 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753094AbZCYQOf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754282AbZCYQOx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753094AbZCYQOf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 12:14:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755043AbZCYQOX
+	id S1754282AbZCYQOx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 12:14:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763416AbZCYQO3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 12:14:23 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:49656 "EHLO mx2.redhat.com"
+	Wed, 25 Mar 2009 12:14:29 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:49623 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751014AbZCYQOW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 12:14:22 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-To: Kentaro Takeda <takedakn@nttdata.co.jp>,
-       Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>,
-       Toshiharu Harada <haradats@nttdata.co.jp>,
-       Al Viro <viro@zeniv.linux.org.uk>
-cc: dhowells@redhat.com, linux-kernel@vger.kernel.org
-Subject: Are path-based LSM hooks called from the wrong places?
-Date: Wed, 25 Mar 2009 16:14:13 +0000
-Message-ID: <13750.1237997653@redhat.com>
+	id S1763402AbZCYQO2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Mar 2009 12:14:28 -0400
+Date: Wed, 25 Mar 2009 17:14:25 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Pierre Ossman <drzeus@drzeus.cx>
+Cc: Manuel Lauss <mano@roarinelk.homelinux.net>, linux-kernel@vger.kernel.org
+Subject: Re: MMC layer regression with single-block controllers
+Message-ID: <20090325161425.GY27476@kernel.dk>
+References: <20090323092802.GA30122@roarinelk.homelinux.net> <20090324210138.71029c2c@mjolnir.ossman.eu> <20090325104837.GA18389@roarinelk.homelinux.net> <20090325110401.GM27476@kernel.dk> <20090325123613.06404b17@mjolnir.ossman.eu> <20090325114248.GN27476@kernel.dk> <20090325165328.251daabb@mjolnir.ossman.eu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090325165328.251daabb@mjolnir.ossman.eu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Mar 25 2009, Pierre Ossman wrote:
+> On Wed, 25 Mar 2009 12:42:48 +0100
+> Jens Axboe <jens.axboe@oracle.com> wrote:
+> 
+> > On Wed, Mar 25 2009, Pierre Ossman wrote:
+> > > 
+> > > That's an annoying limitation and sort of defeats the purpose of
+> > > specifying a maximum sector count. Why can't it go below 8?
+> > 
+> > Because it would add all sorts of complexity for handling 4kb block size
+> > file systems on top of the block device. The bio_add_page() api depends
+> > on being able to add a single page at least, it has to or you would need
+> > to push that complexity to the callers.
+> > 
+> 
+> Requests going in into the block layer and requests coming out aren't
+> that strongly coupled, so I don't see it of that much of a stretch to
+> expect this to be handled.
 
-Hi Kentaro,
+The point is that you have to handle at one side of the block layer, at
+submission or at send-to-driver time.
 
-I've just been looking at some of the VFS syscall routines, such as
-notify_change(), with an eye to calling it from FS-Cache to grow a file.  I
-see that whilst notify_change() calls the inode-based LSM hooks (as drive
-SELinux), it doesn't call the path-based LSM hooks (as drive other security
-modules).  It leaves that to the callers, such as do_sys_ftruncate().
+> > So it's annoying, but you have to do the incremental completions
+> > yourself for the (obscure) device that doesn't do more than 512b
+> > transfers. It's really not that difficult, and it would be simpler than
+> > supporting partial completions generically in the block layer.
+> 
+> The code was there previously, but it seemed a bit redundant to have
+> functionality like that in the block driver since we've already told
+> the block layer about the restrictions.
 
-I see that vfs_mkdir(), for example, is similar, in that vfs_mkdir() - which
-I'm calling from FS-Cache - invokes the inode-based LSM hooks, but it bypasses
-the path-based LSM hooks as those are called from sys_mkdir().
+You never saw the warnings? It's pretty clear that it does not support <
+PAGE_CACHE_SIZE blocks. It has always been so, I don't know why the
+subject says regression. I guess that is referring to a mmc layer
+regression?
 
-It would appear that path-based LSM hooks may well be being called from the
-wrong places.  They were added in:
+> The code was pretty simple. Basically it just cropped the sg list at
+> the correct place. Couldn't that be as easily done in the block layer?
 
-	commit be6d3e56a6b9b3a4ee44a0685e39e595073c6f0d
-	Author: Kentaro Takeda <takedakn@nttdata.co.jp>
-	Date:   Wed Dec 17 13:24:15 2008 +0900
+No, because if you do it transparently, then you have to keep partial
+state in the bio for completions. So it makes everything a lot more
+complex, I don't want to do that for something like this.
 
-	    introduce new LSM hooks where vfsmount is available.
+> > Saying that it defeats the purpose of the setting is missing the bigger
+> > picture - basically all other devices, that have sane limits (like 128k,
+> > or whatnot).
+> > 
+> 
+> I suppose. But it makes the feature completely useless for MMC as it
+> has to implement it's own cropping of requests anyway.
 
-	    Add new LSM hooks for path-based checks.  Call them on directory-modifying
-	    operations at the points where we still know the vfsmount involved.
+Unfortunate, it's useful for other cases though.
 
-	    Signed-off-by: Kentaro Takeda <takedakn@nttdata.co.jp>
-	    Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-	    Signed-off-by: Toshiharu Harada <haradats@nttdata.co.jp>
-	    Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
+-- 
+Jens Axboe
 
-Using sys_mkdir() and suchlike directly from within the kernel would add a lot
-of overhead as I'd have to generate a full pathname for each call, whereas
-vfs_mkdir() or notify_change() allows me to start from an inode I already
-have.
-
-David
