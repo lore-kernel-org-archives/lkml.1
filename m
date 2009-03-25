@@ -1,1453 +1,539 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762973AbZCYP2u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763053AbZCYP3a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762973AbZCYP2u (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 11:28:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762938AbZCYP21
+	id S1763053AbZCYP3a (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 11:29:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758662AbZCYP3T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 11:28:27 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:49550 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762870AbZCYP2X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 11:28:23 -0400
-Date: Wed, 25 Mar 2009 16:28:19 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: linux-kernel@vger.kernel.org, Laurent Vivier <laurent@lvivier.info>,
-       linux-m68k@vger.kernel.org
-Subject: Re: [PATCH 3/6] m68k: mac - Add SWIM floppy support
-Message-ID: <20090325152819.GW27476@kernel.dk>
-References: <1235899275-23630-1-git-send-email-geert@linux-m68k.org> <1235899275-23630-2-git-send-email-geert@linux-m68k.org> <1235899275-23630-3-git-send-email-geert@linux-m68k.org> <1235899275-23630-4-git-send-email-geert@linux-m68k.org> <10f740e80903250755o5b0e0315g2c3c27d3d0af1be0@mail.gmail.com>
+	Wed, 25 Mar 2009 11:29:19 -0400
+Received: from mail-ew0-f165.google.com ([209.85.219.165]:53355 "EHLO
+	mail-ew0-f165.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754750AbZCYP3Q (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Mar 2009 11:29:16 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=nEonuI9kBPa/FdRpE66ioAzpFeXsRqdRqsM0KPCuMfBcPYuErQVGy4nNFSmuNSPrWU
+         3isnGKntrczIPe4s8PSw87dwzlHol1ONLvqKjKrubvcdCnAsphGwwcFBaeie+k5U5yxD
+         BYroY7hmXLwuA0WcBgGLNxPZXvH9qTz2q6DFk=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <10f740e80903250755o5b0e0315g2c3c27d3d0af1be0@mail.gmail.com>
+In-Reply-To: <20090325152234.GN23439@duck.suse.cz>
+References: <a4423d670903100517y42f342d4pd73c4c36f5c64dd7@mail.gmail.com>
+	 <20090310124658.GE8840@mit.edu>
+	 <a4423d670903100718w1a532143he767782ae598d0fb@mail.gmail.com>
+	 <20090310154745.GF23075@mit.edu>
+	 <a4423d670903110907o7041f4eof92278835aa0c71c@mail.gmail.com>
+	 <20090325151122.GA14881@atrey.karlin.mff.cuni.cz>
+	 <20090325151516.GB14881@atrey.karlin.mff.cuni.cz>
+	 <a4423d670903250818n512b1c67ja1b38db6d09ac7c@mail.gmail.com>
+	 <20090325152234.GN23439@duck.suse.cz>
+Date: Wed, 25 Mar 2009 18:29:10 +0300
+Message-ID: <a4423d670903250829w5e9304a7rce24f4220379620f@mail.gmail.com>
+Subject: Re: next-20090310: ext4 hangs
+From: Alexander Beregalov <a.beregalov@gmail.com>
+To: Jan Kara <jack@suse.cz>
+Cc: Theodore Tso <tytso@mit.edu>,
+       "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>,
+       linux-ext4@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Content-Type: multipart/mixed; boundary=0015174c18ea412c8d0465f329d9
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 25 2009, Geert Uytterhoeven wrote:
-> Hi Jens,
-> 
-> Is this OK for you to go in through the m68k tree?
+--0015174c18ea412c8d0465f329d9
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-Sure!
+2009/3/25 Jan Kara <jack@suse.cz>:
+> On Wed 25-03-09 18:18:43, Alexander Beregalov wrote:
+>> 2009/3/25 Jan Kara <jack@suse.cz>:
+>> >> > So, I think I need to try it on 2.6.29-rc7 again.
+>> >> =C2=A0 I've looked into this. Obviously, what's happenning is that we=
+ delete
+>> >> an inode and jbd2_journal_release_jbd_inode() finds inode is just und=
+er
+>> >> writeout in transaction commit and thus it waits. But it gets never w=
+oken
+>> >> up and because it has a handle from the transaction, every one eventu=
+ally
+>> >> blocks on waiting for a transaction to finish.
+>> >> =C2=A0 But I don't really see how that can happen. The code is really
+>> >> straightforward and everything happens under j_list_lock... Strange.
+>> > =C2=A0BTW: Is the system SMP?
+>> No, it is UP system.
+> =C2=A0Even stranger. And do you have CONFIG_PREEMPT set?
+>
+>> The bug exists even in 2.6.29, I posted it with a new topic.
+> =C2=A0OK, I've sort-of expected this.
 
-> 
-> Thanks!
-> 
-> On Sun, Mar 1, 2009 at 10:21, Geert Uytterhoeven <geert@linux-m68k.org> wrote:
-> > From: Laurent Vivier <laurent@lvivier.info>
-> >
-> > It allows to read data from a floppy, but not to write to, and to eject the
-> > floppy (useful on our Mac without eject button).
-> >
-> > Signed-off-by: Laurent Vivier <Laurent@lvivier.info>
-> > Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
-> > Cc: Jens Axboe <axboe@kernel.dk>
-> > ---
-> >  arch/m68k/mac/config.c   |   44 ++
-> >  arch/m68k/mac/via.c      |    9 +
-> >  drivers/block/Kconfig    |    7 +
-> >  drivers/block/Makefile   |    3 +
-> >  drivers/block/swim.c     |  995 ++++++++++++++++++++++++++++++++++++++++++++++
-> >  drivers/block/swim_asm.S |  247 ++++++++++++
-> >  6 files changed, 1305 insertions(+), 0 deletions(-)
-> >  create mode 100644 drivers/block/swim.c
-> >  create mode 100644 drivers/block/swim_asm.S
-> >
-> > diff --git a/arch/m68k/mac/config.c b/arch/m68k/mac/config.c
-> > index 3a1c0b2..be01798 100644
-> > --- a/arch/m68k/mac/config.c
-> > +++ b/arch/m68k/mac/config.c
-> > @@ -22,6 +22,7 @@
-> >  /* keyb */
-> >  #include <linux/init.h>
-> >  #include <linux/vt_kern.h>
-> > +#include <linux/platform_device.h>
-> >
-> >  #define BOOTINFO_COMPAT_1_0
-> >  #include <asm/setup.h>
-> > @@ -43,6 +44,10 @@
-> >  #include <asm/mac_oss.h>
-> >  #include <asm/mac_psc.h>
-> >
-> > +/* platform device info */
-> > +
-> > +#define SWIM_IO_SIZE 0x2000    /* SWIM IO resource size */
-> > +
-> >  /* Mac bootinfo struct */
-> >
-> >  struct mac_booter_data mac_bi_data;
-> > @@ -870,3 +875,42 @@ static void mac_get_model(char *str)
-> >        strcpy(str, "Macintosh ");
-> >        strcat(str, macintosh_config->name);
-> >  }
-> > +
-> > +static struct resource swim_resources[1];
-> > +
-> > +static struct platform_device swim_device = {
-> > +       .name           = "swim",
-> > +       .id             = -1,
-> > +       .num_resources  = ARRAY_SIZE(swim_resources),
-> > +       .resource       = swim_resources,
-> > +};
-> > +
-> > +static struct platform_device *mac_platform_devices[] __initdata = {
-> > +       &swim_device
-> > +};
-> > +
-> > +int __init mac_platform_init(void)
-> > +{
-> > +       u8 *swim_base;
-> > +
-> > +       switch (macintosh_config->floppy_type) {
-> > +       case MAC_FLOPPY_SWIM_ADDR1:
-> > +               swim_base = (u8 *)(VIA1_BASE + 0x1E000);
-> > +               break;
-> > +       case MAC_FLOPPY_SWIM_ADDR2:
-> > +               swim_base = (u8 *)(VIA1_BASE + 0x16000);
-> > +               break;
-> > +       default:
-> > +               return 0;
-> > +       }
-> > +
-> > +       swim_resources[0].name = "swim-regs";
-> > +       swim_resources[0].start = (resource_size_t)swim_base;
-> > +       swim_resources[0].end = (resource_size_t)(swim_base + SWIM_IO_SIZE);
-> > +       swim_resources[0].flags = IORESOURCE_MEM;
-> > +
-> > +       return platform_add_devices(mac_platform_devices,
-> > +                                   ARRAY_SIZE(mac_platform_devices));
-> > +}
-> > +
-> > +arch_initcall(mac_platform_init);
-> > diff --git a/arch/m68k/mac/via.c b/arch/m68k/mac/via.c
-> > index 7d97ba5..11bce3c 100644
-> > --- a/arch/m68k/mac/via.c
-> > +++ b/arch/m68k/mac/via.c
-> > @@ -645,3 +645,12 @@ int via_irq_pending(int irq)
-> >        }
-> >        return 0;
-> >  }
-> > +
-> > +void via1_set_head(int head)
-> > +{
-> > +       if (head == 0)
-> > +               via1[vBufA] &= ~VIA1A_vHeadSel;
-> > +       else
-> > +               via1[vBufA] |= VIA1A_vHeadSel;
-> > +}
-> > +EXPORT_SYMBOL(via1_set_head);
-> > diff --git a/drivers/block/Kconfig b/drivers/block/Kconfig
-> > index 0344a8a..e7b8aa0 100644
-> > --- a/drivers/block/Kconfig
-> > +++ b/drivers/block/Kconfig
-> > @@ -45,6 +45,13 @@ config MAC_FLOPPY
-> >          If you have a SWIM-3 (Super Woz Integrated Machine 3; from Apple)
-> >          floppy controller, say Y here. Most commonly found in PowerMacs.
-> >
-> > +config BLK_DEV_SWIM
-> > +       tristate "Support for SWIM Macintosh floppy"
-> > +       depends on M68K && MAC
-> > +       help
-> > +         You should select this option if you want floppy support
-> > +         and you don't have a II, IIfx, Q900, Q950 or AV series.
-> > +
-> >  config AMIGA_Z2RAM
-> >        tristate "Amiga Zorro II ramdisk support"
-> >        depends on ZORRO
-> > diff --git a/drivers/block/Makefile b/drivers/block/Makefile
-> > index 204332b..b32b7f9 100644
-> > --- a/drivers/block/Makefile
-> > +++ b/drivers/block/Makefile
-> > @@ -6,6 +6,7 @@
-> >  #
-> >
-> >  obj-$(CONFIG_MAC_FLOPPY)       += swim3.o
-> > +obj-$(CONFIG_BLK_DEV_SWIM)     += swim_mod.o
-> >  obj-$(CONFIG_BLK_DEV_FD)       += floppy.o
-> >  obj-$(CONFIG_AMIGA_FLOPPY)     += amiflop.o
-> >  obj-$(CONFIG_PS3_DISK)         += ps3disk.o
-> > @@ -32,3 +33,5 @@ obj-$(CONFIG_BLK_DEV_UB)      += ub.o
-> >  obj-$(CONFIG_BLK_DEV_HD)       += hd.o
-> >
-> >  obj-$(CONFIG_XEN_BLKDEV_FRONTEND)      += xen-blkfront.o
-> > +
-> > +swim_mod-objs  := swim.o swim_asm.o
-> > diff --git a/drivers/block/swim.c b/drivers/block/swim.c
-> > new file mode 100644
-> > index 0000000..d22cc38
-> > --- /dev/null
-> > +++ b/drivers/block/swim.c
-> > @@ -0,0 +1,995 @@
-> > +/*
-> > + * Driver for SWIM (Sander Woz Integrated Machine) floppy controller
-> > + *
-> > + * Copyright (C) 2004,2008 Laurent Vivier <Laurent@lvivier.info>
-> > + *
-> > + * based on Alastair Bridgewater SWIM analysis, 2001
-> > + * based on SWIM3 driver (c) Paul Mackerras, 1996
-> > + * based on netBSD IWM driver (c) 1997, 1998 Hauke Fath.
-> > + *
-> > + * This program is free software; you can redistribute it and/or
-> > + * modify it under the terms of the GNU General Public License
-> > + * as published by the Free Software Foundation; either version
-> > + * 2 of the License, or (at your option) any later version.
-> > + *
-> > + * 2004-08-21 (lv) - Initial implementation
-> > + * 2008-10-30 (lv) - Port to 2.6
-> > + */
-> > +
-> > +#include <linux/module.h>
-> > +#include <linux/fd.h>
-> > +#include <linux/blkdev.h>
-> > +#include <linux/hdreg.h>
-> > +#include <linux/kernel.h>
-> > +#include <linux/delay.h>
-> > +#include <linux/platform_device.h>
-> > +
-> > +#include <asm/macintosh.h>
-> > +#include <asm/mac_via.h>
-> > +
-> > +#define CARDNAME "swim"
-> > +
-> > +struct sector_header {
-> > +       unsigned char side;
-> > +       unsigned char track;
-> > +       unsigned char sector;
-> > +       unsigned char size;
-> > +       unsigned char crc0;
-> > +       unsigned char crc1;
-> > +} __attribute__((packed));
-> > +
-> > +#define DRIVER_VERSION "Version 0.2 (2008-10-30)"
-> > +
-> > +#define REG(x) unsigned char x, x ## _pad[0x200 - 1];
-> > +
-> > +struct swim {
-> > +       REG(write_data)
-> > +       REG(write_mark)
-> > +       REG(write_CRC)
-> > +       REG(write_parameter)
-> > +       REG(write_phase)
-> > +       REG(write_setup)
-> > +       REG(write_mode0)
-> > +       REG(write_mode1)
-> > +
-> > +       REG(read_data)
-> > +       REG(read_mark)
-> > +       REG(read_error)
-> > +       REG(read_parameter)
-> > +       REG(read_phase)
-> > +       REG(read_setup)
-> > +       REG(read_status)
-> > +       REG(read_handshake)
-> > +} __attribute__((packed));
-> > +
-> > +#define swim_write(base, reg, v)       out_8(&(base)->write_##reg, (v))
-> > +#define swim_read(base, reg)           in_8(&(base)->read_##reg)
-> > +
-> > +/* IWM registers */
-> > +
-> > +struct iwm {
-> > +       REG(ph0L)
-> > +       REG(ph0H)
-> > +       REG(ph1L)
-> > +       REG(ph1H)
-> > +       REG(ph2L)
-> > +       REG(ph2H)
-> > +       REG(ph3L)
-> > +       REG(ph3H)
-> > +       REG(mtrOff)
-> > +       REG(mtrOn)
-> > +       REG(intDrive)
-> > +       REG(extDrive)
-> > +       REG(q6L)
-> > +       REG(q6H)
-> > +       REG(q7L)
-> > +       REG(q7H)
-> > +} __attribute__((packed));
-> > +
-> > +#define iwm_write(base, reg, v)        out_8(&(base)->reg, (v))
-> > +#define iwm_read(base, reg)            in_8(&(base)->reg)
-> > +
-> > +/* bits in phase register */
-> > +
-> > +#define SEEK_POSITIVE  0x070
-> > +#define SEEK_NEGATIVE  0x074
-> > +#define STEP           0x071
-> > +#define MOTOR_ON       0x072
-> > +#define MOTOR_OFF      0x076
-> > +#define INDEX          0x073
-> > +#define EJECT          0x077
-> > +#define SETMFM         0x171
-> > +#define SETGCR         0x175
-> > +
-> > +#define RELAX          0x033
-> > +#define LSTRB          0x008
-> > +
-> > +#define CA_MASK                0x077
-> > +
-> > +/* Select values for swim_select and swim_readbit */
-> > +
-> > +#define READ_DATA_0    0x074
-> > +#define TWOMEG_DRIVE   0x075
-> > +#define SINGLE_SIDED   0x076
-> > +#define DRIVE_PRESENT  0x077
-> > +#define DISK_IN                0x170
-> > +#define WRITE_PROT     0x171
-> > +#define TRACK_ZERO     0x172
-> > +#define TACHO          0x173
-> > +#define READ_DATA_1    0x174
-> > +#define MFM_MODE       0x175
-> > +#define SEEK_COMPLETE  0x176
-> > +#define ONEMEG_MEDIA   0x177
-> > +
-> > +/* Bits in handshake register */
-> > +
-> > +#define MARK_BYTE      0x01
-> > +#define CRC_ZERO       0x02
-> > +#define RDDATA         0x04
-> > +#define SENSE          0x08
-> > +#define MOTEN          0x10
-> > +#define ERROR          0x20
-> > +#define DAT2BYTE       0x40
-> > +#define DAT1BYTE       0x80
-> > +
-> > +/* bits in setup register */
-> > +
-> > +#define S_INV_WDATA    0x01
-> > +#define S_3_5_SELECT   0x02
-> > +#define S_GCR          0x04
-> > +#define S_FCLK_DIV2    0x08
-> > +#define S_ERROR_CORR   0x10
-> > +#define S_IBM_DRIVE    0x20
-> > +#define S_GCR_WRITE    0x40
-> > +#define S_TIMEOUT      0x80
-> > +
-> > +/* bits in mode register */
-> > +
-> > +#define CLFIFO         0x01
-> > +#define ENBL1          0x02
-> > +#define ENBL2          0x04
-> > +#define ACTION         0x08
-> > +#define WRITE_MODE     0x10
-> > +#define HEDSEL         0x20
-> > +#define MOTON          0x80
-> > +
-> > +/*----------------------------------------------------------------------------*/
-> > +
-> > +enum drive_location {
-> > +       INTERNAL_DRIVE = 0x02,
-> > +       EXTERNAL_DRIVE = 0x04,
-> > +};
-> > +
-> > +enum media_type {
-> > +       DD_MEDIA,
-> > +       HD_MEDIA,
-> > +};
-> > +
-> > +struct floppy_state {
-> > +
-> > +       /* physical properties */
-> > +
-> > +       enum drive_location location;   /* internal or external drive */
-> > +       int              head_number;   /* single- or double-sided drive */
-> > +
-> > +       /* media */
-> > +
-> > +       int              disk_in;
-> > +       int              ejected;
-> > +       enum media_type  type;
-> > +       int              write_protected;
-> > +
-> > +       int              total_secs;
-> > +       int              secpercyl;
-> > +       int              secpertrack;
-> > +
-> > +       /* in-use information */
-> > +
-> > +       int             track;
-> > +       int             ref_count;
-> > +
-> > +       struct gendisk *disk;
-> > +
-> > +       /* parent controller */
-> > +
-> > +       struct swim_priv *swd;
-> > +};
-> > +
-> > +enum motor_action {
-> > +       OFF,
-> > +       ON,
-> > +};
-> > +
-> > +enum head {
-> > +       LOWER_HEAD = 0,
-> > +       UPPER_HEAD = 1,
-> > +};
-> > +
-> > +#define FD_MAX_UNIT    2
-> > +
-> > +struct swim_priv {
-> > +       struct swim __iomem *base;
-> > +       spinlock_t lock;
-> > +       struct request_queue *queue;
-> > +       int floppy_count;
-> > +       struct floppy_state unit[FD_MAX_UNIT];
-> > +};
-> > +
-> > +extern int swim_read_sector_header(struct swim __iomem *base,
-> > +                                  struct sector_header *header);
-> > +extern int swim_read_sector_data(struct swim __iomem *base,
-> > +                                unsigned char *data);
-> > +
-> > +static inline void set_swim_mode(struct swim __iomem *base, int enable)
-> > +{
-> > +       struct iwm __iomem *iwm_base;
-> > +       unsigned long flags;
-> > +
-> > +       if (!enable) {
-> > +               swim_write(base, mode0, 0xf8);
-> > +               return;
-> > +       }
-> > +
-> > +       iwm_base = (struct iwm __iomem *)base;
-> > +       local_irq_save(flags);
-> > +
-> > +       iwm_read(iwm_base, q7L);
-> > +       iwm_read(iwm_base, mtrOff);
-> > +       iwm_read(iwm_base, q6H);
-> > +
-> > +       iwm_write(iwm_base, q7H, 0x57);
-> > +       iwm_write(iwm_base, q7H, 0x17);
-> > +       iwm_write(iwm_base, q7H, 0x57);
-> > +       iwm_write(iwm_base, q7H, 0x57);
-> > +
-> > +       local_irq_restore(flags);
-> > +}
-> > +
-> > +static inline int get_swim_mode(struct swim __iomem *base)
-> > +{
-> > +       unsigned long flags;
-> > +
-> > +       local_irq_save(flags);
-> > +
-> > +       swim_write(base, phase, 0xf5);
-> > +       if (swim_read(base, phase) != 0xf5)
-> > +               goto is_iwm;
-> > +       swim_write(base, phase, 0xf6);
-> > +       if (swim_read(base, phase) != 0xf6)
-> > +               goto is_iwm;
-> > +       swim_write(base, phase, 0xf7);
-> > +       if (swim_read(base, phase) != 0xf7)
-> > +               goto is_iwm;
-> > +       local_irq_restore(flags);
-> > +       return 1;
-> > +is_iwm:
-> > +       local_irq_restore(flags);
-> > +       return 0;
-> > +}
-> > +
-> > +static inline void swim_select(struct swim __iomem *base, int sel)
-> > +{
-> > +       swim_write(base, phase, RELAX);
-> > +
-> > +       via1_set_head(sel & 0x100);
-> > +
-> > +       swim_write(base, phase, sel & CA_MASK);
-> > +}
-> > +
-> > +static inline void swim_action(struct swim __iomem *base, int action)
-> > +{
-> > +       unsigned long flags;
-> > +
-> > +       local_irq_save(flags);
-> > +
-> > +       swim_select(base, action);
-> > +       udelay(1);
-> > +       swim_write(base, phase, (LSTRB<<4) | LSTRB);
-> > +       udelay(1);
-> > +       swim_write(base, phase, (LSTRB<<4) | ((~LSTRB) & 0x0F));
-> > +       udelay(1);
-> > +
-> > +       local_irq_restore(flags);
-> > +}
-> > +
-> > +static inline int swim_readbit(struct swim __iomem *base, int bit)
-> > +{
-> > +       int stat;
-> > +
-> > +       swim_select(base, bit);
-> > +
-> > +       udelay(10);
-> > +
-> > +       stat = swim_read(base, handshake);
-> > +
-> > +       return (stat & SENSE) == 0;
-> > +}
-> > +
-> > +static inline void swim_drive(struct swim __iomem *base,
-> > +                             enum drive_location location)
-> > +{
-> > +       if (location == INTERNAL_DRIVE) {
-> > +               swim_write(base, mode0, EXTERNAL_DRIVE); /* clear drive 1 bit */
-> > +               swim_write(base, mode1, INTERNAL_DRIVE); /* set drive 0 bit */
-> > +       } else if (location == EXTERNAL_DRIVE) {
-> > +               swim_write(base, mode0, INTERNAL_DRIVE); /* clear drive 0 bit */
-> > +               swim_write(base, mode1, EXTERNAL_DRIVE); /* set drive 1 bit */
-> > +       }
-> > +}
-> > +
-> > +static inline void swim_motor(struct swim __iomem *base,
-> > +                             enum motor_action action)
-> > +{
-> > +       if (action == ON) {
-> > +               int i;
-> > +
-> > +               swim_action(base, MOTOR_ON);
-> > +
-> > +               for (i = 0; i < 2*HZ; i++) {
-> > +                       swim_select(base, RELAX);
-> > +                       if (swim_readbit(base, MOTOR_ON))
-> > +                               break;
-> > +                       current->state = TASK_INTERRUPTIBLE;
-> > +                       schedule_timeout(1);
-> > +               }
-> > +       } else if (action == OFF) {
-> > +               swim_action(base, MOTOR_OFF);
-> > +               swim_select(base, RELAX);
-> > +       }
-> > +}
-> > +
-> > +static inline void swim_eject(struct swim __iomem *base)
-> > +{
-> > +       int i;
-> > +
-> > +       swim_action(base, EJECT);
-> > +
-> > +       for (i = 0; i < 2*HZ; i++) {
-> > +               swim_select(base, RELAX);
-> > +               if (!swim_readbit(base, DISK_IN))
-> > +                       break;
-> > +               current->state = TASK_INTERRUPTIBLE;
-> > +               schedule_timeout(1);
-> > +       }
-> > +       swim_select(base, RELAX);
-> > +}
-> > +
-> > +static inline void swim_head(struct swim __iomem *base, enum head head)
-> > +{
-> > +       /* wait drive is ready */
-> > +
-> > +       if (head == UPPER_HEAD)
-> > +               swim_select(base, READ_DATA_1);
-> > +       else if (head == LOWER_HEAD)
-> > +               swim_select(base, READ_DATA_0);
-> > +}
-> > +
-> > +static inline int swim_step(struct swim __iomem *base)
-> > +{
-> > +       int wait;
-> > +
-> > +       swim_action(base, STEP);
-> > +
-> > +       for (wait = 0; wait < HZ; wait++) {
-> > +
-> > +               current->state = TASK_INTERRUPTIBLE;
-> > +               schedule_timeout(1);
-> > +
-> > +               swim_select(base, RELAX);
-> > +               if (!swim_readbit(base, STEP))
-> > +                       return 0;
-> > +       }
-> > +       return -1;
-> > +}
-> > +
-> > +static inline int swim_track00(struct swim __iomem *base)
-> > +{
-> > +       int try;
-> > +
-> > +       swim_action(base, SEEK_NEGATIVE);
-> > +
-> > +       for (try = 0; try < 100; try++) {
-> > +
-> > +               swim_select(base, RELAX);
-> > +               if (swim_readbit(base, TRACK_ZERO))
-> > +                       break;
-> > +
-> > +               if (swim_step(base))
-> > +                       return -1;
-> > +       }
-> > +
-> > +       if (swim_readbit(base, TRACK_ZERO))
-> > +               return 0;
-> > +
-> > +       return -1;
-> > +}
-> > +
-> > +static inline int swim_seek(struct swim __iomem *base, int step)
-> > +{
-> > +       if (step == 0)
-> > +               return 0;
-> > +
-> > +       if (step < 0) {
-> > +               swim_action(base, SEEK_NEGATIVE);
-> > +               step = -step;
-> > +       } else
-> > +               swim_action(base, SEEK_POSITIVE);
-> > +
-> > +       for ( ; step > 0; step--) {
-> > +               if (swim_step(base))
-> > +                       return -1;
-> > +       }
-> > +
-> > +       return 0;
-> > +}
-> > +
-> > +static inline int swim_track(struct floppy_state *fs,  int track)
-> > +{
-> > +       struct swim __iomem *base = fs->swd->base;
-> > +       int ret;
-> > +
-> > +       ret = swim_seek(base, track - fs->track);
-> > +
-> > +       if (ret == 0)
-> > +               fs->track = track;
-> > +       else {
-> > +               swim_track00(base);
-> > +               fs->track = 0;
-> > +       }
-> > +
-> > +       return ret;
-> > +}
-> > +
-> > +static int floppy_eject(struct floppy_state *fs)
-> > +{
-> > +       struct swim __iomem *base = fs->swd->base;
-> > +
-> > +       swim_drive(base, fs->location);
-> > +       swim_motor(base, OFF);
-> > +       swim_eject(base);
-> > +
-> > +       fs->disk_in = 0;
-> > +       fs->ejected = 1;
-> > +
-> > +       return 0;
-> > +}
-> > +
-> > +static inline int swim_read_sector(struct floppy_state *fs,
-> > +                                  int side, int track,
-> > +                                  int sector, unsigned char *buffer)
-> > +{
-> > +       struct swim __iomem *base = fs->swd->base;
-> > +       unsigned long flags;
-> > +       struct sector_header header;
-> > +       int ret = -1;
-> > +       short i;
-> > +
-> > +       swim_track(fs, track);
-> > +
-> > +       swim_write(base, mode1, MOTON);
-> > +       swim_head(base, side);
-> > +       swim_write(base, mode0, side);
-> > +
-> > +       local_irq_save(flags);
-> > +       for (i = 0; i < 36; i++) {
-> > +               ret = swim_read_sector_header(base, &header);
-> > +               if (!ret && (header.sector == sector)) {
-> > +                       /* found */
-> > +
-> > +                       ret = swim_read_sector_data(base, buffer);
-> > +                       break;
-> > +               }
-> > +       }
-> > +       local_irq_restore(flags);
-> > +
-> > +       swim_write(base, mode0, MOTON);
-> > +
-> > +       if ((header.side != side)  || (header.track != track) ||
-> > +            (header.sector != sector))
-> > +               return 0;
-> > +
-> > +       return ret;
-> > +}
-> > +
-> > +static int floppy_read_sectors(struct floppy_state *fs,
-> > +                              int req_sector, int sectors_nb,
-> > +                              unsigned char *buffer)
-> > +{
-> > +       struct swim __iomem *base = fs->swd->base;
-> > +       int ret;
-> > +       int side, track, sector;
-> > +       int i, try;
-> > +
-> > +
-> > +       swim_drive(base, fs->location);
-> > +       for (i = req_sector; i < req_sector + sectors_nb; i++) {
-> > +               int x;
-> > +               track = i / fs->secpercyl;
-> > +               x = i % fs->secpercyl;
-> > +               side = x / fs->secpertrack;
-> > +               sector = x % fs->secpertrack + 1;
-> > +
-> > +               try = 5;
-> > +               do {
-> > +                       ret = swim_read_sector(fs, side, track, sector,
-> > +                                               buffer);
-> > +                       if (try-- == 0)
-> > +                               return -1;
-> > +               } while (ret != 512);
-> > +
-> > +               buffer += ret;
-> > +       }
-> > +
-> > +       return 0;
-> > +}
-> > +
-> > +static void redo_fd_request(struct request_queue *q)
-> > +{
-> > +       struct request *req;
-> > +       struct floppy_state *fs;
-> > +
-> > +       while ((req = elv_next_request(q))) {
-> > +
-> > +               fs = req->rq_disk->private_data;
-> > +               if (req->sector < 0 || req->sector >= fs->total_secs) {
-> > +                       end_request(req, 0);
-> > +                       continue;
-> > +               }
-> > +               if (req->current_nr_sectors == 0) {
-> > +                       end_request(req, 1);
-> > +                       continue;
-> > +               }
-> > +               if (!fs->disk_in) {
-> > +                       end_request(req, 0);
-> > +                       continue;
-> > +               }
-> > +               if (rq_data_dir(req) == WRITE) {
-> > +                       if (fs->write_protected) {
-> > +                               end_request(req, 0);
-> > +                               continue;
-> > +                       }
-> > +               }
-> > +               switch (rq_data_dir(req)) {
-> > +               case WRITE:
-> > +                       /* NOT IMPLEMENTED */
-> > +                       end_request(req, 0);
-> > +                       break;
-> > +               case READ:
-> > +                       if (floppy_read_sectors(fs, req->sector,
-> > +                                               req->current_nr_sectors,
-> > +                                               req->buffer)) {
-> > +                               end_request(req, 0);
-> > +                               continue;
-> > +                       }
-> > +                       req->nr_sectors -= req->current_nr_sectors;
-> > +                       req->sector += req->current_nr_sectors;
-> > +                       req->buffer += req->current_nr_sectors * 512;
-> > +                       end_request(req, 1);
-> > +                       break;
-> > +               }
-> > +       }
-> > +}
-> > +
-> > +static void do_fd_request(struct request_queue *q)
-> > +{
-> > +       redo_fd_request(q);
-> > +}
-> > +
-> > +static struct floppy_struct floppy_type[4] = {
-> > +       {    0,  0, 0,  0, 0, 0x00, 0x00, 0x00, 0x00, NULL }, /* no testing   */
-> > +       {  720,  9, 1, 80, 0, 0x2A, 0x02, 0xDF, 0x50, NULL }, /* 360KB SS 3.5"*/
-> > +       { 1440,  9, 2, 80, 0, 0x2A, 0x02, 0xDF, 0x50, NULL }, /* 720KB 3.5"   */
-> > +       { 2880, 18, 2, 80, 0, 0x1B, 0x00, 0xCF, 0x6C, NULL }, /* 1.44MB 3.5"  */
-> > +};
-> > +
-> > +static int get_floppy_geometry(struct floppy_state *fs, int type,
-> > +                              struct floppy_struct **g)
-> > +{
-> > +       if (type >= ARRAY_SIZE(floppy_type))
-> > +               return -EINVAL;
-> > +
-> > +       if (type)
-> > +               *g = &floppy_type[type];
-> > +       else if (fs->type == HD_MEDIA) /* High-Density media */
-> > +               *g = &floppy_type[3];
-> > +       else if (fs->head_number == 2) /* double-sided */
-> > +               *g = &floppy_type[2];
-> > +       else
-> > +               *g = &floppy_type[1];
-> > +
-> > +       return 0;
-> > +}
-> > +
-> > +static void setup_medium(struct floppy_state *fs)
-> > +{
-> > +       struct swim __iomem *base = fs->swd->base;
-> > +
-> > +       if (swim_readbit(base, DISK_IN)) {
-> > +               struct floppy_struct *g;
-> > +               fs->disk_in = 1;
-> > +               fs->write_protected = swim_readbit(base, WRITE_PROT);
-> > +               fs->type = swim_readbit(base, ONEMEG_MEDIA);
-> > +
-> > +               if (swim_track00(base))
-> > +                       printk(KERN_ERR
-> > +                               "SWIM: cannot move floppy head to track 0\n");
-> > +
-> > +               swim_track00(base);
-> > +
-> > +               get_floppy_geometry(fs, 0, &g);
-> > +               fs->total_secs = g->size;
-> > +               fs->secpercyl = g->head * g->sect;
-> > +               fs->secpertrack = g->sect;
-> > +               fs->track = 0;
-> > +       } else {
-> > +               fs->disk_in = 0;
-> > +       }
-> > +}
-> > +
-> > +static int floppy_open(struct block_device *bdev, fmode_t mode)
-> > +{
-> > +       struct floppy_state *fs = bdev->bd_disk->private_data;
-> > +       struct swim __iomem *base = fs->swd->base;
-> > +       int err;
-> > +
-> > +       if (fs->ref_count == -1 || (fs->ref_count && mode & FMODE_EXCL))
-> > +               return -EBUSY;
-> > +
-> > +       if (mode & FMODE_EXCL)
-> > +               fs->ref_count = -1;
-> > +       else
-> > +               fs->ref_count++;
-> > +
-> > +       swim_write(base, setup, S_IBM_DRIVE  | S_FCLK_DIV2);
-> > +       udelay(10);
-> > +       swim_drive(base, INTERNAL_DRIVE);
-> > +       swim_motor(base, ON);
-> > +       swim_action(base, SETMFM);
-> > +       if (fs->ejected)
-> > +               setup_medium(fs);
-> > +       if (!fs->disk_in) {
-> > +               err = -ENXIO;
-> > +               goto out;
-> > +       }
-> > +
-> > +       if (mode & FMODE_NDELAY)
-> > +               return 0;
-> > +
-> > +       if (mode & (FMODE_READ|FMODE_WRITE)) {
-> > +               check_disk_change(bdev);
-> > +               if ((mode & FMODE_WRITE) && fs->write_protected) {
-> > +                       err = -EROFS;
-> > +                       goto out;
-> > +               }
-> > +       }
-> > +       return 0;
-> > +out:
-> > +       if (fs->ref_count < 0)
-> > +               fs->ref_count = 0;
-> > +       else if (fs->ref_count > 0)
-> > +               --fs->ref_count;
-> > +
-> > +       if (fs->ref_count == 0)
-> > +               swim_motor(base, OFF);
-> > +       return err;
-> > +}
-> > +
-> > +static int floppy_release(struct gendisk *disk, fmode_t mode)
-> > +{
-> > +       struct floppy_state *fs = disk->private_data;
-> > +       struct swim __iomem *base = fs->swd->base;
-> > +
-> > +       if (fs->ref_count < 0)
-> > +               fs->ref_count = 0;
-> > +       else if (fs->ref_count > 0)
-> > +               --fs->ref_count;
-> > +
-> > +       if (fs->ref_count == 0)
-> > +               swim_motor(base, OFF);
-> > +
-> > +       return 0;
-> > +}
-> > +
-> > +static int floppy_ioctl(struct block_device *bdev, fmode_t mode,
-> > +                       unsigned int cmd, unsigned long param)
-> > +{
-> > +       struct floppy_state *fs = bdev->bd_disk->private_data;
-> > +       int err;
-> > +
-> > +       if ((cmd & 0x80) && !capable(CAP_SYS_ADMIN))
-> > +                       return -EPERM;
-> > +
-> > +       switch (cmd) {
-> > +       case FDEJECT:
-> > +               if (fs->ref_count != 1)
-> > +                       return -EBUSY;
-> > +               err = floppy_eject(fs);
-> > +               return err;
-> > +
-> > +       case FDGETPRM:
-> > +               if (copy_to_user((void __user *) param, (void *) &floppy_type,
-> > +                                sizeof(struct floppy_struct)))
-> > +                       return -EFAULT;
-> > +               break;
-> > +
-> > +       default:
-> > +               printk(KERN_DEBUG "SWIM floppy_ioctl: unknown cmd %d\n",
-> > +                      cmd);
-> > +               return -ENOSYS;
-> > +       }
-> > +       return 0;
-> > +}
-> > +
-> > +static int floppy_getgeo(struct block_device *bdev, struct hd_geometry *geo)
-> > +{
-> > +       struct floppy_state *fs = bdev->bd_disk->private_data;
-> > +       struct floppy_struct *g;
-> > +       int ret;
-> > +
-> > +       ret = get_floppy_geometry(fs, 0, &g);
-> > +       if (ret)
-> > +               return ret;
-> > +
-> > +       geo->heads = g->head;
-> > +       geo->sectors = g->sect;
-> > +       geo->cylinders = g->track;
-> > +
-> > +       return 0;
-> > +}
-> > +
-> > +static int floppy_check_change(struct gendisk *disk)
-> > +{
-> > +       struct floppy_state *fs = disk->private_data;
-> > +
-> > +       return fs->ejected;
-> > +}
-> > +
-> > +static int floppy_revalidate(struct gendisk *disk)
-> > +{
-> > +       struct floppy_state *fs = disk->private_data;
-> > +       struct swim __iomem *base = fs->swd->base;
-> > +
-> > +       swim_drive(base, fs->location);
-> > +
-> > +       if (fs->ejected)
-> > +               setup_medium(fs);
-> > +
-> > +       if (!fs->disk_in)
-> > +               swim_motor(base, OFF);
-> > +       else
-> > +               fs->ejected = 0;
-> > +
-> > +       return !fs->disk_in;
-> > +}
-> > +
-> > +static struct block_device_operations floppy_fops = {
-> > +       .owner           = THIS_MODULE,
-> > +       .open            = floppy_open,
-> > +       .release         = floppy_release,
-> > +       .locked_ioctl    = floppy_ioctl,
-> > +       .getgeo          = floppy_getgeo,
-> > +       .media_changed   = floppy_check_change,
-> > +       .revalidate_disk = floppy_revalidate,
-> > +};
-> > +
-> > +static struct kobject *floppy_find(dev_t dev, int *part, void *data)
-> > +{
-> > +       struct swim_priv *swd = data;
-> > +       int drive = (*part & 3);
-> > +
-> > +       if (drive > swd->floppy_count)
-> > +               return NULL;
-> > +
-> > +       *part = 0;
-> > +       return get_disk(swd->unit[drive].disk);
-> > +}
-> > +
-> > +static int __devinit swim_add_floppy(struct swim_priv *swd,
-> > +                                    enum drive_location location)
-> > +{
-> > +       struct floppy_state *fs = &swd->unit[swd->floppy_count];
-> > +       struct swim __iomem *base = swd->base;
-> > +
-> > +       fs->location = location;
-> > +
-> > +       swim_drive(base, location);
-> > +
-> > +       swim_motor(base, OFF);
-> > +
-> > +       if (swim_readbit(base, SINGLE_SIDED))
-> > +               fs->head_number = 1;
-> > +       else
-> > +               fs->head_number = 2;
-> > +       fs->ref_count = 0;
-> > +       fs->ejected = 1;
-> > +
-> > +       swd->floppy_count++;
-> > +
-> > +       return 0;
-> > +}
-> > +
-> > +static int __devinit swim_floppy_init(struct swim_priv *swd)
-> > +{
-> > +       int err;
-> > +       int drive;
-> > +       struct swim __iomem *base = swd->base;
-> > +
-> > +       /* scan floppy drives */
-> > +
-> > +       swim_drive(base, INTERNAL_DRIVE);
-> > +       if (swim_readbit(base, DRIVE_PRESENT))
-> > +               swim_add_floppy(swd, INTERNAL_DRIVE);
-> > +       swim_drive(base, EXTERNAL_DRIVE);
-> > +       if (swim_readbit(base, DRIVE_PRESENT))
-> > +               swim_add_floppy(swd, EXTERNAL_DRIVE);
-> > +
-> > +       /* register floppy drives */
-> > +
-> > +       err = register_blkdev(FLOPPY_MAJOR, "fd");
-> > +       if (err) {
-> > +               printk(KERN_ERR "Unable to get major %d for SWIM floppy\n",
-> > +                      FLOPPY_MAJOR);
-> > +               return -EBUSY;
-> > +       }
-> > +
-> > +       for (drive = 0; drive < swd->floppy_count; drive++) {
-> > +               swd->unit[drive].disk = alloc_disk(1);
-> > +               if (swd->unit[drive].disk == NULL) {
-> > +                       err = -ENOMEM;
-> > +                       goto exit_put_disks;
-> > +               }
-> > +               swd->unit[drive].swd = swd;
-> > +       }
-> > +
-> > +       swd->queue = blk_init_queue(do_fd_request, &swd->lock);
-> > +       if (!swd->queue) {
-> > +               err = -ENOMEM;
-> > +               goto exit_put_disks;
-> > +       }
-> > +
-> > +       for (drive = 0; drive < swd->floppy_count; drive++) {
-> > +               swd->unit[drive].disk->flags = GENHD_FL_REMOVABLE;
-> > +               swd->unit[drive].disk->major = FLOPPY_MAJOR;
-> > +               swd->unit[drive].disk->first_minor = drive;
-> > +               sprintf(swd->unit[drive].disk->disk_name, "fd%d", drive);
-> > +               swd->unit[drive].disk->fops = &floppy_fops;
-> > +               swd->unit[drive].disk->private_data = &swd->unit[drive];
-> > +               swd->unit[drive].disk->queue = swd->queue;
-> > +               set_capacity(swd->unit[drive].disk, 2880);
-> > +               add_disk(swd->unit[drive].disk);
-> > +       }
-> > +
-> > +       blk_register_region(MKDEV(FLOPPY_MAJOR, 0), 256, THIS_MODULE,
-> > +                           floppy_find, NULL, swd);
-> > +
-> > +       return 0;
-> > +
-> > +exit_put_disks:
-> > +       unregister_blkdev(FLOPPY_MAJOR, "fd");
-> > +       while (drive--)
-> > +               put_disk(swd->unit[drive].disk);
-> > +       return err;
-> > +}
-> > +
-> > +static int __devinit swim_probe(struct platform_device *dev)
-> > +{
-> > +       struct resource *res;
-> > +       struct swim __iomem *swim_base;
-> > +       struct swim_priv *swd;
-> > +       int ret;
-> > +
-> > +       res = platform_get_resource_byname(dev, IORESOURCE_MEM, "swim-regs");
-> > +       if (!res) {
-> > +               ret = -ENODEV;
-> > +               goto out;
-> > +       }
-> > +
-> > +       if (!request_mem_region(res->start, resource_size(res), CARDNAME)) {
-> > +               ret = -EBUSY;
-> > +               goto out;
-> > +       }
-> > +
-> > +       swim_base = ioremap(res->start, resource_size(res));
-> > +       if (!swim_base) {
-> > +               return -ENOMEM;
-> > +               goto out_release_io;
-> > +       }
-> > +
-> > +       /* probe device */
-> > +
-> > +       set_swim_mode(swim_base, 1);
-> > +       if (!get_swim_mode(swim_base)) {
-> > +               printk(KERN_INFO "SWIM device not found !\n");
-> > +               ret = -ENODEV;
-> > +               goto out_iounmap;
-> > +       }
-> > +
-> > +       /* set platform driver data */
-> > +
-> > +       swd = kzalloc(sizeof(struct swim_priv), GFP_KERNEL);
-> > +       if (!swd) {
-> > +               ret = -ENOMEM;
-> > +               goto out_iounmap;
-> > +       }
-> > +       platform_set_drvdata(dev, swd);
-> > +
-> > +       swd->base = swim_base;
-> > +
-> > +       ret = swim_floppy_init(swd);
-> > +       if (ret)
-> > +               goto out_kfree;
-> > +
-> > +       return 0;
-> > +
-> > +out_kfree:
-> > +       platform_set_drvdata(dev, NULL);
-> > +       kfree(swd);
-> > +out_iounmap:
-> > +       iounmap(swim_base);
-> > +out_release_io:
-> > +       release_mem_region(res->start, resource_size(res));
-> > +out:
-> > +       return ret;
-> > +}
-> > +
-> > +static int __devexit swim_remove(struct platform_device *dev)
-> > +{
-> > +       struct swim_priv *swd = platform_get_drvdata(dev);
-> > +       int drive;
-> > +       struct resource *res;
-> > +
-> > +       blk_unregister_region(MKDEV(FLOPPY_MAJOR, 0), 256);
-> > +
-> > +       for (drive = 0; drive < swd->floppy_count; drive++) {
-> > +               del_gendisk(swd->unit[drive].disk);
-> > +               put_disk(swd->unit[drive].disk);
-> > +       }
-> > +
-> > +       unregister_blkdev(FLOPPY_MAJOR, "fd");
-> > +
-> > +       blk_cleanup_queue(swd->queue);
-> > +
-> > +       /* eject floppies */
-> > +
-> > +       for (drive = 0; drive < swd->floppy_count; drive++)
-> > +               floppy_eject(&swd->unit[drive]);
-> > +
-> > +       iounmap(swd->base);
-> > +
-> > +       res = platform_get_resource_byname(dev, IORESOURCE_MEM, "swim-regs");
-> > +       if (res)
-> > +               release_mem_region(res->start, resource_size(res));
-> > +
-> > +       platform_set_drvdata(dev, NULL);
-> > +       kfree(swd);
-> > +
-> > +       return 0;
-> > +}
-> > +
-> > +static struct platform_driver swim_driver = {
-> > +       .probe  = swim_probe,
-> > +       .remove = __devexit_p(swim_remove),
-> > +       .driver   = {
-> > +               .name   = CARDNAME,
-> > +               .owner  = THIS_MODULE,
-> > +       },
-> > +};
-> > +
-> > +static int __init swim_init(void)
-> > +{
-> > +       printk(KERN_INFO "SWIM floppy driver %s\n", DRIVER_VERSION);
-> > +
-> > +       return platform_driver_register(&swim_driver);
-> > +}
-> > +module_init(swim_init);
-> > +
-> > +static void __exit swim_exit(void)
-> > +{
-> > +       platform_driver_unregister(&swim_driver);
-> > +}
-> > +module_exit(swim_exit);
-> > +
-> > +MODULE_DESCRIPTION("Driver for SWIM floppy controller");
-> > +MODULE_LICENSE("GPL");
-> > +MODULE_AUTHOR("Laurent Vivier <laurent@lvivier.info>");
-> > +MODULE_ALIAS_BLOCKDEV_MAJOR(FLOPPY_MAJOR);
-> > diff --git a/drivers/block/swim_asm.S b/drivers/block/swim_asm.S
-> > new file mode 100644
-> > index 0000000..c966820
-> > --- /dev/null
-> > +++ b/drivers/block/swim_asm.S
-> > @@ -0,0 +1,247 @@
-> > +/*
-> > + * low-level functions for the SWIM floppy controller
-> > + *
-> > + * needs assembly language because is very timing dependent
-> > + * this controller exists only on macintosh 680x0 based
-> > + *
-> > + * Copyright (C) 2004,2008 Laurent Vivier <Laurent@lvivier.info>
-> > + *
-> > + * based on Alastair Bridgewater SWIM analysis, 2001
-> > + * based on netBSD IWM driver (c) 1997, 1998 Hauke Fath.
-> > + *
-> > + * This program is free software; you can redistribute it and/or
-> > + * modify it under the terms of the GNU General Public License
-> > + * as published by the Free Software Foundation; either version
-> > + * 2 of the License, or (at your option) any later version.
-> > + *
-> > + * 2004-08-21 (lv) - Initial implementation
-> > + * 2008-11-05 (lv) - add get_swim_mode
-> > + */
-> > +
-> > +       .equ    write_data,     0x0000
-> > +       .equ    write_mark,     0x0200
-> > +       .equ    write_CRC,      0x0400
-> > +       .equ    write_parameter,0x0600
-> > +       .equ    write_phase,    0x0800
-> > +       .equ    write_setup,    0x0a00
-> > +       .equ    write_mode0,    0x0c00
-> > +       .equ    write_mode1,    0x0e00
-> > +       .equ    read_data,      0x1000
-> > +       .equ    read_mark,      0x1200
-> > +       .equ    read_error,     0x1400
-> > +       .equ    read_parameter, 0x1600
-> > +       .equ    read_phase,     0x1800
-> > +       .equ    read_setup,     0x1a00
-> > +       .equ    read_status,    0x1c00
-> > +       .equ    read_handshake, 0x1e00
-> > +
-> > +       .equ    o_side, 0
-> > +       .equ    o_track, 1
-> > +       .equ    o_sector, 2
-> > +       .equ    o_size, 3
-> > +       .equ    o_crc0, 4
-> > +       .equ    o_crc1, 5
-> > +
-> > +       .equ    seek_time, 30000
-> > +       .equ    max_retry, 40
-> > +       .equ    sector_size, 512
-> > +
-> > +       .global swim_read_sector_header
-> > +swim_read_sector_header:
-> > +       link    %a6, #0
-> > +       moveml  %d1-%d5/%a0-%a4,%sp@-
-> > +       movel   %a6@(0x0c), %a4
-> > +       bsr     mfm_read_addrmark
-> > +       moveml  %sp@+, %d1-%d5/%a0-%a4
-> > +       unlk    %a6
-> > +       rts
-> > +
-> > +sector_address_mark:
-> > +       .byte   0xa1, 0xa1, 0xa1, 0xfe
-> > +sector_data_mark:
-> > +       .byte   0xa1, 0xa1, 0xa1, 0xfb
-> > +
-> > +mfm_read_addrmark:
-> > +       movel   %a6@(0x08), %a3
-> > +       lea     %a3@(read_handshake), %a2
-> > +       lea     %a3@(read_mark), %a3
-> > +       moveq   #-1, %d0
-> > +       movew   #seek_time, %d2
-> > +
-> > +wait_header_init:
-> > +       tstb    %a3@(read_error - read_mark)
-> > +       moveb   #0x18, %a3@(write_mode0 - read_mark)
-> > +       moveb   #0x01, %a3@(write_mode1 - read_mark)
-> > +       moveb   #0x01, %a3@(write_mode0 - read_mark)
-> > +       tstb    %a3@(read_error - read_mark)
-> > +       moveb   #0x08, %a3@(write_mode1 - read_mark)
-> > +
-> > +       lea     sector_address_mark, %a0
-> > +       moveq   #3, %d1
-> > +
-> > +wait_addr_mark_byte:
-> > +
-> > +       tstb    %a2@
-> > +       dbmi    %d2, wait_addr_mark_byte
-> > +       bpl     header_exit
-> > +
-> > +       moveb   %a3@, %d3
-> > +       cmpb    %a0@+, %d3
-> > +       dbne    %d1, wait_addr_mark_byte
-> > +       bne     wait_header_init
-> > +
-> > +       moveq   #max_retry, %d2
-> > +
-> > +amark0:        tstb    %a2@
-> > +       dbmi    %d2, amark0
-> > +       bpl     signal_nonyb
-> > +
-> > +       moveb   %a3@, %a4@(o_track)
-> > +
-> > +       moveq   #max_retry, %d2
-> > +
-> > +amark1:        tstb    %a2@
-> > +       dbmi    %d2, amark1
-> > +       bpl     signal_nonyb
-> > +
-> > +       moveb   %a3@, %a4@(o_side)
-> > +
-> > +       moveq   #max_retry, %d2
-> > +
-> > +amark2:        tstb    %a2@
-> > +       dbmi    %d2, amark2
-> > +       bpl     signal_nonyb
-> > +
-> > +       moveb   %a3@, %a4@(o_sector)
-> > +
-> > +       moveq   #max_retry, %d2
-> > +
-> > +amark3:        tstb    %a2@
-> > +       dbmi    %d2, amark3
-> > +       bpl     signal_nonyb
-> > +
-> > +       moveb   %a3@, %a4@(o_size)
-> > +
-> > +       moveq   #max_retry, %d2
-> > +
-> > +crc0:  tstb    %a2@
-> > +       dbmi    %d2, crc0
-> > +       bpl     signal_nonyb
-> > +
-> > +       moveb   %a3@, %a4@(o_crc0)
-> > +
-> > +       moveq   #max_retry, %d2
-> > +
-> > +crc1:  tstb    %a2@
-> > +       dbmi    %d2, crc1
-> > +       bpl     signal_nonyb
-> > +
-> > +       moveb   %a3@, %a4@(o_crc1)
-> > +
-> > +       tstb    %a3@(read_error - read_mark)
-> > +
-> > +header_exit:
-> > +       moveq   #0, %d0
-> > +       moveb   #0x18, %a3@(write_mode0 - read_mark)
-> > +       rts
-> > +signal_nonyb:
-> > +       moveq   #-1, %d0
-> > +       moveb   #0x18, %a3@(write_mode0 - read_mark)
-> > +       rts
-> > +
-> > +       .global swim_read_sector_data
-> > +swim_read_sector_data:
-> > +       link    %a6, #0
-> > +       moveml  %d1-%d5/%a0-%a5,%sp@-
-> > +       movel   %a6@(0x0c), %a4
-> > +       bsr     mfm_read_data
-> > +       moveml  %sp@+, %d1-%d5/%a0-%a5
-> > +       unlk    %a6
-> > +       rts
-> > +
-> > +mfm_read_data:
-> > +       movel   %a6@(0x08), %a3
-> > +       lea     %a3@(read_handshake), %a2
-> > +       lea     %a3@(read_data), %a5
-> > +       lea     %a3@(read_mark), %a3
-> > +       movew   #seek_time, %d2
-> > +
-> > +wait_data_init:
-> > +       tstb    %a3@(read_error - read_mark)
-> > +       moveb   #0x18, %a3@(write_mode0 - read_mark)
-> > +       moveb   #0x01, %a3@(write_mode1 - read_mark)
-> > +       moveb   #0x01, %a3@(write_mode0 - read_mark)
-> > +       tstb    %a3@(read_error - read_mark)
-> > +       moveb   #0x08, %a3@(write_mode1 - read_mark)
-> > +
-> > +       lea     sector_data_mark, %a0
-> > +       moveq   #3, %d1
-> > +
-> > +       /* wait data address mark */
-> > +
-> > +wait_data_mark_byte:
-> > +
-> > +       tstb    %a2@
-> > +       dbmi    %d2, wait_data_mark_byte
-> > +       bpl     data_exit
-> > +
-> > +       moveb   %a3@, %d3
-> > +       cmpb    %a0@+, %d3
-> > +       dbne    %d1, wait_data_mark_byte
-> > +       bne     wait_data_init
-> > +
-> > +       /* read data */
-> > +
-> > +       tstb    %a3@(read_error - read_mark)
-> > +
-> > +       movel   #sector_size-1, %d4             /* sector size */
-> > +read_new_data:
-> > +       movew   #max_retry, %d2
-> > +read_data_loop:
-> > +       moveb   %a2@, %d5
-> > +       andb    #0xc0, %d5
-> > +       dbne    %d2, read_data_loop
-> > +       beq     data_exit
-> > +       moveb   %a5@, %a4@+
-> > +       andb    #0x40, %d5
-> > +       dbne    %d4, read_new_data
-> > +       beq     exit_loop
-> > +       moveb   %a5@, %a4@+
-> > +       dbra    %d4, read_new_data
-> > +exit_loop:
-> > +
-> > +       /* read CRC */
-> > +
-> > +       movew   #max_retry, %d2
-> > +data_crc0:
-> > +
-> > +       tstb    %a2@
-> > +       dbmi    %d2, data_crc0
-> > +       bpl     data_exit
-> > +
-> > +       moveb   %a3@, %d5
-> > +
-> > +       moveq   #max_retry, %d2
-> > +
-> > +data_crc1:
-> > +
-> > +       tstb    %a2@
-> > +       dbmi    %d2, data_crc1
-> > +       bpl     data_exit
-> > +
-> > +       moveb   %a3@, %d5
-> > +
-> > +       tstb    %a3@(read_error - read_mark)
-> > +
-> > +       moveb   #0x18, %a3@(write_mode0 - read_mark)
-> > +
-> > +       /* return number of bytes read */
-> > +
-> > +       movel   #sector_size, %d0
-> > +       addw    #1, %d4
-> > +       subl    %d4, %d0
-> > +       rts
-> > +data_exit:
-> > +       moveb   #0x18, %a3@(write_mode0 - read_mark)
-> > +       moveq   #-1, %d0
-> > +       rts
-> > --
-> > 1.6.1.3
-> >
-> >
-> 
-> 
-> 
-> -- 
-> Gr{oetje,eeting}s,
-> 
-> 						Geert
-> 
-> --
-> Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-> 
-> In personal conversations with technical people, I call myself a hacker. But
-> when I'm talking to journalists I just say "programmer" or something like that.
-> 							    -- Linus Torvalds
+CONFIG_PREEMPT_RCU=3Dy
+CONFIG_PREEMPT_RCU_TRACE=3Dy
+# CONFIG_PREEMPT_NONE is not set
+# CONFIG_PREEMPT_VOLUNTARY is not set
+CONFIG_PREEMPT=3Dy
+CONFIG_DEBUG_PREEMPT=3Dy
+# CONFIG_PREEMPT_TRACER is not set
 
--- 
-Jens Axboe
+config is attached.
 
+--0015174c18ea412c8d0465f329d9
+Content-Type: application/octet-stream; name=sparc-config
+Content-Disposition: attachment; filename=sparc-config
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_fsq671va0
+
+IwojIEF1dG9tYXRpY2FsbHkgZ2VuZXJhdGVkIG1ha2UgY29uZmlnOiBkb24ndCBlZGl0CiMgTGlu
+dXgga2VybmVsIHZlcnNpb246IDIuNi4yOS1yYzcKIyBUdWUgTWFyIDI0IDE3OjQ1OjAxIDIwMDkK
+IwpDT05GSUdfNjRCSVQ9eQpDT05GSUdfU1BBUkM9eQojIENPTkZJR19TUEFSQzMyIGlzIG5vdCBz
+ZXQKQ09ORklHX1NQQVJDNjQ9eQpDT05GSUdfQVJDSF9ERUZDT05GSUc9ImFyY2gvc3BhcmMvY29u
+Zmlncy9zcGFyYzY0X2RlZmNvbmZpZyIKQ09ORklHX0JJVFM9NjQKQ09ORklHX0dFTkVSSUNfVElN
+RT15CkNPTkZJR19HRU5FUklDX0NNT1NfVVBEQVRFPXkKQ09ORklHX0dFTkVSSUNfQ0xPQ0tFVkVO
+VFM9eQpDT05GSUdfSU9NTVVfSEVMUEVSPXkKQ09ORklHX1FVSUNLTElTVD15CkNPTkZJR19TVEFD
+S1RSQUNFX1NVUFBPUlQ9eQpDT05GSUdfTE9DS0RFUF9TVVBQT1JUPXkKQ09ORklHX0hBVkVfTEFU
+RU5DWVRPUF9TVVBQT1JUPXkKQ09ORklHX0FVRElUX0FSQ0g9eQpDT05GSUdfSEFWRV9TRVRVUF9Q
+RVJfQ1BVX0FSRUE9eQpDT05GSUdfR0VORVJJQ19IQVJESVJRU19OT19fRE9fSVJRPXkKQ09ORklH
+X01NVT15CkNPTkZJR19BUkNIX05PX1ZJUlRfVE9fQlVTPXkKQ09ORklHX09GPXkKQ09ORklHX0RF
+RkNPTkZJR19MSVNUPSIvbGliL21vZHVsZXMvJFVOQU1FX1JFTEVBU0UvLmNvbmZpZyIKCiMKIyBH
+ZW5lcmFsIHNldHVwCiMKQ09ORklHX0VYUEVSSU1FTlRBTD15CkNPTkZJR19CUk9LRU5fT05fU01Q
+PXkKQ09ORklHX0xPQ0tfS0VSTkVMPXkKQ09ORklHX0lOSVRfRU5WX0FSR19MSU1JVD0zMgpDT05G
+SUdfTE9DQUxWRVJTSU9OPSIiCkNPTkZJR19MT0NBTFZFUlNJT05fQVVUTz15CkNPTkZJR19TV0FQ
+PXkKQ09ORklHX1NZU1ZJUEM9eQpDT05GSUdfU1lTVklQQ19TWVNDVEw9eQpDT05GSUdfUE9TSVhf
+TVFVRVVFPXkKIyBDT05GSUdfQlNEX1BST0NFU1NfQUNDVCBpcyBub3Qgc2V0CiMgQ09ORklHX1RB
+U0tTVEFUUyBpcyBub3Qgc2V0CiMgQ09ORklHX0FVRElUIGlzIG5vdCBzZXQKCiMKIyBSQ1UgU3Vi
+c3lzdGVtCiMKIyBDT05GSUdfQ0xBU1NJQ19SQ1UgaXMgbm90IHNldAojIENPTkZJR19UUkVFX1JD
+VSBpcyBub3Qgc2V0CkNPTkZJR19QUkVFTVBUX1JDVT15CkNPTkZJR19SQ1VfVFJBQ0U9eQojIENP
+TkZJR19UUkVFX1JDVV9UUkFDRSBpcyBub3Qgc2V0CkNPTkZJR19QUkVFTVBUX1JDVV9UUkFDRT15
+CkNPTkZJR19JS0NPTkZJRz15CkNPTkZJR19JS0NPTkZJR19QUk9DPXkKQ09ORklHX0xPR19CVUZf
+U0hJRlQ9MTgKIyBDT05GSUdfR1JPVVBfU0NIRUQgaXMgbm90IHNldAojIENPTkZJR19DR1JPVVBT
+IGlzIG5vdCBzZXQKIyBDT05GSUdfU1lTRlNfREVQUkVDQVRFRF9WMiBpcyBub3Qgc2V0CkNPTkZJ
+R19SRUxBWT15CkNPTkZJR19OQU1FU1BBQ0VTPXkKIyBDT05GSUdfVVRTX05TIGlzIG5vdCBzZXQK
+IyBDT05GSUdfSVBDX05TIGlzIG5vdCBzZXQKIyBDT05GSUdfVVNFUl9OUyBpcyBub3Qgc2V0CiMg
+Q09ORklHX1BJRF9OUyBpcyBub3Qgc2V0CiMgQ09ORklHX05FVF9OUyBpcyBub3Qgc2V0CiMgQ09O
+RklHX0JMS19ERVZfSU5JVFJEIGlzIG5vdCBzZXQKQ09ORklHX0NDX09QVElNSVpFX0ZPUl9TSVpF
+PXkKQ09ORklHX1NZU0NUTD15CiMgQ09ORklHX0VNQkVEREVEIGlzIG5vdCBzZXQKQ09ORklHX1VJ
+RDE2PXkKQ09ORklHX1NZU0NUTF9TWVNDQUxMPXkKQ09ORklHX0tBTExTWU1TPXkKQ09ORklHX0tB
+TExTWU1TX0FMTD15CiMgQ09ORklHX0tBTExTWU1TX0VYVFJBX1BBU1MgaXMgbm90IHNldApDT05G
+SUdfSE9UUExVRz15CkNPTkZJR19QUklOVEs9eQpDT05GSUdfQlVHPXkKQ09ORklHX0VMRl9DT1JF
+PXkKQ09ORklHX0NPTVBBVF9CUks9eQpDT05GSUdfQkFTRV9GVUxMPXkKQ09ORklHX0ZVVEVYPXkK
+Q09ORklHX0FOT05fSU5PREVTPXkKQ09ORklHX0VQT0xMPXkKQ09ORklHX1NJR05BTEZEPXkKQ09O
+RklHX1RJTUVSRkQ9eQpDT05GSUdfRVZFTlRGRD15CkNPTkZJR19TSE1FTT15CkNPTkZJR19BSU89
+eQpDT05GSUdfVk1fRVZFTlRfQ09VTlRFUlM9eQpDT05GSUdfUENJX1FVSVJLUz15CkNPTkZJR19T
+TFVCX0RFQlVHPXkKIyBDT05GSUdfU0xBQiBpcyBub3Qgc2V0CkNPTkZJR19TTFVCPXkKIyBDT05G
+SUdfU0xPQiBpcyBub3Qgc2V0CiMgQ09ORklHX1BST0ZJTElORyBpcyBub3Qgc2V0CkNPTkZJR19I
+QVZFX09QUk9GSUxFPXkKQ09ORklHX0tQUk9CRVM9eQpDT05GSUdfSEFWRV9TWVNDQUxMX1dSQVBQ
+RVJTPXkKQ09ORklHX0tSRVRQUk9CRVM9eQpDT05GSUdfSEFWRV9LUFJPQkVTPXkKQ09ORklHX0hB
+VkVfS1JFVFBST0JFUz15CkNPTkZJR19IQVZFX0FSQ0hfVFJBQ0VIT09LPXkKIyBDT05GSUdfSEFW
+RV9HRU5FUklDX0RNQV9DT0hFUkVOVCBpcyBub3Qgc2V0CkNPTkZJR19TTEFCSU5GTz15CkNPTkZJ
+R19SVF9NVVRFWEVTPXkKQ09ORklHX0JBU0VfU01BTEw9MApDT05GSUdfTU9EVUxFUz15CiMgQ09O
+RklHX01PRFVMRV9GT1JDRV9MT0FEIGlzIG5vdCBzZXQKQ09ORklHX01PRFVMRV9VTkxPQUQ9eQpD
+T05GSUdfTU9EVUxFX0ZPUkNFX1VOTE9BRD15CiMgQ09ORklHX01PRFZFUlNJT05TIGlzIG5vdCBz
+ZXQKIyBDT05GSUdfTU9EVUxFX1NSQ1ZFUlNJT05fQUxMIGlzIG5vdCBzZXQKQ09ORklHX0JMT0NL
+PXkKIyBDT05GSUdfQkxLX0RFVl9JT19UUkFDRSBpcyBub3Qgc2V0CiMgQ09ORklHX0JMS19ERVZf
+QlNHIGlzIG5vdCBzZXQKIyBDT05GSUdfQkxLX0RFVl9JTlRFR1JJVFkgaXMgbm90IHNldApDT05G
+SUdfQkxPQ0tfQ09NUEFUPXkKCiMKIyBJTyBTY2hlZHVsZXJzCiMKQ09ORklHX0lPU0NIRURfTk9P
+UD15CiMgQ09ORklHX0lPU0NIRURfQVMgaXMgbm90IHNldAojIENPTkZJR19JT1NDSEVEX0RFQURM
+SU5FIGlzIG5vdCBzZXQKQ09ORklHX0lPU0NIRURfQ0ZRPXkKIyBDT05GSUdfREVGQVVMVF9BUyBp
+cyBub3Qgc2V0CiMgQ09ORklHX0RFRkFVTFRfREVBRExJTkUgaXMgbm90IHNldApDT05GSUdfREVG
+QVVMVF9DRlE9eQojIENPTkZJR19ERUZBVUxUX05PT1AgaXMgbm90IHNldApDT05GSUdfREVGQVVM
+VF9JT1NDSEVEPSJjZnEiCiMgQ09ORklHX0ZSRUVaRVIgaXMgbm90IHNldAoKIwojIFByb2Nlc3Nv
+ciB0eXBlIGFuZCBmZWF0dXJlcwojCiMgQ09ORklHX1NNUCBpcyBub3Qgc2V0CkNPTkZJR19IWl8x
+MDA9eQojIENPTkZJR19IWl8yNTAgaXMgbm90IHNldAojIENPTkZJR19IWl8zMDAgaXMgbm90IHNl
+dAojIENPTkZJR19IWl8xMDAwIGlzIG5vdCBzZXQKQ09ORklHX0haPTEwMAojIENPTkZJR19TQ0hF
+RF9IUlRJQ0sgaXMgbm90IHNldApDT05GSUdfUldTRU1fWENIR0FERF9BTEdPUklUSE09eQpDT05G
+SUdfR0VORVJJQ19GSU5EX05FWFRfQklUPXkKQ09ORklHX0dFTkVSSUNfSFdFSUdIVD15CkNPTkZJ
+R19HRU5FUklDX0NBTElCUkFURV9ERUxBWT15CkNPTkZJR19BUkNIX01BWV9IQVZFX1BDX0ZEQz15
+CkNPTkZJR19TUEFSQzY0X1BBR0VfU0laRV84S0I9eQojIENPTkZJR19TUEFSQzY0X1BBR0VfU0la
+RV82NEtCIGlzIG5vdCBzZXQKQ09ORklHX1NFQ0NPTVA9eQpDT05GSUdfR0VORVJJQ19IQVJESVJR
+Uz15CkNPTkZJR19USUNLX09ORVNIT1Q9eQpDT05GSUdfTk9fSFo9eQojIENPTkZJR19ISUdIX1JF
+U19USU1FUlMgaXMgbm90IHNldApDT05GSUdfR0VORVJJQ19DTE9DS0VWRU5UU19CVUlMRD15CiMg
+Q09ORklHX0NQVV9GUkVRIGlzIG5vdCBzZXQKIyBDT05GSUdfVVMzX01DIGlzIG5vdCBzZXQKQ09O
+RklHX0FSQ0hfUE9QVUxBVEVTX05PREVfTUFQPXkKQ09ORklHX0FSQ0hfU0VMRUNUX01FTU9SWV9N
+T0RFTD15CkNPTkZJR19BUkNIX1NQQVJTRU1FTV9FTkFCTEU9eQpDT05GSUdfQVJDSF9TUEFSU0VN
+RU1fREVGQVVMVD15CkNPTkZJR19TRUxFQ1RfTUVNT1JZX01PREVMPXkKIyBDT05GSUdfRkxBVE1F
+TV9NQU5VQUwgaXMgbm90IHNldAojIENPTkZJR19ESVNDT05USUdNRU1fTUFOVUFMIGlzIG5vdCBz
+ZXQKQ09ORklHX1NQQVJTRU1FTV9NQU5VQUw9eQpDT05GSUdfU1BBUlNFTUVNPXkKQ09ORklHX0hB
+VkVfTUVNT1JZX1BSRVNFTlQ9eQpDT05GSUdfU1BBUlNFTUVNX0VYVFJFTUU9eQpDT05GSUdfU1BB
+UlNFTUVNX1ZNRU1NQVBfRU5BQkxFPXkKQ09ORklHX1NQQVJTRU1FTV9WTUVNTUFQPXkKQ09ORklH
+X1BBR0VGTEFHU19FWFRFTkRFRD15CkNPTkZJR19TUExJVF9QVExPQ0tfQ1BVUz00CkNPTkZJR19Q
+SFlTX0FERFJfVF82NEJJVD15CkNPTkZJR19aT05FX0RNQV9GTEFHPTAKQ09ORklHX05SX1FVSUNL
+PTEKQ09ORklHX1VORVZJQ1RBQkxFX0xSVT15CiMgQ09ORklHX1BSRUVNUFRfTk9ORSBpcyBub3Qg
+c2V0CiMgQ09ORklHX1BSRUVNUFRfVk9MVU5UQVJZIGlzIG5vdCBzZXQKQ09ORklHX1BSRUVNUFQ9
+eQojIENPTkZJR19DTURMSU5FX0JPT0wgaXMgbm90IHNldAoKIwojIEJ1cyBvcHRpb25zIChQQ0kg
+ZXRjLikKIwpDT05GSUdfU0JVUz15CkNPTkZJR19TQlVTQ0hBUj15CiMgQ09ORklHX1NVTl9MRE9N
+UyBpcyBub3Qgc2V0CkNPTkZJR19QQ0k9eQpDT05GSUdfUENJX0RPTUFJTlM9eQpDT05GSUdfUENJ
+X1NZU0NBTEw9eQpDT05GSUdfQVJDSF9TVVBQT1JUU19NU0k9eQpDT05GSUdfUENJX01TST15CiMg
+Q09ORklHX1BDSV9MRUdBQ1kgaXMgbm90IHNldApDT05GSUdfUENJX0RFQlVHPXkKIyBDT05GSUdf
+UENJX1NUVUIgaXMgbm90IHNldAojIENPTkZJR19QQ0NBUkQgaXMgbm90IHNldApDT05GSUdfU1VO
+X09QRU5QUk9NRlM9eQpDT05GSUdfU1BBUkM2NF9QQ0k9eQoKIwojIEV4ZWN1dGFibGUgZmlsZSBm
+b3JtYXRzCiMKQ09ORklHX0JJTkZNVF9FTEY9eQpDT05GSUdfQ09NUEFUX0JJTkZNVF9FTEY9eQoj
+IENPTkZJR19DT1JFX0RVTVBfREVGQVVMVF9FTEZfSEVBREVSUyBpcyBub3Qgc2V0CiMgQ09ORklH
+X0hBVkVfQU9VVCBpcyBub3Qgc2V0CiMgQ09ORklHX0JJTkZNVF9NSVNDIGlzIG5vdCBzZXQKQ09O
+RklHX0NPTVBBVD15CkNPTkZJR19TWVNWSVBDX0NPTVBBVD15CkNPTkZJR19ORVQ9eQoKIwojIE5l
+dHdvcmtpbmcgb3B0aW9ucwojCkNPTkZJR19DT01QQVRfTkVUX0RFVl9PUFM9eQpDT05GSUdfUEFD
+S0VUPXkKQ09ORklHX1BBQ0tFVF9NTUFQPXkKQ09ORklHX1VOSVg9eQojIENPTkZJR19ORVRfS0VZ
+IGlzIG5vdCBzZXQKQ09ORklHX0lORVQ9eQojIENPTkZJR19JUF9NVUxUSUNBU1QgaXMgbm90IHNl
+dAojIENPTkZJR19JUF9BRFZBTkNFRF9ST1VURVIgaXMgbm90IHNldApDT05GSUdfSVBfRklCX0hB
+U0g9eQojIENPTkZJR19JUF9QTlAgaXMgbm90IHNldAojIENPTkZJR19ORVRfSVBJUCBpcyBub3Qg
+c2V0CiMgQ09ORklHX05FVF9JUEdSRSBpcyBub3Qgc2V0CiMgQ09ORklHX0FSUEQgaXMgbm90IHNl
+dAojIENPTkZJR19TWU5fQ09PS0lFUyBpcyBub3Qgc2V0CiMgQ09ORklHX0lORVRfQUggaXMgbm90
+IHNldAojIENPTkZJR19JTkVUX0VTUCBpcyBub3Qgc2V0CiMgQ09ORklHX0lORVRfSVBDT01QIGlz
+IG5vdCBzZXQKIyBDT05GSUdfSU5FVF9YRlJNX1RVTk5FTCBpcyBub3Qgc2V0CiMgQ09ORklHX0lO
+RVRfVFVOTkVMIGlzIG5vdCBzZXQKIyBDT05GSUdfSU5FVF9YRlJNX01PREVfVFJBTlNQT1JUIGlz
+IG5vdCBzZXQKIyBDT05GSUdfSU5FVF9YRlJNX01PREVfVFVOTkVMIGlzIG5vdCBzZXQKIyBDT05G
+SUdfSU5FVF9YRlJNX01PREVfQkVFVCBpcyBub3Qgc2V0CiMgQ09ORklHX0lORVRfTFJPIGlzIG5v
+dCBzZXQKIyBDT05GSUdfSU5FVF9ESUFHIGlzIG5vdCBzZXQKIyBDT05GSUdfVENQX0NPTkdfQURW
+QU5DRUQgaXMgbm90IHNldApDT05GSUdfVENQX0NPTkdfQ1VCSUM9eQpDT05GSUdfREVGQVVMVF9U
+Q1BfQ09ORz0iY3ViaWMiCiMgQ09ORklHX1RDUF9NRDVTSUcgaXMgbm90IHNldAojIENPTkZJR19J
+UFY2IGlzIG5vdCBzZXQKIyBDT05GSUdfTkVUV09SS19TRUNNQVJLIGlzIG5vdCBzZXQKIyBDT05G
+SUdfTkVURklMVEVSIGlzIG5vdCBzZXQKIyBDT05GSUdfSVBfRENDUCBpcyBub3Qgc2V0CiMgQ09O
+RklHX0lQX1NDVFAgaXMgbm90IHNldAojIENPTkZJR19USVBDIGlzIG5vdCBzZXQKIyBDT05GSUdf
+QVRNIGlzIG5vdCBzZXQKIyBDT05GSUdfQlJJREdFIGlzIG5vdCBzZXQKIyBDT05GSUdfTkVUX0RT
+QSBpcyBub3Qgc2V0CiMgQ09ORklHX1ZMQU5fODAyMVEgaXMgbm90IHNldAojIENPTkZJR19ERUNO
+RVQgaXMgbm90IHNldAojIENPTkZJR19MTEMyIGlzIG5vdCBzZXQKIyBDT05GSUdfSVBYIGlzIG5v
+dCBzZXQKIyBDT05GSUdfQVRBTEsgaXMgbm90IHNldAojIENPTkZJR19YMjUgaXMgbm90IHNldAoj
+IENPTkZJR19MQVBCIGlzIG5vdCBzZXQKIyBDT05GSUdfRUNPTkVUIGlzIG5vdCBzZXQKIyBDT05G
+SUdfV0FOX1JPVVRFUiBpcyBub3Qgc2V0CiMgQ09ORklHX05FVF9TQ0hFRCBpcyBub3Qgc2V0CiMg
+Q09ORklHX0RDQiBpcyBub3Qgc2V0CgojCiMgTmV0d29yayB0ZXN0aW5nCiMKIyBDT05GSUdfTkVU
+X1BLVEdFTiBpcyBub3Qgc2V0CiMgQ09ORklHX05FVF9UQ1BQUk9CRSBpcyBub3Qgc2V0CiMgQ09O
+RklHX0hBTVJBRElPIGlzIG5vdCBzZXQKIyBDT05GSUdfQ0FOIGlzIG5vdCBzZXQKIyBDT05GSUdf
+SVJEQSBpcyBub3Qgc2V0CiMgQ09ORklHX0JUIGlzIG5vdCBzZXQKIyBDT05GSUdfQUZfUlhSUEMg
+aXMgbm90IHNldAojIENPTkZJR19QSE9ORVQgaXMgbm90IHNldAojIENPTkZJR19XSVJFTEVTUyBp
+cyBub3Qgc2V0CiMgQ09ORklHX1dJTUFYIGlzIG5vdCBzZXQKIyBDT05GSUdfUkZLSUxMIGlzIG5v
+dCBzZXQKIyBDT05GSUdfTkVUXzlQIGlzIG5vdCBzZXQKCiMKIyBEZXZpY2UgRHJpdmVycwojCgoj
+CiMgR2VuZXJpYyBEcml2ZXIgT3B0aW9ucwojCkNPTkZJR19VRVZFTlRfSEVMUEVSX1BBVEg9Ii9z
+YmluL2hvdHBsdWciCkNPTkZJR19TVEFOREFMT05FPXkKIyBDT05GSUdfUFJFVkVOVF9GSVJNV0FS
+RV9CVUlMRCBpcyBub3Qgc2V0CkNPTkZJR19GV19MT0FERVI9eQojIENPTkZJR19GSVJNV0FSRV9J
+Tl9LRVJORUwgaXMgbm90IHNldApDT05GSUdfRVhUUkFfRklSTVdBUkU9IiIKQ09ORklHX0RFQlVH
+X0RSSVZFUj15CkNPTkZJR19ERUJVR19ERVZSRVM9eQojIENPTkZJR19TWVNfSFlQRVJWSVNPUiBp
+cyBub3Qgc2V0CkNPTkZJR19DT05ORUNUT1I9eQpDT05GSUdfUFJPQ19FVkVOVFM9eQojIENPTkZJ
+R19NVEQgaXMgbm90IHNldApDT05GSUdfT0ZfREVWSUNFPXkKIyBDT05GSUdfUEFSUE9SVCBpcyBu
+b3Qgc2V0CkNPTkZJR19CTEtfREVWPXkKIyBDT05GSUdfQkxLX0RFVl9GRCBpcyBub3Qgc2V0CiMg
+Q09ORklHX0JMS19DUFFfQ0lTU19EQSBpcyBub3Qgc2V0CiMgQ09ORklHX0JMS19ERVZfREFDOTYw
+IGlzIG5vdCBzZXQKIyBDT05GSUdfQkxLX0RFVl9VTUVNIGlzIG5vdCBzZXQKIyBDT05GSUdfQkxL
+X0RFVl9DT1dfQ09NTU9OIGlzIG5vdCBzZXQKQ09ORklHX0JMS19ERVZfTE9PUD15CiMgQ09ORklH
+X0JMS19ERVZfQ1JZUFRPTE9PUCBpcyBub3Qgc2V0CiMgQ09ORklHX0JMS19ERVZfTkJEIGlzIG5v
+dCBzZXQKIyBDT05GSUdfQkxLX0RFVl9TWDggaXMgbm90IHNldAojIENPTkZJR19CTEtfREVWX1JB
+TSBpcyBub3Qgc2V0CiMgQ09ORklHX0NEUk9NX1BLVENEVkQgaXMgbm90IHNldAojIENPTkZJR19B
+VEFfT1ZFUl9FVEggaXMgbm90IHNldAojIENPTkZJR19CTEtfREVWX0hEIGlzIG5vdCBzZXQKIyBD
+T05GSUdfTUlTQ19ERVZJQ0VTIGlzIG5vdCBzZXQKQ09ORklHX0hBVkVfSURFPXkKIyBDT05GSUdf
+SURFIGlzIG5vdCBzZXQKCiMKIyBTQ1NJIGRldmljZSBzdXBwb3J0CiMKIyBDT05GSUdfUkFJRF9B
+VFRSUyBpcyBub3Qgc2V0CkNPTkZJR19TQ1NJPXkKQ09ORklHX1NDU0lfRE1BPXkKIyBDT05GSUdf
+U0NTSV9UR1QgaXMgbm90IHNldAojIENPTkZJR19TQ1NJX05FVExJTksgaXMgbm90IHNldApDT05G
+SUdfU0NTSV9QUk9DX0ZTPXkKCiMKIyBTQ1NJIHN1cHBvcnQgdHlwZSAoZGlzaywgdGFwZSwgQ0Qt
+Uk9NKQojCkNPTkZJR19CTEtfREVWX1NEPXkKIyBDT05GSUdfQ0hSX0RFVl9TVCBpcyBub3Qgc2V0
+CiMgQ09ORklHX0NIUl9ERVZfT1NTVCBpcyBub3Qgc2V0CkNPTkZJR19CTEtfREVWX1NSPXkKQ09O
+RklHX0JMS19ERVZfU1JfVkVORE9SPXkKQ09ORklHX0NIUl9ERVZfU0c9eQojIENPTkZJR19DSFJf
+REVWX1NDSCBpcyBub3Qgc2V0CgojCiMgU29tZSBTQ1NJIGRldmljZXMgKGUuZy4gQ0QganVrZWJv
+eCkgc3VwcG9ydCBtdWx0aXBsZSBMVU5zCiMKIyBDT05GSUdfU0NTSV9NVUxUSV9MVU4gaXMgbm90
+IHNldAojIENPTkZJR19TQ1NJX0NPTlNUQU5UUyBpcyBub3Qgc2V0CiMgQ09ORklHX1NDU0lfTE9H
+R0lORyBpcyBub3Qgc2V0CiMgQ09ORklHX1NDU0lfU0NBTl9BU1lOQyBpcyBub3Qgc2V0CkNPTkZJ
+R19TQ1NJX1dBSVRfU0NBTj1tCgojCiMgU0NTSSBUcmFuc3BvcnRzCiMKIyBDT05GSUdfU0NTSV9T
+UElfQVRUUlMgaXMgbm90IHNldAojIENPTkZJR19TQ1NJX0ZDX0FUVFJTIGlzIG5vdCBzZXQKIyBD
+T05GSUdfU0NTSV9JU0NTSV9BVFRSUyBpcyBub3Qgc2V0CiMgQ09ORklHX1NDU0lfU0FTX0xJQlNB
+UyBpcyBub3Qgc2V0CiMgQ09ORklHX1NDU0lfU1JQX0FUVFJTIGlzIG5vdCBzZXQKIyBDT05GSUdf
+U0NTSV9MT1dMRVZFTCBpcyBub3Qgc2V0CiMgQ09ORklHX1NDU0lfREggaXMgbm90IHNldApDT05G
+SUdfQVRBPXkKIyBDT05GSUdfQVRBX05PTlNUQU5EQVJEIGlzIG5vdCBzZXQKQ09ORklHX1NBVEFf
+UE1QPXkKIyBDT05GSUdfU0FUQV9BSENJIGlzIG5vdCBzZXQKIyBDT05GSUdfU0FUQV9TSUwyNCBp
+cyBub3Qgc2V0CkNPTkZJR19BVEFfU0ZGPXkKIyBDT05GSUdfU0FUQV9TVlcgaXMgbm90IHNldAoj
+IENPTkZJR19BVEFfUElJWCBpcyBub3Qgc2V0CiMgQ09ORklHX1NBVEFfTVYgaXMgbm90IHNldAoj
+IENPTkZJR19TQVRBX05WIGlzIG5vdCBzZXQKIyBDT05GSUdfUERDX0FETUEgaXMgbm90IHNldAoj
+IENPTkZJR19TQVRBX1FTVE9SIGlzIG5vdCBzZXQKIyBDT05GSUdfU0FUQV9QUk9NSVNFIGlzIG5v
+dCBzZXQKIyBDT05GSUdfU0FUQV9TWDQgaXMgbm90IHNldAojIENPTkZJR19TQVRBX1NJTCBpcyBu
+b3Qgc2V0CiMgQ09ORklHX1NBVEFfU0lTIGlzIG5vdCBzZXQKIyBDT05GSUdfU0FUQV9VTEkgaXMg
+bm90IHNldAojIENPTkZJR19TQVRBX1ZJQSBpcyBub3Qgc2V0CiMgQ09ORklHX1NBVEFfVklURVNT
+RSBpcyBub3Qgc2V0CiMgQ09ORklHX1NBVEFfSU5JQzE2MlggaXMgbm90IHNldAojIENPTkZJR19Q
+QVRBX0FMSSBpcyBub3Qgc2V0CiMgQ09ORklHX1BBVEFfQU1EIGlzIG5vdCBzZXQKIyBDT05GSUdf
+UEFUQV9BUlRPUCBpcyBub3Qgc2V0CiMgQ09ORklHX1BBVEFfQVRJSVhQIGlzIG5vdCBzZXQKIyBD
+T05GSUdfUEFUQV9DTUQ2NDBfUENJIGlzIG5vdCBzZXQKQ09ORklHX1BBVEFfQ01ENjRYPXkKIyBD
+T05GSUdfUEFUQV9DUzU1MjAgaXMgbm90IHNldAojIENPTkZJR19QQVRBX0NTNTUzMCBpcyBub3Qg
+c2V0CiMgQ09ORklHX1BBVEFfQ1lQUkVTUyBpcyBub3Qgc2V0CiMgQ09ORklHX1BBVEFfRUZBUiBp
+cyBub3Qgc2V0CiMgQ09ORklHX0FUQV9HRU5FUklDIGlzIG5vdCBzZXQKIyBDT05GSUdfUEFUQV9I
+UFQzNjYgaXMgbm90IHNldAojIENPTkZJR19QQVRBX0hQVDM3WCBpcyBub3Qgc2V0CiMgQ09ORklH
+X1BBVEFfSFBUM1gyTiBpcyBub3Qgc2V0CiMgQ09ORklHX1BBVEFfSFBUM1gzIGlzIG5vdCBzZXQK
+IyBDT05GSUdfUEFUQV9JVDgyMVggaXMgbm90IHNldAojIENPTkZJR19QQVRBX0lUODIxMyBpcyBu
+b3Qgc2V0CiMgQ09ORklHX1BBVEFfSk1JQ1JPTiBpcyBub3Qgc2V0CiMgQ09ORklHX1BBVEFfVFJJ
+RkxFWCBpcyBub3Qgc2V0CiMgQ09ORklHX1BBVEFfTUFSVkVMTCBpcyBub3Qgc2V0CiMgQ09ORklH
+X1BBVEFfTVBJSVggaXMgbm90IHNldAojIENPTkZJR19QQVRBX09MRFBJSVggaXMgbm90IHNldAoj
+IENPTkZJR19QQVRBX05FVENFTEwgaXMgbm90IHNldAojIENPTkZJR19QQVRBX05JTkpBMzIgaXMg
+bm90IHNldAojIENPTkZJR19QQVRBX05TODc0MTAgaXMgbm90IHNldAojIENPTkZJR19QQVRBX05T
+ODc0MTUgaXMgbm90IHNldAojIENPTkZJR19QQVRBX09QVEkgaXMgbm90IHNldAojIENPTkZJR19Q
+QVRBX09QVElETUEgaXMgbm90IHNldAojIENPTkZJR19QQVRBX1BEQ19PTEQgaXMgbm90IHNldAoj
+IENPTkZJR19QQVRBX1JBRElTWVMgaXMgbm90IHNldAojIENPTkZJR19QQVRBX1JaMTAwMCBpcyBu
+b3Qgc2V0CiMgQ09ORklHX1BBVEFfU0MxMjAwIGlzIG5vdCBzZXQKIyBDT05GSUdfUEFUQV9TRVJW
+RVJXT1JLUyBpcyBub3Qgc2V0CiMgQ09ORklHX1BBVEFfUERDMjAyN1ggaXMgbm90IHNldAojIENP
+TkZJR19QQVRBX1NJTDY4MCBpcyBub3Qgc2V0CiMgQ09ORklHX1BBVEFfU0lTIGlzIG5vdCBzZXQK
+IyBDT05GSUdfUEFUQV9WSUEgaXMgbm90IHNldAojIENPTkZJR19QQVRBX1dJTkJPTkQgaXMgbm90
+IHNldAojIENPTkZJR19QQVRBX1NDSCBpcyBub3Qgc2V0CiMgQ09ORklHX01EIGlzIG5vdCBzZXQK
+IyBDT05GSUdfRlVTSU9OIGlzIG5vdCBzZXQKCiMKIyBJRUVFIDEzOTQgKEZpcmVXaXJlKSBzdXBw
+b3J0CiMKCiMKIyBFbmFibGUgb25seSBvbmUgb2YgdGhlIHR3byBzdGFja3MsIHVubGVzcyB5b3Ug
+a25vdyB3aGF0IHlvdSBhcmUgZG9pbmcKIwojIENPTkZJR19GSVJFV0lSRSBpcyBub3Qgc2V0CiMg
+Q09ORklHX0lFRUUxMzk0IGlzIG5vdCBzZXQKIyBDT05GSUdfSTJPIGlzIG5vdCBzZXQKQ09ORklH
+X05FVERFVklDRVM9eQojIENPTkZJR19EVU1NWSBpcyBub3Qgc2V0CiMgQ09ORklHX0JPTkRJTkcg
+aXMgbm90IHNldAojIENPTkZJR19NQUNWTEFOIGlzIG5vdCBzZXQKIyBDT05GSUdfRVFVQUxJWkVS
+IGlzIG5vdCBzZXQKIyBDT05GSUdfVFVOIGlzIG5vdCBzZXQKIyBDT05GSUdfVkVUSCBpcyBub3Qg
+c2V0CiMgQ09ORklHX0FSQ05FVCBpcyBub3Qgc2V0CiMgQ09ORklHX1BIWUxJQiBpcyBub3Qgc2V0
+CkNPTkZJR19ORVRfRVRIRVJORVQ9eQojIENPTkZJR19NSUkgaXMgbm90IHNldAojIENPTkZJR19T
+VU5MQU5DRSBpcyBub3Qgc2V0CkNPTkZJR19IQVBQWU1FQUw9eQojIENPTkZJR19TVU5CTUFDIGlz
+IG5vdCBzZXQKIyBDT05GSUdfU1VOUUUgaXMgbm90IHNldAojIENPTkZJR19TVU5HRU0gaXMgbm90
+IHNldAojIENPTkZJR19DQVNTSU5JIGlzIG5vdCBzZXQKIyBDT05GSUdfTkVUX1ZFTkRPUl8zQ09N
+IGlzIG5vdCBzZXQKIyBDT05GSUdfRE5FVCBpcyBub3Qgc2V0CiMgQ09ORklHX05FVF9UVUxJUCBp
+cyBub3Qgc2V0CiMgQ09ORklHX0hQMTAwIGlzIG5vdCBzZXQKIyBDT05GSUdfSUJNX05FV19FTUFD
+X1pNSUkgaXMgbm90IHNldAojIENPTkZJR19JQk1fTkVXX0VNQUNfUkdNSUkgaXMgbm90IHNldAoj
+IENPTkZJR19JQk1fTkVXX0VNQUNfVEFIIGlzIG5vdCBzZXQKIyBDT05GSUdfSUJNX05FV19FTUFD
+X0VNQUM0IGlzIG5vdCBzZXQKIyBDT05GSUdfSUJNX05FV19FTUFDX05PX0ZMT1dfQ1RSTCBpcyBu
+b3Qgc2V0CiMgQ09ORklHX0lCTV9ORVdfRU1BQ19NQUxfQ0xSX0lDSU5UU1RBVCBpcyBub3Qgc2V0
+CiMgQ09ORklHX0lCTV9ORVdfRU1BQ19NQUxfQ09NTU9OX0VSUiBpcyBub3Qgc2V0CiMgQ09ORklH
+X05FVF9QQ0kgaXMgbm90IHNldAojIENPTkZJR19CNDQgaXMgbm90IHNldAojIENPTkZJR19BVEwy
+IGlzIG5vdCBzZXQKIyBDT05GSUdfTkVUREVWXzEwMDAgaXMgbm90IHNldAojIENPTkZJR19ORVRE
+RVZfMTAwMDAgaXMgbm90IHNldAojIENPTkZJR19UUiBpcyBub3Qgc2V0CgojCiMgV2lyZWxlc3Mg
+TEFOCiMKIyBDT05GSUdfV0xBTl9QUkU4MDIxMSBpcyBub3Qgc2V0CiMgQ09ORklHX1dMQU5fODAy
+MTEgaXMgbm90IHNldAojIENPTkZJR19JV0xXSUZJX0xFRFMgaXMgbm90IHNldAoKIwojIEVuYWJs
+ZSBXaU1BWCAoTmV0d29ya2luZyBvcHRpb25zKSB0byBzZWUgdGhlIFdpTUFYIGRyaXZlcnMKIwoj
+IENPTkZJR19XQU4gaXMgbm90IHNldAojIENPTkZJR19GRERJIGlzIG5vdCBzZXQKIyBDT05GSUdf
+SElQUEkgaXMgbm90IHNldAojIENPTkZJR19QUFAgaXMgbm90IHNldAojIENPTkZJR19TTElQIGlz
+IG5vdCBzZXQKIyBDT05GSUdfTkVUX0ZDIGlzIG5vdCBzZXQKQ09ORklHX05FVENPTlNPTEU9eQpD
+T05GSUdfTkVUQ09OU09MRV9EWU5BTUlDPXkKQ09ORklHX05FVFBPTEw9eQpDT05GSUdfTkVUUE9M
+TF9UUkFQPXkKQ09ORklHX05FVF9QT0xMX0NPTlRST0xMRVI9eQojIENPTkZJR19JU0ROIGlzIG5v
+dCBzZXQKIyBDT05GSUdfUEhPTkUgaXMgbm90IHNldAoKIwojIElucHV0IGRldmljZSBzdXBwb3J0
+CiMKQ09ORklHX0lOUFVUPXkKIyBDT05GSUdfSU5QVVRfRkZfTUVNTEVTUyBpcyBub3Qgc2V0CiMg
+Q09ORklHX0lOUFVUX1BPTExERVYgaXMgbm90IHNldAoKIwojIFVzZXJsYW5kIGludGVyZmFjZXMK
+IwpDT05GSUdfSU5QVVRfTU9VU0VERVY9eQpDT05GSUdfSU5QVVRfTU9VU0VERVZfUFNBVVg9eQpD
+T05GSUdfSU5QVVRfTU9VU0VERVZfU0NSRUVOX1g9MTAyNApDT05GSUdfSU5QVVRfTU9VU0VERVZf
+U0NSRUVOX1k9NzY4CiMgQ09ORklHX0lOUFVUX0pPWURFViBpcyBub3Qgc2V0CkNPTkZJR19JTlBV
+VF9FVkRFVj15CiMgQ09ORklHX0lOUFVUX0VWQlVHIGlzIG5vdCBzZXQKCiMKIyBJbnB1dCBEZXZp
+Y2UgRHJpdmVycwojCkNPTkZJR19JTlBVVF9LRVlCT0FSRD15CiMgQ09ORklHX0tFWUJPQVJEX0FU
+S0JEIGlzIG5vdCBzZXQKQ09ORklHX0tFWUJPQVJEX1NVTktCRD15CiMgQ09ORklHX0tFWUJPQVJE
+X0xLS0JEIGlzIG5vdCBzZXQKIyBDT05GSUdfS0VZQk9BUkRfWFRLQkQgaXMgbm90IHNldAojIENP
+TkZJR19LRVlCT0FSRF9ORVdUT04gaXMgbm90IHNldAojIENPTkZJR19LRVlCT0FSRF9TVE9XQVdB
+WSBpcyBub3Qgc2V0CiMgQ09ORklHX0lOUFVUX01PVVNFIGlzIG5vdCBzZXQKIyBDT05GSUdfSU5Q
+VVRfSk9ZU1RJQ0sgaXMgbm90IHNldAojIENPTkZJR19JTlBVVF9UQUJMRVQgaXMgbm90IHNldAoj
+IENPTkZJR19JTlBVVF9UT1VDSFNDUkVFTiBpcyBub3Qgc2V0CiMgQ09ORklHX0lOUFVUX01JU0Mg
+aXMgbm90IHNldAoKIwojIEhhcmR3YXJlIEkvTyBwb3J0cwojCkNPTkZJR19TRVJJTz15CiMgQ09O
+RklHX1NFUklPX0k4MDQyIGlzIG5vdCBzZXQKIyBDT05GSUdfU0VSSU9fU0VSUE9SVCBpcyBub3Qg
+c2V0CiMgQ09ORklHX1NFUklPX1BDSVBTMiBpcyBub3Qgc2V0CiMgQ09ORklHX1NFUklPX1JBVyBp
+cyBub3Qgc2V0CiMgQ09ORklHX0dBTUVQT1JUIGlzIG5vdCBzZXQKCiMKIyBDaGFyYWN0ZXIgZGV2
+aWNlcwojCkNPTkZJR19WVD15CkNPTkZJR19DT05TT0xFX1RSQU5TTEFUSU9OUz15CkNPTkZJR19W
+VF9DT05TT0xFPXkKQ09ORklHX0hXX0NPTlNPTEU9eQojIENPTkZJR19WVF9IV19DT05TT0xFX0JJ
+TkRJTkcgaXMgbm90IHNldApDT05GSUdfREVWS01FTT15CiMgQ09ORklHX1NFUklBTF9OT05TVEFO
+REFSRCBpcyBub3Qgc2V0CiMgQ09ORklHX05PWk9NSSBpcyBub3Qgc2V0CgojCiMgU2VyaWFsIGRy
+aXZlcnMKIwojIENPTkZJR19TRVJJQUxfODI1MCBpcyBub3Qgc2V0CgojCiMgTm9uLTgyNTAgc2Vy
+aWFsIHBvcnQgc3VwcG9ydAojCkNPTkZJR19TRVJJQUxfU1VOQ09SRT15CiMgQ09ORklHX1NFUklB
+TF9TVU5aSUxPRyBpcyBub3Qgc2V0CkNPTkZJR19TRVJJQUxfU1VOU1U9eQpDT05GSUdfU0VSSUFM
+X1NVTlNVX0NPTlNPTEU9eQojIENPTkZJR19TRVJJQUxfU1VOU0FCIGlzIG5vdCBzZXQKIyBDT05G
+SUdfU0VSSUFMX1NVTkhWIGlzIG5vdCBzZXQKQ09ORklHX1NFUklBTF9DT1JFPXkKQ09ORklHX1NF
+UklBTF9DT1JFX0NPTlNPTEU9eQojIENPTkZJR19TRVJJQUxfSlNNIGlzIG5vdCBzZXQKQ09ORklH
+X1VOSVg5OF9QVFlTPXkKIyBDT05GSUdfREVWUFRTX01VTFRJUExFX0lOU1RBTkNFUyBpcyBub3Qg
+c2V0CiMgQ09ORklHX0xFR0FDWV9QVFlTIGlzIG5vdCBzZXQKIyBDT05GSUdfSVBNSV9IQU5ETEVS
+IGlzIG5vdCBzZXQKIyBDT05GSUdfSFdfUkFORE9NIGlzIG5vdCBzZXQKIyBDT05GSUdfUjM5NjQg
+aXMgbm90IHNldAojIENPTkZJR19BUFBMSUNPTSBpcyBub3Qgc2V0CiMgQ09ORklHX1JBV19EUklW
+RVIgaXMgbm90IHNldAojIENPTkZJR19UQ0dfVFBNIGlzIG5vdCBzZXQKQ09ORklHX0RFVlBPUlQ9
+eQojIENPTkZJR19JMkMgaXMgbm90IHNldAojIENPTkZJR19TUEkgaXMgbm90IHNldApDT05GSUdf
+QVJDSF9XQU5UX09QVElPTkFMX0dQSU9MSUI9eQojIENPTkZJR19HUElPTElCIGlzIG5vdCBzZXQK
+IyBDT05GSUdfVzEgaXMgbm90IHNldAojIENPTkZJR19QT1dFUl9TVVBQTFkgaXMgbm90IHNldAoj
+IENPTkZJR19IV01PTiBpcyBub3Qgc2V0CiMgQ09ORklHX1RIRVJNQUwgaXMgbm90IHNldAojIENP
+TkZJR19USEVSTUFMX0hXTU9OIGlzIG5vdCBzZXQKIyBDT05GSUdfV0FUQ0hET0cgaXMgbm90IHNl
+dApDT05GSUdfU1NCX1BPU1NJQkxFPXkKCiMKIyBTb25pY3MgU2lsaWNvbiBCYWNrcGxhbmUKIwoj
+IENPTkZJR19TU0IgaXMgbm90IHNldAoKIwojIE11bHRpZnVuY3Rpb24gZGV2aWNlIGRyaXZlcnMK
+IwojIENPTkZJR19NRkRfQ09SRSBpcyBub3Qgc2V0CiMgQ09ORklHX01GRF9TTTUwMSBpcyBub3Qg
+c2V0CiMgQ09ORklHX0hUQ19QQVNJQzMgaXMgbm90IHNldAojIENPTkZJR19NRkRfVE1JTyBpcyBu
+b3Qgc2V0CiMgQ09ORklHX1JFR1VMQVRPUiBpcyBub3Qgc2V0CgojCiMgTXVsdGltZWRpYSBkZXZp
+Y2VzCiMKCiMKIyBNdWx0aW1lZGlhIGNvcmUgc3VwcG9ydAojCiMgQ09ORklHX1ZJREVPX0RFViBp
+cyBub3Qgc2V0CiMgQ09ORklHX0RWQl9DT1JFIGlzIG5vdCBzZXQKIyBDT05GSUdfVklERU9fTUVE
+SUEgaXMgbm90IHNldAoKIwojIE11bHRpbWVkaWEgZHJpdmVycwojCiMgQ09ORklHX0RBQiBpcyBu
+b3Qgc2V0CgojCiMgR3JhcGhpY3Mgc3VwcG9ydAojCiMgQ09ORklHX0RSTSBpcyBub3Qgc2V0CiMg
+Q09ORklHX1ZHQVNUQVRFIGlzIG5vdCBzZXQKIyBDT05GSUdfVklERU9fT1VUUFVUX0NPTlRST0wg
+aXMgbm90IHNldApDT05GSUdfRkI9eQojIENPTkZJR19GSVJNV0FSRV9FRElEIGlzIG5vdCBzZXQK
+IyBDT05GSUdfRkJfRERDIGlzIG5vdCBzZXQKIyBDT05GSUdfRkJfQk9PVF9WRVNBX1NVUFBPUlQg
+aXMgbm90IHNldApDT05GSUdfRkJfQ0ZCX0ZJTExSRUNUPXkKQ09ORklHX0ZCX0NGQl9DT1BZQVJF
+QT15CkNPTkZJR19GQl9DRkJfSU1BR0VCTElUPXkKIyBDT05GSUdfRkJfQ0ZCX1JFVl9QSVhFTFNf
+SU5fQllURSBpcyBub3Qgc2V0CiMgQ09ORklHX0ZCX1NZU19GSUxMUkVDVCBpcyBub3Qgc2V0CiMg
+Q09ORklHX0ZCX1NZU19DT1BZQVJFQSBpcyBub3Qgc2V0CiMgQ09ORklHX0ZCX1NZU19JTUFHRUJM
+SVQgaXMgbm90IHNldAojIENPTkZJR19GQl9GT1JFSUdOX0VORElBTiBpcyBub3Qgc2V0CiMgQ09O
+RklHX0ZCX1NZU19GT1BTIGlzIG5vdCBzZXQKIyBDT05GSUdfRkJfU1ZHQUxJQiBpcyBub3Qgc2V0
+CiMgQ09ORklHX0ZCX01BQ01PREVTIGlzIG5vdCBzZXQKIyBDT05GSUdfRkJfQkFDS0xJR0hUIGlz
+IG5vdCBzZXQKQ09ORklHX0ZCX01PREVfSEVMUEVSUz15CkNPTkZJR19GQl9USUxFQkxJVFRJTkc9
+eQoKIwojIEZyYW1lIGJ1ZmZlciBoYXJkd2FyZSBkcml2ZXJzCiMKIyBDT05GSUdfRkJfQ0lSUlVT
+IGlzIG5vdCBzZXQKIyBDT05GSUdfRkJfUE0yIGlzIG5vdCBzZXQKIyBDT05GSUdfRkJfQVNJTElB
+TlQgaXMgbm90IHNldAojIENPTkZJR19GQl9JTVNUVCBpcyBub3Qgc2V0CiMgQ09ORklHX0ZCX1VW
+RVNBIGlzIG5vdCBzZXQKQ09ORklHX0ZCX1NCVVM9eQojIENPTkZJR19GQl9CVzIgaXMgbm90IHNl
+dAojIENPTkZJR19GQl9DRzMgaXMgbm90IHNldAojIENPTkZJR19GQl9DRzYgaXMgbm90IHNldApD
+T05GSUdfRkJfRkZCPXkKIyBDT05GSUdfRkJfVENYIGlzIG5vdCBzZXQKIyBDT05GSUdfRkJfQ0cx
+NCBpcyBub3Qgc2V0CiMgQ09ORklHX0ZCX1A5MTAwIGlzIG5vdCBzZXQKIyBDT05GSUdfRkJfTEVP
+IGlzIG5vdCBzZXQKIyBDT05GSUdfRkJfWFZSNTAwIGlzIG5vdCBzZXQKIyBDT05GSUdfRkJfWFZS
+MjUwMCBpcyBub3Qgc2V0CiMgQ09ORklHX0ZCX1MxRDEzWFhYIGlzIG5vdCBzZXQKIyBDT05GSUdf
+RkJfTlZJRElBIGlzIG5vdCBzZXQKIyBDT05GSUdfRkJfUklWQSBpcyBub3Qgc2V0CiMgQ09ORklH
+X0ZCX01BVFJPWCBpcyBub3Qgc2V0CiMgQ09ORklHX0ZCX1JBREVPTiBpcyBub3Qgc2V0CiMgQ09O
+RklHX0ZCX0FUWTEyOCBpcyBub3Qgc2V0CkNPTkZJR19GQl9BVFk9eQpDT05GSUdfRkJfQVRZX0NU
+PXkKIyBDT05GSUdfRkJfQVRZX0dFTkVSSUNfTENEIGlzIG5vdCBzZXQKIyBDT05GSUdfRkJfQVRZ
+X0dYIGlzIG5vdCBzZXQKIyBDT05GSUdfRkJfQVRZX0JBQ0tMSUdIVCBpcyBub3Qgc2V0CiMgQ09O
+RklHX0ZCX1MzIGlzIG5vdCBzZXQKIyBDT05GSUdfRkJfU0FWQUdFIGlzIG5vdCBzZXQKIyBDT05G
+SUdfRkJfU0lTIGlzIG5vdCBzZXQKIyBDT05GSUdfRkJfVklBIGlzIG5vdCBzZXQKIyBDT05GSUdf
+RkJfTkVPTUFHSUMgaXMgbm90IHNldAojIENPTkZJR19GQl9LWVJPIGlzIG5vdCBzZXQKIyBDT05G
+SUdfRkJfM0RGWCBpcyBub3Qgc2V0CiMgQ09ORklHX0ZCX1ZPT0RPTzEgaXMgbm90IHNldAojIENP
+TkZJR19GQl9WVDg2MjMgaXMgbm90IHNldAojIENPTkZJR19GQl9UUklERU5UIGlzIG5vdCBzZXQK
+IyBDT05GSUdfRkJfQVJLIGlzIG5vdCBzZXQKIyBDT05GSUdfRkJfUE0zIGlzIG5vdCBzZXQKIyBD
+T05GSUdfRkJfQ0FSTUlORSBpcyBub3Qgc2V0CiMgQ09ORklHX0ZCX1ZJUlRVQUwgaXMgbm90IHNl
+dAojIENPTkZJR19GQl9NRVRST05PTUUgaXMgbm90IHNldAojIENPTkZJR19GQl9NQjg2MlhYIGlz
+IG5vdCBzZXQKIyBDT05GSUdfQkFDS0xJR0hUX0xDRF9TVVBQT1JUIGlzIG5vdCBzZXQKCiMKIyBE
+aXNwbGF5IGRldmljZSBzdXBwb3J0CiMKIyBDT05GSUdfRElTUExBWV9TVVBQT1JUIGlzIG5vdCBz
+ZXQKCiMKIyBDb25zb2xlIGRpc3BsYXkgZHJpdmVyIHN1cHBvcnQKIwpDT05GSUdfUFJPTV9DT05T
+T0xFPXkKQ09ORklHX0RVTU1ZX0NPTlNPTEU9eQpDT05GSUdfRlJBTUVCVUZGRVJfQ09OU09MRT15
+CkNPTkZJR19GUkFNRUJVRkZFUl9DT05TT0xFX0RFVEVDVF9QUklNQVJZPXkKIyBDT05GSUdfRlJB
+TUVCVUZGRVJfQ09OU09MRV9ST1RBVElPTiBpcyBub3Qgc2V0CkNPTkZJR19GT05UUz15CiMgQ09O
+RklHX0ZPTlRfOHg4IGlzIG5vdCBzZXQKIyBDT05GSUdfRk9OVF84eDE2IGlzIG5vdCBzZXQKIyBD
+T05GSUdfRk9OVF82eDExIGlzIG5vdCBzZXQKIyBDT05GSUdfRk9OVF83eDE0IGlzIG5vdCBzZXQK
+IyBDT05GSUdfRk9OVF9QRUFSTF84eDggaXMgbm90IHNldAojIENPTkZJR19GT05UX0FDT1JOXzh4
+OCBpcyBub3Qgc2V0CkNPTkZJR19GT05UX1NVTjh4MTY9eQojIENPTkZJR19GT05UX1NVTjEyeDIy
+IGlzIG5vdCBzZXQKIyBDT05GSUdfRk9OVF8xMHgxOCBpcyBub3Qgc2V0CkNPTkZJR19MT0dPPXkK
+IyBDT05GSUdfTE9HT19MSU5VWF9NT05PIGlzIG5vdCBzZXQKIyBDT05GSUdfTE9HT19MSU5VWF9W
+R0ExNiBpcyBub3Qgc2V0CiMgQ09ORklHX0xPR09fTElOVVhfQ0xVVDIyNCBpcyBub3Qgc2V0CkNP
+TkZJR19MT0dPX1NVTl9DTFVUMjI0PXkKIyBDT05GSUdfU09VTkQgaXMgbm90IHNldAojIENPTkZJ
+R19ISURfU1VQUE9SVCBpcyBub3Qgc2V0CiMgQ09ORklHX1VTQl9TVVBQT1JUIGlzIG5vdCBzZXQK
+IyBDT05GSUdfVVdCIGlzIG5vdCBzZXQKIyBDT05GSUdfTU1DIGlzIG5vdCBzZXQKIyBDT05GSUdf
+TUVNU1RJQ0sgaXMgbm90IHNldAojIENPTkZJR19ORVdfTEVEUyBpcyBub3Qgc2V0CiMgQ09ORklH
+X0FDQ0VTU0lCSUxJVFkgaXMgbm90IHNldAojIENPTkZJR19JTkZJTklCQU5EIGlzIG5vdCBzZXQK
+Q09ORklHX1JUQ19MSUI9eQpDT05GSUdfUlRDX0NMQVNTPXkKQ09ORklHX1JUQ19IQ1RPU1lTPXkK
+Q09ORklHX1JUQ19IQ1RPU1lTX0RFVklDRT0icnRjMCIKIyBDT05GSUdfUlRDX0RFQlVHIGlzIG5v
+dCBzZXQKCiMKIyBSVEMgaW50ZXJmYWNlcwojCkNPTkZJR19SVENfSU5URl9TWVNGUz15CkNPTkZJ
+R19SVENfSU5URl9QUk9DPXkKQ09ORklHX1JUQ19JTlRGX0RFVj15CiMgQ09ORklHX1JUQ19JTlRG
+X0RFVl9VSUVfRU1VTCBpcyBub3Qgc2V0CiMgQ09ORklHX1JUQ19EUlZfVEVTVCBpcyBub3Qgc2V0
+CgojCiMgU1BJIFJUQyBkcml2ZXJzCiMKCiMKIyBQbGF0Zm9ybSBSVEMgZHJpdmVycwojCkNPTkZJ
+R19SVENfRFJWX0NNT1M9eQojIENPTkZJR19SVENfRFJWX0RTMTI4NiBpcyBub3Qgc2V0CiMgQ09O
+RklHX1JUQ19EUlZfRFMxNTExIGlzIG5vdCBzZXQKIyBDT05GSUdfUlRDX0RSVl9EUzE1NTMgaXMg
+bm90IHNldAojIENPTkZJR19SVENfRFJWX0RTMTc0MiBpcyBub3Qgc2V0CiMgQ09ORklHX1JUQ19E
+UlZfU1RLMTdUQTggaXMgbm90IHNldAojIENPTkZJR19SVENfRFJWX000OFQ4NiBpcyBub3Qgc2V0
+CiMgQ09ORklHX1JUQ19EUlZfTTQ4VDM1IGlzIG5vdCBzZXQKQ09ORklHX1JUQ19EUlZfTTQ4VDU5
+PXkKQ09ORklHX1JUQ19EUlZfQlE0ODAyPXkKIyBDT05GSUdfUlRDX0RSVl9WMzAyMCBpcyBub3Qg
+c2V0CgojCiMgb24tQ1BVIFJUQyBkcml2ZXJzCiMKQ09ORklHX1JUQ19EUlZfU1VONFY9eQpDT05G
+SUdfUlRDX0RSVl9TVEFSRklSRT15CiMgQ09ORklHX0RNQURFVklDRVMgaXMgbm90IHNldAojIENP
+TkZJR19VSU8gaXMgbm90IHNldApDT05GSUdfU1RBR0lORz15CiMgQ09ORklHX1NUQUdJTkdfRVhD
+TFVERV9CVUlMRCBpcyBub3Qgc2V0CiMgQ09ORklHX01FNDAwMCBpcyBub3Qgc2V0CiMgQ09ORklH
+X01FSUxIQVVTIGlzIG5vdCBzZXQKIyBDT05GSUdfRUNITyBpcyBub3Qgc2V0CiMgQ09ORklHX0JF
+TkVUIGlzIG5vdCBzZXQKIyBDT05GSUdfQ09NRURJIGlzIG5vdCBzZXQKIyBDT05GSUdfQUxURVJB
+X1BDSUVfQ0hETUEgaXMgbm90IHNldAoKIwojIEFuZHJvaWQKIwojIENPTkZJR19BTkRST0lEIGlz
+IG5vdCBzZXQKIyBDT05GSUdfQU5EUk9JRF9CSU5ERVJfSVBDIGlzIG5vdCBzZXQKIyBDT05GSUdf
+QU5EUk9JRF9MT0dHRVIgaXMgbm90IHNldAojIENPTkZJR19BTkRST0lEX1JBTV9DT05TT0xFIGlz
+IG5vdCBzZXQKIyBDT05GSUdfQU5EUk9JRF9MT1dfTUVNT1JZX0tJTExFUiBpcyBub3Qgc2V0Cgoj
+CiMgTWlzYyBMaW51eC9TUEFSQyBkcml2ZXJzCiMKQ09ORklHX1NVTl9PUEVOUFJPTUlPPXkKIyBD
+T05GSUdfT0JQX0ZMQVNIIGlzIG5vdCBzZXQKIyBDT05GSUdfVEFEUE9MRV9UUzEwMl9VQ1RSTCBp
+cyBub3Qgc2V0CiMgQ09ORklHX0JCQ19JMkMgaXMgbm90IHNldAojIENPTkZJR19FTlZDVFJMIGlz
+IG5vdCBzZXQKIyBDT05GSUdfRElTUExBWTdTRUcgaXMgbm90IHNldAoKIwojIEZpbGUgc3lzdGVt
+cwojCkNPTkZJR19FWFQyX0ZTPXkKIyBDT05GSUdfRVhUMl9GU19YQVRUUiBpcyBub3Qgc2V0CiMg
+Q09ORklHX0VYVDJfRlNfWElQIGlzIG5vdCBzZXQKQ09ORklHX0VYVDNfRlM9eQojIENPTkZJR19F
+WFQzX0ZTX1hBVFRSIGlzIG5vdCBzZXQKQ09ORklHX0VYVDRfRlM9eQpDT05GSUdfRVhUNERFVl9D
+T01QQVQ9eQojIENPTkZJR19FWFQ0X0ZTX1hBVFRSIGlzIG5vdCBzZXQKQ09ORklHX0pCRD15CkNP
+TkZJR19KQkRfREVCVUc9eQpDT05GSUdfSkJEMj15CkNPTkZJR19KQkQyX0RFQlVHPXkKIyBDT05G
+SUdfUkVJU0VSRlNfRlMgaXMgbm90IHNldAojIENPTkZJR19KRlNfRlMgaXMgbm90IHNldAojIENP
+TkZJR19GU19QT1NJWF9BQ0wgaXMgbm90IHNldApDT05GSUdfRklMRV9MT0NLSU5HPXkKIyBDT05G
+SUdfWEZTX0ZTIGlzIG5vdCBzZXQKIyBDT05GSUdfR0ZTMl9GUyBpcyBub3Qgc2V0CiMgQ09ORklH
+X09DRlMyX0ZTIGlzIG5vdCBzZXQKQ09ORklHX0JUUkZTX0ZTPXkKIyBDT05GSUdfQlRSRlNfRlNf
+UE9TSVhfQUNMIGlzIG5vdCBzZXQKQ09ORklHX0ROT1RJRlk9eQpDT05GSUdfSU5PVElGWT15CkNP
+TkZJR19JTk9USUZZX1VTRVI9eQojIENPTkZJR19RVU9UQSBpcyBub3Qgc2V0CiMgQ09ORklHX0FV
+VE9GU19GUyBpcyBub3Qgc2V0CiMgQ09ORklHX0FVVE9GUzRfRlMgaXMgbm90IHNldAojIENPTkZJ
+R19GVVNFX0ZTIGlzIG5vdCBzZXQKCiMKIyBDRC1ST00vRFZEIEZpbGVzeXN0ZW1zCiMKIyBDT05G
+SUdfSVNPOTY2MF9GUyBpcyBub3Qgc2V0CiMgQ09ORklHX1VERl9GUyBpcyBub3Qgc2V0CgojCiMg
+RE9TL0ZBVC9OVCBGaWxlc3lzdGVtcwojCiMgQ09ORklHX01TRE9TX0ZTIGlzIG5vdCBzZXQKIyBD
+T05GSUdfVkZBVF9GUyBpcyBub3Qgc2V0CiMgQ09ORklHX05URlNfRlMgaXMgbm90IHNldAoKIwoj
+IFBzZXVkbyBmaWxlc3lzdGVtcwojCkNPTkZJR19QUk9DX0ZTPXkKQ09ORklHX1BST0NfS0NPUkU9
+eQpDT05GSUdfUFJPQ19TWVNDVEw9eQpDT05GSUdfUFJPQ19QQUdFX01PTklUT1I9eQpDT05GSUdf
+U1lTRlM9eQpDT05GSUdfVE1QRlM9eQojIENPTkZJR19UTVBGU19QT1NJWF9BQ0wgaXMgbm90IHNl
+dAojIENPTkZJR19IVUdFVExCRlMgaXMgbm90IHNldAojIENPTkZJR19IVUdFVExCX1BBR0UgaXMg
+bm90IHNldApDT05GSUdfQ09ORklHRlNfRlM9eQojIENPTkZJR19NSVNDX0ZJTEVTWVNURU1TIGlz
+IG5vdCBzZXQKQ09ORklHX05FVFdPUktfRklMRVNZU1RFTVM9eQpDT05GSUdfTkZTX0ZTPXkKQ09O
+RklHX05GU19WMz15CiMgQ09ORklHX05GU19WM19BQ0wgaXMgbm90IHNldAojIENPTkZJR19ORlNf
+VjQgaXMgbm90IHNldApDT05GSUdfTkZTRD15CkNPTkZJR19ORlNEX1YzPXkKIyBDT05GSUdfTkZT
+RF9WM19BQ0wgaXMgbm90IHNldAojIENPTkZJR19ORlNEX1Y0IGlzIG5vdCBzZXQKQ09ORklHX0xP
+Q0tEPXkKQ09ORklHX0xPQ0tEX1Y0PXkKQ09ORklHX0VYUE9SVEZTPXkKQ09ORklHX05GU19DT01N
+T049eQpDT05GSUdfU1VOUlBDPXkKIyBDT05GSUdfU1VOUlBDX1JFR0lTVEVSX1Y0IGlzIG5vdCBz
+ZXQKIyBDT05GSUdfUlBDU0VDX0dTU19LUkI1IGlzIG5vdCBzZXQKIyBDT05GSUdfUlBDU0VDX0dT
+U19TUEtNMyBpcyBub3Qgc2V0CiMgQ09ORklHX1NNQl9GUyBpcyBub3Qgc2V0CiMgQ09ORklHX0NJ
+RlMgaXMgbm90IHNldAojIENPTkZJR19OQ1BfRlMgaXMgbm90IHNldAojIENPTkZJR19DT0RBX0ZT
+IGlzIG5vdCBzZXQKIyBDT05GSUdfQUZTX0ZTIGlzIG5vdCBzZXQKCiMKIyBQYXJ0aXRpb24gVHlw
+ZXMKIwojIENPTkZJR19QQVJUSVRJT05fQURWQU5DRUQgaXMgbm90IHNldApDT05GSUdfTVNET1Nf
+UEFSVElUSU9OPXkKQ09ORklHX1NVTl9QQVJUSVRJT049eQojIENPTkZJR19OTFMgaXMgbm90IHNl
+dAojIENPTkZJR19ETE0gaXMgbm90IHNldAoKIwojIEtlcm5lbCBoYWNraW5nCiMKQ09ORklHX1RS
+QUNFX0lSUUZMQUdTX1NVUFBPUlQ9eQpDT05GSUdfUFJJTlRLX1RJTUU9eQpDT05GSUdfRU5BQkxF
+X1dBUk5fREVQUkVDQVRFRD15CkNPTkZJR19FTkFCTEVfTVVTVF9DSEVDSz15CkNPTkZJR19GUkFN
+RV9XQVJOPTIwNDgKQ09ORklHX01BR0lDX1NZU1JRPXkKIyBDT05GSUdfVU5VU0VEX1NZTUJPTFMg
+aXMgbm90IHNldApDT05GSUdfREVCVUdfRlM9eQojIENPTkZJR19IRUFERVJTX0NIRUNLIGlzIG5v
+dCBzZXQKQ09ORklHX0RFQlVHX0tFUk5FTD15CkNPTkZJR19ERUJVR19TSElSUT15CkNPTkZJR19E
+RVRFQ1RfU09GVExPQ0tVUD15CiMgQ09ORklHX0JPT1RQQVJBTV9TT0ZUTE9DS1VQX1BBTklDIGlz
+IG5vdCBzZXQKQ09ORklHX0JPT1RQQVJBTV9TT0ZUTE9DS1VQX1BBTklDX1ZBTFVFPTAKIyBDT05G
+SUdfU0NIRURfREVCVUcgaXMgbm90IHNldAojIENPTkZJR19TQ0hFRFNUQVRTIGlzIG5vdCBzZXQK
+IyBDT05GSUdfVElNRVJfU1RBVFMgaXMgbm90IHNldAojIENPTkZJR19ERUJVR19PQkpFQ1RTIGlz
+IG5vdCBzZXQKIyBDT05GSUdfU0xVQl9ERUJVR19PTiBpcyBub3Qgc2V0CiMgQ09ORklHX1NMVUJf
+U1RBVFMgaXMgbm90IHNldApDT05GSUdfREVCVUdfUFJFRU1QVD15CkNPTkZJR19ERUJVR19SVF9N
+VVRFWEVTPXkKQ09ORklHX0RFQlVHX1BJX0xJU1Q9eQojIENPTkZJR19SVF9NVVRFWF9URVNURVIg
+aXMgbm90IHNldApDT05GSUdfREVCVUdfU1BJTkxPQ0s9eQpDT05GSUdfREVCVUdfTVVURVhFUz15
+CkNPTkZJR19ERUJVR19MT0NLX0FMTE9DPXkKQ09ORklHX1BST1ZFX0xPQ0tJTkc9eQpDT05GSUdf
+TE9DS0RFUD15CiMgQ09ORklHX0xPQ0tfU1RBVCBpcyBub3Qgc2V0CkNPTkZJR19ERUJVR19MT0NL
+REVQPXkKQ09ORklHX1RSQUNFX0lSUUZMQUdTPXkKQ09ORklHX0RFQlVHX1NQSU5MT0NLX1NMRUVQ
+PXkKQ09ORklHX0RFQlVHX0xPQ0tJTkdfQVBJX1NFTEZURVNUUz15CkNPTkZJR19TVEFDS1RSQUNF
+PXkKIyBDT05GSUdfREVCVUdfS09CSkVDVCBpcyBub3Qgc2V0CkNPTkZJR19ERUJVR19CVUdWRVJC
+T1NFPXkKQ09ORklHX0RFQlVHX0lORk89eQpDT05GSUdfREVCVUdfVk09eQojIENPTkZJR19ERUJV
+R19XUklURUNPVU5UIGlzIG5vdCBzZXQKQ09ORklHX0RFQlVHX01FTU9SWV9JTklUPXkKQ09ORklH
+X0RFQlVHX0xJU1Q9eQpDT05GSUdfREVCVUdfU0c9eQojIENPTkZJR19ERUJVR19OT1RJRklFUlMg
+aXMgbm90IHNldApDT05GSUdfRlJBTUVfUE9JTlRFUj15CiMgQ09ORklHX0JPT1RfUFJJTlRLX0RF
+TEFZIGlzIG5vdCBzZXQKIyBDT05GSUdfUkNVX1RPUlRVUkVfVEVTVCBpcyBub3Qgc2V0CkNPTkZJ
+R19LUFJPQkVTX1NBTklUWV9URVNUPXkKIyBDT05GSUdfQkFDS1RSQUNFX1NFTEZfVEVTVCBpcyBu
+b3Qgc2V0CiMgQ09ORklHX0RFQlVHX0JMT0NLX0VYVF9ERVZUIGlzIG5vdCBzZXQKIyBDT05GSUdf
+TEtEVE0gaXMgbm90IHNldAojIENPTkZJR19GQVVMVF9JTkpFQ1RJT04gaXMgbm90IHNldAojIENP
+TkZJR19MQVRFTkNZVE9QIGlzIG5vdCBzZXQKQ09ORklHX1NZU0NUTF9TWVNDQUxMX0NIRUNLPXkK
+Q09ORklHX0hBVkVfRlVOQ1RJT05fVFJBQ0VSPXkKCiMKIyBUcmFjZXJzCiMKIyBDT05GSUdfRlVO
+Q1RJT05fVFJBQ0VSIGlzIG5vdCBzZXQKIyBDT05GSUdfSVJRU09GRl9UUkFDRVIgaXMgbm90IHNl
+dAojIENPTkZJR19QUkVFTVBUX1RSQUNFUiBpcyBub3Qgc2V0CiMgQ09ORklHX1NDSEVEX1RSQUNF
+UiBpcyBub3Qgc2V0CiMgQ09ORklHX0NPTlRFWFRfU1dJVENIX1RSQUNFUiBpcyBub3Qgc2V0CiMg
+Q09ORklHX0JPT1RfVFJBQ0VSIGlzIG5vdCBzZXQKIyBDT05GSUdfVFJBQ0VfQlJBTkNIX1BST0ZJ
+TElORyBpcyBub3Qgc2V0CiMgQ09ORklHX1NUQUNLX1RSQUNFUiBpcyBub3Qgc2V0CkNPTkZJR19E
+WU5BTUlDX1BSSU5US19ERUJVRz15CiMgQ09ORklHX1NBTVBMRVMgaXMgbm90IHNldApDT05GSUdf
+SEFWRV9BUkNIX0tHREI9eQojIENPTkZJR19LR0RCIGlzIG5vdCBzZXQKIyBDT05GSUdfREVCVUdf
+U1RBQ0tfVVNBR0UgaXMgbm90IHNldApDT05GSUdfREVCVUdfRENGTFVTSD15CkNPTkZJR19TVEFD
+S19ERUJVRz15CkNPTkZJR19ERUJVR19QQUdFQUxMT0M9eQpDT05GSUdfTUNPVU5UPXkKCiMKIyBT
+ZWN1cml0eSBvcHRpb25zCiMKIyBDT05GSUdfS0VZUyBpcyBub3Qgc2V0CiMgQ09ORklHX1NFQ1VS
+SVRZIGlzIG5vdCBzZXQKIyBDT05GSUdfU0VDVVJJVFlGUyBpcyBub3Qgc2V0CiMgQ09ORklHX1NF
+Q1VSSVRZX0ZJTEVfQ0FQQUJJTElUSUVTIGlzIG5vdCBzZXQKQ09ORklHX0NSWVBUTz15CgojCiMg
+Q3J5cHRvIGNvcmUgb3IgaGVscGVyCiMKIyBDT05GSUdfQ1JZUFRPX0ZJUFMgaXMgbm90IHNldApD
+T05GSUdfQ1JZUFRPX0FMR0FQST15CkNPTkZJR19DUllQVE9fQUxHQVBJMj15CkNPTkZJR19DUllQ
+VE9fQUVBRDI9eQpDT05GSUdfQ1JZUFRPX0JMS0NJUEhFUjI9eQpDT05GSUdfQ1JZUFRPX0hBU0g9
+eQpDT05GSUdfQ1JZUFRPX0hBU0gyPXkKQ09ORklHX0NSWVBUT19STkcyPXkKQ09ORklHX0NSWVBU
+T19NQU5BR0VSPXkKQ09ORklHX0NSWVBUT19NQU5BR0VSMj15CiMgQ09ORklHX0NSWVBUT19HRjEy
+OE1VTCBpcyBub3Qgc2V0CiMgQ09ORklHX0NSWVBUT19OVUxMIGlzIG5vdCBzZXQKIyBDT05GSUdf
+Q1JZUFRPX0NSWVBURCBpcyBub3Qgc2V0CiMgQ09ORklHX0NSWVBUT19BVVRIRU5DIGlzIG5vdCBz
+ZXQKIyBDT05GSUdfQ1JZUFRPX1RFU1QgaXMgbm90IHNldAoKIwojIEF1dGhlbnRpY2F0ZWQgRW5j
+cnlwdGlvbiB3aXRoIEFzc29jaWF0ZWQgRGF0YQojCiMgQ09ORklHX0NSWVBUT19DQ00gaXMgbm90
+IHNldAojIENPTkZJR19DUllQVE9fR0NNIGlzIG5vdCBzZXQKIyBDT05GSUdfQ1JZUFRPX1NFUUlW
+IGlzIG5vdCBzZXQKCiMKIyBCbG9jayBtb2RlcwojCiMgQ09ORklHX0NSWVBUT19DQkMgaXMgbm90
+IHNldAojIENPTkZJR19DUllQVE9fQ1RSIGlzIG5vdCBzZXQKIyBDT05GSUdfQ1JZUFRPX0NUUyBp
+cyBub3Qgc2V0CiMgQ09ORklHX0NSWVBUT19FQ0IgaXMgbm90IHNldAojIENPTkZJR19DUllQVE9f
+TFJXIGlzIG5vdCBzZXQKIyBDT05GSUdfQ1JZUFRPX1BDQkMgaXMgbm90IHNldAojIENPTkZJR19D
+UllQVE9fWFRTIGlzIG5vdCBzZXQKCiMKIyBIYXNoIG1vZGVzCiMKQ09ORklHX0NSWVBUT19ITUFD
+PXkKIyBDT05GSUdfQ1JZUFRPX1hDQkMgaXMgbm90IHNldAoKIwojIERpZ2VzdAojCkNPTkZJR19D
+UllQVE9fQ1JDMzJDPXkKIyBDT05GSUdfQ1JZUFRPX01ENCBpcyBub3Qgc2V0CiMgQ09ORklHX0NS
+WVBUT19NRDUgaXMgbm90IHNldAojIENPTkZJR19DUllQVE9fTUlDSEFFTF9NSUMgaXMgbm90IHNl
+dAojIENPTkZJR19DUllQVE9fUk1EMTI4IGlzIG5vdCBzZXQKIyBDT05GSUdfQ1JZUFRPX1JNRDE2
+MCBpcyBub3Qgc2V0CiMgQ09ORklHX0NSWVBUT19STUQyNTYgaXMgbm90IHNldAojIENPTkZJR19D
+UllQVE9fUk1EMzIwIGlzIG5vdCBzZXQKIyBDT05GSUdfQ1JZUFRPX1NIQTEgaXMgbm90IHNldAoj
+IENPTkZJR19DUllQVE9fU0hBMjU2IGlzIG5vdCBzZXQKIyBDT05GSUdfQ1JZUFRPX1NIQTUxMiBp
+cyBub3Qgc2V0CiMgQ09ORklHX0NSWVBUT19UR1IxOTIgaXMgbm90IHNldAojIENPTkZJR19DUllQ
+VE9fV1A1MTIgaXMgbm90IHNldAoKIwojIENpcGhlcnMKIwojIENPTkZJR19DUllQVE9fQUVTIGlz
+IG5vdCBzZXQKIyBDT05GSUdfQ1JZUFRPX0FOVUJJUyBpcyBub3Qgc2V0CiMgQ09ORklHX0NSWVBU
+T19BUkM0IGlzIG5vdCBzZXQKIyBDT05GSUdfQ1JZUFRPX0JMT1dGSVNIIGlzIG5vdCBzZXQKIyBD
+T05GSUdfQ1JZUFRPX0NBTUVMTElBIGlzIG5vdCBzZXQKIyBDT05GSUdfQ1JZUFRPX0NBU1Q1IGlz
+IG5vdCBzZXQKIyBDT05GSUdfQ1JZUFRPX0NBU1Q2IGlzIG5vdCBzZXQKIyBDT05GSUdfQ1JZUFRP
+X0RFUyBpcyBub3Qgc2V0CiMgQ09ORklHX0NSWVBUT19GQ1JZUFQgaXMgbm90IHNldAojIENPTkZJ
+R19DUllQVE9fS0hBWkFEIGlzIG5vdCBzZXQKIyBDT05GSUdfQ1JZUFRPX1NBTFNBMjAgaXMgbm90
+IHNldAojIENPTkZJR19DUllQVE9fU0VFRCBpcyBub3Qgc2V0CiMgQ09ORklHX0NSWVBUT19TRVJQ
+RU5UIGlzIG5vdCBzZXQKIyBDT05GSUdfQ1JZUFRPX1RFQSBpcyBub3Qgc2V0CiMgQ09ORklHX0NS
+WVBUT19UV09GSVNIIGlzIG5vdCBzZXQKCiMKIyBDb21wcmVzc2lvbgojCiMgQ09ORklHX0NSWVBU
+T19ERUZMQVRFIGlzIG5vdCBzZXQKIyBDT05GSUdfQ1JZUFRPX0xaTyBpcyBub3Qgc2V0CgojCiMg
+UmFuZG9tIE51bWJlciBHZW5lcmF0aW9uCiMKIyBDT05GSUdfQ1JZUFRPX0FOU0lfQ1BSTkcgaXMg
+bm90IHNldAojIENPTkZJR19DUllQVE9fSFcgaXMgbm90IHNldAoKIwojIExpYnJhcnkgcm91dGlu
+ZXMKIwpDT05GSUdfQklUUkVWRVJTRT15CkNPTkZJR19HRU5FUklDX0ZJTkRfTEFTVF9CSVQ9eQoj
+IENPTkZJR19DUkNfQ0NJVFQgaXMgbm90IHNldApDT05GSUdfQ1JDMTY9eQpDT05GSUdfQ1JDX1Qx
+MERJRj15CiMgQ09ORklHX0NSQ19JVFVfVCBpcyBub3Qgc2V0CkNPTkZJR19DUkMzMj15CiMgQ09O
+RklHX0NSQzcgaXMgbm90IHNldApDT05GSUdfTElCQ1JDMzJDPXkKQ09ORklHX1pMSUJfSU5GTEFU
+RT15CkNPTkZJR19aTElCX0RFRkxBVEU9eQpDT05GSUdfUExJU1Q9eQpDT05GSUdfSEFTX0lPTUVN
+PXkKQ09ORklHX0hBU19JT1BPUlQ9eQpDT05GSUdfSEFTX0RNQT15CkNPTkZJR19IQVZFX0xNQj15
+Cg==
+--0015174c18ea412c8d0465f329d9--
