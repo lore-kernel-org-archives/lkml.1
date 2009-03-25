@@ -1,86 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763841AbZCYSnt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763989AbZCYSob@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763841AbZCYSnt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 14:43:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751707AbZCYSnj
+	id S1763989AbZCYSob (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 14:44:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752327AbZCYSoV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 14:43:39 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:60241 "EHLO mx2.mail.elte.hu"
+	Wed, 25 Mar 2009 14:44:21 -0400
+Received: from hera.kernel.org ([140.211.167.34]:55478 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752599AbZCYSni (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 14:43:38 -0400
-Date: Wed, 25 Mar 2009 19:42:29 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: Andrew Lutomirski <amluto@gmail.com>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Kyle McMartin <kyle@redhat.com>, Fenghua Yu <fenghua.yu@intel.com>,
-       Suresh Siddha <suresh.b.siddha@intel.com>,
-       Yinghai Lu <yinghai@kernel.org>, Mark Gross <mgross@linux.intel.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.29: can't resume from suspend with DMAR (intel iommu)
-	enabled
-Message-ID: <20090325184229.GA6117@elte.hu>
-References: <cb0375e10903241258x32c9d0f3g35a4f56793eb8677@mail.gmail.com> <20090324203259.GC26930@elte.hu> <1238003581.2085.53.camel@macbook.infradead.org> <20090325175908.GA25518@elte.hu> <1238004228.2085.56.camel@macbook.infradead.org> <20090325180720.GA28366@elte.hu> <1238004601.2085.57.camel@macbook.infradead.org> <20090325182003.GC28366@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090325182003.GC28366@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S1751707AbZCYSoU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Mar 2009 14:44:20 -0400
+Subject: [PATCH -tip] x86: signal.c cleanup
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: Ingo Molnar <mingo@elte.hu>, x86 maintainers <x86@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>, Andi Kleen <andi@firstfloor.org>
+Content-Type: text/plain
+Date: Thu, 26 Mar 2009 00:13:37 +0530
+Message-Id: <1238006617.2500.57.camel@ht.satnam>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+Date: Thu, 26 Mar 2009 00:11:46 +0530
+Subject: [PATCH] x86: signal.c cleanup
 
-btw., there's also the bugreport below.
+Impact: cleanup
 
-	Ingo
+Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+---
+ arch/x86/kernel/signal.c |   46 +++++++++++++++++++---------------------------
+ 1 files changed, 19 insertions(+), 27 deletions(-)
 
-http://bugzilla.kernel.org/show_bug.cgi?id=12940
-
-           Summary: CONFIG_DMAR/CONFIG_DMAR_DEFAULT_ON makes the kernel
-                    unbootable
-           Product: Platform Specific/Hardware
-           Version: 2.5
-    Kernel Version: 2.6.29
-          Platform: All
-        OS/Version: Linux
-              Tree: Mainline
-            Status: NEW
-          Severity: normal
-          Priority: P1
-         Component: x86-64
-        AssignedTo: platform_x86_64@kernel-bugs.osdl.org
-        ReportedBy: edman007x@mac.com
-        Regression: No
-
-
-When i enable the options CONFIG_DMAR/CONFIG_DMAR_DEFAULT_ON my kernel fails to
-boot. It just hangs at:
-
-hpet0: at MMIO 0xfed00000, IRQs 2, 8, 0
-hpet0: 3 comparators, 64-bit 14.318180 MHz counter
-
-right before that i see stuff saying that the IOMMU was remapping stuff. When i
-encountered this i recompiled the kernel, disabled only
-CONFIG_DMAR/CONFIG_DMAR_DEFAULT_ON and my kernel worked fine.
-
-
-My hardware:
-Tyan i5400PW/ 2x E5410 CPUs (latest BIOS)
-8GB RAM
-ATI radeonhd 3870
-3ware 9650se
-
+diff --git a/arch/x86/kernel/signal.c b/arch/x86/kernel/signal.c
+index 62f2164..249b7bc 100644
+--- a/arch/x86/kernel/signal.c
++++ b/arch/x86/kernel/signal.c
+@@ -7,35 +7,30 @@
+  *  2000-2002   x86-64 support by Andi Kleen
+  */
+ #include <linux/perf_counter.h>
+-#include <linux/sched.h>
+-#include <linux/mm.h>
+-#include <linux/smp.h>
++#include <linux/personality.h>
++#include <linux/tracehook.h>
++#include <linux/uaccess.h>
+ #include <linux/kernel.h>
++#include <linux/ptrace.h>
+ #include <linux/signal.h>
++#include <linux/stddef.h>
++#include <linux/unistd.h>
+ #include <linux/errno.h>
++#include <linux/sched.h>
+ #include <linux/wait.h>
+-#include <linux/ptrace.h>
+-#include <linux/tracehook.h>
+-#include <linux/unistd.h>
+-#include <linux/stddef.h>
+-#include <linux/personality.h>
+-#include <linux/uaccess.h>
++#include <linux/smp.h>
++#include <linux/mm.h>
+ 
++#include <asm/ia32_unistd.h>
+ #include <asm/processor.h>
++#include <asm/sigframe.h>
++#include <asm/syscalls.h>
+ #include <asm/ucontext.h>
++#include <asm/syscall.h>
++#include <asm/proto.h>
+ #include <asm/i387.h>
+ #include <asm/vdso.h>
+-
+-#ifdef CONFIG_X86_64
+-#include <asm/proto.h>
+-#include <asm/ia32_unistd.h>
+ #include <asm/mce.h>
+-#endif /* CONFIG_X86_64 */
+-
+-#include <asm/syscall.h>
+-#include <asm/syscalls.h>
+-
+-#include <asm/sigframe.h>
+ 
+ #define _BLOCKABLE (~(sigmask(SIGKILL) | sigmask(SIGSTOP)))
+ 
+@@ -100,17 +95,14 @@ restore_sigcontext(struct pt_regs *regs, struct sigcontext __user *sc,
+ 		COPY(r13);
+ 		COPY(r14);
+ 		COPY(r15);
+-#endif /* CONFIG_X86_64 */
+-
+-#ifdef CONFIG_X86_32
+-		COPY_SEG_CPL3(cs);
+-		COPY_SEG_CPL3(ss);
+-#else /* !CONFIG_X86_32 */
+ 		/* Kernel saves and restores only the CS segment register on signals,
+ 		 * which is the bare minimum needed to allow mixed 32/64-bit code.
+ 		 * App's signal handler can save/restore other segments if needed. */
+ 		COPY_SEG_CPL3(cs);
+-#endif /* CONFIG_X86_32 */
++#else
++		COPY_SEG_CPL3(cs);
++		COPY_SEG_CPL3(ss);
++#endif
+ 
+ 		get_user_ex(tmpflags, &sc->flags);
+ 		regs->flags = (regs->flags & ~FIX_EFLAGS) | (tmpflags & FIX_EFLAGS);
+@@ -887,7 +879,7 @@ void signal_fault(struct pt_regs *regs, void __user *frame, char *where)
+ 	struct task_struct *me = current;
+ 
+ 	if (show_unhandled_signals && printk_ratelimit()) {
+-		printk("%s"
++		printk(KERN_INFO "%s"
+ 		       "%s[%d] bad frame in %s frame:%p ip:%lx sp:%lx orax:%lx",
+ 		       task_pid_nr(current) > 1 ? KERN_INFO : KERN_EMERG,
+ 		       me->comm, me->pid, where, frame,
 -- 
-Configure bugmail: http://bugzilla.kernel.org/userprefs.cgi?tab=email
-------- You are receiving this mail because: -------
-You are on the CC list for the bug.
+1.6.0.6
+
+
+
