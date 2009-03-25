@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764001AbZCYRjs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764012AbZCYRk0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764001AbZCYRjs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 13:39:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763929AbZCYRj0
+	id S1764012AbZCYRk0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 13:40:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763703AbZCYRkF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 13:39:26 -0400
-Received: from e38.co.us.ibm.com ([32.97.110.159]:33347 "EHLO
-	e38.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763942AbZCYRjX (ORCPT
+	Wed, 25 Mar 2009 13:40:05 -0400
+Received: from e35.co.us.ibm.com ([32.97.110.153]:34218 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763588AbZCYRkB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 13:39:23 -0400
-Date: Wed, 25 Mar 2009 12:39:04 -0500
+	Wed, 25 Mar 2009 13:40:01 -0400
+Date: Wed, 25 Mar 2009 12:39:54 -0500
 From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Marc-Christian Petersen <m.c.p@wolk-project.de>
+To: Willy Tarreau <w@1wt.eu>
 Cc: mtk.manpages@gmail.com, Stephen Smalley <sds@epoch.ncsc.mil>,
        Andrew Morgan <morgan@kernel.org>,
        linux-security-module@vger.kernel.org,
        lkml <linux-kernel@vger.kernel.org>, linux-nfs@vger.kernel.org,
        Igor Zhbanov <izh1979@gmail.com>, stable@kernel.org,
        linux-api@vger.kernel.org, Chris Wright <chrisw@sous-sol.org>
-Subject: [PATCH 2.2] CAP_FS_MASK: add CAP_LINUX_IMMUTABLE
-Message-ID: <20090325173904.GA19269@us.ibm.com>
+Subject: [PATCH 2.4] CAP_FS_MASK: add CAP_LINUX_IMMUTABLE and CAP_MKNOD
+Message-ID: <20090325173954.GA19299@us.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -35,11 +35,8 @@ fsuid==0 is supposed to grant, did not include CAP_MKNOD and
 CAP_LINUX_IMMUTABLE.  However, before capabilities the privilege
 to call these did in fact depend upon fsuid==0.
 
-However, 2.2 does not have CAP_MKNOD, instead using CAP_SYS_ADMIN
-to authorize sys_mknod.  We don't want to put CAP_SYS_ADMIN in
-CAP_FS_MASK because it carries too many non-fs implications.
-
-This patch introduces CAP_LINUX_IMMUTABLE into the fsmask.
+This patch introduces those capabilities into the fsmask,
+restoring the old behavior.
 
 See the thread starting at http://lkml.org/lkml/2009/3/11/157 for
 reference.
@@ -48,13 +45,13 @@ Reported-by: Igor Zhbanov <izh1979@gmail.com>
 Signed-off-by: Serge E. Hallyn <serue@us.ibm.com>
 Cc: stable@kernel.org
 ---
- include/linux/capability.h |   13 +++++++++----
- 1 file changed, 9 insertions(+), 4 deletions(-)
+ include/linux/capability.h |   14 ++++++++++----
+ 1 file changed, 10 insertions(+), 4 deletions(-)
 
-diff -Nrup linux-2.2.26/include/linux/capability.h linux-2.2.26.new/include/linux/capability.h
---- linux-2.2.26/include/linux/capability.h	2004-02-23 07:44:47.000000000 -0600
-+++ linux-2.2.26.new/include/linux/capability.h	2009-03-25 11:12:08.000000000 -0500
-@@ -98,10 +98,6 @@ typedef __u32 kernel_cap_t;
+diff -Nrup linux-2.4.37/include/linux/capability.h linux-2.4.37.new/include/linux/capability.h
+--- linux-2.4.37/include/linux/capability.h	2008-12-02 02:01:34.000000000 -0600
++++ linux-2.4.37.new/include/linux/capability.h	2009-03-25 11:09:47.000000000 -0500
+@@ -99,10 +99,6 @@ typedef __u32 kernel_cap_t;
  
  #define CAP_FSETID           4
  
@@ -65,7 +62,7 @@ diff -Nrup linux-2.2.26/include/linux/capability.h linux-2.2.26.new/include/linu
  /* Overrides the restriction that the real or effective user ID of a
     process sending a signal must match the real or effective user ID
     of the process receiving the signal. */
-@@ -288,6 +284,15 @@ extern kernel_cap_t cap_bset;
+@@ -301,6 +297,16 @@ extern kernel_cap_t cap_bset;
  
  #endif
  
@@ -76,7 +73,8 @@ diff -Nrup linux-2.2.26/include/linux/capability.h linux-2.2.26.new/include/linu
 +			| CAP_TO_MASK(CAP_DAC_READ_SEARCH)	\
 +			| CAP_TO_MASK(CAP_FOWNER)		\
 +			| CAP_TO_MASK(CAP_FSETID)		\
-+			| CAP_TO_MASK(CAP_LINUX_IMMUTABLE))
++			| CAP_TO_MASK(CAP_LINUX_IMMUTABLE)	\
++			| CAP_TO_MASK(CAP_MKNOD))
 +
  #define CAP_EMPTY_SET       to_cap_t(0)
  #define CAP_FULL_SET        to_cap_t(~0)
