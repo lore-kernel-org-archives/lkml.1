@@ -1,56 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754790AbZCYWeN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755860AbZCYWg5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754790AbZCYWeN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 18:34:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752261AbZCYWdz
+	id S1755860AbZCYWg5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 18:36:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752669AbZCYWgs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 18:33:55 -0400
-Received: from mail-out2.uio.no ([129.240.10.58]:33622 "EHLO mail-out2.uio.no"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752098AbZCYWdy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 18:33:54 -0400
-Subject: Re: NFS/AFS/Selinux issues with 2.26.29
-From: Trond Myklebust <trond.myklebust@fys.uio.no>
-To: Richard A Nelson <cowboy@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, linux-nfs@vger.kernel.org,
-       openafs-devel@openafs.org
-In-Reply-To: <49CAAB9B.5070104@linux.vnet.ibm.com>
-References: <49CAAB9B.5070104@linux.vnet.ibm.com>
-Content-Type: text/plain
-Date: Wed, 25 Mar 2009 18:33:44 -0400
-Message-Id: <1238020424.26487.81.camel@heimdal.trondhjem.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.0 
-Content-Transfer-Encoding: 7bit
-X-UiO-Spam-info: not spam, SpamAssassin (score=-5.0, required=5.0, autolearn=disabled, UIO_MAIL_IS_INTERNAL=-5, uiobl=NO, uiouri=NO)
-X-UiO-Scanned: 9AE50DA7206CB54CA09AF12F479C149AC94845A7
-X-UiO-SPAM-Test: remote_host: 71.227.91.12 spam_score: -49 maxlevel 200 minaction 2 bait 0 mail/h: 1 total 112 max/h 3 blacklist 0 greylist 0 ratelimit 0
+	Wed, 25 Mar 2009 18:36:48 -0400
+Received: from byss.tchmachines.com ([208.76.80.75]:53327 "EHLO
+	byss.tchmachines.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751966AbZCYWgr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Mar 2009 18:36:47 -0400
+Date: Wed, 25 Mar 2009 15:36:42 -0700
+From: Ravikiran G Thirumalai <kiran@scalex86.org>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Yinghai Lu <yinghai@kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       shai@scalex86.org
+Subject: Re: [PATCH] x86: don't compile vsmp_64 for 32bit
+Message-ID: <20090325223642.GK7278@localdomain>
+References: <20090226064806.GC27240@localdomain> <20090226114457.GB6651@elte.hu> <20090227001757.GE27240@localdomain> <20090228094430.GH12095@elte.hu> <20090302235120.GF27240@localdomain> <20090322124818.GA31466@elte.hu> <20090324061429.GH7278@localdomain> <20090324091035.GA6605@elte.hu> <20090325185138.GI7278@localdomain> <49CAAD2E.3060904@goop.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49CAAD2E.3060904@goop.org>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - byss.tchmachines.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - scalex86.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-03-25 at 15:09 -0700, Richard A Nelson wrote:
-> 1) 2.6.29 NFS clients can no longer lock files:
->    #strace -f lockfile fubar
->    ...
->    uname({sys="Linux", node="gothic-ave", ...}) = 0
->    lstat64("_V0H.jaqyJB.gothic-ave", 0xbfdac9ec) = -1 ENOENT (No such file or directory)
->    open("_V0H.jaqyJB.gothic-ave", O_WRONLY|O_CREAT|O_EXCL|O_LARGEFILE, 0444) = -1 EINVAL (Invalid argument)
->    write(2, "lockfile: ", 10lockfile: )              = 10
->    write(2, "Try praying", 11Try praying)             = 11
->    write(2, ", giving up on \"", 16, giving up on ")       = 16
->    write(2, "fubar", 5fubar)                    = 5
->    write(2, "\"\n", 2"
-> 
->    clients still on 2.6.28 and lower work fine ... the server *is* 2.26.29
+On Wed, Mar 25, 2009 at 03:16:14PM -0700, Jeremy Fitzhardinge wrote:
+> Ravikiran G Thirumalai wrote:
+>> It is already there, and has been there!  But we still need to make
+>> vsmp64.c compile only when CONFIG_X86_64 is defined no?
+>>   
+>
+> I still think you should restructure it so that vsmp_64.c only gets 
+> compiled with CONFIG_X86_VSMP enabled.  Having all that stuff compiled into 
+> every kernel seems pretty pointless.
+>
 
-lockfile works fine for me, both on NFSv3 and NFSv4 against my NetApp
-filers, and as far as I can remember, there have been no changes to the
-exclusive create code in the 2.6.29 client.
+Well, not everything gets compiled in.  Only the is_vsmp_box() logic and
+related stuff gets compiled in.  Other paravirt related stuff in vsmp64.c
+depends on CONFIG_PARAVIRT.
 
-Given that you are claiming to be seeing selinux problems on
-2.6.29-based servers, could you therefore please check again after
-downgrading the server kernel?
-
-Trond
-
+Thanks,
+Kiran
