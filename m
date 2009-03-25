@@ -1,84 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758602AbZCYKMz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758868AbZCYKOG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758602AbZCYKMz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 06:12:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753971AbZCYKMn
+	id S1758868AbZCYKOG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 06:14:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754553AbZCYKNy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 06:12:43 -0400
-Received: from anchor-post-1.mail.demon.net ([195.173.77.132]:64967 "EHLO
-	anchor-post-1.mail.demon.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753086AbZCYKMl (ORCPT
+	Wed, 25 Mar 2009 06:13:54 -0400
+Received: from rv-out-0506.google.com ([209.85.198.238]:48138 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753229AbZCYKNx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 06:12:41 -0400
-Message-ID: <49CA0396.20705@lougher.demon.co.uk>
-Date: Wed, 25 Mar 2009 10:12:38 +0000
-From: Phillip Lougher <phillip@lougher.demon.co.uk>
-User-Agent: Thunderbird 2.0.0.18 (X11/20081125)
+	Wed, 25 Mar 2009 06:13:53 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=SBg6Kr531rSzDTOJX02sUxIhofLSu8BM658Vil1ICuif5Ens4vAQ+js/wX/jGf3aZf
+         oNby+nD4sCV10hQlY6SRf09U1SMAwQ+SUsriyfgTwO9vZaXC3srkaez/Fq+45UEyEVvt
+         AvqYPMMb1O+WDfEN+e8tjmoetxBrz9vRxALV8=
 MIME-Version: 1.0
-To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-CC: Herbert Xu <herbert@gondor.apana.org.au>, linux-crypto@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH/RFC] crypto: compress - Return produced bytes in crypto_{,de}compress_{update,final}()
- (was: Re: [PATCH/RFC] crypto: compress - Add comp_request.total_out
-References: <1235569394-15217-1-git-send-email-Geert.Uytterhoeven@sonycom.com> <1235569394-15217-2-git-send-email-Geert.Uytterhoeven@sonycom.com> <1235569394-15217-3-git-send-email-Geert.Uytterhoeven@sonycom.com> <1235569394-15217-4-git-send-email-Geert.Uytterhoeven@sonycom.com> <1235569394-15217-5-git-send-email-Geert.Uytterhoeven@sonycom.com> <1235569394-15217-6-git-send-email-Geert.Uytterhoeven@sonycom.com> <1235569394-15217-7-git-send-email-Geert.Uytterhoeven@sonycom.com> <20090307104637.GB8731@gondor.apana.org.au> <49B36A18.5030506@lougher.demon.co.uk> <alpine.LRH.2.00.0903111830540.1040@vixen.sonytel.be> <alpine.LRH.2.00.0903171345040.7595@vixen.sonytel.be> <alpine.LRH.2.00.0903241729540.4446@vixen.sonytel.be>
-In-Reply-To: <alpine.LRH.2.00.0903241729540.4446@vixen.sonytel.be>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+In-Reply-To: <Pine.LNX.4.64.0903250817090.5590@axis700.grange>
+References: <1232458448-4412-1-git-send-email-tom.leiming@gmail.com>
+	 <Pine.LNX.4.64.0903250039160.4451@axis700.grange>
+	 <d82e647a0903241815l66abfc18ldbb26abd7d2c6b4@mail.gmail.com>
+	 <Pine.LNX.4.64.0903250817090.5590@axis700.grange>
+Date: Wed, 25 Mar 2009 18:13:51 +0800
+Message-ID: <d82e647a0903250313ka2d270ag78335e7c7f525f22@mail.gmail.com>
+Subject: Re: [PATCH] driver core: check bus->match without holding device lock
+From: Ming Lei <tom.leiming@gmail.com>
+To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Cc: kay.sievers@vrfy.org, Greg KH <greg@kroah.com>,
+       linux-kernel@vger.kernel.org, arjan@linux.intel.com
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Geert Uytterhoeven wrote:
-> On Tue, 17 Mar 2009, Geert Uytterhoeven wrote:
->> On Wed, 11 Mar 2009, Geert Uytterhoeven wrote:
->>> On Sun, 8 Mar 2009, Phillip Lougher wrote:
->>>> Two API issues of concern (one major, one minor).  Both of these relate to the
->>>> way Squashfs drives the decompression code, where it repeatedly calls it
->>>> supplying additional input/output buffers, rather than using a "single-shot"
->>>> approach where it calls the decompression code once supplying all the
->>>> necessary input and output buffer space.
->>>>
->>>> 1. Minor issue -the lack of a stream.total_out field.  The current
->>>> zlib_inflate code collects the total number of bytes decompressed over the
->>>> multiple calls into the stream.total_out field.
->>>>
->>>>    There is clearly no such field available in the cryto API, leading to the
->>>> somewhat clumsy need to track it, i.e. it leads to the following additional
->>>> code.
->>> If people feel the need for a total_out field, I can add it to struct
->>> comp_request.
->>>
->>> BTW, what about total_in, which is also provided by plain zlib's z_stream?
->>> Do people see a need for a similar field?
->> The patch below (on top of the updated one to convert SquashFS to pcomp) adds
->> comp_request.total_out, so you don't have to calculate and accumulate the
->> decompressed output sizes in SquashFS.
+>> > Now, without .match() no probing is done. Is this an intended change and
+>> > soc-camera has to be fixed or is this a bug?
 >>
->> Notes:
->>   - This required the addition of a `struct comp_request *' parameter to
->>     crypto_{,de}compress_init()
->>   - Still, there's one of the 
->>
->> 	produced = req.avail_out;
->> 	...
->> 	produced -= req.avail_out;
->>
->>     left, as this is part of the logic to discover the end of decompression
->>     (no bytes produced, no error returned).
->>
->> Perhaps it's better to instead make crypto_{,de}compress_{update,final}()
->> return the (positive) number of output bytes (of the current step)?
->>
->> Currently it returns zero (no error) or a negative error value.
->> That would allow to get rid of both `produced = ... / produced -= ...'
->> constructs, but the user would have to accumulate the total output size again
->> (which is not such a big deal, IMHO).
-> 
-> Here's an alternative patch, which does exactly that.
-> Phillip, what do you think?
-> 
+>> It is not a driver-core bug, and soc-camera should be fixed.
+>
+> So, you're saying this used to be a bug and it has been fixed by this
+> patch? Then why isn't this mentioned in the commit message? The commit
+> text seems to suggest, that this patch shouldn't introduce any change in
+> behaviour, but it does. So, before .match == NULL lead to .probe() being
+> called, and now it doesn't anymore?
 
- From a quick look, it looks OK :-)  I'm not ignoring this, but I'm trying to get a release of
-the 4.0 tools finished ASAP (now 2.6.29 is out).
+Where is soc-camera  driver in kernel tree?  Which bus  is soc-camera
+device (driver) attached to ?
+Why doesn't soc-camera  driver  have a match method?
 
-Phillip
+Thanks!
+
+
+-- 
+Lei Ming
