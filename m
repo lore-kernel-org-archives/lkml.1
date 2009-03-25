@@ -1,72 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754058AbZCYUFu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755018AbZCYUJV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754058AbZCYUFu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 16:05:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751546AbZCYUFl
+	id S1755018AbZCYUJV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 16:09:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751313AbZCYUJE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 16:05:41 -0400
-Received: from mail-fx0-f158.google.com ([209.85.220.158]:41602 "EHLO
-	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750937AbZCYUFk (ORCPT
+	Wed, 25 Mar 2009 16:09:04 -0400
+Received: from rcsinet12.oracle.com ([148.87.113.124]:60523 "EHLO
+	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751133AbZCYUJB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 16:05:40 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=Nj0W2Ni4xlYmR63hdrhWAZEkMsjrk32yF1CUBV2hGteywqF9CoWiH3JdsDDTpLTkLu
-         UiaXU1VMTVZSkEUycy0nD6Do06W5FFRDlJSxdi7mio9+ubNpM4rftmOwWRpvx5r2iqaU
-         esYATddb/dUuOppNb/XFHZF5uQkl5b2YeQbkA=
-MIME-Version: 1.0
-In-Reply-To: <1238010885.2500.65.camel@ht.satnam>
-References: <Pine.LNX.4.64.0903252041190.14101@anakin>
-	 <1238010885.2500.65.camel@ht.satnam>
-Date: Wed, 25 Mar 2009 21:05:37 +0100
-X-Google-Sender-Auth: 7679245be2705d39
-Message-ID: <10f740e80903251305t24529e6fl1d3c850c8e4ec819@mail.gmail.com>
-Subject: Re: [PATCH] module: Kill warning: label 'free_init' defined but not 
-	used
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Jaswinder Singh Rajput <jaswinder@kernel.org>
-Cc: Masami Hiramatsu <mhiramat@redhat.com>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, dmitri.vorobiev@movial.com
-Content-Type: text/plain; charset=UTF-8
+	Wed, 25 Mar 2009 16:09:01 -0400
+Subject: Re: [PATCH] writeback: reset inode dirty time when adding it back
+ to empty s_dirty list
+From: Chris Mason <chris.mason@oracle.com>
+To: "hch@infradead.org" <hch@infradead.org>
+Cc: Wu Fengguang <fengguang.wu@intel.com>, Jeff Layton <jlayton@redhat.com>,
+       Ian Kent <raven@themaw.net>, Dave Chinner <david@fromorbit.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
+       "jens.axboe@oracle.com" <jens.axboe@oracle.com>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "linux-nfs@vger.kernel.org" <linux-nfs@vger.kernel.org>
+In-Reply-To: <20090325165500.GA6047@infradead.org>
+References: <1237840233-11045-1-git-send-email-jlayton@redhat.com>
+	 <20090324135720.GA25314@localhost>
+	 <20090324102806.4f38fd26@tleilax.poochiereds.net>
+	 <20090324104657.6907b19e@tleilax.poochiereds.net>
+	 <20090325012829.GA7506@localhost>
+	 <20090324221528.2bb7c50b@tleilax.poochiereds.net>
+	 <20090325025037.GA17374@localhost>
+	 <20090325075110.028f0d1d@tleilax.poochiereds.net>
+	 <20090325121742.GA22869@localhost>  <20090325165500.GA6047@infradead.org>
+Content-Type: text/plain
+Date: Wed, 25 Mar 2009 16:07:02 -0400
+Message-Id: <1238011622.5676.3.camel@think.oraclecorp.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 
 Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt703.oracle.com [141.146.40.81]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090206.49CA8EED.01FD:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 25, 2009 at 20:54, Jaswinder Singh Rajput
-<jaswinder@kernel.org> wrote:
-> On Wed, 2009-03-25 at 20:43 +0100, Geert Uytterhoeven wrote:
->> On m68k (which doesn't do SMP), I get:
->>
->> | kernel/module.c:2291: warning: label 'free_init' defined but not used
->>
->> which was introduced by commit 6e2b75740bed35df98b8113300579e13ed2ce848
->> ("module: fix refptr allocation and release order").
->> Move the label inside the #ifdef, as the goto is protected by the same #ifdef.
->>
->> Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
->> ---
->
-> AFAIK, it is already fixed in -tip:
-> http://git.kernel.org/?p=linux/kernel/git/x86/linux-2.6-tip.git;a=commit;h=67f5ca081c6ace125e8ccc76b8a7d99b091abaa7
+On Wed, 2009-03-25 at 12:55 -0400, hch@infradead.org wrote:
+> On Wed, Mar 25, 2009 at 08:17:43PM +0800, Wu Fengguang wrote:
+> > Now there are now two possible solutions:
+> > - unconditionally update dirtied_when in redirty_tail();
+> > - keep dirtied_when and redirty inodes to a new dedicated queue.
+> > The first one involves less code, the second one allows more flexible timing.
+> > 
+> > NFS/XFS could be a good starting point for discussing the
+> > requirements, so that we can reach a suitable solution.
+> 
+> Note that the XFS requirement also applies to all filesystems that
+> perform some sort of metadata updats on I/O completeion.  That includes
+> at least ext4, btrfs and most likely the cluster filesystems too.
 
-Interesting, as I noticed the problem in today's linux-next.
-http://kisskb.ellerman.id.au/kisskb/buildresult/271602/
-Or am I caught again by fake warnings from the bisection process?
+btrfs at least doesn't dirty the inode on I/O completion.  It just puts
+the changes directly into the btree blocks.
 
-Gr{oetje,eeting}s,
+-chris
 
-						Geert
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
