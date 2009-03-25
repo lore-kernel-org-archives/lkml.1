@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758375AbZCYJAU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755790AbZCYJAw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758375AbZCYJAU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 05:00:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751173AbZCYJAF
+	id S1755790AbZCYJAw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 05:00:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752741AbZCYJAo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 05:00:05 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:63618 "EHLO song.cn.fujitsu.com"
+	Wed, 25 Mar 2009 05:00:44 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:58412 "EHLO song.cn.fujitsu.com"
 	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751137AbZCYJAE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 05:00:04 -0400
-Message-ID: <49C9F23F.5040307@cn.fujitsu.com>
-Date: Wed, 25 Mar 2009 16:58:39 +0800
+	id S1750924AbZCYJAn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Mar 2009 05:00:43 -0400
+Message-ID: <49C9F266.2060706@cn.fujitsu.com>
+Date: Wed, 25 Mar 2009 16:59:18 +0800
 From: Lai Jiangshan <laijs@cn.fujitsu.com>
 User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
@@ -18,7 +18,7 @@ To: Ingo Molnar <mingo@elte.hu>
 CC: Steven Rostedt <srostedt@redhat.com>,
        Frederic Weisbecker <fweisbec@gmail.com>,
        LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH 1/2] trace_stat: keep original order
+Subject: [PATCH 2/2] trace_workqueues: fix empty line's output
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
@@ -26,51 +26,47 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Impact: make trace_stat files show items with the original order
-
-trace_stat tracer reverse the items, it makes the output
-looks a little ugly.
-
-Example, when we read trace_stat/workqueues, we get cpu#7's stat.
-at first, and then cpu#6... cpu#0.
+Empty lines separate cpus stat. After previous
+fix(trace_stat: keep original order) applied, the empty lines
+are displayed at incorrect position.
 
 Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
 ---
-diff --git a/kernel/trace/trace_stat.c b/kernel/trace/trace_stat.c
-index f71b85b..c08e7f1 100644
---- a/kernel/trace/trace_stat.c
-+++ b/kernel/trace/trace_stat.c
-@@ -125,23 +125,21 @@ static int stat_seq_init(struct tracer_stat_session *session)
- 		INIT_LIST_HEAD(&new_entry->list);
- 		new_entry->stat = stat;
+diff --git a/kernel/trace/trace_workqueue.c b/kernel/trace/trace_workqueue.c
+index 9ab035b..797201e 100644
+--- a/kernel/trace/trace_workqueue.c
++++ b/kernel/trace/trace_workqueue.c
+@@ -196,6 +196,11 @@ static int workqueue_stat_show(struct seq_file *s, void *p)
+ 	struct pid *pid;
+ 	struct task_struct *tsk;
  
--		list_for_each_entry(iter_entry, &session->stat_list, list) {
-+		list_for_each_entry_reverse(iter_entry, &session->stat_list,
-+				list) {
- 
- 			/* Insertion with a descendent sorting */
--			if (ts->stat_cmp(new_entry->stat,
--						iter_entry->stat) > 0) {
-+			if (ts->stat_cmp(iter_entry->stat,
-+					new_entry->stat) >= 0) {
- 
--				list_add_tail(&new_entry->list,
--						&iter_entry->list);
--				break;
--
--			/* The current smaller value */
--			} else if (list_is_last(&iter_entry->list,
--						&session->stat_list)) {
- 				list_add(&new_entry->list, &iter_entry->list);
- 				break;
- 			}
- 		}
++	spin_lock_irqsave(&workqueue_cpu_stat(cpu)->lock, flags);
++	if (&cws->list == workqueue_cpu_stat(cpu)->list.next)
++		seq_printf(s, "\n");
++	spin_unlock_irqrestore(&workqueue_cpu_stat(cpu)->lock, flags);
 +
-+		/* The current larger value */
-+		if (list_empty(&new_entry->list))
-+			list_add(&new_entry->list, &session->stat_list);
+ 	pid = find_get_pid(cws->pid);
+ 	if (pid) {
+ 		tsk = get_pid_task(pid, PIDTYPE_PID);
+@@ -208,18 +213,13 @@ static int workqueue_stat_show(struct seq_file *s, void *p)
+ 		put_pid(pid);
  	}
- exit:
- 	mutex_unlock(&session->stat_mutex);
+ 
+-	spin_lock_irqsave(&workqueue_cpu_stat(cpu)->lock, flags);
+-	if (&cws->list == workqueue_cpu_stat(cpu)->list.next)
+-		seq_printf(s, "\n");
+-	spin_unlock_irqrestore(&workqueue_cpu_stat(cpu)->lock, flags);
+-
+ 	return 0;
+ }
+ 
+ static int workqueue_stat_headers(struct seq_file *s)
+ {
+ 	seq_printf(s, "# CPU  INSERTED  EXECUTED   NAME\n");
+-	seq_printf(s, "# |      |         |          |\n\n");
++	seq_printf(s, "# |      |         |          |\n");
+ 	return 0;
+ }
+ 
 
 
