@@ -1,60 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761601AbZCYNhG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761659AbZCYNiS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761601AbZCYNhG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 09:37:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756524AbZCYNgy
+	id S1761659AbZCYNiS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 09:38:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754835AbZCYNiG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 09:36:54 -0400
-Received: from hera.kernel.org ([140.211.167.34]:48473 "EHLO hera.kernel.org"
+	Wed, 25 Mar 2009 09:38:06 -0400
+Received: from rtr.ca ([76.10.145.34]:55944 "EHLO mail.rtr.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755346AbZCYNgy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 09:36:54 -0400
-Message-ID: <49CA32F6.2030408@kernel.org>
-Date: Wed, 25 Mar 2009 22:34:46 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	id S1756524AbZCYNiF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Mar 2009 09:38:05 -0400
+Message-ID: <49CA33B8.5050503@rtr.ca>
+Date: Wed, 25 Mar 2009 09:38:00 -0400
+From: Mark Lord <lkml@rtr.ca>
+Organization: Real-Time Remedies Inc.
+User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
 MIME-Version: 1.0
-To: Martin Schwidefsky <schwidefsky@de.ibm.com>
-CC: Ingo Molnar <mingo@elte.hu>, rusty@rustcorp.com.au, tglx@linutronix.de,
-       x86@kernel.org, linux-kernel@vger.kernel.org, hpa@zytor.com,
-       Paul Mundt <lethal@linux-sh.org>, rmk@arm.linux.org.uk,
-       starvik@axis.com, ralf@linux-mips.org, davem@davemloft.net,
-       cooloney@kernel.org, kyle@mcmartin.ca, matthew@wil.cx,
-       grundler@parisc-linux.org, takata@linux-m32r.org,
-       benh@kernel.crashing.org, rth@twiddle.net, ink@jurassic.park.msu.ru,
-       heiko.carstens@de.ibm.com
-Subject: Re: [GIT RFC] percpu: use dynamic percpu allocator as the default
- percpu allocator
-References: <1236671631-9305-1-git-send-email-tj@kernel.org>	<20090316190132.7965a49a@skybase>	<49C300D8.5080204@kernel.org>	<49C8FAC4.6060508@kernel.org>	<20090325122738.42d105b7@skybase>	<49CA1AC3.9080908@kernel.org>	<20090325122241.GE11571@elte.hu>	<49CA2345.70204@kernel.org>	<20090325141330.2717dc97@skybase>	<49CA2FBF.9000207@kernel.org> <20090325142525.2d31c522@skybase>
-In-Reply-To: <20090325142525.2d31c522@skybase>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
+To: Jaswinder Singh Rajput <jaswinder@kernel.org>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
+       x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
+       akataria@vmware.com
+Subject: Re: [PATCH -tip] x86: move vmware to hypervisor
+References: <1237281581.7907.2.camel@ht.satnam>	 <20090317093919.GD6477@elte.hu> <1237283318.7907.9.camel@ht.satnam>	 <49BFC6CB.9070603@zytor.com> <1237958994.5556.5.camel@localhost.localdomain>
+In-Reply-To: <1237958994.5556.5.camel@localhost.localdomain>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 25 Mar 2009 13:34:50 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Martin Schwidefsky wrote:
-> On Wed, 25 Mar 2009 22:21:03 +0900
-> Tejun Heo <tj@kernel.org> wrote:
+Jaswinder Singh Rajput wrote:
+> On Tue, 2009-03-17 at 08:50 -0700, H. Peter Anvin wrote:
+>> Jaswinder Singh Rajput wrote:
+>>>> I dont really like this one. KVM is a hypervisor too, and so is 
+>>>> Xen and lguest. VMware is one of the many types of a 
+>>>> hypervisors.
+>>> Can we use common hypervisor for Xen, lguest, vmware, etc.
+>>> And Xen, lguest, vmware will be the sub-options.
+>> Obviously.  We spent a lot of time breaking up the cpu stuff into common
+>> and vendor-specific portions, we shouldn't go backwards w.r.t. hypervisors.
+>> 	
 > 
->> Martin Schwidefsky wrote:
->>>> Martin's original patch should do the trick although it would be
->>>> slower for static symbols.  I'll merge it and post the tree.
->>> No, my original patch doesn't work. It will break modules that use
->>> static per-cpu variables.
->> Oops.  Even with the default offset adding macros?  Heh... I think it
->> would be best to wait for your fix then.
+> OK, agreed.
 > 
-> We could use HAVE_LEGACY_PER_CPU_AREA for the time being. 
+> But atleast give freedom to users to disable this who are not willing to
+> use it.
+> 
+> Currently hypervisor is used only used by VMWARE, so is I prepare this
+> freedom patch:
+> 
+> From: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+> Date: Wed, 25 Mar 2009 10:40:01 +0530
+> Subject: [PATCH] x86: Introduce CONFIG_X86_VMWARE option
+> 
+> Impact: freedom to choose
+> 
+> Gives freedom to users to select or suppress CONFIG_X86_VMWARE option.
+> 
+> Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+> ---
+>  arch/x86/Kconfig                  |    7 +++++++
+>  arch/x86/include/asm/hypervisor.h |    9 +++++++++
+>  arch/x86/kernel/cpu/Makefile      |    2 +-
+>  3 files changed, 17 insertions(+), 1 deletions(-)
+> 
+> diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+> index f5d7d29..56e1a9c 100644
+> --- a/arch/x86/Kconfig
+> +++ b/arch/x86/Kconfig
+> @@ -554,6 +554,13 @@ config HPET_EMULATE_RTC
+>  	def_bool y
+>  	depends on HPET_TIMER && (RTC=y || RTC=m || RTC_DRV_CMOS=m || RTC_DRV_CMOS=y)
+>  
+> +config X86_VMWARE
+> +	bool
+> +	default n
+> +	prompt "X86 VMware support"
+> +	---help---
+> +	 Enable X86 VMware Hypervisor support.
+>
+..
 
-Eh...  The thing is that the patch kills the legacy default allocator.
-We can move it into arch/s390 for the time being but it would be
-simpler if the constant_p thing or something else could work.  :-) Do
-you think figuring out how to fix it will take long?
 
-Thanks.
+Could that perhaps be clarified somewhat, changing the prompt
+string to either "X86 VMware host support"
+or "X86 VMware guest support", to remove any confusion ?
 
--- 
-tejun
+thanks
