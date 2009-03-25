@@ -1,55 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756483AbZCYRFy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760232AbZCYRIC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756483AbZCYRFy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 13:05:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752420AbZCYRFq
+	id S1760232AbZCYRIC (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 13:08:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752420AbZCYRHp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 13:05:46 -0400
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:57716 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750940AbZCYRFp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 13:05:45 -0400
-Date: Wed, 25 Mar 2009 18:05:33 +0100
-From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
-	<u.kleine-koenig@pengutronix.de>
-To: Tim Bird <tim.bird@am.sony.com>,
-       Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>,
-       Abhishek Sagar <sagar.abhishek@gmail.com>,
-       linux-arm-kernel <linux-arm-kernel@lists.arm.linux.org.uk>,
-       linux kernel <linux-kernel@vger.kernel.org>,
-       Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@redhat.com>
-Subject: Re: Anyone working on ftrace function graph support on ARM?
-Message-ID: <20090325170533.GA4667@pengutronix.de>
-References: <49C936CA.8070800@am.sony.com> <20090324213618.GC5975@nowhere> <49C95EAF.7030901@gmail.com> <20090324224857.GE5975@nowhere> <20090325084248.GF4697@n2100.arm.linux.org.uk> <49CA5CFF.8090908@am.sony.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <49CA5CFF.8090908@am.sony.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
-X-SA-Exim-Mail-From: ukl@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
+	Wed, 25 Mar 2009 13:07:45 -0400
+Received: from hera.kernel.org ([140.211.167.34]:42973 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751137AbZCYRHo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Mar 2009 13:07:44 -0400
+Subject: Re: [PATCH -tip] x86: move vmware to hypervisor
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: akataria@vmware.com
+Cc: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <1237999971.32497.12.camel@alok-dev1>
+References: <1237281581.7907.2.camel@ht.satnam>
+	 <20090317093919.GD6477@elte.hu> <1237283318.7907.9.camel@ht.satnam>
+	 <49BFC6CB.9070603@zytor.com>
+	 <1237958994.5556.5.camel@localhost.localdomain>
+	 <20090325125955.GB516@elte.hu>  <1237999971.32497.12.camel@alok-dev1>
+Content-Type: text/plain
+Date: Wed, 25 Mar 2009 22:37:20 +0530
+Message-Id: <1238000840.2500.49.camel@ht.satnam>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 25, 2009 at 09:34:07AM -0700, Tim Bird wrote:
-> Russell King - ARM Linux wrote:
-> > As pointed out in my previous mail, identifying where on the stack the
-> > return address is stored is only possible for OABI with frame pointers.
+On Wed, 2009-03-25 at 09:52 -0700, Alok Kataria wrote:
 > > 
-> > EABI will probably be possible with the stack unwinding code, but it
-> > probably won't be cheap.  The EABI unwinder is scheduled for merging
-> > during the present now-open merge window.
-EABI with frame pointers should work, too, shouldn't it?
+> > vmware can be considered a CPU here, so i think making the disabling 
+> > also depend on PROCESSOR_SELECT.
+> 
+> Ingo, this code is not just to be used by VMware, the reason we did this
+> generically was so that a guest could run unaltered on *any* fully
+> virtualized hypervisor.
+> And give that this code is just a boot setup thing, the only thing this
+> patch saves over here is not running the detection code on native
+> systems. All the rest of the code is guarded by the
+> "boot_cpu_data.x86_hyper_vendor" checks anyways.  
+> 
+> I don't really see the point of adding one more config option just for
+> this. 
+> 
 
-Best regards
-Uwe
+Can you please explain what is the point of adding this support all the
+time if this is useless for 99.9% of cases. IMHO, it should be optional.
 
--- 
-Pengutronix e.K.                              | Uwe Kleine-König            |
-Industrial Linux Solutions                    | http://www.pengutronix.de/  |
+--
+JSR
+
+
+
+
+
