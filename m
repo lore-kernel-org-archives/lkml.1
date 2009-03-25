@@ -1,69 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764387AbZCYSvY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764470AbZCYSv4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764387AbZCYSvY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 14:51:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753744AbZCYSvO
+	id S1764470AbZCYSv4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 14:51:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759667AbZCYSvp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 14:51:14 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:40092 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760854AbZCYSvN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 14:51:13 -0400
-Message-ID: <49CA7C6E.5010103@redhat.com>
-Date: Wed, 25 Mar 2009 14:48:14 -0400
-From: Ric Wheeler <rwheeler@redhat.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Wed, 25 Mar 2009 14:51:45 -0400
+Received: from byss.tchmachines.com ([208.76.80.75]:42280 "EHLO
+	byss.tchmachines.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754898AbZCYSvo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Mar 2009 14:51:44 -0400
+Date: Wed, 25 Mar 2009 11:51:38 -0700
+From: Ravikiran G Thirumalai <kiran@scalex86.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Yinghai Lu <yinghai@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       shai@scalex86.org
+Subject: Re: [PATCH] x86: don't compile vsmp_64 for 32bit
+Message-ID: <20090325185138.GI7278@localdomain>
+References: <49A626B2.8090205@kernel.org> <20090226064806.GC27240@localdomain> <20090226114457.GB6651@elte.hu> <20090227001757.GE27240@localdomain> <20090228094430.GH12095@elte.hu> <20090302235120.GF27240@localdomain> <20090322124818.GA31466@elte.hu> <20090324061429.GH7278@localdomain> <20090324091035.GA6605@elte.hu>
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: David Rees <drees76@gmail.com>, Theodore Tso <tytso@mit.edu>,
-       Jan Kara <jack@suse.cz>, Andrew Morton <akpm@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Nick Piggin <npiggin@suse.de>,
-       Jens Axboe <jens.axboe@oracle.com>, Jesper Krogh <jesper@krogh.cc>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.29
-References: <alpine.LFD.2.00.0903231617550.3032@localhost.localdomain>  <72dbd3150903232346g5af126d7sb5ad4949a7b5041f@mail.gmail.com>  <20090324091545.758d00f5@lxorguk.ukuu.org.uk>  <20090324093245.GA22483@elte.hu>  <20090324101011.6555a0b9@lxorguk.ukuu.org.uk>  <20090324103111.GA26691@elte.hu>  <20090324041249.1133efb6.akpm@linux-foundation.org>  <20090325123744.GK23439@duck.suse.cz> <20090325150041.GM32307@mit.edu>  <alpine.LFD.2.00.0903251008120.3032@localhost.localdomain> <72dbd3150903251109x75aa5d8ke8277247c2f292f9@mail.gmail.com> <alpine.LFD.2.00.0903251117380.3032@localhost.localdomain> <alpine.LFD.2.00.0903251122250.3032@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.00.0903251122250.3032@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090324091035.GA6605@elte.hu>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - byss.tchmachines.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - scalex86.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
-> On Wed, 25 Mar 2009, Linus Torvalds wrote:
->   
->> Even a suck-ass laptop drive can write streaming data fast enough that 
->> people don't care. The problem is invariably that writes from different 
->> sources (much of it being metadata) interact and cause seeking.
->>     
+On Tue, Mar 24, 2009 at 10:10:35AM +0100, Ingo Molnar wrote:
 >
-> Actually, not just writes.
+>* Ravikiran G Thirumalai <kiran@scalex86.org> wrote:
 >
-> The IO priority thing is almost certainly that _reads_ (which get higher 
-> priority by default due to being synchronous) get interspersed with the 
-> writes, and then even if you _could_ be having streaming writes, what you 
-> actually end up with is lots of seeking.
+>> Sure.  Here's a revert, it is a partial revert which compiles 
+>> vsmp64.c only for 64bit architectures.
 >
-> Again, good SSD's don't care. Disks do. It doesn't matter if you have a FC 
-> disk array that can eat 300MB/s when streaming - once you start seeking, 
-> that 300MB/s goes down like a rock. Battery-protected write caches will 
-> help - but not a whole lot when streaming more data than they have RAM. 
-> Basic queuing theory.
->
-> 			Linus
->   
+>hm, why dont you add 'depends on X86_64' to the X86_VSMP Kconfig 
+>rules? That's far clear - or am i missing some detail?
 
-This is actually not really true - random writes to an enterprise disk 
-array will make your Intel SSD look slow. Effectively, they are 
-extremely large, battery backed banks of DRAM with lots of fibre channel 
-ports.  Some of the bigger ones can have several hundred GB of DRAM and 
-dozens of fibre channel ports to feed them.
+It is already there, and has been there!  But we still need to make
+vsmp64.c compile only when CONFIG_X86_64 is defined no?
 
-Of course, if your random writes exceed the cache capacity and you fall 
-back to their internal disks (SSD or traditional), your random write 
-speed will drop.
-
-Ric
-
+Thanks,
+Kiran
