@@ -1,56 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760128AbZCYQUd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763122AbZCYQVN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760128AbZCYQUd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 12:20:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754732AbZCYQUM
+	id S1763122AbZCYQVN (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 12:21:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754947AbZCYQU5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 12:20:12 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:32845 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754597AbZCYQUK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 12:20:10 -0400
-Date: Wed, 25 Mar 2009 17:19:13 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Roland McGrath <roland@redhat.com>,
-       Nick Piggin <nickpiggin@yahoo.com.au>
-Subject: Re: [PATCH 0/3 v2] [GIT PULL] remove unlikelys
-Message-ID: <20090325161913.GB1411@elte.hu>
-References: <20090325154538.916038098@goodmis.org>
+	Wed, 25 Mar 2009 12:20:57 -0400
+Received: from mail.gmx.net ([213.165.64.20]:49959 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1754732AbZCYQU4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Mar 2009 12:20:56 -0400
+X-Authenticated: #2025681
+X-Provags-ID: V01U2FsdGVkX1/qYatqyOLq0Q/fO8Cm6MXudOX0OE9hmd9WPEiuLw
+	7cnzJTekfg0vEJ
+Message-ID: <49CA59E8.7080201@gmx.de>
+Date: Wed, 25 Mar 2009 17:20:56 +0100
+From: Stefan Sassenberg <stefan.sassenberg@gmx.de>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081209)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090325154538.916038098@goodmis.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: /proc/bus/input/devices changing while booting
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.71
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello,
 
-* Steven Rostedt <rostedt@goodmis.org> wrote:
+while booting, an init-script on my machine greps the Handlers entry of 
+a certain device (USB touchscreen) from /proc/bus/input/devices. It ends 
+with "event2", so I configure my software to listen for events in 
+/dev/input/event2. A few seconds later /proc/bus/input/devices changes, 
+the order of the devices is different and the Handlers entry for my 
+device ends with event1 making my device misconfigured and thus unusable.
 
-> Ingo,
-> 
-> The differences between v1 and v2 is that I only included the non 
-> controversial patches. I also modified the change log of 
-> pre_schedule_rt to include the annotated branch profiler output.
+Can anybody explain that behaviour? How can I get the final eventX 
+device file?
 
->       mm: remove unlikelys for unlock in rmap.c
+I'm using kernel 2.6.28.8 on an Intel Celeron, chipset ICH5.
 
->  mm/rmap.c         |    8 ++++----
+Regards
 
-the rmap.c thing looks uncontroversial to me, but an MM person 
-should still have a look and Ack it.
-
-	Ingo
+Stefan
