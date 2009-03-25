@@ -1,101 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753743AbZCYXs0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755071AbZCYXuz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753743AbZCYXs0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 19:48:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754252AbZCYXsP
+	id S1755071AbZCYXuz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 19:50:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752693AbZCYXuq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 19:48:15 -0400
-Received: from mu-out-0910.google.com ([209.85.134.185]:36530 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753026AbZCYXsN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 19:48:13 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=vfqeyhgJ6d5C5cRXQHXgFBNXYQ8DV6061o+wKTNAcJssuSk268w7P9jAuZe2G7QUn8
-         csp8dJSrOWZ7wYQD5KsVYysX00ScUaCbSIVgl5LqsaThzQqwEAIDFC2la6cnCHoU1ptD
-         +BAu0ABNMFtuCeRTwZD5y8/QAfi+XMB6VRnrA=
-Date: Thu, 26 Mar 2009 00:48:07 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Kevin Shanahan <kmshanah@ucwb.org.au>
-Cc: Avi Kivity <avi@redhat.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Mike Galbraith <efault@gmx.de>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [Bug #12465] KVM guests stalling on 2.6.28 (bisected)
-Message-ID: <20090325234806.GO5932@nowhere>
-References: <49BE20B2.9070804@redhat.com> <1237207595.4964.31.camel@kulgan.wumi.org.au> <20090316200736.GD8393@nowhere> <1237244137.4964.54.camel@kulgan.wumi.org.au> <20090318001955.GB5143@nowhere> <1237338986.4801.11.camel@kulgan.wumi.org.au> <1237411441.5211.5.camel@kulgan.wumi.org.au> <1237611639.4933.4.camel@kulgan.wumi.org.au> <20090324114409.GB6058@nowhere> <1238024432.8669.6.camel@kulgan>
+	Wed, 25 Mar 2009 19:50:46 -0400
+Received: from cantor.suse.de ([195.135.220.2]:34643 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752496AbZCYXup (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Mar 2009 19:50:45 -0400
+Date: Thu, 26 Mar 2009 00:50:41 +0100
+From: Jan Kara <jack@suse.cz>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Theodore Tso <tytso@mit.edu>, Andrew Morton <akpm@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Nick Piggin <npiggin@suse.de>,
+       Jens Axboe <jens.axboe@oracle.com>, David Rees <drees76@gmail.com>,
+       Jesper Krogh <jesper@krogh.cc>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.29
+Message-ID: <20090325235041.GA11024@duck.suse.cz>
+References: <20090324101011.6555a0b9@lxorguk.ukuu.org.uk> <20090324103111.GA26691@elte.hu> <20090324041249.1133efb6.akpm@linux-foundation.org> <20090325123744.GK23439@duck.suse.cz> <20090325150041.GM32307@mit.edu> <alpine.LFD.2.00.0903251008120.3032@localhost.localdomain> <20090325185824.GO32307@mit.edu> <alpine.LFD.2.00.0903251341050.3032@localhost.localdomain> <20090325215137.GQ32307@mit.edu> <alpine.LFD.2.00.0903251613300.3032@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1238024432.8669.6.camel@kulgan>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <alpine.LFD.2.00.0903251613300.3032@localhost.localdomain>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 26, 2009 at 10:10:32AM +1030, Kevin Shanahan wrote:
-> On Tue, 2009-03-24 at 12:44 +0100, Frederic Weisbecker wrote:
-> > Sorry, I've been late to answer.
-> > As I explained in my previous mail, you trace is only
-> > a snapshot that happened in 10 msec.
+On Wed 25-03-09 16:21:56, Linus Torvalds wrote:
+> On Wed, 25 Mar 2009, Theodore Tso wrote:
 > > 
-> > I experimented different sizes for the ring buffer but even
-> > a 1 second trace require 20 Mo of memory. And a so huge trace
-> > would be impractical.
-> > 
-> > I think we should keep the trace filters we had previously.
-> > If you don't minde, could you please retest against latest -tip
-> > the following updated patch? Iadded the filters, fixed the python
-> > subshell and also flushed the buffer more nicely according to
-> > a recent feature in -tip:
-> > 
-> > echo > trace 
-> > 
-> > instead of switching to nop.
-> > You will need to pull latest -tip again.
+> > Um, no, ext3 shouldn't block on writepage().  Since it doesn't do
+> > delayed allocation, it should always be able to push out a dirty page
+> > to the disk.
 > 
-> Ok, thanks for that. I'll get a new -tip kernel ready to test tonight.
-> I'm not sure about the change to the python subshell though:
+> Umm. Maybe I'm mis-reading something, but they seem to all synchronize 
+> with the journal with "ext3_journal_start/stop".
 > 
-> > while [ "$found" != "True" ]
-> > do
-> >         # Flush the previous buffer
-> >         echo trace > $prefix/trace
-> > 
-> >         echo 1 > $prefix/tracing_enabled
-> >         lat=$(ping -c 1 $addr | grep rtt | grep -Eo " [0-9]+.[0-9]+")
-> >         echo 0 > $prefix/tracing_enabled
-> > 
-> > 	echo $lat
-> > 	found=$(python -c "print float(str($lat).strip())")
-> >         sleep 0.01
-> > done
+> Which will at a minimum wait for 'j_barrier_count == 0' and 't_state != 
+> T_LOCKED'. Along with making sure that there are enough transaction 
+> buffers.
 > 
-> kmshanah@kulgan:~$ python -c "print float(str(1.234).strip())"
-> 1.234
+> Do I understand _why_ ext3 does that? Hell no. The code makes no sense to 
+> me. But I don't think I'm wrong.
 > 
-> That's not going to evaluate to "True" at all is it? What happened to
-> the test against the latency threshold value? Did you mean something
-> like this?
+> Look at the sane case (data=ordered): it still does
 > 
-> kmshanah@kulgan:~$ python -c "print float(str(1.234).strip()) > 5000"
-> False
-> kmshanah@kulgan:~$ python -c "print float(str(5001.234).strip()) > 5000"
-> True
+> 	handle = ext3_journal_start(inode, ext3_writepage_trans_blocks(inode));
+> 	...
+> 	err = ext3_journal_stop(handle);
+> 
+> around all the IO starting. Never mind that the IO shouldn't be needing 
+> any journal activity at all afaik in any common case. 
+> 
+> Yes, yes, it may need to allocate backing store (a page that was dirtied 
+> by mmap), and I'm sure that's the reason for it all, but the point is, 
+> most of the time there should be no journal activity at all, yet it looks 
+> very much like a simple writepage() will synchronize with a full journal 
+> and wait for the journal to get space.
+> 
+> No?
+  Yes, you got it right. Furthermore in ordered mode we need to attach
+buffers to the running transaction if they aren't there (but for checking
+whether they are we need to pin the running transaction and we are
+basically where we started.. damn). But maybe there's a way out of it.
+We don't have to guarantee data written via mmap are on disk when "the
+transaction running when somebody decided to call writepage" commits (in
+case no block allocation happen) and so we could just submit those buffers
+for IO and don't attach them to the transaction...
 
+> So tell me again how the VM can rely on the filesystem not blocking at 
+> random points.
+  I can write a patch to make writepage() in the non-"mmapped creation"
+case non-blocking on journal. But I'll also have to find out whether it
+really helps something. But it's probably worth trying...
 
-Sorry. I guess I was a bit asleep.
-It's a mistake. So you can restore how it was.
-
-Thanks.
-
- 
-> Cheers,
-> Kevin.
-> 
-> 
-
+								Honza
+-- 
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
