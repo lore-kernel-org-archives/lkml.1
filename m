@@ -1,81 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757159AbZCYQqT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757877AbZCYQwA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757159AbZCYQqT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 12:46:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755517AbZCYQqE
+	id S1757877AbZCYQwA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 12:52:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753829AbZCYQvu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 12:46:04 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:42592 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755102AbZCYQqC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 12:46:02 -0400
-Message-ID: <49CA60FF.9030602@suse.de>
-Date: Thu, 26 Mar 2009 00:51:11 +0800
-From: Coly Li <coly.li@suse.de>
-Reply-To: coly.li@suse.de
-Organization: SuSE Labs
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Wed, 25 Mar 2009 12:51:50 -0400
+Received: from mail01a.mail.t-online.hu ([84.2.40.6]:54685 "EHLO
+	mail01a.mail.t-online.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753059AbZCYQvs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Mar 2009 12:51:48 -0400
+Message-ID: <49CA611B.5050902@freemail.hu>
+Date: Wed, 25 Mar 2009 17:51:39 +0100
+From: =?ISO-8859-2?Q?N=E9meth_M=E1rton?= <nm127@freemail.hu>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; hu-HU; rv:1.8.1.16) Gecko/20080702 SeaMonkey/1.1.11
 MIME-Version: 1.0
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: mmotm 2009-03-23-22-34 uploaded (reiserfs)
-References: <200903240539.n2O5d6A8018954@imap1.linux-foundation.org> <49C9483B.1030905@oracle.com> <49C9C163.8040502@suse.de> <49CA48A0.6000404@oracle.com>
-In-Reply-To: <49CA48A0.6000404@oracle.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+To: Mauro Carvalho Chehab <mchehab@infradead.org>, linux-media@vger.kernel.org
+CC: LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] v4l2: fill reserved fields of VIDIOC_ENUMAUDIO also
+Content-Type: text/plain; charset=ISO-8859-2
+Content-Transfer-Encoding: 8bit
+X-DCC-mail.t-online.hu-Metrics: mail01a.mail.t-online.hu 32711; Body=3 Fuz1=3
+	Fuz2=3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Márton Németh <nm127@freemail.hu>
 
+When enumerating audio inputs with VIDIOC_ENUMAUDIO the gspca_sunplus driver
+does not fill the reserved fields of the struct v4l2_audio with zeros as
+required by V4L2 API revision 0.24 [1]. Add the missing initializations to
+the V4L2 framework.
 
-Randy Dunlap Wrote:
-> Coly Li wrote:
->> Hi Randy,
->>
->> Randy Dunlap Wrote:
->>> akpm@linux-foundation.org wrote:
->>>> The mm-of-the-moment snapshot 2009-03-23-22-34 has been uploaded to
->>>>
->>>>    http://userweb.kernel.org/~akpm/mmotm/
->>>>
->>>> and will soon be available at
->>>>
->>>>    git://git.zen-sources.org/zen/mmotm.git
->>>>
->>>> It contains the following patches against 2.6.29-rc8:
->>>> fs-reiserfs-return-f_fsid-for-statfs2-v2.patch
->>> fs/built-in.o: In function `reiserfs_statfs':
->>> super.c:(.text+0x7332b): undefined reference to `crc32_le'
->>> super.c:(.text+0x7333f): undefined reference to `crc32_le'
->>>
->> Hmm, it should not be. The v2 patch includes linux/crc32.h, and I tested without
->> any error. Now I am downloading mmotm to verify.
-> 
-> CONFIG_CRC32=m
-> 
-> Since reiserfs is built into the kernel image (CONFIG_REISERFS=y),
-> CONFIG_CRC32 also needs to be =y.
-> Probably just add
-> 	select CRC32
-> 	select BITREVERSE
-> to the REISERFS_FS kconfig entry.
-> 
-Oh, I thought of that, yeah, I will send another patch for the fix.
-Thanks for pointing out this :)
+The patch was tested with v4l-test 0.10 [2] with gspca_sunplus driver and
+with Trust 610 LCD POWERC@M ZOOM webcam.
 
->> BTW, from series file of mmotm, I see two version patches,
->> fs-reiserfs-return-f_fsid-for-statfs2.patch
->> fs-reiserfs-return-f_fsid-for-statfs2-v2.patch
->> are all included. I suspect whether this is a proper behavior.
-> 
-> The v2 patch mostly replaces the first one.  I don't see a
-> problem with them.
-> 
-Interesting, don't know how it works so well ;))
+References:
+[1] V4L2 API specification, revision 0.24
+    http://v4l2spec.bytesex.org/spec/r8242.htm
 
+[2] v4l-test: Test environment for Video For Linux Two API
+    http://v4l-test.sourceforge.net/
 
--- 
-Coly Li
-SuSE Labs
+Signed-off-by: Márton Németh <nm127@freemail.hu>
+---
+--- linux-2.6.29/drivers/media/video/v4l2-ioctl.c.orig	2009-03-24 00:12:14.000000000 +0100
++++ linux-2.6.29/drivers/media/video/v4l2-ioctl.c	2009-03-25 17:11:27.000000000 +0100
+@@ -1363,9 +1363,13 @@ static long __video_do_ioctl(struct file
+ 	case VIDIOC_ENUMAUDIO:
+ 	{
+ 		struct v4l2_audio *p = arg;
++		__u32 index = p->index;
+
+ 		if (!ops->vidioc_enumaudio)
+ 			break;
++
++		memset(p, 0, sizeof(*p));
++		p->index = index;
+ 		ret = ops->vidioc_enumaudio(file, fh, p);
+ 		if (!ret)
+ 			dbgarg(cmd, "index=%d, name=%s, capability=0x%x, "
