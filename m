@@ -1,291 +1,215 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753642AbZCYVHp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755119AbZCYVIB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753642AbZCYVHp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 17:07:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752974AbZCYVGn
+	id S1755119AbZCYVIB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 17:08:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753295AbZCYVGn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Wed, 25 Mar 2009 17:06:43 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:50565 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752098AbZCYVGk (ORCPT
+Received: from casper.infradead.org ([85.118.1.10]:40117 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751068AbZCYVGl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 17:06:40 -0400
-Message-Id: <20090325210542.293237509@chello.nl>
+	Wed, 25 Mar 2009 17:06:41 -0400
+Message-Id: <20090325210542.201764923@chello.nl>
 References: <20090325210419.408653980@chello.nl>
 User-Agent: quilt/0.46-1
-Date: Wed, 25 Mar 2009 22:04:21 +0100
+Date: Wed, 25 Mar 2009 22:04:20 +0100
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
 Cc: Paul Mackerras <paulus@samba.org>, Mike Galbraith <efault@gmx.de>,
        Arjan van de Ven <arjan@infradead.org>,
        Wu Fengguang <fengguang.wu@intel.com>,
        Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: [RFC][PATCH 2/3] perf_counter: executable mmap() information
-Content-Disposition: inline; filename=perf_counter-mmap-tracking.patch
+Subject: [RFC][PATCH 1/3] perf_counter: event overlow handling
+Content-Disposition: inline; filename=perf_counter-mmap-write.patch
 X-Bad-Reply: References but no 'Re:' in Subject.
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Currently the profiling information returns userspace IPs but now way
-to correlate them to userspace code. Userspace could look into
-/proc/$pid/maps but that might not be current or even present anymore
-at the time of analyzing the IPs.
+Alternative method of mmap() data output handling that provides better
+overflow management.
 
-Therefore provide means to track the mmap information and provide it
-in the output stream.
+Unlike the previous method, that didn't have any user->kernel
+feedback and relied on userspace keeping up, this method relies on
+userspace writing its last read position into the control page. 
 
-XXX: only covers mmap()/munmap(), mremap() and mprotect() are missing.
+It will ensure new output doesn't overwrite not-yet read events, new
+events for which there is no space left are lost and the overflow
+counter is incremented, providing exact event loss numbers.
+
+Untested -- not sure its really worth the overhead, the most important
+thing to know is _if_ you're loosing data, either method allows for
+that.
 
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 ---
- include/linux/perf_counter.h |   22 ++++++-
- kernel/perf_counter.c        |  135 +++++++++++++++++++++++++++++++++++++++++++
- mm/mmap.c                    |   10 +++
- 3 files changed, 166 insertions(+), 1 deletion(-)
+ include/linux/perf_counter.h |    4 ++
+ kernel/perf_counter.c        |   69 ++++++++++++++++++++++++++++++++++++++-----
+ 2 files changed, 66 insertions(+), 7 deletions(-)
 
 Index: linux-2.6/include/linux/perf_counter.h
 ===================================================================
 --- linux-2.6.orig/include/linux/perf_counter.h
 +++ linux-2.6/include/linux/perf_counter.h
-@@ -137,7 +137,9 @@ struct perf_counter_hw_event {
- 				exclude_kernel :  1, /* ditto kernel          */
- 				exclude_hv     :  1, /* ditto hypervisor      */
- 				exclude_idle   :  1, /* don't count when idle */
--				include_tid    :  1, /* include the tid */
-+				include_tid    :  1, /* include the tid       */
-+				mmap           :  1, /* include mmap data     */
-+				munmap         :  1, /* include munmap data   */
+@@ -165,6 +165,8 @@ struct perf_counter_mmap_page {
+ 	__s64	offset;			/* add to hardware counter value */
  
- 				__reserved_1   : 54;
- 
-@@ -178,6 +180,9 @@ enum perf_event_type {
- 	PERF_EVENT_IP		= 0,
- 	PERF_EVENT_GROUP	= 1,
- 
-+	PERF_EVENT_MMAP		= 2,
-+	PERF_EVENT_MUNMAP	= 3,
-+
- 	__PERF_EVENT_TID	= 0x100,
+ 	__u32   data_head;		/* head in the data section */
++	__u32	data_tail;		/* user-space written tail */
++	__u32	overflow;		/* number of lost events */
  };
  
-@@ -456,6 +461,12 @@ static inline int is_software_counter(st
- 
- extern void perf_swcounter_event(u32, u64, int, struct pt_regs *);
- 
-+extern void perf_counter_mmap(unsigned long addr, unsigned long len,
-+			      unsigned long pgoff, struct file *file);
-+
-+extern void perf_counter_munmap(unsigned long addr, unsigned long len,
-+				unsigned long pgoff, struct file *file);
-+
- #else
- static inline void
- perf_counter_task_sched_in(struct task_struct *task, int cpu)		{ }
-@@ -475,6 +486,15 @@ static inline int perf_counter_task_enab
- 
- static inline void perf_swcounter_event(u32 event, u64 nr,
- 					int nmi, struct pt_regs *regs)	{ }
-+
-+static inline void perf_counter_mmap(unsigned long addr, unsigned long len,
-+				     unsigned long pgoff, struct file *file)
-+{ }
-+
-+static inline void perf_counter_munmap(unsigned long addr, unsigned long len,
-+				       unsigned long pgoff, struct file *file)
-+{ }
-+
- #endif
- 
- #endif /* __KERNEL__ */
+ struct perf_event_header {
+@@ -269,8 +271,10 @@ struct file;
+ struct perf_mmap_data {
+ 	struct rcu_head			rcu_head;
+ 	int				nr_pages;
++	int				writable;
+ 	atomic_t			wakeup;
+ 	atomic_t			head;
++	atomic_t			overflow;
+ 	struct perf_counter_mmap_page   *user_page;
+ 	void 				*data_pages[0];
+ };
 Index: linux-2.6/kernel/perf_counter.c
 ===================================================================
 --- linux-2.6.orig/kernel/perf_counter.c
 +++ linux-2.6/kernel/perf_counter.c
-@@ -25,6 +25,7 @@
- #include <linux/anon_inodes.h>
- #include <linux/kernel_stat.h>
- #include <linux/perf_counter.h>
-+#include <linux/dcache.h>
+@@ -1330,6 +1330,7 @@ static void __perf_counter_update_userpa
+ 		userpg->offset -= atomic64_read(&counter->hw.prev_count);
  
- #include <asm/irq_regs.h>
- 
-@@ -1778,6 +1779,140 @@ void perf_counter_output(struct perf_cou
+ 	userpg->data_head = atomic_read(&data->head);
++	userpg->overflow = atomic_read(&data->overflow);
+ 	smp_wmb();
+ 	++userpg->lock;
+ 	preempt_enable();
+@@ -1375,6 +1376,30 @@ unlock:
+ 	return ret;
  }
  
- /*
-+ * mmap tracking
-+ */
-+
-+struct perf_mmap_event {
-+	struct file	*file;
-+	char		*file_name;
-+	int		file_size;
-+
-+	struct {
-+		struct perf_event_header	header;
-+
-+		u32				pid;
-+		u32				tid;
-+		u64				start;
-+		u64				len;
-+		u64				pgoff;
-+	} event;
-+};
-+
-+static void perf_counter_mmap_output(struct perf_counter *counter,
-+				     struct perf_mmap_event *mmap_event)
++static int perf_mmap_mkwrite(struct vm_area_struct *vma, struct page *page)
 +{
-+	struct perf_output_handle handle;
-+	int size = mmap_event->event.header.size;
-+	int ret = perf_output_begin(&handle, counter, size);
++	struct perf_counter *counter = vma->vm_file->private_data;
++	struct perf_mmap_data *data;
++	int ret = -EINVAL;
 +
-+	if (ret)
-+		return;
++	rcu_read_lock();
++	data = rcu_dereference(counter->data);
++	if (!data)
++		goto unlock;
 +
-+	perf_output_put(&handle, mmap_event->event);
-+	perf_output_copy(&handle, mmap_event->file_name,
-+				   mmap_event->file_size);
-+	perf_output_end(&handle, 0);
++	/*
++	 * Only allow writes to the control page.
++	 */
++	if (page != virt_to_page(data->user_page))
++		goto unlock;
++
++	ret = 0;
++unlock:
++	rcu_read_unlock();
++
++	return ret;
 +}
 +
-+static int perf_counter_mmap_match(struct perf_counter *counter,
-+				   struct perf_mmap_event *mmap_event)
-+{
-+	if (counter->hw_event.mmap &&
-+	    mmap_event->event.header.type == PERF_EVENT_MMAP)
-+		return 1;
+ static int perf_mmap_data_alloc(struct perf_counter *counter, int nr_pages)
+ {
+ 	struct perf_mmap_data *data;
+@@ -1463,6 +1488,7 @@ static struct vm_operations_struct perf_
+ 	.open = perf_mmap_open,
+ 	.close = perf_mmap_close,
+ 	.fault = perf_mmap_fault,
++	.page_mkwrite = perf_mmap_mkwrite,
+ };
+ 
+ static int perf_mmap(struct file *file, struct vm_area_struct *vma)
+@@ -1473,7 +1499,7 @@ static int perf_mmap(struct file *file, 
+ 	unsigned long locked, lock_limit;
+ 	int ret = 0;
+ 
+-	if (!(vma->vm_flags & VM_SHARED) || (vma->vm_flags & VM_WRITE))
++	if (!(vma->vm_flags & VM_SHARED))
+ 		return -EINVAL;
+ 
+ 	vma_size = vma->vm_end - vma->vm_start;
+@@ -1503,16 +1529,19 @@ static int perf_mmap(struct file *file, 
+ 
+ 	mutex_lock(&counter->mmap_mutex);
+ 	if (atomic_inc_not_zero(&counter->mmap_count))
+-		goto out;
++		goto unlock;
+ 
+ 	WARN_ON(counter->data);
+ 	ret = perf_mmap_data_alloc(counter, nr_pages);
+-	if (!ret)
+-		atomic_set(&counter->mmap_count, 1);
+-out:
++	if (ret)
++		goto unlock;
 +
-+	if (counter->hw_event.munmap &&
-+	    mmap_event->event.header.type == PERF_EVENT_MUNMAP)
++	atomic_set(&counter->mmap_count, 1);
++	if (vma->vm_flags & VM_WRITE)
++		counter->data->writable = 1;
++unlock:
+ 	mutex_unlock(&counter->mmap_mutex);
+ 
+-	vma->vm_flags &= ~VM_MAYWRITE;
+ 	vma->vm_flags |= VM_RESERVED;
+ 	vma->vm_ops = &perf_mmap_vmops;
+ 
+@@ -1540,6 +1569,28 @@ struct perf_output_handle {
+ 	int			wakeup;
+ };
+ 
++static int perf_output_overflow(struct perf_mmap_data *data,
++				unsigned int offset, unsigned int head)
++{
++	unsigned int tail;
++	unsigned int mask;
++
++	if (!data->writable)
++		return 0;
++
++	mask = (data->nr_pages << PAGE_SHIFT) - 1;
++	smp_rmb();
++	tail = ACCESS_ONCE(data->user_page->data_tail);
++
++	offset = (offset - tail) & mask;
++	head   = (head   - tail) & mask;
++
++	if ((int)(head - offset) < 0)
 +		return 1;
 +
 +	return 0;
 +}
 +
-+static void perf_counter_mmap_ctx(struct perf_counter_context *ctx,
-+				  struct perf_mmap_event *mmap_event)
-+{
-+	struct perf_counter *counter;
-+
-+	if (system_state != SYSTEM_RUNNING || list_empty(&ctx->event_list))
-+		return;
-+
-+	rcu_read_lock();
-+	list_for_each_entry_rcu(counter, &ctx->event_list, event_entry) {
-+		if (perf_counter_mmap_match(counter, mmap_event))
-+			perf_counter_mmap_output(counter, mmap_event);
-+	}
-+	rcu_read_unlock();
-+}
-+
-+static void perf_counter_mmap_event(struct perf_mmap_event *mmap_event)
-+{
-+	struct perf_cpu_context *cpuctx;
-+	struct file *file = mmap_event->file;
-+	unsigned int size;
-+	char *buf = NULL;
-+	char *name;
-+
-+	if (file) {
-+		name = kzalloc(PATH_MAX, GFP_KERNEL);
-+		name = dentry_path(file->f_dentry, name, PATH_MAX);
-+		if (IS_ERR(name))
-+			name = "//toolong\0\0\0\0\0\0\0";
-+	} else
-+		name = "//anon\0\0";
-+
-+	size = ALIGN(strlen(name), sizeof(u64));
-+
-+	mmap_event->file_name = name;
-+	mmap_event->file_size = size;
-+
-+	mmap_event->event.header.size = sizeof(mmap_event->event) + size;
-+
-+	cpuctx = &get_cpu_var(perf_cpu_context);
-+	perf_counter_mmap_ctx(&cpuctx->ctx, mmap_event);
-+	put_cpu_var(perf_cpu_context);
-+
-+	perf_counter_mmap_ctx(&current->perf_counter_ctx, mmap_event);
-+
-+	kfree(buf);
-+}
-+
-+void perf_counter_mmap(unsigned long addr, unsigned long len,
-+		       unsigned long pgoff, struct file *file)
-+{
-+	struct perf_mmap_event mmap_event = {
-+		.file   = file,
-+		.event  = {
-+			.header = { .type = PERF_EVENT_MMAP, },
-+			.pid	= current->group_leader->pid,
-+			.tid	= current->pid,
-+			.start  = addr,
-+			.len    = len,
-+			.pgoff  = pgoff,
-+		},
-+	};
-+
-+	perf_counter_mmap_event(&mmap_event);
-+}
-+
-+void perf_counter_munmap(unsigned long addr, unsigned long len,
-+			 unsigned long pgoff, struct file *file)
-+{
-+	struct perf_mmap_event mmap_event = {
-+		.file   = file,
-+		.event  = {
-+			.header = { .type = PERF_EVENT_MUNMAP, },
-+			.pid	= current->group_leader->pid,
-+			.tid	= current->pid,
-+			.start  = addr,
-+			.len    = len,
-+			.pgoff  = pgoff,
-+		},
-+	};
-+
-+	perf_counter_mmap_event(&mmap_event);
-+}
-+
-+/*
-  * Generic software counter infrastructure
-  */
+ static int perf_output_begin(struct perf_output_handle *handle,
+ 			     struct perf_counter *counter, unsigned int size)
+ {
+@@ -1552,11 +1603,13 @@ static int perf_output_begin(struct perf
+ 		goto out;
  
-Index: linux-2.6/mm/mmap.c
-===================================================================
---- linux-2.6.orig/mm/mmap.c
-+++ linux-2.6/mm/mmap.c
-@@ -27,6 +27,7 @@
- #include <linux/mempolicy.h>
- #include <linux/rmap.h>
- #include <linux/mmu_notifier.h>
-+#include <linux/perf_counter.h>
+ 	if (!data->nr_pages)
+-		goto out;
++		goto fail;
  
- #include <asm/uaccess.h>
- #include <asm/cacheflush.h>
-@@ -1219,6 +1220,9 @@ munmap_back:
- 	if (correct_wcount)
- 		atomic_inc(&inode->i_writecount);
- out:
-+	if (vm_flags & VM_EXEC)
-+		perf_counter_mmap(addr, len, pgoff, file);
-+
- 	mm->total_vm += len >> PAGE_SHIFT;
- 	vm_stat_account(mm, vm_flags, file, len >> PAGE_SHIFT);
- 	if (vm_flags & VM_LOCKED) {
-@@ -1752,6 +1756,12 @@ static void remove_vma_list(struct mm_st
  	do {
- 		long nrpages = vma_pages(vma);
+ 		offset = head = atomic_read(&data->head);
+ 		head += size;
++		if (unlikely(perf_output_overflow(data, offset, head)))
++			goto fail;
+ 	} while (atomic_cmpxchg(&data->head, offset, head) != offset);
  
-+		if (vma->vm_flags & VM_EXEC) {
-+			perf_counter_munmap(vma->vm_start,
-+					nrpages << PAGE_SIZE,
-+					vma->vm_pgoff, vma->vm_file);
-+		}
-+
- 		mm->total_vm -= nrpages;
- 		vm_stat_account(mm, vma->vm_flags, vma->vm_file, -nrpages);
- 		vma = remove_vma(vma);
+ 	handle->counter	= counter;
+@@ -1567,6 +1620,8 @@ static int perf_output_begin(struct perf
+ 
+ 	return 0;
+ 
++fail:
++	atomic_inc(&data->overflow);
+ out:
+ 	rcu_read_unlock();
+ 
 
 -- 
 
