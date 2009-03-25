@@ -1,130 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761478AbZCYNYn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759605AbZCYNYU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761478AbZCYNYn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 09:24:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757034AbZCYNYa
+	id S1759605AbZCYNYU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 09:24:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758359AbZCYNYE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 09:24:30 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:37187 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757807AbZCYNY3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 09:24:29 -0400
-Date: Wed, 25 Mar 2009 09:24:25 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: "K.Prasad" <prasad@linux.vnet.ibm.com>
-cc: Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Benjamin Herrenschmidt <benh@au1.ibm.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>, maneesh@linux.vnet.ibm.com,
-       Roland McGrath <roland@redhat.com>
-Subject: Re: [Patch 11/11] ftrace plugin for kernel symbol tracing using HW
- Breakpoint interfaces - v3
-In-Reply-To: <20090325063517.GA5825@in.ibm.com>
-Message-ID: <alpine.DEB.2.00.0903250923340.5675@gandalf.stny.rr.com>
-References: <20090324152028.754123712@K.Prasad> <20090324152811.GL17918@in.ibm.com> <20090325063517.GA5825@in.ibm.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Wed, 25 Mar 2009 09:24:04 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:40864 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756833AbZCYNYB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Mar 2009 09:24:01 -0400
+Date: Wed, 25 Mar 2009 09:20:56 -0400
+From: Jason Baron <jbaron@redhat.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>, Steven Rostedt <rostedt@goodmis.org>,
+       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Greg Banks <gnb@sgi.com>
+Subject: Re: [PATCH 58/61] dynamic debug: combine dprintk and dynamic printk
+Message-ID: <20090325132056.GA15440@redhat.com>
+References: <20090325001659.GA22461@kroah.com> <1237940825-22904-58-git-send-email-gregkh@suse.de> <20090325105023.GL2341@elte.hu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090325105023.GL2341@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Wed, 25 Mar 2009, K.Prasad wrote:
-
-> On Tue, Mar 24, 2009 at 08:58:11PM +0530, K.Prasad wrote:
-> > This patch adds an ftrace plugin to detect and profile memory access over
-> > kernel variables. It uses HW Breakpoint interfaces to 'watch memory
-> > addresses.
+On Wed, Mar 25, 2009 at 11:50:23AM +0100, Ingo Molnar wrote:
+> * Greg Kroah-Hartman <gregkh@suse.de> wrote:
+> 
+> > From: Jason Baron <jbaron@redhat.com>
 > > 
-> > Signed-off-by: K.Prasad <prasad@linux.vnet.ibm.com> 
-> > ---
-> >  kernel/trace/Kconfig          |   21 +
-> >  kernel/trace/Makefile         |    1 
-> >  kernel/trace/trace.h          |   25 +
-> >  kernel/trace/trace_ksym.c     |  555 ++++++++++++++++++++++++++++++++++++++++++
-> >  kernel/trace/trace_selftest.c |   36 ++
-> >  5 files changed, 638 insertions(+)
-> >
+> > This patch combines Greg Bank's dprintk() work with the existing 
+> > dynamic printk patchset, we are now calling it 'dynamic debug'.
+> > 
+> > The new feature of this patchset is a richer /debugfs control file 
+> > interface, (an example output from my system is at the bottom), 
+> > which allows fined grained control over the the debug output. The 
+> > output can be controlled by function, file, module, format string, 
+> > and line number.
 > 
-> Submitting the revised patch 11/11 and not reposting the entire
-> patchset.
+> Hm, dunno this overlaps quite a bit with existing tracing 
+> facilities.
 > 
-> Changelog
-> ---------
-> - Checking for the appropriate tracer type in the .print_line handler function
+> There seems to be serious consolidation potential here, if you want 
+> to reduce code and want to cooperate with existing tracing 
+> facilities.
 > 
-> Please find the new patch below.
-> 
-> Thanks,
-> K.Prasad
-> 
-> 
-> ftrace plugin for kernel symbol tracing using HW Breakpoint interfaces - v2
-> 
-> This patch adds an ftrace plugin to detect and profile memory access over
-> kernel variables. It uses HW Breakpoint interfaces to 'watch memory
-> addresses.
-> 
-> Signed-off-by: K.Prasad <prasad@linux.vnet.ibm.com> 
-> ---
->  kernel/trace/Kconfig          |   21 +
->  kernel/trace/Makefile         |    1 
->  kernel/trace/trace.h          |   25 +
->  kernel/trace/trace_ksym.c     |  558 ++++++++++++++++++++++++++++++++++++++++++
->  kernel/trace/trace_selftest.c |   36 ++
->  5 files changed, 641 insertions(+)
-> 
-> +static enum print_line_t ksym_trace_output(struct trace_iterator *iter)
-> +{
-> +	struct trace_entry *entry = iter->ent;
-> +	struct trace_seq *s = &iter->seq;
-> +	struct trace_ksym *field;
-> +	char str[KSYM_SYMBOL_LEN];
-> +	int ret;
-> +
-> +	if (entry->type != TRACE_KSYM)
-> +		return TRACE_TYPE_UNHANDLED;
 
-Looks good.
+we're definitely interested in consolidation...i had posted an optional
+flag for toggling to use trace_printk() instead of printk() before...
 
-Acked-by:Steven Rostedt <srostedt@redhat.com>
+> In particlar, this facility seems to be a subset of what is already 
+> possible via trace_printk(). We could make every dprintk() site show 
+> up in /debug/tracing/events/dprintk/, and make it possible to toggle 
+> them on/off individually.
+> 
+> Furthermore it would also be possible to use the user-defined per 
+> tracepoint filter expression facility. That way each dprintk site 
+> can be (optionally) tailored individually.
 
-Thanks,
+we currently can toggle them individually, but not by pid.
 
--- Steve
+> 
+> For example we could enable such use:
+> 
+>   echo 'pid == 1234' > /debug/tracing/events/dprintk/fs/lockd/svc4proc.c:71/filter
+>   echo 1             > /debug/tracing/events/dprintk/fs/lockd/svc4proc.c:71/enabled
+> 
+> To tailor the following dprintk() in fs/lockd/svc4proc.c (line 71):
+> 
+>   static __be32
+>   nlm4svc_proc_null(struct svc_rqst *rqstp, void *argp, void *resp)
+>   {
+>           dprintk("lockd: NULL          called\n");
+>           return rpc_success;
+>   }
+> 
+> To only be printed for PID 1234.
+> 
+> Per subsystem filters would be available too. The subsystem 
+> maintainers dont have to do anything but place dprintk() calls - 
+> they'll show up under /debug/tracing/events/dprintk/ automatically.
+> 
+> Would you be interested in this?
+> 
 
-> +
-> +	trace_assign_type(field, entry);
-> +
-> +	ret = trace_seq_printf(s, "%-15s %-5d %-3d %-20s ", field->p_name,
-> +				entry->pid, iter->cpu, field->ksym_name);
-> +	if (!ret)
-> +		return TRACE_TYPE_PARTIAL_LINE;
-> +
-> +	switch (field->ksym_hbp->info.type) {
-> +	case HW_BREAKPOINT_WRITE:
-> +		ret = trace_seq_printf(s, " W  ");
-> +		break;
-> +	case HW_BREAKPOINT_RW:
-> +		ret = trace_seq_printf(s, " RW ");
-> +		break;
-> +	default:
-> +		return TRACE_TYPE_PARTIAL_LINE;
-> +	}
-> +
-> +	if (!ret)
-> +		return TRACE_TYPE_PARTIAL_LINE;
-> +
-> +	sprint_symbol(str, field->ip);
-> +	ret = trace_seq_printf(s, "%-20s\n", str);
-> +	if (!ret)
-> +		return TRACE_TYPE_PARTIAL_LINE;
-> +
-> +	return TRACE_TYPE_HANDLED;
-> +}
-> +
+I don't think we want a tracepoint for each of these sites. note that
+this facility ties into 'pr_debug' and 'dev_debug' as well...however i
+think what you're suggesting is perhaps a new type of event that can
+handle this case. Instead of register/unregistering to enable the event,
+we can simply set a variable that is associated with each call site. is
+this what you are suggesting? If so, i think this would be a nice way to
+go...I would however, perhaps want an optional flag that makes these
+into printk() and not trace_printk() for certain situations...
+
+With respect to 2.6.30, I'm away next week, so maybe we can keep what we
+already have for 2.6.30, and look at this integration for 2.6.31?
+
+thanks,
+
+-Jason
+
