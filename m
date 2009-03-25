@@ -1,100 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763316AbZCYPxu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758806AbZCYPzX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763316AbZCYPxu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 11:53:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756694AbZCYPxj
+	id S1758806AbZCYPzX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 11:55:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756729AbZCYPzJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 11:53:39 -0400
-Received: from 82-117-125-11.tcdsl.calypso.net ([82.117.125.11]:60499 "EHLO
-	smtp.ossman.eu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756250AbZCYPxi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 11:53:38 -0400
-Date: Wed, 25 Mar 2009 16:53:28 +0100
-From: Pierre Ossman <drzeus@drzeus.cx>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Manuel Lauss <mano@roarinelk.homelinux.net>, linux-kernel@vger.kernel.org
-Subject: Re: MMC layer regression with single-block controllers
-Message-ID: <20090325165328.251daabb@mjolnir.ossman.eu>
-In-Reply-To: <20090325114248.GN27476@kernel.dk>
-References: <20090323092802.GA30122@roarinelk.homelinux.net>
-	<20090324210138.71029c2c@mjolnir.ossman.eu>
-	<20090325104837.GA18389@roarinelk.homelinux.net>
-	<20090325110401.GM27476@kernel.dk>
-	<20090325123613.06404b17@mjolnir.ossman.eu>
-	<20090325114248.GN27476@kernel.dk>
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.15.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=PGP-SHA1; protocol="application/pgp-signature"; boundary="=_freyr.ossman.eu-28722-1237996412-0001-2"
+	Wed, 25 Mar 2009 11:55:09 -0400
+Received: from hera.kernel.org ([140.211.167.34]:48426 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755979AbZCYPzI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Mar 2009 11:55:08 -0400
+Date: Wed, 25 Mar 2009 15:54:27 GMT
+From: Ingo Molnar <mingo@elte.hu>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       penberg@cs.helsinki.fi, eduard.munteanu@linux360.ro, tglx@linutronix.de,
+       mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       penberg@cs.helsinki.fi, eduard.munteanu@linux360.ro, tglx@linutronix.de,
+       mingo@elte.hu
+In-Reply-To: <1237898630.25315.83.camel@penberg-laptop>
+References: <1237898630.25315.83.camel@penberg-laptop>
+Subject: [tip:tracing/kmemtrace] fs, kmemtrace: fix fs.h's PAGE_SIZE dependency
+Message-ID: <tip-55553d2b7c253a1d676596fee680412727d84bc4@git.kernel.org>
+Git-Commit-ID: 55553d2b7c253a1d676596fee680412727d84bc4
+X-Mailer: tip-git-log-daemon
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 25 Mar 2009 15:54:29 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a MIME-formatted message.  If you see this text it means that your
-E-mail software does not support MIME-formatted messages.
+Commit-ID:  55553d2b7c253a1d676596fee680412727d84bc4
+Gitweb:     http://git.kernel.org/tip/55553d2b7c253a1d676596fee680412727d84bc4
+Author:     Ingo Molnar <mingo@elte.hu>
+AuthorDate: Wed, 25 Mar 2009 16:48:35 +0100
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Wed, 25 Mar 2009 16:50:47 +0100
 
---=_freyr.ossman.eu-28722-1237996412-0001-2
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+fs, kmemtrace: fix fs.h's PAGE_SIZE dependency
 
-On Wed, 25 Mar 2009 12:42:48 +0100
-Jens Axboe <jens.axboe@oracle.com> wrote:
+Impact: build fix
 
-> On Wed, Mar 25 2009, Pierre Ossman wrote:
-> >=20
-> > That's an annoying limitation and sort of defeats the purpose of
-> > specifying a maximum sector count. Why can't it go below 8?
->=20
-> Because it would add all sorts of complexity for handling 4kb block size
-> file systems on top of the block device. The bio_add_page() api depends
-> on being able to add a single page at least, it has to or you would need
-> to push that complexity to the callers.
->=20
+ARM does not build due to fs.h using PAGE_SIZE but not including
+asm/page.h.
 
-Requests going in into the block layer and requests coming out aren't
-that strongly coupled, so I don't see it of that much of a stretch to
-expect this to be handled.
+(This was masked before by rcupreempt.h including percpu.h which
+brought in asm/page.h indirectly.)
 
-> So it's annoying, but you have to do the incremental completions
-> yourself for the (obscure) device that doesn't do more than 512b
-> transfers. It's really not that difficult, and it would be simpler than
-> supporting partial completions generically in the block layer.
+( A future enhancement would be to split out the simple_transaction
+  facility (only two usage sites) from fs.h, into a separate
+  linux/simple_transaction.h header. )
 
-The code was there previously, but it seemed a bit redundant to have
-functionality like that in the block driver since we've already told
-the block layer about the restrictions.
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
+Cc: paulmck@linux.vnet.ibm.com
+LKML-Reference: <1237898630.25315.83.camel@penberg-laptop>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
-The code was pretty simple. Basically it just cropped the sg list at
-the correct place. Couldn't that be as easily done in the block layer?
 
->=20
-> Saying that it defeats the purpose of the setting is missing the bigger
-> picture - basically all other devices, that have sane limits (like 128k,
-> or whatnot).
->=20
+---
+ include/linux/fs.h |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
 
-I suppose. But it makes the feature completely useless for MMC as it
-has to implement it's own cropping of requests anyway.
-
-Rgds
---=20
-     -- Pierre Ossman
-
-  WARNING: This correspondence is being monitored by the
-  Swedish government. Make sure your server uses encryption
-  for SMTP traffic and consider using PGP for end-to-end
-  encryption.
-
---=_freyr.ossman.eu-28722-1237996412-0001-2
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.11 (GNU/Linux)
-
-iEYEARECAAYFAknKU3oACgkQ7b8eESbyJLiuDgCgxqVjrbesmriJNYGmxOwEBguP
-XBYAnjsRFGWMEN6p3I4r3hroOQRwrswv
-=kRpR
------END PGP SIGNATURE-----
-
---=_freyr.ossman.eu-28722-1237996412-0001-2--
+diff --git a/include/linux/fs.h b/include/linux/fs.h
+index 159f7b8..79be937 100644
+--- a/include/linux/fs.h
++++ b/include/linux/fs.h
+@@ -9,6 +9,8 @@
+ #include <linux/limits.h>
+ #include <linux/ioctl.h>
+ 
++#include <asm/page.h> /* for PAGE_SIZE */
++
+ /*
+  * It's silly to have NR_OPEN bigger than NR_FILE, but you can change
+  * the file limit at runtime and only root can increase the per-process
