@@ -1,98 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757202AbZCYC2p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756824AbZCYCbg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757202AbZCYC2p (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 22:28:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755113AbZCYC2f
+	id S1756824AbZCYCbg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 22:31:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752681AbZCYCb2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 22:28:35 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:62822 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1752681AbZCYC2f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 22:28:35 -0400
-Message-ID: <7867D4500D2F4CFFB36A9EA93C0DC2D5@zhaoleiwin>
-From: "Zhaolei" <zhaolei@cn.fujitsu.com>
-To: "Steven Rostedt" <rostedt@goodmis.org>
-Cc: "Ingo Molnar" <mingo@elte.hu>, <linux-kernel@vger.kernel.org>
-References: <49BA23D9.1050900@cn.fujitsu.com> <20090313092558.GD2571@elte.hu> <18199AAD941A4071B7FD8A0D6C67733A@zhaoleiwin> <alpine.DEB.2.00.0903241152020.22830@gandalf.stny.rr.com>
-Subject: Re: [PATCH] ftrace: Avoid double-free of dyn_ftrace
-Date: Wed, 25 Mar 2009 10:25:47 +0800
+	Tue, 24 Mar 2009 22:31:28 -0400
+Received: from yw-out-2324.google.com ([74.125.46.30]:20583 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751752AbZCYCb1 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Mar 2009 22:31:27 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=BIK5lhk8nW5qIh7AlbuSqsMhYtxuuZ3VXvUnK7Gx+XgaF+IuyqI8CPBnO+Ckysrpbx
+         hwfxB+CNXI3BDsey869iIvxzhYRNSjHgiPgRelAYQLEfcT8IHvtlkc1Q3iTeWm6AGRFV
+         3LzgGlFXJoIlJE4K7ZR7tyRXL9FEFOqYX0sWM=
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="ISO-8859-1"
-X-Priority: 3
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook Express 6.00.2900.5512
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.5579
+In-Reply-To: <1237929168-15341-5-git-send-email-stoyboyker@gmail.com>
+References: <1237929168-15341-5-git-send-email-stoyboyker@gmail.com>
+Date: Tue, 24 Mar 2009 22:31:25 -0400
+Message-ID: <8bd0f97a0903241931r6ecba9dwc64bb803319efea4@mail.gmail.com>
+Subject: Re: [PATCH 04/13] [blackfin] changed ioctls to unlocked
+From: Mike Frysinger <vapier.adi@gmail.com>
+To: stoyboyker@gmail.com
+Cc: linux-kernel@vger.kernel.org, cooloney@kernel.org,
+       uclinux-dist-devel@blackfin.uclinux.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id n2P2Slqu029371
 
-* From: "Steven Rostedt" <rostedt@goodmis.org>
-> On Fri, 13 Mar 2009, Zhaolei wrote:
-> 
->> * From: "Ingo Molnar" <mingo@elte.hu>
->> > 
->> > * Zhaolei <zhaolei@cn.fujitsu.com> wrote:
->> > 
->> >> If dyn_ftrace is free before ftrace_release(), 
->> >> ftrace_release() will free it again and make 
->> >> ftrace_free_records wrong.
->> >> 
->> >> Signed-off-by: Zhao Lei <zhaolei@cn.fujitsu.com>
->> >> ---
->> >>  kernel/trace/ftrace.c |    3 ++-
->> >>  1 files changed, 2 insertions(+), 1 deletions(-)
->> >> 
->> >> diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
->> >> index d33d306..26c45aa 100644
->> >> --- a/kernel/trace/ftrace.c
->> >> +++ b/kernel/trace/ftrace.c
->> >> @@ -356,7 +356,8 @@ void ftrace_release(void *start, unsigned long size)
->> >>  
->> >>  mutex_lock(&ftrace_lock);
->> >>  do_for_each_ftrace_rec(pg, rec) {
->> >> - if ((rec->ip >= s) && (rec->ip < e))
->> >> + if ((rec->ip >= s) && (rec->ip < e) &&
->> >> +     !(rec->flags & FTRACE_FL_FREE))
->> >>  ftrace_free_rec(rec);
->> > 
->> > Applied to tip:tracing/ftrace, thanks!
->> > 
->> > I'm wondering, did you trigger this in practice (if yes, how?), 
->> > or have you found it via code review?
->> Hello, Ingo
->> 
->> It is found via code review.
-> 
-> Hmm, could you explain this more. I'm thinking that this scenario should 
-> not happen, and if it does, it should probably be a bug.
-> 
-> Because when we call ftrace_free_rec we change the rec->ip to point to the 
-> next record in the chain. Something is very wrong if rec->ip >= s && 
-> rec->ip < e and the record is already free.
-Hello, Steven
+On Tue, Mar 24, 2009 at 17:12,  <stoyboyker@gmail.com> wrote:
+> --- a/arch/blackfin/mach-bf561/coreb.c
+> +++ b/arch/blackfin/mach-bf561/coreb.c
+> @@ -220,9 +220,10 @@ static int coreb_release(struct inode *inode, struct file *file)
+> Â  Â  Â  Â return 0;
+> Â }
+>
+> -static int coreb_ioctl(struct inode *inode, struct file *file,
+> - Â  Â  Â  Â  Â  Â  Â  Â  Â  Â  Â unsigned int cmd, unsigned long arg)
+> +static long coreb_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
+> Â {
+> + Â  Â  Â  lock_kernel();
+> +
+> Â  Â  Â  Â int retval = 0;
+> Â  Â  Â  Â int coreb_index = 0;
+>
+> @@ -289,6 +290,7 @@ static int coreb_ioctl(struct inode *inode, struct file *file,
+> Â #endif
+> Â  Â  Â  Â }
+>
+> + Â  Â  Â  unlock_kernel();
+> Â  Â  Â  Â return retval;
+> Â }
 
-Thanks for your comment.
-I got your meaning, and I agree that if rec->ip >= s && rec->ip < e,
-this record is not freed.
-But IMHO, "if rec->ip >= s && rec->ip < e" is used to select records in the module,
-and function of ignore "freed record" is only its side-effect.
-So, add a special judgement to avoid "freed record" is not a bad idea.
-And I also agree your suggestion of add a WARN_ON, because this should not happened.
-
-B.R.
-Zhaolei
-
-> 
-> We can add a:
-> 
-> WARN_ON(rec->flags & FTRACE_FL_FREE);
-> 
-> in ftrace_free_rec if you are worried about this happening.
-> 
-> -- Steve
-> 
-> 
->ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
+there is no need to lock the kernel in here.  people have asked in the
+past and we've told them that it's pointless.  simply change it to use
+unlocked_ioctl.
+-mike
