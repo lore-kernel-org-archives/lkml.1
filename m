@@ -1,88 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756939AbZCYUgw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755243AbZCYUny@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756939AbZCYUgw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 16:36:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753786AbZCYUgm
+	id S1755243AbZCYUny (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 16:43:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752337AbZCYUnp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 16:36:42 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:40845 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752727AbZCYUgl (ORCPT
+	Wed, 25 Mar 2009 16:43:45 -0400
+Received: from extu-mxob-1.symantec.com ([216.10.194.28]:50577 "EHLO
+	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752098AbZCYUno (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 16:36:41 -0400
-Date: Wed, 25 Mar 2009 14:36:24 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Christoph Hellwig <hch@infradead.org>, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org
-Subject: Re: [PATCH] Add a 'wait-scan' command to /proc/scsi/scsi.
-Message-ID: <20090325203624.GT14127@parisc-linux.org>
-References: <1238007647-25752-1-git-send-email-notting@redhat.com> <20090325190137.GA8509@infradead.org> <20090325190321.GB25176@nostromo.devel.redhat.com> <20090325192653.GS14127@parisc-linux.org> <20090325194756.GA26465@nostromo.devel.redhat.com>
+	Wed, 25 Mar 2009 16:43:44 -0400
+Date: Wed, 25 Mar 2009 20:41:17 +0000 (GMT)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.anvils
+To: Jens Axboe <jens.axboe@oracle.com>
+cc: Ric Wheeler <rwheeler@redhat.com>, Jeff Garzik <jeff@garzik.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Theodore Tso <tytso@mit.edu>, Ingo Molnar <mingo@elte.hu>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Nick Piggin <npiggin@suse.de>,
+       David Rees <drees76@gmail.com>, Jesper Krogh <jesper@krogh.cc>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.29
+In-Reply-To: <20090325195747.GC27476@kernel.dk>
+Message-ID: <Pine.LNX.4.64.0903252036130.8872@blonde.anvils>
+References: <20090324103111.GA26691@elte.hu> <20090324132032.GK5814@mit.edu>
+ <alpine.LFD.2.00.0903241053200.3032@localhost.localdomain>
+ <20090324184549.GE32307@mit.edu> <alpine.LFD.2.00.0903241218130.3032@localhost.localdomain>
+ <49C93AB0.6070300@garzik.org> <20090325093913.GJ27476@kernel.dk>
+ <49CA86BD.6060205@garzik.org> <20090325194341.GB27476@kernel.dk>
+ <49CA8ADA.3040709@redhat.com> <20090325195747.GC27476@kernel.dk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090325194756.GA26465@nostromo.devel.redhat.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 25, 2009 at 03:47:56PM -0400, Bill Nottingham wrote:
-> Matthew Wilcox (matthew@wil.cx) said: 
-> > On Wed, Mar 25, 2009 at 03:03:21PM -0400, Bill Nottingham wrote:
-> > > Then where is a better place to put this, as scsi_wait_scan.ko is
-> > > a ridiculous interface for userspace?
-> > 
-> > It would be nice if people would comment on "ridiculous interface"s when
-> > they're asked for feedback, instead of waiting more than two years.
+On Wed, 25 Mar 2009, Jens Axboe wrote:
+> On Wed, Mar 25 2009, Ric Wheeler wrote:
+> > Jens Axboe wrote:
+> >>
+> >> Another problem is that FLUSH_CACHE sucks. Really. And not just on
+> >> ext3/ordered, generally. Write a 50 byte file, fsync, flush cache and
+> >> wit for the world to finish. Pretty hard to teach people to use a nicer
+> >> fdatasync(), when the majority of the cost now becomes flushing the
+> >> cache of that 1TB drive you happen to have 8 partitions on. Good luck
+> >> with that.
+> >>   
+> > And, as I am sure that you do know, to add insult to injury, FLUSH_CACHE  
+> > is per device (not file system).
+> >
+> > When you issue an fsync() on a disk with multiple partitions, you will  
+> > flush the data for all of its partitions from the write cache....
 > 
-> Sure, but asking all people who might eventually have to use it
-> to always watch any possible interface addition isn't practical.
+> Exactly, that's what my (vague) 8 partition reference was for :-)
+> A range flush would be so much more palatable.
 
-Right.  I asked several people at Red Hat about the interface and I got a
-"yeah, OK, whatever" kind of response.  Clearly you need to educate your
-colleagues to pass these kinds of interface questions along to you.
+Tangential question, but am I right in thinking that BIO_RW_BARRIER
+similarly bars across all partitions, whereas its WRITE_BARRIER and
+DISCARD_BARRIER users would actually prefer it to apply to just one?
 
-> I would have hoped that the fact that the interface required loading
-> a module and immediately removing it by hand is suboptimal enough
-> that it wouldn't have gotten in in the first place.
-
-It seems pretty elegant to me, actually.  There's no overhead after
-you're done (unlike having a sysfs file, or even including a new ability
-in a procfs file).
-
-> > I think you're misunderstanding how to use scsi_wait_scan.  The idea was
-> > that the bit of userspace that probes all the device drivers would do:
-> > 
-> > modprobe fusion.ko
-> > modprobe aic79xx.ko
-> > modprobe sym53c8xx.ko
-> > modprobe scsi_wait_scan
-> > rmmod scsi_wait_scan
-> > 
-> > et voila, you're done.  It seems like you want random other bits of
-> > userspace to wait for scsi scanning to be done, and that wasn't the
-> > original intent.
-> 
-> Well, in the case I'm looking at, udev is what's loading the host
-> controllers, and there needs to be some sort of synchronization point
-> between that and LVM invocations, fsck, mount, etc. Since scans
-> aren't sent over as events for udev to catch, 'udevadm settle'
-> isn't enough.
-
-So ... if we sent a udev event when the scan list was empty, you'd be OK?
-
-> Removing, loading, and removing scsi_wait_scan works
-> here, but it just seems like a kludge.
-
-I don't quite understand why it was loaded, and not unloaded immediately.
-
-> I can trigger a load of scsi_wait_scan when hosts are registered
-> in udev, but that's still ugly, and sort of overkill.
-
-That would rather miss the point, yes.
-
--- 
-Matthew Wilcox				Intel Open Source Technology Centre
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+Hugh
