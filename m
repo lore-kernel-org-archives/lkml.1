@@ -1,75 +1,151 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760257AbZCYQwk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761624AbZCYQx3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760257AbZCYQwk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 12:52:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757563AbZCYQwK
+	id S1761624AbZCYQx3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 12:53:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761006AbZCYQwy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 12:52:10 -0400
-Received: from e9.ny.us.ibm.com ([32.97.182.139]:46973 "EHLO e9.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757332AbZCYQwI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 12:52:08 -0400
-Date: Wed, 25 Mar 2009 09:52:04 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+	Wed, 25 Mar 2009 12:52:54 -0400
+Received: from smtp-outbound-2.vmware.com ([65.115.85.73]:33667 "EHLO
+	smtp-outbound-2.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1761433AbZCYQww (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Mar 2009 12:52:52 -0400
+Subject: Re: [PATCH -tip] x86: move vmware to hypervisor
+From: Alok Kataria <akataria@vmware.com>
+Reply-To: akataria@vmware.com
 To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-tip-commits@vger.kernel.org, linux-kernel@vger.kernel.org,
-       hpa@zytor.com, mingo@redhat.com, penberg@cs.helsinki.fi,
-       eduard.munteanu@linux360.ro, tglx@linutronix.de
-Subject: Re: [tip:tracing/kmemtrace] rcutree: fix rcu_tree_trace.c data
-	structure dependencies
-Message-ID: <20090325165204.GG7297@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <1237898630.25315.83.camel@penberg-laptop> <tip-5d957021d326fbfdc1d7a4f11a3da1f6f82d6a36@git.kernel.org> <20090325161147.GA18738@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090325161147.GA18738@elte.hu>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+Cc: Jaswinder Singh Rajput <jaswinder@kernel.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, x86 maintainers <x86@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20090325125955.GB516@elte.hu>
+References: <1237281581.7907.2.camel@ht.satnam>
+	 <20090317093919.GD6477@elte.hu> <1237283318.7907.9.camel@ht.satnam>
+	 <49BFC6CB.9070603@zytor.com>
+	 <1237958994.5556.5.camel@localhost.localdomain>
+	 <20090325125955.GB516@elte.hu>
+Content-Type: text/plain
+Organization: VMware INC.
+Date: Wed, 25 Mar 2009 09:52:51 -0700
+Message-Id: <1237999971.32497.12.camel@alok-dev1>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.8.0 (2.8.0-40.el5_1.1) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 25, 2009 at 05:11:47PM +0100, Ingo Molnar wrote:
+On Wed, 2009-03-25 at 05:59 -0700, Ingo Molnar wrote:
+> * Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
 > 
-> * Ingo Molnar <mingo@elte.hu> wrote:
+> > On Tue, 2009-03-17 at 08:50 -0700, H. Peter Anvin wrote:
+> > > Jaswinder Singh Rajput wrote:
+> > > >> I dont really like this one. KVM is a hypervisor too, and so is 
+> > > >> Xen and lguest. VMware is one of the many types of a 
+> > > >> hypervisors.
+> > > > 
+> > > > Can we use common hypervisor for Xen, lguest, vmware, etc.
+> > > > And Xen, lguest, vmware will be the sub-options.
+> > > 
+> > > Obviously.  We spent a lot of time breaking up the cpu stuff into common
+> > > and vendor-specific portions, we shouldn't go backwards w.r.t. hypervisors.
+> > > 	
+> > 
+> > OK, agreed.
+> > 
+> > But atleast give freedom to users to disable this who are not willing to
+> > use it.
+> > 
+> > Currently hypervisor is used only used by VMWARE, so is I prepare this
+> > freedom patch:
+> > 
+> > From: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+> > Date: Wed, 25 Mar 2009 10:40:01 +0530
+> > Subject: [PATCH] x86: Introduce CONFIG_X86_VMWARE option
+> > 
+> > Impact: freedom to choose
+> > 
+> > Gives freedom to users to select or suppress CONFIG_X86_VMWARE option.
+> > 
+> > Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+> > ---
+> >  arch/x86/Kconfig                  |    7 +++++++
+> >  arch/x86/include/asm/hypervisor.h |    9 +++++++++
+> >  arch/x86/kernel/cpu/Makefile      |    2 +-
+> >  3 files changed, 17 insertions(+), 1 deletions(-)
+> > 
+> > diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+> > index f5d7d29..56e1a9c 100644
+> > --- a/arch/x86/Kconfig
+> > +++ b/arch/x86/Kconfig
+> > @@ -554,6 +554,13 @@ config HPET_EMULATE_RTC
+> >  	def_bool y
+> >  	depends on HPET_TIMER && (RTC=y || RTC=m || RTC_DRV_CMOS=m || RTC_DRV_CMOS=y)
+> >  
+> > +config X86_VMWARE
+> > +	bool
+> > +	default n
+> > +	prompt "X86 VMware support"
+> > +	---help---
+> > +	 Enable X86 VMware Hypervisor support.
+> > +
+> >  # Mark as embedded because too many people got it wrong.
+> >  # The code disables itself when not needed.
+> >  config DMI
+> > diff --git a/arch/x86/include/asm/hypervisor.h b/arch/x86/include/asm/hypervisor.h
+> > index 369f5c5..c08ae75 100644
+> > --- a/arch/x86/include/asm/hypervisor.h
+> > +++ b/arch/x86/include/asm/hypervisor.h
+> > @@ -20,7 +20,16 @@
+> >  #ifndef ASM_X86__HYPERVISOR_H
+> >  #define ASM_X86__HYPERVISOR_H
+> >  
+> > +#ifdef CONFIG_X86_VMWARE
+> >  extern unsigned long get_hypervisor_tsc_freq(void);
+> >  extern void init_hypervisor(struct cpuinfo_x86 *c);
+> > +#else
+> > +static inline unsigned long get_hypervisor_tsc_freq(void)
+> > +{
+> > +	return 0;
+> > +}
+> > +
+> > +static inline void init_hypervisor(struct cpuinfo_x86 *c) {}
+> > +#endif
+> >  
+> >  #endif
+> > diff --git a/arch/x86/kernel/cpu/Makefile b/arch/x86/kernel/cpu/Makefile
+> > index 3efcb2b..24372f7 100644
+> > --- a/arch/x86/kernel/cpu/Makefile
+> > +++ b/arch/x86/kernel/cpu/Makefile
+> > @@ -9,11 +9,11 @@ endif
+> >  
+> >  obj-y			:= intel_cacheinfo.o addon_cpuid_features.o
+> >  obj-y			+= proc.o capflags.o powerflags.o common.o
+> > -obj-y			+= vmware.o hypervisor.o
+> >  
+> >  obj-$(CONFIG_X86_32)	+= bugs.o cmpxchg.o
+> >  obj-$(CONFIG_X86_64)	+= bugs_64.o
+> >  
+> > +obj-$(CONFIG_X86_VMWARE)		+= vmware.o hypervisor.o
+> >  obj-$(CONFIG_X86_CPU_DEBUG)		+= cpu_debug.o
 > 
-> > Commit-ID:  5d957021d326fbfdc1d7a4f11a3da1f6f82d6a36
-> > Gitweb:     http://git.kernel.org/tip/5d957021d326fbfdc1d7a4f11a3da1f6f82d6a36
-> > Author:     Ingo Molnar <mingo@elte.hu>
-> > AuthorDate: Wed, 25 Mar 2009 16:42:24 +0100
-> > Committer:  Ingo Molnar <mingo@elte.hu>
-> > CommitDate: Wed, 25 Mar 2009 16:42:24 +0100
-> > 
-> > rcutree: fix rcu_tree_trace.c data structure dependencies
-> > 
-> > Impact: build fix
-> > 
-> > We removed rcutree internals from the public rcutree.h file - but
-> > kernel/rcutree_trace.c depends on them.
-> > 
-> > Introduce kernel/rcutree.h for internal definitions. (Probably all
-> > the other data types from include/linux/rcutree.h could be
-> > moved here too - except rcu_data.)
+> vmware can be considered a CPU here, so i think making the disabling 
+> also depend on PROCESSOR_SELECT.
+
+Ingo, this code is not just to be used by VMware, the reason we did this
+generically was so that a guest could run unaltered on *any* fully
+virtualized hypervisor.
+And give that this code is just a boot setup thing, the only thing this
+patch saves over here is not running the detection code on native
+systems. All the rest of the code is guarded by the
+"boot_cpu_data.x86_hyper_vendor" checks anyways.  
+
+I don't really see the point of adding one more config option just for
+this. 
+
+Thanks,
+Alok
+
+
 > 
-> Paul ... what do you think? This is just an interim measure to get 
-> the build going - i think we could do more cleanups here perhaps, if 
-> you agree.
+> 	Ingo
 
-I am generally in favor of this.  I reviewed the above gitweb and it
-looks good to me, feel free to append:
-
-Reviewed-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-
-> I think many of the data definitions (and the resulting include file 
-> dependencies) in include/linux/rcu*.h could move into kernel/rcu*.h 
-> and be privatized that way. 'struct rcu_state' would be an example.
-> 
-> Agreed?
-
-In principle, yes.  In practice, my attempts to make headway in this
-direction have usually collided with the desire to inline some of the
-functions that appear on fastpaths, so I would prefer caution when moving
-in this direction, especially given my treercu-related todos, to which
-"speeding up synchronize_rcu()" just got added.
-
-							Thanx, Paul
