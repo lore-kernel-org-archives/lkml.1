@@ -1,62 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758590AbZCYTt5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758693AbZCYTvk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758590AbZCYTt5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 15:49:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754858AbZCYTtr
+	id S1758693AbZCYTvk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 15:51:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754552AbZCYTvc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 15:49:47 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:54827 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753987AbZCYTtr (ORCPT
+	Wed, 25 Mar 2009 15:51:32 -0400
+Received: from mail-bw0-f169.google.com ([209.85.218.169]:44449 "EHLO
+	mail-bw0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754379AbZCYTva convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 15:49:47 -0400
-Date: Wed, 25 Mar 2009 15:48:51 -0400
-From: Christoph Hellwig <hch@infradead.org>
-To: Theodore Tso <tytso@mit.edu>,
-       Linus Torvalds <torvalds@linux-foundation.org>, Jan Kara <jack@suse.cz>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Nick Piggin <npiggin@suse.de>,
-       Jens Axboe <jens.axboe@oracle.com>, David Rees <drees76@gmail.com>,
-       Jesper Krogh <jesper@krogh.cc>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.29
-Message-ID: <20090325194851.GA1617@infradead.org>
-References: <72dbd3150903232346g5af126d7sb5ad4949a7b5041f@mail.gmail.com> <20090324091545.758d00f5@lxorguk.ukuu.org.uk> <20090324093245.GA22483@elte.hu> <20090324101011.6555a0b9@lxorguk.ukuu.org.uk> <20090324103111.GA26691@elte.hu> <20090324041249.1133efb6.akpm@linux-foundation.org> <20090325123744.GK23439@duck.suse.cz> <20090325150041.GM32307@mit.edu> <alpine.LFD.2.00.0903251008120.3032@localhost.localdomain> <20090325185824.GO32307@mit.edu>
+	Wed, 25 Mar 2009 15:51:30 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=wnTyQfq42Im215DVSETzz9DVxkSThrrU9zAxHJ+EDukDuIh/14i6WJoUPySB3/UPXR
+         4vaRSSqalcOOvlI9MJmchXDOxs+jJtf/ZuxmnSIr572sNo3Qp8juKZWtZ+2iBetwPWcD
+         +mJXLMmeZm+oFVwHbaUseYDbzHyHEHcaPcKdw=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090325185824.GO32307@mit.edu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+In-Reply-To: <20090226131719.393515463@linutronix.de>
+References: <20090226131336.423054348@linutronix.de>
+	 <20090226131719.393515463@linutronix.de>
+Date: Wed, 25 Mar 2009 20:51:27 +0100
+X-Google-Sender-Auth: cd3ee1ecdb900e93
+Message-ID: <10f740e80903251251x33cd3e05gcf03e41e0aaf6308@mail.gmail.com>
+Subject: Re: [patch 1/4] genirq: make irqreturn_t an enum
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Arjan van de Veen <arjan@infradead.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Jon Masters <jonathan@jonmasters.org>, linux-next@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 25, 2009 at 02:58:24PM -0400, Theodore Tso wrote:
-> omits the fsync().  So with ext4 we has workarounds that start pushing
-> out the data blocks in the for replace-via-rename and
-> replace-via-truncate cases, while XFS will do an implied fsync for
-> replace-via-truncate only, and btrfs will do an implied fsync for
-> replace-via-rename only.
+On Thu, Feb 26, 2009 at 14:28, Thomas Gleixner <tglx@linutronix.de> wrote:
+> Impact: cleanup
+>
+> Remove the 2.4 compabiliy cruft
 
-The XFS one and the ext4 one that I saw only start an _asynchronous_
-writeout.  Which is not an implied fsync but snake oil to make the
-most common complaints go away without providing hard guarantees.
+> --- linux-2.6-tip.orig/include/linux/irqreturn.h
+> +++ linux-2.6-tip/include/linux/irqreturn.h
+> @@ -1,25 +1,17 @@
+> -/* irqreturn.h */
+>  #ifndef _LINUX_IRQRETURN_H
+>  #define _LINUX_IRQRETURN_H
+>
+> -/*
+> - * For 2.4.x compatibility, 2.4.x can use
+> - *
+> - *     typedef void irqreturn_t;
+> - *     #define IRQ_NONE
+> - *     #define IRQ_HANDLED
+> - *     #define IRQ_RETVAL(x)
+> - *
+> - * To mix old-style and new-style irq handler returns.
+> - *
+> - * IRQ_NONE means we didn't handle it.
+> - * IRQ_HANDLED means that we did have a valid interrupt and handled it.
+> - * IRQ_RETVAL(x) selects on the two depending on x being non-zero (for handled)
+> +/**
+> + * enum irqreturn
+> + * @IRQ_NONE           interrupt was not from this device
+> + * @IRQ_HANDLED                interrupt was handled by this device
+>  */
+> -typedef int irqreturn_t;
+> +enum irqreturn {
+> +       IRQ_NONE,
+> +       IRQ_HANDLED,
+> +};
+>
+> -#define IRQ_NONE       (0)
+> -#define IRQ_HANDLED    (1)
+> -#define IRQ_RETVAL(x)  ((x) != 0)
+> +typedef enum irqreturn irqreturn_t;
+> +#define IRQ_RETVAL(x)  ((x) != IRQ_NONE)
 
-IFF we want to go down this route we should better provide strong
-guranteed semantics and document the propery.  And of course implement
-it consistently on all native filesystems.
+JFYI, this causes the following warning in linux-next on m68k:
 
-> Traditionally, the way applications told us about such dependencies
-> was fsync().  But if application programmers are demanding that
-> fsync() is no longer required for correct operation after a filesystem
-> crash, all we can do is push things out to disk much more
-> aggressively.
+| arch/m68k/kernel/ints.c:231: warning: assignment from incompatible
+pointer type
 
-Note that the rename for atomic commits trick originated in mail severs
-which always did the proper fsync.  When the word spread into the
-desktop world it looks like this wisdom got lost.
+(cfr. http://kisskb.ellerman.id.au/kisskb/buildresult/271602/)
 
+as struct irq_node in arch/m68k/include/asm/irq_mm.h still has a
+`int (*handler)(int, void *);'.
+
+I'll cook a patch, but there may be other users hidden somewhere in
+arch-specific code...
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
