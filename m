@@ -1,30 +1,32 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763667AbZCYRgt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763656AbZCYRhe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763667AbZCYRgt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 13:36:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763573AbZCYRfs
+	id S1763656AbZCYRhe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 13:37:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763556AbZCYRhT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 13:35:48 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:65092 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763577AbZCYRfq (ORCPT
+	Wed, 25 Mar 2009 13:37:19 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:35964 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1762730AbZCYRhS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 13:35:46 -0400
-Date: Wed, 25 Mar 2009 13:35:43 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Ingo Molnar <mingo@elte.hu>
-cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Tim Bird <tim.bird@am.sony.com>, Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [PATCH 5/5][RFC] function-graph: add option to calculate graph
- time or not
-In-Reply-To: <20090325101139.GJ2341@elte.hu>
-Message-ID: <alpine.DEB.2.00.0903251328290.5675@gandalf.stny.rr.com>
-References: <20090325035646.662994901@goodmis.org> <20090325040833.213388591@goodmis.org> <20090325101139.GJ2341@elte.hu>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Wed, 25 Mar 2009 13:37:18 -0400
+Date: Wed, 25 Mar 2009 10:29:48 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Theodore Tso <tytso@mit.edu>
+cc: Jan Kara <jack@suse.cz>, Andrew Morton <akpm@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Nick Piggin <npiggin@suse.de>,
+       Jens Axboe <jens.axboe@oracle.com>, David Rees <drees76@gmail.com>,
+       Jesper Krogh <jesper@krogh.cc>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.29
+In-Reply-To: <20090325150041.GM32307@mit.edu>
+Message-ID: <alpine.LFD.2.00.0903251008120.3032@localhost.localdomain>
+References: <alpine.LFD.2.00.0903231617550.3032@localhost.localdomain> <49C87B87.4020108@krogh.cc> <72dbd3150903232346g5af126d7sb5ad4949a7b5041f@mail.gmail.com> <20090324091545.758d00f5@lxorguk.ukuu.org.uk> <20090324093245.GA22483@elte.hu>
+ <20090324101011.6555a0b9@lxorguk.ukuu.org.uk> <20090324103111.GA26691@elte.hu> <20090324041249.1133efb6.akpm@linux-foundation.org> <20090325123744.GK23439@duck.suse.cz> <20090325150041.GM32307@mit.edu>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -33,46 +35,41 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 
 
-On Wed, 25 Mar 2009, Ingo Molnar wrote:
+On Wed, 25 Mar 2009, Theodore Tso wrote:
+>
+> I still think the fsync() problem is the much bigger deal, and solving 
+> the contention problem isn't going to solve the fsync() latency problem 
+> with ext3 data=ordered mode.
 
-> 
-> * Steven Rostedt <rostedt@goodmis.org> wrote:
-> 
-> > --- a/kernel/trace/trace_functions_graph.c
-> > +++ b/kernel/trace/trace_functions_graph.c
-> > @@ -104,9 +105,6 @@ ftrace_pop_return_trace(struct ftrace_graph_ret *trace, unsigned long *ret)
-> >  	trace->calltime = current->ret_stack[index].calltime;
-> >  	trace->overrun = atomic_read(&current->trace_overrun);
-> >  	trace->depth = index;
-> > -	barrier();
-> > -	current->curr_ret_stack--;
-> > -
-> >  }
-> >  
-> >  /*
-> > @@ -121,6 +119,8 @@ unsigned long ftrace_return_to_handler(void)
-> >  	ftrace_pop_return_trace(&trace, &ret);
-> >  	trace.rettime = trace_clock_local();
-> >  	ftrace_graph_return(&trace);
-> > +	barrier();
-> > +	current->curr_ret_stack--;
-> 
-> this will modify the regular graph tracer too. No discussion of this 
-> change in the changelog - is it a fix?
+The fsync() problem is really annoying, but what is doubly annoying is 
+that sometimes one process doing fsync() (or sync) seems to cause other 
+processes to hickup too. 
 
-Ah, sorry, I should have commented that.
+Now, I personally solved that problem by moving to (good) SSD's on my 
+desktop, and I think that's indeed the long-term solution. But it would be 
+good to try to figure out a solution in the short term for people who 
+don't have new hardware thrown at them from random companies too.
 
-This is to prevent a race in the profiler code. This is not a problem with 
-current function graph code.
+I suspect it's a combination of filesystem transaction locking, together 
+with the VM wanting to write out some unrelated blocks or inodes due to 
+the system just being close to the dirty limits. Which is why the 
+system-wide hickups then happen especially when writing big files.
 
-What happens is that the profiler references the ret_stack from the 
-ftrace_graph_return function. If we update the curr_ret_stack and we take 
-an interrupt then we run the risk of reading incorrect data. Once we 
-decrement the curr_ret_stack, the ret_stack for the function is fair game 
-to be used again by an interrupt.
+The VM _tries_ to do writes in the background, but if the writepage() path 
+hits a filesystem-level blocking lock, that background write suddenly 
+becomes largely synchronous.
 
-Perhaps I should pull this change out and add it for core. This will let 
-any function graph user safely reference the ret_stack.
+I suspect there is also some possibility of confusion with inter-file 
+(false) metadata dependencies. If a filesystem were to think that the file 
+size is metadata that should be journaled (in a single journal), and the 
+journaling code then decides that it needs to do those meta-data updates 
+in the correct order (ie the big file write _before_ the file write that 
+wants to be fsync'ed), then the fsync() will be delayed by a totally 
+irrelevant large file having to have its data written out (due to 
+data=ordered or whatever).
 
--- Steve
+I'd like to think that no filesystem designer would ever be that silly, 
+but I'm too scared to try to actually go and check. Because I could well 
+imagine that somebody really thought that "size" is metadata.
 
+			Linus
