@@ -1,57 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756102AbZCYGpW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757853AbZCYGrR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756102AbZCYGpW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 02:45:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755205AbZCYGpG
+	id S1757853AbZCYGrR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 02:47:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755317AbZCYGrD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 02:45:06 -0400
-Received: from eazy.amigager.de ([213.239.192.238]:49615 "EHLO
-	eazy.amigager.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754938AbZCYGpF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 02:45:05 -0400
-Date: Wed, 25 Mar 2009 07:45:03 +0100
-From: Tino Keitel <tino.keitel@tikei.de>
-To: linux-kernel@vger.kernel.org
-Subject: Resume failure: ata3.01: revalidation failed (errno=-2)
-Message-ID: <20090325064503.GA4959@dose.home.local>
-Mail-Followup-To: linux-kernel@vger.kernel.org
+	Wed, 25 Mar 2009 02:47:03 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:53125 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755205AbZCYGrB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Mar 2009 02:47:01 -0400
+From: Nikanth Karthikesan <knikanth@novell.com>
+Organization: Novell
+To: Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: Strange code in include/linux/cpumask.h
+Date: Wed, 25 Mar 2009 12:14:30 +0530
+User-Agent: KMail/1.10.3 (Linux/2.6.27.19-3.2-default; KDE/4.1.3; x86_64; ; )
+Cc: nikanth@gmail.com, linux-kernel@vger.kernel.org
+References: <200903251021.13811.knikanth@novell.com> <200903251541.12180.rusty@rustcorp.com.au>
+In-Reply-To: <200903251541.12180.rusty@rustcorp.com.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200903251214.31731.knikanth@novell.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Wednesday 25 March 2009 10:41:11 Rusty Russell wrote:
+> On Wednesday 25 March 2009 15:21:13 Nikanth Karthikesan wrote:
+> > Hi Rusty
+> >
+> > I do not understand this code.
+>
+> Hi Nikanth,
+>
+>    That's OK, it's a little tricky.
+>
+> > The conditional operator would always evaluates to true and return
+> > bitmap. So all it seems to does is
+> > #define to_cpumansk(bitmap) (struct cpumask *)(bitmap)
+>
+> Yes, except that this insists that bitmap be an unsigned long * or you'll
+> get a warning.  Otherwise the macro could be used on anything.  And it
+> needs to be a macro to use it as a static initializer.
+>
 
-I tried if I can get reliable suspend to RAM on my new Mac mini Core 2
-Duo using 2.6.29, and did a "burn in" test with an endless
-suspend/resume loop using RTC wakeup. After ~30 attempts, the kernel
-hangs with a screen full of this message:
+Ah, got it. Thanks a lot for the explanation. May be a comment could be added 
+to the source.
 
-ata3.01: revalidation failed (errno=-2)
+So if only type-checking is required, something like this should work.
 
-In the kernel log, I see _one_ occurrence of this message at each resume:
+diff --git a/include/linux/cpumask.h b/include/linux/cpumask.h
+index 9f31538..7857f8f 100644
+--- a/include/linux/cpumask.h
++++ b/include/linux/cpumask.h
+@@ -282,11 +282,11 @@ static inline void __cpus_shift_left(cpumask_t *dstp,
+  */
+ #define to_cpumask(bitmap)						\
+ 	((struct cpumask *)(1 ? (bitmap)				\
+-			    : (void *)sizeof(__check_is_bitmap(bitmap))))
++			    : __check_is_bitmap(bitmap)))
+ 
+-static inline int __check_is_bitmap(const unsigned long *bitmap)
++static inline void * __check_is_bitmap(const unsigned long *bitmap)
+ {
+-	return 1;
++	return 0;
+ }
+ 
+ /*
 
-kern.debug: ata3.01: NODEV after polling detection
-kern.err: ata3.01: revalidation failed (errno=-2)
+And for static initialization + type checking, will this work?
 
-I tried the same using 2.6.27.20 and got the same, after 52 attempts.
+diff --git a/include/linux/cpumask.h b/include/linux/cpumask.h
+index 9f31538..d86b8d0 100644
+--- a/include/linux/cpumask.h
++++ b/include/linux/cpumask.h
+@@ -282,11 +282,11 @@ static inline void __cpus_shift_left(cpumask_t *dstp,
+  */
+ #define to_cpumask(bitmap)						\
+ 	((struct cpumask *)(1 ? (bitmap)				\
+-			    : (void *)sizeof(__check_is_bitmap(bitmap))))
++			    :( __check_is_bitmap(bitmap),(void *)0)))
+ 
+-static inline int __check_is_bitmap(const unsigned long *bitmap)
++static inline void * __check_is_bitmap(const unsigned long *bitmap)
+ {
+-	return 1;
++	return 0;
+ }
+ 
+ /*
 
-The full kernel log is here:
+>
+> As the NR_CPUS bit arrays vanish, this macro will be used less and less;
+> but some of them will probably take a while.
+>
 
-http://tikei.de/kernlog.txt
+Also looks like, this is not being used as a static initializer anywhere. 
+ i.e., Using my type-checking only version didn't trigger any error/warnings! 
+Being a deprecated interface, no new users are expected? Or is gcc smart, not 
+complaining when used as static initializer, as it would always evaluate to 
+(struct cpumask *)(bitmap)? Can the sizeof constification be removed?
 
-This is the SATA device:
-
-00:1f.2 IDE interface [0101]: Intel Corporation 82801GBM/GHM (ICH7
-Family) SATA IDE Controller [8086:27c4] (rev 02)
-
-Any hints how I can fix or debug this? It looks like a generic message
-that only shows that something is wrong in a much deeper layer. Maybe I
-should add some debugging to ata_dev_revalidate().
-
-Regards,
-Tino
+Thanks
+Nikanth
