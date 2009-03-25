@@ -1,89 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759523AbZCYMKQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761413AbZCYMKl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759523AbZCYMKQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 08:10:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761271AbZCYMJb
+	id S1761413AbZCYMKl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 08:10:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761385AbZCYMKA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 08:09:31 -0400
-Received: from rhun.apana.org.au ([64.62.148.172]:36612 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1761270AbZCYMJa (ORCPT
+	Wed, 25 Mar 2009 08:10:00 -0400
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:58124 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761377AbZCYMJ7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 08:09:30 -0400
-Date: Wed, 25 Mar 2009 20:08:40 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: David Miller <davem@davemloft.net>, r.schwebel@pengutronix.de,
-       torvalds@linux-foundation.org, blaschka@linux.vnet.ibm.com,
-       tglx@linutronix.de, a.p.zijlstra@chello.nl,
-       linux-kernel@vger.kernel.org, kernel@pengutronix.de
-Subject: Re: Revert "gro: Fix legacy path napi_complete crash",
-Message-ID: <20090325120840.GA6351@gondor.apana.org.au>
-References: <20090324150928.GB30224@gondor.apana.org.au> <20090324.143622.186562202.davem@davemloft.net> <20090325002303.GA2219@gondor.apana.org.au> <20090324.191134.05205089.davem@davemloft.net> <20090325073349.GF25833@elte.hu>
+	Wed, 25 Mar 2009 08:09:59 -0400
+Date: Wed, 25 Mar 2009 13:09:44 +0100
+From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
+	<u.kleine-koenig@pengutronix.de>
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+Cc: Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
+       Abhishek Sagar <sagar.abhishek@gmail.com>,
+       Tim Bird <tim.bird@am.sony.com>,
+       linux-arm-kernel <linux-arm-kernel@lists.arm.linux.org.uk>,
+       linux kernel <linux-kernel@vger.kernel.org>,
+       Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@redhat.com>
+Subject: Re: Anyone working on ftrace function graph support on ARM?
+Message-ID: <20090325120944.GA30873@pengutronix.de>
+References: <49C936CA.8070800@am.sony.com> <20090324213618.GC5975@nowhere> <49C95EAF.7030901@gmail.com> <20090324224857.GE5975@nowhere> <20090325084248.GF4697@n2100.arm.linux.org.uk> <20090325085418.GA2341@elte.hu> <20090325095751.GA31464@n2100.arm.linux.org.uk> <20090325104505.GA27803@pengutronix.de> <20090325112115.GB31464@n2100.arm.linux.org.uk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <20090325073349.GF25833@elte.hu>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20090325112115.GB31464@n2100.arm.linux.org.uk>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
+X-SA-Exim-Mail-From: ukl@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 25, 2009 at 08:33:49AM +0100, Ingo Molnar wrote:
+Hi Russell,
+
+> > > Hmm, and it looks like the ftrace code is rather crap:
+> > > 
+> > > ENTRY(mcount)
+> > >         stmdb sp!, {r0-r3, lr}
+> > >         ldr r0, =ftrace_trace_function
+> > >         ldr r2, [r0]
+> > >         adr r0, ftrace_stub
+> > >         cmp r0, r2
+> > >         bne trace
+> > >         ldr lr, [fp, #-4]                       @ restore lr
+> > >         ldmia sp!, {r0-r3, pc}
+> > > 
+> > > trace:
+> > >         ldr r1, [fp, #-4]                       @ lr of instrumented routine
+> > >         mov r0, lr
+> > >         sub r0, r0, #MCOUNT_INSN_SIZE
+> > >         mov lr, pc
+> > >         mov pc, r2
+> > >  XXX calling a C function results in r0-r3,ip,lr being clobbered XXX
+> > > 
+> > >         mov lr, r1                              @ restore lr
+> > >  XXX not necessarily, r1 might be some other random value
+> > > 
+> > >         ldmia sp!, {r0-r3, pc}
+> > > 
+> > > In fact, to me the above code looks totally crap, because it's checking
+> > > whether the caller is 'ftrace_stub'.  It can never be 'ftrace_stub'
+> > > because that is an assembly function:
+> > > 
+> > >         .globl ftrace_stub
+> > > ftrace_stub:
+> > >         mov pc, lr
+> > > 
+> > > and therefore gcc has no hand in adding a mcount call to it.
+> > Hhhm.  Isn't the equivalent C-Code ~ as follows:
+> > 
+> > 	if (ftrace_trace_function != ftrace_stub)
+> > 		trace(some, args);
+> > 	return;
+> > ?  ftrace_trace_function is initialised to ftrace_stub at compile time
+> > and is changed when a tracerfunction is registered.
 > 
-> So if there's no definitive resolution for the real cause of the 
-> bug, the plain revert looks like an acceptable interim choice for 
-> .29.1 - at least as far as my systems go.
+> Correct.  But my point is that there's no way for ftrace_stub to ever call
+> mcount.  So the check there is pointless.
+Which check?  ftrace_trace_function isn't the caller of mcount but a
+function pointer defined in kernel/trace/ftrace.c.  And if this pointer
+changes, the if-condition becomes true.
 
-OK, let's just do the revert and disable GRO for the legacy path.
-This should be the safest option for 2.6.29.
+> Ok - it would be nice if there was a comment to explain that.
+Some comments would be nice, that's right.
 
-GRO: Disable GRO on legacy netif_rx path
+> Is someone going to fix the existing ftrace before trying to build stuff
+> on top of it?
+Mmh, I think you misunderstood the code, so I don't see something to fix
+here (at least for non-dynamic ftrace).  If the next few mails show,
+that it's me who didn't understand the code, I will fix the problems, of
+course.
 
-When I fixed the GRO crash in the legacy receive path I used
-napi_complete to replace __napi_complete.  Unfortunately they're
-not the same when NETPOLL is enabled, which may result in us
-not calling __napi_complete at all.
+Best regards
+Uwe
 
-What's more, we really do need to keep the __napi_complete call
-within the IRQ-off section since in theory an IRQ can occur in
-between and fill up the backlog to the maximum, causing us to
-lock up.
-
-Since we can't seem to find a fix that works properly right now,
-this patch reverts all the GRO support from the netif_rx path.
-
-Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
-
-diff --git a/net/core/dev.c b/net/core/dev.c
-index e3fe5c7..e438f54 100644
---- a/net/core/dev.c
-+++ b/net/core/dev.c
-@@ -2588,18 +2588,15 @@ static int process_backlog(struct napi_struct *napi, int quota)
- 		local_irq_disable();
- 		skb = __skb_dequeue(&queue->input_pkt_queue);
- 		if (!skb) {
-+			__napi_complete(napi);
- 			local_irq_enable();
--			napi_complete(napi);
--			goto out;
-+			break;
- 		}
- 		local_irq_enable();
- 
--		napi_gro_receive(napi, skb);
-+		netif_receive_skb(skb);
- 	} while (++work < quota && jiffies == start_time);
- 
--	napi_gro_flush(napi);
--
--out:
- 	return work;
- }
- 
-Thanks,
 -- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+Pengutronix e.K.                              | Uwe Kleine-König            |
+Industrial Linux Solutions                    | http://www.pengutronix.de/  |
