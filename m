@@ -1,68 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754553AbZCYEkb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756853AbZCYExv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754553AbZCYEkb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 00:40:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751374AbZCYEkW
+	id S1756853AbZCYExv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 00:53:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751544AbZCYExm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 00:40:22 -0400
-Received: from e7.ny.us.ibm.com ([32.97.182.137]:49707 "EHLO e7.ny.us.ibm.com"
+	Wed, 25 Mar 2009 00:53:42 -0400
+Received: from cantor.suse.de ([195.135.220.2]:57492 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751135AbZCYEkV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 00:40:21 -0400
-Date: Wed, 25 Mar 2009 10:10:39 +0530
-From: Bharata B Rao <bharata@linux.vnet.ibm.com>
-To: Li Zefan <lizf@cn.fujitsu.com>
-Cc: linux-kernel@vger.kernel.org, Balaji Rao <balajirrao@gmail.com>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Paul Menage <menage@google.com>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Subject: Re: [PATCH -tip] cpuacct: per-cgroup utime/stime statistics - v5
-Message-ID: <20090325044039.GB3276@in.ibm.com>
-Reply-To: bharata@linux.vnet.ibm.com
-References: <20090324125710.GG3891@in.ibm.com> <49C97F43.7080302@cn.fujitsu.com>
+	id S1750867AbZCYExl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Mar 2009 00:53:41 -0400
+From: Nikanth Karthikesan <knikanth@novell.com>
+Organization: Novell
+To: rusty@rustcorp.com.au
+Subject: Strange code in include/linux/cpumask.h
+Date: Wed, 25 Mar 2009 10:21:13 +0530
+User-Agent: KMail/1.10.3 (Linux/2.6.27.19-3.2-default; KDE/4.1.3; x86_64; ; )
+Cc: nikanth@gmail.com, linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <49C97F43.7080302@cn.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200903251021.13811.knikanth@novell.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 25, 2009 at 08:48:03AM +0800, Li Zefan wrote:
-> > cpuacct: Add stime and utime statistics
-> > 
-> > Add per-cgroup cpuacct controller statistics like the system and user
-> > time consumed by the group of tasks.
-> 
-> Reviewed-by: Li Zefan <lizf@cn.fujitsu.com>
+Hi Rusty
 
-Thanks.
+I do not understand this code.
 
-> 
-> except a bug below.
-> 
-> > +	for (i = 0; i < CPUACCT_STAT_NSTATS; i++)
-> > +		if (percpu_counter_init(&ca->cpustat[i], 0))
-> > +			goto out_free_counters;
-> >  
-> >  	if (cgrp->parent)
-> >  		ca->parent = cgroup_ca(cgrp->parent);
-> >  
-> >  	return &ca->css;
-> > +
-> > +out_free_counters:
-> > +	i--;
-> > +	while (i-- >= 0)
-> > +		percpu_counter_destroy(&ca->cpustat[i]);
-> 
-> replace "i--; while (i-- >=0)" to "while (--i >=0)", otherwise
-> you'll be accessing ca->cpustat[-1].
+/**
+ * to_cpumask - convert an NR_CPUS bitmap to a struct cpumask *
+ * @bitmap: the bitmap
+ *
+ * There are a few places where cpumask_var_t isn't appropriate and
+ * static cpumasks must be used (eg. very early boot), yet we don't
+ * expose the definition of 'struct cpumask'.
+ *
+ * This does the conversion, and can be used as a constant initializer.
+ */
+#define to_cpumask(bitmap)                                              \
+        ((struct cpumask *)(1 ? (bitmap)                                \
+                            : (void *)sizeof(__check_is_bitmap(bitmap))))
 
-Sorry about this. Posted the fixed version.
+static inline int __check_is_bitmap(const unsigned long *bitmap)
+{
+        return 1;
+}
 
-Regards,
-Bharata.
+The conditional operator would always evaluates to true and return bitmap. So 
+all it seems to does is
+#define to_cpumansk(bitmap) (struct cpumask *)(bitmap)
+
+Even If it would return (void *)sizeof(__check_is_bitmap(bitmap)), wouldn't it 
+be always
+(struct cpumask *) (sizeof(1))!?
+
+Is this some magic for type safety?
+
+Thanks
+Nikanth
