@@ -1,65 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761001AbZCYAyz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754809AbZCYA7f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761001AbZCYAyz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 20:54:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759972AbZCYArs
+	id S1754809AbZCYA7f (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 20:59:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752821AbZCYA70
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 20:47:48 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:56818 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1759968AbZCYArr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 20:47:47 -0400
-Message-ID: <49C97F43.7080302@cn.fujitsu.com>
-Date: Wed, 25 Mar 2009 08:48:03 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Tue, 24 Mar 2009 20:59:26 -0400
+Received: from ozlabs.org ([203.10.76.45]:38787 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752368AbZCYA7Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Mar 2009 20:59:25 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: [RFC] Correct behaviour of irq affinity?
+Date: Wed, 25 Mar 2009 11:29:19 +1030
+User-Agent: KMail/1.11.1 (Linux/2.6.27-11-generic; KDE/4.2.1; i686; ; )
+Cc: x86@kernel.org, linux-kernel@vger.kernel.org,
+       Yinghai Lu <yinghai@kernel.org>, Ingo Molnar <mingo@elte.hu>
+References: <200903241619.03517.rusty@rustcorp.com.au> <m1k56frt6e.fsf@fess.ebiederm.org> <200903251103.10249.rusty@rustcorp.com.au>
+In-Reply-To: <200903251103.10249.rusty@rustcorp.com.au>
 MIME-Version: 1.0
-To: bharata@linux.vnet.ibm.com
-CC: linux-kernel@vger.kernel.org, Balaji Rao <balajirrao@gmail.com>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Paul Menage <menage@google.com>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Subject: Re: [PATCH -tip] cpuacct: per-cgroup utime/stime statistics - v5
-References: <20090324125710.GG3891@in.ibm.com>
-In-Reply-To: <20090324125710.GG3891@in.ibm.com>
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200903251129.19490.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> cpuacct: Add stime and utime statistics
+On Wednesday 25 March 2009 11:03:08 Rusty Russell wrote:
+> On Tuesday 24 March 2009 23:09:37 Eric W. Biederman wrote:
+> > cpu_mask_to_apic_id do not take cpu_online_map into account and should
+> > probably be fixed.  flat_cpu_mask_to_apicid was the one I could find.
 > 
-> Add per-cgroup cpuacct controller statistics like the system and user
-> time consumed by the group of tasks.
+> Also the numaq apic.h.  I'll do an audit and send a patch.
 
-Reviewed-by: Li Zefan <lizf@cn.fujitsu.com>
+Actually, numaq is just weird, so I'll assume it's correct.  I couldn't
+find any others.
 
-except a bug below.
+> Yes, agree with Yinghai's fix.  I'll re-spin my patch on top of his.
 
-> +	for (i = 0; i < CPUACCT_STAT_NSTATS; i++)
-> +		if (percpu_counter_init(&ca->cpustat[i], 0))
-> +			goto out_free_counters;
->  
->  	if (cgrp->parent)
->  		ca->parent = cgroup_ca(cgrp->parent);
->  
->  	return &ca->css;
-> +
-> +out_free_counters:
-> +	i--;
-> +	while (i-- >= 0)
-> +		percpu_counter_destroy(&ca->cpustat[i]);
+But he already did it while I slept in.
 
-replace "i--; while (i-- >=0)" to "while (--i >=0)", otherwise
-you'll be accessing ca->cpustat[-1].
-
-> +	free_percpu(ca->cpuusage);
-> +out_free_ca:
-> +	kfree(ca);
-> +out:
-> +	return ERR_PTR(-ENOMEM);
->  }
+Thanks Yinghai!
+Rusty.
