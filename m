@@ -1,33 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755812AbZCYMpp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755517AbZCYMxL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755812AbZCYMpp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 08:45:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761896AbZCYMpR
+	id S1755517AbZCYMxL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 08:53:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753509AbZCYMwz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 08:45:17 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:37839 "EHLO mx3.mail.elte.hu"
+	Wed, 25 Mar 2009 08:52:55 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:37675 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761889AbZCYMpO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 08:45:14 -0400
-Date: Wed, 25 Mar 2009 13:45:03 +0100
+	id S1751756AbZCYMwy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Mar 2009 08:52:54 -0400
+Date: Wed, 25 Mar 2009 13:52:31 +0100
 From: Ingo Molnar <mingo@elte.hu>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Cc: beckyb@kernel.crashing.org, linux-kernel@vger.kernel.org,
-       ian.campbell@citrix.com, jeremy@goop.org
-Subject: Re: [PATCH 2/5] swiotlb: fix compile warning
-Message-ID: <20090325124503.GD30755@elte.hu>
-References: <1237930126-6741-3-git-send-email-beckyb@kernel.crashing.org> <20090325114023S.fujita.tomonori@lab.ntt.co.jp> <D375125B-E20E-47D9-87F5-EB9CBE927293@kernel.crashing.org> <20090325125227C.fujita.tomonori@lab.ntt.co.jp>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Li Zefan <lizf@cn.fujitsu.com>, Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC][PATCH] blktrace: fix original blktrace
+Message-ID: <20090325125231.GE30755@elte.hu>
+References: <49C99BD2.9090503@cn.fujitsu.com> <20090325070726.GD27476@kernel.dk> <49C9DC75.9080301@cn.fujitsu.com> <20090325072704.GF27476@kernel.dk>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090325125227C.fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20090325072704.GF27476@kernel.dk>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
 X-ELTE-SpamLevel: 
 X-ELTE-SpamCheck: no
 X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
 	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
 	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
@@ -35,66 +37,61 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
+* Jens Axboe <jens.axboe@oracle.com> wrote:
 
-> On Tue, 24 Mar 2009 22:42:33 -0500
-> Becky Bruce <beckyb@kernel.crashing.org> wrote:
+> On Wed, Mar 25 2009, Li Zefan wrote:
+> > Jens Axboe wrote:
+> > > On Wed, Mar 25 2009, Li Zefan wrote:
+> > >> I'm wondering what we are going to do with the original blktrace which
+> > >> is using relay and is used via ioctl.
+> > >>
+> > >> The problem is currently it's totally broken. You can use ftrace to see
+> > >> the output of blktrace, but user-space blktrace is unusable.
+> > >>
+> > >> With this patch, both ioctl and ftrace can be used, but of course you
+> > >> can't use both of them at the same time.
+> > > 
+> > > Even if ftrace was as fast as storing huge amounts of data as blktrace,
+> > > it's still of utmost importance that nothing is broken there. There are
+> > 
+> > agreed
+> > 
+> > > people actually USING this tracing to do real work, it's not a
+> > > playground.
+> > > 
+> > 
+> > and we are using blktrace to test the cgroup-based io controller
+> > 
+> > > I appreciate the efforts to unify and improve our tracing, but we must
+> > > not be breaking blktrace along the way. Otherwise the whole thing goes
+> > 
+> > this patch fixes it.
+> > 
+> > it's broken by "blktrace: add ftrace plugin"
+> > (c71a896154119f4ca9e89d6078f5f63ad60ef199)
+> > 
+> > @@ -131,13 +162,14 @@ static void __blk_add_trace()
+> > - 	if (unlikely(bt->trace_state != Blktrace_running))
+> > + 	if (unlikely(bt->trace_state != Blktrace_running || !blk_tracer_enabled))
+> >  		return;
 > 
-> > 
-> > On Mar 24, 2009, at 9:58 PM, FUJITA Tomonori wrote:
-> > 
-> > > On Tue, 24 Mar 2009 16:28:43 -0500
-> > > Becky Bruce <beckyb@kernel.crashing.org> wrote:
-> > >
-> > >> Squash a build warning seen on 32-bit powerpc caused by calling min()
-> > >> with 2 different types.  Cast the first arg to size_t, which is the
-> > >> type of the second, and should be portable across architectures.
-> > >>
-> > >> Signed-off-by: Becky Bruce <beckyb@kernel.crashing.org>
-> > >> ---
-> > >> lib/swiotlb.c |    2 +-
-> > >> 1 files changed, 1 insertions(+), 1 deletions(-)
-> > >>
-> > >> diff --git a/lib/swiotlb.c b/lib/swiotlb.c
-> > >> index f59cf30..62f5f75 100644
-> > >> --- a/lib/swiotlb.c
-> > >> +++ b/lib/swiotlb.c
-> > >> @@ -341,7 +341,7 @@ static void swiotlb_bounce(phys_addr_t phys,  
-> > >> char *dma_addr, size_t size,
-> > >> 		unsigned long flags;
-> > >>
-> > >> 		while (size) {
-> > >> -			sz = min(PAGE_SIZE - offset, size);
-> > >> +			sz = min((size_t)(PAGE_SIZE - offset), size);
-> > >>
-> > >> 			local_irq_save(flags);
-> > >> 			buffer = kmap_atomic(pfn_to_page(pfn),
-> > >
-> > > ?
-> > >
-> > > diff --git a/lib/swiotlb.c b/lib/swiotlb.c
-> > > index f59cf30..fa62498 100644
-> > > --- a/lib/swiotlb.c
-> > > +++ b/lib/swiotlb.c
-> > > @@ -341,7 +341,7 @@ static void swiotlb_bounce(phys_addr_t phys,  
-> > > char *dma_addr, size_t size,
-> > > 		unsigned long flags;
-> > >
-> > > 		while (size) {
-> > > -			sz = min(PAGE_SIZE - offset, size);
-> > > +			sz = min_t(size_t, PAGE_SIZE - offset, size);
-> > >
-> > > 			local_irq_save(flags);
-> > > 			buffer = kmap_atomic(pfn_to_page(pfn),
-> > 
-> > OK, we're clearly pointed at different trees here, and it looks like  
-> > I'm behind - this patch is based on Ingo's master.  Which tree has  
-> > this change?
-> 
-> I also use tip/master. I think that we are on the same page. No 
-> tree has this change. I just send it because I'm not sure why you 
-> don't use min_t().
+> Good, as long as it still works with blktrace, that's all I care 
+> about (for now, at least).
 
-yes, min_t() is safer and cleaner than min()+cast.
+Sorry about that. I've applied Li's fixes and double checked 
+blktrace+blktrace functionality and pushed out a new tracing
+tree to linux-next.
+
+Btw., blktrace could be updated in the future to make use the
+new per CPU buffering and sys_splice() code available in ftrace
+plugin. [ splice is cool! =B-) ]
+
+Plus blktrace could make use of built-in event filtering 
+capabilities - for example to only trace events in a specific
+sector range on the disk. Or to trace all IO of a given PID only.
+
+But that is a different project that needs changes both on the 
+kernel side and on the user-space side (.31-ish for sure) and the 
+relayfs+ioctl method must work fine in any case.
 
 	Ingo
