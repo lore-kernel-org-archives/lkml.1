@@ -1,51 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760359AbZCYLlf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760060AbZCYLnB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760359AbZCYLlf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 07:41:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760435AbZCYLkt
+	id S1760060AbZCYLnB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 07:43:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758823AbZCYLmv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 07:40:49 -0400
-Received: from wine.ocn.ne.jp ([122.1.235.145]:59661 "EHLO smtp.wine.ocn.ne.jp"
+	Wed, 25 Mar 2009 07:42:51 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:42683 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760364AbZCYLkr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 07:40:47 -0400
-To: wangchen@cn.fujitsu.com
-Cc: mingo@elte.hu, linux-kernel@vger.kernel.org, sfr@canb.auug.org.au
-Subject: Re: linux-next-20090324: undefined reference to `__this_fixmap_does_not_exist'
-From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
-References: <200903250324.n2P3OwX0098272@www262.sakura.ne.jp>
-	<49C9BA02.9070706@cn.fujitsu.com>
-	<49C9F0CB.2000807@cn.fujitsu.com>
-	<49C9FFEA.7060908@cn.fujitsu.com>
-In-Reply-To: <49C9FFEA.7060908@cn.fujitsu.com>
-Message-Id: <200903252040.GDG04637.OHtQFLVSMFOJOF@I-love.SAKURA.ne.jp>
-X-Mailer: Winbiff [Version 2.50 PL2]
-X-Accept-Language: ja,en
-Date: Wed, 25 Mar 2009 20:40:44 +0900
-Mime-Version: 1.0
+	id S1755911AbZCYLmu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Mar 2009 07:42:50 -0400
+Date: Wed, 25 Mar 2009 12:42:48 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Pierre Ossman <drzeus@drzeus.cx>
+Cc: Manuel Lauss <mano@roarinelk.homelinux.net>, linux-kernel@vger.kernel.org
+Subject: Re: MMC layer regression with single-block controllers
+Message-ID: <20090325114248.GN27476@kernel.dk>
+References: <20090323092802.GA30122@roarinelk.homelinux.net> <20090324210138.71029c2c@mjolnir.ossman.eu> <20090325104837.GA18389@roarinelk.homelinux.net> <20090325110401.GM27476@kernel.dk> <20090325123613.06404b17@mjolnir.ossman.eu>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090325123613.06404b17@mjolnir.ossman.eu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+On Wed, Mar 25 2009, Pierre Ossman wrote:
+> On Wed, 25 Mar 2009 12:04:01 +0100
+> Jens Axboe <jens.axboe@oracle.com> wrote:
+> 
+> > 
+> > Well, as the warning tells you, it's not supported. But that doesn't
+> > mean you can't do single sector transfers and complete the IO when you
+> > have done all of them.
+> > 
+> 
+> That's an annoying limitation and sort of defeats the purpose of
+> specifying a maximum sector count. Why can't it go below 8?
 
-Wang Chen wrote:
-> Maybe we use different gcc versions.
-Yes. I'm using gcc 3.3 .
+Because it would add all sorts of complexity for handling 4kb block size
+file systems on top of the block device. The bio_add_page() api depends
+on being able to add a single page at least, it has to or you would need
+to push that complexity to the callers.
 
-# gcc --version
-gcc (GCC) 3.3.5 (Debian 1:3.3.5-13)
-Copyright (C) 2003 Free Software Foundation, Inc.
-This is free software; see the source for copying conditions.  There is NO
-warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+So it's annoying, but you have to do the incremental completions
+yourself for the (obscure) device that doesn't do more than 512b
+transfers. It's really not that difficult, and it would be simpler than
+supporting partial completions generically in the block layer.
 
-# make -sj2
-arch/x86/mm/built-in.o(.init.text+0x1831): In function `early_ioremap_init':
-: undefined reference to `__this_fixmap_does_not_exist'
-make: *** [.tmp_vmlinux1] Error 1
+Saying that it defeats the purpose of the setting is missing the bigger
+picture - basically all other devices, that have sane limits (like 128k,
+or whatnot).
 
-> Please try following patch.
-After applying that patch, this problem was solved.
+-- 
+Jens Axboe
 
-Thank you.
