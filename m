@@ -1,81 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764012AbZCYRk0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764076AbZCYRkt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764012AbZCYRk0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 13:40:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763703AbZCYRkF
+	id S1764076AbZCYRkt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 13:40:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764008AbZCYRkL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 13:40:05 -0400
-Received: from e35.co.us.ibm.com ([32.97.110.153]:34218 "EHLO
-	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763588AbZCYRkB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 13:40:01 -0400
-Date: Wed, 25 Mar 2009 12:39:54 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Willy Tarreau <w@1wt.eu>
-Cc: mtk.manpages@gmail.com, Stephen Smalley <sds@epoch.ncsc.mil>,
-       Andrew Morgan <morgan@kernel.org>,
-       linux-security-module@vger.kernel.org,
-       lkml <linux-kernel@vger.kernel.org>, linux-nfs@vger.kernel.org,
-       Igor Zhbanov <izh1979@gmail.com>, stable@kernel.org,
-       linux-api@vger.kernel.org, Chris Wright <chrisw@sous-sol.org>
-Subject: [PATCH 2.4] CAP_FS_MASK: add CAP_LINUX_IMMUTABLE and CAP_MKNOD
-Message-ID: <20090325173954.GA19299@us.ibm.com>
+	Wed, 25 Mar 2009 13:40:11 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:50027 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1763929AbZCYRkJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Mar 2009 13:40:09 -0400
+Date: Wed, 25 Mar 2009 18:38:50 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: mark gross <mgross@linux.intel.com>
+Cc: Andrew Lutomirski <amluto@gmail.com>,
+       David Woodhouse <dwmw2@infradead.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Kyle McMartin <kyle@redhat.com>, Fenghua Yu <fenghua.yu@intel.com>,
+       Suresh Siddha <suresh.b.siddha@intel.com>,
+       Yinghai Lu <yinghai@kernel.org>,
+       David Woodhouse <David.Woodhouse@intel.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.29: can't resume from suspend with DMAR (intel iommu)
+	enabled
+Message-ID: <20090325173850.GD14250@elte.hu>
+References: <cb0375e10903241258x32c9d0f3g35a4f56793eb8677@mail.gmail.com> <20090324203259.GC26930@elte.hu> <20090325173212.GA30701@linux.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <20090325173212.GA30701@linux.intel.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When POSIX capabilities were introduced during the 2.1 Linux
-cycle, the fs mask, which represents the capabilities which having
-fsuid==0 is supposed to grant, did not include CAP_MKNOD and
-CAP_LINUX_IMMUTABLE.  However, before capabilities the privilege
-to call these did in fact depend upon fsuid==0.
 
-This patch introduces those capabilities into the fsmask,
-restoring the old behavior.
+* mark gross <mgross@linux.intel.com> wrote:
 
-See the thread starting at http://lkml.org/lkml/2009/3/11/157 for
-reference.
+> On Tue, Mar 24, 2009 at 09:32:59PM +0100, Ingo Molnar wrote:
+> > 
+> > (Cc:s added)
+> > 
+> > * Andrew Lutomirski <amluto@gmail.com> wrote:
+> > 
+> > > On vanilla 2.6.29 (on Ubuntu 8.10), on a Lenovo x200s, my system 
+> > > is completely hosed on resume.  It appears that even hard disk IO 
+> > > didn't work (trying to do *anything* including getting a dmesg 
+> > > trace just spewed sda io errors to the console).  Hence no trace.  
+> > > I did an alt-sysrq-b and the screen went blank and the machine 
+> > > just started beeping at me.
+> > > 
+> > > Resume works much better with intel_iommu=off.  (I remember seeing 
+> > > a patch go by that purported to fix resume with IOMMU enabled, but 
+> > > it didn't work for me.)
+> > > 
+> > > I'd be happy to try to make a better bug report if anyone has any 
+> > > bright ideas.
+> > 
+> > i have a Lenovo T500 that does not even boot with with DMAR enabled 
+> > in the BIOS (it's default-off), i get this panic in early bootup:
+> > 
+> >     DMAR hardware is malfunctioning
+> 
+> That happens when the polling of the IOMMU registers fail to 
+> behave as expected in the VT-d specification.  Typically its been 
+> a bios issue when this happens.
 
-Reported-by: Igor Zhbanov <izh1979@gmail.com>
-Signed-off-by: Serge E. Hallyn <serue@us.ibm.com>
-Cc: stable@kernel.org
----
- include/linux/capability.h |   14 ++++++++++----
- 1 file changed, 10 insertions(+), 4 deletions(-)
+it's hugely problematic to panic() the box early during bootup. 
+IOMMU code should be disabled instead, a warning emitted - and life 
+should continue.
 
-diff -Nrup linux-2.4.37/include/linux/capability.h linux-2.4.37.new/include/linux/capability.h
---- linux-2.4.37/include/linux/capability.h	2008-12-02 02:01:34.000000000 -0600
-+++ linux-2.4.37.new/include/linux/capability.h	2009-03-25 11:09:47.000000000 -0500
-@@ -99,10 +99,6 @@ typedef __u32 kernel_cap_t;
- 
- #define CAP_FSETID           4
- 
--/* Used to decide between falling back on the old suser() or fsuser(). */
--
--#define CAP_FS_MASK          0x1f
--
- /* Overrides the restriction that the real or effective user ID of a
-    process sending a signal must match the real or effective user ID
-    of the process receiving the signal. */
-@@ -301,6 +297,16 @@ extern kernel_cap_t cap_bset;
- 
- #endif
- 
-+/* Used to decide between falling back on the old suser() or fsuser(). */
-+
-+#define CAP_FS_MASK	(CAP_TO_MASK(CAP_CHOWN)			\
-+			| CAP_TO_MASK(CAP_DAC_OVERRIDE)		\
-+			| CAP_TO_MASK(CAP_DAC_READ_SEARCH)	\
-+			| CAP_TO_MASK(CAP_FOWNER)		\
-+			| CAP_TO_MASK(CAP_FSETID)		\
-+			| CAP_TO_MASK(CAP_LINUX_IMMUTABLE)	\
-+			| CAP_TO_MASK(CAP_MKNOD))
-+
- #define CAP_EMPTY_SET       to_cap_t(0)
- #define CAP_FULL_SET        to_cap_t(~0)
- #define CAP_INIT_EFF_SET    to_cap_t(~0 & ~CAP_TO_MASK(CAP_SETPCAP))
+With the current method you only ensure that distros turn DMAR 
+support off and that users disable it in their BIOS. That's a double 
+disadvantage.
+
+	Ingo
