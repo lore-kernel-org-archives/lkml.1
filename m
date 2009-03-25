@@ -1,96 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756807AbZCYDa0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757236AbZCYDar@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756807AbZCYDa0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 23:30:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751708AbZCYDaN
+	id S1757236AbZCYDar (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 23:30:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754116AbZCYDah
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 23:30:13 -0400
-Received: from e28smtp07.in.ibm.com ([59.145.155.7]:44340 "EHLO
-	e28smtp07.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750768AbZCYDaL (ORCPT
+	Tue, 24 Mar 2009 23:30:37 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:38124 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752102AbZCYDag (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 23:30:11 -0400
-Date: Wed, 25 Mar 2009 09:00:01 +0530
-From: "K.Prasad" <prasad@linux.vnet.ibm.com>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Benjamin Herrenschmidt <benh@au1.ibm.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>, maneesh@linux.vnet.ibm.com,
-       Roland McGrath <roland@redhat.com>
-Subject: Re: [Patch 11/11] ftrace plugin for kernel symbol tracing using HW
-	Breakpoint interfaces - v2
-Message-ID: <20090325033001.GA20411@in.ibm.com>
-Reply-To: prasad@linux.vnet.ibm.com
-References: <20090324152028.754123712@K.Prasad> <20090324152811.GL17918@in.ibm.com> <alpine.DEB.2.00.0903242256280.22830@gandalf.stny.rr.com>
+	Tue, 24 Mar 2009 23:30:36 -0400
+Date: Tue, 24 Mar 2009 23:30:33 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: LKML <linux-kernel@vger.kernel.org>
+cc: Ingo Molnar <mingo@elte.hu>,
+       =?ISO-8859-15?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH][GIT PULL] tracing: add handler to trace_stat
+Message-ID: <alpine.DEB.2.00.0903242329350.22830@gandalf.stny.rr.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.0903242256280.22830@gandalf.stny.rr.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 24, 2009 at 11:03:18PM -0400, Steven Rostedt wrote:
-> 
-> Hi Prasad,
-> 
-> On Tue, 24 Mar 2009, K.Prasad wrote:
-> 
-> > +
-> > +static void ksym_trace_print_header(struct seq_file *m)
-> > +{
-> > +
-> > +	seq_puts(m,
-> > +		 "#       TASK-PID      CPU#      Symbol         Type    "
-> > +		 "Function         \n");
-> > +	seq_puts(m,
-> > +		 "#          |           |          |              |         "
-> > +		 "|            \n");
-> > +}
-> > +
-> > +static enum print_line_t ksym_trace_output(struct trace_iterator *iter)
-> > +{
-> > +	struct trace_entry *entry = iter->ent;
-> > +	struct trace_seq *s = &iter->seq;
-> > +	struct trace_ksym *field;
-> > +	char str[KSYM_SYMBOL_LEN];
-> > +	int ret;
-> > +
-> > +	trace_assign_type(field, entry);
-> 
-> Looking at this, you do not test the iter->ent->type. If events or
-> trace_printk is running, this will fail your tracer.
-> 
-> You want to test for your types first, because all trace types will be 
-> called for "print_line" function below.
-> 
-> Thus you want something like
-> 
-> 	if (entry->type != TRACE_KSYM)
-> 		return TRACE_TYPE_UNHANDLED;
-> 
-> Then the tracer infrastructure could print out the trace event or 
-> trace_printk.
-> 
-> If you only want to print your events and ignore all others. Return
-> TRACE_TYPE_HANDLED.
-> 
-> Note, the if needs to be before the trace_assign_type.
-> 
-> -- Steve
->
 
-Thanks for pointing that out. I will make those changes and send out a
-new patchset.
+Ingo,
 
-However, looking at some of the existing plugins I find that many of
-them do this check after trace_assign_type() or not do at all (e.g.
-trace_branch_print()). They may need similar changes too.
+Please pull the latest tip/tracing/ftrace tree, which can be found at:
 
-Thanks,
-K.Prasad
+  git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
+tip/tracing/ftrace
+
+
+Steven Rostedt (1):
+      tracing: add handler to trace_stat
+
+----
+ kernel/trace/trace_branch.c    |    4 ++--
+ kernel/trace/trace_stat.c      |    2 +-
+ kernel/trace/trace_stat.h      |    2 +-
+ kernel/trace/trace_workqueue.c |    2 +-
+ 4 files changed, 5 insertions(+), 5 deletions(-)
+---------------------------
+commit 425480081e936d8725f0d44b8829d699bf088c6b
+Author: Steven Rostedt <srostedt@redhat.com>
+Date:   Tue Mar 24 13:38:36 2009 -0400
+
+    tracing: add handler to trace_stat
+    
+    Currently, if a trace_stat user wants a handle to some private data,
+    the trace_stat infrastructure does not supply a way to do that.
+    
+    This patch passes the trace_stat structure to the start function of
+    the trace_stat code.
+    
+    Signed-off-by: Steven Rostedt <srostedt@redhat.com>
+
+diff --git a/kernel/trace/trace_branch.c b/kernel/trace/trace_branch.c
+index ad8c22e..e6e3291 100644
+--- a/kernel/trace/trace_branch.c
++++ b/kernel/trace/trace_branch.c
+@@ -263,7 +263,7 @@ static int branch_stat_show(struct seq_file *m, void *v)
+ 	return 0;
+ }
  
+-static void *annotated_branch_stat_start(void)
++static void *annotated_branch_stat_start(struct tracer_stat *trace)
+ {
+ 	return __start_annotated_branch_profile;
+ }
+@@ -338,7 +338,7 @@ static int all_branch_stat_headers(struct seq_file *m)
+ 	return 0;
+ }
+ 
+-static void *all_branch_stat_start(void)
++static void *all_branch_stat_start(struct tracer_stat *trace)
+ {
+ 	return __start_branch_profile;
+ }
+diff --git a/kernel/trace/trace_stat.c b/kernel/trace/trace_stat.c
+index f71b85b..f8f48d8 100644
+--- a/kernel/trace/trace_stat.c
++++ b/kernel/trace/trace_stat.c
+@@ -85,7 +85,7 @@ static int stat_seq_init(struct tracer_stat_session *session)
+ 	if (!ts->stat_cmp)
+ 		ts->stat_cmp = dummy_cmp;
+ 
+-	stat = ts->stat_start();
++	stat = ts->stat_start(ts);
+ 	if (!stat)
+ 		goto exit;
+ 
+diff --git a/kernel/trace/trace_stat.h b/kernel/trace/trace_stat.h
+index 202274c..f3546a2 100644
+--- a/kernel/trace/trace_stat.h
++++ b/kernel/trace/trace_stat.h
+@@ -12,7 +12,7 @@ struct tracer_stat {
+ 	/* The name of your stat file */
+ 	const char		*name;
+ 	/* Iteration over statistic entries */
+-	void			*(*stat_start)(void);
++	void			*(*stat_start)(struct tracer_stat *trace);
+ 	void			*(*stat_next)(void *prev, int idx);
+ 	/* Compare two entries for stats sorting */
+ 	int			(*stat_cmp)(void *p1, void *p2);
+diff --git a/kernel/trace/trace_workqueue.c b/kernel/trace/trace_workqueue.c
+index 9ab035b..ee533c2 100644
+--- a/kernel/trace/trace_workqueue.c
++++ b/kernel/trace/trace_workqueue.c
+@@ -152,7 +152,7 @@ static struct cpu_workqueue_stats *workqueue_stat_start_cpu(int cpu)
+ 	return ret;
+ }
+ 
+-static void *workqueue_stat_start(void)
++static void *workqueue_stat_start(struct tracer_stat *trace)
+ {
+ 	int cpu;
+ 	void *ret = NULL;
+
