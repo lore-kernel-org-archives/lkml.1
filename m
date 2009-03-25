@@ -1,75 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756835AbZCYXXZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753923AbZCYXZE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756835AbZCYXXZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 19:23:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752991AbZCYXXR
+	id S1753923AbZCYXZE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 19:25:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752991AbZCYXYx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 19:23:17 -0400
-Received: from bilbo.ozlabs.org ([203.10.76.25]:35228 "EHLO bilbo.ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752861AbZCYXXQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 19:23:16 -0400
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18890.48350.132781.696909@cargo.ozlabs.ibm.com>
-Date: Thu, 26 Mar 2009 10:23:10 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: Corey Ashford <cjashfor@linux.vnet.ibm.com>
-Cc: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       a.p.zijlstra@chello.nl, akpm@linux-foundation.org, tglx@linutronix.de,
-       mingo@elte.hu, linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:perfcounters/core] perf_counter: record time running and
- time enabled for each counter
-In-Reply-To: <49CAA384.60101@linux.vnet.ibm.com>
-References: <18890.6578.728637.139402@cargo.ozlabs.ibm.com>
-	<tip-03ced439c94d692363307eeb3abe0bbfa2d08a01@git.kernel.org>
-	<49CAA384.60101@linux.vnet.ibm.com>
-X-Mailer: VM 8.0.9 under Emacs 22.2.1 (i486-pc-linux-gnu)
+	Wed, 25 Mar 2009 19:24:53 -0400
+Received: from relais.videotron.ca ([24.201.245.36]:63028 "EHLO
+	relais.videotron.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750849AbZCYXYw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Mar 2009 19:24:52 -0400
+MIME-version: 1.0
+Content-transfer-encoding: 7BIT
+Content-type: text/plain; charset=ISO-8859-1; format=flowed
+Message-id: <49CABD41.1080702@gmail.com>
+Date: Wed, 25 Mar 2009 19:24:49 -0400
+From: Marc Dionne <marc.c.dionne@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre)
+ Gecko/20090303 Fedora/3.0-1.beta2.fc11 Thunderbird/3.0b2
+To: Richard A Nelson <cowboy@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, linux-nfs@vger.kernel.org,
+       openafs-devel@openafs.org
+Subject: Re: NFS/AFS/Selinux issues with 2.26.29
+References: <49CAAB9B.5070104@linux.vnet.ibm.com>
+In-reply-to: <49CAAB9B.5070104@linux.vnet.ibm.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Corey Ashford writes:
+On 03/25/2009 06:09 PM, Richard A Nelson wrote:
+> -- AFS --
+> Mar 24 14:33:54 bandit-hall kernel: BUG: unable to handle kernel NULL pointer dereference at 00000010
+> Mar 24 14:33:54 bandit-hall kernel: IP: [<c021ba99>] selinux_key_alloc+0x26/0x3b
+> Mar 24 14:33:54 bandit-hall kernel: *pde = 00000000
+> Mar 24 14:33:54 bandit-hall kernel: Oops: 0000 [#1] PREEMPT SMP
+> Mar 24 14:33:54 bandit-hall kernel: last sysfs file: /sys/class/power_supply/BAT0/energy_full
+> Mar 24 14:33:54 bandit-hall kernel: Modules linked in: radeon drm binfmt_misc ppdev lp openafs(P) bnep rfcomm l2cap ipt_ULOG nsc_irc
+> Mar 24 14:33:54 bandit-hall kernel: snd_seq_dummy snd_seq_oss snd_seq_midi snd_rawmidi irtty_sir snd_seq_midi_event ipw2100 thinkpad
+> Mar 24 14:33:54 bandit-hall kernel:
+> Mar 24 14:33:54 bandit-hall kernel: Pid: 20144, comm: ckpasswd Tainted: P           (2.6.29 #2) 2373MU3
+> Mar 24 14:33:54 bandit-hall kernel: EIP: 0060:[<c021ba99>] EFLAGS: 00010286 CPU: 0
+> Mar 24 14:33:54 bandit-hall kernel: EIP is at selinux_key_alloc+0x26/0x3b
+> Mar 24 14:33:54 bandit-hall kernel: EAX: fffffff4 EBX: ce673170 ECX: dd6232a0 EDX: 00000000
+> Mar 24 14:33:54 bandit-hall kernel: ESI: f66fb9c0 EDI: f66fba14 EBP: dd645d94 ESP: dd645d8c
+> Mar 24 14:33:54 bandit-hall kernel: DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
+> Mar 24 14:33:54 bandit-hall kernel: Process ckpasswd (pid: 20144, ti=dd644000 task=ce673170 task.ti=dd644000)
+> Mar 24 14:33:54 bandit-hall kernel: Stack:
+> Mar 24 14:33:54 bandit-hall kernel: c0495f78 d5cf63c0 dd645da0 c0217eff f66fb9c0 dd645dd4 c02130e6 00000009
+> Mar 24 14:33:54 bandit-hall kernel: dd645df4 c0495898 0000000a 00000000 0000000b 0000001b 00004e20 ce673170
+> Mar 24 14:33:54 bandit-hall kernel: 00000009 00000009 dd645e14 f887a658 00000009 ce673170 1f3f0000 00000000
+> Mar 24 14:33:54 bandit-hall kernel: Call Trace:
+> Mar 24 14:33:54 bandit-hall kernel: [<c0217eff>] ? security_key_alloc+0x10/0x13
+> Mar 24 14:33:54 bandit-hall kernel: [<c02130e6>] ? key_alloc+0x185/0x2e6
+> Mar 24 14:33:54 bandit-hall kernel: [<f887a658>] ? setpag+0xa1/0x17d [openafs]
 
-> This change looks good to me, except:
-> 
-> How do I know which value comes first after the counter value if I have 
-> both PERF_FORMAT_TOTAL_TIME_ENABLED and PERF_FORMAT_TOTAL_TIME_RUNNING 
-> set?  Are they in the order of their enum values?
+The arguments to key_alloc() changed with 2.6.29, but this was fixed 
+only recently in the OpenAFS source - it wasn't fixed in the original 
+patches for 2.6.29.  I would guess that's the cause of the oops.
 
-Yes.
+You might want to try current OpenAFS source or a 1.4.9 pre-release.
 
->  The order should be 
-> described somewhere.
-
-This comment that I added to perf_counter.h:
-
-/*
- * Bits that can be set in hw_event.read_format to request that
- * reads on the counter should return the indicated quantities,
- * in increasing order of bit value, after the counter value.
- */
-
-describes the order ("in increasing order of bit value").  So you will
-get the count, total time enabled, total time running, in that order.
-
->  Is there anything to keep a kernel code change 
-> from inadvertantly reversing the position of two values at some point in 
-> the future?
-
-Well, that would be an ABI breakage.  Once it's upstream, we won't
-break the ABI, and if someone does break it and no-one realizes at the
-time, we'll revert their change once we do realize.  (With a possible
-exception for security holes that can't be fixed without breaking the
-ABI, of course, but I can't see how that would be the case here.)
-
-Until it goes into Linus' tree, we can still change the ABI in
-incompatible ways.  Ingo and Peter are talking about using a tagged
-format for the data obtained from read(), which would solve your
-problem in another way, though it would make the userspace code more
-complicated (it would have to check that the tags were what it was
-expecting, and cope with the situation where it doesn't get a value it
-needs).
-
-Paul.
+Marc
