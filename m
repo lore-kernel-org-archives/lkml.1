@@ -1,21 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756775AbZCYAfp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756760AbZCYAgA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756775AbZCYAfp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 20:35:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756067AbZCYA3y
+	id S1756760AbZCYAgA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 20:36:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756787AbZCYA3z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 20:29:54 -0400
-Received: from kroah.org ([198.145.64.141]:54081 "EHLO coco.kroah.org"
+	Tue, 24 Mar 2009 20:29:55 -0400
+Received: from kroah.org ([198.145.64.141]:54084 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753763AbZCYA3t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 20:29:49 -0400
+	id S1756795AbZCYA3u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Mar 2009 20:29:50 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
-Cc: Kay Sievers <kay.sievers@vrfy.org>, mchehab@infradead.org,
-       linux-media@vger.kernel.org
-Subject: [PATCH 17/61] v4l: struct device - replace bus_id with dev_name(), dev_set_name()
-Date: Tue, 24 Mar 2009 17:26:21 -0700
-Message-Id: <1237940825-22904-17-git-send-email-gregkh@suse.de>
+Cc: Kay Sievers <kay.sievers@vrfy.org>
+Subject: [PATCH 18/61] amba: struct device - replace bus_id with dev_name(), dev_set_name()
+Date: Tue, 24 Mar 2009 17:26:22 -0700
+Message-Id: <1237940825-22904-18-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.6.2
 In-Reply-To: <20090325001659.GA22461@kroah.com>
 References: <20090325001659.GA22461@kroah.com>
@@ -25,42 +24,34 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Kay Sievers <kay.sievers@vrfy.org>
 
-Cc: mchehab@infradead.org
-Cc: linux-media@vger.kernel.org
 Acked-by: Greg Kroah-Hartman <gregkh@suse.de>
 Signed-off-by: Kay Sievers <kay.sievers@vrfy.org>
 ---
- drivers/media/radio/radio-tea5764.c |    3 ++-
- drivers/media/video/v4l2-device.c   |    2 +-
- 2 files changed, 3 insertions(+), 2 deletions(-)
+ drivers/amba/bus.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/media/radio/radio-tea5764.c b/drivers/media/radio/radio-tea5764.c
-index 4d35308..3936238 100644
---- a/drivers/media/radio/radio-tea5764.c
-+++ b/drivers/media/radio/radio-tea5764.c
-@@ -298,7 +298,8 @@ static int vidioc_querycap(struct file *file, void  *priv,
+diff --git a/drivers/amba/bus.c b/drivers/amba/bus.c
+index 00c46e0..3d763fd 100644
+--- a/drivers/amba/bus.c
++++ b/drivers/amba/bus.c
+@@ -210,7 +210,7 @@ int amba_device_register(struct amba_device *dev, struct resource *parent)
+ 	dev->dev.release = amba_device_release;
+ 	dev->dev.bus = &amba_bustype;
+ 	dev->dev.dma_mask = &dev->dma_mask;
+-	dev->res.name = dev->dev.bus_id;
++	dev->res.name = dev_name(&dev->dev);
  
- 	strlcpy(v->driver, dev->dev.driver->name, sizeof(v->driver));
- 	strlcpy(v->card, dev->name, sizeof(v->card));
--	snprintf(v->bus_info, sizeof(v->bus_info), "I2C:%s", dev->dev.bus_id);
-+	snprintf(v->bus_info, sizeof(v->bus_info),
-+		 "I2C:%s", dev_name(&dev->dev));
- 	v->version = RADIO_VERSION;
- 	v->capabilities = V4L2_CAP_TUNER | V4L2_CAP_RADIO;
- 	return 0;
-diff --git a/drivers/media/video/v4l2-device.c b/drivers/media/video/v4l2-device.c
-index cf9d4c7..8a4b74f 100644
---- a/drivers/media/video/v4l2-device.c
-+++ b/drivers/media/video/v4l2-device.c
-@@ -34,7 +34,7 @@ int v4l2_device_register(struct device *dev, struct v4l2_device *v4l2_dev)
- 	spin_lock_init(&v4l2_dev->lock);
- 	v4l2_dev->dev = dev;
- 	snprintf(v4l2_dev->name, sizeof(v4l2_dev->name), "%s %s",
--			dev->driver->name, dev->bus_id);
-+			dev->driver->name, dev_name(dev));
- 	dev_set_drvdata(dev, v4l2_dev);
- 	return 0;
- }
+ 	if (!dev->dev.coherent_dma_mask && dev->dma_mask)
+ 		dev_warn(&dev->dev, "coherent dma mask is unset\n");
+@@ -294,7 +294,7 @@ static int amba_find_match(struct device *dev, void *data)
+ 	if (d->parent)
+ 		r &= d->parent == dev->parent;
+ 	if (d->busid)
+-		r &= strcmp(dev->bus_id, d->busid) == 0;
++		r &= strcmp(dev_name(dev), d->busid) == 0;
+ 
+ 	if (r) {
+ 		get_device(dev);
 -- 
 1.6.2
 
