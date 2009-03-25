@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758907AbZCYJPl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758966AbZCYJP5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758907AbZCYJPl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 05:15:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757932AbZCYJOO
+	id S1758966AbZCYJP5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 05:15:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758507AbZCYJOR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 05:14:14 -0400
-Received: from e23smtp08.au.ibm.com ([202.81.31.141]:41264 "EHLO
-	e23smtp08.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758287AbZCYJOL (ORCPT
+	Wed, 25 Mar 2009 05:14:17 -0400
+Received: from e28smtp05.in.ibm.com ([59.145.155.5]:44424 "EHLO
+	e28smtp05.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758388AbZCYJOP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 05:14:11 -0400
+	Wed, 25 Mar 2009 05:14:15 -0400
 From: Gautham R Shenoy <ego@in.ibm.com>
-Subject: [RFC PATCH 06/11] sched: Create a helper function to calculate
-	sched_domain stats for fbg()
+Subject: [RFC PATCH 07/11] sched: Create helper to calculate small_imbalance
+	in find_busiest_group.
 To: "Ingo Molnar" <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
        "Vaidyanathan Srinivasan" <svaidy@linux.vnet.ibm.com>
 Cc: linux-kernel@vger.kernel.org, Suresh Siddha <suresh.b.siddha@intel.com>,
@@ -21,8 +21,8 @@ Cc: linux-kernel@vger.kernel.org, Suresh Siddha <suresh.b.siddha@intel.com>,
        "Dhaval Giani" <dhaval@linux.vnet.ibm.com>,
        Bharata B Rao <bharata@linux.vnet.ibm.com>,
        Gautham R Shenoy <ego@in.ibm.com>
-Date: Wed, 25 Mar 2009 14:44:01 +0530
-Message-ID: <20090325091401.13992.88737.stgit@sofia.in.ibm.com>
+Date: Wed, 25 Mar 2009 14:44:06 +0530
+Message-ID: <20090325091406.13992.54316.stgit@sofia.in.ibm.com>
 In-Reply-To: <20090325091239.13992.96090.stgit@sofia.in.ibm.com>
 References: <20090325091239.13992.96090.stgit@sofia.in.ibm.com>
 User-Agent: StGIT/0.14.2
@@ -33,201 +33,172 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Create a helper function named update_sd_lb_stats() to update the various
-sched_domain related statistics in find_busiest_group(). With this
-we would have moved all the statistics computation out of
-find_busiest_group().
+We have two places in find_busiest_group() where we need to calculate the
+minor imbalance before returning the busiest group. Encapsulate this
+functionality into a seperate helper function.
 
 Credit: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
 Signed-off-by: Gautham R Shenoy <ego@in.ibm.com>
 ---
 
- kernel/sched.c |  117 +++++++++++++++++++++++++++++++++++---------------------
- 1 files changed, 73 insertions(+), 44 deletions(-)
+ kernel/sched.c |  131 ++++++++++++++++++++++++++++++--------------------------
+ 1 files changed, 70 insertions(+), 61 deletions(-)
 
 diff --git a/kernel/sched.c b/kernel/sched.c
-index c1b92da..5e01162 100644
+index 5e01162..364866f 100644
 --- a/kernel/sched.c
 +++ b/kernel/sched.c
-@@ -3261,32 +3261,33 @@ static inline void update_sg_lb_stats(struct sched_group *group, int this_cpu,
- 	sgs->group_capacity = group->__cpu_power / SCHED_LOAD_SCALE;
- 
- }
--/******* find_busiest_group() helpers end here *********************/
- 
--/*
-- * find_busiest_group finds and returns the busiest CPU group within the
-- * domain. It calculates and returns the amount of weighted load which
-- * should be moved to restore balance via the imbalance parameter.
-+/**
-+ * update_sd_lb_stats - Update sched_group's statistics for load balancing.
-+ * @sd: sched_domain whose statistics are to be updated.
-+ * @this_cpu: Cpu for which load balance is currently performed.
-+ * @idle: Idle status of this_cpu
-+ * @sd_idle: Idle status of the sched_domain containing group.
-+ * @cpus: Set of cpus considered for load balancing.
-+ * @balance: Should we balance.
-+ * @sds: variable to hold the statistics for this sched_domain.
-  */
--static struct sched_group *
--find_busiest_group(struct sched_domain *sd, int this_cpu,
--		   unsigned long *imbalance, enum cpu_idle_type idle,
--		   int *sd_idle, const struct cpumask *cpus, int *balance)
-+static inline void update_sd_lb_stats(struct sched_domain *sd, int this_cpu,
-+			enum cpu_idle_type idle, int *sd_idle,
-+			const struct cpumask *cpus, int *balance,
-+			struct sd_lb_stats *sds)
- {
--	struct sd_lb_stats sds;
- 	struct sched_group *group = sd->groups;
--	unsigned long max_pull;
-+	struct sg_lb_stats sgs;
- 	int load_idx;
- 
--	memset(&sds, 0, sizeof(sds));
- #if defined(CONFIG_SCHED_MC) || defined(CONFIG_SCHED_SMT)
--	sds.power_savings_balance = 1;
--	sds.min_nr_running = ULONG_MAX;
-+	sds->power_savings_balance = 1;
-+	sds->min_nr_running = ULONG_MAX;
- #endif
- 	load_idx = get_sd_load_idx(sd, idle);
- 
- 	do {
--		struct sg_lb_stats sgs;
- 		int local_group;
- 
- 		local_group = cpumask_test_cpu(this_cpu,
-@@ -3295,25 +3296,25 @@ find_busiest_group(struct sched_domain *sd, int this_cpu,
- 		update_sg_lb_stats(group, this_cpu, idle, load_idx, sd_idle,
- 				local_group, cpus, balance, &sgs);
- 
--		if (balance && !(*balance))
--			goto ret;
-+		if (local_group && balance && !(*balance))
-+			return;
- 
--		sds.total_load += sgs.group_load;
--		sds.total_pwr += group->__cpu_power;
-+		sds->total_load += sgs.group_load;
-+		sds->total_pwr += group->__cpu_power;
- 
- 		if (local_group) {
--			sds.this_load = sgs.avg_load;
--			sds.this = group;
--			sds.this_nr_running = sgs.sum_nr_running;
--			sds.this_load_per_task = sgs.sum_weighted_load;
--		} else if (sgs.avg_load > sds.max_load &&
-+			sds->this_load = sgs.avg_load;
-+			sds->this = group;
-+			sds->this_nr_running = sgs.sum_nr_running;
-+			sds->this_load_per_task = sgs.sum_weighted_load;
-+		} else if (sgs.avg_load > sds->max_load &&
- 			   (sgs.sum_nr_running > sgs.group_capacity ||
- 				sgs.group_imb)) {
--			sds.max_load = sgs.avg_load;
--			sds.busiest = group;
--			sds.busiest_nr_running = sgs.sum_nr_running;
--			sds.busiest_load_per_task = sgs.sum_weighted_load;
--			sds.group_imb = sgs.group_imb;
-+			sds->max_load = sgs.avg_load;
-+			sds->busiest = group;
-+			sds->busiest_nr_running = sgs.sum_nr_running;
-+			sds->busiest_load_per_task = sgs.sum_weighted_load;
-+			sds->group_imb = sgs.group_imb;
- 		}
- 
- #if defined(CONFIG_SCHED_MC) || defined(CONFIG_SCHED_SMT)
-@@ -3330,15 +3331,15 @@ find_busiest_group(struct sched_domain *sd, int this_cpu,
- 		 * no need to do power savings balance at this domain
- 		 */
- 		if (local_group &&
--			(sds.this_nr_running >= sgs.group_capacity ||
--			!sds.this_nr_running))
--			sds.power_savings_balance = 0;
-+			(sds->this_nr_running >= sgs.group_capacity ||
-+			!sds->this_nr_running))
-+			sds->power_savings_balance = 0;
- 
- 		/*
- 		 * If a group is already running at full capacity or idle,
- 		 * don't include that group in power savings calculations
- 		 */
--		if (!sds.power_savings_balance ||
-+		if (!sds->power_savings_balance ||
- 			sgs.sum_nr_running >= sgs.group_capacity ||
- 			!sgs.sum_nr_running)
- 			goto group_next;
-@@ -3348,13 +3349,13 @@ find_busiest_group(struct sched_domain *sd, int this_cpu,
- 		 * This is the group from where we need to pick up the load
- 		 * for saving power
- 		 */
--		if ((sgs.sum_nr_running < sds.min_nr_running) ||
--		    (sgs.sum_nr_running == sds.min_nr_running &&
-+		if ((sgs.sum_nr_running < sds->min_nr_running) ||
-+		    (sgs.sum_nr_running == sds->min_nr_running &&
- 		     group_first_cpu(group) >
--			group_first_cpu(sds.group_min))) {
--			sds.group_min = group;
--			sds.min_nr_running = sgs.sum_nr_running;
--			sds.min_load_per_task = sgs.sum_weighted_load /
-+			group_first_cpu(sds->group_min))) {
-+			sds->group_min = group;
-+			sds->min_nr_running = sgs.sum_nr_running;
-+			sds->min_load_per_task = sgs.sum_weighted_load /
- 						sgs.sum_nr_running;
- 		}
- 
-@@ -3366,18 +3367,46 @@ find_busiest_group(struct sched_domain *sd, int this_cpu,
- 		if (sgs.sum_nr_running > sgs.group_capacity - 1)
- 			goto group_next;
- 
--		if (sgs.sum_nr_running > sds.leader_nr_running ||
--		    (sgs.sum_nr_running == sds.leader_nr_running &&
-+		if (sgs.sum_nr_running > sds->leader_nr_running ||
-+		    (sgs.sum_nr_running == sds->leader_nr_running &&
- 		     group_first_cpu(group) <
--			group_first_cpu(sds.group_leader))) {
--			sds.group_leader = group;
--			sds.leader_nr_running = sgs.sum_nr_running;
-+			group_first_cpu(sds->group_leader))) {
-+			sds->group_leader = group;
-+			sds->leader_nr_running = sgs.sum_nr_running;
- 		}
- group_next:
- #endif
- 		group = group->next;
+@@ -3380,6 +3380,71 @@ group_next:
  	} while (group != sd->groups);
  
-+}
-+/******* find_busiest_group() helpers end here *********************/
+ }
 +
-+/*
-+ * find_busiest_group finds and returns the busiest CPU group within the
-+ * domain. It calculates and returns the amount of weighted load which
-+ * should be moved to restore balance via the imbalance parameter.
++/**
++ * fix_small_imbalance - Calculate the minor imbalance that exists
++ * 			amongst the groups of a sched_domain, during
++ * 			load balancing.
++ * @sds: Statistics of the sched_domain whose imbalance is to be calculated.
++ * @this_cpu: The cpu at whose sched_domain we're performing load-balance.
++ * @imbalance: Variable to store the imbalance.
 + */
-+static struct sched_group *
-+find_busiest_group(struct sched_domain *sd, int this_cpu,
-+		   unsigned long *imbalance, enum cpu_idle_type idle,
-+		   int *sd_idle, const struct cpumask *cpus, int *balance)
++static inline void fix_small_imbalance(struct sd_lb_stats *sds,
++				int this_cpu, unsigned long *imbalance)
 +{
-+	struct sd_lb_stats sds;
-+	unsigned long max_pull;
++	unsigned long tmp, pwr_now = 0, pwr_move = 0;
++	unsigned int imbn = 2;
 +
-+	memset(&sds, 0, sizeof(sds));
++	if (sds->this_nr_running) {
++		sds->this_load_per_task /= sds->this_nr_running;
++		if (sds->busiest_load_per_task >
++				sds->this_load_per_task)
++			imbn = 1;
++	} else
++		sds->this_load_per_task =
++			cpu_avg_load_per_task(this_cpu);
++
++	if (sds->max_load - sds->this_load + sds->busiest_load_per_task >=
++			sds->busiest_load_per_task * imbn) {
++		*imbalance = sds->busiest_load_per_task;
++		return;
++	}
 +
 +	/*
-+	 * Compute the various statistics relavent for load balancing at
-+	 * this level.
++	 * OK, we don't have enough imbalance to justify moving tasks,
++	 * however we may be able to increase total CPU power used by
++	 * moving them.
 +	 */
-+	update_sd_lb_stats(sd, this_cpu, idle, sd_idle, cpus,
-+					balance, &sds);
 +
-+	if (balance && !(*balance))
-+		goto ret;
++	pwr_now += sds->busiest->__cpu_power *
++			min(sds->busiest_load_per_task, sds->max_load);
++	pwr_now += sds->this->__cpu_power *
++			min(sds->this_load_per_task, sds->this_load);
++	pwr_now /= SCHED_LOAD_SCALE;
 +
- 	if (!sds.busiest || sds.this_load >= sds.max_load
- 		|| sds.busiest_nr_running == 0)
- 		goto out_balanced;
++	/* Amount of load we'd subtract */
++	tmp = sg_div_cpu_power(sds->busiest,
++			sds->busiest_load_per_task * SCHED_LOAD_SCALE);
++	if (sds->max_load > tmp)
++		pwr_move += sds->busiest->__cpu_power *
++			min(sds->busiest_load_per_task, sds->max_load - tmp);
++
++	/* Amount of load we'd add */
++	if (sds->max_load * sds->busiest->__cpu_power <
++		sds->busiest_load_per_task * SCHED_LOAD_SCALE)
++		tmp = sg_div_cpu_power(sds->this,
++			sds->max_load * sds->busiest->__cpu_power);
++	else
++		tmp = sg_div_cpu_power(sds->this,
++			sds->busiest_load_per_task * SCHED_LOAD_SCALE);
++	pwr_move += sds->this->__cpu_power *
++			min(sds->this_load_per_task, sds->this_load + tmp);
++	pwr_move /= SCHED_LOAD_SCALE;
++
++	/* Move if we gain throughput */
++	if (pwr_move > pwr_now)
++		*imbalance = sds->busiest_load_per_task;
++}
+ /******* find_busiest_group() helpers end here *********************/
+ 
+ /*
+@@ -3443,7 +3508,8 @@ find_busiest_group(struct sched_domain *sd, int this_cpu,
+ 	 */
+ 	if (sds.max_load < sds.avg_load) {
+ 		*imbalance = 0;
+-		goto small_imbalance;
++		fix_small_imbalance(&sds, this_cpu, imbalance);
++		goto ret_busiest;
+ 	}
+ 
+ 	/* Don't want to pull so many tasks that a group would go idle */
+@@ -3461,67 +3527,10 @@ find_busiest_group(struct sched_domain *sd, int this_cpu,
+ 	 * a think about bumping its value to force at least one task to be
+ 	 * moved
+ 	 */
+-	if (*imbalance < sds.busiest_load_per_task) {
+-		unsigned long tmp, pwr_now, pwr_move;
+-		unsigned int imbn;
+-
+-small_imbalance:
+-		pwr_move = pwr_now = 0;
+-		imbn = 2;
+-		if (sds.this_nr_running) {
+-			sds.this_load_per_task /= sds.this_nr_running;
+-			if (sds.busiest_load_per_task >
+-					sds.this_load_per_task)
+-				imbn = 1;
+-		} else
+-			sds.this_load_per_task =
+-				cpu_avg_load_per_task(this_cpu);
+-
+-		if (sds.max_load - sds.this_load +
+-			sds.busiest_load_per_task >=
+-				sds.busiest_load_per_task * imbn) {
+-			*imbalance = sds.busiest_load_per_task;
+-			return sds.busiest;
+-		}
+-
+-		/*
+-		 * OK, we don't have enough imbalance to justify moving tasks,
+-		 * however we may be able to increase total CPU power used by
+-		 * moving them.
+-		 */
+-
+-		pwr_now += sds.busiest->__cpu_power *
+-				min(sds.busiest_load_per_task, sds.max_load);
+-		pwr_now += sds.this->__cpu_power *
+-				min(sds.this_load_per_task, sds.this_load);
+-		pwr_now /= SCHED_LOAD_SCALE;
+-
+-		/* Amount of load we'd subtract */
+-		tmp = sg_div_cpu_power(sds.busiest,
+-				sds.busiest_load_per_task * SCHED_LOAD_SCALE);
+-		if (sds.max_load > tmp)
+-			pwr_move += sds.busiest->__cpu_power *
+-				min(sds.busiest_load_per_task,
+-						sds.max_load - tmp);
+-
+-		/* Amount of load we'd add */
+-		if (sds.max_load * sds.busiest->__cpu_power <
+-				sds.busiest_load_per_task * SCHED_LOAD_SCALE)
+-			tmp = sg_div_cpu_power(sds.this,
+-				sds.max_load * sds.busiest->__cpu_power);
+-		else
+-			tmp = sg_div_cpu_power(sds.this,
+-				sds.busiest_load_per_task * SCHED_LOAD_SCALE);
+-		pwr_move += sds.this->__cpu_power *
+-				min(sds.this_load_per_task,
+-					sds.this_load + tmp);
+-		pwr_move /= SCHED_LOAD_SCALE;
+-
+-		/* Move if we gain throughput */
+-		if (pwr_move > pwr_now)
+-			*imbalance = sds.busiest_load_per_task;
+-	}
++	if (*imbalance < sds.busiest_load_per_task)
++		fix_small_imbalance(&sds, this_cpu, imbalance);
+ 
++ret_busiest:
+ 	return sds.busiest;
+ 
+ out_balanced:
 
