@@ -1,127 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760733AbZCYNjM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761912AbZCYNku@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760733AbZCYNjM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 09:39:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759136AbZCYNiy
+	id S1761912AbZCYNku (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 09:40:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752943AbZCYNkm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 09:38:54 -0400
-Received: from outbound.icp-qv1-irony-out1.iinet.net.au ([203.59.1.106]:53158
-	"EHLO outbound.icp-qv1-irony-out1.iinet.net.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757681AbZCYNix (ORCPT
+	Wed, 25 Mar 2009 09:40:42 -0400
+Received: from smtp02.citrix.com ([66.165.176.63]:54323 "EHLO
+	SMTP02.CITRIX.COM" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753877AbZCYNkm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 09:38:53 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ApoEAA/RyUl8qXHv/2dsb2JhbADSYIN1Bg
-X-IronPort-AV: E=Sophos;i="4.38,419,1233500400"; 
-   d="scan'208";a="471682675"
-Message-ID: <49CA33E7.6090309@themaw.net>
-Date: Wed, 25 Mar 2009 22:38:47 +0900
-From: Ian Kent <raven@themaw.net>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
-MIME-Version: 1.0
-To: Jeff Layton <jlayton@redhat.com>
-CC: Wu Fengguang <fengguang.wu@intel.com>, Dave Chinner <david@fromorbit.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       "jens.axboe@oracle.com" <jens.axboe@oracle.com>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "hch@infradead.org" <hch@infradead.org>,
-       "linux-nfs@vger.kernel.org" <linux-nfs@vger.kernel.org>
-Subject: Re: [PATCH] writeback: reset inode dirty time when adding it back
- to empty s_dirty list
-References: <1237840233-11045-1-git-send-email-jlayton@redhat.com>	<20090324135720.GA25314@localhost>	<20090324102806.4f38fd26@tleilax.poochiereds.net>	<20090324104657.6907b19e@tleilax.poochiereds.net>	<20090325012829.GA7506@localhost>	<20090324221528.2bb7c50b@tleilax.poochiereds.net>	<20090325025037.GA17374@localhost>	<20090325075110.028f0d1d@tleilax.poochiereds.net>	<20090325121742.GA22869@localhost> <20090325091325.17c997fd@tleilax.poochiereds.net> <49CA2F41.8030804@themaw.net>
-In-Reply-To: <49CA2F41.8030804@themaw.net>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Wed, 25 Mar 2009 09:40:42 -0400
+X-IronPort-AV: E=Sophos;i="4.38,419,1233550800"; 
+   d="scan'208";a="45082399"
+From: Ian Campbell <Ian.Campbell@citrix.com>
+To: linux-kernel@vger.kernel.org
+Cc: Ian Campbell <Ian.Campbell@citrix.com>,
+       Ian Campbell <ian.campbell@citrix.com>,
+       Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       "Alex.Zeffertt" <Alex.Zeffertt@citrix.com>, stable@kernel.org
+Subject: [PATCH] clockevent: on resume program the next oneshot tick with the next actual event
+Date: Wed, 25 Mar 2009 13:40:29 +0000
+Message-Id: <1237988429-26474-1-git-send-email-Ian.Campbell@citrix.com>
+X-Mailer: git-send-email 1.5.6.5
+X-OriginalArrivalTime: 25 Mar 2009 13:40:34.0790 (UTC) FILETIME=[46294060:01C9AD4F]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ian Kent wrote:
-> Jeff Layton wrote:
->> On Wed, 25 Mar 2009 20:17:43 +0800
->> Wu Fengguang <fengguang.wu@intel.com> wrote:
->>
->>> On Wed, Mar 25, 2009 at 07:51:10PM +0800, Jeff Layton wrote:
->>>> On Wed, 25 Mar 2009 10:50:37 +0800
->>>> Wu Fengguang <fengguang.wu@intel.com> wrote:
->>>>
->>>>>> Given the right situation though (or maybe the right filesystem), it's
->>>>>> not too hard to imagine this problem occurring even in current mainline
->>>>>> code with an inode that's frequently being redirtied.
->>>>> My reasoning with recent kernel is: for kupdate, s_dirty enqueues only
->>>>> happen in __mark_inode_dirty() and redirty_tail().  Newly dirtied
->>>>> inodes will be parked in s_dirty for 30s. During which time the
->>>>> actively being-redirtied inodes, if their dirtied_when is an old stuck
->>>>> value, will be retried for writeback and then re-inserted into a
->>>>> non-empty s_dirty queue and have their dirtied_when refreshed.
->>>>>
->>>> Doesn't that assume that there are new inodes that are being dirtied?
->>>> If you only have the same inodes being redirtied and never any new
->>>> ones, the problem still occurs, right?
->>> Yes. But will a production server run months without making one single
->>> new dirtied inode? (Just out of curiosity. Not that I'm not willing to
->>> fix this possible issue.:)
->>>
->> Yes. It's not that the box will run that long without creating a
->> single new dirtied inode, but rather that it won't necessarily create
->> one on all of its mounts. It's often the case that someone has a
->> mountpoint for a dedicated purpose.
->>
->> Consider a host that has a mountpoint that contains logfiles that are
->> being heavily written. There's nothing that says that they must rotate
->> those logs over a particular period (assuming the fs has enough space,
->> etc). If the same ones are constantly being redirtied and no new
->> ones are created, then I think this problem can easily happen.
->>
->>>>>>> ...I see no obvious reasons against unconditionally resetting dirtied_when.
->>>>>>>
->>>>>>> (a) Delaying an inode's writeback for 30s maybe too long - its blocking
->>>>>>> condition may well go away within 1s. (b) And it would be very undesirable
->>>>>>> if one big file is repeatedly redirtied hence its writeback being
->>>>>>> delayed considerably.
->>>>>>>
->>>>>>> However, redirty_tail() currently only tries to speedup writeback-after-redirty
->>>>>>> in a _best effort_ way. It at best partially hides the above issues,
->>>>>>> if there are any. In particular, if (b) is possible, the bug should
->>>>>>> already show up at least in some situations.
->>>>>>>
->>>>>>> For XFS, immediately sync of redirtied inode is actually discouraged:
->>>>>>>
->>>>>>>         http://lkml.org/lkml/2008/1/16/491
->>>>>>>
->>>>>>>
->>>>>> Ok, those are good points that I need to think about.
->>>>>>
->>>>>> Thanks for the help so far. I'd welcome any suggestions you have on
->>>>>> how best to fix this.
->>>>> For NFS, is it desirable to retry a redirtied inode after 30s, or
->>>>> after a shorter 5s, or after 0.1~5s? Or the exact timing simply
->>>>> doesn't matter?
->>>>>
->>>> I don't really consider NFS to be a special case here. It just happens
->>>> to be where we saw the problem originally. Some of its characteristics
->>>> might make it easier to hit this, but I'm not certain of that.
->>> Now there are now two possible solutions:
->>> - unconditionally update dirtied_when in redirty_tail();
->>> - keep dirtied_when and redirty inodes to a new dedicated queue.
->>> The first one involves less code, the second one allows more flexible timing.
->>>
->>> NFS/XFS could be a good starting point for discussing the
->>> requirements, so that we can reach a suitable solution.
->>>
->> It sounds like it, yes. I saw that you posted some patches in January
->> (including your s_more_io_wait patch). I'll give those a closer look.
->> Adding the new s_more_io_wait queue is interesting and might sidestep
->> this problem nicely.
->>
-> 
-> Yes, I was looking at that bit of code but, so far, I think it won't be
-> called for the case we are trying to describe.
+When resuming a Xen domU we were seeing an issue where the timer ticks never
+seemed to start up again. This was with CONFIG_NO_HZ=y, the Xen clocksource
+has CLOCK_EVT_FEAT_ONESHOT but not CLOCK_EVT_FEAT_PERIODIC.
 
-I take that back.
-As Jeff pointed out I haven't seen these patches and can't seem to find
-them in my fsdevel list folder, Wu can you send me a copy please?
+The issue is that on resume tick_resume_oneshot() tries to program an event for
+"now", e.g.
+	tick_program_event(ktime_get(), 1);
 
-Ian
+However further down the call chain tick_dev_program_event() then compares that
+expiry time with a second call to ktime_get() and discards the event if the
+timeout is negative -- which it always will be since some time must have passed
+since tick_program_event was called.
+
+Instead of asking for an immediate event on resume, instead ask for the next
+actual event.
+
+With this fix I can successfully resume a Xen domain.
+
+Signed-off-by: Ian Campbell <ian.campbell@citrix.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Alex.Zeffertt <Alex.Zeffertt@citrix.com>
+Cc: stable@kernel.org
+---
+ kernel/time/tick-oneshot.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/kernel/time/tick-oneshot.c b/kernel/time/tick-oneshot.c
+index 2e8de67..8b2c8ed 100644
+--- a/kernel/time/tick-oneshot.c
++++ b/kernel/time/tick-oneshot.c
+@@ -81,7 +81,7 @@ void tick_resume_oneshot(void)
+ 	struct clock_event_device *dev = td->evtdev;
+ 
+ 	clockevents_set_mode(dev, CLOCK_EVT_MODE_ONESHOT);
+-	tick_program_event(ktime_get(), 1);
++	tick_program_event(dev->next_event, 1);
+ }
+ 
+ /**
+-- 
+1.5.6.5
 
