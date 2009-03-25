@@ -1,20 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759758AbZCYArV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759869AbZCYAri@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759758AbZCYArV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 20:47:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756920AbZCYAad
+	id S1759869AbZCYAri (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 20:47:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756885AbZCYAaf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 20:30:33 -0400
-Received: from kroah.org ([198.145.64.141]:54179 "EHLO coco.kroah.org"
+	Tue, 24 Mar 2009 20:30:35 -0400
+Received: from kroah.org ([198.145.64.141]:54183 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756864AbZCYAaV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 20:30:21 -0400
+	id S1756873AbZCYAaW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Mar 2009 20:30:22 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
-Cc: Greg Kroah-Hartman <gregkh@suse.de>, Kay Sievers <kay.sievers@vrfy.org>
-Subject: [PATCH 47/61] driver core: move knode_bus into private structure
-Date: Tue, 24 Mar 2009 17:26:51 -0700
-Message-Id: <1237940825-22904-47-git-send-email-gregkh@suse.de>
+Cc: "Eric W. Biederman" <ebiederm@aristanetworks.com>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Kay Sievers <kay.sievers@vrfy.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [PATCH 48/61] sysfs: don't block indefinitely for unmapped files.
+Date: Tue, 24 Mar 2009 17:26:52 -0700
+Message-Id: <1237940825-22904-48-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.6.2
 In-Reply-To: <20090325001659.GA22461@kroah.com>
 References: <20090325001659.GA22461@kroah.com>
@@ -22,178 +26,311 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Nothing outside of the driver core should ever touch knode_bus, so
-move it out of the public eye.
+From: Eric W. Biederman <ebiederm@aristanetworks.com>
 
+Modify sysfs bin files so that we can remove the bin file while they are
+still mapped.  When the kobject is removed we unmap the bin file and
+arrange for future accesses to the mapping to receive SIGBUS.
+
+Implementing this prevents a nasty DOS when pci devices are hot plugged
+and unplugged.  Where if any of their resources were mmaped the kernel
+could not free up their pci resources or release their pci data
+structures.
+
+[akpm@linux-foundation.org: remove unused var]
+Signed-off-by: Eric W. Biederman <ebiederm@aristanetworks.com>
+Cc: Jesse Barnes <jbarnes@virtuousgeek.org>
+Acked-by: Tejun Heo <tj@kernel.org>
 Cc: Kay Sievers <kay.sievers@vrfy.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/base/base.h    |    4 ++++
- drivers/base/bus.c     |   40 +++++++++++++++++++++++++++-------------
- include/linux/device.h |    1 -
- 3 files changed, 31 insertions(+), 14 deletions(-)
+ fs/sysfs/bin.c   |  184 ++++++++++++++++++++++++++++++++++++++++++++++++++----
+ fs/sysfs/dir.c   |    1 +
+ fs/sysfs/sysfs.h |    2 +
+ 3 files changed, 174 insertions(+), 13 deletions(-)
 
-diff --git a/drivers/base/base.h b/drivers/base/base.h
-index 4fc5fd3..ddc9749 100644
---- a/drivers/base/base.h
-+++ b/drivers/base/base.h
-@@ -69,6 +69,7 @@ struct class_private {
-  * @klist_children - klist containing all children of this device
-  * @knode_parent - node in sibling list
-  * @knode_driver - node in driver list
-+ * @knode_bus - node in bus list
-  * @device - pointer back to the struct class that this structure is
-  * associated with.
-  *
-@@ -78,12 +79,15 @@ struct device_private {
- 	struct klist klist_children;
- 	struct klist_node knode_parent;
- 	struct klist_node knode_driver;
-+	struct klist_node knode_bus;
- 	struct device *device;
- };
- #define to_device_private_parent(obj)	\
- 	container_of(obj, struct device_private, knode_parent)
- #define to_device_private_driver(obj)	\
- 	container_of(obj, struct device_private, knode_driver)
-+#define to_device_private_bus(obj)	\
-+	container_of(obj, struct device_private, knode_bus)
+diff --git a/fs/sysfs/bin.c b/fs/sysfs/bin.c
+index f2c478c..96cc2bf 100644
+--- a/fs/sysfs/bin.c
++++ b/fs/sysfs/bin.c
+@@ -21,15 +21,28 @@
+ #include <linux/module.h>
+ #include <linux/slab.h>
+ #include <linux/mutex.h>
++#include <linux/mm.h>
  
- /* initialisation functions */
- extern int devices_init(void);
-diff --git a/drivers/base/bus.c b/drivers/base/bus.c
-index 11463c0..dc030f1 100644
---- a/drivers/base/bus.c
-+++ b/drivers/base/bus.c
-@@ -253,7 +253,14 @@ static ssize_t store_drivers_probe(struct bus_type *bus,
- static struct device *next_device(struct klist_iter *i)
- {
- 	struct klist_node *n = klist_next(i);
--	return n ? container_of(n, struct device, knode_bus) : NULL;
-+	struct device *dev = NULL;
-+	struct device_private *dev_prv;
+ #include <asm/uaccess.h>
+ 
+ #include "sysfs.h"
+ 
++/*
++ * There's one bin_buffer for each open file.
++ *
++ * filp->private_data points to bin_buffer and
++ * sysfs_dirent->s_bin_attr.buffers points to a the bin_buffer s
++ * sysfs_dirent->s_bin_attr.buffers is protected by sysfs_bin_lock
++ */
++static DEFINE_MUTEX(sysfs_bin_lock);
 +
-+	if (n) {
-+		dev_prv = to_device_private_bus(n);
-+		dev = dev_prv->device;
-+	}
-+	return dev;
- }
- 
- /**
-@@ -286,7 +293,7 @@ int bus_for_each_dev(struct bus_type *bus, struct device *start,
- 		return -EINVAL;
- 
- 	klist_iter_init_node(&bus->p->klist_devices, &i,
--			     (start ? &start->knode_bus : NULL));
-+			     (start ? &start->p->knode_bus : NULL));
- 	while ((dev = next_device(&i)) && !error)
- 		error = fn(dev, data);
- 	klist_iter_exit(&i);
-@@ -320,7 +327,7 @@ struct device *bus_find_device(struct bus_type *bus,
- 		return NULL;
- 
- 	klist_iter_init_node(&bus->p->klist_devices, &i,
--			     (start ? &start->knode_bus : NULL));
-+			     (start ? &start->p->knode_bus : NULL));
- 	while ((dev = next_device(&i)))
- 		if (match(dev, data) && get_device(dev))
- 			break;
-@@ -507,7 +514,8 @@ void bus_attach_device(struct device *dev)
- 			ret = device_attach(dev);
- 		WARN_ON(ret < 0);
- 		if (ret >= 0)
--			klist_add_tail(&dev->knode_bus, &bus->p->klist_devices);
-+			klist_add_tail(&dev->p->knode_bus,
-+				       &bus->p->klist_devices);
- 	}
- }
- 
-@@ -528,8 +536,8 @@ void bus_remove_device(struct device *dev)
- 		sysfs_remove_link(&dev->bus->p->devices_kset->kobj,
- 				  dev_name(dev));
- 		device_remove_attrs(dev->bus, dev);
--		if (klist_node_attached(&dev->knode_bus))
--			klist_del(&dev->knode_bus);
-+		if (klist_node_attached(&dev->p->knode_bus))
-+			klist_del(&dev->p->knode_bus);
- 
- 		pr_debug("bus: '%s': remove device %s\n",
- 			 dev->bus->name, dev_name(dev));
-@@ -831,14 +839,16 @@ static void bus_remove_attrs(struct bus_type *bus)
- 
- static void klist_devices_get(struct klist_node *n)
- {
--	struct device *dev = container_of(n, struct device, knode_bus);
-+	struct device_private *dev_prv = to_device_private_bus(n);
-+	struct device *dev = dev_prv->device;
- 
- 	get_device(dev);
- }
- 
- static void klist_devices_put(struct klist_node *n)
- {
--	struct device *dev = container_of(n, struct device, knode_bus);
-+	struct device_private *dev_prv = to_device_private_bus(n);
-+	struct device *dev = dev_prv->device;
- 
- 	put_device(dev);
- }
-@@ -995,18 +1005,20 @@ static void device_insertion_sort_klist(struct device *a, struct list_head *list
- {
- 	struct list_head *pos;
- 	struct klist_node *n;
-+	struct device_private *dev_prv;
- 	struct device *b;
- 
- 	list_for_each(pos, list) {
- 		n = container_of(pos, struct klist_node, n_node);
--		b = container_of(n, struct device, knode_bus);
-+		dev_prv = to_device_private_bus(n);
-+		b = dev_prv->device;
- 		if (compare(a, b) <= 0) {
--			list_move_tail(&a->knode_bus.n_node,
--				       &b->knode_bus.n_node);
-+			list_move_tail(&a->p->knode_bus.n_node,
-+				       &b->p->knode_bus.n_node);
- 			return;
- 		}
- 	}
--	list_move_tail(&a->knode_bus.n_node, list);
-+	list_move_tail(&a->p->knode_bus.n_node, list);
- }
- 
- void bus_sort_breadthfirst(struct bus_type *bus,
-@@ -1016,6 +1028,7 @@ void bus_sort_breadthfirst(struct bus_type *bus,
- 	LIST_HEAD(sorted_devices);
- 	struct list_head *pos, *tmp;
- 	struct klist_node *n;
-+	struct device_private *dev_prv;
- 	struct device *dev;
- 	struct klist *device_klist;
- 
-@@ -1024,7 +1037,8 @@ void bus_sort_breadthfirst(struct bus_type *bus,
- 	spin_lock(&device_klist->k_lock);
- 	list_for_each_safe(pos, tmp, &device_klist->k_list) {
- 		n = container_of(pos, struct klist_node, n_node);
--		dev = container_of(n, struct device, knode_bus);
-+		dev_prv = to_device_private_bus(n);
-+		dev = dev_prv->device;
- 		device_insertion_sort_klist(dev, &sorted_devices, compare);
- 	}
- 	list_splice(&sorted_devices, &device_klist->k_list);
-diff --git a/include/linux/device.h b/include/linux/device.h
-index 83e241f..5a64775 100644
---- a/include/linux/device.h
-+++ b/include/linux/device.h
-@@ -368,7 +368,6 @@ struct device_dma_parameters {
+ struct bin_buffer {
+-	struct mutex	mutex;
+-	void		*buffer;
+-	int		mmapped;
++	struct mutex			mutex;
++	void				*buffer;
++	int				mmapped;
++	struct vm_operations_struct 	*vm_ops;
++	struct file			*file;
++	struct hlist_node		list;
  };
  
- struct device {
--	struct klist_node	knode_bus;
- 	struct device		*parent;
+ static int
+@@ -168,29 +181,148 @@ out_free:
+ 	return count;
+ }
  
- 	struct device_private	*p;
++static void bin_vma_open(struct vm_area_struct *vma)
++{
++	struct file *file = vma->vm_file;
++	struct bin_buffer *bb = file->private_data;
++	struct sysfs_dirent *attr_sd = file->f_path.dentry->d_fsdata;
++
++	if (!bb->vm_ops || !bb->vm_ops->open)
++		return;
++
++	if (!sysfs_get_active_two(attr_sd))
++		return;
++
++	bb->vm_ops->open(vma);
++
++	sysfs_put_active_two(attr_sd);
++}
++
++static void bin_vma_close(struct vm_area_struct *vma)
++{
++	struct file *file = vma->vm_file;
++	struct bin_buffer *bb = file->private_data;
++	struct sysfs_dirent *attr_sd = file->f_path.dentry->d_fsdata;
++
++	if (!bb->vm_ops || !bb->vm_ops->close)
++		return;
++
++	if (!sysfs_get_active_two(attr_sd))
++		return;
++
++	bb->vm_ops->close(vma);
++
++	sysfs_put_active_two(attr_sd);
++}
++
++static int bin_fault(struct vm_area_struct *vma, struct vm_fault *vmf)
++{
++	struct file *file = vma->vm_file;
++	struct bin_buffer *bb = file->private_data;
++	struct sysfs_dirent *attr_sd = file->f_path.dentry->d_fsdata;
++	int ret;
++
++	if (!bb->vm_ops || !bb->vm_ops->fault)
++		return VM_FAULT_SIGBUS;
++
++	if (!sysfs_get_active_two(attr_sd))
++		return VM_FAULT_SIGBUS;
++
++	ret = bb->vm_ops->fault(vma, vmf);
++
++	sysfs_put_active_two(attr_sd);
++	return ret;
++}
++
++static int bin_page_mkwrite(struct vm_area_struct *vma, struct page *page)
++{
++	struct file *file = vma->vm_file;
++	struct bin_buffer *bb = file->private_data;
++	struct sysfs_dirent *attr_sd = file->f_path.dentry->d_fsdata;
++	int ret;
++
++	if (!bb->vm_ops || !bb->vm_ops->page_mkwrite)
++		return -EINVAL;
++
++	if (!sysfs_get_active_two(attr_sd))
++		return -EINVAL;
++
++	ret = bb->vm_ops->page_mkwrite(vma, page);
++
++	sysfs_put_active_two(attr_sd);
++	return ret;
++}
++
++static int bin_access(struct vm_area_struct *vma, unsigned long addr,
++		  void *buf, int len, int write)
++{
++	struct file *file = vma->vm_file;
++	struct bin_buffer *bb = file->private_data;
++	struct sysfs_dirent *attr_sd = file->f_path.dentry->d_fsdata;
++	int ret;
++
++	if (!bb->vm_ops || !bb->vm_ops->access)
++		return -EINVAL;
++
++	if (!sysfs_get_active_two(attr_sd))
++		return -EINVAL;
++
++	ret = bb->vm_ops->access(vma, addr, buf, len, write);
++
++	sysfs_put_active_two(attr_sd);
++	return ret;
++}
++
++static struct vm_operations_struct bin_vm_ops = {
++	.open		= bin_vma_open,
++	.close		= bin_vma_close,
++	.fault		= bin_fault,
++	.page_mkwrite	= bin_page_mkwrite,
++	.access		= bin_access,
++};
++
+ static int mmap(struct file *file, struct vm_area_struct *vma)
+ {
+ 	struct bin_buffer *bb = file->private_data;
+ 	struct sysfs_dirent *attr_sd = file->f_path.dentry->d_fsdata;
+ 	struct bin_attribute *attr = attr_sd->s_bin_attr.bin_attr;
+ 	struct kobject *kobj = attr_sd->s_parent->s_dir.kobj;
++	struct vm_operations_struct *vm_ops;
+ 	int rc;
+ 
+ 	mutex_lock(&bb->mutex);
+ 
+ 	/* need attr_sd for attr, its parent for kobj */
++	rc = -ENODEV;
+ 	if (!sysfs_get_active_two(attr_sd))
+-		return -ENODEV;
++		goto out_unlock;
+ 
+ 	rc = -EINVAL;
+-	if (attr->mmap)
+-		rc = attr->mmap(kobj, attr, vma);
++	if (!attr->mmap)
++		goto out_put;
+ 
+-	if (rc == 0 && !bb->mmapped)
+-		bb->mmapped = 1;
+-	else
+-		sysfs_put_active_two(attr_sd);
++	rc = attr->mmap(kobj, attr, vma);
++	vm_ops = vma->vm_ops;
++	vma->vm_ops = &bin_vm_ops;
++	if (rc)
++		goto out_put;
+ 
++	rc = -EINVAL;
++	if (bb->mmapped && bb->vm_ops != vma->vm_ops)
++		goto out_put;
++
++#ifdef CONFIG_NUMA
++	rc = -EINVAL;
++	if (vm_ops && ((vm_ops->set_policy || vm_ops->get_policy || vm_ops->migrate)))
++		goto out_put;
++#endif
++
++	rc = 0;
++	bb->mmapped = 1;
++	bb->vm_ops = vm_ops;
++out_put:
++	sysfs_put_active_two(attr_sd);
++out_unlock:
+ 	mutex_unlock(&bb->mutex);
+ 
+ 	return rc;
+@@ -223,8 +355,13 @@ static int open(struct inode * inode, struct file * file)
+ 		goto err_out;
+ 
+ 	mutex_init(&bb->mutex);
++	bb->file = file;
+ 	file->private_data = bb;
+ 
++	mutex_lock(&sysfs_bin_lock);
++	hlist_add_head(&bb->list, &attr_sd->s_bin_attr.buffers);
++	mutex_unlock(&sysfs_bin_lock);
++
+ 	/* open succeeded, put active references */
+ 	sysfs_put_active_two(attr_sd);
+ 	return 0;
+@@ -237,11 +374,12 @@ static int open(struct inode * inode, struct file * file)
+ 
+ static int release(struct inode * inode, struct file * file)
+ {
+-	struct sysfs_dirent *attr_sd = file->f_path.dentry->d_fsdata;
+ 	struct bin_buffer *bb = file->private_data;
+ 
+-	if (bb->mmapped)
+-		sysfs_put_active_two(attr_sd);
++	mutex_lock(&sysfs_bin_lock);
++	hlist_del(&bb->list);
++	mutex_unlock(&sysfs_bin_lock);
++
+ 	kfree(bb->buffer);
+ 	kfree(bb);
+ 	return 0;
+@@ -256,6 +394,26 @@ const struct file_operations bin_fops = {
+ 	.release	= release,
+ };
+ 
++
++void unmap_bin_file(struct sysfs_dirent *attr_sd)
++{
++	struct bin_buffer *bb;
++	struct hlist_node *tmp;
++
++	if (sysfs_type(attr_sd) != SYSFS_KOBJ_BIN_ATTR)
++		return;
++
++	mutex_lock(&sysfs_bin_lock);
++
++	hlist_for_each_entry(bb, tmp, &attr_sd->s_bin_attr.buffers, list) {
++		struct inode *inode = bb->file->f_path.dentry->d_inode;
++
++		unmap_mapping_range(inode->i_mapping, 0, 0, 1);
++	}
++
++	mutex_unlock(&sysfs_bin_lock);
++}
++
+ /**
+  *	sysfs_create_bin_file - create binary file for object.
+  *	@kobj:	object.
+diff --git a/fs/sysfs/dir.c b/fs/sysfs/dir.c
+index f13d852..66aeb4f 100644
+--- a/fs/sysfs/dir.c
++++ b/fs/sysfs/dir.c
+@@ -609,6 +609,7 @@ void sysfs_addrm_finish(struct sysfs_addrm_cxt *acxt)
+ 
+ 		sysfs_drop_dentry(sd);
+ 		sysfs_deactivate(sd);
++		unmap_bin_file(sd);
+ 		sysfs_put(sd);
+ 	}
+ }
+diff --git a/fs/sysfs/sysfs.h b/fs/sysfs/sysfs.h
+index 9055d04..3fa0d98 100644
+--- a/fs/sysfs/sysfs.h
++++ b/fs/sysfs/sysfs.h
+@@ -28,6 +28,7 @@ struct sysfs_elem_attr {
+ 
+ struct sysfs_elem_bin_attr {
+ 	struct bin_attribute	*bin_attr;
++	struct hlist_head	buffers;
+ };
+ 
+ /*
+@@ -164,6 +165,7 @@ int sysfs_add_file_mode(struct sysfs_dirent *dir_sd,
+  * bin.c
+  */
+ extern const struct file_operations bin_fops;
++void unmap_bin_file(struct sysfs_dirent *attr_sd);
+ 
+ /*
+  * symlink.c
 -- 
 1.6.2
 
