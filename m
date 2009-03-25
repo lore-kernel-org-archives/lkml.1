@@ -1,21 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760529AbZCYAv6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760455AbZCYAvk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760529AbZCYAv6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 20:51:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756999AbZCYAav
+	id S1760455AbZCYAvk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 20:51:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756994AbZCYAau
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 20:30:51 -0400
-Received: from kroah.org ([198.145.64.141]:54219 "EHLO coco.kroah.org"
+	Tue, 24 Mar 2009 20:30:50 -0400
+Received: from kroah.org ([198.145.64.141]:54224 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756864AbZCYAae (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 20:30:34 -0400
+	id S1756934AbZCYAaf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Mar 2009 20:30:35 -0400
 From: Greg Kroah-Hartman <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org
-Cc: Jason Baron <jbaron@redhat.com>, Greg Banks <gnb@sgi.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [PATCH 59/61] dynamic debug: update docs
-Date: Tue, 24 Mar 2009 17:27:03 -0700
-Message-Id: <1237940825-22904-59-git-send-email-gregkh@suse.de>
+Cc: Greg Banks <gnb@melbourne.sgi.com>, Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [PATCH 60/61] Dynamic debug: allow simple quoting of words
+Date: Tue, 24 Mar 2009 17:27:04 -0700
+Message-Id: <1237940825-22904-60-git-send-email-gregkh@suse.de>
 X-Mailer: git-send-email 1.6.2
 In-Reply-To: <20090325001659.GA22461@kroah.com>
 References: <20090325001659.GA22461@kroah.com>
@@ -23,362 +22,157 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jason Baron <jbaron@redhat.com>
+From: Greg Banks <gnb@melbourne.sgi.com>
 
-updates the documentation for 'dynamic debug' feature.
+Allow simple quoting of words in the dynamic debug control language.
 
-Signed-off-by: Greg Banks <gnb@sgi.com>
-Signed-off-by: Jason Baron <jbaron@redhat.com>
+This allows more natural specification when using the control language
+to match against printk formats, e.g
+
+#echo -n 'format "Setting node for non-present cpu" +p' >
+	/mnt/debugfs/dynamic_debug/control
+
+instead of
+
+#echo -n 'format Setting\040node\040for\040non-present\040cpu +p' >
+	/mnt/debugfs/dynamic_debug/control
+
+Adjust the dynamic debug documention to describe that and provide a
+new example.  Adjust the existing examples in the documentation to
+reflect the current whitespace escaping behaviour when reading the
+control file.  Fix some minor documentation trailing whitespace.
+
+Signed-off-by: Greg Banks <gnb@melbourne.sgi.com>
+Acked-by: Jason Baron <jbaron@redhat.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- Documentation/dynamic-debug-howto.txt |  232 +++++++++++++++++++++++++++++++++
- lib/Kconfig.debug                     |   72 ++++++-----
- 2 files changed, 273 insertions(+), 31 deletions(-)
- create mode 100644 Documentation/dynamic-debug-howto.txt
+ Documentation/dynamic-debug-howto.txt |   20 +++++++++----
+ lib/dynamic_debug.c                   |   53 ++++++++++++++++++++------------
+ 2 files changed, 47 insertions(+), 26 deletions(-)
 
 diff --git a/Documentation/dynamic-debug-howto.txt b/Documentation/dynamic-debug-howto.txt
-new file mode 100644
-index 0000000..6839482
---- /dev/null
+index 6839482..674c566 100644
+--- a/Documentation/dynamic-debug-howto.txt
 +++ b/Documentation/dynamic-debug-howto.txt
-@@ -0,0 +1,232 @@
+@@ -49,10 +49,10 @@ via:
+ 
+ nullarbor:~ # cat <debugfs>/dynamic_debug/control
+ # filename:lineno [module]function flags format
+-/usr/src/packages/BUILD/sgi-enhancednfs-1.4/default/net/sunrpc/svc_rdma.c:323 [svcxprt_rdma]svc_rdma_cleanup - "SVCRDMA\040Module\040Removed,\040deregister\040RPC\040RDMA\040transport\012"
+-/usr/src/packages/BUILD/sgi-enhancednfs-1.4/default/net/sunrpc/svc_rdma.c:341 [svcxprt_rdma]svc_rdma_init - "\011max_inline\040\040\040\040\040\040\040:\040%d\012"
+-/usr/src/packages/BUILD/sgi-enhancednfs-1.4/default/net/sunrpc/svc_rdma.c:340 [svcxprt_rdma]svc_rdma_init - "\011sq_depth\040\040\040\040\040\040\040\040\040:\040%d\012"
+-/usr/src/packages/BUILD/sgi-enhancednfs-1.4/default/net/sunrpc/svc_rdma.c:338 [svcxprt_rdma]svc_rdma_init - "\011max_requests\040\040\040\040\040:\040%d\012"
++/usr/src/packages/BUILD/sgi-enhancednfs-1.4/default/net/sunrpc/svc_rdma.c:323 [svcxprt_rdma]svc_rdma_cleanup - "SVCRDMA Module Removed, deregister RPC RDMA transport\012"
++/usr/src/packages/BUILD/sgi-enhancednfs-1.4/default/net/sunrpc/svc_rdma.c:341 [svcxprt_rdma]svc_rdma_init - "\011max_inline       : %d\012"
++/usr/src/packages/BUILD/sgi-enhancednfs-1.4/default/net/sunrpc/svc_rdma.c:340 [svcxprt_rdma]svc_rdma_init - "\011sq_depth         : %d\012"
++/usr/src/packages/BUILD/sgi-enhancednfs-1.4/default/net/sunrpc/svc_rdma.c:338 [svcxprt_rdma]svc_rdma_init - "\011max_requests     : %d\012"
+ ...
+ 
+ 
+@@ -72,7 +72,7 @@ you can view all the debug statement callsites with any non-default flags:
+ 
+ nullarbor:~ # awk '$3 != "-"' <debugfs>/dynamic_debug/control
+ # filename:lineno [module]function flags format
+-/usr/src/packages/BUILD/sgi-enhancednfs-1.4/default/net/sunrpc/svcsock.c:1603 [sunrpc]svc_send p "svc_process:\040st_sendto\040returned\040%d\012"
++/usr/src/packages/BUILD/sgi-enhancednfs-1.4/default/net/sunrpc/svcsock.c:1603 [sunrpc]svc_send p "svc_process: st_sendto returned %d\012"
+ 
+ 
+ Command Language Reference
+@@ -166,11 +166,15 @@ format
+     entire format, only some part.  Whitespace and other
+     special characters can be escaped using C octal character
+     escape \ooo notation, e.g. the space character is \040.
++    Alternatively, the string can be enclosed in double quote
++    characters (") or single quote characters (').
+     Examples:
+ 
+     format svcrdma:	    // many of the NFS/RDMA server dprintks
+     format readahead	    // some dprintks in the readahead cache
+-    format nfsd:\040SETATTR // how to match a format with whitespace
++    format nfsd:\040SETATTR // one way to match a format with whitespace
++    format "nfsd: SETATTR"  // a neater way to match a format with whitespace
++    format 'nfsd: SETATTR'  // yet another way to match a format with whitespace
+ 
+ line
+     The given line number or range of line numbers is compared
+@@ -230,3 +234,7 @@ nullarbor:~ # echo -n 'func svc_process +p' >
+ // disable all 12 messages in the function svc_process()
+ nullarbor:~ # echo -n 'func svc_process -p' >
+ 				<debugfs>/dynamic_debug/control
 +
-+Introduction
-+============
-+
-+This document describes how to use the dynamic debug (ddebug) feature.
-+
-+Dynamic debug is designed to allow you to dynamically enable/disable kernel
-+code to obtain additional kernel information. Currently, if
-+CONFIG_DYNAMIC_DEBUG is set, then all pr_debug()/dev_debug() calls can be
-+dynamically enabled per-callsite.
-+
-+Dynamic debug has even more useful features:
-+
-+ * Simple query language allows turning on and off debugging statements by
-+   matching any combination of:
-+
-+   - source filename
-+   - function name
-+   - line number (including ranges of line numbers)
-+   - module name
-+   - format string
-+
-+ * Provides a debugfs control file: <debugfs>/dynamic_debug/control which can be
-+   read to display the complete list of known debug statements, to help guide you
-+
-+Controlling dynamic debug Behaviour
-+===============================
-+
-+The behaviour of pr_debug()/dev_debug()s are controlled via writing to a
-+control file in the 'debugfs' filesystem. Thus, you must first mount the debugfs
-+filesystem, in order to make use of this feature. Subsequently, we refer to the
-+control file as: <debugfs>/dynamic_debug/control. For example, if you want to
-+enable printing from source file 'svcsock.c', line 1603 you simply do:
-+
-+nullarbor:~ # echo 'file svcsock.c line 1603 +p' >
++// enable messages for NFS calls READ, READLINK, READDIR and READDIR+.
++nullarbor:~ # echo -n 'format "nfsd: READ" +p' >
 +				<debugfs>/dynamic_debug/control
-+
-+If you make a mistake with the syntax, the write will fail thus:
-+
-+nullarbor:~ # echo 'file svcsock.c wtf 1 +p' >
-+				<debugfs>/dynamic_debug/control
-+-bash: echo: write error: Invalid argument
-+
-+Viewing Dynamic Debug Behaviour
-+===========================
-+
-+You can view the currently configured behaviour of all the debug statements
-+via:
-+
-+nullarbor:~ # cat <debugfs>/dynamic_debug/control
-+# filename:lineno [module]function flags format
-+/usr/src/packages/BUILD/sgi-enhancednfs-1.4/default/net/sunrpc/svc_rdma.c:323 [svcxprt_rdma]svc_rdma_cleanup - "SVCRDMA\040Module\040Removed,\040deregister\040RPC\040RDMA\040transport\012"
-+/usr/src/packages/BUILD/sgi-enhancednfs-1.4/default/net/sunrpc/svc_rdma.c:341 [svcxprt_rdma]svc_rdma_init - "\011max_inline\040\040\040\040\040\040\040:\040%d\012"
-+/usr/src/packages/BUILD/sgi-enhancednfs-1.4/default/net/sunrpc/svc_rdma.c:340 [svcxprt_rdma]svc_rdma_init - "\011sq_depth\040\040\040\040\040\040\040\040\040:\040%d\012"
-+/usr/src/packages/BUILD/sgi-enhancednfs-1.4/default/net/sunrpc/svc_rdma.c:338 [svcxprt_rdma]svc_rdma_init - "\011max_requests\040\040\040\040\040:\040%d\012"
-+...
-+
-+
-+You can also apply standard Unix text manipulation filters to this
-+data, e.g.
-+
-+nullarbor:~ # grep -i rdma <debugfs>/dynamic_debug/control  | wc -l
-+62
-+
-+nullarbor:~ # grep -i tcp <debugfs>/dynamic_debug/control | wc -l
-+42
-+
-+Note in particular that the third column shows the enabled behaviour
-+flags for each debug statement callsite (see below for definitions of the
-+flags).  The default value, no extra behaviour enabled, is "-".  So
-+you can view all the debug statement callsites with any non-default flags:
-+
-+nullarbor:~ # awk '$3 != "-"' <debugfs>/dynamic_debug/control
-+# filename:lineno [module]function flags format
-+/usr/src/packages/BUILD/sgi-enhancednfs-1.4/default/net/sunrpc/svcsock.c:1603 [sunrpc]svc_send p "svc_process:\040st_sendto\040returned\040%d\012"
-+
-+
-+Command Language Reference
-+==========================
-+
-+At the lexical level, a command comprises a sequence of words separated
-+by whitespace characters.  Note that newlines are treated as word
-+separators and do *not* end a command or allow multiple commands to
-+be done together.  So these are all equivalent:
-+
-+nullarbor:~ # echo -c 'file svcsock.c line 1603 +p' >
-+				<debugfs>/dynamic_debug/control
-+nullarbor:~ # echo -c '  file   svcsock.c     line  1603 +p  ' >
-+				<debugfs>/dynamic_debug/control
-+nullarbor:~ # echo -c 'file svcsock.c\nline 1603 +p' >
-+				<debugfs>/dynamic_debug/control
-+nullarbor:~ # echo -n 'file svcsock.c line 1603 +p' >
-+				<debugfs>/dynamic_debug/control
-+
-+Commands are bounded by a write() system call.  If you want to do
-+multiple commands you need to do a separate "echo" for each, like:
-+
-+nullarbor:~ # echo 'file svcsock.c line 1603 +p' > /proc/dprintk ;\
-+> echo 'file svcsock.c line 1563 +p' > /proc/dprintk
-+
-+or even like:
-+
-+nullarbor:~ # (
-+> echo 'file svcsock.c line 1603 +p' ;\
-+> echo 'file svcsock.c line 1563 +p' ;\
-+> ) > /proc/dprintk
-+
-+At the syntactical level, a command comprises a sequence of match
-+specifications, followed by a flags change specification.
-+
-+command ::= match-spec* flags-spec
-+
-+The match-spec's are used to choose a subset of the known dprintk()
-+callsites to which to apply the flags-spec.  Think of them as a query
-+with implicit ANDs between each pair.  Note that an empty list of
-+match-specs is possible, but is not very useful because it will not
-+match any debug statement callsites.
-+
-+A match specification comprises a keyword, which controls the attribute
-+of the callsite to be compared, and a value to compare against.  Possible
-+keywords are:
-+
-+match-spec ::= 'func' string |
-+	       'file' string |
-+	       'module' string |
-+	       'format' string |
-+	       'line' line-range
-+
-+line-range ::= lineno |
-+	       '-'lineno |
-+	       lineno'-' |
-+	       lineno'-'lineno
-+// Note: line-range cannot contain space, e.g.
-+// "1-30" is valid range but "1 - 30" is not.
-+
-+lineno ::= unsigned-int
-+
-+The meanings of each keyword are:
-+
-+func
-+    The given string is compared against the function name
-+    of each callsite.  Example:
-+
-+    func svc_tcp_accept
-+
-+file
-+    The given string is compared against either the full
-+    pathname or the basename of the source file of each
-+    callsite.  Examples:
-+
-+    file svcsock.c
-+    file /usr/src/packages/BUILD/sgi-enhancednfs-1.4/default/net/sunrpc/svcsock.c
-+
-+module
-+    The given string is compared against the module name
-+    of each callsite.  The module name is the string as
-+    seen in "lsmod", i.e. without the directory or the .ko
-+    suffix and with '-' changed to '_'.  Examples:
-+
-+    module sunrpc
-+    module nfsd
-+
-+format
-+    The given string is searched for in the dynamic debug format
-+    string.  Note that the string does not need to match the
-+    entire format, only some part.  Whitespace and other
-+    special characters can be escaped using C octal character
-+    escape \ooo notation, e.g. the space character is \040.
-+    Examples:
-+
-+    format svcrdma:	    // many of the NFS/RDMA server dprintks
-+    format readahead	    // some dprintks in the readahead cache
-+    format nfsd:\040SETATTR // how to match a format with whitespace
-+
-+line
-+    The given line number or range of line numbers is compared
-+    against the line number of each dprintk() callsite.  A single
-+    line number matches the callsite line number exactly.  A
-+    range of line numbers matches any callsite between the first
-+    and last line number inclusive.  An empty first number means
-+    the first line in the file, an empty line number means the
-+    last number in the file.  Examples:
-+
-+    line 1603	    // exactly line 1603
-+    line 1600-1605  // the six lines from line 1600 to line 1605
-+    line -1605	    // the 1605 lines from line 1 to line 1605
-+    line 1600-	    // all lines from line 1600 to the end of the file
-+
-+The flags specification comprises a change operation followed
-+by one or more flag characters.  The change operation is one
-+of the characters:
-+
-+-
-+    remove the given flags
-+
-++
-+    add the given flags
-+
-+=
-+    set the flags to the given flags
-+
-+The flags are:
-+
-+p
-+    Causes a printk() message to be emitted to dmesg
-+
-+Note the regexp ^[-+=][scp]+$ matches a flags specification.
-+Note also that there is no convenient syntax to remove all
-+the flags at once, you need to use "-psc".
-+
-+Examples
-+========
-+
-+// enable the message at line 1603 of file svcsock.c
-+nullarbor:~ # echo -n 'file svcsock.c line 1603 +p' >
-+				<debugfs>/dynamic_debug/control
-+
-+// enable all the messages in file svcsock.c
-+nullarbor:~ # echo -n 'file svcsock.c +p' >
-+				<debugfs>/dynamic_debug/control
-+
-+// enable all the messages in the NFS server module
-+nullarbor:~ # echo -n 'module nfsd +p' >
-+				<debugfs>/dynamic_debug/control
-+
-+// enable all 12 messages in the function svc_process()
-+nullarbor:~ # echo -n 'func svc_process +p' >
-+				<debugfs>/dynamic_debug/control
-+
-+// disable all 12 messages in the function svc_process()
-+nullarbor:~ # echo -n 'func svc_process -p' >
-+				<debugfs>/dynamic_debug/control
-diff --git a/lib/Kconfig.debug b/lib/Kconfig.debug
-index 0dd1c04..8fee0a1 100644
---- a/lib/Kconfig.debug
-+++ b/lib/Kconfig.debug
-@@ -848,59 +848,69 @@ config BUILD_DOCSRC
- 	  Say N if you are unsure.
+diff --git a/lib/dynamic_debug.c b/lib/dynamic_debug.c
+index 9e123ae..833139c 100644
+--- a/lib/dynamic_debug.c
++++ b/lib/dynamic_debug.c
+@@ -196,32 +196,45 @@ static void ddebug_change(const struct ddebug_query *query,
+ }
  
- config DYNAMIC_DEBUG
--	bool "Enable dynamic printk() call support"
-+	bool "Enable dynamic printk() support"
- 	default n
- 	depends on PRINTK
-+	depends on DEBUG_FS
- 	select PRINTK_DEBUG
- 	help
- 
- 	  Compiles debug level messages into the kernel, which would not
- 	  otherwise be available at runtime. These messages can then be
--	  enabled/disabled on a per module basis. This mechanism implicitly
--	  enables all pr_debug() and dev_dbg() calls. The impact of this
--	  compile option is a larger kernel text size of about 2%.
-+	  enabled/disabled based on various levels of scope - per source file,
-+	  function, module, format string, and line number. This mechanism
-+	  implicitly enables all pr_debug() and dev_dbg() calls. The impact of
-+	  this compile option is a larger kernel text size of about 2%.
- 
- 	  Usage:
- 
--	  Dynamic debugging is controlled by the debugfs file,
--	  dynamic_printk/modules. This file contains a list of the modules that
--	  can be enabled. The format of the file is the module name, followed
--	  by a set of flags that can be enabled. The first flag is always the
--	  'enabled' flag. For example:
-+	  Dynamic debugging is controlled via the 'dynamic_debug/ddebug' file,
-+	  which is contained in the 'debugfs' filesystem. Thus, the debugfs
-+	  filesystem must first be mounted before making use of this feature.
-+	  We refer the control file as: <debugfs>/dynamic_debug/ddebug. This
-+	  file contains a list of the debug statements that can be enabled. The
-+	  format for each line of the file is:
- 
--		<module_name> <enabled=0/1>
--				.
--				.
--				.
-+		filename:lineno [module]function flags format
- 
--	  <module_name> : Name of the module in which the debug call resides
--	  <enabled=0/1> : whether the messages are enabled or not
-+	  filename : source file of the debug statement
-+	  lineno : line number of the debug statement
-+	  module : module that contains the debug statement
-+	  function : function that contains the debug statement
-+          flags : 'p' means the line is turned 'on' for printing
-+          format : the format used for the debug statement
- 
- 	  From a live system:
- 
--		snd_hda_intel enabled=0
--		fixup enabled=0
--		driver enabled=0
-+		nullarbor:~ # cat <debugfs>/dynamic_debug/ddebug
-+		# filename:lineno [module]function flags format
-+		fs/aio.c:222 [aio]__put_ioctx - "__put_ioctx:\040freeing\040%p\012"
-+		fs/aio.c:248 [aio]ioctx_alloc - "ENOMEM:\040nr_events\040too\040high\012"
-+		fs/aio.c:1770 [aio]sys_io_cancel - "calling\040cancel\012"
- 
--	  Enable a module:
-+	  Example usage:
- 
--	  	$echo "set enabled=1 <module_name>" > dynamic_printk/modules
-+		// enable the message at line 1603 of file svcsock.c
-+		nullarbor:~ # echo -n 'file svcsock.c line 1603 +p' >
-+						<debugfs>/dynamic_debug/ddebug
- 
--	  Disable a module:
-+		// enable all the messages in file svcsock.c
-+		nullarbor:~ # echo -n 'file svcsock.c +p' >
-+						<debugfs>/dynamic_debug/ddebug
- 
--	  	$echo "set enabled=0 <module_name>" > dynamic_printk/modules
-+		// enable all the messages in the NFS server module
-+		nullarbor:~ # echo -n 'module nfsd +p' >
-+						<debugfs>/dynamic_debug/ddebug
- 
--	  Enable all modules:
-+		// enable all 12 messages in the function svc_process()
-+		nullarbor:~ # echo -n 'func svc_process +p' >
-+						<debugfs>/dynamic_debug/ddebug
- 
--		$echo "set enabled=1 all" > dynamic_printk/modules
-+		// disable all 12 messages in the function svc_process()
-+		nullarbor:~ # echo -n 'func svc_process -p' >
-+						<debugfs>/dynamic_debug/ddebug
- 
--	  Disable all modules:
+ /*
+- * Wrapper around strsep() to collapse the multiple empty tokens
+- * that it returns when fed sequences of separator characters.
+- * Now, if we had strtok_r()...
+- */
+-static inline char *nearly_strtok_r(char **p, const char *sep)
+-{
+-	char *r;
 -
--		$echo "set enabled=0 all" > dynamic_printk/modules
+-	while ((r = strsep(p, sep)) != NULL && *r == '\0')
+-		;
+-	return r;
+-}
 -
--	  Finally, passing "dynamic_printk" at the command line enables
--	  debugging for all modules. This mode can be turned off via the above
--	  disable command.
-+	  See Documentation/dynamic-debug-howto.txt for additional information.
+-/*
+  * Split the buffer `buf' into space-separated words.
+- * Return the number of such words or <0 on error.
++ * Handles simple " and ' quoting, i.e. without nested,
++ * embedded or escaped \".  Return the number of words
++ * or <0 on error.
+  */
+ static int ddebug_tokenize(char *buf, char *words[], int maxwords)
+ {
+ 	int nwords = 0;
  
- source "samples/Kconfig"
+-	while (nwords < maxwords &&
+-	       (words[nwords] = nearly_strtok_r(&buf, " \t\r\n")) != NULL)
+-		nwords++;
+-	if (buf)
+-		return -EINVAL;	/* ran out of words[] before bytes */
++	while (*buf) {
++		char *end;
++
++		/* Skip leading whitespace */
++		while (*buf && isspace(*buf))
++			buf++;
++		if (!*buf)
++			break;	/* oh, it was trailing whitespace */
++
++		/* Run `end' over a word, either whitespace separated or quoted */
++		if (*buf == '"' || *buf == '\'') {
++			int quote = *buf++;
++			for (end = buf ; *end && *end != quote ; end++)
++				;
++			if (!*end)
++				return -EINVAL;	/* unclosed quote */
++		} else {
++			for (end = buf ; *end && !isspace(*end) ; end++)
++				;
++			BUG_ON(end == buf);
++		}
++		/* Here `buf' is the start of the word, `end' is one past the end */
++
++		if (nwords == maxwords)
++			return -EINVAL;	/* ran out of words[] before bytes */
++		if (*end)
++			*end++ = '\0';	/* terminate the word */
++		words[nwords++] = buf;
++		buf = end;
++	}
  
+ 	if (verbose) {
+ 		int i;
 -- 
 1.6.2
 
