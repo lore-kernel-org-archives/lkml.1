@@ -1,125 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756402AbZCYDT3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756846AbZCYDWU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756402AbZCYDT3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 23:19:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753470AbZCYDTU
+	id S1756846AbZCYDWU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 23:22:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754158AbZCYDWK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 23:19:20 -0400
-Received: from nwd2mail11.analog.com ([137.71.25.57]:53539 "EHLO
-	nwd2mail11.analog.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753434AbZCYDTT convert rfc822-to-8bit (ORCPT
+	Tue, 24 Mar 2009 23:22:10 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:41418 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754147AbZCYDWK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 23:19:19 -0400
-From: "Cai, Cliff" <Cliff.Cai@analog.com>
-X-IronPort-AV: E=Sophos;i="4.38,416,1233550800"; 
-   d="scan'208";a="68455436"
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-Class: urn:content-classes:message
+	Tue, 24 Mar 2009 23:22:10 -0400
+Date: Wed, 25 Mar 2009 12:21:21 +0900 (JST)
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Nikanth Karthikesan <knikanth@suse.de>
+Subject: Re: ftrace not working?
+Cc: kosaki.motohiro@jp.fujitsu.com, Steven Rostedt <rostedt@goodmis.org>,
+       Steven Rostedt <srostedt@redhat.com>, rusty@rustcorp.com.au,
+       Ingo Molnar <mingo@elte.hu>,
+       =?ISO-2022-JP?B?RnIbJEJxRXFTGyhCaWM=?= Weisbecker 
+	<fweisbec@gmail.com>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <200903242253.36794.knikanth@suse.de>
+References: <20090323143226.GA18439@elte.hu> <200903242253.36794.knikanth@suse.de>
+Message-Id: <20090325121906.D2D6.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [PATCH] mmc: align data size for host which only supports power-of-2 block
-Date: Wed, 25 Mar 2009 11:22:25 +0800
-Message-ID: <0F1B54C89D5F954D8535DB252AF412FA03C5D7C5@chinexm1.ad.analog.com>
-In-Reply-To: <20090314213038.4d14526e@mjolnir.ossman.eu>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH] mmc: align data size for host which only supports power-of-2 block
-Thread-Index: Acmk48Pjy0mvKYgsQ5SnpVaSqmgdGwIFA71A
-References: <1236309321-23955-1-git-send-email-cooloney@kernel.org> <20090314213038.4d14526e@mjolnir.ossman.eu>
-To: "Pierre Ossman" <drzeus-mmc@drzeus.cx>, "Bryan Wu" <cooloney@kernel.org>
-CC: <linux-kernel@vger.kernel.org>, "Bryan Wu" <cooloney@kernel.org>
-X-OriginalArrivalTime: 25 Mar 2009 03:19:14.0372 (UTC) FILETIME=[794CE840:01C9ACF8]
+Content-Type: text/plain; charset="ISO-2022-JP"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> Signed-off-by: Nikanth Karthikesan <knikanth@suse.de>
+> 
+> ---
+> 
+> diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
+> index 17bb88d..98f609d 100644
+> --- a/kernel/trace/trace.c
+> +++ b/kernel/trace/trace.c
+> @@ -3887,6 +3887,7 @@ __init static int tracer_alloc_buffers(void)
+>  
+>  	register_die_notifier(&trace_die_notifier);
+>  	ret = 0;
+> +	goto out;
+>  
+>  out_free_cpumask:
+>  	free_cpumask_var(tracing_cpumask);
+
+Good catch!
+
+I think this patch should send to 2.6.29.1 :)
 
 
->
- 
 
->-----Original Message-----
->From: Pierre Ossman [mailto:drzeus-mmc@drzeus.cx] 
->Sent: Sunday, March 15, 2009 4:31 AM
->To: Bryan Wu
->Cc: linux-kernel@vger.kernel.org; Cai, Cliff; Bryan Wu
->Subject: Re: [PATCH] mmc: align data size for host which only 
->supports power-of-2 block
->
->On Fri,  6 Mar 2009 11:15:21 +0800
->Bryan Wu <cooloney@kernel.org> wrote:
->
->> From: Cliff Cai <cliff.cai@analog.com>
->> 
->> Signed-off-by: Cliff Cai <cliff.cai@analog.com>
->> Signed-off-by: Bryan Wu <cooloney@kernel.org>
->> ---
->
->This patch seems premature as there is no associated 
->modification of any of the host drivers.
-
-The SDH on Blackfin BF54x/BF51x only supports power-of-2 block
-transfer,we will soon
-Send the sdh driver to mainline as well.
-
->
->>  drivers/mmc/core/core.c  |    8 +++++++-
->>  include/linux/mmc/host.h |    1 +
->>  2 files changed, 8 insertions(+), 1 deletions(-)
->> 
->> diff --git a/drivers/mmc/core/core.c b/drivers/mmc/core/core.c index 
->> df6ce4a..15119df 100644
->> --- a/drivers/mmc/core/core.c
->> +++ b/drivers/mmc/core/core.c
->> @@ -321,7 +321,13 @@ unsigned int mmc_align_data_size(struct 
->mmc_card *card, unsigned int sz)
->>  	 * the core about its problems yet, so for now we just 32-bit
->>  	 * align the size.
->>  	 */
->> -	sz = ((sz + 3) / 4) * 4;
->> +
->> +	/* Align size for host which only supports power-of-2 block */
->> +	if (card->host->powerof2_block) {
->> +		if (sz & (sz - 1))
->> +			sz = 1 << fls(sz);
->> +	} else
->> +		sz = ((sz + 3) / 4) * 4;
->>  
->>  	return sz;
->>  }
->
->At the very least, the comment at the top of this function 
->must go. But really, if we want to improve this we should 
->probably do it properly and have flags for the different 
->limitations that are available.
->Padding to a power of two size can also mean a rather large 
->padding. We might need to check the host data limits after 
->doing the adjustment.
-
-Yes,but it's the higher level driver's job. 
-
->
->> diff --git a/include/linux/mmc/host.h 
->b/include/linux/mmc/host.h index 
->> 4e45725..7416ed1 100644
->> --- a/include/linux/mmc/host.h
->> +++ b/include/linux/mmc/host.h
->> @@ -162,6 +162,7 @@ struct mmc_host {
->>  	struct dentry		*debugfs_root;
->>  
->>  	unsigned long		private[0] ____cacheline_aligned;
->> +	unsigned int		powerof2_block;	/* host only 
->supports power-of-2 block */
->>  };
->>  
->>  extern struct mmc_host *mmc_alloc_host(int extra, struct device *);
->
->This is just broken. Putting it after private completely 
->breaks accesses to the host driver private data.
-
-Sure,it should be added before private.
-
-Thanks
-
-Cliff
