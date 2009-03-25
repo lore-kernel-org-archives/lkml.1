@@ -1,51 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756750AbZCYHHh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756712AbZCYHMh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756750AbZCYHHh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 03:07:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756115AbZCYHH3
+	id S1756712AbZCYHMh (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 03:12:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756133AbZCYHM1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 03:07:29 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:52441 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754626AbZCYHH3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 03:07:29 -0400
-Date: Wed, 25 Mar 2009 08:07:26 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Li Zefan <lizf@cn.fujitsu.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
+	Wed, 25 Mar 2009 03:12:27 -0400
+Received: from smtp-vbr12.xs4all.nl ([194.109.24.32]:4705 "EHLO
+	smtp-vbr12.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756099AbZCYHM0 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Mar 2009 03:12:26 -0400
+From: Hans Verkuil <hverkuil@xs4all.nl>
+To: =?utf-8?q?N=C3=A9meth_M=C3=A1rton?= <nm127@freemail.hu>
+Subject: Re: [PATCH] uvcvideo: add zero fill for VIDIOC_ENUM_FMT
+Date: Wed, 25 Mar 2009 08:12:38 +0100
+User-Agent: KMail/1.9.9
+Cc: Laurent Pinchart <laurent.pinchart@skynet.be>, linux-media@vger.kernel.org,
        LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC][PATCH] blktrace: fix original blktrace
-Message-ID: <20090325070726.GD27476@kernel.dk>
-References: <49C99BD2.9090503@cn.fujitsu.com>
+References: <49C9D652.5040104@freemail.hu>
+In-Reply-To: <49C9D652.5040104@freemail.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <49C99BD2.9090503@cn.fujitsu.com>
+Message-Id: <200903250812.38051.hverkuil@xs4all.nl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 25 2009, Li Zefan wrote:
-> I'm wondering what we are going to do with the original blktrace which
-> is using relay and is used via ioctl.
-> 
-> The problem is currently it's totally broken. You can use ftrace to see
-> the output of blktrace, but user-space blktrace is unusable.
-> 
-> With this patch, both ioctl and ftrace can be used, but of course you
-> can't use both of them at the same time.
+On Wednesday 25 March 2009 07:59:30 Németh Márton wrote:
+> From: Márton Németh <nm127@freemail.hu>
+>
+> When enumerating formats with VIDIOC_ENUM_FMT the uvcvideo driver does
+> not fill the reserved fields of the struct v4l2_fmtdesc with zeros as
+> required by V4L2 API revision 0.24 [1]. Add the missing initializations.
+>
+> The patch was tested with v4l-test 0.10 [2] with CNF7129 webcam found on
+> EeePC 901.
 
-Even if ftrace was as fast as storing huge amounts of data as blktrace,
-it's still of utmost importance that nothing is broken there. There are
-people actually USING this tracing to do real work, it's not a
-playground.
+Or even better, Laurent, why not move to video_ioctl2? That will take care 
+of such things for you. The next step I'm going to take in the 
+implementation of the v4l2 framework is to move all drivers over to 
+v4l2_device and v4l2_ioctl2, so it would certainly help me if you could 
+convert uvcvideo. This is a typical example why using video_ioctl2 is a 
+good (tm) idea!
 
-I appreciate the efforts to unify and improve our tracing, but we must
-not be breaking blktrace along the way. Otherwise the whole thing goes
-back to block/blktrace.c, period.
+Regards,
+
+	Hans
+
+>
+> References:
+> [1] V4L2 API specification, revision 0.24
+>     http://v4l2spec.bytesex.org/spec/r8367.htm
+>
+> [2] v4l-test: Test environment for Video For Linux Two API
+>     http://v4l-test.sourceforge.net/
+>
+> Signed-off-by: Márton Németh <nm127@freemail.hu>
+> ---
+> --- linux-2.6.29/drivers/media/video/uvc/uvc_v4l2.c.orig	2009-03-24
+> 00:12:14.000000000 +0100 +++
+> linux-2.6.29/drivers/media/video/uvc/uvc_v4l2.c	2009-03-25
+> 07:24:42.000000000 +0100 @@ -673,11 +673,19 @@ static long
+> uvc_v4l2_do_ioctl(struct fil
+>  	{
+>  		struct v4l2_fmtdesc *fmt = arg;
+>  		struct uvc_format *format;
+> +		__u32 index;
+> +		enum v4l2_buf_type type;
+>
+>  		if (fmt->type != video->streaming->type ||
+>  		    fmt->index >= video->streaming->nformats)
+>  			return -EINVAL;
+>
+> +		index = fmt->index;
+> +		type = fmt->type;
+> +		memset(fmt, 0, sizeof(*fmt));
+> +		fmt->index = index;
+> +		fmt->type = type;
+> +
+>  		format = &video->streaming->format[fmt->index];
+>  		fmt->flags = 0;
+>  		if (format->flags & UVC_FMT_FLAG_COMPRESSED)
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-media" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+
+
 
 -- 
-Jens Axboe
-
+Hans Verkuil - video4linux developer - sponsored by TANDBERG
