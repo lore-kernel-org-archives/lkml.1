@@ -1,140 +1,137 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762063AbZCYNpp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761465AbZCYNv6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762063AbZCYNpp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 09:45:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760143AbZCYNpc
+	id S1761465AbZCYNv6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 09:51:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756071AbZCYNvs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 09:45:32 -0400
-Received: from mga14.intel.com ([143.182.124.37]:64344 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758034AbZCYNpb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 09:45:31 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.38,419,1233561600"; 
-   d="scan'208";a="124032086"
-Date: Wed, 25 Mar 2009 21:44:57 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Ian Kent <raven@themaw.net>
-Cc: Jeff Layton <jlayton@redhat.com>, Dave Chinner <david@fromorbit.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       "jens.axboe@oracle.com" <jens.axboe@oracle.com>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "hch@infradead.org" <hch@infradead.org>,
-       "linux-nfs@vger.kernel.org" <linux-nfs@vger.kernel.org>
-Subject: Re: [PATCH] writeback: reset inode dirty time when adding it back
-	to empty s_dirty list
-Message-ID: <20090325134457.GA5222@localhost>
-References: <20090324102806.4f38fd26@tleilax.poochiereds.net> <20090324104657.6907b19e@tleilax.poochiereds.net> <20090325012829.GA7506@localhost> <20090324221528.2bb7c50b@tleilax.poochiereds.net> <20090325025037.GA17374@localhost> <20090325075110.028f0d1d@tleilax.poochiereds.net> <20090325121742.GA22869@localhost> <20090325091325.17c997fd@tleilax.poochiereds.net> <49CA2F41.8030804@themaw.net> <49CA33E7.6090309@themaw.net>
+	Wed, 25 Mar 2009 09:51:48 -0400
+Received: from yx-out-2324.google.com ([74.125.44.28]:7919 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754388AbZCYNvr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Mar 2009 09:51:47 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=IW4mraJWm11cf2f9IQ82G72fztMKOYbfCUp+EA76b+H1f7zhzjIpG8exkmVa7baEDg
+         +7ptikECzSDyc36db/KacKWwhabdAkexfMrg3YBsohO1mXOH7qwCAOOjs7bw4+uxgsHN
+         CpN3yd9/tP9Wn5b3XxIFKT5lqmEvSPl1fvyQw=
+Date: Wed, 25 Mar 2009 14:51:39 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Lai Jiangshan <laijs@cn.fujitsu.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Paul Menage <menage@google.com>,
+       miaoxie <miaox@cn.fujitsu.com>, Li Zefan <lizf@cn.fujitsu.com>,
+       Ingo Molnar <mingo@elte.hu>, Steven Rostedt <srostedt@redhat.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] init,cpuset: fix initialize order
+Message-ID: <20090325135138.GG5976@nowhere>
+References: <49C9F416.1050707@cn.fujitsu.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <49CA33E7.6090309@themaw.net>
+In-Reply-To: <49C9F416.1050707@cn.fujitsu.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 25, 2009 at 09:38:47PM +0800, Ian Kent wrote:
-> Ian Kent wrote:
-> > Jeff Layton wrote:
-> >> On Wed, 25 Mar 2009 20:17:43 +0800
-> >> Wu Fengguang <fengguang.wu@intel.com> wrote:
-> >>
-> >>> On Wed, Mar 25, 2009 at 07:51:10PM +0800, Jeff Layton wrote:
-> >>>> On Wed, 25 Mar 2009 10:50:37 +0800
-> >>>> Wu Fengguang <fengguang.wu@intel.com> wrote:
-> >>>>
-> >>>>>> Given the right situation though (or maybe the right filesystem), it's
-> >>>>>> not too hard to imagine this problem occurring even in current mainline
-> >>>>>> code with an inode that's frequently being redirtied.
-> >>>>> My reasoning with recent kernel is: for kupdate, s_dirty enqueues only
-> >>>>> happen in __mark_inode_dirty() and redirty_tail().  Newly dirtied
-> >>>>> inodes will be parked in s_dirty for 30s. During which time the
-> >>>>> actively being-redirtied inodes, if their dirtied_when is an old stuck
-> >>>>> value, will be retried for writeback and then re-inserted into a
-> >>>>> non-empty s_dirty queue and have their dirtied_when refreshed.
-> >>>>>
-> >>>> Doesn't that assume that there are new inodes that are being dirtied?
-> >>>> If you only have the same inodes being redirtied and never any new
-> >>>> ones, the problem still occurs, right?
-> >>> Yes. But will a production server run months without making one single
-> >>> new dirtied inode? (Just out of curiosity. Not that I'm not willing to
-> >>> fix this possible issue.:)
-> >>>
-> >> Yes. It's not that the box will run that long without creating a
-> >> single new dirtied inode, but rather that it won't necessarily create
-> >> one on all of its mounts. It's often the case that someone has a
-> >> mountpoint for a dedicated purpose.
-> >>
-> >> Consider a host that has a mountpoint that contains logfiles that are
-> >> being heavily written. There's nothing that says that they must rotate
-> >> those logs over a particular period (assuming the fs has enough space,
-> >> etc). If the same ones are constantly being redirtied and no new
-> >> ones are created, then I think this problem can easily happen.
-> >>
-> >>>>>>> ...I see no obvious reasons against unconditionally resetting dirtied_when.
-> >>>>>>>
-> >>>>>>> (a) Delaying an inode's writeback for 30s maybe too long - its blocking
-> >>>>>>> condition may well go away within 1s. (b) And it would be very undesirable
-> >>>>>>> if one big file is repeatedly redirtied hence its writeback being
-> >>>>>>> delayed considerably.
-> >>>>>>>
-> >>>>>>> However, redirty_tail() currently only tries to speedup writeback-after-redirty
-> >>>>>>> in a _best effort_ way. It at best partially hides the above issues,
-> >>>>>>> if there are any. In particular, if (b) is possible, the bug should
-> >>>>>>> already show up at least in some situations.
-> >>>>>>>
-> >>>>>>> For XFS, immediately sync of redirtied inode is actually discouraged:
-> >>>>>>>
-> >>>>>>>         http://lkml.org/lkml/2008/1/16/491
-> >>>>>>>
-> >>>>>>>
-> >>>>>> Ok, those are good points that I need to think about.
-> >>>>>>
-> >>>>>> Thanks for the help so far. I'd welcome any suggestions you have on
-> >>>>>> how best to fix this.
-> >>>>> For NFS, is it desirable to retry a redirtied inode after 30s, or
-> >>>>> after a shorter 5s, or after 0.1~5s? Or the exact timing simply
-> >>>>> doesn't matter?
-> >>>>>
-> >>>> I don't really consider NFS to be a special case here. It just happens
-> >>>> to be where we saw the problem originally. Some of its characteristics
-> >>>> might make it easier to hit this, but I'm not certain of that.
-> >>> Now there are now two possible solutions:
-> >>> - unconditionally update dirtied_when in redirty_tail();
-> >>> - keep dirtied_when and redirty inodes to a new dedicated queue.
-> >>> The first one involves less code, the second one allows more flexible timing.
-> >>>
-> >>> NFS/XFS could be a good starting point for discussing the
-> >>> requirements, so that we can reach a suitable solution.
-> >>>
-> >> It sounds like it, yes. I saw that you posted some patches in January
-> >> (including your s_more_io_wait patch). I'll give those a closer look.
-> >> Adding the new s_more_io_wait queue is interesting and might sidestep
-> >> this problem nicely.
-> >>
-> > 
-> > Yes, I was looking at that bit of code but, so far, I think it won't be
-> > called for the case we are trying to describe.
+On Wed, Mar 25, 2009 at 05:06:30PM +0800, Lai Jiangshan wrote:
+> 
+> (After these two fixes applied:
+> [PATCH 1/2] trace_stat: keep original order
+> [PATCH 2/2] trace_workqueues: fix empty line's output
+> )
+> When I read /debugfs/tracing/trace_stat/workqueues,
+> and the I got this:
+> 
+> # CPU  INSERTED  EXECUTED   NAME
+> # |      |         |          |
+> 
+>   0      0          0       cpuset
+>   0    285        285       events/0
+>   0      2          2       work_on_cpu/0
+>   0   1115       1115       khelper
+>   0    325        325       kblockd/0
+>   0      0          0       kacpid
+>   0      0          0       kacpi_notify
+>   0      0          0       ata/0
+>   0      0          0       ata_aux
+>   0      0          0       ksuspend_usbd
+>   0      0          0       aio/0
+>   0      0          0       nfsiod
+>   0      0          0       kpsmoused
+>   0      0          0       kstriped
+>   0      0          0       kondemand/0
+>   0      1          1       hid_compat
+>   0      0          0       rpciod/0
+> 
+>   1     64         64       events/1
+>   1      2          2       work_on_cpu/1
+>   1      5          5       kblockd/1
+>   1      0          0       ata/1
+>   1      0          0       aio/1
+>   1      0          0       kondemand/1
+>   1      0          0       rpciod/1
+> 
+> I found "cpuset" is at the earliest.
+> ---------
+> 
+> Subject: [PATCH] init,cpuset: fix initialize order
+> 
+> Impact: cpuset_wq should be initialized after init_workqueues()
+> 
+> I found a create_singlethread_workqueue() is earlier than
+> init_workqueues():
+> 
+> kernel_init()
+> ->cpuset_init_smp()
+>   ->create_singlethread_workqueue()
+> ->do_basic_setup()
+>   ->init_workqueues()
+> 
+> I think it's better that create_singlethread_workqueue() is called
+> after workqueue subsystem has been initialized.
+> 
+> Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
+> ---
 
-You mean this case?
 
-                } else if (inode->i_state & I_DIRTY) {
-                        /*
-                         * Someone redirtied the inode while were writing back
-                         * the pages.
-                         */
-                        redirty_tail(inode);
-                } else if (atomic_read(&inode->i_count)) {
+Indeed it seems to be a bug.
+If init_workqueues() have not been called:
 
-Sure we can replace the redirty_tail() with requeue_io_wait().
+- cpu_singlethread_map = NULL
+- singlethread_cpu = 0
 
-> I take that back.
-> As Jeff pointed out I haven't seen these patches and can't seem to find
-> them in my fsdevel list folder, Wu can you send me a copy please?
+create_workqueue_thread() will be called with cpu = 0 and
+then: kthread_create(worker_thread, cwq, fmt, wq->name, cpu = 0);
 
-OK, wait a minute...
+Meaning that cpuset is only bound to the first cpu.
 
-Thanks,
-Fengguang
+Frederic.
+
+
+> diff --git a/init/main.c b/init/main.c
+> index 1ce6931..91d5047 100644
+> --- a/init/main.c
+> +++ b/init/main.c
+> @@ -773,6 +773,7 @@ static void __init do_basic_setup(void)
+>  {
+>  	rcu_init_sched(); /* needed by module_init stage. */
+>  	init_workqueues();
+> +	cpuset_init_smp();
+>  	usermodehelper_init();
+>  	driver_init();
+>  	init_irq_proc();
+> @@ -869,8 +870,6 @@ static int __init kernel_init(void * unused)
+>  	smp_init();
+>  	sched_init_smp();
+>  
+> -	cpuset_init_smp();
+> -
+>  	do_basic_setup();
+>  
+>  	/*
+> 
+> 
+
