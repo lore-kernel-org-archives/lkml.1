@@ -1,104 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758864AbZCYHap@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757700AbZCYHe0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758864AbZCYHap (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 03:30:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756527AbZCYHaf
+	id S1757700AbZCYHe0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 03:34:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752193AbZCYHeS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 03:30:35 -0400
-Received: from wf-out-1314.google.com ([209.85.200.175]:51211 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756547AbZCYHae convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 03:30:34 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :content-type:content-transfer-encoding;
-        b=lvBXFfqmgUo+/qZ4uFuoRygVLxPGzVfwQ+179W1S4XOAeH9QKX+hX0u5hfgec+E0wx
-         yBJZmiqyUag8z3XaDDjSf/pSe4ZQWzhAnfeW41eNbMenvl1216FvAaw/+kpzWu2eTN1A
-         vwi9j9aNADj5DIFVcs2QF0XlKe1TX1uR8wYs0=
+	Wed, 25 Mar 2009 03:34:18 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:39914 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752617AbZCYHeR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Mar 2009 03:34:17 -0400
+Date: Wed, 25 Mar 2009 08:33:49 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: David Miller <davem@davemloft.net>
+Cc: herbert@gondor.apana.org.au, r.schwebel@pengutronix.de,
+       torvalds@linux-foundation.org, blaschka@linux.vnet.ibm.com,
+       tglx@linutronix.de, a.p.zijlstra@chello.nl,
+       linux-kernel@vger.kernel.org, kernel@pengutronix.de
+Subject: Re: Revert "gro: Fix legacy path napi_complete crash",
+Message-ID: <20090325073349.GF25833@elte.hu>
+References: <20090324150928.GB30224@gondor.apana.org.au> <20090324.143622.186562202.davem@davemloft.net> <20090325002303.GA2219@gondor.apana.org.au> <20090324.191134.05205089.davem@davemloft.net>
 MIME-Version: 1.0
-In-Reply-To: <72dbd3150903241324n2d77b34cx5681ce0520e80887@mail.gmail.com>
-References: <alpine.LFD.2.00.0903231617550.3032@localhost.localdomain>
-	 <49C87B87.4020108@krogh.cc>
-	 <72dbd3150903232346g5af126d7sb5ad4949a7b5041f@mail.gmail.com>
-	 <20090324091545.758d00f5@lxorguk.ukuu.org.uk>
-	 <20090324093245.GA22483@elte.hu>
-	 <20090324101011.6555a0b9@lxorguk.ukuu.org.uk>
-	 <20090324103111.GA26691@elte.hu> <20090324132032.GK5814@mit.edu>
-	 <72dbd3150903241324n2d77b34cx5681ce0520e80887@mail.gmail.com>
-Date: Wed, 25 Mar 2009 00:30:32 -0700
-Message-ID: <72dbd3150903250030y6db62ac2r5144befed2ef2206@mail.gmail.com>
-Subject: Re: Linux 2.6.29
-From: David Rees <drees76@gmail.com>
-To: Theodore Tso <tytso@mit.edu>, Ingo Molnar <mingo@elte.hu>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Nick Piggin <npiggin@suse.de>,
-       Jens Axboe <jens.axboe@oracle.com>, David Rees <drees76@gmail.com>,
-       Jesper Krogh <jesper@krogh.cc>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090324.191134.05205089.davem@davemloft.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 24, 2009 at 1:24 PM, David Rees <drees76@gmail.com> wrote:
-> On Tue, Mar 24, 2009 at 6:20 AM, Theodore Tso <tytso@mit.edu> wrote:
->> The only realistic workload
->> I've found that triggers this requires a fast network dumping data to
->> a local filesystem.
->
-> It's pretty easy to reproduce it these days.  Here's my setup, and
-> it's not even that fancy:  Dual core Xeon, 8GB RAM, SATA RAID1 array,
-> GigE network.  All it takes is a single client writing a large file
-> using Samba or NFS to introduce huge latencies.
->
-> Looking at the raw throughput, the server's disks can sustain
-> 30-60MB/s writes (older disks), but the network can handle up to
-> ~100MB/s.  Throw in some other random seeky IO on the server, a bunch
-> of fragmentation and it's sustained write throughput in reality for
-> these writes is more like 10-25MB/s, far slower than the rate at which
-> a client can throw data at it.
->
->> (I'm sure someone will be ingeniuous enough to find something else
->> though, and if they're interested, I've attached an fsync latency
->> tester to this note.  If you find something; let me know, I'd be
->> interested.)
 
-OK, two simple tests on this system produce latencies well over 1-2s
-using your fsync-tester.
+* David Miller <davem@davemloft.net> wrote:
 
-The network client writing to disk scenario (~1GB file) resulted in this:
-fsync time: 6.5272
-fsync time: 35.6803
-fsync time: 15.6488
-fsync time: 0.3570
+> From: Herbert Xu <herbert@gondor.apana.org.au>
+> Date: Wed, 25 Mar 2009 08:23:03 +0800
+> 
+> > On Tue, Mar 24, 2009 at 02:36:22PM -0700, David Miller wrote:
+> > >
+> > > I think the problem is that we need to do the GRO flush before the
+> > > list delete and clearing the NAPI_STATE_SCHED bit.
+> > 
+> > Well first of all GRO shouldn't even be on in Ingo's case, unless
+> > he enabled it by hand with ethtool.  Secondly the only thing that
+> > touches the GRO state for the legacy path is process_backlog, and
+> > since this is per-cpu, I can't see how another instance can run
+> > while the first is still going.
+> 
+> Right.
+> 
+> I think the conditions Ingo is running under is that both loopback 
+> (using legacy paths) and his NAPI based device (forcedeth) are 
+> processing a lot of packets at the same time.
+> 
+> Another thing that seems to be critical is he can only trigger 
+> this on UP, which means that we don't have the damn APIC 
+> potentially moving the cpu target of the forcedeth interrupts 
+> around.  And this means also that all the processing will be on 
+> one cpu's backlog queue only.
 
-One thing to note - writing to this particular array seems to have
-higher than expected latency without the big write, on the order of
-0.2 seconds or so.  I think this is because the system is not idle and
-has a good number of programs on it doing logging and other small bits
-of IO. vmstat 5 shows the system writing out about 300-1000 under the
-bo column.
+I tested the plain revert i sent in the original report overnight 
+(with about 12 hours of combined testing time), and all systems held 
+up fine. The system that would reproduce the bug within 10-20 
+iterations did 210 successful iterations. Other systems held up fine 
+too.
 
-Copying that file to a separate disk was not as bad, but there were
-still some big spikes:
+So if there's no definitive resolution for the real cause of the 
+bug, the plain revert looks like an acceptable interim choice for 
+.29.1 - at least as far as my systems go.
 
-fsync time: 6.8808
-fsync time: 18.4634
-fsync time: 9.6852
-fsync time: 10.6146
-fsync time: 8.5015
-fsync time: 5.2160
-
-The destination disk did not have any significant IO on it at the time.
-
-The system is running Fedora 10 2.6.27.19-78.2.30.fc9.x86_64 and has
-two RAID1 arrays attached to an aacraid controller. ext3 filesystems
-mounted with noatime.
-
--Dave
+	Ingo
