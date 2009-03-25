@@ -1,31 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756689AbZCYUsm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754493AbZCYUxB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756689AbZCYUsm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 16:48:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754329AbZCYUsd
+	id S1754493AbZCYUxB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 16:53:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751645AbZCYUww
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 16:48:33 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:48864 "EHLO
+	Wed, 25 Mar 2009 16:52:52 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:59727 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751674AbZCYUsd (ORCPT
+	by vger.kernel.org with ESMTP id S1750830AbZCYUwv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 16:48:33 -0400
-Date: Wed, 25 Mar 2009 13:40:37 -0700 (PDT)
+	Wed, 25 Mar 2009 16:52:51 -0400
+Date: Wed, 25 Mar 2009 13:45:43 -0700 (PDT)
 From: Linus Torvalds <torvalds@linux-foundation.org>
 X-X-Sender: torvalds@localhost.localdomain
-To: Jeff Garzik <jeff@garzik.org>
-cc: Theodore Tso <tytso@mit.edu>, Ingo Molnar <mingo@elte.hu>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+To: Theodore Tso <tytso@mit.edu>
+cc: Jan Kara <jack@suse.cz>, Andrew Morton <akpm@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
        Arjan van de Ven <arjan@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
        Peter Zijlstra <a.p.zijlstra@chello.nl>, Nick Piggin <npiggin@suse.de>,
-       David Rees <drees76@gmail.com>, Jesper Krogh <jesper@krogh.cc>,
+       Jens Axboe <jens.axboe@oracle.com>, David Rees <drees76@gmail.com>,
+       Jesper Krogh <jesper@krogh.cc>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Subject: Re: Linux 2.6.29
-In-Reply-To: <49CA9346.6040108@garzik.org>
-Message-ID: <alpine.LFD.2.00.0903251337410.3032@localhost.localdomain>
-References: <20090324093245.GA22483@elte.hu> <20090324101011.6555a0b9@lxorguk.ukuu.org.uk> <20090324103111.GA26691@elte.hu> <20090324132032.GK5814@mit.edu> <alpine.LFD.2.00.0903241053200.3032@localhost.localdomain> <20090324184549.GE32307@mit.edu>
- <alpine.LFD.2.00.0903241218130.3032@localhost.localdomain> <49C93AB0.6070300@garzik.org> <20090325093913.GJ27476@kernel.dk> <49CA86BD.6060205@garzik.org> <20090325194341.GB27476@kernel.dk> <49CA9346.6040108@garzik.org>
+In-Reply-To: <20090325185824.GO32307@mit.edu>
+Message-ID: <alpine.LFD.2.00.0903251341050.3032@localhost.localdomain>
+References: <49C87B87.4020108@krogh.cc> <72dbd3150903232346g5af126d7sb5ad4949a7b5041f@mail.gmail.com> <20090324091545.758d00f5@lxorguk.ukuu.org.uk> <20090324093245.GA22483@elte.hu> <20090324101011.6555a0b9@lxorguk.ukuu.org.uk> <20090324103111.GA26691@elte.hu>
+ <20090324041249.1133efb6.akpm@linux-foundation.org> <20090325123744.GK23439@duck.suse.cz> <20090325150041.GM32307@mit.edu> <alpine.LFD.2.00.0903251008120.3032@localhost.localdomain> <20090325185824.GO32307@mit.edu>
 User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
@@ -35,28 +35,23 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 
 
-On Wed, 25 Mar 2009, Jeff Garzik wrote:
+On Wed, 25 Mar 2009, Theodore Tso wrote:
 > 
-> It is clearly possible to implement an fsync(2) that causes FLUSH CACHE to be
-> issued, without adding full barrier support to a filesystem.  It is likely
-> doable to avoid touching per-filesystem code at all, if we issue the flush
-> from a generic fsync(2) code path in the kernel.
+> Now, there are three ways of solving this problem.
 
-We could easily do that. It would even work for most cases. The 
-problematic ones are where filesystems do their own disk management, but I 
-guess those people can do their own fsync() management too.
+You seem to disregard the "write in the right order" approach. Or is that 
+your:
 
-Somebody send me the patch, we can try it out.
+> The third potential solution we can try doing is to make some tuning
+> adjustments to the VM so that we start pushing out these data blocks
+> much more aggressively out to the disk.
 
-> Remember, fsync(2) means that the user _expects_ a performance hit.
+Yes. but at least one problem is, as mentioned, that when the VM calls 
+writepage[s]() to start async writeback, many filesystems do seem to just 
+_block_ on it.
 
-Within reason, though.
-
-OS X, for example, doesn't do the disk barrier. It requires you to do a 
-separate FULL_FSYNC (or something similar) ioctl to get that. Apparently 
-exactly because users don't expect quite _that_ big of a performance hit.
-
-(Or maybe just because it was easier to do that way. Never attribute to 
-malice what can be sufficiently explained by stupidity).
+So the VM has a really hard time doing anything sanely early - the 
+filesystems seem to take a perverse pleasure in synchronizing things using 
+blocking semaphores.
 
 			Linus
