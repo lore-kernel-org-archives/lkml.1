@@ -1,100 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762216AbZCYSQm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763027AbZCYSQ6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762216AbZCYSQm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 14:16:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754379AbZCYSQd
+	id S1763027AbZCYSQ6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 14:16:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757380AbZCYSQf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 14:16:33 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:49454 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753079AbZCYSQc (ORCPT
+	Wed, 25 Mar 2009 14:16:35 -0400
+Received: from mail-qy0-f118.google.com ([209.85.221.118]:35619 "EHLO
+	mail-qy0-f118.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754534AbZCYSQd convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 14:16:32 -0400
-Date: Wed, 25 Mar 2009 14:16:29 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Ingo Molnar <mingo@elte.hu>
-cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Tim Bird <tim.bird@am.sony.com>, Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [PATCH 2/5][RFC] tracing: move function profiler data out of
- function struct
-In-Reply-To: <20090325180203.GB25518@elte.hu>
-Message-ID: <alpine.DEB.2.00.0903251411260.5675@gandalf.stny.rr.com>
-References: <20090325035646.662994901@goodmis.org> <20090325040832.443420395@goodmis.org> <20090325100746.GI2341@elte.hu> <alpine.DEB.2.00.0903251142470.5675@gandalf.stny.rr.com> <20090325174446.GE14250@elte.hu> <alpine.DEB.2.00.0903251354020.5675@gandalf.stny.rr.com>
- <20090325180203.GB25518@elte.hu>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Wed, 25 Mar 2009 14:16:33 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=dll1kw3MvBK2fcKb2xHIEA1k9d5cW/MtqhwI1qVfV3fyoewmlw5hwIHmo/wGWuEi0s
+         zd1GmufkC3EUnqD5SGPblaAxsKOZ0fkeAaAzo7Dsc1iXc710/d4OwV+/xHpqBpooDWeM
+         W1TSY2mJxw5bRlC7L8ThAfo5meA391/AVLbos=
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <49CA6D09.1020401@krogh.cc>
+References: <alpine.LFD.2.00.0903231617550.3032@localhost.localdomain>
+	 <49C87B87.4020108@krogh.cc>
+	 <72dbd3150903232346g5af126d7sb5ad4949a7b5041f@mail.gmail.com>
+	 <49C88C80.5010803@krogh.cc>
+	 <72dbd3150903241200v38720ca0x392c381f295bdea@mail.gmail.com>
+	 <49CA6D09.1020401@krogh.cc>
+Date: Wed, 25 Mar 2009 11:16:30 -0700
+Message-ID: <72dbd3150903251116ie84b9e9ib998ac0283e6cfbb@mail.gmail.com>
+Subject: Re: Linux 2.6.29
+From: David Rees <drees76@gmail.com>
+To: Jesper Krogh <jesper@krogh.cc>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Mar 25, 2009 at 10:42 AM, Jesper Krogh <jesper@krogh.cc> wrote:
+> David Rees wrote:
+>> On Tue, Mar 24, 2009 at 12:32 AM, Jesper Krogh <jesper@krogh.cc> wrote:
+>>> David Rees wrote:
+>>> The 480 secondes is not the "wait time" but the time gone before the
+>>> message is printed. It the kernel-default it was earlier 120 seconds but
+>>> thats changed by Ingo Molnar back in september. I do get a lot of less
+>>> noise but it really doesn't tell anything about the nature of the
+>>> problem.
+>>>
+>>> The systes spec:
+>>> 32GB of memory. The disks are a Nexsan SataBeast with 42 SATA drives in
+>>> Raid10 connected using 4Gbit fibre-channel. I'll let it up to you to
+>>> decide
+>>> if thats fast or slow?
+>>
+>> The drives should be fast enough to saturate 4Gbit FC in streaming
+>> writes.  How fast is the array in practice?
+>
+> Thats allways a good question.. This is by far not being the only user
+> of the array at the time of testing.. (there are 4 FC-channel connected to a
+> switch). Creating a fresh slice.. and just dd'ing onto it from /dev/zero
+> gives:
+> jk@hest:~$ sudo dd if=/dev/zero of=/dev/sdh bs=1M count=10000
+> 10000+0 records in
+> 10000+0 records out
+> 10485760000 bytes (10 GB) copied, 78.0557 s, 134 MB/s
+> jk@hest:~$ sudo dd if=/dev/zero of=/dev/sdh bs=1M count=1000
+> 1000+0 records in
+> 1000+0 records out
+> 1048576000 bytes (1.0 GB) copied, 8.11019 s, 129 MB/s
+>
+> Watching using dstat while dd'ing it peaks at 220M/s
 
-On Wed, 25 Mar 2009, Ingo Molnar wrote:
+Hmm, not as fast as I expected.
 
-> 
-> * Steven Rostedt <rostedt@goodmis.org> wrote:
-> 
-> > 
-> > On Wed, 25 Mar 2009, Ingo Molnar wrote:
-> > 
-> > > > The atomic_inc_return protects against NMIs, since this is the only place 
-> > > > the lock is taken.
-> > > 
-> > > i mean, if this code executes _ni_ an NMI. Or that cannot happen? We 
-> > > trace nmis too, dont we?
-> > 
-> > Yes, it can execute in an NMI, but we have no issues there. If the 
-> > lock was taken the atomic inc is set. If an NMI comes in, it will 
-> > fail the atomic inc counter test and never try to take the lock.
-> 
-> You are misunderstanding me. Can this bit:
+> It has 2GB of battery backed cache. I'm fairly sure that when it was new
+> (and I only had connected one host) I could get it up at around 350MB/s.
 
-Ah thanks,
+With 2GB of BBC, I'm surprised you are seeing as much latency as you
+are.  It should be able to suck down writes as fast as you can throw
+at it.  Is the array configured in writeback mode?
 
-> 
-> > > +   if (!profile_pages->next && alloc_safe)
-> > > +           profile_pages->next = (void *)get_zeroed_page(GFP_ATOMIC);
-> 
-> run in NMI context?
-> 
-> or is alloc_safe false in that case? Even if it's safe it looks 
-> really messy ...
+>> On a 32GB system that's 1.6GB of dirty data, but your array should be
+>> able to write that out fairly quickly (in a couple seconds) as long as
+>> it's not too random.  If it's spread all over the disk, write
+>> throughput will drop significantly - how fast is data being written to
+>> disk when your system suffers from large write latency?
+>
+> Thats another thing. I havent been debugging while hitting it (yet) but if I
+> go ind and do a sync on the system manually. Then it doesn't get above
+> 50MB/s in writeout (measured using dstat). But even that doesn't sum up to 8
+> minutes .. 1.6GB at 50MB/s ..=> 32 s.
 
-alloc_safe is true only if interrupts were enabled, preemption is enabled 
-and we are not in an interrupt or softirq.
+Have you also tried increasing the IO priority of the kjournald
+processes as a workaround as Arjan van de Ven suggests?
 
-So, it should fail when in NMI.
+You must have a significant amount of activity going to that FC array
+from other clients - it certainly doesn't seem to be performing as
+well as it could/should be.
 
-But I agree, it is messy, and I never liked it. I was trying to save 
-space, but the space saving is probably not worth the messy code.
-
-For every recorded function we have:
-
-struct ftrace_profile {
-	struct hlist_node	*node;
-	unsigned long		ip;
-	unsigned long		hit;
-	unsigned long long	calltime;
-};
-
-on x86_64 that is 40 bytes. (node is 16, ip is 8, hit is 8, calltime is 8)
-
-Thus, a normal distro kernel has 20,000 functions, and if we were to 
-allocate for every function per online cpu, we have:
-
- 20K * 40 = 800K per online CPU.
-
-But we allocate only when we use it. Though it must be warned, because 
-when we use it we must always be able to reference it, that memory stays 
-allocated. If this becomes an issue, I can add a way to clean the results 
-and free the memory.
-
-I guess 800K per online CPU is not worth the messy code. I'll write up a 
-patch to fix that.
-
--- Steve
-
+-Dave
