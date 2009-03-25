@@ -1,23 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760032AbZCYKz1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758252AbZCYK4V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760032AbZCYKz1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 06:55:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755346AbZCYKyh
+	id S1758252AbZCYK4V (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 06:56:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755351AbZCYK4J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 06:54:37 -0400
-Received: from mx1.emlix.com ([193.175.82.87]:51361 "EHLO mx1.emlix.com"
+	Wed, 25 Mar 2009 06:56:09 -0400
+Received: from mx1.emlix.com ([193.175.82.87]:35422 "EHLO mx1.emlix.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752206AbZCYKyf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 06:54:35 -0400
+	id S1755346AbZCYK4I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Mar 2009 06:56:08 -0400
 From: =?utf-8?q?Daniel=20Gl=C3=B6ckner?= <dg@emlix.com>
 To: Chris Zankel <chris@zankel.net>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+Cc: linux-kernel@vger.kernel.org, linux-xtensa@linux-xtensa.org,
        =?utf-8?q?Daniel=20Gl=C3=B6ckner?= <dg@emlix.com>
-Subject: [patch 3/3] xtensa: enable m41t80 driver in s6105_defconfig
-Date: Wed, 25 Mar 2009 11:55:37 +0100
-Message-Id: <1237978537-23681-3-git-send-email-dg@emlix.com>
-In-Reply-To: <1237978537-23681-1-git-send-email-dg@emlix.com>
-References: <1237978537-23681-1-git-send-email-dg@emlix.com>
+Subject: [patch] xtensa: implement PTRACE_PEEKUSER addresses for nommu
+Date: Wed, 25 Mar 2009 11:57:08 +0100
+Message-Id: <1237978628-23746-1-git-send-email-dg@emlix.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 8bit
@@ -26,85 +24,55 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On nommu gdbserver needs to be able to look up where the currently
+debugged application has been relocated. Based on the Blackfin
+implementation, this introduces three "addresses" PT_TEXT_ADDR,
+PT_DATA_ADDR, and PT_TEXT_END_ADDR for PTRACE_PEEKUSER.
+
 Signed-off-by: Daniel Glöckner <dg@emlix.com>
 ---
- arch/xtensa/configs/s6105_defconfig |   56 +++++++++++++++++++++++++++++++++--
- 1 files changed, 53 insertions(+), 3 deletions(-)
+ arch/xtensa/include/asm/ptrace.h |    4 ++++
+ arch/xtensa/kernel/ptrace.c      |   12 ++++++++++++
+ 2 files changed, 16 insertions(+), 0 deletions(-)
 
-diff --git a/arch/xtensa/configs/s6105_defconfig b/arch/xtensa/configs/s6105_defconfig
-index c5ea056..a386a01 100644
---- a/arch/xtensa/configs/s6105_defconfig
-+++ b/arch/xtensa/configs/s6105_defconfig
-@@ -363,8 +363,6 @@ CONFIG_UNIX98_PTYS=y
- # CONFIG_LEGACY_PTYS is not set
- # CONFIG_IPMI_HANDLER is not set
- # CONFIG_HW_RANDOM is not set
--# CONFIG_RTC is not set
--# CONFIG_GEN_RTC is not set
- # CONFIG_R3964 is not set
- # CONFIG_RAW_DRIVER is not set
- # CONFIG_TCG_TPM is not set
-@@ -529,7 +527,59 @@ CONFIG_MMC_SPI=y
- # CONFIG_MEMSTICK is not set
- # CONFIG_NEW_LEDS is not set
- # CONFIG_ACCESSIBILITY is not set
--# CONFIG_RTC_CLASS is not set
-+CONFIG_RTC_LIB=y
-+CONFIG_RTC_CLASS=y
-+CONFIG_RTC_HCTOSYS=y
-+CONFIG_RTC_HCTOSYS_DEVICE="rtc0"
-+# CONFIG_RTC_DEBUG is not set
+diff --git a/arch/xtensa/include/asm/ptrace.h b/arch/xtensa/include/asm/ptrace.h
+index 905e1e6..8f4fbf3 100644
+--- a/arch/xtensa/include/asm/ptrace.h
++++ b/arch/xtensa/include/asm/ptrace.h
+@@ -66,6 +66,10 @@
+ 
+ #define SYSCALL_NR	0x00ff
+ 
++#define PT_TEXT_ADDR	0x0300
++#define PT_DATA_ADDR	0x0301
++#define PT_TEXT_END_ADDR	0x0302
 +
-+#
-+# RTC interfaces
-+#
-+# CONFIG_RTC_INTF_SYSFS is not set
-+# CONFIG_RTC_INTF_PROC is not set
-+# CONFIG_RTC_INTF_DEV is not set
-+# CONFIG_RTC_DRV_TEST is not set
+ /* Other PTRACE_ values defined in <linux/ptrace.h> using values 0-9,16,17,24 */
+ 
+ #define PTRACE_GETREGS		12
+diff --git a/arch/xtensa/kernel/ptrace.c b/arch/xtensa/kernel/ptrace.c
+index 9486882..82f3620 100644
+--- a/arch/xtensa/kernel/ptrace.c
++++ b/arch/xtensa/kernel/ptrace.c
+@@ -211,6 +211,18 @@ int ptrace_peekusr(struct task_struct *child, long regno, long __user *ret)
+ 			tmp = regs->syscall;
+ 			break;
+ 
++		case PT_TEXT_ADDR:
++			tmp = child->mm->start_code;
++			break;
 +
-+#
-+# I2C RTC drivers
-+#
-+# CONFIG_RTC_DRV_DS1307 is not set
-+# CONFIG_RTC_DRV_DS1374 is not set
-+# CONFIG_RTC_DRV_DS1672 is not set
-+# CONFIG_RTC_DRV_MAX6900 is not set
-+# CONFIG_RTC_DRV_RS5C372 is not set
-+# CONFIG_RTC_DRV_ISL1208 is not set
-+# CONFIG_RTC_DRV_X1205 is not set
-+# CONFIG_RTC_DRV_PCF8563 is not set
-+# CONFIG_RTC_DRV_PCF8583 is not set
-+CONFIG_RTC_DRV_M41T80=y
-+# CONFIG_RTC_DRV_M41T80_WDT is not set
-+# CONFIG_RTC_DRV_S35390A is not set
-+# CONFIG_RTC_DRV_FM3130 is not set
-+# CONFIG_RTC_DRV_RX8581 is not set
++		case PT_DATA_ADDR:
++			tmp = child->mm->start_data;
++			break;
 +
-+#
-+# SPI RTC drivers
-+#
++		case PT_TEXT_END_ADDR:
++			tmp = child->mm->end_code;
++			break;
 +
-+#
-+# Platform RTC drivers
-+#
-+# CONFIG_RTC_DRV_DS1286 is not set
-+# CONFIG_RTC_DRV_DS1511 is not set
-+# CONFIG_RTC_DRV_DS1553 is not set
-+# CONFIG_RTC_DRV_DS1742 is not set
-+# CONFIG_RTC_DRV_STK17TA8 is not set
-+# CONFIG_RTC_DRV_M48T86 is not set
-+# CONFIG_RTC_DRV_M48T35 is not set
-+# CONFIG_RTC_DRV_M48T59 is not set
-+# CONFIG_RTC_DRV_BQ4802 is not set
-+# CONFIG_RTC_DRV_V3020 is not set
-+
-+#
-+# on-CPU RTC drivers
-+#
- # CONFIG_DMADEVICES is not set
- # CONFIG_UIO is not set
- # CONFIG_STAGING is not set
+ 		default:
+ 			return -EIO;
+ 	}
 -- 
 1.6.2.107.ge47ee
 
