@@ -1,79 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757347AbZCYUXp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756742AbZCYU0V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757347AbZCYUXp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 16:23:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753976AbZCYUXh
+	id S1756742AbZCYU0V (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 16:26:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752260AbZCYU0N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 16:23:37 -0400
-Received: from hera.kernel.org ([140.211.167.34]:47747 "EHLO hera.kernel.org"
+	Wed, 25 Mar 2009 16:26:13 -0400
+Received: from gw.goop.org ([64.81.55.164]:38572 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752300AbZCYUXg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 16:23:36 -0400
-Subject: Re: [PATCH] module: Kill warning: label 'free_init' defined but
- not used
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: Masami Hiramatsu <mhiramat@redhat.com>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, dmitri.vorobiev@movial.com
-In-Reply-To: <10f740e80903251305t24529e6fl1d3c850c8e4ec819@mail.gmail.com>
-References: <Pine.LNX.4.64.0903252041190.14101@anakin>
-	 <1238010885.2500.65.camel@ht.satnam>
-	 <10f740e80903251305t24529e6fl1d3c850c8e4ec819@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 26 Mar 2009 01:52:30 +0530
-Message-Id: <1238012550.2500.76.camel@ht.satnam>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
-Content-Transfer-Encoding: 8bit
+	id S1751909AbZCYU0M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Mar 2009 16:26:12 -0400
+Message-ID: <49CA935F.8000908@goop.org>
+Date: Wed, 25 Mar 2009 13:26:07 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+MIME-Version: 1.0
+To: Steven Rostedt <rostedt@goodmis.org>
+CC: Matt Mackall <mpm@selenic.com>, Pekka Enberg <penberg@cs.helsinki.fi>,
+       Hua Zhong <hzhong@gmail.com>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Roland McGrath <roland@redhat.com>,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       Steven Rostedt <srostedt@redhat.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Al Viro <viro@zeniv.linux.org.uk>
+Subject: Re: [PATCH 2/5] mm: remove unlikly NULL from kfree
+References: <20090325051920.406564281@goodmis.org>  <20090325052023.071564146@goodmis.org>  <84144f020903250034j24e1782bt5f73809b9349346c@mail.gmail.com>  <009101c9ad20$1ae231c0$50a69540$@com>  <1237968394.30175.12.camel@penberg-laptop>  <84144f020903250651o13c723cgf64643091459a5ac@mail.gmail.com>  <alpine.DEB.2.00.0903251039590.5675@gandalf.stny.rr.com>  <1237993145.30175.34.camel@penberg-laptop>  <alpine.DEB.2.00.0903251103070.5675@gandalf.stny.rr.com>  <alpine.DEB.2.00.0903251105030.5675@gandalf.stny.rr.com> <1237997658.2132.193.camel@calx> <alpine.DEB.2.00.0903251227360.5675@gandalf.stny.rr.com>
+In-Reply-To: <alpine.DEB.2.00.0903251227360.5675@gandalf.stny.rr.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-03-25 at 21:05 +0100, Geert Uytterhoeven wrote:
-> On Wed, Mar 25, 2009 at 20:54, Jaswinder Singh Rajput
-> <jaswinder@kernel.org> wrote:
-> > On Wed, 2009-03-25 at 20:43 +0100, Geert Uytterhoeven wrote:
-> >> On m68k (which doesn't do SMP), I get:
-> >>
-> >> | kernel/module.c:2291: warning: label 'free_init' defined but not used
-> >>
-> >> which was introduced by commit 6e2b75740bed35df98b8113300579e13ed2ce848
-> >> ("module: fix refptr allocation and release order").
-> >> Move the label inside the #ifdef, as the goto is protected by the same #ifdef.
-> >>
-> >> Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
-> >> ---
-> >
-> > AFAIK, it is already fixed in -tip:
-> > http://git.kernel.org/?p=linux/kernel/git/x86/linux-2.6-tip.git;a=commit;h=67f5ca081c6ace125e8ccc76b8a7d99b091abaa7
-> 
-> Interesting, as I noticed the problem in today's linux-next.
-> http://kisskb.ellerman.id.au/kisskb/buildresult/271602/
-> Or am I caught again by fake warnings from the bisection process?
-> 
+Steven Rostedt wrote:
+> Thanks for this info!
+>
+> Although gcc plays a role too. That is, if we have
+>
+> 	if (x)
+> 		do something small;
+>
+> 	do something large;
+>
+>
+> this can be broken into:
+>
+> 	cmp x
+> 	beq 1f
+> 	do something small
+> 1:
+> 	do something large
+>
+> Which plays nice with the cache. But, by adding a unlikely(x), gcc will 
+> probably choose to do:
+>
+> 	cmp x
+> 	bne 2f
+>
+> 1:
+> 	do something large
+>
+> 	ret;
+>
+> 2:
+> 	do something small
+> 	b 1b
+>
+> which hurts in a number of ways.
+>   
 
-Yes, you are right linux-next is still having this problem.
+I think that's probably the dominant effect on x86 systems, because 
+Intel doesn't recommend using the branch hint prefixes as far as I can 
+tell (their consumption of icache space outweighs any benefit of priming 
+the predictor).
 
-You are the third guy who came with this fix.
-
-Two of them are already applied in -tip and Rusty's tree:
-
------------>
-On Wed, 2009-03-25 at 11:35 +1030, Rusty Russell wrote: 
-> On Wednesday 25 March 2009 02:37:19 Américo Wang wrote:
-> > 
-> > Label 'free_init' is only used when defined(CONFIG_MODULE_UNLOAD) &&
-> > defined(CONFIG_SMP), so move it inside to shut up gcc.
-> 
-> Thanks, applied!
-> Rusty.
-<-----------
-
-May be you can also try linux-next tree ;-)
-
---
-JSR
-
-
+    J
