@@ -1,209 +1,189 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762724AbZCYPUi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761790AbZCYPVc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762724AbZCYPUi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 11:20:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755143AbZCYPUU
+	id S1761790AbZCYPVc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 11:21:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756326AbZCYPVU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 11:20:20 -0400
-Received: from mail-fx0-f158.google.com ([209.85.220.158]:55615 "EHLO
-	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762633AbZCYPUQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 11:20:16 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=Fm6bgdieu5nZc4v0LkH4+YAnJU37Upcm0tecwkZN2fBss5FKoqa6M6W/tSWECOBXJr
-         RES88W6JhNRgardmH2kLIw9ryIhKZli/+lgm95zubNH4v6fDSed8Wgrx0fOSMTcWHhKw
-         lm8HYgvPF/Mxfpo1e/FhrEM2EKHcs9isSZPgw=
-Message-ID: <49CA4B4B.50408@panasas.com>
-Date: Wed, 25 Mar 2009 17:18:35 +0200
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Wed, 25 Mar 2009 11:21:20 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:37419 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753824AbZCYPVT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Mar 2009 11:21:19 -0400
+Date: Wed, 25 Mar 2009 16:19:38 +0100
+From: Jiri Pirko <jpirko@redhat.com>
+To: linux-kernel@vger.kernel.org
+Cc: netdev@vger.kernel.org, jgarzik@pobox.com, davem@davemloft.net,
+       shemminger@linux-foundation.org, bridge@lists.linux-foundation.org,
+       fubar@us.ibm.com, bonding-devel@lists.sourceforge.net, kaber@trash.net,
+       mschmidt@redhat.com, dada1@cosmosbay.com
+Subject: [PATCH] bonding: allow bond in mode balance-alb to work properly
+	in bridge -try3
+Message-ID: <20090325151937.GI3437@psychotron.englab.brq.redhat.com>
+References: <20090313183303.GF3436@psychotron.englab.brq.redhat.com>
 MIME-Version: 1.0
-To: Tejun Heo <tj@kernel.org>
-CC: bzolnier@gmail.com, linux-kernel@vger.kernel.org, axboe@kernel.dk,
-       linux-ide@vger.kernel.org
-Subject: Re: [PATCH 03/14] block: implement blk_rq_map_kern_prealloc()
-References: <1237910776-10983-1-git-send-email-tj@kernel.org> <1237910776-10983-4-git-send-email-tj@kernel.org>
-In-Reply-To: <1237910776-10983-4-git-send-email-tj@kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090313183303.GF3436@psychotron.englab.brq.redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tejun Heo wrote:
-> Impact: implement new API
-> 
-> There still are a few places where request is allocated statically and
-> manually initialized.  Till now, those sites used their own custom
-> mechanisms to pass data buffer through request queue.  This patch
-> implements blk_rq_map_kern_prealloc() which initializes rq with
-> pre-allocated bio and bvec so that those code paths can be converted
-> to bio.
-> 
-> Signed-off-by: Tejun Heo <tj@kernel.org>
-> Cc: Jens Axboe <axboe@kernel.dk>
+(resend, using compare_ether_addr_64bits instead of memcmp)
 
-Hi dear Tejun Heo
+Hi all.
 
-I have a similar, totally unrelated patch queued, perhaps we can unify
-the efforts, to satisfy both our needs in one stone.
+The problem is described in following bugzilla:
+https://bugzilla.redhat.com/show_bug.cgi?id=487763
 
-I've sent this patch:
-http://www.spinics.net/lists/linux-scsi/msg34082.html
+Basically here's what's going on. In every mode, bonding interface uses the same
+mac address for all enslaved devices. Except for mode balance-alb. When you put
+this kind of bond device into a bridge it will only add one of mac adresses into
+a hash list of mac addresses, say X. This mac address is marked as local. But
+this bonding interface also has mac address Y. Now then packet arrives with
+destination address Y, this address is not marked as local and the packed looks
+like it needs to be forwarded. This packet is then lost which is wrong.
 
-In an effort to un-export blk_rq_append_bio().
+Notice that interfaces can be added and removed from bond while it is in bridge.
 
-Perhaps you could reorder the code below a bit?
+This patch solves the situation in the bonding without touching bridge code,
+as Patrick suggested. For every incoming frame to bonding it searches the
+destination address in slaves list and if any of slave addresses matches, it
+rewrites the address in frame by the adress of bonding master. This ensures that
+all frames comming thru the bonding in alb mode have the same address.
 
-My proposal is:
-* blk_rq_map_kern_prealloc => is simplified to be
-    int blk_rq_map_bio(struct request_queue *q, struct request *rq,
-		       struct bio *bio);
+Jirka
 
-* The extra checks currently inside blk_rq_map_kern_prealloc are moved
-  to bio_map_kern_prealloc()
 
-* Users call bio_map_kern_prealloc() directly and then use blk_rq_map_bio()
-  in a two stage process.
+Signed-off-by: Jiri Pirko <jpirko@redhat.com>
 
-So blk_rq_map_bio becomes a BLOCK_PC command's way of a pre-allocated bio
-the way FS_PC commands use generic_make_request.
-
-Thanks for doing all this. BTW' how close are we to remove req->data and req->buffer
-
-Have a good day
-Boaz
-
-> ---
->  block/blk-map.c        |   50 ++++++++++++++++++++++++++++++++++++++++++++++++
->  fs/bio.c               |   23 ++++++++++++++++++++++
->  include/linux/bio.h    |    3 ++
->  include/linux/blkdev.h |    4 +++
->  4 files changed, 80 insertions(+), 0 deletions(-)
-> 
-> diff --git a/block/blk-map.c b/block/blk-map.c
-> index f103729..c50aac2 100644
-> --- a/block/blk-map.c
-> +++ b/block/blk-map.c
-> @@ -317,3 +317,53 @@ int blk_rq_map_kern(struct request_queue *q, struct request *rq, void *kbuf,
->  	return 0;
->  }
->  EXPORT_SYMBOL(blk_rq_map_kern);
-> +
-> +/**
-> + * blk_rq_map_kern_prealloc - map kernel data using preallocated structures
-> + * @q:		request queue where request should be inserted
-> + * @rq:		request to fill
-> + * @bio:	bio to use
-> + * @bvec:	bio_vec array to use
-> + * @bvec_len:	the number of available bvecs in @bvec
-> + * @kbuf:	the kernel buffer to map
-> + * @len:	length of @kbuf
-> + * @force:	bypass @kbuf alignment and on stack check
-> + *
-> + * Description:
-> + *    @len bytes at @kbuf will be mapped into @rq using @bio and
-> + *    @bvec.  The buffer must be suitable for direct mapping and
-> + *    should not require more than @bvec_len elements to map.  This
-> + *    function doesn't do any allocation and can be called from atomic
-> + *    context.  0 is returned on success, -errno on failure.  Note
-> + *    that this function does not handle bouncing.
-> + *
-> + *    WARNING: Using this function is strongly discouraged.  Use
-> + *    blk_rq_map_kern() if at all possible.
-> + */
-> +int blk_rq_map_kern_prealloc(struct request_queue *q,
-> +			     struct request *rq, struct bio *bio,
-> +			     struct bio_vec *bvec, unsigned short bvec_len,
-> +			     void *kbuf, unsigned int len, bool force)
-> +{
-> +	int error;
-> +
-> +	if (len > (q->max_hw_sectors << 9))
-> +		return -EINVAL;
-> +	if (!len || !kbuf)
-> +		return -EINVAL;
-> +	if (!force &&
-> +	    (!blk_rq_aligned(q, kbuf, len) || object_is_on_stack(kbuf)))
-> +		return -EINVAL;
-> +
-> +	error = bio_map_kern_prealloc(q, bio, bvec, bvec_len, kbuf, len);
-> +	if (error)
-> +		return error;
-> +
-> +	if (rq_data_dir(rq) == WRITE)
-> +		bio->bi_rw |= (1 << BIO_RW);
-> +
-> +	blk_rq_bio_prep(q, rq, bio);
-> +	rq->buffer = rq->data = NULL;
-> +	return 0;
-> +}
-> +EXPORT_SYMBOL(blk_rq_map_kern_prealloc);
-> diff --git a/fs/bio.c b/fs/bio.c
-> index 746b566..ab3c9c9 100644
-> --- a/fs/bio.c
-> +++ b/fs/bio.c
-> @@ -1165,6 +1165,29 @@ struct bio *bio_map_kern(struct request_queue *q, void *data, unsigned int len,
->  	return bio;
->  }
->  
-> +/**
-> + *	bio_map_kern_prealloc - map kernel address into preallocated bio/bvec
-> + *	@q: the struct request_queue for the bio
-> + *	@bio: bio to initialize
-> + *	@bvec: bio_vec array to initialize
-> + *	@bvec_len: how many elements are available in @bvec
-> + *	@data: pointer to buffer to map
-> + *	@len: length in bytes
-> + *
-> + *	Map @data into @bvec and initialize @bio with it.  If there
-> + *	aren't enough @bvec entries, -EINVAL is returned.
-> + */
-> +int bio_map_kern_prealloc(struct request_queue *q, struct bio *bio,
-> +			  struct bio_vec *bvec, unsigned short bvec_len,
-> +			  void *data, unsigned int len)
-> +{
-> +	bio_init(bio);
-> +	bio->bi_io_vec = bvec;
-> +	bio->bi_max_vecs = bvec_len;
-> +
-> +	return __bio_map_kern(q, bio, data, len);
-> +}
-> +
->  static void bio_copy_kern_endio(struct bio *bio, int err)
->  {
->  	struct bio_vec *bvec;
-> diff --git a/include/linux/bio.h b/include/linux/bio.h
-> index d8bd43b..39619eb 100644
-> --- a/include/linux/bio.h
-> +++ b/include/linux/bio.h
-> @@ -388,6 +388,9 @@ extern struct bio *bio_map_user_iov(struct request_queue *,
->  extern void bio_unmap_user(struct bio *);
->  extern struct bio *bio_map_kern(struct request_queue *, void *, unsigned int,
->  				gfp_t);
-> +extern int bio_map_kern_prealloc(struct request_queue *q, struct bio *bio,
-> +				 struct bio_vec *bvec, unsigned short bvec_len,
-> +				 void *data, unsigned int len);
->  extern struct bio *bio_copy_kern(struct request_queue *, void *, unsigned int,
->  				 gfp_t, int);
->  extern void bio_set_pages_dirty(struct bio *bio);
-> diff --git a/include/linux/blkdev.h b/include/linux/blkdev.h
-> index 465d6ba..e322e94 100644
-> --- a/include/linux/blkdev.h
-> +++ b/include/linux/blkdev.h
-> @@ -781,6 +781,10 @@ extern int blk_rq_map_user(struct request_queue *, struct request *,
->  			   gfp_t);
->  extern int blk_rq_unmap_user(struct bio *);
->  extern int blk_rq_map_kern(struct request_queue *, struct request *, void *, unsigned int, gfp_t);
-> +extern int blk_rq_map_kern_prealloc(struct request_queue *q,
-> +			struct request *rq, struct bio *bio,
-> +			struct bio_vec *bvec, unsigned short bvec_len,
-> +			void *kbuf, unsigned int len, bool force);
->  extern int blk_rq_map_user_iov(struct request_queue *, struct request *,
->  			       struct rq_map_data *, struct sg_iovec *, int,
->  			       unsigned int, gfp_t);
-
+diff --git a/drivers/net/bonding/bond_alb.c b/drivers/net/bonding/bond_alb.c
+index 27fb7f5..83998f4 100644
+--- a/drivers/net/bonding/bond_alb.c
++++ b/drivers/net/bonding/bond_alb.c
+@@ -1762,6 +1762,26 @@ int bond_alb_set_mac_address(struct net_device *bond_dev, void *addr)
+ 	return 0;
+ }
+ 
++void bond_alb_change_dest(struct sk_buff *skb)
++{
++	struct net_device *bond_dev = skb->dev;
++	struct bonding *bond = netdev_priv(bond_dev);
++	unsigned char *dest = eth_hdr(skb)->h_dest;
++	struct slave *slave;
++	int i;
++
++	if (!compare_ether_addr_64bits(dest, bond_dev->dev_addr))
++		return;
++	read_lock(&bond->lock);
++	bond_for_each_slave(bond, slave, i) {
++		if (!compare_ether_addr_64bits(slave->dev->dev_addr, dest)) {
++			memcpy(dest, bond_dev->dev_addr, ETH_ALEN);
++			break;
++		}
++	}
++	read_unlock(&bond->lock);
++}
++
+ void bond_alb_clear_vlan(struct bonding *bond, unsigned short vlan_id)
+ {
+ 	if (bond->alb_info.current_alb_vlan &&
+diff --git a/drivers/net/bonding/bond_alb.h b/drivers/net/bonding/bond_alb.h
+index 50968f8..77f36fb 100644
+--- a/drivers/net/bonding/bond_alb.h
++++ b/drivers/net/bonding/bond_alb.h
+@@ -127,6 +127,7 @@ void bond_alb_handle_active_change(struct bonding *bond, struct slave *new_slave
+ int bond_alb_xmit(struct sk_buff *skb, struct net_device *bond_dev);
+ void bond_alb_monitor(struct work_struct *);
+ int bond_alb_set_mac_address(struct net_device *bond_dev, void *addr);
++void bond_alb_change_dest(struct sk_buff *skb);
+ void bond_alb_clear_vlan(struct bonding *bond, unsigned short vlan_id);
+ #endif /* __BOND_ALB_H__ */
+ 
+diff --git a/drivers/net/bonding/bond_main.c b/drivers/net/bonding/bond_main.c
+index 3d76686..b62fdc4 100644
+--- a/drivers/net/bonding/bond_main.c
++++ b/drivers/net/bonding/bond_main.c
+@@ -4294,6 +4294,19 @@ unwind:
+ 	return res;
+ }
+ 
++/*
++ * Called via bond_change_dest_hook.
++ * note: already called with rcu_read_lock (preempt_disabled)
++ */
++void bond_change_dest(struct sk_buff *skb)
++{
++	struct net_device *bond_dev = skb->dev;
++	struct bonding *bond = netdev_priv(bond_dev);
++
++	if (bond->params.mode == BOND_MODE_ALB)
++		bond_alb_change_dest(skb);
++}
++
+ static int bond_xmit_roundrobin(struct sk_buff *skb, struct net_device *bond_dev)
+ {
+ 	struct bonding *bond = netdev_priv(bond_dev);
+@@ -5243,6 +5256,8 @@ static int __init bonding_init(void)
+ 	register_inetaddr_notifier(&bond_inetaddr_notifier);
+ 	bond_register_ipv6_notifier();
+ 
++	bond_change_dest_hook = bond_change_dest;
++
+ 	goto out;
+ err:
+ 	list_for_each_entry(bond, &bond_dev_list, bond_list) {
+@@ -5266,6 +5281,8 @@ static void __exit bonding_exit(void)
+ 	unregister_inetaddr_notifier(&bond_inetaddr_notifier);
+ 	bond_unregister_ipv6_notifier();
+ 
++	bond_change_dest_hook = NULL;
++
+ 	bond_destroy_sysfs();
+ 
+ 	rtnl_lock();
+diff --git a/drivers/net/bonding/bonding.h b/drivers/net/bonding/bonding.h
+index ca849d2..df92b70 100644
+--- a/drivers/net/bonding/bonding.h
++++ b/drivers/net/bonding/bonding.h
+@@ -375,5 +375,7 @@ static inline void bond_unregister_ipv6_notifier(void)
+ }
+ #endif
+ 
++extern void (*bond_change_dest_hook)(struct sk_buff *skb);
++
+ #endif /* _LINUX_BONDING_H */
+ 
+diff --git a/net/core/dev.c b/net/core/dev.c
+index e3fe5c7..abe68d9 100644
+--- a/net/core/dev.c
++++ b/net/core/dev.c
+@@ -2061,6 +2061,13 @@ static inline int deliver_skb(struct sk_buff *skb,
+ 	return pt_prev->func(skb, skb->dev, pt_prev, orig_dev);
+ }
+ 
++#if defined(CONFIG_BONDING) || defined(CONFIG_BONDING_MODULE)
++void (*bond_change_dest_hook)(struct sk_buff *skb) __read_mostly;
++EXPORT_SYMBOL(bond_change_dest_hook);
++#else
++#define bond_change_dest_hook(skb) do {} while (0)
++#endif
++
+ #if defined(CONFIG_BRIDGE) || defined (CONFIG_BRIDGE_MODULE)
+ /* These hooks defined here for ATM */
+ struct net_bridge;
+@@ -2251,10 +2258,12 @@ int netif_receive_skb(struct sk_buff *skb)
+ 	null_or_orig = NULL;
+ 	orig_dev = skb->dev;
+ 	if (orig_dev->master) {
+-		if (skb_bond_should_drop(skb))
++		if (skb_bond_should_drop(skb)) {
+ 			null_or_orig = orig_dev; /* deliver only exact match */
+-		else
++		} else {
+ 			skb->dev = orig_dev->master;
++			bond_change_dest_hook(skb);
++		}
+ 	}
+ 
+ 	__get_cpu_var(netdev_rx_stat).total++;
