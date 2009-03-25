@@ -1,109 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757853AbZCYGrR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756231AbZCYG7r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757853AbZCYGrR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 02:47:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755317AbZCYGrD
+	id S1756231AbZCYG7r (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 02:59:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755453AbZCYG7h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 02:47:03 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:53125 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755205AbZCYGrB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 02:47:01 -0400
-From: Nikanth Karthikesan <knikanth@novell.com>
-Organization: Novell
-To: Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: Strange code in include/linux/cpumask.h
-Date: Wed, 25 Mar 2009 12:14:30 +0530
-User-Agent: KMail/1.10.3 (Linux/2.6.27.19-3.2-default; KDE/4.1.3; x86_64; ; )
-Cc: nikanth@gmail.com, linux-kernel@vger.kernel.org
-References: <200903251021.13811.knikanth@novell.com> <200903251541.12180.rusty@rustcorp.com.au>
-In-Reply-To: <200903251541.12180.rusty@rustcorp.com.au>
+	Wed, 25 Mar 2009 02:59:37 -0400
+Received: from mail00d.mail.t-online.hu ([84.2.42.5]:64741 "EHLO
+	mail00d.mail.t-online.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755449AbZCYG7g (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Mar 2009 02:59:36 -0400
+Message-ID: <49C9D652.5040104@freemail.hu>
+Date: Wed, 25 Mar 2009 07:59:30 +0100
+From: =?UTF-8?B?TsOpbWV0aCBNw6FydG9u?= <nm127@freemail.hu>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; hu-HU; rv:1.8.1.16) Gecko/20080702 SeaMonkey/1.1.11
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200903251214.31731.knikanth@novell.com>
+To: Laurent Pinchart <laurent.pinchart@skynet.be>, linux-media@vger.kernel.org
+CC: LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] uvcvideo: add zero fill for VIDIOC_ENUM_FMT
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-DCC-mail.t-online.hu-Metrics: mail00d.mail.t-online.hu 32720; Body=3 Fuz1=3
+	Fuz2=3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 25 March 2009 10:41:11 Rusty Russell wrote:
-> On Wednesday 25 March 2009 15:21:13 Nikanth Karthikesan wrote:
-> > Hi Rusty
-> >
-> > I do not understand this code.
->
-> Hi Nikanth,
->
->    That's OK, it's a little tricky.
->
-> > The conditional operator would always evaluates to true and return
-> > bitmap. So all it seems to does is
-> > #define to_cpumansk(bitmap) (struct cpumask *)(bitmap)
->
-> Yes, except that this insists that bitmap be an unsigned long * or you'll
-> get a warning.  Otherwise the macro could be used on anything.  And it
-> needs to be a macro to use it as a static initializer.
->
+From: Márton Németh <nm127@freemail.hu>
 
-Ah, got it. Thanks a lot for the explanation. May be a comment could be added 
-to the source.
+When enumerating formats with VIDIOC_ENUM_FMT the uvcvideo driver does not
+fill the reserved fields of the struct v4l2_fmtdesc with zeros as required by
+V4L2 API revision 0.24 [1]. Add the missing initializations.
 
-So if only type-checking is required, something like this should work.
+The patch was tested with v4l-test 0.10 [2] with CNF7129 webcam found on EeePC
+901.
 
-diff --git a/include/linux/cpumask.h b/include/linux/cpumask.h
-index 9f31538..7857f8f 100644
---- a/include/linux/cpumask.h
-+++ b/include/linux/cpumask.h
-@@ -282,11 +282,11 @@ static inline void __cpus_shift_left(cpumask_t *dstp,
-  */
- #define to_cpumask(bitmap)						\
- 	((struct cpumask *)(1 ? (bitmap)				\
--			    : (void *)sizeof(__check_is_bitmap(bitmap))))
-+			    : __check_is_bitmap(bitmap)))
- 
--static inline int __check_is_bitmap(const unsigned long *bitmap)
-+static inline void * __check_is_bitmap(const unsigned long *bitmap)
- {
--	return 1;
-+	return 0;
- }
- 
- /*
+References:
+[1] V4L2 API specification, revision 0.24
+    http://v4l2spec.bytesex.org/spec/r8367.htm
 
-And for static initialization + type checking, will this work?
+[2] v4l-test: Test environment for Video For Linux Two API
+    http://v4l-test.sourceforge.net/
 
-diff --git a/include/linux/cpumask.h b/include/linux/cpumask.h
-index 9f31538..d86b8d0 100644
---- a/include/linux/cpumask.h
-+++ b/include/linux/cpumask.h
-@@ -282,11 +282,11 @@ static inline void __cpus_shift_left(cpumask_t *dstp,
-  */
- #define to_cpumask(bitmap)						\
- 	((struct cpumask *)(1 ? (bitmap)				\
--			    : (void *)sizeof(__check_is_bitmap(bitmap))))
-+			    :( __check_is_bitmap(bitmap),(void *)0)))
- 
--static inline int __check_is_bitmap(const unsigned long *bitmap)
-+static inline void * __check_is_bitmap(const unsigned long *bitmap)
- {
--	return 1;
-+	return 0;
- }
- 
- /*
+Signed-off-by: Márton Németh <nm127@freemail.hu>
+---
+--- linux-2.6.29/drivers/media/video/uvc/uvc_v4l2.c.orig	2009-03-24 00:12:14.000000000 +0100
++++ linux-2.6.29/drivers/media/video/uvc/uvc_v4l2.c	2009-03-25 07:24:42.000000000 +0100
+@@ -673,11 +673,19 @@ static long uvc_v4l2_do_ioctl(struct fil
+ 	{
+ 		struct v4l2_fmtdesc *fmt = arg;
+ 		struct uvc_format *format;
++		__u32 index;
++		enum v4l2_buf_type type;
 
->
-> As the NR_CPUS bit arrays vanish, this macro will be used less and less;
-> but some of them will probably take a while.
->
+ 		if (fmt->type != video->streaming->type ||
+ 		    fmt->index >= video->streaming->nformats)
+ 			return -EINVAL;
 
-Also looks like, this is not being used as a static initializer anywhere. 
- i.e., Using my type-checking only version didn't trigger any error/warnings! 
-Being a deprecated interface, no new users are expected? Or is gcc smart, not 
-complaining when used as static initializer, as it would always evaluate to 
-(struct cpumask *)(bitmap)? Can the sizeof constification be removed?
-
-Thanks
-Nikanth
++		index = fmt->index;
++		type = fmt->type;
++		memset(fmt, 0, sizeof(*fmt));
++		fmt->index = index;
++		fmt->type = type;
++
+ 		format = &video->streaming->format[fmt->index];
+ 		fmt->flags = 0;
+ 		if (format->flags & UVC_FMT_FLAG_COMPRESSED)
