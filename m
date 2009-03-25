@@ -1,91 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763014AbZCYR3V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761106AbZCYRbb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763014AbZCYR3V (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 13:29:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759359AbZCYR3L
+	id S1761106AbZCYRbb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 13:31:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754804AbZCYRbX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 13:29:11 -0400
-Received: from mtagate4.de.ibm.com ([195.212.29.153]:40720 "EHLO
-	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757700AbZCYR3K (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 13:29:10 -0400
-Date: Wed, 25 Mar 2009 18:29:05 +0100
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
-To: Ralf Baechle <ralf@linux-mips.org>
-Cc: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
-       dann frazier <dannf@dannf.org>, linux-mips@linux-mips.org
-Subject: Re: [PATCH 2/2] MIPS: o32: Get rid of useless wrapper for llseek
-Message-ID: <20090325182905.5fbca9df@osiris.boeblingen.de.ibm.com>
-In-Reply-To: <20090325001555.GA1357@linux-mips.org>
-References: <20090325001555.GA1357@linux-mips.org>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.7; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 25 Mar 2009 13:31:23 -0400
+Received: from hera.kernel.org ([140.211.167.34]:56698 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753298AbZCYRbW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Mar 2009 13:31:22 -0400
+Date: Wed, 25 Mar 2009 17:30:29 GMT
+From: Ingo Molnar <mingo@elte.hu>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       penberg@cs.helsinki.fi, eduard.munteanu@linux360.ro,
+       viro@zeniv.linux.org.uk, tglx@linutronix.de, mingo@elte.hu,
+       adobriyan@gmail.com
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       penberg@cs.helsinki.fi, eduard.munteanu@linux360.ro,
+       viro@zeniv.linux.org.uk, tglx@linutronix.de, mingo@elte.hu,
+       adobriyan@gmail.com
+In-Reply-To: <1237898630.25315.83.camel@penberg-laptop>
+References: <1237898630.25315.83.camel@penberg-laptop>
+Subject: [tip:tracing/kmemtrace] fs.h: uninline simple_transaction_set()
+Message-ID: <tip-1a6ad03119ce01dd862b089b8b2d9d3848453b11@git.kernel.org>
+Git-Commit-ID: 1a6ad03119ce01dd862b089b8b2d9d3848453b11
+X-Mailer: tip-git-log-daemon
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 25 Mar 2009 17:30:32 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 25 Mar 2009 01:15:55 +0100
-Ralf Baechle <ralf@linux-mips.org> wrote:
+Commit-ID:  1a6ad03119ce01dd862b089b8b2d9d3848453b11
+Gitweb:     http://git.kernel.org/tip/1a6ad03119ce01dd862b089b8b2d9d3848453b11
+Author:     Ingo Molnar <mingo@elte.hu>
+AuthorDate: Wed, 25 Mar 2009 16:48:35 +0100
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Wed, 25 Mar 2009 18:27:56 +0100
 
-> Signed-off-by: Ralf Baechle <ralf@linux-mips.org>
-> 
->  arch/mips/kernel/linux32.c     |    7 -------
->  arch/mips/kernel/scall64-o32.S |    2 +-
->  2 files changed, 1 insertions(+), 8 deletions(-)
-> 
-> diff --git a/arch/mips/kernel/linux32.c b/arch/mips/kernel/linux32.c
-> index 49aac6e..ab2da41 100644
-> --- a/arch/mips/kernel/linux32.c
-> +++ b/arch/mips/kernel/linux32.c
-> @@ -133,13 +133,6 @@ SYSCALL_DEFINE4(32_ftruncate64, unsigned long, fd, unsigned long, __dummy,
->  	return sys_ftruncate(fd, merge_64(a2, a3));
->  }
-> 
-> -SYSCALL_DEFINE5(32_llseek, unsigned long, fd, unsigned long, offset_high,
-> -	unsigned long, offset_low, loff_t __user *, result,
-> -	unsigned long, origin)
-> -{
-> -	return sys_llseek(fd, offset_high, offset_low, result, origin);
-> -}
-> -
+fs.h: uninline simple_transaction_set()
 
-Ah.. this hunk seems to be the origin of the bug. git commit
-dbda6ac0897603f6c6dfadbbc37f9882177ec7ac "MIPS: CVE-2009-0029: Enable
-syscall wrappers." contains this:
+Move simple_transaction_set() to the other simple-transaction
+file helpers in fs/libfs.c.
 
--asmlinkage int sys32_llseek(unsigned int fd, unsigned int offset_high,
--			    unsigned int offset_low, loff_t __user * result,
--			    unsigned int origin)
-+SYSCALL_DEFINE5(32_llseek, unsigned long, fd, unsigned long, offset_high,
-+	unsigned long, offset_low, loff_t __user *, result,
-+	unsigned long, origin)
+This removes an implicit asm/page.h PAGE_SIZE dependency from
+fs.h (asm/page.h is not an exported header so HEADERS_CHECK fils),
+and also reduces kernel size a bit.
 
-Here you converted offset_low from unsigned int to unsigned long. Hence
-you lost the clearing of the upper 32 bits. That would explain the bug.
-Any chance the process where the bug was seen was a compat process?
+Cc: Al Viro <viro@zeniv.linux.org.uk>
+Cc: Alexey Dobriyan <adobriyan@gmail.com>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
+Cc: paulmck@linux.vnet.ibm.com
+LKML-Reference: <1237898630.25315.83.camel@penberg-laptop>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
-Patch below would probably fix it.
 
-Btw. there are a lot of int->long conversions in the git commit
-mentioned above. AFAICS all(?) of the conversions are wrong.
+---
+ fs/libfs.c         |   16 ++++++++++++++++
+ include/linux/fs.h |   16 +---------------
+ 2 files changed, 17 insertions(+), 15 deletions(-)
 
-diff --git a/arch/mips/kernel/linux32.c b/arch/mips/kernel/linux32.c
-index 1a86f84..5abcc7f 100644
---- a/arch/mips/kernel/linux32.c
-+++ b/arch/mips/kernel/linux32.c
-@@ -134,9 +134,9 @@ SYSCALL_DEFINE4(32_ftruncate64, unsigned long, fd, unsigned long, __dummy,
- 	return sys_ftruncate(fd, merge_64(a2, a3));
- }
- 
--SYSCALL_DEFINE5(32_llseek, unsigned long, fd, unsigned long, offset_high,
--	unsigned long, offset_low, loff_t __user *, result,
--	unsigned long, origin)
-+SYSCALL_DEFINE5(32_llseek, unsigned int, fd, unsigned int, offset_high,
-+		unsigned int, offset_low, loff_t __user *, result,
-+		unsigned int, origin)
+diff --git a/fs/libfs.c b/fs/libfs.c
+index 49b4409..c872c64 100644
+--- a/fs/libfs.c
++++ b/fs/libfs.c
+@@ -574,6 +574,21 @@ ssize_t memory_read_from_buffer(void *to, size_t count, loff_t *ppos,
+  * possibly a read which collects the result - which is stored in a
+  * file-local buffer.
+  */
++
++void simple_transaction_set(struct file *file, size_t n)
++{
++	struct simple_transaction_argresp *ar = file->private_data;
++
++	BUG_ON(n > SIMPLE_TRANSACTION_LIMIT);
++
++	/*
++	 * The barrier ensures that ar->size will really remain zero until
++	 * ar->data is ready for reading.
++	 */
++	smp_mb();
++	ar->size = n;
++}
++
+ char *simple_transaction_get(struct file *file, const char __user *buf, size_t size)
  {
- 	return sys_llseek(fd, offset_high, offset_low, result, origin);
- }
+ 	struct simple_transaction_argresp *ar;
+@@ -819,6 +834,7 @@ EXPORT_SYMBOL(simple_sync_file);
+ EXPORT_SYMBOL(simple_unlink);
+ EXPORT_SYMBOL(simple_read_from_buffer);
+ EXPORT_SYMBOL(memory_read_from_buffer);
++EXPORT_SYMBOL(simple_transaction_set);
+ EXPORT_SYMBOL(simple_transaction_get);
+ EXPORT_SYMBOL(simple_transaction_read);
+ EXPORT_SYMBOL(simple_transaction_release);
+diff --git a/include/linux/fs.h b/include/linux/fs.h
+index 79be937..2ebe3ce 100644
+--- a/include/linux/fs.h
++++ b/include/linux/fs.h
+@@ -9,8 +9,6 @@
+ #include <linux/limits.h>
+ #include <linux/ioctl.h>
+ 
+-#include <asm/page.h> /* for PAGE_SIZE */
+-
+ /*
+  * It's silly to have NR_OPEN bigger than NR_FILE, but you can change
+  * the file limit at runtime and only root can increase the per-process
+@@ -2173,19 +2171,7 @@ ssize_t simple_transaction_read(struct file *file, char __user *buf,
+ 				size_t size, loff_t *pos);
+ int simple_transaction_release(struct inode *inode, struct file *file);
+ 
+-static inline void simple_transaction_set(struct file *file, size_t n)
+-{
+-	struct simple_transaction_argresp *ar = file->private_data;
+-
+-	BUG_ON(n > SIMPLE_TRANSACTION_LIMIT);
+-
+-	/*
+-	 * The barrier ensures that ar->size will really remain zero until
+-	 * ar->data is ready for reading.
+-	 */
+-	smp_mb();
+-	ar->size = n;
+-}
++void simple_transaction_set(struct file *file, size_t n);
+ 
+ /*
+  * simple attribute files
