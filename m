@@ -1,85 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761163AbZCYRzW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763416AbZCYR5x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761163AbZCYRzW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 13:55:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755113AbZCYRzF
+	id S1763416AbZCYR5x (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 13:57:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753642AbZCYR5p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 13:55:05 -0400
-Received: from hera.kernel.org ([140.211.167.34]:51471 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753248AbZCYRzD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 13:55:03 -0400
-Date: Wed, 25 Mar 2009 17:51:28 GMT
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       yinghai@kernel.org, rusty@rustcorp.com.au, ebiederm@xmission.com,
-       akpm@linux-foundation.org, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       yinghai@kernel.org, rusty@rustcorp.com.au, ebiederm@xmission.com,
-       akpm@linux-foundation.org, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <49C94DDF.2010703@kernel.org>
-References: <49C94DDF.2010703@kernel.org>
-Subject: [tip:x86/apic] x86: Correct behaviour of irq affinity
-Message-ID: <tip-e06b1b56f9bfcc91e1f175fe8d8bf3e35dafa080@git.kernel.org>
-Git-Commit-ID: e06b1b56f9bfcc91e1f175fe8d8bf3e35dafa080
-X-Mailer: tip-git-log-daemon
+	Wed, 25 Mar 2009 13:57:45 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:56899 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753059AbZCYR5o (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Mar 2009 13:57:44 -0400
+Date: Wed, 25 Mar 2009 13:57:41 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Ingo Molnar <mingo@elte.hu>
+cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Tim Bird <tim.bird@am.sony.com>, Steven Rostedt <srostedt@redhat.com>
+Subject: Re: [PATCH 2/5][RFC] tracing: move function profiler data out of
+ function struct
+In-Reply-To: <20090325174446.GE14250@elte.hu>
+Message-ID: <alpine.DEB.2.00.0903251354020.5675@gandalf.stny.rr.com>
+References: <20090325035646.662994901@goodmis.org> <20090325040832.443420395@goodmis.org> <20090325100746.GI2341@elte.hu> <alpine.DEB.2.00.0903251142470.5675@gandalf.stny.rr.com> <20090325174446.GE14250@elte.hu>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 25 Mar 2009 17:51:32 +0000 (UTC)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  e06b1b56f9bfcc91e1f175fe8d8bf3e35dafa080
-Gitweb:     http://git.kernel.org/tip/e06b1b56f9bfcc91e1f175fe8d8bf3e35dafa080
-Author:     Rusty Russell <rusty@rustcorp.com.au>
-AuthorDate: Tue, 24 Mar 2009 14:17:19 -0700
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Wed, 25 Mar 2009 18:48:29 +0100
 
-x86: Correct behaviour of irq affinity
+On Wed, 25 Mar 2009, Ingo Molnar wrote:
 
-Impact: get correct smp_affinity as user requested
+> > The atomic_inc_return protects against NMIs, since this is the only place 
+> > the lock is taken.
+> 
+> i mean, if this code executes _ni_ an NMI. Or that cannot happen? We 
+> trace nmis too, dont we?
 
-The effect of setting desc->affinity (ie. from userspace via sysfs) has
-varied over time.  In 2.6.27, the 32-bit code anded the value with
-cpu_online_map, and both 32 and 64-bit did that anding whenever a cpu
-was unplugged.
+Yes, it can execute in an NMI, but we have no issues there. If the lock 
+was taken the atomic inc is set. If an NMI comes in, it will fail the
+atomic inc counter test and never try to take the lock. 
 
-2.6.29 consolidated this into one routine (and fixed hotplug) but
-introduced another variation: anding the affinity with cfg->domain.
+But as stated below, this is just beating the dead horse, because we can 
+bend the lock. But it is impossible to bend the lock. What we must realize 
+is... "There is no lock". ;-)
 
-We should just set it to what the user said - if possible.
-
-(cpu_mask_to_apicid_and already takes cpu_online_mask into account)
-
-Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-Acked-by: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-LKML-Reference: <49C94DDF.2010703@kernel.org>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+-- Steve
 
 
----
- arch/x86/kernel/apic/io_apic.c |    5 +++--
- 1 files changed, 3 insertions(+), 2 deletions(-)
-
-diff --git a/arch/x86/kernel/apic/io_apic.c b/arch/x86/kernel/apic/io_apic.c
-index 1ed6c06..d990408 100644
---- a/arch/x86/kernel/apic/io_apic.c
-+++ b/arch/x86/kernel/apic/io_apic.c
-@@ -594,9 +594,10 @@ set_desc_affinity(struct irq_desc *desc, const struct cpumask *mask)
- 
- 	/* check that before desc->addinity get updated */
- 	set_extra_move_desc(desc, mask);
--	cpumask_and(desc->affinity, cfg->domain, mask);
- 
--	return apic->cpu_mask_to_apicid_and(desc->affinity, cpu_online_mask);
-+	cpumask_copy(desc->affinity, mask);
-+
-+	return apic->cpu_mask_to_apicid_and(desc->affinity, cfg->domain);
- }
- 
- static void
+> 
+> > > This all would be solved much more robustly by the function 
+> > > attributes hash approach i suggested in the previous mail. If 
+> > > percpu_alloc() is done for 20,000 functions the memory 
+> > > allocation overhead is no big deal.
+> > 
+> > Later patches create a per-cpu buffers and removes the lock.
+> 
+> ok :)
+> 
+> 	Ingo
+> 
