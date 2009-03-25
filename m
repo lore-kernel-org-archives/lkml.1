@@ -1,46 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754809AbZCYA7f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754000AbZCYBCb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754809AbZCYA7f (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 24 Mar 2009 20:59:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752821AbZCYA70
+	id S1754000AbZCYBCb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 24 Mar 2009 21:02:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752074AbZCYBCV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 20:59:26 -0400
-Received: from ozlabs.org ([203.10.76.45]:38787 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752368AbZCYA7Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 20:59:25 -0400
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: [RFC] Correct behaviour of irq affinity?
-Date: Wed, 25 Mar 2009 11:29:19 +1030
-User-Agent: KMail/1.11.1 (Linux/2.6.27-11-generic; KDE/4.2.1; i686; ; )
-Cc: x86@kernel.org, linux-kernel@vger.kernel.org,
-       Yinghai Lu <yinghai@kernel.org>, Ingo Molnar <mingo@elte.hu>
-References: <200903241619.03517.rusty@rustcorp.com.au> <m1k56frt6e.fsf@fess.ebiederm.org> <200903251103.10249.rusty@rustcorp.com.au>
-In-Reply-To: <200903251103.10249.rusty@rustcorp.com.au>
+	Tue, 24 Mar 2009 21:02:21 -0400
+Received: from smtp-01.mandic.com.br ([200.225.81.132]:45808 "EHLO
+	smtp-01.mandic.com.br" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752179AbZCYBCV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 24 Mar 2009 21:02:21 -0400
+Message-ID: <49C98280.4020402@diamondcut.com.br>
+Date: Tue, 24 Mar 2009 22:01:52 -0300
+From: "Renato S. Yamane" <yamane@diamondcut.com.br>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; pt-BR; rv:1.9.1b3pre) Gecko/20090223 Thunderbird/3.0b2
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200903251129.19490.rusty@rustcorp.com.au>
+To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+CC: LKML <linux-kernel@vger.kernel.org>, jnelson@jamponi.net
+Subject: Re: Thinkpad T61 - Fan running a lot of time
+References: <49C94620.8040309@diamondcut.com.br> <20090324232328.GA23356@khazad-dum.debian.net>
+In-Reply-To: <20090324232328.GA23356@khazad-dum.debian.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 25 March 2009 11:03:08 Rusty Russell wrote:
-> On Tuesday 24 March 2009 23:09:37 Eric W. Biederman wrote:
-> > cpu_mask_to_apic_id do not take cpu_online_map into account and should
-> > probably be fixed.  flat_cpu_mask_to_apicid was the one I could find.
-> 
-> Also the numaq apic.h.  I'll do an audit and send a patch.
+Henrique de Moraes Holschuh wrote:
+> Renato S. Yamane wrote:
+>> The fan speed is ~2600RPM (always under 3000RPM), and I think that is
+>> not enough to cooling the processor, because is necessary 3min to
+>> decrease 1°C in Core1 and only 40sec to increase 1°C.
+>>
+>> I think that is necessary a higher fan speed.
+>
+> Or a better thermal coupling between the fan assembly and the
+> processor...  this is a weak area on thinkpads.
+>
+> If your box is still under warranty, I suggest you to use
+> thinkpad-acpi fan control to keep your fan at level 7 (fastest normal
+> fan level).  If that's not enough, call in for a motherboard
+> replacement.
 
-Actually, numaq is just weird, so I'll assume it's correct.  I couldn't
-find any others.
+Updated BIOS to 7LETC5WW (2.25) and...
 
-> Yes, agree with Yinghai's fix.  I'll re-spin my patch on top of his.
+Fan speed is stabilished in ~3000RPM, temperature go to 42°C and fan 
+speed still power-on.
 
-But he already did it while I slept in.
+# cat /proc/acpi/ibm/fan
+status:         enabled
+speed:          3028
+level:          auto
 
-Thanks Yinghai!
-Rusty.
+# echo level 7 > /proc/acpi/ibm/fan
+bash: echo: write error: Invalid argument
+
+How can I change fan level?
+
+Regards,
+Renato
