@@ -1,107 +1,346 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758693AbZCYTvk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757120AbZCYTxJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758693AbZCYTvk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 15:51:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754552AbZCYTvc
+	id S1757120AbZCYTxJ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 15:53:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754569AbZCYTwx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 15:51:32 -0400
-Received: from mail-bw0-f169.google.com ([209.85.218.169]:44449 "EHLO
-	mail-bw0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754379AbZCYTva convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 15:51:30 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=wnTyQfq42Im215DVSETzz9DVxkSThrrU9zAxHJ+EDukDuIh/14i6WJoUPySB3/UPXR
-         4vaRSSqalcOOvlI9MJmchXDOxs+jJtf/ZuxmnSIr572sNo3Qp8juKZWtZ+2iBetwPWcD
-         +mJXLMmeZm+oFVwHbaUseYDbzHyHEHcaPcKdw=
+	Wed, 25 Mar 2009 15:52:53 -0400
+Received: from brm-mailgate-2.brocade.com ([144.49.197.3]:14612 "EHLO
+	brm-mailgate-2.brocade.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753711AbZCYTwv convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Mar 2009 15:52:51 -0400
+X-Greylist: delayed 910 seconds by postgrey-1.27 at vger.kernel.org; Wed, 25 Mar 2009 15:52:51 EDT
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-In-Reply-To: <20090226131719.393515463@linutronix.de>
-References: <20090226131336.423054348@linutronix.de>
-	 <20090226131719.393515463@linutronix.de>
-Date: Wed, 25 Mar 2009 20:51:27 +0100
-X-Google-Sender-Auth: cd3ee1ecdb900e93
-Message-ID: <10f740e80903251251x33cd3e05gcf03e41e0aaf6308@mail.gmail.com>
-Subject: Re: [patch 1/4] genirq: make irqreturn_t an enum
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Arjan van de Veen <arjan@infradead.org>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Jon Masters <jonathan@jonmasters.org>, linux-next@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain;
+	charset="us-ascii"
 Content-Transfer-Encoding: 8BIT
+Subject: RE: [PATCH 1/5] bfa: Brocade BFA FC SCSI driver (bfad)
+Date: Wed, 25 Mar 2009 12:36:55 -0700
+Message-ID: <4C94DE2070B172459E4F1EE14BD2364E02BD1DB0@HQ-EXCH-5.corp.brocade.com>
+In-Reply-To: <200903241205.55028.eike-kernel@sf-tec.de>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH 1/5] bfa: Brocade BFA FC SCSI driver (bfad)
+Thread-Index: AcmscIjOjLtffxq9QsqPml1X+6w/ygBEGeIQ
+References: <200903240010.n2O0Ap68013744@blc-10-2.brocade.com> <200903241205.55028.eike-kernel@sf-tec.de>
+From: "Krishna Gudipati" <kgudipat@Brocade.com>
+To: "Rolf Eike Beer" <eike-kernel@sf-tec.de>
+Cc: <James.Bottomley@hansenpartnership.com>, "Jing Huang" <huangj@Brocade.com>,
+       <linux-kernel@vger.kernel.org>, <linux-scsi@vger.kernel.org>,
+       "Ramkumar Vadivelu" <rvadivel@Brocade.com>,
+       "Vinodh Ravindran" <vravindr@Brocade.com>,
+       "Nadeem Kattangere" <nkattang@Brocade.com>
+X-OriginalArrivalTime: 25 Mar 2009 19:37:39.0571 (UTC) FILETIME=[28536430:01C9AD81]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Feb 26, 2009 at 14:28, Thomas Gleixner <tglx@linutronix.de> wrote:
-> Impact: cleanup
->
-> Remove the 2.4 compabiliy cruft
+Thanks Eike for reviewing our code. We are considering all the changes
+suggested by you for our driver and we are going to incorporate most of
+the changes suggested in our next submission.
 
-> --- linux-2.6-tip.orig/include/linux/irqreturn.h
-> +++ linux-2.6-tip/include/linux/irqreturn.h
-> @@ -1,25 +1,17 @@
-> -/* irqreturn.h */
->  #ifndef _LINUX_IRQRETURN_H
->  #define _LINUX_IRQRETURN_H
+Thanks,
+Krishna Chaitanya Gudipati.
+
+-----Original Message-----
+From: Rolf Eike Beer [mailto:eike-kernel@sf-tec.de] 
+Sent: Tuesday, March 24, 2009 4:06 AM
+To: Krishna Gudipati
+Cc: James.Bottomley@hansenpartnership.com; Jing Huang;
+linux-kernel@vger.kernel.org; linux-scsi@vger.kernel.org; Ramkumar
+Vadivelu; Vinodh Ravindran
+Subject: Re: [PATCH 1/5] bfa: Brocade BFA FC SCSI driver (bfad)
+
+Krishna Gudipati wrote:
+> From: Krishna Chaitanya Gudipati <kgudipat@brocade.com>
 >
-> -/*
-> - * For 2.4.x compatibility, 2.4.x can use
-> - *
-> - *     typedef void irqreturn_t;
-> - *     #define IRQ_NONE
-> - *     #define IRQ_HANDLED
-> - *     #define IRQ_RETVAL(x)
-> - *
-> - * To mix old-style and new-style irq handler returns.
-> - *
-> - * IRQ_NONE means we didn't handle it.
-> - * IRQ_HANDLED means that we did have a valid interrupt and handled it.
-> - * IRQ_RETVAL(x) selects on the two depending on x being non-zero (for handled)
+> This patch contains Brocade linux driver specific code that interfaces
+to
+> upper layer linux kernel for PCI, SCSI mid-layer, sysfs related stuff.
+The
+> code handles things such as module load/unload, PCI probe/release,
+handling
+> interrupts, interfacing with sysfs etc. It interacts with the
+> firmware/hardware via the code under files with prefix bfa_*.
+>
+> Signed-off-by: Krishna Chaitanya Gudipati <kgudipat@brocade.com>
+
+> +int
+> +bfad_pci_init(struct pci_dev *pdev, struct bfad_s *bfad)
+> +{
+> +       unsigned long   bar0_len;
+> +       int             rc = -ENODEV;
+> +
+> +       if (pci_enable_device(pdev)) {
+> +               BFA_PRINTF(BFA_ERR, "pci_enable_device fail %p\n",
+pdev);
+> +               goto out;
+> +       }
+> +
+> +       if (pci_request_regions(pdev, BFAD_DRIVER_NAME))
+> +               goto out_disable_device;
+> +
+> +       pci_set_master(pdev);
+> +
+> +
+> +       if (pci_set_dma_mask(pdev, DMA_64BIT_MASK) != 0)
+> +               if (pci_set_dma_mask(pdev, DMA_32BIT_MASK) != 0) {
+> +                       BFA_PRINTF(BFA_ERR, "pci_set_dma_mask fail
+%p\n",
+> pdev); +                       goto out_release_region;
+> +               }
+
+Save the return value of pci_set_dma_mask() to rc and use this as error
+code.
+
+> +#ifdef SUPPORT_PCI_AER
+> +       /*
+> +        * Enable PCIE Advanced Error Recovery (AER) if the kernel
+version
+> +        * supports.
+> +        */
+> +       BFAD_ENABLE_PCIE_AER(pdev);
+> +#endif
+> +
+> +       bfad->pci_bar0_map = pci_resource_start(pdev, 0);
+> +       bar0_len = pci_resource_len(pdev, 0);
+> +       bfad->pci_bar0_kva = ioremap(bfad->pci_bar0_map, bar0_len);
+
+bfad->pci_bar0_kva = pci_iomap(pdev, 0, 0);
+
+> +       if (bfad->pci_bar0_kva == NULL) {
+> +               BFA_PRINTF(BFA_ERR, "Fail to map bar0\n");
+> +               goto out_release_region;
+> +       }
+> +
+> +       bfad->hal_pcidev.pci_slot = PCI_SLOT(pdev->devfn);
+> +       bfad->hal_pcidev.pci_func = PCI_FUNC(pdev->devfn);
+> +       bfad->hal_pcidev.pci_bar_kva = bfad->pci_bar0_kva;
+> +       bfad->hal_pcidev.device_id = pdev->device;
+> +       bfad->pci_name = pci_name(pdev);
+> +
+> +       bfad->pci_attr.vendor_id = pdev->vendor;
+> +       bfad->pci_attr.device_id = pdev->device;
+> +       bfad->pci_attr.ssid = pdev->subsystem_device;
+> +       bfad->pci_attr.ssvid = pdev->subsystem_vendor;
+> +       bfad->pci_attr.pcifn = PCI_FUNC(pdev->devfn);
+> +
+> +       bfad->pcidev = pdev;
+> +       return 0;
+> +
+> +out_release_region:
+> +       pci_release_regions(pdev);
+> +out_disable_device:
+> +       pci_disable_device(pdev);
+> +out:
+> +       return rc;
+> +}
+
+What about using devres for your driver? (See 
+Documentation/driver-model/devres.txt) This would take care of the 
+release_regions and disable device in the error paths here and also in
+the 
+remove handler.
+
 > +/**
-> + * enum irqreturn
-> + * @IRQ_NONE           interrupt was not from this device
-> + * @IRQ_HANDLED                interrupt was handled by this device
->  */
-> -typedef int irqreturn_t;
-> +enum irqreturn {
-> +       IRQ_NONE,
-> +       IRQ_HANDLED,
-> +};
->
-> -#define IRQ_NONE       (0)
-> -#define IRQ_HANDLED    (1)
-> -#define IRQ_RETVAL(x)  ((x) != 0)
-> +typedef enum irqreturn irqreturn_t;
-> +#define IRQ_RETVAL(x)  ((x) != IRQ_NONE)
+> + *  bfa_isr BFA driver interrupt functions
+> + */
+> +irqreturn_t bfad_intx(int irq, void *dev_id);
 
-JFYI, this causes the following warning in linux-next on m68k:
+This declaration isn't needed at all as the function follows directly
+after 
+that.
 
-| arch/m68k/kernel/ints.c:231: warning: assignment from incompatible
-pointer type
+> +/**
+> + * Line based interrupt handler.
+> + */
+> +irqreturn_t
+> +bfad_intx(int irq, void *dev_id)
+> +{
 
-(cfr. http://kisskb.ellerman.id.au/kisskb/buildresult/271602/)
+[...]
 
-as struct irq_node in arch/m68k/include/asm/irq_mm.h still has a
-`int (*handler)(int, void *);'.
+> +static int
+> +bfad_install_msix_handler(struct bfad_s *bfad)
+> +{
+> +	int             i, error = 0;
+           ^^^^^^^^^^^^^
 
-I'll cook a patch, but there may be other users hidden somewhere in
-arch-specific code...
+One space.
 
-Gr{oetje,eeting}s,
+> +	for (i = 0; i < bfad->nvec; i++) {
+> +		error = request_irq(bfad->msix_tab[i].msix.vector,
+> +				    bfad->msix_tab[i].handler, 0,
+> +				    BFAD_DRIVER_NAME, bfad);
+> +		printk(KERN_WARNING "%s: bfad%d irq %d\n", __FUNCTION__,
+> +			 bfad->inst_no, bfad->msix_tab[i].msix.vector);
+> +
+> +		if (error) {
+> +			int             j;
+> +
+> +			for (j = 0; j < i; j++)
+> +				free_irq(bfad->msix_tab[j].msix.vector,
+bfad);
+> +
+> +			return 1;
 
-						Geert
+"return error" would allow doint something useful with this value later
+(e.g. 
+printing them in your warning) so one can actually see what went wrong.
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+> +		}
+> +	}
+> +
+> +	return 0;
+> +}
+> +
+> +/**
+> + * Setup MSIX based interrupt.
+> + */
+> +int
+> +bfad_setup_intr(struct bfad_s *bfad)
+> +{
+> +	int             error = 0;
+> +
+> +	if (!msix_disable) {
+> +		u32 mask = 0, i, num_bit = 0, max_bit = 0;
+> +		struct msix_entry msix_entries[MAX_MSIX_ENTRY];
+> +
+> +		/* Call BFA to get the msix map for this PCI function.
+*/
+> +		bfa_msix_getvecs(&bfad->bfa, &mask, &num_bit, &max_bit);
+> +
+> +		/* Set up the msix entry table */
+> +		bfad_init_msix_entry(bfad, msix_entries, mask, max_bit);
+> +
+> +		error = pci_enable_msix(bfad->pcidev, msix_entries,
+bfad->nvec);
+> +		if (error) {
+> +			/*
+> +			 * Only error number of vector is available.
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+"of vectors are"
+
+> +			 * We don't have a mechanism to map multiple
+> +			 * interrupts into one vector, so even if we
+> +			 * can try to request less vectors, we don't
+> +			 * know how to associate interrupt events to
+> +			 *  vectors. Linux doesn't dupicate vectors
+> +			 * in the MSIX table for this case.
+> +			 */
+> +
+> +			printk(KERN_WARNING
+> +				"%s: enable_msix failed, %d bfad%d\n",
+> +			       __FUNCTION__, error, bfad->inst_no);
+
+Also the message should really be more descriptive, like "enable_msix
+for %i 
+vectors failed, only %i vectors available". And if you use dev_warn()
+that 
+function will add the correct device description for you (You should use
+it 
+whereever possible).
+
+__FUNCTION__ should not be used anymore, use __func__. Or remove it 
+completely, it's rather obvious where this message actually comes from.
+
+> +
+> +			goto line_based;
+> +		}
+> +
+> +		/* Save the vectors */
+> +		for (i = 0; i < bfad->nvec; i++)
+> +			bfad->msix_tab[i].msix.vector =
+msix_entries[i].vector;
+> +
+> +		/* Set up interrupt handler for each vectors */
+> +		if (bfad_install_msix_handler(bfad)) {
+> +			printk(KERN_WARNING "%s: install_msix failed,
+bfad%d\n",
+> +			       __FUNCTION__, bfad->inst_no);
+> +			goto line_based;
+> +		}
+
+This is just your choice, but when MSI was requested and the number of 
+interrupts were reserved successfully and now installing the IRQ handler
+
+fails this should IMHO be an error and not a situation to fallback to
+line 
+based. YMMV.
+
+> +		bfad->bfad_flags |= BFAD_MSIX_ON;
+> +
+> +		goto success;
+> +	}
+> +
+> +line_based:
+> +	error = 0;
+> +	if (request_irq
+> +	    (bfad->pcidev->irq, (irq_handler_t) bfad_intx,
+BFAD_IRQ_FLAGS,
+
+Cast not needed, bfad_intx() should be of the correct signature.
+
+> +	     BFAD_DRIVER_NAME, bfad) != 0) {
+> +		/* Enable interrupt handler failed */
+> +		return 1;
+> +	}
+> +success:
+> +	return error;
+> +}
+> +
+> +void
+> +bfad_remove_intr(struct bfad_s *bfad)
+> +{
+> +	int             i;
+> +
+> +	if (bfad->bfad_flags & BFAD_MSIX_ON) {
+> +		for (i = 0; i < bfad->nvec; i++)
+> +			free_irq(bfad->msix_tab[i].msix.vector, bfad);
+> +
+> +		pci_disable_msix(bfad->pcidev);
+> +		bfad->bfad_flags &= ~BFAD_MSIX_ON;
+> +	} else {
+> +		free_irq(bfad->pcidev->irq, bfad);
+> +	}
+> +}
+> +
+> +#else /* CONFIG_PCI_MSI */
+> +/**
+> + * Setup line-based interrupt.
+> + */
+> +int
+> +bfad_setup_intr(struct bfad_s *bfad)
+> +{
+> +	if (request_irq
+> +	    (bfad->pcidev->irq, (irq_handler_t) bfad_intx, SA_SHIRQ,
+
+Same here.
+
+> +	     BFAD_DRIVER_NAME, bfad) != 0) {
+> +		/* Enable interrupt handler failed */
+> +		return 1;
+> +	}
+> +
+> +	return 0;
+> +}
+> +
+> +void
+> +bfad_remove_intr(struct bfad_s *bfad)
+> +{
+> +	bfa_trc(bfad, bfad->pcidev->irq);
+> +	free_irq(bfad->pcidev->irq, bfad);
+> +}
+> +
+> +#endif /* CONFIG_PCI_MSI */
+> +
+> +
+
+Remove trailing empty lines.
+
+Greetings,
+
+Eike
