@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753838AbZCYEJE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756539AbZCYEJ0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753838AbZCYEJE (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 00:09:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752168AbZCYEIh
+	id S1756539AbZCYEJ0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 00:09:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752504AbZCYEIi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 00:08:37 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:32834 "EHLO
+	Wed, 25 Mar 2009 00:08:38 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:48301 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751591AbZCYEIf (ORCPT
+	with ESMTP id S1751774AbZCYEIf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 25 Mar 2009 00:08:35 -0400
-Message-Id: <20090325040832.251748832@goodmis.org>
+Message-Id: <20090325040832.671432678@goodmis.org>
 References: <20090325035646.662994901@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Tue, 24 Mar 2009 23:56:47 -0400
+Date: Tue, 24 Mar 2009 23:56:49 -0400
 From: Steven Rostedt <rostedt@goodmis.org>
 To: linux-kernel@vger.kernel.org
 Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
@@ -21,485 +21,326 @@ Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
        Peter Zijlstra <peterz@infradead.org>,
        Frederic Weisbecker <fweisbec@gmail.com>,
        Tim Bird <tim.bird@am.sony.com>, Steven Rostedt <srostedt@redhat.com>
-Subject: [PATCH 1/5][RFC] tracing: add function profiler
-Content-Disposition: inline; filename=0001-tracing-add-function-profiler.patch
+Subject: [PATCH 3/5][RFC] tracing: adding function timings to function profiler
+Content-Disposition: inline; filename=0003-tracing-adding-function-timings-to-function-profile.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Steven Rostedt <srostedt@redhat.com>
 
-Impact: new profiling feature
+If the function graph trace is enabled, the function profiler will
+use it to take the timing of the functions.
 
-This patch adds a function profiler. In debugfs/tracing/ two new
-files are created.
+ cat /debug/tracing/trace_stat/functions
 
-  function_profile_enabled  - to enable or disable profiling
-
-  trace_stat/functions   - the profiled functions.
-
-For example:
-
-  echo 1 > /debugfs/tracing/function_profile_enabled
-  ./hackbench 50
-  echo 0 > /debugfs/tracing/function_profile_enabled
-
-yields:
-
-  cat /debugfs/tracing/trace_stat/functions
-
-  Function                               Hit
-  --------                               ---
-  _spin_lock                        10106442
-  _spin_unlock                      10097492
-  kfree                              6013704
-  _spin_unlock_irqrestore            4423941
-  _spin_lock_irqsave                 4406825
-  __phys_addr                        4181686
-  __slab_free                        4038222
-  dput                               4030130
-  path_put                           4023387
-  unroll_tree_refs                   4019532
+  Function                               Hit    Time
+  --------                               ---    ----
+  mwait_idle                             127    183028.4 us
+  schedule                                26    151997.7 us
+  __schedule                              31    151975.1 us
+  sys_wait4                                2    74080.53 us
+  do_wait                                  2    74077.80 us
+  sys_newlstat                           138    39929.16 us
+  do_path_lookup                         179    39845.79 us
+  vfs_lstat_fd                           138    39761.97 us
+  user_path_at                           153    39469.58 us
+  path_walk                              179    39435.76 us
+  __link_path_walk                       189    39143.73 us
 [...]
 
-The most hit functions are listed first. Functions that are not
-hit are not listed.
-
-This feature depends on and uses dynamic function tracing. When the
-function profiling is disabled, no overhead occurs. But it still
-takes up around 300KB to hold the data, thus it is not recomended
-to keep it enabled for systems low on memory.
-
-When a '1' is echoed into the function_profile_enabled file, the
-counters for is function is reset back to zero. Thus you can see what
-functions are hit most by different programs.
+Note the times are skewed due to the function graph tracer not taking
+into account schedules.
 
 Signed-off-by: Steven Rostedt <srostedt@redhat.com>
 ---
- include/linux/ftrace.h |    4 +
- kernel/trace/Kconfig   |   19 +++
- kernel/trace/ftrace.c  |  313 +++++++++++++++++++++++++++++++++++++++++++++++-
- 3 files changed, 334 insertions(+), 2 deletions(-)
+ kernel/trace/ftrace.c                |   93 ++++++++++++++++++++++++++++++++--
+ kernel/trace/trace.c                 |   11 ----
+ kernel/trace/trace.h                 |    3 +-
+ kernel/trace/trace_functions_graph.c |   17 +++++-
+ kernel/trace/trace_output.c          |   10 ++++
+ kernel/trace/trace_output.h          |    2 +
+ 6 files changed, 117 insertions(+), 19 deletions(-)
 
-diff --git a/include/linux/ftrace.h b/include/linux/ftrace.h
-index 015a3d2..0456c3a 100644
---- a/include/linux/ftrace.h
-+++ b/include/linux/ftrace.h
-@@ -153,6 +153,10 @@ struct dyn_ftrace {
- 		unsigned long		flags;
- 		struct dyn_ftrace	*newlist;
- 	};
-+#ifdef CONFIG_FUNCTION_PROFILER
-+	unsigned long			counter;
-+	struct hlist_node		node;
-+#endif
- 	struct dyn_arch_ftrace		arch;
- };
- 
-diff --git a/kernel/trace/Kconfig b/kernel/trace/Kconfig
-index 8a4d729..95e9ad5 100644
---- a/kernel/trace/Kconfig
-+++ b/kernel/trace/Kconfig
-@@ -105,6 +105,7 @@ config FUNCTION_GRAPH_TRACER
- 	  This is done by setting the current return address on the current
- 	  task structure into a stack of calls.
- 
-+
- config IRQSOFF_TRACER
- 	bool "Interrupts-off Latency Tracer"
- 	default n
-@@ -376,6 +377,24 @@ config DYNAMIC_FTRACE
- 	 were made. If so, it runs stop_machine (stops all CPUS)
- 	 and modifies the code to jump over the call to ftrace.
- 
-+config FUNCTION_PROFILER
-+	bool "Kernel function profiler"
-+	depends on DYNAMIC_FTRACE
-+	default n
-+	help
-+	 This option enables the kernel function profiler. When the dynamic
-+	 function tracing is enabled, a counter is added into the function
-+	 records used by the dynamic function tracer. A file is created in
-+	 debugfs called function_profile_enabled which defaults to zero.
-+	 When a 1 is echoed into this file profiling begins, and when a
-+	 zero is entered, profiling stops. A file in the trace_stats
-+	 directory called functions, that show the list of functions that
-+	 have been hit and their counters.
-+
-+	 This takes up around 320K more memory.
-+
-+	 If in doubt, say N
-+
- config FTRACE_MCOUNT_RECORD
- 	def_bool y
- 	depends on DYNAMIC_FTRACE
 diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
-index 7b8722b..11f364c 100644
+index 24dac44..a9ccd71 100644
 --- a/kernel/trace/ftrace.c
 +++ b/kernel/trace/ftrace.c
-@@ -34,6 +34,7 @@
+@@ -33,7 +33,7 @@
+ 
  #include <asm/ftrace.h>
  
- #include "trace.h"
-+#include "trace_stat.h"
+-#include "trace.h"
++#include "trace_output.h"
+ #include "trace_stat.h"
  
  #define FTRACE_WARN_ON(cond)			\
- 	do {					\
-@@ -261,7 +262,6 @@ struct ftrace_func_probe {
- 	struct rcu_head		rcu;
+@@ -246,6 +246,9 @@ struct ftrace_profile {
+ 	struct hlist_node		node;
+ 	unsigned long			ip;
+ 	unsigned long			counter;
++#ifdef CONFIG_FUNCTION_GRAPH_TRACER
++	unsigned long long		time;
++#endif
  };
  
--
- enum {
- 	FTRACE_ENABLE_CALLS		= (1 << 0),
- 	FTRACE_DISABLE_CALLS		= (1 << 1),
-@@ -309,6 +309,307 @@ static struct dyn_ftrace *ftrace_free_records;
- 		}				\
- 	}
+ struct ftrace_profile_page {
+@@ -303,6 +306,22 @@ static void *function_stat_start(struct tracer_stat *trace)
+ 	return function_stat_next(&profile_pages_start->records[0], 0);
+ }
  
-+#ifdef CONFIG_FUNCTION_PROFILER
-+static struct hlist_head *ftrace_profile_hash;
-+static int ftrace_profile_bits;
-+static int ftrace_profile_enabled;
-+static DEFINE_MUTEX(ftrace_profile_lock);
-+
-+static void *
-+function_stat_next(void *v, int idx)
-+{
-+	struct dyn_ftrace *rec = v;
-+	struct ftrace_page *pg;
-+
-+	pg = (struct ftrace_page *)((unsigned long)rec & PAGE_MASK);
-+
-+ again:
-+	rec++;
-+	if ((void *)rec >= (void *)&pg->records[pg->index]) {
-+		pg = pg->next;
-+		if (!pg)
-+			return NULL;
-+		rec = &pg->records[0];
-+	}
-+
-+	if (rec->flags & FTRACE_FL_FREE ||
-+	    rec->flags & FTRACE_FL_FAILED ||
-+	    !(rec->flags & FTRACE_FL_CONVERTED) ||
-+	    /* ignore non hit functions */
-+	    !rec->counter)
-+		goto again;
-+
-+	return rec;
-+}
-+
-+static void *function_stat_start(struct tracer_stat *trace)
-+{
-+	return function_stat_next(&ftrace_pages_start->records[0], 0);
-+}
-+
++#ifdef CONFIG_FUNCTION_GRAPH_TRACER
++/* function graph compares on total time */
 +static int function_stat_cmp(void *p1, void *p2)
 +{
-+	struct dyn_ftrace *a = p1;
-+	struct dyn_ftrace *b = p2;
++	struct ftrace_profile *a = p1;
++	struct ftrace_profile *b = p2;
 +
-+	if (a->counter < b->counter)
++	if (a->time < b->time)
 +		return -1;
-+	if (a->counter > b->counter)
++	if (a->time > b->time)
 +		return 1;
 +	else
 +		return 0;
 +}
-+
-+static int function_stat_headers(struct seq_file *m)
-+{
-+	seq_printf(m, "  Function                               Hit\n"
-+		      "  --------                               ---\n");
-+	return 0;
-+}
-+
-+static int function_stat_show(struct seq_file *m, void *v)
-+{
-+	struct dyn_ftrace *rec = v;
-+	char str[KSYM_SYMBOL_LEN];
-+
-+	kallsyms_lookup(rec->ip, NULL, NULL, NULL, str);
-+
-+	seq_printf(m, "  %-30.30s  %10lu\n", str, rec->counter);
-+	return 0;
-+}
-+
-+static struct tracer_stat function_stats = {
-+	.name = "functions",
-+	.stat_start = function_stat_start,
-+	.stat_next = function_stat_next,
-+	.stat_cmp = function_stat_cmp,
-+	.stat_headers = function_stat_headers,
-+	.stat_show = function_stat_show
-+};
-+
-+static void ftrace_profile_init(int nr_funcs)
-+{
-+	unsigned long addr;
-+	int order;
-+	int size;
-+
-+	/*
-+	 * We are profiling all functions, lets make it 1/4th of the
-+	 * number of functions that are in core kernel. So we have to
-+	 * iterate 4 times.
-+	 */
-+	order = (sizeof(struct hlist_head) * nr_funcs) / 4;
-+	order = get_order(order);
-+	size = 1 << (PAGE_SHIFT + order);
-+
-+	pr_info("Allocating %d KB for profiler hash\n", size >> 10);
-+
-+	addr = __get_free_pages(GFP_KERNEL | __GFP_ZERO, order);
-+	if (!addr) {
-+		pr_warning("Could not allocate function profiler hash\n");
-+		return;
-+	}
-+
-+	ftrace_profile_hash = (void *)addr;
-+
-+	/*
-+	 * struct hlist_head should be a pointer of 4 or 8 bytes.
-+	 * And a simple bit manipulation can be done, but if for
-+	 * some reason struct hlist_head is not a mulitple of 2,
-+	 * then we play it safe, and simply count. This function
-+	 * is done once at boot up, so it is not that critical in
-+	 * performance.
-+	 */
-+
-+	size--;
-+	size /= sizeof(struct hlist_head);
-+
-+	for (; size; size >>= 1)
-+		ftrace_profile_bits++;
-+
-+	pr_info("Function profiler has %d hash buckets\n",
-+		1 << ftrace_profile_bits);
-+
-+	return;
-+}
-+
-+static ssize_t
-+ftrace_profile_read(struct file *filp, char __user *ubuf,
-+		     size_t cnt, loff_t *ppos)
-+{
-+	char buf[64];
-+	int r;
-+
-+	r = sprintf(buf, "%u\n", ftrace_profile_enabled);
-+	return simple_read_from_buffer(ubuf, cnt, ppos, buf, r);
-+}
-+
-+static void ftrace_profile_reset(void)
-+{
-+	struct dyn_ftrace *rec;
-+	struct ftrace_page *pg;
-+
-+	do_for_each_ftrace_rec(pg, rec) {
-+		rec->counter = 0;
-+	} while_for_each_ftrace_rec();
-+}
-+
-+static struct dyn_ftrace *ftrace_find_profiled_func(unsigned long ip)
-+{
-+	struct dyn_ftrace *rec;
-+	struct hlist_head *hhd;
-+	struct hlist_node *n;
-+	unsigned long flags;
-+	unsigned long key;
-+
-+	if (!ftrace_profile_hash)
-+		return NULL;
-+
-+	key = hash_long(ip, ftrace_profile_bits);
-+	hhd = &ftrace_profile_hash[key];
-+
-+	if (hlist_empty(hhd))
-+		return NULL;
-+
-+	local_irq_save(flags);
-+	hlist_for_each_entry_rcu(rec, n, hhd, node) {
-+		if (rec->ip == ip)
-+			goto out;
-+	}
-+	rec = NULL;
-+ out:
-+	local_irq_restore(flags);
-+
-+	return rec;
-+}
-+
-+static void
-+function_profile_call(unsigned long ip, unsigned long parent_ip)
-+{
-+	struct dyn_ftrace *rec;
-+	unsigned long flags;
-+
-+	if (!ftrace_profile_enabled)
-+		return;
-+
-+	local_irq_save(flags);
-+	rec = ftrace_find_profiled_func(ip);
-+	if (!rec)
-+		goto out;
-+
-+	rec->counter++;
-+ out:
-+	local_irq_restore(flags);
-+}
-+
-+static struct ftrace_ops ftrace_profile_ops __read_mostly =
-+{
-+	.func = function_profile_call,
-+};
-+
-+static ssize_t
-+ftrace_profile_write(struct file *filp, const char __user *ubuf,
-+		     size_t cnt, loff_t *ppos)
-+{
-+	unsigned long val;
-+	char buf[64];
-+	int ret;
-+
-+	if (!ftrace_profile_hash) {
-+		pr_info("Can not enable hash due to earlier problems\n");
-+		return -ENODEV;
-+	}
-+
-+	if (cnt >= sizeof(buf))
-+		return -EINVAL;
-+
-+	if (copy_from_user(&buf, ubuf, cnt))
-+		return -EFAULT;
-+
-+	buf[cnt] = 0;
-+
-+	ret = strict_strtoul(buf, 10, &val);
-+	if (ret < 0)
-+		return ret;
-+
-+	val = !!val;
-+
-+	mutex_lock(&ftrace_profile_lock);
-+	if (ftrace_profile_enabled ^ val) {
-+		if (val) {
-+			ftrace_profile_reset();
-+			register_ftrace_function(&ftrace_profile_ops);
-+			ftrace_profile_enabled = 1;
-+		} else {
-+			ftrace_profile_enabled = 0;
-+			unregister_ftrace_function(&ftrace_profile_ops);
-+		}
-+	}
-+	mutex_unlock(&ftrace_profile_lock);
-+
-+	filp->f_pos += cnt;
-+
-+	return cnt;
-+}
-+
-+static const struct file_operations ftrace_profile_fops = {
-+	.open		= tracing_open_generic,
-+	.read		= ftrace_profile_read,
-+	.write		= ftrace_profile_write,
-+};
-+
-+static void ftrace_profile_debugfs(struct dentry *d_tracer)
-+{
-+	struct dentry *entry;
-+	int ret;
-+
-+	ret = register_stat_tracer(&function_stats);
-+	if (ret) {
-+		pr_warning("Warning: could not register "
-+			   "function stats\n");
-+		return;
-+	}
-+
-+	entry = debugfs_create_file("function_profile_enabled", 0644,
-+				    d_tracer, NULL, &ftrace_profile_fops);
-+	if (!entry)
-+		pr_warning("Could not create debugfs "
-+			   "'function_profile_enabled' entry\n");
-+}
-+
-+static void ftrace_add_profile(struct dyn_ftrace *rec)
-+{
-+	unsigned long key;
-+
-+	if (!ftrace_profile_hash)
-+		return;
-+
-+	key = hash_long(rec->ip, ftrace_profile_bits);
-+	hlist_add_head_rcu(&rec->node, &ftrace_profile_hash[key]);
-+}
-+
-+static void ftrace_profile_release(struct dyn_ftrace *rec)
-+{
-+	mutex_lock(&ftrace_profile_lock);
-+	hlist_del(&rec->node);
-+	mutex_unlock(&ftrace_profile_lock);
-+}
-+
-+#else /* CONFIG_FUNCTION_PROFILER */
-+static void ftrace_profile_init(int nr_funcs)
-+{
-+}
-+static void ftrace_add_profile(struct dyn_ftrace *rec)
-+{
-+}
-+static void ftrace_profile_debugfs(struct dentry *d_tracer)
-+{
-+}
-+static void ftrace_profile_release(struct dyn_ftrace *rec)
-+{
-+}
-+#endif /* CONFIG_FUNCTION_PROFILER */
-+
- #ifdef CONFIG_KPROBES
- 
- static int frozen_record_count;
-@@ -359,8 +660,10 @@ void ftrace_release(void *start, unsigned long size)
- 	mutex_lock(&ftrace_lock);
- 	do_for_each_ftrace_rec(pg, rec) {
- 		if ((rec->ip >= s) && (rec->ip < e) &&
--		    !(rec->flags & FTRACE_FL_FREE))
-+		    !(rec->flags & FTRACE_FL_FREE)) {
- 			ftrace_free_rec(rec);
-+			ftrace_profile_release(rec);
-+		}
- 	} while_for_each_ftrace_rec();
- 	mutex_unlock(&ftrace_lock);
++#else
++/* not function graph compares against hits */
+ static int function_stat_cmp(void *p1, void *p2)
+ {
+ 	struct ftrace_profile *a = p1;
+@@ -315,11 +334,17 @@ static int function_stat_cmp(void *p1, void *p2)
+ 	else
+ 		return 0;
  }
-@@ -414,6 +717,8 @@ ftrace_record_ip(unsigned long ip)
- 	rec->newlist = ftrace_new_addrs;
- 	ftrace_new_addrs = rec;
++#endif
  
-+	ftrace_add_profile(rec);
-+
- 	return rec;
- }
- 
-@@ -2157,6 +2462,8 @@ static __init int ftrace_init_dyn_debugfs(struct dentry *d_tracer)
- 			   "'set_graph_function' entry\n");
- #endif /* CONFIG_FUNCTION_GRAPH_TRACER */
- 
-+	ftrace_profile_debugfs(d_tracer);
-+
+ static int function_stat_headers(struct seq_file *m)
+ {
++#ifdef CONFIG_FUNCTION_GRAPH_TRACER
++	seq_printf(m, "  Function                               Hit    Time\n"
++		      "  --------                               ---    ----\n");
++#else
+ 	seq_printf(m, "  Function                               Hit\n"
+ 		      "  --------                               ---\n");
++#endif
  	return 0;
  }
  
-@@ -2225,6 +2532,8 @@ void __init ftrace_init(void)
- 	if (ret)
- 		goto failed;
- 
-+	ftrace_profile_init(count);
+@@ -327,10 +352,25 @@ static int function_stat_show(struct seq_file *m, void *v)
+ {
+ 	struct ftrace_profile *rec = v;
+ 	char str[KSYM_SYMBOL_LEN];
++#ifdef CONFIG_FUNCTION_GRAPH_TRACER
++	static struct trace_seq s;
++	static DEFINE_MUTEX(mutex);
 +
- 	last_ftrace_enabled = ftrace_enabled = 1;
++	mutex_lock(&mutex);
++	trace_seq_init(&s);
++	trace_print_graph_duration(rec->time, &s);
++#endif
  
- 	ret = ftrace_convert_nops(NULL,
+ 	kallsyms_lookup(rec->ip, NULL, NULL, NULL, str);
++	seq_printf(m, "  %-30.30s  %10lu", str, rec->counter);
++
++#ifdef CONFIG_FUNCTION_GRAPH_TRACER
++	seq_printf(m, "    ");
++	trace_print_seq(m, &s);
++	mutex_unlock(&mutex);
++#endif
++	seq_putc(m, '\n');
+ 
+-	seq_printf(m, "  %-30.30s  %10lu\n", str, rec->counter);
+ 	return 0;
+ }
+ 
+@@ -534,11 +574,52 @@ function_profile_call(unsigned long ip, unsigned long parent_ip)
+ 	local_irq_restore(flags);
+ }
+ 
++#ifdef CONFIG_FUNCTION_GRAPH_TRACER
++static int profile_graph_entry(struct ftrace_graph_ent *trace)
++{
++	function_profile_call(trace->func, 0);
++	return 1;
++}
++
++static void profile_graph_return(struct ftrace_graph_ret *trace)
++{
++	unsigned long flags;
++	struct ftrace_profile *rec;
++
++	local_irq_save(flags);
++	rec = ftrace_find_profiled_func(trace->func);
++	if (rec)
++		rec->time += trace->rettime - trace->calltime;
++	local_irq_restore(flags);
++}
++
++static int register_ftrace_profiler(void)
++{
++	return register_ftrace_graph(&profile_graph_return,
++				     &profile_graph_entry);
++}
++
++static void unregister_ftrace_profiler(void)
++{
++	unregister_ftrace_graph();
++}
++#else
+ static struct ftrace_ops ftrace_profile_ops __read_mostly =
+ {
+ 	.func = function_profile_call,
+ };
+ 
++static int register_ftrace_profiler(void)
++{
++	return register_ftrace_function(&ftrace_profile_ops);
++}
++
++static void unregister_ftrace_profiler(void)
++{
++	unregister_ftrace_function(&ftrace_profile_ops);
++}
++#endif /* CONFIG_FUNCTION_GRAPH_TRACER */
++
+ static ssize_t
+ ftrace_profile_write(struct file *filp, const char __user *ubuf,
+ 		     size_t cnt, loff_t *ppos)
+@@ -570,11 +651,15 @@ ftrace_profile_write(struct file *filp, const char __user *ubuf,
+ 				goto out;
+ 			}
+ 
+-			register_ftrace_function(&ftrace_profile_ops);
++			ret = register_ftrace_profiler();
++			if (ret < 0) {
++				cnt = ret;
++				goto out;
++			}
+ 			ftrace_profile_enabled = 1;
+ 		} else {
+ 			ftrace_profile_enabled = 0;
+-			unregister_ftrace_function(&ftrace_profile_ops);
++			unregister_ftrace_profiler();
+ 		}
+ 	}
+  out:
+diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
+index 67c6a21..821bf49 100644
+--- a/kernel/trace/trace.c
++++ b/kernel/trace/trace.c
+@@ -402,17 +402,6 @@ static ssize_t trace_seq_to_buffer(struct trace_seq *s, void *buf, size_t cnt)
+ 	return cnt;
+ }
+ 
+-static void
+-trace_print_seq(struct seq_file *m, struct trace_seq *s)
+-{
+-	int len = s->len >= PAGE_SIZE ? PAGE_SIZE - 1 : s->len;
+-
+-	s->buffer[len] = 0;
+-	seq_puts(m, s->buffer);
+-
+-	trace_seq_init(s);
+-}
+-
+ /**
+  * update_max_tr - snapshot all trace buffers from global_trace to max_tr
+  * @tr: tracer
+diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
+index d7410bb..c66ca3b 100644
+--- a/kernel/trace/trace.h
++++ b/kernel/trace/trace.h
+@@ -605,6 +605,8 @@ extern unsigned long trace_flags;
+ /* Standard output formatting function used for function return traces */
+ #ifdef CONFIG_FUNCTION_GRAPH_TRACER
+ extern enum print_line_t print_graph_function(struct trace_iterator *iter);
++extern enum print_line_t
++trace_print_graph_duration(unsigned long long duration, struct trace_seq *s);
+ 
+ #ifdef CONFIG_DYNAMIC_FTRACE
+ /* TODO: make this variable */
+@@ -636,7 +638,6 @@ static inline int ftrace_graph_addr(unsigned long addr)
+ 	return 1;
+ }
+ #endif /* CONFIG_DYNAMIC_FTRACE */
+-
+ #else /* CONFIG_FUNCTION_GRAPH_TRACER */
+ static inline enum print_line_t
+ print_graph_function(struct trace_iterator *iter)
+diff --git a/kernel/trace/trace_functions_graph.c b/kernel/trace/trace_functions_graph.c
+index d28687e..85bba0f 100644
+--- a/kernel/trace/trace_functions_graph.c
++++ b/kernel/trace/trace_functions_graph.c
+@@ -426,8 +426,8 @@ print_graph_irq(struct trace_iterator *iter, unsigned long addr,
+ 	return TRACE_TYPE_HANDLED;
+ }
+ 
+-static enum print_line_t
+-print_graph_duration(unsigned long long duration, struct trace_seq *s)
++enum print_line_t
++trace_print_graph_duration(unsigned long long duration, struct trace_seq *s)
+ {
+ 	unsigned long nsecs_rem = do_div(duration, 1000);
+ 	/* log10(ULONG_MAX) + '\0' */
+@@ -464,12 +464,23 @@ print_graph_duration(unsigned long long duration, struct trace_seq *s)
+ 		if (!ret)
+ 			return TRACE_TYPE_PARTIAL_LINE;
+ 	}
++	return TRACE_TYPE_HANDLED;
++}
++
++static enum print_line_t
++print_graph_duration(unsigned long long duration, struct trace_seq *s)
++{
++	int ret;
++
++	ret = trace_print_graph_duration(duration, s);
++	if (ret != TRACE_TYPE_HANDLED)
++		return ret;
+ 
+ 	ret = trace_seq_printf(s, "|  ");
+ 	if (!ret)
+ 		return TRACE_TYPE_PARTIAL_LINE;
+-	return TRACE_TYPE_HANDLED;
+ 
++	return TRACE_TYPE_HANDLED;
+ }
+ 
+ /* Case of a leaf function on its call entry */
+diff --git a/kernel/trace/trace_output.c b/kernel/trace/trace_output.c
+index 19261fd..a3b6e3f 100644
+--- a/kernel/trace/trace_output.c
++++ b/kernel/trace/trace_output.c
+@@ -19,6 +19,16 @@ static struct hlist_head event_hash[EVENT_HASHSIZE] __read_mostly;
+ 
+ static int next_event_type = __TRACE_LAST_TYPE + 1;
+ 
++void trace_print_seq(struct seq_file *m, struct trace_seq *s)
++{
++	int len = s->len >= PAGE_SIZE ? PAGE_SIZE - 1 : s->len;
++
++	s->buffer[len] = 0;
++	seq_puts(m, s->buffer);
++
++	trace_seq_init(s);
++}
++
+ enum print_line_t trace_print_bprintk_msg_only(struct trace_iterator *iter)
+ {
+ 	struct trace_seq *s = &iter->seq;
+diff --git a/kernel/trace/trace_output.h b/kernel/trace/trace_output.h
+index 35c422f..1eac297 100644
+--- a/kernel/trace/trace_output.h
++++ b/kernel/trace/trace_output.h
+@@ -20,6 +20,8 @@ trace_print_bprintk_msg_only(struct trace_iterator *iter);
+ extern enum print_line_t
+ trace_print_printk_msg_only(struct trace_iterator *iter);
+ 
++extern void trace_print_seq(struct seq_file *m, struct trace_seq *s);
++
+ extern int trace_seq_printf(struct trace_seq *s, const char *fmt, ...)
+ 	__attribute__ ((format (printf, 2, 3)));
+ extern int
 -- 
 1.6.2
 
