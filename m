@@ -1,148 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755108AbZCYWCL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756131AbZCYWCa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755108AbZCYWCL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 18:02:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752770AbZCYWB5
+	id S1756131AbZCYWCa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 18:02:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755920AbZCYWCU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 18:01:57 -0400
-Received: from mail-ew0-f165.google.com ([209.85.219.165]:52086 "EHLO
-	mail-ew0-f165.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751215AbZCYWB4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 18:01:56 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=tRC8ctYA5WCb3cPJDzktTU6O9xKPXpbjpJwwdfGeuDQLrz/22GQBN1A7Kqi1wvz/9q
-         MZmP+v0pNw0V/bsk2ebkV8N/d0Ki/ztigADfgPj/gk8l93X0trDNhmf8MwUy94aIZzbP
-         NufFZ0s4v2hPF1Ogbe2AuD/iSxJ5wfv/0t6xQ=
-Date: Wed, 25 Mar 2009 23:01:51 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH][GIT PULL] tracing: add handler to trace_stat
-Message-ID: <20090325220149.GK5932@nowhere>
-References: <alpine.DEB.2.00.0903242329350.22830@gandalf.stny.rr.com>
+	Wed, 25 Mar 2009 18:02:20 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:35390 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752770AbZCYWCT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Mar 2009 18:02:19 -0400
+Date: Wed, 25 Mar 2009 23:01:49 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Herbert Xu <herbert@gondor.apana.org.au>
+Cc: David Miller <davem@davemloft.net>, r.schwebel@pengutronix.de,
+       torvalds@linux-foundation.org, blaschka@linux.vnet.ibm.com,
+       tglx@linutronix.de, a.p.zijlstra@chello.nl,
+       linux-kernel@vger.kernel.org, kernel@pengutronix.de
+Subject: Re: Revert "gro: Fix legacy path napi_complete crash",
+Message-ID: <20090325220149.GB21111@elte.hu>
+References: <20090324150928.GB30224@gondor.apana.org.au> <20090324.143622.186562202.davem@davemloft.net> <20090325002303.GA2219@gondor.apana.org.au> <20090324.191134.05205089.davem@davemloft.net> <20090325073349.GF25833@elte.hu> <20090325120840.GA6351@gondor.apana.org.au> <20090325122046.GD11571@elte.hu> <20090325122635.GA6489@gondor.apana.org.au>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.0903242329350.22830@gandalf.stny.rr.com>
+In-Reply-To: <20090325122635.GA6489@gondor.apana.org.au>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 24, 2009 at 11:30:33PM -0400, Steven Rostedt wrote:
-> 
-> Ingo,
-> 
-> Please pull the latest tip/tracing/ftrace tree, which can be found at:
-> 
->   git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
-> tip/tracing/ftrace
-> 
-> 
-> Steven Rostedt (1):
->       tracing: add handler to trace_stat
-> 
-> ----
->  kernel/trace/trace_branch.c    |    4 ++--
->  kernel/trace/trace_stat.c      |    2 +-
->  kernel/trace/trace_stat.h      |    2 +-
->  kernel/trace/trace_workqueue.c |    2 +-
->  4 files changed, 5 insertions(+), 5 deletions(-)
-> ---------------------------
-> commit 425480081e936d8725f0d44b8829d699bf088c6b
-> Author: Steven Rostedt <srostedt@redhat.com>
-> Date:   Tue Mar 24 13:38:36 2009 -0400
-> 
->     tracing: add handler to trace_stat
->     
->     Currently, if a trace_stat user wants a handle to some private data,
->     the trace_stat infrastructure does not supply a way to do that.
->     
->     This patch passes the trace_stat structure to the start function of
->     the trace_stat code.
->     
->     Signed-off-by: Steven Rostedt <srostedt@redhat.com>
-> 
-> diff --git a/kernel/trace/trace_branch.c b/kernel/trace/trace_branch.c
-> index ad8c22e..e6e3291 100644
-> --- a/kernel/trace/trace_branch.c
-> +++ b/kernel/trace/trace_branch.c
-> @@ -263,7 +263,7 @@ static int branch_stat_show(struct seq_file *m, void *v)
->  	return 0;
->  }
->  
-> -static void *annotated_branch_stat_start(void)
-> +static void *annotated_branch_stat_start(struct tracer_stat *trace)
->  {
->  	return __start_annotated_branch_profile;
->  }
-> @@ -338,7 +338,7 @@ static int all_branch_stat_headers(struct seq_file *m)
->  	return 0;
->  }
->  
-> -static void *all_branch_stat_start(void)
-> +static void *all_branch_stat_start(struct tracer_stat *trace)
->  {
->  	return __start_branch_profile;
->  }
-> diff --git a/kernel/trace/trace_stat.c b/kernel/trace/trace_stat.c
-> index f71b85b..f8f48d8 100644
-> --- a/kernel/trace/trace_stat.c
-> +++ b/kernel/trace/trace_stat.c
-> @@ -85,7 +85,7 @@ static int stat_seq_init(struct tracer_stat_session *session)
->  	if (!ts->stat_cmp)
->  		ts->stat_cmp = dummy_cmp;
->  
-> -	stat = ts->stat_start();
-> +	stat = ts->stat_start(ts);
->  	if (!stat)
->  		goto exit;
->  
-> diff --git a/kernel/trace/trace_stat.h b/kernel/trace/trace_stat.h
-> index 202274c..f3546a2 100644
-> --- a/kernel/trace/trace_stat.h
-> +++ b/kernel/trace/trace_stat.h
-> @@ -12,7 +12,7 @@ struct tracer_stat {
->  	/* The name of your stat file */
->  	const char		*name;
->  	/* Iteration over statistic entries */
-> -	void			*(*stat_start)(void);
-> +	void			*(*stat_start)(struct tracer_stat *trace);
 
+* Herbert Xu <herbert@gondor.apana.org.au> wrote:
 
+> On Wed, Mar 25, 2009 at 01:20:46PM +0100, Ingo Molnar wrote:
+> > 
+> > ok - i have started testing the delta below, on top of the plain 
+> > revert.
 
-In that case, shoudn't we pass another thing than the struct tracer_stat?
-Because nothing really private can be stored in it. Moreover, most of the
-time the handler is dedicated to this tracer_stat so it is able to have
-an access to it.
+it's still fine btw, so:
 
-May be we could add a void *private inside struct trace_stat and then pass
-it to stat_start() ?
+Tested-by: Ingo Molnar <mingo@elte.hu>
+
+> Thanks! BTW Ingo, any chance you could help us identify the 
+> problem with the previous patch? I don't have a forcedeth machine 
+> here and the hang you had with my patch that open-coded 
+> __napi_complete appears intimately connected to forcedeth (with 
+> NAPI enabled).
+> 
+> The simplest thing to try would be to build forcedeth.c with DEBUG
+> and see what it prints out after it locks up.
+
+Sure, can try that. Probably the best would be if you sent me a 
+combo patch with the precise patch you meant me to try (there were 
+several patches, i'm not sure which one is the 'previous' one) plus 
+the forcedeth debug enable change as well.
 
 Thanks,
-Frederic.
 
-
->  	void			*(*stat_next)(void *prev, int idx);
->  	/* Compare two entries for stats sorting */
->  	int			(*stat_cmp)(void *p1, void *p2);
-> diff --git a/kernel/trace/trace_workqueue.c b/kernel/trace/trace_workqueue.c
-> index 9ab035b..ee533c2 100644
-> --- a/kernel/trace/trace_workqueue.c
-> +++ b/kernel/trace/trace_workqueue.c
-> @@ -152,7 +152,7 @@ static struct cpu_workqueue_stats *workqueue_stat_start_cpu(int cpu)
->  	return ret;
->  }
->  
-> -static void *workqueue_stat_start(void)
-> +static void *workqueue_stat_start(struct tracer_stat *trace)
->  {
->  	int cpu;
->  	void *ret = NULL;
-> 
-
+	Ingo
