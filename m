@@ -1,64 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763067AbZCYQLY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762589AbZCYQMW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763067AbZCYQLY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 12:11:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759643AbZCYQLE
+	id S1762589AbZCYQMW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 12:12:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759452AbZCYQME
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 12:11:04 -0400
-Received: from mail-fx0-f158.google.com ([209.85.220.158]:47823 "EHLO
-	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757077AbZCYQLB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 12:11:01 -0400
-Message-ID: <49CA578F.7010907@monstr.eu>
-Date: Wed, 25 Mar 2009 17:10:55 +0100
-From: Michal Simek <monstr@monstr.eu>
-Reply-To: monstr@monstr.eu
-User-Agent: Thunderbird 2.0.0.17 (X11/20081001)
+	Wed, 25 Mar 2009 12:12:04 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:40164 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754064AbZCYQMD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Mar 2009 12:12:03 -0400
+Date: Wed, 25 Mar 2009 17:11:47 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: linux-tip-commits@vger.kernel.org, "Paul E. McKenney" <paulmck@us.ibm.com>
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       penberg@cs.helsinki.fi, eduard.munteanu@linux360.ro, tglx@linutronix.de
+Subject: Re: [tip:tracing/kmemtrace] rcutree: fix rcu_tree_trace.c data
+	structure dependencies
+Message-ID: <20090325161147.GA18738@elte.hu>
+References: <1237898630.25315.83.camel@penberg-laptop> <tip-5d957021d326fbfdc1d7a4f11a3da1f6f82d6a36@git.kernel.org>
 MIME-Version: 1.0
-To: Arnd Bergmann <arnd@arndb.de>
-CC: linux-kernel@vger.kernel.org, john.williams@petalogix.com
-Subject: Re: [PATCH 01/57] microblaze_v7: Kconfig patches
-References: <1237408284-8674-1-git-send-email-monstr@monstr.eu> <0168f03c96e9479ede695a9859c8a0691baa8ef3.1237407249.git.monstr@monstr.eu> <200903251642.40442.arnd@arndb.de>
-In-Reply-To: <200903251642.40442.arnd@arndb.de>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <tip-5d957021d326fbfdc1d7a4f11a3da1f6f82d6a36@git.kernel.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arnd Bergmann wrote:
-> On Wednesday 18 March 2009, monstr@monstr.eu wrote:
->> From: Michal Simek <monstr@monstr.eu>
->>
->>
->> Signed-off-by: Michal Simek <monstr@monstr.eu>
->> ---
->>  arch/microblaze/Kconfig                       |  136 +++++++++++++++++++++++++
->>  arch/microblaze/Kconfig.debug                 |   26 +++++
->>  arch/microblaze/platform/Kconfig.platform     |   85 +++++++++++++++
->>  arch/microblaze/platform/generic/Kconfig.auto |   62 +++++++++++
->>  4 files changed, 309 insertions(+), 0 deletions(-)
->>  create mode 100644 arch/microblaze/Kconfig
->>  create mode 100644 arch/microblaze/Kconfig.debug
->>  create mode 100644 arch/microblaze/platform/Kconfig.platform
->>  create mode 100644 arch/microblaze/platform/generic/Kconfig.auto
+
+* Ingo Molnar <mingo@elte.hu> wrote:
+
+> Commit-ID:  5d957021d326fbfdc1d7a4f11a3da1f6f82d6a36
+> Gitweb:     http://git.kernel.org/tip/5d957021d326fbfdc1d7a4f11a3da1f6f82d6a36
+> Author:     Ingo Molnar <mingo@elte.hu>
+> AuthorDate: Wed, 25 Mar 2009 16:42:24 +0100
+> Committer:  Ingo Molnar <mingo@elte.hu>
+> CommitDate: Wed, 25 Mar 2009 16:42:24 +0100
 > 
-> As a general rule for future updates, you should make sure that
-> the order of your patches is so that you don't get a broken
-> version in the middle. In your current series, it's not important,
-> because nothing works really until all your patches are in there.
+> rcutree: fix rcu_tree_trace.c data structure dependencies
+> 
+> Impact: build fix
+> 
+> We removed rcutree internals from the public rcutree.h file - but
+> kernel/rcutree_trace.c depends on them.
+> 
+> Introduce kernel/rcutree.h for internal definitions. (Probably all
+> the other data types from include/linux/rcutree.h could be
+> moved here too - except rcu_data.)
 
-Thanks for your advice.
-I am trying to do in all project where I work.
+Paul ... what do you think? This is just an interim measure to get 
+the build going - i think we could do more cleanups here perhaps, if 
+you agree.
 
-Thanks,
-Michal
+I think many of the data definitions (and the resulting include file 
+dependencies) in include/linux/rcu*.h could move into kernel/rcu*.h 
+and be privatized that way. 'struct rcu_state' would be an example.
 
+Agreed?
 
-> 	Arnd <><
-
-
--- 
-Michal Simek, Ing. (M.Eng)
-w: www.monstr.eu p: +42-0-721842854
+	Ingo
