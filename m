@@ -1,126 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761044AbZCYQw6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761761AbZCYQxo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761044AbZCYQw6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 12:52:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758726AbZCYQw0
+	id S1761761AbZCYQxo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 12:53:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759530AbZCYQw4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 12:52:26 -0400
-Received: from hera.kernel.org ([140.211.167.34]:53721 "EHLO hera.kernel.org"
+	Wed, 25 Mar 2009 12:52:56 -0400
+Received: from cantor.suse.de ([195.135.220.2]:49849 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759260AbZCYQwY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 12:52:24 -0400
-Date: Wed, 25 Mar 2009 16:51:28 GMT
-From: Ingo Molnar <mingo@elte.hu>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       penberg@cs.helsinki.fi, eduard.munteanu@linux360.ro,
-       viro@zeniv.linux.org.uk, tglx@linutronix.de, mingo@elte.hu,
-       adobriyan@gmail.com
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       penberg@cs.helsinki.fi, eduard.munteanu@linux360.ro,
-       viro@zeniv.linux.org.uk, tglx@linutronix.de, mingo@elte.hu,
-       adobriyan@gmail.com
-In-Reply-To: <1237898630.25315.83.camel@penberg-laptop>
-References: <1237898630.25315.83.camel@penberg-laptop>
-Subject: [tip:tracing/kmemtrace] fs.h: uninline simple_transaction_set()
-Message-ID: <tip-44eea45ca9e25d6dd660d4806ef4c11209609e03@git.kernel.org>
-Git-Commit-ID: 44eea45ca9e25d6dd660d4806ef4c11209609e03
-X-Mailer: tip-git-log-daemon
+	id S1760894AbZCYQwz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Mar 2009 12:52:55 -0400
+Message-ID: <49CA629E.7040701@suse.de>
+Date: Thu, 26 Mar 2009 00:58:06 +0800
+From: Coly Li <coly.li@suse.de>
+Reply-To: coly.li@suse.de
+Organization: SuSE Labs
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Randy Dunlap <randy.dunlap@oracle.com>
+Subject: [PATCH] reiserfs: select CRC32 and BITREVERSE for REISERFS_FS Kconfig
+ entry
+X-Enigmail-Version: 0.95.7
 Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 25 Mar 2009 16:51:30 +0000 (UTC)
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  44eea45ca9e25d6dd660d4806ef4c11209609e03
-Gitweb:     http://git.kernel.org/tip/44eea45ca9e25d6dd660d4806ef4c11209609e03
-Author:     Ingo Molnar <mingo@elte.hu>
-AuthorDate: Wed, 25 Mar 2009 16:48:35 +0100
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Wed, 25 Mar 2009 17:48:14 +0100
+In patch fs-reiserfs-return-f_fsid-for-statfs2-v2.patch (from mmotm), crc32_le()
+is referenced. If reiserfs is compiled into kernel and crc32_le() is compiled as
+kernel module, there might be a compiling error as:
+    fs/built-in.o: In function `reiserfs_statfs':
+    super.c:(.text+0x7332b): undefined reference to `crc32_le'
+    super.c:(.text+0x7333f): undefined reference to `crc32_le'
+This patch select CRC32 and BITREVERSE for REISERFS_FS Kconfig entry, which
+indicates compiling crc32_le() into kernel.
 
-fs.h: uninline simple_transaction_set()
+Thanks to Randy Dunlap for pointing out this error and providing helpful solution.
 
-Move simple_transaction_set() to the other simple-transaction
-file helpers in fs/libfs.c.
-
-This removes an implicit asm/page.h PAGE_SIZE dependency from
-fs.h (asm/page.h is not an exported header so HEADERS_CHECK fils),
-and also reduces kernel size a bit.
-
-Cc: Al Viro <viro@zeniv.linux.org.uk>
-Cc: Alexey Dobriyan <adobriyan@gmail.com>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-Cc: paulmck@linux.vnet.ibm.com
-LKML-Reference: <1237898630.25315.83.camel@penberg-laptop>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-
+Signed-off-by: Coly Li <coly.li@suse.de>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>
 ---
- fs/libfs.c         |   15 +++++++++++++++
- include/linux/fs.h |   16 +---------------
- 2 files changed, 16 insertions(+), 15 deletions(-)
+ fs/reiserfs/Kconfig |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
 
-diff --git a/fs/libfs.c b/fs/libfs.c
-index 49b4409..a1db380 100644
---- a/fs/libfs.c
-+++ b/fs/libfs.c
-@@ -574,6 +574,21 @@ ssize_t memory_read_from_buffer(void *to, size_t count, loff_t *ppos,
-  * possibly a read which collects the result - which is stored in a
-  * file-local buffer.
-  */
-+
-+void simple_transaction_set(struct file *file, size_t n)
-+{
-+	struct simple_transaction_argresp *ar = file->private_data;
-+
-+	BUG_ON(n > SIMPLE_TRANSACTION_LIMIT);
-+
-+	/*
-+	 * The barrier ensures that ar->size will really remain zero until
-+	 * ar->data is ready for reading.
-+	 */
-+	smp_mb();
-+	ar->size = n;
-+}
-+
- char *simple_transaction_get(struct file *file, const char __user *buf, size_t size)
- {
- 	struct simple_transaction_argresp *ar;
-diff --git a/include/linux/fs.h b/include/linux/fs.h
-index 79be937..2ebe3ce 100644
---- a/include/linux/fs.h
-+++ b/include/linux/fs.h
-@@ -9,8 +9,6 @@
- #include <linux/limits.h>
- #include <linux/ioctl.h>
- 
--#include <asm/page.h> /* for PAGE_SIZE */
--
- /*
-  * It's silly to have NR_OPEN bigger than NR_FILE, but you can change
-  * the file limit at runtime and only root can increase the per-process
-@@ -2173,19 +2171,7 @@ ssize_t simple_transaction_read(struct file *file, char __user *buf,
- 				size_t size, loff_t *pos);
- int simple_transaction_release(struct inode *inode, struct file *file);
- 
--static inline void simple_transaction_set(struct file *file, size_t n)
--{
--	struct simple_transaction_argresp *ar = file->private_data;
--
--	BUG_ON(n > SIMPLE_TRANSACTION_LIMIT);
--
--	/*
--	 * The barrier ensures that ar->size will really remain zero until
--	 * ar->data is ready for reading.
--	 */
--	smp_mb();
--	ar->size = n;
--}
-+void simple_transaction_set(struct file *file, size_t n);
- 
- /*
-  * simple attribute files
+diff --git a/fs/reiserfs/Kconfig b/fs/reiserfs/Kconfig
+index 949b8c6..9712bea 100644
+--- a/fs/reiserfs/Kconfig
++++ b/fs/reiserfs/Kconfig
+@@ -1,5 +1,7 @@
+ config REISERFS_FS
+ 	tristate "Reiserfs support"
++	select CRC32
++	select BITREVERSE
+ 	help
+ 	  Stores not just filenames but the files themselves in a balanced
+ 	  tree.  Uses journalling.
+-- 
+Coly Li
+SuSE Labs
