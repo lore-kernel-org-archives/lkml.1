@@ -1,67 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763411AbZCYQNz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753094AbZCYQOf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763411AbZCYQNz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 12:13:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759168AbZCYQNq
+	id S1753094AbZCYQOf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 12:14:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755043AbZCYQOX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 12:13:46 -0400
-Received: from hera.kernel.org ([140.211.167.34]:39669 "EHLO hera.kernel.org"
+	Wed, 25 Mar 2009 12:14:23 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:49656 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752420AbZCYQNp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 12:13:45 -0400
-Message-ID: <49CA582B.9080706@kernel.org>
-Date: Thu, 26 Mar 2009 01:13:31 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
-MIME-Version: 1.0
-To: Grant Grundler <grundler@google.com>
-CC: bzolnier@gmail.com, linux-kernel@vger.kernel.org, axboe@kernel.dk,
-       linux-ide@vger.kernel.org
-Subject: Re: [PATCH 02/10] ide-tape: use single continuous buffer
-References: <1237990673-8358-1-git-send-email-tj@kernel.org>	 <1237990673-8358-3-git-send-email-tj@kernel.org> <da824cf30903250904n211b157eje2db99b0bdb1f33a@mail.gmail.com>
-In-Reply-To: <da824cf30903250904n211b157eje2db99b0bdb1f33a@mail.gmail.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 25 Mar 2009 16:13:35 +0000 (UTC)
+	id S1751014AbZCYQOW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Mar 2009 12:14:22 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+To: Kentaro Takeda <takedakn@nttdata.co.jp>,
+       Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>,
+       Toshiharu Harada <haradats@nttdata.co.jp>,
+       Al Viro <viro@zeniv.linux.org.uk>
+cc: dhowells@redhat.com, linux-kernel@vger.kernel.org
+Subject: Are path-based LSM hooks called from the wrong places?
+Date: Wed, 25 Mar 2009 16:14:13 +0000
+Message-ID: <13750.1237997653@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello, Grant.
 
-Grant Grundler wrote:
-> On Wed, Mar 25, 2009 at 7:17 AM, Tejun Heo <tj@kernel.org> wrote:
->> Impact: simpler buffer allocation and handling, fix DMA transfers
-> ...
->> +               atomic_set(&bh->b_count, bcount);
->>                if (atomic_read(&bh->b_count) == bh->b_size)
-> ...
-> 
-> I'm failing to see why bh->b_count is an atomic_t.
-> I always assumed tapes were exclusive access devices
-> and would be serialized at a higher level.
+Hi Kentaro,
 
-Beats me.  I don't know.  The code is generally pretty over-engineered
-but, well, it's an ancient piece of code with (probably too) rich
-history.
+I've just been looking at some of the VFS syscall routines, such as
+notify_change(), with an eye to calling it from FS-Cache to grow a file.  I
+see that whilst notify_change() calls the inode-based LSM hooks (as drive
+SELinux), it doesn't call the path-based LSM hooks (as drive other security
+modules).  It leaves that to the callers, such as do_sys_ftruncate().
 
->> -       ide_tape_kfree_buffer(tape);
->> -       return NULL;
->> +       bh->b_size = tape->buffer_size;
->> +       atomic_set(&bh->b_count, full ? bh->b_size : 0);
-> 
-> No one else could possibly be referencing bh->count at this
-> point...I like that it's consistent though.
+I see that vfs_mkdir(), for example, is similar, in that vfs_mkdir() - which
+I'm calling from FS-Cache - invokes the inode-based LSM hooks, but it bypasses
+the path-based LSM hooks as those are called from sys_mkdir().
 
-Yeah, this patch is just one of logical steps to remove bh, so it
-doesn't make any other changes than described.  The whole bh stuff
-will be removed later in the series.
+It would appear that path-based LSM hooks may well be being called from the
+wrong places.  They were added in:
 
-> The use of atomic won't hurt correctness and this patch looks fine to me.
-> Please add "Reviewed-by: Grant Grundler <grundler@google.com>"
+	commit be6d3e56a6b9b3a4ee44a0685e39e595073c6f0d
+	Author: Kentaro Takeda <takedakn@nttdata.co.jp>
+	Date:   Wed Dec 17 13:24:15 2008 +0900
 
-Thanks.
+	    introduce new LSM hooks where vfsmount is available.
 
--- 
-tejun
+	    Add new LSM hooks for path-based checks.  Call them on directory-modifying
+	    operations at the points where we still know the vfsmount involved.
+
+	    Signed-off-by: Kentaro Takeda <takedakn@nttdata.co.jp>
+	    Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+	    Signed-off-by: Toshiharu Harada <haradats@nttdata.co.jp>
+	    Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
+
+Using sys_mkdir() and suchlike directly from within the kernel would add a lot
+of overhead as I'd have to generate a full pathname for each call, whereas
+vfs_mkdir() or notify_change() allows me to start from an inode I already
+have.
+
+David
