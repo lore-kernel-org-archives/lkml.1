@@ -1,95 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756712AbZCYHMh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757678AbZCYHQz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756712AbZCYHMh (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 03:12:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756133AbZCYHM1
+	id S1757678AbZCYHQz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 03:16:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754951AbZCYHQr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 03:12:27 -0400
-Received: from smtp-vbr12.xs4all.nl ([194.109.24.32]:4705 "EHLO
-	smtp-vbr12.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756099AbZCYHM0 convert rfc822-to-8bit (ORCPT
+	Wed, 25 Mar 2009 03:16:47 -0400
+Received: from ip23.morthills.com ([208.76.97.23]:34620 "HELO
+	ip23.morthills.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1753164AbZCYHQq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 03:12:26 -0400
-From: Hans Verkuil <hverkuil@xs4all.nl>
-To: =?utf-8?q?N=C3=A9meth_M=C3=A1rton?= <nm127@freemail.hu>
-Subject: Re: [PATCH] uvcvideo: add zero fill for VIDIOC_ENUM_FMT
-Date: Wed, 25 Mar 2009 08:12:38 +0100
-User-Agent: KMail/1.9.9
-Cc: Laurent Pinchart <laurent.pinchart@skynet.be>, linux-media@vger.kernel.org,
-       LKML <linux-kernel@vger.kernel.org>
-References: <49C9D652.5040104@freemail.hu>
-In-Reply-To: <49C9D652.5040104@freemail.hu>
+	Wed, 25 Mar 2009 03:16:46 -0400
+Date: Wed, 25 Mar 2009 03:04:04 -0400
+From: "Hard Money Conference" <conference0430@morthills.com>
+To: linux-kernel@vger.kernel.org
+Subject: April 30th Invite 
 MIME-Version: 1.0
+X-Mailer: qdu v8.3.4.1000.2302609
+Reply-To: r.98.2302609@morthills.com
+Message-Id: <20090325015002.dxathiyxdm@morthills.com>
 Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200903250812.38051.hverkuil@xs4all.nl>
+	charset="iso-8859-1"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 25 March 2009 07:59:30 Németh Márton wrote:
-> From: Márton Németh <nm127@freemail.hu>
->
-> When enumerating formats with VIDIOC_ENUM_FMT the uvcvideo driver does
-> not fill the reserved fields of the struct v4l2_fmtdesc with zeros as
-> required by V4L2 API revision 0.24 [1]. Add the missing initializations.
->
-> The patch was tested with v4l-test 0.10 [2] with CNF7129 webcam found on
-> EeePC 901.
+Hard Money event taking place April 30th Hosted by Pitbull Seminars, call 858.736.7788 or visit http://events4hardmoney.com for more information.
 
-Or even better, Laurent, why not move to video_ioctl2? That will take care 
-of such things for you. The next step I'm going to take in the 
-implementation of the v4l2 framework is to move all drivers over to 
-v4l2_device and v4l2_ioctl2, so it would certainly help me if you could 
-convert uvcvideo. This is a typical example why using video_ioctl2 is a 
-good (tm) idea!
+Limited seats available please register before it's to late, this event sells out every year. Call 858.736.7788 for group pricing or event sponsors.
 
-Regards,
+If you would like to stop receiving our emails please go to http://events4hardmoney.com/uns/ or, send us a letter to:
+PSeminars, 1580 la jolla blvd #153 La Jolla, Ca 92037.
 
-	Hans
 
->
-> References:
-> [1] V4L2 API specification, revision 0.24
->     http://v4l2spec.bytesex.org/spec/r8367.htm
->
-> [2] v4l-test: Test environment for Video For Linux Two API
->     http://v4l-test.sourceforge.net/
->
-> Signed-off-by: Márton Németh <nm127@freemail.hu>
-> ---
-> --- linux-2.6.29/drivers/media/video/uvc/uvc_v4l2.c.orig	2009-03-24
-> 00:12:14.000000000 +0100 +++
-> linux-2.6.29/drivers/media/video/uvc/uvc_v4l2.c	2009-03-25
-> 07:24:42.000000000 +0100 @@ -673,11 +673,19 @@ static long
-> uvc_v4l2_do_ioctl(struct fil
->  	{
->  		struct v4l2_fmtdesc *fmt = arg;
->  		struct uvc_format *format;
-> +		__u32 index;
-> +		enum v4l2_buf_type type;
->
->  		if (fmt->type != video->streaming->type ||
->  		    fmt->index >= video->streaming->nformats)
->  			return -EINVAL;
->
-> +		index = fmt->index;
-> +		type = fmt->type;
-> +		memset(fmt, 0, sizeof(*fmt));
-> +		fmt->index = index;
-> +		fmt->type = type;
-> +
->  		format = &video->streaming->format[fmt->index];
->  		fmt->flags = 0;
->  		if (format->flags & UVC_FMT_FLAG_COMPRESSED)
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-media" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+--------------------------------------------
+..
 
 
 
--- 
-Hans Verkuil - video4linux developer - sponsored by TANDBERG
+
+
