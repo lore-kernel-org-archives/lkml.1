@@ -1,72 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760544AbZCYNwV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762115AbZCYNww@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760544AbZCYNwV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 09:52:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758492AbZCYNvx
+	id S1762115AbZCYNww (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 09:52:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759188AbZCYNwi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 09:51:53 -0400
-Received: from rv-out-0506.google.com ([209.85.198.233]:4613 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759313AbZCYNvw (ORCPT
+	Wed, 25 Mar 2009 09:52:38 -0400
+Received: from emulex.emulex.com ([138.239.112.1]:38528 "EHLO
+	emulex.emulex.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761808AbZCYNwh convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 09:51:52 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=fTuMTnolWNAk9gzFyzn64uuqiKCelonRZKYH246LKbpMAw7SUhtu6DdlFM/DEUxjli
-         FwoNy8Y4TyhYQo3kl+MchOoMQYyrtdzdOB5SzDVPRRDcToMKu80WW0MS6OmJWbZPRHeK
-         7sftCWxaIFtqcpFUr1qV/F2P2CsQ8NIoejHC4=
+	Wed, 25 Mar 2009 09:52:37 -0400
+From: Chetan.Loke@Emulex.Com
+To: <mingo@elte.hu>, <mathieu.desnoyers@polymtl.ca>
+CC: <akpm@linux-foundation.org>, <linux-kernel@vger.kernel.org>,
+       <ltt-dev@lists.casi.polymtl.ca>, <fweisbec@gmail.com>,
+       <jbaron@redhat.com>, <peterz@infradead.org>, <tglx@linutronix.de>,
+       <rmk+lkml@arm.linux.org.uk>, <mhiramat@redhat.com>, <fche@redhat.com>,
+       <haoki@redhat.com>, <t-nishiie@np.css.fujitsu.com>,
+       <rostedt@goodmis.org>, <eduard.munteanu@linux360.ro>
+Date: Wed, 25 Mar 2009 06:52:32 -0700
+Subject: RE: [patch 3/9] LTTng instrumentation tasklets
+Thread-Topic: [patch 3/9] LTTng instrumentation tasklets
+Thread-Index: AcmsqkNgvgu5qm0AT2aX5WwWDwWgaAAo+HGw
+Message-ID: <BD597E014482714090555A6376F9CA8B771BE5A0BD@EXMAIL.ad.emulex.com>
+References: <20090324155625.420966314@polymtl.ca>
+ <20090324160148.238795468@polymtl.ca> <20090324175621.GE31117@elte.hu>
+In-Reply-To: <20090324175621.GE31117@elte.hu>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-In-Reply-To: <1237968394.30175.12.camel@penberg-laptop>
-References: <20090325051920.406564281@goodmis.org>
-	 <20090325052023.071564146@goodmis.org>
-	 <84144f020903250034j24e1782bt5f73809b9349346c@mail.gmail.com>
-	 <009101c9ad20$1ae231c0$50a69540$@com>
-	 <1237968394.30175.12.camel@penberg-laptop>
-Date: Wed, 25 Mar 2009 15:51:49 +0200
-X-Google-Sender-Auth: c3575f28bc5420e1
-Message-ID: <84144f020903250651o13c723cgf64643091459a5ac@mail.gmail.com>
-Subject: Re: [PATCH 2/5] mm: remove unlikly NULL from kfree
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: Hua Zhong <hzhong@gmail.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Roland McGrath <roland@redhat.com>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       Steven Rostedt <srostedt@redhat.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Matt Mackall <mpm@selenic.com>, Al Viro <viro@zeniv.linux.org.uk>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 25 Mar 2009 13:52:34.0308 (UTC) FILETIME=[F306FC40:01C9AD50]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-03-25 at 01:02 -0700, Hua Zhong wrote:
->> > But those are _error handling paths_ (at least supposed to be). I
->> > wonder which call-sites are responsible for this. Can frtrace help us
->> > here?
->>
->> I am not sure why you call these error paths.
->>
->> I submitted the same patch two years ago, and you are still holding the same
->> argument.
->>
->> http://www.archivum.info/linux.kernel/2006-04/msg06042.html
->>
->> Have you used likely profiler? These are real numbers. If you insist on
->> calling them error paths then error paths are obviously the norm.
+ 
 
-On Wed, Mar 25, 2009 at 10:06 AM, Pekka Enberg <penberg@cs.helsinki.fi> wrote:
-> I am not denying the results, I am just saying that they don't make much
-> sense to me. Like I said, I would love to see the actual call-sites to
-> prove my argument wrong.
+> -----Original Message-----
+> From: linux-kernel-owner@vger.kernel.org 
+> [mailto:linux-kernel-owner@vger.kernel.org] On Behalf Of Ingo Molnar
+> Sent: Tuesday, March 24, 2009 1:56 PM
+> To: Mathieu Desnoyers
+> Cc: akpm@linux-foundation.org; linux-kernel@vger.kernel.org; 
+> ltt-dev@lists.casi.polymtl.ca; Frederic Weisbecker; Jason 
+> Baron; Peter Zijlstra; Thomas Gleixner; Russell King; Masami 
+> Hiramatsu; Frank Ch. Eigler; Hideo AOKI; Takashi Nishiie; 
+> Steven Rostedt; Eduard - Gabriel Munteanu
+> Subject: Re: [patch 3/9] LTTng instrumentation tasklets
+> 
+> 
+> * Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
+> 
+> > tasklet entry and exit events.
+> 
+> > +DEFINE_TRACE(irq_tasklet_high_entry);
+> > +DEFINE_TRACE(irq_tasklet_high_exit);
+> > +DEFINE_TRACE(irq_tasklet_low_entry);
+> > +DEFINE_TRACE(irq_tasklet_low_exit);
+> 
+> Dunno - tasklets are a legacy mechanism, not sure we want to 
+> instrument them. 
 
-OK, so according to Steven, audit_syscall_exit() is one such call-site
-that shows up in the traces. I don't really understand what's going on
-there but if it is sane, maybe that warrants the removal of unlikely()
-from kfree(). Hmm?
+
+Quick question. I understand this is unrelated to this patch. So I apologize in advance.
+Ingo - you mentioned "tasklets are a legacy mechanism". Is there a plan to phase them out ? Let me draw a small picture as to what's bothering me.
+
+With the SR-IOV support if there are 'N' virtual functions then there will be 'N' driver instances(actually N+1, 1 for the PF). If that driver drains the responses in the interrupt context then all such VF-instances could virtually block everyone else(because SR-IOV guys might also have MSI-X enabled).
+So now all such drivers should alter their Rx path.Driver's can queue tasklets and can also get the performance they want.
+
+Any suggestions?
+
+thanks
+Chetan
