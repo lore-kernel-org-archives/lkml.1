@@ -1,51 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756366AbZCYIGB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753791AbZCYIGz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756366AbZCYIGB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 04:06:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752954AbZCYIFn
+	id S1753791AbZCYIGz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 04:06:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753967AbZCYIGj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 04:05:43 -0400
-Received: from smtp.nokia.com ([192.100.105.134]:25002 "EHLO
-	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752741AbZCYIFl (ORCPT
+	Wed, 25 Mar 2009 04:06:39 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:53735 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754595AbZCYIGi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 04:05:41 -0400
-Message-ID: <49C9E5D1.8060900@nokia.com>
-Date: Wed, 25 Mar 2009 10:05:37 +0200
-From: Adrian Hunter <adrian.hunter@nokia.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
-MIME-Version: 1.0
-To: Pierre Ossman <drzeus-mmc@drzeus.cx>
-CC: "Lavinen Jarkko (Nokia-D/Helsinki)" <jarkko.lavinen@nokia.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: MMC: Accept EXT_CSD rev 1.3 assuming it is backwards compatible
- with 1.2
-References: <49C8CE1B.7000802@nokia.com> <20090324211037.65cd05ea@mjolnir.ossman.eu>
-In-Reply-To: <20090324211037.65cd05ea@mjolnir.ossman.eu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 25 Mar 2009 04:06:38 -0400
+Subject: RE: [PATCH 2/5] mm: remove unlikly NULL from kfree
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: Hua Zhong <hzhong@gmail.com>
+Cc: "'Steven Rostedt'" <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
+       "'Ingo Molnar'" <mingo@elte.hu>,
+       "'Andrew Morton'" <akpm@linux-foundation.org>,
+       "'Thomas Gleixner'" <tglx@linutronix.de>,
+       "'Peter Zijlstra'" <peterz@infradead.org>,
+       "'Roland McGrath'" <roland@redhat.com>,
+       "'Nick Piggin'" <nickpiggin@yahoo.com.au>,
+       "'Steven Rostedt'" <srostedt@redhat.com>,
+       "'Christoph Lameter'" <cl@linux-foundation.org>,
+       "'Matt Mackall'" <mpm@selenic.com>
+In-Reply-To: <009101c9ad20$1ae231c0$50a69540$@com>
+References: <20090325051920.406564281@goodmis.org>
+	 <20090325052023.071564146@goodmis.org>
+	 <84144f020903250034j24e1782bt5f73809b9349346c@mail.gmail.com>
+	 <009101c9ad20$1ae231c0$50a69540$@com>
+Date: Wed, 25 Mar 2009 10:06:34 +0200
+Message-Id: <1237968394.30175.12.camel@penberg-laptop>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 25 Mar 2009 08:04:49.0808 (UTC) FILETIME=[5ED0F100:01C9AD20]
-X-Nokia-AV: Clean
+X-Mailer: Evolution 2.22.3.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pierre Ossman wrote:
-> On Tue, 24 Mar 2009 14:12:11 +0200
-> Adrian Hunter <adrian.hunter@nokia.com> wrote:
+On Wed, 2009-03-25 at 01:02 -0700, Hua Zhong wrote:
+> > But those are _error handling paths_ (at least supposed to be). I
+> > wonder which call-sites are responsible for this. Can frtrace help us
+> > here?
 > 
->> From a939998e34cbc263317d51b21ab52c8d5863a913 Mon Sep 17 00:00:00 2001
->> From: Jarkko Lavinen <jarkko.lavinen@nokia.com>
->> Date: Thu, 27 Nov 2008 14:30:32 +0200
->> Subject: MMC: Accept EXT_CSD rev 1.3 assuming it is backwards compatible with 1.2
->>
->> Signed-off-by: Jarkko Lavinen <jarkko.lavinen@nokia.com>
->> ---
+> I am not sure why you call these error paths.
 > 
-> I don't like the whole "assuming" part. Do the specs back this up?
+> I submitted the same patch two years ago, and you are still holding the same
+> argument.
 > 
-> Rgds
+> http://www.archivum.info/linux.kernel/2006-04/msg06042.html
+> 
+> Have you used likely profiler? These are real numbers. If you insist on
+> calling them error paths then error paths are obviously the norm.
 
-Yes.
+I am not denying the results, I am just saying that they don't make much
+sense to me. Like I said, I would love to see the actual call-sites to
+prove my argument wrong.
 
-Please swap "assuming" for "because".
+			Pekka
+
