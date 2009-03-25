@@ -1,63 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759551AbZCYOpU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761195AbZCYOpm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759551AbZCYOpU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 10:45:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759165AbZCYOpH
+	id S1761195AbZCYOpm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 10:45:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754645AbZCYOp2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 10:45:07 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:57683 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1756366AbZCYOpG (ORCPT
+	Wed, 25 Mar 2009 10:45:28 -0400
+Received: from flounder.pepperfish.net ([87.237.62.181]:35722 "EHLO
+	flounder.pepperfish.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758492AbZCYOp1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 10:45:06 -0400
-Date: Wed, 25 Mar 2009 10:45:04 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Alex Chiang <achiang@hp.com>
-cc: htejun@gmail.com, <greg@kroah.com>, <cornelia.huck@de.ibm.com>,
-       <kay.sievers@vrfy.org>, <rusty@rustcorp.com.au>,
-       <ebiederm@xmission.com>, <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC PATCH 0/3] sysfs: allow suicide
-In-Reply-To: <20090325035707.15921.42150.stgit@bob.kio>
-Message-ID: <Pine.LNX.4.44L0.0903251036450.3462-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 25 Mar 2009 10:45:27 -0400
+X-Greylist: delayed 2212 seconds by postgrey-1.27 at vger.kernel.org; Wed, 25 Mar 2009 10:45:26 EDT
+Subject: Re: [PATCH] GPIOLIB: Allow GPIOs to be named
+From: Daniel Silverstone <dsilvers@simtec.co.uk>
+Reply-To: dsilvers@simtec.co.uk
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, David Brownell <david-b@pacbell.net>
+In-Reply-To: <1236937429.1218.2.camel@petitemort>
+References: <1231504690.8511.8.camel@petitemort>
+	 <20090113131417.fe36d9bb.akpm@linux-foundation.org>
+	 <1236256030.21294.4.camel@petitemort>  <1236937429.1218.2.camel@petitemort>
+Content-Type: text/plain
+Organization: Simtec Electronics
+Date: Wed, 25 Mar 2009 14:08:28 +0000
+Message-Id: <1237990108.15128.11.camel@petitemort>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 24 Mar 2009, Alex Chiang wrote:
+On Fri, 2009-03-13 at 09:43 +0000, Daniel Silverstone wrote:
+> > David, have you had a chance to review this patch? It was also
+> > added-to-mm on the 13th Jan as gpiolib-allow-gpios-to-be-named.patch --
+> > I believe you were CCed on this add.
+> > With -rc8 looming, I am anxious to know if this is acceptable for going
+> > into the .30 merge window.
+> Andrew,
+> with -rc8 out, and David apparently MIA on this topic, is now an
+> appropriate time for me to ask that you queue this up for the .30 merge
+> window, or is that something you can't really do?
 
-> Hi all,
-> 
-> This is a refreshed version of the patch series Tejun posted quite a while
-> ago that allowed sysfs attributes to commit suicide directly:
-> 
-> 	http://thread.gmane.org/gmane.linux.kernel/582130/
+While I hate to nag, I thought I should ping on this again. Any movement
+on whether or not this will go in?
 
-> The most contentious part is patch 1/3, wherein sysfs abuses the
-> module notifier call chain, and basically prevents all module unloads
-> until suicidal sysfs attributes have completed.
-> 
-> This is poison of a different flavor from last time. The earlier version
-> of this series modified the module API and created an interface that
-> allowed anyone to inhibit module unload.
-> 
-> This time, only sysfs is allowed to be so... special. Which is a slight
-> improvement, but the question as to whether sysfs should be allowed to
-> do something like this is unresolved.
+Regards,
 
-I tend to agree with Eric that this feels a little like a band-aid, and 
-a more general solution would be preferable.  But I don't have one to 
-offer, and getting the immediate problems fixed is also important.
+Daniel.
 
-Why change the inhibit-module-unload interface?  This new approach
-seems a lot more complicated than needed; a simple rwsem should work
-okay.  Exposing it to the entire kernel when only sysfs uses it doesn't 
-matter -- there must be plenty of EXPORTed symbols with only one user.
+-- 
+Daniel Silverstone                              http://www.simtec.co.uk/
+PGP mail accepted and encouraged.            Key Id: 2BC8 4016 2068 7895
 
-Which reminds me...  What happens if two different processes write to
-the same suicidal sysfs attribute at the same time?
-
-Alan Stern
 
