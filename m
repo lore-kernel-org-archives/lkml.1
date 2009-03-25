@@ -1,128 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751719AbZCYQeW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757414AbZCYQer@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751719AbZCYQeW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 12:34:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755430AbZCYQeH
+	id S1757414AbZCYQer (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 12:34:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751907AbZCYQeg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 12:34:07 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:42397 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755241AbZCYQeF (ORCPT
+	Wed, 25 Mar 2009 12:34:36 -0400
+Received: from tx2ehsobe002.messaging.microsoft.com ([65.55.88.12]:48948 "EHLO
+	TX2EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1750940AbZCYQef (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 12:34:05 -0400
-Date: Wed, 25 Mar 2009 12:34:02 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Matt Mackall <mpm@selenic.com>
-cc: Pekka Enberg <penberg@cs.helsinki.fi>, Hua Zhong <hzhong@gmail.com>,
-       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Roland McGrath <roland@redhat.com>,
-       Nick Piggin <nickpiggin@yahoo.com.au>,
-       Steven Rostedt <srostedt@redhat.com>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Al Viro <viro@zeniv.linux.org.uk>
-Subject: Re: [PATCH 2/5] mm: remove unlikly NULL from kfree
-In-Reply-To: <1237997658.2132.193.camel@calx>
-Message-ID: <alpine.DEB.2.00.0903251227360.5675@gandalf.stny.rr.com>
-References: <20090325051920.406564281@goodmis.org>  <20090325052023.071564146@goodmis.org>  <84144f020903250034j24e1782bt5f73809b9349346c@mail.gmail.com>  <009101c9ad20$1ae231c0$50a69540$@com>  <1237968394.30175.12.camel@penberg-laptop> 
- <84144f020903250651o13c723cgf64643091459a5ac@mail.gmail.com>  <alpine.DEB.2.00.0903251039590.5675@gandalf.stny.rr.com>  <1237993145.30175.34.camel@penberg-laptop>  <alpine.DEB.2.00.0903251103070.5675@gandalf.stny.rr.com>  <alpine.DEB.2.00.0903251105030.5675@gandalf.stny.rr.com>
- <1237997658.2132.193.camel@calx>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Wed, 25 Mar 2009 12:34:35 -0400
+X-BigFish: VPS-25(zz1432R98dR1805Mzz1202hzzz2fh6bh65h)
+X-Spam-TCS-SCL: 4:0
+Message-ID: <49CA5CFF.8090908@am.sony.com>
+Date: Wed, 25 Mar 2009 09:34:07 -0700
+From: Tim Bird <tim.bird@am.sony.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Russell King - ARM Linux <linux@arm.linux.org.uk>
+CC: Frederic Weisbecker <fweisbec@gmail.com>,
+       Abhishek Sagar <sagar.abhishek@gmail.com>,
+       linux-arm-kernel <linux-arm-kernel@lists.arm.linux.org.uk>,
+       linux kernel <linux-kernel@vger.kernel.org>,
+       Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@redhat.com>,
+       =?UTF-8?B?VXdlIEtsZWluZS1Lw7ZuaWc=?= 
+	<u.kleine-koenig@pengutronix.de>
+Subject: Re: Anyone working on ftrace function graph support on ARM?
+References: <49C936CA.8070800@am.sony.com> <20090324213618.GC5975@nowhere> <49C95EAF.7030901@gmail.com> <20090324224857.GE5975@nowhere> <20090325084248.GF4697@n2100.arm.linux.org.uk>
+In-Reply-To: <20090325084248.GF4697@n2100.arm.linux.org.uk>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 25 Mar 2009 16:34:09.0450 (UTC) FILETIME=[85C840A0:01C9AD67]
+X-SEL-encryption-scan: scanned
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Wed, 25 Mar 2009, Matt Mackall wrote:
-> > 
-> > I think the theory is that gcc and the CPU can handle normal branch 
-> > predictions well. But if you use one of the prediction macros, gcc 
-> > (and some archs) behaves differently, such that taking the wrong branch 
-> > can cost more than the time saved with all the other correct hits.
-> > 
-> > Again, I'm not sure. I haven't done the bench marks. Perhaps someone else 
-> > is more apt at knowing the details here.
+Russell King - ARM Linux wrote:
+> As pointed out in my previous mail, identifying where on the stack the
+> return address is stored is only possible for OABI with frame pointers.
 > 
-> >From first principles, we can make a reasonable model of branch
-> prediction success with a branch cache:
+> EABI will probably be possible with the stack unwinding code, but it
+> probably won't be cheap.  The EABI unwinder is scheduled for merging
+> during the present now-open merge window.
 > 
->                hot cache     cold cache  cold cache  cold cache 
->                w|w/o hint                good hint   bad hint
-> p near 0       +             +           +           -
-> p near .5      0             0           0           0
-> p near 1       +             -           +           -
-> 
-> (this assumes the CPU is biased against branching in the cold cache
-> case)
-> 
-> Branch prediction miss has a penalty measured in some smallish number of
-> cycles. So the impact in cycles/sec[1] is (p(miss) * penalty) * (calls /
-> sec). Because the branch cache kicks in and hides our unlikely hint with
-> a hot cache, we can't get a high calls/sec, so to have much impact,
-> we've got to have a very high probably of a missed branch (p near 1)
-> _and_ cold cache. 
-> 
-> So for CPUs with a branch cache, unlikely hints only make sense in
-> fairly extreme cases. And I think that includes most CPU families these
-> days as it's pretty much required to get much advantage from making the
-> CPU clock faster than the memory bus. 
-> 
-> We'd have a lot of trouble benchmarking this meaningfully as hot caches
-> kill the effect. And it would of course depend directly on a given CPU's
-> branch cache size and branch miss penalty, numbers that vary from model
-> to model. So I think unless we can confidently state that a branch is
-> rarely taken, there's very little upside to adding unlikely.
-> 
-> On the other hand, there's also very little downside until our hint is
-> grossly inaccurate. So there's a huge hysteresis here: if p is < .99,
-> not much point adding unlikely. If p is > .1, not much point removing
-> it.
-> 
-> [1] Note that cycles/sec is dimensionless as cycles and seconds are both
-> measures of time. So impact here is in units of very small fractions of
-> a percent.
 
-Hi Matt,
+-finstrument-functions is looking better and better.  I know it
+adds more overhead than the mcount call, and may wreak havoc with
+the dynamic ftrace mechanisms, but at least the callouts are
+simple, clear, and you get both entry and exit, at fixed
+costs.  I'll take a look at the EABI unwinder to see
+what kind of variability it introduces (e.g. if it does a stack
+scan or something).
 
-Thanks for this info!
+Thanks very much for the information!
+ -- Tim
 
-Although gcc plays a role too. That is, if we have
-
-	if (x)
-		do something small;
-
-	do something large;
-
-
-this can be broken into:
-
-	cmp x
-	beq 1f
-	do something small
-1:
-	do something large
-
-Which plays nice with the cache. But, by adding a unlikely(x), gcc will 
-probably choose to do:
-
-	cmp x
-	bne 2f
-
-1:
-	do something large
-
-	ret;
-
-2:
-	do something small
-	b 1b
-
-which hurts in a number of ways.
-
--- Steve
+=============================
+Tim Bird
+Architecture Group Chair, CE Linux Forum
+Senior Staff Engineer, Sony Corporation of America
+=============================
 
