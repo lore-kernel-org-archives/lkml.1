@@ -1,65 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760568AbZCYMas@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761541AbZCYMb0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760568AbZCYMas (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 08:30:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753966AbZCYMak
+	id S1761541AbZCYMb0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 08:31:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758117AbZCYMbP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 08:30:40 -0400
-Received: from mta-1.ms.rz.RWTH-Aachen.DE ([134.130.7.72]:49529 "EHLO
-	mta-1.ms.rz.rwth-aachen.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752945AbZCYMaj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 08:30:39 -0400
-MIME-version: 1.0
-X-IronPort-AV: E=Sophos;i="4.38,419,1233529200";   d="scan'208";a="5952910"
-Date: Wed, 25 Mar 2009 13:30:32 +0100
-From: markus reichelt <ml@mareichelt.de>
-To: linux-kernel@vger.kernel.org
-Subject: Re: BUG in 2.6.29 final: broken network connection
-Message-id: <20090325123032.GA6163@tatooine.rebelbase.local>
-Mail-followup-to: linux-kernel@vger.kernel.org
-References: <cjisi-2Kz-11@gated-at.bofh.it> <cjiC5-2XR-15@gated-at.bofh.it>
- <cjiVm-3mJ-23@gated-at.bofh.it> <49C92935.4090901@gmail.com>
-Content-type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary=d6Gm4EdcadzBjdND
-Content-disposition: inline
-In-reply-to: <49C92935.4090901@gmail.com>
-Organization: still stuck in reorganization mode
-X-PGP-Key: 0xC2A3FEE4
-X-PGP-Fingerprint: FFB8 E22F D2BC 0488 3D56  F672 2CCC 933B C2A3 FEE4
-X-Request-PGP: http://mareichelt.de/keys/c2a3fee4.asc
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Wed, 25 Mar 2009 08:31:15 -0400
+Received: from hera.kernel.org ([140.211.167.34]:56590 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756936AbZCYMbO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Mar 2009 08:31:14 -0400
+Message-ID: <49CA2345.70204@kernel.org>
+Date: Wed, 25 Mar 2009 21:27:49 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: Martin Schwidefsky <schwidefsky@de.ibm.com>, rusty@rustcorp.com.au,
+       tglx@linutronix.de, x86@kernel.org, linux-kernel@vger.kernel.org,
+       hpa@zytor.com, Paul Mundt <lethal@linux-sh.org>, rmk@arm.linux.org.uk,
+       starvik@axis.com, ralf@linux-mips.org, davem@davemloft.net,
+       cooloney@kernel.org, kyle@mcmartin.ca, matthew@wil.cx,
+       grundler@parisc-linux.org, takata@linux-m32r.org,
+       benh@kernel.crashing.org, rth@twiddle.net, ink@jurassic.park.msu.ru,
+       heiko.carstens@de.ibm.com
+Subject: Re: [GIT RFC] percpu: use dynamic percpu allocator as the default
+ percpu allocator
+References: <1236671631-9305-1-git-send-email-tj@kernel.org> <20090316190132.7965a49a@skybase> <49C300D8.5080204@kernel.org> <49C8FAC4.6060508@kernel.org> <20090325122738.42d105b7@skybase> <49CA1AC3.9080908@kernel.org> <20090325122241.GE11571@elte.hu>
+In-Reply-To: <20090325122241.GE11571@elte.hu>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 25 Mar 2009 12:27:53 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Ingo Molnar wrote:
+> * Tejun Heo <tj@kernel.org> wrote:
+> 
+>>> With your patches and a RELOC_HIDE version that uses the GOTENT 
+>>> indirection the kernel won't compile because the "X" constraint 
+>>> for the GOTENT access needs a symbol and there are quite a few 
+>>> users that pass a pointer. I do not see a simple solution for 
+>>> that problem yet.
+>> Ah... okay.  Now I get it.  It wasn't expecting variables there.  How
+>> about doing the following?
+>>
+>>  #define SHIFT_PERCPU_PTR(ptr, offset) (({				\
+>> 	 if (__builtin_constant_p(ptr))					\
+>> 		 do GOTENT trick;					\
+>> 	 else								\
+>> 		 RELOC_HIDE();						\
+>>  }))
+>>
+>> Thanks.
+> 
+> Btw., is there any intermediate fix/workaround i could apply 
+> perhaps? I'd like to send the percpu bits early in the merge window 
+> and would hate to break Martin's arch ...
 
---d6Gm4EdcadzBjdND
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Martin's original patch should do the trick although it would be
+slower for static symbols.  I'll merge it and post the tree.
 
-* Niel Lambrechts <niel.lambrechts@gmail.com> wrote:
+BTW, I couldn't do the sparc32 test as the sparc I got is IIe which
+can't boot 32 bit kernels.  :-(
 
-> > It sounds like a troll, dont you think ?
->=20
-> Sounds like Uwe Bugla to me.
+Thanks.
 
-It's him for sure, his gmx authentication gave him away.
-
---=20
-left blank, right bald
-
---d6Gm4EdcadzBjdND
-Content-Type: application/pgp-signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.7 (GNU/Linux)
-
-iD8DBQFJyiPoLMyTO8Kj/uQRAq/cAJ4iBcuSCIJ+7MGgydcwRYBsGKFb1ACghmgj
-b5xrqZ/EBBwFem8H63YGQrA=
-=Ojhi
------END PGP SIGNATURE-----
-
---d6Gm4EdcadzBjdND--
+-- 
+tejun
