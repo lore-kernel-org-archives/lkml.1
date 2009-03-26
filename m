@@ -1,34 +1,31 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756382AbZCYCH6 (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Tue, 24 Mar 2009 22:07:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753961AbZCYCHs
+	id S1753798AbZCZGm0 (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Thu, 26 Mar 2009 02:42:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751919AbZCZGmS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 24 Mar 2009 22:07:48 -0400
-Received: from hrndva-commlb.mail.rr.com ([71.74.57.9]:40585 "EHLO
-	hrndva-commlb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752414AbZCYCHs (ORCPT
+	Thu, 26 Mar 2009 02:42:18 -0400
+Received: from outmailhost.telefonica.net ([213.4.149.242]:45768 "EHLO
+	ctsmtpout2.frontal.correo" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751070AbZCZGmR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 24 Mar 2009 22:07:48 -0400
-Message-Id: <7h9gbp$cjem49@rrcs-agw-01b.hrndva.rr.com>
-X-Mailer: Openwave WebEngine, version 2.8.17 (webedge20-101-1107-20041027)
-From: Mrs Helen Anderson <tuscoffice@rrbiznet.com>
-Reply-To: agtuk_ltd002@ymail.com
-Organization: Mrs Helen Anderson
-To: <info@winner.com>
-Subject: claims of =?iso-8859-1?B?ozUwMCwwMDA=?= pounds
-Date: Tue, 24 Mar 2009 21:07:45 -0500
+	Thu, 26 Mar 2009 02:42:17 -0400
+Message-ID: <49B4D71300706DE8@ctsmtpout2.frontal.correo> (added by
+	    postmaster@telefonica.net)
+Reply-To: <alexina3000@live.com>
+From: "Alexina" <habitatcosta@infonegocio.com>
+To: alexina3000@live.com
+Subject: Hi its me Alexina,how are you today? 
+Date: Thu, 26 Mar 2009 06:34:41 -0000
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain;
+	charset="Windows-1251"
+Content-Transfer-Encoding: 7bit
+X-Priority: 3
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook Express 6.00.2600.0000
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2600.0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-You have just been awarded,the sum of  £500,000 GBP in UK Promo, Claims email your details 
-
-Names.......
-Address.....
-Country....
-Age...
-Sex.....
-
+Hi,i have accpted you as my gud friend,so reply and let us knw each other more ok am Alexina and u?
