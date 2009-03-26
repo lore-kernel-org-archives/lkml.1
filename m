@@ -1,68 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761137AbZCZTJm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760575AbZCZTPi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761137AbZCZTJm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Mar 2009 15:09:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760978AbZCZTJQ
+	id S1760575AbZCZTPi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Mar 2009 15:15:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932104AbZCZTPU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Mar 2009 15:09:16 -0400
-Received: from fg-out-1718.google.com ([72.14.220.159]:54503 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760968AbZCZTJP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Mar 2009 15:09:15 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent;
-        b=jiydr1YE9y1KwdRZ3d+BwEMGv5eY2+LDzF+2ExOvPXoDxhX7sfoC8uz+JqY8V94V9h
-         aPd2X/rW/QejXJrLWus+7A7yPDZyNAeBDm71RHcd9hRu3aytx/Z+n1b0Xvp63PXG6M+E
-         TeY8EBDOIKGj9HyfOwNI6G8d9D/9osnoGe+IE=
-Date: Thu, 26 Mar 2009 22:16:36 +0300
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: mingo@redhat.com
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] x86_64: reduce ifdeffery near errata #93 code
-Message-ID: <20090326191636.GA17275@x200.localdomain>
+	Thu, 26 Mar 2009 15:15:20 -0400
+Received: from gw.goop.org ([64.81.55.164]:53664 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932103AbZCZTPT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Mar 2009 15:15:19 -0400
+Message-ID: <49CBD444.70103@goop.org>
+Date: Thu, 26 Mar 2009 12:15:16 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Bryan Donlan <bdonlan@gmail.com>
+CC: LKML <linux-kernel@vger.kernel.org>, xen-devel@lists.xensource.com
+Subject: Re: Bug: ptrace issues under x86_64 Xen kernel 2.6.29
+References: <3e8340490903252341u55abbc3aree9afc1b0a7703e6@mail.gmail.com>
+In-Reply-To: <3e8340490903252341u55abbc3aree9afc1b0a7703e6@mail.gmail.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
----
+Bryan Donlan wrote:
+> Using 2.6.29 or 2.6.28 as a 64-bit Xen domU, a number of ptrace()
+> users seem to have issues with unexpected breakpoints. ltrace and gdb
+> both seem to be affected, under both 64-bit and 32-bit userspace.
+> 32-bit kernels do not seem to be affected. Typical symptoms look like:
+>   
 
- arch/x86/mm/fault.c |   13 +++++--------
- 1 file changed, 5 insertions(+), 8 deletions(-)
+Thanks for the reminder.  I'd noticed it in passing, but haven't 
+investigated it.
 
---- a/arch/x86/mm/fault.c
-+++ b/arch/x86/mm/fault.c
-@@ -303,14 +303,6 @@ static inline pmd_t *vmalloc_sync_one(pgd_t *pgd, unsigned long address)
- }
- #endif
- 
--#ifdef CONFIG_X86_64
--static const char errata93_warning[] =
--KERN_ERR "******* Your BIOS seems to not contain a fix for K8 errata #93\n"
--KERN_ERR "******* Working around it, but it may cause SEGVs or burn power.\n"
--KERN_ERR "******* Please consider a BIOS update.\n"
--KERN_ERR "******* Disabling USB legacy in the BIOS may also help.\n";
--#endif
--
- /* Workaround for K8 erratum #93 & buggy BIOS.
-    BIOS SMM functions are required to use a specific workaround
-    to avoid corruption of the 64bit RIP register on C stepping K8.
-@@ -323,6 +315,11 @@ KERN_ERR "******* Disabling USB legacy in the BIOS may also help.\n";
- static int is_errata93(struct pt_regs *regs, unsigned long address)
- {
- #ifdef CONFIG_X86_64
-+static const char errata93_warning[] =
-+KERN_ERR "******* Your BIOS seems to not contain a fix for K8 errata #93\n"
-+KERN_ERR "******* Working around it, but it may cause SEGVs or burn power.\n"
-+KERN_ERR "******* Please consider a BIOS update.\n"
-+KERN_ERR "******* Disabling USB legacy in the BIOS may also help.\n";
- 	static int warned;
- 	if (address != regs->ip)
- 		return 0;
+    J
+
+> x86 li63-205:/# ltrace /bin/true
+> unexpected breakpoint at 0xf7e6d89f
+> unexpected breakpoint at 0xf7e60a3f
+> unexpected breakpoint at 0xf7e6464f
+> unexpected breakpoint at 0x804933f
+> unexpected breakpoint at 0xf7ea509f
+> unexpected breakpoint at 0xf7e9b1ff
+> unexpected breakpoint at 0xf7efef66
+> +++ exited (status 0) +++
+>
+> x64 li63-205:~/linux-2.6# ltrace true
+> unexpected breakpoint at 0x7f3379878f1f
+> unexpected breakpoint at 0x7f337986ca3f
+> unexpected breakpoint at 0x7f337986fd3f
+> unexpected breakpoint at 0x402bdf
+> unexpected breakpoint at 0x7f33798b07bf
+> unexpected breakpoint at 0x7f33798a696f
+> unexpected breakpoint at 0x7f3379905e3f
+> +++ exited (status 0) +++
+>
+> li63-205:~# gdb /bin/true
+> GNU gdb 6.8-debian
+> Copyright (C) 2008 Free Software Foundation, Inc.
+> License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
+> This is free software: you are free to change and redistribute it.
+> There is NO WARRANTY, to the extent permitted by law.  Type "show copying"
+> and "show warranty" for details.
+> This GDB was configured as "x86_64-linux-gnu"...
+> (no debugging symbols found)
+> (gdb) run
+> Starting program: /bin/true
+> (no debugging symbols found)
+> (no debugging symbols found)
+>
+> Program received signal SIGTRAP, Trace/breakpoint trap.
+> 0x00007f640680e4e7 in ?? () from /lib64/ld-linux-x86-64.so.2
+> (gdb)
+>
+> In the specific case of the above gdb session, here is /proc/pid/maps
+> from the tracee:
+> 00400000-00407000 r-xp 00000000 ca:00 9531
+>   /bin/true
+> 00607000-00608000 rw-p 00007000 ca:00 9531
+>   /bin/true
+> 7f64067f9000-7f6406816000 r-xp 00000000 ca:00 1678
+>   /lib/ld-2.9.so
+> 7f6406a12000-7f6406a15000 rw-p 7f6406a12000 00:00 0
+> 7f6406a15000-7f6406a17000 rw-p 0001c000 ca:00 1678
+>   /lib/ld-2.9.so
+> 7fff0ea01000-7fff0ea16000 rw-p 7ffffffea000 00:00 0                      [stack]
+> 7fff0ebfe000-7fff0ebff000 r-xp 7fff0ebfe000 00:00 0                      [vdso]
+> ffffffffff600000-ffffffffff601000 r-xp 00000000 00:00 0
+>   [vsyscall]
+>
+> strace seems(?) to be unaffected.
+>
+> I've attached my .config, dmesg, and strace output for running ltrace
+> (32-bit) on /bin/true on the affected system. Unfortunately, I'm not
+> enough of a ptrace guru to interpret what the cause might be.
+
