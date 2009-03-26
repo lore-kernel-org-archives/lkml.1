@@ -1,107 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759363AbZCZOtl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759424AbZCZOut@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759363AbZCZOtl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Mar 2009 10:49:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758861AbZCZOsa
+	id S1759424AbZCZOut (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Mar 2009 10:50:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759209AbZCZOtM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Mar 2009 10:48:30 -0400
-Received: from mx1.emlix.com ([193.175.82.87]:54194 "EHLO mx1.emlix.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758828AbZCZOs1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Mar 2009 10:48:27 -0400
-From: =?utf-8?q?Daniel=20Gl=C3=B6ckner?= <dg@emlix.com>
-To: Chris Zankel <chris@zankel.net>
-Cc: linux-kernel@vger.kernel.org,
-       =?utf-8?q?Daniel=20Gl=C3=B6ckner?= <dg@emlix.com>
-Subject: [patch 3/5] xtensa: add mt9d131l demo head to s6105 platform
-Date: Thu, 26 Mar 2009 15:49:32 +0100
-Message-Id: <1238078974-26040-3-git-send-email-dg@emlix.com>
-In-Reply-To: <1238078974-26040-1-git-send-email-dg@emlix.com>
-References: <1238078974-26040-1-git-send-email-dg@emlix.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
-Organization: emlix gmbh, Goettingen, Germany"
+	Thu, 26 Mar 2009 10:49:12 -0400
+Received: from casper.infradead.org ([85.118.1.10]:44191 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759215AbZCZOtK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Mar 2009 10:49:10 -0400
+Date: Thu, 26 Mar 2009 07:49:55 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Jan Kara <jack@suse.cz>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Theodore Tso <tytso@mit.edu>, Andrew Morton <akpm@linux-foundation.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Nick Piggin <npiggin@suse.de>,
+       David Rees <drees76@gmail.com>, Jesper Krogh <jesper@krogh.cc>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Oleg Nesterov <oleg@redhat.com>, Roland McGrath <roland@redhat.com>
+Subject: Re: ext3 IO latency measurements (was: Linux 2.6.29)
+Message-ID: <20090326074955.54add4d3@infradead.org>
+In-Reply-To: <20090326143618.GD27476@kernel.dk>
+References: <20090325150041.GM32307@mit.edu>
+	<alpine.LFD.2.00.0903251008120.3032@localhost.localdomain>
+	<20090325185824.GO32307@mit.edu>
+	<alpine.LFD.2.00.0903251341050.3032@localhost.localdomain>
+	<20090325215137.GQ32307@mit.edu>
+	<alpine.LFD.2.00.0903251613300.3032@localhost.localdomain>
+	<20090325235041.GA11024@duck.suse.cz>
+	<20090326090630.GA9369@elte.hu>
+	<20090326110815.GT27476@kernel.dk>
+	<20090326072707.5a98242d@infradead.org>
+	<20090326143618.GD27476@kernel.dk>
+Organization: Intel
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The mt9d131 is behind a pca9543 which needs to be configured before
-we can find the sensor. Our s6_pca9543_callback is called directly
-from pca9543_probe, so we may not call i2c_new_device immediately.
+On Thu, 26 Mar 2009 15:36:18 +0100
+Jens Axboe <jens.axboe@oracle.com> wrote:
 
-If Rodolfo Giometti's multiplexed i2c bus code and pca954x driver
-is accepted, most of this patch can be replaced by a simple
-i2c_register_board_info call.
+> On Thu, Mar 26 2009, Arjan van de Ven wrote:
+> > On Thu, 26 Mar 2009 12:08:15 +0100
+> > Jens Axboe <jens.axboe@oracle.com> wrote:
+> > > 
+> > > Did you capture the trace of the long delays in the read test
+> > > case? It can be two things, at least. One is that each little
+> > > read takes much longer than it should, the other is that we get
+> > > stuck waiting on a dirty page and hence that slows down the reads
+> > > a lot.
+> > > 
+> > 
+> > would be interesting to run latencytop during such runs...
+> 
+> Things just drown in the noise in there sometimes, is my experience...
+> And disappear. Perhaps I'm just not very good at reading the output,
+> but it was never very useful for me. I know, not a very useful
+> complaint, I'll try and use it again and come up with something more
+> productive :-)
+> 
+> But in this case, I bet it's also the atime updates. If Ingo turned
+> those off, the read results would likely be a lot better (and
+> consistent).
 
-Signed-off-by: Daniel Glöckner <dg@emlix.com>
----
- arch/xtensa/platforms/s6105/device.c |   35 ++++++++++++++++++++++++++++++++++
- 1 files changed, 35 insertions(+), 0 deletions(-)
+latencytop does identify those for sure.
+> 
 
-diff --git a/arch/xtensa/platforms/s6105/device.c b/arch/xtensa/platforms/s6105/device.c
-index 07fb329..ff047fc 100644
---- a/arch/xtensa/platforms/s6105/device.c
-+++ b/arch/xtensa/platforms/s6105/device.c
-@@ -207,9 +207,33 @@ static struct s6dp_link s6dp_links[] = {
- 		.is_egress = 1,
- 		.minor = 2,
- 	},
-+	{
-+		.port_mask = 1 << 3,
-+		.is_egress = 0,
-+		.minor = 3,
-+	},
- 	{ }
- };
- 
-+static void s6_attach_camera(struct work_struct *ws)
-+{
-+	struct i2c_board_info mt9d131_bi = {
-+		I2C_BOARD_INFO("mt9d131", S6I2C_ADDR_MT9D131),
-+		.platform_data = &s6dp_links[1]
-+	};
-+	i2c_new_device(i2c_get_adapter(0), &mt9d131_bi);
-+}
-+
-+static DECLARE_WORK(s6_attach_camera_work, s6_attach_camera);
-+
-+static void s6_pca9543_callback(struct i2c_client *client,
-+				int (set_switch)(struct i2c_client *, unsigned))
-+{
-+	set_switch(client, 3);
-+	/* i2c_attach_client does not look reentrant */
-+	schedule_work(&s6_attach_camera_work);
-+}
-+
- static struct i2c_board_info __initdata s6_i2c_devices[] = {
- 	{
- 		I2C_BOARD_INFO("24c02", S6I2C_ADDR_AT24HC02B),
-@@ -221,6 +245,10 @@ static struct i2c_board_info __initdata s6_i2c_devices[] = {
- 		I2C_BOARD_INFO("saa7121", S6I2C_ADDR_SAA7121),
- 		.platform_data = &s6dp_links[0],
- 	},
-+	{
-+		I2C_BOARD_INFO("pca9543", S6I2C_ADDR_PCA9543),
-+		.platform_data = &s6_pca9543_callback
-+	},
- };
- 
- static struct resource s6_isef_resource[] = {
-@@ -453,6 +481,13 @@ static int __init device_init(void)
- 		gpio_set_value(GPIO_BP_RESET, 1);
- 	}
- 
-+	/* reset MT9D131 */
-+	if (!gpio_request(GPIO_IMAGER_RESET, "imager_reset")) {
-+		gpio_direction_output(GPIO_IMAGER_RESET, 0);
-+		udelay(1);
-+		gpio_set_value(GPIO_IMAGER_RESET, 1);
-+	}
-+
- 	i2c_register_board_info(S6_I2C_BUS_NUM, s6_i2c_devices,
- 				ARRAY_SIZE(s6_i2c_devices));
- 	spi_register_board_info(s6_spi_devices, ARRAY_SIZE(s6_spi_devices));
+
 -- 
-1.6.2.107.ge47ee
-
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
