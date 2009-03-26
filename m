@@ -1,167 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758044AbZCZJJs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754193AbZCZJJF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758044AbZCZJJs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Mar 2009 05:09:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757340AbZCZJIv
+	id S1754193AbZCZJJF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Mar 2009 05:09:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756799AbZCZJIg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Mar 2009 05:08:51 -0400
-Received: from mail-fx0-f158.google.com ([209.85.220.158]:62404 "EHLO
-	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757138AbZCZJIq convert rfc822-to-8bit (ORCPT
+	Thu, 26 Mar 2009 05:08:36 -0400
+Received: from rhun.apana.org.au ([64.62.148.172]:38448 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755986AbZCZJI0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Mar 2009 05:08:46 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=sender:from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:message-id;
-        b=fltCltMQY8UVc2kZOBjFjoCYplrgjtiPnYzuXEsGOQTOOha2l5Km78kuVwWvNMwOnn
-         i7YJFoPUbe3B311lRaFGTV3VkyZwVxHizeZOfx/ed5GVCyfOiFsTOLboJwHuGpu0sy+W
-         WbuF5R1OIjIXGpDUXfExiv9la4j2dLDSyC3O8=
-From: Florian Fainelli <florian@openwrt.org>
-To: Thierry Reding <thierry.reding@avionic-design.de>
-Subject: Re: [PATCH] net: Add support for the OpenCores 10/100 Mbps Ethernet MAC.
-Date: Wed, 25 Mar 2009 22:00:22 +0100
-User-Agent: KMail/1.9.9
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <1237889923-32257-1-git-send-email-thierry.reding@avionic-design.de> <200903241132.12836.florian@openwrt.org> <20090325144310.GA11710@avionic-design.de>
-In-Reply-To: <20090325144310.GA11710@avionic-design.de>
+	Thu, 26 Mar 2009 05:08:26 -0400
+Date: Thu, 26 Mar 2009 17:07:44 +0800
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: David Miller <davem@davemloft.net>, r.schwebel@pengutronix.de,
+       torvalds@linux-foundation.org, blaschka@linux.vnet.ibm.com,
+       tglx@linutronix.de, a.p.zijlstra@chello.nl,
+       linux-kernel@vger.kernel.org, kernel@pengutronix.de
+Subject: Re: Revert "gro: Fix legacy path napi_complete crash",
+Message-ID: <20090326090744.GA16665@gondor.apana.org.au>
+References: <20090324150928.GB30224@gondor.apana.org.au> <20090324.143622.186562202.davem@davemloft.net> <20090325002303.GA2219@gondor.apana.org.au> <20090324.191134.05205089.davem@davemloft.net> <20090325073349.GF25833@elte.hu> <20090325120840.GA6351@gondor.apana.org.au> <20090325122046.GD11571@elte.hu> <20090325122635.GA6489@gondor.apana.org.au> <20090325220149.GB21111@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200903252200.24365.florian@openwrt.org>
+In-Reply-To: <20090325220149.GB21111@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Thierry,
+On Wed, Mar 25, 2009 at 11:01:49PM +0100, Ingo Molnar wrote:
+> 
+> Sure, can try that. Probably the best would be if you sent me a 
+> combo patch with the precise patch you meant me to try (there were 
+> several patches, i'm not sure which one is the 'previous' one) plus 
+> the forcedeth debug enable change as well.
 
-Le Wednesday 25 March 2009 15:43:10 Thierry Reding, vous avez écrit :
-> I did look at the uClinux driver at some point, but decided to rewrite it-
-> from scratch. But to be honest it's been quite some time since I started
-> work on this and I'm not a 100% certain that one part or another may not be
-> borrowed from it.
+Sure, here's the patch to do both.
 
-Sure my concern was more about the original authors somehow claiming copyright 
-on this sooner or later. That's fine with me.
+diff --git a/net/core/dev.c b/net/core/dev.c
+index e3fe5c7..2a7f6b3 100644
+--- a/net/core/dev.c
++++ b/net/core/dev.c
+@@ -2588,9 +2588,10 @@ static int process_backlog(struct napi_struct *napi, int quota)
+ 		local_irq_disable();
+ 		skb = __skb_dequeue(&queue->input_pkt_queue);
+ 		if (!skb) {
++			list_del(&napi->poll_list);
++			clear_bit(NAPI_STATE_SCHED, &napi->state);
+ 			local_irq_enable();
+-			napi_complete(napi);
+-			goto out;
++			break;
+ 		}
+ 		local_irq_enable();
+ 
+@@ -2599,7 +2600,6 @@ static int process_backlog(struct napi_struct *napi, int quota)
+ 
+ 	napi_gro_flush(napi);
+ 
+-out:
+ 	return work;
+ }
 
->
-> Would it be enough to mention that it is loosely based on the uClinux
-> driver?
->
-> > > +/* function prototypes */
-> > > +static int ethoc_set_mac_address(struct net_device *dev, void *addr);
-> > > +static int ethoc_get_mac_address(struct net_device *dev, void *addr);
-> > > +static int ethoc_rx(struct net_device *dev, int budget);
-> > > +static void ethoc_tx(struct net_device *dev);
-> > > +static irqreturn_t ethoc_interrupt(int irq, void *dev_id);
-> >
-> > Why do you need these declarations ? Are not your functions properly
-> > ordered already ?
->
-> I'll reply to the first patch with an updated version shortly.
->
-> > > +/**
-> > > + * ethoc_probe() - initialize OpenCores ethernet MAC
-> > > + * pdev:	platform device
-> > > + */
-> > > +static int ethoc_probe(struct platform_device *pdev)
-> > > +{
-> > > +	struct net_device *netdev = NULL;
-> > > +	struct resource *res = NULL;
-> > > +	struct resource *mmio = NULL;
-> > > +	struct resource *mem = NULL;
-> > > +	struct ethoc *priv = NULL;
-> > > +	unsigned int phy;
-> > > +	int ret = 0;
-> > > +
-> > > +	/* allocate networking device */
-> > > +	netdev = alloc_etherdev(sizeof(struct ethoc));
-> > > +	if (!netdev) {
-> > > +		dev_err(&pdev->dev, "cannot allocate network device\n");
-> > > +		ret = -ENOMEM;
-> > > +		goto out;
-> > > +	}
-> > > +
-> > > +	SET_NETDEV_DEV(netdev, &pdev->dev);
-> > > +	platform_set_drvdata(pdev, netdev);
-> > > +
-> > > +	/* obtain I/O memory space */
-> > > +	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-> > > +	if (!res) {
-> > > +		dev_err(&pdev->dev, "cannot obtain I/O memory space\n");
-> > > +		ret = -ENXIO;
-> > > +		goto free;
-> > > +	}
-> > > +
-> > > +	mmio = devm_request_mem_region(&pdev->dev, res->start,
-> > > +			res->end - res->start + 1, res->name);
-> > > +	if (!res) {
-> > > +		dev_err(&pdev->dev, "cannot request I/O memory space\n");
-> > > +		ret = -ENXIO;
-> > > +		goto free;
-> > > +	}
-> > > +
-> > > +	netdev->base_addr = mmio->start;
-> > > +
-> > > +	/* obtain buffer memory space */
-> > > +	res = platform_get_resource(pdev, IORESOURCE_MEM, 1);
-> > > +	if (!res) {
-> > > +		dev_err(&pdev->dev, "cannot obtain memory space\n");
-> > > +		ret = -ENXIO;
-> > > +		goto free;
-> > > +	}
-> >
-> > That's what uClinux driver calls SRAM right ?
->
-> Right.
->
-> > > +	/* setup the net_device structure */
-> > > +	netdev->open = ethoc_open;
-> > > +	netdev->stop = ethoc_stop;
-> > > +	netdev->do_ioctl = ethoc_ioctl;
-> > > +	netdev->set_config = ethoc_config;
-> > > +	netdev->set_mac_address = ethoc_set_mac_address;
-> > > +	netdev->set_multicast_list = ethoc_set_multicast_list;
-> > > +	netdev->change_mtu = ethoc_change_mtu;
-> > > +	netdev->tx_timeout = ethoc_tx_timeout;
-> > > +	netdev->get_stats = ethoc_stats;
-> > > +	netdev->hard_start_xmit = ethoc_start_xmit;
-> > > +	netdev->watchdog_timeo = ETHOC_TIMEOUT;
-> > > +	netdev->features |= NETIF_F_SG | NETIF_F_HW_CSUM | NETIF_F_HIGHDMA;
-> >
-> > Please use netdev_ops.
->
-> Done.
->
-> > > +#ifndef LINUX_NET_ETHOC_H
-> > > +#define LINUX_NET_ETHOC_H 1
-> > > +
-> > > +struct ethoc_platform_data {
-> > > +	u8 hwaddr[IFHWADDRLEN];
-> > > +	s8 phy_id;
-> >
-> > What about allowing platform configuration of the RX/TX buffers size and
-> > number of them ?
->
-> I think this is a good idea, but I'm not quite sure about how this should
-> be implemented. The total number of buffers is dependent on the total
-> buffer size as defined by the second IORESOURCE_MEM resource. That really
-> only leaves the option for allowing the individual buffer size to be
-> defined by the platform configuration. Furthermore the network controller
-> can only handle fixed-sized buffers (at least for reception), so perhaps
-> defining some kind of RX/TX buffer number ratio would be useful. Or perhaps
-> defining a minimum or maximum number of TX buffers and leaving the rest up
-> for RX for instance.
+diff --git a/drivers/net/forcedeth.c b/drivers/net/forcedeth.c
+index b8251e8..101e552 100644
+--- a/drivers/net/forcedeth.c
++++ b/drivers/net/forcedeth.c
+@@ -64,7 +64,7 @@
+ #include <asm/uaccess.h>
+ #include <asm/system.h>
+ 
+-#if 0
++#if 1
+ #define dprintk			printk
+ #else
+ #define dprintk(x...)		do { } while (0)
 
-I like the idea of defining ratios but for now let's just stick to what you 
-proposed and we can later agree on getting more parameters being passed to 
-the driver using platform_data I am not sure yet how I will tune these 
-parameters on my design.
+Thanks,
 -- 
-Best regards, Florian Fainelli
-Email : florian@openwrt.org
-http://openwrt.org
--------------------------------
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
