@@ -1,69 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758141AbZCZJ72@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758307AbZCZJ7k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758141AbZCZJ72 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Mar 2009 05:59:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753528AbZCZJ7S
+	id S1758307AbZCZJ7k (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Mar 2009 05:59:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758084AbZCZJ72
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Mar 2009 05:59:18 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:58389 "EHLO mx3.mail.elte.hu"
+	Thu, 26 Mar 2009 05:59:28 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:53546 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752292AbZCZJ7R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Mar 2009 05:59:17 -0400
-Date: Thu, 26 Mar 2009 10:58:44 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: fenghua.yu@intel.com, amluto@gmail.com, kyle@redhat.com,
-       mgross@linux.intel.com, linux-kernel@vger.kernel.org,
-       iommu@lists.linux-foundation.org
-Subject: Re: [patch 1/2] Intel IOMMU Suspend/Resume Support for DMAR
-Message-ID: <20090326095844.GC19826@elte.hu>
-References: <20090325184548.012018000@intel.com> <20090325184635.374969000@intel.com> <20090325201228.GA26204@elte.hu> <1238024827.2085.60.camel@macbook.infradead.org>
+	id S1758166AbZCZJ71 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Mar 2009 05:59:27 -0400
+Date: Thu, 26 Mar 2009 10:59:25 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Nikanth Karthikesan <knikanth@suse.de>
+Cc: zdenek.kabelac@gmail.com, bunk@kernel.org, jirislaby@gmail.com,
+       hidave.darkstar@gmail.com, viro@zeniv.linux.org.uk,
+       linux-kernel@vger.kernel.org, nikanth@gmail.com
+Subject: Re: [PATCH] Fix Bug 10504 - losetup possible circular locking
+Message-ID: <20090326095924.GP27476@kernel.dk>
+References: <200903121341.13173.knikanth@suse.de> <200903261512.22775.knikanth@suse.de> <20090326094847.GN27476@kernel.dk> <200903261522.57041.knikanth@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1238024827.2085.60.camel@macbook.infradead.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <200903261522.57041.knikanth@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* David Woodhouse <dwmw2@infradead.org> wrote:
-
-> On Wed, 2009-03-25 at 21:12 +0100, Ingo Molnar wrote:
-> > 
-> > > +static int iommu_resume(struct sys_device *dev)
-> > > +{
-> > > +     struct dmar_drhd_unit *drhd;
-> > > +     struct intel_iommu *iommu;
-> > > +     unsigned long flag;
-> > > +     int i = 0;
-> > > +
-> > > +     if (init_iommu_hw())
-> > > +             panic("IOMMU setup failed, DMAR can not start!\n");
-> > 
-> > Please dont panic boxes ... insert a WARN() and return.
+On Thu, Mar 26 2009, Nikanth Karthikesan wrote:
+> On Thursday 26 March 2009 15:18:47 Jens Axboe wrote:
+> > On Thu, Mar 26 2009, Nikanth Karthikesan wrote:
+> > > On Tuesday 24 March 2009 17:00:32 Jens Axboe wrote:
+> > > > On Tue, Mar 24 2009, Nikanth Karthikesan wrote:
+> > > > > Hi Jens
+> > > > >
+> > > > > Did you get to look at this? Can you ACK/NACK this one?
+> > > >
+> > > > It looks fine, I have applied it.
+> > >
+> > > Thanks. But it looks like, the patch I quoted in the changelog had the
+> > > "---" delimiter, which made you commit without the full changelog and
+> > > signed-off. Sorry for that mistake.
+> >
+> > That was actually done on purpose, I wanted the whole thing there! It
+> > was a lot more useful than the short summary. Never be afraid to write
+> > exhaustive changelogs, I even put the test app in there for some cases
+> > when that makes sense.
 > 
-> Well, the box is going to die anyway. If it was using the IOMMU 
-> before suspend, and you fail to re-initialise the IOMMU after 
-> resume, then you're buggered.
+> Yes, but because of a delimiter '---' in my changelog, the git log has only 
+> half of the changelog. IOW, the whole thing is not there.
 
-except if one is testing suspend/resume (via pm-test) without 
-actually suspending the hardware.
+Hmm right, it does appear to be missing everything from (and including)
+the
 
-> But if you panic() immediately during the resume, the message is 
-> unlikely to make it out even to a serial console. If you print a 
-> warning and limp on, I suppose there's at least a _chance_ that it 
-> might get seen.
+--- a/drivers/block/loop.c
 
-yeah.
+part. I'll fix it up, thanks for noticing!
 
-	Ingo
+-- 
+Jens Axboe
+
