@@ -1,65 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756040AbZCZDlv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756251AbZCZDr1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756040AbZCZDlv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 23:41:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753722AbZCZDlm
+	id S1756251AbZCZDr1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 23:47:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754664AbZCZDrT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 23:41:42 -0400
-Received: from rhun.apana.org.au ([64.62.148.172]:55395 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753124AbZCZDll (ORCPT
+	Wed, 25 Mar 2009 23:47:19 -0400
+Received: from hq2.tensilica.com ([65.205.227.30]:18560 "EHLO
+	maia.hq.tensilica.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750771AbZCZDrS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 23:41:41 -0400
-Date: Thu, 26 Mar 2009 11:40:59 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: David Miller <davem@davemloft.net>
-Cc: jarkao2@gmail.com, mingo@elte.hu, r.schwebel@pengutronix.de,
-       torvalds@linux-foundation.org, blaschka@linux.vnet.ibm.com,
-       tglx@linutronix.de, a.p.zijlstra@chello.nl,
-       linux-kernel@vger.kernel.org, kernel@pengutronix.de
-Subject: Re: Revert "gro: Fix legacy path napi_complete crash",
-Message-ID: <20090326034059.GA14514@gondor.apana.org.au>
-References: <20090325122635.GA6489@gondor.apana.org.au> <20090325225456.GA3271@ami.dom.local> <20090326024129.GA13982@gondor.apana.org.au> <20090325.202050.08183381.davem@davemloft.net>
+	Wed, 25 Mar 2009 23:47:18 -0400
+Message-ID: <49CAFA83.1000005@tensilica.com>
+Date: Wed, 25 Mar 2009 20:46:11 -0700
+From: Piet Delaney <piet.delaney@tensilica.com>
+User-Agent: Thunderbird 1.5.0.12 (X11/20070530)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090325.202050.08183381.davem@davemloft.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>
+CC: linux-mm@kvack.org, Johannes Weiner <jw@emlix.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH} - There appears  to be a minor race condition in sched.c
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 25, 2009 at 08:20:50PM -0700, David Miller wrote:
->
-> There is still a difference compared to your fix Herbert.  Jarek's
-> patch flushes GRO first before the unlink.
-> 
-> I still believe that's critical, although like you I can't pinpoint
-> why.
-> 
-> I know that GRO ought to be disabled here, but what if for some reason
-> it isn't? :-)
+Ingo, Peter:
 
-Sure, I can accept that somehow someone has enabled GRO :) But
-I'd still like to know why flushing the GRO afterwards would
-lead to a hang.
+There appears to be a minor race condition in sched.c where
+you can get a division by zero. I suspect that it only shows
+up when the kernel is compiled without optimization and the code
+loads rq->nr_running from memory twice.
 
-> Adam Richter has successfully tested Jarek's variant, and if Ingo's
-> tests show that it makes his problem go away too then I'm definitely
-> going with Jarek's patch.
+It's part of our SMP stabilization changes that I just posted to:
 
-I don't have a problem with that.
+     git://git.kernel.org/pub/scm/linux/kernel/git/piet/xtensa-2.6.27-smp.git
 
-I've asked Adam to test my patch as well.  So far the only failure
-case against it has been on Ingo's machine, where the process_backlog
-path isn't involved.  Yes it's used for loopback, but he's seeing
-the hang on eth0, which with that config uses netif_receive_skb
-so it should continue to work even if process_backlog completely
-seizes up.
+I mentioned it to Johannes the other day and he suggested passing it on to you ASAP.
 
-Cheers,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+-------------------------------- Begin kernel/sched.c --------------------------------
+index 9a1ddb8..607ee38 100644
+@@ -1388,9 +1388,11 @@ static int task_hot(struct task_struct *p, u64 now, struct sched_domain *sd);
+  static unsigned long cpu_avg_load_per_task(int cpu)
+  {
+         struct rq *rq = cpu_rq(cpu);
++       unsigned long nr_running = rq->nr_running;
+
+-       if (rq->nr_running)
+-               rq->avg_load_per_task = rq->load.weight / rq->nr_running;
++        /* Local copy of nr_running used to avoid a possible div by zero */
++       if (nr_running)
++               rq->avg_load_per_task = rq->load.weight / nr_running;
+
+         return rq->avg_load_per_task;
+  }
+-------------------------------- End kernel/sched.c --------------------------------
+
+-piet
+
