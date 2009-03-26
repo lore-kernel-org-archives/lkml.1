@@ -1,95 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757655AbZCZBbj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757892AbZCZBcb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757655AbZCZBbj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 21:31:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753531AbZCZBbb
+	id S1757892AbZCZBcb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 21:32:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752838AbZCZBcW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 21:31:31 -0400
-Received: from www262.sakura.ne.jp ([202.181.97.72]:53541 "EHLO
-	www262.sakura.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752838AbZCZBba (ORCPT
+	Wed, 25 Mar 2009 21:32:22 -0400
+Received: from ti-out-0910.google.com ([209.85.142.191]:30036 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753531AbZCZBcV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 21:31:30 -0400
-Message-Id: <200903260130.n2Q1U9EJ040448@www262.sakura.ne.jp>
-Subject: current->mm == NULL in security_vm_enough_memory().
-From: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
-To: alan@redhat.com, hooanon05@yahoo.co.jp, jmorris@namei.org
-Cc: linux-kernel@vger.kernel.org
+	Wed, 25 Mar 2009 21:32:21 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=jMDGgPq6ibiixsdAEegvm10v7doOZUGmz4q1N41q7J2bNTgGGzD6m02v45mGVaU3Ze
+         HXFZ2xyo4+QLa1c5NhYtegNNwM422h3Sb/kzyE/YCo3ZFuMWRr/NH6+zkv67P5YcR9ge
+         /bf2z83H0AP3nSTncX6M5y06+IimeD+BXzLtc=
+Message-ID: <49CADB45.3090501@gmail.com>
+Date: Thu, 26 Mar 2009 10:32:53 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+CC: Alex Chiang <achiang@hp.com>, greg@kroah.com, cornelia.huck@de.ibm.com,
+       stern@rowland.harvard.edu, kay.sievers@vrfy.org, rusty@rustcorp.com.au,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC PATCH 0/3] sysfs: allow suicide
+References: <20090325035707.15921.42150.stgit@bob.kio>	<m13ad2xi46.fsf@fess.ebiederm.org>	<20090325225414.GA11447@ldl.fc.hp.com> <m17i2dunao.fsf@fess.ebiederm.org>
+In-Reply-To: <m17i2dunao.fsf@fess.ebiederm.org>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Date: Thu, 26 Mar 2009 10:30:09 +0900
-Content-Type: text/plain; charset="ISO-2022-JP"
-X-Anti-Virus: K-Prox Anti-Virus Powered by Kaspersky, bases: 26032009 #1779876, status: clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+Hello,
 
-2.6.28 and later have a "current->mm != NULL" checking
-added by commit 731572d39fcd3498702eda4600db4c43d51e0b26 .
+Eric W. Biederman wrote:
+>>> Fixing a read/writer deadlock by allowing the writers to nest
+>>> inside the readers.
+>>>
+>>> My first impression is that it is too clever.
+>> Clever points go to Tejun. All I did was refresh the series
+>> slightly. :)
 
-  int security_vm_enough_memory(long pages)
-  {
-  	WARN_ON(current->mm == NULL);
-  	return security_ops->vm_enough_memory(current->mm, pages);
-  }
+Thanks for the points.  I do agree that it could be a bit too clever,
+but the thing is that protecting the code area from going underneath
+something is a pretty special thing to begin with and I think it's
+better to apply special solution rather than trying to work around it
+using general mechanisms.  So, I actually think the global inhibit
+thing is one of the better ways to deal with the nasty-in-nature
+problem.
 
-I encountered this warning on Debian Sarge.
-Config is at http://I-love.SAKURA.ne.jp/tmp/config-2.6.29-next-20090324 .
+>>> My hypothesis is once we solve this for the general case of
+>>> device hotplug and removal we won't need special support from
+>>> sysfs.  At least not in the suicidal way.
+>> I agree that we have problems in our infrastructure, especially,
+>> as you point out, overlapping device trees, etc.
 
-Mounting local filesystems...
-[   18.746829] kjournald starting.  Commit interval 5 seconds
-[   18.754102] EXT3 FS on sdb1, internal journal
-[   18.756928] EXT3-fs: mounted filesystem with ordered data mode.
-/dev/sdb1 on /usr/src/all type ext3 (rw,noatime,nodiratime)
-Cleaning /tmp /var/run /var/lock.
-Detecting hardware: agpgart pcnet32 piix BusLogic ide_scsi
-Skipping unavailable/built-in agpgart module.
-pcnet32 disabled in configuration.
-Skipping unavailable/built-in piix module.
-Skipping unavailable/built-in BusLogic module.
-Skipping unavailable/built-in ide_scsi module.
-Running 0dns-down to make sure resolv.conf is ok...done.
-Setting up networking...done.
-Starting hotplug subsystem:
-   pci
-     ignoring pci display device 00:0f.0
-[   28.728908] pcnet32.c:v1.35 21.Apr.2008 tsbogend@alpha.franken.de
-[   28.735902] pcnet32: PCnet/PCI II 79C970A at 0x2000, 00:0c:29:9e:eb:32 assigned IRQ 18.
-[   28.754197] eth0: registered as PCnet/PCI II 79C970A
-[   28.758543] pcnet32: 1 cards_found.
-[   28.765817] ------------[ cut here ]------------
-[   28.768916] WARNING: at security/security.c:217 security_vm_enough_memory+0xa0/0xb0()
-[   28.772484] Hardware name: VMware Virtual Platform
-[   28.774099] Modules linked in: pcnet32 crc32
-[   28.776920] Pid: 3286, comm: khelper Not tainted 2.6.29-next-20090324-dirty #3
-[   28.780317] Call Trace:
-[   28.781323]  [<c0159200>] ? have_callable_console+0x30/0x50
-[   28.784171]  [<c0158497>] warn_slowpath+0x97/0xf0
-[   28.785739]  [<c0190f7c>] ? validate_chain+0x3fc/0x540
-[   28.788402]  [<c0190f7c>] ? validate_chain+0x3fc/0x540
-[   28.790103]  [<c0192dfc>] ? __lock_acquire+0x29c/0x8a0
-[   28.792809]  [<c0194859>] ? __lock_acquired+0x109/0x1c0
-[   28.794539]  [<c0338ea0>] security_vm_enough_memory+0xa0/0xb0
-[   28.797391]  [<c0202117>] acct_stack_growth+0xd7/0x160
-[   28.798842]  [<c02022b9>] expand_downwards+0x119/0x150
-[   28.801709]  [<c020230d>] expand_stack+0xd/0x10
-[   28.804171]  [<c02023bd>] find_extend_vma+0xad/0x110
-[   28.805806]  [<c01f9c04>] __get_user_pages+0x94/0x610
-[   28.808557]  [<c01fa1fb>] get_user_pages+0x7b/0x90
-[   28.810483]  [<c022c028>] get_arg_page+0x48/0x100
-[   28.812972]  [<c022c58c>] copy_strings+0x16c/0x2a0
-[   28.814552]  [<c022ea52>] do_execve+0x6b2/0x7e0
-[   28.817138]  [<c02320eb>] ? getname+0x6b/0xa0
-[   28.818622]  [<c010237e>] sys_execve+0x5e/0xb0
-[   28.821006]  [<c0103d19>] syscall_call+0x7/0xb
-[   28.822469]  [<c010ae94>] ? kernel_execve+0x24/0x30
-[   28.825161]  [<c01729af>] ? ____call_usermodehelper+0xff/0x170
-[   28.828052]  [<c01728b0>] ? ____call_usermodehelper+0x0/0x170
-[   28.829944]  [<c0104707>] ? kernel_thread_helper+0x7/0x10
-[   28.832802] ---[ end trace 2e6964f14bb57083 ]---
+I don't really see how some grand general solution would solve
+deadlock problem at sysfs layer, care to elaborate a bit?
 
-May I ignore this warning?
+>> I see your point about adding extra cruft into sysfs to work
+>> around a special case while leaving the hard problem unsolved.
+>>
+>> Perhaps the status quo is better. I do think that getting
+>> suicidal sysfs attributes off the global workqueue is a band-aid
+>> that actually helps, vs. the proposed patches here which are
+>> questionable in nature.
+> 
+> Sounds like it.    I'm not trying to shoot this down, rather
+> I'm trying to figure out how to solve this cleanly, as I am slowly
+> trying to sort out the pci hotplug and unplug issues.
 
-Regards.
+The problem I see is that there aren't too many users and the solution
+is a bit too narrow focused, but with increasing support for
+hotplug/unplug, I think the problem is becoming more widespread and
+the workqueue solution is quite fragile and cumbersome for each and
+every user, so unless there are other directions we can pursue (the
+general one above maybe?), I think it's better to add a bit of
+complexity to sysfs rather than forcing everyone user of it to do it.
+
+Thanks.
+
+-- 
+tejun
