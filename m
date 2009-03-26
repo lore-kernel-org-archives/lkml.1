@@ -1,74 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760158AbZCZRyQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759274AbZCZRzR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760158AbZCZRyQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Mar 2009 13:54:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756333AbZCZRx7
+	id S1759274AbZCZRzR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Mar 2009 13:55:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756333AbZCZRzD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Mar 2009 13:53:59 -0400
-Received: from cavan.codon.org.uk ([93.93.128.6]:60586 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755193AbZCZRx7 (ORCPT
+	Thu, 26 Mar 2009 13:55:03 -0400
+Received: from qw-out-2122.google.com ([74.125.92.26]:52364 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755193AbZCZRzB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Mar 2009 13:53:59 -0400
-Date: Thu, 26 Mar 2009 17:53:14 +0000
-From: Matthew Garrett <mjg@redhat.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Theodore Tso <tytso@mit.edu>, Ingo Molnar <mingo@elte.hu>,
-       Jan Kara <jack@suse.cz>, Andrew Morton <akpm@linux-foundation.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Nick Piggin <npiggin@suse.de>,
-       Jens Axboe <jens.axboe@oracle.com>, David Rees <drees76@gmail.com>,
-       Jesper Krogh <jesper@krogh.cc>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Oleg Nesterov <oleg@redhat.com>, Roland McGrath <roland@redhat.com>
-Subject: [PATCH 2/2] Make relatime default
-Message-ID: <20090326175314.GC7198@srcf.ucam.org>
-References: <alpine.LFD.2.00.0903251613300.3032@localhost.localdomain> <20090325235041.GA11024@duck.suse.cz> <20090326090630.GA9369@elte.hu> <20090326113705.GV32307@mit.edu> <20090326140312.GB14822@elte.hu> <20090326144707.GA6239@mit.edu> <alpine.LFD.2.00.0903260914440.3032@localhost.localdomain> <20090326170714.GF6239@mit.edu> <alpine.LFD.2.00.0903261015050.3032@localhost.localdomain> <20090326174956.GB7198@srcf.ucam.org>
+	Thu, 26 Mar 2009 13:55:01 -0400
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, David Brownell <david-b@pacbell.net>
+Subject: Re: [PATCH v3 0/3] new memory_accessor interface and usage
+References: <1237239379-24186-1-git-send-email-khilman@deeprootsystems.com>
+	<200903161610.06469.david-b@pacbell.net>
+	<874oxgi4hp.fsf@deeprootsystems.com>
+	<20090326105137.5bf765e5.akpm@linux-foundation.org>
+From: Kevin Hilman <khilman@deeprootsystems.com>
+Organization: Deep Root Systems, LLC
+Date: Thu, 26 Mar 2009 10:54:55 -0700
+In-Reply-To: <20090326105137.5bf765e5.akpm@linux-foundation.org> (Andrew Morton's message of "Thu\, 26 Mar 2009 10\:51\:37 -0700")
+Message-ID: <87zlf8f9u8.fsf@deeprootsystems.com>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090326174956.GB7198@srcf.ucam.org>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Change the default behaviour of the kernel to use relatime for all
-filesystems. This can be overridden with the "strictatime" mount
-option.
+Andrew Morton <akpm@linux-foundation.org> writes:
 
-Signed-off-by: Matthew Garrett <mjg@redhat.com>
----
- fs/namespace.c |    5 +++--
- 1 files changed, 3 insertions(+), 2 deletions(-)
+> On Thu, 26 Mar 2009 10:22:10 -0700 Kevin Hilman <khilman@deeprootsystems.com> wrote:
+>
+>> David Brownell <david-b@pacbell.net> writes:
+>> 
+>> > On Monday 16 March 2009, Kevin Hilman wrote:
+>> >> This series adds an interface by which other kernel code can read/write
+>> >> persistent memory such as I2C or SPI EEPROMs, or devices which provide
+>> >> NVRAM. __Use cases include storage of board-specific configuration data
+>> >> like Ethernet addresses and sensor calibrations, etc.
+>> >
+>> > Looks OK to me.  Once this goes in (with support for I2C and SPI EEPROMs)
+>> > then various RTC's NVRAM support can be updated too ... at a quick count,
+>> > that makes nine more drivers that can easily support this.
+>> >
+>> > I kind of like letting Linux have the option of using this kind of
+>> > persistent storage, instead of keeping it so that only bootloaders
+>> > (and maybe some userspace code) ever touch it.
+>> 
+>> Andrew,
+>> 
+>> What's the next step for this series?  It's one of those areas that
+>> doesn't seem to have clear ownership so this seems to be falling
+>> through the cracks.
+>
+> I've been mostly-awol for a couple of weeks, sorry.  It's presently
+> stuck in my backlog queue along with everything else.  I'll start
+> chewing on that queue next week.
+>
+> As the patch "is pretty much a blocking issue for merging more complete
+> DaVinci platform support" I guess we'll be wanting it in 2.6.30, yes?
 
-diff --git a/fs/namespace.c b/fs/namespace.c
-index d0659ec..f0e7530 100644
---- a/fs/namespace.c
-+++ b/fs/namespace.c
-@@ -1920,6 +1920,9 @@ long do_mount(char *dev_name, char *dir_name, char *type_page,
- 	if (data_page)
- 		((char *)data_page)[PAGE_SIZE - 1] = 0;
- 
-+	/* Default to relatime */
-+	mnt_flags |= MNT_RELATIME;
-+
- 	/* Separate the per-mountpoint flags */
- 	if (flags & MS_NOSUID)
- 		mnt_flags |= MNT_NOSUID;
-@@ -1931,8 +1934,6 @@ long do_mount(char *dev_name, char *dir_name, char *type_page,
- 		mnt_flags |= MNT_NOATIME;
- 	if (flags & MS_NODIRATIME)
- 		mnt_flags |= MNT_NODIRATIME;
--	if (flags & MS_RELATIME)
--		mnt_flags |= MNT_RELATIME;
- 	if (flags & MS_STRICTATIME)
- 		mnt_flags &= ~(MNT_RELATIME | MNT_NOATIME);
- 	if (flags & MS_RDONLY)
+Yes, I'm strongly hoping for 2.6.30.
 
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+Kevin
