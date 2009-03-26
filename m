@@ -1,65 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755988AbZCZMuI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757132AbZCZMwY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755988AbZCZMuI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Mar 2009 08:50:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754530AbZCZMtz
+	id S1757132AbZCZMwY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Mar 2009 08:52:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753476AbZCZMwM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Mar 2009 08:49:55 -0400
-Received: from yx-out-2324.google.com ([74.125.44.29]:17998 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752669AbZCZMty (ORCPT
+	Thu, 26 Mar 2009 08:52:12 -0400
+Received: from miranda.se.axis.com ([193.13.178.8]:56825 "EHLO
+	miranda.se.axis.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752669AbZCZMwL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Mar 2009 08:49:54 -0400
+	Thu, 26 Mar 2009 08:52:11 -0400
+X-Greylist: delayed 784 seconds by postgrey-1.27 at vger.kernel.org; Thu, 26 Mar 2009 08:52:10 EDT
+Date: Thu, 26 Mar 2009 13:38:53 +0100
+From: Jesper Nilsson <jesper.nilsson@axis.com>
+To: YOSHIFUJI Hideaki <yoshfuji@linux-ipv6.org>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Cc: Mikael Starvik <mikael.starvik@axis.com>
+Subject: ipv6: Plug sk_buff leak in ipv6_rcv (net/ipv6/ip6_input.c)
+Message-ID: <20090326123853.GW31562@axis.com>
 MIME-Version: 1.0
-In-Reply-To: <49CB1F90.3090501@garzik.org>
-References: <20090324093245.GA22483@elte.hu> <20090325215016.GP32307@mit.edu>
-	 <20090326021034.GA26559@srcf.ucam.org>
-	 <f73f7ab80903251944s581166bbk31c26db50750814a@mail.gmail.com>
-	 <f73f7ab80903251946u593216eejb75d77c54fc8bdf@mail.gmail.com>
-	 <49CAEDA7.1080902@garzik.org>
-	 <f73f7ab80903252003j248b416ewe52b613c5b53066c@mail.gmail.com>
-	 <alpine.LFD.2.00.0903252017100.3032@localhost.localdomain>
-	 <f73f7ab80903252158o1d722068j117b4e9933f67589@mail.gmail.com>
-	 <49CB1F90.3090501@garzik.org>
-Date: Thu, 26 Mar 2009 08:49:52 -0400
-Message-ID: <f73f7ab80903260549w1619d3a9h588001383026febf@mail.gmail.com>
-Subject: Re: Linux 2.6.29
-From: Kyle Moffett <kyle@moffetthome.net>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Matthew Garrett <mjg59@srcf.ucam.org>, Theodore Tso <tytso@mit.edu>,
-       Christoph Hellwig <hch@infradead.org>, Jan Kara <jack@suse.cz>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Nick Piggin <npiggin@suse.de>,
-       Jens Axboe <jens.axboe@oracle.com>, David Rees <drees76@gmail.com>,
-       Jesper Krogh <jesper@krogh.cc>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 26, 2009 at 2:24 AM, Jeff Garzik <jeff@garzik.org> wrote:
-> Kyle Moffett wrote:
->> Really, I think virtually all of the database programs would be
->> perfectly happy with an "fsbarrier(fd, flags)" syscall, where if "fd"
->> points to a regular file or directory then it instructs the underlying
->> filesystem to do whatever internal barrier it supports, and if not
->> just fail with -ENOTSUPP (so you can fall back to fdatasync(), etc).
->> Perhaps "flags" would allow a "data" or "metadata" barrier, but if not
->> it's not a big issue.
->
-> If you want a per-fd barrier call, there is always sync_file_range(2)
+Hi,
 
-The issue is that sync_file_range doesn't seem to be documented to
-have any inter-file barrier semantics.  Even then, from the manpage it
-doesn't look like
-write(fd)+sync_file_range(fd,SYNC_FILE_RANGE_WRITE)+write(fd) would
-actually prevent the second write from occurring before the first has
-actually hit disk (assuming both are within the specified range).
+Commit 778d80be52699596bf70e0eb0761cf5e1e46088d
+(ipv6: Add disable_ipv6 sysctl to disable IPv6 operaion on specific interface)
+seems to have introduced a leak of sk_buff's for ipv6 traffic,
+at least in some configurations where idev is NULL, or when ipv6
+is disabled via sysctl.
 
-Cheers,
-Kyle Moffett
+The problem is that if the first condition of the if-statement
+returns non-NULL, it returns an skb with only one reference,
+and when the other conditions apply, execution jumps to the "out"
+label, which does not call kfree_skb for it.
+
+To plug this leak, change to use the "drop" label instead.
+(this relies on it being ok to call kfree_skb on NULL)
+This also allows us to avoid calling rcu_read_unlock here,
+and removes the only user of the "out" label.
+
+
+Signed-off-by: Jesper Nilsson <jesper.nilsson@axis.com>
+
+---
+ ip6_input.c |    4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
+
+diff --git a/net/ipv6/ip6_input.c b/net/ipv6/ip6_input.c
+index f171e8d..8f04bd9 100644
+--- a/net/ipv6/ip6_input.c
++++ b/net/ipv6/ip6_input.c
+@@ -75,8 +75,7 @@ int ipv6_rcv(struct sk_buff *skb, struct net_device *dev, struct packet_type *pt
+ 	if ((skb = skb_share_check(skb, GFP_ATOMIC)) == NULL ||
+ 	    !idev || unlikely(idev->cnf.disable_ipv6)) {
+ 		IP6_INC_STATS_BH(net, idev, IPSTATS_MIB_INDISCARDS);
+-		rcu_read_unlock();
+-		goto out;
++		goto drop;
+ 	}
+ 
+ 	memset(IP6CB(skb), 0, sizeof(struct inet6_skb_parm));
+@@ -147,7 +146,6 @@ err:
+ drop:
+ 	rcu_read_unlock();
+ 	kfree_skb(skb);
+-out:
+ 	return 0;
+ }
+ 
+
+/^JN - Jesper Nilsson
+-- 
+               Jesper Nilsson -- jesper.nilsson@axis.com
