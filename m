@@ -1,117 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754226AbZCZKyk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756028AbZCZK5Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754226AbZCZKyk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Mar 2009 06:54:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752794AbZCZKy2
+	id S1756028AbZCZK5Y (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Mar 2009 06:57:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752801AbZCZK5P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Mar 2009 06:54:28 -0400
-Received: from wf-out-1314.google.com ([209.85.200.173]:30908 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751041AbZCZKy1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Mar 2009 06:54:27 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=Wkc30jQhYhn+/u/R9YnRD5nNSrcIZnPezvetrfhskhiwVdFNs/A/Lq+6J46iosgv5T
-         bTddwU1ds/1wlNM7+QmXsTrM5js/cuIbgmJBrCQOPwTdsQgTvDAXHsCjucM+pDla6beg
-         tUWxxlf5jw5iIoYWfH3Ec9Rb2PykpYfH7skPE=
+	Thu, 26 Mar 2009 06:57:15 -0400
+Received: from bilbo.ozlabs.org ([203.10.76.25]:40648 "EHLO bilbo.ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752794AbZCZK5P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Mar 2009 06:57:15 -0400
 MIME-Version: 1.0
-Date: Thu, 26 Mar 2009 19:54:25 +0900
-Message-ID: <49b7c2350903260354p6eaf50ebo87985dcfb8d48ba0@mail.gmail.com>
-Subject: Re: [Announce] 2.6.29-rt1
-From: GeunSik Lim <leemgs1@gmail.com>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       rt-users <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Peter Zijlstra <peterz@infradead.org>, Carsten Emde <ce@ceag.ch>,
-       Clark Williams <williams@redhat.com>,
-       Frank Rowand <frank.rowand@am.sony.com>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-ID: <18891.24450.489196.961004@cargo.ozlabs.ibm.com>
+Date: Thu, 26 Mar 2009 21:57:06 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
+       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
+       Wu Fengguang <fengguang.wu@intel.com>
+Subject: Re: [RFC][PATCH 2/3] perf_counter: executable mmap() information
+In-Reply-To: <20090326100058.GD19826@elte.hu>
+References: <20090325210419.408653980@chello.nl>
+	<20090325210542.293237509@chello.nl>
+	<18891.6159.109191.255560@drongo.ozlabs.ibm.com>
+	<20090326100058.GD19826@elte.hu>
+X-Mailer: VM 8.0.9 under Emacs 22.2.1 (i486-pc-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Ingo Molnar writes:
 
-I understood statement that Thosmas explained about invalid access of
-2.6.29-rt1 soruces.
-In general,
-We remeber rc directory (./v2.6/testing/ and release directory
-(./v2.6/) certainly.
+> * Paul Mackerras <paulus@samba.org> wrote:
+> 
+> > Peter Zijlstra writes:
+> > 
+> > > --- linux-2.6.orig/include/linux/perf_counter.h
+> > > +++ linux-2.6/include/linux/perf_counter.h
+> > > @@ -137,7 +137,9 @@ struct perf_counter_hw_event {
+> > >  				exclude_kernel :  1, /* ditto kernel          */
+> > >  				exclude_hv     :  1, /* ditto hypervisor      */
+> > >  				exclude_idle   :  1, /* don't count when idle */
+> > > -				include_tid    :  1, /* include the tid */
+> > > +				include_tid    :  1, /* include the tid       */
+> > > +				mmap           :  1, /* include mmap data     */
+> > > +				munmap         :  1, /* include munmap data   */
+> > >  
+> > >  				__reserved_1   : 54;
+> > 
+> > Nit: need to adjust the size of __reserved_1 here.  Or maybe just 
+> > get rid of it?
+> 
+> it's nice to have a constant reminder about how many bits there are 
+> left.
 
-Release Version is located in http://www.kernel.org/pub/linux/kernel/v2.6/ site.
-RC      Version is located in
-http://www.kernel.org/pub/linux/kernel/v2.6/testing/ site.
+Fair enough, but as it stands, we've changed the ABI, so we need to
+fix it.
 
-I summarized quick howto per notice of "2.6.* rt patch" file.
-fc9#> wget http://www.kernel.org/pub/linux/kernel/v2.6/linux-2.6.29.tar.bz2
-  (If linux version is RC[release candidate] version,
- use "wget http://www.kernel.org/pub/linux/kernel/v2.6/testing/***" command.)
-fc9#> wget http://www.kernel.org/pub/linux/kernel/projects/rt/patch-2.6.29-rt1.bz2
-fc9#> tar xjf ./linux-2.6.29.tar.bz2
-fc9#> tar xvjf ./patch-2.6.29-rt1-broken-out.tar.bz2
-fc9#> cd ./linux-2.6.29
-fc9#> for i in `cat ../patches/series | grep patch | grep -v "#"  `;do
-echo "+++ patching $i"; patch -p1 <
-
-../patches/$i;done
-fc9#> cp ./arch/x86/configs/i386_defconfig ./.config
-fc9#> make menuconfig
-        ..... Below Omission .....
-  	
-
-Regards,
-GeunSik Lim
-
------ Original Message -----
-From: "Thomas Gleixner" <tglx@linutronix.de>
-To: "Jaswinder Singh Rajput" <jaswinder@kernel.org>
-Cc: "LKML" <linux-kernel@vger.kernel.org>; "rt-users"
-<linux-rt-users@vger.kernel.org>; "Ingo Molnar" <mingo@elte.hu>;
-"Steven Rostedt" <rostedt@goodmis.org>; "Peter Zijlstra"
-<peterz@infradead.org>; "Carsten Emde" <ce@ceag.ch>; "Clark Williams"
-<williams@redhat.com>; "Frank Rowand" <frank.rowand@am.sony.com>
-Sent: Thursday, March 26, 2009 6:09 AM
-Subject: Re: [Announce] 2.6.29-rt1
-
-
-> On Thu, 26 Mar 2009, Jaswinder Singh Rajput wrote:
->
->> On Wed, 2009-03-25 at 21:59 +0100, Thomas Gleixner wrote:
->> > We are pleased to announce the next update to our new preempt-rt
->> > series.
->> >
->> >      - port forward to 2.6.29 final
->> >
->> > Download locations:
->> >
->> >     http://rt.et.redhat.com/download/
->> >     http://www.kernel.org/pub/linux/kernel/projects/rt/
->> >
->> > Information on the RT patch can be found at:
->> >
->> >     http://rt.wiki.kernel.org/index.php/Main_Page
->> >
->> > to build the 2.6.29-rt1 tree, the following patches should be
->> > applied:
->> >
->> >     http://www.kernel.org/pub/linux/kernel/v2.6/testing/linux-2.6.29.tar.bz2
->>
->> Is this valid ?
->
-> If we remove the testing/ it should work better :)
->
->   tglx
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
->
->
->
+Paul.
