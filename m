@@ -1,107 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756568AbZCZJU3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753112AbZCZJ0T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756568AbZCZJU3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Mar 2009 05:20:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751418AbZCZJUT
+	id S1753112AbZCZJ0T (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Mar 2009 05:26:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750863AbZCZJ0J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Mar 2009 05:20:19 -0400
-Received: from hera.kernel.org ([140.211.167.34]:38220 "EHLO hera.kernel.org"
+	Thu, 26 Mar 2009 05:26:09 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:43384 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751401AbZCZJUR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Mar 2009 05:20:17 -0400
-Date: Thu, 26 Mar 2009 09:18:55 GMT
-From: Tom Zanussi <tzanussi@gmail.com>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       fweisbec@gmail.com, tzanussi@gmail.com, rostedt@goodmis.org,
-       tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       tzanussi@gmail.com, fweisbec@gmail.com, rostedt@goodmis.org,
-       tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <1237878882.8339.61.camel@charm-linux>
-References: <1237878882.8339.61.camel@charm-linux>
-Subject: [tip:tracing/filters] tracing: filter fix for TRACE_EVENT_FORMAT events
-Message-ID: <tip-9a8118baaeb0eaa148913bed77bf9c6335f6ca63@git.kernel.org>
-Git-Commit-ID: 9a8118baaeb0eaa148913bed77bf9c6335f6ca63
-X-Mailer: tip-git-log-daemon
+	id S1750919AbZCZJ0I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Mar 2009 05:26:08 -0400
+Date: Thu, 26 Mar 2009 10:25:43 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Herbert Xu <herbert@gondor.apana.org.au>
+Cc: David Miller <davem@davemloft.net>, r.schwebel@pengutronix.de,
+       torvalds@linux-foundation.org, blaschka@linux.vnet.ibm.com,
+       tglx@linutronix.de, a.p.zijlstra@chello.nl,
+       linux-kernel@vger.kernel.org, kernel@pengutronix.de
+Subject: Re: Revert "gro: Fix legacy path napi_complete crash",
+Message-ID: <20090326092543.GC9369@elte.hu>
+References: <20090324150928.GB30224@gondor.apana.org.au> <20090324.143622.186562202.davem@davemloft.net> <20090325002303.GA2219@gondor.apana.org.au> <20090324.191134.05205089.davem@davemloft.net> <20090325073349.GF25833@elte.hu> <20090325120840.GA6351@gondor.apana.org.au> <20090325122046.GD11571@elte.hu> <20090325122635.GA6489@gondor.apana.org.au> <20090325220149.GB21111@elte.hu> <20090326090744.GA16665@gondor.apana.org.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 26 Mar 2009 09:18:57 +0000 (UTC)
+In-Reply-To: <20090326090744.GA16665@gondor.apana.org.au>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  9a8118baaeb0eaa148913bed77bf9c6335f6ca63
-Gitweb:     http://git.kernel.org/tip/9a8118baaeb0eaa148913bed77bf9c6335f6ca63
-Author:     Tom Zanussi <tzanussi@gmail.com>
-AuthorDate: Thu, 26 Mar 2009 01:24:34 -0500
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Thu, 26 Mar 2009 09:13:14 +0100
 
-tracing: filter fix for TRACE_EVENT_FORMAT events
+* Herbert Xu <herbert@gondor.apana.org.au> wrote:
 
-Impact: fix crash (hang) when using TRACE_EVENT_FORMAT filter files
+> On Wed, Mar 25, 2009 at 11:01:49PM +0100, Ingo Molnar wrote:
+> > 
+> > Sure, can try that. Probably the best would be if you sent me a 
+> > combo patch with the precise patch you meant me to try (there were 
+> > several patches, i'm not sure which one is the 'previous' one) plus 
+> > the forcedeth debug enable change as well.
+> 
+> Sure, here's the patch to do both.
 
-filters are only hooked up to the tracepoint events defined using
-TRACE_EVENT but not the tracers that use TRACE_EVENT_FORMAT, such
-as ftrace.
+> diff --git a/drivers/net/forcedeth.c b/drivers/net/forcedeth.c
+> index b8251e8..101e552 100644
+> --- a/drivers/net/forcedeth.c
+> +++ b/drivers/net/forcedeth.c
+> @@ -64,7 +64,7 @@
+>  #include <asm/uaccess.h>
+>  #include <asm/system.h>
+>  
+> -#if 0
+> +#if 1
+>  #define dprintk			printk
+>  #else
+>  #define dprintk(x...)		do { } while (0)
 
-Do not display the filter files at all for TRACE_EVENT_FORMAT events
-for the time being.
+The box is not even able to boot up, so many messages are printed.
 
-Cc: Steven Rostedt <rostedt@goodmis.org>
-Cc: =?ISO-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>
-LKML-Reference: <1237878882.8339.61.camel@charm-linux>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-
----
- kernel/trace/trace_events.c |   18 +++++-------------
- 1 files changed, 5 insertions(+), 13 deletions(-)
-
-diff --git a/kernel/trace/trace_events.c b/kernel/trace/trace_events.c
-index d132997..64ec4d2 100644
---- a/kernel/trace/trace_events.c
-+++ b/kernel/trace/trace_events.c
-@@ -680,7 +680,6 @@ static struct dentry *
- event_subsystem_dir(const char *name, struct dentry *d_events)
- {
- 	struct event_subsystem *system;
--	struct dentry *entry;
- 
- 	/* First see if we did not already create this dir */
- 	list_for_each_entry(system, &event_subsystems, list) {
-@@ -709,12 +708,6 @@ event_subsystem_dir(const char *name, struct dentry *d_events)
- 
- 	system->preds = NULL;
- 
--	entry = debugfs_create_file("filter", 0644, system->entry, system,
--				    &ftrace_subsystem_filter_fops);
--	if (!entry)
--		pr_warning("Could not create debugfs "
--			   "'%s/filter' entry\n", name);
--
- 	return system->entry;
- }
- 
-@@ -770,14 +763,13 @@ event_create_dir(struct ftrace_event_call *call, struct dentry *d_events)
- 				   " events/%s\n", call->name);
- 			return ret;
- 		}
-+		entry = debugfs_create_file("filter", 0644, call->dir, call,
-+					    &ftrace_event_filter_fops);
-+		if (!entry)
-+			pr_warning("Could not create debugfs "
-+				   "'%s/filter' entry\n", call->name);
- 	}
- 
--	entry = debugfs_create_file("filter", 0644, call->dir, call,
--				    &ftrace_event_filter_fops);
--	if (!entry)
--		pr_warning("Could not create debugfs "
--			   "'%s/filter' entry\n", call->name);
--
- 	/* A trace may not want to export its format */
- 	if (!call->show_format)
- 		return 0;
+	Ingo
