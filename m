@@ -1,92 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755562AbZCZMSW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756853AbZCZMWj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755562AbZCZMSW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Mar 2009 08:18:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752108AbZCZMSM
+	id S1756853AbZCZMWj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Mar 2009 08:22:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752764AbZCZMWb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Mar 2009 08:18:12 -0400
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:58510 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751583AbZCZMSL (ORCPT
+	Thu, 26 Mar 2009 08:22:31 -0400
+Received: from rv-out-0506.google.com ([209.85.198.234]:55629 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752108AbZCZMWa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Mar 2009 08:18:11 -0400
-From: Luotao Fu <l.fu@pengutronix.de>
-To: broonie@sirena.org.uk
-Cc: linux@arm.linux.org.uk, dbaryshkov@gmail.com, alsa-devel@alsa-project.org,
-       linux-arm-kernel@lists.arm.linux.org.uk, linux-kernel@vger.kernel.org,
-       Luotao Fu <l.fu@pengutronix.de>
-Subject: [PATCH] pxa2xx-ac97: fix displaying GSR after reset timeout
-Date: Thu, 26 Mar 2009 13:18:03 +0100
-Message-Id: <1238069883-12445-1-git-send-email-l.fu@pengutronix.de>
-X-Mailer: git-send-email 1.6.2
-In-Reply-To: <20090325103406.GA20936@sirena.org.uk>
-References: <20090325103406.GA20936@sirena.org.uk>
-X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
-X-SA-Exim-Mail-From: l.fu@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
+	Thu, 26 Mar 2009 08:22:30 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=kxvI/JhxPU0jBiM7EN+gu59nSUN3xS/59gckdHof/kRqeZ8jfJPYfSswsFQZZV5tsR
+         Djob1jc1ktmtKJMGcsZM9HUQ5+8dtKW7sqrGhc+cEiDjU3BkJvnr+VcLEhTxLURF7EIN
+         amr5TTEJKIMYdG1twdSorhKTgM8gx8tc/XN3k=
+MIME-Version: 1.0
+In-Reply-To: <20090326090630.GA9369@elte.hu>
+References: <20090324103111.GA26691@elte.hu>
+	 <20090325123744.GK23439@duck.suse.cz> <20090325150041.GM32307@mit.edu>
+	 <alpine.LFD.2.00.0903251008120.3032@localhost.localdomain>
+	 <20090325185824.GO32307@mit.edu>
+	 <alpine.LFD.2.00.0903251341050.3032@localhost.localdomain>
+	 <20090325215137.GQ32307@mit.edu>
+	 <alpine.LFD.2.00.0903251613300.3032@localhost.localdomain>
+	 <20090325235041.GA11024@duck.suse.cz> <20090326090630.GA9369@elte.hu>
+Date: Thu, 26 Mar 2009 14:22:27 +0200
+X-Google-Sender-Auth: df0818fb79901be1
+Message-ID: <84144f020903260522r78240128j3c7d4691b76b7257@mail.gmail.com>
+Subject: Re: ext3 IO latency measurements (was: Linux 2.6.29)
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Jan Kara <jack@suse.cz>, Linus Torvalds <torvalds@linux-foundation.org>,
+       Theodore Tso <tytso@mit.edu>, Andrew Morton <akpm@linux-foundation.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Nick Piggin <npiggin@suse.de>,
+       Jens Axboe <jens.axboe@oracle.com>, David Rees <drees76@gmail.com>,
+       Jesper Krogh <jesper@krogh.cc>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Oleg Nesterov <oleg@redhat.com>, Roland McGrath <roland@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-the variable gsr_bit is set in isr. It is however set to 0 and interrupts are
-disabled prior to reset. Hence it doesn't make a lot of sense to show the
-content of gsr_bit in case of a reset timeout.
+Hi Ingo,
 
-Signed-off-by: Luotao Fu <l.fu@pengutronix.de>
----
- sound/arm/pxa2xx-ac97-lib.c |   15 ++++++++++-----
- 1 files changed, 10 insertions(+), 5 deletions(-)
+On Thu, Mar 26, 2009 at 11:06 AM, Ingo Molnar <mingo@elte.hu> wrote:
+> Btw., i had this test going on that box while i wrote some simple
+> scripts in Vim - and it was a horrible experience. The worst wait
+> was well above one minute - Vim just hung there indefinitely. Not
+> even Ctrl-Z was possible. I captured one such wait, it was hanging
+> right here:
 
-diff --git a/sound/arm/pxa2xx-ac97-lib.c b/sound/arm/pxa2xx-ac97-lib.c
-index 35afd0c..bbb71ae 100644
---- a/sound/arm/pxa2xx-ac97-lib.c
-+++ b/sound/arm/pxa2xx-ac97-lib.c
-@@ -199,6 +199,8 @@ static inline void pxa_ac97_cold_pxa3xx(void)
- 
- bool pxa2xx_ac97_try_warm_reset(struct snd_ac97 *ac97)
- {
-+	unsigned long gsr;
-+
- #ifdef CONFIG_PXA25x
- 	if (cpu_is_pxa25x())
- 		pxa_ac97_warm_pxa25x();
-@@ -215,10 +217,10 @@ bool pxa2xx_ac97_try_warm_reset(struct snd_ac97 *ac97)
- 	else
- #endif
- 		BUG();
--
--	if (!((GSR | gsr_bits) & (GSR_PCR | GSR_SCR))) {
-+	gsr = GSR | gsr_bits;
-+	if (!(gsr & (GSR_PCR | GSR_SCR))) {
- 		printk(KERN_INFO "%s: warm reset timeout (GSR=%#lx)\n",
--				 __func__, gsr_bits);
-+				 __func__, gsr);
- 
- 		return false;
- 	}
-@@ -229,6 +231,8 @@ EXPORT_SYMBOL_GPL(pxa2xx_ac97_try_warm_reset);
- 
- bool pxa2xx_ac97_try_cold_reset(struct snd_ac97 *ac97)
- {
-+	unsigned long gsr;
-+
- #ifdef CONFIG_PXA25x
- 	if (cpu_is_pxa25x())
- 		pxa_ac97_cold_pxa25x();
-@@ -246,9 +250,10 @@ bool pxa2xx_ac97_try_cold_reset(struct snd_ac97 *ac97)
- #endif
- 		BUG();
- 
--	if (!((GSR | gsr_bits) & (GSR_PCR | GSR_SCR))) {
-+	gsr = GSR | gsr_bits;
-+	if (!(gsr & (GSR_PCR | GSR_SCR))) {
- 		printk(KERN_INFO "%s: cold reset timeout (GSR=%#lx)\n",
--				 __func__, gsr_bits);
-+				 __func__, gsr);
- 
- 		return false;
- 	}
--- 
-1.6.2
+Just a data point: I've seen this exact same time for a long time (1-2
+years) too even with stock distribution kernels. Never bothered to
+investigate it though.
 
+                        Pekka
