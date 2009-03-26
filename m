@@ -1,61 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759832AbZCZQhb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759719AbZCZQkP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759832AbZCZQhb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Mar 2009 12:37:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757523AbZCZQhV
+	id S1759719AbZCZQkP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Mar 2009 12:40:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754977AbZCZQj6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Mar 2009 12:37:21 -0400
-Received: from mail-bw0-f169.google.com ([209.85.218.169]:57499 "EHLO
-	mail-bw0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754224AbZCZQhU (ORCPT
+	Thu, 26 Mar 2009 12:39:58 -0400
+Received: from ausc60ps301.us.dell.com ([143.166.148.206]:54031 "EHLO
+	ausc60ps301.us.dell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754081AbZCZQj5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Mar 2009 12:37:20 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=giZjPfbWlyQrAE4RN9JnGheMww+JYd9cI02WhuXCnA3aWN/QgIMxxqJYaSam5jSQAg
-         byazcjE6cNAX5ao3OB4/ssCLI21MhsUgUYo7+7aNakrrumMCaGsuh0pjpB7dQ+ONcB3Q
-         5Z9EM7e2sY729WQAO+xM7dEN9tTEXgSVph5+U=
-Message-ID: <49CBAF36.1010203@gmail.com>
-Date: Thu, 26 Mar 2009 17:37:10 +0100
-From: =?UTF-8?B?Sm9zw6kgTWFyw63CrWEgRmVybsOhbmRleiBHb256w6FsZXo=?= 
-	<josemariafg@gmail.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090323)
-MIME-Version: 1.0
-To: Pierre Ossman <drzeus-list@drzeus.cx>
-CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/1] mmc: Some microSD cards are not recognized by PCIxx12
- SDA controller
-References: <49B5C091.3090303@gmail.com>	<20090324211748.30cd7429@mjolnir.ossman.eu>	<49C9E4B8.3000708@gmail.com> <20090325171749.62bd0fbb@mjolnir.ossman.eu>
-In-Reply-To: <20090325171749.62bd0fbb@mjolnir.ossman.eu>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+	Thu, 26 Mar 2009 12:39:57 -0400
+Date: Thu, 26 Mar 2009 11:39:55 -0500
+From: Matt Domsch <Matt_Domsch@dell.com>
+To: David Miller <davem@davemloft.net>
+Cc: netdev@vger.kernel.org, linux-hotplug@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: Network Device Naming mechanism and policy
+Message-ID: <20090326163955.GA22398@auslistsprd01.us.dell.com>
+References: <20090324154617.GA16332@auslistsprd01.us.dell.com> <20090324.155756.214460004.davem@davemloft.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090324.155756.214460004.davem@davemloft.net>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pierre Ossman wrote:
-> On Wed, 25 Mar 2009 09:00:56 +0100
-> José Marí­a Fernández González <josemariafg@gmail.com> wrote:
+On Tue, Mar 24, 2009 at 03:57:56PM -0700, David Miller wrote:
+> From: Matt Domsch <Matt_Domsch@dell.com>
+> Date: Tue, 24 Mar 2009 10:46:17 -0500
 > 
->> As I'm going to install 2.6.29 today, I can test the patch with it and HZ=100.
+> > Problem: Users expect on-motherboard NICs to be named eth0..ethN.
+> > This can be difficult to achieve.
 > 
-> Please do. And try to determine where it breaks. I'd prefer if we don't
-> need to increase this yet again in a month because we were relying on
-> some scheduling latencies. :)
+> I learned a long time ago that eth0 et al. have zero meaning.
 > 
-> Rgds
+> If the system firmware folks gave us topology information with respect
+> to these things, we could export something that tools such as
+> NetworkManager, iproute2, etc. could use.
+> 
+> For example, if we were told that PCI device "domain:bus:dev:fn" has
+> string label "Onboard Ethernet 0" then we could present that to the
+> user.
+> 
+> Changing how the actual network device name is determined is going to
+> have zero traction.
+> 
+> So, please, put mapping tables into the ACPI or similar and then
+> programs can go:
+> 
+> 	for_each_network_device(name) {
+> 		fd = open(name);
+> 		label = get_system_label(fd, name);
+> 		present_to_user(label, name);
+> 	}
 
-I have been testing the patch with kernel 2.6.29 and a couple of cards (the Transcend 2GB microSD and a EZ Memory 8GB SDHC) in a few cases:
 
-*	HZ=300 + tickless + desktop preemption
-*	HZ=100 + tickless + desktop preemption
-*	HZ=100 + desktop preemption
-*	HZ=100 + low latency desktop preemption
-*	HZ=1000 + tickless + desktop preemption
+Your wish is my command.  DMTF SMBIOS 2.6 specification
+http://www.dmtf.org/standards/smbios/ contains changes which provide
+this for PCI devices.
 
-and it worked with no problem. I don't know if I have forgotten any obvious corner case. Perhaps I should have tested with no preemption...
+Specifically, Type 9 ("System Slots") was extended to include the PCI
+domain/bus/device/function for each slot.  Type 10 ("On Board Devices
+Information") could not be extended, thus it was deprecated, and new
+Type 41 ("Onboard Devices Extended Information") was created to be
+extensible and now includes PCI domain/bus/device/function
+information.  Both Type 9 and Type 41 include a String field which
+hopefully has a more descriptive value, such as "Onboard Ethernet
+Broadcom 5808 NIC 1" in the case of some Dell servers.
 
-	Best Regards,
-		José María
+Shipping Dell 10G (and very soon 11G) server BIOS includes this
+information.  biosdevname can use this to report device names.  Some
+HP systems have a vendor-specific SMBIOS extension to provide a
+similar mapping; biosdevname can report this as well.
+
+> This "get_system_label()" thing can be an ethtool ioctl, some
+> rtnetlink call, or similar.  In the kernel, a generic routine would
+> exist for major bus types to make the mapping translation, and drivers
+> would call these.
+>
+> For PCI it might take the PCI device pointer and try to fish
+> out a string from the ACPI layer.
+> 
+> For OpenFirmware we might just simply give the full device path,
+> or a matching device alias name.
+> 
+> That's the only model which allows a smooth transition and
+> no major infrastructure changes.
+
+While I'd be happy for NetworkManager to present these SMBIOS-provided
+human-parsable names when available, the names aren't terribly
+meaningful in a programatic fashion.  The users I've encountered are
+looking for a programatic way to say:
+
+  The first LOM is my management/admin NIC.  The second LOM is my bulk
+  traffic NIC.  The first add-in card is my backup NIC.
+
+meaning we still need a translation from "how I want to use a NIC" to
+"which NIC should I plug the cable into".  The SMBIOS names don't
+completely solve this.
+
+Hence my desire of having a way to have multiple alternate names for
+the same interface.  One such name would be the full SMBIOS string.
+Another would be a bus topology name. A third could be a "how do I use
+it" name.  Analogous to devices represented in /dev using symlinks for
+these other names.  I don't care if it's symlinks in /dev or some
+other mechanism.
+
+Thanks,
+Matt
+
+-- 
+Matt Domsch
+Linux Technology Strategist, Dell Office of the CTO
+linux.dell.com & www.dell.com/linux
