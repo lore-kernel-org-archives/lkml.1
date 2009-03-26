@@ -1,85 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758697AbZCZWeR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759324AbZCZWfU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758697AbZCZWeR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Mar 2009 18:34:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756636AbZCZWeB
+	id S1759324AbZCZWfU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Mar 2009 18:35:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754662AbZCZWfG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Mar 2009 18:34:01 -0400
-Received: from col0-omc2-s17.col0.hotmail.com ([65.55.34.91]:29200 "EHLO
-	col0-omc2-s17.col0.hotmail.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754662AbZCZWeA convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Mar 2009 18:34:00 -0400
-Message-ID: <COL112-W70B31F9B113D4E450DAD09C8910@phx.gbl>
-X-Originating-IP: [76.197.186.32]
-From: Adam Turk <bofh1234@hotmail.com>
-CC: <linux-kernel@vger.kernel.org>
-Subject: RE: recommended programming practices for writing (was Linux	2.6.29)
-Date: Thu, 26 Mar 2009 18:33:58 -0400
-Importance: Normal
-In-Reply-To: <1238096043.13457.4.camel@spike.firmix.at>
-References: <COL112-W81AF4A8C222B9941D8295FC8910@phx.gbl>
- <1238096043.13457.4.camel@spike.firmix.at>
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
+	Thu, 26 Mar 2009 18:35:06 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:54047 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752414AbZCZWfF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Mar 2009 18:35:05 -0400
+Date: Thu, 26 Mar 2009 15:24:55 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Bill Nottingham <notting@redhat.com>
+cc: Theodore Tso <tytso@mit.edu>, Ingo Molnar <mingo@elte.hu>,
+       Jan Kara <jack@suse.cz>, Andrew Morton <akpm@linux-foundation.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Nick Piggin <npiggin@suse.de>,
+       Jens Axboe <jens.axboe@oracle.com>, David Rees <drees76@gmail.com>,
+       Jesper Krogh <jesper@krogh.cc>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Oleg Nesterov <oleg@redhat.com>, Roland McGrath <roland@redhat.com>
+Subject: Re: ext3 IO latency measurements (was: Linux 2.6.29)
+In-Reply-To: <20090326182320.GA9341@nostromo.devel.redhat.com>
+Message-ID: <alpine.LFD.2.00.0903261523060.3032@localhost.localdomain>
+References: <20090325215137.GQ32307@mit.edu> <alpine.LFD.2.00.0903251613300.3032@localhost.localdomain> <20090325235041.GA11024@duck.suse.cz> <20090326090630.GA9369@elte.hu> <20090326113705.GV32307@mit.edu> <20090326140312.GB14822@elte.hu> <20090326144707.GA6239@mit.edu>
+ <alpine.LFD.2.00.0903260914440.3032@localhost.localdomain> <20090326173237.GB8465@nostromo.devel.redhat.com> <alpine.LFD.2.00.0903261039480.3032@localhost.localdomain> <20090326182320.GA9341@nostromo.devel.redhat.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-X-OriginalArrivalTime: 26 Mar 2009 22:33:59.0037 (UTC) FILETIME=[F4978AD0:01C9AE62]
-To: unlisted-recipients:; (no To-header on input)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
->> On Thu, 2009-03-26 at 15:03 -0400, Adam Turk wrote:
->> I have been reading the Linux 2.6.29 thread with interest. I have
->> written several (10 or so) C programs that write large amounts of data
->> (between 1 and 2 GB file sizes are common). A snippet of code looks
->> like this:
->>
->> if((fptr = fopen(outfilename,"w")) == NULL) {
->> printf("File %s could not be created\n", outfilename);
->> }
->> else {
->> fprintf(fptr,"%s\n",datablock);
->> while(!writeouput(datablock,amount,tax)) {
->> getnext(dtablock)
->> fprintf(fptr,"%s\n",datablock);
->> }
->> fclose(fptr);
->> }
->>
->> I learned C about 15 years ago and there was no mention of a fsync.
->> My C book doesn't mention fsync either. Granted I have written only
->
-> Probably because fsync() is a system call (and not a standard C lib
-> function).
->
-> [...]
->> From what Linus posted about git and checking the return from fclose I
->> think I going to start doing that. I also think I am going to start
->> checking the return from fprintf and maybe write to a /tmp/file and
->> then rename it.
->
-> For a really robust app it's probably not wrong. At least one gets an
-> error (e.g. "disk full") immediately and not only at fclose() time after
-> (trying to) write 2GB data.
->
->> So is there a C fsync that I should add before my fclose?
->
-> "fflush(fptr);" flushes all of the buffers (managed by the C-lib) of
-> fptr and also delivers an error.
-> fsync() is to flush the in-kernel cached pages of that file.
->
->> What is the proper way to write to files?
->
-> Basically just as you do above.
->
-> Bernd
- 
-Thank you for the tips. 
- 
-Thanks,
-Adam
-_________________________________________________________________
-Quick access to Windows Live and your favorite MSN content with Internet Explorer 8.
-http://ie8.msn.com/microsoft/internet-explorer-8/en-us/ie8.aspx?ocid=B037MSN55C0701A
+
+On Thu, 26 Mar 2009, Bill Nottingham wrote:
+> 
+> Well, it's got to find the root fs options somewhere. Pulling them
+> from the modified /etc/fstab in the root fs before you mount it, well...
+
+Umm.
+
+The _only_ sane thng to do is to mount the root read-only from initramfs, 
+and then re-mount it with the options in the /etc/fstab later when you 
+re-mount it read-write _anyway_ (which may possibly be immediately, of 
+course).
+
+Anybody who thinks you should re-write initramfs for something like this 
+really hasn't spent a single second thinking about it.
+
+		Linus
