@@ -1,82 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759424AbZCZOut@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758913AbZCZOvL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759424AbZCZOut (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Mar 2009 10:50:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759209AbZCZOtM
+	id S1758913AbZCZOvL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Mar 2009 10:51:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759240AbZCZOt2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Mar 2009 10:49:12 -0400
-Received: from casper.infradead.org ([85.118.1.10]:44191 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759215AbZCZOtK (ORCPT
+	Thu, 26 Mar 2009 10:49:28 -0400
+Received: from extu-mxob-2.symantec.com ([216.10.194.135]:51797 "EHLO
+	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759266AbZCZOt0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Mar 2009 10:49:10 -0400
-Date: Thu, 26 Mar 2009 07:49:55 -0700
-From: Arjan van de Ven <arjan@infradead.org>
+	Thu, 26 Mar 2009 10:49:26 -0400
+Date: Thu, 26 Mar 2009 14:47:34 +0000 (GMT)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.anvils
 To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Jan Kara <jack@suse.cz>,
+cc: Ric Wheeler <rwheeler@redhat.com>, Jeff Garzik <jeff@garzik.org>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       Theodore Tso <tytso@mit.edu>, Andrew Morton <akpm@linux-foundation.org>,
+       Theodore Tso <tytso@mit.edu>, Ingo Molnar <mingo@elte.hu>,
        Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
        Peter Zijlstra <a.p.zijlstra@chello.nl>, Nick Piggin <npiggin@suse.de>,
        David Rees <drees76@gmail.com>, Jesper Krogh <jesper@krogh.cc>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Oleg Nesterov <oleg@redhat.com>, Roland McGrath <roland@redhat.com>
-Subject: Re: ext3 IO latency measurements (was: Linux 2.6.29)
-Message-ID: <20090326074955.54add4d3@infradead.org>
-In-Reply-To: <20090326143618.GD27476@kernel.dk>
-References: <20090325150041.GM32307@mit.edu>
-	<alpine.LFD.2.00.0903251008120.3032@localhost.localdomain>
-	<20090325185824.GO32307@mit.edu>
-	<alpine.LFD.2.00.0903251341050.3032@localhost.localdomain>
-	<20090325215137.GQ32307@mit.edu>
-	<alpine.LFD.2.00.0903251613300.3032@localhost.localdomain>
-	<20090325235041.GA11024@duck.suse.cz>
-	<20090326090630.GA9369@elte.hu>
-	<20090326110815.GT27476@kernel.dk>
-	<20090326072707.5a98242d@infradead.org>
-	<20090326143618.GD27476@kernel.dk>
-Organization: Intel
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.29
+In-Reply-To: <20090326085748.GH27476@kernel.dk>
+Message-ID: <Pine.LNX.4.64.0903261430410.32095@blonde.anvils>
+References: <alpine.LFD.2.00.0903241053200.3032@localhost.localdomain>
+ <20090324184549.GE32307@mit.edu> <alpine.LFD.2.00.0903241218130.3032@localhost.localdomain>
+ <49C93AB0.6070300@garzik.org> <20090325093913.GJ27476@kernel.dk>
+ <49CA86BD.6060205@garzik.org> <20090325194341.GB27476@kernel.dk>
+ <49CA8ADA.3040709@redhat.com> <20090325195747.GC27476@kernel.dk>
+ <Pine.LNX.4.64.0903252036130.8872@blonde.anvils> <20090326085748.GH27476@kernel.dk>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 26 Mar 2009 15:36:18 +0100
-Jens Axboe <jens.axboe@oracle.com> wrote:
-
-> On Thu, Mar 26 2009, Arjan van de Ven wrote:
-> > On Thu, 26 Mar 2009 12:08:15 +0100
-> > Jens Axboe <jens.axboe@oracle.com> wrote:
-> > > 
-> > > Did you capture the trace of the long delays in the read test
-> > > case? It can be two things, at least. One is that each little
-> > > read takes much longer than it should, the other is that we get
-> > > stuck waiting on a dirty page and hence that slows down the reads
-> > > a lot.
-> > > 
+On Thu, 26 Mar 2009, Jens Axboe wrote:
+> On Wed, Mar 25 2009, Hugh Dickins wrote:
 > > 
-> > would be interesting to run latencytop during such runs...
+> > Tangential question, but am I right in thinking that BIO_RW_BARRIER
+> > similarly bars across all partitions, whereas its WRITE_BARRIER and
+> > DISCARD_BARRIER users would actually prefer it to apply to just one?
 > 
-> Things just drown in the noise in there sometimes, is my experience...
-> And disappear. Perhaps I'm just not very good at reading the output,
-> but it was never very useful for me. I know, not a very useful
-> complaint, I'll try and use it again and come up with something more
-> productive :-)
-> 
-> But in this case, I bet it's also the atime updates. If Ingo turned
-> those off, the read results would likely be a lot better (and
-> consistent).
+> All the barriers refer to just that range which the barrier itself
+> references.
 
-latencytop does identify those for sure.
-> 
+Ah, thank you: then I had a fundamental misunderstanding of them,
+and need to go away and work that out some more.
 
+Though I didn't read it before asking, doesn't the I/O Barriers section
+of Documentation/block/biodoc.txt give a very different impression?
 
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+> The problem with the full device flushes is implementation
+> on the hardware side, since we can't do small range flushes. So it's not
+> as-designed, but rather the best we can do...
+
+Right, that part of it I did get.
+
+Hugh
