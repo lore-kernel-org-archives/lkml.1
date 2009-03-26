@@ -1,86 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761759AbZCZWgi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761352AbZCZWkq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761759AbZCZWgi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Mar 2009 18:36:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760316AbZCZWgK
+	id S1761352AbZCZWkq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Mar 2009 18:40:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755103AbZCZWkh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Mar 2009 18:36:10 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:43004 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761546AbZCZWgJ (ORCPT
+	Thu, 26 Mar 2009 18:40:37 -0400
+Received: from smtp3.ono.com ([62.42.230.176]:43511 "EHLO resmaa14.ono.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752414AbZCZWkh convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Mar 2009 18:36:09 -0400
-Date: Thu, 26 Mar 2009 23:38:55 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: "Tvrtko A. Ursulin" <tvrtko@ursulin.net>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-pm@lists.linux-foundation.org,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Tobias Diedrich <ranma+kernel@tdiedrich.de>,
-       Ayaz Abdulla <aabdulla@nvidia.com>
-Subject: Re: Resume after hibernation regression in 2.6.29
-Message-ID: <20090326223855.GF29836@elf.ucw.cz>
-References: <200903261920.32173.tvrtko@ursulin.net> <20090326211406.GC29836@elf.ucw.cz> <200903262235.29576.rjw@sisk.pl> <200903262201.03931.tvrtko@ursulin.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200903262201.03931.tvrtko@ursulin.net>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 26 Mar 2009 18:40:37 -0400
+Date: Thu, 26 Mar 2009 23:40:30 +0100
+From: "J.A. =?UTF-8?B?TWFnYWxsw7Nu?=" <jamagallon@ono.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: Re: recommended programming practices for writing (was Linux
+ 2.6.29)
+Message-ID: <20090326234030.4bce8801@werewolf.home>
+In-Reply-To: <COL112-W81AF4A8C222B9941D8295FC8910@phx.gbl>
+References: <COL112-W81AF4A8C222B9941D8295FC8910@phx.gbl>
+X-Mailer: Claws Mail 3.7.1cvs24 (GTK+ 2.16.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu 2009-03-26 22:01:03, Tvrtko A. Ursulin wrote:
-> On Thursday 26 March 2009 21:35:29 Rafael J. Wysocki wrote:
-> > On Thursday 26 March 2009, Pavel Machek wrote:
-> > > On Thu 2009-03-26 20:55:23, Tvrtko A. Ursulin wrote:
-> > > > On Thursday 26 March 2009 20:18:40 Pavel Machek wrote:
-> > > > > On Thu 2009-03-26 19:20:32, Tvrtko A. Ursulin wrote:
-> > > > > > Hi guys,
-> > > > > > I have been running custom compiled 2.6.28.7 in OpenSUSE 11.1 and
-> > > > > > using hiberation/resume daily as configured by the distro.
-> > > > > > Yesterday I upgraded to 2.6.29 (make oldconfig from 2.6.28.7,
-> > > > > > attached) and after resume networking (at least) does not work.
-> > > > > > Reboot at this point takes very long because of timeouts on CIFS
-> > > > > > and whatelse.
-> > > > > >
-> > > > > > Below is how /var/log/messagess looks for one cycle
-> > > > > > (hibernate-resume-reboot) and I am also attaching kernel config and
-> > > > > > /var/log/pm-suspend.log.
-> > > > > >
-> > > > > > You will probably notice evil nvidia.ko in there but don't panic,
-> > > > > > it all happens without it as well. Tested from runlevel 3 and by
-> > > > > > running pm-hibernate. After resume from that NIC LEDs were off. I
-> > > > > > tried /etc/init.d/network restart but that hung so I ^C and tried
-> > > > > > rmmod forcedeth && modprobe forcedeth && ifup eth0 and after some
-> > > > > > time network went live again. Haven't had time to test further
-> > > > > > though, so this is all pretty rough.
-> > > > >
-> > > > > Ok, can you try to rmmod forcedeth before hibernation, then insmod it
-> > > > > after resume?
-> > > >
-> > > > Sure, after insmod and /etc/init.d/network start following resume
-> > > > network was fine. Guess I could kludge that sequence into pm scripts
-> > > > somehow but would rather avoid that since it slows down the cycle and
-> > > > would make scripts non-stock.
-> > >
-> > > Ok, I guess you need to talk to forcedeth maintainers then... sounds
-> > > like a forcedeth problem to me.
-> >
-> > I have a box with forcedeth somewhere here, I should be able to check that
-> > in the next few days.
-> 
-> Not a lot activity in forcedeth.c from 2.6.28 to 2.6.29 so I will CC two guys 
-> who commited changes in that period. Ayaz, Tobias, forcedeth does not seem to 
-> come up after hibernation well for me. Actual hardware is:
-> 
-> 00:0f.0 Ethernet controller: nVidia Corporation MCP73 Ethernet (rev a2)
-> 
-> Anything more I can do just shout!
+On Thu, 26 Mar 2009 15:03:28 -0400, Adam Turk <bofh1234@hotmail.com> wrote:
 
-Actually yes. Testing forcedeth from 2.6.28 in 2.6.29 would be nice
-way to prove problem is indeed in that module.
+> 
+> I have been reading the Linux 2.6.29 thread with interest.  I have written several (10 or so) C programs that write large amounts of data (between 1 and 2 GB file sizes are common).  A snippet of code looks like this:
+> 
+> if((fptr = fopen(outfilename,"w")) == NULL) {
+>   printf("File %s could not be created\n", outfilename);
+> }
+> else {
+>   fprintf(fptr,"%s\n",datablock);
+>   while(!writeouput(datablock,amount,tax)) {
+>     getnext(dtablock)
+>     fprintf(fptr,"%s\n",datablock);
+>   }
+>   fclose(fptr);
+> }
+> 
+> I learned C about 15 years ago and there was no mention of a fsync.  My C book doesn't mention fsync either.  Granted I have written only 25-30 applications in the last 15 years or so so I am not an expert C programmer. 
+> 
+> From what Linus posted about git and checking the return from fclose I think I going to start doing that.  I also think I am going to start checking the return from fprintf and maybe write to a /tmp/file and then rename it.
+> 
+> So is there a C fsync that I should add before my fclose?
+> What is the proper way to write to files?
+> 
+> Is what I am thinking about doing something that would be good or is it just a lack of my understanding the problem?
+> 
+
+You _really_ should not worry bout that. You write a file the way C or Fortran
+or ADA tells you to do so. I think no language standard worries about when
+the file really is dumped to disk from the kernel side. Even fflush() just
+guarantees that the _high level_ buffer in the C library is sent to the kernel
+routines to write to the device. But none gives you a standard function to
+get the pages really witten to disk, or wait even till the hardware queues
+have really sent the data to the platter. You will never know that.
+
+Assume this world is imperfect. Your computer can always crash. I think just
+routines like link/unlink/rename could be near to metal. And with journaled
+filesystems, even that.
+
+>From what I have understood reading LKML these years, if you do something like
+
+    fwrite(one megabyte)
+    fsync()
+    pause()
+    fwrite(other megabyte)
+
+and unplug the cord while in the pause, nobody guarantees you that the first
+megabyte is on the disk. Live with it.
+
+PD: I'm not saying this is good, I think it's just the way it is.
 
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+J.A. Magallon <jamagallon()ono!com>     \               Software is like sex:
+                                         \         It's better when it's free
+Mandriva Linux release 2009.1 (Cooker) for x86_64
+Linux 2.6.28.2-desktop-1mnb (gcc 4.3.2 (GCC) #1 Wed Jan
