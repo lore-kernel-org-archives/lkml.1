@@ -1,207 +1,224 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759755AbZCZPyt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759201AbZCZPzJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759755AbZCZPyt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Mar 2009 11:54:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752868AbZCZPyi
+	id S1759201AbZCZPzJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Mar 2009 11:55:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759497AbZCZPyk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Mar 2009 11:54:38 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:37896 "EHLO mx2.redhat.com"
+	Thu, 26 Mar 2009 11:54:40 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:37899 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754179AbZCZPyh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Mar 2009 11:54:37 -0400
-Message-ID: <49CBA4F4.5040409@redhat.com>
-Date: Thu, 26 Mar 2009 16:53:24 +0100
-From: Jerome Marchand <jmarchan@redhat.com>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
+	id S1758755AbZCZPyi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Mar 2009 11:54:38 -0400
+Date: Thu, 26 Mar 2009 16:52:06 +0100
+From: Jiri Pirko <jpirko@redhat.com>
+To: linux-kernel@vger.kernel.org
+Cc: netdev@vger.kernel.org, jgarzik@pobox.com, davem@davemloft.net,
+       shemminger@linux-foundation.org, bridge@lists.linux-foundation.org,
+       fubar@us.ibm.com, bonding-devel@lists.sourceforge.net, kaber@trash.net,
+       mschmidt@redhat.com, dada1@cosmosbay.com
+Subject: [PATCH] bonding: allow bond in mode balance-alb to work properly
+	in bridge -try4
+Message-ID: <20090326155205.GA28868@psychotron.englab.brq.redhat.com>
+References: <20090313183303.GF3436@psychotron.englab.brq.redhat.com>
 MIME-Version: 1.0
-To: Jens Axboe <jens.axboe@oracle.com>
-CC: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH 2/2] block: fix inconsistency in I/O stat accounting code
-References: <49CBA46E.6050306@redhat.com>
-In-Reply-To: <49CBA46E.6050306@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090313183303.GF3436@psychotron.englab.brq.redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This forces in_flight to be zero when turning off or on the I/O stat
-accounting and stops updating I/O stats in attempt_merge() when
-accounting is turned off.
+(resend, updated changelog, hook moved into skb_bond_should_drop,
+skb_bond_should_drop ifdefed)
 
-Signed-off-by: Jerome Marchand <jmarchan@redhat.com>
----
- block/blk-core.c         |   13 ++++---------
- block/blk-merge.c        |   29 +++++++++++++++++------------
- block/blk-sysfs.c        |    4 ++++
- block/blk.h              |   10 ++++++----
- block/elevator.c         |    2 +-
- include/linux/elevator.h |    1 +
- 6 files changed, 33 insertions(+), 26 deletions(-)
+Hi all.
 
-Index: linux-2.6/block/blk-core.c
-===================================================================
---- linux-2.6.orig/block/blk-core.c
-+++ linux-2.6/block/blk-core.c
-@@ -64,12 +64,11 @@ static struct workqueue_struct *kblockd_
+The problem is described in following bugzilla:
+https://bugzilla.redhat.com/show_bug.cgi?id=487763
 
- static void drive_stat_acct(struct request *rq, int new_io)
- {
--	struct gendisk *disk = rq->rq_disk;
- 	struct hd_struct *part;
- 	int rw = rq_data_dir(rq);
- 	int cpu;
+Basically here's what's going on. In every mode, bonding interface uses the same
+mac address for all enslaved devices (except fail_over_mac). Only balance-alb
+will simultaneously use multiple MAC addresses across different slaves. When you
+put this kind of bond device into a bridge it will only add one of mac adresses
+into a hash list of mac addresses, say X. This mac address is marked as local.
+But this bonding interface also has mac address Y. Now then packet arrives with
+destination address Y, this address is not marked as local and the packed looks
+like it needs to be forwarded. This packet is then lost which is wrong.
 
--	if (!blk_fs_request(rq) || !disk || !blk_do_io_stat(disk->queue))
-+	if (!blk_fs_request(rq) || !blk_do_io_stat(rq))
- 		return;
+Notice that interfaces can be added and removed from bond while it is in bridge.
 
- 	cpu = part_stat_lock();
-@@ -1665,9 +1664,7 @@ EXPORT_SYMBOL(blkdev_dequeue_request);
+This patch solves the situation in the bonding without touching bridge code,
+as Patrick suggested. For every incoming frame to bonding it searches the
+destination address in slaves list and if any of slave addresses matches, it
+rewrites the address in frame by the adress of bonding master. This ensures that
+all frames comming thru the bonding in alb mode have the same address.
 
- static void blk_account_io_completion(struct request *req, unsigned int
-bytes)
- {
--	struct gendisk *disk = req->rq_disk;
--
--	if (!disk || !blk_do_io_stat(disk->queue))
-+	if (!blk_do_io_stat(req))
- 		return;
+Jirka
 
- 	if (blk_fs_request(req)) {
-@@ -1684,9 +1681,7 @@ static void blk_account_io_completion(st
 
- static void blk_account_io_done(struct request *req)
- {
--	struct gendisk *disk = req->rq_disk;
--
--	if (!disk || !blk_do_io_stat(disk->queue))
-+	if (!blk_do_io_stat(req))
- 		return;
+Signed-off-by: Jiri Pirko <jpirko@redhat.com>
 
- 	/*
-@@ -1701,7 +1696,7 @@ static void blk_account_io_done(struct r
- 		int cpu;
-
- 		cpu = part_stat_lock();
--		part = disk_map_sector_rcu(disk, req->sector);
-+		part = disk_map_sector_rcu(req->rq_disk, req->sector);
-
- 		part_stat_inc(cpu, part, ios[rw]);
- 		part_stat_add(cpu, part, ticks[rw], duration);
-Index: linux-2.6/block/blk-merge.c
-===================================================================
---- linux-2.6.orig/block/blk-merge.c
-+++ linux-2.6/block/blk-merge.c
-@@ -338,6 +338,22 @@ static int ll_merge_requests_fn(struct r
- 	return 1;
+diff --git a/drivers/net/bonding/bond_alb.c b/drivers/net/bonding/bond_alb.c
+index 27fb7f5..b973ede 100644
+--- a/drivers/net/bonding/bond_alb.c
++++ b/drivers/net/bonding/bond_alb.c
+@@ -1762,6 +1762,25 @@ int bond_alb_set_mac_address(struct net_device *bond_dev, void *addr)
+ 	return 0;
  }
-
-+static void blk_account_io_merge(struct request *req)
+ 
++void bond_alb_change_dest(struct sk_buff *skb, struct net_device *bond_dev)
 +{
-+	if (blk_do_io_stat(req)) {
-+		struct hd_struct *part;
-+		int cpu;
++	struct bonding *bond = netdev_priv(bond_dev);
++	unsigned char *dest = eth_hdr(skb)->h_dest;
++	struct slave *slave;
++	int i;
 +
-+		cpu = part_stat_lock();
-+		part = disk_map_sector_rcu(req->rq_disk, req->sector);
-+
-+		part_round_stats(cpu, part);
-+		part_dec_in_flight(part);
-+
-+		part_stat_unlock();
++	if (!compare_ether_addr_64bits(dest, bond_dev->dev_addr))
++		return;
++	read_lock(&bond->lock);
++	bond_for_each_slave(bond, slave, i) {
++		if (!compare_ether_addr_64bits(slave->dev->dev_addr, dest)) {
++			memcpy(dest, bond_dev->dev_addr, ETH_ALEN);
++			break;
++		}
 +	}
++	read_unlock(&bond->lock);
 +}
 +
- /*
-  * Has to be called with the request spinlock acquired
-  */
-@@ -386,18 +402,7 @@ static int attempt_merge(struct request_
-
- 	elv_merge_requests(q, req, next);
-
--	if (req->rq_disk) {
--		struct hd_struct *part;
--		int cpu;
--
--		cpu = part_stat_lock();
--		part = disk_map_sector_rcu(req->rq_disk, req->sector);
--
--		part_round_stats(cpu, part);
--		part_dec_in_flight(part);
--
--		part_stat_unlock();
--	}
-+	blk_account_io_merge(req);
-
- 	req->ioprio = ioprio_best(req->ioprio, next->ioprio);
- 	if (blk_rq_cpu_valid(next))
-Index: linux-2.6/block/blk-sysfs.c
-===================================================================
---- linux-2.6.orig/block/blk-sysfs.c
-+++ linux-2.6/block/blk-sysfs.c
-@@ -209,10 +209,14 @@ static ssize_t queue_iostats_store(struc
- 	ssize_t ret = queue_var_store(&stats, page, count);
-
- 	spin_lock_irq(q->queue_lock);
-+	elv_quisce_start(q);
-+
- 	if (stats)
- 		queue_flag_set(QUEUE_FLAG_IO_STAT, q);
- 	else
- 		queue_flag_clear(QUEUE_FLAG_IO_STAT, q);
-+
-+	elv_quisce_end(q);
- 	spin_unlock_irq(q->queue_lock);
-
- 	return ret;
-Index: linux-2.6/block/blk.h
-===================================================================
---- linux-2.6.orig/block/blk.h
-+++ linux-2.6/block/blk.h
-@@ -112,12 +112,14 @@ static inline int blk_cpu_to_group(int c
- #endif
- }
-
--static inline int blk_do_io_stat(struct request_queue *q)
-+static inline int blk_do_io_stat(struct request *rq)
+ void bond_alb_clear_vlan(struct bonding *bond, unsigned short vlan_id)
  {
--	if (q)
--		return blk_queue_io_stat(q);
-+	struct gendisk *disk = rq->rq_disk;
-
--	return 0;
-+	if (!disk || !disk->queue)
-+		return 0;
+ 	if (bond->alb_info.current_alb_vlan &&
+diff --git a/drivers/net/bonding/bond_alb.h b/drivers/net/bonding/bond_alb.h
+index 50968f8..4924dd7 100644
+--- a/drivers/net/bonding/bond_alb.h
++++ b/drivers/net/bonding/bond_alb.h
+@@ -127,6 +127,7 @@ void bond_alb_handle_active_change(struct bonding *bond, struct slave *new_slave
+ int bond_alb_xmit(struct sk_buff *skb, struct net_device *bond_dev);
+ void bond_alb_monitor(struct work_struct *);
+ int bond_alb_set_mac_address(struct net_device *bond_dev, void *addr);
++void bond_alb_change_dest(struct sk_buff *skb, struct net_device *bond_dev);
+ void bond_alb_clear_vlan(struct bonding *bond, unsigned short vlan_id);
+ #endif /* __BOND_ALB_H__ */
+ 
+diff --git a/drivers/net/bonding/bond_main.c b/drivers/net/bonding/bond_main.c
+index 3d76686..7c7cb81 100644
+--- a/drivers/net/bonding/bond_main.c
++++ b/drivers/net/bonding/bond_main.c
+@@ -4294,6 +4294,18 @@ unwind:
+ 	return res;
+ }
+ 
++/*
++ * Called via bond_change_dest_hook.
++ * note: already called with rcu_read_lock (preempt_disabled)
++ */
++void bond_change_dest(struct sk_buff *skb, struct net_device *bond_dev)
++{
++	struct bonding *bond = netdev_priv(bond_dev);
 +
-+	return blk_queue_io_stat(disk->queue) && (rq->cmd_flags & REQ_ELVPRIV);
- }
-
- #endif
-Index: linux-2.6/block/elevator.c
-===================================================================
---- linux-2.6.orig/block/elevator.c
-+++ linux-2.6/block/elevator.c
-@@ -573,7 +573,7 @@ void elv_requeue_request(struct request_
- 	elv_insert(q, rq, ELEVATOR_INSERT_REQUEUE);
- }
-
--static void elv_drain_elevator(struct request_queue *q)
-+void elv_drain_elevator(struct request_queue *q)
++	if (bond->params.mode == BOND_MODE_ALB)
++		bond_alb_change_dest(skb, bond_dev);
++}
++
+ static int bond_xmit_roundrobin(struct sk_buff *skb, struct net_device *bond_dev)
  {
- 	static int printed;
- 	while (q->elevator->ops->elevator_dispatch_fn(q, 1))
-Index: linux-2.6/include/linux/elevator.h
-===================================================================
---- linux-2.6.orig/include/linux/elevator.h
-+++ linux-2.6/include/linux/elevator.h
-@@ -116,6 +116,7 @@ extern void elv_abort_queue(struct reque
- extern void elv_completed_request(struct request_queue *, struct
-request *);
- extern int elv_set_request(struct request_queue *, struct request *,
-gfp_t);
- extern void elv_put_request(struct request_queue *, struct request *);
-+extern void elv_drain_elevator(struct request_queue *);
-
- /*
-  * io scheduler registration
+ 	struct bonding *bond = netdev_priv(bond_dev);
+@@ -5243,6 +5255,8 @@ static int __init bonding_init(void)
+ 	register_inetaddr_notifier(&bond_inetaddr_notifier);
+ 	bond_register_ipv6_notifier();
+ 
++	bond_change_dest_hook = bond_change_dest;
++
+ 	goto out;
+ err:
+ 	list_for_each_entry(bond, &bond_dev_list, bond_list) {
+@@ -5266,6 +5280,8 @@ static void __exit bonding_exit(void)
+ 	unregister_inetaddr_notifier(&bond_inetaddr_notifier);
+ 	bond_unregister_ipv6_notifier();
+ 
++	bond_change_dest_hook = NULL;
++
+ 	bond_destroy_sysfs();
+ 
+ 	rtnl_lock();
+diff --git a/drivers/net/bonding/bonding.h b/drivers/net/bonding/bonding.h
+index ca849d2..7159483 100644
+--- a/drivers/net/bonding/bonding.h
++++ b/drivers/net/bonding/bonding.h
+@@ -375,5 +375,8 @@ static inline void bond_unregister_ipv6_notifier(void)
+ }
+ #endif
+ 
++extern void (*bond_change_dest_hook)(struct sk_buff *skb,
++				     struct net_device *master);
++
+ #endif /* _LINUX_BONDING_H */
+ 
+diff --git a/include/linux/netdevice.h b/include/linux/netdevice.h
+index 6593667..7af6857 100644
+--- a/include/linux/netdevice.h
++++ b/include/linux/netdevice.h
+@@ -1860,6 +1860,10 @@ static inline void netif_set_gso_max_size(struct net_device *dev,
+ 	dev->gso_max_size = size;
+ }
+ 
++#if defined(CONFIG_BONDING) || defined(CONFIG_BONDING_MODULE)
++extern void (*bond_change_dest_hook)(struct sk_buff *skb,
++				     struct net_device *master);
++
+ /* On bonding slaves other than the currently active slave, suppress
+  * duplicates except for 802.3ad ETH_P_SLOW, alb non-mcast/bcast, and
+  * ARP on active-backup slaves with arp_validate enabled.
+@@ -1876,22 +1880,31 @@ static inline int skb_bond_should_drop(struct sk_buff *skb)
+ 		if (dev->priv_flags & IFF_SLAVE_INACTIVE) {
+ 			if ((dev->priv_flags & IFF_SLAVE_NEEDARP) &&
+ 			    skb->protocol == __constant_htons(ETH_P_ARP))
+-				return 0;
++				goto dont_drop;
+ 
+ 			if (master->priv_flags & IFF_MASTER_ALB) {
+ 				if (skb->pkt_type != PACKET_BROADCAST &&
+ 				    skb->pkt_type != PACKET_MULTICAST)
+-					return 0;
++					goto dont_drop;
+ 			}
+ 			if (master->priv_flags & IFF_MASTER_8023AD &&
+ 			    skb->protocol == __constant_htons(ETH_P_SLOW))
+-				return 0;
++				goto dont_drop;
+ 
+ 			return 1;
+ 		}
++dont_drop:
++		bond_change_dest_hook(skb, master);
+ 	}
++
++	return 0;
++}
++#else
++static inline int skb_bond_should_drop(struct sk_buff *skb)
++{
+ 	return 0;
+ }
++#endif
+ 
+ extern struct pernet_operations __net_initdata loopback_net_ops;
+ #endif /* __KERNEL__ */
+diff --git a/net/core/dev.c b/net/core/dev.c
+index e3fe5c7..d9b758b 100644
+--- a/net/core/dev.c
++++ b/net/core/dev.c
+@@ -2061,6 +2061,12 @@ static inline int deliver_skb(struct sk_buff *skb,
+ 	return pt_prev->func(skb, skb->dev, pt_prev, orig_dev);
+ }
+ 
++#if defined(CONFIG_BONDING) || defined(CONFIG_BONDING_MODULE)
++void (*bond_change_dest_hook)(struct sk_buff *skb,
++			      struct net_device *master) __read_mostly;
++EXPORT_SYMBOL(bond_change_dest_hook);
++#endif
++
+ #if defined(CONFIG_BRIDGE) || defined (CONFIG_BRIDGE_MODULE)
+ /* These hooks defined here for ATM */
+ struct net_bridge;
