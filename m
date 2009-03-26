@@ -1,56 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757376AbZCZM4n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757755AbZCZNFW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757376AbZCZM4n (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Mar 2009 08:56:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756635AbZCZM4b
+	id S1757755AbZCZNFW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Mar 2009 09:05:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754805AbZCZNFI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Mar 2009 08:56:31 -0400
-Received: from mail-in-12.arcor-online.net ([151.189.21.52]:46970 "EHLO
-	mail-in-12.arcor-online.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756034AbZCZM4a (ORCPT
+	Thu, 26 Mar 2009 09:05:08 -0400
+Received: from mail-in-13.arcor-online.net ([151.189.21.53]:47988 "EHLO
+	mail-in-13.arcor-online.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752296AbZCZNFG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Mar 2009 08:56:30 -0400
-X-DKIM: Sendmail DKIM Filter v2.8.2 mail-in-01.arcor-online.net 9F8E0232E63
-Date: Thu, 26 Mar 2009 13:56:24 +0100 (CET)
+	Thu, 26 Mar 2009 09:05:06 -0400
+X-DKIM: Sendmail DKIM Filter v2.8.2 mail-in-01.arcor-online.net 481E2332D1D
 From: Bodo Eggert <7eggert@gmx.de>
-To: Andreas Robinson <andr345@gmail.com>
-cc: Bodo Eggert <7eggert@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: fastboot: unpacking initramfs faster
-In-Reply-To: <1238068631.12756.23.camel@andreas-desktop>
-Message-ID: <alpine.LSU.0.999.0903261354380.6387@be1.lrz>
-References: <cj9yI-540-17@gated-at.bofh.it>  <E1LmEqj-0001SN-6Y@be1.7eggert.dyndns.org>
-  <1238053964.8304.24.camel@andreas-desktop>  <alpine.LSU.0.999.0903261216550.5843@be1.lrz>
- <1238068631.12756.23.camel@andreas-desktop>
+Subject: Re: [dm-devel] Barriers still not passing on simple dm devices...
+To: Mikulas Patocka <mpatocka@redhat.com>, Jens Axboe <jens.axboe@oracle.com>,
+       device-mapper development <dm-devel@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andi Kleen <ak@suse.de>,
+       ?missing.closing.'"' in token?"MASON",
+	CHRISTOPHER <CHRIS.MASON@oracle.com>"@vax.1wt.eu
+Illegal-Object: Syntax error in To: address found on vger.kernel.org:
+	To:	?missing closing '"' in token?"MASON", CHRISTOPHER <CHRIS.MASON@oracle.com>"
+			^				    ^-missing closing '"' in token
+		 \-extraneous tokens in address
+Illegal-Object: Syntax error in To: address found on vger.kernel.org:
+	To:	?missing closing '"' in token?"MASON", CHRISTOPHER <CHRIS.MASON@oracle.com>"
+			^				    ^-missing closing '"' in token
+		 \-extraneous tokens in address
+Reply-To: 7eggert@gmx.de
+Date: Thu, 26 Mar 2009 14:05:00 +0100
+References: <ciXHh-39c-37@gated-at.bofh.it> <cjfuL-6vJ-43@gated-at.bofh.it> <cjfEl-6J2-45@gated-at.bofh.it> <cjfNX-6Wh-27@gated-at.bofh.it>
+User-Agent: KNode/0.10.4
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7Bit
+Message-Id: <E1LmpGX-0001gP-6q@be1.7eggert.dyndns.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 26 Mar 2009, Andreas Robinson wrote:
-> On Thu, 2009-03-26 at 12:26 +0100, Bodo Eggert wrote:
-> > On Thu, 26 Mar 2009, Andreas Robinson wrote:
-> > > On Tue, 2009-03-24 at 23:11 +0100, Bodo Eggert wrote:
-> [snip]
+Mikulas Patocka <mpatocka@redhat.com> wrote:
 
-> > > > Why not make a new set? http://7eggert.dyndns.org:8080/l/bgz.tar.gz
+> ./drivers/block/loop.c:
+> doesn't reject barriers, it's ok because it doesn't reorder requests
 
-> The file permissions are wrong, I'm not allowed to download it.
+But it relies on other devices to not reorder.
 
-fixed
-
-> > Thinking about it: It's now very kernel-specific, other users might like a
-> > block signature to make it robust against errors - e.g. in the middle of a
-> > .tar.bgz file. I think I'll change that soon and put 0x55aa in front of
-> > each block.
-> 
-> I think we'll want an optional checksum of the compressed data.
-> Suppose bit 32 in the compressed block size field is set, the next field
-> is the block's Adler32 checksum.
-> (the adler32 source is in include/linux/zutil.h)
-
-I will think about it.
--- 
-Funny quotes:
-5. 99 percent of lawyers give the rest a bad name.
