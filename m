@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757601AbZCZNda@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758101AbZCZNdo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757601AbZCZNda (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Mar 2009 09:33:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754109AbZCZNcn
+	id S1758101AbZCZNdo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Mar 2009 09:33:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754805AbZCZNcn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Thu, 26 Mar 2009 09:32:43 -0400
-Received: from mx1.emlix.com ([193.175.82.87]:60145 "EHLO mx1.emlix.com"
+Received: from mx1.emlix.com ([193.175.82.87]:35334 "EHLO mx1.emlix.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753163AbZCZNcl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1750996AbZCZNcl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 26 Mar 2009 09:32:41 -0400
 From: =?utf-8?q?Daniel=20Gl=C3=B6ckner?= <dg@emlix.com>
 To: Chris Zankel <chris@zankel.net>
 Cc: linux-kernel@vger.kernel.org,
        =?utf-8?q?Daniel=20Gl=C3=B6ckner?= <dg@emlix.com>
-Subject: [patch 4/4] xtensa: enable on-board sound in s6105_defconfig
-Date: Thu, 26 Mar 2009 14:33:48 +0100
-Message-Id: <1238074428-24666-4-git-send-email-dg@emlix.com>
+Subject: [patch 3/4] xtensa: prepare s6105 platform for I2S
+Date: Thu, 26 Mar 2009 14:33:47 +0100
+Message-Id: <1238074428-24666-3-git-send-email-dg@emlix.com>
 In-Reply-To: <1238074428-24666-1-git-send-email-dg@emlix.com>
 References: <1238074428-24666-1-git-send-email-dg@emlix.com>
 MIME-Version: 1.0
@@ -26,55 +26,84 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This patch routes the I2S irq, powers up the I2S block and resets the
+I2S codec.
+
+Resetting of the codec can't be moved to the sound driver as the reset
+line affects another chip as well.
+
 Signed-off-by: Daniel Glöckner <dg@emlix.com>
 ---
- arch/xtensa/configs/s6105_defconfig |   26 ++++++++++++++++++++++++--
- 1 files changed, 24 insertions(+), 2 deletions(-)
+ arch/xtensa/platforms/s6105/device.c |   16 ++++++++++++++++
+ arch/xtensa/platforms/s6105/setup.c  |    2 ++
+ 2 files changed, 18 insertions(+), 0 deletions(-)
 
-diff --git a/arch/xtensa/configs/s6105_defconfig b/arch/xtensa/configs/s6105_defconfig
-index a386a01..6ced233 100644
---- a/arch/xtensa/configs/s6105_defconfig
-+++ b/arch/xtensa/configs/s6105_defconfig
-@@ -1,7 +1,7 @@
- #
- # Automatically generated make config: don't edit
- # Linux kernel version: 2.6.29-rc7-s6
--# Wed Mar 11 13:38:31 2009
-+# Tue Mar 17 11:55:24 2009
- #
- # CONFIG_FRAME_POINTER is not set
- CONFIG_ZONE_DMA=y
-@@ -505,7 +505,29 @@ CONFIG_SSB_POSSIBLE=y
- # Display device support
- #
- # CONFIG_DISPLAY_SUPPORT is not set
--# CONFIG_SOUND is not set
-+CONFIG_SOUND=y
-+# CONFIG_SOUND_OSS_CORE is not set
-+CONFIG_SND=y
-+CONFIG_SND_TIMER=y
-+CONFIG_SND_PCM=y
-+# CONFIG_SND_SEQUENCER is not set
-+# CONFIG_SND_MIXER_OSS is not set
-+# CONFIG_SND_PCM_OSS is not set
-+# CONFIG_SND_DYNAMIC_MINORS is not set
-+# CONFIG_SND_SUPPORT_OLD_API is not set
-+CONFIG_SND_VERBOSE_PROCFS=y
-+# CONFIG_SND_VERBOSE_PRINTK is not set
-+# CONFIG_SND_DEBUG is not set
-+# CONFIG_SND_DRIVERS is not set
-+# CONFIG_SND_SPI is not set
-+CONFIG_SND_SOC=y
-+CONFIG_SND_S6000_SOC=y
-+CONFIG_SND_S6000_SOC_I2S=y
-+CONFIG_SND_S6000_SOC_S6IPCAM=y
-+CONFIG_SND_SOC_I2C_AND_SPI=y
-+# CONFIG_SND_SOC_ALL_CODECS is not set
-+CONFIG_SND_SOC_TLV320AIC3X=y
-+# CONFIG_SOUND_PRIME is not set
- # CONFIG_USB_SUPPORT is not set
- CONFIG_MMC=y
- # CONFIG_MMC_DEBUG is not set
+diff --git a/arch/xtensa/platforms/s6105/device.c b/arch/xtensa/platforms/s6105/device.c
+index d296201..f7af6d2 100644
+--- a/arch/xtensa/platforms/s6105/device.c
++++ b/arch/xtensa/platforms/s6105/device.c
+@@ -5,6 +5,7 @@
+  */
+ 
+ #include <linux/kernel.h>
++#include <linux/delay.h>
+ #include <linux/gpio.h>
+ #include <linux/i2c.h>
+ #include <linux/i2c/s6000.h>
+@@ -57,6 +58,13 @@ static const signed char isef_irq_mappings[] = {
+ 	-1
+ };
+ 
++static const signed char i2s_irq_mappings[] = {
++	S6_INTC_I2S_ERR,
++	S6_INTC_DMA_HOSTTERMCNT(2),
++	S6_INTC_DMA_HOSTTERMCNT(3),
++	-1
++};
++
+ static const signed char spi_irq_mappings[] = {
+ 	S6_INTC_SPI,
+ 	-1
+@@ -68,6 +76,7 @@ const signed char *platform_irq_mappings[NR_IRQS] = {
+ 	[GMAC_INTNUM] = gmac_irq_mappings,
+ 	[I2C_INTNUM] = i2c_irq_mappings,
+ 	[ISEF_INTNUM] = isef_irq_mappings,
++	[I2S_INTNUM] = i2s_irq_mappings,
+ 	[SPI_INTNUM] = spi_irq_mappings,
+ };
+ 
+@@ -388,6 +397,13 @@ static int __init device_init(void)
+ {
+ 	int i;
+ 
++	/* reset TLV320AIC31 and SAA7121 */
++	if (!gpio_request(GPIO_BP_RESET, "bp_reset")) {
++		gpio_direction_output(GPIO_BP_RESET, 0);
++		udelay(1);
++		gpio_set_value(GPIO_BP_RESET, 1);
++	}
++
+ 	i2c_register_board_info(S6_I2C_BUS_NUM, s6_i2c_devices,
+ 				ARRAY_SIZE(s6_i2c_devices));
+ 	spi_register_board_info(s6_spi_devices, ARRAY_SIZE(s6_spi_devices));
+diff --git a/arch/xtensa/platforms/s6105/setup.c b/arch/xtensa/platforms/s6105/setup.c
+index 5ffa148..bbd1730 100644
+--- a/arch/xtensa/platforms/s6105/setup.c
++++ b/arch/xtensa/platforms/s6105/setup.c
+@@ -45,11 +45,13 @@ void __init platform_setup(char **cmdline)
+ 	reg = readl(S6_REG_GREG1 + S6_GREG1_CLKGATE);
+ 	reg &= ~(1 << S6_GREG1_BLOCK_SB);
+ 	reg &= ~(1 << S6_GREG1_BLOCK_GMAC);
++	reg &= ~(1 << S6_GREG1_BLOCK_I2S);
+ 	writel(reg, S6_REG_GREG1 + S6_GREG1_CLKGATE);
+ 
+ 	reg = readl(S6_REG_GREG1 + S6_GREG1_BLOCKENA);
+ 	reg |= 1 << S6_GREG1_BLOCK_SB;
+ 	reg |= 1 << S6_GREG1_BLOCK_GMAC;
++	reg |= 1 << S6_GREG1_BLOCK_I2S;
+ 	writel(reg, S6_REG_GREG1 + S6_GREG1_BLOCKENA);
+ 
+ 	printk(KERN_NOTICE "S6105 on Stretch S6000 - "
 -- 
 1.6.2.107.ge47ee
 
