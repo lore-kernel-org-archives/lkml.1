@@ -1,74 +1,250 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758212AbZCZP5f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758955AbZCZQF2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758212AbZCZP5f (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Mar 2009 11:57:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754162AbZCZP51
+	id S1758955AbZCZQF2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Mar 2009 12:05:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754081AbZCZQFT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Mar 2009 11:57:27 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:37771 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753733AbZCZP50 (ORCPT
+	Thu, 26 Mar 2009 12:05:19 -0400
+Received: from fg-out-1718.google.com ([72.14.220.156]:12967 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753470AbZCZQFQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Mar 2009 11:57:26 -0400
-Date: Thu, 26 Mar 2009 08:47:33 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Frans Pop <elendil@planet.nl>
-Cc: mingo@elte.hu, tytso@mit.edu, jack@suse.cz, torvalds@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, arjan@infradead.org, a.p.zijlstra@chello.nl,
-       npiggin@suse.de, jens.axboe@oracle.com, drees76@gmail.com,
-       jesper@krogh.cc, linux-kernel@vger.kernel.org, oleg@redhat.com,
-       roland@redhat.com
-Subject: Re: relatime: update once per day patches (was: ext3 IO latency
- measurements)
-Message-Id: <20090326084733.156c4910.akpm@linux-foundation.org>
-In-Reply-To: <200903261632.42439.elendil@planet.nl>
-References: <20090325123744.GK23439@duck.suse.cz>
-	<20090325150041.GM32307@mit.edu>
-	<alpine.LFD.2.00.0903251008120.3032@localhost.localdomain>
-	<20090325185824.GO32307@mit.edu>
-	<alpine.LFD.2.00.0903251341050.3032@localhost.localdomain>
-	<20090325215137.GQ32307@mit.edu>
-	<alpine.LFD.2.00.0903251613300.3032@localhost.localdomain>
-	<20090325235041.GA11024@duck.suse.cz>
-	<20090326090630.GA9369@elte.hu>
-	<20090326113705.GV32307@mit.edu>
-	<20090326140312.GB14822@elte.hu>
-	<20090326140312.GB14822@elte.hu>
-	<20090326073013.2fa83178.akpm@linux-foundation.org>
-	<200903261632.42439.elendil@planet.nl>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+	Thu, 26 Mar 2009 12:05:16 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=cTwUmoFCfy1vh/hvUl3jWhSFrs6c+3f55lfxmN49p9yE9Kv3Fgv2FzYG0bXz1MBpCD
+         hFdM44AFX57XZFT2nOozKoAcdbxS8VpFcIDV2fBRT9Zgj68BIjsqcIn8OLhTbjEKJ93A
+         ETgWYlqQ/f8P5qAzN5UAFrGEnY7Uf4m67L4WA=
+Subject: Re: fastboot: unpacking initramfs faster
+From: Andreas Robinson <andr345@gmail.com>
+To: Bodo Eggert <7eggert@gmx.de>
+Cc: Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org
+In-Reply-To: <alpine.LSU.0.999.0903261354380.6387@be1.lrz>
+References: <cj9yI-540-17@gated-at.bofh.it>
+	 <E1LmEqj-0001SN-6Y@be1.7eggert.dyndns.org>
+	 <1238053964.8304.24.camel@andreas-desktop>
+	 <alpine.LSU.0.999.0903261216550.5843@be1.lrz>
+	 <1238068631.12756.23.camel@andreas-desktop>
+	 <alpine.LSU.0.999.0903261354380.6387@be1.lrz>
+Content-Type: text/plain
+Date: Thu, 26 Mar 2009 17:05:12 +0100
+Message-Id: <1238083512.11269.9.camel@andreas-desktop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.24.3 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 26 Mar 2009 16:32:38 +0100 Frans Pop <elendil@planet.nl> wrote:
+Here is a quick and dirty patch that works for me. Applies to current
+git.kernel.org/pub/scm/linux/kernel/git/mingo/linux-2.6-x86.git
 
-> Andrew Morton wrote:
-> > On Thu, 26 Mar 2009 15:03:12 +0100 Ingo Molnar <mingo@elte.hu> wrote:
-> >> Why arent the relatime patches upstream?
-> > 
-> > They have been for ages.
-> 
-> I assume Ingo means the patches to make relatime update atime at least 
-> once per day to ensure better compatibility with apps that do use or rely 
-> on access times.
-> These patches are already being included by several distros and, FWIW, 
-> Debian would like to see them upstream as well because we feel .
-> 
-> They were last submitted by Matthew Garrett:
-> http://lkml.org/lkml/2008/11/27/234
-> http://lkml.org/lkml/2008/11/27/235
-> 
-> Loads of people seem to want this, but even though it's been submitted at 
-> least twice and discussed even more often, it never gets anywhere.
-> 
+Work on monolithic-kernel decompression and multithreading is next.
 
-Hard-wiring a 24-hour interval into the core VFS for all mounted
-filesystems is dumb.
+>From 27d64e5fca08d695282da219eb71e5fca978a9d2 Mon Sep 17 00:00:00 2001
+From: Andreas Robinson <andr345@gmail.com>
+Date: Thu, 26 Mar 2009 16:44:14 +0100
+Subject: [PATCH] lib: support lzo-compressed initramfs images
 
-I (and others) pointed out that it would be better to implement this as
-a mount option.  That suggestion was met with varying sillinesses and
-that is where things stand.
+Impact: Allows faster unpacking of the initial ramdisk.
+
+LZO files are marginally larger than gzip, about 7% for the
+best compression method lzo1x_999, but decompress about 30%
+faster on x86 hardware.
+
+This patch supports a new stream format generated by a
+userspace tool named blzo.
+
+Patch content:
+* necessary additions to Kconfig and makefiles
+* a simple initramfs decompressor
+---
+ include/linux/decompress/ublzo.h |   12 ++++++
+ lib/Kconfig                      |    4 ++
+ lib/Makefile                     |    1 +
+ lib/decompress.c                 |    5 +++
+ lib/decompress_ublzo.c           |   75 ++++++++++++++++++++++++++++++++++++++
+ usr/Kconfig                      |    9 +++++
+ 6 files changed, 106 insertions(+), 0 deletions(-)
+ create mode 100644 include/linux/decompress/ublzo.h
+ create mode 100644 lib/decompress_ublzo.c
+
+diff --git a/include/linux/decompress/ublzo.h b/include/linux/decompress/ublzo.h
+new file mode 100644
+index 0000000..e453d07
+--- /dev/null
++++ b/include/linux/decompress/ublzo.h
+@@ -0,0 +1,12 @@
++#ifndef DECOMPRESS_UBLZO_H
++#define DECOMPRESS_UBLZO_H
++
++int ublzo(unsigned char *, int,
++	  int(*fill)(void*, unsigned int),
++	  int(*flush)(void*, unsigned int),
++	  unsigned char *output,
++	  int *posp,
++	  void(*error)(char *x)
++	);
++
++#endif
+diff --git a/lib/Kconfig b/lib/Kconfig
+index e3b7d7a..9e5c7f1 100644
+--- a/lib/Kconfig
++++ b/lib/Kconfig
+@@ -104,6 +104,10 @@ config LZO_DECOMPRESS
+ # These all provide a common interface (hence the apparent duplication with
+ # ZLIB_INFLATE; DECOMPRESS_GZIP is just a wrapper.)
+ #
++config DECOMPRESS_BLZO
++	select LZO_DECOMPRESS
++	tristate
++
+ config DECOMPRESS_GZIP
+ 	select ZLIB_INFLATE
+ 	tristate
+diff --git a/lib/Makefile b/lib/Makefile
+index b24222c..9ee48e8 100644
+--- a/lib/Makefile
++++ b/lib/Makefile
+@@ -65,6 +65,7 @@ obj-$(CONFIG_REED_SOLOMON) += reed_solomon/
+ obj-$(CONFIG_LZO_COMPRESS) += lzo/
+ obj-$(CONFIG_LZO_DECOMPRESS) += lzo/
+ 
++lib-$(CONFIG_DECOMPRESS_BLZO) += decompress_ublzo.o
+ lib-$(CONFIG_DECOMPRESS_GZIP) += decompress_inflate.o
+ lib-$(CONFIG_DECOMPRESS_BZIP2) += decompress_bunzip2.o
+ lib-$(CONFIG_DECOMPRESS_LZMA) += decompress_unlzma.o
+diff --git a/lib/decompress.c b/lib/decompress.c
+index d2842f5..8c189a0 100644
+--- a/lib/decompress.c
++++ b/lib/decompress.c
+@@ -9,10 +9,14 @@
+ #include <linux/decompress/bunzip2.h>
+ #include <linux/decompress/unlzma.h>
+ #include <linux/decompress/inflate.h>
++#include <linux/decompress/ublzo.h>
+ 
+ #include <linux/types.h>
+ #include <linux/string.h>
+ 
++#ifndef CONFIG_DECOMPRESS_BLZO
++# define ublzo NULL
++#endif
+ #ifndef CONFIG_DECOMPRESS_GZIP
+ # define gunzip NULL
+ #endif
+@@ -28,6 +32,7 @@ static const struct compress_format {
+ 	const char *name;
+ 	decompress_fn decompressor;
+ } compressed_formats[] = {
++	{ {'B', 'L'}, "blzo", ublzo },
+ 	{ {037, 0213}, "gzip", gunzip },
+ 	{ {037, 0236}, "gzip", gunzip },
+ 	{ {0x42, 0x5a}, "bzip2", bunzip2 },
+diff --git a/lib/decompress_ublzo.c b/lib/decompress_ublzo.c
+new file mode 100644
+index 0000000..136f57f
+--- /dev/null
++++ b/lib/decompress_ublzo.c
+@@ -0,0 +1,75 @@
++/* Simple LZO file format decompressor.
++ *
++ *     Copyright (C) 2009 Andreas Robinson <andr345@gmail.com>
++ *
++ *
++ * This program is free software: you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation, either version 2 of the License, or
++ * (at your option) any later version.
++ */
++
++#include <linux/types.h>
++#include <linux/lzo.h>
++
++#ifndef STATIC
++#include <linux/decompress/ublzo.h>
++#endif /* STATIC */
++#include <linux/decompress/mm.h>
++
++#define BLZO_BLOCK_SIZE 65536
++
++int INIT ublzo(unsigned char *inbuf, int len,
++		int(*fill)(void*, unsigned int),
++		int(*flush)(void*, unsigned int),
++		unsigned char *output,
++		int *posp,
++		void(*error)(char *x))
++{
++	int ret = LZO_E_OK;
++	size_t start_len, in_len, out_len;
++	void *out;
++
++	start_len = len;
++
++	if (fill) {
++		error("the decompress 'fill' feature is not yet implemented");
++		return LZO_E_ERROR;
++	} else {
++		out = malloc(BLZO_BLOCK_SIZE);
++		if (!out)
++			panic("Cannot allocate decompression buffers!");
++
++		if (memcmp("BLZO", inbuf, 4) != 0)
++			return LZO_E_ERROR;
++
++		inbuf += 4;
++		len -= 4;
++
++		while (len > 0) {
++			in_len = (inbuf[0] << 8) + inbuf[1];
++			inbuf += 2;
++			len -= 2;
++			if (in_len == 0)
++				goto done;
++
++			out_len = BLZO_BLOCK_SIZE;
++			ret = lzo1x_decompress_safe(inbuf, in_len, out, &out_len);
++			if (ret != LZO_E_OK) {
++				error("error in LZO archive");
++				goto done;
++			}
++
++			inbuf += in_len;
++			len -= in_len;
++			flush(out, out_len);
++		}
++	}
++
++done:
++	free(out);
++	*posp = start_len - len;
++	return ret;
++}
++
++#define decompress ublzo
+diff --git a/usr/Kconfig b/usr/Kconfig
+index 43a3a0f..ff2b15c 100644
+--- a/usr/Kconfig
++++ b/usr/Kconfig
+@@ -45,6 +45,15 @@ config INITRAMFS_ROOT_GID
+ 
+ 	  If you are not sure, leave it set to "0".
+ 
++config RD_BLZO
++	bool "Initial ramdisk compressed using blzo"
++	default y
++	depends on BLK_DEV_INITRD=y
++	select DECOMPRESS_BLZO
++	help
++	  Support loading of a blzo encoded initial ramdisk or cpio buffer.
++	  If unsure, say Y.
++
+ config RD_GZIP
+ 	bool "Initial ramdisk compressed using gzip"
+ 	default y
+-- 
+1.5.6.3
+
+
