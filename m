@@ -1,77 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932070AbZCZSXa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760261AbZCZSZa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932070AbZCZSXa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Mar 2009 14:23:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755193AbZCZSXU
+	id S1760261AbZCZSZa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Mar 2009 14:25:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755800AbZCZSZW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Mar 2009 14:23:20 -0400
-Received: from extu-mxob-1.symantec.com ([216.10.194.28]:48379 "EHLO
-	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754414AbZCZSXU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Mar 2009 14:23:20 -0400
-Date: Thu, 26 Mar 2009 18:21:27 +0000 (GMT)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.anvils
-To: Jens Axboe <jens.axboe@oracle.com>
-cc: Ric Wheeler <rwheeler@redhat.com>, Jeff Garzik <jeff@garzik.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Theodore Tso <tytso@mit.edu>, Ingo Molnar <mingo@elte.hu>,
+	Thu, 26 Mar 2009 14:25:22 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:38935 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755563AbZCZSZV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Mar 2009 14:25:21 -0400
+Date: Thu, 26 Mar 2009 14:23:20 -0400
+From: Bill Nottingham <notting@redhat.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Theodore Tso <tytso@mit.edu>, Ingo Molnar <mingo@elte.hu>,
+       Jan Kara <jack@suse.cz>, Andrew Morton <akpm@linux-foundation.org>,
        Alan Cox <alan@lxorguk.ukuu.org.uk>,
        Arjan van de Ven <arjan@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
        Peter Zijlstra <a.p.zijlstra@chello.nl>, Nick Piggin <npiggin@suse.de>,
-       David Rees <drees76@gmail.com>, Jesper Krogh <jesper@krogh.cc>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.29
-In-Reply-To: <20090326154610.GH27476@kernel.dk>
-Message-ID: <Pine.LNX.4.64.0903261755010.14358@blonde.anvils>
-References: <alpine.LFD.2.00.0903241218130.3032@localhost.localdomain>
- <49C93AB0.6070300@garzik.org> <20090325093913.GJ27476@kernel.dk>
- <49CA86BD.6060205@garzik.org> <20090325194341.GB27476@kernel.dk>
- <49CA8ADA.3040709@redhat.com> <20090325195747.GC27476@kernel.dk>
- <Pine.LNX.4.64.0903252036130.8872@blonde.anvils> <20090326085748.GH27476@kernel.dk>
- <Pine.LNX.4.64.0903261430410.32095@blonde.anvils> <20090326154610.GH27476@kernel.dk>
+       Jens Axboe <jens.axboe@oracle.com>, David Rees <drees76@gmail.com>,
+       Jesper Krogh <jesper@krogh.cc>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Oleg Nesterov <oleg@redhat.com>, Roland McGrath <roland@redhat.com>
+Subject: Re: ext3 IO latency measurements (was: Linux 2.6.29)
+Message-ID: <20090326182320.GA9341@nostromo.devel.redhat.com>
+Mail-Followup-To: Linus Torvalds <torvalds@linux-foundation.org>,
+	Theodore Tso <tytso@mit.edu>, Ingo Molnar <mingo@elte.hu>,
+	Jan Kara <jack@suse.cz>, Andrew Morton <akpm@linux-foundation.org>,
+	Alan Cox <alan@lxorguk.ukuu.org.uk>,
+	Arjan van de Ven <arjan@infradead.org>,
+	Peter Zijlstra <a.p.zijlstra@chello.nl>,
+	Nick Piggin <npiggin@suse.de>, Jens Axboe <jens.axboe@oracle.com>,
+	David Rees <drees76@gmail.com>, Jesper Krogh <jesper@krogh.cc>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	Oleg Nesterov <oleg@redhat.com>, Roland McGrath <roland@redhat.com>
+References: <20090325215137.GQ32307@mit.edu> <alpine.LFD.2.00.0903251613300.3032@localhost.localdomain> <20090325235041.GA11024@duck.suse.cz> <20090326090630.GA9369@elte.hu> <20090326113705.GV32307@mit.edu> <20090326140312.GB14822@elte.hu> <20090326144707.GA6239@mit.edu> <alpine.LFD.2.00.0903260914440.3032@localhost.localdomain> <20090326173237.GB8465@nostromo.devel.redhat.com> <alpine.LFD.2.00.0903261039480.3032@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.00.0903261039480.3032@localhost.localdomain>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 26 Mar 2009, Jens Axboe wrote:
-> On Thu, Mar 26 2009, Hugh Dickins wrote:
-> > On Thu, 26 Mar 2009, Jens Axboe wrote:
-> > > On Wed, Mar 25 2009, Hugh Dickins wrote:
-> > > > 
-> > > > Tangential question, but am I right in thinking that BIO_RW_BARRIER
-> > > > similarly bars across all partitions, whereas its WRITE_BARRIER and
-> > > > DISCARD_BARRIER users would actually prefer it to apply to just one?
-> > > 
-> > > All the barriers refer to just that range which the barrier itself
-> > > references.
+Linus Torvalds (torvalds@linux-foundation.org) said: 
+> > Linus Torvalds (torvalds@linux-foundation.org) said: 
+> > > And quite frankly, even if you then _manually_ put 'relatime' in 
+> > > /etc/fstab, the default Fedora install will totally ignore it. Why? 
+> > > Because it mounts the root partition while using initrd, and totally 
+> > > ignores /etc/fstab.
 > > 
-> > Ah, thank you: then I had a fundamental misunderstanding of them,
-> > and need to go away and work that out some more.
-> > 
-> > Though I didn't read it before asking, doesn't the I/O Barriers section
-> > of Documentation/block/biodoc.txt give a very different impression?
+> > It should honor /etc/fstab changes, if the initramfs is rebuilt
+> > after the change is made. If it doesn't, that's a bug.
 > 
-> I'm sensing a miscommunication here... The ordering constraint is across
-> devices, at least that is how it is implemented. For file system
-> barriers (like BIO_RW_BARRIER), it could be per-partition instead. Doing
-> so would involve some changes at the block layer side, not necessarily
-> trivial. So I think you were asking about ordering, I was answering
-> about the write guarantee :-)
+> Why the hell should I rebuild initramfs? 
 
-Ah, thank you again, perhaps I did understand after all.
+Well, it's got to find the root fs options somewhere. Pulling them
+from the modified /etc/fstab in the root fs before you mount it, well...
 
-So, directing a barrier (WRITE_BARRIER or DISCARD_BARRIER) to a range
-of sectors in one partition interposes a barrier into the queue of I/O
-across (all partitions of) that whole device.
+As for why fstab options aren't applied with remount once the root
+fs has been mounted, 1) historical reasons 2) someone specifies
+'data=writeback' or similar can't-be-applied-with-remount flag in
+/etc/fstab, and then mount refuses to remount it at all, and the
+system refuses to boot. Arguably pilot error, of course.
 
-I think that's not how filesystems really want barriers to behave,
-and might tend to discourage us from using barriers more freely.
-But I have zero appreciation of whether it's a significant issue
-worth non-trivial change - just wanted to get it out into the open.
-
-Hugh
+Bill
