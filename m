@@ -1,75 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757131AbZCZWaX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760490AbZCZWc2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757131AbZCZWaX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Mar 2009 18:30:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753427AbZCZWaH
+	id S1760490AbZCZWc2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Mar 2009 18:32:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753427AbZCZWcT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Mar 2009 18:30:07 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:40219 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752848AbZCZWaG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Mar 2009 18:30:06 -0400
-Date: Thu, 26 Mar 2009 23:29:24 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: Re: [PATCH 2/2] tracing: add average time in function to function
-	profiler
-Message-ID: <20090326222924.GA28755@elte.hu>
-References: <20090326010737.611522983@goodmis.org> <20090326010811.510051401@goodmis.org> <20090327091507.f133257e.sfr@canb.auug.org.au>
+	Thu, 26 Mar 2009 18:32:19 -0400
+Received: from col0-omc4-s2.col0.hotmail.com ([65.55.34.204]:22050 "EHLO
+	col0-omc4-s2.col0.hotmail.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752414AbZCZWcT convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Mar 2009 18:32:19 -0400
+Message-ID: <COL112-W1F128D0A25E4992851102C8910@phx.gbl>
+X-Originating-IP: [76.197.186.32]
+From: Adam Turk <bofh1234@hotmail.com>
+To: <leon.woestenberg@gmail.com>
+CC: <linux-kernel@vger.kernel.org>
+Subject: RE: recommended programming practices for writing (was Linux 2.6.29)
+Date: Thu, 26 Mar 2009 18:32:17 -0400
+Importance: Normal
+In-Reply-To: <c384c5ea0903261235sf1a4440q6fb5f38c983770bc@mail.gmail.com>
+References: <COL112-W81AF4A8C222B9941D8295FC8910@phx.gbl>
+ <c384c5ea0903261235sf1a4440q6fb5f38c983770bc@mail.gmail.com>
+Content-Type: text/plain; charset="Windows-1252"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090327091507.f133257e.sfr@canb.auug.org.au>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+X-OriginalArrivalTime: 26 Mar 2009 22:32:17.0738 (UTC) FILETIME=[B8368AA0:01C9AE62]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+>> On Thu, Mar 26, 2009 at 8:03 PM, Adam Turk  wrote:
+>>
+>> I have been reading the Linux 2.6.29 thread with interest.  I have written several (10 or so) C programs that write large amounts of data (between 1 and 2 GB file sizes are common).  A snippet of code looks like this:
+>>
+>> I learned C about 15 years ago and there was no mention of a fsync.  My C book doesn't mention fsync either.  Granted I have written only 25-30 applications in the last 15 years or so so I am not an expert C programmer.
+>>
+>
+> Your question is really off-topic for the Linux Kernel mailing list,
+> but let me point you somewhere else:
+>
+> There is (1) the C library and (2) the functions provided by your
+> operating system. Linux follows to some extend the POSIX functions for
+> (2).
+>
+> A good read is the book "Linux Systems Programming" if you want to go
+> beyond what the C library offers, for starters.
+>
 
-> Hi Steve,
-> 
-> On Wed, 25 Mar 2009 21:07:39 -0400 Steven Rostedt <rostedt@goodmis.org> wrote:
-> >
-> > From: Steven Rostedt <srostedt@redhat.com>
-> > 
-> > Show the average time in the function (Time / Hit)
-> 
-> Just wondering why we need to do this in the kernel ... there is 
-> already enough information for a user to figure these averages 
-> out.
+I don't think it is really off topic as in the original topic thread there were comments about lazy programmers who didn't write their code properly.  Noone who made those comments gave examples of bad and good code so I decided to ask.  
 
-Well, this argument can be applied to a lot of information exposed 
-in /proc and /sys. For example in theory there's no need for 
-/proc/interrupts at all, because the IRQ mappings are present in the 
-syslog and in /sys enumerations and the IRQ counts are present in 
-/proc/stat already.
+Thank you for the recommendation.  I will check the local bookstores.
 
-I still find /proc/interrupts very handy, despite purist arguments 
-that it is redundant and that it thus should not be there.
+Thanks,
+Adam
 
-So we provide such things when it's easy to do, when it's a 
-meaningful piece of information and it is convenient to users and 
-developers.
-
-Note that the function profiler is a double-non-default item in 
-/debug (you need to enable two non-default options in the .config to 
-get it), so you cannot stumble on it accidentally.
-
-	Ingo
+_________________________________________________________________
+Windows Live™ SkyDrive: Get 25 GB of free online storage.
+http://windowslive.com/online/skydrive?ocid=TXT_TAGLM_WL_skydrive_032009
