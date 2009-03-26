@@ -1,66 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754906AbZCZLPT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753832AbZCZLXU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754906AbZCZLPT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Mar 2009 07:15:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751949AbZCZLPA
+	id S1753832AbZCZLXU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Mar 2009 07:23:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751949AbZCZLXK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Mar 2009 07:15:00 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:48800 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751075AbZCZLO7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Mar 2009 07:14:59 -0400
-Date: Thu, 26 Mar 2009 12:12:14 +0100
-From: Jiri Pirko <jpirko@redhat.com>
-To: Jay Vosburgh <fubar@us.ibm.com>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org, jgarzik@pobox.com,
-       davem@davemloft.net, shemminger@linux-foundation.org,
-       bridge@lists.linux-foundation.org, bonding-devel@lists.sourceforge.net,
-       kaber@trash.net, mschmidt@redhat.com, dada1@cosmosbay.com
-Subject: Re: [PATCH] bonding: allow bond in mode balance-alb to work
-	properly in bridge -try3
-Message-ID: <20090326111213.GA3471@psychotron.englab.brq.redhat.com>
-References: <20090313183303.GF3436@psychotron.englab.brq.redhat.com> <20090325151937.GI3437@psychotron.englab.brq.redhat.com> <28445.1237998713@death.nxdomain.ibm.com>
+	Thu, 26 Mar 2009 07:23:10 -0400
+Received: from gw-ca.panasas.com ([209.116.51.66]:4432 "EHLO
+	laguna.int.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751789AbZCZLXJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Mar 2009 07:23:09 -0400
+Message-ID: <49CB6597.9060607@panasas.com>
+Date: Thu, 26 Mar 2009 13:23:03 +0200
+From: Benny Halevy <bhalevy@panasas.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686 (x86_64); en-US; rv:1.9.1b3pre) Gecko/20090223 Thunderbird/3.0b2
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <28445.1237998713@death.nxdomain.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: pNFS Mailing List <pnfs@linux-nfs.org>
+CC: Fredric Isaman <iisaman@citi.umich.edu>, Steve Dickson <steved@redhat.com>,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: [PATCH] lib: statically link find_last_bit
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 26 Mar 2009 11:23:05.0879 (UTC) FILETIME=[3BD71270:01C9AE05]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Wed, Mar 25, 2009 at 05:31:53PM CET, fubar@us.ibm.com wrote:
->>@@ -2251,10 +2258,12 @@ int netif_receive_skb(struct sk_buff *skb)
->> 	null_or_orig = NULL;
->> 	orig_dev = skb->dev;
->> 	if (orig_dev->master) {
->>-		if (skb_bond_should_drop(skb))
->>+		if (skb_bond_should_drop(skb)) {
->> 			null_or_orig = orig_dev; /* deliver only exact match */
->>-		else
->>+		} else {
->> 			skb->dev = orig_dev->master;
->>+			bond_change_dest_hook(skb);
->
->	Since you put the hook outside of the skb_bond_should_drop
->function, does the VLAN accelerated receive path do the right thing if,
->e.g., there's a VLAN on top of bonding and that VLAN is part of the
->bridge?
+Currently, the only use of find_last_bit in the kernel is
+setup_nr_cpu_ids which compiles only under CONFIG_SMP.
+On uniprocessor machines the linker can't find it when
+needed in a loadable module.
 
-Don't worry :) I did not forget about this - just needed a bit time to
-investigate...
+    Kernel: arch/x86/boot/bzImage is ready  (#5)
+      Building modules, stage 2.
+      MODPOST 515 modules
+    ERROR: "find_last_bit" [fs/nfs/nfs.ko] undefined!
 
-Yeah, this look's like a problem. In __vlan_hwaccel_rx there is following line:
-	skb->dev = vlan_group_get_device(grp, vlan_tci & VLAN_VID_MASK);
-This rewrites the dev so latter on when netif_receive_skb is called the hook
-will be not called (because dev->master will not be set).
+Cc: Fredric Isaman <iisaman@citi.umich.edu>
+Signed-off-by: Benny Halevy <bhalevy@panasas.com>
+---
 
-Ok I will put the hook inside the skb_bond_should_drop() - it seems like a
-correct solution...
+patch required for the nfs41 series
 
-Thanks for pointing this out.
->
->	-J
->
->---
->	-Jay Vosburgh, IBM Linux Technology Center, fubar@us.ibm.com
+ lib/Makefile |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/lib/Makefile b/lib/Makefile
+index 32b0e64..286e2f7 100644
+--- a/lib/Makefile
++++ b/lib/Makefile
+@@ -37,7 +37,7 @@ lib-$(CONFIG_RWSEM_GENERIC_SPINLOCK) += rwsem-spinlock.o
+ lib-$(CONFIG_RWSEM_XCHGADD_ALGORITHM) += rwsem.o
+ lib-$(CONFIG_GENERIC_FIND_FIRST_BIT) += find_next_bit.o
+ lib-$(CONFIG_GENERIC_FIND_NEXT_BIT) += find_next_bit.o
+-lib-$(CONFIG_GENERIC_FIND_LAST_BIT) += find_last_bit.o
++obj-$(CONFIG_GENERIC_FIND_LAST_BIT) += find_last_bit.o
+ obj-$(CONFIG_GENERIC_HWEIGHT) += hweight.o
+ obj-$(CONFIG_LOCK_KERNEL) += kernel_lock.o
+ obj-$(CONFIG_PLIST) += plist.o
+-- 
+1.6.2.1
+
