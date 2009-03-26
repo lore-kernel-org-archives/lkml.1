@@ -1,83 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756489AbZCZIJS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756603AbZCZIJn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756489AbZCZIJS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Mar 2009 04:09:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756224AbZCZIIt
+	id S1756603AbZCZIJn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Mar 2009 04:09:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756224AbZCZIJZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Mar 2009 04:08:49 -0400
-Received: from gw-ca.panasas.com ([209.116.51.66]:31572 "EHLO
-	laguna.int.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756214AbZCZIIq (ORCPT
+	Thu, 26 Mar 2009 04:09:25 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:58552 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756545AbZCZIJW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Mar 2009 04:08:46 -0400
-Message-ID: <49CB3765.4070406@panasas.com>
-Date: Thu, 26 Mar 2009 10:05:57 +0200
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090315 Remi/3.0-0.b2.fc10.remi Thunderbird/3.0b2
+	Thu, 26 Mar 2009 04:09:22 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Message-ID: <49CB36F3.7040701@s5r6.in-berlin.de>
+Date: Thu, 26 Mar 2009 09:04:03 +0100
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.21) Gecko/20090323 SeaMonkey/1.1.15
 MIME-Version: 1.0
-To: Tejun Heo <htejun@gmail.com>
-CC: bzolnier@gmail.com, linux-kernel@vger.kernel.org, axboe@kernel.dk,
-       linux-ide@vger.kernel.org
-Subject: Re: [PATCH 03/14] block: implement blk_rq_map_kern_prealloc()
-References: <1237910776-10983-1-git-send-email-tj@kernel.org> <1237910776-10983-4-git-send-email-tj@kernel.org> <49CA4B4B.50408@panasas.com> <49CAE425.5050009@kernel.org> <49CB31DB.2040608@gmail.com>
-In-Reply-To: <49CB31DB.2040608@gmail.com>
-Content-Type: text/plain; charset=UTF-8
+To: Tejun Heo <tj@kernel.org>
+CC: "J.H." <warthog19@eaglescrag.net>, users@kernel.org,
+       linux-kernel <linux-kernel@vger.kernel.org>, support@osuosl.org,
+       Jon Tollefson <kniht@linux.vnet.ibm.com>,
+       Martin Bligh <mbligh@mbligh.org>, "Jorge O. Castro" <jorge@ubuntu.com>,
+       bugme-admin@linux-foundation.org,
+       "FTPAdmin Kernel.org" <ftpadmin@kernel.org>,
+       Jim Zemlin <jzemlin@linux-foundation.org>
+Subject: Re: [kernel.org users] [KORG] Bugzilla Upgrade / Server move
+References: <49C9D99D.2050400@eaglescrag.net> <49CB2D84.3070206@kernel.org> <49CB3356.4070104@s5r6.in-berlin.de>
+In-Reply-To: <49CB3356.4070104@s5r6.in-berlin.de>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 26 Mar 2009 08:07:34.0279 (UTC) FILETIME=[EB42F970:01C9ADE9]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 03/26/2009 09:42 AM, Tejun Heo wrote:
-> Hello,
-> 
-> A few issues.
-> 
+Stefan Richter wrote:
 > Tejun Heo wrote:
->>> Perhaps you could reorder the code below a bit?
->>>
->>> My proposal is:
->>> * blk_rq_map_kern_prealloc => is simplified to be
->>>     int blk_rq_map_bio(struct request_queue *q, struct request *rq,
->>> 		       struct bio *bio);
+>> Is there anyway to put the comment input area at the bottom of the
+>> page?  Trying to reply at the top just messes up my head in weird
+>> ways.
 > 
-> The thing is that the prealloc variant should be allowed to be called
-> from IRQ context and blk_queue_bounce() shouldn't be called.
-> Hmmm... well, the caller is supposed to know what it's doing and maybe
-> we can just add a comment that it shouldn't be called with buffers
-> which might get bounced from IRQ context.
-> 
+> Here is a patch:
+> https://bugzilla.redhat.com/show_bug.cgi?id=457022#c19
 
-Hmm that is a problem. I would suggest a flag or a check. My bios come
-from VFS they need bouncing.
-
-Can you think of a solution?
-
-We could just call blk_queue_bounce(). IRQ callers need to make sure their
-buffers don't need bouncing anyway, so there is no such bug right? If a programmer
-gets it wrong he will get a BUG check that tells him that.
-
->>> * The extra checks currently inside blk_rq_map_kern_prealloc are moved
->>>   to bio_map_kern_prealloc()
->>>
->>> * Users call bio_map_kern_prealloc() directly and then use blk_rq_map_bio()
->>>   in a two stage process.
-> 
-> This breaks consistency with blk_rq_map_*() family of functions.  Do
-> you have a plan to make them all consistent?  I think we really need
-> to maintain API consistency.
-> 
-
-I agree, that is why I called it blk_make_request originally. But this is not good
-for you since your request is pre-allocated as well as the bio.
-
-It needs a different name, blk_rq_set_bio(), I don't know do you have any ideas?
-
-> Thanks.
-> 
-
-Thanks
-
-Boaz
-
-
+PS:
+Here is a 'me too' to Tejun's comment.  Top-posting in bugzilla is OK if
+one doesn't have to re-read the history of the bug because it's all
+fresh in one's mind.  This is almost only the case when one follows the
+bug by mail --- but then one can also reply by mail and doesn't have a
+problem with the web interface anyway.  So, whenever one uses the web
+interface of bugzilla.kernel.org, it is quite likely that one skims
+through previous comments before adding a new one.  Hence comment box
+after existing comments makes much more sense, IMO.  At least if
+comments are shown in chronological order ( = site default).
+-- 
+Stefan Richter
+-=====-=-=== -=-= -==-=
+http://arcgraph.de/sr/
