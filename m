@@ -1,111 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757879AbZCZIkz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757308AbZCZIm2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757879AbZCZIkz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Mar 2009 04:40:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757622AbZCZIkF
+	id S1757308AbZCZIm2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Mar 2009 04:42:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753872AbZCZImM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Mar 2009 04:40:05 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:37445 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757056AbZCZIkB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Mar 2009 04:40:01 -0400
-Message-ID: <49CB3F4B.8070406@jp.fujitsu.com>
-Date: Thu, 26 Mar 2009 17:39:39 +0900
-From: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
+	Thu, 26 Mar 2009 04:42:12 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:59923 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750720AbZCZImK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Mar 2009 04:42:10 -0400
+Date: Thu, 26 Mar 2009 09:42:05 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Mikulas Patocka <mpatocka@redhat.com>
+Cc: device-mapper development <dm-devel@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andi Kleen <ak@suse.de>, "MASON, CHRISTOPHER" <CHRIS.MASON@oracle.com>
+Subject: Re: [dm-devel] Barriers still not passing on simple dm devices...
+Message-ID: <20090326084205.GG27476@kernel.dk>
+References: <49C7DD3C.2020401@redhat.com> <Pine.LNX.4.64.0903241000010.29968@hs20-bc2-1.build.redhat.com> <20090324140524.GV27476@kernel.dk> <Pine.LNX.4.64.0903241010490.29968@hs20-bc2-1.build.redhat.com> <20090324143034.GW27476@kernel.dk> <Pine.LNX.4.64.0903241033070.4088@hs20-bc2-1.build.redhat.com> <20090324150517.GX27476@kernel.dk> <Pine.LNX.4.64.0903251106520.27750@hs20-bc2-1.build.redhat.com> <20090325152751.GV27476@kernel.dk> <Pine.LNX.4.64.0903251825310.8027@hs20-bc2-1.build.redhat.com>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-CC: Andi Kleen <ak@linux.intel.com>, Ingo Molnar <mingo@elte.hu>
-Subject: [PATCH -tip 3/3] x86, mce: Add mce=nopoll option to disable timer
- polling
-Content-Type: text/plain; charset=ISO-2022-JP
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0903251825310.8027@hs20-bc2-1.build.redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds "mce=nopoll" option to disable timer polling
-for corrected errors from boot.  Unlike "mce=off", it doesn't
-prevent handling for uncorrected errors.
+On Wed, Mar 25 2009, Mikulas Patocka wrote:
+> > > > If they can't flush cache, then they must reject barriers unless they
+> > > > have write through caching.
+> > > 
+> > > ... and you suppose that journaled filesystems will use this error and 
+> > > mark filesystem for fsck if they are running over a device that doesn't 
+> > > support consistency?
+> > 
+> > No, but they can warn that data consistency isn't guarenteed. And they
+> > all do, if you mount with barriers enabled and the barrier write fails.
+> > If barriers aren't support, the first one will fail. So either they do
+> > lazy detect, or they do a trial barrier write at mount time.
+> 
+> The user shouldn't really be required to know what are barriers, which 
+> drivers support them and which don't, and which drivers maintain 
+> consistency without barriers and which not.
+> 
+> The user only needs to know if he must run fsck in the case of power 
+> failure or not. --- and that -EOPNOTSUPP error and warnings about failed 
+> barriers give him no information about that.
 
-It is useful if:
- - You don't have any interests in corrected errors. You may
-   use option mce_threshold=0 to disable cmci too.
- - You'd like to care banks only which cmci are supported.
- - You have an application such as hardware monitor that
-   checks error banks, and that can conflict with OS's polling.
- - Your system have an intelligent BIOS which can provide
-   enough health information, so reports from OS is redundant.
+I completely agree, but that's "just" a usability issue. Ext4 will tell
+you that barriers failed and are now disabled, not very informative. XFS
+will tell you something similar.
 
-Once booted, we can disable polling by setting check_interval
-to 0, but there are no mention about the fact.
-Some additional comments are help for this.
+> > So yes, I suppose that file systems will use this error. Because that is
+> > what they do.
+> > 
+> > > In theory it would be nice, in practice it doesn't work this way because 
+> > > many devices *DO* support data consistency don't support barriers (the 
+> > > most common are DM and MD when run over disk without write cache).
+> > 
+> > Your theory is nice, but most dm systems use write back caching. Any
+> 
+> If they do, the filesystem should know about it and fsck the partition in 
+> the case of crash.
+> 
+> > desktop uses write back caching. Only higher end disks default to
+> > write-through caching.
+> > 
+> > > So I think there should be flag (this device does/doesn't support data 
+> > > consistency) that the journaled filesystems can use to mark the disk dirty 
+> > > for fsck. And if you implement this flag, you can accept barriers always 
+> > > to all kind of devices regardless of whether they support consistency. You 
+> > > can then get rid of that -EOPNOTSUPP and simplify filesystem code because 
+> > > they'd no longer need two commit paths and a clumsy way to restart 
+> > > -EOPNOTSUPPed requests.
+> > 
+> > And my point is that this case isn't interesting, because most setups
+> > don't guarantee proper ordering.
+> 
+> If the ordering isn't guaranteed, the filesystem should know about it, and 
+> mark the partition for fsck. That's why I'm suggesting to use a flag for 
+> that. That flag could be also propagated up through md and dm.
 
-Signed-off-by: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-Cc: Andi Kleen <ak@linux.intel.com>
-Cc: Ingo Molnar <mingo@elte.hu>
----
- Documentation/x86/x86_64/boot-options.txt |    2 ++
- arch/x86/kernel/cpu/mcheck/mce_64.c       |   10 ++++++++--
- 2 files changed, 10 insertions(+), 2 deletions(-)
+We can do that, not a problem. The problem is that ordering is almost
+never preserved, SCSI does not use ordered tags because it hasn't
+verified that its error path doesn't reorder by mistake. So right now
+you can basically use 'false' as that flag.
 
-diff --git a/Documentation/x86/x86_64/boot-options.txt b/Documentation/x86/x86_64/boot-options.txt
-index 34c1304..5d55158 100644
---- a/Documentation/x86/x86_64/boot-options.txt
-+++ b/Documentation/x86/x86_64/boot-options.txt
-@@ -13,6 +13,8 @@ Machine check
-                in a reboot. On Intel systems it is enabled by default.
-    mce=nobootlog
- 		Disable boot machine check logging.
-+   mce=nopoll
-+		Disable timer polling for corrected errors
-    mce=tolerancelevel (number)
- 		0: always panic on uncorrected errors, log corrected errors
- 		1: panic or SIGBUS on uncorrected errors, log corrected errors
-diff --git a/arch/x86/kernel/cpu/mcheck/mce_64.c b/arch/x86/kernel/cpu/mcheck/mce_64.c
-index 33d612e..80ec191 100644
---- a/arch/x86/kernel/cpu/mcheck/mce_64.c
-+++ b/arch/x86/kernel/cpu/mcheck/mce_64.c
-@@ -449,6 +449,8 @@ void mce_log_therm_throt_event(__u64 status)
-  * Periodic polling timer for "silent" machine check errors.  If the
-  * poller finds an MCE, poll 2x faster.  When the poller finds no more
-  * errors, poll 2x slower (up to check_interval seconds).
-+ *
-+ * If check_interval is 0, polling is disabled.
-  */
- 
- static int check_interval = 5 * 60; /* 5 minutes */
-@@ -633,11 +635,12 @@ static void mce_init_timer(void)
- {
- 	struct timer_list *t = &__get_cpu_var(mce_timer);
- 
-+	/* Disable polling if check_interval is 0 */
-+	if (!check_interval)
-+		return;
- 	/* data race harmless because everyone sets to the same value */
- 	if (!next_interval)
- 		next_interval = check_interval * HZ;
--	if (!next_interval)
--		return;
- 	setup_timer(t, mcheck_timer, smp_processor_id());
- 	t->expires = round_jiffies(jiffies + next_interval);
- 	add_timer(t);
-@@ -845,11 +848,14 @@ __setup("nomce", mcheck_disable);
-  * mce=TOLERANCELEVEL (number, see above)
-  * mce=bootlog Log MCEs from before booting. Disabled by default on AMD.
-  * mce=nobootlog Don't log MCEs from before booting.
-+ * mce=nopoll Disable timer polling for corrected errors
-  */
- static int __init mcheck_enable(char *str)
- {
- 	if (!strcmp(str, "off"))
- 		mce_dont_init = 1;
-+	else if (!strcmp(str, "nopoll"))
-+		check_interval = 0;
- 	else if (!strcmp(str, "bootlog") || !strcmp(str, "nobootlog"))
- 		mce_bootlog = (str[0] == 'b');
- 	else if (isdigit(str[0]))
+> The reasoning: "write barriers aren't supported => the device doesn't 
+> guarantee consistency" isn't valid.
+
+It's valid in the sense that it's the only RELIABLE primitive we have.
+Are you really suggestion that we just assume any device is fully
+ordered, unless proven otherwise?
+
+> > The error handling is complex, no doubt
+> > about that. But the trial barrier test is pretty trivial and even could
+> > be easily abstracted out. If a later barrier write fails, then that's
+> > really no different than if a normal write fails. Error handling is not
+> > easy in that case.
+> 
+> I had a discussion with Andi about it some times ago. The conclusion was 
+> that all the current filesystems handle barriers failing in the middle of 
+> the operation without functionality loss, but it makes barriers useless 
+> for any performance-sensitive tasks (commits that wouldn't block 
+> concurrent activity). Non-blocking commits could only be implemented if 
+> barriers don't fail.
+
+As long as you do a trial barrier like XFS does, barriers will not fail
+unless you have media error. Things would also be much easier, if writes
+never failed.
+
 -- 
-1.6.2.1
+Jens Axboe
 
