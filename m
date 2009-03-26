@@ -1,138 +1,195 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755988AbZCZMHj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755988AbZCZMQV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755988AbZCZMHj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Mar 2009 08:07:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751226AbZCZMH3
+	id S1755988AbZCZMQV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Mar 2009 08:16:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752009AbZCZMQK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Mar 2009 08:07:29 -0400
-Received: from rv-out-0506.google.com ([209.85.198.224]:57893 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751133AbZCZMH1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Mar 2009 08:07:27 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=NzJ1NvNGj5DNTs9X8kqu6FQUiK8LrJ/fQi89Mi/Cnheno5Gv6QRxvSg/2vLxgdsAh6
-         YAqPFdLVH7s16wB9QRyyz1z/zJzbT6D+t+sEKNoC8yZk5pr6BIaynYfnH4OybTUXFm8S
-         38rY3OS3Eu4tfPoALQOwJ3KKXWta31n9OZKLQ=
-Message-ID: <49CB6FF8.7050701@gmail.com>
-Date: Thu, 26 Mar 2009 21:07:20 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Thu, 26 Mar 2009 08:16:10 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:49313 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751226AbZCZMQJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Mar 2009 08:16:09 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Subject: Re: [RFC][PATCH 1/2] PCI PM: Introduce __pci_[start|complete]_power_transition()
+Date: Thu, 26 Mar 2009 13:15:52 +0100
+User-Agent: KMail/1.11.1 (Linux/2.6.29-rc8-tst; KDE/4.2.1; x86_64; ; )
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Linux PCI <linux-pci@vger.kernel.org>,
+       pm list <linux-pm@lists.linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+References: <200903250138.53234.linux-pci-owner@vger.kernel.org> <200903250141.08478.rjw@sisk.pl>
+In-Reply-To: <200903250141.08478.rjw@sisk.pl>
 MIME-Version: 1.0
-To: Boaz Harrosh <bharrosh@panasas.com>
-CC: bzolnier@gmail.com, linux-kernel@vger.kernel.org, axboe@kernel.dk,
-       linux-ide@vger.kernel.org
-Subject: Re: [PATCH 03/14] block: implement blk_rq_map_kern_prealloc()
-References: <1237910776-10983-1-git-send-email-tj@kernel.org> <1237910776-10983-4-git-send-email-tj@kernel.org> <49CA4B4B.50408@panasas.com> <49CAE425.5050009@kernel.org> <49CB31DB.2040608@gmail.com> <49CB3765.4070406@panasas.com> <49CB387A.3000006@panasas.com> <49CB56AD.3080101@gmail.com> <49CB65CB.1030905@panasas.com>
-In-Reply-To: <49CB65CB.1030905@panasas.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200903261315.52699.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello, Boaz.
-
-Boaz Harrosh wrote:
->> For the latter, the APIs are blk_rq_map_{user[_iov]|kern}().  To add
->> to the fun, we have blk_rq_map_sg() which does a completely different
->> thing of mapping an rq's bios to sg and is usually called from low
->> level do_request() when starting to process a request.
+On Wednesday 25 March 2009, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rjw@sisk.pl>
 > 
-> Lets just remove for a moment blk_rq_map_sg() from the discussion.
-> That one is totally bogus name that gives me the crips every time
-> I read its name. If using the same terminology then at minimum it should have
-> been blk_sg_map_request() (Which I agree is even more cryptic but at least
-> it gets the source-destination right).
-
-Ah... yeah, one of the two definitely needs to get a different name.
-
->> You're suggesting to add blk_rq_map_bio() which doesn't really map
->> anything but rather allocates and initializes an rq from bio and
->> basically boils down to blk_rq_bio_prep() and blk_queue_bounce().
+> The radeonfb driver needs to program the device's PMCSR directly due
+> to some quirky hardware it has to handle (see
+> http://bugzilla.kernel.org/show_bug.cgi?id=12846 for details) and
+> after doing that it needs to call the platform (usually ACPI) to
+> finish the power transition of the device.  Currently it uses
+> pci_set_power_state() for this purpose, however making a specific
+> assumption about the internal behavior of this function, which has
+> changed recently so that this assumption is no longer satisfied.
+> For this reason, introduce __pci_complete_power_transition() that may
+> be called by the radeonfb driver to complete the power transition of
+> the device.  For symmetry, introduce __pci_start_power_transition().
 > 
-> Yes, as I said, I completely agree. It does not map anything and
-> should not be named blk_rq_map_. It should have a different better
-> name. Hell it exists today, as blk_rq_append_bio(), but that one
-> suggests usage in ways some people don't like, and they want to
-> remove it. My opinion is that: Both me and you could just use the
-> good old blk_rq_append_bio() and be happy.
-> 
-> So basically in practice it just comes down to renaming
-> blk_rq_append_bio() to something. We both just don't know how to call
-> it?
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 
-Subtly different.  blk_rq_append_bio() doesn't bounce.  It seems we
-really need to figure out who needs what and how to provide the
-interface in uniform way.
+Sorry, with this version of the patch the following failure scenarion is
+possible:
+* a caller of pci_set_power_state() wants to put a device into D3
+* pci_raw_set_power_state() fails and returns error code
+* device is not power manageable by the platform, so
+  __pci_complete_power_transition() returns 0
+* pci_set_power_state() returns 0, although it should return the error code
+  from pci_raw_set_power_state().
 
->> I think it's about time to cool it a bit and try to see what's going
->> on.  We don't really want blk_rq_map_*() to do three completely
->> different things, right?  Usage of blk_rq_map_{user[_iov]|kern}()
->> isn't too wide spread, so cleaning up the API shouldn't be difficult.
-> 
-> Currently blk_rq_map_sg() is the only odd ball, renaming that to something
-> sane will fix the current situation.
-> 
-> What additionally we both want is just plain old blk_rq_append_bio and
-> maybe with a better name?
+Also, if the device doesn't support the native PM and is not power manageable
+by the platform, we should always fall back to D0.
 
-Yeah, basically, something similar to that but without the subtle
-traps.  :-)
+The updated patch below has these problems fixed.
 
->> The difference explains why we have two different
->> initialization directions, so to me, the current API seems logical
->> although we really should be using different names.
->>
->> Can you please explain what your need is?  Why do you want
->> blk_make_request()?
->>
-> 
-> I don't need blk_make_request per-se, I just need a way to
-> allocate a request and then associate a pre built bio with it,
-> that was prepared by an upper filesystem.
-> 
-> (Which talks OSD, which does not fit the block device model at all,
-> but this is too much information for you)
-> 
-> Farther more, My life is more complicated then that because, I need
-> a bidi-request which is second request hanging on the first one. And
-> each request can map up to 6 segments of source information that
-> are finally laid linear on the wire. So my bio can not be built
-> with a single blk_rq_map_xxx call.
-> 
-> To make the story short blk_rq_append_bio() can be used by your
-> code and mine, perhaps with a better name.
-> 
-> I feel I took to much of your time with my petty problems, Just
-> that I felt that if adding an associate-this-request-with-this-bio
-> API to blkdev.h could be done in a way that makes both of us happy.
+Thanks,
+Rafael
 
-Thanks for the explanation.
+---
+From: Rafael J. Wysocki <rjw@sisk.pl>
+Subject: PCI PM: Introduce __pci_[start|complete]_power_transition() (rev. 2)
 
-I think the problem is unclear distinction between bio initialization
-and rq initialization.  Ideally, blk_rq_map*() functions should
-initialize rq, call appropriate bio map function, link the result into
-rq and be done with it, but currently blk_rq_map*() functions do more
-than that and that makes cutting out the bio initialization apart
-difficult, so in case where bios need to be initialized separately
-from rq, the interface gets weird.  What level of bio initialization
-should the init-rq-from-bio function should expect?  Is it already
-bounced?  Does it have aligned buffer and etc?
+The radeonfb driver needs to program the device's PMCSR directly due
+to some quirky hardware it has to handle (see
+http://bugzilla.kernel.org/show_bug.cgi?id=12846 for details) and
+after doing that it needs to call the platform (usually ACPI) to
+finish the power transition of the device.  Currently it uses
+pci_set_power_state() for this purpose, however making a specific
+assumption about the internal behavior of this function, which has
+changed recently so that this assumption is no longer satisfied.
+For this reason, introduce __pci_complete_power_transition() that may
+be called by the radeonfb driver to complete the power transition of
+the device.  For symmetry, introduce __pci_start_power_transition().
 
-If we can define cleaner bio mapping interface and make rq mapping
-functions thinner wrapper around those, it will be much better, but
-that doesn't seem to be a trivial thing.  Is it possible for you to
-stay with blk_rq_append_bio() for the time being?  I'll revisit the
-mapping API once the current pile of patches I'm sitting on settle
-down a bit.
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ drivers/pci/pci.c   |   69 ++++++++++++++++++++++++++++++++++++++--------------
+ include/linux/pci.h |    1 
+ 2 files changed, 52 insertions(+), 18 deletions(-)
 
-Thanks.
-
--- 
-tejun
+Index: linux-2.6/drivers/pci/pci.c
+===================================================================
+--- linux-2.6.orig/drivers/pci/pci.c
++++ linux-2.6/drivers/pci/pci.c
+@@ -540,6 +540,53 @@ void pci_update_current_state(struct pci
+ }
+ 
+ /**
++ * pci_platform_power_transition - Use platform to change device power state
++ * @dev: PCI device to handle.
++ * @state: State to put the device into.
++ */
++static int pci_platform_power_transition(
++	struct pci_dev *dev, pci_power_t state)
++{
++	int error;
++
++	if (platform_pci_power_manageable(dev)) {
++		error = platform_pci_set_power_state(dev, state);
++		if (!error)
++			pci_update_current_state(dev, state);
++	} else {
++		error = -ENODEV;
++		pci_update_current_state(dev, PCI_D0);
++	}
++
++	return error;
++}
++
++/**
++ * __pci_start_power_transition - Start power transition of a PCI device
++ * @dev: PCI device to handle.
++ * @state: State to put the device into.
++ */
++static void __pci_start_power_transition(struct pci_dev *dev, pci_power_t state)
++{
++	if (state == PCI_D0)
++		pci_platform_power_transition(dev, PCI_D0);
++}
++
++/**
++ * __pci_complete_power_transition - Complete power transition of a PCI device
++ * @dev: PCI device to handle.
++ * @state: State to put the device into.
++ *
++ * This function should not be called directly by device drivers.
++ */
++int __pci_complete_power_transition(struct pci_dev *dev, pci_power_t state)
++{
++	return state > PCI_D0 ?
++			pci_platform_power_transition(dev, state) : -ENODEV;
++}
++EXPORT_SYMBOL_GPL(__pci_complete_power_transition);
++
++/**
+  * pci_set_power_state - Set the power state of a PCI device
+  * @dev: PCI device to handle.
+  * @state: PCI power state (D0, D1, D2, D3hot) to put the device into.
+@@ -575,16 +622,8 @@ int pci_set_power_state(struct pci_dev *
+ 	if (dev->current_state == state)
+ 		return 0;
+ 
+-	if (state == PCI_D0) {
+-		/*
+-		 * Allow the platform to change the state, for example via ACPI
+-		 * _PR0, _PS0 and some such, but do not trust it.
+-		 */
+-		int ret = platform_pci_power_manageable(dev) ?
+-			platform_pci_set_power_state(dev, PCI_D0) : 0;
+-		if (!ret)
+-			pci_update_current_state(dev, PCI_D0);
+-	}
++	__pci_start_power_transition(dev, state);
++
+ 	/* This device is quirked not to be put into D3, so
+ 	   don't put it in D3 */
+ 	if (state == PCI_D3hot && (dev->dev_flags & PCI_DEV_FLAGS_NO_D3))
+@@ -592,14 +631,8 @@ int pci_set_power_state(struct pci_dev *
+ 
+ 	error = pci_raw_set_power_state(dev, state);
+ 
+-	if (state > PCI_D0 && platform_pci_power_manageable(dev)) {
+-		/* Allow the platform to finalize the transition */
+-		int ret = platform_pci_set_power_state(dev, state);
+-		if (!ret) {
+-			pci_update_current_state(dev, state);
+-			error = 0;
+-		}
+-	}
++	if (!__pci_complete_power_transition(dev, state))
++		error = 0;
+ 
+ 	return error;
+ }
+Index: linux-2.6/include/linux/pci.h
+===================================================================
+--- linux-2.6.orig/include/linux/pci.h
++++ linux-2.6/include/linux/pci.h
+@@ -689,6 +689,7 @@ size_t pci_get_rom_size(struct pci_dev *
+ /* Power management related routines */
+ int pci_save_state(struct pci_dev *dev);
+ int pci_restore_state(struct pci_dev *dev);
++int __pci_complete_power_transition(struct pci_dev *dev, pci_power_t state);
+ int pci_set_power_state(struct pci_dev *dev, pci_power_t state);
+ pci_power_t pci_choose_state(struct pci_dev *dev, pm_message_t state);
+ bool pci_pme_capable(struct pci_dev *dev, pci_power_t state);
