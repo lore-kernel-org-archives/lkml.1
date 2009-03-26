@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760446AbZCZSuk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759703AbZCZSxw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760446AbZCZSuk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Mar 2009 14:50:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759134AbZCZSub
+	id S1759703AbZCZSxw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Mar 2009 14:53:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754689AbZCZSxo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Mar 2009 14:50:31 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:32777 "EHLO
+	Thu, 26 Mar 2009 14:53:44 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:47393 "EHLO
 	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1758466AbZCZSua (ORCPT
+	with ESMTP id S1752879AbZCZSxn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Mar 2009 14:50:30 -0400
-Date: Thu, 26 Mar 2009 18:48:38 +0000
+	Thu, 26 Mar 2009 14:53:43 -0400
+Date: Thu, 26 Mar 2009 18:52:43 +0000
 From: Alan Cox <alan@lxorguk.ukuu.org.uk>
 To: Matthew Garrett <mjg@redhat.com>
 Cc: Linus Torvalds <torvalds@linux-foundation.org>,
@@ -22,10 +22,11 @@ Cc: Linus Torvalds <torvalds@linux-foundation.org>,
        Jesper Krogh <jesper@krogh.cc>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Oleg Nesterov <oleg@redhat.com>, Roland McGrath <roland@redhat.com>
-Subject: Re: [PATCH 2/2] Make relatime default
-Message-ID: <20090326184838.26166549@lxorguk.ukuu.org.uk>
-In-Reply-To: <20090326175314.GC7198@srcf.ucam.org>
-References: <alpine.LFD.2.00.0903251613300.3032@localhost.localdomain>
+Subject: Re: [PATCH 1/2] Add a strictatime mount option
+Message-ID: <20090326185243.5bf44458@lxorguk.ukuu.org.uk>
+In-Reply-To: <20090326174956.GB7198@srcf.ucam.org>
+References: <20090325215137.GQ32307@mit.edu>
+	<alpine.LFD.2.00.0903251613300.3032@localhost.localdomain>
 	<20090325235041.GA11024@duck.suse.cz>
 	<20090326090630.GA9369@elte.hu>
 	<20090326113705.GV32307@mit.edu>
@@ -35,7 +36,6 @@ References: <alpine.LFD.2.00.0903251613300.3032@localhost.localdomain>
 	<20090326170714.GF6239@mit.edu>
 	<alpine.LFD.2.00.0903261015050.3032@localhost.localdomain>
 	<20090326174956.GB7198@srcf.ucam.org>
-	<20090326175314.GC7198@srcf.ucam.org>
 X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -44,18 +44,15 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 26 Mar 2009 17:53:14 +0000
+On Thu, 26 Mar 2009 17:49:56 +0000
 Matthew Garrett <mjg@redhat.com> wrote:
 
-> Change the default behaviour of the kernel to use relatime for all
-> filesystems. This can be overridden with the "strictatime" mount
-> option.
+> Add support for explicitly requesting full atime updates. This makes it
+> possible for kernels to default to relatime but still allow userspace to
+> override it.
+> 
+> Signed-off-by: Matthew Garrett <mjg@redhat.com>
 
-NAK this again
+NAK this is unneccessary complication from a broken ABI change that isn't
+safe to make anyway.
 
-There is an expected behaviour pattern that is standards compliant and
-suddenly breaking that on people when they upgrade could cause serious
-problems in some server environments.
-
-What you propose is basically a bogus ABI change. Fix it in user space
-(in fact all the distros *are* so this patch is silly and pointless)
