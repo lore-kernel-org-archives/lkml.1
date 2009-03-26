@@ -1,42 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755081AbZCZLN6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754906AbZCZLPT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755081AbZCZLN6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Mar 2009 07:13:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751503AbZCZLNu
+	id S1754906AbZCZLPT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Mar 2009 07:15:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751949AbZCZLPA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Mar 2009 07:13:50 -0400
-Received: from bilbo.ozlabs.org ([203.10.76.25]:46056 "EHLO bilbo.ozlabs.org"
+	Thu, 26 Mar 2009 07:15:00 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:48800 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751075AbZCZLNu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Mar 2009 07:13:50 -0400
+	id S1751075AbZCZLO7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Mar 2009 07:14:59 -0400
+Date: Thu, 26 Mar 2009 12:12:14 +0100
+From: Jiri Pirko <jpirko@redhat.com>
+To: Jay Vosburgh <fubar@us.ibm.com>
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org, jgarzik@pobox.com,
+       davem@davemloft.net, shemminger@linux-foundation.org,
+       bridge@lists.linux-foundation.org, bonding-devel@lists.sourceforge.net,
+       kaber@trash.net, mschmidt@redhat.com, dada1@cosmosbay.com
+Subject: Re: [PATCH] bonding: allow bond in mode balance-alb to work
+	properly in bridge -try3
+Message-ID: <20090326111213.GA3471@psychotron.englab.brq.redhat.com>
+References: <20090313183303.GF3436@psychotron.englab.brq.redhat.com> <20090325151937.GI3437@psychotron.englab.brq.redhat.com> <28445.1237998713@death.nxdomain.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18891.25448.953379.813652@cargo.ozlabs.ibm.com>
-Date: Thu, 26 Mar 2009 22:13:44 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       linux-kernel@vger.kernel.org, Mike Galbraith <efault@gmx.de>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Wu Fengguang <fengguang.wu@intel.com>
-Subject: Re: [RFC][PATCH 2/3] perf_counter: executable mmap() information
-In-Reply-To: <18891.24450.489196.961004@cargo.ozlabs.ibm.com>
-References: <20090325210419.408653980@chello.nl>
-	<20090325210542.293237509@chello.nl>
-	<18891.6159.109191.255560@drongo.ozlabs.ibm.com>
-	<20090326100058.GD19826@elte.hu>
-	<18891.24450.489196.961004@cargo.ozlabs.ibm.com>
-X-Mailer: VM 8.0.9 under Emacs 22.2.1 (i486-pc-linux-gnu)
+Content-Disposition: inline
+In-Reply-To: <28445.1237998713@death.nxdomain.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I wrote:
+Wed, Mar 25, 2009 at 05:31:53PM CET, fubar@us.ibm.com wrote:
+>>@@ -2251,10 +2258,12 @@ int netif_receive_skb(struct sk_buff *skb)
+>> 	null_or_orig = NULL;
+>> 	orig_dev = skb->dev;
+>> 	if (orig_dev->master) {
+>>-		if (skb_bond_should_drop(skb))
+>>+		if (skb_bond_should_drop(skb)) {
+>> 			null_or_orig = orig_dev; /* deliver only exact match */
+>>-		else
+>>+		} else {
+>> 			skb->dev = orig_dev->master;
+>>+			bond_change_dest_hook(skb);
+>
+>	Since you put the hook outside of the skb_bond_should_drop
+>function, does the VLAN accelerated receive path do the right thing if,
+>e.g., there's a VLAN on top of bonding and that VLAN is part of the
+>bridge?
 
-> Fair enough, but as it stands, we've changed the ABI, so we need to
-> fix it.
+Don't worry :) I did not forget about this - just needed a bit time to
+investigate...
 
-I meant of course that that patch would change the ABI if it were
-accepted...
+Yeah, this look's like a problem. In __vlan_hwaccel_rx there is following line:
+	skb->dev = vlan_group_get_device(grp, vlan_tci & VLAN_VID_MASK);
+This rewrites the dev so latter on when netif_receive_skb is called the hook
+will be not called (because dev->master will not be set).
 
-Paul.
+Ok I will put the hook inside the skb_bond_should_drop() - it seems like a
+correct solution...
+
+Thanks for pointing this out.
+>
+>	-J
+>
+>---
+>	-Jay Vosburgh, IBM Linux Technology Center, fubar@us.ibm.com
