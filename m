@@ -1,101 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757788AbZCZKTn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755869AbZCZKiQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757788AbZCZKTn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Mar 2009 06:19:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751275AbZCZKTe
+	id S1755869AbZCZKiQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Mar 2009 06:38:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751617AbZCZKiG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Mar 2009 06:19:34 -0400
-Received: from ti-out-0910.google.com ([209.85.142.186]:18151 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751075AbZCZKTd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Mar 2009 06:19:33 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=RJ/yNy2x0R805YUXBCY8T2dxGHbrcq9VKnH77bLc5wKLvmNaQeJjUnVnVwEdSwwYSo
-         FzcUuCRTPFxNmnuG/JdoH+F6KnpOTP8UWlUIKcEMOsM0hK5UfsL32kcp6j13zvxglyNe
-         RKl2H0HKRDVOK8MkkIIoweoiw3hqzwt1Rw988=
-Message-ID: <49CB56AD.3080101@gmail.com>
-Date: Thu, 26 Mar 2009 19:19:25 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
-MIME-Version: 1.0
-To: Boaz Harrosh <bharrosh@panasas.com>
-CC: bzolnier@gmail.com, linux-kernel@vger.kernel.org, axboe@kernel.dk,
-       linux-ide@vger.kernel.org
-Subject: Re: [PATCH 03/14] block: implement blk_rq_map_kern_prealloc()
-References: <1237910776-10983-1-git-send-email-tj@kernel.org> <1237910776-10983-4-git-send-email-tj@kernel.org> <49CA4B4B.50408@panasas.com> <49CAE425.5050009@kernel.org> <49CB31DB.2040608@gmail.com> <49CB3765.4070406@panasas.com> <49CB387A.3000006@panasas.com>
-In-Reply-To: <49CB387A.3000006@panasas.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Thu, 26 Mar 2009 06:38:06 -0400
+Received: from cmpxchg.org ([85.214.51.133]:53124 "EHLO cmpxchg.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751255AbZCZKiF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Mar 2009 06:38:05 -0400
+Date: Thu, 26 Mar 2009 11:36:31 +0100
+From: Johannes Weiner <hannes@cmpxchg.org>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: David Howells <dhowells@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, Nick Piggin <npiggin@suse.de>,
+       Rik van Riel <riel@redhat.com>, Peter Zijlstra <peterz@infradead.org>,
+       MinChan Kim <minchan.kim@gmail.com>,
+       Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+Subject: Re: [patch 3/3] mm: keep pages from unevictable mappings off the LRU lists
+Message-ID: <20090326103631.GA1775@cmpxchg.org>
+References: <12135.1237805607@redhat.com> <20090326000100.GA5404@cmpxchg.org> <20090326175314.68F7.A69D9226@jp.fujitsu.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090326175314.68F7.A69D9226@jp.fujitsu.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Boaz Harrosh wrote:
-> On 03/26/2009 10:05 AM, Boaz Harrosh wrote:
->> On 03/26/2009 09:42 AM, Tejun Heo wrote:
->>> The thing is that the prealloc variant should be allowed to be called
->>> from IRQ context and blk_queue_bounce() shouldn't be called.
->>> Hmmm... well, the caller is supposed to know what it's doing and maybe
->>> we can just add a comment that it shouldn't be called with buffers
->>> which might get bounced from IRQ context.
->>>
->> Hmm that is a problem. I would suggest a flag or a check. My bios come
->> from VFS they need bouncing.
->>
->> Can you think of a solution?
->>
->> We could just call blk_queue_bounce(). IRQ callers need to make sure their
->> buffers don't need bouncing anyway, so there is no such bug right? If a programmer
->> gets it wrong he will get a BUG check that tells him that.
->>
+On Thu, Mar 26, 2009 at 05:56:52PM +0900, KOSAKI Motohiro wrote:
+> > On Mon, Mar 23, 2009 at 10:53:27AM +0000, David Howells wrote:
+> > > Johannes Weiner <hannes@cmpxchg.org> wrote:
+> > > 
+> > > > -		if (page_is_file_cache(page))
+> > > > +		if (mapping_unevictable(mapping))
+> > > > +			add_page_to_unevictable_list(page);
+> > > > +		else if (page_is_file_cache(page))
+> > > 
+> > > It would be nice to avoid adding an extra test and branch in here.  This
+> > > function is used a lot, and quite often we know the answer to the first test
+> > > before we even get here.
+> > 
+> > Yes, I thought about that too.  So I mounted a tmpfs and dd'd
+> > /dev/zero to a file on it until it ran out of space (around 900M,
+> > without swapping), deleted the file again.  I did this in a tight loop
+> > and profiled it.
+> > 
+> > I couldn't think of a way that would excercise add_to_page_cache_lru()
+> > more, I hope I didn't overlook anything, please correct if I am wrong.
+> > 
+> > If I was not, than the extra checking for unevictable mappings doesn't
+> > make a measurable difference.  The function on the vanilla kernel had
+> > a share of 0.2033%, on the patched kernel 0.1953%.
 > 
-> I just realized that in your original call you had the "force" flag,
-> we can keep that flag for the blk_rq_set_bio(), or what ever we
-> should name it.
+> May I ask the number of the cpu of your test box.
+> In general, lock contention possibility depend on #ofCPUs.
 
-Eh...  Currently, fs requests are built from bio whereas PC/kernel
-requests are usually mapped into the requset the driver already
-allocated, so there are two different directions of initiaializing a
-request.
+Yes, sure.  In this test I tried to find out how much this extra
+branch makes a difference for the common path (untaken), though.
 
-For the latter, the APIs are blk_rq_map_{user[_iov]|kern}().  To add
-to the fun, we have blk_rq_map_sg() which does a completely different
-thing of mapping an rq's bios to sg and is usually called from low
-level do_request() when starting to process a request.
+I have not tried to instrument the lock contention.  But this will be
+done with a quadcore system.
 
-You're suggesting to add blk_rq_map_bio() which doesn't really map
-anything but rather allocates and initializes an rq from bio and
-basically boils down to blk_rq_bio_prep() and blk_queue_bounce().
+> So, I and lee mainly talked about large box.
 
-I think it's about time to cool it a bit and try to see what's going
-on.  We don't really want blk_rq_map_*() to do three completely
-different things, right?  Usage of blk_rq_map_{user[_iov]|kern}()
-isn't too wide spread, so cleaning up the API shouldn't be difficult.
+Yeah, I don't have such a thing ;)
 
-So, let's think about the whole API.
-
-There is fundamental difference between fs and pc requests.  For fs
-requests, rq (struct request) doesn't really matter.  bio is the final
-goal of fs requests and rq is just the carrier of bios into the block
-layer and drivers.  For pc requests, this isn't true.  Here, bios are
-used as data carrier and the issuer cares much more about the rq
-itself which will be configured to carry the command the issuer wants
-to execute.  This is also true for completion too.  For fs requests,
-rq error status doesn't matter.  For pc requests, the other way
-around.  The difference explains why we have two different
-initialization directions, so to me, the current API seems logical
-although we really should be using different names.
-
-Can you please explain what your need is?  Why do you want
-blk_make_request()?
-
-Thanks.
-
--- 
-tejun
+	Hannes
