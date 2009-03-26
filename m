@@ -1,75 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757906AbZCZBmW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758037AbZCZBoS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757906AbZCZBmW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 21:42:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755631AbZCZBmM
+	id S1758037AbZCZBoS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 21:44:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755114AbZCZBoG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 21:42:12 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:50820 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754754AbZCZBmK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 21:42:10 -0400
-Date: Wed, 25 Mar 2009 18:34:32 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Jan Kara <jack@suse.cz>
-cc: Theodore Tso <tytso@mit.edu>, Andrew Morton <akpm@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Nick Piggin <npiggin@suse.de>,
-       Jens Axboe <jens.axboe@oracle.com>, David Rees <drees76@gmail.com>,
-       Jesper Krogh <jesper@krogh.cc>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.29
-In-Reply-To: <20090326002253.GC11024@duck.suse.cz>
-Message-ID: <alpine.LFD.2.00.0903251826390.3032@localhost.localdomain>
-References: <20090324103111.GA26691@elte.hu> <20090324041249.1133efb6.akpm@linux-foundation.org> <20090325123744.GK23439@duck.suse.cz> <20090325150041.GM32307@mit.edu> <alpine.LFD.2.00.0903251008120.3032@localhost.localdomain> <20090325185824.GO32307@mit.edu>
- <alpine.LFD.2.00.0903251341050.3032@localhost.localdomain> <20090325215137.GQ32307@mit.edu> <alpine.LFD.2.00.0903251613300.3032@localhost.localdomain> <alpine.LFD.2.00.0903251649450.3032@localhost.localdomain> <20090326002253.GC11024@duck.suse.cz>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Wed, 25 Mar 2009 21:44:06 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:52801 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753285AbZCZBoD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Mar 2009 21:44:03 -0400
+Message-ID: <49CADCCC.4000902@redhat.com>
+Date: Wed, 25 Mar 2009 21:39:24 -0400
+From: Ric Wheeler <rwheeler@redhat.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Jeff Garzik <jeff@garzik.org>
+CC: Eric Sandeen <sandeen@sandeen.net>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Theodore Tso <tytso@mit.edu>, Ingo Molnar <mingo@elte.hu>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Nick Piggin <npiggin@suse.de>,
+       David Rees <drees76@gmail.com>, Jesper Krogh <jesper@krogh.cc>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] issue storage device flush via sync_blockdev() (was Re:
+ Linux 2.6.29)
+References: <20090324132032.GK5814@mit.edu> <alpine.LFD.2.00.0903241053200.3032@localhost.localdomain> <20090324184549.GE32307@mit.edu> <alpine.LFD.2.00.0903241218130.3032@localhost.localdomain> <49C93AB0.6070300@garzik.org> <20090325093913.GJ27476@kernel.dk> <49CA86BD.6060205@garzik.org> <20090325194341.GB27476@kernel.dk> <49CA9346.6040108@garzik.org> <alpine.LFD.2.00.0903251337410.3032@localhost.localdomain> <20090325212923.GA5620@havoc.gtf.org> <49CAA88B.1080102@sandeen.net> <49CAD343.5070009@redhat.com> <49CAD9B3.1010208@garzik.org> <49CADB55.8050400@garzik.org>
+In-Reply-To: <49CADB55.8050400@garzik.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Thu, 26 Mar 2009, Jan Kara wrote:
+Jeff Garzik wrote:
+> Jeff Garzik wrote:
+>> Ric Wheeler wrote:
+>> What do you think sync_blockdev() does?  What is its purpose?
 >
->  1) We have to writeout blocks full of zeros on allocation so that we don't
-> expose unallocated data => slight slowdown
+>> Twofold:
+>> (1) guarantee all user data is flushed out before a major event 
+>> (unmount, journal close, unplug, poweroff, explosion, ...)
+>
+>> (2) As a sledgehammer hack for simple or legacy filesystems that do 
+>> not wish or need the complexity of transactional protection. 
+>> sync_blockdev() is intentionally used in lieu of complexity for the 
+>> following filesystems: HFS, HFS+, ADFS, AFFS, FAT, bfs, UFS, NTFS, qnx4.
+>
+>> My patch adds needed guarantees, only for the above filesystems, 
+>> where none were present before.
+>
+> To be specific, I was referring to fsync(2) guarantees being added to 
+> HFS, HFS+, ADFS, AFFS, FAT, bfs, UFS, NTFS, and qnx4.
+>
+> Other filesystems, besides those in the list, gain the 
+> flush-on-unmount action (a rare but useful addition) with my patch.
+>
+>     Jeff
+>
+>
+>
+Sorry for misunderstanding the scope of this before - this is certainly 
+a net win for the file systems that don't have proper barrier support 
+baked in already. Thanks!
 
-Why? 
+Ric
 
-This is in _no_ way different from a regular "write()" system call. And 
-there, we just attach the buffers to the page. If something crashes before 
-the page actually gets written out, then we'll have hopefully never 
-written out the metadata (that's what "data=ordered" means).
 
->  2) When blocksize < pagesize we must play nasty tricks for this to work
-> (think about i_size = 1024, set_page_dirty(), truncate(f, 8192),
-> writepage() -> uhuh, not enough space allocated)
-
-Good point. I suspect not enough people have played around with 
-"set_page_dirty()" to find these kinds of things. The VFS layer probably 
-doesn't help sufficiently with the half-dirty pages, although the FS can 
-obviously always look up the previously last page and do things manually 
-if it wants to.
-
-But yes, this is nasty.
-
->  3) We'll do allocation in the order in which pages are dirtied. Generally,
-> I'd suspect this order to be less linear than the order in which writepages
-> submit IO and thus it will result in the larger fragmentation of the file.
->   So it's not a clear win IMHO.
-
-Yes, that may be the case.
-
-Of course, the approach of just checking whether the buffer heads already 
-exists and are mapped (before bothering with anything else) probably works 
-fine in practice. In most loads, pages will have been dirtied by regular 
-"write()" system calls, and then we will have the buffers pre-allocated 
-regardless. 
-
-			Linus
