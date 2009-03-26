@@ -1,54 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752685AbZCYX7U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755075AbZCZAAv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752685AbZCYX7U (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 19:59:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752699AbZCYX7E
+	id S1755075AbZCZAAv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 20:00:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752734AbZCZAAk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 19:59:04 -0400
-Received: from gw.goop.org ([64.81.55.164]:38162 "EHLO mail.goop.org"
+	Wed, 25 Mar 2009 20:00:40 -0400
+Received: from cantor.suse.de ([195.135.220.2]:34850 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752693AbZCYX7D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 19:59:03 -0400
-Message-ID: <49CAC543.5020205@goop.org>
-Date: Wed, 25 Mar 2009 16:58:59 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	id S1751070AbZCZAAj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Mar 2009 20:00:39 -0400
+Date: Thu, 26 Mar 2009 01:00:36 +0100
+From: Jan Kara <jack@suse.cz>
+To: Alexander Beregalov <a.beregalov@gmail.com>
+Cc: Theodore Tso <tytso@mit.edu>,
+       "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>,
+       linux-ext4@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       sparclinux@vger.kernel.org
+Subject: Re: next-20090310: ext4 hangs
+Message-ID: <20090326000035.GB11024@duck.suse.cz>
+References: <a4423d670903110907o7041f4eof92278835aa0c71c@mail.gmail.com> <20090325151122.GA14881@atrey.karlin.mff.cuni.cz> <20090325151516.GB14881@atrey.karlin.mff.cuni.cz> <a4423d670903250818n512b1c67ja1b38db6d09ac7c@mail.gmail.com> <20090325152234.GN23439@duck.suse.cz> <a4423d670903250829w5e9304a7rce24f4220379620f@mail.gmail.com> <20090325161556.GP23439@duck.suse.cz> <a4423d670903251007r72058ca8m28275c1433ab2706@mail.gmail.com> <20090325194316.GQ23439@duck.suse.cz> <a4423d670903251538p3a7c180br1bcfe08c4f044c15@mail.gmail.com>
 MIME-Version: 1.0
-To: Ravikiran G Thirumalai <kiran@scalex86.org>
-CC: Ingo Molnar <mingo@elte.hu>, Yinghai Lu <yinghai@kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       shai@scalex86.org
-Subject: Re: [PATCH] x86: don't compile vsmp_64 for 32bit
-References: <20090227001757.GE27240@localdomain> <20090228094430.GH12095@elte.hu> <20090302235120.GF27240@localdomain> <20090322124818.GA31466@elte.hu> <20090324061429.GH7278@localdomain> <20090324091035.GA6605@elte.hu> <20090325185138.GI7278@localdomain> <49CAAD2E.3060904@goop.org> <20090325223642.GK7278@localdomain> <49CABB25.8040106@goop.org> <20090325232921.GL7278@localdomain>
-In-Reply-To: <20090325232921.GL7278@localdomain>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <a4423d670903251538p3a7c180br1bcfe08c4f044c15@mail.gmail.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ravikiran G Thirumalai wrote:
-> The point in this thread was, is_vsmp_box() needs to be meaningful even when
-> CONFIG_X86_VSMP is not on.  This is needed because is_vsmp_box() is used to
-> determine if the platform has reliable tscs.
->   
+  Hi,
 
-Well, as I said, that code is inoperative at present.  But aside from 
-that, how well will a non-VSMP kernel work on your hardware, with a 
-normal cacheline, etc.  Is the tsc stability really all that important, 
-given that the kernel should notice if the tsc is busted pretty quickly 
-anyway.
+  thanks for the updated disassembly.
 
-unsynchronized_tsc() just returns a guess anyway, and if you don't have 
-X86_FEATURE_CONSTANT_TSC set, then it will return unstable for your 
-hardware anyway, even without the is_vsmp_box() test.
+>   55bab0:       82 10 60 01     or  %g1, 1, %g1
+>                 spin_unlock(&journal->j_list_lock);
+>   55bab4:       40 06 4b 20     call  6ee734 <_spin_unlock>
+>   55bab8:       c2 24 e0 28     st  %g1, [ %l3 + 0x28 ]
+  OK, so it really seems that:
+  jinode->i_flags |= JI_COMMIT_RUNNING;
+  spin_unlock(&journal->j_list_lock);
 
-Failing that, you could add yourself to bad_tsc_dmi_table[] and have 
-that mark the tsc as unstable (you have DMI, right?).
+  has been compiled to
+  ld [ %l3 + 0x28 ], %g1
+  or  %g1, 1, %g1
+  call  6ee734 <_spin_unlock>
+  st  %g1, [ %l3 + 0x28 ]
 
-    J
+  Which seems like a bug in the compiler or in the way implement compiler
+barriers in spin_unlock() on UP sparc. Or is there some sparc magic by which
+this is correct code? Any clever sparc guy?
 
-
+									Honza
+-- 
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
