@@ -1,59 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755467AbZCZALr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756440AbZCZAMU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755467AbZCZALr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 20:11:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752737AbZCZALj
+	id S1756440AbZCZAMU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 20:12:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753446AbZCZAMH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 20:11:39 -0400
-Received: from byss.tchmachines.com ([208.76.80.75]:57211 "EHLO
-	byss.tchmachines.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752208AbZCZALj (ORCPT
+	Wed, 25 Mar 2009 20:12:07 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:44175 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752990AbZCZAMF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 20:11:39 -0400
-Date: Wed, 25 Mar 2009 17:11:34 -0700
-From: Ravikiran G Thirumalai <kiran@scalex86.org>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>, Ingo Molnar <mingo@elte.hu>,
-       Yinghai Lu <yinghai@kernel.org>, "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       shai@scalex86.org
-Subject: Re: [PATCH] x86: don't compile vsmp_64 for 32bit
-Message-ID: <20090326001134.GM7278@localdomain>
-References: <20090302235120.GF27240@localdomain> <20090322124818.GA31466@elte.hu> <20090324061429.GH7278@localdomain> <20090324091035.GA6605@elte.hu> <20090325185138.GI7278@localdomain> <49CAAD2E.3060904@goop.org> <20090325223642.GK7278@localdomain> <49CABB25.8040106@goop.org> <20090325232921.GL7278@localdomain> <alpine.LFD.2.00.0903260034200.3397@localhost.localdomain>
+	Wed, 25 Mar 2009 20:12:05 -0400
+Date: Wed, 25 Mar 2009 17:04:47 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Jan Kara <jack@suse.cz>
+cc: Theodore Tso <tytso@mit.edu>, Andrew Morton <akpm@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Nick Piggin <npiggin@suse.de>,
+       Jens Axboe <jens.axboe@oracle.com>, David Rees <drees76@gmail.com>,
+       Jesper Krogh <jesper@krogh.cc>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.29
+In-Reply-To: <20090325235041.GA11024@duck.suse.cz>
+Message-ID: <alpine.LFD.2.00.0903251657510.3032@localhost.localdomain>
+References: <20090324101011.6555a0b9@lxorguk.ukuu.org.uk> <20090324103111.GA26691@elte.hu> <20090324041249.1133efb6.akpm@linux-foundation.org> <20090325123744.GK23439@duck.suse.cz> <20090325150041.GM32307@mit.edu> <alpine.LFD.2.00.0903251008120.3032@localhost.localdomain>
+ <20090325185824.GO32307@mit.edu> <alpine.LFD.2.00.0903251341050.3032@localhost.localdomain> <20090325215137.GQ32307@mit.edu> <alpine.LFD.2.00.0903251613300.3032@localhost.localdomain> <20090325235041.GA11024@duck.suse.cz>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0903260034200.3397@localhost.localdomain>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - byss.tchmachines.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - scalex86.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 26, 2009 at 12:36:11AM +0100, Thomas Gleixner wrote:
->On Wed, 25 Mar 2009, Ravikiran G Thirumalai wrote:
->> > Sure, but it would be cleaner if the whole file were controlled by 
->> > CONFIG_X86_VSMP.  is_vsmp_box() is already defined as const inline 
->> > returning 0 if !CONFIG_X86_VSMP.
->> >
->> 
->> The point in this thread was, is_vsmp_box() needs to be meaningful even when
->> CONFIG_X86_VSMP is not on.  This is needed because is_vsmp_box() is used to
->> determine if the platform has reliable tscs.
+
+
+On Thu, 26 Mar 2009, Jan Kara wrote:
 >
->Did you even read what Jeremy wrote or bother to look at the code in
->arch/x86/include/asm/apic.h ?
->
+>   I can write a patch to make writepage() in the non-"mmapped creation"
+> case non-blocking on journal. But I'll also have to find out whether it
+> really helps something. But it's probably worth trying...
 
-Might I politely point out the origin of this code:
-http://lkml.org/lkml/2009/2/26/5
+Actually, it really should be easier to make a patch that just does the 
+journal thing if ->set_page_dirty() is called, and buffers weren't already 
+allocated.
 
-Please note the subject of the patch in the link and the subject of this
-discussion.  It is the same thread.  The patch was commited to tip and is
-still being discussed if it is any clarification :)
+Then ext3_[ordered|writeback]_writepage() _should_ just become something 
+like
 
+	if (test_opt(inode->i_sb, NOBH))
+		return nobh_writepage(page, ext3_get_block, wbc);
+
+	return block_write_full_page(page, ext3_get_block, wbc);
+
+and that's it. The code would be simpler to understand to boot.
+
+			Linus
