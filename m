@@ -1,79 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753677AbZCZKnW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754226AbZCZKyk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753677AbZCZKnW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Mar 2009 06:43:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752585AbZCZKnE
+	id S1754226AbZCZKyk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Mar 2009 06:54:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752794AbZCZKy2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Mar 2009 06:43:04 -0400
-Received: from systemlinux.org ([83.151.29.59]:58594 "EHLO m18s25.vlinux.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751175AbZCZKnD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Mar 2009 06:43:03 -0400
-Date: Thu, 26 Mar 2009 11:39:12 +0100
-From: Andre Noll <maan@systemlinux.org>
-To: Dan Williams <dan.j.williams@intel.com>
-Cc: linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org, neilb@suse.de,
-       maciej.sosnowski@intel.com, Yuri Tikhonov <yur@emcraft.com>,
-       Ilya Yanok <yanok@emcraft.com>
-Subject: Re: [PATCH 02/13] async_tx: don't use src_list argument of async_xor() for dma addresses
-Message-ID: <20090326103912.GP17185@skl-net.de>
-References: <20090318191248.20375.40560.stgit@dwillia2-linux.ch.intel.com> <20090318192026.20375.3053.stgit@dwillia2-linux.ch.intel.com> <20090319201008.GC10491@skl-net.de> <e9c3a7c20903251011w3f6b3f58u7c0352ae39bb1c7c@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="+sObS8/rhx1YpqEF"
-Content-Disposition: inline
-In-Reply-To: <e9c3a7c20903251011w3f6b3f58u7c0352ae39bb1c7c@mail.gmail.com>
-User-Agent: Mutt/1.5.9i
+	Thu, 26 Mar 2009 06:54:28 -0400
+Received: from wf-out-1314.google.com ([209.85.200.173]:30908 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751041AbZCZKy1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Mar 2009 06:54:27 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=Wkc30jQhYhn+/u/R9YnRD5nNSrcIZnPezvetrfhskhiwVdFNs/A/Lq+6J46iosgv5T
+         bTddwU1ds/1wlNM7+QmXsTrM5js/cuIbgmJBrCQOPwTdsQgTvDAXHsCjucM+pDla6beg
+         tUWxxlf5jw5iIoYWfH3Ec9Rb2PykpYfH7skPE=
+MIME-Version: 1.0
+Date: Thu, 26 Mar 2009 19:54:25 +0900
+Message-ID: <49b7c2350903260354p6eaf50ebo87985dcfb8d48ba0@mail.gmail.com>
+Subject: Re: [Announce] 2.6.29-rt1
+From: GeunSik Lim <leemgs1@gmail.com>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       rt-users <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Peter Zijlstra <peterz@infradead.org>, Carsten Emde <ce@ceag.ch>,
+       Clark Williams <williams@redhat.com>,
+       Frank Rowand <frank.rowand@am.sony.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
---+sObS8/rhx1YpqEF
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+I understood statement that Thosmas explained about invalid access of
+2.6.29-rt1 soruces.
+In general,
+We remeber rc directory (./v2.6/testing/ and release directory
+(./v2.6/) certainly.
 
-On 10:11, Dan Williams wrote:
-> On Thu, Mar 19, 2009 at 1:10 PM, Andre Noll <maan@systemlinux.org> wrote:
-> > On 12:20, Dan Williams wrote:
-> >
-> >> Using src_list argument of async_xor() as a storage for dma addresses
-> >> implies sizeof(dma_addr_t) <=3D sizeof(struct page *) restriction whic=
-h is
-> >> not always true (e.g. ppc440spe).
-> >
-> > This message does not tell what the patch is going to do about that.
-> > It would also be nice to mention (either in the log message or as a
-> > comment) why allocating the dma_src arrays on the stack is not going
-> > to be a problem.
-> >
->=20
-> True, and taking into account your other comment about the number of
-> parameters I think this is a good opportunity to solve this problem
-> rather than kick it down the road.  So I will prepare a rework to make
-> this memory caller provided.  This gives us the flexibility to use a
-> kmalloc'd buffer hanging off the stripe_head as Neil suggested in
-> another thread.
+Release Version is located in http://www.kernel.org/pub/linux/kernel/v2.6/ site.
+RC      Version is located in
+http://www.kernel.org/pub/linux/kernel/v2.6/testing/ site.
 
-Glad you agree. I'm looking forward to seeing the reworked patch set.
+I summarized quick howto per notice of "2.6.* rt patch" file.
+fc9#> wget http://www.kernel.org/pub/linux/kernel/v2.6/linux-2.6.29.tar.bz2
+  (If linux version is RC[release candidate] version,
+ use "wget http://www.kernel.org/pub/linux/kernel/v2.6/testing/***" command.)
+fc9#> wget http://www.kernel.org/pub/linux/kernel/projects/rt/patch-2.6.29-rt1.bz2
+fc9#> tar xjf ./linux-2.6.29.tar.bz2
+fc9#> tar xvjf ./patch-2.6.29-rt1-broken-out.tar.bz2
+fc9#> cd ./linux-2.6.29
+fc9#> for i in `cat ../patches/series | grep patch | grep -v "#"  `;do
+echo "+++ patching $i"; patch -p1 <
 
-Thanks
-Andre
---=20
-The only person who always got his work done by Friday was Robinson Crusoe
+../patches/$i;done
+fc9#> cp ./arch/x86/configs/i386_defconfig ./.config
+fc9#> make menuconfig
+        ..... Below Omission .....
+  	
 
---+sObS8/rhx1YpqEF
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
+Regards,
+GeunSik Lim
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.1 (GNU/Linux)
+----- Original Message -----
+From: "Thomas Gleixner" <tglx@linutronix.de>
+To: "Jaswinder Singh Rajput" <jaswinder@kernel.org>
+Cc: "LKML" <linux-kernel@vger.kernel.org>; "rt-users"
+<linux-rt-users@vger.kernel.org>; "Ingo Molnar" <mingo@elte.hu>;
+"Steven Rostedt" <rostedt@goodmis.org>; "Peter Zijlstra"
+<peterz@infradead.org>; "Carsten Emde" <ce@ceag.ch>; "Clark Williams"
+<williams@redhat.com>; "Frank Rowand" <frank.rowand@am.sony.com>
+Sent: Thursday, March 26, 2009 6:09 AM
+Subject: Re: [Announce] 2.6.29-rt1
 
-iD8DBQFJy1tQWto1QDEAkw8RAh77AKCZjEr0A4Sjog2N583P4DDO6X0tiACgmiiV
-8YWg4iVYkIFoN1ejRsQQieQ=
-=VWTU
------END PGP SIGNATURE-----
 
---+sObS8/rhx1YpqEF--
+> On Thu, 26 Mar 2009, Jaswinder Singh Rajput wrote:
+>
+>> On Wed, 2009-03-25 at 21:59 +0100, Thomas Gleixner wrote:
+>> > We are pleased to announce the next update to our new preempt-rt
+>> > series.
+>> >
+>> >      - port forward to 2.6.29 final
+>> >
+>> > Download locations:
+>> >
+>> >     http://rt.et.redhat.com/download/
+>> >     http://www.kernel.org/pub/linux/kernel/projects/rt/
+>> >
+>> > Information on the RT patch can be found at:
+>> >
+>> >     http://rt.wiki.kernel.org/index.php/Main_Page
+>> >
+>> > to build the 2.6.29-rt1 tree, the following patches should be
+>> > applied:
+>> >
+>> >     http://www.kernel.org/pub/linux/kernel/v2.6/testing/linux-2.6.29.tar.bz2
+>>
+>> Is this valid ?
+>
+> If we remove the testing/ it should work better :)
+>
+>   tglx
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
+>
+>
+>
