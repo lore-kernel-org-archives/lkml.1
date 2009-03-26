@@ -1,67 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759811AbZCZQrt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759475AbZCZQ6u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759811AbZCZQrt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Mar 2009 12:47:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756945AbZCZQrk
+	id S1759475AbZCZQ6u (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Mar 2009 12:58:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756945AbZCZQ6l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Mar 2009 12:47:40 -0400
-Received: from mail.sl.pt ([212.55.140.13]:49513 "EHLO sl.pt"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752505AbZCZQrj convert rfc822-to-8bit (ORCPT
+	Thu, 26 Mar 2009 12:58:41 -0400
+Received: from mail-fx0-f158.google.com ([209.85.220.158]:44169 "EHLO
+	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756800AbZCZQ6j (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Mar 2009 12:47:39 -0400
-X-Greylist: delayed 397 seconds by postgrey-1.27 at vger.kernel.org; Thu, 26 Mar 2009 12:47:38 EDT
-Date: Thu, 26 Mar 2009 16:40:53 +0000
-From: Jose Celestino <japc@co.sapo.pt>
-To: Theodore Tso <tytso@mit.edu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Frans Pop <elendil@planet.nl>, mingo@elte.hu, jack@suse.cz,
-       alan@lxorguk.ukuu.org.uk, arjan@infradead.org, a.p.zijlstra@chello.nl,
-       npiggin@suse.de, jens.axboe@oracle.com, drees76@gmail.com,
-       jesper@krogh.cc, linux-kernel@vger.kernel.org, oleg@redhat.com,
-       roland@redhat.com
-Subject: Re: relatime: update once per day patches (was: ext3 IO latency
-	measurements)
-Message-ID: <20090326164053.GA6318@co.sapo.pt>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Frans Pop <elendil@planet.nl>, mingo@elte.hu, jack@suse.cz,
-	alan@lxorguk.ukuu.org.uk, arjan@infradead.org,
-	a.p.zijlstra@chello.nl, npiggin@suse.de, jens.axboe@oracle.com,
-	drees76@gmail.com, jesper@krogh.cc, linux-kernel@vger.kernel.org,
-	oleg@redhat.com, roland@redhat.com
-References: <20090325235041.GA11024@duck.suse.cz> <20090326090630.GA9369@elte.hu> <20090326113705.GV32307@mit.edu> <20090326140312.GB14822@elte.hu> <20090326140312.GB14822@elte.hu> <20090326073013.2fa83178.akpm@linux-foundation.org> <200903261632.42439.elendil@planet.nl> <20090326084733.156c4910.akpm@linux-foundation.org> <alpine.LFD.2.00.0903260912270.3032@localhost.localdomain> <20090326163026.GD6239@mit.edu>
+	Thu, 26 Mar 2009 12:58:39 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=B1c9GJFjybgmQmtZtLJm+1EY7+KL3DTU4DQugqETlNISfaUAM7Zi8ANSTHWm2oGmN9
+         oPLizxhvfx+3hBPWBifqO7pTjjhvmzFivLjEMPw9Bq+/vHWUsCKAbZA2Ot51jjpHJxRS
+         lYEjIVQ59/nocYUrgavGFGh/h7FPhHH9d8UJI=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8BIT
-In-Reply-To: <20090326163026.GD6239@mit.edu>
-X-URL: http://xpto.org/~japc
-X-System: Linux morgoth 2.6.28-9-generic
-X-UP: 16:26:59 up 1 day, 14:55,  2 users,  load average: 2.45, 1.79, 1.28
-X-By: japc@morgoth
-X-GPG-key-ID: 0x07B1363B
-X-GPG-key-Fingerprint: D3F3 B47B F20C 3B1E 488C B949 1B8B 8141 07B1 363B
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <4e5e476b0903260847m1de3e976ne20279df359176cf@mail.gmail.com>
+References: <4e5e476b0903260847m1de3e976ne20279df359176cf@mail.gmail.com>
+Date: Thu, 26 Mar 2009 16:58:36 +0000
+Message-ID: <9b2b86520903260958r790e5459r553308311522e88f@mail.gmail.com>
+Subject: Re: "ACPI: EC: missing confirmations, switch off interrupt mode" 
+	wastes time on startup
+From: Alan Jenkins <sourcejedi.lkml@googlemail.com>
+To: Corrado Zoccolo <czoccolo@gmail.com>
+Cc: linux-kernel@vger.kernel.org, linux acpi <linux-acpi@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Words by Theodore Tso [Thu, Mar 26, 2009 at 12:30:26PM -0400]:
-> On Thu, Mar 26, 2009 at 09:14:28AM -0700, Linus Torvalds wrote:
-> > I generally agree witht he "leave policy to user space" people, but this 
-> > is an area where (a) user space has shown itself to not get it right (ie 
-> > people don't do even the existing relatime because distros don't) and (b) 
-> > what's the alternative?
-> 
-> I thought at least some distro's were adding relatime by default; I
-> could be wrong, but I thought Ubuntu was doing this.
+On 3/26/09, Corrado Zoccolo <czoccolo@gmail.com> wrote:
+> Hi,
+> I found that on my netbook (acer aspire one 110), kernel boot time
+> (kernel 2.6.29) is severely affected by the EC boot procedure, since
+> it is first fooled by a spurious interrupt in thinking that interrupts
+> work, and then gets a timeout waiting for an interrupt that never
+> arrives:
+> [    0.351161] calling  acpi_init+0x0/0x236 @ 1
+> [    0.361052] ACPI: EC: Look up EC in DSDT
+> [    0.367754] ACPI: BIOS _OSI(Linux) query ignored
+> [    0.368984] ACPI: EC: non-query interrupt received, switching to
+> interrupt mode
+> [    0.860013] ACPI: EC: missing confirmations, switch off interrupt mode.
+> [    0.866062] ACPI: Interpreter enabled
+>
+> There is a bug report for this issue
+> http://bugzilla.kernel.org/show_bug.cgi?id=12001 ,  marked as fixed on
+> an old kernel, but I'm still getting it with 2.6.29 (maybe my
+> controller is flaky?), so I'm looking for a workaround: is there a way
+> to force the ACPI using polling?
 
-Yes.
+[CC linux-acpi]
 
--- 
-Jose Celestino | http://japc.uncovering.org/files/japc-pgpkey.asc
-----------------------------------------------------------------
-"One man’s theology is another man’s belly laugh." -- Robert A. Heinlein
+Thanks for reporting this bug / issue.  Your hardware is probably
+defective by design - that is, it doesn't follow the ACPI spec.  But
+we can't blame users for that :-).
+
+I take it this isn't a regression, i.e. if you've tried earlier
+kernels, it's never worked any better?
+
+You say this is a severe delay - but your logs show 0.5 seconds only,
+is that right?  Just to get it clear.
+
+Currently there is no option to force polling, sorry.  I'm _guessing_
+this was a deliberate omission.  But I can sympathise that even 0.5s
+boot delay is bad on a netbook.
+
+Feel free to create a new bugzilla entry.  You can attach the full
+output of dmesg, but acpidump is probably not required.  What would be
+really helpful is if you could file on bugzilla, and attach a full
+debug trace.  I.e. as well as the normal dmesg, attach the dmesg
+output after recompiling with this change:
+
+drivers/acpi/ec.c:
+29: /* Uncomment next line to get verbose printout */
+30: /* #define DEBUG */
+
+change to
+
+30: #define DEBUG
+
+Thanks again
+Alan
