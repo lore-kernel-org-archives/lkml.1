@@ -1,64 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757880AbZCZUn4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756824AbZCZUo5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757880AbZCZUn4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Mar 2009 16:43:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754622AbZCZUns
+	id S1756824AbZCZUo5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Mar 2009 16:44:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755432AbZCZUos
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Mar 2009 16:43:48 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:35175 "EHLO
+	Thu, 26 Mar 2009 16:44:48 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:35179 "EHLO
 	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752505AbZCZUnr (ORCPT
+	with ESMTP id S1752222AbZCZUor (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Mar 2009 16:43:47 -0400
+	Thu, 26 Mar 2009 16:44:47 -0400
+Date: Thu, 26 Mar 2009 20:42:09 +0000
 From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: [PATCH] cx88: Missing failure checks
-To: linux-kernel@vger.kernel.org, mchehab@infradead.org
-Date: Thu, 26 Mar 2009 20:44:38 +0000
-Message-ID: <20090326204408.4341.49334.stgit@localhost.localdomain>
-User-Agent: StGIT/0.14.3
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+To: Matthew Garrett <mjg@redhat.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Theodore Tso <tytso@mit.edu>, Ingo Molnar <mingo@elte.hu>,
+       Jan Kara <jack@suse.cz>, Andrew Morton <akpm@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Nick Piggin <npiggin@suse.de>,
+       Jens Axboe <jens.axboe@oracle.com>, David Rees <drees76@gmail.com>,
+       Jesper Krogh <jesper@krogh.cc>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Oleg Nesterov <oleg@redhat.com>, Roland McGrath <roland@redhat.com>
+Subject: Re: ext3 IO latency measurements (was: Linux 2.6.29)
+Message-ID: <20090326204209.1da6e791@lxorguk.ukuu.org.uk>
+In-Reply-To: <20090326200258.GA10313@srcf.ucam.org>
+References: <alpine.LFD.2.00.0903251613300.3032@localhost.localdomain>
+	<20090325235041.GA11024@duck.suse.cz>
+	<20090326090630.GA9369@elte.hu>
+	<20090326113705.GV32307@mit.edu>
+	<20090326140312.GB14822@elte.hu>
+	<20090326144707.GA6239@mit.edu>
+	<alpine.LFD.2.00.0903260914440.3032@localhost.localdomain>
+	<20090326170714.GF6239@mit.edu>
+	<alpine.LFD.2.00.0903261015050.3032@localhost.localdomain>
+	<20090326185900.166a1097@lxorguk.ukuu.org.uk>
+	<20090326200258.GA10313@srcf.ucam.org>
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The ioremap one was reported in October 2007 (Bug 9146), the kmalloc one
-was blindingly obvious while looking at the ioremap one
+> before performing the update. So while relatime doesn't conform, the 
+> practical difference is meaningless. You can't depend on atime being 
+> updated in a timely manner.
 
-The bug suggests some other configuration for lots of I/O memory (32MB per
-device is ioremapped) but I'll leave that to the real maintainers
+POSIX says a disk write interrupted by a signal can be a short write. If
+you do this in practice all hell breaks loose.
 
-Signed-off-by: Alan Cox <alan@lxorguk.ukuu.org.uk>
----
+A conforming implementation needs to conform with expectations not just
+play lawyer games with users systems.
 
- drivers/media/video/cx88/cx88-cards.c |    7 +++++++
- 1 files changed, 7 insertions(+), 0 deletions(-)
-
-
-diff --git a/drivers/media/video/cx88/cx88-cards.c b/drivers/media/video/cx88/cx88-cards.c
-index 733ede3..2fa02cf 100644
---- a/drivers/media/video/cx88/cx88-cards.c
-+++ b/drivers/media/video/cx88/cx88-cards.c
-@@ -3089,6 +3089,8 @@ struct cx88_core *cx88_core_create(struct pci_dev *pci, int nr)
- 	int i;
- 
- 	core = kzalloc(sizeof(*core), GFP_KERNEL);
-+	if (core == NULL)
-+		return NULL;
- 
- 	atomic_inc(&core->refcount);
- 	core->pci_bus  = pci->bus->number;
-@@ -3110,6 +3112,11 @@ struct cx88_core *cx88_core_create(struct pci_dev *pci, int nr)
- 	core->lmmio = ioremap(pci_resource_start(pci, 0),
- 			      pci_resource_len(pci, 0));
- 	core->bmmio = (u8 __iomem *)core->lmmio;
-+	
-+	if (core->lmmio == NULL) {
-+		kfree(core);
-+		return NULL;
-+	}
- 
- 	/* board config */
- 	core->boardnr = UNSET;
-
+Alan
