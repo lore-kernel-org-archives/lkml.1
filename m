@@ -1,48 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759251AbZCZVkg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759953AbZCZVpZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759251AbZCZVkg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Mar 2009 17:40:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757877AbZCZVk2
+	id S1759953AbZCZVpZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Mar 2009 17:45:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758019AbZCZVpJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Mar 2009 17:40:28 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:44660 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757597AbZCZVk0 (ORCPT
+	Thu, 26 Mar 2009 17:45:09 -0400
+Received: from rcsinet12.oracle.com ([148.87.113.124]:62462 "EHLO
+	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757934AbZCZVpH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Mar 2009 17:40:26 -0400
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: [PATCH] firedtv: wrong types in printk
-To: linux-kernel@vger.kernel.org, mchehab@infradead.org
-Date: Thu, 26 Mar 2009 21:41:15 +0000
-Message-ID: <20090326214101.18485.58960.stgit@localhost.localdomain>
-User-Agent: StGIT/0.14.3
+	Thu, 26 Mar 2009 17:45:07 -0400
+Message-ID: <49CBF73E.2010808@oracle.com>
+Date: Thu, 26 Mar 2009 14:44:30 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+Organization: Oracle Linux Engineering
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+CC: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       scsi <linux-scsi@vger.kernel.org>, Boaz Harrosh <bharrosh@panasas.com>
+Subject: [PATCH -next] exofs: fix printk format warnings
+References: <20090326190130.54fc6fde.sfr@canb.auug.org.au>
+In-Reply-To: <20090326190130.54fc6fde.sfr@canb.auug.org.au>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt707.oracle.com [141.146.40.85]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090205.49CBF757.0204:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-size_t is not int...
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
-Signed-off-by: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Fix exofs printk format warnings:
+
+fs/exofs/inode.c:184: warning: format '%zx' expects type 'size_t', but argument 6 has type 'long unsigned int'
+fs/exofs/inode.c:291: warning: format '%zx' expects type 'size_t', but argument 6 has type 'long unsigned int'
+fs/exofs/inode.c:373: warning: format '%zx' expects type 'size_t', but argument 7 has type 'long unsigned int'
+fs/exofs/inode.c:461: warning: format '%zx' expects type 'size_t', but argument 6 has type 'long unsigned int'
+fs/exofs/inode.c:534: warning: format '%zx' expects type 'size_t', but argument 7 has type 'long unsigned int'
+fs/exofs/inode.c:610: warning: format '%zx' expects type 'size_t', but argument 5 has type 'long unsigned int'
+
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+cc: Boaz Harrosh <bharrosh@panasas.com>
 ---
+ fs/exofs/inode.c |   12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
 
- drivers/media/dvb/firewire/firedtv-avc.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-
-diff --git a/drivers/media/dvb/firewire/firedtv-avc.c b/drivers/media/dvb/firewire/firedtv-avc.c
-index b55d9cc..424ed5d 100644
---- a/drivers/media/dvb/firewire/firedtv-avc.c
-+++ b/drivers/media/dvb/firewire/firedtv-avc.c
-@@ -150,7 +150,7 @@ static void debug_fcp(const u8 *data, size_t length)
- 		subunit_type = data[1] >> 3;
- 		subunit_id = data[1] & 7;
- 		op = subunit_type == 0x1e || subunit_id == 5 ? ~0 : data[2];
--		printk(KERN_INFO "%ssu=%x.%x l=%d: %-8s - %s\n",
-+		printk(KERN_INFO "%ssu=%x.%x l=%Zd: %-8s - %s\n",
- 		       prefix, subunit_type, subunit_id, length,
- 		       debug_fcp_ctype(data[0]),
- 		       debug_fcp_opcode(op, data, length));
-
+--- linux-next-20090325.orig/fs/exofs/inode.c
++++ linux-next-20090325/fs/exofs/inode.c
+@@ -182,7 +182,7 @@ static int __readpages_done(struct osd_r
+ 		good_bytes = pcol->length - resid;
+ 
+ 	EXOFS_DBGMSG("readpages_done(%ld) good_bytes=%llx"
+-		     " length=%zx nr_pages=%u\n",
++		     " length=%lx nr_pages=%u\n",
+ 		     pcol->inode->i_ino, _LLU(good_bytes), pcol->length,
+ 		     pcol->nr_pages);
+ 
+@@ -288,7 +288,7 @@ static int read_exec(struct page_collect
+ 
+ 	atomic_inc(&pcol->sbi->s_curr_pending);
+ 
+-	EXOFS_DBGMSG("read_exec obj=%llx start=%llx length=%zx\n",
++	EXOFS_DBGMSG("read_exec obj=%llx start=%llx length=%lx\n",
+ 		  obj.id, _LLU(i_start), pcol->length);
+ 
+ 	/* pages ownership was passed to pcol_copy */
+@@ -371,7 +371,7 @@ try_again:
+ 	ret = pcol_add_page(pcol, page, len);
+ 	if (ret) {
+ 		EXOFS_DBGMSG("Failed pcol_add_page pages[i]=%p "
+-			  "len=%zx nr_pages=%u length=%zx\n",
++			  "len=%zx nr_pages=%u length=%lx\n",
+ 			  page, len, pcol->nr_pages, pcol->length);
+ 
+ 		/* split the request, and start again with current page */
+@@ -459,7 +459,7 @@ static void writepages_done(struct osd_r
+ 		good_bytes = pcol->length - resid;
+ 
+ 	EXOFS_DBGMSG("writepages_done(%lx) good_bytes=%llx"
+-		     " length=%zx nr_pages=%u\n",
++		     " length=%lx nr_pages=%u\n",
+ 		     pcol->inode->i_ino, _LLU(good_bytes), pcol->length,
+ 		     pcol->nr_pages);
+ 
+@@ -531,7 +531,7 @@ static int write_exec(struct page_collec
+ 	}
+ 
+ 	atomic_inc(&pcol->sbi->s_curr_pending);
+-	EXOFS_DBGMSG("write_exec(%lx, %lx) start=%llx length=%zx\n",
++	EXOFS_DBGMSG("write_exec(%lx, %lx) start=%llx length=%lx\n",
+ 		  pcol->inode->i_ino, pcol->pg_first, _LLU(i_start),
+ 		  pcol->length);
+ 	/* pages ownership was passed to pcol_copy */
+@@ -608,7 +608,7 @@ try_again:
+ 	ret = pcol_add_page(pcol, page, len);
+ 	if (unlikely(ret)) {
+ 		EXOFS_DBGMSG("Failed pcol_add_page "
+-			     "nr_pages=%u total_length=%zx\n",
++			     "nr_pages=%u total_length=%lx\n",
+ 			     pcol->nr_pages, pcol->length);
+ 
+ 		/* split the request, next loop will start again */
