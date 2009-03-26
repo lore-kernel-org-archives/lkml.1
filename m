@@ -1,94 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757046AbZCZXJW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762013AbZCZXJm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757046AbZCZXJW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Mar 2009 19:09:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755046AbZCZXJI
+	id S1762013AbZCZXJm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Mar 2009 19:09:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755118AbZCZXJ3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Mar 2009 19:09:08 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:52419 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754389AbZCZXJG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Mar 2009 19:09:06 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: "Tvrtko A. Ursulin" <tvrtko@ursulin.net>
-Subject: Re: Resume after hibernation regression in 2.6.29
-Date: Fri, 27 Mar 2009 00:08:59 +0100
-User-Agent: KMail/1.11.1 (Linux/2.6.29-rc8-tst; KDE/4.2.1; x86_64; ; )
-Cc: Pavel Machek <pavel@ucw.cz>, linux-pm@lists.linux-foundation.org,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Tobias Diedrich <ranma+kernel@tdiedrich.de>,
-       Ayaz Abdulla <aabdulla@nvidia.com>
-References: <200903261920.32173.tvrtko@ursulin.net> <20090326223855.GF29836@elf.ucw.cz> <200903262304.24634.tvrtko@ursulin.net>
-In-Reply-To: <200903262304.24634.tvrtko@ursulin.net>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Thu, 26 Mar 2009 19:09:29 -0400
+Received: from outbound-mail-144.bluehost.com ([67.222.38.34]:45131 "HELO
+	outbound-mail-144.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752786AbZCZXJ2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Mar 2009 19:09:28 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
+	b=PSYvflnuCc67pE3g26pUud2aP7B0hTRJJv2r40D9+5PvNcB3qnSTC5XYKb98fx85CGpvj7p1nUa1SHJ2vB5SUq3YcnjRCgLQ6iBToXtHE/pHsHgbxsvQPQtp/D6/6DFW;
+Date: Thu, 26 Mar 2009 16:09:24 -0700
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Yinghai Lu <yinghai@kernel.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86/pci: make pci=lastbus=255 work when acpi is on
+Message-ID: <20090326160924.07e42bc0@hobbes>
+In-Reply-To: <49CA9365.9090003@kernel.org>
+References: <49CA9365.9090003@kernel.org>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200903270009.00479.rjw@sisk.pl>
+X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 27 March 2009, Tvrtko A. Ursulin wrote:
-> On Thursday 26 March 2009 22:38:55 Pavel Machek wrote:
-> > On Thu 2009-03-26 22:01:03, Tvrtko A. Ursulin wrote:
-> > > On Thursday 26 March 2009 21:35:29 Rafael J. Wysocki wrote:
-> > > > On Thursday 26 March 2009, Pavel Machek wrote:
-> > > > > On Thu 2009-03-26 20:55:23, Tvrtko A. Ursulin wrote:
-> > > > > > On Thursday 26 March 2009 20:18:40 Pavel Machek wrote:
-> > > > > > > On Thu 2009-03-26 19:20:32, Tvrtko A. Ursulin wrote:
-> > > > > > > > Hi guys,
-> > > > > > > > I have been running custom compiled 2.6.28.7 in OpenSUSE 11.1
-> > > > > > > > and using hiberation/resume daily as configured by the distro.
-> > > > > > > > Yesterday I upgraded to 2.6.29 (make oldconfig from 2.6.28.7,
-> > > > > > > > attached) and after resume networking (at least) does not work.
-> > > > > > > > Reboot at this point takes very long because of timeouts on
-> > > > > > > > CIFS and whatelse.
-> > > > > > > >
-> > > > > > > > Below is how /var/log/messagess looks for one cycle
-> > > > > > > > (hibernate-resume-reboot) and I am also attaching kernel config
-> > > > > > > > and /var/log/pm-suspend.log.
-> > > > > > > >
-> > > > > > > > You will probably notice evil nvidia.ko in there but don't
-> > > > > > > > panic, it all happens without it as well. Tested from runlevel
-> > > > > > > > 3 and by running pm-hibernate. After resume from that NIC LEDs
-> > > > > > > > were off. I tried /etc/init.d/network restart but that hung so
-> > > > > > > > I ^C and tried rmmod forcedeth && modprobe forcedeth && ifup
-> > > > > > > > eth0 and after some time network went live again. Haven't had
-> > > > > > > > time to test further though, so this is all pretty rough.
-> > > > > > >
-> > > > > > > Ok, can you try to rmmod forcedeth before hibernation, then
-> > > > > > > insmod it after resume?
-> > > > > >
-> > > > > > Sure, after insmod and /etc/init.d/network start following resume
-> > > > > > network was fine. Guess I could kludge that sequence into pm
-> > > > > > scripts somehow but would rather avoid that since it slows down the
-> > > > > > cycle and would make scripts non-stock.
-> > > > >
-> > > > > Ok, I guess you need to talk to forcedeth maintainers then... sounds
-> > > > > like a forcedeth problem to me.
-> > > >
-> > > > I have a box with forcedeth somewhere here, I should be able to check
-> > > > that in the next few days.
-> > >
-> > > Not a lot activity in forcedeth.c from 2.6.28 to 2.6.29 so I will CC two
-> > > guys who commited changes in that period. Ayaz, Tobias, forcedeth does
-> > > not seem to come up after hibernation well for me. Actual hardware is:
-> > >
-> > > 00:0f.0 Ethernet controller: nVidia Corporation MCP73 Ethernet (rev a2)
-> > >
-> > > Anything more I can do just shout!
-> >
-> > Actually yes. Testing forcedeth from 2.6.28 in 2.6.29 would be nice
-> > way to prove problem is indeed in that module.
+On Wed, 25 Mar 2009 13:26:13 -0700
+Yinghai Lu <yinghai@kernel.org> wrote:
+
 > 
-> Good idea, I had to massage it a bit due to some API changes, but the end 
-> result is a correct resume which proves that the problem really is in 
-> forcedeth.
+> Impact: scan more peer root buses even acpi is used
+> 
+> move out pci_bios_fixup_peer_bridges of pci_legacy_init.
+> so pci_bios_fixup_peer_bridges could be called even pci_apci_init is
+> called.
+> 
+> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
 
-Well, since you can easily check what commits changed forcedeth between
-2.6.28 and 2.6.29, you can find the one that introduced the problem for you.
+Applied, thanks.
 
-Thanks,
-Rafael
+-- 
+Jesse Barnes, Intel Open Source Technology Center
