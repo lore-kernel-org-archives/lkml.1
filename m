@@ -1,71 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762000AbZCZXKr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758788AbZCZXO1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762000AbZCZXKr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Mar 2009 19:10:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761737AbZCZXKO
+	id S1758788AbZCZXO1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Mar 2009 19:14:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754266AbZCZXOT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Mar 2009 19:10:14 -0400
-Received: from outbound-mail-117.bluehost.com ([69.89.22.17]:52292 "HELO
-	outbound-mail-117.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1761755AbZCZXKM (ORCPT
+	Thu, 26 Mar 2009 19:14:19 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:57300 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752260AbZCZXOS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Mar 2009 19:10:12 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
-	b=t4Lrwy6csB1Ban/hJbNetNuPt+w+l55vYpRirnDt2Ew87LXR+5FMxrKMO13xAmMzgu6WTFX5RWXtkVBq+xyhTEAYc0HwyG4gT2MeTkibAv6BcTY5q92IAxCbnAuoEt83;
-Date: Thu, 26 Mar 2009 16:10:01 -0700
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Yinghai Lu <yinghai@kernel.org>
-Cc: Matthew Wilcox <matthew@wil.cx>, Prakash Punnoor <prakash@punnoor.de>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Robert Hancock <hancockrwd@gmail.com>, david@lang.hm,
-       linux-kernel <linux-kernel@vger.kernel.org>, linux-pci@vger.kernel.org
-Subject: Re: [PATCH] pci: don't enable too much HT MSI mapping -v5 -resend
-Message-ID: <20090326161001.526354ed@hobbes>
-In-Reply-To: <49C45115.2090101@kernel.org>
-References: <alpine.DEB.1.10.0902171419000.26625@asgard.lang.hm>
-	<200903040815.38387.prakash@punnoor.de>
-	<20090305171514.GB1021@parisc-linux.org>
-	<200903060045.13509.prakash@punnoor.de>
-	<20090306011036.GB829@parisc-linux.org>
-	<49B0A371.4040208@kernel.org>
-	<49C45115.2090101@kernel.org>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
+	Thu, 26 Mar 2009 19:14:18 -0400
+Date: Thu, 26 Mar 2009 19:14:14 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
+       Steven Rostedt <srostedt@redhat.com>
+Subject: Re: [PATCH 2/2] tracing: add average time in function to function
+ profiler
+In-Reply-To: <20090327091507.f133257e.sfr@canb.auug.org.au>
+Message-ID: <alpine.DEB.2.00.0903261910470.28807@gandalf.stny.rr.com>
+References: <20090326010737.611522983@goodmis.org> <20090326010811.510051401@goodmis.org> <20090327091507.f133257e.sfr@canb.auug.org.au>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 20 Mar 2009 19:29:41 -0700
-Yinghai Lu <yinghai@kernel.org> wrote:
 
-> 
-> Impact: fix bug
-> 
-> Prakash reported that his c51-mcp51 system ondie sound card doesn't
-> work MSI but if he hack out the HT-MSI on mcp51, the MSI will work
-> well with sound card.
-> 
-> this patch rework the nv_msi_ht_cap_quirk()
-> and will only try to avoid to enable ht_msi on device following that
-> root dev, and don't touch that root dev
-> 
-> v3: will enable c51...
-> v4: will enable c51 kind of without leaf too.
-> v5: update to mainline
-> 
-> Reported-by: Prakash Punnoor <prakash@punnoor.de>
-> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-> 
+On Fri, 27 Mar 2009, Stephen Rothwell wrote:
 
-Applied, thanks.  Prakash if you get a chance can you try testing my
-linux-next branch (or just linux-next in general tomorrow) to make sure
-this is still ok for you?
+> Hi Steve,
+> 
+> On Wed, 25 Mar 2009 21:07:39 -0400 Steven Rostedt <rostedt@goodmis.org> wrote:
+> >
+> > From: Steven Rostedt <srostedt@redhat.com>
+> > 
+> > Show the average time in the function (Time / Hit)
+> 
+> Just wondering why we need to do this in the kernel ... there is already
+> enough information for a user to figure these averages out.
 
-Thanks,
--- 
-Jesse Barnes, Intel Open Source Technology Center
+I also plan on adding a profiler_option file to let you sort by Hit, Time, 
+or Avg. I'm working on a project at the University that would like to see 
+that. Yes, it can be done by userspace too, but it is very simple to do in 
+the kernel (just pick what to sort by since it already has the sorting 
+algorithm). Userspace, can do it, but it is much more clumsy at it.
+
+-- Steve
+
