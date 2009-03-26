@@ -1,87 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759060AbZCZVyV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761389AbZCZV4V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759060AbZCZVyV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Mar 2009 17:54:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757880AbZCZVyL
+	id S1761389AbZCZV4V (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Mar 2009 17:56:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754080AbZCZV4N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Mar 2009 17:54:11 -0400
-Received: from mail-ew0-f165.google.com ([209.85.219.165]:35834 "EHLO
-	mail-ew0-f165.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754080AbZCZVyK convert rfc822-to-8bit (ORCPT
+	Thu, 26 Mar 2009 17:56:13 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:47576 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754190AbZCZV4M (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Mar 2009 17:54:10 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=xQ4pQ0jxK2LXfd3AdAI46InMan8Sms9FB01aBG679zNL5EO4sI+kn8Zq9bdep8IQpX
-         i76SCjQY03LzGh91vS0FRdFl6vb3PFhFV/ZFcnsjGD/3+WVhNzXIdNX1z7BJGFQ+N6o1
-         SkuwBuDlttuQCmxwfpzWf12RgTbilAVnxMuRg=
+	Thu, 26 Mar 2009 17:56:12 -0400
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: [RFC] dmi: sanity check BIOS tables
+To: linux-kernel@vger.kernel.org
+Date: Thu, 26 Mar 2009 21:57:12 +0000
+Message-ID: <20090326215658.18745.37412.stgit@localhost.localdomain>
+User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
-In-Reply-To: <9b2b86520903260958r790e5459r553308311522e88f@mail.gmail.com>
-References: <4e5e476b0903260847m1de3e976ne20279df359176cf@mail.gmail.com>
-	 <9b2b86520903260958r790e5459r553308311522e88f@mail.gmail.com>
-Date: Thu, 26 Mar 2009 22:54:07 +0100
-Message-ID: <4e5e476b0903261454h1525c30chdc86dbcb1cf3cb5c@mail.gmail.com>
-Subject: Re: "ACPI: EC: missing confirmations, switch off interrupt mode" 
-	wastes time on startup
-From: Corrado Zoccolo <czoccolo@gmail.com>
-To: Alan Jenkins <sourcejedi.lkml@googlemail.com>
-Cc: linux-kernel@vger.kernel.org, linux acpi <linux-acpi@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 26, 2009 at 5:58 PM, Alan Jenkins
-<sourcejedi.lkml@googlemail.com> wrote:
-> On 3/26/09, Corrado Zoccolo <czoccolo@gmail.com> wrote:
->
-> [CC linux-acpi]
->
-> Thanks for reporting this bug / issue.  Your hardware is probably
-> defective by design - that is, it doesn't follow the ACPI spec.  But
-> we can't blame users for that :-).
->
-> I take it this isn't a regression, i.e. if you've tried earlier
-> kernels, it's never worked any better?
+There are various places where invalid DMI tables cause "undefined" kernel
+behaviour at boot. Be more robust.
 
-This is new hardware, and 2.6.29 is the first kernel I installed, so I
-can't say.
+---
 
->
-> You say this is a severe delay - but your logs show 0.5 seconds only,
-> is that right?  Just to get it clear.
->
-Right, but Arjan showed that 1s boot time for kernel is possible, so
-0.5s is quite severe respect to this :).
-I'm still way far from 1s, though, due to an other issue that wastes
->1s, i.e. tsc clocksource unstable.
+ drivers/firmware/dmi_scan.c |   33 +++++++++++++++++++++++++++++----
+ 1 files changed, 29 insertions(+), 4 deletions(-)
 
-> Currently there is no option to force polling, sorry.  I'm _guessing_
-> this was a deliberate omission.  But I can sympathise that even 0.5s
-> boot delay is bad on a netbook.
->
-Yes. Do you think that changing olpc_ec_timeout kernel parameter may
-help in getting the timeout sooner?
 
-> Feel free to create a new bugzilla entry.  You can attach the full
-> output of dmesg, but acpidump is probably not required.  What would be
-> really helpful is if you could file on bugzilla, and attach a full
-> debug trace.  I.e. as well as the normal dmesg, attach the dmesg
-> output after recompiling with this change:
->
+diff --git a/drivers/firmware/dmi_scan.c b/drivers/firmware/dmi_scan.c
+index 8f0f7c4..0ad45b1 100644
+--- a/drivers/firmware/dmi_scan.c
++++ b/drivers/firmware/dmi_scan.c
+@@ -20,21 +20,32 @@ static char dmi_empty_string[] = "        ";
+  */
+ static int dmi_initialized;
+ 
++static u8 *dmi_end;
++
+ static const char * __init dmi_string_nosave(const struct dmi_header *dm, u8 s)
+ {
+ 	const u8 *bp = ((u8 *) dm) + dm->length;
+ 
+ 	if (s) {
+ 		s--;
+-		while (s > 0 && *bp) {
++		while (s > 0) {
++			/* Catch corrupt table ends before we walk into
++			   undefined mappings */
++			if (bp >= dmi_end)
++				goto invalid;
++			if (*bp == 0)
++				break;
+ 			bp += strlen(bp) + 1;
+ 			s--;
+ 		}
+ 
+ 		if (*bp != 0) {
+-			size_t len = strlen(bp)+1;
++			/* Use strnlen in case we have a BIOS table error */
++			size_t len = strnlen(bp, dmi_end - bp) + 1;
+ 			size_t cmp_len = len > 8 ? 8 : len;
+ 
++			if (bp == dmi_end)
++				goto invalid;
+ 			if (!memcmp(bp, dmi_empty_string, cmp_len))
+ 				return dmi_empty_string;
+ 			return bp;
+@@ -42,6 +53,9 @@ static const char * __init dmi_string_nosave(const struct dmi_header *dm, u8 s)
+ 	}
+ 
+ 	return "";
++invalid:
++	printk(KERN_ERR "dmi: table overrun - corrupt DMI tables ?\n");
++	return dmi_empty_string;
+ }
+ 
+ static char * __init dmi_string(const struct dmi_header *dm, u8 s)
+@@ -107,6 +121,9 @@ static int __init dmi_walk_early(void (*decode)(const struct dmi_header *))
+ 	if (buf == NULL)
+ 		return -1;
+ 
++	/* Remember the end mark for string walking */
++	dmi_end = buf + dmi_len;
++
+ 	dmi_table(buf, dmi_len, dmi_num, decode);
+ 
+ 	dmi_iounmap(buf, dmi_len);
+@@ -152,7 +169,7 @@ static void __init dmi_save_uuid(const struct dmi_header *dm, int slot, int inde
+ 	char *s;
+ 	int is_ff = 1, is_00 = 1, i;
+ 
+-	if (dmi_ident[slot])
++	if (dmi_ident[slot] || d > dmi_end - 16)
+ 		return;
+ 
+ 	for (i = 0; i < 16 && (is_ff || is_00); i++) {
+@@ -180,7 +197,7 @@ static void __init dmi_save_type(const struct dmi_header *dm, int slot, int inde
+ 	const u8 *d = (u8*) dm + index;
+ 	char *s;
+ 
+-	if (dmi_ident[slot])
++	if (dmi_ident[slot] || d == dmi_end)
+ 		return;
+ 
+ 	s = dmi_alloc(4);
+@@ -258,6 +275,11 @@ static void __init dmi_save_ipmi_device(const struct dmi_header *dm)
+ 	struct dmi_device *dev;
+ 	void * data;
+ 
++	if (((u8 *)dm) + dm->length >= dmi_end) {
++		printk(KERN_ERR "dmi_save_ipmi_device: table overrun.\n");
++		return;
++	}
++
+ 	data = dmi_alloc(dm->length);
+ 	if (data == NULL) {
+ 		printk(KERN_ERR "dmi_save_ipmi_device: out of memory.\n");
+@@ -283,6 +305,9 @@ static void __init dmi_save_extended_devices(const struct dmi_header *dm)
+ {
+ 	const u8 *d = (u8*) dm + 5;
+ 
++	if (d >= dmi_end)
++		return;
++
+ 	/* Skip disabled device */
+ 	if ((*d & 0x80) == 0)
+ 		return;
 
-bug: http://bugzilla.kernel.org/show_bug.cgi?id=12949
-full debug dmesg: http://bugzilla.kernel.org/attachment.cgi?id=20695
-
-Thanks,
-Corrado
-
--- 
-__________________________________________________________________________
-
-dott. Corrado Zoccolo                          mailto:czoccolo@gmail.com
-PhD - Department of Computer Science - University of Pisa, Italy
---------------------------------------------------------------------------
