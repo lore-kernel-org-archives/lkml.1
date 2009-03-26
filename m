@@ -1,256 +1,137 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758774AbZCZOq0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758826AbZCZOq4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758774AbZCZOq0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Mar 2009 10:46:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757663AbZCZOpz
+	id S1758826AbZCZOq4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Mar 2009 10:46:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756763AbZCZOql
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Mar 2009 10:45:55 -0400
-Received: from mx1.emlix.com ([193.175.82.87]:41417 "EHLO mx1.emlix.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756763AbZCZOpy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Mar 2009 10:45:54 -0400
-From: Oskar Schirmer <os@emlix.com>
-To: Ben Dooks <ben-linux@fluff.org>
-Cc: Chris Zankel <chris@zankel.net>, linux-i2c@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Oskar Schirmer <os@emlix.com>
-Subject: [patch] add pca9543 driver
-Date: Thu, 26 Mar 2009 15:46:58 +0100
-Message-Id: <1238078818-25977-1-git-send-email-os@emlix.com>
-Organization: emlix gmbh, Goettingen, Germany"
+	Thu, 26 Mar 2009 10:46:41 -0400
+Received: from gw-ca.panasas.com ([209.116.51.66]:22384 "EHLO
+	laguna.int.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1758556AbZCZOqj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Mar 2009 10:46:39 -0400
+Message-ID: <49CB94E9.5040808@panasas.com>
+Date: Thu, 26 Mar 2009 16:44:57 +0200
+From: Boaz Harrosh <bharrosh@panasas.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090315 Remi/3.0-0.b2.fc10.remi Thunderbird/3.0b2
+MIME-Version: 1.0
+To: Tejun Heo <htejun@gmail.com>
+CC: bzolnier@gmail.com, linux-kernel@vger.kernel.org, axboe@kernel.dk,
+       linux-ide@vger.kernel.org
+Subject: Re: [PATCH 03/14] block: implement blk_rq_map_kern_prealloc()
+References: <1237910776-10983-1-git-send-email-tj@kernel.org> <1237910776-10983-4-git-send-email-tj@kernel.org> <49CA4B4B.50408@panasas.com> <49CAE425.5050009@kernel.org> <49CB31DB.2040608@gmail.com> <49CB3765.4070406@panasas.com> <49CB387A.3000006@panasas.com> <49CB56AD.3080101@gmail.com> <49CB65CB.1030905@panasas.com> <49CB6FF8.7050701@gmail.com>
+In-Reply-To: <49CB6FF8.7050701@gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 26 Mar 2009 14:46:35.0077 (UTC) FILETIME=[A916D750:01C9AE21]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-support pca9543 i2c bus switch chip
+On 03/26/2009 02:07 PM, Tejun Heo wrote:
+> Hello, Boaz.
+> 
+> Boaz Harrosh wrote:
+>>> For the latter, the APIs are blk_rq_map_{user[_iov]|kern}().  To add
+>>> to the fun, we have blk_rq_map_sg() which does a completely different
+>>> thing of mapping an rq's bios to sg and is usually called from low
+>>> level do_request() when starting to process a request.
+>> Lets just remove for a moment blk_rq_map_sg() from the discussion.
+>> That one is totally bogus name that gives me the crips every time
+>> I read its name. If using the same terminology then at minimum it should have
+>> been blk_sg_map_request() (Which I agree is even more cryptic but at least
+>> it gets the source-destination right).
+> 
+> Ah... yeah, one of the two definitely needs to get a different name.
+> 
+>>> You're suggesting to add blk_rq_map_bio() which doesn't really map
+>>> anything but rather allocates and initializes an rq from bio and
+>>> basically boils down to blk_rq_bio_prep() and blk_queue_bounce().
+>> Yes, as I said, I completely agree. It does not map anything and
+>> should not be named blk_rq_map_. It should have a different better
+>> name. Hell it exists today, as blk_rq_append_bio(), but that one
+>> suggests usage in ways some people don't like, and they want to
+>> remove it. My opinion is that: Both me and you could just use the
+>> good old blk_rq_append_bio() and be happy.
+>>
+>> So basically in practice it just comes down to renaming
+>> blk_rq_append_bio() to something. We both just don't know how to call
+>> it?
+> 
+> Subtly different.  blk_rq_append_bio() doesn't bounce.  It seems we
+> really need to figure out who needs what and how to provide the
+> interface in uniform way.
+> 
+>>> I think it's about time to cool it a bit and try to see what's going
+>>> on.  We don't really want blk_rq_map_*() to do three completely
+>>> different things, right?  Usage of blk_rq_map_{user[_iov]|kern}()
+>>> isn't too wide spread, so cleaning up the API shouldn't be difficult.
+>> Currently blk_rq_map_sg() is the only odd ball, renaming that to something
+>> sane will fix the current situation.
+>>
+>> What additionally we both want is just plain old blk_rq_append_bio and
+>> maybe with a better name?
+> 
+> Yeah, basically, something similar to that but without the subtle
+> traps.  :-)
+> 
+>>> The difference explains why we have two different
+>>> initialization directions, so to me, the current API seems logical
+>>> although we really should be using different names.
+>>>
+>>> Can you please explain what your need is?  Why do you want
+>>> blk_make_request()?
+>>>
+>> I don't need blk_make_request per-se, I just need a way to
+>> allocate a request and then associate a pre built bio with it,
+>> that was prepared by an upper filesystem.
+>>
+>> (Which talks OSD, which does not fit the block device model at all,
+>> but this is too much information for you)
+>>
+>> Farther more, My life is more complicated then that because, I need
+>> a bidi-request which is second request hanging on the first one. And
+>> each request can map up to 6 segments of source information that
+>> are finally laid linear on the wire. So my bio can not be built
+>> with a single blk_rq_map_xxx call.
+>>
+>> To make the story short blk_rq_append_bio() can be used by your
+>> code and mine, perhaps with a better name.
+>>
+>> I feel I took to much of your time with my petty problems, Just
+>> that I felt that if adding an associate-this-request-with-this-bio
+>> API to blkdev.h could be done in a way that makes both of us happy.
+> 
+> Thanks for the explanation.
+> 
+> I think the problem is unclear distinction between bio initialization
+> and rq initialization.  Ideally, blk_rq_map*() functions should
+> initialize rq, call appropriate bio map function, link the result into
+> rq and be done with it, but currently blk_rq_map*() functions do more
+> than that and that makes cutting out the bio initialization apart
+> difficult, so in case where bios need to be initialized separately
+> from rq, the interface gets weird.  What level of bio initialization
+> should the init-rq-from-bio function should expect?  Is it already
+> bounced?  Does it have aligned buffer and etc?
+> 
+> If we can define cleaner bio mapping interface and make rq mapping
+> functions thinner wrapper around those, it will be much better, but
+> that doesn't seem to be a trivial thing.  Is it possible for you to
+> stay with blk_rq_append_bio() for the time being?  I'll revisit the
+> mapping API once the current pile of patches I'm sitting on settle
+> down a bit.
+> 
 
-Signed-off-by: Oskar Schirmer <os@emlix.com>
----
- drivers/i2c/chips/Kconfig   |    3 +
- drivers/i2c/chips/Makefile  |    1 +
- drivers/i2c/chips/pca9543.c |  188 +++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 192 insertions(+), 0 deletions(-)
- create mode 100644 drivers/i2c/chips/pca9543.c
+Yes sure, I'll be thinking about this some more too. Once your patch
+pile settles we can sort out an additional cleanup that unifies some
+of today's exported functions, just like you did with the blk_end_request.
 
-diff --git a/drivers/i2c/chips/Kconfig b/drivers/i2c/chips/Kconfig
-index c80312c..acfc46f 100644
---- a/drivers/i2c/chips/Kconfig
-+++ b/drivers/i2c/chips/Kconfig
-@@ -64,6 +64,9 @@ config SENSORS_PCA9539
- 	  This driver is deprecated and will be dropped soon. Use
- 	  drivers/gpio/pca953x.c instead.
- 
-+config PCA9543
-+	tristate "Philips PCA9543 i2c bus switch"
-+
- config SENSORS_PCF8591
- 	tristate "Philips PCF8591"
- 	depends on EXPERIMENTAL
-diff --git a/drivers/i2c/chips/Makefile b/drivers/i2c/chips/Makefile
-index d142f23..c7a7fe2 100644
---- a/drivers/i2c/chips/Makefile
-+++ b/drivers/i2c/chips/Makefile
-@@ -13,6 +13,7 @@
- obj-$(CONFIG_DS1682)		+= ds1682.o
- obj-$(CONFIG_SENSORS_MAX6875)	+= max6875.o
- obj-$(CONFIG_SENSORS_PCA9539)	+= pca9539.o
-+obj-$(CONFIG_PCA9543)		+= pca9543.o
- obj-$(CONFIG_SENSORS_PCF8574)	+= pcf8574.o
- obj-$(CONFIG_PCF8575)		+= pcf8575.o
- obj-$(CONFIG_SENSORS_PCF8591)	+= pcf8591.o
-diff --git a/drivers/i2c/chips/pca9543.c b/drivers/i2c/chips/pca9543.c
-new file mode 100644
-index 0000000..ee59497
---- /dev/null
-+++ b/drivers/i2c/chips/pca9543.c
-@@ -0,0 +1,188 @@
-+/*
-+ *  pca9543.c - i2c channel switch
-+ *
-+ *  Copyright (C) 2008 Emlix GmbH <info@emlix.com>
-+ *  Authors:	Fabian Godehardt <fg@emlix.com>
-+ *		Oskar Schirmer <os@emlix.com>
-+ *
-+ *  This program is free software; you can redistribute it and/or modify
-+ *  it under the terms of the GNU General Public License as published by
-+ *  the Free Software Foundation; either version 2 of the License, or
-+ *  (at your option) any later version.
-+ *
-+ *  This program is distributed in the hope that it will be useful,
-+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ *  GNU General Public License for more details.
-+ *
-+ *  You should have received a copy of the GNU General Public License
-+ *  along with this program; if not, write to the Free Software
-+ *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-+ */
-+
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/i2c.h>
-+#include <linux/mutex.h>
-+#include <linux/sysfs.h>
-+
-+struct pca9543_data {
-+	struct mutex lock;
-+	struct i2c_client *client;
-+};
-+
-+static ssize_t pca9543_read(struct pca9543_data *data, char *buf, size_t count)
-+{
-+	int stat;
-+	struct i2c_msg msg;
-+	mutex_lock(&data->lock);
-+	msg.addr = data->client->addr;
-+	msg.flags = I2C_M_RD;
-+	msg.buf = buf;
-+	msg.len = 1;
-+	stat = i2c_transfer(data->client->adapter, &msg, 1);
-+	mutex_unlock(&data->lock);
-+	if ((stat >= 0) && (stat != 1))
-+		stat = -EIO;
-+	return stat;
-+}
-+
-+static ssize_t pca9543_bin_read(struct kobject *kobj,
-+		struct bin_attribute *attr, char *buf, loff_t off, size_t count)
-+{
-+	struct pca9543_data *data;
-+	data = dev_get_drvdata(container_of(kobj, struct device, kobj));
-+	if (unlikely(!count))
-+		return count;
-+	if (off)
-+		return -EINVAL;
-+	return pca9543_read(data, buf, count);
-+}
-+
-+static ssize_t pca9543_write(struct pca9543_data *data, char *buf, size_t count)
-+{
-+	int stat;
-+	struct i2c_msg msg;
-+	mutex_lock(&data->lock);
-+	msg.addr = data->client->addr;
-+	msg.flags = 0;
-+	msg.buf = buf;
-+	msg.len = 1;
-+	stat = i2c_transfer(data->client->adapter, &msg, 1);
-+	mutex_unlock(&data->lock);
-+	if ((stat >= 0) && (stat != 1))
-+		stat = -EIO;
-+	return stat;
-+}
-+
-+static ssize_t pca9543_bin_write(struct kobject *kobj,
-+		struct bin_attribute *attr, char *buf, loff_t off, size_t count)
-+{
-+	struct pca9543_data *data;
-+	data = dev_get_drvdata(container_of(kobj, struct device, kobj));
-+	if (unlikely(!count))
-+		return count;
-+	if (off)
-+		return -EINVAL;
-+	return pca9543_write(data, buf, count);
-+}
-+
-+static struct bin_attribute pca9543_attr = {
-+	.attr = {
-+		.name = "switch",
-+		.mode = S_IRUGO | S_IWUSR,
-+	},
-+	.size = 1,
-+	.read = pca9543_bin_read,
-+	.write = pca9543_bin_write,
-+};
-+
-+int pca9543_set_switch(struct i2c_client *client, unsigned value)
-+{
-+	struct pca9543_data *data;
-+	u8 buf;
-+	int ret;
-+	data = i2c_get_clientdata(client);
-+	buf = value;
-+	ret = pca9543_write(data, &buf, 1);
-+	if (ret > 0)
-+		ret = 0;
-+	return ret;
-+}
-+EXPORT_SYMBOL(pca9543_set_switch);
-+
-+static int pca9543_probe(struct i2c_client *client,
-+			 const struct i2c_device_id *id)
-+{
-+	int err;
-+	struct pca9543_data *data;
-+	void (*cbf)(struct i2c_client *, int(*)(struct i2c_client *, unsigned));
-+	if (!i2c_check_functionality(client->adapter, I2C_FUNC_I2C)) {
-+		printk(KERN_ERR "pca9543 probe failure\n");
-+		err = -EPFNOSUPPORT;
-+		goto err;
-+	}
-+	data = kzalloc(sizeof(struct pca9543_data), GFP_KERNEL);
-+	if (!data) {
-+		err = -ENOMEM;
-+		goto err;
-+	}
-+	mutex_init(&data->lock);
-+	data->client = client;
-+	err = sysfs_create_bin_file(&client->dev.kobj, &pca9543_attr);
-+	if (err)
-+		goto errmem;
-+	i2c_set_clientdata(client, data);
-+	dev_info(&client->dev,
-+		"pca9543 i2c switch @ x%02x\n", client->addr);
-+	cbf = client->dev.platform_data;
-+	if (cbf)
-+		cbf(client, &pca9543_set_switch);
-+	return 0;
-+errmem:
-+	kfree(data);
-+err:
-+	return err;
-+}
-+
-+static int pca9543_remove(struct i2c_client *client)
-+{
-+	struct pca9543_data *data;
-+	data = i2c_get_clientdata(client);
-+	sysfs_remove_bin_file(&client->dev.kobj, &pca9543_attr);
-+	i2c_set_clientdata(client, NULL);
-+	kfree(data);
-+	return 0;
-+}
-+
-+static const struct i2c_device_id pca9543_id[] = {
-+	{ "pca9543", 0 },
-+	{ }
-+};
-+
-+static struct i2c_driver pca9543_driver = {
-+	.driver = {
-+		.name = "pca9543",
-+		.owner = THIS_MODULE,
-+	},
-+	.probe = pca9543_probe,
-+	.remove = pca9543_remove,
-+	.id_table = pca9543_id,
-+};
-+
-+static int __init pca9543_init(void)
-+{
-+	return i2c_add_driver(&pca9543_driver);
-+}
-+
-+static void __exit pca9543_exit(void)
-+{
-+	i2c_del_driver(&pca9543_driver);
-+}
-+
-+MODULE_AUTHOR("emlix GmbH <info@emlix.com>");
-+MODULE_DESCRIPTION("pca9543 switch driver");
-+MODULE_LICENSE("GPL");
-+
-+module_init(pca9543_init);
-+module_exit(pca9543_exit);
--- 
-1.6.2.107.ge47ee
+> Thanks.
+> 
 
+Do you have a public tree I can inspect the all lot in one central
+place? That should be the IDE tree you published few days ago
+right? I'll look for it.
+
+Thanks
+Boaz
