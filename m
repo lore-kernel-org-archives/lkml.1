@@ -1,80 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759213AbZCZQeS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759832AbZCZQhb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759213AbZCZQeS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Mar 2009 12:34:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754977AbZCZQeD
+	id S1759832AbZCZQhb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Mar 2009 12:37:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757523AbZCZQhV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Mar 2009 12:34:03 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:37553 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752359AbZCZQeB (ORCPT
+	Thu, 26 Mar 2009 12:37:21 -0400
+Received: from mail-bw0-f169.google.com ([209.85.218.169]:57499 "EHLO
+	mail-bw0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754224AbZCZQhU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Mar 2009 12:34:01 -0400
-Date: Thu, 26 Mar 2009 09:24:54 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Frans Pop <elendil@planet.nl>, mingo@elte.hu, tytso@mit.edu, jack@suse.cz,
-       alan@lxorguk.ukuu.org.uk, arjan@infradead.org, a.p.zijlstra@chello.nl,
-       npiggin@suse.de, jens.axboe@oracle.com, drees76@gmail.com,
-       jesper@krogh.cc, linux-kernel@vger.kernel.org, oleg@redhat.com,
-       roland@redhat.com
-Subject: Re: relatime: update once per day patches (was: ext3 IO latency
- measurements)
-Message-Id: <20090326092454.b74e3f96.akpm@linux-foundation.org>
-In-Reply-To: <alpine.LFD.2.00.0903260912270.3032@localhost.localdomain>
-References: <20090325123744.GK23439@duck.suse.cz>
-	<20090325150041.GM32307@mit.edu>
-	<alpine.LFD.2.00.0903251008120.3032@localhost.localdomain>
-	<20090325185824.GO32307@mit.edu>
-	<alpine.LFD.2.00.0903251341050.3032@localhost.localdomain>
-	<20090325215137.GQ32307@mit.edu>
-	<alpine.LFD.2.00.0903251613300.3032@localhost.localdomain>
-	<20090325235041.GA11024@duck.suse.cz>
-	<20090326090630.GA9369@elte.hu>
-	<20090326113705.GV32307@mit.edu>
-	<20090326140312.GB14822@elte.hu>
-	<20090326140312.GB14822@elte.hu>
-	<20090326073013.2fa83178.akpm@linux-foundation.org>
-	<200903261632.42439.elendil@planet.nl>
-	<20090326084733.156c4910.akpm@linux-foundation.org>
-	<alpine.LFD.2.00.0903260912270.3032@localhost.localdomain>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 26 Mar 2009 12:37:20 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=giZjPfbWlyQrAE4RN9JnGheMww+JYd9cI02WhuXCnA3aWN/QgIMxxqJYaSam5jSQAg
+         byazcjE6cNAX5ao3OB4/ssCLI21MhsUgUYo7+7aNakrrumMCaGsuh0pjpB7dQ+ONcB3Q
+         5Z9EM7e2sY729WQAO+xM7dEN9tTEXgSVph5+U=
+Message-ID: <49CBAF36.1010203@gmail.com>
+Date: Thu, 26 Mar 2009 17:37:10 +0100
+From: =?UTF-8?B?Sm9zw6kgTWFyw63CrWEgRmVybsOhbmRleiBHb256w6FsZXo=?= 
+	<josemariafg@gmail.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090323)
+MIME-Version: 1.0
+To: Pierre Ossman <drzeus-list@drzeus.cx>
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/1] mmc: Some microSD cards are not recognized by PCIxx12
+ SDA controller
+References: <49B5C091.3090303@gmail.com>	<20090324211748.30cd7429@mjolnir.ossman.eu>	<49C9E4B8.3000708@gmail.com> <20090325171749.62bd0fbb@mjolnir.ossman.eu>
+In-Reply-To: <20090325171749.62bd0fbb@mjolnir.ossman.eu>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 26 Mar 2009 09:14:28 -0700 (PDT) Linus Torvalds <torvalds@linux-foundation.org> wrote:
+Pierre Ossman wrote:
+> On Wed, 25 Mar 2009 09:00:56 +0100
+> José Marí­a Fernández González <josemariafg@gmail.com> wrote:
+> 
+>> As I'm going to install 2.6.29 today, I can test the patch with it and HZ=100.
+> 
+> Please do. And try to determine where it breaks. I'd prefer if we don't
+> need to increase this yet again in a month because we were relying on
+> some scheduling latencies. :)
+> 
+> Rgds
 
-> 
-> 
-> On Thu, 26 Mar 2009, Andrew Morton wrote:
-> > 
-> > Hard-wiring a 24-hour interval into the core VFS for all mounted
-> > filesystems is dumb.
-> 
-> Umm. 
-> 
-> I generally agree witht he "leave policy to user space" people, but this 
-> is an area where (a) user space has shown itself to not get it right (ie 
-> people don't do even the existing relatime because distros don't) and (b) 
-> what's the alternative?
-> 
-> > I (and others) pointed out that it would be better to implement this as
-> > a mount option.  That suggestion was met with varying sillinesses and
-> > that is where things stand.
-> 
-> I'd suggest first just doing the 24 hour thing, and then, IF user space 
-> actually ever gets its act together, and people care, and they _ask_ for a 
-> mount option, that's when it's worth doing.
-> 
+I have been testing the patch with kernel 2.6.29 and a couple of cards (the Transcend 2GB microSD and a EZ Memory 8GB SDHC) in a few cases:
 
-We wouldn't normally just enable the new feature by default because it
-changes kernel behaviour.  Userspace needs to be changed in some manner to
-opt-in.  One way it's `mount -o remount', the other way it's a poke in
-/proc.
+*	HZ=300 + tickless + desktop preemption
+*	HZ=100 + tickless + desktop preemption
+*	HZ=100 + desktop preemption
+*	HZ=100 + low latency desktop preemption
+*	HZ=1000 + tickless + desktop preemption
 
+and it worked with no problem. I don't know if I have forgotten any obvious corner case. Perhaps I should have tested with no preemption...
 
-
+	Best Regards,
+		José María
