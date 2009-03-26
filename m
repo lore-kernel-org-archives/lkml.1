@@ -1,91 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758128AbZCZPai@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758761AbZCZPcz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758128AbZCZPai (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Mar 2009 11:30:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750931AbZCZPa3
+	id S1758761AbZCZPcz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Mar 2009 11:32:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752532AbZCZPcq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Mar 2009 11:30:29 -0400
-Received: from THUNK.ORG ([69.25.196.29]:51573 "EHLO thunker.thunk.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753127AbZCZPa2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Mar 2009 11:30:28 -0400
-Date: Thu, 26 Mar 2009 11:28:15 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Jan Kara <jack@suse.cz>, Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Nick Piggin <npiggin@suse.de>,
-       Jens Axboe <jens.axboe@oracle.com>, David Rees <drees76@gmail.com>,
-       Jesper Krogh <jesper@krogh.cc>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Oleg Nesterov <oleg@redhat.com>, Roland McGrath <roland@redhat.com>
-Subject: Re: ext3 IO latency measurements (was: Linux 2.6.29)
-Message-ID: <20090326152815.GB6239@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>, Ingo Molnar <mingo@elte.hu>,
-	Jan Kara <jack@suse.cz>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Alan Cox <alan@lxorguk.ukuu.org.uk>,
-	Arjan van de Ven <arjan@infradead.org>,
-	Peter Zijlstra <a.p.zijlstra@chello.nl>,
-	Nick Piggin <npiggin@suse.de>, Jens Axboe <jens.axboe@oracle.com>,
-	David Rees <drees76@gmail.com>, Jesper Krogh <jesper@krogh.cc>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	Oleg Nesterov <oleg@redhat.com>, Roland McGrath <roland@redhat.com>
-References: <20090325150041.GM32307@mit.edu> <alpine.LFD.2.00.0903251008120.3032@localhost.localdomain> <20090325185824.GO32307@mit.edu> <alpine.LFD.2.00.0903251341050.3032@localhost.localdomain> <20090325215137.GQ32307@mit.edu> <alpine.LFD.2.00.0903251613300.3032@localhost.localdomain> <20090325235041.GA11024@duck.suse.cz> <20090326090630.GA9369@elte.hu> <20090326113705.GV32307@mit.edu> <20090326140312.GB14822@elte.hu>
+	Thu, 26 Mar 2009 11:32:46 -0400
+Received: from Cpsmtpm-eml108.kpnxchange.com ([195.121.3.12]:64727 "EHLO
+	CPSMTPM-EML108.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751388AbZCZPcq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Mar 2009 11:32:46 -0400
+From: Frans Pop <elendil@planet.nl>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: relatime: update once per day patches (was: ext3 IO latency measurements)
+Date: Thu, 26 Mar 2009 16:32:38 +0100
+User-Agent: KMail/1.9.9
+Cc: mingo@elte.hu, tytso@mit.edu, jack@suse.cz, torvalds@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, arjan@infradead.org, a.p.zijlstra@chello.nl,
+       npiggin@suse.de, jens.axboe@oracle.com, drees76@gmail.com,
+       jesper@krogh.cc, linux-kernel@vger.kernel.org, oleg@redhat.com,
+       roland@redhat.com
+References: <20090325123744.GK23439@duck.suse.cz> <20090325150041.GM32307@mit.edu> <alpine.LFD.2.00.0903251008120.3032@localhost.localdomain> <20090325185824.GO32307@mit.edu> <alpine.LFD.2.00.0903251341050.3032@localhost.localdomain> <20090325215137.GQ32307@mit.edu> <alpine.LFD.2.00.0903251613300.3032@localhost.localdomain> <20090325235041.GA11024@duck.suse.cz> <20090326090630.GA9369@elte.hu> <20090326113705.GV32307@mit.edu> <20090326140312.GB14822@elte.hu> <20090326140312.GB14822@elte.hu> <20090326073013.2fa83178.akpm@linux-foundation.org>
+In-reply-To: <20090326073013.2fa83178.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090326140312.GB14822@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+Message-Id: <200903261632.42439.elendil@planet.nl>
+X-OriginalArrivalTime: 26 Mar 2009 15:32:42.0961 (UTC) FILETIME=[1AE06C10:01C9AE28]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 26, 2009 at 03:03:12PM +0100, Ingo Molnar wrote:
+Andrew Morton wrote:
+> On Thu, 26 Mar 2009 15:03:12 +0100 Ingo Molnar <mingo@elte.hu> wrote:
+>> Why arent the relatime patches upstream?
 > 
-> I still see similarly bad latencies in Vim:
-> 
+> They have been for ages.
 
-When you say "similarly bad", how many seconds were you seeing?  I
-understand that from the user's perspective, the 120 seconds you saw
-with ext3 isn't going to be that different from 15 seconds (which
-seems to be the maximum commit time in the jbd2 history file you sent
-me), but I'm curious if what you saw was just as bad with ext4, or was
-it somewhat better (i.e., 120 seconds vs 15 or so).  Or were you also
-seeing a net time to save the file using vim of around 120 seconds
-with ext4?
+I assume Ingo means the patches to make relatime update atime at least 
+once per day to ensure better compatibility with apps that do use or rely 
+on access times.
+These patches are already being included by several distros and, FWIW, 
+Debian would like to see them upstream as well because we feel .
 
-Ext4 in nodelalloc mode is mostly similar to ext3, but it does have
-some improvements, such as a slightly elevated I/O priority for
-kjournald, and the ext4's writepage doesn't take the journal handle as
-it does in ext3.  (That's why I was confused about Linus's assertion
-about ext3 waiting on the journal; ext4 doesn't any more, and I had
-ext4 on the brain.)  Unfortunately, we don't have the
-/proc/fs/jbd/<dev>/history for ext3, so it would be interesting to
-compare whether the vim save latencies were improved or not with ext4.
-If they are, then it might be worth Jan's time to fix up ext3's
-writepage to not try request journal access if it's not needed.  It
-might also be worth backporting ext4's slightly raised I/O priority
-patch.
+They were last submitted by Matthew Garrett:
+http://lkml.org/lkml/2008/11/27/234
+http://lkml.org/lkml/2008/11/27/235
 
-Another thing that's worth trying.  Suppose you use ionice to raise
-the priority of kjournald to a real-time I/O priority (which is what
-Arjan's patch does).  How much does that help?  Is it more or less
-compared to what we're seeing with ext4's slightly reaised I/O
-priority.
+Loads of people seem to want this, but even though it's been submitted at 
+least twice and discussed even more often, it never gets anywhere.
 
-And if we mount the filesystem noatime, does that change the results
-significantly as far as Vim write latencies and the jbd2 history file?
-
-> The read-test is somewhat better. There are occasional blips of 4-5 
-> seconds:
-
-Presumably these go away once we mount the filesystem noatime, right?
-
-	   	   	    	      	       - Ted
+Cheers,
+FJP
