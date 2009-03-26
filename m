@@ -1,966 +1,1225 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754951AbZCZKNy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756793AbZCZKQo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754951AbZCZKNy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Mar 2009 06:13:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753288AbZCZKNo
+	id S1756793AbZCZKQo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Mar 2009 06:16:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751771AbZCZKQc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Mar 2009 06:13:44 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:58890 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751226AbZCZKNk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Mar 2009 06:13:40 -0400
-Date: Thu, 26 Mar 2009 11:13:37 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: [GIT PULL] block updates for 2.6.30
-Message-ID: <20090326101337.GQ27476@kernel.dk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+	Thu, 26 Mar 2009 06:16:32 -0400
+Received: from moutng.kundenserver.de ([212.227.126.188]:51819 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751436AbZCZKQ3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Mar 2009 06:16:29 -0400
+From: Thierry Reding <thierry.reding@avionic-design.de>
+To: netdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, davem@davemloft.net
+Subject: [PATCH v4] net: Add support for the OpenCores 10/100 Mbps Ethernet MAC.
+Date: Thu, 26 Mar 2009 11:16:24 +0100
+Message-Id: <1238062584-12685-1-git-send-email-thierry.reding@avionic-design.de>
+X-Mailer: git-send-email 1.6.2.1
+In-Reply-To: <20090326080959.GA23013@avionic-design.de>
+References: <20090326080959.GA23013@avionic-design.de>
+X-Provags-ID: V01U2FsdGVkX1/nZSNycXE1uYm3FTXx/dFaFlmyOi9xFYsMnih
+ pIVX1v6WyW19EnKULhyUM5E8eznMNlJ8EW6ahgPfM7/R7nA4/2
+ hmJeRmlgq71GRjHa9HdMw==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+This patch adds a platform device driver that supports the OpenCores 10/100
+Mbps Ethernet MAC.
 
-Nothing particularly interesting in there, see below for full diff.
+The driver expects three resources: one IORESOURCE_MEM resource defines the
+memory region for the core's memory-mapped registers while a second
+IORESOURCE_MEM resource defines the network packet buffer space. The third
+resource, of type IORESOURCE_IRQ, associates an interrupt with the driver.
 
-  git://git.kernel.dk/linux-2.6-block.git for-2.6.30
-
-Avishay Traeger (1):
-      block: Repeated lines in switching-sched.txt
-
-Boaz Harrosh (3):
-      bsg: add support for tail queuing
-      block: WARN in __blk_put_request() for potential bio leak
-      bsg: Remove bogus check against request_queue->max_sectors
-
-Dave Jones (1):
-      cpqarray: enable bus mastering
-
-Ingo Molnar (1):
-      block: cleanup bio_alloc_bioset()
-
-Jens Axboe (7):
-      block: don't create bio_vec slabs of less than the inline number
-      cciss: add BUILD_BUG_ON() for catching bad CommandList_struct alignment
-      block: remove various blk_queue_*() setting functions in blk_init_queue_node()
-      block: get rid of unused blkdev_free_rq() define
-      Move the default_backing_dev_info out of readahead.c and into backing-dev.c
-      btrfs: get rid of current_is_pdflush() in btrfs_btree_balance_dirty
-      Get rid of pdflush_operation() in emergency sync and remount
-
-Martin K. Petersen (1):
-      block: add private bio_set for bio integrity allocations
-
-Nikanth Karthikesan (2):
-      loop: support barrier writes
-      loop: fix circular locking in loop_clr_fd()
-
-Petros Koutoupis (2):
-      block: genhd.h comment needs updating
-      block: genhd.h cleanup patch
-
- Documentation/block/switching-sched.txt |    6 --
- block/blk-core.c                        |   13 ++---
- block/blk-merge.c                       |    2 +
- block/bsg.c                             |   12 +++--
- block/scsi_ioctl.c                      |   21 ++------
- drivers/block/cciss.c                   |    7 +++
- drivers/block/cpqarray.c                |    1 +
- drivers/block/loop.c                    |   48 ++++++++++++++++--
- fs/bio-integrity.c                      |   85 +++++++++---------------------
- fs/bio.c                                |   87 ++++++++++++++++--------------
- fs/btrfs/disk-io.c                      |    2 +-
- fs/super.c                              |   11 +++-
- fs/sync.c                               |   14 +++++-
- include/linux/bio.h                     |   18 ++-----
- include/linux/bsg.h                     |    8 +++
- include/linux/genhd.h                   |    5 +-
- mm/backing-dev.c                        |   26 +++++++++-
- mm/readahead.c                          |   25 ---------
- 18 files changed, 205 insertions(+), 186 deletions(-)
+Signed-off-by: Thierry Reding <thierry.reding@avionic-design.de>
+Acked-by: Florian Fainelli <florian@openwrt.org>
 
 ---
+ drivers/net/Kconfig  |    8 +
+ drivers/net/Makefile |    1 +
+ drivers/net/ethoc.c  | 1112 ++++++++++++++++++++++++++++++++++++++++++++++++++
+ include/net/ethoc.h  |   22 +
+ 4 files changed, 1143 insertions(+), 0 deletions(-)
 
-diff --git a/Documentation/block/switching-sched.txt b/Documentation/block/switching-sched.txt
-index 634c952..d5af3f6 100644
---- a/Documentation/block/switching-sched.txt
-+++ b/Documentation/block/switching-sched.txt
-@@ -35,9 +35,3 @@ noop anticipatory deadline [cfq]
- # echo anticipatory > /sys/block/hda/queue/scheduler
- # cat /sys/block/hda/queue/scheduler
- noop [anticipatory] deadline cfq
--
--Each io queue has a set of io scheduler tunables associated with it. These
--tunables control how the io scheduler works. You can find these entries
--in:
--
--/sys/block/<device>/queue/iosched
-diff --git a/block/blk-core.c b/block/blk-core.c
-index 29bcfac..996ed90 100644
---- a/block/blk-core.c
-+++ b/block/blk-core.c
-@@ -603,13 +603,10 @@ blk_init_queue_node(request_fn_proc *rfn, spinlock_t *lock, int node_id)
- 	q->queue_flags		= QUEUE_FLAG_DEFAULT;
- 	q->queue_lock		= lock;
+diff --git a/drivers/net/Kconfig b/drivers/net/Kconfig
+index e5ffc1c..f062b42 100644
+--- a/drivers/net/Kconfig
++++ b/drivers/net/Kconfig
+@@ -972,6 +972,14 @@ config ENC28J60_WRITEVERIFY
+ 	  Enable the verify after the buffer write useful for debugging purpose.
+ 	  If unsure, say N.
  
--	blk_queue_segment_boundary(q, BLK_SEG_BOUNDARY_MASK);
--
-+	/*
-+	 * This also sets hw/phys segments, boundary and size
-+	 */
- 	blk_queue_make_request(q, __make_request);
--	blk_queue_max_segment_size(q, MAX_SEGMENT_SIZE);
--
--	blk_queue_max_hw_segments(q, MAX_HW_SEGMENTS);
--	blk_queue_max_phys_segments(q, MAX_PHYS_SEGMENTS);
- 
- 	q->sg_reserved_size = INT_MAX;
- 
-@@ -735,7 +732,6 @@ static void freed_request(struct request_queue *q, int rw, int priv)
- 		__freed_request(q, rw ^ 1);
- }
- 
--#define blkdev_free_rq(list) list_entry((list)->next, struct request, queuelist)
- /*
-  * Get a free request, queue_lock must be held.
-  * Returns NULL on failure, with queue_lock held.
-@@ -1066,6 +1062,9 @@ void __blk_put_request(struct request_queue *q, struct request *req)
- 
- 	elv_completed_request(q, req);
- 
-+	/* this is a bio leak */
-+	WARN_ON(req->bio != NULL);
++config ETHOC
++	tristate "OpenCores 10/100 Mbps Ethernet MAC support"
++	depends on NET_ETHERNET
++	select MII
++	select PHYLIB
++	help
++	  Say Y here if you want to use the OpenCores 10/100 Mbps Ethernet MAC.
 +
- 	/*
- 	 * Request may not have originated from ll_rw_blk. if not,
- 	 * it didn't come out of our reserved rq pools
-diff --git a/block/blk-merge.c b/block/blk-merge.c
-index 5a244f0..e39cb24 100644
---- a/block/blk-merge.c
-+++ b/block/blk-merge.c
-@@ -403,6 +403,8 @@ static int attempt_merge(struct request_queue *q, struct request *req,
- 	if (blk_rq_cpu_valid(next))
- 		req->cpu = next->cpu;
+ config SMC911X
+ 	tristate "SMSC LAN911[5678] support"
+ 	select CRC32
+diff --git a/drivers/net/Makefile b/drivers/net/Makefile
+index 758ecdf..98409c9 100644
+--- a/drivers/net/Makefile
++++ b/drivers/net/Makefile
+@@ -230,6 +230,7 @@ obj-$(CONFIG_PASEMI_MAC) += pasemi_mac_driver.o
+ pasemi_mac_driver-objs := pasemi_mac.o pasemi_mac_ethtool.o
+ obj-$(CONFIG_MLX4_CORE) += mlx4/
+ obj-$(CONFIG_ENC28J60) += enc28j60.o
++obj-$(CONFIG_ETHOC) += ethoc.o
  
-+	/* owner-ship of bio passed from next to req */
-+	next->bio = NULL;
- 	__blk_put_request(q, next);
- 	return 1;
- }
-diff --git a/block/bsg.c b/block/bsg.c
-index 0ce8806..206060e 100644
---- a/block/bsg.c
-+++ b/block/bsg.c
-@@ -218,9 +218,6 @@ bsg_validate_sgv4_hdr(struct request_queue *q, struct sg_io_v4 *hdr, int *rw)
+ obj-$(CONFIG_XTENSA_XT2000_SONIC) += xtsonic.o
  
- 	if (hdr->guard != 'Q')
- 		return -EINVAL;
--	if (hdr->dout_xfer_len > (q->max_sectors << 9) ||
--	    hdr->din_xfer_len > (q->max_sectors << 9))
--		return -EIO;
- 
- 	switch (hdr->protocol) {
- 	case BSG_PROTOCOL_SCSI:
-@@ -353,6 +350,8 @@ static void bsg_rq_end_io(struct request *rq, int uptodate)
- static void bsg_add_command(struct bsg_device *bd, struct request_queue *q,
- 			    struct bsg_command *bc, struct request *rq)
- {
-+	int at_head = (0 == (bc->hdr.flags & BSG_FLAG_Q_AT_TAIL));
+diff --git a/drivers/net/ethoc.c b/drivers/net/ethoc.c
+new file mode 100644
+index 0000000..c737bd6
+--- /dev/null
++++ b/drivers/net/ethoc.c
+@@ -0,0 +1,1112 @@
++/*
++ * linux/drivers/net/ethoc.c
++ *
++ * Copyright (C) 2007-2008 Avionic Design Development GmbH
++ * Copyright (C) 2008-2009 Avionic Design GmbH
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ *
++ * Written by Thierry Reding <thierry.reding@avionic-design.de>
++ */
 +
- 	/*
- 	 * add bc command to busy queue and submit rq for io
- 	 */
-@@ -368,7 +367,7 @@ static void bsg_add_command(struct bsg_device *bd, struct request_queue *q,
- 	dprintk("%s: queueing rq %p, bc %p\n", bd->name, rq, bc);
- 
- 	rq->end_io_data = bc;
--	blk_execute_rq_nowait(q, NULL, rq, 1, bsg_rq_end_io);
-+	blk_execute_rq_nowait(q, NULL, rq, at_head, bsg_rq_end_io);
- }
- 
- static struct bsg_command *bsg_next_done_cmd(struct bsg_device *bd)
-@@ -924,6 +923,7 @@ static long bsg_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
- 		struct request *rq;
- 		struct bio *bio, *bidi_bio = NULL;
- 		struct sg_io_v4 hdr;
-+		int at_head;
- 		u8 sense[SCSI_SENSE_BUFFERSIZE];
- 
- 		if (copy_from_user(&hdr, uarg, sizeof(hdr)))
-@@ -936,7 +936,9 @@ static long bsg_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
- 		bio = rq->bio;
- 		if (rq->next_rq)
- 			bidi_bio = rq->next_rq->bio;
--		blk_execute_rq(bd->queue, NULL, rq, 0);
++#include <linux/etherdevice.h>
++#include <linux/crc32.h>
++#include <linux/io.h>
++#include <linux/mii.h>
++#include <linux/phy.h>
++#include <linux/platform_device.h>
++#include <net/ethoc.h>
 +
-+		at_head = (0 == (hdr.flags & BSG_FLAG_Q_AT_TAIL));
-+		blk_execute_rq(bd->queue, NULL, rq, at_head);
- 		ret = blk_complete_sgv4_hdr_rq(rq, &hdr, bio, bidi_bio);
- 
- 		if (copy_to_user(uarg, &hdr, sizeof(hdr)))
-diff --git a/block/scsi_ioctl.c b/block/scsi_ioctl.c
-index ee9c67d..626ee27 100644
---- a/block/scsi_ioctl.c
-+++ b/block/scsi_ioctl.c
-@@ -214,21 +214,10 @@ static int blk_fill_sghdr_rq(struct request_queue *q, struct request *rq,
- 	return 0;
- }
- 
--/*
-- * unmap a request that was previously mapped to this sg_io_hdr. handles
-- * both sg and non-sg sg_io_hdr.
-- */
--static int blk_unmap_sghdr_rq(struct request *rq, struct sg_io_hdr *hdr)
--{
--	blk_rq_unmap_user(rq->bio);
--	blk_put_request(rq);
--	return 0;
--}
--
- static int blk_complete_sghdr_rq(struct request *rq, struct sg_io_hdr *hdr,
- 				 struct bio *bio)
- {
--	int r, ret = 0;
-+	int ret = 0;
- 
- 	/*
- 	 * fill in all the output members
-@@ -253,12 +242,10 @@ static int blk_complete_sghdr_rq(struct request *rq, struct sg_io_hdr *hdr,
- 			ret = -EFAULT;
- 	}
- 
--	rq->bio = bio;
--	r = blk_unmap_sghdr_rq(rq, hdr);
--	if (ret)
--		r = ret;
-+	blk_rq_unmap_user(bio);
-+	blk_put_request(rq);
- 
--	return r;
-+	return ret;
- }
- 
- static int sg_io(struct request_queue *q, struct gendisk *bd_disk,
-diff --git a/drivers/block/cciss.c b/drivers/block/cciss.c
-index 4f9b6d7..5d0e135 100644
---- a/drivers/block/cciss.c
-+++ b/drivers/block/cciss.c
-@@ -3898,6 +3898,13 @@ static struct pci_driver cciss_pci_driver = {
-  */
- static int __init cciss_init(void)
- {
-+	/*
-+	 * The hardware requires that commands are aligned on a 64-bit
-+	 * boundary. Given that we use pci_alloc_consistent() to allocate an
-+	 * array of them, the size must be a multiple of 8 bytes.
-+	 */
-+	BUILD_BUG_ON(sizeof(CommandList_struct) % 8);
++/* register offsets */
++#define	MODER		0x00
++#define	INT_SOURCE	0x04
++#define	INT_MASK	0x08
++#define	IPGT		0x0c
++#define	IPGR1		0x10
++#define	IPGR2		0x14
++#define	PACKETLEN	0x18
++#define	COLLCONF	0x1c
++#define	TX_BD_NUM	0x20
++#define	CTRLMODER	0x24
++#define	MIIMODER	0x28
++#define	MIICOMMAND	0x2c
++#define	MIIADDRESS	0x30
++#define	MIITX_DATA	0x34
++#define	MIIRX_DATA	0x38
++#define	MIISTATUS	0x3c
++#define	MAC_ADDR0	0x40
++#define	MAC_ADDR1	0x44
++#define	ETH_HASH0	0x48
++#define	ETH_HASH1	0x4c
++#define	ETH_TXCTRL	0x50
 +
- 	printk(KERN_INFO DRIVER_NAME "\n");
- 
- 	/* Register for our PCI devices */
-diff --git a/drivers/block/cpqarray.c b/drivers/block/cpqarray.c
-index 5d39df1..ca268ca 100644
---- a/drivers/block/cpqarray.c
-+++ b/drivers/block/cpqarray.c
-@@ -617,6 +617,7 @@ static int cpqarray_pci_init(ctlr_info_t *c, struct pci_dev *pdev)
- 	int i;
- 
- 	c->pci_dev = pdev;
-+	pci_set_master(pdev);
- 	if (pci_enable_device(pdev)) {
- 		printk(KERN_ERR "cpqarray: Unable to Enable PCI device\n");
- 		return -1;
-diff --git a/drivers/block/loop.c b/drivers/block/loop.c
-index bf03455..2621ed2 100644
---- a/drivers/block/loop.c
-+++ b/drivers/block/loop.c
-@@ -474,10 +474,35 @@ static int do_bio_filebacked(struct loop_device *lo, struct bio *bio)
- 	int ret;
- 
- 	pos = ((loff_t) bio->bi_sector << 9) + lo->lo_offset;
--	if (bio_rw(bio) == WRITE)
++/* mode register */
++#define	MODER_RXEN	(1 <<  0) /* receive enable */
++#define	MODER_TXEN	(1 <<  1) /* transmit enable */
++#define	MODER_NOPRE	(1 <<  2) /* no preamble */
++#define	MODER_BRO	(1 <<  3) /* broadcast address */
++#define	MODER_IAM	(1 <<  4) /* individual address mode */
++#define	MODER_PRO	(1 <<  5) /* promiscuous mode */
++#define	MODER_IFG	(1 <<  6) /* interframe gap for incoming frames */
++#define	MODER_LOOP	(1 <<  7) /* loopback */
++#define	MODER_NBO	(1 <<  8) /* no back-off */
++#define	MODER_EDE	(1 <<  9) /* excess defer enable */
++#define	MODER_FULLD	(1 << 10) /* full duplex */
++#define	MODER_RESET	(1 << 11) /* FIXME: reset (undocumented) */
++#define	MODER_DCRC	(1 << 12) /* delayed CRC enable */
++#define	MODER_CRC	(1 << 13) /* CRC enable */
++#define	MODER_HUGE	(1 << 14) /* huge packets enable */
++#define	MODER_PAD	(1 << 15) /* padding enabled */
++#define	MODER_RSM	(1 << 16) /* receive small packets */
 +
-+	if (bio_rw(bio) == WRITE) {
-+		int barrier = bio_barrier(bio);
-+		struct file *file = lo->lo_backing_file;
++/* interrupt source and mask registers */
++#define	INT_MASK_TXF	(1 << 0) /* transmit frame */
++#define	INT_MASK_TXE	(1 << 1) /* transmit error */
++#define	INT_MASK_RXF	(1 << 2) /* receive frame */
++#define	INT_MASK_RXE	(1 << 3) /* receive error */
++#define	INT_MASK_BUSY	(1 << 4)
++#define	INT_MASK_TXC	(1 << 5) /* transmit control frame */
++#define	INT_MASK_RXC	(1 << 6) /* receive control frame */
 +
-+		if (barrier) {
-+			if (unlikely(!file->f_op->fsync)) {
-+				ret = -EOPNOTSUPP;
-+				goto out;
-+			}
++#define	INT_MASK_TX	(INT_MASK_TXF | INT_MASK_TXE)
++#define	INT_MASK_RX	(INT_MASK_RXF | INT_MASK_RXE)
 +
-+			ret = vfs_fsync(file, file->f_path.dentry, 0);
-+			if (unlikely(ret)) {
-+				ret = -EIO;
-+				goto out;
-+			}
-+		}
++#define	INT_MASK_ALL ( \
++		INT_MASK_TXF | INT_MASK_TXE | \
++		INT_MASK_RXF | INT_MASK_RXE | \
++		INT_MASK_TXC | INT_MASK_RXC | \
++		INT_MASK_BUSY \
++	)
 +
- 		ret = lo_send(lo, bio, pos);
--	else
++/* packet length register */
++#define	PACKETLEN_MIN(min)		(((min) & 0xffff) << 16)
++#define	PACKETLEN_MAX(max)		(((max) & 0xffff) <<  0)
++#define	PACKETLEN_MIN_MAX(min, max)	(PACKETLEN_MIN(min) | \
++					PACKETLEN_MAX(max))
 +
-+		if (barrier && !ret) {
-+			ret = vfs_fsync(file, file->f_path.dentry, 0);
-+			if (unlikely(ret))
-+				ret = -EIO;
-+		}
-+	} else
- 		ret = lo_receive(lo, bio, lo->lo_blocksize, pos);
++/* transmit buffer number register */
++#define	TX_BD_NUM_VAL(x)	(((x) <= 0x80) ? (x) : 0x80)
 +
-+out:
- 	return ret;
- }
- 
-@@ -826,6 +851,9 @@ static int loop_set_fd(struct loop_device *lo, fmode_t mode,
- 	lo->lo_queue->queuedata = lo;
- 	lo->lo_queue->unplug_fn = loop_unplug;
- 
-+	if (!(lo_flags & LO_FLAGS_READ_ONLY) && file->f_op->fsync)
-+		blk_queue_ordered(lo->lo_queue, QUEUE_ORDERED_DRAIN, NULL);
++/* control module mode register */
++#define	CTRLMODER_PASSALL	(1 << 0) /* pass all receive frames */
++#define	CTRLMODER_RXFLOW	(1 << 1) /* receive control flow */
++#define	CTRLMODER_TXFLOW	(1 << 2) /* transmit control flow */
 +
- 	set_capacity(lo->lo_disk, size);
- 	bd_set_size(bdev, size << 9);
- 
-@@ -941,11 +969,18 @@ static int loop_clr_fd(struct loop_device *lo, struct block_device *bdev)
- 		bd_set_size(bdev, 0);
- 	mapping_set_gfp_mask(filp->f_mapping, gfp);
- 	lo->lo_state = Lo_unbound;
--	fput(filp);
- 	/* This is safe: open() is still holding a reference. */
- 	module_put(THIS_MODULE);
- 	if (max_part > 0)
- 		ioctl_by_bdev(bdev, BLKRRPART, 0);
-+	mutex_unlock(&lo->lo_ctl_mutex);
-+	/*
-+	 * Need not hold lo_ctl_mutex to fput backing file.
-+	 * Calling fput holding lo_ctl_mutex triggers a circular
-+	 * lock dependency possibility warning as fput can take
-+	 * bd_mutex which is usually taken before lo_ctl_mutex.
-+	 */
-+	fput(filp);
- 	return 0;
- }
- 
-@@ -1163,7 +1198,7 @@ static int lo_ioctl(struct block_device *bdev, fmode_t mode,
- 	struct loop_device *lo = bdev->bd_disk->private_data;
- 	int err;
- 
--	mutex_lock(&lo->lo_ctl_mutex);
-+	mutex_lock_nested(&lo->lo_ctl_mutex, 1);
- 	switch (cmd) {
- 	case LOOP_SET_FD:
- 		err = loop_set_fd(lo, mode, bdev, arg);
-@@ -1172,7 +1207,10 @@ static int lo_ioctl(struct block_device *bdev, fmode_t mode,
- 		err = loop_change_fd(lo, bdev, arg);
- 		break;
- 	case LOOP_CLR_FD:
-+		/* loop_clr_fd would have unlocked lo_ctl_mutex on success */
- 		err = loop_clr_fd(lo, bdev);
-+		if (!err)
-+			goto out_unlocked;
- 		break;
- 	case LOOP_SET_STATUS:
- 		err = loop_set_status_old(lo, (struct loop_info __user *) arg);
-@@ -1190,6 +1228,8 @@ static int lo_ioctl(struct block_device *bdev, fmode_t mode,
- 		err = lo->ioctl ? lo->ioctl(lo, cmd, arg) : -EINVAL;
- 	}
- 	mutex_unlock(&lo->lo_ctl_mutex);
++/* MII mode register */
++#define	MIIMODER_CLKDIV(x)	((x) & 0xfe) /* needs to be an even number */
++#define	MIIMODER_NOPRE		(1 << 8) /* no preamble */
 +
-+out_unlocked:
- 	return err;
- }
- 
-diff --git a/fs/bio-integrity.c b/fs/bio-integrity.c
-index fe2b1aa..31c46a2 100644
---- a/fs/bio-integrity.c
-+++ b/fs/bio-integrity.c
-@@ -26,23 +26,23 @@
- #include <linux/workqueue.h>
- 
- static struct kmem_cache *bio_integrity_slab __read_mostly;
-+static mempool_t *bio_integrity_pool;
-+static struct bio_set *integrity_bio_set;
- static struct workqueue_struct *kintegrityd_wq;
- 
- /**
-- * bio_integrity_alloc_bioset - Allocate integrity payload and attach it to bio
-+ * bio_integrity_alloc - Allocate integrity payload and attach it to bio
-  * @bio:	bio to attach integrity metadata to
-  * @gfp_mask:	Memory allocation mask
-  * @nr_vecs:	Number of integrity metadata scatter-gather elements
-- * @bs:		bio_set to allocate from
-  *
-  * Description: This function prepares a bio for attaching integrity
-  * metadata.  nr_vecs specifies the maximum number of pages containing
-  * integrity metadata that can be attached.
-  */
--struct bio_integrity_payload *bio_integrity_alloc_bioset(struct bio *bio,
--							 gfp_t gfp_mask,
--							 unsigned int nr_vecs,
--							 struct bio_set *bs)
-+struct bio_integrity_payload *bio_integrity_alloc(struct bio *bio,
-+						  gfp_t gfp_mask,
-+						  unsigned int nr_vecs)
- {
- 	struct bio_integrity_payload *bip;
- 	struct bio_vec *iv;
-@@ -50,7 +50,7 @@ struct bio_integrity_payload *bio_integrity_alloc_bioset(struct bio *bio,
- 
- 	BUG_ON(bio == NULL);
- 
--	bip = mempool_alloc(bs->bio_integrity_pool, gfp_mask);
-+	bip = mempool_alloc(bio_integrity_pool, gfp_mask);
- 	if (unlikely(bip == NULL)) {
- 		printk(KERN_ERR "%s: could not alloc bip\n", __func__);
- 		return NULL;
-@@ -58,10 +58,10 @@ struct bio_integrity_payload *bio_integrity_alloc_bioset(struct bio *bio,
- 
- 	memset(bip, 0, sizeof(*bip));
- 
--	iv = bvec_alloc_bs(gfp_mask, nr_vecs, &idx, bs);
-+	iv = bvec_alloc_bs(gfp_mask, nr_vecs, &idx, integrity_bio_set);
- 	if (unlikely(iv == NULL)) {
- 		printk(KERN_ERR "%s: could not alloc bip_vec\n", __func__);
--		mempool_free(bip, bs->bio_integrity_pool);
-+		mempool_free(bip, bio_integrity_pool);
- 		return NULL;
- 	}
- 
-@@ -72,35 +72,16 @@ struct bio_integrity_payload *bio_integrity_alloc_bioset(struct bio *bio,
- 
- 	return bip;
- }
--EXPORT_SYMBOL(bio_integrity_alloc_bioset);
--
--/**
-- * bio_integrity_alloc - Allocate integrity payload and attach it to bio
-- * @bio:	bio to attach integrity metadata to
-- * @gfp_mask:	Memory allocation mask
-- * @nr_vecs:	Number of integrity metadata scatter-gather elements
-- *
-- * Description: This function prepares a bio for attaching integrity
-- * metadata.  nr_vecs specifies the maximum number of pages containing
-- * integrity metadata that can be attached.
-- */
--struct bio_integrity_payload *bio_integrity_alloc(struct bio *bio,
--						  gfp_t gfp_mask,
--						  unsigned int nr_vecs)
--{
--	return bio_integrity_alloc_bioset(bio, gfp_mask, nr_vecs, fs_bio_set);
--}
- EXPORT_SYMBOL(bio_integrity_alloc);
- 
- /**
-  * bio_integrity_free - Free bio integrity payload
-  * @bio:	bio containing bip to be freed
-- * @bs:		bio_set this bio was allocated from
-  *
-  * Description: Used to free the integrity portion of a bio. Usually
-  * called from bio_free().
-  */
--void bio_integrity_free(struct bio *bio, struct bio_set *bs)
-+void bio_integrity_free(struct bio *bio)
- {
- 	struct bio_integrity_payload *bip = bio->bi_integrity;
- 
-@@ -111,8 +92,8 @@ void bio_integrity_free(struct bio *bio, struct bio_set *bs)
- 	    && bip->bip_buf != NULL)
- 		kfree(bip->bip_buf);
- 
--	bvec_free_bs(bs, bip->bip_vec, bip->bip_pool);
--	mempool_free(bip, bs->bio_integrity_pool);
-+	bvec_free_bs(integrity_bio_set, bip->bip_vec, bip->bip_pool);
-+	mempool_free(bip, bio_integrity_pool);
- 
- 	bio->bi_integrity = NULL;
- }
-@@ -686,19 +667,17 @@ EXPORT_SYMBOL(bio_integrity_split);
-  * @bio:	New bio
-  * @bio_src:	Original bio
-  * @gfp_mask:	Memory allocation mask
-- * @bs:		bio_set to allocate bip from
-  *
-  * Description:	Called to allocate a bip when cloning a bio
-  */
--int bio_integrity_clone(struct bio *bio, struct bio *bio_src,
--			gfp_t gfp_mask, struct bio_set *bs)
-+int bio_integrity_clone(struct bio *bio, struct bio *bio_src, gfp_t gfp_mask)
- {
- 	struct bio_integrity_payload *bip_src = bio_src->bi_integrity;
- 	struct bio_integrity_payload *bip;
- 
- 	BUG_ON(bip_src == NULL);
- 
--	bip = bio_integrity_alloc_bioset(bio, gfp_mask, bip_src->bip_vcnt, bs);
-+	bip = bio_integrity_alloc(bio, gfp_mask, bip_src->bip_vcnt);
- 
- 	if (bip == NULL)
- 		return -EIO;
-@@ -714,37 +693,25 @@ int bio_integrity_clone(struct bio *bio, struct bio *bio_src,
- }
- EXPORT_SYMBOL(bio_integrity_clone);
- 
--int bioset_integrity_create(struct bio_set *bs, int pool_size)
-+static int __init bio_integrity_init(void)
- {
--	bs->bio_integrity_pool = mempool_create_slab_pool(pool_size,
--							  bio_integrity_slab);
--	if (!bs->bio_integrity_pool)
--		return -1;
--
--	return 0;
--}
--EXPORT_SYMBOL(bioset_integrity_create);
-+	kintegrityd_wq = create_workqueue("kintegrityd");
- 
--void bioset_integrity_free(struct bio_set *bs)
--{
--	if (bs->bio_integrity_pool)
--		mempool_destroy(bs->bio_integrity_pool);
--}
--EXPORT_SYMBOL(bioset_integrity_free);
-+	if (!kintegrityd_wq)
-+		panic("Failed to create kintegrityd\n");
- 
--void __init bio_integrity_init_slab(void)
--{
- 	bio_integrity_slab = KMEM_CACHE(bio_integrity_payload,
- 					SLAB_HWCACHE_ALIGN|SLAB_PANIC);
--}
- 
--static int __init integrity_init(void)
--{
--	kintegrityd_wq = create_workqueue("kintegrityd");
-+	bio_integrity_pool = mempool_create_slab_pool(BIO_POOL_SIZE,
-+						      bio_integrity_slab);
-+	if (!bio_integrity_pool)
-+		panic("bio_integrity: can't allocate bip pool\n");
- 
--	if (!kintegrityd_wq)
--		panic("Failed to create kintegrityd\n");
-+	integrity_bio_set = bioset_create(BIO_POOL_SIZE, 0);
-+	if (!integrity_bio_set)
-+		panic("bio_integrity: can't allocate bio_set\n");
- 
- 	return 0;
- }
--subsys_initcall(integrity_init);
-+subsys_initcall(bio_integrity_init);
-diff --git a/fs/bio.c b/fs/bio.c
-index d4f0632..a040cde 100644
---- a/fs/bio.c
-+++ b/fs/bio.c
-@@ -248,7 +248,7 @@ void bio_free(struct bio *bio, struct bio_set *bs)
- 		bvec_free_bs(bs, bio->bi_io_vec, BIO_POOL_IDX(bio));
- 
- 	if (bio_integrity(bio))
--		bio_integrity_free(bio, bs);
-+		bio_integrity_free(bio);
- 
- 	/*
- 	 * If we have front padding, adjust the bio pointer before freeing
-@@ -301,48 +301,51 @@ void bio_init(struct bio *bio)
-  **/
- struct bio *bio_alloc_bioset(gfp_t gfp_mask, int nr_iovecs, struct bio_set *bs)
- {
-+	struct bio_vec *bvl = NULL;
- 	struct bio *bio = NULL;
--	void *uninitialized_var(p);
-+	unsigned long idx = 0;
-+	void *p = NULL;
- 
- 	if (bs) {
- 		p = mempool_alloc(bs->bio_pool, gfp_mask);
--
--		if (p)
--			bio = p + bs->front_pad;
--	} else
-+		if (!p)
-+			goto err;
-+		bio = p + bs->front_pad;
-+	} else {
- 		bio = kmalloc(sizeof(*bio), gfp_mask);
-+		if (!bio)
-+			goto err;
++/* MII command register */
++#define	MIICOMMAND_SCAN		(1 << 0) /* scan status */
++#define	MIICOMMAND_READ		(1 << 1) /* read status */
++#define	MIICOMMAND_WRITE	(1 << 2) /* write control data */
++
++/* MII address register */
++#define	MIIADDRESS_FIAD(x)		(((x) & 0x1f) << 0)
++#define	MIIADDRESS_RGAD(x)		(((x) & 0x1f) << 8)
++#define	MIIADDRESS_ADDR(phy, reg)	(MIIADDRESS_FIAD(phy) | \
++					MIIADDRESS_RGAD(reg))
++
++/* MII transmit data register */
++#define	MIITX_DATA_VAL(x)	((x) & 0xffff)
++
++/* MII receive data register */
++#define	MIIRX_DATA_VAL(x)	((x) & 0xffff)
++
++/* MII status register */
++#define	MIISTATUS_LINKFAIL	(1 << 0)
++#define	MIISTATUS_BUSY		(1 << 1)
++#define	MIISTATUS_INVALID	(1 << 2)
++
++/* TX buffer descriptor */
++#define	TX_BD_CS		(1 <<  0) /* carrier sense lost */
++#define	TX_BD_DF		(1 <<  1) /* defer indication */
++#define	TX_BD_LC		(1 <<  2) /* late collision */
++#define	TX_BD_RL		(1 <<  3) /* retransmission limit */
++#define	TX_BD_RETRY_MASK	(0x00f0)
++#define	TX_BD_RETRY(x)		(((x) & 0x00f0) >>  4)
++#define	TX_BD_UR		(1 <<  8) /* transmitter underrun */
++#define	TX_BD_CRC		(1 << 11) /* TX CRC enable */
++#define	TX_BD_PAD		(1 << 12) /* pad enable for short packets */
++#define	TX_BD_WRAP		(1 << 13)
++#define	TX_BD_IRQ		(1 << 14) /* interrupt request enable */
++#define	TX_BD_READY		(1 << 15) /* TX buffer ready */
++#define	TX_BD_LEN(x)		(((x) & 0xffff) << 16)
++#define	TX_BD_LEN_MASK		(0xffff << 16)
++
++#define	TX_BD_STATS		(TX_BD_CS | TX_BD_DF | TX_BD_LC | \
++				TX_BD_RL | TX_BD_RETRY_MASK | TX_BD_UR)
++
++/* RX buffer descriptor */
++#define	RX_BD_LC	(1 <<  0) /* late collision */
++#define	RX_BD_CRC	(1 <<  1) /* RX CRC error */
++#define	RX_BD_SF	(1 <<  2) /* short frame */
++#define	RX_BD_TL	(1 <<  3) /* too long */
++#define	RX_BD_DN	(1 <<  4) /* dribble nibble */
++#define	RX_BD_IS	(1 <<  5) /* invalid symbol */
++#define	RX_BD_OR	(1 <<  6) /* receiver overrun */
++#define	RX_BD_MISS	(1 <<  7)
++#define	RX_BD_CF	(1 <<  8) /* control frame */
++#define	RX_BD_WRAP	(1 << 13)
++#define	RX_BD_IRQ	(1 << 14) /* interrupt request enable */
++#define	RX_BD_EMPTY	(1 << 15)
++#define	RX_BD_LEN(x)	(((x) & 0xffff) << 16)
++
++#define	RX_BD_STATS	(RX_BD_LC | RX_BD_CRC | RX_BD_SF | RX_BD_TL | \
++			RX_BD_DN | RX_BD_IS | RX_BD_OR | RX_BD_MISS)
++
++#define	ETHOC_BUFSIZ		1536
++#define	ETHOC_ZLEN		64
++#define	ETHOC_BD_BASE		0x400
++#define	ETHOC_TIMEOUT		(HZ / 2)
++#define	ETHOC_MII_TIMEOUT	(1 + (HZ / 5))
++
++/**
++ * struct ethoc - driver-private device structure
++ * @iobase:	pointer to I/O memory region
++ * @membase:	pointer to buffer memory region
++ * @num_tx:	number of send buffers
++ * @cur_tx:	last send buffer written
++ * @dty_tx:	last buffer actually sent
++ * @num_rx:	number of receive buffers
++ * @cur_rx:	current receive buffer
++ * @netdev:	pointer to network device structure
++ * @napi:	NAPI structure
++ * @stats:	network device statistics
++ * @msg_enable:	device state flags
++ * @rx_lock:	receive lock
++ * @lock:	device lock
++ * @phy:	attached PHY
++ * @mdio:	MDIO bus for PHY access
++ * @phy_id:	address of attached PHY
++ */
++struct ethoc {
++	void __iomem *iobase;
++	void __iomem *membase;
++
++	unsigned int num_tx;
++	unsigned int cur_tx;
++	unsigned int dty_tx;
++
++	unsigned int num_rx;
++	unsigned int cur_rx;
++
++	struct net_device *netdev;
++	struct napi_struct napi;
++	struct net_device_stats stats;
++	u32 msg_enable;
++
++	spinlock_t rx_lock;
++	spinlock_t lock;
++
++	struct phy_device *phy;
++	struct mii_bus *mdio;
++	s8 phy_id;
++};
++
++/**
++ * struct ethoc_bd - buffer descriptor
++ * @stat:	buffer statistics
++ * @addr:	physical memory address
++ */
++struct ethoc_bd {
++	u32 stat;
++	u32 addr;
++};
++
++static u32 ethoc_read(struct ethoc *dev, loff_t offset)
++{
++	return ioread32(dev->iobase + offset);
++}
++
++static void ethoc_write(struct ethoc *dev, loff_t offset, u32 data)
++{
++	iowrite32(data, dev->iobase + offset);
++}
++
++static void ethoc_read_bd(struct ethoc *dev, int index, struct ethoc_bd *bd)
++{
++	loff_t offset = ETHOC_BD_BASE + (index * sizeof(struct ethoc_bd));
++	bd->stat = ethoc_read(dev, offset + 0);
++	bd->addr = ethoc_read(dev, offset + 4);
++}
++
++static void ethoc_write_bd(struct ethoc *dev, int index,
++		const struct ethoc_bd *bd)
++{
++	loff_t offset = ETHOC_BD_BASE + (index * sizeof(struct ethoc_bd));
++	ethoc_write(dev, offset + 0, bd->stat);
++	ethoc_write(dev, offset + 4, bd->addr);
++}
++
++static void ethoc_enable_irq(struct ethoc *dev, u32 mask)
++{
++	u32 imask = ethoc_read(dev, INT_MASK);
++	imask |= mask;
++	ethoc_write(dev, INT_MASK, imask);
++}
++
++static void ethoc_disable_irq(struct ethoc *dev, u32 mask)
++{
++	u32 imask = ethoc_read(dev, INT_MASK);
++	imask &= ~mask;
++	ethoc_write(dev, INT_MASK, imask);
++}
++
++static void ethoc_ack_irq(struct ethoc *dev, u32 mask)
++{
++	ethoc_write(dev, INT_SOURCE, mask);
++}
++
++static void ethoc_enable_rx_and_tx(struct ethoc *dev)
++{
++	u32 mode = ethoc_read(dev, MODER);
++	mode |= MODER_RXEN | MODER_TXEN;
++	ethoc_write(dev, MODER, mode);
++}
++
++static void ethoc_disable_rx_and_tx(struct ethoc *dev)
++{
++	u32 mode = ethoc_read(dev, MODER);
++	mode &= ~(MODER_RXEN | MODER_TXEN);
++	ethoc_write(dev, MODER, mode);
++}
++
++static int ethoc_init_ring(struct ethoc *dev)
++{
++	struct ethoc_bd bd;
++	int i;
++
++	dev->cur_tx = 0;
++	dev->dty_tx = 0;
++	dev->cur_rx = 0;
++
++	/* setup transmission buffers */
++	bd.addr = 0;
++	bd.stat = TX_BD_IRQ | TX_BD_CRC;
++
++	for (i = 0; i < dev->num_tx; i++) {
++		if (i == dev->num_tx - 1)
++			bd.stat |= TX_BD_WRAP;
++
++		ethoc_write_bd(dev, i, &bd);
++		bd.addr += ETHOC_BUFSIZ;
 +	}
- 
--	if (likely(bio)) {
--		struct bio_vec *bvl = NULL;
--
--		bio_init(bio);
--		if (likely(nr_iovecs)) {
--			unsigned long uninitialized_var(idx);
--
--			if (nr_iovecs <= BIO_INLINE_VECS) {
--				idx = 0;
--				bvl = bio->bi_inline_vecs;
--				nr_iovecs = BIO_INLINE_VECS;
--			} else {
--				bvl = bvec_alloc_bs(gfp_mask, nr_iovecs, &idx,
--							bs);
--				nr_iovecs = bvec_nr_vecs(idx);
--			}
--			if (unlikely(!bvl)) {
--				if (bs)
--					mempool_free(p, bs->bio_pool);
--				else
--					kfree(bio);
--				bio = NULL;
--				goto out;
--			}
--			bio->bi_flags |= idx << BIO_POOL_OFFSET;
--			bio->bi_max_vecs = nr_iovecs;
--		}
--		bio->bi_io_vec = bvl;
-+	bio_init(bio);
 +
-+	if (unlikely(!nr_iovecs))
-+		goto out_set;
++	bd.addr = dev->num_tx * ETHOC_BUFSIZ;
++	bd.stat = RX_BD_EMPTY | RX_BD_IRQ;
 +
-+	if (nr_iovecs <= BIO_INLINE_VECS) {
-+		bvl = bio->bi_inline_vecs;
-+		nr_iovecs = BIO_INLINE_VECS;
-+	} else {
-+		bvl = bvec_alloc_bs(gfp_mask, nr_iovecs, &idx, bs);
-+		if (unlikely(!bvl))
-+			goto err_free;
++	for (i = 0; i < dev->num_rx; i++) {
++		if (i == dev->num_rx - 1)
++			bd.stat |= RX_BD_WRAP;
 +
-+		nr_iovecs = bvec_nr_vecs(idx);
- 	}
--out:
-+	bio->bi_flags |= idx << BIO_POOL_OFFSET;
-+	bio->bi_max_vecs = nr_iovecs;
-+out_set:
-+	bio->bi_io_vec = bvl;
++		ethoc_write_bd(dev, dev->num_tx + i, &bd);
++		bd.addr += ETHOC_BUFSIZ;
++	}
 +
- 	return bio;
++	return 0;
++}
 +
-+err_free:
-+	if (bs)
-+		mempool_free(p, bs->bio_pool);
-+	else
-+		kfree(bio);
-+err:
-+	return NULL;
- }
- 
- struct bio *bio_alloc(gfp_t gfp_mask, int nr_iovecs)
-@@ -463,7 +466,7 @@ struct bio *bio_clone(struct bio *bio, gfp_t gfp_mask)
- 	if (bio_integrity(bio)) {
- 		int ret;
- 
--		ret = bio_integrity_clone(b, bio, gfp_mask, fs_bio_set);
-+		ret = bio_integrity_clone(b, bio, gfp_mask);
- 
- 		if (ret < 0) {
- 			bio_put(b);
-@@ -1526,7 +1529,6 @@ void bioset_free(struct bio_set *bs)
- 	if (bs->bio_pool)
- 		mempool_destroy(bs->bio_pool);
- 
--	bioset_integrity_free(bs);
- 	biovec_free_pools(bs);
- 	bio_put_slab(bs);
- 
-@@ -1567,9 +1569,6 @@ struct bio_set *bioset_create(unsigned int pool_size, unsigned int front_pad)
- 	if (!bs->bio_pool)
- 		goto bad;
- 
--	if (bioset_integrity_create(bs, pool_size))
--		goto bad;
--
- 	if (!biovec_create_pools(bs, pool_size))
- 		return bs;
- 
-@@ -1586,6 +1585,13 @@ static void __init biovec_init_slabs(void)
- 		int size;
- 		struct biovec_slab *bvs = bvec_slabs + i;
- 
-+#ifndef CONFIG_BLK_DEV_INTEGRITY
-+		if (bvs->nr_vecs <= BIO_INLINE_VECS) {
-+			bvs->slab = NULL;
-+			continue;
++static int ethoc_reset(struct ethoc *dev)
++{
++	u32 mode;
++
++	/* TODO: reset controller? */
++
++	ethoc_disable_rx_and_tx(dev);
++
++	/* TODO: setup registers */
++
++	/* enable FCS generation and automatic padding */
++	mode = ethoc_read(dev, MODER);
++	mode |= MODER_CRC | MODER_PAD;
++	ethoc_write(dev, MODER, mode);
++
++	/* set full-duplex mode */
++	mode = ethoc_read(dev, MODER);
++	mode |= MODER_FULLD;
++	ethoc_write(dev, MODER, mode);
++	ethoc_write(dev, IPGT, 0x15);
++
++	ethoc_ack_irq(dev, INT_MASK_ALL);
++	ethoc_enable_irq(dev, INT_MASK_ALL);
++	ethoc_enable_rx_and_tx(dev);
++	return 0;
++}
++
++static unsigned int ethoc_update_rx_stats(struct ethoc *dev,
++		struct ethoc_bd *bd)
++{
++	struct net_device *netdev = dev->netdev;
++	unsigned int ret = 0;
++
++	if (bd->stat & RX_BD_TL) {
++		dev_err(&netdev->dev, "RX: frame too long\n");
++		dev->stats.rx_length_errors++;
++		ret++;
++	}
++
++	if (bd->stat & RX_BD_SF) {
++		dev_err(&netdev->dev, "RX: frame too short\n");
++		dev->stats.rx_length_errors++;
++		ret++;
++	}
++
++	if (bd->stat & RX_BD_DN) {
++		dev_err(&netdev->dev, "RX: dribble nibble\n");
++		dev->stats.rx_frame_errors++;
++	}
++
++	if (bd->stat & RX_BD_CRC) {
++		dev_err(&netdev->dev, "RX: wrong CRC\n");
++		dev->stats.rx_crc_errors++;
++		ret++;
++	}
++
++	if (bd->stat & RX_BD_OR) {
++		dev_err(&netdev->dev, "RX: overrun\n");
++		dev->stats.rx_over_errors++;
++		ret++;
++	}
++
++	if (bd->stat & RX_BD_MISS)
++		dev->stats.rx_missed_errors++;
++
++	if (bd->stat & RX_BD_LC) {
++		dev_err(&netdev->dev, "RX: late collision\n");
++		dev->stats.collisions++;
++		ret++;
++	}
++
++	return ret;
++}
++
++static int ethoc_rx(struct net_device *dev, int limit)
++{
++	struct ethoc *priv = netdev_priv(dev);
++	int count;
++
++	for (count = 0; count < limit; ++count) {
++		unsigned int entry;
++		struct ethoc_bd bd;
++
++		entry = priv->num_tx + (priv->cur_rx % priv->num_rx);
++		ethoc_read_bd(priv, entry, &bd);
++		if (bd.stat & RX_BD_EMPTY)
++			break;
++
++		if (ethoc_update_rx_stats(priv, &bd) == 0) {
++			int size = bd.stat >> 16;
++			struct sk_buff *skb = netdev_alloc_skb(dev, size);
++			if (likely(skb)) {
++				void *src = priv->membase + bd.addr;
++				memcpy_fromio(skb_put(skb, size), src, size);
++				skb->protocol = eth_type_trans(skb, dev);
++				dev->last_rx = jiffies;
++				priv->stats.rx_packets++;
++				priv->stats.rx_bytes += size;
++				netif_receive_skb(skb);
++			} else {
++				if (net_ratelimit())
++					dev_warn(&dev->dev, "low on memory - "
++							"packet dropped\n");
++
++				priv->stats.rx_dropped++;
++				break;
++			}
 +		}
++
++		/* clear the buffer descriptor so it can be reused */
++		bd.stat &= ~RX_BD_STATS;
++		bd.stat |=  RX_BD_EMPTY;
++		ethoc_write_bd(priv, entry, &bd);
++		priv->cur_rx++;
++	}
++
++	return count;
++}
++
++static int ethoc_update_tx_stats(struct ethoc *dev, struct ethoc_bd *bd)
++{
++	struct net_device *netdev = dev->netdev;
++
++	if (bd->stat & TX_BD_LC) {
++		dev_err(&netdev->dev, "TX: late collision\n");
++		dev->stats.tx_window_errors++;
++	}
++
++	if (bd->stat & TX_BD_RL) {
++		dev_err(&netdev->dev, "TX: retransmit limit\n");
++		dev->stats.tx_aborted_errors++;
++	}
++
++	if (bd->stat & TX_BD_UR) {
++		dev_err(&netdev->dev, "TX: underrun\n");
++		dev->stats.tx_fifo_errors++;
++	}
++
++	if (bd->stat & TX_BD_CS) {
++		dev_err(&netdev->dev, "TX: carrier sense lost\n");
++		dev->stats.tx_carrier_errors++;
++	}
++
++	if (bd->stat & TX_BD_STATS)
++		dev->stats.tx_errors++;
++
++	dev->stats.collisions += (bd->stat >> 4) & 0xf;
++	dev->stats.tx_bytes += bd->stat >> 16;
++	dev->stats.tx_packets++;
++	return 0;
++}
++
++static void ethoc_tx(struct net_device *dev)
++{
++	struct ethoc *priv = netdev_priv(dev);
++
++	spin_lock(&priv->lock);
++
++	while (priv->dty_tx != priv->cur_tx) {
++		unsigned int entry = priv->dty_tx % priv->num_tx;
++		struct ethoc_bd bd;
++
++		ethoc_read_bd(priv, entry, &bd);
++		if (bd.stat & TX_BD_READY)
++			break;
++
++		entry = (++priv->dty_tx) % priv->num_tx;
++		(void)ethoc_update_tx_stats(priv, &bd);
++	}
++
++	if ((priv->cur_tx - priv->dty_tx) <= (priv->num_tx / 2))
++		netif_wake_queue(dev);
++
++	ethoc_ack_irq(priv, INT_MASK_TX);
++	spin_unlock(&priv->lock);
++}
++
++static irqreturn_t ethoc_interrupt(int irq, void *dev_id)
++{
++	struct net_device *dev = (struct net_device *)dev_id;
++	struct ethoc *priv = netdev_priv(dev);
++	u32 pending;
++
++	ethoc_disable_irq(priv, INT_MASK_ALL);
++	pending = ethoc_read(priv, INT_SOURCE);
++	if (unlikely(pending == 0)) {
++		ethoc_enable_irq(priv, INT_MASK_ALL);
++		return IRQ_NONE;
++	}
++
++	ethoc_ack_irq(priv, INT_MASK_ALL);
++
++	if (pending & INT_MASK_BUSY) {
++		dev_err(&dev->dev, "packet dropped\n");
++		priv->stats.rx_dropped++;
++	}
++
++	if (pending & INT_MASK_RX) {
++		if (napi_schedule_prep(&priv->napi))
++			__napi_schedule(&priv->napi);
++	} else {
++		ethoc_enable_irq(priv, INT_MASK_RX);
++	}
++
++	if (pending & INT_MASK_TX)
++		ethoc_tx(dev);
++
++	ethoc_enable_irq(priv, INT_MASK_ALL & ~INT_MASK_RX);
++	return IRQ_HANDLED;
++}
++
++static int ethoc_get_mac_address(struct net_device *dev, void *addr)
++{
++	struct ethoc *priv = netdev_priv(dev);
++	u8 *mac = (u8 *)addr;
++	u32 reg;
++
++	reg = ethoc_read(priv, MAC_ADDR0);
++	mac[2] = (reg >> 24) & 0xff;
++	mac[3] = (reg >> 16) & 0xff;
++	mac[4] = (reg >>  8) & 0xff;
++	mac[5] = (reg >>  0) & 0xff;
++
++	reg = ethoc_read(priv, MAC_ADDR1);
++	mac[0] = (reg >>  8) & 0xff;
++	mac[1] = (reg >>  0) & 0xff;
++
++	return 0;
++}
++
++static int ethoc_poll(struct napi_struct *napi, int budget)
++{
++	struct ethoc *priv = container_of(napi, struct ethoc, napi);
++	int work_done = 0;
++
++	work_done = ethoc_rx(priv->netdev, budget);
++	if (work_done < budget) {
++		ethoc_enable_irq(priv, INT_MASK_RX);
++		napi_complete(napi);
++	}
++
++	return work_done;
++}
++
++static int ethoc_mdio_read(struct mii_bus *bus, int phy, int reg)
++{
++	unsigned long timeout = jiffies + ETHOC_MII_TIMEOUT;
++	struct ethoc *priv = bus->priv;
++
++	ethoc_write(priv, MIIADDRESS, MIIADDRESS_ADDR(phy, reg));
++	ethoc_write(priv, MIICOMMAND, MIICOMMAND_READ);
++
++	while (time_before(jiffies, timeout)) {
++		u32 status = ethoc_read(priv, MIISTATUS);
++		if (!(status & MIISTATUS_BUSY)) {
++			u32 data = ethoc_read(priv, MIIRX_DATA);
++			/* reset MII command register */
++			ethoc_write(priv, MIICOMMAND, 0);
++			return data;
++		}
++
++		schedule();
++	}
++
++	return -EBUSY;
++}
++
++static int ethoc_mdio_write(struct mii_bus *bus, int phy, int reg, u16 val)
++{
++	unsigned long timeout = jiffies + ETHOC_MII_TIMEOUT;
++	struct ethoc *priv = bus->priv;
++
++	ethoc_write(priv, MIIADDRESS, MIIADDRESS_ADDR(phy, reg));
++	ethoc_write(priv, MIITX_DATA, val);
++	ethoc_write(priv, MIICOMMAND, MIICOMMAND_WRITE);
++
++	while (time_before(jiffies, timeout)) {
++		u32 stat = ethoc_read(priv, MIISTATUS);
++		if (!(stat & MIISTATUS_BUSY))
++			return 0;
++
++		schedule();
++	}
++
++	return -EBUSY;
++}
++
++static int ethoc_mdio_reset(struct mii_bus *bus)
++{
++	return 0;
++}
++
++static void ethoc_mdio_poll(struct net_device *dev)
++{
++}
++
++static int ethoc_mdio_probe(struct net_device *dev)
++{
++	struct ethoc *priv = netdev_priv(dev);
++	struct phy_device *phy;
++	int i;
++
++	for (i = 0; i < PHY_MAX_ADDR; i++) {
++		phy = priv->mdio->phy_map[i];
++		if (phy) {
++			if (priv->phy_id != -1) {
++				/* attach to specified PHY */
++				if (priv->phy_id == phy->addr)
++					break;
++			} else {
++				/* autoselect PHY if none was specified */
++				if (phy->addr != 0)
++					break;
++			}
++		}
++	}
++
++	if (!phy) {
++		dev_err(&dev->dev, "no PHY found\n");
++		return -ENXIO;
++	}
++
++	phy = phy_connect(dev, phy->dev.bus_id, &ethoc_mdio_poll, 0,
++			PHY_INTERFACE_MODE_GMII);
++	if (IS_ERR(phy)) {
++		dev_err(&dev->dev, "could not attach to PHY\n");
++		return PTR_ERR(phy);
++	}
++
++	priv->phy = phy;
++	return 0;
++}
++
++static int ethoc_open(struct net_device *dev)
++{
++	struct ethoc *priv = netdev_priv(dev);
++	unsigned int min_tx = 2;
++	unsigned int num_bd;
++	int ret;
++
++	ret = request_irq(dev->irq, ethoc_interrupt, IRQF_SHARED,
++			dev->name, dev);
++	if (ret)
++		return ret;
++
++	/* calculate the number of TX/RX buffers */
++	num_bd = (dev->mem_end - dev->mem_start + 1) / ETHOC_BUFSIZ;
++	priv->num_tx = min(min_tx, num_bd / 4);
++	priv->num_rx = num_bd - priv->num_tx;
++	ethoc_write(priv, TX_BD_NUM, priv->num_tx);
++
++	ethoc_init_ring(priv);
++	ethoc_reset(priv);
++
++	if (netif_queue_stopped(dev)) {
++		dev_dbg(&dev->dev, " resuming queue\n");
++		netif_wake_queue(dev);
++	} else {
++		dev_dbg(&dev->dev, " starting queue\n");
++		netif_start_queue(dev);
++	}
++
++	phy_start(priv->phy);
++	napi_enable(&priv->napi);
++
++	if (netif_msg_ifup(priv)) {
++		dev_info(&dev->dev, "I/O: %08lx Memory: %08lx-%08lx\n",
++				dev->base_addr, dev->mem_start, dev->mem_end);
++	}
++
++	return 0;
++}
++
++static int ethoc_stop(struct net_device *dev)
++{
++	struct ethoc *priv = netdev_priv(dev);
++
++	napi_disable(&priv->napi);
++
++	if (priv->phy)
++		phy_stop(priv->phy);
++
++	ethoc_disable_rx_and_tx(priv);
++	free_irq(dev->irq, dev);
++
++	if (!netif_queue_stopped(dev))
++		netif_stop_queue(dev);
++
++	return 0;
++}
++
++static int ethoc_ioctl(struct net_device *dev, struct ifreq *ifr, int cmd)
++{
++	struct ethoc *priv = netdev_priv(dev);
++	struct mii_ioctl_data *mdio = if_mii(ifr);
++	struct phy_device *phy = NULL;
++
++	if (!netif_running(dev))
++		return -EINVAL;
++
++	if (cmd != SIOCGMIIPHY) {
++		if (mdio->phy_id >= PHY_MAX_ADDR)
++			return -ERANGE;
++
++		phy = priv->mdio->phy_map[mdio->phy_id];
++		if (!phy)
++			return -ENODEV;
++	} else {
++		phy = priv->phy;
++	}
++
++	return phy_mii_ioctl(phy, mdio, cmd);
++}
++
++static int ethoc_config(struct net_device *dev, struct ifmap *map)
++{
++	return -ENOSYS;
++}
++
++static int ethoc_set_mac_address(struct net_device *dev, void *addr)
++{
++	struct ethoc *priv = netdev_priv(dev);
++	u8 *mac = (u8 *)addr;
++
++	ethoc_write(priv, MAC_ADDR0, (mac[2] << 24) | (mac[3] << 16) |
++				     (mac[4] <<  8) | (mac[5] <<  0));
++	ethoc_write(priv, MAC_ADDR1, (mac[0] <<  8) | (mac[1] <<  0));
++
++	return 0;
++}
++
++static void ethoc_set_multicast_list(struct net_device *dev)
++{
++	struct ethoc *priv = netdev_priv(dev);
++	u32 mode = ethoc_read(priv, MODER);
++	struct dev_mc_list *mc = NULL;
++	u32 hash[2] = { 0, 0 };
++
++	/* set loopback mode if requested */
++	if (dev->flags & IFF_LOOPBACK)
++		mode |=  MODER_LOOP;
++	else
++		mode &= ~MODER_LOOP;
++
++	/* receive broadcast frames if requested */
++	if (dev->flags & IFF_BROADCAST)
++		mode &= ~MODER_BRO;
++	else
++		mode |=  MODER_BRO;
++
++	/* enable promiscuous mode if requested */
++	if (dev->flags & IFF_PROMISC)
++		mode |=  MODER_PRO;
++	else
++		mode &= ~MODER_PRO;
++
++	ethoc_write(priv, MODER, mode);
++
++	/* receive multicast frames */
++	if (dev->flags & IFF_ALLMULTI) {
++		hash[0] = 0xffffffff;
++		hash[1] = 0xffffffff;
++	} else {
++		for (mc = dev->mc_list; mc; mc = mc->next) {
++			u32 crc = ether_crc(mc->dmi_addrlen, mc->dmi_addr);
++			int bit = (crc >> 26) & 0x3f;
++			hash[bit >> 5] |= 1 << (bit & 0x1f);
++		}
++	}
++
++	ethoc_write(priv, ETH_HASH0, hash[0]);
++	ethoc_write(priv, ETH_HASH1, hash[1]);
++}
++
++static int ethoc_change_mtu(struct net_device *dev, int new_mtu)
++{
++	return -ENOSYS;
++}
++
++static void ethoc_tx_timeout(struct net_device *dev)
++{
++	struct ethoc *priv = netdev_priv(dev);
++	u32 pending = ethoc_read(priv, INT_SOURCE);
++	if (likely(pending))
++		ethoc_interrupt(dev->irq, dev);
++}
++
++static struct net_device_stats *ethoc_stats(struct net_device *dev)
++{
++	struct ethoc *priv = netdev_priv(dev);
++	return &priv->stats;
++}
++
++static int ethoc_start_xmit(struct sk_buff *skb, struct net_device *dev)
++{
++	struct ethoc *priv = netdev_priv(dev);
++	struct ethoc_bd bd;
++	unsigned int entry;
++	void *dest;
++
++	if (unlikely(skb->len > ETHOC_BUFSIZ)) {
++		priv->stats.tx_errors++;
++		return -EMSGSIZE;
++	}
++
++	entry = priv->cur_tx % priv->num_tx;
++	spin_lock_irq(&priv->lock);
++	priv->cur_tx++;
++
++	ethoc_read_bd(priv, entry, &bd);
++	if (unlikely(skb->len < ETHOC_ZLEN))
++		bd.stat |=  TX_BD_PAD;
++	else
++		bd.stat &= ~TX_BD_PAD;
++
++	dest = priv->membase + bd.addr;
++	memcpy_toio(dest, skb->data, skb->len);
++
++	bd.stat &= ~(TX_BD_STATS | TX_BD_LEN_MASK);
++	bd.stat |= TX_BD_LEN(skb->len);
++	ethoc_write_bd(priv, entry, &bd);
++
++	bd.stat |= TX_BD_READY;
++	ethoc_write_bd(priv, entry, &bd);
++
++	if (priv->cur_tx == (priv->dty_tx + priv->num_tx)) {
++		dev_dbg(&dev->dev, "stopping queue\n");
++		netif_stop_queue(dev);
++	}
++
++	dev->trans_start = jiffies;
++	dev_kfree_skb(skb);
++
++	spin_unlock_irq(&priv->lock);
++	return NETDEV_TX_OK;
++}
++
++static const struct net_device_ops ethoc_netdev_ops = {
++	.ndo_open = ethoc_open,
++	.ndo_stop = ethoc_stop,
++	.ndo_do_ioctl = ethoc_ioctl,
++	.ndo_set_config = ethoc_config,
++	.ndo_set_mac_address = ethoc_set_mac_address,
++	.ndo_set_multicast_list = ethoc_set_multicast_list,
++	.ndo_change_mtu = ethoc_change_mtu,
++	.ndo_tx_timeout = ethoc_tx_timeout,
++	.ndo_get_stats = ethoc_stats,
++	.ndo_start_xmit = ethoc_start_xmit,
++};
++
++/**
++ * ethoc_probe() - initialize OpenCores ethernet MAC
++ * pdev:	platform device
++ */
++static int ethoc_probe(struct platform_device *pdev)
++{
++	struct net_device *netdev = NULL;
++	struct resource *res = NULL;
++	struct resource *mmio = NULL;
++	struct resource *mem = NULL;
++	struct ethoc *priv = NULL;
++	unsigned int phy;
++	int ret = 0;
++
++	/* allocate networking device */
++	netdev = alloc_etherdev(sizeof(struct ethoc));
++	if (!netdev) {
++		dev_err(&pdev->dev, "cannot allocate network device\n");
++		ret = -ENOMEM;
++		goto out;
++	}
++
++	SET_NETDEV_DEV(netdev, &pdev->dev);
++	platform_set_drvdata(pdev, netdev);
++
++	/* obtain I/O memory space */
++	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
++	if (!res) {
++		dev_err(&pdev->dev, "cannot obtain I/O memory space\n");
++		ret = -ENXIO;
++		goto free;
++	}
++
++	mmio = devm_request_mem_region(&pdev->dev, res->start,
++			res->end - res->start + 1, res->name);
++	if (!res) {
++		dev_err(&pdev->dev, "cannot request I/O memory space\n");
++		ret = -ENXIO;
++		goto free;
++	}
++
++	netdev->base_addr = mmio->start;
++
++	/* obtain buffer memory space */
++	res = platform_get_resource(pdev, IORESOURCE_MEM, 1);
++	if (!res) {
++		dev_err(&pdev->dev, "cannot obtain memory space\n");
++		ret = -ENXIO;
++		goto free;
++	}
++
++	mem = devm_request_mem_region(&pdev->dev, res->start,
++			res->end - res->start + 1, res->name);
++	if (!mem) {
++		dev_err(&pdev->dev, "cannot request memory space\n");
++		ret = -ENXIO;
++		goto free;
++	}
++
++	netdev->mem_start = mem->start;
++	netdev->mem_end   = mem->end;
++
++	/* obtain device IRQ number */
++	res = platform_get_resource(pdev, IORESOURCE_IRQ, 0);
++	if (!res) {
++		dev_err(&pdev->dev, "cannot obtain IRQ\n");
++		ret = -ENXIO;
++		goto free;
++	}
++
++	netdev->irq = res->start;
++
++	/* setup driver-private data */
++	priv = netdev_priv(netdev);
++	priv->netdev = netdev;
++
++	priv->iobase = devm_ioremap_nocache(&pdev->dev, netdev->base_addr,
++			mmio->end - mmio->start + 1);
++	if (!priv->iobase) {
++		dev_err(&pdev->dev, "cannot remap I/O memory space\n");
++		ret = -ENXIO;
++		goto error;
++	}
++
++	priv->membase = devm_ioremap_nocache(&pdev->dev, netdev->mem_start,
++			mem->end - mem->start + 1);
++	if (!priv->membase) {
++		dev_err(&pdev->dev, "cannot remap memory space\n");
++		ret = -ENXIO;
++		goto error;
++	}
++
++	/* Allow the platform setup code to pass in a MAC address. */
++	if (pdev->dev.platform_data) {
++		struct ethoc_platform_data *pdata =
++			(struct ethoc_platform_data *)pdev->dev.platform_data;
++		memcpy(netdev->dev_addr, pdata->hwaddr, IFHWADDRLEN);
++		priv->phy_id = pdata->phy_id;
++	}
++
++	/* Check that the given MAC address is valid. If it isn't, read the
++	 * current MAC from the controller. */
++	if (!is_valid_ether_addr(netdev->dev_addr))
++		ethoc_get_mac_address(netdev, netdev->dev_addr);
++
++	/* Check the MAC again for validity, if it still isn't choose and
++	 * program a random one. */
++	if (!is_valid_ether_addr(netdev->dev_addr))
++		random_ether_addr(netdev->dev_addr);
++
++	ethoc_set_mac_address(netdev, netdev->dev_addr);
++
++	/* register MII bus */
++	priv->mdio = mdiobus_alloc();
++	if (!priv->mdio) {
++		ret = -ENOMEM;
++		goto free;
++	}
++
++	priv->mdio->name = "ethoc-mdio";
++	snprintf(priv->mdio->id, MII_BUS_ID_SIZE, "%s-%d",
++			priv->mdio->name, pdev->id);
++	priv->mdio->read = ethoc_mdio_read;
++	priv->mdio->write = ethoc_mdio_write;
++	priv->mdio->reset = ethoc_mdio_reset;
++	priv->mdio->priv = priv;
++
++	priv->mdio->irq = kmalloc(sizeof(int) * PHY_MAX_ADDR, GFP_KERNEL);
++	if (!priv->mdio->irq) {
++		ret = -ENOMEM;
++		goto free_mdio;
++	}
++
++	for (phy = 0; phy < PHY_MAX_ADDR; phy++)
++		priv->mdio->irq[phy] = PHY_POLL;
++
++	ret = mdiobus_register(priv->mdio);
++	if (ret) {
++		dev_err(&netdev->dev, "failed to register MDIO bus\n");
++		goto free_mdio;
++	}
++
++	ret = ethoc_mdio_probe(netdev);
++	if (ret) {
++		dev_err(&netdev->dev, "failed to probe MDIO bus\n");
++		goto error;
++	}
++
++	ether_setup(netdev);
++
++	/* setup the net_device structure */
++	netdev->netdev_ops = &ethoc_netdev_ops;
++	netdev->watchdog_timeo = ETHOC_TIMEOUT;
++	netdev->features |= 0;
++
++	/* setup NAPI */
++	memset(&priv->napi, 0, sizeof(priv->napi));
++	netif_napi_add(netdev, &priv->napi, ethoc_poll, 64);
++
++	spin_lock_init(&priv->rx_lock);
++	spin_lock_init(&priv->lock);
++
++	ret = register_netdev(netdev);
++	if (ret < 0) {
++		dev_err(&netdev->dev, "failed to register interface\n");
++		goto error;
++	}
++
++	goto out;
++
++error:
++	mdiobus_unregister(priv->mdio);
++free_mdio:
++	kfree(priv->mdio->irq);
++	mdiobus_free(priv->mdio);
++free:
++	free_netdev(netdev);
++out:
++	return ret;
++}
++
++/**
++ * ethoc_remove() - shutdown OpenCores ethernet MAC
++ * @pdev:	platform device
++ */
++static int ethoc_remove(struct platform_device *pdev)
++{
++	struct net_device *netdev = platform_get_drvdata(pdev);
++	struct ethoc *priv = netdev_priv(netdev);
++
++	platform_set_drvdata(pdev, NULL);
++
++	if (netdev) {
++		phy_disconnect(priv->phy);
++		priv->phy = NULL;
++
++		if (priv->mdio) {
++			mdiobus_unregister(priv->mdio);
++			kfree(priv->mdio->irq);
++			mdiobus_free(priv->mdio);
++		}
++
++		unregister_netdev(netdev);
++		free_netdev(netdev);
++	}
++
++	return 0;
++}
++
++#ifdef CONFIG_PM
++static int ethoc_suspend(struct platform_device *pdev, pm_message_t state)
++{
++	return -ENOSYS;
++}
++
++static int ethoc_resume(struct platform_device *pdev)
++{
++	return -ENOSYS;
++}
++#else
++# define ethoc_suspend NULL
++# define ethoc_resume  NULL
 +#endif
 +
- 		size = bvs->nr_vecs * sizeof(struct bio_vec);
- 		bvs->slab = kmem_cache_create(bvs->name, size, 0,
-                                 SLAB_HWCACHE_ALIGN|SLAB_PANIC, NULL);
-@@ -1600,7 +1606,6 @@ static int __init init_bio(void)
- 	if (!bio_slabs)
- 		panic("bio: can't allocate bios\n");
- 
--	bio_integrity_init_slab();
- 	biovec_init_slabs();
- 
- 	fs_bio_set = bioset_create(BIO_POOL_SIZE, 0);
-diff --git a/fs/btrfs/disk-io.c b/fs/btrfs/disk-io.c
-index 3e18175..6ec80c0 100644
---- a/fs/btrfs/disk-io.c
-+++ b/fs/btrfs/disk-io.c
-@@ -2385,7 +2385,7 @@ void btrfs_btree_balance_dirty(struct btrfs_root *root, unsigned long nr)
- 	unsigned long thresh = 32 * 1024 * 1024;
- 	tree = &BTRFS_I(root->fs_info->btree_inode)->io_tree;
- 
--	if (current_is_pdflush() || current->flags & PF_MEMALLOC)
-+	if (current->flags & PF_MEMALLOC)
- 		return;
- 
- 	num_dirty = count_range_bits(tree, &start, (u64)-1,
-diff --git a/fs/super.c b/fs/super.c
-index 6ce5014..dd4acb1 100644
---- a/fs/super.c
-+++ b/fs/super.c
-@@ -674,7 +674,7 @@ int do_remount_sb(struct super_block *sb, int flags, void *data, int force)
- 	return 0;
- }
- 
--static void do_emergency_remount(unsigned long foo)
-+static void do_emergency_remount(struct work_struct *work)
- {
- 	struct super_block *sb;
- 
-@@ -697,12 +697,19 @@ static void do_emergency_remount(unsigned long foo)
- 		spin_lock(&sb_lock);
- 	}
- 	spin_unlock(&sb_lock);
-+	kfree(work);
- 	printk("Emergency Remount complete\n");
- }
- 
- void emergency_remount(void)
- {
--	pdflush_operation(do_emergency_remount, 0);
-+	struct work_struct *work;
-+
-+	work = kmalloc(sizeof(*work), GFP_ATOMIC);
-+	if (work) {
-+		INIT_WORK(work, do_emergency_remount);
-+		schedule_work(work);
-+	}
- }
- 
- /*
-diff --git a/fs/sync.c b/fs/sync.c
-index a16d53e..ec95a69 100644
---- a/fs/sync.c
-+++ b/fs/sync.c
-@@ -42,9 +42,21 @@ SYSCALL_DEFINE0(sync)
- 	return 0;
- }
- 
-+static void do_sync_work(struct work_struct *work)
-+{
-+	do_sync(0);
-+	kfree(work);
-+}
-+
- void emergency_sync(void)
- {
--	pdflush_operation(do_sync, 0);
-+	struct work_struct *work;
-+
-+	work = kmalloc(sizeof(*work), GFP_ATOMIC);
-+	if (work) {
-+		INIT_WORK(work, do_sync_work);
-+		schedule_work(work);
-+	}
- }
- 
- /*
-diff --git a/include/linux/bio.h b/include/linux/bio.h
-index d8bd43b..b05b1d4 100644
---- a/include/linux/bio.h
-+++ b/include/linux/bio.h
-@@ -426,9 +426,6 @@ struct bio_set {
- 	unsigned int front_pad;
- 
- 	mempool_t *bio_pool;
--#if defined(CONFIG_BLK_DEV_INTEGRITY)
--	mempool_t *bio_integrity_pool;
--#endif
- 	mempool_t *bvec_pool;
- };
- 
-@@ -519,9 +516,8 @@ static inline int bio_has_data(struct bio *bio)
- 
- #define bio_integrity(bio) (bio->bi_integrity != NULL)
- 
--extern struct bio_integrity_payload *bio_integrity_alloc_bioset(struct bio *, gfp_t, unsigned int, struct bio_set *);
- extern struct bio_integrity_payload *bio_integrity_alloc(struct bio *, gfp_t, unsigned int);
--extern void bio_integrity_free(struct bio *, struct bio_set *);
-+extern void bio_integrity_free(struct bio *);
- extern int bio_integrity_add_page(struct bio *, struct page *, unsigned int, unsigned int);
- extern int bio_integrity_enabled(struct bio *bio);
- extern int bio_integrity_set_tag(struct bio *, void *, unsigned int);
-@@ -531,27 +527,21 @@ extern void bio_integrity_endio(struct bio *, int);
- extern void bio_integrity_advance(struct bio *, unsigned int);
- extern void bio_integrity_trim(struct bio *, unsigned int, unsigned int);
- extern void bio_integrity_split(struct bio *, struct bio_pair *, int);
--extern int bio_integrity_clone(struct bio *, struct bio *, gfp_t, struct bio_set *);
--extern int bioset_integrity_create(struct bio_set *, int);
--extern void bioset_integrity_free(struct bio_set *);
--extern void bio_integrity_init_slab(void);
-+extern int bio_integrity_clone(struct bio *, struct bio *, gfp_t);
- 
- #else /* CONFIG_BLK_DEV_INTEGRITY */
- 
- #define bio_integrity(a)		(0)
--#define bioset_integrity_create(a, b)	(0)
- #define bio_integrity_prep(a)		(0)
- #define bio_integrity_enabled(a)	(0)
--#define bio_integrity_clone(a, b, c,d )	(0)
--#define bioset_integrity_free(a)	do { } while (0)
--#define bio_integrity_free(a, b)	do { } while (0)
-+#define bio_integrity_clone(a, b, c)	(0)
-+#define bio_integrity_free(a)		do { } while (0)
- #define bio_integrity_endio(a, b)	do { } while (0)
- #define bio_integrity_advance(a, b)	do { } while (0)
- #define bio_integrity_trim(a, b, c)	do { } while (0)
- #define bio_integrity_split(a, b, c)	do { } while (0)
- #define bio_integrity_set_tag(a, b, c)	do { } while (0)
- #define bio_integrity_get_tag(a, b, c)	do { } while (0)
--#define bio_integrity_init_slab(a)	do { } while (0)
- 
- #endif /* CONFIG_BLK_DEV_INTEGRITY */
- 
-diff --git a/include/linux/bsg.h b/include/linux/bsg.h
-index cf0303a..3f0c64a 100644
---- a/include/linux/bsg.h
-+++ b/include/linux/bsg.h
-@@ -7,6 +7,14 @@
- #define BSG_SUB_PROTOCOL_SCSI_TMF	1
- #define BSG_SUB_PROTOCOL_SCSI_TRANSPORT	2
- 
-+/*
-+ * For flags member below
-+ * sg.h sg_io_hdr also has bits defined for it's flags member. However
-+ * none of these bits are implemented/used by bsg. The bits below are
-+ * allocated to not conflict with sg.h ones anyway.
-+ */
-+#define BSG_FLAG_Q_AT_TAIL 0x10 /* default, == 0 at this bit, is Q_AT_HEAD */
-+
- struct sg_io_v4 {
- 	__s32 guard;		/* [i] 'Q' to differentiate from v3 */
- 	__u32 protocol;		/* [i] 0 -> SCSI , .... */
-diff --git a/include/linux/genhd.h b/include/linux/genhd.h
-index 16948ea..634c530 100644
---- a/include/linux/genhd.h
-+++ b/include/linux/genhd.h
-@@ -333,11 +333,10 @@ static inline void part_dec_in_flight(struct hd_struct *part)
- 		part_to_disk(part)->part0.in_flight--;
- }
- 
--/* drivers/block/ll_rw_blk.c */
-+/* block/blk-core.c */
- extern void part_round_stats(int cpu, struct hd_struct *part);
- 
--/* drivers/block/genhd.c */
--extern int get_blkdev_list(char *, int);
-+/* block/genhd.c */
- extern void add_disk(struct gendisk *disk);
- extern void del_gendisk(struct gendisk *gp);
- extern void unlink_gendisk(struct gendisk *gp);
-diff --git a/mm/backing-dev.c b/mm/backing-dev.c
-index 8e85874..be68c95 100644
---- a/mm/backing-dev.c
-+++ b/mm/backing-dev.c
-@@ -2,11 +2,24 @@
- #include <linux/wait.h>
- #include <linux/backing-dev.h>
- #include <linux/fs.h>
-+#include <linux/pagemap.h>
- #include <linux/sched.h>
- #include <linux/module.h>
- #include <linux/writeback.h>
- #include <linux/device.h>
- 
-+void default_unplug_io_fn(struct backing_dev_info *bdi, struct page *page)
-+{
-+}
-+EXPORT_SYMBOL(default_unplug_io_fn);
-+
-+struct backing_dev_info default_backing_dev_info = {
-+	.ra_pages	= VM_MAX_READAHEAD * 1024 / PAGE_CACHE_SIZE,
-+	.state		= 0,
-+	.capabilities	= BDI_CAP_MAP_COPY,
-+	.unplug_io_fn	= default_unplug_io_fn,
++static struct platform_driver ethoc_driver = {
++	.probe   = ethoc_probe,
++	.remove  = ethoc_remove,
++	.suspend = ethoc_suspend,
++	.resume  = ethoc_resume,
++	.driver  = {
++		.name = "ethoc",
++	},
 +};
-+EXPORT_SYMBOL_GPL(default_backing_dev_info);
- 
- static struct class *bdi_class;
- 
-@@ -166,9 +179,20 @@ static __init int bdi_class_init(void)
- 	bdi_debug_init();
- 	return 0;
- }
--
- postcore_initcall(bdi_class_init);
- 
-+static int __init default_bdi_init(void)
++
++static int __init ethoc_init(void)
 +{
-+	int err;
-+
-+	err = bdi_init(&default_backing_dev_info);
-+	if (!err)
-+		bdi_register(&default_backing_dev_info, NULL, "default");
-+
-+	return err;
++	return platform_driver_register(&ethoc_driver);
 +}
-+subsys_initcall(default_bdi_init);
 +
- int bdi_register(struct backing_dev_info *bdi, struct device *parent,
- 		const char *fmt, ...)
- {
-diff --git a/mm/readahead.c b/mm/readahead.c
-index bec83c1..9ce303d 100644
---- a/mm/readahead.c
-+++ b/mm/readahead.c
-@@ -17,19 +17,6 @@
- #include <linux/pagevec.h>
- #include <linux/pagemap.h>
- 
--void default_unplug_io_fn(struct backing_dev_info *bdi, struct page *page)
--{
--}
--EXPORT_SYMBOL(default_unplug_io_fn);
--
--struct backing_dev_info default_backing_dev_info = {
--	.ra_pages	= VM_MAX_READAHEAD * 1024 / PAGE_CACHE_SIZE,
--	.state		= 0,
--	.capabilities	= BDI_CAP_MAP_COPY,
--	.unplug_io_fn	= default_unplug_io_fn,
--};
--EXPORT_SYMBOL_GPL(default_backing_dev_info);
--
- /*
-  * Initialise a struct file's readahead state.  Assumes that the caller has
-  * memset *ra to zero.
-@@ -233,18 +220,6 @@ unsigned long max_sane_readahead(unsigned long nr)
- 		+ node_page_state(numa_node_id(), NR_FREE_PAGES)) / 2);
- }
- 
--static int __init readahead_init(void)
--{
--	int err;
--
--	err = bdi_init(&default_backing_dev_info);
--	if (!err)
--		bdi_register(&default_backing_dev_info, NULL, "default");
--
--	return err;
--}
--subsys_initcall(readahead_init);
--
- /*
-  * Submit IO for the read-ahead request in file_ra_state.
-  */
-
++static void __exit ethoc_exit(void)
++{
++	platform_driver_unregister(&ethoc_driver);
++}
++
++module_init(ethoc_init);
++module_exit(ethoc_exit);
++
++MODULE_AUTHOR("Thierry Reding <thierry.reding@avionic-design.de>");
++MODULE_DESCRIPTION("OpenCores Ethernet MAC driver");
++MODULE_LICENSE("GPL v2");
++
+diff --git a/include/net/ethoc.h b/include/net/ethoc.h
+new file mode 100644
+index 0000000..96f3789
+--- /dev/null
++++ b/include/net/ethoc.h
+@@ -0,0 +1,22 @@
++/*
++ * linux/include/net/ethoc.h
++ *
++ * Copyright (C) 2008-2009 Avionic Design GmbH
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ *
++ * Written by Thierry Reding <thierry.reding@avionic-design.de>
++ */
++
++#ifndef LINUX_NET_ETHOC_H
++#define LINUX_NET_ETHOC_H 1
++
++struct ethoc_platform_data {
++	u8 hwaddr[IFHWADDRLEN];
++	s8 phy_id;
++};
++
++#endif /* !LINUX_NET_ETHOC_H */
++
 -- 
-Jens Axboe
-
+tg: (7834cd5..) adx/net/ethoc (depends on: master)
