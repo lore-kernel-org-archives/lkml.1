@@ -1,260 +1,316 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755287AbZCZJon@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756637AbZCZJo1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755287AbZCZJon (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Mar 2009 05:44:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756200AbZCZJoJ
+	id S1756637AbZCZJo1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Mar 2009 05:44:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751255AbZCZJnj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Mar 2009 05:44:09 -0400
-Received: from www.konftel.com ([83.68.233.82]:10062 "EHLO mail.konftel.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755834AbZCZJoF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Mar 2009 05:44:05 -0400
-X-Greylist: delayed 326 seconds by postgrey-1.27 at vger.kernel.org; Thu, 26 Mar 2009 05:44:05 EDT
-Subject: Re: [PATCH] macb: RLE and BNA handling
-From: Erik Waling <erik.waling@konftel.se>
-To: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-In-Reply-To: <1232026671.10152.52.camel@konftel>
-References: <1231863713.10152.11.camel@konftel>
-	 <20090114111505.48d34949@hskinnemoen-d830>
-	 <1231928868.10152.31.camel@konftel>
-	 <20090114130322.483a7830@hskinnemoen-d830>
-	 <1232026671.10152.52.camel@konftel>
-Content-Type: text/plain
-Date: Thu, 26 Mar 2009 10:38:16 +0100
-Message-ID: <1238060296.23641.8.camel@konftel>
+	Thu, 26 Mar 2009 05:43:39 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:49632 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753609AbZCZJnf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Mar 2009 05:43:35 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=nxtmh3GZgAIYf7+skl1hmCeDr44mjgJupJqFoGjxk/qONzzpO9C47UJs7bsczAeC2
+	Ixb87D3cthe8TSp0qiXhA==
+Date: Thu, 26 Mar 2009 02:42:47 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+cc: Christoph Lameter <cl@linux-foundation.org>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Martin Bligh <mbligh@google.com>,
+       linux-kernel@vger.kernel.org
+Subject: [patch 2/3] slub: scan partial list for free slabs when thrashing
+In-Reply-To: <alpine.DEB.2.00.0903260240390.1454@chino.kir.corp.google.com>
+Message-ID: <alpine.DEB.2.00.0903260241150.1454@chino.kir.corp.google.com>
+References: <alpine.DEB.2.00.0903260240390.1454@chino.kir.corp.google.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-X-Mailer: Evolution 2.24.5 
-Content-Transfer-Encoding: 7bit
-X-TM-AS-Product-Ver: SMEX-8.0.0.1181-5.600.1016-16542.005
-X-TM-AS-Result: No--35.550700-0.000000-31
-X-TM-AS-User-Approved-Sender: Yes
-X-TM-AS-User-Blocked-Sender: No
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Haavard,
+To determine when a slab is actually thrashing, it's insufficient to only
+look at the most recent allocation path.  It's perfectly valid to swap
+the cpu slab with a partial slab that contains very few free objects if
+the goal is to quickly fill it since slub no longer needs to track such
+slabs.
 
-Have you had the time to check the patch below? These two issues still
-needs to be addressed.
+This is inefficient if an object will immediately be freed so that the
+full slab must be readded to the partial list.  With certain object
+allocation and freeing patterns, it is possible to spend more time
+processing the partial list than utilizing the fastpaths.
 
-If you are unsure of the BNA part you could at least pass the RLE part
-upstreams since it happens more frequently. 
+We already have a per-cache min_free_watermark setting that is
+configurable from userspace, which helps determine when we have excessive
+partial list handling.  When a slab does not fulfill its watermark, it
+suggests that the cache may be thrashing.  A pre-defined value,
+SLAB_THRASHING_THRESHOLD (which defaults to 3), is implemented to be used
+in conjunction with this statistic to determine when a slab is actually
+thrashing.
 
-Regards,
+Whenever a cpu cache satisfies a fastpath allocation, a fastpath counter
+is incrememted.  This counter is cleared whenever the slowpath is
+invoked.  This tracks how many fastpath allocations the cpu slab has
+fulfilled before it must be refilled.
 
-Erik
+When the slowpath must be invoked, a slowpath counter is incremented if
+the cpu slab did not fulfill the thrashing watermark.  Otherwise, it is
+decremented.
 
-On Thu, 2009-01-15 at 14:37 +0100, Erik Waling wrote:
-> On Wed, 2009-01-14 at 13:03 +0100, Haavard Skinnemoen wrote:
-> 
-> [...]
-> 
-> > >
-> > > This was the only solution I could think of since all slots are marked
-> > > as used and we are not able to assemble a complete frame. Do you think
-> > > there is a better solution?
-> >
-> > No, I guess that might be a good fallback solution if we really can't
-> > seem to make any progress...
-> >
-> > However, I'm wondering if there might be a different bug in the code
-> > above: Suppose that we receive lots of frames, start processing them,
-> > but exhaust our budget so that we return before we had a chance to look
-> > at all of them.
-> 
-> True. That could probably happen.
-> 
-> > Then, when the network layer calls us again, we will only continue
-> > processing the buffers if the REC bit was set in the mean time, which
-> > it might not be if there was a brief pause in the flow of packets. If
-> > this happens, we'll simply display a warning and call
-> > netif_rx_complete() with potentially lots of unprocessed packets in the
-> > RX ring...
-> >
-> > So I'm wondering if the right thing to do is to just call macb_rx()
-> > regardless of the state of the REC bit. If it exhausts the budget, and
-> > the BNA bit is set, we could flush the ring in order to sort of relieve
-> > the pressure a bit...
-> 
-> I agree. The best solution would probably be one that does not depend on
-> the REC bit.
-> 
-> I did some quick tests and modified macb_poll() so that it calls
-> macb_rx() before anything else is checked. When macb_rx() returns the
-> poll routine checks if the BNA bit was set in RSR. If that is the case
-> and macb_rx() was not able to process any complete frames we flush the
-> whole ring. In the case were we manage to process at least one frame and
-> BNA is set we just clear the bit without flushing the ring since the
-> processed frame(s) will leave one or more empty slots in the ring.
-> 
-> I also had to modify macb_rx() slightly since we, after a buffer flush,
-> might receive an EOF fragment before any SOF frags are received (the
-> case were we received the SOF and then flushed the buffer).
-> 
-> In order to test this quickly I changed the size of the RX ring to 16
-> slots since it is quite hard to reproduce the BNA issue using the
-> standard size of 512.
-> 
-> I have been testing (by constant bi-directional transfer) for an hour or
-> so and the driver always seems recover after BNA. Anyway, I think the
-> BNA part of this patch needs some more review and testing before even
-> thinking about sending it upstream.
-> 
-> > Btw, I suspect you'll need to update rx_tail when you do that, or it
-> > might not point to where the next used buffer will be.
-> 
-> Are you sure rx_tail needs updating? If I understand the specs correctly
-> the EMAC module will continue writing to the address currently stored in
-> RBQP. This address should be the same as before the flush (if no new
-> fragments has been recvd). Right?
-> 
-> > Haavard
-> 
-> Erik
-> 
-> 
-> Signed-off-by: Erik Waling <erik.waling@konftel.com>
-> 
-> 
-> ---
-> 
-> diff -urpN linux-2.6.28.orig/drivers/net/macb.c linux-2.6.28.rle_and_bna_fix/drivers/net/macb.c
-> --- linux-2.6.28.orig/drivers/net/macb.c        2009-01-13 10:36:13.000000000 +0100
-> +++ linux-2.6.28.rle_and_bna_fix/drivers/net/macb.c     2009-01-15 14:23:52.000000000 +0100
-> @@ -2,6 +2,7 @@
->   * Atmel MACB Ethernet Controller driver
->   *
->   * Copyright (C) 2004-2006 Atmel Corporation
-> + * Copyright (C) 2008-2009 Konftel AB
->   *
->   * This program is free software; you can redistribute it and/or modify
->   * it under the terms of the GNU General Public License version 2 as
-> @@ -316,10 +317,11 @@ static void macb_tx(struct macb *bp)
->         dev_dbg(&bp->pdev->dev, "macb_tx status = %02lx\n",
->                 (unsigned long)status);
-> 
-> -       if (status & MACB_BIT(UND)) {
-> +       if (status & (MACB_BIT(UND) | MACB_BIT(TSR_RLE))) {
->                 int i;
-> -               printk(KERN_ERR "%s: TX underrun, resetting buffers\n",
-> -                       bp->dev->name);
-> +               printk(KERN_ERR "%s: TX %s, resetting buffers\n",
-> +                       bp->dev->name, status & MACB_BIT(UND) ?
-> +                       "underrun" : "retry limit exceeded");
-> 
->                 head = bp->tx_head;
-> 
-> @@ -484,13 +486,28 @@ static int macb_rx(struct macb *bp, int
-> 
->                 if (ctrl & MACB_BIT(RX_EOF)) {
->                         int dropped;
-> -                       BUG_ON(first_frag == -1);
-> -
-> -                       dropped = macb_rx_frame(bp, first_frag, tail);
-> -                       first_frag = -1;
-> -                       if (!dropped) {
-> -                               received++;
-> -                               budget--;
-> +                       if (first_frag != -1) {
-> +                               dropped = macb_rx_frame(bp, first_frag, tail);
-> +                               first_frag = -1;
-> +
-> +                               if (!dropped) {
-> +                                       received++;
-> +                                       budget--;
-> +                               }
-> +                       } else {
-> +                               /* We might end up here if we previously
-> +                                * flushed the RX buffer ring because of
-> +                                * no available buffers.
-> +                                */
-> +                               printk(KERN_INFO
-> +                                       "%s: Found EOF frag without any "
-> +                                       "previous SOF frag. Discarding "
-> +                                       "everything up until EOF.\n",
-> +                                       bp->dev->name);
-> +                               /* This might also "discard" a couple of
-> +                                * fragments that are already marked as unused.
-> +                                */
-> +                               discard_partial_frame(bp, bp->rx_tail, tail);
->                         }
->                 }
->         }
-> @@ -514,28 +531,39 @@ static int macb_poll(struct napi_struct
->         macb_writel(bp, RSR, status);
-> 
->         work_done = 0;
-> -       if (!status) {
-> -               /*
-> -                * This may happen if an interrupt was pending before
-> -                * this function was called last time, and no packets
-> -                * have been received since.
-> -                */
-> -               netif_rx_complete(dev, napi);
-> -               goto out;
-> -       }
-> 
->         dev_dbg(&bp->pdev->dev, "poll: status = %08lx, budget = %d\n",
->                 (unsigned long)status, budget);
-> 
-> -       if (!(status & MACB_BIT(REC))) {
-> -               dev_warn(&bp->pdev->dev,
-> -                        "No RX buffers complete, status = %02lx\n",
-> -                        (unsigned long)status);
-> -               netif_rx_complete(dev, napi);
-> -               goto out;
-> +       work_done = macb_rx(bp, budget);
-> +
-> +       if (status & MACB_BIT(BNA)) {
-> +
-> +               printk(KERN_INFO
-> +                       "%s: No RX buffers available. "
-> +                       "Packets processed = %d\n", dev->name, work_done);
-> +
-> +               /* Only flush buffers if we did not manage to assemble
-> +                * any complete frames in macb_rx() since each assembled
-> +                * frame will result in free slots in the ring buffer.
-> +                */
-> +               if (!work_done) {
-> +                       /* No slots available in RX ring and no frames were
-> +                        * assembled. Mark all slots as unused.
-> +                        * Hopefully this will let us recover...
-> +                        */
-> +                       int i;
-> +
-> +                       printk(KERN_INFO "%s: No free RX buffers. "
-> +                               "Flushing everything.\n", dev->name);
-> +
-> +                       for (i = 0; i < RX_RING_SIZE; i++)
-> +                               bp->rx_ring[i].addr &= ~MACB_BIT(RX_USED);
-> +
-> +                       wmb();
-> +               }
->         }
-> 
-> -       work_done = macb_rx(bp, budget);
->         if (work_done < budget)
->                 netif_rx_complete(dev, napi);
-> 
-> @@ -543,7 +571,6 @@ static int macb_poll(struct napi_struct
->          * We've done what we can to clean the buffers. Make sure we
->          * get notified when new packets arrive.
->          */
-> -out:
->         macb_writel(bp, IER, MACB_RX_INT_FLAGS);
-> 
->         /* TODO: Handle errors */
-> @@ -584,7 +611,8 @@ static irqreturn_t macb_interrupt(int ir
->                         }
->                 }
-> 
-> -               if (status & (MACB_BIT(TCOMP) | MACB_BIT(ISR_TUND)))
-> +               if (status & (MACB_BIT(TCOMP) | MACB_BIT(ISR_TUND) |
-> +                            MACB_BIT(ISR_RLE)))
->                         macb_tx(bp);
-> 
->                 /*
+When the slowpath counter is greater than or equal to
+SLAB_THRASHING_THRESHOLD, the partial list is scanned for a slab that
+will be able to fulfill at least the number of objects required to not
+be considered thrashing.  If no such slabs are available, the remote
+nodes are defragmented (if allowed) or a new slab is allocated.
 
+If a cpu slab must be swapped because the allocation is for a different
+node, both counters are cleared since this doesn't indicate any
+thrashing behavior.
 
+When /sys/kernel/slab/cache/slab_thrash_ratio is not set, this does not
+include any functional change other than the incrementing of a fastpath
+counter for the per-cpu cache.
+
+A new statistic, /sys/kernel/slab/cache/deferred_partial, indicates how
+many times a partial list was deferred because no slabs could satisfy
+the requisite number of objects for CONFIG_SLUB_STATS kernels.
+
+Cc: Christoph Lameter <cl@linux-foundation.org>
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>
+Signed-off-by: David Rientjes <rientjes@google.com>
+---
+ include/linux/slub_def.h |    3 +
+ mm/slub.c                |   93 ++++++++++++++++++++++++++++++++++++----------
+ 2 files changed, 76 insertions(+), 20 deletions(-)
+
+diff --git a/include/linux/slub_def.h b/include/linux/slub_def.h
+--- a/include/linux/slub_def.h
++++ b/include/linux/slub_def.h
+@@ -30,6 +30,7 @@ enum stat_item {
+ 	DEACTIVATE_TO_TAIL,	/* Cpu slab was moved to the tail of partials */
+ 	DEACTIVATE_REMOTE_FREES,/* Slab contained remotely freed objects */
+ 	ORDER_FALLBACK,		/* Number of times fallback was necessary */
++	DEFERRED_PARTIAL,	/* Defer local partial list for lack of objs */
+ 	NR_SLUB_STAT_ITEMS };
+ 
+ struct kmem_cache_cpu {
+@@ -38,6 +39,8 @@ struct kmem_cache_cpu {
+ 	int node;		/* The node of the page (or -1 for debug) */
+ 	unsigned int offset;	/* Freepointer offset (in word units) */
+ 	unsigned int objsize;	/* Size of an object (from kmem_cache) */
++	u16 fastpath_allocs;	/* Consecutive fast allocs before slowpath */
++	u16 slowpath_allocs;	/* Consecutive slow allocs before watermark */
+ #ifdef CONFIG_SLUB_STATS
+ 	unsigned stat[NR_SLUB_STAT_ITEMS];
+ #endif
+diff --git a/mm/slub.c b/mm/slub.c
+--- a/mm/slub.c
++++ b/mm/slub.c
+@@ -134,6 +134,19 @@
+  */
+ #define MAX_PARTIAL 10
+ 
++/*
++ * Number of successive slowpath allocations that have failed to allocate at
++ * least the number of objects in the fastpath to not be slab thrashing (as
++ * defined by the cache's slab thrash ratio).
++ *
++ * When an allocation follows the slowpath, it increments a counter in its cpu
++ * cache.  If this counter exceeds the threshold, the partial list is scanned
++ * for a slab that will satisfy at least the cache's min_free_watermark in
++ * order for it to be used.  Otherwise, the slab with the most free objects is
++ * used.
++ */
++#define SLAB_THRASHING_THRESHOLD 3
++
+ #define DEBUG_DEFAULT_FLAGS (SLAB_DEBUG_FREE | SLAB_RED_ZONE | \
+ 				SLAB_POISON | SLAB_STORE_USER)
+ 
+@@ -1252,28 +1265,30 @@ static void remove_partial(struct kmem_cache *s, struct page *page)
+ }
+ 
+ /*
+- * Lock slab and remove from the partial list.
++ * Remove from the partial list.
+  *
+- * Must hold list_lock.
++ * Must hold n->list_lock and slab_lock(page).
+  */
+-static inline int lock_and_freeze_slab(struct kmem_cache_node *n,
+-							struct page *page)
++static inline void freeze_slab(struct kmem_cache_node *n, struct page *page)
+ {
+-	if (slab_trylock(page)) {
+-		list_del(&page->lru);
+-		n->nr_partial--;
+-		__SetPageSlubFrozen(page);
+-		return 1;
+-	}
+-	return 0;
++	list_del(&page->lru);
++	n->nr_partial--;
++	__SetPageSlubFrozen(page);
++}
++
++static inline int skip_partial(struct kmem_cache *s, struct page *page)
++{
++	return (page->objects - page->inuse) < s->min_free_watermark;
+ }
+ 
+ /*
+  * Try to allocate a partial slab from a specific node.
+  */
+-static struct page *get_partial_node(struct kmem_cache_node *n)
++static struct page *get_partial_node(struct kmem_cache *s,
++				     struct kmem_cache_node *n, int thrashing)
+ {
+ 	struct page *page;
++	int locked = 0;
+ 
+ 	/*
+ 	 * Racy check. If we mistakenly see no partial slabs then we
+@@ -1286,9 +1301,28 @@ static struct page *get_partial_node(struct kmem_cache_node *n)
+ 
+ 	spin_lock(&n->list_lock);
+ 	list_for_each_entry(page, &n->partial, lru)
+-		if (lock_and_freeze_slab(n, page))
++		if (slab_trylock(page)) {
++			/*
++			 * When the cpu cache is partial list thrashing, it's
++			 * necessary to replace the cpu slab with one that will
++			 * accommodate at least s->min_free_watermark objects
++			 * to avoid excessive list_lock contention and cache
++			 * polluting.
++			 *
++			 * If no such slabs exist on the partial list, remote
++			 * nodes are defragmented if allowed.
++			 */
++			if (thrashing && skip_partial(s, page)) {
++				slab_unlock(page);
++				locked++;
++				continue;
++			}
++			freeze_slab(n, page);
+ 			goto out;
++		}
+ 	page = NULL;
++	if (locked)
++		stat(get_cpu_slab(s, raw_smp_processor_id()), DEFERRED_PARTIAL);
+ out:
+ 	spin_unlock(&n->list_lock);
+ 	return page;
+@@ -1297,7 +1331,8 @@ out:
+ /*
+  * Get a page from somewhere. Search in increasing NUMA distances.
+  */
+-static struct page *get_any_partial(struct kmem_cache *s, gfp_t flags)
++static struct page *get_any_partial(struct kmem_cache *s, gfp_t flags,
++				    int thrashing)
+ {
+ #ifdef CONFIG_NUMA
+ 	struct zonelist *zonelist;
+@@ -1336,7 +1371,7 @@ static struct page *get_any_partial(struct kmem_cache *s, gfp_t flags)
+ 
+ 		if (n && cpuset_zone_allowed_hardwall(zone, flags) &&
+ 				n->nr_partial > n->min_partial) {
+-			page = get_partial_node(n);
++			page = get_partial_node(s, n, thrashing);
+ 			if (page)
+ 				return page;
+ 		}
+@@ -1348,16 +1383,17 @@ static struct page *get_any_partial(struct kmem_cache *s, gfp_t flags)
+ /*
+  * Get a partial page, lock it and return it.
+  */
+-static struct page *get_partial(struct kmem_cache *s, gfp_t flags, int node)
++static struct page *get_partial(struct kmem_cache *s, gfp_t flags, int node,
++				int thrashing)
+ {
+ 	struct page *page;
+ 	int searchnode = (node == -1) ? numa_node_id() : node;
+ 
+-	page = get_partial_node(get_node(s, searchnode));
++	page = get_partial_node(s, get_node(s, searchnode), thrashing);
+ 	if (page || (flags & __GFP_THISNODE))
+ 		return page;
+ 
+-	return get_any_partial(s, flags);
++	return get_any_partial(s, flags, thrashing);
+ }
+ 
+ /*
+@@ -1509,6 +1545,7 @@ static void *__slab_alloc(struct kmem_cache *s, gfp_t gfpflags, int node,
+ {
+ 	void **object;
+ 	struct page *new;
++	int is_empty = 0;
+ 
+ 	/* We handle __GFP_ZERO in the caller */
+ 	gfpflags &= ~__GFP_ZERO;
+@@ -1517,7 +1554,8 @@ static void *__slab_alloc(struct kmem_cache *s, gfp_t gfpflags, int node,
+ 		goto new_slab;
+ 
+ 	slab_lock(c->page);
+-	if (unlikely(!node_match(c, node)))
++	is_empty = node_match(c, node);
++	if (unlikely(!is_empty))
+ 		goto another_slab;
+ 
+ 	stat(c, ALLOC_REFILL);
+@@ -1542,7 +1580,17 @@ another_slab:
+ 	deactivate_slab(s, c);
+ 
+ new_slab:
+-	new = get_partial(s, gfpflags, node);
++	if (is_empty) {
++		if (c->fastpath_allocs < s->min_free_watermark)
++			c->slowpath_allocs++;
++		else if (c->slowpath_allocs)
++			c->slowpath_allocs--;
++	} else
++		c->slowpath_allocs = 0;
++	c->fastpath_allocs = 0;
++
++	new = get_partial(s, gfpflags, node,
++			  c->slowpath_allocs > SLAB_THRASHING_THRESHOLD);
+ 	if (new) {
+ 		c->page = new;
+ 		stat(c, ALLOC_FROM_PARTIAL);
+@@ -1611,6 +1659,7 @@ static __always_inline void *slab_alloc(struct kmem_cache *s,
+ 	else {
+ 		object = c->freelist;
+ 		c->freelist = object[c->offset];
++		c->fastpath_allocs++;
+ 		stat(c, ALLOC_FASTPATH);
+ 	}
+ 	local_irq_restore(flags);
+@@ -1919,6 +1968,8 @@ static void init_kmem_cache_cpu(struct kmem_cache *s,
+ 	c->node = 0;
+ 	c->offset = s->offset / sizeof(void *);
+ 	c->objsize = s->objsize;
++	c->fastpath_allocs = 0;
++	c->slowpath_allocs = 0;
+ #ifdef CONFIG_SLUB_STATS
+ 	memset(c->stat, 0, NR_SLUB_STAT_ITEMS * sizeof(unsigned));
+ #endif
+@@ -4172,6 +4223,7 @@ STAT_ATTR(DEACTIVATE_TO_HEAD, deactivate_to_head);
+ STAT_ATTR(DEACTIVATE_TO_TAIL, deactivate_to_tail);
+ STAT_ATTR(DEACTIVATE_REMOTE_FREES, deactivate_remote_frees);
+ STAT_ATTR(ORDER_FALLBACK, order_fallback);
++STAT_ATTR(DEFERRED_PARTIAL, deferred_partial);
+ #endif
+ 
+ static struct attribute *slab_attrs[] = {
+@@ -4226,6 +4278,7 @@ static struct attribute *slab_attrs[] = {
+ 	&deactivate_to_tail_attr.attr,
+ 	&deactivate_remote_frees_attr.attr,
+ 	&order_fallback_attr.attr,
++	&deferred_partial_attr.attr,
+ #endif
+ 	NULL
+ };
