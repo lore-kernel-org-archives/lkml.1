@@ -1,54 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755880AbZCZDOB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755897AbZCZDVV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755880AbZCZDOB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 23:14:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753170AbZCZDNv
+	id S1755897AbZCZDVV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 23:21:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752859AbZCZDVE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 23:13:51 -0400
-Received: from THUNK.ORG ([69.25.196.29]:43501 "EHLO thunker.thunk.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751226AbZCZDNu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 23:13:50 -0400
-Date: Wed, 25 Mar 2009 23:13:37 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: Neil Brown <neilb@suse.de>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       David Rees <drees76@gmail.com>, Jesper Krogh <jesper@krogh.cc>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.29
-Message-ID: <20090326031337.GU32307@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>, Neil Brown <neilb@suse.de>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	David Rees <drees76@gmail.com>, Jesper Krogh <jesper@krogh.cc>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <alpine.LFD.2.00.0903231617550.3032@localhost.localdomain> <49C87B87.4020108@krogh.cc> <72dbd3150903232346g5af126d7sb5ad4949a7b5041f@mail.gmail.com> <49C88C80.5010803@krogh.cc> <72dbd3150903241200v38720ca0x392c381f295bdea@mail.gmail.com> <20090325183011.GN32307@mit.edu> <alpine.LFD.2.00.0903251139260.3032@localhost.localdomain> <20090325220530.GR32307@mit.edu> <18890.60770.371109.185593@notabene.brown>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <18890.60770.371109.185593@notabene.brown>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+	Wed, 25 Mar 2009 23:21:04 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:33542
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1752490AbZCZDVD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Mar 2009 23:21:03 -0400
+Date: Wed, 25 Mar 2009 20:20:50 -0700 (PDT)
+Message-Id: <20090325.202050.08183381.davem@davemloft.net>
+To: herbert@gondor.apana.org.au
+Cc: jarkao2@gmail.com, mingo@elte.hu, r.schwebel@pengutronix.de,
+       torvalds@linux-foundation.org, blaschka@linux.vnet.ibm.com,
+       tglx@linutronix.de, a.p.zijlstra@chello.nl,
+       linux-kernel@vger.kernel.org, kernel@pengutronix.de
+Subject: Re: Revert "gro: Fix legacy path napi_complete crash",
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20090326024129.GA13982@gondor.apana.org.au>
+References: <20090325122635.GA6489@gondor.apana.org.au>
+	<20090325225456.GA3271@ami.dom.local>
+	<20090326024129.GA13982@gondor.apana.org.au>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 26, 2009 at 01:50:10PM +1100, Neil Brown wrote:
-> I shouldn't be too hard to add some concept of total time to this.
-> If we track the number of write-outs per unit time and use that together
-> with a "target time for fsync" to scale the 'dirty_bytes' number, we
-> might be able to auto-tune the amount of dirty space to fit the speeds
-> of the drives.
+From: Herbert Xu <herbert@gondor.apana.org.au>
+Date: Thu, 26 Mar 2009 10:41:29 +0800
+
+> On Wed, Mar 25, 2009 at 11:54:56PM +0100, Jarek Poplawski wrote:
+> > 
+> > Of course it's too late for verifying this now, but (for the future)
+> > I think, this scenario could be considered:
+> > 
+> > process_backlog()			netif_rx()
+> > 
+> > if (!skb)
+> > local_irq_enable()
+> > 					if (queue.qlen) //NO
+> > 					napi_schedule() //NOTHING
+> > 					__skb_queue_tail() //qlen > 0
+> > napi_complete()
+> > ...					...
+> > 					Every next netif_rx() sees
+> > 					qlen > 0, so napi is never
+> > 					scheduled again.
+> > 
+> > Then, something like this might work...
 > 
-> We would probably start with each device having a very low "max dirty"
-> number which would cause writeouts to start soon.  Once the device
-> demonstrates that it can do n-per-second (or whatever) the VM would
-> allow the "max dirty" number to drift upwards.  I'm not sure how best
-> to get it to move downwards if the device slows down (or the kernel
-> over-estimated).  Maybe it should regularly decay so that the device
-> keeps have to "prove" itself.
+> Yes this is why my original patch that started all this is broken.
+> However, this doesn't apply to my patch that open-codes __napi_complete.
 
-This seems like a really cool idea.
+There is still a difference compared to your fix Herbert.  Jarek's
+patch flushes GRO first before the unlink.
 
-						-Ted
+I still believe that's critical, although like you I can't pinpoint
+why.
+
+I know that GRO ought to be disabled here, but what if for some reason
+it isn't? :-)
+
+Adam Richter has successfully tested Jarek's variant, and if Ingo's
+tests show that it makes his problem go away too then I'm definitely
+going with Jarek's patch.
