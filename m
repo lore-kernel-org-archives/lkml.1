@@ -1,78 +1,146 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758363AbZCZOVh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758599AbZCZOXV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758363AbZCZOVh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Mar 2009 10:21:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757005AbZCZOV2
+	id S1758599AbZCZOXV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Mar 2009 10:23:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757136AbZCZOXH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Mar 2009 10:21:28 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:53923 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1757097AbZCZOV1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Mar 2009 10:21:27 -0400
-Date: Thu, 26 Mar 2009 10:21:23 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Tejun Heo <htejun@gmail.com>
-cc: "Eric W. Biederman" <ebiederm@xmission.com>, Alex Chiang <achiang@hp.com>,
-       <greg@kroah.com>, <cornelia.huck@de.ibm.com>, <kay.sievers@vrfy.org>,
-       <rusty@rustcorp.com.au>, <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC PATCH 0/3] sysfs: allow suicide
-In-Reply-To: <49CAF840.2030308@gmail.com>
-Message-ID: <Pine.LNX.4.44L0.0903261005530.2945-100000@iolanthe.rowland.org>
+	Thu, 26 Mar 2009 10:23:07 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:52411 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757119AbZCZOXF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Mar 2009 10:23:05 -0400
+Message-ID: <49CB8EF3.2020409@redhat.com>
+Date: Thu, 26 Mar 2009 10:19:31 -0400
+From: Ric Wheeler <rwheeler@redhat.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090303 Fedora/3.0-1.beta2.fc11 Thunderbird/3.0b2
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Eric Sandeen <sandeen@sandeen.net>
+CC: Jeff Garzik <jeff@garzik.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Theodore Tso <tytso@mit.edu>, Ingo Molnar <mingo@elte.hu>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Nick Piggin <npiggin@suse.de>,
+       David Rees <drees76@gmail.com>, Jesper Krogh <jesper@krogh.cc>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] issue storage device flush via sync_blockdev() (was Re:
+ Linux 2.6.29)
+References: <20090324132032.GK5814@mit.edu> <alpine.LFD.2.00.0903241053200.3032@localhost.localdomain> <20090324184549.GE32307@mit.edu> <alpine.LFD.2.00.0903241218130.3032@localhost.localdomain> <49C93AB0.6070300@garzik.org> <20090325093913.GJ27476@kernel.dk> <49CA86BD.6060205@garzik.org> <20090325194341.GB27476@kernel.dk> <49CA9346.6040108@garzik.org> <alpine.LFD.2.00.0903251337410.3032@localhost.localdomain> <20090325212923.GA5620@havoc.gtf.org> <49CAA88B.1080102@sandeen.net> <49CAB957.4050402@garzik.org> <49CAE8E7.4010904@sandeen.net>
+In-Reply-To: <49CAE8E7.4010904@sandeen.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 26 Mar 2009, Tejun Heo wrote:
+On 03/25/2009 10:31 PM, Eric Sandeen wrote:
+> Jeff Garzik wrote:
+>    
+>> Eric Sandeen wrote:
+>>      
+>
+>    
+>>> What about when you're running over a big raid device with
+>>> battery-backed cache, and you trust the cache as much as much as the
+>>> disks.  Wouldn't this unconditional cache flush be painful there on any
+>>> of the callers even if they're rare?  (fs unmounts, freezes, unmounts,
+>>> etc?  Or a fat filesystem on that device doing an fsync?)
+>>>        
+>> What exactly do you think sync_blockdev() does?  :)
+>>      
+>
+> It used to push os cached data to the storage.  Now it tells the storage
+> to flush cache too (with your patch).  This seems fine in general,
+> although it's not a panacea for all the various data integrity issues
+> that are being tossed about in this thread.  :)
+>
+>    
+>> It is used right before a volume goes away.  If that's not a time to
+>> flush the cache, I dunno what is.
+>>
+>> The _whole purpose_ of sync_blockdev() is to push out the data to
+>> permanent storage.  Look at the users -- unmount volume, journal close,
+>> etc.  Things that are OK to occur after those points include: power off,
+>> device unplug, etc.
+>>      
+>
+> Sure.  But I was thinking about enterprise raids with battery backup
+> which may last for days.
+>
+> But, ok, I wasn't thinking quite right about the unmount situations etc;
+> even on enterprise raids like this, flushing things out on unmount makes
+> sense in the case where you lose power post-unmount and can't restore
+> power before the battery backup dies.
+>    
 
-> > The problem that I see is that we are missing support from the device
-> > model for hotunplug.  Running the device remove method from process
-> > context is required.  Typically hotplug controllers discover a
-> > device has been removed or will be removed in interrupt context.
-> > 
-> > Therefore every hotplug driver I have looked at has it's own workqueue
-> > to solve the problem of getting the notification of a hotplug event
-> > from an inappropriate context.
-> > 
-> > So the general problem that I see is that I need a solution to trigger
-> > a remove from interrupt context and that same solution will happen to
-> > work just fine for sysfs.
-> 
-> I think the problem is more driver domain specific and not quite sure
-> whether one size would fit all.  We have a lot of drivers in the tree.
-> I think the best approach would be trying to move upwards from the
-> bottom.  ie. Consolidate hotplug / error handling support from low
-> level drivers to specific driver subsystem, from driver subsystems to
-> higher layer (ie. block layer) and then see whether there can be more
-> commonalities which can be factored, but the chance is that once
-> things are pushed upwards enough, moving it into the kobject layer
-> probably wouldn't worth the trouble.  Well, it's all speculations at
-> this point tho.
+Enterprise raid systems don't have this issue. They all have sufficient 
+battery power to safely destage the volatile cache to persistent storage 
+on power outage (i.e., they keep enough drives spinning and so on to 
+empty the cache).
 
-It sounds like Eric's point is that sysfs_schedule_callback() is a
-special-purpose interface devoted to sysfs, whereas a more generally
-useful interface would allow delayed unregistration of any struct
-device. (Or perhaps delayed invocation of an arbitrary function with a
-struct device as the argument, but unregistration is the single most
-important usage.)
+Hardware RAID cards that you have in some servers (not external RAID 
+arrays) would have this issue though and are probably fairly common.
 
-The actual interface wouldn't be very different from 
-sysfs_schedule_callback().  In fact, the only changes I see offhand are 
-that the new routine would accept a pointer to struct device instead of 
-a pointer to struct kobject and there wouldn't be any func argument.  
+> I also wondered if a cache flush on one lun issues a cache flush for the
+> entire controller, or just for that lun.  Hopefully the latter, in which
+> case it's not as big a deal.
+>    
 
-The idea is that this would come in useful both for suicidal sysfs 
-attributes and for hot-unplug events detected by an interrupt handler.
+Probably just for that LUN - LUN's are usually independent in almost all 
+ways. Firmware of course could do anything, I would assume that most 
+high end arrays would probably ignore a flush command in any case.
 
-But there's something I'm not clear on.  If hot-unplug events are
-detected by an interrupt handler, then what about hot-plug events?  
-Wouldn't they be detected by the same interrupt handler?  Obviously you
-can't register new devices in interrupt context, so there must be a
-workqueue or kernel thread involved somewhere.  Shouldn't the two types
-of events be managed by the same workqueue/thread?
+>    
+>> A secondary purpose of sync_blockdev() is as a hack, for simple/ancient
+>> bdev-based filesystems that do not wish to bother with barriers and all
+>> the associated complexity to tracking what writes do/do not need flushing.
+>>      
+>
+> Yep, I get that and it seems reasonable except ....
+>
+>    
+>>> xfs, reiserfs, ext4 all avoid the blkdev flush on fsync if barriers are
+>>> not enabled, I think for that reason...
+>>>        
+>> Enabling barriers causes slowdowns far greater than that of simply
+>> causing fsync(2) to trigger FLUSH CACHE, because barriers imply FLUSH
+>> CACHE issuance for all in-kernel filesystem journalled/atomic
+>> transactions, in addition to whatever syscalls userspace is issuing.
+>>
+>> The number of FLUSH CACHES w/ barriers is orders of magnitude larger
+>> than the number of fsync/fdatasync calls.
+>>      
+>
+> I understand all that.
+>
+> My point is that the above filesystems (xfs, reiserfs, ext4) skip the
+> blkdev flush on fsync when barriers are explicitly disabled.
+>
+> They do this because if an admin disables barriers, they are trusting
+> that the write cache is nonvolatile and will be able to destage fully
+> even if external power is lost for some time.
+>
+> In that case you don't need a blkdev_issue_flush on fsync either (or are
+> at least willing to live with the diminished risk, thanks to the battery
+> backup), and on xfs, ext4 etc you can turn it off (it goes away w/ the
+> barriers off setting).  With this change to the simple generic fsync
+> path, you can't turn it off for those filesystems that use it for fsync.
+>
+> But I suppose it's rare that anybody ever uses a filesystem which uses
+> this generic sync method on any sort of interesting storage like I'm
+> talking about, and it's not a big deal...  (or maybe that interesting
+> storage just ignores cache flushes anyway, I dunno).
+>
+> My main concerns were that these extra cache flushes for fsync aren't
+> tunable, and that flushes on one lun might affect other luns.  I guess
+> I've talked myself out of those concerns in a couple different ways now.  ;)
+>
+> -Eric
+>    
 
-Alan Stern
+I do enthusiastically agree that we should not be doing barriers and the 
+blkdev flush for file systems that do barriers correctly.
+
+ric
 
