@@ -1,108 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756526AbZCZAnV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755637AbZCZAqz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756526AbZCZAnV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 20:43:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755001AbZCZAnL
+	id S1755637AbZCZAqz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 20:46:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752838AbZCZAqq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 20:43:11 -0400
-Received: from out01.mta.xmission.com ([166.70.13.231]:44472 "EHLO
-	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752578AbZCZAnJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 20:43:09 -0400
-To: Alex Chiang <achiang@hp.com>
-Cc: htejun@gmail.com, greg@kroah.com, cornelia.huck@de.ibm.com,
-       stern@rowland.harvard.edu, kay.sievers@vrfy.org, rusty@rustcorp.com.au,
-       linux-kernel@vger.kernel.org
-References: <20090325035707.15921.42150.stgit@bob.kio>
-	<m13ad2xi46.fsf@fess.ebiederm.org>
-	<20090325225414.GA11447@ldl.fc.hp.com>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Wed, 25 Mar 2009 17:42:55 -0700
-In-Reply-To: <20090325225414.GA11447@ldl.fc.hp.com> (Alex Chiang's message of "Wed\, 25 Mar 2009 16\:54\:14 -0600")
-Message-ID: <m17i2dunao.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Wed, 25 Mar 2009 20:46:46 -0400
+Received: from rotring.dds.nl ([85.17.178.138]:47251 "EHLO rotring.dds.nl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751707AbZCZAqp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Mar 2009 20:46:45 -0400
+X-Greylist: delayed 1619 seconds by postgrey-1.27 at vger.kernel.org; Wed, 25 Mar 2009 20:46:45 EDT
+Message-ID: <49CACA17.3020805@skku.edu>
+Date: Thu, 26 Mar 2009 09:19:35 +0900
+From: Rob Lahaye <lahaye@skku.edu>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=67.169.126.145;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 67.169.126.145
-X-SA-Exim-Rcpt-To: achiang@hp.com, linux-kernel@vger.kernel.org, rusty@rustcorp.com.au, kay.sievers@vrfy.org, stern@rowland.harvard.edu, cornelia.huck@de.ibm.com, greg@kroah.com, htejun@gmail.com
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa04 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Combo: ;Alex Chiang <achiang@hp.com>
-X-Spam-Relay-Country: 
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  3.0 XMNoVowels Alpha-numberic number with no vowels
-	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	* -2.6 BAYES_00 BODY: Bayesian spam probability is 0 to 1%
-	*      [score: 0.0000]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa04 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  0.1 XMSolicitRefs_0 Weightloss drug
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-	*  1.0 XMSolicitRefs_1 XMSolicitRefs_1
-Subject: Re: [RFC PATCH 0/3] sysfs: allow suicide
-X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
-X-SA-Exim-Scanned: Yes (on in01.mta.xmission.com)
+To: linux-kernel@vger.kernel.org
+Subject: 2.6.27.19-170.2.35.fc10.i686 freezes Intel PC
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alex Chiang <achiang@hp.com> writes:
 
-> * Eric W. Biederman <ebiederm@xmission.com>:
->> 
->> Interesting.
->> 
->> Fixing a read/writer deadlock by allowing the writers to nest
->> inside the readers.
->> 
->> My first impression is that it is too clever.
->
-> Clever points go to Tejun. All I did was refresh the series
-> slightly. :)
->
->> Furthermore I think this is walking around the edges of a more
->> general problem.   How should we serial hotplug and hotunplug
->> in general.  In what context should remove methods run in.
->> 
->> My impression is that we have a huge hole in our infrastructure
->> for hotplug drivers.  Problems like how do we get a user space
->> context for the code to run in and how do we handle
->> multiple hotplug actions for overlapping device trees from
->> stomping on each other.
->> 
->> My hypothesis is once we solve this for the general case of
->> device hotplug and removal we won't need special support from
->> sysfs.  At least not in the suicidal way.
->
-> I agree that we have problems in our infrastructure, especially,
-> as you point out, overlapping device trees, etc.
->
-> I see your point about adding extra cruft into sysfs to work
-> around a special case while leaving the hard problem unsolved.
->
-> Perhaps the status quo is better. I do think that getting
-> suicidal sysfs attributes off the global workqueue is a band-aid
-> that actually helps, vs. the proposed patches here which are
-> questionable in nature.
+[1.]
+At certain moment the PC become totally unresponsive.
 
-Sounds like it.    I'm not trying to shoot this down, rather
-I'm trying to figure out how to solve this cleanly, as I am slowly
-trying to sort out the pci hotplug and unplug issues.
+[2.]
+I have no idea what has gone wrong; the computer was
+running on its own in my office while I was home.
+Local time was about 9pm.
 
-I'm not certain how general we can be. pci layer, device layer or kobject
-layer, but I think it makes sense to have a dedicated work queue to use
-when devices are removed.  As every hotplug driver currently has to
-invent one.  The fake hotplug code is very normal in this respect.
+All I have is the kernel trace from the /var/log/messages
+file:
 
-If we can get the work queue creation and the calling of remove put
-into the generic pci layer, we should be able to simply all of the
-hotplug controller drivers.
+Mar 25 20:23:20 skku kernel: ------------[ cut here ]------------
+Mar 25 20:23:20 skku kernel: WARNING: at lib/list_debug.c:48 
+list_del+0x22/0x60()
+Mar 25 20:23:20 skku kernel: Hardware name: System Product Name
+Mar 25 20:23:20 skku kernel: list_del corruption. prev->next should be 
+c136a258, but was 00000000
+Mar 25 20:23:20 skku kernel: Modules linked in: fuse i915 drm sco bridge 
+stp bnep l2cap bluetooth coretemp w83627ehf hwmon_vid hwmon 
+ipt_MASQUERADE iptable_nat nf_nat ip6t_REJECT nf_conntrack_ipv6 
+ip6table_filter ip6_tables ipv6 cpufreq_ondemand acpi_cpufreq 
+dm_multipath uinput snd_hda_intel snd_seq_dummy snd_seq_oss 
+snd_seq_midi_event snd_seq snd_seq_device snd_pcm_oss snd_mixer_oss 
+snd_pcm i2c_i801 i2c_core snd_timer snd_page_alloc snd_hwdep snd 
+soundcore pata_jmicron firewire_ohci skge 8139cp iTCO_wdt 
+iTCO_vendor_support pcspkr firewire_core crc_itu_t 8139too mii 
+ata_generic pata_acpi [last unloaded: microcode]
+Mar 25 20:23:20 skku kernel: Pid: 696, comm: kjournald Not tainted 
+2.6.27.19-170.2.35.fc10.i686 #1
+Mar 25 20:23:20 skku kernel: [<c042db04>] warn_slowpath+0x69/0x89
+Mar 25 20:23:20 skku kernel: [<c0422674>] ? dequeue_entity+0x15/0x13a
+Mar 25 20:23:20 skku kernel: [<c0422b78>] ? dequeue_task_fair+0x3d/0x42
+Mar 25 20:23:20 skku kernel: [<c04d5639>] ? ext3_get_block+0x9d/0xd2
+Mar 25 20:23:20 skku kernel: [<c046f9a6>] ? find_get_page+0x1d/0x81
+Mar 25 20:23:20 skku kernel: [<c05231fa>] list_del+0x22/0x60
+Mar 25 20:23:20 skku kernel: [<c0476eed>] activate_page+0x4e/0xad
+Mar 25 20:23:20 skku kernel: [<c0476f86>] mark_page_accessed+0x3a/0x57
+Mar 25 20:23:20 skku kernel: [<c04af54b>] __find_get_block+0x1ab/0x1b5
+Mar 25 20:23:20 skku kernel: [<c04af56f>] __getblk+0x1a/0x264
+Mar 25 20:23:20 skku kernel: [<c04aff62>] ? sync_buffer+0x0/0x37
+Mar 25 20:23:20 skku kernel: [<c048ce19>] ? virt_to_head_page+0x22/0x2e
+Mar 25 20:23:20 skku kernel: [<c04e6137>] ? journal_next_log_block+0x5f/0x65
+Mar 25 20:23:20 skku kernel: [<c04e616e>] 
+journal_get_descriptor_buffer+0x31/0x72
+Mar 25 20:23:20 skku kernel: [<c04e311e>] 
+journal_commit_transaction+0x930/0xc72
+Mar 25 20:23:20 skku kernel: [<c043692e>] ? lock_timer_base+0x1f/0x3e
+Mar 25 20:23:20 skku kernel: [<c0436995>] ? try_to_del_timer_sync+0x48/0x4f
+Mar 25 20:23:20 skku kernel: [<c04e5b5a>] kjournald+0xbb/0x1ee
+Mar 25 20:23:20 skku kernel: [<c043ef62>] ? 
+autoremove_wake_function+0x0/0x33
+Mar 25 20:23:20 skku kernel: [<c04e5a9f>] ? kjournald+0x0/0x1ee
+Mar 25 20:23:20 skku kernel: [<c043ecbf>] kthread+0x3b/0x61
+Mar 25 20:23:20 skku kernel: [<c043ec84>] ? kthread+0x0/0x61
+Mar 25 20:23:20 skku kernel: [<c040590b>] kernel_thread_helper+0x7/0x10
+Mar 25 20:23:20 skku kernel: =======================
+Mar 25 20:23:20 skku kernel: ---[ end trace ac8e1bdd82694409 ]---
 
-I'm not seeing a patch from you where you are using a separate
-workqueue.  Am I missing something?  But if we can place that workqueue
-in say the pci layer I think it would be just a little re factoring
-and not a lot more code.
-
-Eric
+R.L.
