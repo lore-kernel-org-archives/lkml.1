@@ -1,68 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759371AbZCZQb1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759213AbZCZQeS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759371AbZCZQb1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Mar 2009 12:31:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754977AbZCZQbT
+	id S1759213AbZCZQeS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Mar 2009 12:34:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754977AbZCZQeD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Mar 2009 12:31:19 -0400
-Received: from THUNK.ORG ([69.25.196.29]:42142 "EHLO thunker.thunk.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752583AbZCZQbS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Mar 2009 12:31:18 -0400
-Date: Thu, 26 Mar 2009 12:30:26 -0400
-From: Theodore Tso <tytso@mit.edu>
+	Thu, 26 Mar 2009 12:34:03 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:37553 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752359AbZCZQeB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Mar 2009 12:34:01 -0400
+Date: Thu, 26 Mar 2009 09:24:54 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
 To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Frans Pop <elendil@planet.nl>,
-       mingo@elte.hu, jack@suse.cz, alan@lxorguk.ukuu.org.uk,
-       arjan@infradead.org, a.p.zijlstra@chello.nl, npiggin@suse.de,
-       jens.axboe@oracle.com, drees76@gmail.com, jesper@krogh.cc,
-       linux-kernel@vger.kernel.org, oleg@redhat.com, roland@redhat.com
+Cc: Frans Pop <elendil@planet.nl>, mingo@elte.hu, tytso@mit.edu, jack@suse.cz,
+       alan@lxorguk.ukuu.org.uk, arjan@infradead.org, a.p.zijlstra@chello.nl,
+       npiggin@suse.de, jens.axboe@oracle.com, drees76@gmail.com,
+       jesper@krogh.cc, linux-kernel@vger.kernel.org, oleg@redhat.com,
+       roland@redhat.com
 Subject: Re: relatime: update once per day patches (was: ext3 IO latency
-	measurements)
-Message-ID: <20090326163026.GD6239@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Frans Pop <elendil@planet.nl>, mingo@elte.hu, jack@suse.cz,
-	alan@lxorguk.ukuu.org.uk, arjan@infradead.org,
-	a.p.zijlstra@chello.nl, npiggin@suse.de, jens.axboe@oracle.com,
-	drees76@gmail.com, jesper@krogh.cc, linux-kernel@vger.kernel.org,
-	oleg@redhat.com, roland@redhat.com
-References: <alpine.LFD.2.00.0903251613300.3032@localhost.localdomain> <20090325235041.GA11024@duck.suse.cz> <20090326090630.GA9369@elte.hu> <20090326113705.GV32307@mit.edu> <20090326140312.GB14822@elte.hu> <20090326140312.GB14822@elte.hu> <20090326073013.2fa83178.akpm@linux-foundation.org> <200903261632.42439.elendil@planet.nl> <20090326084733.156c4910.akpm@linux-foundation.org> <alpine.LFD.2.00.0903260912270.3032@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+ measurements)
+Message-Id: <20090326092454.b74e3f96.akpm@linux-foundation.org>
 In-Reply-To: <alpine.LFD.2.00.0903260912270.3032@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+References: <20090325123744.GK23439@duck.suse.cz>
+	<20090325150041.GM32307@mit.edu>
+	<alpine.LFD.2.00.0903251008120.3032@localhost.localdomain>
+	<20090325185824.GO32307@mit.edu>
+	<alpine.LFD.2.00.0903251341050.3032@localhost.localdomain>
+	<20090325215137.GQ32307@mit.edu>
+	<alpine.LFD.2.00.0903251613300.3032@localhost.localdomain>
+	<20090325235041.GA11024@duck.suse.cz>
+	<20090326090630.GA9369@elte.hu>
+	<20090326113705.GV32307@mit.edu>
+	<20090326140312.GB14822@elte.hu>
+	<20090326140312.GB14822@elte.hu>
+	<20090326073013.2fa83178.akpm@linux-foundation.org>
+	<200903261632.42439.elendil@planet.nl>
+	<20090326084733.156c4910.akpm@linux-foundation.org>
+	<alpine.LFD.2.00.0903260912270.3032@localhost.localdomain>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 26, 2009 at 09:14:28AM -0700, Linus Torvalds wrote:
+On Thu, 26 Mar 2009 09:14:28 -0700 (PDT) Linus Torvalds <torvalds@linux-foundation.org> wrote:
+
+> 
+> 
+> On Thu, 26 Mar 2009, Andrew Morton wrote:
+> > 
+> > Hard-wiring a 24-hour interval into the core VFS for all mounted
+> > filesystems is dumb.
+> 
+> Umm. 
+> 
 > I generally agree witht he "leave policy to user space" people, but this 
 > is an area where (a) user space has shown itself to not get it right (ie 
 > people don't do even the existing relatime because distros don't) and (b) 
 > what's the alternative?
+> 
+> > I (and others) pointed out that it would be better to implement this as
+> > a mount option.  That suggestion was met with varying sillinesses and
+> > that is where things stand.
+> 
+> I'd suggest first just doing the 24 hour thing, and then, IF user space 
+> actually ever gets its act together, and people care, and they _ask_ for a 
+> mount option, that's when it's worth doing.
+> 
 
-I thought at least some distro's were adding relatime by default; I
-could be wrong, but I thought Ubuntu was doing this.  Personally, I
-actually think that if we're going to give up on POSIX, I'll go all
-the way to noatime since it helps even more.
+We wouldn't normally just enable the new feature by default because it
+changes kernel behaviour.  Userspace needs to be changed in some manner to
+opt-in.  One way it's `mount -o remount', the other way it's a poke in
+/proc.
 
-I've always thought the right approach would be to have a "atime
-dirty" flag, and update atime, but never flush it out to disk unless
-(a) we're about to unmount the disk, or (b) we need to update some
-other inode in the same inode table block, or (c) we have memory
-pressure and we're trying to evict the inode from the inode cache.
-That way we get full POSIX compliance, without taking the I/O hit of
-atime updates.  The atime updates get lost if we crash, but that's
-allowed by POSIX, and most people don't care about losing atime
-updates after a crash.
 
-Since it's fully backwards (and POSIX) compatible, there would no
-question about enabling it by default.
 
-						- Ted
