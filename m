@@ -1,82 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760302AbZCZSp2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760302AbZCZStj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760302AbZCZSp2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Mar 2009 14:45:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757352AbZCZSpQ
+	id S1760302AbZCZStj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Mar 2009 14:49:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759134AbZCZStb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Mar 2009 14:45:16 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:37132 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756849AbZCZSpO (ORCPT
+	Thu, 26 Mar 2009 14:49:31 -0400
+Received: from cavan.codon.org.uk ([93.93.128.6]:34659 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758255AbZCZSta (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Mar 2009 14:45:14 -0400
-Date: Thu, 26 Mar 2009 11:35:29 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Jan Kara <jack@suse.cz>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Theodore Tso <tytso@mit.edu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Nick Piggin <npiggin@suse.de>,
-       Jens Axboe <jens.axboe@oracle.com>, David Rees <drees76@gmail.com>,
-       Jesper Krogh <jesper@krogh.cc>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Oleg Nesterov <oleg@redhat.com>, Roland McGrath <roland@redhat.com>
-Subject: Re: ext3 IO latency measurements (was: Linux 2.6.29)
-Message-Id: <20090326113529.d1e906f4.akpm@linux-foundation.org>
-In-Reply-To: <20090326181106.GC17159@duck.suse.cz>
-References: <20090324041249.1133efb6.akpm@linux-foundation.org>
-	<20090325123744.GK23439@duck.suse.cz>
-	<20090325150041.GM32307@mit.edu>
-	<alpine.LFD.2.00.0903251008120.3032@localhost.localdomain>
-	<20090325185824.GO32307@mit.edu>
-	<alpine.LFD.2.00.0903251341050.3032@localhost.localdomain>
-	<20090325215137.GQ32307@mit.edu>
-	<alpine.LFD.2.00.0903251613300.3032@localhost.localdomain>
-	<20090325235041.GA11024@duck.suse.cz>
-	<20090326090630.GA9369@elte.hu>
-	<20090326181106.GC17159@duck.suse.cz>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 26 Mar 2009 14:49:30 -0400
+Date: Thu, 26 Mar 2009 18:49:00 +0000
+From: Matthew Garrett <mjg@redhat.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Frans Pop <elendil@planet.nl>,
+       Linus Torvalds <torvalds@linux-foundation.org>, mingo@elte.hu,
+       tytso@mit.edu, jack@suse.cz, alan@lxorguk.ukuu.org.uk,
+       arjan@infradead.org, a.p.zijlstra@chello.nl, npiggin@suse.de,
+       jens.axboe@oracle.com, drees76@gmail.com, jesper@krogh.cc,
+       linux-kernel@vger.kernel.org, oleg@redhat.com, roland@redhat.com
+Subject: Re: relatime: update once per day patches (was: ext3 IO latency measurements)
+Message-ID: <20090326184900.GA8580@srcf.ucam.org>
+References: <20090325123744.GK23439@duck.suse.cz> <alpine.LFD.2.00.0903260912270.3032@localhost.localdomain> <20090326092454.b74e3f96.akpm@linux-foundation.org> <200903261812.09153.elendil@planet.nl> <20090326104843.46abfaa7.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090326104843.46abfaa7.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Mar 26, 2009 at 10:48:43AM -0700, Andrew Morton wrote:
 
-The patch looks OK to me.
+> Oh, the feature itself is desirable.  But the interface isn't.
+> 
+> - It's a magic number.  Maybe someone runs tmpwatch twice per day, or
+>   weekly, or...
 
-On Thu, 26 Mar 2009 19:11:06 +0100 Jan Kara <jack@suse.cz> wrote:
+There has to be a default. 24 hours is a sensible one.
 
-> @@ -1490,6 +1494,16 @@ static int ext3_ordered_writepage(struct page *page,
->  	if (ext3_journal_current_handle())
->  		goto out_fail;
->  
-> +	if (!page_has_buffers(page)) {
-> +		create_empty_buffers(page, inode->i_sb->s_blocksize,
-> +				(1 << BH_Dirty)|(1 << BH_Uptodate));
+> - That's fixable by making "24" tunable, but it's still a global
+>   thing.  Better to make it per-fs.
 
-This will attach dirty buffers to a clean page, which is an invalid
-state (but OK if we immediately fix it up).
+Patches welcome.
 
+> - mount(8) is the standard way of tuning fs behaviour.  There's no
+>   need to deviate from that here.
 
-> +	} else if (!walk_page_buffers(NULL, page_buffers(page), 0, PAGE_CACHE_SIZE, NULL, buffer_unmapped)) {
-> +		/* Provide NULL instead of get_block so that we catch bugs if buffers weren't really mapped */
-> +		return block_write_full_page(page, NULL, wbc);
-> +	}
-> +	page_bufs = page_buffers(page);
-> +
-> +
->  	handle = ext3_journal_start(inode, ext3_writepage_trans_blocks(inode));
->  
->  	if (IS_ERR(handle)) {
+Patches welcome.
 
-And if this error happens we'll go on to run
-redirty_page_for_writepage() which will do the right thing.
+When did we adopt a mindset that led to code having to satisfy every 
+single user requirement before being accepted, rather than being happy 
+with code that provides an incremental improvement over what exists 
+already? If there are actually users who want to be able to tune this 
+per filesystem then I'm sure someone (possibly even me) will write code 
+to support them, but right now it just sounds like features for the sake 
+of some sense of aesthetic correctness.
 
-However if PageMappedToDisk() is working right, we should be able to
-avoid that newly-added buffer walk.  Possibly SetPageMappedToDisk()
-isn't being run in all the right places though, dunno.
-
-
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
