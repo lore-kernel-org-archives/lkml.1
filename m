@@ -1,80 +1,153 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758608AbZCZOs1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754243AbZCZOtB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758608AbZCZOs1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Mar 2009 10:48:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758293AbZCZOsN
+	id S1754243AbZCZOtB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Mar 2009 10:49:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758939AbZCZOs2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Mar 2009 10:48:13 -0400
-Received: from THUNK.ORG ([69.25.196.29]:36722 "EHLO thunker.thunk.org"
+	Thu, 26 Mar 2009 10:48:28 -0400
+Received: from mx1.emlix.com ([193.175.82.87]:42312 "EHLO mx1.emlix.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758801AbZCZOsM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Mar 2009 10:48:12 -0400
-Date: Thu, 26 Mar 2009 10:47:07 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Jan Kara <jack@suse.cz>, Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Nick Piggin <npiggin@suse.de>,
-       Jens Axboe <jens.axboe@oracle.com>, David Rees <drees76@gmail.com>,
-       Jesper Krogh <jesper@krogh.cc>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Oleg Nesterov <oleg@redhat.com>, Roland McGrath <roland@redhat.com>
-Subject: Re: ext3 IO latency measurements (was: Linux 2.6.29)
-Message-ID: <20090326144707.GA6239@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>, Ingo Molnar <mingo@elte.hu>,
-	Jan Kara <jack@suse.cz>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Alan Cox <alan@lxorguk.ukuu.org.uk>,
-	Arjan van de Ven <arjan@infradead.org>,
-	Peter Zijlstra <a.p.zijlstra@chello.nl>,
-	Nick Piggin <npiggin@suse.de>, Jens Axboe <jens.axboe@oracle.com>,
-	David Rees <drees76@gmail.com>, Jesper Krogh <jesper@krogh.cc>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	Oleg Nesterov <oleg@redhat.com>, Roland McGrath <roland@redhat.com>
-References: <20090325150041.GM32307@mit.edu> <alpine.LFD.2.00.0903251008120.3032@localhost.localdomain> <20090325185824.GO32307@mit.edu> <alpine.LFD.2.00.0903251341050.3032@localhost.localdomain> <20090325215137.GQ32307@mit.edu> <alpine.LFD.2.00.0903251613300.3032@localhost.localdomain> <20090325235041.GA11024@duck.suse.cz> <20090326090630.GA9369@elte.hu> <20090326113705.GV32307@mit.edu> <20090326140312.GB14822@elte.hu>
+	id S1758830AbZCZOs1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Mar 2009 10:48:27 -0400
+From: =?utf-8?q?Daniel=20Gl=C3=B6ckner?= <dg@emlix.com>
+To: Chris Zankel <chris@zankel.net>
+Cc: linux-kernel@vger.kernel.org,
+       =?utf-8?q?Daniel=20Gl=C3=B6ckner?= <dg@emlix.com>
+Subject: [patch 1/5] xtensa: add s6000 data port to s6105 platform
+Date: Thu, 26 Mar 2009 15:49:30 +0100
+Message-Id: <1238078974-26040-1-git-send-email-dg@emlix.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090326140312.GB14822@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+Organization: emlix gmbh, Goettingen, Germany"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 26, 2009 at 03:03:12PM +0100, Ingo Molnar wrote:
-> That's in good deal atime update latencies. We still appear to 
-> default to atime enabled in ext4.
-> 
-> That's stupid - only around 0.01% of all Linux systems relies on 
-> atime - and even those who rely on it would be well served by 
-> relatime. Why arent the relatime patches upstream? Why isnt it the 
-> default? They have been submitted several times.
+Signed-off-by: Daniel Glöckner <dg@emlix.com>
+---
+ arch/xtensa/platforms/s6105/device.c               |   40 ++++++++++++++++++++
+ arch/xtensa/platforms/s6105/include/platform/irq.h |    1 +
+ arch/xtensa/platforms/s6105/setup.c                |    2 +
+ 3 files changed, 43 insertions(+), 0 deletions(-)
 
-The relatime patches are upstream.  Both noatime and relatime are
-handled at the VFS layer, not at the per-filesystem level.  The reason
-why it sin't the default is because of a desire for POSIX compliance,
-I suspect.  Most distributions are putting relatime into /etc/fstab by
-default, but we haven't changed the mount option.  It wouldn't be hard
-to add an "atime" option to turn on atime updates, and make either
-"noatime" or "relatime" the default.  This is a simple patch to
-fs/namespace.c
+diff --git a/arch/xtensa/platforms/s6105/device.c b/arch/xtensa/platforms/s6105/device.c
+index f7af6d2..9238d24 100644
+--- a/arch/xtensa/platforms/s6105/device.c
++++ b/arch/xtensa/platforms/s6105/device.c
+@@ -22,6 +22,7 @@
+ #include <linux/spi/mmc_spi.h>
+ #include <linux/spi/spi.h>
+ #include <linux/spi/spi_s6000.h>
++#include <media/s6dp-link.h>
+ 
+ #include <variant/hardware.h>
+ #include <variant/dmac.h>
+@@ -53,6 +54,14 @@ static const signed char i2c_irq_mappings[] = {
+ 	-1
+ };
+ 
++static const signed char dp_irq_mappings[] = {
++	S6_INTC_DMA_DPTERMCNT(0),
++	S6_INTC_DMA_DPTERMCNT(1),
++	S6_INTC_DMA_DPTERMCNT(2),
++	S6_INTC_DMA_DPTERMCNT(3),
++	-1
++};
++
+ static const signed char isef_irq_mappings[] = {
+ 	S6_INTC_DMA_LMSPENDCNT(11),
+ 	-1
+@@ -75,6 +84,7 @@ const signed char *platform_irq_mappings[NR_IRQS] = {
+ 	[UART_INTNUM] = uart_irq_mappings,
+ 	[GMAC_INTNUM] = gmac_irq_mappings,
+ 	[I2C_INTNUM] = i2c_irq_mappings,
++	[DP_INTNUM] = dp_irq_mappings,
+ 	[ISEF_INTNUM] = isef_irq_mappings,
+ 	[I2S_INTNUM] = i2s_irq_mappings,
+ 	[SPI_INTNUM] = spi_irq_mappings,
+@@ -191,6 +201,10 @@ static struct resource s6_i2c_resource[] = {
+ #define S6I2C_ADDR_CDCE906	0x69
+ #define S6I2C_ADDR_PCA9543	0x73
+ 
++static struct s6dp_link s6dp_links[] = {
++	{ }
++};
++
+ static struct i2c_board_info __initdata s6_i2c_devices[] = {
+ 	{
+ 		I2C_BOARD_INFO("24c02", S6I2C_ADDR_AT24HC02B),
+@@ -355,6 +369,23 @@ static struct spi_board_info __initdata s6_spi_devices[] = {
+ 	},
+ };
+ 
++static struct resource s6_dp_resource[] = {
++	{
++		.start	= (resource_size_t)S6_REG_DP,
++		.end	= (resource_size_t)S6_REG_DP + 0x10000 - 1,
++		.flags	= IORESOURCE_MEM,
++	},
++	{
++		.start	= (resource_size_t)S6_REG_DPDMA,
++		.end	= (resource_size_t)S6_REG_DPDMA + 0x10000 - 1,
++		.flags	= IORESOURCE_DMA,
++	},
++	{
++		.start	= (resource_size_t)DP_INTNUM,
++		.flags	= IORESOURCE_IRQ,
++	},
++};
++
+ static struct platform_device platform_devices[] = {
+ 	{
+ 		.name = "serial8250",
+@@ -391,6 +422,15 @@ static struct platform_device platform_devices[] = {
+ 			.platform_data = &s6_spi_pdata,
+ 		},
+ 	},
++	{
++		.name = "s6dp",
++		.id = -1,
++		.resource = s6_dp_resource,
++		.num_resources = ARRAY_SIZE(s6_dp_resource),
++		.dev = {
++			.platform_data = &s6dp_links,
++		},
++	},
+ };
+ 
+ static int __init device_init(void)
+diff --git a/arch/xtensa/platforms/s6105/include/platform/irq.h b/arch/xtensa/platforms/s6105/include/platform/irq.h
+index 84c972f..65f6d92 100644
+--- a/arch/xtensa/platforms/s6105/include/platform/irq.h
++++ b/arch/xtensa/platforms/s6105/include/platform/irq.h
+@@ -5,6 +5,7 @@
+ #define UART_INTNUM	4
+ #define GMAC_INTNUM	5
+ #define I2C_INTNUM	6
++#define DP_INTNUM	7
+ #define ISEF_INTNUM	8
+ #define I2S_INTNUM	10
+ #define SPI_INTNUM	11
+diff --git a/arch/xtensa/platforms/s6105/setup.c b/arch/xtensa/platforms/s6105/setup.c
+index bbd1730..87ae88c 100644
+--- a/arch/xtensa/platforms/s6105/setup.c
++++ b/arch/xtensa/platforms/s6105/setup.c
+@@ -46,12 +46,14 @@ void __init platform_setup(char **cmdline)
+ 	reg &= ~(1 << S6_GREG1_BLOCK_SB);
+ 	reg &= ~(1 << S6_GREG1_BLOCK_GMAC);
+ 	reg &= ~(1 << S6_GREG1_BLOCK_I2S);
++	reg &= ~(1 << S6_GREG1_BLOCK_DP);
+ 	writel(reg, S6_REG_GREG1 + S6_GREG1_CLKGATE);
+ 
+ 	reg = readl(S6_REG_GREG1 + S6_GREG1_BLOCKENA);
+ 	reg |= 1 << S6_GREG1_BLOCK_SB;
+ 	reg |= 1 << S6_GREG1_BLOCK_GMAC;
+ 	reg |= 1 << S6_GREG1_BLOCK_I2S;
++	reg |= 1 << S6_GREG1_BLOCK_DP;
+ 	writel(reg, S6_REG_GREG1 + S6_GREG1_BLOCKENA);
+ 
+ 	printk(KERN_NOTICE "S6105 on Stretch S6000 - "
+-- 
+1.6.2.107.ge47ee
 
-> Atime in its current mandatory do-a-write-for-every-read form is a 
-> stupid relic and we have been paying the fool's tax for it in the 
-> past 10 years.
-
-No argument here.  I use noatime, myself.  It actually saves a lot
-more than relatime, and unless you are using mutt with local Maildir
-delivery, relatime isn't really that helpful, and the benefit of
-noatime is roughly double that of relatime vs normal atime update, in
-my measurements:
-
-http://thunk.org/tytso/blog/2009/03/01/ssds-journaling-and-noatimerelatime/
-
-						- Ted
