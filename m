@@ -1,56 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759625AbZCZR3q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754496AbZCZRdL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759625AbZCZR3q (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Mar 2009 13:29:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754423AbZCZR3i
+	id S1754496AbZCZRdL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Mar 2009 13:33:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755789AbZCZRc4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Mar 2009 13:29:38 -0400
-Received: from Cpsmtpm-eml107.kpnxchange.com ([195.121.3.11]:57717 "EHLO
-	CPSMTPM-EML107.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753427AbZCZR3h (ORCPT
+	Thu, 26 Mar 2009 13:32:56 -0400
+Received: from cavan.codon.org.uk ([93.93.128.6]:36332 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754345AbZCZRcz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Mar 2009 13:29:37 -0400
-From: Frans Pop <elendil@planet.nl>
+	Thu, 26 Mar 2009 13:32:55 -0400
+Date: Thu, 26 Mar 2009 17:32:14 +0000
+From: Matthew Garrett <mjg@redhat.com>
 To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: ext3 IO latency measurements (was: Linux 2.6.29)
-Date: Thu, 26 Mar 2009 18:29:30 +0100
-User-Agent: KMail/1.9.9
-Cc: tytso@mit.edu, mingo@elte.hu, jack@suse.cz, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, arjan@infradead.org, a.p.zijlstra@chello.nl,
-       npiggin@suse.de, jens.axboe@oracle.com, drees76@gmail.com,
-       jesper@krogh.cc, linux-kernel@vger.kernel.org, oleg@redhat.com,
-       roland@redhat.com
-References: <20090325150041.GM32307@mit.edu> <alpine.LFD.2.00.0903251008120.3032@localhost.localdomain> <20090325185824.GO32307@mit.edu> <alpine.LFD.2.00.0903251341050.3032@localhost.localdomain> <20090325215137.GQ32307@mit.edu> <alpine.LFD.2.00.0903251613300.3032@localhost.localdomain> <20090325235041.GA11024@duck.suse.cz> <20090326090630.GA9369@elte.hu> <20090326113705.GV32307@mit.edu> <20090326140312.GB14822@elte.hu> <20090326144707.GA6239@mit.edu> <20090326144707.GA6239@mit.edu> <alpine.LFD.2.00.0903260914440.3032@localhost.localdomain>
-In-reply-To: <alpine.LFD.2.00.0903260914440.3032@localhost.localdomain>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Frans Pop <elendil@planet.nl>,
+       mingo@elte.hu, tytso@mit.edu, jack@suse.cz, alan@lxorguk.ukuu.org.uk,
+       arjan@infradead.org, a.p.zijlstra@chello.nl, npiggin@suse.de,
+       jens.axboe@oracle.com, drees76@gmail.com, jesper@krogh.cc,
+       linux-kernel@vger.kernel.org, oleg@redhat.com, roland@redhat.com,
+       willy@linux.intel.com, vaurora@redhat.com
+Subject: [PATCH] Allow relatime to update atime once a day
+Message-ID: <20090326173214.GA7198@srcf.ucam.org>
+References: <alpine.LFD.2.00.0903251613300.3032@localhost.localdomain> <20090325235041.GA11024@duck.suse.cz> <20090326090630.GA9369@elte.hu> <20090326113705.GV32307@mit.edu> <20090326140312.GB14822@elte.hu> <20090326140312.GB14822@elte.hu> <20090326073013.2fa83178.akpm@linux-foundation.org> <200903261632.42439.elendil@planet.nl> <20090326084733.156c4910.akpm@linux-foundation.org> <alpine.LFD.2.00.0903260912270.3032@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200903261829.34359.elendil@planet.nl>
-X-OriginalArrivalTime: 26 Mar 2009 17:29:35.0013 (UTC) FILETIME=[6E62A550:01C9AE38]
+In-Reply-To: <alpine.LFD.2.00.0903260912270.3032@localhost.localdomain>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
-> And quite frankly, even if you then _manually_ put 'relatime' in
-> /etc/fstab, the default Fedora install will totally ignore it. Why?
-> Because it mounts the root partition while using initrd, and totally
-> ignores /etc/fstab.
+Allow atime to be updated once per day even with relatime. This lets
+utilities like tmpreaper (which delete files based on last access time)
+continue working, making relatime a plausible default for distributions.
+    
+Signed-off-by: Matthew Garrett <mjg@redhat.com>
+Reviewed-by: Matthew Wilcox <willy@linux.intel.com>
+Acked-by: Valerie Aurora Henson <vaurora@redhat.com>
+Acked-by: Alan Cox <alan@redhat.com>
+Acked-by: Ingo Molnar <mingo@elte.hu>
 
-That's a difference between Fedora's initrd and Debian/Ubuntu's 
-initramfs-tools then. We do respect the mount options in fstab for the 
-root partition when root is mounted from the initrd:
+---
 
-$ cat /etc/fstab | grep " / "
-/dev/mapper/main-root /      ext3    relatime,errors=remount-ro 0       1
+diff --git a/fs/inode.c b/fs/inode.c
+index 0487ddb..057c92b 100644
+--- a/fs/inode.c
++++ b/fs/inode.c
+@@ -1179,6 +1179,40 @@ sector_t bmap(struct inode * inode, sector_t block)
+ }
+ EXPORT_SYMBOL(bmap);
+ 
++/*
++ * With relative atime, only update atime if the previous atime is
++ * earlier than either the ctime or mtime or if at least a day has
++ * passed since the last atime update.
++ */
++static int relatime_need_update(struct vfsmount *mnt, struct inode *inode,
++			     struct timespec now)
++{
++
++	if (!(mnt->mnt_flags & MNT_RELATIME))
++		return 1;
++	/*
++	 * Is mtime younger than atime? If yes, update atime:
++	 */
++	if (timespec_compare(&inode->i_mtime, &inode->i_atime) >= 0)
++		return 1;
++	/*
++	 * Is ctime younger than atime? If yes, update atime:
++	 */
++	if (timespec_compare(&inode->i_ctime, &inode->i_atime) >= 0)
++		return 1;
++
++	/*
++	 * Is the previous atime value older than a day? If yes,
++	 * update atime:
++	 */
++	if ((long)(now.tv_sec - inode->i_atime.tv_sec) >= 24*60*60)
++		return 1;
++	/*
++	 * Good, we can skip the atime update:
++	 */
++	return 0;
++}
++
+ /**
+  *	touch_atime	-	update the access time
+  *	@mnt: mount the inode is accessed on
+@@ -1206,17 +1240,12 @@ void touch_atime(struct vfsmount *mnt, struct dentry *dentry)
+ 		goto out;
+ 	if ((mnt->mnt_flags & MNT_NODIRATIME) && S_ISDIR(inode->i_mode))
+ 		goto out;
+-	if (mnt->mnt_flags & MNT_RELATIME) {
+-		/*
+-		 * With relative atime, only update atime if the previous
+-		 * atime is earlier than either the ctime or mtime.
+-		 */
+-		if (timespec_compare(&inode->i_mtime, &inode->i_atime) < 0 &&
+-		    timespec_compare(&inode->i_ctime, &inode->i_atime) < 0)
+-			goto out;
+-	}
+ 
+ 	now = current_fs_time(inode->i_sb);
++
++	if (!relatime_need_update(mnt, inode, now))
++		goto out;
++
+ 	if (timespec_equal(&inode->i_atime, &now))
+ 		goto out;
 
-$ mount | grep " / "
-/dev/mapper/main-root on / type ext3 (rw,relatime,errors=remount-ro)
-
-$ cat /proc/cmdline
-root=/dev/mapper/main-root ro vga=791 quiet
-
-Cheers,
-FJP
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
