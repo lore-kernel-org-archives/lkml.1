@@ -1,133 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757676AbZCZCBm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757108AbZCZCKb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757676AbZCZCBm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 22:01:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753430AbZCZCBc
+	id S1757108AbZCZCKb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 22:10:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753642AbZCZCKV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 22:01:32 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:39307 "EHLO mx2.redhat.com"
+	Wed, 25 Mar 2009 22:10:21 -0400
+Received: from hera.kernel.org ([140.211.167.34]:38213 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753336AbZCZCBb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 22:01:31 -0400
-Date: Thu, 26 Mar 2009 02:58:01 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: "Metzger, Markus T" <markus.t.metzger@intel.com>
-Cc: "Kleen, Andi" <andi.kleen@intel.com>, Ingo Molnar <mingo@elte.hu>,
-       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org
-Subject: Re: [rfc] x86, bts: fix crash
-Message-ID: <20090326015801.GA451@redhat.com>
-References: <928CFBE8E7CB0040959E56B4EA41A77E9260843D@irsmsx504.ger.corp.intel.com>
+	id S1751204AbZCZCKU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Mar 2009 22:10:20 -0400
+Message-ID: <49CAE425.5050009@kernel.org>
+Date: Thu, 26 Mar 2009 11:10:45 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <928CFBE8E7CB0040959E56B4EA41A77E9260843D@irsmsx504.ger.corp.intel.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Boaz Harrosh <bharrosh@panasas.com>
+CC: bzolnier@gmail.com, linux-kernel@vger.kernel.org, axboe@kernel.dk,
+       linux-ide@vger.kernel.org
+Subject: Re: [PATCH 03/14] block: implement blk_rq_map_kern_prealloc()
+References: <1237910776-10983-1-git-send-email-tj@kernel.org> <1237910776-10983-4-git-send-email-tj@kernel.org> <49CA4B4B.50408@panasas.com>
+In-Reply-To: <49CA4B4B.50408@panasas.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 26 Mar 2009 02:10:12 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Metzger, let's move this discussion to lkml, I also cc'ed Roland.
-Imho, this problem (which I don't fully understand ;) needs more
-eyes.
+Hello,
 
-On 03/25, Metzger, Markus T wrote:
->
-> The attached patch
+Boaz Harrosh wrote:
+> I have a similar, totally unrelated patch queued, perhaps we can unify
+> the efforts, to satisfy both our needs in one stone.
+> 
+> I've sent this patch:
+> http://www.spinics.net/lists/linux-scsi/msg34082.html
+> 
+> In an effort to un-export blk_rq_append_bio().
+> 
+> Perhaps you could reorder the code below a bit?
+> 
+> My proposal is:
+> * blk_rq_map_kern_prealloc => is simplified to be
+>     int blk_rq_map_bio(struct request_queue *q, struct request *rq,
+> 		       struct bio *bio);
+> 
+> * The extra checks currently inside blk_rq_map_kern_prealloc are moved
+>   to bio_map_kern_prealloc()
+> 
+> * Users call bio_map_kern_prealloc() directly and then use blk_rq_map_bio()
+>   in a two stage process.
+> 
+> So blk_rq_map_bio becomes a BLOCK_PC command's way of a
+> pre-allocated bio the way FS_PC commands use generic_make_request.
 
-Please don't use attachments ;)
+Sounds good.  I'll make the change.
 
-> I would appreciate any comment or directions you have if you think that this is the
->
-> wrong approach to tackle this problem.
+> Thanks for doing all this. BTW' how close are we to remove req->data
+> and req->buffer
 
-Metzger, this all is a black magic to me, I don't even know what bts does.
-But at least some bits doesn't look right to me.
+Those patches will be going out later today.  It will also kill
+rq->hard_* and rq->*nr_sectors.  Single byte-granual data length for
+all along with single way to carray data via bio! :-)
 
-> +static void ptrace_bts_exit_tracer(void)
->  {
-> +	struct task_struct *child, *n;
-> +
->  	/*
-> -	 * Ptrace_detach() races with ptrace_untrace() in case
-> -	 * the child dies and is reaped by another thread.
-> +	 * We must not hold the tasklist_lock when we release the bts
-> +	 * tracer, since we need to make sure the cpu executing the
-> +	 * tracee stops tracing before we may free the trace buffer.
->  	 *
-> -	 * We only do the memory accounting at this point and
-> -	 * leave the buffer deallocation and the bts tracer
-> -	 * release to ptrace_bts_untrace() which will be called
-> -	 * later on with tasklist_lock held.
-> +	 * read_lock(&tasklist_lock) and smp_call_function() may
-> +	 * deadlock with write_lock_irq(&tasklist_lock).
-> +	 *
-> +	 * As long as we're the only one modifying our list of traced
-> +	 * children, we should be safe, since we're currently busy.
->  	 */
-> -	release_locked_buffer(child->bts_buffer, child->bts_size);
-> +	list_for_each_entry_safe(child, n, &current->ptraced, ptrace_entry) {
+Thanks.
 
-It is not safe to iterate over current->ptraced lockless, the comment
-is not right. Anoter subthread can reap the dead tracee, or at least
-do ptrace_unlink() if the tracee is not the child of our thread group.
-
-> +static void ptrace_bts_exit_tracee(void)
-> +{
-> +	struct mm_struct *mm = NULL;
-> +
-> +	/*
-> +	 * This code may race with ptrace reparenting.
-> +	 *
-> +	 * We hold the tasklist lock while we check whether we're
-> +	 * ptraced and grab our ptracer's mm.
-> +	 *
-> +	 * It does not really matter if we're reparented,
-> +	 * afterwards. We hold onto the correct mm.
-> +	 *
-> +	 * If we're reparented before we get the tasklist_lock, our
-> +	 * former ptrace parent will release the bts tracer.
-> +	 */
-> +	write_lock_irq(&tasklist_lock);
-> +	if (current->ptrace)
-> +		mm = get_task_mm(current->parent);
-
-We can't take task_lock() (called by get_task_mm) under write_lock(tasklist),
-this is deadlockable. Afaics, read_lock() is enough here, in that case it is
-safe to call get_task_mm().
-
-> @@ -752,6 +752,14 @@ void ds_release_bts(struct bts_tracer *t
->
->  	ds_suspend_bts(tracer);
->
-> +	/*
-> +	 * We must wait for the suspend to take effect before we may
-> +	 * free the tracer and the ds configuration.
-> +	 */
-> +	if (tracer->ds.context->task &&
-> +	    (tracer->ds.context->task != current))
-> +		wait_task_inactive(tracer->ds.context->task, 0);
-
-I am not sure I understand the problem. From the changelog:
-
-	If the children are currently executing, the buffer
-	may be freed while the hardware is still tracing.
-	This might cause the hardware to overwrite memory.
-
-So, the problem is that ds.context->task must not be running before we
-can start to disable/free ds, yes? Something like ds_switch_to() should
-be completed, right?
-
-In that case I don't really understand how wait_task_inactive() can help.
-If the task is killed it can be scheduled again, right after
-wait_task_inactive() returns.
-
-Also. This function is called from ptrace_bts_exit_tracer(), when the
-tracee is not stopped. In this case wait_task_inactive() can spin forever.
-For example, if the tracee simply does "for (;;) ;" it never succeeds.
-
-
-If my understanding of the problem is wrong, could you please explain
-it for dummies?
-
-Oleg.
-
+-- 
+tejun
