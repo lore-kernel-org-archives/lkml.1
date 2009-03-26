@@ -1,56 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754832AbZCZWtm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754847AbZCZWvF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754832AbZCZWtm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Mar 2009 18:49:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752260AbZCZWtb
+	id S1754847AbZCZWvF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Mar 2009 18:51:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752773AbZCZWux
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Mar 2009 18:49:31 -0400
-Received: from mail-fx0-f158.google.com ([209.85.220.158]:33972 "EHLO
-	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751686AbZCZWta (ORCPT
+	Thu, 26 Mar 2009 18:50:53 -0400
+Received: from outbound-mail-23.bluehost.com ([69.89.21.18]:38876 "HELO
+	outbound-mail-23.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752260AbZCZWuw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Mar 2009 18:49:30 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent;
-        b=fIEIG1NeDUfg/mQ+mCBt3VS8vt6UNl8AnDDgKHZTFLBsHmuHUiV3qP/JQkh/ycwEaj
-         CnKnRZxqix+o5A8wMbJujjWg/nJQ01MxyaOatm09WJ6/pDMXc7fPIlYYqF5AFhw9Eh4H
-         pbaLFvwYGIi7J4ZqhYmBkiqKCuHVlO3GLTI9k=
-Date: Fri, 27 Mar 2009 01:49:19 +0300
-From: Alexander Beregalov <a.beregalov@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org, x86@kernel.org
-Subject: [PATCH 2.6.30-git] x86: visws: fix UP build
-Message-ID: <20090326224919.GA31233@orion>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.19 (2009-01-05)
+	Thu, 26 Mar 2009 18:50:52 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
+	b=qjHIHV05n49P+kGrACZ7qYu2GP4c4shJiFms4A6cUh+AxmFCYMN64aojkVDqslTGR1n0ixPLWpE69GXmAL/u/9PI0guIQjEoTELRew1obWj8wNAdTcT0RvbwOcqOVsLC;
+Date: Thu, 26 Mar 2009 15:50:48 -0700
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Yu Zhao <yu.zhao@intel.com>
+Cc: "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH v12 1/8] PCI: initialize and release SR-IOV capability
+Message-ID: <20090326155048.4a8f9d36@hobbes>
+In-Reply-To: <20090321140511.GA24964@yzhao-otc.sh.intel.com>
+References: <1237519518-24048-1-git-send-email-yu.zhao@intel.com>
+	<1237519518-24048-2-git-send-email-yu.zhao@intel.com>
+	<20090320105409.5ed80885@hobbes.lan>
+	<20090321140511.GA24964@yzhao-otc.sh.intel.com>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-arch/x86/kernel/visws_quirks.c: In function 'visws_find_smp_config':
-arch/x86/kernel/visws_quirks.c:229: error: 'setup_max_cpus' undeclared
+On Sat, 21 Mar 2009 22:05:11 +0800
+Yu Zhao <yu.zhao@intel.com> wrote:
 
-Signed-off-by: Alexander Beregalov <a.beregalov@gmail.com>
----
+> On Sat, Mar 21, 2009 at 01:54:09AM +0800, Jesse Barnes wrote:
+> > On Fri, 20 Mar 2009 11:25:11 +0800
+> > Yu Zhao <yu.zhao@intel.com> wrote:
+> > 
+> > > If a device has the SR-IOV capability, initialize it (set the ARI
+> > > Capable Hierarchy in the lowest numbered PF if necessary;
+> > > calculate the System Page Size for the VF MMIO, probe the VF
+> > > Offset, Stride and BARs). A lock for the VF bus allocation is
+> > > also initialized if a PF is the lowest numbered PF.
+> > > 
+> > > Reviewed-by: Matthew Wilcox <willy@linux.intel.com>
+> > > Signed-off-by: Yu Zhao <yu.zhao@intel.com>
+> > 
+> > I applied this series to my linux-next branch, but there were a few
+> > conflicts here and there, so please check it out.  Looks like from
+> > start to finish this took about 6 months to get banged into shape,
+> > thanks for staying on it, Yu!
+> 
+> Yes, I checked them and found there is conflict between the SR-IOV
+> changes and Yinghai's 'PCI/x86: detect host bridge config space size
+> w/o using quirks'. Following is the fix, thanks!
+> 
+> 
+> New pci_cfg_space_size() needs invalid pdev->class, put it in the
+> right place in the pci_setup_device().
+> 
+> Signed-off-by: Yu Zhao <yu.zhao@intel.com>
 
- arch/x86/kernel/visws_quirks.c |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
+Applied, thanks Yu.
 
-diff --git a/arch/x86/kernel/visws_quirks.c b/arch/x86/kernel/visws_quirks.c
-index d801d06..f8f41c6 100644
---- a/arch/x86/kernel/visws_quirks.c
-+++ b/arch/x86/kernel/visws_quirks.c
-@@ -226,8 +226,10 @@ static int __init visws_find_smp_config(unsigned int reserve)
- 		ncpus = CO_CPU_MAX;
- 	}
- 
-+#ifdef CONFIG_SMP
- 	if (ncpus > setup_max_cpus)
- 		ncpus = setup_max_cpus;
-+#endif
- 
- #ifdef CONFIG_X86_LOCAL_APIC
- 	smp_found_config = 1;
+-- 
+Jesse Barnes, Intel Open Source Technology Center
