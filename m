@@ -1,65 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757666AbZCZQJb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759021AbZCZQKd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757666AbZCZQJb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Mar 2009 12:09:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752583AbZCZQJY
+	id S1759021AbZCZQKd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Mar 2009 12:10:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757097AbZCZQKY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Mar 2009 12:09:24 -0400
-Received: from tx2ehsobe004.messaging.microsoft.com ([65.55.88.14]:29509 "EHLO
-	TX2EHSOBE007.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751388AbZCZQJX (ORCPT
+	Thu, 26 Mar 2009 12:10:24 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:44668 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754924AbZCZQKX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Mar 2009 12:09:23 -0400
-X-BigFish: VPS-40(zz1432R62a3L98dR936eQ4015M1805Mzz1202hzzz32i6bh43j61h)
-X-Spam-TCS-SCL: 0:0
-X-WSS-ID: 0KH4FIV-03-KUP-01
-Date: Thu, 26 Mar 2009 17:08:56 +0100
-From: Robert Richter <robert.richter@amd.com>
-To: Jaswinder Singh Rajput <jaswinder@kernel.org>
-CC: Ingo Molnar <mingo@elte.hu>, x86 maintainers <x86@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>, Andi Kleen <andi@firstfloor.org>,
-       Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: [git-pull -tip] x86: unification and cleanup patches 20090326
-Message-ID: <20090326160856.GF3226@erda.amd.com>
-References: <1238080231.2852.4.camel@ht.satnam>
+	Thu, 26 Mar 2009 12:10:23 -0400
+Date: Thu, 26 Mar 2009 16:10:19 +0000
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Hua Zhong <hzhong@gmail.com>, Steven Rostedt <rostedt@goodmis.org>,
+       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Roland McGrath <roland@redhat.com>,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       Steven Rostedt <srostedt@redhat.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Matt Mackall <mpm@selenic.com>
+Subject: Re: [PATCH 2/5] mm: remove unlikly NULL from kfree
+Message-ID: <20090326161019.GT28946@ZenIV.linux.org.uk>
+References: <20090325051920.406564281@goodmis.org> <20090325052023.071564146@goodmis.org> <84144f020903250034j24e1782bt5f73809b9349346c@mail.gmail.com> <009101c9ad20$1ae231c0$50a69540$@com> <1237968394.30175.12.camel@penberg-laptop> <84144f020903250651o13c723cgf64643091459a5ac@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1238080231.2852.4.camel@ht.satnam>
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-OriginalArrivalTime: 26 Mar 2009 16:08:57.0530 (UTC) FILETIME=[2B0551A0:01C9AE2D]
+In-Reply-To: <84144f020903250651o13c723cgf64643091459a5ac@mail.gmail.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 26.03.09 20:40:31, Jaswinder Singh Rajput wrote:
-> Individual log and patches are available at:
-> http://git.kernel.org/?p=linux/kernel/git/jaswinder/linux-2.6-tip.git;a=shortlog;h=x86/core
-> 
-> The following changes since commit 29219683c46cb89edf5c58418b5305b14646d030:
->   Ingo Molnar (1):
->         Merge branches 'x86/apic', 'x86/cleanups', 'x86/mm', 'x86/pat', 'x86/setup' and 'x86/signal'; commit 'v2.6.29' into x86/core
-> 
-> are available in the git repository at:
-> 
->   git://git.kernel.org/pub/scm/linux/kernel/git/jaswinder/linux-2.6-tip.git x86/core
-> 
-> Jaswinder Singh Rajput (3):
->       x86: unification of cpu/bugs.c
->       x86: cpu/bugs.c cleanup
->       x86: unification of module.c
+On Wed, Mar 25, 2009 at 03:51:49PM +0200, Pekka Enberg wrote:
+> OK, so according to Steven, audit_syscall_exit() is one such call-site
+> that shows up in the traces. I don't really understand what's going on
+> there but if it is sane, maybe that warrants the removal of unlikely()
+> from kfree(). Hmm?
 
-Jaswinder,
+*Shrug*
 
-again, please send numbered patches to the list instead of a complete
-diff.
+We certainly can add explicit check, but that'll keep asking for
+patches "removing useless check".  The same applies to other places,
+really.
 
-Thanks,
+And making kfree(NULL) break will keep reintroducing bugs, since people
+will expect the behaviour of free(3)...
 
--Robert
-
--- 
-Advanced Micro Devices, Inc.
-Operating System Research Center
-email: robert.richter@amd.com
-
+I don't have any serious objections to adding a check there; indeed,
+the normal case there (
+                if (context->state != AUDIT_RECORD_CONTEXT) {
+                        kfree(context->filterkey);
+                        context->filterkey = NULL;
+                }
+) is context->state != AUDIT_RECORD_CONTEXT, context->filterkey == NULL,
+so it might be worth turning into
+		if (unlikely(context->filterkey)) {
+			if (context->state != AUDIT_RECORD_CONTEXT) {
+				kfree(context->filterkey);
+				context->filterkey = NULL;
+			}
+		}
+anyway.  Just dubious about the goal in general...
