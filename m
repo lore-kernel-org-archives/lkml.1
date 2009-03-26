@@ -1,66 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762081AbZCZX00@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762125AbZCZX1I@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762081AbZCZX00 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Mar 2009 19:26:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762007AbZCZXZx
+	id S1762125AbZCZX1I (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Mar 2009 19:27:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760407AbZCZX0v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Mar 2009 19:25:53 -0400
-Received: from sj-iport-6.cisco.com ([171.71.176.117]:20855 "EHLO
-	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760227AbZCZXZv (ORCPT
+	Thu, 26 Mar 2009 19:26:51 -0400
+Received: from mail-fx0-f158.google.com ([209.85.220.158]:48766 "EHLO
+	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758629AbZCZX0u (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Mar 2009 19:25:51 -0400
-X-IronPort-AV: E=Sophos;i="4.38,429,1233532800"; 
-   d="scan'208";a="274965075"
-From: Roland Dreier <rdreier@cisco.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: David Miller <davem@davemloft.net>,
-       Andrew Morton <akpm@linux-foundation.org>, netdev@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: RDMA/nes: Fix mis-merge
-References: <20090326.020714.36421849.davem@davemloft.net>
-	<20090326.152515.43533230.davem@davemloft.net>
-	<alpine.LFD.2.00.0903261555290.3032@localhost.localdomain>
-X-Message-Flag: Warning: May contain useful information
-Date: Thu, 26 Mar 2009 16:25:49 -0700
-In-Reply-To: <alpine.LFD.2.00.0903261555290.3032@localhost.localdomain> (Linus
-	Torvalds's message of "Thu, 26 Mar 2009 15:56:24 -0700 (PDT)")
-Message-ID: <adahc1fuarm.fsf_-_@cisco.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+	Thu, 26 Mar 2009 19:26:50 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent;
+        b=lj/RvDLwihzq6w6o1anM7Wrej0qnr0PAIlCNNjE2z952vKhvdzVX01FOreNjs+hAb9
+         7AIfb/SfWxbdCPlEVHneXbzot491An+H7MYq0iKPzsRgv1TYNTyg+Py04Ub2NFg2aba0
+         iBLitWK0fbiMUpIWd6+LJmqIaysftV1D/KmxU=
+Date: Fri, 27 Mar 2009 02:34:12 +0300
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: akpm@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] Remove INIT_KIOCTX
+Message-ID: <20090326233412.GA26012@x200.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 26 Mar 2009 23:25:49.0805 (UTC) FILETIME=[32C111D0:01C9AE6A]
-Authentication-Results: sj-dkim-2; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim2002 verified; ); 
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When net-next and infiniband were merged upstream, each branch deleted
-one of a pair of adjacent lines from nes_nic.c, but when Linus fixed the
-conflict up, he brought back both of the lines.  Fix up to the intended
-final tree state.
+Unused after 20dcae32439384b6863c626bb3b2a09bed65b33e aka
+"[PATCH] aio: remove kioctx from mm_struct".
+
+Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
 ---
- > Well, I merged infiniband, and that caused more conflicts. I fixed them 
- > up, but people need to double-check my fixes.
 
-Looks like you mismerged one file -- each side deleted one line right
-next to each other, but your merge left both lines in.  I think the
-patch below is needed.  (The cxgb3 fix looks correct)
+ include/linux/init_task.h |   13 -------------
+ 1 file changed, 13 deletions(-)
 
- drivers/infiniband/hw/nes/nes_nic.c |    2 --
- 1 files changed, 0 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/infiniband/hw/nes/nes_nic.c b/drivers/infiniband/hw/nes/nes_nic.c
-index 8d3e4c6..ecb1f6f 100644
---- a/drivers/infiniband/hw/nes/nes_nic.c
-+++ b/drivers/infiniband/hw/nes/nes_nic.c
-@@ -1602,8 +1602,6 @@ struct net_device *nes_netdev_init(struct nes_device *nesdev,
- 	netif_napi_add(netdev, &nesvnic->napi, nes_netdev_poll, 128);
- 	nes_debug(NES_DBG_INIT, "Enabling VLAN Insert/Delete.\n");
- 	netdev->features |= NETIF_F_HW_VLAN_TX | NETIF_F_HW_VLAN_RX;
--	netdev->vlan_rx_register = nes_netdev_vlan_rx_register;
--	netdev->features |= NETIF_F_LLTX;
+--- a/include/linux/init_task.h
++++ b/include/linux/init_task.h
+@@ -14,19 +14,6 @@
+ extern struct files_struct init_files;
+ extern struct fs_struct init_fs;
  
- 	/* Fill in the port structure */
- 	nesvnic->netdev = netdev;
+-#define INIT_KIOCTX(name, which_mm) \
+-{							\
+-	.users		= ATOMIC_INIT(1),		\
+-	.dead		= 0,				\
+-	.mm		= &which_mm,			\
+-	.user_id	= 0,				\
+-	.next		= NULL,				\
+-	.wait		= __WAIT_QUEUE_HEAD_INITIALIZER(name.wait), \
+-	.ctx_lock	= __SPIN_LOCK_UNLOCKED(name.ctx_lock), \
+-	.reqs_active	= 0U,				\
+-	.max_reqs	= ~0U,				\
+-}
+-
+ #define INIT_MM(name) \
+ {			 					\
+ 	.mm_rb		= RB_ROOT,				\
