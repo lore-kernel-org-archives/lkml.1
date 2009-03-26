@@ -1,67 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757046AbZCZAcv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756366AbZCZAdj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757046AbZCZAcv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 20:32:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753164AbZCZAcm
+	id S1756366AbZCZAdj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 20:33:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754077AbZCZAda
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 20:32:42 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:54142 "EHLO mx2.redhat.com"
+	Wed, 25 Mar 2009 20:33:30 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:54155 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753248AbZCZAcl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 20:32:41 -0400
-Message-ID: <49CACC4A.2080600@redhat.com>
-Date: Wed, 25 Mar 2009 20:28:58 -0400
+	id S1752970AbZCZAd3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Mar 2009 20:33:29 -0400
+Message-ID: <49CACD0B.4060901@redhat.com>
+Date: Wed, 25 Mar 2009 20:32:11 -0400
 From: Ric Wheeler <rwheeler@redhat.com>
 User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Jeff Garzik <jeff@garzik.org>, Theodore Tso <tytso@mit.edu>,
-       Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Nick Piggin <npiggin@suse.de>,
-       David Rees <drees76@gmail.com>, Jesper Krogh <jesper@krogh.cc>,
+To: Bron Gondwana <brong@fastmail.fm>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       Theodore Tso <tytso@mit.edu>, David Rees <drees76@gmail.com>,
+       Jesper Krogh <jesper@krogh.cc>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Subject: Re: Linux 2.6.29
-References: <20090324093245.GA22483@elte.hu> <20090324101011.6555a0b9@lxorguk.ukuu.org.uk> <20090324103111.GA26691@elte.hu> <20090324132032.GK5814@mit.edu> <alpine.LFD.2.00.0903241053200.3032@localhost.localdomain> <20090324184549.GE32307@mit.edu> <alpine.LFD.2.00.0903241218130.3032@localhost.localdomain> <49C93AB0.6070300@garzik.org> <20090325093913.GJ27476@kernel.dk> <49CA86BD.6060205@garzik.org> <20090325194341.GB27476@kernel.dk> <49CA9346.6040108@garzik.org> <alpine.LFD.2.00.0903251337410.3032@localhost.localdomain> <49CA9AD2.1080402@redhat.com> <alpine.LFD.2.00.0903251600310.3032@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.00.0903251600310.3032@localhost.localdomain>
+References: <alpine.LFD.2.00.0903231617550.3032@localhost.localdomain> <49C87B87.4020108@krogh.cc> <72dbd3150903232346g5af126d7sb5ad4949a7b5041f@mail.gmail.com> <49C88C80.5010803@krogh.cc> <72dbd3150903241200v38720ca0x392c381f295bdea@mail.gmail.com> <20090325183011.GN32307@mit.edu> <alpine.LFD.2.00.0903251139260.3032@localhost.localdomain> <20090325220530.GR32307@mit.edu> <alpine.LFD.2.00.0903251622420.3032@localhost.localdomain> <20090325234604.GA14828@brong.net>
+In-Reply-To: <20090325234604.GA14828@brong.net>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
-> On Wed, 25 Mar 2009, Ric Wheeler wrote:
+Bron Gondwana wrote:
+> On Wed, Mar 25, 2009 at 04:23:08PM -0700, Linus Torvalds wrote:
 >   
->> One concern with doing this above the file system is that you are not in the
->> context of a transaction so you have no clean promises about what is on disk
->> and persistent when. Flushing the cache is primitive at best, but the way
->> barriers work today is designed to give the transactions some pretty critical
->> ordering semantics for journalling file systems at least.
+>> On Wed, 25 Mar 2009, Theodore Tso wrote:
+>>     
+>>>> The problem being that unlike the ratio, there's no sane default value 
+>>>> that you can at least argue is not _entirely_ pointless.
+>>>>         
+>>> Well, if the maximum time that someone wants to wait for an fsync() to
+>>> return is one second, and the RAID array can write 100MB/sec
+>>>       
+>> How are you going to tell the kernel that the RAID array can write 
+>> 100MB/s?
 >>
->> I don't see how you could use this approach to make a really robust, failure
->> proof storage system, but it might appear to work most of the time for most
->> people :-)
+>> The kernel has no idea.
 >>     
 >
-> You just do a write barrier after doing all the filesystem writing, and 
-> you return with the guarantee that all the writes the filesystem did are 
-> actually on disk.
+> Not at boot up, but after it's been using the RAID array for a little
+> while it could...
 >
+> Bron (... imagining a tunable "max_fsync_wait_target_centisecs = 100" 
+>       which caused the kernel to notice how long flushes were taking
+>       and tune its buffer sizes to be approximately right over time )
 >   
-In this case, you have not gained anything  - same number of barrier 
-operations/cache flushes and looser semantics for the transactions?
-> No gray areas. No questions. No "might appear to work". 
->
-> Sure, there might be other writes that got flushed _too_, but nobody 
-> cares. If you have a crash later on, that's always true - you don't get 
-> crashes at nice well-defined points.
->
-> 			Linus
->   
-This is pretty much how write barriers work today - you carry down other 
-transactions (even for other partitions on the same disk) with you...
+This tuning logic is the core of what Josef Bacik did for the 
+transaction batching code for ext4....
 
 ric
 
