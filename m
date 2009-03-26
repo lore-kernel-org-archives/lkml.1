@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756843AbZCZBIk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751985AbZCZBIz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756843AbZCZBIk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 21:08:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753871AbZCZBIQ
+	id S1751985AbZCZBIz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 21:08:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754237AbZCZBIR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 21:08:16 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:37900 "EHLO
+	Wed, 25 Mar 2009 21:08:17 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:37912 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752095AbZCZBIO (ORCPT
+	with ESMTP id S1753248AbZCZBIP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 21:08:14 -0400
-Message-Id: <20090326010811.510051401@goodmis.org>
+	Wed, 25 Mar 2009 21:08:15 -0400
+Message-Id: <20090326010811.319344597@goodmis.org>
 References: <20090326010737.611522983@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Wed, 25 Mar 2009 21:07:39 -0400
+Date: Wed, 25 Mar 2009 21:07:38 -0400
 From: Steven Rostedt <rostedt@goodmis.org>
 To: linux-kernel@vger.kernel.org
 Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
@@ -22,82 +22,181 @@ Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
        Frederic Weisbecker <fweisbec@gmail.com>,
        Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
        Steven Rostedt <srostedt@redhat.com>
-Subject: [PATCH 2/2] tracing: add average time in function to function profiler
-Content-Disposition: inline; filename=0002-tracing-add-average-time-in-function-to-function-pr.patch
+Subject: [PATCH 1/2] tracing: remove on the fly allocator from function profiler
+Content-Disposition: inline; filename=0001-tracing-remove-on-the-fly-allocator-from-function-p.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Steven Rostedt <srostedt@redhat.com>
 
-Show the average time in the function (Time / Hit)
+Impact: safer code
 
-  Function                               Hit    Time            Avg
-  --------                               ---    ----            ---
-  mwait_idle                              51    140326.6 us     2751.503 us
-  smp_apic_timer_interrupt                47    3517.735 us     74.845 us
-  schedule                                10    2738.754 us     273.875 us
-  __schedule                              10    2732.857 us     273.285 us
-  hrtimer_interrupt                       47    1896.104 us     40.342 us
-  irq_exit                                56    1711.833 us     30.568 us
-  __run_hrtimer                           47    1315.589 us     27.991 us
-  tick_sched_timer                        47    1138.690 us     24.227 us
-  do_softirq                              56    1116.829 us     19.943 us
-  __do_softirq                            56    1066.932 us     19.052 us
-  do_IRQ                                   9    926.153 us      102.905 us
+The on the fly allocator for the function profiler was to save
+memory. But at the expense of stability. Although it survived several
+tests, allocating from the function tracer is just too risky, just
+to save space.
+
+This patch removes the allocator and simply allocates enough entries
+at start up.
+
+Each function gets a profiling structure of 40 bytes. With an average
+of 20K functions, and this is for each CPU, we have 800K per online
+CPU. This is not too bad, at least for non-embedded.
 
 Signed-off-by: Steven Rostedt <srostedt@redhat.com>
 ---
- kernel/trace/ftrace.c |   21 ++++++++++++++-------
- 1 files changed, 14 insertions(+), 7 deletions(-)
+ kernel/trace/ftrace.c |   76 +++++++++++++++++++++++++++---------------------
+ 1 files changed, 43 insertions(+), 33 deletions(-)
 
 diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
-index 4d90c91..c7f4a4b 100644
+index a141d84..4d90c91 100644
 --- a/kernel/trace/ftrace.c
 +++ b/kernel/trace/ftrace.c
-@@ -347,8 +347,10 @@ static int function_stat_cmp(void *p1, void *p2)
- static int function_stat_headers(struct seq_file *m)
+@@ -401,6 +401,8 @@ static void ftrace_profile_reset(struct ftrace_profile_stat *stat)
+ int ftrace_profile_pages_init(struct ftrace_profile_stat *stat)
  {
- #ifdef CONFIG_FUNCTION_GRAPH_TRACER
--	seq_printf(m, "  Function                               Hit    Time\n"
--		      "  --------                               ---    ----\n");
-+	seq_printf(m, "  Function                               "
-+		   "Hit    Time            Avg\n"
-+		      "  --------                               "
-+		   "---    ----            ---\n");
- #else
- 	seq_printf(m, "  Function                               Hit\n"
- 		      "  --------                               ---\n");
-@@ -361,12 +363,9 @@ static int function_stat_show(struct seq_file *m, void *v)
- 	struct ftrace_profile *rec = v;
- 	char str[KSYM_SYMBOL_LEN];
- #ifdef CONFIG_FUNCTION_GRAPH_TRACER
--	static struct trace_seq s;
- 	static DEFINE_MUTEX(mutex);
--
--	mutex_lock(&mutex);
--	trace_seq_init(&s);
--	trace_print_graph_duration(rec->time, &s);
-+	static struct trace_seq s;
-+	unsigned long long avg;
- #endif
+ 	struct ftrace_profile_page *pg;
++	int functions;
++	int pages;
+ 	int i;
  
- 	kallsyms_lookup(rec->ip, NULL, NULL, NULL, str);
-@@ -374,6 +373,14 @@ static int function_stat_show(struct seq_file *m, void *v)
+ 	/* If we already allocated, do nothing */
+@@ -411,22 +413,46 @@ int ftrace_profile_pages_init(struct ftrace_profile_stat *stat)
+ 	if (!stat->pages)
+ 		return -ENOMEM;
  
- #ifdef CONFIG_FUNCTION_GRAPH_TRACER
- 	seq_printf(m, "    ");
-+	avg = rec->time;
-+	do_div(avg, rec->counter);
++#ifdef CONFIG_DYNAMIC_FTRACE
++	functions = ftrace_update_tot_cnt;
++#else
++	/*
++	 * We do not know the number of functions that exist because
++	 * dynamic tracing is what counts them. With past experience
++	 * we have around 20K functions. That should be more than enough.
++	 * It is highly unlikely we will execute every function in
++	 * the kernel.
++	 */
++	functions = 20000;
++#endif
 +
-+	mutex_lock(&mutex);
-+	trace_seq_init(&s);
-+	trace_print_graph_duration(rec->time, &s);
-+	trace_seq_puts(&s, "    ");
-+	trace_print_graph_duration(avg, &s);
- 	trace_print_seq(m, &s);
- 	mutex_unlock(&mutex);
- #endif
+ 	pg = stat->start = stat->pages;
+ 
+-	/* allocate 10 more pages to start */
+-	for (i = 0; i < 10; i++) {
++	pages = DIV_ROUND_UP(functions, PROFILES_PER_PAGE);
++
++	for (i = 0; i < pages; i++) {
+ 		pg->next = (void *)get_zeroed_page(GFP_KERNEL);
+-		/*
+-		 * We only care about allocating profile_pages, if
+-		 * we failed to allocate here, hopefully we will allocate
+-		 * later.
+-		 */
+ 		if (!pg->next)
+-			break;
++			goto out_free;
+ 		pg = pg->next;
+ 	}
+ 
+ 	return 0;
++
++ out_free:
++	pg = stat->start;
++	while (pg) {
++		unsigned long tmp = (unsigned long)pg;
++
++		pg = pg->next;
++		free_page(tmp);
++	}
++
++	free_page((unsigned long)stat->pages);
++	stat->pages = NULL;
++	stat->start = NULL;
++
++	return -ENOMEM;
+ }
+ 
+ static int ftrace_profile_init_cpu(int cpu)
+@@ -460,7 +486,7 @@ static int ftrace_profile_init_cpu(int cpu)
+ 			ftrace_profile_bits++;
+ 	}
+ 
+-	/* Preallocate a few pages */
++	/* Preallocate the function profiling pages */
+ 	if (ftrace_profile_pages_init(stat) < 0) {
+ 		kfree(stat->hash);
+ 		stat->hash = NULL;
+@@ -516,24 +542,21 @@ static void ftrace_add_profile(struct ftrace_profile_stat *stat,
+ 	hlist_add_head_rcu(&rec->node, &stat->hash[key]);
+ }
+ 
+-/* Interrupts must be disabled calling this */
++/*
++ * The memory is already allocated, this simply finds a new record to use.
++ */
+ static struct ftrace_profile *
+-ftrace_profile_alloc(struct ftrace_profile_stat *stat,
+-		     unsigned long ip, bool alloc_safe)
++ftrace_profile_alloc(struct ftrace_profile_stat *stat, unsigned long ip)
+ {
+ 	struct ftrace_profile *rec = NULL;
+ 
+-	/* prevent recursion */
++	/* prevent recursion (from NMIs) */
+ 	if (atomic_inc_return(&stat->disabled) != 1)
+ 		goto out;
+ 
+-	/* Try to always keep another page available */
+-	if (!stat->pages->next && alloc_safe)
+-		stat->pages->next = (void *)get_zeroed_page(GFP_ATOMIC);
+-
+ 	/*
+-	 * Try to find the function again since another
+-	 * task on another CPU could have added it
++	 * Try to find the function again since an NMI
++	 * could have added it
+ 	 */
+ 	rec = ftrace_find_profiled_func(stat, ip);
+ 	if (rec)
+@@ -555,29 +578,16 @@ ftrace_profile_alloc(struct ftrace_profile_stat *stat,
+ 	return rec;
+ }
+ 
+-/*
+- * If we are not in an interrupt, or softirq and
+- * and interrupts are disabled and preemption is not enabled
+- * (not in a spinlock) then it should be safe to allocate memory.
+- */
+-static bool ftrace_safe_to_allocate(void)
+-{
+-	return !in_interrupt() && irqs_disabled() && !preempt_count();
+-}
+-
+ static void
+ function_profile_call(unsigned long ip, unsigned long parent_ip)
+ {
+ 	struct ftrace_profile_stat *stat;
+ 	struct ftrace_profile *rec;
+ 	unsigned long flags;
+-	bool alloc_safe;
+ 
+ 	if (!ftrace_profile_enabled)
+ 		return;
+ 
+-	alloc_safe = ftrace_safe_to_allocate();
+-
+ 	local_irq_save(flags);
+ 
+ 	stat = &__get_cpu_var(ftrace_profile_stats);
+@@ -586,7 +596,7 @@ function_profile_call(unsigned long ip, unsigned long parent_ip)
+ 
+ 	rec = ftrace_find_profiled_func(stat, ip);
+ 	if (!rec) {
+-		rec = ftrace_profile_alloc(stat, ip, alloc_safe);
++		rec = ftrace_profile_alloc(stat, ip);
+ 		if (!rec)
+ 			goto out;
+ 	}
 -- 
 1.6.2
 
