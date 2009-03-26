@@ -1,79 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757132AbZCZMwY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756511AbZCZM4S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757132AbZCZMwY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Mar 2009 08:52:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753476AbZCZMwM
+	id S1756511AbZCZM4S (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Mar 2009 08:56:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754283AbZCZM4F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Mar 2009 08:52:12 -0400
-Received: from miranda.se.axis.com ([193.13.178.8]:56825 "EHLO
-	miranda.se.axis.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752669AbZCZMwL (ORCPT
+	Thu, 26 Mar 2009 08:56:05 -0400
+Received: from rcsinet11.oracle.com ([148.87.113.123]:42044 "EHLO
+	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755450AbZCZM4E (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Mar 2009 08:52:11 -0400
-X-Greylist: delayed 784 seconds by postgrey-1.27 at vger.kernel.org; Thu, 26 Mar 2009 08:52:10 EDT
-Date: Thu, 26 Mar 2009 13:38:53 +0100
-From: Jesper Nilsson <jesper.nilsson@axis.com>
-To: YOSHIFUJI Hideaki <yoshfuji@linux-ipv6.org>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Cc: Mikael Starvik <mikael.starvik@axis.com>
-Subject: ipv6: Plug sk_buff leak in ipv6_rcv (net/ipv6/ip6_input.c)
-Message-ID: <20090326123853.GW31562@axis.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 26 Mar 2009 08:56:04 -0400
+Subject: Re: [dm-devel] Barriers still not passing on simple dm devices...
+From: Chris Mason <chris.mason@oracle.com>
+To: Mikulas Patocka <mpatocka@redhat.com>
+Cc: Jens Axboe <jens.axboe@oracle.com>,
+       device-mapper development <dm-devel@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andi Kleen <ak@suse.de>
+In-Reply-To: <Pine.LNX.4.64.0903251825310.8027@hs20-bc2-1.build.redhat.com>
+References: <49C7DD3C.2020401@redhat.com>
+	 <Pine.LNX.4.64.0903241000010.29968@hs20-bc2-1.build.redhat.com>
+	 <20090324140524.GV27476@kernel.dk>
+	 <Pine.LNX.4.64.0903241010490.29968@hs20-bc2-1.build.redhat.com>
+	 <20090324143034.GW27476@kernel.dk>
+	 <Pine.LNX.4.64.0903241033070.4088@hs20-bc2-1.build.redhat.com>
+	 <20090324150517.GX27476@kernel.dk>
+	 <Pine.LNX.4.64.0903251106520.27750@hs20-bc2-1.build.redhat.com>
+	 <20090325152751.GV27476@kernel.dk>
+	 <Pine.LNX.4.64.0903251825310.8027@hs20-bc2-1.build.redhat.com>
+Content-Type: text/plain
+Date: Thu, 26 Mar 2009 08:55:34 -0400
+Message-Id: <1238072134.5676.12.camel@think.oraclecorp.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 
+Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt707.oracle.com [141.146.40.85]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090202.49CB7B4B.003A:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Wed, 2009-03-25 at 18:39 -0400, Mikulas Patocka wrote:
 
-Commit 778d80be52699596bf70e0eb0761cf5e1e46088d
-(ipv6: Add disable_ipv6 sysctl to disable IPv6 operaion on specific interface)
-seems to have introduced a leak of sk_buff's for ipv6 traffic,
-at least in some configurations where idev is NULL, or when ipv6
-is disabled via sysctl.
+> > The error handling is complex, no doubt
+> > about that. But the trial barrier test is pretty trivial and even could
+> > be easily abstracted out. If a later barrier write fails, then that's
+> > really no different than if a normal write fails. Error handling is not
+> > easy in that case.
+> 
+> I had a discussion with Andi about it some times ago. The conclusion was 
+> that all the current filesystems handle barriers failing in the middle of 
+> the operation without functionality loss, but it makes barriers useless 
+> for any performance-sensitive tasks (commits that wouldn't block 
+> concurrent activity). Non-blocking commits could only be implemented if 
+> barriers don't fail.
+> 
 
-The problem is that if the first condition of the if-statement
-returns non-NULL, it returns an skb with only one reference,
-and when the other conditions apply, execution jumps to the "out"
-label, which does not call kfree_skb for it.
+If a barrier fails at runtime, the filesystems do fall back to not doing
+barriers without real problems.  But, that's because they don't actually
+rely on the barriers to decide if an async commit is a good idea.
 
-To plug this leak, change to use the "drop" label instead.
-(this relies on it being ok to call kfree_skb on NULL)
-This also allows us to avoid calling rcu_read_unlock here,
-and removes the only user of the "out" label.
+One exception is reiserfs, which does one wait_on_buffer at a later time
+if barriers are on.  But, this isn't an async commit, this is just
+moving an unplug.
+
+In general, async commits happen with threads and they aren't related to
+barriers.  Barriers don't really give us error handling, and they are at
+the very end of a long chain of technical problems around commits that
+don't block concurrent activity.
+
+-chris
 
 
-Signed-off-by: Jesper Nilsson <jesper.nilsson@axis.com>
-
----
- ip6_input.c |    4 +---
- 1 file changed, 1 insertion(+), 3 deletions(-)
-
-diff --git a/net/ipv6/ip6_input.c b/net/ipv6/ip6_input.c
-index f171e8d..8f04bd9 100644
---- a/net/ipv6/ip6_input.c
-+++ b/net/ipv6/ip6_input.c
-@@ -75,8 +75,7 @@ int ipv6_rcv(struct sk_buff *skb, struct net_device *dev, struct packet_type *pt
- 	if ((skb = skb_share_check(skb, GFP_ATOMIC)) == NULL ||
- 	    !idev || unlikely(idev->cnf.disable_ipv6)) {
- 		IP6_INC_STATS_BH(net, idev, IPSTATS_MIB_INDISCARDS);
--		rcu_read_unlock();
--		goto out;
-+		goto drop;
- 	}
- 
- 	memset(IP6CB(skb), 0, sizeof(struct inet6_skb_parm));
-@@ -147,7 +146,6 @@ err:
- drop:
- 	rcu_read_unlock();
- 	kfree_skb(skb);
--out:
- 	return 0;
- }
- 
-
-/^JN - Jesper Nilsson
--- 
-               Jesper Nilsson -- jesper.nilsson@axis.com
