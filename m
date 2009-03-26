@@ -1,69 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757389AbZCZOVQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758363AbZCZOVh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757389AbZCZOVQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Mar 2009 10:21:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756782AbZCZOU6
+	id S1758363AbZCZOVh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Mar 2009 10:21:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757005AbZCZOV2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Mar 2009 10:20:58 -0400
-Received: from smtp.nokia.com ([192.100.122.233]:21047 "EHLO
-	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756528AbZCZOU5 (ORCPT
+	Thu, 26 Mar 2009 10:21:28 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:53923 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1757097AbZCZOV1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Mar 2009 10:20:57 -0400
-Message-ID: <49CB8F5A.4030400@nokia.com>
-Date: Thu, 26 Mar 2009 16:21:14 +0200
-From: Adrian Hunter <adrian.hunter@nokia.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Thu, 26 Mar 2009 10:21:27 -0400
+Date: Thu, 26 Mar 2009 10:21:23 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Tejun Heo <htejun@gmail.com>
+cc: "Eric W. Biederman" <ebiederm@xmission.com>, Alex Chiang <achiang@hp.com>,
+       <greg@kroah.com>, <cornelia.huck@de.ibm.com>, <kay.sievers@vrfy.org>,
+       <rusty@rustcorp.com.au>, <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC PATCH 0/3] sysfs: allow suicide
+In-Reply-To: <49CAF840.2030308@gmail.com>
+Message-ID: <Pine.LNX.4.44L0.0903261005530.2945-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-To: David Brownell <david-b@pacbell.net>
-CC: Liam Girdwood <lrg@slimlogic.co.uk>, Mark Brown <broonie@sirena.org.uk>,
-       LKML <linux-kernel@vger.kernel.org>,
-       linux-omap Mailing List <linux-omap@vger.kernel.org>
-Subject: Re: [PATCH] regulator: twl4030 VAUX3 supports 3.0V
-References: <49B11EB0.30809@nokia.com> <1237290190.6781.313.camel@vega.slimlogic.co.uk> <49C9EB17.2020408@nokia.com> <200903251003.29340.david-b@pacbell.net>
-In-Reply-To: <200903251003.29340.david-b@pacbell.net>
-Content-Type: text/plain; charset=iso-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 26 Mar 2009 14:20:24.0978 (UTC) FILETIME=[013CBF20:01C9AE1E]
-X-Nokia-AV: Clean
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From 51f946af56a5de9c25b2eb6e6a33660283f84195 Mon Sep 17 00:00:00 2001
-From: Adrian Hunter <adrian.hunter@nokia.com>
-Date: Fri, 6 Mar 2009 14:51:30 +0200
-Subject: [PATCH] regulator: twl4030 VAUX3 supports 3.0V
+On Thu, 26 Mar 2009, Tejun Heo wrote:
 
-TWL4030 and TWL5030 support 3.0V on VAUX3.
+> > The problem that I see is that we are missing support from the device
+> > model for hotunplug.  Running the device remove method from process
+> > context is required.  Typically hotplug controllers discover a
+> > device has been removed or will be removed in interrupt context.
+> > 
+> > Therefore every hotplug driver I have looked at has it's own workqueue
+> > to solve the problem of getting the notification of a hotplug event
+> > from an inappropriate context.
+> > 
+> > So the general problem that I see is that I need a solution to trigger
+> > a remove from interrupt context and that same solution will happen to
+> > work just fine for sysfs.
+> 
+> I think the problem is more driver domain specific and not quite sure
+> whether one size would fit all.  We have a lot of drivers in the tree.
+> I think the best approach would be trying to move upwards from the
+> bottom.  ie. Consolidate hotplug / error handling support from low
+> level drivers to specific driver subsystem, from driver subsystems to
+> higher layer (ie. block layer) and then see whether there can be more
+> commonalities which can be factored, but the chance is that once
+> things are pushed upwards enough, moving it into the kobject layer
+> probably wouldn't worth the trouble.  Well, it's all speculations at
+> this point tho.
 
-Signed-off-by: Adrian Hunter <adrian.hunter@nokia.com>
----
- drivers/regulator/twl4030-regulator.c |    5 ++++-
- 1 files changed, 4 insertions(+), 1 deletions(-)
+It sounds like Eric's point is that sysfs_schedule_callback() is a
+special-purpose interface devoted to sysfs, whereas a more generally
+useful interface would allow delayed unregistration of any struct
+device. (Or perhaps delayed invocation of an arbitrary function with a
+struct device as the argument, but unregistration is the single most
+important usage.)
 
-diff --git a/drivers/regulator/twl4030-regulator.c b/drivers/regulator/twl4030-regulator.c
-index f3ec98c..e2032fb 100644
---- a/drivers/regulator/twl4030-regulator.c
-+++ b/drivers/regulator/twl4030-regulator.c
-@@ -193,6 +193,9 @@ static int twl4030reg_set_mode(struct regulator_dev *rdev, unsigned mode)
-  *
-  * VSEL values documented as "TI cannot support these values" are flagged
-  * in these tables as UNSUP() values; we normally won't assign them.
-+ *
-+ * VAUX3 at 3V is incorrectly listed in some TI manuals as unsupported.
-+ * TI are revising the twl5030/tps659x0 specs to support that 3.0V setting.
-  */
- #ifdef CONFIG_TWL4030_ALLOW_UNSUPPORTED
- #define UNSUP_MASK	0x0000
-@@ -223,7 +226,7 @@ static const u16 VAUX2_VSEL_table[] = {
- };
- static const u16 VAUX3_VSEL_table[] = {
- 	1500, 1800, 2500, 2800,
--	UNSUP(3000), UNSUP(3000), UNSUP(3000), UNSUP(3000),
-+	3000, 3000, 3000, 3000,
- };
- static const u16 VAUX4_VSEL_table[] = {
- 	700, 1000, 1200, UNSUP(1300),
--- 
-1.5.6.3
+The actual interface wouldn't be very different from 
+sysfs_schedule_callback().  In fact, the only changes I see offhand are 
+that the new routine would accept a pointer to struct device instead of 
+a pointer to struct kobject and there wouldn't be any func argument.  
+
+The idea is that this would come in useful both for suicidal sysfs 
+attributes and for hot-unplug events detected by an interrupt handler.
+
+But there's something I'm not clear on.  If hot-unplug events are
+detected by an interrupt handler, then what about hot-plug events?  
+Wouldn't they be detected by the same interrupt handler?  Obviously you
+can't register new devices in interrupt context, so there must be a
+workqueue or kernel thread involved somewhere.  Shouldn't the two types
+of events be managed by the same workqueue/thread?
+
+Alan Stern
+
