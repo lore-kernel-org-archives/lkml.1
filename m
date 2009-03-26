@@ -1,146 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758599AbZCZOXV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757742AbZCZO00@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758599AbZCZOXV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Mar 2009 10:23:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757136AbZCZOXH
+	id S1757742AbZCZO00 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Mar 2009 10:26:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756831AbZCZO0S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Mar 2009 10:23:07 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:52411 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757119AbZCZOXF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Mar 2009 10:23:05 -0400
-Message-ID: <49CB8EF3.2020409@redhat.com>
-Date: Thu, 26 Mar 2009 10:19:31 -0400
-From: Ric Wheeler <rwheeler@redhat.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090303 Fedora/3.0-1.beta2.fc11 Thunderbird/3.0b2
-MIME-Version: 1.0
-To: Eric Sandeen <sandeen@sandeen.net>
-CC: Jeff Garzik <jeff@garzik.org>,
+	Thu, 26 Mar 2009 10:26:18 -0400
+Received: from casper.infradead.org ([85.118.1.10]:41243 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756400AbZCZO0S (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Mar 2009 10:26:18 -0400
+Date: Thu, 26 Mar 2009 07:27:07 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Jan Kara <jack@suse.cz>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       Theodore Tso <tytso@mit.edu>, Ingo Molnar <mingo@elte.hu>,
+       Theodore Tso <tytso@mit.edu>, Andrew Morton <akpm@linux-foundation.org>,
        Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
        Peter Zijlstra <a.p.zijlstra@chello.nl>, Nick Piggin <npiggin@suse.de>,
        David Rees <drees76@gmail.com>, Jesper Krogh <jesper@krogh.cc>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] issue storage device flush via sync_blockdev() (was Re:
- Linux 2.6.29)
-References: <20090324132032.GK5814@mit.edu> <alpine.LFD.2.00.0903241053200.3032@localhost.localdomain> <20090324184549.GE32307@mit.edu> <alpine.LFD.2.00.0903241218130.3032@localhost.localdomain> <49C93AB0.6070300@garzik.org> <20090325093913.GJ27476@kernel.dk> <49CA86BD.6060205@garzik.org> <20090325194341.GB27476@kernel.dk> <49CA9346.6040108@garzik.org> <alpine.LFD.2.00.0903251337410.3032@localhost.localdomain> <20090325212923.GA5620@havoc.gtf.org> <49CAA88B.1080102@sandeen.net> <49CAB957.4050402@garzik.org> <49CAE8E7.4010904@sandeen.net>
-In-Reply-To: <49CAE8E7.4010904@sandeen.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Oleg Nesterov <oleg@redhat.com>, Roland McGrath <roland@redhat.com>
+Subject: Re: ext3 IO latency measurements (was: Linux 2.6.29)
+Message-ID: <20090326072707.5a98242d@infradead.org>
+In-Reply-To: <20090326110815.GT27476@kernel.dk>
+References: <20090324041249.1133efb6.akpm@linux-foundation.org>
+	<20090325123744.GK23439@duck.suse.cz>
+	<20090325150041.GM32307@mit.edu>
+	<alpine.LFD.2.00.0903251008120.3032@localhost.localdomain>
+	<20090325185824.GO32307@mit.edu>
+	<alpine.LFD.2.00.0903251341050.3032@localhost.localdomain>
+	<20090325215137.GQ32307@mit.edu>
+	<alpine.LFD.2.00.0903251613300.3032@localhost.localdomain>
+	<20090325235041.GA11024@duck.suse.cz>
+	<20090326090630.GA9369@elte.hu>
+	<20090326110815.GT27476@kernel.dk>
+Organization: Intel
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 03/25/2009 10:31 PM, Eric Sandeen wrote:
-> Jeff Garzik wrote:
->    
->> Eric Sandeen wrote:
->>      
->
->    
->>> What about when you're running over a big raid device with
->>> battery-backed cache, and you trust the cache as much as much as the
->>> disks.  Wouldn't this unconditional cache flush be painful there on any
->>> of the callers even if they're rare?  (fs unmounts, freezes, unmounts,
->>> etc?  Or a fat filesystem on that device doing an fsync?)
->>>        
->> What exactly do you think sync_blockdev() does?  :)
->>      
->
-> It used to push os cached data to the storage.  Now it tells the storage
-> to flush cache too (with your patch).  This seems fine in general,
-> although it's not a panacea for all the various data integrity issues
-> that are being tossed about in this thread.  :)
->
->    
->> It is used right before a volume goes away.  If that's not a time to
->> flush the cache, I dunno what is.
->>
->> The _whole purpose_ of sync_blockdev() is to push out the data to
->> permanent storage.  Look at the users -- unmount volume, journal close,
->> etc.  Things that are OK to occur after those points include: power off,
->> device unplug, etc.
->>      
->
-> Sure.  But I was thinking about enterprise raids with battery backup
-> which may last for days.
->
-> But, ok, I wasn't thinking quite right about the unmount situations etc;
-> even on enterprise raids like this, flushing things out on unmount makes
-> sense in the case where you lose power post-unmount and can't restore
-> power before the battery backup dies.
->    
+On Thu, 26 Mar 2009 12:08:15 +0100
+Jens Axboe <jens.axboe@oracle.com> wrote:
+> 
+> Did you capture the trace of the long delays in the read test case? It
+> can be two things, at least. One is that each little read takes much
+> longer than it should, the other is that we get stuck waiting on a
+> dirty page and hence that slows down the reads a lot.
+> 
 
-Enterprise raid systems don't have this issue. They all have sufficient 
-battery power to safely destage the volatile cache to persistent storage 
-on power outage (i.e., they keep enough drives spinning and so on to 
-empty the cache).
+would be interesting to run latencytop during such runs...
 
-Hardware RAID cards that you have in some servers (not external RAID 
-arrays) would have this issue though and are probably fairly common.
 
-> I also wondered if a cache flush on one lun issues a cache flush for the
-> entire controller, or just for that lun.  Hopefully the latter, in which
-> case it's not as big a deal.
->    
-
-Probably just for that LUN - LUN's are usually independent in almost all 
-ways. Firmware of course could do anything, I would assume that most 
-high end arrays would probably ignore a flush command in any case.
-
->    
->> A secondary purpose of sync_blockdev() is as a hack, for simple/ancient
->> bdev-based filesystems that do not wish to bother with barriers and all
->> the associated complexity to tracking what writes do/do not need flushing.
->>      
->
-> Yep, I get that and it seems reasonable except ....
->
->    
->>> xfs, reiserfs, ext4 all avoid the blkdev flush on fsync if barriers are
->>> not enabled, I think for that reason...
->>>        
->> Enabling barriers causes slowdowns far greater than that of simply
->> causing fsync(2) to trigger FLUSH CACHE, because barriers imply FLUSH
->> CACHE issuance for all in-kernel filesystem journalled/atomic
->> transactions, in addition to whatever syscalls userspace is issuing.
->>
->> The number of FLUSH CACHES w/ barriers is orders of magnitude larger
->> than the number of fsync/fdatasync calls.
->>      
->
-> I understand all that.
->
-> My point is that the above filesystems (xfs, reiserfs, ext4) skip the
-> blkdev flush on fsync when barriers are explicitly disabled.
->
-> They do this because if an admin disables barriers, they are trusting
-> that the write cache is nonvolatile and will be able to destage fully
-> even if external power is lost for some time.
->
-> In that case you don't need a blkdev_issue_flush on fsync either (or are
-> at least willing to live with the diminished risk, thanks to the battery
-> backup), and on xfs, ext4 etc you can turn it off (it goes away w/ the
-> barriers off setting).  With this change to the simple generic fsync
-> path, you can't turn it off for those filesystems that use it for fsync.
->
-> But I suppose it's rare that anybody ever uses a filesystem which uses
-> this generic sync method on any sort of interesting storage like I'm
-> talking about, and it's not a big deal...  (or maybe that interesting
-> storage just ignores cache flushes anyway, I dunno).
->
-> My main concerns were that these extra cache flushes for fsync aren't
-> tunable, and that flushes on one lun might affect other luns.  I guess
-> I've talked myself out of those concerns in a couple different ways now.  ;)
->
-> -Eric
->    
-
-I do enthusiastically agree that we should not be doing barriers and the 
-blkdev flush for file systems that do barriers correctly.
-
-ric
-
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
