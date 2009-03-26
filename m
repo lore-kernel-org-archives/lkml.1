@@ -1,522 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761938AbZCZXZ7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762081AbZCZX00@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761938AbZCZXZ7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Mar 2009 19:25:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755413AbZCZXZq
+	id S1762081AbZCZX00 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Mar 2009 19:26:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762007AbZCZXZx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Mar 2009 19:25:46 -0400
-Received: from mail-ew0-f165.google.com ([209.85.219.165]:36075 "EHLO
-	mail-ew0-f165.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754266AbZCZXZp (ORCPT
+	Thu, 26 Mar 2009 19:25:53 -0400
+Received: from sj-iport-6.cisco.com ([171.71.176.117]:20855 "EHLO
+	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760227AbZCZXZv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Mar 2009 19:25:45 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        b=gUA68Q4UZyXyV2Hoq4CmXgpk8jojPCQ92p3ZasPgjVUuAVEdOIjOvCesp5BtWiSnUZ
-         7XBdnVvP7kply6iAXDWhkpmlXPxougueANjM61F+aVeZxhaqmeZxtRbunZ8/8E51aocv
-         THMCe/l5B8t+4hJUUjrNymEetkqJqzQjoJGxg=
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Steven Rostedt <rostedt@goodmis.org>, LKML <linux-kernel@vger.kernel.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>
-Subject: [PATCH] tracing/ftrace: factorize the tracing files creation
-Date: Fri, 27 Mar 2009 00:25:38 +0100
-Message-Id: <1238109938-11840-1-git-send-email-fweisbec@gmail.com>
-X-Mailer: git-send-email 1.6.1
+	Thu, 26 Mar 2009 19:25:51 -0400
+X-IronPort-AV: E=Sophos;i="4.38,429,1233532800"; 
+   d="scan'208";a="274965075"
+From: Roland Dreier <rdreier@cisco.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: David Miller <davem@davemloft.net>,
+       Andrew Morton <akpm@linux-foundation.org>, netdev@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: RDMA/nes: Fix mis-merge
+References: <20090326.020714.36421849.davem@davemloft.net>
+	<20090326.152515.43533230.davem@davemloft.net>
+	<alpine.LFD.2.00.0903261555290.3032@localhost.localdomain>
+X-Message-Flag: Warning: May contain useful information
+Date: Thu, 26 Mar 2009 16:25:49 -0700
+In-Reply-To: <alpine.LFD.2.00.0903261555290.3032@localhost.localdomain> (Linus
+	Torvalds's message of "Thu, 26 Mar 2009 15:56:24 -0700 (PDT)")
+Message-ID: <adahc1fuarm.fsf_-_@cisco.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-OriginalArrivalTime: 26 Mar 2009 23:25:49.0805 (UTC) FILETIME=[32C111D0:01C9AE6A]
+Authentication-Results: sj-dkim-2; header.From=rdreier@cisco.com; dkim=pass (
+	sig from cisco.com/sjdkim2002 verified; ); 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: cleanup
-
-Most of the tracing files creation follow the same pattern:
-
-ret = debugfs_create_file(...)
-if (!ret)
-	pr_warning("Couldn't create ... entry\n")
-
-Unify it!
-
-Reported-by: Ingo Molnar <mingo@elte.hu>
-Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
+When net-next and infiniband were merged upstream, each branch deleted
+one of a pair of adjacent lines from nes_nic.c, but when Linus fixed the
+conflict up, he brought back both of the lines.  Fix up to the intended
+final tree state.
 ---
- kernel/trace/ftrace.c              |   47 +++--------
- kernel/trace/ring_buffer.c         |    7 +-
- kernel/trace/trace.c               |  159 ++++++++++++++----------------------
- kernel/trace/trace.h               |    6 ++
- kernel/trace/trace_event_profile.c |    3 +-
- kernel/trace/trace_printk.c        |    6 +-
- kernel/trace/trace_stack.c         |   13 +--
- kernel/trace/trace_sysprof.c       |    6 +-
- 8 files changed, 90 insertions(+), 157 deletions(-)
+ > Well, I merged infiniband, and that caused more conflicts. I fixed them 
+ > up, but people need to double-check my fixes.
 
-diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
-index 874f16f..2b37bbb 100644
---- a/kernel/trace/ftrace.c
-+++ b/kernel/trace/ftrace.c
-@@ -764,7 +764,6 @@ static struct tracer_stat function_stats __initdata = {
- static void ftrace_profile_debugfs(struct dentry *d_tracer)
- {
- 	struct ftrace_profile_stat *stat;
--	struct dentry *entry;
- 	char *name;
- 	int ret;
- 	int cpu;
-@@ -798,11 +797,8 @@ static void ftrace_profile_debugfs(struct dentry *d_tracer)
- 		}
- 	}
- 
--	entry = debugfs_create_file("function_profile_enabled", 0644,
--				    d_tracer, NULL, &ftrace_profile_fops);
--	if (!entry)
--		pr_warning("Could not create debugfs "
--			   "'function_profile_enabled' entry\n");
-+	trace_create_file("function_profile_enabled", 0644,
-+			  d_tracer, NULL, &ftrace_profile_fops);
- }
- 
- #else /* CONFIG_FUNCTION_PROFILER */
-@@ -2698,38 +2694,23 @@ static const struct file_operations ftrace_graph_fops = {
- 
- static __init int ftrace_init_dyn_debugfs(struct dentry *d_tracer)
- {
--	struct dentry *entry;
- 
--	entry = debugfs_create_file("available_filter_functions", 0444,
--				    d_tracer, NULL, &ftrace_avail_fops);
--	if (!entry)
--		pr_warning("Could not create debugfs "
--			   "'available_filter_functions' entry\n");
-+	trace_create_file("available_filter_functions", 0444,
-+			d_tracer, NULL, &ftrace_avail_fops);
- 
--	entry = debugfs_create_file("failures", 0444,
--				    d_tracer, NULL, &ftrace_failures_fops);
--	if (!entry)
--		pr_warning("Could not create debugfs 'failures' entry\n");
-+	trace_create_file("failures", 0444,
-+			d_tracer, NULL, &ftrace_failures_fops);
- 
--	entry = debugfs_create_file("set_ftrace_filter", 0644, d_tracer,
--				    NULL, &ftrace_filter_fops);
--	if (!entry)
--		pr_warning("Could not create debugfs "
--			   "'set_ftrace_filter' entry\n");
-+	trace_create_file("set_ftrace_filter", 0644, d_tracer,
-+			NULL, &ftrace_filter_fops);
- 
--	entry = debugfs_create_file("set_ftrace_notrace", 0644, d_tracer,
-+	trace_create_file("set_ftrace_notrace", 0644, d_tracer,
- 				    NULL, &ftrace_notrace_fops);
--	if (!entry)
--		pr_warning("Could not create debugfs "
--			   "'set_ftrace_notrace' entry\n");
- 
- #ifdef CONFIG_FUNCTION_GRAPH_TRACER
--	entry = debugfs_create_file("set_graph_function", 0444, d_tracer,
-+	trace_create_file("set_graph_function", 0444, d_tracer,
- 				    NULL,
- 				    &ftrace_graph_fops);
--	if (!entry)
--		pr_warning("Could not create debugfs "
--			   "'set_graph_function' entry\n");
- #endif /* CONFIG_FUNCTION_GRAPH_TRACER */
- 
- 	return 0;
-@@ -2987,7 +2968,6 @@ static const struct file_operations ftrace_pid_fops = {
- static __init int ftrace_init_debugfs(void)
- {
- 	struct dentry *d_tracer;
--	struct dentry *entry;
- 
- 	d_tracer = tracing_init_dentry();
- 	if (!d_tracer)
-@@ -2995,11 +2975,8 @@ static __init int ftrace_init_debugfs(void)
- 
- 	ftrace_init_dyn_debugfs(d_tracer);
- 
--	entry = debugfs_create_file("set_ftrace_pid", 0644, d_tracer,
--				    NULL, &ftrace_pid_fops);
--	if (!entry)
--		pr_warning("Could not create debugfs "
--			   "'set_ftrace_pid' entry\n");
-+	trace_create_file("set_ftrace_pid", 0644, d_tracer,
-+			    NULL, &ftrace_pid_fops);
- 
- 	ftrace_profile_debugfs(d_tracer);
- 
-diff --git a/kernel/trace/ring_buffer.c b/kernel/trace/ring_buffer.c
-index 5cd2342..171c394 100644
---- a/kernel/trace/ring_buffer.c
-+++ b/kernel/trace/ring_buffer.c
-@@ -2849,14 +2849,11 @@ static const struct file_operations rb_simple_fops = {
- static __init int rb_init_debugfs(void)
- {
- 	struct dentry *d_tracer;
--	struct dentry *entry;
- 
- 	d_tracer = tracing_init_dentry();
- 
--	entry = debugfs_create_file("tracing_on", 0644, d_tracer,
--				    &ring_buffer_flags, &rb_simple_fops);
--	if (!entry)
--		pr_warning("Could not create debugfs 'tracing_on' entry\n");
-+	trace_create_file("tracing_on", 0644, d_tracer,
-+			    &ring_buffer_flags, &rb_simple_fops);
- 
- 	return 0;
- }
-diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
-index 2a81dec..9e2ffc3 100644
---- a/kernel/trace/trace.c
-+++ b/kernel/trace/trace.c
-@@ -3570,7 +3570,7 @@ struct dentry *tracing_dentry_percpu(void)
- static void tracing_init_debugfs_percpu(long cpu)
- {
- 	struct dentry *d_percpu = tracing_dentry_percpu();
--	struct dentry *entry, *d_cpu;
-+	struct dentry *d_cpu;
- 	/* strlen(cpu) + MAX(log10(cpu)) + '\0' */
- 	char cpu_dir[7];
- 
-@@ -3585,21 +3585,15 @@ static void tracing_init_debugfs_percpu(long cpu)
- 	}
- 
- 	/* per cpu trace_pipe */
--	entry = debugfs_create_file("trace_pipe", 0444, d_cpu,
--				(void *) cpu, &tracing_pipe_fops);
--	if (!entry)
--		pr_warning("Could not create debugfs 'trace_pipe' entry\n");
-+	trace_create_file("trace_pipe", 0444, d_cpu,
-+			(void *) cpu, &tracing_pipe_fops);
- 
- 	/* per cpu trace */
--	entry = debugfs_create_file("trace", 0644, d_cpu,
--				(void *) cpu, &tracing_fops);
--	if (!entry)
--		pr_warning("Could not create debugfs 'trace' entry\n");
-+	trace_create_file("trace", 0644, d_cpu,
-+			(void *) cpu, &tracing_fops);
- 
--	entry = debugfs_create_file("trace_pipe_raw", 0444, d_cpu,
--				    (void *) cpu, &tracing_buffers_fops);
--	if (!entry)
--		pr_warning("Could not create debugfs 'trace_pipe_raw' entry\n");
-+	trace_create_file("trace_pipe_raw", 0444, d_cpu,
-+			(void *) cpu, &tracing_buffers_fops);
- }
- 
- #ifdef CONFIG_FTRACE_SELFTEST
-@@ -3755,6 +3749,22 @@ static const struct file_operations trace_options_core_fops = {
- 	.write = trace_options_core_write,
- };
- 
-+struct dentry *trace_create_file(const char *name,
-+				 mode_t mode,
-+				 struct dentry *parent,
-+				 void *data,
-+				 const struct file_operations *fops)
-+{
-+	struct dentry *ret;
-+
-+	ret = debugfs_create_file(name, mode, parent, data, fops);
-+	if (!ret)
-+		pr_warning("Could not create debugfs '%s' entry\n", name);
-+
-+	return ret;
-+}
-+
-+
- static struct dentry *trace_options_init_dentry(void)
- {
- 	struct dentry *d_tracer;
-@@ -3782,7 +3792,6 @@ create_trace_option_file(struct trace_option_dentry *topt,
- 			 struct tracer_opt *opt)
- {
- 	struct dentry *t_options;
--	struct dentry *entry;
- 
- 	t_options = trace_options_init_dentry();
- 	if (!t_options)
-@@ -3791,11 +3800,9 @@ create_trace_option_file(struct trace_option_dentry *topt,
- 	topt->flags = flags;
- 	topt->opt = opt;
- 
--	entry = debugfs_create_file(opt->name, 0644, t_options, topt,
-+	topt->entry = trace_create_file(opt->name, 0644, t_options, topt,
- 				    &trace_options_fops);
- 
--	topt->entry = entry;
--
- }
- 
- static struct trace_option_dentry *
-@@ -3850,123 +3857,81 @@ static struct dentry *
- create_trace_option_core_file(const char *option, long index)
- {
- 	struct dentry *t_options;
--	struct dentry *entry;
- 
- 	t_options = trace_options_init_dentry();
- 	if (!t_options)
- 		return NULL;
- 
--	entry = debugfs_create_file(option, 0644, t_options, (void *)index,
-+	return trace_create_file(option, 0644, t_options, (void *)index,
- 				    &trace_options_core_fops);
--
--	return entry;
- }
- 
- static __init void create_trace_options_dir(void)
- {
- 	struct dentry *t_options;
--	struct dentry *entry;
- 	int i;
- 
- 	t_options = trace_options_init_dentry();
- 	if (!t_options)
- 		return;
- 
--	for (i = 0; trace_options[i]; i++) {
--		entry = create_trace_option_core_file(trace_options[i], i);
--		if (!entry)
--			pr_warning("Could not create debugfs %s entry\n",
--				   trace_options[i]);
--	}
-+	for (i = 0; trace_options[i]; i++)
-+		create_trace_option_core_file(trace_options[i], i);
- }
- 
- static __init int tracer_init_debugfs(void)
- {
- 	struct dentry *d_tracer;
--	struct dentry *entry;
- 	int cpu;
- 
- 	d_tracer = tracing_init_dentry();
- 
--	entry = debugfs_create_file("tracing_enabled", 0644, d_tracer,
--				    &global_trace, &tracing_ctrl_fops);
--	if (!entry)
--		pr_warning("Could not create debugfs 'tracing_enabled' entry\n");
-+	trace_create_file("tracing_enabled", 0644, d_tracer,
-+			&global_trace, &tracing_ctrl_fops);
- 
--	entry = debugfs_create_file("trace_options", 0644, d_tracer,
--				    NULL, &tracing_iter_fops);
--	if (!entry)
--		pr_warning("Could not create debugfs 'trace_options' entry\n");
-+	trace_create_file("trace_options", 0644, d_tracer,
-+			NULL, &tracing_iter_fops);
- 
--	create_trace_options_dir();
-+	trace_create_file("tracing_cpumask", 0644, d_tracer,
-+			NULL, &tracing_cpumask_fops);
-+
-+	trace_create_file("trace", 0644, d_tracer,
-+			(void *) TRACE_PIPE_ALL_CPU, &tracing_fops);
-+
-+	trace_create_file("available_tracers", 0444, d_tracer,
-+			&global_trace, &show_traces_fops);
-+
-+	trace_create_file("current_tracer", 0444, d_tracer,
-+			&global_trace, &set_tracer_fops);
-+
-+	trace_create_file("tracing_max_latency", 0644, d_tracer,
-+			&tracing_max_latency, &tracing_max_lat_fops);
-+
-+	trace_create_file("tracing_thresh", 0644, d_tracer,
-+			&tracing_thresh, &tracing_max_lat_fops);
- 
--	entry = debugfs_create_file("tracing_cpumask", 0644, d_tracer,
--				    NULL, &tracing_cpumask_fops);
--	if (!entry)
--		pr_warning("Could not create debugfs 'tracing_cpumask' entry\n");
--
--	entry = debugfs_create_file("trace", 0644, d_tracer,
--				 (void *) TRACE_PIPE_ALL_CPU, &tracing_fops);
--	if (!entry)
--		pr_warning("Could not create debugfs 'trace' entry\n");
--
--	entry = debugfs_create_file("available_tracers", 0444, d_tracer,
--				    &global_trace, &show_traces_fops);
--	if (!entry)
--		pr_warning("Could not create debugfs 'available_tracers' entry\n");
--
--	entry = debugfs_create_file("current_tracer", 0444, d_tracer,
--				    &global_trace, &set_tracer_fops);
--	if (!entry)
--		pr_warning("Could not create debugfs 'current_tracer' entry\n");
--
--	entry = debugfs_create_file("tracing_max_latency", 0644, d_tracer,
--				    &tracing_max_latency,
--				    &tracing_max_lat_fops);
--	if (!entry)
--		pr_warning("Could not create debugfs "
--			   "'tracing_max_latency' entry\n");
--
--	entry = debugfs_create_file("tracing_thresh", 0644, d_tracer,
--				    &tracing_thresh, &tracing_max_lat_fops);
--	if (!entry)
--		pr_warning("Could not create debugfs "
--			   "'tracing_thresh' entry\n");
--	entry = debugfs_create_file("README", 0644, d_tracer,
--				    NULL, &tracing_readme_fops);
--	if (!entry)
--		pr_warning("Could not create debugfs 'README' entry\n");
--
--	entry = debugfs_create_file("trace_pipe", 0444, d_tracer,
-+	trace_create_file("README", 0644, d_tracer,
-+			NULL, &tracing_readme_fops);
-+
-+	trace_create_file("trace_pipe", 0444, d_tracer,
- 			(void *) TRACE_PIPE_ALL_CPU, &tracing_pipe_fops);
--	if (!entry)
--		pr_warning("Could not create debugfs "
--			   "'trace_pipe' entry\n");
--
--	entry = debugfs_create_file("buffer_size_kb", 0644, d_tracer,
--				    &global_trace, &tracing_entries_fops);
--	if (!entry)
--		pr_warning("Could not create debugfs "
--			   "'buffer_size_kb' entry\n");
--
--	entry = debugfs_create_file("trace_marker", 0220, d_tracer,
--				    NULL, &tracing_mark_fops);
--	if (!entry)
--		pr_warning("Could not create debugfs "
--			   "'trace_marker' entry\n");
-+
-+	trace_create_file("buffer_size_kb", 0644, d_tracer,
-+			&global_trace, &tracing_entries_fops);
-+
-+	trace_create_file("trace_marker", 0220, d_tracer,
-+			NULL, &tracing_mark_fops);
- 
- #ifdef CONFIG_DYNAMIC_FTRACE
--	entry = debugfs_create_file("dyn_ftrace_total_info", 0444, d_tracer,
--				    &ftrace_update_tot_cnt,
--				    &tracing_dyn_info_fops);
--	if (!entry)
--		pr_warning("Could not create debugfs "
--			   "'dyn_ftrace_total_info' entry\n");
-+	trace_create_file("dyn_ftrace_total_info", 0444, d_tracer,
-+			&ftrace_update_tot_cnt, &tracing_dyn_info_fops);
- #endif
- #ifdef CONFIG_SYSPROF_TRACER
- 	init_tracer_sysprof_debugfs(d_tracer);
- #endif
- 
-+	create_trace_options_dir();
-+
- 	for_each_tracing_cpu(cpu)
- 		tracing_init_debugfs_percpu(cpu);
- 
-diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
-index fec6521..cbdf1a5 100644
---- a/kernel/trace/trace.h
-+++ b/kernel/trace/trace.h
-@@ -470,6 +470,12 @@ void trace_wake_up(void);
- void tracing_reset(struct trace_array *tr, int cpu);
- void tracing_reset_online_cpus(struct trace_array *tr);
- int tracing_open_generic(struct inode *inode, struct file *filp);
-+struct dentry *trace_create_file(const char *name,
-+				 mode_t mode,
-+				 struct dentry *parent,
-+				 void *data,
-+				 const struct file_operations *fops);
-+
- struct dentry *tracing_init_dentry(void);
- void init_tracer_sysprof_debugfs(struct dentry *d_tracer);
- 
-diff --git a/kernel/trace/trace_event_profile.c b/kernel/trace/trace_event_profile.c
-index 22cba99..5d84b28 100644
---- a/kernel/trace/trace_event_profile.c
-+++ b/kernel/trace/trace_event_profile.c
-@@ -6,7 +6,7 @@
-  */
- 
- #include "trace.h"
--
-+#if 0
- int ftrace_profile_enable(int event_id)
- {
- 	struct ftrace_event_call *event;
-@@ -29,3 +29,4 @@ void ftrace_profile_disable(int event_id)
- 	}
- }
- 
-+#endif
-diff --git a/kernel/trace/trace_printk.c b/kernel/trace/trace_printk.c
-index eb81556..9bece96 100644
---- a/kernel/trace/trace_printk.c
-+++ b/kernel/trace/trace_printk.c
-@@ -245,17 +245,13 @@ static const struct file_operations ftrace_formats_fops = {
- static __init int init_trace_printk_function_export(void)
- {
- 	struct dentry *d_tracer;
--	struct dentry *entry;
- 
- 	d_tracer = tracing_init_dentry();
- 	if (!d_tracer)
- 		return 0;
- 
--	entry = debugfs_create_file("printk_formats", 0444, d_tracer,
-+	trace_create_file("printk_formats", 0444, d_tracer,
- 				    NULL, &ftrace_formats_fops);
--	if (!entry)
--		pr_warning("Could not create debugfs "
--			   "'printk_formats' entry\n");
- 
- 	return 0;
- }
-diff --git a/kernel/trace/trace_stack.c b/kernel/trace/trace_stack.c
-index c750f65..1796f00 100644
---- a/kernel/trace/trace_stack.c
-+++ b/kernel/trace/trace_stack.c
-@@ -352,19 +352,14 @@ __setup("stacktrace", enable_stacktrace);
- static __init int stack_trace_init(void)
- {
- 	struct dentry *d_tracer;
--	struct dentry *entry;
- 
- 	d_tracer = tracing_init_dentry();
- 
--	entry = debugfs_create_file("stack_max_size", 0644, d_tracer,
--				    &max_stack_size, &stack_max_size_fops);
--	if (!entry)
--		pr_warning("Could not create debugfs 'stack_max_size' entry\n");
-+	trace_create_file("stack_max_size", 0644, d_tracer,
-+			&max_stack_size, &stack_max_size_fops);
- 
--	entry = debugfs_create_file("stack_trace", 0444, d_tracer,
--				    NULL, &stack_trace_fops);
--	if (!entry)
--		pr_warning("Could not create debugfs 'stack_trace' entry\n");
-+	trace_create_file("stack_trace", 0444, d_tracer,
-+			NULL, &stack_trace_fops);
- 
- 	if (stack_tracer_enabled)
- 		register_ftrace_function(&trace_ops);
-diff --git a/kernel/trace/trace_sysprof.c b/kernel/trace/trace_sysprof.c
-index 91fd19c..e04b76c 100644
---- a/kernel/trace/trace_sysprof.c
-+++ b/kernel/trace/trace_sysprof.c
-@@ -321,11 +321,7 @@ static const struct file_operations sysprof_sample_fops = {
- 
- void init_tracer_sysprof_debugfs(struct dentry *d_tracer)
- {
--	struct dentry *entry;
- 
--	entry = debugfs_create_file("sysprof_sample_period", 0644,
-+	trace_create_file("sysprof_sample_period", 0644,
- 			d_tracer, NULL, &sysprof_sample_fops);
--	if (entry)
--		return;
--	pr_warning("Could not create debugfs 'sysprof_sample_period' entry\n");
- }
--- 
-1.6.1
+Looks like you mismerged one file -- each side deleted one line right
+next to each other, but your merge left both lines in.  I think the
+patch below is needed.  (The cxgb3 fix looks correct)
 
+ drivers/infiniband/hw/nes/nes_nic.c |    2 --
+ 1 files changed, 0 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/infiniband/hw/nes/nes_nic.c b/drivers/infiniband/hw/nes/nes_nic.c
+index 8d3e4c6..ecb1f6f 100644
+--- a/drivers/infiniband/hw/nes/nes_nic.c
++++ b/drivers/infiniband/hw/nes/nes_nic.c
+@@ -1602,8 +1602,6 @@ struct net_device *nes_netdev_init(struct nes_device *nesdev,
+ 	netif_napi_add(netdev, &nesvnic->napi, nes_netdev_poll, 128);
+ 	nes_debug(NES_DBG_INIT, "Enabling VLAN Insert/Delete.\n");
+ 	netdev->features |= NETIF_F_HW_VLAN_TX | NETIF_F_HW_VLAN_RX;
+-	netdev->vlan_rx_register = nes_netdev_vlan_rx_register;
+-	netdev->features |= NETIF_F_LLTX;
+ 
+ 	/* Fill in the port structure */
+ 	nesvnic->netdev = netdev;
