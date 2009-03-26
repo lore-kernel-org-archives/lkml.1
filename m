@@ -1,54 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752994AbZCZHrs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753628AbZCZHuj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752994AbZCZHrs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Mar 2009 03:47:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751229AbZCZHrj
+	id S1753628AbZCZHuj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Mar 2009 03:50:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751294AbZCZHua
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Mar 2009 03:47:39 -0400
-Received: from smtp.witbe.net ([81.88.96.48]:45833 "EHLO smtp.witbe.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751004AbZCZHri (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Mar 2009 03:47:38 -0400
-X-Greylist: delayed 313 seconds by postgrey-1.27 at vger.kernel.org; Thu, 26 Mar 2009 03:47:38 EDT
-Date: Thu, 26 Mar 2009 08:42:20 +0100
-From: Paul Rolland <rol@as2917.net>
-To: linux-kernel@vger.kernel.org
-Cc: rol@as2917.net
-Subject: Linux 2.6.x - Serial port signalling not maintained when closing
- device
-Message-ID: <20090326084220.4def5652@tux.DEF.witbe.net>
-Organization: AS2917.net
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.12.8; x86_64-unknown-linux-gnu)
-Face: iVBORw0KGgoAAAANSUhEUgAAADAAAAAwBAMAAAClLOS0AAAAFVBMVEWsjH1VRjFydFciEg3a1tJxUEM6OCB1zdsDAAACcElEQVQ4jV2Tu3LcMAxFEY7SG/KQNYlY2685Zi1rmF5kQteBNcL/f0JAacfZDUscARePK9itY3Q4Qu5vplJKIFsrvI0t7Ii/8/nmQsERtgJpHAtiGW4ggylOAwhXTxPi0xfIcxDrZIc3qhMGD/kfKdwBExZrAf6l5PeC/Al7cAGfAGD+AgvL5yckcsxegVmG+QZRPgnYXnFUMAC8DLd6QZhAxj6dRo6vT/JNkmZQmPyDtoroMkD2VlaVgHsw2QrCAf1jPM+ou2Ju1j/G8+xINfZT+zGDPDjr7H/xnKewgi6SO4D7zloYoRDafSoogmirP0t9YIOJnN2ibDEKK6zDoSEjTIFXDcYYkwizoO/AjkATm3g+JVsSXPOCZIHwj7uBo2Bi97RMOoflJ4n3b3dvS2kVXDQupjvAk7zvaMEJlu0OJDFy4SsCusRbL95jRynY0LIA/rpyxCMkJ1ie+bWoEy+MG7pzDE3k8Z2C1a5eUdxmi0adGi2mdVjyUr2uvamrW9EeuLTCY84/AUjBj40LtqYbbM23vqolA2mpj5g03gparH45DqBgmsBK2hU0x662+QQLVYJLitxTnHB7yf0es4rraS/xqKW/hF1zPg9lOijpmtIBVrWKOQ6oTSkQjh3YtnarHQc0RrtS1XjtbQnScPrLeNKM6iS+6Qz6e9mVoPvaHHPU6eP5aKu1Ifd2QQvp6EA1bLaP3VREwewXY73xgLppBR2tg4LFg9lXzegHQlusWuxwogLCaswJ+qunQ2cyfuziX6B1p0E26nQazR3Qn2jQarRXVVZT9zP3uB5FV6pNjQG+u03ugbalEsEXqo7/AjAH60VpvOMvAAAAAElFTkSuQmCC
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 26 Mar 2009 03:50:30 -0400
+Received: from ms1.nttdata.co.jp ([163.135.193.232]:35041 "EHLO
+	ms1.nttdata.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750911AbZCZHu3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Mar 2009 03:50:29 -0400
+X-Greylist: delayed 2132 seconds by postgrey-1.27 at vger.kernel.org; Thu, 26 Mar 2009 03:50:29 EDT
+Message-ID: <49CB2B69.7010102@nttdata.co.jp>
+Date: Thu, 26 Mar 2009 16:14:49 +0900
+From: Kentaro Takeda <takedakn@nttdata.co.jp>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; ja; rv:1.8.1.21) Gecko/20090302 Thunderbird/2.0.0.21 Mnenhy/0.7.5.0
+MIME-Version: 1.0
+To: dhowells@redhat.com
+CC: penguin-kernel@I-love.SAKURA.ne.jp, haradats@nttdata.co.jp,
+       viro@zeniv.linux.org.uk, linux-kernel@vger.kernel.org
+Subject: Re: Are path-based LSM hooks called from the wrong places?
+References: <13750.1237997653@redhat.com>
+In-Reply-To: <13750.1237997653@redhat.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 26 Mar 2009 07:14:52.0534 (UTC) FILETIME=[8EB6F960:01C9ADE2]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+David,
+thanks for your attention. :)
 
-I'm using small devices that are connected on the serial port, and powered
-using RTS and DTR.
-When using kernel 2.4.x (at least 2.4.31), I could easily control the
-powering of the device using :
- stty -F /dev/ttyS0 ospeed 9600 (this would put RTS and DTR to 1 / power)
-and
- stty -F /dev/ttyS0 ospeed 0 (this would turn it off).
+David Howells wrote:
+> I've just been looking at some of the VFS syscall routines, such as
+> notify_change(), with an eye to calling it from FS-Cache to grow a file.  I
+> see that whilst notify_change() calls the inode-based LSM hooks (as drive
+> SELinux), it doesn't call the path-based LSM hooks (as drive other security
+> modules).  It leaves that to the callers, such as do_sys_ftruncate().
+> 
+> I see that vfs_mkdir(), for example, is similar, in that vfs_mkdir() - which
+> I'm calling from FS-Cache - invokes the inode-based LSM hooks, but it bypasses
+> the path-based LSM hooks as those are called from sys_mkdir().
+> 
+> It would appear that path-based LSM hooks may well be being called from the
+> wrong places.  They were added in:
+> 
+> 	commit be6d3e56a6b9b3a4ee44a0685e39e595073c6f0d
+> 	Author: Kentaro Takeda <takedakn@nttdata.co.jp>
+> 	Date:   Wed Dec 17 13:24:15 2008 +0900
+> 
+> 	    introduce new LSM hooks where vfsmount is available.
+> 
+> 	    Add new LSM hooks for path-based checks.  Call them on directory-modifying
+> 	    operations at the points where we still know the vfsmount involved.
+> 
+> 	    Signed-off-by: Kentaro Takeda <takedakn@nttdata.co.jp>
+> 	    Signed-off-by: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+> 	    Signed-off-by: Toshiharu Harada <haradats@nttdata.co.jp>
+> 	    Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
+Well, my understanding is that your question is related to two aspects of
+the new LSM hooks: location and coverage.
 
-I've recently updated one of the machine to a new 2.6.29 kernel, and this
-is not working anymore.
-As far as I can see, I need to have an application that keeps /dev/ttyS0
-open for this to work. As soon as no application is using the port,
-everything goes down again.
+(about location)
+This patch introduced new LSM hooks outside vfs helper functions because
+Al had adviced us that vfs helper functions should remain vfsmount-unaware.
 
-This is a significant change between 2.4.x and 2.6.x. Is there a way to
-change 2.6.x behavior to go back to the 2.4.x ? When was this change
-introduce ?
+(about coverage)
+This patch is not intended to implement the equivalent of security_inode_*
+hooks. This patch is for pathname-based MAC, especially for TOMOYO 
+in kernel 2.6.30.
 
-This serial port controler is a 16550A, the machine is an x86 platform, so
-nothing unusual.
+> Using sys_mkdir() and suchlike directly from within the kernel would add a lot
+> of overhead as I'd have to generate a full pathname for each call, whereas
+> vfs_mkdir() or notify_change() allows me to start from an inode I already
+> have.
+Callers of sys_mkdir() and suchlike directly from within the kernel don't need
+to generate a full pathname. Name based LSM will generate a full pathname from
+dentry and vfsmount. There is no getname() nor path_walk() call.
 
-Best regards,
-Paul
+Regards,
+
