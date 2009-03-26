@@ -1,70 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755869AbZCZKiQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753677AbZCZKnW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755869AbZCZKiQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Mar 2009 06:38:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751617AbZCZKiG
+	id S1753677AbZCZKnW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Mar 2009 06:43:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752585AbZCZKnE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Mar 2009 06:38:06 -0400
-Received: from cmpxchg.org ([85.214.51.133]:53124 "EHLO cmpxchg.org"
+	Thu, 26 Mar 2009 06:43:04 -0400
+Received: from systemlinux.org ([83.151.29.59]:58594 "EHLO m18s25.vlinux.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751255AbZCZKiF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Mar 2009 06:38:05 -0400
-Date: Thu, 26 Mar 2009 11:36:31 +0100
-From: Johannes Weiner <hannes@cmpxchg.org>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: David Howells <dhowells@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, Nick Piggin <npiggin@suse.de>,
-       Rik van Riel <riel@redhat.com>, Peter Zijlstra <peterz@infradead.org>,
-       MinChan Kim <minchan.kim@gmail.com>,
-       Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-Subject: Re: [patch 3/3] mm: keep pages from unevictable mappings off the LRU lists
-Message-ID: <20090326103631.GA1775@cmpxchg.org>
-References: <12135.1237805607@redhat.com> <20090326000100.GA5404@cmpxchg.org> <20090326175314.68F7.A69D9226@jp.fujitsu.com>
+	id S1751175AbZCZKnD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Mar 2009 06:43:03 -0400
+Date: Thu, 26 Mar 2009 11:39:12 +0100
+From: Andre Noll <maan@systemlinux.org>
+To: Dan Williams <dan.j.williams@intel.com>
+Cc: linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org, neilb@suse.de,
+       maciej.sosnowski@intel.com, Yuri Tikhonov <yur@emcraft.com>,
+       Ilya Yanok <yanok@emcraft.com>
+Subject: Re: [PATCH 02/13] async_tx: don't use src_list argument of async_xor() for dma addresses
+Message-ID: <20090326103912.GP17185@skl-net.de>
+References: <20090318191248.20375.40560.stgit@dwillia2-linux.ch.intel.com> <20090318192026.20375.3053.stgit@dwillia2-linux.ch.intel.com> <20090319201008.GC10491@skl-net.de> <e9c3a7c20903251011w3f6b3f58u7c0352ae39bb1c7c@mail.gmail.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="+sObS8/rhx1YpqEF"
 Content-Disposition: inline
-In-Reply-To: <20090326175314.68F7.A69D9226@jp.fujitsu.com>
+In-Reply-To: <e9c3a7c20903251011w3f6b3f58u7c0352ae39bb1c7c@mail.gmail.com>
+User-Agent: Mutt/1.5.9i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 26, 2009 at 05:56:52PM +0900, KOSAKI Motohiro wrote:
-> > On Mon, Mar 23, 2009 at 10:53:27AM +0000, David Howells wrote:
-> > > Johannes Weiner <hannes@cmpxchg.org> wrote:
-> > > 
-> > > > -		if (page_is_file_cache(page))
-> > > > +		if (mapping_unevictable(mapping))
-> > > > +			add_page_to_unevictable_list(page);
-> > > > +		else if (page_is_file_cache(page))
-> > > 
-> > > It would be nice to avoid adding an extra test and branch in here.  This
-> > > function is used a lot, and quite often we know the answer to the first test
-> > > before we even get here.
-> > 
-> > Yes, I thought about that too.  So I mounted a tmpfs and dd'd
-> > /dev/zero to a file on it until it ran out of space (around 900M,
-> > without swapping), deleted the file again.  I did this in a tight loop
-> > and profiled it.
-> > 
-> > I couldn't think of a way that would excercise add_to_page_cache_lru()
-> > more, I hope I didn't overlook anything, please correct if I am wrong.
-> > 
-> > If I was not, than the extra checking for unevictable mappings doesn't
-> > make a measurable difference.  The function on the vanilla kernel had
-> > a share of 0.2033%, on the patched kernel 0.1953%.
-> 
-> May I ask the number of the cpu of your test box.
-> In general, lock contention possibility depend on #ofCPUs.
 
-Yes, sure.  In this test I tried to find out how much this extra
-branch makes a difference for the common path (untaken), though.
+--+sObS8/rhx1YpqEF
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-I have not tried to instrument the lock contention.  But this will be
-done with a quadcore system.
+On 10:11, Dan Williams wrote:
+> On Thu, Mar 19, 2009 at 1:10 PM, Andre Noll <maan@systemlinux.org> wrote:
+> > On 12:20, Dan Williams wrote:
+> >
+> >> Using src_list argument of async_xor() as a storage for dma addresses
+> >> implies sizeof(dma_addr_t) <=3D sizeof(struct page *) restriction whic=
+h is
+> >> not always true (e.g. ppc440spe).
+> >
+> > This message does not tell what the patch is going to do about that.
+> > It would also be nice to mention (either in the log message or as a
+> > comment) why allocating the dma_src arrays on the stack is not going
+> > to be a problem.
+> >
+>=20
+> True, and taking into account your other comment about the number of
+> parameters I think this is a good opportunity to solve this problem
+> rather than kick it down the road.  So I will prepare a rework to make
+> this memory caller provided.  This gives us the flexibility to use a
+> kmalloc'd buffer hanging off the stripe_head as Neil suggested in
+> another thread.
 
-> So, I and lee mainly talked about large box.
+Glad you agree. I'm looking forward to seeing the reworked patch set.
 
-Yeah, I don't have such a thing ;)
+Thanks
+Andre
+--=20
+The only person who always got his work done by Friday was Robinson Crusoe
 
-	Hannes
+--+sObS8/rhx1YpqEF
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.1 (GNU/Linux)
+
+iD8DBQFJy1tQWto1QDEAkw8RAh77AKCZjEr0A4Sjog2N583P4DDO6X0tiACgmiiV
+8YWg4iVYkIFoN1ejRsQQieQ=
+=VWTU
+-----END PGP SIGNATURE-----
+
+--+sObS8/rhx1YpqEF--
