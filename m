@@ -1,49 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754199AbZCZFwi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754408AbZCZGEU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754199AbZCZFwi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Mar 2009 01:52:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750848AbZCZFw3
+	id S1754408AbZCZGEU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Mar 2009 02:04:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752033AbZCZGEH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Mar 2009 01:52:29 -0400
-Received: from bilbo.ozlabs.org ([203.10.76.25]:46515 "EHLO bilbo.ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750802AbZCZFw2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Mar 2009 01:52:28 -0400
+	Thu, 26 Mar 2009 02:04:07 -0400
+Received: from mail-bw0-f169.google.com ([209.85.218.169]:53071 "EHLO
+	mail-bw0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751985AbZCZGEG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Mar 2009 02:04:06 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=uL7rWVHB6vKls2hrzeDhrcomBNSNGYGBrvUxNjqPLNEQqmAbtmCoxElu9J4jVkTsrG
+         Oq/UQ0z2Xsc9WpeDujrXML404H7OpPHBhqBeYuOX55KUxcUNp+P+aqx+HGWYarFVXc0P
+         qs5oU+CftyLODMLa52XjxPn4TGPDdbyhS7XbA=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <alpine.LNX.2.00.0903252206520.7962@speedy.coe.org>
+References: <alpine.LNX.2.00.0903252206520.7962@speedy.coe.org>
+Date: Thu, 26 Mar 2009 09:04:02 +0300
+Message-ID: <aa79d98a0903252304h1fdcdef3jc81dfb5ced3abc19@mail.gmail.com>
+Subject: Re: pppoe over ethernet
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Detlef Tschirschky <detlef.tschirschky@gmx.de>
+Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Message-ID: <18891.6159.109191.255560@drongo.ozlabs.ibm.com>
-Date: Thu, 26 Mar 2009 16:52:15 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
-       Wu Fengguang <fengguang.wu@intel.com>
-Subject: Re: [RFC][PATCH 2/3] perf_counter: executable mmap() information
-In-Reply-To: <20090325210542.293237509@chello.nl>
-References: <20090325210419.408653980@chello.nl>
-	<20090325210542.293237509@chello.nl>
-X-Mailer: VM 8.0.12 under 22.2.1 (powerpc-unknown-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Zijlstra writes:
+On Thu, Mar 26, 2009 at 12:28 AM, Detlef Tschirschky
+<detlef.tschirschky@gmx.de> wrote:
+> Hi Peoples,
+>
+> after update kernel 2.6.29 i got disconnects to my ISP.
+> This happens 5 - 7 times in 12 hours.
+> Reconnect fails only reboot solve that.
+> Never before i have this kind of problems so i did a
+> downgrade to 2.6.28.8 and all works fine again.
+>
+> Internet:       t-online in germany, dsl 6000.
+> Connectiontype: pppoe over ethernet
+> Netcard:        3c905B 100BaseTX [Cy3c905B 100BaseTX [Cyclone] (rev 30)
+>
+> Hope that helps
+>
+> regards
+> Pauli
+>
 
-> --- linux-2.6.orig/include/linux/perf_counter.h
-> +++ linux-2.6/include/linux/perf_counter.h
-> @@ -137,7 +137,9 @@ struct perf_counter_hw_event {
->  				exclude_kernel :  1, /* ditto kernel          */
->  				exclude_hv     :  1, /* ditto hypervisor      */
->  				exclude_idle   :  1, /* don't count when idle */
-> -				include_tid    :  1, /* include the tid */
-> +				include_tid    :  1, /* include the tid       */
-> +				mmap           :  1, /* include mmap data     */
-> +				munmap         :  1, /* include munmap data   */
->  
->  				__reserved_1   : 54;
+Hi,
 
-Nit: need to adjust the size of __reserved_1 here.  Or maybe just get
-rid of it?
-
-Paul.
+is it possible to see your kernel log?
