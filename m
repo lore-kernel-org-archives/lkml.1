@@ -1,89 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758277AbZCZNuU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758339AbZCZNzw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758277AbZCZNuU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Mar 2009 09:50:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755688AbZCZNuB
+	id S1758339AbZCZNzw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Mar 2009 09:55:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756209AbZCZNzn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Mar 2009 09:50:01 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:39727 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755592AbZCZNuA (ORCPT
+	Thu, 26 Mar 2009 09:55:43 -0400
+Received: from mail-in-11.arcor-online.net ([151.189.21.51]:53286 "EHLO
+	mail-in-11.arcor-online.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755209AbZCZNzm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Mar 2009 09:50:00 -0400
-Date: Thu, 26 Mar 2009 09:49:56 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Frederic Weisbecker <fweisbec@gmail.com>
-cc: Maneesh Soni <maneesh@in.ibm.com>, linux-kernel@vger.kernel.org,
-       mingo@elte.hu
-Subject: Re: [-tip] ftrace: oops at probe_wakeup_sched_switch+0xd1/0x1ae
-In-Reply-To: <20090326132739.GB5960@nowhere>
-Message-ID: <alpine.DEB.2.00.0903260949340.17665@gandalf.stny.rr.com>
-References: <20090326122806.GA4188@in.ibm.com> <20090326132739.GB5960@nowhere>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Thu, 26 Mar 2009 09:55:42 -0400
+X-DKIM: Sendmail DKIM Filter v2.8.2 mail-in-06.arcor-online.net AEBF739A775
+From: Bodo Eggert <7eggert@gmx.de>
+Subject: Re: My new fancy font for framebuffer
+To: "H. Peter Anvin" <hpa@zytor.com>,
+       Felipe Contreras <felipe.contreras@gmail.com>,
+       Baybal Ni <nikulinpi@gmail.com>, Ken Moffat <zarniwhoop@ntlworld.com>,
+       linux-kernel@vger.kernel.org
+Reply-To: 7eggert@gmx.de
+Date: Thu, 26 Mar 2009 14:55:30 +0100
+References: <cicyE-3qo-15@gated-at.bofh.it> <cidXL-5OQ-35@gated-at.bofh.it> <cinu8-41e-3@gated-at.bofh.it> <cisas-37w-5@gated-at.bofh.it> <ciFKp-7QW-17@gated-at.bofh.it> <cj8CE-3uO-11@gated-at.bofh.it> <cjo4C-3hh-13@gated-at.bofh.it> <cjoo1-3FO-13@gated-at.bofh.it> <cjoxL-3SW-35@gated-at.bofh.it>
+User-Agent: KNode/0.10.4
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8Bit
+Message-Id: <E1Lmq3O-0001mo-Pf@be1.7eggert.dyndns.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Thu, 26 Mar 2009, Frederic Weisbecker wrote:
-
-> On Thu, Mar 26, 2009 at 05:58:07PM +0530, Maneesh Soni wrote:
-> > 
-> > I hit the below oops while playing with "wakeup" tracer. Just enabled
-> > tracing and ran "while true; do cat trace; done" on a 8-way systems with
-> > -tip at commit 9e25bacc221318a29d37425e054c01047edad7f5.
-> > 
-> > 
-> > Attached the .config.
-> > 
-> > Thanks
-> > Maneesh
-> > 
-> > BUG: unable to handle kernel NULL pointer dereference at 0000000000000008
-> > IP: [<ffffffff802d2258>] probe_wakeup_sched_switch+0xd1/0x1ae
-> > PGD 219147067 PUD 1e449e067 PMD 0 
-> > Oops: 0000 [#1] SMP 
-> > last sysfs file: /sys/devices/pci0000:0c/0000:0c:00.0/irq
-> > CPU 5 
-> > Modules linked in: autofs4 hidp rfcomm l2cap bluetooth iptable_filter ip_tables ip6t_REJECT xt_tcpudp ip6table_filter ip6_tables x_tables ipv6 dm_mirror dm_region_hash dm_log dm_multipath scsi_dh dm_mod sbs sbshc battery ac parport_pc lp parport sg sr_mod ide_cd_mod cdrom serio_raw acpi_memhotplug button tg3 libphy i2c_piix4 i2c_core pcspkr usb_storage uhci_hcd ohci_hcd ehci_hcd aacraid sd_mod scsi_mod ext3 jbd
-> > Pid: 5937, comm: cat Not tainted 2.6.29-tip-test #1 eserver xSeries 366-[88632RA]-
-> > RIP: 0010:[<ffffffff802d2258>]  [<ffffffff802d2258>] probe_wakeup_sched_switch+0xd1/0x1ae
-> > RSP: 0000:ffff8801cf4cdea0  EFLAGS: 00010046
-> > RAX: 0000000000000000 RBX: ffff88022f232820 RCX: 0000000000000046
-> > RDX: ffff8800281989a0 RSI: ffffffff8020d56d RDI: ffffffff811de480
-> > RBP: ffff8801cf4cded0 R08: 0000000000000000 R09: 0000000000000000
-> > R10: 0000000000000000 R11: 0000000000000001 R12: 0000000000000046
-> > R13: 0000000000000000 R14: ffff8801e4471820 R15: 0000000000000005
-> > FS:  00007f607411c6e0(0000) GS:ffff88002818b000(0000) knlGS:0000000000000000
-> > CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
-> > CR2: 0000000000000008 CR3: 00000001da19a000 CR4: 00000000000006e0
-> > DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-> > DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-> > Process cat (pid: 5937, threadinfo ffff8801cf4cc000, task ffff8801e4471820)
-> > Stack:
-> >  ffff8800281989a0 ffff8802191e14b0 ffff88002819dd40 00007fff7c130640
-> >  0000000000000000 ffff88002819dd40 ffff8801cf4cdf70 ffffffff806f8264
-> >  0000000000000002 ffff8801cf4cdf48 ffff8801e4471820 ffff88022f232820
-> > Call Trace:
-> >  [<ffffffff806f8264>] schedule+0xd99/0x10f9
-> >  [<ffffffff806fb61b>] ? trace_hardirqs_on_thunk+0x3a/0x3c
-> >  [<ffffffff8020d56d>] retint_careful+0x12/0x2e
-> > Code: f2 83 3d 1b b0 9f 00 00 74 77 48 3b 1d a2 de f2 00 75 6e 48 8b 4d 00 48 8b 3d 8d de f2 00 45 89 e8 48 8b 01 48 8b 71 08 4c 89 e1 <48> 8b 50 08 e8 f7 9f ff ff 48 8b 3d 70 de f2 00 45 89 e8 48 89 
-> > RIP  [<ffffffff802d2258>] probe_wakeup_sched_switch+0xd1/0x1ae
-> >  RSP <ffff8801cf4cdea0>
-> > CR2: 0000000000000008
-> > ---[ end trace ab11daa90bb147ba ]---
-> > 
+H. Peter Anvin <hpa@zytor.com> wrote:
+> Felipe Contreras wrote:
+>> 
+>> I thought you had to distribute the source code only if you made
+>> modifications. What's the point of distributing it _again_?
+>> 
 > 
-> 
-> 
-> I've tested the same config and ran your script with wakeup tracer but nothing
-> weird happened.
-> Though I've tested on UP so may be I should try on SMP.
+> a) the license requires it.
 
-Yeah, that may make a difference ;-)
+No, you just have to offer the source.
 
--- Steve
+OTOH, if the bdf2c-translator is reasonably small, put it into the utility
+directory, define a user-stuff-directory, and write a "make fonts" section
+which will insert $CONFIG_USER_STUFF/fonts/* into the kconfig menu.
+(Or pre-define $CONFIG_USER_STUFF to a fixed directory in the kernel tree.)
+
+just my ¢¢
+
