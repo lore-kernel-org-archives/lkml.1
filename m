@@ -1,62 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759252AbZCZQX3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759436AbZCZQXx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759252AbZCZQX3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Mar 2009 12:23:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754482AbZCZQXV
+	id S1759436AbZCZQXx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Mar 2009 12:23:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754773AbZCZQXn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Mar 2009 12:23:21 -0400
-Received: from mx1.emlix.com ([193.175.82.87]:53962 "EHLO mx1.emlix.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752583AbZCZQXU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Mar 2009 12:23:20 -0400
-From: "Oskar Schirmer" <os@emlix.com>
-Date: Thu, 26 Mar 2009 17:23:15 +0100
-To: Jean Delvare <khali@linux-fr.org>
-Cc: Oskar Schirmer <os@emlix.com>, Ben Dooks <ben-linux@fluff.org>,
-       Chris Zankel <chris@zankel.net>, linux-i2c@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch] add pca9543 driver
-Message-ID: <20090326162315.GA26255@emlix.com>
-References: <1238078818-25977-1-git-send-email-os@emlix.com> <20090326155105.5dfbd898@hyperion.delvare>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20090326155105.5dfbd898@hyperion.delvare>
-Organization: emlix GmbH
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Thu, 26 Mar 2009 12:23:43 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:39581 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756095AbZCZQXm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Mar 2009 12:23:42 -0400
+Date: Thu, 26 Mar 2009 09:15:11 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Al Viro <viro@ZenIV.linux.org.uk>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>, Hua Zhong <hzhong@gmail.com>,
+       Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Roland McGrath <roland@redhat.com>,
+       Nick Piggin <nickpiggin@yahoo.com.au>,
+       Steven Rostedt <srostedt@redhat.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Matt Mackall <mpm@selenic.com>
+Subject: Re: [PATCH 2/5] mm: remove unlikly NULL from kfree
+Message-Id: <20090326091511.a4e88b2f.akpm@linux-foundation.org>
+In-Reply-To: <20090326161019.GT28946@ZenIV.linux.org.uk>
+References: <20090325051920.406564281@goodmis.org>
+	<20090325052023.071564146@goodmis.org>
+	<84144f020903250034j24e1782bt5f73809b9349346c@mail.gmail.com>
+	<009101c9ad20$1ae231c0$50a69540$@com>
+	<1237968394.30175.12.camel@penberg-laptop>
+	<84144f020903250651o13c723cgf64643091459a5ac@mail.gmail.com>
+	<20090326161019.GT28946@ZenIV.linux.org.uk>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"
+On Thu, 26 Mar 2009 16:10:19 +0000 Al Viro <viro@ZenIV.linux.org.uk> wrote:
 
-On Thu, Mar 26, 2009 at 15:51:05 +0100, Jean Delvare wrote:
-> On Thu, 26 Mar 2009 15:46:58 +0100, Oskar Schirmer wrote:
-> > support pca9543 i2c bus switch chip
-> > 
-> > Signed-off-by: Oskar Schirmer <os@emlix.com>
-> > ---
-> >  drivers/i2c/chips/Kconfig   |    3 +
-> >  drivers/i2c/chips/Makefile  |    1 +
-> 
-> Please read the header of these two files carefully again.
+> We certainly can add explicit check, but that'll keep asking for
+> patches "removing useless check".  The same applies to other places,
+> really.
 
-Ok, I see. But how to have PCA9543 supported then?
-The PCA9543 is an I2C bus switch/mux, so following
-the headers it might be placed in drivers/<functionality>,
-where <functionality> is "i2c bus mux", thus drivers/i2c.
-
-As this is obviously not the solution, we might try to do the
-bus muxing manually from userland, as soon as the system is up.
-This wont work either, as the video drivers need the i2c bus
-switch programmed before the video stuff can be initialized,
-thus during bootup.
-
-Next, the drivers proposed by Rodolfo Giometti
-( http://article.gmane.org/gmane.linux.drivers.i2c/2996/ )
-might add the functionality needed. As far as I can see from
-Documentation/feature-removal-schedule.txt, prerequisites for
-it to be accepted are given with 2.6.30, is the driver by
-Rodolfo still in the queue, i.e. being merged for 2.6.30 now?
-
-  Oskar
+Such patches are easily prevented by commenting the exceptional cases.
