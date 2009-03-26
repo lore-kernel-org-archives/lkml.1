@@ -1,75 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756511AbZCZM4S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757376AbZCZM4n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756511AbZCZM4S (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Mar 2009 08:56:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754283AbZCZM4F
+	id S1757376AbZCZM4n (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Mar 2009 08:56:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756635AbZCZM4b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Mar 2009 08:56:05 -0400
-Received: from rcsinet11.oracle.com ([148.87.113.123]:42044 "EHLO
-	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755450AbZCZM4E (ORCPT
+	Thu, 26 Mar 2009 08:56:31 -0400
+Received: from mail-in-12.arcor-online.net ([151.189.21.52]:46970 "EHLO
+	mail-in-12.arcor-online.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756034AbZCZM4a (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Mar 2009 08:56:04 -0400
-Subject: Re: [dm-devel] Barriers still not passing on simple dm devices...
-From: Chris Mason <chris.mason@oracle.com>
-To: Mikulas Patocka <mpatocka@redhat.com>
-Cc: Jens Axboe <jens.axboe@oracle.com>,
-       device-mapper development <dm-devel@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andi Kleen <ak@suse.de>
-In-Reply-To: <Pine.LNX.4.64.0903251825310.8027@hs20-bc2-1.build.redhat.com>
-References: <49C7DD3C.2020401@redhat.com>
-	 <Pine.LNX.4.64.0903241000010.29968@hs20-bc2-1.build.redhat.com>
-	 <20090324140524.GV27476@kernel.dk>
-	 <Pine.LNX.4.64.0903241010490.29968@hs20-bc2-1.build.redhat.com>
-	 <20090324143034.GW27476@kernel.dk>
-	 <Pine.LNX.4.64.0903241033070.4088@hs20-bc2-1.build.redhat.com>
-	 <20090324150517.GX27476@kernel.dk>
-	 <Pine.LNX.4.64.0903251106520.27750@hs20-bc2-1.build.redhat.com>
-	 <20090325152751.GV27476@kernel.dk>
-	 <Pine.LNX.4.64.0903251825310.8027@hs20-bc2-1.build.redhat.com>
-Content-Type: text/plain
-Date: Thu, 26 Mar 2009 08:55:34 -0400
-Message-Id: <1238072134.5676.12.camel@think.oraclecorp.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
-Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt707.oracle.com [141.146.40.85]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090202.49CB7B4B.003A:SCFMA4539814,ss=1,fgs=0
+	Thu, 26 Mar 2009 08:56:30 -0400
+X-DKIM: Sendmail DKIM Filter v2.8.2 mail-in-01.arcor-online.net 9F8E0232E63
+Date: Thu, 26 Mar 2009 13:56:24 +0100 (CET)
+From: Bodo Eggert <7eggert@gmx.de>
+To: Andreas Robinson <andr345@gmail.com>
+cc: Bodo Eggert <7eggert@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: fastboot: unpacking initramfs faster
+In-Reply-To: <1238068631.12756.23.camel@andreas-desktop>
+Message-ID: <alpine.LSU.0.999.0903261354380.6387@be1.lrz>
+References: <cj9yI-540-17@gated-at.bofh.it>  <E1LmEqj-0001SN-6Y@be1.7eggert.dyndns.org>
+  <1238053964.8304.24.camel@andreas-desktop>  <alpine.LSU.0.999.0903261216550.5843@be1.lrz>
+ <1238068631.12756.23.camel@andreas-desktop>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-03-25 at 18:39 -0400, Mikulas Patocka wrote:
+On Thu, 26 Mar 2009, Andreas Robinson wrote:
+> On Thu, 2009-03-26 at 12:26 +0100, Bodo Eggert wrote:
+> > On Thu, 26 Mar 2009, Andreas Robinson wrote:
+> > > On Tue, 2009-03-24 at 23:11 +0100, Bodo Eggert wrote:
+> [snip]
 
-> > The error handling is complex, no doubt
-> > about that. But the trial barrier test is pretty trivial and even could
-> > be easily abstracted out. If a later barrier write fails, then that's
-> > really no different than if a normal write fails. Error handling is not
-> > easy in that case.
+> > > > Why not make a new set? http://7eggert.dyndns.org:8080/l/bgz.tar.gz
+
+> The file permissions are wrong, I'm not allowed to download it.
+
+fixed
+
+> > Thinking about it: It's now very kernel-specific, other users might like a
+> > block signature to make it robust against errors - e.g. in the middle of a
+> > .tar.bgz file. I think I'll change that soon and put 0x55aa in front of
+> > each block.
 > 
-> I had a discussion with Andi about it some times ago. The conclusion was 
-> that all the current filesystems handle barriers failing in the middle of 
-> the operation without functionality loss, but it makes barriers useless 
-> for any performance-sensitive tasks (commits that wouldn't block 
-> concurrent activity). Non-blocking commits could only be implemented if 
-> barriers don't fail.
-> 
+> I think we'll want an optional checksum of the compressed data.
+> Suppose bit 32 in the compressed block size field is set, the next field
+> is the block's Adler32 checksum.
+> (the adler32 source is in include/linux/zutil.h)
 
-If a barrier fails at runtime, the filesystems do fall back to not doing
-barriers without real problems.  But, that's because they don't actually
-rely on the barriers to decide if an async commit is a good idea.
-
-One exception is reiserfs, which does one wait_on_buffer at a later time
-if barriers are on.  But, this isn't an async commit, this is just
-moving an unplug.
-
-In general, async commits happen with threads and they aren't related to
-barriers.  Barriers don't really give us error handling, and they are at
-the very end of a long chain of technical problems around commits that
-don't block concurrent activity.
-
--chris
-
-
+I will think about it.
+-- 
+Funny quotes:
+5. 99 percent of lawyers give the rest a bad name.
