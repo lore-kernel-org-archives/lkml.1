@@ -1,87 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759440AbZCZOu1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759295AbZCZOt4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759440AbZCZOu1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Mar 2009 10:50:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759174AbZCZOtE
+	id S1759295AbZCZOt4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Mar 2009 10:49:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758958AbZCZOsb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Mar 2009 10:49:04 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:48670 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1759150AbZCZOtD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Mar 2009 10:49:03 -0400
-Date: Thu, 26 Mar 2009 07:38:51 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Jan Kara <jack@suse.cz>, Linus Torvalds <torvalds@linux-foundation.org>,
-       Theodore Tso <tytso@mit.edu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Nick Piggin <npiggin@suse.de>,
-       Jens Axboe <jens.axboe@oracle.com>, David Rees <drees76@gmail.com>,
-       Jesper Krogh <jesper@krogh.cc>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Oleg Nesterov <oleg@redhat.com>, Roland McGrath <roland@redhat.com>
-Subject: Re: ext3 IO latency measurements (was: Linux 2.6.29)
-Message-Id: <20090326073851.fcee79dd.akpm@linux-foundation.org>
-In-Reply-To: <20090326090630.GA9369@elte.hu>
-References: <20090324103111.GA26691@elte.hu>
-	<20090324041249.1133efb6.akpm@linux-foundation.org>
-	<20090325123744.GK23439@duck.suse.cz>
-	<20090325150041.GM32307@mit.edu>
-	<alpine.LFD.2.00.0903251008120.3032@localhost.localdomain>
-	<20090325185824.GO32307@mit.edu>
-	<alpine.LFD.2.00.0903251341050.3032@localhost.localdomain>
-	<20090325215137.GQ32307@mit.edu>
-	<alpine.LFD.2.00.0903251613300.3032@localhost.localdomain>
-	<20090325235041.GA11024@duck.suse.cz>
-	<20090326090630.GA9369@elte.hu>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 26 Mar 2009 10:48:31 -0400
+Received: from mx1.emlix.com ([193.175.82.87]:38950 "EHLO mx1.emlix.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758837AbZCZOs1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Mar 2009 10:48:27 -0400
+From: =?utf-8?q?Daniel=20Gl=C3=B6ckner?= <dg@emlix.com>
+To: Chris Zankel <chris@zankel.net>
+Cc: linux-kernel@vger.kernel.org,
+       =?utf-8?q?Daniel=20Gl=C3=B6ckner?= <dg@emlix.com>,
+       Oskar Schirmer <os@emlix.com>
+Subject: [patch 5/5] xtensa: s6000 video updates for s6105_defconfig
+Date: Thu, 26 Mar 2009 15:49:34 +0100
+Message-Id: <1238078974-26040-5-git-send-email-dg@emlix.com>
+In-Reply-To: <1238078974-26040-1-git-send-email-dg@emlix.com>
+References: <1238078974-26040-1-git-send-email-dg@emlix.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+Organization: emlix gmbh, Goettingen, Germany"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 26 Mar 2009 10:06:30 +0100 Ingo Molnar <mingo@elte.hu> wrote:
+Signed-off-by: Daniel Glöckner <dg@emlix.com>
+Signed-off-by: Oskar Schirmer <os@emlix.com>
+---
+ arch/xtensa/configs/s6105_defconfig |   42 ++++++++++++++++++++++++++++++++--
+ 1 files changed, 39 insertions(+), 3 deletions(-)
 
-> And it's not just sys_fsync(). The script i wrote tests file read 
-> latencies. I have created 1000 files with the same size (all copies 
-> of kernel/sched.c ;-), and tested their cache-cold plain-cat 
-> performance via:
-> 
->   for ((i=0;i<1000;i++)); do
->     printf "file #%4d, plain reading it took: " $i
->     /usr/bin/time -f "%e seconds."  cat $i >/dev/null
->   done
-> 
-> I.e. plain, supposedly high-prio reads. The result is very common 
-> hickups in read latencies:
-> 
-> file # 579 (253560 bytes), reading it took: 0.08 seconds.
-> file # 580 (253560 bytes), reading it took: 0.05 seconds.
-> file # 581 (253560 bytes), reading it took: 0.01 seconds.
-> file # 582 (253560 bytes), reading it took: 0.01 seconds.
-> file # 583 (253560 bytes), reading it took: 4.61 seconds.
-> file # 584 (253560 bytes), reading it took: 1.29 seconds.
-> file # 585 (253560 bytes), reading it took: 3.01 seconds.
-> file # 586 (253560 bytes), reading it took: 7.74 seconds.
-> file # 587 (253560 bytes), reading it took: 3.22 seconds.
-> file # 588 (253560 bytes), reading it took: 0.05 seconds.
-> file # 589 (253560 bytes), reading it took: 0.36 seconds.
-> file # 590 (253560 bytes), reading it took: 7.39 seconds.
-> file # 591 (253560 bytes), reading it took: 7.58 seconds.
-> file # 592 (253560 bytes), reading it took: 7.90 seconds.
-> file # 593 (253560 bytes), reading it took: 8.78 seconds.
-> file # 594 (253560 bytes), reading it took: 8.01 seconds.
-> file # 595 (253560 bytes), reading it took: 7.47 seconds.
-> file # 596 (253560 bytes), reading it took: 11.52 seconds.
-> file # 597 (253560 bytes), reading it took: 10.33 seconds.
-> file # 598 (253560 bytes), reading it took: 8.56 seconds.
-> file # 599 (253560 bytes), reading it took: 7.58 seconds.
+diff --git a/arch/xtensa/configs/s6105_defconfig b/arch/xtensa/configs/s6105_defconfig
+index 8eec578..8c7a6ec 100644
+--- a/arch/xtensa/configs/s6105_defconfig
++++ b/arch/xtensa/configs/s6105_defconfig
+@@ -1,7 +1,7 @@
+ #
+ # Automatically generated make config: don't edit
+ # Linux kernel version: 2.6.29-rc7-s6
+-# Tue Mar 17 11:55:24 2009
++# Tue Mar 24 14:16:43 2009
+ #
+ # CONFIG_FRAME_POINTER is not set
+ CONFIG_ZONE_DMA=y
+@@ -400,6 +400,7 @@ CONFIG_I2C_S6000=y
+ # CONFIG_SENSORS_PCF8574 is not set
+ # CONFIG_PCF8575 is not set
+ # CONFIG_SENSORS_PCA9539 is not set
++CONFIG_PCA9543=y
+ # CONFIG_SENSORS_PCF8591 is not set
+ # CONFIG_SENSORS_MAX6875 is not set
+ # CONFIG_SENSORS_TSL2550 is not set
+@@ -483,13 +484,48 @@ CONFIG_SSB_POSSIBLE=y
+ #
+ # Multimedia core support
+ #
+-# CONFIG_VIDEO_DEV is not set
++CONFIG_VIDEO_DEV=y
++CONFIG_VIDEO_V4L2_COMMON=y
++# CONFIG_VIDEO_ALLOW_V4L1 is not set
++# CONFIG_VIDEO_V4L1_COMPAT is not set
+ # CONFIG_DVB_CORE is not set
+-# CONFIG_VIDEO_MEDIA is not set
++CONFIG_VIDEO_MEDIA=y
+ 
+ #
+ # Multimedia drivers
+ #
++CONFIG_MEDIA_TUNER=y
++CONFIG_MEDIA_TUNER_CUSTOMIZE=y
++# CONFIG_MEDIA_TUNER_SIMPLE is not set
++# CONFIG_MEDIA_TUNER_TDA8290 is not set
++# CONFIG_MEDIA_TUNER_TDA827X is not set
++# CONFIG_MEDIA_TUNER_TDA18271 is not set
++# CONFIG_MEDIA_TUNER_TDA9887 is not set
++# CONFIG_MEDIA_TUNER_TEA5761 is not set
++# CONFIG_MEDIA_TUNER_TEA5767 is not set
++# CONFIG_MEDIA_TUNER_MT20XX is not set
++# CONFIG_MEDIA_TUNER_MT2060 is not set
++# CONFIG_MEDIA_TUNER_MT2266 is not set
++# CONFIG_MEDIA_TUNER_MT2131 is not set
++# CONFIG_MEDIA_TUNER_QT1010 is not set
++# CONFIG_MEDIA_TUNER_XC2028 is not set
++# CONFIG_MEDIA_TUNER_XC5000 is not set
++# CONFIG_MEDIA_TUNER_MXL5005S is not set
++# CONFIG_MEDIA_TUNER_MXL5007T is not set
++CONFIG_VIDEO_V4L2=y
++CONFIG_VIDEO_CAPTURE_DRIVERS=y
++# CONFIG_VIDEO_ADV_DEBUG is not set
++CONFIG_VIDEO_FIXED_MINOR_RANGES=y
++CONFIG_VIDEO_HELPER_CHIPS_AUTO=y
++# CONFIG_VIDEO_VIVI is not set
++# CONFIG_VIDEO_SAA5246A is not set
++# CONFIG_VIDEO_SAA5249 is not set
++CONFIG_VIDEO_S6000=y
++CONFIG_VIDEO_S6000_CANONICAL=y
++CONFIG_VIDEO_S6DP_MT9D131=y
++CONFIG_VIDEO_S6DP_SAA7121=y
++# CONFIG_SOC_CAMERA is not set
++# CONFIG_RADIO_ADAPTERS is not set
+ # CONFIG_DAB is not set
+ 
+ #
+-- 
+1.6.2.107.ge47ee
 
-(gets deja-vu feelings)
-
-http://lkml.org/lkml/2003/2/21/10
-
-Maybe you should be running a 2.5.61 kernel.
