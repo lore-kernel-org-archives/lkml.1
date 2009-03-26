@@ -1,101 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756846AbZCZXEm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761897AbZCZXE7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756846AbZCZXEm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Mar 2009 19:04:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753096AbZCZXEb
+	id S1761897AbZCZXE7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Mar 2009 19:04:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752848AbZCZXEr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Mar 2009 19:04:31 -0400
-Received: from mk-outboundfilter-3.mail.uk.tiscali.com ([212.74.114.23]:64629
-	"EHLO mk-outboundfilter-3.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752848AbZCZXEa (ORCPT
+	Thu, 26 Mar 2009 19:04:47 -0400
+Received: from out2.smtp.messagingengine.com ([66.111.4.26]:34067 "EHLO
+	out2.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1761662AbZCZXEp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Mar 2009 19:04:30 -0400
-X-Trace: 232453579/mk-outboundfilter-1.mail.uk.tiscali.com/F2S/$F2S-ACCEPTED/f2s-freedom2Surf-customers/83.67.11.44/None/tvrtko@ursulin.net
-X-SBRS: None
-X-RemoteIP: 83.67.11.44
-X-IP-MAIL-FROM: tvrtko@ursulin.net
-X-MUA: KMail/1.9.10
-X-IP-BHB: Once
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ApsEAISmy0lTQwss/2dsb2JhbACBUNMBg3cG
-X-IronPort-AV: E=Sophos;i="4.38,428,1233532800"; 
-   d="scan'208";a="232453579"
-X-IP-Direction: IN
-From: "Tvrtko A. Ursulin" <tvrtko@ursulin.net>
-To: Pavel Machek <pavel@ucw.cz>
-Subject: Re: Resume after hibernation regression in 2.6.29
-Date: Thu, 26 Mar 2009 23:04:24 +0000
-User-Agent: KMail/1.9.10
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-pm@lists.linux-foundation.org,
-       kernel list <linux-kernel@vger.kernel.org>,
-       Tobias Diedrich <ranma+kernel@tdiedrich.de>,
-       Ayaz Abdulla <aabdulla@nvidia.com>
-References: <200903261920.32173.tvrtko@ursulin.net> <200903262201.03931.tvrtko@ursulin.net> <20090326223855.GF29836@elf.ucw.cz>
-In-Reply-To: <20090326223855.GF29836@elf.ucw.cz>
+	Thu, 26 Mar 2009 19:04:45 -0400
+Date: Fri, 27 Mar 2009 10:04:35 +1100
+From: Bron Gondwana <brong@fastmail.fm>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Matthew Garrett <mjg@redhat.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Theodore Tso <tytso@mit.edu>, Ingo Molnar <mingo@elte.hu>,
+       Jan Kara <jack@suse.cz>, Andrew Morton <akpm@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Nick Piggin <npiggin@suse.de>,
+       Jens Axboe <jens.axboe@oracle.com>, David Rees <drees76@gmail.com>,
+       Jesper Krogh <jesper@krogh.cc>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Oleg Nesterov <oleg@redhat.com>, Roland McGrath <roland@redhat.com>
+Subject: Re: ext3 IO latency measurements (was: Linux 2.6.29)
+Message-ID: <20090326230435.GA10884@brong.net>
+References: <20090326090630.GA9369@elte.hu> <20090326113705.GV32307@mit.edu> <20090326140312.GB14822@elte.hu> <20090326144707.GA6239@mit.edu> <alpine.LFD.2.00.0903260914440.3032@localhost.localdomain> <20090326170714.GF6239@mit.edu> <alpine.LFD.2.00.0903261015050.3032@localhost.localdomain> <20090326185900.166a1097@lxorguk.ukuu.org.uk> <20090326200258.GA10313@srcf.ucam.org> <20090326204209.1da6e791@lxorguk.ukuu.org.uk>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200903262304.24634.tvrtko@ursulin.net>
+In-Reply-To: <20090326204209.1da6e791@lxorguk.ukuu.org.uk>
+Organization: brong.net
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 26 March 2009 22:38:55 Pavel Machek wrote:
-> On Thu 2009-03-26 22:01:03, Tvrtko A. Ursulin wrote:
-> > On Thursday 26 March 2009 21:35:29 Rafael J. Wysocki wrote:
-> > > On Thursday 26 March 2009, Pavel Machek wrote:
-> > > > On Thu 2009-03-26 20:55:23, Tvrtko A. Ursulin wrote:
-> > > > > On Thursday 26 March 2009 20:18:40 Pavel Machek wrote:
-> > > > > > On Thu 2009-03-26 19:20:32, Tvrtko A. Ursulin wrote:
-> > > > > > > Hi guys,
-> > > > > > > I have been running custom compiled 2.6.28.7 in OpenSUSE 11.1
-> > > > > > > and using hiberation/resume daily as configured by the distro.
-> > > > > > > Yesterday I upgraded to 2.6.29 (make oldconfig from 2.6.28.7,
-> > > > > > > attached) and after resume networking (at least) does not work.
-> > > > > > > Reboot at this point takes very long because of timeouts on
-> > > > > > > CIFS and whatelse.
-> > > > > > >
-> > > > > > > Below is how /var/log/messagess looks for one cycle
-> > > > > > > (hibernate-resume-reboot) and I am also attaching kernel config
-> > > > > > > and /var/log/pm-suspend.log.
-> > > > > > >
-> > > > > > > You will probably notice evil nvidia.ko in there but don't
-> > > > > > > panic, it all happens without it as well. Tested from runlevel
-> > > > > > > 3 and by running pm-hibernate. After resume from that NIC LEDs
-> > > > > > > were off. I tried /etc/init.d/network restart but that hung so
-> > > > > > > I ^C and tried rmmod forcedeth && modprobe forcedeth && ifup
-> > > > > > > eth0 and after some time network went live again. Haven't had
-> > > > > > > time to test further though, so this is all pretty rough.
-> > > > > >
-> > > > > > Ok, can you try to rmmod forcedeth before hibernation, then
-> > > > > > insmod it after resume?
-> > > > >
-> > > > > Sure, after insmod and /etc/init.d/network start following resume
-> > > > > network was fine. Guess I could kludge that sequence into pm
-> > > > > scripts somehow but would rather avoid that since it slows down the
-> > > > > cycle and would make scripts non-stock.
-> > > >
-> > > > Ok, I guess you need to talk to forcedeth maintainers then... sounds
-> > > > like a forcedeth problem to me.
-> > >
-> > > I have a box with forcedeth somewhere here, I should be able to check
-> > > that in the next few days.
-> >
-> > Not a lot activity in forcedeth.c from 2.6.28 to 2.6.29 so I will CC two
-> > guys who commited changes in that period. Ayaz, Tobias, forcedeth does
-> > not seem to come up after hibernation well for me. Actual hardware is:
-> >
-> > 00:0f.0 Ethernet controller: nVidia Corporation MCP73 Ethernet (rev a2)
-> >
-> > Anything more I can do just shout!
->
-> Actually yes. Testing forcedeth from 2.6.28 in 2.6.29 would be nice
-> way to prove problem is indeed in that module.
+On Thu, Mar 26, 2009 at 08:42:09PM +0000, Alan Cox wrote:
+> > before performing the update. So while relatime doesn't conform, the 
+> > practical difference is meaningless. You can't depend on atime being 
+> > updated in a timely manner.
+> 
+> POSIX says a disk write interrupted by a signal can be a short write. If
+> you do this in practice all hell breaks loose.
+> 
+> A conforming implementation needs to conform with expectations not just
+> play lawyer games with users systems.
 
-Good idea, I had to massage it a bit due to some API changes, but the end 
-result is a correct resume which proves that the problem really is in 
-forcedeth.
+Is this the same Alan Cox who thought a couple of months ago that
+having an insanely low default maximum number epoll instances was a
+reasonable answer to a theoretical DoS risk, despite it breaking
+pretty much every reasonable user of the epoll interface?
 
-Tvrtko
+Bron ( what stable interface? )
