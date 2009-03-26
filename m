@@ -1,47 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754414AbZCZD6O@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753627AbZCZEMi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754414AbZCZD6O (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 23:58:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753476AbZCZD56
+	id S1753627AbZCZEMi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Mar 2009 00:12:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750925AbZCZEM2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 23:57:58 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:59720
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1750808AbZCZD55 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 23:57:57 -0400
-Date: Wed, 25 Mar 2009 20:57:45 -0700 (PDT)
-Message-Id: <20090325.205745.208859329.davem@davemloft.net>
-To: torvalds@linux-foundation.org
-Cc: kyle@moffetthome.net, jeff@garzik.org, mjg59@srcf.ucam.org, tytso@mit.edu,
-       hch@infradead.org, jack@suse.cz, akpm@linux-foundation.org,
-       mingo@elte.hu, alan@lxorguk.ukuu.org.uk, arjan@infradead.org,
-       a.p.zijlstra@chello.nl, npiggin@suse.de, jens.axboe@oracle.com,
-       drees76@gmail.com, jesper@krogh.cc, linux-kernel@vger.kernel.org
-Subject: Re: Linux 2.6.29
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <alpine.LFD.2.00.0903252017100.3032@localhost.localdomain>
-References: <49CAEDA7.1080902@garzik.org>
-	<f73f7ab80903252003j248b416ewe52b613c5b53066c@mail.gmail.com>
-	<alpine.LFD.2.00.0903252017100.3032@localhost.localdomain>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Thu, 26 Mar 2009 00:12:28 -0400
+Received: from home.keithp.com ([63.227.221.253]:56501 "EHLO keithp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750824AbZCZEM2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Mar 2009 00:12:28 -0400
+X-Greylist: delayed 530 seconds by postgrey-1.27 at vger.kernel.org; Thu, 26 Mar 2009 00:12:27 EDT
+Subject: Re: [PATCH 4/6] drm/i915: Fix lock order reversal in shmem pread
+	path.
+From: Keith Packard <keithp@keithp.com>
+To: Dave Airlie <airlied@linux.ie>
+Cc: keithp@keithp.com, Eric Anholt <eric@anholt.net>,
+       dri-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+In-Reply-To: <alpine.DEB.2.00.0903252328590.27027@skynet.skynet.ie>
+References: <1238017510-26784-1-git-send-email-eric@anholt.net>
+	 <1238017510-26784-2-git-send-email-eric@anholt.net>
+	 <1238017510-26784-3-git-send-email-eric@anholt.net>
+	 <1238017510-26784-4-git-send-email-eric@anholt.net>
+	 <1238017510-26784-5-git-send-email-eric@anholt.net>
+	 <alpine.DEB.2.00.0903252328590.27027@skynet.skynet.ie>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-NZOtivrmD3fBmnpfQmXa"
+Date: Wed, 25 Mar 2009 21:03:13 -0700
+Message-Id: <1238040193.26771.186.camel@aiko.keithp.com>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.22.3.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Wed, 25 Mar 2009 20:40:23 -0700 (PDT)
 
-> For example, the latest one came from git actually checking the error code 
-> from 'close()'. Tell me the last time you saw anybody do that in a real 
-> program. Hint: it's just not done. EVER.
+--=-NZOtivrmD3fBmnpfQmXa
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Emacs does it too, and I know that you consider GNU emacs to be the
-definition of abnormal :-)
+On Wed, 2009-03-25 at 23:30 +0000, Dave Airlie wrote:
+>=20
+> I've no idea when a fault is likely in the fast case, i.e. will it happen
+> usually on the first page etc, because if it happens on the last page and=
+=20
+> you fallback and restart the whole copy, I would think that would be=20
+> sub-optimal, granted it could get ugly quick, but this code has already=20
+> hit a few branches on the tree.
 
-That's how we found some misbehaviors in NFS a while ago, we used to
-return -EAGAIN or something like that from close() on NFS files.  This
-was like 12 years ago and it gave emacs massive heartburn.
+The data in question is presumably 'hot', and so unlikely to be swapped
+out. Testing the slow paths doing a complete copy is fairly easy, while
+testing partial copies would be considerably more difficult. The
+combination of these two seems to encourage a careful and simplistic
+slow path.
+
+We can always make it 'faster' in the future, but having it wrong from
+the first seems sub-optimal.
+
+--=20
+keith.packard@intel.com
+
+--=-NZOtivrmD3fBmnpfQmXa
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iD8DBQBJyv6BQp8BWwlsTdMRAjokAKDcXwteMwFlxf5eY0whr8+Ta2sa1ACfSDvZ
+xtUZ4JYVyZnufH2bmtvB/yI=
+=/NQW
+-----END PGP SIGNATURE-----
+
+--=-NZOtivrmD3fBmnpfQmXa--
+
