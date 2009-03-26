@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756293AbZCZIfR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756742AbZCZIfu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756293AbZCZIfR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Mar 2009 04:35:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755193AbZCZIeZ
+	id S1756742AbZCZIfu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Mar 2009 04:35:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755780AbZCZIe1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Mar 2009 04:34:25 -0400
-Received: from smtp.wellnetcz.com ([212.24.148.102]:52238 "EHLO
+	Thu, 26 Mar 2009 04:34:27 -0400
+Received: from smtp.wellnetcz.com ([212.24.148.102]:52239 "EHLO
 	smtp.wellnetcz.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752400AbZCZIeV (ORCPT
+	with ESMTP id S1752341AbZCZIeV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 26 Mar 2009 04:34:21 -0400
 From: Jiri Slaby <jirislaby@gmail.com>
 To: Greg Kroah-Hartman <gregkh@suse.de>
 Cc: linux-kernel@vger.kernel.org, Jiri Slaby <jirislaby@gmail.com>
-Subject: [PATCH 2/8] staging: agnx, probe cleanup
-Date: Thu, 26 Mar 2009 09:34:07 +0100
-Message-Id: <1238056453-25653-2-git-send-email-jirislaby@gmail.com>
+Subject: [PATCH 3/8] staging: agnx, remove memlens from probe
+Date: Thu, 26 Mar 2009 09:34:08 +0100
+Message-Id: <1238056453-25653-3-git-send-email-jirislaby@gmail.com>
 X-Mailer: git-send-email 1.6.2
 In-Reply-To: <1238056453-25653-1-git-send-email-jirislaby@gmail.com>
 References: <1238056453-25653-1-git-send-email-jirislaby@gmail.com>
@@ -23,113 +23,51 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-- switch printks to dev_*
-- remove useless comments
-- remove useless prints (for info we can obtain from lspci or /sys)
+Pass 0 to pci_iomap instead. It will cope with that per se.
 
 Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
 ---
- drivers/staging/agnx/pci.c |   34 ++++++++++++----------------------
- 1 files changed, 12 insertions(+), 22 deletions(-)
+ drivers/staging/agnx/pci.c |    8 ++------
+ 1 files changed, 2 insertions(+), 6 deletions(-)
 
 diff --git a/drivers/staging/agnx/pci.c b/drivers/staging/agnx/pci.c
-index 4ff4c16..f646211 100644
+index f646211..f2fbd26 100644
 --- a/drivers/staging/agnx/pci.c
 +++ b/drivers/staging/agnx/pci.c
-@@ -452,47 +452,39 @@ static int __devinit agnx_pci_probe(struct pci_dev *pdev,
+@@ -452,7 +452,6 @@ static int __devinit agnx_pci_probe(struct pci_dev *pdev,
  {
  	struct ieee80211_hw *dev;
  	struct agnx_priv *priv;
--	u32 mem_addr0, mem_len0;
--	u32 mem_addr1, mem_len1;
-+	u32 mem_len0, mem_len1;
+-	u32 mem_len0, mem_len1;
  	int err;
  	DECLARE_MAC_BUF(mac);
  
- 	err = pci_enable_device(pdev);
- 	if (err) {
--		printk(KERN_ERR PFX "Can't enable new PCI device\n");
-+		dev_err(&pdev->dev, "can't enable PCI device\n");
+@@ -462,9 +461,6 @@ static int __devinit agnx_pci_probe(struct pci_dev *pdev,
  		return err;
  	}
  
--	/* get pci resource */
--	mem_addr0 = pci_resource_start(pdev, 0);
- 	mem_len0 = pci_resource_len(pdev, 0);
--	mem_addr1 = pci_resource_start(pdev, 1);
- 	mem_len1 = pci_resource_len(pdev, 1);
--	printk(KERN_DEBUG PFX "Memaddr0 is %x, length is %x\n", mem_addr0, mem_len0);
--	printk(KERN_DEBUG PFX "Memaddr1 is %x, length is %x\n", mem_addr1, mem_len1);
- 
+-	mem_len0 = pci_resource_len(pdev, 0);
+-	mem_len1 = pci_resource_len(pdev, 1);
+-
  	err = pci_request_regions(pdev, "agnx-pci");
  	if (err) {
--		printk(KERN_ERR PFX "Can't obtain PCI resource\n");
-+		dev_err(&pdev->dev, "can't reserve PCI resources\n");
- 		return err;
- 	}
- 
- 	if (pci_set_dma_mask(pdev, DMA_32BIT_MASK) ||
- 	    pci_set_consistent_dma_mask(pdev, DMA_32BIT_MASK)) {
--		printk(KERN_ERR PFX "No suitable DMA available\n");
-+		dev_err(&pdev->dev, "no suitable DMA available\n");
- 		goto err_free_reg;
- 	}
- 
- 	pci_set_master(pdev);
--	printk(KERN_DEBUG PFX "pdev->irq is %d\n", pdev->irq);
- 
- 	dev = ieee80211_alloc_hw(sizeof(*priv), &agnx_ops);
- 	if (!dev) {
--		printk(KERN_ERR PFX "ieee80211 alloc failed\n");
-+		dev_err(&pdev->dev, "ieee80211 alloc failed\n");
- 		err = -ENOMEM;
- 		goto err_free_reg;
- 	}
--	/* init priv  */
- 	priv = dev->priv;
- 	memset(priv, 0, sizeof(*priv));
- 	priv->mode = NL80211_IFTYPE_MONITOR;
-@@ -501,17 +493,15 @@ static int __devinit agnx_pci_probe(struct pci_dev *pdev,
+ 		dev_err(&pdev->dev, "can't reserve PCI resources\n");
+@@ -493,13 +489,13 @@ static int __devinit agnx_pci_probe(struct pci_dev *pdev,
  	spin_lock_init(&priv->lock);
  	priv->init_status = AGNX_UNINIT;
  
--	/* Map mem #1 and #2 */
- 	priv->ctl = pci_iomap(pdev, 0, mem_len0);
--/*	printk(KERN_DEBUG PFX"MEM1 mapped address is 0x%p\n", priv->ctl); */
-+/*	dev_dbg(&pdev->dev, "MEM1 mapped address is 0x%p\n", priv->ctl); */
+-	priv->ctl = pci_iomap(pdev, 0, mem_len0);
++	priv->ctl = pci_iomap(pdev, 0, 0);
+ /*	dev_dbg(&pdev->dev, "MEM1 mapped address is 0x%p\n", priv->ctl); */
  	if (!priv->ctl) {
--		printk(KERN_ERR PFX "Can't map device memory\n");
-+		dev_err(&pdev->dev, "can't map device memory\n");
+ 		dev_err(&pdev->dev, "can't map device memory\n");
  		goto err_free_dev;
  	}
- 	priv->data = pci_iomap(pdev, 1, mem_len1);
--	printk(KERN_DEBUG PFX "MEM2 mapped address is 0x%p\n", priv->data);
+-	priv->data = pci_iomap(pdev, 1, mem_len1);
++	priv->data = pci_iomap(pdev, 1, 0);
  	if (!priv->data) {
--		printk(KERN_ERR PFX "Can't map device memory\n");
-+		dev_err(&pdev->dev, "can't map device memory\n");
+ 		dev_err(&pdev->dev, "can't map device memory\n");
  		goto err_iounmap2;
- 	}
- 
-@@ -552,15 +542,15 @@ static int __devinit agnx_pci_probe(struct pci_dev *pdev,
- 
- 	err = ieee80211_register_hw(dev);
- 	if (err) {
--		printk(KERN_ERR PFX "Can't register hardware\n");
-+		dev_err(&pdev->dev, "can't register hardware\n");
- 		goto err_iounmap;
- 	}
- 
- 	agnx_hw_reset(priv);
- 
--
--	printk(PFX "%s: hwaddr %s, Rev 0x%02x\n", wiphy_name(dev->wiphy),
--	       print_mac(mac, dev->wiphy->perm_addr), priv->revid);
-+	dev_info(&pdev->dev, "%s: hwaddr %s, Rev 0x%02x\n",
-+		wiphy_name(dev->wiphy),
-+		print_mac(mac, dev->wiphy->perm_addr), priv->revid);
- 	return 0;
- 
-  err_iounmap:
 -- 
 1.6.2
 
