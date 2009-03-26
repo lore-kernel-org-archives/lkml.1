@@ -1,46 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755780AbZCZADN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754185AbZCZAEU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755780AbZCZADN (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 20:03:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753483AbZCZAC5
+	id S1754185AbZCZAEU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 20:04:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752990AbZCZAEF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 20:02:57 -0400
-Received: from gate.crashing.org ([63.228.1.57]:48180 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752251AbZCZAC4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 20:02:56 -0400
-Subject: Re: [PATCH 04/57] microblaze_v7: Open firmware files
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: avorontsov@ru.mvista.com
-Cc: Arnd Bergmann <arnd@arndb.de>, linuxppc-dev@ozlabs.org, monstr@monstr.eu,
-       linux-kernel@vger.kernel.org, john.williams@petalogix.com
-In-Reply-To: <20090323205305.GA10576@oksana.dev.rtsoft.ru>
-References: <1237408284-8674-1-git-send-email-monstr@monstr.eu>
-	 <4b5aee01d11fc790c7842838ea63a82ee3273003.1237407249.git.monstr@monstr.eu>
-	 <af309ba8e95f503b7990461384d9f8453f45dbbd.1237407249.git.monstr@monstr.eu>
-	 <200903231951.23902.arnd@arndb.de>
-	 <20090323205305.GA10576@oksana.dev.rtsoft.ru>
-Content-Type: text/plain
-Date: Thu, 26 Mar 2009 11:01:39 +1100
-Message-Id: <1238025699.25062.756.camel@pasglop>
+	Wed, 25 Mar 2009 20:04:05 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:45574
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1752496AbZCZAEE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Mar 2009 20:04:04 -0400
+Date: Wed, 25 Mar 2009 17:03:52 -0700 (PDT)
+Message-Id: <20090325.170352.95221419.davem@davemloft.net>
+To: jarkao2@gmail.com
+Cc: herbert@gondor.apana.org.au, mingo@elte.hu, r.schwebel@pengutronix.de,
+       torvalds@linux-foundation.org, blaschka@linux.vnet.ibm.com,
+       tglx@linutronix.de, a.p.zijlstra@chello.nl,
+       linux-kernel@vger.kernel.org, kernel@pengutronix.de
+Subject: Re: Revert "gro: Fix legacy path napi_complete crash",
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20090325225456.GA3271@ami.dom.local>
+References: <20090325122635.GA6489@gondor.apana.org.au>
+	<20090325225456.GA3271@ami.dom.local>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-03-23 at 23:53 +0300, Anton Vorontsov wrote:
-> It took me approx. 4 hours to factor out the code and make a
-> proof-of-concept FDT support for a little-endian ARM platform. ;-)
-> (The device tree was only describing a cpu and a nor flash, though.
-> No support for interrupt- and gpio-controllers. And no support for
-> U-Boot, I just built the dtb file into the kernel).
+From: Jarek Poplawski <jarkao2@gmail.com>
+Date: Wed, 25 Mar 2009 23:54:56 +0100
 
-ARM could benefit tremendously I believe from a similar virtualized
-interrupt mapping & OF tree to powerpc for their gazillions of weirdly
-cascaded interrupt controller setups :-)
+> Herbert Xu wrote, On 03/25/2009 01:26 PM:
+> 
+> > On Wed, Mar 25, 2009 at 01:20:46PM +0100, Ingo Molnar wrote:
+> >> ok - i have started testing the delta below, on top of the plain 
+> >> revert.
+> > 
+> > Thanks! BTW Ingo, any chance you could help us identify the problem
+> > with the previous patch? I don't have a forcedeth machine here
+> > and the hang you had with my patch that open-coded __napi_complete
+> > appears intimately connected to forcedeth (with NAPI enabled).
+> 
+> Of course it's too late for verifying this now, but (for the future)
+> I think, this scenario could be considered:
+> 
+> process_backlog()			netif_rx()
+> 
+> if (!skb)
+> local_irq_enable()
+> 					if (queue.qlen) //NO
+> 					napi_schedule() //NOTHING
+> 					__skb_queue_tail() //qlen > 0
+> napi_complete()
+> ...					...
+> 					Every next netif_rx() sees
+> 					qlen > 0, so napi is never
+> 					scheduled again.
+> 
+> Then, something like this might work...
 
-Ben.
+Excellent detective work, I would have never figured this one
+out.
 
+Herbert can you take a good look at this can confirm Jarek's
+findings?
 
+Thanks!
