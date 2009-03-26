@@ -1,64 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755821AbZCZDee@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756233AbZCZDgQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755821AbZCZDee (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 23:34:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753946AbZCZDeZ
+	id S1756233AbZCZDgQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 23:36:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753783AbZCZDf7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 23:34:25 -0400
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:32998 "EHLO e1.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753715AbZCZDeY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 23:34:24 -0400
-Date: Wed, 25 Mar 2009 20:34:00 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-tip-commits@vger.kernel.org, linux-kernel@vger.kernel.org,
-       hpa@zytor.com, mingo@redhat.com, penberg@cs.helsinki.fi,
-       eduard.munteanu@linux360.ro, tglx@linutronix.de
-Subject: Re: [tip:tracing/kmemtrace] rcutree: fix rcu_tree_trace.c data
-	structure dependencies
-Message-ID: <20090326033400.GI7297@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <1237898630.25315.83.camel@penberg-laptop> <tip-5d957021d326fbfdc1d7a4f11a3da1f6f82d6a36@git.kernel.org> <20090325161147.GA18738@elte.hu> <20090325165204.GG7297@linux.vnet.ibm.com> <20090325165713.GA14250@elte.hu>
+	Wed, 25 Mar 2009 23:35:59 -0400
+Received: from ti-out-0910.google.com ([209.85.142.186]:41403 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753114AbZCZDf6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Mar 2009 23:35:58 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=C1gyb/3YlrKqaZXEmFZ66sBbfUppj9IRdH1GyKE3evjeWECOh4TZWSLE3pXSWlsNPk
+         6gRLBQSYfYvdYPy+y/4r1Vn7yV3OCpDsP2x9q8LtydGNwQeSyoetqjJPExgDSFcTbOb6
+         PJxDuNF2jtW0k35TE8tsq1S5TPsgbOM20KQ3o=
+Message-ID: <49CAF840.2030308@gmail.com>
+Date: Thu, 26 Mar 2009 12:36:32 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090325165713.GA14250@elte.hu>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+CC: Alex Chiang <achiang@hp.com>, greg@kroah.com, cornelia.huck@de.ibm.com,
+       stern@rowland.harvard.edu, kay.sievers@vrfy.org, rusty@rustcorp.com.au,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC PATCH 0/3] sysfs: allow suicide
+References: <20090325035707.15921.42150.stgit@bob.kio>	<m13ad2xi46.fsf@fess.ebiederm.org>	<20090325225414.GA11447@ldl.fc.hp.com>	<m17i2dunao.fsf@fess.ebiederm.org> <49CADB45.3090501@gmail.com> <m163hxrnkb.fsf@fess.ebiederm.org>
+In-Reply-To: <m163hxrnkb.fsf@fess.ebiederm.org>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 25, 2009 at 05:57:13PM +0100, Ingo Molnar wrote:
+Hello,
+
+Eric W. Biederman wrote:
+> Tejun Heo <htejun@gmail.com> writes:
 > 
-> * Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
+>> Thanks for the points.  I do agree that it could be a bit too clever,
+>> but the thing is that protecting the code area from going underneath
+>> something is a pretty special thing to begin with and I think it's
+>> better to apply special solution rather than trying to work around it
+>> using general mechanisms.  So, I actually think the global inhibit
+>> thing is one of the better ways to deal with the nasty-in-nature
+>> problem.
 > 
-> > > I think many of the data definitions (and the resulting include 
-> > > file dependencies) in include/linux/rcu*.h could move into 
-> > > kernel/rcu*.h and be privatized that way. 'struct rcu_state' 
-> > > would be an example.
-> > > 
-> > > Agreed?
-> > 
-> > In principle, yes.  In practice, my attempts to make headway in 
-> > this direction have usually collided with the desire to inline 
-> > some of the functions that appear on fastpaths, so I would prefer 
-> > caution when moving in this direction, especially given my 
-> > treercu-related todos, to which "speeding up synchronize_rcu()" 
-> > just got added.
+> Protecting the data structures from going away is just as important,
+> and the module_inhibit does not address that.
+
+Yeap, I was talking about the code issue only.
+
+> When I looked at it I could not see any touches of kobj in the sysfs
+> code after we dropped the reference count in a strange place, but
+> I haven't been able to convince myself that we will be safe.
+
+The reference is dropped when the suiciding thread calls delete on the
+sysfs node.  It forfeits its right to access the object when it
+deletes it, which makes sense.  The things which are guaranteed after
+deleting the base object are the code it's running off of and the
+sysfs object itself.  I think it's pretty intuitive from user's POV.
+
+> My view is that this is a general hotplug problem and not a sysfs
+> problem.  Further I see inhibiting module reload as only solving
+> have the problem as dropping the kobject reference opens a window to
+> a use after free on the kobj.
+
+kobject_del(obj); obj->whatever; isn't any different from kfree(p);
+*p;.  If the caller accesses the object after deleting it, it's gonna
+fail unless it already held a separate reference count.  There is no
+window.
+
+> The problem that I see is that we are missing support from the device
+> model for hotunplug.  Running the device remove method from process
+> context is required.  Typically hotplug controllers discover a
+> device has been removed or will be removed in interrupt context.
 > 
-> I think there's a solution, for example the quiescent-state inlines 
-> could still be offered in a kernel/rcupdate_internals.h header to be 
-> included by kernel/softirq.c et al directly.
+> Therefore every hotplug driver I have looked at has it's own workqueue
+> to solve the problem of getting the notification of a hotplug event
+> from an inappropriate context.
+> 
+> So the general problem that I see is that I need a solution to trigger
+> a remove from interrupt context and that same solution will happen to
+> work just fine for sysfs.
 
-Could definitely do this, as I used to do it this way in a former life.
-As long as we are now OK with creating an additional header file or two
-per flavor of RCU.
+I think the problem is more driver domain specific and not quite sure
+whether one size would fit all.  We have a lot of drivers in the tree.
+I think the best approach would be trying to move upwards from the
+bottom.  ie. Consolidate hotplug / error handling support from low
+level drivers to specific driver subsystem, from driver subsystems to
+higher layer (ie. block layer) and then see whether there can be more
+commonalities which can be factored, but the chance is that once
+things are pushed upwards enough, moving it into the kobject layer
+probably wouldn't worth the trouble.  Well, it's all speculations at
+this point tho.
 
-> Otherwise ... i think it generally is not worth the trouble to put 
-> huge data types into common headers just to be able to inline into a 
-> small number of callsites.
+Thanks.
 
-Information hiding can indeed be a good thing.
-
-							Thanx, Paul
+-- 
+tejun
