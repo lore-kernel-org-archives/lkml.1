@@ -1,92 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760118AbZCZR6b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759689AbZCZSFn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760118AbZCZR6b (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Mar 2009 13:58:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755612AbZCZR6V
+	id S1759689AbZCZSFn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Mar 2009 14:05:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754851AbZCZSFd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Mar 2009 13:58:21 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:53934 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754481AbZCZR6U (ORCPT
+	Thu, 26 Mar 2009 14:05:33 -0400
+Received: from ey-out-2122.google.com ([74.125.78.24]:22132 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754224AbZCZSFc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Mar 2009 13:58:20 -0400
-Date: Thu, 26 Mar 2009 10:48:43 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Frans Pop <elendil@planet.nl>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, mingo@elte.hu,
-       tytso@mit.edu, jack@suse.cz, alan@lxorguk.ukuu.org.uk,
-       arjan@infradead.org, a.p.zijlstra@chello.nl, npiggin@suse.de,
-       jens.axboe@oracle.com, drees76@gmail.com, jesper@krogh.cc,
-       linux-kernel@vger.kernel.org, oleg@redhat.com, roland@redhat.com
-Subject: Re: relatime: update once per day patches (was: ext3 IO latency
- measurements)
-Message-Id: <20090326104843.46abfaa7.akpm@linux-foundation.org>
-In-Reply-To: <200903261812.09153.elendil@planet.nl>
-References: <20090325123744.GK23439@duck.suse.cz>
-	<alpine.LFD.2.00.0903260912270.3032@localhost.localdomain>
-	<20090326092454.b74e3f96.akpm@linux-foundation.org>
-	<200903261812.09153.elendil@planet.nl>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 26 Mar 2009 14:05:32 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:content-type
+         :content-transfer-encoding;
+        b=tnMPD0OD3P8AIQXj31zi9A23SB3POjspd9EvbHJWniDO5vdDISxZ25H1/vF5eYvGvz
+         7RJNcS2RX1RLa70rhFEYSJ2fBGAtKH/1ZMFwEJK4nm+5IJWbfx/zLavT/kfM32k5Fagt
+         ywisi3Eg3+EZ/4wEynMychJqT5OMOqUTXmP5k=
+MIME-Version: 1.0
+In-Reply-To: <b2080d80903230812s2a33b635vf70f7736133570c7@mail.gmail.com>
+References: <20090320030121.1fa8e6d3.akpm@linux-foundation.org>
+	 <b2080d80903220626s5fffdbf3i907cb4b215670ce6@mail.gmail.com>
+	 <b2080d80903200244u7fbcc150g6724a84c9b3b2054@mail.gmail.com>
+	 <20090323020522.GF29466@mit.edu>
+	 <b2080d80903230210w60d48530n9b98fdf71cf6fd18@mail.gmail.com>
+	 <20090323121709.GD13368@mit.edu>
+	 <b2080d80903230720m16af65c4t992b9cc34c44b914@mail.gmail.com>
+	 <20090323150804.GG13368@mit.edu>
+	 <b2080d80903230812s2a33b635vf70f7736133570c7@mail.gmail.com>
+Date: Thu, 26 Mar 2009 19:05:29 +0100
+X-Google-Sender-Auth: b061d1c5a5ba747a
+Message-ID: <b2080d80903261105j20c103ci158ecd6fe9a65c59@mail.gmail.com>
+Subject: Re: Severe data corruption with ext4
+From: =?ISO-8859-1?Q?Richard_H=F6chenberger?= <richard@r-selected.de>
+To: Theodore Tso <tytso@mit.edu>, linux-kernel@vger.kernel.org,
+       linux-ext4@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 26 Mar 2009 18:12:04 +0100 Frans Pop <elendil@planet.nl> wrote:
+Hello Ted,
 
-> On Thursday 26 March 2009, Andrew Morton wrote:
-> > On Thu, 26 Mar 2009 09:14:28 -0700 (PDT) Linus Torvalds 
-> <torvalds@linux-foundation.org> wrote:
-> > > I generally agree witht he "leave policy to user space" people, but
-> > > this is an area where (a) user space has shown itself to not get it
-> > > right (ie people don't do even the existing relatime because distros
-> > > don't) and (b) what's the alternative?
-> > >
-> > > > I (and others) pointed out that it would be better to implement
-> > > > this as a mount option.  That suggestion was met with varying
-> > > > sillinesses and that is where things stand.
-> > >
-> > > I'd suggest first just doing the 24 hour thing, and then, IF user
-> > > space actually ever gets its act together, and people care, and they
-> > > _ask_ for a mount option, that's when it's worth doing.
-> >
-> > We wouldn't normally just enable the new feature by default because it
-> > changes kernel behaviour.  Userspace needs to be changed in some manner
-> > to opt-in.  One way it's `mount -o remount', the other way it's a poke
-> > in /proc.
-> 
-> What change are you talking about here exactly? The "change relatime to 
-> have a 24 hour safeguard" of Matthes's first patch or the "enable 
-> relatime by default" options in the second patch?
-> 
-> For the first I don't think it's that big a deal as it is a change that 
-> makes the behavior of relatime safer and not riskier. Also, it's 
-> something people have argued should have been part of the initial 
-> functionality of relatime (it was part of the discussion back then), and 
-> finally for a lot of users it's already current functionality as major 
-> distros already do include the patch.
-> 
-> For the second, I can see your point and can understand reservations to 
-> make enabling relatime a kernel config option.
-> 
-> Speaking exclusively for myself, I would be happy enough if only the first 
-> of Matthew's patches would get accepted.
-> 
+I am considering moving my data to ext3, since in a week (or two) I
+will have to use the computer on which the bug occured as a (hopefully
+stable) production system. Should I keep an Image of the /usr
+partition, in case you have any further questions or something?
 
-Oh, the feature itself is desirable.  But the interface isn't.
+Thanks for your help so far,
 
-- It's a magic number.  Maybe someone runs tmpwatch twice per day, or
-  weekly, or...
-
-- That's fixable by making "24" tunable, but it's still a global
-  thing.  Better to make it per-fs.
-
-- mount(8) is the standard way of tuning fs behaviour.  There's no
-  need to deviate from that here.
-
-Note that none of this involves the default setting.  With a per-mount
-tunable we can still make the default for each fs be "on, 24 hours"
-if we so decide.
-
+    Richard
