@@ -1,117 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759719AbZCZQkP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759907AbZCZQkl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759719AbZCZQkP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Mar 2009 12:40:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754977AbZCZQj6
+	id S1759907AbZCZQkl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Mar 2009 12:40:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757097AbZCZQkY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Mar 2009 12:39:58 -0400
-Received: from ausc60ps301.us.dell.com ([143.166.148.206]:54031 "EHLO
-	ausc60ps301.us.dell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754081AbZCZQj5 (ORCPT
+	Thu, 26 Mar 2009 12:40:24 -0400
+Received: from smtp-outbound-1.vmware.com ([65.115.85.69]:44913 "EHLO
+	smtp-outbound-1.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754977AbZCZQkX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Mar 2009 12:39:57 -0400
-Date: Thu, 26 Mar 2009 11:39:55 -0500
-From: Matt Domsch <Matt_Domsch@dell.com>
-To: David Miller <davem@davemloft.net>
-Cc: netdev@vger.kernel.org, linux-hotplug@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: Network Device Naming mechanism and policy
-Message-ID: <20090326163955.GA22398@auslistsprd01.us.dell.com>
-References: <20090324154617.GA16332@auslistsprd01.us.dell.com> <20090324.155756.214460004.davem@davemloft.net>
+	Thu, 26 Mar 2009 12:40:23 -0400
+Subject: Re: [PATCH -tip] x86: move vmware to hypervisor
+From: Alok Kataria <akataria@vmware.com>
+Reply-To: akataria@vmware.com
+To: "david@lang.hm" <david@lang.hm>
+Cc: Jaswinder Singh Rajput <jaswinder@kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>, x86 maintainers <x86@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <alpine.DEB.1.10.0903260008050.13440@asgard.lang.hm>
+References: <1237281581.7907.2.camel@ht.satnam>
+	 <20090317093919.GD6477@elte.hu> <1237283318.7907.9.camel@ht.satnam>
+	 <49BFC6CB.9070603@zytor.com>
+	 <1237958994.5556.5.camel@localhost.localdomain>
+	 <20090325125955.GB516@elte.hu>  <1237999971.32497.12.camel@alok-dev1>
+	 <1238000840.2500.49.camel@ht.satnam>  <1238001853.32497.22.camel@alok-dev1>
+	 <1238002693.2500.52.camel@ht.satnam> <1238005127.32497.38.camel@alok-dev1>
+	 <alpine.DEB.1.10.0903260008050.13440@asgard.lang.hm>
+Content-Type: text/plain
+Organization: VMware INC.
+Date: Thu, 26 Mar 2009 09:40:21 -0700
+Message-Id: <1238085621.21971.3.camel@alok-dev1>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090324.155756.214460004.davem@davemloft.net>
-User-Agent: Mutt/1.5.11
+X-Mailer: Evolution 2.8.0 (2.8.0-40.el5_1.1) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 24, 2009 at 03:57:56PM -0700, David Miller wrote:
-> From: Matt Domsch <Matt_Domsch@dell.com>
-> Date: Tue, 24 Mar 2009 10:46:17 -0500
+On Thu, 2009-03-26 at 00:10 -0700, david@lang.hm wrote:
+> On Wed, 25 Mar 2009, Alok Kataria wrote:
 > 
-> > Problem: Users expect on-motherboard NICs to be named eth0..ethN.
-> > This can be difficult to achieve.
+> > On Wed, 2009-03-25 at 10:38 -0700, Jaswinder Singh Rajput wrote:
+> >> I am not saying we should not hide this behind a config at all. The
+> >> point is there is nothing that we save by adding a new config, so what's
+> >> the point at all. If you can give me a solid reason like, say, you save
+> >> 1% code space with this config option, or 'n' sec in the boottime,  I am
+> >> all ears for such an argument.
+> >>
+> >>
+> >
+> > So, if there are any tangible benefits with doing this I am ok with it,
+> > but your current argument about "Freedom to user"  doesn't sound too
+> > compelling.
 > 
-> I learned a long time ago that eth0 et al. have zero meaning.
+> isn't it the other way around? you are adding this in, it should be up to 
+> you to show that it
 > 
-> If the system firmware folks gave us topology information with respect
-> to these things, we could export something that tools such as
-> NetworkManager, iproute2, etc. could use.
+> A. has no impact
 > 
-> For example, if we were told that PCI device "domain:bus:dev:fn" has
-> string label "Onboard Ethernet 0" then we could present that to the
-> user.
-> 
-> Changing how the actual network device name is determined is going to
-> have zero traction.
-> 
-> So, please, put mapping tables into the ACPI or similar and then
-> programs can go:
-> 
-> 	for_each_network_device(name) {
-> 		fd = open(name);
-> 		label = get_system_label(fd, name);
-> 		present_to_user(label, name);
-> 	}
+> B. has a small enough impact that it's not worth the config option
 
+This is what exactly I have mentioned in a mail earlier in this thread.
+http://lkml.org/lkml/2009/3/25/333
 
-Your wish is my command.  DMTF SMBIOS 2.6 specification
-http://www.dmtf.org/standards/smbios/ contains changes which provide
-this for PCI devices.
+Alok
 
-Specifically, Type 9 ("System Slots") was extended to include the PCI
-domain/bus/device/function for each slot.  Type 10 ("On Board Devices
-Information") could not be extended, thus it was deprecated, and new
-Type 41 ("Onboard Devices Extended Information") was created to be
-extensible and now includes PCI domain/bus/device/function
-information.  Both Type 9 and Type 41 include a String field which
-hopefully has a more descriptive value, such as "Onboard Ethernet
-Broadcom 5808 NIC 1" in the case of some Dell servers.
-
-Shipping Dell 10G (and very soon 11G) server BIOS includes this
-information.  biosdevname can use this to report device names.  Some
-HP systems have a vendor-specific SMBIOS extension to provide a
-similar mapping; biosdevname can report this as well.
-
-> This "get_system_label()" thing can be an ethtool ioctl, some
-> rtnetlink call, or similar.  In the kernel, a generic routine would
-> exist for major bus types to make the mapping translation, and drivers
-> would call these.
->
-> For PCI it might take the PCI device pointer and try to fish
-> out a string from the ACPI layer.
-> 
-> For OpenFirmware we might just simply give the full device path,
-> or a matching device alias name.
-> 
-> That's the only model which allows a smooth transition and
-> no major infrastructure changes.
-
-While I'd be happy for NetworkManager to present these SMBIOS-provided
-human-parsable names when available, the names aren't terribly
-meaningful in a programatic fashion.  The users I've encountered are
-looking for a programatic way to say:
-
-  The first LOM is my management/admin NIC.  The second LOM is my bulk
-  traffic NIC.  The first add-in card is my backup NIC.
-
-meaning we still need a translation from "how I want to use a NIC" to
-"which NIC should I plug the cable into".  The SMBIOS names don't
-completely solve this.
-
-Hence my desire of having a way to have multiple alternate names for
-the same interface.  One such name would be the full SMBIOS string.
-Another would be a bus topology name. A third could be a "how do I use
-it" name.  Analogous to devices represented in /dev using symlinks for
-these other names.  I don't care if it's symlinks in /dev or some
-other mechanism.
-
-Thanks,
-Matt
-
--- 
-Matt Domsch
-Linux Technology Strategist, Dell Office of the CTO
-linux.dell.com & www.dell.com/linux
