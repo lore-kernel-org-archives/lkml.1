@@ -1,67 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756389AbZCZI6G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756855AbZCZI6g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756389AbZCZI6G (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Mar 2009 04:58:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753628AbZCZI5z
+	id S1756855AbZCZI6g (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Mar 2009 04:58:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754532AbZCZI6Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Mar 2009 04:57:55 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:52586 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753330AbZCZI5y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Mar 2009 04:57:54 -0400
-Date: Thu, 26 Mar 2009 09:57:48 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Hugh Dickins <hugh@veritas.com>
-Cc: Ric Wheeler <rwheeler@redhat.com>, Jeff Garzik <jeff@garzik.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Theodore Tso <tytso@mit.edu>, Ingo Molnar <mingo@elte.hu>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Nick Piggin <npiggin@suse.de>,
-       David Rees <drees76@gmail.com>, Jesper Krogh <jesper@krogh.cc>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.29
-Message-ID: <20090326085748.GH27476@kernel.dk>
-References: <alpine.LFD.2.00.0903241053200.3032@localhost.localdomain> <20090324184549.GE32307@mit.edu> <alpine.LFD.2.00.0903241218130.3032@localhost.localdomain> <49C93AB0.6070300@garzik.org> <20090325093913.GJ27476@kernel.dk> <49CA86BD.6060205@garzik.org> <20090325194341.GB27476@kernel.dk> <49CA8ADA.3040709@redhat.com> <20090325195747.GC27476@kernel.dk> <Pine.LNX.4.64.0903252036130.8872@blonde.anvils>
+	Thu, 26 Mar 2009 04:58:25 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:38420 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754206AbZCZI6Y (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Mar 2009 04:58:24 -0400
+Date: Thu, 26 Mar 2009 17:56:52 +0900 (JST)
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Johannes Weiner <hannes@cmpxchg.org>
+Subject: Re: [patch 3/3] mm: keep pages from unevictable mappings off the LRU lists
+Cc: kosaki.motohiro@jp.fujitsu.com, David Howells <dhowells@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, Nick Piggin <npiggin@suse.de>,
+       Rik van Riel <riel@redhat.com>, Peter Zijlstra <peterz@infradead.org>,
+       MinChan Kim <minchan.kim@gmail.com>,
+       Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+In-Reply-To: <20090326000100.GA5404@cmpxchg.org>
+References: <12135.1237805607@redhat.com> <20090326000100.GA5404@cmpxchg.org>
+Message-Id: <20090326175314.68F7.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0903252036130.8872@blonde.anvils>
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50 [ja]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 25 2009, Hugh Dickins wrote:
-> On Wed, 25 Mar 2009, Jens Axboe wrote:
-> > On Wed, Mar 25 2009, Ric Wheeler wrote:
-> > > Jens Axboe wrote:
-> > >>
-> > >> Another problem is that FLUSH_CACHE sucks. Really. And not just on
-> > >> ext3/ordered, generally. Write a 50 byte file, fsync, flush cache and
-> > >> wit for the world to finish. Pretty hard to teach people to use a nicer
-> > >> fdatasync(), when the majority of the cost now becomes flushing the
-> > >> cache of that 1TB drive you happen to have 8 partitions on. Good luck
-> > >> with that.
-> > >>   
-> > > And, as I am sure that you do know, to add insult to injury, FLUSH_CACHE  
-> > > is per device (not file system).
-> > >
-> > > When you issue an fsync() on a disk with multiple partitions, you will  
-> > > flush the data for all of its partitions from the write cache....
+> On Mon, Mar 23, 2009 at 10:53:27AM +0000, David Howells wrote:
+> > Johannes Weiner <hannes@cmpxchg.org> wrote:
 > > 
-> > Exactly, that's what my (vague) 8 partition reference was for :-)
-> > A range flush would be so much more palatable.
+> > > -		if (page_is_file_cache(page))
+> > > +		if (mapping_unevictable(mapping))
+> > > +			add_page_to_unevictable_list(page);
+> > > +		else if (page_is_file_cache(page))
+> > 
+> > It would be nice to avoid adding an extra test and branch in here.  This
+> > function is used a lot, and quite often we know the answer to the first test
+> > before we even get here.
 > 
-> Tangential question, but am I right in thinking that BIO_RW_BARRIER
-> similarly bars across all partitions, whereas its WRITE_BARRIER and
-> DISCARD_BARRIER users would actually prefer it to apply to just one?
+> Yes, I thought about that too.  So I mounted a tmpfs and dd'd
+> /dev/zero to a file on it until it ran out of space (around 900M,
+> without swapping), deleted the file again.  I did this in a tight loop
+> and profiled it.
+> 
+> I couldn't think of a way that would excercise add_to_page_cache_lru()
+> more, I hope I didn't overlook anything, please correct if I am wrong.
+> 
+> If I was not, than the extra checking for unevictable mappings doesn't
+> make a measurable difference.  The function on the vanilla kernel had
+> a share of 0.2033%, on the patched kernel 0.1953%.
 
-All the barriers refer to just that range which the barrier itself
-references. The problem with the full device flushes is implementation
-on the hardware side, since we can't do small range flushes. So it's not
-as-designed, but rather the best we can do...
+May I ask the number of the cpu of your test box.
+In general, lock contention possibility depend on #ofCPUs.
 
--- 
-Jens Axboe
+So, I and lee mainly talked about large box.
+
+
 
