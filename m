@@ -1,82 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758847AbZCZOrm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758608AbZCZOs1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758847AbZCZOrm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Mar 2009 10:47:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756763AbZCZOr3
+	id S1758608AbZCZOs1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Mar 2009 10:48:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758293AbZCZOsN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Mar 2009 10:47:29 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:47039 "EHLO mx2.redhat.com"
+	Thu, 26 Mar 2009 10:48:13 -0400
+Received: from THUNK.ORG ([69.25.196.29]:36722 "EHLO thunker.thunk.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757510AbZCZOr2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Mar 2009 10:47:28 -0400
-Date: Thu, 26 Mar 2009 10:47:16 -0400
-From: Bill Nottingham <notting@redhat.com>
-To: Matthew Wilcox <matthew@wil.cx>
-Cc: Christoph Hellwig <hch@infradead.org>, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org, pjones@redhat.com
-Subject: Re: [PATCH] Add a 'wait-scan' command to /proc/scsi/scsi.
-Message-ID: <20090326144716.GA5696@nostromo.devel.redhat.com>
-Mail-Followup-To: Matthew Wilcox <matthew@wil.cx>,
-	Christoph Hellwig <hch@infradead.org>, linux-kernel@vger.kernel.org,
-	linux-scsi@vger.kernel.org, pjones@redhat.com
-References: <1238007647-25752-1-git-send-email-notting@redhat.com> <20090325190137.GA8509@infradead.org> <20090325190321.GB25176@nostromo.devel.redhat.com> <20090325192653.GS14127@parisc-linux.org> <20090325194756.GA26465@nostromo.devel.redhat.com> <20090325203624.GT14127@parisc-linux.org>
+	id S1758801AbZCZOsM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Mar 2009 10:48:12 -0400
+Date: Thu, 26 Mar 2009 10:47:07 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Jan Kara <jack@suse.cz>, Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Nick Piggin <npiggin@suse.de>,
+       Jens Axboe <jens.axboe@oracle.com>, David Rees <drees76@gmail.com>,
+       Jesper Krogh <jesper@krogh.cc>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Oleg Nesterov <oleg@redhat.com>, Roland McGrath <roland@redhat.com>
+Subject: Re: ext3 IO latency measurements (was: Linux 2.6.29)
+Message-ID: <20090326144707.GA6239@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>, Ingo Molnar <mingo@elte.hu>,
+	Jan Kara <jack@suse.cz>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Alan Cox <alan@lxorguk.ukuu.org.uk>,
+	Arjan van de Ven <arjan@infradead.org>,
+	Peter Zijlstra <a.p.zijlstra@chello.nl>,
+	Nick Piggin <npiggin@suse.de>, Jens Axboe <jens.axboe@oracle.com>,
+	David Rees <drees76@gmail.com>, Jesper Krogh <jesper@krogh.cc>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	Oleg Nesterov <oleg@redhat.com>, Roland McGrath <roland@redhat.com>
+References: <20090325150041.GM32307@mit.edu> <alpine.LFD.2.00.0903251008120.3032@localhost.localdomain> <20090325185824.GO32307@mit.edu> <alpine.LFD.2.00.0903251341050.3032@localhost.localdomain> <20090325215137.GQ32307@mit.edu> <alpine.LFD.2.00.0903251613300.3032@localhost.localdomain> <20090325235041.GA11024@duck.suse.cz> <20090326090630.GA9369@elte.hu> <20090326113705.GV32307@mit.edu> <20090326140312.GB14822@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090325203624.GT14127@parisc-linux.org>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+In-Reply-To: <20090326140312.GB14822@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Matthew Wilcox (matthew@wil.cx) said: 
-> > Sure, but asking all people who might eventually have to use it
-> > to always watch any possible interface addition isn't practical.
+On Thu, Mar 26, 2009 at 03:03:12PM +0100, Ingo Molnar wrote:
+> That's in good deal atime update latencies. We still appear to 
+> default to atime enabled in ext4.
 > 
-> Right.  I asked several people at Red Hat about the interface and I got a
-> "yeah, OK, whatever" kind of response.  Clearly you need to educate your
-> colleagues to pass these kinds of interface questions along to you.
+> That's stupid - only around 0.01% of all Linux systems relies on 
+> atime - and even those who rely on it would be well served by 
+> relatime. Why arent the relatime patches upstream? Why isnt it the 
+> default? They have been submitted several times.
 
-Heh. Of course, I suspect many of them and I wouldn't see eye-to-eye
-in any case.
+The relatime patches are upstream.  Both noatime and relatime are
+handled at the VFS layer, not at the per-filesystem level.  The reason
+why it sin't the default is because of a desire for POSIX compliance,
+I suspect.  Most distributions are putting relatime into /etc/fstab by
+default, but we haven't changed the mount option.  It wouldn't be hard
+to add an "atime" option to turn on atime updates, and make either
+"noatime" or "relatime" the default.  This is a simple patch to
+fs/namespace.c
 
-> > Well, in the case I'm looking at, udev is what's loading the host
-> > controllers, and there needs to be some sort of synchronization point
-> > between that and LVM invocations, fsck, mount, etc. Since scans
-> > aren't sent over as events for udev to catch, 'udevadm settle'
-> > isn't enough.
-> 
-> So ... if we sent a udev event when the scan list was empty, you'd be OK?
+> Atime in its current mandatory do-a-write-for-every-read form is a 
+> stupid relic and we have been paying the fool's tax for it in the 
+> past 10 years.
 
-I'm CC'ing Peter, who has some more ideas - it would definitely be a good
-start, but we'd probably at least need to know when the scan list started
-being filled as well.
+No argument here.  I use noatime, myself.  It actually saves a lot
+more than relatime, and unless you are using mutt with local Maildir
+delivery, relatime isn't really that helpful, and the benefit of
+noatime is roughly double that of relatime vs normal atime update, in
+my measurements:
 
-This also doesn't help with USB, where the scan isn't scheduled until some
-indeterminate time after the host is registered, but given that USB is
-always hotpluggable, you can never fully be sure there.
+http://thunk.org/tytso/blog/2009/03/01/ssds-journaling-and-noatimerelatime/
 
-Ideally, once we get to the point where:
-
-- MD
-- DM/LVM/etc
-- fsck
-- mount
-
-can all be event-driven on startup, we won't need this. But we're not
-there yet.
-
-> > Removing, loading, and removing scsi_wait_scan works
-> > here, but it just seems like a kludge.
-> 
-> I don't quite understand why it was loaded, and not unloaded immediately.
-
-In the initramfs (as we use it) it is, but any time later in userspace it
-seems prudent to make sure it's removed first. I toyed with the idea of
-having module_init() return an error so that the module unregisters itself
-after doing the wait-for-scans, but the error of course propagates back
-to userspace, giving lots of ugly messages in the default config.
-(You could do a modprobe rule that automatically removes it after
-insertion.)
-
-Bill
+						- Ted
