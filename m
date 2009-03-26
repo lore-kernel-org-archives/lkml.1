@@ -1,62 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757172AbZCZRZ2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760007AbZCZRZq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757172AbZCZRZ2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Mar 2009 13:25:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753856AbZCZRZT
+	id S1760007AbZCZRZq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Mar 2009 13:25:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758399AbZCZRZa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Mar 2009 13:25:19 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:41439 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752532AbZCZRZS (ORCPT
+	Thu, 26 Mar 2009 13:25:30 -0400
+Received: from mail-ew0-f165.google.com ([209.85.219.165]:42237 "EHLO
+	mail-ew0-f165.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757583AbZCZRZ2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Mar 2009 13:25:18 -0400
-Date: Thu, 26 Mar 2009 10:16:25 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Theodore Tso <tytso@mit.edu>
-cc: Ingo Molnar <mingo@elte.hu>, Jan Kara <jack@suse.cz>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Nick Piggin <npiggin@suse.de>,
-       Jens Axboe <jens.axboe@oracle.com>, David Rees <drees76@gmail.com>,
-       Jesper Krogh <jesper@krogh.cc>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Oleg Nesterov <oleg@redhat.com>, Roland McGrath <roland@redhat.com>
-Subject: Re: ext3 IO latency measurements (was: Linux 2.6.29)
-In-Reply-To: <20090326170714.GF6239@mit.edu>
-Message-ID: <alpine.LFD.2.00.0903261015050.3032@localhost.localdomain>
-References: <20090325185824.GO32307@mit.edu> <alpine.LFD.2.00.0903251341050.3032@localhost.localdomain> <20090325215137.GQ32307@mit.edu> <alpine.LFD.2.00.0903251613300.3032@localhost.localdomain> <20090325235041.GA11024@duck.suse.cz> <20090326090630.GA9369@elte.hu>
- <20090326113705.GV32307@mit.edu> <20090326140312.GB14822@elte.hu> <20090326144707.GA6239@mit.edu> <alpine.LFD.2.00.0903260914440.3032@localhost.localdomain> <20090326170714.GF6239@mit.edu>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Thu, 26 Mar 2009 13:25:28 -0400
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <20090326144716.GA5696@nostromo.devel.redhat.com>
+References: <1238007647-25752-1-git-send-email-notting@redhat.com>
+	 <20090325190137.GA8509@infradead.org>
+	 <20090325190321.GB25176@nostromo.devel.redhat.com>
+	 <20090325192653.GS14127@parisc-linux.org>
+	 <20090325194756.GA26465@nostromo.devel.redhat.com>
+	 <20090325203624.GT14127@parisc-linux.org>
+	 <20090326144716.GA5696@nostromo.devel.redhat.com>
+Date: Thu, 26 Mar 2009 18:25:25 +0100
+Message-ID: <ac3eb2510903261025y5cacc8a3i32ba8ee8896c9db9@mail.gmail.com>
+Subject: Re: [PATCH] Add a 'wait-scan' command to /proc/scsi/scsi.
+From: Kay Sievers <kay.sievers@vrfy.org>
+To: Matthew Wilcox <matthew@wil.cx>, Christoph Hellwig <hch@infradead.org>,
+       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+       pjones@redhat.com
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, Mar 26, 2009 at 15:47, Bill Nottingham <notting@redhat.com> wrote:
+> Matthew Wilcox (matthew@wil.cx) said:
 
+>> > Well, in the case I'm looking at, udev is what's loading the host
+>> > controllers, and there needs to be some sort of synchronization point
+>> > between that and LVM invocations, fsck, mount, etc. Since scans
+>> > aren't sent over as events for udev to catch, 'udevadm settle'
+>> > isn't enough.
+>>
+>> So ... if we sent a udev event when the scan list was empty, you'd be OK?
+>
+> I'm CC'ing Peter, who has some more ideas - it would definitely be a good
+> start, but we'd probably at least need to know when the scan list started
+> being filled as well.
 
-On Thu, 26 Mar 2009, Theodore Tso wrote:
-> 
-> You can, actually, but it requires hacking /boot/grub/menu.list.  The
-> boot command option "rootflags=noatime" should do it, if their initrd
-> scripts are at all sane (and they honor rootfstype, so they probably
-> do also honor rootflags).
+I don't like to see any uevent send for issues like this. This would
+just be a hack around badly designed system services, which should be
+fixed themselves and not worked around in the kernel. This hack will
+run useless events for system who don't need them.
 
-Not when I tried it. It just causes the initrd to be mounted noatime, and 
-then the real root filesystem gets mounted atime again.
+Something like a poll()'able sysfs file, which other subsytems already
+use, and which can be used to wake up a process that can blocks, might
+work fine here.
 
-Maybe I screwed up. But I don't think so.
-
-> The question is whether we can make Fedora 11 and OpenSUSE do the
-> right thing now that this has become a highly visible discussion.  I'm
-> actually fairly optimistic on this front.  (Maybe some distro folks
-> will care to chime in on whether upcoming releases of F11 and OpenSuSE
-> can be changed to DTRT?)
-
-And what's the argument for not doing it in the kernel?
-
-The fact is, "atime" by default is just wrong.
-
-			Linus
+Thanks,
+Kay
