@@ -1,63 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760913AbZCZTGV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761137AbZCZTJm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760913AbZCZTGV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Mar 2009 15:06:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759685AbZCZTEL
+	id S1761137AbZCZTJm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Mar 2009 15:09:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760978AbZCZTJQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Mar 2009 15:04:11 -0400
-Received: from extu-mxob-1.symantec.com ([216.10.194.28]:53646 "EHLO
-	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760228AbZCZTEG (ORCPT
+	Thu, 26 Mar 2009 15:09:16 -0400
+Received: from fg-out-1718.google.com ([72.14.220.159]:54503 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760968AbZCZTJP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Mar 2009 15:04:06 -0400
-Date: Thu, 26 Mar 2009 19:00:10 +0000 (GMT)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.anvils
-To: Jens Axboe <jens.axboe@oracle.com>
-cc: Ric Wheeler <rwheeler@redhat.com>, Jeff Garzik <jeff@garzik.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Theodore Tso <tytso@mit.edu>, Ingo Molnar <mingo@elte.hu>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Nick Piggin <npiggin@suse.de>,
-       David Rees <drees76@gmail.com>, Jesper Krogh <jesper@krogh.cc>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.29
-In-Reply-To: <20090326183254.GI27476@kernel.dk>
-Message-ID: <Pine.LNX.4.64.0903261855590.18132@blonde.anvils>
-References: <20090325093913.GJ27476@kernel.dk> <49CA86BD.6060205@garzik.org>
- <20090325194341.GB27476@kernel.dk> <49CA8ADA.3040709@redhat.com>
- <20090325195747.GC27476@kernel.dk> <Pine.LNX.4.64.0903252036130.8872@blonde.anvils>
- <20090326085748.GH27476@kernel.dk> <Pine.LNX.4.64.0903261430410.32095@blonde.anvils>
- <20090326154610.GH27476@kernel.dk> <Pine.LNX.4.64.0903261755010.14358@blonde.anvils>
- <20090326183254.GI27476@kernel.dk>
+	Thu, 26 Mar 2009 15:09:15 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent;
+        b=jiydr1YE9y1KwdRZ3d+BwEMGv5eY2+LDzF+2ExOvPXoDxhX7sfoC8uz+JqY8V94V9h
+         aPd2X/rW/QejXJrLWus+7A7yPDZyNAeBDm71RHcd9hRu3aytx/Z+n1b0Xvp63PXG6M+E
+         TeY8EBDOIKGj9HyfOwNI6G8d9D/9osnoGe+IE=
+Date: Thu, 26 Mar 2009 22:16:36 +0300
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: mingo@redhat.com
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] x86_64: reduce ifdeffery near errata #93 code
+Message-ID: <20090326191636.GA17275@x200.localdomain>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 26 Mar 2009, Jens Axboe wrote:
-> On Thu, Mar 26 2009, Hugh Dickins wrote:
-> > 
-> > So, directing a barrier (WRITE_BARRIER or DISCARD_BARRIER) to a range
-> > of sectors in one partition interposes a barrier into the queue of I/O
-> > across (all partitions of) that whole device.
-> 
-> Correct
-> 
-> > I think that's not how filesystems really want barriers to behave,
-> > and might tend to discourage us from using barriers more freely.
-> > But I have zero appreciation of whether it's a significant issue
-> > worth non-trivial change - just wanted to get it out into the open.
-> 
-> Per-partition definitely makes sense. The problem is that we do sorting
-> on a per-device basis right now. But it's a good point, I'll try and
-> take a look at how much work it would be to make it per-partition
-> instead. It wont be trivial :-)
+Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
+---
 
-Thanks, that would be interesting.
-Trivial bores you anyway, doesn't it?
+ arch/x86/mm/fault.c |   13 +++++--------
+ 1 file changed, 5 insertions(+), 8 deletions(-)
 
-Hugh
+--- a/arch/x86/mm/fault.c
++++ b/arch/x86/mm/fault.c
+@@ -303,14 +303,6 @@ static inline pmd_t *vmalloc_sync_one(pgd_t *pgd, unsigned long address)
+ }
+ #endif
+ 
+-#ifdef CONFIG_X86_64
+-static const char errata93_warning[] =
+-KERN_ERR "******* Your BIOS seems to not contain a fix for K8 errata #93\n"
+-KERN_ERR "******* Working around it, but it may cause SEGVs or burn power.\n"
+-KERN_ERR "******* Please consider a BIOS update.\n"
+-KERN_ERR "******* Disabling USB legacy in the BIOS may also help.\n";
+-#endif
+-
+ /* Workaround for K8 erratum #93 & buggy BIOS.
+    BIOS SMM functions are required to use a specific workaround
+    to avoid corruption of the 64bit RIP register on C stepping K8.
+@@ -323,6 +315,11 @@ KERN_ERR "******* Disabling USB legacy in the BIOS may also help.\n";
+ static int is_errata93(struct pt_regs *regs, unsigned long address)
+ {
+ #ifdef CONFIG_X86_64
++static const char errata93_warning[] =
++KERN_ERR "******* Your BIOS seems to not contain a fix for K8 errata #93\n"
++KERN_ERR "******* Working around it, but it may cause SEGVs or burn power.\n"
++KERN_ERR "******* Please consider a BIOS update.\n"
++KERN_ERR "******* Disabling USB legacy in the BIOS may also help.\n";
+ 	static int warned;
+ 	if (address != regs->ip)
+ 		return 0;
