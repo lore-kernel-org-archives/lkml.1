@@ -1,64 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753333AbZCZE2U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752021AbZCZEmP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753333AbZCZE2U (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Mar 2009 00:28:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751255AbZCZE2J
+	id S1752021AbZCZEmP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Mar 2009 00:42:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751689AbZCZEl4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Mar 2009 00:28:09 -0400
-Received: from vsmtp04.dti.ne.jp ([202.216.231.139]:45942 "EHLO
-	vsmtp04.dti.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750863AbZCZE2I (ORCPT
+	Thu, 26 Mar 2009 00:41:56 -0400
+Received: from mail168c2.megamailservers.com ([69.49.111.68]:56768 "EHLO
+	mail168c2.megamailservers.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751061AbZCZEly (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Mar 2009 00:28:08 -0400
-From: hooanon05@yahoo.co.jp
-Subject: Re: current->mm == NULL in security_vm_enough_memory(). 
-To: James Morris <jmorris@namei.org>
-Cc: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>, alan@redhat.com,
-       linux-kernel@vger.kernel.org, linux-security-module@vger.kernel.org
-In-Reply-To: <alpine.LRH.2.00.0903261236580.30336@tundra.namei.org>
-References: <200903260130.n2Q1U9EJ040448@www262.sakura.ne.jp> <alpine.LRH.2.00.0903261236580.30336@tundra.namei.org>
-Date: Thu, 26 Mar 2009 13:26:43 +0900
-Message-ID: <7142.1238041603@jrobl>
+	Thu, 26 Mar 2009 00:41:54 -0400
+X-Greylist: delayed 15876 seconds by postgrey-1.27 at vger.kernel.org; Thu, 26 Mar 2009 00:41:54 EDT
+X-Authenticated-User: jiri.gaisler.com
+Message-ID: <49CAC982.4050507@gaisler.com>
+Date: Thu, 26 Mar 2009 01:17:06 +0100
+From: Jiri Gaisler <jiri@gaisler.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.21) Gecko/20090303 SeaMonkey/1.1.15
+MIME-Version: 1.0
+To: Jan Kara <jack@suse.cz>
+CC: Alexander Beregalov <a.beregalov@gmail.com>, Theodore Tso <tytso@mit.edu>,
+       "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>,
+       linux-ext4@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       sparclinux@vger.kernel.org
+Subject: Re: next-20090310: ext4 hangs
+References: <a4423d670903110907o7041f4eof92278835aa0c71c@mail.gmail.com> <20090325151122.GA14881@atrey.karlin.mff.cuni.cz> <20090325151516.GB14881@atrey.karlin.mff.cuni.cz> <a4423d670903250818n512b1c67ja1b38db6d09ac7c@mail.gmail.com> <20090325152234.GN23439@duck.suse.cz> <a4423d670903250829w5e9304a7rce24f4220379620f@mail.gmail.com> <20090325161556.GP23439@duck.suse.cz> <a4423d670903251007r72058ca8m28275c1433ab2706@mail.gmail.com> <20090325194316.GQ23439@duck.suse.cz> <a4423d670903251538p3a7c180br1bcfe08c4f044c15@mail.gmail.com> <20090326000035.GB11024@duck.suse.cz>
+In-Reply-To: <20090326000035.GB11024@duck.suse.cz>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-James Morris:
-> On Thu, 26 Mar 2009, Tetsuo Handa wrote:
+
+Jan Kara wrote:
+>   Hi,
 > 
-> > [   28.765817] ------------[ cut here ]------------
-> > [   28.768916] WARNING: at security/security.c:217 security_vm_enough_memory+0xa0/0xb0()
-> > [   28.772484] Hardware name: VMware Virtual Platform
-> > [   28.774099] Modules linked in: pcnet32 crc32
-> > [   28.776920] Pid: 3286, comm: khelper Not tainted 2.6.29-next-20090324-dirty #3
-> > [   28.780317] Call Trace:
-> > [   28.781323]  [<c0159200>] ? have_callable_console+0x30/0x50
-> > [   28.784171]  [<c0158497>] warn_slowpath+0x97/0xf0
-> > [   28.785739]  [<c0190f7c>] ? validate_chain+0x3fc/0x540
-> > [   28.788402]  [<c0190f7c>] ? validate_chain+0x3fc/0x540
-> > [   28.790103]  [<c0192dfc>] ? __lock_acquire+0x29c/0x8a0
-> > [   28.792809]  [<c0194859>] ? __lock_acquired+0x109/0x1c0
-> > [   28.794539]  [<c0338ea0>] security_vm_enough_memory+0xa0/0xb0
-> > [   28.797391]  [<c0202117>] acct_stack_growth+0xd7/0x160
-> > [   28.798842]  [<c02022b9>] expand_downwards+0x119/0x150
-> > [   28.801709]  [<c020230d>] expand_stack+0xd/0x10
-	:::
-> > May I ignore this warning?
+>   thanks for the updated disassembly.
 > 
-> khelper is a kernel thread, so it should not have an ->mm, but I wonder 
-> why this hasn't shown up before.  Odd...
+>>   55bab0:       82 10 60 01     or  %g1, 1, %g1
+>>                 spin_unlock(&journal->j_list_lock);
+>>   55bab4:       40 06 4b 20     call  6ee734 <_spin_unlock>
+>>   55bab8:       c2 24 e0 28     st  %g1, [ %l3 + 0x28 ]
+>   OK, so it really seems that:
+>   jinode->i_flags |= JI_COMMIT_RUNNING;
+>   spin_unlock(&journal->j_list_lock);
+> 
+>   has been compiled to
+>   ld [ %l3 + 0x28 ], %g1
+>   or  %g1, 1, %g1
+>   call  6ee734 <_spin_unlock>
+>   st  %g1, [ %l3 + 0x28 ]
+> 
+>   Which seems like a bug in the compiler or in the way implement compiler
+> barriers in spin_unlock() on UP sparc. Or is there some sparc magic by which
+> this is correct code? Any clever sparc guy?
+> 
+> 									Honza
 
-The patch was merged in 2.6.28. See this url in detail.
-http://marc.info/?t=122460314500001&r=1&w=2
-Subject: __vm_enough_memory(), OVERCOMMIT_NEVER, current->mm, kernel thread
 
-With this discussion, a new function security_vm_enough_memory_kern()
-was introduced. All kernel thread should call this new one instead of
-security_vm_enough_memory(). The added WARN_ON() worked exactly as Alan
-Cox expected.
-But I am not sure this is the case. When expand_stack() is called in the
-user context, to call ..._kern() may be a bad idea.
-
-
-J. R. Okajima
+Looks fine to me - the store is made in the branch delay slot
+of the call, so it will occur before the first instruction at
+the call target address executes.
+Jiri.
