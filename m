@@ -1,59 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932440AbZCZT1u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932522AbZCZTbB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932440AbZCZT1u (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Mar 2009 15:27:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932382AbZCZT1f
+	id S932522AbZCZTbB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Mar 2009 15:31:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760836AbZCZTap
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Mar 2009 15:27:35 -0400
-Received: from shards.monkeyblade.net ([198.137.202.13]:33790 "EHLO
-	shards.monkeyblade.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932380AbZCZT1e (ORCPT
+	Thu, 26 Mar 2009 15:30:45 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:58580 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1760769AbZCZTao (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Mar 2009 15:27:34 -0400
-Message-ID: <49CBD5B2.6080101@eaglescrag.net>
-Date: Thu, 26 Mar 2009 12:21:22 -0700
-From: "J.H." <warthog19@eaglescrag.net>
-User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
-MIME-Version: 1.0
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-CC: Tejun Heo <tj@kernel.org>, users@kernel.org,
-       linux-kernel <linux-kernel@vger.kernel.org>, support@osuosl.org,
-       Jon Tollefson <kniht@linux.vnet.ibm.com>,
-       Martin Bligh <mbligh@mbligh.org>, "Jorge O. Castro" <jorge@ubuntu.com>,
-       bugme-admin@linux-foundation.org,
-       "FTPAdmin Kernel.org" <ftpadmin@kernel.org>,
-       Jim Zemlin <jzemlin@linux-foundation.org>
-Subject: Re: [kernel.org users] [KORG] Bugzilla Upgrade / Server move
-References: <49C9D99D.2050400@eaglescrag.net> <49CB2D84.3070206@kernel.org> <49CB3356.4070104@s5r6.in-berlin.de> <49CB36F3.7040701@s5r6.in-berlin.de>
-In-Reply-To: <49CB36F3.7040701@s5r6.in-berlin.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Thu, 26 Mar 2009 15:30:44 -0400
+Date: Thu, 26 Mar 2009 12:20:03 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Matthew Garrett <mjg@redhat.com>
+Cc: Frans Pop <elendil@planet.nl>,
+       Linus Torvalds <torvalds@linux-foundation.org>, mingo@elte.hu,
+       tytso@mit.edu, jack@suse.cz, alan@lxorguk.ukuu.org.uk,
+       arjan@infradead.org, a.p.zijlstra@chello.nl, npiggin@suse.de,
+       jens.axboe@oracle.com, drees76@gmail.com, jesper@krogh.cc,
+       linux-kernel@vger.kernel.org, oleg@redhat.com, roland@redhat.com
+Subject: Re: relatime: update once per day patches (was: ext3 IO latency
+ measurements)
+Message-Id: <20090326122003.5f6f608c.akpm@linux-foundation.org>
+In-Reply-To: <20090326184900.GA8580@srcf.ucam.org>
+References: <20090325123744.GK23439@duck.suse.cz>
+	<alpine.LFD.2.00.0903260912270.3032@localhost.localdomain>
+	<20090326092454.b74e3f96.akpm@linux-foundation.org>
+	<200903261812.09153.elendil@planet.nl>
+	<20090326104843.46abfaa7.akpm@linux-foundation.org>
+	<20090326184900.GA8580@srcf.ucam.org>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender succeeded SMTP AUTH, not delayed by milter-greylist-4.1.1 (shards.monkeyblade.net [198.137.202.13]); Thu, 26 Mar 2009 12:21:35 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ok this change is in now.  The additional comments section should be 
-below the comments now.
+On Thu, 26 Mar 2009 18:49:00 +0000 Matthew Garrett <mjg@redhat.com> wrote:
 
-- John 'Warthog9' Hawley
-
-Stefan Richter wrote:
-> Stefan Richter wrote:
->> Tejun Heo wrote:
->>> Is there anyway to put the comment input area at the bottom of the
->>> page?  Trying to reply at the top just messes up my head in weird
->>> ways.
->> Here is a patch:
->> https://bugzilla.redhat.com/show_bug.cgi?id=457022#c19
+> On Thu, Mar 26, 2009 at 10:48:43AM -0700, Andrew Morton wrote:
 > 
-> PS:
-> Here is a 'me too' to Tejun's comment.  Top-posting in bugzilla is OK if
-> one doesn't have to re-read the history of the bug because it's all
-> fresh in one's mind.  This is almost only the case when one follows the
-> bug by mail --- but then one can also reply by mail and doesn't have a
-> problem with the web interface anyway.  So, whenever one uses the web
-> interface of bugzilla.kernel.org, it is quite likely that one skims
-> through previous comments before adding a new one.  Hence comment box
-> after existing comments makes much more sense, IMO.  At least if
-> comments are shown in chronological order ( = site default).
+> > Oh, the feature itself is desirable.  But the interface isn't.
+> > 
+> > - It's a magic number.  Maybe someone runs tmpwatch twice per day, or
+> >   weekly, or...
+> 
+> There has to be a default. 24 hours is a sensible one.
+
+"default" implies that it can be altered by some means.
+
+> When did we adopt a mindset that led to code having to satisfy every 
+> single user requirement before being accepted, rather than being happy 
+> with code that provides an incremental improvement over what exists 
+> already?
+
+Shortcomings have been identified.  Weaselly verbiage is not a suitable
+way of addressing shortcomings!
+
+Yes, we could (and do) merge things as a halfway step.  But when the
+features are visible to userspace we just can't do that - we have to
+get the interface right on day one, because interfaces are for ever.
+
+(Bear in mind that kernel-does-X-once-per-day _is_ an interface)
+
+> If there are actually users who want to be able to tune this 
+> per filesystem then I'm sure someone (possibly even me) will write code 
+> to support them, but right now it just sounds like features for the sake 
+> of some sense of aesthetic correctness.
+
+A hard-wired global 24-hours constant is in no way superior to a
+per-mount tunable.  If we're going to do this we should do it in the
+best way we know, and we certainly should not lock ourselves into the
+inferior implementation for all time by exposing it to userspace.
