@@ -1,52 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758749AbZCZPrW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758717AbZCZPrj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758749AbZCZPrW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Mar 2009 11:47:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756981AbZCZPrH
+	id S1758717AbZCZPrj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Mar 2009 11:47:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759028AbZCZPrZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Mar 2009 11:47:07 -0400
-Received: from rcsinet12.oracle.com ([148.87.113.124]:28412 "EHLO
-	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753777AbZCZPrF (ORCPT
+	Thu, 26 Mar 2009 11:47:25 -0400
+Received: from mail-ew0-f165.google.com ([209.85.219.165]:61617 "EHLO
+	mail-ew0-f165.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758962AbZCZPrX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Mar 2009 11:47:05 -0400
-Message-ID: <49CBA351.2000007@oracle.com>
-Date: Thu, 26 Mar 2009 08:46:25 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Organization: Oracle Linux Engineering
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Thu, 26 Mar 2009 11:47:23 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type
+         :content-transfer-encoding;
+        b=d086Nhgvmp2+xJVZ6DerBhF4npPtfNq/utIqeOZggoafLkP2qVR9SN1HTeJa+l64rj
+         jQ4+rg8eNbRqCpENAyM+p9J1EL4CM7N56/PI2MNhXqmBpvFtDDlqJuHe932g36cxDGLN
+         hc2miz2OldigA+Uou3cfepInckKKsPIf6pGGM=
 MIME-Version: 1.0
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-CC: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       netdev@vger.kernel.org, linux-drivers@serverengines.com
-Subject: Re: linux-next: Tree for March 26 (benet)
-References: <20090326190130.54fc6fde.sfr@canb.auug.org.au>
-In-Reply-To: <20090326190130.54fc6fde.sfr@canb.auug.org.au>
-Content-Type: text/plain; charset=ISO-8859-1
+Date: Thu, 26 Mar 2009 16:47:20 +0100
+Message-ID: <4e5e476b0903260847m1de3e976ne20279df359176cf@mail.gmail.com>
+Subject: "ACPI: EC: missing confirmations, switch off interrupt mode" wastes 
+	time on startup
+From: Corrado Zoccolo <czoccolo@gmail.com>
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt703.oracle.com [141.146.40.81]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090201.49CBA36D.0115:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stephen Rothwell wrote:
-> Hi all,
-> 
-> Changes since 20090325:
+Hi,
+I found that on my netbook (acer aspire one 110), kernel boot time
+(kernel 2.6.29) is severely affected by the EC boot procedure, since
+it is first fooled by a spurious interrupt in thinking that interrupts
+work, and then gets a timeout waiting for an interrupt that never
+arrives:
+[    0.351161] calling  acpi_init+0x0/0x236 @ 1
+[    0.361052] ACPI: EC: Look up EC in DSDT
+[    0.367754] ACPI: BIOS _OSI(Linux) query ignored
+[    0.368984] ACPI: EC: non-query interrupt received, switching to
+interrupt mode
+[    0.860013] ACPI: EC: missing confirmations, switch off interrupt mode.
+[    0.866062] ACPI: Interpreter enabled
 
-
-on i386 build:
-
-drivers/built-in.o: In function `be_worker':
-be_main.c:(.text+0x827c7): undefined reference to `__udivdi3'
-be_main.c:(.text+0x8286c): undefined reference to `__udivdi3'
-
-
-Probably one of the called functions (that contains
-division) is inlined.
-
+There is a bug report for this issue
+http://bugzilla.kernel.org/show_bug.cgi?id=12001 ,  marked as fixed on
+an old kernel, but I'm still getting it with 2.6.29 (maybe my
+controller is flaky?), so I'm looking for a workaround: is there a way
+to force the ACPI using polling?
 
 -- 
-~Randy
+__________________________________________________________________________
+
+dott. Corrado Zoccolo                          mailto:czoccolo@gmail.com
+PhD - Department of Computer Science - University of Pisa, Italy
+--------------------------------------------------------------------------
