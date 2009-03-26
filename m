@@ -1,61 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759077AbZCZPqi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758749AbZCZPrW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759077AbZCZPqi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Mar 2009 11:46:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757857AbZCZPqO
+	id S1758749AbZCZPrW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Mar 2009 11:47:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756981AbZCZPrH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Mar 2009 11:46:14 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:52757 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755645AbZCZPqN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Mar 2009 11:46:13 -0400
-Date: Thu, 26 Mar 2009 16:46:11 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Hugh Dickins <hugh@veritas.com>
-Cc: Ric Wheeler <rwheeler@redhat.com>, Jeff Garzik <jeff@garzik.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Theodore Tso <tytso@mit.edu>, Ingo Molnar <mingo@elte.hu>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Nick Piggin <npiggin@suse.de>,
-       David Rees <drees76@gmail.com>, Jesper Krogh <jesper@krogh.cc>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.29
-Message-ID: <20090326154610.GH27476@kernel.dk>
-References: <alpine.LFD.2.00.0903241218130.3032@localhost.localdomain> <49C93AB0.6070300@garzik.org> <20090325093913.GJ27476@kernel.dk> <49CA86BD.6060205@garzik.org> <20090325194341.GB27476@kernel.dk> <49CA8ADA.3040709@redhat.com> <20090325195747.GC27476@kernel.dk> <Pine.LNX.4.64.0903252036130.8872@blonde.anvils> <20090326085748.GH27476@kernel.dk> <Pine.LNX.4.64.0903261430410.32095@blonde.anvils>
+	Thu, 26 Mar 2009 11:47:07 -0400
+Received: from rcsinet12.oracle.com ([148.87.113.124]:28412 "EHLO
+	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753777AbZCZPrF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Mar 2009 11:47:05 -0400
+Message-ID: <49CBA351.2000007@oracle.com>
+Date: Thu, 26 Mar 2009 08:46:25 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+Organization: Oracle Linux Engineering
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0903261430410.32095@blonde.anvils>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+CC: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       netdev@vger.kernel.org, linux-drivers@serverengines.com
+Subject: Re: linux-next: Tree for March 26 (benet)
+References: <20090326190130.54fc6fde.sfr@canb.auug.org.au>
+In-Reply-To: <20090326190130.54fc6fde.sfr@canb.auug.org.au>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt703.oracle.com [141.146.40.81]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090201.49CBA36D.0115:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 26 2009, Hugh Dickins wrote:
-> On Thu, 26 Mar 2009, Jens Axboe wrote:
-> > On Wed, Mar 25 2009, Hugh Dickins wrote:
-> > > 
-> > > Tangential question, but am I right in thinking that BIO_RW_BARRIER
-> > > similarly bars across all partitions, whereas its WRITE_BARRIER and
-> > > DISCARD_BARRIER users would actually prefer it to apply to just one?
-> > 
-> > All the barriers refer to just that range which the barrier itself
-> > references.
+Stephen Rothwell wrote:
+> Hi all,
 > 
-> Ah, thank you: then I had a fundamental misunderstanding of them,
-> and need to go away and work that out some more.
-> 
-> Though I didn't read it before asking, doesn't the I/O Barriers section
-> of Documentation/block/biodoc.txt give a very different impression?
+> Changes since 20090325:
 
-I'm sensing a miscommunication here... The ordering constraint is across
-devices, at least that is how it is implemented. For file system
-barriers (like BIO_RW_BARRIER), it could be per-partition instead. Doing
-so would involve some changes at the block layer side, not necessarily
-trivial. So I think you were asking about ordering, I was answering
-about the write guarantee :-)
+
+on i386 build:
+
+drivers/built-in.o: In function `be_worker':
+be_main.c:(.text+0x827c7): undefined reference to `__udivdi3'
+be_main.c:(.text+0x8286c): undefined reference to `__udivdi3'
+
+
+Probably one of the called functions (that contains
+division) is inlined.
+
 
 -- 
-Jens Axboe
-
+~Randy
