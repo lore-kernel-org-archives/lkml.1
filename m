@@ -1,224 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759201AbZCZPzJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758212AbZCZP5f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759201AbZCZPzJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Mar 2009 11:55:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759497AbZCZPyk
+	id S1758212AbZCZP5f (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Mar 2009 11:57:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754162AbZCZP51
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Mar 2009 11:54:40 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:37899 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758755AbZCZPyi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Mar 2009 11:54:38 -0400
-Date: Thu, 26 Mar 2009 16:52:06 +0100
-From: Jiri Pirko <jpirko@redhat.com>
-To: linux-kernel@vger.kernel.org
-Cc: netdev@vger.kernel.org, jgarzik@pobox.com, davem@davemloft.net,
-       shemminger@linux-foundation.org, bridge@lists.linux-foundation.org,
-       fubar@us.ibm.com, bonding-devel@lists.sourceforge.net, kaber@trash.net,
-       mschmidt@redhat.com, dada1@cosmosbay.com
-Subject: [PATCH] bonding: allow bond in mode balance-alb to work properly
-	in bridge -try4
-Message-ID: <20090326155205.GA28868@psychotron.englab.brq.redhat.com>
-References: <20090313183303.GF3436@psychotron.englab.brq.redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090313183303.GF3436@psychotron.englab.brq.redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 26 Mar 2009 11:57:27 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:37771 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753733AbZCZP50 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Mar 2009 11:57:26 -0400
+Date: Thu, 26 Mar 2009 08:47:33 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Frans Pop <elendil@planet.nl>
+Cc: mingo@elte.hu, tytso@mit.edu, jack@suse.cz, torvalds@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, arjan@infradead.org, a.p.zijlstra@chello.nl,
+       npiggin@suse.de, jens.axboe@oracle.com, drees76@gmail.com,
+       jesper@krogh.cc, linux-kernel@vger.kernel.org, oleg@redhat.com,
+       roland@redhat.com
+Subject: Re: relatime: update once per day patches (was: ext3 IO latency
+ measurements)
+Message-Id: <20090326084733.156c4910.akpm@linux-foundation.org>
+In-Reply-To: <200903261632.42439.elendil@planet.nl>
+References: <20090325123744.GK23439@duck.suse.cz>
+	<20090325150041.GM32307@mit.edu>
+	<alpine.LFD.2.00.0903251008120.3032@localhost.localdomain>
+	<20090325185824.GO32307@mit.edu>
+	<alpine.LFD.2.00.0903251341050.3032@localhost.localdomain>
+	<20090325215137.GQ32307@mit.edu>
+	<alpine.LFD.2.00.0903251613300.3032@localhost.localdomain>
+	<20090325235041.GA11024@duck.suse.cz>
+	<20090326090630.GA9369@elte.hu>
+	<20090326113705.GV32307@mit.edu>
+	<20090326140312.GB14822@elte.hu>
+	<20090326140312.GB14822@elte.hu>
+	<20090326073013.2fa83178.akpm@linux-foundation.org>
+	<200903261632.42439.elendil@planet.nl>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(resend, updated changelog, hook moved into skb_bond_should_drop,
-skb_bond_should_drop ifdefed)
+On Thu, 26 Mar 2009 16:32:38 +0100 Frans Pop <elendil@planet.nl> wrote:
 
-Hi all.
+> Andrew Morton wrote:
+> > On Thu, 26 Mar 2009 15:03:12 +0100 Ingo Molnar <mingo@elte.hu> wrote:
+> >> Why arent the relatime patches upstream?
+> > 
+> > They have been for ages.
+> 
+> I assume Ingo means the patches to make relatime update atime at least 
+> once per day to ensure better compatibility with apps that do use or rely 
+> on access times.
+> These patches are already being included by several distros and, FWIW, 
+> Debian would like to see them upstream as well because we feel .
+> 
+> They were last submitted by Matthew Garrett:
+> http://lkml.org/lkml/2008/11/27/234
+> http://lkml.org/lkml/2008/11/27/235
+> 
+> Loads of people seem to want this, but even though it's been submitted at 
+> least twice and discussed even more often, it never gets anywhere.
+> 
 
-The problem is described in following bugzilla:
-https://bugzilla.redhat.com/show_bug.cgi?id=487763
+Hard-wiring a 24-hour interval into the core VFS for all mounted
+filesystems is dumb.
 
-Basically here's what's going on. In every mode, bonding interface uses the same
-mac address for all enslaved devices (except fail_over_mac). Only balance-alb
-will simultaneously use multiple MAC addresses across different slaves. When you
-put this kind of bond device into a bridge it will only add one of mac adresses
-into a hash list of mac addresses, say X. This mac address is marked as local.
-But this bonding interface also has mac address Y. Now then packet arrives with
-destination address Y, this address is not marked as local and the packed looks
-like it needs to be forwarded. This packet is then lost which is wrong.
-
-Notice that interfaces can be added and removed from bond while it is in bridge.
-
-This patch solves the situation in the bonding without touching bridge code,
-as Patrick suggested. For every incoming frame to bonding it searches the
-destination address in slaves list and if any of slave addresses matches, it
-rewrites the address in frame by the adress of bonding master. This ensures that
-all frames comming thru the bonding in alb mode have the same address.
-
-Jirka
-
-
-Signed-off-by: Jiri Pirko <jpirko@redhat.com>
-
-diff --git a/drivers/net/bonding/bond_alb.c b/drivers/net/bonding/bond_alb.c
-index 27fb7f5..b973ede 100644
---- a/drivers/net/bonding/bond_alb.c
-+++ b/drivers/net/bonding/bond_alb.c
-@@ -1762,6 +1762,25 @@ int bond_alb_set_mac_address(struct net_device *bond_dev, void *addr)
- 	return 0;
- }
- 
-+void bond_alb_change_dest(struct sk_buff *skb, struct net_device *bond_dev)
-+{
-+	struct bonding *bond = netdev_priv(bond_dev);
-+	unsigned char *dest = eth_hdr(skb)->h_dest;
-+	struct slave *slave;
-+	int i;
-+
-+	if (!compare_ether_addr_64bits(dest, bond_dev->dev_addr))
-+		return;
-+	read_lock(&bond->lock);
-+	bond_for_each_slave(bond, slave, i) {
-+		if (!compare_ether_addr_64bits(slave->dev->dev_addr, dest)) {
-+			memcpy(dest, bond_dev->dev_addr, ETH_ALEN);
-+			break;
-+		}
-+	}
-+	read_unlock(&bond->lock);
-+}
-+
- void bond_alb_clear_vlan(struct bonding *bond, unsigned short vlan_id)
- {
- 	if (bond->alb_info.current_alb_vlan &&
-diff --git a/drivers/net/bonding/bond_alb.h b/drivers/net/bonding/bond_alb.h
-index 50968f8..4924dd7 100644
---- a/drivers/net/bonding/bond_alb.h
-+++ b/drivers/net/bonding/bond_alb.h
-@@ -127,6 +127,7 @@ void bond_alb_handle_active_change(struct bonding *bond, struct slave *new_slave
- int bond_alb_xmit(struct sk_buff *skb, struct net_device *bond_dev);
- void bond_alb_monitor(struct work_struct *);
- int bond_alb_set_mac_address(struct net_device *bond_dev, void *addr);
-+void bond_alb_change_dest(struct sk_buff *skb, struct net_device *bond_dev);
- void bond_alb_clear_vlan(struct bonding *bond, unsigned short vlan_id);
- #endif /* __BOND_ALB_H__ */
- 
-diff --git a/drivers/net/bonding/bond_main.c b/drivers/net/bonding/bond_main.c
-index 3d76686..7c7cb81 100644
---- a/drivers/net/bonding/bond_main.c
-+++ b/drivers/net/bonding/bond_main.c
-@@ -4294,6 +4294,18 @@ unwind:
- 	return res;
- }
- 
-+/*
-+ * Called via bond_change_dest_hook.
-+ * note: already called with rcu_read_lock (preempt_disabled)
-+ */
-+void bond_change_dest(struct sk_buff *skb, struct net_device *bond_dev)
-+{
-+	struct bonding *bond = netdev_priv(bond_dev);
-+
-+	if (bond->params.mode == BOND_MODE_ALB)
-+		bond_alb_change_dest(skb, bond_dev);
-+}
-+
- static int bond_xmit_roundrobin(struct sk_buff *skb, struct net_device *bond_dev)
- {
- 	struct bonding *bond = netdev_priv(bond_dev);
-@@ -5243,6 +5255,8 @@ static int __init bonding_init(void)
- 	register_inetaddr_notifier(&bond_inetaddr_notifier);
- 	bond_register_ipv6_notifier();
- 
-+	bond_change_dest_hook = bond_change_dest;
-+
- 	goto out;
- err:
- 	list_for_each_entry(bond, &bond_dev_list, bond_list) {
-@@ -5266,6 +5280,8 @@ static void __exit bonding_exit(void)
- 	unregister_inetaddr_notifier(&bond_inetaddr_notifier);
- 	bond_unregister_ipv6_notifier();
- 
-+	bond_change_dest_hook = NULL;
-+
- 	bond_destroy_sysfs();
- 
- 	rtnl_lock();
-diff --git a/drivers/net/bonding/bonding.h b/drivers/net/bonding/bonding.h
-index ca849d2..7159483 100644
---- a/drivers/net/bonding/bonding.h
-+++ b/drivers/net/bonding/bonding.h
-@@ -375,5 +375,8 @@ static inline void bond_unregister_ipv6_notifier(void)
- }
- #endif
- 
-+extern void (*bond_change_dest_hook)(struct sk_buff *skb,
-+				     struct net_device *master);
-+
- #endif /* _LINUX_BONDING_H */
- 
-diff --git a/include/linux/netdevice.h b/include/linux/netdevice.h
-index 6593667..7af6857 100644
---- a/include/linux/netdevice.h
-+++ b/include/linux/netdevice.h
-@@ -1860,6 +1860,10 @@ static inline void netif_set_gso_max_size(struct net_device *dev,
- 	dev->gso_max_size = size;
- }
- 
-+#if defined(CONFIG_BONDING) || defined(CONFIG_BONDING_MODULE)
-+extern void (*bond_change_dest_hook)(struct sk_buff *skb,
-+				     struct net_device *master);
-+
- /* On bonding slaves other than the currently active slave, suppress
-  * duplicates except for 802.3ad ETH_P_SLOW, alb non-mcast/bcast, and
-  * ARP on active-backup slaves with arp_validate enabled.
-@@ -1876,22 +1880,31 @@ static inline int skb_bond_should_drop(struct sk_buff *skb)
- 		if (dev->priv_flags & IFF_SLAVE_INACTIVE) {
- 			if ((dev->priv_flags & IFF_SLAVE_NEEDARP) &&
- 			    skb->protocol == __constant_htons(ETH_P_ARP))
--				return 0;
-+				goto dont_drop;
- 
- 			if (master->priv_flags & IFF_MASTER_ALB) {
- 				if (skb->pkt_type != PACKET_BROADCAST &&
- 				    skb->pkt_type != PACKET_MULTICAST)
--					return 0;
-+					goto dont_drop;
- 			}
- 			if (master->priv_flags & IFF_MASTER_8023AD &&
- 			    skb->protocol == __constant_htons(ETH_P_SLOW))
--				return 0;
-+				goto dont_drop;
- 
- 			return 1;
- 		}
-+dont_drop:
-+		bond_change_dest_hook(skb, master);
- 	}
-+
-+	return 0;
-+}
-+#else
-+static inline int skb_bond_should_drop(struct sk_buff *skb)
-+{
- 	return 0;
- }
-+#endif
- 
- extern struct pernet_operations __net_initdata loopback_net_ops;
- #endif /* __KERNEL__ */
-diff --git a/net/core/dev.c b/net/core/dev.c
-index e3fe5c7..d9b758b 100644
---- a/net/core/dev.c
-+++ b/net/core/dev.c
-@@ -2061,6 +2061,12 @@ static inline int deliver_skb(struct sk_buff *skb,
- 	return pt_prev->func(skb, skb->dev, pt_prev, orig_dev);
- }
- 
-+#if defined(CONFIG_BONDING) || defined(CONFIG_BONDING_MODULE)
-+void (*bond_change_dest_hook)(struct sk_buff *skb,
-+			      struct net_device *master) __read_mostly;
-+EXPORT_SYMBOL(bond_change_dest_hook);
-+#endif
-+
- #if defined(CONFIG_BRIDGE) || defined (CONFIG_BRIDGE_MODULE)
- /* These hooks defined here for ATM */
- struct net_bridge;
+I (and others) pointed out that it would be better to implement this as
+a mount option.  That suggestion was met with varying sillinesses and
+that is where things stand.
