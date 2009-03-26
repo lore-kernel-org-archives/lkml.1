@@ -1,127 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760415AbZCZS3U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760520AbZCZSaB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760415AbZCZS3U (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Mar 2009 14:29:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758396AbZCZS3M
+	id S1760520AbZCZSaB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Mar 2009 14:30:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758396AbZCZS3w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Mar 2009 14:29:12 -0400
-Received: from tomts22-srv.bellnexxia.net ([209.226.175.184]:40455 "EHLO
-	tomts22-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757113AbZCZS3L (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Mar 2009 14:29:11 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: ApsEAMNmy0lMQW1W/2dsb2JhbACBUNMkg3cG
-Date: Thu, 26 Mar 2009 14:28:59 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
-       Christoph Hellwig <hch@infradead.org>, Jason Baron <jbaron@redhat.com>,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       ltt-dev@lists.casi.polymtl.ca, Frederic Weisbecker <fweisbec@gmail.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Russell King <rmk+lkml@arm.linux.org.uk>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       "Frank Ch. Eigler" <fche@redhat.com>, Hideo AOKI <haoki@redhat.com>,
-       Takashi Nishiie <t-nishiie@np.css.fujitsu.com>,
-       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-Subject: Re: [patch 2/9] LTTng instrumentation - irq
-Message-ID: <20090326182859.GB6399@Krystal>
-References: <20090324155625.420966314@polymtl.ca> <20090324160148.080628193@polymtl.ca> <20090324173354.GC3129@redhat.com> <20090324175049.GC31117@elte.hu> <20090324175750.GE3129@redhat.com> <20090324191252.GA11665@elte.hu> <20090324201146.GA4350@Krystal> <alpine.DEB.2.00.0903242203480.22830@gandalf.stny.rr.com>
-Mime-Version: 1.0
+	Thu, 26 Mar 2009 14:29:52 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:52186 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752222AbZCZS3v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Mar 2009 14:29:51 -0400
+Date: Thu, 26 Mar 2009 19:29:47 +0100
+From: Jan Kara <jack@suse.cz>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       "Martin J. Bligh" <mbligh@mbligh.org>, linux-ext4@vger.kernel.org,
+       Ying Han <yinghan@google.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-mm <linux-mm@kvack.org>, guichaz@gmail.com,
+       Alex Khesin <alexk@google.com>, Mike Waychison <mikew@google.com>,
+       Rohit Seth <rohitseth@google.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: ftruncate-mmap: pages are lost after writing to mmaped file.
+Message-ID: <20090326182947.GE17159@duck.suse.cz>
+References: <604427e00903181244w360c5519k9179d5c3e5cd6ab3@mail.gmail.com> <200903241844.22851.nickpiggin@yahoo.com.au> <20090324033204.64f3da9d.akpm@linux-foundation.org> <200903250235.02816.nickpiggin@yahoo.com.au>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.0903242203480.22830@gandalf.stny.rr.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 14:27:32 up 26 days, 14:53,  3 users,  load average: 1.42, 0.84,
-	0.67
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <200903250235.02816.nickpiggin@yahoo.com.au>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Steven Rostedt (rostedt@goodmis.org) wrote:
+On Wed 25-03-09 02:35:01, Nick Piggin wrote:
+> On Tuesday 24 March 2009 21:32:04 Andrew Morton wrote:
+> > On Tue, 24 Mar 2009 18:44:21 +1100 Nick Piggin <nickpiggin@yahoo.com.au> 
+> wrote:
+> > > On Friday 20 March 2009 03:46:39 Jan Kara wrote:
+> > > > On Fri 20-03-09 02:48:21, Nick Piggin wrote:
+> > > > > Holding mapping->private_lock over the __set_page_dirty should
+> > > > > fix it, although I guess you'd want to release it before calling
+> > > > > __mark_inode_dirty so as not to put inode_lock under there. I
+> > > > > have a patch for this if it sounds reasonable.
+> > > >
+> > > >   Yes, that seems to be a bug - the function actually looked suspitious
+> > > > to me yesterday but I somehow convinced myself that it's fine. Probably
+> > > > because fsx-linux is single-threaded.
+> > >
+> > > After a whole lot of chasing my own tail in the VM and buffer layers,
+> > > I think it is a problem in ext2 (and I haven't been able to reproduce
+> > > with ext3 yet, which might lend weight to that, although as we have
+> > > seen, it is very timing dependent).
+> > >
+> > > That would be slightly unfortunate because we still have Jan's ext3
+> > > problem, and also another reported problem of corruption on ext3 (on
+> > > brd driver).
+> > >
+> > > Anyway, when I have reproduced the problem with the test case, the
+> > > "lost" writes are all reported to be holes. Unfortunately, that doesn't
+> > > point straight to the filesystem, because ext2 allocates blocks in this
+> > > case at writeout time, so if dirty bits are getting lost, then it would
+> > > be normal to see holes.
+> > >
+> > > I then put in a whole lot of extra infrastructure to track metadata about
+> > > each struct page (when it was last written out, when it last had the
+> > > number of writable ptes reach 0, when the dirty bits were last cleared
+> > > etc). And none of the normal asertions were triggering: eg. when any page
+> > > is removed from pagecache (except truncates), it has always had all its
+> > > buffers written out *after* all ptes were made readonly or unmapped. Lots
+> > > of other tests and crap like that.
+> > >
+> > > So I tried what I should have done to start with and did an e2fsck after
+> > > seeing corruption. Yes, it comes up with errors.
+> >
+> > Do you recall what the errors were?
 > 
-> On Tue, 24 Mar 2009, Mathieu Desnoyers wrote:
-> > 
-> > This third type of tracepoint for IRQs you are talking about is actually
-> > what I had in LTTng. I decided to add the irq_next_handler and to add a
-> > action field to irq_entry to include the irq handler information needed
-> > by Jason.
-> > 
-> > If we want to do this logically, without thinking about tracer
-> > performance impact, we could/should do :
-> > 
-> > trace_irq_entry(irqno, pt_regs)
-> >   for_each_handler() {
-> >     trace_irq_handler_entry(action)
-> >     action->handler()
-> >     trace_irq_handler_exit(ret)
-> >   }
-> > trace_irq_exit(retval)
-> > 
-> > And add the irq_entry/irq_exit events to the arch-specific reschedule,
-> > tlb flush, local timer irq, as I have in my lttng tree already.
-> > 
-> > But given the trace_irq_handler_entry/trace_irq_handler_exit events
-> > could be combined, given we can record action and ret in the
-> > irq_entry/exit events, I decided to remove 2 tracepoints (out of 4) from
-> > the single-handler fast path by adding this information to the irq
-> > entry/exit events, and decided to combine the irq_handler entry/exit
-> > into a single next_handler event, which records the previous ret value
-> > and the next action to execute.
-> > 
-> > On an interrupt-driven workload, it will have a significant impact.
-> > (2 events vs 4).
-> 
-> I thought tracepoints while not active are very low overhead.
-> 
-> If you only want to use 2 of the 4, would that be just as fast?
-> 
+> OK, after running several tests in parallel and having 3 of them
+> blow up, I unmounted the fs (so error-case files are still intact).
+  Nick, what tests do you use? Because on the first reading the ext2 code
+looks correct so I'll probably have to reproduce the corruption...
 
-Probably, but I was talking about active tracing overhead here.
-
-> > 
-> > If we add interrupt threads to the kernel, then we can switch to the
-> > following scheme :
-> > 
-> > * instrumentation of the real interrupt handler :
-> > 
-> > trace_irq_entry(irqno, pt_regs)
-> > 
-> > trace_irq_exit(ret)
-> > 
-> > * instrumentation of the irq threads :
-> > 
-> > trace_irq_thread_entry()
-> > 
-> > trace_irq_thread_exit()
-> > 
-> > I don't see why we should mind trying to make the tracepoints "logical",
-> > especially if it hurts performance considerably. Doing these
-> > implementation-specific versions of irq tracepoints would provide the
-> > best performance we can get when tracing. It's up to the tracers to
-> > specialize their analysis based on the underlying IRQ mechanism
-> > (non-threaded vs threaded).
-> 
-> Perhaps we want to make them logical so that other things might hook into 
-> these trace points besides a tracer. I do not agree that the code should 
-> be modified just to make the trace points faster. The trace points are 
-> just hooks into code, and should have no effect when disabled. Once the 
-> code starts to change due to better placement of tracepoints for tracers, 
-> that's when those trace points should be NACKed.
-> 
-> -- Steve
-> 
-
-If it makes the code messy, then yes, I agree that those tracepoints
-should not go in.
-
-Mathieu
-
+									Honza
 -- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
