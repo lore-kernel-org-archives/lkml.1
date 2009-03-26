@@ -1,57 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754860AbZCZL0v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754788AbZCZL3O@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754860AbZCZL0v (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Mar 2009 07:26:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751397AbZCZL0m
+	id S1754788AbZCZL3O (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Mar 2009 07:29:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752599AbZCZL26
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Mar 2009 07:26:42 -0400
-Received: from mail-in-07.arcor-online.net ([151.189.21.47]:38816 "EHLO
-	mail-in-07.arcor-online.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750849AbZCZL0l (ORCPT
+	Thu, 26 Mar 2009 07:28:58 -0400
+Received: from wa4ehsobe005.messaging.microsoft.com ([216.32.181.15]:3619 "EHLO
+	WA4EHSOBE005.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752312AbZCZL25 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Mar 2009 07:26:41 -0400
-X-DKIM: Sendmail DKIM Filter v2.8.2 mail-in-03.arcor-online.net 0E1F52C353B
-Date: Thu, 26 Mar 2009 12:26:35 +0100 (CET)
-From: Bodo Eggert <7eggert@gmx.de>
-To: Andreas Robinson <andr345@gmail.com>
-cc: 7eggert@gmx.de, Arjan van de Ven <arjan@infradead.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: fastboot: unpacking initramfs faster
-In-Reply-To: <1238053964.8304.24.camel@andreas-desktop>
-Message-ID: <alpine.LSU.0.999.0903261216550.5843@be1.lrz>
-References: <cj9yI-540-17@gated-at.bofh.it>  <E1LmEqj-0001SN-6Y@be1.7eggert.dyndns.org>
- <1238053964.8304.24.camel@andreas-desktop>
+	Thu, 26 Mar 2009 07:28:57 -0400
+X-BigFish: VPS-42(zz1432R62a3L98dR936eQ4015M1805Mzz1202hzzz32i6bh61h)
+X-Spam-TCS-SCL: 0:0
+X-WSS-ID: 0KH42JM-02-H9L-01
+Date: Thu, 26 Mar 2009 12:28:35 +0100
+From: Robert Richter <robert.richter@amd.com>
+To: Jaswinder Singh Rajput <jaswinder@kernel.org>
+CC: Ingo Molnar <mingo@elte.hu>, x86 maintainers <x86@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [git-pull -tip] x86: cpu/common.c cleanup patches
+Message-ID: <20090326112834.GC3226@erda.amd.com>
+References: <1237009789.4387.2.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+Content-Type: text/plain; charset="us-ascii"
+Content-Disposition: inline
+In-Reply-To: <1237009789.4387.2.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.16 (2007-06-09)
+X-OriginalArrivalTime: 26 Mar 2009 11:28:36.0213 (UTC) FILETIME=[00BC0A50:01C9AE06]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 26 Mar 2009, Andreas Robinson wrote:
-> On Tue, 2009-03-24 at 23:11 +0100, Bodo Eggert wrote:
-> > Andreas Robinson <andr345@gmail.com> wrote:
-
-> > > I then looked at multithreaded decompression and found that neither gzip
-> > > files nor deflate streams provide enough information (eg block lengths)
-> > > to let you share the decompression among threads.
-> > > 
-> > > It can be done of course, but obviously not without modifying file
-> > > formats and userspace tools.
-> > > 
-> > > (Thoughts of snowballs and hell presented themselves at this point.)
-> > 
-> > Why not make a new set? http://7eggert.dyndns.org:8080/l/bgz.tar.gz
+On 14.03.09 11:19:49, Jaswinder Singh Rajput wrote:
+> The following changes since commit 82434c275bbc2f4ab22518004a897126c79f6bf4:
+>   Ingo Molnar (1):
+>         Merge branch 'irq/genirq'
 > 
-> Hmm, well if you think there is a chance of it being accepted, then
-> sure! I'll cook something up, but will be looking to use LZO first since
-> it's a bit faster to begin with.
+> are available in the git repository at:
+> 
+>   git://git.kernel.org/pub/scm/linux/kernel/git/jaswinder/linux-2.6-tiptop.git master
+> 
+> Jaswinder Singh Rajput (4):
+>       x86: cpu/common.c fix various style problems
+>       x86: cpu/common.c declare varibles before they get used
+>       x86: cpu/common.c introduced clear_all_debug_regs
+>       x86: cpu/common.c fix header files issues
 
-It's small enough, and now I've updated it to support lzo and put a
-license into the files.
+Jaswinder,
 
-Thinking about it: It's now very kernel-specific, other users might like a
-block signature to make it robust against errors - e.g. in the middle of a
-.tar.bgz file. I think I'll change that soon and put 0x55aa in front of
-each block.
+please send numbered patches next time instead of a complete diff,
+this is much more easier to review.
+
+Thanks,
+
+-Robert
+
 -- 
-Borges sumus. Resistere inutile est.
+Advanced Micro Devices, Inc.
+Operating System Research Center
+email: robert.richter@amd.com
+
