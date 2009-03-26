@@ -1,76 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755287AbZCZIyx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756389AbZCZI6G@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755287AbZCZIyx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Mar 2009 04:54:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752860AbZCZIyn
+	id S1756389AbZCZI6G (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Mar 2009 04:58:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753628AbZCZI5z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Mar 2009 04:54:43 -0400
-Received: from gerard.telenet-ops.be ([195.130.132.48]:60686 "EHLO
-	gerard.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752413AbZCZIym (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Mar 2009 04:54:42 -0400
-Date: Thu, 26 Mar 2009 09:54:37 +0100 (CET)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Thomas Gleixner <tglx@linutronix.de>
-cc: Linux/m68k <linux-m68k@vger.kernel.org>,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       linux-next@vger.kernel.org
-Subject: [PATCH] m68k: irq_node.handler() should return irqreturn_t
-Message-ID: <Pine.LNX.4.64.0903260953180.21047@anakin>
+	Thu, 26 Mar 2009 04:57:55 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:52586 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753330AbZCZI5y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Mar 2009 04:57:54 -0400
+Date: Thu, 26 Mar 2009 09:57:48 +0100
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Hugh Dickins <hugh@veritas.com>
+Cc: Ric Wheeler <rwheeler@redhat.com>, Jeff Garzik <jeff@garzik.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Theodore Tso <tytso@mit.edu>, Ingo Molnar <mingo@elte.hu>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Nick Piggin <npiggin@suse.de>,
+       David Rees <drees76@gmail.com>, Jesper Krogh <jesper@krogh.cc>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.29
+Message-ID: <20090326085748.GH27476@kernel.dk>
+References: <alpine.LFD.2.00.0903241053200.3032@localhost.localdomain> <20090324184549.GE32307@mit.edu> <alpine.LFD.2.00.0903241218130.3032@localhost.localdomain> <49C93AB0.6070300@garzik.org> <20090325093913.GJ27476@kernel.dk> <49CA86BD.6060205@garzik.org> <20090325194341.GB27476@kernel.dk> <49CA8ADA.3040709@redhat.com> <20090325195747.GC27476@kernel.dk> <Pine.LNX.4.64.0903252036130.8872@blonde.anvils>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0903252036130.8872@blonde.anvils>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-commit b5dc7840b3ebe9c7967dd8ba73db957767009ff9 ("m68k: introduce irq
-controller") reverted the return type of struct irq_node.handler() from
-irqreturn_t to int. Change it back to irqreturn_t, else it will give a
-compiler warning when irqreturn_t is turned into an enum in the near future:
+On Wed, Mar 25 2009, Hugh Dickins wrote:
+> On Wed, 25 Mar 2009, Jens Axboe wrote:
+> > On Wed, Mar 25 2009, Ric Wheeler wrote:
+> > > Jens Axboe wrote:
+> > >>
+> > >> Another problem is that FLUSH_CACHE sucks. Really. And not just on
+> > >> ext3/ordered, generally. Write a 50 byte file, fsync, flush cache and
+> > >> wit for the world to finish. Pretty hard to teach people to use a nicer
+> > >> fdatasync(), when the majority of the cost now becomes flushing the
+> > >> cache of that 1TB drive you happen to have 8 partitions on. Good luck
+> > >> with that.
+> > >>   
+> > > And, as I am sure that you do know, to add insult to injury, FLUSH_CACHE  
+> > > is per device (not file system).
+> > >
+> > > When you issue an fsync() on a disk with multiple partitions, you will  
+> > > flush the data for all of its partitions from the write cache....
+> > 
+> > Exactly, that's what my (vague) 8 partition reference was for :-)
+> > A range flush would be so much more palatable.
+> 
+> Tangential question, but am I right in thinking that BIO_RW_BARRIER
+> similarly bars across all partitions, whereas its WRITE_BARRIER and
+> DISCARD_BARRIER users would actually prefer it to apply to just one?
 
-| arch/m68k/kernel/ints.c:231: warning: assignment from incompatible pointer type
+All the barriers refer to just that range which the barrier itself
+references. The problem with the full device flushes is implementation
+on the hardware side, since we can't do small range flushes. So it's not
+as-designed, but rather the best we can do...
 
-Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
----
-We already hit the warning in linux-next, which has commit
-bedd30d986a05e32dc3eab874e4b9ed8a38058bb ("genirq: make irqreturn_t an enum")
-
- arch/m68k/include/asm/irq_mm.h |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
-
-diff --git a/arch/m68k/include/asm/irq_mm.h b/arch/m68k/include/asm/irq_mm.h
-index 226bfc0..0cab42c 100644
---- a/arch/m68k/include/asm/irq_mm.h
-+++ b/arch/m68k/include/asm/irq_mm.h
-@@ -3,6 +3,7 @@
- 
- #include <linux/linkage.h>
- #include <linux/hardirq.h>
-+#include <linux/irqreturn.h>
- #include <linux/spinlock_types.h>
- 
- /*
-@@ -80,7 +81,7 @@ struct pt_regs;
-  * interrupt source (if it supports chaining).
-  */
- typedef struct irq_node {
--	int		(*handler)(int, void *);
-+	irqreturn_t	(*handler)(int, void *);
- 	void		*dev_id;
- 	struct irq_node *next;
- 	unsigned long	flags;
 -- 
-1.6.2
+Jens Axboe
 
-
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
