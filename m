@@ -1,143 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757069AbZCZBWb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757304AbZCZB0s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757069AbZCZBWb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 21:22:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755232AbZCZBWR
+	id S1757304AbZCZB0s (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 21:26:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754704AbZCZB0k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 21:22:17 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:56986 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754334AbZCZBWP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 21:22:15 -0400
-Date: Thu, 26 Mar 2009 02:22:07 +0100
-From: Jan Kara <jack@suse.cz>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: tytso@mit.edu, LKML <linux-kernel@vger.kernel.org>
-Subject: [PULL REQUEST] Quota changes for 2.6.30
-Message-ID: <20090326012207.GG11024@duck.suse.cz>
+	Wed, 25 Mar 2009 21:26:40 -0400
+Received: from g5t0008.atlanta.hp.com ([15.192.0.45]:34413 "EHLO
+	g5t0008.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754127AbZCZB0j (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 25 Mar 2009 21:26:39 -0400
+Date: Wed, 25 Mar 2009 19:26:36 -0600
+From: Alex Chiang <achiang@hp.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: htejun@gmail.com, greg@kroah.com, cornelia.huck@de.ibm.com,
+       stern@rowland.harvard.edu, kay.sievers@vrfy.org, rusty@rustcorp.com.au,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC PATCH 0/3] sysfs: allow suicide
+Message-ID: <20090326012636.GC11447@ldl.fc.hp.com>
+References: <20090325035707.15921.42150.stgit@bob.kio> <m13ad2xi46.fsf@fess.ebiederm.org> <20090325225414.GA11447@ldl.fc.hp.com> <m17i2dunao.fsf@fess.ebiederm.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <m17i2dunao.fsf@fess.ebiederm.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  Hi Linus,
+* Eric W. Biederman <ebiederm@xmission.com>:
+> Alex Chiang <achiang@hp.com> writes:
+> 
+> > * Eric W. Biederman <ebiederm@xmission.com>:
+> >> 
+> >> Interesting.
+> >> 
+> >> Fixing a read/writer deadlock by allowing the writers to nest
+> >> inside the readers.
+> >> 
+> >> My first impression is that it is too clever.
+> >
+> > Clever points go to Tejun. All I did was refresh the series
+> > slightly. :)
+> >
+> >> Furthermore I think this is walking around the edges of a more
+> >> general problem.   How should we serial hotplug and hotunplug
+> >> in general.  In what context should remove methods run in.
+> >> 
+> >> My impression is that we have a huge hole in our infrastructure
+> >> for hotplug drivers.  Problems like how do we get a user space
+> >> context for the code to run in and how do we handle
+> >> multiple hotplug actions for overlapping device trees from
+> >> stomping on each other.
+> >> 
+> >> My hypothesis is once we solve this for the general case of
+> >> device hotplug and removal we won't need special support from
+> >> sysfs.  At least not in the suicidal way.
+> >
+> > I agree that we have problems in our infrastructure, especially,
+> > as you point out, overlapping device trees, etc.
+> >
+> > I see your point about adding extra cruft into sysfs to work
+> > around a special case while leaving the hard problem unsolved.
+> >
+> > Perhaps the status quo is better. I do think that getting
+> > suicidal sysfs attributes off the global workqueue is a band-aid
+> > that actually helps, vs. the proposed patches here which are
+> > questionable in nature.
+> 
+> Sounds like it.    I'm not trying to shoot this down, rather
+> I'm trying to figure out how to solve this cleanly, as I am slowly
+> trying to sort out the pci hotplug and unplug issues.
 
-  could you please pull from
+Please do keep me informed on any progress you make or thoughts
+you have here.
 
-git://git.kernel.org/pub/scm/linux/kernel/git/jack/linux-quota-2.6.git for_linus
+> I'm not certain how general we can be. pci layer, device layer or kobject
+> layer, but I think it makes sense to have a dedicated work queue to use
+> when devices are removed.  As every hotplug driver currently has to
+> invent one.  The fake hotplug code is very normal in this respect.
+> 
+> If we can get the work queue creation and the calling of remove put
+> into the generic pci layer, we should be able to simply all of the
+> hotplug controller drivers.
 
-  to get quota related changes for 2.6.30:
+Hm, that is a good idea.
 
-Jan Kara (20):
-      ext3: Remove unnecessary quota functions
-      ext4: Remove unnecessary quota functions
-      reiserfs: Remove unnecessary quota functions
-      quota: Move quota files into separate directory
-      quota: Make global quota locks cacheline aligned
-      quota: Remove NODQUOT macro
-      quota: Remove dqbuf_t and other cleanups
-      vfs: Use lowercase names of quota functions
-      ramfs: Remove quota call
-      ext2: Use lowercase names of quota functions
-      ext3: Use lowercase names of quota functions
-      ext4: Use lowercase names of quota functions
-      reiserfs: Use lowercase names of quota functions
-      ufs: Use lowercase names of quota functions
-      udf: Use lowercase names of quota functions
-      jfs: Use lowercase names of quota functions
-      nfsd: Use lowercase names of quota functions
-      quota: Remove uppercase aliases for quota functions.
-      quota: Remove superfluous inlines
-      quota: Coding style fixes
+Simplifying all the various hotplug drivers is on my TODO list,
+but it's a long and tricky process. I agree though, there is no
+reason why they should all be as complicated as they are.
 
-Manish Katiyar (1):
-      ext2: Zero our b_size in ext2_quota_read()
+> I'm not seeing a patch from you where you are using a separate
+> workqueue.  Am I missing something?  
 
-Matt LaPlante (1):
-      trivial: fix typos/grammar errors in fs/Kconfig
+	http://lkml.org/lkml/2009/3/25/489
 
-Mingming Cao (5):
-      quota: Add quota reservation support
-      quota: Add quota reservation claim and released operations
-      quota: Use inode->i_blkbits to get block bits
-      quota: Move EXPORT_SYMBOL immediately next to the functions/varibles
-      ext4: quota reservation for delayed allocation
+But I suspect that is not the workqueue you are looking for. ;)
 
-  The diffstat is:
+> But if we can place that workqueue in say the pci layer I think
+> it would be just a little re factoring and not a lot more code.
 
- fs/Kconfig               |   56 +-
- fs/Makefile              |    6 +-
- fs/attr.c                |    3 +-
- fs/dquot.c               | 2410 ------------------------------------------
- fs/ext2/balloc.c         |    8 +-
- fs/ext2/ialloc.c         |   10 +-
- fs/ext2/inode.c          |    2 +-
- fs/ext2/super.c          |    1 +
- fs/ext2/xattr.c          |    8 +-
- fs/ext3/balloc.c         |    8 +-
- fs/ext3/ialloc.c         |   12 +-
- fs/ext3/inode.c          |    6 +-
- fs/ext3/namei.c          |    6 +-
- fs/ext3/super.c          |   48 +-
- fs/ext3/xattr.c          |    6 +-
- fs/ext4/balloc.c         |    2 +-
- fs/ext4/ext4.h           |    2 +
- fs/ext4/ialloc.c         |   12 +-
- fs/ext4/inode.c          |   40 +-
- fs/ext4/mballoc.c        |   46 +-
- fs/ext4/namei.c          |    6 +-
- fs/ext4/super.c          |   54 +-
- fs/ext4/xattr.c          |    6 +-
- fs/inode.c               |    4 +-
- fs/jfs/acl.c             |    2 +-
- fs/jfs/inode.c           |    6 +-
- fs/jfs/jfs_dtree.c       |   18 +-
- fs/jfs/jfs_extent.c      |   10 +-
- fs/jfs/jfs_inode.c       |    4 +-
- fs/jfs/jfs_xtree.c       |   14 +-
- fs/jfs/namei.c           |    6 +-
- fs/jfs/xattr.c           |   12 +-
- fs/namei.c               |   22 +-
- fs/nfsd/vfs.c            |    4 +-
- fs/open.c                |    2 +-
- fs/quota.c               |  513 ---------
- fs/quota/Kconfig         |   59 +
- fs/quota/Makefile        |   14 +
- fs/quota/dquot.c         | 2614 ++++++++++++++++++++++++++++++++++++++++++++++
- fs/quota/quota.c         |  524 ++++++++++
- fs/quota/quota_tree.c    |  651 ++++++++++++
- fs/quota/quota_tree.h    |   25 +
- fs/quota/quota_v1.c      |  234 +++++
- fs/quota/quota_v2.c      |  237 +++++
- fs/quota/quotaio_v1.h    |   33 +
- fs/quota/quotaio_v2.h    |   60 ++
- fs/quota_tree.c          |  645 ------------
- fs/quota_tree.h          |   25 -
- fs/quota_v1.c            |  218 ----
- fs/quota_v2.c            |  236 -----
- fs/quotaio_v1.h          |   33 -
- fs/quotaio_v2.h          |   60 --
- fs/ramfs/file-nommu.c    |    6 -
- fs/reiserfs/bitmap.c     |   14 +-
- fs/reiserfs/inode.c      |   10 +-
- fs/reiserfs/namei.c      |    6 +-
- fs/reiserfs/stree.c      |   14 +-
- fs/reiserfs/super.c      |   60 +-
- fs/super.c               |    8 +-
- fs/sync.c                |    2 +-
- fs/udf/balloc.c          |   14 +-
- fs/udf/ialloc.c          |    8 +-
- fs/ufs/balloc.c          |   12 +-
- fs/ufs/ialloc.c          |    8 +-
- include/linux/quota.h    |   11 +-
- include/linux/quotaops.h |  119 ++-
- 66 files changed, 4770 insertions(+), 4565 deletions(-)
+The PCI layer doesn't need a workqueue to remove devices, not on
+its own behalf.
 
-							Thanks.
-								Honza
--- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
+You are talking about providing something for the benefit of all
+the hotplug drivers, right?
+
+Thanks.
+
+/ac
+
