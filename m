@@ -1,92 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753042AbZCZAKl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755467AbZCZALr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753042AbZCZAKl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 25 Mar 2009 20:10:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752186AbZCZAKc
+	id S1755467AbZCZALr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 25 Mar 2009 20:11:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752737AbZCZALj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 25 Mar 2009 20:10:32 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:33998
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751075AbZCZAKb (ORCPT
+	Wed, 25 Mar 2009 20:11:39 -0400
+Received: from byss.tchmachines.com ([208.76.80.75]:57211 "EHLO
+	byss.tchmachines.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752208AbZCZALj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 25 Mar 2009 20:10:31 -0400
-Date: Wed, 25 Mar 2009 17:10:19 -0700 (PDT)
-Message-Id: <20090325.171019.56283101.davem@davemloft.net>
-To: jarkao2@gmail.com
-Cc: herbert@gondor.apana.org.au, mingo@elte.hu, r.schwebel@pengutronix.de,
-       torvalds@linux-foundation.org, blaschka@linux.vnet.ibm.com,
-       tglx@linutronix.de, a.p.zijlstra@chello.nl,
-       linux-kernel@vger.kernel.org, kernel@pengutronix.de
-Subject: Re: Revert "gro: Fix legacy path napi_complete crash",
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20090325225456.GA3271@ami.dom.local>
-References: <20090325122635.GA6489@gondor.apana.org.au>
-	<20090325225456.GA3271@ami.dom.local>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Wed, 25 Mar 2009 20:11:39 -0400
+Date: Wed, 25 Mar 2009 17:11:34 -0700
+From: Ravikiran G Thirumalai <kiran@scalex86.org>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>, Ingo Molnar <mingo@elte.hu>,
+       Yinghai Lu <yinghai@kernel.org>, "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       shai@scalex86.org
+Subject: Re: [PATCH] x86: don't compile vsmp_64 for 32bit
+Message-ID: <20090326001134.GM7278@localdomain>
+References: <20090302235120.GF27240@localdomain> <20090322124818.GA31466@elte.hu> <20090324061429.GH7278@localdomain> <20090324091035.GA6605@elte.hu> <20090325185138.GI7278@localdomain> <49CAAD2E.3060904@goop.org> <20090325223642.GK7278@localdomain> <49CABB25.8040106@goop.org> <20090325232921.GL7278@localdomain> <alpine.LFD.2.00.0903260034200.3397@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.00.0903260034200.3397@localhost.localdomain>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - byss.tchmachines.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - scalex86.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jarek Poplawski <jarkao2@gmail.com>
-Date: Wed, 25 Mar 2009 23:54:56 +0100
+On Thu, Mar 26, 2009 at 12:36:11AM +0100, Thomas Gleixner wrote:
+>On Wed, 25 Mar 2009, Ravikiran G Thirumalai wrote:
+>> > Sure, but it would be cleaner if the whole file were controlled by 
+>> > CONFIG_X86_VSMP.  is_vsmp_box() is already defined as const inline 
+>> > returning 0 if !CONFIG_X86_VSMP.
+>> >
+>> 
+>> The point in this thread was, is_vsmp_box() needs to be meaningful even when
+>> CONFIG_X86_VSMP is not on.  This is needed because is_vsmp_box() is used to
+>> determine if the platform has reliable tscs.
+>
+>Did you even read what Jeremy wrote or bother to look at the code in
+>arch/x86/include/asm/apic.h ?
+>
 
-Ingo, in case it isn't completely obvious, it would be
-wonderful if you could try Jarek's patch below with your
-test case.
+Might I politely point out the origin of this code:
+http://lkml.org/lkml/2009/2/26/5
 
-Thanks!
+Please note the subject of the patch in the link and the subject of this
+discussion.  It is the same thread.  The patch was commited to tip and is
+still being discussed if it is any clarification :)
 
-> Herbert Xu wrote, On 03/25/2009 01:26 PM:
-> 
-> > On Wed, Mar 25, 2009 at 01:20:46PM +0100, Ingo Molnar wrote:
-> >> ok - i have started testing the delta below, on top of the plain 
-> >> revert.
-> > 
-> > Thanks! BTW Ingo, any chance you could help us identify the problem
-> > with the previous patch? I don't have a forcedeth machine here
-> > and the hang you had with my patch that open-coded __napi_complete
-> > appears intimately connected to forcedeth (with NAPI enabled).
-> 
-> Of course it's too late for verifying this now, but (for the future)
-> I think, this scenario could be considered:
-> 
-> process_backlog()			netif_rx()
-> 
-> if (!skb)
-> local_irq_enable()
-> 					if (queue.qlen) //NO
-> 					napi_schedule() //NOTHING
-> 					__skb_queue_tail() //qlen > 0
-> napi_complete()
-> ...					...
-> 					Every next netif_rx() sees
-> 					qlen > 0, so napi is never
-> 					scheduled again.
-> 
-> Then, something like this might work...
-> 
-> Jarek P.
-> --- (2.6.29)
->  net/core/dev.c |    6 +++++-
->  1 files changed, 5 insertions(+), 1 deletions(-)
-> 
-> diff --git a/net/core/dev.c b/net/core/dev.c
-> index e3fe5c7..cf53c24 100644
-> --- a/net/core/dev.c
-> +++ b/net/core/dev.c
-> @@ -2589,7 +2589,11 @@ static int process_backlog(struct napi_struct *napi, int quota)
->  		skb = __skb_dequeue(&queue->input_pkt_queue);
->  		if (!skb) {
->  			local_irq_enable();
-> -			napi_complete(napi);
-> +			napi_gro_flush(napi);
-> +			local_irq_disable();
-> +			if (skb_queue_empty(&queue->input_pkt_queue))
-> +				__napi_complete(napi);
-> +			local_irq_enable();
->  			goto out;
->  		}
->  		local_irq_enable();
