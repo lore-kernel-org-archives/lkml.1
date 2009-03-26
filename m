@@ -1,80 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757132AbZCZP1S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758128AbZCZPai@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757132AbZCZP1S (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Mar 2009 11:27:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752448AbZCZP1D
+	id S1758128AbZCZPai (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Mar 2009 11:30:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750931AbZCZPa3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Mar 2009 11:27:03 -0400
-Received: from mail-in-11.arcor-online.net ([151.189.21.51]:59405 "EHLO
-	mail-in-11.arcor-online.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752737AbZCZP1B (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Mar 2009 11:27:01 -0400
-X-DKIM: Sendmail DKIM Filter v2.8.2 mail-in-11.arcor-online.net 6F68AE3EC7
-From: Bodo Eggert <7eggert@gmx.de>
-Subject: Re: [dm-devel] Barriers still not passing on simple dm devices...
-To: Chris Mason <chris.mason@oracle.com>,
-       Mikulas Patocka <mpatocka@redhat.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       device-mapper development <dm-devel@redhat.com>,
+	Thu, 26 Mar 2009 11:30:29 -0400
+Received: from THUNK.ORG ([69.25.196.29]:51573 "EHLO thunker.thunk.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753127AbZCZPa2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Mar 2009 11:30:28 -0400
+Date: Thu, 26 Mar 2009 11:28:15 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Jan Kara <jack@suse.cz>, Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Nick Piggin <npiggin@suse.de>,
+       Jens Axboe <jens.axboe@oracle.com>, David Rees <drees76@gmail.com>,
+       Jesper Krogh <jesper@krogh.cc>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andi Kleen <ak@suse.de>
-Reply-To: 7eggert@gmx.de
-Date: Thu, 26 Mar 2009 16:26:53 +0100
-References: <ciXHh-39c-37@gated-at.bofh.it> <cjfuL-6vJ-43@gated-at.bofh.it> <cjfEl-6J2-45@gated-at.bofh.it> <cjfNX-6Wh-27@gated-at.bofh.it> <cjfXx-78D-9@gated-at.bofh.it> <cjg7h-7lM-29@gated-at.bofh.it> <cjgqC-80G-21@gated-at.bofh.it> <cjD3I-22U-7@gated-at.bofh.it> <cjDdE-2g3-31@gated-at.bofh.it> <cjJVv-4vp-13@gated-at.bofh.it> <cjXlS-uM-1@gated-at.bofh.it>
-User-Agent: KNode/0.10.4
+       Oleg Nesterov <oleg@redhat.com>, Roland McGrath <roland@redhat.com>
+Subject: Re: ext3 IO latency measurements (was: Linux 2.6.29)
+Message-ID: <20090326152815.GB6239@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>, Ingo Molnar <mingo@elte.hu>,
+	Jan Kara <jack@suse.cz>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Alan Cox <alan@lxorguk.ukuu.org.uk>,
+	Arjan van de Ven <arjan@infradead.org>,
+	Peter Zijlstra <a.p.zijlstra@chello.nl>,
+	Nick Piggin <npiggin@suse.de>, Jens Axboe <jens.axboe@oracle.com>,
+	David Rees <drees76@gmail.com>, Jesper Krogh <jesper@krogh.cc>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	Oleg Nesterov <oleg@redhat.com>, Roland McGrath <roland@redhat.com>
+References: <20090325150041.GM32307@mit.edu> <alpine.LFD.2.00.0903251008120.3032@localhost.localdomain> <20090325185824.GO32307@mit.edu> <alpine.LFD.2.00.0903251341050.3032@localhost.localdomain> <20090325215137.GQ32307@mit.edu> <alpine.LFD.2.00.0903251613300.3032@localhost.localdomain> <20090325235041.GA11024@duck.suse.cz> <20090326090630.GA9369@elte.hu> <20090326113705.GV32307@mit.edu> <20090326140312.GB14822@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7Bit
-Message-Id: <E1LmrTq-0001wg-2i@be1.7eggert.dyndns.org>
+Content-Disposition: inline
+In-Reply-To: <20090326140312.GB14822@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Chris Mason <chris.mason@oracle.com> wrote:
-> On Wed, 2009-03-25 at 18:39 -0400, Mikulas Patocka wrote:
-
->> > The error handling is complex, no doubt
->> > about that. But the trial barrier test is pretty trivial and even could
->> > be easily abstracted out. If a later barrier write fails, then that's
->> > really no different than if a normal write fails. Error handling is not
->> > easy in that case.
->> 
->> I had a discussion with Andi about it some times ago. The conclusion was
->> that all the current filesystems handle barriers failing in the middle of
->> the operation without functionality loss, but it makes barriers useless
->> for any performance-sensitive tasks (commits that wouldn't block
->> concurrent activity). Non-blocking commits could only be implemented if
->> barriers don't fail.
->> 
+On Thu, Mar 26, 2009 at 03:03:12PM +0100, Ingo Molnar wrote:
 > 
-> If a barrier fails at runtime, the filesystems do fall back to not doing
-> barriers without real problems.
+> I still see similarly bad latencies in Vim:
+> 
 
-That's because there are no real problems in not honoring barriers - unless
-your system crashes.
+When you say "similarly bad", how many seconds were you seeing?  I
+understand that from the user's perspective, the 120 seconds you saw
+with ext3 isn't going to be that different from 15 seconds (which
+seems to be the maximum commit time in the jbd2 history file you sent
+me), but I'm curious if what you saw was just as bad with ext4, or was
+it somewhat better (i.e., 120 seconds vs 15 or so).  Or were you also
+seeing a net time to save the file using vim of around 120 seconds
+with ext4?
 
-> But, that's because they don't actually 
-> rely on the barriers to decide if an async commit is a good idea.
+Ext4 in nodelalloc mode is mostly similar to ext3, but it does have
+some improvements, such as a slightly elevated I/O priority for
+kjournald, and the ext4's writepage doesn't take the journal handle as
+it does in ext3.  (That's why I was confused about Linus's assertion
+about ext3 waiting on the journal; ext4 doesn't any more, and I had
+ext4 on the brain.)  Unfortunately, we don't have the
+/proc/fs/jbd/<dev>/history for ext3, so it would be interesting to
+compare whether the vim save latencies were improved or not with ext4.
+If they are, then it might be worth Jan's time to fix up ext3's
+writepage to not try request journal access if it's not needed.  It
+might also be worth backporting ext4's slightly raised I/O priority
+patch.
 
-As long as they cannot rely on barriers - how should they?
+Another thing that's worth trying.  Suppose you use ionice to raise
+the priority of kjournald to a real-time I/O priority (which is what
+Arjan's patch does).  How much does that help?  Is it more or less
+compared to what we're seeing with ext4's slightly reaised I/O
+priority.
 
-[...]
-> In general, async commits happen with threads and they aren't related to
-> barriers.
+And if we mount the filesystem noatime, does that change the results
+significantly as far as Vim write latencies and the jbd2 history file?
 
-If my filesystem said "First update b, then let a point to b", where the H
-is the thread?
+> The read-test is somewhat better. There are occasional blips of 4-5 
+> seconds:
 
-> Barriers don't really give us error handling,
+Presumably these go away once we mount the filesystem noatime, right?
 
-Each request should give you error handling, but you are right: The whole
-queue after the barrier must be aborted, too. (Or better: The part depending
-on the barrier.)
-
-> and they are at  
-> the very end of a long chain of technical problems around commits that
-> don't block concurrent activity.
-
-You lost me here, but I guess the end will be a major rewrite.
-
+	   	   	    	      	       - Ted
