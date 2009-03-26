@@ -1,56 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761858AbZCZU4Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761667AbZCZU6V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761858AbZCZU4Y (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Mar 2009 16:56:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757093AbZCZU4I
+	id S1761667AbZCZU6V (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Mar 2009 16:58:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756432AbZCZU6M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Mar 2009 16:56:08 -0400
-Received: from cavan.codon.org.uk ([93.93.128.6]:47165 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757973AbZCZU4G (ORCPT
+	Thu, 26 Mar 2009 16:58:12 -0400
+Received: from mail-ew0-f165.google.com ([209.85.219.165]:32994 "EHLO
+	mail-ew0-f165.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753036AbZCZU6K (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Mar 2009 16:56:06 -0400
-Date: Thu, 26 Mar 2009 20:55:34 +0000
-From: Matthew Garrett <mjg@redhat.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Theodore Tso <tytso@mit.edu>, Ingo Molnar <mingo@elte.hu>,
-       Jan Kara <jack@suse.cz>, Andrew Morton <akpm@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Nick Piggin <npiggin@suse.de>,
-       Jens Axboe <jens.axboe@oracle.com>, David Rees <drees76@gmail.com>,
-       Jesper Krogh <jesper@krogh.cc>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Oleg Nesterov <oleg@redhat.com>, Roland McGrath <roland@redhat.com>
-Subject: Re: ext3 IO latency measurements (was: Linux 2.6.29)
-Message-ID: <20090326205534.GA11217@srcf.ucam.org>
-References: <20090326090630.GA9369@elte.hu> <20090326113705.GV32307@mit.edu> <20090326140312.GB14822@elte.hu> <20090326144707.GA6239@mit.edu> <alpine.LFD.2.00.0903260914440.3032@localhost.localdomain> <20090326170714.GF6239@mit.edu> <alpine.LFD.2.00.0903261015050.3032@localhost.localdomain> <20090326185900.166a1097@lxorguk.ukuu.org.uk> <20090326200258.GA10313@srcf.ucam.org> <20090326204209.1da6e791@lxorguk.ukuu.org.uk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090326204209.1da6e791@lxorguk.ukuu.org.uk>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
+	Thu, 26 Mar 2009 16:58:10 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:from:to:cc:subject:date:message-id:x-mailer;
+        b=ugP2Z1L5/lx7uPPH00oSSnwci+JUQIuRUSIUwx0DQhWRGt1nzz0Ud/jTSUzu5AiBr/
+         tBG+TXMMWICXUs7MOvcIKwEZ9z8VigJf5IiHAIb7jKQAsPqgSlqwpqowBZoL2D8XkmaK
+         FIb2kWdowVR2LoQRaEgDoM0M0yh6qNcD4Bad8=
+From: Peter Korsgaard <jacmet@sunsite.dk>
+To: sam@ravnborg.org, linux-kernel@vger.kernel.org
+Cc: Peter Korsgaard <jacmet@sunsite.dk>
+Subject: [PATCH] setlocalversion: use git svn instead of git-svn
+Date: Thu, 26 Mar 2009 21:58:04 +0100
+Message-Id: <1238101084-7213-1-git-send-email-jacmet@sunsite.dk>
+X-Mailer: git-send-email 1.6.2
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 26, 2009 at 08:42:09PM +0000, Alan Cox wrote:
-> > before performing the update. So while relatime doesn't conform, the 
-> > practical difference is meaningless. You can't depend on atime being 
-> > updated in a timely manner.
-> 
-> POSIX says a disk write interrupted by a signal can be a short write. If
-> you do this in practice all hell breaks loose.
-> 
-> A conforming implementation needs to conform with expectations not just
-> play lawyer games with users systems.
+Use the correct git <subcmd> syntax instead of the deprecated git-<subcmd>.
 
-I agree, but arguing for something on the basis of a spec isn't terribly 
-convincing if the spec allows effectively identical behaviour. SuS isn't 
-a relevant consideration when it comes to deciding default atime policy.
+Signed-off-by: Peter Korsgaard <jacmet@sunsite.dk>
+---
+ scripts/setlocalversion |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
+diff --git a/scripts/setlocalversion b/scripts/setlocalversion
+index f1c4b35..47e75b6 100755
+--- a/scripts/setlocalversion
++++ b/scripts/setlocalversion
+@@ -21,7 +21,7 @@ if head=`git rev-parse --verify --short HEAD 2>/dev/null`; then
+ 
+ 	# Is this git on svn?
+ 	if git config --get svn-remote.svn.url >/dev/null; then
+-	        printf -- '-svn%s' "`git-svn find-rev $head`"
++	        printf -- '-svn%s' "`git svn find-rev $head`"
+ 	fi
+ 
+ 	# Are there uncommitted changes?
 -- 
-Matthew Garrett | mjg59@srcf.ucam.org
+1.6.2
+
