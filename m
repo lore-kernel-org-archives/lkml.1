@@ -1,66 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752021AbZCZEmP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753743AbZCZE6k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752021AbZCZEmP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Mar 2009 00:42:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751689AbZCZEl4
+	id S1753743AbZCZE6k (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Mar 2009 00:58:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751972AbZCZE6b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Mar 2009 00:41:56 -0400
-Received: from mail168c2.megamailservers.com ([69.49.111.68]:56768 "EHLO
-	mail168c2.megamailservers.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751061AbZCZEly (ORCPT
+	Thu, 26 Mar 2009 00:58:31 -0400
+Received: from yx-out-2324.google.com ([74.125.44.30]:30258 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751275AbZCZE6b convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Mar 2009 00:41:54 -0400
-X-Greylist: delayed 15876 seconds by postgrey-1.27 at vger.kernel.org; Thu, 26 Mar 2009 00:41:54 EDT
-X-Authenticated-User: jiri.gaisler.com
-Message-ID: <49CAC982.4050507@gaisler.com>
-Date: Thu, 26 Mar 2009 01:17:06 +0100
-From: Jiri Gaisler <jiri@gaisler.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.21) Gecko/20090303 SeaMonkey/1.1.15
+	Thu, 26 Mar 2009 00:58:31 -0400
 MIME-Version: 1.0
-To: Jan Kara <jack@suse.cz>
-CC: Alexander Beregalov <a.beregalov@gmail.com>, Theodore Tso <tytso@mit.edu>,
-       "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>,
-       linux-ext4@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       sparclinux@vger.kernel.org
-Subject: Re: next-20090310: ext4 hangs
-References: <a4423d670903110907o7041f4eof92278835aa0c71c@mail.gmail.com> <20090325151122.GA14881@atrey.karlin.mff.cuni.cz> <20090325151516.GB14881@atrey.karlin.mff.cuni.cz> <a4423d670903250818n512b1c67ja1b38db6d09ac7c@mail.gmail.com> <20090325152234.GN23439@duck.suse.cz> <a4423d670903250829w5e9304a7rce24f4220379620f@mail.gmail.com> <20090325161556.GP23439@duck.suse.cz> <a4423d670903251007r72058ca8m28275c1433ab2706@mail.gmail.com> <20090325194316.GQ23439@duck.suse.cz> <a4423d670903251538p3a7c180br1bcfe08c4f044c15@mail.gmail.com> <20090326000035.GB11024@duck.suse.cz>
-In-Reply-To: <20090326000035.GB11024@duck.suse.cz>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <alpine.LFD.2.00.0903252017100.3032@localhost.localdomain>
+References: <20090324093245.GA22483@elte.hu> <20090325185824.GO32307@mit.edu>
+	 <20090325194851.GA1617@infradead.org> <20090325215016.GP32307@mit.edu>
+	 <20090326021034.GA26559@srcf.ucam.org>
+	 <f73f7ab80903251944s581166bbk31c26db50750814a@mail.gmail.com>
+	 <f73f7ab80903251946u593216eejb75d77c54fc8bdf@mail.gmail.com>
+	 <49CAEDA7.1080902@garzik.org>
+	 <f73f7ab80903252003j248b416ewe52b613c5b53066c@mail.gmail.com>
+	 <alpine.LFD.2.00.0903252017100.3032@localhost.localdomain>
+Date: Thu, 26 Mar 2009 00:58:28 -0400
+Message-ID: <f73f7ab80903252158o1d722068j117b4e9933f67589@mail.gmail.com>
+Subject: Re: Linux 2.6.29
+From: Kyle Moffett <kyle@moffetthome.net>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Jeff Garzik <jeff@garzik.org>, Matthew Garrett <mjg59@srcf.ucam.org>,
+       Theodore Tso <tytso@mit.edu>, Christoph Hellwig <hch@infradead.org>,
+       Jan Kara <jack@suse.cz>, Andrew Morton <akpm@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Nick Piggin <npiggin@suse.de>,
+       Jens Axboe <jens.axboe@oracle.com>, David Rees <drees76@gmail.com>,
+       Jesper Krogh <jesper@krogh.cc>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, Mar 25, 2009 at 11:40 PM, Linus Torvalds
+<torvalds@linux-foundation.org> wrote:
+> On Wed, 25 Mar 2009, Kyle Moffett wrote:
+>> To be honest I think we could provide much better data consistency
+>> guarantees and remove a lot of fsync() calls with just a basic
+>> per-filesystem barrier() call.
+>
+> The problem is not that we have a lot of fsync() calls. Quite the reverse.
+> fsync() is really really rare. So is being careful in general. The number
+> of applications that do even the _minimal_ safety-net of "create new file,
+> rename it atomically over an old one" is basically zero. Almost everybody
+> ends up rewriting files with something like
+>
+>        open(name, O_CREAT | O_TRUNC, 0666)
+>        write();
+>        close();
+>
+> where there isn't an fsync in sight, nor any "create temp file", nor
+> likely even any real error checking on the write(), much less the
+> close().
 
+Really, I think virtually all of the database programs would be
+perfectly happy with an "fsbarrier(fd, flags)" syscall, where if "fd"
+points to a regular file or directory then it instructs the underlying
+filesystem to do whatever internal barrier it supports, and if not
+just fail with -ENOTSUPP (so you can fall back to fdatasync(), etc).
+Perhaps "flags" would allow a "data" or "metadata" barrier, but if not
+it's not a big issue.
 
-Jan Kara wrote:
->   Hi,
-> 
->   thanks for the updated disassembly.
-> 
->>   55bab0:       82 10 60 01     or  %g1, 1, %g1
->>                 spin_unlock(&journal->j_list_lock);
->>   55bab4:       40 06 4b 20     call  6ee734 <_spin_unlock>
->>   55bab8:       c2 24 e0 28     st  %g1, [ %l3 + 0x28 ]
->   OK, so it really seems that:
->   jinode->i_flags |= JI_COMMIT_RUNNING;
->   spin_unlock(&journal->j_list_lock);
-> 
->   has been compiled to
->   ld [ %l3 + 0x28 ], %g1
->   or  %g1, 1, %g1
->   call  6ee734 <_spin_unlock>
->   st  %g1, [ %l3 + 0x28 ]
-> 
->   Which seems like a bug in the compiler or in the way implement compiler
-> barriers in spin_unlock() on UP sparc. Or is there some sparc magic by which
-> this is correct code? Any clever sparc guy?
-> 
-> 									Honza
+I've ended up having to write a fair amount of high-performance
+filesystem library code which almost never ends up using fsync() quite
+simply because the performance on it sucks so badly.  This is one of
+the big reasons why so many critical database programs use O_DIRECT
+and reinvent the the wheel^H^H^H^H^H^H pagecache.  The only way you
+can actually use it in high-bandwidth transaction applications is by
+doing your own IO-thread and buffering system.
 
+You have to have your own buffer ordering dependencies and call
+fdatasync() or fsync() from individual threads in-between specific
+ordered IOs.  The threading helps you keep other IO in flight while
+waiting for the flush to finish.  For big databases on spinning media
+(SSDs don't work precisely because they are small and your databases
+are big) the overhead of a full flush may still be too large.  Even
+with SSDs, with multiple processes vying for IO bandwidth you still
+want some kind of application-level barrier to avoid introducing
+bubbles in your IO pipeline.
 
-Looks fine to me - the store is made in the branch delay slot
-of the call, so it will occur before the first instruction at
-the call target address executes.
-Jiri.
+It all comes down to a trivial calculation: if you can't get
+(bandwidth * latency-to-stable-storage) bytes of data queued *behind*
+a flush then your disk is going to sit idle waiting for more data
+after completing it.  If a user-level tool needs to enforce ordering
+between IOs the only tool right now is is a full flush; when
+database-oriented tools can use a barrier()-ish call instead, they can
+issue the op and immediately resume keeping the IO queues full.
+
+Cheers,
+Kyle Moffett
