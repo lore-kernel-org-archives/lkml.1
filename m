@@ -1,21 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756742AbZCZIfu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756880AbZCZIgQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756742AbZCZIfu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Mar 2009 04:35:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755780AbZCZIe1
+	id S1756880AbZCZIgQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Mar 2009 04:36:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755834AbZCZIe2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Mar 2009 04:34:27 -0400
-Received: from smtp.wellnetcz.com ([212.24.148.102]:52239 "EHLO
+	Thu, 26 Mar 2009 04:34:28 -0400
+Received: from smtp.wellnetcz.com ([212.24.148.102]:52247 "EHLO
 	smtp.wellnetcz.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752341AbZCZIeV (ORCPT
+	with ESMTP id S1751591AbZCZIeV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 26 Mar 2009 04:34:21 -0400
 From: Jiri Slaby <jirislaby@gmail.com>
 To: Greg Kroah-Hartman <gregkh@suse.de>
-Cc: linux-kernel@vger.kernel.org, Jiri Slaby <jirislaby@gmail.com>
-Subject: [PATCH 3/8] staging: agnx, remove memlens from probe
-Date: Thu, 26 Mar 2009 09:34:08 +0100
-Message-Id: <1238056453-25653-3-git-send-email-jirislaby@gmail.com>
+Cc: linux-kernel@vger.kernel.org, Jiri Slaby <jirislaby@gmail.com>,
+       David Kiliani <mail@davidkiliani.de>
+Subject: [PATCH 7/8] staging: meilhaus, annotate cpi functions
+Date: Thu, 26 Mar 2009 09:34:12 +0100
+Message-Id: <1238056453-25653-7-git-send-email-jirislaby@gmail.com>
 X-Mailer: git-send-email 1.6.2
 In-Reply-To: <1238056453-25653-1-git-send-email-jirislaby@gmail.com>
 References: <1238056453-25653-1-git-send-email-jirislaby@gmail.com>
@@ -23,51 +24,52 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pass 0 to pci_iomap instead. It will cope with that per se.
+Add __devinit and __devexit to pci probe/remove. Also make pci_driver
+static.
 
 Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+Cc: David Kiliani <mail@davidkiliani.de>
 ---
- drivers/staging/agnx/pci.c |    8 ++------
- 1 files changed, 2 insertions(+), 6 deletions(-)
+ drivers/staging/meilhaus/memain.c |    9 +++++----
+ 1 files changed, 5 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/staging/agnx/pci.c b/drivers/staging/agnx/pci.c
-index f646211..f2fbd26 100644
---- a/drivers/staging/agnx/pci.c
-+++ b/drivers/staging/agnx/pci.c
-@@ -452,7 +452,6 @@ static int __devinit agnx_pci_probe(struct pci_dev *pdev,
+diff --git a/drivers/staging/meilhaus/memain.c b/drivers/staging/meilhaus/memain.c
+index d5aacdd..2631587 100644
+--- a/drivers/staging/meilhaus/memain.c
++++ b/drivers/staging/meilhaus/memain.c
+@@ -103,11 +103,11 @@ static const struct file_operations me_file_operations = {
+ 	.release = me_release,
+ };
+ 
+-struct pci_driver me_pci_driver = {
++static struct pci_driver me_pci_driver = {
+ 	.name = MEMAIN_NAME,
+ 	.id_table = me_pci_table,
+ 	.probe = me_probe_pci,
+-	.remove = me_remove_pci
++	.remove = __devexit_p(me_remove_pci),
+ };
+ 
+ /* //me_usb_driver
+@@ -384,7 +384,8 @@ static me_device_t *get_dummy_instance(unsigned short vendor_id,
+ 	return instance;
+ }
+ 
+-static int me_probe_pci(struct pci_dev *dev, const struct pci_device_id *id)
++static int __devinit me_probe_pci(struct pci_dev *dev,
++		const struct pci_device_id *id)
  {
- 	struct ieee80211_hw *dev;
- 	struct agnx_priv *priv;
--	u32 mem_len0, mem_len1;
  	int err;
- 	DECLARE_MAC_BUF(mac);
+ 	me_pci_constructor_t constructor = NULL;
+@@ -582,7 +583,7 @@ static int insert_to_device_list(me_device_t *n_device)
+ 	return 0;
+ }
  
-@@ -462,9 +461,6 @@ static int __devinit agnx_pci_probe(struct pci_dev *pdev,
- 		return err;
- 	}
- 
--	mem_len0 = pci_resource_len(pdev, 0);
--	mem_len1 = pci_resource_len(pdev, 1);
--
- 	err = pci_request_regions(pdev, "agnx-pci");
- 	if (err) {
- 		dev_err(&pdev->dev, "can't reserve PCI resources\n");
-@@ -493,13 +489,13 @@ static int __devinit agnx_pci_probe(struct pci_dev *pdev,
- 	spin_lock_init(&priv->lock);
- 	priv->init_status = AGNX_UNINIT;
- 
--	priv->ctl = pci_iomap(pdev, 0, mem_len0);
-+	priv->ctl = pci_iomap(pdev, 0, 0);
- /*	dev_dbg(&pdev->dev, "MEM1 mapped address is 0x%p\n", priv->ctl); */
- 	if (!priv->ctl) {
- 		dev_err(&pdev->dev, "can't map device memory\n");
- 		goto err_free_dev;
- 	}
--	priv->data = pci_iomap(pdev, 1, mem_len1);
-+	priv->data = pci_iomap(pdev, 1, 0);
- 	if (!priv->data) {
- 		dev_err(&pdev->dev, "can't map device memory\n");
- 		goto err_iounmap2;
+-static void me_remove_pci(struct pci_dev *dev)
++static void __devexit me_remove_pci(struct pci_dev *dev)
+ {
+ 	int vendor_id = dev->vendor;
+ 	int device_id = dev->device;
 -- 
 1.6.2
 
