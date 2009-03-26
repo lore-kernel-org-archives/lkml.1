@@ -1,61 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761513AbZCZUUU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761563AbZCZUXX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761513AbZCZUUU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Mar 2009 16:20:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751221AbZCZUT6
+	id S1761563AbZCZUXX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Mar 2009 16:23:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757452AbZCZUXO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Mar 2009 16:19:58 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:50539 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757432AbZCZUT4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Mar 2009 16:19:56 -0400
-Subject: Re: Network Device Naming mechanism and policy
-From: Dan Williams <dcbw@redhat.com>
-To: Chris Friesen <cfriesen@nortel.com>
-Cc: David Miller <davem@davemloft.net>, Matt_Domsch@dell.com,
-       netdev@vger.kernel.org, linux-hotplug@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <49CA927B.9080709@nortel.com>
-References: <20090324154617.GA16332@auslistsprd01.us.dell.com>
-	 <20090324.155756.214460004.davem@davemloft.net>
-	 <49CA927B.9080709@nortel.com>
+	Thu, 26 Mar 2009 16:23:14 -0400
+Received: from bowden.ucwb.org.au ([203.122.237.119]:48286 "EHLO
+	mail.ucwb.org.au" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753795AbZCZUXN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Mar 2009 16:23:13 -0400
+Subject: Re: [Bug #12465] KVM guests stalling on 2.6.28 (bisected)
+From: Kevin Shanahan <kmshanah@ucwb.org.au>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Avi Kivity <avi@redhat.com>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Mike Galbraith <efault@gmx.de>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+In-Reply-To: <20090324114409.GB6058@nowhere>
+References: <qm8_cedJGaP.A.-NH.CPCvJB@chimera>
+	 <1237107837.27699.27.camel@kulgan.wumi.org.au>
+	 <49BE20B2.9070804@redhat.com> <1237207595.4964.31.camel@kulgan.wumi.org.au>
+	 <20090316200736.GD8393@nowhere>
+	 <1237244137.4964.54.camel@kulgan.wumi.org.au>
+	 <20090318001955.GB5143@nowhere>
+	 <1237338986.4801.11.camel@kulgan.wumi.org.au>
+	 <1237411441.5211.5.camel@kulgan.wumi.org.au>
+	 <1237611639.4933.4.camel@kulgan.wumi.org.au>
+	 <20090324114409.GB6058@nowhere>
 Content-Type: text/plain
-Date: Thu, 26 Mar 2009 16:17:42 -0400
-Message-Id: <1238098662.3254.10.camel@localhost.localdomain>
+Organization: UnitingCare Wesley Bowden
+Date: Fri, 27 Mar 2009 06:52:57 +1030
+Message-Id: <1238098977.5406.5.camel@kulgan>
 Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-03-25 at 14:22 -0600, Chris Friesen wrote:
-> David Miller wrote:
-> > From: Matt Domsch <Matt_Domsch@dell.com>
-> > Date: Tue, 24 Mar 2009 10:46:17 -0500
-> > 
-> >> Problem: Users expect on-motherboard NICs to be named eth0..ethN.
-> >> This can be difficult to achieve.
-> > 
-> > I learned a long time ago that eth0 et al. have zero meaning.
-> > 
-> > If the system firmware folks gave us topology information with respect
-> > to these things, we could export something that tools such as
-> > NetworkManager, iproute2, etc. could use.
+On Tue, 2009-03-24 at 12:44 +0100, Frederic Weisbecker wrote:
+> As I explained in my previous mail, you trace is only
+> a snapshot that happened in 10 msec.
 > 
-> <snip>
+> I experimented different sizes for the ring buffer but even
+> a 1 second trace require 20 Mo of memory. And a so huge trace
+> would be impractical.
 > 
-> > I guess it's easier to spew about MAC addresses and other
-> > irrelevant topics than try to solve this problem properly. :-)
+> I think we should keep the trace filters we had previously.
+> If you don't minde, could you please retest against latest -tip
+> the following updated patch? Iadded the filters, fixed the python
+> subshell and also flushed the buffer more nicely according to
+> a recent feature in -tip:
 > 
-> What about things like USB network adapters where the topology is not 
-> fixed?  Presumably we would want to use some sort of unique identifier, 
-> and the MAC comes to mind.  Of course, then you run into the problem of 
-> how to deal with duplicate MACs.
+> echo > trace 
+> 
+> instead of switching to nop.
+> You will need to pull latest -tip again.
 
-USB devices do have a serial number field in the descriptors, but that
-only sometimes gets populated with sensible values.  More often than not
-it's just zeros.  But worth checking if the MAC isn't set yet.
+Ok, new set of traces uploaded again here:
 
-Dan
+  http://disenchant.net/tmp/bug-12465/trace-4/
+
+These were taken using 2.6.29-tip-02749-g398bf09.
+
+Same as last time, it was only necessary to have the one guest running
+to reproduce the problem.
+
+Cheers,
+Kevin.
 
 
