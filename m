@@ -1,25 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763816AbZC0Xs6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764804AbZC0Xtf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763816AbZC0Xs6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Mar 2009 19:48:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762673AbZC0X2U
+	id S1764804AbZC0Xtf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Mar 2009 19:49:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761979AbZC0X2V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Mar 2009 19:28:20 -0400
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:48630 "EHLO
+	Fri, 27 Mar 2009 19:28:21 -0400
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:48634 "EHLO
 	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761924AbZC0X1u (ORCPT
+	with ESMTP id S1761765AbZC0X1u (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 27 Mar 2009 19:27:50 -0400
 From: =?utf-8?q?Uwe=20Kleine-K=C3=B6nig?= 
 	<u.kleine-koenig@pengutronix.de>
 To: linux-kernel@vger.kernel.org
 Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Russell King <rmk+kernel@arm.linux.org.uk>,
-       Tony Lindgren <tony@atomide.com>, Hiroshi DOYU <Hiroshi.DOYU@nokia.com>,
-       Juha Yrjola <juha.yrjola@solidboot.com>
-Subject: [PATCH 28/58] move mailbox's probe function to .devinit.text
-Date: Sat, 28 Mar 2009 00:26:49 +0100
-Message-Id: <1238196439-16535-28-git-send-email-u.kleine-koenig@pengutronix.de>
+       Weiwei Wang <weiwei.wang@windriver.com>,
+       Jeff Garzik <jgarzik@redhat.com>,
+       "David S. Miller" <davem@davemloft.net>,
+       Stephen Hemminger <shemminger@vyatta.com>,
+       "Maciej W. Rozycki" <macro@linux-mips.org>
+Subject: [PATCH 43/58] move sb1250-mac's probe function to .devinit.text
+Date: Sat, 28 Mar 2009 00:27:04 +0100
+Message-Id: <1238196439-16535-43-git-send-email-u.kleine-koenig@pengutronix.de>
 X-Mailer: git-send-email 1.6.2
 In-Reply-To: <20090327232153.GA16348@pengutronix.de>
 References: <20090327232153.GA16348@pengutronix.de>
@@ -34,7 +36,7 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A pointer to omap1_mbox_probe is passed to the core via
+A pointer to sbmac_probe is passed to the core via
 platform_driver_register and so the function must not disappear when the
 .init sections are discarded.  Otherwise (if also having HOTPLUG=y)
 unbinding and binding a device to the driver via sysfs will result in an
@@ -45,28 +47,29 @@ platform_driver_register plus removing the pointer to the probe function
 from the struct platform_driver.
 
 Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
-Cc: Russell King <rmk+kernel@arm.linux.org.uk>
-Cc: Tony Lindgren <tony@atomide.com>
-Cc: Hiroshi DOYU <Hiroshi.DOYU@nokia.com>
-Cc: Juha Yrjola <juha.yrjola@solidboot.com>
+Cc: Weiwei Wang <weiwei.wang@windriver.com>
+Cc: Jeff Garzik <jgarzik@redhat.com>
+Cc: David S. Miller <davem@davemloft.net>
+Cc: Stephen Hemminger <shemminger@vyatta.com>
+Cc: Maciej W. Rozycki <macro@linux-mips.org>
 Cc: Andrew Morton <akpm@linux-foundation.org>
 ---
- arch/arm/mach-omap1/mailbox.c |    2 +-
+ drivers/net/sb1250-mac.c |    2 +-
  1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/arch/arm/mach-omap1/mailbox.c b/arch/arm/mach-omap1/mailbox.c
-index 59abbf3..e91211c 100644
---- a/arch/arm/mach-omap1/mailbox.c
-+++ b/arch/arm/mach-omap1/mailbox.c
-@@ -143,7 +143,7 @@ struct omap_mbox mbox_dsp_info = {
- };
- EXPORT_SYMBOL(mbox_dsp_info);
+diff --git a/drivers/net/sb1250-mac.c b/drivers/net/sb1250-mac.c
+index 88dd2e0..8c961b9 100644
+--- a/drivers/net/sb1250-mac.c
++++ b/drivers/net/sb1250-mac.c
+@@ -2683,7 +2683,7 @@ static int sbmac_poll(struct napi_struct *napi, int budget)
+ }
  
--static int __init omap1_mbox_probe(struct platform_device *pdev)
-+static int __devinit omap1_mbox_probe(struct platform_device *pdev)
+ 
+-static int __init sbmac_probe(struct platform_device *pldev)
++static int __devinit sbmac_probe(struct platform_device *pldev)
  {
- 	struct resource *res;
- 	int ret = 0;
+ 	struct net_device *dev;
+ 	struct sbmac_softc *sc;
 -- 
 1.6.2
 
