@@ -1,27 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764657AbZC0Xs2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763816AbZC0Xs6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764657AbZC0Xs2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Mar 2009 19:48:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758915AbZC0X2T
+	id S1763816AbZC0Xs6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Mar 2009 19:48:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762673AbZC0X2U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Mar 2009 19:28:19 -0400
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:48627 "EHLO
+	Fri, 27 Mar 2009 19:28:20 -0400
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:48630 "EHLO
 	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761847AbZC0X1u (ORCPT
+	with ESMTP id S1761924AbZC0X1u (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 27 Mar 2009 19:27:50 -0400
 From: =?utf-8?q?Uwe=20Kleine-K=C3=B6nig?= 
 	<u.kleine-koenig@pengutronix.de>
 To: linux-kernel@vger.kernel.org
 Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Philipp Zabel <philipp.zabel@gmail.com>,
-       David Brownell <dbrownell@users.sourceforge.net>,
-       Greg Kroah-Hartman <gregkh@suse.de>, Tony Lindgren <tony@atomide.com>,
-       Russell King <rmk@arm.linux.org.uk>,
-       Dmitry Baryshkov <dbaryshkov@gmail.com>
-Subject: [PATCH 53/58] move omap_udc's probe function to .devinit.text
-Date: Sat, 28 Mar 2009 00:27:14 +0100
-Message-Id: <1238196439-16535-53-git-send-email-u.kleine-koenig@pengutronix.de>
+       Russell King <rmk+kernel@arm.linux.org.uk>,
+       Tony Lindgren <tony@atomide.com>, Hiroshi DOYU <Hiroshi.DOYU@nokia.com>,
+       Juha Yrjola <juha.yrjola@solidboot.com>
+Subject: [PATCH 28/58] move mailbox's probe function to .devinit.text
+Date: Sat, 28 Mar 2009 00:26:49 +0100
+Message-Id: <1238196439-16535-28-git-send-email-u.kleine-koenig@pengutronix.de>
 X-Mailer: git-send-email 1.6.2
 In-Reply-To: <20090327232153.GA16348@pengutronix.de>
 References: <20090327232153.GA16348@pengutronix.de>
@@ -36,7 +34,7 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A pointer to omap_udc_probe is passed to the core via
+A pointer to omap1_mbox_probe is passed to the core via
 platform_driver_register and so the function must not disappear when the
 .init sections are discarded.  Otherwise (if also having HOTPLUG=y)
 unbinding and binding a device to the driver via sysfs will result in an
@@ -47,30 +45,28 @@ platform_driver_register plus removing the pointer to the probe function
 from the struct platform_driver.
 
 Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
-Cc: Philipp Zabel <philipp.zabel@gmail.com>
-Cc: David Brownell <dbrownell@users.sourceforge.net>
-Cc: Greg Kroah-Hartman <gregkh@suse.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Russell King <rmk+kernel@arm.linux.org.uk>
 Cc: Tony Lindgren <tony@atomide.com>
-Cc: Russell King <rmk@arm.linux.org.uk>
-Cc: Dmitry Baryshkov <dbaryshkov@gmail.com>
+Cc: Hiroshi DOYU <Hiroshi.DOYU@nokia.com>
+Cc: Juha Yrjola <juha.yrjola@solidboot.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>
 ---
- drivers/usb/gadget/omap_udc.c |    2 +-
+ arch/arm/mach-omap1/mailbox.c |    2 +-
  1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/usb/gadget/omap_udc.c b/drivers/usb/gadget/omap_udc.c
-index 57d9641..17755f5 100644
---- a/drivers/usb/gadget/omap_udc.c
-+++ b/drivers/usb/gadget/omap_udc.c
-@@ -2800,7 +2800,7 @@ omap_udc_setup(struct platform_device *odev, struct otg_transceiver *xceiv)
- 	return 0;
- }
+diff --git a/arch/arm/mach-omap1/mailbox.c b/arch/arm/mach-omap1/mailbox.c
+index 59abbf3..e91211c 100644
+--- a/arch/arm/mach-omap1/mailbox.c
++++ b/arch/arm/mach-omap1/mailbox.c
+@@ -143,7 +143,7 @@ struct omap_mbox mbox_dsp_info = {
+ };
+ EXPORT_SYMBOL(mbox_dsp_info);
  
--static int __init omap_udc_probe(struct platform_device *pdev)
-+static int __devinit omap_udc_probe(struct platform_device *pdev)
+-static int __init omap1_mbox_probe(struct platform_device *pdev)
++static int __devinit omap1_mbox_probe(struct platform_device *pdev)
  {
- 	int			status = -ENODEV;
- 	int			hmc;
+ 	struct resource *res;
+ 	int ret = 0;
 -- 
 1.6.2
 
