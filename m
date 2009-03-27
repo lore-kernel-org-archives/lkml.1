@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757678AbZC0Jdx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756055AbZC0Je1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757678AbZC0Jdx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Mar 2009 05:33:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754949AbZC0JdM
+	id S1756055AbZC0Je1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Mar 2009 05:34:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755131AbZC0JdQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Mar 2009 05:33:12 -0400
+	Fri, 27 Mar 2009 05:33:16 -0400
 Received: from mga02.intel.com ([134.134.136.20]:49663 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755409AbZC0JdL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Mar 2009 05:33:11 -0400
+	id S1756626AbZC0JdP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Mar 2009 05:33:15 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.38,431,1233561600"; 
-   d="scan'208";a="501272169"
-Date: Fri, 27 Mar 2009 10:01:41 +0100
+   d="scan'208";a="501272179"
+Date: Fri, 27 Mar 2009 09:46:26 +0100
 From: Markus Metzger <markus.t.metzger@intel.com>
 To: linux-kernel@vger.kernel.org, mingo@elte.hu, tglx@linutronix.de,
        hpa@zytor.com
 Cc: markus.t.metzger@intel.com, markus.t.metzger@gmail.com, roland@redhat.com,
        eranian@googlemail.com, oleg@redhat.com, juan.villacis@intel.com,
        ak@linux.jf.intel.com
-Subject: [patch 5/14] x86, debugctlmsr: add _on_cpu variants for debugctlmsr functions
-Message-ID: <20090327100141.A11220@sedona.ch.intel.com>
+Subject: [patch 1/14] x86, ptrace: add arch_ptrace_report_exit
+Message-ID: <20090327094626.A11002@sedona.ch.intel.com>
 Mime-Version: 1.0
 Content-Disposition: inline
 User-Agent: Mutt/1.2.5i
@@ -30,57 +30,54 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add functions to read and write the debugctlmsr on different cpus.
+Add an arch_ variant to report a task exit.
+Move the ptrace report exit code from tracehook.h to ptrace.h.
 
 
 Signed-off-by: Markus Metzger <markus.t.metzger@intel.com>
 ---
 
-Index: git-tip/arch/x86/include/asm/processor.h
+Index: git-tip/include/linux/ptrace.h
 ===================================================================
---- git-tip.orig/arch/x86/include/asm/processor.h	2009-03-16 09:44:25.000000000 +0100
-+++ git-tip/arch/x86/include/asm/processor.h	2009-03-18 12:22:11.000000000 +0100
-@@ -785,6 +785,21 @@ static inline unsigned long get_debugctl
-     return debugctlmsr;
- }
+--- git-tip.orig/include/linux/ptrace.h	2009-03-23 10:45:30.000000000 +0100
++++ git-tip/include/linux/ptrace.h	2009-03-23 11:31:21.000000000 +0100
+@@ -335,6 +335,23 @@ static inline void user_enable_block_ste
+ #define arch_ptrace_fork(child, clone_flags)	do { } while (0)
+ #endif
  
-+static inline unsigned long get_debugctlmsr_on_cpu(int cpu)
-+{
-+	u64 debugctlmsr = 0;
-+	u32 val1, val2;
-+
-+#ifndef CONFIG_X86_DEBUGCTLMSR
-+	if (boot_cpu_data.x86 < 6)
-+		return 0;
++#ifndef arch_ptrace_report_exit
++/**
++ * arch_ptrace_report_exit - Do machine specific work for exiting ptraced tasks
++ * @exit_code:	current->exit_code value
++ *
++ * This is called early from do_exit() with no locks held after we notified the
++ * ptracer.
++ */
++#define arch_ptrace_report_exit(exit_code)	do { } while (0)
 +#endif
-+	rdmsr_on_cpu(cpu, MSR_IA32_DEBUGCTLMSR, &val1, &val2);
-+	debugctlmsr = val1 | ((u64)val2 << 32);
 +
-+	return debugctlmsr;
++static inline void ptrace_report_exit(long *exit_code)
++{
++	ptrace_event(PT_TRACE_EXIT, PTRACE_EVENT_EXIT, *exit_code);
++	arch_ptrace_report_exit(*exit_code);
 +}
 +
- static inline void update_debugctlmsr(unsigned long debugctlmsr)
+ extern int task_current_syscall(struct task_struct *target, long *callno,
+ 				unsigned long args[6], unsigned int maxargs,
+ 				unsigned long *sp, unsigned long *pc);
+Index: git-tip/include/linux/tracehook.h
+===================================================================
+--- git-tip.orig/include/linux/tracehook.h	2009-03-23 10:45:30.000000000 +0100
++++ git-tip/include/linux/tracehook.h	2009-03-23 11:31:21.000000000 +0100
+@@ -211,7 +211,7 @@ static inline void tracehook_report_exec
+  */
+ static inline void tracehook_report_exit(long *exit_code)
  {
- #ifndef CONFIG_X86_DEBUGCTLMSR
-@@ -794,6 +809,18 @@ static inline void update_debugctlmsr(un
- 	wrmsrl(MSR_IA32_DEBUGCTLMSR, debugctlmsr);
+-	ptrace_event(PT_TRACE_EXIT, PTRACE_EVENT_EXIT, *exit_code);
++	ptrace_report_exit(exit_code);
  }
  
-+static inline void update_debugctlmsr_on_cpu(int cpu,
-+					     unsigned long debugctlmsr)
-+{
-+#ifndef CONFIG_X86_DEBUGCTLMSR
-+	if (boot_cpu_data.x86 < 6)
-+		return;
-+#endif
-+	wrmsr_on_cpu(cpu, MSR_IA32_DEBUGCTLMSR,
-+		     (u32)((u64)debugctlmsr),
-+		     (u32)((u64)debugctlmsr >> 32));
-+}
-+
- /*
-  * from system description table in BIOS. Mostly for MCA use, but
-  * others may find it useful:
+ /**
 ---------------------------------------------------------------------
 Intel GmbH
 Dornacher Strasse 1
