@@ -1,49 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757665AbZC0QRu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759067AbZC0QTn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757665AbZC0QRu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Mar 2009 12:17:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756685AbZC0QRi
+	id S1759067AbZC0QTn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Mar 2009 12:19:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755881AbZC0QTd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Mar 2009 12:17:38 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:41254 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755230AbZC0QRh convert rfc822-to-8bit (ORCPT
+	Fri, 27 Mar 2009 12:19:33 -0400
+Received: from 69-30-77-85.dq1sn.easystreet.com ([69.30.77.85]:45105 "EHLO
+	kingsolver.anholt.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754305AbZC0QTc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Mar 2009 12:17:37 -0400
-Date: Fri, 27 Mar 2009 13:17:29 -0300
-From: Mauro Carvalho Chehab <mchehab@infradead.org>
-To: =?ISO-8859-1?B?TultZXRoIE3hcnRvbg==?= <nm127@freemail.hu>
-Cc: linux-media@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] v4l2: fill reserved fields of VIDIOC_ENUMAUDIO also
-Message-ID: <20090327131729.0842bdec@pedra.chehab.org>
-In-Reply-To: <49CA611B.5050902@freemail.hu>
-References: <49CA611B.5050902@freemail.hu>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
+	Fri, 27 Mar 2009 12:19:32 -0400
+Subject: Re: DRM lock ordering fix series
+From: Eric Anholt <eric@anholt.net>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: linux-kernel@vger.kernel.org, dri-devel@lists.sourceforge.net
+In-Reply-To: <87ocvnmhqx.fsf@basil.nowhere.org>
+References: <1238017510-26784-1-git-send-email-eric@anholt.net>
+	 <87ocvnmhqx.fsf@basil.nowhere.org>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-g4/ZdNEWH3u3uuMdlhiz"
+Date: Fri, 27 Mar 2009 09:19:27 -0700
+Message-Id: <1238170767.8275.2397.camel@gaiman.anholt.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+X-Mailer: Evolution 2.24.5 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 25 Mar 2009 17:51:39 +0100
-Németh Márton <nm127@freemail.hu> wrote:
 
-> From: Márton Németh <nm127@freemail.hu>
-> 
-> When enumerating audio inputs with VIDIOC_ENUMAUDIO the gspca_sunplus driver
-> does not fill the reserved fields of the struct v4l2_audio with zeros as
-> required by V4L2 API revision 0.24 [1]. Add the missing initializations to
-> the V4L2 framework.
-> 
-> The patch was tested with v4l-test 0.10 [2] with gspca_sunplus driver and
-> with Trust 610 LCD POWERC@M ZOOM webcam.
+--=-g4/ZdNEWH3u3uuMdlhiz
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-It didn't apply against the development tree. Anyway, a recent patch removed
-the need of memset there. the memory fill with zero now happens at the same
-code we copy the structure values.
+On Fri, 2009-03-27 at 10:34 +0100, Andi Kleen wrote:
+> Eric Anholt <eric@anholt.net> writes:
+>=20
+> > Here's hopefully the final attempt at the lock ordering fix for GEM.  T=
+he
+> > problem was introduced in .29 with the GTT mapping support.  We hashed =
+out
+> > a few potential fixes on the mailing list and at OSTS.  Peter's plan wa=
+s
+> > to use get_user_pages, but it has significant CPU overhead (10% cost to=
+ text
+> > rendering, though part of that is due to some dumb userland code.  But =
+it's
+> > dumb userland code we're all running).
+>=20
+>=20
+> You are aware that there is a fast path now (get_user_pages_fast) which
+> is significantly faster? (but has some limitations)
 
-Cheers,
-Mauro
+In the code I have, get_user_pages_fast is just a wrapper that calls the
+get_user_pages in the way that I'm calling it from the DRM.
+
+I'm assuming that that's changing.  Can you explain what the "some
+limitations" is?  (Though, of course, in a comment in mm/util.c would be
+better than email).
+
+--=20
+Eric Anholt
+eric@anholt.net                         eric.anholt@intel.com
+
+
+
+--=-g4/ZdNEWH3u3uuMdlhiz
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAknM/I8ACgkQHUdvYGzw6vdi+QCdFKCxPdsYv7Yf30xW8rrvPss/
+/uMAn1/HTgWqeIpiemrRO2YOR2H7ncdz
+=rFKm
+-----END PGP SIGNATURE-----
+
+--=-g4/ZdNEWH3u3uuMdlhiz--
