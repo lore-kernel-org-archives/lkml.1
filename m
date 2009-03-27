@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756055AbZC0Je1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758087AbZC0Jep@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756055AbZC0Je1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Mar 2009 05:34:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755131AbZC0JdQ
+	id S1758087AbZC0Jep (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Mar 2009 05:34:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757131AbZC0Jd1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Mar 2009 05:33:16 -0400
-Received: from mga02.intel.com ([134.134.136.20]:49663 "EHLO mga02.intel.com"
+	Fri, 27 Mar 2009 05:33:27 -0400
+Received: from mga02.intel.com ([134.134.136.20]:49007 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756626AbZC0JdP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Mar 2009 05:33:15 -0400
+	id S1757166AbZC0JdZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Mar 2009 05:33:25 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.38,431,1233561600"; 
-   d="scan'208";a="501272179"
-Date: Fri, 27 Mar 2009 09:46:26 +0100
+   d="scan'208";a="398016408"
+Date: Fri, 27 Mar 2009 10:33:18 +0100
 From: Markus Metzger <markus.t.metzger@intel.com>
 To: linux-kernel@vger.kernel.org, mingo@elte.hu, tglx@linutronix.de,
        hpa@zytor.com
 Cc: markus.t.metzger@intel.com, markus.t.metzger@gmail.com, roland@redhat.com,
        eranian@googlemail.com, oleg@redhat.com, juan.villacis@intel.com,
        ak@linux.jf.intel.com
-Subject: [patch 1/14] x86, ptrace: add arch_ptrace_report_exit
-Message-ID: <20090327094626.A11002@sedona.ch.intel.com>
+Subject: [patch 14/14] x86, ds: support Core i7
+Message-ID: <20090327103318.A11864@sedona.ch.intel.com>
 Mime-Version: 1.0
 Content-Disposition: inline
 User-Agent: Mutt/1.2.5i
@@ -30,54 +30,202 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add an arch_ variant to report a task exit.
-Move the ptrace report exit code from tracehook.h to ptrace.h.
+Add Debug Store support for Core i7.
+
+Core i7 adds a separate reset value for each PEBS counter and it adds
+a new PEBS record format.
 
 
 Signed-off-by: Markus Metzger <markus.t.metzger@intel.com>
 ---
 
-Index: git-tip/include/linux/ptrace.h
+ arch/x86/include/asm/ds.h |   10 ++++++++--
+ arch/x86/kernel/ds.c      |   24 ++++++++++++++++++++++++
+ 2 files changed, 32 insertions(+), 2 deletions(-)
+
+Index: git-tip/arch/x86/include/asm/ds.h
 ===================================================================
---- git-tip.orig/include/linux/ptrace.h	2009-03-23 10:45:30.000000000 +0100
-+++ git-tip/include/linux/ptrace.h	2009-03-23 11:31:21.000000000 +0100
-@@ -335,6 +335,23 @@ static inline void user_enable_block_ste
- #define arch_ptrace_fork(child, clone_flags)	do { } while (0)
- #endif
+--- git-tip.orig/arch/x86/include/asm/ds.h	2009-03-27 08:04:53.000000000 +0100
++++ git-tip/arch/x86/include/asm/ds.h	2009-03-27 08:05:01.000000000 +0100
+@@ -237,8 +237,12 @@ struct bts_trace {
+ struct pebs_trace {
+ 	struct ds_trace ds;
  
-+#ifndef arch_ptrace_report_exit
-+/**
-+ * arch_ptrace_report_exit - Do machine specific work for exiting ptraced tasks
-+ * @exit_code:	current->exit_code value
-+ *
-+ * This is called early from do_exit() with no locks held after we notified the
-+ * ptracer.
-+ */
-+#define arch_ptrace_report_exit(exit_code)	do { } while (0)
-+#endif
+-	/* the PEBS reset value */
+-	unsigned long long reset_value;
++	/* the number of valid counters in the below array */
++	unsigned int counters;
 +
-+static inline void ptrace_report_exit(long *exit_code)
-+{
-+	ptrace_event(PT_TRACE_EXIT, PTRACE_EVENT_EXIT, *exit_code);
-+	arch_ptrace_report_exit(*exit_code);
-+}
-+
- extern int task_current_syscall(struct task_struct *target, long *callno,
- 				unsigned long args[6], unsigned int maxargs,
- 				unsigned long *sp, unsigned long *pc);
-Index: git-tip/include/linux/tracehook.h
-===================================================================
---- git-tip.orig/include/linux/tracehook.h	2009-03-23 10:45:30.000000000 +0100
-+++ git-tip/include/linux/tracehook.h	2009-03-23 11:31:21.000000000 +0100
-@@ -211,7 +211,7 @@ static inline void tracehook_report_exec
++#define MAX_PEBS_COUNTERS 4
++	/* the counter reset value */
++	unsigned long long counter_reset[MAX_PEBS_COUNTERS];
+ };
+ 
+ 
+@@ -273,9 +277,11 @@ extern int ds_reset_pebs(struct pebs_tra
+  * Returns 0 on success; -Eerrno on error
+  *
+  * tracer: the tracer handle returned from ds_request_pebs()
++ * counter: the index of the counter
+  * value: the new counter reset value
   */
- static inline void tracehook_report_exit(long *exit_code)
- {
--	ptrace_event(PT_TRACE_EXIT, PTRACE_EVENT_EXIT, *exit_code);
-+	ptrace_report_exit(exit_code);
+-extern int ds_set_pebs_reset(struct pebs_tracer *tracer, u64 value);
++extern int ds_set_pebs_reset(struct pebs_tracer *tracer,
++			     unsigned int counter, u64 value);
+ 
+ /*
+  * Initialization
+Index: git-tip/arch/x86/kernel/ds.c
+===================================================================
+--- git-tip.orig/arch/x86/kernel/ds.c	2009-03-27 08:04:58.000000000 +0100
++++ git-tip/arch/x86/kernel/ds.c	2009-03-27 08:05:01.000000000 +0100
+@@ -43,6 +43,9 @@ struct ds_configuration {
+ 	/* The size of a BTS/PEBS record in bytes: */
+ 	unsigned char		sizeof_rec[2];
+ 
++	/* The number of pebs counter reset values in the DS structure. */
++	unsigned char		nr_counter_reset;
++
+ 	/* Control bit-masks indexed by enum ds_feature: */
+ 	unsigned long		ctl[dsf_ctl_max];
+ };
+@@ -50,7 +53,7 @@ static struct ds_configuration ds_cfg __
+ 
+ 
+ /* Maximal size of a DS configuration: */
+-#define MAX_SIZEOF_DS		(12 * 8)
++#define MAX_SIZEOF_DS		0x80
+ 
+ /* Maximal size of a BTS record: */
+ #define MAX_SIZEOF_BTS		(3 * 8)
+@@ -58,6 +61,12 @@ static struct ds_configuration ds_cfg __
+ /* BTS and PEBS buffer alignment: */
+ #define DS_ALIGNMENT		(1 << 3)
+ 
++/* Number of buffer pointers in DS: */
++#define NUM_DS_PTR_FIELDS	8
++
++/* Size of a pebs reset value in DS: */
++#define PEBS_RESET_FIELD_SIZE	8
++
+ /* Mask of control bits in the DS MSR register: */
+ #define BTS_CONTROL				  \
+ 	( ds_cfg.ctl[dsf_bts]			| \
+@@ -1124,9 +1133,12 @@ const struct pebs_trace *ds_read_pebs(st
+ 		return NULL;
+ 
+ 	ds_read_config(tracer->ds.context, &tracer->trace.ds, ds_pebs);
+-	tracer->trace.reset_value =
+-		*(u64 *)(tracer->ds.context->ds +
+-			 (ds_cfg.sizeof_ptr_field * 8));
++
++	tracer->trace.counters = ds_cfg.nr_counter_reset;
++	memcpy(tracer->trace.counter_reset,
++	       tracer->ds.context->ds +
++	       (NUM_DS_PTR_FIELDS * ds_cfg.sizeof_ptr_field),
++	       ds_cfg.nr_counter_reset * PEBS_RESET_FIELD_SIZE);
+ 
+ 	return &tracer->trace;
+ }
+@@ -1157,13 +1169,18 @@ int ds_reset_pebs(struct pebs_tracer *tr
+ 	return 0;
  }
  
- /**
+-int ds_set_pebs_reset(struct pebs_tracer *tracer, u64 value)
++int ds_set_pebs_reset(struct pebs_tracer *tracer,
++		      unsigned int counter, u64 value)
+ {
+ 	if (!tracer)
+ 		return -EINVAL;
+ 
++	if (ds_cfg.nr_counter_reset < counter)
++		return -EINVAL;
++
+ 	*(u64 *)(tracer->ds.context->ds +
+-		 (ds_cfg.sizeof_ptr_field * 8)) = value;
++		 (NUM_DS_PTR_FIELDS * ds_cfg.sizeof_ptr_field) +
++		 (counter * PEBS_RESET_FIELD_SIZE)) = value;
+ 
+ 	return 0;
+ }
+@@ -1173,16 +1190,26 @@ static const struct ds_configuration ds_
+ 	.ctl[dsf_bts]		= (1 << 2) | (1 << 3),
+ 	.ctl[dsf_bts_kernel]	= (1 << 5),
+ 	.ctl[dsf_bts_user]	= (1 << 6),
++	.nr_counter_reset	= 1,
+ };
+ static const struct ds_configuration ds_cfg_pentium_m = {
+ 	.name = "Pentium M",
+ 	.ctl[dsf_bts]		= (1 << 6) | (1 << 7),
++	.nr_counter_reset	= 1,
+ };
+ static const struct ds_configuration ds_cfg_core2_atom = {
+ 	.name = "Core 2/Atom",
+ 	.ctl[dsf_bts]		= (1 << 6) | (1 << 7),
+ 	.ctl[dsf_bts_kernel]	= (1 << 9),
+ 	.ctl[dsf_bts_user]	= (1 << 10),
++	.nr_counter_reset	= 1,
++};
++static const struct ds_configuration ds_cfg_core_i7 = {
++	.name = "Core i7",
++	.ctl[dsf_bts]		= (1 << 6) | (1 << 7),
++	.ctl[dsf_bts_kernel]	= (1 << 9),
++	.ctl[dsf_bts_user]	= (1 << 10),
++	.nr_counter_reset	= 4,
+ };
+ 
+ static void
+@@ -1199,6 +1226,32 @@ ds_configure(const struct ds_configurati
+ 	nr_pebs_fields = 18;
+ #endif
+ 
++	/*
++	 * Starting with version 2, architectural performance
++	 * monitoring supports a format specifier.
++	 */
++	if ((cpuid_eax(0xa) & 0xff) > 1) {
++		unsigned long perf_capabilities, format;
++
++		rdmsrl(MSR_IA32_PERF_CAPABILITIES, perf_capabilities);
++
++		format = (perf_capabilities >> 8) & 0xf;
++
++		switch (format) {
++		case 0:
++			nr_pebs_fields = 18;
++			break;
++		case 1:
++			nr_pebs_fields = 22;
++			break;
++		default:
++			printk(KERN_INFO
++			       "[ds] unknown PEBS format: %lu\n", format);
++			nr_pebs_fields = 0;
++			break;
++		}
++	}
++
+ 	memset(&ds_cfg, 0, sizeof(ds_cfg));
+ 	ds_cfg = *cfg;
+ 
+@@ -1222,7 +1275,7 @@ ds_configure(const struct ds_configurati
+ 	printk("bts/pebs record: %u/%u bytes\n",
+ 	       ds_cfg.sizeof_rec[ds_bts], ds_cfg.sizeof_rec[ds_pebs]);
+ 
+-	WARN_ON(MAX_SIZEOF_DS < (12 * ds_cfg.sizeof_ptr_field));
++	WARN_ON(MAX_PEBS_COUNTERS < ds_cfg.nr_counter_reset);
+ }
+ 
+ void __cpuinit ds_init_intel(struct cpuinfo_x86 *c)
+@@ -1244,6 +1297,8 @@ void __cpuinit ds_init_intel(struct cpui
+ 			ds_configure(&ds_cfg_core2_atom, c);
+ 			break;
+ 		case 0x1a: /* Core i7 */
++			ds_configure(&ds_cfg_core_i7, c);
++			break;
+ 		default:
+ 			/* Sorry, don't know about them. */
+ 			break;
 ---------------------------------------------------------------------
 Intel GmbH
 Dornacher Strasse 1
