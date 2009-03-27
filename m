@@ -1,24 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764895AbZC0Xuz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764926AbZC0XvW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764895AbZC0Xuz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Mar 2009 19:50:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761851AbZC0X2Y
+	id S1764926AbZC0XvW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Mar 2009 19:51:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762611AbZC0X2Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Mar 2009 19:28:24 -0400
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:48469 "EHLO
+	Fri, 27 Mar 2009 19:28:25 -0400
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:48716 "EHLO
 	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761357AbZC0X1k (ORCPT
+	with ESMTP id S1762142AbZC0X16 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Mar 2009 19:27:40 -0400
+	Fri, 27 Mar 2009 19:27:58 -0400
 From: =?utf-8?q?Uwe=20Kleine-K=C3=B6nig?= 
 	<u.kleine-koenig@pengutronix.de>
 To: linux-kernel@vger.kernel.org
-Cc: Andrew Morton <akpm@linux-foundation.org>, Christoph Hellwig <hch@lst.de>,
-       Antonino Daplas <adaplas@pol.net>,
-       linux-fbdev-devel@lists.sourceforge.net
-Subject: [PATCH 01/58] move acornfb's probe function to .devinit.text
-Date: Sat, 28 Mar 2009 00:26:22 +0100
-Message-Id: <1238196439-16535-1-git-send-email-u.kleine-koenig@pengutronix.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Hiroshi DOYU <Hiroshi.DOYU@nokia.com>, Tony Lindgren <tony@atomide.com>,
+       Juha Yrjola <juha.yrjola@solidboot.com>,
+       Russell King <rmk+kernel@arm.linux.org.uk>
+Subject: [PATCH 30/58] move mailbox's probe function to .devinit.text
+Date: Sat, 28 Mar 2009 00:26:51 +0100
+Message-Id: <1238196439-16535-30-git-send-email-u.kleine-koenig@pengutronix.de>
 X-Mailer: git-send-email 1.6.2
 In-Reply-To: <20090327232153.GA16348@pengutronix.de>
 References: <20090327232153.GA16348@pengutronix.de>
@@ -33,7 +34,7 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A pointer to acornfb_probe is passed to the core via
+A pointer to omap2_mbox_probe is passed to the core via
 platform_driver_register and so the function must not disappear when the
 .init sections are discarded.  Otherwise (if also having HOTPLUG=y)
 unbinding and binding a device to the driver via sysfs will result in an
@@ -44,27 +45,28 @@ platform_driver_register plus removing the pointer to the probe function
 from the struct platform_driver.
 
 Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
-Cc: Christoph Hellwig <hch@lst.de>
-Cc: Antonino Daplas <adaplas@pol.net>
-Cc: linux-fbdev-devel@lists.sourceforge.net
+Cc: Hiroshi DOYU <Hiroshi.DOYU@nokia.com>
+Cc: Tony Lindgren <tony@atomide.com>
+Cc: Juha Yrjola <juha.yrjola@solidboot.com>
+Cc: Russell King <rmk+kernel@arm.linux.org.uk>
 Cc: Andrew Morton <akpm@linux-foundation.org>
 ---
- drivers/video/acornfb.c |    2 +-
+ arch/arm/mach-omap2/mailbox.c |    2 +-
  1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/video/acornfb.c b/drivers/video/acornfb.c
-index 61c3d3f..19e4b21 100644
---- a/drivers/video/acornfb.c
-+++ b/drivers/video/acornfb.c
-@@ -1259,7 +1259,7 @@ free_unused_pages(unsigned int virtual_start, unsigned int virtual_end)
- 	printk("acornfb: freed %dK memory\n", mb_freed);
- }
+diff --git a/arch/arm/mach-omap2/mailbox.c b/arch/arm/mach-omap2/mailbox.c
+index 32b7af3..726876c 100644
+--- a/arch/arm/mach-omap2/mailbox.c
++++ b/arch/arm/mach-omap2/mailbox.c
+@@ -251,7 +251,7 @@ static struct omap_mbox mbox_iva_info = {
+ 	.priv	= &omap2_mbox_iva_priv,
+ };
  
--static int __init acornfb_probe(struct platform_device *dev)
-+static int __devinit acornfb_probe(struct platform_device *dev)
+-static int __init omap2_mbox_probe(struct platform_device *pdev)
++static int __devinit omap2_mbox_probe(struct platform_device *pdev)
  {
- 	unsigned long size;
- 	u_int h_sync, v_sync;
+ 	struct resource *res;
+ 	int ret = 0;
 -- 
 1.6.2
 
