@@ -1,28 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763893AbZC0Xev@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763922AbZC0XfQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763893AbZC0Xev (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Mar 2009 19:34:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762086AbZC0X1s
+	id S1763922AbZC0XfQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Mar 2009 19:35:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758122AbZC0X1t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Mar 2009 19:27:48 -0400
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:48418 "EHLO
+	Fri, 27 Mar 2009 19:27:49 -0400
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:48416 "EHLO
 	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758706AbZC0X1e (ORCPT
+	with ESMTP id S1755913AbZC0X1e (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 27 Mar 2009 19:27:34 -0400
 From: =?utf-8?q?Uwe=20Kleine-K=C3=B6nig?= 
 	<u.kleine-koenig@pengutronix.de>
 To: linux-kernel@vger.kernel.org
 Cc: Andrew Morton <akpm@linux-foundation.org>,
-       David Woodhouse <dwmw2@infradead.org>,
-       Kay Sievers <kay.sievers@vrfy.org>,
-       Hamish Moffatt <hamish@cloud.net.au>,
-       David Brownell <dbrownell@users.sourceforge.net>,
-       Li Zefan <lizf@cn.fujitsu.com>, Vitaly Wool <vitalywool@gmail.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: [PATCH 37/58] move gen_nand's probe function to .devinit.text
-Date: Sat, 28 Mar 2009 00:26:58 +0100
-Message-Id: <1238196439-16535-37-git-send-email-u.kleine-koenig@pengutronix.de>
+       Sakari Ailus <sakari.ailus@nokia.com>,
+       Trilok Soni <soni.trilok@gmail.com>, Hans Verkuil <hverkuil@xs4all.nl>,
+       Mauro Carvalho Chehab <mchehab@redhat.com>
+Subject: [PATCH 29/58] move omap24xxcam's probe function to .devinit.text
+Date: Sat, 28 Mar 2009 00:26:50 +0100
+Message-Id: <1238196439-16535-29-git-send-email-u.kleine-koenig@pengutronix.de>
 X-Mailer: git-send-email 1.6.2
 In-Reply-To: <20090327232153.GA16348@pengutronix.de>
 References: <20090327232153.GA16348@pengutronix.de>
@@ -37,7 +34,7 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A pointer to plat_nand_probe is passed to the core via
+A pointer to omap24xxcam_probe is passed to the core via
 platform_driver_register and so the function must not disappear when the
 .init sections are discarded.  Otherwise (if also having HOTPLUG=y)
 unbinding and binding a device to the driver via sysfs will result in an
@@ -48,31 +45,28 @@ platform_driver_register plus removing the pointer to the probe function
 from the struct platform_driver.
 
 Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
-Cc: David Woodhouse <dwmw2@infradead.org>
-Cc: Kay Sievers <kay.sievers@vrfy.org>
-Cc: Hamish Moffatt <hamish@cloud.net.au>
-Cc: David Brownell <dbrownell@users.sourceforge.net>
+Cc: Sakari Ailus <sakari.ailus@nokia.com>
+Cc: Trilok Soni <soni.trilok@gmail.com>
+Cc: Hans Verkuil <hverkuil@xs4all.nl>
+Cc: Mauro Carvalho Chehab <mchehab@redhat.com>
 Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: Li Zefan <lizf@cn.fujitsu.com>
-Cc: Vitaly Wool <vitalywool@gmail.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>
 ---
- drivers/mtd/nand/plat_nand.c |    2 +-
+ drivers/media/video/omap24xxcam.c |    2 +-
  1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/mtd/nand/plat_nand.c b/drivers/mtd/nand/plat_nand.c
-index 75f9f48..86e1d08 100644
---- a/drivers/mtd/nand/plat_nand.c
-+++ b/drivers/mtd/nand/plat_nand.c
-@@ -30,7 +30,7 @@ struct plat_nand_data {
- /*
-  * Probe for the NAND device.
+diff --git a/drivers/media/video/omap24xxcam.c b/drivers/media/video/omap24xxcam.c
+index 73eb656..270e60d 100644
+--- a/drivers/media/video/omap24xxcam.c
++++ b/drivers/media/video/omap24xxcam.c
+@@ -1744,7 +1744,7 @@ static struct v4l2_int_device omap24xxcam = {
+  *
   */
--static int __init plat_nand_probe(struct platform_device *pdev)
-+static int __devinit plat_nand_probe(struct platform_device *pdev)
+ 
+-static int __init omap24xxcam_probe(struct platform_device *pdev)
++static int __devinit omap24xxcam_probe(struct platform_device *pdev)
  {
- 	struct platform_nand_data *pdata = pdev->dev.platform_data;
- 	struct plat_nand_data *data;
+ 	struct omap24xxcam_device *cam;
+ 	struct resource *mem;
 -- 
 1.6.2
 
