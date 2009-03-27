@@ -1,175 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758233AbZC0U0E@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758606AbZC0U1i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758233AbZC0U0E (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Mar 2009 16:26:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761710AbZC0UYm
+	id S1758606AbZC0U1i (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Mar 2009 16:27:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754607AbZC0U12
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Mar 2009 16:24:42 -0400
-Received: from THUNK.ORG ([69.25.196.29]:45713 "EHLO thunker.thunk.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761539AbZC0UYf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Mar 2009 16:24:35 -0400
-From: "Theodore Ts'o" <tytso@mit.edu>
-To: Linux Kernel Developers List <linux-kernel@vger.kernel.org>
-Cc: Ext4 Developers List <linux-ext4@vger.kernel.org>, jack@suse.cz,
-       "Theodore Ts'o" <tytso@mit.edu>
-Subject: [PATCH 2/3] ext3: Use WRITE_SYNC for commits which are caused by fsync()
-Date: Fri, 27 Mar 2009 16:24:30 -0400
-Message-Id: <1238185471-31152-3-git-send-email-tytso@mit.edu>
-X-Mailer: git-send-email 1.5.6.3
-In-Reply-To: <1238185471-31152-2-git-send-email-tytso@mit.edu>
-References: <1238185471-31152-1-git-send-email-tytso@mit.edu>
- <1238185471-31152-2-git-send-email-tytso@mit.edu>
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+	Fri, 27 Mar 2009 16:27:28 -0400
+Received: from mail-fx0-f158.google.com ([209.85.220.158]:47640 "EHLO
+	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750914AbZC0U11 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Mar 2009 16:27:27 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=LYAs/uSoogsuXmB6VPz9QbeHKUvAYsWHW7pbUHXIGcOEUO8o7645SEG50ApYw4BUly
+         XdzkVi46XAyrGhbNSRzwWgAu0xaGri0umQ0fLWKEuBb/hLE4NE6lLaThtOh6QvtXoE30
+         KRxxu3rqxUURTI1r2EV/IqZU2khSLHS2XCNjc=
+MIME-Version: 1.0
+In-Reply-To: <alpine.LFD.2.00.0903271138220.3994@localhost.localdomain>
+References: <20090327051338.GP6239@mit.edu>
+	 <20090327150811.09b313f5@lxorguk.ukuu.org.uk>
+	 <20090327152221.GA25234@srcf.ucam.org>
+	 <20090327161553.31436545@lxorguk.ukuu.org.uk>
+	 <20090327162841.GA26860@srcf.ucam.org>
+	 <20090327165150.7e69d9e1@lxorguk.ukuu.org.uk>
+	 <20090327170208.GA27646@srcf.ucam.org>
+	 <alpine.LFD.2.00.0903271032090.3994@localhost.localdomain>
+	 <20090327183214.2e73b6a3@lxorguk.ukuu.org.uk>
+	 <alpine.LFD.2.00.0903271138220.3994@localhost.localdomain>
+Date: Fri, 27 Mar 2009 22:27:23 +0200
+Message-ID: <94a0d4530903271327w48a649e8h965a22c2a9b57b4d@mail.gmail.com>
+Subject: Re: Linux 2.6.29
+From: Felipe Contreras <felipe.contreras@gmail.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Matthew Garrett <mjg59@srcf.ucam.org>,
+       Theodore Tso <tytso@mit.edu>, Andrew Morton <akpm@linux-foundation.org>,
+       David Rees <drees76@gmail.com>, Jesper Krogh <jesper@krogh.cc>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-If a commit is triggered by fsync(), set a flag indicating the journal
-blocks associated with the transaction should be flushed out using
-WRITE_SYNC.
+On Fri, Mar 27, 2009 at 8:40 PM, Linus Torvalds
+<torvalds@linux-foundation.org> wrote:
+>
+>
+> On Fri, 27 Mar 2009, Alan Cox wrote:
+>>
+>> > So the fact is, "people should always use fsync" simply isn't a realistic
+>> > expectation, nor is it historically accurate.
+>>
+>> Far too many people don't - and it is unfortunate but people should learn
+>> to write quality software.
+>
+> You're ignoring reality.
+>
+> Your definition of "quality software" is PURE SH*T.
+>
+> Look at that laptop disk spinup issue. Look at the performance issue. Look
+> at something as nebulous as "usability".
+>
+> If adding fsync's makes software unusable (and it does), then you
+> shouldn't call that "quality software".
+>
+> Alan, just please face that reality, and think about it for a moment. If
+> fsync() was instantaneous, this discussion wouldn't exist. But read the
+> thread. We're talking 3-5s under NORMAL load, with peaks of minutes.
 
-Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
----
- fs/jbd/commit.c      |   23 +++++++++++++++--------
- fs/jbd/transaction.c |    2 ++
- include/linux/jbd.h  |    5 +++++
- 3 files changed, 22 insertions(+), 8 deletions(-)
+We are looking at the wrong problem, the problem is not "should
+userspace apps do fsync", the problem is "how do we ensure reliable
+data where it's needed".
 
-diff --git a/fs/jbd/commit.c b/fs/jbd/commit.c
-index 3fbffb1..f8077b9 100644
---- a/fs/jbd/commit.c
-+++ b/fs/jbd/commit.c
-@@ -20,6 +20,7 @@
- #include <linux/slab.h>
- #include <linux/mm.h>
- #include <linux/pagemap.h>
-+#include <linux/bio.h>
- 
- /*
-  * Default IO end handler for temporary BJ_IO buffer_heads.
-@@ -171,14 +172,15 @@ static int journal_write_commit_record(journal_t *journal,
- 	return (ret == -EIO);
- }
- 
--static void journal_do_submit_data(struct buffer_head **wbuf, int bufs)
-+static void journal_do_submit_data(struct buffer_head **wbuf, int bufs,
-+				   int write_op)
- {
- 	int i;
- 
- 	for (i = 0; i < bufs; i++) {
- 		wbuf[i]->b_end_io = end_buffer_write_sync;
- 		/* We use-up our safety reference in submit_bh() */
--		submit_bh(WRITE, wbuf[i]);
-+		submit_bh(write_op, wbuf[i]);
- 	}
- }
- 
-@@ -186,7 +188,8 @@ static void journal_do_submit_data(struct buffer_head **wbuf, int bufs)
-  *  Submit all the data buffers to disk
-  */
- static int journal_submit_data_buffers(journal_t *journal,
--				transaction_t *commit_transaction)
-+				       transaction_t *commit_transaction,
-+				       int write_op)
- {
- 	struct journal_head *jh;
- 	struct buffer_head *bh;
-@@ -225,7 +228,7 @@ write_out_data:
- 				BUFFER_TRACE(bh, "needs blocking lock");
- 				spin_unlock(&journal->j_list_lock);
- 				/* Write out all data to prevent deadlocks */
--				journal_do_submit_data(wbuf, bufs);
-+				journal_do_submit_data(wbuf, bufs, write_op);
- 				bufs = 0;
- 				lock_buffer(bh);
- 				spin_lock(&journal->j_list_lock);
-@@ -256,7 +259,7 @@ write_out_data:
- 			jbd_unlock_bh_state(bh);
- 			if (bufs == journal->j_wbufsize) {
- 				spin_unlock(&journal->j_list_lock);
--				journal_do_submit_data(wbuf, bufs);
-+				journal_do_submit_data(wbuf, bufs, write_op);
- 				bufs = 0;
- 				goto write_out_data;
- 			}
-@@ -286,7 +289,7 @@ write_out_data:
- 		}
- 	}
- 	spin_unlock(&journal->j_list_lock);
--	journal_do_submit_data(wbuf, bufs);
-+	journal_do_submit_data(wbuf, bufs, write_op);
- 
- 	return err;
- }
-@@ -315,6 +318,7 @@ void journal_commit_transaction(journal_t *journal)
- 	int first_tag = 0;
- 	int tag_flag;
- 	int i;
-+	int write_op = WRITE;
- 
- 	/*
- 	 * First job: lock down the current transaction and wait for
-@@ -347,6 +351,8 @@ void journal_commit_transaction(journal_t *journal)
- 	spin_lock(&journal->j_state_lock);
- 	commit_transaction->t_state = T_LOCKED;
- 
-+	if (commit_transaction->t_synchronous_commit)
-+		write_op = WRITE_SYNC;
- 	spin_lock(&commit_transaction->t_handle_lock);
- 	while (commit_transaction->t_updates) {
- 		DEFINE_WAIT(wait);
-@@ -431,7 +437,8 @@ void journal_commit_transaction(journal_t *journal)
- 	 * Now start flushing things to disk, in the order they appear
- 	 * on the transaction lists.  Data blocks go first.
- 	 */
--	err = journal_submit_data_buffers(journal, commit_transaction);
-+	err = journal_submit_data_buffers(journal, commit_transaction,
-+					  write_op);
- 
- 	/*
- 	 * Wait for all previously submitted IO to complete.
-@@ -660,7 +667,7 @@ start_journal_io:
- 				clear_buffer_dirty(bh);
- 				set_buffer_uptodate(bh);
- 				bh->b_end_io = journal_end_buffer_io_sync;
--				submit_bh(WRITE, bh);
-+				submit_bh(write_op, bh);
- 			}
- 			cond_resched();
- 
-diff --git a/fs/jbd/transaction.c b/fs/jbd/transaction.c
-index e6a1174..ed886e6 100644
---- a/fs/jbd/transaction.c
-+++ b/fs/jbd/transaction.c
-@@ -1440,6 +1440,8 @@ int journal_stop(handle_t *handle)
- 		}
- 	}
- 
-+	if (handle->h_sync)
-+		transaction->t_synchronous_commit = 1;
- 	current->journal_info = NULL;
- 	spin_lock(&journal->j_state_lock);
- 	spin_lock(&transaction->t_handle_lock);
-diff --git a/include/linux/jbd.h b/include/linux/jbd.h
-index 64246dc..2c69431 100644
---- a/include/linux/jbd.h
-+++ b/include/linux/jbd.h
-@@ -552,6 +552,11 @@ struct transaction_s
- 	 */
- 	int t_handle_count;
- 
-+	/*
-+	 * This transaction is being forced and some process is
-+	 * waiting for it to finish.
-+	 */
-+	int t_synchronous_commit:1;
- };
- 
- /**
+It would be great if as a user I could have the option to set an fsync
+level and say; look, I have a fast fs, and I really care about data
+reliability in this server, so, level=0; or, hmm, what is this data
+reliability thing? I just want my phone to don't be so damn slow,
+level=5.
+
 -- 
-1.5.6.3
-
+Felipe Contreras
