@@ -1,28 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764269AbZC0Xkq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763386AbZC0XlU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764269AbZC0Xkq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Mar 2009 19:40:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758873AbZC0X2C
+	id S1763386AbZC0XlU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Mar 2009 19:41:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761338AbZC0X2D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Mar 2009 19:28:02 -0400
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:48495 "EHLO
+	Fri, 27 Mar 2009 19:28:03 -0400
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:48499 "EHLO
 	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761555AbZC0X1m (ORCPT
+	with ESMTP id S1761584AbZC0X1m (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 27 Mar 2009 19:27:42 -0400
 From: =?utf-8?q?Uwe=20Kleine-K=C3=B6nig?= 
 	<u.kleine-koenig@pengutronix.de>
 To: linux-kernel@vger.kernel.org
 Cc: Andrew Morton <akpm@linux-foundation.org>,
-       "David S. Miller" <davem@davemloft.net>,
-       David Brownell <dbrownell@users.sourceforge.net>,
-       Jeff Garzik <jgarzik@redhat.com>,
-       Paulius Zaleckas <paulius.zaleckas@teltonika.lt>,
-       Marc Pignat <marc.pignat@hevs.ch>, Andrew Victor <linux@maxim.org.za>,
-       Roel Kluin <12o3l@tiscali.nl>
-Subject: [PATCH 04/58] move at91_ether's probe function to .devinit.text
-Date: Sat, 28 Mar 2009 00:26:25 +0100
-Message-Id: <1238196439-16535-4-git-send-email-u.kleine-koenig@pengutronix.de>
+       Roel Kluin <roel.kluin@gmail.com>,
+       Krzysztof Helt <krzysztof.h1@poczta.fm>,
+       Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
+       Antonino Daplas <adaplas@pol.net>, Kaj-Michael Lang <milang@tal.org>,
+       Martin Michlmayr <tbm@cyrius.com>, Joshua Kinard <kumba@gentoo.org>
+Subject: [PATCH 15/58] move gbefb's probe function to .devinit.text
+Date: Sat, 28 Mar 2009 00:26:36 +0100
+Message-Id: <1238196439-16535-15-git-send-email-u.kleine-koenig@pengutronix.de>
 X-Mailer: git-send-email 1.6.2
 In-Reply-To: <20090327232153.GA16348@pengutronix.de>
 References: <20090327232153.GA16348@pengutronix.de>
@@ -37,7 +36,7 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A pointer to at91ether_probe is passed to the core via
+A pointer to gbefb_probe is passed to the core via
 platform_driver_register and so the function must not disappear when the
 .init sections are discarded.  Otherwise (if also having HOTPLUG=y)
 unbinding and binding a device to the driver via sysfs will result in an
@@ -48,31 +47,31 @@ platform_driver_register plus removing the pointer to the probe function
 from the struct platform_driver.
 
 Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
-Cc: David S. Miller <davem@davemloft.net>
-Cc: David Brownell <dbrownell@users.sourceforge.net>
-Cc: Jeff Garzik <jgarzik@redhat.com>
-Cc: Paulius Zaleckas <paulius.zaleckas@teltonika.lt>
-Cc: Marc Pignat <marc.pignat@hevs.ch>
-Cc: Andrew Victor <linux@maxim.org.za>
-Cc: Roel Kluin <12o3l@tiscali.nl>
+Cc: Roel Kluin <roel.kluin@gmail.com>
+Cc: Krzysztof Helt <krzysztof.h1@poczta.fm>
+Cc: Thomas Bogendoerfer <tsbogend@alpha.franken.de>
 Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Antonino Daplas <adaplas@pol.net>
+Cc: Kaj-Michael Lang <milang@tal.org>
+Cc: Martin Michlmayr <tbm@cyrius.com>
+Cc: Joshua Kinard <kumba@gentoo.org>
 ---
- drivers/net/arm/at91_ether.c |    2 +-
+ drivers/video/gbefb.c |    2 +-
  1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/net/arm/at91_ether.c b/drivers/net/arm/at91_ether.c
-index 442938d..52e09eb 100644
---- a/drivers/net/arm/at91_ether.c
-+++ b/drivers/net/arm/at91_ether.c
-@@ -1113,7 +1113,7 @@ static int __init at91ether_setup(unsigned long phy_type, unsigned short phy_add
- /*
-  * Detect MAC and PHY and perform initialization
-  */
--static int __init at91ether_probe(struct platform_device *pdev)
-+static int __devinit at91ether_probe(struct platform_device *pdev)
+diff --git a/drivers/video/gbefb.c b/drivers/video/gbefb.c
+index fe5b519..4c7f3a0 100644
+--- a/drivers/video/gbefb.c
++++ b/drivers/video/gbefb.c
+@@ -1128,7 +1128,7 @@ int __init gbefb_setup(char *options)
+ 	return 0;
+ }
+ 
+-static int __init gbefb_probe(struct platform_device *p_dev)
++static int __devinit gbefb_probe(struct platform_device *p_dev)
  {
- 	unsigned int phyid1, phyid2;
- 	int detected = -1;
+ 	int i, ret = 0;
+ 	struct fb_info *info;
 -- 
 1.6.2
 
