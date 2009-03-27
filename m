@@ -1,66 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756371AbZC0VTo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758473AbZC0VVI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756371AbZC0VTo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Mar 2009 17:19:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755952AbZC0VTV
+	id S1758473AbZC0VVI (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Mar 2009 17:21:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755375AbZC0VUx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Mar 2009 17:19:21 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:57477 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756594AbZC0VTT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Mar 2009 17:19:19 -0400
-Date: Fri, 27 Mar 2009 22:19:15 +0100
-From: Jan Kara <jack@suse.cz>
-To: Chris Mason <chris.mason@oracle.com>
-Cc: "Theodore Ts'o" <tytso@mit.edu>, Ric Wheeler <rwheeler@redhat.com>,
-       Linux Kernel Developers List <linux-kernel@vger.kernel.org>,
-       Ext4 Developers List <linux-ext4@vger.kernel.org>, jack@suse.cz
-Subject: Re: [PATCH 0/3] Ext3 latency improvement patches
-Message-ID: <20090327211915.GE31071@duck.suse.cz>
-References: <1238185471-31152-1-git-send-email-tytso@mit.edu> <1238187031.27455.212.camel@think.oraclecorp.com> <1238187818.27455.217.camel@think.oraclecorp.com>
-MIME-Version: 1.0
+	Fri, 27 Mar 2009 17:20:53 -0400
+Received: from pfepa.post.tele.dk ([195.41.46.235]:39011 "EHLO
+	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750863AbZC0VUx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Mar 2009 17:20:53 -0400
+Date: Fri, 27 Mar 2009 22:22:51 +0100
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: liqin.chen@sunplusct.com, linux-arch@vger.kernel.org,
+       linux-kernel@vger.kernel.org, torvalds@linux-foundation.org
+Subject: Re: [PATCH 5/13] score - New architecure port to SunplusCT S+CORE processor
+Message-ID: <20090327212251.GA22518@uranus.ravnborg.org>
+References: <OFE9A5E3A2.37B73BA8-ON48257586.0008CFAC-48257586.00091B05@sunplusct.com> <200903272019.53689.arnd@arndb.de> <20090327202614.GA22054@uranus.ravnborg.org> <200903272153.05622.arnd@arndb.de>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1238187818.27455.217.camel@think.oraclecorp.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+In-Reply-To: <200903272153.05622.arnd@arndb.de>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri 27-03-09 17:03:38, Chris Mason wrote:
-> On Fri, 2009-03-27 at 16:50 -0400, Chris Mason wrote:
-> > On Fri, 2009-03-27 at 16:24 -0400, Theodore Ts'o wrote:
-> > > The following patches have been posted as providing at least some
-> > > partial improvement to the ext3 latency problem that has been
-> > > discussed on the 2.6.29 mongo-LKML-thread-that-would-not-die.
-> > 
-> > Ric had asked me about a test program that would show the worst case
-> > ext3 behavior.  So I've modified your ext3 program a little.  It now
-> > creates a 8G file and forks off another proc to do random IO to that
-> > file.
-> > 
-> > Then it runs one fsync every 4 seconds and times how long they take.
-> > After the program has been running for 60 seconds, it tries to stop.
-> > 
-> > On my sata drive with barriers on, even btrfs and xfs saw some
-> > multi-second fsyncs, but ext3 came in at 414s for a single fsync.
-> > 
-> > Warning: don't run this on a laptop drive, you'll still be waiting for
-> > it next year.  This is probably full of little errors, I cut it together
-> > pretty quickly.
-> > 
 > 
-> My understanding of ext4 delalloc is that once blocks are allocated to
-> file, we go back to data=ordered.  
-  Yes.
+> Yes, I agree. Hopefully I'll manage to get my patches into
+> shape to post the generic versions in the next days so we can use
+> them on microblaze and score as well as all future versions.
 
-> Ext4 is going pretty slowly for this fsync test (slower than ext3), it
-> looks like we're going for a very long time in
-> jbd2_journal_commit_transaction -> write_cache_pages.
-  Yes, this is how we writeout ordered data and obviously it takes long for
-such a huge file where you do random IO...
+That would be gret.
+And I need to take a critical look at the patch from Remis Lima Baima -
+this would help those guys too.
 
-									Honza
--- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
+	Sam
