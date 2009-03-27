@@ -1,50 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932774AbZC0ARI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932874AbZC0ARr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932774AbZC0ARI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Mar 2009 20:17:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762835AbZC0AQL
+	id S932874AbZC0ARr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Mar 2009 20:17:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932835AbZC0AQ4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Mar 2009 20:16:11 -0400
-Received: from tundra.namei.org ([65.99.196.166]:1094 "EHLO tundra.namei.org"
+	Thu, 26 Mar 2009 20:16:56 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:57347 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762724AbZC0AQJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Mar 2009 20:16:09 -0400
-Date: Fri, 27 Mar 2009 11:15:28 +1100 (EST)
-From: James Morris <jmorris@namei.org>
-To: Pavel Machek <pavel@ucw.cz>
-cc: kernel list <linux-kernel@vger.kernel.org>,
-       linux-security-module@vger.kernel.org
-Subject: Re: TOMOYO in linux-next
-In-Reply-To: <20090326215031.GD29836@elf.ucw.cz>
-Message-ID: <alpine.LRH.2.00.0903271102240.7492@tundra.namei.org>
-References: <20090326215031.GD29836@elf.ucw.cz>
-User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
+	id S932814AbZC0AQy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Mar 2009 20:16:54 -0400
+Date: Fri, 27 Mar 2009 01:16:32 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: David Miller <davem@davemloft.net>
+Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH]: Fix sparc64 build.
+Message-ID: <20090327001632.GA10459@elte.hu>
+References: <20090326.164417.155660865.davem@davemloft.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20090326.164417.155660865.davem@davemloft.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 26 Mar 2009, Pavel Machek wrote:
 
-> Hi!
+* David Miller <davem@davemloft.net> wrote:
+
 > 
-> I don't think merging that is good idea.
+> Ingo, didn't we fix this (a few times)? :-)
+> 
+> Linus, please apply:
+> 
+> sparc64: Fix build of timer_interrupt().
+> 
+> arch/sparc/kernel/time_64.c: In function ‘timer_interrupt’:
+> arch/sparc/kernel/time_64.c:732: error: ‘struct kernel_stat’ has no member named ‘irqs’
+> make[1]: *** [arch/sparc/kernel/time_64.o] Error 1
 
-It's already merged in Linus' tree.
+Oops, sorry! Note that the fix is in a pending pull request (but 
+this still does not make it right that i cut trees with this not in 
+it).
 
-> Security should be doable
-> without making shell-like glob matching...
+I did check sparc for that particular pull request:
 
-The TOMOYO developers have already responded to your feedback on this 
-issue.  It's also an inherent aspect of pathname security, an issue which 
-has been resolved in favour of inclusion in the kernel.
+  aldebaran:~/linux/linux> ./m-arch-all
+  [...]
+  testing      sparc:  -git:  pass (   2),  -tip:  pass (   2)
 
-As for the rest of the feedback, please work with the developers to fix 
-any bugs or lack of documentation.
+So once the pieces are together again, it should all be fine.
 
-
-- James
--- 
-James Morris
-<jmorris@namei.org>
+	Ingo
