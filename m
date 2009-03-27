@@ -1,86 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756229AbZC0Jmg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757188AbZC0Jof@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756229AbZC0Jmg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Mar 2009 05:42:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753233AbZC0Jm1
+	id S1757188AbZC0Jof (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Mar 2009 05:44:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753610AbZC0Jo0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Mar 2009 05:42:27 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:59010 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752231AbZC0Jm0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Mar 2009 05:42:26 -0400
-Date: Fri, 27 Mar 2009 10:42:07 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Li Zefan <lizf@cn.fujitsu.com>
-Cc: Jens Axboe <jens.axboe@oracle.com>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH v2 0/7] blktrace: last round of fixes
-Message-ID: <20090327094207.GB8234@elte.hu>
-References: <49CC6691.7050103@cn.fujitsu.com>
+	Fri, 27 Mar 2009 05:44:26 -0400
+Received: from mail-fx0-f158.google.com ([209.85.220.158]:57505 "EHLO
+	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752823AbZC0Jo0 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Mar 2009 05:44:26 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=ljJDfL+ix0OWRFkcXuEkvsYbnbwiJxzP3OQcQ2h7iOsvP4tlw30FPE2MOJGuC6uIcl
+         LTyrjpIRRYxRVetUDGXRSU64BMOr5eZ5J11dFjl4XX2Gu50CpiZz1+SdG8n18ONxLoiX
+         iQU8Kw6JHtvvqzvuOK7FOQ+y1vbp4aTrbGbOg=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49CC6691.7050103@cn.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <84a01a8b0903251437l9f9059s3c548b5d35ea47d4@mail.gmail.com>
+References: <84a01a8b0903250545n799a8727o1faad60c8eaf372e@mail.gmail.com>
+	 <49CAA055.5060603@goop.org>
+	 <84a01a8b0903251437l9f9059s3c548b5d35ea47d4@mail.gmail.com>
+Date: Fri, 27 Mar 2009 10:44:23 +0100
+Message-ID: <84a01a8b0903270244s146ca50cr2758d36c2d9d77cd@mail.gmail.com>
+Subject: Re: epoll_ctl and const correctness
+From: nicolas sitbon <nicolas.sitbon@gmail.com>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Please, can anyone answer me, I need a response.
 
-* Li Zefan <lizf@cn.fujitsu.com> wrote:
-
-> This is the last round of fixes for blktrace, I hope.  :) 
-> 
-> Changelog v1 -> v2:
->   - fix a bug in "blktrace: make classic output more classic",
->     and rebase other patches.
->   - re-order patches.
->   - a new patch for filtering BLK_TN_MESSAGE
-> 
-> 
-> [PATCH v2 1/6] trace: make 'mem' argument of trace_seq_putmem() const
-> [PATCH v2 2/6] blktrace: make classic output more classic
-> [PATCH v2 3/6] blktrace: fix blk_probes_ref chaos
-> [PATCH v2 4/6] blktrace: fix memory leak when freeing struct blk_io_trace
-> [PATCH v2 5/6] blktrace: extract duplidate code
-> [PATCH v2 6/6] blktrace: print out BLK_TN_MESSAGE properly
-
-thanks Li!
-
-I think we can do the following ordering. First apply the fixes:
-
-> [PATCH v2 1/6] trace: make 'mem' argument of trace_seq_putmem() const
-> [PATCH v2 3/6] blktrace: fix blk_probes_ref chaos
-> [PATCH v2 4/6] blktrace: fix memory leak when freeing struct blk_io_trace
-
-These mostly relate to mixed use of ioctl and ftrace based block 
-tracing - which is rare but indeed possible. The fixes and cleanups 
-you did to refcounting look good.
-
-These bits:
-
-> [PATCH v2 2/6] blktrace: make classic output more classic
-> [PATCH v2 5/6] blktrace: extract duplidate code
-> [PATCH v2 6/6] blktrace: print out BLK_TN_MESSAGE properly
-
-are optional improvements. The BLK_TN_MESSAGE filter addition - 
-Jens, are you fine with that feature addition? (it certainly looks 
-like a nice thing to me.)
-
-Also, note that we'll get even more in-kernel filtering capabilities 
-in blktrace if we convert the tracepoints to TRACE_EVENT().
-
-Reviewed-by: Ingo Molnar <mingo@elte.hu>
-
-	Ingo
+2009/3/25 nicolas sitbon <nicolas.sitbon@gmail.com>:
+> You don't teach me anything, I know that, the fact is the
+> documentation is incomplete, so rather saying that, please answer my
+> questions. For the moment, only the documenation and the prototype of
+> epoll are buggy.
+>
+> 2009/3/25 Jeremy Fitzhardinge <jeremy@goop.org>:
+>> nicolas sitbon wrote:
+>>>
+>>> valgrind confirms this
+>>> behaviour, so am I wrong?
+>>
+>> That doesn't prove very much.  Unlike usermode code, Valgrind doesn't
+>> instrument the kernel, so it computes the side-effects of kernel operations
+>> by parsing the syscall stream and simulating the effect.  (That is to say,
+>> it strengthens your argument somewhat, but valgrind's handling of this
+>> syscall could be buggy.)
+>>
+>>>  or the good prototype is
+>>>
+>>> int epoll_ctl(int epfd, int op, int fd, struct epoll_event const *event);
+>>>
+>>
+>> Putting "const" first is conventional.
+>>
+>>   J
+>>
+>
