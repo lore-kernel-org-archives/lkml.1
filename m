@@ -1,69 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758210AbZC0XKl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761655AbZC0XLq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758210AbZC0XKl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Mar 2009 19:10:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754084AbZC0XKc
+	id S1761655AbZC0XLq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Mar 2009 19:11:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754084AbZC0XLh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Mar 2009 19:10:32 -0400
-Received: from mail-bw0-f169.google.com ([209.85.218.169]:57245 "EHLO
-	mail-bw0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752193AbZC0XKb convert rfc822-to-8bit (ORCPT
+	Fri, 27 Mar 2009 19:11:37 -0400
+Received: from wf-out-1314.google.com ([209.85.200.168]:13233 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752193AbZC0XLg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Mar 2009 19:10:31 -0400
+	Fri, 27 Mar 2009 19:11:36 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=mime-version:in-reply-to:references:date:message-id:subject:from:to
          :cc:content-type:content-transfer-encoding;
-        b=OzoVt05w9OAxy/CumApMHaPt1WZIDBUuu6uoybYkbTyg1Rh0oPcw4HuTRjssbcSFCf
-         6ZY3itMABb9I5vml4sE0b7SnV807xk1S8NMWW+p2MPqdhBhbpis7y1mWdAhc7C7IXcoj
-         G7l8OlZ9UUp6CuLau0icRoshJ6Z9lW/53R9TY=
+        b=UiFlrGQNBmFYyklyXrlbDvyRoUoZeknQH+heo5cGJALNUCwRpLQJVKOf7Ciqlzrdog
+         sirOjDUVJKxVse9P5+52EKCjBA+J5CjuRcGgSNnxecb5eKgs6uKhk8aCkVTExZBQJ0XS
+         C6HvpBIxrCU4PBPrYTWF904kwMaVGGp7ijt0A=
 MIME-Version: 1.0
-In-Reply-To: <49CD5AC6.3020806@msgid.tls.msk.ru>
-References: <84a01a8b0903250545n799a8727o1faad60c8eaf372e@mail.gmail.com>
-	 <49CAA055.5060603@goop.org>
-	 <84a01a8b0903251437l9f9059s3c548b5d35ea47d4@mail.gmail.com>
-	 <84a01a8b0903270244s146ca50cr2758d36c2d9d77cd@mail.gmail.com>
-	 <49CD4967.2090606@msgid.tls.msk.ru>
-	 <84a01a8b0903271517t668c6276l7fe098d74c24b836@mail.gmail.com>
-	 <84a01a8b0903271530of8d43ffhf77e7ba73e309f75@mail.gmail.com>
-	 <49CD564E.6050101@msgid.tls.msk.ru>
-	 <84a01a8b0903271555i7a4fea50nd95009539aa2f94d@mail.gmail.com>
-	 <49CD5AC6.3020806@msgid.tls.msk.ru>
-Date: Sat, 28 Mar 2009 00:10:28 +0100
-Message-ID: <84a01a8b0903271610u17267f87u65b097ac2d755a52@mail.gmail.com>
-Subject: Re: epoll_ctl and const correctness
-From: nicolas sitbon <nicolas.sitbon@gmail.com>
-To: Michael Tokarev <mjt@tls.msk.ru>
-Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <200903272347.01219.henrik@austad.us>
+References: <43e72e890903271213t72745018s128cd19df0f06e87@mail.gmail.com> 
+	<200903272347.01219.henrik@austad.us>
+Date: Fri, 27 Mar 2009 16:11:20 -0700
+Message-ID: <43e72e890903271611g6e1178fcg1aa620aeab1215c2@mail.gmail.com>
+Subject: Re: Linux general wiki
+From: "Luis R. Rodriguez" <mcgrof@gmail.com>
+To: Henrik Austad <henrik@austad.us>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-is it stupid to ask how a size can be negative? who is stupid? you're
-boring with my question, just tell me please how a size can be
-negative?
+On Fri, Mar 27, 2009 at 3:47 PM, Henrik Austad <henrik@austad.us> wrote:
+> On Friday 27 March 2009 20:13:24 Luis R. Rodriguez wrote:
+>> We have a lot of good wikis [1] at kernel.org but I don't see one for
+>> general things. I just made a huge write up to how to help support the
+>> stable kernels
+>
+> What exactly do you mean by 'help support the stable kernels'? Are you talking
+> about maintaining drivers? Doing patch review? Running configure/compile/run
+> tests?
 
-2009/3/28 Michael Tokarev <mjt@tls.msk.ru>:
-> nicolas sitbon wrote:
->>
->> Do you read my post? there is a confusion, my question was first : why
->> the structure isn't const? and you answer me. ok. second, I asked if
->> the kernel keep track of this structure, that is, it keeps a pointer
->> on it for doing his job? according to your last answer, no. last
->> question : why the size type of the first parameter of epoll_create is
->> int and not size_t? no answer for the moment.
+How to efficiently get patches upstream from Linus's tree down to the
+stable series, recommendation of use of linux-2.6-allstable for this,
+etc.
+
+>> and figured I'd go and add that to the wiki somewhere
+>> but I don't see any place it would fit. Should I just start using the
+>> main page for that and expand?
 >
-> Why can't you ask all your questions at once?
+> Why not? After all, it it's a general article. IMHO, adding a new 'general
+> wiki' doesn't make any sense.
 >
-> The answer to your last one is in the manpage.  size_t, as
-> name suggests, is used for sizes of various memory regions,
-> in bytes.  Here, we're dealing with something else, not bytes.
->
-> And probably the next question will be of the sort why the argument
-> is named 'event' and not 'Event' or 'EventPtr', and why there's no
-> space after the star character...  Oh well.
->
-> /mjt
->
+> However, are you sure that this article doesn't belong at, say, kernelnewbies?
+
+Hm, yeah good point will check there.
+
+  Luis
