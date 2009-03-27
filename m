@@ -1,67 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756007AbZC0Vrc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756535AbZC0Vv7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756007AbZC0Vrc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Mar 2009 17:47:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751291AbZC0VrX
+	id S1756535AbZC0Vv7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Mar 2009 17:51:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751617AbZC0Vvu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Mar 2009 17:47:23 -0400
-Received: from isrv.corpit.ru ([81.13.33.159]:33686 "EHLO isrv.corpit.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750863AbZC0VrW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Mar 2009 17:47:22 -0400
-Message-ID: <49CD4967.2090606@msgid.tls.msk.ru>
-Date: Sat, 28 Mar 2009 00:47:19 +0300
-From: Michael Tokarev <mjt@tls.msk.ru>
-Organization: Telecom Service, JSC
-User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
+	Fri, 27 Mar 2009 17:51:50 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:55375 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751428AbZC0Vvt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Mar 2009 17:51:49 -0400
+Date: Fri, 27 Mar 2009 14:46:15 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Jeff Garzik <jeff@garzik.org>
+cc: Matthew Garrett <mjg59@srcf.ucam.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Theodore Tso <tytso@mit.edu>, Andrew Morton <akpm@linux-foundation.org>,
+       David Rees <drees76@gmail.com>, Jesper Krogh <jesper@krogh.cc>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.29
+In-Reply-To: <49CD2C47.4040300@garzik.org>
+Message-ID: <alpine.LFD.2.00.0903271443440.3994@localhost.localdomain>
+References: <20090327051338.GP6239@mit.edu> <20090327055750.GA18065@srcf.ucam.org> <20090327062114.GA18290@srcf.ucam.org> <20090327112438.GQ6239@mit.edu> <20090327145156.GB24819@srcf.ucam.org> <20090327150811.09b313f5@lxorguk.ukuu.org.uk>
+ <20090327152221.GA25234@srcf.ucam.org> <20090327161553.31436545@lxorguk.ukuu.org.uk> <20090327162841.GA26860@srcf.ucam.org> <20090327165150.7e69d9e1@lxorguk.ukuu.org.uk> <20090327170208.GA27646@srcf.ucam.org> <alpine.LFD.2.00.0903271032090.3994@localhost.localdomain>
+ <49CD2C47.4040300@garzik.org>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-To: nicolas sitbon <nicolas.sitbon@gmail.com>
-CC: Jeremy Fitzhardinge <jeremy@goop.org>, linux-kernel@vger.kernel.org,
-       Davide Libenzi <davidel@xmailserver.org>
-Subject: Re: epoll_ctl and const correctness
-References: <84a01a8b0903250545n799a8727o1faad60c8eaf372e@mail.gmail.com>	 <49CAA055.5060603@goop.org>	 <84a01a8b0903251437l9f9059s3c548b5d35ea47d4@mail.gmail.com> <84a01a8b0903270244s146ca50cr2758d36c2d9d77cd@mail.gmail.com>
-In-Reply-To: <84a01a8b0903270244s146ca50cr2758d36c2d9d77cd@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-nicolas sitbon wrote:
-> Please, can anyone answer me, I need a response.
 
-> 2009/3/25 nicolas sitbon <nicolas.sitbon@gmail.com>:
->> You don't teach me anything, I know that, the fact is the
->> documentation is incomplete, so rather saying that, please answer my
->> questions. For the moment, only the documenation and the prototype of
->> epoll are buggy.
 
-So which response do you want -- the one saying that the documentation
-is buggy or or epoll prototype?  Or something else?
+On Fri, 27 Mar 2009, Jeff Garzik wrote:
+> 
+> On the other side of the coin, major desktop apps Firefox and Thunderbird
+> already use it:  Firefox uses sqlite  [...]
 
-[]
->>>>  or the good prototype is
->>>>
->>>> int epoll_ctl(int epfd, int op, int fd, struct epoll_event const *event);
+You do know that Firefox had to _disable_ fsync() exactly because not 
+disabling it was unacceptable? That whole "why does firefox stop for 5 
+seconds" thing created too many bug-reports.
 
-Why should it be const?  There is no guarantee the argument will not be
-modified by the kernel.  Documentation does not say that.  Current prototype
-does not say that.  If you need such a guarantee, you're free to add another
-system call into your kernel, and fix both your documentation and your
-prototype to match.  What's the deal?
+> So, arguments about "people should..." aside, existing desktops apps _do_
+> fsync and we get to deal with the bad performance :/
 
-Back from useless rants and to the technical points.
+No they don't. Read up on it. Really.
 
-Again: there's no guarantee the `event' argument will not be modified.
-Even if kernel CURRENTLY indeed does not modify it, but the interface
-does not PROMISE it to be that way for ever.
+Guys, I don't understand why you even argue. I've been complaining about 
+fsync() performance for the last five years or so. It's taken you a long 
+time to finally realize, and you still don't seem to "get it".
 
-Why does it not promise that is another question.  Just one example:
-what, some day, stops us from adding some EPOLL_CTL_GET operation
-to RETRIEVE information associated with that filedescriptor in kernel
-currently and STORE that info in the structure pointed to by `event'
-argument?  That way it will not be const anymore.
+PEOPLE LITERALLY REMOVE 'fsync()' CALLS BECAUSE THEY ARE UNACCEPTABLE FOR 
+USERS.
 
-So.. what's your problem?
+It really is that simple.
 
-/mjt
+			Linus
