@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763478AbZC0BvW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763472AbZC0Bv7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763478AbZC0BvW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Mar 2009 21:51:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763164AbZC0BvE
+	id S1763472AbZC0Bv7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Mar 2009 21:51:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763377AbZC0Bvo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Mar 2009 21:51:04 -0400
-Received: from 219-87-157-169.static.tfn.net.tw ([219.87.157.169]:45653 "EHLO
+	Thu, 26 Mar 2009 21:51:44 -0400
+Received: from 219-87-157-169.static.tfn.net.tw ([219.87.157.169]:45806 "EHLO
 	mswedge2.sunplus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759862AbZC0Bu6 (ORCPT
+	with ESMTP id S1763164AbZC0Bvj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Mar 2009 21:50:58 -0400
+	Thu, 26 Mar 2009 21:51:39 -0400
 To: linux-arch@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org
 MIME-Version: 1.0
-Subject: Re: [PATCH 12/13] score - New architecure port to SunplusCT S+CORE
+Subject: Re: [PATCH 13/13] score - New architecure port to SunplusCT S+CORE
   processor
 X-Mailer: Lotus Notes Release 6.5 September 26, 2003
-Message-ID: <OF33220B3D.C7812D3B-ON48257586.0009C8A6-48257586.000A0DBB@sunplusct.com>
+Message-ID: <OFB3F5306C.4CEBF166-ON48257586.0009E897-48257586.000A2E5E@sunplusct.com>
 From: liqin.chen@sunplusct.com
-Date: Fri, 27 Mar 2009 09:48:04 +0800
-X-MIMETrack: Serialize by Router on ctmail01/SunplusCT(Release 7.0.3FP1|February 24, 2008) at 2009/03/27 ?? 09:48:06,
-	Serialize complete at 2009/03/27 ?? 09:48:06
+Date: Fri, 27 Mar 2009 09:49:27 +0800
+X-MIMETrack: Serialize by Router on ctmail01/SunplusCT(Release 7.0.3FP1|February 24, 2008) at 2009/03/27 ?? 09:49:29,
+	Serialize complete at 2009/03/27 ?? 09:49:29
 Content-Type: text/plain; charset="US-ASCII"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -29,463 +29,17 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 linux/score lastest patch place at 
 http://www.sunplusct.com/images/linux-score-patch/linux-score-20090324.patch
 
+
 diff -uprN -x linux-2.6-git.ori/Documentation/dontdiff 
-linux-2.6-git.ori/arch/score/lib/libgcc.h 
-linux-2.6-git.new/arch/score/lib/libgcc.h
---- linux-2.6-git.ori/arch/score/lib/libgcc.h   1970-01-01 
+linux-2.6-git.ori/arch/score/mm/ioremap.c 
+linux-2.6-git.new/arch/score/mm/ioremap.c
+--- linux-2.6-git.ori/arch/score/mm/ioremap.c   1970-01-01 
 08:00:00.000000000 +0800
-+++ linux-2.6-git.new/arch/score/lib/libgcc.h   2009-03-13 
-17:22:23.000000000 +0800
-@@ -0,0 +1,46 @@
++++ linux-2.6-git.new/arch/score/mm/ioremap.c   2009-03-23 
+14:31:25.000000000 +0800
+@@ -0,0 +1,56 @@
 +/*
-+ * arch/score/lib/libgcc.h
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, see the file COPYING, or write
-+ * to the Free Software Foundation, Inc.,
-+ * 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-+ */
-+
-+
-+#ifndef __ASM_LIBGCC_H
-+#define __ASM_LIBGCC_H
-+
-+#include <asm/byteorder.h>
-+
-+typedef int word_type __attribute__ ((mode (__word__)));
-+
-+#ifdef __BIG_ENDIAN
-+struct DWstruct {
-+       int high, low;
-+};
-+#elif defined(__LITTLE_ENDIAN)
-+struct DWstruct {
-+       int low, high;
-+};
-+#else
-+#error I feel sick.
-+#endif
-+
-+typedef union
-+{
-+       struct DWstruct s;
-+       long long ll;
-+} DWunion;
-+
-+#endif /* __ASM_LIBGCC_H */
-diff -uprN -x linux-2.6-git.ori/Documentation/dontdiff 
-linux-2.6-git.ori/arch/score/lib/lshrdi3.c 
-linux-2.6-git.new/arch/score/lib/lshrdi3.c
---- linux-2.6-git.ori/arch/score/lib/lshrdi3.c  1970-01-01 
-08:00:00.000000000 +0800
-+++ linux-2.6-git.new/arch/score/lib/lshrdi3.c  2009-03-23 
-14:15:42.000000000 +0800
-@@ -0,0 +1,47 @@
-+/*
-+ * arch/score/lib/lshrdi3.c
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, see the file COPYING, or write
-+ * to the Free Software Foundation, Inc.,
-+ * 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-+ */
-+
-+
-+#include <linux/module.h>
-+#include "libgcc.h"
-+
-+long long __lshrdi3(long long u, word_type b)
-+{
-+       DWunion uu, w;
-+       word_type bm;
-+
-+       if (b == 0)
-+               return u;
-+
-+       uu.ll = u;
-+       bm = 32 - b;
-+
-+       if (bm <= 0) {
-+               w.s.high = 0;
-+               w.s.low = (unsigned int) uu.s.high >> -bm;
-+       } else {
-+               const unsigned int carries = (unsigned int) uu.s.high << 
-bm;
-+
-+               w.s.high = (unsigned int) uu.s.high >> b;
-+               w.s.low = ((unsigned int) uu.s.low >> b) | carries;
-+       }
-+
-+       return w.ll;
-+}
-+EXPORT_SYMBOL(__lshrdi3);
-diff -uprN -x linux-2.6-git.ori/Documentation/dontdiff 
-linux-2.6-git.ori/arch/score/lib/Makefile 
-linux-2.6-git.new/arch/score/lib/Makefile
---- linux-2.6-git.ori/arch/score/lib/Makefile   1970-01-01 
-08:00:00.000000000 +0800
-+++ linux-2.6-git.new/arch/score/lib/Makefile   2009-03-24 
-08:58:50.000000000 +0800
-@@ -0,0 +1,8 @@
-+#
-+# Makefile for SCORE-specific library files..
-+#
-+
-+lib-y  += string.o checksum.o checksum_copy.o
-+
-+# libgcc-style stuff needed in the kernel
-+obj-y  += ashldi3.o ashrdi3.o cmpdi2.o lshrdi3.o ucmpdi2.o
-diff -uprN -x linux-2.6-git.ori/Documentation/dontdiff 
-linux-2.6-git.ori/arch/score/lib/string.S 
-linux-2.6-git.new/arch/score/lib/string.S
---- linux-2.6-git.ori/arch/score/lib/string.S   1970-01-01 
-08:00:00.000000000 +0800
-+++ linux-2.6-git.new/arch/score/lib/string.S   2009-03-23 
-18:02:48.000000000 +0800
-@@ -0,0 +1,203 @@
-+/*
-+ * arch/score/lib/string.S
-+ *
-+ * Score Processor version.
-+ *
-+ * Copyright (C) 2009 Sunplus Core Technology Co., Ltd.
-+ *  Chen Liqin <liqin.chen@sunplusct.com>
-+ *  Lennox Wu <lennox.wu@sunplusct.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, see the file COPYING, or write
-+ * to the Free Software Foundation, Inc.,
-+ * 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-+ */
-+
-+#include <asm/errno.h>
-+
-+       .text
-+       .globl  __strncpy_from_user
-+       .align 2
-+__strncpy_from_user:
-+       cmpi.c  r6, 0
-+       mv      r9, r6
-+       ble     .L2
-+0:     lbu     r7, [r5]
-+       ldi     r8, 0
-+1:     sb      r7, [r4]
-+2:     lb      r6, [r5]
-+       cmp.c   r6, r8
-+       beq     .L2
-+ 
-+.L5:
-+       addi    r8, 1
-+       cmp.c   r8, r9
-+       beq     .L7
-+3:     lbu     r6, [r5, 1]+
-+4:     sb      r6, [r4, 1]+
-+5:     lb      r7, [r5]
-+       cmpi.c  r7, 0
-+       bne     .L5
-+.L7:
-+       mv      r4, r8
-+       br      r3
-+.L2:
-+       ldi     r8, 0
-+       mv      r4, r8
-+       br      r3
-+       .section .fixup, "ax"
-+99:
-+       ldi     r4, -EFAULT
-+       br      r3
-+       .previous
-+       .section __ex_table, "a"
-+       .align  2
-+       .word   0b ,99b
-+       .word   1b ,99b
-+       .word   2b ,99b
-+       .word   3b ,99b
-+       .word   4b ,99b
-+       .word   5b ,99b
-+       .previous
-+ 
-+       .globl __strnlen_user
-+       .align 2 
-+__strnlen_user: 
-+       cmpi.c  r5, 0
-+       ble     .L11
-+0:     lb      r6, [r4]
-+       ldi     r7, 0
-+       cmp.c   r6, r7
-+       beq     .L11
-+.L15: 
-+       addi    r7, 1
-+       cmp.c   r7, r5
-+       beq     .L23
-+1:     lb      r6, [r4,1]+
-+       cmpi.c  r6, 0
-+       bne     .L15
-+.L23:
-+       addri   r4, r7, 1
-+       br      r3
-+ 
-+.L11:
-+       ldi     r4, 1
-+       br      r3
-+       .section .fixup, "ax"
-+99:
-+       ldi     r4, 0
-+       br      r3
-+ 
-+       .section __ex_table,"a"
-+       .align 2
-+       .word   0b, 99b
-+       .word   1b, 99b
-+       .previous
-+ 
-+       .globl  __strlen_user
-+       .align 2
-+__strlen_user:
-+0:     lb      r6, [r4]
-+       mv      r7, r4
-+       extsb   r6, r6
-+       cmpi.c  r6, 0
-+       mv      r4, r6
-+       beq     .L27
-+.L28:
-+1:     lb      r6, [r7, 1]+
-+       addi    r6, 1
-+       cmpi.c  r6, 0
-+       bne     .L28 
-+.L27:
-+       br      r3
-+       .section .fixup, "ax"
-+       ldi     r4, 0x0
-+       br      r3
-+99:
-+       ldi     r4, 0
-+       br      r3
-+       .previous
-+       .section __ex_table, "a"
-+       .align  2
-+       .word   0b ,99b
-+       .word   1b ,99b
-+       .previous
-+
-+       .globl  __copy_tofrom_user
-+       .align 2
-+__copy_tofrom_user:
-+       cmpi.c  r6, 0
-+       mv      r10,r6
-+       beq     .L32
-+       ldi     r9, 0
-+.L34:
-+       add     r6, r5, r9
-+0:     lbu     r8, [r6]
-+       add     r7, r4, r9
-+1:     sb      r8, [r7]
-+       addi    r9, 1
-+       cmp.c   r9, r10
-+       bne     .L34
-+.L32: 
-+       ldi     r4, 0
-+       br      r3
-+       .section .fixup, "ax"
-+99:
-+       sub     r4, r10, r9
-+       br      r3
-+       .previous
-+       .section __ex_table, "a"
-+       .align  2
-+       .word   0b, 99b
-+       .word   1b, 99b
-+       .previous
-+
-+       .globl __clear_user
-+       .align 2
-+__clear_user:
-+       cmpi.c  r5, 0
-+       beq     .L38
-+       ldi     r6, 0
-+       mv      r7, r6
-+.L40:
-+       addi    r6, 1
-+0:     sb      r7, [r4]+, 1
-+       cmp.c   r6, r5
-+       bne     .L40
-+.L38:
-+       ldi     r4, 0
-+       br      r3
-+
-+       .section .fixup, "ax"
-+       br      r3
-+       .previous
-+       .section __ex_table, "a"
-+       .align  2
-+99:
-+       .word   0b, 99b 
-+       .previous 
-+
-+       .align  2
-+       .globl  __put_user_unknown
-+__put_user_unknown:
-+       .set volatile
-+       ldi     r4, -EFAULT
-+       br      r3
-+
-+       .align  2
-+       .globl  __get_user_unknown
-+       .set volatile
-+__get_user_unknown:
-+       ldi     r5, 0
-+       ldi     r4, -EFAULT
-+       br      r3
-diff -uprN -x linux-2.6-git.ori/Documentation/dontdiff 
-linux-2.6-git.ori/arch/score/lib/ucmpdi2.c 
-linux-2.6-git.new/arch/score/lib/ucmpdi2.c
---- linux-2.6-git.ori/arch/score/lib/ucmpdi2.c  1970-01-01 
-08:00:00.000000000 +0800
-+++ linux-2.6-git.new/arch/score/lib/ucmpdi2.c  2009-03-23 
-14:15:20.000000000 +0800
-@@ -0,0 +1,38 @@
-+/*
-+ * arch/score/lib/ucmpdi2.c
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, see the file COPYING, or write
-+ * to the Free Software Foundation, Inc.,
-+ * 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-+ */
-+
-+#include <linux/module.h>
-+#include "libgcc.h"
-+
-+word_type __ucmpdi2(unsigned long long a, unsigned long long b)
-+{
-+       const DWunion au = {.ll = a};
-+       const DWunion bu = {.ll = b};
-+
-+       if ((unsigned int) au.s.high < (unsigned int) bu.s.high)
-+               return 0;
-+       else if ((unsigned int) au.s.high > (unsigned int) bu.s.high)
-+               return 2;
-+       if ((unsigned int) au.s.low < (unsigned int) bu.s.low)
-+               return 0;
-+       else if ((unsigned int) au.s.low > (unsigned int) bu.s.low)
-+               return 2;
-+       return 1;
-+}
-+EXPORT_SYMBOL(__ucmpdi2);
-diff -uprN -x linux-2.6-git.ori/Documentation/dontdiff 
-linux-2.6-git.ori/arch/score/Makefile 
-linux-2.6-git.new/arch/score/Makefile
---- linux-2.6-git.ori/arch/score/Makefile       1970-01-01 
-08:00:00.000000000 +0800
-+++ linux-2.6-git.new/arch/score/Makefile       2009-03-26 
-13:59:53.000000000 +0800
-@@ -0,0 +1,54 @@
-+#
-+# arch/score/Makefile
-+#
-+# This file is subject to the terms and conditions of the GNU General 
-Public
-+# License.  See the file "COPYING" in the main directory of this archive
-+# for more details.
-+#
-+
-+KBUILD_DEFCONFIG:= spct6600_defconfig
-+CROSS_COMPILE  := score-elf-
-+
-+cflags-y       := -ffunction-sections -ffreestanding
-+
-+#
-+# CPU-dependent compiler/assembler options for optimization.
-+#
-+cflags-y       += -O2 -G0 -pipe -mel -mnhwloop -D__linux__ -D__SCOREEL__
-+
-+#
-+# Board-dependent options and extra files
-+#
-+
-+KBUILD_AFLAGS  += $(cflags-y)
-+KBUILD_CFLAGS  += $(cflags-y)
-+MODFLAGS       += -mlong-calls
-+LDFLAGS                += --oformat elf32-littlescore
-+LDFLAGS_vmlinux        += -G0 -static -nostdlib
-+
-+CLEAN_FILES    += arch/score/kernel/vmlinux.lds
-+
-+#
-+# Choosing incompatible machines durings configuration will result in
-+# error messages during linking.  Select a default linkscript if
-+# none has been choosen above.
-+#
-+
-+head-y         := arch/score/kernel/head.o arch/score/kernel/init_task.o
-+
-+libs-y         += arch/score/lib/
-+core-y         += arch/score/kernel/ arch/score/mm/
-+
-+boot           := arch/score/boot
-+
-+vmlinux.bin: vmlinux
-+       $(Q)$(MAKE) $(build)=$(boot) $(boot)/$@
-+
-+archclean:
-+       @$(MAKE) $(clean)=$(boot)
-+
-+define archhelp
-+       echo '  vmlinux.bin          - Raw binary boot image'
-+       echo
-+       echo '  These will be default as apropriate for a configured 
-platform.'
-+endef
-diff -uprN -x linux-2.6-git.ori/Documentation/dontdiff 
-linux-2.6-git.ori/arch/score/mm/cache.c 
-linux-2.6-git.new/arch/score/mm/cache.c
---- linux-2.6-git.ori/arch/score/mm/cache.c     1970-01-01 
-08:00:00.000000000 +0800
-+++ linux-2.6-git.new/arch/score/mm/cache.c     2009-03-23 
-18:03:22.000000000 +0800
-@@ -0,0 +1,332 @@
-+/*
-+ * arch/score/mm/cache.c
++ * arch/score/mm/ioremap.c
 + *
 + * Score Processor version.
 + *
@@ -509,795 +63,68 @@ linux-2.6-git.new/arch/score/mm/cache.c
 + * 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 + */
 +
-+#include <linux/init.h>
-+#include <linux/kernel.h>
-+#include <linux/linkage.h>
 +#include <linux/module.h>
 +#include <linux/sched.h>
-+#include <linux/mm.h>
-+#include <asm/cache.h>
-+#include <asm/cacheflush.h>
-+#include <asm/mmu_context.h>
++#include <linux/vmalloc.h>
 +
-+#define CACHE_SAVE 0
-+
-+/* Cache operations. */
-+void (*flush_cache_all)(void);
-+void (*__flush_cache_all)(void);
-+void (*flush_cache_mm)(struct mm_struct *mm);
-+void (*flush_cache_range)(struct vm_area_struct *vma,
-+                               unsigned long start, unsigned long end);
-+void (*flush_cache_page)(struct vm_area_struct *vma,
-+                               unsigned long page, unsigned long pfn);
-+void (*flush_icache_range)(unsigned long start, unsigned long end);
-+void (*__flush_cache_vmap)(void);
-+void (*__flush_cache_vunmap)(void);
-+void (*flush_cache_sigtramp)(unsigned long addr);
-+void (*flush_data_cache_page)(unsigned long addr);
-+EXPORT_SYMBOL(flush_data_cache_page);
-+void (*flush_icache_all)(void);
-+
-+/*Score 7 cache operations*/
-+void s7_flush_cache_all(void);
-+void s7_flush_dcache_all(void);
-+void s7_flush_icache_all(void);
-+static inline void s7___flush_cache_all(void);
-+static void s7_flush_cache_mm(struct mm_struct *mm);
-+static void s7_flush_cache_range(struct vm_area_struct *vma,
-+                                unsigned long start, unsigned long end);
-+static void s7_flush_cache_page(struct vm_area_struct *vma,
-+                                unsigned long page, unsigned long pfn);
-+static void s7_flush_icache_range(unsigned long start, unsigned long 
-end);
-+static void s7_flush_cache_sigtramp(unsigned long addr);
-+static void s7_flush_data_cache_page(unsigned long addr);
-+static void s7_flush_dcache_range(unsigned long start, unsigned long 
-end);
-+
-+/*
-+ * We could optimize the case where the cache argument is not BCACHE but
-+ * that seems very atypical use ...
-+ */
-+asmlinkage int sys_cacheflush(unsigned long addr,
-+       unsigned long bytes, unsigned int cache)
-+{
-+       if (bytes == 0)
-+               return 0;
-+       if (!access_ok(VERIFY_WRITE, (void __user *) addr, bytes))
-+               return -EFAULT;
-+
-+       flush_icache_range(addr, addr + bytes);
-+
-+       return 0;
-+}
-+
-+void __update_cache(struct vm_area_struct *vma, unsigned long address,
-+       pte_t pte)
-+{
-+       struct page *page;
-+       unsigned long pfn, addr;
-+       int exec = (vma->vm_flags & VM_EXEC);
-+
-+       pfn = pte_pfn(pte);
-+       if (unlikely(!pfn_valid(pfn)))
-+               return;
-+       page = pfn_to_page(pfn);
-+       if (page_mapping(page) && Page_dcache_dirty(page)) {
-+               addr = (unsigned long) page_address(page);
-+               if (exec)
-+                       s7_flush_data_cache_page(addr);
-+               ClearPageDcacheDirty(page);
-+       }
-+}
-+
-+static inline void setup_protection_map(void)
-+{
-+       protection_map[0] = PAGE_NONE;
-+       protection_map[1] = PAGE_READONLY;
-+       protection_map[2] = PAGE_COPY;
-+       protection_map[3] = PAGE_COPY;
-+       protection_map[4] = PAGE_READONLY;
-+       protection_map[5] = PAGE_READONLY;
-+       protection_map[6] = PAGE_COPY;
-+       protection_map[7] = PAGE_COPY;
-+       protection_map[8] = PAGE_NONE;
-+       protection_map[9] = PAGE_READONLY;
-+       protection_map[10] = PAGE_SHARED;
-+       protection_map[11] = PAGE_SHARED;
-+       protection_map[12] = PAGE_READONLY;
-+       protection_map[13] = PAGE_READONLY;
-+       protection_map[14] = PAGE_SHARED;
-+       protection_map[15] = PAGE_SHARED;
-+}
-+
-+void __devinit cpu_cache_init(void)
-+{
-+       flush_cache_all = s7_flush_cache_all;
-+       __flush_cache_all = s7___flush_cache_all;
-+       flush_cache_mm = s7_flush_cache_mm;
-+       flush_cache_range = s7_flush_cache_range;
-+       flush_cache_page = s7_flush_cache_page;
-+       flush_icache_range = s7_flush_icache_range;
-+       flush_cache_sigtramp = s7_flush_cache_sigtramp;
-+       flush_data_cache_page = s7_flush_data_cache_page;
-+
-+       setup_protection_map();
-+}
-+
-+void s7_flush_icache_all(void)
-+{
-+       __asm__ __volatile__(
-+       "la r8, s7_flush_icache_all\n"
-+       "cache 0x10, [r8, 0]\n"
-+       "nop\nnop\nnop\nnop\nnop\nnop\n"
-+       ::: "r8");
-+}
-+
-+void s7_flush_dcache_all(void)
-+{
-+       __asm__ __volatile__(
-+       "la r8, s7_flush_dcache_all\n"
-+       "cache 0x1f, [r8, 0]\n"
-+       "nop\nnop\nnop\nnop\nnop\nnop\n"
-+       "cache 0x1a, [r8, 0]\n"
-+       "nop\nnop\nnop\nnop\nnop\nnop\n"
-+       ::: "r8");
-+}
-+
-+void s7_flush_cache_all(void)
-+{
-+       __asm__ __volatile__(
-+       "la r8, s7_flush_cache_all\n"
-+       "cache 0x10, [r8, 0]\n"
-+       "nop\nnop\nnop\nnop\nnop\nnop\n"
-+       "cache 0x1f, [r8, 0]\n"
-+       "nop\nnop\nnop\nnop\nnop\nnop\n"
-+       "cache 0x1a, [r8, 0]\n"
-+       "nop\nnop\nnop\nnop\nnop\nnop\n"
-+       ::: "r8");
-+}
-+
-+void s7___flush_cache_all(void)
-+{
-+       __asm__ __volatile__(
-+       "la r8, s7_flush_cache_all\n"
-+       "cache 0x10, [r8, 0]\n"
-+       "nop\nnop\nnop\nnop\nnop\nnop\n"
-+       "cache 0x1f, [r8, 0]\n"
-+       "nop\nnop\nnop\nnop\nnop\nnop\n"
-+       "cache 0x1a, [r8, 0]\n"
-+       "nop\nnop\nnop\nnop\nnop\nnop\n"
-+       ::: "r8");
-+}
-+
-+static void s7_flush_cache_mm(struct mm_struct *mm)
-+{
-+       if(!cpu_context(0, mm))
-+               return;
-+       s7_flush_cache_all();
-+}
-+
-+/*if we flush a range precisely , the processing may be very long.
-+We must check each page in the range whether present. If the page is 
-present,
-+we can flush the range in the page. Be careful, the range may be cross 
-two
-+page, a page is present and another is not present.
-+*/
-+/*
-+The interface is provided in hopes that the port can find
-+a suitably efficient method for removing multiple page
-+sized regions from the cache.
-+*/
-+static void s7_flush_cache_range(struct vm_area_struct *vma, unsigned 
-long start,
-+                                unsigned long end)
-+{
-+       struct mm_struct *mm = vma->vm_mm;
-+       int exec = vma->vm_flags & VM_EXEC;
-+       pgd_t *pgdp;
-+       pud_t *pudp;
-+       pmd_t *pmdp;
-+       pte_t *ptep;
-+
-+       if(!cpu_context(0, mm))
-+               return;
-+
-+       pgdp = pgd_offset(mm, start);
-+       pudp = pud_offset(pgdp, start);
-+       pmdp = pmd_offset(pudp, start);
-+       ptep = pte_offset(pmdp, start);
-+
-+       while (start <= end) {
-+               unsigned long tmpend;
-+               pgdp = pgd_offset(mm, start);
-+               pudp = pud_offset(pgdp, start);
-+               pmdp = pmd_offset(pudp, start);
-+               ptep = pte_offset(pmdp, start);
-+
-+               if (!(pte_val(*ptep) & _PAGE_PRESENT)) {
-+                       start = (start + PAGE_SIZE) & ~(PAGE_SIZE - 1);
-+                       continue;
-+               }
-+               tmpend = (start | (PAGE_SIZE-1)) > end ?
-+                                end : (start | (PAGE_SIZE-1));
-+
-+               s7_flush_dcache_range(start, tmpend);
-+               if (exec)
-+                       s7_flush_icache_range(start, tmpend);
-+               start=(start + PAGE_SIZE) & ~(PAGE_SIZE - 1);
-+       }
-+}
-+
-+static void s7_flush_cache_page(struct vm_area_struct *vma, unsigned long 
-addr,
-+                               unsigned long pfn)
-+{
-+       int exec = vma->vm_flags & VM_EXEC;
-+       unsigned long kaddr = 0xa0000000 | (pfn << PAGE_SHIFT);
-+
-+       s7_flush_dcache_range(kaddr, kaddr + PAGE_SIZE);
-+
-+       if (exec)
-+               s7_flush_icache_range(kaddr, kaddr + PAGE_SIZE);
-+}
-+
-+static void s7_flush_cache_sigtramp(unsigned long addr)
-+{
-+       __asm__ __volatile__(
-+       "cache 0x02, [%0, 0]\n"
-+       "nop\nnop\nnop\nnop\nnop\n"
-+       "cache 0x02, [%0, 0x4]\n"
-+       "nop\nnop\nnop\nnop\nnop\n"
-+
-+       "cache 0x0d, [%0, 0]\n"
-+       "nop\nnop\nnop\nnop\nnop\n"
-+       "cache 0x0d, [%0, 0x4]\n"
-+       "nop\nnop\nnop\nnop\nnop\n"
-+
-+       "cache 0x1a, [%0, 0]\n"
-+       "nop\nnop\nnop\nnop\nnop\n"
-+       :: "r" (addr));
-+}
-+
-+/*
-+Just flush entire Dcache!!
-+You must ensure the page doesn't include instructions, because
-+the function will not flush the Icache.
-+The addr must be cache aligned.
-+*/
-+static void s7_flush_data_cache_page(unsigned long addr)
-+{
-+       unsigned int i;
-+       for (i = 0; i < PAGE_SIZE / DCACHE_LSIZE ; i += DCACHE_LSIZE) {
-+               __asm__ __volatile__(
-+               "cache 0x0e, [%0, 0]\n"
-+               "cache 0x1a, [%0, 0]\n"
-+               "nop\n"
-+               :
-+               : "r" (addr));
-+               addr += DCACHE_LSIZE;
-+       }
-+}
-+
-+/*
-+1. WB and invalid a cache line of Dcache
-+2. Drain Write Buffer
-+the range must be smaller than PAGE_SIZE
-+*/
-+static void s7_flush_dcache_range(unsigned long start, unsigned long end)
-+{
-+       int size, i;
-+ 
-+       start = start & ~(ICACHE_LSIZE - 1);
-+       end = end & ~(ICACHE_LSIZE - 1);
-+       size = end - start;
-+       /* flush dcache to ram, and invalidate dcache lines. */
-+       for (i = 0; i < size; i += DCACHE_LSIZE) {
-+               __asm__ __volatile__(
-+               "cache 0x0e, [%0, 0]\n"
-+               "nop\nnop\nnop\nnop\nnop\n"
-+               "cache 0x1a, [%0, 0]\n"
-+               "nop\nnop\nnop\nnop\nnop\n"
-+               :
-+               : "r" (start));
-+               start += DCACHE_LSIZE;
-+       }
-+}
-+
-+static void s7_flush_icache_range(unsigned long start, unsigned long end)
-+{
-+       int size, i;
-+       start = start & ~(ICACHE_LSIZE - 1);
-+       end = end & ~(ICACHE_LSIZE - 1);
-+
-+       size = end - start;
-+       /* invalidate icache lines. */
-+       for (i = 0; i < size; i += ICACHE_LSIZE) {
-+               __asm__ __volatile__(
-+               "cache 0x02, [%0, 0]\n"
-+               "nop\nnop\nnop\nnop\nnop\n"
-+               :
-+               : "r" (start));
-+               start += ICACHE_LSIZE;
-+       }
-+}
-diff -uprN -x linux-2.6-git.ori/Documentation/dontdiff 
-linux-2.6-git.ori/arch/score/mm/dma-default.c 
-linux-2.6-git.new/arch/score/mm/dma-default.c
---- linux-2.6-git.ori/arch/score/mm/dma-default.c       1970-01-01 
-08:00:00.000000000 +0800
-+++ linux-2.6-git.new/arch/score/mm/dma-default.c       2009-03-23 
-14:27:26.000000000 +0800
-@@ -0,0 +1,147 @@
-+/*
-+ * arch/score/mm/dma-default.c
-+ *
-+ * Score Processor version.
-+ *
-+ * Copyright (C) 2009 Sunplus Core Technology Co., Ltd.
-+ *  Lennox Wu <lennox.wu@sunplusct.com>
-+ *  Chen Liqin <liqin.chen@sunplusct.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, see the file COPYING, or write
-+ * to the Free Software Foundation, Inc.,
-+ * 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-+ */
-+
-+#include <linux/types.h>
-+#include <linux/dma-mapping.h>
-+#include <linux/mm.h>
-+#include <linux/module.h>
-+#include <linux/scatterlist.h>
-+#include <linux/string.h>
-+#include <asm/cache.h>
 +#include <asm/io.h>
++#include <asm/fixmap.h>
 +
-+void *dma_alloc_noncoherent(struct device *dev, size_t size,
-+       dma_addr_t *dma_handle, gfp_t gfp)
-+{
-+       return 0;
-+}
-+EXPORT_SYMBOL(dma_alloc_noncoherent);
-+
-+void *dma_alloc_coherent(struct device *dev, size_t size,
-+       dma_addr_t *dma_handle, gfp_t gfp)
-+{
-+       return 0;
-+}
-+EXPORT_SYMBOL(dma_alloc_coherent);
-+
-+void dma_free_noncoherent(struct device *dev, size_t size, void *vaddr,
-+       dma_addr_t dma_handle)
-+{}
-+EXPORT_SYMBOL(dma_free_noncoherent);
-+
-+void dma_free_coherent(struct device *dev, size_t size, void *vaddr,
-+       dma_addr_t dma_handle)
-+{}
-+EXPORT_SYMBOL(dma_free_coherent);
-+
-+dma_addr_t dma_map_single(struct device *dev, void *ptr, size_t size,
-+       enum dma_data_direction direction)
-+{
-+       return 0;
-+}
-+EXPORT_SYMBOL(dma_map_single);
-+
-+void dma_unmap_single(struct device *dev, dma_addr_t dma_addr, size_t 
-size,
-+       enum dma_data_direction direction)
-+{
-+}
-+EXPORT_SYMBOL(dma_unmap_single);
-+
-+int dma_map_sg(struct device *dev, struct scatterlist *sg, int nents,
-+       enum dma_data_direction direction)
-+{
-+       return 0;
-+}
-+EXPORT_SYMBOL(dma_map_sg);
-+
-+dma_addr_t dma_map_page(struct device *dev, struct page *page,
-+       unsigned long offset, size_t size, enum dma_data_direction 
-direction)
-+{
-+       return 0;
-+}
-+EXPORT_SYMBOL(dma_map_page);
-+
-+void dma_unmap_page(struct device *dev, dma_addr_t dma_address, size_t 
-size,
-+       enum dma_data_direction direction)
-+{}
-+EXPORT_SYMBOL(dma_unmap_page);
-+
-+void dma_unmap_sg(struct device *dev, struct scatterlist *sg, int 
-nhwentries,
-+       enum dma_data_direction direction)
-+{}
-+EXPORT_SYMBOL(dma_unmap_sg);
-+
-+void dma_sync_single_for_cpu(struct device *dev, dma_addr_t dma_handle,
-+       size_t size, enum dma_data_direction direction)
-+{}
-+EXPORT_SYMBOL(dma_sync_single_for_cpu);
-+
-+void dma_sync_single_for_device(struct device *dev, dma_addr_t 
-dma_handle,
-+       size_t size, enum dma_data_direction direction)
-+{}
-+EXPORT_SYMBOL(dma_sync_single_for_device);
-+
-+void dma_sync_single_range_for_cpu(struct device *dev, dma_addr_t 
-dma_handle,
-+       unsigned long offset, size_t size, enum dma_data_direction 
-direction)
-+{}
-+EXPORT_SYMBOL(dma_sync_single_range_for_cpu);
-+
-+void dma_sync_single_range_for_device(struct device *dev, dma_addr_t 
-dma_handle,
-+       unsigned long offset, size_t size, enum dma_data_direction 
-direction)
-+{}
-+EXPORT_SYMBOL(dma_sync_single_range_for_device);
-+
-+void dma_sync_sg_for_cpu(struct device *dev, struct scatterlist *sg, int 
-nelems,
-+       enum dma_data_direction direction)
-+{}
-+EXPORT_SYMBOL(dma_sync_sg_for_cpu);
-+
-+void dma_sync_sg_for_device(struct device *dev, struct scatterlist *sg, 
-int nelems,
-+       enum dma_data_direction direction)
-+{}
-+EXPORT_SYMBOL(dma_sync_sg_for_device);
-+
-+int dma_mapping_error(struct device *dev, dma_addr_t dma_addr)
-+{
-+       return 0;
-+}
-+EXPORT_SYMBOL(dma_mapping_error);
-+
-+int dma_supported(struct device *dev, u64 mask)
-+{
-+       return 0;
-+}
-+EXPORT_SYMBOL(dma_supported);
-+
-+int dma_is_consistent(struct device *dev, dma_addr_t dma_addr)
-+{
-+       return 0;
-+}
-+EXPORT_SYMBOL(dma_is_consistent);
-+
-+void dma_cache_sync(struct device *dev, void *vaddr, size_t size,
-+       enum dma_data_direction direction)
-+{}
-+EXPORT_SYMBOL(dma_cache_sync);
-diff -uprN -x linux-2.6-git.ori/Documentation/dontdiff 
-linux-2.6-git.ori/arch/score/mm/extable.c 
-linux-2.6-git.new/arch/score/mm/extable.c
---- linux-2.6-git.ori/arch/score/mm/extable.c   1970-01-01 
-08:00:00.000000000 +0800
-+++ linux-2.6-git.new/arch/score/mm/extable.c   2009-03-23 
-14:27:37.000000000 +0800
-@@ -0,0 +1,41 @@
 +/*
-+ * arch/score/mm/extable.c
++ * Remap an arbitrary physical address space into the kernel virtual
++ * address space. Needed when the kernel wants to access high addresses
++ * directly.
 + *
-+ * Score Processor version.
-+ *
-+ * Copyright (C) 2009 Sunplus Core Technology Co., Ltd.
-+ *  Lennox Wu <lennox.wu@sunplusct.com>
-+ *  Chen Liqin <liqin.chen@sunplusct.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, see the file COPYING, or write
-+ * to the Free Software Foundation, Inc.,
-+ * 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
++ * NOTE! We need to allow non-page-aligned mappings too: we will 
+obviously
++ * have to convert them into an offset in a page-aligned mapping, but the
++ * caller shouldn't need to know that small detail.
 + */
-+
-+#include <linux/module.h>
-+#include <linux/spinlock.h>
-+#include <asm/uaccess.h>
-+#include <asm/ptrace.h>
-+
-+int fixup_exception(struct pt_regs *regs)
++void __iomem *__ioremap(phys_t phys_addr, phys_t size, unsigned long 
+flags)
 +{
-+       const struct exception_table_entry *fixup;
-+
-+       fixup = search_exception_tables(regs->cp0_epc);
-+       if (fixup) {
-+               regs->cp0_epc = fixup->nextinsn;
-+               return 1;
-+       }
-+       return 0;
-+}
-diff -uprN -x linux-2.6-git.ori/Documentation/dontdiff 
-linux-2.6-git.ori/arch/score/mm/fault.c 
-linux-2.6-git.new/arch/score/mm/fault.c
---- linux-2.6-git.ori/arch/score/mm/fault.c     1970-01-01 
-08:00:00.000000000 +0800
-+++ linux-2.6-git.new/arch/score/mm/fault.c     2009-03-23 
-18:03:47.000000000 +0800
-@@ -0,0 +1,240 @@
-+/*
-+ * arch/score/mm/fault.c
-+ *
-+ * Score Processor version.
-+ *
-+ * Copyright (C) 2009 Sunplus Core Technology Co., Ltd.
-+ *  Lennox Wu <lennox.wu@sunplusct.com>
-+ *  Chen Liqin <liqin.chen@sunplusct.com>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, see the file COPYING, or write
-+ * to the Free Software Foundation, Inc.,
-+ * 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-+ */
-+
-+#include <linux/signal.h>
-+#include <linux/sched.h>
-+#include <linux/interrupt.h>
-+#include <linux/kernel.h>
-+#include <linux/errno.h>
-+#include <linux/string.h>
-+#include <linux/types.h>
-+#include <linux/ptrace.h>
-+#include <linux/mman.h>
-+#include <linux/mm.h>
-+#include <linux/vt_kern.h>             /* For unblank_screen() */
-+#include <linux/module.h>
-+#include <asm/system.h>
-+#include <asm/uaccess.h>
-+#include <asm/ptrace.h>
-+
-+extern unsigned long pgd_current;
-+/*
-+ * This routine handles page faults.  It determines the address,
-+ * and the problem, and then passes it off to one of the appropriate
-+ * routines.
-+ */
-+asmlinkage void do_page_fault(struct pt_regs *regs, unsigned long write,
-+                               unsigned long address)
-+{
-+       struct vm_area_struct *vma = NULL;
-+       struct task_struct *tsk = current;
-+       struct mm_struct *mm = tsk->mm;
-+       const int field = sizeof(unsigned long) * 2;
-+       siginfo_t info;
-+       int fault;
-+
-+       info.si_code = SEGV_MAPERR;
-+
-+       /*
-+       * We fault-in kernel-space virtual memory on-demand. The
-+       * 'reference' page table is init_mm.pgd.
-+       *
-+       * NOTE! We MUST NOT take any locks for this case. We may
-+       * be in an interrupt or a critical region, and should
-+       * only copy the information from the master page table,
-+       * nothing more.
-+       */
-+       if (unlikely(address >= VMALLOC_START && address <= VMALLOC_END))
-+               goto vmalloc_fault;
-+#ifdef MODULE_START
-+       if (unlikely(address >= MODULE_START && address < MODULE_END))
-+               goto vmalloc_fault;
-+#endif
-+
-+       /*
-+       * If we're in an interrupt or have no user
-+       * context, we must not take the fault..
-+       */
-+       if (in_atomic() || !mm)
-+               goto bad_area_nosemaphore;
-+
-+       down_read(&mm->mmap_sem);
-+       vma = find_vma(mm, address);
-+       if (!vma)
-+               goto bad_area;
-+       if (vma->vm_start <= address)
-+               goto good_area;
-+       if (!(vma->vm_flags & VM_GROWSDOWN))
-+               goto bad_area;
-+       if (expand_stack(vma, address))
-+               goto bad_area;
-+       /*
-+       * Ok, we have a good vm_area for this memory access, so
-+       * we can handle it..
-+        */
-+good_area:
-+       info.si_code = SEGV_ACCERR;
-+
-+       if (write) {
-+               if (!(vma->vm_flags & VM_WRITE))
-+                       goto bad_area;
-+       } else {
-+               if (!(vma->vm_flags & (VM_READ | VM_WRITE | VM_EXEC)))
-+                       goto bad_area;
-+       }
-+
-+survive:
-+       /*
-+       * If for any reason at all we couldn't handle the fault,
-+       * make sure we exit gracefully rather than endlessly redo
-+       * the fault.
-+       */
-+       fault = handle_mm_fault(mm, vma, address, write);
-+       if (unlikely(fault & VM_FAULT_ERROR)) {
-+               if (fault & VM_FAULT_OOM)
-+                       goto out_of_memory;
-+               else if (fault & VM_FAULT_SIGBUS)
-+                       goto do_sigbus;
-+               BUG();
-+       }
-+       if (fault & VM_FAULT_MAJOR)
-+               tsk->maj_flt++;
++       if ((phys_addr > PHY_IO_BASE) &&
++           (phys_addr < (PHY_IO_BASE + IO_SPACE_SIZE)))
++               return (void *) (VIRTUAL_IO_BASE + phys_addr - 
+PHY_IO_BASE);
 +       else
-+               tsk->min_flt++;
-+
-+       up_read(&mm->mmap_sem);
-+       return;
-+
-+       /*
-+       * Something tried to access memory that isn't in our memory map..
-+       * Fix it, but check if it's kernel or user first..
-+        */
-+bad_area:
-+       up_read(&mm->mmap_sem);
-+
-+bad_area_nosemaphore:
-+       /* User mode accesses just cause a SIGSEGV */
-+       if (user_mode(regs)) {
-+               tsk->thread.cp0_badvaddr = address;
-+               tsk->thread.error_code = write;
-+               info.si_signo = SIGSEGV;
-+               info.si_errno = 0;
-+               /* info.si_code has been set above */
-+               info.si_addr = (void __user *) address;
-+               force_sig_info(SIGSEGV, &info, tsk);
-+               return;
-+       }
-+
-+no_context:
-+       /* Are we prepared to handle this kernel fault? */
-+       if (fixup_exception(regs)) {
-+               current->thread.cp0_baduaddr = address;
-+               return;
-+       }
-+
-+       /*
-+       * Oops. The kernel tried to access some bad page. We'll have to
-+       * terminate things with extreme prejudice.
-+       */
-+       bust_spinlocks(1);
-+
-+       printk(KERN_ALERT "CPU %d Unable to handle kernel paging request 
-at "
-+                       "virtual address %0*lx, epc == %0*lx, ra == 
-%0*lx\n",
-+                       0, field, address, field, regs->cp0_epc,
-+                       field, regs->regs[3]);
-+       die("Oops", regs);
-+
-+       /*
-+       * We ran out of memory, or some other thing happened to us that 
-made
-+       * us unable to handle the page fault gracefully.
-+       */
-+out_of_memory:
-+       up_read(&mm->mmap_sem);
-+       if (is_global_init(tsk)) {
-+               yield();
-+               down_read(&mm->mmap_sem);
-+               goto survive;
-+       }
-+       printk("VM: killing process %s\n", tsk->comm);
-+       if (user_mode(regs))
-+               do_group_exit(SIGKILL);
-+       goto no_context;
-+
-+do_sigbus:
-+       up_read(&mm->mmap_sem);
-+       /* Kernel mode? Handle exceptions or die */
-+       if (!user_mode(regs))
-+               goto no_context;
-+       else
-+       /*
-+       * Send a sigbus, regardless of whether we were in kernel
-+       * or user mode.
-+       */
-+       tsk->thread.cp0_badvaddr = address;
-+       info.si_signo = SIGBUS;
-+       info.si_errno = 0;
-+       info.si_code = BUS_ADRERR;
-+       info.si_addr = (void __user *) address;
-+       force_sig_info(SIGBUS, &info, tsk);
-+       return;
-+vmalloc_fault:
-+       {
-+               /*
-+               * Synchronize this task's top level page-table
-+               * with the 'reference' page table.
-+               *
-+               * Do _not_ use "tsk" here. We might be inside
-+               * an interrupt in the middle of a task switch..
-+               */
-+               int offset = __pgd_offset(address);
-+               pgd_t *pgd, *pgd_k;
-+               pud_t *pud, *pud_k;
-+               pmd_t *pmd, *pmd_k;
-+               pte_t *pte_k;
-+
-+               pgd = (pgd_t *) pgd_current + offset;
-+               pgd_k = init_mm.pgd + offset;
-+
-+               if (!pgd_present(*pgd_k))
-+                       goto no_context;
-+               set_pgd(pgd, *pgd_k);
-+
-+               pud = pud_offset(pgd, address);
-+               pud_k = pud_offset(pgd_k, address);
-+               if (!pud_present(*pud_k))
-+                       goto no_context;
-+
-+               pmd = pmd_offset(pud, address);
-+               pmd_k = pmd_offset(pud_k, address);
-+               if (!pmd_present(*pmd_k))
-+                       goto no_context;
-+               set_pmd(pmd, *pmd_k);
-+
-+               pte_k = pte_offset_kernel(pmd_k, address);
-+               if (!pte_present(*pte_k))
-+                       goto no_context;
-+               return;
-+       }
++               return NULL;
 +}
++EXPORT_SYMBOL(__ioremap);
++
++void __iounmap(const volatile void __iomem *addr)
++{
++       return;
++}
++EXPORT_SYMBOL(__iounmap);
 diff -uprN -x linux-2.6-git.ori/Documentation/dontdiff 
-linux-2.6-git.ori/arch/score/mm/init.c 
-linux-2.6-git.new/arch/score/mm/init.c
---- linux-2.6-git.ori/arch/score/mm/init.c      1970-01-01 
+linux-2.6-git.ori/arch/score/mm/Makefile 
+linux-2.6-git.new/arch/score/mm/Makefile
+--- linux-2.6-git.ori/arch/score/mm/Makefile    1970-01-01 
 08:00:00.000000000 +0800
-+++ linux-2.6-git.new/arch/score/mm/init.c      2009-03-23 
-14:30:53.000000000 +0800
-@@ -0,0 +1,176 @@
++++ linux-2.6-git.new/arch/score/mm/Makefile    2009-03-24 
+08:59:19.000000000 +0800
+@@ -0,0 +1,10 @@
++#
++# Makefile for the Linux/SCORE-specific parts of the memory manager.
++#
++
++obj-y  += cache.o dma-default.o extable.o fault.o init.o \
++           tlb-miss.o tlb-score.o ioremap.o pgtable.o
++
++obj-$(CONFIG_HIGHMEM)  += highmem.o
++
++EXTRA_CFLAGS +=
+diff -uprN -x linux-2.6-git.ori/Documentation/dontdiff 
+linux-2.6-git.ori/arch/score/mm/pgtable.c 
+linux-2.6-git.new/arch/score/mm/pgtable.c
+--- linux-2.6-git.ori/arch/score/mm/pgtable.c   1970-01-01 
+08:00:00.000000000 +0800
++++ linux-2.6-git.new/arch/score/mm/pgtable.c   2009-03-23 
+14:31:51.000000000 +0800
+@@ -0,0 +1,61 @@
 +/*
-+ * arch/score/mm/init.c
++ * arch/score/mm/pgtable-32.c
 + *
 + * Score Processor version.
 + *
@@ -1322,166 +149,1336 @@ linux-2.6-git.new/arch/score/mm/init.c
 + */
 +
 +#include <linux/init.h>
-+#include <linux/sched.h>
-+#include <linux/kernel.h>
-+#include <linux/errno.h>
-+#include <linux/pagemap.h>
-+#include <linux/mman.h>
 +#include <linux/mm.h>
 +#include <linux/bootmem.h>
-+#include <linux/proc_fs.h>
-+#include <linux/pfn.h>
-+
-+#include <asm/asm-offsets.h>
-+#include <asm/sections.h>
++#include <asm/fixmap.h>
 +#include <asm/pgtable.h>
-+#include <asm/tlb.h>
 +
-+DEFINE_PER_CPU(struct mmu_gather, mmu_gathers);
++void pgd_init(unsigned long page)
++{
++       unsigned long *p = (unsigned long *) page;
++       int i;
++
++       for (i = 0; i < USER_PTRS_PER_PGD; i += 8) {
++               p[i + 0] = (unsigned long) invalid_pte_table;
++               p[i + 1] = (unsigned long) invalid_pte_table;
++               p[i + 2] = (unsigned long) invalid_pte_table;
++               p[i + 3] = (unsigned long) invalid_pte_table;
++               p[i + 4] = (unsigned long) invalid_pte_table;
++               p[i + 5] = (unsigned long) invalid_pte_table;
++               p[i + 6] = (unsigned long) invalid_pte_table;
++               p[i + 7] = (unsigned long) invalid_pte_table;
++       }
++}
++
++void __init pagetable_init(void)
++{
++       unsigned long vaddr;
++       pgd_t *pgd_base;
++
++       /* Initialize the entire pgd. */
++       pgd_init((unsigned long) swapper_pg_dir);
++       pgd_init((unsigned long) swapper_pg_dir
++               + sizeof(pgd_t) * USER_PTRS_PER_PGD);
++
++       pgd_base = swapper_pg_dir;
++       vaddr = __fix_to_virt(__end_of_fixed_addresses - 1) & PMD_MASK;
++}
+diff -uprN -x linux-2.6-git.ori/Documentation/dontdiff 
+linux-2.6-git.ori/arch/score/mm/tlb-miss.S 
+linux-2.6-git.new/arch/score/mm/tlb-miss.S
+--- linux-2.6-git.ori/arch/score/mm/tlb-miss.S  1970-01-01 
+08:00:00.000000000 +0800
++++ linux-2.6-git.new/arch/score/mm/tlb-miss.S  2009-03-23 
+17:30:15.000000000 +0800
+@@ -0,0 +1,205 @@
++/*
++ * arch/score/mm/tlbex.S
++ *
++ * Score Processor version.
++ *
++ * Copyright (C) 2009 Sunplus Core Technology Co., Ltd.
++ *  Lennox Wu <lennox.wu@sunplusct.com>
++ *  Chen Liqin <liqin.chen@sunplusct.com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, see the file COPYING, or write
++ * to the Free Software Foundation, Inc.,
++ * 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
++ */
++
++#include <asm/scoreregs.h>
++#include <asm/page.h>
++#include <asm/pgtable-bits.h>
++#include <asm/asm.h>
 +
 +/*
-+ * We have up to 8 empty zeroed pages so we can map one of the right 
-colour
-+ * when needed.
++* After this macro runs, the pte faulted on is
++* in register PTE, a ptr into the table in which
++* the pte belongs is in PTR.
++*/
++       .macro  load_pte, pte, ptr
++       la      \ptr, pgd_current
++       lw      \ptr, [\ptr, 0]
++       mfcr    \pte, cr6
++       srli    \pte, \pte, 22
++       slli    \pte, \pte, 2
++       add     \ptr, \ptr, \pte
++       lw      \ptr, [\ptr, 0]
++       mfcr    \pte, cr6
++       srli    \pte, \pte, 10
++       andi    \pte, 0xffc
++       add     \ptr, \ptr, \pte
++       lw      \pte, [\ptr, 0]
++       .endm
++
++       .macro  pte_reload, ptr
++       lw      \ptr, [\ptr, 0]
++       mtcr    \ptr, cr12
++       nop
++       nop
++       nop
++       nop
++       nop
++       .endm
++
++       .macro do_fault, write
++       SAVE_ALL
++       mfcr    r6, cr6
++       mv      r4, r0
++       ldi     r5, \write
++       la      r8, do_page_fault
++       brl     r8
++       j       ret_from_exception
++       .endm
++
++       .macro  pte_writable, pte, ptr, label
++       andi    \pte, 0x280
++       cmpi.c  \pte, 0x280
++       bne     \label
++       lw      \pte, [\ptr, 0]         /*reload PTE*/
++       .endm
++
++/*
++ * Make PTE writable, update software status bits as well,
++ * then store at PTR.
 + */
-+unsigned long empty_zero_page, zero_page_mask;
-+EXPORT_SYMBOL_GPL(empty_zero_page);
-+static struct kcore_list kcore_mem, kcore_vmalloc;
++       .macro  pte_makewrite, pte, ptr
++       ori     \pte, 0x426
++       sw      \pte, [\ptr, 0]
++       .endm
 +
-+unsigned long setup_zero_pages(void)
++       .text
++       .globl  score7_FTLB_refill_Handler
++score7_FTLB_refill_Handler:
++       la      r31, pgd_current        /* get pgd pointer */
++       lw      r31, [r31, 0]           /* get the address of PGD */
++       mfcr    r30, cr6
++       srli    r30, r30, 22            /* PGDIR_SHIFT = 22*/
++       slli    r30, r30, 2 
++       add     r31, r31, r30 
++       lw      r31, [r31, 0]           /* get the address of the start 
+address of PTE table */
++
++       mfcr    r30, cr9
++       andi    r30, 0xfff              /* equivalent to get PET index and 
+right shift 2 bits */
++       add     r31, r31, r30 
++       lw      r30, [r31, 0]           /* load pte entry */
++       mtcr    r30, cr12
++       nop
++       nop
++       nop
++       nop
++       nop
++       mtrtlb
++       nop
++       nop
++       nop
++       nop
++       nop
++       rte                             /* 6 cycles to make sure tlb entry 
+works */
++
++       .globl  score7_KSEG_refill_Handler
++score7_KSEG_refill_Handler:
++       la      r31, pgd_current        /* get pgd pointer */
++       lw      r31, [r31, 0]           /* get the address of PGD */
++       mfcr    r30, cr6
++       srli    r30, r30, 22            /* PGDIR_SHIFT = 22 */
++       slli    r30, r30, 2 
++       add     r31, r31, r30 
++       lw      r31, [r31, 0]           /* get the address of the start 
+address of PTE table */
++
++       mfcr    r30, cr6                /* get Bad VPN */
++       srli    r30, r30, 10
++       andi    r30, 0xffc              /* PTE VPN mask (bit 11~2) */
++ 
++       add     r31, r31, r30
++       lw      r30, [r31, 0]           /* load pte entry */
++       mtcr    r30, cr12
++       nop
++       nop
++       nop
++       nop
++       nop
++       mtrtlb
++       nop
++       nop
++       nop
++       nop
++       nop
++       rte                             /* 6 cycles to make sure tlb entry 
+works */
++
++nopage_tlbl:
++       do_fault        0               /* Read */
++
++       .globl  handle_tlb_refill
++handle_tlb_refill:
++       load_pte        r30, r31
++       pte_writable    r30, r31, handle_tlb_refill_nopage
++       pte_makewrite   r30, r31        /* Access|Modify|Dirty|Valid */
++       pte_reload      r31
++       mtrtlb
++       nop
++       nop
++       nop
++       nop
++       nop
++       rte
++handle_tlb_refill_nopage:
++       do_fault        0               /* Read */
++
++       .globl  handle_tlb_invaild
++handle_tlb_invaild:
++       load_pte        r30, r31
++       stlb                            /* find faulting entry */
++       pte_writable    r30, r31, handle_tlb_invaild_nopage
++       pte_makewrite   r30, r31        /* Access|Modify|Dirty|Valid */
++       pte_reload      r31
++       mtptlb
++       nop
++       nop
++       nop
++       nop
++       nop
++       rte
++handle_tlb_invaild_nopage:
++       do_fault        0               /* Read */
++
++       .globl  handle_mod
++handle_mod:
++       load_pte        r30, r31
++       stlb                            /* find faulting entry */
++       andi    r30, _PAGE_WRITE        /* Writable? */
++       cmpz.c  r30
++       beq     nowrite_mod
++       lw      r30, [r31, 0]           /* reload into r30 */
++
++       /* Present and writable bits set, set accessed and dirty bits. */
++       pte_makewrite   r30, r31
++
++       /* Now reload the entry into the tlb. */
++       pte_reload      r31
++       mtptlb
++       nop
++       nop
++       nop
++       nop
++       nop
++       rte
++
++nowrite_mod:
++       do_fault        1       /* Write */
+diff -uprN -x linux-2.6-git.ori/Documentation/dontdiff 
+linux-2.6-git.ori/arch/score/mm/tlb-score.c 
+linux-2.6-git.new/arch/score/mm/tlb-score.c
+--- linux-2.6-git.ori/arch/score/mm/tlb-score.c 1970-01-01 
+08:00:00.000000000 +0800
++++ linux-2.6-git.new/arch/score/mm/tlb-score.c 2009-03-23 
+14:33:28.000000000 +0800
+@@ -0,0 +1,250 @@
++/*
++ * arch/score/mm/tlb-score.c
++ *
++ * Score Processor version.
++ *
++ * Copyright (C) 2009 Sunplus Core Technology Co., Ltd.
++ *  Lennox Wu <lennox.wu@sunplusct.com>
++ *  Chen Liqin <liqin.chen@sunplusct.com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, see the file COPYING, or write
++ * to the Free Software Foundation, Inc.,
++ * 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
++ */
++
++#include <linux/module.h>
++
++#include <asm/mmu_context.h>
++#include <asm/pgtable.h>
++#include <asm/irq.h>
++
++#define TLBSIZE 32
++
++unsigned long asid_cache=ASID_FIRST_VERSION;
++EXPORT_SYMBOL(asid_cache);
++
++void local_flush_tlb_all(void)
 +{
-+       unsigned int order = 0;
-+       unsigned long size;
-+       struct page *page;
++       unsigned long flags;
++       unsigned long old_ASID;
++       int entry;
 +
-+       empty_zero_page = __get_free_pages(GFP_KERNEL | __GFP_ZERO, 
-order);
-+       if (!empty_zero_page)
-+               panic("Oh boy, that early out of memory?");
++       local_irq_save(flags);
++       old_ASID = (get_PEVN() & ASID_MASK);
++       set_PECTX(0);                   /* invalid */
++       entry = get_TLBLOCK();          /* skip locked entries*/
 +
-+       page = virt_to_page((void *) empty_zero_page);
-+       split_page(page, order);
-+       while (page < virt_to_page((void *) (empty_zero_page +
-+                                            (PAGE_SIZE << order)))) {
-+               SetPageReserved(page);
-+               page++;
++       for (; entry < TLBSIZE; entry++) {
++               set_TLBPT(entry);
++               set_PEVN(KSEG1);
++               barrier();
++               tlb_write_indexed();
 +       }
-+
-+       size = PAGE_SIZE << order;
-+       zero_page_mask = (size - 1) & PAGE_MASK;
-+
-+       return 1UL << order;
++       set_PEVN(old_ASID);
++       local_irq_restore(flags);
 +}
 +
-+#ifndef CONFIG_NEED_MULTIPLE_NODES
-+static int __init page_is_ram(unsigned long pagenr)
++/*
++ * If mm is currently active_mm, we can't really drop it. Instead,
++ * we will get a new one for it.
++ */
++static inline void
++drop_mmu_context(struct mm_struct *mm, unsigned cpu)
 +{
-+       if (pagenr >= min_low_pfn && pagenr < max_low_pfn)
-+               return 1;
-+       else
-+               return 0;
++       unsigned long flags;
++
++       local_irq_save(flags);
++       get_new_mmu_context(mm, 0);
++       set_PEVN(cpu_asid(0, mm));
++       local_irq_restore(flags);
 +}
 +
-+void __init paging_init(void)
++void local_flush_tlb_mm(struct mm_struct *mm)
 +{
-+       unsigned long max_zone_pfns[MAX_NR_ZONES];
-+       unsigned long lastpfn;
-+
-+       pagetable_init();
-+       max_zone_pfns[ZONE_NORMAL] = max_low_pfn;
-+       lastpfn = max_low_pfn;
-+       free_area_init_nodes(max_zone_pfns);
++       if (cpu_context(0, mm) != 0) {
++               drop_mmu_context(mm, 0);
++       }
 +}
 +
-+void __init mem_init(void)
++void local_flush_tlb_range(struct vm_area_struct *vma, unsigned long 
+start,
++       unsigned long end)
 +{
-+       unsigned long codesize, reservedpages, datasize, initsize;
-+       unsigned long tmp, ram;
++       struct mm_struct *mm = vma->vm_mm;
++       unsigned long vma_mm_context = mm->context[0];
++       if (mm->context != 0) {
++               unsigned long flags;
++               int size;
 +
-+       max_mapnr = max_low_pfn;
-+       high_memory = (void *) __va(max_low_pfn << PAGE_SHIFT);
-+       totalram_pages += free_all_bootmem();
-+       totalram_pages -= setup_zero_pages();   /* Setup zeroed pages. */
-+       reservedpages = ram = 0;
++               local_irq_save(flags);
++               size = (end - start + (PAGE_SIZE - 1)) >> PAGE_SHIFT;
++               if (size <= TLBSIZE) {
++                       int oldpid = (get_PEVN() & ASID_MASK);
++                       int newpid = vma_mm_context & ASID_MASK;
 +
-+       for (tmp = 0; tmp < max_low_pfn; tmp++)
-+               if (page_is_ram(tmp)) {
-+                       ram++;
-+                       if (PageReserved(pfn_to_page(tmp)))
-+                               reservedpages++;
++                       start &= PAGE_MASK;
++                       end += (PAGE_SIZE - 1);
++                       end &= PAGE_MASK;
++                       while (start < end) {
++                               int idx;
++
++                               set_PEVN(start | newpid);
++                               start += PAGE_SIZE;
++                               barrier();
++                               tlb_probe();
++                               idx = get_TLBPT();
++                               set_PECTX(0);
++                               set_PEVN(KSEG1);
++                               if (idx < 0)
++                                       continue;
++                               tlb_write_indexed();
++                       }
++                       set_PEVN(oldpid);
++               } else {
++                       /* Bigger than TLBSIZE, get new ASID directly */
++                       get_new_mmu_context(mm, 0);
++                       if (mm == current->active_mm)
++                               set_PEVN(vma_mm_context & ASID_MASK);
 +               }
-+
-+       num_physpages = ram;
-+       codesize = (unsigned long) &_etext - (unsigned long) &_text;
-+       datasize = (unsigned long) &_edata - (unsigned long) &_etext;
-+       initsize = (unsigned long) &__init_end - (unsigned long) 
-&__init_begin;
-+
-+       kclist_add(&kcore_mem, __va(0), max_low_pfn << PAGE_SHIFT);
-+       kclist_add(&kcore_vmalloc, (void *) VMALLOC_START,
-+                       VMALLOC_END - VMALLOC_START);
-+
-+       printk(KERN_INFO "Memory: %luk/%luk available (%ldk kernel code, "
-+                       "%ldk reserved, %ldk data, %ldk init, %ldk 
-highmem)\n",
-+                       (unsigned long) nr_free_pages() << 
-(PAGE_SHIFT-10),
-+                       ram << (PAGE_SHIFT-10), codesize >> 10,
-+                       reservedpages << (PAGE_SHIFT-10), datasize >> 10,
-+                       initsize >> 10,
-+                       (unsigned long) (totalhigh_pages << 
-(PAGE_SHIFT-10)));
-+}
-+#endif /* !CONFIG_NEED_MULTIPLE_NODES */
-+
-+void free_init_pages(const char *what, unsigned long begin, unsigned long 
-end)
-+{
-+       unsigned long pfn;
-+
-+       for (pfn = PFN_UP(begin); pfn < PFN_DOWN(end); pfn++) {
-+               struct page *page = pfn_to_page(pfn);
-+               void *addr = phys_to_virt(PFN_PHYS(pfn));
-+
-+               ClearPageReserved(page);
-+               init_page_count(page);
-+               memset(addr, POISON_FREE_INITMEM, PAGE_SIZE);
-+               __free_page(page);
-+               totalram_pages++;
++               local_irq_restore(flags);
 +       }
-+       printk(KERN_INFO "Freeing %s: %ldk freed\n", what, (end - begin) 
->> 10);
 +}
 +
-+#ifdef CONFIG_BLK_DEV_INITRD
-+void free_initrd_mem(unsigned long start, unsigned long end)
++void local_flush_tlb_kernel_range(unsigned long start, unsigned long end)
 +{
-+       free_init_pages("initrd memory",
-+       virt_to_phys((void *) start),
-+       virt_to_phys((void *) end));
++       unsigned long flags;
++       int size;
++
++       local_irq_save(flags);
++       size = (end - start + (PAGE_SIZE - 1)) >> PAGE_SHIFT;
++       if (size <= TLBSIZE) {
++               int pid = get_PEVN();
++
++               start &= PAGE_MASK;
++               end += PAGE_SIZE - 1;
++               end &= PAGE_MASK;
++
++               while (start < end) {
++                       long idx;
++
++                       set_PEVN(start);
++                       start += PAGE_SIZE;
++                       tlb_probe();
++                       idx = get_TLBPT();
++                       if (idx < 0)
++                               continue;
++                       set_PECTX(0);
++                       set_PEVN(KSEG1);
++                       barrier();
++                       tlb_write_indexed();
++               }
++               set_PEVN(pid);
++       } else {
++               local_flush_tlb_all();
++       }
++
++       local_irq_restore(flags);
++}
++
++void local_flush_tlb_page(struct vm_area_struct *vma, unsigned long page)
++{
++       if (!vma || vma->vm_mm->context != 0) {
++               unsigned long flags;
++               int oldpid, newpid, idx;
++               unsigned long vma_ASID=vma->vm_mm->context[0];
++
++               newpid = (vma_ASID & ASID_MASK);
++               page &= PAGE_MASK;
++               local_irq_save(flags);
++               oldpid = (get_PEVN() & ASID_MASK);
++               set_PEVN(page | newpid);
++               barrier();
++               tlb_probe();
++               idx = get_TLBPT();
++               set_PECTX(0);
++               set_PEVN(KSEG1);
++               if (idx < 0)            /* p_bit(31) - 1: miss, 0: hit*/
++                       goto finish;
++               barrier();
++               tlb_write_indexed();
++finish:
++               set_PEVN(oldpid);
++               local_irq_restore(flags);
++       }
++}
++
++/*
++ * This one is only used for pages with the global bit set so we don't 
+care
++ * much about the ASID.
++ */
++void local_flush_tlb_one(unsigned long page)
++{
++       unsigned long flags;
++       int oldpid, idx;
++
++       local_irq_save(flags);
++       oldpid = get_PEVN();
++       page &= (PAGE_MASK << 1);
++       set_PEVN(page);
++       barrier();
++       tlb_probe();
++       idx = get_TLBPT();
++       set_PECTX(0);
++       if (idx >= 0) {
++               /* Make sure all entries differ. */
++               set_PEVN(KSEG1);
++               barrier();
++               tlb_write_indexed();
++       }
++       set_PEVN(oldpid);
++       local_irq_restore(flags);
++}
++
++void __update_tlb(struct vm_area_struct *vma, unsigned long address, 
+pte_t pte)
++{
++       unsigned long flags;
++       int idx, pid;
++
++       /*
++        * Handle debugger faulting in for debugee.
++        */
++       if (current->active_mm != vma->vm_mm)
++               return;
++
++       pid = get_PEVN() & ASID_MASK;
++
++       local_irq_save(flags);
++       address &= PAGE_MASK;
++       set_PEVN(address | pid);
++       barrier();
++       tlb_probe();
++       idx = get_TLBPT();
++       set_PECTX(pte_val(pte));
++       set_PEVN(address | pid);
++       if (idx < 0)
++               tlb_write_random();
++       else
++               tlb_write_indexed();
++ 
++       set_PEVN(pid);
++       local_irq_restore(flags);
++}
++
++extern void score7_FTLB_refill_Handler(void);
++void __cpuinit tlb_init(void)
++{
++       set_TLBLOCK(0);
++       local_flush_tlb_all();
++       memcpy((void *)(EXCEPTION_VECTOR_BASE_ADDR + 0x100), 
+&score7_FTLB_refill_Handler, 0xFC);
++       flush_icache_range(EXCEPTION_VECTOR_BASE_ADDR + 0x100, 
+EXCEPTION_VECTOR_BASE_ADDR + 0x1FC);
++}
+diff -uprN -x linux-2.6-git.ori/Documentation/dontdiff 
+linux-2.6-git.ori/drivers/serial/Kconfig 
+linux-2.6-git.new/drivers/serial/Kconfig
+--- linux-2.6-git.ori/drivers/serial/Kconfig    2009-03-23 
+11:24:50.000000000 +0800
++++ linux-2.6-git.new/drivers/serial/Kconfig    2009-03-23 
+17:32:43.000000000 +0800
+@@ -1412,4 +1412,31 @@ config SPORT_BAUD_RATE
+        default 19200 if (SERIAL_SPORT_BAUD_RATE_19200)
+        default 9600 if (SERIAL_SPORT_BAUD_RATE_9600)
+ 
++config SERIAL_SCT
++       tristate "SunplusCT compatible serial support"
++       depends on (SCORE)
++       select SERIAL_CORE
++       ---help---
++         Most people will say Y or M here, so that they can use serial 
+mice,
++         modems and similar devices connecting to the standard serial 
+ports.
++
++config SERIAL_SCT_CONSOLE
++       bool "Console on SunplusCT compatible serial port"
++       depends on (SERIAL_SCT)
++       select SERIAL_CORE_CONSOLE
++       ---help---
++         If you don't have a VGA card installed and you say Y here, the
++         kernel will automatically use the first serial line, /dev/ttyS0, 
+as
++         system console.
++
++         You can set that using a kernel command line option such as
++         "console=sct_uart,"
++         "console=uart,"
++         and it will switch to normal serial console when the 
+corresponding
++         port is ready.
++         "earlycon=sct_uart,"
++         "earlycon=uart,"
++         it will not only setup early console.
++
++         If unsure, say N.
+ endmenu
+diff -uprN -x linux-2.6-git.ori/Documentation/dontdiff 
+linux-2.6-git.ori/drivers/serial/Makefile 
+linux-2.6-git.new/drivers/serial/Makefile
+--- linux-2.6-git.ori/drivers/serial/Makefile   2009-03-23 
+11:24:50.000000000 +0800
++++ linux-2.6-git.new/drivers/serial/Makefile   2009-03-23 
+16:08:57.000000000 +0800
+@@ -76,3 +76,4 @@ obj-$(CONFIG_SERIAL_OF_PLATFORM_NWPSERIA
+ obj-$(CONFIG_SERIAL_KS8695) += serial_ks8695.o
+ obj-$(CONFIG_KGDB_SERIAL_CONSOLE) += kgdboc.o
+ obj-$(CONFIG_SERIAL_QE) += ucc_uart.o
++obj-$(CONFIG_SERIAL_SCT) += sct_serial.o
+diff -uprN -x linux-2.6-git.ori/Documentation/dontdiff 
+linux-2.6-git.ori/drivers/serial/sct_serial.c 
+linux-2.6-git.new/drivers/serial/sct_serial.c
+--- linux-2.6-git.ori/drivers/serial/sct_serial.c       1970-01-01 
+08:00:00.000000000 +0800
++++ linux-2.6-git.new/drivers/serial/sct_serial.c       2009-03-23 
+16:36:35.000000000 +0800
+@@ -0,0 +1,546 @@
++/*
++ * File: linux/drivers/serial/sct_serial.c
++ *
++ * Based on: linux/drivers/serial/8250.c
++ * Author: Chang Yu-ming
++ *
++ * Created: Nov 29, 2008
++ * Copyright:   (C) Sunplus Core Technology Co., Ltd.
++ * Description: Driver for SunplusCT  Serial ports.
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, see the file COPYING, or write
++ * to the Free Software Foundation, Inc.,
++ * 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
++ */
++
++/*
++ *  Currently don't support modem line status...
++ *  maybe the only 1 need to be care is CTS,
++ *  DCD.DSR seems not too important
++ */
++
++#include <linux/init.h>
++#include <linux/module.h>
++#ifdef CONFIG_SERIAL_SCT_CONSOLE
++#include <linux/console.h>
++#endif
++#include <linux/platform_device.h>
++#include <linux/tty.h>
++#include <linux/tty_flip.h>
++#include <linux/serial.h>
++#include <linux/serial_core.h>
++#include <asm/irq.h>
++#include <asm/irq.h>
++
++#include "sct_serial.h"
++
++
++/* DEBUG macro*/
++/*
++#define DEBUG_MESSAGE  0
++#if DEBUG_MESSAGE == 1
++#define DEBUG(args...) printk(args)
++#else
++#define DEBUG(args...)
++#endif
++*/
++
++#ifdef CONFIG_SCORE_SIM
++static void send_char(char c)
++{
++       riteb(c, UART_THR);
++       f (c == '\n')
++               writeb('\r', UART_THR);
 +}
 +#endif
 +
-+void __init_refok free_initmem(void)
++/* send a character to an UART */
++static void
++sct_uart_putc(struct uart_port *port, unsigned char c)
 +{
-+       free_init_pages("unused kernel memory",
-+       __pa_symbol(&__init_begin),
-+       __pa_symbol(&__init_end));
++#ifdef CONFIG_SCORE_SIM
++       send_char(c);
++#else
++       unsigned int base = port->mapbase;
++
++       /* wait until not busy */
++       while (readw(UART_ST(base)) & UART_ST_BY);
++       writeb(c, UART_DR(base));
++
++       if (c == '\n') {
++               while(readw(UART_ST(base)) & UART_ST_BY);
++               writeb('\r', UART_DR(base));
++       }
++#endif
 +}
 +
-+unsigned long pgd_current;
++/* get a character from an UART */
++static unsigned char
++sct_uart_getc(struct uart_port *port)
++{
++       unsigned int base = port->mapbase;
 +
-+#define __page_aligned(order) 
-__attribute__((__aligned__(PAGE_SIZE<<order)))
++#ifdef CONFIG_SCORE_SIM
++       return readb(UART_RBR);
++#else
++       /* wait until receive FIFO is not empty */
++       while(readw(UART_ST(base)) & UART_ST_RE);
++       return readb(UART_DR(base));
++#endif
++}
++
++/* Receive interrupt handler */
++static irqreturn_t
++sct_uart_rxint(int irq, void *dev_id)
++{
++       struct uart_port *port = (struct uart_port *) dev_id;
++       struct tty_struct *tty = port->info->port.tty;
++       unsigned int data, status, base = port->mapbase;
++
++#ifdef CONFIG_SCORE_SIM
++       if (readw(UART_LSR) & 1) {
++               data = readb(UART_RBR);
++               tty_insert_flip_char(tty, data, 0);
++       }
++#else
++       do {
++               data = sct_uart_getc(port);
++               status = readw(UART_ERR(base)) & 0xf;
++               switch (status) {
++               case UART_ERR_OE:
++                       status = TTY_OVERRUN;
++                       break;
++               case UART_ERR_BE:
++                       status = TTY_BREAK;
++                       break;
++               case UART_ERR_PE:
++                       status = TTY_PARITY;
++                       break;
++               case UART_ERR_FE:
++                       status = TTY_FRAME;
++                       break;
++               default:
++                       status = 0;
++               }
++
++               tty_insert_flip_char(tty, data, status);
++       } while (!(readw(UART_ST(base)) & UART_ST_RE));
++#endif
++       tty_flip_buffer_push(tty);
++       return IRQ_HANDLED;
++}
 +
 +/*
-+ * gcc 3.3 and older have trouble determining that PTRS_PER_PGD and 
-PGD_ORDER
-+ * are constants.  So we use the variants from asm-offset.h until that 
-gcc
-+ * will officially be retired.
++ * Claim the memory region attached to a UART port.
++ * Called when the driver adds an UART port via
++ * uart_add_one_port().
 + */
-+pgd_t swapper_pg_dir[_PTRS_PER_PGD] __page_aligned(_PGD_ORDER);
-+pte_t invalid_pte_table[PTRS_PER_PTE] __page_aligned(PTE_ORDER);
++static int
++sct_uart_request_port(struct uart_port *port)
++{
++       if (!request_mem_region(port->mapbase, UART_REGISTER_SPACE, 
+"sct_uart"))
++               return -EBUSY;
++
++       return 0;
++}
++
++/*
++ * Release the memory region attached to a UART port.
++ * Called when the driver removes an UART port via
++ * uart_remove_one_port().
++ */
++static void
++sct_uart_release_port(struct uart_port *port)
++{
++       release_mem_region(port->mapbase, UART_REGISTER_SPACE);
++}
++
++/*
++ * Configure a UART port.
++ * Called when the driver adds an UART port.
++ */
++static void
++sct_uart_config_port(struct uart_port *port, int flags)
++{
++       if (flags & UART_CONFIG_TYPE && sct_uart_request_port(port) == 0)
++               port->type = PORT_SCT;
++}
++
++/* Set port type */
++static const char*
++sct_uart_type(struct uart_port *port)
++{
++       return port->type == PORT_SCT ? "SCT_UART" : NULL;
++}
++
++/* Start transmitting bytes. */
++static void
++sct_uart_start_tx(struct uart_port *port)
++{
++       while (1) {
++               sct_uart_putc(port, 
+port->info->xmit.buf[port->info->xmit.tail]);
++               port->info->xmit.tail = (port->info->xmit.tail + 1) &
++                                        (UART_XMIT_SIZE - 1);
++               port->icount.tx++;
++               if (uart_circ_empty(&port->info->xmit))
++                       break;
++       }
++}
++
++/* Initialize an UART port */
++static void
++sct_uart_init_port(unsigned int base, int early)
++{
++#ifndef CONFIG_SCORE_SIM
++       unsigned short val = 0;
++
++       /* Clear error and status register */
++       writew(0, UART_ERR(base));
++       writew(0, UART_ST(base));
++
++       /* Set UART baudrate to 1152000 */
++       writew(UART_BAUDRATE, UART_BUD(base));
++
++       /* Set UART Control Register. 8-N-1 */
++       val |= UART_CR_8BITS;   /* Word Length Definition=8 Bits */
++       val &= ~UART_CR_PEN;    /* Disable Party Check */
++       val &= ~UART_CR_SBSEL;  /* Stop-Bit Size Selection: 1 Stop Bit */
++
++       /* don't enable interrupts when init an early port */
++       if (!early) {
++               val |= UART_CR_RIE;     /* Enable receive interrupt */
++               val |= UART_CR_RT;      /* Enable receive timeout 
+interrupt */
++       }
++       val |= UART_CR_FEN;     /* Enable FIFO buffer */
++       val |= UART_CR_UEN;     /* Enable UART */
++       writew(val, UART_CR(base));
++#endif
++}
++
++/* Called when an application opens an UART */
++static int
++sct_uart_startup(struct uart_port *port)
++{
++       int retval = 0;
++
++       if ((retval = request_irq(port->irq, sct_uart_rxint, 0,
++                                 "sct_uart", (void *)port))) {
++               return retval;
++       }
++
++       sct_uart_init_port(port->mapbase, 0);
++       return retval;
++}
++
++/* Called when an application closes an UART*/
++static void
++sct_uart_shutdown(struct uart_port *port)
++{
++#ifndef CONFIG_SERIAL_SCT_CONSOLE
++       writew(0, UART_CR(port->mapbase));
++#endif
++       free_irq(port->irq, port);
++}
++
++static void
++sct_uart_set_mctrl(struct uart_port *port, unsigned int mctrl)
++{}
++
++static void
++sct_uart_set_termios(struct uart_port *port, struct ktermios *new,
++                       struct ktermios *old)
++{}
++
++static unsigned int sct_uart_tx_empty(struct uart_port *port)
++{
++       return (readw(UART_ST(port->mapbase)) & UART_ST_TE) ? TIOCSER_TEMT 
+: 0;
++}
++
++static void sct_uart_stop_rx(struct uart_port *port)
++{}
++
++static struct uart_ops sct_uart_ops = {
++       .tx_empty       = sct_uart_tx_empty,
++       .stop_rx        = sct_uart_stop_rx,
++       .start_tx       = sct_uart_start_tx,
++       .startup        = sct_uart_startup,
++       .shutdown       = sct_uart_shutdown,
++       .type           = sct_uart_type,
++       .config_port    = sct_uart_config_port,
++       .request_port   = sct_uart_request_port,
++       .release_port   = sct_uart_release_port,
++       .set_mctrl      = sct_uart_set_mctrl,
++       .set_termios    = sct_uart_set_termios,
++};
++
++#ifdef CONFIG_SERIAL_SCT_CONSOLE
++static struct console sct_uart_console;
++#endif
++static struct uart_driver sct_uart_reg = {
++       .owner          = THIS_MODULE,
++       .driver_name    = "sct_uart",
++       .dev_name       = "ttyS",
++       .major           = UART_MAJOR,
++       .minor          = UART_MINOR_START,
++       .nr             = UART_PORT_NR,
++#ifdef CONFIG_SERIAL_SCT_CONSOLE
++       .cons           = &sct_uart_console,
++#else
++       .cons           = NULL,
++#endif
++};
++
++static struct uart_port sct_uart_port[] = {
++       {
++#ifdef CONFIG_SCORE_SIM
++       .mapbase        = (unsigned int) UART_BASE,
++       .irq            = UART_IRQ,
++       .fifosize       = UART_FIFO_SIZE,
++#else
++       .mapbase        = (unsigned int) UART0_BASE,
++       .irq            = UART0_IRQ,
++       .fifosize       = UART0_FIFO_SIZE,
++#endif
++       .iotype         = UPIO_MEM,
++       .ops            = &sct_uart_ops,
++       .flags          = UPF_BOOT_AUTOCONF,
++       .line           = 0,
++       },
++};
++
++static int __init
++sct_uart_probe(struct platform_device *dev)
++{
++       uart_add_one_port(&sct_uart_reg, &sct_uart_port[dev->id]);
++       platform_set_drvdata(dev, &sct_uart_port[dev->id]);
++       return 0;
++}
++
++static int
++sct_uart_remove(struct platform_device *dev)
++{
++       platform_set_drvdata(dev, NULL);
++       uart_remove_one_port(&sct_uart_reg, &sct_uart_port[dev->id]);
++       return 0;
++}
++
++static int
++sct_uart_suspend(struct platform_device *dev, pm_message_t state)
++{
++       uart_suspend_port(&sct_uart_reg, &sct_uart_port[dev->id]);
++       return 0;
++}
++
++static int
++sct_uart_resume(struct platform_device *dev)
++{
++       uart_resume_port(&sct_uart_reg, &sct_uart_port[dev->id]);
++       return 0;
++}
++
++struct platform_device *sct_uart_plat_device0;
++
++static struct platform_driver sct_uart_driver = {
++       .probe          = sct_uart_probe,
++       .remove         = __exit_p(sct_uart_remove),
++       .suspend        = sct_uart_suspend,
++       .resume         = sct_uart_resume,
++       .driver         = {
++               .name   = "sct_uart",
++               .owner  = THIS_MODULE,
++       },
++};
++
++/* Driver module initialization */
++static int __init
++sct_uart_init(void)
++{
++       int retval;
++
++       if ((retval = uart_register_driver(&sct_uart_reg)))
++               return retval;
++
++       sct_uart_plat_device0 = 
+platform_device_register_simple("sct_uart",
++                                                                0, NULL, 
+0);
++       if (IS_ERR(sct_uart_plat_device0)) {
++               uart_unregister_driver(&sct_uart_reg);
++               return PTR_ERR(sct_uart_plat_device0);
++       }
++
++       if ((retval = platform_driver_register(&sct_uart_driver))) {
++               platform_device_unregister(sct_uart_plat_device0);
++               uart_unregister_driver(&sct_uart_reg);
++       }
++       return 0;
++}
++
++/* Driver module exit */
++static void __exit sct_uart_exit(void)
++{
++       platform_driver_unregister(&sct_uart_driver);
++       platform_device_unregister(sct_uart_plat_device0);
++       uart_unregister_driver(&sct_uart_reg);
++}
++
++module_init(sct_uart_init);
++module_exit(sct_uart_exit);
++MODULE_LICENSE("GPL");
++
++#ifdef CONFIG_SERIAL_SCT_CONSOLE
++asmlinkage void sct_uart_out(const char *s)
++{
++#ifdef CONFIG_SCORE_SIM
++       unsigned int i;
++
++       for (i = 0; *s != '\0'; i++, s++)
++               send_char(*s);
++#else
++       unsigned int i, base = UART0_BASE;
++       unsigned short val = 0;
++
++       if (readw(UART_CR(base)) == 0) {
++               /* Clear error and status register */
++               writew(0, UART_ERR(base));
++               writew(0, UART_ST(base));
++
++               /* Set UART Control Register. 8-N-1 */
++               val |= UART_CR_8BITS;   /* Word Length Definition=8 Bits 
+*/
++               val &= ~UART_CR_PEN;    /* Disable Party Check */
++               val &= ~UART_CR_SBSEL;  /* Stop-Bit Size Selection: 1 Stop 
+Bit */
++               val |= UART_CR_FEN;     /* Enable FIFO buffer */
++               val |= UART_CR_UEN;     /* Enable UART */
++               writew(val, UART_CR(base));
++       }
++
++       /* Set UART baudrate to 1152000 */
++       writew(UART_BAUDRATE, UART_BUD(base));
++
++       for (i = 0; *s != '\0'; i++, s++) {
++               /* wait until not busy */
++               while (readw(UART_ST(base)) & UART_ST_BY);
++               writeb(*s, UART_DR(base));
++
++               if (*s == '\n') {
++                       while(readw(UART_ST(base)) & UART_ST_BY);
++                       writeb('\r', UART_DR(base));
++               }
++       }
++#endif
++}
++
++static void
++sct_uart_console_write(struct console *con, const char *s, u_int count)
++{
++       int i;
++
++       for (i = 0; i < count; i++, s++)
++               sct_uart_putc(&sct_uart_port[con->index], *s);
++}
++
++static void __init
++sct_uart_console_get_options(struct uart_port *port, int *baud,
++                               int *parity, int *bits)
++{
++       *parity = 'n';
++       *bits = 8;
++       *baud = 115200;
++}
++
++static int __init
++sct_uart_console_setup(struct console *con, char *options)
++{
++       struct uart_port *port;
++       int baud, bits, parity, flow;
++
++       if (con->index == -1 || con->index >= UART_PORT_NR)
++               con->index = 0;
++
++       port = &sct_uart_port[con->index];
++
++       if (options)
++               uart_parse_options(options, &baud, &parity, &bits, &flow);
++       else
++               sct_uart_console_get_options(port, &baud, &parity, &bits);
++
++       return uart_set_options(port, con, baud, parity, bits, flow);
++}
++
++static int __init
++sct_uart_console_early_setup(void)
++{
++       return 0;
++}
++
++
++static struct console sct_uart_console = {
++       .name           = "ttyS",
++       .write          = sct_uart_console_write,
++       .device         = uart_console_device,
++       .setup          = sct_uart_console_setup,
++       .early_setup    = sct_uart_console_early_setup,
++       .flags          = CON_PRINTBUFFER,
++       .index          = -1,
++       .data           = &sct_uart_reg,
++};
++
++static struct console sct_early_uart_console __initdata = {
++       .name   = "uart",
++       .write  = sct_uart_console_write,
++       .flags  = CON_PRINTBUFFER | CON_BOOT,
++       .index  = -1,
++};
++
++/* init an uart console during init calls*/
++static int __init
++sct_uart_console_init(void)
++{
++#ifdef CONFIG_SCORE_SIM
++       sct_uart_init_port(UART_BASE, 0);
++#else
++       sct_uart_init_port(UART0_BASE, 0);
++#endif
++       register_console(&sct_uart_console);
++       return 0;
++}
++console_initcall(sct_uart_console_init);
++
++/*
++ * setup an early uart console when user
++ * specifies "earlycon" option.
++ */
++int __init
++setup_early_sct_uart_console(char *cmdline)
++{
++       char *options;
++
++       options = strstr(cmdline, "sct_uart,");
++
++       if (!options) {
++               options = strstr(cmdline, "uart,");
++               if (!options)
++                       return 0;
++       }
++
++#ifdef CONFIG_SCORE_SIM
++       sct_uart_init_port(UART_BASE, 1);
++#else
++       sct_uart_init_port(UART0_BASE, 1);
++#endif
++       register_console(&sct_early_uart_console);
++       return 0;
++}
++early_param("earlycon", setup_early_sct_uart_console);
++
++#endif /* CONFIG_SERIAL_SCT_CONSOLE */
++
+diff -uprN -x linux-2.6-git.ori/Documentation/dontdiff 
+linux-2.6-git.ori/drivers/serial/sct_serial.h 
+linux-2.6-git.new/drivers/serial/sct_serial.h
+--- linux-2.6-git.ori/drivers/serial/sct_serial.h       1970-01-01 
+08:00:00.000000000 +0800
++++ linux-2.6-git.new/drivers/serial/sct_serial.h       2009-03-23 
+16:42:24.000000000 +0800
+@@ -0,0 +1,138 @@
++/*
++ * File: linux/drivers/serial/sct_serial.h
++ *
++ * Based on: linux/drivers/serial/8250.h
++ * Author: Chang Yu-ming
++ *
++ * Created: Nov 29, 2008
++ * Copyright:   (C) Sunplus Core Technology Co., Ltd.
++ * Description: Driver for SunplusCT  Serial ports.
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, see the file COPYING, or write
++ * to the Free Software Foundation, Inc.,
++ * 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
++ */
++
++#ifndef _SCT_SERIAL_H_
++#define _SCT_SERIAL_H_
++
++#define UART_MAJOR             4
++#define UART_MINOR_START       64
++#define UART_PORT_NR           1
++
++/* define UART IRQ */
++#define UART0_IRQ              16
++#define UART_IRQ               16
++
++/* define UART I/O base address */
++#if defined(CONFIG_MACH_SPG300) || defined(CONFIG_MACH_SPCT6600)
++#define UART0_BASE             0x96070000
++#define UART_REGISTER_SPACE    0x24
++#define UART0_FIFO_SIZE                8
++#elif defined(CONFIG_SCORE_SIM)
++#define UART_BASE              0x88250000
++#define UART_REGISTER_SPACE    0x18
++#define UART_FIFO_SIZE         1
++#endif
++
++/* define UART baudrate parameter */
++#if defined(CONFIG_MACH_IAB050) || defined(CONFIG_SCORE_SPG300)
++#define UART_BAUDRATE          233
++#elif defined(CONFIG_MACH_SCT6600_TWN)
++#define UART_BAUDRATE          70
++#elif defined(CONFIG_MACH_SPG300) || defined(CONFIG_MACH_SPCT6600)
++#define UART_BAUDRATE          0x39            //27Mhz
++#elif defined(CONFIG_MACH_SCT6600_SD)
++#define UART_BAUDRATE          0xe9
++#elif defined(CONFIG_MACH_SCT6600_USB)
++#define UART_BAUDRATE          0x33
++#else
++#define UART_BAUDRATE          0                //Don't care
++#endif
++
++/* define UART register address */
++#ifdef CONFIG_SCORE_SIM
++#define UART_RBR               (UART_BASE+0x00)        /* Rx buffer */
++#define UART_THR               (UART_BASE+0x00)        /* Tx buffer */
++#define UART_IER               (UART_BASE+0x04)        /* interrupt 
+enable */
++#define UART_LSR               (UART_BASE+0x14)        /* line status */
++#else
++#define UART_DR(_base)         (_base+0x00)            /* Rx\Tx buffer */
++#define UART_ERR(_base)                (_base+0x04)            /* Rx\Tx 
+Error Flag Register */
++#define UART_CR(_base)         (_base+0x08)            /* Conrol register 
+*/
++#define UART_BUD(_base)                (_base+0x0C)            /* Baud 
+Rate Setup Register */
++#define UART_ST(_base)         (_base+0x10)            /* Status Register 
+*/
++#define UART_IRDABUD(_base)    (_base+0x14)            /* IRDA Baud Rate 
+Setup Register */
++#define UART_IRDALP(_base)     (_base+0x18)            /* IRDA Low Power 
+Setup Register */
++#define UART_IRDACR(_base)     (_base+0x1C)            /* IRDA Control 
+Register */
++#define UART_TWTR(_base)       (_base+0x20)            /* Transmitter 
+Waiting time Register */
++#endif
++
++
++/*
++ * Bit definition of Rx/Tx error flag register
++ *   rUARTEFR    (_base+0x04)
++ */
++#define UART_ERR_RXD           (1 << 15)       /* UART RXD signal, 0: in 
+process of receiving data
++                                                       1: receive data 
+have completed */
++#define UART_ERR_OE            (1 << 3)        /* overrun error */
++#define UART_ERR_BE            (1 << 2)        /* break error */
++#define UART_ERR_PE            (1 << 1)        /* parity error */
++#define UART_ERR_FE            1               /* frame error */
++
++/*
++ * Bit definition of control register:
++ *   rUARTCR    (_base+0x04)
++ */
++#define UART_CR_RIE            (1 << 15)       /* receive interrupt 
+enable */
++#define UART_CR_TIE            (1 << 14)       /* transmit interrupt 
+enable */
++#define UART_CR_RT             (1 << 13)       /* receive timeout 
+interrupt enable */
++#define UART_CR_UEN            (1 << 12)       /* UART enable */
++#define UART_CR_MSIE           (1 << 11)       /* modem status interrupt 
+enable */
++#define UART_CR_SLT            (1 << 10)       /* self loop test */
++#define UART_CR_MEN            (1 << 9)        /* modem enable */
++#define UART_CR_WKUEN          (1 << 8)        /* wake up enable */
++#define UART_CR_8BITS          (0x3 << 5)
++#define UART_CR_7BITS          (0x2 << 5)
++#define UART_CR_6BITS          (0x1 << 5)
++#define UART_CR_5BITS          0x0
++#define UART_CR_FEN            (1 << 4)        /* FIFO buffer enable */
++#define UART_CR_SBSEL          (1 << 3)        /* stop bit size 
+selection, 0: one stop bit, 1: two stop bits */
++#define UART_CR_PSEL           (1 << 2)        /* parity selection, 0: 
+odd parity, 1: even parity */
++#define UART_CR_PEN            (1 << 1)        /* parity enable */
++#define UART_CR_SB             1               /* send break */
++
++/*
++ * Bit definition of status register
++ *   rUARTST     (_base+0x10)
++ */
++#define UART_ST_RI             (1 << 15)       /* receive interrupt flag 
+*/
++#define UART_ST_TI             (1 << 14)       /* transmit interrupt flag 
+*/
++#define UART_ST_RT             (1 << 13)       /* receive timeout 
+interrupt flag */
++#define UART_ST_MIT            (1 << 12)       /* modem status interrupt 
+flag */
++#define UART_ST_MRI            (1 << 10)       /* complement of 
+nUARTRI(Ring Indicator) modem status input */
++#define UART_ST_RTS            (1 << 9)        /* modem output (Request 
+to Send) */
++#define UART_ST_DTR            (1 << 8)        /* modem output (Data 
+Terminal Ready) */
++#define UART_ST_TE             (1 << 7)        /* transmit FIFO empty 
+flag */
++#define UART_ST_RF             (1 << 6)        /* receive FIFO full flag 
+*/
++#define UART_ST_TF             (1 << 5)        /* transmit FIFO full flag 
+*/
++#define UART_ST_RE             (1 << 4)        /* receive FIFO empty flag 
+*/
++#define UART_ST_BY             (1 << 3)        /* busy */
++#define UART_ST_MDCD           (1 << 2)        /* complement of 
+nUARTDCD(Data Carrier Detect) modem status input */
++#define UART_ST_MDSR           (1 << 1)        /* complement of 
+nUARTDSR(Data Set Ready) modem status input */
++#define UART_ST_MCTS           1               /* complement of 
+nUARTCTS(Clear to Send) modem status input */
++
++#define PORT_SCT               86
++#endif /* _SCT_SERIAL_H_ */
++
+diff -uprN -x linux-2.6-git.ori/Documentation/dontdiff 
+linux-2.6-git.ori/MAINTAINERS linux-2.6-git.new/MAINTAINERS
+--- linux-2.6-git.ori/MAINTAINERS       2009-03-23 11:24:36.000000000 
++0800
++++ linux-2.6-git.new/MAINTAINERS       2009-03-23 17:32:21.000000000 
++0800
+@@ -3772,6 +3772,14 @@ M:       rml@tech9.net
+ L:     linux-kernel@vger.kernel.org
+ S:     Maintained
+ 
++SCORE ARCHITECTURE
++P:     Chen Liqin
++M:     liqin.chen@sunplusct.com
++P:     Lennox Wu
++M:     lennox.wu@sunplusct.com
++W:     http://www.sunplusct.com
++S:     Supported
++
+ SCSI CDROM DRIVER
+ P:     Jens Axboe
+ M:     axboe@kernel.dk
 
 Signed off by: Chen Liqin <liqin.chen@sunplusct.com>
