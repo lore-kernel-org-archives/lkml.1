@@ -1,197 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754771AbZC0FMo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756525AbZC0FOD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754771AbZC0FMo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Mar 2009 01:12:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751327AbZC0FMe
+	id S1756525AbZC0FOD (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Mar 2009 01:14:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751377AbZC0FNw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Mar 2009 01:12:34 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:47436 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750938AbZC0FMd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Mar 2009 01:12:33 -0400
-Date: Fri, 27 Mar 2009 14:11:02 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "kosaki.motohiro@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>
-Subject: [RFC][PATCH 6/8] soft limit victim select
-Message-Id: <20090327141102.a22753e6.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20090327135933.789729cb.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20090327135933.789729cb.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 27 Mar 2009 01:13:52 -0400
+Received: from thunk.org ([69.25.196.29]:50534 "EHLO thunker.thunk.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751327AbZC0FNv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Mar 2009 01:13:51 -0400
+Date: Fri, 27 Mar 2009 01:13:39 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       David Rees <drees76@gmail.com>, Jesper Krogh <jesper@krogh.cc>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.29
+Message-ID: <20090327051338.GP6239@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Matthew Garrett <mjg59@srcf.ucam.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	David Rees <drees76@gmail.com>, Jesper Krogh <jesper@krogh.cc>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <20090325183011.GN32307@mit.edu> <alpine.LFD.2.00.0903251139260.3032@localhost.localdomain> <20090325220530.GR32307@mit.edu> <alpine.LFD.2.00.0903251622420.3032@localhost.localdomain> <20090326171148.9bf8f1ec.akpm@linux-foundation.org> <alpine.LFD.2.00.0903261723250.3994@localhost.localdomain> <20090326174704.cd36bf7b.akpm@linux-foundation.org> <alpine.LFD.2.00.0903261752110.3994@localhost.localdomain> <20090327032301.GN6239@mit.edu> <20090327034705.GA16888@srcf.ucam.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090327034705.GA16888@srcf.ucam.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+On Fri, Mar 27, 2009 at 03:47:05AM +0000, Matthew Garrett wrote:
+> Oh, for the love of a whole range of mythological figures. ext3 didn't 
+> train application programmers that they could be careless about fsync(). 
+> It gave them functionality that they wanted, ie the ability to do things 
+> like rename a file over another one with the expectation that these 
+> operations would actually occur in the same order that they were 
+> generated. More to the point, it let them do this *without* having to 
+> call fsync(), resulting in a significant improvement in filesystem 
+> usability.
 
-Soft Limit victim selection/cache logic.
+Matthew, 
 
-This patch implements victim selection logic and caching method.
+There were plenty of applications that were written for Unix *and*
+Linux systems before ext3 existed, and they worked just fine.  Back
+then, people were drilled into the fact that they needed to use
+fsync(), and fsync() wan't expensive, so there wasn't a big deal in
+terms of usability.  The fact that fsync() was expensive was precisely
+because of ext3's data=ordered problem.  Writing files safely meant
+that you had to check error returns from fsync() *and* close().  
 
-victim memcg is selected in following way, assume a zone under shrinking
-is specified. Selected memcg will be
-  - has the highest priority (high usage)
-  - has memory on the zone.
+In fact, if you care about making sure that data doesn't get lost due
+to disk errors, you *must* call fsync().  Pavel may have complained
+that fsync() can sometimes drop errors if some other process also has
+the file open and calls fsync() --- but if you don't, and you rely on
+ext3 to magically write the data blocks out as a side effect of the
+commit in data=ordered mode, there's no way to signal the write error
+to the application, and you are *guaranteed * to lose the I/O error
+indication.
 
-When a memcg is selected, it's rotated and cached per cpu with tickets.
+I can tell you quite authoritatively that we didn't implement
+data=ordered to make life easier for application writers, and
+application writers didn't come to ext3 developers asking for this
+convenience.  It may have **accidentally** given them convenience that
+they wanted, but it also made fsync() slow.  
 
-This cache is refreshed when
-  - given ticket is exhausetd
-  - very long time since last update.
-  - the cached memcg doesn't include proper zone.
+> I'm utterly and screamingly bored of this "Blame userspace" attitude. 
 
-Even when no proper memcg is not found in victim selection logic,
-some tickets are assigned to NULL victim.
+I'm not blaming userspace.  I'm blaming ourselves, for implementing an
+attractive nuisance, and not realizing that we had implemented an
+attractive nuisance; which years later, is also responsible for these
+latency problems, both with and without fsync() ---- *and* which have
+also traied people into believing that fsync() is always expensive,
+and must be avoided at all costs --- which had not previously been
+true!
 
-As softlimitq, this cache's information has 2 ents for anon and file.
+If I had to do it all over again, I would have argued with Stephen
+about making data=writeback the default, which would have provided
+behaviour on crash just like ext2, except that we wouldn't have to
+fsck the partition afterwards.  Back then, people lived with the
+potential security exposure on a crash, and they lived with the fact
+that you had to use fsync(), or manually type "sync", if you wanted to
+guarantee that data would be safely written to disk.  And you know
+what?  Things had been this way with Unix systems for 31 years before
+ext3 came on the scene, and things worked pretty well during those
+three decades.
 
-TODO:
-  - need to handle cpu hotplug (in other patch)
+So again, let it make it clear, I'm not "blaming userspace".  I'm
+blaming ext3 data=ordered mode.  But it's trained application writers
+to program systems a certain way, and it's trained them to assume that
+fsync() is always evil, and they outnumber us kernel programmers, and
+so we are where we are.  And data=ordered mode is also responsible for
+these write latency problems which seems to make Ingo so cranky ---
+and rightly so.  It all comes from the same source.
 
-Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
----
- mm/memcontrol.c |  121 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 121 insertions(+)
-
-Index: mmotm-2.6.29-Mar23/mm/memcontrol.c
-===================================================================
---- mmotm-2.6.29-Mar23.orig/mm/memcontrol.c
-+++ mmotm-2.6.29-Mar23/mm/memcontrol.c
-@@ -1055,6 +1055,127 @@ static void mem_cgroup_update_soft_limit
- 	return;
- }
- 
-+/* softlimit victim selection logic */
-+
-+/* Returns the amount of evictable memory in memcg */
-+static int mem_cgroup_usage(struct mem_cgroup *mem, struct zone *zone, int file)
-+{
-+	struct mem_cgroup_per_zone *mz;
-+	int nid = zone->zone_pgdat->node_id;
-+	int zid = zone_idx(zone);
-+	unsigned long usage = 0;
-+
-+	mz = mem_cgroup_zoneinfo(mem, nid, zid);
-+	if (!file) {
-+		usage = MEM_CGROUP_ZSTAT(mz, LRU_ACTIVE_ANON)
-+			+ MEM_CGROUP_ZSTAT(mz, LRU_INACTIVE_ANON);
-+	} else {
-+		usage = MEM_CGROUP_ZSTAT(mz, LRU_ACTIVE_FILE)
-+			+ MEM_CGROUP_ZSTAT(mz, LRU_INACTIVE_FILE);
-+	}
-+	return usage;
-+}
-+
-+struct soft_limit_cache {
-+	/* If ticket is 0, refresh and refill the cache.*/
-+	unsigned long ticket[2];
-+	/* next update time for ticket(jiffies)*/
-+	unsigned long next_update;
-+	/* An event count per cpu. */
-+	unsigned long total_events;
-+	/* victim memcg */
-+	struct mem_cgroup *mem[2];
-+};
-+/* In fast-path, 32pages are reclaimed per call. 4*32=128pages as base ticket */
-+#define SLCACHE_NULL_TICKET (4)
-+#define SLCACHE_UPDATE_JIFFIES (HZ*5) /* 5 minutes is very long. */
-+DEFINE_PER_CPU(struct soft_limit_cache, soft_limit_cache);
-+
-+/* This is called under preempt disabled context....*/
-+static void reload_softlimit_victim(struct soft_limit_cache *slc,
-+				    struct zone *zone, int file)
-+{
-+	struct mem_cgroup *mem = NULL;
-+	struct mem_cgroup *tmp;
-+	struct list_head *queue;
-+	int prio, bonus;
-+
-+	if (slc->mem[file]) {
-+		mem_cgroup_put(slc->mem[file]);
-+		slc->mem[file] = NULL;
-+	}
-+	slc->ticket[file] = SLCACHE_NULL_TICKET;
-+	slc->next_update = jiffies + SLCACHE_UPDATE_JIFFIES;
-+	slc->total_events++;
-+
-+	/* brief check the queue */
-+	for (prio = SLQ_MAXPRIO - 1; prio > 0; prio--) {
-+		if (!list_empty(&softlimitq.queue[prio][file]))
-+			break;
-+	}
-+retry:
-+	if (prio == 0)
-+		return;
-+
-+	/* check queue in priority order */
-+
-+	queue = &softlimitq.queue[prio][file];
-+	spin_lock(&softlimitq.lock);
-+	if (file) {
-+		list_for_each_entry(tmp, queue, soft_limit_file) {
-+			if (mem_cgroup_usage(tmp, zone, file)) {
-+				mem = tmp;
-+				break;
-+			}
-+		}
-+		if (mem)
-+			list_move_tail(&mem->soft_limit_file, queue);
-+	} else {
-+		list_for_each_entry(tmp, queue, soft_limit_anon) {
-+			if (mem_cgroup_usage(tmp, zone, file)) {
-+				mem = tmp;
-+				break;
-+			}
-+		}
-+		if (mem)
-+			list_move_tail(&mem->soft_limit_anon, queue);
-+	}
-+	spin_unlock(&softlimitq.lock);
-+	/* If not found, goes to next priority */
-+	if (!mem) {
-+		prio--;
-+		goto retry;
-+	}
-+	if (!css_is_removed(&mem->css)) {
-+		slc->mem[file] = mem;
-+		bonus = prio * 2;
-+		slc->ticket[file] += bonus;
-+		mem_cgroup_get(mem);
-+	}
-+}
-+
-+static struct mem_cgroup *get_soft_limit_victim(struct zone *zone, int file)
-+{
-+	struct mem_cgroup *ret;
-+	struct soft_limit_cache *slc;
-+
-+	slc = &get_cpu_var(soft_limit_cache);
-+	/*
-+	 * If ticket is expired or long time since last ticket or
-+	 * there are no evictables in memcg, reload victim.
-+	 */
-+	ret = slc->mem[file];
-+	if ((!slc->ticket[file]-- ||
-+	     time_after(jiffies, slc->next_update)) ||
-+	    (ret && !mem_cgroup_usage(ret, zone, file))) {
-+		reload_softlimit_victim(slc, zone, file);
-+		ret = slc->mem[file];
-+	}
-+	put_cpu_var(soft_limit_cache);
-+	return ret;
-+}
-+
-+
- static void softlimitq_init(void)
- {
- 	int i;
-
+						- Ted
