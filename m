@@ -1,71 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762883AbZC0XFb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761456AbZC0XJX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762883AbZC0XFb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Mar 2009 19:05:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751434AbZC0XFO
+	id S1761456AbZC0XJX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Mar 2009 19:09:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753170AbZC0XJN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Mar 2009 19:05:14 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:55373 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752052AbZC0XFN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Mar 2009 19:05:13 -0400
-Date: Sat, 28 Mar 2009 01:05:09 +0200 (EET)
-From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
-X-X-Sender: ijjarvin@wrl-59.cs.helsinki.fi
-To: Markus Trippelsdorf <markus@trippelsdorf.de>
-cc: Netdev <netdev@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: WARNING: at net/ipv4/tcp_input.c:2927 tcp_ack+0xd55/0x1991()
-In-Reply-To: <20090327211202.GA10014@gentoox2.trippelsdorf.de>
-Message-ID: <Pine.LNX.4.64.0903280031080.5904@wrl-59.cs.helsinki.fi>
-References: <20090327211202.GA10014@gentoox2.trippelsdorf.de>
-Mime-Version: 1.0
+	Fri, 27 Mar 2009 19:09:13 -0400
+Received: from THUNK.ORG ([69.25.196.29]:33939 "EHLO thunker.thunk.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752102AbZC0XJM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Mar 2009 19:09:12 -0400
+Date: Fri, 27 Mar 2009 19:09:02 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Jan Kara <jack@suse.cz>
+Cc: Chris Mason <chris.mason@oracle.com>, Ric Wheeler <rwheeler@redhat.com>,
+       Linux Kernel Developers List <linux-kernel@vger.kernel.org>,
+       Ext4 Developers List <linux-ext4@vger.kernel.org>
+Subject: Re: [PATCH 0/3] Ext3 latency improvement patches
+Message-ID: <20090327230902.GG5176@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>, Jan Kara <jack@suse.cz>,
+	Chris Mason <chris.mason@oracle.com>,
+	Ric Wheeler <rwheeler@redhat.com>,
+	Linux Kernel Developers List <linux-kernel@vger.kernel.org>,
+	Ext4 Developers List <linux-ext4@vger.kernel.org>
+References: <1238185471-31152-1-git-send-email-tytso@mit.edu> <1238187031.27455.212.camel@think.oraclecorp.com> <1238187818.27455.217.camel@think.oraclecorp.com> <20090327213052.GC5176@mit.edu> <20090327215454.GH31071@duck.suse.cz>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <20090327215454.GH31071@duck.suse.cz>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 27 Mar 2009, Markus Trippelsdorf wrote:
+On Fri, Mar 27, 2009 at 10:54:54PM +0100, Jan Kara wrote:
+>   Yes, but OTOH this will make the problem "my data was lost after crash"
+> worse... Although rewrites aren't that common either so maybe it won't
+> be that bad.
 
-> I'm running the latest git kernel (2.6.29-03321-gbe0ea69) and I've got
-> this warning twice in the last few hours.:
+The real question is how many applications actually do random access
+I/O to rewrite blocks and *don't* use fsync()?  Most of the
+applications which do block rewrites are databases, and those folks
+generally pay very close attention to using synchronization primiives.
+It's the people use the standard I/O interfaces, or and who end up
+rewriting files by replacing them outright that tend to lose.
 
-What did you run previously?
+OTOH, the really big databases will tend to use direct I/O, so they
+won't be dirtying the page cache anyway.  So maybe it's not worth the
+effort; it's not clear what workloads will do huge numbers of block
+rewrites in the first place.  Your test program does, of course, but
+the question is whether that happens a lot in real life, and so it's
+an open question whether we should optimize for it, and whether we can
+assume that applications which do this tend to be databases like
+sqlite that are quite anal already about calling fsync().
 
-> Mar 27 21:37:00 [kernel] ------------[ cut here ]------------
-> Mar 27 21:37:00 [kernel] WARNING: at net/ipv4/tcp_input.c:2927 tcp_ack+0xd55/0x1991()
-
-This one may or may not be a new one... Starting from the point when the 
-warning was added it has been seen and some of those miscounts got tracked 
-down but there is still something remaining (and that has been the state 
-for couple of version already). It seems to require some particularly hard 
-to reproduce network behavior people usually hit once in a lifetime. 
-However, those miscount alone should not cause crashes, stalled TCP at 
-worst but even that is quite unlikely to happen if fackets_out was not 
-counted right.
-
-> The machine hangs afterwards.
-
-Is it really related to the warning for sure? I find it hard to 
-believe...
-
-We even fixed that miscount for you when the warning was printed out (and 
-the miscount alone wouldn't be able to cause crash anyway). Obviously 
-there could something that got broken but reading through all post 2.6.29 
-tcp material doesn't reveal anything particularly suspicious or even 
-tricky... Only one thing that is remotely related to the warning that gets 
-printed out is d3d2ae454501a4dec360995649e1b002a2ad90c5 but even that has 
-very strong foundation as it does not have any potential to introduce 
-stale references, rest of the effects would be just stalled tcp connection 
-at worst.
-
-Please add some debugging things, at least lockdep (CONFIG_PROVE_LOCKING) 
-and soft lockup detector (CONFIG_DETECT_SOFTLOCKUP) to find out if we can 
-get some info about the actual place of hang, some other debug things 
-might also end up being useful.
-
-Thanks for the report.
-
--- 
- i.
+       	    	      	   	   	 - Ted
