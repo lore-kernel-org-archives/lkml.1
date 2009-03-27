@@ -1,63 +1,209 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758392AbZC0Juh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756474AbZC0JzY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758392AbZC0Juh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Mar 2009 05:50:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755131AbZC0JuP
+	id S1756474AbZC0JzY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Mar 2009 05:55:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754830AbZC0JzJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Mar 2009 05:50:15 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:41879 "EHLO mx2.redhat.com"
+	Fri, 27 Mar 2009 05:55:09 -0400
+Received: from main.gmane.org ([80.91.229.2]:57159 "EHLO ciao.gmane.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755409AbZC0JuN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Mar 2009 05:50:13 -0400
-Date: Fri, 27 Mar 2009 10:47:32 +0100
-From: Jiri Pirko <jpirko@redhat.com>
-To: Patrick McHardy <kaber@trash.net>
-Cc: David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, jgarzik@pobox.com,
-       shemminger@linux-foundation.org, bridge@lists.linux-foundation.org,
-       fubar@us.ibm.com, bonding-devel@lists.sourceforge.net,
-       mschmidt@redhat.com, dada1@cosmosbay.com
-Subject: Re: [PATCH] bonding: allow bond in mode balance-alb to work
-	properly in bridge -try4
-Message-ID: <20090327094731.GB4582@psychotron.englab.brq.redhat.com>
-References: <20090313183303.GF3436@psychotron.englab.brq.redhat.com> <20090326155205.GA28868@psychotron.englab.brq.redhat.com> <20090327.003819.234492275.davem@davemloft.net> <49CC85E9.7070903@trash.net> <20090327084138.GA4582@psychotron.englab.brq.redhat.com> <49CC948B.8020005@trash.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49CC948B.8020005@trash.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	id S1754080AbZC0JzH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Mar 2009 05:55:07 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Philippe Reynes <philippe.reynes@isismpp.fr>
+Subject: Re: [Announce] 2.6.29-rt1
+Date: Fri, 27 Mar 2009 09:37:17 +0000 (UTC)
+Message-ID: <gqi6oc$1s3$1@ger.gmane.org>
+References: <49b7c2350903260354p6eaf50ebo87985dcfb8d48ba0@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: extranet.isismpp.fr
+User-Agent: Pan/0.132 (Waxed in Black)
+Cc: linux-rt-users@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fri, Mar 27, 2009 at 09:55:39AM CET, kaber@trash.net wrote:
-> Jiri Pirko wrote:
->> Fri, Mar 27, 2009 at 08:53:13AM CET, kaber@trash.net wrote:
+Hi
+
+
+I've got crashes when I run an app with thread with RT priority.
+This crash could happen on any comman, here some log of crashes :
+
+
+First one :
+
+server calling Oops: Exception in kernel mode, sig: 5 [#1]
+PREEMPT MPC837x RR605
+Modules linked in:
+NIP: c0075b08 LR: c0075a50 CTR: c00d7d90
+REGS: dbb6dcb0 TRAP: 0700   Not tainted  (2.6.29-rt1)
+MSR: 00029032 <EE,ME,CE,IR,DR>  CR: 24002488  XER: 00000000
+TASK = dddea1e0[1769] 'vsftpd' THREAD: dbb6c000
+GPR00: 00000001 dbb6dd60 dddea1e0 df803e24 df803e10 df803e08 00000000 
+ddc72020 
+GPR08: 00000000 0000001b dddea1e0 df803e24 24000482 100bf094 00000000 
+c04aa6fc 
+GPR16: 00200200 00100100 c04e5958 c04e595c dbb6dd68 c04e0000 c04e0000 
+c04aa6bc 
+GPR24: 00000020 dbb6ddd8 00000010 df80ae00 00000000 dbb6de38 df816800 
+df803e00 
+NIP [c0075b08] cache_alloc_refill+0x180/0x62c
+LR [c0075a50] cache_alloc_refill+0xc8/0x62c
+Call Trace:
+[dbb6dd60] [c038878c] preempt_schedule_irq+0x5c/0x80 (unreliable)
+[dbb6ddd0] [c00761a0] kmem_cache_alloc+0x6c/0x140
+[dbb6de00] [c002ddb4] __sigqueue_do_alloc+0xa0/0xec
+[dbb6de10] [c002e2f8] send_signal+0xa4/0x224
+[dbb6de30] [c002f680] do_notify_parent+0x1a8/0x1d4
+[dbb6ded0] [c0025608] do_exit+0x584/0x69c
+[dbb6df10] [c00257a0] do_group_exit+0x80/0xac
+[dbb6df30] [c00257e0] sys_exit_group+0x14/0x28
+[dbb6df40] [c00117f4] ret_from_syscall+0x0/0x38
+--- Exception: c01 at 0xfef463c
+    LR = 0xffa5884
+Instruction dump:
+7f87f800 40be0018 80ff0010 38000001 901f0048 7f872000 419e00e8 80070010 
+813b001c 7c090010 38000000 7c000114 <0f000000> 381a0001 38c7001c 7c0903a6 
+---[ end trace 99200bd45c29aa91 ]---
+Fixing recursive fault but reboot is needed!
+
+
+Second one :
+I've run my app, and after just run a simple "ifconfig"
+
+
+-sh-2.05b# ifconfig 
+eth0      Link eOops: Exception in kernel mode, sig: 5 [#1]
+PREEMPT MPC837x RR605
+Modules linked in:
+NIP: c0075b08 LR: c0075a50 CTR: c02cf170
+REGS: dab41cb0 TRAP: 0700   Not tainted  (2.6.29-rt1)
+MSR: 00029032 <EE,ME,CE,IR,DR>  CR: 24002488  XER: 00000000
+TASK = df8be100[1756] 'ifconfig' THREAD: dab40000
+GPR00: 00000001 dab41d60 df8be100 df803e24 df803e10 df803e08 00000000 
+dddcc000 
+GPR08: 00000000 0000001b df8be100 df803e24 24000482 10023370 00000000 
+c04aa6fc 
+GPR16: 00200200 00100100 c04e5958 c04e595c dab41d68 c04e0000 c04e0000 
+c04aa6bc 
+GPR24: 00000020 dab41dd8 00000010 df80ae00 00000000 dab41e38 df816800 
+df803e00 
+NIP [c0075b08] cache_alloc_refill+0x180/0x62c
+LR [c0075a50] cache_alloc_refill+0xc8/0x62c
+Call Trace:
+[dab41d60] [00000001] 0x1 (unreliable)
+[dab41dd0] [c00761a0] kmem_cache_alloc+0x6c/0x140
+[dab41e00] [c002ddb4] __sigqueue_do_alloc+0xa0/0xec
+[dab41e10] [c002e2f8] send_signal+0xa4/0x224
+[dab41e30] [c002f680] do_notify_parent+0x1a8/0x1d4
+[dab41ed0] [c0025608] do_exit+0x584/0x69c
+[dab41f10] [c00257a0] do_group_exit+0x80/0xac
+[dab41f30] [c00257e0] sys_exit_group+0x14/0x28
+[dab41f40] [c00117f4] ret_from_syscall+0x0/0x38
+--- Exception: c01 at 0xff3b63c
+    LR = 0xffec884
+Instruction dump:
+7f87f800 40be0018 80ff0010 38000001 901f0048 7f872000 419e00e8 80070010 
+813b001c 7c090010 38000000 7c000114 <0f000000> 381a0001 38c7001c 7c0903a6 
+---[ end trace f43c24570097662c ]---
+Fixing recursive fault but reboot is needed!
+
+
+
+The kernel is a 2.6.29-rt1 compiled with ltib for powerpc (mpc8377E).
+
+Philippe
+
+
+
+Le Thu, 26 Mar 2009 19:54:25 +0900, GeunSik Lim a écrit :
+
+> Hi,
+> 
+> I understood statement that Thosmas explained about invalid access of
+> 2.6.29-rt1 soruces.
+> In general,
+> We remeber rc directory (./v2.6/testing/ and release directory (./v2.6/)
+> certainly.
+> 
+> Release Version is located in
+> http://www.kernel.org/pub/linux/kernel/v2.6/ site. RC      Version is
+> located in
+> http://www.kernel.org/pub/linux/kernel/v2.6/testing/ site.
+> 
+> I summarized quick howto per notice of "2.6.* rt patch" file. fc9#> wget
+> http://www.kernel.org/pub/linux/kernel/v2.6/linux-2.6.29.tar.bz2
+>   (If linux version is RC[release candidate] version,
+>  use "wget http://www.kernel.org/pub/linux/kernel/v2.6/testing/***"
+>  command.)
+> fc9#> wget
+> http://www.kernel.org/pub/linux/kernel/projects/rt/patch-2.6.29-rt1.bz2
+> fc9#> tar xjf ./linux-2.6.29.tar.bz2
+> fc9#> tar xvjf ./patch-2.6.29-rt1-broken-out.tar.bz2 fc9#> cd
+> ./linux-2.6.29
+> fc9#> for i in `cat ../patches/series | grep patch | grep -v "#"  `;do
+> echo "+++ patching $i"; patch -p1 <
+> 
+> ../patches/$i;done
+> fc9#> cp ./arch/x86/configs/i386_defconfig ./.config fc9#> make
+> menuconfig
+>         ..... Below Omission .....
+>   	
+>   	
+> Regards,
+> GeunSik Lim
+> 
+> ----- Original Message -----
+> From: "Thomas Gleixner" <tglx@linutronix.de> To: "Jaswinder Singh
+> Rajput" <jaswinder@kernel.org> Cc: "LKML"
+> <linux-kernel@vger.kernel.org>; "rt-users"
+> <linux-rt-users@vger.kernel.org>; "Ingo Molnar" <mingo@elte.hu>; "Steven
+> Rostedt" <rostedt@goodmis.org>; "Peter Zijlstra" <peterz@infradead.org>;
+> "Carsten Emde" <ce@ceag.ch>; "Clark Williams" <williams@redhat.com>;
+> "Frank Rowand" <frank.rowand@am.sony.com> Sent: Thursday, March 26, 2009
+> 6:09 AM Subject: Re: [Announce] 2.6.29-rt1
+> 
+> 
+>> On Thu, 26 Mar 2009, Jaswinder Singh Rajput wrote:
+>>
+>>> On Wed, 2009-03-25 at 21:59 +0100, Thomas Gleixner wrote:
+>>> > We are pleased to announce the next update to our new preempt-rt
+>>> > series.
 >>> >
->>> > Me neither, but I don't think this approach can be done without the
->>> > hook. While I still find it questionable whether this mode really
->>> > needs to be supported for a bridge at all
+>>> >      - port forward to 2.6.29 final
+>>> >
+>>> > Download locations:
+>>> >
+>>> >     http://rt.et.redhat.com/download/
+>>> >     http://www.kernel.org/pub/linux/kernel/projects/rt/
+>>> >
+>>> > Information on the RT patch can be found at:
+>>> >
+>>> >     http://rt.wiki.kernel.org/index.php/Main_Page
+>>> >
+>>> > to build the 2.6.29-rt1 tree, the following patches should be
+>>> > applied:
+>>> >
+>>> >     http://www.kernel.org/pub/linux/kernel/v2.6/testing/
+linux-2.6.29.tar.bz2
+>>>
+>>> Is this valid ?
 >>
->> Well there is I think nothing unusual in this net scheme. And by for example
->> the increasing setups with kvm/bridging it will be needed more and more.
->
-> Mangling ARP packets for load-balancing purposes seems quite unusual.
-
-Well, there are many unusual things, that do not imply that they should not be
-supported...
-
->>> , an alternative approach
->>> would be to have bonding add FDB entries for all secondary MACs to
->>> make bridging treat them as local.
+>> If we remove the testing/ it should work better :)
 >>
->> Yes - that is the clear way. But there's not really straihtforward way to do
->> this. The clear approach would be to extend struct net_device for list of these
->> mac addresses and let the drivers (binding) fill it and bridge to process it.
->> But I don't know.
->
-> We have a list of secondary unicast addresses, but that might not
-> be suitable in this case since the addresses are (mostly) intended
-> not to be visible to the stack if I understood correctly.
+>>   tglx
+>> --
+>> To unsubscribe from this list: send the line "unsubscribe linux-kernel"
+>> in the body of a message to majordomo@vger.kernel.org More majordomo
+>> info at  http://vger.kernel.org/majordomo-info.html Please read the FAQ
+>> at  http://www.tux.org/lkml/
+>>
+>>
+>>
+>>
 
-I agree this list is not suitable for this - it's used for different purpose and
-I think it would be not wise to mix it with what we want...
+
