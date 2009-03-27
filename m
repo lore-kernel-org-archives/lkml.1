@@ -1,45 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932641AbZC0AFn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932736AbZC0AHq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932641AbZC0AFn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Mar 2009 20:05:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932504AbZC0AFM
+	id S932736AbZC0AHq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Mar 2009 20:07:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932626AbZC0AHI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Mar 2009 20:05:12 -0400
-Received: from yx-out-2324.google.com ([74.125.44.30]:42833 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932618AbZC0AFJ (ORCPT
+	Thu, 26 Mar 2009 20:07:08 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:58952 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932697AbZC0AHE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Mar 2009 20:05:09 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=Gs+99/2Wk7ICN4R795K6fVcOFgxjtwk0A4sjNG3F3+9j0W9bwqxuTcy+mWfoCJOJ0L
-         1Eo9BlWfa+42jI38vKn1p9gTIjTy7oZ5VWi33jAM464oojMchIe0RJxXQfJgIWFC1jSZ
-         OportY3/QjutQ1JzwglMIbLOkNH9pzbSRuLrk=
-MIME-Version: 1.0
-In-Reply-To: <20090326235116.GA26129@x200.localdomain>
-References: <20090326235116.GA26129@x200.localdomain>
-Date: Thu, 26 Mar 2009 20:05:05 -0400
-Message-ID: <8bd0f97a0903261705v2a28a9bancbb588c4c7fe365f@mail.gmail.com>
-Subject: Re: [PATCH] Consolidate init_mm definition
-From: Mike Frysinger <vapier.adi@gmail.com>
-To: Alexey Dobriyan <adobriyan@gmail.com>
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
+	Thu, 26 Mar 2009 20:07:04 -0400
+Date: Thu, 26 Mar 2009 17:05:13 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: =?ISO-8859-1?Q? "J.A._Magall=F3n" ?= <jamagallon@ono.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-nfs@vger.kernel.org
+Subject: Re: Problems with default ACLs over NFS
+Message-Id: <20090326170513.4e7d377a.akpm@linux-foundation.org>
+In-Reply-To: <20090323222427.00bb24e7@werewolf.home>
+References: <20090323222427.00bb24e7@werewolf.home>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 26, 2009 at 19:51, Alexey Dobriyan wrote:
-> new file mode 100644
-> --- /dev/null
-> +++ b/mm/init-mm.c
-> @@ -0,0 +1,13 @@
-> +#include <linux/mm_types.h>
-> +#include <asm/pgtable.h>
+(cc linux-nfs)
 
-shouldnt there be a short license blurb ?
-/* Licensed under the GPL-2 or later. */
--mike
+On Mon, 23 Mar 2009 22:24:27 +0100 "J.A. Magall__n" <jamagallon@ono.com> wrote:
+
+> Hi all...
+> 
+> I have a strange problem with 2.6.29-rc8-git3.
+> It looks like a kernel bug... ?
+> 
+> I have a box with NFS autofs-mounted home directories. Server is a
+> Solaris 10 system. This worked in previous kernel versions, so I
+> don't blame Solaris, at this moment.
+> 
+> With this acls set in my home:
+> 
+> 
+> prometeo:~> getfacl .  
+> 
+> # file: .
+> # owner: magallon
+> # group: giga
+> user::rwx
+> user:webservd:r-x       #effective:r-x
+> group::--x      #effective:--x
+> mask:r-x
+> other:--x
+> default:user::rwx
+> default:group::--x
+> default:other:--x
+> 
+> I get this strange message in the linux client:
+> 
+> cicely:~> mkdir kk  
+> mkdir: cannot create directory `kk': Invalid argument
+> 
+> But the directory is created, and its ACLs are correct:
+> 
+> prometeo:~> getfacl kk  
+> 
+> # file: kk
+> # owner: magallon
+> # group: giga
+> user::rwx
+> group::--x      #effective:--x
+> other:--x
+> default:user::rwx
+> default:group::--x
+> default:other:--x
+> 
+> If I remove the 'default' entries, the error message goes away.
+> 
+> With strace, I get this:
+> 
+> mkdir("kk", 0777)                       = -1 EINVAL (Invalid argument)
+> 
+> Mount info from /proc/mounts:
+> 
+> ldap:danae-nfs:automountMapName=auto_home,o=diis /home autofs rw,fd=7,pgrp=3165,timeout=600,minproto=5,maxproto=5,indirect 0 0
+> 
+> danae-nfs:/export/home/usuarios/giga/magallon /home/magallon nfs rw,vers=3,rsize=1048576,wsize=1048576,namlen=255,hard,nointr,proto=tcp,timeo=600,retrans=2,sec=sys,mountaddr=155.210.152.202,mountvers=3,mountproto=tcp,addr=155.210.152.202 0 0
+> 
+> It happens the same If I try to create a file with "> kk", or try to cp -r one
+> other dir, but "touch kk" works.
+> 
+> Any idea ?
+> 
+
