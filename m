@@ -1,26 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764473AbZC0XoJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764527AbZC0Xoh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764473AbZC0XoJ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Mar 2009 19:44:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762458AbZC0X2J
+	id S1764527AbZC0Xoh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Mar 2009 19:44:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762555AbZC0X2K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Mar 2009 19:28:09 -0400
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:48513 "EHLO
+	Fri, 27 Mar 2009 19:28:10 -0400
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:48515 "EHLO
 	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761686AbZC0X1m (ORCPT
+	with ESMTP id S1761645AbZC0X1m (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 27 Mar 2009 19:27:42 -0400
 From: =?utf-8?q?Uwe=20Kleine-K=C3=B6nig?= 
 	<u.kleine-koenig@pengutronix.de>
 To: linux-kernel@vger.kernel.org
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       "David S. Miller" <davem@davemloft.net>,
-       Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Jeff Garzik <jgarzik@redhat.com>, Ralf Baechle <ralf@linux-mips.org>
-Subject: [PATCH 26/58] move meth's probe function to .devinit.text
-Date: Sat, 28 Mar 2009 00:26:47 +0100
-Message-Id: <1238196439-16535-26-git-send-email-u.kleine-koenig@pengutronix.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Frans Pop <elendil@planet.nl>,
+       Larry Finger <Larry.Finger@lwfinger.net>, Len Brown <lenb@kernel.org>,
+       Helge Deller <deller@gmx.de>, Matthew Garrett <mjg@redhat.com>
+Subject: [PATCH 21/58] move hp-wmi's probe function to .devinit.text
+Date: Sat, 28 Mar 2009 00:26:42 +0100
+Message-Id: <1238196439-16535-21-git-send-email-u.kleine-koenig@pengutronix.de>
 X-Mailer: git-send-email 1.6.2
 In-Reply-To: <20090327232153.GA16348@pengutronix.de>
 References: <20090327232153.GA16348@pengutronix.de>
@@ -35,7 +33,7 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A pointer to meth_probe is passed to the core via
+A pointer to hp_wmi_bios_setup is passed to the core via
 platform_driver_register and so the function must not disappear when the
 .init sections are discarded.  Otherwise (if also having HOTPLUG=y)
 unbinding and binding a device to the driver via sysfs will result in an
@@ -46,29 +44,38 @@ platform_driver_register plus removing the pointer to the probe function
 from the struct platform_driver.
 
 Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
-Cc: David S. Miller <davem@davemloft.net>
-Cc: Thomas Bogendoerfer <tsbogend@alpha.franken.de>
-Cc: Christoph Lameter <cl@linux-foundation.org>
-Cc: Jeff Garzik <jgarzik@redhat.com>
-Cc: Ralf Baechle <ralf@linux-mips.org>
+Cc: Frans Pop <elendil@planet.nl>
+Cc: Larry Finger <Larry.Finger@lwfinger.net>
+Cc: Len Brown <lenb@kernel.org>
+Cc: Helge Deller <deller@gmx.de>
+Cc: Matthew Garrett <mjg@redhat.com>
 Cc: Andrew Morton <akpm@linux-foundation.org>
 ---
- drivers/net/meth.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ drivers/platform/x86/hp-wmi.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/net/meth.c b/drivers/net/meth.c
-index c336a1f..8947129 100644
---- a/drivers/net/meth.c
-+++ b/drivers/net/meth.c
-@@ -775,7 +775,7 @@ static int meth_ioctl(struct net_device *dev, struct ifreq *rq, int cmd)
- /*
-  * The init function.
-  */
--static int __init meth_probe(struct platform_device *pdev)
-+static int __devinit meth_probe(struct platform_device *pdev)
+diff --git a/drivers/platform/x86/hp-wmi.c b/drivers/platform/x86/hp-wmi.c
+index f41135f..7b31da7 100644
+--- a/drivers/platform/x86/hp-wmi.c
++++ b/drivers/platform/x86/hp-wmi.c
+@@ -51,7 +51,7 @@ MODULE_ALIAS("wmi:5FB7F034-2C63-45e9-BE91-3D44E2C707E4");
+ #define HPWMI_WIRELESS_QUERY 0x5
+ #define HPWMI_HOTKEY_QUERY 0xc
+ 
+-static int __init hp_wmi_bios_setup(struct platform_device *device);
++static int __devinit hp_wmi_bios_setup(struct platform_device *device);
+ static int __exit hp_wmi_bios_remove(struct platform_device *device);
+ 
+ struct bios_args {
+@@ -409,7 +409,7 @@ static void cleanup_sysfs(struct platform_device *device)
+ 	device_remove_file(&device->dev, &dev_attr_dock);
+ }
+ 
+-static int __init hp_wmi_bios_setup(struct platform_device *device)
++static int __devinit hp_wmi_bios_setup(struct platform_device *device)
  {
- 	struct net_device *dev;
- 	struct meth_private *priv;
+ 	int err;
+ 	int wireless = hp_wmi_perform_query(HPWMI_WIRELESS_QUERY, 0, 0);
 -- 
 1.6.2
 
