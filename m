@@ -1,80 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765040AbZC0Xwm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765096AbZC0XxJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765040AbZC0Xwm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Mar 2009 19:52:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761430AbZC0X22
+	id S1765096AbZC0XxJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Mar 2009 19:53:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763644AbZC0Xdk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Mar 2009 19:28:28 -0400
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:48718 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760849AbZC0X16 (ORCPT
+	Fri, 27 Mar 2009 19:33:40 -0400
+Received: from exprod6ob114.obsmtp.com ([64.18.1.32]:41392 "HELO psmtp.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
+	id S1763648AbZC0Xdi convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Mar 2009 19:27:58 -0400
-From: =?utf-8?q?Uwe=20Kleine-K=C3=B6nig?= 
-	<u.kleine-koenig@pengutronix.de>
-To: linux-kernel@vger.kernel.org
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Ronen Shitrit <rshitrit@marvell.com>,
-       Lennert Buytenhek <buytenh@marvell.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       Alan Stern <stern@rowland.harvard.edu>,
-       David Brownell <david-b@pacbell.net>, Nicolas Pitre <nico@marvell.com>,
-       Russell King <rmk+kernel@arm.linux.org.uk>,
-       Tzachi Perelstein <tzachi@marvell.com>
-Subject: [PATCH 12/58] move orion-ehci's probe function to .devinit.text
-Date: Sat, 28 Mar 2009 00:26:33 +0100
-Message-Id: <1238196439-16535-12-git-send-email-u.kleine-koenig@pengutronix.de>
-X-Mailer: git-send-email 1.6.2
-In-Reply-To: <20090327232153.GA16348@pengutronix.de>
-References: <20090327232153.GA16348@pengutronix.de>
+	Fri, 27 Mar 2009 19:33:38 -0400
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
-X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
-X-SA-Exim-Mail-From: ukl@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+Subject: [PATCH] mm/sparse.c: fix build warning
+Date: Fri, 27 Mar 2009 19:33:21 -0400
+Message-ID: <BD79186B4FD85F4B8E60E381CAEE1909014E2C09@mi8nycmail19.Mi8.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [PATCH] mm/sparse.c: fix build warning
+Thread-Index: AcmvNGolsB0dpxOgQNGR/8G3dWyrwg==
+From: "H Hartley Sweeten" <hartleys@visionengravers.com>
+To: <linux-kernel@vger.kernel.org>
+X-OriginalArrivalTime: 27 Mar 2009 23:33:34.0522 (UTC) FILETIME=[722901A0:01C9AF34]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A pointer to ehci_orion_drv_probe is passed to the core via
-platform_driver_register and so the function must not disappear when the
-.init sections are discarded.  Otherwise (if also having HOTPLUG=y)
-unbinding and binding a device to the driver via sysfs will result in an
-oops as does a device being registered late.
+Fix warning due to uninitialized variable.
 
-An alternative to this patch is using platform_driver_probe instead of
-platform_driver_register plus removing the pointer to the probe function
-from the struct platform_driver.
+mm/sparse.c: In function '__section_nr':
+mm/sparse.c:132: warning: 'root' is used uninitialized in this function
 
-Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
-Cc: Ronen Shitrit <rshitrit@marvell.com>
-Cc: Lennert Buytenhek <buytenh@marvell.com>
-Cc: Greg Kroah-Hartman <gregkh@suse.de>
-Cc: Alan Stern <stern@rowland.harvard.edu>
-Cc: David Brownell <david-b@pacbell.net>
-Cc: Nicolas Pitre <nico@marvell.com>
-Cc: Russell King <rmk+kernel@arm.linux.org.uk>
-Cc: Tzachi Perelstein <tzachi@marvell.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
+
 ---
- drivers/usb/host/ehci-orion.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/usb/host/ehci-orion.c b/drivers/usb/host/ehci-orion.c
-index 9d48790..17dc154 100644
---- a/drivers/usb/host/ehci-orion.c
-+++ b/drivers/usb/host/ehci-orion.c
-@@ -187,7 +187,7 @@ ehci_orion_conf_mbus_windows(struct usb_hcd *hcd,
- 	}
- }
- 
--static int __init ehci_orion_drv_probe(struct platform_device *pdev)
-+static int __devinit ehci_orion_drv_probe(struct platform_device *pdev)
+diff --git a/mm/sparse.c b/mm/sparse.c
+index 083f5b6..5657e92 100644
+--- a/mm/sparse.c
++++ b/mm/sparse.c
+@@ -117,7 +117,7 @@ static inline int sparse_index_init(unsigned long
+section_nr, int nid)
+ int __section_nr(struct mem_section* ms)
  {
- 	struct orion_ehci_data *pd = pdev->dev.platform_data;
- 	struct resource *res;
--- 
-1.6.2
-
+ 	unsigned long root_nr;
+-	struct mem_section* root;
++	struct mem_section *uninitialized_var(root);
+ 
+ 	for (root_nr = 0; root_nr < NR_SECTION_ROOTS; root_nr++) {
+ 		root = __nr_to_section(root_nr * SECTIONS_PER_ROOT); 
