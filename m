@@ -1,40 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756869AbZC0NCz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758149AbZC0NEp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756869AbZC0NCz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Mar 2009 09:02:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752810AbZC0NCq
+	id S1758149AbZC0NEp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Mar 2009 09:04:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752401AbZC0NEh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Mar 2009 09:02:46 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:41978 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752705AbZC0NCp (ORCPT
+	Fri, 27 Mar 2009 09:04:37 -0400
+Received: from mail-in-03.arcor-online.net ([151.189.21.43]:53254 "EHLO
+	mail-in-03.arcor-online.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751325AbZC0NEg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Mar 2009 09:02:45 -0400
-Date: Fri, 27 Mar 2009 13:02:43 +0000
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Alexander Larsson <alexl@redhat.com>
-Cc: eparis@redhat.com, linux-kernel@vger.kernel.org
-Subject: Re: Issues with using fanotify for a filesystem indexer
-Message-ID: <20090327130242.GW28946@ZenIV.linux.org.uk>
-References: <1238158043.23703.20.camel@fatty>
+	Fri, 27 Mar 2009 09:04:36 -0400
+X-DKIM: Sendmail DKIM Filter v2.8.2 mail-in-07.arcor-online.net E16893CA6DB
+Date: Fri, 27 Mar 2009 14:04:32 +0100 (CET)
+From: Bodo Eggert <7eggert@gmx.de>
+To: Pavel Machek <pavel@ucw.cz>
+cc: Bodo Eggert <7eggert@gmx.de>, James Morris <jmorris@namei.org>,
+       kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: TOMOYO in linux-next
+In-Reply-To: <20090327114224.GF2585@elf.ucw.cz>
+Message-ID: <alpine.LSU.0.999.0903271354290.5610@be1.lrz>
+References: <ck5CF-5mU-11@gated-at.bofh.it> <E1Ln8MC-0001RR-1E@be1.7eggert.dyndns.org>
+ <20090327114224.GF2585@elf.ucw.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1238158043.23703.20.camel@fatty>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Type: TEXT/PLAIN; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 27, 2009 at 01:47:23PM +0100, Alexander Larsson wrote:
+On Fri, 27 Mar 2009, Pavel Machek wrote:
+> On Fri 2009-03-27 10:28:07, Bodo Eggert wrote:
+> > Pavel Machek <pavel@ucw.cz> wrote:
 
-> In order to write an app using the fanotify API satisfying the above
-> needs we would need the following events:
-> * the event queue overflowed, (you need to reindex everything)
-> * An inode was linked into the filesystem (creat, O_CREAT,
-> mkdir, link, symlink, etc)
-> * An inode was unlinked (unlink, rmdir, rename replaced existing file)
-> * An inode was moved in the filesystem (rename)
+> > > I don't think merging that is good idea. Security should be doable
+> > > without making shell-like glob matching...
+> > 
+> > How do you suppose a security system should handle mozilla modifying
+> > ~/.bashrc differently from downloading something to ~/pr0n.jpg?
+> 
+> How does shell-like glob matching help there? You'd need to parse
+> /etc/passwd to find all ~ directories...
 
-Erm...  Just how would you represent and *order* the events?  Note that
-"serialize all directory operations on given fs" is a non-starter...
+That is, if you'd use HOME=`dd if=/dev/urandom ...`.
+
+If you have your users in /home/user, you can tell /home/*/.*
+is bad, /home/*/[^.]* is OK.
+
+How would you exclude mozilla from writing to .* then? ".a" is bad,
+".b" is bad ...? or "A" is OK, "a" is OK, "zzzzzzzzzzzzz" is OK"?
+Either way, you'd need several universes to store the security profile.
+-- 
+The enemy diversion you have been ignoring will be the main attack.
