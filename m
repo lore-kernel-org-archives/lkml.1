@@ -1,287 +1,145 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758779AbZC0PMo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759717AbZC0PNL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758779AbZC0PMo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Mar 2009 11:12:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756922AbZC0PKf
+	id S1759717AbZC0PNL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Mar 2009 11:13:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758696AbZC0PMu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Mar 2009 11:10:35 -0400
-Received: from mtagate4.de.ibm.com ([195.212.29.153]:55166 "EHLO
-	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758065AbZC0PKc (ORCPT
+	Fri, 27 Mar 2009 11:12:50 -0400
+Received: from mga11.intel.com ([192.55.52.93]:33802 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759549AbZC0PMs convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Mar 2009 11:10:32 -0400
-Message-Id: <20090327151012.713478499@de.ibm.com>
-References: <20090327150905.819861420@de.ibm.com>
-User-Agent: quilt/0.46-1
-Date: Fri, 27 Mar 2009 16:09:10 +0100
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-To: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       virtualization@lists.osdl.org
-Cc: frankeh@watson.ibm.com, akpm@osdl.org, nickpiggin@yahoo.com.au,
-       hugh@veritas.com, riel@redhat.com,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>
-Subject: [patch 5/6] Guest page hinting: minor fault optimization.
-Content-Disposition: inline; filename=005-hva-nohv.diff
+	Fri, 27 Mar 2009 11:12:48 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.38,432,1233561600"; 
+   d="scan'208";a="442650716"
+From: "Metzger, Markus T" <markus.t.metzger@intel.com>
+To: Oleg Nesterov <oleg@redhat.com>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "mingo@elte.hu" <mingo@elte.hu>,
+       "tglx@linutronix.de" <tglx@linutronix.de>,
+       "hpa@zytor.com" <hpa@zytor.com>,
+       "markus.t.metzger@gmail.com" <markus.t.metzger@gmail.com>,
+       "roland@redhat.com" <roland@redhat.com>,
+       "eranian@googlemail.com" <eranian@googlemail.com>,
+       "Villacis, Juan" <juan.villacis@intel.com>,
+       "ak@linux.jf.intel.com" <ak@linux.jf.intel.com>
+Date: Fri, 27 Mar 2009 15:12:35 +0000
+Subject: RE: [patch 1/14] x86, ptrace: add arch_ptrace_report_exit
+Thread-Topic: [patch 1/14] x86, ptrace: add arch_ptrace_report_exit
+Thread-Index: Acmu543h/b61rAmpTa6EKCyeI/6HDQABf5nA
+Message-ID: <928CFBE8E7CB0040959E56B4EA41A77E9266B6B4@irsmsx504.ger.corp.intel.com>
+References: <20090327094626.A11002@sedona.ch.intel.com>
+ <20090327141937.GB14504@redhat.com>
+In-Reply-To: <20090327141937.GB14504@redhat.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-From: Hubertus Franke <frankeh@watson.ibm.com>
-From: Himanshu Raj
+>-----Original Message-----
+>From: Oleg Nesterov [mailto:oleg@redhat.com]
+>Sent: Friday, March 27, 2009 3:20 PM
+>To: Metzger, Markus T
+>Cc: linux-kernel@vger.kernel.org; mingo@elte.hu; tglx@linutronix.de; hpa@zytor.com;
+>markus.t.metzger@gmail.com; roland@redhat.com; eranian@googlemail.com; Villacis, Juan;
+>ak@linux.jf.intel.com
+>Subject: Re: [patch 1/14] x86, ptrace: add arch_ptrace_report_exit
+>
+>On 03/27, Markus Metzger wrote:
+>>
+>> --- git-tip.orig/include/linux/ptrace.h	2009-03-23 10:45:30.000000000 +0100
+>> +++ git-tip/include/linux/ptrace.h	2009-03-23 11:31:21.000000000 +0100
+>> @@ -335,6 +335,23 @@ static inline void user_enable_block_ste
+>>  #define arch_ptrace_fork(child, clone_flags)	do { } while (0)
+>>  #endif
+>>
+>> +#ifndef arch_ptrace_report_exit
+>> +/**
+>> + * arch_ptrace_report_exit - Do machine specific work for exiting ptraced tasks
+>> + * @exit_code:	current->exit_code value
+>> + *
+>> + * This is called early from do_exit() with no locks held after we notified the
+>> + * ptracer.
+>> + */
+>> +#define arch_ptrace_report_exit(exit_code)	do { } while (0)
+>> +#endif
+>> +
+>> +static inline void ptrace_report_exit(long *exit_code)
+>> +{
+>> +	ptrace_event(PT_TRACE_EXIT, PTRACE_EVENT_EXIT, *exit_code);
+>> +	arch_ptrace_report_exit(*exit_code);
+>> +}
+>> +
+>>  extern int task_current_syscall(struct task_struct *target, long *callno,
+>>  				unsigned long args[6], unsigned int maxargs,
+>>  				unsigned long *sp, unsigned long *pc);
+>> Index: git-tip/include/linux/tracehook.h
+>> ===================================================================
+>> --- git-tip.orig/include/linux/tracehook.h	2009-03-23 10:45:30.000000000 +0100
+>> +++ git-tip/include/linux/tracehook.h	2009-03-23 11:31:21.000000000 +0100
+>> @@ -211,7 +211,7 @@ static inline void tracehook_report_exec
+>>   */
+>>  static inline void tracehook_report_exit(long *exit_code)
+>>  {
+>> -	ptrace_event(PT_TRACE_EXIT, PTRACE_EVENT_EXIT, *exit_code);
+>> +	ptrace_report_exit(exit_code);
+>>  }
+>
+>This needs Rolan'd review.
+>
+>But I'd say this has nothing to do with tracehooks. And why do
+>you pass *exit_code to arch_ptrace_report_exit() ?
+>
+>Just add arch_ptrace_report_exit(void) into do_exit() ?
+>
+>From the 3/14 patch:
+>
+>	#define arch_ptrace_report_exit(code) x86_ptrace_report_exit(code)
+>
+>	void x86_ptrace_report_exit(long exit_code)
+>	{
+>	       ptrace_bts_exit();
+>	}
+>
+>This is a bit strange. Why do we need 2 functions, ptrace_bts_exit() and
+>x86_ptrace_report_exit() which just calls the first one?
 
-On of the challenges of the guest page hinting scheme is the cost for
-the state transitions. If the cost gets too high the whole concept of
-page state information is in question. Therefore it is important to
-avoid the state transitions when possible. One place where the state
-transitions can be avoided are minor faults. Why change the page state
-to stable in find_get_page and back in page_add_anon_rmap/
-page_add_file_rmap if the discarded pages can be handled by the discard
-fault handler? If the page is in page/swap cache just map it even if it
-is already discarded. The first access to the page will cause a discard
-fault which needs to be able to deal with this kind of situation anyway
-because of other races in the memory management.
+I did not want to take any shortcuts. I try to maintain the structure 
+general_function()->ptrace_report()->arch_ptrace_report().
 
-The special find_get_page_nodiscard variant introduced for volatile
-swap cache is used which does not change the page state. The calls to
-find_get_page in filemap_nopage and lookup_swap_cache are replaced with
-find_get_page_nodiscard. By the use of this function a new race is
-created. If a minor fault races with the discard of a page the page may
-not get mapped to the page table because the discard handler removed
-the page from the cache which removes the page->mapping that is needed
-to find the page table entry. A check for the discarded bit is added to
-do_swap_page and do_no_page. The page table lock for the pte takes care
-of the synchronization.
+Recently, tracehook_report_whatever() calls were added which either do the
+ptrace work directly or call a ptrace function. I try to use those calls, where possible.
 
-That removes the state transitions on the minor fault path. A page that
-has been mapped will eventually be unmapped again. On the unmap path
-each page that has been removed from the page table is freed with a
-call to page_cache_release. In general that causes an unnecessary page
-state transition from volatile to volatile. To get rid of these state
-transitions as well a special variants of page_cache_release is added
-that does not attempt to make the page volatile.
-page_cache_release_nocheck is then used in free_page_and_swap_cache
-and release_pages. This makes the unmap of ptes state transitions free.
+It does not clutter the general code with x86 specific, or worse x86 branch trace
+recording specific calls.
 
-Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
----
 
- include/linux/pagemap.h |    4 ++++
- include/linux/swap.h    |    2 +-
- mm/filemap.c            |   27 ++++++++++++++++++++++++---
- mm/fremap.c             |    1 +
- mm/memory.c             |    4 ++--
- mm/rmap.c               |    4 +---
- mm/shmem.c              |    7 +++++++
- mm/swap_state.c         |    4 ++--
- 8 files changed, 42 insertions(+), 11 deletions(-)
+If people don't like these ptrace_whatever() and arch_ptrace_whatever() calls I add,
+I can remove them and add my calls directly where I need them.
 
-Index: linux-2.6/include/linux/pagemap.h
-===================================================================
---- linux-2.6.orig/include/linux/pagemap.h
-+++ linux-2.6/include/linux/pagemap.h
-@@ -93,11 +93,15 @@ static inline void mapping_set_gfp_mask(
- #ifdef CONFIG_PAGE_STATES
- extern struct page * find_get_page_nodiscard(struct address_space *mapping,
- 					     unsigned long index);
-+extern struct page * find_lock_page_nodiscard(struct address_space *mapping,
-+					      unsigned long index);
- #define page_cache_release(page)	put_page_check(page)
- #else
- #define find_get_page_nodiscard(mapping, index) find_get_page(mapping, index)
-+#define find_lock_page_nodiscard(mapping, index) find_lock_page(mapping, index)
- #define page_cache_release(page)	put_page(page)
- #endif
-+#define page_cache_release_nocheck(page)	put_page(page)
- void release_pages(struct page **pages, int nr, int cold);
- 
- /*
-Index: linux-2.6/include/linux/swap.h
-===================================================================
---- linux-2.6.orig/include/linux/swap.h
-+++ linux-2.6/include/linux/swap.h
-@@ -362,7 +362,7 @@ static inline void mem_cgroup_uncharge_s
- /* only sparc can not include linux/pagemap.h in this file
-  * so leave page_cache_release and release_pages undeclared... */
- #define free_page_and_swap_cache(page) \
--	page_cache_release(page)
-+	page_cache_release_nocheck(page)
- #define free_pages_and_swap_cache(pages, nr) \
- 	release_pages((pages), (nr), 0);
- 
-Index: linux-2.6/mm/filemap.c
-===================================================================
---- linux-2.6.orig/mm/filemap.c
-+++ linux-2.6/mm/filemap.c
-@@ -592,6 +592,27 @@ repeat:
- 
- EXPORT_SYMBOL(find_get_page_nodiscard);
- 
-+struct page *find_lock_page_nodiscard(struct address_space *mapping,
-+				      unsigned long offset)
-+{
-+	struct page *page;
-+
-+repeat:
-+	page = find_get_page_nodiscard(mapping, offset);
-+	if (page) {
-+		lock_page(page);
-+		/* Has the page been truncated? */
-+		if (unlikely(page->mapping != mapping)) {
-+			unlock_page(page);
-+			page_cache_release(page);
-+			goto repeat;
-+		}
-+		VM_BUG_ON(page->index != offset);
-+	}
-+	return page;
-+}
-+EXPORT_SYMBOL(find_lock_page_nodiscard);
-+
- #endif
- 
- /*
-@@ -1586,7 +1607,7 @@ int filemap_fault(struct vm_area_struct 
- 	 * Do we have something in the page cache already?
- 	 */
- retry_find:
--	page = find_lock_page(mapping, vmf->pgoff);
-+	page = find_lock_page_nodiscard(mapping, vmf->pgoff);
- 	/*
- 	 * For sequential accesses, we use the generic readahead logic.
- 	 */
-@@ -1594,7 +1615,7 @@ retry_find:
- 		if (!page) {
- 			page_cache_sync_readahead(mapping, ra, file,
- 							   vmf->pgoff, 1);
--			page = find_lock_page(mapping, vmf->pgoff);
-+			page = find_lock_page_nodiscard(mapping, vmf->pgoff);
- 			if (!page)
- 				goto no_cached_page;
- 		}
-@@ -1633,7 +1654,7 @@ retry_find:
- 				start = vmf->pgoff - ra_pages / 2;
- 			do_page_cache_readahead(mapping, file, start, ra_pages);
- 		}
--		page = find_lock_page(mapping, vmf->pgoff);
-+		page = find_lock_page_nodiscard(mapping, vmf->pgoff);
- 		if (!page)
- 			goto no_cached_page;
- 	}
-Index: linux-2.6/mm/fremap.c
-===================================================================
---- linux-2.6.orig/mm/fremap.c
-+++ linux-2.6/mm/fremap.c
-@@ -16,6 +16,7 @@
- #include <linux/module.h>
- #include <linux/syscalls.h>
- #include <linux/mmu_notifier.h>
-+#include <linux/page-states.h>
- 
- #include <asm/mmu_context.h>
- #include <asm/cacheflush.h>
-Index: linux-2.6/mm/memory.c
-===================================================================
---- linux-2.6.orig/mm/memory.c
-+++ linux-2.6/mm/memory.c
-@@ -2513,7 +2513,7 @@ static int do_swap_page(struct mm_struct
- 	 * Back out if somebody else already faulted in this pte.
- 	 */
- 	page_table = pte_offset_map_lock(mm, pmd, address, &ptl);
--	if (unlikely(!pte_same(*page_table, orig_pte)))
-+	if (unlikely(!pte_same(*page_table, orig_pte) || PageDiscarded(page)))
- 		goto out_nomap;
- 
- 	if (unlikely(!PageUptodate(page))) {
-@@ -2753,7 +2753,7 @@ retry:
- 	 * handle that later.
- 	 */
- 	/* Only go through if we didn't race with anybody else... */
--	if (likely(pte_same(*page_table, orig_pte))) {
-+	if (likely(pte_same(*page_table, orig_pte) && !PageDiscarded(page))) {
- 		flush_icache_page(vma, page);
- 		entry = mk_pte(page, vma->vm_page_prot);
- 		if (flags & FAULT_FLAG_WRITE)
-Index: linux-2.6/mm/rmap.c
-===================================================================
---- linux-2.6.orig/mm/rmap.c
-+++ linux-2.6/mm/rmap.c
-@@ -703,7 +703,6 @@ void page_add_file_rmap(struct page *pag
- {
- 	if (atomic_inc_and_test(&page->_mapcount))
- 		__inc_zone_page_state(page, NR_FILE_MAPPED);
--	page_make_volatile(page, 1);
- }
- 
- #ifdef CONFIG_DEBUG_VM
-@@ -763,7 +762,6 @@ void page_remove_rmap(struct page *page)
- 		 * faster for those pages still in swapcache.
- 		 */
- 	}
--	page_make_volatile(page, 1);
- }
- 
- /*
-@@ -862,7 +860,7 @@ static int try_to_unmap_one(struct page 
- 	}
- 
- 	page_remove_rmap(page);
--	page_cache_release(page);
-+	page_cache_release_nocheck(page);
- 
- out_unmap:
- 	pte_unmap_unlock(pte, ptl);
-Index: linux-2.6/mm/shmem.c
-===================================================================
---- linux-2.6.orig/mm/shmem.c
-+++ linux-2.6/mm/shmem.c
-@@ -59,6 +59,7 @@ static struct vfsmount *shm_mnt;
- #include <linux/highmem.h>
- #include <linux/seq_file.h>
- #include <linux/magic.h>
-+#include <linux/page-states.h>
- 
- #include <asm/uaccess.h>
- #include <asm/div64.h>
-@@ -1245,6 +1246,12 @@ repeat:
- 	if (swap.val) {
- 		/* Look it up and read it in.. */
- 		swappage = lookup_swap_cache(swap);
-+		if (swappage && unlikely(!page_make_stable(swappage))) {
-+			shmem_swp_unmap(entry);
-+			spin_unlock(&info->lock);
-+			page_discard(swappage);
-+			goto repeat;
-+		}
- 		if (!swappage) {
- 			shmem_swp_unmap(entry);
- 			/* here we actually do the io */
-Index: linux-2.6/mm/swap_state.c
-===================================================================
---- linux-2.6.orig/mm/swap_state.c
-+++ linux-2.6/mm/swap_state.c
-@@ -241,7 +241,7 @@ static inline void free_swap_cache(struc
- void free_page_and_swap_cache(struct page *page)
- {
- 	free_swap_cache(page);
--	page_cache_release(page);
-+	page_cache_release_nocheck(page);
- }
- 
- /*
-@@ -275,7 +275,7 @@ struct page * lookup_swap_cache(swp_entr
- {
- 	struct page *page;
- 
--	page = find_get_page(&swapper_space, entry.val);
-+	page = find_get_page_nodiscard(&swapper_space, entry.val);
- 
- 	if (page)
- 		INC_CACHE_INFO(find_success);
+regards,
+markus.
 
--- 
-blue skies,
-   Martin.
+---------------------------------------------------------------------
+Intel GmbH
+Dornacher Strasse 1
+85622 Feldkirchen/Muenchen Germany
+Sitz der Gesellschaft: Feldkirchen bei Muenchen
+Geschaeftsfuehrer: Douglas Lusk, Peter Gleissner, Hannes Schwaderer
+Registergericht: Muenchen HRB 47456 Ust.-IdNr.
+VAT Registration No.: DE129385895
+Citibank Frankfurt (BLZ 502 109 00) 600119052
 
-"Reality continues to ruin my life." - Calvin.
+This e-mail and any attachments may contain confidential material for
+the sole use of the intended recipient(s). Any review or distribution
+by others is strictly prohibited. If you are not the intended
+recipient, please contact the sender and delete all copies.
 
