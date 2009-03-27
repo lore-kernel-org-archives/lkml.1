@@ -1,81 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758277AbZC0Mxf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758186AbZC0MyE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758277AbZC0Mxf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Mar 2009 08:53:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753242AbZC0Mx1
+	id S1758186AbZC0MyE (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Mar 2009 08:54:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757265AbZC0Mxw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Mar 2009 08:53:27 -0400
-Received: from smtp.nokia.com ([192.100.122.233]:53092 "EHLO
-	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752505AbZC0Mx0 (ORCPT
+	Fri, 27 Mar 2009 08:53:52 -0400
+Received: from mail-ew0-f165.google.com ([209.85.219.165]:64715 "EHLO
+	mail-ew0-f165.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756842AbZC0Mxv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Mar 2009 08:53:26 -0400
-Message-ID: <49CCCB0A.6070701@nokia.com>
-Date: Fri, 27 Mar 2009 14:48:10 +0200
-From: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
-Reply-To: Artem.Bityutskiy@nokia.com
-Organization: Nokia OYJ
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Fri, 27 Mar 2009 08:53:51 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=akE4hAUDggL8aObFLe16myFzoy39RVDPbZwncuOqJG2qrWYlJ/+p8ygpLnpbQl0VO0
+         Q6wYuNwCMFOedEE9xwJaAR81YDuLl+KVmk0UezK+bD7YRm2N0OfRhhVGn6Kf4ji40YR3
+         Bdx1L1stdC08oi6DFZvLquIQ7r/lqlbbVylGA=
+Date: Fri, 27 Mar 2009 13:53:45 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Zhaolei <zhaolei@cn.fujitsu.com>
+Cc: Lai Jiangshan <laijs@cn.fujitsu.com>, Ingo Molnar <mingo@elte.hu>,
+       torvalds@linux-foundation.org, Steven Rostedt <rostedt@goodmis.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/2] Fix wrong format string iter for printk
+Message-ID: <20090327125345.GF5976@nowhere>
+References: <49CC9739.30107@cn.fujitsu.com> <49CC97B6.7040809@cn.fujitsu.com>
 MIME-Version: 1.0
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: EXT4-ish "fixes" in UBIFS 
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-OriginalArrivalTime: 27 Mar 2009 12:48:11.0750 (UTC) FILETIME=[4996E860:01C9AEDA]
-X-Nokia-AV: Clean
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49CC97B6.7040809@cn.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-UBIFS has exactly the same properties like ext4 - in case
-of power cuts:
+On Fri, Mar 27, 2009 at 05:09:10PM +0800, Zhaolei wrote:
+> printk("%Q");
+> Output before patch:
+> %QQ
+> Output after patch:
+> %Q
+> 
+> Signed-off-by: Zhao Lei <zhaolei@cn.fujitsu.com>
+> ---
+>  lib/vsprintf.c |   16 ----------------
+>  1 files changed, 0 insertions(+), 16 deletions(-)
+> 
+> diff --git a/lib/vsprintf.c b/lib/vsprintf.c
+> index 908dd41..b56f6d0 100644
+> --- a/lib/vsprintf.c
+> +++ b/lib/vsprintf.c
+> @@ -1062,13 +1062,6 @@ int vsnprintf(char *buf, size_t size, const char *fmt, va_list args)
+>  			if (str < end)
+>  				*str = '%';
+>  			++str;
+> -			if (*fmt) {
+> -				if (str < end)
+> -					*str = *fmt;
+> -				++str;
+> -			} else {
+> -				--fmt;
+> -			}
+>  			break;
+>  
+>  		case FORMAT_TYPE_NRCHARS: {
+> @@ -1356,8 +1349,6 @@ do {									\
+>  			break;
+>  
+>  		case FORMAT_TYPE_INVALID:
+> -			if (!*fmt)
+> -				--fmt;
+>  			break;
+>  
+>  		case FORMAT_TYPE_NRCHARS: {
+> @@ -1544,13 +1535,6 @@ int bstr_printf(char *buf, size_t size, const char *fmt, const u32 *bin_buf)
+>  			if (str < end)
+>  				*str = '%';
+>  			++str;
+> -			if (*fmt) {
+> -				if (str < end)
+> -					*str = *fmt;
+> -				++str;
+> -			} else {
+> -				--fmt;
+> -			}
+>  			break;
+>  
+>  		case FORMAT_TYPE_NRCHARS:
+> -- 
+> 1.5.5.3
+> 
+> 
 
-1. truncate/write/close leads to empty files
-2. create/write/rename leads to empty files
 
-UBIFS is used in hand-held and and power-cuts are very
-often there, because users just remove battery often.
+Thanks for fixing this!
 
-I realize the "reality is different" argument, and already
-concluded that we need a similar changes as Theo has done
-for ext4:
-http://git.kernel.org/?p=linux/kernel/git/tytso/ext4.git;a=commitdiff;h=bf1b69c0db7f9b9d8f02e94d40b19fca8336b991
-http://git.kernel.org/?p=linux/kernel/git/tytso/ext4.git;a=commitdiff;h=f32b730a69bd56c5c9d704d8b75f03e90e290971
-http://git.kernel.org/?p=linux/kernel/git/tytso/ext4.git;a=commitdiff;h=8411e347c3306ed36b8ca88611bf5fbf4d27d705
-
-We have a problem that user-space people do not want to
-use 'fsync()', even when they are pointed to their code
-which is doing create/write/rename/close without fsync().
-
-They just say - this is file-system bug, it is fixed in
-ext4 now, just fix the bug in UBIFS.
-
-I tell them, that is not a fix, that is band-aid, because
-ext4 issues asynchronous write, and a power cut can lead
-to corruptions anyway.
-
-I tell them, we can make this in UBIFS, but please, anyway
-add fsync() to your application. They say - now, we will
-will not - you fix your UBIFS.
-
-And because there is so much flood and about this, it is
-so difficult to have reasonable arguments. I want to say
-people - please, still use fsync(), if this is about the
-performance/reliability trade-off - make it optional.
-But they instead say - respected people are on our side,
-go away. And point me this:
-http://www.advogato.org/person/mjg59/diary/195.html
-http://thread.gmane.org/gmane.linux.kernel/811167/focus=811700
-http://article.gmane.org/gmane.comp.lang.perl.perl5.porters/67352
-
-And they say that BTRFS and XFS are going to fix userspace
-as well, and point me at this:
-https://bugs.launchpad.net/ubuntu/+source/linux/+bug/317781/comments/175
-
-This all became so messy and controversial. What should I do
-to persuade userspace to use 'fsync()' even if we hack UBIFS
-similarly to ext4? Suggestions?
-
--- 
-Best Regards,
-Artem Bityutskiy (Артём Битюцкий)
