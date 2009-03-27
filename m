@@ -1,81 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755612AbZC0IdH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754618AbZC0Ilr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755612AbZC0IdH (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Mar 2009 04:33:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754122AbZC0Icp
+	id S1754618AbZC0Ilr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Mar 2009 04:41:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751743AbZC0Ilg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Mar 2009 04:32:45 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:54634 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751743AbZC0Icn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Mar 2009 04:32:43 -0400
-Message-ID: <49CC8EBA.9040804@cn.fujitsu.com>
-Date: Fri, 27 Mar 2009 16:30:50 +0800
-From: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.5 (Windows/20070716)
+	Fri, 27 Mar 2009 04:41:36 -0400
+Received: from cantor.suse.de ([195.135.220.2]:49961 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750719AbZC0Ile (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Mar 2009 04:41:34 -0400
+Message-ID: <49CC926D.7030101@suse.de>
+Date: Fri, 27 Mar 2009 16:46:37 +0800
+From: Coly Li <coly.li@suse.de>
+Reply-To: coly.li@suse.de
+Organization: SuSE Labs
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-To: Vivek Goyal <vgoyal@redhat.com>
-CC: nauman@google.com, dpshah@google.com, lizf@cn.fujitsu.com,
-       mikew@google.com, fchecconi@gmail.com, paolo.valente@unimore.it,
-       jens.axboe@oracle.com, ryov@valinux.co.jp, fernando@intellilink.co.jp,
-       s-uchida@ap.jp.nec.com, taka@valinux.co.jp, arozansk@redhat.com,
-       jmoyer@redhat.com, oz-kernel@redhat.com, dhaval@linux.vnet.ibm.com,
-       balbir@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
-       containers@lists.linux-foundation.org, akpm@linux-foundation.org,
-       menage@google.com, peterz@infradead.org
-Subject: [PATCH] IO Controller: Don't store the pid in single queue circumstances
-References: <1236823015-4183-1-git-send-email-vgoyal@redhat.com> <1236823015-4183-3-git-send-email-vgoyal@redhat.com>
-In-Reply-To: <1236823015-4183-3-git-send-email-vgoyal@redhat.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       reiserfs-devel@vger.kernel.org
+Subject: [PATCH] fs/reiserfs: return f_fsid for statfs(2), v3
+X-Enigmail-Version: 0.95.7
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vivek Goyal wrote:
-...
-> +int elv_init_ioq(struct elevator_queue *eq, struct io_queue *ioq,
-> +			void *sched_queue, int ioprio_class, int ioprio,
-> +			int is_sync)
-> +{
-> +	struct elv_fq_data *efqd = &eq->efqd;
-> +	struct io_group *iog = io_lookup_io_group_current(efqd->queue);
-> +
-> +	RB_CLEAR_NODE(&ioq->entity.rb_node);
-> +	atomic_set(&ioq->ref, 0);
-> +	ioq->efqd = efqd;
-> +	ioq->entity.budget = efqd->elv_slice[is_sync];
-> +	elv_ioq_set_ioprio_class(ioq, ioprio_class);
-> +	elv_ioq_set_ioprio(ioq, ioprio);
-> +	ioq->pid = current->pid;
+This patch makes reiserfs3 return f_fsid info for statfs(2). By Andreas'
+suggestion, this patch populates a persistent f_fsid between boots/mounts with
+help of on-disk uuid record.
 
-  Hi Vivek,
+Randy Dunlap reported a compiling error from v2 patch like:
+    fs/built-in.o: In function `reiserfs_statfs':
+    super.c:(.text+0x7332b): undefined reference to `crc32_le'
+    super.c:(.text+0x7333f): undefined reference to `crc32_le'
+Also he provided helpful solution to fix this error. The modification of v3
+patch is based on Randy's suggestion, add 'select CRC32' in fs/reiserfs/Kconfig.
 
-  Storing a pid in single queue circumstances doesn't make sence.
-  So just store the pid when cfq is used.
+Signed-off-by: Coly Li <coly.li@suse.de>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: reiserfs-devel@vger.kernel.org
+---
+ fs/reiserfs/Kconfig |    1 +
+ fs/reiserfs/super.c |    5 +++++
+ 2 files changed, 6 insertions(+), 0 deletions(-)
 
-Signed-off-by: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
- ---
- block/elevator-fq.c |    5 ++++-
- 1 files changed, 4 insertions(+), 1 deletions(-)
+diff --git a/fs/reiserfs/Kconfig b/fs/reiserfs/Kconfig
+index 949b8c6..513f431 100644
+--- a/fs/reiserfs/Kconfig
++++ b/fs/reiserfs/Kconfig
+@@ -1,5 +1,6 @@
+ config REISERFS_FS
+ 	tristate "Reiserfs support"
++	select CRC32
+ 	help
+ 	  Stores not just filenames but the files themselves in a balanced
+ 	  tree.  Uses journalling.
+diff --git a/fs/reiserfs/super.c b/fs/reiserfs/super.c
+index f3c820b..cb8e7ee 100644
+--- a/fs/reiserfs/super.c
++++ b/fs/reiserfs/super.c
+@@ -27,6 +27,7 @@
+ #include <linux/mnt_namespace.h>
+ #include <linux/mount.h>
+ #include <linux/namei.h>
++#include <linux/crc32.h>
 
-diff --git a/block/elevator-fq.c b/block/elevator-fq.c
-index df53418..c72f7e6 100644
---- a/block/elevator-fq.c
-+++ b/block/elevator-fq.c
-@@ -1988,7 +1988,10 @@ int elv_init_ioq(struct elevator_queue *eq, struct io_queue *ioq,
- 	ioq->entity.budget = efqd->elv_slice[is_sync];
- 	elv_ioq_set_ioprio_class(ioq, ioprio_class);
- 	elv_ioq_set_ioprio(ioq, ioprio);
--	ioq->pid = current->pid;
-+	if (elv_iosched_single_ioq(eq))
-+		ioq->pid = 0;
-+	else
-+		ioq->pid = current->pid;
- 	ioq->sched_queue = sched_queue;
- 
- 	/* If generic idle logic is enabled, mark it */
+ struct file_system_type reiserfs_fs_type;
+
+@@ -1892,6 +1893,10 @@ static int reiserfs_statfs(struct dentry *dentry, struct
+kstatfs *buf)
+ 	buf->f_bsize = dentry->d_sb->s_blocksize;
+ 	/* changed to accommodate gcc folks. */
+ 	buf->f_type = REISERFS_SUPER_MAGIC;
++	buf->f_fsid.val[0] = (u32)crc32_le(0, rs->s_uuid, sizeof(rs->s_uuid)/2);
++	buf->f_fsid.val[1] = (u32)crc32_le(0, rs->s_uuid + sizeof(rs->s_uuid)/2,
++				sizeof(rs->s_uuid)/2);
++
+ 	return 0;
+ }
+
 -- 
-1.5.4.rc3
-
-
+Coly Li
+SuSE Labs
