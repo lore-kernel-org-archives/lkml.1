@@ -1,43 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762145AbZC0VEf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760081AbZC0VL4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762145AbZC0VEf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Mar 2009 17:04:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759905AbZC0VEX
+	id S1760081AbZC0VL4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Mar 2009 17:11:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757958AbZC0VLo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Mar 2009 17:04:23 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:46596 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761409AbZC0VEW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Mar 2009 17:04:22 -0400
-Date: Fri, 27 Mar 2009 22:05:34 +0100
-From: Andi Kleen <andi@firstfloor.org>
-To: Eric Anholt <eric@anholt.net>
-Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
-       dri-devel@lists.sourceforge.net
-Subject: Re: DRM lock ordering fix series
-Message-ID: <20090327210534.GD11935@one.firstfloor.org>
-References: <1238017510-26784-1-git-send-email-eric@anholt.net> <87ocvnmhqx.fsf@basil.nowhere.org> <1238170767.8275.2397.camel@gaiman.anholt.net> <1238171805.8275.2434.camel@gaiman.anholt.net> <20090327181018.GC11935@one.firstfloor.org> <1238184629.625.44.camel@gaiman.anholt.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1238184629.625.44.camel@gaiman.anholt.net>
-User-Agent: Mutt/1.4.2.1i
+	Fri, 27 Mar 2009 17:11:44 -0400
+Received: from gw.goop.org ([64.81.55.164]:44858 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757112AbZC0VLn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Mar 2009 17:11:43 -0400
+Message-ID: <49CD4109.2070505@goop.org>
+Date: Fri, 27 Mar 2009 14:11:37 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+MIME-Version: 1.0
+To: Theodore Tso <tytso@mit.edu>, Matthew Garrett <mjg59@srcf.ucam.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       David Rees <drees76@gmail.com>, Jesper Krogh <jesper@krogh.cc>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.29
+References: <alpine.LFD.2.00.0903251622420.3032@localhost.localdomain> <20090326171148.9bf8f1ec.akpm@linux-foundation.org> <alpine.LFD.2.00.0903261723250.3994@localhost.localdomain> <20090326174704.cd36bf7b.akpm@linux-foundation.org> <alpine.LFD.2.00.0903261752110.3994@localhost.localdomain> <20090327032301.GN6239@mit.edu> <20090327034705.GA16888@srcf.ucam.org> <20090327051338.GP6239@mit.edu> <20090327055750.GA18065@srcf.ucam.org> <20090327062114.GA18290@srcf.ucam.org> <20090327112438.GQ6239@mit.edu>
+In-Reply-To: <20090327112438.GQ6239@mit.edu>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> OK.  I'm not too excited here -- 10% of 2% of the CPU time doesn't get
-> me to the 10% loss that the slow path added up to.  Most of the cost is
-> in k{un,}map_atomic of the returned pages.  If the gup somehow filled in
-> the user's PTEs, I'd be happy and always use that (since then I'd have
+Theodore Tso wrote:
+> When I was growing up we were trained to *always* check error returns
+> from *all* system calls, and to *always* fsync() if it was critical
+> that the data survive a crash.  That was what competent Unix
+> programmers did.  And if you are always checking error returns, the
+> difference in the Lines of Code between doing it right and doing
+> really wasn't that big --- and again, back then fsync() wan't
+> expensive.  Making fsync expensive was ext3's data=ordered mode's
+> fault.
 
-On x86 the user PTEs are already there if it's your current process
-context so you could just use them. And it's even safe to use as long as its 
-locked.  But that would be a x86 specific hack, not working on all platforms 
-that have split kernel user address spaces (that includes UML)
+This is a fairly narrow view of correct and possible.  How can you make 
+"cat" fsync? grep? sort?  How do they know they're not dealing with 
+critical data?  Apps in general don't know, because "criticality" is a 
+property of the data itself and how its used, not the tools operating on it.
 
--Andi
+My point isn't that "there should be a way of doing fsync from a shell 
+script" (which is probably true anyway), but that authors can't 
+generally anticipate when their program is going to be dealing with 
+something important.  The conservative approach would be to fsync all 
+data on every close, but that's almost certainly the wrong thing for 
+everyone.
 
--- 
-ak@linux.intel.com -- Speaking for myself only.
+If the filesystem has reasonably strong inherent data-preserving 
+properties, then that's much better than scattering fsync everywhere.
+
+fsync obviously makes sense in specific applications; it makes sense to 
+fsync when you're guaranteeing that a database commit hits stable 
+storage, etc.  But generic tools can't reasonably perform fsyncs, and 
+its not reasonable to say that "important data is always handled by 
+special important data tools".
+
+    J
