@@ -1,58 +1,183 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757108AbZC0WTo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759069AbZC0WUd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757108AbZC0WTo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Mar 2009 18:19:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752052AbZC0WTe
+	id S1759069AbZC0WUd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Mar 2009 18:20:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753075AbZC0WUW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Mar 2009 18:19:34 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:58368 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752253AbZC0WTe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Mar 2009 18:19:34 -0400
-Date: Fri, 27 Mar 2009 15:10:56 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Jan Kara <jack@suse.cz>
-cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Theodore Tso <tytso@mit.edu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Nick Piggin <npiggin@suse.de>,
-       Jens Axboe <jens.axboe@oracle.com>, David Rees <drees76@gmail.com>,
-       Jesper Krogh <jesper@krogh.cc>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Oleg Nesterov <oleg@redhat.com>, Roland McGrath <roland@redhat.com>
-Subject: Re: ext3 IO latency measurements (was: Linux 2.6.29)
-In-Reply-To: <20090327213806.GG31071@duck.suse.cz>
-Message-ID: <alpine.LFD.2.00.0903271508520.3994@localhost.localdomain>
-References: <alpine.LFD.2.00.0903251008120.3032@localhost.localdomain> <20090325185824.GO32307@mit.edu> <alpine.LFD.2.00.0903251341050.3032@localhost.localdomain> <20090325215137.GQ32307@mit.edu> <alpine.LFD.2.00.0903251613300.3032@localhost.localdomain>
- <20090325235041.GA11024@duck.suse.cz> <20090326090630.GA9369@elte.hu> <20090326181106.GC17159@duck.suse.cz> <alpine.LFD.2.00.0903261534490.3032@localhost.localdomain> <20090326155725.c2150ab2.akpm@linux-foundation.org>
- <20090327213806.GG31071@duck.suse.cz>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Fri, 27 Mar 2009 18:20:22 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:58787 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752711AbZC0WUV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Mar 2009 18:20:21 -0400
+Date: Fri, 27 Mar 2009 23:20:17 +0100
+From: Jan Kara <jack@suse.cz>
+To: "Theodore Ts'o" <tytso@mit.edu>
+Cc: Linux Kernel Developers List <linux-kernel@vger.kernel.org>,
+       Ext4 Developers List <linux-ext4@vger.kernel.org>, jack@suse.cz
+Subject: Re: [PATCH 2/3] ext3: Use WRITE_SYNC for commits which are caused
+	by fsync()
+Message-ID: <20090327222017.GI31071@duck.suse.cz>
+References: <1238185471-31152-1-git-send-email-tytso@mit.edu> <1238185471-31152-2-git-send-email-tytso@mit.edu> <1238185471-31152-3-git-send-email-tytso@mit.edu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1238185471-31152-3-git-send-email-tytso@mit.edu>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri 27-03-09 16:24:30, Theodore Ts'o wrote:
+> If a commit is triggered by fsync(), set a flag indicating the journal
+> blocks associated with the transaction should be flushed out using
+> WRITE_SYNC.
+> 
+> Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
+  And this one seems fine as well. Acked-by: Jan Kara <jack@suse.cz>
 
+								Honza
 
-On Fri, 27 Mar 2009, Jan Kara wrote:
->
->   Doable but not fairly simple ;) Firstly you have to restart a transaction
-> when you've used up all the credits you originally started with (easy),
-> secondly ext3 uses lock order PageLock -> "transaction start" which is
-> unusable for the scheme you suggest. So we'd have to revert that - which
-> needs larger audit of our locking scheme and that's probably the reason
-> why noone has done it yet.
-
-It's also not clear that ext3 can really do much better than the regular 
-generic_writepages() logic. I mean, seriously, what's there to improve on? 
-The transaction code is all normally totally pointless, and I merged the 
-patch that avoids it when not necessary. 
-
-It might be different if more people used "data=journal", but I don't 
-doubt that is very common. For data=writeback and data=ordered, I bet 
-generic_writepages() is as good as anything ext3-specific could be.
-
-			Linus
+> ---
+>  fs/jbd/commit.c      |   23 +++++++++++++++--------
+>  fs/jbd/transaction.c |    2 ++
+>  include/linux/jbd.h  |    5 +++++
+>  3 files changed, 22 insertions(+), 8 deletions(-)
+> 
+> diff --git a/fs/jbd/commit.c b/fs/jbd/commit.c
+> index 3fbffb1..f8077b9 100644
+> --- a/fs/jbd/commit.c
+> +++ b/fs/jbd/commit.c
+> @@ -20,6 +20,7 @@
+>  #include <linux/slab.h>
+>  #include <linux/mm.h>
+>  #include <linux/pagemap.h>
+> +#include <linux/bio.h>
+>  
+>  /*
+>   * Default IO end handler for temporary BJ_IO buffer_heads.
+> @@ -171,14 +172,15 @@ static int journal_write_commit_record(journal_t *journal,
+>  	return (ret == -EIO);
+>  }
+>  
+> -static void journal_do_submit_data(struct buffer_head **wbuf, int bufs)
+> +static void journal_do_submit_data(struct buffer_head **wbuf, int bufs,
+> +				   int write_op)
+>  {
+>  	int i;
+>  
+>  	for (i = 0; i < bufs; i++) {
+>  		wbuf[i]->b_end_io = end_buffer_write_sync;
+>  		/* We use-up our safety reference in submit_bh() */
+> -		submit_bh(WRITE, wbuf[i]);
+> +		submit_bh(write_op, wbuf[i]);
+>  	}
+>  }
+>  
+> @@ -186,7 +188,8 @@ static void journal_do_submit_data(struct buffer_head **wbuf, int bufs)
+>   *  Submit all the data buffers to disk
+>   */
+>  static int journal_submit_data_buffers(journal_t *journal,
+> -				transaction_t *commit_transaction)
+> +				       transaction_t *commit_transaction,
+> +				       int write_op)
+>  {
+>  	struct journal_head *jh;
+>  	struct buffer_head *bh;
+> @@ -225,7 +228,7 @@ write_out_data:
+>  				BUFFER_TRACE(bh, "needs blocking lock");
+>  				spin_unlock(&journal->j_list_lock);
+>  				/* Write out all data to prevent deadlocks */
+> -				journal_do_submit_data(wbuf, bufs);
+> +				journal_do_submit_data(wbuf, bufs, write_op);
+>  				bufs = 0;
+>  				lock_buffer(bh);
+>  				spin_lock(&journal->j_list_lock);
+> @@ -256,7 +259,7 @@ write_out_data:
+>  			jbd_unlock_bh_state(bh);
+>  			if (bufs == journal->j_wbufsize) {
+>  				spin_unlock(&journal->j_list_lock);
+> -				journal_do_submit_data(wbuf, bufs);
+> +				journal_do_submit_data(wbuf, bufs, write_op);
+>  				bufs = 0;
+>  				goto write_out_data;
+>  			}
+> @@ -286,7 +289,7 @@ write_out_data:
+>  		}
+>  	}
+>  	spin_unlock(&journal->j_list_lock);
+> -	journal_do_submit_data(wbuf, bufs);
+> +	journal_do_submit_data(wbuf, bufs, write_op);
+>  
+>  	return err;
+>  }
+> @@ -315,6 +318,7 @@ void journal_commit_transaction(journal_t *journal)
+>  	int first_tag = 0;
+>  	int tag_flag;
+>  	int i;
+> +	int write_op = WRITE;
+>  
+>  	/*
+>  	 * First job: lock down the current transaction and wait for
+> @@ -347,6 +351,8 @@ void journal_commit_transaction(journal_t *journal)
+>  	spin_lock(&journal->j_state_lock);
+>  	commit_transaction->t_state = T_LOCKED;
+>  
+> +	if (commit_transaction->t_synchronous_commit)
+> +		write_op = WRITE_SYNC;
+>  	spin_lock(&commit_transaction->t_handle_lock);
+>  	while (commit_transaction->t_updates) {
+>  		DEFINE_WAIT(wait);
+> @@ -431,7 +437,8 @@ void journal_commit_transaction(journal_t *journal)
+>  	 * Now start flushing things to disk, in the order they appear
+>  	 * on the transaction lists.  Data blocks go first.
+>  	 */
+> -	err = journal_submit_data_buffers(journal, commit_transaction);
+> +	err = journal_submit_data_buffers(journal, commit_transaction,
+> +					  write_op);
+>  
+>  	/*
+>  	 * Wait for all previously submitted IO to complete.
+> @@ -660,7 +667,7 @@ start_journal_io:
+>  				clear_buffer_dirty(bh);
+>  				set_buffer_uptodate(bh);
+>  				bh->b_end_io = journal_end_buffer_io_sync;
+> -				submit_bh(WRITE, bh);
+> +				submit_bh(write_op, bh);
+>  			}
+>  			cond_resched();
+>  
+> diff --git a/fs/jbd/transaction.c b/fs/jbd/transaction.c
+> index e6a1174..ed886e6 100644
+> --- a/fs/jbd/transaction.c
+> +++ b/fs/jbd/transaction.c
+> @@ -1440,6 +1440,8 @@ int journal_stop(handle_t *handle)
+>  		}
+>  	}
+>  
+> +	if (handle->h_sync)
+> +		transaction->t_synchronous_commit = 1;
+>  	current->journal_info = NULL;
+>  	spin_lock(&journal->j_state_lock);
+>  	spin_lock(&transaction->t_handle_lock);
+> diff --git a/include/linux/jbd.h b/include/linux/jbd.h
+> index 64246dc..2c69431 100644
+> --- a/include/linux/jbd.h
+> +++ b/include/linux/jbd.h
+> @@ -552,6 +552,11 @@ struct transaction_s
+>  	 */
+>  	int t_handle_count;
+>  
+> +	/*
+> +	 * This transaction is being forced and some process is
+> +	 * waiting for it to finish.
+> +	 */
+> +	int t_synchronous_commit:1;
+>  };
+>  
+>  /**
+> -- 
+> 1.5.6.3
+> 
+-- 
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
