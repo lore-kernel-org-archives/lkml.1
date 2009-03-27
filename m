@@ -1,60 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761959AbZC0XET@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762883AbZC0XFb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761959AbZC0XET (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Mar 2009 19:04:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761778AbZC0XDu
+	id S1762883AbZC0XFb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Mar 2009 19:05:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751434AbZC0XFO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Mar 2009 19:03:50 -0400
-Received: from e37.co.us.ibm.com ([32.97.110.158]:47995 "EHLO
-	e37.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759870AbZC0XDt (ORCPT
+	Fri, 27 Mar 2009 19:05:14 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:55373 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752052AbZC0XFN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Mar 2009 19:03:49 -0400
-Subject: Re: [patch 0/6] Guest page hinting version 7.
-From: Dave Hansen <dave@linux.vnet.ibm.com>
-To: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       virtualization@lists.osdl.org, frankeh@watson.ibm.com, akpm@osdl.org,
-       nickpiggin@yahoo.com.au, hugh@veritas.com, riel@redhat.com
-In-Reply-To: <20090327150905.819861420@de.ibm.com>
-References: <20090327150905.819861420@de.ibm.com>
-Content-Type: text/plain
-Date: Fri, 27 Mar 2009 16:03:43 -0700
-Message-Id: <1238195024.8286.562.camel@nimitz>
+	Fri, 27 Mar 2009 19:05:13 -0400
+Date: Sat, 28 Mar 2009 01:05:09 +0200 (EET)
+From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
+X-X-Sender: ijjarvin@wrl-59.cs.helsinki.fi
+To: Markus Trippelsdorf <markus@trippelsdorf.de>
+cc: Netdev <netdev@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: WARNING: at net/ipv4/tcp_input.c:2927 tcp_ack+0xd55/0x1991()
+In-Reply-To: <20090327211202.GA10014@gentoox2.trippelsdorf.de>
+Message-ID: <Pine.LNX.4.64.0903280031080.5904@wrl-59.cs.helsinki.fi>
+References: <20090327211202.GA10014@gentoox2.trippelsdorf.de>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-03-27 at 16:09 +0100, Martin Schwidefsky wrote:
-> If the host picks one of the
-> pages the guest can recreate, the host can throw it away instead of writing
-> it to the paging device. Simple and elegant.
+On Fri, 27 Mar 2009, Markus Trippelsdorf wrote:
 
-Heh, simple and elegant for the hypervisor.  But I'm not sure I'm going
-to call *anything* that requires a new CPU instruction elegant. ;)
+> I'm running the latest git kernel (2.6.29-03321-gbe0ea69) and I've got
+> this warning twice in the last few hours.:
 
-I don't see any description of it in there any more, but I thought this
-entire patch set was to get rid of the idiotic triple I/Os in the
-following scenario:
+What did you run previously?
 
-1. Hypervisor picks a page and evicts it out to disk, pays the I/O cost
-   to get it written out. (I/O #1)
-2. Linux comes along (being a bit late to the party) and picks the same
-   page, also decides it needs to be out to disk
-3. Linux tries to write the page to disk, but touches it in the 
-   process, pulling the page back in from the store where the hypervisor
-   wrote it. (I/O #2)
-4. Linux writes the page to its swap device (I/O #3)
+> Mar 27 21:37:00 [kernel] ------------[ cut here ]------------
+> Mar 27 21:37:00 [kernel] WARNING: at net/ipv4/tcp_input.c:2927 tcp_ack+0xd55/0x1991()
 
-I don't see that mentioned at all in the current description.
-Simplifying the hypervisor is hard to get behind, but cutting system I/O
-by 2/3 is a much nicer benefit for 1200 lines of invasive code. ;)
+This one may or may not be a new one... Starting from the point when the 
+warning was added it has been seen and some of those miscounts got tracked 
+down but there is still something remaining (and that has been the state 
+for couple of version already). It seems to require some particularly hard 
+to reproduce network behavior people usually hit once in a lifetime. 
+However, those miscount alone should not cause crashes, stalled TCP at 
+worst but even that is quite unlikely to happen if fackets_out was not 
+counted right.
 
-Can we persuade the hypervisor to tell us which pages it decided to page
-out and just skip those when we're scanning the LRU?
+> The machine hangs afterwards.
 
--- Dave
+Is it really related to the warning for sure? I find it hard to 
+believe...
 
+We even fixed that miscount for you when the warning was printed out (and 
+the miscount alone wouldn't be able to cause crash anyway). Obviously 
+there could something that got broken but reading through all post 2.6.29 
+tcp material doesn't reveal anything particularly suspicious or even 
+tricky... Only one thing that is remotely related to the warning that gets 
+printed out is d3d2ae454501a4dec360995649e1b002a2ad90c5 but even that has 
+very strong foundation as it does not have any potential to introduce 
+stale references, rest of the effects would be just stalled tcp connection 
+at worst.
+
+Please add some debugging things, at least lockdep (CONFIG_PROVE_LOCKING) 
+and soft lockup detector (CONFIG_DETECT_SOFTLOCKUP) to find out if we can 
+get some info about the actual place of hang, some other debug things 
+might also end up being useful.
+
+Thanks for the report.
+
+-- 
+ i.
