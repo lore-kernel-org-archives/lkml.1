@@ -1,51 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760585AbZC0Uj2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761456AbZC0Uka@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760585AbZC0Uj2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Mar 2009 16:39:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754484AbZC0UjT
+	id S1761456AbZC0Uka (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Mar 2009 16:40:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755974AbZC0UkT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Mar 2009 16:39:19 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:53162 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753182AbZC0UjS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Mar 2009 16:39:18 -0400
-Message-ID: <49CD394B.9080903@garzik.org>
-Date: Fri, 27 Mar 2009 16:38:35 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
-MIME-Version: 1.0
-To: Christoph Hellwig <hch@infradead.org>
-CC: Theodore Tso <tytso@mit.edu>, Jens Axboe <jens.axboe@oracle.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Nick Piggin <npiggin@suse.de>,
-       David Rees <drees76@gmail.com>, Jesper Krogh <jesper@krogh.cc>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.29
-References: <20090324184549.GE32307@mit.edu> <alpine.LFD.2.00.0903241218130.3032@localhost.localdomain> <49C93AB0.6070300@garzik.org> <20090325093913.GJ27476@kernel.dk> <49CA86BD.6060205@garzik.org> <20090325194341.GB27476@kernel.dk> <49CA9346.6040108@garzik.org> <alpine.LFD.2.00.0903251337410.3032@localhost.localdomain> <20090327075723.GT27476@kernel.dk> <20090327141333.GS6239@mit.edu> <20090327143543.GA17541@infradead.org>
-In-Reply-To: <20090327143543.GA17541@infradead.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+	Fri, 27 Mar 2009 16:40:19 -0400
+Received: from mail-ew0-f165.google.com ([209.85.219.165]:54087 "EHLO
+	mail-ew0-f165.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755442AbZC0UkR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Mar 2009 16:40:17 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
+         :mime-version:content-type;
+        b=PEt0kbkIw3cfLpBVobdpi493sM2TdFjVUIXm9NmlzFCq1xZUr98RTIFz+T2cDLwTtl
+         EzfIrIh+21hcWi2aQNOakeeaHKXf9YY5Z5xnPPw9AgCCg6JW175zfSSdgu6O7OYSxCk5
+         TNUcL7jfJmznon/Hj6EooAdmQH63rmi+FWwT4=
+Date: Fri, 27 Mar 2009 21:41:06 +0100
+From: Kristoffer Ericson <kristoffer.ericson@gmail.com>
+To: avorontsov@ru.mvista.com
+Cc: cbou@mail.ru,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: Using POWER or APM for battery handling
+Message-Id: <20090327214106.dbf36adf.kristoffer.ericson@gmail.com>
+In-Reply-To: <20090327192947.GA13609@oksana.dev.rtsoft.ru>
+References: <20090327202406.60885d4a.kristoffer.ericson@gmail.com>
+	<20090327192947.GA13609@oksana.dev.rtsoft.ru>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.14.7; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Fri__27_Mar_2009_21_41_06_+0100_nb31ckfDkgf7uM.v"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Hellwig wrote:
-> And please add a tuneable for the flush.  Preferable a generic one at
-> the block device layer instead of the current mess where every
-> filesystem has a slightly different option for barrier usage.
+--Signature=_Fri__27_Mar_2009_21_41_06_+0100_nb31ckfDkgf7uM.v
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-At the very least, IMO the block layer should be able to notice when 
-barriers need not be translated into cache flushes.  Most notably when 
-wb cache is disabled on the drive, something easy to auto-detect, but 
-probably a manual switch also, for people with enterprise battery-backed 
-storage and such.
+On Fri, 27 Mar 2009 22:29:47 +0300
+Anton Vorontsov <avorontsov@ru.mvista.com> wrote:
 
-	Jeff
+> Hello Kristoffer,
+>=20
+> On Fri, Mar 27, 2009 at 08:24:06PM +0100, Kristoffer Ericson wrote:
+> > Hey Anton,
+> >=20
+> > My machines (HP Jornada 600-series and HP Jornada 700-series) both
+> > rely on batteries for power. Now, in the past it has all
+> > been handled by an APM_EMULATION driver that
+> > essentially detects the current state (loading YES/NO,=20
+> > POWER_LEFT, ESTIMATED TIME LEFT,...) and adjusts
+> > the state of the machine.
+> >=20
+> > My question is should I port this to instead
+> > use the power class (drivers/power) or not.
+>=20
+> The driver is already there:
+> drivers/power/apm_power.c
+>=20
+> So all you need is Jornada driver for the power supply class,
+> and then apm_power.c will work for your battery driver.
+>=20
+> Feel free to ask if there is anything still not clear.
+
+Great!
+
+I think I understand, but should I create this driver
+inside /drivers/power or inside the mach folder (in this case arch/arm/mach=
+-sa1100)?
+
+>=20
+> Thanks,
+>=20
+> --=20
+> Anton Vorontsov
+> email: cbouatmailru@gmail.com
+> irc://irc.freenode.net/bd2
 
 
+--=20
+Kristoffer Ericson <kristoffer.ericson@gmail.com>
+
+--Signature=_Fri__27_Mar_2009_21_41_06_+0100_nb31ckfDkgf7uM.v
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAknNOeIACgkQPQls10ERAGcO/gCcCVDqWH7Wn8nYKIXXDzC1D44X
+tP0An0MwCBQ0HK7/elXnd7VBXRK4Vl35
+=mjKp
+-----END PGP SIGNATURE-----
+
+--Signature=_Fri__27_Mar_2009_21_41_06_+0100_nb31ckfDkgf7uM.v--
