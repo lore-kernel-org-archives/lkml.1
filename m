@@ -1,537 +1,220 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762635AbZC0UO3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754012AbZC0UQE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762635AbZC0UO3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Mar 2009 16:14:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761746AbZC0UMk
+	id S1754012AbZC0UQE (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Mar 2009 16:16:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757739AbZC0UPt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Mar 2009 16:12:40 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:39099 "EHLO mx2.redhat.com"
+	Fri, 27 Mar 2009 16:15:49 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:46979 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762887AbZC0UMh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Mar 2009 16:12:37 -0400
-Message-ID: <49CD3314.9@redhat.com>
-Date: Fri, 27 Mar 2009 16:12:04 -0400
-From: Masami Hiramatsu <mhiramat@redhat.com>
+	id S1755200AbZC0UPr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Mar 2009 16:15:47 -0400
+Message-ID: <49CD33E8.6060307@redhat.com>
+Date: Fri, 27 Mar 2009 13:15:36 -0700
+From: Josh Stone <jistone@redhat.com>
 User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-To: Frederic Weisbecker <fweisbec@gmail.com>
-CC: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       systemtap-ml <systemtap@sources.redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH -tip 3/4 V3.1] tracing: kprobe-tracer plugin supports arguments
-References: <49CC08D2.30608@redhat.com> <20090327114453.GB5976@nowhere> <49CCFAD8.7040304@redhat.com> <20090327181539.GA6005@nowhere>
-In-Reply-To: <20090327181539.GA6005@nowhere>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
+To: systemtap <systemtap@sourceware.org>
+CC: LKML <linux-kernel@vger.kernel.org>
+Subject: systemtap release 0.9.5
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Frederic Weisbecker wrote:
-[...]
->>>>  Synopsis of kprobe_probes:
->>>> -  p SYMBOL[+offs|-offs]|MEMADDR	: set a probe
->>>> -  r SYMBOL[+0]				: set a return probe
->>>> +  p SYMBOL[+offs|-offs]|MEMADDR [FETCHARGS]	: set a probe
->>>> +  r SYMBOL[+0] [FETCHARGS]			: set a return probe
->>>> +
->>>> + FETCHARGS:
->>>> +  rN	: Fetch Nth register (N >= 0)
->>>> +  sN	: Fetch Nth entry of stack (N >= 0)
->>>> +  @ADDR	: Fetch memory at ADDR (ADDR should be in kernel)
->>>> +  aN	: Fetch function argument. (N >= 1)(*)
->>>> +  rv	: Fetch return value.(**)
->>>> +  rp	: Fetch return address.(**)
->>>
->>> May be ra for the latter?
->>> If we mean "return value" for rv, it might be better to follow
->>> the same logic with rp.
->>>
->>> If rp means "return pointer" or "return pc", then it seems
->>> less intuitive than "return address" (at least to me).
->> Ah, sure, 'ra' is better.
->>
-[...]
->>> I think you really need to factorize these helpers in a generic one.
->> Hmm, I hope so. what I need is a variant of __trace_bprintk which
->> accepts an arrayed arguments ...
-> 
-> 
-> Hmm, that wouldn't result in something proper. We would always
-> need a u64 array container to make it generic.
-> 
-> And a loop would reduce the performances (the tracing path must stay fast).
-> I guess you can keep it as is for now.
+The SystemTap team proudly announces release 0.9.5.
 
-OK, so I updated my patch just use ra instead of rp.
+ Kernel tracepoint support, standard tapset functions and probe now have
+ manual pages, typecasting supports module search paths, on-file flight
+ recorder support, probe each instruction (block) step of a process,
+ syscall wrappers support, security fixes, tested against released
+ 2.6.29 kernels.
 
-Thanks!
+ = Where to get it
 
------
-tracing: kprobe-tracer plugin supports arguments v3.1
+   http://sourceware.org/systemtap/ - our project page
+   http://sourceware.org/systemtap/ftp/releases/systemtap-0.9.5.tar.gz
+   http://koji.fedoraproject.org/koji/packageinfo?packageID=615
+   git commit 756c9462
 
-From: Masami Hiramatsu <mhiramat@redhat.com>
+ = How to build it
 
-Support probe arguments and add fetch functions.
+   See the README and NEWS files at
+   http://sourceware.org/git/?p=systemtap.git;a=tree;hb=756c9462
+   Further information at http://sourceware.org/systemtap/wiki/
 
-changes from v3:
- - access return value with ra instead of rv.
+ = Systemtap frontend (stap) changes
 
-Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>
-Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>
----
+ - On-file flight recorder is supported. It allows stap to record huge
+   trace log on the disk and to run in background.  Passing -F option
+   with -o option runs stap in background mode. In this mode, staprun is
+   detached from console, and stap itself shows staprun's pid and exits.
+   Specifying the max size and the max number of log files are also
+   available by passing -S option. This option has one or two arguments
+   seperated by a comma. The first argument is the max size of a log
+   file in MB. If the size of a log file exceeds it, stap switches to
+   the next log file automatically. The second is how many files are
+   kept on the disk. If the number of log files exceeds it, the oldest
+   log file is removed automatically. The second argument can be
+   omitted.
 
- Documentation/ftrace.txt    |   43 ++++--
- kernel/trace/trace_kprobe.c |  292 ++++++++++++++++++++++++++++++++++++++++++-
- 2 files changed, 312 insertions(+), 23 deletions(-)
+   For example, this will record output on log files each of them is
+   smaller than 1024MB and keep last 3 logs, in background.
+     % stap -F -o /tmp/staplog -S 1024,3 script.stp
 
+ - In guru mode (-g), the kernel probing blacklist is disabled, leaving
+   only a subset - the kernel's own internal kprobe blacklist - to
+   attempt to filter out areas unsafe to probe.  The differences may be
+   enough to probe more interrupt handlers.
 
-diff --git a/Documentation/ftrace.txt b/Documentation/ftrace.txt
-index fd0833b..eb8c745 100644
---- a/Documentation/ftrace.txt
-+++ b/Documentation/ftrace.txt
-@@ -1329,17 +1329,30 @@ current_tracer, instead of that, just set probe points via
- /debug/tracing/kprobe_probes.
+ - Variables unavailable in current context may be skipped by setting a
+   session level flag with command line option --skip-badvars now
+   available. This replaces any dwarf $variable expressions that could
+   not be resolved with literal numeric zeros, along with a warning
+   message.
 
- Synopsis of kprobe_probes:
--  p SYMBOL[+offs|-offs]|MEMADDR	: set a probe
--  r SYMBOL[+0]				: set a return probe
-+  p SYMBOL[+offs|-offs]|MEMADDR [FETCHARGS]	: set a probe
-+  r SYMBOL[+0] [FETCHARGS]			: set a return probe
-+
-+ FETCHARGS:
-+  rN	: Fetch Nth register (N >= 0)
-+  sN	: Fetch Nth entry of stack (N >= 0)
-+  @ADDR	: Fetch memory at ADDR (ADDR should be in kernel)
-+  aN	: Fetch function argument. (N >= 1)(*)
-+  rv	: Fetch return value.(**)
-+  ra	: Fetch return address.(**)
-+
-+  (*) aN may not correct on asmlinkaged functions and at function body.
-+  (**) only for return probe.
+ - Both kernel markers and kernel tracepoint support argument listing
+   through stap -L 'kernel.mark("*")' or stap -L 'kernel.trace("*")'
 
- E.g.
--  echo p sys_open > /debug/tracing/kprobe_probes
-+  echo p do_sys_open a1 a2 a3 a4 > /debug/tracing/kprobe_probes
+ - Users can use -DINTERRUPTIBLE=0 to prevent interrupt reentrancy in
+   their script, at the cost of a bit more overhead to toggle the
+   interrupt mask.
 
-- This sets a kprobe on the top of sys_open() function.
-+ This sets a kprobe on the top of do_sys_open() function with recording
-+1st to 4th arguments.
+ - Added reentrancy debugging. If stap is run with the arguments
+   "-t -DDEBUG_REENTRANCY", additional warnings will be printed for
+   every reentrancy event, including the probe points of the resident
+   and interloper probes.
 
--  echo r sys_open >> /debug/tracing/kprobe_probes
-+  echo r do_sys_open rv ra >> /debug/tracing/kprobe_probes
+   For an overview of the stap frontend see man stap(1).
 
-- This sets a kretprobe on the return point of sys_open() function.
-+ This sets a kretprobe on the return point of do_sys_open() function with
-+recording return value and return address.
+ = Systemtap script language changes
 
-   echo > /debug/tracing/kprobe_probes
+ - Kernel tracepoints are now supported for probing predefined kernel
+   events without any debuginfo.  Tracepoints incur less overhead than
+   kprobes, and context parameters are available with full type
+   information.  Any kernel 2.6.28 and later should have defined
+   tracepoints.  Try the following to see what's available:
+    $ stap -L 'kernel.trace("*")'
 
-@@ -1351,18 +1364,16 @@ E.g.
- #
- #           TASK-PID    CPU#    TIMESTAMP  FUNCTION
- #              | |       |          |         |
--           <...>-5117  [003]   416.481638: sys_open: @sys_open+0
--           <...>-5117  [003]   416.481662: syscall_call: <-sys_open+0
--           <...>-5117  [003]   416.481739: sys_open: @sys_open+0
--           <...>-5117  [003]   416.481762: sysenter_do_call: <-sys_open+0
--           <...>-5117  [003]   416.481818: sys_open: @sys_open+0
--           <...>-5117  [003]   416.481842: sysenter_do_call: <-sys_open+0
--           <...>-5117  [003]   416.481882: sys_open: @sys_open+0
--           <...>-5117  [003]   416.481905: sysenter_do_call: <-sys_open+0
-+           <...>-2376  [001]   262.389131: do_sys_open: @do_sys_open+0 0xffffff9c 0x98db83e 0x8880 0x0
-+           <...>-2376  [001]   262.391166: sys_open: <-do_sys_open+0 0x5 0xc06e8ebb
-+           <...>-2376  [001]   264.384876: do_sys_open: @do_sys_open+0 0xffffff9c 0x98db83e 0x8880 0x0
-+           <...>-2376  [001]   264.386880: sys_open: <-do_sys_open+0 0x5 0xc06e8ebb
-+           <...>-2084  [001]   265.380330: do_sys_open: @do_sys_open+0 0xffffff9c 0x804be3e 0x0 0x1b6
-+           <...>-2084  [001]   265.380399: sys_open: <-do_sys_open+0 0x3 0xc06e8ebb
+ - New probes process().insn and process().insn.block that allows
+   inspection of the process after each instruction or block of
+   instructions executed. So to count the total number of instructions
+   a process executes during a run do something like:
+    $ stap -e 'global steps; probe process("/bin/ls").insn {steps++}
+               probe end {printf("Total instructions: %d\n", steps);}' \
+           -c /bin/ls
+   This feature can slow down execution of a process somewhat.
 
-  @SYMBOL means that kernel hits a probe, and <-SYMBOL means kernel returns
--from SYMBOL(e.g. "sysenter_do_call: <-sys_open+0" means kernel returns from
--sys_open to sysenter_do_call).
-+from SYMBOL(e.g. "sys_open: <-do_sys_open+0" means kernel returns from
-+do_sys_open to sys_open).
+ - Typecasting with @cast now supports modules search paths, which is
+   useful in case there are multiple places where the type definition
+   may be found.  For example:
+     @cast(sdev, "scsi_device", "kernel:scsi_mod")->sdev_state
 
+   For an overview of available probes, functions and variables see
+   man stapprobes(3stap), man stapfuncs(3stap), man stapvars(3stap)
 
- function graph tracer
-diff --git a/kernel/trace/trace_kprobe.c b/kernel/trace/trace_kprobe.c
-index 6f5fdd6..85edc41 100644
---- a/kernel/trace/trace_kprobe.c
-+++ b/kernel/trace/trace_kprobe.c
-@@ -27,10 +27,122 @@
- #include <linux/types.h>
- #include <linux/string.h>
- #include <linux/ctype.h>
-+#include <linux/ptrace.h>
+ = Documentation
 
- #include <linux/ftrace.h>
- #include "trace.h"
+ - Systemtap probes and function man pages extracted from the tapsets
+   are now available under 3stap. To show the page for the probe
+   vm.pagefault or the stap function pexecname do:
+     $ man [3stap] vm.pagefault
+     $ man [3stap] pexecname
 
-+/* TODO: Move these functions to arch/XXX/include/asm/debugger.h */
-+
-+struct fetch_func {
-+	unsigned long (*func)(struct pt_regs *, void *);
-+	void *data;
-+};
-+
-+static unsigned long call_fetch(struct fetch_func *f, struct pt_regs *regs)
-+{
-+	return f->func(regs, f->data);
-+}
-+
-+#define STACK_MASK (THREAD_SIZE - 1)
-+#define valid_stack_addr(regs, addr) \
-+	(((addr) & ~STACK_MASK) == (kernel_trap_sp(regs) & ~STACK_MASK))
-+
-+#if defined(__i386__)
-+#define MAX_REG_NUM 15
-+#elif defined(__x86_64__)
-+#define MAX_REG_NUM 21
-+#else
-+#define MAX_REG_NUM (sizeof(struct pt_regs)/sizeof(unsigned long))
-+#endif
-+
-+static unsigned long fetch_register(struct pt_regs *regs, void *num)
-+{
-+	if (unlikely((unsigned long)num > MAX_REG_NUM))
-+		return 0;
-+	return *((unsigned long *)regs + (unsigned long)num);
-+}
-+
-+static unsigned long fetch_stack(struct pt_regs *regs, void *num)
-+{
-+	unsigned long *addr = (unsigned long *)kernel_trap_sp(regs);
-+	addr += (unsigned long)num;
-+	if (valid_stack_addr(regs, (unsigned long)addr))
-+		return *addr;
-+	else
-+		return 0;
-+}
-+
-+static unsigned long fetch_memory(struct pt_regs *regs, void *addr)
-+{
-+	unsigned long retval;
-+	if (probe_kernel_address(addr, retval))
-+		return 0;
-+	return retval;
-+}
-+
-+#if defined(__i386__)
-+#define REGPARMS 3
-+static unsigned long fetch_argument(struct pt_regs *regs, void *data)
-+{
-+	unsigned long n = (unsigned long)data;
-+	if (n > REGPARMS) {
-+		/*
-+		 * The typical case: arg n is on the stack.
-+		 * stack[0] = return address
-+		 */
-+		return fetch_stack(regs, (void *)(n - REGPARMS));
-+	} else {
-+		switch (n) {
-+		case 1: return regs->ax;
-+		case 2: return regs->dx;
-+		case 3: return regs->cx;
-+		}
-+		return 0;
-+	}
-+}
-+#elif defined(__x86_64__)
-+#define REGPARMS 6
-+static unsigned long fetch_argument(struct pt_regs *regs, void *data)
-+{
-+	unsigned long n = (unsigned long)data;
-+	if (n > REGPARMS) {
-+		/*
-+		 * The typical case: arg n is on the stack.
-+		 * stack[0] = return address
-+		 */
-+		return fetch_stack(regs, (void *)(n - REGPARMS));
-+	} else {
-+		switch (n) {
-+		case 1: return regs->di;
-+		case 2: return regs->si;
-+		case 3: return regs->dx;
-+		case 4: return regs->cx;
-+		case 5: return regs->r8;
-+		case 6: return regs->r9;
-+		}
-+		return 0;
-+	}
-+}
-+#else
-+/* currently, trace_kprobe only supports X86. */
-+static unsigned long fetch_argument(struct pt_regs *regs, void *data)
-+{
-+	return fetch_stack(regs, data);
-+}
-+#endif
-+
-+static unsigned long fetch_retvalue(struct pt_regs *regs, void *dummy)
-+{
-+	return regs_return_value(regs);
-+}
-+
-+static unsigned long fetch_ip(struct pt_regs *regs, void *dummy)
-+{
-+	return instruction_pointer(regs);
-+}
-+
-+
- /**
-  * kprobe_trace_core
-  */
-@@ -43,6 +155,8 @@ struct trace_probe {
- 		struct kretprobe	rp;
- 	};
- 	const char		*symbol;	/* symbol name */
-+	unsigned int		nr_args;
-+	struct fetch_func	args[TRACE_MAXARGS];
- };
+ = Miscellaneous changes
 
- static void kprobe_trace_record(unsigned long ip, struct trace_probe *tp,
-@@ -152,17 +266,25 @@ static int create_trace_probe(int argc, char **argv)
- {
- 	/*
- 	 * Argument syntax:
--	 *  - Add kprobe: p SYMBOL[+OFFS|-OFFS]|ADDRESS
--	 *  - Add kretprobe: r SYMBOL[+0]
-+	 *  - Add kprobe: p SYMBOL[+OFFS|-OFFS]|ADDRESS [FETCHARGS]
-+	 *  - Add kretprobe: r SYMBOL[+0] [FETCHARGS]
-+	 * Fetch args:
-+	 *  aN	: fetch Nth of function argument. (N:1-)
-+	 *  rN	: fetch Nth of register (pt_regs + N) (N:0-)
-+	 *  rv	: fetch return value
-+	 *  ra	: fetch return address
-+	 *  sN	: fetch Nth of stack (N:0-)
-+	 *  @ADDR	: fetch memory at ADDR (ADDR should be in kernel)
- 	 */
- 	struct trace_probe *tp;
- 	struct kprobe *kp;
- 	char *tmp;
--	int ret = 0;
-+	int i, ret = 0;
- 	int is_return = 0;
- 	char *symbol = NULL;
- 	long offset = 0;
- 	void *addr = NULL;
-+	unsigned long param;
+ - Default to --disable-pie for configure. Use --enable-pie to turn it
+   back on.
 
- 	if (argc < 2)
- 		return -EINVAL;
-@@ -222,6 +344,63 @@ static int create_trace_probe(int argc, char **argv)
- 	} else
- 		kp->addr = addr;
+ - Improved sdt.h compatibility and test suite for static dtrace
+   compatible user space markers.
 
-+	/* parse arguments */
-+	argc -= 2; argv += 2; ret = 0;
-+	for (i = 0; i < argc && i < TRACE_MAXARGS; i++) {
-+		tmp = argv[i];
-+		switch (*tmp) {
-+		case 'a':	/* argument */
-+			ret = strict_strtoul(tmp + 1, 10, &param);
-+			if (ret || param > PARAM_MAX_ARGS)
-+				ret = -EINVAL;
-+			else {
-+				tp->args[i].func = fetch_argument;
-+				tp->args[i].data = (void *)param;
-+			}
-+			break;
-+		case 'r':	/* register||retval||retip */
-+			if (isdigit(tmp[1])) {
-+				ret = strict_strtoul(tmp + 1, 10, &param);
-+				if (ret || param > PARAM_MAX_REGS)
-+					ret = -EINVAL;
-+				else {
-+					tp->args[i].func = fetch_register;
-+					tp->args[i].data = (void *)param;
-+				}
-+			} else if (is_return && tmp[1] == 'v') {
-+				tp->args[i].func = fetch_retvalue;
-+				tp->args[i].data = NULL;
-+			} else if (is_return && tmp[1] == 'a') {
-+				tp->args[i].func = fetch_ip;
-+				tp->args[i].data = NULL;
-+			} else
-+				ret = -EINVAL;
-+			break;
-+		case 's':	/* stack */
-+			ret = strict_strtoul(tmp + 1, 10, &param);
-+			if (ret || param > PARAM_MAX_STACK)
-+				ret = -EINVAL;
-+			else {
-+				tp->args[i].func = fetch_stack;
-+				tp->args[i].data = (void *)param;
-+			}
-+			break;
-+		case '@':	/* memory */
-+			ret = strict_strtoul(tmp + 1, 0, &param);
-+			if (!ret) {
-+				tp->args[i].func = fetch_memory;
-+				tp->args[i].data = (void *)param;
-+			}
-+			break;
-+		default:
-+			/* TODO: support custom handler */
-+			ret = -EINVAL;
-+		}
-+		if (ret)
-+			goto error;
-+	}
-+	tp->nr_args = i;
-+
- 	ret = register_trace_probe(tp);
- 	if (ret)
- 		goto error;
-@@ -266,18 +445,35 @@ static void probes_seq_stop(struct seq_file *m, void *v)
- static int probes_seq_show(struct seq_file *m, void *v)
- {
- 	struct trace_probe *tp = v;
-+	int i;
+ - Some architectures now use syscall wrappers (HAVE_SYSCALL_WRAPPERS).
+   The syscall tapset has been enhanced to take care of the syscall
+   wrappers in this release.
 
- 	if (tp == NULL)
- 		return 0;
+ - Security fix for CVE-2009-0784: stapusr module-path checking race.
 
- 	if (tp->symbol)
--		seq_printf(m, "%c %s%+ld\n",
-+		seq_printf(m, "%c %s%+ld",
- 			probe_is_return(tp) ? 'r' : 'p',
- 			probe_symbol(tp), probe_offset(tp));
- 	else
--		seq_printf(m, "%c 0x%p\n",
-+		seq_printf(m, "%c 0x%p",
- 			probe_is_return(tp) ? 'r' : 'p',
- 			probe_address(tp));
-+
-+	for (i = 0; i < tp->nr_args; i++) {
-+		if (tp->args[i].func == fetch_argument)
-+			seq_printf(m, " a%lu", (unsigned long)tp->args[i].data);
-+		else if (tp->args[i].func == fetch_register)
-+			seq_printf(m, " r%lu", (unsigned long)tp->args[i].data);
-+		else if (tp->args[i].func == fetch_stack)
-+			seq_printf(m, " s%lu", (unsigned long)tp->args[i].data);
-+		else if (tp->args[i].func == fetch_memory)
-+			seq_printf(m, " @0x%p", tp->args[i].data);
-+		else if (tp->args[i].func == fetch_retvalue)
-+			seq_printf(m, " rv");
-+		else if (tp->args[i].func == fetch_ip)
-+			seq_printf(m, " ra");
-+	}
-+	seq_printf(m, "\n");
- 	return 0;
- }
+ = Code contributors for this release
 
-@@ -368,13 +564,95 @@ static const struct file_operations kprobe_points_ops = {
- };
+   Ananth N Mavinakayanahalli, Breno Leitao, Dan Horak, Dave Brolley,
+   David Smith, Don Domingo, Eugeniy Meshcheryakov, Frank Ch. Eigler,
+   Josh Stone, Lubomir Rintel, Mahesh J Salgaonkar, Mark Wielaard,
+   Masami Hiramatsu, Maynard Johnson, Rajan Arora, Roland McGrath,
+   Stan Cox, Tim Moore, Wenji Huang and William Cohen
 
- /* event recording functions */
--static void kprobe_trace_record(unsigned long ip, struct trace_probe *tp,
--				struct pt_regs *regs)
-+/* TODO: rewrite based on trace_vprintk(maybe, trace_vprintk_begin/end?) */
-+static void kprobe_trace_printk_0(unsigned long ip, struct trace_probe *tp,
-+				  struct pt_regs *regs)
- {
- 	__trace_bprintk(ip, "%s%s%+ld\n",
- 			probe_is_return(tp) ? "<-" : "@",
- 			probe_symbol(tp), probe_offset(tp));
- }
-+static void kprobe_trace_printk_1(unsigned long ip, struct trace_probe *tp,
-+				  struct pt_regs *regs)
-+{
-+	__trace_bprintk(ip, "%s%s%+ld 0x%lx\n",
-+			probe_is_return(tp) ? "<-" : "@",
-+			probe_symbol(tp), probe_offset(tp),
-+			call_fetch(&tp->args[0], regs));
-+}
-+static void kprobe_trace_printk_2(unsigned long ip, struct trace_probe *tp,
-+				  struct pt_regs *regs)
-+{
-+	__trace_bprintk(ip, "%s%s%+ld 0x%lx 0x%lx\n",
-+			probe_is_return(tp) ? "<-" : "@", probe_symbol(tp),
-+			probe_offset(tp),
-+			call_fetch(&tp->args[0], regs),
-+			call_fetch(&tp->args[1], regs));
-+}
-+static void kprobe_trace_printk_3(unsigned long ip, struct trace_probe *tp,
-+				  struct pt_regs *regs)
-+{
-+	__trace_bprintk(ip, "%s%s%+ld 0x%lx 0x%lx 0x%lx\n",
-+			probe_is_return(tp) ? "<-" : "@", probe_symbol(tp),
-+			probe_offset(tp),
-+			call_fetch(&tp->args[0], regs),
-+			call_fetch(&tp->args[1], regs),
-+			call_fetch(&tp->args[2], regs));
-+}
-+static void kprobe_trace_printk_4(unsigned long ip, struct trace_probe *tp,
-+				  struct pt_regs *regs)
-+{
-+	__trace_bprintk(ip, "%s%s%+ld 0x%lx 0x%lx 0x%lx 0x%lx\n",
-+			probe_is_return(tp) ? "<-" : "@", probe_symbol(tp),
-+			probe_offset(tp),
-+			call_fetch(&tp->args[0], regs),
-+			call_fetch(&tp->args[1], regs),
-+			call_fetch(&tp->args[2], regs),
-+			call_fetch(&tp->args[3], regs));
-+}
-+static void kprobe_trace_printk_5(unsigned long ip, struct trace_probe *tp,
-+				  struct pt_regs *regs)
-+{
-+	__trace_bprintk(ip, "%s%s%+ld 0x%lx 0x%lx 0x%lx 0x%lx 0x%lx\n",
-+			probe_is_return(tp) ? "<-" : "@", probe_symbol(tp),
-+			probe_offset(tp),
-+			call_fetch(&tp->args[0], regs),
-+			call_fetch(&tp->args[1], regs),
-+			call_fetch(&tp->args[2], regs),
-+			call_fetch(&tp->args[3], regs),
-+			call_fetch(&tp->args[4], regs));
-+}
-+static void kprobe_trace_printk_6(unsigned long ip, struct trace_probe *tp,
-+				  struct pt_regs *regs)
-+{
-+	__trace_bprintk(ip, "%s%s%+ld 0x%lx 0x%lx 0x%lx 0x%lx 0x%lx 0x%lx\n",
-+			probe_is_return(tp) ? "<-" : "@", probe_symbol(tp),
-+			probe_offset(tp),
-+			call_fetch(&tp->args[0], regs),
-+			call_fetch(&tp->args[1], regs),
-+			call_fetch(&tp->args[2], regs),
-+			call_fetch(&tp->args[3], regs),
-+			call_fetch(&tp->args[4], regs),
-+			call_fetch(&tp->args[5], regs));
-+}
-+
-+static void (*kprobe_trace_printk_n[TRACE_MAXARGS + 1])(unsigned long ip,
-+						       struct trace_probe *,
-+						       struct pt_regs *) = {
-+	[0] = kprobe_trace_printk_0,
-+	[1] = kprobe_trace_printk_1,
-+	[2] = kprobe_trace_printk_2,
-+	[3] = kprobe_trace_printk_3,
-+	[4] = kprobe_trace_printk_4,
-+	[5] = kprobe_trace_printk_5,
-+	[6] = kprobe_trace_printk_6,
-+};
-+
-+static void kprobe_trace_record(unsigned long ip, struct trace_probe *tp,
-+				struct pt_regs *regs)
-+{
-+	kprobe_trace_printk_n[tp->nr_args](ip, tp, regs);
-+}
+   Thanks to Mark Wielaard for assembling these notes.
 
- /* Make a debugfs interface for controling probe points */
- static __init int init_kprobe_trace(void)
+ = Examples of tested kernel versions
 
--- 
-Masami Hiramatsu
+   2.6.9-70 (el4/i386)
+   2.6.18 (el5/ia64/i686/x86_64-xen)
+   2.6.27.19 (f10/i686/x86_64)
+   2.6.29 (i586/x86_64)
 
-Software Engineer
-Hitachi Computer Products (America) Inc.
-Software Solutions Division
+ = Know issues with this release
 
-e-mail: mhiramat@redhat.com
+   Some kernel crashes continue to be reported when a script probes
+   broad kernel function wildcards.
 
+   Some 2.6.28- and 2.6.29-era kernels contain bugs that can more
+   easily trigger crashes upon systemtap scripts.  Upgrade to the
+   latest -stable or -rc if possible.
+
+ = Problems resolved for this release
+
+    4311 support probing without debuginfo via symbol tables
+    4862 -rt kernel compatibility for locks
+    4901 tcp_sendmsg arguments changed in 2.6.23-rc2
+    5634 support pointer type punning
+    5951 process lifetime/memorymap monitor
+    6899 offer option to avoid disabling interrupts during more probe...
+    6921 tracepoint support
+    6930 Flight Recorder on file
+    6950 buildok/twentyfive.stp fails with elfutils 0.137
+    7045 user-space probe x86 on x86-64 host
+    7053 automatic global printing of statistic needs to check @count>0
+    7071 optional $context variables
+    7092 uprobes probes causing OOM
+    9692 stap-{client,server}-connect fail to build on Debian
+    9718 utrace - ftrace demo consumer
+    9719 improve type mismatch messages
+    9770 stap -l 'process("bla").mark("*")' should print marker names
+    9788 permissions error in staprun
+    9821 Support strftime like format for output file
+    9866 save_stack_trace code in runtime stack* needs more than CONF...
+    9870 man pages from tapset should not go under /usr/share/man/man5
+    9875 building rpm fails in checking for unpackaged file
+    9876 Syscall tapset broken on architectures that use SYSCALL_WRAP...
+    9882 drop Core from Fedora name
+    9883 static markers in userspace libraries segfaults
+    9896 Systemtap source compilation failure on latest Ubuntu
+    9919 array overflow error points to wrong statement
+    9922 need to configure with --disable-pie on ubuntu
+    9927 2.6.29-rc7 - kernel crash with sharedbuf.exp stap test script
+    9930 produce more information about probe reentrancy
+    9932 @cast module search path
+    9935 New sdt.exp test fails for mark probes with more than 4 argu...
+    9936 server.exp  hangs
+    9947 lockdep triggered on rawhide with tracepoints
+    9951 runtime error: error: '_v' may be used uninitialized in this...
+    9956 sdt.exp doesn't run against gcc 4.1.2 with -O2
+    9959 tracepoints should gloss over unrecognized parameter types
+    9960 tracepoints should support complex parameters by-value
+    9964 Can't find seperate debuginfo file  for user space probing
+    9967 raise MAXSKIPPED for -DINTERRUPTIBLE!=0 case
+    9974 adapt to utrace renaming of utrace_attached_engine -> utrace...
+    9980 sdt.h doesn't compile against gcc 4.3.2 on i386
+    9989 utrace or task-finder crash in upstream utrace git tree
+    9993 2.6.29-rc8-next-20090323 tracepoint build-breaking changes
+   10000 buildok/seventeen.stp fails "integer constant is too large"
+   10001 32-bit map error "array subscript is above array bounds"
+   10006 CVE-2009-0784: staprun race condition, privilege escalation
+
+ = Test results on various systems
+
+   After running "sudo make installcheck" from the test suite, on a
+   suitably equipped machine (kernel debugging data and other stuff
+   installed), you should see 500-600 passes and a small handful of
+   failures.
