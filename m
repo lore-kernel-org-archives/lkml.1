@@ -1,37 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761273AbZC0VAx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761282AbZC0VEV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761273AbZC0VAx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Mar 2009 17:00:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756506AbZC0VAn
+	id S1761282AbZC0VEV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Mar 2009 17:04:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753182AbZC0VEL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Mar 2009 17:00:43 -0400
-Received: from vms173005pub.verizon.net ([206.46.173.5]:42752 "EHLO
-	vms173005pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754667AbZC0VAm (ORCPT
+	Fri, 27 Mar 2009 17:04:11 -0400
+Received: from rcsinet11.oracle.com ([148.87.113.123]:46083 "EHLO
+	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750914AbZC0VEJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Mar 2009 17:00:42 -0400
-Date: Fri, 27 Mar 2009 17:00:33 -0400 (EDT)
-From: Len Brown <lenb@kernel.org>
-X-X-Sender: lenb@localhost.localdomain
-To: Yinghai Lu <yinghai@kernel.org>
-Cc: Jan Beulich <jbeulich@novell.com>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>
-Subject: Re: [PATCH] acpi: remove the wrong warning about
- xpm1a_event_block.bit_width
-In-reply-to: <49C017D0.6030502@kernel.org>
-Message-id: <alpine.LFD.2.00.0903271700100.26419@localhost.localdomain>
-References: <49C017D0.6030502@kernel.org>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-version: 1.0
-Content-type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 27 Mar 2009 17:04:09 -0400
+Subject: Re: [PATCH 0/3] Ext3 latency improvement patches
+From: Chris Mason <chris.mason@oracle.com>
+To: "Theodore Ts'o" <tytso@mit.edu>
+Cc: Ric Wheeler <rwheeler@redhat.com>,
+       Linux Kernel Developers List <linux-kernel@vger.kernel.org>,
+       Ext4 Developers List <linux-ext4@vger.kernel.org>, jack@suse.cz
+In-Reply-To: <1238187031.27455.212.camel@think.oraclecorp.com>
+References: <1238185471-31152-1-git-send-email-tytso@mit.edu>
+	 <1238187031.27455.212.camel@think.oraclecorp.com>
+Content-Type: text/plain
+Date: Fri, 27 Mar 2009 17:03:38 -0400
+Message-Id: <1238187818.27455.217.camel@think.oraclecorp.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 
+Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt706.oracle.com [141.146.40.84]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A09020B.49CD3F2E.02A6:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This warning is not present in the latest ACPICA branch.
+On Fri, 2009-03-27 at 16:50 -0400, Chris Mason wrote:
+> On Fri, 2009-03-27 at 16:24 -0400, Theodore Ts'o wrote:
+> > The following patches have been posted as providing at least some
+> > partial improvement to the ext3 latency problem that has been
+> > discussed on the 2.6.29 mongo-LKML-thread-that-would-not-die.
+> 
+> Ric had asked me about a test program that would show the worst case
+> ext3 behavior.  So I've modified your ext3 program a little.  It now
+> creates a 8G file and forks off another proc to do random IO to that
+> file.
+> 
+> Then it runs one fsync every 4 seconds and times how long they take.
+> After the program has been running for 60 seconds, it tries to stop.
+> 
+> On my sata drive with barriers on, even btrfs and xfs saw some
+> multi-second fsyncs, but ext3 came in at 414s for a single fsync.
+> 
+> Warning: don't run this on a laptop drive, you'll still be waiting for
+> it next year.  This is probably full of little errors, I cut it together
+> pretty quickly.
+> 
 
-thanks,
-Len Brown, Intel Open Source Technology Center
+My understanding of ext4 delalloc is that once blocks are allocated to
+file, we go back to data=ordered.  
+
+Ext4 is going pretty slowly for this fsync test (slower than ext3), it
+looks like we're going for a very long time in
+jbd2_journal_commit_transaction -> write_cache_pages.
+
+-chris
+
 
