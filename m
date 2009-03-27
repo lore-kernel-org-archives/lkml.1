@@ -1,55 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755801AbZC0RqW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756242AbZC0RrB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755801AbZC0RqW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Mar 2009 13:46:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753600AbZC0RqO
+	id S1756242AbZC0RrB (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Mar 2009 13:47:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754373AbZC0Rqu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Mar 2009 13:46:14 -0400
-Received: from vms173017pub.verizon.net ([206.46.173.17]:60312 "EHLO
-	vms173017pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751294AbZC0RqN (ORCPT
+	Fri, 27 Mar 2009 13:46:50 -0400
+Received: from smtp-68.nebula.fi ([83.145.220.68]:46866 "EHLO
+	smtp-68.nebula.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753609AbZC0Rqt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Mar 2009 13:46:13 -0400
-From: Gene Heskett <gene.heskett@verizon.net>
-Organization: Organization? Not detectable
-To: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.29 final
-Date: Fri, 27 Mar 2009 13:45:46 -0400
-User-Agent: KMail/1.11.1 (Linux/2.6.28.7; KDE/4.2.1; i686; ; )
-MIME-version: 1.0
-Content-type: text/plain; charset=us-ascii
-Content-transfer-encoding: 7bit
-Content-disposition: inline
-Message-id: <200903271345.46416.gene.heskett@verizon.net>
+	Fri, 27 Mar 2009 13:46:49 -0400
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: greg@kroah.com
+Cc: linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>
+Subject: [PATCH] w35und: remove unused code from wbsoft_configure_filter()
+Date: Fri, 27 Mar 2009 19:46:45 +0200
+Message-Id: <1238176005-7392-1-git-send-email-penberg@cs.helsinki.fi>
+X-Mailer: git-send-email 1.5.4.3
+In-Reply-To: <>
+References: <>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-As of now I'm back to 2.6.28.7, I simply cannot keep my ethernet hdwe working 
-for more than about 24 hours with .29 final.
+We don't initialize hardware multicast filter in the driver nor do we know how
+to do that. Therefore, remove some code that isn't actually used from
+wbsoft_configure_filter().
 
-Please, we need a 29.1 that fixes this.
+Cc: Pavel Machek <pavel@ucw.cz>
+Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
+---
+ drivers/staging/winbond/wbusb.c |   24 +++---------------------
+ 1 files changed, 3 insertions(+), 21 deletions(-)
 
-Other problems encountered with 29 final:
-
-qjackd went into a loop eating all 4 core at about 50%, restarting it fixed
-knotify grabbed 100% of core0 at the same time the network died _I think_
-
-when I tried to do a graceful shut down after restarting knotify, x eventually 
-quit, but hung onto the console, I couldn't select another as it just echoed 
-the keys I pressed to the terminal screen and I was force to use the front 
-panel rest button to effect a reboot.  Which was good because I rebooted to 
-2.6.28.7. and 2.6.28.9 is now building in the background, with its usual 5 
-warnings about section mis-matches.
-
-Thanks everybody.
-
+diff --git a/drivers/staging/winbond/wbusb.c b/drivers/staging/winbond/wbusb.c
+index f716b2e..5201f5c 100644
+--- a/drivers/staging/winbond/wbusb.c
++++ b/drivers/staging/winbond/wbusb.c
+@@ -83,32 +83,14 @@ static void wbsoft_configure_filter(struct ieee80211_hw *dev,
+ 				     unsigned int *total_flags,
+ 				     int mc_count, struct dev_mc_list *mclist)
+ {
+-	unsigned int bit_nr, new_flags;
+-	u32 mc_filter[2];
+-	int i;
++	unsigned int new_flags;
+ 
+ 	new_flags = 0;
+ 
+-	if (*total_flags & FIF_PROMISC_IN_BSS) {
++	if (*total_flags & FIF_PROMISC_IN_BSS)
+ 		new_flags |= FIF_PROMISC_IN_BSS;
+-		mc_filter[1] = mc_filter[0] = ~0;
+-	} else if ((*total_flags & FIF_ALLMULTI) || (mc_count > 32)) {
++	else if ((*total_flags & FIF_ALLMULTI) || (mc_count > 32))
+ 		new_flags |= FIF_ALLMULTI;
+-		mc_filter[1] = mc_filter[0] = ~0;
+-	} else {
+-		mc_filter[1] = mc_filter[0] = 0;
+-		for (i = 0; i < mc_count; i++) {
+-			if (!mclist)
+-				break;
+-			printk("Should call ether_crc here\n");
+-			//bit_nr = ether_crc(ETH_ALEN, mclist->dmi_addr) >> 26;
+-			bit_nr = 0;
+-
+-			bit_nr &= 0x3F;
+-			mc_filter[bit_nr >> 5] |= 1 << (bit_nr & 31);
+-			mclist = mclist->next;
+-		}
+-	}
+ 
+ 	dev->flags &= ~IEEE80211_HW_RX_INCLUDES_FCS;
+ 
 -- 
-Cheers, Gene
-"There are four boxes to be used in defense of liberty:
- soap, ballot, jury, and ammo. Please use in that order."
--Ed Howdershelt (Author)
-The Almighty in His infinite wisdom did not see fit to create Frenchmen
-in the image of Englishmen.
-		-- Winston Churchill, 1942
+1.5.4.3
 
