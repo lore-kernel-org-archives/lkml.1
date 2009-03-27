@@ -1,59 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759938AbZC0Rmv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755801AbZC0RqW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759938AbZC0Rmv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Mar 2009 13:42:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756250AbZC0RmY
+	id S1755801AbZC0RqW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Mar 2009 13:46:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753600AbZC0RqO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Mar 2009 13:42:24 -0400
-Received: from e9.ny.us.ibm.com ([32.97.182.139]:53007 "EHLO e9.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759213AbZC0RmX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Mar 2009 13:42:23 -0400
-Date: Fri, 27 Mar 2009 23:11:43 +0530
-From: Maneesh Soni <maneesh@in.ibm.com>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH][GIT PULL] tracing/wakeup: move access to wakeup_cpu
-	into spinlock
-Message-ID: <20090327174143.GA24940@in.ibm.com>
-Reply-To: maneesh@in.ibm.com
-References: <20090326122806.GA4188@in.ibm.com> <20090326132739.GB5960@nowhere> <alpine.DEB.2.00.0903260949340.17665@gandalf.stny.rr.com> <alpine.DEB.2.00.0903261032070.17665@gandalf.stny.rr.com> <20090327084144.GA23318@in.ibm.com> <20090327124532.GA9963@in.ibm.com> <alpine.DEB.2.00.0903270904260.1917@gandalf.stny.rr.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.0903270904260.1917@gandalf.stny.rr.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Fri, 27 Mar 2009 13:46:14 -0400
+Received: from vms173017pub.verizon.net ([206.46.173.17]:60312 "EHLO
+	vms173017pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751294AbZC0RqN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Mar 2009 13:46:13 -0400
+From: Gene Heskett <gene.heskett@verizon.net>
+Organization: Organization? Not detectable
+To: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.29 final
+Date: Fri, 27 Mar 2009 13:45:46 -0400
+User-Agent: KMail/1.11.1 (Linux/2.6.28.7; KDE/4.2.1; i686; ; )
+MIME-version: 1.0
+Content-type: text/plain; charset=us-ascii
+Content-transfer-encoding: 7bit
+Content-disposition: inline
+Message-id: <200903271345.46416.gene.heskett@verizon.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 27, 2009 at 09:15:29AM -0400, Steven Rostedt wrote:
-...
+As of now I'm back to 2.6.28.7, I simply cannot keep my ethernet hdwe working 
+for more than about 24 hours with .29 final.
 
-> Do you have CONFIG_FRAME_POINTER set?
->
+Please, we need a 29.1 that fixes this.
 
-Yes, CONFIG_FRAME_POINTER=y
- 
-> Is this running in a virtual box or bare metal? (probably should not matter)
-> 
+Other problems encountered with 29 final:
 
-Bare metal.
+qjackd went into a loop eating all 4 core at about 50%, restarting it fixed
+knotify grabbed 100% of core0 at the same time the network died _I think_
 
+when I tried to do a graceful shut down after restarting knotify, x eventually 
+quit, but hung onto the console, I couldn't select another as it just echoed 
+the keys I pressed to the terminal screen and I was force to use the front 
+panel rest button to effect a reboot.  Which was good because I rebooted to 
+2.6.28.7. and 2.6.28.9 is now building in the background, with its usual 5 
+warnings about section mis-matches.
 
-> What version of gcc do you have?
-> 
-gcc (GCC) 4.1.2 20080704 (Red Hat 4.1.2-44)
-
-
-Thanks
-Maneesh
+Thanks everybody.
 
 -- 
+Cheers, Gene
+"There are four boxes to be used in defense of liberty:
+ soap, ballot, jury, and ammo. Please use in that order."
+-Ed Howdershelt (Author)
+The Almighty in His infinite wisdom did not see fit to create Frenchmen
+in the image of Englishmen.
+		-- Winston Churchill, 1942
 
-Maneesh Soni
-Linux Technology Center
-IBM India Systems and Technology Lab,
-Bangalore, India.
