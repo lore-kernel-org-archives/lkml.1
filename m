@@ -1,74 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758562AbZC0XWi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752217AbZC0XZw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758562AbZC0XWi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Mar 2009 19:22:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754754AbZC0XW1
+	id S1752217AbZC0XZw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Mar 2009 19:25:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751310AbZC0XZn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Mar 2009 19:22:27 -0400
-Received: from mail-in-05.arcor-online.net ([151.189.21.45]:39915 "EHLO
-	mail-in-05.arcor-online.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752922AbZC0XW0 (ORCPT
+	Fri, 27 Mar 2009 19:25:43 -0400
+Received: from mail-fx0-f158.google.com ([209.85.220.158]:34330 "EHLO
+	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750925AbZC0XZm convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Mar 2009 19:22:26 -0400
-X-DKIM: Sendmail DKIM Filter v2.8.2 mail-in-03.arcor-online.net 692432C2CB2
-From: Bodo Eggert <7eggert@gmx.de>
-Subject: Re: Linux 2.6.29
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Theodore Tso <tytso@mit.edu>, David Rees <drees76@gmail.com>,
-       Jesper Krogh <jesper@krogh.cc>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Reply-To: 7eggert@gmx.de
-Date: Sat, 28 Mar 2009 00:22:22 +0100
-References: <cj1Ut-1i2-7@gated-at.bofh.it> <cj8ji-35a-5@gated-at.bofh.it> <cj8CC-3uO-5@gated-at.bofh.it> <cj9oW-4PO-1@gated-at.bofh.it> <cjkaL-5xg-15@gated-at.bofh.it> <cjGbn-6Xx-35@gated-at.bofh.it> <cjGl4-7ak-61@gated-at.bofh.it> <cjJsv-3Uu-5@gated-at.bofh.it> <cjKHX-5MF-19@gated-at.bofh.it> <ck7XP-JA-13@gated-at.bofh.it> <ck8h7-18H-1@gated-at.bofh.it> <ck8AA-1y0-7@gated-at.bofh.it> <ck8Kd-20o-7@gated-at.bofh.it> <ck93x-2oJ-3@gated-at.bofh.it>
-User-Agent: KNode/0.10.4
+	Fri, 27 Mar 2009 19:25:42 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=V+Xl6YZzdxp0/hPXOpP5gnJzaf/8C5kMkc2hbwD9dLKH8ppkKKYFx2Enu5+rPDT6Yw
+         7Hs8URvjQU/R//LY5n4sIQbXDdrm1FCPoe/RdxQC4VIvKTZsE5bhRvJLRcccO/rFS69y
+         ++BmcHwf/GGsmDBzNaSuBZo/9rYfVCHHRQj68=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7Bit
-Message-Id: <E1LnLNW-00027R-FP@be1.7eggert.dyndns.org>
+In-Reply-To: <49CD5E59.6030805@msgid.tls.msk.ru>
+References: <84a01a8b0903250545n799a8727o1faad60c8eaf372e@mail.gmail.com>
+	 <84a01a8b0903270244s146ca50cr2758d36c2d9d77cd@mail.gmail.com>
+	 <49CD4967.2090606@msgid.tls.msk.ru>
+	 <84a01a8b0903271517t668c6276l7fe098d74c24b836@mail.gmail.com>
+	 <84a01a8b0903271530of8d43ffhf77e7ba73e309f75@mail.gmail.com>
+	 <49CD564E.6050101@msgid.tls.msk.ru>
+	 <84a01a8b0903271555i7a4fea50nd95009539aa2f94d@mail.gmail.com>
+	 <49CD5AC6.3020806@msgid.tls.msk.ru>
+	 <84a01a8b0903271610u17267f87u65b097ac2d755a52@mail.gmail.com>
+	 <49CD5E59.6030805@msgid.tls.msk.ru>
+Date: Sat, 28 Mar 2009 00:25:38 +0100
+Message-ID: <84a01a8b0903271625y30a56113l87aa517385120e6@mail.gmail.com>
+Subject: Re: epoll_ctl and const correctness
+From: nicolas sitbon <nicolas.sitbon@gmail.com>
+To: Michael Tokarev <mjt@tls.msk.ru>
+Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton <akpm@linux-foundation.org> wrote:
-> On Thu, 26 Mar 2009 18:03:15 -0700 (PDT) Linus Torvalds
->> On Thu, 26 Mar 2009, Andrew Morton wrote:
+read() and poll() are very old functions, a long time ago, int was
+nearly the only used type. Today, people uses good programming
+practices, mixing information (the size read) and error is a very poor
+design and a bad practice, as with read().
 
->> > userspace can get closer than the kernel can.
->> 
->> Andrew, that's SIMPLY NOT TRUE.
->> 
->> You state that without any amount of data to back it up, as if it was some
->> kind of truism. It's not.
-> 
-> I've seen you repeatedly fiddle the in-kernel defaults based on
-> in-field experience.  That could just as easily have been done in
-> initscripts by distros, and much more effectively because it doesn't
-> need a new kernel.  That's data.
-> 
-> The fact that this hasn't even been _attempted_ (afaik) is deplorable.
-> 
-> Why does everyone just sit around waiting for the kernel to put a new
-> value into two magic numbers which userspace scripts could have set?
-
-Because the user controlling userspace does not understand your knobs.
-I want to say "file cache minimum 128 MB (otherwise my system crawls),
-max 1,5 GB (or the same happens due to swapping)". Maybe I'll want to say
-"start writing if you have data for one second of max. transfer rate"
-(obviously a per-device setting).
-
-> My /etc/rc.local has been tweaking dirty_ratio, dirty_background_ratio
-> and swappiness for many years.  I guess I'm just incredibly advanced.
-
-These settings are good, but they can't prevent the filecache from
-growing until the mouse driver gets swapped out.
-
-You happened to find good settings for your setup. Maybe I did once, too,
-but it stopped working for the pathological cases in which I'd need
-tweaking (which includes normal operation on my laptop), and having a
-numeric swappiness without units or a guide did not help. And instead of
-dedicating a week to loading NASA images in GIMP (which was a pathological
-case on my old desktop) in order to find acceptable settings, I just didn't
-do that then.
-
-
+2009/3/28 Michael Tokarev <mjt@tls.msk.ru>:
+> nicolas sitbon wrote:
+>>
+>> is it stupid to ask how a size can be negative? who is stupid? you're
+>> boring with my question, just tell me please how a size can be
+>> negative?
+>
+> Yes I'm bored with your questions.  And am suggesting you to stop
+> asking me now.  That's enough.
+>
+> As of size being negative - how one can read() negative number
+> of bytes for example?  How one can poll() waiting for a maximum
+> of negative number of milliseconds?
+>
+> This is my last reply to you.  I have something more useful to do.
+>
+> /mjt
+>
