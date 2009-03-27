@@ -1,59 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933039AbZC0A2K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S933187AbZC0AbG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933039AbZC0A2K (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Mar 2009 20:28:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933015AbZC0A1v
+	id S933187AbZC0AbG (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Mar 2009 20:31:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933118AbZC0Aan
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Mar 2009 20:27:51 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:52190 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S933014AbZC0A1v (ORCPT
+	Thu, 26 Mar 2009 20:30:43 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:44719 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S933115AbZC0Aam (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Mar 2009 20:27:51 -0400
-Date: Fri, 27 Mar 2009 01:30:40 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: James Morris <jmorris@namei.org>
-Cc: kernel list <linux-kernel@vger.kernel.org>,
-       linux-security-module@vger.kernel.org
-Subject: Re: TOMOYO in linux-next
-Message-ID: <20090327003040.GH29836@elf.ucw.cz>
-References: <20090326215031.GD29836@elf.ucw.cz> <alpine.LRH.2.00.0903271102240.7492@tundra.namei.org>
+	Thu, 26 Mar 2009 20:30:42 -0400
+Date: Thu, 26 Mar 2009 17:27:43 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Theodore Tso <tytso@mit.edu>, David Rees <drees76@gmail.com>,
+       Jesper Krogh <jesper@krogh.cc>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.29
+In-Reply-To: <20090326171148.9bf8f1ec.akpm@linux-foundation.org>
+Message-ID: <alpine.LFD.2.00.0903261723250.3994@localhost.localdomain>
+References: <alpine.LFD.2.00.0903231617550.3032@localhost.localdomain> <49C87B87.4020108@krogh.cc> <72dbd3150903232346g5af126d7sb5ad4949a7b5041f@mail.gmail.com> <49C88C80.5010803@krogh.cc> <72dbd3150903241200v38720ca0x392c381f295bdea@mail.gmail.com>
+ <20090325183011.GN32307@mit.edu> <alpine.LFD.2.00.0903251139260.3032@localhost.localdomain> <20090325220530.GR32307@mit.edu> <alpine.LFD.2.00.0903251622420.3032@localhost.localdomain> <20090326171148.9bf8f1ec.akpm@linux-foundation.org>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LRH.2.00.0903271102240.7492@tundra.namei.org>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri 2009-03-27 11:15:28, James Morris wrote:
-> On Thu, 26 Mar 2009, Pavel Machek wrote:
+
+
+On Thu, 26 Mar 2009, Andrew Morton wrote:
 > 
-> > Hi!
-> > 
-> > I don't think merging that is good idea.
-> 
-> It's already merged in Linus' tree.
+> userspace can do it quite easily.  Run a self-tuning script after
+> installation and when the disk hardware changes significantly.
 
-Too bad.
+Uhhuh.
 
-> > Security should be doable
-> > without making shell-like glob matching...
-> 
-> The TOMOYO developers have already responded to your feedback on this 
-> issue.  It's also an inherent aspect of pathname security, an issue which 
-> has been resolved in favour of inclusion in the kernel.
+"user space can do it".
 
-Do you have any references? My memory claims otherwise on this.
+That's the global cop-out.
 
-> As for the rest of the feedback, please work with the developers to fix 
-> any bugs or lack of documentation.
+The fact is, user-space isn't doing it, and never has done anything even 
+_remotely_ like it. 
 
-Which brings a question: given that kernel<->user interface is
-undocumented, how was this reviewed?
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+In fact, I claim that it's impossible to do. If you give me a number for 
+the throughput of your harddisk, I will laugh in your face and call you a 
+moron.
+
+Why? Because no such number exists. It depends on the access patterns. If 
+you write one large file, the number will be very different (and not just 
+by a few percent) from the numbers of you writing thousands of small 
+files, or re-writing a large database in random order.
+
+So no. User space CAN NOT DO IT, and the fact that you even claim 
+something like that shows a distinct lack of thought.
+
+> Maybe we should set the tunables to 99.9% to make it suck enough to
+> motivate someone.
+
+The only times tunables have worked for us is when they auto-tune. 
+
+IOW, we don't have "use 35% of memory for buffer cache" tunables, we just 
+dynamically auto-tune memory use. And no, we don't expect user space to 
+run some "tuning program for their load" either.
+
+		Linus
