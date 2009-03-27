@@ -1,194 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755508AbZC0JXu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756420AbZC0J0Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755508AbZC0JXu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Mar 2009 05:23:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752735AbZC0JXl
+	id S1756420AbZC0J0Z (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Mar 2009 05:26:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752103AbZC0J0Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Mar 2009 05:23:41 -0400
-Received: from mga09.intel.com ([134.134.136.24]:5066 "EHLO mga09.intel.com"
+	Fri, 27 Mar 2009 05:26:16 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:56992 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752823AbZC0JXk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Mar 2009 05:23:40 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.38,431,1233561600"; 
-   d="scan'208";a="398014783"
-Date: Fri, 27 Mar 2009 10:23:32 +0100
-From: Markus Metzger <markus.t.metzger@intel.com>
-To: linux-kernel@vger.kernel.org, mingo@elte.hu, tglx@linutronix.de,
-       hpa@zytor.com
-Cc: markus.t.metzger@intel.com, markus.t.metzger@gmail.com, roland@redhat.com,
-       eranian@googlemail.com, oleg@redhat.com, juan.villacis@intel.com,
-       ak@linux.jf.intel.com
-Subject: [patch 11/14] x86, ptrace: remove ptrace_fork, use init_task instead
-Message-ID: <20090327102332.A11685@sedona.ch.intel.com>
-Mime-Version: 1.0
+	id S1750840AbZC0J0P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Mar 2009 05:26:15 -0400
+Date: Fri, 27 Mar 2009 10:26:01 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Al Viro <viro@ZenIV.linux.org.uk>
+Cc: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       penberg@cs.helsinki.fi, eduard.munteanu@linux360.ro, tglx@linutronix.de,
+       adobriyan@gmail.com, linux-tip-commits@vger.kernel.org
+Subject: Re: [tip:tracing/kmemtrace] fs.h: uninline simple_transaction_set()
+Message-ID: <20090327092601.GA8234@elte.hu>
+References: <1237898630.25315.83.camel@penberg-laptop> <tip-44eea45ca9e25d6dd660d4806ef4c11209609e03@git.kernel.org> <20090326154840.GR28946@ZenIV.linux.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.2.5i
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <20090326154840.GR28946@ZenIV.linux.org.uk>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I introduced ptrace_fork to initialize bts tracing for a new task.
 
-Now I've seen that there is already a ptrace_init_task() called from
-tracehook that does essentially the same thing.
+* Al Viro <viro@ZenIV.linux.org.uk> wrote:
 
-Remove ptrace_fork and add an arch_ variant to ptrace_init_task.
+> On Wed, Mar 25, 2009 at 04:51:28PM +0000, Ingo Molnar wrote:
+> > Commit-ID:  44eea45ca9e25d6dd660d4806ef4c11209609e03
+> > Gitweb:     http://git.kernel.org/tip/44eea45ca9e25d6dd660d4806ef4c11209609e03
+> > Author:     Ingo Molnar <mingo@elte.hu>
+> > AuthorDate: Wed, 25 Mar 2009 16:48:35 +0100
+> > Committer:  Ingo Molnar <mingo@elte.hu>
+> > CommitDate: Wed, 25 Mar 2009 17:48:14 +0100
+> > 
+> > fs.h: uninline simple_transaction_set()
+> > 
+> > Move simple_transaction_set() to the other simple-transaction
+> > file helpers in fs/libfs.c.
+> > 
+> > This removes an implicit asm/page.h PAGE_SIZE dependency from
+> > fs.h (asm/page.h is not an exported header so HEADERS_CHECK fils),
+> > and also reduces kernel size a bit.
+> 
+> *shrug*
 
+Thanks for the encouragement - it must be a lot of fun for you to 
+work with other people and you seem to be taking great pride in 
+seeing improvements to the code you maintain and care about, no 
+matter how insignificant they seem in isolation ;-)
 
-Signed-off-by: Markus Metzger <markus.t.metzger@intel.com>
----
+> I can live with that.  Which tree do you want that to go through?  
+> I'll be pushing VFS queue tonight.
 
-Index: git-tip/arch/x86/include/asm/ptrace.h
-===================================================================
---- git-tip.orig/arch/x86/include/asm/ptrace.h	2009-03-27 08:18:46.000000000 +0100
-+++ git-tip/arch/x86/include/asm/ptrace.h	2009-03-27 08:29:32.000000000 +0100
-@@ -236,13 +236,12 @@ extern int do_set_thread_area(struct tas
- 			      struct user_desc __user *info, int can_allocate);
- 
- extern void x86_ptrace_untrace(struct task_struct *child);
--extern void x86_ptrace_fork(struct task_struct *child,
--			    unsigned long clone_flags);
-+extern void x86_ptrace_init_task(struct task_struct *child);
- extern void x86_ptrace_report_exit(long exit_code);
- 
--#define arch_ptrace_untrace(tsk) x86_ptrace_untrace(tsk)
--#define arch_ptrace_fork(child, flags) x86_ptrace_fork(child, flags)
--#define arch_ptrace_report_exit(code) x86_ptrace_report_exit(code)
-+#define arch_ptrace_untrace(tsk)	x86_ptrace_untrace(tsk)
-+#define arch_ptrace_init_task(child)	x86_ptrace_init_task(child)
-+#define arch_ptrace_report_exit(code)	x86_ptrace_report_exit(code)
- 
- #endif /* __KERNEL__ */
- 
-Index: git-tip/include/linux/ptrace.h
-===================================================================
---- git-tip.orig/include/linux/ptrace.h	2009-03-27 08:18:46.000000000 +0100
-+++ git-tip/include/linux/ptrace.h	2009-03-27 08:29:32.000000000 +0100
-@@ -154,6 +154,18 @@ static inline int ptrace_event(int mask,
- 	return 1;
- }
- 
-+#ifndef arch_ptrace_init_task
-+/**
-+ * arch_ptrace_init_task - initialize machine specific state for a new child
-+ * @child:		new child task
-+ *
-+ * This is called immediately after initializing the general ptrace state.
-+ *
-+ * Called with current's siglock and write_lock_irq(&tasklist_lock) held.
-+ */
-+#define arch_ptrace_init_task(child)	do { } while (0)
-+#endif
-+
- /**
-  * ptrace_init_task - initialize ptrace state for a new child
-  * @child:		new child task
-@@ -174,6 +186,8 @@ static inline void ptrace_init_task(stru
- 		child->ptrace = current->ptrace;
- 		ptrace_link(child, current->parent);
- 	}
-+
-+	arch_ptrace_init_task(child);
- }
- 
- /**
-@@ -326,15 +340,6 @@ static inline void user_enable_block_ste
- #define arch_ptrace_untrace(task)		do { } while (0)
- #endif
- 
--#ifndef arch_ptrace_fork
--/*
-- * Do machine-specific work to initialize a new task.
-- *
-- * This is called from copy_process().
-- */
--#define arch_ptrace_fork(child, clone_flags)	do { } while (0)
--#endif
--
- #ifndef arch_ptrace_report_exit
- /**
-  * arch_ptrace_report_exit - Do machine specific work for exiting ptraced tasks
-Index: git-tip/kernel/fork.c
-===================================================================
---- git-tip.orig/kernel/fork.c	2009-03-27 08:18:46.000000000 +0100
-+++ git-tip/kernel/fork.c	2009-03-27 08:29:32.000000000 +0100
-@@ -1100,8 +1100,6 @@ static struct task_struct *copy_process(
- #ifdef CONFIG_DEBUG_MUTEXES
- 	p->blocked_on = NULL; /* not blocked yet */
- #endif
--	if (unlikely(current->ptrace))
--		ptrace_fork(p, clone_flags);
- 
- 	/* Perform scheduler related setup. Assign this task to a CPU. */
- 	sched_fork(p, clone_flags);
-Index: git-tip/kernel/ptrace.c
-===================================================================
---- git-tip.orig/kernel/ptrace.c	2009-03-27 08:18:46.000000000 +0100
-+++ git-tip/kernel/ptrace.c	2009-03-27 08:29:32.000000000 +0100
-@@ -27,16 +27,6 @@
- 
- 
- /*
-- * Initialize a new task whose father had been ptraced.
-- *
-- * Called from copy_process().
-- */
--void ptrace_fork(struct task_struct *child, unsigned long clone_flags)
--{
--	arch_ptrace_fork(child, clone_flags);
--}
--
--/*
-  * ptrace a task: make the debugger its new parent and
-  * move it to the ptrace list.
-  *
-Index: git-tip/arch/x86/kernel/ptrace.c
-===================================================================
---- git-tip.orig/arch/x86/kernel/ptrace.c	2009-03-27 08:29:32.000000000 +0100
-+++ git-tip/arch/x86/kernel/ptrace.c	2009-03-27 08:29:32.000000000 +0100
-@@ -781,7 +781,7 @@ static int ptrace_bts_size(struct task_s
- 	return (trace->ds.top - trace->ds.begin) / trace->ds.size;
- }
- 
--static void ptrace_bts_fork(struct task_struct *tsk)
-+static void ptrace_bts_init_task(struct task_struct *tsk)
- {
- 	tsk->bts = NULL;
- 	tsk->bts_buffer = NULL;
-@@ -926,15 +926,14 @@ static void ptrace_bts_untrace(struct ta
- 	WARN(child->bts, "leaking BTS tracer\n");
- }
- #else
--static inline void ptrace_bts_fork(struct task_struct *tsk) {}
-+static inline void ptrace_bts_init_task(struct task_struct *tsk) {}
- static inline void ptrace_bts_untrace(struct task_struct *child) {}
- static inline void ptrace_bts_exit(void) {}
- #endif /* CONFIG_X86_PTRACE_BTS */
- 
--void x86_ptrace_fork(struct task_struct *child,
--		     unsigned long clone_flags)
-+void x86_ptrace_init_task(struct task_struct *child)
- {
--	ptrace_bts_fork(child);
-+	ptrace_bts_init_task(child);
- }
- 
- void x86_ptrace_untrace(struct task_struct *child)
----------------------------------------------------------------------
-Intel GmbH
-Dornacher Strasse 1
-85622 Feldkirchen/Muenchen Germany
-Sitz der Gesellschaft: Feldkirchen bei Muenchen
-Geschaeftsfuehrer: Douglas Lusk, Peter Gleissner, Hannes Schwaderer
-Registergericht: Muenchen HRB 47456 Ust.-IdNr.
-VAT Registration No.: DE129385895
-Citibank Frankfurt (BLZ 502 109 00) 600119052
+Either way is certainly fine with me, you are the maintainer so it's 
+your call. I kept the branch isolated and can adopt.
 
-This e-mail and any attachments may contain confidential material for
-the sole use of the intended recipient(s). Any review or distribution
-by others is strictly prohibited. If you are not the intended
-recipient, please contact the sender and delete all copies.
+Note: the patch i sent has some (very minimal) dependencies on a 
+previous patchlet [which adds the asm/page.h include to fs.h - that 
+dependency was implicit before], it will be all just fine if you 
+ignore the fs.h reject when you apply the patch.
 
+Thanks,
+
+	Ingo
