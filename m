@@ -1,78 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759067AbZC0QTn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758751AbZC0QUb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759067AbZC0QTn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Mar 2009 12:19:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755881AbZC0QTd
+	id S1758751AbZC0QUb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Mar 2009 12:20:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755941AbZC0QUV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Mar 2009 12:19:33 -0400
-Received: from 69-30-77-85.dq1sn.easystreet.com ([69.30.77.85]:45105 "EHLO
-	kingsolver.anholt.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754305AbZC0QTc (ORCPT
+	Fri, 27 Mar 2009 12:20:21 -0400
+Received: from e23smtp03.au.ibm.com ([202.81.31.145]:46426 "EHLO
+	e23smtp03.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755881AbZC0QUT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Mar 2009 12:19:32 -0400
-Subject: Re: DRM lock ordering fix series
-From: Eric Anholt <eric@anholt.net>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: linux-kernel@vger.kernel.org, dri-devel@lists.sourceforge.net
-In-Reply-To: <87ocvnmhqx.fsf@basil.nowhere.org>
-References: <1238017510-26784-1-git-send-email-eric@anholt.net>
-	 <87ocvnmhqx.fsf@basil.nowhere.org>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-g4/ZdNEWH3u3uuMdlhiz"
-Date: Fri, 27 Mar 2009 09:19:27 -0700
-Message-Id: <1238170767.8275.2397.camel@gaiman.anholt.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 
+	Fri, 27 Mar 2009 12:20:19 -0400
+Date: Fri, 27 Mar 2009 21:49:15 +0530
+From: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>
+Cc: Bharata B Rao <bharata@linux.vnet.ibm.com>,
+       Balbir Singh <balbir@in.ibm.com>,
+       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
+       Gautham Shenoy <ego@in.ibm.com>, lkml <linux-kernel@vger.kernel.org>
+Subject: [PATCH] sched: rt group scheduling, compare child's limit against
+	parent's
+Message-ID: <20090327161915.GA8891@linux.vnet.ibm.com>
+Reply-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Ingo, Peter,
 
---=-g4/ZdNEWH3u3uuMdlhiz
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+I've not been able to follow the reasoning behind checking the sum of
+the children's runtime not exceeding the parent's runtime as opposed to
+the child's runtime not exceeding that of the parent.
 
-On Fri, 2009-03-27 at 10:34 +0100, Andi Kleen wrote:
-> Eric Anholt <eric@anholt.net> writes:
->=20
-> > Here's hopefully the final attempt at the lock ordering fix for GEM.  T=
-he
-> > problem was introduced in .29 with the GTT mapping support.  We hashed =
-out
-> > a few potential fixes on the mailing list and at OSTS.  Peter's plan wa=
-s
-> > to use get_user_pages, but it has significant CPU overhead (10% cost to=
- text
-> > rendering, though part of that is due to some dumb userland code.  But =
-it's
-> > dumb userland code we're all running).
->=20
->=20
-> You are aware that there is a fast path now (get_user_pages_fast) which
-> is significantly faster? (but has some limitations)
+>From what I understand, the limits only guarantee that the group cannot
+exceed a certain limit and not guarantee a group gets to run. If my
+understanding is corrct, maybe the following patch is needed?
 
-In the code I have, get_user_pages_fast is just a wrapper that calls the
-get_user_pages in the way that I'm calling it from the DRM.
+Thanks,
 
-I'm assuming that that's changing.  Can you explain what the "some
-limitations" is?  (Though, of course, in a comment in mm/util.c would be
-better than email).
+--
+sched: rt group scheduling, compare child's limit against parent's
 
---=20
-Eric Anholt
-eric@anholt.net                         eric.anholt@intel.com
+The current logic checks that the sum of the children's runtime in rt
+group scheduling does not exceed the parent's. This logic is wrong,
+all we claim is that the group cannot exceed the amount of time allowed.
 
+Change the code to reflect this.
 
+Signed-off-by: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+---
+ kernel/sched.c |   13 +++++++------
+ 1 file changed, 7 insertions(+), 6 deletions(-)
 
---=-g4/ZdNEWH3u3uuMdlhiz
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAknM/I8ACgkQHUdvYGzw6vdi+QCdFKCxPdsYv7Yf30xW8rrvPss/
-/uMAn1/HTgWqeIpiemrRO2YOR2H7ncdz
-=rFKm
------END PGP SIGNATURE-----
-
---=-g4/ZdNEWH3u3uuMdlhiz--
+Index: linux-2.6/kernel/sched.c
+===================================================================
+--- linux-2.6.orig/kernel/sched.c
++++ linux-2.6/kernel/sched.c
+@@ -9601,7 +9601,7 @@ static int tg_schedulable(struct task_gr
+ {
+ 	struct rt_schedulable_data *d = data;
+ 	struct task_group *child;
+-	unsigned long total, sum = 0;
++	unsigned long total;
+ 	u64 period, runtime;
+ 
+ 	period = ktime_to_ns(tg->rt_bandwidth.rt_period);
+@@ -9640,9 +9640,10 @@ static int tg_schedulable(struct task_gr
+ 		return -EINVAL;
+ 
+ 	/*
+-	 * The sum of our children's runtime should not exceed our own.
++	 * The child's runtime should not exceed our own.
+ 	 */
+ 	list_for_each_entry_rcu(child, &tg->children, siblings) {
++		unsigned long ratio;
+ 		period = ktime_to_ns(child->rt_bandwidth.rt_period);
+ 		runtime = child->rt_bandwidth.rt_runtime;
+ 
+@@ -9651,11 +9652,11 @@ static int tg_schedulable(struct task_gr
+ 			runtime = d->rt_runtime;
+ 		}
+ 
+-		sum += to_ratio(period, runtime);
+-	}
++		ratio = to_ratio(period, runtime);
+ 
+-	if (sum > total)
+-		return -EINVAL;
++		if (ratio > total)
++			return -EINVAL;
++	}
+ 
+ 	return 0;
+ }
+-- 
+regards,
+Dhaval
