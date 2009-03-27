@@ -1,39 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757710AbZC0FEj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758629AbZC0FFX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757710AbZC0FEj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Mar 2009 01:04:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751977AbZC0FE3
+	id S1758629AbZC0FFX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Mar 2009 01:05:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751325AbZC0FFI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Mar 2009 01:04:29 -0400
-Received: from rhun.apana.org.au ([64.62.148.172]:48213 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751702AbZC0FE2 (ORCPT
+	Fri, 27 Mar 2009 01:05:08 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:54923
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1751913AbZC0FFH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Mar 2009 01:04:28 -0400
-Date: Fri, 27 Mar 2009 13:04:25 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Yehuda Sadeh <yehuda@hq.newdream.net>
-Cc: linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] shash: fix unaligned calculation with short length
-Message-ID: <20090327050424.GB26198@gondor.apana.org.au>
-References: <1238101941-12859-1-git-send-email-yehuda@hq.newdream.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1238101941-12859-1-git-send-email-yehuda@hq.newdream.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Fri, 27 Mar 2009 01:05:07 -0400
+Date: Thu, 26 Mar 2009 22:04:54 -0700 (PDT)
+Message-Id: <20090326.220454.133267757.davem@davemloft.net>
+To: mike@trausch.us
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.29 Networking Problems
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20090326232045.700a251a@zest.trausch.us>
+References: <20090326232045.700a251a@zest.trausch.us>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 26, 2009 at 02:12:21PM -0700, Yehuda Sadeh wrote:
-> When the total length is shorter than the calculated number of unaligned bytes, the call to shash->update breaks. For example, calling crc32c on unaligned buffer with length of 1 can result in a system crash.
-> 
-> Signed-off-by: Yehuda Sadeh <yehuda@hq.newdream.net>
+From: "Michael B. Trausch" <mike@trausch.us>
+Date: Thu, 26 Mar 2009 23:20:45 -0400
 
-Ouch! Thanks for fixing this!  Applied to crpyto-2.6.
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+> Any chance that this patch will land in 2.6.29.1?
+
+It will the first patch I submit to -stable in a few
+moments, don't worry.
+
