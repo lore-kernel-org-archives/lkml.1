@@ -1,77 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756118AbZC0Vy3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759715AbZC0VzX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756118AbZC0Vy3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Mar 2009 17:54:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751428AbZC0VyU
+	id S1759715AbZC0VzX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Mar 2009 17:55:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753082AbZC0Vy7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Mar 2009 17:54:20 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:38624 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752052AbZC0VyT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Mar 2009 17:54:19 -0400
-Date: Fri, 27 Mar 2009 14:52:11 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Jan Kara <jack@suse.cz>
-cc: tytso@mit.edu, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PULL REQUEST] Quota changes for 2.6.30
-In-Reply-To: <20090327201227.GA31071@duck.suse.cz>
-Message-ID: <alpine.LFD.2.00.0903271448520.3994@localhost.localdomain>
-References: <20090326012207.GG11024@duck.suse.cz> <alpine.LFD.2.00.0903261616210.3032@localhost.localdomain> <20090327201227.GA31071@duck.suse.cz>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Fri, 27 Mar 2009 17:54:59 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:58143 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750738AbZC0Vy5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Mar 2009 17:54:57 -0400
+Date: Fri, 27 Mar 2009 22:54:54 +0100
+From: Jan Kara <jack@suse.cz>
+To: Theodore Tso <tytso@mit.edu>, Chris Mason <chris.mason@oracle.com>,
+       Ric Wheeler <rwheeler@redhat.com>,
+       Linux Kernel Developers List <linux-kernel@vger.kernel.org>,
+       Ext4 Developers List <linux-ext4@vger.kernel.org>, jack@suse.cz
+Subject: Re: [PATCH 0/3] Ext3 latency improvement patches
+Message-ID: <20090327215454.GH31071@duck.suse.cz>
+References: <1238185471-31152-1-git-send-email-tytso@mit.edu> <1238187031.27455.212.camel@think.oraclecorp.com> <1238187818.27455.217.camel@think.oraclecorp.com> <20090327213052.GC5176@mit.edu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090327213052.GC5176@mit.edu>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Fri, 27 Mar 2009, Jan Kara wrote:
-
-> On Thu 26-03-09 16:16:47, Linus Torvalds wrote:
-> > 
-> > 
-> > On Thu, 26 Mar 2009, Jan Kara wrote:
+On Fri 27-03-09 17:30:52, Theodore Tso wrote:
+> On Fri, Mar 27, 2009 at 05:03:38PM -0400, Chris Mason wrote:
+> > > Ric had asked me about a test program that would show the worst case
+> > > ext3 behavior.  So I've modified your ext3 program a little.  It now
+> > > creates a 8G file and forks off another proc to do random IO to that
+> > > file.
 > > > 
-> > >   could you please pull from
-> > > 
-> > > git://git.kernel.org/pub/scm/linux/kernel/git/jack/linux-quota-2.6.git for_linus
 > > 
-> > 	"Already up-to-date."
-> > 
-> > Forgot to actually push it out?
->   Damn, you're right. Should be there now.
+> > My understanding of ext4 delalloc is that once blocks are allocated to
+> > file, we go back to data=ordered.  
+> 
+> Yes, that's correct.
+> 
+> > Ext4 is going pretty slowly for this fsync test (slower than ext3), it
+> > looks like we're going for a very long time in
+> > jbd2_journal_commit_transaction -> write_cache_pages.
+> 
+> One of the things that we can do to optimize this case for ext4 (and
+> ext3) is that if block has already been written out to disk once, we
+> don't have to flush it to disk a second time.  So if we add a new
+> buffer_head flag which can distinguish between blocks that have been
+> newly allocated (and not yet been flushed to disk) versus blocks that
+> have already been flushed to disk at least once, we wouldn't need to
+> force I/O for blocks in the latter case.
+>
+> After all, most of the applications which do random I/O to a file
+> normally will use fsync() appropriately such that they are rewriting
+> already allocated blocks.  So there really is no reason to flush those
+> blocks out to disk even in data=ordered mode.
+> 
+> We currently flush *all* blocks out to disk in data=ordered mode
+> because we don't have a good way of telling the difference between the
+> two cases.
+  Yes, but OTOH this will make the problem "my data was lost after crash"
+worse... Although rewrites aren't that common either so maybe it won't
+be that bad.
 
-It is, but now when I pull I notice that you hadn't used "-M --summary" 
-when asking me to pull. You claimed:
-
-	 66 files changed, 4770 insertions(+), 4565 deletions(-)
-
-but in fact it's really:
-
-	 58 files changed, 902 insertions(+), 697 deletions(-)
-	 create mode 100644 fs/quota/Kconfig
-	 create mode 100644 fs/quota/Makefile
-	 rename fs/{ => quota}/dquot.c (85%)
-	 rename fs/{ => quota}/quota.c (94%)
-	 rename fs/{ => quota}/quota_tree.c (84%)
-	 rename fs/{ => quota}/quota_tree.h (100%)
-	 rename fs/{ => quota}/quota_v1.c (79%)
-	 rename fs/{ => quota}/quota_v2.c (98%)
-	 rename fs/{ => quota}/quotaio_v1.h (100%)
-	 rename fs/{ => quota}/quotaio_v2.h (100%)
-
-so please do change your pull-request script to add -M (for rename 
-detection) and --summary (for that "new, deleted and renamed files" 
-summary at the end).
-
-It really does generate a much nicer view of what changed, _especially_ in 
-cases like the above when a non-rename patch is mostly movement noise.
-
-Git still defaults to non-rename patches because some people probably 
-still use inferior crud that doesn't understand about the extended patch 
-semantics of git patches.
-
-			Linus
+								Honza
+-- 
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
