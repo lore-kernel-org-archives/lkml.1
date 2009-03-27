@@ -1,24 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763290AbZC0Xpp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764083AbZC0XqL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763290AbZC0Xpp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Mar 2009 19:45:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762614AbZC0X2M
+	id S1764083AbZC0XqL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Mar 2009 19:46:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761445AbZC0X2N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Mar 2009 19:28:12 -0400
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:48505 "EHLO
+	Fri, 27 Mar 2009 19:28:13 -0400
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:48489 "EHLO
 	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761513AbZC0X1m (ORCPT
+	with ESMTP id S1761430AbZC0X1l (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Mar 2009 19:27:42 -0400
+	Fri, 27 Mar 2009 19:27:41 -0400
 From: =?utf-8?q?Uwe=20Kleine-K=C3=B6nig?= 
 	<u.kleine-koenig@pengutronix.de>
 To: linux-kernel@vger.kernel.org
-Cc: Andrew Morton <akpm@linux-foundation.org>, Alan Cox <alan@redhat.com>,
-       Wim Van Sebroeck <wim@iguana.be>, Felipe Balbi <felipe.balbi@nokia.com>,
-       "George G. Davis" <gdavis@mvista.com>
-Subject: [PATCH 35/58] move omap_wdt's probe function to .devinit.text
-Date: Sat, 28 Mar 2009 00:26:56 +0100
-Message-Id: <1238196439-16535-35-git-send-email-u.kleine-koenig@pengutronix.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Takashi Iwai <tiwai@suse.de>,
+       Jaroslav Kysela <perex@perex.cz>,
+       Johannes Berg <johannes@sipsolutions.net>,
+       Rene Herman <rene.herman@keyaccess.nl>
+Subject: [PATCH 49/58] move snd_powermac's probe function to .devinit.text
+Date: Sat, 28 Mar 2009 00:27:10 +0100
+Message-Id: <1238196439-16535-49-git-send-email-u.kleine-koenig@pengutronix.de>
 X-Mailer: git-send-email 1.6.2
 In-Reply-To: <20090327232153.GA16348@pengutronix.de>
 References: <20090327232153.GA16348@pengutronix.de>
@@ -33,9 +34,9 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A pointer to omap_wdt_probe is passed to the core via
+A pointer to snd_pmac_probe is passed to the core via
 platform_driver_register and so the function must not disappear when the
-.init sections are discarded.  Otherwise (if also having HOTPLUG=y)
+.init sections are discarded.  Otherwise (when having HOTPLUG=y)
 unbinding and binding a device to the driver via sysfs will result in an
 oops as does a device being registered late.
 
@@ -44,28 +45,28 @@ platform_driver_register plus removing the pointer to the probe function
 from the struct platform_driver.
 
 Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
-Cc: Alan Cox <alan@redhat.com>
-Cc: Wim Van Sebroeck <wim@iguana.be>
-Cc: Felipe Balbi <felipe.balbi@nokia.com>
-Cc: George G. Davis <gdavis@mvista.com>
+Cc: Takashi Iwai <tiwai@suse.de>
+Cc: Jaroslav Kysela <perex@perex.cz>
+Cc: Johannes Berg <johannes@sipsolutions.net>
+Cc: Rene Herman <rene.herman@keyaccess.nl>
 Cc: Andrew Morton <akpm@linux-foundation.org>
 ---
- drivers/watchdog/omap_wdt.c |    2 +-
+ sound/ppc/powermac.c |    2 +-
  1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/watchdog/omap_wdt.c b/drivers/watchdog/omap_wdt.c
-index 2f2ce74..c9c14dd 100644
---- a/drivers/watchdog/omap_wdt.c
-+++ b/drivers/watchdog/omap_wdt.c
-@@ -269,7 +269,7 @@ static const struct file_operations omap_wdt_fops = {
- 	.release = omap_wdt_release,
- };
+diff --git a/sound/ppc/powermac.c b/sound/ppc/powermac.c
+index 5a92906..a2b69b8 100644
+--- a/sound/ppc/powermac.c
++++ b/sound/ppc/powermac.c
+@@ -51,7 +51,7 @@ static struct platform_device *device;
+ /*
+  */
  
--static int __init omap_wdt_probe(struct platform_device *pdev)
-+static int __devinit omap_wdt_probe(struct platform_device *pdev)
+-static int __init snd_pmac_probe(struct platform_device *devptr)
++static int __devinit snd_pmac_probe(struct platform_device *devptr)
  {
- 	struct resource *res, *mem;
- 	struct omap_wdt_dev *wdev;
+ 	struct snd_card *card;
+ 	struct snd_pmac *chip;
 -- 
 1.6.2
 
