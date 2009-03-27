@@ -1,46 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759290AbZC0QYM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756768AbZC0Q2Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759290AbZC0QYM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Mar 2009 12:24:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757811AbZC0QX4
+	id S1756768AbZC0Q2Z (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Mar 2009 12:28:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754371AbZC0Q2P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Mar 2009 12:23:56 -0400
-Received: from viefep18-int.chello.at ([62.179.121.38]:9749 "EHLO
-	viefep18-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757665AbZC0QX4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Mar 2009 12:23:56 -0400
-X-SourceIP: 213.93.53.227
-Subject: Re: [PATCH] sched: rt group scheduling, compare child's limit
- against parent's
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Bharata B Rao <bharata@linux.vnet.ibm.com>,
-       Balbir Singh <balbir@in.ibm.com>,
-       Srivatsa Vaddagiri <vatsa@linux.vnet.ibm.com>,
-       Gautham Shenoy <ego@in.ibm.com>, lkml <linux-kernel@vger.kernel.org>
-In-Reply-To: <20090327161915.GA8891@linux.vnet.ibm.com>
-References: <20090327161915.GA8891@linux.vnet.ibm.com>
-Content-Type: text/plain
-Date: Fri, 27 Mar 2009 17:23:59 +0100
-Message-Id: <1238171039.16890.308.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.0 
+	Fri, 27 Mar 2009 12:28:15 -0400
+Received: from gw.goop.org ([64.81.55.164]:33815 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754140AbZC0Q2O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Mar 2009 12:28:14 -0400
+Message-ID: <49CCFE9C.6060702@goop.org>
+Date: Fri, 27 Mar 2009 09:28:12 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+MIME-Version: 1.0
+To: Rusty Russell <rusty@rustcorp.com.au>
+CC: lguest@ozlabs.org, Ingo Molnar <mingo@redhat.com>,
+       linux-kernel@vger.kernel.org, virtualization@lists.linux-foundation.org
+Subject: Re: [PATCH 3/5] lguest: avoid accidental recycling of pgdir pages
+References: <200903271022.28863.rusty@rustcorp.com.au> <49CC1B1C.3080102@goop.org> <200903271154.22450.rusty@rustcorp.com.au>
+In-Reply-To: <200903271154.22450.rusty@rustcorp.com.au>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-03-27 at 21:49 +0530, Dhaval Giani wrote:
-> Hi Ingo, Peter,
-> 
-> I've not been able to follow the reasoning behind checking the sum of
-> the children's runtime not exceeding the parent's runtime as opposed to
-> the child's runtime not exceeding that of the parent.
-> 
-> From what I understand, the limits only guarantee that the group cannot
-> exceed a certain limit and not guarantee a group gets to run. If my
-> understanding is corrct, maybe the following patch is needed?
+Rusty Russell wrote:
+>> You can't just do this in tlb flush?
+>>     
+>
+> I don't think so.  The problem is that lguest tracks 4 toplevels, using random
+> replacement.  This cache is indexed by cr3 value.
+>
+> Lguest assumes it's told about all pte removals or changes, but simple
+> additions get faulted in.  If a pgdir page gets reused we'll potentially have
+> stale values from its previous life as a pgdir, no?
+>   
 
-NAK, rt needs that as it guarantees a min too.
+Yes, but when you get a tlb flush hypercall, couldn't you also look up 
+the corresponding shadow pte and zap it so that it will get repopulated 
+next time around?  And a full tlb flush would just zap the entire 
+shadow.  After all, the shadow pagetable is just a glorified 
+software-managed tlb...
 
+    J
