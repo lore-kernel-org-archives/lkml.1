@@ -1,268 +1,304 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756148AbZC0Ofk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759400AbZC0OgN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756148AbZC0Ofk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Mar 2009 10:35:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758800AbZC0Oe0
+	id S1759400AbZC0OgN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Mar 2009 10:36:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759354AbZC0Ofp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Mar 2009 10:34:26 -0400
-Received: from main.gmane.org ([80.91.229.2]:46778 "EHLO ciao.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758773AbZC0OeW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Mar 2009 10:34:22 -0400
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Philippe Reynes <philippe.reynes@isismpp.fr>
-Subject: Re: [Announce] 2.6.29-rt1
-Date: Fri, 27 Mar 2009 14:34:08 +0000 (UTC)
-Message-ID: <gqio50$c27$3@ger.gmane.org>
-References: <49b7c2350903260354p6eaf50ebo87985dcfb8d48ba0@mail.gmail.com>
-	<gqi6oc$1s3$1@ger.gmane.org> <gqic7t$c27$1@ger.gmane.org>
-	<alpine.LFD.2.00.0903271236270.3397@localhost.localdomain>
-	<gqilj9$c27$2@ger.gmane.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-Complaints-To: usenet@ger.gmane.org
-X-Gmane-NNTP-Posting-Host: extranet.isismpp.fr
-User-Agent: Pan/0.133 (House of Butterflies)
-Cc: linux-rt-users@vger.kernel.org
+	Fri, 27 Mar 2009 10:35:45 -0400
+Received: from va3ehsobe002.messaging.microsoft.com ([216.32.180.12]:54818
+	"EHLO VA3EHSOBE002.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1759330AbZC0Ofn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Mar 2009 10:35:43 -0400
+X-BigFish: VPS3(zzzz1202hzzz32i43j64h)
+X-Spam-TCS-SCL: 3:0
+X-FB-SS: 5,
+X-WSS-ID: 0KH65UT-03-6O2-01
+From: Joerg Roedel <joerg.roedel@amd.com>
+To: Avi Kivity <avi@redhat.com>, Marcelo Tosatti <mtosatti@redhat.com>
+CC: kvm@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Joerg Roedel <joerg.roedel@amd.com>
+Subject: [PATCH] kvm mmu: add support for 1GB pages in shadow paging code
+Date: Fri, 27 Mar 2009 15:35:18 +0100
+Message-ID: <1238164518-16261-1-git-send-email-joerg.roedel@amd.com>
+X-Mailer: git-send-email 1.5.6.4
+X-OriginalArrivalTime: 27 Mar 2009 14:35:18.0721 (UTC) FILETIME=[405CDB10:01C9AEE9]
+MIME-Version: 1.0
+Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-may be this trace is better ....
+This patch adds support for 1GB pages in the shadow paging code. The
+guest can map 1GB pages in his page tables and KVM will map the page
+frame with a 1GB, a 2MB or even a 4kb page size, according to backing
+host page size and the write protections in place.
+This is the theory. In practice there are conditions which turn the
+guest unstable when running with this patch and GB pages enabled. The
+failing conditions are:
 
+	* KVM is loaded using shadow paging
+	* The Linux guest uses GB pages for the kernel direct mapping
+	* The guest memory is backed with 4kb pages on the host side
 
-    sirq-timer/0-4     [000]    97.737264: finish_task_switch <-__schedule
-    sirq-timer/0-4     [000]    97.737267: run_timer_softirq <-ksoftirqd
-    sirq-timer/0-4     [000]    97.737269: printk_tick <-run_timer_softirq
-    sirq-timer/0-4     [000]    97.737271: hrtimer_run_pending <-
-run_timer_softirq
-    sirq-timer/0-4     [000]    97.737273: rt_spin_lock <-
-run_timer_softirq
-    sirq-timer/0-4     [000]    97.737275: __wake_up <-run_timer_softirq
-    sirq-timer/0-4     [000]    97.737277: rt_spin_lock <-__wake_up
-         hwclock-1740  [000]   121.298710: free_page_and_swap_cache <-
-unmap_vmas
-         hwclock-1740  [000]   121.298712: put_page <-
-free_page_and_swap_cache
-         hwclock-1740  [000]   121.298713: vm_normal_page <-unmap_vmas
-         hwclock-1740  [000]   121.298715: page_remove_rmap <-unmap_vmas
-         hwclock-1740  [000]   121.298716: free_page_and_swap_cache <-
-unmap_vmas
-         hwclock-1740  [000]   121.298718: put_page <-
-free_page_and_swap_cache
-         hwclock-1740  [000]   121.298719: vm_normal_page <-unmap_vmas
-         hwclock-1740  [000]   121.298721: page_remove_rmap <-unmap_vmas
-         hwclock-1740  [000]   121.298722: free_page_and_swap_cache <-
-unmap_vmas
-         hwclock-1740  [000]   121.298724: put_page <-
-free_page_and_swap_cache
-         hwclock-1740  [000]   121.298726: vm_normal_page <-unmap_vmas
-         hwclock-1740  [000]   121.298727: page_remove_rmap <-unmap_vmas
-         hwclock-1740  [000]   121.298729: free_page_and_swap_cache <-
-unmap_vmas
-         hwclock-1740  [000]   121.298730: put_page <-
-free_page_and_swap_cache
-         hwclock-1740  [000]   121.298732: vm_normal_page <-unmap_vmas
-         hwclock-1740  [000]   121.298733: page_remove_rmap <-unmap_vmas
-         hwclock-1740  [000]   121.298735: free_page_and_swap_cache <-
-unmap_vmas
-         hwclock-1740  [000]   121.298736: put_page <-
-free_page_and_swap_cache
-         hwclock-1740  [000]   121.298738: vm_normal_page <-unmap_vmas
-         hwclock-1740  [000]   121.298739: page_remove_rmap <-unmap_vmas
-         hwclock-1740  [000]   121.298741: free_page_and_swap_cache <-
-unmap_vmas
-         hwclock-1740  [000]   121.298742: put_page <-
-free_page_and_swap_cache
-         hwclock-1740  [000]   121.298744: vm_normal_page <-unmap_vmas
-         hwclock-1740  [000]   121.298746: page_remove_rmap <-unmap_vmas
-         hwclock-1740  [000]   121.298747: free_page_and_swap_cache <-
-unmap_vmas
-         hwclock-1740  [000]   121.298749: put_page <-
-free_page_and_swap_cache
-         hwclock-1740  [000]   121.298750: vm_normal_page <-unmap_vmas
-         hwclock-1740  [000]   121.298752: page_remove_rmap <-unmap_vmas
-         hwclock-1740  [000]   121.298753: free_page_and_swap_cache <-
-unmap_vmas
-         hwclock-1740  [000]   121.298755: put_page <-
-free_page_and_swap_cache
-         hwclock-1740  [000]   121.298756: vm_normal_page <-unmap_vmas
-         hwclock-1740  [000]   121.298758: page_remove_rmap <-unmap_vmas
-         hwclock-1740  [000]   121.298759: free_page_and_swap_cache <-
-unmap_vmas
-         hwclock-1740  [000]   121.298761: put_page <-
-free_page_and_swap_cache
-         hwclock-1740  [000]   121.298762: vm_normal_page <-unmap_vmas
-         hwclock-1740  [000]   121.298764: page_remove_rmap <-unmap_vmas
-         hwclock-1740  [000]   121.298766: free_page_and_swap_cache <-
-unmap_vmas
-         hwclock-1740  [000]   121.298767: put_page <-
-free_page_and_swap_cache
-         hwclock-1740  [000]   121.298769: vm_normal_page <-unmap_vmas
-         hwclock-1740  [000]   121.298770: page_remove_rmap <-unmap_vmas
-         hwclock-1740  [000]   121.298772: free_page_and_swap_cache <-
-unmap_vmas
-         hwclock-1740  [000]   121.298773: put_page <-
-free_page_and_swap_cache
-         hwclock-1740  [000]   121.298775: vm_normal_page <-unmap_vmas
-         hwclock-1740  [000]   121.298776: page_remove_rmap <-unmap_vmas
-         hwclock-1740  [000]   121.298778: free_page_and_swap_cache <-
-unmap_vmas
-         hwclock-1740  [000]   121.298779: put_page <-
-free_page_and_swap_cache
-         hwclock-1740  [000]   12PHY: 0:0a - Link is Up1.298781: 
-vm_normal_page <-unmap_vmas
-         hwclock-1740  [000]   121.298782: page_remove_rm - 1000/Fullap <-
-unmap_vmas
+With the above configuration there are random application or kernel
+crashed when the guest runs under load. When GB pages for HugeTLBfs in
+the guest are allocated at boot time in the guest the guest kernel
+crashes or stucks at boot depending on the amount of RAM in the guest.
+The following parameters have no impact:
 
-         hwclock-1740  [000]   121.298784: free_page_and_swap_cache <-
-unmap_vmas
-         hwclock-1740  [000]   121.298785: put_page <-
-free_page_and_swap_cache
-         hwclock-1740  [000]   121.298787: vm_normal_page <-unmap_vmas
-         hwclock-1740  [000]   121.298789: page_remove_rmap <-unmap_vmas
-         hwclock-1740  [000]   121.298790: free_page_and_swap_cache <-
-unmap_vmas
-         hwclock-1740  [000]   121.298792: put_page <-
-free_page_and_swap_cache
-         hwclock-1740  [000]   121.298793: vm_normal_page <-unmap_vmas
-         hwclock-1740  [000]   121.298795: page_remove_rmap <-unmap_vmas
-         hwclock-1740  [000]   121.2987Oops: Exception in kernel mode, 
-sig: 5 [#1]
-PREEMPT MPC837x RR605
-Modules linked in:
-NIP: c0095550 LR: c00956f0 CTR: c00954d8
-REGS: df89fe00 TRAP: 0700   Not tainted  (2.6.29-rt1)
-MSR: 00029032 <EE,ME,CE,IR,DR>  CR: 24044028  XER: 20000000
-TASK = df89da00[15] 'events/0' THREAD: df89e000
-GPR00: 00000001 df89feb0 df89da00 df80ae00 c0b821a0 00000000 00000000 
-df89fee8 
-GPR08: 00000000 003821a0 dc10d918 c0800000 777db820 00000000 1ffcd000 
-00000000 
-GPR16: 1ffc300e 1ffc6f20 00000000 1ffc8600 c0471623 c047165a c0560000 
-00000002 
-GPR24: df89fee8 df80ae00 00100100 00200200 00000000 df816828 df80ae00 
-df89feb0 
-NIP [c0095550] free_block+0x84/0x160
-LR [c00956f0] drain_array+0xc4/0x194
-Call Trace:
-[df89feb0] [c0013d88] ftrace_call+0x4/0x48 (unreliable)
-[df89fee0] [c00956f0] drain_array+0xc4/0x194
-[df89ff20] [c0097374] cache_reap+0x68/0x148
-[df89ff50] [c003aa8c] run_workqueue+0x14c/0x1b8
-[df89ff90] [c003b51c] worker_thread+0xfc/0x10c
-[df89ffd0] [c003fd00] kthread+0x5c/0x8c
-[df89fff0] [c00131c0] kernel_thread+0x4c/0x68
-Instruction dump:
-815d0000 8176b248 3d2a4000 5529c9f4 7c09582e 7c895a14 70054000 41a20008 
-8084000c 80040000 68000080 5400cffe <0f000000> 8084001c 80f9004c 81640004 
----[ end trace 8fa1185748d94493 ]---
-------------[ cut here ]------------
-kernel BUG at kernel/rtmutex.c:806!
-Oops: Exception in kernel mode, sig: 5 [#2]
-PREEMPT MPC837x RR605
-Modules linked in:
-NIP: c03f3b64 LR: c03f409c CTR: c03f3af4
-REGS: df89fab0 TRAP: 0700   Tainted: G      D     (2.6.29-rt1)
-MSR: 00021032 <ME,CE,IR,DR>  CR: 84044048  XER: 20000000
-TASK = df89da00[15] 'events/0' THREAD: df89e000
-GPR00: 00000001 df89fb60 df89da00 c052bb7c df87b580 00001032 00017fff 
-c051cc6c 
-GPR08: df89da00 00000001 df89da00 df89e000 7e6ec050 00000000 1ffcd000 
-00000000 
-GPR16: 1ffc300e 1ffc6f20 00000000 1ffc8600 c0471623 c0028780 c055e748 
-c0520000 
-GPR24: c0560000 00200200 c0023edc df87b580 c052bb7c df89fc08 df85a240 
-df89fb60 
-NIP [c03f3b64] rt_spin_lock_slowlock+0x7c/0x284
-LR [c03f409c] rt_spin_lock+0x7c/0x84
-Call Trace:
-[df89fb60] [00001032] 0x1032 (unreliable)
-[df89fbd0] [c03f409c] rt_spin_lock+0x7c/0x84
-[df89fbe0] [c0094e40] _slab_irq_disable+0x34/0x44
-[df89fc00] [c009531c] kmem_cache_free+0x38/0x15c
-[df89fc30] [c0023edc] __cleanup_sighand+0x4c/0x54
-[df89fc40] [c0029114] release_task+0x2d0/0x3a8
-[df89fc80] [c002a7f8] do_exit+0x65c/0x710
-[df89fcc0] [c0010e18] kernel_bad_stack+0x0/0x54
-[df89fce0] [c0011010] _exception+0x68/0x174
-[df89fdd0] [c0011838] program_check_exception+0x520/0x530
-[df89fdf0] [c00139e8] ret_from_except_full+0x0/0x4c
---- Exception: 700 at free_block+0x84/0x160
-    LR = drain_array+0xc4/0x194
-[df89feb0] [c0013d88] ftrace_call+0x4/0x48 (unreliable)
-[df89fee0] [c00956f0] drain_array+0xc4/0x194
-[df89ff20] [c0097374] cache_reap+0x68/0x148
-[df89ff50] [c003aa8c] run_workqueue+0x14c/0x1b8
-[df89ff90] [c003b51c] worker_thread+0xfc/0x10c
-[df89ffd0] [c003fd00] kthread+0x5c/0x8c
-[df89fff0] [c00131c0] kernel_thread+0x4c/0x68
-Instruction dump:
-2f800000 40be0018 39230008 907c0004 907c0000 91290004 91230008 801c0010 
-5400003a 7c001278 7c000034 5400d97e <0f000000> 81420000 69490002 3129ffff 
----[ end trace 8fa1185748d94494 ]---
-Fixing recursive fault but reboot is needed!
-96: free_page_and_swap_cache <-unmap_vmas
-         hwclock-1740  [000]   121.298798: put_page <-
-free_page_and_swap_cache
-         hwclock-1740  [000]   121.298799: vm_normal_page <-unmap_vmas
-         hwclock-1740  [000]   121.298801: page_remove_rmap <-unmap_vmas
-         hwclock-1740  [000]   121.298802: free_page_and_swap_cache <-
-unmap_vmas
-         hwclock-1740  [000]   121.298804: put_page <-
-free_page_and_swap_cache
-         hwclock-1740  [000]   121.298805: vm_normal_page <-unmap_vmas
-         hwclock-1740  [000]   121.298807: page_remove_rmap <-unmap_vmas
-         hwclock-1740  [000]   121.298809: free_page_and_swap_cache <-
-unmap_vmas
-         hwclock-1740  [000]   121.298810: put_page <-
-free_page_and_swap_cache
-         hwclock-1740  [000]   121.298812: vm_normal_page <-unmap_vmas
-         hwclock-1740  [000]   121.298813: page_remove_rmap <-unmap_vmas
-         hwclock-1740  [000]   121.298815: free_page_and_swap_cache <-
-unmap_vmas
-         hwclock-1740  [000]   121.298816: put_page <-
-free_page_and_swap_cache
-         hwclock-1740  [000]   121.298818: vm_normal_page <-unmap_vmas
-         hwclock-1740  [000]   121.298819: page_remove_rmap <-unmap_vmas
-         hwclock-1740  [000]   121.298821: free_page_and_swap_cache <-
-unmap_vmas
-         hwclock-1740  [000]   121.298822: put_page <-
-free_page_and_swap_cache
-         hwclock-1740  [000]   121.298824: vm_normal_page <-unmap_vmas
-         hwclock-1740  [000]   121.298825: page_remove_rmap <-unmap_vmas
-         hwclock-1740  [000]   121.298827: free_page_and_swap_cache <-
-unmap_vmas
-         hwclock-1740  [000]   121.298828: put_page <-
-free_page_and_swap_cache
-         hwclock-1740  [000]   121.298830: vm_normal_page <-unmap_vmas
-         hwclock-1740  [000]   121.298832: page_remove_rmap <-unmap_vmas
-         hwclock-1740  [000]   121.298833: free_page_and_swap_cache <-
-unmap_vmas
-         hwclock-1740  [000]   121.298835: put_page <-
-free_page_and_swap_cache
-         hwclock-1740  [000]   121.298836: vm_normal_page <-unmap_vmas
-         hwclock-1740  [000]   121.298838: page_remove_rmap <-unmap_vmas
-         hwclock-1740  [000]   121.298839: free_page_and_swap_cache <-
-unmap_vmas
-         hwclock-1740  [000]   121.298841: put_page <-
-free_page_and_swap_cache
-         hwclock-1740  [000]   121.298842: vm_normal_page <-unmap_vmas
-         hwclock-1740  [000]   121.298844: page_remove_rmap <-unmap_vmas
-         hwclock-1740  [000]   121.298845: free_page_and_swap_cache <-
-unmap_vmas
-         hwclock-1740  [000]   121.298847: put_page <-
-free_page_and_swap_cache
-         hwclock-1740  [000]   121.298849: vm_normal_page <-unmap_vmas
-         hwclock-1740  [000]   121.298850: page_remove_rmap <-unmap_vmas
-         hwclock-1740  [000]   121.298852: free_page_and_swap_cache <-
-unmap_vmas
-         hwclock-1740  [000]   121.298853: put_page <-
-free_page_and_swap_cache
-         hwclock-1740  [000]   121.298855: vm_normal_page <-unmap_vmas
-         hwclock-1740  [000]   121.298856: page_remove_rmap <-unmap_vmas
-         hwclock-1740  [000]   121.298858: free_page_and_swap_cache <-
-unmap_vmas
+	* It bug occurs also without guest SMP (so likely no race
+	  condition)
+	* Use PV-MMU makes no difference
+
+I have searched this bug for quite some time with no real luck. Maybe
+some other reviewers have more luck than I had by now.
+
+Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
+---
+ arch/x86/kvm/mmu.c         |   56 +++++++++++++++++++++++++++++++------------
+ arch/x86/kvm/paging_tmpl.h |   35 +++++++++++++++++++++------
+ arch/x86/kvm/svm.c         |    2 +-
+ 3 files changed, 68 insertions(+), 25 deletions(-)
+
+diff --git a/arch/x86/kvm/mmu.c b/arch/x86/kvm/mmu.c
+index 471e5d0..e3120fe 100644
+--- a/arch/x86/kvm/mmu.c
++++ b/arch/x86/kvm/mmu.c
+@@ -705,6 +705,7 @@ static int rmap_write_protect(struct kvm *kvm, u64 gfn)
+ 	unsigned long *rmapp;
+ 	u64 *spte;
+ 	int write_protected = 0;
++	enum kvm_page_size psize;
+ 
+ 	gfn = unalias_gfn(kvm, gfn);
+ 	rmapp = gfn_to_rmap(kvm, gfn, KVM_PAGE_SIZE_4k);
+@@ -729,7 +730,9 @@ static int rmap_write_protect(struct kvm *kvm, u64 gfn)
+ 	}
+ 
+ 	/* check for huge page mappings */
+-	rmapp = gfn_to_rmap(kvm, gfn, KVM_PAGE_SIZE_2M);
++	psize = KVM_PAGE_SIZE_2M;
++again:
++	rmapp = gfn_to_rmap(kvm, gfn, psize);
+ 	spte = rmap_next(kvm, rmapp, NULL);
+ 	while (spte) {
+ 		BUG_ON(!spte);
+@@ -737,7 +740,7 @@ static int rmap_write_protect(struct kvm *kvm, u64 gfn)
+ 		BUG_ON((*spte & (PT_PAGE_SIZE_MASK|PT_PRESENT_MASK)) != (PT_PAGE_SIZE_MASK|PT_PRESENT_MASK));
+ 		pgprintk("rmap_write_protect(large): spte %p %llx %lld\n", spte, *spte, gfn);
+ 		if (is_writeble_pte(*spte)) {
+-			rmap_remove(kvm, spte, KVM_PAGE_SIZE_2M);
++			rmap_remove(kvm, spte, psize);
+ 			--kvm->stat.lpages;
+ 			set_shadow_pte(spte, shadow_trap_nonpresent_pte);
+ 			spte = NULL;
+@@ -746,6 +749,11 @@ static int rmap_write_protect(struct kvm *kvm, u64 gfn)
+ 		spte = rmap_next(kvm, rmapp, spte);
+ 	}
+ 
++	if (psize == KVM_PAGE_SIZE_2M) {
++		psize = KVM_PAGE_SIZE_1G;
++		goto again;
++	}
++
+ 	return write_protected;
+ }
+ 
+@@ -789,11 +797,14 @@ static int kvm_handle_hva(struct kvm *kvm, unsigned long hva,
+ 		if (hva >= start && hva < end) {
+ 			gfn_t gfn_offset = (hva - start) >> PAGE_SHIFT;
+ 			unsigned long lidx = gfn_offset / KVM_PAGES_PER_2M_PAGE;
++			unsigned long hidx = gfn_offset / KVM_PAGES_PER_1G_PAGE;
+ 			retval |= handler(kvm, &memslot->rmap[gfn_offset],
+ 					  KVM_PAGE_SIZE_4k);
+ 			retval |= handler(kvm,
+ 					  &memslot->lpage_info[lidx].rmap_pde,
+ 					  KVM_PAGE_SIZE_2M);
++			retval |= handler(kvm, &memslot->hpage_info[hidx].rmap_pde,
++					  KVM_PAGE_SIZE_1G);
+ 		}
+ 	}
+ 
+@@ -2408,6 +2419,9 @@ static void mmu_pte_write_zap_pte(struct kvm_vcpu *vcpu,
+ 		else if (is_large_pte(pte) &&
+ 			 sp->role.level == PT_DIRECTORY_LEVEL)
+ 			rmap_remove(vcpu->kvm, spte, KVM_PAGE_SIZE_2M);
++		else if (is_large_pte(pte) &&
++			 sp->role.level == PT_MIDDLE_LEVEL)
++			rmap_remove(vcpu->kvm, spte, KVM_PAGE_SIZE_1G);
+ 		else {
+ 			child = page_header(pte & PT64_BASE_ADDR_MASK);
+ 			mmu_page_remove_parent_pte(child, spte);
+@@ -2423,19 +2437,36 @@ static void mmu_pte_write_new_pte(struct kvm_vcpu *vcpu,
+ 				  u64 *spte,
+ 				  const void *new)
+ {
+-	if (sp->role.level != PT_PAGE_TABLE_LEVEL) {
+-		if (vcpu->arch.update_pte.page_size != KVM_PAGE_SIZE_2M ||
+-		    sp->role.glevels == PT32_ROOT_LEVEL) {
+-			++vcpu->kvm->stat.mmu_pde_zapped;
+-			return;
+-		}
+-        }
++	enum kvm_page_size psize = KVM_PAGE_SIZE_4k;
++
++	if (sp->role.level == PT_PAGE_TABLE_LEVEL)
++		goto write_pte;
+ 
++	if (!is_large_pte(*(u64*)new))
++		goto out_pde;
++
++	psize = backing_size(vcpu, vcpu->arch.update_pte.gfn);
++	if ((sp->role.level == PT_DIRECTORY_LEVEL) &&
++	    (psize >= KVM_PAGE_SIZE_2M)) {
++		psize = KVM_PAGE_SIZE_2M;
++		vcpu->arch.update_pte.gfn &= ~(KVM_PAGES_PER_2M_PAGE-1);
++		vcpu->arch.update_pte.pfn &= ~(KVM_PAGES_PER_2M_PAGE-1);
++	} else if ((sp->role.level == PT_MIDDLE_LEVEL) &&
++		   (psize == KVM_PAGE_SIZE_1G)) {
++		vcpu->arch.update_pte.gfn &= ~(KVM_PAGES_PER_1G_PAGE-1);
++		vcpu->arch.update_pte.pfn &= ~(KVM_PAGES_PER_1G_PAGE-1);
++	} else
++		goto out_pde;
++
++write_pte:
++	vcpu->arch.update_pte.page_size = psize;
+ 	++vcpu->kvm->stat.mmu_pte_updated;
+ 	if (sp->role.glevels == PT32_ROOT_LEVEL)
+ 		paging32_update_pte(vcpu, sp, spte, new);
+ 	else
+ 		paging64_update_pte(vcpu, sp, spte, new);
++out_pde:
++	++vcpu->kvm->stat.mmu_pde_zapped;
+ }
+ 
+ static bool need_remote_flush(u64 old, u64 new)
+@@ -2474,8 +2505,6 @@ static void mmu_guess_page_from_pte_write(struct kvm_vcpu *vcpu, gpa_t gpa,
+ 	u64 gpte = 0;
+ 	pfn_t pfn;
+ 
+-	vcpu->arch.update_pte.page_size = KVM_PAGE_SIZE_4k;
+-
+ 	if (bytes != 4 && bytes != 8)
+ 		return;
+ 
+@@ -2503,11 +2532,6 @@ static void mmu_guess_page_from_pte_write(struct kvm_vcpu *vcpu, gpa_t gpa,
+ 		return;
+ 	gfn = (gpte & PT64_BASE_ADDR_MASK) >> PAGE_SHIFT;
+ 
+-	if (is_large_pte(gpte) &&
+-	    backing_size(vcpu, gfn) != KVM_PAGE_SIZE_4k) {
+-		gfn &= ~(KVM_PAGES_PER_2M_PAGE-1);
+-		vcpu->arch.update_pte.page_size = KVM_PAGE_SIZE_2M;
+-	}
+ 	vcpu->arch.update_pte.mmu_seq = vcpu->kvm->mmu_notifier_seq;
+ 	smp_rmb();
+ 	pfn = gfn_to_pfn(vcpu->kvm, gfn);
+diff --git a/arch/x86/kvm/paging_tmpl.h b/arch/x86/kvm/paging_tmpl.h
+index 67d6bfb..a2cbc3f 100644
+--- a/arch/x86/kvm/paging_tmpl.h
++++ b/arch/x86/kvm/paging_tmpl.h
+@@ -306,7 +306,9 @@ static u64 *FNAME(fetch)(struct kvm_vcpu *vcpu, gva_t addr,
+ 		sptep = iterator.sptep;
+ 		if (level == PT_PAGE_TABLE_LEVEL
+ 		    || (psize == KVM_PAGE_SIZE_2M &&
+-			level == PT_DIRECTORY_LEVEL)) {
++			level == PT_DIRECTORY_LEVEL)
++		    || (psize == KVM_PAGE_SIZE_1G &&
++			level == PT_MIDDLE_LEVEL)) {
+ 			mmu_set_spte(vcpu, sptep, access,
+ 				     gw->pte_access & access,
+ 				     user_fault, write_fault,
+@@ -321,17 +323,20 @@ static u64 *FNAME(fetch)(struct kvm_vcpu *vcpu, gva_t addr,
+ 			continue;
+ 
+ 		if (is_large_pte(*sptep)) {
+-			rmap_remove(vcpu->kvm, sptep, KVM_PAGE_SIZE_2M);
++			enum kvm_page_size __psize = KVM_PAGE_SIZE_2M;
++			if (level == PT_MIDDLE_LEVEL)
++				__psize = KVM_PAGE_SIZE_1G;
++			rmap_remove(vcpu->kvm, sptep, __psize);
+ 			set_shadow_pte(sptep, shadow_trap_nonpresent_pte);
+ 			kvm_flush_remote_tlbs(vcpu->kvm);
+ 		}
+ 
+-		if (level == PT_DIRECTORY_LEVEL
+-		    && gw->level == PT_DIRECTORY_LEVEL) {
++		if (level <= gw->level) {
++			int delta = level - gw->level + 1;
+ 			direct = 1;
+-			if (!is_dirty_pte(gw->ptes[level - 1]))
++			if (!is_dirty_pte(gw->ptes[level - delta]))
+ 				access &= ~ACC_WRITE_MASK;
+-			table_gfn = gpte_to_gfn(gw->ptes[level - 1]);
++			table_gfn = gpte_to_gfn(gw->ptes[level - delta]);
+ 		} else {
+ 			direct = 0;
+ 			table_gfn = gw->table_gfn[level - 2];
+@@ -418,6 +423,15 @@ static int FNAME(page_fault)(struct kvm_vcpu *vcpu, gva_t addr,
+ 			psize = KVM_PAGE_SIZE_2M;
+ 		}
+ 	}
++
++	if (walker.level == PT_MIDDLE_LEVEL) {
++		psize = backing_size(vcpu, walker.gfn);
++		if (psize == KVM_PAGE_SIZE_1G)
++			walker.gfn &= ~(KVM_PAGES_PER_1G_PAGE-1);
++		else if (psize == KVM_PAGE_SIZE_2M)
++			walker.gfn &= ~(KVM_PAGES_PER_2M_PAGE-1);
++	}
++
+ 	mmu_seq = vcpu->kvm->mmu_notifier_seq;
+ 	smp_rmb();
+ 	pfn = gfn_to_pfn(vcpu->kvm, walker.gfn);
+@@ -471,12 +485,15 @@ static void FNAME(invlpg)(struct kvm_vcpu *vcpu, gva_t gva)
+ 
+ 		/* FIXME: properly handle invlpg on large guest pages */
+ 		if (level == PT_PAGE_TABLE_LEVEL ||
+-		    ((level == PT_DIRECTORY_LEVEL) && is_large_pte(*sptep))) {
++		    ((level == PT_DIRECTORY_LEVEL) && is_large_pte(*sptep)) ||
++		    ((level == PT_MIDDLE_LEVEL) && is_large_pte(*sptep))) {
+ 			struct kvm_mmu_page *sp = page_header(__pa(sptep));
+ 			enum kvm_page_size psize = KVM_PAGE_SIZE_4k;
+ 
+ 			if (level == PT_DIRECTORY_LEVEL)
+ 				psize = KVM_PAGE_SIZE_2M;
++			else if (level == PT_MIDDLE_LEVEL)
++				psize = KVM_PAGE_SIZE_1G;
+ 
+ 			pte_gpa = (sp->gfn << PAGE_SHIFT);
+ 			pte_gpa += (sptep - sp->spt) * sizeof(pt_element_t);
+@@ -605,7 +622,8 @@ static int FNAME(sync_page)(struct kvm_vcpu *vcpu, struct kvm_mmu_page *sp)
+ 		nr_present++;
+ 		pte_access = sp->role.access & FNAME(gpte_access)(vcpu, gpte);
+ 		set_spte(vcpu, &sp->spt[i], pte_access, 0, 0,
+-			 is_dirty_pte(gpte), 0, gpte & PT_GLOBAL_MASK, gfn,
++			 is_dirty_pte(gpte), KVM_PAGE_SIZE_4k,
++			 gpte & PT_GLOBAL_MASK, gfn,
+ 			 spte_to_pfn(sp->spt[i]), true, false);
+ 	}
+ 
+@@ -623,4 +641,5 @@ static int FNAME(sync_page)(struct kvm_vcpu *vcpu, struct kvm_mmu_page *sp)
+ #undef PT_MAX_FULL_LEVELS
+ #undef gpte_to_gfn
+ #undef gpte_to_gfn_pde
++#undef gpte_to_gfn_pmd
+ #undef CMPXCHG
+diff --git a/arch/x86/kvm/svm.c b/arch/x86/kvm/svm.c
+index d140686..1152ca9 100644
+--- a/arch/x86/kvm/svm.c
++++ b/arch/x86/kvm/svm.c
+@@ -2606,7 +2606,7 @@ static int svm_get_mt_mask_shift(void)
+ 
+ static bool svm_gb_page_enable(void)
+ {
+-	return npt_enabled;
++	return true;
+ }
+ 
+ static struct kvm_x86_ops svm_x86_ops = {
+-- 
+1.5.6.4
+
 
