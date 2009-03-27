@@ -1,25 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764172AbZC0XjS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764220AbZC0Xjm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764172AbZC0XjS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Mar 2009 19:39:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758472AbZC0X17
+	id S1764220AbZC0Xjm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Mar 2009 19:39:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758355AbZC0X2A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Mar 2009 19:27:59 -0400
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:48491 "EHLO
+	Fri, 27 Mar 2009 19:28:00 -0400
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:48497 "EHLO
 	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756873AbZC0X1m (ORCPT
+	with ESMTP id S1761457AbZC0X1m (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 27 Mar 2009 19:27:42 -0400
 From: =?utf-8?q?Uwe=20Kleine-K=C3=B6nig?= 
 	<u.kleine-koenig@pengutronix.de>
 To: linux-kernel@vger.kernel.org
 Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Dmitry Baryshkov <dbaryshkov@gmail.com>,
-       Russell King <rmk+kernel@arm.linux.org.uk>,
-       Eric Miao <eric.miao@marvell.com>
-Subject: [PATCH 47/58] move sharpsl-pm's probe function to .devinit.text
-Date: Sat, 28 Mar 2009 00:27:08 +0100
-Message-Id: <1238196439-16535-47-git-send-email-u.kleine-koenig@pengutronix.de>
+       Dmitri Vorobiev <dmitri.vorobiev@movial.fi>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
+       Ralf Baechle <ralf@linux-mips.org>, peter fuerst <post@pfrst.de>,
+       Henrik Kretzschmar <henne@nachtwindheim.de>
+Subject: [PATCH 46/58] move sgiwd93's probe function to .devinit.text
+Date: Sat, 28 Mar 2009 00:27:07 +0100
+Message-Id: <1238196439-16535-46-git-send-email-u.kleine-koenig@pengutronix.de>
 X-Mailer: git-send-email 1.6.2
 In-Reply-To: <20090327232153.GA16348@pengutronix.de>
 References: <20090327232153.GA16348@pengutronix.de>
@@ -34,7 +36,7 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A pointer to sharpsl_pm_probe is passed to the core via
+A pointer to sgiwd93_probe is passed to the core via
 platform_driver_register and so the function must not disappear when the
 .init sections are discarded.  Otherwise (if also having HOTPLUG=y)
 unbinding and binding a device to the driver via sysfs will result in an
@@ -45,27 +47,30 @@ platform_driver_register plus removing the pointer to the probe function
 from the struct platform_driver.
 
 Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
-Cc: Dmitry Baryshkov <dbaryshkov@gmail.com>
-Cc: Russell King <rmk+kernel@arm.linux.org.uk>
-Cc: Eric Miao <eric.miao@marvell.com>
+Cc: Dmitri Vorobiev <dmitri.vorobiev@movial.fi>
+Cc: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: Thomas Bogendoerfer <tsbogend@alpha.franken.de>
+Cc: Ralf Baechle <ralf@linux-mips.org>
 Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: peter fuerst <post@pfrst.de>
+Cc: Henrik Kretzschmar <henne@nachtwindheim.de>
 ---
- arch/arm/common/sharpsl_pm.c |    2 +-
+ drivers/scsi/sgiwd93.c |    2 +-
  1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/arch/arm/common/sharpsl_pm.c b/arch/arm/common/sharpsl_pm.c
-index 780bbf7..e88c9ca 100644
---- a/arch/arm/common/sharpsl_pm.c
-+++ b/arch/arm/common/sharpsl_pm.c
-@@ -780,7 +780,7 @@ static struct platform_suspend_ops sharpsl_pm_ops = {
+diff --git a/drivers/scsi/sgiwd93.c b/drivers/scsi/sgiwd93.c
+index 0807b26..fef0e3c 100644
+--- a/drivers/scsi/sgiwd93.c
++++ b/drivers/scsi/sgiwd93.c
+@@ -226,7 +226,7 @@ static struct scsi_host_template sgiwd93_template = {
+ 	.use_clustering		= DISABLE_CLUSTERING,
  };
- #endif
  
--static int __init sharpsl_pm_probe(struct platform_device *pdev)
-+static int __devinit sharpsl_pm_probe(struct platform_device *pdev)
+-static int __init sgiwd93_probe(struct platform_device *pdev)
++static int __devinit sgiwd93_probe(struct platform_device *pdev)
  {
- 	int ret;
- 
+ 	struct sgiwd93_platform_data *pd = pdev->dev.platform_data;
+ 	unsigned char *wdregs = pd->wdregs;
 -- 
 1.6.2
 
