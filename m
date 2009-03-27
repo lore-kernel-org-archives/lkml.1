@@ -1,27 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934489AbZC0Bj4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932836AbZC0Bli@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934489AbZC0Bj4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Mar 2009 21:39:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759706AbZC0Bjo
+	id S932836AbZC0Bli (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Mar 2009 21:41:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932527AbZC0Bl1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Mar 2009 21:39:44 -0400
-Received: from 60-248-182-106.HINET-IP.hinet.net ([60.248.182.106]:39810 "EHLO
+	Thu, 26 Mar 2009 21:41:27 -0400
+Received: from 219-87-157-169.static.tfn.net.tw ([219.87.157.169]:40069 "EHLO
 	mswedge2.sunplus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754669AbZC0Bjl (ORCPT
+	with ESMTP id S1759706AbZC0BlZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Mar 2009 21:39:41 -0400
-X-Greylist: delayed 319 seconds by postgrey-1.27 at vger.kernel.org; Thu, 26 Mar 2009 21:39:41 EDT
+	Thu, 26 Mar 2009 21:41:25 -0400
 To: linux-arch@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, torvalds@linux-foundation.org
 MIME-Version: 1.0
-Subject: Re: [PATCH 5/13] score - New architecure port to SunplusCT S+CORE
+Subject: Re: [PATCH 6/13] score - New architecure port to SunplusCT S+CORE
   processor
 X-Mailer: Lotus Notes Release 6.5 September 26, 2003
-Message-ID: <OFE9A5E3A2.37B73BA8-ON48257586.0008CFAC-48257586.00091B05@sunplusct.com>
+Message-ID: <OF48378D81.6667BB0D-ON48257586.0008F474-48257586.00093CBC@sunplusct.com>
 From: liqin.chen@sunplusct.com
-Date: Fri, 27 Mar 2009 09:37:42 +0800
-X-MIMETrack: Serialize by Router on ctmail01/SunplusCT(Release 7.0.3FP1|February 24, 2008) at 2009/03/27 ?? 09:37:43,
-	Serialize complete at 2009/03/27 ?? 09:37:43
+Date: Fri, 27 Mar 2009 09:39:09 +0800
+X-MIMETrack: Serialize by Router on ctmail01/SunplusCT(Release 7.0.3FP1|February 24, 2008) at 2009/03/27 ?? 09:39:09,
+	Serialize complete at 2009/03/27 ?? 09:39:09
 Content-Type: text/plain; charset="US-ASCII"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -31,1141 +30,855 @@ linux/score lastest patch place at
 http://www.sunplusct.com/images/linux-score-patch/linux-score-20090324.patch
 
 diff -uprN -x linux-2.6-git.ori/Documentation/dontdiff 
-linux-2.6-git.ori/arch/score/include/asm/setup.h 
-linux-2.6-git.new/arch/score/include/asm/setup.h
---- linux-2.6-git.ori/arch/score/include/asm/setup.h    1970-01-01 
+linux-2.6-git.ori/arch/score/include/asm/thread_info.h 
+linux-2.6-git.new/arch/score/include/asm/thread_info.h
+--- linux-2.6-git.ori/arch/score/include/asm/thread_info.h      1970-01-01 
 08:00:00.000000000 +0800
-+++ linux-2.6-git.new/arch/score/include/asm/setup.h    2009-03-23 
-17:25:43.000000000 +0800
-@@ -0,0 +1,33 @@
-+#ifndef _SCORE_SETUP_H
-+#define _SCORE_SETUP_H
-+
-+#define COMMAND_LINE_SIZE      256
-+#define MEM_SIZE       0x2000000
-+
-+#ifdef  __KERNEL__
-+extern void setup_early_printk(void);
-+
-+extern void handle_nmi(void);
-+extern void handle_adelinsn(void);
-+extern void handle_adedata(void);
-+extern void handle_ibe(void);
-+extern void handle_pel(void);
-+extern void handle_sys(void);
-+extern void handle_ccu(void);
-+extern void handle_ri(void);
-+extern void handle_tr(void);
-+extern void handle_ades(void);
-+extern void handle_cee(void);
-+extern void handle_cpe(void);
-+extern void handle_dve(void);
-+extern void handle_dbe(void);
-+extern void handle_reserved(void);
-+extern void handle_tlb_refill(void);
-+extern void handle_tlb_invaild(void);
-+extern void handle_mod(void);
-+extern void __devinit cpu_cache_init(void);
-+extern void debug_exception_vector(void);
-+extern void general_exception_vector(void);
-+#endif /* __KERNEL__ */
-+
-+#endif /* __SETUP_H */
-diff -uprN -x linux-2.6-git.ori/Documentation/dontdiff 
-linux-2.6-git.ori/arch/score/include/asm/shmbuf.h 
-linux-2.6-git.new/arch/score/include/asm/shmbuf.h
---- linux-2.6-git.ori/arch/score/include/asm/shmbuf.h   1970-01-01 
-08:00:00.000000000 +0800
-+++ linux-2.6-git.new/arch/score/include/asm/shmbuf.h   2009-03-13 
-14:26:33.000000000 +0800
-@@ -0,0 +1,29 @@
-+#ifndef _ASM_SHMBUF_H
-+#define _ASM_SHMBUF_H
-+
-+struct shmid64_ds {
-+       struct ipc64_perm       shm_perm;       /* operation perms */
-+       size_t                  shm_segsz;      /* size of segment (bytes) 
-*/
-+       __kernel_time_t         shm_atime;      /* last attach time */
-+       __kernel_time_t         shm_dtime;      /* last detach time */
-+       __kernel_time_t         shm_ctime;      /* last change time */
-+       __kernel_pid_t          shm_cpid;       /* pid of creator */
-+       __kernel_pid_t          shm_lpid;       /* pid of last operator */
-+       unsigned long           shm_nattch;     /* no. of current attaches 
-*/
-+       unsigned long           __unused1;
-+       unsigned long           __unused2;
-+};
-+
-+struct shminfo64 {
-+       unsigned long   shmmax;
-+       unsigned long   shmmin;
-+       unsigned long   shmmni;
-+       unsigned long   shmseg;
-+       unsigned long   shmall;
-+       unsigned long   __unused1;
-+       unsigned long   __unused2;
-+       unsigned long   __unused3;
-+       unsigned long   __unused4;
-+};
-+
-+#endif /* _ASM_SHMBUF_H */
-diff -uprN -x linux-2.6-git.ori/Documentation/dontdiff 
-linux-2.6-git.ori/arch/score/include/asm/shmparam.h 
-linux-2.6-git.new/arch/score/include/asm/shmparam.h
---- linux-2.6-git.ori/arch/score/include/asm/shmparam.h 1970-01-01 
-08:00:00.000000000 +0800
-+++ linux-2.6-git.new/arch/score/include/asm/shmparam.h 2009-03-14 
-13:52:52.000000000 +0800
-@@ -0,0 +1,7 @@
-+#ifndef _ASM_SHMPARAM_H
-+#define _ASM_SHMPARAM_H
-+
-+#define        __ARCH_FORCE_SHMLBA     1
-+#define        SHMLBA                  0x40000         /* attach addr a 
-multiple of this */
-+
-+#endif /* _ASM_SHMPARAM_H */
-diff -uprN -x linux-2.6-git.ori/Documentation/dontdiff 
-linux-2.6-git.ori/arch/score/include/asm/sigcontext.h 
-linux-2.6-git.new/arch/score/include/asm/sigcontext.h
---- linux-2.6-git.ori/arch/score/include/asm/sigcontext.h       1970-01-01 
-08:00:00.000000000 +0800
-+++ linux-2.6-git.new/arch/score/include/asm/sigcontext.h       2009-03-14 
-13:53:10.000000000 +0800
-@@ -0,0 +1,22 @@
-+#ifndef _ASM_SIGCONTEXT_H
-+#define _ASM_SIGCONTEXT_H
-+
-+/*
-+ * Keep this struct definition in sync with the sigcontext fragment
-+ * in arch/score/tools/offset.c
-+ */
-+struct sigcontext {
-+       unsigned int            sc_regmask;
-+       unsigned int            sc_psr;
-+       unsigned int            sc_condition;
-+       unsigned long           sc_pc;
-+       unsigned long           sc_regs[32];
-+       unsigned int            sc_ssflags;
-+       unsigned int            sc_mdceh;
-+       unsigned int            sc_mdcel;
-+       unsigned int            sc_ecr;
-+       unsigned long           sc_ema;
-+       unsigned long           sc_sigset[4];
-+};
-+
-+#endif /* _ASM_SIGCONTEXT_H */
-diff -uprN -x linux-2.6-git.ori/Documentation/dontdiff 
-linux-2.6-git.ori/arch/score/include/asm/siginfo.h 
-linux-2.6-git.new/arch/score/include/asm/siginfo.h
---- linux-2.6-git.ori/arch/score/include/asm/siginfo.h  1970-01-01 
-08:00:00.000000000 +0800
-+++ linux-2.6-git.new/arch/score/include/asm/siginfo.h  2009-03-23 
-14:59:09.000000000 +0800
-@@ -0,0 +1,113 @@
-+#ifndef _ASM_SIGINFO_H
-+#define _ASM_SIGINFO_H
-+
-+#define __ARCH_SIGEV_PREAMBLE_SIZE (sizeof(long) + 2*sizeof(int))
-+#undef __ARCH_SI_TRAPNO        /* exception code needs to fill this ... 
-*/
-+
-+#define HAVE_ARCH_SIGINFO_T
-+#define HAVE_ARCH_COPY_SIGINFO
-+
-+struct siginfo;
-+
-+/*
-+ * Careful to keep union _sifields from shifting ...
-+ */
-+#define __ARCH_SI_PREAMBLE_SIZE (3 * sizeof(int))
-+
-+#include <asm-generic/siginfo.h>
-+
-+typedef struct siginfo {
-+       int si_signo;
-+       int si_code;
-+       int si_errno;
-+       int __pad0[SI_MAX_SIZE / sizeof(int) - SI_PAD_SIZE - 3];
-+
-+       union {
-+               int _pad[SI_PAD_SIZE];
-+
-+               /* kill() */
-+               struct {
-+                       pid_t _pid;             /* sender's pid */
-+                       __ARCH_SI_UID_T _uid;   /* sender's uid */
-+               } _kill;
-+
-+               /* POSIX.1b timers */
-+               struct {
-+                       timer_t _tid;           /* timer id */
-+                       int _overrun;           /* overrun count */
-+                       char _pad[sizeof( __ARCH_SI_UID_T) - sizeof(int)];
-+                       sigval_t _sigval;       /* same as below */
-+                       int _sys_private;       /* not to be passed to 
-user */
-+               } _timer;
-+
-+               /* POSIX.1b signals */
-+               struct {
-+                       pid_t _pid;             /* sender's pid */
-+                       __ARCH_SI_UID_T _uid;   /* sender's uid */
-+                       sigval_t _sigval;
-+               } _rt;
-+
-+               /* SIGCHLD */
-+               struct {
-+                       pid_t _pid;             /* which child */
-+                       __ARCH_SI_UID_T _uid;   /* sender's uid */
-+                       int _status;            /* exit code */
-+                       clock_t _utime;
-+                       clock_t _stime;
-+               } _sigchld;
-+
-+               /* IRIX SIGCHLD */
-+               struct {
-+                       pid_t _pid;             /* which child */
-+                       clock_t _utime;
-+                       int _status;            /* exit code */
-+                       clock_t _stime;
-+               } _irix_sigchld;
-+
-+               /* SIGILL, SIGFPE, SIGSEGV, SIGBUS */
-+               struct {
-+                       void __user *_addr; /* faulting insn/memory ref. 
-*/
-+#ifdef __ARCH_SI_TRAPNO
-+                       int _trapno;    /* TRAP # which caused the signal 
-*/
-+#endif
-+               } _sigfault;
-+
-+               /* SIGPOLL, SIGXFSZ (To do ...) */
-+               struct {
-+                       __ARCH_SI_BAND_T _band; /* POLL_IN, POLL_OUT, 
-POLL_MSG */
-+                       int _fd;
-+               } _sigpoll;
-+       } _sifields;
-+} siginfo_t;
-+
-+/*
-+ * si_code values
-+ * Again these have been choosen to be IRIX compatible.
-+ */
-+#undef SI_ASYNCIO
-+#undef SI_TIMER
-+#undef SI_MESGQ
-+#define SI_ASYNCIO     -2      /* sent by AIO completion */
-+#define SI_TIMER __SI_CODE(__SI_TIMER, -3) /* sent by timer expiration */
-+#define SI_MESGQ __SI_CODE(__SI_MESGQ, -4) /* sent by real time mesq 
-state change */
++++ linux-2.6-git.new/arch/score/include/asm/thread_info.h      2009-03-23 
+15:02:37.000000000 +0800
+@@ -0,0 +1,97 @@
++#ifndef _ASM_THREAD_INFO_H
++#define _ASM_THREAD_INFO_H
 +
 +#ifdef __KERNEL__
 +
-+/*
-+ * Duplicated here because of <asm-generic/siginfo.h> braindamage ...
-+ */
-+#include <linux/string.h>
-+
-+static inline void copy_siginfo(struct siginfo *to, struct siginfo *from)
-+{
-+       if (from->si_code < 0)
-+               memcpy(to, from, sizeof(*to));
-+       else
-+               /* _sigchld is currently the largest know union member */
-+               memcpy(to, from, 3 * sizeof(int) +
-+                                sizeof(from->_sifields._sigchld));
-+}
-+
-+#endif
-+
-+#endif /* _ASM_SIGINFO_H */
-diff -uprN -x linux-2.6-git.ori/Documentation/dontdiff 
-linux-2.6-git.ori/arch/score/include/asm/signal.h 
-linux-2.6-git.new/arch/score/include/asm/signal.h
---- linux-2.6-git.ori/arch/score/include/asm/signal.h   1970-01-01 
-08:00:00.000000000 +0800
-+++ linux-2.6-git.new/arch/score/include/asm/signal.h   2009-03-24 
-19:39:12.000000000 +0800
-@@ -0,0 +1,128 @@
-+#ifndef _ASM_SIGNAL_H
-+#define _ASM_SIGNAL_H
-+
-+#include <linux/types.h>
-+
-+#define _NSIG          128
-+#define _NSIG_BPW      (sizeof(unsigned long) * 8)
-+#define _NSIG_WORDS    (_NSIG / _NSIG_BPW)
-+
-+typedef struct {
-+       unsigned long sig[_NSIG_WORDS];
-+} sigset_t;
-+
-+typedef unsigned long old_sigset_t;            /* at least 32 bits */
-+
-+#define SIGHUP         1       /* Hangup (POSIX). */
-+#define SIGINT         2       /* Interrupt (ANSI). */
-+#define SIGQUIT                3       /* Quit (POSIX). */
-+#define SIGILL         4       /* Illegal instruction (ANSI). */
-+#define SIGTRAP                5       /* Trace trap (POSIX). */
-+#define SIGIOT         6       /* IOT trap (4.2 BSD). */
-+#define SIGABRT                SIGIOT  /* Abort (ANSI). */
-+#define SIGEMT         7
-+#define SIGFPE         8       /* Floating-point exception (ANSI). */
-+#define SIGKILL                9       /* Kill, unblockable (POSIX). */
-+#define SIGBUS         10      /* BUS error (4.2 BSD). */
-+#define SIGSEGV                11      /* Segmentation violation (ANSI). 
-*/
-+#define SIGSYS         12
-+#define SIGPIPE                13      /* Broken pipe (POSIX). */
-+#define SIGALRM                14      /* Alarm clock (POSIX). */
-+#define SIGTERM                15      /* Termination (ANSI). */
-+#define SIGUSR1                16      /* User-defined signal 1 (POSIX). 
-*/
-+#define SIGUSR2                17      /* User-defined signal 2 (POSIX). 
-*/
-+#define SIGCHLD                18      /* Child status has changed 
-(POSIX). */
-+#define SIGCLD         SIGCHLD /* Same as SIGCHLD (System V). */
-+#define SIGPWR         19      /* Power failure restart (System V). */
-+#define SIGWINCH       20      /* Window size change (4.3 BSD, Sun). */
-+#define SIGURG         21      /* Urgent condition on socket (4.2 BSD). 
-*/
-+#define SIGIO          22      /* I/O now possible (4.2 BSD). */
-+#define SIGPOLL                SIGIO   /* Pollable event occurred (System 
-V). */
-+#define SIGSTOP                23      /* Stop, unblockable (POSIX). */
-+#define SIGTSTP                24      /* Keyboard stop (POSIX). */
-+#define SIGCONT                25      /* Continue (POSIX). */
-+#define SIGTTIN                26      /* Background read from tty 
-(POSIX). */
-+#define SIGTTOU                27      /* Background write to tty 
-(POSIX). */
-+#define SIGVTALRM      28      /* Virtual alarm clock (4.2 BSD). */
-+#define SIGPROF                29      /* Profiling alarm clock (4.2 
-BSD). */
-+#define SIGXCPU                30      /* CPU limit exceeded (4.2 BSD). 
-*/
-+#define SIGXFSZ                31      /* File size limit exceeded (4.2 
-BSD). */
-+
-+/* These should not be considered constants from userland. */
-+#define SIGRTMIN       32
-+#define SIGRTMAX       _NSIG
-+
-+/*
-+ * SA_FLAGS values:
-+ *
-+ * SA_ONSTACK indicates that a registered stack_t will be used.
-+ * SA_RESTART flag to get restarting signals (which were the default long 
-ago)
-+ * SA_NOCLDSTOP flag to turn off SIGCHLD when children stop.
-+ * SA_RESETHAND clears the handler when the signal is delivered.
-+ * SA_NOCLDWAIT flag on SIGCHLD to inhibit zombies.
-+ * SA_NODEFER prevents the current signal from being masked in the 
-handler.
-+ *
-+ * SA_ONESHOT and SA_NOMASK are the historical Linux names for the Single
-+ * Unix names RESETHAND and NODEFER respectively.
-+ */
-+#define SA_ONSTACK     0x08000000
-+#define SA_RESETHAND   0x80000000
-+#define SA_RESTART     0x10000000
-+#define SA_SIGINFO     0x00000008
-+#define SA_NODEFER     0x40000000
-+#define SA_NOCLDWAIT   0x00010000
-+#define SA_NOCLDSTOP   0x00000001
-+
-+#define SA_NOMASK      SA_NODEFER
-+#define SA_ONESHOT     SA_RESETHAND
-+
-+/*
-+ * sigaltstack controls
-+ */
-+#define SS_ONSTACK     1
-+#define SS_DISABLE     2
-+
-+#define MINSIGSTKSZ    2048
-+#define SIGSTKSZ       8192
-+
-+#ifdef __KERNEL__
-+
-+#ifdef CONFIG_TRAD_SIGNALS
-+#define sig_uses_siginfo(ka)   ((ka)->sa.sa_flags & SA_SIGINFO)
-+#else
-+#define sig_uses_siginfo(ka)   (1)
-+#endif
-+
-+#endif /* __KERNEL__ */
-+
-+#define SIG_BLOCK      1       /* for blocking signals */
-+#define SIG_UNBLOCK    2       /* for unblocking signals */
-+#define SIG_SETMASK    3       /* for setting the signal mask */
-+
-+#include <asm-generic/signal.h>
-+
-+struct sigaction {
-+       unsigned int    sa_flags;
-+       __sighandler_t  sa_handler;
-+       sigset_t        sa_mask;
-+};
-+
-+struct k_sigaction {
-+       struct sigaction sa;
-+};
-+
-+/* IRIX compatible stack_t */
-+typedef struct sigaltstack {
-+       void __user *ss_sp;
-+       size_t ss_size;
-+       int ss_flags;
-+} stack_t;
-+
-+#ifdef __KERNEL__
-+#include <asm/sigcontext.h>
-+
-+#define ptrace_signal_deliver(regs, cookie) do { } while (0)
-+
-+#endif /* __KERNEL__ */
-+
-+#endif /* _ASM_SIGNAL_H */
-diff -uprN -x linux-2.6-git.ori/Documentation/dontdiff 
-linux-2.6-git.ori/arch/score/include/asm/socket.h 
-linux-2.6-git.new/arch/score/include/asm/socket.h
---- linux-2.6-git.ori/arch/score/include/asm/socket.h   1970-01-01 
-08:00:00.000000000 +0800
-+++ linux-2.6-git.new/arch/score/include/asm/socket.h   2009-03-23 
-17:48:41.000000000 +0800
-@@ -0,0 +1,109 @@
-+#ifndef _ASM_SOCKET_H
-+#define _ASM_SOCKET_H
-+
-+#include <asm/sockios.h>
-+
-+/*
-+ * For setsockopt(2)
-+ *
-+ * This defines are ABI conformant as far as Linux supports these ...
-+ */
-+#define SOL_SOCKET     0xffff
-+
-+#define SO_DEBUG       0x0001  /* Record debugging information. */
-+#define SO_REUSEADDR   0x0004  /* Allow reuse of local addresses. */
-+#define SO_KEEPALIVE   0x0008  /* Keep connections alive and send
-+                                  SIGPIPE when they die. */
-+#define SO_DONTROUTE   0x0010  /* Don't do local routing. */
-+#define SO_BROADCAST   0x0020  /* Allow transmission of
-+                                  broadcast messages. */
-+#define SO_LINGER      0x0080  /* Block on close of a reliable
-+                                  socket to transmit pending data. */
-+#define SO_OOBINLINE 0x0100    /* Receive out-of-band data in-band. */
-+#if 0
-+To add: #define SO_REUSEPORT 0x0200    /* Allow local address and port 
-reuse. */
-+#endif
-+
-+#define SO_TYPE                0x1008  /* Compatible name for SO_STYLE. 
-*/
-+#define SO_STYLE       SO_TYPE /* Synonym */
-+#define SO_ERROR       0x1007  /* get error status and clear */
-+#define SO_SNDBUF      0x1001  /* Send buffer size. */
-+#define SO_RCVBUF      0x1002  /* Receive buffer. */
-+#define SO_SNDLOWAT    0x1003  /* send low-water mark */
-+#define SO_RCVLOWAT    0x1004  /* receive low-water mark */
-+#define SO_SNDTIMEO    0x1005  /* send timeout */
-+#define SO_RCVTIMEO    0x1006  /* receive timeout */
-+#define SO_ACCEPTCONN  0x1009
-+
-+/* linux-specific, might as well be the same as on i386 */
-+#define SO_NO_CHECK    11
-+#define SO_PRIORITY    12
-+#define SO_BSDCOMPAT   14
-+
-+#define SO_PASSCRED    17
-+#define SO_PEERCRED    18
-+
-+/* Security levels - as per NRL IPv6 - don't actually do anything */
-+#define SO_SECURITY_AUTHENTICATION             22
-+#define SO_SECURITY_ENCRYPTION_TRANSPORT       23
-+#define SO_SECURITY_ENCRYPTION_NETWORK         24
-+
-+#define SO_BINDTODEVICE                25
-+
-+/* Socket filtering */
-+#define SO_ATTACH_FILTER       26
-+#define SO_DETACH_FILTER       27
-+
-+#define SO_PEERNAME            28
-+#define SO_TIMESTAMP           29
-+#define SCM_TIMESTAMP          SO_TIMESTAMP
-+
-+#define SO_PEERSEC             30
-+#define SO_SNDBUFFORCE         31
-+#define SO_RCVBUFFORCE         33
-+#define SO_PASSSEC             34
-+#define SO_TIMESTAMPNS         35
-+#define SCM_TIMESTAMPNS                SO_TIMESTAMPNS
-+
-+#define SO_MARK                        36
-+
-+#ifdef __KERNEL__
-+
-+/** sock_type - Socket types
-+ *
-+ * Please notice that for binary compat reasons SCORE has to
-+ * override the enum sock_type in include/linux/net.h, so
-+ * we define ARCH_HAS_SOCKET_TYPES here.
-+ *
-+ * @SOCK_DGRAM - datagram (conn.less) socket
-+ * @SOCK_STREAM - stream (connection) socket
-+ * @SOCK_RAW - raw socket
-+ * @SOCK_RDM - reliably-delivered message
-+ * @SOCK_SEQPACKET - sequential packet socket
-+ * @SOCK_PACKET - linux specific way of getting packets at the dev level.
-+ *               For writing rarp and other similar things on the user 
-level.
-+ */
-+enum sock_type {
-+       SOCK_DGRAM      = 1,
-+       SOCK_STREAM     = 2,
-+       SOCK_RAW        = 3,
-+       SOCK_RDM        = 4,
-+       SOCK_SEQPACKET  = 5,
-+       SOCK_DCCP       = 6,
-+       SOCK_PACKET     = 10,
-+};
-+
-+#define SOCK_MAX (SOCK_PACKET + 1)
-+/* Mask which covers at least up to SOCK_MASK-1.  The
-+ *  * remaining bits are used as flags. */
-+#define SOCK_TYPE_MASK 0xf
-+
-+/* Flags for socket, socketpair, paccept */
-+#define SOCK_CLOEXEC   O_CLOEXEC
-+#define SOCK_NONBLOCK  O_NONBLOCK
-+
-+#define ARCH_HAS_SOCKET_TYPES 1
-+
-+#endif /* __KERNEL__ */
-+
-+#endif /* _ASM_SOCKET_H */
-diff -uprN -x linux-2.6-git.ori/Documentation/dontdiff 
-linux-2.6-git.ori/arch/score/include/asm/sockios.h 
-linux-2.6-git.new/arch/score/include/asm/sockios.h
---- linux-2.6-git.ori/arch/score/include/asm/sockios.h  1970-01-01 
-08:00:00.000000000 +0800
-+++ linux-2.6-git.new/arch/score/include/asm/sockios.h  2009-03-13 
-14:26:33.000000000 +0800
-@@ -0,0 +1,17 @@
-+#ifndef _ASM_SOCKIOS_H
-+#define _ASM_SOCKIOS_H
-+
-+#include <asm/ioctl.h>
-+
-+/* Socket-level I/O control calls. */
-+#define FIOGETOWN      _IOR('f', 123, int)
-+#define FIOSETOWN      _IOW('f', 124, int)
-+
-+#define SIOCATMARK     _IOR('s', 7, int)
-+#define SIOCSPGRP      _IOW('s', 8, pid_t)
-+#define SIOCGPGRP      _IOR('s', 9, pid_t)
-+
-+#define SIOCGSTAMP     0x8906          /* Get stamp (timeval) */
-+#define SIOCGSTAMPNS   0x8907          /* Get stamp (timespec) */
-+
-+#endif /* _ASM_SOCKIOS_H */
-diff -uprN -x linux-2.6-git.ori/Documentation/dontdiff 
-linux-2.6-git.ori/arch/score/include/asm/statfs.h 
-linux-2.6-git.new/arch/score/include/asm/statfs.h
---- linux-2.6-git.ori/arch/score/include/asm/statfs.h   1970-01-01 
-08:00:00.000000000 +0800
-+++ linux-2.6-git.new/arch/score/include/asm/statfs.h   2009-03-23 
-15:00:10.000000000 +0800
-@@ -0,0 +1,49 @@
-+#ifndef _ASM_STATFS_H
-+#define _ASM_STATFS_H
-+
-+#include <linux/posix_types.h>
-+
-+#ifndef __KERNEL_STRICT_NAMES
-+
-+#include <linux/types.h>
-+
-+typedef __kernel_fsid_t        fsid_t;
-+
-+#endif
-+
-+struct statfs {
-+       long            f_type;
-+#define f_fstyp f_type
-+       long            f_bsize;
-+       long            f_frsize;       /* Fragment size - unsupported */
-+       long            f_blocks;
-+       long            f_bfree;
-+       long            f_files;
-+       long            f_ffree;
-+       long            f_bavail;
-+
-+       /* Linux specials */
-+       __kernel_fsid_t f_fsid;
-+       long            f_namelen;
-+       long            f_spare[6];
-+};
-+
-+/*
-+ * Unlike the traditional version the LFAPI version has none of the ABI 
-junk
-+ */
-+struct statfs64 {
-+       __u32   f_type;
-+       __u32   f_bsize;
-+       __u32   f_frsize;       /* Fragment size - unsupported */
-+       __u32   __pad;
-+       __u64   f_blocks;
-+       __u64   f_bfree;
-+       __u64   f_files;
-+       __u64   f_ffree;
-+       __u64   f_bavail;
-+       __kernel_fsid_t f_fsid;
-+       __u32   f_namelen;
-+       __u32   f_spare[6];
-+};
-+
-+#endif /* _ASM_STATFS_H */
-diff -uprN -x linux-2.6-git.ori/Documentation/dontdiff 
-linux-2.6-git.ori/arch/score/include/asm/stat.h 
-linux-2.6-git.new/arch/score/include/asm/stat.h
---- linux-2.6-git.ori/arch/score/include/asm/stat.h     1970-01-01 
-08:00:00.000000000 +0800
-+++ linux-2.6-git.new/arch/score/include/asm/stat.h     2009-03-23 
-17:49:13.000000000 +0800
-@@ -0,0 +1,75 @@
-+#ifndef _ASM_STAT_H
-+#define _ASM_STAT_H
-+
-+#include <linux/types.h>
-+
-+struct stat {
-+       unsigned        st_dev;
-+       long            st_pad1[3];             /* Reserved for network id 
-*/
-+       ino_t           st_ino;
-+       mode_t          st_mode;
-+       nlink_t         st_nlink;
-+       uid_t           st_uid;
-+       gid_t           st_gid;
-+       unsigned        st_rdev;
-+       long            st_pad2[2];
-+       off_t           st_size;
-+       long            st_pad3;
-+       /*
-+        * Actually this should be timestruc_t st_atime, st_mtime and 
-st_ctime
-+        * but we don't have it under Linux.
-+        */
-+       time_t          st_atime;
-+       long            st_atime_nsec;
-+       time_t          st_mtime;
-+       long            st_mtime_nsec;
-+       time_t          st_ctime;
-+       long            st_ctime_nsec;
-+       long            st_blksize;
-+       long            st_blocks;
-+       long            st_pad4[14];
-+};
-+
-+/*
-+ * This matches struct stat64 in glibc2.1, hence the absolutely insane
-+ * amounts of padding around dev_t's.  The memory layout is the same as 
-of
-+ * struct stat of the 64-bit kernel.
-+ */
-+
-+struct stat64 {
-+       unsigned long   st_dev;
-+       unsigned long   st_pad0[3];     /* Reserved for st_dev expansion 
-*/
-+
-+       unsigned long long      st_ino;
-+
-+       mode_t          st_mode;
-+       nlink_t         st_nlink;
-+
-+       uid_t           st_uid;
-+       gid_t           st_gid;
-+
-+       unsigned long   st_rdev;
-+       unsigned long   st_pad1[3];     /* Reserved for st_rdev expansion 
-*/
-+
-+       long long       st_size;
-+
-+       /*
-+        * Actually this should be timestruc_t st_atime, st_mtime and 
-st_ctime
-+        * but we don't have it under Linux.
-+        */
-+       time_t          st_atime;
-+       unsigned long   st_atime_nsec;  /* Reserved for st_atime expansion 
-*/
-+
-+       time_t          st_mtime;
-+       unsigned long   st_mtime_nsec;  /* Reserved for st_mtime expansion 
-*/
-+
-+       time_t          st_ctime;
-+       unsigned long   st_ctime_nsec;  /* Reserved for st_ctime expansion 
-*/
-+
-+       unsigned long   st_blksize;
-+       unsigned long   st_pad2;
-+
-+       long long       st_blocks;
-+};
-+
-+#endif /* _ASM_STAT_H */
-diff -uprN -x linux-2.6-git.ori/Documentation/dontdiff 
-linux-2.6-git.ori/arch/score/include/asm/string.h 
-linux-2.6-git.new/arch/score/include/asm/string.h
---- linux-2.6-git.ori/arch/score/include/asm/string.h   1970-01-01 
-08:00:00.000000000 +0800
-+++ linux-2.6-git.new/arch/score/include/asm/string.h   2009-03-13 
-14:26:33.000000000 +0800
-@@ -0,0 +1,8 @@
-+#ifndef _ASM_STRING_H
-+#define _ASM_STRING_H
-+
-+extern void *memset(void *__s, int __c, size_t __count);
-+extern void *memcpy(void *__to, __const__ void *__from, size_t __n);
-+extern void *memmove(void *__dest, __const__ void *__src, size_t __n);
-+
-+#endif /* _ASM_STRING_H */
-diff -uprN -x linux-2.6-git.ori/Documentation/dontdiff 
-linux-2.6-git.ori/arch/score/include/asm/swab.h 
-linux-2.6-git.new/arch/score/include/asm/swab.h
---- linux-2.6-git.ori/arch/score/include/asm/swab.h     1970-01-01 
-08:00:00.000000000 +0800
-+++ linux-2.6-git.new/arch/score/include/asm/swab.h     2009-03-23 
-17:49:33.000000000 +0800
-@@ -0,0 +1,13 @@
-+#ifndef _ASM_SWAB_H
-+#define _ASM_SWAB_H
-+
-+#include <asm/types.h>
-+
-+#ifdef __GNUC__
-+
-+#if !defined(__STRICT_ANSI__) || defined(__KERNEL__)
-+#define __SWAB_64_THRU_32__
-+#endif
-+
-+#endif /* __GNUC__ */
-+#endif /* _ASM_SWAB_H */
-diff -uprN -x linux-2.6-git.ori/Documentation/dontdiff 
-linux-2.6-git.ori/arch/score/include/asm/system.h 
-linux-2.6-git.new/arch/score/include/asm/system.h
---- linux-2.6-git.ori/arch/score/include/asm/system.h   1970-01-01 
-08:00:00.000000000 +0800
-+++ linux-2.6-git.new/arch/score/include/asm/system.h   2009-03-25 
-09:55:03.000000000 +0800
-@@ -0,0 +1,96 @@
-+#ifndef _ASM_SYSTEM_H
-+#define _ASM_SYSTEM_H
-+
-+#include <linux/types.h>
-+#include <linux/irqflags.h>
-+
-+extern void *resume(void *last, void *next, void *next_ti);
-+
-+struct task_struct;
-+
-+#define switch_to(prev, next, last)                            \
-+do {                                                           \
-+       (last) = resume(prev, next, task_thread_info(next));    \
-+} while (0)
-+
-+#define finish_arch_switch(prev)                               \
-+do {                                                           \
-+} while (0)
-+
-+typedef void (*vi_handler_t)(void);
-+extern unsigned long arch_align_stack(unsigned long sp);
-+
-+#define mb()           barrier()
-+#define rmb()          barrier()
-+#define wmb()          barrier()
-+#define smp_mb()       barrier() 
-+#define smp_rmb()      barrier()
-+#define smp_wmb()      barrier()
-+
-+#define read_barrier_depends()         do {} while(0)
-+#define smp_read_barrier_depends()     do {} while(0)
-+
-+#define set_mb(var, value)             do {var = value; wmb();} while (0)
-+
-+#define __HAVE_ARCH_CMPXCHG 1
-+
-+#include <asm-generic/cmpxchg-local.h>
-+#define cmpxchg_local(ptr, o, n) \
-+       ((__typeof__(*(ptr)))__cmpxchg_local_generic((ptr), (unsigned 
-long)(o),\
-+                       (unsigned long)(n), sizeof(*(ptr))))
++#define KU_MASK        0x08
++#define KU_USER        0x08
++#define KU_KERN        0x00
 +
 +#ifndef __ASSEMBLY__
 +
-+struct __xchg_dummy { unsigned long a[100]; };
-+#define __xg(x) ((struct __xchg_dummy *)(x))
-+
-+static inline
-+unsigned long __xchg(volatile unsigned long *m, unsigned long val)
-+{
-+       unsigned long retval;
-+       unsigned long flags;
-+
-+       local_irq_save(flags);
-+       retval = *m;
-+       *m = val;
-+       local_irq_restore(flags);
-+       return retval;
-+}
-+
-+#define xchg(ptr, v)                                           \
-+       ((__typeof__(*(ptr))) __xchg((unsigned long *)(ptr),    \
-+                                       (unsigned long)(v)))
-+
-+static inline unsigned long __cmpxchg(volatile unsigned long *m,
-+                                       unsigned long old, unsigned long 
-new)
-+{
-+       unsigned long retval;
-+       unsigned long flags;
-+
-+       local_irq_save(flags);
-+       retval = *m;
-+       if (retval == old)
-+               *m = new;
-+       local_irq_restore(flags);
-+       return retval;
-+}
-+
-+#define cmpxchg(ptr, o, n)                                     \
-+       ((__typeof__(*(ptr))) __cmpxchg((unsigned long *)(ptr), \
-+                                       (unsigned long)(o),     \
-+                                       (unsigned long)(n)))
-+
-+struct pt_regs;
-+
-+extern void __die(const char *, struct pt_regs *, const char *,
-+       const char *, unsigned long) __attribute__((noreturn));
-+extern void __die_if_kernel(const char *, struct pt_regs *, const char *,
-+       const char *, unsigned long);
-+
-+#define die(msg, regs)                                                 \
-+       __die(msg, regs, __FILE__ ":", __FUNCTION__, __LINE__)
-+#define die_if_kernel(msg, regs)                                       \
-+       __die_if_kernel(msg, regs, __FILE__ ":", __FUNCTION__, __LINE__)
-+
-+#endif /* !__ASSEMBLY__ */
-+#endif /* _ASM_SYSTEM_H */
-diff -uprN -x linux-2.6-git.ori/Documentation/dontdiff 
-linux-2.6-git.ori/arch/score/include/asm/termbits.h 
-linux-2.6-git.new/arch/score/include/asm/termbits.h
---- linux-2.6-git.ori/arch/score/include/asm/termbits.h 1970-01-01 
-08:00:00.000000000 +0800
-+++ linux-2.6-git.new/arch/score/include/asm/termbits.h 2009-03-26 
-10:30:52.000000000 +0800
-@@ -0,0 +1,195 @@
-+#ifndef __ASM_SCORE_TERMBITS_H
-+#define __ASM_SCORE_TERMBITS_H
-+
-+#include <linux/posix_types.h>
-+
-+typedef unsigned char  cc_t;
-+typedef unsigned int   speed_t;
-+typedef unsigned int   tcflag_t;
-+
-+#define NCCS 19
-+struct termios {
-+       tcflag_t c_iflag;               /* input mode flags */
-+       tcflag_t c_oflag;               /* output mode flags */
-+       tcflag_t c_cflag;               /* control mode flags */
-+       tcflag_t c_lflag;               /* local mode flags */
-+       cc_t c_line;                    /* line discipline */
-+       cc_t c_cc[NCCS];                /* control characters */
-+};
-+
-+struct termios2 {
-+       tcflag_t c_iflag;               /* input mode flags */
-+       tcflag_t c_oflag;               /* output mode flags */
-+       tcflag_t c_cflag;               /* control mode flags */
-+       tcflag_t c_lflag;               /* local mode flags */
-+       cc_t c_line;                    /* line discipline */
-+       cc_t c_cc[NCCS];                /* control characters */
-+       speed_t c_ispeed;               /* input speed */
-+       speed_t c_ospeed;               /* output speed */
-+};
-+
-+struct ktermios {
-+       tcflag_t c_iflag;               /* input mode flags */
-+       tcflag_t c_oflag;               /* output mode flags */
-+       tcflag_t c_cflag;               /* control mode flags */
-+       tcflag_t c_lflag;               /* local mode flags */
-+       cc_t c_line;                    /* line discipline */
-+       cc_t c_cc[NCCS];                /* control characters */
-+       speed_t c_ispeed;               /* input speed */
-+       speed_t c_ospeed;               /* output speed */
-+};
-+
-+/* c_cc characters */
-+#define VINTR  0
-+#define VQUIT  1
-+#define VERASE 2
-+#define VKILL  3
-+#define VEOF   4
-+#define VTIME  5
-+#define VMIN   6
-+#define VSWTC  7
-+#define VSTART 8
-+#define VSTOP  9
-+#define VSUSP  10
-+#define VEOL   11
-+#define VREPRINT       12
-+#define VDISCARD       13
-+#define VWERASE        14
-+#define VLNEXT 15
-+#define VEOL2  16
-+
-+/* c_iflag bits */
-+#define IGNBRK 0000001
-+#define BRKINT 0000002
-+#define IGNPAR 0000004
-+#define PARMRK 0000010
-+#define INPCK  0000020
-+#define ISTRIP 0000040
-+#define INLCR  0000100
-+#define IGNCR  0000200
-+#define ICRNL  0000400
-+#define IUCLC  0001000
-+#define IXON   0002000
-+#define IXANY  0004000
-+#define IXOFF  0010000
-+#define IMAXBEL        0020000
-+#define IUTF8  0040000
-+
-+/* c_oflag bits */
-+#define OPOST  0000001
-+#define OLCUC  0000002
-+#define ONLCR  0000004
-+#define OCRNL  0000010
-+#define ONOCR  0000020
-+#define ONLRET 0000040
-+#define OFILL  0000100
-+#define OFDEL  0000200
-+#define NLDLY  0000400
-+#define NL0    0000000
-+#define NL1    0000400
-+#define CRDLY  0003000
-+#define CR0    0000000
-+#define CR1    0001000
-+#define CR2    0002000
-+#define CR3    0003000
-+#define TABDLY 0014000
-+#define TAB0   0000000
-+#define TAB1   0004000
-+#define TAB2   0010000
-+#define TAB3   0014000
-+#define XTABS  0014000
-+#define BSDLY  0020000
-+#define BS0    0000000
-+#define BS1    0020000
-+#define VTDLY  0040000
-+#define VT0    0000000
-+#define VT1    0040000
-+#define FFDLY  0100000
-+#define FF0    0000000
-+#define FF1    0100000
-+
-+/* c_cflag bit meaning */
-+#define CBAUD  0010017
-+#define B0     0000000         /* hang up */
-+#define B50    0000001
-+#define B75    0000002
-+#define B110   0000003
-+#define B134   0000004
-+#define B150   0000005
-+#define B200   0000006
-+#define B300   0000007
-+#define B600   0000010
-+#define B1200  0000011
-+#define B1800  0000012
-+#define B2400  0000013
-+#define B4800  0000014
-+#define B9600  0000015
-+#define B19200 0000016
-+#define B38400 0000017
-+#define EXTA   B19200
-+#define EXTB   B38400
-+#define CSIZE  0000060
-+#define CS5    0000000
-+#define CS6    0000020
-+#define CS7    0000040
-+#define CS8    0000060
-+#define CSTOPB 0000100
-+#define CREAD  0000200
-+#define PARENB 0000400
-+#define PARODD 0001000
-+#define HUPCL  0002000
-+#define CLOCAL 0004000
-+#define CBAUDEX        0010000
-+#define B57600 0010001
-+#define B115200        0010002
-+#define B230400        0010003
-+#define B460800        0010004
-+#define B500000        0010005
-+#define B576000        0010006
-+#define B921600        0010007
-+#define B1000000       0010010
-+#define B1152000       0010011
-+#define B1500000       0010012
-+#define B2000000       0010013
-+#define B2500000       0010014
-+#define B3000000       0010015
-+#define B3500000       0010016
-+#define B4000000       0010017
-+#define CIBAUD 002003600000    /* input baud rate (not used) */
-+#define CMSPAR 010000000000    /* mark or space (stick) parity */
-+#define CRTSCTS        020000000000    /* flow control */
-+
-+/* c_lflag bits */
-+#define ISIG   0000001
-+#define ICANON 0000002
-+#define XCASE  0000004
-+#define ECHO   0000010
-+#define ECHOE  0000020
-+#define ECHOK  0000040
-+#define ECHONL 0000100
-+#define NOFLSH 0000200
-+#define TOSTOP 0000400
-+#define ECHOCTL        0001000
-+#define ECHOPRT        0002000
-+#define ECHOKE 0004000
-+#define FLUSHO 0010000
-+#define PENDIN 0040000
-+#define IEXTEN 0100000
-+
-+/* tcflow() and TCXONC use these */
-+#define        TCOOFF          0
-+#define        TCOON           1
-+#define        TCIOFF          2
-+#define        TCION           3
-+
-+/* tcflush() and TCFLSH use these */
-+#define        TCIFLUSH        0
-+#define        TCOFLUSH        1
-+#define        TCIOFLUSH       2
-+
-+/* tcsetattr uses these */
-+#define        TCSANOW         0
-+#define        TCSADRAIN       1
-+#define        TCSAFLUSH       2
-+
-+#endif /* __ASM_SCORE_TERMBITS_H */
-diff -uprN -x linux-2.6-git.ori/Documentation/dontdiff 
-linux-2.6-git.ori/arch/score/include/asm/termios.h 
-linux-2.6-git.new/arch/score/include/asm/termios.h
---- linux-2.6-git.ori/arch/score/include/asm/termios.h  1970-01-01 
-08:00:00.000000000 +0800
-+++ linux-2.6-git.new/arch/score/include/asm/termios.h  2009-03-23 
-15:02:13.000000000 +0800
-@@ -0,0 +1,85 @@
-+#ifndef _ASM_TERMIOS_H
-+#define _ASM_TERMIOS_H
-+
-+#include <asm/termbits.h>
-+#include <asm/ioctls.h>
-+
-+struct sgttyb {
-+       char    sg_ispeed;
-+       char    sg_ospeed;
-+       char    sg_erase;
-+       char    sg_kill;
-+       int     sg_flags;       /* SGI special - int, not short */
-+};
-+
-+struct tchars {
-+       char    t_intrc;
-+       char    t_quitc;
-+       char    t_startc;
-+       char    t_stopc;
-+       char    t_eofc;
-+       char    t_brkc;
-+};
-+
-+struct ltchars {
-+       char    t_suspc;        /* stop process signal */
-+       char    t_dsuspc;       /* delayed stop process signal */
-+       char    t_rprntc;       /* reprint line */
-+       char    t_flushc;       /* flush output (toggles) */
-+       char    t_werasc;       /* word erase */
-+       char    t_lnextc;       /* literal next character */
-+};
-+
-+/* TIOCGSIZE, TIOCSSIZE not defined yet.  Only needed for SunOS source
-+   compatibility anyway ... */
-+
-+struct winsize {
-+       unsigned short ws_row;
-+       unsigned short ws_col;
-+       unsigned short ws_xpixel;
-+       unsigned short ws_ypixel;
-+};
-+
-+#define NCC    8
-+struct termio {
-+       unsigned short c_iflag;         /* input mode flags */
-+       unsigned short c_oflag;         /* output mode flags */
-+       unsigned short c_cflag;         /* control mode flags */
-+       unsigned short c_lflag;         /* local mode flags */
-+       char c_line;                    /* line discipline */
-+       unsigned char c_cc[NCCS];       /* control characters */
-+};
-+
-+#ifdef __KERNEL__
-+#include <linux/module.h>
++#include <asm/processor.h>
 +
 +/*
-+ *     intr=^C         quit=^\         erase=del       kill=^U
-+ *     vmin=\1         vtime=\0        eol2=\0         swtc=\0
-+ *     start=^Q        stop=^S         susp=^Z         vdsusp=
-+ *     reprint=^R      discard=^U      werase=^W       lnext=^V
-+ *     eof=^D          eol=\0
++ * low level task data that entry.S needs immediate access to
++ * - this struct should fit entirely inside of one cache line
++ * - this struct shares the supervisor stack pages
++ * - if the contents of this structure are changed, the assembly 
+constants
++ *   must also be changed
 + */
-+#define INIT_C_CC 
-"\003\034\177\025\1\0\0\0\021\023\032\0\022\017\027\026\004\0"
-+#endif
++struct thread_info {
++       struct task_struct      *task;          /* main task structure */
++       struct exec_domain      *exec_domain;   /* execution domain */
++       unsigned long           flags;          /* low level flags */
++       unsigned long           tp_value;       /* thread pointer */
++       __u32                   cpu;            /* current CPU */
++       int                     preempt_count;  /* 0 => preemptable, <0 => 
+BUG */
++       mm_segment_t            addr_limit;     /* thread address space:
++                                                  0-0xBFFFFFFF for 
+user-thead
++                                                  0-0xFFFFFFFF for 
+kernel-thread
++                                               */
++       struct restart_block    restart_block;
++       struct pt_regs          *regs;
++};
 +
-+/* modem lines */
-+#define TIOCM_LE       0x001           /* line enable */
-+#define TIOCM_DTR      0x002           /* data terminal ready */
-+#define TIOCM_RTS      0x004           /* request to send */
-+#define TIOCM_ST       0x010           /* secondary transmit */
-+#define TIOCM_SR       0x020           /* secondary receive */
-+#define TIOCM_CTS      0x040           /* clear to send */
-+#define TIOCM_CAR      0x100           /* carrier detect */
-+#define TIOCM_CD       TIOCM_CAR
-+#define TIOCM_RNG      0x200           /* ring */
-+#define TIOCM_RI       TIOCM_RNG
-+#define TIOCM_DSR      0x400           /* data set ready */
-+#define TIOCM_OUT1     0x2000
-+#define TIOCM_OUT2     0x4000
-+#define TIOCM_LOOP     0x8000
++/*
++ * macros/functions for gaining access to the thread information 
+structure
++ *
++ * preempt_count needs to be 1 initially, until the scheduler is 
+functional.
++ */
++#define INIT_THREAD_INFO(tsk)                  \
++{                                              \
++       .task           = &tsk,                 \
++       .exec_domain    = &default_exec_domain, \
++       .cpu            = 0,                    \
++       .preempt_count  = 1,                    \
++       .addr_limit     = KERNEL_DS,            \
++       .restart_block  = {                     \
++               .fn = do_no_restart_syscall,    \
++       },                                      \
++}
++
++#define init_thread_info       (init_thread_union.thread_info)
++#define init_stack             (init_thread_union.stack)
++
++/* How to get the thread information struct from C.  */
++register struct thread_info *__current_thread_info __asm__("r28");
++#define current_thread_info()  __current_thread_info
++
++/* thread information allocation */
++#define THREAD_SIZE_ORDER      (1)
++#define THREAD_SIZE            (PAGE_SIZE << THREAD_SIZE_ORDER)
++#define THREAD_MASK            (THREAD_SIZE - 1UL)
++#define __HAVE_ARCH_THREAD_INFO_ALLOCATOR
++
++#define alloc_thread_info(tsk) kmalloc(THREAD_SIZE, GFP_KERNEL)
++#define free_thread_info(info) kfree(info)
++
++#endif /* !__ASSEMBLY__ */
++
++#define PREEMPT_ACTIVE         0x10000000
++
++/*
++ * thread information flags
++ * - these are process state flags that various assembly files may need 
+to
++ *   access
++ * - pending work-to-be-done flags are in LSW
++ * - other flags in MSW
++ */
++#define TIF_SYSCALL_TRACE      0       /* syscall trace active */
++#define TIF_SIGPENDING         1       /* signal pending */
++#define TIF_NEED_RESCHED       2       /* rescheduling necessary */
++#define TIF_RESTORE_SIGMASK    9       /* restore signal mask in 
+do_signal() */
++#define TIF_POLLING_NRFLAG     17      /* true if poll_idle() is polling 
+TIF_NEED_RESCHED */
++#define TIF_MEMDIE             18
++
++#define _TIF_SYSCALL_TRACE     (1<<TIF_SYSCALL_TRACE)
++#define _TIF_SIGPENDING                (1<<TIF_SIGPENDING)
++#define _TIF_NEED_RESCHED      (1<<TIF_NEED_RESCHED)
++#define _TIF_RESTORE_SIGMASK   (1<<TIF_RESTORE_SIGMASK)
++#define _TIF_POLLING_NRFLAG    (1<<TIF_POLLING_NRFLAG)
++
++#define _TIF_WORK_MASK         (0x0000ffff)
++
++#endif /* __KERNEL__ */
++
++#endif /* _ASM_THREAD_INFO_H */
+diff -uprN -x linux-2.6-git.ori/Documentation/dontdiff 
+linux-2.6-git.ori/arch/score/include/asm/timex.h 
+linux-2.6-git.new/arch/score/include/asm/timex.h
+--- linux-2.6-git.ori/arch/score/include/asm/timex.h    1970-01-01 
+08:00:00.000000000 +0800
++++ linux-2.6-git.new/arch/score/include/asm/timex.h    2009-03-13 
+14:26:33.000000000 +0800
+@@ -0,0 +1,34 @@
++#ifndef _ASM_TIMEX_H
++#define _ASM_TIMEX_H
 +
 +#ifdef __KERNEL__
-+#include <asm-generic/termios.h>
-+#endif /* defined(__KERNEL__) */
-+#endif /* _ASM_TERMIOS_H */
++
++/*
++ * This is the clock rate of the i8253 PIT.  A SCORE system may not have
++ * a PIT by the symbol is used all over the kernel including some APIs.
++ * So keeping it defined to the number for the PIT is the only sane thing
++ * for now.
++ */
++#define CLOCK_TICK_RATE 1193182
++
++/*
++ * Standard way to access the cycle counter.
++ * Currently only used on SMP for scheduling.
++ *
++ * Only the low 32 bits are available as a continuously counting entity.
++ * But this only means we'll force a reschedule every 8 seconds or so,
++ * which isn't an evil thing.
++ *
++ * We know that all SMP capable CPUs have cycle counters.
++ */
++
++typedef unsigned int cycles_t;
++
++static inline cycles_t get_cycles(void)
++{
++       return 0;
++}
++
++#endif /* __KERNEL__ */
++
++#endif /*  _ASM_TIMEX_H */
+diff -uprN -x linux-2.6-git.ori/Documentation/dontdiff 
+linux-2.6-git.ori/arch/score/include/asm/tlbflush.h 
+linux-2.6-git.new/arch/score/include/asm/tlbflush.h
+--- linux-2.6-git.ori/arch/score/include/asm/tlbflush.h 1970-01-01 
+08:00:00.000000000 +0800
++++ linux-2.6-git.new/arch/score/include/asm/tlbflush.h 2009-03-14 
+14:04:05.000000000 +0800
+@@ -0,0 +1,142 @@
++#ifndef __ASM_TLBFLUSH_H
++#define __ASM_TLBFLUSH_H
++
++#include <linux/mm.h>
++
++/*
++ * TLB flushing:
++ *
++ *  - flush_tlb_all() flushes all processes TLB entries
++ *  - flush_tlb_mm(mm) flushes the specified mm context TLB entries
++ *  - flush_tlb_page(vma, vmaddr) flushes one page
++ *  - flush_tlb_range(vma, start, end) flushes a range of pages
++ *  - flush_tlb_kernel_range(start, end) flushes a range of kernel pages
++ */
++extern void local_flush_tlb_all(void);
++extern void local_flush_tlb_mm(struct mm_struct *mm);
++extern void local_flush_tlb_range(struct vm_area_struct *vma,
++       unsigned long start, unsigned long end);
++extern void local_flush_tlb_kernel_range(unsigned long start,
++       unsigned long end);
++extern void local_flush_tlb_page(struct vm_area_struct *vma,
++       unsigned long page);
++extern void local_flush_tlb_one(unsigned long vaddr);
++
++#define flush_tlb_all()                        local_flush_tlb_all()
++#define flush_tlb_mm(mm)               local_flush_tlb_mm(mm)
++#define flush_tlb_range(vma, vmaddr, end) \
++       local_flush_tlb_range(vma, vmaddr, end)
++#define flush_tlb_kernel_range(vmaddr,end) \
++       local_flush_tlb_kernel_range(vmaddr, end)
++#define flush_tlb_page(vma, page)      local_flush_tlb_page(vma, page)
++#define flush_tlb_one(vaddr)           local_flush_tlb_one(vaddr)
++
++#ifndef __ASSEMBLY__
++
++static inline unsigned long get_PEVN(void)
++{
++       unsigned long val;
++
++       __asm__ __volatile__(
++               "mfcr %0, cr11\n"
++               "nop\nnop\n"
++               : "=r" (val));
++
++       return val;
++}
++
++static inline void set_PEVN(unsigned long val)
++{
++       __asm__ __volatile__(
++               "mtcr %0, cr11\n"
++               "nop\nnop\nnop\nnop\nnop\n"
++       : : "r" (val));
++}
++
++static inline void set_PECTX(unsigned long val)
++{
++       __asm__ __volatile__(
++               "mtcr %0, cr12\n"
++               "nop\nnop\nnop\nnop\nnop\n"
++       :: "r" (val));
++}
++
++static inline unsigned long get_PECTX(void)
++{
++       unsigned long val;
++       __asm__ __volatile__(
++               "mfcr %0, cr12\n"
++               "nop\nnop\n"
++       : "=r" (val));
++       return val;
++}
++static inline unsigned long get_TLBLOCK(void)
++{
++       unsigned long val;
++
++       __asm__ __volatile__(
++               "mfcr %0, cr7\n"
++               "nop\nnop\n"
++       : "=r" (val));
++       return val;
++}
++static inline void set_TLBLOCK(unsigned long val)
++{
++       __asm__ __volatile__(
++               "mtcr %0, cr7\n"
++               "nop\nnop\nnop\nnop\nnop\n"
++       : : "r" (val));
++}
++
++static inline void set_TLBPT(unsigned long val)
++{
++       __asm__ __volatile__(
++               "mtcr %0, cr8\n"
++               "nop\nnop\nnop\nnop\nnop\n"
++               :: "r" (val));
++}
++
++static inline long get_TLBPT(void)
++{
++       long val;
++
++       __asm__ __volatile__(
++               "mfcr %0, cr8\n"
++               "nop\nnop\n"
++               : "=r" (val));
++
++       return val;
++}
++
++static inline void set_PEADDR(unsigned long val)
++{
++       __asm__ __volatile__(
++               "mtcr %0, cr9\n"
++               "nop\nnop\nnop\nnop\nnop\n"
++               :: "r" (val));
++}
++
++/* TLB operations. */
++static inline void tlb_probe(void)
++{
++       __asm__ __volatile__("stlb;nop;nop;nop;nop;nop");
++}
++
++static inline void tlb_read(void)
++{
++       __asm__ __volatile__("mftlb;nop;nop;nop;nop;nop");
++}
++
++static inline void tlb_write_indexed(void)
++{
++       __asm__ __volatile__("mtptlb;nop;nop;nop;nop;nop");
++}
++
++static inline void tlb_write_random(void)
++{
++       __asm__ __volatile__("mtrtlb;nop;nop;nop;nop;nop");
++}
++
++#endif /* Not __ASSEMBLY__ */
++
++#endif /* __ASM_TLBFLUSH_H */
+diff -uprN -x linux-2.6-git.ori/Documentation/dontdiff 
+linux-2.6-git.ori/arch/score/include/asm/tlb.h 
+linux-2.6-git.new/arch/score/include/asm/tlb.h
+--- linux-2.6-git.ori/arch/score/include/asm/tlb.h      1970-01-01 
+08:00:00.000000000 +0800
++++ linux-2.6-git.new/arch/score/include/asm/tlb.h      2009-03-23 
+15:03:16.000000000 +0800
+@@ -0,0 +1,15 @@
++#ifndef __ASM_TLB_H
++#define __ASM_TLB_H
++
++/*
++ * SCORE doesn't need any special per-pte or per-vma handling, except
++ * we need to flush cache for area to be unmapped.
++ */
++#define tlb_start_vma(tlb, vma)                do {} while (0)
++#define tlb_end_vma(tlb, vma)          do {} while (0)
++#define __tlb_remove_tlb_entry(tlb, ptep, address) do {} while (0)
++#define tlb_flush(tlb)                 flush_tlb_mm((tlb)->mm)
++
++#include <asm-generic/tlb.h>
++
++#endif /* __ASM_TLB_H */
+diff -uprN -x linux-2.6-git.ori/Documentation/dontdiff 
+linux-2.6-git.ori/arch/score/include/asm/topology.h 
+linux-2.6-git.new/arch/score/include/asm/topology.h
+--- linux-2.6-git.ori/arch/score/include/asm/topology.h 1970-01-01 
+08:00:00.000000000 +0800
++++ linux-2.6-git.new/arch/score/include/asm/topology.h 2009-03-13 
+14:26:33.000000000 +0800
+@@ -0,0 +1,6 @@
++#ifndef __ASM_TOPOLOGY_H
++#define __ASM_TOPOLOGY_H
++
++#include <asm-generic/topology.h>
++
++#endif /* __ASM_TOPOLOGY_H */
+diff -uprN -x linux-2.6-git.ori/Documentation/dontdiff 
+linux-2.6-git.ori/arch/score/include/asm/types.h 
+linux-2.6-git.new/arch/score/include/asm/types.h
+--- linux-2.6-git.ori/arch/score/include/asm/types.h    1970-01-01 
+08:00:00.000000000 +0800
++++ linux-2.6-git.new/arch/score/include/asm/types.h    2009-03-23 
+15:03:24.000000000 +0800
+@@ -0,0 +1,24 @@
++#ifndef _ASM_TYPES_H
++#define _ASM_TYPES_H
++
++#include <asm-generic/int-ll64.h>
++
++#ifndef __ASSEMBLY__
++typedef unsigned short umode_t;
++#endif /* __ASSEMBLY__ */
++
++#ifdef __KERNEL__
++#define BITS_PER_LONG  32
++#ifndef __ASSEMBLY__
++
++typedef u32 dma_addr_t;
++typedef u64 dma64_addr_t;
++
++/*
++ * Don't use phys_t. You've been warned.
++ */
++typedef unsigned long phys_t;
++
++#endif /* __ASSEMBLY__ */
++#endif /* __KERNEL__ */
++#endif /* _ASM_TYPES_H */
+diff -uprN -x linux-2.6-git.ori/Documentation/dontdiff 
+linux-2.6-git.ori/arch/score/include/asm/uaccess.h 
+linux-2.6-git.new/arch/score/include/asm/uaccess.h
+--- linux-2.6-git.ori/arch/score/include/asm/uaccess.h  1970-01-01 
+08:00:00.000000000 +0800
++++ linux-2.6-git.new/arch/score/include/asm/uaccess.h  2009-03-23 
+17:35:07.000000000 +0800
+@@ -0,0 +1,405 @@
++#ifndef _ASM_UACCESS_H
++#define _ASM_UACCESS_H
++
++#include <linux/kernel.h>
++#include <linux/errno.h>
++#include <linux/thread_info.h>
++#include <asm-generic/uaccess.h>
++
++#define __UA_LIMIT     0x80000000UL
++#define KERNEL_DS      ((mm_segment_t) { 0UL })
++#define USER_DS                ((mm_segment_t) { __UA_LIMIT })
++
++#define VERIFY_READ    0
++#define VERIFY_WRITE   1
++
++#define get_ds()       (KERNEL_DS)
++#define get_fs()       (current_thread_info()->addr_limit)
++#define set_fs(x)      (current_thread_info()->addr_limit = (x))
++#define segment_eq(a, b)       ((a).seg == (b).seg)
++
++/*
++ * Is a address valid? This does a straighforward calculation rather
++ * than tests.
++ *
++ * Address valid if:
++ *  - "addr" doesn't have any high-bits set
++ *  - AND "size" doesn't have any high-bits set
++ *  - AND "addr+size" doesn't have any high-bits set
++ *  - OR we are in kernel mode.
++ *
++ * __ua_size() is a trick to avoid runtime checking of positive constant
++ * sizes; for those we already know at compile time that the size is ok.
++ */
++#define __ua_size(size) \
++       ((__builtin_constant_p(size) && (signed long) (size) > 0) ? 0 : 
+(size))
++
++/*
++ * access_ok: - Checks if a user space pointer is valid
++ * @type: Type of access: %VERIFY_READ or %VERIFY_WRITE.  Note that
++ *        %VERIFY_WRITE is a superset of %VERIFY_READ - if it is safe
++ *        to write to a block, it is always safe to read from it.
++ * @addr: User space pointer to start of block to check
++ * @size: Size of block to check
++ *
++ * Context: User context only.  This function may sleep.
++ *
++ * Checks if a pointer to a block of memory in user space is valid.
++ *
++ * Returns true (nonzero) if the memory block may be valid, false (zero)
++ * if it is definitely invalid.
++ *
++ * Note that, depending on architecture, this function probably just
++ * checks that the pointer is in the user space range - after calling
++ * this function, memory access functions may still return -EFAULT.
++ */
++
++#define __access_mask get_fs().seg
++
++#define __access_ok(addr, size, mask)                                  \
++       (((signed long)((mask) & ((addr) | ((addr) + (size)) | 
+__ua_size(size)))) == 0)
++
++#define access_ok(type, addr, size)                                    \
++       likely(__access_ok((unsigned long)(addr), (size), __access_mask))
++
++/*
++ * put_user: - Write a simple value into user space.
++ * @x:   Value to copy to user space.
++ * @ptr: Destination address, in user space.
++ *
++ * Context: User context only.  This function may sleep.
++ *
++ * This macro copies a single simple value from kernel space to user
++ * space.  It supports simple types like char and int, but not larger
++ * data types like structures or arrays.
++ *
++ * @ptr must have pointer-to-simple-variable type, and @x must be 
+assignable
++ * to the result of dereferencing @ptr.
++ *
++ * Returns zero on success, or -EFAULT on error.
++ */
++#define put_user(x,ptr) __put_user_check((x), (ptr), sizeof(*(ptr)))
++
++/*
++ * get_user: - Get a simple variable from user space.
++ * @x:   Variable to store result.
++ * @ptr: Source address, in user space.
++ *
++ * Context: User context only.  This function may sleep.
++ *
++ * This macro copies a single simple variable from user space to kernel
++ * space.  It supports simple types like char and int, but not larger
++ * data types like structures or arrays.
++ *
++ * @ptr must have pointer-to-simple-variable type, and the result of
++ * dereferencing @ptr must be assignable to @x without a cast.
++ *
++ * Returns zero on success, or -EFAULT on error.
++ * On error, the variable @x is set to zero.
++ */
++#define get_user(x,ptr) __get_user_check((x), (ptr), sizeof(*(ptr)))
++
++/*
++ * __put_user: - Write a simple value into user space, with less 
+checking.
++ * @x:   Value to copy to user space.
++ * @ptr: Destination address, in user space.
++ *
++ * Context: User context only.  This function may sleep.
++ *
++ * This macro copies a single simple value from kernel space to user
++ * space.  It supports simple types like char and int, but not larger
++ * data types like structures or arrays.
++ *
++ * @ptr must have pointer-to-simple-variable type, and @x must be 
+assignable
++ * to the result of dereferencing @ptr.
++ *
++ * Caller must check the pointer with access_ok() before calling this
++ * function.
++ *
++ * Returns zero on success, or -EFAULT on error.
++ */
++#define __put_user(x,ptr) __put_user_nocheck((x), (ptr), sizeof(*(ptr)))
++
++/*
++ * __get_user: - Get a simple variable from user space, with less 
+checking.
++ * @x:   Variable to store result.
++ * @ptr: Source address, in user space.
++ *
++ * Context: User context only.  This function may sleep.
++ *
++ * This macro copies a single simple variable from user space to kernel
++ * space.  It supports simple types like char and int, but not larger
++ * data types like structures or arrays.
++ *
++ * @ptr must have pointer-to-simple-variable type, and the result of
++ * dereferencing @ptr must be assignable to @x without a cast.
++ *
++ * Caller must check the pointer with access_ok() before calling this
++ * function.
++ *
++ * Returns zero on success, or -EFAULT on error.
++ * On error, the variable @x is set to zero.
++ */
++#define __get_user(x,ptr) __get_user_nocheck((x), (ptr), sizeof(*(ptr)))
++
++struct __large_struct { unsigned long buf[100]; };
++#define __m(x) (*(struct __large_struct __user *)(x))
++
++/*
++ * Yuck.  We need two variants, one for 64bit operation and one
++ * for 32 bit mode and old iron.
++ */
++extern void __get_user_unknown(void);
++
++#define __get_user_common(val, size, ptr)                              \
++do {                                                                   \
++       switch (size) {                                                 \
++       case 1: __get_user_asm(val, "lb", ptr); break;                  \
++       case 2: __get_user_asm(val, "lh", ptr); break;                  \
++       case 4: __get_user_asm(val, "lw", ptr); break;                  \
++       case 8:                                                         \
++               if((copy_from_user((void *)&val, ptr, 8)) == 0)         \
++                       __gu_err = 0;                                   \
++               else                                                    \
++                       __gu_err = -EFAULT;                             \
++               break;                                                  \
++       default: __get_user_unknown(); break;                           \
++       }                                                               \
++} while (0)
++
++#define __get_user_nocheck(x, ptr, size)                               \
++({                                                                     \
++       long __gu_err = 0;                                              \
++       __get_user_common((x), size, ptr);                              \
++       __gu_err;                                                       \
++})
++
++#define __get_user_check(x, ptr, size)                                 \
++({                                                                     \
++       long __gu_err = -EFAULT;                                        \
++       const __typeof__(*(ptr)) __user *__gu_ptr = (ptr);              \
++                                                                       \
++       if (likely(access_ok(VERIFY_READ, __gu_ptr, size)))             \
++               __get_user_common((x), size, __gu_ptr);                 \
++                                                                       \
++       __gu_err;                                                       \
++})
++
++#define __get_user_asm(val, insn, addr) \
++{                                                                      \
++       long __gu_tmp;                                                  \
++                                                                       \
++       __asm__ __volatile__(                                           \
++               "1:" insn " %1, %3\n"                                   \
++               "2:\n"                                                  \
++               ".section .fixup,\"ax\"\n"                              \
++               "3:li   %0, %4\n"                                       \
++               "j      2b\n"                                           \
++               ".previous\n"                                           \
++               ".section __ex_table,\"a\"\n"                           \
++               ".word  1b, 3b\n"                                       \
++               ".previous\n"                                           \
++               : "=r" (__gu_err), "=r" (__gu_tmp)                      \
++               : "0" (0), "o" (__m(addr)), "i" (-EFAULT));             \
++                                                                       \
++               (val) = (__typeof__(*(addr))) __gu_tmp;                 \
++}
++
++/*
++ * Yuck.  We need two variants, one for 64bit operation and one
++ * for 32 bit mode and old iron.
++ */
++#define __put_user_nocheck(val, ptr, size)                             \
++({                                                                     \
++       __typeof__(*(ptr)) __pu_val;                                    \
++       long __pu_err = 0;                                              \
++                                                                       \
++       __pu_val = (val);                                               \
++       switch (size) {                                                 \
++       case 1: __put_user_asm("sb", ptr); break;                       \
++       case 2: __put_user_asm("sh", ptr); break;                       \
++       case 4: __put_user_asm("sw", ptr); break;                       \
++       case 8:                                                         \
++               if((__copy_to_user((void *)ptr, &__pu_val, 8)) == 0)    \
++                       __pu_err = 0;                                   \
++               else                                                    \
++                       __pu_err = -EFAULT;                             \
++               break;                                                  \
++       default: __put_user_unknown(); break;                           \
++       }                                                               \
++       __pu_err;                                                       \
++})
++
++
++#define __put_user_check(val, ptr, size)                               \
++({                                                                     \
++       __typeof__(*(ptr)) __user *__pu_addr = (ptr);                   \
++       __typeof__(*(ptr)) __pu_val = (val);                            \
++       long __pu_err = -EFAULT;                                        \
++                                                                       \
++       if (likely(access_ok(VERIFY_WRITE, __pu_addr, size))) { \
++               switch (size) {                                         \
++               case 1: __put_user_asm("sb", __pu_addr); break;         \
++               case 2: __put_user_asm("sh", __pu_addr); break;         \
++               case 4: __put_user_asm("sw", __pu_addr); break;         \
++               case 8:                                                 \
++                       if ((__copy_to_user((void *)__pu_addr, &__pu_val, 
+8)) == 0)\
++                               __pu_err = 0;                           \
++                       else                                            \
++                               __pu_err = -EFAULT;                     \
++                       break;                                          \
++               default: __put_user_unknown(); break;                   \
++               }                                                       \
++       }                                                               \
++       __pu_err;                                                       \
++})
++
++#define __put_user_asm(insn,ptr)                                       \
++       __asm__ __volatile__(                                           \
++               "1:" insn " %2, %3\n"                                   \
++               "2:\n"                                                  \
++               ".section .fixup,\"ax\"\n"                              \
++               "3:li %0, %4\n"                                         \
++               "j 2b\n"                                                \
++               ".previous\n"                                           \
++               ".section __ex_table,\"a\"\n"                           \
++               ".word 1b, 3b\n"                                        \
++               ".previous\n"                                           \
++               : "=r" (__pu_err)                                       \
++               : "0" (0), "r" (__pu_val), "o" (__m(ptr)),              \
++                 "i" (-EFAULT));
++
++extern void __put_user_unknown(void);
++
++extern int __copy_tofrom_user(void *to, const void *from, unsigned long 
+len);
++
++static inline unsigned long copy_from_user(void *to, const void *from, 
+unsigned long len)
++{
++       unsigned long over;
++       if(access_ok(VERIFY_READ, from, len))
++               return __copy_tofrom_user(to, from, len);
++       if ((unsigned long)from < TASK_SIZE) {
++               over = (unsigned long)from + len - TASK_SIZE;
++               return __copy_tofrom_user(to, from, len - over) + over;
++       }
++       return len;
++}
++
++static inline unsigned long copy_to_user(void *to, const void *from, 
+unsigned long len)
++{
++       unsigned long over;
++
++       if (access_ok(VERIFY_WRITE, to, len))
++               return __copy_tofrom_user(to, from, len);
++       if ((unsigned long)to < TASK_SIZE) {
++               over = (unsigned long)to + len - TASK_SIZE;
++               return __copy_tofrom_user(to, from, len - over) + over;
++       }
++       return len;
++}
++
++#define __copy_from_user(to, from, len)        \
++               __copy_tofrom_user((to), (from), (len))
++
++#define __copy_to_user(to, from, len)          \
++               __copy_tofrom_user((to), (from), (len))
++
++
++static inline unsigned long
++__copy_to_user_inatomic(void *to, const void *from, unsigned long len)
++{
++       return __copy_to_user(to, from, len);
++}
++
++static inline unsigned long
++__copy_from_user_inatomic(void *to, const void *from, unsigned long len)
++{
++       return __copy_from_user(to, from, len);
++}
++
++#define __copy_in_user(to, from, len)  __copy_from_user(to, from, len)
++
++static inline unsigned long
++copy_in_user(void *to, const void *from, unsigned long len)
++{
++       if (access_ok(VERIFY_READ, from, len) &&
++                     access_ok(VERFITY_WRITE, to, len))
++               return copy_from_user(to, from, len);
++}
++
++/*
++ * __clear_user: - Zero a block of memory in user space, with less 
+checking.
++ * @to:   Destination address, in user space.
++ * @n:    Number of bytes to zero.
++ *
++ * Zero a block of memory in user space.  Caller must check
++ * the specified block with access_ok() before calling this function.
++ *
++ * Returns number of bytes that could not be cleared.
++ * On success, this will be zero.
++ */
++extern unsigned long __clear_user(char *src, unsigned long size);
++
++static inline unsigned long clear_user(char *src, unsigned long size)
++{
++       if (access_ok(VERIFY_WRITE, src, size))
++               return __clear_user(src, size);
++       return -EFAULT;
++}
++
++
++/*
++ * __strncpy_from_user: - Copy a NUL terminated string from userspace, 
+with less checking.
++ * @dst:   Destination address, in kernel space.  This buffer must be at
++ *         least @count bytes long.
++ * @src:   Source address, in user space.
++ * @count: Maximum number of bytes to copy, including the trailing NUL.
++ *
++ * Copies a NUL-terminated string from userspace to kernel space.
++ * Caller must check the specified block with access_ok() before calling
++ * this function.
++ *
++ * On success, returns the length of the string (not including the 
+trailing
++ * NUL).
++ *
++ * If access to userspace fails, returns -EFAULT (some data may have been
++ * copied).
++ *
++ * If @count is smaller than the length of the string, copies @count 
+bytes
++ * and returns @count.
++ */
++extern int __strncpy_from_user(char *dst, const char *src, long len);
++
++static inline int strncpy_from_user(char *dst, const char *src, long len)
++{
++       if (access_ok(VERIFY_READ, src, 1))
++               return __strncpy_from_user(dst, src, len);
++       return -EFAULT;
++}
++
++
++extern int __strlen_user(const char *src);
++static inline long strlen_user(const char __user *src)
++{
++       return __strlen_user(src);
++}
++
++
++extern int __strnlen_user(const char *str, long len);
++static inline long strnlen_user(const char __user *str, long len)
++{
++       if (access_ok(VERIFY_READ, str, len));
++               return __strnlen_user(str, len);
++       return -EFAULT;
++}
++
++struct exception_table_entry
++{
++       unsigned long insn;
++       unsigned long nextinsn;
++};
++
++extern int fixup_exception(struct pt_regs *regs);
++
++#endif /* _ASM_UACCESS_H */
++
+diff -uprN -x linux-2.6-git.ori/Documentation/dontdiff 
+linux-2.6-git.ori/arch/score/include/asm/ucontext.h 
+linux-2.6-git.new/arch/score/include/asm/ucontext.h
+--- linux-2.6-git.ori/arch/score/include/asm/ucontext.h 1970-01-01 
+08:00:00.000000000 +0800
++++ linux-2.6-git.new/arch/score/include/asm/ucontext.h 2009-03-23 
+15:07:20.000000000 +0800
+@@ -0,0 +1,12 @@
++#ifndef _ASM_UCONTEXT_H
++#define _ASM_UCONTEXT_H
++
++struct ucontext {
++       unsigned long   uc_flags;
++       struct ucontext *uc_link;
++       stack_t         uc_stack;
++       struct sigcontext uc_mcontext;
++       sigset_t        uc_sigmask;     /* mask last for extensibility */
++};
++
++#endif /* _ASM_UCONTEXT_H */
+diff -uprN -x linux-2.6-git.ori/Documentation/dontdiff 
+linux-2.6-git.ori/arch/score/include/asm/unaligned.h 
+linux-2.6-git.new/arch/score/include/asm/unaligned.h
+--- linux-2.6-git.ori/arch/score/include/asm/unaligned.h        1970-01-01 
+08:00:00.000000000 +0800
++++ linux-2.6-git.new/arch/score/include/asm/unaligned.h        2009-03-23 
+15:07:26.000000000 +0800
+@@ -0,0 +1,21 @@
++#ifndef _ASM_SCORE_UNALIGNED_H
++#define _ASM_SCORE_UNALIGNED_H
++
++#include <linux/compiler.h>
++#if defined(__SCOREEB__)
++# include <linux/unaligned/be_struct.h>
++# include <linux/unaligned/le_byteshift.h>
++# include <linux/unaligned/generic.h>
++# define get_unaligned __get_unaligned_be
++# define put_unaligned __put_unaligned_be
++#elif defined(__SCOREEL__)
++# include <linux/unaligned/le_struct.h>
++# include <linux/unaligned/be_byteshift.h>
++# include <linux/unaligned/generic.h>
++# define get_unaligned __get_unaligned_le
++# define put_unaligned __put_unaligned_le
++#else
++# error "SCORE, but neither __SCOREEB__, nor __SCOREEL__???"
++#endif
++
++#endif /* _ASM_SCORE_UNALIGNED_H */
 
 Signed off by: Chen Liqin <liqin.chen@sunplusct.com>
