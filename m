@@ -1,66 +1,152 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752217AbZC0XZw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755540AbZC0X0m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752217AbZC0XZw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Mar 2009 19:25:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751310AbZC0XZn
+	id S1755540AbZC0X0m (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Mar 2009 19:26:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751994AbZC0X0d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Mar 2009 19:25:43 -0400
-Received: from mail-fx0-f158.google.com ([209.85.220.158]:34330 "EHLO
-	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750925AbZC0XZm convert rfc822-to-8bit (ORCPT
+	Fri, 27 Mar 2009 19:26:33 -0400
+Received: from 69-30-77-85.dq1sn.easystreet.com ([69.30.77.85]:33369 "EHLO
+	kingsolver.anholt.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751310AbZC0X0c (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Mar 2009 19:25:42 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=V+Xl6YZzdxp0/hPXOpP5gnJzaf/8C5kMkc2hbwD9dLKH8ppkKKYFx2Enu5+rPDT6Yw
-         7Hs8URvjQU/R//LY5n4sIQbXDdrm1FCPoe/RdxQC4VIvKTZsE5bhRvJLRcccO/rFS69y
-         ++BmcHwf/GGsmDBzNaSuBZo/9rYfVCHHRQj68=
-MIME-Version: 1.0
-In-Reply-To: <49CD5E59.6030805@msgid.tls.msk.ru>
-References: <84a01a8b0903250545n799a8727o1faad60c8eaf372e@mail.gmail.com>
-	 <84a01a8b0903270244s146ca50cr2758d36c2d9d77cd@mail.gmail.com>
-	 <49CD4967.2090606@msgid.tls.msk.ru>
-	 <84a01a8b0903271517t668c6276l7fe098d74c24b836@mail.gmail.com>
-	 <84a01a8b0903271530of8d43ffhf77e7ba73e309f75@mail.gmail.com>
-	 <49CD564E.6050101@msgid.tls.msk.ru>
-	 <84a01a8b0903271555i7a4fea50nd95009539aa2f94d@mail.gmail.com>
-	 <49CD5AC6.3020806@msgid.tls.msk.ru>
-	 <84a01a8b0903271610u17267f87u65b097ac2d755a52@mail.gmail.com>
-	 <49CD5E59.6030805@msgid.tls.msk.ru>
-Date: Sat, 28 Mar 2009 00:25:38 +0100
-Message-ID: <84a01a8b0903271625y30a56113l87aa517385120e6@mail.gmail.com>
-Subject: Re: epoll_ctl and const correctness
-From: nicolas sitbon <nicolas.sitbon@gmail.com>
-To: Michael Tokarev <mjt@tls.msk.ru>
-Cc: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Fri, 27 Mar 2009 19:26:32 -0400
+Subject: 
+From: Eric Anholt <eric@anholt.net>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       lkml <linux-kernel@vger.kernel.org>, dri-devel <dri-devel@lists.sf.net>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-Jbs8OdKKXmc6ZkjqR3+F"
+Date: Fri, 27 Mar 2009 16:26:28 -0700
+Message-Id: <1238196389.625.430.camel@gaiman.anholt.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-read() and poll() are very old functions, a long time ago, int was
-nearly the only used type. Today, people uses good programming
-practices, mixing information (the size read) and error is a very poor
-design and a bad practice, as with read().
 
-2009/3/28 Michael Tokarev <mjt@tls.msk.ru>:
-> nicolas sitbon wrote:
->>
->> is it stupid to ask how a size can be negative? who is stupid? you're
->> boring with my question, just tell me please how a size can be
->> negative?
->
-> Yes I'm bored with your questions.  And am suggesting you to stop
-> asking me now.  That's enough.
->
-> As of size being negative - how one can read() negative number
-> of bytes for example?  How one can poll() waiting for a maximum
-> of negative number of milliseconds?
->
-> This is my last reply to you.  I have something more useful to do.
->
-> /mjt
->
+--=-Jbs8OdKKXmc6ZkjqR3+F
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+
+The following changes since commit be0ea69674ed95e1e98cb3687a241badc756d228=
+:
+  Linus Torvalds (1):
+        Merge branch 'for-linus' of git://git.kernel.org/.../penberg/slab-2=
+.6
+
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/anholt/drm-intel drm-intel-=
+next
+
+There's only one outside-of-i915 commit here (debugfs), and it's a
+prereq for the i915 changes.  airlied said he'd pulled my version into
+his tree, so we should be OK with it going in through my tree since he
+hasn't send a pull request out.
+
+Short summary: Fixing lock order reversals finally.  Piles of KMS fixes
+as usual.  Support for an unreleased chipset.  And a bunch of
+infrastructure for debugging info we're going to be adding in this
+kernel so that just maybe we can get a better handle on these "I use my
+machine for a few days and then the GPU falls over" bugs.
+
+Ben Gamari (3):
+      drm: Convert proc files to seq_file and introduce debugfs
+      drm/i915: Convert i915 proc files to seq_file and move to debugfs.
+      drm/i915: Consolidate gem object list dumping
+
+Chris Wilson (2):
+      drm/i915: Display fence register state in debugfs i915_gem_fence_regs=
+ node.
+      drm/i915: Check for dev->primary->master before dereference.
+
+Eric Anholt (8):
+      drm/i915: Change DCC tiling detection case to cover only mobile parts=
+.
+      drm/i915: Fix lock order reversal in GTT pwrite path.
+      drm/i915: Make GEM object's page lists refcounted instead of get/free=
+.
+      drm/i915: Fix lock order reversal in shmem pwrite path.
+      drm/i915: Fix lock order reversal in shmem pread path.
+      drm/i915: Fix lock order reversal with cliprects and cmdbuf in non-DR=
+I2 paths.
+      drm/i915: Fix lock order reversal in GEM relocation entry copying.
+      drm/i915: Add information on pinning and fencing to the i915 list deb=
+ug.
+
+Kristian H=C3=B8gsberg (1):
+      drm/i915: Read the right SDVO register when detecting SVDO/HDMI.
+
+Li Peng (1):
+      drm/i915: Fix LVDS dither setting
+
+Ma Ling (2):
+      drm/i915: Use documented PLL timing limits for G4X platform
+      drm/i915: Use a different PLL timing search function on G4X.
+
+Owain G. Ainsworth (1):
+      i915/drm: Remove two redundant agp_chipset_flushes
+
+Shaohua Li (1):
+      agp/intel: Add support for new intel chipset.
+
+Zhao Yakui (2):
+      drm/i915: Sync mode_valid/mode_set with intel video driver
+      drm/i915: Sync crt hotplug detection with intel video driver
+
+Zhenyu Wang (4):
+      drm/i915: TV modes' parameters sync up with 2D driver
+      drm/i915: Fix TV get_modes to return modes count
+      drm/i915: TV mode_set sync up with 2D driver
+      drm/i915: TV detection fix
+
+ drivers/char/agp/intel-agp.c            |   21 +-
+ drivers/gpu/drm/Makefile                |    3 +-
+ drivers/gpu/drm/drm_debugfs.c           |  235 ++++++++
+ drivers/gpu/drm/drm_drv.c               |   12 +-
+ drivers/gpu/drm/drm_info.c              |  328 +++++++++++
+ drivers/gpu/drm/drm_proc.c              |  721 ++++---------------------
+ drivers/gpu/drm/drm_stub.c              |   15 +-
+ drivers/gpu/drm/i915/Makefile           |    2 +-
+ drivers/gpu/drm/i915/i915_dma.c         |  116 +++--
+ drivers/gpu/drm/i915/i915_drv.c         |    6 +-
+ drivers/gpu/drm/i915/i915_drv.h         |   21 +-
+ drivers/gpu/drm/i915/i915_gem.c         |  898 +++++++++++++++++++++++++--=
+----
+ drivers/gpu/drm/i915/i915_gem_debugfs.c |  257 +++++++++
+ drivers/gpu/drm/i915/i915_gem_proc.c    |  334 ------------
+ drivers/gpu/drm/i915/i915_gem_tiling.c  |   31 +-
+ drivers/gpu/drm/i915/i915_reg.h         |   22 +-
+ drivers/gpu/drm/i915/intel_bios.h       |   12 +-
+ drivers/gpu/drm/i915/intel_crt.c        |   66 ++-
+ drivers/gpu/drm/i915/intel_display.c    |  406 +++++++++++++-
+ drivers/gpu/drm/i915/intel_lvds.c       |    2 +-
+ drivers/gpu/drm/i915/intel_tv.c         |  148 +++---
+ include/drm/drmP.h                      |   77 +++-
+ include/drm/drm_pciids.h                |    2 +
+ 23 files changed, 2431 insertions(+), 1304 deletions(-)
+ create mode 100644 drivers/gpu/drm/drm_debugfs.c
+ create mode 100644 drivers/gpu/drm/drm_info.c
+ create mode 100644 drivers/gpu/drm/i915/i915_gem_debugfs.c
+ delete mode 100644 drivers/gpu/drm/i915/i915_gem_proc.c
+
+--=20
+Eric Anholt
+eric@anholt.net                         eric.anholt@intel.com
+
+
+
+--=-Jbs8OdKKXmc6ZkjqR3+F
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAknNYKQACgkQHUdvYGzw6vcSZwCfb81SQhL8hhs2avWcHZPY+ecr
+c+QAn09Bpbt7c/MKeUVbewPb3lBIS9Ip
+=dc9v
+-----END PGP SIGNATURE-----
+
+--=-Jbs8OdKKXmc6ZkjqR3+F--
+
