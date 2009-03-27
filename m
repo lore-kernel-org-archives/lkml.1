@@ -1,52 +1,210 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758016AbZC0FBe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754844AbZC0FD2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758016AbZC0FBe (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Mar 2009 01:01:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756055AbZC0FBT
+	id S1754844AbZC0FD2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Mar 2009 01:03:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751842AbZC0FDS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Mar 2009 01:01:19 -0400
-Received: from gw1.cosmosbay.com ([212.99.114.194]:60357 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755775AbZC0FBS convert rfc822-to-8bit (ORCPT
+	Fri, 27 Mar 2009 01:03:18 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:46896 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751377AbZC0FDR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Mar 2009 01:01:18 -0400
-Message-ID: <49CC5C7A.9070505@cosmosbay.com>
-Date: Fri, 27 Mar 2009 05:56:26 +0100
-From: Eric Dumazet <dada1@cosmosbay.com>
-User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
-MIME-Version: 1.0
-To: Minchan Kim <minchan.kim@gmail.com>
-CC: Peter Zijlstra <peterz@infradead.org>, lkml <linux-kernel@vger.kernel.org>
-Subject: Re: Question about PRIVATE_FUTEX
-References: <28c262360903261912n4ce235c6wf2f75b2be7faf0f4@mail.gmail.com>
-In-Reply-To: <28c262360903261912n4ce235c6wf2f75b2be7faf0f4@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Fri, 27 Mar 2009 05:56:28 +0100 (CET)
+	Fri, 27 Mar 2009 01:03:17 -0400
+Date: Fri, 27 Mar 2009 14:01:47 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "kosaki.motohiro@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>
+Subject: [RFC][PATCH 1/8] soft limit support in res_counter
+Message-Id: <20090327140147.aedea657.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20090327135933.789729cb.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20090327135933.789729cb.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Minchan Kim a écrit :
-> Hi, Peter and Eric.
-> 
-> I am not expert about futex.
-> I am sorry if this is dumb question.
-> 
-> If we use private futex, get_futex_key don't call get_user_pages_fast
-> which pins page at page table.
-> Then, get_futex_value_locked calls __cpy_from_user_inatomic with
-> pagefault_disable.
-> 
-> Who make sure the user page is mapped at app's page table ?
-> 
+This is from Balbir's one.
+-Kame
+==
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+Changelog v2...v1
+1. Add support for res_counter_check_soft_limit_locked. This is used
+   by the hierarchy code.
 
-Nothing makes sure user page is mapped, as we dont have to (for private futexes
-at least, since the 'key' is a combination of the futex virtual address (not
-depending on the underlying physical page) and the task mm (sort of a static
-offset per task)
+Add an interface to allow get/set of soft limits. Soft limits for memory plus
+swap controller (memsw) is currently not supported. Resource counters have
+been enhanced to support soft limits and new type RES_SOFT_LIMIT has been
+added. Unlike hard limits, soft limits can be directly set and do not
+need any reclaim or checks before setting them to a newer value.
 
-If no page is mapped, a normal error should be returned to user, since
-access to futex location will trigger a fault.
+Kamezawa-San raised a question as to whether soft limit should belong
+to res_counter. Since all resources understand the basic concepts of
+hard and soft limits, it is justified to add soft limits here. Soft limits
+are a generic resource usage feature, even file system quotas support
+soft limits.
 
+Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
+---
+Index: mmotm-2.6.29-Mar23/include/linux/res_counter.h
+===================================================================
+--- mmotm-2.6.29-Mar23.orig/include/linux/res_counter.h
++++ mmotm-2.6.29-Mar23/include/linux/res_counter.h
+@@ -35,6 +35,10 @@ struct res_counter {
+ 	 */
+ 	unsigned long long limit;
+ 	/*
++	 * the limit that usage can be exceed
++	 */
++	unsigned long long soft_limit;
++	/*
+ 	 * the number of unsuccessful attempts to consume the resource
+ 	 */
+ 	unsigned long long failcnt;
+@@ -85,6 +89,7 @@ enum {
+ 	RES_MAX_USAGE,
+ 	RES_LIMIT,
+ 	RES_FAILCNT,
++	RES_SOFT_LIMIT,
+ };
+ 
+ /*
+@@ -130,6 +135,36 @@ static inline bool res_counter_limit_che
+ 	return false;
+ }
+ 
++static inline bool res_counter_soft_limit_check_locked(struct res_counter *cnt)
++{
++	if (cnt->usage < cnt->soft_limit)
++		return true;
++
++	return false;
++}
++
++/**
++ * Get the difference between the usage and the soft limit
++ * @cnt: The counter
++ *
++ * Returns 0 if usage is less than or equal to soft limit
++ * The difference between usage and soft limit, otherwise.
++ */
++static inline unsigned long long
++res_counter_soft_limit_excess(struct res_counter *cnt)
++{
++	unsigned long long excess;
++	unsigned long flags;
++
++	spin_lock_irqsave(&cnt->lock, flags);
++	if (cnt->usage <= cnt->soft_limit)
++		excess = 0;
++	else
++		excess = cnt->usage - cnt->soft_limit;
++	spin_unlock_irqrestore(&cnt->lock, flags);
++	return excess;
++}
++
+ /*
+  * Helper function to detect if the cgroup is within it's limit or
+  * not. It's currently called from cgroup_rss_prepare()
+@@ -145,6 +180,17 @@ static inline bool res_counter_check_und
+ 	return ret;
+ }
+ 
++static inline bool res_counter_check_under_soft_limit(struct res_counter *cnt)
++{
++	bool ret;
++	unsigned long flags;
++
++	spin_lock_irqsave(&cnt->lock, flags);
++	ret = res_counter_soft_limit_check_locked(cnt);
++	spin_unlock_irqrestore(&cnt->lock, flags);
++	return ret;
++}
++
+ static inline void res_counter_reset_max(struct res_counter *cnt)
+ {
+ 	unsigned long flags;
+@@ -178,4 +224,16 @@ static inline int res_counter_set_limit(
+ 	return ret;
+ }
+ 
++static inline int
++res_counter_set_soft_limit(struct res_counter *cnt,
++				unsigned long long soft_limit)
++{
++	unsigned long flags;
++
++	spin_lock_irqsave(&cnt->lock, flags);
++	cnt->soft_limit = soft_limit;
++	spin_unlock_irqrestore(&cnt->lock, flags);
++	return 0;
++}
++
+ #endif
+Index: mmotm-2.6.29-Mar23/kernel/res_counter.c
+===================================================================
+--- mmotm-2.6.29-Mar23.orig/kernel/res_counter.c
++++ mmotm-2.6.29-Mar23/kernel/res_counter.c
+@@ -19,6 +19,7 @@ void res_counter_init(struct res_counter
+ {
+ 	spin_lock_init(&counter->lock);
+ 	counter->limit = (unsigned long long)LLONG_MAX;
++	counter->soft_limit = (unsigned long long)LLONG_MAX;
+ 	counter->parent = parent;
+ }
+ 
+@@ -101,6 +102,8 @@ res_counter_member(struct res_counter *c
+ 		return &counter->limit;
+ 	case RES_FAILCNT:
+ 		return &counter->failcnt;
++	case RES_SOFT_LIMIT:
++		return &counter->soft_limit;
+ 	};
+ 
+ 	BUG();
+Index: mmotm-2.6.29-Mar23/mm/memcontrol.c
+===================================================================
+--- mmotm-2.6.29-Mar23.orig/mm/memcontrol.c
++++ mmotm-2.6.29-Mar23/mm/memcontrol.c
+@@ -2002,6 +2002,20 @@ static int mem_cgroup_write(struct cgrou
+ 		else
+ 			ret = mem_cgroup_resize_memsw_limit(memcg, val);
+ 		break;
++	case RES_SOFT_LIMIT:
++		ret = res_counter_memparse_write_strategy(buffer, &val);
++		if (ret)
++			break;
++		/*
++		 * For memsw, soft limits are hard to implement in terms
++		 * of semantics, for now, we support soft limits for
++		 * control without swap
++		 */
++		if (type == _MEM)
++			ret = res_counter_set_soft_limit(&memcg->res, val);
++		else
++			ret = -EINVAL;
++		break;
+ 	default:
+ 		ret = -EINVAL; /* should be BUG() ? */
+ 		break;
+@@ -2251,6 +2265,12 @@ static struct cftype mem_cgroup_files[] 
+ 		.read_u64 = mem_cgroup_read,
+ 	},
+ 	{
++		.name = "soft_limit_in_bytes",
++		.private = MEMFILE_PRIVATE(_MEM, RES_SOFT_LIMIT),
++		.write_string = mem_cgroup_write,
++		.read_u64 = mem_cgroup_read,
++	},
++	{
+ 		.name = "failcnt",
+ 		.private = MEMFILE_PRIVATE(_MEM, RES_FAILCNT),
+ 		.trigger = mem_cgroup_reset,
 
