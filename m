@@ -1,47 +1,579 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758768AbZC0SKt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756999AbZC0SP6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758768AbZC0SKt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Mar 2009 14:10:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754635AbZC0SKj
+	id S1756999AbZC0SP6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Mar 2009 14:15:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751582AbZC0SPr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Mar 2009 14:10:39 -0400
-Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:60733 "EHLO
-	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753285AbZC0SKi (ORCPT
+	Fri, 27 Mar 2009 14:15:47 -0400
+Received: from mail-ew0-f165.google.com ([209.85.219.165]:49876 "EHLO
+	mail-ew0-f165.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753430AbZC0SPq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Mar 2009 14:10:38 -0400
-Message-ID: <49CD1622.8040508@s5r6.in-berlin.de>
-Date: Fri, 27 Mar 2009 19:08:34 +0100
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.21) Gecko/20090303 SeaMonkey/1.1.15
+	Fri, 27 Mar 2009 14:15:46 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=QX2KYzdua5pxSLo8pYaZGSurO713PCa7WDgNz7jkdoZ5Da6xHOcffSjCu6xeD+aZLP
+         9WB/nrcPP/s1rxAYB/6/gAPZqgD1HUYAEx12agHfqMF8iPLVPbdESOHP/Rx8zbd0/rTE
+         40P2917IOwTO5Sx+oDBdhYRIHEAJ7ol2DUcvw=
+Date: Fri, 27 Mar 2009 19:15:40 +0100
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Masami Hiramatsu <mhiramat@redhat.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       systemtap-ml <systemtap@sources.redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH -tip 3/4 V3] tracing: kprobe-tracer plugin supports
+	arguments
+Message-ID: <20090327181539.GA6005@nowhere>
+References: <49CC08D2.30608@redhat.com> <20090327114453.GB5976@nowhere> <49CCFAD8.7040304@redhat.com>
 MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: linux-kernel@vger.kernel.org, mchehab@infradead.org
-Subject: Re: [PATCH] firedtv: wrong types in printk
-References: <20090326214101.18485.58960.stgit@localhost.localdomain>
-In-Reply-To: <20090326214101.18485.58960.stgit@localhost.localdomain>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49CCFAD8.7040304@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox wrote:
-> --- a/drivers/media/dvb/firewire/firedtv-avc.c
-> +++ b/drivers/media/dvb/firewire/firedtv-avc.c
-> @@ -150,7 +150,7 @@ static void debug_fcp(const u8 *data, size_t length)
->  		subunit_type = data[1] >> 3;
->  		subunit_id = data[1] & 7;
->  		op = subunit_type == 0x1e || subunit_id == 5 ? ~0 : data[2];
-> -		printk(KERN_INFO "%ssu=%x.%x l=%d: %-8s - %s\n",
-> +		printk(KERN_INFO "%ssu=%x.%x l=%Zd: %-8s - %s\n",
->  		       prefix, subunit_type, subunit_id, length,
->  		       debug_fcp_ctype(data[0]),
->  		       debug_fcp_opcode(op, data, length));
+On Fri, Mar 27, 2009 at 12:12:08PM -0400, Masami Hiramatsu wrote:
+> Frederic Weisbecker wrote:
+> > On Thu, Mar 26, 2009 at 06:59:30PM -0400, Masami Hiramatsu wrote:
+> >> Support probe arguments and add fetch functions.
+> >>
+> >> changes from v2:
+> >>  - change casting type unsigned to unsignd long
+> >>    for 64 bit arch.
+> >>  - remove a redundant white space.
+> >>  - move struct fetch_func on top of fetch functions.
+> >>  - access memory with @
+> >>
+> >> Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
+> >> Cc: Steven Rostedt <rostedt@goodmis.org>
+> >> Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+> >> Cc: Ingo Molnar <mingo@elte.hu>
+> >> Cc: Frederic Weisbecker <fweisbec@gmail.com>
+> >> ---
+> >>
+> >>  Documentation/ftrace.txt    |   43 ++++--
+> >>  kernel/trace/trace_kprobe.c |  290 ++++++++++++++++++++++++++++++++++++++++++-
+> >>  2 files changed, 310 insertions(+), 23 deletions(-)
+> >>
+> >>
+> >> diff --git a/Documentation/ftrace.txt b/Documentation/ftrace.txt
+> >> index fd0833b..ddc75af 100644
+> >> --- a/Documentation/ftrace.txt
+> >> +++ b/Documentation/ftrace.txt
+> >> @@ -1329,17 +1329,30 @@ current_tracer, instead of that, just set probe points via
+> >>  /debug/tracing/kprobe_probes.
+> >>
+> >>  Synopsis of kprobe_probes:
+> >> -  p SYMBOL[+offs|-offs]|MEMADDR	: set a probe
+> >> -  r SYMBOL[+0]				: set a return probe
+> >> +  p SYMBOL[+offs|-offs]|MEMADDR [FETCHARGS]	: set a probe
+> >> +  r SYMBOL[+0] [FETCHARGS]			: set a return probe
+> >> +
+> >> + FETCHARGS:
+> >> +  rN	: Fetch Nth register (N >= 0)
+> >> +  sN	: Fetch Nth entry of stack (N >= 0)
+> >> +  @ADDR	: Fetch memory at ADDR (ADDR should be in kernel)
+> >> +  aN	: Fetch function argument. (N >= 1)(*)
+> >> +  rv	: Fetch return value.(**)
+> >> +  rp	: Fetch return address.(**)
+> > 
+> > 
+> > May be ra for the latter?
+> > If we mean "return value" for rv, it might be better to follow
+> > the same logic with rp.
+> > 
+> > If rp means "return pointer" or "return pc", then it seems
+> > less intuitive than "return address" (at least to me).
+> 
+> Ah, sure, 'ra' is better.
+> 
+> 
+> >> +
+> >> +  (*) aN may not correct on asmlinkaged functions and at function body.
+> >> +  (**) only for return probe.
+> >>
+> >>  E.g.
+> >> -  echo p sys_open > /debug/tracing/kprobe_probes
+> >> +  echo p do_sys_open a1 a2 a3 a4 > /debug/tracing/kprobe_probes
+> >>
+> >> - This sets a kprobe on the top of sys_open() function.
+> >> + This sets a kprobe on the top of do_sys_open() function with recording
+> >> +1st to 4th arguments.
+> >>
+> >> -  echo r sys_open >> /debug/tracing/kprobe_probes
+> >> +  echo r do_sys_open rv rp >> /debug/tracing/kprobe_probes
+> >>
+> >> - This sets a kretprobe on the return point of sys_open() function.
+> >> + This sets a kretprobe on the return point of do_sys_open() function with
+> >> +recording return value and return address.
+> >>
+> >>    echo > /debug/tracing/kprobe_probes
+> >>
+> >> @@ -1351,18 +1364,16 @@ E.g.
+> >>  #
+> >>  #           TASK-PID    CPU#    TIMESTAMP  FUNCTION
+> >>  #              | |       |          |         |
+> >> -           <...>-5117  [003]   416.481638: sys_open: @sys_open+0
+> >> -           <...>-5117  [003]   416.481662: syscall_call: <-sys_open+0
+> >> -           <...>-5117  [003]   416.481739: sys_open: @sys_open+0
+> >> -           <...>-5117  [003]   416.481762: sysenter_do_call: <-sys_open+0
+> >> -           <...>-5117  [003]   416.481818: sys_open: @sys_open+0
+> >> -           <...>-5117  [003]   416.481842: sysenter_do_call: <-sys_open+0
+> >> -           <...>-5117  [003]   416.481882: sys_open: @sys_open+0
+> >> -           <...>-5117  [003]   416.481905: sysenter_do_call: <-sys_open+0
+> >> +           <...>-2376  [001]   262.389131: do_sys_open: @do_sys_open+0 0xffffff9c 0x98db83e 0x8880 0x0
+> >> +           <...>-2376  [001]   262.391166: sys_open: <-do_sys_open+0 0x5 0xc06e8ebb
+> >> +           <...>-2376  [001]   264.384876: do_sys_open: @do_sys_open+0 0xffffff9c 0x98db83e 0x8880 0x0
+> >> +           <...>-2376  [001]   264.386880: sys_open: <-do_sys_open+0 0x5 0xc06e8ebb
+> >> +           <...>-2084  [001]   265.380330: do_sys_open: @do_sys_open+0 0xffffff9c 0x804be3e 0x0 0x1b6
+> >> +           <...>-2084  [001]   265.380399: sys_open: <-do_sys_open+0 0x3 0xc06e8ebb
+> >>
+> >>   @SYMBOL means that kernel hits a probe, and <-SYMBOL means kernel returns
+> >> -from SYMBOL(e.g. "sysenter_do_call: <-sys_open+0" means kernel returns from
+> >> -sys_open to sysenter_do_call).
+> >> +from SYMBOL(e.g. "sys_open: <-do_sys_open+0" means kernel returns from
+> >> +do_sys_open to sys_open).
+> >>
+> >>
+> >>  function graph tracer
+> >> diff --git a/kernel/trace/trace_kprobe.c b/kernel/trace/trace_kprobe.c
+> >> index 6f5fdd6..68b2833 100644
+> >> --- a/kernel/trace/trace_kprobe.c
+> >> +++ b/kernel/trace/trace_kprobe.c
+> >> @@ -27,10 +27,122 @@
+> >>  #include <linux/types.h>
+> >>  #include <linux/string.h>
+> >>  #include <linux/ctype.h>
+> >> +#include <linux/ptrace.h>
+> >>
+> >>  #include <linux/ftrace.h>
+> >>  #include "trace.h"
+> >>
+> >> +/* TODO: Move these functions to arch/XXX/include/asm/debugger.h */
+> >> +
+> >> +struct fetch_func {
+> >> +	unsigned long (*func)(struct pt_regs *, void *);
+> >> +	void *data;
+> >> +};
+> >> +
+> >> +static unsigned long call_fetch(struct fetch_func *f, struct pt_regs *regs)
+> >> +{
+> >> +	return f->func(regs, f->data);
+> >> +}
+> >> +
+> >> +#define STACK_MASK (THREAD_SIZE - 1)
+> >> +#define valid_stack_addr(regs, addr) \
+> >> +	(((addr) & ~STACK_MASK) == (kernel_trap_sp(regs) & ~STACK_MASK))
+> >> +
+> >> +#if defined(__i386__)
+> >> +#define MAX_REG_NUM 15
+> >> +#elif defined(__x86_64__)
+> >> +#define MAX_REG_NUM 21
+> >> +#else
+> >> +#define MAX_REG_NUM (sizeof(struct pt_regs)/sizeof(unsigned long))
+> >> +#endif
+> >> +
+> >> +static unsigned long fetch_register(struct pt_regs *regs, void *num)
+> >> +{
+> >> +	if (unlikely((unsigned long)num > MAX_REG_NUM))
+> >> +		return 0;
+> >> +	return *((unsigned long *)regs + (unsigned long)num);
+> >> +}
+> >> +
+> >> +static unsigned long fetch_stack(struct pt_regs *regs, void *num)
+> >> +{
+> >> +	unsigned long *addr = (unsigned long *)kernel_trap_sp(regs);
+> >> +	addr += (unsigned long)num;
+> >> +	if (valid_stack_addr(regs, (unsigned long)addr))
+> >> +		return *addr;
+> >> +	else
+> >> +		return 0;
+> >> +}
+> >> +
+> >> +static unsigned long fetch_memory(struct pt_regs *regs, void *addr)
+> >> +{
+> >> +	unsigned long retval;
+> >> +	if (probe_kernel_address(addr, retval))
+> >> +		return 0;
+> >> +	return retval;
+> >> +}
+> >> +
+> >> +#if defined(__i386__)
+> >> +#define REGPARMS 3
+> >> +static unsigned long fetch_argument(struct pt_regs *regs, void *data)
+> >> +{
+> >> +	unsigned long n = (unsigned long)data;
+> >> +	if (n > REGPARMS) {
+> >> +		/*
+> >> +		 * The typical case: arg n is on the stack.
+> >> +		 * stack[0] = return address
+> >> +		 */
+> >> +		return fetch_stack(regs, (void *)(n - REGPARMS));
+> >> +	} else {
+> >> +		switch (n) {
+> >> +		case 1: return regs->ax;
+> >> +		case 2: return regs->dx;
+> >> +		case 3: return regs->cx;
+> >> +		}
+> >> +		return 0;
+> >> +	}
+> >> +}
+> >> +#elif defined(__x86_64__)
+> >> +#define REGPARMS 6
+> >> +static unsigned long fetch_argument(struct pt_regs *regs, void *data)
+> >> +{
+> >> +	unsigned long n = (unsigned long)data;
+> >> +	if (n > REGPARMS) {
+> >> +		/*
+> >> +		 * The typical case: arg n is on the stack.
+> >> +		 * stack[0] = return address
+> >> +		 */
+> >> +		return fetch_stack(regs, (void *)(n - REGPARMS));
+> >> +	} else {
+> >> +		switch (n) {
+> >> +		case 1: return regs->di;
+> >> +		case 2: return regs->si;
+> >> +		case 3: return regs->dx;
+> >> +		case 4: return regs->cx;
+> >> +		case 5: return regs->r8;
+> >> +		case 6: return regs->r9;
+> >> +		}
+> >> +		return 0;
+> >> +	}
+> >> +}
+> >> +#else
+> >> +/* currently, trace_kprobe only supports X86. */
+> >> +static unsigned long fetch_argument(struct pt_regs *regs, void *data)
+> >> +{
+> >> +	return fetch_stack(regs, data);
+> >> +}
+> >> +#endif
+> >> +
+> >> +static unsigned long fetch_retvalue(struct pt_regs *regs, void *dummy)
+> >> +{
+> >> +	return regs_return_value(regs);
+> >> +}
+> >> +
+> >> +static unsigned long fetch_ip(struct pt_regs *regs, void *dummy)
+> >> +{
+> >> +	return instruction_pointer(regs);
+> >> +}
+> >> +
+> >> +
+> >>  /**
+> >>   * kprobe_trace_core
+> >>   */
+> >> @@ -43,6 +155,8 @@ struct trace_probe {
+> >>  		struct kretprobe	rp;
+> >>  	};
+> >>  	const char		*symbol;	/* symbol name */
+> >> +	unsigned int		nr_args;
+> >> +	struct fetch_func	args[TRACE_MAXARGS];
+> >>  };
+> >>
+> >>  static void kprobe_trace_record(unsigned long ip, struct trace_probe *tp,
+> >> @@ -152,17 +266,23 @@ static int create_trace_probe(int argc, char **argv)
+> >>  {
+> >>  	/*
+> >>  	 * Argument syntax:
+> >> -	 *  - Add kprobe: p SYMBOL[+OFFS|-OFFS]|ADDRESS
+> >> -	 *  - Add kretprobe: r SYMBOL[+0]
+> >> +	 *  - Add kprobe: p SYMBOL[+OFFS|-OFFS]|ADDRESS [FETCHARGS]
+> >> +	 *  - Add kretprobe: r SYMBOL[+0] [FETCHARGS]
+> >> +	 * Fetch args:
+> >> +	 *  aN	: fetch Nth of function argument. (N:1-)
+> >> +	 *  rN	: fetch Nth of register (pt_regs + N) (N:0-)
+> >> +	 *  sN	: fetch Nth of stack (N:0-)
+> >> +	 *  @ADDR	: fetch memory at ADDR (ADDR should be in kernel)
+> >>  	 */
+> >>  	struct trace_probe *tp;
+> >>  	struct kprobe *kp;
+> >>  	char *tmp;
+> >> -	int ret = 0;
+> >> +	int i, ret = 0;
+> >>  	int is_return = 0;
+> >>  	char *symbol = NULL;
+> >>  	long offset = 0;
+> >>  	void *addr = NULL;
+> >> +	unsigned long param;
+> >>
+> >>  	if (argc < 2)
+> >>  		return -EINVAL;
+> >> @@ -222,6 +342,63 @@ static int create_trace_probe(int argc, char **argv)
+> >>  	} else
+> >>  		kp->addr = addr;
+> >>
+> >> +	/* parse arguments */
+> >> +	argc -= 2; argv += 2; ret = 0;
+> >> +	for (i = 0; i < argc && i < TRACE_MAXARGS; i++) {
+> >> +		tmp = argv[i];
+> >> +		switch (*tmp) {
+> >> +		case 'a':	/* argument */
+> >> +			ret = strict_strtoul(tmp + 1, 10, &param);
+> >> +			if (ret || param > PARAM_MAX_ARGS)
+> >> +				ret = -EINVAL;
+> >> +			else {
+> >> +				tp->args[i].func = fetch_argument;
+> >> +				tp->args[i].data = (void *)param;
+> >> +			}
+> >> +			break;
+> >> +		case 'r':	/* register||retval||retip */
+> >> +			if (isdigit(tmp[1])) {
+> >> +				ret = strict_strtoul(tmp + 1, 10, &param);
+> >> +				if (ret || param > PARAM_MAX_REGS)
+> >> +					ret = -EINVAL;
+> >> +				else {
+> >> +					tp->args[i].func = fetch_register;
+> >> +					tp->args[i].data = (void *)param;
+> >> +				}
+> >> +			} else if (is_return && tmp[1] == 'v') {
+> >> +				tp->args[i].func = fetch_retvalue;
+> >> +				tp->args[i].data = NULL;
+> >> +			} else if (is_return && tmp[1] == 'p') {
+> >> +				tp->args[i].func = fetch_ip;
+> >> +				tp->args[i].data = NULL;
+> >> +			} else
+> >> +				ret = -EINVAL;
+> >> +			break;
+> >> +		case 's':	/* stack */
+> >> +			ret = strict_strtoul(tmp + 1, 10, &param);
+> >> +			if (ret || param > PARAM_MAX_STACK)
+> >> +				ret = -EINVAL;
+> >> +			else {
+> >> +				tp->args[i].func = fetch_stack;
+> >> +				tp->args[i].data = (void *)param;
+> >> +			}
+> >> +			break;
+> >> +		case '@':	/* memory */
+> >> +			ret = strict_strtoul(tmp + 1, 0, &param);
+> >> +			if (!ret) {
+> >> +				tp->args[i].func = fetch_memory;
+> >> +				tp->args[i].data = (void *)param;
+> >> +			}
+> >> +			break;
+> >> +		default:
+> >> +			/* TODO: support custom handler */
+> >> +			ret = -EINVAL;
+> >> +		}
+> >> +		if (ret)
+> >> +			goto error;
+> >> +	}
+> >> +	tp->nr_args = i;
+> >> +
+> >>  	ret = register_trace_probe(tp);
+> >>  	if (ret)
+> >>  		goto error;
+> >> @@ -266,18 +443,35 @@ static void probes_seq_stop(struct seq_file *m, void *v)
+> >>  static int probes_seq_show(struct seq_file *m, void *v)
+> >>  {
+> >>  	struct trace_probe *tp = v;
+> >> +	int i;
+> >>
+> >>  	if (tp == NULL)
+> >>  		return 0;
+> >>
+> >>  	if (tp->symbol)
+> >> -		seq_printf(m, "%c %s%+ld\n",
+> >> +		seq_printf(m, "%c %s%+ld",
+> >>  			probe_is_return(tp) ? 'r' : 'p',
+> >>  			probe_symbol(tp), probe_offset(tp));
+> >>  	else
+> >> -		seq_printf(m, "%c 0x%p\n",
+> >> +		seq_printf(m, "%c 0x%p",
+> >>  			probe_is_return(tp) ? 'r' : 'p',
+> >>  			probe_address(tp));
+> >> +
+> >> +	for (i = 0; i < tp->nr_args; i++) {
+> >> +		if (tp->args[i].func == fetch_argument)
+> >> +			seq_printf(m, " a%lu", (unsigned long)tp->args[i].data);
+> >> +		else if (tp->args[i].func == fetch_register)
+> >> +			seq_printf(m, " r%lu", (unsigned long)tp->args[i].data);
+> >> +		else if (tp->args[i].func == fetch_stack)
+> >> +			seq_printf(m, " s%lu", (unsigned long)tp->args[i].data);
+> >> +		else if (tp->args[i].func == fetch_memory)
+> >> +			seq_printf(m, " @0x%p", tp->args[i].data);
+> >> +		else if (tp->args[i].func == fetch_retvalue)
+> >> +			seq_printf(m, " rv");
+> >> +		else if (tp->args[i].func == fetch_ip)
+> >> +			seq_printf(m, " rp");
+> > 
+> > 
+> > So, with rp we are not giving the return address but the current instruction
+> > pointer?
+> 
+> Actually, when the return probe hits, the target function has already returned.
+> So, ideally the current ip on a return probe _is_ return address.
 
-This is already fixed in -next via linux1394-2.6.git.  (1394 git pull
-request follows later today.)
--- 
-Stefan Richter
--=====-==--= --== ==-==
-http://arcgraph.de/sr/
+
+Ah ok.
+
+ 
+> > Anyway both would be handy:
+> > 
+> > rp: current ip
+> > ra: return address
+> 
+> current ip can be fetched by 'r12' on i386 ('r16' on x86-64).
+> (hmm, we'd better support %ip, %ax, etc.)
+> 
+
+
+Yes, as an example, I'm currently unable to tell you
+which number is esi :)
+
+
+> >> +	}
+> >> +	seq_printf(m, "\n");
+> >>  	return 0;
+> >>  }
+> >>
+> >> @@ -368,13 +562,95 @@ static const struct file_operations kprobe_points_ops = {
+> >>  };
+> >>
+> >>  /* event recording functions */
+> >> -static void kprobe_trace_record(unsigned long ip, struct trace_probe *tp,
+> >> -				struct pt_regs *regs)
+> >> +/* TODO: rewrite based on trace_vprintk(maybe, trace_vprintk_begin/end?) */
+> >> +static void kprobe_trace_printk_0(unsigned long ip, struct trace_probe *tp,
+> >> +				  struct pt_regs *regs)
+> >>  {
+> >>  	__trace_bprintk(ip, "%s%s%+ld\n",
+> >>  			probe_is_return(tp) ? "<-" : "@",
+> >>  			probe_symbol(tp), probe_offset(tp));
+> >>  }
+> >> +static void kprobe_trace_printk_1(unsigned long ip, struct trace_probe *tp,
+> >> +				  struct pt_regs *regs)
+> >> +{
+> >> +	__trace_bprintk(ip, "%s%s%+ld 0x%lx\n",
+> >> +			probe_is_return(tp) ? "<-" : "@",
+> >> +			probe_symbol(tp), probe_offset(tp),
+> >> +			call_fetch(&tp->args[0], regs));
+> >> +}
+> >> +static void kprobe_trace_printk_2(unsigned long ip, struct trace_probe *tp,
+> >> +				  struct pt_regs *regs)
+> >> +{
+> >> +	__trace_bprintk(ip, "%s%s%+ld 0x%lx 0x%lx\n",
+> >> +			probe_is_return(tp) ? "<-" : "@", probe_symbol(tp),
+> >> +			probe_offset(tp),
+> >> +			call_fetch(&tp->args[0], regs),
+> >> +			call_fetch(&tp->args[1], regs));
+> >> +}
+> >> +static void kprobe_trace_printk_3(unsigned long ip, struct trace_probe *tp,
+> >> +				  struct pt_regs *regs)
+> >> +{
+> >> +	__trace_bprintk(ip, "%s%s%+ld 0x%lx 0x%lx 0x%lx\n",
+> >> +			probe_is_return(tp) ? "<-" : "@", probe_symbol(tp),
+> >> +			probe_offset(tp),
+> >> +			call_fetch(&tp->args[0], regs),
+> >> +			call_fetch(&tp->args[1], regs),
+> >> +			call_fetch(&tp->args[2], regs));
+> >> +}
+> >> +static void kprobe_trace_printk_4(unsigned long ip, struct trace_probe *tp,
+> >> +				  struct pt_regs *regs)
+> >> +{
+> >> +	__trace_bprintk(ip, "%s%s%+ld 0x%lx 0x%lx 0x%lx 0x%lx\n",
+> >> +			probe_is_return(tp) ? "<-" : "@", probe_symbol(tp),
+> >> +			probe_offset(tp),
+> >> +			call_fetch(&tp->args[0], regs),
+> >> +			call_fetch(&tp->args[1], regs),
+> >> +			call_fetch(&tp->args[2], regs),
+> >> +			call_fetch(&tp->args[3], regs));
+> >> +}
+> >> +static void kprobe_trace_printk_5(unsigned long ip, struct trace_probe *tp,
+> >> +				  struct pt_regs *regs)
+> >> +{
+> >> +	__trace_bprintk(ip, "%s%s%+ld 0x%lx 0x%lx 0x%lx 0x%lx 0x%lx\n",
+> >> +			probe_is_return(tp) ? "<-" : "@", probe_symbol(tp),
+> >> +			probe_offset(tp),
+> >> +			call_fetch(&tp->args[0], regs),
+> >> +			call_fetch(&tp->args[1], regs),
+> >> +			call_fetch(&tp->args[2], regs),
+> >> +			call_fetch(&tp->args[3], regs),
+> >> +			call_fetch(&tp->args[4], regs));
+> >> +}
+> >> +static void kprobe_trace_printk_6(unsigned long ip, struct trace_probe *tp,
+> >> +				  struct pt_regs *regs)
+> >> +{
+> >> +	__trace_bprintk(ip, "%s%s%+ld 0x%lx 0x%lx 0x%lx 0x%lx 0x%lx 0x%lx\n",
+> >> +			probe_is_return(tp) ? "<-" : "@", probe_symbol(tp),
+> >> +			probe_offset(tp),
+> >> +			call_fetch(&tp->args[0], regs),
+> >> +			call_fetch(&tp->args[1], regs),
+> >> +			call_fetch(&tp->args[2], regs),
+> >> +			call_fetch(&tp->args[3], regs),
+> >> +			call_fetch(&tp->args[4], regs),
+> >> +			call_fetch(&tp->args[5], regs));
+> >> +}
+> > 
+> > 
+> > 
+> > I think you really need to factorize these helpers in a generic one.
+> 
+> Hmm, I hope so. what I need is a variant of __trace_bprintk which
+> accepts an arrayed arguments ...
+
+
+Hmm, that wouldn't result in something proper. We would always
+need a u64 array container to make it generic.
+
+And a loop would reduce the performances (the tracing path must stay fast).
+I guess you can keep it as is for now.
+
+
+> 
+> >> +
+> >> +static void (*kprobe_trace_printk_n[TRACE_MAXARGS + 1])(unsigned long ip,
+> >> +							struct trace_probe *,
+> >> +							struct pt_regs *) = {
+> >> +	[0] = kprobe_trace_printk_0,
+> >> +	[1] = kprobe_trace_printk_1,
+> >> +	[2] = kprobe_trace_printk_2,
+> >> +	[3] = kprobe_trace_printk_3,
+> >> +	[4] = kprobe_trace_printk_4,
+> >> +	[5] = kprobe_trace_printk_5,
+> >> +	[6] = kprobe_trace_printk_6,
+> >> +};
+> >> +
+> >> +static void kprobe_trace_record(unsigned long ip, struct trace_probe *tp,
+> >> +				struct pt_regs *regs)
+> >> +{
+> >> +	kprobe_trace_printk_n[tp->nr_args](ip, tp, regs);
+> >> +}
+> > 
+> > 
+> > It could be a simple arg in a kprobe_trace_printk()
+> 
+> Hmm, would you mean that I'd better use switch-case?
+> 
+> Thanks!
+
+
+No it was about a generic wrapper but it looks too much difficult.
+
+Thanks.
+
+> 
+> > 
+> > 
+> > The rest looks nice!
+> > 
+> > Thanks.
+> > 
+> > 
+> 
+> -- 
+> Masami Hiramatsu
+> 
+> Software Engineer
+> Hitachi Computer Products (America) Inc.
+> Software Solutions Division
+> 
+> e-mail: mhiramat@redhat.com
+> 
+
