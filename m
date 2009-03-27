@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761977AbZC0UJY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761801AbZC0UI4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761977AbZC0UJY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Mar 2009 16:09:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761290AbZC0UGy
+	id S1761801AbZC0UI4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Mar 2009 16:08:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761322AbZC0UGx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Mar 2009 16:06:54 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:55342 "EHLO mx2.redhat.com"
+	Fri, 27 Mar 2009 16:06:53 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:55341 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755368AbZC0UGw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1761290AbZC0UGw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 27 Mar 2009 16:06:52 -0400
 From: Eric Paris <eparis@redhat.com>
-Subject: [PATCH -V2 05/13] fsnotify: parent event notification
+Subject: [PATCH -V2 10/13] fsnotify: allow groups to add private data to events
 To: linux-kernel@vger.kernel.org
 Cc: viro@zeniv.linux.org.uk, hch@infradead.org, alan@lxorguk.ukuu.org.uk,
        sfr@canb.auug.org.au, john@johnmccutchan.com, rlove@rlove.org,
        akpm@linux-foundation.org
-Date: Fri, 27 Mar 2009 16:05:32 -0400
-Message-ID: <20090327200531.32007.62129.stgit@paris.rdu.redhat.com>
+Date: Fri, 27 Mar 2009 16:06:00 -0400
+Message-ID: <20090327200600.32007.66180.stgit@paris.rdu.redhat.com>
 In-Reply-To: <20090327200508.32007.63278.stgit@paris.rdu.redhat.com>
 References: <20090327200508.32007.63278.stgit@paris.rdu.redhat.com>
 User-Agent: StGIT/0.14.3
@@ -27,306 +27,157 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-inotify and dnotify both use a similar parent notification mechanism.  We
-add a generic parent notification mechanism to fsnotify for both of these
-to use.  This new machanism also adds the dentry flag optimization which
-exists for inotify to dnotify.
+inotify needs per group information attached to events.  This patch allows
+groups to attach private information and implements a callback so that
+information can be freed when an event is being destroyed.
 
 Signed-off-by: Eric Paris <eparis@redhat.com>
 ---
 
- fs/notify/inode_mark.c           |   48 +++++++++++++++++++++++++++++++++
- include/linux/dcache.h           |    3 +-
- include/linux/fsnotify.h         |   56 ++++++++++++++++++++++++++++++++++++--
- include/linux/fsnotify_backend.h |   43 +++++++++++++++++++++++++++++
- 4 files changed, 146 insertions(+), 4 deletions(-)
+ fs/notify/dnotify/dnotify.c      |    1 +
+ fs/notify/notification.c         |   31 +++++++++++++++++++++++++++----
+ include/linux/fsnotify_backend.h |   15 ++++++++++++++-
+ 3 files changed, 42 insertions(+), 5 deletions(-)
 
-diff --git a/fs/notify/inode_mark.c b/fs/notify/inode_mark.c
-index 0271e65..e59a198 100644
---- a/fs/notify/inode_mark.c
-+++ b/fs/notify/inode_mark.c
-@@ -41,6 +41,48 @@ void fsnotify_put_mark(struct fsnotify_mark_entry *entry)
+diff --git a/fs/notify/dnotify/dnotify.c b/fs/notify/dnotify/dnotify.c
+index f69e0c4..26c07c5 100644
+--- a/fs/notify/dnotify/dnotify.c
++++ b/fs/notify/dnotify/dnotify.c
+@@ -152,6 +152,7 @@ static struct fsnotify_ops dnotify_fsnotify_ops = {
+ 	.should_send_event = dnotify_should_send_event,
+ 	.free_group_priv = NULL,
+ 	.freeing_mark = dnotify_freeing_mark,
++	.free_event_priv = NULL,
+ };
+ 
+ void dnotify_flush(struct file *filp, fl_owner_t id)
+diff --git a/fs/notify/notification.c b/fs/notify/notification.c
+index 420769e..2750703 100644
+--- a/fs/notify/notification.c
++++ b/fs/notify/notification.c
+@@ -71,6 +71,7 @@ void fsnotify_put_event(struct fsnotify_event *event)
+ 		if (event->data_type == FSNOTIFY_EVENT_PATH)
+ 			path_put(&event->path);
+ 
++		BUG_ON(!list_empty(&event->private_data_list));
+ 		kfree(event->file_name);
+ 		kmem_cache_free(event_kmem_cache, event);
+ 	}
+@@ -86,8 +87,23 @@ void fsnotify_destroy_event_holder(struct fsnotify_event_holder *holder)
+ 	kmem_cache_free(event_holder_kmem_cache, holder);
  }
  
- /*
-+ * Given an inode, first check if we care what happens to out children.  Inotify
-+ * and dnotify both tell their parents about events.  If we care about any event
-+ * on a child we run all of our children and set a dentry flag saying that the
-+ * parent cares.  Thus when an event happens on a child it can quickly tell if
-+ * if there is a need to find a parent and send the event to the parent.
-+ */
-+static inline void fsnotify_update_dentry_child_flags(struct inode *inode)
++struct fsnotify_event_private_data *fsnotify_get_priv_from_event(struct fsnotify_group *group, struct fsnotify_event *event)
 +{
-+	struct dentry *alias;
-+	int watched;
++	struct fsnotify_event_private_data *lpriv;
++	struct fsnotify_event_private_data *priv = NULL;
 +
-+	if (!S_ISDIR(inode->i_mode))
-+		return;
-+
-+	/* determine if the children should tell inode about their events */
-+	watched = fsnotify_inode_watches_children(inode);
-+
-+	spin_lock(&dcache_lock);
-+	/* run all of the dentries associated with this inode.  Since this is a
-+	 * directory, there damn well better only be one item on this list */
-+	list_for_each_entry(alias, &inode->i_dentry, d_alias) {
-+		struct dentry *child;
-+
-+		/* run all of the children of the original inode and fix their
-+		 * d_flags to indicate parental interest (their parent is the
-+		 * original inode) */
-+		list_for_each_entry(child, &alias->d_subdirs, d_u.d_child) {
-+			if (!child->d_inode)
-+				continue;
-+
-+			spin_lock(&child->d_lock);
-+			if (watched)
-+				child->d_flags |= DCACHE_FSNOTIFY_PARENT_WATCHED;
-+			else
-+				child->d_flags &= ~DCACHE_FSNOTIFY_PARENT_WATCHED;
-+			spin_unlock(&child->d_lock);
++	list_for_each_entry(lpriv, &event->private_data_list, event_list) {
++		if (lpriv->group == group) {
++			priv = lpriv;
++			break;
 +		}
 +	}
-+	spin_unlock(&dcache_lock);
++	return priv;
 +}
 +
-+/*
-  * recalculate the mask of events relevant to a given inode locked.
-  */
- static void fsnotify_recalc_inode_mask_locked(struct inode *inode)
-@@ -65,6 +107,8 @@ void fsnotify_recalc_inode_mask(struct inode *inode)
- 	spin_lock(&inode->i_lock);
- 	fsnotify_recalc_inode_mask_locked(inode);
- 	spin_unlock(&inode->i_lock);
-+
-+	fsnotify_update_dentry_child_flags(inode);
- }
- 
  /*
-@@ -114,6 +158,8 @@ void fsnotify_destroy_mark_by_entry(struct fsnotify_mark_entry *entry)
- 
- 	group->ops->freeing_mark(entry, group);
- 
-+	fsnotify_update_dentry_child_flags(inode);
-+
- 	if (atomic_dec_and_test(&group->num_marks))
- 		fsnotify_final_destroy_group(group);
- }
-@@ -223,6 +269,8 @@ int fsnotify_add_mark(struct fsnotify_mark_entry *entry, struct fsnotify_group *
- 	if (lentry) {
- 		ret = -EEXIST;
- 		fsnotify_put_mark(lentry);
-+	} else {
-+		fsnotify_update_dentry_child_flags(inode);
- 	}
- 
- 	return ret;
-diff --git a/include/linux/dcache.h b/include/linux/dcache.h
-index c66d224..2b935f2 100644
---- a/include/linux/dcache.h
-+++ b/include/linux/dcache.h
-@@ -180,7 +180,8 @@ d_iput:		no		no		no       yes
- #define DCACHE_REFERENCED	0x0008  /* Recently used, don't discard. */
- #define DCACHE_UNHASHED		0x0010	
- 
--#define DCACHE_INOTIFY_PARENT_WATCHED	0x0020 /* Parent inode is watched */
-+#define DCACHE_INOTIFY_PARENT_WATCHED	0x0020 /* Parent inode is watched by inotify */
-+#define DCACHE_FSNOTIFY_PARENT_WATCHED	0x0040 /* Parent inode is watched by some fsnotify listener */
- 
- #define DCACHE_COOKIE		0x0040	/* For use by dcookie subsystem */
- 
-diff --git a/include/linux/fsnotify.h b/include/linux/fsnotify.h
-index 4e04ab2..7b45f29 100644
---- a/include/linux/fsnotify.h
-+++ b/include/linux/fsnotify.h
-@@ -20,10 +20,43 @@
-  * fsnotify_d_instantiate - instantiate a dentry for inode
-  * Called with dcache_lock held.
+- * check if 2 events contain the same information.
++ * check if 2 events contain the same information.  we do not compare private data
++ * but at this moment that isn't a problem.
   */
--static inline void fsnotify_d_instantiate(struct dentry *entry,
--						struct inode *inode)
-+static inline void fsnotify_d_instantiate(struct dentry *dentry, struct inode *inode)
+ static inline int event_compare(struct fsnotify_event *old, struct fsnotify_event *new)
  {
--	inotify_d_instantiate(entry, inode);
-+	__fsnotify_d_instantiate(dentry, inode);
-+
-+	/* call the legacy inotify shit */
-+	inotify_d_instantiate(dentry, inode);
-+}
-+
-+/* Notify this dentry's parent about a child's events. */
-+static inline void fsnotify_parent(struct dentry *dentry, __u32 mask)
-+{
-+	struct dentry *parent;
-+	struct inode *p_inode;
-+	char send = 0;
-+
-+	if (!(dentry->d_flags | DCACHE_FSNOTIFY_PARENT_WATCHED))
-+		return;
-+
-+	/* we are notifying a parent so come up with the new mask which
-+	 * specifies these are events which came from a child. */
-+	mask |= FS_EVENT_ON_CHILD;
-+
-+	spin_lock(&dentry->d_lock);
-+	parent = dentry->d_parent;
-+	p_inode = parent->d_inode;
-+
-+	if (p_inode->i_fsnotify_mask & mask) {
-+		dget(parent);
-+		send = 1;
-+	}
-+
-+	spin_unlock(&dentry->d_lock);
-+
-+	if (send) {
-+		fsnotify(p_inode, mask, dentry->d_inode, FSNOTIFY_EVENT_INODE);
-+		dput(parent);
-+	}
+@@ -111,10 +127,11 @@ static inline int event_compare(struct fsnotify_event *old, struct fsnotify_even
  }
  
  /*
-@@ -32,6 +65,14 @@ static inline void fsnotify_d_instantiate(struct dentry *entry,
+- * Add an event to the group notification queue.  The group can later pull this
+- * event off the queue to deal with.
++ * Add events to the generic group notification queue.  We test if the event
++ * is the same as the last event in the queue, and if so, we do not add it.
++ * Events added to this queue must be removed with fsnotify_remove_notif_event.
   */
- static inline void fsnotify_d_move(struct dentry *entry)
+-int fsnotify_add_notif_event(struct fsnotify_group *group, struct fsnotify_event *event)
++int fsnotify_add_notif_event(struct fsnotify_group *group, struct fsnotify_event *event, struct fsnotify_event_private_data *priv)
  {
-+	struct dentry *parent;
-+
-+	parent = entry->d_parent;
-+	if (fsnotify_inode_watches_children(parent->d_inode))
-+		entry->d_flags |= DCACHE_FSNOTIFY_PARENT_WATCHED;
-+	else
-+		entry->d_flags &= ~DCACHE_FSNOTIFY_PARENT_WATCHED;
-+
- 	inotify_d_move(entry);
- }
+ 	struct fsnotify_event_holder *holder = NULL;
+ 	struct list_head *list = &group->notification_list;
+@@ -171,6 +188,8 @@ alloc_holder:
  
-@@ -113,6 +154,8 @@ static inline void fsnotify_nameremove(struct dentry *dentry, int isdir)
- 		isdir = FS_IN_ISDIR;
- 	dnotify_parent(dentry, DN_DELETE);
- 	inotify_dentry_parent_queue_event(dentry, IN_DELETE|isdir, 0, dentry->d_name.name);
-+
-+	fsnotify_parent(dentry, FS_DELETE|isdir);
- }
+ 	fsnotify_get_event(event);
+ 	list_add_tail(&holder->event_list, list);
++	if (priv)
++		list_add_tail(&priv->event_list, &event->private_data_list);
+ 	spin_unlock(&event->lock);
+ 	mutex_unlock(&group->notification_mutex);
  
- /*
-@@ -182,6 +225,7 @@ static inline void fsnotify_access(struct dentry *dentry)
- 	inotify_dentry_parent_queue_event(dentry, mask, 0, dentry->d_name.name);
- 	inotify_inode_queue_event(inode, mask, 0, NULL, NULL);
- 
-+	fsnotify_parent(dentry, mask);
- 	fsnotify(inode, mask, inode, FSNOTIFY_EVENT_INODE);
- }
- 
-@@ -200,6 +244,7 @@ static inline void fsnotify_modify(struct dentry *dentry)
- 	inotify_dentry_parent_queue_event(dentry, mask, 0, dentry->d_name.name);
- 	inotify_inode_queue_event(inode, mask, 0, NULL, NULL);
- 
-+	fsnotify_parent(dentry, mask);
- 	fsnotify(inode, mask, inode, FSNOTIFY_EVENT_INODE);
- }
- 
-@@ -217,6 +262,7 @@ static inline void fsnotify_open(struct dentry *dentry)
- 	inotify_dentry_parent_queue_event(dentry, mask, 0, dentry->d_name.name);
- 	inotify_inode_queue_event(inode, mask, 0, NULL, NULL);
- 
-+	fsnotify_parent(dentry, mask);
- 	fsnotify(inode, mask, inode, FSNOTIFY_EVENT_INODE);
- }
- 
-@@ -237,6 +283,7 @@ static inline void fsnotify_close(struct file *file)
- 	inotify_dentry_parent_queue_event(dentry, mask, 0, name);
- 	inotify_inode_queue_event(inode, mask, 0, NULL, NULL);
- 
-+	fsnotify_parent(dentry, mask);
- 	fsnotify(inode, mask, file, FSNOTIFY_EVENT_FILE);
- }
- 
-@@ -254,6 +301,7 @@ static inline void fsnotify_xattr(struct dentry *dentry)
- 	inotify_dentry_parent_queue_event(dentry, mask, 0, dentry->d_name.name);
- 	inotify_inode_queue_event(inode, mask, 0, NULL, NULL);
- 
-+	fsnotify_parent(dentry, mask);
- 	fsnotify(inode, mask, inode, FSNOTIFY_EVENT_INODE);
- }
- 
-@@ -304,6 +352,8 @@ static inline void fsnotify_change(struct dentry *dentry, unsigned int ia_valid)
- 		inotify_inode_queue_event(inode, in_mask, 0, NULL, NULL);
- 		inotify_dentry_parent_queue_event(dentry, in_mask, 0,
- 						  dentry->d_name.name);
-+
-+		fsnotify_parent(dentry, in_mask);
- 		fsnotify(inode, in_mask, inode, FSNOTIFY_EVENT_INODE);
+@@ -235,6 +254,8 @@ void fsnotify_flush_notif(struct fsnotify_group *group)
+ 	mutex_lock(&group->notification_mutex);
+ 	while (fsnotify_check_notif_queue(group)) {
+ 		event = fsnotify_remove_notif_event(group);
++		if (group->ops->free_event_priv)
++			group->ops->free_event_priv(group, event);
+ 		fsnotify_put_event(event);
  	}
- }
+ 	mutex_unlock(&group->notification_mutex);
+@@ -253,6 +274,8 @@ static void initialize_event(struct fsnotify_event *event)
+ 	event->inode = NULL;
+ 	event->data_type = FSNOTIFY_EVENT_NONE;
+ 
++	INIT_LIST_HEAD(&event->private_data_list);
++
+ 	event->to_tell = NULL;
+ 
+ 	event->file_name = NULL;
 diff --git a/include/linux/fsnotify_backend.h b/include/linux/fsnotify_backend.h
-index fc71e88..0d380bc 100644
+index f1b61b7..2da9790 100644
 --- a/include/linux/fsnotify_backend.h
 +++ b/include/linux/fsnotify_backend.h
-@@ -45,8 +45,17 @@
- #define FS_DN_RENAME		0x10000000ul	/* file renamed */
- #define FS_DN_MULTISHOT		0x20000000ul	/* dnotify multishot */
+@@ -79,6 +79,7 @@ struct fsnotify_ops {
+ 	int (*handle_event)(struct fsnotify_group *group, struct fsnotify_event *event);
+ 	void (*free_group_priv)(struct fsnotify_group *group);
+ 	void (*freeing_mark)(struct fsnotify_mark_entry *entry, struct fsnotify_group *group);
++	void (*free_event_priv)(struct fsnotify_group *group, struct fsnotify_event *event);
+ };
  
-+/* this inode cares about things that happen to it's children.  Always set for
-+ * dnotify and inotify.  never set for fanotify */
- #define FS_EVENT_ON_CHILD	0x08000000ul
+ /*
+@@ -133,6 +134,15 @@ struct fsnotify_event_holder {
+ };
  
-+/* this is a list of all events that may get sent to a parernt based on fs event
-+ * happening to inodes inside that directory */
-+#define FS_EVENTS_POSS_ON_CHILD   (FS_ACCESS | FS_MODIFY | FS_ATTRIB |\
-+				   FS_CLOSE_WRITE | FS_CLOSE_NOWRITE | FS_OPEN |\
-+				   FS_MOVED_FROM | FS_MOVED_TO | FS_CREATE |\
-+				   FS_DELETE)
-+
- struct fsnotify_group;
- struct fsnotify_event;
- struct fsnotify_mark_entry;
-@@ -154,6 +163,37 @@ struct fsnotify_mark_entry {
- extern void fsnotify(struct inode *to_tell, __u32 mask, void *data, int data_is);
- extern void __fsnotify_inode_delete(struct inode *inode);
- 
-+static inline int fsnotify_inode_watches_children(struct inode *inode)
-+{
-+	/* FS_EVENT_ON_CHILD is set if the inode may care */
-+	if (!(inode->i_fsnotify_mask & FS_EVENT_ON_CHILD))
-+		return 0;
-+	/* this inode might care about child events, does it care about the
-+	 * specific set of events that can happen on a child? */
-+	return inode->i_fsnotify_mask & FS_EVENTS_POSS_ON_CHILD;
-+}
+ /*
++ * Inotify needs to tack data onto an event.  This struct lets us later find the
++ * correct private data of the correct group.
++ */
++struct fsnotify_event_private_data {
++	struct fsnotify_group *group;
++	struct list_head event_list;
++};
 +
 +/*
-+ * fsnotify_d_instantiate - instantiate a dentry for inode
-+ * Called with dcache_lock held.
-+ */
-+static inline void __fsnotify_d_instantiate(struct dentry *dentry, struct inode *inode)
-+{
-+	struct dentry *parent;
-+	struct inode *p_inode;
+  * all of the information about the original object we want to now send to
+  * a group.  If you want to carry more info from the accessing task to the
+  * listener this structure is where you need to be adding fields.
+@@ -166,6 +176,8 @@ struct fsnotify_event {
+ 	u32 sync_cookie;	/* used to corrolate events, namely inotify mv events */
+ 	char *file_name;
+ 	size_t name_len;
 +
-+	if (!inode)
-+		return;
-+
-+	spin_lock(&dentry->d_lock);
-+	parent = dentry->d_parent;
-+	p_inode = parent->d_inode;
-+
-+	if (fsnotify_inode_watches_children(p_inode))
-+		dentry->d_flags |= DCACHE_FSNOTIFY_PARENT_WATCHED;
-+	spin_unlock(&dentry->d_lock);
-+}
-+
- /* called from fsnotify interfaces, such as fanotify or dnotify */
- extern void fsnotify_recalc_global_mask(void);
- extern void fsnotify_recalc_group_mask(struct fsnotify_group *group);
-@@ -186,6 +226,9 @@ static inline void fsnotify(struct inode *to_tell, __u32 mask, void *data, int d
- static inline void __fsnotify_inode_delete(struct inode *inode)
- {}
++	struct list_head private_data_list;	/* groups can store private data here */
+ };
  
-+static inline void __fsnotify_d_instantiate(struct dentry *dentry, struct inode *inode)
-+{}
-+
- #endif	/* CONFIG_FSNOTIFY */
+ /*
+@@ -241,10 +253,11 @@ extern void fsnotify_put_group(struct fsnotify_group *group);
+ extern void fsnotify_get_event(struct fsnotify_event *event);
+ extern void fsnotify_put_event(struct fsnotify_event *event);
  
- #endif	/* __KERNEL __ */
+-extern int fsnotify_add_notif_event(struct fsnotify_group *group, struct fsnotify_event *event);
++extern int fsnotify_add_notif_event(struct fsnotify_group *group, struct fsnotify_event *event, struct fsnotify_event_private_data *priv);
+ extern int fsnotify_check_notif_queue(struct fsnotify_group *group);
+ extern struct fsnotify_event *fsnotify_peek_notif_event(struct fsnotify_group *group);
+ extern struct fsnotify_event *fsnotify_remove_notif_event(struct fsnotify_group *group);
++extern struct fsnotify_event_private_data *fsnotify_get_priv_from_event(struct fsnotify_group *group, struct fsnotify_event *event);
+ 
+ /* functions used to manipulate the marks attached to inodes */
+ extern void fsnotify_recalc_inode_mask(struct inode *inode);
 
