@@ -1,99 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933679AbZC0AuQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762952AbZC0AvI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933679AbZC0AuQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Mar 2009 20:50:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933575AbZC0Atw
+	id S1762952AbZC0AvI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Mar 2009 20:51:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762995AbZC0AuJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Mar 2009 20:49:52 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:59080 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1762220AbZC0Atv (ORCPT
+	Thu, 26 Mar 2009 20:50:09 -0400
+Received: from outbound-mail-118.bluehost.com ([69.89.22.18]:37933 "HELO
+	outbound-mail-118.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S933676AbZC0AuG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Mar 2009 20:49:51 -0400
-Date: Thu, 26 Mar 2009 17:47:04 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Theodore Tso <tytso@mit.edu>, David Rees <drees76@gmail.com>,
-       Jesper Krogh <jesper@krogh.cc>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.29
-Message-Id: <20090326174704.cd36bf7b.akpm@linux-foundation.org>
-In-Reply-To: <alpine.LFD.2.00.0903261723250.3994@localhost.localdomain>
-References: <alpine.LFD.2.00.0903231617550.3032@localhost.localdomain>
-	<49C87B87.4020108@krogh.cc>
-	<72dbd3150903232346g5af126d7sb5ad4949a7b5041f@mail.gmail.com>
-	<49C88C80.5010803@krogh.cc>
-	<72dbd3150903241200v38720ca0x392c381f295bdea@mail.gmail.com>
-	<20090325183011.GN32307@mit.edu>
-	<alpine.LFD.2.00.0903251139260.3032@localhost.localdomain>
-	<20090325220530.GR32307@mit.edu>
-	<alpine.LFD.2.00.0903251622420.3032@localhost.localdomain>
-	<20090326171148.9bf8f1ec.akpm@linux-foundation.org>
-	<alpine.LFD.2.00.0903261723250.3994@localhost.localdomain>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+	Thu, 26 Mar 2009 20:50:06 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
+	b=cVR+8D+t2t5R4rYFRFNuONpJATpQRSGekzm/tTRjOr5cxnWrLz/Lg+81emCzRD/4cnAPyoA/pi18UjXj3HhNDxzB6TfsZTm9Kw295YKODzvBuQNniICp8ug08s2Etnto;
+Date: Thu, 26 Mar 2009 17:50:02 -0700
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Eric Anholt <eric@anholt.net>
+Cc: linux-kernel@vger.kernel.org, dri-devel@lists.sourceforge.net,
+       Eric Anholt <eric@anholt.net>
+Subject: Re: [PATCH 3/6] drm/i915: Fix lock order reversal in shmem pwrite
+ path.
+Message-ID: <20090326175002.2011bc75@hobbes>
+In-Reply-To: <1238017510-26784-4-git-send-email-eric@anholt.net>
+References: <1238017510-26784-1-git-send-email-eric@anholt.net>
+	<1238017510-26784-2-git-send-email-eric@anholt.net>
+	<1238017510-26784-3-git-send-email-eric@anholt.net>
+	<1238017510-26784-4-git-send-email-eric@anholt.net>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 26 Mar 2009 17:27:43 -0700 (PDT) Linus Torvalds <torvalds@linux-foundation.org> wrote:
+On Wed, 25 Mar 2009 14:45:07 -0700
+Eric Anholt <eric@anholt.net> wrote:
 
+> Like the GTT pwrite path fix, this uses an optimistic path and a
+> fallback to get_user_pages.  Note that this means we have to stop
+> using vfs_write and roll it ourselves.
 > 
-> 
-> On Thu, 26 Mar 2009, Andrew Morton wrote:
-> > 
-> > userspace can do it quite easily.  Run a self-tuning script after
-> > installation and when the disk hardware changes significantly.
-> 
-> Uhhuh.
-> 
-> "user space can do it".
-> 
-> That's the global cop-out.
+> Signed-off-by: Eric Anholt <eric@anholt.net>
 
-userspace can get closer than the kernel can.
+Ashame that it's so similar but can't share more code...
 
-> The fact is, user-space isn't doing it, and never has done anything even 
-> _remotely_ like it. 
-> 
-> In fact, I claim that it's impossible to do. If you give me a number for 
-> the throughput of your harddisk, I will laugh in your face and call you a 
-> moron.
->
-> Why? Because no such number exists. It depends on the access patterns.
+Reviewed-by: Jesse Barnes <jbarnes@virtuousgeek.org>
 
-Those access patterns are observable!
-
-> If 
-> you write one large file, the number will be very different (and not just 
-> by a few percent) from the numbers of you writing thousands of small 
-> files, or re-writing a large database in random order.
-> 
-> So no. User space CAN NOT DO IT, and the fact that you even claim 
-> something like that shows a distinct lack of thought.
-
-userspace can get closer.  Even if it's asking the user "what sort of
-applications will this machine be running" and then use a set of canned
-tunables based on that.
-
-Better would be to observe system behaviour, perhaps in real time and
-make adjustments.
-
-> > Maybe we should set the tunables to 99.9% to make it suck enough to
-> > motivate someone.
-> 
-> The only times tunables have worked for us is when they auto-tune. 
-> 
-> IOW, we don't have "use 35% of memory for buffer cache" tunables, we just 
-> dynamically auto-tune memory use. And no, we don't expect user space to 
-> run some "tuning program for their load" either.
-> 
-
-This particular case is exceptional - it's just too hard for the kernel
-to be able to predict the future for this one.
-
-It wouldn't be terribly hard for a userspace daemon to produce better
-results than we can achieve in-kernel.  That might of course require
-additional kernel work to support it well.
+-- 
+Jesse Barnes, Intel Open Source Technology Center
