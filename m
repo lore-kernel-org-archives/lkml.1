@@ -1,63 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760081AbZC0VL4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761515AbZC0VM7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760081AbZC0VL4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Mar 2009 17:11:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757958AbZC0VLo
+	id S1761515AbZC0VM7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Mar 2009 17:12:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758141AbZC0VMr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Mar 2009 17:11:44 -0400
-Received: from gw.goop.org ([64.81.55.164]:44858 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757112AbZC0VLn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Mar 2009 17:11:43 -0400
-Message-ID: <49CD4109.2070505@goop.org>
-Date: Fri, 27 Mar 2009 14:11:37 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Fri, 27 Mar 2009 17:12:47 -0400
+Received: from mail12.sea5.speakeasy.net ([69.17.117.14]:45692 "EHLO
+	mail12.sea5.speakeasy.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757958AbZC0VMq convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Mar 2009 17:12:46 -0400
+Date: Fri, 27 Mar 2009 14:12:44 -0700 (PDT)
+From: Trent Piepho <xyzzy@speakeasy.org>
+X-X-Sender: xyzzy@shell2.speakeasy.net
+To: Hans Verkuil <hverkuil@xs4all.nl>
+cc: Mauro Carvalho Chehab <mchehab@infradead.org>,
+       =?iso-8859-1?q?N=E9meth_M=E1rton?= <nm127@freemail.hu>,
+       linux-media@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] v4l2: fill reserved fields of VIDIOC_ENUMAUDIO also
+In-Reply-To: <200903272134.07576.hverkuil@xs4all.nl>
+Message-ID: <Pine.LNX.4.58.0903271406080.28292@shell2.speakeasy.net>
+References: <49CA611B.5050902@freemail.hu> <20090327131729.0842bdec@pedra.chehab.org>
+ <Pine.LNX.4.58.0903271241360.28292@shell2.speakeasy.net>
+ <200903272134.07576.hverkuil@xs4all.nl>
 MIME-Version: 1.0
-To: Theodore Tso <tytso@mit.edu>, Matthew Garrett <mjg59@srcf.ucam.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Rees <drees76@gmail.com>, Jesper Krogh <jesper@krogh.cc>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.29
-References: <alpine.LFD.2.00.0903251622420.3032@localhost.localdomain> <20090326171148.9bf8f1ec.akpm@linux-foundation.org> <alpine.LFD.2.00.0903261723250.3994@localhost.localdomain> <20090326174704.cd36bf7b.akpm@linux-foundation.org> <alpine.LFD.2.00.0903261752110.3994@localhost.localdomain> <20090327032301.GN6239@mit.edu> <20090327034705.GA16888@srcf.ucam.org> <20090327051338.GP6239@mit.edu> <20090327055750.GA18065@srcf.ucam.org> <20090327062114.GA18290@srcf.ucam.org> <20090327112438.GQ6239@mit.edu>
-In-Reply-To: <20090327112438.GQ6239@mit.edu>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=X-UNKNOWN
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Theodore Tso wrote:
-> When I was growing up we were trained to *always* check error returns
-> from *all* system calls, and to *always* fsync() if it was critical
-> that the data survive a crash.  That was what competent Unix
-> programmers did.  And if you are always checking error returns, the
-> difference in the Lines of Code between doing it right and doing
-> really wasn't that big --- and again, back then fsync() wan't
-> expensive.  Making fsync expensive was ext3's data=ordered mode's
-> fault.
+On Fri, 27 Mar 2009, Hans Verkuil wrote:
+> On Friday 27 March 2009 20:45:40 Trent Piepho wrote:
+> > On Fri, 27 Mar 2009, Mauro Carvalho Chehab wrote:
+> > > On Wed, 25 Mar 2009 17:51:39 +0100
+> > >
+> > > Németh Márton <nm127@freemail.hu> wrote:
+> > > > From: Márton Németh <nm127@freemail.hu>
+> > > >
+> > > > When enumerating audio inputs with VIDIOC_ENUMAUDIO the gspca_sunplus
+> > > > driver does not fill the reserved fields of the struct v4l2_audio
+> > > > with zeros as required by V4L2 API revision 0.24 [1]. Add the missing
+> > > > initializations to the V4L2 framework.
+> > > >
+> > > > The patch was tested with v4l-test 0.10 [2] with gspca_sunplus driver
+> > > > and with Trust 610 LCD POWERC@M ZOOM webcam.
+> > >
+> > > It didn't apply against the development tree. Anyway, a recent patch
+> > > removed the need of memset there. the memory fill with zero now happens
+> > > at the same code we copy the structure values.
+> >
+> > That code is in video_ioctl2, which gspca doesn't use.
+>
+> Yes, gspca does use video_ioctl2. You're probably confused with uvcvideo,
+> which doesn't use it.
 
-This is a fairly narrow view of correct and possible.  How can you make 
-"cat" fsync? grep? sort?  How do they know they're not dealing with 
-critical data?  Apps in general don't know, because "criticality" is a 
-property of the data itself and how its used, not the tools operating on it.
-
-My point isn't that "there should be a way of doing fsync from a shell 
-script" (which is probably true anyway), but that authors can't 
-generally anticipate when their program is going to be dealing with 
-something important.  The conservative approach would be to fsync all 
-data on every close, but that's almost certainly the wrong thing for 
-everyone.
-
-If the filesystem has reasonably strong inherent data-preserving 
-properties, then that's much better than scattering fsync everywhere.
-
-fsync obviously makes sense in specific applications; it makes sense to 
-fsync when you're guaranteeing that a database commit hits stable 
-storage, etc.  But generic tools can't reasonably perform fsyncs, and 
-its not reasonable to say that "important data is always handled by 
-special important data tools".
-
-    J
+You're right, I was thinking about Németh's earlier patches for the same
+things in uvcvideo.  This patch wasn't for gspca anyway, it was for the
+v4l2 core, and Mauro's right it's not necessary as my patch series fixed
+all these problems.
