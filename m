@@ -1,65 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759323AbZC0APB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762856AbZC0AQS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759323AbZC0APB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Mar 2009 20:15:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762655AbZC0AOi
+	id S1762856AbZC0AQS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Mar 2009 20:16:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762790AbZC0APk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Mar 2009 20:14:38 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:38154 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1761711AbZC0AOh (ORCPT
+	Thu, 26 Mar 2009 20:15:40 -0400
+Received: from cpsmtpm-eml104.kpnxchange.com ([195.121.3.8]:49319 "EHLO
+	CPSMTPM-EML104.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1762736AbZC0APg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Mar 2009 20:14:37 -0400
-Date: Thu, 26 Mar 2009 17:11:48 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
+	Thu, 26 Mar 2009 20:15:36 -0400
+From: Frans Pop <elendil@planet.nl>
 To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Theodore Tso <tytso@mit.edu>, David Rees <drees76@gmail.com>,
-       Jesper Krogh <jesper@krogh.cc>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.29
-Message-Id: <20090326171148.9bf8f1ec.akpm@linux-foundation.org>
-In-Reply-To: <alpine.LFD.2.00.0903251622420.3032@localhost.localdomain>
-References: <alpine.LFD.2.00.0903231617550.3032@localhost.localdomain>
-	<49C87B87.4020108@krogh.cc>
-	<72dbd3150903232346g5af126d7sb5ad4949a7b5041f@mail.gmail.com>
-	<49C88C80.5010803@krogh.cc>
-	<72dbd3150903241200v38720ca0x392c381f295bdea@mail.gmail.com>
-	<20090325183011.GN32307@mit.edu>
-	<alpine.LFD.2.00.0903251139260.3032@localhost.localdomain>
-	<20090325220530.GR32307@mit.edu>
-	<alpine.LFD.2.00.0903251622420.3032@localhost.localdomain>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Subject: Re: [PATCH 2/2] Make relatime default
+Date: Fri, 27 Mar 2009 01:15:27 +0100
+User-Agent: KMail/1.9.9
+Cc: alan@lxorguk.ukuu.org.uk, mjg@redhat.com, tytso@mit.edu, mingo@elte.hu,
+       jack@suse.cz, akpm@linux-foundation.org, arjan@infradead.org,
+       a.p.zijlstra@chello.nl, npiggin@suse.de, jens.axboe@oracle.com,
+       drees76@gmail.com, jesper@krogh.cc, linux-kernel@vger.kernel.org,
+       oleg@redhat.com, roland@redhat.com
+References: <alpine.LFD.2.00.0903251613300.3032@localhost.localdomain> <20090325235041.GA11024@duck.suse.cz> <20090326090630.GA9369@elte.hu> <20090326113705.GV32307@mit.edu> <20090326140312.GB14822@elte.hu> <20090326144707.GA6239@mit.edu> <alpine.LFD.2.00.0903260914440.3032@localhost.localdomain> <20090326170714.GF6239@mit.edu> <alpine.LFD.2.00.0903261015050.3032@localhost.localdomain> <20090326174956.GB7198@srcf.ucam.org> <20090326175314.GC7198@srcf.ucam.org> <20090326184838.26166549@lxorguk.ukuu.org.uk> <20090326184838.26166549@lxorguk.ukuu.org.uk> <alpine.LFD.2.00.0903261525560.3032@localhost.localdomain>
+In-reply-To: <alpine.LFD.2.00.0903261525560.3032@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200903270115.32071.elendil@planet.nl>
+X-OriginalArrivalTime: 27 Mar 2009 00:15:32.0601 (UTC) FILETIME=[24A39E90:01C9AE71]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 25 Mar 2009 16:23:08 -0700 (PDT) Linus Torvalds <torvalds@linux-foundation.org> wrote:
+Linus Torvalds wrote:
+> If the distro's had done this right in the year+ that this has been in,
+> I might consider your NAK to have some weight.
+> 
+> As it is, we know that didn't happen, and we've had three different
+> people from different distributions say that they wanted to use relatime
+> anyway, so it's now the default in my git tree.
+> 
+> If you want to live in some dark ages, you can do so with the
+> "strictatime" thing.
 
-> 
-> 
-> On Wed, 25 Mar 2009, Theodore Tso wrote:
-> > > 
-> > > The problem being that unlike the ratio, there's no sane default value 
-> > > that you can at least argue is not _entirely_ pointless.
-> > 
-> > Well, if the maximum time that someone wants to wait for an fsync() to
-> > return is one second, and the RAID array can write 100MB/sec
-> 
-> How are you going to tell the kernel that the RAID array can write 
-> 100MB/s?
-> 
-> The kernel has no idea.
-> 
+I obviously welcome the inclusion of the first patch and I'm neutral about 
+the second one, but I'm not at all sure that making relatime the default 
+(yet) is the right thing, especially as util-linux' mount command does 
+not yet even support that "strictatime" thing. Shouldn't that at least 
+happen first (and have been supported in distro's stable releases for 
+some time)?
 
-userspace can do it quite easily.  Run a self-tuning script after
-installation and when the disk hardware changes significantly.
-
-It is very disappointing that nobody appears to have attempted to do
-_any_ sensible tuning of these controls in all this time - we just keep
-thrashing around trying to pick better magic numbers in the base kernel. 
-
-Maybe we should set the tunables to 99.9% to make it suck enough to
-motivate someone.
+I guess users and distros can still elect not to set it as default, but it 
+still seems a bit like going from one extreme to another.
