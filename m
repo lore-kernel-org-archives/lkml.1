@@ -1,182 +1,239 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758623AbZC0FIb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761223AbZC0FIs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758623AbZC0FIb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Mar 2009 01:08:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752101AbZC0FIW
+	id S1761223AbZC0FIs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Mar 2009 01:08:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758771AbZC0FIZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Mar 2009 01:08:22 -0400
-Received: from fmailhost02.isp.att.net ([204.127.217.102]:46349 "EHLO
-	fmailhost02.isp.att.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751895AbZC0FIU (ORCPT
+	Fri, 27 Mar 2009 01:08:25 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:40687 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757647AbZC0FIY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Mar 2009 01:08:20 -0400
-X-Originating-IP: [69.76.240.125]
-Message-ID: <49CC5F15.4020404@lwfinger.net>
-Date: Fri, 27 Mar 2009 00:07:33 -0500
-From: Larry Finger <Larry.Finger@lwfinger.net>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
-MIME-Version: 1.0
-To: LKML <linux-kernel@vger.kernel.org>
-Subject: Possible IRQ lock inversion from 2.6.29-Linus-03321-gbe0ea69 (2.6.29-git)
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 27 Mar 2009 01:08:24 -0400
+Date: Fri, 27 Mar 2009 14:06:53 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "kosaki.motohiro@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>
+Subject: [RFC][PATCH 4/8] memcg soft limit priority array queue.
+Message-Id: <20090327140653.a12c6b1e.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20090327135933.789729cb.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20090327135933.789729cb.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On my x86_64 dual core system, I get the following messages logged.
+I'm now search a way to reduce lock contention without complex...
+-Kame
+==
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 
+Softlimitq. for memcg.
 
-=========================================================
-[ INFO: possible irq lock inversion dependency detected ]
-2.6.29-Linus-03321-gbe0ea69 #55
----------------------------------------------------------
-swapper/0 just changed the state of lock:
- (fasync_lock){..+.}, at: [<ffffffff802c7073>] kill_fasync+0x2c/0x4e
-but this lock took another, hard-irq-unsafe lock in the past:
- (&f->f_lock){--..}
+Implements an array of queue to list memcgs, array index is determined by
+the amount of memory usage excess the soft limit.
 
-and interrupts could create inverse lock ordering between them.
+While Balbir's one uses RB-tree and my old one used a per-zone queue
+(with round-robin), this is one of mixture of them.
+(I'd like to use rotation of queue in later patches)
 
+Priority is determined by following.
+   unit = total pages/1024.
+   if excess is...
+      < unit,          priority = 0
+      < unit*2,        priority = 1,
+      < unit*2*2,      priority = 2,
+      ...
+      < unit*2^9,      priority = 9,
+      < unit*2^10,      priority = 10,
 
-other info that might help us debug this:
-4 locks held by swapper/0:
- #0:  (&serio->lock){+...}, at: [<ffffffff803c47a4>] serio_interrupt+0x2b/0x83
- #1:  (&dev->event_lock){+...}, at: [<ffffffff803c8bd3>] input_event+0x40/0x7d
- #2:  (rcu_read_lock){..--}, at: [<ffffffff803c7541>] input_pass_event+0x0/0xcc
- #3:  (rcu_read_lock){..--}, at: [<ffffffff803cbad3>] evdev_event+0x0/0xfd
+This patch just includes queue management part and not includes 
+selection logic from queue. Some trick will be used for selecting victims at
+soft limit in efficient way.
 
-the first lock's dependencies:
--> (fasync_lock){..+.} ops: 0 {
-   initial-use  at:
-                        [<ffffffff80262870>] __lock_acquire+0x79e/0x1697
-                        [<ffffffff802637be>] lock_acquire+0x55/0x71
-                        [<ffffffff804642bf>] _write_lock_irq+0x37/0x43
-                        [<ffffffff802c6bf5>] fasync_helper+0x57/0x110
-                        [<ffffffff802ea28c>] locks_delete_lock+0x50/0x9f
-                        [<ffffffff802ea819>] __posix_lock_file+0x326/0x549
-                        [<ffffffff802eaa8c>] vfs_lock_file+0x38/0x3a
-                        [<ffffffff802eab1f>] locks_remove_posix+0x91/0xb2
-                        [<ffffffff802b9634>] filp_close+0x56/0x68
-                        [<ffffffff802b96f0>] sys_close+0xaa/0xe9
-                        [<ffffffff8020c2cb>] system_call_fastpath+0x16/0x1b
-                        [<ffffffffffffffff>] 0xffffffffffffffff
-   in-hardirq-R at:
-                        [<ffffffffffffffff>] 0xffffffffffffffff
+And this equips 2 queues, for anon and file. Inset/Delete of both list is
+done at once but scan will be independent. (These 2 queues are used later.)
+
+Major difference from Balbir's one other than RB-tree is bahavior under
+hierarchy. This one adds all children to queue by checking hierarchical
+priority. This is for helping per-zone usage check on victim-selection logic.
+
+Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+---
+ mm/memcontrol.c |  121 +++++++++++++++++++++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 120 insertions(+), 1 deletion(-)
+
+Index: mmotm-2.6.29-Mar23/mm/memcontrol.c
+===================================================================
+--- mmotm-2.6.29-Mar23.orig/mm/memcontrol.c
++++ mmotm-2.6.29-Mar23/mm/memcontrol.c
+@@ -192,7 +192,13 @@ struct mem_cgroup {
+ 	atomic_t	refcnt;
+ 
+ 	unsigned int	swappiness;
+-
++	/*
++	 * For soft limit.
++	 */
++	int soft_limit_priority;
++	struct list_head soft_limit_anon;
++	struct list_head soft_limit_file;
++	spinlock_t soft_limit_lock;
+ 	/*
+ 	 * statistics. This must be placed at the end of memcg.
+ 	 */
+@@ -938,11 +944,116 @@ static bool mem_cgroup_soft_limit_check(
+ 	return ret;
  }
- ... key      at: [<ffffffff805f7db8>] fasync_lock+0x18/0x30
- -> (&f->f_lock){--..} ops: 0 {
-    initial-use  at:
-                          [<ffffffff80262870>] __lock_acquire+0x79e/0x1697
-                          [<ffffffff802637be>] lock_acquire+0x55/0x71
-                          [<ffffffff80464126>] _spin_lock+0x31/0x3d
-                          [<ffffffff802c6c74>] fasync_helper+0xd6/0x110
-                          [<ffffffff802ea28c>] locks_delete_lock+0x50/0x9f
-                          [<ffffffff802ea819>] __posix_lock_file+0x326/0x549
-                          [<ffffffff802eaa8c>] vfs_lock_file+0x38/0x3a
-                          [<ffffffff802eab1f>] locks_remove_posix+0x91/0xb2
-                          [<ffffffff802b9634>] filp_close+0x56/0x68
-                          [<ffffffff802b96f0>] sys_close+0xaa/0xe9
-                          [<ffffffff8020c2cb>] system_call_fastpath+0x16/0x1b
-                          [<ffffffffffffffff>] 0xffffffffffffffff
-    softirq-on-W at:
-                          [<ffffffff80262857>] __lock_acquire+0x785/0x1697
-                          [<ffffffff802637be>] lock_acquire+0x55/0x71
-                          [<ffffffff80464126>] _spin_lock+0x31/0x3d
-                          [<ffffffff802c7505>] sys_fcntl+0x2aa/0x36c
-                          [<ffffffff8020c2cb>] system_call_fastpath+0x16/0x1b
-                          [<ffffffffffffffff>] 0xffffffffffffffff
-    hardirq-on-W at:
-                          [<ffffffff8026282e>] __lock_acquire+0x75c/0x1697
-                          [<ffffffff802637be>] lock_acquire+0x55/0x71
-                          [<ffffffff80464126>] _spin_lock+0x31/0x3d
-                          [<ffffffff802c7505>] sys_fcntl+0x2aa/0x36c
-                          [<ffffffff8020c2cb>] system_call_fastpath+0x16/0x1b
-                          [<ffffffffffffffff>] 0xffffffffffffffff
-  }
-  ... key      at: [<ffffffff81096e08>] __key.20386+0x0/0x8
- ... acquired at:
-   [<ffffffff80263404>] __lock_acquire+0x1332/0x1697
-   [<ffffffff802637be>] lock_acquire+0x55/0x71
-   [<ffffffff80464126>] _spin_lock+0x31/0x3d
-   [<ffffffff802c6c74>] fasync_helper+0xd6/0x110
-   [<ffffffff802ea28c>] locks_delete_lock+0x50/0x9f
-   [<ffffffff802ea819>] __posix_lock_file+0x326/0x549
-   [<ffffffff802eaa8c>] vfs_lock_file+0x38/0x3a
-   [<ffffffff802eab1f>] locks_remove_posix+0x91/0xb2
-   [<ffffffff802b9634>] filp_close+0x56/0x68
-   [<ffffffff802b96f0>] sys_close+0xaa/0xe9
-   [<ffffffff8020c2cb>] system_call_fastpath+0x16/0x1b
-   [<ffffffffffffffff>] 0xffffffffffffffff
-
-
-the second lock's dependencies:
--> (&f->f_lock){--..} ops: 0 {
-   initial-use  at:
-                        [<ffffffff80262870>] __lock_acquire+0x79e/0x1697
-                        [<ffffffff802637be>] lock_acquire+0x55/0x71
-                        [<ffffffff80464126>] _spin_lock+0x31/0x3d
-                        [<ffffffff802c6c74>] fasync_helper+0xd6/0x110
-                        [<ffffffff802ea28c>] locks_delete_lock+0x50/0x9f
-                        [<ffffffff802ea819>] __posix_lock_file+0x326/0x549
-                        [<ffffffff802eaa8c>] vfs_lock_file+0x38/0x3a
-                        [<ffffffff802eab1f>] locks_remove_posix+0x91/0xb2
-                        [<ffffffff802b9634>] filp_close+0x56/0x68
-                        [<ffffffff802b96f0>] sys_close+0xaa/0xe9
-                        [<ffffffff8020c2cb>] system_call_fastpath+0x16/0x1b
-                        [<ffffffffffffffff>] 0xffffffffffffffff
-   softirq-on-W at:
-                        [<ffffffff80262857>] __lock_acquire+0x785/0x1697
-                        [<ffffffff802637be>] lock_acquire+0x55/0x71
-                        [<ffffffff80464126>] _spin_lock+0x31/0x3d
-                        [<ffffffff802c7505>] sys_fcntl+0x2aa/0x36c
-                        [<ffffffff8020c2cb>] system_call_fastpath+0x16/0x1b
-                        [<ffffffffffffffff>] 0xffffffffffffffff
-   hardirq-on-W at:
-                        [<ffffffff8026282e>] __lock_acquire+0x75c/0x1697
-                        [<ffffffff802637be>] lock_acquire+0x55/0x71
-                        [<ffffffff80464126>] _spin_lock+0x31/0x3d
-                        [<ffffffff802c7505>] sys_fcntl+0x2aa/0x36c
-                        [<ffffffff8020c2cb>] system_call_fastpath+0x16/0x1b
-                        [<ffffffffffffffff>] 0xffffffffffffffff
+ 
++/*
++ * Assume "base_amount", and excess = usage - soft limit.
++ *
++ * 0...... if excess < base_amount
++ * 1...... if excess < base_amount * 2
++ * 2...... if excess < base_amount * 2^2
++ * 3.......if excess < base_amount * 2^3
++ * ....
++ * 9.......if excess < base_amount * 2^9
++ * 10 .....if excess < base_amount * 2^10
++ */
++
++#define SLQ_MAXPRIO (11)
++static struct {
++	spinlock_t lock;
++	struct list_head queue[SLQ_MAXPRIO][2]; /* 0:anon 1:file */
++#define SL_ANON (0)
++#define SL_FILE (1)
++} softlimitq;
++
++#define SLQ_PRIO_FACTOR (1024) /* 2^10 */
++static unsigned long memcg_softlimit_base __read_mostly;
++
++static int __calc_soft_limit_prio(unsigned long long excess)
++{
++	unsigned long val;
++
++	val = excess / PAGE_SIZE;
++	val = val /memcg_softlimit_base;
++	return fls(val);
++}
++
++static int mem_cgroup_soft_limit_prio(struct mem_cgroup *mem)
++{
++	unsigned long long excess, max_excess;
++	struct res_counter *c;
++
++	max_excess = 0;
++	for (c = &mem->res; c; c = c->parent) {
++		excess = res_counter_soft_limit_excess(c);
++		if (max_excess < excess)
++			max_excess = excess;
++	}
++	return __calc_soft_limit_prio(max_excess);
++}
++
++static void __mem_cgroup_requeue(struct mem_cgroup *mem)
++{
++	/* enqueue to softlimit queue */
++	int prio = mem->soft_limit_priority;
++
++	spin_lock(&softlimitq.lock);
++	list_del_init(&mem->soft_limit_anon);
++	list_add_tail(&mem->soft_limit_anon, &softlimitq.queue[prio][SL_ANON]);
++	list_del_init(&mem->soft_limit_file,ist[SL_FILE]);
++	list_add_tail(&mem->soft_limit_file, &softlimitq.queue[prio][SL_FILE]);
++	spin_unlock(&softlimitq.lock);
++}
++
++static void __mem_cgroup_dequeue(struct mem_cgroup *mem)
++{
++	spin_lock(&softlimitq.lock);
++	list_del_init(&mem->soft_limit_anon);
++	list_del_init(&mem->soft_limit_file);
++	spin_unlock(&softlimitq.lock);
++}
++
++static int
++__mem_cgroup_update_soft_limit_cb(struct mem_cgroup *mem, void *data)
++{
++	int priority;
++	/* If someone updates, we don't need more */
++	if (!spin_trylock(&mem->soft_limit_lock))
++		return 0;
++
++	priority = mem_cgroup_soft_limit_prio(mem);
++
++	if (priority != mem->soft_limit_priority) {
++		mem->soft_limit_priority = priority;
++		__mem_cgroup_requeue(mem);
++	}
++	spin_unlock(&mem->soft_limit_lock);
++	return 0;
++}
++
+ static void mem_cgroup_update_soft_limit(struct mem_cgroup *mem)
+ {
++	int priority;
++
++	/* check status change */
++	priority = mem_cgroup_soft_limit_prio(mem);
++	if (priority != mem->soft_limit_priority) {
++		mem_cgroup_walk_tree(mem, NULL,
++				     __mem_cgroup_update_soft_limit_cb);
++	}
+ 	return;
  }
- ... key      at: [<ffffffff81096e08>] __key.20386+0x0/0x8
+ 
++static void softlimitq_init(void)
++{
++	int i;
++
++	spin_lock_init(&softlimitq.lock);
++	for (i = 0; i < SLQ_MAXPRIO; i++) {
++		INIT_LIST_HEAD(&softlimitq.queue[i][SL_ANON]);
++		INIT_LIST_HEAD(&softlimitq.queue[i][SL_FILE]);
++	}
++	memcg_softlimit_base = totalram_pages / SLQ_PRIO_FACTOR;
++}
++
+ /*
+  * Unlike exported interface, "oom" parameter is added. if oom==true,
+  * oom-killer can be invoked.
+@@ -2527,6 +2638,7 @@ mem_cgroup_create(struct cgroup_subsys *
+ 	if (cont->parent == NULL) {
+ 		enable_swap_cgroup();
+ 		parent = NULL;
++		softlimitq_init();
+ 	} else {
+ 		parent = mem_cgroup_from_cont(cont->parent);
+ 		mem->use_hierarchy = parent->use_hierarchy;
+@@ -2547,6 +2659,10 @@ mem_cgroup_create(struct cgroup_subsys *
+ 		res_counter_init(&mem->memsw, NULL);
+ 	}
+ 	mem->last_scanned_child = 0;
++	mem->soft_limit_priority = 0;
++	INIT_LIST_HEAD(&mem->soft_limit_anon);
++	INIT_LIST_HEAD(&mem->soft_limit_file);
++	spin_lock_init(&mem->soft_limit_lock);
+ 	spin_lock_init(&mem->reclaim_param_lock);
+ 
+ 	if (parent)
+@@ -2571,6 +2687,9 @@ static void mem_cgroup_destroy(struct cg
+ {
+ 	struct mem_cgroup *mem = mem_cgroup_from_cont(cont);
+ 
++	spin_lock(&mem->soft_limit_lock);
++	__mem_cgroup_dequeue(mem);
++	spin_unlock(&mem->soft_limit_lock);
+ 	mem_cgroup_put(mem);
+ }
+ 
 
-stack backtrace:
-Pid: 0, comm: swapper Not tainted 2.6.29-Linus-03321-gbe0ea69 #55
-Call Trace:
- <IRQ>  [<ffffffff80260a11>] print_irq_inversion_bug+0x175/0x184
- [<ffffffff80260ab8>] check_usage_forwards+0x98/0xa1
- [<ffffffff8026113b>] mark_lock+0x5dd/0xa2b
- [<ffffffff80262748>] __lock_acquire+0x676/0x1697
- [<ffffffff80262870>] ? __lock_acquire+0x79e/0x1697
- [<ffffffff802637be>] lock_acquire+0x55/0x71
- [<ffffffff802c7073>] ? kill_fasync+0x2c/0x4e
- [<ffffffff8046442b>] _read_lock+0x34/0x41
- [<ffffffff802c7073>] ? kill_fasync+0x2c/0x4e
- [<ffffffff802c7073>] kill_fasync+0x2c/0x4e
- [<ffffffff803cb7bd>] evdev_pass_event+0x6e/0x77
- [<ffffffff803cbb47>] evdev_event+0x74/0xfd
- [<ffffffff803cbad3>] ? evdev_event+0x0/0xfd
- [<ffffffff803c75a5>] input_pass_event+0x64/0xcc
- [<ffffffff803c7541>] ? input_pass_event+0x0/0xcc
- [<ffffffff803c7cdf>] input_handle_event+0x339/0x345
- [<ffffffff803c8bf6>] input_event+0x63/0x7d
- [<ffffffff803d1275>] alps_process_packet+0x3b7/0x4cc
- [<ffffffff803d13e5>] alps_process_byte+0x5b/0x6e
- [<ffffffff803ce797>] psmouse_handle_byte+0x17/0x10d
- [<ffffffff803cf766>] psmouse_interrupt+0x277/0x285
- [<ffffffff803c47a4>] ? serio_interrupt+0x2b/0x83
- [<ffffffff803c47c0>] serio_interrupt+0x47/0x83
- [<ffffffff803c58b7>] i8042_interrupt+0x200/0x215
- [<ffffffff8027b277>] handle_IRQ_event+0x6b/0xa1
- [<ffffffff8027c55c>] handle_edge_irq+0xeb/0x131
- [<ffffffff80464a25>] __irqentry_text_start+0x6d/0xd8
- [<ffffffff8020cd13>] ret_from_intr+0x0/0xf
- <EOI>  [<ffffffff8025d068>] ? tick_broadcast_oneshot_control+0x1f/0x102
- [<ffffffff802130e6>] ? default_idle+0x35/0x4f
- [<ffffffff802130e4>] ? default_idle+0x33/0x4f
- [<ffffffff802131ed>] ? c1e_idle+0xda/0x101
- [<ffffffff8025713e>] ? atomic_notifier_call_chain+0xf/0x11
- [<ffffffff8020b1f6>] ? cpu_idle+0x5c/0x9d
- [<ffffffff80451797>] ? rest_init+0x6b/0x6d
