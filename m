@@ -1,65 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757309AbZC0Qt5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758772AbZC0QvT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757309AbZC0Qt5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Mar 2009 12:49:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757167AbZC0Qtr
+	id S1758772AbZC0QvT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Mar 2009 12:51:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757167AbZC0Qu6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Mar 2009 12:49:47 -0400
-Received: from cpsmtpm-eml104.kpnxchange.com ([195.121.3.8]:54419 "EHLO
-	CPSMTPM-EML104.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755331AbZC0Qtq convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Mar 2009 12:49:46 -0400
-From: Frans Pop <elendil@planet.nl>
-To: Hans-Peter Jansen <hpj@urpla.net>
-Subject: Re: Linux 2.6.29
-Date: Fri, 27 Mar 2009 17:49:43 +0100
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org
-References: <alpine.LFD.2.00.0903231617550.3032@localhost.localdomain> <alpine.LFD.2.00.0903231617550.3032@localhost.localdomain> <200903271435.23116.hpj@urpla.net>
-In-reply-To: <200903271435.23116.hpj@urpla.net>
+	Fri, 27 Mar 2009 12:50:58 -0400
+Received: from gw.goop.org ([64.81.55.164]:51951 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757265AbZC0Qu5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Mar 2009 12:50:57 -0400
+Message-ID: <49CD03EE.2070003@goop.org>
+Date: Fri, 27 Mar 2009 09:50:54 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200903271749.43762.elendil@planet.nl>
-X-OriginalArrivalTime: 27 Mar 2009 16:49:44.0318 (UTC) FILETIME=[07D549E0:01C9AEFC]
+To: Isaku Yamahata <yamahata@valinux.co.jp>
+CC: linux-kernel@vger.kernel.org, xen-devel@lists.xensource.com
+Subject: Re: [PATCH] xen/balloon: remove a warning.
+References: <20090327061438.GL13054%yamahata@valinux.co.jp>
+In-Reply-To: <20090327061438.GL13054%yamahata@valinux.co.jp>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hans-Peter Jansen wrote:
-> Am Dienstag, 24. März 2009 schrieb Linus Torvalds:
->> This obviously starts the merge window for 2.6.30, although as usual,
->> I'll probably wait a day or two before I start actively merging.
-> 
-> It would be very nice, if you could start with a commit to Makefile,
-> that reflects the new series: e.g.:
+Isaku Yamahata wrote:
+> This patch removes the following warning on ia64.
+>
+> drivers/xen/balloon.c: In function 'show_target':
+> drivers/xen/balloon.c:516: warning: format '%llu' expects type 'long long unsigned int', but argument 3 has type 'long unsigned int'
+>   
 
-If you have a git checkout, you can easily do this yourself:
+Ah, the old long vs long long u64 bites again.  OK.
 
-git checkout -b 2.6.30-rc master
-sed -i "/^SUBLEVEL/ s/29/30/; /^EXTRAVERSION/ s/$/ -rc0/" Makefile
-git add Makefile
-git commit -m "Mark as -rc0"
+    J
 
-Then to get latest git head:
+> Signed-off-by: Isaku Yamahata <yamahata@valinux.co.jp>
+> ---
+>  drivers/xen/balloon.c |    3 ++-
+>  1 files changed, 2 insertions(+), 1 deletions(-)
+>
+> diff --git a/drivers/xen/balloon.c b/drivers/xen/balloon.c
+> index efa4b36..b989ba6 100644
+> --- a/drivers/xen/balloon.c
+> +++ b/drivers/xen/balloon.c
+> @@ -513,7 +513,8 @@ static ssize_t show_target(struct sys_device *dev, struct sysdev_attribute *attr
+>  			      char *buf)
+>  {
+>  	return sprintf(buf, "%llu\n",
+> -		       (u64)balloon_stats.target_pages << PAGE_SHIFT);
+> +		       (unsigned long long)balloon_stats.target_pages <<
+> +		       PAGE_SHIFT);
+>  }
+>  
+>  static ssize_t store_target(struct sys_device *dev,
+>   
 
-git checkout master
-git pull
-git rebase master 2.6.30-rc
-
-When Linus releases -rc1, the rebase will signal a conflict on that commit 
-and you can just 'git rebase --skip' it.
-
-Instead of sed you can also just edit the Makefile of course, or you can 
-go the other way and create a simple script that automatically increases 
-the existing sublevel by 1. I just do this manually, given that it's only 
-needed once per three months or so.
-
-Using a branch is something I do anyway as I almost always have a few 
-minor patches on top of git head for various reasons.
-
-Cheers,
-FJP
