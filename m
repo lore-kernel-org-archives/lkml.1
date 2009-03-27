@@ -1,70 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759715AbZC0VzX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755180AbZC0WHF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759715AbZC0VzX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Mar 2009 17:55:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753082AbZC0Vy7
+	id S1755180AbZC0WHF (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Mar 2009 18:07:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752199AbZC0WGv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Mar 2009 17:54:59 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:58143 "EHLO mx2.suse.de"
+	Fri, 27 Mar 2009 18:06:51 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:42003 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750738AbZC0Vy5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Mar 2009 17:54:57 -0400
-Date: Fri, 27 Mar 2009 22:54:54 +0100
-From: Jan Kara <jack@suse.cz>
-To: Theodore Tso <tytso@mit.edu>, Chris Mason <chris.mason@oracle.com>,
-       Ric Wheeler <rwheeler@redhat.com>,
-       Linux Kernel Developers List <linux-kernel@vger.kernel.org>,
-       Ext4 Developers List <linux-ext4@vger.kernel.org>, jack@suse.cz
-Subject: Re: [PATCH 0/3] Ext3 latency improvement patches
-Message-ID: <20090327215454.GH31071@duck.suse.cz>
-References: <1238185471-31152-1-git-send-email-tytso@mit.edu> <1238187031.27455.212.camel@think.oraclecorp.com> <1238187818.27455.217.camel@think.oraclecorp.com> <20090327213052.GC5176@mit.edu>
+	id S1752145AbZC0WGv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Mar 2009 18:06:51 -0400
+Message-ID: <49CD4DDF.3000001@garzik.org>
+Date: Fri, 27 Mar 2009 18:06:23 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090327213052.GC5176@mit.edu>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Matthew Garrett <mjg59@srcf.ucam.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Theodore Tso <tytso@mit.edu>, Andrew Morton <akpm@linux-foundation.org>,
+       David Rees <drees76@gmail.com>, Jesper Krogh <jesper@krogh.cc>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.29
+References: <20090327051338.GP6239@mit.edu> <20090327055750.GA18065@srcf.ucam.org> <20090327062114.GA18290@srcf.ucam.org> <20090327112438.GQ6239@mit.edu> <20090327145156.GB24819@srcf.ucam.org> <20090327150811.09b313f5@lxorguk.ukuu.org.uk> <20090327152221.GA25234@srcf.ucam.org> <20090327161553.31436545@lxorguk.ukuu.org.uk> <20090327162841.GA26860@srcf.ucam.org> <20090327165150.7e69d9e1@lxorguk.ukuu.org.uk> <20090327170208.GA27646@srcf.ucam.org> <alpine.LFD.2.00.0903271032090.3994@localhost.localdomain> <49CD2C47.4040300@garzik.org> <alpine.LFD.2.00.0903271443440.3994@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.0903271443440.3994@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri 27-03-09 17:30:52, Theodore Tso wrote:
-> On Fri, Mar 27, 2009 at 05:03:38PM -0400, Chris Mason wrote:
-> > > Ric had asked me about a test program that would show the worst case
-> > > ext3 behavior.  So I've modified your ext3 program a little.  It now
-> > > creates a 8G file and forks off another proc to do random IO to that
-> > > file.
-> > > 
-> > 
-> > My understanding of ext4 delalloc is that once blocks are allocated to
-> > file, we go back to data=ordered.  
+Linus Torvalds wrote:
 > 
-> Yes, that's correct.
+> On Fri, 27 Mar 2009, Jeff Garzik wrote:
+>> On the other side of the coin, major desktop apps Firefox and Thunderbird
+>> already use it:  Firefox uses sqlite  [...]
 > 
-> > Ext4 is going pretty slowly for this fsync test (slower than ext3), it
-> > looks like we're going for a very long time in
-> > jbd2_journal_commit_transaction -> write_cache_pages.
+> You do know that Firefox had to _disable_ fsync() exactly because not 
+> disabling it was unacceptable? That whole "why does firefox stop for 5 
+> seconds" thing created too many bug-reports.
 > 
-> One of the things that we can do to optimize this case for ext4 (and
-> ext3) is that if block has already been written out to disk once, we
-> don't have to flush it to disk a second time.  So if we add a new
-> buffer_head flag which can distinguish between blocks that have been
-> newly allocated (and not yet been flushed to disk) versus blocks that
-> have already been flushed to disk at least once, we wouldn't need to
-> force I/O for blocks in the latter case.
->
-> After all, most of the applications which do random I/O to a file
-> normally will use fsync() appropriately such that they are rewriting
-> already allocated blocks.  So there really is no reason to flush those
-> blocks out to disk even in data=ordered mode.
+>> So, arguments about "people should..." aside, existing desktops apps _do_
+>> fsync and we get to deal with the bad performance :/
 > 
-> We currently flush *all* blocks out to disk in data=ordered mode
-> because we don't have a good way of telling the difference between the
-> two cases.
-  Yes, but OTOH this will make the problem "my data was lost after crash"
-worse... Although rewrites aren't that common either so maybe it won't
-be that bad.
+> No they don't. Read up on it. Really.
 
-								Honza
--- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
+What is in Fedora 10 and Debian lenny's iceweasel both definitely sync 
+to disk, as of today, according to my own tests.
+
+I'm talking about what's in real world user's hands today, not some 
+hoped-for future version in developer CVS somewhere, depending on build 
+options and who knows what else...
+
+	Jeff
+
+
+
