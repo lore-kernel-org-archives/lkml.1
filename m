@@ -1,90 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762980AbZC0UM7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762751AbZC0UMO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762980AbZC0UM7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Mar 2009 16:12:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761896AbZC0UKh
+	id S1762751AbZC0UMO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Mar 2009 16:12:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761380AbZC0UJ3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Mar 2009 16:10:37 -0400
-Received: from 69-30-77-85.dq1sn.easystreet.com ([69.30.77.85]:56111 "EHLO
-	kingsolver.anholt.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760676AbZC0UKf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Mar 2009 16:10:35 -0400
-Subject: Re: DRM lock ordering fix series
-From: Eric Anholt <eric@anholt.net>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: linux-kernel@vger.kernel.org, dri-devel@lists.sourceforge.net
-In-Reply-To: <20090327181018.GC11935@one.firstfloor.org>
-References: <1238017510-26784-1-git-send-email-eric@anholt.net>
-	 <87ocvnmhqx.fsf@basil.nowhere.org>
-	 <1238170767.8275.2397.camel@gaiman.anholt.net>
-	 <1238171805.8275.2434.camel@gaiman.anholt.net>
-	 <20090327181018.GC11935@one.firstfloor.org>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-Vqeuyg/Vbrht32t/i0uC"
-Date: Fri, 27 Mar 2009 13:10:29 -0700
-Message-Id: <1238184629.625.44.camel@gaiman.anholt.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 
+	Fri, 27 Mar 2009 16:09:29 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:57644 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761804AbZC0UJ1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Mar 2009 16:09:27 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: "Tvrtko A. Ursulin" <tvrtko@ursulin.net>
+Subject: [Regression in 2.6.29] forcedeth doesn't work after resume from hibernation (was: Re: Resume after hibernation regression in 2.6.29)
+Date: Fri, 27 Mar 2009 21:09:20 +0100
+User-Agent: KMail/1.11.1 (Linux/2.6.29-rc8-tst; KDE/4.2.1; x86_64; ; )
+Cc: Pavel Machek <pavel@ucw.cz>, linux-pm@lists.linux-foundation.org,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Tobias Diedrich <ranma+kernel@tdiedrich.de>,
+       Ayaz Abdulla <aabdulla@nvidia.com>, netdev@vger.kernel.org,
+       Ed Swierk <eswierk@arastra.com>, Arthur Jones <ajones@riverbed.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "David S. Miller" <davem@davemloft.net>
+References: <200903261920.32173.tvrtko@ursulin.net> <200903270801.46712.tvrtko@ursulin.net> <200903271255.36429.rjw@sisk.pl>
+In-Reply-To: <200903271255.36429.rjw@sisk.pl>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200903272109.21259.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Friday 27 March 2009, Rafael J. Wysocki wrote:
+> On Friday 27 March 2009, Tvrtko A. Ursulin wrote:
+> > On Thursday 26 March 2009 23:08:59 Rafael J. Wysocki wrote:
+> > > On Friday 27 March 2009, Tvrtko A. Ursulin wrote:
+> > > > On Thursday 26 March 2009 22:38:55 Pavel Machek wrote:
+> > > > > On Thu 2009-03-26 22:01:03, Tvrtko A. Ursulin wrote:
+> > > > > > On Thursday 26 March 2009 21:35:29 Rafael J. Wysocki wrote:
+> > > > > > > On Thursday 26 March 2009, Pavel Machek wrote:
+> > > > > > > > On Thu 2009-03-26 20:55:23, Tvrtko A. Ursulin wrote:
+> > > > > > > > > On Thursday 26 March 2009 20:18:40 Pavel Machek wrote:
+> > > > > > > > > > On Thu 2009-03-26 19:20:32, Tvrtko A. Ursulin wrote:
+> > > > > > > > > > > Hi guys,
+> > > > > > > > > > > I have been running custom compiled 2.6.28.7 in OpenSUSE
+> > > > > > > > > > > 11.1 and using hiberation/resume daily as configured by the
+> > > > > > > > > > > distro. Yesterday I upgraded to 2.6.29 (make oldconfig from
+> > > > > > > > > > > 2.6.28.7, attached) and after resume networking (at least)
+> > > > > > > > > > > does not work. Reboot at this point takes very long because
+> > > > > > > > > > > of timeouts on CIFS and whatelse.
+> > > > > > > > > > >
+> > > > > > > > > > > Below is how /var/log/messagess looks for one cycle
+> > > > > > > > > > > (hibernate-resume-reboot) and I am also attaching kernel
+> > > > > > > > > > > config and /var/log/pm-suspend.log.
+> > > > > > > > > > >
+> > > > > > > > > > > You will probably notice evil nvidia.ko in there but don't
+> > > > > > > > > > > panic, it all happens without it as well. Tested from
+> > > > > > > > > > > runlevel 3 and by running pm-hibernate. After resume from
+> > > > > > > > > > > that NIC LEDs were off. I tried /etc/init.d/network restart
+> > > > > > > > > > > but that hung so I ^C and tried rmmod forcedeth && modprobe
+> > > > > > > > > > > forcedeth && ifup eth0 and after some time network went
+> > > > > > > > > > > live again. Haven't had time to test further though, so
+> > > > > > > > > > > this is all pretty rough.
+> > > > > > > > > >
+> > > > > > > > > > Ok, can you try to rmmod forcedeth before hibernation, then
+> > > > > > > > > > insmod it after resume?
+> > > > > > > > >
+> > > > > > > > > Sure, after insmod and /etc/init.d/network start following
+> > > > > > > > > resume network was fine. Guess I could kludge that sequence
+> > > > > > > > > into pm scripts somehow but would rather avoid that since it
+> > > > > > > > > slows down the cycle and would make scripts non-stock.
+> > > > > > > >
+> > > > > > > > Ok, I guess you need to talk to forcedeth maintainers then...
+> > > > > > > > sounds like a forcedeth problem to me.
+> > > > > > >
+> > > > > > > I have a box with forcedeth somewhere here, I should be able to
+> > > > > > > check that in the next few days.
+> > > > > >
+> > > > > > Not a lot activity in forcedeth.c from 2.6.28 to 2.6.29 so I will CC
+> > > > > > two guys who commited changes in that period. Ayaz, Tobias, forcedeth
+> > > > > > does not seem to come up after hibernation well for me. Actual
+> > > > > > hardware is:
+> > > > > >
+> > > > > > 00:0f.0 Ethernet controller: nVidia Corporation MCP73 Ethernet (rev
+> > > > > > a2)
+> > > > > >
+> > > > > > Anything more I can do just shout!
+> > > > >
+> > > > > Actually yes. Testing forcedeth from 2.6.28 in 2.6.29 would be nice
+> > > > > way to prove problem is indeed in that module.
+> > > >
+> > > > Good idea, I had to massage it a bit due to some API changes, but the end
+> > > > result is a correct resume which proves that the problem really is in
+> > > > forcedeth.
+> > >
+> > > Well, since you can easily check what commits changed forcedeth between
+> > > 2.6.28 and 2.6.29, you can find the one that introduced the problem for
+> > > you.
 
---=-Vqeuyg/Vbrht32t/i0uC
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+I was able to reproduce the problem and identify the commit that broke the
+resume of forcedeth, which turned out to be:
 
-On Fri, 2009-03-27 at 19:10 +0100, Andi Kleen wrote:
-> On Fri, Mar 27, 2009 at 09:36:45AM -0700, Eric Anholt wrote:
-> > > > You are aware that there is a fast path now (get_user_pages_fast) w=
-hich
-> > > > is significantly faster? (but has some limitations)
-> > >=20
-> > > In the code I have, get_user_pages_fast is just a wrapper that calls =
-the
-> > > get_user_pages in the way that I'm calling it from the DRM.
-> >=20
-> > Ah, I see: that's a weak stub, and there is a real implementation.  I
-> > didn't know we could do weak stubs.
->=20
-> The main limitation is that it only works for your current process,
-> not another one. For more details you can check the git changelog
-> that added it (8174c430e445a93016ef18f717fe570214fa38bf)
->=20
-> And yes it's only faster for architectures that support it, that's
-> currently x86 and ppc.
+commit cb52deba12f27af90a46d2f8667a64888118a888
+Author: Ed Swierk <eswierk@arastra.com>
+Date:   Mon Dec 1 12:24:43 2008 +0000
 
-OK.  I'm not too excited here -- 10% of 2% of the CPU time doesn't get
-me to the 10% loss that the slow path added up to.  Most of the cost is
-in k{un,}map_atomic of the returned pages.  If the gup somehow filled in
-the user's PTEs, I'd be happy and always use that (since then I'd have
-the mapping already in place and just use that).  But I think I can see
-why that can't be done.
+    forcedeth: power down phy when interface is down
 
-I suppose I could rework this so that we get_user_pages_fast outside the
-lock, then walk doing copy_from_user_inatomic, and fall back to
-kmap_atomic of the page list if we fault on the user's address.  It's
-still going to be a cost in our hot path, though, so I'd rather not.
+    Signed-off-by: Ed Swierk <eswierk@arastra.com>
+    Tested-by: Arthur Jones <ajones@riverbed.com>
+    Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+    Signed-off-by: David S. Miller <davem@davemloft.net>
 
-I'm working on a set of tests and microbenchmarks for GEM, so other
-people will be able to play with this easily soon.
+Since I have no slightest idea of what this commit is supposed to achieve,
+I can only ask for reverting it.  It reverts cleanly, BTW.
 
---=20
-Eric Anholt
-eric@anholt.net                         eric.anholt@intel.com
-
-
-
---=-Vqeuyg/Vbrht32t/i0uC
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAknNMrMACgkQHUdvYGzw6vcfHgCdE2I9kRsnbsUDubUHjiQ3lERb
-3Z8An34TKzxaB3sbOHuEMuhrbQsO7Sjv
-=ENwZ
------END PGP SIGNATURE-----
-
---=-Vqeuyg/Vbrht32t/i0uC--
+Thanks,
+Rafael
