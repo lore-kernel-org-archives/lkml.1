@@ -1,129 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757945AbZC0Pnc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757973AbZC0Pqb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757945AbZC0Pnc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Mar 2009 11:43:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753409AbZC0PnX
+	id S1757973AbZC0Pqb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Mar 2009 11:46:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754305AbZC0PqX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Mar 2009 11:43:23 -0400
-Received: from e37.co.us.ibm.com ([32.97.110.158]:40228 "EHLO
-	e37.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752587AbZC0PnX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Mar 2009 11:43:23 -0400
-Message-ID: <49CCF415.7080201@us.ibm.com>
-Date: Fri, 27 Mar 2009 08:43:17 -0700
-From: Darren Hart <dvhltc@us.ibm.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
-MIME-Version: 1.0
-To: Minchan Kim <minchan.kim@gmail.com>
-CC: Peter Zijlstra <peterz@infradead.org>, Eric Dumazet <dada1@cosmosbay.com>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: Question about PRIVATE_FUTEX
-References: <28c262360903261912n4ce235c6wf2f75b2be7faf0f4@mail.gmail.com> <1238143759.7808.2885.camel@twins> <28c262360903270356x6a9fc929m96941de8f8201fb0@mail.gmail.com> <1238152496.7808.3203.camel@twins> <28c262360903270437l72cd31e1ja2daf00dbcf29675@mail.gmail.com>
-In-Reply-To: <28c262360903270437l72cd31e1ja2daf00dbcf29675@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+	Fri, 27 Mar 2009 11:46:23 -0400
+Received: from mail.gmx.net ([213.165.64.20]:57580 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1752281AbZC0PqX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Mar 2009 11:46:23 -0400
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX1/Rk8ptZk/RXx1eeNTb3nr258Oy9cybMr13+2ilBf
+	4+dqTGhEJ0+fjp
+Subject: Re: Linux 2.6.29
+From: Mike Galbraith <efault@gmx.de>
+To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Cc: Hans-Peter Jansen <hpj@urpla.net>, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>
+In-Reply-To: <alpine.LRH.2.00.0903271552080.11064@vixen.sonytel.be>
+References: <alpine.LFD.2.00.0903231617550.3032@localhost.localdomain>
+	 <200903271435.23116.hpj@urpla.net>
+	 <alpine.LRH.2.00.0903271552080.11064@vixen.sonytel.be>
+Content-Type: text/plain; charset=utf-8
+Date: Fri, 27 Mar 2009 16:46:17 +0100
+Message-Id: <1238168777.5969.18.camel@marge.simson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1.1 
+Content-Transfer-Encoding: 8bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.59
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Minchan Kim wrote:
-> On Fri, Mar 27, 2009 at 8:14 PM, Peter Zijlstra <peterz@infradead.org> wrote:
->> On Fri, 2009-03-27 at 19:56 +0900, Minchan Kim wrote:
->>
->>>>> Then, get_futex_value_locked calls __cpy_from_user_inatomic with
->>>>> pagefault_disable.
->>>>>
->>>>> Who make sure the user page is mapped at app's page table ?
->>>> Nobody, all uses of get_futex_value_locked() have to deal with it
->>>> returning -EFAULT.
->>> Does It mean that __copy_from_user_inatomic in get_futex_value_locked
->>> would be failed rather than sleep?
->> Correct.
->>
->>> In fact, I don't make sure _copy_from_user_inatomic function's meaning.
->>> As far as I understand, It never sleep. It just can be failed in case
->>> of user page isn't mapped. Is right ?
->> Correct.
->>
->>> Otherwise, it can be scheduled with pagefault_disable which increments
->>> preempt_count. It is a atomic bug.
->>> If my assume is right, it can be failed rather than sleep.
->>> At this case, other architecture implements __copy_from_user_inatomic
->>> with __copy_from_user which can be scheduled. It also can be bug.
->>>
->>> Hmm, Now I am confusing.
->> Confused I guess ;-)
->> The trick is in the in_atomic() check in the pagefault handler and the
->> fixup section of the copy routines.
+On Fri, 2009-03-27 at 15:53 +0100, Geert Uytterhoeven wrote:
+> On Fri, 27 Mar 2009, Hans-Peter Jansen wrote:
+> > Am Dienstag, 24. März 2009 schrieb Linus Torvalds:
+> > > This obviously starts the merge window for 2.6.30, although as usual,
+> > > I'll probably wait a day or two before I start actively merging.
+> > 
+> > It would be very nice, if you could start with a commit to Makefile, that 
+> > reflects the new series: e.g.:
+> > 
+> > VERSION = 2
+> > PATCHLEVEL = 6
+> > SUBLEVEL = 30
+> > EXTRAVERSION = -pre
+> > 
+> > -pre for preparing state.
 > 
-> Whew~,  There was good hidden trick.
-> I will dive into this assembly.
-> I always thanks for your kindness. :)
-> 
->> #define __copy_user(to, from, size)                                     \
->> do {                                                                    \
->>        int __d0, __d1, __d2;                                           \
->>        __asm__ __volatile__(                                           \
->>                "       cmp  $7,%0\n"                                   \
->>                "       jbe  1f\n"                                      \
->>                "       movl %1,%0\n"                                   \
->>                "       negl %0\n"                                      \
->>                "       andl $7,%0\n"                                   \
->>                "       subl %0,%3\n"                                   \
->>                "4:     rep; movsb\n"                                   \
->>                "       movl %3,%0\n"                                   \
->>                "       shrl $2,%0\n"                                   \
->>                "       andl $3,%3\n"                                   \
->>                "       .align 2,0x90\n"                                \
->>                "0:     rep; movsl\n"                                   \
->>                "       movl %3,%0\n"                                   \
->>                "1:     rep; movsb\n"                                   \
->>                "2:\n"                                                  \
->>                ".section .fixup,\"ax\"\n"                              \
->>                "5:     addl %3,%0\n"                                   \
->>                "       jmp 2b\n"                                       \
->>                "3:     lea 0(%3,%0,4),%0\n"                            \
->>                "       jmp 2b\n"                                       \
->>                ".previous\n"                                           \
->>                ".section __ex_table,\"a\"\n"                           \
->>                "       .align 4\n"                                     \
->>                "       .long 4b,5b\n"                                  \
->>                "       .long 0b,3b\n"                                  \
->>                "       .long 1b,2b\n"                                  \
->>                ".previous"                                             \
->>                : "=&c"(size), "=&D" (__d0), "=&S" (__d1), "=r"(__d2)   \
->>                : "3"(size), "0"(size), "1"(to), "2"(from)              \
->>                : "memory");                                            \
->> } while (0)
->>
->> see that __ex_table section, it tells the fault handler where to
->> continue in case of an atomic fault.
->>
->>>> Most of this is legacy btw, from when futex ops were done under the
->>>> mmap_sem. Back then we couldn't fault because that would cause mmap_sem
->>>> recursion. Howver, now that we don't hold mmap_sem anymore we could use
->>>> a faulting user access like get_user().
->>>> Darren has been working on patches to clean that up, some of those are
->>>> already merged in the -tip tree.
+> If you're using the kernel-of-they-day, you're probably using git, and
+> CONFIG_LOCALVERSION_AUTO=y should be mandatory.
 
-I'm a little late to the party I guess.  Minchan, a lot of the fault 
-logic has been cleaned up in the tip tree, core/futexes branch.  The 
-removes a lot of the legacy complication from the faulting paths. 
-However, the get_futex_key code remains the same if I remember correctly.
+I sure hope it never becomes mandatory, I despise that thing.  I don't
+even do -rc tags.  .nn is .nn until baked and nn.1 appears.
 
->>> Thanks for good information.
->>> It will be very desirable way to enhance kernel performance.
->> I doubt it'll make a measurable difference, if you need to fault
->> performance sucks anyway. If you don't, the current code is just as
->> fast.
->>
+(would be nice if baked were immediately handed to stable .nn.0 instead
+of being in limbo for a bit, but I don't drive the cart, just tag along
+behind [w. shovel];)
 
-Agreed.  If you are suffering performance hits from excessive paging, 
-consider locking your memory.
+	-Mike
 
-
--- 
-Darren Hart
-IBM Linux Technology Center
-Real-Time Linux Team
