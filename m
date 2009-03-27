@@ -1,32 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763807AbZC0Xec@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763893AbZC0Xev@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763807AbZC0Xec (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Mar 2009 19:34:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761969AbZC0X1r
+	id S1763893AbZC0Xev (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Mar 2009 19:34:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762086AbZC0X1s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Mar 2009 19:27:47 -0400
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:48424 "EHLO
+	Fri, 27 Mar 2009 19:27:48 -0400
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:48418 "EHLO
 	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758298AbZC0X1e (ORCPT
+	with ESMTP id S1758706AbZC0X1e (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 27 Mar 2009 19:27:34 -0400
 From: =?utf-8?q?Uwe=20Kleine-K=C3=B6nig?= 
 	<u.kleine-koenig@pengutronix.de>
 To: linux-kernel@vger.kernel.org
 Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Grazvydas Ignotas <notasas@gmail.com>,
-       Pierre Ossman <drzeus-mmc@drzeus.cx>,
+       David Woodhouse <dwmw2@infradead.org>,
+       Kay Sievers <kay.sievers@vrfy.org>,
+       Hamish Moffatt <hamish@cloud.net.au>,
        David Brownell <dbrownell@users.sourceforge.net>,
-       Tony Lindgren <tony@atomide.com>,
-       Russell King <rmk+kernel@arm.linux.org.uk>,
-       Paul Walmsley <paul@pwsan.com>,
-       Jarkko Lavinen <jarkko.lavinen@nokia.com>,
-       Hiroshi DOYU <Hiroshi.DOYU@nokia.com>,
-       Kyungmin Park <kyungmin.park@samsung.com>,
-       Carlos Eduardo Aguiar <carlos.aguiar@indt.org.br>
-Subject: [PATCH 27/58] move mmci-omap's probe function to .devinit.text
-Date: Sat, 28 Mar 2009 00:26:48 +0100
-Message-Id: <1238196439-16535-27-git-send-email-u.kleine-koenig@pengutronix.de>
+       Li Zefan <lizf@cn.fujitsu.com>, Vitaly Wool <vitalywool@gmail.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: [PATCH 37/58] move gen_nand's probe function to .devinit.text
+Date: Sat, 28 Mar 2009 00:26:58 +0100
+Message-Id: <1238196439-16535-37-git-send-email-u.kleine-koenig@pengutronix.de>
 X-Mailer: git-send-email 1.6.2
 In-Reply-To: <20090327232153.GA16348@pengutronix.de>
 References: <20090327232153.GA16348@pengutronix.de>
@@ -41,7 +37,7 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A pointer to mmc_omap_probe is passed to the core via
+A pointer to plat_nand_probe is passed to the core via
 platform_driver_register and so the function must not disappear when the
 .init sections are discarded.  Otherwise (if also having HOTPLUG=y)
 unbinding and binding a device to the driver via sysfs will result in an
@@ -52,34 +48,31 @@ platform_driver_register plus removing the pointer to the probe function
 from the struct platform_driver.
 
 Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
-Cc: Grazvydas Ignotas <notasas@gmail.com>
-Cc: Pierre Ossman <drzeus-mmc@drzeus.cx>
+Cc: David Woodhouse <dwmw2@infradead.org>
+Cc: Kay Sievers <kay.sievers@vrfy.org>
+Cc: Hamish Moffatt <hamish@cloud.net.au>
 Cc: David Brownell <dbrownell@users.sourceforge.net>
-Cc: Tony Lindgren <tony@atomide.com>
-Cc: Russell King <rmk+kernel@arm.linux.org.uk>
-Cc: Paul Walmsley <paul@pwsan.com>
-Cc: Jarkko Lavinen <jarkko.lavinen@nokia.com>
-Cc: Hiroshi DOYU <Hiroshi.DOYU@nokia.com>
-Cc: Kyungmin Park <kyungmin.park@samsung.com>
-Cc: Carlos Eduardo Aguiar <carlos.aguiar@indt.org.br>
 Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Li Zefan <lizf@cn.fujitsu.com>
+Cc: Vitaly Wool <vitalywool@gmail.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>
 ---
- drivers/mmc/host/omap.c |    2 +-
+ drivers/mtd/nand/plat_nand.c |    2 +-
  1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/mmc/host/omap.c b/drivers/mmc/host/omap.c
-index 67d7b7f..33bf49f 100644
---- a/drivers/mmc/host/omap.c
-+++ b/drivers/mmc/host/omap.c
-@@ -1394,7 +1394,7 @@ static void mmc_omap_remove_slot(struct mmc_omap_slot *slot)
- 	mmc_free_host(mmc);
- }
- 
--static int __init mmc_omap_probe(struct platform_device *pdev)
-+static int __devinit mmc_omap_probe(struct platform_device *pdev)
+diff --git a/drivers/mtd/nand/plat_nand.c b/drivers/mtd/nand/plat_nand.c
+index 75f9f48..86e1d08 100644
+--- a/drivers/mtd/nand/plat_nand.c
++++ b/drivers/mtd/nand/plat_nand.c
+@@ -30,7 +30,7 @@ struct plat_nand_data {
+ /*
+  * Probe for the NAND device.
+  */
+-static int __init plat_nand_probe(struct platform_device *pdev)
++static int __devinit plat_nand_probe(struct platform_device *pdev)
  {
- 	struct omap_mmc_platform_data *pdata = pdev->dev.platform_data;
- 	struct mmc_omap_host *host = NULL;
+ 	struct platform_nand_data *pdata = pdev->dev.platform_data;
+ 	struct plat_nand_data *data;
 -- 
 1.6.2
 
