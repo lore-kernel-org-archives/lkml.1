@@ -1,66 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755760AbZC0KhZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757307AbZC0Kla@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755760AbZC0KhZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Mar 2009 06:37:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753233AbZC0KhK
+	id S1757307AbZC0Kla (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Mar 2009 06:41:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754425AbZC0KlU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Mar 2009 06:37:10 -0400
-Received: from gw02.mail.saunalahti.fi ([195.197.172.116]:59946 "EHLO
-	gw02.mail.saunalahti.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751842AbZC0KhJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Mar 2009 06:37:09 -0400
-From: Dmitri Vorobiev <dmitri.vorobiev@movial.com>
-To: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: Dmitri Vorobiev <dmitri.vorobiev@movial.com>
-Subject: [PATCH 1/1] Add missing include into include/linux/netdevice.h
-Date: Fri, 27 Mar 2009 12:36:53 +0200
-Message-Id: <1238150213-30416-1-git-send-email-dmitri.vorobiev@movial.com>
-X-Mailer: git-send-email 1.5.6.3
+	Fri, 27 Mar 2009 06:41:20 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:53911 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751842AbZC0KlT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Mar 2009 06:41:19 -0400
+Date: Fri, 27 Mar 2009 11:40:45 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Michal Simek <monstr@monstr.eu>, Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: torvalds@linux-foundation.org,
+       Linux Kernel list <linux-kernel@vger.kernel.org>,
+       lkml <linux-arch@vger.kernel.org>, microblaze-uclinux@itee.uq.edu.au,
+       Andrew Morton <akpm@linux-foundation.org>,
+       John Williams <john.williams@petalogix.com>,
+       John Linn <John.Linn@xilinx.com>,
+       Stephen Neuendorffer <stephenn@xilinx.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Randy Dunlap <randy.dunlap@oracle.com>, Arnd Bergmann <arnd@arndb.de>,
+       Peter Korsgaard <jacmet@sunsite.dk>
+Subject: Re: [GIT PULL] Microblaze initial pack
+Message-ID: <20090327104045.GA11518@elte.hu>
+References: <49CC8A41.4060503@monstr.eu> <20090327103032.GA12485@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090327103032.GA12485@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The inline function skb_gro_mac_header defined in include/linux/netdevice.h
-makes use of page_address(). Depending on configuration options, the latter
-is either defined as a macro or is declared as a function in another header
-file, namely include/linux/mm.h. However, include/linux/netdevice.h does not
-include include/linux/mm.h.
 
-On MIPS, this has produced the following build error:
+* Ingo Molnar <mingo@elte.hu> wrote:
 
-  CC      kernel/sysctl_check.o
-In file included from include/linux/icmpv6.h:173,
-                 from include/linux/ipv6.h:208,
-                 from include/net/ip_vs.h:26,
-                 from kernel/sysctl_check.c:6:
-include/linux/netdevice.h: In function 'skb_gro_mac_header':
-include/linux/netdevice.h:1132: error: implicit declaration of function
-'page_address'
-include/linux/netdevice.h:1133: warning: pointer/integer type mismatch
-in conditional expression
-make[1]: *** [kernel/sysctl_check.o] Error 1
-make: *** [kernel] Error 2
+> I have noticed one relatively big (but easily fixable) commit 
+> structure problem in this tree.
+> 
+> All of the commits have these tags:
+> 
+>     Reviewed-by: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
+>     Acked-by: John Linn <john.linn@xilinx.com>
+>     Acked-by: John Williams<john.williams@petalogix.com>
 
-The patch adds the missing include and fixes the build error.
+I forgot to mention that in any case _your_ signoff as the submitter 
+of this tree should be in all commits as well.
 
-Signed-off-by: Dmitri Vorobiev <dmitri.vorobiev@movial.com>
----
- include/linux/netdevice.h |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+So for example this (sample) chain would be fine:
 
-diff --git a/include/linux/netdevice.h b/include/linux/netdevice.h
-index be3ebd7..1b55952 100644
---- a/include/linux/netdevice.h
-+++ b/include/linux/netdevice.h
-@@ -32,6 +32,7 @@
- #ifdef __KERNEL__
- #include <linux/timer.h>
- #include <linux/delay.h>
-+#include <linux/mm.h>
- #include <asm/atomic.h>
- #include <asm/cache.h>
- #include <asm/byteorder.h>
--- 
-1.5.6.3
+     Reviewed-by: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
+     Acked-by: John Linn <john.linn@xilinx.com>
+     Acked-by: John Williams<john.williams@petalogix.com>
+     Signed-off-by: Michal Simek <monstr@monstr.eu>
 
+It's not enough to be listed as the author in the commit. (In any 
+case please see Documentation/SubmittingPatches and the DCO 1.1.)
+
+Also, a minor stylistic detail, please fix this:
+
+     John Williams<john.williams@petalogix.com>
+
+to:
+
+     John Williams <john.williams@petalogix.com>
+
+Thanks,
+
+	Ingo
