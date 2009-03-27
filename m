@@ -1,98 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757936AbZC0W4v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756386AbZC0W71@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757936AbZC0W4v (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Mar 2009 18:56:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758447AbZC0W4I
+	id S1756386AbZC0W71 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Mar 2009 18:59:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755907AbZC0W7N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Mar 2009 18:56:08 -0400
-Received: from THUNK.ORG ([69.25.196.29]:50518 "EHLO thunker.thunk.org"
+	Fri, 27 Mar 2009 18:59:13 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:55628 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757940AbZC0W4H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Mar 2009 18:56:07 -0400
-Date: Fri, 27 Mar 2009 18:55:54 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: Gene Heskett <gene.heskett@verizon.net>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Matthew Garrett <mjg59@srcf.ucam.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Rees <drees76@gmail.com>, Jesper Krogh <jesper@krogh.cc>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.29
-Message-ID: <20090327225553.GE5176@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Gene Heskett <gene.heskett@verizon.net>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Alan Cox <alan@lxorguk.ukuu.org.uk>,
-	Matthew Garrett <mjg59@srcf.ucam.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	David Rees <drees76@gmail.com>, Jesper Krogh <jesper@krogh.cc>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <20090327112438.GQ6239@mit.edu> <200903271519.10921.gene.heskett@verizon.net> <20090327194836.GZ6239@mit.edu> <200903271837.08755.gene.heskett@verizon.net>
+	id S1755115AbZC0W7M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Mar 2009 18:59:12 -0400
+Message-ID: <49CD59DB.3070906@redhat.com>
+Date: Fri, 27 Mar 2009 18:57:31 -0400
+From: Rik van Riel <riel@redhat.com>
+Organization: Red Hat, Inc
+User-Agent: Thunderbird 2.0.0.17 (X11/20080915)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200903271837.08755.gene.heskett@verizon.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+To: Martin Schwidefsky <schwidefsky@de.ibm.com>
+CC: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       virtualization@lists.osdl.org, frankeh@watson.ibm.com, akpm@osdl.org,
+       nickpiggin@yahoo.com.au, hugh@veritas.com
+Subject: Re: [patch 1/6] Guest page hinting: core + volatile page cache.
+References: <20090327150905.819861420@de.ibm.com> <20090327151011.534224968@de.ibm.com>
+In-Reply-To: <20090327151011.534224968@de.ibm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 27, 2009 at 06:37:08PM -0400, Gene Heskett wrote:
-> Thanks Ted, I will build 2.6.28.9 with this:
-> [root@coyote linux-2.6.28.9]# grep EXT .config
-> [...]
-> CONFIG_PAGEFLAGS_EXTENDED=y
-> CONFIG_EXT2_FS=m
-> CONFIG_EXT2_FS_XATTR=y
-> CONFIG_EXT2_FS_POSIX_ACL=y
-> # CONFIG_EXT2_FS_SECURITY is not set
-> CONFIG_EXT2_FS_XIP=y
-> CONFIG_EXT3_FS=m
-> CONFIG_EXT3_FS_XATTR=y
-> CONFIG_EXT3_FS_POSIX_ACL=y
-> CONFIG_EXT3_FS_SECURITY=y
-> CONFIG_EXT4_FS=y
-> # CONFIG_EXT4DEV_COMPAT is not set
-> # CONFIG_EXT4_FS_XATTR is not set
-> CONFIG_GENERIC_FIND_NEXT_BIT=y
-> 
-> Anything there that isn't compatible?
+Martin Schwidefsky wrote:
 
-Well, if you need extended attributes (if you are using SELinux, then
-you need extended attributes) you'll want to enable
-CONFIG_EXT4_FS_XATTR.
+> The major obstacles that need to get addressed:
+> * Concurrent page state changes:
+>   To guard against concurrent page state updates some kind of lock
+>   is needed. If page_make_volatile() has already done the 11 checks it
+>   will issue the state change primitive. If in the meantime one of
+>   the conditions has changed the user that requires that page in
+>   stable state will have to wait in the page_make_stable() function
+>   until the make volatile operation has finished. It is up to the
+>   architecture to define how this is done with the three primitives
+>   page_test_set_state_change, page_clear_state_change and
+>   page_state_change.
+>   There are some alternatives how this can be done, e.g. a global
+>   lock, or lock per segment in the kernel page table, or the per page
+>   bit PG_arch_1 if it is still free.
 
-If you want to use ext4 on your root filesystem, you may need to take
-some special measures depending on your distribution.  Using the boot
-command-line option rootfstype=ext4 will work on many distributions,
-but I haven't tested all of them.  It definitely works on Ubuntu, and
-it should work if you're not using an initial ramdisk.
+Can this be taken care of by memory barriers and
+careful ordering of operations?
 
-Oh yeah; the other thing I should warn you about is that 2.6.28.9
-won't have the replace-via-rename and replace-via-truncate
-workarounds.  So if you crash and your applications aren't using
-fsync(), you could end up seeing the zero-length files.  I very much
-doubt that will make a big difference for your /amandatapes partition,
-but if you want to use this for the filesystem where you have home
-directory, you'll probably want the workaround patches.  I've heard
-reports of KDE users telling me that when they initial start up their
-desktop, literally hundreds of files are rewritten by their desktop,
-just starting it up.  (Why?  Who knows?  It's not good for SSD
-endurance, in any case.)  But if you crash while initially logging in,
-your KDE configuration files might get wiped out w/o the
-replace-via-rename and replace-via-truncate workaround patches.
+If we consider the states unused -> volatile -> stable
+as progressively higher, "upgrades" can be done before
+any kernel operation that requires the page to be in
+that state (but after setting up the things that allow
+it to be found), while downgrades can be done after the
+kernel is done with needing the page at a higher level.
 
-> I'll build that, but only switch the /amandatapes mount in fstab for testing 
-> tonight unless you spot something above.
+Since the downgrade checks for users that need the page
+in a higher state, no lock should be required.
 
-OK, so you're not worried about your root filesystem, and presumably
-the issue with your home directory won't be an issue for you either.
-The only question then is whether you need extended attribute support.
+In fact, it may be possible to manage the page state
+bitmap with compare-and-swap, without needing a call
+to the hypervisor.
 
-Regards,
+> Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
 
-					- Ted
+Some comments and questions in line.
+
+> @@ -601,6 +604,21 @@ copy_one_pte(struct mm_struct *dst_mm, s
+>  
+>  out_set_pte:
+>  	set_pte_at(dst_mm, addr, dst_pte, pte);
+> +	return;
+> +
+> +out_discard_pte:
+> +	/*
+> +	 * If the page referred by the pte has the PG_discarded bit set,
+> +	 * copy_one_pte is racing with page_discard. The pte may not be
+> +	 * copied or we can end up with a pte pointing to a page not
+> +	 * in the page cache anymore. Do what try_to_unmap_one would do
+> +	 * if the copy_one_pte had taken place before page_discard.
+> +	 */
+> +	if (page->index != linear_page_index(vma, addr))
+> +		/* If nonlinear, store the file page offset in the pte. */
+> +		set_pte_at(dst_mm, addr, dst_pte, pgoff_to_pte(page->index));
+> +	else
+> +		pte_clear(dst_mm, addr, dst_pte);
+>  }
+
+It would be good to document that PG_discarded can only happen for
+file pages and NOT for eg. clean swap cache pages.
+
+> @@ -1390,6 +1391,7 @@ int test_clear_page_writeback(struct pag
+>  			radix_tree_tag_clear(&mapping->page_tree,
+>  						page_index(page),
+>  						PAGECACHE_TAG_WRITEBACK);
+> +			page_make_volatile(page, 1);
+>  			if (bdi_cap_account_writeback(bdi)) {
+>  				__dec_bdi_stat(bdi, BDI_WRITEBACK);
+>  				__bdi_writeout_inc(bdi);
+
+Does this mark the page volatile before the IO writing the
+dirty data back to disk has even started?  Is that OK?
+
+-- 
+All rights reversed.
