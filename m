@@ -1,81 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758473AbZC0RLf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758547AbZC0RNW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758473AbZC0RLf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Mar 2009 13:11:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754607AbZC0RL0
+	id S1758547AbZC0RNW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Mar 2009 13:13:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753555AbZC0RNN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Mar 2009 13:11:26 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:54422 "EHLO mx2.redhat.com"
+	Fri, 27 Mar 2009 13:13:13 -0400
+Received: from gw.goop.org ([64.81.55.164]:46397 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754708AbZC0RLZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Mar 2009 13:11:25 -0400
-Date: Fri, 27 Mar 2009 18:07:09 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: "Metzger, Markus T" <markus.t.metzger@intel.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "mingo@elte.hu" <mingo@elte.hu>,
-       "tglx@linutronix.de" <tglx@linutronix.de>,
-       "hpa@zytor.com" <hpa@zytor.com>,
-       "markus.t.metzger@gmail.com" <markus.t.metzger@gmail.com>,
-       "roland@redhat.com" <roland@redhat.com>,
-       "eranian@googlemail.com" <eranian@googlemail.com>,
-       "Villacis, Juan" <juan.villacis@intel.com>,
-       "ak@linux.jf.intel.com" <ak@linux.jf.intel.com>
-Subject: Re: [patch 1/14] x86, ptrace: add arch_ptrace_report_exit
-Message-ID: <20090327170709.GB25762@redhat.com>
-References: <20090327094626.A11002@sedona.ch.intel.com> <20090327141937.GB14504@redhat.com> <928CFBE8E7CB0040959E56B4EA41A77E9266B6B4@irsmsx504.ger.corp.intel.com>
+	id S1752861AbZC0RNN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Mar 2009 13:13:13 -0400
+Message-ID: <49CD0926.8080503@goop.org>
+Date: Fri, 27 Mar 2009 10:13:10 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <928CFBE8E7CB0040959E56B4EA41A77E9266B6B4@irsmsx504.ger.corp.intel.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Becky Bruce <beckyb@kernel.crashing.org>
+CC: linux-kernel@vger.kernel.org, mingo@elte.hu, fujita.tomonori@lab.ntt.co.jp,
+       ian.campbell@citrix.com
+Subject: Re: [PATCH 0/5] swiotlb: changes for powerpc/highmem
+References: <1237930126-6741-1-git-send-email-beckyb@kernel.crashing.org>
+In-Reply-To: <1237930126-6741-1-git-send-email-beckyb@kernel.crashing.org>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 03/27, Metzger, Markus T wrote:
+Becky Bruce wrote:
+> This is a series of fairly minor patches that get swiotlb working
+> on 32-bit powerpc systems with HIGHMEM, plus some cleanup of the
+> outdated comments in the code.  I've made a couple of things
+> weak that ppc needs to override, and have changed the prototypes
+> for a couple of functions to include the hwdev pointer, which
+> we need to ppc to convert bus addresses to and from phys/virt
+> addresses.  I've also fixed a build warning I've been seeing on
+> ppc.
 >
-> >-----Original Message-----
-> >From: Oleg Nesterov [mailto:oleg@redhat.com]
-> >
-> >This needs Rolan'd review.
-> >
-> >But I'd say this has nothing to do with tracehooks. And why do
-> >you pass *exit_code to arch_ptrace_report_exit() ?
-> >
-> >Just add arch_ptrace_report_exit(void) into do_exit() ?
-> >
-> >From the 3/14 patch:
-> >
-> >	#define arch_ptrace_report_exit(code) x86_ptrace_report_exit(code)
-> >
-> >	void x86_ptrace_report_exit(long exit_code)
-> >	{
-> >	       ptrace_bts_exit();
-> >	}
-> >
-> >This is a bit strange. Why do we need 2 functions, ptrace_bts_exit() and
-> >x86_ptrace_report_exit() which just calls the first one?
->
-> I did not want to take any shortcuts. I try to maintain the structure
-> general_function()->ptrace_report()->arch_ptrace_report().
+> I have not tested this in any way on any non-ppc platforms,
+> so commentary/testing from x86/ia64 folks is greatly 
+> appreciated.
+>   
 
-I see. And honestly, this doesn't look good to me. Yes, this is subjective.
+This works fine for me under Xen.
 
-Say, Regardless of CONFIG_X86_PTRACE_BTS we have the non-empty and non-inline
-x86_ptrace_untrace() which just calls ptrace_bts_untrace(). And ptrace_bts_untrace()
-depends on CONFIG_X86_PTRACE_BTS.
+Acked-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 
-But this is minor.
-
-> Recently, tracehook_report_whatever() calls were added which either do the
-> ptrace work directly or call a ptrace function. I try to use those calls, where possible.
-
-Up to Roland, but I still think tracehook_report_whatever() is not the
-good place for this stuff. And tracehooks will be changed soon by utrace.
-
-In any case I don't understand why you added yet another helper, you could
-just add arch_ptrace_report_exit() into tracehook_report_exit().
-
-Oleg.
-
+    J
