@@ -1,62 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754662AbZC0HtP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754860AbZC0Htn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754662AbZC0HtP (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Mar 2009 03:49:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751823AbZC0Hs6
+	id S1754860AbZC0Htn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Mar 2009 03:49:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752970AbZC0Ht3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Mar 2009 03:48:58 -0400
-Received: from mail.parknet.ad.jp ([210.171.162.6]:55450 "EHLO
-	mail.officemail.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751770AbZC0Hs6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Mar 2009 03:48:58 -0400
-From: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH] vfat: Note the NLS requirement
-References: <20090326205256.5293.35764.stgit@localhost.localdomain>
-Date: Fri, 27 Mar 2009 16:48:50 +0900
-In-Reply-To: <20090326205256.5293.35764.stgit@localhost.localdomain> (Alan
-	Cox's message of "Thu, 26 Mar 2009 20:53:00 +0000")
-Message-ID: <87vdpv5rtp.fsf@devron.myhome.or.jp>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.91 (gnu/linux)
+	Fri, 27 Mar 2009 03:49:29 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:58091 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751823AbZC0Ht2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Mar 2009 03:49:28 -0400
+Date: Fri, 27 Mar 2009 08:46:55 +0100
+From: Jiri Pirko <jpirko@redhat.com>
+To: David Miller <davem@davemloft.net>
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org, jgarzik@pobox.com,
+       shemminger@linux-foundation.org, bridge@lists.linux-foundation.org,
+       fubar@us.ibm.com, bonding-devel@lists.sourceforge.net, kaber@trash.net,
+       mschmidt@redhat.com, dada1@cosmosbay.com
+Subject: Re: [PATCH] bonding: allow bond in mode balance-alb to work
+	properly in bridge -try4
+Message-ID: <20090327074654.GC3377@psychotron.englab.brq.redhat.com>
+References: <20090313183303.GF3436@psychotron.englab.brq.redhat.com> <20090326155205.GA28868@psychotron.englab.brq.redhat.com> <20090327.003819.234492275.davem@davemloft.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-Anti-Virus: Kaspersky Anti-Virus for MailServers 5.5.10/RELEASE, bases: 24052007 #308098, status: clean
+Content-Disposition: inline
+In-Reply-To: <20090327.003819.234492275.davem@davemloft.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox <alan@lxorguk.ukuu.org.uk> writes:
-
-Thanks. Looks good to me.
-
-Acked-by: OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
-
-Please apply.
-
-> Close bug #4754
+Fri, Mar 27, 2009 at 08:38:19AM CET, davem@davemloft.net wrote:
+>From: Jiri Pirko <jpirko@redhat.com>
+>Date: Thu, 26 Mar 2009 16:52:06 +0100
 >
-> Signed-off-by: Alan Cox <alan@lxorguk.ukuu.org.uk>
-> ---
+>> (resend, updated changelog, hook moved into skb_bond_should_drop,
+>> skb_bond_should_drop ifdefed)
+>> 
+>> Hi all.
+>> 
+>> The problem is described in following bugzilla:
+>> https://bugzilla.redhat.com/show_bug.cgi?id=487763
+> ...
+>> This patch solves the situation in the bonding without touching bridge code,
+>> as Patrick suggested. For every incoming frame to bonding it searches the
+>> destination address in slaves list and if any of slave addresses matches, it
+>> rewrites the address in frame by the adress of bonding master. This ensures that
+>> all frames comming thru the bonding in alb mode have the same address.
+>> 
+>> Signed-off-by: Jiri Pirko <jpirko@redhat.com>
 >
->  fs/fat/Kconfig |    3 +++
->  1 files changed, 3 insertions(+), 0 deletions(-)
 >
->
-> diff --git a/fs/fat/Kconfig b/fs/fat/Kconfig
-> index d0a69ff..182f9ff 100644
-> --- a/fs/fat/Kconfig
-> +++ b/fs/fat/Kconfig
-> @@ -95,3 +95,6 @@ config FAT_DEFAULT_IOCHARSET
->  	  Note that "utf8" is not recommended for FAT filesystems.
->  	  If unsure, you shouldn't set "utf8" here.
->  	  See <file:Documentation/filesystems/vfat.txt> for more information.
-> +
-> +	  Enable any character sets you need in File Systems/Native Language
-> +	  Support.
->
+>I don't like the hook, but if that's how it's best done....
 
--- 
-OGAWA Hirofumi <hirofumi@mail.parknet.co.jp>
+Yes I agree with you, but I thing that for now it's the best way to do this. I
+picked this solution out of 3 that I had in mind and this is the lesser evil :)
+If anyone have any other solution please speak up.
+
+>
+>Patrick, please review this.
