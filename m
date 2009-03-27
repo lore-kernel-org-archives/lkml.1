@@ -1,26 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763323AbZC0XwQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765040AbZC0Xwm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763323AbZC0XwQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Mar 2009 19:52:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760606AbZC0X21
+	id S1765040AbZC0Xwm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Mar 2009 19:52:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761430AbZC0X22
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Mar 2009 19:28:27 -0400
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:48722 "EHLO
+	Fri, 27 Mar 2009 19:28:28 -0400
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:48718 "EHLO
 	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762153AbZC0X16 (ORCPT
+	with ESMTP id S1760849AbZC0X16 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 27 Mar 2009 19:27:58 -0400
 From: =?utf-8?q?Uwe=20Kleine-K=C3=B6nig?= 
 	<u.kleine-koenig@pengutronix.de>
 To: linux-kernel@vger.kernel.org
 Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Jeff Garzik <jgarzik@redhat.com>,
-       "David S. Miller" <davem@davemloft.net>,
-       Finn Thain <fthain@telegraphics.com.au>,
-       Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: [PATCH 25/58] move macsonic's probe function to .devinit.text
-Date: Sat, 28 Mar 2009 00:26:46 +0100
-Message-Id: <1238196439-16535-25-git-send-email-u.kleine-koenig@pengutronix.de>
+       Ronen Shitrit <rshitrit@marvell.com>,
+       Lennert Buytenhek <buytenh@marvell.com>,
+       Greg Kroah-Hartman <gregkh@suse.de>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       David Brownell <david-b@pacbell.net>, Nicolas Pitre <nico@marvell.com>,
+       Russell King <rmk+kernel@arm.linux.org.uk>,
+       Tzachi Perelstein <tzachi@marvell.com>
+Subject: [PATCH 12/58] move orion-ehci's probe function to .devinit.text
+Date: Sat, 28 Mar 2009 00:26:33 +0100
+Message-Id: <1238196439-16535-12-git-send-email-u.kleine-koenig@pengutronix.de>
 X-Mailer: git-send-email 1.6.2
 In-Reply-To: <20090327232153.GA16348@pengutronix.de>
 References: <20090327232153.GA16348@pengutronix.de>
@@ -35,7 +38,7 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A pointer to mac_sonic_probe is passed to the core via
+A pointer to ehci_orion_drv_probe is passed to the core via
 platform_driver_register and so the function must not disappear when the
 .init sections are discarded.  Otherwise (if also having HOTPLUG=y)
 unbinding and binding a device to the driver via sysfs will result in an
@@ -46,28 +49,32 @@ platform_driver_register plus removing the pointer to the probe function
 from the struct platform_driver.
 
 Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
-Cc: Jeff Garzik <jgarzik@redhat.com>
-Cc: David S. Miller <davem@davemloft.net>
-Cc: Finn Thain <fthain@telegraphics.com.au>
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Ronen Shitrit <rshitrit@marvell.com>
+Cc: Lennert Buytenhek <buytenh@marvell.com>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>
+Cc: Alan Stern <stern@rowland.harvard.edu>
+Cc: David Brownell <david-b@pacbell.net>
+Cc: Nicolas Pitre <nico@marvell.com>
+Cc: Russell King <rmk+kernel@arm.linux.org.uk>
+Cc: Tzachi Perelstein <tzachi@marvell.com>
 Cc: Andrew Morton <akpm@linux-foundation.org>
 ---
- drivers/net/macsonic.c |    2 +-
+ drivers/usb/host/ehci-orion.c |    2 +-
  1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/net/macsonic.c b/drivers/net/macsonic.c
-index 527166e..d4f913b 100644
---- a/drivers/net/macsonic.c
-+++ b/drivers/net/macsonic.c
-@@ -555,7 +555,7 @@ static int __init mac_nubus_sonic_probe(struct net_device *dev)
- 	return macsonic_init(dev);
+diff --git a/drivers/usb/host/ehci-orion.c b/drivers/usb/host/ehci-orion.c
+index 9d48790..17dc154 100644
+--- a/drivers/usb/host/ehci-orion.c
++++ b/drivers/usb/host/ehci-orion.c
+@@ -187,7 +187,7 @@ ehci_orion_conf_mbus_windows(struct usb_hcd *hcd,
+ 	}
  }
  
--static int __init mac_sonic_probe(struct platform_device *pdev)
-+static int __devinit mac_sonic_probe(struct platform_device *pdev)
+-static int __init ehci_orion_drv_probe(struct platform_device *pdev)
++static int __devinit ehci_orion_drv_probe(struct platform_device *pdev)
  {
- 	struct net_device *dev;
- 	struct sonic_local *lp;
+ 	struct orion_ehci_data *pd = pdev->dev.platform_data;
+ 	struct resource *res;
 -- 
 1.6.2
 
