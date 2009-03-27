@@ -1,78 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759905AbZC0Wvy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753838AbZC0WwQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759905AbZC0Wvy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Mar 2009 18:51:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753248AbZC0Wvp
+	id S1753838AbZC0WwQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Mar 2009 18:52:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757782AbZC0Wvs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Mar 2009 18:51:45 -0400
-Received: from vsmtp01.dti.ne.jp ([202.216.231.136]:50961 "EHLO
-	vsmtp01.dti.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752597AbZC0Wvo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Mar 2009 18:51:44 -0400
-From: hooanon05@yahoo.co.jp
-Subject: Re: Problems with default ACLs over NFS 
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: "\"=?ISO-8859-1?Q? \" J. A. _Magall=F3n \" ?=\"" <jamagallon@ono.com>,
-       LKML <linux-kernel@vger.kernel.org>, linux-nfs@vger.kernel.org,
-       Trond.Myklebust@netapp.com
-In-Reply-To: <20090326170513.4e7d377a.akpm@linux-foundation.org>
-References: <20090323222427.00bb24e7@werewolf.home> <20090326170513.4e7d377a.akpm@linux-foundation.org>
-Date: Sat, 28 Mar 2009 07:50:55 +0900
-Message-ID: <18513.1238194255@jrobl>
+	Fri, 27 Mar 2009 18:51:48 -0400
+Received: from mail.atlantis.sk ([80.94.52.35]:36139 "EHLO mail.atlantis.sk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756535AbZC0Wvs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Mar 2009 18:51:48 -0400
+From: Ondrej Zary <linux@rainbow-software.org>
+To: Linux Kernel <linux-kernel@vger.kernel.org>
+Subject: Network died completely in 2.6.29
+Date: Fri, 27 Mar 2009 23:51:36 +0100
+User-Agent: KMail/1.9.10
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200903272351.37610.linux@rainbow-software.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello,
+upgraded to 2.6.29 today. It appeared to work fine for a couple of hours. But 
+suddenly the network stopped. I wasn't even able to ping my local IP. Even 
+pinging 127.0.0.1 did not work. There were no errors in dmesg and the system 
+appeared to work fine otherwise. Had to reboot (into 2.6.28).
 
-> On Mon, 23 Mar 2009 22:24:27 +0100 "J.A. Magall__n" <jamagallon@ono.com> wrote:
-> 
-> > Hi all...
-> > 
-> > I have a strange problem with 2.6.29-rc8-git3.
-> > It looks like a kernel bug... ?
-> > 
-> > I have a box with NFS autofs-mounted home directories. Server is a
-> > Solaris 10 system. This worked in previous kernel versions, so I
-> > don't blame Solaris, at this moment.
-> > 
-> > With this acls set in my home:
-	:::
-> > I get this strange message in the linux client:
-> > 
-> > cicely:~> mkdir kk  
-> > mkdir: cannot create directory `kk': Invalid argument
+Never seen this before. Anyone with the same problem?
 
-I met a similar problem.
-In linux-2.6.29 with CONFIG_NFS_V3_ACL enabled, 
-when I executed "cp -p /local/ext2/file /nfsv3/file", I got EINVAL too.
-Strace-ing this cp, I found setxsttr() return EINVAL. Before 2.6.29, it
-was EOPNOTSUPPORTED.
-
-Tracing some kernel functions, I observed several thigs.
-- xdr_buf_subsegment() returned -1 due to 'len' is not 0.
-- xdr_encode_word() call from nfsacl_encode() got this -1, and
-  nfsacl_encode/nfs3_xdr_setaclargs/nfs3_proc_setacls/nfs3_proc_setacl/nfs3_setxattr
-  returned -EINVAL.
-
-
-Finally I am afraid this commit might be related to this issue.
-
-commit ae46141ff08f1965b17c531b571953c39ce8b9e2
-Author: Trond Myklebust <Trond.Myklebust@netapp.com>
-Date:   Tue Mar 10 20:33:18 2009 -0400
-
-    NFSv3: Fix posix ACL code
-    
-    Fix a memory leak due to allocation in the XDR layer. In cases where the
-    RPC call needs to be retransmitted, we end up allocating new pages without
-    clearing the old ones. Fix this by moving the allocation into
-    nfs3_proc_setacls().
-    
-    Also fix an issue discovered by Kevin Rudd, whereby the amount of memory
-    reserved for the acls in the xdr_buf->head was miscalculated, and causing
-    corruption.
-
-
-
-J. R. Okajima
+-- 
+Ondrej Zary
