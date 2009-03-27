@@ -1,113 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757162AbZC0IAA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756233AbZC0ICF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757162AbZC0IAA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Mar 2009 04:00:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752153AbZC0H7v
+	id S1756233AbZC0ICF (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Mar 2009 04:02:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753756AbZC0IBx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Mar 2009 03:59:51 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:45871 "EHLO kernel.dk"
+	Fri, 27 Mar 2009 04:01:53 -0400
+Received: from mk-outboundfilter-6-a-2.mail.uk.tiscali.com ([212.74.114.16]:56981
+	"EHLO mk-outboundfilter-6-a-2.mail.uk.tiscali.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752937AbZC0H7v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Mar 2009 03:59:51 -0400
-Date: Fri, 27 Mar 2009 08:59:48 +0100
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Eric Sandeen <sandeen@sandeen.net>
-Cc: Jeff Garzik <jeff@garzik.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Theodore Tso <tytso@mit.edu>, Ingo Molnar <mingo@elte.hu>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Nick Piggin <npiggin@suse.de>,
-       David Rees <drees76@gmail.com>, Jesper Krogh <jesper@krogh.cc>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] issue storage device flush via sync_blockdev() (was
-	Re:  Linux 2.6.29)
-Message-ID: <20090327075947.GU27476@kernel.dk>
-References: <20090324184549.GE32307@mit.edu> <alpine.LFD.2.00.0903241218130.3032@localhost.localdomain> <49C93AB0.6070300@garzik.org> <20090325093913.GJ27476@kernel.dk> <49CA86BD.6060205@garzik.org> <20090325194341.GB27476@kernel.dk> <49CA9346.6040108@garzik.org> <alpine.LFD.2.00.0903251337410.3032@localhost.localdomain> <20090325212923.GA5620@havoc.gtf.org> <49CAA88B.1080102@sandeen.net>
+	id S1752816AbZC0IBw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Mar 2009 04:01:52 -0400
+X-Trace: 88546414/mk-outboundfilter-6.mail.uk.tiscali.com/F2S/$F2S-ACCEPTED/f2s-freedom2Surf-customers/83.67.11.44/None/tvrtko@ursulin.net
+X-SBRS: None
+X-RemoteIP: 83.67.11.44
+X-IP-MAIL-FROM: tvrtko@ursulin.net
+X-MUA: KMail/1.9.10
+X-IP-BHB: Once
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApsEAE8lzElTQwss/2dsb2JhbACBUMsZg3cG
+X-IronPort-AV: E=Sophos;i="4.38,431,1233532800"; 
+   d="scan'208";a="88546414"
+X-IP-Direction: IN
+From: "Tvrtko A. Ursulin" <tvrtko@ursulin.net>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: Resume after hibernation regression in 2.6.29
+Date: Fri, 27 Mar 2009 08:01:46 +0000
+User-Agent: KMail/1.9.10
+Cc: Pavel Machek <pavel@ucw.cz>, linux-pm@lists.linux-foundation.org,
+       kernel list <linux-kernel@vger.kernel.org>,
+       Tobias Diedrich <ranma+kernel@tdiedrich.de>,
+       Ayaz Abdulla <aabdulla@nvidia.com>
+References: <200903261920.32173.tvrtko@ursulin.net> <200903262304.24634.tvrtko@ursulin.net> <200903270009.00479.rjw@sisk.pl>
+In-Reply-To: <200903270009.00479.rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <49CAA88B.1080102@sandeen.net>
+Message-Id: <200903270801.46712.tvrtko@ursulin.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 25 2009, Eric Sandeen wrote:
-> Jeff Garzik wrote:
-> > On Wed, Mar 25, 2009 at 01:40:37PM -0700, Linus Torvalds wrote:
-> >> On Wed, 25 Mar 2009, Jeff Garzik wrote:
-> >>> It is clearly possible to implement an fsync(2) that causes FLUSH CACHE to be
-> >>> issued, without adding full barrier support to a filesystem.  It is likely
-> >>> doable to avoid touching per-filesystem code at all, if we issue the flush
-> >>> from a generic fsync(2) code path in the kernel.
-> >> We could easily do that. It would even work for most cases. The 
-> >> problematic ones are where filesystems do their own disk management, but I 
-> >> guess those people can do their own fsync() management too.
-> >>
-> >> Somebody send me the patch, we can try it out.
-> > 
-> > This is a simple step that would cover a lot of cases...  sync(2)
-> > calls sync_blockdev(), and many filesystems do as well via the generic
-> > filesystem helper file_fsync (fs/sync.c).
-> > 
-> > XFS code calls sync_blockdev() a "big hammer", so I hope my patch
-> > follows with known practice.
-> > 
-> > Looking over every use of sync_blockdev(), its most frequent use is
-> > through fsync(2), for the selected filesystems that use the generic
-> > file_fsync helper.
-> > 
-> > Most callers of sync_blockdev() in the kernel do so infrequently,
-> > when removing and invalidating volumes (MD) or storing the superblock
-> > prior to release (put_super) in some filesystems.
-> > 
-> > Compile-tested only, of course :)  But it should be work :)
-> > 
-> > My main concern is some hidden area that calls sync_blockdev() with
-> > a high-enough frequency that the performance hit is bad.
-> > 
-> > Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
-> > 
-> > diff --git a/fs/buffer.c b/fs/buffer.c
-> > index 891e1c7..7b9f74a 100644
-> > --- a/fs/buffer.c
-> > +++ b/fs/buffer.c
-> > @@ -173,9 +173,14 @@ int sync_blockdev(struct block_device *bdev)
-> >  {
-> >  	int ret = 0;
-> >  
-> > -	if (bdev)
-> > -		ret = filemap_write_and_wait(bdev->bd_inode->i_mapping);
-> > -	return ret;
-> > +	if (!bdev)
-> > +		return 0;
-> > +	
-> > +	ret = filemap_write_and_wait(bdev->bd_inode->i_mapping);
-> > +	if (ret)
-> > +		return ret;
-> > +	
-> > +	return blkdev_issue_flush(bdev, NULL);
-> >  }
-> >  EXPORT_SYMBOL(sync_blockdev);
-> 
-> What about when you're running over a big raid device with
-> battery-backed cache, and you trust the cache as much as much as the
-> disks.  Wouldn't this unconditional cache flush be painful there on any
-> of the callers even if they're rare?  (fs unmounts, freezes, unmounts,
-> etc?  Or a fat filesystem on that device doing an fsync?)
-> 
-> xfs, reiserfs, ext4 all avoid the blkdev flush on fsync if barriers are
-> not enabled, I think for that reason...
-> 
-> (I'm assuming these raid devices still honor a cache flush request even
-> if they're battery-backed?  I dunno.)
+On Thursday 26 March 2009 23:08:59 Rafael J. Wysocki wrote:
+> On Friday 27 March 2009, Tvrtko A. Ursulin wrote:
+> > On Thursday 26 March 2009 22:38:55 Pavel Machek wrote:
+> > > On Thu 2009-03-26 22:01:03, Tvrtko A. Ursulin wrote:
+> > > > On Thursday 26 March 2009 21:35:29 Rafael J. Wysocki wrote:
+> > > > > On Thursday 26 March 2009, Pavel Machek wrote:
+> > > > > > On Thu 2009-03-26 20:55:23, Tvrtko A. Ursulin wrote:
+> > > > > > > On Thursday 26 March 2009 20:18:40 Pavel Machek wrote:
+> > > > > > > > On Thu 2009-03-26 19:20:32, Tvrtko A. Ursulin wrote:
+> > > > > > > > > Hi guys,
+> > > > > > > > > I have been running custom compiled 2.6.28.7 in OpenSUSE
+> > > > > > > > > 11.1 and using hiberation/resume daily as configured by the
+> > > > > > > > > distro. Yesterday I upgraded to 2.6.29 (make oldconfig from
+> > > > > > > > > 2.6.28.7, attached) and after resume networking (at least)
+> > > > > > > > > does not work. Reboot at this point takes very long because
+> > > > > > > > > of timeouts on CIFS and whatelse.
+> > > > > > > > >
+> > > > > > > > > Below is how /var/log/messagess looks for one cycle
+> > > > > > > > > (hibernate-resume-reboot) and I am also attaching kernel
+> > > > > > > > > config and /var/log/pm-suspend.log.
+> > > > > > > > >
+> > > > > > > > > You will probably notice evil nvidia.ko in there but don't
+> > > > > > > > > panic, it all happens without it as well. Tested from
+> > > > > > > > > runlevel 3 and by running pm-hibernate. After resume from
+> > > > > > > > > that NIC LEDs were off. I tried /etc/init.d/network restart
+> > > > > > > > > but that hung so I ^C and tried rmmod forcedeth && modprobe
+> > > > > > > > > forcedeth && ifup eth0 and after some time network went
+> > > > > > > > > live again. Haven't had time to test further though, so
+> > > > > > > > > this is all pretty rough.
+> > > > > > > >
+> > > > > > > > Ok, can you try to rmmod forcedeth before hibernation, then
+> > > > > > > > insmod it after resume?
+> > > > > > >
+> > > > > > > Sure, after insmod and /etc/init.d/network start following
+> > > > > > > resume network was fine. Guess I could kludge that sequence
+> > > > > > > into pm scripts somehow but would rather avoid that since it
+> > > > > > > slows down the cycle and would make scripts non-stock.
+> > > > > >
+> > > > > > Ok, I guess you need to talk to forcedeth maintainers then...
+> > > > > > sounds like a forcedeth problem to me.
+> > > > >
+> > > > > I have a box with forcedeth somewhere here, I should be able to
+> > > > > check that in the next few days.
+> > > >
+> > > > Not a lot activity in forcedeth.c from 2.6.28 to 2.6.29 so I will CC
+> > > > two guys who commited changes in that period. Ayaz, Tobias, forcedeth
+> > > > does not seem to come up after hibernation well for me. Actual
+> > > > hardware is:
+> > > >
+> > > > 00:0f.0 Ethernet controller: nVidia Corporation MCP73 Ethernet (rev
+> > > > a2)
+> > > >
+> > > > Anything more I can do just shout!
+> > >
+> > > Actually yes. Testing forcedeth from 2.6.28 in 2.6.29 would be nice
+> > > way to prove problem is indeed in that module.
+> >
+> > Good idea, I had to massage it a bit due to some API changes, but the end
+> > result is a correct resume which proves that the problem really is in
+> > forcedeth.
+>
+> Well, since you can easily check what commits changed forcedeth between
+> 2.6.28 and 2.6.29, you can find the one that introduced the problem for
+> you.
 
-I think most don't, as they realize it's a data integrity thing and that
-doesn't apply if you don't lose data on powerloss. But, I'm sure there
-are also "dumb" ones that DO flush the cache. In which case the flush is
-utterly hopeless and should not be done.
+Not so easily :/ I don't know git for start, what I did so far was through the 
+web interface, but this morning a lot more commits appeared so my assumption 
+that if I start by selecting 2.6.29 tag and then tree, that leaves the view 
+in 2.6.29 tagged state was obviously wrong.
 
--- 
-Jens Axboe
+What I managed to do is to revert this:
+http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=34edaa88324004baf4884fb0388f86059d9c4878
 
+But that didn't fix the problem. That one was also the last commit yesterday, 
+but not any more today as I said. Interestingly, the next one 
+(http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=e70049b9e74267dd47e1ffa62302073487afcb48#patch203) 
+seems to introduce the same change.
+
+Anyway, I won't have time due to personal and business commitments to test 
+this further for a couple of weeks.
+
+Tvrtko
