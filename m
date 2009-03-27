@@ -1,46 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759667AbZC0TOQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759981AbZC0TOu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759667AbZC0TOQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Mar 2009 15:14:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754553AbZC0TN4
+	id S1759981AbZC0TOu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Mar 2009 15:14:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754553AbZC0TOl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Mar 2009 15:13:56 -0400
-Received: from mail-in-07.arcor-online.net ([151.189.21.47]:37727 "EHLO
-	mail-in-07.arcor-online.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753430AbZC0TNz (ORCPT
+	Fri, 27 Mar 2009 15:14:41 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:37687 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754505AbZC0TOk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Mar 2009 15:13:55 -0400
-X-DKIM: Sendmail DKIM Filter v2.8.2 mail-in-12.arcor-online.net 1648E1B3AE1
-From: Bodo Eggert <7eggert@gmx.de>
-Subject: Re: [PATCH 1/2] Add a strictatime mount option
-To: Matthew Garrett <mjg@redhat.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Theodore Tso <tytso@mit.edu>, Ingo Molnar <mingo@elte.hu>,
-       Jan Kara <jack@suse.cz>, Andrew Morton <akpm@linux-foundation.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Nick Piggin <npiggin@suse.de>,
-       Jens Axboe <jens.axboe@oracle.com>, David Rees <drees76@gmail.com>,
-       Jesper Krogh <jesper@krogh.cc>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Oleg Nesterov <oleg@redhat.com>, Roland McGrath <roland@redhat.com>
-Reply-To: 7eggert@gmx.de
-Date: Fri, 27 Mar 2009 20:13:44 +0100
-References: <cjJiR-3rY-9@gated-at.bofh.it> <cjKHX-5MF-17@gated-at.bofh.it> <cjLb2-6no-13@gated-at.bofh.it> <cjTLl-3ln-15@gated-at.bofh.it> <cjW6r-72f-21@gated-at.bofh.it> <cjYrG-2u0-23@gated-at.bofh.it> <cjZ4h-3jp-19@gated-at.bofh.it> <ck0D8-5Ua-11@gated-at.bofh.it> <ck1fN-6Yp-25@gated-at.bofh.it> <ck1zb-7o2-29@gated-at.bofh.it> <ck22i-7Zy-25@gated-at.bofh.it>
-User-Agent: KNode/0.10.4
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7Bit
-Message-Id: <E1LnHUu-0001hc-V4@be1.7eggert.dyndns.org>
+	Fri, 27 Mar 2009 15:14:40 -0400
+Date: Fri, 27 Mar 2009 19:14:26 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Theodore Tso <tytso@mit.edu>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Matthew Garrett <mjg59@srcf.ucam.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       David Rees <drees76@gmail.com>, Jesper Krogh <jesper@krogh.cc>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.29
+Message-ID: <20090327191426.3d478b6b@lxorguk.ukuu.org.uk>
+In-Reply-To: <20090327190339.GW6239@mit.edu>
+References: <20090327112438.GQ6239@mit.edu>
+	<20090327145156.GB24819@srcf.ucam.org>
+	<20090327150811.09b313f5@lxorguk.ukuu.org.uk>
+	<20090327152221.GA25234@srcf.ucam.org>
+	<20090327161553.31436545@lxorguk.ukuu.org.uk>
+	<20090327162841.GA26860@srcf.ucam.org>
+	<20090327165150.7e69d9e1@lxorguk.ukuu.org.uk>
+	<20090327170208.GA27646@srcf.ucam.org>
+	<20090327171955.78662c1e@lxorguk.ukuu.org.uk>
+	<alpine.LFD.2.00.0903271058060.3994@localhost.localdomain>
+	<20090327190339.GW6239@mit.edu>
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Matthew Garrett <mjg@redhat.com> wrote:
+> Agreed, we need a middle ground.  We need a transition path that
+> recognizes that ext3 won't be the dominant filesystem for Linux in
+> perpetuity, and that ext3's data=ordered semantics will someday no
+> longer be a major factor in application design.  fbarrier() semantics
+> might be one approach; there may be others.  It's something we need to
+> figure out.
 
-> Add support for explicitly requesting full atime updates. This makes it
-> possible for kernels to default to relatime but still allow userspace to
-> override it.
+Would making close imply fbarrier() rather than fsync() work for this ?
+That would give people the ordering they want even if they are less
+careful but wouldn't give the media error cases - which are less
+interesting.
 
-Maybe the *atime should be consolidated to atime=foo.
-
+Alan
