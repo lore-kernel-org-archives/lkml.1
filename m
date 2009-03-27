@@ -1,84 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759955AbZC0Dbn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760018AbZC0Di2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759955AbZC0Dbn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Mar 2009 23:31:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754523AbZC0Dbf
+	id S1760018AbZC0Di2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Mar 2009 23:38:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757769AbZC0DiT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Mar 2009 23:31:35 -0400
-Received: from thunk.org ([69.25.196.29]:39733 "EHLO thunker.thunk.org"
+	Thu, 26 Mar 2009 23:38:19 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:38865 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753641AbZC0Dbe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Mar 2009 23:31:34 -0400
-Date: Thu, 26 Mar 2009 23:30:22 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Nick Piggin <npiggin@suse.de>,
-       David Rees <drees76@gmail.com>, Jesper Krogh <jesper@krogh.cc>,
+	id S1757623AbZC0DiS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Mar 2009 23:38:18 -0400
+Date: Thu, 26 Mar 2009 23:36:55 -0400
+From: Dave Jones <davej@redhat.com>
+To: David Rees <drees76@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Theodore Tso <tytso@mit.edu>, Jesper Krogh <jesper@krogh.cc>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH v2] issue storage device flush via sync_blockdev()
-Message-ID: <20090327033022.GO6239@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Jeff Garzik <jeff@garzik.org>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-	Arjan van de Ven <arjan@infradead.org>,
+Subject: Re: Linux 2.6.29
+Message-ID: <20090327033654.GA21857@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	David Rees <drees76@gmail.com>,
 	Andrew Morton <akpm@linux-foundation.org>,
-	Peter Zijlstra <a.p.zijlstra@chello.nl>,
-	Nick Piggin <npiggin@suse.de>, David Rees <drees76@gmail.com>,
-	Jesper Krogh <jesper@krogh.cc>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Theodore Tso <tytso@mit.edu>, Jesper Krogh <jesper@krogh.cc>,
 	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <49C93AB0.6070300@garzik.org> <20090325093913.GJ27476@kernel.dk> <49CA86BD.6060205@garzik.org> <20090325194341.GB27476@kernel.dk> <49CA9346.6040108@garzik.org> <alpine.LFD.2.00.0903251337410.3032@localhost.localdomain> <20090325212923.GA5620@havoc.gtf.org> <20090326032445.GA16999@havoc.gtf.org> <20090327025044.GM6239@mit.edu> <49CC4558.7020701@garzik.org>
+References: <20090325183011.GN32307@mit.edu> <alpine.LFD.2.00.0903251139260.3032@localhost.localdomain> <20090325220530.GR32307@mit.edu> <alpine.LFD.2.00.0903251622420.3032@localhost.localdomain> <20090326171148.9bf8f1ec.akpm@linux-foundation.org> <alpine.LFD.2.00.0903261723250.3994@localhost.localdomain> <20090326174704.cd36bf7b.akpm@linux-foundation.org> <alpine.LFD.2.00.0903261752110.3994@localhost.localdomain> <20090326182519.d576d703.akpm@linux-foundation.org> <72dbd3150903261921k7cf728ebhf331e9965630be7e@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <49CC4558.7020701@garzik.org>
+In-Reply-To: <72dbd3150903261921k7cf728ebhf331e9965630be7e@mail.gmail.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 26, 2009 at 11:17:44PM -0400, Jeff Garzik wrote:
-> Theodore Tso wrote:
->> Jeff,
->>
->> FYI, I tried your patch; it causes the lvm process called out of
->> the initramfs from an Ubuntu 8.10 system to blow up while trying to
->> set up the root filesystem.  The stack trace was:
->>
->> generic_make_request+0x2a3/0x2e6
->> trace_hardirqs_on_caller+0x111/0x135
->> mempool_alloc_slab+0xe/0x10
->> mempool_alloc+0x42/0xe0
->> submit_bio+0xad/0xb5
->> bio_alloc_bioset+0x21/0xfc
->> blkdev_issue_flush+0x7f/0xfc
->> syn_blockdev+0x2a/0x36
->> __blkdev_put_0x44/0x131
->> blkdev_put+0xa/0xc
->> blkdev_close+0x2e/0x32
->> __fput+0xcf/0x15f
->> fput+0x19/0x1b
->> filp_close+0x51/0x5b
->> sys_close+0x73/0xad
->
-> hmmm, I wonder if DM/LVM doesn't like blkdev_issue_flush, or it's too  
-> early, or what.  I'll toss Ubuntu onto a VM and check it out...
+On Thu, Mar 26, 2009 at 07:21:08PM -0700, David Rees wrote:
+ 
+ > * Mon Mar 23 2009 xx <xx@xx.xx> 2.6.29-2
+ >  - Change default swappiness setting from 60 to 30.
+ > 
+ > * Thu Mar 19 2009 xx <xx@xx.xx> 2.6.29-0.66.rc8.git4
+ >  - Raise default vm dirty data limits from 5/10 to 10/20 percent.
+ > 
+ > Why are the going in the kernel package instead of /etc/sysctl.conf?
 
-I forgot to mention.  The failure was the EIP was NULL; so it looks
-like we called a null function pointer.  The only function pointer
-derference I can find is q->make_request_fn() in line 1460 of
-blk-core.c, in __generic_make_request.  But that doesn't seem make any
-sense....  
+At least in part, because rpm sucks.
+If a user has editted /etc/sysctl.conf, upgrading the initscripts package
+won't change that file.
 
-Anyway, maybe you can figure out what's going on.  The problem
-disappeared as soon as I popped off this patch, though, so it was
-pretty clearly the culprit.
+	Dave
 
-					- Ted
