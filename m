@@ -1,100 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752794AbZC0Gza@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752260AbZC0HAb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752794AbZC0Gza (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Mar 2009 02:55:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751118AbZC0GzU
+	id S1752260AbZC0HAb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Mar 2009 03:00:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751100AbZC0HAX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Mar 2009 02:55:20 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:49431 "EHLO song.cn.fujitsu.com"
+	Fri, 27 Mar 2009 03:00:23 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:58371 "EHLO song.cn.fujitsu.com"
 	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1750868AbZC0GzU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Mar 2009 02:55:20 -0400
-Message-ID: <49CC7870.9000309@cn.fujitsu.com>
-Date: Fri, 27 Mar 2009 14:55:44 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	id S1750850AbZC0HAW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Mar 2009 03:00:22 -0400
+Message-ID: <49CC791A.10008@cn.fujitsu.com>
+Date: Fri, 27 Mar 2009 14:58:34 +0800
+From: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.5 (Windows/20070716)
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] tracing: kill some magic numbers
+To: Vivek Goyal <vgoyal@redhat.com>
+CC: nauman@google.com, dpshah@google.com, lizf@cn.fujitsu.com,
+       mikew@google.com, fchecconi@gmail.com, paolo.valente@unimore.it,
+       jens.axboe@oracle.com, ryov@valinux.co.jp, fernando@intellilink.co.jp,
+       s-uchida@ap.jp.nec.com, taka@valinux.co.jp, arozansk@redhat.com,
+       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
+       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       akpm@linux-foundation.org, menage@google.com, peterz@infradead.org
+Subject: [PATCH] IO Controller: No need to stop idling in as
+References: <1236823015-4183-1-git-send-email-vgoyal@redhat.com> <1236823015-4183-11-git-send-email-vgoyal@redhat.com>
+In-Reply-To: <1236823015-4183-11-git-send-email-vgoyal@redhat.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: cleanup
+Vivek Goyal wrote:
 
-Use USEC_PER_SEC and NSEC_PER_SEC instead of 1000000 and 1000000000.
+>  		.elevator_alloc_sched_queue_fn = as_alloc_as_queue,
+>  		.elevator_free_sched_queue_fn = as_free_as_queue,
+> +#ifdef CONFIG_IOSCHED_AS_HIER
+> +		.elevator_expire_ioq_fn =       as_expire_ioq,
+> +		.elevator_active_ioq_set_fn =   as_active_ioq_set,
+>  	},
+> -
+> +	.elevator_features = ELV_IOSCHED_NEED_FQ | ELV_IOSCHED_SINGLE_IOQ | ELV_IOSCHED_DONT_IDLE,
 
-Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+  Hi Vivek,
+
+  I found the IO Controller doesn't work in as.
+  I dig into this issue, and notice that you stop idling in as. IMHO, this will cause
+  active ioq is always expired when tring to choose a new ioq to serve(elv_fq_select_ioq). 
+  Because idling is disabled, active ioq can't be kept anymore.
+  So i just get rid of ELV_IOSCHED_DONT_IDLE, and it works fine this time.
+
+Signed-off-by: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
 ---
- kernel/trace/trace_boot.c      |    5 +++--
- kernel/trace/trace_mmiotrace.c |    6 ++++--
- 2 files changed, 7 insertions(+), 4 deletions(-)
+ block/as-iosched.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/kernel/trace/trace_boot.c b/kernel/trace/trace_boot.c
-index 7a30fc4..a29ef23 100644
---- a/kernel/trace/trace_boot.c
-+++ b/kernel/trace/trace_boot.c
-@@ -9,6 +9,7 @@
- #include <linux/debugfs.h>
- #include <linux/ftrace.h>
- #include <linux/kallsyms.h>
-+#include <linux/time.h>
- 
- #include "trace.h"
- #include "trace_output.h"
-@@ -67,7 +68,7 @@ initcall_call_print_line(struct trace_iterator *iter)
- 	trace_assign_type(field, entry);
- 	call = &field->boot_call;
- 	ts = iter->ts;
--	nsec_rem = do_div(ts, 1000000000);
-+	nsec_rem = do_div(ts, NSEC_PER_SEC);
- 
- 	ret = trace_seq_printf(s, "[%5ld.%09ld] calling  %s @ %i\n",
- 			(unsigned long)ts, nsec_rem, call->func, call->caller);
-@@ -92,7 +93,7 @@ initcall_ret_print_line(struct trace_iterator *iter)
- 	trace_assign_type(field, entry);
- 	init_ret = &field->boot_ret;
- 	ts = iter->ts;
--	nsec_rem = do_div(ts, 1000000000);
-+	nsec_rem = do_div(ts, NSEC_PER_SEC);
- 
- 	ret = trace_seq_printf(s, "[%5ld.%09ld] initcall %s "
- 			"returned %d after %llu msecs\n",
-diff --git a/kernel/trace/trace_mmiotrace.c b/kernel/trace/trace_mmiotrace.c
-index 8e37fcd..d53b45e 100644
---- a/kernel/trace/trace_mmiotrace.c
-+++ b/kernel/trace/trace_mmiotrace.c
-@@ -9,6 +9,8 @@
- #include <linux/kernel.h>
- #include <linux/mmiotrace.h>
- #include <linux/pci.h>
-+#include <linux/time.h>
-+
- #include <asm/atomic.h>
- 
- #include "trace.h"
-@@ -174,7 +176,7 @@ static enum print_line_t mmio_print_rw(struct trace_iterator *iter)
- 	struct mmiotrace_rw *rw;
- 	struct trace_seq *s	= &iter->seq;
- 	unsigned long long t	= ns2usecs(iter->ts);
--	unsigned long usec_rem	= do_div(t, 1000000ULL);
-+	unsigned long usec_rem	= do_div(t, USEC_PER_SEC);
- 	unsigned secs		= (unsigned long)t;
- 	int ret = 1;
- 
-@@ -221,7 +223,7 @@ static enum print_line_t mmio_print_map(struct trace_iterator *iter)
- 	struct mmiotrace_map *m;
- 	struct trace_seq *s	= &iter->seq;
- 	unsigned long long t	= ns2usecs(iter->ts);
--	unsigned long usec_rem	= do_div(t, 1000000ULL);
-+	unsigned long usec_rem	= do_div(t, USEC_PER_SEC);
- 	unsigned secs		= (unsigned long)t;
- 	int ret;
- 
+diff --git a/block/as-iosched.c b/block/as-iosched.c
+index 27c14a7..499c521 100644
+--- a/block/as-iosched.c
++++ b/block/as-iosched.c
+@@ -1689,7 +1689,7 @@ static struct elevator_type iosched_as = {
+ 		.elevator_expire_ioq_fn =       as_expire_ioq,
+ 		.elevator_active_ioq_set_fn =   as_active_ioq_set,
+ 	},
+-	.elevator_features = ELV_IOSCHED_NEED_FQ | ELV_IOSCHED_SINGLE_IOQ | ELV_IOSCHED_DONT_IDLE,
++	.elevator_features = ELV_IOSCHED_NEED_FQ | ELV_IOSCHED_SINGLE_IOQ,
+ #else
+ 	},
+ #endif
 -- 
 1.5.4.rc3
+
+
