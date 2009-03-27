@@ -1,47 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757909AbZC0XBs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757148AbZC0XD4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757909AbZC0XBs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Mar 2009 19:01:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761798AbZC0XBa
+	id S1757148AbZC0XD4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Mar 2009 19:03:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752052AbZC0XDq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Mar 2009 19:01:30 -0400
-Received: from isrv.corpit.ru ([81.13.33.159]:54773 "EHLO isrv.corpit.ru"
+	Fri, 27 Mar 2009 19:03:46 -0400
+Received: from THUNK.ORG ([69.25.196.29]:47593 "EHLO thunker.thunk.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762070AbZC0XB3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Mar 2009 19:01:29 -0400
-Message-ID: <49CD5AC6.3020806@msgid.tls.msk.ru>
-Date: Sat, 28 Mar 2009 02:01:26 +0300
-From: Michael Tokarev <mjt@tls.msk.ru>
-Organization: Telecom Service, JSC
-User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
+	id S1751434AbZC0XDp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Mar 2009 19:03:45 -0400
+Date: Fri, 27 Mar 2009 19:03:41 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Jan Kara <jack@suse.cz>
+Cc: Linux Kernel Developers List <linux-kernel@vger.kernel.org>,
+       Ext4 Developers List <linux-ext4@vger.kernel.org>
+Subject: Re: [PATCH 3/3] ext3: Avoid starting a transaction in writepage
+	when not necessary
+Message-ID: <20090327230341.GF5176@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>, Jan Kara <jack@suse.cz>,
+	Linux Kernel Developers List <linux-kernel@vger.kernel.org>,
+	Ext4 Developers List <linux-ext4@vger.kernel.org>
+References: <1238185471-31152-1-git-send-email-tytso@mit.edu> <1238185471-31152-2-git-send-email-tytso@mit.edu> <1238185471-31152-3-git-send-email-tytso@mit.edu> <1238185471-31152-4-git-send-email-tytso@mit.edu> <20090327222346.GJ31071@duck.suse.cz>
 MIME-Version: 1.0
-To: nicolas sitbon <nicolas.sitbon@gmail.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: epoll_ctl and const correctness
-References: <84a01a8b0903250545n799a8727o1faad60c8eaf372e@mail.gmail.com>	 <49CAA055.5060603@goop.org>	 <84a01a8b0903251437l9f9059s3c548b5d35ea47d4@mail.gmail.com>	 <84a01a8b0903270244s146ca50cr2758d36c2d9d77cd@mail.gmail.com>	 <49CD4967.2090606@msgid.tls.msk.ru>	 <84a01a8b0903271517t668c6276l7fe098d74c24b836@mail.gmail.com>	 <84a01a8b0903271530of8d43ffhf77e7ba73e309f75@mail.gmail.com>	 <49CD564E.6050101@msgid.tls.msk.ru> <84a01a8b0903271555i7a4fea50nd95009539aa2f94d@mail.gmail.com>
-In-Reply-To: <84a01a8b0903271555i7a4fea50nd95009539aa2f94d@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090327222346.GJ31071@duck.suse.cz>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-nicolas sitbon wrote:
-> Do you read my post? there is a confusion, my question was first : why
-> the structure isn't const? and you answer me. ok. second, I asked if
-> the kernel keep track of this structure, that is, it keeps a pointer
-> on it for doing his job? according to your last answer, no. last
-> question : why the size type of the first parameter of epoll_create is
-> int and not size_t? no answer for the moment.
+On Fri, Mar 27, 2009 at 11:23:46PM +0100, Jan Kara wrote:
+> On Fri 27-03-09 16:24:31, Theodore Ts'o wrote:
+> > From: Jan Kara <jack@suse.cz>
+> > 
+> > We don't have to start a transaction in writepage() when all the blocks
+> > are a properly allocated. Even in ordered mode either the data has been
+> > written via write() and they are thus already added to transaction's list
+> > or the data was written via mmap and then it's random in which transaction
+> > they get written anyway.
+> > 
+> > This should help VM to pageout dirty memory without blocking on transaction
+> > commits.
+> > 
+> > Signed-off-by: Jan Kara <jack@suse.cz>
+> > Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
+>   Please, use the patch below instead (and I'd also wait a few days for
+> Mingo to check whether it also helps him). It also changes data=writeback
+> mode in the same way and it adheres to coding style...
 
-Why can't you ask all your questions at once?
+FYI, Looks like Linus has already cherry-picked your first patch from
+LKML and dropped it into mainline.  My other two patches haven't gone
+in yet as far as I can tell.
 
-The answer to your last one is in the manpage.  size_t, as
-name suggests, is used for sizes of various memory regions,
-in bytes.  Here, we're dealing with something else, not bytes.
+So we'll need to do a delta patch that has the differences from your
+new patch and what Linus has already pulled into mainline.
 
-And probably the next question will be of the sort why the argument
-is named 'event' and not 'Event' or 'EventPtr', and why there's no
-space after the star character...  Oh well.
-
-/mjt
+    	      	   	     	     	    - Ted
