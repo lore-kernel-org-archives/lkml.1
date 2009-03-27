@@ -1,45 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757933AbZC0Jpr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757699AbZC0JsZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757933AbZC0Jpr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Mar 2009 05:45:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754327AbZC0Jph
+	id S1757699AbZC0JsZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Mar 2009 05:48:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754183AbZC0JsQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Mar 2009 05:45:37 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:59299 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754122AbZC0Jph (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Mar 2009 05:45:37 -0400
-Message-ID: <49CCA029.40400@jp.fujitsu.com>
-Date: Fri, 27 Mar 2009 18:45:13 +0900
-From: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
+	Fri, 27 Mar 2009 05:48:16 -0400
+Received: from www.tglx.de ([62.245.132.106]:53466 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753729AbZC0JsQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Mar 2009 05:48:16 -0400
+Date: Fri, 27 Mar 2009 10:46:14 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: liqin.chen@sunplusct.com
+cc: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
+       torvalds@linux-foundation.org
+Subject: Re: [PATCH 11/13] score - New architecure port to SunplusCT S+CORE
+ processor
+In-Reply-To: <OF7CA377BE.25D639C0-ON48257586.0009A7DE-48257586.0009EF6F@sunplusct.com>
+Message-ID: <alpine.LFD.2.00.0903271042410.3397@localhost.localdomain>
+References: <OF7CA377BE.25D639C0-ON48257586.0009A7DE-48257586.0009EF6F@sunplusct.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-To: Andi Kleen <ak@linux.intel.com>
-CC: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH -tip 2/3] x86, mce: Cleanup param parser
-References: <49CB3F38.7090703@jp.fujitsu.com> <49CB4C7B.8080401@linux.intel.com>
-In-Reply-To: <49CB4C7B.8080401@linux.intel.com>
-Content-Type: text/plain; charset=ISO-2022-JP
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
-> Hidetoshi Seto wrote:
->> - Fix the comment formatting.
->> - The error path does not return 0, and printk lacks level and "\n".
->> - Move __setup("nomce") next to mcheck_disable().
->> - Improve readability etc.
-> 
-> Looks good.
+On Fri, 27 Mar 2009, liqin.chen@sunplusct.com wrote:
+> +#include <linux/interrupt.h>
+> +#include <asm/scoreregs.h>
+> +
+> +int timer_interrupt(int irq, void *dev_id)
+> +{
+> +       rTIMER0CPPR = 1;        /* clear timer interrupt flag */
+> +       do_timer(1);
+> +       update_process_times(user_mode(get_irq_regs()));
+> +       return IRQ_HANDLED;
+> +}
 
-Thank you for reviewing!
-
-This cleanup can stand alone, so could you apply this onto -tip?
-# Or would you request me to resend it with subject stripped "2/3"?
+  Please convert this to CLOCK_EVENTS.
 
 Thanks,
-H.Seto
 
+	tglx
