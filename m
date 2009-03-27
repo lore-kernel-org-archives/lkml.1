@@ -1,25 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763382AbZC0XaV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763439AbZC0Xau@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763382AbZC0XaV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Mar 2009 19:30:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758317AbZC0X1g
+	id S1763439AbZC0Xau (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Mar 2009 19:30:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760150AbZC0X1h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Mar 2009 19:27:36 -0400
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:48393 "EHLO
+	Fri, 27 Mar 2009 19:27:37 -0400
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:48396 "EHLO
 	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756807AbZC0X1d (ORCPT
+	with ESMTP id S1759578AbZC0X1d (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 27 Mar 2009 19:27:33 -0400
 From: =?utf-8?q?Uwe=20Kleine-K=C3=B6nig?= 
 	<u.kleine-koenig@pengutronix.de>
 To: linux-kernel@vger.kernel.org
 Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Yoichi Yuasa <yoichi_yuasa@tripeaks.co.jp>,
-       Krzysztof Helt <krzysztof.h1@poczta.fm>,
-       Antonino Daplas <adaplas@pol.net>, Ralf Baechle <ralf@linux-mips.org>
-Subject: [PATCH 09/58] move cobalt-lcd's probe function to .devinit.text
-Date: Sat, 28 Mar 2009 00:26:30 +0100
-Message-Id: <1238196439-16535-9-git-send-email-u.kleine-koenig@pengutronix.de>
+       Russell King <rmk+kernel@arm.linux.org.uk>,
+       Ben Dooks <ben-linux@fluff.org>, Richard Purdie <rpurdie@rpsys.net>,
+       =?utf-8?q?M=C3=A1rton=20N=C3=A9meth?= <nm127@freemail.hu>,
+       Arnaud Patard <arnaud.patard@rtp-net.org>
+Subject: [PATCH 17/58] move h1940-leds's probe function to .devinit.text
+Date: Sat, 28 Mar 2009 00:26:38 +0100
+Message-Id: <1238196439-16535-17-git-send-email-u.kleine-koenig@pengutronix.de>
 X-Mailer: git-send-email 1.6.2
 In-Reply-To: <20090327232153.GA16348@pengutronix.de>
 References: <20090327232153.GA16348@pengutronix.de>
@@ -34,7 +35,7 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A pointer to cobalt_lcdfb_probe is passed to the core via
+A pointer to h1940leds_probe is passed to the core via
 platform_driver_register and so the function must not disappear when the
 .init sections are discarded.  Otherwise (if also having HOTPLUG=y)
 unbinding and binding a device to the driver via sysfs will result in an
@@ -45,28 +46,29 @@ platform_driver_register plus removing the pointer to the probe function
 from the struct platform_driver.
 
 Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
-Cc: Yoichi Yuasa <yoichi_yuasa@tripeaks.co.jp>
-Cc: Krzysztof Helt <krzysztof.h1@poczta.fm>
-Cc: Antonino Daplas <adaplas@pol.net>
-Cc: Ralf Baechle <ralf@linux-mips.org>
+Cc: Russell King <rmk+kernel@arm.linux.org.uk>
+Cc: Ben Dooks <ben-linux@fluff.org>
+Cc: Richard Purdie <rpurdie@rpsys.net>
+Cc: Márton Németh <nm127@freemail.hu>
+Cc: Arnaud Patard <arnaud.patard@rtp-net.org>
 Cc: Andrew Morton <akpm@linux-foundation.org>
 ---
- drivers/video/cobalt_lcdfb.c |    2 +-
+ drivers/leds/leds-h1940.c |    2 +-
  1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/video/cobalt_lcdfb.c b/drivers/video/cobalt_lcdfb.c
-index 7bad24e..5ef3a0f 100644
---- a/drivers/video/cobalt_lcdfb.c
-+++ b/drivers/video/cobalt_lcdfb.c
-@@ -287,7 +287,7 @@ static struct fb_ops cobalt_lcd_fbops = {
- 	.fb_cursor	= cobalt_lcdfb_cursor,
+diff --git a/drivers/leds/leds-h1940.c b/drivers/leds/leds-h1940.c
+index 11b77a7..1aa46a3 100644
+--- a/drivers/leds/leds-h1940.c
++++ b/drivers/leds/leds-h1940.c
+@@ -104,7 +104,7 @@ static struct led_classdev h1940_blueled = {
+ 	.default_trigger	= "h1940-bluetooth",
  };
  
--static int __init cobalt_lcdfb_probe(struct platform_device *dev)
-+static int __devinit cobalt_lcdfb_probe(struct platform_device *dev)
+-static int __init h1940leds_probe(struct platform_device *pdev)
++static int __devinit h1940leds_probe(struct platform_device *pdev)
  {
- 	struct fb_info *info;
- 	struct resource *res;
+ 	int ret;
+ 
 -- 
 1.6.2
 
