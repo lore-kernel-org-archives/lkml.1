@@ -1,82 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757706AbZC0Ljj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758094AbZC0Ljw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757706AbZC0Ljj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Mar 2009 07:39:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753619AbZC0Lj2
+	id S1758094AbZC0Ljw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Mar 2009 07:39:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757440AbZC0Lja
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Mar 2009 07:39:28 -0400
-Received: from gw03.mail.saunalahti.fi ([195.197.172.111]:35754 "EHLO
-	gw03.mail.saunalahti.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754428AbZC0Lj1 (ORCPT
+	Fri, 27 Mar 2009 07:39:30 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:47442 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755409AbZC0Lj3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Mar 2009 07:39:27 -0400
-From: Dmitri Vorobiev <dmitri.vorobiev@movial.com>
-To: ralf@linux-mips.org, linux-mips@linux-mips.org,
-       linux-kernel@vger.kernel.org
-Cc: Dmitri Vorobiev <dmitri.vorobiev@movial.com>
-Subject: [PATCH 1/1] [MIPS] ip22: use a generic method for irq statistics
-Date: Fri, 27 Mar 2009 13:39:11 +0200
-Message-Id: <1238153951-18307-1-git-send-email-dmitri.vorobiev@movial.com>
-X-Mailer: git-send-email 1.5.6.3
+	Fri, 27 Mar 2009 07:39:29 -0400
+Date: Fri, 27 Mar 2009 12:42:24 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Bodo Eggert <7eggert@gmx.de>
+Cc: James Morris <jmorris@namei.org>,
+       kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: TOMOYO in linux-next
+Message-ID: <20090327114224.GF2585@elf.ucw.cz>
+References: <ck5CF-5mU-11@gated-at.bofh.it> <E1Ln8MC-0001RR-1E@be1.7eggert.dyndns.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <E1Ln8MC-0001RR-1E@be1.7eggert.dyndns.org>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The structure 'struct kernel_stat' defines the 'irqs' array as its
-field only when CONFIG_GENERIC_HARDIRQS is not set. However, the ip22
-code makes use of this field unconditionally. As the result, the
-following build error is produced:
+On Fri 2009-03-27 10:28:07, Bodo Eggert wrote:
+> Pavel Machek <pavel@ucw.cz> wrote:
+> 
+> > I don't think merging that is good idea. Security should be doable
+> > without making shell-like glob matching...
+> 
+> How do you suppose a security system should handle mozilla modifying
+> ~/.bashrc differently from downloading something to ~/pr0n.jpg?
 
-  CC      arch/mips/sgi-ip22/ip22-int.o
-arch/mips/sgi-ip22/ip22-int.c: In function 'indy_buserror_irq':
-arch/mips/sgi-ip22/ip22-int.c:158: error: 'struct kernel_stat' has no
-member named 'irqs'
-make[1]: *** [arch/mips/sgi-ip22/ip22-int.o] Error 1
-make: *** [arch/mips/sgi-ip22] Error 2
+How does shell-like glob matching help there? You'd need to parse
+/etc/passwd to find all ~ directories...
 
-This patch fixes the build error by using the generic method for the irq
-statistics.
-
-Signed-off-by: Dmitri Vorobiev <dmitri.vorobiev@movial.com>
----
- arch/mips/sgi-ip22/ip22-int.c  |    3 ++-
- arch/mips/sgi-ip22/ip22-time.c |    3 ++-
- 2 files changed, 4 insertions(+), 2 deletions(-)
-
-diff --git a/arch/mips/sgi-ip22/ip22-int.c b/arch/mips/sgi-ip22/ip22-int.c
-index f8b18af..e359ee8 100644
---- a/arch/mips/sgi-ip22/ip22-int.c
-+++ b/arch/mips/sgi-ip22/ip22-int.c
-@@ -153,9 +153,10 @@ extern void ip22_be_interrupt(int irq);
- static void indy_buserror_irq(void)
- {
- 	int irq = SGI_BUSERR_IRQ;
-+	struct irq_desc *desc = irq_to_desc(irq);
- 
- 	irq_enter();
--	kstat_this_cpu.irqs[irq]++;
-+	kstat_incr_irqs_this_cpu(irq, desc);
- 	ip22_be_interrupt(irq);
- 	irq_exit();
- }
-diff --git a/arch/mips/sgi-ip22/ip22-time.c b/arch/mips/sgi-ip22/ip22-time.c
-index 3dcb27e..2536d78 100644
---- a/arch/mips/sgi-ip22/ip22-time.c
-+++ b/arch/mips/sgi-ip22/ip22-time.c
-@@ -118,11 +118,12 @@ __init void plat_time_init(void)
- void indy_8254timer_irq(void)
- {
- 	int irq = SGI_8254_0_IRQ;
-+	struct irq_desc *desc = irq_to_desc(irq);
- 	ULONG cnt;
- 	char c;
- 
- 	irq_enter();
--	kstat_this_cpu.irqs[irq]++;
-+	kstat_incr_irqs_this_cpu(irq, desc);
- 	printk(KERN_ALERT "Oops, got 8254 interrupt.\n");
- 	ArcRead(0, &c, 1, &cnt);
- 	ArcEnterInteractiveMode();
+									Pavel
 -- 
-1.5.6.3
-
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
