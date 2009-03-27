@@ -1,80 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762169AbZC0UK5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755597AbZC0ULt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762169AbZC0UK5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Mar 2009 16:10:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753430AbZC0UHF
+	id S1755597AbZC0ULt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Mar 2009 16:11:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761419AbZC0UHa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Mar 2009 16:07:05 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:55358 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760983AbZC0UHC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Mar 2009 16:07:02 -0400
-From: Eric Paris <eparis@redhat.com>
-Subject: [PATCH -V2 11/13] fsnotify: fsnotify marks on inodes pin them in core
-To: linux-kernel@vger.kernel.org
-Cc: viro@zeniv.linux.org.uk, hch@infradead.org, alan@lxorguk.ukuu.org.uk,
-       sfr@canb.auug.org.au, john@johnmccutchan.com, rlove@rlove.org,
-       akpm@linux-foundation.org
-Date: Fri, 27 Mar 2009 16:06:05 -0400
-Message-ID: <20090327200605.32007.66600.stgit@paris.rdu.redhat.com>
-In-Reply-To: <20090327200508.32007.63278.stgit@paris.rdu.redhat.com>
-References: <20090327200508.32007.63278.stgit@paris.rdu.redhat.com>
-User-Agent: StGIT/0.14.3
+	Fri, 27 Mar 2009 16:07:30 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:39306 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761420AbZC0UH2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Mar 2009 16:07:28 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Date: Fri, 27 Mar 2009 21:00:46 +0100 (CET)
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: [PATCH resend] DVB: firedtv: FireDTV S2 problems with tuning solved
+To: linux-media@vger.kernel.org
+cc: linux1394-devel@lists.sourceforge.net,
+       Beat Michel Liechti <bml303@gmail.com>,
+       Mauro Carvalho Chehab <mchehab@infradead.org>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <3e03d4060903261446s777bc55bx98e4dce8e1fd6c21@mail.gmail.com>
+Message-ID: <tkrat.61cf63974add377d@s5r6.in-berlin.de>
+References: <3e03d4060903261446s777bc55bx98e4dce8e1fd6c21@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; CHARSET=us-ascii
+Content-Disposition: INLINE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch pins any inodes with an fsnotify mark in core.  The idea is that
-as soon as the mark is removed from the inode->fsnotify_mark_entries list
-the inode will be iput.  In reality is doesn't quite work exactly this way.
-The igrab will happen when the mark is added to an inode, but the iput will
-happen when the inode pointer is NULL'd inside the mark.
+This came in via linux1394-devel.  If there are no objections, I'll
+include it in my pull request to Linus which I want to send in a few
+hours.  It's also good to send to stable.
 
-It's possible that 2 racing things will try to remove the mark from
-different directions.  One may try to remove the mark because of an
-explicit request and one might try to remove it because the inode was
-deleted.  It's possible that the removal because of inode deletion will
-remove the mark from the inode's list, but the removal by explicit request
-will actually set entry->inode == NULL; and call the iput.  This is safe.
 
-Signed-off-by: Eric Paris <eparis@redhat.com>
+Date: Thu, Mar 26, 2009 22:36:52 +0100 (CET)
+From: Beat Michel Liechti <bml303@gmail.com>
+Subject: DVB: firedtv: FireDTV S2 problems with tuning solved
+
+Signed-off-by: Beat Michel Liechti <bml303@gmail.com>
+
+Tuning was broken on FireDTV S2 (and presumably  FloppyDTV S2) because a
+wrong opcode was sent.  The box only gave "not implemented" responses.
+Changing the opcode to _TUNE_QPSK2 fixes this for good.
+
+Cc: stable@kernel.org
+Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
 ---
+ drivers/media/dvb/firewire/firedtv-avc.c |    6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
 
- fs/notify/inode_mark.c |    9 ++++++++-
- 1 files changed, 8 insertions(+), 1 deletions(-)
+Index: linux/drivers/media/dvb/firewire/firedtv-avc.c
+===================================================================
+--- linux.orig/drivers/media/dvb/firewire/firedtv-avc.c
++++ linux/drivers/media/dvb/firewire/firedtv-avc.c
+@@ -135,6 +135,7 @@ static const char *debug_fcp_opcode(unsi
+ 	case SFE_VENDOR_OPCODE_REGISTER_REMOTE_CONTROL:	return "RegisterRC";
+ 	case SFE_VENDOR_OPCODE_LNB_CONTROL:		return "LNBControl";
+ 	case SFE_VENDOR_OPCODE_TUNE_QPSK:		return "TuneQPSK";
++	case SFE_VENDOR_OPCODE_TUNE_QPSK2:		return "TuneQPSK2";
+ 	case SFE_VENDOR_OPCODE_HOST2CA:			return "Host2CA";
+ 	case SFE_VENDOR_OPCODE_CA2HOST:			return "CA2Host";
+ 	}
+@@ -266,7 +267,10 @@ static void avc_tuner_tuneqpsk(struct fi
+ 	c->operand[0] = SFE_VENDOR_DE_COMPANYID_0;
+ 	c->operand[1] = SFE_VENDOR_DE_COMPANYID_1;
+ 	c->operand[2] = SFE_VENDOR_DE_COMPANYID_2;
+-	c->operand[3] = SFE_VENDOR_OPCODE_TUNE_QPSK;
++	if (fdtv->type == FIREDTV_DVB_S2)
++		c->operand[3] = SFE_VENDOR_OPCODE_TUNE_QPSK2;
++	else
++		c->operand[3] = SFE_VENDOR_OPCODE_TUNE_QPSK;
+ 
+ 	c->operand[4] = (params->frequency >> 24) & 0xff;
+ 	c->operand[5] = (params->frequency >> 16) & 0xff;
 
-diff --git a/fs/notify/inode_mark.c b/fs/notify/inode_mark.c
-index e59a198..e9e89d2 100644
---- a/fs/notify/inode_mark.c
-+++ b/fs/notify/inode_mark.c
-@@ -160,6 +160,8 @@ void fsnotify_destroy_mark_by_entry(struct fsnotify_mark_entry *entry)
- 
- 	fsnotify_update_dentry_child_flags(inode);
- 
-+	iput(inode);
-+
- 	if (atomic_dec_and_test(&group->num_marks))
- 		fsnotify_final_destroy_group(group);
- }
-@@ -231,11 +233,16 @@ void fsnotify_init_mark(struct fsnotify_mark_entry *entry, void (*free_mark)(str
- 	entry->free_mark = free_mark;
- }
- 
--int fsnotify_add_mark(struct fsnotify_mark_entry *entry, struct fsnotify_group *group, struct inode *inode)
-+int fsnotify_add_mark(struct fsnotify_mark_entry *entry, struct fsnotify_group *group, struct inode *in_inode)
- {
- 	struct fsnotify_mark_entry *lentry;
-+	struct inode *inode;
- 	int ret = 0;
- 
-+	inode = igrab(in_inode);
-+	if (unlikely(!inode))
-+		return -EINVAL;
-+
- 	/*
- 	 * LOCKING ORDER!!!!
- 	 * entry->lock
+
+-- 
+Stefan Richter
+-=====-==--= --== ==-==
+http://arcgraph.de/sr/
 
