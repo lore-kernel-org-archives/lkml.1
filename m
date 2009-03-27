@@ -1,71 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757233AbZC0VbU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756399AbZC0Vda@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757233AbZC0VbU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Mar 2009 17:31:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751994AbZC0VbG
+	id S1756399AbZC0Vda (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Mar 2009 17:33:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751201AbZC0VdV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Mar 2009 17:31:06 -0400
-Received: from THUNK.ORG ([69.25.196.29]:47812 "EHLO thunker.thunk.org"
+	Fri, 27 Mar 2009 17:33:21 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:38428 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751434AbZC0VbD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Mar 2009 17:31:03 -0400
-Date: Fri, 27 Mar 2009 17:30:52 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: Chris Mason <chris.mason@oracle.com>
-Cc: Ric Wheeler <rwheeler@redhat.com>,
-       Linux Kernel Developers List <linux-kernel@vger.kernel.org>,
-       Ext4 Developers List <linux-ext4@vger.kernel.org>, jack@suse.cz
-Subject: Re: [PATCH 0/3] Ext3 latency improvement patches
-Message-ID: <20090327213052.GC5176@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Chris Mason <chris.mason@oracle.com>,
-	Ric Wheeler <rwheeler@redhat.com>,
-	Linux Kernel Developers List <linux-kernel@vger.kernel.org>,
-	Ext4 Developers List <linux-ext4@vger.kernel.org>, jack@suse.cz
-References: <1238185471-31152-1-git-send-email-tytso@mit.edu> <1238187031.27455.212.camel@think.oraclecorp.com> <1238187818.27455.217.camel@think.oraclecorp.com>
+	id S1751428AbZC0VdU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Mar 2009 17:33:20 -0400
+Date: Fri, 27 Mar 2009 22:29:33 +0100
+From: Oleg Nesterov <oleg@redhat.com>
+To: Markus Metzger <markus.t.metzger@googlemail.com>
+Cc: "Metzger, Markus T" <markus.t.metzger@intel.com>,
+       "Kleen, Andi" <andi.kleen@intel.com>, Ingo Molnar <mingo@elte.hu>,
+       Roland McGrath <roland@redhat.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [rfc] x86, bts: fix crash
+Message-ID: <20090327212933.GA5325@redhat.com>
+References: <928CFBE8E7CB0040959E56B4EA41A77E9260843D@irsmsx504.ger.corp.intel.com> <20090326015801.GA451@redhat.com> <928CFBE8E7CB0040959E56B4EA41A77E9266B699@irsmsx504.ger.corp.intel.com> <20090327165038.GA25762@redhat.com> <1238175204.6077.18.camel@raistlin>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1238187818.27455.217.camel@think.oraclecorp.com>
+In-Reply-To: <1238175204.6077.18.camel@raistlin>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 27, 2009 at 05:03:38PM -0400, Chris Mason wrote:
-> > Ric had asked me about a test program that would show the worst case
-> > ext3 behavior.  So I've modified your ext3 program a little.  It now
-> > creates a 8G file and forks off another proc to do random IO to that
-> > file.
-> > 
-> 
-> My understanding of ext4 delalloc is that once blocks are allocated to
-> file, we go back to data=ordered.  
+On 03/27, Markus Metzger wrote:
+>
+> Regarding the race on task->thread.ds_ctx between ds_release_bts() and
+> ds_switch_to(), how would I prevent a task from being rescheduled for
+> a small amount of time?
 
-Yes, that's correct.
+I don't see how we can do this. We can split wait_task_inactive() into
+2 functions, the first one returns with task_rq_lock() held and interrupts
+disabled. But this is nasty, and in any case wait_task_inactive(p) can't
+force "p" to be deactivated.
 
-> Ext4 is going pretty slowly for this fsync test (slower than ext3), it
-> looks like we're going for a very long time in
-> jbd2_journal_commit_transaction -> write_cache_pages.
+Can't we do something different?
 
-One of the things that we can do to optimize this case for ext4 (and
-ext3) is that if block has already been written out to disk once, we
-don't have to flush it to disk a second time.  So if we add a new
-buffer_head flag which can distinguish between blocks that have been
-newly allocated (and not yet been flushed to disk) versus blocks that
-have already been flushed to disk at least once, we wouldn't need to
-force I/O for blocks in the latter case.
+For simplicity, let's suppose that we have only task_struct->bts and it
+is just a blob of memory which can be used by CPU somehow.
 
-After all, most of the applications which do random I/O to a file
-normally will use fsync() appropriately such that they are rewriting
-already allocated blocks.  So there really is no reason to flush those
-blocks out to disk even in data=ordered mode.
+First, we add "struct rcu_head" into task_struct->bts, and then
 
-We currently flush *all* blocks out to disk in data=ordered mode
-because we don't have a good way of telling the difference between the
-two cases.  
+	void free_bts((struct rcu_head *rcu)
+	{
+		struct bts_tracer *bts = container_of();
+		...
+		kfree(bts);
+	}
 
-						- Ted
+	void ds_release_bts(struct bts_tracer *tracer)
+	{
+		struct task_struct *child = tracer->ds.context->task;
+		struct bts_tracer *bts = child->bts;
+
+		child->bts = NULL;
+
+		// make sure child will NOT use ->bts
+		// after the next context switch,
+		// clear TIF_DS_AREA_MSR or something
+		...
+
+		call_rcu_sched(bts->rcu, free_bts);
+	}
+
+Now we can call ds_release_bts() from the atomic context (as we do
+now).
+
+Once again, the pseudo code above has nothing to do with reality,
+just for illustration.
+
+(as for the memory accounting, this is another issue, let's forget
+ for now).
+
+Oleg.
+
