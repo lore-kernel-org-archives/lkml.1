@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763784AbZC0CUj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763635AbZC0CVF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763784AbZC0CUj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Mar 2009 22:20:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763721AbZC0CT5
+	id S1763635AbZC0CVF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Mar 2009 22:21:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763741AbZC0CUd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Mar 2009 22:19:57 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:53588 "EHLO song.cn.fujitsu.com"
+	Thu, 26 Mar 2009 22:20:33 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:63080 "EHLO song.cn.fujitsu.com"
 	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1763713AbZC0CTz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Mar 2009 22:19:55 -0400
-Message-ID: <49CC37E8.6070609@cn.fujitsu.com>
-Date: Fri, 27 Mar 2009 10:20:24 +0800
+	id S1763710AbZC0CUb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Mar 2009 22:20:31 -0400
+Message-ID: <49CC380C.4010700@cn.fujitsu.com>
+Date: Fri, 27 Mar 2009 10:21:00 +0800
 From: Li Zefan <lizf@cn.fujitsu.com>
 User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
@@ -20,7 +20,7 @@ CC: Jens Axboe <jens.axboe@oracle.com>,
        Steven Rostedt <rostedt@goodmis.org>,
        Frederic Weisbecker <fweisbec@gmail.com>,
        LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH 3/6] blktrace: fix memory leak when freeing struct blk_io_trace
+Subject: [PATCH 4/6] trace: make argument 'mem' of trace_seq_putmem() const
 References: <49CC37AA.3060908@cn.fujitsu.com>
 In-Reply-To: <49CC37AA.3060908@cn.fujitsu.com>
 Content-Type: text/plain; charset=UTF-8
@@ -29,112 +29,56 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When mixing the use of ioctl-based blktrace and ftrace-based blktrace,
-we can leak memory in this way:
-  # btrace /dev/sda > /dev/null &
-  # echo 0 > /sys/block/sda/sda1/trace/enable
-now we leak bt->dropped_file, bt->msg_file, bt->rchan...
+I passed a const value to trace_seq_putmem(), and I got compile warning.
 
 Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
 ---
- kernel/trace/blktrace.c |   29 ++++++++++++-----------------
- 1 files changed, 12 insertions(+), 17 deletions(-)
+ kernel/trace/trace_output.c |    6 +++---
+ kernel/trace/trace_output.h |    5 +++--
+ 2 files changed, 6 insertions(+), 5 deletions(-)
 
-diff --git a/kernel/trace/blktrace.c b/kernel/trace/blktrace.c
-index f36e531..6b38a34 100644
---- a/kernel/trace/blktrace.c
-+++ b/kernel/trace/blktrace.c
-@@ -247,7 +247,7 @@ record_it:
- static struct dentry *blk_tree_root;
- static DEFINE_MUTEX(blk_tree_mutex);
+diff --git a/kernel/trace/trace_output.c b/kernel/trace/trace_output.c
+index 6595074..d72b9a6 100644
+--- a/kernel/trace/trace_output.c
++++ b/kernel/trace/trace_output.c
+@@ -137,7 +137,7 @@ int trace_seq_putc(struct trace_seq *s, unsigned char c)
+ 	return 1;
+ }
  
--static void blk_trace_cleanup(struct blk_trace *bt)
-+static void blk_trace_free(struct blk_trace *bt)
+-int trace_seq_putmem(struct trace_seq *s, void *mem, size_t len)
++int trace_seq_putmem(struct trace_seq *s, const void *mem, size_t len)
  {
- 	debugfs_remove(bt->msg_file);
- 	debugfs_remove(bt->dropped_file);
-@@ -255,6 +255,11 @@ static void blk_trace_cleanup(struct blk_trace *bt)
- 	free_percpu(bt->sequence);
- 	free_percpu(bt->msg_data);
- 	kfree(bt);
-+}
-+
-+static void blk_trace_cleanup(struct blk_trace *bt)
-+{
-+	blk_trace_free(bt);
- 	if (atomic_dec_and_test(&blk_probes_ref))
- 		blk_unregister_tracepoints();
- }
-@@ -410,11 +415,11 @@ int do_blk_trace_setup(struct request_queue *q, char *name, dev_t dev,
- 		if (buts->name[i] == '/')
- 			buts->name[i] = '_';
- 
--	ret = -ENOMEM;
- 	bt = kzalloc(sizeof(*bt), GFP_KERNEL);
- 	if (!bt)
--		goto err;
-+		return -ENOMEM;
- 
-+	ret = -ENOMEM;
- 	bt->sequence = alloc_percpu(unsigned long);
- 	if (!bt->sequence)
- 		goto err;
-@@ -483,17 +488,7 @@ int do_blk_trace_setup(struct request_queue *q, char *name, dev_t dev,
- 
- 	return 0;
- err:
--	if (bt) {
--		if (bt->msg_file)
--			debugfs_remove(bt->msg_file);
--		if (bt->dropped_file)
--			debugfs_remove(bt->dropped_file);
--		free_percpu(bt->sequence);
--		free_percpu(bt->msg_data);
--		if (bt->rchan)
--			relay_close(bt->rchan);
--		kfree(bt);
--	}
-+	blk_trace_free(bt);
- 	return ret;
+ 	if (len > ((PAGE_SIZE - 1) - s->len))
+ 		return 0;
+@@ -148,10 +148,10 @@ int trace_seq_putmem(struct trace_seq *s, void *mem, size_t len)
+ 	return len;
  }
  
-@@ -1091,6 +1086,7 @@ static void blk_tracer_print_header(struct seq_file *m)
- 
- static void blk_tracer_start(struct trace_array *tr)
+-int trace_seq_putmem_hex(struct trace_seq *s, void *mem, size_t len)
++int trace_seq_putmem_hex(struct trace_seq *s, const void *mem, size_t len)
  {
-+	blk_tracer_enabled = true;
- 	trace_flags &= ~TRACE_ITER_CONTEXT_INFO;
- }
+ 	unsigned char hex[HEX_CHARS];
+-	unsigned char *data = mem;
++	const unsigned char *data = mem;
+ 	int i, j;
  
-@@ -1098,18 +1094,17 @@ static int blk_tracer_init(struct trace_array *tr)
- {
- 	blk_tr = tr;
- 	blk_tracer_start(tr);
--	blk_tracer_enabled = true;
- 	return 0;
- }
- 
- static void blk_tracer_stop(struct trace_array *tr)
- {
-+	blk_tracer_enabled = false;
- 	trace_flags |= TRACE_ITER_CONTEXT_INFO;
- }
- 
- static void blk_tracer_reset(struct trace_array *tr)
- {
--	blk_tracer_enabled = false;
- 	blk_tracer_stop(tr);
- }
- 
-@@ -1250,7 +1245,7 @@ static int blk_trace_remove_queue(struct request_queue *q)
- 	if (atomic_dec_and_test(&blk_probes_ref))
- 		blk_unregister_tracepoints();
- 
--	kfree(bt);
-+	blk_trace_free(bt);
- 	return 0;
- }
- 
+ #ifdef __BIG_ENDIAN
+diff --git a/kernel/trace/trace_output.h b/kernel/trace/trace_output.h
+index 46fb961..e0bde39 100644
+--- a/kernel/trace/trace_output.h
++++ b/kernel/trace/trace_output.h
+@@ -31,8 +31,9 @@ extern ssize_t trace_seq_to_user(struct trace_seq *s, char __user *ubuf,
+ 				 size_t cnt);
+ extern int trace_seq_puts(struct trace_seq *s, const char *str);
+ extern int trace_seq_putc(struct trace_seq *s, unsigned char c);
+-extern int trace_seq_putmem(struct trace_seq *s, void *mem, size_t len);
+-extern int trace_seq_putmem_hex(struct trace_seq *s, void *mem, size_t len);
++extern int trace_seq_putmem(struct trace_seq *s, const void *mem, size_t len);
++extern int trace_seq_putmem_hex(struct trace_seq *s, const void *mem,
++				size_t len);
+ extern void *trace_seq_reserve(struct trace_seq *s, size_t len);
+ extern int trace_seq_path(struct trace_seq *s, struct path *path);
+ extern int seq_print_userip_objs(const struct userstack_entry *entry,
 -- 
 1.5.4.rc3
 
