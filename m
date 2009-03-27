@@ -1,191 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757355AbZC0GcV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754768AbZC0GnV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757355AbZC0GcV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Mar 2009 02:32:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751668AbZC0GcK
+	id S1754768AbZC0GnV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Mar 2009 02:43:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751791AbZC0GnJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Mar 2009 02:32:10 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:51803 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751440AbZC0GcI (ORCPT
+	Fri, 27 Mar 2009 02:43:09 -0400
+Received: from kuber.nabble.com ([216.139.236.158]:35008 "EHLO
+	kuber.nabble.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751440AbZC0GnI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Mar 2009 02:32:08 -0400
-Date: Fri, 27 Mar 2009 15:30:35 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       Johannes Weiner <hannes@cmpxchg.org>,
-       MinChan Kim <minchan.kim@gmail.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Rik van Riel <riel@redhat.com>,
-       Balbir Singh <balbir@in.ibm.com>
-Subject: Re: [PATCH] vmscan: memcg needs may_swap (Re: [patch] vmscan:
- rename sc.may_swap to may_unmap)
-Message-Id: <20090327153035.35498303.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20090327151926.f252fba7.nishimura@mxp.nes.nec.co.jp>
-References: <20090206122129.79CC.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-	<20090206044907.GA18467@cmpxchg.org>
-	<20090206135302.628E.KOSAKI.MOTOHIRO@jp.fujitsu.com>
-	<20090206122417.GB1580@cmpxchg.org>
-	<28c262360902060535g22facdd0tf082ca0abaec3f80@mail.gmail.com>
-	<28c262360902060915u18b2fb54t5f2c1f44d03306e3@mail.gmail.com>
-	<20090209194309.GA8491@cmpxchg.org>
-	<20090327151926.f252fba7.nishimura@mxp.nes.nec.co.jp>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 27 Mar 2009 02:43:08 -0400
+Message-ID: <22736728.post@talk.nabble.com>
+Date: Thu, 26 Mar 2009 23:43:03 -0700 (PDT)
+From: sidc7 <siddhartha.chhabra@gmail.com>
+To: linux-kernel@vger.kernel.org
+Subject: Re: Copy-on-write
+In-Reply-To: <3e8340490903262235g6174c6b4t4bfd76311be91eeb@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+X-Nabble-From: siddhartha.chhabra@gmail.com
+References: <22736146.post@talk.nabble.com> <3e8340490903262235g6174c6b4t4bfd76311be91eeb@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 27 Mar 2009 15:19:26 +0900
-Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
 
-> Added
->  Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
->  Cc: Balbir Singh <balbir@in.ibm.com>
-> 
-> I'm sorry for replying to a very old mail.
-> 
-> > @@ -1713,7 +1713,7 @@ unsigned long try_to_free_mem_cgroup_pag
-> >  {
-> >  	struct scan_control sc = {
-> >  		.may_writepage = !laptop_mode,
-> > -		.may_swap = 1,
-> > +		.may_unmap = 1,
-> >  		.swap_cluster_max = SWAP_CLUSTER_MAX,
-> >  		.swappiness = swappiness,
-> >  		.order = 0,
-> > @@ -1723,7 +1723,7 @@ unsigned long try_to_free_mem_cgroup_pag
-> >  	struct zonelist *zonelist;
-> >  
-> >  	if (noswap)
-> > -		sc.may_swap = 0;
-> > +		sc.may_unmap = 0;
-> >  
-> >  	sc.gfp_mask = (gfp_mask & GFP_RECLAIM_MASK) |
-> >  			(GFP_HIGHUSER_MOVABLE & ~GFP_RECLAIM_MASK);
-> IIUC, memcg had used may_swap as a flag for "we need to use swap?" as the name indicate.
-> 
-> Because, when mem+swap hits the limit, trying to swapout pages is meaningless
-> as it doesn't change mem+swap usage.
-> 
-Good catch...sigh, I missed this disussion.
+> If the source and destination pages are not in high memory (exactly
+> where this boundary is depends on your architecture) they do not need
+> to be mapped before copying. See cow_user_page in mm/memory.c,
+> copy_user_highpage in include/linux/highmem.h and kmap_atomic in
+> arch/x86/mm/highmem_32.c (as well as implementations for other
+> architectures)
 
+> Note that on 64-bit platforms, generally there will be no high memory,
+> and so remappings will never be needed to carry out a COW.
 
+Thanks for the quick reply. In general if the kernel wishes to read any
+arbitrary page mapped to an application's address space, will the kernel
+cause a page fault on that page, since the page is currently not in its
+address space and the kernel is wishing to read from this page?
 
-> What do you think of this patch?
-> ===
-> From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-> 
-> vmscan-rename-scmay_swap-to-may_unmap.patch removed may_swap flag,
-> but memcg had used it as a flag for "we need to use swap?", as the
-> name indicate.
-> 
-> And in current implementation, memcg cannot reclaim mapped file caches
-> when mem+swap hits the limit.
-> 
-When mem+swap hits the limit, swap-out anonymous page doesn't reduce the
-amount of usage of mem+swap, so, swap-out should be avoided.
+Thanks
 
-> re-introduce may_swap flag and handle it at shrink_page_list.
-> 
-> This patch doesn't influence any scan_control users other than memcg.
-> 
-
-
-> Signed-off-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-
-Seems good,
-Reviewed-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-
-But hum....Maybe this lru scan work in the same way as the case
-of !total_swap_pages. (means don't scan anon LRU.)
-revisit this later.
-
--Kame
-
-> ---
->  mm/vmscan.c |   15 ++++++++++++++-
->  1 files changed, 14 insertions(+), 1 deletions(-)
-> 
-> diff --git a/mm/vmscan.c b/mm/vmscan.c
-> index c815653..86118d9 100644
-> --- a/mm/vmscan.c
-> +++ b/mm/vmscan.c
-> @@ -64,6 +64,9 @@ struct scan_control {
->  	/* Can mapped pages be reclaimed? */
->  	int may_unmap;
->  
-> +	/* Can pages be swapped as part of reclaim? */
-> +	int may_swap;
-> +
->  	/* This context's SWAP_CLUSTER_MAX. If freeing memory for
->  	 * suspend, we effectively ignore SWAP_CLUSTER_MAX.
->  	 * In this context, it doesn't matter that we scan the
-> @@ -616,6 +619,11 @@ static unsigned long shrink_page_list(struct list_head *page_list,
->  		if (!sc->may_unmap && page_mapped(page))
->  			goto keep_locked;
->  
-> +		if (!sc->may_swap && PageSwapBacked(page)
-> +			/* SwapCache uses 'swap' already */
-> +			&& !PageSwapCache(page))
-> +			goto keep_locked;
-> +
->  		/* Double the slab pressure for mapped and swapcache pages */
->  		if (page_mapped(page) || PageSwapCache(page))
->  			sc->nr_scanned++;
-> @@ -1696,6 +1704,7 @@ unsigned long try_to_free_pages(struct zonelist *zonelist, int order,
->  		.may_writepage = !laptop_mode,
->  		.swap_cluster_max = SWAP_CLUSTER_MAX,
->  		.may_unmap = 1,
-> +		.may_swap = 1,
->  		.swappiness = vm_swappiness,
->  		.order = order,
->  		.mem_cgroup = NULL,
-> @@ -1715,6 +1724,7 @@ unsigned long try_to_free_mem_cgroup_pages(struct mem_cgroup *mem_cont,
->  	struct scan_control sc = {
->  		.may_writepage = !laptop_mode,
->  		.may_unmap = 1,
-> +		.may_swap = 1,
->  		.swap_cluster_max = SWAP_CLUSTER_MAX,
->  		.swappiness = swappiness,
->  		.order = 0,
-> @@ -1724,7 +1734,7 @@ unsigned long try_to_free_mem_cgroup_pages(struct mem_cgroup *mem_cont,
->  	struct zonelist *zonelist;
->  
->  	if (noswap)
-> -		sc.may_unmap = 0;
-> +		sc.may_swap = 0;
->  
->  	sc.gfp_mask = (gfp_mask & GFP_RECLAIM_MASK) |
->  			(GFP_HIGHUSER_MOVABLE & ~GFP_RECLAIM_MASK);
-> @@ -1764,6 +1774,7 @@ static unsigned long balance_pgdat(pg_data_t *pgdat, int order)
->  	struct scan_control sc = {
->  		.gfp_mask = GFP_KERNEL,
->  		.may_unmap = 1,
-> +		.may_swap = 1,
->  		.swap_cluster_max = SWAP_CLUSTER_MAX,
->  		.swappiness = vm_swappiness,
->  		.order = order,
-> @@ -2110,6 +2121,7 @@ unsigned long shrink_all_memory(unsigned long nr_pages)
->  	struct scan_control sc = {
->  		.gfp_mask = GFP_KERNEL,
->  		.may_unmap = 0,
-> +		.may_swap = 1,
->  		.may_writepage = 1,
->  		.isolate_pages = isolate_pages_global,
->  	};
-> @@ -2292,6 +2304,7 @@ static int __zone_reclaim(struct zone *zone, gfp_t gfp_mask, unsigned int order)
->  	struct scan_control sc = {
->  		.may_writepage = !!(zone_reclaim_mode & RECLAIM_WRITE),
->  		.may_unmap = !!(zone_reclaim_mode & RECLAIM_SWAP),
-> +		.may_swap = 1,
->  		.swap_cluster_max = max_t(unsigned long, nr_pages,
->  					SWAP_CLUSTER_MAX),
->  		.gfp_mask = gfp_mask,
-> 
+-- 
+View this message in context: http://www.nabble.com/Copy-on-write-tp22736146p22736728.html
+Sent from the linux-kernel mailing list archive at Nabble.com.
 
