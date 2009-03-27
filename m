@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755946AbZC0JdU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757497AbZC0Jdh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755946AbZC0JdU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Mar 2009 05:33:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754576AbZC0JdI
+	id S1757497AbZC0Jdh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Mar 2009 05:33:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754889AbZC0JdJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Mar 2009 05:33:08 -0400
+	Fri, 27 Mar 2009 05:33:09 -0400
 Received: from mga02.intel.com ([134.134.136.20]:49663 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752949AbZC0JdG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Mar 2009 05:33:06 -0400
+	id S1754429AbZC0JdI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Mar 2009 05:33:08 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.38,431,1233561600"; 
-   d="scan'208";a="501272144"
-Date: Fri, 27 Mar 2009 09:43:20 +0100
+   d="scan'208";a="501272158"
+Date: Fri, 27 Mar 2009 09:58:40 +0100
 From: Markus Metzger <markus.t.metzger@intel.com>
 To: linux-kernel@vger.kernel.org, mingo@elte.hu, tglx@linutronix.de,
        hpa@zytor.com
 Cc: markus.t.metzger@intel.com, markus.t.metzger@gmail.com, roland@redhat.com,
        eranian@googlemail.com, oleg@redhat.com, juan.villacis@intel.com,
        ak@linux.jf.intel.com
-Subject: [patch 0/14] x86, ptrace, bts, hw-branch-tracer: bug fixes and cleanups
-Message-ID: <20090327094320.A10628@sedona.ch.intel.com>
+Subject: [patch 4/14] x86, ds: wait before freeing the DS configuration
+Message-ID: <20090327095840.A11187@sedona.ch.intel.com>
 Mime-Version: 1.0
 Content-Disposition: inline
 User-Agent: Mutt/1.2.5i
@@ -30,27 +30,33 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A bug in the ptrace bts extension may cause a kernel crash.
+After suspending bts tracing, the task is still traced as long as it is
+running. The suspend will take effect when the task is scheduled out.
 
-When the ptracer exits, it stops branch tracing for all ptraced tasks
-and frees the branch trace buffer. If the traced tasks are currently
-running, the branch trace buffer may be freed before the cpu running
-that task has stopped tracing, thus overwriting memory with branch
-trace data.
+Wait until the traced task becomes inactive before freeing the DS configuration.
 
-Patches 1-4 fix this problem by having the tracer wait for the tracee
-to become inactive. This ensures that the cpu has stopped tracing that task.
+Signed-off-by: Markus Metzger <markus.t.metzger@intel.com>
+---
 
-The bug affects the .29 kernel.
-
-
-The rest of the patches are for tip/tracing/hw-branch-tracing only.
-Patches 5 and 6 fix boot problems caused by the hw-branch-tracer
-selftests reported by Ingo Molnar (thanks for reporting the problems).
-Patch 8 fixes a bug in the selftest.
-Patches 9 and 10 add more selftests.
-Patches 7, 11 - 13 are cleanup.
-Patch 14 adds support for Core i7.
+Index: git-tip/arch/x86/kernel/ds.c
+===================================================================
+--- git-tip.orig/arch/x86/kernel/ds.c	2009-03-27 07:59:23.000000000 +0100
++++ git-tip/arch/x86/kernel/ds.c	2009-03-27 08:00:41.000000000 +0100
+@@ -783,6 +783,14 @@ void ds_release_bts(struct bts_tracer *t
+ 
+ 	ds_suspend_bts(tracer);
+ 
++	/*
++	 * We must wait for the suspend to take effect before we may
++	 * free the tracer and the ds configuration.
++	 */
++	if (tracer->ds.context->task &&
++	    (tracer->ds.context->task != current))
++		wait_task_inactive(tracer->ds.context->task, 0);
++
+ 	WARN_ON_ONCE(tracer->ds.context->bts_master != tracer);
+ 	tracer->ds.context->bts_master = NULL;
+ 
 ---------------------------------------------------------------------
 Intel GmbH
 Dornacher Strasse 1
