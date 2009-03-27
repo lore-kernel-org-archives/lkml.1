@@ -1,24 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764754AbZC0Xrv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764657AbZC0Xs2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764754AbZC0Xrv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Mar 2009 19:47:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762309AbZC0X2S
+	id S1764657AbZC0Xs2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Mar 2009 19:48:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758915AbZC0X2T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Mar 2009 19:28:18 -0400
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:48473 "EHLO
+	Fri, 27 Mar 2009 19:28:19 -0400
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:48627 "EHLO
 	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758491AbZC0X1l (ORCPT
+	with ESMTP id S1761847AbZC0X1u (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Mar 2009 19:27:41 -0400
+	Fri, 27 Mar 2009 19:27:50 -0400
 From: =?utf-8?q?Uwe=20Kleine-K=C3=B6nig?= 
 	<u.kleine-koenig@pengutronix.de>
 To: linux-kernel@vger.kernel.org
 Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Krzysztof Helt <krzysztof.h1@wp.pl>, Roel Kluin <12o3l@tiscali.nl>,
-       Antonino Daplas <adaplas@pol.net>
-Subject: [PATCH 56/58] move vga16fb's probe function to .devinit.text
-Date: Sat, 28 Mar 2009 00:27:17 +0100
-Message-Id: <1238196439-16535-56-git-send-email-u.kleine-koenig@pengutronix.de>
+       Philipp Zabel <philipp.zabel@gmail.com>,
+       David Brownell <dbrownell@users.sourceforge.net>,
+       Greg Kroah-Hartman <gregkh@suse.de>, Tony Lindgren <tony@atomide.com>,
+       Russell King <rmk@arm.linux.org.uk>,
+       Dmitry Baryshkov <dbaryshkov@gmail.com>
+Subject: [PATCH 53/58] move omap_udc's probe function to .devinit.text
+Date: Sat, 28 Mar 2009 00:27:14 +0100
+Message-Id: <1238196439-16535-53-git-send-email-u.kleine-koenig@pengutronix.de>
 X-Mailer: git-send-email 1.6.2
 In-Reply-To: <20090327232153.GA16348@pengutronix.de>
 References: <20090327232153.GA16348@pengutronix.de>
@@ -33,7 +36,7 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A pointer to vga16fb_probe is passed to the core via
+A pointer to omap_udc_probe is passed to the core via
 platform_driver_register and so the function must not disappear when the
 .init sections are discarded.  Otherwise (if also having HOTPLUG=y)
 unbinding and binding a device to the driver via sysfs will result in an
@@ -44,27 +47,30 @@ platform_driver_register plus removing the pointer to the probe function
 from the struct platform_driver.
 
 Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
-Cc: Krzysztof Helt <krzysztof.h1@wp.pl>
-Cc: Roel Kluin <12o3l@tiscali.nl>
-Cc: Antonino Daplas <adaplas@pol.net>
+Cc: Philipp Zabel <philipp.zabel@gmail.com>
+Cc: David Brownell <dbrownell@users.sourceforge.net>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>
 Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Tony Lindgren <tony@atomide.com>
+Cc: Russell King <rmk@arm.linux.org.uk>
+Cc: Dmitry Baryshkov <dbaryshkov@gmail.com>
 ---
- drivers/video/vga16fb.c |    2 +-
+ drivers/usb/gadget/omap_udc.c |    2 +-
  1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/video/vga16fb.c b/drivers/video/vga16fb.c
-index 5b29389..76d8dae 100644
---- a/drivers/video/vga16fb.c
-+++ b/drivers/video/vga16fb.c
-@@ -1293,7 +1293,7 @@ static int vga16fb_setup(char *options)
+diff --git a/drivers/usb/gadget/omap_udc.c b/drivers/usb/gadget/omap_udc.c
+index 57d9641..17755f5 100644
+--- a/drivers/usb/gadget/omap_udc.c
++++ b/drivers/usb/gadget/omap_udc.c
+@@ -2800,7 +2800,7 @@ omap_udc_setup(struct platform_device *odev, struct otg_transceiver *xceiv)
+ 	return 0;
  }
- #endif
  
--static int __init vga16fb_probe(struct platform_device *dev)
-+static int __devinit vga16fb_probe(struct platform_device *dev)
+-static int __init omap_udc_probe(struct platform_device *pdev)
++static int __devinit omap_udc_probe(struct platform_device *pdev)
  {
- 	struct fb_info *info;
- 	struct vga16fb_par *par;
+ 	int			status = -ENODEV;
+ 	int			hmc;
 -- 
 1.6.2
 
