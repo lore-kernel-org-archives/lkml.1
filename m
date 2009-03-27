@@ -1,78 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763994AbZC0CWd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763807AbZC0C0z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763994AbZC0CWd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Mar 2009 22:22:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934559AbZC0CVb
+	id S1763807AbZC0C0z (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Mar 2009 22:26:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759859AbZC0C0p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Mar 2009 22:21:31 -0400
-Received: from yx-out-2324.google.com ([74.125.44.29]:17163 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S934500AbZC0CV0 convert rfc822-to-8bit (ORCPT
+	Thu, 26 Mar 2009 22:26:45 -0400
+Received: from ti-out-0910.google.com ([209.85.142.188]:25432 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753748AbZC0C0n (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Mar 2009 22:21:26 -0400
+	Thu, 26 Mar 2009 22:26:43 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=cwy/TgOBLo933IrNUWHPJL2lJxxmpUysClxnqUfdTDKJo3Pjwg9eXtvyOVNLE1LndN
-         2zrA++Iu0J6ELlT/2vQ2BHDjcVii5Hn8EEsRru585zZlvs0UclnrPm1D9szgNHUUzdgX
-         OCg9yUeH/+Sf/V2Xb1YOGMvhJURrp5m8I35XY=
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=NViVnXk3u6cg+BzX9bJsUX2zC76aC2cPujJhw9DjSmxqsr4JcV7TgWysEqS8U26J/p
+         V0kYQ2y3NDFIZS4TnLYlTJU2fIlbaMEP9c+gZhoE50rEgO3pntvQ4kLllfmDxtrYx3Km
+         /rMOPutTs9JKybmkbRcS9f7A9Nf6kWiPrJ45E=
+Message-ID: <49CC395B.20003@gmail.com>
+Date: Fri, 27 Mar 2009 11:26:35 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-In-Reply-To: <20090326182519.d576d703.akpm@linux-foundation.org>
-References: <alpine.LFD.2.00.0903231617550.3032@localhost.localdomain> 
-	<20090325183011.GN32307@mit.edu> <alpine.LFD.2.00.0903251139260.3032@localhost.localdomain> 
-	<20090325220530.GR32307@mit.edu> <alpine.LFD.2.00.0903251622420.3032@localhost.localdomain> 
-	<20090326171148.9bf8f1ec.akpm@linux-foundation.org> <alpine.LFD.2.00.0903261723250.3994@localhost.localdomain> 
-	<20090326174704.cd36bf7b.akpm@linux-foundation.org> <alpine.LFD.2.00.0903261752110.3994@localhost.localdomain> 
-	<20090326182519.d576d703.akpm@linux-foundation.org>
-Date: Thu, 26 Mar 2009 19:21:08 -0700
-Message-ID: <72dbd3150903261921k7cf728ebhf331e9965630be7e@mail.gmail.com>
-Subject: Re: Linux 2.6.29
-From: David Rees <drees76@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Theodore Tso <tytso@mit.edu>, Jesper Krogh <jesper@krogh.cc>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+To: Boaz Harrosh <bharrosh@panasas.com>
+CC: bzolnier@gmail.com, linux-kernel@vger.kernel.org, axboe@kernel.dk,
+       linux-ide@vger.kernel.org
+Subject: Re: [PATCH 03/14] block: implement blk_rq_map_kern_prealloc()
+References: <1237910776-10983-1-git-send-email-tj@kernel.org> <1237910776-10983-4-git-send-email-tj@kernel.org> <49CA4B4B.50408@panasas.com> <49CAE425.5050009@kernel.org> <49CB31DB.2040608@gmail.com> <49CB3765.4070406@panasas.com> <49CB387A.3000006@panasas.com> <49CB56AD.3080101@gmail.com> <49CB65CB.1030905@panasas.com> <49CB6FF8.7050701@gmail.com> <49CB94E9.5040808@panasas.com>
+In-Reply-To: <49CB94E9.5040808@panasas.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 26, 2009 at 6:25 PM, Andrew Morton
-<akpm@linux-foundation.org> wrote:
-> Why does everyone just sit around waiting for the kernel to put a new
-> value into two magic numbers which userspace scripts could have set?
->
-> My /etc/rc.local has been tweaking dirty_ratio, dirty_background_ratio
-> and swappiness for many years.  I guess I'm just incredibly advanced.
+Hello,
 
-The only people who bother to tune those values are people who get
-annoyed enough to do the research to see if it's something that's
-tunable - hackers.
+Boaz Harrosh wrote:
+> Yes sure, I'll be thinking about this some more too. Once your patch
+> pile settles we can sort out an additional cleanup that unifies some
+> of today's exported functions, just like you did with the blk_end_request.
 
-Everyone else simply says "man, Linux *sucks*" and lives life hoping
-it will get better some day.  From posts in this thread - even most
-developers just live with it, and have been doing so for *years*.
+I'm currently looking at the mapping API.  It's actually the final
+obstacle.  It seems scsi_req_map_sg() should really be in blk-map and
+doing that would solve most issues we've been talking about, right?
+Anyways, I'll take deeper look and see whether I can clean this up.
 
-Even Linux distros don't bother modifying init scripts - they patch
-them into kernel instead.  I routinely watch Fedora kernel changelogs
-and found these comments in the changelog recently:
+> Do you have a public tree I can inspect the all lot in one central
+> place? That should be the IDE tree you published few days ago
+> right? I'll look for it.
 
-* Mon Mar 23 2009 xx <xx@xx.xx> 2.6.29-2
- - Change default swappiness setting from 60 to 30.
+I have ~40 more patches on top of those two.  They're mostly ready.
+I'll post them soonish (I want to say later today but I said later
+today yesterday too :-)
 
-* Thu Mar 19 2009 xx <xx@xx.xx> 2.6.29-0.66.rc8.git4
- - Raise default vm dirty data limits from 5/10 to 10/20 percent.
+Thanks.
 
-Why are the going in the kernel package instead of /etc/sysctl.conf?
-Why is Fedora deviating from upstream? (probably sqlite performance)
-Maybe there's a good reason to put them into the kernel - for some
-reason the latest kernels perform better with those values where the
-previous ones didn't.  But still - why ship those 2 bytes of
-configuration in a 75MB package instead of one that could be a
-fraction of that size?
-
-Does *any* distro fiddle those bits in userspace instead of patching the kernel?
-
--Dave
+-- 
+tejun
