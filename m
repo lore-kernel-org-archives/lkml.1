@@ -1,13 +1,13 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757611AbZC0SDh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759242AbZC0SDz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757611AbZC0SDh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Mar 2009 14:03:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753753AbZC0SCs
+	id S1759242AbZC0SDz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Mar 2009 14:03:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754295AbZC0SCt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Mar 2009 14:02:48 -0400
-Received: from gw.goop.org ([64.81.55.164]:58145 "EHLO abulafia.goop.org"
+	Fri, 27 Mar 2009 14:02:49 -0400
+Received: from gw.goop.org ([64.81.55.164]:58141 "EHLO abulafia.goop.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751145AbZC0SCq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1751478AbZC0SCq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 27 Mar 2009 14:02:46 -0400
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: Andrew Morton <akpm@linux-foundation.org>
@@ -17,9 +17,9 @@ Cc: the arch/x86 maintainers <x86@kernel.org>, Ingo Molnar <mingo@elte.hu>,
        Nick Piggin <nickpiggin@yahoo.com.au>,
        Thomas Gleixner <tglx@linutronix.de>,
        Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Subject: [PATCH 3/8] x86/pvops: replace arch_enter_lazy_cpu_mode with arch_start_context_switch
-Date: Fri, 27 Mar 2009 11:02:38 -0700
-Message-Id: <1238176963-21093-4-git-send-email-jeremy@goop.org>
+Subject: [PATCH 2/8] x86/paravirt: remove lazy mode in interrupts
+Date: Fri, 27 Mar 2009 11:02:37 -0700
+Message-Id: <1238176963-21093-3-git-send-email-jeremy@goop.org>
 X-Mailer: git-send-email 1.6.0.6
 In-Reply-To: <1238176963-21093-1-git-send-email-jeremy@goop.org>
 References: <1238176963-21093-1-git-send-email-jeremy@goop.org>
@@ -29,186 +29,128 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 
-Impact: simplification, prepare for later changes
+Impact: simplification, robustness
 
-Make lazy cpu mode more specific to context switching, so that
-it makes sense to do more context-switch specific things in
-the callbacks.
+Make paravirt_lazy_mode() always return PARAVIRT_LAZY_NONE
+when in an interrupt.  This prevents interrupt code from
+accidentally inheriting an outer lazy state, and instead
+does everything synchronously.  Outer batched operations
+are left deferred.
 
 Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 ---
- arch/x86/include/asm/paravirt.h |    8 +++-----
- arch/x86/kernel/paravirt.c      |   13 -------------
- arch/x86/kernel/process_32.c    |    2 +-
- arch/x86/kernel/process_64.c    |    2 +-
- arch/x86/xen/mmu.c              |    5 +----
- include/asm-frv/pgtable.h       |    4 ++--
- include/asm-generic/pgtable.h   |   21 +++++++++++----------
- kernel/sched.c                  |    2 +-
- 8 files changed, 20 insertions(+), 37 deletions(-)
+ arch/x86/kernel/paravirt.c |    3 +++
+ arch/x86/mm/fault.c        |    6 ++----
+ arch/x86/mm/highmem_32.c   |    2 --
+ arch/x86/mm/iomap_32.c     |    2 --
+ arch/x86/mm/pageattr.c     |   14 --------------
+ 5 files changed, 5 insertions(+), 22 deletions(-)
 
-diff --git a/arch/x86/include/asm/paravirt.h b/arch/x86/include/asm/paravirt.h
-index 7727aa8..f79dc89 100644
---- a/arch/x86/include/asm/paravirt.h
-+++ b/arch/x86/include/asm/paravirt.h
-@@ -1405,19 +1405,17 @@ void paravirt_enter_lazy_mmu(void);
- void paravirt_leave_lazy_mmu(void);
- void paravirt_leave_lazy(enum paravirt_lazy_mode mode);
- 
--#define  __HAVE_ARCH_ENTER_LAZY_CPU_MODE
--static inline void arch_enter_lazy_cpu_mode(void)
-+#define  __HAVE_ARCH_START_CONTEXT_SWITCH
-+static inline void arch_start_context_switch(void)
- {
- 	PVOP_VCALL0(pv_cpu_ops.lazy_mode.enter);
- }
- 
--static inline void arch_leave_lazy_cpu_mode(void)
-+static inline void arch_end_context_switch(void)
- {
- 	PVOP_VCALL0(pv_cpu_ops.lazy_mode.leave);
- }
- 
--void arch_flush_lazy_cpu_mode(void);
--
- #define  __HAVE_ARCH_ENTER_LAZY_MMU_MODE
- static inline void arch_enter_lazy_mmu_mode(void)
- {
 diff --git a/arch/x86/kernel/paravirt.c b/arch/x86/kernel/paravirt.c
-index c866521..a53e4fb 100644
+index 8e45f44..c866521 100644
 --- a/arch/x86/kernel/paravirt.c
 +++ b/arch/x86/kernel/paravirt.c
-@@ -301,19 +301,6 @@ void arch_flush_lazy_mmu_mode(void)
- 	preempt_enable();
+@@ -282,6 +282,9 @@ void paravirt_leave_lazy_cpu(void)
+ 
+ enum paravirt_lazy_mode paravirt_get_lazy_mode(void)
+ {
++	if (in_interrupt())
++		return PARAVIRT_LAZY_NONE;
++
+ 	return __get_cpu_var(paravirt_lazy_mode);
  }
  
--void arch_flush_lazy_cpu_mode(void)
--{
--	preempt_disable();
--
--	if (paravirt_get_lazy_mode() == PARAVIRT_LAZY_CPU) {
--		WARN_ON(preempt_count() == 1);
--		arch_leave_lazy_cpu_mode();
--		arch_enter_lazy_cpu_mode();
+diff --git a/arch/x86/mm/fault.c b/arch/x86/mm/fault.c
+index f70b901..09e6ae4 100644
+--- a/arch/x86/mm/fault.c
++++ b/arch/x86/mm/fault.c
+@@ -227,12 +227,10 @@ static inline pmd_t *vmalloc_sync_one(pgd_t *pgd, unsigned long address)
+ 	if (!pmd_present(*pmd_k))
+ 		return NULL;
+ 
+-	if (!pmd_present(*pmd)) {
++	if (!pmd_present(*pmd))
+ 		set_pmd(pmd, *pmd_k);
+-		arch_flush_lazy_mmu_mode();
+-	} else {
++	else
+ 		BUG_ON(pmd_page(*pmd) != pmd_page(*pmd_k));
 -	}
--
--	preempt_enable();
--}
--
- struct pv_info pv_info = {
- 	.name = "bare hardware",
- 	.paravirt_enabled = 0,
-diff --git a/arch/x86/kernel/process_32.c b/arch/x86/kernel/process_32.c
-index 14014d7..57e49a8 100644
---- a/arch/x86/kernel/process_32.c
-+++ b/arch/x86/kernel/process_32.c
-@@ -407,7 +407,7 @@ __switch_to(struct task_struct *prev_p, struct task_struct *next_p)
- 	 * done before math_state_restore, so the TS bit is up
- 	 * to date.
- 	 */
--	arch_leave_lazy_cpu_mode();
-+	arch_end_context_switch();
  
- 	/* If the task has used fpu the last 5 timeslices, just do a full
- 	 * restore of the math state immediately to avoid the trap; the
-diff --git a/arch/x86/kernel/process_64.c b/arch/x86/kernel/process_64.c
-index abb7e6a..7115e60 100644
---- a/arch/x86/kernel/process_64.c
-+++ b/arch/x86/kernel/process_64.c
-@@ -428,7 +428,7 @@ __switch_to(struct task_struct *prev_p, struct task_struct *next_p)
- 	 * done before math_state_restore, so the TS bit is up
- 	 * to date.
- 	 */
--	arch_leave_lazy_cpu_mode();
-+	arch_end_context_switch();
- 
- 	/*
- 	 * Switch FS and GS.
-diff --git a/arch/x86/xen/mmu.c b/arch/x86/xen/mmu.c
-index db3802f..4702c79 100644
---- a/arch/x86/xen/mmu.c
-+++ b/arch/x86/xen/mmu.c
-@@ -1119,10 +1119,8 @@ static void drop_other_mm_ref(void *info)
- 
- 	/* If this cpu still has a stale cr3 reference, then make sure
- 	   it has been flushed. */
--	if (percpu_read(xen_current_cr3) == __pa(mm->pgd)) {
-+	if (percpu_read(xen_current_cr3) == __pa(mm->pgd))
- 		load_cr3(swapper_pg_dir);
--		arch_flush_lazy_cpu_mode();
--	}
+ 	return pmd_k;
  }
+diff --git a/arch/x86/mm/highmem_32.c b/arch/x86/mm/highmem_32.c
+index 522db5e..17d0103 100644
+--- a/arch/x86/mm/highmem_32.c
++++ b/arch/x86/mm/highmem_32.c
+@@ -87,7 +87,6 @@ void *kmap_atomic_prot(struct page *page, enum km_type type, pgprot_t prot)
+ 	vaddr = __fix_to_virt(FIX_KMAP_BEGIN + idx);
+ 	BUG_ON(!pte_none(*(kmap_pte-idx)));
+ 	set_pte(kmap_pte-idx, mk_pte(page, prot));
+-	arch_flush_lazy_mmu_mode();
  
- static void xen_drop_mm_ref(struct mm_struct *mm)
-@@ -1135,7 +1133,6 @@ static void xen_drop_mm_ref(struct mm_struct *mm)
- 			load_cr3(swapper_pg_dir);
- 		else
- 			leave_mm(smp_processor_id());
--		arch_flush_lazy_cpu_mode();
+ 	return (void *)vaddr;
+ }
+@@ -117,7 +116,6 @@ void kunmap_atomic(void *kvaddr, enum km_type type)
+ #endif
  	}
  
- 	/* Get the "official" set of cpus referring to our pagetable. */
-diff --git a/include/asm-frv/pgtable.h b/include/asm-frv/pgtable.h
-index e16fdb1..235e34a 100644
---- a/include/asm-frv/pgtable.h
-+++ b/include/asm-frv/pgtable.h
-@@ -73,8 +73,8 @@ static inline int pte_file(pte_t pte) { return 0; }
- #define pgtable_cache_init()		do {} while (0)
- #define arch_enter_lazy_mmu_mode()	do {} while (0)
- #define arch_leave_lazy_mmu_mode()	do {} while (0)
--#define arch_enter_lazy_cpu_mode()	do {} while (0)
--#define arch_leave_lazy_cpu_mode()	do {} while (0)
-+
-+#define arch_start_context_switch()	do {} while (0)
+-	arch_flush_lazy_mmu_mode();
+ 	pagefault_enable();
+ }
  
- #else /* !CONFIG_MMU */
- /*****************************************************************************/
-diff --git a/include/asm-generic/pgtable.h b/include/asm-generic/pgtable.h
-index 8e6d0ca..922f036 100644
---- a/include/asm-generic/pgtable.h
-+++ b/include/asm-generic/pgtable.h
-@@ -280,17 +280,18 @@ static inline void ptep_modify_prot_commit(struct mm_struct *mm,
- #endif
+diff --git a/arch/x86/mm/iomap_32.c b/arch/x86/mm/iomap_32.c
+index 699c9b2..0c16a33 100644
+--- a/arch/x86/mm/iomap_32.c
++++ b/arch/x86/mm/iomap_32.c
+@@ -41,7 +41,6 @@ void *kmap_atomic_prot_pfn(unsigned long pfn, enum km_type type, pgprot_t prot)
+ 	idx = type + KM_TYPE_NR * smp_processor_id();
+ 	vaddr = __fix_to_virt(FIX_KMAP_BEGIN + idx);
+ 	set_pte(kmap_pte - idx, pfn_pte(pfn, prot));
+-	arch_flush_lazy_mmu_mode();
  
- /*
-- * A facility to provide batching of the reload of page tables with the
-- * actual context switch code for paravirtualized guests.  By convention,
-- * only one of the lazy modes (CPU, MMU) should be active at any given
-- * time, entry should never be nested, and entry and exits should always
-- * be paired.  This is for sanity of maintaining and reasoning about the
-- * kernel code.
-+ * A facility to provide batching of the reload of page tables and
-+ * other process state with the actual context switch code for
-+ * paravirtualized guests.  By convention, only one of the batched
-+ * update (lazy) modes (CPU, MMU) should be active at any given time,
-+ * entry should never be nested, and entry and exits should always be
-+ * paired.  This is for sanity of maintaining and reasoning about the
-+ * kernel code.  In this case, the exit (end of the context switch) is
-+ * in architecture-specific code, and so doesn't need a generic
-+ * definition.
-  */
--#ifndef __HAVE_ARCH_ENTER_LAZY_CPU_MODE
--#define arch_enter_lazy_cpu_mode()	do {} while (0)
--#define arch_leave_lazy_cpu_mode()	do {} while (0)
--#define arch_flush_lazy_cpu_mode()	do {} while (0)
-+#ifndef __HAVE_ARCH_START_CONTEXT_SWITCH
-+#define arch_start_context_switch()	do {} while (0)
- #endif
+ 	return (void *)vaddr;
+ }
+@@ -80,7 +79,6 @@ iounmap_atomic(void *kvaddr, enum km_type type)
+ 	if (vaddr == __fix_to_virt(FIX_KMAP_BEGIN+idx))
+ 		kpte_clear_flush(kmap_pte-idx, vaddr);
  
- #ifndef __HAVE_PFNMAP_TRACKING
-diff --git a/kernel/sched.c b/kernel/sched.c
-index 3e827b8..168adaf 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -2804,7 +2804,7 @@ context_switch(struct rq *rq, struct task_struct *prev,
- 	 * combine the page table reload and the switch backend into
- 	 * one hypercall.
- 	 */
--	arch_enter_lazy_cpu_mode();
-+	arch_start_context_switch();
+-	arch_flush_lazy_mmu_mode();
+ 	pagefault_enable();
+ }
+ EXPORT_SYMBOL_GPL(iounmap_atomic);
+diff --git a/arch/x86/mm/pageattr.c b/arch/x86/mm/pageattr.c
+index b0e5adb..1224865 100644
+--- a/arch/x86/mm/pageattr.c
++++ b/arch/x86/mm/pageattr.c
+@@ -844,13 +844,6 @@ static int change_page_attr_set_clr(unsigned long *addr, int numpages,
  
- 	if (unlikely(!mm)) {
- 		next->active_mm = oldmm;
+ 	vm_unmap_aliases();
+ 
+-	/*
+-	 * If we're called with lazy mmu updates enabled, the
+-	 * in-memory pte state may be stale.  Flush pending updates to
+-	 * bring them up to date.
+-	 */
+-	arch_flush_lazy_mmu_mode();
+-
+ 	cpa.vaddr = addr;
+ 	cpa.pages = pages;
+ 	cpa.numpages = numpages;
+@@ -895,13 +888,6 @@ static int change_page_attr_set_clr(unsigned long *addr, int numpages,
+ 	} else
+ 		cpa_flush_all(cache);
+ 
+-	/*
+-	 * If we've been called with lazy mmu updates enabled, then
+-	 * make sure that everything gets flushed out before we
+-	 * return.
+-	 */
+-	arch_flush_lazy_mmu_mode();
+-
+ out:
+ 	return ret;
+ }
 -- 
 1.6.0.6
 
