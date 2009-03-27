@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759717AbZC0PNL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757204AbZC0PTu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759717AbZC0PNL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Mar 2009 11:13:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758696AbZC0PMu
+	id S1757204AbZC0PTu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Mar 2009 11:19:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752281AbZC0PTl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Mar 2009 11:12:50 -0400
-Received: from mga11.intel.com ([192.55.52.93]:33802 "EHLO mga11.intel.com"
+	Fri, 27 Mar 2009 11:19:41 -0400
+Received: from mga09.intel.com ([134.134.136.24]:14298 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759549AbZC0PMs convert rfc822-to-8bit (ORCPT
+	id S1751837AbZC0PTl convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Mar 2009 11:12:48 -0400
+	Fri, 27 Mar 2009 11:19:41 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.38,432,1233561600"; 
-   d="scan'208";a="442650716"
+   d="scan'208";a="398084662"
 From: "Metzger, Markus T" <markus.t.metzger@intel.com>
 To: Oleg Nesterov <oleg@redhat.com>
 CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
@@ -24,14 +24,14 @@ CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
        "eranian@googlemail.com" <eranian@googlemail.com>,
        "Villacis, Juan" <juan.villacis@intel.com>,
        "ak@linux.jf.intel.com" <ak@linux.jf.intel.com>
-Date: Fri, 27 Mar 2009 15:12:35 +0000
-Subject: RE: [patch 1/14] x86, ptrace: add arch_ptrace_report_exit
-Thread-Topic: [patch 1/14] x86, ptrace: add arch_ptrace_report_exit
-Thread-Index: Acmu543h/b61rAmpTa6EKCyeI/6HDQABf5nA
-Message-ID: <928CFBE8E7CB0040959E56B4EA41A77E9266B6B4@irsmsx504.ger.corp.intel.com>
-References: <20090327094626.A11002@sedona.ch.intel.com>
- <20090327141937.GB14504@redhat.com>
-In-Reply-To: <20090327141937.GB14504@redhat.com>
+Date: Fri, 27 Mar 2009 15:18:40 +0000
+Subject: RE: [patch 2/14] x86, mm: add release_locked_buffer_on_behalf
+Thread-Topic: [patch 2/14] x86, mm: add release_locked_buffer_on_behalf
+Thread-Index: Acmu5+hbF7dUBF/2SIWKmi0/i4wOZQABrVYQ
+Message-ID: <928CFBE8E7CB0040959E56B4EA41A77E9266B6C0@irsmsx504.ger.corp.intel.com>
+References: <20090327094836.A11033@sedona.ch.intel.com>
+ <20090327142215.GC14504@redhat.com>
+In-Reply-To: <20090327142215.GC14504@redhat.com>
 Accept-Language: en-US
 Content-Language: en-US
 X-MS-Has-Attach: 
@@ -46,84 +46,43 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 >-----Original Message-----
 >From: Oleg Nesterov [mailto:oleg@redhat.com]
->Sent: Friday, March 27, 2009 3:20 PM
+>Sent: Friday, March 27, 2009 3:22 PM
 >To: Metzger, Markus T
 >Cc: linux-kernel@vger.kernel.org; mingo@elte.hu; tglx@linutronix.de; hpa@zytor.com;
 >markus.t.metzger@gmail.com; roland@redhat.com; eranian@googlemail.com; Villacis, Juan;
 >ak@linux.jf.intel.com
->Subject: Re: [patch 1/14] x86, ptrace: add arch_ptrace_report_exit
+>Subject: Re: [patch 2/14] x86, mm: add release_locked_buffer_on_behalf
 >
 >On 03/27, Markus Metzger wrote:
 >>
->> --- git-tip.orig/include/linux/ptrace.h	2009-03-23 10:45:30.000000000 +0100
->> +++ git-tip/include/linux/ptrace.h	2009-03-23 11:31:21.000000000 +0100
->> @@ -335,6 +335,23 @@ static inline void user_enable_block_ste
->>  #define arch_ptrace_fork(child, clone_flags)	do { } while (0)
->>  #endif
->>
->> +#ifndef arch_ptrace_report_exit
->> +/**
->> + * arch_ptrace_report_exit - Do machine specific work for exiting ptraced tasks
->> + * @exit_code:	current->exit_code value
->> + *
->> + * This is called early from do_exit() with no locks held after we notified the
->> + * ptracer.
->> + */
->> +#define arch_ptrace_report_exit(exit_code)	do { } while (0)
->> +#endif
->> +
->> +static inline void ptrace_report_exit(long *exit_code)
->> +{
->> +	ptrace_event(PT_TRACE_EXIT, PTRACE_EVENT_EXIT, *exit_code);
->> +	arch_ptrace_report_exit(*exit_code);
->> +}
->> +
->>  extern int task_current_syscall(struct task_struct *target, long *callno,
->>  				unsigned long args[6], unsigned int maxargs,
->>  				unsigned long *sp, unsigned long *pc);
->> Index: git-tip/include/linux/tracehook.h
->> ===================================================================
->> --- git-tip.orig/include/linux/tracehook.h	2009-03-23 10:45:30.000000000 +0100
->> +++ git-tip/include/linux/tracehook.h	2009-03-23 11:31:21.000000000 +0100
->> @@ -211,7 +211,7 @@ static inline void tracehook_report_exec
->>   */
->>  static inline void tracehook_report_exit(long *exit_code)
+>> -void release_locked_buffer(void *buffer, size_t size)
+>> +void release_locked_buffer_on_behalf(struct mm_struct *mm,
+>> +				     void *buffer, size_t size)
 >>  {
->> -	ptrace_event(PT_TRACE_EXIT, PTRACE_EVENT_EXIT, *exit_code);
->> +	ptrace_report_exit(exit_code);
+>>  	unsigned long pgsz = PAGE_ALIGN(size) >> PAGE_SHIFT;
+>>
+>> -	down_write(&current->mm->mmap_sem);
+>> +	down_write(&mm->mmap_sem);
+>>
+>> -	current->mm->total_vm  -= pgsz;
+>> -	current->mm->locked_vm -= pgsz;
+>> +	mm->total_vm  -= pgsz;
+>> +	mm->locked_vm -= pgsz;
+>>
+>> -	up_write(&current->mm->mmap_sem);
+>> +	up_write(&mm->mmap_sem);
 >>  }
 >
->This needs Rolan'd review.
->
->But I'd say this has nothing to do with tracehooks. And why do
->you pass *exit_code to arch_ptrace_report_exit() ?
->
->Just add arch_ptrace_report_exit(void) into do_exit() ?
->
->From the 3/14 patch:
->
->	#define arch_ptrace_report_exit(code) x86_ptrace_report_exit(code)
->
->	void x86_ptrace_report_exit(long exit_code)
->	{
->	       ptrace_bts_exit();
->	}
->
->This is a bit strange. Why do we need 2 functions, ptrace_bts_exit() and
->x86_ptrace_report_exit() which just calls the first one?
+>If you change this helper, perhaps you can remove the "void *buffer"
+>argument? It is not used. Actually, this helper should be renamed.
+>It doesn't free the memory, it only updates mm->xxx_vm.
 
-I did not want to take any shortcuts. I try to maintain the structure 
-general_function()->ptrace_report()->arch_ptrace_report().
+OK.
 
-Recently, tracehook_report_whatever() calls were added which either do the
-ptrace work directly or call a ptrace function. I try to use those calls, where possible.
+There's an alloc/free pair. This one is in between to allow another task to free
+the buffer and get the memory correctly refunded.
 
-It does not clutter the general code with x86 specific, or worse x86 branch trace
-recording specific calls.
-
-
-If people don't like these ptrace_whatever() and arch_ptrace_whatever() calls I add,
-I can remove them and add my calls directly where I need them.
+How about refund_locked_buffer_memory(struct mm_struct *, size_t)?
 
 regards,
 markus.
