@@ -1,94 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758289AbZC0Pj4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757945AbZC0Pnc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758289AbZC0Pj4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Mar 2009 11:39:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754586AbZC0Pjr
+	id S1757945AbZC0Pnc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Mar 2009 11:43:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753409AbZC0PnX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Mar 2009 11:39:47 -0400
-Received: from mga02.intel.com ([134.134.136.20]:33431 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754305AbZC0Pjr convert rfc822-to-8bit (ORCPT
+	Fri, 27 Mar 2009 11:43:23 -0400
+Received: from e37.co.us.ibm.com ([32.97.110.158]:40228 "EHLO
+	e37.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752587AbZC0PnX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Mar 2009 11:39:47 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.38,432,1233561600"; 
-   d="scan'208";a="398089840"
-From: "Metzger, Markus T" <markus.t.metzger@intel.com>
-To: Oleg Nesterov <oleg@redhat.com>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "mingo@elte.hu" <mingo@elte.hu>,
-       "tglx@linutronix.de" <tglx@linutronix.de>,
-       "hpa@zytor.com" <hpa@zytor.com>,
-       "markus.t.metzger@gmail.com" <markus.t.metzger@gmail.com>,
-       "roland@redhat.com" <roland@redhat.com>,
-       "eranian@googlemail.com" <eranian@googlemail.com>,
-       "Villacis, Juan" <juan.villacis@intel.com>,
-       "ak@linux.jf.intel.com" <ak@linux.jf.intel.com>
-Date: Fri, 27 Mar 2009 15:39:31 +0000
-Subject: RE: [patch 4/14] x86, ds: wait before freeing the DS configuration
-Thread-Topic: [patch 4/14] x86, ds: wait before freeing the DS configuration
-Thread-Index: Acmu6dgLNK4/NgDDR9mKbVKc/qWUpAACDz+w
-Message-ID: <928CFBE8E7CB0040959E56B4EA41A77E9266B6D8@irsmsx504.ger.corp.intel.com>
-References: <20090327095840.A11187@sedona.ch.intel.com>
- <20090327143556.GE14504@redhat.com>
-In-Reply-To: <20090327143556.GE14504@redhat.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
+	Fri, 27 Mar 2009 11:43:23 -0400
+Message-ID: <49CCF415.7080201@us.ibm.com>
+Date: Fri, 27 Mar 2009 08:43:17 -0700
+From: Darren Hart <dvhltc@us.ibm.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8BIT
+To: Minchan Kim <minchan.kim@gmail.com>
+CC: Peter Zijlstra <peterz@infradead.org>, Eric Dumazet <dada1@cosmosbay.com>,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: Question about PRIVATE_FUTEX
+References: <28c262360903261912n4ce235c6wf2f75b2be7faf0f4@mail.gmail.com> <1238143759.7808.2885.camel@twins> <28c262360903270356x6a9fc929m96941de8f8201fb0@mail.gmail.com> <1238152496.7808.3203.camel@twins> <28c262360903270437l72cd31e1ja2daf00dbcf29675@mail.gmail.com>
+In-Reply-To: <28c262360903270437l72cd31e1ja2daf00dbcf29675@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->-----Original Message-----
->From: Oleg Nesterov [mailto:oleg@redhat.com]
->Sent: Friday, March 27, 2009 3:36 PM
->To: Metzger, Markus T
->Cc: linux-kernel@vger.kernel.org; mingo@elte.hu; tglx@linutronix.de; hpa@zytor.com;
->markus.t.metzger@gmail.com; roland@redhat.com; eranian@googlemail.com; Villacis, Juan;
->ak@linux.jf.intel.com
->Subject: Re: [patch 4/14] x86, ds: wait before freeing the DS configuration
->
->On 03/27, Markus Metzger wrote:
+Minchan Kim wrote:
+> On Fri, Mar 27, 2009 at 8:14 PM, Peter Zijlstra <peterz@infradead.org> wrote:
+>> On Fri, 2009-03-27 at 19:56 +0900, Minchan Kim wrote:
 >>
->> --- git-tip.orig/arch/x86/kernel/ds.c	2009-03-27 07:59:23.000000000 +0100
->> +++ git-tip/arch/x86/kernel/ds.c	2009-03-27 08:00:41.000000000 +0100
->> @@ -783,6 +783,14 @@ void ds_release_bts(struct bts_tracer *t
+>>>>> Then, get_futex_value_locked calls __cpy_from_user_inatomic with
+>>>>> pagefault_disable.
+>>>>>
+>>>>> Who make sure the user page is mapped at app's page table ?
+>>>> Nobody, all uses of get_futex_value_locked() have to deal with it
+>>>> returning -EFAULT.
+>>> Does It mean that __copy_from_user_inatomic in get_futex_value_locked
+>>> would be failed rather than sleep?
+>> Correct.
 >>
->>  	ds_suspend_bts(tracer);
+>>> In fact, I don't make sure _copy_from_user_inatomic function's meaning.
+>>> As far as I understand, It never sleep. It just can be failed in case
+>>> of user page isn't mapped. Is right ?
+>> Correct.
 >>
->> +	/*
->> +	 * We must wait for the suspend to take effect before we may
->> +	 * free the tracer and the ds configuration.
->> +	 */
->> +	if (tracer->ds.context->task &&
->> +	    (tracer->ds.context->task != current))
->> +		wait_task_inactive(tracer->ds.context->task, 0);
->> +
->
->Since you didn't replay yet, I will just repeat my question ;)
+>>> Otherwise, it can be scheduled with pagefault_disable which increments
+>>> preempt_count. It is a atomic bug.
+>>> If my assume is right, it can be failed rather than sleep.
+>>> At this case, other architecture implements __copy_from_user_inatomic
+>>> with __copy_from_user which can be scheduled. It also can be bug.
+>>>
+>>> Hmm, Now I am confusing.
+>> Confused I guess ;-)
+>> The trick is in the in_atomic() check in the pagefault handler and the
+>> fixup section of the copy routines.
+> 
+> Whew~,  There was good hidden trick.
+> I will dive into this assembly.
+> I always thanks for your kindness. :)
+> 
+>> #define __copy_user(to, from, size)                                     \
+>> do {                                                                    \
+>>        int __d0, __d1, __d2;                                           \
+>>        __asm__ __volatile__(                                           \
+>>                "       cmp  $7,%0\n"                                   \
+>>                "       jbe  1f\n"                                      \
+>>                "       movl %1,%0\n"                                   \
+>>                "       negl %0\n"                                      \
+>>                "       andl $7,%0\n"                                   \
+>>                "       subl %0,%3\n"                                   \
+>>                "4:     rep; movsb\n"                                   \
+>>                "       movl %3,%0\n"                                   \
+>>                "       shrl $2,%0\n"                                   \
+>>                "       andl $3,%3\n"                                   \
+>>                "       .align 2,0x90\n"                                \
+>>                "0:     rep; movsl\n"                                   \
+>>                "       movl %3,%0\n"                                   \
+>>                "1:     rep; movsb\n"                                   \
+>>                "2:\n"                                                  \
+>>                ".section .fixup,\"ax\"\n"                              \
+>>                "5:     addl %3,%0\n"                                   \
+>>                "       jmp 2b\n"                                       \
+>>                "3:     lea 0(%3,%0,4),%0\n"                            \
+>>                "       jmp 2b\n"                                       \
+>>                ".previous\n"                                           \
+>>                ".section __ex_table,\"a\"\n"                           \
+>>                "       .align 4\n"                                     \
+>>                "       .long 4b,5b\n"                                  \
+>>                "       .long 0b,3b\n"                                  \
+>>                "       .long 1b,2b\n"                                  \
+>>                ".previous"                                             \
+>>                : "=&c"(size), "=&D" (__d0), "=&S" (__d1), "=r"(__d2)   \
+>>                : "3"(size), "0"(size), "1"(to), "2"(from)              \
+>>                : "memory");                                            \
+>> } while (0)
+>>
+>> see that __ex_table section, it tells the fault handler where to
+>> continue in case of an atomic fault.
+>>
+>>>> Most of this is legacy btw, from when futex ops were done under the
+>>>> mmap_sem. Back then we couldn't fault because that would cause mmap_sem
+>>>> recursion. Howver, now that we don't hold mmap_sem anymore we could use
+>>>> a faulting user access like get_user().
+>>>> Darren has been working on patches to clean that up, some of those are
+>>>> already merged in the -tip tree.
 
-I replied in http://lkml.org/lkml/2009/3/27/220.
+I'm a little late to the party I guess.  Minchan, a lot of the fault 
+logic has been cleaned up in the tip tree, core/futexes branch.  The 
+removes a lot of the legacy complication from the faulting paths. 
+However, the get_futex_key code remains the same if I remember correctly.
 
-regards,
-markus.
+>>> Thanks for good information.
+>>> It will be very desirable way to enhance kernel performance.
+>> I doubt it'll make a measurable difference, if you need to fault
+>> performance sucks anyway. If you don't, the current code is just as
+>> fast.
+>>
 
----------------------------------------------------------------------
-Intel GmbH
-Dornacher Strasse 1
-85622 Feldkirchen/Muenchen Germany
-Sitz der Gesellschaft: Feldkirchen bei Muenchen
-Geschaeftsfuehrer: Douglas Lusk, Peter Gleissner, Hannes Schwaderer
-Registergericht: Muenchen HRB 47456 Ust.-IdNr.
-VAT Registration No.: DE129385895
-Citibank Frankfurt (BLZ 502 109 00) 600119052
+Agreed.  If you are suffering performance hits from excessive paging, 
+consider locking your memory.
 
-This e-mail and any attachments may contain confidential material for
-the sole use of the intended recipient(s). Any review or distribution
-by others is strictly prohibited. If you are not the intended
-recipient, please contact the sender and delete all copies.
 
+-- 
+Darren Hart
+IBM Linux Technology Center
+Real-Time Linux Team
