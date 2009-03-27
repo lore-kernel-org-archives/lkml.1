@@ -1,127 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934559AbZC0BSp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763145AbZC0BYm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934559AbZC0BSp (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Mar 2009 21:18:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934478AbZC0BSO
+	id S1763145AbZC0BYm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Mar 2009 21:24:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754848AbZC0BYd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Mar 2009 21:18:14 -0400
-Received: from mail.vyatta.com ([76.74.103.46]:51424 "EHLO mail.vyatta.com"
+	Thu, 26 Mar 2009 21:24:33 -0400
+Received: from ozlabs.org ([203.10.76.45]:59100 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S934477AbZC0BSM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Mar 2009 21:18:12 -0400
-Date: Thu, 26 Mar 2009 18:18:04 -0700
-From: Stephen Hemminger <shemminger@vyatta.com>
-To: Alexander Beregalov <a.beregalov@gmail.com>
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org, davem@davemloft.net
-Subject: Re: [PATCH] IRDA: donauboe: fix build
-Message-ID: <20090326181804.02c06f51@nehalam>
-In-Reply-To: <20090327010227.GA2676@orion>
-References: <20090327010227.GA2676@orion>
-Organization: Vyatta
-X-Mailer: Claws Mail 3.6.1 (GTK+ 2.16.0; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	id S1754817AbZC0BYc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Mar 2009 21:24:32 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Subject: Re: [PATCH 3/5] lguest: avoid accidental recycling of pgdir pages
+Date: Fri, 27 Mar 2009 11:54:20 +1030
+User-Agent: KMail/1.11.1 (Linux/2.6.27-11-generic; KDE/4.2.1; i686; ; )
+Cc: lguest@ozlabs.org, Ingo Molnar <mingo@redhat.com>,
+       linux-kernel@vger.kernel.org, virtualization@lists.linux-foundation.org
+References: <200903271022.28863.rusty@rustcorp.com.au> <49CC1B1C.3080102@goop.org>
+In-Reply-To: <49CC1B1C.3080102@goop.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200903271154.22450.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 27 Mar 2009 04:02:27 +0300
-Alexander Beregalov <a.beregalov@gmail.com> wrote:
+On Friday 27 March 2009 10:47:32 Jeremy Fitzhardinge wrote:
+> Rusty Russell wrote:
+> > Impact: potential bugfix
+> >
+> > In theory, the kernel could reuse the same page as pgdir for a new process
+> > while the hypervisor keeps it cached.  This would have undesirable results.
+> >   
+> 
+> You can't just do this in tlb flush?
 
-> drivers/net/irda/donauboe.c: In function 'toshoboe_open':
-> drivers/net/irda/donauboe.c:1660: error: 'struct net_device' has no
-> member named 'hard_start_xmit'
-> drivers/net/irda/donauboe.c:1661: error: 'struct net_device' has no
-> member named 'open'
-> drivers/net/irda/donauboe.c:1662: error: 'struct net_device' has no
-> member named 'stop'
-> drivers/net/irda/donauboe.c:1663: error: 'struct net_device' has no
-> member named 'do_ioctl'
-> 
-> Signed-off-by: Alexander Beregalov <a.beregalov@gmail.com>
-> ---
-> 
->  drivers/net/irda/donauboe.c |   15 +++++++++++----
->  1 files changed, 11 insertions(+), 4 deletions(-)
-> 
-> diff --git a/drivers/net/irda/donauboe.c b/drivers/net/irda/donauboe.c
-> index 6f3e7f7..847fa22 100644
-> --- a/drivers/net/irda/donauboe.c
-> +++ b/drivers/net/irda/donauboe.c
-> @@ -970,7 +970,7 @@ toshoboe_probe (struct toshoboe_cb *self)
->  /* Netdev style code */
->  
->  /* Transmit something */
-> -static int
-> +int
->  toshoboe_hard_xmit (struct sk_buff *skb, struct net_device *dev)
->  {
->    struct toshoboe_cb *self;
-> @@ -1145,6 +1145,7 @@ dumpbufs(skb->data,skb->len,'>');
->  
->    return 0;
->  }
-> +EXPORT_SYMBOL(toshoboe_hard_xmit);
->  
->  /*interrupt handler */
->  static irqreturn_t
-> @@ -1336,7 +1337,7 @@ dumpbufs(self->rx_bufs[self->rxs],len,'<');
->  }
->  
->  
-> -static int
-> +int
->  toshoboe_net_open (struct net_device *dev)
->  {
->    struct toshoboe_cb *self;
-> @@ -1375,8 +1376,9 @@ toshoboe_net_open (struct net_device *dev)
->  
->    return 0;
->  }
-> +EXPORT_SYMBOL(toshoboe_net_open);
->  
-> -static int
-> +int
->  toshoboe_net_close (struct net_device *dev)
->  {
->    struct toshoboe_cb *self;
-> @@ -1405,6 +1407,7 @@ toshoboe_net_close (struct net_device *dev)
->  
->    return 0;
->  }
-> +EXPORT_SYMBOL(toshoboe_net_close);
->  
->  /*
->   * Function toshoboe_net_ioctl (dev, rq, cmd)
-> @@ -1412,7 +1415,7 @@ toshoboe_net_close (struct net_device *dev)
->   *    Process IOCTL commands for this device
->   *
->   */
-> -static int
-> +int
->  toshoboe_net_ioctl (struct net_device *dev, struct ifreq *rq, int cmd)
->  {
->    struct if_irda_req *irq = (struct if_irda_req *) rq;
-> @@ -1473,6 +1476,7 @@ out:
->    return ret;
->  
->  }
-> +EXPORT_SYMBOL(toshoboe_net_ioctl);
->  
->  MODULE_DESCRIPTION("Toshiba OBOE IrDA Device Driver");
->  MODULE_AUTHOR("James McKenzie <james@fishsoup.dhs.org>");
-> @@ -1657,10 +1661,13 @@ toshoboe_open (struct pci_dev *pci_dev, const struct pci_device_id *pdid)
->  #endif
->  
->    SET_NETDEV_DEV(dev, &pci_dev->dev);
-> +
-> +#ifdef CONFIG_COMPAT_NET_DEV_OPS
->    dev->hard_start_xmit = toshoboe_hard_xmit;
->    dev->open = toshoboe_net_open;
->    dev->stop = toshoboe_net_close;
->    dev->do_ioctl = toshoboe_net_ioctl;
-> +#endif
+I don't think so.  The problem is that lguest tracks 4 toplevels, using random
+replacement.  This cache is indexed by cr3 value.
 
-NAKC, device needs to be convert to net_device_ops for real
-or it won't work.
+Lguest assumes it's told about all pte removals or changes, but simple
+additions get faulted in.  If a pgdir page gets reused we'll potentially have
+stale values from its previous life as a pgdir, no?
+
+Now, I haven't *seen* this happen...
+Rusty.
