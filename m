@@ -1,55 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757065AbZC0WrW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759905AbZC0Wvy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757065AbZC0WrW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Mar 2009 18:47:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752300AbZC0WrM
+	id S1759905AbZC0Wvy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Mar 2009 18:51:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753248AbZC0Wvp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Mar 2009 18:47:12 -0400
-Received: from cassarossa.samfundet.no ([129.241.93.19]:54185 "EHLO
-	cassarossa.samfundet.no" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751041AbZC0WrM (ORCPT
+	Fri, 27 Mar 2009 18:51:45 -0400
+Received: from vsmtp01.dti.ne.jp ([202.216.231.136]:50961 "EHLO
+	vsmtp01.dti.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752597AbZC0Wvo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Mar 2009 18:47:12 -0400
-From: Henrik Austad <henrik@austad.us>
-To: "Luis R. Rodriguez" <mcgrof@gmail.com>
-Subject: Re: Linux general wiki
-Date: Fri, 27 Mar 2009 23:47:01 +0100
-User-Agent: KMail/1.9.10
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-References: <43e72e890903271213t72745018s128cd19df0f06e87@mail.gmail.com>
-In-Reply-To: <43e72e890903271213t72745018s128cd19df0f06e87@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200903272347.01219.henrik@austad.us>
+	Fri, 27 Mar 2009 18:51:44 -0400
+From: hooanon05@yahoo.co.jp
+Subject: Re: Problems with default ACLs over NFS 
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: "\"=?ISO-8859-1?Q? \" J. A. _Magall=F3n \" ?=\"" <jamagallon@ono.com>,
+       LKML <linux-kernel@vger.kernel.org>, linux-nfs@vger.kernel.org,
+       Trond.Myklebust@netapp.com
+In-Reply-To: <20090326170513.4e7d377a.akpm@linux-foundation.org>
+References: <20090323222427.00bb24e7@werewolf.home> <20090326170513.4e7d377a.akpm@linux-foundation.org>
+Date: Sat, 28 Mar 2009 07:50:55 +0900
+Message-ID: <18513.1238194255@jrobl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 27 March 2009 20:13:24 Luis R. Rodriguez wrote:
-> We have a lot of good wikis [1] at kernel.org but I don't see one for
-> general things. I just made a huge write up to how to help support the
-> stable kernels 
 
-What exactly do you mean by 'help support the stable kernels'? Are you talking 
-about maintaining drivers? Doing patch review? Running configure/compile/run 
-tests?
+> On Mon, 23 Mar 2009 22:24:27 +0100 "J.A. Magall__n" <jamagallon@ono.com> wrote:
+> 
+> > Hi all...
+> > 
+> > I have a strange problem with 2.6.29-rc8-git3.
+> > It looks like a kernel bug... ?
+> > 
+> > I have a box with NFS autofs-mounted home directories. Server is a
+> > Solaris 10 system. This worked in previous kernel versions, so I
+> > don't blame Solaris, at this moment.
+> > 
+> > With this acls set in my home:
+	:::
+> > I get this strange message in the linux client:
+> > 
+> > cicely:~> mkdir kk  
+> > mkdir: cannot create directory `kk': Invalid argument
 
-> and figured I'd go and add that to the wiki somewhere 
-> but I don't see any place it would fit. Should I just start using the
-> main page for that and expand?
+I met a similar problem.
+In linux-2.6.29 with CONFIG_NFS_V3_ACL enabled, 
+when I executed "cp -p /local/ext2/file /nfsv3/file", I got EINVAL too.
+Strace-ing this cp, I found setxsttr() return EINVAL. Before 2.6.29, it
+was EOPNOTSUPPORTED.
 
-Why not? After all, it it's a general article. IMHO, adding a new 'general 
-wiki' doesn't make any sense.
-
-However, are you sure that this article doesn't belong at, say, kernelnewbies?
-
->   Luis
->
-> [1] http://wiki.kernel.org/
+Tracing some kernel functions, I observed several thigs.
+- xdr_buf_subsegment() returned -1 due to 'len' is not 0.
+- xdr_encode_word() call from nfsacl_encode() got this -1, and
+  nfsacl_encode/nfs3_xdr_setaclargs/nfs3_proc_setacls/nfs3_proc_setacl/nfs3_setxattr
+  returned -EINVAL.
 
 
--- 
- -> henrik
+Finally I am afraid this commit might be related to this issue.
+
+commit ae46141ff08f1965b17c531b571953c39ce8b9e2
+Author: Trond Myklebust <Trond.Myklebust@netapp.com>
+Date:   Tue Mar 10 20:33:18 2009 -0400
+
+    NFSv3: Fix posix ACL code
+    
+    Fix a memory leak due to allocation in the XDR layer. In cases where the
+    RPC call needs to be retransmitted, we end up allocating new pages without
+    clearing the old ones. Fix this by moving the allocation into
+    nfs3_proc_setacls().
+    
+    Also fix an issue discovered by Kevin Rudd, whereby the amount of memory
+    reserved for the acls in the xdr_buf->head was miscalculated, and causing
+    corruption.
+
+
+
+J. R. Okajima
