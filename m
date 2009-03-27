@@ -1,27 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764804AbZC0Xtf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764826AbZC0Xt4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764804AbZC0Xtf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Mar 2009 19:49:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761979AbZC0X2V
+	id S1764826AbZC0Xt4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Mar 2009 19:49:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761513AbZC0X2W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Mar 2009 19:28:21 -0400
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:48634 "EHLO
+	Fri, 27 Mar 2009 19:28:22 -0400
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:48636 "EHLO
 	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761765AbZC0X1u (ORCPT
+	with ESMTP id S1762169AbZC0X1u (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 27 Mar 2009 19:27:50 -0400
 From: =?utf-8?q?Uwe=20Kleine-K=C3=B6nig?= 
 	<u.kleine-koenig@pengutronix.de>
 To: linux-kernel@vger.kernel.org
 Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Weiwei Wang <weiwei.wang@windriver.com>,
-       Jeff Garzik <jgarzik@redhat.com>,
-       "David S. Miller" <davem@davemloft.net>,
-       Stephen Hemminger <shemminger@vyatta.com>,
-       "Maciej W. Rozycki" <macro@linux-mips.org>
-Subject: [PATCH 43/58] move sb1250-mac's probe function to .devinit.text
-Date: Sat, 28 Mar 2009 00:27:04 +0100
-Message-Id: <1238196439-16535-43-git-send-email-u.kleine-koenig@pengutronix.de>
+       "Stanley.Miao" <stanley.miao@windriver.com>,
+       Evgeniy Polyakov <zbr@ioremap.net>,
+       Madhusudhan Chikkature <madhu.cr@ti.com>,
+       Felipe Balbi <felipe.balbi@nokia.com>
+Subject: [PATCH 31/58] move omap_hdq's probe function to .devinit.text
+Date: Sat, 28 Mar 2009 00:26:52 +0100
+Message-Id: <1238196439-16535-31-git-send-email-u.kleine-koenig@pengutronix.de>
 X-Mailer: git-send-email 1.6.2
 In-Reply-To: <20090327232153.GA16348@pengutronix.de>
 References: <20090327232153.GA16348@pengutronix.de>
@@ -36,7 +35,7 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A pointer to sbmac_probe is passed to the core via
+A pointer to omap_hdq_probe is passed to the core via
 platform_driver_register and so the function must not disappear when the
 .init sections are discarded.  Otherwise (if also having HOTPLUG=y)
 unbinding and binding a device to the driver via sysfs will result in an
@@ -47,29 +46,37 @@ platform_driver_register plus removing the pointer to the probe function
 from the struct platform_driver.
 
 Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
-Cc: Weiwei Wang <weiwei.wang@windriver.com>
-Cc: Jeff Garzik <jgarzik@redhat.com>
-Cc: David S. Miller <davem@davemloft.net>
-Cc: Stephen Hemminger <shemminger@vyatta.com>
-Cc: Maciej W. Rozycki <macro@linux-mips.org>
+Cc: Stanley.Miao <stanley.miao@windriver.com>
+Cc: Evgeniy Polyakov <zbr@ioremap.net>
 Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Madhusudhan Chikkature <madhu.cr@ti.com>
+Cc: Felipe Balbi <felipe.balbi@nokia.com>
 ---
- drivers/net/sb1250-mac.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ drivers/w1/masters/omap_hdq.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/net/sb1250-mac.c b/drivers/net/sb1250-mac.c
-index 88dd2e0..8c961b9 100644
---- a/drivers/net/sb1250-mac.c
-+++ b/drivers/net/sb1250-mac.c
-@@ -2683,7 +2683,7 @@ static int sbmac_poll(struct napi_struct *napi, int budget)
+diff --git a/drivers/w1/masters/omap_hdq.c b/drivers/w1/masters/omap_hdq.c
+index c973889..6a5dd2e 100644
+--- a/drivers/w1/masters/omap_hdq.c
++++ b/drivers/w1/masters/omap_hdq.c
+@@ -72,7 +72,7 @@ struct hdq_data {
+ 	int			init_trans;
+ };
+ 
+-static int __init omap_hdq_probe(struct platform_device *pdev);
++static int __devinit omap_hdq_probe(struct platform_device *pdev);
+ static int omap_hdq_remove(struct platform_device *pdev);
+ 
+ static struct platform_driver omap_hdq_driver = {
+@@ -558,7 +558,7 @@ static void omap_w1_write_byte(void *_hdq, u8 byte)
+ 	return;
  }
  
- 
--static int __init sbmac_probe(struct platform_device *pldev)
-+static int __devinit sbmac_probe(struct platform_device *pldev)
+-static int __init omap_hdq_probe(struct platform_device *pdev)
++static int __devinit omap_hdq_probe(struct platform_device *pdev)
  {
- 	struct net_device *dev;
- 	struct sbmac_softc *sc;
+ 	struct hdq_data *hdq_data;
+ 	struct resource *res;
 -- 
 1.6.2
 
