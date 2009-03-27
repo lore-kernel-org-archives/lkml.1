@@ -1,208 +1,303 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761261AbZC0Uv3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761765AbZC0UwU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761261AbZC0Uv3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Mar 2009 16:51:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754751AbZC0UvH
+	id S1761765AbZC0UwU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Mar 2009 16:52:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755848AbZC0UwG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Mar 2009 16:51:07 -0400
-Received: from rcsinet12.oracle.com ([148.87.113.124]:30380 "EHLO
-	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754569AbZC0UvG (ORCPT
+	Fri, 27 Mar 2009 16:52:06 -0400
+Received: from moutng.kundenserver.de ([212.227.126.171]:58191 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755370AbZC0UwC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Mar 2009 16:51:06 -0400
-Subject: Re: [PATCH 0/3] Ext3 latency improvement patches
-From: Chris Mason <chris.mason@oracle.com>
-To: "Theodore Ts'o" <tytso@mit.edu>, Ric Wheeler <rwheeler@redhat.com>
-Cc: Linux Kernel Developers List <linux-kernel@vger.kernel.org>,
-       Ext4 Developers List <linux-ext4@vger.kernel.org>, jack@suse.cz
-In-Reply-To: <1238185471-31152-1-git-send-email-tytso@mit.edu>
-References: <1238185471-31152-1-git-send-email-tytso@mit.edu>
-Content-Type: multipart/mixed; boundary="=-+oZmrcHLBv9JsxpkoHLR"
-Date: Fri, 27 Mar 2009 16:50:31 -0400
-Message-Id: <1238187031.27455.212.camel@think.oraclecorp.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
-X-Source-IP: acsmt705.oracle.com [141.146.40.83]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090207.49CD3C1B.01A4:SCFMA4539814,ss=1,fgs=0
+	Fri, 27 Mar 2009 16:52:02 -0400
+Message-ID: <49CD3CA1.7070706@vlnb.net>
+Date: Fri, 27 Mar 2009 23:52:49 +0300
+From: Vladislav Bolkhovitin <vst@vlnb.net>
+User-Agent: Thunderbird 2.0.0.17 (X11/20081009)
+MIME-Version: 1.0
+To: scst-devel <scst-devel@lists.sourceforge.net>
+CC: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [ANNOUNCE]: SCST target drivers suit 1.0.1 development freeze
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Provags-ID: V01U2FsdGVkX1/r2DkUgvsL6EovydXETnmXlVkTwC7C2LKg4cQ
+ qNa+1VPC+tSdonID3vlgEFL4VkphvXkWl2Hwszg1xH0XWpx6fT
+ 2ehK6ylyiM8WqslHcwPgA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi All,
 
---=-+oZmrcHLBv9JsxpkoHLR
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
+I'm glad to announce that development of SCST drivers suit is frozen and 
+ready for final testing before release, which is scheduled in few weeks 
+time depending from amount of problems found during testing.
 
-On Fri, 2009-03-27 at 16:24 -0400, Theodore Ts'o wrote:
-> The following patches have been posted as providing at least some
-> partial improvement to the ext3 latency problem that has been
-> discussed on the 2.6.29 mongo-LKML-thread-that-would-not-die.
+The SCST is an alternative implementation of SCSI target subsystem for 
+Linux. It provides unified, consistent interface between SCSI target 
+drivers and Linux kernel and simplifies target drivers development.
 
-Ric had asked me about a test program that would show the worst case
-ext3 behavior.  So I've modified your ext3 program a little.  It now
-creates a 8G file and forks off another proc to do random IO to that
-file.
+SCST allows creation of sophisticated storage devices, which provide 
+advanced functionality, like replication, thin provisioning, 
+deduplication, high availability, automatic backup, etc. Another class 
+of such devices are Virtual Tape Libraries (VTL) as well as other 
+disk-based backup solutions. SCST created devices not limited by IP 
+network interface only, but they can use any link supporting SCSI-style 
+data exchange, including Fibre Channel, SAS and parallel SCSI. It might 
+well be that your favorite storage appliance running SCST in the firmware.
 
-Then it runs one fsync every 4 seconds and times how long they take.
-After the program has been running for 60 seconds, it tries to stop.
+SCST suit consists of a set of subprojects: SCST core itself with a set 
+of device handlers as well as target drivers and user space utilities. 
+Particularly, it has target drivers for iSCSI, QLogic qla2xxx cards and 
+InfiniBand SRP. You can find more info about it on SCST home page 
+http://scst.sourceforge.net.
 
-On my sata drive with barriers on, even btrfs and xfs saw some
-multi-second fsyncs, but ext3 came in at 414s for a single fsync.
+SCST aims to be included in the mainline kernel. You can find the first 
+iteration of SCST patches review in http://lkml.org/lkml/2008/12/10/245.
 
-Warning: don't run this on a laptop drive, you'll still be waiting for
-it next year.  This is probably full of little errors, I cut it together
-pretty quickly.
+You can download SCST target drivers suit 1.0.1 by running a command:
 
--chris
+$ svn co https://scst.svn.sourceforge.net/svnroot/scst/branches/1.0.1.x
 
+Summary of changes in SCST core between versions 1.0.0 and 1.0.1
+----------------------------------------------------------------
 
---=-+oZmrcHLBv9JsxpkoHLR
-Content-Disposition: attachment; filename="fsync-tester.c"
-Content-Type: text/x-csrc; name="fsync-tester.c"; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
+  - Support for descriptor sense format added
 
-/*
- * fsync-tester.c
- *
- * Written by Theodore Ts'o, 3/21/09.  Updated by Chris Mason to include
- * the random writer thread
- *
- * This file may be redistributed under the terms of the GNU Public
- * License, version 2.
- */
-#define _FILE_OFFSET_BITS 64
-#define _XOPEN_SOURCE 500
-#include <unistd.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <sys/time.h>
-#include <sys/wait.h>
-#include <signal.h>
-#include <time.h>
-#include <fcntl.h>
-#include <string.h>
+  - Makefiles made more packager friendly (Ruben Laban)
 
-#define SIZE (32768*32)
-static char bigbuf[4096];
+  - Support for variable length CDB added
 
-static float timeval_subtract(struct timeval *tv1, struct timeval *tv2)
-{
-	return ((tv1->tv_sec - tv2->tv_sec) +
-		((float) (tv1->tv_usec - tv2->tv_usec)) / 1000000);
-}
+  - Support for Asynchronous Event Notifications added
 
-static void random_io(int fd, loff_t total)
-{
-	loff_t cur = 0;
-	int ret;
+  - Implemented "plug-and-play" notifications about new devices in
+    security groups, deleted devices from security groups and changed
+    size of a device. They can be delivered either through AENs (if
+    supported), or Unit Attentions.
 
-	/* just some constant so our runs are always the same */
-	srand(4096);
-	while(1) {
-		/*
-		 * we want a random offset into the file,
-		 * but rand only returns max in.  So we make
-		 * it a random block number instead, and multiply
-		 * by 4096.
-		 */
-		cur = rand();
-		cur = (cur * 4096) % (total - 4096);
+  - New command "resync_size" added to scst_vdisk proc interface to tell
+    scst_vdisk to reread size of the corresponding device after it was
+    changed
 
-		/* align our offset  to 4k */
-		cur = cur / 4096;
-		cur = cur * 4096;
-		ret = pwrite(fd, bigbuf, 4096, cur);
-		if (ret < 4096) {
-			fprintf(stderr, "short write ret %d cur %llu\n",
-				ret, (unsigned long long)cur);
-			exit(1);
-		}
-	}
-}
+  - Added pattern matching for initiator names in SCST access control
+    (Gennadiy Nerubayev)
 
-int main(int argc, char **argv)
-{
-	int	fd;
-	struct timeval tv, tv2, start;
-	char buf[SIZE];
-	pid_t pid;
-	loff_t total = ((loff_t)8) * 1024 * 1024 * 1024;
-	loff_t cur = 0;
-	int rand_fd;
-	int ret;
-	int i;
-	int status;
-	struct stat st;
+  - Now only sent for execution commands are counted to wait for in TM
+    commands, which made processing of TM commands faster
 
-	memset(bigbuf, 0, 4096);
+  - Now devices blocked only in reset TM commands. ABORTs, etc. now done
+    without devices blocking.
 
-	rand_fd = open("fsync-tester.rnd-file", O_WRONLY|O_CREAT);
-	if (rand_fd < 0) {
-		perror("open");
-		exit(1);
-	}
+  - scst_unregister_session_ex() removed, since there are no users of it
 
-	ret = fstat(rand_fd, &st);
-	if (ret < 0) {
-		perror("fstat");
-		exit(1);
-	}
+  -  New functions added to scst_user interface:
 
-	if (st.st_size < total) {
-		printf("setting up random write file\n");
-		while(cur < total) {
-			ret = write(rand_fd, bigbuf, 4096);
-			if (ret <= 0) {
-				fprintf(stderr, "short write\n");
-				exit(1);
-			}
-			cur += ret;
-		}
-		printf("done setting up random write file\n");
-	}
+     * SCST_USER_UNREGISTER_DEVICE - to unregister device, flush mem
+       reuse (SGV) cache and send UCMD_STATE_ON_CACHE_FREEING
+       notifications for all freed buffers to the user space handler.
+       Simple device close doesn't allow that, so all the cached buffers
+       might look as "leaked" from the user space handler POV.
 
-	fd = open("fsync-tester.tst-file", O_WRONLY|O_CREAT);
-	if (fd < 0) {
-		perror("open");
-		exit(1);
-	}
-	memset(buf, 'a', SIZE);
+     * SCST_USER_FLUSH_CACHE - to flush mem reuse (SGV) cache and send
+       UCMD_STATE_ON_CACHE_FREEING notifications for all freed buffers to
+       the user space handler
 
-	pid = fork();
-	if (pid == 0) {
-		printf("starting random io!\n");
-		random_io(rand_fd, total);
-		exit(0);
-	}
+     * SCST_USER_DEVICE_CAPACITY_CHANGED - to notify SCST core that the
+       corresponding device has changed its capacity
 
-	close(rand_fd);
+  - Clustering of scst_user pages added
 
-	gettimeofday(&start, NULL);
-	printf("starting fsync run\n");
-	for(i = 0; i < 60; i++) {
-		pwrite(fd, buf, SIZE, 0);
-		gettimeofday(&tv, NULL);
-		fsync(fd);
-		gettimeofday(&tv2, NULL);
-		printf("fsync time: %5.4fs\n", timeval_subtract(&tv2, &tv));
-		if (timeval_subtract(&tv2, &start) > 60)
-			break;
-		sleep(4);
-	}
-	printf("run done %d fsyncs total, killing random writer\n", i + 1);
-	fflush(stdout);
-	kill(pid, SIGTERM);
-	wait(&status);
+  - Added autogenerated SCSI SN in vdisk handler
 
-	return 0;
-}
+  - Fixed race in scst_user, which could have lead to usage of already
+    freed command. A misbehaving user space handler could have made ucmd
+    to get dead immediately after the lock is released and that is caught
+    now.
+
+  - Support for CentOS 5.2 added (Bart Van Assche)
+
+  - In scst_vdisk new module parameter num_threads added to specify a
+    number of threads for each vdisk/vcdrom. Default is 5.
+
+  - Access control docs updated
+
+  - Set memory limits according to LOWMEM, not TOTALMEM
+
+  - Major performance increase working with disk based storage
+
+  - Now task_mgmt_fn() callback called for TARGET RESET and NEXUS LOSS
+    functions only once for tgt_dev, which belongs to the session, from
+    which the corresponding request came
+
+  - SGV cache related parameters moved from scst.h to scst_sgv.h
+
+  - Log level mgmt_minor for messages like "Warning: expected transfer
+    length X for opcode Y" changed to be disabled by default
+
+  - Added possibility to coexist if both target driver and dev handler
+    need custom memory allocation. Direct consequences: (1) scst_local
+    can work with scst_user's devices and (2) scst_user now compatible
+    with iscsi-scst if put_page_callback patch not applied.
+
+  - Deprecated scst_cmd_get_tgt_resp_flags() removed
+
+  - SWP and TAS parameters made changeable in vdisk handler
+
+  - External interface changed to fix usage of in_atomic(). Now target
+    drivers and dev handlers need to explicitly supply preferred
+    execution context in scst_cmd_done() and scst_tgt_cmd_done()
+
+  - Handling of internal REQUEST SENSE fixed.
+
+  - Fixed SAM violation (HiSup bit must be set in INQUIRY response)
+
+  - Fixed handling of VERIFY commands that comes with BYTCHK unset
+
+  - Handling of double reset UAs made more reliable
+
+  - A lot of kernel style, checkpatch and sparse fixes (Bart Van Assche)
+
+  - In-kernel build integration (Bart Van Assche)
+
+  - Update for kernels up to 2.6.29
+
+  - A lot of fixes and cleanups (many people)
 
 
+Summary of changes in iSCSI-SCST between versions 1.0.0 and 1.0.1
+-----------------------------------------------------------------
+
+  - Support for variable length CDB added
+
+  - Sending and receiving padding bytes as well as sense data
+    reimplemented to make it more reliable
+
+  - Support for SCSI Asynchronous Event Notifications added
+
+  - Sessions and connections reinstatement reimplemented to be conforming
+    to iSCSI RFC
+
+  - iscsi-scst-adm fixed
+
+  - Removed artificial limitation of sg_tablesize. It isn't needed,
+    because the regular iSCSI negotiated MaxRecvDataSegmentLength-related
+    facilities do all the job pretty well.
+
+  - Merge with IET r170-211:
+
+    * Update MaxConnections documentation
+
+    * Remove isns config description from man page
+
+    * Check return values of chdir(), ftruncate() and write(), because
+      recent versions of the glibc insist on the return value being
+      checked by introducing __attribute__((warn_unused_result)) to these
+      functions.
+
+    * Fix snprintf use in isns.c
+
+    * Take \0-termination into account when passing strings to
+      isns_tlv_set() to solve incompatibility with MS iSNS 3.0 as IQN
+      length is multiple of 4
+
+    * Fix list corruption if SCST target registration fails
+
+    * Register the target port actually used instead of the default iSCSI
+      port.
+
+    * Remove unused connection->pad
+
+    * Refactor cmnd_execute()
+
+    * Introduce min*/max*() and more list_* macros
+
+    * Multipart PDU support for discovery sessions
+
+    * Add support for Reject PDUs and make use of them in appropriate
+      places.
+
+    * Ignore SIGPIPE in iscsi-scstd
+
+    * Allow removal of kernel target objects if the user space object
+      does not exist
+
+    * Use netlink_socket_release() to clean up netlink sockets correctly
+      (taking care of namespaces)
+
+    * More scalable proc seq_file implementation
+
+    * Segfault in ietd buffer overrun in dump_line
+
+    * Add iscsi-scst-adm support to display list of CHAP accounts and
+      their data
+
+    * Fixed compilation on glibc 2.8
+
+    * Fix CHAP account handling bugs
+
+    * Fix bugs in multi PDU handling code
+
+  - Support for CentOS 5.2 added (Bart Van Assche)
+
+  - Fixed NOP-Out with payload handling
+
+  - Several minor iSCSI RFC violations fixed
+
+  - Update for kernels up to 2.6.29
+
+  - Zero-copy feature, introduced by put_page_callback patch made
+    kernel compile time configurable via
+    CONFIG_TCP_ZERO_COPY_TRANSFER_COMPLETION_NOTIFICATION option. If you
+    upgrade from earlier versions, see the corresponding "[CAUTION]"
+    e-mail in scst-devel mailing list about possible compatibility
+    problems.
+
+  - A lot of cleanups and minor fixes
 
 
+Summary of changes in qla2x00t between versions 1.0.0 and 1.0.1
+---------------------------------------------------------------
 
---=-+oZmrcHLBv9JsxpkoHLR--
+  - Update to initiator driver from 2.6.27
 
+  - HOWTO added (Amit Mehta)
+
+  - Fixed wrong sess_count decrement on session registration failure
+
+  - Fixed possible oops in the initiator driver on the module unload
+
+  - Updated to work on kernels up to 2.6.29
+
+  - Other minor fixes
+
+
+Summary of changes in SRPT between versions 1.0.0 and 1.0.1
+-----------------------------------------------------------
+
+  - Update for kernels up to 2.6.29
+
+  - Fixed incorrect SCST state used on error path
+
+  - Unneeded context switches during commands processing eliminated
+
+  - Minor fixes and cleanups
+
+
+Summary of changes in fileio_tgt between versions 1.0.0 and 1.0.1
+-----------------------------------------------------------------
+
+  - Added notification about device capacity change
+
+  - Usage of new commands SCST_USER_UNREGISTER_DEVICE,
+    SCST_USER_FLUSH_CACHE and SCST_USER_DEVICE_CAPACITY_CHANGED added
+
+  - Sync with vdisk handler
+
+  - Added autogenerated SCSI SN
+
+
+Change logs for other modules have not updated yet, but going to be 
+updated soon.
+
+Thanks to all who made it happen!
+Vlad
