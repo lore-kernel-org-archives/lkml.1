@@ -1,57 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759241AbZC0OfA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757139AbZC0Ohf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759241AbZC0OfA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Mar 2009 10:35:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758479AbZC0OeC
+	id S1757139AbZC0Ohf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Mar 2009 10:37:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752281AbZC0OhY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Mar 2009 10:34:02 -0400
-Received: from tx2ehsobe001.messaging.microsoft.com ([65.55.88.11]:15610 "EHLO
-	TX2EHSOBE001.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753407AbZC0OeA (ORCPT
+	Fri, 27 Mar 2009 10:37:24 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:49585 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752810AbZC0OhY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Mar 2009 10:34:00 -0400
-X-BigFish: VPS3(zzzz1202hzzz32i43j65h)
-X-Spam-TCS-SCL: 4:0
-X-WSS-ID: 0KH65PB-01-IGS-01
-From: Joerg Roedel <joerg.roedel@amd.com>
-To: Avi Kivity <avi@redhat.com>, Marcelo Tosatti <mtosatti@redhat.com>
-CC: kvm@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Joerg Roedel <joerg.roedel@amd.com>, William Irwin <wli@holomorphy.com>
-Subject: [PATCH 1/7] hugetlb: export vma_kernel_pagesize to modules
-Date: Fri, 27 Mar 2009 15:31:53 +0100
-Message-ID: <1238164319-16092-2-git-send-email-joerg.roedel@amd.com>
-X-Mailer: git-send-email 1.5.6.4
-In-Reply-To: <1238164319-16092-1-git-send-email-joerg.roedel@amd.com>
-References: <1238164319-16092-1-git-send-email-joerg.roedel@amd.com>
-X-OriginalArrivalTime: 27 Mar 2009 14:32:00.0243 (UTC) FILETIME=[CA0F8430:01C9AEE8]
+	Fri, 27 Mar 2009 10:37:24 -0400
+Date: Fri, 27 Mar 2009 10:35:44 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: Theodore Tso <tytso@mit.edu>, Jens Axboe <jens.axboe@oracle.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Jeff Garzik <jeff@garzik.org>, Ingo Molnar <mingo@elte.hu>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Nick Piggin <npiggin@suse.de>,
+       David Rees <drees76@gmail.com>, Jesper Krogh <jesper@krogh.cc>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.29
+Message-ID: <20090327143543.GA17541@infradead.org>
+References: <20090324184549.GE32307@mit.edu> <alpine.LFD.2.00.0903241218130.3032@localhost.localdomain> <49C93AB0.6070300@garzik.org> <20090325093913.GJ27476@kernel.dk> <49CA86BD.6060205@garzik.org> <20090325194341.GB27476@kernel.dk> <49CA9346.6040108@garzik.org> <alpine.LFD.2.00.0903251337410.3032@localhost.localdomain> <20090327075723.GT27476@kernel.dk> <20090327141333.GS6239@mit.edu>
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090327141333.GS6239@mit.edu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This function is required in the KVM module to determine the size of the
-backing page size.
+On Fri, Mar 27, 2009 at 10:13:33AM -0400, Theodore Tso wrote:
+> On Fri, Mar 27, 2009 at 08:57:23AM +0100, Jens Axboe wrote:
+> > 
+> > Here's a simple patch that does that. Not even tested, it compiles. Note
+> > that file systems that currently do blkdev_issue_flush() in their
+> > ->sync() should then get it removed.
+> > 
+> 
+> That's going to be a mess.  Ext3 implements an fsync() by requesting a
+> journal commit, and then waiting for the commit to have taken place.
+> The commit happens in another thread, kjournald.  Knowing when it's OK
+> not to do a blkdev_issue_flush() because the commit was triggered by
+> an fsync() is going to be really messy.  Could we at least have a flag
+> in struct super which says, "We'll handle the flush correctly, please
+> don't try to do it for us?"
 
-Cc: William Irwin <wli@holomorphy.com>
-Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
----
- mm/hugetlb.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+Doing it in vfs_fsync also is completely wrong layering.  If people want
+it for simple filesystems add it to file_fsync instead of messing up
+the generic helper.  Removing well meaning but ill behaved policy from
+the generic path has been costing me far too much time lately.
 
-diff --git a/mm/hugetlb.c b/mm/hugetlb.c
-index 107da3d..29f4fbf 100644
---- a/mm/hugetlb.c
-+++ b/mm/hugetlb.c
-@@ -234,6 +234,7 @@ unsigned long vma_kernel_pagesize(struct vm_area_struct *vma)
- 
- 	return 1UL << (hstate->order + PAGE_SHIFT);
- }
-+EXPORT_SYMBOL_GPL(vma_kernel_pagesize);
- 
- /*
-  * Return the page size being used by the MMU to back a VMA. In the majority
--- 
-1.5.6.4
-
-
+And please add a tuneable for the flush.  Preferable a generic one at
+the block device layer instead of the current mess where every
+filesystem has a slightly different option for barrier usage.
