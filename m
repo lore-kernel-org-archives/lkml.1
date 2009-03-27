@@ -1,259 +1,339 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755293AbZC0MRf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752795AbZC0MTy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755293AbZC0MRf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Mar 2009 08:17:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751285AbZC0MRZ
+	id S1752795AbZC0MTy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Mar 2009 08:19:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751092AbZC0MTo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Mar 2009 08:17:25 -0400
-Received: from yx-out-2324.google.com ([74.125.44.29]:50792 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751092AbZC0MRY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Mar 2009 08:17:24 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=NJRxrWpizVHdpvFS2BnbGEjiLnwgqkPbw4pFjdhT/gkXtq2xJdNjQnGIHxndMJWwHm
-         H+7D8mP38M+DgBBclOMkfSxxchcubc09BhMRoDYAnx+VGShzytgVEYDHMcn68d5zBdr3
-         5XT3clophKUuWde5CCETLbc8eplKkSqz1RBxk=
-Date: Fri, 27 Mar 2009 13:17:17 +0100
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       systemtap-ml <systemtap@sources.redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH -tip 4/4 V3] tracing: kprobe-tracer plugin supports
-	fetching symbol value
-Message-ID: <20090327121716.GC5976@nowhere>
-References: <49CC08D8.6080501@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49CC08D8.6080501@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Fri, 27 Mar 2009 08:19:44 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:38610 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751325AbZC0MTm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Mar 2009 08:19:42 -0400
+Date: Fri, 27 Mar 2009 23:19:24 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: linux-next@vger.kernel.org
+Cc: LKML <linux-kernel@vger.kernel.org>
+Subject: linux-next: Tree for March 27
+Message-Id: <20090327231924.4e4168c5.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.14.7; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Fri__27_Mar_2009_23_19_24_+1100_Q+nzIQyzEanU.Orf"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 26, 2009 at 06:59:36PM -0400, Masami Hiramatsu wrote:
-> Add symbol value fetching support. This allows kprobe tracer to fetch the
-> value of global variables.
-> 
-> To record some values of symbols, just specify @SYMBOL(e.g. @jiffies).
-> Offset specifying is also available(e.g. @jiffies+4).
-> ---
-> 
->  Documentation/ftrace.txt    |    1
->  kernel/trace/trace_kprobe.c |  120 +++++++++++++++++++++++++++++++++++++------
->  2 files changed, 104 insertions(+), 17 deletions(-)
-> 
-> 
-> diff --git a/Documentation/ftrace.txt b/Documentation/ftrace.txt
-> index ddc75af..1ad2e66 100644
-> --- a/Documentation/ftrace.txt
-> +++ b/Documentation/ftrace.txt
-> @@ -1336,6 +1336,7 @@ Synopsis of kprobe_probes:
->    rN	: Fetch Nth register (N >= 0)
->    sN	: Fetch Nth entry of stack (N >= 0)
->    @ADDR	: Fetch memory at ADDR (ADDR should be in kernel)
-> +  @SYM[+|-offs]	: Fetch memory at SYM +|- offs (SYM should be a data symbol)
->    aN	: Fetch function argument. (N >= 1)(*)
->    rv	: Fetch return value.(**)
->    rp	: Fetch return address.(**)
-> diff --git a/kernel/trace/trace_kprobe.c b/kernel/trace/trace_kprobe.c
-> index 68b2833..c22a5c6 100644
-> --- a/kernel/trace/trace_kprobe.c
-> +++ b/kernel/trace/trace_kprobe.c
-> @@ -142,6 +142,55 @@ static unsigned long fetch_ip(struct pt_regs *regs, void *dummy)
->  	return instruction_pointer(regs);
->  }
-> 
-> +struct symbol_cache {
-> +	char *symbol;
-> +	long offset;
-> +	unsigned long addr;
-> +};
-> +
-> +static unsigned long update_symbol_cache(struct symbol_cache *sc)
-> +{
-> +	sc->addr = (unsigned long)kallsyms_lookup_name(sc->symbol);
-> +	if (sc->addr)
-> +		sc->addr += sc->offset;
-> +	return sc->addr;
-> +}
-> +
-> +static void free_symbol_cache(struct symbol_cache *sc)
-> +{
-> +	kfree(sc->symbol);
-> +	kfree(sc);
-> +}
-> +
-> +static struct symbol_cache *alloc_symbol_cache(const char *sym, long offset)
-> +{
-> +	struct symbol_cache *sc;
-> +	if (!sym || strlen(sym) == 0)
-> +		return NULL;
-> +	sc = kzalloc(sizeof(struct symbol_cache), GFP_KERNEL);
-> +	if (!sc)
-> +		return NULL;
-> +
-> +	sc->symbol = kstrdup(sym, GFP_KERNEL);
-> +	if (!sc->symbol) {
-> +		kfree(sc);
-> +		return NULL;
-> +	}
-> +	sc->offset = offset;
-> +
-> +	update_symbol_cache(sc);
-> +	return sc;
-> +}
-> +
-> +static unsigned long fetch_symbol(struct pt_regs *regs, void *data)
-> +{
-> +	struct symbol_cache *sc = data;
-> +	if (sc->addr)
-> +		return fetch_memory(regs, (void *)sc->addr);
-> +	else
-> +		return 0;
-> +}
-> +
-> 
->  /**
->   * kprobe_trace_core
-> @@ -225,6 +274,11 @@ static struct trace_probe *alloc_trace_probe(const char *symbol)
-> 
->  static void free_trace_probe(struct trace_probe *tp)
->  {
-> +	int i;
-> +	for (i = 0; i < tp->nr_args; i++)
-> +		if (tp->args[i].func == fetch_symbol)
-> +			free_symbol_cache(tp->args[i].data);
-> +
->  	kfree(tp->symbol);
->  	kfree(tp);
->  }
-> @@ -258,6 +312,32 @@ static void unregister_trace_probe(struct trace_probe *tp)
->  	list_del(&tp->list);
->  }
-> 
-> +/* Split symbol and offset. */
-> +static int split_symbol_offset(char *symbol, long *offset)
-> +{
-> +	char *tmp;
-> +	int ret;
-> +
-> +	if (!offset)
-> +		return -EINVAL;
-> +
-> +	tmp = strchr(symbol, '+');
-> +	if (!tmp)
-> +		tmp = strchr(symbol, '-');
-> +
-> +	if (tmp) {
-> +		/* skip sign because strict_strtol doesn't accept '+' */
-> +		ret = strict_strtol(tmp + 1, 0, offset);
-> +		if (ret)
-> +			return ret;
-> +		if (*tmp == '-')
-> +			*offset = -(*offset);
-> +		*tmp = '\0';
-> +	} else
-> +		*offset = 0;
-> +	return 0;
-> +}
-> +
->  #define PARAM_MAX_ARGS 16
->  #define PARAM_MAX_REGS MAX_REG_NUM
->  #define PARAM_MAX_STACK (THREAD_SIZE / sizeof(unsigned long))
-> @@ -273,6 +353,7 @@ static int create_trace_probe(int argc, char **argv)
->  	 *  rN	: fetch Nth of register (pt_regs + N) (N:0-)
->  	 *  sN	: fetch Nth of stack (N:0-)
->  	 *  @ADDR	: fetch memory at ADDR (ADDR should be in kernel)
-> +	 *  @SYM[+|-offs] : fetch memory at SYM +|- offs (SYM is a data symbol)
->  	 */
->  	struct trace_probe *tp;
->  	struct kprobe *kp;
-> @@ -305,19 +386,9 @@ static int create_trace_probe(int argc, char **argv)
->  		/* a symbol specified */
->  		symbol = argv[1];
->  		/* TODO: support .init module functions */
-> -		tmp = strchr(symbol, '+');
-> -		if (!tmp)
-> -			tmp = strchr(symbol, '-');
-> -
-> -		if (tmp) {
-> -			/* skip sign because strict_strtol doesn't accept '+' */
-> -			ret = strict_strtol(tmp + 1, 0, &offset);
-> -			if (ret)
-> -				return ret;
-> -			if (*tmp == '-')
-> -				offset = -offset;
-> -			*tmp = '\0';
-> -		}
-> +		ret = split_symbol_offset(symbol, &offset);
-> +		if (ret)
-> +			return ret;
->  		if (offset && is_return)
->  			return -EINVAL;
->  	}
-> @@ -383,11 +454,23 @@ static int create_trace_probe(int argc, char **argv)
->  				tp->args[i].data = (void *)param;
->  			}
->  			break;
-> -		case '@':	/* memory */
-> -			ret = strict_strtoul(tmp + 1, 0, &param);
-> -			if (!ret) {
-> +		case '@':	/* memory or symbol */
-> +			if (isdigit(tmp[1])) {
-> +				ret = strict_strtoul(tmp + 1, 0, &param);
-> +				if (ret)
-> +					break;
->  				tp->args[i].func = fetch_memory;
->  				tp->args[i].data = (void *)param;
-> +			} else {
-> +				ret = split_symbol_offset(tmp + 1, &offset);
-> +				if (ret)
-> +					break;
-> +				tp->args[i].data = alloc_symbol_cache(tmp + 1,
-> +								      offset);
-> +				if (tp->args[i].data)
-> +					tp->args[i].func = fetch_symbol;
-> +				else
-> +					ret = -EINVAL;
->  			}
->  			break;
->  		default:
-> @@ -466,7 +549,10 @@ static int probes_seq_show(struct seq_file *m, void *v)
->  			seq_printf(m, " s%lu", (unsigned long)tp->args[i].data);
->  		else if (tp->args[i].func == fetch_memory)
->  			seq_printf(m, " @0x%p", tp->args[i].data);
-> -		else if (tp->args[i].func == fetch_retvalue)
-> +		else if (tp->args[i].func == fetch_symbol) {
-> +			struct symbol_cache *sc = tp->args[i].data;
-> +			seq_printf(m, " @%s%+ld", sc->symbol, sc->offset);
-> +		} else if (tp->args[i].func == fetch_retvalue)
->  			seq_printf(m, " rv");
->  		else if (tp->args[i].func == fetch_ip)
->  			seq_printf(m, " rp");
+--Signature=_Fri__27_Mar_2009_23_19_24_+1100_Q+nzIQyzEanU.Orf
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
+Hi all,
 
+Changes since 20090326:
 
-Looks good too!
+Various conflicts have moved around due to some trees being merged into
+Linus' tree.
 
-Acked-by: Frederic Weisbecker <fweisbec@gmail.com>
+The tracing tree lost its build failure.
 
+The v4l-dvb tree gained a build failure so I have used the version from
+next-20090326.
 
+The ide tree lost its 3 conflicts.
 
-> -- 
-> Masami Hiramatsu
-> 
-> Software Engineer
-> Hitachi Computer Products (America) Inc.
-> Software Solutions Division
-> 
-> e-mail: mhiramat@redhat.com
-> 
+The build failure from the device-core tree is now in the acpi tree.
 
+The rr tree gained a conflict against the tip-core tree.
+
+The lblnet tree gained a conflict against the security-testing tree.
+
+The iommu tree lost a conflict.
+
+I have reverted a known bad commit from the block tree.
+
+An interaction between the tracing and powerpc trees added a build failure
+for which I applied a patch.
+
+----------------------------------------------------------------------------
+
+I have created today's linux-next tree at
+git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git
+(patches at
+http://www.kernel.org/pub/linux/kernel/people/sfr/linux-next/).  If you
+are tracking the linux-next tree using git, you should not use "git pull"
+to do so as that will try to merge the new linux-next release with the
+old one.  You should use "git fetch" as mentioned in the FAQ on the wiki
+(see below).
+
+You can see which trees have been included by looking in the Next/Trees
+file in the source.  There are also quilt-import.log and merge.log files
+in the Next directory.  Between each merge, the tree was built with
+a ppc64_defconfig for powerpc and an allmodconfig for x86_64. After the
+final fixups (if any), it is also built with powerpc allnoconfig (32 and
+64 bit), ppc44x_defconfig and allyesconfig (minus
+CONFIG_PROFILE_ALL_BRANCHES) and i386, sparc and sparc64 defconfig.
+These builds also have CONFIG_ENABLE_WARN_DEPRECATED,
+CONFIG_ENABLE_MUST_CHECK and CONFIG_DEBUG_INFO disabled when necessary.
+
+Below is a summary of the state of the merge.
+
+We are up to 133 trees (counting Linus' and 18 trees of patches pending for
+Linus' tree), more are welcome (even if they are currently empty).
+Thanks to those who have contributed, and to those who haven't, please do.
+
+Status of my local build tests will be at
+http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
+advice about cross compilers/configs that work, we are always open to add
+more builds.
+
+Thanks to Jan Dittmer for adding the linux-next tree to his build tests
+at http://l4x.org/k/ , the guys at http://test.kernel.org/ and Randy
+Dunlap for doing many randconfig builds.
+
+There is a wiki covering stuff to do with linux-next at
+http://linux.f-seidel.de/linux-next/pmwiki/ .  Thanks to Frank Seidel.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+$ git checkout master
+$ git reset --hard stable
+Merging origin/master
+Merging arm-current/master
+Merging m68k-current/for-linus
+Merging powerpc-merge/merge
+Merging sparc-current/master
+Merging scsi-rc-fixes/master
+Merging net-current/master
+Merging sound-current/for-linus
+Merging pci-current/for-linus
+Merging wireless-current/master
+Merging kbuild-current/master
+Merging quilt/driver-core.current
+Merging quilt/usb.current
+Merging cpufreq-current/fixes
+Merging input-current/for-linus
+Merging md-current/for-linus
+Merging audit-current/for-linus
+Merging crypto-current/master
+Merging dwmw2/master
+Merging arm/devel
+CONFLICT (content): Merge conflict in arch/arm/include/asm/elf.h
+CONFLICT (content): Merge conflict in arch/arm/kernel/module.c
+CONFLICT (content): Merge conflict in sound/soc/pxa/pxa2xx-i2s.c
+Merging avr32/avr32-arch
+Merging blackfin/for-linus
+Merging cris/for-next
+Merging ia64/test
+Merging m68k/for-next
+Merging m68knommu/for-next
+Merging mips/mips-for-linux-next
+Merging parisc/master
+Merging powerpc/next
+Merging 4xx/next
+Merging galak/next
+Merging pxa/for-next
+Merging s390/features
+Merging sh/master
+Merging sparc/master
+Merging x86/auto-x86-next
+CONFLICT (content): Merge conflict in arch/powerpc/include/asm/elf.h
+CONFLICT (content): Merge conflict in arch/x86/include/asm/timer.h
+Merging xtensa/master
+Merging tip-core/auto-core-next
+CONFLICT (content): Merge conflict in arch/x86/kernel/pci-nommu.c
+CONFLICT (content): Merge conflict in lib/Kconfig.debug
+Merging cpus4096/auto-cpus4096-next
+CONFLICT (content): Merge conflict in arch/x86/kernel/cpu/common.c
+CONFLICT (content): Merge conflict in arch/x86/kernel/cpu/intel_cacheinfo.c
+Merging tracing/auto-tracing-next
+CONFLICT (content): Merge conflict in kernel/extable.c
+Merging genirq/auto-genirq-next
+CONFLICT (content): Merge conflict in kernel/irq/handle.c
+Merging safe-poison-pointers/auto-safe-poison-pointers-next
+Merging sched/auto-sched-next
+CONFLICT (content): Merge conflict in lib/Makefile
+Merging stackprotector/auto-stackprotector-next
+Merging timers/auto-timers-next
+Merging pci/linux-next
+CONFLICT (content): Merge conflict in Documentation/feature-removal-schedul=
+e.txt
+Merging quilt/device-mapper
+Merging hid/for-next
+Merging quilt/i2c
+CONFLICT (content): Merge conflict in Documentation/feature-removal-schedul=
+e.txt
+CONFLICT (content): Merge conflict in drivers/i2c/busses/i2c-mpc.c
+Merging quilt/jdelvare-hwmon
+Merging quilt/kernel-doc
+CONFLICT (content): Merge conflict in Documentation/kernel-parameters.txt
+Merging v4l-dvb/master
+CONFLICT (content): Merge conflict in drivers/media/video/v4l2-device.c
+$ git reset --hard HEAD^
+Merging next-20090326/v4l-dvb
+CONFLICT (content): Merge conflict in drivers/media/video/v4l2-device.c
+Merging quota/for_next
+Merging jfs/next
+Merging kbuild/master
+Merging quilt/ide
+Merging libata/NEXT
+Merging nfs/linux-next
+Merging xfs/master
+Merging infiniband/for-next
+Merging acpi/test
+Applying: acpi: update thermal for bus_id removal
+Merging nfsd/nfsd-next
+Merging ieee1394/for-next
+Merging ubi/linux-next
+Merging kvm/master
+Merging dlm/next
+Merging scsi/master
+Merging ocfs2/linux-next
+Merging ext4/next
+CONFLICT (content): Merge conflict in fs/ext4/inode.c
+Merging async_tx/next
+Merging udf/for_next
+Merging net/master
+CONFLICT (content): Merge conflict in drivers/infiniband/hw/cxgb3/cxio_hal.h
+CONFLICT (content): Merge conflict in drivers/infiniband/hw/nes/nes_nic.c
+CONFLICT (content): Merge conflict in drivers/net/wimax/i2400m/usb-notif.c
+CONFLICT (content): Merge conflict in include/linux/netfilter/xt_limit.h
+CONFLICT (content): Merge conflict in include/linux/netfilter/xt_statistic.h
+Applying: net: tracing interface fixup
+Merging wireless/master
+Merging mtd/master
+CONFLICT (content): Merge conflict in drivers/mtd/maps/Makefile
+Merging crypto/master
+Merging vfs/for-next
+Merging sound/for-next
+Merging cpufreq/next
+Merging v9fs/for-next
+CONFLICT (content): Merge conflict in net/9p/protocol.c
+Merging quilt/rr
+CONFLICT (content): Merge conflict in arch/powerpc/kernel/irq.c
+CONFLICT (content): Merge conflict in arch/powerpc/kernel/sysfs.c
+CONFLICT (content): Merge conflict in arch/x86/include/asm/topology.h
+CONFLICT (content): Merge conflict in arch/x86/kernel/cpu/cpufreq/powernow-=
+k8.c
+CONFLICT (content): Merge conflict in arch/x86/kernel/cpu/cpufreq/speedstep=
+-ich.c
+CONFLICT (content): Merge conflict in arch/x86/kernel/cpu/cpufreq/speedstep=
+-lib.c
+CONFLICT (content): Merge conflict in arch/x86/lguest/boot.c
+CONFLICT (delete/modify): arch/x86/mach-default/setup.c deleted in HEAD and=
+ modified in quilt/rr. Version quilt/rr of arch/x86/mach-default/setup.c le=
+ft in tree.
+CONFLICT (delete/modify): arch/x86/mach-voyager/setup.c deleted in HEAD and=
+ modified in quilt/rr. Version quilt/rr of arch/x86/mach-voyager/setup.c le=
+ft in tree.
+CONFLICT (content): Merge conflict in drivers/firmware/dcdbas.c
+CONFLICT (content): Merge conflict in drivers/media/video/saa7134/saa7134-c=
+ore.c
+CONFLICT (content): Merge conflict in drivers/media/video/saa7134/saa7134.h
+CONFLICT (content): Merge conflict in drivers/net/virtio_net.c
+CONFLICT (content): Merge conflict in kernel/extable.c
+CONFLICT (content): Merge conflict in kernel/module.c
+$ git rm -f arch/x86/mach-default/setup.c
+$ git rm -f arch/x86/mach-voyager/setup.c
+Applying: rr: x86 irqaction merge fixup
+Merging cifs/master
+Merging mmc/next
+Merging gfs2/master
+Merging input/next
+Merging bkl-removal/bkl-removal
+Merging ubifs/linux-next
+Merging lsm/for-next
+Merging block/for-next
+Merging embedded/master
+Merging firmware/master
+CONFLICT (content): Merge conflict in firmware/Makefile
+CONFLICT (content): Merge conflict in firmware/WHENCE
+CONFLICT (content): Merge conflict in sound/isa/Kconfig
+Merging pcmcia/master
+Merging battery/master
+Merging leds/for-mm
+Merging backlight/for-mm
+Merging kgdb/kgdb-next
+Merging slab/for-next
+CONFLICT (content): Merge conflict in include/linux/rcupdate.h
+CONFLICT (content): Merge conflict in include/linux/slub_def.h
+CONFLICT (content): Merge conflict in mm/slob.c
+CONFLICT (content): Merge conflict in mm/slub.c
+Merging uclinux/for-next
+Merging md/for-next
+Merging mfd/for-next
+Merging hdlc/hdlc-next
+Merging drm/drm-next
+CONFLICT (content): Merge conflict in drivers/gpu/drm/drm_proc.c
+Merging voltage/for-next
+Merging security-testing/next
+Merging lblnet/master
+CONFLICT (content): Merge conflict in Documentation/feature-removal-schedul=
+e.txt
+CONFLICT (content): Merge conflict in security/smack/smack_lsm.c
+Merging quilt/ttydev
+Merging agp/agp-next
+Merging generic-ipi/auto-generic-ipi-next
+Merging oprofile/auto-oprofile-next
+Merging fastboot/auto-fastboot-next
+Merging sparseirq/auto-sparseirq-next
+Merging iommu/auto-iommu-next
+CONFLICT (content): Merge conflict in Documentation/kernel-parameters.txt
+CONFLICT (content): Merge conflict in arch/x86/Kconfig
+Merging uwb/for-upstream
+Merging watchdog/master
+Merging proc/proc
+CONFLICT (content): Merge conflict in security/selinux/hooks.c
+Merging bdev/master
+Merging dwmw2-iommu/master
+CONFLICT (content): Merge conflict in arch/x86/Kconfig
+CONFLICT (content): Merge conflict in drivers/pci/intel-iommu.c
+Merging cputime/cputime
+Merging osd/linux-next
+Merging fatfs/master
+Merging fuse/for-next
+Merging jc_docs/docs-next
+Merging nommu/master
+Merging trivial/for-next
+Merging audit/for-next
+Merging squashfs/master
+Merging omap/for-next
+Merging quilt/aoe
+Merging kmemleak/kmemleak
+CONFLICT (content): Merge conflict in Documentation/kernel-parameters.txt
+CONFLICT (content): Merge conflict in MAINTAINERS
+CONFLICT (content): Merge conflict in include/linux/percpu.h
+CONFLICT (content): Merge conflict in init/main.c
+CONFLICT (content): Merge conflict in kernel/module.c
+CONFLICT (content): Merge conflict in lib/Kconfig.debug
+CONFLICT (content): Merge conflict in mm/slob.c
+CONFLICT (content): Merge conflict in mm/vmalloc.c
+Merging suspend/linux-next
+CONFLICT (content): Merge conflict in drivers/xen/manage.c
+Merging quilt/driver-core
+CONFLICT (content): Merge conflict in drivers/media/video/v4l2-device.c
+CONFLICT (content): Merge conflict in drivers/net/wimax/i2400m/usb-notif.c
+CONFLICT (content): Merge conflict in drivers/sh/maple/maple.c
+CONFLICT (content): Merge conflict in lib/Kconfig.debug
+CONFLICT (content): Merge conflict in lib/Makefile
+Merging quilt/usb
+Merging quilt/staging
+Merging scsi-post-merge/master
+[master 14d59b6] Revert "block: add global timeout to requests"
+Applying: tracing: fixup for ftrace_push_return_trace API change
+
+--Signature=_Fri__27_Mar_2009_23_19_24_+1100_Q+nzIQyzEanU.Orf
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAknMxE0ACgkQjjKRsyhoI8zxigCfUNLTpP9B3kBMtM4waB/244CP
+ln0AoIc/5MiCWsyOjLm7KuDasGWi75Jo
+=g9eS
+-----END PGP SIGNATURE-----
+
+--Signature=_Fri__27_Mar_2009_23_19_24_+1100_Q+nzIQyzEanU.Orf--
