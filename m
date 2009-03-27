@@ -1,65 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757986AbZC0DXW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759067AbZC0DYX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757986AbZC0DXW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Mar 2009 23:23:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756650AbZC0DXN
+	id S1759067AbZC0DYX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Mar 2009 23:24:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756907AbZC0DYM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Mar 2009 23:23:13 -0400
-Received: from thunk.org ([69.25.196.29]:53135 "EHLO thunker.thunk.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756615AbZC0DXN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Mar 2009 23:23:13 -0400
-Date: Thu, 26 Mar 2009 23:23:01 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, David Rees <drees76@gmail.com>,
-       Jesper Krogh <jesper@krogh.cc>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.29
-Message-ID: <20090327032301.GN6239@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	David Rees <drees76@gmail.com>, Jesper Krogh <jesper@krogh.cc>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <49C88C80.5010803@krogh.cc> <72dbd3150903241200v38720ca0x392c381f295bdea@mail.gmail.com> <20090325183011.GN32307@mit.edu> <alpine.LFD.2.00.0903251139260.3032@localhost.localdomain> <20090325220530.GR32307@mit.edu> <alpine.LFD.2.00.0903251622420.3032@localhost.localdomain> <20090326171148.9bf8f1ec.akpm@linux-foundation.org> <alpine.LFD.2.00.0903261723250.3994@localhost.localdomain> <20090326174704.cd36bf7b.akpm@linux-foundation.org> <alpine.LFD.2.00.0903261752110.3994@localhost.localdomain>
+	Thu, 26 Mar 2009 23:24:12 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:51551 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756650AbZC0DYL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Mar 2009 23:24:11 -0400
+Message-ID: <49CC4441.8060205@zytor.com>
+Date: Thu, 26 Mar 2009 20:13:05 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0903261752110.3994@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+To: Johannes Berg <johannes@sipsolutions.net>
+CC: Al Viro <viro@ZenIV.linux.org.uk>, Ingo Molnar <mingo@elte.hu>,
+       Vegard Nossum <vegard.nossum@gmail.com>,
+       Alexander Viro <viro@ftp.linux.org.uk>,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       Christopher Li <sparse@chrisli.org>, linux-sparse@vger.kernel.org,
+       Hannes Eder <hannes@hanneseder.net>, linux-kernel@vger.kernel.org
+Subject: Re: Nasal demons in preprocessor use (Re: [PATCH] test-suite: new
+ preprocessor test case)
+References: <20090319175544.13691.42362.stgit@f10box.hanneseder.net>	 <20090319182628.GB28946@ZenIV.linux.org.uk>	 <154e089b0903191151q37ab7b20o43838845af12966f@mail.gmail.com>	 <20090319190730.GC28946@ZenIV.linux.org.uk>	 <20090319192758.GB24318@elte.hu>	 <19f34abd0903191320qdd73530ud85081d23e17b266@mail.gmail.com>	 <20090320180853.GA24154@elte.hu>	 <20090320190409.GH28946@ZenIV.linux.org.uk>	 <20090320191407.GI28946@ZenIV.linux.org.uk>	 (sfid-20090320_201424_332824_735EEDAB) <1237624446.5100.171.camel@johannes.local>
+In-Reply-To: <1237624446.5100.171.camel@johannes.local>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 26, 2009 at 06:03:15PM -0700, Linus Torvalds wrote:
+Johannes Berg wrote:
+> On Fri, 2009-03-20 at 19:14 +0000, Al Viro wrote:
 > 
-> Everybody accepts that if you've written a 20MB file and then call 
-> "fsync()" on it, it's going to take a while. But when you've written a 2kB 
-> file, and "fsync()" takes 20 seconds, because somebody else is just 
-> writing normally, _that_ is a bug. And it is actually almost totally 
-> unrelated to the whole 'dirty_limit' thing.
+>> Ingo, care to explain what the hell had your reply above been about?
+> 
+> Yes, please do. You're showing a little confusing behaviour here,
+> telling me in one thread to show more respect for other people, and ...
+> 
+> johannes
 
-Yeah, well, it's caused by data=ordered, which is an ext3 unique
-thing; no other filesystem (or operating system) has such a feature.
-I'm beginning to wish we hadn't implemented it.  Yeah, it solved a
-security problem (which delayed allocation also solves), but it
-trained application programs to be careless about fsync(), and it's
-caused us so many other problems, including the fsync() and unrelated
-commit latency problems.
+I'm not Ingo, but I took his statement at exactly face value...
 
-We are where we are, though, and people have been trained to think
-they don't need fsync(), so we're going to have to deal with the
-problem by having these implied fsync for cases like
-replace-via-rename, and in addition to that, some kind of hueristic to
-force out writes early to avoid these huge write latencies.  It would
-be good to make it be autotuning it so that filesystems that don't do
-ext3 data=ordered don't have to pay the price of having to force out
-writes so aggressively early (since in some cases if the file
-subsequently is deleted, we might be able to optimize out the write
-altogether --- and that's good for SSD endurance).
+Well done for catching a serious problem, and :-( for the serious 
+problem being discovered at this late stage.
 
-	     	       		      	  	 - Ted
+	-hpa
