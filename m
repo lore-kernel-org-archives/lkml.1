@@ -1,66 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759242AbZC0Rmg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759938AbZC0Rmv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759242AbZC0Rmg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Mar 2009 13:42:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757043AbZC0RmP
+	id S1759938AbZC0Rmv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Mar 2009 13:42:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756250AbZC0RmY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Mar 2009 13:42:15 -0400
-Received: from rdu-nat.rpath.com ([66.192.95.194]:57733 "EHLO
-	rdu-nat.rpath.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755801AbZC0RmO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Mar 2009 13:42:14 -0400
-X-Greylist: delayed 1648 seconds by postgrey-1.27 at vger.kernel.org; Fri, 27 Mar 2009 13:42:13 EDT
-Date: Fri, 27 Mar 2009 13:14:41 -0400
-From: "Michael K. Johnson" <johnsonm@rpath.com>
-To: jmforbes@linuxtx.org, hpa@zytor.com
-Cc: Jordan_Hargrave@Dell.com, linux-kernel@vger.kernel.org
-Subject: [PATCH] mark %esi as clobbered in E820 BIOS call
-Message-ID: <20090327171441.GD4363@logo.rdu.rpath.com>
+	Fri, 27 Mar 2009 13:42:24 -0400
+Received: from e9.ny.us.ibm.com ([32.97.182.139]:53007 "EHLO e9.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759213AbZC0RmX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Mar 2009 13:42:23 -0400
+Date: Fri, 27 Mar 2009 23:11:43 +0530
+From: Maneesh Soni <maneesh@in.ibm.com>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH][GIT PULL] tracing/wakeup: move access to wakeup_cpu
+	into spinlock
+Message-ID: <20090327174143.GA24940@in.ibm.com>
+Reply-To: maneesh@in.ibm.com
+References: <20090326122806.GA4188@in.ibm.com> <20090326132739.GB5960@nowhere> <alpine.DEB.2.00.0903260949340.17665@gandalf.stny.rr.com> <alpine.DEB.2.00.0903261032070.17665@gandalf.stny.rr.com> <20090327084144.GA23318@in.ibm.com> <20090327124532.GA9963@in.ibm.com> <alpine.DEB.2.00.0903270904260.1917@gandalf.stny.rr.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <alpine.DEB.2.00.0903270904260.1917@gandalf.stny.rr.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Justin and Peter, please review this for stable .y trees.  Peter,
-please review this for trunk unless you decide to do a more 
-extensive workaround for BIOS register clobbering.
+On Fri, Mar 27, 2009 at 09:15:29AM -0400, Steven Rostedt wrote:
+...
 
-Thanks!
+> Do you have CONFIG_FRAME_POINTER set?
+>
 
-$ cat e820-esi-clobber-workaround.patch
-Jordan Hargrave diagnosed a BIOS clobbering %esi in the E820 call.
-That particular BIOS has been fixed, but there is a possibility that
-this is responsible for other occasional reports of early boot
-failure, and it does not hurt to add %esi to the clobbers.
-
-Cc: H. Peter Anvin <hpa@zytor.com>
-Cc: Justin Forbes <jmforbes@linuxtx.org>
-
-Signed-off-by: Michael K Johnson <johnsonm@rpath.com>
-
-diff --git a/arch/x86/boot/memory.c b/arch/x86/boot/memory.c
-index 8c3c25f..fa85af7 100644
---- a/arch/x86/boot/memory.c
-+++ b/arch/x86/boot/memory.c
-@@ -27,13 +27,14 @@ static int detect_memory_e820(void)
- 	do {
- 		size = sizeof(struct e820entry);
+Yes, CONFIG_FRAME_POINTER=y
  
--		/* Important: %edx is clobbered by some BIOSes,
--		   so it must be either used for the error output
-+		/* Important: %edx and %esi are clobbered by some BIOSes,
-+		   so they must be either used for the error output
- 		   or explicitly marked clobbered. */
- 		asm("int $0x15; setc %0"
- 		    : "=d" (err), "+b" (next), "=a" (id), "+c" (size),
- 		      "=m" (*desc)
--		    : "D" (desc), "d" (SMAP), "a" (0xe820));
-+		    : "D" (desc), "d" (SMAP), "a" (0xe820)
-+		    : "%esi");
- 
- 		/* BIOSes which terminate the chain with CF = 1 as opposed
- 		   to %ebx = 0 don't always report the SMAP signature on
+> Is this running in a virtual box or bare metal? (probably should not matter)
+> 
+
+Bare metal.
+
+
+> What version of gcc do you have?
+> 
+gcc (GCC) 4.1.2 20080704 (Red Hat 4.1.2-44)
+
+
+Thanks
+Maneesh
+
+-- 
+
+Maneesh Soni
+Linux Technology Center
+IBM India Systems and Technology Lab,
+Bangalore, India.
