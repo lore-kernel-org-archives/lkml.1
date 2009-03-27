@@ -1,44 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753325AbZC0Va3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757233AbZC0VbU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753325AbZC0Va3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Mar 2009 17:30:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751434AbZC0VaV
+	id S1757233AbZC0VbU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Mar 2009 17:31:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751994AbZC0VbG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Mar 2009 17:30:21 -0400
-Received: from mail-bw0-f169.google.com ([209.85.218.169]:63198 "EHLO
-	mail-bw0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750863AbZC0VaU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Mar 2009 17:30:20 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=ZgnpncpzqJ3FuW/pATE8tvsummIsKLSC6xwwGvXoQ7elQgIWMwJx6voQhdHHrW3Eok
-         qDoKULIz6R00c2We0b/D+mN7EmU/LCZgMnyXdJhez0Ns5ialWUkO8yfmMVXJ8V9hpgFZ
-         aOtwDXz0fAiTLsvQDuxUgRgpwbGBz/tJGHgJ8=
-Message-ID: <49CD4565.2090509@gmail.com>
-Date: Fri, 27 Mar 2009 22:30:13 +0100
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; cs-CZ; rv:1.9.1b3pre) Gecko/20090223 SUSE/3.0b2-8.1 Thunderbird/3.0b2
+	Fri, 27 Mar 2009 17:31:06 -0400
+Received: from THUNK.ORG ([69.25.196.29]:47812 "EHLO thunker.thunk.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751434AbZC0VbD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Mar 2009 17:31:03 -0400
+Date: Fri, 27 Mar 2009 17:30:52 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Chris Mason <chris.mason@oracle.com>
+Cc: Ric Wheeler <rwheeler@redhat.com>,
+       Linux Kernel Developers List <linux-kernel@vger.kernel.org>,
+       Ext4 Developers List <linux-ext4@vger.kernel.org>, jack@suse.cz
+Subject: Re: [PATCH 0/3] Ext3 latency improvement patches
+Message-ID: <20090327213052.GC5176@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Chris Mason <chris.mason@oracle.com>,
+	Ric Wheeler <rwheeler@redhat.com>,
+	Linux Kernel Developers List <linux-kernel@vger.kernel.org>,
+	Ext4 Developers List <linux-ext4@vger.kernel.org>, jack@suse.cz
+References: <1238185471-31152-1-git-send-email-tytso@mit.edu> <1238187031.27455.212.camel@think.oraclecorp.com> <1238187818.27455.217.camel@think.oraclecorp.com>
 MIME-Version: 1.0
-To: Fabio Coatti <cova@ferrara.linux.it>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: server lockups - task blocked for more than 120 seconds
-References: <200903261543.35383.cova@ferrara.linux.it>
-In-Reply-To: <200903261543.35383.cova@ferrara.linux.it>
-X-Enigmail-Version: 0.96a
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1238187818.27455.217.camel@think.oraclecorp.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 03/26/2009 03:43 PM, Fabio Coatti wrote:
-> Hi all, as we are experiencing several lockups on productions servers, we 
-> activated some kernel debug options in order to look into causes. One thing 
-> that we have found on kernel log is the message " task blocked for more than 
-> 120 seconds", just before the lockup.I don't know if this is a symptom useful 
+On Fri, Mar 27, 2009 at 05:03:38PM -0400, Chris Mason wrote:
+> > Ric had asked me about a test program that would show the worst case
+> > ext3 behavior.  So I've modified your ext3 program a little.  It now
+> > creates a 8G file and forks off another proc to do random IO to that
+> > file.
+> > 
+> 
+> My understanding of ext4 delalloc is that once blocks are allocated to
+> file, we go back to data=ordered.  
 
-Hmm, could you try to turn on LOCKDEP?
+Yes, that's correct.
+
+> Ext4 is going pretty slowly for this fsync test (slower than ext3), it
+> looks like we're going for a very long time in
+> jbd2_journal_commit_transaction -> write_cache_pages.
+
+One of the things that we can do to optimize this case for ext4 (and
+ext3) is that if block has already been written out to disk once, we
+don't have to flush it to disk a second time.  So if we add a new
+buffer_head flag which can distinguish between blocks that have been
+newly allocated (and not yet been flushed to disk) versus blocks that
+have already been flushed to disk at least once, we wouldn't need to
+force I/O for blocks in the latter case.
+
+After all, most of the applications which do random I/O to a file
+normally will use fsync() appropriately such that they are rewriting
+already allocated blocks.  So there really is no reason to flush those
+blocks out to disk even in data=ordered mode.
+
+We currently flush *all* blocks out to disk in data=ordered mode
+because we don't have a good way of telling the difference between the
+two cases.  
+
+						- Ted
