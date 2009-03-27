@@ -1,45 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756892AbZC0Lhu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757206AbZC0LiS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756892AbZC0Lhu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Mar 2009 07:37:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752795AbZC0Lhk
+	id S1757206AbZC0LiS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Mar 2009 07:38:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755260AbZC0Lh4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Mar 2009 07:37:40 -0400
-Received: from rv-out-0506.google.com ([209.85.198.230]:55163 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755773AbZC0Lhj (ORCPT
+	Fri, 27 Mar 2009 07:37:56 -0400
+Received: from mondschein.lichtvoll.de ([194.150.191.11]:32920 "EHLO
+	mail.lichtvoll.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752795AbZC0Lhz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Mar 2009 07:37:39 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=NHqkqoKaQR4241sH0O3o3LT4pM9HBu9n/n4Z8xWYyg2F2E6YwqcQ2nSgUJ5zAwfgGR
-         N1bbrPglhF2zviMM1CEOc0tTZCCVeJuwahs8TM7jKWzBNZyjK/6GENeolRJ0HNIexFOF
-         iZCkSgAr3k2/1hqQmByZBtMNjXjKgUc+FReZ8=
+	Fri, 27 Mar 2009 07:37:55 -0400
+X-Greylist: delayed 685 seconds by postgrey-1.27 at vger.kernel.org; Fri, 27 Mar 2009 07:37:55 EDT
+From: Martin Steigerwald <Martin@lichtvoll.de>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Subject: Re: Linux 2.6.29
+Date: Fri, 27 Mar 2009 12:27:01 +0100
+User-Agent: KMail/1.9.9
+Cc: Theodore Tso <tytso@mit.edu>, Ingo Molnar <mingo@elte.hu>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Nick Piggin <npiggin@suse.de>,
+       Jens Axboe <jens.axboe@oracle.com>, David Rees <drees76@gmail.com>,
+       Jesper Krogh <jesper@krogh.cc>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <alpine.LFD.2.00.0903231617550.3032@localhost.localdomain> <20090324132032.GK5814@mit.edu> <20090324160353.06a4a5ed@hobbes.virtuouswap> (sfid-20090325_092908_502849_27B3F1C9)
+In-Reply-To: <20090324160353.06a4a5ed@hobbes.virtuouswap>
 MIME-Version: 1.0
-In-Reply-To: <1238152496.7808.3203.camel@twins>
-References: <28c262360903261912n4ce235c6wf2f75b2be7faf0f4@mail.gmail.com>
-	 <1238143759.7808.2885.camel@twins>
-	 <28c262360903270356x6a9fc929m96941de8f8201fb0@mail.gmail.com>
-	 <1238152496.7808.3203.camel@twins>
-Date: Fri, 27 Mar 2009 20:37:37 +0900
-Message-ID: <28c262360903270437l72cd31e1ja2daf00dbcf29675@mail.gmail.com>
-Subject: Re: Question about PRIVATE_FUTEX
-From: Minchan Kim <minchan.kim@gmail.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Eric Dumazet <dada1@cosmosbay.com>, lkml <linux-kernel@vger.kernel.org>,
-       Darren Hart <dvhltc@us.ibm.com>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: multipart/signed;
+  boundary="nextPart1474302.kQQn0crxJr";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <200903271227.07424.Martin@lichtvoll.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id n2RBc7qu030939
 
-On Fri, Mar 27, 2009 at 8:14 PM, Peter Zijlstra <peterz@infradead.org> wrote:> On Fri, 2009-03-27 at 19:56 +0900, Minchan Kim wrote:>>> >> Then, get_futex_value_locked calls __cpy_from_user_inatomic with>> >> pagefault_disable.>> >>>> >> Who make sure the user page is mapped at app's page table ?>> >>> > Nobody, all uses of get_futex_value_locked() have to deal with it>> > returning -EFAULT.>>>> Does It mean that __copy_from_user_inatomic in get_futex_value_locked>> would be failed rather than sleep?>> Correct.>>> In fact, I don't make sure _copy_from_user_inatomic function's meaning.>> As far as I understand, It never sleep. It just can be failed in case>> of user page isn't mapped. Is right ?>> Correct.>>> Otherwise, it can be scheduled with pagefault_disable which increments>> preempt_count. It is a atomic bug.>> If my assume is right, it can be failed rather than sleep.>> At this case, other architecture implements __copy_from_user_inatomic>> with __copy_from_user which can be scheduled. It also can be bug.>>>> Hmm, Now I am confusing.>> Confused I guess ;-)> The trick is in the in_atomic() check in the pagefault handler and the> fixup section of the copy routines.
-Whew~,  There was good hidden trick.I will dive into this assembly.I always thanks for your kindness. :)
-> #define __copy_user(to, from, size)                                     \> do {                                                                    \>        int __d0, __d1, __d2;                                           \>        __asm__ __volatile__(                                           \>                "       cmp  $7,%0\n"                                   \>                "       jbe  1f\n"                                      \>                "       movl %1,%0\n"                                   \>                "       negl %0\n"                                      \>                "       andl $7,%0\n"                                   \>                "       subl %0,%3\n"                                   \>                "4:     rep; movsb\n"                                   \>                "       movl %3,%0\n"                                   \>                "       shrl $2,%0\n"                                   \>                "       andl $3,%3\n"                                   \>                "       .align 2,0x90\n"                                \>                "0:     rep; movsl\n"                                   \>                "       movl %3,%0\n"                                   \>                "1:     rep; movsb\n"                                   \>                "2:\n"                                                  \>                ".section .fixup,\"ax\"\n"                              \>                "5:     addl %3,%0\n"                                   \>                "       jmp 2b\n"                                       \>                "3:     lea 0(%3,%0,4),%0\n"                            \>                "       jmp 2b\n"                                       \>                ".previous\n"                                           \>                ".section __ex_table,\"a\"\n"                           \>                "       .align 4\n"                                     \>                "       .long 4b,5b\n"                                  \>                "       .long 0b,3b\n"                                  \>                "       .long 1b,2b\n"                                  \>                ".previous"                                             \>                : "=&c"(size), "=&D" (__d0), "=&S" (__d1), "=r"(__d2)   \>                : "3"(size), "0"(size), "1"(to), "2"(from)              \>                : "memory");                                            \> } while (0)>> see that __ex_table section, it tells the fault handler where to> continue in case of an atomic fault.>>> > Most of this is legacy btw, from when futex ops were done under the>> > mmap_sem. Back then we couldn't fault because that would cause mmap_sem>> > recursion. Howver, now that we don't hold mmap_sem anymore we could use>> > a faulting user access like get_user().>> > Darren has been working on patches to clean that up, some of those are>> > already merged in the -tip tree.>>>> Thanks for good information.>> It will be very desirable way to enhance kernel performance.>> I doubt it'll make a measurable difference, if you need to fault> performance sucks anyway. If you don't, the current code is just as> fast.>
+--nextPart1474302.kQQn0crxJr
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
+Am Mittwoch 25 M=E4rz 2009 schrieb Jesse Barnes:
+> On Tue, 24 Mar 2009 09:20:32 -0400
+>
+> Theodore Tso <tytso@mit.edu> wrote:
+> > They don't solve the problem where there is a *huge* amount of writes
+> > going on, though --- if something is dirtying pages at a rate far
+> > greater than the local disk can write it out, say, either "dd
+> > if=3D/dev/zero of=3D/mnt/make-lots-of-writes" or a massive distcc clust=
+er
+> > driving a huge amount of data towards a single system or a wget over
+> > a local 100 megabit ethernet from a massive NFS server where
+> > everything is in cache, then you can have a major delay with the
+> > fsync().
+>
+> You make it sound like this is hard to do...  I was running into this
+> problem *every day* until I moved to XFS recently.  I'm running a
+> fairly beefy desktop (VMware running a crappy Windows install w/AV junk
+> on it, builds, icecream and large mailboxes) and have a lot of RAM, but
+> it became unusable for minutes at a time, which was just totally
+> unacceptable, thus the switch.  Things have been better since, but are
+> still a little choppy.
+>
+> I remember early in the 2.6.x days there was a lot of focus on making
+> interactive performance good, and for a long time it was.  But this I/O
+> problem has been around for a *long* time now... What happened?  Do not
+> many people run into this daily?  Do all the filesystem hackers run
+> with special mount options to mitigate the problem?
 
--- Kinds regards,Minchan Kim���{.n�+�������+%�����ݶ��w��{.n�+����{��G�����{ay�ʇڙ�,j��f���h��������z_�(�階�ݢj"���m������G������?����&���~��iO��z��v�^�m����������?�I�
+Well I always had the feeling that somewhen from one 2.6.x to another I/O=20
+latencies increased a lot. But first I thought I was just imaging this=20
+and when I more and more thought that this is for real, I forgot since=20
+when I observed these increased latencies.
+
+This is on IBM ThinkPad T42 and T23 with XFS.
+
+I/O latencies are pathetic when dpkg reads in the database or I do tar -xf=
+=20
+linux-x.y.z.tar.bz2.
+
+I never got down to what is causing these higher latencies though also I=20
+tried different I/O schedulers, tuned XFS options, used relatime.
+
+What I found tough is that on XFS at least a tar -xf linux-kernel / rm -rf=
+=20
+linux-kernel operation is way slower with barriers and write cache=20
+enabled that with no barriers and no write cache enabled. And frankly I=20
+never got that.
+
+XFS crawls to a stop on metadata operations when barriers are enabled.=20
+According to the XFS FAQ disabling drive write cache should be as safe as=20
+enabling barriers. And I always unterstood barriers as a feature to be=20
+have *some* ordering contraints, i.e. write before barrier go before=20
+barrier and writes after it after it - even when a drives hardware write=20
+cache is involved. But when this cache is enabled ordering will always be=20
+like issued from Linux block layer cause all I/Os issued to the drive are=20
+write-through and synchron without write cache, versus only barrier=20
+requests are synchron with barriers and write cache.
+
+=2D-=20
+Martin 'Helios' Steigerwald - http://www.Lichtvoll.de
+GPG: 03B0 0D6C 0040 0710 4AFA  B82F 991B EAAC A599 84C7
+
+--nextPart1474302.kQQn0crxJr
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAknMuAcACgkQmRvqrKWZhMdIngCeM2EGhNPseiD5TRRjbMJVqHTk
+5xYAni85/1ZN/ff8LCbyLPjcRJBw9bmr
+=PBHk
+-----END PGP SIGNATURE-----
+
+--nextPart1474302.kQQn0crxJr--
