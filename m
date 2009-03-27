@@ -1,87 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758976AbZC0Jgh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759259AbZC0Jgz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758976AbZC0Jgh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Mar 2009 05:36:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754501AbZC0Jf5
+	id S1759259AbZC0Jgz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Mar 2009 05:36:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758967AbZC0Jg2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Mar 2009 05:35:57 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:59989 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1758838AbZC0Jf4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Mar 2009 05:35:56 -0400
-Message-ID: <49CC9DB2.9000705@cn.fujitsu.com>
-Date: Fri, 27 Mar 2009 17:34:42 +0800
-From: Lai Jiangshan <laijs@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Fri, 27 Mar 2009 05:36:28 -0400
+Received: from mail-in-12.arcor-online.net ([151.189.21.52]:42671 "EHLO
+	mail-in-12.arcor-online.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757773AbZC0Jg0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Mar 2009 05:36:26 -0400
+X-DKIM: Sendmail DKIM Filter v2.8.2 mail-in-12.arcor-online.net A39E51B3E20
+From: Bodo Eggert <7eggert@gmx.de>
+Subject: Re: [PATCH] config: Make need for SCSI_CDROM clearer
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org
+Reply-To: 7eggert@gmx.de
+Date: Fri, 27 Mar 2009 10:36:22 +0100
+References: <ck4Qt-44e-51@gated-at.bofh.it>
+User-Agent: KNode/0.10.4
 MIME-Version: 1.0
-To: Zhaolei <zhaolei@cn.fujitsu.com>
-CC: Ingo Molnar <mingo@elte.hu>, torvalds@linux-foundation.org,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/2] Fix wrong format string iter for printk
-References: <49CC9739.30107@cn.fujitsu.com> <49CC97B6.7040809@cn.fujitsu.com>
-In-Reply-To: <49CC97B6.7040809@cn.fujitsu.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7Bit
+Message-Id: <E1Ln8UB-0001SM-50@be1.7eggert.dyndns.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Zhaolei wrote:
-> printk("%Q");
-> Output before patch:
-> %QQ
-> Output after patch:
-> %Q
-> 
-> Signed-off-by: Zhao Lei <zhaolei@cn.fujitsu.com>
-> ---
->  lib/vsprintf.c |   16 ----------------
->  1 files changed, 0 insertions(+), 16 deletions(-)
-> 
-> diff --git a/lib/vsprintf.c b/lib/vsprintf.c
-> index 908dd41..b56f6d0 100644
-> --- a/lib/vsprintf.c
-> +++ b/lib/vsprintf.c
-> @@ -1062,13 +1062,6 @@ int vsnprintf(char *buf, size_t size, const char *fmt, va_list args)
->  			if (str < end)
->  				*str = '%';
->  			++str;
-> -			if (*fmt) {
-> -				if (str < end)
-> -					*str = *fmt;
-> -				++str;
-> -			} else {
-> -				--fmt;
-> -			}
->  			break;
->  
->  		case FORMAT_TYPE_NRCHARS: {
-> @@ -1356,8 +1349,6 @@ do {									\
->  			break;
->  
->  		case FORMAT_TYPE_INVALID:
-> -			if (!*fmt)
-> -				--fmt;
->  			break;
->  
->  		case FORMAT_TYPE_NRCHARS: {
-> @@ -1544,13 +1535,6 @@ int bstr_printf(char *buf, size_t size, const char *fmt, const u32 *bin_buf)
->  			if (str < end)
->  				*str = '%';
->  			++str;
-> -			if (*fmt) {
-> -				if (str < end)
-> -					*str = *fmt;
-> -				++str;
-> -			} else {
-> -				--fmt;
-> -			}
->  			break;
->  
->  		case FORMAT_TYPE_NRCHARS:
+Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
 
-It's nice.
-Review-by: Lai Jiangshan <laijs@cn.fujitsu.com>
+> Mention ATAPI. We could insert an essay about libata and ide-scsi etc but
+> the failure case is someone enables it which is just fine so keep it
+> simple.
 
+What about:
+
+> +++ b/drivers/scsi/Kconfig
+> @@ -121,7 +121,7 @@ config BLK_DEV_SR
+>  tristate "SCSI CDROM support"
+
+"CDROM support (except for old IDE and legacy drivers)"?
 
