@@ -1,25 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764926AbZC0XvW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764978AbZC0Xvq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764926AbZC0XvW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Mar 2009 19:51:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762611AbZC0X2Z
+	id S1764978AbZC0Xvq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Mar 2009 19:51:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761765AbZC0X20
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Mar 2009 19:28:25 -0400
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:48716 "EHLO
+	Fri, 27 Mar 2009 19:28:26 -0400
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:48720 "EHLO
 	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762142AbZC0X16 (ORCPT
+	with ESMTP id S1761870AbZC0X16 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 27 Mar 2009 19:27:58 -0400
 From: =?utf-8?q?Uwe=20Kleine-K=C3=B6nig?= 
 	<u.kleine-koenig@pengutronix.de>
 To: linux-kernel@vger.kernel.org
 Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Hiroshi DOYU <Hiroshi.DOYU@nokia.com>, Tony Lindgren <tony@atomide.com>,
-       Juha Yrjola <juha.yrjola@solidboot.com>,
+       Kristoffer Ericson <Kristoffer.Ericson@gmail.com>,
        Russell King <rmk+kernel@arm.linux.org.uk>
-Subject: [PATCH 30/58] move mailbox's probe function to .devinit.text
-Date: Sat, 28 Mar 2009 00:26:51 +0100
-Message-Id: <1238196439-16535-30-git-send-email-u.kleine-koenig@pengutronix.de>
+Subject: [PATCH 23/58] move jornada_ssp's probe function to .devinit.text
+Date: Sat, 28 Mar 2009 00:26:44 +0100
+Message-Id: <1238196439-16535-23-git-send-email-u.kleine-koenig@pengutronix.de>
 X-Mailer: git-send-email 1.6.2
 In-Reply-To: <20090327232153.GA16348@pengutronix.de>
 References: <20090327232153.GA16348@pengutronix.de>
@@ -34,7 +33,7 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A pointer to omap2_mbox_probe is passed to the core via
+A pointer to jornada_ssp_probe is passed to the core via
 platform_driver_register and so the function must not disappear when the
 .init sections are discarded.  Otherwise (if also having HOTPLUG=y)
 unbinding and binding a device to the driver via sysfs will result in an
@@ -45,28 +44,26 @@ platform_driver_register plus removing the pointer to the probe function
 from the struct platform_driver.
 
 Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
-Cc: Hiroshi DOYU <Hiroshi.DOYU@nokia.com>
-Cc: Tony Lindgren <tony@atomide.com>
-Cc: Juha Yrjola <juha.yrjola@solidboot.com>
+Cc: Kristoffer Ericson <Kristoffer.Ericson@gmail.com>
 Cc: Russell King <rmk+kernel@arm.linux.org.uk>
 Cc: Andrew Morton <akpm@linux-foundation.org>
 ---
- arch/arm/mach-omap2/mailbox.c |    2 +-
+ arch/arm/mach-sa1100/jornada720_ssp.c |    2 +-
  1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/arch/arm/mach-omap2/mailbox.c b/arch/arm/mach-omap2/mailbox.c
-index 32b7af3..726876c 100644
---- a/arch/arm/mach-omap2/mailbox.c
-+++ b/arch/arm/mach-omap2/mailbox.c
-@@ -251,7 +251,7 @@ static struct omap_mbox mbox_iva_info = {
- 	.priv	= &omap2_mbox_iva_priv,
+diff --git a/arch/arm/mach-sa1100/jornada720_ssp.c b/arch/arm/mach-sa1100/jornada720_ssp.c
+index 28cf369..ce4c6cb 100644
+--- a/arch/arm/mach-sa1100/jornada720_ssp.c
++++ b/arch/arm/mach-sa1100/jornada720_ssp.c
+@@ -130,7 +130,7 @@ void jornada_ssp_end(void)
  };
+ EXPORT_SYMBOL(jornada_ssp_end);
  
--static int __init omap2_mbox_probe(struct platform_device *pdev)
-+static int __devinit omap2_mbox_probe(struct platform_device *pdev)
+-static int __init jornada_ssp_probe(struct platform_device *dev)
++static int __devinit jornada_ssp_probe(struct platform_device *dev)
  {
- 	struct resource *res;
- 	int ret = 0;
+ 	int ret;
+ 
 -- 
 1.6.2
 
