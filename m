@@ -1,75 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S933885AbZC0Ayv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934095AbZC0BDI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S933885AbZC0Ayv (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Mar 2009 20:54:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S933837AbZC0AyO
+	id S934095AbZC0BDI (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Mar 2009 21:03:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934026AbZC0BCj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Mar 2009 20:54:14 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:46332 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S933662AbZC0AyM (ORCPT
+	Thu, 26 Mar 2009 21:02:39 -0400
+Received: from mu-out-0910.google.com ([209.85.134.184]:55933 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S934024AbZC0BCh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Mar 2009 20:54:12 -0400
-Date: Thu, 26 Mar 2009 17:51:44 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Theodore Tso <tytso@mit.edu>, David Rees <drees76@gmail.com>,
-       Jesper Krogh <jesper@krogh.cc>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.29
-In-Reply-To: <alpine.LFD.2.00.0903261723250.3994@localhost.localdomain>
-Message-ID: <alpine.LFD.2.00.0903261742210.3994@localhost.localdomain>
-References: <alpine.LFD.2.00.0903231617550.3032@localhost.localdomain> <49C87B87.4020108@krogh.cc> <72dbd3150903232346g5af126d7sb5ad4949a7b5041f@mail.gmail.com> <49C88C80.5010803@krogh.cc> <72dbd3150903241200v38720ca0x392c381f295bdea@mail.gmail.com>
- <20090325183011.GN32307@mit.edu> <alpine.LFD.2.00.0903251139260.3032@localhost.localdomain> <20090325220530.GR32307@mit.edu> <alpine.LFD.2.00.0903251622420.3032@localhost.localdomain> <20090326171148.9bf8f1ec.akpm@linux-foundation.org>
- <alpine.LFD.2.00.0903261723250.3994@localhost.localdomain>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Thu, 26 Mar 2009 21:02:37 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent;
+        b=uZ/pd64nlegD4pK4mLl9l6y5B6+r1IKX/PK7eyEceSgS6LBmsiESIiAKFbMZz67t5s
+         oXdyxc87QByUfyxrQX9BYJJBVYO1TpEqKAdQBh14xdN56FXaKSgInnp7pLcCo9mFEuk8
+         hR6l37mlPPKiZTmNR3YZXcc4wA0zyfU5CFhYE=
+Date: Fri, 27 Mar 2009 04:02:27 +0300
+From: Alexander Beregalov <a.beregalov@gmail.com>
+To: netdev@vger.kernel.org, linux-kernel@vger.kernel.org, davem@davemloft.net
+Subject: [PATCH] IRDA: donauboe: fix build
+Message-ID: <20090327010227.GA2676@orion>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+drivers/net/irda/donauboe.c: In function 'toshoboe_open':
+drivers/net/irda/donauboe.c:1660: error: 'struct net_device' has no
+member named 'hard_start_xmit'
+drivers/net/irda/donauboe.c:1661: error: 'struct net_device' has no
+member named 'open'
+drivers/net/irda/donauboe.c:1662: error: 'struct net_device' has no
+member named 'stop'
+drivers/net/irda/donauboe.c:1663: error: 'struct net_device' has no
+member named 'do_ioctl'
 
+Signed-off-by: Alexander Beregalov <a.beregalov@gmail.com>
+---
 
-On Thu, 26 Mar 2009, Linus Torvalds wrote:
-> 
-> The only times tunables have worked for us is when they auto-tune. 
-> 
-> IOW, we don't have "use 35% of memory for buffer cache" tunables, we just 
-> dynamically auto-tune memory use. And no, we don't expect user space to 
-> run some "tuning program for their load" either.
+ drivers/net/irda/donauboe.c |   15 +++++++++++----
+ 1 files changed, 11 insertions(+), 4 deletions(-)
 
-IOW, what we could reasonably do is something along the lines of:
-
- - start off with some reasonable value for max background dirty (per 
-   block device) that defaults to something sane (quite possibly based on 
-   simply memory size).
-
- - assume that "foreground dirty" is just always 2* background dirty.
-
- - if we hit the "max foreground dirty" during memory allocation, then we 
-   shrink the background dirty value (logic: we never want to have to wait 
-   synchronously)
-
- - if we hit some maximum latency on writeback, shrink dirty aggressively 
-   and based on how long the latency was (because at that point we have a 
-   real _measure_ of how costly it is with that load).
-
- - if we start doing background dirtying, but never hit the foreground 
-   dirty even in dirty balancing (ie when a writer is actually _writing_, 
-   as opposed to hitting it when allocating memory by a non-writer), then 
-   slowly open up the window - we may be limiting too early.
-
-.. add heuristics to taste. The point being, that if we do this based on 
-real loads, and based on hitting the real problems, then we might actually 
-be getting somewhere. In particular, if the filesystem sucks at writeout 
-(ie the limiter is not the _disk_, but the filesystem serialization), then 
-it should automatically also shrink the max dirty state. 
-
-The tunable then could become the maximum latency we accept or something 
-like that. Or the hysteresis limits/rules for the soft "grow" or "shrink" 
-events. At that point, maybe we could even find something that works for 
-most people.
-
-			Linus
+diff --git a/drivers/net/irda/donauboe.c b/drivers/net/irda/donauboe.c
+index 6f3e7f7..847fa22 100644
+--- a/drivers/net/irda/donauboe.c
++++ b/drivers/net/irda/donauboe.c
+@@ -970,7 +970,7 @@ toshoboe_probe (struct toshoboe_cb *self)
+ /* Netdev style code */
+ 
+ /* Transmit something */
+-static int
++int
+ toshoboe_hard_xmit (struct sk_buff *skb, struct net_device *dev)
+ {
+   struct toshoboe_cb *self;
+@@ -1145,6 +1145,7 @@ dumpbufs(skb->data,skb->len,'>');
+ 
+   return 0;
+ }
++EXPORT_SYMBOL(toshoboe_hard_xmit);
+ 
+ /*interrupt handler */
+ static irqreturn_t
+@@ -1336,7 +1337,7 @@ dumpbufs(self->rx_bufs[self->rxs],len,'<');
+ }
+ 
+ 
+-static int
++int
+ toshoboe_net_open (struct net_device *dev)
+ {
+   struct toshoboe_cb *self;
+@@ -1375,8 +1376,9 @@ toshoboe_net_open (struct net_device *dev)
+ 
+   return 0;
+ }
++EXPORT_SYMBOL(toshoboe_net_open);
+ 
+-static int
++int
+ toshoboe_net_close (struct net_device *dev)
+ {
+   struct toshoboe_cb *self;
+@@ -1405,6 +1407,7 @@ toshoboe_net_close (struct net_device *dev)
+ 
+   return 0;
+ }
++EXPORT_SYMBOL(toshoboe_net_close);
+ 
+ /*
+  * Function toshoboe_net_ioctl (dev, rq, cmd)
+@@ -1412,7 +1415,7 @@ toshoboe_net_close (struct net_device *dev)
+  *    Process IOCTL commands for this device
+  *
+  */
+-static int
++int
+ toshoboe_net_ioctl (struct net_device *dev, struct ifreq *rq, int cmd)
+ {
+   struct if_irda_req *irq = (struct if_irda_req *) rq;
+@@ -1473,6 +1476,7 @@ out:
+   return ret;
+ 
+ }
++EXPORT_SYMBOL(toshoboe_net_ioctl);
+ 
+ MODULE_DESCRIPTION("Toshiba OBOE IrDA Device Driver");
+ MODULE_AUTHOR("James McKenzie <james@fishsoup.dhs.org>");
+@@ -1657,10 +1661,13 @@ toshoboe_open (struct pci_dev *pci_dev, const struct pci_device_id *pdid)
+ #endif
+ 
+   SET_NETDEV_DEV(dev, &pci_dev->dev);
++
++#ifdef CONFIG_COMPAT_NET_DEV_OPS
+   dev->hard_start_xmit = toshoboe_hard_xmit;
+   dev->open = toshoboe_net_open;
+   dev->stop = toshoboe_net_close;
+   dev->do_ioctl = toshoboe_net_ioctl;
++#endif
+ 
+   err = register_netdev(dev);
+   if (err)
