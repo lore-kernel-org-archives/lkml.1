@@ -1,24 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753116AbZC0Xgc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764048AbZC0Xg4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753116AbZC0Xgc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Mar 2009 19:36:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761833AbZC0X1x
+	id S1764048AbZC0Xg4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Mar 2009 19:36:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761908AbZC0X1y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Mar 2009 19:27:53 -0400
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:48405 "EHLO
+	Fri, 27 Mar 2009 19:27:54 -0400
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:48467 "EHLO
 	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757199AbZC0X1d (ORCPT
+	with ESMTP id S1761353AbZC0X1k (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Mar 2009 19:27:33 -0400
+	Fri, 27 Mar 2009 19:27:40 -0400
 From: =?utf-8?q?Uwe=20Kleine-K=C3=B6nig?= 
 	<u.kleine-koenig@pengutronix.de>
 To: linux-kernel@vger.kernel.org
 Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Nicolas Pitre <nico@marvell.com>, David Woodhouse <dwmw2@infradead.org>,
-       Russell King <rmk+kernel@arm.linux.org.uk>
-Subject: [PATCH 42/58] move flash's probe function to .devinit.text
-Date: Sat, 28 Mar 2009 00:27:03 +0100
-Message-Id: <1238196439-16535-42-git-send-email-u.kleine-koenig@pengutronix.de>
+       Russell King <rmk+kernel@arm.linux.org.uk>,
+       Krzysztof Helt <krzysztof.h1@wp.pl>,
+       Antonino Daplas <adaplas@gmail.com>, Paul Mundt <lethal@linux-sh.org>,
+       Roland Stigge <stigge@antcom.de>, Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [PATCH 13/58] move epson1355fb's probe function to .devinit.text
+Date: Sat, 28 Mar 2009 00:26:34 +0100
+Message-Id: <1238196439-16535-13-git-send-email-u.kleine-koenig@pengutronix.de>
 X-Mailer: git-send-email 1.6.2
 In-Reply-To: <20090327232153.GA16348@pengutronix.de>
 References: <20090327232153.GA16348@pengutronix.de>
@@ -33,7 +35,7 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A pointer to sa1100_mtd_probe is passed to the core via
+A pointer to epson1355fb_probe is passed to the core via
 platform_driver_register and so the function must not disappear when the
 .init sections are discarded.  Otherwise (if also having HOTPLUG=y)
 unbinding and binding a device to the driver via sysfs will result in an
@@ -44,27 +46,30 @@ platform_driver_register plus removing the pointer to the probe function
 from the struct platform_driver.
 
 Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
-Cc: Nicolas Pitre <nico@marvell.com>
-Cc: David Woodhouse <dwmw2@infradead.org>
 Cc: Russell King <rmk+kernel@arm.linux.org.uk>
+Cc: Krzysztof Helt <krzysztof.h1@wp.pl>
+Cc: Antonino Daplas <adaplas@gmail.com>
 Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Paul Mundt <lethal@linux-sh.org>
+Cc: Roland Stigge <stigge@antcom.de>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/mtd/maps/sa1100-flash.c |    2 +-
+ drivers/video/epson1355fb.c |    2 +-
  1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/mtd/maps/sa1100-flash.c b/drivers/mtd/maps/sa1100-flash.c
-index 6f6a0f6..1757ab0 100644
---- a/drivers/mtd/maps/sa1100-flash.c
-+++ b/drivers/mtd/maps/sa1100-flash.c
-@@ -351,7 +351,7 @@ sa1100_setup_mtd(struct platform_device *pdev, struct flash_platform_data *plat)
+diff --git a/drivers/video/epson1355fb.c b/drivers/video/epson1355fb.c
+index 2735b79..6d755bb 100644
+--- a/drivers/video/epson1355fb.c
++++ b/drivers/video/epson1355fb.c
+@@ -602,7 +602,7 @@ static int epson1355fb_remove(struct platform_device *dev)
+ 	return 0;
+ }
  
- static const char *part_probes[] = { "cmdlinepart", "RedBoot", NULL };
- 
--static int __init sa1100_mtd_probe(struct platform_device *pdev)
-+static int __devinit sa1100_mtd_probe(struct platform_device *pdev)
+-int __init epson1355fb_probe(struct platform_device *dev)
++int __devinit epson1355fb_probe(struct platform_device *dev)
  {
- 	struct flash_platform_data *plat = pdev->dev.platform_data;
- 	struct mtd_partition *parts;
+ 	struct epson1355_par *default_par;
+ 	struct fb_info *info;
 -- 
 1.6.2
 
