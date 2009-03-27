@@ -1,49 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757653AbZC0PWq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758297AbZC0P1z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757653AbZC0PWq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Mar 2009 11:22:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754287AbZC0PWg
+	id S1758297AbZC0P1z (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Mar 2009 11:27:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753409AbZC0P1p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Mar 2009 11:22:36 -0400
-Received: from cavan.codon.org.uk ([93.93.128.6]:57190 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753323AbZC0PWg (ORCPT
+	Fri, 27 Mar 2009 11:27:45 -0400
+Received: from moutng.kundenserver.de ([212.227.126.177]:49683 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753045AbZC0P1o (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Mar 2009 11:22:36 -0400
-Date: Fri, 27 Mar 2009 15:22:21 +0000
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Theodore Tso <tytso@mit.edu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Rees <drees76@gmail.com>, Jesper Krogh <jesper@krogh.cc>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.29
-Message-ID: <20090327152221.GA25234@srcf.ucam.org>
-References: <20090326174704.cd36bf7b.akpm@linux-foundation.org> <alpine.LFD.2.00.0903261752110.3994@localhost.localdomain> <20090327032301.GN6239@mit.edu> <20090327034705.GA16888@srcf.ucam.org> <20090327051338.GP6239@mit.edu> <20090327055750.GA18065@srcf.ucam.org> <20090327062114.GA18290@srcf.ucam.org> <20090327112438.GQ6239@mit.edu> <20090327145156.GB24819@srcf.ucam.org> <20090327150811.09b313f5@lxorguk.ukuu.org.uk>
+	Fri, 27 Mar 2009 11:27:44 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: liqin.chen@sunplusct.com
+Subject: Re: [PATCH 10/13] score - New architecure port to SunplusCT S+CORE processor
+Date: Fri, 27 Mar 2009 16:26:20 +0100
+User-Agent: KMail/1.9.9
+Cc: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
+       torvalds@linux-foundation.org
+References: <OF23D2A1D1.74CB7871-ON48257586.00098D8A-48257586.0009CE62@sunplusct.com>
+In-Reply-To: <OF23D2A1D1.74CB7871-ON48257586.00098D8A-48257586.0009CE62@sunplusct.com>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090327150811.09b313f5@lxorguk.ukuu.org.uk>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
+Message-Id: <200903271626.20863.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX1/27eJLWSzeJHpzKLm4PvckywFc94s4bR8uQ6Z
+ 3wYWbjSjKromBdRyBiXDEt87iawp+0urTppE7F10dlti2zO5bM
+ aTQd/8Pgc7vA/5eQ2TUqA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 27, 2009 at 03:08:11PM +0000, Alan Cox wrote:
+On Friday 27 March 2009, liqin.chen@sunplusct.com wrote:
 
-> Not checking for errors is not "progress" its indiscipline aided by
-> languages and tools that permit it to occur without issuing errors. It's
-> why software "engineering" is at best approaching early 1950's real
-> engineering practice ("hey gee we should test this stuff") and has yet to
-> grow up and get anywhere into the world of real engineering and quality.
+> +
+> +extern void cpu_cache_init (void);
+> +extern void tlb_init (void);
 
-No. Not *having* to check for errors in the cases that you care about is 
-progress. How much of the core kernel actually deals with kmalloc 
-failures sensibly? Some things just aren't worth it.
+In general, never put 'extern' declarations into a .c file. They are
+part of an interface between different compilation units, so they
+should be moved into a header file that is included by both of them.
 
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+> diff -uprN -x linux-2.6-git.ori/Documentation/dontdiff 
+> linux-2.6-git.ori/arch/score/kernel/signal.c 
+> linux-2.6-git.new/arch/score/kernel/signal.c
+> --- linux-2.6-git.ori/arch/score/kernel/signal.c        1970-01-01 
+> 08:00:00.000000000 +0800
+> +++ linux-2.6-git.new/arch/score/kernel/signal.c        2009-03-26 
+> 15:32:23.000000000 +0800
+
+As mentioned in my comment on system calls, this file should largely
+not exist at all, because the generic rt_sig* system calls have
+replaced these functions.
+
+You will still need do_signal, sys_rt_sigaction and sys_rt_sigreturn,
+maybe others, but not sys_sig*
+
+> +#ifdef HAVE_ARCH_UNMAPPED_AREA
+> +unsigned long arch_get_unmapped_area(struct file *filp, unsigned long 
+> addr,
+> +       unsigned long len, unsigned long pgoff, unsigned long flags)
+> +{
+> +       struct vm_area_struct *vmm;
+> +       int do_color_align;
+> +       unsigned long task_size;
+
+The #ifdef here looks wrong. You decide in asm/pgtable.h whether you
+need it or not, but I would expect that decision to be constant.
+Most new architectures don't need one. Why do you?
+
+> +/* common code for old and new mmaps */
+
+You only do "new" mmaps, so this function could be merged
+into your sys_mmap2.
+
+[note to myself: I should send my patch that provides
+a generic version of this so architectures don't have to
+copy it any more]
+
+
+> +asmlinkage int sys_set_thread_area(unsigned long addr)
+> +{
+> +       struct thread_info *ti = task_thread_info(current);
+> +
+> +       ti->tp_value = addr;
+> +       return 0;
+> +}
+
+Why does this have to be a systemcall? Most architectures handle
+TLS in user space.
+
+> +asmlinkage int _sys_sysscore(int cmd, long arg1, int arg2, int arg3)
+> +{
+> +       return 0;
+> +}
+
+What is this used for?
+
+> +asmlinkage ssize_t sys_pwrite_wrapper(unsigned int fd, const char *buf,
+> +                                       long long count,loff_t pos)
+> +{
+> +       return sys_pwrite64(fd, buf, (long) count, pos);
+> +}
+> +
+> +asmlinkage ssize_t sys_pread_wrapper(unsigned int fd, char *buf,
+> +                                       long long count, loff_t pos)
+> +{
+> +       return sys_pread64(fd, buf, (long) count, pos);
+> +}
+
+Just for consistency, I'd call these sys_pwrite64_wrapper and
+sys_pread64_wrapper.
+
+> +asmlinkage long
+> +sys_fadvise64_wrapper(int fd, int unused, loff_t offset, size_t len, int 
+> advice)
+> +{
+> +       return sys_fadvise64(fd, offset, len, advice);
+> +}
+
+This should probably be fadvise64_64, not fadvise64.
+
+	Arnd <><
