@@ -1,108 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S934308AbZC0BGw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S934559AbZC0BSp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S934308AbZC0BGw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Mar 2009 21:06:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934263AbZC0BGP
+	id S934559AbZC0BSp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Mar 2009 21:18:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S934478AbZC0BSO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Mar 2009 21:06:15 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:40062 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S934251AbZC0BGM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Mar 2009 21:06:12 -0400
-Date: Thu, 26 Mar 2009 18:03:15 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: Theodore Tso <tytso@mit.edu>, David Rees <drees76@gmail.com>,
-       Jesper Krogh <jesper@krogh.cc>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.29
-In-Reply-To: <20090326174704.cd36bf7b.akpm@linux-foundation.org>
-Message-ID: <alpine.LFD.2.00.0903261752110.3994@localhost.localdomain>
-References: <alpine.LFD.2.00.0903231617550.3032@localhost.localdomain> <49C87B87.4020108@krogh.cc> <72dbd3150903232346g5af126d7sb5ad4949a7b5041f@mail.gmail.com> <49C88C80.5010803@krogh.cc> <72dbd3150903241200v38720ca0x392c381f295bdea@mail.gmail.com>
- <20090325183011.GN32307@mit.edu> <alpine.LFD.2.00.0903251139260.3032@localhost.localdomain> <20090325220530.GR32307@mit.edu> <alpine.LFD.2.00.0903251622420.3032@localhost.localdomain> <20090326171148.9bf8f1ec.akpm@linux-foundation.org>
- <alpine.LFD.2.00.0903261723250.3994@localhost.localdomain> <20090326174704.cd36bf7b.akpm@linux-foundation.org>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 26 Mar 2009 21:18:14 -0400
+Received: from mail.vyatta.com ([76.74.103.46]:51424 "EHLO mail.vyatta.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S934477AbZC0BSM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 26 Mar 2009 21:18:12 -0400
+Date: Thu, 26 Mar 2009 18:18:04 -0700
+From: Stephen Hemminger <shemminger@vyatta.com>
+To: Alexander Beregalov <a.beregalov@gmail.com>
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org, davem@davemloft.net
+Subject: Re: [PATCH] IRDA: donauboe: fix build
+Message-ID: <20090326181804.02c06f51@nehalam>
+In-Reply-To: <20090327010227.GA2676@orion>
+References: <20090327010227.GA2676@orion>
+Organization: Vyatta
+X-Mailer: Claws Mail 3.6.1 (GTK+ 2.16.0; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 27 Mar 2009 04:02:27 +0300
+Alexander Beregalov <a.beregalov@gmail.com> wrote:
 
-
-On Thu, 26 Mar 2009, Andrew Morton wrote:
+> drivers/net/irda/donauboe.c: In function 'toshoboe_open':
+> drivers/net/irda/donauboe.c:1660: error: 'struct net_device' has no
+> member named 'hard_start_xmit'
+> drivers/net/irda/donauboe.c:1661: error: 'struct net_device' has no
+> member named 'open'
+> drivers/net/irda/donauboe.c:1662: error: 'struct net_device' has no
+> member named 'stop'
+> drivers/net/irda/donauboe.c:1663: error: 'struct net_device' has no
+> member named 'do_ioctl'
 > 
-> userspace can get closer than the kernel can.
-
-Andrew, that's SIMPLY NOT TRUE.
-
-You state that without any amount of data to back it up, as if it was some 
-kind of truism. It's not.
-
-> > Why? Because no such number exists. It depends on the access patterns.
+> Signed-off-by: Alexander Beregalov <a.beregalov@gmail.com>
+> ---
 > 
-> Those access patterns are observable!
-
-Not by user space they aren't, and not dynamically. At least not as well 
-as they are for the kernel.
-
-So when you say "user space can do it better", you base that statement on 
-exactly what? The night-time whisperings of the small creatures living in 
-your basement?
-
-The fact is, user space can't do better. And perhaps equally importantly, 
-we have 16 years of history with user space tuning, and that history tells 
-us unequivocally that user space never does anything like this.
-
-Name _one_ case where even simple tuning has happened, and where it has 
-actually _worked_?
-
-I claim you cannot. And I have counter-examples. Just look at the utter 
-fiasco that was user-space "tuning" of nice-levels that distros did. Ooh. 
-Yeah, it didn't work so well, did it? Especially not when the kernel 
-changed subtly, and the "tuning" that had been done was shown to be 
-utter crap.
-
-> > dynamically auto-tune memory use. And no, we don't expect user space to 
-> > run some "tuning program for their load" either.
-> > 
+>  drivers/net/irda/donauboe.c |   15 +++++++++++----
+>  1 files changed, 11 insertions(+), 4 deletions(-)
 > 
-> This particular case is exceptional - it's just too hard for the kernel
-> to be able to predict the future for this one.
+> diff --git a/drivers/net/irda/donauboe.c b/drivers/net/irda/donauboe.c
+> index 6f3e7f7..847fa22 100644
+> --- a/drivers/net/irda/donauboe.c
+> +++ b/drivers/net/irda/donauboe.c
+> @@ -970,7 +970,7 @@ toshoboe_probe (struct toshoboe_cb *self)
+>  /* Netdev style code */
+>  
+>  /* Transmit something */
+> -static int
+> +int
+>  toshoboe_hard_xmit (struct sk_buff *skb, struct net_device *dev)
+>  {
+>    struct toshoboe_cb *self;
+> @@ -1145,6 +1145,7 @@ dumpbufs(skb->data,skb->len,'>');
+>  
+>    return 0;
+>  }
+> +EXPORT_SYMBOL(toshoboe_hard_xmit);
+>  
+>  /*interrupt handler */
+>  static irqreturn_t
+> @@ -1336,7 +1337,7 @@ dumpbufs(self->rx_bufs[self->rxs],len,'<');
+>  }
+>  
+>  
+> -static int
+> +int
+>  toshoboe_net_open (struct net_device *dev)
+>  {
+>    struct toshoboe_cb *self;
+> @@ -1375,8 +1376,9 @@ toshoboe_net_open (struct net_device *dev)
+>  
+>    return 0;
+>  }
+> +EXPORT_SYMBOL(toshoboe_net_open);
+>  
+> -static int
+> +int
+>  toshoboe_net_close (struct net_device *dev)
+>  {
+>    struct toshoboe_cb *self;
+> @@ -1405,6 +1407,7 @@ toshoboe_net_close (struct net_device *dev)
+>  
+>    return 0;
+>  }
+> +EXPORT_SYMBOL(toshoboe_net_close);
+>  
+>  /*
+>   * Function toshoboe_net_ioctl (dev, rq, cmd)
+> @@ -1412,7 +1415,7 @@ toshoboe_net_close (struct net_device *dev)
+>   *    Process IOCTL commands for this device
+>   *
+>   */
+> -static int
+> +int
+>  toshoboe_net_ioctl (struct net_device *dev, struct ifreq *rq, int cmd)
+>  {
+>    struct if_irda_req *irq = (struct if_irda_req *) rq;
+> @@ -1473,6 +1476,7 @@ out:
+>    return ret;
+>  
+>  }
+> +EXPORT_SYMBOL(toshoboe_net_ioctl);
+>  
+>  MODULE_DESCRIPTION("Toshiba OBOE IrDA Device Driver");
+>  MODULE_AUTHOR("James McKenzie <james@fishsoup.dhs.org>");
+> @@ -1657,10 +1661,13 @@ toshoboe_open (struct pci_dev *pci_dev, const struct pci_device_id *pdid)
+>  #endif
+>  
+>    SET_NETDEV_DEV(dev, &pci_dev->dev);
+> +
+> +#ifdef CONFIG_COMPAT_NET_DEV_OPS
+>    dev->hard_start_xmit = toshoboe_hard_xmit;
+>    dev->open = toshoboe_net_open;
+>    dev->stop = toshoboe_net_close;
+>    dev->do_ioctl = toshoboe_net_ioctl;
+> +#endif
 
-We've never even tried. 
-
-The dirty limit was never about trying to tune things, it started out as 
-protection against deadlocks and other catastrophic failures. We used to 
-allow 50% dirty or something like that (which is not unlike our old buffer 
-cache limits, btw), and then when we had a HIGHMEM lockup issue it got 
-severly cut down. At no point was that number even _trying_ to limit 
-latency, other than as a "hey, it's probably good to not have all memory 
-tied up in dirty pages" kind of secondary way.
-
-I claim that the whole balancing between inodes/dentries/pagecache/swap/ 
-anonymous memory/what-not is likely a much harder problem. And no, I'm not 
-claiming that we "solved" that problem, but we've clearly done a pretty 
-good job over the years of getting to a reasonable end result.
-
-Sure, you can still tune "swappiness" (nobody much does), but even there 
-you don't actually tune how much memory you use for swap cache, you do 
-more of a "meta-tuning" where you tune how the auto-tuning works.
-
-That is something we have shown to work historically.
-
-That said, the real problem isn't even the tuning. The real problem is a 
-filesystem issue. If "fsync()" cost was roughly proportional to the size 
-of the changes to the file we are fsync'ing, nobody would even complain. 
-
-Everybody accepts that if you've written a 20MB file and then call 
-"fsync()" on it, it's going to take a while. But when you've written a 2kB 
-file, and "fsync()" takes 20 seconds, because somebody else is just 
-writing normally, _that_ is a bug. And it is actually almost totally 
-unrelated to the whole 'dirty_limit' thing.
-
-At least it _should_ be. 
-
-			Linus
+NAKC, device needs to be convert to net_device_ops for real
+or it won't work.
