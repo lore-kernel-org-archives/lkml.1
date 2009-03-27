@@ -1,69 +1,143 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759751AbZC0Uca@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758445AbZC0Uff@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759751AbZC0Uca (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Mar 2009 16:32:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755751AbZC0UcD
+	id S1758445AbZC0Uff (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Mar 2009 16:35:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754344AbZC0UfY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Mar 2009 16:32:03 -0400
-Received: from gw.goop.org ([64.81.55.164]:33442 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757346AbZC0UcB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Mar 2009 16:32:01 -0400
-Message-ID: <49CD37BD.1080102@goop.org>
-Date: Fri, 27 Mar 2009 13:31:57 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Fri, 27 Mar 2009 16:35:24 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:26455 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753216AbZC0UfW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Mar 2009 16:35:22 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding:x-system-of-record;
+	b=kIT0WMPjVX3H8rGjbexAHw+OnoLOzYgvEaGvAJ1OFCWqsdb1VxbphBWj9VM8bnZq5
+	Ry+mw/q5Vt19ON52CBXLw==
 MIME-Version: 1.0
-To: Nick Piggin <npiggin@suse.de>
-CC: Avi Kivity <avi@redhat.com>, Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       the arch/x86 maintainers <x86@kernel.org>
-Subject: [PATCH 2/2] xen: spin in xen_flush_tlb_others if a target cpu is
- in gup_fast()
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=UTF-8; format=flowed
+In-Reply-To: <200903241844.22851.nickpiggin@yahoo.com.au>
+References: <604427e00903181244w360c5519k9179d5c3e5cd6ab3@mail.gmail.com>
+	 <200903200248.22623.nickpiggin@yahoo.com.au>
+	 <20090319164638.GB3899@duck.suse.cz>
+	 <200903241844.22851.nickpiggin@yahoo.com.au>
+Date: Fri, 27 Mar 2009 13:35:16 -0700
+Message-ID: <604427e00903271335p14f96910y912ccd349faf154c@mail.gmail.com>
+Subject: Re: ftruncate-mmap: pages are lost after writing to mmaped file.
+From: Ying Han <yinghan@google.com>
+To: Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: Jan Kara <jack@suse.cz>, "Martin J. Bligh" <mbligh@mbligh.org>,
+       linux-ext4@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-mm <linux-mm@kvack.org>, guichaz@gmail.com,
+       Alex Khesin <alexk@google.com>, Mike Waychison <mikew@google.com>,
+       Rohit Seth <rohitseth@google.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-get_user_pages_fast() relies on cross-cpu tlb flushes being a barrier
-between clearing and setting a pte, and before freeing a pagetable page.
+On Tue, Mar 24, 2009 at 12:44 AM, Nick Piggin <nickpiggin@yahoo.com.au> wrote:
+> On Friday 20 March 2009 03:46:39 Jan Kara wrote:
+>> On Fri 20-03-09 02:48:21, Nick Piggin wrote:
+>
+>> > Holding mapping->private_lock over the __set_page_dirty should
+>> > fix it, although I guess you'd want to release it before calling
+>> > __mark_inode_dirty so as not to put inode_lock under there. I
+>> > have a patch for this if it sounds reasonable.
+>>
+>>   Yes, that seems to be a bug - the function actually looked suspitious to
+>> me yesterday but I somehow convinced myself that it's fine. Probably
+>> because fsx-linux is single-threaded.
+>
+>
+> After a whole lot of chasing my own tail in the VM and buffer layers,
+> I think it is a problem in ext2 (and I haven't been able to reproduce
+> with ext3 yet, which might lend weight to that, although as we have
+> seen, it is very timing dependent).
+>
+> That would be slightly unfortunate because we still have Jan's ext3
+> problem, and also another reported problem of corruption on ext3 (on
+> brd driver).
+I believe i see the same issue on ext2 as well as ext4.
+>
+> Anyway, when I have reproduced the problem with the test case, the
+> "lost" writes are all reported to be holes. Unfortunately, that doesn't
+> point straight to the filesystem, because ext2 allocates blocks in this
+> case at writeout time, so if dirty bits are getting lost, then it would
+> be normal to see holes.
+>
+> I then put in a whole lot of extra infrastructure to track metadata about
+> each struct page (when it was last written out, when it last had the number
+> of writable ptes reach 0, when the dirty bits were last cleared etc). And
+> none of the normal asertions were triggering: eg. when any page is removed
+> from pagecache (except truncates), it has always had all its buffers
+> written out *after* all ptes were made readonly or unmapped. Lots of other
+> tests and crap like that.
 
-It normally implements this by disabling interrupts to suspend tlb flush
-IPIs.  This doesn't work for us because we don't use kernel-visible
-IPIs for tlb flushes, so just spin manually until none of our target
-cpus are in gup_fast().
-
-Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-
-diff --git a/arch/x86/xen/mmu.c b/arch/x86/xen/mmu.c
-index aa16ef4..b0523f8 100644
---- a/arch/x86/xen/mmu.c
-+++ b/arch/x86/xen/mmu.c
-@@ -50,6 +50,7 @@
- #include <asm/setup.h>
- #include <asm/paravirt.h>
- #include <asm/linkage.h>
-+#include <asm/mmu.h>
- 
- #include <asm/xen/hypercall.h>
- #include <asm/xen/hypervisor.h>
-@@ -1334,6 +1335,14 @@ static void xen_flush_tlb_others(const struct cpumask *cpus,
- 	MULTI_mmuext_op(mcs.mc, &args->op, 1, NULL, DOMID_SELF);
- 
- 	xen_mc_issue(PARAVIRT_LAZY_MMU);
-+
-+	/*
-+	 * If we're racing with a get_user_pages_fast(), wait here
-+	 * until it has finishes so that it can use cross-cpu tlb
-+	 * flush as a barrier.
-+	 */
-+	while (cpus_intersects(*in_gup_cpumask, *cpus))
-+		cpu_relax();
- }
- 
- static unsigned long xen_read_cr3(void)
+Do you think there might be a race in the page reclaim path? I did a
+hack which commeted out
+wakeup_pdflush in try_to_free_pages ( based on 2.6.21, just randomly
+picked on has the problem)
+It runs for couple of hours and the problem not happened yet. I am not
+sure if that is the problem or not,
+and i will leave it running.
+The reason i tried the hack since i reproduce the "bad pages" easily
+everytime i put more memory pressure
+on the system.
 
 
+diff --git a/mm/vmscan.c b/mm/vmscan.c
+index db023e2..b4b7e1f 100644
+--- a/mm/vmscan.c
++++ b/mm/vmscan.c
+@@ -1067,11 +1067,13 @@ unsigned long try_to_free_pages(struct zone **zones, g
+ 		 * that's undesirable in laptop mode, where we *want* lumpy
+ 		 * writeout.  So in laptop mode, write out the whole world.
+ 		 */
++/*
+ 		if (total_scanned > sc.swap_cluster_max +
+ 					sc.swap_cluster_max / 2) {
+ 			wakeup_pdflush(laptop_mode ? 0 : total_scanned);
+ 			sc.may_writepage = 1;
+ 		}
++*/
+
+ 		/* Take a nap, wait for some writeback to complete */
+ 		if (sc.nr_scanned && priority < DEF_PRIORITY - 2)
+
+>
+> So I tried what I should have done to start with and did an e2fsck after
+> seeing corruption. Yes, it comes up with errors. Now that is unusual
+> because that should be largely insulated from the vm: if a dirty bit gets
+> lost, then the filesystem image should be quite happy and error-free with
+> a hole or unwritten data there.
+>
+> I don't know ext? locking very well, except that it looks pretty overly
+> complex and crufty.
+>
+> Usually, blocks are instantiated by write(2), under i_mutex, serialising
+> the allocator somewhat. mmap-write blocks are instantiated at writeout
+> time, unserialised. I moved truncate_mutex to cover the entire get_blocks
+> function, and can no longer trigger the problem. Might be a timing issue
+> though -- Ying, can you try this and see if you can still reproduce?
+>
+> I close my eyes and pick something out of a hat. a686cd89. Search for XXX.
+> Nice. Whether or not this cased the problem, can someone please tell me
+> why it got merged in that state?
+>
+> I'm leaving ext3 running for now. It looks like a nasty task to bisect
+> ext2 down to that commit :( and I would be more interested in trying to
+> reproduce Jan's ext3 problem, however, because I'm not too interested in
+> diving into ext2 locking to work out exactly what is racing and how to
+> fix it properly. I suspect it would be most productive to wire up some
+> ioctls right into the block allocator/lookup and code up a userspace
+> tester for it that could probably stress it a lot harder than kernel
+> writeout can.
+>
+>
