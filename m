@@ -1,63 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757229AbZC0Wmj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757065AbZC0WrW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757229AbZC0Wmj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Mar 2009 18:42:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753842AbZC0Wm1
+	id S1757065AbZC0WrW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Mar 2009 18:47:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752300AbZC0WrM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Mar 2009 18:42:27 -0400
-Received: from isrv.corpit.ru ([81.13.33.159]:58110 "EHLO isrv.corpit.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752199AbZC0Wm0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Mar 2009 18:42:26 -0400
-Message-ID: <49CD564E.6050101@msgid.tls.msk.ru>
-Date: Sat, 28 Mar 2009 01:42:22 +0300
-From: Michael Tokarev <mjt@tls.msk.ru>
-Organization: Telecom Service, JSC
-User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
+	Fri, 27 Mar 2009 18:47:12 -0400
+Received: from cassarossa.samfundet.no ([129.241.93.19]:54185 "EHLO
+	cassarossa.samfundet.no" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751041AbZC0WrM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Mar 2009 18:47:12 -0400
+From: Henrik Austad <henrik@austad.us>
+To: "Luis R. Rodriguez" <mcgrof@gmail.com>
+Subject: Re: Linux general wiki
+Date: Fri, 27 Mar 2009 23:47:01 +0100
+User-Agent: KMail/1.9.10
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+References: <43e72e890903271213t72745018s128cd19df0f06e87@mail.gmail.com>
+In-Reply-To: <43e72e890903271213t72745018s128cd19df0f06e87@mail.gmail.com>
 MIME-Version: 1.0
-To: nicolas sitbon <nicolas.sitbon@gmail.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: epoll_ctl and const correctness
-References: <84a01a8b0903250545n799a8727o1faad60c8eaf372e@mail.gmail.com>	 <49CAA055.5060603@goop.org>	 <84a01a8b0903251437l9f9059s3c548b5d35ea47d4@mail.gmail.com>	 <84a01a8b0903270244s146ca50cr2758d36c2d9d77cd@mail.gmail.com>	 <49CD4967.2090606@msgid.tls.msk.ru>	 <84a01a8b0903271517t668c6276l7fe098d74c24b836@mail.gmail.com> <84a01a8b0903271530of8d43ffhf77e7ba73e309f75@mail.gmail.com>
-In-Reply-To: <84a01a8b0903271530of8d43ffhf77e7ba73e309f75@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200903272347.01219.henrik@austad.us>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-nicolas sitbon wrote:
-> I was looking at libevent of niels provos, and even him, is apparently
-> doing a mistake :
-> 
-> static int
-> epoll_add(void *arg, struct event *ev)
-> {
-> 	struct epollop *epollop = arg;
-> 	struct epoll_event epev = {0, {0}};
-> 
->         /* ... some code here ... */
-> 	if (epoll_ctl(epollop->epfd, op, ev->ev_fd, &epev) == -1)
-> 			return (-1);
-> 
-> 	/* Update events responsible */
-> 	if (ev->ev_events & EV_READ)
-> 		evep->evread = ev;
-> 	if (ev->ev_events & EV_WRITE)
-> 		evep->evwrite = ev;
-> 
-> 	return (0);
-> }
-> 
-> the structure pointed to by &epev is allocated on the stack, so how
-> the kernel could keep track of it?
+On Friday 27 March 2009 20:13:24 Luis R. Rodriguez wrote:
+> We have a lot of good wikis [1] at kernel.org but I don't see one for
+> general things. I just made a huge write up to how to help support the
+> stable kernels 
 
-I've no idea what are you talking about and what exactly
-is your problem.  Both the examples (one at cplayer.org and
-another above) gives correct usage of epoll.  If you don't
-understand it, well, I'd suggest reading some documentation
-first, maybe in kernel, maybe in glibc, maybe numerous
-available on the net.  And all the numerous examples too,
-which you quote as, for some reason, wrong.
+What exactly do you mean by 'help support the stable kernels'? Are you talking 
+about maintaining drivers? Doing patch review? Running configure/compile/run 
+tests?
 
-/mjt
+> and figured I'd go and add that to the wiki somewhere 
+> but I don't see any place it would fit. Should I just start using the
+> main page for that and expand?
+
+Why not? After all, it it's a general article. IMHO, adding a new 'general 
+wiki' doesn't make any sense.
+
+However, are you sure that this article doesn't belong at, say, kernelnewbies?
+
+>   Luis
+>
+> [1] http://wiki.kernel.org/
+
+
+-- 
+ -> henrik
