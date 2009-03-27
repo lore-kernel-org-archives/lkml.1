@@ -1,92 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759774AbZC0QyU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757500AbZC0Q4T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759774AbZC0QyU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Mar 2009 12:54:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755374AbZC0QyK
+	id S1757500AbZC0Q4T (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Mar 2009 12:56:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754326AbZC0Q4J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Mar 2009 12:54:10 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:40435 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754407AbZC0QyI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Mar 2009 12:54:08 -0400
-Date: Fri, 27 Mar 2009 17:50:38 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: "Metzger, Markus T" <markus.t.metzger@intel.com>
-Cc: "Kleen, Andi" <andi.kleen@intel.com>, Ingo Molnar <mingo@elte.hu>,
-       Roland McGrath <roland@redhat.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "markus.t.metzger@gmail.com" <markus.t.metzger@gmail.com>
-Subject: Re: [rfc] x86, bts: fix crash
-Message-ID: <20090327165038.GA25762@redhat.com>
-References: <928CFBE8E7CB0040959E56B4EA41A77E9260843D@irsmsx504.ger.corp.intel.com> <20090326015801.GA451@redhat.com> <928CFBE8E7CB0040959E56B4EA41A77E9266B699@irsmsx504.ger.corp.intel.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <928CFBE8E7CB0040959E56B4EA41A77E9266B699@irsmsx504.ger.corp.intel.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Fri, 27 Mar 2009 12:56:09 -0400
+Received: from 69-30-77-85.dq1sn.easystreet.com ([69.30.77.85]:55084 "EHLO
+	kingsolver.anholt.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751014AbZC0Q4G (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Mar 2009 12:56:06 -0400
+Subject: Re: [PATCH 1/6] drm/i915: Fix lock order reversal in GTT pwrite
+ path.
+From: Eric Anholt <eric@anholt.net>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: linux-kernel@vger.kernel.org, dri-devel@lists.sourceforge.net
+In-Reply-To: <20090326174320.4f16c822@hobbes>
+References: <1238017510-26784-1-git-send-email-eric@anholt.net>
+	 <1238017510-26784-2-git-send-email-eric@anholt.net>
+	 <20090326174320.4f16c822@hobbes>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-5oowMnbHSJx4YWBEtjZ8"
+Date: Fri, 27 Mar 2009 09:56:03 -0700
+Message-Id: <1238172963.8275.2492.camel@gaiman>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 03/27, Metzger, Markus T wrote:
->
-> >> @@ -752,6 +752,14 @@ void ds_release_bts(struct bts_tracer *t
-> >>
-> >>  	ds_suspend_bts(tracer);
-> >>
-> >> +	/*
-> >> +	 * We must wait for the suspend to take effect before we may
-> >> +	 * free the tracer and the ds configuration.
-> >> +	 */
-> >> +	if (tracer->ds.context->task &&
-> >> +	    (tracer->ds.context->task != current))
-> >> +		wait_task_inactive(tracer->ds.context->task, 0);
-> >
-> >I am not sure I understand the problem. From the changelog:
-> >
-> >	If the children are currently executing, the buffer
-> >	may be freed while the hardware is still tracing.
-> >	This might cause the hardware to overwrite memory.
-> >
-> >So, the problem is that ds.context->task must not be running before we
-> >can start to disable/free ds, yes? Something like ds_switch_to() should
-> >be completed, right?
-> >
-> >In that case I don't really understand how wait_task_inactive() can help.
-> >If the task is killed it can be scheduled again, right after
-> >wait_task_inactive() returns.
->
-> We first call ds_suspend_bts().
-> This clears the branch tracing control bits for the traced task and already
-> writes the updated value to the msr, if running on the current cpu.
-> If the task is running on a different cpu, the updated value will be written
-> when the task is scheduled out.
-> By waiting for the task to become inactive, we know that it has been scheduled out
-> at least once after we changed the bits. So we know that the hardware will not use
-> the tracing configuration for that task and we can safely free the memory.
 
-Still can't understand...
+--=-5oowMnbHSJx4YWBEtjZ8
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Let's suppose the traced task is scheduled again, right after
-wait_task_inactive() returns a before we set ds.context->bts_master = NULL.
+On Thu, 2009-03-26 at 17:43 -0700, Jesse Barnes wrote:
+> On Wed, 25 Mar 2009 14:45:05 -0700
+> Eric Anholt <eric@anholt.net> wrote:
+>=20
+> > Since the pagefault path determines that the lock order we use has to
+> > be mmap_sem -> struct_mutex, we can't allow page faults to occur
+> > while the struct_mutex is held.  To fix this in pwrite, we first try
+> > optimistically to see if we can copy from user without faulting.  If
+> > it fails, fall back to using get_user_pages to pin the user's memory,
+> > and map those pages atomically when copying it to the GPU.
+> >=20
+> > Signed-off-by: Eric Anholt <eric@anholt.net>
+> > ---
+> > +	/* Pin the user pages containing the data.  We can't fault
+> > while
+> > +	 * holding the struct mutex, and all of the pwrite
+> > implementations
+> > +	 * want to hold it while dereferencing the user data.
+> > +	 */
+> > +	first_data_page =3D data_ptr / PAGE_SIZE;
+> > +	last_data_page =3D (data_ptr + args->size - 1) / PAGE_SIZE;
+> > +	num_pages =3D last_data_page - first_data_page + 1;
+> > +
+> > +	user_pages =3D kcalloc(num_pages, sizeof(struct page *),
+> > GFP_KERNEL);
+> > +	if (user_pages =3D=3D NULL)
+> > +		return -ENOMEM;
+>=20
+> If kmalloc limits us to a 128k allocation (and maybe less under
+> pressure), then we'll be limited to 128k/8 page pointers on 64 bit, or
+> 64M per pwrite...  Is that ok?  Or do we need to handle multiple passes
+> here?
 
-In this case, can't ds_switch_to() (which plays with ds_context) race
-with ds_put_context()->kfree(context) ?
+That's a really good point.  This hurts.  However, we're already in
+pain:
+	obj_priv->page_list =3D drm_calloc(page_count, sizeof(struct page *),
+					 DRM_MEM_DRIVER);
 
-> >Also. This function is called from ptrace_bts_exit_tracer(), when the
-> >tracee is not stopped. In this case wait_task_inactive() can spin forever.
-> >For example, if the tracee simply does "for (;;) ;" it never succeeds.
->
-> As far as I understand, wait_task_inactive() returns when the task is scheduled out.
+drm_calloc is kcalloc, so we already fall on our faces with big objects,
+before this code.  Thinking about potential regressions for big objects
+from the change in question:
 
-Yes. But the task does above is never scheduled out, it is always running
-even if preempted by another task. wait_task_inactive() returns when
-->on_rq == 0, iow when the task sleeps.
+pixmaps: Can't render with them already.  X only limits you to 4GB
+pixmaps.  Doesn't use pread/pwrite.
 
-This means that the tracer can hang "forever" during exit, until the tracee
-does the blocking syscall or exits.
+textures: Can't render with them already.  Largest texture size is
+2048*2048*4*6*1.5 or so for a mipmapped cube map, or around 150MB.  This
+would fail on 32-bit as well. Doesn't use pread/write.
 
-This is not acceptable, imho.
+FBOs: Can't render with them.  Same size as textures.  Software
+fallbacks use pread/pwrite, but it's always done a page at a time.
 
-Oleg.
+VBOs (965): Can't render with them.  No size limitations I know of.
 
+VBOs (915): Not used for rendering, just intermediate storage (this is a
+bug).  No size limitations I know of.  So here we would regress huge
+VBOs on 915 when uploaded using BufferData instead of MapBuffer
+(unlikely).  Of course, it's already a bug that we make real VBOs on 915
+before it's strictly necessary.
+
+PBOs: Can't render with them.  Normal usage wouldn't be big enough to
+trigger the bug, though.  Does use pread/pwrite when accessed using
+{Get,}Buffer{Sub,}Data.
+
+My summary here would be: Huge objects are already pretty thoroughly
+broken, since any acceleration using them fails at the kcalloc of the
+page list when binding to the GTT.  Doing one more kalloc of a page list
+isn't significantly changing the situation.
+
+I propose going forward with these patches, and I'll go off and build
+some small testcases for our various interfaces with big objects so we
+can fix them and make sure we stay correct.
+
+--=20
+Eric Anholt
+eric@anholt.net                         eric.anholt@intel.com
+
+
+
+--=-5oowMnbHSJx4YWBEtjZ8
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAknNBSMACgkQHUdvYGzw6vedpwCaAoZ11KhPDsZyEfPJdmxfez1b
++PwAn2RxrhEDOIlrgy3py0i38mOLg2so
+=Y9gC
+-----END PGP SIGNATURE-----
+
+--=-5oowMnbHSJx4YWBEtjZ8--
