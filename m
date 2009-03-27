@@ -1,29 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764408AbZC0Xno@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764473AbZC0XoJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764408AbZC0Xno (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Mar 2009 19:43:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762379AbZC0X2I
+	id S1764473AbZC0XoJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Mar 2009 19:44:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762458AbZC0X2J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Mar 2009 19:28:08 -0400
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:48510 "EHLO
+	Fri, 27 Mar 2009 19:28:09 -0400
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:48513 "EHLO
 	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761650AbZC0X1m (ORCPT
+	with ESMTP id S1761686AbZC0X1m (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 27 Mar 2009 19:27:42 -0400
 From: =?utf-8?q?Uwe=20Kleine-K=C3=B6nig?= 
 	<u.kleine-koenig@pengutronix.de>
 To: linux-kernel@vger.kernel.org
 Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Jouni Hogander <jouni.hogander@nokia.com>,
-       Kalle Jokiniemi <kalle.jokiniemi@digia.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>,
-       David Brownell <dbrownell@users.sourceforge.net>,
-       Tony Lindgren <tony@atomide.com>,
-       Kevin Hilman <khilman@deeprootsystems.com>,
-       Felipe Balbi <felipe.balbi@nokia.com>
-Subject: [PATCH 52/58] move twl4030_usb's probe function to .devinit.text
-Date: Sat, 28 Mar 2009 00:27:13 +0100
-Message-Id: <1238196439-16535-52-git-send-email-u.kleine-koenig@pengutronix.de>
+       "David S. Miller" <davem@davemloft.net>,
+       Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Jeff Garzik <jgarzik@redhat.com>, Ralf Baechle <ralf@linux-mips.org>
+Subject: [PATCH 26/58] move meth's probe function to .devinit.text
+Date: Sat, 28 Mar 2009 00:26:47 +0100
+Message-Id: <1238196439-16535-26-git-send-email-u.kleine-koenig@pengutronix.de>
 X-Mailer: git-send-email 1.6.2
 In-Reply-To: <20090327232153.GA16348@pengutronix.de>
 References: <20090327232153.GA16348@pengutronix.de>
@@ -38,7 +35,7 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A pointer to twl4030_usb_probe is passed to the core via
+A pointer to meth_probe is passed to the core via
 platform_driver_register and so the function must not disappear when the
 .init sections are discarded.  Otherwise (if also having HOTPLUG=y)
 unbinding and binding a device to the driver via sysfs will result in an
@@ -49,31 +46,29 @@ platform_driver_register plus removing the pointer to the probe function
 from the struct platform_driver.
 
 Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
-Cc: Jouni Hogander <jouni.hogander@nokia.com>
-Cc: Kalle Jokiniemi <kalle.jokiniemi@digia.com>
-Cc: Greg Kroah-Hartman <gregkh@suse.de>
+Cc: David S. Miller <davem@davemloft.net>
+Cc: Thomas Bogendoerfer <tsbogend@alpha.franken.de>
+Cc: Christoph Lameter <cl@linux-foundation.org>
+Cc: Jeff Garzik <jgarzik@redhat.com>
+Cc: Ralf Baechle <ralf@linux-mips.org>
 Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: David Brownell <dbrownell@users.sourceforge.net>
-Cc: Tony Lindgren <tony@atomide.com>
-Cc: Kevin Hilman <khilman@deeprootsystems.com>
-Cc: Felipe Balbi <felipe.balbi@nokia.com>
 ---
- drivers/usb/otg/twl4030-usb.c |    2 +-
+ drivers/net/meth.c |    2 +-
  1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/usb/otg/twl4030-usb.c b/drivers/usb/otg/twl4030-usb.c
-index d9478d0..c34e639 100644
---- a/drivers/usb/otg/twl4030-usb.c
-+++ b/drivers/usb/otg/twl4030-usb.c
-@@ -641,7 +641,7 @@ static int twl4030_set_host(struct otg_transceiver *x, struct usb_bus *host)
- 	return 0;
- }
- 
--static int __init twl4030_usb_probe(struct platform_device *pdev)
-+static int __devinit twl4030_usb_probe(struct platform_device *pdev)
+diff --git a/drivers/net/meth.c b/drivers/net/meth.c
+index c336a1f..8947129 100644
+--- a/drivers/net/meth.c
++++ b/drivers/net/meth.c
+@@ -775,7 +775,7 @@ static int meth_ioctl(struct net_device *dev, struct ifreq *rq, int cmd)
+ /*
+  * The init function.
+  */
+-static int __init meth_probe(struct platform_device *pdev)
++static int __devinit meth_probe(struct platform_device *pdev)
  {
- 	struct twl4030_usb_data *pdata = pdev->dev.platform_data;
- 	struct twl4030_usb	*twl;
+ 	struct net_device *dev;
+ 	struct meth_private *priv;
 -- 
 1.6.2
 
