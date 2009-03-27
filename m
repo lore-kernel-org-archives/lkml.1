@@ -1,117 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756598AbZC0LPL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756291AbZC0LSi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756598AbZC0LPL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Mar 2009 07:15:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753621AbZC0LO6
+	id S1756291AbZC0LSi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Mar 2009 07:18:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754837AbZC0LSZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Mar 2009 07:14:58 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:49153 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751498AbZC0LO5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Mar 2009 07:14:57 -0400
-Subject: Re: Question about PRIVATE_FUTEX
-From: Peter Zijlstra <peterz@infradead.org>
-To: Minchan Kim <minchan.kim@gmail.com>
-Cc: Eric Dumazet <dada1@cosmosbay.com>, lkml <linux-kernel@vger.kernel.org>,
-       Darren Hart <dvhltc@us.ibm.com>
-In-Reply-To: <28c262360903270356x6a9fc929m96941de8f8201fb0@mail.gmail.com>
-References: <28c262360903261912n4ce235c6wf2f75b2be7faf0f4@mail.gmail.com>
-	 <1238143759.7808.2885.camel@twins>
-	 <28c262360903270356x6a9fc929m96941de8f8201fb0@mail.gmail.com>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Fri, 27 Mar 2009 12:14:56 +0100
-Message-Id: <1238152496.7808.3203.camel@twins>
+	Fri, 27 Mar 2009 07:18:25 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:36774 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751842AbZC0LSX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Mar 2009 07:18:23 -0400
+Date: Fri, 27 Mar 2009 07:16:33 -0400
+From: Jeff Layton <jlayton@redhat.com>
+To: Wu Fengguang <fengguang.wu@intel.com>
+Cc: Ian Kent <raven@themaw.net>, Dave Chinner <david@fromorbit.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
+       "jens.axboe@oracle.com" <jens.axboe@oracle.com>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "hch@infradead.org" <hch@infradead.org>,
+       "linux-nfs@vger.kernel.org" <linux-nfs@vger.kernel.org>
+Subject: Re: [PATCH] writeback: reset inode dirty time when adding it back
+ to empty s_dirty list
+Message-ID: <20090327071633.0c1a0e3a@tleilax.poochiereds.net>
+In-Reply-To: <20090327021303.GA7547@localhost>
+References: <20090324221528.2bb7c50b@tleilax.poochiereds.net>
+	<20090325025037.GA17374@localhost>
+	<20090325075110.028f0d1d@tleilax.poochiereds.net>
+	<20090325121742.GA22869@localhost>
+	<20090325091325.17c997fd@tleilax.poochiereds.net>
+	<49CA2F41.8030804@themaw.net>
+	<49CA33E7.6090309@themaw.net>
+	<20090325100049.0cc4de87@tleilax.poochiereds.net>
+	<20090325141618.GA5684@localhost>
+	<20090326130327.3206e00b@barsoom.rdu.redhat.com>
+	<20090327021303.GA7547@localhost>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.0 
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-03-27 at 19:56 +0900, Minchan Kim wrote:
+On Fri, 27 Mar 2009 10:13:03 +0800
+Wu Fengguang <fengguang.wu@intel.com> wrote:
 
-> >> Then, get_futex_value_locked calls __cpy_from_user_inatomic with
-> >> pagefault_disable.
-> >>
-> >> Who make sure the user page is mapped at app's page table ?
-> >
-> > Nobody, all uses of get_futex_value_locked() have to deal with it
-> > returning -EFAULT.
 > 
-> Does It mean that __copy_from_user_inatomic in get_futex_value_locked
-> would be failed rather than sleep?
-
-Correct.
-
-> In fact, I don't make sure _copy_from_user_inatomic function's meaning.
-> As far as I understand, It never sleep. It just can be failed in case
-> of user page isn't mapped. Is right ?
-
-Correct.
-
-> Otherwise, it can be scheduled with pagefault_disable which increments
-> preempt_count. It is a atomic bug.
-> If my assume is right, it can be failed rather than sleep.
-> At this case, other architecture implements __copy_from_user_inatomic
-> with __copy_from_user which can be scheduled. It also can be bug.
+> > They also don't eliminate the problematic check above. Regardless of
+> > whether your or Jens' patches make it in, I think we'll still need
+> > something like the following (untested) patch.
+> > 
+> > If this looks ok, I'll flesh out the comments some and "officially" post
+> > it. Thoughts?
 > 
-> Hmm, Now I am confusing.
-
-Confused I guess ;-)
-
-The trick is in the in_atomic() check in the pagefault handler and the
-fixup section of the copy routines.
-
-#define __copy_user(to, from, size)                                     \
-do {                                                                    \
-        int __d0, __d1, __d2;                                           \
-        __asm__ __volatile__(                                           \
-                "       cmp  $7,%0\n"                                   \
-                "       jbe  1f\n"                                      \
-                "       movl %1,%0\n"                                   \
-                "       negl %0\n"                                      \
-                "       andl $7,%0\n"                                   \
-                "       subl %0,%3\n"                                   \
-                "4:     rep; movsb\n"                                   \
-                "       movl %3,%0\n"                                   \
-                "       shrl $2,%0\n"                                   \
-                "       andl $3,%3\n"                                   \
-                "       .align 2,0x90\n"                                \
-                "0:     rep; movsl\n"                                   \
-                "       movl %3,%0\n"                                   \
-                "1:     rep; movsb\n"                                   \
-                "2:\n"                                                  \
-                ".section .fixup,\"ax\"\n"                              \
-                "5:     addl %3,%0\n"                                   \
-                "       jmp 2b\n"                                       \
-                "3:     lea 0(%3,%0,4),%0\n"                            \
-                "       jmp 2b\n"                                       \
-                ".previous\n"                                           \
-                ".section __ex_table,\"a\"\n"                           \
-                "       .align 4\n"                                     \
-                "       .long 4b,5b\n"                                  \
-                "       .long 0b,3b\n"                                  \
-                "       .long 1b,2b\n"                                  \
-                ".previous"                                             \
-                : "=&c"(size), "=&D" (__d0), "=&S" (__d1), "=r"(__d2)   \
-                : "3"(size), "0"(size), "1"(to), "2"(from)              \
-                : "memory");                                            \
-} while (0)
-
-see that __ex_table section, it tells the fault handler where to
-continue in case of an atomic fault.
-
-> > Most of this is legacy btw, from when futex ops were done under the
-> > mmap_sem. Back then we couldn't fault because that would cause mmap_sem
-> > recursion. Howver, now that we don't hold mmap_sem anymore we could use
-> > a faulting user access like get_user().
-> > Darren has been working on patches to clean that up, some of those are
-> > already merged in the -tip tree.
+> It's good in itself. However with more_io_wait queue, the first two
+> chunks will be eliminated. Mind I carry this patch with my patchset?
 > 
-> Thanks for good information.
-> It will be very desirable way to enhance kernel performance.
 
-I doubt it'll make a measurable difference, if you need to fault
-performance sucks anyway. If you don't, the current code is just as
-fast.
+It makes sense to roll that fix in with the stuff you're doing.
+
+If it's going to be a little while before your patches get taken into
+mainline though, it might not hurt to go ahead and push my patch in as
+an interim fix. It shouldn't change the behavior of the code in the
+normal case of a short-lived dirtied_when value, and should guard
+against major problems when there's a long-lived one.
+
+-- 
+Jeff Layton <jlayton@redhat.com>
