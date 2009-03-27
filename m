@@ -1,24 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764978AbZC0Xvq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763323AbZC0XwQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764978AbZC0Xvq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Mar 2009 19:51:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761765AbZC0X20
+	id S1763323AbZC0XwQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Mar 2009 19:52:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760606AbZC0X21
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Mar 2009 19:28:26 -0400
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:48720 "EHLO
+	Fri, 27 Mar 2009 19:28:27 -0400
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:48722 "EHLO
 	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761870AbZC0X16 (ORCPT
+	with ESMTP id S1762153AbZC0X16 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 27 Mar 2009 19:27:58 -0400
 From: =?utf-8?q?Uwe=20Kleine-K=C3=B6nig?= 
 	<u.kleine-koenig@pengutronix.de>
 To: linux-kernel@vger.kernel.org
 Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Kristoffer Ericson <Kristoffer.Ericson@gmail.com>,
-       Russell King <rmk+kernel@arm.linux.org.uk>
-Subject: [PATCH 23/58] move jornada_ssp's probe function to .devinit.text
-Date: Sat, 28 Mar 2009 00:26:44 +0100
-Message-Id: <1238196439-16535-23-git-send-email-u.kleine-koenig@pengutronix.de>
+       Jeff Garzik <jgarzik@redhat.com>,
+       "David S. Miller" <davem@davemloft.net>,
+       Finn Thain <fthain@telegraphics.com.au>,
+       Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: [PATCH 25/58] move macsonic's probe function to .devinit.text
+Date: Sat, 28 Mar 2009 00:26:46 +0100
+Message-Id: <1238196439-16535-25-git-send-email-u.kleine-koenig@pengutronix.de>
 X-Mailer: git-send-email 1.6.2
 In-Reply-To: <20090327232153.GA16348@pengutronix.de>
 References: <20090327232153.GA16348@pengutronix.de>
@@ -33,7 +35,7 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A pointer to jornada_ssp_probe is passed to the core via
+A pointer to mac_sonic_probe is passed to the core via
 platform_driver_register and so the function must not disappear when the
 .init sections are discarded.  Otherwise (if also having HOTPLUG=y)
 unbinding and binding a device to the driver via sysfs will result in an
@@ -44,26 +46,28 @@ platform_driver_register plus removing the pointer to the probe function
 from the struct platform_driver.
 
 Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
-Cc: Kristoffer Ericson <Kristoffer.Ericson@gmail.com>
-Cc: Russell King <rmk+kernel@arm.linux.org.uk>
+Cc: Jeff Garzik <jgarzik@redhat.com>
+Cc: David S. Miller <davem@davemloft.net>
+Cc: Finn Thain <fthain@telegraphics.com.au>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>
 Cc: Andrew Morton <akpm@linux-foundation.org>
 ---
- arch/arm/mach-sa1100/jornada720_ssp.c |    2 +-
+ drivers/net/macsonic.c |    2 +-
  1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/arch/arm/mach-sa1100/jornada720_ssp.c b/arch/arm/mach-sa1100/jornada720_ssp.c
-index 28cf369..ce4c6cb 100644
---- a/arch/arm/mach-sa1100/jornada720_ssp.c
-+++ b/arch/arm/mach-sa1100/jornada720_ssp.c
-@@ -130,7 +130,7 @@ void jornada_ssp_end(void)
- };
- EXPORT_SYMBOL(jornada_ssp_end);
+diff --git a/drivers/net/macsonic.c b/drivers/net/macsonic.c
+index 527166e..d4f913b 100644
+--- a/drivers/net/macsonic.c
++++ b/drivers/net/macsonic.c
+@@ -555,7 +555,7 @@ static int __init mac_nubus_sonic_probe(struct net_device *dev)
+ 	return macsonic_init(dev);
+ }
  
--static int __init jornada_ssp_probe(struct platform_device *dev)
-+static int __devinit jornada_ssp_probe(struct platform_device *dev)
+-static int __init mac_sonic_probe(struct platform_device *pdev)
++static int __devinit mac_sonic_probe(struct platform_device *pdev)
  {
- 	int ret;
- 
+ 	struct net_device *dev;
+ 	struct sonic_local *lp;
 -- 
 1.6.2
 
