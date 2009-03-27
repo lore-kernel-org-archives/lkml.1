@@ -1,59 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755209AbZC0KMJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755209AbZC0KZj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755209AbZC0KMJ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Mar 2009 06:12:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752280AbZC0KLz
+	id S1755209AbZC0KZj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Mar 2009 06:25:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753233AbZC0KZb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Mar 2009 06:11:55 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:38375 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751286AbZC0KLy (ORCPT
+	Fri, 27 Mar 2009 06:25:31 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:46587 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753007AbZC0KZa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Mar 2009 06:11:54 -0400
-Date: Fri, 27 Mar 2009 07:11:43 -0300
-From: Mauro Carvalho Chehab <mchehab@infradead.org>
-To: Alexey Klimov <klimov.linux@gmail.com>
-Cc: Alessio Igor Bogani <abogani@texware.it>,
-       LKML <linux-kernel@vger.kernel.org>, linux-media@vger.kernel.org,
-       video4linux-list@redhat.com
-Subject: Re: [PATCH] radio-mr800.c: Missing mutex include
-Message-ID: <20090327071143.59619399@pedra.chehab.org>
-In-Reply-To: <1237326128.2141.17.camel@tux.localhost>
-References: <1237323618-6464-1-git-send-email-abogani@texware.it>
-	<1237326128.2141.17.camel@tux.localhost>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
+	Fri, 27 Mar 2009 06:25:30 -0400
+Date: Fri, 27 Mar 2009 10:26:24 +0000
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: davem@davemloft.net
+Subject: Re: ax25: zero length frame filtering in AX25
+Message-ID: <20090327102624.16e06404@lxorguk.ukuu.org.uk>
+In-Reply-To: <200903270102.n2R12Q9f021549@hera.kernel.org>
+References: <200903270102.n2R12Q9f021549@hera.kernel.org>
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 18 Mar 2009 00:42:08 +0300
-Alexey Klimov <klimov.linux@gmail.com> wrote:
+>     In previous commit 244f46ae6e9e18f6fc0be7d1f49febde4762c34b
+>     was introduced a zero length frame filter for ROSE protocole.
+>     This patch has the same purpose at AX25 frame level for the same
+>     reason. Empty frames have no meaning in AX25 protocole.
 
-> On Tue, 2009-03-17 at 22:00 +0100, Alessio Igor Bogani wrote:
-> > radio-mr800.c uses struct mutex, so while <linux/mutex.h> seems to be
-> > pulled in indirectly by one of the headers it already includes, the
-> > right thing is to include it directly.
-> 
-> 
-> Hello, Alessio
-> 
-> Patch looks okay for my eyes.
-> If it useful it should be applied.
-> 
-> Thank you!
-> 
-> Mauro, if patch is okay please apply it.
-> If you need my ack - here it is:
-> Acked-by: Alexey Klimov <klimov.linux@gmail.com>
+That isn't actually true. A zero (user data) length AX.25 frame has
+meaning because AX.25 is a LAPB variant so preserves frame boundaries. In
+AX.25 a 0 length write and read are both legitimate activities even if
+the socket API has a problem with it. Viz a 0 length send causes a 0
+length receive which is passing a message boundary.
 
-If the mutex.h were already included by another kernel header, I don't see why
-to include it again. If a later patch remove the mutex.h from the header, then
-the patch author should take care of this change anyway.
+This code is even more wrong because it is applied to both datagram and
+sequenced connections. In datagram mode a zero data frame most definitely
+has meaning, is valid in both directions and can be used very
+successfully for beaconing (indicating your presence)
 
-Cheers,
-Mauro
+(Fortunately the socket API can handle this as the DECnet folks at
+Digital discovered and documented)
+
+Alan
