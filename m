@@ -1,68 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756388AbZC0OJR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757346AbZC0OOb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756388AbZC0OJR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Mar 2009 10:09:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752947AbZC0OI7
+	id S1757346AbZC0OOb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Mar 2009 10:14:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752777AbZC0OOV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Mar 2009 10:08:59 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:42191 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752368AbZC0OI6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Mar 2009 10:08:58 -0400
-Date: Fri, 27 Mar 2009 14:06:40 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Frans Pop <elendil@planet.nl>, mjg@redhat.com, tytso@mit.edu,
-       mingo@elte.hu, jack@suse.cz, akpm@linux-foundation.org,
-       arjan@infradead.org, a.p.zijlstra@chello.nl, npiggin@suse.de,
-       jens.axboe@oracle.com, drees76@gmail.com, jesper@krogh.cc,
-       linux-kernel@vger.kernel.org, oleg@redhat.com, roland@redhat.com
-Subject: Re: [PATCH 2/2] Make relatime default
-Message-ID: <20090327140640.5aa99535@lxorguk.ukuu.org.uk>
-In-Reply-To: <alpine.LFD.2.00.0903261728170.3994@localhost.localdomain>
-References: <alpine.LFD.2.00.0903251613300.3032@localhost.localdomain>
-	<20090325235041.GA11024@duck.suse.cz>
-	<20090326090630.GA9369@elte.hu>
-	<20090326113705.GV32307@mit.edu>
-	<20090326140312.GB14822@elte.hu>
-	<20090326144707.GA6239@mit.edu>
-	<alpine.LFD.2.00.0903260914440.3032@localhost.localdomain>
-	<20090326170714.GF6239@mit.edu>
-	<alpine.LFD.2.00.0903261015050.3032@localhost.localdomain>
-	<20090326174956.GB7198@srcf.ucam.org>
-	<20090326175314.GC7198@srcf.ucam.org>
-	<20090326184838.26166549@lxorguk.ukuu.org.uk>
-	<20090326184838.26166549@lxorguk.ukuu.org.uk>
-	<alpine.LFD.2.00.0903261525560.3032@localhost.localdomain>
-	<200903270115.32071.elendil@planet.nl>
-	<alpine.LFD.2.00.0903261728170.3994@localhost.localdomain>
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 27 Mar 2009 10:14:21 -0400
+Received: from mailrelay009.isp.belgacom.be ([195.238.6.176]:32155 "EHLO
+	mailrelay009.isp.belgacom.be" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752157AbZC0OOV convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Mar 2009 10:14:21 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AgsFAIl8zElR8Pj5/2dsb2JhbACBUZMBvAqDdwY
+From: Laurent Pinchart <laurent.pinchart@skynet.be>
+To: =?utf-8?q?N=C3=A9meth_M=C3=A1rton?= <nm127@freemail.hu>
+Subject: Re: [PATCH] uvcvideo: add zero fill for VIDIOC_ENUM_FMT
+Date: Fri, 27 Mar 2009 15:15:27 +0100
+User-Agent: KMail/1.11.1 (Linux/2.6.28; KDE/4.2.1; x86_64; ; )
+Cc: linux-media@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+References: <49C9D652.5040104@freemail.hu>
+In-Reply-To: <49C9D652.5040104@freemail.hu>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200903271515.28146.laurent.pinchart@skynet.be>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Why? RELATIME has been around since 2006 now.
+On Wednesday 25 March 2009 07:59:30 Németh Márton wrote:
+> From: Márton Németh <nm127@freemail.hu>
+>
+> When enumerating formats with VIDIOC_ENUM_FMT the uvcvideo driver does not
+> fill the reserved fields of the struct v4l2_fmtdesc with zeros as required
+> by V4L2 API revision 0.24 [1]. Add the missing initializations.
+>
+> The patch was tested with v4l-test 0.10 [2] with CNF7129 webcam found on
+> EeePC 901.
+>
+> References:
+> [1] V4L2 API specification, revision 0.24
+>     http://v4l2spec.bytesex.org/spec/r8367.htm
+>
+> [2] v4l-test: Test environment for Video For Linux Two API
+>     http://v4l-test.sourceforge.net/
+>
+> Signed-off-by: Márton Németh <nm127@freemail.hu>
 
-The workable fixes to relatime (the always update once per 24 hours) you
-only just comitted - and did come from a vendor.
+Applied, thanks.
 
-It also looks btw that we don't want to have a "relatime" option and a
-"strictatime" option and a "relatimebutdoitevery24hrs" option.
+> ---
+> --- linux-2.6.29/drivers/media/video/uvc/uvc_v4l2.c.orig	2009-03-24
+> 00:12:14.000000000 +0100 +++
+> linux-2.6.29/drivers/media/video/uvc/uvc_v4l2.c	2009-03-25
+> 07:24:42.000000000 +0100 @@ -673,11 +673,19 @@ static long
+> uvc_v4l2_do_ioctl(struct fil
+>  	{
+>  		struct v4l2_fmtdesc *fmt = arg;
+>  		struct uvc_format *format;
+> +		__u32 index;
+> +		enum v4l2_buf_type type;
+>
+>  		if (fmt->type != video->streaming->type ||
+>  		    fmt->index >= video->streaming->nformats)
+>  			return -EINVAL;
+>
+> +		index = fmt->index;
+> +		type = fmt->type;
+> +		memset(fmt, 0, sizeof(*fmt));
+> +		fmt->index = index;
+> +		fmt->type = type;
+> +
+>  		format = &video->streaming->format[fmt->index];
+>  		fmt->flags = 0;
+>  		if (format->flags & UVC_FMT_FLAG_COMPRESSED)
 
-All three of these are the same thing so it should (regardless of default
-choice) be 
+Laurent Pinchart
 
-	relatime=n
-
-	n = 0 ('update if its more than 0 seconds out of date') =
-	strictatime
-	n = MAXINT (basically equals relatime)
-	n = 24hrs (the new 'fixed' relatime but not too relative)
-
-	n = anything else - user tuned
-
-Alan
