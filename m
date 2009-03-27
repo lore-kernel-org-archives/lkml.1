@@ -1,22 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757893AbZC0Cj4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756325AbZC0Cks@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757893AbZC0Cj4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Mar 2009 22:39:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755536AbZC0CjQ
+	id S1756325AbZC0Cks (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Mar 2009 22:40:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753973AbZC0CjZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Mar 2009 22:39:16 -0400
-Received: from stargate.chelsio.com ([12.22.49.110]:31274 "EHLO
+	Thu, 26 Mar 2009 22:39:25 -0400
+Received: from stargate.chelsio.com ([12.22.49.110]:31295 "EHLO
 	stargate.chelsio.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753973AbZC0CjM (ORCPT
+	with ESMTP id S1755630AbZC0CjW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Mar 2009 22:39:12 -0400
+	Thu, 26 Mar 2009 22:39:22 -0400
 From: Divy Le Ray <divy@chelsio.com>
-Subject: [PATCH 2.6.30 1/5] cxgb3: start qset timers when setup succeeded
+Subject: [PATCH 2.6.30 3/5] cxgb3: use resource_size_t for mmio declarations
 To: davem@davemloft.net
 Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
        swise@opengridcomputing.com
-Date: Thu, 26 Mar 2009 19:39:09 -0700
-Message-ID: <20090327023909.32137.93884.stgit@speedy5>
+Date: Thu, 26 Mar 2009 19:39:19 -0700
+Message-ID: <20090327023919.32137.81488.stgit@speedy5>
+In-Reply-To: <20090327023909.32137.93884.stgit@speedy5>
+References: <20090327023909.32137.93884.stgit@speedy5>
 User-Agent: StGIT/0.13
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
@@ -27,94 +29,36 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Divy Le Ray <divy@chelsio.com>
 
-Start queue set reclaim timers after the queue sets have been
-allocated successfully.
+Use resource_size_t to declare mmio start and len variables.
+Print PEX error register after EEH resumed.
 
 Signed-off-by: Divy Le Ray <divy@chelsio.com>
 ---
 
- drivers/net/cxgb3/adapter.h    |    1 +
- drivers/net/cxgb3/cxgb3_main.c |    3 ++-
- drivers/net/cxgb3/sge.c        |   24 +++++++++++++++++++++---
- 3 files changed, 24 insertions(+), 4 deletions(-)
+ drivers/net/cxgb3/cxgb3_main.c |    5 ++++-
+ 1 files changed, 4 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/net/cxgb3/adapter.h b/drivers/net/cxgb3/adapter.h
-index 71eaa43..2cf6c92 100644
---- a/drivers/net/cxgb3/adapter.h
-+++ b/drivers/net/cxgb3/adapter.h
-@@ -291,6 +291,7 @@ void t3_os_link_fault_handler(struct adapter *adapter, int port_id);
- 
- void t3_sge_start(struct adapter *adap);
- void t3_sge_stop(struct adapter *adap);
-+void t3_start_sge_timers(struct adapter *adap);
- void t3_stop_sge_timers(struct adapter *adap);
- void t3_free_sge_resources(struct adapter *adap);
- void t3_sge_err_intr_handler(struct adapter *adapter);
 diff --git a/drivers/net/cxgb3/cxgb3_main.c b/drivers/net/cxgb3/cxgb3_main.c
-old mode 100644
-new mode 100755
-index d8be896..8ad5f32
+index 8ad5f32..e2b1193 100755
 --- a/drivers/net/cxgb3/cxgb3_main.c
 +++ b/drivers/net/cxgb3/cxgb3_main.c
-@@ -602,7 +602,6 @@ static int setup_sge_qsets(struct adapter *adap)
- 				&adap->params.sge.qset[qset_idx], ntxq, dev,
- 				netdev_get_tx_queue(dev, j));
- 			if (err) {
--				t3_stop_sge_timers(adap);
- 				t3_free_sge_resources(adap);
- 				return err;
- 			}
-@@ -1046,6 +1045,8 @@ static int cxgb_up(struct adapter *adap)
- 		setup_rss(adap);
- 		if (!(adap->flags & NAPI_INIT))
- 			init_napi(adap);
+@@ -2871,6 +2871,9 @@ static void t3_io_resume(struct pci_dev *pdev)
+ {
+ 	struct adapter *adapter = pci_get_drvdata(pdev);
+ 
++	CH_ALERT(adapter, "adapter recovering, PEX ERR 0x%x\n",
++		 t3_read_reg(adapter, A_PCIE_PEX_ERR));
 +
-+		t3_start_sge_timers(adap);
- 		adap->flags |= FULL_INIT_DONE;
- 	}
- 
-diff --git a/drivers/net/cxgb3/sge.c b/drivers/net/cxgb3/sge.c
-old mode 100644
-new mode 100755
-index a7555cb..fcd1a4f
---- a/drivers/net/cxgb3/sge.c
-+++ b/drivers/net/cxgb3/sge.c
-@@ -3044,9 +3044,6 @@ int t3_sge_alloc_qset(struct adapter *adapter, unsigned int id, int nports,
- 	t3_write_reg(adapter, A_SG_GTS, V_RSPQ(q->rspq.cntxt_id) |
- 		     V_NEWTIMER(q->rspq.holdoff_tmr));
- 
--	mod_timer(&q->tx_reclaim_timer, jiffies + TX_RECLAIM_PERIOD);
--	mod_timer(&q->rx_reclaim_timer, jiffies + RX_RECLAIM_PERIOD);
--
- 	return 0;
- 
- err_unlock:
-@@ -3057,6 +3054,27 @@ err:
+ 	t3_resume_ports(adapter);
  }
  
- /**
-+ *      t3_start_sge_timers - start SGE timer call backs
-+ *      @adap: the adapter
-+ *
-+ *      Starts each SGE queue set's timer call back
-+ */
-+void t3_start_sge_timers(struct adapter *adap)
-+{
-+	int i;
-+
-+	for (i = 0; i < SGE_QSETS; ++i) {
-+		struct sge_qset *q = &adap->sge.qs[i];
-+
-+	if (q->tx_reclaim_timer.function)
-+		mod_timer(&q->tx_reclaim_timer, jiffies + TX_RECLAIM_PERIOD);
-+
-+	if (q->rx_reclaim_timer.function)
-+		mod_timer(&q->rx_reclaim_timer, jiffies + RX_RECLAIM_PERIOD);
-+	}
-+}
-+
-+/**
-  *	t3_stop_sge_timers - stop SGE timer call backs
-  *	@adap: the adapter
-  *
+@@ -3003,7 +3006,7 @@ static int __devinit init_one(struct pci_dev *pdev,
+ 	static int version_printed;
+ 
+ 	int i, err, pci_using_dac = 0;
+-	unsigned long mmio_start, mmio_len;
++	resource_size_t mmio_start, mmio_len;
+ 	const struct adapter_info *ai;
+ 	struct adapter *adapter = NULL;
+ 	struct port_info *pi;
 
