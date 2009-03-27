@@ -1,62 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758456AbZC0Dr1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761490AbZC0Drp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758456AbZC0Dr1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 26 Mar 2009 23:47:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755861AbZC0DrS
+	id S1761490AbZC0Drp (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 26 Mar 2009 23:47:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759521AbZC0Drc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 26 Mar 2009 23:47:18 -0400
-Received: from cavan.codon.org.uk ([93.93.128.6]:59535 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752135AbZC0DrR (ORCPT
+	Thu, 26 Mar 2009 23:47:32 -0400
+Received: from vms173017pub.verizon.net ([206.46.173.17]:33984 "EHLO
+	vms173017pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758601AbZC0Drb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 26 Mar 2009 23:47:17 -0400
-Date: Fri, 27 Mar 2009 03:47:05 +0000
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Theodore Tso <tytso@mit.edu>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Rees <drees76@gmail.com>, Jesper Krogh <jesper@krogh.cc>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.29
-Message-ID: <20090327034705.GA16888@srcf.ucam.org>
-References: <72dbd3150903241200v38720ca0x392c381f295bdea@mail.gmail.com> <20090325183011.GN32307@mit.edu> <alpine.LFD.2.00.0903251139260.3032@localhost.localdomain> <20090325220530.GR32307@mit.edu> <alpine.LFD.2.00.0903251622420.3032@localhost.localdomain> <20090326171148.9bf8f1ec.akpm@linux-foundation.org> <alpine.LFD.2.00.0903261723250.3994@localhost.localdomain> <20090326174704.cd36bf7b.akpm@linux-foundation.org> <alpine.LFD.2.00.0903261752110.3994@localhost.localdomain> <20090327032301.GN6239@mit.edu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090327032301.GN6239@mit.edu>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
+	Thu, 26 Mar 2009 23:47:31 -0400
+From: Gene Heskett <gene.heskett@verizon.net>
+Organization: Organization? Not detectable
+To: "Michael B. Trausch" <mike@trausch.us>
+Subject: Re: 2.6.29 Networking Problems
+Date: Thu, 26 Mar 2009 23:47:19 -0400
+User-Agent: KMail/1.11.1 (Linux/2.6.29; KDE/4.2.1; i686; ; )
+Cc: linux-kernel@vger.kernel.org
+References: <20090326232045.700a251a@zest.trausch.us>
+In-reply-to: <20090326232045.700a251a@zest.trausch.us>
+MIME-version: 1.0
+Content-type: text/plain; charset=iso-8859-1
+Content-transfer-encoding: 7bit
+Content-disposition: inline
+Message-id: <200903262347.19338.gene.heskett@verizon.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Mar 26, 2009 at 11:23:01PM -0400, Theodore Tso wrote:
+On Thursday 26 March 2009, Michael B. Trausch wrote:
+>Alright, so I upgraded to 2.6.29 and had all sorts of issues with my
+>networking (x86-64 system, both forcedeth and 3c59x NICs).  At first I
+>thought my forcedeth NIC was dying or something, so I disabled it and
+>installed a trusty 3com.  When it started acting up also, I began to
+>suspect software, and some searching led me to the thread (and
+>eventually the patch) at:
+>
+>  http://patchwork.kernel.org/patch/14465/
+>
+>So, I applied this patch to my local kernel, and my test (transferring
+>13 GiB of data over the LAN) now can be run repeatedly.  Prior to
+>applying the patch, I'd start the transfer and it'd go for about 20
+>seconds and all transfer would stop, and ping would not return errors,
+>just nothing.
+>
+>Any chance that this patch will land in 2.6.29.1?  Or other code that
+>fixes the same problem?  I haven't tried it against Linus' kernel tree
+>yet because I probably won't run that kernel again until at least -rc2
+>or -rc3, so apologies if this issue is already fixed in the trunk.
+>
+>	--- Mike
 
-> Yeah, well, it's caused by data=ordered, which is an ext3 unique
-> thing; no other filesystem (or operating system) has such a feature.
-> I'm beginning to wish we hadn't implemented it.  Yeah, it solved a
-> security problem (which delayed allocation also solves), but it
-> trained application programs to be careless about fsync(), and it's
-> caused us so many other problems, including the fsync() and unrelated
-> commit latency problems.
+I'll second this on 2.6.29.  Asus M2N SLI Deluxe mobo, quad core phenom, 4GB 
+ram.
 
-Oh, for the love of a whole range of mythological figures. ext3 didn't 
-train application programmers that they could be careless about fsync(). 
-It gave them functionality that they wanted, ie the ability to do things 
-like rename a file over another one with the expectation that these 
-operations would actually occur in the same order that they were 
-generated. More to the point, it let them do this *without* having to 
-call fsync(), resulting in a significant improvement in filesystem 
-usability.
+When I woke up this morning I had no network.  Ifconfig said it was up and ok, 
+but I couldn't even ping my router.  So I went to another machine and the 
+router etc was fine.  Restarting the networking did not help.  The leds on the 
+mobo jacks were on so the MCP55's hadn't been killed.  A reboot that took a 
+good piece of an hour cuz it had timed out on 1.5 TB of drives and had to fsck 
+them, and its been fine since.
 
-I'm utterly and screamingly bored of this "Blame userspace" attitude. 
-The simple fact of the matter is that ext4 was designed without paying 
-any attention to how the majority of applications behave. fsync() isn't 
-the interface people want. ext3 demonstrated that a filesystem could be 
-written that made life easier for application authors. Why on earth 
-would anyone think that taking a step back by requiring fsync() in a 
-wider range of circumstances was a good idea?
+>--
+>To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+>the body of a message to majordomo@vger.kernel.org
+>More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>Please read the FAQ at  http://www.tux.org/lkml/
+
+
 -- 
-Matthew Garrett | mjg59@srcf.ucam.org
+Cheers, Gene
+"There are four boxes to be used in defense of liberty:
+ soap, ballot, jury, and ammo. Please use in that order."
+-Ed Howdershelt (Author)
+Windows without the X is like making love without a partner.
+	-- MaDsen Wikholm, mwikholm@at8.abo.fi
+
