@@ -1,26 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763439AbZC0Xau@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763208AbZC0XbQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763439AbZC0Xau (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Mar 2009 19:30:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760150AbZC0X1h
+	id S1763208AbZC0XbQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Mar 2009 19:31:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758186AbZC0X1i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Mar 2009 19:27:37 -0400
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:48396 "EHLO
+	Fri, 27 Mar 2009 19:27:38 -0400
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:48400 "EHLO
 	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759578AbZC0X1d (ORCPT
+	with ESMTP id S1757909AbZC0X1d (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 27 Mar 2009 19:27:33 -0400
 From: =?utf-8?q?Uwe=20Kleine-K=C3=B6nig?= 
 	<u.kleine-koenig@pengutronix.de>
 To: linux-kernel@vger.kernel.org
 Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Andrew Victor <linux@maxim.org.za>,
        Russell King <rmk+kernel@arm.linux.org.uk>,
-       Ben Dooks <ben-linux@fluff.org>, Richard Purdie <rpurdie@rpsys.net>,
-       =?utf-8?q?M=C3=A1rton=20N=C3=A9meth?= <nm127@freemail.hu>,
-       Arnaud Patard <arnaud.patard@rtp-net.org>
-Subject: [PATCH 17/58] move h1940-leds's probe function to .devinit.text
-Date: Sat, 28 Mar 2009 00:26:38 +0100
-Message-Id: <1238196439-16535-17-git-send-email-u.kleine-koenig@pengutronix.de>
+       Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>,
+       Ilpo Jarvinen <ilpo.jarvinen@helsinki.fi>,
+       Wim Van Sebroeck <wim@iguana.be>
+Subject: [PATCH 05/58] move at91_wdt's probe function to .devinit.text
+Date: Sat, 28 Mar 2009 00:26:26 +0100
+Message-Id: <1238196439-16535-5-git-send-email-u.kleine-koenig@pengutronix.de>
 X-Mailer: git-send-email 1.6.2
 In-Reply-To: <20090327232153.GA16348@pengutronix.de>
 References: <20090327232153.GA16348@pengutronix.de>
@@ -35,7 +36,7 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A pointer to h1940leds_probe is passed to the core via
+A pointer to at91wdt_probe is passed to the core via
 platform_driver_register and so the function must not disappear when the
 .init sections are discarded.  Otherwise (if also having HOTPLUG=y)
 unbinding and binding a device to the driver via sysfs will result in an
@@ -46,28 +47,28 @@ platform_driver_register plus removing the pointer to the probe function
 from the struct platform_driver.
 
 Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
+Cc: Andrew Victor <linux@maxim.org.za>
 Cc: Russell King <rmk+kernel@arm.linux.org.uk>
-Cc: Ben Dooks <ben-linux@fluff.org>
-Cc: Richard Purdie <rpurdie@rpsys.net>
-Cc: Márton Németh <nm127@freemail.hu>
-Cc: Arnaud Patard <arnaud.patard@rtp-net.org>
+Cc: Jean-Christophe PLAGNIOL-VILLARD <plagnioj@jcrosoft.com>
+Cc: Ilpo Jarvinen <ilpo.jarvinen@helsinki.fi>
+Cc: Wim Van Sebroeck <wim@iguana.be>
 Cc: Andrew Morton <akpm@linux-foundation.org>
 ---
- drivers/leds/leds-h1940.c |    2 +-
+ drivers/watchdog/at91rm9200_wdt.c |    2 +-
  1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/leds/leds-h1940.c b/drivers/leds/leds-h1940.c
-index 11b77a7..1aa46a3 100644
---- a/drivers/leds/leds-h1940.c
-+++ b/drivers/leds/leds-h1940.c
-@@ -104,7 +104,7 @@ static struct led_classdev h1940_blueled = {
- 	.default_trigger	= "h1940-bluetooth",
+diff --git a/drivers/watchdog/at91rm9200_wdt.c b/drivers/watchdog/at91rm9200_wdt.c
+index e35d545..ee82323 100644
+--- a/drivers/watchdog/at91rm9200_wdt.c
++++ b/drivers/watchdog/at91rm9200_wdt.c
+@@ -197,7 +197,7 @@ static struct miscdevice at91wdt_miscdev = {
+ 	.fops		= &at91wdt_fops,
  };
  
--static int __init h1940leds_probe(struct platform_device *pdev)
-+static int __devinit h1940leds_probe(struct platform_device *pdev)
+-static int __init at91wdt_probe(struct platform_device *pdev)
++static int __devinit at91wdt_probe(struct platform_device *pdev)
  {
- 	int ret;
+ 	int res;
  
 -- 
 1.6.2
