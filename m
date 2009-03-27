@@ -1,74 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759458AbZC0Q24@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759715AbZC0Q3S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759458AbZC0Q24 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Mar 2009 12:28:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757204AbZC0Q2q
+	id S1759715AbZC0Q3S (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Mar 2009 12:29:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759549AbZC0Q2z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Mar 2009 12:28:46 -0400
-Received: from mail.phnxsoft.com ([195.227.45.4]:4319 "EHLO
-	posthamster.phnxsoft.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754371AbZC0Q2q (ORCPT
+	Fri, 27 Mar 2009 12:28:55 -0400
+Received: from cavan.codon.org.uk ([93.93.128.6]:38138 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759537AbZC0Q2y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Mar 2009 12:28:46 -0400
-Message-ID: <49CCFEBA.6060009@imap.cc>
-Date: Fri, 27 Mar 2009 18:28:42 +0200
-From: Tilman Schmidt <tilman@imap.cc>
-User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.1; de-AT; rv:1.8.1.19) Gecko/20081204 SeaMonkey/1.1.14 Mnenhy/0.7.6.0
+	Fri, 27 Mar 2009 12:28:54 -0400
+Date: Fri, 27 Mar 2009 16:28:41 +0000
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Theodore Tso <tytso@mit.edu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       David Rees <drees76@gmail.com>, Jesper Krogh <jesper@krogh.cc>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.29
+Message-ID: <20090327162841.GA26860@srcf.ucam.org>
+References: <20090327032301.GN6239@mit.edu> <20090327034705.GA16888@srcf.ucam.org> <20090327051338.GP6239@mit.edu> <20090327055750.GA18065@srcf.ucam.org> <20090327062114.GA18290@srcf.ucam.org> <20090327112438.GQ6239@mit.edu> <20090327145156.GB24819@srcf.ucam.org> <20090327150811.09b313f5@lxorguk.ukuu.org.uk> <20090327152221.GA25234@srcf.ucam.org> <20090327161553.31436545@lxorguk.ukuu.org.uk>
 MIME-Version: 1.0
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Help: tasklet blocked for >8msec
-X-Enigmail-Version: 0.95.7
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig2B53C522A24EF27745B40F78"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090327161553.31436545@lxorguk.ukuu.org.uk>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig2B53C522A24EF27745B40F78
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: quoted-printable
+On Fri, Mar 27, 2009 at 04:15:53PM +0000, Alan Cox wrote:
 
-A user of the Gigaset base driver (drivers/isdn/gigaset/bas-gigaset.c)
-reports his connection being dropped exactly every 30 seconds.
-Analysis of his dmesg indicates that when the error occurs, both the
-tasklets read_iso_tasklet and write_iso_tasklet handling the B channel
-data stream (125 USB isochronous packets per second in each direction)
-are at the same time not executed for an entire inter-packet interval,
-ie. 8 msecs.
+> To be honest I don't see your problem. Surely well designed desktop
+> applications are already all using nice error handling, out of space and
+> fsync aware interfaces in the gnome library that do all the work for them
+> - "so they don't have to check for errors".
 
-The machine in question, an Intel Core2 Duo E8600 with 4 GB RAM and
-SATA hard disks, should really be fast enough. CPU load is negligible.
-I have asked the user to recompile the kernel with CONFIG_PREEMPT=3Dy
-and to replace the calls to schedule_tasklet() for the two tasklets
-by schedule_hi_tasklet(). That had no noticeable effect on the problem.
+The context was situations like errors on close() not occuring unless 
+you've fsync()ed first. I don't think that error case is sufficiently 
+common to warrant the cost of an fsync() on every single close, 
+especially since doing so would cripple any application that ever tried 
+to run on ext3.
 
-I would be grateful for any hint on what could be the cause for that
-blockage and how to prevent it.
-
-aTdHvAaNnKcSe
-Tilman
-
---=20
-Tilman Schmidt                    E-Mail: tilman@imap.cc
-Bonn, Germany
-Diese Nachricht besteht zu 100% aus wiederverwerteten Bits.
-Unge=F6ffnet mindestens haltbar bis: (siehe R=FCckseite)
-
-
---------------enig2B53C522A24EF27745B40F78
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.4 (MingW32)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-
-iD8DBQFJzP66Q3+did9BuFsRAni6AJwM+JV2MfPhD60ptpqE+8MbhhxLEACfaLMT
-QhkhBUlOaLKnWPmVm76tBoM=
-=3Kj4
------END PGP SIGNATURE-----
-
---------------enig2B53C522A24EF27745B40F78--
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
