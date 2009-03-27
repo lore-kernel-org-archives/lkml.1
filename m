@@ -1,303 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761765AbZC0UwU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762156AbZC0Ux2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761765AbZC0UwU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Mar 2009 16:52:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755848AbZC0UwG
+	id S1762156AbZC0Ux2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Mar 2009 16:53:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755082AbZC0UxQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Mar 2009 16:52:06 -0400
-Received: from moutng.kundenserver.de ([212.227.126.171]:58191 "EHLO
+	Fri, 27 Mar 2009 16:53:16 -0400
+Received: from moutng.kundenserver.de ([212.227.126.186]:64194 "EHLO
 	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755370AbZC0UwC (ORCPT
+	with ESMTP id S1755436AbZC0UxP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Mar 2009 16:52:02 -0400
-Message-ID: <49CD3CA1.7070706@vlnb.net>
-Date: Fri, 27 Mar 2009 23:52:49 +0300
-From: Vladislav Bolkhovitin <vst@vlnb.net>
-User-Agent: Thunderbird 2.0.0.17 (X11/20081009)
+	Fri, 27 Mar 2009 16:53:15 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: Sam Ravnborg <sam@ravnborg.org>
+Subject: Re: [PATCH 5/13] score - New architecure port to SunplusCT S+CORE processor
+Date: Fri, 27 Mar 2009 21:53:05 +0100
+User-Agent: KMail/1.9.9
+Cc: liqin.chen@sunplusct.com, linux-arch@vger.kernel.org,
+       linux-kernel@vger.kernel.org, torvalds@linux-foundation.org
+References: <OFE9A5E3A2.37B73BA8-ON48257586.0008CFAC-48257586.00091B05@sunplusct.com> <200903272019.53689.arnd@arndb.de> <20090327202614.GA22054@uranus.ravnborg.org>
+In-Reply-To: <20090327202614.GA22054@uranus.ravnborg.org>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
 MIME-Version: 1.0
-To: scst-devel <scst-devel@lists.sourceforge.net>
-CC: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [ANNOUNCE]: SCST target drivers suit 1.0.1 development freeze
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
-X-Provags-ID: V01U2FsdGVkX1/r2DkUgvsL6EovydXETnmXlVkTwC7C2LKg4cQ
- qNa+1VPC+tSdonID3vlgEFL4VkphvXkWl2Hwszg1xH0XWpx6fT
- 2ehK6ylyiM8WqslHcwPgA==
+Content-Disposition: inline
+Message-Id: <200903272153.05622.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX18EzIOgKJ5OAIYHsBvKJSV8R1OycshQgPJ8EAI
+ cQrfdxIw9Zn0sc9qaBNmMUN2ov8ugh26tlc8qmLny9ejR2uUoF
+ xujqynLlboI/qK5sV/XSQ==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi All,
-
-I'm glad to announce that development of SCST drivers suit is frozen and 
-ready for final testing before release, which is scheduled in few weeks 
-time depending from amount of problems found during testing.
-
-The SCST is an alternative implementation of SCSI target subsystem for 
-Linux. It provides unified, consistent interface between SCSI target 
-drivers and Linux kernel and simplifies target drivers development.
-
-SCST allows creation of sophisticated storage devices, which provide 
-advanced functionality, like replication, thin provisioning, 
-deduplication, high availability, automatic backup, etc. Another class 
-of such devices are Virtual Tape Libraries (VTL) as well as other 
-disk-based backup solutions. SCST created devices not limited by IP 
-network interface only, but they can use any link supporting SCSI-style 
-data exchange, including Fibre Channel, SAS and parallel SCSI. It might 
-well be that your favorite storage appliance running SCST in the firmware.
-
-SCST suit consists of a set of subprojects: SCST core itself with a set 
-of device handlers as well as target drivers and user space utilities. 
-Particularly, it has target drivers for iSCSI, QLogic qla2xxx cards and 
-InfiniBand SRP. You can find more info about it on SCST home page 
-http://scst.sourceforge.net.
-
-SCST aims to be included in the mainline kernel. You can find the first 
-iteration of SCST patches review in http://lkml.org/lkml/2008/12/10/245.
-
-You can download SCST target drivers suit 1.0.1 by running a command:
-
-$ svn co https://scst.svn.sourceforge.net/svnroot/scst/branches/1.0.1.x
-
-Summary of changes in SCST core between versions 1.0.0 and 1.0.1
-----------------------------------------------------------------
-
-  - Support for descriptor sense format added
-
-  - Makefiles made more packager friendly (Ruben Laban)
-
-  - Support for variable length CDB added
-
-  - Support for Asynchronous Event Notifications added
-
-  - Implemented "plug-and-play" notifications about new devices in
-    security groups, deleted devices from security groups and changed
-    size of a device. They can be delivered either through AENs (if
-    supported), or Unit Attentions.
-
-  - New command "resync_size" added to scst_vdisk proc interface to tell
-    scst_vdisk to reread size of the corresponding device after it was
-    changed
-
-  - Added pattern matching for initiator names in SCST access control
-    (Gennadiy Nerubayev)
-
-  - Now only sent for execution commands are counted to wait for in TM
-    commands, which made processing of TM commands faster
-
-  - Now devices blocked only in reset TM commands. ABORTs, etc. now done
-    without devices blocking.
-
-  - scst_unregister_session_ex() removed, since there are no users of it
-
-  -  New functions added to scst_user interface:
-
-     * SCST_USER_UNREGISTER_DEVICE - to unregister device, flush mem
-       reuse (SGV) cache and send UCMD_STATE_ON_CACHE_FREEING
-       notifications for all freed buffers to the user space handler.
-       Simple device close doesn't allow that, so all the cached buffers
-       might look as "leaked" from the user space handler POV.
-
-     * SCST_USER_FLUSH_CACHE - to flush mem reuse (SGV) cache and send
-       UCMD_STATE_ON_CACHE_FREEING notifications for all freed buffers to
-       the user space handler
-
-     * SCST_USER_DEVICE_CAPACITY_CHANGED - to notify SCST core that the
-       corresponding device has changed its capacity
-
-  - Clustering of scst_user pages added
-
-  - Added autogenerated SCSI SN in vdisk handler
-
-  - Fixed race in scst_user, which could have lead to usage of already
-    freed command. A misbehaving user space handler could have made ucmd
-    to get dead immediately after the lock is released and that is caught
-    now.
-
-  - Support for CentOS 5.2 added (Bart Van Assche)
-
-  - In scst_vdisk new module parameter num_threads added to specify a
-    number of threads for each vdisk/vcdrom. Default is 5.
-
-  - Access control docs updated
-
-  - Set memory limits according to LOWMEM, not TOTALMEM
-
-  - Major performance increase working with disk based storage
-
-  - Now task_mgmt_fn() callback called for TARGET RESET and NEXUS LOSS
-    functions only once for tgt_dev, which belongs to the session, from
-    which the corresponding request came
-
-  - SGV cache related parameters moved from scst.h to scst_sgv.h
-
-  - Log level mgmt_minor for messages like "Warning: expected transfer
-    length X for opcode Y" changed to be disabled by default
-
-  - Added possibility to coexist if both target driver and dev handler
-    need custom memory allocation. Direct consequences: (1) scst_local
-    can work with scst_user's devices and (2) scst_user now compatible
-    with iscsi-scst if put_page_callback patch not applied.
-
-  - Deprecated scst_cmd_get_tgt_resp_flags() removed
-
-  - SWP and TAS parameters made changeable in vdisk handler
-
-  - External interface changed to fix usage of in_atomic(). Now target
-    drivers and dev handlers need to explicitly supply preferred
-    execution context in scst_cmd_done() and scst_tgt_cmd_done()
-
-  - Handling of internal REQUEST SENSE fixed.
-
-  - Fixed SAM violation (HiSup bit must be set in INQUIRY response)
-
-  - Fixed handling of VERIFY commands that comes with BYTCHK unset
-
-  - Handling of double reset UAs made more reliable
-
-  - A lot of kernel style, checkpatch and sparse fixes (Bart Van Assche)
-
-  - In-kernel build integration (Bart Van Assche)
-
-  - Update for kernels up to 2.6.29
-
-  - A lot of fixes and cleanups (many people)
-
-
-Summary of changes in iSCSI-SCST between versions 1.0.0 and 1.0.1
------------------------------------------------------------------
-
-  - Support for variable length CDB added
-
-  - Sending and receiving padding bytes as well as sense data
-    reimplemented to make it more reliable
-
-  - Support for SCSI Asynchronous Event Notifications added
-
-  - Sessions and connections reinstatement reimplemented to be conforming
-    to iSCSI RFC
-
-  - iscsi-scst-adm fixed
-
-  - Removed artificial limitation of sg_tablesize. It isn't needed,
-    because the regular iSCSI negotiated MaxRecvDataSegmentLength-related
-    facilities do all the job pretty well.
-
-  - Merge with IET r170-211:
-
-    * Update MaxConnections documentation
-
-    * Remove isns config description from man page
-
-    * Check return values of chdir(), ftruncate() and write(), because
-      recent versions of the glibc insist on the return value being
-      checked by introducing __attribute__((warn_unused_result)) to these
-      functions.
-
-    * Fix snprintf use in isns.c
-
-    * Take \0-termination into account when passing strings to
-      isns_tlv_set() to solve incompatibility with MS iSNS 3.0 as IQN
-      length is multiple of 4
-
-    * Fix list corruption if SCST target registration fails
-
-    * Register the target port actually used instead of the default iSCSI
-      port.
-
-    * Remove unused connection->pad
-
-    * Refactor cmnd_execute()
-
-    * Introduce min*/max*() and more list_* macros
-
-    * Multipart PDU support for discovery sessions
-
-    * Add support for Reject PDUs and make use of them in appropriate
-      places.
-
-    * Ignore SIGPIPE in iscsi-scstd
-
-    * Allow removal of kernel target objects if the user space object
-      does not exist
-
-    * Use netlink_socket_release() to clean up netlink sockets correctly
-      (taking care of namespaces)
-
-    * More scalable proc seq_file implementation
-
-    * Segfault in ietd buffer overrun in dump_line
-
-    * Add iscsi-scst-adm support to display list of CHAP accounts and
-      their data
-
-    * Fixed compilation on glibc 2.8
-
-    * Fix CHAP account handling bugs
-
-    * Fix bugs in multi PDU handling code
-
-  - Support for CentOS 5.2 added (Bart Van Assche)
-
-  - Fixed NOP-Out with payload handling
-
-  - Several minor iSCSI RFC violations fixed
-
-  - Update for kernels up to 2.6.29
-
-  - Zero-copy feature, introduced by put_page_callback patch made
-    kernel compile time configurable via
-    CONFIG_TCP_ZERO_COPY_TRANSFER_COMPLETION_NOTIFICATION option. If you
-    upgrade from earlier versions, see the corresponding "[CAUTION]"
-    e-mail in scst-devel mailing list about possible compatibility
-    problems.
-
-  - A lot of cleanups and minor fixes
-
-
-Summary of changes in qla2x00t between versions 1.0.0 and 1.0.1
----------------------------------------------------------------
-
-  - Update to initiator driver from 2.6.27
-
-  - HOWTO added (Amit Mehta)
-
-  - Fixed wrong sess_count decrement on session registration failure
-
-  - Fixed possible oops in the initiator driver on the module unload
-
-  - Updated to work on kernels up to 2.6.29
-
-  - Other minor fixes
-
-
-Summary of changes in SRPT between versions 1.0.0 and 1.0.1
------------------------------------------------------------
-
-  - Update for kernels up to 2.6.29
-
-  - Fixed incorrect SCST state used on error path
-
-  - Unneeded context switches during commands processing eliminated
-
-  - Minor fixes and cleanups
-
-
-Summary of changes in fileio_tgt between versions 1.0.0 and 1.0.1
------------------------------------------------------------------
-
-  - Added notification about device capacity change
-
-  - Usage of new commands SCST_USER_UNREGISTER_DEVICE,
-    SCST_USER_FLUSH_CACHE and SCST_USER_DEVICE_CAPACITY_CHANGED added
-
-  - Sync with vdisk handler
-
-  - Added autogenerated SCSI SN
-
-
-Change logs for other modules have not updated yet, but going to be 
-updated soon.
-
-Thanks to all who made it happen!
-Vlad
+On Friday 27 March 2009, Sam Ravnborg wrote:
+
+> Thats strange indeed.
+> This structure will then change layout depending on the target bit-size
+> of the compiler.
+> 
+> From x86:
+> #ifdef __i386__
+>         unsigned long           __unused1;
+> #endif
+>         __kernel_time_t         shm_dtime;      /* last detach time */
+> #ifdef __i386__
+>         unsigned long           __unused2;
+> #endif
+> 
+> long is 64 bit in one case and 32 bit in another case.
+> I'm confused..
+
+The idea here is to have the same layout for both by adding
+long (32 bit) padding between 32 bit members on i386 and not
+having the padding along the __kernel_time_t (which is also
+long) members on x86_64. The problem is that some architectures
+copying this didn't understand the part about the padding,
+while others (big-endian ones) put the padding in the wrong
+place by copying from i386.
+
+By now, most of the existing architectures copied the i386
+file, which is at least consistent and we've learned to
+deal with it. I recommend just using this one as the
+asm-generic version and letting all new archs fall back
+to that.
+
+> I would expect it to be safer to be bit-size neutral in our
+> exported headers.
+> But the score people know there userlend best so let them decide.
+ 
+> Still they should audit all their exported headers.
+> They cannot assume it was right because they copied them from
+> somewhere.
+
+Yes, I agree. Hopefully I'll manage to get my patches into
+shape to post the generic versions in the next days so we can use
+them on microblaze and score as well as all future versions.
+
+	Arnd <><
