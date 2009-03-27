@@ -1,63 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761276AbZC0UoS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760733AbZC0UpE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761276AbZC0UoS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Mar 2009 16:44:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753463AbZC0UoG
+	id S1760733AbZC0UpE (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Mar 2009 16:45:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753463AbZC0Uov
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Mar 2009 16:44:06 -0400
-Received: from smtp-vbr16.xs4all.nl ([194.109.24.36]:3626 "EHLO
-	smtp-vbr16.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753170AbZC0UoF convert rfc822-to-8bit (ORCPT
+	Fri, 27 Mar 2009 16:44:51 -0400
+Received: from vms173001pub.verizon.net ([206.46.173.1]:60043 "EHLO
+	vms173001pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753931AbZC0Uou (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Mar 2009 16:44:05 -0400
-X-Greylist: delayed 564 seconds by postgrey-1.27 at vger.kernel.org; Fri, 27 Mar 2009 16:44:04 EDT
-From: Hans Verkuil <hverkuil@xs4all.nl>
-To: Trent Piepho <xyzzy@speakeasy.org>
-Subject: Re: [PATCH] v4l2: fill reserved fields of VIDIOC_ENUMAUDIO also
-Date: Fri, 27 Mar 2009 21:34:07 +0100
-User-Agent: KMail/1.9.9
-Cc: Mauro Carvalho Chehab <mchehab@infradead.org>,
-       =?iso-8859-1?q?N=E9meth_M=E1rton?= <nm127@freemail.hu>,
-       linux-media@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-References: <49CA611B.5050902@freemail.hu> <20090327131729.0842bdec@pedra.chehab.org> <Pine.LNX.4.58.0903271241360.28292@shell2.speakeasy.net>
-In-Reply-To: <Pine.LNX.4.58.0903271241360.28292@shell2.speakeasy.net>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200903272134.07576.hverkuil@xs4all.nl>
+	Fri, 27 Mar 2009 16:44:50 -0400
+MIME-version: 1.0
+Content-type: multipart/mixed; boundary="Boundary_(ID_Wn0CgGdPuzRyi+GptxCrXA)"
+Date: Fri, 27 Mar 2009 16:44:33 -0400 (EDT)
+From: Len Brown <lenb@kernel.org>
+X-X-Sender: lenb@localhost.localdomain
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       LKML <linux-kernel@vger.kernel.org>, Len Brown <len.brown@intel.com>,
+       Bob Moore <robert.moore@intel.com>, Lin Ming <ming.m.lin@intel.com>
+Subject: Re: linux-next: Tree for March 27 (longhaul build error)
+In-reply-to: <200903271842.37665.bzolnier@gmail.com>
+Message-id: <alpine.LFD.2.00.0903271644040.26419@localhost.localdomain>
+References: <20090327231924.4e4168c5.sfr@canb.auug.org.au>
+ <200903271842.37665.bzolnier@gmail.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 27 March 2009 20:45:40 Trent Piepho wrote:
-> On Fri, 27 Mar 2009, Mauro Carvalho Chehab wrote:
-> > On Wed, 25 Mar 2009 17:51:39 +0100
-> >
-> > Németh Márton <nm127@freemail.hu> wrote:
-> > > From: Márton Németh <nm127@freemail.hu>
-> > >
-> > > When enumerating audio inputs with VIDIOC_ENUMAUDIO the gspca_sunplus
-> > > driver does not fill the reserved fields of the struct v4l2_audio
-> > > with zeros as required by V4L2 API revision 0.24 [1]. Add the missing
-> > > initializations to the V4L2 framework.
-> > >
-> > > The patch was tested with v4l-test 0.10 [2] with gspca_sunplus driver
-> > > and with Trust 610 LCD POWERC@M ZOOM webcam.
-> >
-> > It didn't apply against the development tree. Anyway, a recent patch
-> > removed the need of memset there. the memory fill with zero now happens
-> > at the same code we copy the structure values.
->
-> That code is in video_ioctl2, which gspca doesn't use.
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-Yes, gspca does use video_ioctl2. You're probably confused with uvcvideo, 
-which doesn't use it.
+--Boundary_(ID_Wn0CgGdPuzRyi+GptxCrXA)
+Content-type: TEXT/PLAIN; charset=utf-8
+Content-transfer-encoding: 8BIT
 
-Regards,
 
-	Hans
+On Fri, 27 Mar 2009, Bartlomiej Zolnierkiewicz wrote:
 
--- 
-Hans Verkuil - video4linux developer - sponsored by TANDBERG
+> 
+> Hi,
+> 
+> On Friday 27 March 2009, Stephen Rothwell wrote:
+> > Hi all,
+> > 
+> > Changes since 20090326:
+> 
+> I hit the following build error using OpenSUSE's kernel config:
+> 
+> arch/x86/kernel/cpu/cpufreq/longhaul.c: In function â€˜longhaul_setstateâ€™:
+> arch/x86/kernel/cpu/cpufreq/longhaul.c:308: error: implicit declaration of function â€˜acpi_set_registerâ€™
+> make[1]: *** [arch/x86/kernel/cpu/cpufreq/longhaul.o] Error 1
+> make: *** [arch/x86/kernel/cpu/cpufreq/longhaul.o] Error 2
+> 
+> Len, it seems like the following patch managed to slip through the cracks:
+> 
+> 	http://patchwork.kernel.org/patch/12715/
+
+Got it,
+thanks Bart.
+
+Len Brown, Intel Open Source Technology Center
+
+--Boundary_(ID_Wn0CgGdPuzRyi+GptxCrXA)--
