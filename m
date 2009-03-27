@@ -1,77 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759926AbZC0SJr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758768AbZC0SKt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759926AbZC0SJr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Mar 2009 14:09:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754322AbZC0SJh
+	id S1758768AbZC0SKt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Mar 2009 14:10:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754635AbZC0SKj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Mar 2009 14:09:37 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:41711 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753550AbZC0SJg (ORCPT
+	Fri, 27 Mar 2009 14:10:39 -0400
+Received: from hp3.statik.tu-cottbus.de ([141.43.120.68]:60733 "EHLO
+	hp3.statik.tu-cottbus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753285AbZC0SKi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Mar 2009 14:09:36 -0400
-Date: Fri, 27 Mar 2009 11:05:58 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-cc: Matthew Garrett <mjg59@srcf.ucam.org>, Theodore Tso <tytso@mit.edu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Rees <drees76@gmail.com>, Jesper Krogh <jesper@krogh.cc>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.29
-In-Reply-To: <20090327171955.78662c1e@lxorguk.ukuu.org.uk>
-Message-ID: <alpine.LFD.2.00.0903271058060.3994@localhost.localdomain>
-References: <20090327051338.GP6239@mit.edu> <20090327055750.GA18065@srcf.ucam.org> <20090327062114.GA18290@srcf.ucam.org> <20090327112438.GQ6239@mit.edu> <20090327145156.GB24819@srcf.ucam.org> <20090327150811.09b313f5@lxorguk.ukuu.org.uk>
- <20090327152221.GA25234@srcf.ucam.org> <20090327161553.31436545@lxorguk.ukuu.org.uk> <20090327162841.GA26860@srcf.ucam.org> <20090327165150.7e69d9e1@lxorguk.ukuu.org.uk> <20090327170208.GA27646@srcf.ucam.org> <20090327171955.78662c1e@lxorguk.ukuu.org.uk>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Fri, 27 Mar 2009 14:10:38 -0400
+Message-ID: <49CD1622.8040508@s5r6.in-berlin.de>
+Date: Fri, 27 Mar 2009 19:08:34 +0100
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+User-Agent: Mozilla/5.0 (Windows; U; Windows NT 5.0; en-US; rv:1.8.1.21) Gecko/20090303 SeaMonkey/1.1.15
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: linux-kernel@vger.kernel.org, mchehab@infradead.org
+Subject: Re: [PATCH] firedtv: wrong types in printk
+References: <20090326214101.18485.58960.stgit@localhost.localdomain>
+In-Reply-To: <20090326214101.18485.58960.stgit@localhost.localdomain>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Alan Cox wrote:
+> --- a/drivers/media/dvb/firewire/firedtv-avc.c
+> +++ b/drivers/media/dvb/firewire/firedtv-avc.c
+> @@ -150,7 +150,7 @@ static void debug_fcp(const u8 *data, size_t length)
+>  		subunit_type = data[1] >> 3;
+>  		subunit_id = data[1] & 7;
+>  		op = subunit_type == 0x1e || subunit_id == 5 ? ~0 : data[2];
+> -		printk(KERN_INFO "%ssu=%x.%x l=%d: %-8s - %s\n",
+> +		printk(KERN_INFO "%ssu=%x.%x l=%Zd: %-8s - %s\n",
+>  		       prefix, subunit_type, subunit_id, length,
+>  		       debug_fcp_ctype(data[0]),
+>  		       debug_fcp_opcode(op, data, length));
 
-
-On Fri, 27 Mar 2009, Alan Cox wrote:
-> 
-> The kernel cannot tell them apart, while fsync/close() as a pair allows
-> the user to correctly indicate their requirements.
-
-Alan. Repeat after me: "fsync()+close() is basically useless for any app 
-that expects user interaction under load".
-
-That's a FACT, not an opinion.
-
-> For an event driven app you really want some kind of threaded or async
-> fsync then close
-
-Don't be silly. If you want data corruption, then you make people write 
-threaded applications. Yes, you may work for Intel now, but that doesn't 
-mean that you have to drink the insane cool-aid. Threading is HARD. Async 
-stuff is HARD. 
-
-We kernel people really are special. Expecting normal apps to spend the 
-kind of effort we do (in scalability, in error handling, in security) is 
-just not realistic. 
-
-> Agreed - which is why close should not happen to do an fsync(). That's
-> their problem for writing code thats specific to some random may happen
-> behaviour on certain Linux releases - and unfortunately with no obvious
-> cheap cure.
-
-I do agree that close() shouldn't do an fsync - simply for performance 
-reasons.
-
-But I also think that the "we write meta-data synchronously, but then the 
-actual data shows up at some random later time" is just crazy talk. That's 
-simply insane. It _guarantees_ that there will be huge windows of times 
-where data simply will be lost if something bad happens.
-
-And expecting every app to do fsync() is also crazy talk, especially with 
-the major filesystems _sucking_ so bad at it (it's actually a lot more 
-realistic with ext2 than it is with ext3).
-
-So look for a middle ground. Not this crazy militant "user apps must do 
-fsync()" crap. Because that is simply not a realistic scenario.
-
-			Linus
+This is already fixed in -next via linux1394-2.6.git.  (1394 git pull
+request follows later today.)
+-- 
+Stefan Richter
+-=====-==--= --== ==-==
+http://arcgraph.de/sr/
