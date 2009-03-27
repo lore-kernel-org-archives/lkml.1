@@ -1,42 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756459AbZC0K1f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756012AbZC0Kaa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756459AbZC0K1f (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Mar 2009 06:27:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753431AbZC0K11
+	id S1756012AbZC0Kaa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Mar 2009 06:30:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753242AbZC0KaR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Mar 2009 06:27:27 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:43240 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751286AbZC0K11 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Mar 2009 06:27:27 -0400
-Date: Fri, 27 Mar 2009 10:28:23 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Cc: davem@davemloft.net
-Subject: Re: netrom: zero length frame filtering in NetRom
-Message-ID: <20090327102823.3c485bfc@lxorguk.ukuu.org.uk>
-In-Reply-To: <200903270102.n2R12S2U021576@hera.kernel.org>
-References: <200903270102.n2R12S2U021576@hera.kernel.org>
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 27 Mar 2009 06:30:17 -0400
+Received: from www.tglx.de ([62.245.132.106]:40816 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754080AbZC0KaQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Mar 2009 06:30:16 -0400
+Date: Fri, 27 Mar 2009 11:29:26 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: liqin.chen@sunplusct.com
+cc: Will Newton <will.newton@gmail.com>, linux-arch@vger.kernel.org,
+       linux-kernel@vger.kernel.org, torvalds@linux-foundation.org
+Subject: Re: [PATCH 0/13] score - New architecure port to SunplusCT S+CORE
+ processor
+In-Reply-To: <OF39905543.8F85F55B-ON48257586.000793DC-48257586.0007F946@sunplusct.com>
+Message-ID: <alpine.LFD.2.00.0903271125380.3397@localhost.localdomain>
+References: <OF39905543.8F85F55B-ON48257586.000793DC-48257586.0007F946@sunplusct.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 27 Mar 2009, liqin.chen@sunplusct.com wrote:
+> > >> > We would like to release a patch for kernel 2.6.29-rc8.
+> > >> > This patch include score header files, arch files and serial driver
+> > > for
+> > >> > spct6600(score core) platform.
+> > >> >
+> > >> > For the other driver patches, I'll send them one by one in
+> > >> > small size latter. Thanks!
+> > >> >
+> > >> > Would you merge them to the stock kernel?
+> > >> >
+> > >> > Patch information is slightly bigger, so I placed it on our 
+> SunplusCT
+> > > web
+> > >> > site.
+> > >> >
+> > > 
+> http://www.sunplusct.com/images/linux-score-patch/linux-score-20090324.patch
 
-> +	/* NetRom empty data frame has no meaning : ignore it */
-> +	if (copied == 0) {
-> +		goto out;
-> +	}
-> +
+Please split the patches further into logical and reviewable
+pieces. Also each patch needs a patch description which will be the
+change log in the git repository and your Signed-off-by line. Also
+each patch needs a unique and useful subject line in the mail.
 
-Also broken - and doesn't follow the coding style either 8)
+Download references for such patches are useless.
 
-I'm not familiar enough with ROSE to tell if the ROSE one is wrong, but
-rose is X.25 LL based (sadly without the X.29 layer) so it seems odd
-there too (especially for datagram services)
+See Documentation/SubmittingPatches
 
+Thanks,
 
+	tglx
