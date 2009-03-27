@@ -1,23 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761584AbZC0X2F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762749AbZC0X2b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761584AbZC0X2F (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Mar 2009 19:28:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754395AbZC0X1Y
+	id S1762749AbZC0X2b (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Mar 2009 19:28:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757949AbZC0X10
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Mar 2009 19:27:24 -0400
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:48374 "EHLO
+	Fri, 27 Mar 2009 19:27:26 -0400
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:48377 "EHLO
 	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751837AbZC0X1X (ORCPT
+	with ESMTP id S1751837AbZC0X1Z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Mar 2009 19:27:23 -0400
+	Fri, 27 Mar 2009 19:27:25 -0400
 From: =?utf-8?q?Uwe=20Kleine-K=C3=B6nig?= 
 	<u.kleine-koenig@pengutronix.de>
 To: linux-kernel@vger.kernel.org
 Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Antonino Daplas <adaplas@gmail.com>
-Subject: [PATCH 03/58] move arcfb's probe function to .devinit.text
-Date: Sat, 28 Mar 2009 00:26:24 +0100
-Message-Id: <1238196439-16535-3-git-send-email-u.kleine-koenig@pengutronix.de>
+       Miguel Ojeda <miguel.ojeda.sandonis@gmail.com>,
+       Avuton Olrich <avuton@gmail.com>, Antonino Daplas <adaplas@gmail.com>
+Subject: [PATCH 07/58] move cfag12864bfb's probe function to .devinit.text
+Date: Sat, 28 Mar 2009 00:26:28 +0100
+Message-Id: <1238196439-16535-7-git-send-email-u.kleine-koenig@pengutronix.de>
 X-Mailer: git-send-email 1.6.2
 In-Reply-To: <20090327232153.GA16348@pengutronix.de>
 References: <20090327232153.GA16348@pengutronix.de>
@@ -32,7 +33,7 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A pointer to arcfb_probe is passed to the core via
+A pointer to cfag12864bfb_probe is passed to the core via
 platform_driver_register and so the function must not disappear when the
 .init sections are discarded.  Otherwise (if also having HOTPLUG=y)
 unbinding and binding a device to the driver via sysfs will result in an
@@ -43,25 +44,27 @@ platform_driver_register plus removing the pointer to the probe function
 from the struct platform_driver.
 
 Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
-Cc: Antonino Daplas <adaplas@gmail.com>
+Cc: Miguel Ojeda <miguel.ojeda.sandonis@gmail.com>
 Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Avuton Olrich <avuton@gmail.com>
+Cc: Antonino Daplas <adaplas@gmail.com>
 ---
- drivers/video/arcfb.c |    2 +-
+ drivers/auxdisplay/cfag12864bfb.c |    2 +-
  1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/video/arcfb.c b/drivers/video/arcfb.c
-index c343169..01554d6 100644
---- a/drivers/video/arcfb.c
-+++ b/drivers/video/arcfb.c
-@@ -504,7 +504,7 @@ static struct fb_ops arcfb_ops = {
- 	.fb_ioctl 	= arcfb_ioctl,
+diff --git a/drivers/auxdisplay/cfag12864bfb.c b/drivers/auxdisplay/cfag12864bfb.c
+index fe3a865..b0ca5a4 100644
+--- a/drivers/auxdisplay/cfag12864bfb.c
++++ b/drivers/auxdisplay/cfag12864bfb.c
+@@ -81,7 +81,7 @@ static struct fb_ops cfag12864bfb_ops = {
+ 	.fb_mmap = cfag12864bfb_mmap,
  };
  
--static int __init arcfb_probe(struct platform_device *dev)
-+static int __devinit arcfb_probe(struct platform_device *dev)
+-static int __init cfag12864bfb_probe(struct platform_device *device)
++static int __devinit cfag12864bfb_probe(struct platform_device *device)
  {
- 	struct fb_info *info;
- 	int retval = -ENOMEM;
+ 	int ret = -EINVAL;
+  	struct fb_info *info = framebuffer_alloc(0, &device->dev);
 -- 
 1.6.2
 
