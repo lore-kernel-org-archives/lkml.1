@@ -1,37 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758896AbZC0Rdq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759803AbZC0Rhu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758896AbZC0Rdq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Mar 2009 13:33:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753643AbZC0Rdh
+	id S1759803AbZC0Rhu (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Mar 2009 13:37:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754395AbZC0Rhm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Mar 2009 13:33:37 -0400
-Received: from mail-bw0-f169.google.com ([209.85.218.169]:36861 "EHLO
-	mail-bw0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752649AbZC0Rdg (ORCPT
+	Fri, 27 Mar 2009 13:37:42 -0400
+Received: from mail-fx0-f158.google.com ([209.85.220.158]:57940 "EHLO
+	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754218AbZC0Rhl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Mar 2009 13:33:36 -0400
+	Fri, 27 Mar 2009 13:37:41 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=googlemail.com; s=gamma;
         h=subject:from:to:cc:in-reply-to:references:content-type:date
          :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=Zks+V3KOgSOL5+rsUTB0SnRABTlqz3aP4REYMDSJ7eVySuMHshk5X7jiXgDmmeliwZ
-         UAn8cHA21kRqlzEHSdccKlITcVGx8/b3Nnh51w/8Vw4lsvx1SgS13+z8MDftzPqswUsg
-         dpnUyHtD9ELBwn/JjLowGEtV0xaNiF6849qC0=
-Subject: Re: [rfc] x86, bts: fix crash
+        b=Nw9II9nhgzNgi4oJUTaBb+hjhTh1d0A4LCTU+90DR/Q+60m6YtGXgoHUaVg3s0Xb27
+         /fV4QyXLNy6nEMDMinWwWQLoXA4sltdkF2sQ13hf05htTFcIo/dD9/cua1IpKHUb8nVg
+         NpVMGYQ9llgSA5kER9rqKtFJVSS717lSIqATU=
+Subject: Re: [patch 1/14] x86, ptrace: add arch_ptrace_report_exit
 From: Markus Metzger <markus.t.metzger@googlemail.com>
 To: Oleg Nesterov <oleg@redhat.com>
 Cc: "Metzger, Markus T" <markus.t.metzger@intel.com>,
-       "Kleen, Andi" <andi.kleen@intel.com>, Ingo Molnar <mingo@elte.hu>,
-       Roland McGrath <roland@redhat.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-In-Reply-To: <20090327165038.GA25762@redhat.com>
-References: <928CFBE8E7CB0040959E56B4EA41A77E9260843D@irsmsx504.ger.corp.intel.com>
-	 <20090326015801.GA451@redhat.com>
-	 <928CFBE8E7CB0040959E56B4EA41A77E9266B699@irsmsx504.ger.corp.intel.com>
-	 <20090327165038.GA25762@redhat.com>
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "mingo@elte.hu" <mingo@elte.hu>,
+       "tglx@linutronix.de" <tglx@linutronix.de>,
+       "hpa@zytor.com" <hpa@zytor.com>,
+       "roland@redhat.com" <roland@redhat.com>,
+       "eranian@googlemail.com" <eranian@googlemail.com>,
+       "Villacis, Juan" <juan.villacis@intel.com>,
+       "ak@linux.jf.intel.com" <ak@linux.jf.intel.com>
+In-Reply-To: <20090327170709.GB25762@redhat.com>
+References: <20090327094626.A11002@sedona.ch.intel.com>
+	 <20090327141937.GB14504@redhat.com>
+	 <928CFBE8E7CB0040959E56B4EA41A77E9266B6B4@irsmsx504.ger.corp.intel.com>
+	 <20090327170709.GB25762@redhat.com>
 Content-Type: text/plain
-Date: Fri, 27 Mar 2009 18:33:24 +0100
-Message-Id: <1238175204.6077.18.camel@raistlin>
+Date: Fri, 27 Mar 2009 18:37:28 +0100
+Message-Id: <1238175448.6077.22.camel@raistlin>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.22.3.1
 Content-Transfer-Encoding: 7bit
@@ -39,100 +44,56 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-03-27 at 17:50 +0100, Oleg Nesterov wrote:
+On Fri, 2009-03-27 at 18:07 +0100, Oleg Nesterov wrote:
 > On 03/27, Metzger, Markus T wrote:
 > >
-> > >> @@ -752,6 +752,14 @@ void ds_release_bts(struct bts_tracer *t
-> > >>
-> > >>  	ds_suspend_bts(tracer);
-> > >>
-> > >> +	/*
-> > >> +	 * We must wait for the suspend to take effect before we may
-> > >> +	 * free the tracer and the ds configuration.
-> > >> +	 */
-> > >> +	if (tracer->ds.context->task &&
-> > >> +	    (tracer->ds.context->task != current))
-> > >> +		wait_task_inactive(tracer->ds.context->task, 0);
+> > >-----Original Message-----
+> > >From: Oleg Nesterov [mailto:oleg@redhat.com]
 > > >
-> > >I am not sure I understand the problem. From the changelog:
+> > >This needs Rolan'd review.
 > > >
-> > >	If the children are currently executing, the buffer
-> > >	may be freed while the hardware is still tracing.
-> > >	This might cause the hardware to overwrite memory.
+> > >But I'd say this has nothing to do with tracehooks. And why do
+> > >you pass *exit_code to arch_ptrace_report_exit() ?
 > > >
-> > >So, the problem is that ds.context->task must not be running before we
-> > >can start to disable/free ds, yes? Something like ds_switch_to() should
-> > >be completed, right?
+> > >Just add arch_ptrace_report_exit(void) into do_exit() ?
 > > >
-> > >In that case I don't really understand how wait_task_inactive() can help.
-> > >If the task is killed it can be scheduled again, right after
-> > >wait_task_inactive() returns.
+> > >From the 3/14 patch:
+> > >
+> > >	#define arch_ptrace_report_exit(code) x86_ptrace_report_exit(code)
+> > >
+> > >	void x86_ptrace_report_exit(long exit_code)
+> > >	{
+> > >	       ptrace_bts_exit();
+> > >	}
+> > >
+> > >This is a bit strange. Why do we need 2 functions, ptrace_bts_exit() and
+> > >x86_ptrace_report_exit() which just calls the first one?
 > >
-> > We first call ds_suspend_bts().
-> > This clears the branch tracing control bits for the traced task and already
-> > writes the updated value to the msr, if running on the current cpu.
-> > If the task is running on a different cpu, the updated value will be written
-> > when the task is scheduled out.
-> > By waiting for the task to become inactive, we know that it has been scheduled out
-> > at least once after we changed the bits. So we know that the hardware will not use
-> > the tracing configuration for that task and we can safely free the memory.
+> > I did not want to take any shortcuts. I try to maintain the structure
+> > general_function()->ptrace_report()->arch_ptrace_report().
 > 
-> Still can't understand...
+> I see. And honestly, this doesn't look good to me. Yes, this is subjective.
 > 
-> Let's suppose the traced task is scheduled again, right after
-> wait_task_inactive() returns a before we set ds.context->bts_master = NULL.
+> Say, Regardless of CONFIG_X86_PTRACE_BTS we have the non-empty and non-inline
+> x86_ptrace_untrace() which just calls ptrace_bts_untrace(). And ptrace_bts_untrace()
+> depends on CONFIG_X86_PTRACE_BTS.
 > 
-> In this case, can't ds_switch_to() (which plays with ds_context) race
-> with ds_put_context()->kfree(context) ?
-
-
-You're right. Now I see the problem.
-
-The bts_master pointer needs to be set to NULL while the traced task is
-off the cpu.
-
-The kfree will only happen if the context is not used. If another tracer
-immediately reuses the context and traces the same task, it will
-become the new master and overwrite the configuration. 
-
-I assumed that the traced task would always be stopped, since that's
-the ptrace scenario. But it's not true for disable, which may be called
-by an exiting tracer while the tracee is running.
-
-I would still require it for ds_request_bts_task(), though. I will add
-a comment regarding this.
-
-Regarding the race on task->thread.ds_ctx between ds_release_bts() and
-ds_switch_to(), how would I prevent a task from being rescheduled for
-a small amount of time?
-
-
-> > >Also. This function is called from ptrace_bts_exit_tracer(), when the
-> > >tracee is not stopped. In this case wait_task_inactive() can spin forever.
-> > >For example, if the tracee simply does "for (;;) ;" it never succeeds.
-> >
-> > As far as I understand, wait_task_inactive() returns when the task is scheduled out.
+> But this is minor.
 > 
-> Yes. But the task does above is never scheduled out, it is always running
-> even if preempted by another task. wait_task_inactive() returns when
-> ->on_rq == 0, iow when the task sleeps.
-
-Oops.
-
-
-> This means that the tracer can hang "forever" during exit, until the tracee
-> does the blocking syscall or exits.
+> > Recently, tracehook_report_whatever() calls were added which either do the
+> > ptrace work directly or call a ptrace function. I try to use those calls, where possible.
 > 
-> This is not acceptable, imho.
+> Up to Roland, but I still think tracehook_report_whatever() is not the
+> good place for this stuff. And tracehooks will be changed soon by utrace.
+> 
+> In any case I don't understand why you added yet another helper, you could
+> just add arch_ptrace_report_exit() into tracehook_report_exit().
 
-Definitely not.
+Fine with me.
+I did not want to add some arch_ptrace stuff in tracehook, but I can
+change that.
 
-
-What I would need here (see above) is to get the traced task off any cpu
-in order to clear the bts_master pointer.
-Is there some existing function that I could use?
-Could you point me to some code that does something similar?
-
-thanks,
+regards,
 markus.
+
 
