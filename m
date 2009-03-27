@@ -1,80 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757307AbZC0Kla@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757131AbZC0Kng@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757307AbZC0Kla (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Mar 2009 06:41:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754425AbZC0KlU
+	id S1757131AbZC0Kng (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Mar 2009 06:43:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755131AbZC0KnZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Mar 2009 06:41:20 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:53911 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751842AbZC0KlT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Mar 2009 06:41:19 -0400
-Date: Fri, 27 Mar 2009 11:40:45 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Michal Simek <monstr@monstr.eu>, Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: torvalds@linux-foundation.org,
-       Linux Kernel list <linux-kernel@vger.kernel.org>,
-       lkml <linux-arch@vger.kernel.org>, microblaze-uclinux@itee.uq.edu.au,
-       Andrew Morton <akpm@linux-foundation.org>,
-       John Williams <john.williams@petalogix.com>,
-       John Linn <John.Linn@xilinx.com>,
-       Stephen Neuendorffer <stephenn@xilinx.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Randy Dunlap <randy.dunlap@oracle.com>, Arnd Bergmann <arnd@arndb.de>,
-       Peter Korsgaard <jacmet@sunsite.dk>
-Subject: Re: [GIT PULL] Microblaze initial pack
-Message-ID: <20090327104045.GA11518@elte.hu>
-References: <49CC8A41.4060503@monstr.eu> <20090327103032.GA12485@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090327103032.GA12485@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Fri, 27 Mar 2009 06:43:25 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:45290 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754917AbZC0KnY convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Mar 2009 06:43:24 -0400
+Date: Fri, 27 Mar 2009 07:42:58 -0300
+From: Mauro Carvalho Chehab <mchehab@infradead.org>
+To: Trent Piepho <xyzzy@speakeasy.org>
+Cc: =?ISO-8859-1?B?TultZXRoIE3hcnRvbg==?= <nm127@freemail.hu>,
+       Jean-Francois Moine <moinejf@free.fr>,
+       David Ellingsworth <david@identd.dyndns.org>,
+       linux-media@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] gspca: add missing .type field check in VIDIOC_G_PARM
+Message-ID: <20090327074258.1cf99620@pedra.chehab.org>
+In-Reply-To: <Pine.LNX.4.58.0903191741540.28292@shell2.speakeasy.net>
+References: <49C133F6.3020202@freemail.hu>
+	<30353c3d0903181445i409604e8r33678f7ce09d0288@mail.gmail.com>
+	<49C1DD0C.4050500@freemail.hu>
+	<Pine.LNX.4.58.0903190032530.28292@shell2.speakeasy.net>
+	<49C2C3C8.3000300@freemail.hu>
+	<Pine.LNX.4.58.0903191741540.28292@shell2.speakeasy.net>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 19 Mar 2009 17:47:13 -0700 (PDT)
+Trent Piepho <xyzzy@speakeasy.org> wrote:
 
-* Ingo Molnar <mingo@elte.hu> wrote:
-
-> I have noticed one relatively big (but easily fixable) commit 
-> structure problem in this tree.
+> On Thu, 19 Mar 2009, [UTF-8] Németh Márton wrote:
+> > The gspca webcam driver does not check the .type field of struct v4l2_streamparm.
+> > This field is an input parameter for the driver according to V4L2 API specification,
+> > revision 0.24 [1]. Add the missing check.
 > 
-> All of the commits have these tags:
+> I think this check could go in the v4l2 core too.  It already does a
+> similar check for QUERYBUF, QBUF, DQBUF, etc.  If the driver doesn't
+> provide a method for ->vidioc_try_fmt_foo() then the v4l2 core will reject
+> a call with .type == V4L2_BUF_TYPE_foo.
 > 
->     Reviewed-by: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
->     Acked-by: John Linn <john.linn@xilinx.com>
->     Acked-by: John Williams<john.williams@petalogix.com>
+> It seems like it should be ok to do this for S_PARM and G_PARM too.
 
-I forgot to mention that in any case _your_ signoff as the submitter 
-of this tree should be in all commits as well.
+I agree. Could you provide such patch?
 
-So for example this (sample) chain would be fine:
-
-     Reviewed-by: Stephen Neuendorffer <stephen.neuendorffer@xilinx.com>
-     Acked-by: John Linn <john.linn@xilinx.com>
-     Acked-by: John Williams<john.williams@petalogix.com>
-     Signed-off-by: Michal Simek <monstr@monstr.eu>
-
-It's not enough to be listed as the author in the commit. (In any 
-case please see Documentation/SubmittingPatches and the DCO 1.1.)
-
-Also, a minor stylistic detail, please fix this:
-
-     John Williams<john.williams@petalogix.com>
-
-to:
-
-     John Williams <john.williams@petalogix.com>
-
-Thanks,
-
-	Ingo
+Cheers,
+Mauro
