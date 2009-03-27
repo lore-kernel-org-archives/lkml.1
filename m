@@ -1,81 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752868AbZC0LZG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752893AbZC0LZg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752868AbZC0LZG (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Mar 2009 07:25:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751175AbZC0LYx
+	id S1752893AbZC0LZg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Mar 2009 07:25:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751285AbZC0LZX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Mar 2009 07:24:53 -0400
-Received: from thunk.org ([69.25.196.29]:52562 "EHLO thunker.thunk.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751075AbZC0LYw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Mar 2009 07:24:52 -0400
-Date: Fri, 27 Mar 2009 07:24:38 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Rees <drees76@gmail.com>, Jesper Krogh <jesper@krogh.cc>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.29
-Message-ID: <20090327112438.GQ6239@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Matthew Garrett <mjg59@srcf.ucam.org>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	David Rees <drees76@gmail.com>, Jesper Krogh <jesper@krogh.cc>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <alpine.LFD.2.00.0903251622420.3032@localhost.localdomain> <20090326171148.9bf8f1ec.akpm@linux-foundation.org> <alpine.LFD.2.00.0903261723250.3994@localhost.localdomain> <20090326174704.cd36bf7b.akpm@linux-foundation.org> <alpine.LFD.2.00.0903261752110.3994@localhost.localdomain> <20090327032301.GN6239@mit.edu> <20090327034705.GA16888@srcf.ucam.org> <20090327051338.GP6239@mit.edu> <20090327055750.GA18065@srcf.ucam.org> <20090327062114.GA18290@srcf.ucam.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090327062114.GA18290@srcf.ucam.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+	Fri, 27 Mar 2009 07:25:23 -0400
+Received: from yx-out-2324.google.com ([74.125.44.29]:34747 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750883AbZC0LZU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Mar 2009 07:25:20 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=Aypej4BhuEbyONNOhP/CpEqoHGKpc/1XmmAqgrAOxMYBfE8vp1H8ZQt5pm5e7Xv/Gw
+         LWC1/hVt51PjdWDFIxmLN8oQJsv/gypp2BvNNWWKngZ8RUnLYrg5LPxq7Gq8VMMi7nkx
+         C0bxgmhKOs9kcjwmxwf8XxSI/RwpZ+js9oYzs=
+Subject: Re: relatime: update once per day patches (was: ext3 IO latency 
+ measurements)
+From: David Hagood <david.hagood@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Matthew Garrett <mjg@redhat.com>, Frans Pop <elendil@planet.nl>,
+       Linus Torvalds <torvalds@linux-foundation.org>, mingo@elte.hu,
+       tytso@mit.edu, jack@suse.cz, alan@lxorguk.ukuu.org.uk,
+       arjan@infradead.org, a.p.zijlstra@chello.nl, npiggin@suse.de,
+       jens.axboe@oracle.com, drees76@gmail.com, jesper@krogh.cc,
+       linux-kernel@vger.kernel.org, oleg@redhat.com, roland@redhat.com
+In-Reply-To: <20090326122003.5f6f608c.akpm@linux-foundation.org>
+References: <20090325123744.GK23439@duck.suse.cz>
+	 <alpine.LFD.2.00.0903260912270.3032@localhost.localdomain>
+	 <20090326092454.b74e3f96.akpm@linux-foundation.org>
+	 <200903261812.09153.elendil@planet.nl>
+	 <20090326104843.46abfaa7.akpm@linux-foundation.org>
+	 <20090326184900.GA8580@srcf.ucam.org>
+	 <20090326122003.5f6f608c.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Fri, 27 Mar 2009 06:25:15 -0500
+Message-Id: <1238153115.32119.15.camel@surfer>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 27, 2009 at 06:21:14AM +0000, Matthew Garrett wrote:
-> And, hey, fsync didn't make POSIX proper until 1996. It's not like 
-> authors were able to depend on it for a significant period of time 
-> before ext3 hit the scene.
+It seems to me that, rather than having the kernel maintain a timer (or
+multiple timers, one per mount) itself, it would make sense to have
+entries in /sys which, when written to, cause the file system layer to
+flush all atime data to the mounted volume.
 
-Fsync() was in BSD 4.3 and it was in much earlier Unix specifications,
-such as SVID, well before it appeared in POSIX.  If an interface was
-in both BSD and AT&T System V Unix, it was around everywhere.
+Something like
+/sys
+/sys/atime
+/sys/atime/all
+/sys/atime/<mountpoint id>/flush
 
-> (It could be argued that most relevant Unices implemented fsync() even 
-> before then, so its status in POSIX was broadly irrelevant. The obvious 
-> counterargument is that most relevant Unix filesystems ensure that data 
-> is written before a clobbering rename() is carried out, so POSIX is 
-> again not especially releant)
+where <mountpoint id> would be the name of the file system
+(e.g. /sys/atime/usr/flush).
 
-Nope, not true.  Most relevant Unix file systems sync'ed data blocks
-on a 30 timer, and metadata on 5 second timers.  They did *not* force
-data to be written before a clobbering rename() was carried you;
-you're rewriting history when you say that; it's simply not true.
-Rename was atomic *only* where metadata was concerned, and all the
-talk about rename being atomic was because back then we didn't have
-flock() and you built locking primitives open(O_CREAT) and rename();
-but that was only metadata, and that was only if the system didn't
-crash.
+The only sticky part would be how to describe "/" in such a system.
 
-When I was growing up we were trained to *always* check error returns
-from *all* system calls, and to *always* fsync() if it was critical
-that the data survive a crash.  That was what competent Unix
-programmers did.  And if you are always checking error returns, the
-difference in the Lines of Code between doing it right and doing
-really wasn't that big --- and again, back then fsync() wan't
-expensive.  Making fsync expensive was ext3's data=ordered mode's
-fault.
+(Better still would be a /sys/ system for each file system with the
+various parameters (e.g. uid, journal) as entries + an entry for
+flushing atime, but that is beyond the scope of this discussion.)
 
-Then again, most users or system administrators of Unix systems didn't
-tolerate device drivers that would crash your system when you exited a
-game, either....  and I've said that I recognize the world has changed
-and that crappy application programmers outnumber kernel programers,
-which is why I coded the workaround for ext4.  That still doesn't make
-what they are doing correct.
+That would truly let userspace set policy, while the kernel provides
+mechanism. Thus, a script that depends upon atime being accurate could
+simply tickle the sysfs entries as needed before running.
 
-     	   	      	     	      	     - Ted
+
