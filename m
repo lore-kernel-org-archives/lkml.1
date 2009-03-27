@@ -1,79 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750738AbZC0WVc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757807AbZC0WYA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750738AbZC0WVc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Mar 2009 18:21:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753075AbZC0WVV
+	id S1757807AbZC0WYA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Mar 2009 18:24:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753042AbZC0WXu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Mar 2009 18:21:21 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:35404 "EHLO mail.dvmed.net"
+	Fri, 27 Mar 2009 18:23:50 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:58855 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752598AbZC0WVV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Mar 2009 18:21:21 -0400
-Message-ID: <49CD5143.1060904@garzik.org>
-Date: Fri, 27 Mar 2009 18:20:51 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	id S1751617AbZC0WXt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Mar 2009 18:23:49 -0400
+Date: Fri, 27 Mar 2009 23:23:46 +0100
+From: Jan Kara <jack@suse.cz>
+To: "Theodore Ts'o" <tytso@mit.edu>
+Cc: Linux Kernel Developers List <linux-kernel@vger.kernel.org>,
+       Ext4 Developers List <linux-ext4@vger.kernel.org>, jack@suse.cz
+Subject: Re: [PATCH 3/3] ext3: Avoid starting a transaction in writepage
+	when not necessary
+Message-ID: <20090327222346.GJ31071@duck.suse.cz>
+References: <1238185471-31152-1-git-send-email-tytso@mit.edu> <1238185471-31152-2-git-send-email-tytso@mit.edu> <1238185471-31152-3-git-send-email-tytso@mit.edu> <1238185471-31152-4-git-send-email-tytso@mit.edu>
 MIME-Version: 1.0
-To: Theodore Tso <tytso@mit.edu>, Jeff Garzik <jeff@garzik.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Matthew Garrett <mjg59@srcf.ucam.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Rees <drees76@gmail.com>, Jesper Krogh <jesper@krogh.cc>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.29
-References: <20090327112438.GQ6239@mit.edu> <20090327145156.GB24819@srcf.ucam.org> <20090327150811.09b313f5@lxorguk.ukuu.org.uk> <20090327152221.GA25234@srcf.ucam.org> <20090327161553.31436545@lxorguk.ukuu.org.uk> <20090327162841.GA26860@srcf.ucam.org> <20090327165150.7e69d9e1@lxorguk.ukuu.org.uk> <20090327170208.GA27646@srcf.ucam.org> <alpine.LFD.2.00.0903271032090.3994@localhost.localdomain> <49CD2C47.4040300@garzik.org> <20090327200118.GA6239@mit.edu>
-In-Reply-To: <20090327200118.GA6239@mit.edu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1238185471-31152-4-git-send-email-tytso@mit.edu>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Theodore Tso wrote:
-> On Fri, Mar 27, 2009 at 03:43:03PM -0400, Jeff Garzik wrote:
->> On the other side of the coin, major desktop apps Firefox and  
->> Thunderbird already use it:  Firefox uses sqlite to log open web pages  
->> in case of a crash, and sqlite in turn sync's its journal as any good  
->> database app should.  [I think tytso just got them to use fdatasync and  
->> a couple other improvements, to make this not-quite-so-bad]
+On Fri 27-03-09 16:24:31, Theodore Ts'o wrote:
+> From: Jan Kara <jack@suse.cz>
 > 
-> I spent a very productive hour-long conversation with the Sqlite
-> maintainer last weekend.  He's already checked in a change to use
-> fdatasync() everywhere, and he's looking into other changes that would
-> help avoid needing to do a metadata sync because i_size has changed.
-> One thing that will definitely help is if applications send the
-> sqlite-specific SQL command "PRAGMA journal_mode = PERSIST;" when they
-> first startup the Sqlite database connection.  This will cause Sqlite
-> to keep the rollback journal file to stick around instead of being
-> deleted and then recreated for each Sqlite transaction.  This avoids
-> at least one fsync() of the directory containing the rollback journal
-> file.  Combined with the change in Sqlite's development branch to use
-> fdatasync() everwhere that fsync() is used, this should definitely be
-> a huge improvement.
+> We don't have to start a transaction in writepage() when all the blocks
+> are a properly allocated. Even in ordered mode either the data has been
+> written via write() and they are thus already added to transaction's list
+> or the data was written via mmap and then it's random in which transaction
+> they get written anyway.
 > 
-> In addition, Firefox 3.1 is reportedly going to use an union of an
-> on-disk database and an in-memory database, and every 15 or 30 minutes
-> or so (presumably tunable via some config parameter), the in-memory
-> database changes will be synched out to the on-disk database.  This
-> will *definitely* help a lot, and also help improve SSD endurance.
+> This should help VM to pageout dirty memory without blocking on transaction
+> commits.
+> 
+> Signed-off-by: Jan Kara <jack@suse.cz>
+> Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
+  Please, use the patch below instead (and I'd also wait a few days for
+Mingo to check whether it also helps him). It also changes data=writeback
+mode in the same way and it adheres to coding style...
 
-Definitely, though it will be an interesting balance once user feedback 
-starts to roll in...
+									Honza
+-- 
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
 
-Firefox started doing this stuff because, when it or the window system 
-or OS crashed, users like my wife would not lose the 50+ tabs they've 
-opened and were actively using.  :)
+---
 
-So it's hard to see how users will react to going back to the days when 
-firefox crashes once again mean lost work.  [referring to the 15-30 min 
-delay, not fsync(2)]
+>From 8c1678ee703b36f3be51c856f4586c1512d98521 Mon Sep 17 00:00:00 2001
+From: Jan Kara <jack@suse.cz>
+Date: Thu, 26 Mar 2009 13:08:04 +0100
+Subject: [PATCH] ext3: Avoid starting a transaction in writepage when not necessary
 
-	Jeff
+We don't have to start a transaction in writepage() when all the blocks
+are a properly allocated. Even in ordered mode either the data has been
+written via write() and they are thus already added to transaction's list
+or the data was written via mmap and then it's random in which transaction
+they get written anyway.
 
+This should help VM to pageout dirty memory without blocking on transaction
+commits.
 
+Signed-off-by: Jan Kara <jack@suse.cz>
+---
+ fs/ext3/inode.c |   31 ++++++++++++++++++++++++++-----
+ 1 files changed, 26 insertions(+), 5 deletions(-)
 
+diff --git a/fs/ext3/inode.c b/fs/ext3/inode.c
+index e230f7a..73f605a 100644
+--- a/fs/ext3/inode.c
++++ b/fs/ext3/inode.c
+@@ -1420,6 +1420,10 @@ static int bput_one(handle_t *handle, struct buffer_head *bh)
+ 	return 0;
+ }
+ 
++static int buffer_unmapped(handle_t *handle, struct buffer_head *bh)
++{
++	return !buffer_mapped(bh);
++}
+ /*
+  * Note that we always start a transaction even if we're not journalling
+  * data.  This is to preserve ordering: any hole instantiation within
+@@ -1490,6 +1494,19 @@ static int ext3_ordered_writepage(struct page *page,
+ 	if (ext3_journal_current_handle())
+ 		goto out_fail;
+ 
++	if (!page_has_buffers(page)) {
++		create_empty_buffers(page, inode->i_sb->s_blocksize,
++				(1 << BH_Dirty)|(1 << BH_Uptodate));
++		page_bufs = page_buffers(page);
++	} else {
++		page_bufs = page_buffers(page);
++		if (!walk_page_buffers(NULL, page_bufs, 0, PAGE_CACHE_SIZE,
++				       NULL, buffer_unmapped)) {
++			/* Provide NULL get_block() to catch bugs if buffers
++			 * weren't really mapped */
++			return block_write_full_page(page, NULL, wbc);
++		}
++	}
+ 	handle = ext3_journal_start(inode, ext3_writepage_trans_blocks(inode));
+ 
+ 	if (IS_ERR(handle)) {
+@@ -1497,11 +1514,6 @@ static int ext3_ordered_writepage(struct page *page,
+ 		goto out_fail;
+ 	}
+ 
+-	if (!page_has_buffers(page)) {
+-		create_empty_buffers(page, inode->i_sb->s_blocksize,
+-				(1 << BH_Dirty)|(1 << BH_Uptodate));
+-	}
+-	page_bufs = page_buffers(page);
+ 	walk_page_buffers(handle, page_bufs, 0,
+ 			PAGE_CACHE_SIZE, NULL, bget_one);
+ 
+@@ -1549,6 +1561,15 @@ static int ext3_writeback_writepage(struct page *page,
+ 	if (ext3_journal_current_handle())
+ 		goto out_fail;
+ 
++	if (page_has_buffers(page)) {
++		if (!walk_page_buffers(NULL, page_buffers(page), 0,
++				      PAGE_CACHE_SIZE, NULL, buffer_unmapped)) {
++			/* Provide NULL get_block() to catch bugs if buffers
++			 * weren't really mapped */
++			return block_write_full_page(page, NULL, wbc);
++		}
++	}
++
+ 	handle = ext3_journal_start(inode, ext3_writepage_trans_blocks(inode));
+ 	if (IS_ERR(handle)) {
+ 		ret = PTR_ERR(handle);
+-- 
+1.6.0.2
 
