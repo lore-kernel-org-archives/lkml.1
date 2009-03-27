@@ -1,27 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763386AbZC0XlU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764280AbZC0Xlq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763386AbZC0XlU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Mar 2009 19:41:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761338AbZC0X2D
+	id S1764280AbZC0Xlq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Mar 2009 19:41:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759674AbZC0X2E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Mar 2009 19:28:03 -0400
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:48499 "EHLO
+	Fri, 27 Mar 2009 19:28:04 -0400
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:48493 "EHLO
 	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761584AbZC0X1m (ORCPT
+	with ESMTP id S1761471AbZC0X1m (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 27 Mar 2009 19:27:42 -0400
 From: =?utf-8?q?Uwe=20Kleine-K=C3=B6nig?= 
 	<u.kleine-koenig@pengutronix.de>
 To: linux-kernel@vger.kernel.org
 Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Roel Kluin <roel.kluin@gmail.com>,
-       Krzysztof Helt <krzysztof.h1@poczta.fm>,
-       Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
-       Antonino Daplas <adaplas@pol.net>, Kaj-Michael Lang <milang@tal.org>,
-       Martin Michlmayr <tbm@cyrius.com>, Joshua Kinard <kumba@gentoo.org>
-Subject: [PATCH 15/58] move gbefb's probe function to .devinit.text
-Date: Sat, 28 Mar 2009 00:26:36 +0100
-Message-Id: <1238196439-16535-15-git-send-email-u.kleine-koenig@pengutronix.de>
+       Greg Kroah-Hartman <gregkh@suse.de>, Magnus Damm <damm@igel.co.jp>,
+       Paul Mundt <lethal@linux-sh.org>,
+       Krzysztof Helt <krzysztof.h1@poczta.fm>
+Subject: [PATCH 48/58] move sh_mobile_lcdc_fb's probe function to .devinit.text
+Date: Sat, 28 Mar 2009 00:27:09 +0100
+Message-Id: <1238196439-16535-48-git-send-email-u.kleine-koenig@pengutronix.de>
 X-Mailer: git-send-email 1.6.2
 In-Reply-To: <20090327232153.GA16348@pengutronix.de>
 References: <20090327232153.GA16348@pengutronix.de>
@@ -36,7 +34,7 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A pointer to gbefb_probe is passed to the core via
+A pointer to sh_mobile_lcdc_probe is passed to the core via
 platform_driver_register and so the function must not disappear when the
 .init sections are discarded.  Otherwise (if also having HOTPLUG=y)
 unbinding and binding a device to the driver via sysfs will result in an
@@ -47,31 +45,28 @@ platform_driver_register plus removing the pointer to the probe function
 from the struct platform_driver.
 
 Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
-Cc: Roel Kluin <roel.kluin@gmail.com>
+Cc: Greg Kroah-Hartman <gregkh@suse.de>
+Cc: Magnus Damm <damm@igel.co.jp>
+Cc: Paul Mundt <lethal@linux-sh.org>
 Cc: Krzysztof Helt <krzysztof.h1@poczta.fm>
-Cc: Thomas Bogendoerfer <tsbogend@alpha.franken.de>
 Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: Antonino Daplas <adaplas@pol.net>
-Cc: Kaj-Michael Lang <milang@tal.org>
-Cc: Martin Michlmayr <tbm@cyrius.com>
-Cc: Joshua Kinard <kumba@gentoo.org>
 ---
- drivers/video/gbefb.c |    2 +-
+ drivers/video/sh_mobile_lcdcfb.c |    2 +-
  1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/video/gbefb.c b/drivers/video/gbefb.c
-index fe5b519..4c7f3a0 100644
---- a/drivers/video/gbefb.c
-+++ b/drivers/video/gbefb.c
-@@ -1128,7 +1128,7 @@ int __init gbefb_setup(char *options)
- 	return 0;
- }
+diff --git a/drivers/video/sh_mobile_lcdcfb.c b/drivers/video/sh_mobile_lcdcfb.c
+index 92ea0ab..ba795e2 100644
+--- a/drivers/video/sh_mobile_lcdcfb.c
++++ b/drivers/video/sh_mobile_lcdcfb.c
+@@ -704,7 +704,7 @@ static struct dev_pm_ops sh_mobile_lcdc_dev_pm_ops = {
  
--static int __init gbefb_probe(struct platform_device *p_dev)
-+static int __devinit gbefb_probe(struct platform_device *p_dev)
+ static int sh_mobile_lcdc_remove(struct platform_device *pdev);
+ 
+-static int __init sh_mobile_lcdc_probe(struct platform_device *pdev)
++static int __devinit sh_mobile_lcdc_probe(struct platform_device *pdev)
  {
- 	int i, ret = 0;
  	struct fb_info *info;
+ 	struct sh_mobile_lcdc_priv *priv;
 -- 
 1.6.2
 
