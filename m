@@ -1,68 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759193AbZC1ErL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758205AbZC1EvV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759193AbZC1ErL (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Mar 2009 00:47:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751991AbZC1Eq4
+	id S1758205AbZC1EvV (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Mar 2009 00:51:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751780AbZC1EvD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Mar 2009 00:46:56 -0400
-Received: from hera.kernel.org ([140.211.167.34]:54328 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750726AbZC1Eqz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Mar 2009 00:46:55 -0400
-Message-ID: <49CDAB6E.90006@kernel.org>
-Date: Fri, 27 Mar 2009 21:45:34 -0700
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Sat, 28 Mar 2009 00:51:03 -0400
+Received: from smtp-out-44.synserver.de ([217.119.50.44]:1052 "HELO
+	smtp-out-44.synserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751620AbZC1EvB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Mar 2009 00:51:01 -0400
+X-SynServer-TrustedSrc: 1
+X-SynServer-AuthUser: markus@trippelsdorf.de
+X-SynServer-PPID: 30395
+Date: Sat, 28 Mar 2009 05:50:56 +0100
+From: Markus Trippelsdorf <markus@trippelsdorf.de>
+To: Ilpo =?iso-8859-1?Q?J=E4rvinen?= <ilpo.jarvinen@helsinki.fi>
+Cc: Netdev <netdev@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: WARNING: at net/ipv4/tcp_input.c:2927 tcp_ack+0xd55/0x1991()
+Message-ID: <20090328045056.GA2394@gentoox2.trippelsdorf.de>
+References: <20090327211202.GA10014@gentoox2.trippelsdorf.de> <Pine.LNX.4.64.0903280031080.5904@wrl-59.cs.helsinki.fi>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Rusty Russell <rusty@rustcorp.com.au>, Mike Travis <travis@sgi.com>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: [PATCH] irq: remove wrong ifdef
-References: <49CDAB27.7050602@kernel.org>
-In-Reply-To: <49CDAB27.7050602@kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <Pine.LNX.4.64.0903280031080.5904@wrl-59.cs.helsinki.fi>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: fix smp_affinity copying
+On Sat, Mar 28, 2009 at 01:05:09AM +0200, Ilpo Järvinen wrote:
+> On Fri, 27 Mar 2009, Markus Trippelsdorf wrote:
+> 
+> > I'm running the latest git kernel (2.6.29-03321-gbe0ea69) and I've got
+> > this warning twice in the last few hours.:
+> 
+> What did you run previously?
 
-CPUMASKS_OFFSTACK is not defined anywhere.
-and init_allocate_desc_masks called before it set affinity to all cpus...
+2.6.29
 
-just remove those #idef to make them get copied
+> 
+> > Mar 27 21:37:00 [kernel] ------------[ cut here ]------------
+> > Mar 27 21:37:00 [kernel] WARNING: at net/ipv4/tcp_input.c:2927 tcp_ack+0xd55/0x1991()
+> 
+> This one may or may not be a new one... Starting from the point when the 
+> warning was added it has been seen and some of those miscounts got tracked 
+> down but there is still something remaining (and that has been the state 
+> for couple of version already). It seems to require some particularly hard 
+> to reproduce network behavior people usually hit once in a lifetime. 
+> However, those miscount alone should not cause crashes, stalled TCP at 
+> worst but even that is quite unlikely to happen if fackets_out was not 
+> counted right.
 
-Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+The only unusual thing in my setup is that I use two Internet providers
+at the same time:
 
----
- include/linux/irq.h |    4 ----
- 1 file changed, 4 deletions(-)
+# ip route show
+192.168.1.0/24 dev eth1  proto kernel  scope link  src 192.168.1.2
+192.168.0.0/24 dev eth0  proto kernel  scope link  src 192.168.0.2
+127.0.0.0/8 via 127.0.0.1 dev lo
+default equalize
+        nexthop via 192.168.1.1  dev eth1 weight 10
+        nexthop via 192.168.0.1  dev eth0 weight 1
 
-Index: linux-2.6/include/linux/irq.h
-===================================================================
---- linux-2.6.orig/include/linux/irq.h
-+++ linux-2.6/include/linux/irq.h
-@@ -468,20 +468,16 @@ static inline bool init_alloc_desc_masks
-  * @new_desc:	pointer to new irq_desc struct
-  *
-  * Insures affinity and pending_masks are copied to new irq_desc.
-- * If !CONFIG_CPUMASKS_OFFSTACK the cpumasks are embedded in the
-- * irq_desc struct so the copy is redundant.
-  */
- 
- static inline void init_copy_desc_masks(struct irq_desc *old_desc,
- 					struct irq_desc *new_desc)
- {
--#ifdef CONFIG_CPUMASKS_OFFSTACK
- 	cpumask_copy(new_desc->affinity, old_desc->affinity);
- 
- #ifdef CONFIG_GENERIC_PENDING_IRQ
- 	cpumask_copy(new_desc->pending_mask, old_desc->pending_mask);
- #endif
--#endif
- }
- 
- #else /* !CONFIG_SMP */
+> 
+> > The machine hangs afterwards.
+> 
+> Is it really related to the warning for sure? I find it hard to 
+> believe...
+
+The machine is normally running stable for days. Switching back to 2.6.29
+solves the problem...
+
+> 
+> We even fixed that miscount for you when the warning was printed out (and 
+> the miscount alone wouldn't be able to cause crash anyway). Obviously 
+> there could something that got broken but reading through all post 2.6.29 
+> tcp material doesn't reveal anything particularly suspicious or even 
+> tricky... Only one thing that is remotely related to the warning that gets 
+> printed out is d3d2ae454501a4dec360995649e1b002a2ad90c5 but even that has 
+> very strong foundation as it does not have any potential to introduce 
+> stale references, rest of the effects would be just stalled tcp connection 
+> at worst.
+> 
+> Please add some debugging things, at least lockdep (CONFIG_PROVE_LOCKING) 
+> and soft lockup detector (CONFIG_DETECT_SOFTLOCKUP) to find out if we can 
+> get some info about the actual place of hang, some other debug things 
+> might also end up being useful.
+
+Ok, will try this later today and report back. (It takes ~1 hour to
+reproduce the problem with a big torrent download).
+
+-- 
+Markus
