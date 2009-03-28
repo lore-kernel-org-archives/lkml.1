@@ -1,70 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759048AbZC1TyE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754894AbZC1UDp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759048AbZC1TyE (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Mar 2009 15:54:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759210AbZC1TwT
+	id S1754894AbZC1UDp (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Mar 2009 16:03:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751211AbZC1UDe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Mar 2009 15:52:19 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:40835 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1759227AbZC1TwR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Mar 2009 15:52:17 -0400
-Date: Sat, 28 Mar 2009 12:43:03 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Jan Kara <jack@suse.cz>, Ingo Molnar <mingo@elte.hu>,
-       Theodore Tso <tytso@mit.edu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Nick Piggin <npiggin@suse.de>,
-       Jens Axboe <jens.axboe@oracle.com>, David Rees <drees76@gmail.com>,
-       Jesper Krogh <jesper@krogh.cc>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Oleg Nesterov <oleg@redhat.com>, Roland McGrath <roland@redhat.com>
-Subject: Re: ext3 IO latency measurements (was: Linux 2.6.29)
-Message-Id: <20090328124303.d902fb57.akpm@linux-foundation.org>
-In-Reply-To: <alpine.LFD.2.00.0903271508520.3994@localhost.localdomain>
-References: <alpine.LFD.2.00.0903251008120.3032@localhost.localdomain>
-	<20090325185824.GO32307@mit.edu>
-	<alpine.LFD.2.00.0903251341050.3032@localhost.localdomain>
-	<20090325215137.GQ32307@mit.edu>
-	<alpine.LFD.2.00.0903251613300.3032@localhost.localdomain>
-	<20090325235041.GA11024@duck.suse.cz>
-	<20090326090630.GA9369@elte.hu>
-	<20090326181106.GC17159@duck.suse.cz>
-	<alpine.LFD.2.00.0903261534490.3032@localhost.localdomain>
-	<20090326155725.c2150ab2.akpm@linux-foundation.org>
-	<20090327213806.GG31071@duck.suse.cz>
-	<alpine.LFD.2.00.0903271508520.3994@localhost.localdomain>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sat, 28 Mar 2009 16:03:34 -0400
+Received: from agrajag.mansr.com ([78.86.181.102]:36160 "EHLO mail.mansr.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751161AbZC1UDd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Mar 2009 16:03:33 -0400
+X-Greylist: delayed 491 seconds by postgrey-1.27 at vger.kernel.org; Sat, 28 Mar 2009 16:03:33 EDT
+From: Mans Rullgard <mans@mansr.com>
+To: linux-kernel@vger.kernel.org, linux-nfs@vger.kernel.org
+Subject: [PATCH] NSM: Fix unaligned accesses in nsm_init_private()
+Date: Sat, 28 Mar 2009 19:55:20 +0000
+Message-Id: <1238270120-31501-1-git-send-email-mans@mansr.com>
+X-Mailer: git-send-email 1.6.2
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 27 Mar 2009 15:10:56 -0700 (PDT) Linus Torvalds <torvalds@linux-foundation.org> wrote:
+This fixes unaligned accesses in nsm_init_private() when
+creating nlm_reboot keys.
 
-> On Fri, 27 Mar 2009, Jan Kara wrote:
-> >
-> >   Doable but not fairly simple ;) Firstly you have to restart a transaction
-> > when you've used up all the credits you originally started with (easy),
-> > secondly ext3 uses lock order PageLock -> "transaction start" which is
-> > unusable for the scheme you suggest. So we'd have to revert that - which
-> > needs larger audit of our locking scheme and that's probably the reason
-> > why noone has done it yet.
-> 
-> It's also not clear that ext3 can really do much better than the regular 
-> generic_writepages() logic. I mean, seriously, what's there to improve on? 
+Signed-off-by: Mans Rullgard <mans@mansr.com>
+---
+ fs/lockd/mon.c |    8 ++++++--
+ 1 files changed, 6 insertions(+), 2 deletions(-)
 
-- opening a single transaction for many pages in the cases when a
-  transaction _is_ needed.
-
-- single large BIO versus zillions of single-page BIOs.
-
-Relatively minor benefits, but it's a bit odd that we never got around
-to doing it.
-
-It just got quite a bit harder to do, so I expect we won't be doing it.
+diff --git a/fs/lockd/mon.c b/fs/lockd/mon.c
+index 5e2c4d5..6d5d4a4 100644
+--- a/fs/lockd/mon.c
++++ b/fs/lockd/mon.c
+@@ -16,6 +16,8 @@
+ #include <linux/sunrpc/svc.h>
+ #include <linux/lockd/lockd.h>
+ 
++#include <asm/unaligned.h>
++
+ #define NLMDBG_FACILITY		NLMDBG_MONITOR
+ #define NSM_PROGRAM		100024
+ #define NSM_VERSION		1
+@@ -274,10 +276,12 @@ static void nsm_init_private(struct nsm_handle *nsm)
+ {
+ 	u64 *p = (u64 *)&nsm->sm_priv.data;
+ 	struct timespec ts;
++	s64 ns;
+ 
+ 	ktime_get_ts(&ts);
+-	*p++ = timespec_to_ns(&ts);
+-	*p = (unsigned long)nsm;
++	ns = timespec_to_ns(&ts);
++	put_unaligned(ns, p);
++	put_unaligned((unsigned long)nsm, p + 1);
+ }
+ 
+ static struct nsm_handle *nsm_create_handle(const struct sockaddr *sap,
+-- 
+1.6.2
 
