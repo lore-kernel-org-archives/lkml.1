@@ -1,40 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756892AbZC1P5g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755459AbZC1QKw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756892AbZC1P5g (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Mar 2009 11:57:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752803AbZC1P50
+	id S1755459AbZC1QKw (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Mar 2009 12:10:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753369AbZC1QKm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Mar 2009 11:57:26 -0400
-Received: from lxorguk.ukuu.org.uk ([81.2.110.251]:53908 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752562AbZC1P5Z convert rfc822-to-8bit (ORCPT
+	Sat, 28 Mar 2009 12:10:42 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:36413 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753323AbZC1QKl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Mar 2009 11:57:25 -0400
-X-Greylist: delayed 1738 seconds by postgrey-1.27 at vger.kernel.org; Sat, 28 Mar 2009 11:57:25 EDT
-Date: Sat, 28 Mar 2009 16:28:57 +0000
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Alexey Dobriyan <adobriyan@gmail.com>
-Cc: Jaswinder Singh Rajput <jaswinder@kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [git-pull -tip] x86: include inverse Xmas tree patches
-Message-ID: <20090328162857.57c5372d@the-village.bc.nu>
-In-Reply-To: <20090328155837.GA3503@x200.localdomain>
-References: <1238251730.2526.2.camel@ht.satnam>
-	<20090328150746.GA3268@x200.localdomain>
-	<20090328155549.47c9cdc5@the-village.bc.nu>
-	<20090328155837.GA3503@x200.localdomain>
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.12.12; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Sat, 28 Mar 2009 12:10:41 -0400
+Message-ID: <cb947346323dc0c602b6aad8eec13263.squirrel@webmail-b.css.fujitsu.com>
+In-Reply-To: <20090328082350.GS24227@balbir.in.ibm.com>
+References: <20090327135933.789729cb.kamezawa.hiroyu@jp.fujitsu.com>
+    <20090328082350.GS24227@balbir.in.ibm.com>
+Date: Sun, 29 Mar 2009 01:10:37 +0900 (JST)
+Subject: Re: [RFC][PATCH] memcg soft limit (yet another new design) v1
+From: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
+To: balbir@linux.vnet.ibm.com
+Cc: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "kosaki.motohiro@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>
+User-Agent: SquirrelMail/1.4.16
+MIME-Version: 1.0
+Content-Type: text/plain;charset=iso-2022-jp
+Content-Transfer-Encoding: 8bit
+X-Priority: 3 (Normal)
+Importance: Normal
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > Getting the includes under control is a good thing and saves everyone
-> > time.
-> 
-> Moving #includes up and down is not getting them under control.
+Balbir Singh wrote:
+> * KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-03-27
+> 13:59:33]:
 
-Look a bit deeper and youĺl see what is going on (or tell your gcc to log
-the include calls and it will become very apparent)
+>>   When vm.swappiness = 60  => 60MB of memory are swapped out from B.
+>>   When vm.swappiness = 10  => 1MB of memory are swapped out from B
+>>
+>>   If no soft limit, 350MB of swap out will happen from B.(swapiness=60)
+>>
+>
+> How did you calculate the swap usage of group B?
+>
+ memsory.memsw.usage_in_bytes - memory.usage_in_bytes.
+
+>> I'll try much more complexed ones in the weekend.
+>
+> You might want to try experiments where the group with the higher soft
+> limit starts much later than the group with lower soft limit and both
+> have a high demand for memory. Also try corner cases such as soft
+> limits being 0, or groups where soft limits are equal, etc.
+>
+thx, good input. maybe I need some hook in "set soft limit" path.
+
+> We have a long weekend, so I've been unable to test/review your
+> patches. I'll do so soon if possible.
+>
+thank you.
+-Kame
+
+> --
+> 	Balbir
+>
+
+
