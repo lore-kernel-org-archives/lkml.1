@@ -1,56 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757975AbZC1OSf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758080AbZC1OY7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757975AbZC1OSf (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Mar 2009 10:18:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755289AbZC1OS1
+	id S1758080AbZC1OY7 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Mar 2009 10:24:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752276AbZC1OYt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Mar 2009 10:18:27 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:44369 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755113AbZC1OS0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Mar 2009 10:18:26 -0400
-Message-ID: <49CE3186.8090903@garzik.org>
-Date: Sat, 28 Mar 2009 10:17:42 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Sat, 28 Mar 2009 10:24:49 -0400
+Received: from mail-bw0-f169.google.com ([209.85.218.169]:51019 "EHLO
+	mail-bw0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751791AbZC1OYs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Mar 2009 10:24:48 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=gFtSkRZyzRITRkABaAi3kFn3vPkxU+YVrW2zy7sAr6IFKWwp7Wdx+vNIyVVI1RUA9E
+         vH/XB6x0N5+Flk/ERKc5kP1d5tLATZbaY/9AYlhaUzeG7e9Xz9jwki+SKUTiN5DmMyfI
+         1xy8Hkk5uF36o5k2L9Kpy4EuF110O8H7ispI0=
 MIME-Version: 1.0
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-CC: Mark Lord <lkml@rtr.ca>, Linus Torvalds <torvalds@linux-foundation.org>,
-       Matthew Garrett <mjg59@srcf.ucam.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Theodore Tso <tytso@mit.edu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Rees <drees76@gmail.com>, Jesper Krogh <jesper@krogh.cc>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.29
-References: <20090327051338.GP6239@mit.edu> <20090327055750.GA18065@srcf.ucam.org> <20090327062114.GA18290@srcf.ucam.org> <20090327112438.GQ6239@mit.edu> <20090327145156.GB24819@srcf.ucam.org> <20090327150811.09b313f5@lxorguk.ukuu.org.uk> <20090327152221.GA25234@srcf.ucam.org> <20090327161553.31436545@lxorguk.ukuu.org.uk> <20090327162841.GA26860@srcf.ucam.org> <20090327165150.7e69d9e1@lxorguk.ukuu.org.uk> <20090327170208.GA27646@srcf.ucam.org> <alpine.LFD.2.00.0903271032090.3994@localhost.localdomain> <49CD2C47.4040300@garzik.org> <alpine.LFD.2.00.0903271443440.3994@localhost.localdomain> <49CD4DDF.3000001@garzik.org> <alpine.LFD.2.00.0903271511230.3994@localhost.localdomain> <alpine.LFD.2.00.0903271522210.3994@localhost.localdomain> <49CD7B10.7010601@garzik.org> <49CD891A.7030103@rtr.ca> <49CD9047.4060500@garzik.org> <49CE2633.2000903@s5r6.in-berlin.de>
-In-Reply-To: <49CE2633.2000903@s5r6.in-berlin.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+In-Reply-To: <20090327212241.234500000@intel.com>
+References: <20090327212241.234500000@intel.com>
+Date: Sat, 28 Mar 2009 10:24:45 -0400
+Message-ID: <cb0375e10903280724s22b231f8w81593c23ca90c288@mail.gmail.com>
+Subject: Re: [patch 0/4] Intel IOMMU Supspend/Resume Support
+From: Andrew Lutomirski <amluto@gmail.com>
+To: Fenghua Yu <fenghua.yu@intel.com>
+Cc: Ingo Molnar <mingo@elte.hu>, David Woodhouse <dwmw2@infradead.org>,
+       Suresh Siddha <suresh.b.siddha@intel.com>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Kyle McMartin <kyle@redhat.com>, Yinghai Lu <yinghai@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       IOMMU <iommu@lists.linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stefan Richter wrote:
-> Jeff Garzik wrote:
->> Mark Lord wrote:
-> [store browser session]
->>> fsync() isn't going to affect that one way or another
->>> unless the entire kernel freezes and dies.
->>  ...which is one of the three common crash scenarios listed (and
->> experienced in the field).
-> 
-> To get work done which one really cares about, one can always choose a
-> system which does not crash frequently.  Those who run unstable drivers
-> for thrills surely do it on boxes on which nothing important is being
-> done, one would think.
+Works for me (applied to current -tip).  I suspended and resumed just
+fine, with no errors logged and all hardware apparently still working.
 
-Once software is perfect, there is definitely a lot of useless crash 
-protection code to remove.
+Tested-by: Andy Lutomirski <amluto@gmail.com>
 
-	Jeff
+Thanks for the patch!
+Andy
 
-
-
+On Fri, Mar 27, 2009 at 5:22 PM, Fenghua Yu <fenghua.yu@intel.com> wrote:
+> Current Intel IOMMU does not support suspend and resume. In S3 event, kernel
+> crashes when DMAR or interrupt remapping is running.
+>
+> The attached patch set implements the suspend and resume feature for Intel
+> IOMMU. It hooks to kernel suspend and resume interface. When suspend happens, itsaves necessary hardware registers. When resume happens, it restores the
+> registers and restarts IOMMU.
+>
+> This patch set can be applied on the tip tree.
+>
+> --
+>
+>
