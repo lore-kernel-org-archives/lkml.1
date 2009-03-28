@@ -1,48 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761150AbZC1BTg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762571AbZC1BTy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761150AbZC1BTg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Mar 2009 21:19:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752733AbZC1BTD
+	id S1762571AbZC1BTy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Mar 2009 21:19:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759092AbZC1BTg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Mar 2009 21:19:03 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:33263
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1751992AbZC1BSz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Mar 2009 21:18:55 -0400
-Date: Fri, 27 Mar 2009 18:18:43 -0700 (PDT)
-Message-Id: <20090327.181843.208533325.davem@davemloft.net>
-To: torvalds@linux-foundation.org
-CC: akpm@linux-foundation.org, sparclinux@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: [GIT]: Sparc
-From: David Miller <davem@davemloft.net>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Fri, 27 Mar 2009 21:19:36 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:44716 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759984AbZC1BTf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 27 Mar 2009 21:19:35 -0400
+Message-ID: <49CD7B10.7010601@garzik.org>
+Date: Fri, 27 Mar 2009 21:19:12 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+MIME-Version: 1.0
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Matthew Garrett <mjg59@srcf.ucam.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Theodore Tso <tytso@mit.edu>, Andrew Morton <akpm@linux-foundation.org>,
+       David Rees <drees76@gmail.com>, Jesper Krogh <jesper@krogh.cc>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.29
+References: <20090327051338.GP6239@mit.edu> <20090327055750.GA18065@srcf.ucam.org> <20090327062114.GA18290@srcf.ucam.org> <20090327112438.GQ6239@mit.edu> <20090327145156.GB24819@srcf.ucam.org> <20090327150811.09b313f5@lxorguk.ukuu.org.uk> <20090327152221.GA25234@srcf.ucam.org> <20090327161553.31436545@lxorguk.ukuu.org.uk> <20090327162841.GA26860@srcf.ucam.org> <20090327165150.7e69d9e1@lxorguk.ukuu.org.uk> <20090327170208.GA27646@srcf.ucam.org> <alpine.LFD.2.00.0903271032090.3994@localhost.localdomain> <49CD2C47.4040300@garzik.org> <alpine.LFD.2.00.0903271443440.3994@localhost.localdomain> <49CD4DDF.3000001@garzik.org> <alpine.LFD.2.00.0903271511230.3994@localhost.localdomain> <alpine.LFD.2.00.0903271522210.3994@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.0903271522210.3994@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Linus Torvalds wrote:
+> Of course, your browsing history database is an excellent example of 
+> something you should _not_ care about that much, and where performance is 
+> a lot more important than "ooh, if the machine goes down suddenly, I need 
+> to be 100% up-to-date". Using fsync on that thing was just stupid, even 
 
-Two bug fixes for sparc64.
+If you are doing a ton of web-based work with a bunch of tabs or windows 
+open, you really like the post-crash restoration methods that Firefox 
+now employs.  Some users actually do want to checkpoint/restore their 
+web work, regardless of whether it was the browser, the window system or 
+the OS that crashed.
 
-Please pull, thanks a lot!
+You may not care about that, but others do care about the integrity of 
+the database that stores the active FF state (Web URLs currently open), 
+a database which necessarily changes for each URL visited.
 
-The following changes since commit 0b4d569de222452bcb55a4a536ade6cf4d8d1e30:
-  Linus Torvalds (1):
-        i915: fix wrong 'size_t' format string
 
-are available in the git repository at:
 
-  master.kernel.org:/pub/scm/linux/kernel/git/davem/sparc-2.6.git master
+As an aside, I find it highly ironic that Firefox gained useful session 
+management around the same time that some GNOME jarhead no-op'd GNOME 
+session management[1] in X.
 
-David S. Miller (3):
-      sparc64: Fix MM refcount check in smp_flush_tlb_pending().
-      Merge branch 'master' of /home/davem/src/GIT/linux-2.6/
-      sparc64: We need to use compat_sys_ustat() as well.
+	Jeff
 
- arch/sparc/kernel/smp_64.c     |    4 ++--
- arch/sparc/kernel/systbls_64.S |    2 +-
- 2 files changed, 3 insertions(+), 3 deletions(-)
+
+
+[1] http://np237.livejournal.com/22014.html
+
