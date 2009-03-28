@@ -1,48 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753838AbZC1IWS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755105AbZC1IYe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753838AbZC1IWS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Mar 2009 04:22:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752853AbZC1IWB
+	id S1755105AbZC1IYe (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Mar 2009 04:24:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753077AbZC1IYR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Mar 2009 04:22:01 -0400
-Received: from tservice.net.ru ([195.178.208.66]:33188 "EHLO tservice.net.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752697AbZC1IWA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Mar 2009 04:22:00 -0400
-Date: Sat, 28 Mar 2009 11:21:49 +0300
-From: Evgeniy Polyakov <zbr@ioremap.net>
-To: Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       "Stanley.Miao" <stanley.miao@windriver.com>,
-       Madhusudhan Chikkature <madhu.cr@ti.com>,
-       Felipe Balbi <felipe.balbi@nokia.com>
-Subject: Re: [PATCH 31/58] move omap_hdq's probe function to .devinit.text
-Message-ID: <20090328082148.GA20668@ioremap.net>
-References: <20090327232153.GA16348@pengutronix.de> <1238196439-16535-31-git-send-email-u.kleine-koenig@pengutronix.de>
+	Sat, 28 Mar 2009 04:24:17 -0400
+Received: from e28smtp02.in.ibm.com ([59.145.155.2]:39557 "EHLO
+	e28smtp02.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752853AbZC1IYP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Mar 2009 04:24:15 -0400
+Date: Sat, 28 Mar 2009 13:53:50 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "kosaki.motohiro@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>
+Subject: Re: [RFC][PATCH] memcg soft limit (yet another new design) v1
+Message-ID: <20090328082350.GS24227@balbir.in.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+References: <20090327135933.789729cb.kamezawa.hiroyu@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1238196439-16535-31-git-send-email-u.kleine-koenig@pengutronix.de>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20090327135933.789729cb.kamezawa.hiroyu@jp.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Uwe.
+* KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-03-27 13:59:33]:
 
-On Sat, Mar 28, 2009 at 12:26:52AM +0100, Uwe Kleine-König (u.kleine-koenig@pengutronix.de) wrote:
-> A pointer to omap_hdq_probe is passed to the core via
-> platform_driver_register and so the function must not disappear when the
-> .init sections are discarded.  Otherwise (if also having HOTPLUG=y)
-> unbinding and binding a device to the driver via sysfs will result in an
-> oops as does a device being registered late.
+> Hi,
 > 
-> An alternative to this patch is using platform_driver_probe instead of
-> platform_driver_register plus removing the pointer to the probe function
-> from the struct platform_driver.
+> Memory cgroup's soft limit feature is a feature to tell global LRU 
+> "please reclaim from this memcg at memory shortage".
+> 
+> And Balbir's one and my one was proposed.
+> This is new one. (so restart from v1), this is very new-born.
+> 
+> While testing soft limit, my dilemma was following.
+> 
+>  - needs additional cost of can if implementation is naive (unavoidable?)
+> 
+>  - Inactive/Active rotation scheme of global LRU will be broken.
+> 
+>  - File/Anon reclaim ratio scheme of global LRU will be broken.
+>     - vm.swappiness will be ignored.
+> 
+>  - If using memcg's memory reclaim routine, 
+>     - shrink_slab() will be never called.
+>     - stale SwapCache has no chance to be reclaimed (stale SwapCache means
+>       readed but not used one.)
+>     - memcg can have no memory in a zone.
+>     - memcg can have no Anon memory
+>     - lumpty_reclaim() is not called.
+> 
+> 
+> This patch tries to avoid to use existing memcg's reclaim routine and
+> just tell "Hints" to global LRU. This patch is briefly tested and shows
+> good result to me. (But may not to you. plz brame me.)
+> 
+> Major characteristic is.
+>  - memcg will be inserted to softlimit-queue at charge() if usage excess
+>    soft limit.
+>  - softlimit-queue is a queue with priority. priority is detemined by size
+>    of excessing usage.
+>  - memcg's soft limit hooks is called by shrink_xxx_list() to show hints.
+>  - Behavior is affected by vm.swappiness and LRU scan rate is determined by
+>    global LRU's status.
+> 
+> I'm sorry that I'm tend not to tell enough explanation.  plz ask me.
+> There will be much discussion points, anyway. As usual, I'm not in hurry.
+> 
+> 
+> ==brief test result==
+> On 2CPU/1.6GB bytes machine. create group A and B
+>   A.  soft limit=300M
+>   B.  no soft limit
+> 
+>   Run a malloc() program on B and allcoate 1G of memory. The program just
+>   sleeps after allocating memory and no memory refernce after it.
+>   Run make -j 6 and compile the kernel.
+> 
+>   When vm.swappiness = 60  => 60MB of memory are swapped out from B.
+>   When vm.swappiness = 10  => 1MB of memory are swapped out from B    
+> 
+>   If no soft limit, 350MB of swap out will happen from B.(swapiness=60)
+> 
 
-I wonder if it can be hotplugged, but for the consistency it looks good.
+How did you calculate the swap usage of group B?
+
+> I'll try much more complexed ones in the weekend.
+
+You might want to try experiments where the group with the higher soft
+limit starts much later than the group with lower soft limit and both
+have a high demand for memory. Also try corner cases such as soft
+limits being 0, or groups where soft limits are equal, etc.
+
+We have a long weekend, so I've been unable to test/review your
+patches. I'll do so soon if possible.
 
 -- 
-	Evgeniy Polyakov
+	Balbir
