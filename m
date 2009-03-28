@@ -1,167 +1,149 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756444AbZC1Tvq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759329AbZC1Twb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756444AbZC1Tvq (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Mar 2009 15:51:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755460AbZC1TuR
+	id S1759329AbZC1Twb (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Mar 2009 15:52:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756376AbZC1TuT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Mar 2009 15:50:17 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:38365 "EHLO
+	Sat, 28 Mar 2009 15:50:19 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:38369 "EHLO
 	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754842AbZC1TuI (ORCPT
+	with ESMTP id S1755232AbZC1TuI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Sat, 28 Mar 2009 15:50:08 -0400
-Message-Id: <20090328194929.546464621@chello.nl>
+Message-Id: <20090328194929.973259216@chello.nl>
 References: <20090328194359.426029037@chello.nl>
 User-Agent: quilt/0.46-1
-Date: Sat, 28 Mar 2009 20:44:01 +0100
+Date: Sat, 28 Mar 2009 20:44:05 +0100
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
 Cc: Paul Mackerras <paulus@samba.org>, Mike Galbraith <efault@gmx.de>,
        Arjan van de Ven <arjan@infradead.org>,
        Wu Fengguang <fengguang.wu@intel.com>,
        Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: [PATCH 2/9] perf_counter: fix update_userpage()
-Content-Disposition: inline; filename=perf_counter-fix-update_userpage.patch
+Subject: [PATCH 6/9] perf_counter: powerpc: only reserve PMU hardware when we need it
+Content-Disposition: inline; filename=paulus-perf_counter-powerpc-only_reserve_PMU_hardware_when_we_need_it.patch
 X-Bad-Reply: References but no 'Re:' in Subject.
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-It just occured to me it is possible to have multiple contending
-updates of the userpage (mmap information vs overflow vs counter).
-This would break the seqlock logic.
+From: Paul Mackerras <paulus@samba.org>
 
-It appear the arch code uses this from NMI context, so we cannot
-possibly serialize its use, therefore separate the data_head update
-from it and let it return to its original use.
+Impact: cooperate with oprofile
 
-The arch code needs to make sure there are no contending callers by
-disabling the counter before using it -- powerpc appears to do this
-nicely.
+At present, on PowerPC, if you have perf_counters compiled in, oprofile
+doesn't work.  There is code to allow the PMU to be shared between
+competing subsystems, such as perf_counters and oprofile, but currently
+the perf_counter subsystem reserves the PMU for itself at boot time,
+and never releases it.
 
+This makes perf_counter play nicely with oprofile.  Now we keep a count
+of how many perf_counter instances are counting hardware events, and
+reserve the PMU when that count becomes non-zero, and release the PMU
+when that count becomes zero.  This means that it is possible to have
+perf_counters compiled in and still use oprofile, as long as there are
+no hardware perf_counters active.  This also means that if oprofile is
+active, sys_perf_counter_open will fail if the hw_event specifies a
+hardware event.
+
+To avoid races with other tasks creating and destroying perf_counters,
+we use a mutex.  We use atomic_inc_not_zero and atomic_add_unless to
+avoid having to take the mutex unless there is a possibility of the
+count going between 0 and 1.
+
+Signed-off-by: Paul Mackerras <paulus@samba.org>
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 ---
- include/linux/perf_counter.h |   35 +++++++++++++++++++++++++++++++++++
- kernel/perf_counter.c        |   38 +++++++++++++++++++++++---------------
- 2 files changed, 58 insertions(+), 15 deletions(-)
 
-Index: linux-2.6/include/linux/perf_counter.h
+ arch/powerpc/kernel/perf_counter.c |   47 +++++++++++++++++++++++++++++++++----
+ 1 file changed, 42 insertions(+), 5 deletions(-)
+
+Index: linux-2.6/arch/powerpc/kernel/perf_counter.c
 ===================================================================
---- linux-2.6.orig/include/linux/perf_counter.h
-+++ linux-2.6/include/linux/perf_counter.h
-@@ -160,10 +160,45 @@ struct perf_counter_hw_event {
- struct perf_counter_mmap_page {
- 	__u32	version;		/* version number of this structure */
- 	__u32	compat_version;		/* lowest version this is compat with */
-+
-+	/*
-+	 * Bits needed to read the hw counters in user-space.
-+	 *
-+	 * The index and offset should be read atomically using the seqlock:
-+	 *
-+	 *   __u32 seq, index;
-+	 *   __s64 offset;
-+	 *
-+	 * again:
-+	 *   rmb();
-+	 *   seq = pc->lock;
-+	 *
-+	 *   if (unlikely(seq & 1)) {
-+	 *     cpu_relax();
-+	 *     goto again;
-+	 *   }
-+	 *
-+	 *   index = pc->index;
-+	 *   offset = pc->offset;
-+	 *
-+	 *   rmb();
-+	 *   if (pc->lock != seq)
-+	 *     goto again;
-+	 *
-+	 * After this, index contains architecture specific counter index + 1,
-+	 * so that 0 means unavailable, offset contains the value to be added
-+	 * to the result of the raw timer read to obtain this counter's value.
-+	 */
- 	__u32	lock;			/* seqlock for synchronization */
- 	__u32	index;			/* hardware counter identifier */
- 	__s64	offset;			/* add to hardware counter value */
+--- linux-2.6.orig/arch/powerpc/kernel/perf_counter.c
++++ linux-2.6/arch/powerpc/kernel/perf_counter.c
+@@ -41,6 +41,8 @@ struct power_pmu *ppmu;
+  */
+ static unsigned int freeze_counters_kernel = MMCR0_FCS;
  
-+	/*
-+	 * Control data for the mmap() data buffer.
-+	 *
-+	 * User-space reading this value should issue an rmb(), on SMP capable
-+	 * platforms, after reading this value. -- see perf_counter_wakeup().
-+	 */
- 	__u32   data_head;		/* head in the data section */
++static void perf_counter_interrupt(struct pt_regs *regs);
++
+ void perf_counter_print_debug(void)
+ {
+ }
+@@ -594,6 +596,24 @@ struct hw_perf_counter_ops power_perf_op
+ 	.read = power_perf_read
  };
  
-Index: linux-2.6/kernel/perf_counter.c
-===================================================================
---- linux-2.6.orig/kernel/perf_counter.c
-+++ linux-2.6/kernel/perf_counter.c
-@@ -1316,10 +1316,22 @@ static long perf_ioctl(struct file *file
- 	return err;
- }
- 
--static void __perf_counter_update_userpage(struct perf_counter *counter,
--					   struct perf_mmap_data *data)
++/* Number of perf_counters counting hardware events */
++static atomic_t num_counters;
++/* Used to avoid races in calling reserve/release_pmc_hardware */
++static DEFINE_MUTEX(pmc_reserve_mutex);
++
 +/*
-+ * Callers need to ensure there can be no nesting of this function, otherwise
-+ * the seqlock logic goes bad. We can not serialize this because the arch
-+ * code calls this from NMI context.
++ * Release the PMU if this is the last perf_counter.
 + */
-+void perf_counter_update_userpage(struct perf_counter *counter)
++static void hw_perf_counter_destroy(struct perf_counter *counter)
++{
++	if (!atomic_add_unless(&num_counters, -1, 1)) {
++		mutex_lock(&pmc_reserve_mutex);
++		if (atomic_dec_return(&num_counters) == 0)
++			release_pmc_hardware();
++		mutex_unlock(&pmc_reserve_mutex);
++	}
++}
++
+ const struct hw_perf_counter_ops *
+ hw_perf_counter_init(struct perf_counter *counter)
  {
--	struct perf_counter_mmap_page *userpg = data->user_page;
-+	struct perf_mmap_data *data;
-+	struct perf_counter_mmap_page *userpg;
-+
-+	rcu_read_lock();
-+	data = rcu_dereference(counter->data);
-+	if (!data)
-+		goto unlock;
-+
-+	userpg = data->user_page;
+@@ -601,6 +621,7 @@ hw_perf_counter_init(struct perf_counter
+ 	struct perf_counter *ctrs[MAX_HWCOUNTERS];
+ 	unsigned int events[MAX_HWCOUNTERS];
+ 	int n;
++	int err;
  
- 	/*
- 	 * Disable preemption so as to not let the corresponding user-space
-@@ -1333,20 +1345,10 @@ static void __perf_counter_update_userpa
- 	if (counter->state == PERF_COUNTER_STATE_ACTIVE)
- 		userpg->offset -= atomic64_read(&counter->hw.prev_count);
+ 	if (!ppmu)
+ 		return NULL;
+@@ -646,6 +667,27 @@ hw_perf_counter_init(struct perf_counter
  
--	userpg->data_head = atomic_read(&data->head);
- 	smp_wmb();
- 	++userpg->lock;
- 	preempt_enable();
--}
--
--void perf_counter_update_userpage(struct perf_counter *counter)
--{
--	struct perf_mmap_data *data;
--
--	rcu_read_lock();
--	data = rcu_dereference(counter->data);
--	if (data)
--		__perf_counter_update_userpage(counter, data);
-+unlock:
- 	rcu_read_unlock();
+ 	counter->hw.config = events[n];
+ 	atomic64_set(&counter->hw.period_left, counter->hw_event.irq_period);
++
++	/*
++	 * See if we need to reserve the PMU.
++	 * If no counters are currently in use, then we have to take a
++	 * mutex to ensure that we don't race with another task doing
++	 * reserve_pmc_hardware or release_pmc_hardware.
++	 */
++	err = 0;
++	if (!atomic_inc_not_zero(&num_counters)) {
++		mutex_lock(&pmc_reserve_mutex);
++		if (atomic_read(&num_counters) == 0 &&
++		    reserve_pmc_hardware(perf_counter_interrupt))
++			err = -EBUSY;
++		else
++			atomic_inc(&num_counters);
++		mutex_unlock(&pmc_reserve_mutex);
++	}
++	counter->destroy = hw_perf_counter_destroy;
++
++	if (err)
++		return NULL;
+ 	return &power_perf_ops;
  }
  
-@@ -1547,7 +1549,13 @@ void perf_counter_wakeup(struct perf_cou
- 	data = rcu_dereference(counter->data);
- 	if (data) {
- 		(void)atomic_xchg(&data->wakeup, POLL_IN);
--		__perf_counter_update_userpage(counter, data);
-+		/*
-+		 * Ensure all data writes are issued before updating the
-+		 * user-space data head information. The matching rmb()
-+		 * will be in userspace after reading this value.
-+		 */
-+		smp_wmb();
-+		data->user_page->data_head = atomic_read(&data->head);
- 	}
- 	rcu_read_unlock();
+@@ -756,11 +798,6 @@ static int init_perf_counters(void)
+ {
+ 	unsigned long pvr;
  
+-	if (reserve_pmc_hardware(perf_counter_interrupt)) {
+-		printk(KERN_ERR "Couldn't init performance monitor subsystem\n");
+-		return -EBUSY;
+-	}
+-
+ 	/* XXX should get this from cputable */
+ 	pvr = mfspr(SPRN_PVR);
+ 	switch (PVR_VER(pvr)) {
 
 -- 
 
