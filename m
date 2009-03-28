@@ -1,109 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753210AbZC1FHD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755739AbZC1FWU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753210AbZC1FHD (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Mar 2009 01:07:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752077AbZC1FGw
+	id S1755739AbZC1FWU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Mar 2009 01:22:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752036AbZC1FWF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Mar 2009 01:06:52 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:56382 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751812AbZC1FGw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Mar 2009 01:06:52 -0400
-Date: Sat, 28 Mar 2009 06:06:33 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Theodore Tso <tytso@mit.edu>, David Rees <drees76@gmail.com>,
-       Jesper Krogh <jesper@krogh.cc>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.29
-Message-ID: <20090328050633.GA13003@elte.hu>
-References: <72dbd3150903241200v38720ca0x392c381f295bdea@mail.gmail.com> <20090325183011.GN32307@mit.edu> <alpine.LFD.2.00.0903251139260.3032@localhost.localdomain> <20090325220530.GR32307@mit.edu> <alpine.LFD.2.00.0903251622420.3032@localhost.localdomain> <20090326171148.9bf8f1ec.akpm@linux-foundation.org> <alpine.LFD.2.00.0903261723250.3994@localhost.localdomain> <20090326174704.cd36bf7b.akpm@linux-foundation.org> <alpine.LFD.2.00.0903261752110.3994@localhost.localdomain> <20090326182519.d576d703.akpm@linux-foundation.org>
+	Sat, 28 Mar 2009 01:22:05 -0400
+Received: from wf-out-1314.google.com ([209.85.200.170]:5531 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751722AbZC1FWC convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Mar 2009 01:22:02 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=qWKLIkCgxUQxExGvEQy1htVA7KZAMZjB/Ox74dOOc/nq4UDg1Tk5UtMv119qgRhK+r
+         1tENHJ6jJWk+OCVEom7eCAb7k5rjks1iDCDvaa7+ph8GOxq8iw/++jDJE51ht3PdkPFY
+         kpHBBRUHdOIezSC1c0g/70aDjzUyKZioBpyNY=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090326182519.d576d703.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20090327193542.28ffcc10@hobbes>
+References: <1238017510-26784-1-git-send-email-eric@anholt.net>
+	 <1238017510-26784-2-git-send-email-eric@anholt.net>
+	 <20090326174320.4f16c822@hobbes> <1238201672.4039.396.camel@laptop>
+	 <20090327193542.28ffcc10@hobbes>
+Date: Sat, 28 Mar 2009 15:22:00 +1000
+Message-ID: <21d7e9970903272222g3c553056u2c1832dc2cd97625@mail.gmail.com>
+Subject: Re: [PATCH 1/6] drm/i915: Fix lock order reversal in GTT pwrite path.
+From: Dave Airlie <airlied@gmail.com>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: Peter Zijlstra <peterz@infradead.org>, Eric Anholt <eric@anholt.net>,
+       linux-kernel@vger.kernel.org, dri-devel@lists.sourceforge.net
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, Mar 28, 2009 at 12:35 PM, Jesse Barnes <jbarnes@virtuousgeek.org> wrote:
+> On Sat, 28 Mar 2009 01:54:32 +0100
+> Peter Zijlstra <peterz@infradead.org> wrote:
+>
+>> On Thu, 2009-03-26 at 17:43 -0700, Jesse Barnes wrote:
+>> > On Wed, 25 Mar 2009 14:45:05 -0700
+>> > Eric Anholt <eric@anholt.net> wrote:
+>> >
+>> > > Since the pagefault path determines that the lock order we use
+>> > > has to be mmap_sem -> struct_mutex, we can't allow page faults to
+>> > > occur while the struct_mutex is held.  To fix this in pwrite, we
+>> > > first try optimistically to see if we can copy from user without
+>> > > faulting.  If it fails, fall back to using get_user_pages to pin
+>> > > the user's memory, and map those pages atomically when copying it
+>> > > to the GPU.
+>> > >
+>> > > Signed-off-by: Eric Anholt <eric@anholt.net>
+>> > > ---
+>> > > + /* Pin the user pages containing the data.  We can't
+>> > > fault while
+>> > > +  * holding the struct mutex, and all of the pwrite
+>> > > implementations
+>> > > +  * want to hold it while dereferencing the user data.
+>> > > +  */
+>> > > + first_data_page = data_ptr / PAGE_SIZE;
+>> > > + last_data_page = (data_ptr + args->size - 1) / PAGE_SIZE;
+>> > > + num_pages = last_data_page - first_data_page + 1;
+>> > > +
+>> > > + user_pages = kcalloc(num_pages, sizeof(struct page *),
+>> > > GFP_KERNEL);
+>> > > + if (user_pages == NULL)
+>> > > +         return -ENOMEM;
+>> >
+>> > If kmalloc limits us to a 128k allocation (and maybe less under
+>> > pressure), then we'll be limited to 128k/8 page pointers on 64 bit,
+>> > or 64M per pwrite...  Is that ok?  Or do we need to handle multiple
+>> > passes here?
+>>
+>> While officially supported, a 128k kmalloc is _very_ likely to fail,
+>> it would require an order 5 page allocation to back that, and that is
+>> well outside of comfortable.
+>
+> Yeah, my "and maybe less" could have been worded a tad more strongly. ;)
+> Do we have stats on which kmalloc buckets have available allocations
+> anywhere for machines under various workloads?  I know under heavy
+> pressure even 8k allocations can fail, but since this is a GFP_KERNEL
+> things should be a *little* better.
 
-* Andrew Morton <akpm@linux-foundation.org> wrote:
+You might want to check what TTM did, it had a vmalloc fallback.
 
-> On Thu, 26 Mar 2009 18:03:15 -0700 (PDT) Linus Torvalds <torvalds@linux-foundation.org> wrote:
-> 
-> > On Thu, 26 Mar 2009, Andrew Morton wrote:
-> > > 
-> > > userspace can get closer than the kernel can.
-> > 
-> > Andrew, that's SIMPLY NOT TRUE.
-> > 
-> > You state that without any amount of data to back it up, as if it was some 
-> > kind of truism. It's not.
-> 
-> I've seen you repeatedly fiddle the in-kernel defaults based on 
-> in-field experience.  That could just as easily have been done in 
-> initscripts by distros, and much more effectively because it 
-> doesn't need a new kernel.  That's data.
-> 
-> The fact that this hasn't even been _attempted_ (afaik) is 
-> deplorable.
-> 
-> Why does everyone just sit around waiting for the kernel to put a 
-> new value into two magic numbers which userspace scripts could 
-> have set?
+Another issue that might need checking in GEM was whether we can from unpriv
+userspace cause the kernel to do unbounded small kmallocs and keep
+them alive either via object references or anything like that.
 
-Three reasons.
-
-Firstly, this utterly does not scale.
-
-Microsoft has built an empire on the 'power of the default settings' 
-- why cannot Linux kernel developers finally realize the obvious: 
-that setting defaults centrally is an incredibly efficient way of 
-shaping the end result?
-
-The second reason is that in the past 10 years we have gone through 
-a couple of toxic cycles of distros trying to work around kernel 
-behavior by setting sysctls. That was done and then forgotten, and a 
-few years down the line some kernel maintainer found [related to a 
-bugreport] that distro X set that sysctl to value Y which now had a 
-different behavior and immediately chastised the distro broken and 
-refused to touch the bugreport and refused bugreports from that 
-distro from that point on.
-
-We've seen this again, and again, and i remember 2-3 specific 
-examples and i know how badly this experience trickles down on the 
-distro side.
-
-The end result: pretty much any tuning of kernel defaults is done 
-extremely reluctantly by distros. They consider kernel behavior a 
-domain of the kernel, and they dont generally risk going away from 
-the default. [ In other words, distro developers understand the 
-'power of defaults' a lot better than kernel developers ... ]
-
-This is also true in the reverse direction: they dont actually mind 
-the kernel doing a central change of policy, if it's a general step 
-forward. Distro developers are very practical, and they are a lot 
-less hardline about the sacred Unix principle of separation of 
-kernel from policy.
-
-Thirdly: the latency of getting changes to users. A new kernel is 
-released every 3 months. Distros are released every 6 months. A new 
-Firefox major version is released about once a year. A new major GCC 
-is released every three years.
-
-Given the release frequency and given our goal to minimize the 
-latency of getting improvements to users, which of these projects is 
-best suited to introduce a new default value? [and no, such changes 
-are not generally done in minor package updates.]
-
-	Ingo
+Dave.
+>
+> --
+> Jesse Barnes, Intel Open Source Technology Center
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
