@@ -1,98 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756932AbZC1AsT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757830AbZC1Ayr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756932AbZC1AsT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Mar 2009 20:48:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752702AbZC1AsB
+	id S1757830AbZC1Ayr (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Mar 2009 20:54:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752303AbZC1Ayj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Mar 2009 20:48:01 -0400
-Received: from vms173007pub.verizon.net ([206.46.173.7]:44783 "EHLO
-	vms173007pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752253AbZC1AsA (ORCPT
+	Fri, 27 Mar 2009 20:54:39 -0400
+Received: from casper.infradead.org ([85.118.1.10]:35262 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751994AbZC1Ayi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Mar 2009 20:48:00 -0400
-Date: Fri, 27 Mar 2009 20:47:55 -0400 (EDT)
-From: Len Brown <lenb@kernel.org>
-X-X-Sender: lenb@localhost.localdomain
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-Cc: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] acpi: Use 32-bit FADT values on X86
-In-reply-to: <20090327225225.GA1772@srcf.ucam.org>
-Message-id: <alpine.LFD.2.00.0903272045260.26419@localhost.localdomain>
-References: <20090327225225.GA1772@srcf.ucam.org>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-version: 1.0
-Content-type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 27 Mar 2009 20:54:38 -0400
+Subject: Re: [PATCH 1/6] drm/i915: Fix lock order reversal in GTT pwrite
+ path.
+From: Peter Zijlstra <peterz@infradead.org>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: Eric Anholt <eric@anholt.net>, linux-kernel@vger.kernel.org,
+       dri-devel@lists.sourceforge.net
+In-Reply-To: <20090326174320.4f16c822@hobbes>
+References: <1238017510-26784-1-git-send-email-eric@anholt.net>
+	 <1238017510-26784-2-git-send-email-eric@anholt.net>
+	 <20090326174320.4f16c822@hobbes>
+Content-Type: text/plain
+Date: Sat, 28 Mar 2009 01:54:32 +0100
+Message-Id: <1238201672.4039.396.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This was already fixed in ACPICA (granted, the patch hasn't gone over the 
-list yet)
+On Thu, 2009-03-26 at 17:43 -0700, Jesse Barnes wrote:
+> On Wed, 25 Mar 2009 14:45:05 -0700
+> Eric Anholt <eric@anholt.net> wrote:
+> 
+> > Since the pagefault path determines that the lock order we use has to
+> > be mmap_sem -> struct_mutex, we can't allow page faults to occur
+> > while the struct_mutex is held.  To fix this in pwrite, we first try
+> > optimistically to see if we can copy from user without faulting.  If
+> > it fails, fall back to using get_user_pages to pin the user's memory,
+> > and map those pages atomically when copying it to the GPU.
+> > 
+> > Signed-off-by: Eric Anholt <eric@anholt.net>
+> > ---
+> > +	/* Pin the user pages containing the data.  We can't fault
+> > while
+> > +	 * holding the struct mutex, and all of the pwrite
+> > implementations
+> > +	 * want to hold it while dereferencing the user data.
+> > +	 */
+> > +	first_data_page = data_ptr / PAGE_SIZE;
+> > +	last_data_page = (data_ptr + args->size - 1) / PAGE_SIZE;
+> > +	num_pages = last_data_page - first_data_page + 1;
+> > +
+> > +	user_pages = kcalloc(num_pages, sizeof(struct page *),
+> > GFP_KERNEL);
+> > +	if (user_pages == NULL)
+> > +		return -ENOMEM;
+> 
+> If kmalloc limits us to a 128k allocation (and maybe less under
+> pressure), then we'll be limited to 128k/8 page pointers on 64 bit, or
+> 64M per pwrite...  Is that ok?  Or do we need to handle multiple passes
+> here?
 
-http://git.kernel.org/?p=linux/kernel/git/lenb/linux-acpi-2.6.git;a=commitdiff;h=31fbc073a35a017e34840deb9e865a701e986002
---
-Len Brown, Intel Open Source Technology Center
+While officially supported, a 128k kmalloc is _very_ likely to fail, it
+would require an order 5 page allocation to back that, and that is well
+outside of comfortable.
 
-On Fri, 27 Mar 2009, Matthew Garrett wrote:
 
-> The ACPI specification says that we should use the 64-bit address 
-> offsets contained within the FADT if they exist. However, Windows uses 
-> the legacy address. Various vendors have left incorrect values in the 
-> 64-bit field which then causes problems later. Since the vast majority 
-> of machines have never been tested with an OS that uses the 64-bit value 
-> by default, we should behave like Windows and ignore the spec by only 
-> using the 64-bit address if it contains something that can't be 
-> represented in the legacy field. Since system io space is only 16 bits 
-> on x86, this should be entirely safe.
-> 
-> Signed-off-by: Matthew Garrett <mjg@redhat.com>
-> 
-> ---
-> 
-> Some question remains as to whether we should be using the 32-bit values 
-> from the FADT provided by the XSDT or whether we should just be using 
-> the values from the FADT provided by the RSDT. So far every acpidump 
-> I've looked at has contained the same values in both, even when the 
-> 64-bit values are broken. We know that there's a large number of 
-> machines out there that are broken in this respect. We have no evidence 
-> whatsoever to believe that there are any machines that this breaks. Can 
-> we just apply it and worry about further corner cases later?
-> 
-> diff --git a/drivers/acpi/acpica/tbfadt.c b/drivers/acpi/acpica/tbfadt.c
-> index 3636e4f..ad0e858 100644
-> --- a/drivers/acpi/acpica/tbfadt.c
-> +++ b/drivers/acpi/acpica/tbfadt.c
-> @@ -361,9 +361,28 @@ static void acpi_tb_convert_fadt(void)
->  		    ACPI_ADD_PTR(struct acpi_generic_address, &acpi_gbl_FADT,
->  				 fadt_info_table[i].address64);
->  
-> -		/* Expand only if the 64-bit X target is null */
-> +		/*
-> +		 * The ACPI specification says that we should use the
-> +		 * 64-bit address offsets if they exists. However,
-> +		 * Windows uses the legacy address. Various vendors
-> +		 * have left incorrect values in the 64-bit field,
-> +		 * which then causes problems later. Since the vast
-> +		 * majority of machines have never been tested with an
-> +		 * OS that uses the 64-bit value by default, we should
-> +		 * behave like Windows and ignore the spec by only
-> +		 * using the 64-bit address if it contains something
-> +		 * that can't be represented in the legacy
-> +		 * field. Since system io space is only 16 bits on
-> +		 * x86, this should be entirely safe. We also extend
-> +		 * the 32-bit value into the 64-bit one if no 64-bit
-> +		 * address is provided.
-> +		 */
->  
-> -		if (!target64->address) {
-> +		if (!target64->address
-> +#ifdef CONFIG_X86
-> +		    || (target64->space_id == ACPI_ADR_SPACE_SYSTEM_IO)
-> +#endif
-> +			) {
->  
->  			/* The space_id is always I/O for the 32-bit legacy address fields */
->  
-> -- 
-> Matthew Garrett | mjg59@srcf.ucam.org
-> 
+
