@@ -1,62 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761104AbZC1XYp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756253AbZC1XfZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761104AbZC1XYp (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Mar 2009 19:24:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755466AbZC1XYe
+	id S1756253AbZC1XfZ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Mar 2009 19:35:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752944AbZC1XfJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Mar 2009 19:24:34 -0400
-Received: from extu-mxob-1.symantec.com ([216.10.194.28]:60666 "EHLO
-	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752937AbZC1XYd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Mar 2009 19:24:33 -0400
-Date: Sat, 28 Mar 2009 23:23:01 +0000 (GMT)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.anvils
-To: Al Viro <viro@zeniv.linux.org.uk>
-cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Joe Malicki <jmalicki@metacarta.com>, Michael Itz <mitz@metacarta.com>,
-       Kenneth Baker <bakerk@metacarta.com>,
-       Chris Wright <chrisw@sous-sol.org>, David Howells <dhowells@redhat.com>,
-       Alexey Dobriyan <adobriyan@gmail.com>, Oleg Nesterov <oleg@redhat.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH 4/4] Annotate struct fs_struct's usage count restriction
-In-Reply-To: <Pine.LNX.4.64.0903282307050.14892@blonde.anvils>
-Message-ID: <Pine.LNX.4.64.0903282321390.15432@blonde.anvils>
-References: <Pine.LNX.4.64.0903282307050.14892@blonde.anvils>
+	Sat, 28 Mar 2009 19:35:09 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:54615 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751857AbZC1XfH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Mar 2009 19:35:07 -0400
+Date: Sun, 29 Mar 2009 00:34:38 +0100
+From: Ingo Molnar <mingo@elte.hu>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: "H. Peter Anvin" <hpa@kernel.org>, Sam Ravnborg <sam@ravnborg.org>,
+       Alexey Dobriyan <adobriyan@gmail.com>,
+       Jaswinder Singh Rajput <jaswinder@kernel.org>,
+       x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [git-pull -tip] x86: include inverse Xmas tree patches
+Message-ID: <20090328233438.GA4957@elte.hu>
+References: <1238251730.2526.2.camel@ht.satnam> <20090328150746.GA3268@x200.localdomain> <20090328190350.GA30214@uranus.ravnborg.org> <49CEA3CD.105@kernel.org> <alpine.LFD.2.00.0903290025280.3397@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.00.0903290025280.3397@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: David Howells <dhowells@redhat.com>
 
-Annotate struct fs_struct's usage count to indicate the restrictions upon it.
-It may not be incremented, except by clone(CLONE_FS), as this affects the
-check in check_unsafe_exec() in fs/exec.c.
+* Thomas Gleixner <tglx@linutronix.de> wrote:
 
-Signed-off-by: David Howells <dhowells@redhat.com>
-Signed-off-by: Hugh Dickins <hugh@veritas.com>
-Cc: stable@kernel.org
----
+> > Personally I'd prefer alphabetic order, sorting based on length 
+> > isn't a complete ordering.  Nearly all editors can sort 
+> > alphabetically at the push of a key.
+> 
+> I'd prefer if somebody would sit down and write a tool to analyse 
+> the include hell instead of manually shuffling crap around to 
+> avoid trivial merge conflicts. I have cleaned up enough stuff in 
+> the x86 merger myself where I was able to cut the number of 
+> includes at least in half just by staring at the gcc intermediate 
+> files. We could do better and automate the analysis so we get down 
+> to a handful of includes instead of including the world and more.
 
- include/linux/fs_struct.h |    5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
+I do not disagree with include file cleanups (we've done many of 
+them in this cycle and in previous cycles), but note that the 
+reduction in include files at the top of .c files actually increases 
+the chance of patch conflicts: when a new include file is added by 
+two patches to the same .c file.
 
---- 2.6.29/include/linux/fs_struct.h	2009-03-23 23:12:14.000000000 +0000
-+++ linux/include/linux/fs_struct.h	2009-03-28 18:06:02.000000000 +0000
-@@ -4,7 +4,10 @@
- #include <linux/path.h>
- 
- struct fs_struct {
--	atomic_t count;
-+	atomic_t count;	/* This usage count is used by check_unsafe_exec() for
-+			 * security checking purposes - therefore it may not be
-+			 * incremented, except by clone(CLONE_FS).
-+			 */
- 	rwlock_t lock;
- 	int umask;
- 	struct path root, pwd;
+	Ingo
