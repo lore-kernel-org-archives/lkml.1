@@ -1,43 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757134AbZC1Ghh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755304AbZC1Gv1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757134AbZC1Ghh (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Mar 2009 02:37:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753673AbZC1Gh1
+	id S1755304AbZC1Gv1 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Mar 2009 02:51:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752430AbZC1GvQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Mar 2009 02:37:27 -0400
-Received: from ozlabs.org ([203.10.76.45]:58007 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752870AbZC1Gh1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Mar 2009 02:37:27 -0400
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Subject: Re: [PATCH 3/5] lguest: avoid accidental recycling of pgdir pages
-Date: Sat, 28 Mar 2009 17:07:22 +1030
-User-Agent: KMail/1.11.1 (Linux/2.6.27-11-generic; KDE/4.2.1; i686; ; )
-Cc: lguest@ozlabs.org, Ingo Molnar <mingo@redhat.com>,
-       linux-kernel@vger.kernel.org, virtualization@lists.linux-foundation.org
-References: <200903271022.28863.rusty@rustcorp.com.au> <200903271154.22450.rusty@rustcorp.com.au> <49CCFFC0.1020904@goop.org>
-In-Reply-To: <49CCFFC0.1020904@goop.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Sat, 28 Mar 2009 02:51:16 -0400
+Received: from mail.gmx.net ([213.165.64.20]:35763 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1752304AbZC1GvQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Mar 2009 02:51:16 -0400
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX19naidRP65nChXVdGltxKF9V0sJYTc7ngxlGlmVfM
+	15l7hiAEEEy+Nw
+Subject: Re: Linux 2.6.29
+From: Mike Galbraith <efault@gmx.de>
+To: 7eggert@gmx.de
+Cc: Theodore Tso <tytso@mit.edu>, Matthew Garrett <mjg59@srcf.ucam.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       David Rees <drees76@gmail.com>, Jesper Krogh <jesper@krogh.cc>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <E1LnJzS-0001vn-Vf@be1.7eggert.dyndns.org>
+References: <cjGbn-6Xx-35@gated-at.bofh.it> <cjGl4-7ak-61@gated-at.bofh.it>
+	 <cjJsv-3Uu-5@gated-at.bofh.it> <cjKHX-5MF-19@gated-at.bofh.it>
+	 <ck7XP-JA-13@gated-at.bofh.it> <ck8h7-18H-1@gated-at.bofh.it>
+	 <ck8AA-1y0-7@gated-at.bofh.it> <ck8Kd-20o-7@gated-at.bofh.it>
+	 <ckaVR-5o8-9@gated-at.bofh.it> <ckbf4-5M8-7@gated-at.bofh.it>
+	 <ckcE8-845-9@gated-at.bofh.it>  <E1LnJzS-0001vn-Vf@be1.7eggert.dyndns.org>
+Content-Type: text/plain
+Date: Sat, 28 Mar 2009 07:51:08 +0100
+Message-Id: <1238223068.5983.8.camel@marge.simson.net>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200903281707.22688.rusty@rustcorp.com.au>
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.73
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 28 March 2009 03:03:04 Jeremy Fitzhardinge wrote:
-> Rusty Russell wrote:
-> > Now, I haven't *seen* this happen...
-> >   
-> 
-> Oh, maybe its because you already zap the shadows on tlb flush, and the 
-> kernel is careful to tlb flush every pagetable page before freeing...
+On Fri, 2009-03-27 at 22:53 +0100, Bodo Eggert wrote:
 
-OK, you've convinced me.  I'll drop this patch.  It was as I was looking for
-the inconsistent pte values that I thought of this issue.
+> data=ordered is a sane way of handling data. Otherwise, the millions
+> would change their ext3 to data=writeback.
 
-Thanks!
-Rusty.
+This one of the millions did that quite a while ago.  Sanity be damned,
+my quality of life improved by doing so.
+
+	-Mike
+
