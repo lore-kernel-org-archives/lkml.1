@@ -1,80 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753952AbZC2IcT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754223AbZC2Iv4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753952AbZC2IcT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Mar 2009 04:32:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752400AbZC2IcH
+	id S1754223AbZC2Iv4 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Mar 2009 04:51:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752400AbZC2Ivq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Mar 2009 04:32:07 -0400
-Received: from zone0.gcu-squad.org ([212.85.147.21]:3094 "EHLO
-	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752619AbZC2IcE (ORCPT
+	Sun, 29 Mar 2009 04:51:46 -0400
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:40084 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751760AbZC2Ivo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Mar 2009 04:32:04 -0400
-Date: Sun, 29 Mar 2009 10:31:44 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: Xose Vazquez Perez <xose.vazquez@gmail.com>
-Cc: linux-kernel@vger.kernel.org, pavel@suse.cz, mchehab@infradead.org,
-       linux@brodo.de, hch@lst.de, arjan@linux.intel.com, kay.sievers@suse.de,
-       rui.zhang@intel.com, len.brown@intel.com, htejun@gmail.com,
-       jengelh@computergmbh.de, Michael Buesch <mb@bu3sch.de>,
-       gcosta@redhat.com, jirislaby@gmail.com, rene.herman@gmail.com,
-       ole@ans.pl, tglx@linutronix.de
-Subject: Re: feature-removal-schedule.txt updated ??
-Message-ID: <20090329103144.15091e79@hyperion.delvare>
-In-Reply-To: <49CEC796.5040801@gmail.com>
-References: <49AF11AB.8040605@gmail.com>
-	<49CEC796.5040801@gmail.com>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; x86_64-suse-linux-gnu)
+	Sun, 29 Mar 2009 04:51:44 -0400
+References: <git-1238272225-dc85ce155b7cad4c39c1fc95b4f6281920cef3c8@dyn-67.arm.linux.org.uk>
+Message-ID: <git-1238272225-ecbf61e7357d5c7047c813edd6983902d158688c@dyn-67.arm.linux.org.uk>
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+To: stable@kernel.org,
+       Linux Kernel Mailing list <linux-kernel@vger.kernel.org>
+Date: Sat, 28 Mar 2009 20:30:26 +0000
+Content-type: text/plain; charset="utf-8"
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Subject: Re: [PATCH] [ARM] cumana: Fix a long standing bogon
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Xose,
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
 
-On Sun, 29 Mar 2009 01:57:58 +0100, Xose Vazquez Perez wrote:
-> Xose Vazquez Perez wrote:
-> 
-> > code is still there or file is not updated ?
-> > 
-> > $ grep ^When  Documentation/feature-removal-schedule.txt | egrep -v "2009|2010|2.6.3[0-9]"
-> > When:   2.6.29
-> > When:   July 2007
-> > When:   December 2008
-> > When:   November 2005
-> > When:   August 2006
-> > When:   before 2.6.19
-> > When:   October 2008
-> > When:   July 2008
-> > When:   August 2007
-> > When:   February 2008
-> > When: Dec 2008
-> > When:   July 2008
-> > When:   2.6.27
-> > When:   2.6.29
-> > When:   After the only user (hal) has seen a release with the patches
-> > When: 2.6.29
-> 
-> today only ONE was fixed!!
+Should be using strncmp as the data from user space may be unterminated
 
-This is all not very constructive. For one thing the merge window is
-still open, so there are reasonable chances that more entries will be
-removed in the next 9 days.
+(Bug #8004)
 
-For another, flooding people that way isn't going to fix anything. If
-you really want the situation to improve, you have to look at offending
-entries individually, contact the responsible person individually, ask
-why the entry is still there, and then send a patch removing or
-updating it if needs be. This is constructive. Yelling "there are
-out-of-date entries in Documentation/feature-removal-schedule.txt" is
-not.
+Signed-off-by: Alan Cox <alan@lxorguk.ukuu.org.uk
+Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
+---
+ drivers/scsi/arm/cumana_2.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-In other words, if you are sufficiently bothered by the current
-situation and want it to change, then work on it yourself, on your own
-time. We aren't your slaves, and we don't owe you anything.
-
-Thanks,
--- 
-Jean Delvare
+diff --git a/drivers/scsi/arm/cumana_2.c b/drivers/scsi/arm/cumana_2.c
+index 68a6412..ed502b7 100644
+--- a/drivers/scsi/arm/cumana_2.c
++++ b/drivers/scsi/arm/cumana_2.c
+@@ -318,7 +318,7 @@ cumanascsi_2_set_proc_info(struct Scsi_Host *host, char *buffer, int length)
+ {
+ 	int ret = length;
+ 
+-	if (length >= 11 && strcmp(buffer, "CUMANASCSI2") == 0) {
++	if (length >= 11 && strncmp(buffer, "CUMANASCSI2", 11) == 0) {
+ 		buffer += 11;
+ 		length -= 11;
+ 
