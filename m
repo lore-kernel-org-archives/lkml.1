@@ -1,60 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755838AbZC1QZb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758587AbZC1Q1q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755838AbZC1QZb (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Mar 2009 12:25:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754632AbZC1QZW
+	id S1758587AbZC1Q1q (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Mar 2009 12:27:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754870AbZC1Q1h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Mar 2009 12:25:22 -0400
-Received: from mail-ew0-f165.google.com ([209.85.219.165]:55916 "EHLO
-	mail-ew0-f165.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754495AbZC1QZV (ORCPT
+	Sat, 28 Mar 2009 12:27:37 -0400
+Received: from smtp119.sbc.mail.sp1.yahoo.com ([69.147.64.92]:34820 "HELO
+	smtp119.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1754708AbZC1Q1g (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Mar 2009 12:25:21 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=UAa18P/Bn4MtFrCEfYHcjwPM9A4yuPTI1lgkMx4RUkO2ZEA2NyBVIcIWrs3KXtEY7e
-         9gMkUry6w+KxOYYVu7nS2NAB34I9o6H3XdZWIfOcMBCFwNMLauju9PDBjDR/TiQeFsRq
-         0uWh8Hc1K5lYRy2eNXYcgveKc82Jnpm20Cr/I=
+	Sat, 28 Mar 2009 12:27:36 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=G3kk9Op622H0yaCaD8zxWG+2oP4BK/5u0SAj1Lc2U7O5I22o0xk1zuNbWe5g8SnpSwXT67u9YbwnxpsBa9X27TIocgR+9GqVW81/oq+Qd6KMZO+L93uwwvqEsGtvd7g064MG/a4UBQ6mwW8X1rUPXSAI1WfEp42WHmxK8i05eyw=  ;
+X-YMail-OSG: AkuAyzoVM1kCq4GCTVYv2TCZRoSoalliD0X0xIT2CtBjMNvEcz4OEJ8i2w4MQ1ZrsqbMkUNtQVc.ZrmcYYovalir1j9uGxh9P1ghFglQ5t8CMYVbfsj207SyTy4IyjxV69AiITuTKfezrrfm2bx25._pxxnZJ5vtBoCbqfrleyq6wxroFaG44biSbsS3
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: "Uwe =?iso-8859-1?q?Kleine-K=F6nig?=" 
+	<u.kleine-koenig@pengutronix.de>
+Subject: Re: [PATCH 04/58] move at91_ether's probe function to .devinit.text
+Date: Sat, 28 Mar 2009 09:27:32 -0700
+User-Agent: KMail/1.9.10
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       "David S. Miller" <davem@davemloft.net>,
+       Jeff Garzik <jgarzik@redhat.com>,
+       Paulius Zaleckas <paulius.zaleckas@teltonika.lt>,
+       Marc Pignat <marc.pignat@hevs.ch>, Andrew Victor <linux@maxim.org.za>,
+       Roel Kluin <12o3l@tiscali.nl>
+References: <20090327232153.GA16348@pengutronix.de> <200903271709.38383.david-b@pacbell.net> <20090328063211.GA1041@pengutronix.de>
+In-Reply-To: <20090328063211.GA1041@pengutronix.de>
 MIME-Version: 1.0
-In-Reply-To: <49CE35AE.1080702@s5r6.in-berlin.de>
-References: <20090327051338.GP6239@mit.edu> <49CD4DDF.3000001@garzik.org>
-	 <alpine.LFD.2.00.0903271511230.3994@localhost.localdomain>
-	 <alpine.LFD.2.00.0903271522210.3994@localhost.localdomain>
-	 <49CD7B10.7010601@garzik.org> <49CD891A.7030103@rtr.ca>
-	 <49CD9047.4060500@garzik.org> <49CE2633.2000903@s5r6.in-berlin.de>
-	 <49CE3186.8090903@garzik.org> <49CE35AE.1080702@s5r6.in-berlin.de>
-Date: Sat, 28 Mar 2009 09:25:17 -0700
-Message-ID: <faa09fad0903280925t35a61c0aj2ae29d90337b9dab@mail.gmail.com>
-Subject: Re: Linux 2.6.29
-From: Alex Goebel <alex.goebel@gmail.com>
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Cc: Jeff Garzik <jeff@garzik.org>, Mark Lord <lkml@rtr.ca>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Matthew Garrett <mjg59@srcf.ucam.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Theodore Tso <tytso@mit.edu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Rees <drees76@gmail.com>, Jesper Krogh <jesper@krogh.cc>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8bit
+Content-Disposition: inline
+Message-Id: <200903280927.32786.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 3/28/09, Stefan Richter <stefanr@s5r6.in-berlin.de> wrote:
+On Friday 27 March 2009, Uwe Kleine-König wrote:
+> 
+> > In this series, you cc'd me on four OMAP drivers
+> > (mmci-omap, mmci-omap-hs, omap-rng, omap_udc) which
+> > I *know* that's a completely workable -- and far
+> > preferable -- solution.  There might be others.
+>
+> So if I convert them to the alternative fix, you volunteer to test these
+> patches?  (Or at least provide your Tested-and-Acked-by:?)
 
-> Well, for the time being, why not base considerations for performance,
-> interactivity, energy consumption, graceful restoration of application
-> state etc. on the assumption that kernel crashes are suitably rare?  (At
-> least on systems where data loss would be of concern.)
+Sure, those four plus at91_ether.  I've got that hardware
+sitting around, and it's just build-and-boot.
 
-Absolutely! That's what I thought all the time when following this
-(meanwhile quite grotesque) discussion. Even for ordinary
-home/office/laptop/desktop users (!=kernel developers), kernel crashes
-are simply not a realistic scenario any more to optimize anything for
-(which is due to the good work you guys are doing in making/keeping
-the kernel stable).
 
-Alex
+
