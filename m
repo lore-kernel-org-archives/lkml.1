@@ -1,85 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757506AbZC1VEU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758731AbZC1VJO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757506AbZC1VEU (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Mar 2009 17:04:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756939AbZC1VD7
+	id S1758731AbZC1VJO (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Mar 2009 17:09:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758563AbZC1VIz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Mar 2009 17:03:59 -0400
-Received: from pfepb.post.tele.dk ([195.41.46.236]:58761 "EHLO
-	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756860AbZC1VD7 (ORCPT
+	Sat, 28 Mar 2009 17:08:55 -0400
+Received: from rv-out-0506.google.com ([209.85.198.232]:8224 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758548AbZC1VIy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Mar 2009 17:03:59 -0400
-Date: Sat, 28 Mar 2009 22:05:59 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Boaz Harrosh <bharrosh@panasas.com>
-Cc: git-commits-head@vger.kernel.org
-Subject: Re: [SCSI] libosd: OSDv1 preliminary implementation
-Message-ID: <20090328210559.GA30903@uranus.ravnborg.org>
-References: <200903282059.n2SKxp6U030392@hera.kernel.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200903282059.n2SKxp6U030392@hera.kernel.org>
-User-Agent: Mutt/1.4.2.1i
+	Sat, 28 Mar 2009 17:08:54 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:message-id:mime-version:content-type
+         :content-transfer-encoding:x-mailer:thread-index:content-language;
+        b=MQ6Lutq/c246PLw+v2FfHG/B35v90Q5XTv/RoeD8hm/z6yp4nYwepfnng2UYHIsmoD
+         Bkr+3uCpehBRim1kGzQD8/7KO/GC/3cK8kRH6SJK5z9FfiGHoFqc0RzJPzKpdttS5AHl
+         MKStH6GngfCjsuMOrRL+fOxT1BqkBXSbhD8qw=
+From: "Hua Zhong" <hzhong@gmail.com>
+To: "'Linux Kernel Mailing List'" <linux-kernel@vger.kernel.org>
+Subject: 2.6.29 network hosed?
+Date: Sat, 28 Mar 2009 14:08:39 -0700
+Message-ID: <01fc01c9afe9$5ecb43b0$1c61cb10$@com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Microsoft Office Outlook 12.0
+Thread-Index: Acmv6Vz2/Pn8UgPSSK2TMO/OM/5rRA==
+Content-Language: en-us
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Mar 28, 2009 at 08:59:51PM +0000, Linux Kernel Mailing List wrote:
-> Gitweb:     http://git.kernel.org/linus/02941a530ef736210b4cf8b24dd34c238d5d5a40
-> Commit:     02941a530ef736210b4cf8b24dd34c238d5d5a40
-> Parent:     de258bf5e63863f42e0f9a7c5ffd29916a41e399
-> Author:     Boaz Harrosh <bharrosh@panasas.com>
-> AuthorDate: Sun Jan 25 16:55:30 2009 +0200
-> Committer:  James Bottomley <James.Bottomley@HansenPartnership.com>
-> CommitDate: Thu Mar 12 12:58:06 2009 -0500
-> 
->     [SCSI] libosd: OSDv1 preliminary implementation
->     
->     Implementation of the most basic OSD functionality and
->     infrastructure. Mainly Format, Create/Remove Partition,
->     Create/Remove Object, and read/write.
->     
->     - Add Makefile and Kbuild to compile libosd.ko
->     - osd_initiator.c Implementation file for osd_initiator.h
->       and osd_sec.h APIs
->     - osd_debug.h - Some kprintf macro definitions
->     
->     Signed-off-by: Boaz Harrosh <bharrosh@panasas.com>
->     Reviewed-by: Benny Halevy <bhalevy@panasas.com>
->     Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
-> ---
->  drivers/scsi/osd/Kbuild          |   32 +++
->  drivers/scsi/osd/Makefile        |   37 +++
->  drivers/scsi/osd/osd_debug.h     |   30 +++
->  drivers/scsi/osd/osd_initiator.c |  448 ++++++++++++++++++++++++++++++++++++++
->  4 files changed, 547 insertions(+), 0 deletions(-)
-> 
-> diff --git a/drivers/scsi/osd/Kbuild b/drivers/scsi/osd/Kbuild
-> new file mode 100644
-> index 0000000..a95e025
-> --- /dev/null
-> +++ b/drivers/scsi/osd/Kbuild
-> @@ -0,0 +1,32 @@
-> +#
-> +# Kbuild for the OSD modules
-> +#
-> +# Copyright (C) 2008 Panasas Inc.  All rights reserved.
-> +#
-> +# Authors:
-> +#   Boaz Harrosh <bharrosh@panasas.com>
-> +#   Benny Halevy <bhalevy@panasas.com>
-> +#
-> +# This program is free software; you can redistribute it and/or modify
-> +# it under the terms of the GNU General Public License version 2
-> +#
-> +
-> +ifneq ($(OSD_INC),)
-> +# we are built out-of-tree Kconfigure everything as on
+I downloaded 2.6.29 and the network seems to be hosed on my desktop. Normal
+ssh is fine, or light use of network. But whenever I run a perforce
+integration the entire box just becomes completely dead on me. No traces,
+warnings or printks. 100% reproducible. It's a FC4 based system (I know,
+pretty old) for development.
 
-It is now included in mainline.
-So can we please get rid of this crap?
+I only have an USB keyboard attached and it's not recognized after boot, so
+no sysrq traces. Probably I have to upgrade udev? I can still use the
+keyboard on the grub boot menu though.
 
-	Sam
+If it's a known issue please let me know. I'd be glad to test any patches.
+
+Hua
+
