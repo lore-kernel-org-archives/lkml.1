@@ -1,128 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757126AbZC1LcT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754961AbZC1Lri@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757126AbZC1LcT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Mar 2009 07:32:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753951AbZC1LcH
+	id S1754961AbZC1Lri (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Mar 2009 07:47:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753948AbZC1Lr2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Mar 2009 07:32:07 -0400
-Received: from mail-fx0-f158.google.com ([209.85.220.158]:37692 "EHLO
-	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753787AbZC1LcF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Mar 2009 07:32:05 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=M1/K96xe/l1nLFm3OU540KKGQR+AYQqi9mB1ViqwKZHCV4fy56d/peu+LmJVmvGg5o
-         PsaOn0uPktQtBFzO1v5SVDmy6fkLffg01q1tQF9ItU1HqWDbETgnWtE5HoyFjwPwjt/q
-         58ZfEpglRjNeIkWeq76h9tjl0Udl3ETklOiIA=
-Subject: Re: [patch 3/14] x86, ptrace, bts: stop bts tracing early in
-	do_exit
-From: Markus Metzger <markus.t.metzger@googlemail.com>
-To: Oleg Nesterov <oleg@redhat.com>, Ingo Molnar <mingo@elte.hu>
-Cc: "Metzger, Markus T" <markus.t.metzger@intel.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "mingo@elte.hu" <mingo@elte.hu>,
-       "tglx@linutronix.de" <tglx@linutronix.de>,
-       "hpa@zytor.com" <hpa@zytor.com>,
-       "roland@redhat.com" <roland@redhat.com>,
-       "eranian@googlemail.com" <eranian@googlemail.com>,
-       "Villacis, Juan" <juan.villacis@intel.com>,
-       "ak@linux.jf.intel.com" <ak@linux.jf.intel.com>
-In-Reply-To: <20090327172413.GC25762@redhat.com>
-References: <20090327095525.A11052@sedona.ch.intel.com>
-	 <20090327143435.GD14504@redhat.com>
-	 <928CFBE8E7CB0040959E56B4EA41A77E9266B6D4@irsmsx504.ger.corp.intel.com>
-	 <20090327172413.GC25762@redhat.com>
-Content-Type: text/plain
-Date: Sat, 28 Mar 2009 12:31:52 +0100
-Message-Id: <1238239912.6036.0.camel@raistlin>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1
-Content-Transfer-Encoding: 7bit
+	Sat, 28 Mar 2009 07:47:28 -0400
+Received: from hera.kernel.org ([140.211.167.34]:58491 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753914AbZC1Lr0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Mar 2009 07:47:26 -0400
+Date: Sat, 28 Mar 2009 11:45:45 GMT
+From: Ingo Molnar <mingo@elte.hu>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       penberg@cs.helsinki.fi, eduard.munteanu@linux360.ro,
+       viro@zeniv.linux.org.uk, tglx@linutronix.de, mingo@elte.hu,
+       adobriyan@gmail.com
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       penberg@cs.helsinki.fi, eduard.munteanu@linux360.ro,
+       viro@zeniv.linux.org.uk, tglx@linutronix.de, mingo@elte.hu,
+       adobriyan@gmail.com
+In-Reply-To: <1237898630.25315.83.camel@penberg-laptop>
+References: <1237898630.25315.83.camel@penberg-laptop>
+Subject: [tip:tracing/kmemtrace] fs.h: uninline simple_transaction_set()
+Message-ID: <tip-a1525f87fd18c687edf376455c7d2e73c9b2cb6c@git.kernel.org>
+Git-Commit-ID: a1525f87fd18c687edf376455c7d2e73c9b2cb6c
+X-Mailer: tip-git-log-daemon
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sat, 28 Mar 2009 11:45:49 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-03-27 at 18:24 +0100, Oleg Nesterov wrote:
-> On 03/27, Metzger, Markus T wrote:
-> >
-> > >-----Original Message-----
-> > >From: Oleg Nesterov [mailto:oleg@redhat.com]
-> > >Sent: Friday, March 27, 2009 3:35 PM
-> >
-> > >> +static void ptrace_bts_exit(void)
-> > >> +{
-> > >> +	if (unlikely(!list_empty(&current->ptraced)))
-> > >> +		ptrace_bts_exit_tracer();
-> > >> +
-> > >> +	if (unlikely(current->bts))
-> > >> +		ptrace_bts_exit_tracee();
-> > >> +}
-> > >
-> > >Could you explain why do we need ptrace_bts_exit_tracee() ?
-> > >
-> > >If current is traced, the tracer should do ptrace_bts_release()
-> > >eventually, no?
-> >
-> > If current is traced and exits, it may be reaped by another thread that is not
-> > the tracer (that's actually your example you made in an earlier thread to
-> > describe the race between a normal detach and an exiting tracee).
-> >
-> > The ptrace_unlink() call to detach the tracer is executed with irq's disabled.
-> > I need irq's enabled (see the other discussion, to wait for the traced task).
-> 
-> OK,
-> 
-> > Therefore, I have the tracee disable bts tracing itself when it exits.
-> >
-> >
-> > >And if we really need to do ptrace_bts_exit_tracee(), then
-> > >"if (unlikely(current->bts))" check is racy. The tracer
-> > >can do PTRACE_BTS_CONFIG right after the check.
-> >
-> > The ptrace system call to do this would require the tracee to be stopped.
-> 
-> Yes, but this doesn't matter.
-> 
-> The tracer starts ptrace(PTRACE_BTS_CONFIG) and stops the tracee.
-> But when the tracer calls ptrace_bts_config() the tracee can be already
-> killed, and it can exit and bypass ptrace_bts_exit_tracee().
+Commit-ID:  a1525f87fd18c687edf376455c7d2e73c9b2cb6c
+Gitweb:     http://git.kernel.org/tip/a1525f87fd18c687edf376455c7d2e73c9b2cb6c
+Author:     Ingo Molnar <mingo@elte.hu>
+AuthorDate: Wed, 25 Mar 2009 16:48:35 +0100
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Sat, 28 Mar 2009 12:44:06 +0100
 
-Could something like that work?
+fs.h: uninline simple_transaction_set()
 
-ds_release_bts(struct bts_tracer *tracer)
-{
-	struct task_struct *task =
-		tracer->ds.context->task;
+Move simple_transaction_set() to the other simple-transaction
+file helpers in fs/libfs.c.
 
-	do {
-		set_task_state(task, TASK_UNINTERRUPTIBLE);
-	while (!wait_task_inactive(task, TASK_UNINTERRUPTIBLE));
+This removes an implicit asm/page.h PAGE_SIZE dependency from
+fs.h (asm/page.h is not an exported header so HEADERS_CHECK fils),
+and also reduces kernel size a bit.
 
-	ds_suspend_bts(tracer);
-	ds_free_bts(tracer);
-
-	wake_up_process(task);
-}
-
-I guess it would not work in general, since task could already sleep
-on some event and be woken up after the do loop.
-
-I was thinking it might work for the exit race, since we don't sleep
-during exit, but it might have started sleeping before the SIGKILL.
+Acked-by: Al Viro <viro@zeniv.linux.org.uk>
+Cc: Alexey Dobriyan <adobriyan@gmail.com>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
+Cc: paulmck@linux.vnet.ibm.com
+LKML-Reference: <1237898630.25315.83.camel@penberg-laptop>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
-Isn't this a general problem for ptrace?
+---
+ fs/libfs.c         |   16 ++++++++++++++++
+ include/linux/fs.h |   16 +---------------
+ 2 files changed, 17 insertions(+), 15 deletions(-)
 
-Ptrace uses a similar pattern in ptrace_check_attach().
-It stops the traced task, but that task might wake up immediately after
-that check. It might be scheduled in any time during a ptrace operation.
-
-In that case, must I always assume I'm operating on a running task?
-
-
-regards,
-markus.
-
+diff --git a/fs/libfs.c b/fs/libfs.c
+index 49b4409..c872c64 100644
+--- a/fs/libfs.c
++++ b/fs/libfs.c
+@@ -574,6 +574,21 @@ ssize_t memory_read_from_buffer(void *to, size_t count, loff_t *ppos,
+  * possibly a read which collects the result - which is stored in a
+  * file-local buffer.
+  */
++
++void simple_transaction_set(struct file *file, size_t n)
++{
++	struct simple_transaction_argresp *ar = file->private_data;
++
++	BUG_ON(n > SIMPLE_TRANSACTION_LIMIT);
++
++	/*
++	 * The barrier ensures that ar->size will really remain zero until
++	 * ar->data is ready for reading.
++	 */
++	smp_mb();
++	ar->size = n;
++}
++
+ char *simple_transaction_get(struct file *file, const char __user *buf, size_t size)
+ {
+ 	struct simple_transaction_argresp *ar;
+@@ -819,6 +834,7 @@ EXPORT_SYMBOL(simple_sync_file);
+ EXPORT_SYMBOL(simple_unlink);
+ EXPORT_SYMBOL(simple_read_from_buffer);
+ EXPORT_SYMBOL(memory_read_from_buffer);
++EXPORT_SYMBOL(simple_transaction_set);
+ EXPORT_SYMBOL(simple_transaction_get);
+ EXPORT_SYMBOL(simple_transaction_read);
+ EXPORT_SYMBOL(simple_transaction_release);
+diff --git a/include/linux/fs.h b/include/linux/fs.h
+index 79be937..2ebe3ce 100644
+--- a/include/linux/fs.h
++++ b/include/linux/fs.h
+@@ -9,8 +9,6 @@
+ #include <linux/limits.h>
+ #include <linux/ioctl.h>
+ 
+-#include <asm/page.h> /* for PAGE_SIZE */
+-
+ /*
+  * It's silly to have NR_OPEN bigger than NR_FILE, but you can change
+  * the file limit at runtime and only root can increase the per-process
+@@ -2173,19 +2171,7 @@ ssize_t simple_transaction_read(struct file *file, char __user *buf,
+ 				size_t size, loff_t *pos);
+ int simple_transaction_release(struct inode *inode, struct file *file);
+ 
+-static inline void simple_transaction_set(struct file *file, size_t n)
+-{
+-	struct simple_transaction_argresp *ar = file->private_data;
+-
+-	BUG_ON(n > SIMPLE_TRANSACTION_LIMIT);
+-
+-	/*
+-	 * The barrier ensures that ar->size will really remain zero until
+-	 * ar->data is ready for reading.
+-	 */
+-	smp_mb();
+-	ar->size = n;
+-}
++void simple_transaction_set(struct file *file, size_t n);
+ 
+ /*
+  * simple attribute files
