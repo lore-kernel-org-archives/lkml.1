@@ -1,68 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756408AbZC1SDZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756226AbZC1SLe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756408AbZC1SDZ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Mar 2009 14:03:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753392AbZC1SDQ
+	id S1756226AbZC1SLe (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Mar 2009 14:11:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753392AbZC1SLY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Mar 2009 14:03:16 -0400
-Received: from wf-out-1314.google.com ([209.85.200.174]:49990 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753335AbZC1SDP (ORCPT
+	Sat, 28 Mar 2009 14:11:24 -0400
+Received: from e28smtp02.in.ibm.com ([59.145.155.2]:47339 "EHLO
+	e28smtp02.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753024AbZC1SLX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Mar 2009 14:03:15 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type
-         :content-transfer-encoding;
-        b=j0hF1uHAJLLrquTZ+0GBsP9aqH7fvx4jEY+d/8fJG7fm1ciDholbpjVrcCYsOdaK1/
-         rIwhdnk7319Ry/06n1wjcHhfb12BfhLcVuDcP2b2q1cq2jr/x7bm5W4iIX3cTw82L1pB
-         wR+5QxsAjvxM3FgnfV4ACuaTRZC+S0mjJFf3g=
+	Sat, 28 Mar 2009 14:11:23 -0400
+Date: Sat, 28 Mar 2009 23:41:00 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "kosaki.motohiro@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>
+Subject: Re: [RFC][PATCH] memcg soft limit (yet another new design) v1
+Message-ID: <20090328181100.GB26686@balbir.in.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+References: <20090327135933.789729cb.kamezawa.hiroyu@jp.fujitsu.com>
 MIME-Version: 1.0
-Date: Sat, 28 Mar 2009 12:03:13 -0600
-Message-ID: <9b1675090903281103r612ec934odc7430008eeb9c94@mail.gmail.com>
-Subject: kernel sluggish bug 12309
-From: Trenton Adams <trenton.d.adams@gmail.com>
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <20090327135933.789729cb.kamezawa.hiroyu@jp.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-http://bugzilla.kernel.org/show_bug.cgi?id=12309
+* KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-03-27 13:59:33]:
 
-Hi Guys,
+> ==brief test result==
+> On 2CPU/1.6GB bytes machine. create group A and B
+>   A.  soft limit=300M
+>   B.  no soft limit
+> 
+>   Run a malloc() program on B and allcoate 1G of memory. The program just
+>   sleeps after allocating memory and no memory refernce after it.
+>   Run make -j 6 and compile the kernel.
+> 
+>   When vm.swappiness = 60  => 60MB of memory are swapped out from B.
+>   When vm.swappiness = 10  => 1MB of memory are swapped out from B    
+> 
+>   If no soft limit, 350MB of swap out will happen from B.(swapiness=60)
+>
 
-Is this the right place to be discussing this?  If not, let me know.
+I ran the same tests, booted the machine with mem=1700M and maxcpus=2
 
-FYI, I am on x86_64.
+Here is what I see with
 
-This bug is very debilitating for me, especially on my home system.
-So, I recently read about "git bisect", when I was reading an xorg
-bug.  So, I thought hey, I should give that a try to try and narrow
-down which kernel version gives me a problem.  That would certainly
-help you guys in finding this EXACT issue, and me getting a reasonable
-fix. :D
+A has a swapout of 344M and B has not swapout at all, since B is
+always under its soft limit. vm.swappiness is set to 60
 
-Anyhow, I started with cloning Linus' git kernel tree, and then
-checking out 2.6.17.  2.6.17 was working for me on my work machine
-when I was using gentoo 32-bit, so I thought that was a good place to
-start.  It seems like it's better performance.
+I think the above is more along the lines of the expected functional behaviour. 
 
-So, before starting the git bisect stuff, I wanted to try an earlier
-version.  So, I checked out 2.6.16, but it refuses to compile.  Can
-someone help me?
-
-FYI, I did an mrproper, and then copied my config back to ".config".
-
-  AS      arch/x86_64/ia32/vsyscall-sysenter.o
-  SYSCALL arch/x86_64/ia32/vsyscall-sysenter.so
-collect2: ld terminated with signal 11 [Segmentation fault]
-/usr/lib/gcc/x86_64-pc-linux-gnu/4.1.2/../../../../x86_64-pc-linux-gnu/bin/ld:
-i386:x86-64 architecture of input file
-`arch/x86_64/ia32/vsyscall-sysenter.o' is incompatible with i386
-output
-make[1]: *** [arch/x86_64/ia32/vsyscall-sysenter.so] Error 1
-make: *** [arch/x86_64/ia32] Error 2
-
-Thanks.
+-- 
+	Balbir
