@@ -1,58 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752661AbZC1EHb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758141AbZC1Ens@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752661AbZC1EHb (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Mar 2009 00:07:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750715AbZC1EHO
+	id S1758141AbZC1Ens (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Mar 2009 00:43:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751392AbZC1Enj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Mar 2009 00:07:14 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:55767 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750814AbZC1EHF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Mar 2009 00:07:05 -0400
-Date: Sat, 28 Mar 2009 01:06:33 -0300
-From: Mauro Carvalho Chehab <mchehab@infradead.org>
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux1394-devel@lists.sourceforge.net
-Subject: Re: [git pull] FireWire updates post 2.6.29
-Message-ID: <20090328010633.56c10696@pedra.chehab.org>
-In-Reply-To: <tkrat.09e279b9fad0fd3c@s5r6.in-berlin.de>
-References: <tkrat.09e279b9fad0fd3c@s5r6.in-berlin.de>
-X-Mailer: Claws Mail 3.3.1 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sat, 28 Mar 2009 00:43:39 -0400
+Received: from hera.kernel.org ([140.211.167.34]:40886 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750726AbZC1Eni (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Mar 2009 00:43:38 -0400
+Message-ID: <49CDAAD5.9010202@kernel.org>
+Date: Fri, 27 Mar 2009 21:43:01 -0700
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+MIME-Version: 1.0
+To: Chris Leech <christopher.leech@intel.com>, Ingo Molnar <mingo@elte.hu>
+CC: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: [PATCH] irq: mask irq before move it
+References: <20090326220411.GA16286@cleech-lnx.jf.intel.com> <86802c440903261929s775fe85cv86b900e2610acf1d@mail.gmail.com> <20090327163438.GA10185@cleech-lnx.jf.intel.com>
+In-Reply-To: <20090327163438.GA10185@cleech-lnx.jf.intel.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 28 Mar 2009 01:11:20 +0100 (CET)
-Stefan Richter <stefanr@s5r6.in-berlin.de> wrote:
 
-> Linus, please pull from the for-linus branch at
-> 
->     git://git.kernel.org/pub/scm/linux/kernel/git/ieee1394/linux1394-2.6.git for-linus
-> 
-> to receive the following IEEE 1394/ FireWire subsystem updates.
-> Most of it are feature additions to firewire-core for userspace drivers
-> (via libdc1394 and libraw1394), some also for in-kernel drivers.  Much
-> of it has been written already last year and went into -next early this
-> year, slightly too late for 2.6.29. Userspace code which uses the
-> features went over the respective mailinglists and should appear in
-> libdc1394 and libraw1394 soon.  Also included:  Two recent dvb/firewire
-> fixes; Mauro has been informed.
-> 
->  drivers/media/dvb/firewire/firedtv-avc.c |   10 +-
+Imapct: fix panic
 
-For the V4L/DVB changes:
+try to mask the irq, before move the irq desc
 
-Acked-by: Mauro Carvalho Chehab <mchehab@redhat.com>
+Signed-off-by: Yinghai Lu <yinghai@kernel.org>
 
+---
+ kernel/irq/numa_migrate.c |    8 ++++++--
+ 1 file changed, 6 insertions(+), 2 deletions(-)
 
-
-Cheers,
-Mauro
+Index: linux-2.6/kernel/irq/numa_migrate.c
+===================================================================
+--- linux-2.6.orig/kernel/irq/numa_migrate.c
++++ linux-2.6/kernel/irq/numa_migrate.c
+@@ -112,17 +112,21 @@ struct irq_desc *move_irq_desc(struct ir
+ {
+ 	int old_cpu;
+ 	int node, old_node;
++	unsigned int irq = desc->irq;
+ 
+ 	/* those all static, do move them */
+-	if (desc->irq < NR_IRQS_LEGACY)
++	if (irq < NR_IRQS_LEGACY)
+ 		return desc;
+ 
+ 	old_cpu = desc->cpu;
+ 	if (old_cpu != cpu) {
+ 		node = cpu_to_node(cpu);
+ 		old_node = cpu_to_node(old_cpu);
+-		if (old_node != node)
++		if (old_node != node) {
++			desc->chip->mask(irq);
+ 			desc = __real_move_irq_desc(desc, cpu);
++			desc->chip->unmask(irq);
++		}
+ 		else
+ 			desc->cpu = cpu;
+ 	}
