@@ -1,104 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755162AbZC1KBZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755826AbZC1KWh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755162AbZC1KBZ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Mar 2009 06:01:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753215AbZC1KBP
+	id S1755826AbZC1KWh (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Mar 2009 06:22:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753340AbZC1KWZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Mar 2009 06:01:15 -0400
-Received: from mail-bw0-f169.google.com ([209.85.218.169]:54866 "EHLO
-	mail-bw0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752131AbZC1KBO convert rfc822-to-8bit (ORCPT
+	Sat, 28 Mar 2009 06:22:25 -0400
+Received: from mail-ew0-f165.google.com ([209.85.219.165]:63355 "EHLO
+	mail-ew0-f165.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753224AbZC1KWX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Mar 2009 06:01:14 -0400
+	Sat, 28 Mar 2009 06:22:23 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=mWNlNkpJz3nxqhauq3xABFDMB8TY2BunUZr8Cv9KsBxIjwYRS+xGGGHaHIXItOqOgX
-         aP2qj8A79OC5oNyqBsnXD6/DRHkhcptNOCIhsR5AhXewwDo4Q+ZYFbhgN1mSTN+s6v7k
-         76r475v6bnTd9axBRrq7Bc5e/jwk3Bt62hptU=
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=HPkjQOgRv/breakqwq6HEfIhD2LcifOphJJQmZ8uHtddliedfLVBP0I/fSEObcESn9
+         TCLlK+JtWOj19W23Kt6X/2d5SEGBSUKHvnTlJt63fvcjEFycT0DGjrW61VyKzhhpj0k7
+         3Bmmhh1XBHdPETJx+a+Xesw8I5MBw+KyLv2Jk=
+Message-ID: <49CDFA60.9080403@gmail.com>
+Date: Sat, 28 Mar 2009 12:22:24 +0200
+From: Niel Lambrechts <niel.lambrechts@gmail.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090310)
 MIME-Version: 1.0
-In-Reply-To: <1238196439-16535-57-git-send-email-u.kleine-koenig@pengutronix.de>
-References: <20090327232153.GA16348@pengutronix.de>
-	 <1238196439-16535-57-git-send-email-u.kleine-koenig@pengutronix.de>
-Date: Sat, 28 Mar 2009 11:01:10 +0100
-Message-ID: <74d0deb30903280301x7408963ek22e6452d1f3e849c@mail.gmail.com>
-Subject: Re: [PATCH 57/58] move w100fb's probe function to .devinit.text
-From: pHilipp Zabel <philipp.zabel@gmail.com>
-To: =?ISO-8859-1?Q?Uwe_Kleine=2DK=F6nig?= 
-	<u.kleine-koenig@pengutronix.de>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Ian Molton <spyro@f2s.com>, Richard Purdie <rpurdie@rpsys.net>,
-       Antonino Daplas <adaplas@gmail.com>,
-       Alberto Mardegan <mardy@users.sourceforge.net>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+To: Arjan van de Ven <arjan@infradead.org>
+CC: "linux.kernel" <linux-kernel@vger.kernel.org>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Pavel Machek <pavel@ucw.cz>, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux IDE mailing list <linux-ide@vger.kernel.org>,
+       Jeff Garzik <jeff@garzik.org>
+Subject: Re: 2.6.29 regression: ATA bus errors on resume
+References: <cjtH6-3Ll-13@gated-at.bofh.it>	<cjtH6-3Ll-15@gated-at.bofh.it>	<cjtH6-3Ll-11@gated-at.bofh.it>	<cjutt-577-11@gated-at.bofh.it>	<cjJCb-47c-23@gated-at.bofh.it>	<49CD24BC.8040303@devnull.org> <20090327153044.3234722d@infradead.org>
+In-Reply-To: <20090327153044.3234722d@infradead.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/3/28 Uwe Kleine-König <u.kleine-koenig@pengutronix.de>:
-> A pointer to w100fb_probe is passed to the core via
-> platform_driver_register and so the function must not disappear when the
-> .init sections are discarded.  Otherwise (if also having HOTPLUG=y)
-> unbinding and binding a device to the driver via sysfs will result in an
-> oops as does a device being registered late.
+On 03/28/2009 12:30 AM, Arjan van de Ven wrote:
+> On Fri, 27 Mar 2009 21:10:52 +0200
+> Niel Lambrechts <niel.lambrechts@gmail.com> wrote:
 >
-> An alternative to this patch is using platform_driver_probe instead of
-> platform_driver_register plus removing the pointer to the probe function
-> from the struct platform_driver.
+>   
+>> I'm seeing some dubious looking ATA messages even on 2.6.28.9-pae,
+>> although with all the 2.6.28 variants I used s2disk/resume has always
+>> worked. I was wondering if these "errors" perhaps play more of a role
+>> in 2.6.29, perhaps due to the async. changes that was mentioned?
+>>     
+>
+> unless you actively enabled this via a kernel command line option there
+> are no async changes in 2.6.29 in terms of behavior.
+>
+>
+>   
+The only non-default option I had was 'modeset=1'. From Jeff's earlier
+comment I understood the probing behaviour changed.
 
-The ATI Imageon chips handled by this driver are not hotpluggable,
-I think the proposed alternative is the right way.
-Also, shouldn't w100fb_init be moved from __devinit to __init and
-w100fb_remove be put into __exit?
+The fundamental difference is that in 2.6.29 everything initially seems
+okay, but then there is a
+ata1.00: exception Emask 0x10 SAct 0x3f SErr 0x50000 action0xe frozen
+ata1.00: irq_stat 0x00400008, PHY RDY changed
 
-> Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
-> Cc: Philipp Zabel <philipp.zabel@gmail.com>
-> Cc: Ian Molton <spyro@f2s.com>
-> Cc: Richard Purdie <rpurdie@rpsys.net>
-> Cc: Antonino Daplas <adaplas@gmail.com>
-> Cc: Alberto Mardegan <mardy@users.sourceforge.net>
-> Cc: Andrew Morton <akpm@linux-foundation.org>
+There's nothing frozen it 2.6.28.
 
----
- drivers/video/w100fb.c |    9 ++++-----
- 1 files changed, 4 insertions(+), 5 deletions(-)
+Should I log a kernel bug, what's the best way forward and is there
+anything more I can do to help?
 
-diff --git a/drivers/video/w100fb.c b/drivers/video/w100fb.c
-index d0674f1..157e7bd 100644
---- a/drivers/video/w100fb.c
-+++ b/drivers/video/w100fb.c
-@@ -781,7 +781,7 @@ out:
- }
-
-
--static int w100fb_remove(struct platform_device *pdev)
-+static int __exit w100fb_remove(struct platform_device *pdev)
- {
- 	struct fb_info *info = platform_get_drvdata(pdev);
- 	struct w100fb_par *par=info->par;
-@@ -1609,8 +1609,7 @@ static void w100_vsync(void)
- }
-
- static struct platform_driver w100fb_driver = {
--	.probe		= w100fb_probe,
--	.remove		= w100fb_remove,
-+	.remove		= __exit_p(w100fb_remove),
- 	.suspend	= w100fb_suspend,
- 	.resume		= w100fb_resume,
- 	.driver		= {
-@@ -1618,9 +1617,9 @@ static struct platform_driver w100fb_driver = {
- 	},
- };
-
--int __devinit w100fb_init(void)
-+int __init w100fb_init(void)
- {
--	return platform_driver_register(&w100fb_driver);
-+	return platform_driver_probe(&w100fb_driver, w100fb_probe);
- }
-
- void __exit w100fb_cleanup(void)
--- 
-1.6.2.1
+cheers
+Niel
