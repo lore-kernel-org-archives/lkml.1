@@ -1,36 +1,18 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758386AbZC1L7W (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Sat, 28 Mar 2009 07:59:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753895AbZC1L7L
+	id S1755509AbZC1RK7 (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Sat, 28 Mar 2009 13:10:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752644AbZC1RKs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Mar 2009 07:59:11 -0400
-Received: from simmts7-qfe0.srvr.bell.ca ([206.47.199.165]:35322 "EHLO
-	simmts7-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753092AbZC1L7L (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Mar 2009 07:59:11 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Ar8QANumzUnOL8cR/2dsb2JhbACBLCWLRoc+gjK4FxSCTgY
-X-Mailer: Openwave WebEngine, version 2.8.10 (webedge20-101-191-20030113)
-X-Originating-IP: [61.155.110.74]
-From: Nokia Online Notice <saraharris@nf.sympatico.ca>
-Reply-To: nokiamobile04@jmail.co.za
-Organization: Nokia Online Notice
-To: <info@uk.org>
-Subject: Confirm Receipt!
-Date: Sat, 28 Mar 2009 7:59:04 -0400
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 7bit
-Message-Id: <20090328115904.UXBX1679.simmts7-srv.bellnexxia.net@simip9-ac.srvr.bell.ca>
+	Sat, 28 Mar 2009 13:10:48 -0400
+Received: from ns.ttc.kz ([91.185.6.10]:59282 "EHLO ttc.kz"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751637AbZC1RKs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Mar 2009 13:10:48 -0400
+Date: Sat, 28 Mar 2009 23:10:38 +0600
+Message-ID: <auto-000016109541@ttc.kz>
+From: <Elvia_Kirkpatrick@ms4.hinet.net>
+To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-
-Nokia has awarded you the sum of 1,000,000.00pounds for claim your name country sex age telephone occupation email: nokiamobile04@jmail.co.za
-
-regard
-Mr. D. Williams 
-Co-ordinator 
-
 
