@@ -1,29 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758004AbZC1PAb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758181AbZC1PIA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758004AbZC1PAb (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Mar 2009 11:00:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755183AbZC1PAW
+	id S1758181AbZC1PIA (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Mar 2009 11:08:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756214AbZC1PHv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Mar 2009 11:00:22 -0400
-Received: from fk-out-0910.google.com ([209.85.128.189]:9682 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754431AbZC1PAV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Mar 2009 11:00:21 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=p9B+pgNJG5MuP//o6ujrlDQe4c5daF8zoIaP983EZICAE6UHrhNjkNwtBCYAqa2Rvb
-         o714C5gJpBvU9ozDbNbGqLsF4xdK8fwMqG2gUTiBstTQ5BZXiCZ+xwaR4F4i4F38nkf1
-         uzm5sst3W5gisutV9on2Lwfp5vmqhfZEBubro=
-Date: Sat, 28 Mar 2009 18:07:46 +0300
-From: Alexey Dobriyan <adobriyan@gmail.com>
+	Sat, 28 Mar 2009 11:07:51 -0400
+Received: from 8bytes.org ([88.198.83.132]:51989 "EHLO 8bytes.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756158AbZC1PHu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Mar 2009 11:07:50 -0400
+Date: Sat, 28 Mar 2009 16:07:45 +0100
+From: Joerg Roedel <joro@8bytes.org>
 To: Jaswinder Singh Rajput <jaswinder@kernel.org>
 Cc: Ingo Molnar <mingo@elte.hu>, x86 maintainers <x86@kernel.org>,
        LKML <linux-kernel@vger.kernel.org>
 Subject: Re: [git-pull -tip] x86: include inverse Xmas tree patches
-Message-ID: <20090328150746.GA3268@x200.localdomain>
+Message-ID: <20090328150745.GC31080@8bytes.org>
 References: <1238251730.2526.2.camel@ht.satnam>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -45,9 +37,6 @@ On Sat, Mar 28, 2009 at 08:18:50PM +0530, Jaswinder Singh Rajput wrote:
 > 
 > Jaswinder Singh Rajput (49):
 >       x86: process_32.c include inverse Xmas tree effect
-
-What the heck is this?
-
 >       x86: signal.c include inverse Xmas tree effect
 >       x86: entry_32.S include inverse Xmas tree effect
 >       x86: traps.c include inverse Xmas tree effect
@@ -96,63 +85,13 @@ What the heck is this?
 >       x86: head_32.c include inverse Xmas tree effect
 >       x86: head.c include inverse Xmas tree effect
 >       x86: init_task.c include inverse Xmas tree effect
-> 
->  arch/x86/include/asm/proto.h         |    2 +
->  arch/x86/include/asm/sigcontext32.h  |    3 +-
->  arch/x86/include/asm/smpboot_hooks.h |    2 +
->  arch/x86/include/asm/topology.h      |    2 +
->  arch/x86/kernel/alternative.c        |   11 ++--
->  arch/x86/kernel/bootflag.c           |   12 ++--
->  arch/x86/kernel/cpuid.c              |   17 ++---
->  arch/x86/kernel/doublefault_32.c     |    8 +-
->  arch/x86/kernel/ds.c                 |   11 +--
->  arch/x86/kernel/dumpstack.c          |    5 +-
->  arch/x86/kernel/dumpstack_32.c       |    5 +-
->  arch/x86/kernel/e820.c               |   21 +++---
->  arch/x86/kernel/early-quirks.c       |    9 ++-
->  arch/x86/kernel/early_printk.c       |   26 ++++---
->  arch/x86/kernel/entry_32.S           |   17 +++--
->  arch/x86/kernel/head.c               |    2 +-
->  arch/x86/kernel/head_32.S            |   17 +++--
->  arch/x86/kernel/i386_ksyms_32.c      |    3 +-
->  arch/x86/kernel/i8237.c              |    3 +-
->  arch/x86/kernel/i8259.c              |   28 ++++----
->  arch/x86/kernel/init_task.c          |    8 +-
->  arch/x86/kernel/ioport.c             |   15 ++--
->  arch/x86/kernel/irq.c                |   11 ++--
->  arch/x86/kernel/irq_32.c             |   10 ++--
->  arch/x86/kernel/irqinit_32.c         |   29 ++++----
->  arch/x86/kernel/ldt.c                |   14 ++--
->  arch/x86/kernel/module_32.c          |    7 +-
->  arch/x86/kernel/mpparse.c            |   24 +++---
->  arch/x86/kernel/msr.c                |   17 ++---
->  arch/x86/kernel/pci-dma.c            |   10 ++--
->  arch/x86/kernel/pcspeaker.c          |    2 +-
->  arch/x86/kernel/probe_roms_32.c      |   23 +++---
->  arch/x86/kernel/process.c            |   19 +++---
->  arch/x86/kernel/process_32.c         |   70 +++++++++----------
->  arch/x86/kernel/ptrace.c             |   30 ++++----
->  arch/x86/kernel/quirks.c             |    4 +-
->  arch/x86/kernel/reboot.c             |   30 ++++----
->  arch/x86/kernel/setup.c              |  126 ++++++++++++++++------------------
->  arch/x86/kernel/setup_percpu.c       |   21 +++---
->  arch/x86/kernel/signal.c             |   33 ++++-----
->  arch/x86/kernel/smp.c                |   16 ++--
->  arch/x86/kernel/smpboot.c            |   33 ++++-----
->  arch/x86/kernel/stacktrace.c         |    6 +-
->  arch/x86/kernel/step.c               |    3 +-
->  arch/x86/kernel/sys_i386_32.c        |   25 +++----
->  arch/x86/kernel/time_32.c            |    7 +-
->  arch/x86/kernel/tls.c                |   10 ++--
->  arch/x86/kernel/trampoline_32.S      |    3 +-
->  arch/x86/kernel/traps.c              |   34 +++------
->  arch/x86/kernel/tsc.c                |   20 +++---
->  arch/x86/kernel/tsc_sync.c           |    2 +-
->  arch/x86/kernel/vm86_32.c            |   20 +++---
->  arch/x86/kernel/xsave.c              |    5 +-
->  53 files changed, 437 insertions(+), 454 deletions(-)
-> 
+
+Where have you sent these patches for review?
+
 > Complete diff:
+
+No. Complete diffs are not easy to review. At least not in this size.
+
 > diff --git a/arch/x86/include/asm/proto.h b/arch/x86/include/asm/proto.h
 > index 49fb3ec..a8d63be 100644
 > --- a/arch/x86/include/asm/proto.h
@@ -186,6 +125,9 @@ What the heck is this?
 > -
 > +#endif
 >  #endif /* _ASM_X86_SIGCONTEXT32_H */
+
+This doesn't seem to be related to your header include rearangements.
+
 > diff --git a/arch/x86/include/asm/smpboot_hooks.h b/arch/x86/include/asm/smpboot_hooks.h
 > index 1def601..dff6e11 100644
 > --- a/arch/x86/include/asm/smpboot_hooks.h
@@ -213,15 +155,6 @@ What the heck is this?
 >  	return 0;
 >  }
 > +#endif
->  
->  static inline int cpu_to_node(int cpu)
->  {
-> diff --git a/arch/x86/kernel/alternative.c b/arch/x86/kernel/alternative.c
-> index 4c80f15..51fb5c5 100644
-> --- a/arch/x86/kernel/alternative.c
-> +++ b/arch/x86/kernel/alternative.c
-> @@ -1,17 +1,18 @@
-> +#include <linux/kprobes.h>
-> +#include <linux/vmalloc.h>
->  #include <linux/module.h>
-> -#include <linux/sched.h>
+
+"#if 0" ???
+
