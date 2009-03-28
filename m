@@ -1,618 +1,237 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757150AbZC1XAj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756627AbZC1XP7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757150AbZC1XAj (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Mar 2009 19:00:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751119AbZC1XA3
+	id S1756627AbZC1XP7 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Mar 2009 19:15:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753548AbZC1XPt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Mar 2009 19:00:29 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:58609 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750719AbZC1XA2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Mar 2009 19:00:28 -0400
-Date: Sun, 29 Mar 2009 00:00:07 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: [GIT PULL] softlockup detector updates for v2.6.30
-Message-ID: <20090328230007.GA8967@elte.hu>
+	Sat, 28 Mar 2009 19:15:49 -0400
+Received: from rv-out-0506.google.com ([209.85.198.227]:11553 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751668AbZC1XPr convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Mar 2009 19:15:47 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=OoqsE401fUYr9qTVmkshdEU6KUtl8EVhFKqmk95P3HmyUt/YVHon4zMyvig6+YGLfb
+         REtQLQ4BqBxm1TZTMRX3UAbDZ2ZIJGxZsJf3n7kSNJJ6FryY+U6Ib6W9UwoO5dafqL2y
+         eL2A5sfrTz3pKdUw37FhnbJmKv13X9/fHDyOU=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <200903282316.55142.prakash@punnoor.de>
+References: <alpine.DEB.1.10.0902171419000.26625@asgard.lang.hm>
+	 <200903281431.36572.prakash@punnoor.de>
+	 <86802c440903281352v1a12a5a2kbda5a039d72aa26f@mail.gmail.com>
+	 <200903282316.55142.prakash@punnoor.de>
+Date: Sat, 28 Mar 2009 16:15:45 -0700
+X-Google-Sender-Auth: 89eb361c0cd7bd3f
+Message-ID: <86802c440903281615v30fd2071o61b4d75d8a5b28f4@mail.gmail.com>
+Subject: Re: [PATCH] pci: don't enable too much HT MSI mapping -v5 -resend
+From: Yinghai Lu <yinghai@kernel.org>
+To: Prakash Punnoor <prakash@punnoor.de>
+Cc: Jesse Barnes <jbarnes@virtuousgeek.org>, Matthew Wilcox <matthew@wil.cx>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Robert Hancock <hancockrwd@gmail.com>, david@lang.hm,
+       linux-kernel <linux-kernel@vger.kernel.org>, linux-pci@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus,
+On Sat, Mar 28, 2009 at 3:16 PM, Prakash Punnoor <prakash@punnoor.de> wrote:
+> On Samstag 28 März 2009 21:52:45 Yinghai Lu wrote:
+>> On Sat, Mar 28, 2009 at 6:31 AM, Prakash Punnoor <prakash@punnoor.de> wrote:
+>> > On Samstag 28 März 2009 13:34:44 Prakash Punnoor wrote:
+>> >> On Freitag 27 März 2009 00:10:01 Jesse Barnes wrote:
+>> >> > On Fri, 20 Mar 2009 19:29:41 -0700
+>> >> >
+>> >> > Yinghai Lu <yinghai@kernel.org> wrote:
+>> >> > > Impact: fix bug
+>> >> > >
+>> >> > > Prakash reported that his c51-mcp51 system ondie sound card doesn't
+>> >> > > work MSI but if he hack out the HT-MSI on mcp51, the MSI will work
+>> >> > > well with sound card.
+>> >> > >
+>> >> > > this patch rework the nv_msi_ht_cap_quirk()
+>> >> > > and will only try to avoid to enable ht_msi on device following that
+>> >> > > root dev, and don't touch that root dev
+>> >> > >
+>> >> > > v3: will enable c51...
+>> >> > > v4: will enable c51 kind of without leaf too.
+>> >> > > v5: update to mainline
+>> >> > >
+>> >> > > Reported-by: Prakash Punnoor <prakash@punnoor.de>
+>> >> > > Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+>> >> >
+>> >> > Applied, thanks.  Prakash if you get a chance can you try testing my
+>> >> > linux-next branch (or just linux-next in general tomorrow) to make
+>> >> > sure this is still ok for you?
+>> >> >
+>> >> > Thanks,
+>> >>
+>> >> Finally I am able to test the linux-next branch of pci tree after Jesse
+>> >> gave some help with git.(Is it correct that the kernel calls itself
+>> >> 2.6.28-rc8? I looked into quirks.c and it seems to be correctly
+>> >> patched.) Unfortunately it doesn't seem to work for me (and I am
+>> >> wondering why as the old v4 version seemed to work ontop of one of the
+>> >> 2.6.29-rc versions):
+>> >>
+>> >> dmesg|grep HT
+>> >> pci 0000:00:00.0: Found disabled HT MSI Mapping
+>> >> pci 0000:00:03.0: Enabling HT MSI Mapping
+>> >> pci 0000:00:09.0: Found disabled HT MSI Mapping
+>> >> pci 0000:00:0e.0: Enabling HT MSI Mapping
+>> >> pci 0000:00:09.0: Found disabled HT MSI Mapping
+>> >> pci 0000:00:0f.0: Enabling HT MSI Mapping
+>> >> pci 0000:00:09.0: Found disabled HT MSI Mapping
+>> >> pci 0000:00:10.0: Enabling HT MSI Mapping
+>> >> pci 0000:00:09.0: Found disabled HT MSI Mapping
+>> >> pci 0000:00:10.1: Enabling HT MSI Mapping
+>> >>
+>> >> Device 09.0 doesn't get enabled (good) but 00.0 also not (bad). Then my
+>> >> Intel HDA cannot use MSI.
+>> >
+>> > I sprinkeld a few debugging messages around in the code and looking at
+>> > that I don't see how the code can enable NMSI for device 00.0, but not
+>> > for 09.0:
+>> >
+>> > Both will exit here:
+>> >
+>> > if (host_bridge == dev && host_bridge_with_leaf(host_bridge))
+>>
+>> where is
+>> 0000:00:03.0: Enabling HT MSI Mapping
+>> from?
+>
+> As I said this time there is a PCIe device more in my system (a realtek NIC):
+> I guess because of that this one appeared - or I have some different drivers
+> loaded?
+>
+> 00:03.0 PCI bridge: nVidia Corporation C51 PCI Express Bridge (rev a1) (prog-if 00 [Normal decode])
+>        Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B- DisINTx+
+>        Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
+>        Latency: 0, Cache Line Size: 32 bytes
+>        Bus: primary=00, secondary=01, subordinate=01, sec-latency=0
+>        I/O behind bridge: 0000a000-0000afff
+>        Memory behind bridge: fdc00000-fdcfffff
+>        Prefetchable memory behind bridge: 00000000fdd00000-00000000fddfffff
+>        Secondary status: 66MHz- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort+ <SERR- <PERR-
+>        BridgeCtl: Parity- SERR- NoISA+ VGA- MAbort- >Reset- FastB2B-
+>                PriDiscTmr- SecDiscTmr- DiscTmrStat- DiscTmrSERREn-
+>        Capabilities: [40] Subsystem: nVidia Corporation Device 0000
+>        Capabilities: [48] Power Management version 2
+>                Flags: PMEClk- DSI- D1- D2- AuxCurrent=0mA PME(D0+,D1+,D2+,D3hot+,D3cold+)
+>                Status: D0 PME-Enable- DSel=0 DScale=0 PME-
+>        Capabilities: [50] MSI: Mask- 64bit+ Count=1/2 Enable+
+>                Address: 00000000fee0300c  Data: 4149
+>        Capabilities: [60] HyperTransport: MSI Mapping Enable- Fixed-
+>                Mapping Address Base: 00000000fee00000
+>        Capabilities: [80] Express (v1) Root Port (Slot+), MSI 00
+>                DevCap: MaxPayload 128 bytes, PhantFunc 0, Latency L0s <512ns, L1 <4us
+>                        ExtTag- RBE- FLReset-
+>                DevCtl: Report errors: Correctable- Non-Fatal- Fatal- Unsupported-
+>                        RlxdOrd+ ExtTag- PhantFunc- AuxPwr- NoSnoop+
+>                        MaxPayload 128 bytes, MaxReadReq 512 bytes
+>                DevSta: CorrErr- UncorrErr- FatalErr- UnsuppReq- AuxPwr- TransPend-
+>                LnkCap: Port #1, Speed 2.5GT/s, Width x1, ASPM L0s L1, Latency L0 <512ns, L1 <4us
+>                        ClockPM- Surprise- LLActRep+ BwNot-
+>                LnkCtl: ASPM Disabled; RCB 64 bytes Disabled- Retrain- CommClk+
+>                        ExtSynch- ClockPM- AutWidDis- BWInt- AutBWInt-
+>                LnkSta: Speed 2.5GT/s, Width x1, TrErr- Train- SlotClk+ DLActive+ BWMgmt- ABWMgmt-
+>                SltCap: AttnBtn- PwrCtrl- MRL- AttnInd- PwrInd- HotPlug- Surpise-
+>                        Slot #  0, PowerLimit 0.000000; Interlock- NoCompl-
+>                SltCtl: Enable: AttnBtn- PwrFlt- MRL- PresDet- CmdCplt- HPIrq- LinkChg-
+>                        Control: AttnInd Off, PwrInd On, Power- Interlock-
+>                SltSta: Status: AttnBtn- PowerFlt- MRL- CmdCplt- PresDet+ Interlock-
+>                        Changed: MRL- PresDet+ LinkState+
+>                RootCtl: ErrCorrectable- ErrNon-Fatal- ErrFatal- PMEIntEna- CRSVisible-
+>                RootCap: CRSVisible-
+>                RootSta: PME ReqID 0000, PMEStatus- PMEPending-
+>        Capabilities: [100] Virtual Channel <?>
+>        Kernel driver in use: pcieport-driver
+> 00: de 10 fd 02 07 04 10 00 a1 00 04 06 08 00 01 00
+> 10: 00 00 00 00 00 00 00 00 00 01 01 00 a1 a1 00 20
+> 20: c0 fd c0 fd d1 fd d1 fd 00 00 00 00 00 00 00 00
+> 30: 00 00 00 00 40 00 00 00 00 00 00 00 ff 00 04 00
+> 40: 0d 48 00 00 de 10 00 00 01 50 02 f8 00 00 00 00
+> 50: 05 60 83 00 0c 30 e0 fe 00 00 00 00 49 41 00 00
+> 60: 08 80 00 a8 00 00 e0 fe 00 00 00 00 00 00 00 00
+> 70: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+> 80: 10 00 41 01 c0 04 00 00 10 28 00 00 11 3c 11 01
+> 90: 40 00 11 30 00 00 00 00 c0 01 48 01 00 00 00 00
+> a0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+> b0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+> c0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+> d0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+> e0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+> f0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+>
+> The realtek nic:
+> 01:00.0 Ethernet controller: Realtek Semiconductor Co., Ltd. RTL8111/8168B PCI Express Gigabit Ethernet controller (rev 01)
+>        Subsystem: Realtek Semiconductor Co., Ltd. RTL8111/8168B PCI Express Gigabit Ethernet controller
+>        Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B- DisINTx+
+>        Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
+>        Latency: 0, Cache Line Size: 64 bytes
+>        Interrupt: pin A routed to IRQ 25
+>        Region 0: I/O ports at ac00 [size=256]
+>        Region 2: Memory at fdcff000 (64-bit, non-prefetchable) [size=4K]
+>        Expansion ROM at fdcc0000 [disabled] [size=128K]
+>        Capabilities: [40] Power Management version 2
+>                Flags: PMEClk- DSI- D1+ D2+ AuxCurrent=375mA PME(D0-,D1+,D2+,D3hot+,D3cold+)
+>                Status: D0 PME-Enable- DSel=0 DScale=0 PME-
+>        Capabilities: [48] Vital Product Data
+>                Unknown small resource type 05
+>                Unknown large resource type 6c
+>                No end tag found
+>        Capabilities: [50] MSI: Mask- 64bit+ Count=1/2 Enable+
+>                Address: 00000000fee0300c  Data: 4161
+>        Capabilities: [60] Express (v1) Endpoint, MSI 00
+>                DevCap: MaxPayload 1024 bytes, PhantFunc 0, Latency L0s <1us, L1 unlimited
+>                        ExtTag+ AttnBtn+ AttnInd+ PwrInd+ RBE- FLReset-
+>                DevCtl: Report errors: Correctable- Non-Fatal- Fatal- Unsupported-
+>                        RlxdOrd+ ExtTag- PhantFunc- AuxPwr- NoSnoop+
+>                        MaxPayload 128 bytes, MaxReadReq 4096 bytes
+>                DevSta: CorrErr- UncorrErr+ FatalErr- UnsuppReq+ AuxPwr+ TransPend-
+>                LnkCap: Port #0, Speed 2.5GT/s, Width x4, ASPM L0s, Latency L0 unlimited, L1 unlimited
+>                        ClockPM- Surprise- LLActRep- BwNot-
+>                LnkCtl: ASPM Disabled; RCB 64 bytes Disabled- Retrain- CommClk+
+>                        ExtSynch- ClockPM- AutWidDis- BWInt- AutBWInt-
+>                LnkSta: Speed 2.5GT/s, Width x1, TrErr- Train- SlotClk+ DLActive- BWMgmt- ABWMgmt-
+>        Capabilities: [84] Vendor Specific Information <?>
+>        Capabilities: [100] Advanced Error Reporting
+>                UESta:  DLP- SDES- TLP- FCP- CmpltTO- CmpltAbrt- UnxCmplt- RxOF- MalfTLP- ECRC- UnsupReq+ ACSViol-
+>                UEMsk:  DLP- SDES- TLP- FCP- CmpltTO- CmpltAbrt- UnxCmplt- RxOF- MalfTLP- ECRC- UnsupReq- ACSViol-
+>                UESvrt: DLP+ SDES- TLP- FCP+ CmpltTO- CmpltAbrt- UnxCmplt- RxOF+ MalfTLP+ ECRC- UnsupReq- ACSViol-
+>                CESta:  RxErr- BadTLP- BadDLLP- Rollover- Timeout- NonFatalErr-
+>                CEMsk:  RxErr- BadTLP- BadDLLP- Rollover- Timeout- NonFatalErr-
+>                AERCap: First Error Pointer: 14, GenCap- CGenEn- ChkCap- ChkEn-
+>        Capabilities: [12c] Virtual Channel <?>
+>        Capabilities: [148] Device Serial Number 68-81-ec-10-00-00-12-45
+>        Capabilities: [154] Power Budgeting <?>
+>        Kernel driver in use: r8169
+> 00: ec 10 68 81 07 04 10 00 01 00 00 02 10 00 00 00
+> 10: 01 ac 00 00 00 00 00 00 04 f0 cf fd 00 00 00 00
+> 20: 00 00 00 00 00 00 00 00 02 01 00 00 ec 10 68 81
+> 30: 00 00 cc fd 40 00 00 00 00 00 00 00 05 01 00 00
+> 40: 01 48 c2 f7 00 00 00 00 03 50 00 00 05 df c2 f7
+> 50: 05 60 83 00 0c 30 e0 fe 00 00 00 00 61 41 00 00
+> 60: 10 84 01 00 23 7f 00 00 10 58 1a 00 41 f4 03 00
+> 70: 40 00 11 10 00 00 00 00 00 00 00 00 00 00 00 00
+> 80: 00 00 00 00 09 00 4c 01 01 1c 02 00 fb ff ff 11
+> 90: 08 30 00 00 a2 10 0a 00 67 50 08 00 c3 01 00 00
+> a0: 02 28 ff 01 00 00 00 00 00 08 00 00 03 00 03 00
+> b0: 00 00 00 00 ff 3f ff 3f ff ff 00 00 00 00 00 00
+> c0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+> d0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+> e0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+> f0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+>
 
-Please pull the latest softlockup-for-linus git tree from:
+ok, when you plug in the card, BIOS will enable the pcie bridge...
 
-   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git softlockup-for-linus
+need other way to figure out it is HT tunnel or HT end devices.
 
-Note: CONFIG_DETECT_HUNG_TASK defaults to Y here, because that was 
-its previous (implict) default from the softlockup watchdog. Should 
-this default to N perhaps?
-
- Thanks,
-
-	Ingo
-
------------------->
-Frederic Weisbecker (1):
-      softlockup: ensure the task has been switched out once
-
-Ingo Molnar (1):
-      softlockup: move 'one' to the softlockup section in sysctl.c
-
-Mandeep Singh Baines (7):
-      softlockup: decouple hung tasks check from softlockup detection
-      softlockup: fix to allow compiling with !DETECT_HUNG_TASK
-      softlockup: fix potential race in hung_task when resetting timeout
-      softlockup: remove unused definition for spawn_softlockup_task
-      softlockup: check all tasks in hung_task
-      softlockup: convert read_lock in hung_task to rcu_read_lock
-      softlockup: remove timestamp checking from hung_task
-
-
- include/linux/sched.h |   18 +++--
- kernel/Makefile       |    1 +
- kernel/fork.c         |    8 +-
- kernel/hung_task.c    |  217 +++++++++++++++++++++++++++++++++++++++++++++++++
- kernel/softlockup.c   |  100 -----------------------
- kernel/sysctl.c       |   19 ++++-
- lib/Kconfig.debug     |   38 +++++++++
- 7 files changed, 286 insertions(+), 115 deletions(-)
- create mode 100644 kernel/hung_task.c
-
-diff --git a/include/linux/sched.h b/include/linux/sched.h
-index 1d19c02..3a843fa 100644
---- a/include/linux/sched.h
-+++ b/include/linux/sched.h
-@@ -297,17 +297,11 @@ extern int proc_dosoftlockup_thresh(struct ctl_table *table, int write,
- 				    struct file *filp, void __user *buffer,
- 				    size_t *lenp, loff_t *ppos);
- extern unsigned int  softlockup_panic;
--extern unsigned long sysctl_hung_task_check_count;
--extern unsigned long sysctl_hung_task_timeout_secs;
--extern unsigned long sysctl_hung_task_warnings;
- extern int softlockup_thresh;
- #else
- static inline void softlockup_tick(void)
- {
- }
--static inline void spawn_softlockup_task(void)
--{
--}
- static inline void touch_softlockup_watchdog(void)
- {
- }
-@@ -316,6 +310,15 @@ static inline void touch_all_softlockup_watchdogs(void)
- }
- #endif
- 
-+#ifdef CONFIG_DETECT_HUNG_TASK
-+extern unsigned int  sysctl_hung_task_panic;
-+extern unsigned long sysctl_hung_task_check_count;
-+extern unsigned long sysctl_hung_task_timeout_secs;
-+extern unsigned long sysctl_hung_task_warnings;
-+extern int proc_dohung_task_timeout_secs(struct ctl_table *table, int write,
-+					 struct file *filp, void __user *buffer,
-+					 size_t *lenp, loff_t *ppos);
-+#endif
- 
- /* Attach to any functions which should be ignored in wchan output. */
- #define __sched		__attribute__((__section__(".sched.text")))
-@@ -1260,9 +1263,8 @@ struct task_struct {
- /* ipc stuff */
- 	struct sysv_sem sysvsem;
- #endif
--#ifdef CONFIG_DETECT_SOFTLOCKUP
-+#ifdef CONFIG_DETECT_HUNG_TASK
- /* hung task detection */
--	unsigned long last_switch_timestamp;
- 	unsigned long last_switch_count;
- #endif
- /* CPU-specific state of this task */
-diff --git a/kernel/Makefile b/kernel/Makefile
-index e4791b3..3e43fd1 100644
---- a/kernel/Makefile
-+++ b/kernel/Makefile
-@@ -74,6 +74,7 @@ obj-$(CONFIG_AUDIT_TREE) += audit_tree.o
- obj-$(CONFIG_KPROBES) += kprobes.o
- obj-$(CONFIG_KGDB) += kgdb.o
- obj-$(CONFIG_DETECT_SOFTLOCKUP) += softlockup.o
-+obj-$(CONFIG_DETECT_HUNG_TASK) += hung_task.o
- obj-$(CONFIG_GENERIC_HARDIRQS) += irq/
- obj-$(CONFIG_SECCOMP) += seccomp.o
- obj-$(CONFIG_RCU_TORTURE_TEST) += rcutorture.o
-diff --git a/kernel/fork.c b/kernel/fork.c
-index 6715ebc..b82214b 100644
---- a/kernel/fork.c
-+++ b/kernel/fork.c
-@@ -644,6 +644,9 @@ static int copy_mm(unsigned long clone_flags, struct task_struct * tsk)
- 
- 	tsk->min_flt = tsk->maj_flt = 0;
- 	tsk->nvcsw = tsk->nivcsw = 0;
-+#ifdef CONFIG_DETECT_HUNG_TASK
-+	tsk->last_switch_count = tsk->nvcsw + tsk->nivcsw;
-+#endif
- 
- 	tsk->mm = NULL;
- 	tsk->active_mm = NULL;
-@@ -1046,11 +1049,6 @@ static struct task_struct *copy_process(unsigned long clone_flags,
- 
- 	p->default_timer_slack_ns = current->timer_slack_ns;
- 
--#ifdef CONFIG_DETECT_SOFTLOCKUP
--	p->last_switch_count = 0;
--	p->last_switch_timestamp = 0;
--#endif
--
- 	task_io_accounting_init(&p->ioac);
- 	acct_clear_integrals(p);
- 
-diff --git a/kernel/hung_task.c b/kernel/hung_task.c
-new file mode 100644
-index 0000000..022a492
---- /dev/null
-+++ b/kernel/hung_task.c
-@@ -0,0 +1,217 @@
-+/*
-+ * Detect Hung Task
-+ *
-+ * kernel/hung_task.c - kernel thread for detecting tasks stuck in D state
-+ *
-+ */
-+
-+#include <linux/mm.h>
-+#include <linux/cpu.h>
-+#include <linux/nmi.h>
-+#include <linux/init.h>
-+#include <linux/delay.h>
-+#include <linux/freezer.h>
-+#include <linux/kthread.h>
-+#include <linux/lockdep.h>
-+#include <linux/module.h>
-+#include <linux/sysctl.h>
-+
-+/*
-+ * The number of tasks checked:
-+ */
-+unsigned long __read_mostly sysctl_hung_task_check_count = PID_MAX_LIMIT;
-+
-+/*
-+ * Limit number of tasks checked in a batch.
-+ *
-+ * This value controls the preemptibility of khungtaskd since preemption
-+ * is disabled during the critical section. It also controls the size of
-+ * the RCU grace period. So it needs to be upper-bound.
-+ */
-+#define HUNG_TASK_BATCHING 1024
-+
-+/*
-+ * Zero means infinite timeout - no checking done:
-+ */
-+unsigned long __read_mostly sysctl_hung_task_timeout_secs = 120;
-+
-+unsigned long __read_mostly sysctl_hung_task_warnings = 10;
-+
-+static int __read_mostly did_panic;
-+
-+static struct task_struct *watchdog_task;
-+
-+/*
-+ * Should we panic (and reboot, if panic_timeout= is set) when a
-+ * hung task is detected:
-+ */
-+unsigned int __read_mostly sysctl_hung_task_panic =
-+				CONFIG_BOOTPARAM_HUNG_TASK_PANIC_VALUE;
-+
-+static int __init hung_task_panic_setup(char *str)
-+{
-+	sysctl_hung_task_panic = simple_strtoul(str, NULL, 0);
-+
-+	return 1;
-+}
-+__setup("hung_task_panic=", hung_task_panic_setup);
-+
-+static int
-+hung_task_panic(struct notifier_block *this, unsigned long event, void *ptr)
-+{
-+	did_panic = 1;
-+
-+	return NOTIFY_DONE;
-+}
-+
-+static struct notifier_block panic_block = {
-+	.notifier_call = hung_task_panic,
-+};
-+
-+static void check_hung_task(struct task_struct *t, unsigned long timeout)
-+{
-+	unsigned long switch_count = t->nvcsw + t->nivcsw;
-+
-+	/*
-+	 * Ensure the task is not frozen.
-+	 * Also, when a freshly created task is scheduled once, changes
-+	 * its state to TASK_UNINTERRUPTIBLE without having ever been
-+	 * switched out once, it musn't be checked.
-+	 */
-+	if (unlikely(t->flags & PF_FROZEN || !switch_count))
-+		return;
-+
-+	if (switch_count != t->last_switch_count) {
-+		t->last_switch_count = switch_count;
-+		return;
-+	}
-+	if (!sysctl_hung_task_warnings)
-+		return;
-+	sysctl_hung_task_warnings--;
-+
-+	/*
-+	 * Ok, the task did not get scheduled for more than 2 minutes,
-+	 * complain:
-+	 */
-+	printk(KERN_ERR "INFO: task %s:%d blocked for more than "
-+			"%ld seconds.\n", t->comm, t->pid, timeout);
-+	printk(KERN_ERR "\"echo 0 > /proc/sys/kernel/hung_task_timeout_secs\""
-+			" disables this message.\n");
-+	sched_show_task(t);
-+	__debug_show_held_locks(t);
-+
-+	touch_nmi_watchdog();
-+
-+	if (sysctl_hung_task_panic)
-+		panic("hung_task: blocked tasks");
-+}
-+
-+/*
-+ * To avoid extending the RCU grace period for an unbounded amount of time,
-+ * periodically exit the critical section and enter a new one.
-+ *
-+ * For preemptible RCU it is sufficient to call rcu_read_unlock in order
-+ * exit the grace period. For classic RCU, a reschedule is required.
-+ */
-+static void rcu_lock_break(struct task_struct *g, struct task_struct *t)
-+{
-+	get_task_struct(g);
-+	get_task_struct(t);
-+	rcu_read_unlock();
-+	cond_resched();
-+	rcu_read_lock();
-+	put_task_struct(t);
-+	put_task_struct(g);
-+}
-+
-+/*
-+ * Check whether a TASK_UNINTERRUPTIBLE does not get woken up for
-+ * a really long time (120 seconds). If that happens, print out
-+ * a warning.
-+ */
-+static void check_hung_uninterruptible_tasks(unsigned long timeout)
-+{
-+	int max_count = sysctl_hung_task_check_count;
-+	int batch_count = HUNG_TASK_BATCHING;
-+	struct task_struct *g, *t;
-+
-+	/*
-+	 * If the system crashed already then all bets are off,
-+	 * do not report extra hung tasks:
-+	 */
-+	if (test_taint(TAINT_DIE) || did_panic)
-+		return;
-+
-+	rcu_read_lock();
-+	do_each_thread(g, t) {
-+		if (!--max_count)
-+			goto unlock;
-+		if (!--batch_count) {
-+			batch_count = HUNG_TASK_BATCHING;
-+			rcu_lock_break(g, t);
-+			/* Exit if t or g was unhashed during refresh. */
-+			if (t->state == TASK_DEAD || g->state == TASK_DEAD)
-+				goto unlock;
-+		}
-+		/* use "==" to skip the TASK_KILLABLE tasks waiting on NFS */
-+		if (t->state == TASK_UNINTERRUPTIBLE)
-+			check_hung_task(t, timeout);
-+	} while_each_thread(g, t);
-+ unlock:
-+	rcu_read_unlock();
-+}
-+
-+static unsigned long timeout_jiffies(unsigned long timeout)
-+{
-+	/* timeout of 0 will disable the watchdog */
-+	return timeout ? timeout * HZ : MAX_SCHEDULE_TIMEOUT;
-+}
-+
-+/*
-+ * Process updating of timeout sysctl
-+ */
-+int proc_dohung_task_timeout_secs(struct ctl_table *table, int write,
-+				  struct file *filp, void __user *buffer,
-+				  size_t *lenp, loff_t *ppos)
-+{
-+	int ret;
-+
-+	ret = proc_doulongvec_minmax(table, write, filp, buffer, lenp, ppos);
-+
-+	if (ret || !write)
-+		goto out;
-+
-+	wake_up_process(watchdog_task);
-+
-+ out:
-+	return ret;
-+}
-+
-+/*
-+ * kthread which checks for tasks stuck in D state
-+ */
-+static int watchdog(void *dummy)
-+{
-+	set_user_nice(current, 0);
-+
-+	for ( ; ; ) {
-+		unsigned long timeout = sysctl_hung_task_timeout_secs;
-+
-+		while (schedule_timeout_interruptible(timeout_jiffies(timeout)))
-+			timeout = sysctl_hung_task_timeout_secs;
-+
-+		check_hung_uninterruptible_tasks(timeout);
-+	}
-+
-+	return 0;
-+}
-+
-+static int __init hung_task_init(void)
-+{
-+	atomic_notifier_chain_register(&panic_notifier_list, &panic_block);
-+	watchdog_task = kthread_run(watchdog, NULL, "khungtaskd");
-+
-+	return 0;
-+}
-+
-+module_init(hung_task_init);
-diff --git a/kernel/softlockup.c b/kernel/softlockup.c
-index 85d5a24..88796c3 100644
---- a/kernel/softlockup.c
-+++ b/kernel/softlockup.c
-@@ -166,97 +166,11 @@ void softlockup_tick(void)
- }
- 
- /*
-- * Have a reasonable limit on the number of tasks checked:
-- */
--unsigned long __read_mostly sysctl_hung_task_check_count = 1024;
--
--/*
-- * Zero means infinite timeout - no checking done:
-- */
--unsigned long __read_mostly sysctl_hung_task_timeout_secs = 480;
--
--unsigned long __read_mostly sysctl_hung_task_warnings = 10;
--
--/*
-- * Only do the hung-tasks check on one CPU:
-- */
--static int check_cpu __read_mostly = -1;
--
--static void check_hung_task(struct task_struct *t, unsigned long now)
--{
--	unsigned long switch_count = t->nvcsw + t->nivcsw;
--
--	if (t->flags & PF_FROZEN)
--		return;
--
--	if (switch_count != t->last_switch_count || !t->last_switch_timestamp) {
--		t->last_switch_count = switch_count;
--		t->last_switch_timestamp = now;
--		return;
--	}
--	if ((long)(now - t->last_switch_timestamp) <
--					sysctl_hung_task_timeout_secs)
--		return;
--	if (!sysctl_hung_task_warnings)
--		return;
--	sysctl_hung_task_warnings--;
--
--	/*
--	 * Ok, the task did not get scheduled for more than 2 minutes,
--	 * complain:
--	 */
--	printk(KERN_ERR "INFO: task %s:%d blocked for more than "
--			"%ld seconds.\n", t->comm, t->pid,
--			sysctl_hung_task_timeout_secs);
--	printk(KERN_ERR "\"echo 0 > /proc/sys/kernel/hung_task_timeout_secs\""
--			" disables this message.\n");
--	sched_show_task(t);
--	__debug_show_held_locks(t);
--
--	t->last_switch_timestamp = now;
--	touch_nmi_watchdog();
--
--	if (softlockup_panic)
--		panic("softlockup: blocked tasks");
--}
--
--/*
-- * Check whether a TASK_UNINTERRUPTIBLE does not get woken up for
-- * a really long time (120 seconds). If that happens, print out
-- * a warning.
-- */
--static void check_hung_uninterruptible_tasks(int this_cpu)
--{
--	int max_count = sysctl_hung_task_check_count;
--	unsigned long now = get_timestamp(this_cpu);
--	struct task_struct *g, *t;
--
--	/*
--	 * If the system crashed already then all bets are off,
--	 * do not report extra hung tasks:
--	 */
--	if (test_taint(TAINT_DIE) || did_panic)
--		return;
--
--	read_lock(&tasklist_lock);
--	do_each_thread(g, t) {
--		if (!--max_count)
--			goto unlock;
--		/* use "==" to skip the TASK_KILLABLE tasks waiting on NFS */
--		if (t->state == TASK_UNINTERRUPTIBLE)
--			check_hung_task(t, now);
--	} while_each_thread(g, t);
-- unlock:
--	read_unlock(&tasklist_lock);
--}
--
--/*
-  * The watchdog thread - runs every second and touches the timestamp.
-  */
- static int watchdog(void *__bind_cpu)
- {
- 	struct sched_param param = { .sched_priority = MAX_RT_PRIO-1 };
--	int this_cpu = (long)__bind_cpu;
- 
- 	sched_setscheduler(current, SCHED_FIFO, &param);
- 
-@@ -276,11 +190,6 @@ static int watchdog(void *__bind_cpu)
- 		if (kthread_should_stop())
- 			break;
- 
--		if (this_cpu == check_cpu) {
--			if (sysctl_hung_task_timeout_secs)
--				check_hung_uninterruptible_tasks(this_cpu);
--		}
--
- 		set_current_state(TASK_INTERRUPTIBLE);
- 	}
- 	__set_current_state(TASK_RUNNING);
-@@ -312,18 +221,9 @@ cpu_callback(struct notifier_block *nfb, unsigned long action, void *hcpu)
- 		break;
- 	case CPU_ONLINE:
- 	case CPU_ONLINE_FROZEN:
--		check_cpu = cpumask_any(cpu_online_mask);
- 		wake_up_process(per_cpu(watchdog_task, hotcpu));
- 		break;
- #ifdef CONFIG_HOTPLUG_CPU
--	case CPU_DOWN_PREPARE:
--	case CPU_DOWN_PREPARE_FROZEN:
--		if (hotcpu == check_cpu) {
--			/* Pick any other online cpu. */
--			check_cpu = cpumask_any_but(cpu_online_mask, hotcpu);
--		}
--		break;
--
- 	case CPU_UP_CANCELED:
- 	case CPU_UP_CANCELED_FROZEN:
- 		if (!per_cpu(watchdog_task, hotcpu))
-diff --git a/kernel/sysctl.c b/kernel/sysctl.c
-index c5ef44f..6d2aeff 100644
---- a/kernel/sysctl.c
-+++ b/kernel/sysctl.c
-@@ -90,6 +90,9 @@ extern int rcutorture_runnable;
- #endif /* #ifdef CONFIG_RCU_TORTURE_TEST */
- 
- /* Constants used for minimum and  maximum */
-+#if defined(CONFIG_DETECT_HUNG_TASK) || defined(CONFIG_DETECT_SOFTLOCKUP) || defined(CONFIG_HIGHMEM)
-+static int one = 1;
-+#endif
- #ifdef CONFIG_DETECT_SOFTLOCKUP
- static int sixty = 60;
- static int neg_one = -1;
-@@ -100,7 +103,6 @@ static int two = 2;
- #endif
- 
- static int zero;
--static int one = 1;
- static unsigned long one_ul = 1;
- static int one_hundred = 100;
- 
-@@ -815,6 +817,19 @@ static struct ctl_table kern_table[] = {
- 		.extra1		= &neg_one,
- 		.extra2		= &sixty,
- 	},
-+#endif
-+#ifdef CONFIG_DETECT_HUNG_TASK
-+	{
-+		.ctl_name	= CTL_UNNUMBERED,
-+		.procname	= "hung_task_panic",
-+		.data		= &sysctl_hung_task_panic,
-+		.maxlen		= sizeof(int),
-+		.mode		= 0644,
-+		.proc_handler	= &proc_dointvec_minmax,
-+		.strategy	= &sysctl_intvec,
-+		.extra1		= &zero,
-+		.extra2		= &one,
-+	},
- 	{
- 		.ctl_name	= CTL_UNNUMBERED,
- 		.procname	= "hung_task_check_count",
-@@ -830,7 +845,7 @@ static struct ctl_table kern_table[] = {
- 		.data		= &sysctl_hung_task_timeout_secs,
- 		.maxlen		= sizeof(unsigned long),
- 		.mode		= 0644,
--		.proc_handler	= &proc_doulongvec_minmax,
-+		.proc_handler	= &proc_dohung_task_timeout_secs,
- 		.strategy	= &sysctl_intvec,
- 	},
- 	{
-diff --git a/lib/Kconfig.debug b/lib/Kconfig.debug
-index 8fee0a1..5a26298 100644
---- a/lib/Kconfig.debug
-+++ b/lib/Kconfig.debug
-@@ -186,6 +186,44 @@ config BOOTPARAM_SOFTLOCKUP_PANIC_VALUE
- 	default 0 if !BOOTPARAM_SOFTLOCKUP_PANIC
- 	default 1 if BOOTPARAM_SOFTLOCKUP_PANIC
- 
-+config DETECT_HUNG_TASK
-+	bool "Detect Hung Tasks"
-+	depends on DEBUG_KERNEL
-+	default y
-+	help
-+	  Say Y here to enable the kernel to detect "hung tasks",
-+	  which are bugs that cause the task to be stuck in
-+	  uninterruptible "D" state indefinitiley.
-+
-+	  When a hung task is detected, the kernel will print the
-+	  current stack trace (which you should report), but the
-+	  task will stay in uninterruptible state. If lockdep is
-+	  enabled then all held locks will also be reported. This
-+	  feature has negligible overhead.
-+
-+config BOOTPARAM_HUNG_TASK_PANIC
-+	bool "Panic (Reboot) On Hung Tasks"
-+	depends on DETECT_HUNG_TASK
-+	help
-+	  Say Y here to enable the kernel to panic on "hung tasks",
-+	  which are bugs that cause the kernel to leave a task stuck
-+	  in uninterruptible "D" state.
-+
-+	  The panic can be used in combination with panic_timeout,
-+	  to cause the system to reboot automatically after a
-+	  hung task has been detected. This feature is useful for
-+	  high-availability systems that have uptime guarantees and
-+	  where a hung tasks must be resolved ASAP.
-+
-+	  Say N if unsure.
-+
-+config BOOTPARAM_HUNG_TASK_PANIC_VALUE
-+	int
-+	depends on DETECT_HUNG_TASK
-+	range 0 1
-+	default 0 if !BOOTPARAM_HUNG_TASK_PANIC
-+	default 1 if BOOTPARAM_HUNG_TASK_PANIC
-+
- config SCHED_DEBUG
- 	bool "Collect scheduler debugging info"
- 	depends on DEBUG_KERNEL && PROC_FS
+YH
