@@ -1,77 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756353AbZC1MIq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755688AbZC1MMm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756353AbZC1MIq (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Mar 2009 08:08:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752105AbZC1MIg
+	id S1755688AbZC1MMm (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Mar 2009 08:12:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753738AbZC1MMd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Mar 2009 08:08:36 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:45028 "EHLO mx3.mail.elte.hu"
+	Sat, 28 Mar 2009 08:12:33 -0400
+Received: from THUNK.ORG ([69.25.196.29]:41352 "EHLO thunker.thunk.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751769AbZC1MIf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Mar 2009 08:08:35 -0400
-Date: Sat, 28 Mar 2009 13:08:25 +0100
-From: Ingo Molnar <mingo@elte.hu>
-To: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>
-Cc: linux-kernel@vger.kernel.org, Andi Kleen <ak@linux.intel.com>
-Subject: Re: [PATCH -tip 1/3] x86, mce: Add mce_threshold option for intel
-	cmci
-Message-ID: <20090328120825.GB14464@elte.hu>
-References: <49CB3F24.8040804@jp.fujitsu.com>
+	id S1753611AbZC1MMd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Mar 2009 08:12:33 -0400
+Date: Sat, 28 Mar 2009 08:12:21 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Bodo Eggert <7eggert@gmx.de>
+Cc: Matthew Garrett <mjg59@srcf.ucam.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       David Rees <drees76@gmail.com>, Jesper Krogh <jesper@krogh.cc>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.29
+Message-ID: <20090328121221.GC2155@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Bodo Eggert <7eggert@gmx.de>, Matthew Garrett <mjg59@srcf.ucam.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	David Rees <drees76@gmail.com>, Jesper Krogh <jesper@krogh.cc>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <cjJsv-3Uu-5@gated-at.bofh.it> <cjKHX-5MF-19@gated-at.bofh.it> <ck7XP-JA-13@gated-at.bofh.it> <ck8h7-18H-1@gated-at.bofh.it> <ck8AA-1y0-7@gated-at.bofh.it> <ck8Kd-20o-7@gated-at.bofh.it> <ckaVR-5o8-9@gated-at.bofh.it> <ckbf4-5M8-7@gated-at.bofh.it> <ckcE8-845-9@gated-at.bofh.it> <E1LnJzS-0001vn-Vf@be1.7eggert.dyndns.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <49CB3F24.8040804@jp.fujitsu.com>
+In-Reply-To: <E1LnJzS-0001vn-Vf@be1.7eggert.dyndns.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, Mar 27, 2009 at 10:53:26PM +0100, Bodo Eggert wrote:
+> data=ordered is a sane way of handling data. Otherwise, the millions
+> would change their ext3 to data=writeback.
 
-* Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com> wrote:
+See the discussion about defaulting to "relatime" (or my preferred,
+"noatime") mount option.  It's a very sane thing to do, yet most
+people don't use anything other than the defaults.  And now we're told
+even most distro's are hesitant to tweak tuning parameters away from
+the default.
 
-> This patch adds a kernel parameter "mce_threshold=n" to enable us
-> to change the default threshold for CMCI(Corrected Machine Check
-> Interrupt) that recent Intel processor supports.
-> 
-> And it also supports CMCI disabling by setting mce_threshold=0.
-> It would be useful if your hardware does something wrong and/or
-> if polling by timer is preferred than the threshold interrupt.
-> 
-> Signed-off-by: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-> Cc: Andi Kleen <ak@linux.intel.com>
-> Cc: Ingo Molnar <mingo@elte.hu>
-> ---
->  Documentation/kernel-parameters.txt       |    5 +++
->  arch/x86/include/asm/msr-index.h          |    1 +
->  arch/x86/kernel/cpu/mcheck/mce_intel_64.c |   56 +++++++++++++++++++++++++++--
->  3 files changed, 59 insertions(+), 3 deletions(-)
-> 
-> diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
-> index 1d8af36..7a0d117 100644
-> --- a/Documentation/kernel-parameters.txt
-> +++ b/Documentation/kernel-parameters.txt
-> @@ -1267,6 +1267,11 @@ and is between 256 and 4096 characters. It is defined in the file
->  
->  	mce=option	[X86-64] See Documentation/x86/x86_64/boot-options.txt
->  
-> +	mce_threshold=	[X86-64,intel] Default CMCI threshold
-> +			Should be unsigned integer. Setting 0 disables cmci.
-> +			Format: <integer>
-> +			Default: 1
-
-Makes sense. CMCI is a new CPU feature so having boot controls to 
-disable it is generally a good idea - while still having old-style 
-MCE support in place.
-
-Applied to tip:x86/mce2, thanks Hidetoshi!
-
-	Ingo
+					- Ted
