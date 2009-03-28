@@ -1,100 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754503AbZC1OBU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754656AbZC1OEY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754503AbZC1OBU (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Mar 2009 10:01:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754006AbZC1OBJ
+	id S1754656AbZC1OEY (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Mar 2009 10:04:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753917AbZC1OEO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Mar 2009 10:01:09 -0400
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:46239 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753948AbZC1OBI (ORCPT
+	Sat, 28 Mar 2009 10:04:14 -0400
+Received: from mail-bw0-f169.google.com ([209.85.218.169]:45091 "EHLO
+	mail-bw0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752276AbZC1OEN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Mar 2009 10:01:08 -0400
-Date: Sat, 28 Mar 2009 14:00:49 +0000
-From: Russell King <rmk@arm.linux.org.uk>
-To: Greg Kroah-Hartman <gregkh@suse.de>, Ming Lei <tom.leiming@gmail.com>
-Cc: Linux Kernel List <linux-kernel@vger.kernel.org>
-Subject: Commit 7a192ec is build breaking
-Message-ID: <20090328140049.GA4344@flint.arm.linux.org.uk>
+	Sat, 28 Mar 2009 10:04:13 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:reply-to:mail-followup-to
+         :references:mime-version:content-type:content-disposition
+         :in-reply-to:user-agent;
+        b=Mgb51wwrrACIVNNciBOcXyGRZkhtncrCANb9Re/4gZSMRJorhh7xb+a+I0KTwxbwPV
+         q0tOzVatBxipYPkXwzJ2NfVf5UvlSR8Ytj1JuuyImAQLUDLyHMIuEGG4Af9gnBI3sqAQ
+         W/fDIQ7x1MUvnrZL5cGq63fV70UNmR+yJM09E=
+Date: Sat, 28 Mar 2009 15:04:05 +0100
+From: Borislav Petkov <petkovbb@googlemail.com>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: Tejun Heo <tj@kernel.org>, linux-kernel@vger.kernel.org, axboe@kernel.dk,
+       linux-ide@vger.kernel.org
+Subject: Re: [PATCHSET pata-2.6] ide: rq->buffer, data, special and misc
+	cleanups
+Message-ID: <20090328140405.GA2741@liondog.tnic>
+Reply-To: petkovbb@gmail.com
+Mail-Followup-To: petkovbb@gmail.com,
+	Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+	Tejun Heo <tj@kernel.org>, linux-kernel@vger.kernel.org,
+	axboe@kernel.dk, linux-ide@vger.kernel.org
+References: <1237910776-10983-1-git-send-email-tj@kernel.org> <200903281451.01361.bzolnier@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
+In-Reply-To: <200903281451.01361.bzolnier@gmail.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The commit:
+On Sat, Mar 28, 2009 at 02:51:01PM +0100, Bartlomiej Zolnierkiewicz wrote:
 
-    platform driver: fix incorrect use of 'platform_bus_type' with 'struct device_driver'
+[..]
 
-contains this:
+> > Bartlomiej, if you're okay with the changes and Jens acks the patches
+> > and pushing the first three patches via pata-2.6, please feel free to
+> > include these patches into your tree.
+> 
+> Everything looks fine to me.  Once I get Jens' ack (block bits)
+> and Borislav's one (ATAPI bits) I'll happily merge this patchset.
 
--static int __exit pxa2xx_flash_remove(struct device *dev)
-+static int __exit pxa2xx_flash_remove(struct platform_device *dev)
-...
--       .remove         = __exit_p(pxa2xx_flash_remove),
-+       .remove         = __devexit_p(pxa2xx_flash_remove),
-
-which leads to the following build error:
-
-`pxa2xx_flash_remove' referenced in section `.data' of drivers/built-in.o: defined in discarded section `.exit.text' of drivers/built-in.o
-
-This is not the only instance of it in this patch - all __exit_p's
-touched by this patch have been converted to __devexit_p's without
-regard to the original function.
-
-Let's revert this change and, if we are going to convert functions
-to be __devexit/__devinit, lets have that as a _separate_ patch doing
-just that change.
-
-Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
----
- arch/mips/basler/excite/excite_iodev.c |    2 +-
- drivers/mtd/maps/pxa2xx-flash.c        |    2 +-
- drivers/mtd/nand/excite_nandflash.c    |    3 +--
- 3 files changed, 3 insertions(+), 4 deletions(-)
-
-diff --git a/arch/mips/basler/excite/excite_iodev.c b/arch/mips/basler/excite/excite_iodev.c
-index dfbfd7e..2ab56ea 100644
---- a/arch/mips/basler/excite/excite_iodev.c
-+++ b/arch/mips/basler/excite/excite_iodev.c
-@@ -71,7 +71,7 @@ static struct platform_driver iodev_driver = {
- 		.owner		= THIS_MODULE,
- 	},
- 	.probe		= iodev_probe,
--	.remove		= __devexit_p(iodev_remove),
-+	.remove		= __exit_p(iodev_remove),
- };
- 
- 
-diff --git a/drivers/mtd/maps/pxa2xx-flash.c b/drivers/mtd/maps/pxa2xx-flash.c
-index e9026cb..bf933a9 100644
---- a/drivers/mtd/maps/pxa2xx-flash.c
-+++ b/drivers/mtd/maps/pxa2xx-flash.c
-@@ -177,7 +177,7 @@ static struct platform_driver pxa2xx_flash_driver = {
- 		.owner		= THIS_MODULE,
- 	},
- 	.probe		= pxa2xx_flash_probe,
--	.remove		= __devexit_p(pxa2xx_flash_remove),
-+	.remove		= __exit_p(pxa2xx_flash_remove),
- 	.suspend	= pxa2xx_flash_suspend,
- 	.resume		= pxa2xx_flash_resume,
- 	.shutdown	= pxa2xx_flash_shutdown,
-diff --git a/drivers/mtd/nand/excite_nandflash.c b/drivers/mtd/nand/excite_nandflash.c
-index 72446fb..630b4d6 100644
---- a/drivers/mtd/nand/excite_nandflash.c
-+++ b/drivers/mtd/nand/excite_nandflash.c
-@@ -224,7 +224,7 @@ static struct platform_driver excite_nand_driver = {
- 		.owner		= THIS_MODULE,
- 	},
- 	.probe = excite_nand_probe,
--	.remove = __devexit_p(excite_nand_remove)
-+	.remove = __exit_p(excite_nand_remove)
- };
- 
- static int __init excite_nand_init(void)
-
+Yep, I just finished testing the whole series here so you can go ahead
+and apply them pending a recast of patch 07/14 you'll hopefully be
+receiving soon from Tejun.
 
 -- 
-Russell King
+Regards/Gruss,
+    Boris.
