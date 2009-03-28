@@ -1,113 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756891AbZC1McU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754708AbZC1Mif@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756891AbZC1McU (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Mar 2009 08:32:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753044AbZC1McJ
+	id S1754708AbZC1Mif (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Mar 2009 08:38:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752882AbZC1MiZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Mar 2009 08:32:09 -0400
-Received: from mail-in-05.arcor-online.net ([151.189.21.45]:60488 "EHLO
-	mail-in-05.arcor-online.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751791AbZC1McH (ORCPT
+	Sat, 28 Mar 2009 08:38:25 -0400
+Received: from casper.infradead.org ([85.118.1.10]:44103 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751686AbZC1MiY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Mar 2009 08:32:07 -0400
-X-DKIM: Sendmail DKIM Filter v2.8.2 mail-in-08.arcor-online.net 956462AEE3A
-From: Prakash Punnoor <prakash@punnoor.de>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: Re: [PATCH] pci: don't enable too much HT MSI mapping -v5 -resend
-Date: Sat, 28 Mar 2009 13:34:44 +0100
-User-Agent: KMail/1.11.1 (Linux/2.6.29; KDE/4.2.1; x86_64; ; )
-Cc: Yinghai Lu <yinghai@kernel.org>, Matthew Wilcox <matthew@wil.cx>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Robert Hancock <hancockrwd@gmail.com>, david@lang.hm,
-       "linux-kernel" <linux-kernel@vger.kernel.org>,
-       linux-pci@vger.kernel.org
-References: <alpine.DEB.1.10.0902171419000.26625@asgard.lang.hm> <49C45115.2090101@kernel.org> <20090326161001.526354ed@hobbes>
-In-Reply-To: <20090326161001.526354ed@hobbes>
-MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart2706378.Nz2EWNZbBu";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
-Content-Transfer-Encoding: 7bit
-Message-Id: <200903281334.51490.prakash@punnoor.de>
+	Sat, 28 Mar 2009 08:38:24 -0400
+Subject: Re: [PATCH 1/2] x86/mm: maintain a percpu "in get_user_pages_fast"
+ flag
+From: Peter Zijlstra <peterz@infradead.org>
+To: Eric Dumazet <dada1@cosmosbay.com>
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>, Avi Kivity <avi@redhat.com>,
+       Nick Piggin <npiggin@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       the arch/x86 maintainers <x86@kernel.org>
+In-Reply-To: <49CDD7B4.4020701@cosmosbay.com>
+References: <49CD37B8.4070109@goop.org> <49CD9E25.2090407@redhat.com>
+	 <49CDAF17.5060207@goop.org>  <49CDD7B4.4020701@cosmosbay.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Sat, 28 Mar 2009 13:31:58 +0100
+Message-Id: <1238243518.4039.725.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.0 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart2706378.Nz2EWNZbBu
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+On Sat, 2009-03-28 at 08:54 +0100, Eric Dumazet wrote:
+> Jeremy Fitzhardinge a écrit :
+> > Avi Kivity wrote:
+> >> Jeremy Fitzhardinge wrote:
+> >>> get_user_pages_fast() relies on cross-cpu tlb flushes being a barrier
+> >>> between clearing and setting a pte, and before freeing a pagetable page.
+> >>> It usually does this by disabling interrupts to hold off IPIs, but
+> >>> some tlb flush implementations don't use IPIs for tlb flushes, and
+> >>> must use another mechanism.
+> >>>
+> >>> In this change, add in_gup_cpumask, which is a cpumask of cpus currently
+> >>> performing a get_user_pages_fast traversal of a pagetable.  A cross-cpu
+> >>> tlb flush function can use this to determine whether it should hold-off
+> >>> on the flush until the gup_fast has finished.
+> >>>
+> >>> @@ -255,6 +260,10 @@ int get_user_pages_fast(unsigned long start, int
+> >>> nr_pages, int write,
+> >>>      * address down to the the page and take a ref on it.
+> >>>      */
+> >>>     local_irq_disable();
+> >>> +
+> >>> +    cpu = smp_processor_id();
+> >>> +    cpumask_set_cpu(cpu, in_gup_cpumask);
+> >>> +
+> >>
+> >> This will bounce a cacheline, every time.  Please wrap in CONFIG_XEN
+> >> and skip at runtime if Xen is not enabled.
+> > 
+> > Every time?  Only when running successive gup_fasts on different cpus,
+> > and only twice per gup_fast. (What's the typical page count?  I see that
+> > kvm and lguest are page-at-a-time users, but presumably direct IO has
+> > larger batches.)
+> 
+> If I am not mistaken, shared futexes where hitting hard mm semaphore.
+> Then gup_fast was introduced in kernel/futex.c to remove this contention point.
+> Yet, this contention point was process specific, not a global one :)
+> 
+> And now, you want to add a global hot point, that would slow
+> down unrelated processes, only because they use shared futexes, thousand
+> times per second...
 
-On Freitag 27 M=E4rz 2009 00:10:01 Jesse Barnes wrote:
-> On Fri, 20 Mar 2009 19:29:41 -0700
->
-> Yinghai Lu <yinghai@kernel.org> wrote:
-> > Impact: fix bug
-> >
-> > Prakash reported that his c51-mcp51 system ondie sound card doesn't
-> > work MSI but if he hack out the HT-MSI on mcp51, the MSI will work
-> > well with sound card.
-> >
-> > this patch rework the nv_msi_ht_cap_quirk()
-> > and will only try to avoid to enable ht_msi on device following that
-> > root dev, and don't touch that root dev
-> >
-> > v3: will enable c51...
-> > v4: will enable c51 kind of without leaf too.
-> > v5: update to mainline
-> >
-> > Reported-by: Prakash Punnoor <prakash@punnoor.de>
-> > Signed-off-by: Yinghai Lu <yinghai@kernel.org>
->
-> Applied, thanks.  Prakash if you get a chance can you try testing my
-> linux-next branch (or just linux-next in general tomorrow) to make sure
-> this is still ok for you?
->
-> Thanks,
+Yet another reason to turn all this virt muck off :-) I just wish I
+could turn off the paravirt code impact, it makes finding functions in
+the x86 code a terrible pain.
 
-=46inally I am able to test the linux-next branch of pci tree after Jesse g=
-ave=20
-some help with git.(Is it correct that the kernel calls itself 2.6.28-rc8? =
-I=20
-looked into quirks.c and it seems to be correctly patched.) Unfortunately i=
-t=20
-doesn't seem to work for me (and I am wondering why as the old v4 version=20
-seemed to work ontop of one of the 2.6.29-rc versions):
+> > Alternatively, it could have per-cpu flags and the other side could
+> > construct the mask (I originally had that, but this was simpler).
+> 
+> Simpler but would be a regression for legacy applications still using shared
+> futexes (because statically linked with old libc)
 
-dmesg|grep HT
-pci 0000:00:00.0: Found disabled HT MSI Mapping
-pci 0000:00:03.0: Enabling HT MSI Mapping
-pci 0000:00:09.0: Found disabled HT MSI Mapping
-pci 0000:00:0e.0: Enabling HT MSI Mapping
-pci 0000:00:09.0: Found disabled HT MSI Mapping
-pci 0000:00:0f.0: Enabling HT MSI Mapping
-pci 0000:00:09.0: Found disabled HT MSI Mapping
-pci 0000:00:10.0: Enabling HT MSI Mapping
-pci 0000:00:09.0: Found disabled HT MSI Mapping
-pci 0000:00:10.1: Enabling HT MSI Mapping
+Still doesn't help those apps that really use shared futexes.
 
-Device 09.0 doesn't get enabled (good) but 00.0 also not (bad). Then my Int=
-el=20
-HDA cannot use MSI.
-
-Regards,
-
-Prakash
-
-
---nextPart2706378.Nz2EWNZbBu
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.11 (GNU/Linux)
-
-iEYEABECAAYFAknOGWsACgkQxU2n/+9+t5hmFgCgvUo1Hy2y7okZAN2+z+f2cZfh
-dM4An2PSPRO0j+llMY8FoKUcaQAzIieO
-=tQTe
------END PGP SIGNATURE-----
-
---nextPart2706378.Nz2EWNZbBu--
