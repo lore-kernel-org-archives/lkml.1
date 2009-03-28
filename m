@@ -1,47 +1,32 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757829AbZC0S6U (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Fri, 27 Mar 2009 14:58:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751093AbZC0S6J
+	id S1762158AbZC1AUa (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Fri, 27 Mar 2009 20:20:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751993AbZC1AUU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Mar 2009 14:58:09 -0400
-Received: from 195-5-179-186.altanusprivatemedia.com ([195.5.179.186]:56458
-	"EHLO mx186.hsxx-research.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1750864AbZC0S6I (ORCPT
+	Fri, 27 Mar 2009 20:20:20 -0400
+Received: from hrndva-commlb.mail.rr.com ([71.74.57.8]:64752 "EHLO
+	hrndva-commlb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750830AbZC1AUT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Mar 2009 14:58:08 -0400
-X-Greylist: delayed 1900 seconds by postgrey-1.27 at vger.kernel.org; Fri, 27 Mar 2009 14:58:08 EDT
+	Fri, 27 Mar 2009 20:20:19 -0400
+Message-Id: <7h9gbp$cksu96@rrcs-agw-01b.hrndva.rr.com>
+X-Mailer: Openwave WebEngine, version 2.8.17 (webedge20-101-1107-20041027)
+From: Global-Promo <wrobinson@rrbiznet.com>
+Reply-To: jerry.smith020@btinternet.com
+To: <info@lotto.org>
+Subject: Claims Of =?iso-8859-1?B?ozk1MC4wMDAuMDA=?= Pounds
+Date: Fri, 27 Mar 2009 19:20:16 -0500
 MIME-Version: 1.0
-From: "Alexandra Brand" <Br@Geld-Regen.org>
-User-Agent: Microsoft-Entourage/10.1.4.030702.0
-X-BounceID: 708bf6bf7f0f46c495996b838e616a5e
-Subject: Zusatzeinkommen=?UTF-8?Q?=20gef=C3=A4llig?=?
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=iso-8859-1
 Content-Transfer-Encoding: 8bit
-Message-ID: <kh6gj8.ib8ls8@localhost>
-To: linux-kernel@vger.kernel.org
-Date: Fri, 27 Mar 2009 19:25:56 +0100 (CET)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Guten Tag,
+Your email ID has been awarded �950.000.00 GBP in our recent Global draw,Contact this office with your details and sent to:jerry.smith33@live.com
 
-sucht Du ein schnelles Zusatzeinkommen? Dann schau' Dir das hier an:
-
-http://www.Geld-Regen.org/
-
-
-Voreile:
-- Keine Abzocke, kein Spam.
-- Kein Betrug.
-- Nachvollziehbare Anleitung, einfach erklärt.
-- Starthilfe durch mich.
-
-
-Probier' es doch einmal ohne Vorurteile aus.
-
-
-Viele Grüße,
-Alexandra Brandson
-
-
+Name:....................
+Country:.................
+Sex:.....................
+Age: .....................
+Address:...................
