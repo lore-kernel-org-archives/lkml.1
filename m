@@ -1,134 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754961AbZC1Lri@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758055AbZC1Lxu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754961AbZC1Lri (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Mar 2009 07:47:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753948AbZC1Lr2
+	id S1758055AbZC1Lxu (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Mar 2009 07:53:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753948AbZC1Lxk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Mar 2009 07:47:28 -0400
-Received: from hera.kernel.org ([140.211.167.34]:58491 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753914AbZC1Lr0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Mar 2009 07:47:26 -0400
-Date: Sat, 28 Mar 2009 11:45:45 GMT
-From: Ingo Molnar <mingo@elte.hu>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       penberg@cs.helsinki.fi, eduard.munteanu@linux360.ro,
-       viro@zeniv.linux.org.uk, tglx@linutronix.de, mingo@elte.hu,
-       adobriyan@gmail.com
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       penberg@cs.helsinki.fi, eduard.munteanu@linux360.ro,
-       viro@zeniv.linux.org.uk, tglx@linutronix.de, mingo@elte.hu,
-       adobriyan@gmail.com
-In-Reply-To: <1237898630.25315.83.camel@penberg-laptop>
-References: <1237898630.25315.83.camel@penberg-laptop>
-Subject: [tip:tracing/kmemtrace] fs.h: uninline simple_transaction_set()
-Message-ID: <tip-a1525f87fd18c687edf376455c7d2e73c9b2cb6c@git.kernel.org>
-Git-Commit-ID: a1525f87fd18c687edf376455c7d2e73c9b2cb6c
-X-Mailer: tip-git-log-daemon
+	Sat, 28 Mar 2009 07:53:40 -0400
+Received: from mail-in-13.arcor-online.net ([151.189.21.53]:47936 "EHLO
+	mail-in-13.arcor-online.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753914AbZC1Lxj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Mar 2009 07:53:39 -0400
+X-DKIM: Sendmail DKIM Filter v2.8.2 mail-in-01.arcor-online.net DE4B9332A61
+From: Bodo Eggert <7eggert@gmx.de>
+Subject: Re: Linux 2.6.29
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Matthew Garrett <mjg59@srcf.ucam.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Theodore Tso <tytso@mit.edu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       David Rees <drees76@gmail.com>, Jesper Krogh <jesper@krogh.cc>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Reply-To: 7eggert@gmx.de
+Date: Sat, 28 Mar 2009 12:53:34 +0100
+References: <ckcE8-845-9@gated-at.bofh.it> <ckdgW-uA-1@gated-at.bofh.it> <ckdK0-1om-1@gated-at.bofh.it> <ckiqk-uZ-13@gated-at.bofh.it> <cklHL-5IW-23@gated-at.bofh.it> <ckm0Q-6o4-3@gated-at.bofh.it> <ckmaG-6AC-5@gated-at.bofh.it> <ckmWO-7Ro-5@gated-at.bofh.it> <ckn6L-84h-19@gated-at.bofh.it> <cknzG-ff-7@gated-at.bofh.it> <cknJk-IB-9@gated-at.bofh.it> <ckoFm-2eg-3@gated-at.bofh.it> <ckoYP-2DC-13@gated-at.bofh.it>
+User-Agent: KNode/0.10.4
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sat, 28 Mar 2009 11:45:49 +0000 (UTC)
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7Bit
+Message-Id: <E1LnX6V-0001aA-AU@be1.7eggert.dyndns.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  a1525f87fd18c687edf376455c7d2e73c9b2cb6c
-Gitweb:     http://git.kernel.org/tip/a1525f87fd18c687edf376455c7d2e73c9b2cb6c
-Author:     Ingo Molnar <mingo@elte.hu>
-AuthorDate: Wed, 25 Mar 2009 16:48:35 +0100
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Sat, 28 Mar 2009 12:44:06 +0100
+Linus Torvalds <torvalds@linux-foundation.org> wrote:
+> On Fri, 27 Mar 2009, Linus Torvalds wrote:
 
-fs.h: uninline simple_transaction_set()
+>> Yes, some editors (vi, emacs) do it, but even there it's configurable.
+> 
+> .. and looking at history, it's even pretty modern. From the vim logs:
+> 
+> Patch 6.2.499
+> Problem:   When writing a file and halting the system, the file might be lost
+> when using a journalling file system.
+> Solution:  Use fsync() to flush the file data to disk after writing a file.
+> (Radim Kolar)
+> Files:     src/fileio.c
+> 
+> so it looks (assuming those patch numbers mean what they would seem to
+> mean) that 'fsync()' in vim is from after 6.2 was released. Some time in
+> 2004.
 
-Move simple_transaction_set() to the other simple-transaction
-file helpers in fs/libfs.c.
+Besides that, it's a fix specific for /journaled/ filesystems. It's easy to see
+that the same journal that was supposed to increase filesystem reliability
+is CAUSING more unreliable behavior.
 
-This removes an implicit asm/page.h PAGE_SIZE dependency from
-fs.h (asm/page.h is not an exported header so HEADERS_CHECK fils),
-and also reduces kernel size a bit.
-
-Acked-by: Al Viro <viro@zeniv.linux.org.uk>
-Cc: Alexey Dobriyan <adobriyan@gmail.com>
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>
-Cc: paulmck@linux.vnet.ibm.com
-LKML-Reference: <1237898630.25315.83.camel@penberg-laptop>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-
----
- fs/libfs.c         |   16 ++++++++++++++++
- include/linux/fs.h |   16 +---------------
- 2 files changed, 17 insertions(+), 15 deletions(-)
-
-diff --git a/fs/libfs.c b/fs/libfs.c
-index 49b4409..c872c64 100644
---- a/fs/libfs.c
-+++ b/fs/libfs.c
-@@ -574,6 +574,21 @@ ssize_t memory_read_from_buffer(void *to, size_t count, loff_t *ppos,
-  * possibly a read which collects the result - which is stored in a
-  * file-local buffer.
-  */
-+
-+void simple_transaction_set(struct file *file, size_t n)
-+{
-+	struct simple_transaction_argresp *ar = file->private_data;
-+
-+	BUG_ON(n > SIMPLE_TRANSACTION_LIMIT);
-+
-+	/*
-+	 * The barrier ensures that ar->size will really remain zero until
-+	 * ar->data is ready for reading.
-+	 */
-+	smp_mb();
-+	ar->size = n;
-+}
-+
- char *simple_transaction_get(struct file *file, const char __user *buf, size_t size)
- {
- 	struct simple_transaction_argresp *ar;
-@@ -819,6 +834,7 @@ EXPORT_SYMBOL(simple_sync_file);
- EXPORT_SYMBOL(simple_unlink);
- EXPORT_SYMBOL(simple_read_from_buffer);
- EXPORT_SYMBOL(memory_read_from_buffer);
-+EXPORT_SYMBOL(simple_transaction_set);
- EXPORT_SYMBOL(simple_transaction_get);
- EXPORT_SYMBOL(simple_transaction_read);
- EXPORT_SYMBOL(simple_transaction_release);
-diff --git a/include/linux/fs.h b/include/linux/fs.h
-index 79be937..2ebe3ce 100644
---- a/include/linux/fs.h
-+++ b/include/linux/fs.h
-@@ -9,8 +9,6 @@
- #include <linux/limits.h>
- #include <linux/ioctl.h>
- 
--#include <asm/page.h> /* for PAGE_SIZE */
--
- /*
-  * It's silly to have NR_OPEN bigger than NR_FILE, but you can change
-  * the file limit at runtime and only root can increase the per-process
-@@ -2173,19 +2171,7 @@ ssize_t simple_transaction_read(struct file *file, char __user *buf,
- 				size_t size, loff_t *pos);
- int simple_transaction_release(struct inode *inode, struct file *file);
- 
--static inline void simple_transaction_set(struct file *file, size_t n)
--{
--	struct simple_transaction_argresp *ar = file->private_data;
--
--	BUG_ON(n > SIMPLE_TRANSACTION_LIMIT);
--
--	/*
--	 * The barrier ensures that ar->size will really remain zero until
--	 * ar->data is ready for reading.
--	 */
--	smp_mb();
--	ar->size = n;
--}
-+void simple_transaction_set(struct file *file, size_t n);
- 
- /*
-  * simple attribute files
