@@ -1,61 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760339AbZC1D43@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752661AbZC1EHb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760339AbZC1D43 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Mar 2009 23:56:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756820AbZC1D4U
+	id S1752661AbZC1EHb (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Mar 2009 00:07:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750715AbZC1EHO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Mar 2009 23:56:20 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:53463 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754179AbZC1D4T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Mar 2009 23:56:19 -0400
-Message-ID: <49CD9E25.2090407@redhat.com>
-Date: Sat, 28 Mar 2009 06:48:53 +0300
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
-MIME-Version: 1.0
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-CC: Nick Piggin <npiggin@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       the arch/x86 maintainers <x86@kernel.org>
-Subject: Re: [PATCH 1/2] x86/mm: maintain a percpu "in get_user_pages_fast"
- flag
-References: <49CD37B8.4070109@goop.org>
-In-Reply-To: <49CD37B8.4070109@goop.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Sat, 28 Mar 2009 00:07:14 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:55767 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750814AbZC1EHF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Mar 2009 00:07:05 -0400
+Date: Sat, 28 Mar 2009 01:06:33 -0300
+From: Mauro Carvalho Chehab <mchehab@infradead.org>
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux1394-devel@lists.sourceforge.net
+Subject: Re: [git pull] FireWire updates post 2.6.29
+Message-ID: <20090328010633.56c10696@pedra.chehab.org>
+In-Reply-To: <tkrat.09e279b9fad0fd3c@s5r6.in-berlin.de>
+References: <tkrat.09e279b9fad0fd3c@s5r6.in-berlin.de>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeremy Fitzhardinge wrote:
-> get_user_pages_fast() relies on cross-cpu tlb flushes being a barrier
-> between clearing and setting a pte, and before freeing a pagetable page.
-> It usually does this by disabling interrupts to hold off IPIs, but
-> some tlb flush implementations don't use IPIs for tlb flushes, and
-> must use another mechanism.
->
-> In this change, add in_gup_cpumask, which is a cpumask of cpus currently
-> performing a get_user_pages_fast traversal of a pagetable.  A cross-cpu
-> tlb flush function can use this to determine whether it should hold-off
-> on the flush until the gup_fast has finished.
->
-> @@ -255,6 +260,10 @@ int get_user_pages_fast(unsigned long start, int 
-> nr_pages, int write,
->      * address down to the the page and take a ref on it.
->      */
->     local_irq_disable();
-> +
-> +    cpu = smp_processor_id();
-> +    cpumask_set_cpu(cpu, in_gup_cpumask);
-> +
+On Sat, 28 Mar 2009 01:11:20 +0100 (CET)
+Stefan Richter <stefanr@s5r6.in-berlin.de> wrote:
 
-This will bounce a cacheline, every time.  Please wrap in CONFIG_XEN and 
-skip at runtime if Xen is not enabled.
+> Linus, please pull from the for-linus branch at
+> 
+>     git://git.kernel.org/pub/scm/linux/kernel/git/ieee1394/linux1394-2.6.git for-linus
+> 
+> to receive the following IEEE 1394/ FireWire subsystem updates.
+> Most of it are feature additions to firewire-core for userspace drivers
+> (via libdc1394 and libraw1394), some also for in-kernel drivers.  Much
+> of it has been written already last year and went into -next early this
+> year, slightly too late for 2.6.29. Userspace code which uses the
+> features went over the respective mailinglists and should appear in
+> libdc1394 and libraw1394 soon.  Also included:  Two recent dvb/firewire
+> fixes; Mauro has been informed.
+> 
+>  drivers/media/dvb/firewire/firedtv-avc.c |   10 +-
+
+For the V4L/DVB changes:
+
+Acked-by: Mauro Carvalho Chehab <mchehab@redhat.com>
 
 
--- 
-I have a truly marvellous patch that fixes the bug which this
-signature is too narrow to contain.
 
+Cheers,
+Mauro
