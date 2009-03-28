@@ -1,45 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754186AbZC1JGW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753440AbZC1JIF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754186AbZC1JGW (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Mar 2009 05:06:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751227AbZC1JGL
+	id S1753440AbZC1JIF (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Mar 2009 05:08:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751169AbZC1JHw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Mar 2009 05:06:11 -0400
-Received: from iona.labri.fr ([147.210.8.143]:59964 "EHLO iona.labri.fr"
+	Sat, 28 Mar 2009 05:07:52 -0400
+Received: from ozlabs.org ([203.10.76.45]:44506 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751169AbZC1JGK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Mar 2009 05:06:10 -0400
-X-Greylist: delayed 1153 seconds by postgrey-1.27 at vger.kernel.org; Sat, 28 Mar 2009 05:06:10 EDT
-Message-ID: <49CDE401.2020502@inria.fr>
-Date: Sat, 28 Mar 2009 09:46:57 +0100
-From: Brice Goglin <Brice.Goglin@inria.fr>
-User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
+	id S1751133AbZC1JHw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Mar 2009 05:07:52 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Yinghai Lu <yinghai@kernel.org>
+Subject: Re: [PATCH] irq: remove wrong ifdef
+Date: Sat, 28 Mar 2009 19:37:47 +1030
+User-Agent: KMail/1.11.1 (Linux/2.6.27-11-generic; KDE/4.2.1; i686; ; )
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>, Mike Travis <travis@sgi.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+References: <49CDAB27.7050602@kernel.org> <49CDAB6E.90006@kernel.org>
+In-Reply-To: <49CDAB6E.90006@kernel.org>
 MIME-Version: 1.0
-To: Peter Zijlstra <peterz@infradead.org>
-CC: Eric Anholt <eric@anholt.net>, Andi Kleen <andi@firstfloor.org>,
-       linux-kernel@vger.kernel.org, dri-devel@lists.sourceforge.net,
-       Nick Piggin <nickpiggin@yahoo.com.au>
-Subject: Re: DRM lock ordering fix series
-References: <1238017510-26784-1-git-send-email-eric@anholt.net>	 <87ocvnmhqx.fsf@basil.nowhere.org>	 <1238170767.8275.2397.camel@gaiman.anholt.net>	 <1238171805.8275.2434.camel@gaiman.anholt.net>	 <20090327181018.GC11935@one.firstfloor.org>	 <1238184629.625.44.camel@gaiman.anholt.net> <1238201922.4039.403.camel@laptop>
-In-Reply-To: <1238201922.4039.403.camel@laptop>
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200903281937.48755.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Zijlstra wrote:
-> Also note that doing large gup() with gup_fast() will be undesirable due
-> to it disabling IRQs. So iterating say several MB worth of pages will
-> hurt like crazy. Currently all gup_fast() users do a single page lookup.
->   
+On Saturday 28 March 2009 15:15:34 Yinghai Lu wrote:
+> Impact: fix smp_affinity copying
+> 
+> CPUMASKS_OFFSTACK is not defined anywhere.
+> and init_allocate_desc_masks called before it set affinity to all cpus...
+> 
+> just remove those #idef to make them get copied
+> 
+> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+> 
+> ---
+>  include/linux/irq.h |    4 ----
+>  1 file changed, 4 deletions(-)
+> 
+> Index: linux-2.6/include/linux/irq.h
+> ===================================================================
+> --- linux-2.6.orig/include/linux/irq.h
+> +++ linux-2.6/include/linux/irq.h
+> @@ -468,20 +468,16 @@ static inline bool init_alloc_desc_masks
+>   * @new_desc:	pointer to new irq_desc struct
+>   *
+>   * Insures affinity and pending_masks are copied to new irq_desc.
+> - * If !CONFIG_CPUMASKS_OFFSTACK the cpumasks are embedded in the
+> - * irq_desc struct so the copy is redundant.
+>   */
+>  
+>  static inline void init_copy_desc_masks(struct irq_desc *old_desc,
+>  					struct irq_desc *new_desc)
+>  {
+> -#ifdef CONFIG_CPUMASKS_OFFSTACK
+>  	cpumask_copy(new_desc->affinity, old_desc->affinity);
+>  
+>  #ifdef CONFIG_GENERIC_PENDING_IRQ
+>  	cpumask_copy(new_desc->pending_mask, old_desc->pending_mask);
+>  #endif
+> -#endif
+>  }
+>  
+>  #else /* !CONFIG_SMP */
 
-In 2.6.29, fs/bio.c:955, fs/direct-io.c:153 and fs/splice.c:1222 do
-multiple-pages lookup at once. The latter might be limited to 16 pages
-because of the pipe-depth, I don't know about the formers.
+Wow, that is supposed to be CONFIG_CPUMASK_OFFSTACK.
 
-Is there some sort of reasonable limit? A couple dozens pages at once maybe?
+The reason it is there is that we already do the memcpy of old_desc: this
+extra copy is only needed if the cpumasks are external.  But perhaps it's
+an over-optimization.
 
-Brice
-
+Thanks,
+Rusty.
