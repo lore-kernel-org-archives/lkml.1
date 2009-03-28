@@ -1,30 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754205AbZC1NGM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755367AbZC1NMU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754205AbZC1NGM (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Mar 2009 09:06:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752562AbZC1NFz
+	id S1755367AbZC1NMU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Mar 2009 09:12:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753800AbZC1NMF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Mar 2009 09:05:55 -0400
-Received: from ozlabs.org ([203.10.76.45]:47437 "EHLO ozlabs.org"
+	Sat, 28 Mar 2009 09:12:05 -0400
+Received: from ozlabs.org ([203.10.76.45]:52495 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751558AbZC1NFw convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Mar 2009 09:05:52 -0400
+	id S1752741AbZC1NL7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Mar 2009 09:11:59 -0400
 From: Rusty Russell <rusty@rustcorp.com.au>
 To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: [PULL] module and parameter patches
-Date: Sat, 28 Mar 2009 23:35:44 +1030
+Subject: [PULL] lguest and virtio patches
+Date: Sat, 28 Mar 2009 23:41:54 +1030
 User-Agent: KMail/1.11.1 (Linux/2.6.27-11-generic; KDE/4.2.1; i686; ; )
-Cc: linux-kernel@vger.kernel.org,
-       =?utf-8?q?Am=C3=A9rico_Wang?= <xiyou.wangcong@gmail.com>,
-       Anders Kaseorg <andersk@mit.edu>,
-       Arjan van de Ven <arjan@linux.intel.com>, Tim Abbott <tabbott@mit.edu>
+Cc: linux-kernel@vger.kernel.org, lguest <lguest@ozlabs.org>,
+       Matias Zabaljauregui <zabaljauregui@gmail.com>,
+       Roel Kluin <roel.kluin@gmail.com>,
+       Christoph Hellwig <hch@infradead.org>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="utf-8"
-Content-Transfer-Encoding: 8BIT
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200903282335.45667.rusty@rustcorp.com.au>
+Message-Id: <200903282341.54810.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -35,1593 +34,997 @@ The following changes since commit 5d80f8e5a9dc9c9a94d4aeaa567e219a808b8a4a:
 
 are available in the git repository at:
 
-  ssh://master.kernel.org/pub/scm/linux/kernel/git/rusty/linux-2.6-module-and-param.git master
+  ssh://master.kernel.org/pub/scm/linux/kernel/git/rusty/linux-2.6-lguest-and-virtio.git master
 
-Américo Wang (1):
-      kernel/module.c: fix an unused goto label
+Matias Zabaljauregui (2):
+      lguest: use KVM hypercalls
+      lguest: use bool instead of int
 
-Anders Kaseorg (1):
-      Ksplice: Add functions for walking kallsyms symbols
+Roel Kluin (1):
+      virtio: fix BAD_RING, START_US and END_USE macros
 
-Arjan van de Ven (3):
-      module: create a request_module_nowait()
-      use the new request_module_nowait() in the hid driver
-      use the new request_module_nowait() in drivers/media 
+Rusty Russell (5):
+      virtio: more neatening of virtio_ring macros.
+      lguest: fix spurious BUG_ON() on invalid guest stack.
+      lguest: wire up pte_update/pte_update_defer
+      lguest: avoid accidental recycling of pgdir pages
+      lguest: barrier me harder
 
-Rusty Russell (7):
-      param: fix charp parameters set via sysfs
-      module: __module_address                 
-      module: remove module_text_address()     
-      module: clarify the force-loading taint message.
-      module: remove the SHF_ALLOC flag on the __versions section.
-      module: include other structures in module version check    
-      module: don't use stop_machine on module load               
+ Documentation/lguest/lguest.c         |    7 +++
+ arch/x86/include/asm/lguest_hcall.h   |   25 ++-------
+ arch/x86/lguest/boot.c                |   94 +++++++++++++++++++++++----------
+ arch/x86/lguest/i386_head.S           |    4 +-
+ drivers/lguest/core.c                 |    4 +-
+ drivers/lguest/hypercalls.c           |    3 +
+ drivers/lguest/interrupts_and_traps.c |   28 +++++-----
+ drivers/lguest/lg.h                   |    9 ++--
+ drivers/lguest/lguest_device.c        |    4 +-
+ drivers/lguest/page_tables.c          |   38 ++++++++++----
+ drivers/lguest/segments.c             |    2 +-
+ drivers/lguest/x86/core.c             |   62 +++++++++++++++++++++-
+ drivers/virtio/virtio_ring.c          |   22 +++++---
+ 13 files changed, 210 insertions(+), 92 deletions(-)
 
-Tim Abbott (2):
-      module: Make find_symbol return a struct kernel_symbol
-      module: Export symbols needed for Ksplice
+commit ca98502ca12192f7f1aec0239734458901c4fdd6
+Author: Roel Kluin <roel.kluin@gmail.com>
+Date:   Thu Jan 22 16:42:57 2009 +0100
 
- drivers/hid/hid-core.c                     |   19 +--
- drivers/media/video/bt8xx/bttv-driver.c    |    8 +-
- drivers/media/video/bt8xx/bttvp.h          |    3 -
- drivers/media/video/cx88/cx88-mpeg.c       |   14 +--
- drivers/media/video/cx88/cx88.h            |    1 -
- drivers/media/video/em28xx/em28xx-cards.c  |   17 +--
- drivers/media/video/em28xx/em28xx.h        |    2 -
- drivers/media/video/saa7134/saa7134-core.c |   19 +--
- drivers/media/video/saa7134/saa7134.h      |    2 -
- drivers/mtd/nand/nand_base.c               |    4 +-
- include/linux/kallsyms.h                   |   15 ++
- include/linux/kmod.h                       |   11 +-
- include/linux/module.h                     |   63 ++++++-
- include/linux/moduleparam.h                |   10 +
- kernel/extable.c                           |    6 +-
- kernel/kallsyms.c                          |   19 ++
- kernel/kmod.c                              |   10 +-
- kernel/module.c                            |  263 +++++++++++++++++-----------
- kernel/params.c                            |   26 +++-
- scripts/mod/modpost.c                      |    4 +-
- 20 files changed, 317 insertions(+), 199 deletions(-)
-
-commit 73d3e96bb9b6530e394630c1656715e5f67f3d1c
-Author: Rusty Russell <rusty@rustcorp.com.au>
-Date:   Sat Mar 28 23:12:50 2009 -0600
-
-    param: fix charp parameters set via sysfs
-    
-    Impact: fix crash on reading from /sys/module/.../ieee80211_default_rc_algo
-    
-    The module_param type "charp" simply sets a char * pointer in the
-    module to the parameter in the commandline string: this is why we keep
-    the (mangled) module command line around.  But when set via sysfs (as
-    about 11 charp parameters can be) this memory is freed on the way
-    out of the write().  Future reads hit random mem.
-    
-    So we kstrdup instead: we have to check we're not in early commandline
-    parsing, and we have to note when we've used it so we can reliably
-    kfree the parameter when it's next overwritten, and also on module
-    unload.
-    
-    (Thanks to Randy Dunlap for CONFIG_SYSFS=n fixes)
-    
-    Reported-by: Sitsofe Wheeler <sitsofe@yahoo.com>
-    Diagnosed-by: Frederic Weisbecker <fweisbec@gmail.com>
-    Tested-by: Frederic Weisbecker <fweisbec@gmail.com>
-    Tested-by: Christof Schmitt <christof.schmitt@de.ibm.com>
-    Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
-
- include/linux/module.h      |    4 ++++
- include/linux/moduleparam.h |   10 ++++++++++
- kernel/module.c             |   14 ++++++++------
- kernel/params.c             |   26 +++++++++++++++++++++++++-
- 4 files changed, 47 insertions(+), 7 deletions(-)
-
-commit 5421acc2cb93aaa9c8f47ea31e4a2bba7c730ff2
-Author: Américo Wang <xiyou.wangcong@gmail.com>
-Date:   Wed Mar 25 00:07:19 2009 +0800
-
-    kernel/module.c: fix an unused goto label
+    virtio: fix BAD_RING, START_US and END_USE macros
     
     Impact: cleanup
     
-    Label 'free_init' is only used when defined(CONFIG_MODULE_UNLOAD) &&
-    defined(CONFIG_SMP), so move it inside to shut up gcc.
+    fix BAD_RING, START_US and END_USE macros
     
-    Signed-off-by: WANG Cong <xiyou.wangcong@gmail.com>
-    Cc: Rusty Russell <rusty@rustcorp.com.au>
+    When these macros aren't called with a variable named vq as first
+    argument, this would result in a build failure.
+    
+    Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
     Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
 
- kernel/module.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ drivers/virtio/virtio_ring.c |   16 ++++++++--------
+ 1 files changed, 8 insertions(+), 8 deletions(-)
 
-commit ebb7dbcaa0bd58b3f10cb03693966a82d1cace39
-Author: Tim Abbott <tabbott@mit.edu>
-Date:   Fri Dec 5 19:03:56 2008 -0500
-
-    module: Make find_symbol return a struct kernel_symbol
-    
-    Impact: Cleanup, internal API change
-    
-    Ksplice needs access to the kernel_symbol structure in order to support
-    modifications to the exported symbol table.
-    
-    Cc: Anders Kaseorg <andersk@mit.edu>
-    Cc: Jeff Arnold <jbarnold@mit.edu>
-    Signed-off-by: Tim Abbott <tabbott@mit.edu>
-    Signed-off-by: Rusty Russell <rusty@rustcorp.com.au> (bugfix and style)
-
- kernel/module.c |   75 +++++++++++++++++++++++++++----------------------------
- 1 files changed, 37 insertions(+), 38 deletions(-)
-
-commit ebb32e28691e27d13584105306ffea6fca1b6284
+commit d8cac090dbf12b5651609776b18446cd984a4d74
 Author: Rusty Russell <rusty@rustcorp.com.au>
-Date:   Sat Mar 28 23:12:51 2009 -0600
+Date:   Sat Mar 28 23:39:16 2009 -0600
 
-    module: __module_address
+    virtio: more neatening of virtio_ring macros.
     
-    Impact: New API, cleanup
+    Impact: cleanup
     
-    ksplice wants to know the bounds of a module, not just the module text.
+    Roel Kluin drew attention to these macros with his patch: here I
+    neaten them a little further:
+    1) Add a comment on what START_USE and END_USE are checking,
+    2) Brackets around _vq in BAD_RING,
+    3) Neaten formatting for START_USE so it's less than 80 cols.
     
-    It makes sense to have __module_address.  We then implement
-    is_module_address and __module_text_address in terms of this (and
-    change is_module_text_address() to bool while we're at it).
-    
-    Also, add proper kerneldoc for them all.
-    
-    Cc: Anders Kaseorg <andersk@mit.edu>
-    Cc: Jeff Arnold <jbarnold@mit.edu>
-    Cc: Tim Abbott <tabbott@mit.edu>
     Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
 
- include/linux/module.h |   20 +++++++++---
- kernel/module.c        |   76 ++++++++++++++++++++++++++++++++++++-----------
- 2 files changed, 73 insertions(+), 23 deletions(-)
+ drivers/virtio/virtio_ring.c |   12 +++++++++---
+ 1 files changed, 9 insertions(+), 3 deletions(-)
 
-commit feef3a4101a239e71d91eb53446588a4a6426ac3
+commit ffa4ae2fe9c68fe35d0dbf29a05af5aff392122b
 Author: Rusty Russell <rusty@rustcorp.com.au>
-Date:   Sat Mar 28 23:12:52 2009 -0600
+Date:   Sat Mar 28 23:39:16 2009 -0600
 
-    module: remove module_text_address()
+    lguest: fix spurious BUG_ON() on invalid guest stack.
     
-    Impact: Replace and remove risky (non-EXPORTed) API
+    Impact: fix crash on misbehaving guest
     
-    module_text_address() returns a pointer to the module, which given locking
-    improvements in module.c, is useless except to test for NULL:
+    gpte_addr() contains a BUG_ON(), insisting that the present flag is
+    set.  We need to return before we call it if that isn't the case.
     
-    1) If the module can't go away, use __module_text_address.
-    2) Otherwise, just use is_module_text_address().
-    
-    Cc: linux-mtd@lists.infradead.org
     Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+    Cc: stable@kernel.org
 
- drivers/mtd/nand/nand_base.c |    4 ++--
- include/linux/module.h       |    7 -------
- kernel/extable.c             |    6 +++---
- kernel/module.c              |   17 ++++-------------
- 4 files changed, 9 insertions(+), 25 deletions(-)
+ drivers/lguest/page_tables.c |    4 +++-
+ 1 files changed, 3 insertions(+), 1 deletions(-)
 
-commit 553d052231210f4b4f328708096dd4d1a5b051a6
-Author: Anders Kaseorg <andersk@mit.edu>
-Date:   Fri Dec 5 19:03:58 2008 -0500
-
-    Ksplice: Add functions for walking kallsyms symbols
-    
-    Impact: New API
-    
-    kallsyms_lookup_name only returns the first match that it finds.  Ksplice
-    needs information about all symbols with a given name in order to correctly
-    resolve local symbols.
-    
-    kallsyms_on_each_symbol provides a generic mechanism for iterating over the
-    kallsyms table.
-    
-    Cc: Jeff Arnold <jbarnold@mit.edu>
-    Cc: Tim Abbott <tabbott@mit.edu>
-    Signed-off-by: Anders Kaseorg <andersk@mit.edu>
-    Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
-
- include/linux/kallsyms.h |   15 +++++++++++++++
- include/linux/module.h   |   12 ++++++++++++
- kernel/kallsyms.c        |   19 +++++++++++++++++++
- kernel/module.c          |   19 +++++++++++++++++++
- 4 files changed, 65 insertions(+), 0 deletions(-)
-
-commit dd3a6593757881ae9d0f3c79621bd78d3b549f2b
-Author: Tim Abbott <tabbott@mit.edu>
-Date:   Fri Dec 5 19:03:59 2008 -0500
-
-    module: Export symbols needed for Ksplice
-    
-    Impact: Expose some module.c symbols
-    
-    Ksplice uses several functions from module.c in order to resolve
-    symbols and implement dependency handling.  Calling these functions
-    requires holding module_mutex, so it is exported.
-    
-    (This is just the module part of a bigger add-exports patch from Tim).
-    
-    Cc: Anders Kaseorg <andersk@mit.edu>
-    Cc: Jeff Arnold <jbarnold@mit.edu>
-    Signed-off-by: Tim Abbott <tabbott@mit.edu>
-    Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
-
- include/linux/module.h |   28 ++++++++++++++++++++++++++++
- kernel/module.c        |   43 +++++++++++++++++++------------------------
- 2 files changed, 47 insertions(+), 24 deletions(-)
-
-commit cabafb1afbdffc6f86a77e79ca52791be4820b00
+commit bb32d14a9e3efd1578e8ad53286de71a992bb4db
 Author: Rusty Russell <rusty@rustcorp.com.au>
-Date:   Sat Mar 28 23:12:55 2009 -0600
+Date:   Sat Mar 28 23:39:16 2009 -0600
 
-    module: clarify the force-loading taint message.
+    lguest: wire up pte_update/pte_update_defer
     
-    Impact: Message cleanup
+    Impact: intermittent guest segv/crash fix
     
-    Two of three callers of try_to_force_load() are not because of a
-    missing version, so change the messages:
+    I've been seeing random guest bad address crashes and segmentation faults:
+    bisect led to 4f98a2fee8 (vmscan: split LRU lists into anon & file sets),
+    but that's a red herring.
     
-    Old:
-    	<modname>: no version for "magic" found: kernel tainted.
-    New:
-    	<modname>: bad vermagic: kernel tainted.
-    
-    Old:
-    	<modname>: no version for "nocrc" found: kernel tainted.
-    New:
-    	<modname>: no versions for exported symbols: kernel tainted.
-    
-    Old:
-    	<modname>: no version for "<symname>" found: kernel tainted.
-    New:
-    	<modname>: <symname>: kernel tainted.
+    It turns out that lguest never hooked up the pte_update/pte_update_defer
+    calls, so our ptes were not always in sync.  After the vmscan commit, the
+    bug became reproducible; now a fsck in a 64MB guest causes reproducible
+    pagetable corruption.
     
     Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+    Cc: jeremy@xensource.com
+    Cc: virtualization@lists.osdl.org
+    Cc: stable@kernel.org
 
- kernel/module.c |   12 ++++++------
- 1 files changed, 6 insertions(+), 6 deletions(-)
+ arch/x86/lguest/boot.c |   10 +++++++++-
+ 1 files changed, 9 insertions(+), 1 deletions(-)
 
-commit 8a50039ec1d358a34474d86f80323cbb0c9e8409
+commit 754b83efa91a021395c7df119ce53aeb32cce11d
 Author: Rusty Russell <rusty@rustcorp.com.au>
-Date:   Sat Mar 28 23:12:56 2009 -0600
+Date:   Sat Mar 28 23:39:17 2009 -0600
 
-    module: remove the SHF_ALLOC flag on the __versions section.
+    lguest: avoid accidental recycling of pgdir pages
     
-    Impact: reduce kernel memory usage
+    Impact: potential bugfix
     
-    This patch just takes off the SHF_ALLOC flag on __versions so we don't
-    keep them around after module load.
+    In theory, the kernel could reuse the same page as pgdir for a new process
+    while the hypervisor keeps it cached.  This would have undesirable results.
     
-    This saves about 7% of module memory if CONFIG_MODVERSIONS=y.
-    
-    Cc: Shawn Bohrer <shawn.bohrer@gmail.com>
     Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
 
- kernel/module.c |    3 +++
- 1 files changed, 3 insertions(+), 0 deletions(-)
+ arch/x86/include/asm/lguest_hcall.h |    1 +
+ arch/x86/lguest/boot.c              |    8 ++++++++
+ drivers/lguest/hypercalls.c         |    3 +++
+ drivers/lguest/lg.h                 |    1 +
+ drivers/lguest/page_tables.c        |   16 ++++++++++++++++
+ 5 files changed, 29 insertions(+), 0 deletions(-)
 
-commit f25d049563820ef472732511d20cdf684632c574
+commit b6757ad1aeeefbe439596dc09f23a4fee16c9079
+Author: Matias Zabaljauregui <zabaljauregui@gmail.com>
+Date:   Sat Mar 14 13:37:52 2009 -0200
+
+    lguest: use KVM hypercalls
+    
+    Impact: cleanup
+    
+    This patch allow us to use KVM hypercalls
+    
+    Signed-off-by: Matias Zabaljauregui <zabaljauregui at gmail.com>
+    Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+
+ arch/x86/include/asm/lguest_hcall.h   |   24 ++--------
+ arch/x86/lguest/boot.c                |   80 ++++++++++++++++++++------------
+ arch/x86/lguest/i386_head.S           |    4 +-
+ drivers/lguest/interrupts_and_traps.c |    7 ++-
+ drivers/lguest/lguest_device.c        |    4 +-
+ drivers/lguest/x86/core.c             |   62 +++++++++++++++++++++++++-
+ 6 files changed, 123 insertions(+), 58 deletions(-)
+
+commit f8f81b891f9e2bb0e149c6bfb6b153ea72f5d8ab
+Author: Matias Zabaljauregui <zabaljauregui@gmail.com>
+Date:   Wed Mar 18 13:38:35 2009 -0300
+
+    lguest: use bool instead of int
+    
+    Impact: clean up
+    
+    Rusty told me, some time ago, that he had become a fan of "bool".
+    So, here are some replacements.
+    
+    Signed-off-by: Matias Zabaljauregui <zabaljauregui at gmail.com>
+    Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+
+ drivers/lguest/core.c                 |    4 ++--
+ drivers/lguest/interrupts_and_traps.c |   21 +++++++++++----------
+ drivers/lguest/lg.h                   |    8 ++++----
+ drivers/lguest/page_tables.c          |   18 +++++++++---------
+ drivers/lguest/segments.c             |    2 +-
+ 5 files changed, 27 insertions(+), 26 deletions(-)
+
+commit 89a923c45472749805a9264fb409eb9c3cbad8e2
 Author: Rusty Russell <rusty@rustcorp.com.au>
-Date:   Sat Mar 28 23:12:57 2009 -0600
+Date:   Sat Mar 28 23:39:19 2009 -0600
 
-    module: include other structures in module version check
+    lguest: barrier me harder
     
-    With CONFIG_MODVERSIONS, we version 'struct module' using a dummy
-    export, but other things matter too:
+    Impact: barrier correctness in example launcher
     
-    1) 'struct modversion_info' determines the layout of the __versions section,
-    2) 'struct kernel_param' determines the layout of the __params section,
-    3) 'struct kernel_symbol' determines __ksymtab*.
-    4) 'struct marker' determines __markers.
-    5) 'struct tracepoint' determines __tracepoints.
+    I doubt either lguest user will complain about performance.
     
-    So we rename 'struct_module' to 'module_layout' and include these in
-    the signature.  Now it's general we can add others later on without
-    confusion.
-    
+    Reported-by: Christoph Hellwig <hch@infradead.org>
+    Cc: Jens Axboe <jens.axboe@oracle.com>
     Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
 
- kernel/module.c       |   18 +++++++++++++-----
- scripts/mod/modpost.c |    4 ++--
- 2 files changed, 15 insertions(+), 7 deletions(-)
+ Documentation/lguest/lguest.c |    7 +++++++
+ 1 files changed, 7 insertions(+), 0 deletions(-)
 
-commit ff5b866b7ba3a8aebd8584236ac52a240dc58b57
-Author: Arjan van de Ven <arjan@linux.intel.com>
-Date:   Sun Feb 8 10:42:01 2009 -0800
-
-    module: create a request_module_nowait()
-    
-    There seems to be a common pattern in the kernel where drivers want to
-    call request_module() from inside a module_init() function. Currently
-    this would deadlock.
-    
-    As a result, several drivers go through hoops like scheduling things via
-    kevent, or creating custom work queues (because kevent can deadlock on them).
-    
-    This patch changes this to use a request_module_nowait() function macro instead,
-    which just fires the modprobe off but doesn't wait for it, and thus avoids the
-    original deadlock entirely.
-    
-    On my laptop this already results in one less kernel thread running..
-    
-    (Includes Jiri's patch to use enum umh_wait)
-    
-    Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
-    Signed-off-by: Rusty Russell <rusty@rustcorp.com.au> (bool-ified)
-    Cc: Jiri Slaby <jirislaby@gmail.com>
-
- include/linux/kmod.h |   11 ++++++++---
- kernel/kmod.c        |   10 ++++++----
- 2 files changed, 14 insertions(+), 7 deletions(-)
-
-commit 8231f6b16a8f515792a68f6a4ee22a6945285e80
-Author: Arjan van de Ven <arjan@linux.intel.com>
-Date:   Sun Feb 8 10:42:40 2009 -0800
-
-    use the new request_module_nowait() in the hid driver
-    
-    From b8c36ec88e272ba2e755e6104579f1e751ee81f8 Mon Sep 17 00:00:00 2001
-    From: Arjan van de Ven <arjan@linux.intel.com>
-    Date: Sun, 1 Feb 2009 12:02:39 -0800
-    Subject: [PATCH] use the new request_module_nowait() in the hid driver
-    
-    Now that there is a request_module_nowait(), use it in the hid driver.
-    This gets rid of a kernel thread, and also greatly simplifies the code...
-    
-    Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
-    Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
-
- drivers/hid/hid-core.c |   19 +------------------
- 1 files changed, 1 insertions(+), 18 deletions(-)
-
-commit b34e2115ad122dd569e9fa51b8aceb089917d3e4
-Author: Arjan van de Ven <arjan@linux.intel.com>
-Date:   Sat Mar 28 23:13:02 2009 -0600
-
-    use the new request_module_nowait() in drivers/media
-    
-    Several drivers/media/video drivers use keventd to load modules
-    to avoid the "load a module from the module init code" deadlock.
-    
-    Now that we have request_module_nowait() this can be simplified
-    greatly.
-    
-    Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
-    Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
-    Acked-by: Mauro Carvalho Chehab <mchehab@redhat.com>
-
- drivers/media/video/bt8xx/bttv-driver.c    |    8 +-------
- drivers/media/video/bt8xx/bttvp.h          |    3 ---
- drivers/media/video/cx88/cx88-mpeg.c       |   14 +++-----------
- drivers/media/video/cx88/cx88.h            |    1 -
- drivers/media/video/em28xx/em28xx-cards.c  |   17 ++++-------------
- drivers/media/video/em28xx/em28xx.h        |    2 --
- drivers/media/video/saa7134/saa7134-core.c |   19 ++++++-------------
- drivers/media/video/saa7134/saa7134.h      |    2 --
- 8 files changed, 14 insertions(+), 52 deletions(-)
-
-commit 036b9c665720c033fb09d07ca93282203540a568
-Author: Rusty Russell <rusty@rustcorp.com.au>
-Date:   Sat Mar 28 23:13:02 2009 -0600
-
-    module: don't use stop_machine on module load
-    
-    Kay Sievers <kay.sievers@vrfy.org> discovered that boot times are slowed
-    by about half a second because all the stop_machine_create() calls,
-    and he only probes about 40 modules (I have 125 loaded on this laptop).
-    
-    We only do stop_machine_create() so we can unlink the module if
-    something goes wrong, but it's overkill (and buggy anyway: if
-    stop_machine_create() fails we still call stop_machine_destroy()).
-    
-    Since we are only protecting against kallsyms (esp. oops) walking the
-    list, synchronize_sched() is sufficient (synchronize_rcu() is probably
-    sufficient, but we're not in a hurry).
-    
-    Kay says of this patch:
-    	... no module takes more than 40 millisecs to link now, most of
-    	them are between 3 and 8 millisecs.
-    
-    	That looks very different to the numbers without this patch
-    	and the otherwise same setup, where we get heavy noise in the
-    	traces and many delays of up to 200 millisecs until linking,
-    	most of them taking 30+ millisecs.
-    
-    Tested-by: Kay Sievers <kay.sievers@vrfy.org>
-    Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
-
- kernel/module.c |   12 +++---------
- 1 files changed, 3 insertions(+), 9 deletions(-)
-
-diff --git a/drivers/hid/hid-core.c b/drivers/hid/hid-core.c
-index 1cc9674..483fa0d 100644
---- a/drivers/hid/hid-core.c
-+++ b/drivers/hid/hid-core.c
-@@ -1813,15 +1813,6 @@ void hid_unregister_driver(struct hid_driver *hdrv)
- }
- EXPORT_SYMBOL_GPL(hid_unregister_driver);
+diff --git a/Documentation/lguest/lguest.c b/Documentation/lguest/lguest.c
+index f2dbbf3..d36fcc0 100644
+--- a/Documentation/lguest/lguest.c
++++ b/Documentation/lguest/lguest.c
+@@ -1630,6 +1630,13 @@ static bool service_io(struct device *dev)
+ 		}
+ 	}
  
--#ifdef CONFIG_HID_COMPAT
--static void hid_compat_load(struct work_struct *ws)
++	/* OK, so we noted that it was pretty poor to use an fdatasync as a
++	 * barrier.  But Christoph Hellwig points out that we need a sync
++	 * *afterwards* as well: "Barriers specify no reordering to the front
++	 * or the back."  And Jens Axboe confirmed it, so here we are: */
++	if (out->type & VIRTIO_BLK_T_BARRIER)
++		fdatasync(vblk->fd);
++
+ 	/* We can't trigger an IRQ, because we're not the Launcher.  It does
+ 	 * that when we tell it we're done. */
+ 	add_used(dev->vq, head, wlen);
+diff --git a/arch/x86/include/asm/lguest_hcall.h b/arch/x86/include/asm/lguest_hcall.h
+index 4389442..93f6cc4 100644
+--- a/arch/x86/include/asm/lguest_hcall.h
++++ b/arch/x86/include/asm/lguest_hcall.h
+@@ -17,6 +17,7 @@
+ #define LHCALL_SET_PMD		15
+ #define LHCALL_LOAD_TLS		16
+ #define LHCALL_NOTIFY		17
++#define LHCALL_INVALIDATE_PGTABLE 18
+ 
+ #define LGUEST_TRAP_ENTRY 0x1F
+ 
+@@ -26,36 +27,20 @@
+ 
+ #ifndef __ASSEMBLY__
+ #include <asm/hw_irq.h>
++#include <asm/kvm_para.h>
+ 
+ /*G:031 But first, how does our Guest contact the Host to ask for privileged
+  * operations?  There are two ways: the direct way is to make a "hypercall",
+  * to make requests of the Host Itself.
+  *
+- * Our hypercall mechanism uses the highest unused trap code (traps 32 and
+- * above are used by real hardware interrupts).  Fifteen hypercalls are
++ * We use the KVM hypercall mechanism. Eighteen hypercalls are
+  * available: the hypercall number is put in the %eax register, and the
+- * arguments (when required) are placed in %edx, %ebx and %ecx.  If a return
++ * arguments (when required) are placed in %ebx, %ecx and %edx.  If a return
+  * value makes sense, it's returned in %eax.
+  *
+  * Grossly invalid calls result in Sudden Death at the hands of the vengeful
+  * Host, rather than returning failure.  This reflects Winston Churchill's
+  * definition of a gentleman: "someone who is only rude intentionally". */
+-static inline unsigned long
+-hcall(unsigned long call,
+-      unsigned long arg1, unsigned long arg2, unsigned long arg3)
 -{
--	request_module("hid-dummy");
+-	/* "int" is the Intel instruction to trigger a trap. */
+-	asm volatile("int $" __stringify(LGUEST_TRAP_ENTRY)
+-		     /* The call in %eax (aka "a") might be overwritten */
+-		     : "=a"(call)
+-		       /* The arguments are in %eax, %edx, %ebx & %ecx */
+-		     : "a"(call), "d"(arg1), "b"(arg2), "c"(arg3)
+-		       /* "memory" means this might write somewhere in memory.
+-			* This isn't true for all calls, but it's safe to tell
+-			* gcc that it might happen so it doesn't get clever. */
+-		     : "memory");
+-	return call;
 -}
--static DECLARE_WORK(hid_compat_work, hid_compat_load);
--static struct workqueue_struct *hid_compat_wq;
--#endif
--
- static int __init hid_init(void)
- {
- 	int ret;
-@@ -1837,12 +1828,7 @@ static int __init hid_init(void)
- 		goto err_bus;
+ /*:*/
  
- #ifdef CONFIG_HID_COMPAT
--	hid_compat_wq = create_singlethread_workqueue("hid_compat");
--	if (!hid_compat_wq) {
--		hidraw_exit();
--		goto err;
--	}
--	queue_work(hid_compat_wq, &hid_compat_work);
-+	request_module_nowait("hid-dummy");
- #endif
- 
- 	return 0;
-@@ -1854,9 +1840,6 @@ err:
- 
- static void __exit hid_exit(void)
- {
--#ifdef CONFIG_HID_COMPAT
--	destroy_workqueue(hid_compat_wq);
--#endif
- 	hidraw_exit();
- 	bus_unregister(&hid_bus_type);
- }
-diff --git a/drivers/media/video/bt8xx/bttv-driver.c b/drivers/media/video/bt8xx/bttv-driver.c
-index c71f394..7b23d87 100644
---- a/drivers/media/video/bt8xx/bttv-driver.c
-+++ b/drivers/media/video/bt8xx/bttv-driver.c
-@@ -175,15 +175,9 @@ static DEVICE_ATTR(card, S_IRUGO, show_card, NULL);
- /* ----------------------------------------------------------------------- */
- /* dvb auto-load setup                                                     */
- #if defined(CONFIG_MODULES) && defined(MODULE)
--static void request_module_async(struct work_struct *work)
--{
--	request_module("dvb-bt8xx");
--}
--
- static void request_modules(struct bttv *dev)
- {
--	INIT_WORK(&dev->request_module_wk, request_module_async);
--	schedule_work(&dev->request_module_wk);
-+	request_module_nowait("dvb-bt8xx");
- }
- #else
- #define request_modules(dev)
-diff --git a/drivers/media/video/bt8xx/bttvp.h b/drivers/media/video/bt8xx/bttvp.h
-index 199a4d2..767d483 100644
---- a/drivers/media/video/bt8xx/bttvp.h
-+++ b/drivers/media/video/bt8xx/bttvp.h
-@@ -439,9 +439,6 @@ struct bttv {
- 	unsigned int users;
- 	struct bttv_fh init;
- 
--	/* used to make dvb-bt8xx autoloadable */
--	struct work_struct request_module_wk;
--
- 	/* Default (0) and current (1) video capturing and overlay
- 	   cropping parameters in bttv_tvnorm.cropcap units. Protected
- 	   by bttv.lock. */
-diff --git a/drivers/media/video/cx88/cx88-mpeg.c b/drivers/media/video/cx88/cx88-mpeg.c
-index b295b76..683d6cc 100644
---- a/drivers/media/video/cx88/cx88-mpeg.c
-+++ b/drivers/media/video/cx88/cx88-mpeg.c
-@@ -50,20 +50,12 @@ MODULE_PARM_DESC(debug,"enable debug messages [mpeg]");
- 	printk(KERN_DEBUG "%s/2-mpeg: " fmt, core->name, ## arg)
- 
- #if defined(CONFIG_MODULES) && defined(MODULE)
--static void request_module_async(struct work_struct *work)
-+static void request_modules(struct cx8802_dev *dev)
- {
--	struct cx8802_dev *dev=container_of(work, struct cx8802_dev, request_module_wk);
--
- 	if (dev->core->board.mpeg & CX88_MPEG_DVB)
--		request_module("cx88-dvb");
-+		request_module_nowait("cx88-dvb");
- 	if (dev->core->board.mpeg & CX88_MPEG_BLACKBIRD)
--		request_module("cx88-blackbird");
--}
--
--static void request_modules(struct cx8802_dev *dev)
--{
--	INIT_WORK(&dev->request_module_wk, request_module_async);
--	schedule_work(&dev->request_module_wk);
-+		request_module_nowait("cx88-blackbird");
- }
- #else
- #define request_modules(dev)
-diff --git a/drivers/media/video/cx88/cx88.h b/drivers/media/video/cx88/cx88.h
-index 6025fdd..242cd62 100644
---- a/drivers/media/video/cx88/cx88.h
-+++ b/drivers/media/video/cx88/cx88.h
-@@ -510,7 +510,6 @@ struct cx8802_dev {
- 
- 	/* List of attached drivers */
- 	struct list_head	   drvlist;
--	struct work_struct	   request_module_wk;
+ /* Can't use our min() macro here: needs to be a constant */
+@@ -64,7 +49,7 @@ hcall(unsigned long call,
+ #define LHCALL_RING_SIZE 64
+ struct hcall_args {
+ 	/* These map directly onto eax, ebx, ecx, edx in struct lguest_regs */
+-	unsigned long arg0, arg2, arg3, arg1;
++	unsigned long arg0, arg1, arg2, arg3;
  };
  
- /* ----------------------------------------------------------- */
-diff --git a/drivers/media/video/em28xx/em28xx-cards.c b/drivers/media/video/em28xx/em28xx-cards.c
-index 3b3ca3f..dc00102 100644
---- a/drivers/media/video/em28xx/em28xx-cards.c
-+++ b/drivers/media/video/em28xx/em28xx-cards.c
-@@ -1809,24 +1809,15 @@ void em28xx_card_setup(struct em28xx *dev)
- 
- 
- #if defined(CONFIG_MODULES) && defined(MODULE)
--static void request_module_async(struct work_struct *work)
-+static void request_modules(struct em28xx *dev)
- {
--	struct em28xx *dev = container_of(work,
--			     struct em28xx, request_module_wk);
--
- 	if (dev->has_audio_class)
--		request_module("snd-usb-audio");
-+		request_module_nowait("snd-usb-audio");
- 	else if (dev->has_alsa_audio)
--		request_module("em28xx-alsa");
-+		request_module_nowait("em28xx-alsa");
- 
- 	if (dev->board.has_dvb)
--		request_module("em28xx-dvb");
--}
--
--static void request_modules(struct em28xx *dev)
--{
--	INIT_WORK(&dev->request_module_wk, request_module_async);
--	schedule_work(&dev->request_module_wk);
-+		request_module_nowait("em28xx-dvb");
- }
- #else
- #define request_modules(dev)
-diff --git a/drivers/media/video/em28xx/em28xx.h b/drivers/media/video/em28xx/em28xx.h
-index dd2cd36..164a543 100644
---- a/drivers/media/video/em28xx/em28xx.h
-+++ b/drivers/media/video/em28xx/em28xx.h
-@@ -498,8 +498,6 @@ struct em28xx {
- 	enum em28xx_dev_state state;
- 	enum em28xx_io_method io;
- 
--	struct work_struct         request_module_wk;
--
- 	/* locks */
- 	struct mutex lock;
- 	struct mutex ctrl_urb_lock;	/* protects urb_buf */
-diff --git a/drivers/media/video/saa7134/saa7134-core.c b/drivers/media/video/saa7134/saa7134-core.c
-index 99221d7..a4bc939 100644
---- a/drivers/media/video/saa7134/saa7134-core.c
-+++ b/drivers/media/video/saa7134/saa7134-core.c
-@@ -149,23 +149,16 @@ void saa7134_set_gpio(struct saa7134_dev *dev, int bit_no, int value)
- /* delayed request_module                                      */
- 
- #if defined(CONFIG_MODULES) && defined(MODULE)
--
--static void request_module_async(struct work_struct *work){
--	struct saa7134_dev* dev = container_of(work, struct saa7134_dev, request_module_wk);
-+static void request_submodules(struct saa7134_dev *dev)
+ #endif /* !__ASSEMBLY__ */
+diff --git a/arch/x86/lguest/boot.c b/arch/x86/lguest/boot.c
+index 960a8d9..557957a 100644
+--- a/arch/x86/lguest/boot.c
++++ b/arch/x86/lguest/boot.c
+@@ -107,7 +107,7 @@ static void async_hcall(unsigned long call, unsigned long arg1,
+ 	local_irq_save(flags);
+ 	if (lguest_data.hcall_status[next_call] != 0xFF) {
+ 		/* Table full, so do normal hcall which will flush table. */
+-		hcall(call, arg1, arg2, arg3);
++		kvm_hypercall3(call, arg1, arg2, arg3);
+ 	} else {
+ 		lguest_data.hcalls[next_call].arg0 = call;
+ 		lguest_data.hcalls[next_call].arg1 = arg1;
+@@ -134,13 +134,32 @@ static void async_hcall(unsigned long call, unsigned long arg1,
+  *
+  * So, when we're in lazy mode, we call async_hcall() to store the call for
+  * future processing: */
+-static void lazy_hcall(unsigned long call,
++static void lazy_hcall1(unsigned long call,
++		       unsigned long arg1)
 +{
- 	if (card_is_empress(dev))
--		request_module("saa7134-empress");
-+		request_module_nowait("saa7134-empress");
- 	if (card_is_dvb(dev))
--		request_module("saa7134-dvb");
-+		request_module_nowait("saa7134-dvb");
- 	if (alsa)
--		request_module("saa7134-alsa");
-+		request_module_nowait("saa7134-alsa");
- 	if (oss)
--		request_module("saa7134-oss");
--}
--
--static void request_submodules(struct saa7134_dev *dev)
--{
--	INIT_WORK(&dev->request_module_wk, request_module_async);
--	schedule_work(&dev->request_module_wk);
-+		request_module_nowait("saa7134-oss");
- }
- 
- #else
-diff --git a/drivers/media/video/saa7134/saa7134.h b/drivers/media/video/saa7134/saa7134.h
-index 14ee265..d13d16f 100644
---- a/drivers/media/video/saa7134/saa7134.h
-+++ b/drivers/media/video/saa7134/saa7134.h
-@@ -482,8 +482,6 @@ struct saa7134_dev {
- 	struct mutex               lock;
- 	spinlock_t                 slock;
- 	struct v4l2_prio_state     prio;
--	/* workstruct for loading modules */
--	struct work_struct request_module_wk;
- 
- 	/* insmod option/autodetected */
- 	int                        autodetected;
-diff --git a/drivers/mtd/nand/nand_base.c b/drivers/mtd/nand/nand_base.c
-index 0c3afcc..5f71371 100644
---- a/drivers/mtd/nand/nand_base.c
-+++ b/drivers/mtd/nand/nand_base.c
-@@ -2720,14 +2720,14 @@ int nand_scan_tail(struct mtd_info *mtd)
- 	return chip->scan_bbt(mtd);
- }
- 
--/* module_text_address() isn't exported, and it's mostly a pointless
-+/* is_module_text_address() isn't exported, and it's mostly a pointless
-    test if this is a module _anyway_ -- they'd have to try _really_ hard
-    to call us from in-kernel code if the core NAND support is modular. */
- #ifdef MODULE
- #define caller_is_module() (1)
- #else
- #define caller_is_module() \
--	module_text_address((unsigned long)__builtin_return_address(0))
-+	is_module_text_address((unsigned long)__builtin_return_address(0))
- #endif
- 
- /**
-diff --git a/include/linux/kallsyms.h b/include/linux/kallsyms.h
-index f3fe343..7922742 100644
---- a/include/linux/kallsyms.h
-+++ b/include/linux/kallsyms.h
-@@ -13,10 +13,17 @@
- #define KSYM_SYMBOL_LEN (sizeof("%s+%#lx/%#lx [%s]") + (KSYM_NAME_LEN - 1) + \
- 			 2*(BITS_PER_LONG*3/10) + (MODULE_NAME_LEN - 1) + 1)
- 
-+struct module;
-+
- #ifdef CONFIG_KALLSYMS
- /* Lookup the address for a symbol. Returns 0 if not found. */
- unsigned long kallsyms_lookup_name(const char *name);
- 
-+/* Call a function on each kallsyms symbol in the core kernel */
-+int kallsyms_on_each_symbol(int (*fn)(void *, const char *, struct module *,
-+				      unsigned long),
-+			    void *data);
-+
- extern int kallsyms_lookup_size_offset(unsigned long addr,
- 				  unsigned long *symbolsize,
- 				  unsigned long *offset);
-@@ -43,6 +50,14 @@ static inline unsigned long kallsyms_lookup_name(const char *name)
- 	return 0;
- }
- 
-+static inline int kallsyms_on_each_symbol(int (*fn)(void *, const char *,
-+						    struct module *,
-+						    unsigned long),
-+					  void *data)
-+{
-+	return 0;
++	if (paravirt_get_lazy_mode() == PARAVIRT_LAZY_NONE)
++		kvm_hypercall1(call, arg1);
++	else
++		async_hcall(call, arg1, 0, 0);
 +}
 +
- static inline int kallsyms_lookup_size_offset(unsigned long addr,
- 					      unsigned long *symbolsize,
- 					      unsigned long *offset)
-diff --git a/include/linux/kmod.h b/include/linux/kmod.h
-index 92213a9..d5fa565 100644
---- a/include/linux/kmod.h
-+++ b/include/linux/kmod.h
-@@ -29,10 +29,15 @@
- #ifdef CONFIG_MODULES
- /* modprobe exit status on success, -ve on error.  Return value
-  * usually useless though. */
--extern int request_module(const char * name, ...) __attribute__ ((format (printf, 1, 2)));
--#define try_then_request_module(x, mod...) ((x) ?: (request_module(mod), (x)))
-+extern int __request_module(bool wait, const char *name, ...) \
-+	__attribute__((format(printf, 2, 3)));
-+#define request_module(mod...) __request_module(true, mod)
-+#define request_module_nowait(mod...) __request_module(false, mod)
-+#define try_then_request_module(x, mod...) \
-+	((x) ?: (__request_module(false, mod), (x)))
- #else
--static inline int request_module(const char * name, ...) { return -ENOSYS; }
-+static inline int request_module(const char *name, ...) { return -ENOSYS; }
-+static inline int request_module_nowait(const char *name, ...) { return -ENOSYS; }
- #define try_then_request_module(x, mod...) (x)
- #endif
- 
-diff --git a/include/linux/module.h b/include/linux/module.h
-index 145a755..d246da0 100644
---- a/include/linux/module.h
-+++ b/include/linux/module.h
-@@ -248,6 +248,10 @@ struct module
- 	const unsigned long *crcs;
- 	unsigned int num_syms;
- 
-+	/* Kernel parameters. */
-+	struct kernel_param *kp;
-+	unsigned int num_kp;
-+
- 	/* GPL-only exported symbols. */
- 	unsigned int num_gpl_syms;
- 	const struct kernel_symbol *gpl_syms;
-@@ -350,6 +354,8 @@ struct module
- #define MODULE_ARCH_INIT {}
- #endif
- 
-+extern struct mutex module_mutex;
-+
- /* FIXME: It'd be nice to isolate modules during init, too, so they
-    aren't used before they (may) fail.  But presently too much code
-    (IDE & SCSI) require entry into the module during init.*/
-@@ -358,10 +364,10 @@ static inline int module_is_live(struct module *mod)
- 	return mod->state != MODULE_STATE_GOING;
- }
- 
--/* Is this address in a module? (second is with no locks, for oops) */
--struct module *module_text_address(unsigned long addr);
- struct module *__module_text_address(unsigned long addr);
--int is_module_address(unsigned long addr);
-+struct module *__module_address(unsigned long addr);
-+bool is_module_address(unsigned long addr);
-+bool is_module_text_address(unsigned long addr);
- 
- static inline int within_module_core(unsigned long addr, struct module *mod)
- {
-@@ -375,6 +381,31 @@ static inline int within_module_init(unsigned long addr, struct module *mod)
- 	       addr < (unsigned long)mod->module_init + mod->init_size;
- }
- 
-+/* Search for module by name: must hold module_mutex. */
-+struct module *find_module(const char *name);
-+
-+struct symsearch {
-+	const struct kernel_symbol *start, *stop;
-+	const unsigned long *crcs;
-+	enum {
-+		NOT_GPL_ONLY,
-+		GPL_ONLY,
-+		WILL_BE_GPL_ONLY,
-+	} licence;
-+	bool unused;
-+};
-+
-+/* Search for an exported symbol by name. */
-+const struct kernel_symbol *find_symbol(const char *name,
-+					struct module **owner,
-+					const unsigned long **crc,
-+					bool gplok,
-+					bool warn);
-+
-+/* Walk the exported symbol table */
-+bool each_symbol(bool (*fn)(const struct symsearch *arr, struct module *owner,
-+			    unsigned int symnum, void *data), void *data);
-+
- /* Returns 0 and fills in value, defined and namebuf, or -ERANGE if
-    symnum out of range. */
- int module_get_kallsym(unsigned int symnum, unsigned long *value, char *type,
-@@ -383,6 +414,10 @@ int module_get_kallsym(unsigned int symnum, unsigned long *value, char *type,
- /* Look for this name: can be of form module:name. */
- unsigned long module_kallsyms_lookup_name(const char *name);
- 
-+int module_kallsyms_on_each_symbol(int (*fn)(void *, const char *,
-+					     struct module *, unsigned long),
-+				   void *data);
-+
- extern void __module_put_and_exit(struct module *mod, long code)
- 	__attribute__((noreturn));
- #define module_put_and_exit(code) __module_put_and_exit(THIS_MODULE, code);
-@@ -444,6 +479,7 @@ static inline void __module_get(struct module *module)
- #define symbol_put_addr(p) do { } while(0)
- 
- #endif /* CONFIG_MODULE_UNLOAD */
-+int use_module(struct module *a, struct module *b);
- 
- /* This is a #define so the string doesn't get put in every .o file */
- #define module_name(mod)			\
-@@ -490,21 +526,24 @@ search_module_extables(unsigned long addr)
- 	return NULL;
- }
- 
--/* Is this address in a module? */
--static inline struct module *module_text_address(unsigned long addr)
-+static inline struct module *__module_address(unsigned long addr)
- {
- 	return NULL;
- }
- 
--/* Is this address in a module? (don't take a lock, we're oopsing) */
- static inline struct module *__module_text_address(unsigned long addr)
- {
- 	return NULL;
- }
- 
--static inline int is_module_address(unsigned long addr)
-+static inline bool is_module_address(unsigned long addr)
- {
--	return 0;
-+	return false;
++static void lazy_hcall2(unsigned long call,
++		       unsigned long arg1,
++		       unsigned long arg2)
++{
++	if (paravirt_get_lazy_mode() == PARAVIRT_LAZY_NONE)
++		kvm_hypercall2(call, arg1, arg2);
++	else
++		async_hcall(call, arg1, arg2, 0);
 +}
 +
-+static inline bool is_module_text_address(unsigned long addr)
-+{
-+	return false;
++static void lazy_hcall3(unsigned long call,
+ 		       unsigned long arg1,
+ 		       unsigned long arg2,
+ 		       unsigned long arg3)
+ {
+ 	if (paravirt_get_lazy_mode() == PARAVIRT_LAZY_NONE)
+-		hcall(call, arg1, arg2, arg3);
++		kvm_hypercall3(call, arg1, arg2, arg3);
+ 	else
+ 		async_hcall(call, arg1, arg2, arg3);
+ }
+@@ -150,7 +169,7 @@ static void lazy_hcall(unsigned long call,
+ static void lguest_leave_lazy_mode(void)
+ {
+ 	paravirt_leave_lazy(paravirt_get_lazy_mode());
+-	hcall(LHCALL_FLUSH_ASYNC, 0, 0, 0);
++	kvm_hypercall0(LHCALL_FLUSH_ASYNC);
  }
  
- /* Get/put a kernel symbol (calls should be symmetric) */
-@@ -559,6 +598,14 @@ static inline unsigned long module_kallsyms_lookup_name(const char *name)
- 	return 0;
+ /*G:033
+@@ -224,7 +243,7 @@ static void lguest_write_idt_entry(gate_desc *dt,
+ 	/* Keep the local copy up to date. */
+ 	native_write_idt_entry(dt, entrynum, g);
+ 	/* Tell Host about this new entry. */
+-	hcall(LHCALL_LOAD_IDT_ENTRY, entrynum, desc[0], desc[1]);
++	kvm_hypercall3(LHCALL_LOAD_IDT_ENTRY, entrynum, desc[0], desc[1]);
  }
  
-+static inline int module_kallsyms_on_each_symbol(int (*fn)(void *, const char *,
-+							   struct module *,
-+							   unsigned long),
-+						 void *data)
-+{
-+	return 0;
-+}
-+
- static inline int register_module_notifier(struct notifier_block * nb)
- {
- 	/* no events will happen anyway, so this can always succeed */
-diff --git a/include/linux/moduleparam.h b/include/linux/moduleparam.h
-index e4af339..a4f0b93 100644
---- a/include/linux/moduleparam.h
-+++ b/include/linux/moduleparam.h
-@@ -138,6 +138,16 @@ extern int parse_args(const char *name,
- 		      unsigned num,
- 		      int (*unknown)(char *param, char *val));
+ /* Changing to a different IDT is very rare: we keep the IDT up-to-date every
+@@ -236,7 +255,7 @@ static void lguest_load_idt(const struct desc_ptr *desc)
+ 	struct desc_struct *idt = (void *)desc->address;
  
-+/* Called by module remove. */
-+#ifdef CONFIG_SYSFS
-+extern void destroy_params(const struct kernel_param *params, unsigned num);
-+#else
-+static inline void destroy_params(const struct kernel_param *params,
-+				  unsigned num)
-+{
-+}
-+#endif /* !CONFIG_SYSFS */
-+
- /* All the helper functions */
- /* The macros to do compile-time type checking stolen from Jakub
-    Jelinek, who IIRC came up with this idea for the 2.4 module init code. */
-diff --git a/kernel/extable.c b/kernel/extable.c
-index e136ed8..384f0da 100644
---- a/kernel/extable.c
-+++ b/kernel/extable.c
-@@ -58,14 +58,14 @@ __notrace_funcgraph int __kernel_text_address(unsigned long addr)
- {
- 	if (core_kernel_text(addr))
- 		return 1;
--	return __module_text_address(addr) != NULL;
-+	return is_module_text_address(addr);
- }
- 
- int kernel_text_address(unsigned long addr)
- {
- 	if (core_kernel_text(addr))
- 		return 1;
--	return module_text_address(addr) != NULL;
-+	return is_module_text_address(addr);
+ 	for (i = 0; i < (desc->size+1)/8; i++)
+-		hcall(LHCALL_LOAD_IDT_ENTRY, i, idt[i].a, idt[i].b);
++		kvm_hypercall3(LHCALL_LOAD_IDT_ENTRY, i, idt[i].a, idt[i].b);
  }
  
  /*
-@@ -81,5 +81,5 @@ int func_ptr_is_kernel_text(void *ptr)
- 	addr = (unsigned long) dereference_function_descriptor(ptr);
- 	if (core_kernel_text(addr))
- 		return 1;
--	return module_text_address(addr) != NULL;
-+	return is_module_text_address(addr);
- }
-diff --git a/kernel/kallsyms.c b/kernel/kallsyms.c
-index 7b8b0f2..374faf9 100644
---- a/kernel/kallsyms.c
-+++ b/kernel/kallsyms.c
-@@ -161,6 +161,25 @@ unsigned long kallsyms_lookup_name(const char *name)
- 	return module_kallsyms_lookup_name(name);
- }
- 
-+int kallsyms_on_each_symbol(int (*fn)(void *, const char *, struct module *,
-+				      unsigned long),
-+			    void *data)
-+{
-+	char namebuf[KSYM_NAME_LEN];
-+	unsigned long i;
-+	unsigned int off;
-+	int ret;
-+
-+	for (i = 0, off = 0; i < kallsyms_num_syms; i++) {
-+		off = kallsyms_expand_symbol(off, namebuf);
-+		ret = fn(data, namebuf, NULL, kallsyms_addresses[i]);
-+		if (ret != 0)
-+			return ret;
-+	}
-+	return module_kallsyms_on_each_symbol(fn, data);
-+}
-+EXPORT_SYMBOL_GPL(kallsyms_on_each_symbol);
-+
- static unsigned long get_symbol_pos(unsigned long addr,
- 				    unsigned long *symbolsize,
- 				    unsigned long *offset)
-diff --git a/kernel/kmod.c b/kernel/kmod.c
-index a27a5f6..dc13dd4 100644
---- a/kernel/kmod.c
-+++ b/kernel/kmod.c
-@@ -50,7 +50,8 @@ static struct workqueue_struct *khelper_wq;
- char modprobe_path[KMOD_PATH_LEN] = "/sbin/modprobe";
- 
- /**
-- * request_module - try to load a kernel module
-+ * __request_module - try to load a kernel module
-+ * @wait: wait (or not) for the operation to complete
-  * @fmt: printf style format string for the name of the module
-  * @...: arguments as specified in the format string
-  *
-@@ -63,7 +64,7 @@ char modprobe_path[KMOD_PATH_LEN] = "/sbin/modprobe";
-  * If module auto-loading support is disabled then this function
-  * becomes a no-operation.
+@@ -256,8 +275,8 @@ static void lguest_load_idt(const struct desc_ptr *desc)
   */
--int request_module(const char *fmt, ...)
-+int __request_module(bool wait, const char *fmt, ...)
+ static void lguest_load_gdt(const struct desc_ptr *desc)
  {
- 	va_list args;
- 	char module_name[MODULE_NAME_LEN];
-@@ -108,11 +109,12 @@ int request_module(const char *fmt, ...)
- 		return -ENOMEM;
+-	BUG_ON((desc->size+1)/8 != GDT_ENTRIES);
+-	hcall(LHCALL_LOAD_GDT, __pa(desc->address), GDT_ENTRIES, 0);
++	BUG_ON((desc->size + 1) / 8 != GDT_ENTRIES);
++	kvm_hypercall2(LHCALL_LOAD_GDT, __pa(desc->address), GDT_ENTRIES);
+ }
+ 
+ /* For a single GDT entry which changes, we do the lazy thing: alter our GDT,
+@@ -267,7 +286,7 @@ static void lguest_write_gdt_entry(struct desc_struct *dt, int entrynum,
+ 				   const void *desc, int type)
+ {
+ 	native_write_gdt_entry(dt, entrynum, desc, type);
+-	hcall(LHCALL_LOAD_GDT, __pa(dt), GDT_ENTRIES, 0);
++	kvm_hypercall2(LHCALL_LOAD_GDT, __pa(dt), GDT_ENTRIES);
+ }
+ 
+ /* OK, I lied.  There are three "thread local storage" GDT entries which change
+@@ -279,7 +298,7 @@ static void lguest_load_tls(struct thread_struct *t, unsigned int cpu)
+ 	 * can't handle us removing entries we're currently using.  So we clear
+ 	 * the GS register here: if it's needed it'll be reloaded anyway. */
+ 	loadsegment(gs, 0);
+-	lazy_hcall(LHCALL_LOAD_TLS, __pa(&t->tls_array), cpu, 0);
++	lazy_hcall2(LHCALL_LOAD_TLS, __pa(&t->tls_array), cpu);
+ }
+ 
+ /*G:038 That's enough excitement for now, back to ploughing through each of
+@@ -377,7 +396,7 @@ static void lguest_cpuid(unsigned int *ax, unsigned int *bx,
+ static unsigned long current_cr0;
+ static void lguest_write_cr0(unsigned long val)
+ {
+-	lazy_hcall(LHCALL_TS, val & X86_CR0_TS, 0, 0);
++	lazy_hcall1(LHCALL_TS, val & X86_CR0_TS);
+ 	current_cr0 = val;
+ }
+ 
+@@ -391,7 +410,7 @@ static unsigned long lguest_read_cr0(void)
+  * the vowels have been optimized out. */
+ static void lguest_clts(void)
+ {
+-	lazy_hcall(LHCALL_TS, 0, 0, 0);
++	lazy_hcall1(LHCALL_TS, 0);
+ 	current_cr0 &= ~X86_CR0_TS;
+ }
+ 
+@@ -413,7 +432,7 @@ static bool cr3_changed = false;
+ static void lguest_write_cr3(unsigned long cr3)
+ {
+ 	lguest_data.pgdir = cr3;
+-	lazy_hcall(LHCALL_NEW_PGTABLE, cr3, 0, 0);
++	lazy_hcall1(LHCALL_NEW_PGTABLE, cr3);
+ 	cr3_changed = true;
+ }
+ 
+@@ -485,11 +504,17 @@ static void lguest_write_cr4(unsigned long val)
+  * into a process' address space.  We set the entry then tell the Host the
+  * toplevel and address this corresponds to.  The Guest uses one pagetable per
+  * process, so we need to tell the Host which one we're changing (mm->pgd). */
++static void lguest_pte_update(struct mm_struct *mm, unsigned long addr,
++			       pte_t *ptep)
++{
++	lazy_hcall3(LHCALL_SET_PTE, __pa(mm->pgd), addr, ptep->pte_low);
++}
++
+ static void lguest_set_pte_at(struct mm_struct *mm, unsigned long addr,
+ 			      pte_t *ptep, pte_t pteval)
+ {
+ 	*ptep = pteval;
+-	lazy_hcall(LHCALL_SET_PTE, __pa(mm->pgd), addr, pteval.pte_low);
++	lguest_pte_update(mm, addr, ptep);
+ }
+ 
+ /* The Guest calls this to set a top-level entry.  Again, we set the entry then
+@@ -498,8 +523,8 @@ static void lguest_set_pte_at(struct mm_struct *mm, unsigned long addr,
+ static void lguest_set_pmd(pmd_t *pmdp, pmd_t pmdval)
+ {
+ 	*pmdp = pmdval;
+-	lazy_hcall(LHCALL_SET_PMD, __pa(pmdp)&PAGE_MASK,
+-		   (__pa(pmdp)&(PAGE_SIZE-1))/4, 0);
++	lazy_hcall2(LHCALL_SET_PMD, __pa(pmdp) & PAGE_MASK,
++		   (__pa(pmdp) & (PAGE_SIZE - 1)) / 4);
+ }
+ 
+ /* There are a couple of legacy places where the kernel sets a PTE, but we
+@@ -515,7 +540,7 @@ static void lguest_set_pte(pte_t *ptep, pte_t pteval)
+ {
+ 	*ptep = pteval;
+ 	if (cr3_changed)
+-		lazy_hcall(LHCALL_FLUSH_TLB, 1, 0, 0);
++		lazy_hcall1(LHCALL_FLUSH_TLB, 1);
+ }
+ 
+ /* Unfortunately for Lguest, the pv_mmu_ops for page tables were based on
+@@ -531,7 +556,7 @@ static void lguest_set_pte(pte_t *ptep, pte_t pteval)
+ static void lguest_flush_tlb_single(unsigned long addr)
+ {
+ 	/* Simply set it to zero: if it was not, it will fault back in. */
+-	lazy_hcall(LHCALL_SET_PTE, lguest_data.pgdir, addr, 0);
++	lazy_hcall3(LHCALL_SET_PTE, lguest_data.pgdir, addr, 0);
+ }
+ 
+ /* This is what happens after the Guest has removed a large number of entries.
+@@ -539,7 +564,7 @@ static void lguest_flush_tlb_single(unsigned long addr)
+  * have changed, ie. virtual addresses below PAGE_OFFSET. */
+ static void lguest_flush_tlb_user(void)
+ {
+-	lazy_hcall(LHCALL_FLUSH_TLB, 0, 0, 0);
++	lazy_hcall1(LHCALL_FLUSH_TLB, 0);
+ }
+ 
+ /* This is called when the kernel page tables have changed.  That's not very
+@@ -547,7 +572,14 @@ static void lguest_flush_tlb_user(void)
+  * slow), so it's worth separating this from the user flushing above. */
+ static void lguest_flush_tlb_kernel(void)
+ {
+-	lazy_hcall(LHCALL_FLUSH_TLB, 1, 0, 0);
++	lazy_hcall1(LHCALL_FLUSH_TLB, 1);
++}
++
++/* This routine is called when a process exits, and we're throwing away the
++ * page table. */
++static void lguest_pgd_free(struct mm_struct *mm, pgd_t *pgd)
++{
++	lazy_hcall1(LHCALL_INVALIDATE_PGTABLE, __pa(pgd));
+ }
+ 
+ /*
+@@ -684,7 +716,7 @@ static int lguest_clockevent_set_next_event(unsigned long delta,
  	}
  
--	ret = call_usermodehelper(modprobe_path, argv, envp, 1);
-+	ret = call_usermodehelper(modprobe_path, argv, envp,
-+			wait ? UMH_WAIT_PROC : UMH_WAIT_EXEC);
- 	atomic_dec(&kmod_concurrent);
- 	return ret;
- }
--EXPORT_SYMBOL(request_module);
-+EXPORT_SYMBOL(__request_module);
- #endif /* CONFIG_MODULES */
- 
- struct subprocess_info {
-diff --git a/kernel/module.c b/kernel/module.c
-index 7767223..3280f72 100644
---- a/kernel/module.c
-+++ b/kernel/module.c
-@@ -67,7 +67,8 @@
- 
- /* List of modules, protected by module_mutex or preempt_disable
-  * (delete uses stop_machine/add uses RCU list operations). */
--static DEFINE_MUTEX(module_mutex);
-+DEFINE_MUTEX(module_mutex);
-+EXPORT_SYMBOL_GPL(module_mutex);
- static LIST_HEAD(modules);
- 
- /* Waiting for a module to finish initializing? */
-@@ -75,7 +76,7 @@ static DECLARE_WAIT_QUEUE_HEAD(module_wq);
- 
- static BLOCKING_NOTIFIER_HEAD(module_notify_list);
- 
--/* Bounds of module allocation, for speeding __module_text_address */
-+/* Bounds of module allocation, for speeding __module_address */
- static unsigned long module_addr_min = -1UL, module_addr_max = 0;
- 
- int register_module_notifier(struct notifier_block * nb)
-@@ -185,17 +186,6 @@ extern const unsigned long __start___kcrctab_unused_gpl[];
- #define symversion(base, idx) ((base != NULL) ? ((base) + (idx)) : NULL)
- #endif
- 
--struct symsearch {
--	const struct kernel_symbol *start, *stop;
--	const unsigned long *crcs;
--	enum {
--		NOT_GPL_ONLY,
--		GPL_ONLY,
--		WILL_BE_GPL_ONLY,
--	} licence;
--	bool unused;
--};
--
- static bool each_symbol_in_section(const struct symsearch *arr,
- 				   unsigned int arrsize,
- 				   struct module *owner,
-@@ -216,10 +206,8 @@ static bool each_symbol_in_section(const struct symsearch *arr,
+ 	/* Please wake us this far in the future. */
+-	hcall(LHCALL_SET_CLOCKEVENT, delta, 0, 0);
++	kvm_hypercall1(LHCALL_SET_CLOCKEVENT, delta);
+ 	return 0;
  }
  
- /* Returns true as soon as fn returns true, otherwise false. */
--static bool each_symbol(bool (*fn)(const struct symsearch *arr,
--				   struct module *owner,
--				   unsigned int symnum, void *data),
--			void *data)
-+bool each_symbol(bool (*fn)(const struct symsearch *arr, struct module *owner,
-+			    unsigned int symnum, void *data), void *data)
+@@ -695,7 +727,7 @@ static void lguest_clockevent_set_mode(enum clock_event_mode mode,
+ 	case CLOCK_EVT_MODE_UNUSED:
+ 	case CLOCK_EVT_MODE_SHUTDOWN:
+ 		/* A 0 argument shuts the clock down. */
+-		hcall(LHCALL_SET_CLOCKEVENT, 0, 0, 0);
++		kvm_hypercall0(LHCALL_SET_CLOCKEVENT);
+ 		break;
+ 	case CLOCK_EVT_MODE_ONESHOT:
+ 		/* This is what we expect. */
+@@ -770,8 +802,8 @@ static void lguest_time_init(void)
+ static void lguest_load_sp0(struct tss_struct *tss,
+ 			    struct thread_struct *thread)
  {
- 	struct module *mod;
- 	const struct symsearch arr[] = {
-@@ -272,6 +260,7 @@ static bool each_symbol(bool (*fn)(const struct symsearch *arr,
+-	lazy_hcall(LHCALL_SET_STACK, __KERNEL_DS|0x1, thread->sp0,
+-		   THREAD_SIZE/PAGE_SIZE);
++	lazy_hcall3(LHCALL_SET_STACK, __KERNEL_DS | 0x1, thread->sp0,
++		   THREAD_SIZE / PAGE_SIZE);
+ }
+ 
+ /* Let's just say, I wouldn't do debugging under a Guest. */
+@@ -843,7 +875,7 @@ static struct apic_ops lguest_basic_apic_ops = {
+ /* STOP!  Until an interrupt comes in. */
+ static void lguest_safe_halt(void)
+ {
+-	hcall(LHCALL_HALT, 0, 0, 0);
++	kvm_hypercall0(LHCALL_HALT);
+ }
+ 
+ /* The SHUTDOWN hypercall takes a string to describe what's happening, and
+@@ -853,7 +885,8 @@ static void lguest_safe_halt(void)
+  * rather than virtual addresses, so we use __pa() here. */
+ static void lguest_power_off(void)
+ {
+-	hcall(LHCALL_SHUTDOWN, __pa("Power down"), LGUEST_SHUTDOWN_POWEROFF, 0);
++	kvm_hypercall2(LHCALL_SHUTDOWN, __pa("Power down"),
++					LGUEST_SHUTDOWN_POWEROFF);
+ }
+ 
+ /*
+@@ -863,7 +896,7 @@ static void lguest_power_off(void)
+  */
+ static int lguest_panic(struct notifier_block *nb, unsigned long l, void *p)
+ {
+-	hcall(LHCALL_SHUTDOWN, __pa(p), LGUEST_SHUTDOWN_POWEROFF, 0);
++	kvm_hypercall2(LHCALL_SHUTDOWN, __pa(p), LGUEST_SHUTDOWN_POWEROFF);
+ 	/* The hcall won't return, but to keep gcc happy, we're "done". */
+ 	return NOTIFY_DONE;
+ }
+@@ -904,7 +937,7 @@ static __init int early_put_chars(u32 vtermno, const char *buf, int count)
+ 		len = sizeof(scratch) - 1;
+ 	scratch[len] = '\0';
+ 	memcpy(scratch, buf, len);
+-	hcall(LHCALL_NOTIFY, __pa(scratch), 0, 0);
++	kvm_hypercall1(LHCALL_NOTIFY, __pa(scratch));
+ 
+ 	/* This routine returns the number of bytes actually written. */
+ 	return len;
+@@ -914,7 +947,7 @@ static __init int early_put_chars(u32 vtermno, const char *buf, int count)
+  * Launcher to reboot us. */
+ static void lguest_restart(char *reason)
+ {
+-	hcall(LHCALL_SHUTDOWN, __pa(reason), LGUEST_SHUTDOWN_RESTART, 0);
++	kvm_hypercall2(LHCALL_SHUTDOWN, __pa(reason), LGUEST_SHUTDOWN_RESTART);
+ }
+ 
+ /*G:050
+@@ -1034,6 +1067,9 @@ __init void lguest_init(void)
+ 	pv_mmu_ops.read_cr3 = lguest_read_cr3;
+ 	pv_mmu_ops.lazy_mode.enter = paravirt_enter_lazy_mmu;
+ 	pv_mmu_ops.lazy_mode.leave = lguest_leave_lazy_mode;
++	pv_mmu_ops.pte_update = lguest_pte_update;
++	pv_mmu_ops.pte_update_defer = lguest_pte_update;
++	pv_mmu_ops.pgd_free = lguest_pgd_free;
+ 
+ #ifdef CONFIG_X86_LOCAL_APIC
+ 	/* apic read/write intercepts */
+diff --git a/arch/x86/lguest/i386_head.S b/arch/x86/lguest/i386_head.S
+index 10b9bd3..f795419 100644
+--- a/arch/x86/lguest/i386_head.S
++++ b/arch/x86/lguest/i386_head.S
+@@ -27,8 +27,8 @@ ENTRY(lguest_entry)
+ 	/* We make the "initialization" hypercall now to tell the Host about
+ 	 * us, and also find out where it put our page tables. */
+ 	movl $LHCALL_LGUEST_INIT, %eax
+-	movl $lguest_data - __PAGE_OFFSET, %edx
+-	int $LGUEST_TRAP_ENTRY
++	movl $lguest_data - __PAGE_OFFSET, %ebx
++	.byte 0x0f,0x01,0xc1 /* KVM_HYPERCALL */
+ 
+ 	/* Set up the initial stack so we can run C code. */
+ 	movl $(init_thread_union+THREAD_SIZE),%esp
+diff --git a/drivers/lguest/core.c b/drivers/lguest/core.c
+index 60156df..4845fb3 100644
+--- a/drivers/lguest/core.c
++++ b/drivers/lguest/core.c
+@@ -152,8 +152,8 @@ static void unmap_switcher(void)
+  * code.  We have to check that the range is below the pfn_limit the Launcher
+  * gave us.  We have to make sure that addr + len doesn't give us a false
+  * positive by overflowing, too. */
+-int lguest_address_ok(const struct lguest *lg,
+-		      unsigned long addr, unsigned long len)
++bool lguest_address_ok(const struct lguest *lg,
++		       unsigned long addr, unsigned long len)
+ {
+ 	return (addr+len) / PAGE_SIZE < lg->pfn_limit && (addr+len >= addr);
+ }
+diff --git a/drivers/lguest/hypercalls.c b/drivers/lguest/hypercalls.c
+index 54d66f0..a160894 100644
+--- a/drivers/lguest/hypercalls.c
++++ b/drivers/lguest/hypercalls.c
+@@ -92,6 +92,9 @@ static void do_hcall(struct lg_cpu *cpu, struct hcall_args *args)
+ 	case LHCALL_NOTIFY:
+ 		cpu->pending_notify = args->arg1;
+ 		break;
++	case LHCALL_INVALIDATE_PGTABLE:
++		invalidate_pagetable(cpu, args->arg1);
++		break;
+ 	default:
+ 		/* It should be an architecture-specific hypercall. */
+ 		if (lguest_arch_do_hcall(cpu, args))
+diff --git a/drivers/lguest/interrupts_and_traps.c b/drivers/lguest/interrupts_and_traps.c
+index 415fab0..6e99adb 100644
+--- a/drivers/lguest/interrupts_and_traps.c
++++ b/drivers/lguest/interrupts_and_traps.c
+@@ -34,7 +34,7 @@ static int idt_type(u32 lo, u32 hi)
+ }
+ 
+ /* An IDT entry can't be used unless the "present" bit is set. */
+-static int idt_present(u32 lo, u32 hi)
++static bool idt_present(u32 lo, u32 hi)
+ {
+ 	return (hi & 0x8000);
+ }
+@@ -60,7 +60,8 @@ static void push_guest_stack(struct lg_cpu *cpu, unsigned long *gstack, u32 val)
+  * We set up the stack just like the CPU does for a real interrupt, so it's
+  * identical for the Guest (and the standard "iret" instruction will undo
+  * it). */
+-static void set_guest_interrupt(struct lg_cpu *cpu, u32 lo, u32 hi, int has_err)
++static void set_guest_interrupt(struct lg_cpu *cpu, u32 lo, u32 hi,
++				bool has_err)
+ {
+ 	unsigned long gstack, origstack;
+ 	u32 eflags, ss, irq_enable;
+@@ -184,7 +185,7 @@ void maybe_do_interrupt(struct lg_cpu *cpu)
+ 		/* set_guest_interrupt() takes the interrupt descriptor and a
+ 		 * flag to say whether this interrupt pushes an error code onto
+ 		 * the stack as well: virtual interrupts never do. */
+-		set_guest_interrupt(cpu, idt->a, idt->b, 0);
++		set_guest_interrupt(cpu, idt->a, idt->b, false);
  	}
- 	return false;
- }
-+EXPORT_SYMBOL_GPL(each_symbol);
  
- struct find_symbol_arg {
- 	/* Input */
-@@ -282,7 +271,7 @@ struct find_symbol_arg {
- 	/* Output */
- 	struct module *owner;
- 	const unsigned long *crc;
--	unsigned long value;
-+	const struct kernel_symbol *sym;
- };
- 
- static bool find_symbol_in_section(const struct symsearch *syms,
-@@ -323,17 +312,17 @@ static bool find_symbol_in_section(const struct symsearch *syms,
- 
- 	fsa->owner = owner;
- 	fsa->crc = symversion(syms->crcs, symnum);
--	fsa->value = syms->start[symnum].value;
-+	fsa->sym = &syms->start[symnum];
- 	return true;
- }
- 
--/* Find a symbol, return value, (optional) crc and (optional) module
-- * which owns it */
--static unsigned long find_symbol(const char *name,
--				 struct module **owner,
--				 const unsigned long **crc,
--				 bool gplok,
--				 bool warn)
-+/* Find a symbol and return it, along with, (optional) crc and
-+ * (optional) module which owns it */
-+const struct kernel_symbol *find_symbol(const char *name,
-+					struct module **owner,
-+					const unsigned long **crc,
-+					bool gplok,
-+					bool warn)
+ 	/* Every time we deliver an interrupt, we update the timestamp in the
+@@ -244,26 +245,26 @@ void free_interrupts(void)
+ /*H:220 Now we've got the routines to deliver interrupts, delivering traps like
+  * page fault is easy.  The only trick is that Intel decided that some traps
+  * should have error codes: */
+-static int has_err(unsigned int trap)
++static bool has_err(unsigned int trap)
  {
- 	struct find_symbol_arg fsa;
- 
-@@ -346,15 +335,16 @@ static unsigned long find_symbol(const char *name,
- 			*owner = fsa.owner;
- 		if (crc)
- 			*crc = fsa.crc;
--		return fsa.value;
-+		return fsa.sym;
- 	}
- 
- 	DEBUGP("Failed to find symbol %s\n", name);
--	return -ENOENT;
-+	return NULL;
+ 	return (trap == 8 || (trap >= 10 && trap <= 14) || trap == 17);
  }
-+EXPORT_SYMBOL_GPL(find_symbol);
  
- /* Search for module by name: must hold module_mutex. */
--static struct module *find_module(const char *name)
-+struct module *find_module(const char *name)
+ /* deliver_trap() returns true if it could deliver the trap. */
+-int deliver_trap(struct lg_cpu *cpu, unsigned int num)
++bool deliver_trap(struct lg_cpu *cpu, unsigned int num)
  {
- 	struct module *mod;
+ 	/* Trap numbers are always 8 bit, but we set an impossible trap number
+ 	 * for traps inside the Switcher, so check that here. */
+ 	if (num >= ARRAY_SIZE(cpu->arch.idt))
+-		return 0;
++		return false;
  
-@@ -364,6 +354,7 @@ static struct module *find_module(const char *name)
- 	}
- 	return NULL;
+ 	/* Early on the Guest hasn't set the IDT entries (or maybe it put a
+ 	 * bogus one in): if we fail here, the Guest will be killed. */
+ 	if (!idt_present(cpu->arch.idt[num].a, cpu->arch.idt[num].b))
+-		return 0;
++		return false;
+ 	set_guest_interrupt(cpu, cpu->arch.idt[num].a,
+ 			    cpu->arch.idt[num].b, has_err(num));
+-	return 1;
++	return true;
  }
-+EXPORT_SYMBOL_GPL(find_module);
  
- #ifdef CONFIG_SMP
- /* Number of blocks used and allocated. */
-@@ -607,7 +598,7 @@ static int already_uses(struct module *a, struct module *b)
- }
- 
- /* Module a uses b */
--static int use_module(struct module *a, struct module *b)
-+int use_module(struct module *a, struct module *b)
+ /*H:250 Here's the hard part: returning to the Host every time a trap happens
+@@ -279,18 +280,19 @@ int deliver_trap(struct lg_cpu *cpu, unsigned int num)
+  *
+  * This routine indicates if a particular trap number could be delivered
+  * directly. */
+-static int direct_trap(unsigned int num)
++static bool direct_trap(unsigned int num)
  {
- 	struct module_use *use;
- 	int no_warn, err;
-@@ -640,6 +631,7 @@ static int use_module(struct module *a, struct module *b)
- 	no_warn = sysfs_create_link(b->holders_dir, &a->mkobj.kobj, a->name);
+ 	/* Hardware interrupts don't go to the Guest at all (except system
+ 	 * call). */
+ 	if (num >= FIRST_EXTERNAL_VECTOR && !could_be_syscall(num))
+-		return 0;
++		return false;
+ 
+ 	/* The Host needs to see page faults (for shadow paging and to save the
+ 	 * fault address), general protection faults (in/out emulation) and
+-	 * device not available (TS handling), and of course, the hypercall
+-	 * trap. */
+-	return num != 14 && num != 13 && num != 7 && num != LGUEST_TRAP_ENTRY;
++	 * device not available (TS handling), invalid opcode fault (kvm hcall),
++	 * and of course, the hypercall trap. */
++	return num != 14 && num != 13 && num != 7 &&
++			num != 6 && num != LGUEST_TRAP_ENTRY;
+ }
+ /*:*/
+ 
+diff --git a/drivers/lguest/lg.h b/drivers/lguest/lg.h
+index f2c641e..4d81591 100644
+--- a/drivers/lguest/lg.h
++++ b/drivers/lguest/lg.h
+@@ -109,8 +109,8 @@ struct lguest
+ extern struct mutex lguest_lock;
+ 
+ /* core.c: */
+-int lguest_address_ok(const struct lguest *lg,
+-		      unsigned long addr, unsigned long len);
++bool lguest_address_ok(const struct lguest *lg,
++		       unsigned long addr, unsigned long len);
+ void __lgread(struct lg_cpu *, void *, unsigned long, unsigned);
+ void __lgwrite(struct lg_cpu *, unsigned long, const void *, unsigned);
+ 
+@@ -140,7 +140,7 @@ int run_guest(struct lg_cpu *cpu, unsigned long __user *user);
+ 
+ /* interrupts_and_traps.c: */
+ void maybe_do_interrupt(struct lg_cpu *cpu);
+-int deliver_trap(struct lg_cpu *cpu, unsigned int num);
++bool deliver_trap(struct lg_cpu *cpu, unsigned int num);
+ void load_guest_idt_entry(struct lg_cpu *cpu, unsigned int i,
+ 			  u32 low, u32 hi);
+ void guest_set_stack(struct lg_cpu *cpu, u32 seg, u32 esp, unsigned int pages);
+@@ -173,7 +173,8 @@ void guest_pagetable_flush_user(struct lg_cpu *cpu);
+ void guest_set_pte(struct lg_cpu *cpu, unsigned long gpgdir,
+ 		   unsigned long vaddr, pte_t val);
+ void map_switcher_in_guest(struct lg_cpu *cpu, struct lguest_pages *pages);
+-int demand_page(struct lg_cpu *cpu, unsigned long cr2, int errcode);
++bool demand_page(struct lg_cpu *cpu, unsigned long cr2, int errcode);
++void invalidate_pagetable(struct lg_cpu *cpu, unsigned long pgtable);
+ void pin_page(struct lg_cpu *cpu, unsigned long vaddr);
+ unsigned long guest_pa(struct lg_cpu *cpu, unsigned long vaddr);
+ void page_table_guest_data_init(struct lg_cpu *cpu);
+diff --git a/drivers/lguest/lguest_device.c b/drivers/lguest/lguest_device.c
+index 8132533..df44d96 100644
+--- a/drivers/lguest/lguest_device.c
++++ b/drivers/lguest/lguest_device.c
+@@ -161,7 +161,7 @@ static void set_status(struct virtio_device *vdev, u8 status)
+ 
+ 	/* We set the status. */
+ 	to_lgdev(vdev)->desc->status = status;
+-	hcall(LHCALL_NOTIFY, (max_pfn<<PAGE_SHIFT) + offset, 0, 0);
++	kvm_hypercall1(LHCALL_NOTIFY, (max_pfn << PAGE_SHIFT) + offset);
+ }
+ 
+ static void lg_set_status(struct virtio_device *vdev, u8 status)
+@@ -209,7 +209,7 @@ static void lg_notify(struct virtqueue *vq)
+ 	 * virtqueue structure. */
+ 	struct lguest_vq_info *lvq = vq->priv;
+ 
+-	hcall(LHCALL_NOTIFY, lvq->config.pfn << PAGE_SHIFT, 0, 0);
++	kvm_hypercall1(LHCALL_NOTIFY, lvq->config.pfn << PAGE_SHIFT);
+ }
+ 
+ /* An extern declaration inside a C file is bad form.  Don't do it. */
+diff --git a/drivers/lguest/page_tables.c b/drivers/lguest/page_tables.c
+index 576a831..d137f7d 100644
+--- a/drivers/lguest/page_tables.c
++++ b/drivers/lguest/page_tables.c
+@@ -199,7 +199,7 @@ static void check_gpgd(struct lg_cpu *cpu, pgd_t gpgd)
+  *
+  * If we fixed up the fault (ie. we mapped the address), this routine returns
+  * true.  Otherwise, it was a real fault and we need to tell the Guest. */
+-int demand_page(struct lg_cpu *cpu, unsigned long vaddr, int errcode)
++bool demand_page(struct lg_cpu *cpu, unsigned long vaddr, int errcode)
+ {
+ 	pgd_t gpgd;
+ 	pgd_t *spgd;
+@@ -211,7 +211,7 @@ int demand_page(struct lg_cpu *cpu, unsigned long vaddr, int errcode)
+ 	gpgd = lgread(cpu, gpgd_addr(cpu, vaddr), pgd_t);
+ 	/* Toplevel not present?  We can't map it in. */
+ 	if (!(pgd_flags(gpgd) & _PAGE_PRESENT))
+-		return 0;
++		return false;
+ 
+ 	/* Now look at the matching shadow entry. */
+ 	spgd = spgd_addr(cpu, cpu->cpu_pgd, vaddr);
+@@ -222,7 +222,7 @@ int demand_page(struct lg_cpu *cpu, unsigned long vaddr, int errcode)
+ 		 * simple for this corner case. */
+ 		if (!ptepage) {
+ 			kill_guest(cpu, "out of memory allocating pte page");
+-			return 0;
++			return false;
+ 		}
+ 		/* We check that the Guest pgd is OK. */
+ 		check_gpgd(cpu, gpgd);
+@@ -238,16 +238,16 @@ int demand_page(struct lg_cpu *cpu, unsigned long vaddr, int errcode)
+ 
+ 	/* If this page isn't in the Guest page tables, we can't page it in. */
+ 	if (!(pte_flags(gpte) & _PAGE_PRESENT))
+-		return 0;
++		return false;
+ 
+ 	/* Check they're not trying to write to a page the Guest wants
+ 	 * read-only (bit 2 of errcode == write). */
+ 	if ((errcode & 2) && !(pte_flags(gpte) & _PAGE_RW))
+-		return 0;
++		return false;
+ 
+ 	/* User access to a kernel-only page? (bit 3 == user access) */
+ 	if ((errcode & 4) && !(pte_flags(gpte) & _PAGE_USER))
+-		return 0;
++		return false;
+ 
+ 	/* Check that the Guest PTE flags are OK, and the page number is below
+ 	 * the pfn_limit (ie. not mapping the Launcher binary). */
+@@ -283,7 +283,7 @@ int demand_page(struct lg_cpu *cpu, unsigned long vaddr, int errcode)
+ 	 * manipulated, the result returned and the code complete.  A small
+ 	 * delay and a trace of alliteration are the only indications the Guest
+ 	 * has that a page fault occurred at all. */
+-	return 1;
++	return true;
+ }
+ 
+ /*H:360
+@@ -296,7 +296,7 @@ int demand_page(struct lg_cpu *cpu, unsigned long vaddr, int errcode)
+  *
+  * This is a quick version which answers the question: is this virtual address
+  * mapped by the shadow page tables, and is it writable? */
+-static int page_writable(struct lg_cpu *cpu, unsigned long vaddr)
++static bool page_writable(struct lg_cpu *cpu, unsigned long vaddr)
+ {
+ 	pgd_t *spgd;
+ 	unsigned long flags;
+@@ -304,7 +304,7 @@ static int page_writable(struct lg_cpu *cpu, unsigned long vaddr)
+ 	/* Look at the current top level entry: is it present? */
+ 	spgd = spgd_addr(cpu, cpu->cpu_pgd, vaddr);
+ 	if (!(pgd_flags(*spgd) & _PAGE_PRESENT))
+-		return 0;
++		return false;
+ 
+ 	/* Check the flags on the pte entry itself: it must be present and
+ 	 * writable. */
+@@ -373,8 +373,10 @@ unsigned long guest_pa(struct lg_cpu *cpu, unsigned long vaddr)
+ 	/* First step: get the top-level Guest page table entry. */
+ 	gpgd = lgread(cpu, gpgd_addr(cpu, vaddr), pgd_t);
+ 	/* Toplevel not present?  We can't map it in. */
+-	if (!(pgd_flags(gpgd) & _PAGE_PRESENT))
++	if (!(pgd_flags(gpgd) & _PAGE_PRESENT)) {
+ 		kill_guest(cpu, "Bad address %#lx", vaddr);
++		return -1UL;
++	}
+ 
+ 	gpte = lgread(cpu, gpte_addr(gpgd, vaddr), pte_t);
+ 	if (!(pte_flags(gpte) & _PAGE_PRESENT))
+@@ -449,6 +451,22 @@ void guest_new_pagetable(struct lg_cpu *cpu, unsigned long pgtable)
+ 		pin_stack_pages(cpu);
+ }
+ 
++/* The Guest tells us when a page is no longer being used as a pagetable.
++ * Without this there can be a subtle bug where the same page gets re-used
++ * for a different process, and we think it's the same one as the one we have
++ * in our little pgdir cache. */
++void invalidate_pagetable(struct lg_cpu *cpu, unsigned long pgtable)
++{
++	unsigned int pgdir = find_pgdir(cpu->lg, pgtable);
++
++	if (pgdir != ARRAY_SIZE(cpu->lg->pgdirs)) {
++		if (pgdir == cpu->cpu_pgd)
++			kill_guest(cpu, "Attempt to invalidate in-use pgdir");
++		/* We set it to an invalid value. */
++		cpu->lg->pgdirs[pgdir].gpgdir = -1UL;
++	}
++}
++
+ /*H:470 Finally, a routine which throws away everything: all PGD entries in all
+  * the shadow page tables, including the Guest's kernel mappings.  This is used
+  * when we destroy the Guest. */
+diff --git a/drivers/lguest/segments.c b/drivers/lguest/segments.c
+index ec6aa3f..4f15439 100644
+--- a/drivers/lguest/segments.c
++++ b/drivers/lguest/segments.c
+@@ -45,7 +45,7 @@
+  * "Task State Segment" which controls all kinds of delicate things.  The
+  * LGUEST_CS and LGUEST_DS entries are reserved for the Switcher, and the
+  * the Guest can't be trusted to deal with double faults. */
+-static int ignored_gdt(unsigned int num)
++static bool ignored_gdt(unsigned int num)
+ {
+ 	return (num == GDT_ENTRY_TSS
+ 		|| num == GDT_ENTRY_LGUEST_CS
+diff --git a/drivers/lguest/x86/core.c b/drivers/lguest/x86/core.c
+index bf79423..a6b7176 100644
+--- a/drivers/lguest/x86/core.c
++++ b/drivers/lguest/x86/core.c
+@@ -290,6 +290,57 @@ static int emulate_insn(struct lg_cpu *cpu)
  	return 1;
  }
-+EXPORT_SYMBOL_GPL(use_module);
  
- /* Clear the unload stuff of the module. */
- static void module_unload_free(struct module *mod)
-@@ -860,7 +852,7 @@ void __symbol_put(const char *symbol)
- 	struct module *owner;
- 
- 	preempt_disable();
--	if (IS_ERR_VALUE(find_symbol(symbol, &owner, NULL, true, false)))
-+	if (!find_symbol(symbol, &owner, NULL, true, false))
- 		BUG();
- 	module_put(owner);
- 	preempt_enable();
-@@ -874,8 +866,10 @@ void symbol_put_addr(void *addr)
- 	if (core_kernel_text((unsigned long)addr))
++/* Our hypercalls mechanism used to be based on direct software interrupts.
++ * After Anthony's "Refactor hypercall infrastructure" kvm patch, we decided to
++ * change over to using kvm hypercalls.
++ *
++ * KVM_HYPERCALL is actually a "vmcall" instruction, which generates an invalid
++ * opcode fault (fault 6) on non-VT cpus, so the easiest solution seemed to be
++ * an *emulation approach*: if the fault was really produced by an hypercall
++ * (is_hypercall() does exactly this check), we can just call the corresponding
++ * hypercall host implementation function.
++ *
++ * But these invalid opcode faults are notably slower than software interrupts.
++ * So we implemented the *patching (or rewriting) approach*: every time we hit
++ * the KVM_HYPERCALL opcode in Guest code, we patch it to the old "int 0x1f"
++ * opcode, so next time the Guest calls this hypercall it will use the
++ * faster trap mechanism.
++ *
++ * Matias even benchmarked it to convince you: this shows the average cycle
++ * cost of a hypercall.  For each alternative solution mentioned above we've
++ * made 5 runs of the benchmark:
++ *
++ * 1) direct software interrupt: 2915, 2789, 2764, 2721, 2898
++ * 2) emulation technique: 3410, 3681, 3466, 3392, 3780
++ * 3) patching (rewrite) technique: 2977, 2975, 2891, 2637, 2884
++ *
++ * One two-line function is worth a 20% hypercall speed boost!
++ */
++static void rewrite_hypercall(struct lg_cpu *cpu)
++{
++	/* This are the opcodes we use to patch the Guest.  The opcode for "int
++	 * $0x1f" is "0xcd 0x1f" but vmcall instruction is 3 bytes long, so we
++	 * complete the sequence with a NOP (0x90). */
++	u8 insn[3] = {0xcd, 0x1f, 0x90};
++
++	__lgwrite(cpu, guest_pa(cpu, cpu->regs->eip), insn, sizeof(insn));
++}
++
++static bool is_hypercall(struct lg_cpu *cpu)
++{
++	u8 insn[3];
++
++	/* This must be the Guest kernel trying to do something.
++	 * The bottom two bits of the CS segment register are the privilege
++	 * level. */
++	if ((cpu->regs->cs & 3) != GUEST_PL)
++		return false;
++
++	/* Is it a vmcall? */
++	__lgread(cpu, insn, guest_pa(cpu, cpu->regs->eip), sizeof(insn));
++	return insn[0] == 0x0f && insn[1] == 0x01 && insn[2] == 0xc1;
++}
++
+ /*H:050 Once we've re-enabled interrupts, we look at why the Guest exited. */
+ void lguest_arch_handle_trap(struct lg_cpu *cpu)
+ {
+@@ -337,7 +388,7 @@ void lguest_arch_handle_trap(struct lg_cpu *cpu)
+ 		break;
+ 	case 32 ... 255:
+ 		/* These values mean a real interrupt occurred, in which case
+-		 * the Host handler has already been run.  We just do a
++		 * the Host handler has already been run. We just do a
+ 		 * friendly check if another process should now be run, then
+ 		 * return to run the Guest again */
+ 		cond_resched();
+@@ -347,6 +398,15 @@ void lguest_arch_handle_trap(struct lg_cpu *cpu)
+ 		 * up the pointer now to indicate a hypercall is pending. */
+ 		cpu->hcall = (struct hcall_args *)cpu->regs;
  		return;
- 
--	if (!(modaddr = module_text_address((unsigned long)addr)))
--		BUG();
-+	/* module_text_address is safe here: we're supposed to have reference
-+	 * to module from symbol_get, so it can't go away. */
-+	modaddr = __module_text_address((unsigned long)addr);
-+	BUG_ON(!modaddr);
- 	module_put(modaddr);
- }
- EXPORT_SYMBOL_GPL(symbol_put_addr);
-@@ -915,10 +909,11 @@ static inline void module_unload_free(struct module *mod)
- {
- }
- 
--static inline int use_module(struct module *a, struct module *b)
-+int use_module(struct module *a, struct module *b)
- {
- 	return strong_try_module_get(b) == 0;
- }
-+EXPORT_SYMBOL_GPL(use_module);
- 
- static inline void module_unload_init(struct module *mod)
- {
-@@ -961,12 +956,12 @@ static struct module_attribute *modinfo_attrs[] = {
- 
- static const char vermagic[] = VERMAGIC_STRING;
- 
--static int try_to_force_load(struct module *mod, const char *symname)
-+static int try_to_force_load(struct module *mod, const char *reason)
- {
- #ifdef CONFIG_MODULE_FORCE_LOAD
- 	if (!test_taint(TAINT_FORCED_MODULE))
--		printk("%s: no version for \"%s\" found: kernel tainted.\n",
--		       mod->name, symname);
-+		printk(KERN_WARNING "%s: %s: kernel tainted.\n",
-+		       mod->name, reason);
- 	add_taint_module(mod, TAINT_FORCED_MODULE);
- 	return 0;
- #else
-@@ -1023,9 +1018,9 @@ static inline int check_modstruct_version(Elf_Shdr *sechdrs,
- {
- 	const unsigned long *crc;
- 
--	if (IS_ERR_VALUE(find_symbol("struct_module", NULL, &crc, true, false)))
-+	if (!find_symbol("module_layout", NULL, &crc, true, false))
- 		BUG();
--	return check_version(sechdrs, versindex, "struct_module", mod, crc);
-+	return check_version(sechdrs, versindex, "module_layout", mod, crc);
- }
- 
- /* First part is kernel version, which we ignore if module has crcs. */
-@@ -1064,25 +1059,25 @@ static inline int same_magic(const char *amagic, const char *bmagic,
- 
- /* Resolve a symbol for this module.  I.e. if we find one, record usage.
-    Must be holding module_mutex. */
--static unsigned long resolve_symbol(Elf_Shdr *sechdrs,
--				    unsigned int versindex,
--				    const char *name,
--				    struct module *mod)
-+static const struct kernel_symbol *resolve_symbol(Elf_Shdr *sechdrs,
-+						  unsigned int versindex,
-+						  const char *name,
-+						  struct module *mod)
- {
- 	struct module *owner;
--	unsigned long ret;
-+	const struct kernel_symbol *sym;
- 	const unsigned long *crc;
- 
--	ret = find_symbol(name, &owner, &crc,
-+	sym = find_symbol(name, &owner, &crc,
- 			  !(mod->taints & (1 << TAINT_PROPRIETARY_MODULE)), true);
--	if (!IS_ERR_VALUE(ret)) {
--		/* use_module can fail due to OOM,
--		   or module initialization or unloading */
-+	/* use_module can fail due to OOM,
-+	   or module initialization or unloading */
-+	if (sym) {
- 		if (!check_version(sechdrs, versindex, name, mod, crc) ||
- 		    !use_module(mod, owner))
--			ret = -EINVAL;
-+			sym = NULL;
- 	}
--	return ret;
-+	return sym;
- }
- 
- /*
-@@ -1457,6 +1452,9 @@ static void free_module(struct module *mod)
- 	/* Module unload stuff */
- 	module_unload_free(mod);
- 
-+	/* Free any allocated parameters. */
-+	destroy_params(mod->kp, mod->num_kp);
-+
- 	/* release any pointers to mcount in this module */
- 	ftrace_release(mod->module_core, mod->core_size);
- 
-@@ -1479,17 +1477,15 @@ static void free_module(struct module *mod)
- void *__symbol_get(const char *symbol)
- {
- 	struct module *owner;
--	unsigned long value;
-+	const struct kernel_symbol *sym;
- 
- 	preempt_disable();
--	value = find_symbol(symbol, &owner, NULL, true, true);
--	if (IS_ERR_VALUE(value))
--		value = 0;
--	else if (strong_try_module_get(owner))
--		value = 0;
-+	sym = find_symbol(symbol, &owner, NULL, true, true);
-+	if (sym && strong_try_module_get(owner))
-+		sym = NULL;
- 	preempt_enable();
- 
--	return (void *)value;
-+	return sym ? (void *)sym->value : NULL;
- }
- EXPORT_SYMBOL_GPL(__symbol_get);
- 
-@@ -1517,8 +1513,7 @@ static int verify_export_symbols(struct module *mod)
- 
- 	for (i = 0; i < ARRAY_SIZE(arr); i++) {
- 		for (s = arr[i].sym; s < arr[i].sym + arr[i].num; s++) {
--			if (!IS_ERR_VALUE(find_symbol(s->name, &owner,
--						      NULL, true, false))) {
-+			if (find_symbol(s->name, &owner, NULL, true, false)) {
- 				printk(KERN_ERR
- 				       "%s: exports duplicate symbol %s"
- 				       " (owned by %s)\n",
-@@ -1542,6 +1537,7 @@ static int simplify_symbols(Elf_Shdr *sechdrs,
- 	unsigned long secbase;
- 	unsigned int i, n = sechdrs[symindex].sh_size / sizeof(Elf_Sym);
- 	int ret = 0;
-+	const struct kernel_symbol *ksym;
- 
- 	for (i = 1; i < n; i++) {
- 		switch (sym[i].st_shndx) {
-@@ -1561,13 +1557,14 @@ static int simplify_symbols(Elf_Shdr *sechdrs,
- 			break;
- 
- 		case SHN_UNDEF:
--			sym[i].st_value
--			  = resolve_symbol(sechdrs, versindex,
--					   strtab + sym[i].st_name, mod);
--
-+			ksym = resolve_symbol(sechdrs, versindex,
-+					      strtab + sym[i].st_name, mod);
- 			/* Ok if resolved.  */
--			if (!IS_ERR_VALUE(sym[i].st_value))
-+			if (ksym) {
-+				sym[i].st_value = ksym->value;
- 				break;
-+			}
-+
- 			/* Ok if weak.  */
- 			if (ELF_ST_BIND(sym[i].st_info) == STB_WEAK)
- 				break;
-@@ -1864,8 +1861,7 @@ static noinline struct module *load_module(void __user *umod,
- 	unsigned int symindex = 0;
- 	unsigned int strindex = 0;
- 	unsigned int modindex, versindex, infoindex, pcpuindex;
--	unsigned int num_kp, num_mcount;
--	struct kernel_param *kp;
-+	unsigned int num_mcount;
- 	struct module *mod;
- 	long err = 0;
- 	void *percpu = NULL, *ptr = NULL; /* Stops spurious gcc warning */
-@@ -1882,12 +1878,6 @@ static noinline struct module *load_module(void __user *umod,
- 	if (len > 64 * 1024 * 1024 || (hdr = vmalloc(len)) == NULL)
- 		return ERR_PTR(-ENOMEM);
- 
--	/* Create stop_machine threads since the error path relies on
--	 * a non-failing stop_machine call. */
--	err = stop_machine_create();
--	if (err)
--		goto free_hdr;
--
- 	if (copy_from_user(hdr, umod, len) != 0) {
- 		err = -EFAULT;
- 		goto free_hdr;
-@@ -1931,6 +1921,9 @@ static noinline struct module *load_module(void __user *umod,
- 		if (strncmp(secstrings+sechdrs[i].sh_name, ".exit", 5) == 0)
- 			sechdrs[i].sh_flags &= ~(unsigned long)SHF_ALLOC;
- #endif
-+		/* Don't keep __versions around; it's just for loading. */
-+		if (strcmp(secstrings + sechdrs[i].sh_name, "__versions") == 0)
-+			sechdrs[i].sh_flags &= ~(unsigned long)SHF_ALLOC;
- 	}
- 
- 	modindex = find_sec(hdr, sechdrs, secstrings,
-@@ -1972,7 +1965,7 @@ static noinline struct module *load_module(void __user *umod,
- 	modmagic = get_modinfo(sechdrs, infoindex, "vermagic");
- 	/* This is allowed: modprobe --force will invalidate it. */
- 	if (!modmagic) {
--		err = try_to_force_load(mod, "magic");
-+		err = try_to_force_load(mod, "bad vermagic");
- 		if (err)
- 			goto free_hdr;
- 	} else if (!same_magic(modmagic, vermagic, versindex)) {
-@@ -2110,8 +2103,8 @@ static noinline struct module *load_module(void __user *umod,
- 
- 	/* Now we've got everything in the final locations, we can
- 	 * find optional sections. */
--	kp = section_objs(hdr, sechdrs, secstrings, "__param", sizeof(*kp),
--			  &num_kp);
-+	mod->kp = section_objs(hdr, sechdrs, secstrings, "__param",
-+			       sizeof(*mod->kp), &mod->num_kp);
- 	mod->syms = section_objs(hdr, sechdrs, secstrings, "__ksymtab",
- 				 sizeof(*mod->syms), &mod->num_syms);
- 	mod->crcs = section_addr(hdr, sechdrs, secstrings, "__kcrctab");
-@@ -2161,8 +2154,8 @@ static noinline struct module *load_module(void __user *umod,
- 	    || (mod->num_unused_gpl_syms && !mod->unused_gpl_crcs)
- #endif
- 		) {
--		printk(KERN_WARNING "%s: No versions for exported symbols.\n", mod->name);
--		err = try_to_force_load(mod, "nocrc");
-+		err = try_to_force_load(mod,
-+					"no versions for exported symbols");
- 		if (err)
- 			goto cleanup;
- 	}
-@@ -2257,11 +2250,11 @@ static noinline struct module *load_module(void __user *umod,
- 	 */
- 	list_add_rcu(&mod->list, &modules);
- 
--	err = parse_args(mod->name, mod->args, kp, num_kp, NULL);
-+	err = parse_args(mod->name, mod->args, mod->kp, mod->num_kp, NULL);
- 	if (err < 0)
- 		goto unlink;
- 
--	err = mod_sysfs_setup(mod, kp, num_kp);
-+	err = mod_sysfs_setup(mod, mod->kp, mod->num_kp);
- 	if (err < 0)
- 		goto unlink;
- 	add_sect_attrs(mod, hdr->e_shnum, secstrings, sechdrs);
-@@ -2270,12 +2263,13 @@ static noinline struct module *load_module(void __user *umod,
- 	/* Get rid of temporary copy */
- 	vfree(hdr);
- 
--	stop_machine_destroy();
- 	/* Done! */
- 	return mod;
- 
-  unlink:
--	stop_machine(__unlink_module, mod, NULL);
-+	/* Unlink carefully: kallsyms could be walking list. */
-+	list_del_rcu(&mod->list);
-+	synchronize_sched();
- 	module_arch_cleanup(mod);
-  cleanup:
- 	kobject_del(&mod->mkobj.kobj);
-@@ -2283,8 +2277,8 @@ static noinline struct module *load_module(void __user *umod,
- 	ftrace_release(mod->module_core, mod->core_size);
-  free_unload:
- 	module_unload_free(mod);
-- free_init:
- #if defined(CONFIG_MODULE_UNLOAD) && defined(CONFIG_SMP)
-+ free_init:
- 	percpu_modfree(mod->refptr);
- #endif
- 	module_free(mod, mod->module_init);
-@@ -2298,7 +2292,6 @@ static noinline struct module *load_module(void __user *umod,
- 	kfree(args);
-  free_hdr:
- 	vfree(hdr);
--	stop_machine_destroy();
- 	return ERR_PTR(err);
- 
-  truncated:
-@@ -2575,6 +2568,25 @@ unsigned long module_kallsyms_lookup_name(const char *name)
- 	preempt_enable();
- 	return ret;
- }
-+
-+int module_kallsyms_on_each_symbol(int (*fn)(void *, const char *,
-+					     struct module *, unsigned long),
-+				   void *data)
-+{
-+	struct module *mod;
-+	unsigned int i;
-+	int ret;
-+
-+	list_for_each_entry(mod, &modules, list) {
-+		for (i = 0; i < mod->num_symtab; i++) {
-+			ret = fn(data, mod->strtab + mod->symtab[i].st_name,
-+				 mod, mod->symtab[i].st_value);
-+			if (ret != 0)
-+				return ret;
++	case 6:
++		/* kvm hypercalls trigger an invalid opcode fault (6).
++		 * We need to check if ring == GUEST_PL and
++		 * faulting instruction == vmcall. */
++		if (is_hypercall(cpu)) {
++			rewrite_hypercall(cpu);
++			return;
 +		}
-+	}
-+	return 0;
-+}
- #endif /* CONFIG_KALLSYMS */
- 
- static char *module_flags(struct module *mod, char *buf)
-@@ -2710,29 +2722,31 @@ const struct exception_table_entry *search_module_extables(unsigned long addr)
- }
- 
- /*
-- * Is this a valid module address?
-+ * is_module_address - is this address inside a module?
-+ * @addr: the address to check.
-+ *
-+ * See is_module_text_address() if you simply want to see if the address
-+ * is code (not data).
-  */
--int is_module_address(unsigned long addr)
-+bool is_module_address(unsigned long addr)
- {
--	struct module *mod;
-+	bool ret;
- 
- 	preempt_disable();
--
--	list_for_each_entry_rcu(mod, &modules, list) {
--		if (within_module_core(addr, mod)) {
--			preempt_enable();
--			return 1;
--		}
--	}
--
-+	ret = __module_address(addr) != NULL;
- 	preempt_enable();
- 
--	return 0;
-+	return ret;
- }
- 
--
--/* Is this a valid kernel address? */
--__notrace_funcgraph struct module *__module_text_address(unsigned long addr)
-+/*
-+ * __module_address - get the module which contains an address.
-+ * @addr: the address.
-+ *
-+ * Must be called with preempt disabled or module mutex held so that
-+ * module doesn't get freed during this.
-+ */
-+__notrace_funcgraph struct module *__module_address(unsigned long addr)
- {
- 	struct module *mod;
- 
-@@ -2740,22 +2754,51 @@ __notrace_funcgraph struct module *__module_text_address(unsigned long addr)
- 		return NULL;
- 
- 	list_for_each_entry_rcu(mod, &modules, list)
--		if (within(addr, mod->module_init, mod->init_text_size)
--		    || within(addr, mod->module_core, mod->core_text_size))
-+		if (within_module_core(addr, mod)
-+		    || within_module_init(addr, mod))
- 			return mod;
- 	return NULL;
- }
-+EXPORT_SYMBOL_GPL(__module_address);
- 
--struct module *module_text_address(unsigned long addr)
-+/*
-+ * is_module_text_address - is this address inside module code?
-+ * @addr: the address to check.
-+ *
-+ * See is_module_address() if you simply want to see if the address is
-+ * anywhere in a module.  See kernel_text_address() for testing if an
-+ * address corresponds to kernel or module code.
-+ */
-+bool is_module_text_address(unsigned long addr)
- {
--	struct module *mod;
-+	bool ret;
- 
- 	preempt_disable();
--	mod = __module_text_address(addr);
-+	ret = __module_text_address(addr) != NULL;
- 	preempt_enable();
- 
-+	return ret;
-+}
-+
-+/*
-+ * __module_text_address - get the module whose code contains an address.
-+ * @addr: the address.
-+ *
-+ * Must be called with preempt disabled or module mutex held so that
-+ * module doesn't get freed during this.
-+ */
-+struct module *__module_text_address(unsigned long addr)
-+{
-+	struct module *mod = __module_address(addr);
-+	if (mod) {
-+		/* Make sure it's within the text section. */
-+		if (!within(addr, mod->module_init, mod->init_text_size)
-+		    && !within(addr, mod->module_core, mod->core_text_size))
-+			mod = NULL;
-+	}
- 	return mod;
- }
-+EXPORT_SYMBOL_GPL(__module_text_address);
- 
- /* Don't grab lock, we're oopsing. */
- void print_modules(void)
-@@ -2775,9 +2818,17 @@ void print_modules(void)
- }
- 
- #ifdef CONFIG_MODVERSIONS
--/* Generate the signature for struct module here, too, for modversions. */
--void struct_module(struct module *mod) { return; }
--EXPORT_SYMBOL(struct_module);
-+/* Generate the signature for all relevant module structures here.
-+ * If these change, we don't want to try to parse the module. */
-+void module_layout(struct module *mod,
-+		   struct modversion_info *ver,
-+		   struct kernel_param *kp,
-+		   struct kernel_symbol *ks,
-+		   struct marker *marker,
-+		   struct tracepoint *tp)
-+{
-+}
-+EXPORT_SYMBOL(module_layout);
- #endif
- 
- #ifdef CONFIG_MARKERS
-diff --git a/kernel/params.c b/kernel/params.c
-index a1e3025..de273ec 100644
---- a/kernel/params.c
-+++ b/kernel/params.c
-@@ -24,6 +24,9 @@
- #include <linux/err.h>
- #include <linux/slab.h>
- 
-+/* We abuse the high bits of "perm" to record whether we kmalloc'ed. */
-+#define KPARAM_KMALLOCED	0x80000000
-+
- #if 0
- #define DEBUGP printk
- #else
-@@ -217,7 +220,19 @@ int param_set_charp(const char *val, struct kernel_param *kp)
- 		return -ENOSPC;
++		break;
  	}
  
--	*(char **)kp->arg = (char *)val;
-+	if (kp->perm & KPARAM_KMALLOCED)
-+		kfree(*(char **)kp->arg);
-+
-+	/* This is a hack.  We can't need to strdup in early boot, and we
-+	 * don't need to; this mangled commandline is preserved. */
-+	if (slab_is_available()) {
-+		kp->perm |= KPARAM_KMALLOCED;
-+		*(char **)kp->arg = kstrdup(val, GFP_KERNEL);
-+		if (!kp->arg)
-+			return -ENOMEM;
-+	} else
-+		*(const char **)kp->arg = val;
-+
- 	return 0;
- }
+ 	/* We didn't handle the trap, so it needs to go to the Guest. */
+diff --git a/drivers/virtio/virtio_ring.c b/drivers/virtio/virtio_ring.c
+index 5777196..5c52369 100644
+--- a/drivers/virtio/virtio_ring.c
++++ b/drivers/virtio/virtio_ring.c
+@@ -23,15 +23,21 @@
  
-@@ -571,6 +586,15 @@ void module_param_sysfs_remove(struct module *mod)
- }
+ #ifdef DEBUG
+ /* For development, we want to crash whenever the ring is screwed. */
+-#define BAD_RING(vq, fmt...)			\
+-	do { dev_err(&vq->vq.vdev->dev, fmt); BUG(); } while(0)
+-#define START_USE(vq) \
+-	do { if ((vq)->in_use) panic("in_use = %i\n", (vq)->in_use); (vq)->in_use = __LINE__; mb(); } while(0)
+-#define END_USE(vq) \
+-	do { BUG_ON(!(vq)->in_use); (vq)->in_use = 0; mb(); } while(0)
++#define BAD_RING(_vq, fmt...)			\
++	do { dev_err(&(_vq)->vq.vdev->dev, fmt); BUG(); } while(0)
++/* Caller is supposed to guarantee no reentry. */
++#define START_USE(_vq)						\
++	do {							\
++		if ((_vq)->in_use)				\
++			panic("in_use = %i\n", (_vq)->in_use);	\
++		(_vq)->in_use = __LINE__;			\
++		mb();						\
++	} while(0)
++#define END_USE(_vq) \
++	do { BUG_ON(!(_vq)->in_use); (_vq)->in_use = 0; mb(); } while(0)
+ #else
+-#define BAD_RING(vq, fmt...)			\
+-	do { dev_err(&vq->vq.vdev->dev, fmt); (vq)->broken = true; } while(0)
++#define BAD_RING(_vq, fmt...)			\
++	do { dev_err(&_vq->vq.vdev->dev, fmt); (_vq)->broken = true; } while(0)
+ #define START_USE(vq)
+ #define END_USE(vq)
  #endif
- 
-+void destroy_params(const struct kernel_param *params, unsigned num)
-+{
-+	unsigned int i;
-+
-+	for (i = 0; i < num; i++)
-+		if (params[i].perm & KPARAM_KMALLOCED)
-+			kfree(*(char **)params[i].arg);
-+}
-+
- static void __init kernel_add_sysfs_param(const char *name,
- 					  struct kernel_param *kparam,
- 					  unsigned int name_skip)
-diff --git a/scripts/mod/modpost.c b/scripts/mod/modpost.c
-index 8892161..164ba2d 100644
---- a/scripts/mod/modpost.c
-+++ b/scripts/mod/modpost.c
-@@ -1604,12 +1604,12 @@ static void read_symbols(char *modname)
- 
- 	parse_elf_finish(&info);
- 
--	/* Our trick to get versioning for struct_module - it's
-+	/* Our trick to get versioning for module struct etc. - it's
- 	 * never passed as an argument to an exported function, so
- 	 * the automatic versioning doesn't pick it up, but it's really
- 	 * important anyhow */
- 	if (modversions)
--		mod->unres = alloc_symbol("struct_module", 0, mod->unres);
-+		mod->unres = alloc_symbol("module_layout", 0, mod->unres);
- }
- 
- #define SZ 500
-
-
