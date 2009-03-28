@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755854AbZC1XV7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761360AbZC1XXU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755854AbZC1XV7 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Mar 2009 19:21:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755016AbZC1XVs
+	id S1761360AbZC1XXU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Mar 2009 19:23:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755364AbZC1XXG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Mar 2009 19:21:48 -0400
-Received: from extu-mxob-2.symantec.com ([216.10.194.135]:35561 "EHLO
-	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752937AbZC1XVr (ORCPT
+	Sat, 28 Mar 2009 19:23:06 -0400
+Received: from extu-mxob-1.symantec.com ([216.10.194.28]:60594 "EHLO
+	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752937AbZC1XXF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Mar 2009 19:21:47 -0400
-Date: Sat, 28 Mar 2009 23:20:19 +0000 (GMT)
+	Sat, 28 Mar 2009 19:23:05 -0400
+Date: Sat, 28 Mar 2009 23:21:27 +0000 (GMT)
 From: Hugh Dickins <hugh@veritas.com>
 X-X-Sender: hugh@blonde.anvils
 To: Al Viro <viro@zeniv.linux.org.uk>
@@ -22,9 +22,9 @@ cc: Linus Torvalds <torvalds@linux-foundation.org>,
        Alexey Dobriyan <adobriyan@gmail.com>, Oleg Nesterov <oleg@redhat.com>,
        Greg Kroah-Hartman <gregkh@suse.de>, linux-fsdevel@vger.kernel.org,
        linux-kernel@vger.kernel.org
-Subject: [PATCH 2/4] fix setuid sometimes doesn't
+Subject: [PATCH 3/4] fix setuid sometimes wouldn't
 In-Reply-To: <Pine.LNX.4.64.0903282307050.14892@blonde.anvils>
-Message-ID: <Pine.LNX.4.64.0903282319270.15432@blonde.anvils>
+Message-ID: <Pine.LNX.4.64.0903282320271.15432@blonde.anvils>
 References: <Pine.LNX.4.64.0903282307050.14892@blonde.anvils>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
@@ -32,96 +32,132 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Joe Malicki reports that setuid sometimes doesn't: very rarely,
-a setuid root program does not get root euid; and, by the way,
-they have a health check running lsof every few minutes.
-
-Right, check_unsafe_exec() notes whether the files_struct is being
+check_unsafe_exec() also notes whether the fs_struct is being
 shared by more threads than will get killed by the exec, and if so
 sets LSM_UNSAFE_SHARE to make bprm_set_creds() careful about euid.
-But /proc/<pid>/fd and /proc/<pid>/fdinfo lookups make transient
-use of get_files_struct(), which also raises that sharing count.
+But /proc/<pid>/cwd and /proc/<pid>/root lookups make transient
+use of get_fs_struct(), which also raises that sharing count.
 
-There's a rather simple fix for this: exec's check on files->count
-has been redundant ever since 2.6.1 made it unshare_files() (except
-while compat_do_execve() omitted to do so) - just remove that check.
+This might occasionally cause a setuid program not to change euid,
+in the same way as happened with files->count (check_unsafe_exec
+also looks at sighand->count, but /proc doesn't raise that one).
 
-[Note to -stable: this patch will not apply before 2.6.29: earlier
-releases should just remove the files->count line from unsafe_exec().]
+We'd prefer exec not to unshare fs_struct: so fix this in procfs,
+replacing get_fs_struct() by get_fs_path(), which does path_get
+while still holding task_lock, instead of raising fs->count.
 
-Reported-by: Joe Malicki <jmalicki@metacarta.com>
-Narrowed-down-by: Michael Itz <mitz@metacarta.com>
-Tested-by: Joe Malicki <jmalicki@metacarta.com>
 Signed-off-by: Hugh Dickins <hugh@veritas.com>
 Cc: stable@kernel.org
----
+___
 
- fs/compat.c   |    2 +-
- fs/exec.c     |   10 +++-------
- fs/internal.h |    2 +-
- 3 files changed, 5 insertions(+), 9 deletions(-)
+ fs/proc/base.c |   50 +++++++++++++++--------------------------------
+ 1 file changed, 16 insertions(+), 34 deletions(-)
 
---- 2.6.29/fs/compat.c	2009-03-23 23:12:14.000000000 +0000
-+++ linux/fs/compat.c	2009-03-28 18:06:02.000000000 +0000
-@@ -1412,7 +1412,7 @@ int compat_do_execve(char * filename,
- 	bprm->cred = prepare_exec_creds();
- 	if (!bprm->cred)
- 		goto out_unlock;
--	check_unsafe_exec(bprm, current->files);
-+	check_unsafe_exec(bprm);
+--- 2.6.29/fs/proc/base.c	2009-03-23 23:12:14.000000000 +0000
++++ linux/fs/proc/base.c	2009-03-28 18:06:02.000000000 +0000
+@@ -146,15 +146,22 @@ static unsigned int pid_entry_count_dirs
+ 	return count;
+ }
  
- 	file = open_exec(filename);
- 	retval = PTR_ERR(file);
---- 2.6.29/fs/exec.c	2009-03-23 23:12:14.000000000 +0000
-+++ linux/fs/exec.c	2009-03-28 18:06:02.000000000 +0000
-@@ -1049,28 +1049,24 @@ EXPORT_SYMBOL(install_exec_creds);
-  * - the caller must hold current->cred_exec_mutex to protect against
-  *   PTRACE_ATTACH
-  */
--void check_unsafe_exec(struct linux_binprm *bprm, struct files_struct *files)
-+void check_unsafe_exec(struct linux_binprm *bprm)
+-static struct fs_struct *get_fs_struct(struct task_struct *task)
++static int get_fs_path(struct task_struct *task, struct path *path, bool root)
  {
- 	struct task_struct *p = current, *t;
- 	unsigned long flags;
--	unsigned n_fs, n_files, n_sighand;
-+	unsigned n_fs, n_sighand;
+ 	struct fs_struct *fs;
++	int result = -ENOENT;
++
+ 	task_lock(task);
+ 	fs = task->fs;
+-	if(fs)
+-		atomic_inc(&fs->count);
++	if (fs) {
++		read_lock(&fs->lock);
++		*path = root ? fs->root : fs->pwd;
++		path_get(path);
++		read_unlock(&fs->lock);
++		result = 0;
++	}
+ 	task_unlock(task);
+-	return fs;
++	return result;
+ }
  
- 	bprm->unsafe = tracehook_unsafe_exec(p);
+ static int get_nr_threads(struct task_struct *tsk)
+@@ -172,42 +179,24 @@ static int get_nr_threads(struct task_st
+ static int proc_cwd_link(struct inode *inode, struct path *path)
+ {
+ 	struct task_struct *task = get_proc_task(inode);
+-	struct fs_struct *fs = NULL;
+ 	int result = -ENOENT;
  
- 	n_fs = 1;
--	n_files = 1;
- 	n_sighand = 1;
- 	lock_task_sighand(p, &flags);
- 	for (t = next_thread(p); t != p; t = next_thread(t)) {
- 		if (t->fs == p->fs)
- 			n_fs++;
--		if (t->files == files)
--			n_files++;
- 		n_sighand++;
+ 	if (task) {
+-		fs = get_fs_struct(task);
++		result = get_fs_path(task, path, 0);
+ 		put_task_struct(task);
+ 	}
+-	if (fs) {
+-		read_lock(&fs->lock);
+-		*path = fs->pwd;
+-		path_get(&fs->pwd);
+-		read_unlock(&fs->lock);
+-		result = 0;
+-		put_fs_struct(fs);
+-	}
+ 	return result;
+ }
+ 
+ static int proc_root_link(struct inode *inode, struct path *path)
+ {
+ 	struct task_struct *task = get_proc_task(inode);
+-	struct fs_struct *fs = NULL;
+ 	int result = -ENOENT;
+ 
+ 	if (task) {
+-		fs = get_fs_struct(task);
++		result = get_fs_path(task, path, 1);
+ 		put_task_struct(task);
+ 	}
+-	if (fs) {
+-		read_lock(&fs->lock);
+-		*path = fs->root;
+-		path_get(&fs->root);
+-		read_unlock(&fs->lock);
+-		result = 0;
+-		put_fs_struct(fs);
+-	}
+ 	return result;
+ }
+ 
+@@ -596,7 +585,6 @@ static int mounts_open_common(struct ino
+ 	struct task_struct *task = get_proc_task(inode);
+ 	struct nsproxy *nsp;
+ 	struct mnt_namespace *ns = NULL;
+-	struct fs_struct *fs = NULL;
+ 	struct path root;
+ 	struct proc_mounts *p;
+ 	int ret = -EINVAL;
+@@ -610,22 +598,16 @@ static int mounts_open_common(struct ino
+ 				get_mnt_ns(ns);
+ 		}
+ 		rcu_read_unlock();
+-		if (ns)
+-			fs = get_fs_struct(task);
++		if (ns && get_fs_path(task, &root, 1) == 0)
++			ret = 0;
+ 		put_task_struct(task);
  	}
  
- 	if (atomic_read(&p->fs->count) > n_fs ||
--	    atomic_read(&p->files->count) > n_files ||
- 	    atomic_read(&p->sighand->count) > n_sighand)
- 		bprm->unsafe |= LSM_UNSAFE_SHARE;
+ 	if (!ns)
+ 		goto err;
+-	if (!fs)
++	if (ret)
+ 		goto err_put_ns;
  
-@@ -1289,7 +1285,7 @@ int do_execve(char * filename,
- 	bprm->cred = prepare_exec_creds();
- 	if (!bprm->cred)
- 		goto out_unlock;
--	check_unsafe_exec(bprm, displaced);
-+	check_unsafe_exec(bprm);
- 
- 	file = open_exec(filename);
- 	retval = PTR_ERR(file);
---- 2.6.29/fs/internal.h	2009-03-23 23:12:14.000000000 +0000
-+++ linux/fs/internal.h	2009-03-28 18:06:02.000000000 +0000
-@@ -43,7 +43,7 @@ extern void __init chrdev_init(void);
- /*
-  * exec.c
-  */
--extern void check_unsafe_exec(struct linux_binprm *, struct files_struct *);
-+extern void check_unsafe_exec(struct linux_binprm *);
- 
- /*
-  * namespace.c
+-	read_lock(&fs->lock);
+-	root = fs->root;
+-	path_get(&root);
+-	read_unlock(&fs->lock);
+-	put_fs_struct(fs);
+-
+ 	ret = -ENOMEM;
+ 	p = kmalloc(sizeof(struct proc_mounts), GFP_KERNEL);
+ 	if (!p)
