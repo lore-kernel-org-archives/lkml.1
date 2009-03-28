@@ -1,61 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755882AbZC1JjP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756045AbZC1Jyz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755882AbZC1JjP (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Mar 2009 05:39:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751707AbZC1Ji4
+	id S1756045AbZC1Jyz (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Mar 2009 05:54:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753440AbZC1Jyq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Mar 2009 05:38:56 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:48314 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751373AbZC1Jiz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Mar 2009 05:38:55 -0400
-To: Heiko Carstens <heiko.carstens@de.ibm.com>
-Cc: Chris Mason <chris.mason@oracle.com>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH] btrfs: fix __ucmpdi2 compile bug on 32 bit builds
-From: Andi Kleen <andi@firstfloor.org>
-References: <20090327134252.0f24773b@osiris.boeblingen.de.ibm.com>
-Date: Sat, 28 Mar 2009 10:38:50 +0100
-In-Reply-To: <20090327134252.0f24773b@osiris.boeblingen.de.ibm.com> (Heiko Carstens's message of "Fri, 27 Mar 2009 13:42:52 +0100")
-Message-ID: <87prg26l79.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/22.3 (gnu/linux)
+	Sat, 28 Mar 2009 05:54:46 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:51693 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753340AbZC1Jyp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Mar 2009 05:54:45 -0400
+Message-ID: <49CDF3CB.8070000@redhat.com>
+Date: Sat, 28 Mar 2009 12:54:19 +0300
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+CC: Nick Piggin <npiggin@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Linux Memory Management List <linux-mm@kvack.org>,
+       the arch/x86 maintainers <x86@kernel.org>
+Subject: Re: [PATCH 1/2] x86/mm: maintain a percpu "in get_user_pages_fast"
+ flag
+References: <49CD37B8.4070109@goop.org> <49CD9E25.2090407@redhat.com> <49CDAF17.5060207@goop.org>
+In-Reply-To: <49CDAF17.5060207@goop.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Heiko Carstens <heiko.carstens@de.ibm.com> writes:
-
-> From: Heiko Carstens <heiko.carstens@de.ibm.com>
+Jeremy Fitzhardinge wrote:
+>>> @@ -255,6 +260,10 @@ int get_user_pages_fast(unsigned long start, 
+>>> int nr_pages, int write,
+>>>      * address down to the the page and take a ref on it.
+>>>      */
+>>>     local_irq_disable();
+>>> +
+>>> +    cpu = smp_processor_id();
+>>> +    cpumask_set_cpu(cpu, in_gup_cpumask);
+>>> +
+>>
+>> This will bounce a cacheline, every time.  Please wrap in CONFIG_XEN 
+>> and skip at runtime if Xen is not enabled.
 >
-> We get this on 32 builds:
->
-> fs/built-in.o: In function `extent_fiemap':
-> (.text+0x1019f2): undefined reference to `__ucmpdi2'
+> Every time?  Only when running successive gup_fasts on different cpus, 
+> and only twice per gup_fast. (What's the typical page count?  I see 
+> that kvm and lguest are page-at-a-time users, but presumably direct IO 
+> has larger batches.)
 
->
-> Happens because of a switch statement with a 64 bit argument.
-> Convert this to an if statement to fix this.
-
-
-To be honest that sounds more like a bug in your architecture.
-
-I don't think it's the right solution to make a new rule
-"you shall not do 64bit switch()", because that's a reasonable
-thing to do and will be hard to enforce over millions of lines
-of random Linux code.
-
-There was a explicit decision to not support implicit 64bit 
-divides on 32bit because they're very costly, but that doesn't
-really apply to 64bit switch(). At least they shouldn't be very costly
-in theory. It seems indeed weird to call a function to compare
-a 64bit value. I bet the call sequence is larger than just 
-doing two cmps. Perhaps your gcc should be fixed? Or alternatively
-at least that function be added to the kernel runtime library.
-
--Andi
+Databases will often issue I/Os of 1 or 2 pages.  But not regressing kvm 
+should be sufficient motivation.
 
 
-ak@linux.intel.com -- Speaking for myself only.
+-- 
+I have a truly marvellous patch that fixes the bug which this
+signature is too narrow to contain.
+
