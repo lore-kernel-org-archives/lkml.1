@@ -1,113 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757165AbZC2CFm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759845AbZC2CF7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757165AbZC2CFm (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Mar 2009 22:05:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756871AbZC2CEL
+	id S1759845AbZC2CF7 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Mar 2009 22:05:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755964AbZC2CEM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Mar 2009 22:04:11 -0400
-Received: from ozlabs.org ([203.10.76.45]:46564 "EHLO ozlabs.org"
+	Sat, 28 Mar 2009 22:04:12 -0400
+Received: from ozlabs.org ([203.10.76.45]:46567 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753774AbZC2CEG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1753966AbZC2CEG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Sat, 28 Mar 2009 22:04:06 -0400
 To: linux-kernel@vger.kernel.org
 From: Rusty Russell <rusty@rustcorp.com.au>
 Date: Sun, 29 Mar 2009 00:25:52 +1030
-Subject: [PATCH 1/10] cpumask: remove dangerous CPU_MASK_ALL_PTR, &CPU_MASK_ALL
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Al Viro <viro@zeniv.linux.org.uk>
-Cc: Mike Travis <travis@sgi.com>
-Message-Id: <20090329020404.1B0A4DDECA@ozlabs.org>
+Subject: [PATCH 8/10] cpumask: convert rcutorture.c
+Cc: "Paul E. McKenney" <paulmck@us.ibm.com>
+Cc: Josh Triplett <josh@freedesktop.org>
+Message-Id: <20090329020404.9D073DDECF@ozlabs.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Impact: cleanup
+We're getting rid of cpumasks on the stack.
 
-(Thanks to Al Viro for reminding me of this, via Ingo)
-
-CPU_MASK_ALL is the (deprecated) "all bits set" cpumask, defined as so:
-
-	#define CPU_MASK_ALL (cpumask_t) { { ... } }
-
-Taking the address of such a temporary is questionable at best,
-unfortunately 321a8e9d (cpumask: add CPU_MASK_ALL_PTR macro) added
-CPU_MASK_ALL_PTR:
-
-	#define CPU_MASK_ALL_PTR (&CPU_MASK_ALL)
-
-Which formalizes this practice.  One day gcc could bite us over this
-usage (though we seem to have gotten away with it so far).
-
-So replace everywhere which used &CPU_MASK_ALL or CPU_MASK_ALL_PTR
-with the modern "cpu_all_mask" (a real const struct cpumask *).
+Simply change tmp_mask to a global, and allocate it in
+rcu_torture_init().
 
 Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
-Acked-by: Ingo Molnar <mingo@elte.hu>
-Reported-by: Al Viro <viro@zeniv.linux.org.uk>
-Cc: Mike Travis <travis@sgi.com>
+Cc: "Paul E. McKenney" <paulmck@us.ibm.com>
+Cc: Josh Triplett <josh@freedesktop.org>
 ---
- init/main.c      |    2 +-
- kernel/kmod.c    |    2 +-
- kernel/kthread.c |    4 ++--
- mm/pdflush.c     |    2 +-
- 4 files changed, 5 insertions(+), 5 deletions(-)
+ kernel/rcutorture.c |   25 +++++++++++++++++--------
+ 1 file changed, 17 insertions(+), 8 deletions(-)
 
-diff --git a/init/main.c b/init/main.c
---- a/init/main.c
-+++ b/init/main.c
-@@ -834,7 +829,7 @@ static int __init kernel_init(void * unu
- 	/*
- 	 * init can run on any cpu.
- 	 */
--	set_cpus_allowed_ptr(current, CPU_MASK_ALL_PTR);
-+	set_cpus_allowed_ptr(current, cpu_all_mask);
- 	/*
- 	 * Tell the world that we're going to be the grim
- 	 * reaper of innocent orphaned children.
-diff --git a/kernel/kmod.c b/kernel/kmod.c
---- a/kernel/kmod.c
-+++ b/kernel/kmod.c
-@@ -167,7 +167,7 @@ static int ____call_usermodehelper(void 
+diff --git a/kernel/rcutorture.c b/kernel/rcutorture.c
+--- a/kernel/rcutorture.c
++++ b/kernel/rcutorture.c
+@@ -126,6 +126,7 @@ static atomic_t n_rcu_torture_error;
+ static atomic_t n_rcu_torture_error;
+ static long n_rcu_torture_timers = 0;
+ static struct list_head rcu_torture_removed;
++static cpumask_var_t shuffle_tmp_mask;
+ 
+ static int stutter_pause_test = 0;
+ 
+@@ -889,10 +890,9 @@ static int rcu_idle_cpu;	/* Force all to
+  */
+ static void rcu_torture_shuffle_tasks(void)
+ {
+-	cpumask_t tmp_mask;
+ 	int i;
+ 
+-	cpus_setall(tmp_mask);
++	cpumask_setall(shuffle_tmp_mask);
+ 	get_online_cpus();
+ 
+ 	/* No point in shuffling if there is only one online CPU (ex: UP) */
+@@ -902,29 +902,29 @@ static void rcu_torture_shuffle_tasks(vo
  	}
  
- 	/* We can run anywhere, unlike our parent keventd(). */
--	set_cpus_allowed_ptr(current, CPU_MASK_ALL_PTR);
-+	set_cpus_allowed_ptr(current, cpu_all_mask);
+ 	if (rcu_idle_cpu != -1)
+-		cpu_clear(rcu_idle_cpu, tmp_mask);
++		cpumask_clear_cpu(rcu_idle_cpu, shuffle_tmp_mask);
  
- 	/*
- 	 * Our parent is keventd, which runs with elevated scheduling priority.
-diff --git a/kernel/kthread.c b/kernel/kthread.c
---- a/kernel/kthread.c
-+++ b/kernel/kthread.c
-@@ -110,7 +110,7 @@ static void create_kthread(struct kthrea
- 		 */
- 		sched_setscheduler(create->result, SCHED_NORMAL, &param);
- 		set_user_nice(create->result, KTHREAD_NICE_LEVEL);
--		set_cpus_allowed_ptr(create->result, CPU_MASK_ALL_PTR);
-+		set_cpus_allowed_ptr(create->result, cpu_all_mask);
+-	set_cpus_allowed_ptr(current, &tmp_mask);
++	set_cpus_allowed_ptr(current, shuffle_tmp_mask);
+ 
+ 	if (reader_tasks) {
+ 		for (i = 0; i < nrealreaders; i++)
+ 			if (reader_tasks[i])
+ 				set_cpus_allowed_ptr(reader_tasks[i],
+-						     &tmp_mask);
++						     shuffle_tmp_mask);
  	}
- 	complete(&create->done);
- }
-@@ -240,7 +240,7 @@ int kthreadd(void *unused)
- 	set_task_comm(tsk, "kthreadd");
- 	ignore_signals(tsk);
- 	set_user_nice(tsk, KTHREAD_NICE_LEVEL);
--	set_cpus_allowed_ptr(tsk, CPU_MASK_ALL_PTR);
-+	set_cpus_allowed_ptr(tsk, cpu_all_mask);
  
- 	current->flags |= PF_NOFREEZE | PF_FREEZER_NOSIG;
+ 	if (fakewriter_tasks) {
+ 		for (i = 0; i < nfakewriters; i++)
+ 			if (fakewriter_tasks[i])
+ 				set_cpus_allowed_ptr(fakewriter_tasks[i],
+-						     &tmp_mask);
++						     shuffle_tmp_mask);
+ 	}
  
-diff --git a/mm/pdflush.c b/mm/pdflush.c
---- a/mm/pdflush.c
-+++ b/mm/pdflush.c
-@@ -191,7 +191,7 @@ static int pdflush(void *dummy)
+ 	if (writer_task)
+-		set_cpus_allowed_ptr(writer_task, &tmp_mask);
++		set_cpus_allowed_ptr(writer_task, shuffle_tmp_mask);
  
- 	/*
- 	 * Some configs put our parent kthread in a limited cpuset,
--	 * which kthread() overrides, forcing cpus_allowed == CPU_MASK_ALL.
-+	 * which kthread() overrides, forcing cpus_allowed == cpu_all_mask.
- 	 * Our needs are more modest - cut back to our cpusets cpus_allowed.
- 	 * This is needed as pdflush's are dynamically created and destroyed.
- 	 * The boottime pdflush's are easily placed w/o these 2 lines.
+ 	if (stats_task)
+-		set_cpus_allowed_ptr(stats_task, &tmp_mask);
++		set_cpus_allowed_ptr(stats_task, shuffle_tmp_mask);
+ 
+ 	if (rcu_idle_cpu == -1)
+ 		rcu_idle_cpu = num_online_cpus() - 1;
+@@ -1012,6 +1012,7 @@ rcu_torture_cleanup(void)
+ 	if (shuffler_task) {
+ 		VERBOSE_PRINTK_STRING("Stopping rcu_torture_shuffle task");
+ 		kthread_stop(shuffler_task);
++		free_cpumask_var(shuffle_tmp_mask);
+ 	}
+ 	shuffler_task = NULL;
+ 
+@@ -1190,10 +1191,18 @@ rcu_torture_init(void)
+ 	}
+ 	if (test_no_idle_hz) {
+ 		rcu_idle_cpu = num_online_cpus() - 1;
++
++		if (!alloc_cpumask_var(&shuffle_tmp_mask, GFP_KERNEL)) {
++			firsterr = -ENOMEM;
++			VERBOSE_PRINTK_ERRSTRING("Failed to alloc mask");
++			goto unwind;
++		}
++
+ 		/* Create the shuffler thread */
+ 		shuffler_task = kthread_run(rcu_torture_shuffle, NULL,
+ 					  "rcu_torture_shuffle");
+ 		if (IS_ERR(shuffler_task)) {
++			free_cpumask_var(shuffle_tmp_mask);
+ 			firsterr = PTR_ERR(shuffler_task);
+ 			VERBOSE_PRINTK_ERRSTRING("Failed to create shuffler");
+ 			shuffler_task = NULL;
 
