@@ -1,61 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754656AbZC1N4l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754503AbZC1OBU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754656AbZC1N4l (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Mar 2009 09:56:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753024AbZC1N4c
+	id S1754503AbZC1OBU (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Mar 2009 10:01:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754006AbZC1OBJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Mar 2009 09:56:32 -0400
-Received: from vena.lwn.net ([206.168.112.25]:58987 "EHLO vena.lwn.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753134AbZC1N4c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Mar 2009 09:56:32 -0400
-Date: Sat, 28 Mar 2009 07:56:28 -0600
-From: Jonathan Corbet <corbet@lwn.net>
-To: Markus Trippelsdorf <markus@trippelsdorf.de>
-Cc: Ilpo =?ISO-8859-1?B?SuRydmluZW4=?= <ilpo.jarvinen@helsinki.fi>,
-       Netdev <netdev@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: WARNING: at net/ipv4/tcp_input.c:2927 tcp_ack+0xd55/0x1991()
-Message-ID: <20090328075628.3565eb39@bike.lwn.net>
-In-Reply-To: <20090328095514.GA2599@gentoox2.trippelsdorf.de>
-References: <20090327211202.GA10014@gentoox2.trippelsdorf.de>
-	<Pine.LNX.4.64.0903280031080.5904@wrl-59.cs.helsinki.fi>
-	<20090328045056.GA2394@gentoox2.trippelsdorf.de>
-	<Pine.LNX.4.64.0903280930440.6696@wrl-59.cs.helsinki.fi>
-	<20090328095514.GA2599@gentoox2.trippelsdorf.de>
-Organization: LWN.net
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.15.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8bit
+	Sat, 28 Mar 2009 10:01:09 -0400
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:46239 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753948AbZC1OBI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Mar 2009 10:01:08 -0400
+Date: Sat, 28 Mar 2009 14:00:49 +0000
+From: Russell King <rmk@arm.linux.org.uk>
+To: Greg Kroah-Hartman <gregkh@suse.de>, Ming Lei <tom.leiming@gmail.com>
+Cc: Linux Kernel List <linux-kernel@vger.kernel.org>
+Subject: Commit 7a192ec is build breaking
+Message-ID: <20090328140049.GA4344@flint.arm.linux.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 28 Mar 2009 10:55:14 +0100
-Markus Trippelsdorf <markus@trippelsdorf.de> wrote:
+The commit:
 
-> Yes, you might be right, because running with CONFIG_PROVE_LOCKING and 
-> CONFIG_DETECT_SOFTLOCKUP enabled points to a possible bug in the BKL
-> removal patches (fasync) by Jonathan Corbet. (I wasn't able so far to
-> reproduce the original WARNING.)
-> 
-> Here is one example:
-> 
-> =========================================================
-> [ INFO: possible irq lock inversion dependency detected ]
-> 2.6.29-03321-gbe0ea69 #7
-> ---------------------------------------------------------
-> swapper/0 just changed the state of lock:
->  (fasync_lock){..+.}, at: [<ffffffff8028a2ac>] kill_fasync+0x24/0x45
-> but this lock took another, hard-irq-unsafe lock in the past:
->  (&f->f_lock){--..}
+    platform driver: fix incorrect use of 'platform_bus_type' with 'struct device_driver'
 
-That's not a bug; f_lock will never be taken in IRQ mode.  There's a
-fix for the warning in linux-next now; my plan is to get it upstream
-before -rc1.
+contains this:
 
-Thanks,
+-static int __exit pxa2xx_flash_remove(struct device *dev)
++static int __exit pxa2xx_flash_remove(struct platform_device *dev)
+...
+-       .remove         = __exit_p(pxa2xx_flash_remove),
++       .remove         = __devexit_p(pxa2xx_flash_remove),
 
-jon
+which leads to the following build error:
 
-Jonathan Corbet / LWN.net / corbet@lwn.net
+`pxa2xx_flash_remove' referenced in section `.data' of drivers/built-in.o: defined in discarded section `.exit.text' of drivers/built-in.o
+
+This is not the only instance of it in this patch - all __exit_p's
+touched by this patch have been converted to __devexit_p's without
+regard to the original function.
+
+Let's revert this change and, if we are going to convert functions
+to be __devexit/__devinit, lets have that as a _separate_ patch doing
+just that change.
+
+Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
+---
+ arch/mips/basler/excite/excite_iodev.c |    2 +-
+ drivers/mtd/maps/pxa2xx-flash.c        |    2 +-
+ drivers/mtd/nand/excite_nandflash.c    |    3 +--
+ 3 files changed, 3 insertions(+), 4 deletions(-)
+
+diff --git a/arch/mips/basler/excite/excite_iodev.c b/arch/mips/basler/excite/excite_iodev.c
+index dfbfd7e..2ab56ea 100644
+--- a/arch/mips/basler/excite/excite_iodev.c
++++ b/arch/mips/basler/excite/excite_iodev.c
+@@ -71,7 +71,7 @@ static struct platform_driver iodev_driver = {
+ 		.owner		= THIS_MODULE,
+ 	},
+ 	.probe		= iodev_probe,
+-	.remove		= __devexit_p(iodev_remove),
++	.remove		= __exit_p(iodev_remove),
+ };
+ 
+ 
+diff --git a/drivers/mtd/maps/pxa2xx-flash.c b/drivers/mtd/maps/pxa2xx-flash.c
+index e9026cb..bf933a9 100644
+--- a/drivers/mtd/maps/pxa2xx-flash.c
++++ b/drivers/mtd/maps/pxa2xx-flash.c
+@@ -177,7 +177,7 @@ static struct platform_driver pxa2xx_flash_driver = {
+ 		.owner		= THIS_MODULE,
+ 	},
+ 	.probe		= pxa2xx_flash_probe,
+-	.remove		= __devexit_p(pxa2xx_flash_remove),
++	.remove		= __exit_p(pxa2xx_flash_remove),
+ 	.suspend	= pxa2xx_flash_suspend,
+ 	.resume		= pxa2xx_flash_resume,
+ 	.shutdown	= pxa2xx_flash_shutdown,
+diff --git a/drivers/mtd/nand/excite_nandflash.c b/drivers/mtd/nand/excite_nandflash.c
+index 72446fb..630b4d6 100644
+--- a/drivers/mtd/nand/excite_nandflash.c
++++ b/drivers/mtd/nand/excite_nandflash.c
+@@ -224,7 +224,7 @@ static struct platform_driver excite_nand_driver = {
+ 		.owner		= THIS_MODULE,
+ 	},
+ 	.probe = excite_nand_probe,
+-	.remove = __devexit_p(excite_nand_remove)
++	.remove = __exit_p(excite_nand_remove)
+ };
+ 
+ static int __init excite_nand_init(void)
+
+
+-- 
+Russell King
