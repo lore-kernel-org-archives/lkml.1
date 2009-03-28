@@ -1,52 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757433AbZC1Nbe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757691AbZC1Ns2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757433AbZC1Nbe (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Mar 2009 09:31:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752741AbZC1NbZ
+	id S1757691AbZC1Ns2 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Mar 2009 09:48:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751558AbZC1NsU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Mar 2009 09:31:25 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:42015 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751558AbZC1NbZ (ORCPT
+	Sat, 28 Mar 2009 09:48:20 -0400
+Received: from mail-bw0-f169.google.com ([209.85.218.169]:41870 "EHLO
+	mail-bw0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751424AbZC1NsT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Mar 2009 09:31:25 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <49CE2633.2000903@s5r6.in-berlin.de>
-Date: Sat, 28 Mar 2009 14:29:23 +0100
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.21) Gecko/20090323 SeaMonkey/1.1.15
+	Sat, 28 Mar 2009 09:48:19 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:message-id;
+        b=AkXTg8fvfKpv+3lAwteUK3jOVd/DIbl6OuFLv/CZ6W5UR0mi9QTPRePemgTLDbA6pb
+         6Rop0KAg+sa0ci1wpDRLh2hy7TY6Q0iIs9Z48lMb/qdTHOzoadJ0brs8JTHg/+Hxr+Pc
+         mYdNJ0lg8yRCOnF1fbOAQg4L8mGcltRmknw78=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Jonathan Corbet <corbet@lwn.net>
+Subject: Re: Possible IRQ lock inversion from 2.6.29-Linus-03321-gbe0ea69 (2.6.29-git)
+Date: Sat, 28 Mar 2009 14:36:09 +0100
+User-Agent: KMail/1.11.1 (Linux/2.6.29-next-20090327-dirty; KDE/4.2.1; i686; ; )
+Cc: Larry Finger <Larry.Finger@lwfinger.net>,
+       LKML <linux-kernel@vger.kernel.org>, Christoph Hellwig <hch@lst.de>,
+       Al Viro <viro@zeniv.linux.org.uk>, Li Zefan <lizf@cn.fujitsu.com>,
+       Wu Fengguang <fengguang.wu@intel.com>, Ingo Molnar <mingo@elte.hu>
+References: <49CC5F15.4020404@lwfinger.net> <200903271354.45480.bzolnier@gmail.com> <20090327120623.3056c795@bike.lwn.net>
+In-Reply-To: <20090327120623.3056c795@bike.lwn.net>
 MIME-Version: 1.0
-To: Jeff Garzik <jeff@garzik.org>
-CC: Mark Lord <lkml@rtr.ca>, Linus Torvalds <torvalds@linux-foundation.org>,
-       Matthew Garrett <mjg59@srcf.ucam.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Theodore Tso <tytso@mit.edu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Rees <drees76@gmail.com>, Jesper Krogh <jesper@krogh.cc>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.29
-References: <20090327051338.GP6239@mit.edu> <20090327055750.GA18065@srcf.ucam.org> <20090327062114.GA18290@srcf.ucam.org> <20090327112438.GQ6239@mit.edu> <20090327145156.GB24819@srcf.ucam.org> <20090327150811.09b313f5@lxorguk.ukuu.org.uk> <20090327152221.GA25234@srcf.ucam.org> <20090327161553.31436545@lxorguk.ukuu.org.uk> <20090327162841.GA26860@srcf.ucam.org> <20090327165150.7e69d9e1@lxorguk.ukuu.org.uk> <20090327170208.GA27646@srcf.ucam.org> <alpine.LFD.2.00.0903271032090.3994@localhost.localdomain> <49CD2C47.4040300@garzik.org> <alpine.LFD.2.00.0903271443440.3994@localhost.localdomain> <49CD4DDF.3000001@garzik.org> <alpine.LFD.2.00.0903271511230.3994@localhost.localdomain> <alpine.LFD.2.00.0903271522210.3994@localhost.localdomain> <49CD7B10.7010601@garzik.org> <49CD891A.7030103@rtr.ca> <49CD9047.4060500@garzik.org>
-In-Reply-To: <49CD9047.4060500@garzik.org>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200903281436.20086.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Garzik wrote:
-> Mark Lord wrote:
-[store browser session]
->> fsync() isn't going to affect that one way or another
->> unless the entire kernel freezes and dies.
+On Friday 27 March 2009, Jonathan Corbet wrote:
+> On Fri, 27 Mar 2009 13:54:35 +0100
+> Bartlomiej Zolnierkiewicz <bzolnier@gmail.com> wrote:
 > 
->  ...which is one of the three common crash scenarios listed (and
-> experienced in the field).
+> > I remember looking a bit more closely into the issue and not seeing
+> > the problem with the locking (though I could have missed something):
+> > 
+> > file->f_lock is never taken in hard-irq or soft-irq context and in
+> > the only place where file->f_lock is taken with fasync_lock hold we're
+> > protected against IRQs by write_lock_irq().
+> 
+> I do think that the warning is spurious at this time.
+> 
+> > [ Despite not being a problem now I think that changing spin_[un]lock()
+> >   to *_irq() variants for file->f_lock could be (given that it really
+> >   fixes the warning) more viable long-term solution than adding special
+> >   lockdep handling (well, it could be that one day file->f_lock is used
+> >   in soft-irq context and then the irq lock inversion issue will become
+> >   a real one) and shouldn't incurr performance penalty since we hold it
+> >   only for a very brief time. ]
+> 
+> We could do that.  When I made the change I'd verified that there were
+> no users in IRQ context, and I couldn't really see why there should
+> be.  I'd rather avoid adding all those IRQ disables if I can avoid it.
+> 
+> How about, instead, just reversing the order of lock acquisition in
+> fasync_helper()?  That would increase the hold time for f_lock, but I
+> have a hard time seeing that being a real problem.  I'm running with
+> the following now; all seems well.  I'll send it up in a bit if nobody
+> gripes.
 
-To get work done which one really cares about, one can always choose a
-system which does not crash frequently.  Those who run unstable drivers
-for thrills surely do it on boxes on which nothing important is being
-done, one would think.
--- 
-Stefan Richter
--=====-=-=== -=-= -==-=
-http://arcgraph.de/sr/
+This is even better and works just fine here.
+
+Thanks,
+Bart
