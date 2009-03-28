@@ -1,45 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761595AbZC1BbM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762589AbZC1Bbb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761595AbZC1BbM (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Mar 2009 21:31:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752985AbZC1Bat
+	id S1762589AbZC1Bbb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Mar 2009 21:31:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760181AbZC1BbD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Mar 2009 21:30:49 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:34291
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752778AbZC1Bas (ORCPT
+	Fri, 27 Mar 2009 21:31:03 -0400
+Received: from vms173005pub.verizon.net ([206.46.173.5]:26677 "EHLO
+	vms173005pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757500AbZC1BbA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Mar 2009 21:30:48 -0400
-Date: Fri, 27 Mar 2009 18:30:36 -0700 (PDT)
-Message-Id: <20090327.183036.252488936.davem@davemloft.net>
-To: jeff@garzik.org
-Cc: torvalds@linux-foundation.org, mjg59@srcf.ucam.org,
-       alan@lxorguk.ukuu.org.uk, tytso@mit.edu, akpm@linux-foundation.org,
-       drees76@gmail.com, jesper@krogh.cc, linux-kernel@vger.kernel.org
-Subject: Re: Linux 2.6.29
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <49CD7B10.7010601@garzik.org>
-References: <alpine.LFD.2.00.0903271511230.3994@localhost.localdomain>
-	<alpine.LFD.2.00.0903271522210.3994@localhost.localdomain>
-	<49CD7B10.7010601@garzik.org>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Fri, 27 Mar 2009 21:31:00 -0400
+Date: Fri, 27 Mar 2009 21:30:53 -0400 (EDT)
+From: Len Brown <lenb@kernel.org>
+X-X-Sender: lenb@localhost.localdomain
+To: Matthew Garrett <mjg@redhat.com>
+Cc: linux-acpi@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] ACPI: make some IO ports off-limits to AML
+In-reply-to: <20090204061505.GD28321@srcf.ucam.org>
+Message-id: <alpine.LFD.2.00.0903272127350.26419@localhost.localdomain>
+References: <alpine.LFD.2.00.0902032258080.5607@localhost.localdomain>
+ <20090204061505.GD28321@srcf.ucam.org>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-version: 1.0
+Content-type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jeff Garzik <jeff@garzik.org>
-Date: Fri, 27 Mar 2009 21:19:12 -0400
+On Wed, 4 Feb 2009, Matthew Garrett wrote:
 
-> As an aside, I find it highly ironic that Firefox gained useful
-> session management around the same time that some GNOME jarhead
-> no-op'd GNOME session management[1] in X.
+> On Tue, Feb 03, 2009 at 10:59:43PM -0500, Len Brown wrote:
+> 
+> > Start using this interface to prevent AML from accessing
+> > some well known IO addresses that the OS "owns".
+> 
+> It might be nice to extend this to cover the other ports listed at 
+> http://www.microsoft.com/whdc/archive/BIOSAML.mspx if (and only if) the 
+> firmware requested _OSI("Windows 2001") or later.
 
-Great, now all the KDE boo-birds might have to switch back,
-or even go to xfce4.
+Right.  We reverted this initialization-time check for 2.6.29
+b/c it had false positives of opregions that were never used.
 
-If KDE and GNOME both make a bad release at the same time,
-then we'll really be in trouble. :-)
+For 2.6.30 we replaced it with a run-time check, and the check
+follows the compatibility rules referenced above.
+
+http://git.kernel.org/?p=linux/kernel/git/lenb/linux-acpi-2.6.git;a=commitdiff;h=7f0719039085cc40114abce84cf29fe57da226f4
+
+cheers,
+Len Brown, Intel Open Source Technology Center
 
