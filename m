@@ -1,55 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755924AbZC1TCA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753449AbZC1TMn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755924AbZC1TCA (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Mar 2009 15:02:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753449AbZC1TBv
+	id S1753449AbZC1TMn (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Mar 2009 15:12:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753291AbZC1TM1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Mar 2009 15:01:51 -0400
-Received: from pfepb.post.tele.dk ([195.41.46.236]:35691 "EHLO
-	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753291AbZC1TBu (ORCPT
+	Sat, 28 Mar 2009 15:12:27 -0400
+Received: from mail-fx0-f158.google.com ([209.85.220.158]:32929 "EHLO
+	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752974AbZC1TM0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Mar 2009 15:01:50 -0400
-Date: Sat, 28 Mar 2009 20:03:50 +0100
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Alexey Dobriyan <adobriyan@gmail.com>
-Cc: Jaswinder Singh Rajput <jaswinder@kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [git-pull -tip] x86: include inverse Xmas tree patches
-Message-ID: <20090328190350.GA30214@uranus.ravnborg.org>
-References: <1238251730.2526.2.camel@ht.satnam> <20090328150746.GA3268@x200.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090328150746.GA3268@x200.localdomain>
-User-Agent: Mutt/1.4.2.1i
+	Sat, 28 Mar 2009 15:12:26 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=V8/qMTx3G1jgcgufGubgn7KL5vHDudXRCtWnKuMC8ZyUN6/oaO/tuGMDt78XrXOXdt
+         uh2O+8GYImj2cYEDFpKKcFVM8f5Emp5z0i2p666dMfOYKzhmjhYbayJjK8LdHWytg69v
+         HcIEwTveDJHySmp3U6sbOsFyb6TM/FY7Zl9U8=
+Message-ID: <49CE7688.2020501@gmail.com>
+Date: Sat, 28 Mar 2009 20:12:08 +0100
+From: Marcin Slusarz <marcin.slusarz@gmail.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090302)
+MIME-Version: 1.0
+To: Dan Carpenter <error27@gmail.com>
+CC: LKML <linux-kernel@vger.kernel.org>, eteo@redhat.com,
+       linux-usb@vger.kernel.org, netdev@vger.kernel.org,
+       linux-media@vger.kernel.org, general@lists.openfabrics.org
+Subject: Re: Dereferencing freed memory bugs
+References: <a63d67fe0903240529v6a0e6b51pf67f8ad6dd6842c4@mail.gmail.com>
+In-Reply-To: <a63d67fe0903240529v6a0e6b51pf67f8ad6dd6842c4@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Mar 28, 2009 at 06:07:46PM +0300, Alexey Dobriyan wrote:
-> On Sat, Mar 28, 2009 at 08:18:50PM +0530, Jaswinder Singh Rajput wrote:
-> > The following changes since commit 29219683c46cb89edf5c58418b5305b14646d030:
-> >   Ingo Molnar (1):
-> >         Merge branches 'x86/apic', 'x86/cleanups', 'x86/mm', 'x86/pat', 'x86/setup' and 'x86/signal'; commit 'v2.6.29' into x86/core
-> > 
-> > are available in the git repository at:
-> > 
-> >   git://git.kernel.org/pub/scm/linux/kernel/git/jaswinder/linux-2.6-Xmas.git x86/core
-> > 
-> > Jaswinder Singh Rajput (49):
-> >       x86: process_32.c include inverse Xmas tree effect
+Dan Carpenter wrote:
+> I added a check to smatch (http://repo.or.cz/w/smatch.git/) to check
+> for when we dereference
+> freed memory.
 > 
-> What the heck is this?
+> drivers/dma/dmatest.c +410 dmatest_exit(7) 'dtc'
+> drivers/dma/dmatest.c +412 dmatest_exit(9) 'dtc'
 
-Ordering include based on length of line minimize the
-risk of merge conflicts.
-If people just add new includes in the bottom of the list you
-are certain that a merge conflit happens.
+Seems to be fixed by 7cbd4877e5b167b56a3d6033b926a9f925186e12:
+dmatest: fix use after free in dmatest_exit
 
-This scheme is starting to be used in several places with the
-primary advocates being David Miller and Ingo.
+> drivers/infiniband/hw/nes/nes_cm.c +563 nes_cm_timer_tick(121) 'cm_node'
+> drivers/infiniband/hw/nes/nes_cm.c +621 nes_cm_timer_tick(179) 'cm_node'
+> (...)
+> drivers/usb/host/ehci-hcd.c +1661 itd_complete(79) 'stream'
+> drivers/usb/host/ehci-hcd.c +2036 sitd_complete(64) 'stream'
+> drivers/uwb/reset.c +193 __uwb_rc_cmd(26) 'cmd'
+> (...)
+> net/netfilter/xt_recent.c +273 recent_mt(69) 'e'
+> (...)
+> drivers/media/video/cpia_pp.c +777 cpia_pp_detach(28) 'cpia'
+> (...)
 
-It is getting used both for includes _and_ for local variables.
+These are less obvious.
 
-	Sam
+Adding CCs.
+Please leave only one of openfabrics/linux-usb/netdev/linux-media in CCs
+when responding.
+
+ps: [s]itd_complete is in drivers/usb/host/ehci-sched.c
