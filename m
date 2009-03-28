@@ -1,50 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757138AbZC1A2L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760128AbZC1Ac0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757138AbZC1A2L (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Mar 2009 20:28:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755279AbZC1A14
+	id S1760128AbZC1Ac0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Mar 2009 20:32:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751966AbZC1AcS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Mar 2009 20:27:56 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:41561
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1753777AbZC1A1z (ORCPT
+	Fri, 27 Mar 2009 20:32:18 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:53311 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751137AbZC1AcR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Mar 2009 20:27:55 -0400
-Date: Fri, 27 Mar 2009 17:27:43 -0700 (PDT)
-Message-Id: <20090327.172743.30040617.davem@davemloft.net>
-To: kay.sievers@vrfy.org
-Cc: greg@kroah.com, linux-kernel@vger.kernel.org
-Subject: Re: sparc: struct device - replace bus_id with dev_name(),
- dev_set_name()
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <ac3eb2510903270521i113df787u7ac5d842ece83740@mail.gmail.com>
-References: <ac3eb2510811070033m108d8ed5t499c20ee02b2618f@mail.gmail.com>
-	<20081107.013833.147302570.davem@davemloft.net>
-	<ac3eb2510903270521i113df787u7ac5d842ece83740@mail.gmail.com>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Fri, 27 Mar 2009 20:32:17 -0400
+Subject: Re: Possible IRQ lock inversion from 2.6.29-Linus-03321-gbe0ea69
+ (2.6.29-git)
+From: Peter Zijlstra <peterz@infradead.org>
+To: Jonathan Corbet <corbet@lwn.net>
+Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Larry Finger <Larry.Finger@lwfinger.net>,
+       LKML <linux-kernel@vger.kernel.org>, Christoph Hellwig <hch@lst.de>,
+       Al Viro <viro@zeniv.linux.org.uk>, Li Zefan <lizf@cn.fujitsu.com>,
+       Wu Fengguang <fengguang.wu@intel.com>, Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <20090327120623.3056c795@bike.lwn.net>
+References: <49CC5F15.4020404@lwfinger.net>
+	 <200903271354.45480.bzolnier@gmail.com>
+	 <20090327120623.3056c795@bike.lwn.net>
+Content-Type: text/plain
+Date: Sat, 28 Mar 2009 01:32:01 +0100
+Message-Id: <1238200321.4039.371.camel@laptop>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+X-Mailer: Evolution 2.26.0 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Kay Sievers <kay.sievers@vrfy.org>
-Date: Fri, 27 Mar 2009 13:21:56 +0100
+On Fri, 2009-03-27 at 12:06 -0600, Jonathan Corbet wrote:
+> On Fri, 27 Mar 2009 13:54:35 +0100
+> Bartlomiej Zolnierkiewicz <bzolnier@gmail.com> wrote:
+> 
+> > I remember looking a bit more closely into the issue and not seeing
+> > the problem with the locking (though I could have missed something):
+> > 
+> > file->f_lock is never taken in hard-irq or soft-irq context and in
+> > the only place where file->f_lock is taken with fasync_lock hold we're
+> > protected against IRQs by write_lock_irq().
+> 
+> I do think that the warning is spurious at this time.
 
-> it took a while, but it happened now, so this issue is coming back. :)
-> 
-> The name size limit is gone, there is no BUS_ID_SIZE thing anymore in
-> the driver core. BUS_ID_SIZE should go away in the 2.6.30 timeframe.
-> 
-> Could you please convert/remove BUS_ID_SIZE value from:
->   drivers/net/gianfar.h:	char	phy_bus_id[BUS_ID_SIZE];
->   drivers/net/ucc_geth.h:	char phy_bus_id[BUS_ID_SIZE];
->   drivers/net/pasemi_mac.h:	char	phy_id[BUS_ID_SIZE];
->   include/linux/phy.h:#define MII_BUS_ID_SIZE	(BUS_ID_SIZE - 3)
->   include/linux/phy.h:	char bus_id[BUS_ID_SIZE];
-> 
-> Or let me know how you want to convert it, so I can do it?
+I think you're right (although at 1:30 am I can't be sure).
 
-Thanks a lot Kay, I'll look into these cases and take care
-of it.
+It does point to inconsistent (sloppy) lock usage though, because f_lock
+is used both with and without irqs disabled -- so on that ground its
+correct to complain.
+
+> diff --git a/fs/fcntl.c b/fs/fcntl.c
+> index d865ca6..b9c1a4b 100644
+> --- a/fs/fcntl.c
+> +++ b/fs/fcntl.c
+> @@ -531,6 +531,7 @@ int fasync_helper(int fd, struct file * filp, int on, struct fasync_struct **fap
+>  		if (!new)
+>  			return -ENOMEM;
+>  	}
+> +	spin_lock(&filp->f_lock); /* outside fasync_lock to keep lockdep happy */
+
+Please don't put in comments like that, they're worse than useless.
+Either explain in detail how and why, or don't bother.
+
+>  	write_lock_irq(&fasync_lock);
+>  	for (fp = fapp; (fa = *fp) != NULL; fp = &fa->fa_next) {
+>  		if (fa->fa_file == filp) {
+> @@ -555,14 +556,12 @@ int fasync_helper(int fd, struct file * filp, int on, struct fasync_struct **fap
+>  		result = 1;
+>  	}
+>  out:
+> -	/* Fix up FASYNC bit while still holding fasync_lock */
+> -	spin_lock(&filp->f_lock);
+>  	if (on)
+>  		filp->f_flags |= FASYNC;
+>  	else
+>  		filp->f_flags &= ~FASYNC;
+> -	spin_unlock(&filp->f_lock);
+>  	write_unlock_irq(&fasync_lock);
+> +	spin_unlock(&filp->f_lock);
+>  	return result;
+>  }
+
