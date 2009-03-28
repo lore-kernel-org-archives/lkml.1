@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761360AbZC1XXU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761104AbZC1XYp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761360AbZC1XXU (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Mar 2009 19:23:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755364AbZC1XXG
+	id S1761104AbZC1XYp (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Mar 2009 19:24:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755466AbZC1XYe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Mar 2009 19:23:06 -0400
-Received: from extu-mxob-1.symantec.com ([216.10.194.28]:60594 "EHLO
+	Sat, 28 Mar 2009 19:24:34 -0400
+Received: from extu-mxob-1.symantec.com ([216.10.194.28]:60666 "EHLO
 	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752937AbZC1XXF (ORCPT
+	with ESMTP id S1752937AbZC1XYd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Mar 2009 19:23:05 -0400
-Date: Sat, 28 Mar 2009 23:21:27 +0000 (GMT)
+	Sat, 28 Mar 2009 19:24:33 -0400
+Date: Sat, 28 Mar 2009 23:23:01 +0000 (GMT)
 From: Hugh Dickins <hugh@veritas.com>
 X-X-Sender: hugh@blonde.anvils
 To: Al Viro <viro@zeniv.linux.org.uk>
@@ -22,9 +22,9 @@ cc: Linus Torvalds <torvalds@linux-foundation.org>,
        Alexey Dobriyan <adobriyan@gmail.com>, Oleg Nesterov <oleg@redhat.com>,
        Greg Kroah-Hartman <gregkh@suse.de>, linux-fsdevel@vger.kernel.org,
        linux-kernel@vger.kernel.org
-Subject: [PATCH 3/4] fix setuid sometimes wouldn't
+Subject: [PATCH 4/4] Annotate struct fs_struct's usage count restriction
 In-Reply-To: <Pine.LNX.4.64.0903282307050.14892@blonde.anvils>
-Message-ID: <Pine.LNX.4.64.0903282320271.15432@blonde.anvils>
+Message-ID: <Pine.LNX.4.64.0903282321390.15432@blonde.anvils>
 References: <Pine.LNX.4.64.0903282307050.14892@blonde.anvils>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
@@ -32,132 +32,31 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-check_unsafe_exec() also notes whether the fs_struct is being
-shared by more threads than will get killed by the exec, and if so
-sets LSM_UNSAFE_SHARE to make bprm_set_creds() careful about euid.
-But /proc/<pid>/cwd and /proc/<pid>/root lookups make transient
-use of get_fs_struct(), which also raises that sharing count.
+From: David Howells <dhowells@redhat.com>
 
-This might occasionally cause a setuid program not to change euid,
-in the same way as happened with files->count (check_unsafe_exec
-also looks at sighand->count, but /proc doesn't raise that one).
+Annotate struct fs_struct's usage count to indicate the restrictions upon it.
+It may not be incremented, except by clone(CLONE_FS), as this affects the
+check in check_unsafe_exec() in fs/exec.c.
 
-We'd prefer exec not to unshare fs_struct: so fix this in procfs,
-replacing get_fs_struct() by get_fs_path(), which does path_get
-while still holding task_lock, instead of raising fs->count.
-
+Signed-off-by: David Howells <dhowells@redhat.com>
 Signed-off-by: Hugh Dickins <hugh@veritas.com>
 Cc: stable@kernel.org
-___
+---
 
- fs/proc/base.c |   50 +++++++++++++++--------------------------------
- 1 file changed, 16 insertions(+), 34 deletions(-)
+ include/linux/fs_struct.h |    5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
 
---- 2.6.29/fs/proc/base.c	2009-03-23 23:12:14.000000000 +0000
-+++ linux/fs/proc/base.c	2009-03-28 18:06:02.000000000 +0000
-@@ -146,15 +146,22 @@ static unsigned int pid_entry_count_dirs
- 	return count;
- }
+--- 2.6.29/include/linux/fs_struct.h	2009-03-23 23:12:14.000000000 +0000
++++ linux/include/linux/fs_struct.h	2009-03-28 18:06:02.000000000 +0000
+@@ -4,7 +4,10 @@
+ #include <linux/path.h>
  
--static struct fs_struct *get_fs_struct(struct task_struct *task)
-+static int get_fs_path(struct task_struct *task, struct path *path, bool root)
- {
- 	struct fs_struct *fs;
-+	int result = -ENOENT;
-+
- 	task_lock(task);
- 	fs = task->fs;
--	if(fs)
--		atomic_inc(&fs->count);
-+	if (fs) {
-+		read_lock(&fs->lock);
-+		*path = root ? fs->root : fs->pwd;
-+		path_get(path);
-+		read_unlock(&fs->lock);
-+		result = 0;
-+	}
- 	task_unlock(task);
--	return fs;
-+	return result;
- }
- 
- static int get_nr_threads(struct task_struct *tsk)
-@@ -172,42 +179,24 @@ static int get_nr_threads(struct task_st
- static int proc_cwd_link(struct inode *inode, struct path *path)
- {
- 	struct task_struct *task = get_proc_task(inode);
--	struct fs_struct *fs = NULL;
- 	int result = -ENOENT;
- 
- 	if (task) {
--		fs = get_fs_struct(task);
-+		result = get_fs_path(task, path, 0);
- 		put_task_struct(task);
- 	}
--	if (fs) {
--		read_lock(&fs->lock);
--		*path = fs->pwd;
--		path_get(&fs->pwd);
--		read_unlock(&fs->lock);
--		result = 0;
--		put_fs_struct(fs);
--	}
- 	return result;
- }
- 
- static int proc_root_link(struct inode *inode, struct path *path)
- {
- 	struct task_struct *task = get_proc_task(inode);
--	struct fs_struct *fs = NULL;
- 	int result = -ENOENT;
- 
- 	if (task) {
--		fs = get_fs_struct(task);
-+		result = get_fs_path(task, path, 1);
- 		put_task_struct(task);
- 	}
--	if (fs) {
--		read_lock(&fs->lock);
--		*path = fs->root;
--		path_get(&fs->root);
--		read_unlock(&fs->lock);
--		result = 0;
--		put_fs_struct(fs);
--	}
- 	return result;
- }
- 
-@@ -596,7 +585,6 @@ static int mounts_open_common(struct ino
- 	struct task_struct *task = get_proc_task(inode);
- 	struct nsproxy *nsp;
- 	struct mnt_namespace *ns = NULL;
--	struct fs_struct *fs = NULL;
- 	struct path root;
- 	struct proc_mounts *p;
- 	int ret = -EINVAL;
-@@ -610,22 +598,16 @@ static int mounts_open_common(struct ino
- 				get_mnt_ns(ns);
- 		}
- 		rcu_read_unlock();
--		if (ns)
--			fs = get_fs_struct(task);
-+		if (ns && get_fs_path(task, &root, 1) == 0)
-+			ret = 0;
- 		put_task_struct(task);
- 	}
- 
- 	if (!ns)
- 		goto err;
--	if (!fs)
-+	if (ret)
- 		goto err_put_ns;
- 
--	read_lock(&fs->lock);
--	root = fs->root;
--	path_get(&root);
--	read_unlock(&fs->lock);
--	put_fs_struct(fs);
--
- 	ret = -ENOMEM;
- 	p = kmalloc(sizeof(struct proc_mounts), GFP_KERNEL);
- 	if (!p)
+ struct fs_struct {
+-	atomic_t count;
++	atomic_t count;	/* This usage count is used by check_unsafe_exec() for
++			 * security checking purposes - therefore it may not be
++			 * incremented, except by clone(CLONE_FS).
++			 */
+ 	rwlock_t lock;
+ 	int umask;
+ 	struct path root, pwd;
