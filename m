@@ -1,62 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756796AbZC1TTM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756386AbZC1T0T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756796AbZC1TTM (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Mar 2009 15:19:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753508AbZC1TS5
+	id S1756386AbZC1T0T (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Mar 2009 15:26:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753469AbZC1T0F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Mar 2009 15:18:57 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:35032 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753486AbZC1TS4 (ORCPT
+	Sat, 28 Mar 2009 15:26:05 -0400
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:36639 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753291AbZC1T0D (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Mar 2009 15:18:56 -0400
-Message-ID: <49CE77F7.8020509@zytor.com>
-Date: Sat, 28 Mar 2009 12:18:15 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Sat, 28 Mar 2009 15:26:03 -0400
+From: =?utf-8?q?Uwe=20Kleine-K=C3=B6nig?= 
+	<u.kleine-koenig@pengutronix.de>
+To: linux-kernel@vger.kernel.org
+Cc: Ralf Baechle <ralf@linux-mips.org>, Jeff Garzik <jeff@garzik.org>,
+       "David S. Miller" <davem@davemloft.net>,
+       Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
+       Finn Thain <fthain@telegraphics.com.au>,
+       Geert Uytterhoeven <geert@linux-m68k.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH] move jazzsonic's probe function to .devinit.text
+Date: Sat, 28 Mar 2009 20:25:58 +0100
+Message-Id: <1238268358-6068-1-git-send-email-u.kleine-koenig@pengutronix.de>
+X-Mailer: git-send-email 1.6.2.1
+In-Reply-To: <1238196439-16535-22-git-send-email-u.kleine-koenig@pengutronix.de>
+References: <1238196439-16535-22-git-send-email-u.kleine-koenig@pengutronix.de>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: "Michael K. Johnson" <johnsonm@rpath.com>, jmforbes@linuxtx.org,
-       Jordan_Hargrave@Dell.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] mark %esi as clobbered in E820 BIOS call
-References: <20090327171441.GD4363@logo.rdu.rpath.com> <20090328112035.GA11146@elte.hu>
-In-Reply-To: <20090328112035.GA11146@elte.hu>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
+X-SA-Exim-Mail-From: ukl@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Michael K. Johnson <johnsonm@rpath.com> wrote:
-> 
->> Justin and Peter, please review this for stable .y trees.  Peter,
->> please review this for trunk unless you decide to do a more 
->> extensive workaround for BIOS register clobbering.
->>
->> Thanks!
->>
->> $ cat e820-esi-clobber-workaround.patch
->> Jordan Hargrave diagnosed a BIOS clobbering %esi in the E820 call.
->> That particular BIOS has been fixed, but there is a possibility that
->> this is responsible for other occasional reports of early boot
->> failure, and it does not hurt to add %esi to the clobbers.
-> 
-> nice fix! Would you mind to update the clobber list to include _all_ 
-> registers? I dont see why any of the other registers couldnt be 
-> clobbered by a BIOS, and this is boot-only code so micro-performance 
-> is not an issue.
+A pointer to jazz_sonic_probe is passed to the core via
+platform_driver_register and so the function must not disappear when the
+.init sections are discarded.  Otherwise (if also having HOTPLUG=y)
+unbinding and binding a device to the driver via sysfs will result in an
+oops as does a device being registered late.
 
-%esi and %ebp are the only registers that aren't already clobbered.  gcc
-doesn't like %ebp clobbers, so it has to be done via push..pop.  I have
-been thinking about doing a generic register-save wrapper for *all* BIOS
-calls; this plus the recent patch to do a bunch of similar hacks for
-VESA calls kind of tells me it's time to do this.  However, I'm going to
-clean up this for the trunk and Cc: stable for now.
+As noticed by Geert Uytterhoeven sonic_probe1 is called by
+jazz_sonic_probe, so the former has to move to .devinit.text, too.
 
-	-hpa
+An alternative to this patch is using platform_driver_probe instead of
+platform_driver_register plus removing the pointer to the probe function
+from the struct platform_driver.
 
+Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
+Cc: Ralf Baechle <ralf@linux-mips.org>
+Cc: Jeff Garzik <jeff@garzik.org>
+Cc: David S. Miller <davem@davemloft.net>
+Cc: Thomas Bogendoerfer <tsbogend@alpha.franken.de>
+Cc: Finn Thain <fthain@telegraphics.com.au>
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+---
+Hi Geert and Ralf,
+
+thanks for your feed-back.
+
+@Geert: Did you notice this, or your compiler?
+@Ralf: I assume that I can still add your ack after this additional change?
+
+Best regards
+Uwe
+
+ drivers/net/jazzsonic.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/net/jazzsonic.c b/drivers/net/jazzsonic.c
+index 14248cf..ca68383 100644
+--- a/drivers/net/jazzsonic.c
++++ b/drivers/net/jazzsonic.c
+@@ -96,7 +96,7 @@ static int jazzsonic_close(struct net_device* dev)
+ 	return err;
+ }
+ 
+-static int __init sonic_probe1(struct net_device *dev)
++static int __devinit sonic_probe1(struct net_device *dev)
+ {
+ 	static unsigned version_printed;
+ 	unsigned int silicon_revision;
+@@ -204,7 +204,7 @@ out:
+  * Probe for a SONIC ethernet controller on a Mips Jazz board.
+  * Actually probing is superfluous but we're paranoid.
+  */
+-static int __init jazz_sonic_probe(struct platform_device *pdev)
++static int __devinit jazz_sonic_probe(struct platform_device *pdev)
+ {
+ 	struct net_device *dev;
+ 	struct sonic_local *lp;
 -- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
-
+tg: (be0ea69..) t/platsection/jazz_sonic_driver (depends on: linus/master)
