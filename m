@@ -1,61 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754656AbZC1OEY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757127AbZC1OF7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754656AbZC1OEY (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Mar 2009 10:04:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753917AbZC1OEO
+	id S1757127AbZC1OF7 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Mar 2009 10:05:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754006AbZC1OFs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Mar 2009 10:04:14 -0400
-Received: from mail-bw0-f169.google.com ([209.85.218.169]:45091 "EHLO
-	mail-bw0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752276AbZC1OEN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Mar 2009 10:04:13 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:reply-to:mail-followup-to
-         :references:mime-version:content-type:content-disposition
-         :in-reply-to:user-agent;
-        b=Mgb51wwrrACIVNNciBOcXyGRZkhtncrCANb9Re/4gZSMRJorhh7xb+a+I0KTwxbwPV
-         q0tOzVatBxipYPkXwzJ2NfVf5UvlSR8Ytj1JuuyImAQLUDLyHMIuEGG4Af9gnBI3sqAQ
-         W/fDIQ7x1MUvnrZL5cGq63fV70UNmR+yJM09E=
-Date: Sat, 28 Mar 2009 15:04:05 +0100
-From: Borislav Petkov <petkovbb@googlemail.com>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: Tejun Heo <tj@kernel.org>, linux-kernel@vger.kernel.org, axboe@kernel.dk,
-       linux-ide@vger.kernel.org
-Subject: Re: [PATCHSET pata-2.6] ide: rq->buffer, data, special and misc
-	cleanups
-Message-ID: <20090328140405.GA2741@liondog.tnic>
-Reply-To: petkovbb@gmail.com
-Mail-Followup-To: petkovbb@gmail.com,
-	Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-	Tejun Heo <tj@kernel.org>, linux-kernel@vger.kernel.org,
-	axboe@kernel.dk, linux-ide@vger.kernel.org
-References: <1237910776-10983-1-git-send-email-tj@kernel.org> <200903281451.01361.bzolnier@gmail.com>
+	Sat, 28 Mar 2009 10:05:48 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:59056 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753917AbZC1OFr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Mar 2009 10:05:47 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Niel Lambrechts <niel.lambrechts@gmail.com>
+Subject: Re: 2.6.29 regression: ATA bus errors on resume
+Date: Sat, 28 Mar 2009 15:06:02 +0100
+User-Agent: KMail/1.11.1 (Linux/2.6.29-rjw; KDE/4.2.1; x86_64; ; )
+Cc: Arjan van de Ven <arjan@infradead.org>,
+       "linux.kernel" <linux-kernel@vger.kernel.org>,
+       James Bottomley <James.Bottomley@hansenpartnership.com>,
+       Pavel Machek <pavel@ucw.cz>,
+       Linux IDE mailing list <linux-ide@vger.kernel.org>,
+       Jeff Garzik <jeff@garzik.org>, Tejun Heo <htejun@gmail.com>
+References: <cjtH6-3Ll-13@gated-at.bofh.it> <20090327153044.3234722d@infradead.org> <49CDFA60.9080403@gmail.com>
+In-Reply-To: <49CDFA60.9080403@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200903281451.01361.bzolnier@gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200903281506.03364.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Mar 28, 2009 at 02:51:01PM +0100, Bartlomiej Zolnierkiewicz wrote:
-
-[..]
-
-> > Bartlomiej, if you're okay with the changes and Jens acks the patches
-> > and pushing the first three patches via pata-2.6, please feel free to
-> > include these patches into your tree.
+On Saturday 28 March 2009, Niel Lambrechts wrote:
+> On 03/28/2009 12:30 AM, Arjan van de Ven wrote:
+> > On Fri, 27 Mar 2009 21:10:52 +0200
+> > Niel Lambrechts <niel.lambrechts@gmail.com> wrote:
+> >
+> >   
+> >> I'm seeing some dubious looking ATA messages even on 2.6.28.9-pae,
+> >> although with all the 2.6.28 variants I used s2disk/resume has always
+> >> worked. I was wondering if these "errors" perhaps play more of a role
+> >> in 2.6.29, perhaps due to the async. changes that was mentioned?
+> >>     
+> >
+> > unless you actively enabled this via a kernel command line option there
+> > are no async changes in 2.6.29 in terms of behavior.
+> >
+> >
+> >   
+> The only non-default option I had was 'modeset=1'. From Jeff's earlier
+> comment I understood the probing behaviour changed.
 > 
-> Everything looks fine to me.  Once I get Jens' ack (block bits)
-> and Borislav's one (ATAPI bits) I'll happily merge this patchset.
+> The fundamental difference is that in 2.6.29 everything initially seems
+> okay, but then there is a
+> ata1.00: exception Emask 0x10 SAct 0x3f SErr 0x50000 action0xe frozen
+> ata1.00: irq_stat 0x00400008, PHY RDY changed
+> 
+> There's nothing frozen it 2.6.28.
+> 
+> Should I log a kernel bug, what's the best way forward and is there
+> anything more I can do to help?
 
-Yep, I just finished testing the whole series here so you can go ahead
-and apply them pending a recast of patch 07/14 you'll hopefully be
-receiving soon from Tejun.
+Let Tejun have a look a this, perhaps?
 
--- 
-Regards/Gruss,
-    Boris.
+Rafael
