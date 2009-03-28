@@ -1,67 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753449AbZC1TMn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755928AbZC1TN4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753449AbZC1TMn (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Mar 2009 15:12:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753291AbZC1TM1
+	id S1755928AbZC1TN4 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Mar 2009 15:13:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753429AbZC1TNq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Mar 2009 15:12:27 -0400
-Received: from mail-fx0-f158.google.com ([209.85.220.158]:32929 "EHLO
-	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752974AbZC1TM0 (ORCPT
+	Sat, 28 Mar 2009 15:13:46 -0400
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:35040 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753291AbZC1TNq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Mar 2009 15:12:26 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=V8/qMTx3G1jgcgufGubgn7KL5vHDudXRCtWnKuMC8ZyUN6/oaO/tuGMDt78XrXOXdt
-         uh2O+8GYImj2cYEDFpKKcFVM8f5Emp5z0i2p666dMfOYKzhmjhYbayJjK8LdHWytg69v
-         HcIEwTveDJHySmp3U6sbOsFyb6TM/FY7Zl9U8=
-Message-ID: <49CE7688.2020501@gmail.com>
-Date: Sat, 28 Mar 2009 20:12:08 +0100
-From: Marcin Slusarz <marcin.slusarz@gmail.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090302)
+	Sat, 28 Mar 2009 15:13:46 -0400
+Date: Sat, 28 Mar 2009 20:13:41 +0100
+From: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
+	<u.kleine-koenig@pengutronix.de>
+To: pHilipp Zabel <philipp.zabel@gmail.com>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Ian Molton <spyro@f2s.com>, Richard Purdie <rpurdie@rpsys.net>,
+       Antonino Daplas <adaplas@gmail.com>,
+       Alberto Mardegan <mardy@users.sourceforge.net>
+Subject: Re: [PATCH 57/58] move w100fb's probe function to .devinit.text
+Message-ID: <20090328191341.GA5588@pengutronix.de>
+References: <20090327232153.GA16348@pengutronix.de> <1238196439-16535-57-git-send-email-u.kleine-koenig@pengutronix.de> <74d0deb30903280301x7408963ek22e6452d1f3e849c@mail.gmail.com>
 MIME-Version: 1.0
-To: Dan Carpenter <error27@gmail.com>
-CC: LKML <linux-kernel@vger.kernel.org>, eteo@redhat.com,
-       linux-usb@vger.kernel.org, netdev@vger.kernel.org,
-       linux-media@vger.kernel.org, general@lists.openfabrics.org
-Subject: Re: Dereferencing freed memory bugs
-References: <a63d67fe0903240529v6a0e6b51pf67f8ad6dd6842c4@mail.gmail.com>
-In-Reply-To: <a63d67fe0903240529v6a0e6b51pf67f8ad6dd6842c4@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <74d0deb30903280301x7408963ek22e6452d1f3e849c@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
+X-SA-Exim-Mail-From: ukl@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dan Carpenter wrote:
-> I added a check to smatch (http://repo.or.cz/w/smatch.git/) to check
-> for when we dereference
-> freed memory.
+Hellp pHilipp,
+
+On Sat, Mar 28, 2009 at 11:01:10AM +0100, pHilipp Zabel wrote:
+> 2009/3/28 Uwe Kleine-König <u.kleine-koenig@pengutronix.de>:
+> > A pointer to w100fb_probe is passed to the core via
+> > platform_driver_register and so the function must not disappear when the
+> > .init sections are discarded.  Otherwise (if also having HOTPLUG=y)
+> > unbinding and binding a device to the driver via sysfs will result in an
+> > oops as does a device being registered late.
+> >
+> > An alternative to this patch is using platform_driver_probe instead of
+> > platform_driver_register plus removing the pointer to the probe function
+> > from the struct platform_driver.
 > 
-> drivers/dma/dmatest.c +410 dmatest_exit(7) 'dtc'
-> drivers/dma/dmatest.c +412 dmatest_exit(9) 'dtc'
+> The ATI Imageon chips handled by this driver are not hotpluggable,
+what about
 
-Seems to be fixed by 7cbd4877e5b167b56a3d6033b926a9f925186e12:
-dmatest: fix use after free in dmatest_exit
+	sysdriverdir=/sys/bus/platform/drivers/w100fb
+	echo -n w100fb > $sysdriverdir/unbind
+	echo -n w100fb > $sysdriverdir/bind
 
-> drivers/infiniband/hw/nes/nes_cm.c +563 nes_cm_timer_tick(121) 'cm_node'
-> drivers/infiniband/hw/nes/nes_cm.c +621 nes_cm_timer_tick(179) 'cm_node'
-> (...)
-> drivers/usb/host/ehci-hcd.c +1661 itd_complete(79) 'stream'
-> drivers/usb/host/ehci-hcd.c +2036 sitd_complete(64) 'stream'
-> drivers/uwb/reset.c +193 __uwb_rc_cmd(26) 'cmd'
-> (...)
-> net/netfilter/xt_recent.c +273 recent_mt(69) 'e'
-> (...)
-> drivers/media/video/cpia_pp.c +777 cpia_pp_detach(28) 'cpia'
-> (...)
+?  (You might have to use w100fb.0 (or another integer id), didn't check
 
-These are less obvious.
+> I think the proposed alternative is the right way.
+> Also, shouldn't w100fb_init be moved from __devinit to __init and
+> w100fb_remove be put into __exit?
+I concentrated for now on the probe functions, primarily because a wrong
+section can result in an oops.  If a function is in __devinit instead of
+__init the only harm is that it occupies RAM.
 
-Adding CCs.
-Please leave only one of openfabrics/linux-usb/netdev/linux-media in CCs
-when responding.
+Other than that your change looks good.
 
-ps: [s]itd_complete is in drivers/usb/host/ehci-sched.c
+Best regards
+Uwe
+
+-- 
+Pengutronix e.K.                              | Uwe Kleine-König            |
+Industrial Linux Solutions                    | http://www.pengutronix.de/  |
