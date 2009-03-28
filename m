@@ -1,63 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761808AbZC1AJx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758789AbZC1AMv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761808AbZC1AJx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 27 Mar 2009 20:09:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753248AbZC1AJn
+	id S1758789AbZC1AMv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 27 Mar 2009 20:12:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751737AbZC1AMm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 27 Mar 2009 20:09:43 -0400
-Received: from n18.bullet.mail.mud.yahoo.com ([68.142.206.145]:25519 "HELO
-	n18.bullet.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754744AbZC1AJm (ORCPT
+	Fri, 27 Mar 2009 20:12:42 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:40016 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751993AbZC1AMl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 27 Mar 2009 20:09:42 -0400
-X-Yahoo-Newman-Id: 644892.5157.bm@omp421.mail.mud.yahoo.com
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=fieuZuSwVcdKaXk7WZft/Glzf8P/SAcDIl77j1aChRmvxWXnxqUgm+ELfv4zLzY6EZKeMhiueOJXzb/lWLCdCo5CuWOMcijohfYDWNH+n2ndAI4A+sjgHPnFAsopwFqWSNU1pFfYL6L+i+qeUjaK8ov/w16p+dirO/HyccshucU=  ;
-X-YMail-OSG: IkbfEVIVM1lAkRHYSYp8RRj24hWsP4WdN_1F1rAooH33VWUpufNLq3fZ0mAa7vGr3h76JF5WYjEViuv979936QhBhOBd8PDOUwn9D2HLBtqG4U9._Ugh7h6uJMWNk7wobkTuTWbdHdWyyQTObCnhFC5y
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: "Uwe =?iso-8859-1?q?Kleine-K=F6nig?=" 
-	<u.kleine-koenig@pengutronix.de>
-Subject: Re: [PATCH 04/58] move at91_ether's probe function to .devinit.text
-Date: Fri, 27 Mar 2009 17:09:37 -0700
-User-Agent: KMail/1.9.10
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       "David S. Miller" <davem@davemloft.net>,
-       Jeff Garzik <jgarzik@redhat.com>,
-       Paulius Zaleckas <paulius.zaleckas@teltonika.lt>,
-       Marc Pignat <marc.pignat@hevs.ch>, Andrew Victor <linux@maxim.org.za>,
-       Roel Kluin <12o3l@tiscali.nl>
-References: <20090327232153.GA16348@pengutronix.de> <1238196439-16535-4-git-send-email-u.kleine-koenig@pengutronix.de>
-In-Reply-To: <1238196439-16535-4-git-send-email-u.kleine-koenig@pengutronix.de>
+	Fri, 27 Mar 2009 20:12:41 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Date: Sat, 28 Mar 2009 01:11:20 +0100 (CET)
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: [git pull] FireWire updates post 2.6.29
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+cc: linux-kernel@vger.kernel.org, linux1394-devel@lists.sourceforge.net,
+       Mauro Carvalho Chehab <mchehab@infradead.org>
+Message-ID: <tkrat.09e279b9fad0fd3c@s5r6.in-berlin.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8bit
-Content-Disposition: inline
-Message-Id: <200903271709.38383.david-b@pacbell.net>
+Content-Type: TEXT/PLAIN; CHARSET=us-ascii
+Content-Disposition: INLINE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 27 March 2009, Uwe Kleine-König wrote:
-> An alternative to this patch is using platform_driver_probe instead of
-> platform_driver_register plus removing the pointer to the probe function
-> from the struct platform_driver.
+Linus, please pull from the for-linus branch at
 
-IMO that's preferable for this driver.  There's no
-point in doing anything other than discarding the
-probe() method after the driver has been set up;
-it'd be doing nothing except wasting memory.
+    git://git.kernel.org/pub/scm/linux/kernel/git/ieee1394/linux1394-2.6.git for-linus
 
-Same thing for ... pretty much all other drivers
-for SoC platform devices.
+to receive the following IEEE 1394/ FireWire subsystem updates.
+Most of it are feature additions to firewire-core for userspace drivers
+(via libdc1394 and libraw1394), some also for in-kernel drivers.  Much
+of it has been written already last year and went into -next early this
+year, slightly too late for 2.6.29. Userspace code which uses the
+features went over the respective mailinglists and should appear in
+libdc1394 and libraw1394 soon.  Also included:  Two recent dvb/firewire
+fixes; Mauro has been informed.
 
-In this series, you cc'd me on four OMAP drivers
-(mmci-omap, mmci-omap-hs, omap-rng, omap_udc) which
-I *know* that's a completely workable -- and far
-preferable -- solution.  There might be others.
+Beat Michel Liechti (1):
+      DVB: firedtv: FireDTV S2 problems with tuning solved
 
+David Moore (1):
+      firewire: Include iso timestamp in headers when header_size > 4
 
+Jay Fenlason (4):
+      firewire: add a client_list_lock
+      firewire: cdev: use an idr rather than a linked list for resources
+      firewire: implement asynchronous stream transmission
+      firewire: broadcast channel support
+
+Jay Fenlason, Stefan Richter (2):
+      firewire: cdev: add ioctls for isochronous resource management
+      firewire: cdev: add ioctl for broadcast write requests
+
+Stefan Richter (44):
+      firewire: convert client_list_lock to mutex
+      firewire: cdev: documentation fixlet
+      firewire: cdev: tcodes input validation
+      firewire: cdev: fix race of fw_device_op_release with bus reset
+      firewire: cdev: address handler input validation
+      firewire: core: remove outdated comment
+      firewire: core: remove obsolete assertions
+      firewire: standardize a variable name
+      firewire: remove line breaks before function names
+      firewire: core: remove unused definitions
+      firewire: cdev: use list_first_entry
+      firewire: prevent creation of multiple IR DMA contexts for the same channel
+      firewire: cdev: fix documentation of FW_CDEV_IOC_GET_INFO
+      firewire: cdev: reference-count client instances
+      firewire: cdev: unify names of struct types and of their instances
+      firewire: cdev: sort includes
+      firewire: core: topology header fix
+      firewire: cdev: add ioctls for manual iso resource management
+      firewire: cdev: add ioctl to query maximum transmission speed
+      firewire: cdev: restrict broadcast write requests to Units Space
+      firewire: cdev: extend transaction payload size check
+      firewire: cdev: replace some spin_lock_irqsave by spin_lock_irq
+      firewire: cdev: shut down iso context before freeing the buffer
+      firewire: cdev: increment fw_cdev_version, update documentation
+      firewire: cdev: add ioctls for iso resource management, amendment
+      firewire: cdev: simplify a schedule_delayed_work wrapper
+      firewire: core: clean up includes
+      firewire: core: move some functions
+      firewire: core: remove condition which is always false
+      firewire: normalize a variable name
+      firewire: core: normalize a function argument name
+      firewire: cdev: amendment to "add ioctl to query maximum transmission speed"
+      firewire: cdev: secure add_descriptor ioctl
+      firewire: cdev: fix race of ioctl_send_request with bus reset
+      firewire: cdev: simplify FW_CDEV_IOC_SEND_REQUEST return value
+      firewire: cdev: add closure to async stream ioctl
+      firewire: core: drop unused call parameters of close_transaction
+      firewire: core: increase bus manager grace period
+      firewire: core: simplify broadcast channel allocation
+      firewire: core: optimize propagation of BROADCAST_CHANNEL
+      ieee1394: sbp2: follow up on "ieee1394: inherit ud vendor_id from node vendor_id"
+      ieee1394: raw1394: add sparse annotations to raw1394_compat_write
+      ieee1394: constify device ID tables
+      DVB: firedtv: fix printk format mismatch
+
+Tobias Klauser (1):
+      ieee1394: Storage class should be before const qualifier
+
+ drivers/firewire/fw-card.c               |  149 +++--
+ drivers/firewire/fw-cdev.c               | 1044 +++++++++++++++++++++---------
+ drivers/firewire/fw-device.c             |  203 ++++---
+ drivers/firewire/fw-device.h             |   23 +-
+ drivers/firewire/fw-iso.c                |  227 ++++++-
+ drivers/firewire/fw-ohci.c               |  260 ++++----
+ drivers/firewire/fw-sbp2.c               |   57 +-
+ drivers/firewire/fw-topology.c           |   29 +-
+ drivers/firewire/fw-topology.h           |   19 +-
+ drivers/firewire/fw-transaction.c        |  185 +++---
+ drivers/firewire/fw-transaction.h        |  138 ++---
+ drivers/ieee1394/csr.c                   |    8 +-
+ drivers/ieee1394/dv1394.c                |    2 +-
+ drivers/ieee1394/eth1394.c               |    4 +-
+ drivers/ieee1394/highlevel.c             |    2 +-
+ drivers/ieee1394/nodemgr.c               |    4 +-
+ drivers/ieee1394/nodemgr.h               |    2 +-
+ drivers/ieee1394/raw1394.c               |   14 +-
+ drivers/ieee1394/sbp2.c                  |    9 +-
+ drivers/ieee1394/video1394.c             |    2 +-
+ drivers/media/dvb/firewire/firedtv-avc.c |   10 +-
+ include/linux/firewire-cdev.h            |  218 ++++++-
+ 22 files changed, 1684 insertions(+), 925 deletions(-)
+
+Thanks,
+-- 
+Stefan Richter
+-=====-==--= --== ===--
+http://arcgraph.de/sr/
 
