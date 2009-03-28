@@ -1,81 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753673AbZC1IQX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753838AbZC1IWS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753673AbZC1IQX (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Mar 2009 04:16:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751169AbZC1IQH
+	id S1753838AbZC1IWS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Mar 2009 04:22:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752853AbZC1IWB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Mar 2009 04:16:07 -0400
-Received: from gw1.cosmosbay.com ([212.99.114.194]:43914 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751137AbZC1IQF convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Mar 2009 04:16:05 -0400
-Message-ID: <49CDD7B4.4020701@cosmosbay.com>
-Date: Sat, 28 Mar 2009 08:54:28 +0100
-From: Eric Dumazet <dada1@cosmosbay.com>
-User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
+	Sat, 28 Mar 2009 04:22:01 -0400
+Received: from tservice.net.ru ([195.178.208.66]:33188 "EHLO tservice.net.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752697AbZC1IWA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Mar 2009 04:22:00 -0400
+Date: Sat, 28 Mar 2009 11:21:49 +0300
+From: Evgeniy Polyakov <zbr@ioremap.net>
+To: Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <u.kleine-koenig@pengutronix.de>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       "Stanley.Miao" <stanley.miao@windriver.com>,
+       Madhusudhan Chikkature <madhu.cr@ti.com>,
+       Felipe Balbi <felipe.balbi@nokia.com>
+Subject: Re: [PATCH 31/58] move omap_hdq's probe function to .devinit.text
+Message-ID: <20090328082148.GA20668@ioremap.net>
+References: <20090327232153.GA16348@pengutronix.de> <1238196439-16535-31-git-send-email-u.kleine-koenig@pengutronix.de>
 MIME-Version: 1.0
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-CC: Avi Kivity <avi@redhat.com>, Nick Piggin <npiggin@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       the arch/x86 maintainers <x86@kernel.org>
-Subject: Re: [PATCH 1/2] x86/mm: maintain a percpu "in get_user_pages_fast"
- flag
-References: <49CD37B8.4070109@goop.org> <49CD9E25.2090407@redhat.com> <49CDAF17.5060207@goop.org>
-In-Reply-To: <49CDAF17.5060207@goop.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Sat, 28 Mar 2009 08:54:36 +0100 (CET)
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <1238196439-16535-31-git-send-email-u.kleine-koenig@pengutronix.de>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeremy Fitzhardinge a écrit :
-> Avi Kivity wrote:
->> Jeremy Fitzhardinge wrote:
->>> get_user_pages_fast() relies on cross-cpu tlb flushes being a barrier
->>> between clearing and setting a pte, and before freeing a pagetable page.
->>> It usually does this by disabling interrupts to hold off IPIs, but
->>> some tlb flush implementations don't use IPIs for tlb flushes, and
->>> must use another mechanism.
->>>
->>> In this change, add in_gup_cpumask, which is a cpumask of cpus currently
->>> performing a get_user_pages_fast traversal of a pagetable.  A cross-cpu
->>> tlb flush function can use this to determine whether it should hold-off
->>> on the flush until the gup_fast has finished.
->>>
->>> @@ -255,6 +260,10 @@ int get_user_pages_fast(unsigned long start, int
->>> nr_pages, int write,
->>>      * address down to the the page and take a ref on it.
->>>      */
->>>     local_irq_disable();
->>> +
->>> +    cpu = smp_processor_id();
->>> +    cpumask_set_cpu(cpu, in_gup_cpumask);
->>> +
->>
->> This will bounce a cacheline, every time.  Please wrap in CONFIG_XEN
->> and skip at runtime if Xen is not enabled.
+Hi Uwe.
+
+On Sat, Mar 28, 2009 at 12:26:52AM +0100, Uwe Kleine-König (u.kleine-koenig@pengutronix.de) wrote:
+> A pointer to omap_hdq_probe is passed to the core via
+> platform_driver_register and so the function must not disappear when the
+> .init sections are discarded.  Otherwise (if also having HOTPLUG=y)
+> unbinding and binding a device to the driver via sysfs will result in an
+> oops as does a device being registered late.
 > 
-> Every time?  Only when running successive gup_fasts on different cpus,
-> and only twice per gup_fast. (What's the typical page count?  I see that
-> kvm and lguest are page-at-a-time users, but presumably direct IO has
-> larger batches.)
+> An alternative to this patch is using platform_driver_probe instead of
+> platform_driver_register plus removing the pointer to the probe function
+> from the struct platform_driver.
 
-If I am not mistaken, shared futexes where hitting hard mm semaphore.
-Then gup_fast was introduced in kernel/futex.c to remove this contention point.
-Yet, this contention point was process specific, not a global one :)
+I wonder if it can be hotplugged, but for the consistency it looks good.
 
-And now, you want to add a global hot point, that would slow
-down unrelated processes, only because they use shared futexes, thousand
-times per second...
-
-> 
-> Alternatively, it could have per-cpu flags and the other side could
-> construct the mask (I originally had that, but this was simpler).
-
-Simpler but would be a regression for legacy applications still using shared
-futexes (because statically linked with old libc)
-
-
+-- 
+	Evgeniy Polyakov
