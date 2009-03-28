@@ -1,91 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760941AbZC1V3c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761026AbZC1V3w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760941AbZC1V3c (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Mar 2009 17:29:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760879AbZC1V2z
+	id S1761026AbZC1V3w (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Mar 2009 17:29:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760790AbZC1V3D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Mar 2009 17:28:55 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:42271 "EHLO mx2.redhat.com"
+	Sat, 28 Mar 2009 17:29:03 -0400
+Received: from hera.kernel.org ([140.211.167.34]:53463 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760869AbZC1V2x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Mar 2009 17:28:53 -0400
-Date: Sat, 28 Mar 2009 18:28:35 -0300
-From: Marcelo Tosatti <mtosatti@redhat.com>
-To: Joerg Roedel <joerg.roedel@amd.com>
-Cc: Avi Kivity <avi@redhat.com>, kvm@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] kvm mmu: add support for 1GB pages in shadow paging
-	code
-Message-ID: <20090328212834.GA4694@amt.cnet>
-References: <1238164518-16261-1-git-send-email-joerg.roedel@amd.com>
+	id S1760882AbZC1V26 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Mar 2009 17:28:58 -0400
+Date: Sat, 28 Mar 2009 21:28:23 GMT
+From: Li Zefan <lizf@cn.fujitsu.com>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, acme@redhat.com, hpa@zytor.com,
+       mingo@redhat.com, lizf@cn.fujitsu.com, jens.axboe@oracle.com,
+       fweisbec@gmail.com, rostedt@goodmis.org, tglx@linutronix.de,
+       mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, acme@redhat.com,
+       linux-kernel@vger.kernel.org, lizf@cn.fujitsu.com,
+       jens.axboe@oracle.com, fweisbec@gmail.com, rostedt@goodmis.org,
+       tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <49CC380C.4010700@cn.fujitsu.com>
+References: <49CC380C.4010700@cn.fujitsu.com>
+Subject: [tip:tracing/blktrace] trace: make argument 'mem' of trace_seq_putmem() const
+Message-ID: <tip-f45847ce7668620080f7eac1c2e78333e98c7fe6@git.kernel.org>
+Git-Commit-ID: f45847ce7668620080f7eac1c2e78333e98c7fe6
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-In-Reply-To: <1238164518-16261-1-git-send-email-joerg.roedel@amd.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sat, 28 Mar 2009 21:28:25 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, Mar 27, 2009 at 03:35:18PM +0100, Joerg Roedel wrote:
-> This patch adds support for 1GB pages in the shadow paging code. The
-> guest can map 1GB pages in his page tables and KVM will map the page
-> frame with a 1GB, a 2MB or even a 4kb page size, according to backing
-> host page size and the write protections in place.
-> This is the theory. In practice there are conditions which turn the
-> guest unstable when running with this patch and GB pages enabled. The
-> failing conditions are:
-> 
-> 	* KVM is loaded using shadow paging
-> 	* The Linux guest uses GB pages for the kernel direct mapping
-> 	* The guest memory is backed with 4kb pages on the host side
-> 
-> With the above configuration there are random application or kernel
-> crashed when the guest runs under load. When GB pages for HugeTLBfs in
-> the guest are allocated at boot time in the guest the guest kernel
-> crashes or stucks at boot depending on the amount of RAM in the guest.
-> The following parameters have no impact:
-> 
-> 	* It bug occurs also without guest SMP (so likely no race
-> 	  condition)
-> 	* Use PV-MMU makes no difference
-> 
-> I have searched this bug for quite some time with no real luck. Maybe
-> some other reviewers have more luck than I had by now.
+Commit-ID:  f45847ce7668620080f7eac1c2e78333e98c7fe6
+Gitweb:     http://git.kernel.org/tip/f45847ce7668620080f7eac1c2e78333e98c7fe6
+Author:     Li Zefan <lizf@cn.fujitsu.com>
+AuthorDate: Fri, 27 Mar 2009 10:21:00 +0800
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Sat, 28 Mar 2009 12:51:42 +0100
 
-Sorry, I can't spot what is wrong here. Avi?
+trace: make argument 'mem' of trace_seq_putmem() const
 
-Perhaps it helps if you provide some info of the hang when guest
-allocates hugepages on boot (its probably and endless fault that can't
-be corrected?).
+Impact: fix build warning
 
-Also another point is that the large huge page at 0-1GB will never
-be created, because it crosses slot boundary.
+I passed a const value to trace_seq_putmem(), and I got compile warning.
 
-> Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
-> ---
->  arch/x86/kvm/mmu.c         |   56 +++++++++++++++++++++++++++++++------------
->  arch/x86/kvm/paging_tmpl.h |   35 +++++++++++++++++++++------
->  arch/x86/kvm/svm.c         |    2 +-
->  3 files changed, 68 insertions(+), 25 deletions(-)
-> 
-> +	psize = backing_size(vcpu, vcpu->arch.update_pte.gfn);
+Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+Cc: Jens Axboe <jens.axboe@oracle.com>
+Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>
+LKML-Reference: <49CC380C.4010700@cn.fujitsu.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
-This can block, and this path holds mmu_lock. Thats why it needs to be
-done in guess_page_from_pte_write.
 
-> +	if ((sp->role.level == PT_DIRECTORY_LEVEL) &&
-> +	    (psize >= KVM_PAGE_SIZE_2M)) {
-> +		psize = KVM_PAGE_SIZE_2M;
-> +		vcpu->arch.update_pte.gfn &= ~(KVM_PAGES_PER_2M_PAGE-1);
-> +		vcpu->arch.update_pte.pfn &= ~(KVM_PAGES_PER_2M_PAGE-1);
-> +	} else if ((sp->role.level == PT_MIDDLE_LEVEL) &&
-> +		   (psize == KVM_PAGE_SIZE_1G)) {
-> +		vcpu->arch.update_pte.gfn &= ~(KVM_PAGES_PER_1G_PAGE-1);
-> +		vcpu->arch.update_pte.pfn &= ~(KVM_PAGES_PER_1G_PAGE-1);
-> +	} else
-> +		goto out_pde;
+---
+ kernel/trace/trace_output.c |    6 +++---
+ kernel/trace/trace_output.h |    5 +++--
+ 2 files changed, 6 insertions(+), 5 deletions(-)
 
-Better just zap the entry in case its a 1GB one and let the
-fault path handle it.
-
+diff --git a/kernel/trace/trace_output.c b/kernel/trace/trace_output.c
+index 9c1ddd6..aeac358 100644
+--- a/kernel/trace/trace_output.c
++++ b/kernel/trace/trace_output.c
+@@ -147,7 +147,7 @@ int trace_seq_putc(struct trace_seq *s, unsigned char c)
+ 	return 1;
+ }
+ 
+-int trace_seq_putmem(struct trace_seq *s, void *mem, size_t len)
++int trace_seq_putmem(struct trace_seq *s, const void *mem, size_t len)
+ {
+ 	if (len > ((PAGE_SIZE - 1) - s->len))
+ 		return 0;
+@@ -158,10 +158,10 @@ int trace_seq_putmem(struct trace_seq *s, void *mem, size_t len)
+ 	return len;
+ }
+ 
+-int trace_seq_putmem_hex(struct trace_seq *s, void *mem, size_t len)
++int trace_seq_putmem_hex(struct trace_seq *s, const void *mem, size_t len)
+ {
+ 	unsigned char hex[HEX_CHARS];
+-	unsigned char *data = mem;
++	const unsigned char *data = mem;
+ 	int i, j;
+ 
+ #ifdef __BIG_ENDIAN
+diff --git a/kernel/trace/trace_output.h b/kernel/trace/trace_output.h
+index d8cb8c9..9163021 100644
+--- a/kernel/trace/trace_output.h
++++ b/kernel/trace/trace_output.h
+@@ -33,8 +33,9 @@ extern ssize_t trace_seq_to_user(struct trace_seq *s, char __user *ubuf,
+ 				 size_t cnt);
+ extern int trace_seq_puts(struct trace_seq *s, const char *str);
+ extern int trace_seq_putc(struct trace_seq *s, unsigned char c);
+-extern int trace_seq_putmem(struct trace_seq *s, void *mem, size_t len);
+-extern int trace_seq_putmem_hex(struct trace_seq *s, void *mem, size_t len);
++extern int trace_seq_putmem(struct trace_seq *s, const void *mem, size_t len);
++extern int trace_seq_putmem_hex(struct trace_seq *s, const void *mem,
++				size_t len);
+ extern void *trace_seq_reserve(struct trace_seq *s, size_t len);
+ extern int trace_seq_path(struct trace_seq *s, struct path *path);
+ extern int seq_print_userip_objs(const struct userstack_entry *entry,
