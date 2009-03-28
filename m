@@ -1,51 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755304AbZC1Gv1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754635AbZC1Hpj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755304AbZC1Gv1 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Mar 2009 02:51:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752430AbZC1GvQ
+	id S1754635AbZC1Hpj (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Mar 2009 03:45:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752253AbZC1Hpa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Mar 2009 02:51:16 -0400
-Received: from mail.gmx.net ([213.165.64.20]:35763 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752304AbZC1GvQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Mar 2009 02:51:16 -0400
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX19naidRP65nChXVdGltxKF9V0sJYTc7ngxlGlmVfM
-	15l7hiAEEEy+Nw
+	Sat, 28 Mar 2009 03:45:30 -0400
+Received: from main.gmane.org ([80.91.229.2]:52712 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751137AbZC1Hp3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Mar 2009 03:45:29 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Bojan Smojver <bojan@rexursive.com>
 Subject: Re: Linux 2.6.29
-From: Mike Galbraith <efault@gmx.de>
-To: 7eggert@gmx.de
-Cc: Theodore Tso <tytso@mit.edu>, Matthew Garrett <mjg59@srcf.ucam.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Rees <drees76@gmail.com>, Jesper Krogh <jesper@krogh.cc>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <E1LnJzS-0001vn-Vf@be1.7eggert.dyndns.org>
-References: <cjGbn-6Xx-35@gated-at.bofh.it> <cjGl4-7ak-61@gated-at.bofh.it>
-	 <cjJsv-3Uu-5@gated-at.bofh.it> <cjKHX-5MF-19@gated-at.bofh.it>
-	 <ck7XP-JA-13@gated-at.bofh.it> <ck8h7-18H-1@gated-at.bofh.it>
-	 <ck8AA-1y0-7@gated-at.bofh.it> <ck8Kd-20o-7@gated-at.bofh.it>
-	 <ckaVR-5o8-9@gated-at.bofh.it> <ckbf4-5M8-7@gated-at.bofh.it>
-	 <ckcE8-845-9@gated-at.bofh.it>  <E1LnJzS-0001vn-Vf@be1.7eggert.dyndns.org>
-Content-Type: text/plain
-Date: Sat, 28 Mar 2009 07:51:08 +0100
-Message-Id: <1238223068.5983.8.camel@marge.simson.net>
+Date: Sat, 28 Mar 2009 07:45:14 +0000 (UTC)
+Message-ID: <loom.20090328T073850-695@post.gmane.org>
+References: <alpine.LFD.2.00.0903251622420.3032@localhost.localdomain> <20090326171148.9bf8f1ec.akpm@linux-foundation.org> <alpine.LFD.2.00.0903261723250.3994@localhost.localdomain> <20090326174704.cd36bf7b.akpm@linux-foundation.org> <alpine.LFD.2.00.0903261752110.3994@localhost.localdomain> <20090327032301.GN6239@mit.edu> <20090327034705.GA16888@srcf.ucam.org> <20090327051338.GP6239@mit.edu> <20090327055750.GA18065@srcf.ucam.org> <20090327062114.GA18290@srcf.ucam.org> <20090327112438.GQ6239@mit.edu> <49CD4109.2070505@goop.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1.1 
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.73
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: main.gmane.org
+User-Agent: Loom/3.14 (http://gmane.org/)
+X-Loom-IP: 150.101.121.179 (Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.0.8) Gecko/2009032713 Fedora/3.0.8-1.fc10 Firefox/3.0.8)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-03-27 at 22:53 +0100, Bodo Eggert wrote:
+Jeremy Fitzhardinge <jeremy <at> goop.org> writes:
 
-> data=ordered is a sane way of handling data. Otherwise, the millions
-> would change their ext3 to data=writeback.
+> This is a fairly narrow view of correct and possible.  How can you make 
+> "cat" fsync? grep? sort?  How do they know they're not dealing with 
+> critical data?  Apps in general don't know, because "criticality" is a 
+> property of the data itself and how its used, not the tools operating on it.
 
-This one of the millions did that quite a while ago.  Sanity be damned,
-my quality of life improved by doing so.
+Isn't it possible to compile a program that simply calls open()/fsync()/close()
+on a given file name? If yes, then in your scripts, you can do whatever you want
+with existing tools on a _scratch_ file, then call your fsync program on that
+scratch file and then rename it to the real file. No?
 
-	-Mike
+In other words, given that you know that your data is critical, you will write
+processed data to another file, while preserving the original, store the new
+file safely and then rename it to the original. Just like the apps that know
+that their files are critical are supposed to do using the API.
+
+--
+Bojan
+
+
 
