@@ -1,59 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760866AbZC1XqQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756390AbZC1Xym@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760866AbZC1XqQ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Mar 2009 19:46:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751286AbZC1Xp7
+	id S1756390AbZC1Xym (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Mar 2009 19:54:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751726AbZC1Xyc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Mar 2009 19:45:59 -0400
-Received: from www.tglx.de ([62.245.132.106]:34598 "EHLO www.tglx.de"
+	Sat, 28 Mar 2009 19:54:32 -0400
+Received: from mail.lang.hm ([64.81.33.126]:37785 "EHLO bifrost.lang.hm"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750719AbZC1Xp6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Mar 2009 19:45:58 -0400
-Date: Sun, 29 Mar 2009 00:39:09 +0100 (CET)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Ingo Molnar <mingo@elte.hu>
-cc: "H. Peter Anvin" <hpa@kernel.org>, Sam Ravnborg <sam@ravnborg.org>,
-       Alexey Dobriyan <adobriyan@gmail.com>,
-       Jaswinder Singh Rajput <jaswinder@kernel.org>,
-       x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [git-pull -tip] x86: include inverse Xmas tree patches
-In-Reply-To: <20090328233438.GA4957@elte.hu>
-Message-ID: <alpine.LFD.2.00.0903290035390.3397@localhost.localdomain>
-References: <1238251730.2526.2.camel@ht.satnam> <20090328150746.GA3268@x200.localdomain> <20090328190350.GA30214@uranus.ravnborg.org> <49CEA3CD.105@kernel.org> <alpine.LFD.2.00.0903290025280.3397@localhost.localdomain> <20090328233438.GA4957@elte.hu>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	id S1751402AbZC1Xyb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Mar 2009 19:54:31 -0400
+Date: Sat, 28 Mar 2009 16:52:14 -0700 (PDT)
+From: david@lang.hm
+X-X-Sender: dlang@asgard.lang.hm
+To: Linus Torvalds <torvalds@linux-foundation.org>
+cc: Andrew Morton <akpm@linux-foundation.org>, Theodore Tso <tytso@mit.edu>,
+       David Rees <drees76@gmail.com>, Jesper Krogh <jesper@krogh.cc>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.29
+In-Reply-To: <alpine.LFD.2.00.0903262044050.3994@localhost.localdomain>
+Message-ID: <alpine.DEB.1.10.0903281647150.22577@asgard.lang.hm>
+References: <alpine.LFD.2.00.0903231617550.3032@localhost.localdomain> <49C87B87.4020108@krogh.cc> <72dbd3150903232346g5af126d7sb5ad4949a7b5041f@mail.gmail.com> <49C88C80.5010803@krogh.cc> <72dbd3150903241200v38720ca0x392c381f295bdea@mail.gmail.com>
+ <20090325183011.GN32307@mit.edu> <alpine.LFD.2.00.0903251139260.3032@localhost.localdomain> <20090325220530.GR32307@mit.edu> <alpine.LFD.2.00.0903251622420.3032@localhost.localdomain> <20090326171148.9bf8f1ec.akpm@linux-foundation.org>
+ <alpine.LFD.2.00.0903261723250.3994@localhost.localdomain> <20090326174704.cd36bf7b.akpm@linux-foundation.org> <alpine.LFD.2.00.0903261752110.3994@localhost.localdomain> <20090326182519.d576d703.akpm@linux-foundation.org> <alpine.LFD.2.00.0903262035270.3994@localhost.localdomain>
+ <alpine.LFD.2.00.0903262044050.3994@localhost.localdomain>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 29 Mar 2009, Ingo Molnar wrote:
-> * Thomas Gleixner <tglx@linutronix.de> wrote:
-> 
-> > > Personally I'd prefer alphabetic order, sorting based on length 
-> > > isn't a complete ordering.  Nearly all editors can sort 
-> > > alphabetically at the push of a key.
-> > 
-> > I'd prefer if somebody would sit down and write a tool to analyse 
-> > the include hell instead of manually shuffling crap around to 
-> > avoid trivial merge conflicts. I have cleaned up enough stuff in 
-> > the x86 merger myself where I was able to cut the number of 
-> > includes at least in half just by staring at the gcc intermediate 
-> > files. We could do better and automate the analysis so we get down 
-> > to a handful of includes instead of including the world and more.
-> 
-> I do not disagree with include file cleanups (we've done many of 
-> them in this cycle and in previous cycles), but note that the 
-> reduction in include files at the top of .c files actually increases 
-> the chance of patch conflicts: when a new include file is added by 
-> two patches to the same .c file.
+On Thu, 26 Mar 2009, Linus Torvalds wrote:
 
-Those conflicts are trivial and if we have a mechanism to anlyse
-include dependencies then we can avoid such conflicts often at all. 
+> On Thu, 26 Mar 2009, Linus Torvalds wrote:
+>>
+>
+> The only excuse _ever_ for user-land tweaking is if you do something
+> really odd. Say that you want to get the absolutely best OLTP numbers you
+> can possibly get - with no regards for _any_ other workload. In that case,
+> you want to tweak the numbers for that exact load, and the exact machine
+> that runs it - and the result is going to be a totally worthless number
+> (since it's just benchmarketing and doesn't actually reflect any real
+> world scenario), but hey, that's what benchmarketing is all about.
+>
+> Or say that you really are a very embedded environment, with a very
+> specific load. A router, a cellphone, a base station, whatever - you do
+> one thing, and you're not trying to be a general purpose machine. Then you
+> can tweak for that load. But not otherwise.
+>
+> If you don't have any magical odd special workloads, you shouldn't need to
+> tweak a single kernel knob. Because if you need to, then the kernel is
+> doing something wrong to begin with.
 
-Go through some of the include madness and watch the compiler reading
-the same header file ten times for a single source file compile.
+while I agree with most of what you say, I'll point out that many 
+enterprise servers really do care about one particular workload to the 
+exclusion of everything else. if you can get another 10% performance by 
+tuning your box for an OLTP workload and make your cluster 9 boxes instead 
+of 10 it's well worth it (it ends up being better response time for users, 
+less hardware, and avoiding software license costs most of the time"
 
-Thanks,
+this is somewhere between benchmarking and embedded, but it is a valid 
+case.
 
-	tglx
+most users (even most database users) don't need to go after that last 
+little bit of performance, the defalts should be good enough for most 
+users, no matter what workload they are running.
+
+David Lang
