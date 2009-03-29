@@ -1,52 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756873AbZC2MCE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756797AbZC2MDP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756873AbZC2MCE (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Mar 2009 08:02:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755780AbZC2MBv
+	id S1756797AbZC2MDP (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Mar 2009 08:03:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753809AbZC2MC6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Mar 2009 08:01:51 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:39597 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755424AbZC2MBu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Mar 2009 08:01:50 -0400
-Message-ID: <49CF632A.7070906@redhat.com>
-Date: Sun, 29 Mar 2009 15:01:46 +0300
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Sun, 29 Mar 2009 08:02:58 -0400
+Received: from mo-p05-ob.rzone.de ([81.169.146.180]:9479 "EHLO
+	mo-p05-ob.rzone.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752334AbZC2MC5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Mar 2009 08:02:57 -0400
+X-RZG-AUTH: :LWIQcGC8af5qXkYNYt77sURZEFmV4M3TAgvB+Qeh4tE+44JfzNbYav6UBdLY
+X-RZG-CLASS-ID: mo05
+Message-ID: <49CF636A.3030400@ursus.ath.cx>
+Date: Sun, 29 Mar 2009 14:02:50 +0200
+From: "Andreas T.Auer" <andreas.t.auer_lkml_73537@ursus.ath.cx>
+User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
 MIME-Version: 1.0
-To: Marcelo Tosatti <mtosatti@redhat.com>
-CC: Joerg Roedel <joerg.roedel@amd.com>, kvm@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/7] Support for GB pages in KVM
-References: <1238164319-16092-1-git-send-email-joerg.roedel@amd.com> <20090328214008.GB4694@amt.cnet>
-In-Reply-To: <20090328214008.GB4694@amt.cnet>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+To: =?ISO-8859-1?Q?M=E5ns_Rullg=E5rd?= <mans@mansr.com>
+CC: linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org
+Subject: Re: Zero length files - an alternative approach?
+References: <87bprka9sg.fsf@newton.gmurray.org.uk> <yw1xab744lqi.fsf@thrashbarg.mansr.com>
+In-Reply-To: <yw1xab744lqi.fsf@thrashbarg.mansr.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Marcelo Tosatti wrote:
-> On Fri, Mar 27, 2009 at 03:31:52PM +0100, Joerg Roedel wrote:
->   
->> Hi,
->>
->> this patchset extends the KVM MMU implementation to support 1GB pages as
->> supported by AMD family 16 processors. These patches enable support for
->> 1 GB pages with Nested Paging. Support for these pages in the shadow
->> paging code was also developed but does not run stable yet. The patch
->> for shadow-paging support is not included in this series and will be
->> sent out seperatly.
->>     
+
+
+On 29.03.2009 13:22 Måns Rullgård wrote:
+> Consider this scenario:
 >
-> Looks generally sane. I'm not sure its even worthwhile to support
-> GBpages with softmmu, because the chance of finding an area without
-> shadowed (write protected) pages is much smaller than with 2MB pages.
+> 1. Create/write/close newfile
+> 2. Rename newfile to oldfile
+> 3. Open/read oldfile.  This must return the new contents.
+> 4. System crash and reboot before delayed allocation/flush complete
+> 5. Open/read oldfile.  Old contents now returned.
+>
+> This rollback isn't obviously, to me at least, without problems of its
+> own.
+>
 >   
-
-If the guest uses 1GB pages in userspace, then these pages would not 
-have any write protected subpages.
-
--- 
-error compiling committee.c: too many arguments to function
-
+Having the old data in 5) is far better than having no data in 5).
