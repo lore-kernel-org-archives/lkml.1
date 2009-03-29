@@ -1,53 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756065AbZC2KoT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753825AbZC2LAT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756065AbZC2KoT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Mar 2009 06:44:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753463AbZC2KoE
+	id S1753825AbZC2LAT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Mar 2009 07:00:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752036AbZC2LAE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Mar 2009 06:44:04 -0400
-Received: from newton.gmurray.org.uk ([81.2.114.237]:41092 "EHLO
-	newton.gmurray.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751551AbZC2KoD (ORCPT
+	Sun, 29 Mar 2009 07:00:04 -0400
+Received: from ftp.linux-mips.org ([213.58.128.207]:38932 "EHLO
+	ftp.linux-mips.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751133AbZC2LAD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Mar 2009 06:44:03 -0400
-X-DKIM: Sendmail DKIM Filter v2.8.2 newton.gmurray.org.uk n2TAhxnP010031
-X-Hashcash: 1:22:090329:linux-kernel@vger.kernel.org::QEFN6M0b+ijO+rdH:000000000000000000000000000000000ExCc
-From: Graham Murray <graham@gmurray.org.uk>
-To: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Zero length files - an alternative approach?
-X-Hashcash: 1:22:090329:linux-ext4@vger.kernel.org::OtBqxEezQK8bFkhZ:000000000000000000000000000000000005Ov9
-Date: Sun, 29 Mar 2009 11:43:59 +0100
-Message-ID: <87bprka9sg.fsf@newton.gmurray.org.uk>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.91 (gnu/linux)
+	Sun, 29 Mar 2009 07:00:03 -0400
+Date: Sun, 29 Mar 2009 12:59:50 +0200
+From: Ralf Baechle <ralf@linux-mips.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] Fix build error in <linux/irq.h>
+Message-ID: <20090329105950.GA21370@linux-mips.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Just a thought on the ongoing discussion of dataloss with ext4 vs ext3.
+<linux/irq.h> relies on <linux/gfp.h> and <linux/topology.h> having been
+included previous.  If not, the errors like below will result.
 
-Taking the common scenario:
-Read oldfile
-create newfile file
-write newfile data
-close newfile
-rename newfile to oldfile
+  CC      arch/mips/mti-malta/malta-int.o
+In file included from /home/ralf/src/linux/linux-queue/arch/mips/mti-malta/malta-int.c:25:
+/home/ralf/src/linux/linux-queue/include/linux/irq.h: In function ‘init_alloc_desc_masks’:
+/home/ralf/src/linux/linux-queue/include/linux/irq.h:444: error: implicit declaration of function ‘cpu_to_node’
+/home/ralf/src/linux/linux-queue/include/linux/irq.h:446: error: ‘GFP_ATOMIC’ undeclared (first use in this function)
+/home/ralf/src/linux/linux-queue/include/linux/irq.h:446: error: (Each undeclared identifier is reported only once
+/home/ralf/src/linux/linux-queue/include/linux/irq.h:446: error: for each function it appears in.)
+make[3]: *** [arch/mips/mti-malta/malta-int.o] Error 1
+make[2]: *** [arch/mips/mti-malta] Error 2
+make[1]: *** [sub-make] Error 2
 
-When using this scenario, the application writer wants to ensure that
-either the old or new content are present. With delayed allocation, this
-can lead to zero length files. Most of the suggestions on how to address
-this have involved syncing the data either before the rename or making
-the rename sync the data.
+Fixed by including the two missing headers.
 
-What about, instead of 'bringing forward' the allocation and flushing of
-the data, would it be possible to instead delay the rename until after
-the blocks for newfile have been allocated and the data buffers flushed?
-This would keep the performance benefits of delayed allocation etc and
-also satisfy the applications developers' apparent dislike of using
-fsync(). It would give better performance that syncing the data at
-rename time (either using fsync() or automatically) and satisfy the
-requirements that either the old or new content is present.
+Signed-off-by: Ralf Baechle <ralf@linux-mips.org>
 
-I am not a filesystem developer, so do not know how feasible this would
-be. 
+ include/linux/irq.h |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
+
+diff --git a/include/linux/irq.h b/include/linux/irq.h
+index 873e4ac..9c62fbe 100644
+--- a/include/linux/irq.h
++++ b/include/linux/irq.h
+@@ -17,9 +17,11 @@
+ #include <linux/cache.h>
+ #include <linux/spinlock.h>
+ #include <linux/cpumask.h>
++#include <linux/gfp.h>
+ #include <linux/irqreturn.h>
+ #include <linux/irqnr.h>
+ #include <linux/errno.h>
++#include <linux/topology.h>
+ 
+ #include <asm/irq.h>
+ #include <asm/ptrace.h>
