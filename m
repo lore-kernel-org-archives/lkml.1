@@ -1,81 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754575AbZC2LwP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755058AbZC2LyU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754575AbZC2LwP (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Mar 2009 07:52:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753307AbZC2Lv5
+	id S1755058AbZC2LyU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Mar 2009 07:54:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752323AbZC2LyG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Mar 2009 07:51:57 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:54727 "EHLO mx2.redhat.com"
+	Sun, 29 Mar 2009 07:54:06 -0400
+Received: from aun.it.uu.se ([130.238.12.36]:47075 "EHLO aun.it.uu.se"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752691AbZC2Lv4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Mar 2009 07:51:56 -0400
-Message-ID: <49CF60D8.1060305@redhat.com>
-Date: Sun, 29 Mar 2009 14:51:52 +0300
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
-MIME-Version: 1.0
-To: Joerg Roedel <joerg.roedel@amd.com>
-CC: Marcelo Tosatti <mtosatti@redhat.com>, kvm@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 6/7] kvm mmu: enabling 1GB pages by extending backing_size
- funtion
-References: <1238164319-16092-1-git-send-email-joerg.roedel@amd.com> <1238164319-16092-7-git-send-email-joerg.roedel@amd.com>
-In-Reply-To: <1238164319-16092-7-git-send-email-joerg.roedel@amd.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	id S1752102AbZC2LyF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Mar 2009 07:54:05 -0400
+Date: Sun, 29 Mar 2009 13:53:59 +0200 (MEST)
+Message-Id: <200903291153.n2TBrxvV012426@pilspetsen.it.uu.se>
+From: Mikael Pettersson <mikpe@it.uu.se>
+To: linux-kernel@vger.kernel.org
+Subject: can get_signal_to_deliver() clobber current's _RESTORE_SIGMASK flag?
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Joerg Roedel wrote:
-> This patch enables support for 1GB pages in KVM by implementing
-> the support in backing_size().
->
-> @@ -490,18 +492,30 @@ static enum kvm_page_size host_page_size(struct kvm *kvm, gfn_t gfn)
->  static enum kvm_page_size backing_size(struct kvm_vcpu *vcpu, gfn_t gfn)
->  {
->  	struct kvm_memory_slot *slot;
-> -
-> -	if (has_wrprotected_page(vcpu->kvm, gfn))
-> -		return KVM_PAGE_SIZE_4k;
-> -
-> -	if (host_page_size(vcpu->kvm, gfn) < KVM_PAGE_SIZE_2M)
-> -		return KVM_PAGE_SIZE_4k;
-> +	enum kvm_page_size host_size, ret;
->  
->  	slot = gfn_to_memslot(vcpu->kvm, gfn);
->  	if (slot && slot->dirty_bitmap)
->  		return KVM_PAGE_SIZE_4k;
->  
-> -	return KVM_PAGE_SIZE_2M;
-> +	host_size = host_page_size(vcpu->kvm, gfn);
-> +
-> +	switch (host_size) {
-> +	case KVM_PAGE_SIZE_1G:
-> +		if (!has_wrprotected_largepage(vcpu->kvm, gfn)) {
-> +			ret = KVM_PAGE_SIZE_1G;
-> +			break;
-> +		}
->   
+In all archs that support _RESTORE_SIGMASK do_signal() queries the
+thread flags and sets up oldset before calling get_signal_to_deliver(),
+but oldset is then only used in the "if (signr > 0)" block.
 
-What if there's a wrprotected_page in there?
+Would it be safe to move the threads flags query past the
+get_signal_to_deliver() call into the "if (signr > 0)" block?
+To illustrate, here's how it would look on x86:
 
-> +	case KVM_PAGE_SIZE_2M:
-> +		if (!has_wrprotected_page(vcpu->kvm, gfn)) {
-> +			ret = KVM_PAGE_SIZE_2M;
-> +			break;
-> +		}
-> +	default:
-> +		ret = KVM_PAGE_SIZE_4k;
-> +	}
-> +
-> +	return ret;
->  }
->  
->  /*
->   
+--- linux-2.6.29/arch/x86/kernel/signal.c.~1~	2009-03-24 18:00:34.000000000 +0100
++++ linux-2.6.29/arch/x86/kernel/signal.c	2009-03-29 10:36:02.000000000 +0200
+@@ -802,7 +802,6 @@ static void do_signal(struct pt_regs *re
+ 	struct k_sigaction ka;
+ 	siginfo_t info;
+ 	int signr;
+-	sigset_t *oldset;
+ 
+ 	/*
+ 	 * We want the common case to go fast, which is why we may in certain
+@@ -814,13 +813,15 @@ static void do_signal(struct pt_regs *re
+ 	if (!user_mode(regs))
+ 		return;
+ 
+-	if (current_thread_info()->status & TS_RESTORE_SIGMASK)
+-		oldset = &current->saved_sigmask;
+-	else
+-		oldset = &current->blocked;
+-
+ 	signr = get_signal_to_deliver(&info, &ka, regs, NULL);
+ 	if (signr > 0) {
++		sigset_t *oldset;
++
++		if (current_thread_info()->status & TS_RESTORE_SIGMASK)
++			oldset = &current->saved_sigmask;
++		else
++			oldset = &current->blocked;
++
+ 		/*
+ 		 * Re-enable any watchpoints before delivering the
+ 		 * signal to user space. The processor register will
 
 
--- 
-error compiling committee.c: too many arguments to function
+The background is that I've been working on _RESTORE_SIGMASK
+support for ARM in order to enable pselect6/ppoll/epoll_pwait.
+It's working but as a cleanup rmk wanted the oldset setup code to
+be moved into the "if (signr > 0)" block. But that's only safe if
+get_signal_to_deliver() cannot clobber current's _RESTORE_SIGMASK.
 
+/Mikael
