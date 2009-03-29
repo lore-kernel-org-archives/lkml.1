@@ -1,144 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757609AbZC2CdV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756923AbZC2Dny@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757609AbZC2CdV (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Mar 2009 22:33:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756096AbZC2CdF
+	id S1756923AbZC2Dny (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Mar 2009 23:43:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752210AbZC2Dnn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Mar 2009 22:33:05 -0400
-Received: from mga03.intel.com ([143.182.124.21]:22701 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756055AbZC2CdD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Mar 2009 22:33:03 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.38,439,1233561600"; 
-   d="scan'208";a="125295533"
-Date: Sun, 29 Mar 2009 10:32:38 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Jos Houtman <jos@hyves.nl>
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Jeff Layton <jlayton@redhat.com>, Dave Chinner <david@fromorbit.com>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       "jens.axboe@oracle.com" <jens.axboe@oracle.com>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "hch@infradead.org" <hch@infradead.org>,
-       "linux-nfs@vger.kernel.org" <linux-nfs@vger.kernel.org>
-Subject: Re: Page Cache writeback too slow,   SSD/noop scheduler/ext2
-Message-ID: <20090329023238.GA7825@localhost>
-References: <20090325052637.GA5912@localhost> <C5F2C492.D4A8%jos@hyves.nl>
+	Sat, 28 Mar 2009 23:43:43 -0400
+Received: from ti-out-0910.google.com ([209.85.142.184]:4854 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751294AbZC2Dnn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Mar 2009 23:43:43 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:reply-to:user-agent:mime-version:to:cc:subject
+         :content-type:content-transfer-encoding;
+        b=VlGdaIJR91NEXHcdupbL/NCaaJFsxMnGJdBv+4khIqr1OkxWOlOl/biQRYYLDUSs2C
+         ASd6zw7FH3nLMr4GPnpFXjqbh+mXTWNNN7vRrd1y1QWHQmFBQOqn+WZlSqzRz7fg/+I6
+         uEftpMfa3y7sFCcgB8jC7Nn0N5QkmJC05aWmY=
+Message-ID: <49CEEE5A.4080004@vflare.org>
+Date: Sun, 29 Mar 2009 09:13:22 +0530
+From: Nitin Gupta <nitingupta910@gmail.com>
+Reply-To: ngupta@vflare.org
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="17pEHd4RhPHOinZp"
-Content-Disposition: inline
-In-Reply-To: <C5F2C492.D4A8%jos@hyves.nl>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: Christoph Lameter <cl@linux-foundation.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Ed Tomlinson <edt@aei.ca>,
+       linux-mm-cc@laptop.org,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: [PATCH 0/3] compressed in-memory swapping take4
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
---17pEHd4RhPHOinZp
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Project home: http://compcache.googlecode.com
 
-On Sat, Mar 28, 2009 at 12:59:43AM +0800, Jos Houtman wrote:
-> Hi,
-> 
-> >> 
-> >> kupdate surely should just continue to keep trying to write back pages
-> >> so long as there are more old pages to clean, and the queue isn't
-> >> congested. That seems to be the intention anyway: MAX_WRITEBACK_PAGES
-> >> is just the number to write back in a single call, but you see
-> >> nr_to_write is set to the number of dirty pages in the system.
-> 
-> And when it's congested it should just wait a little bit before continuing.
->  
-> >> On your system, what must be happening is more_io is not being set.
-> >> The logic in fs/fs-writeback.c might be busted.
-> 
-> I don't know about more_io, but I agree that the logic seems busted.
-> 
-> > 
-> > Hi Jos,
-> > 
-> > I prepared a debugging patch for 2.6.28. (I cannot observe writeback
-> > problems on my local ext2 mount.)
-> 
-> Thanx for the patch, but for the next time: How should I apply it?
-> it seems to be context aware (@@) and broke on all kernel versions I tried
-> 2.6.28/2.6.28.7/2.6.29
+It allows creating a RAM based block device which acts as swap disk.
+Pages swapped to this device are compressed and stored in memory itself.
+This is a big win over swapping to slow hard-disk which are typically used
+as swap disk. For flash, these suffer from wear-leveling issues when used
+as swap disk - so again its helpful. For swapless systems, it allows more
+apps to run.
 
-Do you mean that the patch applies after removing " @@.*$"?
+* Changelog: take4 vs take3
+xvmalloc changes:
+  - Fixed regression in take3 that caused ramzswap write failures.
+    This happened due to error in find_block() where we did not do
+    explicit cast to 'unsigned long' when checking for bits set in
+    bitmap. Now changed it to use kernel build-in test_bit().
+  - Fix divide by zero error in proc read function.
+ramzswap changes:
+  - Forward write requests to backing swap device if allocation for
+    compressed page fails.
+  - Code cleanups.
 
-To be safe, I created the patch with quilt as well as git, for 2.6.29.
+(Please also see testing notes below).
 
-> Because I saw the patch only a few hour ago and didn't want to block on your
-> reply I decided to patch it manually and in the process ported it to 2.6.29.
-> 
-> As for the information the patch provided: It is most helpful.
-> 
-> Attached you will find a list of files containing dirty pages and the count
-> of there dirty pages, there is also a dmesg output where I trace the
-> writeback for 40 seconds.
+* Changelog: take3 vs take2
+xvmalloc changes:
+  - Use kernel defined macros and constants in xvmalloc and remove
+    equivalent defines for ALIGN, roundup etc.
+  - Use kernel bitops (set_bit, clear_bit)
+  - Moved it to drivers/block since its not clear if it has any other
+    user.
+ramzswap changes:
+  - All instances of compcache renamed to ramzswap.
+    Also renamed module to ramzswap
+  - Renamed "backing_dev" parameter to "backing_swap"
+  - Documentation changes to reflect above changes.
+  - Remove "table index" from object header (4 bytes). This will be
+    needed when memory defragmentation is implemented. So, avoid this
+    (small) overhead for now.
 
-They helped, thank you!
+* Changelog: take2 vs initial revision:
+xvmalloc changes:
+  - Use Linux kernel coding style for xvmalloc
+  - Collapse all individual flag test/set/get to generic {test_set_get}_flag
+  - Added BLOCK_NEXT() macro to reach next contiguous block
+  - Other minor cleanups - no functional changes
+compcache block device code:
+  - compcache core changes due to change in xvmalloc interface names
 
-> I did some testing on my own using printk's and what I saw is that for the
-> inodes located on sdb1 (the database) a lot of times they would pass
-> http://lxr.linux.no/linux+v2.6.29/fs/fs-writeback.c#L335
-> And then redirty_tail would be called, I haven't had the time to dig deeper,
-> but that is my primary suspect for the moment.
+* Testing notes:
+  - Multiple cycles of 'scan' benchmark available at:
+http://linux-mm.org/PageReplacementTesting
+It does scans of anonymous mapped memory, both cyclic and use once.
 
-You are right. In your case, there are several big dirty files in sdb1,
-and the sdb write queue is constantly (almost-)congested. The SSD write
-speed is so slow, that in each round of sdb1 writeback, it begins with
-an uncongested queue, but quickly fills up after writing some pages.
-Hence all the inodes will get redirtied because of (nr_to_write > 0).
+Config:
+Arch: x86 and x64
+CPUs: 1/2, RAM: 512MB
+backing swap: 768MB, ramzswap memlimit: 76MB (15% of RAM).
 
-The following quick fix should solve the slow-writeback-on-congested-SSD
-problem. However the writeback sequence is suboptimal: it sync-and-requeue
-each file until congested (in your case about 3~600 pages) instead of
-until MAX_WRITEBACK_PAGES=1024 pages.
+Continuously run 'scan' till it triggers 200K R/W operations on ramzswap.
+Any incompressible pages were correctly forwarded to backing swap device.
+cmd: ./scan 450 20 # scan over 450MB, 20 times.
 
-A more complete fix would be turning MAX_WRITEBACK_PAGES into an exact
-per-file limit. It has been sitting in my todo list for quite a while...
+  - Links to more performance numbers, use cases can be found at:
+http://lkml.org/lkml/2009/3/17/116
+
+Thanks to Ed Tomlinson for reporting bug in 'take3' patches
+and to reviewers of previous versions.
 
 Thanks,
-Fengguang
+Nitin
 
----
- fs/fs-writeback.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
-
---- mm.orig/fs/fs-writeback.c
-+++ mm/fs/fs-writeback.c
-@@ -325,7 +325,8 @@ __sync_single_inode(struct inode *inode,
- 				 * soon as the queue becomes uncongested.
- 				 */
- 				inode->i_state |= I_DIRTY_PAGES;
--				if (wbc->nr_to_write <= 0) {
-+				if (wbc->nr_to_write <= 0 ||
-+				    wbc->encountered_congestion) {
- 					/*
- 					 * slice used up: queue for next turn
- 					 */
-
---17pEHd4RhPHOinZp
-Content-Type: text/x-diff; charset=us-ascii
-Content-Disposition: attachment; filename="writeback-requeue-congestion-quickfix.patch"
-
-diff --git a/fs/fs-writeback.c b/fs/fs-writeback.c
-index e3fe991..da5f88d 100644
---- a/fs/fs-writeback.c
-+++ b/fs/fs-writeback.c
-@@ -325,7 +325,8 @@ __sync_single_inode(struct inode *inode, struct writeback_control *wbc)
- 				 * soon as the queue becomes uncongested.
- 				 */
- 				inode->i_state |= I_DIRTY_PAGES;
--				if (wbc->nr_to_write <= 0) {
-+				if (wbc->nr_to_write <= 0 ||
-+				    wbc->encountered_congestion) {
- 					/*
- 					 * slice used up: queue for next turn
- 					 */
-
---17pEHd4RhPHOinZp--
