@@ -1,106 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755997AbZC2AZm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755114AbZC2A3w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755997AbZC2AZm (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Mar 2009 20:25:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753086AbZC2AZI
+	id S1755114AbZC2A3w (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Mar 2009 20:29:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751726AbZC2A3n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Mar 2009 20:25:08 -0400
-Received: from bilbo.ozlabs.org ([203.10.76.25]:49868 "EHLO bilbo.ozlabs.org"
+	Sat, 28 Mar 2009 20:29:43 -0400
+Received: from www.tglx.de ([62.245.132.106]:45766 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751362AbZC2AZH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Mar 2009 20:25:07 -0400
+	id S1751080AbZC2A3n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Mar 2009 20:29:43 -0400
+Date: Sun, 29 Mar 2009 01:28:31 +0100 (CET)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Ingo Molnar <mingo@elte.hu>
+cc: "H. Peter Anvin" <hpa@kernel.org>, Sam Ravnborg <sam@ravnborg.org>,
+       Alexey Dobriyan <adobriyan@gmail.com>,
+       Jaswinder Singh Rajput <jaswinder@kernel.org>,
+       x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [git-pull -tip] x86: include inverse Xmas tree patches
+In-Reply-To: <alpine.LFD.2.00.0903290035390.3397@localhost.localdomain>
+Message-ID: <alpine.LFD.2.00.0903290055080.3397@localhost.localdomain>
+References: <1238251730.2526.2.camel@ht.satnam> <20090328150746.GA3268@x200.localdomain> <20090328190350.GA30214@uranus.ravnborg.org> <49CEA3CD.105@kernel.org> <alpine.LFD.2.00.0903290025280.3397@localhost.localdomain> <20090328233438.GA4957@elte.hu>
+ <alpine.LFD.2.00.0903290035390.3397@localhost.localdomain>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18894.49084.341238.775487@cargo.ozlabs.ibm.com>
-Date: Sun, 29 Mar 2009 11:24:28 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
-       Wu Fengguang <fengguang.wu@intel.com>
-Subject: Re: [PATCH 2/9] perf_counter: fix update_userpage()
-In-Reply-To: <20090328194929.546464621@chello.nl>
-References: <20090328194359.426029037@chello.nl>
-	<20090328194929.546464621@chello.nl>
-X-Mailer: VM 8.0.9 under Emacs 22.2.1 (i486-pc-linux-gnu)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Zijlstra writes:
+On Sun, 29 Mar 2009, Thomas Gleixner wrote:
 
-> It just occured to me it is possible to have multiple contending
-> updates of the userpage (mmap information vs overflow vs counter).
-> This would break the seqlock logic.
+> On Sun, 29 Mar 2009, Ingo Molnar wrote:
+> > * Thomas Gleixner <tglx@linutronix.de> wrote:
+> > 
+> > > > Personally I'd prefer alphabetic order, sorting based on length 
+> > > > isn't a complete ordering.  Nearly all editors can sort 
+> > > > alphabetically at the push of a key.
+> > > 
+> > > I'd prefer if somebody would sit down and write a tool to analyse 
+> > > the include hell instead of manually shuffling crap around to 
+> > > avoid trivial merge conflicts. I have cleaned up enough stuff in 
+> > > the x86 merger myself where I was able to cut the number of 
+> > > includes at least in half just by staring at the gcc intermediate 
+> > > files. We could do better and automate the analysis so we get down 
+> > > to a handful of includes instead of including the world and more.
+> > 
+> > I do not disagree with include file cleanups (we've done many of 
+> > them in this cycle and in previous cycles), but note that the 
+> > reduction in include files at the top of .c files actually increases 
+> > the chance of patch conflicts: when a new include file is added by 
+> > two patches to the same .c file.
 > 
-> It appear the arch code uses this from NMI context, so we cannot
-> possibly serialize its use, therefore separate the data_head update
-> from it and let it return to its original use.
+> Those conflicts are trivial and if we have a mechanism to anlyse
+> include dependencies then we can avoid such conflicts often at all. 
+> 
+> Go through some of the include madness and watch the compiler reading
+> the same header file ten times for a single source file compile.
 
-That sounds reasonable, and thanks for putting in a big comment.
+I'm not against sorting the headers at all. I personally have no
+preference whether it's alphabetical or length, but...
 
-Acked-by: Paul Mackerras <paulus@samba.org>
+I just run the following on current git:
 
-> --- linux-2.6.orig/include/linux/perf_counter.h
-> +++ linux-2.6/include/linux/perf_counter.h
-> @@ -160,10 +160,45 @@ struct perf_counter_hw_event {
->  struct perf_counter_mmap_page {
->  	__u32	version;		/* version number of this structure */
->  	__u32	compat_version;		/* lowest version this is compat with */
-> +
-> +	/*
-> +	 * Bits needed to read the hw counters in user-space.
-> +	 *
-> +	 * The index and offset should be read atomically using the seqlock:
-> +	 *
-> +	 *   __u32 seq, index;
-> +	 *   __s64 offset;
-> +	 *
-> +	 * again:
-> +	 *   rmb();
-> +	 *   seq = pc->lock;
-> +	 *
-> +	 *   if (unlikely(seq & 1)) {
-> +	 *     cpu_relax();
-> +	 *     goto again;
-> +	 *   }
-> +	 *
-> +	 *   index = pc->index;
-> +	 *   offset = pc->offset;
-> +	 *
-> +	 *   rmb();
-> +	 *   if (pc->lock != seq)
-> +	 *     goto again;
-> +	 *
-> +	 * After this, index contains architecture specific counter index + 1,
-> +	 * so that 0 means unavailable, offset contains the value to be added
-> +	 * to the result of the raw timer read to obtain this counter's value.
-> +	 */
->  	__u32	lock;			/* seqlock for synchronization */
->  	__u32	index;			/* hardware counter identifier */
->  	__s64	offset;			/* add to hardware counter value */
+# FS=`find -type f`; for F in $FS; do grep -c "#include" $F; done | sort -n | uniq -c
 
-I think we can simplify this (in a follow-on patch).
+The top 5 are:
 
-It has occurred to me that we don't need to do all this on the
-userspace side, because we are necessarily reading and writing these
-fields on the same CPU.  If the reader and writer were on different
-CPUs, that would make no sense since they would be accessing different
-hardware counter registers.
+lib/locking-selftest.c:	108 (justified as this includes all the test cases)
+fs/compat_ioctl.c	 88 (maybe ok as it is the all in one kitchen sink)
+arch/x86/kernel/setup.c: 76 (completely nuts)
+init/main.c:		 62 (needs to be looked at)
+security/selinux/hooks.c 61 (needs to be looked at, spotted at least 5 which can be removed)
 
-That means that we don't need any CPU memory barriers on either side.
-All the kernel needs to do is to increment `lock' when it updates
-things, and the user side can be:
+1400 files have more than 20 includes. 5375 more than 10.
 
-	do {
-		seq = pc->lock;
-		index = pc->index;
-		offset = pc->offset;
-		barrier();
-	} while (pc->lock != seq);
+I think it's well justified to sit down and work on a tool which helps
+us analyse and distangle that mess.
 
-and all that's needed is a compiler barrier to stop the compiler from
-optimizing too much.
+Thanks,
 
-Paul.
+	tglx
