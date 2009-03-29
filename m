@@ -1,51 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755304AbZC2Lh3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755310AbZC2LjD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755304AbZC2Lh3 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Mar 2009 07:37:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753321AbZC2LhR
+	id S1755310AbZC2LjD (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Mar 2009 07:39:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753440AbZC2Liv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Mar 2009 07:37:17 -0400
-Received: from ti-out-0910.google.com ([209.85.142.186]:42117 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753266AbZC2LhQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Mar 2009 07:37:16 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=KcLvZnQ7oI5dzwXt1lkFJF8wFLeCmB5FAXd3YNqGSdoanzTvi+eyJK28VVXjlWfaat
-         agqdHT4/77RTNDhfVsCtHg4Fohu2Oi/WK/u4urUebcWAMZ/gwqCPujK9L/my8ZdxW2Rj
-         CX50ZLxLxtEP354XNSypk5dJHw7nunKDK+qt4=
-Message-ID: <49CF5D64.3070008@kernel.org>
-Date: Sun, 29 Mar 2009 19:37:08 +0800
-From: Bryan Wu <cooloney@kernel.org>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090319)
+	Sun, 29 Mar 2009 07:38:51 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:50088 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753321AbZC2Liu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Mar 2009 07:38:50 -0400
+Message-ID: <49CF5DBF.3030305@redhat.com>
+Date: Sun, 29 Mar 2009 14:38:39 +0300
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Bryan Wu <cooloney@kernel.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [GIT PULL] Blackfin fixing and updates for 2.6.30 merge window
-References: <49CE6AD9.1080603@kernel.org> <alpine.LFD.2.00.0903281329180.3994@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.00.0903281329180.3994@localhost.localdomain>
-Content-Type: text/plain; charset=US-ASCII
+To: Joerg Roedel <joerg.roedel@amd.com>
+CC: Marcelo Tosatti <mtosatti@redhat.com>, kvm@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/7] kvm mmu: infrastructure changes for multiple huge
+ page support
+References: <1238164319-16092-1-git-send-email-joerg.roedel@amd.com> <1238164319-16092-3-git-send-email-joerg.roedel@amd.com>
+In-Reply-To: <1238164319-16092-3-git-send-email-joerg.roedel@amd.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
-> 
-> On Sun, 29 Mar 2009, Bryan Wu wrote:
->> Please pull from 'for-linus' branch of
->> master.kernel.org:/pub/scm/linux/kernel/git/cooloney/blackfin.git/ for-linus
-> 
-> Please give the right git-url. That should be "blackfin-2.6.git"
-> 
-> 		Linus
-> 
+Joerg Roedel wrote:
+> This patch includes most of the necessary changes to the KVM SoftMMU for
+> supporting more than one huge page size. The changes in this patch
+> include:
+>
+>   * introduce 'enum kvm_page_size' which is used to represent the page
+>     size used
+>   
 
-Sorry. I will fix my script. Please pull from 'for-linus' branch of
-	master.kernel.org:/pub/scm/linux/kernel/git/cooloney/blackfin-2.6.git/ for-linus
+How about the concept of page_level instead, which returns the level of 
+a page in terms of the paging hierarchy?  Would be easier to compare 
+against in the various walkers.
 
-Thanks a lot
--Bryan
+I've been thinking for a while to make levels zero-based, so 0 would be 
+a 4K page, 1 a 2M page, and 2 a 1GB page.
+
+
+
+
+-- 
+error compiling committee.c: too many arguments to function
+
