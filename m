@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759471AbZC2Uvg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759561AbZC2Uvv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759471AbZC2Uvg (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Mar 2009 16:51:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758811AbZC2Utr
+	id S1759561AbZC2Uvv (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Mar 2009 16:51:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758919AbZC2UuK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Mar 2009 16:49:47 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:50043
+	Sun, 29 Mar 2009 16:50:10 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:50046
 	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1758695AbZC2Utq (ORCPT
+	by vger.kernel.org with ESMTP id S1757913AbZC2UuH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Mar 2009 16:49:46 -0400
-Date: Sun, 29 Mar 2009 13:49:34 -0700 (PDT)
-Message-Id: <20090329.134934.228768968.davem@davemloft.net>
+	Sun, 29 Mar 2009 16:50:07 -0400
+Date: Sun, 29 Mar 2009 13:49:51 -0700 (PDT)
+Message-Id: <20090329.134951.12355962.davem@davemloft.net>
 To: a.beregalov@gmail.com
 Cc: gregkh@suse.de, linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [PATCH 5/10] Staging: rt2860: convert to netdev_ops
+Subject: Re: [PATCH 6/10] Staging: rt2870: convert to netdev_ops
 From: David Miller <davem@davemloft.net>
-In-Reply-To: <20090329152721.GE11056@orion>
-References: <20090329152721.GE11056@orion>
+In-Reply-To: <20090329152811.GF11056@orion>
+References: <20090329152811.GF11056@orion>
 X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
@@ -27,7 +27,7 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Alexander Beregalov <a.beregalov@gmail.com>
-Date: Sun, 29 Mar 2009 19:27:21 +0400
+Date: Sun, 29 Mar 2009 19:28:11 +0400
 
 > Signed-off-by: Alexander Beregalov <a.beregalov@gmail.com>
 
