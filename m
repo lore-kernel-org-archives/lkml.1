@@ -1,72 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756883AbZC2Mr7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756757AbZC2Mt2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756883AbZC2Mr7 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Mar 2009 08:47:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756398AbZC2Mri
+	id S1756757AbZC2Mt2 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Mar 2009 08:49:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755182AbZC2MtR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Mar 2009 08:47:38 -0400
-Received: from 8bytes.org ([88.198.83.132]:55392 "EHLO 8bytes.org"
+	Sun, 29 Mar 2009 08:49:17 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:50629 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756746AbZC2Mrh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Mar 2009 08:47:37 -0400
-Date: Sun, 29 Mar 2009 14:47:35 +0200
-From: Joerg Roedel <joro@8bytes.org>
-To: Avi Kivity <avi@redhat.com>
-Cc: Marcelo Tosatti <mtosatti@redhat.com>, Joerg Roedel <joerg.roedel@amd.com>,
-       kvm@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/7] Support for GB pages in KVM
-Message-ID: <20090329124735.GH31080@8bytes.org>
-References: <1238164319-16092-1-git-send-email-joerg.roedel@amd.com> <20090328214008.GB4694@amt.cnet> <20090328214900.GE31080@8bytes.org> <49CF6390.1020009@redhat.com>
+	id S1753525AbZC2MtQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Mar 2009 08:49:16 -0400
+Message-ID: <49CF6E47.3050402@redhat.com>
+Date: Sun, 29 Mar 2009 15:49:11 +0300
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49CF6390.1020009@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Joerg Roedel <joro@8bytes.org>
+CC: Joerg Roedel <joerg.roedel@amd.com>, Marcelo Tosatti <mtosatti@redhat.com>,
+       kvm@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 7/7] kvm x86: report 1GB page support to userspace
+References: <1238164319-16092-1-git-send-email-joerg.roedel@amd.com> <1238164319-16092-8-git-send-email-joerg.roedel@amd.com> <49CF6177.9010907@redhat.com> <20090329124548.GG31080@8bytes.org>
+In-Reply-To: <20090329124548.GG31080@8bytes.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Mar 29, 2009 at 03:03:28PM +0300, Avi Kivity wrote:
-> Joerg Roedel wrote:
->> On Sat, Mar 28, 2009 at 06:40:08PM -0300, Marcelo Tosatti wrote:
->>   
->>> On Fri, Mar 27, 2009 at 03:31:52PM +0100, Joerg Roedel wrote:
->>>     
->>>> Hi,
->>>>
->>>> this patchset extends the KVM MMU implementation to support 1GB pages as
->>>> supported by AMD family 16 processors. These patches enable support for
->>>> 1 GB pages with Nested Paging. Support for these pages in the shadow
->>>> paging code was also developed but does not run stable yet. The patch
->>>> for shadow-paging support is not included in this series and will be
->>>> sent out seperatly.
->>>>       
->>> Looks generally sane. I'm not sure its even worthwhile to support
->>> GBpages with softmmu, because the chance of finding an area without
->>> shadowed (write protected) pages is much smaller than with 2MB pages.
->>>     
->>
->> Thanks for your review.
->>
->> The idea behind GB pages in softmmu code was to provide GB pages to the
->> guest even if hardware does not support it. This would work better with
->> live migration (Only case where we wouldn't have gbpages then would be
->> vmx with ept enabled).
->>
->>   
->>> Have any numbers to share?
->>>     
->>
->> No numbers I fully trust by now. I measured a 32% improvement in
->> kernbench using nested pages backed with gb pages. I will do some more
->> measurements and share some more solid numbers.
->>
->>   
+Joerg Roedel wrote:
+>>>  	int (*set_tss_addr)(struct kvm *kvm, unsigned int addr);
+>>>  	int (*get_tdp_level)(void);
+>>>  	int (*get_mt_mask_shift)(void);
+>>> +
+>>> +	bool (*gb_page_enable)(void);
+>>>  };
+>>>   
+>>>       
+>> Should enable unconditionally.  Of course we need to find the shadow bug  
+>> first, may be the has_wrprotected thingy.
+>>     
 >
-> Compared to 2M pages?  But we're already close to native here.
+> This was the original plan. But how about VMX with EPT enabled? I am not
+> sure but I think this configuration will not support gbpages?
+>
+> 	
 
-Yes, thats why I don't trust those numbers. I'll find out what went
-wrong and provide more solid numbers.
+You're right.  Let's have a ->max_host_page_level() to handle that.  
+It's 0.5T pages ready, too.
 
-	Joerg
+-- 
+error compiling committee.c: too many arguments to function
 
