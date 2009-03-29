@@ -1,126 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754812AbZC2XdY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754374AbZC2XgV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754812AbZC2XdY (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Mar 2009 19:33:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754005AbZC2XdG
+	id S1754374AbZC2XgV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Mar 2009 19:36:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753160AbZC2XgK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Mar 2009 19:33:06 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:61436 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752276AbZC2XdF (ORCPT
+	Sun, 29 Mar 2009 19:36:10 -0400
+Received: from mk-filter-3-a-1.mail.uk.tiscali.com ([212.74.100.54]:9334 "EHLO
+	mk-filter-3-a-1.mail.uk.tiscali.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751582AbZC2XgJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Mar 2009 19:33:05 -0400
-Date: Sun, 29 Mar 2009 18:32:56 -0500
-From: Larry Finger <Larry.Finger@lwfinger.net>
-To: jgarzik@pobox.com
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: [PATCH 2/2] kaweth: Clean up code
-Message-ID: <49d00528.CwoMz3QjGQQs0fvV%Larry.Finger@lwfinger.net>
-User-Agent: Heirloom mailx 12.2 01/07/07
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sun, 29 Mar 2009 19:36:09 -0400
+X-Trace: 171259806/mk-filter-3.mail.uk.tiscali.com/B2C/$b2c-THROTTLED-DYNAMIC/b2c-CUSTOMER-DYNAMIC-IP/80.41.47.161/None/adrian@newgolddream.dyndns.info
+X-SBRS: None
+X-RemoteIP: 80.41.47.161
+X-IP-MAIL-FROM: adrian@newgolddream.dyndns.info
+X-MUA: Evolution 2.24.3 
+X-IP-BHB: Once
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AjEFAPuiz0lQKS+h/2dsb2JhbACBUcUCg3oG
+X-IronPort-AV: E=Sophos;i="4.38,442,1233532800"; 
+   d="scan'208";a="171259806"
+Subject: Re: regression in 2.6.29-git3 on SH/Dreamcast
+From: Adrian McMenamin <adrian@newgolddream.dyndns.info>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Paul Mundt <lethal@linux-sh.org>, linux-sh <linux-sh@vger.kernel.org>
+In-Reply-To: <1238353446.6471.14.camel@localhost.localdomain>
+References: <1238353446.6471.14.camel@localhost.localdomain>
+Content-Type: text/plain
+Date: Mon, 30 Mar 2009 00:35:58 +0100
+Message-Id: <1238369758.6471.16.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The driver kaweth yields a -EBUSY error when starting, and a -ETIME
-error when shutting down. These errors are avoided, and the RX status
-is further checked for other potential errors.
+On Sun, 2009-03-29 at 20:04 +0100, Adrian McMenamin wrote:
+> While 2.6.29 boots cleanly on the Dreamcast, later revisions are likely
+> to crash with an OOM condition (this is a race, it doesn't happen on
+> every boot, but on about one in every three or four).
+> 
 
-Signed-off-by: Larry Finger <Larry.Finger@lwfinger.net>
----
+Still don't know why this timer patch is tipping the machine over, but I
+have found that if I set CONFIG_NO_HZ=y then the machine will boot with
+the patch applied.
 
-Jeff,
 
-As the listed authors of this driver have not touched it in several years,
-I have taken the liberty of sending it to you as networking drivers maintainer.
-I hope this is OK.
 
-Larry
----
 
-Index: wireless-testing/drivers/net/usb/kaweth.c
-===================================================================
---- wireless-testing.orig/drivers/net/usb/kaweth.c
-+++ wireless-testing/drivers/net/usb/kaweth.c
-@@ -31,7 +31,6 @@
-  ****************************************************************/
- 
- /* TODO:
-- * Fix in_interrupt() problem
-  * Develop test procedures for USB net interfaces
-  * Run test procedures
-  * Fix bugs from previous two steps
-@@ -610,14 +609,30 @@ static void kaweth_usb_receive(struct ur
- 	unsigned long flags;
- 
- 	spin_lock_irqsave(&kaweth->device_lock, flags);
--	if(unlikely(status == -ECONNRESET || status == -ESHUTDOWN))
--	/* we are killed - set a flag and wake the disconnect handler */
--	{
-+	if (unlikely(status == -EPIPE)) {
-+		kaweth->stats.rx_errors++;
- 		kaweth->end = 1;
- 		wake_up(&kaweth->term_wait);
-+		dbg("Status was -EPIPE.");
- 		goto out;
- 	}
--
-+	if (unlikely(status == -ECONNRESET || status == -ESHUTDOWN)) {
-+		/* we are killed - set a flag and wake the disconnect handler */
-+		kaweth->end = 1;
-+		wake_up(&kaweth->term_wait);
-+		dbg("Status was -ECONNRESET or -ESHUTDOWN.");
-+		goto out;
-+	}
-+	if (unlikely(status == -EPROTO || status == -ETIME ||
-+		     status == -EILSEQ)) {
-+		kaweth->stats.rx_errors++;
-+		dbg("Status was -EPROTO, -ETIME, or -EILSEQ.");
-+		goto out;
-+	}
-+	if (unlikely(status == -EOVERFLOW)) {
-+		kaweth->stats.rx_errors++;
-+		dbg("Status was -EOVERFLOW.");
-+	}
- 	if (IS_BLOCKED(kaweth->status))
- 		goto out;
- 
-@@ -887,13 +902,16 @@ static void kaweth_set_rx_mode(struct ne
-  ****************************************************************/
- static void kaweth_async_set_rx_mode(struct kaweth_device *kaweth)
- {
-+	int result;
- 	__u16 packet_filter_bitmap = kaweth->packet_filter_bitmap;
-+
- 	kaweth->packet_filter_bitmap = 0;
- 	if (packet_filter_bitmap == 0)
- 		return;
- 
--	{
--	int result;
-+	if (in_interrupt())
-+		return;
-+
- 	result = kaweth_control(kaweth,
- 				usb_sndctrlpipe(kaweth->dev, 0),
- 				KAWETH_COMMAND_SET_PACKET_FILTER,
-@@ -904,13 +922,10 @@ static void kaweth_async_set_rx_mode(str
- 				0,
- 				KAWETH_CONTROL_TIMEOUT);
- 
--	if(result < 0) {
--		err("Failed to set Rx mode: %d", result);
--	}
--	else {
--		dbg("Set Rx mode to %d", packet_filter_bitmap);
--	}
--	}
-+	if (result < 0)
-+		err("Failed to set Rx mode: 0x%X", result);
-+	else
-+		dbg("Set Rx mode to 0x%X", packet_filter_bitmap);
- }
- 
- /****************************************************************
