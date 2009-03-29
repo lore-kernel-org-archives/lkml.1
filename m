@@ -1,69 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755922AbZC2SG1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758735AbZC2SJ1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755922AbZC2SG1 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Mar 2009 14:06:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752412AbZC2SGR
+	id S1758735AbZC2SJ1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Mar 2009 14:09:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751612AbZC2SJR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Mar 2009 14:06:17 -0400
-Received: from rv-out-0506.google.com ([209.85.198.233]:15508 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751612AbZC2SGR convert rfc822-to-8bit (ORCPT
+	Sun, 29 Mar 2009 14:09:17 -0400
+Received: from mailrelay012.isp.belgacom.be ([195.238.6.179]:35035 "EHLO
+	mailrelay012.isp.belgacom.be" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751119AbZC2SJQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Mar 2009 14:06:17 -0400
+	Sun, 29 Mar 2009 14:09:16 -0400
+X-Belgacom-Dynamic: yes
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApoEAFZWz0lR9cC9/2dsb2JhbADHNgeDcwY
+Date: Sun, 29 Mar 2009 20:09:12 +0200
+From: Wim Van Sebroeck <wim@iguana.be>
+To: Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= 
+	<u.kleine-koenig@pengutronix.de>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Felipe Balbi <felipe.balbi@nokia.com>,
+       "George G. Davis" <gdavis@mvista.com>,
+       Russell King - ARM Linux <linux@arm.linux.org.uk>,
+       linux-omap@vger.kernel.org
+Subject: Re: [PATCH 35/58] move omap_wdt's probe function to .devinit.text
+Message-ID: <20090329180912.GA6979@infomag.iguana.be>
+References: <20090327232153.GA16348@pengutronix.de> <1238196439-16535-35-git-send-email-u.kleine-koenig@pengutronix.de>
 MIME-Version: 1.0
-In-Reply-To: <49CFB553.1020800@archlinux.org>
-References: <49CF9BA1.5030400@archlinux.org> <20090329091148.16a618bf@infradead.org> 
-	<49CFA436.5080000@archlinux.org> <ac3eb2510903291036w13dc34cbi97525e6dd9af1da5@mail.gmail.com> 
-	<49CFB553.1020800@archlinux.org>
-Date: Sun, 29 Mar 2009 20:06:00 +0200
-Message-ID: <ac3eb2510903291106k27902bafpa8231d6781f8f5c@mail.gmail.com>
-Subject: Re: fastboot/async and initramfs: How am I supposed to know when 
-	devices are finished initializing?
-From: Kay Sievers <kay.sievers@vrfy.org>
-To: =?UTF-8?Q?Thomas_B=C3=A4chler?= <thomas@archlinux.org>
-Cc: Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1238196439-16535-35-git-send-email-u.kleine-koenig@pengutronix.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Mar 29, 2009 at 19:52, Thomas Bächler <thomas@archlinux.org> wrote:
-> Kay Sievers schrieb:
->>
->> In initramfs, you have to wait until the device shows up, not for a
->> random module to initialize, or a bus to be scanned -- that can never
->> work correctly, it's pure luck, that your logic was always slower than
->> the kernel.
->>
->> You need a block device -- so you should just wait for the block
->> device, instead of making assumptions about initialization of drivers
->> or buses. :)
->
-> I am planning to do that but there is one problem: Usually, the user
-> specifies a root device, or a device that I want to open with cryptsetup, or
-> anything similar and I can wait until it shows up.
+Hi Uwe,
 
-Right, you have to run the tools until the have found all what they
-need to give you your root device. Please ask the device mapper
-developers to port their stuff to the year 2009. :)
+> A pointer to omap_wdt_probe is passed to the core via
+> platform_driver_register and so the function must not disappear when the
+> .init sections are discarded.  Otherwise (if also having HOTPLUG=y)
+> unbinding and binding a device to the driver via sysfs will result in an
+> oops as does a device being registered late.
+> 
+> An alternative to this patch is using platform_driver_probe instead of
+> platform_driver_register plus removing the pointer to the probe function
+> from the struct platform_driver.
 
-> For lvm however, the user does not specify a specific block device that I
-> can wait for, instead lvm scans all available block devices. Now, how do I
-> know that the block device that contains my physical volume is already
-> there? Maybe I have several hard drives, and several volume groups, so
-> should I now call vgchange -ay again and again until the right volume group
-> shows up?
+Agree with the explanation, but ...
 
-Yeah, today, you just call the "broken" tools in a loop until they
-give you the device you wait for. :(
+> diff --git a/drivers/watchdog/omap_wdt.c b/drivers/watchdog/omap_wdt.c
+> index 2f2ce74..c9c14dd 100644
+> --- a/drivers/watchdog/omap_wdt.c
+> +++ b/drivers/watchdog/omap_wdt.c
+> @@ -269,7 +269,7 @@ static const struct file_operations omap_wdt_fops = {
+>  	.release = omap_wdt_release,
+>  };
+>  
+> -static int __init omap_wdt_probe(struct platform_device *pdev)
+> +static int __devinit omap_wdt_probe(struct platform_device *pdev)
+>  {
+>  	struct resource *res, *mem;
+>  	struct omap_wdt_dev *wdev;
 
-Assembling meta devices, or multi-volume devices should be triggered
-directly when the underlying devices show up. If auto-assembly (which
-kind of works today with md's --incremental) is properly implemented,
-you should still be able to just wait for the specified root device to
-show up, but the dm/lvm guys need to get the stuff done they talk
-about for years now. :)
+...imho this would be the correct fix:
 
-Thanks,
-Kay
+diff --git a/drivers/watchdog/omap_wdt.c b/drivers/watchdog/omap_wdt.c
+index aa5ad6e..f271385 100644
+--- a/drivers/watchdog/omap_wdt.c
++++ b/drivers/watchdog/omap_wdt.c
+@@ -258,7 +258,7 @@ static const struct file_operations omap_wdt_fops = {
+ 	.release = omap_wdt_release,
+ };
+ 
+-static int __init omap_wdt_probe(struct platform_device *pdev)
++static int __devinit omap_wdt_probe(struct platform_device *pdev)
+ {
+ 	struct resource *res, *mem;
+ 	struct omap_wdt_dev *wdev;
+@@ -367,7 +367,7 @@ static void omap_wdt_shutdown(struct platform_device *pdev)
+ 		omap_wdt_disable(wdev);
+ }
+ 
+-static int omap_wdt_remove(struct platform_device *pdev)
++static int __devexit omap_wdt_remove(struct platform_device *pdev)
+ {
+ 	struct omap_wdt_dev *wdev = platform_get_drvdata(pdev);
+ 	struct resource *res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+@@ -426,7 +426,7 @@ static int omap_wdt_resume(struct platform_device *pdev)
+ 
+ static struct platform_driver omap_wdt_driver = {
+ 	.probe		= omap_wdt_probe,
+-	.remove		= omap_wdt_remove,
++	.remove		= __devexit_p(omap_wdt_remove),
+ 	.shutdown	= omap_wdt_shutdown,
+ 	.suspend	= omap_wdt_suspend,
+ 	.resume		= omap_wdt_resume,
+
+Kind regards,
+Wim.
+
