@@ -1,49 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755792AbZC2M1Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755498AbZC2Mbq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755792AbZC2M1Y (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Mar 2009 08:27:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752198AbZC2M1G
+	id S1755498AbZC2Mbq (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Mar 2009 08:31:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752234AbZC2Mbg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Mar 2009 08:27:06 -0400
-Received: from mail-fx0-f158.google.com ([209.85.220.158]:42414 "EHLO
-	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751647AbZC2M1D (ORCPT
+	Sun, 29 Mar 2009 08:31:36 -0400
+Received: from smtp.nokia.com ([192.100.105.134]:22978 "EHLO
+	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752047AbZC2Mbf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Mar 2009 08:27:03 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=ZrrFgyp8NKKcYwzx2WD1aFsrPDf8qsA+5LDwJS6xAaf+fv1RWl+kcclcSv1nityl/1
-         zAWvx+7kWpPUiHHPNkLqjIRBUvu+G+WaK+12VC+yoPdHjwXBs7IQrHmdXtiIIc9gqOyb
-         1kFylVIZCP0MH6fuqnlPIN7/o3Jws0fr1V0nU=
-Date: Sun, 29 Mar 2009 16:27:52 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Pablo Neira Ayuso <pablo@netfilter.org>
-Cc: David Miller <davem@davemloft.net>, randy.dunlap@oracle.com,
-       sfr@canb.auug.org.au, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org, kaber@trash.net,
-       netfilter-devel@vger.kernel.org
-Subject: Re: linux-next: Tree for March 27 (netfilter build error)
-Message-ID: <20090329122752.GF7255@localhost>
-References: <20090328102852.GA7697@localhost> <49CEF882.5000005@oracle.com> <20090329064704.GA7255@localhost> <20090328.234739.26481917.davem@davemloft.net> <49CF62A2.6050803@netfilter.org>
+	Sun, 29 Mar 2009 08:31:35 -0400
+Message-ID: <49CF6A08.3000704@yandex.ru>
+Date: Sun, 29 Mar 2009 15:31:04 +0300
+From: Artem Bityutskiy <dedekind@yandex.ru>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49CF62A2.6050803@netfilter.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+To: Kyungmin Park <kmpark@infradead.org>
+CC: Artem.Bityutskiy@nokia.com,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: EXT4-ish "fixes" in UBIFS
+References: <49CCCB0A.6070701@nokia.com> <9c9fda240903271822w29aa131ch57c33f95e543c883@mail.gmail.com>
+In-Reply-To: <9c9fda240903271822w29aa131ch57c33f95e543c883@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-OriginalArrivalTime: 29 Mar 2009 12:31:05.0680 (UTC) FILETIME=[3AD48D00:01C9B06A]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Pablo Neira Ayuso - Sun, Mar 29, 2009 at 01:59:30PM +0200]
-... 
-| I think that the patch attached is better since it removes the overhead
-| of the IPv6 dependency, which is indeed too much for the use of one
-| function. Thanks.
-| 
-...
+Kyungmin Park wrote:
+> I also got these request. the file is empty at rename operatoin in
+> case of sudden power off.
+> they say it's different from jffs2. in case of jffs2, it points old
+> files even though power off.
 
-It's definitely better! Thanks Pablo.
+Right, because JFFS2 is synchronous :-)
 
-        Cyrill
+> then why is UBIFS different. fix it as before. I said it's not
+> filesystem bug. it's expected behaviors.
+
+Right, this is what I've been always thinking. I've always been
+thinking the FS gives no guarantees, and if you want a 100%
+guarantee, use fsync() before renaming. Frankly, I still think
+so. But we'll make ext4-like changes in UBIFS as well to help
+the applications which do not do the sync.
+
+> Frankly I'm not sure which one is better. how much filesystem support
+> it. but remember that application programmer also don't want to change
+> their application when filesystem is changed.
+> "The application is not changed, only filesystem is changed. so it's
+> filesystem problem, not us"
+
+I hope Linux gurus will put it clearly after all - to fsync() or to
+not fsync(). We do need clear rules of the game. For now, I still
+assume the following:
+
+1. If applications want atomic update which gives 100% guarantee,
+   they should fsync before rename.
+2. If the application does not use fsync, FS should try to minimize
+   the probability of data loss by running asynchronous write-back
+   on rename which unlinks a direntry.
+3. All this performance vs. reliability hassle should be solved
+   by fixing the FS, by having good defaults, by having a
+   "fsync/not fsync" knobs in applications.
+
+Indeed, people mostly talk about ext3, desktops, etc. But there
+is also the embedded world, where battery is removed randomly.
+
+But will see where this all leads. I really want clean rules
+for this.
+
+-- 
+Best Regards,
+Artem Bityutskiy (Артём Битюцкий)
