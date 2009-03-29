@@ -1,157 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760101AbZC2Uzl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756772AbZC2VMx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760101AbZC2Uzl (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Mar 2009 16:55:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755403AbZC2Uz2
+	id S1756772AbZC2VMx (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Mar 2009 17:12:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754982AbZC2VMn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Mar 2009 16:55:28 -0400
-Received: from zone0.gcu-squad.org ([212.85.147.21]:19438 "EHLO
-	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756874AbZC2Uz0 (ORCPT
+	Sun, 29 Mar 2009 17:12:43 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:54585 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753711AbZC2VMm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Mar 2009 16:55:26 -0400
-Date: Sun, 29 Mar 2009 22:55:01 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: Luca Tettamanti <kronos.it@gmail.com>
-Cc: Hans de Goede <hdegoede@redhat.com>, linux-kernel@vger.kernel.org,
-       Matthew Garrett <mjg@redhat.com>, Len Brown <lenb@kernel.org>,
-       Thomas Renninger <trenn@suse.de>, linux-acpi@vger.kernel.org,
-       Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH] ACPI: add "auto" to acpi_enforce_resources
-Message-ID: <20090329225501.0c1771f1@hyperion.delvare>
-In-Reply-To: <20090329201617.GA10303@dreamland.darkstar.lan>
-References: <20090204131708.GA2739@srcf.ucam.org>
-	<20090204142606.1823661b@hyperion.delvare>
-	<20090204142015.GB3923@srcf.ucam.org>
-	<20090210145716.105ab58b@hyperion.delvare>
-	<20090210140829.GA25397@srcf.ucam.org>
-	<49919E08.5050002@redhat.com>
-	<20090210172408.400cacee@hyperion.delvare>
-	<20090227132740.GF1482@ucw.cz>
-	<68676e00903240539i119b6d26j516ee131d4cd6781@mail.gmail.com>
-	<49C8DE51.2010103@redhat.com>
-	<20090329201617.GA10303@dreamland.darkstar.lan>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; x86_64-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sun, 29 Mar 2009 17:12:42 -0400
+Date: Sun, 29 Mar 2009 14:07:54 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+cc: Xavier Bestel <xavier.bestel@free.fr>,
+       Matthew Garrett <mjg59@srcf.ucam.org>, Theodore Tso <tytso@mit.edu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       David Rees <drees76@gmail.com>, Jesper Krogh <jesper@krogh.cc>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.29
+In-Reply-To: <20090329211655.630b8e1e@the-village.bc.nu>
+Message-ID: <alpine.LFD.2.00.0903291354480.3994@localhost.localdomain>
+References: <20090327051338.GP6239@mit.edu> <20090327055750.GA18065@srcf.ucam.org> <20090327062114.GA18290@srcf.ucam.org> <20090327112438.GQ6239@mit.edu> <20090327145156.GB24819@srcf.ucam.org> <20090327150811.09b313f5@lxorguk.ukuu.org.uk>
+ <20090327152221.GA25234@srcf.ucam.org> <20090327161553.31436545@lxorguk.ukuu.org.uk> <20090327162841.GA26860@srcf.ucam.org> <20090327165150.7e69d9e1@lxorguk.ukuu.org.uk> <20090327170208.GA27646@srcf.ucam.org> <alpine.LFD.2.00.0903271032090.3994@localhost.localdomain>
+ <20090327183214.2e73b6a3@lxorguk.ukuu.org.uk> <alpine.LFD.2.00.0903271138220.3994@localhost.localdomain> <20090327190056.3b699e89@lxorguk.ukuu.org.uk> <1238318146.11869.1.camel@badjo> <20090329211655.630b8e1e@the-village.bc.nu>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Luca,
 
-On Sun, 29 Mar 2009 22:16:17 +0200, Luca Tettamanti wrote:
-> Il Tue, Mar 24, 2009 at 02:21:21PM +0100, Hans de Goede ha scritto: 
-> > On 03/24/2009 01:39 PM, Luca Tettamanti wrote:
-> >> On Fri, Feb 27, 2009 at 2:27 PM, Pavel Machek<pavel@ucw.cz>  wrote:
-> >>> Hi!
-> >>>
-> >>>>> For the record we have changed the default to strict in Fedora's
-> >>>>> development branch, for 2 weeks or so now, including in the recently
-> >>>>> released Fedora 11 release and we've had 0 complaints so far.
-> >>>> Well, if the number of affected systems is small, this is good news.
-> >>>> But this is only 2 weeks and one distribution, coverage isn't
-> >>>> sufficient to claim anything yet IMHO.
-> >>>>
-> >>>> That being said... if there's a common consensus that switching to
-> >>>> strict and dealing with fallouts is the best thing to do, and I'm the
-> >>>> only one objecting to this, then I am ready to admit that I was wrong
-> >>>> and let you proceed.
-> >>> I believe that 'enable strict, deal with fallout' is the best
-> >>> long-term strategy...
-> >>
-> >> Hello,
-> >> the merge window for .30 is now open, what are we going to do with this issue?
-> >>
-> >
-> > I think the consensus was to make the default strict and to merge the atk0110
-> > driver, right?
+
+On Sun, 29 Mar 2009, Alan Cox wrote:
 > 
-> Ok,
-> here's a patch:
-> ---
-> The following patch changes the default value for option "acpi_enforce_resource"
-> to strict. It enforces strict resource checking - disallowing access by native
-> drivers to IO ports and memory regions claimed by ACPI firmware.
-> 
-> The patch is mainly aimed to block native hwmon drivers from touching
-> monitoring chips that ACPI thinks it own.
-> 
-> Signed-off-by: Luca Tettamanti <kronos.it@gmail.com>
-> ---
->  Documentation/kernel-parameters.txt |   16 ++++++++++++++++
->  drivers/acpi/osl.c                  |    6 +++---
->  2 files changed, 19 insertions(+), 3 deletions(-)
-> 
-> Index: b/Documentation/kernel-parameters.txt
-> ===================================================================
-> --- a/Documentation/kernel-parameters.txt	2009-03-29 15:47:28.000000000 +0200
-> +++ b/Documentation/kernel-parameters.txt	2009-03-29 15:51:30.000000000 +0200
-> @@ -259,6 +259,22 @@
->  			to assume that this machine's pmtimer latches its value
->  			and always returns good values.
->  
-> +	acpi_enforce_resources=	[ACPI]
-> +			{ strict,  lax, no }
+> Yep and twenty years on software hasn´t improved
 
-Other options use | as a delimited between allowed values.
+I really think you're gilding the edges of those old memories. The 
+software 20 years ago wasn't that great. I'd say it was on the whole a 
+whole lot crappier than it is today.
 
-> +			Check for resource conflicts between native drivers
-> +			and ACPI OperationRegions (SystemIO and SystemMemory
-> +			only). IO ports and memory declared in ACPI might be
-> +			used by the ACPI subsystem in arbitrary AML code and
-> +			can interfere with legacy drivers.
-> +			strict (default): access to resources claimed by ACPI
-> +			is denied; legacy drivers trying to access reserved
-> +			resources will fail to load.
+It's just that we have much higher expectations, and our problem sizes 
+have grown a _lot_ faster than rotating disk latencies have improved. 
+People didn't worry about having a hundred megs of dirty data and doing an 
+'fsync' twenty years ago. Even on big hardware (if you _had_ a hundred 
+megs of dirty data you didn't worry about latencies of a few seconds), 
+never mind in the Linux world.
 
-The driver will fail to _bind_ to the device, this doesn't mean that the
-module will fail to load. In practice, PCI modules will still load
-while "fake" platform modules will indeed fail to load. Many hwmon
-drivers fall into the second category.
+This particular problem really largely boils down to "average memory 
+capacity has expanded a _lot_ more than harddisk speeds have gone up".
 
-> +			lax: access to resources claimed by ACPI is allowed;
-> +			legacy drivers trying to access reserved resources
-> +			will load and a warning message is logged.
-
-Ditto.
-
-> +			no: ACPI OperationRegions are not marked as reserved,
-> +			no further checks are performed.
-> +
->  	agp=		[AGP]
->  			{ off | try_unsupported }
->  			off: disable AGP support
-> Index: b/drivers/acpi/osl.c
-> ===================================================================
-> --- a/drivers/acpi/osl.c	2009-03-29 15:47:29.000000000 +0200
-> +++ b/drivers/acpi/osl.c	2009-03-29 15:51:30.000000000 +0200
-> @@ -1070,9 +1070,9 @@
->   * in arbitrary AML code and can interfere with legacy drivers.
->   * acpi_enforce_resources= can be set to:
->   *
-> - *   - strict           (2)
-> + *   - strict (default) (2)
->   *     -> further driver trying to access the resources will not load
-> - *   - lax (default)    (1)
-> + *   - lax              (1)
->   *     -> further driver trying to access the resources will load, but you
->   *     get a system message that something might go wrong...
->   *
-> @@ -1084,7 +1084,7 @@
->  #define ENFORCE_RESOURCES_LAX    1
->  #define ENFORCE_RESOURCES_NO     0
->  
-> -static unsigned int acpi_enforce_resources = ENFORCE_RESOURCES_LAX;
-> +static unsigned int acpi_enforce_resources = ENFORCE_RESOURCES_STRICT;
->  
->  static int __init acpi_enforce_resources_setup(char *str)
->  {
-
-Other that these minor details:
-
-Acked-by: Jean Delvare <khali@linux-fr.org>
-
--- 
-Jean Delvare
+			Linus
