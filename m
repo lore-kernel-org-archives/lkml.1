@@ -1,99 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755746AbZC2A7k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755022AbZC2BJB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755746AbZC2A7k (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Mar 2009 20:59:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753829AbZC2A7W
+	id S1755022AbZC2BJB (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Mar 2009 21:09:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751080AbZC2BIu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Mar 2009 20:59:22 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:48696 "EHLO mx2.redhat.com"
+	Sat, 28 Mar 2009 21:08:50 -0400
+Received: from main.gmane.org ([80.91.229.2]:44985 "EHLO ciao.gmane.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752414AbZC2A7V (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Mar 2009 20:59:21 -0400
-Date: Sun, 29 Mar 2009 01:53:43 +0100
-From: Oleg Nesterov <oleg@redhat.com>
-To: Hugh Dickins <hugh@veritas.com>
-Cc: Al Viro <viro@zeniv.linux.org.uk>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Joe Malicki <jmalicki@metacarta.com>, Michael Itz <mitz@metacarta.com>,
-       Kenneth Baker <bakerk@metacarta.com>,
-       Chris Wright <chrisw@sous-sol.org>, David Howells <dhowells@redhat.com>,
-       Alexey Dobriyan <adobriyan@gmail.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Q: check_unsafe_exec() races (Was: [PATCH 2/4] fix setuid
-	sometimes doesn't)
-Message-ID: <20090329005343.GA12139@redhat.com>
-References: <Pine.LNX.4.64.0903282307050.14892@blonde.anvils> <Pine.LNX.4.64.0903282319270.15432@blonde.anvils>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0903282319270.15432@blonde.anvils>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	id S1750880AbZC2BIt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Mar 2009 21:08:49 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: "Michael B. Trausch" <mike@trausch.us>
+Subject: Re: 2.6.29 network hosed?
+Date: Sat, 28 Mar 2009 21:08:30 -0400
+Organization: news.gmane.org
+Message-ID: <20090328210830.23ddf477@zest.trausch.us>
+References: <01fc01c9afe9$5ecb43b0$1c61cb10$@com>
+	<1238276579.6669.126.camel@localhost>
+	<020901c9afef$47064e90$d512ebb0$@com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: 173.15.213.186
+X-Newsreader: Claws Mail 3.6.1 (GTK+ 2.16.0; x86_64-pc-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> -void check_unsafe_exec(struct linux_binprm *bprm, struct files_struct *files)
-> +void check_unsafe_exec(struct linux_binprm *bprm)
->  {
->  	struct task_struct *p = current, *t;
->  	unsigned long flags;
-> -	unsigned n_fs, n_files, n_sighand;
-> +	unsigned n_fs, n_sighand;
->
->  	bprm->unsafe = tracehook_unsafe_exec(p);
->
->  	n_fs = 1;
-> -	n_files = 1;
->  	n_sighand = 1;
->  	lock_task_sighand(p, &flags);
->  	for (t = next_thread(p); t != p; t = next_thread(t)) {
->  		if (t->fs == p->fs)
->  			n_fs++;
-> -		if (t->files == files)
-> -			n_files++;
->  		n_sighand++;
->  	}
->
->  	if (atomic_read(&p->fs->count) > n_fs ||
-> -	    atomic_read(&p->files->count) > n_files ||
->  	    atomic_read(&p->sighand->count) > n_sighand)
->  		bprm->unsafe |= LSM_UNSAFE_SHARE;
+On Sat, 28 Mar 2009 14:50:57 -0700
+"Hua Zhong" <hzhong@gmail.com> wrote:
 
-Can't find the patch which introduced check_unsafe_exec(), so
-I am asking here.
+> Thanks. I knew there was some problem with NAPI but I thought it had
+> been fixed.
+> 
+> I'll try the patch on Monday.
+> 
 
-How it is supposed to work?
+I've been using 2.6.29 with the patch from:
 
-Let's suppose we have two threads T1 and T2. T1 exits, and calls
-exit_fs().
+  http://patchwork.kernel.org/patch/14465/
 
-	exit_fs:
+And networking has been restored for me.  I haven't tested the other
+patch that was mentioned to you, but that can be quickly and easily
+found, also on patchwork:
 
-		tsk->fs = NULL;
-		// WINDOW
-		put_fs_struct(fs);
+  http://patchwork.kernel.org/patch/14804/
 
-Now, if T2 does exec() and check_unsafe_exec() happens in the WINDOW
-above, we set LSM_UNSAFE_SHARE.
-
-Or we can race with sub-thread doing clone(CLONE_FS|CLONE_THREAD),
-the new thread is not visible in ->thread_group, buy copy_fs()
-can already increment fs->count.
-
-
-Another question. Why do we check sighand->count? We always unshare
-->sighand on exec, see de_thread().
-
-
-Minor, but why lock_task_sighand() ? This helper is "__must_check".
-If it can't fail (yes, it can't fail here), spin_lock_irq(siglock)
-is enough. (and given that ->siglock can't help anyway to calculate
-n_fs, we could use rcu_read_lock() instead).
-
-
-(as for these patches, I think they are correct).
-
-Oleg.
+	--- Mike
 
