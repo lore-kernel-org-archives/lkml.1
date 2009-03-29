@@ -1,54 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753016AbZC2WVo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754639AbZC2W0a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753016AbZC2WVo (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Mar 2009 18:21:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751137AbZC2WVd
+	id S1754639AbZC2W0a (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Mar 2009 18:26:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752985AbZC2W0V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Mar 2009 18:21:33 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:53802 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750799AbZC2WVc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Mar 2009 18:21:32 -0400
-Date: Sun, 29 Mar 2009 23:20:22 +0100
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Oleg Nesterov <oleg@redhat.com>
-Cc: Hugh Dickins <hugh@veritas.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Joe Malicki <jmalicki@metacarta.com>, Michael Itz <mitz@metacarta.com>,
-       Kenneth Baker <bakerk@metacarta.com>,
-       Chris Wright <chrisw@sous-sol.org>, David Howells <dhowells@redhat.com>,
-       Alexey Dobriyan <adobriyan@gmail.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: Q: check_unsafe_exec() races (Was: [PATCH 2/4] fix setuid
-	sometimes doesn't)
-Message-ID: <20090329222022.GJ28946@ZenIV.linux.org.uk>
-References: <Pine.LNX.4.64.0903282307050.14892@blonde.anvils> <Pine.LNX.4.64.0903282319270.15432@blonde.anvils> <20090329005343.GA12139@redhat.com> <20090329041022.GF28946@ZenIV.linux.org.uk> <20090329045206.GA15519@redhat.com> <20090329055513.GH28946@ZenIV.linux.org.uk> <20090329060118.GI28946@ZenIV.linux.org.uk> <20090329213635.GA21820@redhat.com>
+	Sun, 29 Mar 2009 18:26:21 -0400
+Received: from hera.kernel.org ([140.211.167.34]:47429 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752531AbZC2W0U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Mar 2009 18:26:20 -0400
+Date: Sun, 29 Mar 2009 22:24:36 GMT
+From: Ingo Molnar <mingo@elte.hu>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       torvalds@linux-foundation.org, tglx@linutronix.de, hpa@linux.intel.com,
+       mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       torvalds@linux-foundation.org, tglx@linutronix.de, hpa@linux.intel.com,
+       mingo@elte.hu
+In-Reply-To: <new-submission>
+References: <new-submission>
+Subject: [tip:x86/mm] x86/mm: further cleanups of fault.c's include file section
+Message-ID: <tip-56aea8468746e673a4bf50b6a13d97b2d1cbe1e8@git.kernel.org>
+Git-Commit-ID: 56aea8468746e673a4bf50b6a13d97b2d1cbe1e8
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-In-Reply-To: <20090329213635.GA21820@redhat.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sun, 29 Mar 2009 22:24:38 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Mar 29, 2009 at 11:36:35PM +0200, Oleg Nesterov wrote:
-> > ... or just do that to fs_struct.  After finding that there's no outside
-> > users.  Commenst?
-> 
-> This is even worse. Not only we race with our sub-threads, we race
-> with CLONE_FS processes.
-> 
-> We can't mark fs_struct after finding that there's no outside users
-> lockless. Because we can't know whether this is "after" or not, we
-> can't trust "atomic_read(fs->count) <= n_fs".
+Commit-ID:  56aea8468746e673a4bf50b6a13d97b2d1cbe1e8
+Gitweb:     http://git.kernel.org/tip/56aea8468746e673a4bf50b6a13d97b2d1cbe1e8
+Author:     Ingo Molnar <mingo@elte.hu>
+AuthorDate: Sun, 29 Mar 2009 23:47:48 +0200
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Mon, 30 Mar 2009 00:10:22 +0200
 
-We can lock fs_struct in question, go through the threads, then mark
-or bail out.  With cloning a reference to fs_struct protected by the
-same lock.
+x86/mm: further cleanups of fault.c's include file section
 
-FWIW, I'm not at all sure that we want atomic_t for refcount in that
-case...
+Impact: cleanup
+
+Eliminate more than 20 unnecessary #include lines in fault.c
+
+Also fix include file dependency bug in asm/traps.h. (this was
+masked before, by implicit inclusion)
+
+Cc: Linus Torvalds <torvalds@linux-foundation.org>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+LKML-Reference: <new-submission>
+Acked-by: H. Peter Anvin <hpa@linux.intel.com>
+
+
+---
+ arch/x86/include/asm/traps.h |    1 +
+ arch/x86/mm/fault.c          |   41 ++++++++---------------------------------
+ 2 files changed, 9 insertions(+), 33 deletions(-)
+
+diff --git a/arch/x86/include/asm/traps.h b/arch/x86/include/asm/traps.h
+index 0d53425..37fb07a 100644
+--- a/arch/x86/include/asm/traps.h
++++ b/arch/x86/include/asm/traps.h
+@@ -2,6 +2,7 @@
+ #define _ASM_X86_TRAPS_H
+ 
+ #include <asm/debugreg.h>
++#include <asm/siginfo.h>			/* TRAP_TRACE, ... */
+ 
+ #ifdef CONFIG_X86_32
+ #define dotraplinkage
+diff --git a/arch/x86/mm/fault.c b/arch/x86/mm/fault.c
+index a03b727..f3c4d03 100644
+--- a/arch/x86/mm/fault.c
++++ b/arch/x86/mm/fault.c
+@@ -3,40 +3,15 @@
+  *  Copyright (C) 2001, 2002 Andi Kleen, SuSE Labs.
+  *  Copyright (C) 2008-2009, Red Hat Inc., Ingo Molnar
+  */
+-#include <linux/interrupt.h>
+-#include <linux/mmiotrace.h>
+-#include <linux/bootmem.h>
+-#include <linux/compiler.h>
+-#include <linux/highmem.h>
+-#include <linux/kprobes.h>
+-#include <linux/uaccess.h>
+-#include <linux/vmalloc.h>
+-#include <linux/vt_kern.h>
+-#include <linux/signal.h>
+-#include <linux/kernel.h>
+-#include <linux/ptrace.h>
+-#include <linux/string.h>
+-#include <linux/module.h>
+-#include <linux/kdebug.h>
+-#include <linux/errno.h>
+-#include <linux/magic.h>
+-#include <linux/sched.h>
+-#include <linux/types.h>
+-#include <linux/init.h>
+-#include <linux/mman.h>
+-#include <linux/tty.h>
+-#include <linux/smp.h>
+-#include <linux/mm.h>
+-
+-#include <asm-generic/sections.h>
+-
+-#include <asm/tlbflush.h>
+-#include <asm/pgalloc.h>
+-#include <asm/segment.h>
+-#include <asm/system.h>
+-#include <asm/proto.h>
+-#include <asm/traps.h>
+-#include <asm/desc.h>
++#include <linux/magic.h>		/* STACK_END_MAGIC		*/
++#include <linux/kdebug.h>		/* oops_begin/end, ...		*/
++#include <linux/module.h>		/* search_exception_table	*/
++#include <linux/bootmem.h>		/* max_low_pfn			*/
++#include <linux/kprobes.h>		/* __kprobes, ...		*/
++#include <linux/mmiotrace.h>		/* kmmio_handler, ...		*/
++
++#include <asm/traps.h>			/* dotraplinkage, ...		*/
++#include <asm/pgalloc.h>		/* pgd_*(), ...			*/
+ 
+ /*
+  * Page fault error code bits:
