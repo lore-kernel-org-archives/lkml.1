@@ -1,65 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753890AbZC2Qb4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755889AbZC2Qhu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753890AbZC2Qb4 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Mar 2009 12:31:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752047AbZC2Qbp
+	id S1755889AbZC2Qhu (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Mar 2009 12:37:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752242AbZC2Qha
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Mar 2009 12:31:45 -0400
-Received: from ti-out-0910.google.com ([209.85.142.185]:49877 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751093AbZC2Qbn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Mar 2009 12:31:43 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=aNlKAzZKnmoVfrD/e4xabydW/qwD+sI4oOaEIvfUhZPUsD24Z268SAvoZLXlx4x6JN
-         IRe3KD70JbIWlfb6cGhY3NEXiob8YgWjR7JkGXjuDjwUULRANoA7k8rMO5MMswqqSkQn
-         SHOodPwVixPj903L4gowpCj4p2rjeUcUYUuik=
-Date: Mon, 30 Mar 2009 00:32:28 +0800
-From: =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>
-To: Renzo Davoli <renzo@cs.unibo.it>
-Cc: Am??rico Wang <xiyou.wangcong@gmail.com>, linux-kernel@vger.kernel.org,
-       Jeff Dike <jdike@addtoit.com>,
-       user-mode-linux-devel@lists.sourceforge.net, mtk.manpages@gmail.com,
-       Roland McGrath <roland@redhat.com>
-Subject: Re: [PATCH 0/2] ptrace_vm: ptrace for syscall emulation virtual
-	machines
-Message-ID: <20090329163228.GE7671@hack>
-References: <20090204080236.GA17452@cs.unibo.it> <20090310214436.GC5213@cs.unibo.it> <20090316074520.GC3360@hack> <20090324234753.GH22695@cs.unibo.it>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090324234753.GH22695@cs.unibo.it>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Sun, 29 Mar 2009 12:37:30 -0400
+Received: from cantor.suse.de ([195.135.220.2]:52656 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751085AbZC2Qh3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Mar 2009 12:37:29 -0400
+Message-Id: <20090329155539.275927173@nick.local0.net>
+User-Agent: quilt/0.46_cvs20080326-19.1
+Date: Mon, 30 Mar 2009 02:55:39 +1100
+From: npiggin@suse.de
+To: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [rfc] scale dcache locking
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Mar 25, 2009 at 12:47:53AM +0100, Renzo Davoli wrote:
->> Why not introduce a new request for PTRACE_VM but use *tags* in 'addr'?
->> We are taking risks of breaking the existing code. :)
->
->Yes, there is a minimal risk to break some code. This is a con.
->On the other side there are two main pros for this proposal:
->1- the code is now extremely simple 
+This is my sketch for improving dcache locking scalability. So far I've
+only really been looking at core code to get an idea of how it might look,
+so most configurable functionality is broken (and unfortunately it might
+well be something in there which will cause a fundamental problem for me).
 
-Why adding a new request for ptrace is harder? I don't think so. :)
+But there is a *lot* of stuff to go through, so I like to just get some
+early opinions of this.
 
+I have tried to split it as nicely as possible. Patch splitting still
+needs a bit more work, but it is not too bad hopefully to review.
 
->2- if we define a different tag for syscall (e.g. PTRACE_VM), we need also
->different tags for PTRACE_VM_SINGLESTEP, PTRACE_VM_SINGLEBLOCK and maybe
->others in the future.
->Using the addr field we don't need this multiplication of tags
->(and we could soon delete PTRACE_SYSEMU and PTRACE_SYSEMU_SINGLESTEP).
->
+It seems to break naturally into 3 phases:
+- First phase is to add new locks and rules to protect specific data
+  structures and dentry fields. This attempts to be as simple and dumb
+  replacement as possible, to make review easier.
 
-Yes? We could also remove PTRACE_SYSEMU* if we had PTRACE_VM to replace
-it. I would like to hear more from you on this point.
+- Second phase is to remove dcache_lock after it is not protecting
+  anything itself.
 
-Thanks.
+- Last phase is to improve existing locking schemes, and improve the
+  scalability of the newly added locks.
 
--- 
-Do what you love, f**k the rest! F**k the regulations!
- 
+It's nowhere near complete, but it is running and relatively stable
+on configs where it compiles. As far as core locking changes go for
+this project, I still need to make nr_dentry into a per-cpu counter,
+and break up the LRU lock (which is the last remaining global lock
+broken out of dcache_lock). LRU lock currently naturally splits into
+per-sb locking, but that's not satisfying because we also want really
+good scalability within a single sb. I think per-memory-zone LRU lists
+and locking might be a good idea because it scales with socket count
+and also makes better NUMA targetted dcache reclaim possible. Making
+LRU more lazy might also be a good idea to reduce locking.
+
