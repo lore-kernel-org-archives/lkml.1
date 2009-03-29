@@ -1,62 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757646AbZC2Ok3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757911AbZC2Oqi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757646AbZC2Ok3 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Mar 2009 10:40:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754439AbZC2OkU
+	id S1757911AbZC2Oqi (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Mar 2009 10:46:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757146AbZC2Oq3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Mar 2009 10:40:20 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:42637 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753016AbZC2OkU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Mar 2009 10:40:20 -0400
-Message-ID: <49CF87FB.4030608@redhat.com>
-Date: Sun, 29 Mar 2009 10:38:51 -0400
-From: Rik van Riel <riel@redhat.com>
-Organization: Red Hat, Inc
-User-Agent: Thunderbird 2.0.0.17 (X11/20080915)
+	Sun, 29 Mar 2009 10:46:29 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:45710 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756689AbZC2Oq2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Mar 2009 10:46:28 -0400
+Date: Sun, 29 Mar 2009 16:45:32 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Bodo Eggert <7eggert@gmx.de>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Matthew Garrett <mjg59@srcf.ucam.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Theodore Tso <tytso@mit.edu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       David Rees <drees76@gmail.com>, Jesper Krogh <jesper@krogh.cc>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.29
+Message-ID: <20090329144531.GA1408@ucw.cz>
+References: <cklHL-5IW-23@gated-at.bofh.it> <ckm0Q-6o4-3@gated-at.bofh.it> <ckmaG-6AC-5@gated-at.bofh.it> <ckmWO-7Ro-5@gated-at.bofh.it> <ckn6L-84h-19@gated-at.bofh.it> <cknzG-ff-7@gated-at.bofh.it> <cknJk-IB-9@gated-at.bofh.it> <ckoFm-2eg-3@gated-at.bofh.it> <ckoYP-2DC-13@gated-at.bofh.it> <E1LnX6V-0001aA-AU@be1.7eggert.dyndns.org>
 MIME-Version: 1.0
-To: Martin Schwidefsky <schwidefsky@de.ibm.com>
-CC: Dave Hansen <dave@linux.vnet.ibm.com>, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, virtualization@lists.osdl.org,
-       frankeh@watson.ibm.com, akpm@osdl.org, nickpiggin@yahoo.com.au,
-       hugh@veritas.com
-Subject: Re: [patch 0/6] Guest page hinting version 7.
-References: <20090327150905.819861420@de.ibm.com>	<1238195024.8286.562.camel@nimitz>	<49CD69EB.6000000@redhat.com> <20090329162024.687196ab@skybase>
-In-Reply-To: <20090329162024.687196ab@skybase>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <E1LnX6V-0001aA-AU@be1.7eggert.dyndns.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Martin Schwidefsky wrote:
-> On Fri, 27 Mar 2009 20:06:03 -0400
-> Rik van Riel <riel@redhat.com> wrote:
+On Sat 2009-03-28 12:53:34, Bodo Eggert wrote:
+> Linus Torvalds <torvalds@linux-foundation.org> wrote:
+> > On Fri, 27 Mar 2009, Linus Torvalds wrote:
 > 
->> Dave Hansen wrote:
->>> On Fri, 2009-03-27 at 16:09 +0100, Martin Schwidefsky wrote:
->>>> If the host picks one of the
->>>> pages the guest can recreate, the host can throw it away instead of writing
->>>> it to the paging device. Simple and elegant.
->>> Heh, simple and elegant for the hypervisor.  But I'm not sure I'm going
->>> to call *anything* that requires a new CPU instruction elegant. ;)
->> I am convinced that it could be done with a guest-writable
->> "bitmap", with 2 bits per page.  That would make this scheme
->> useful for KVM, too.
+> >> Yes, some editors (vi, emacs) do it, but even there it's configurable.
+> > 
+> > .. and looking at history, it's even pretty modern. From the vim logs:
+> > 
+> > Patch 6.2.499
+> > Problem:   When writing a file and halting the system, the file might be lost
+> > when using a journalling file system.
+> > Solution:  Use fsync() to flush the file data to disk after writing a file.
+> > (Radim Kolar)
+> > Files:     src/fileio.c
+> > 
+> > so it looks (assuming those patch numbers mean what they would seem to
+> > mean) that 'fsync()' in vim is from after 6.2 was released. Some time in
+> > 2004.
 > 
-> This was our initial approach before we came up with the milli-code
-> instruction. The reason we did not use a bitmap was to prevent the
-> guest to change the host state (4 guest states U/S/V/P and 3 host
-> states r/p/z). With the full set of states you'd need 4 bits. And the
-> hosts need to have a "master" copy of the host bits, one the guest
-> cannot change, otherwise you get into trouble.
+> Besides that, it's a fix specific for /journaled/ filesystems. It's easy to see
+> that the same journal that was supposed to increase filesystem reliability
+> is CAUSING more unreliable behavior.
 
-KVM already has the info from the host bits somewhere else,
-which is needed to be able to actually find the physical
-pages used by a guest.
+Journaling is _not_ supposed to increase filesystem reliability.
 
-That leaves just the guest states, so a compare-and-swap may
-work for non-s390.
+It improves fsck time. That's it.
 
+Actually ext2 is more reliable in ext3 --  fsck tells you
+about errors on parts of disk that are not normallly used.
+								Pavel
 -- 
-All rights reversed.
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
