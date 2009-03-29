@@ -1,54 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753872AbZC2Gj7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755081AbZC2Gna@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753872AbZC2Gj7 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Mar 2009 02:39:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751708AbZC2Gju
+	id S1755081AbZC2Gna (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Mar 2009 02:43:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752739AbZC2GnU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Mar 2009 02:39:50 -0400
-Received: from hera.kernel.org ([140.211.167.34]:57888 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752739AbZC2Gjt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Mar 2009 02:39:49 -0400
-Subject: Re: [git-pull -tip] x86: include inverse Xmas tree patches
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Hugh Dickins <hugh@veritas.com>, x86 maintainers <x86@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20090328234012.GC4957@elte.hu>
-References: <1238251730.2526.2.camel@ht.satnam>
-	 <Pine.LNX.4.64.0903281508410.21235@blonde.anvils>
-	 <20090328234012.GC4957@elte.hu>
-Content-Type: text/plain
-Date: Sun, 29 Mar 2009 12:08:54 +0530
-Message-Id: <1238308734.3074.3.camel@ht.satnam>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+	Sun, 29 Mar 2009 02:43:20 -0400
+Received: from e23smtp01.au.ibm.com ([202.81.31.143]:57293 "EHLO
+	e23smtp01.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752913AbZC2GnT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Mar 2009 02:43:19 -0400
+Message-ID: <49CF1881.7010206@in.ibm.com>
+Date: Sun, 29 Mar 2009 12:13:13 +0530
+From: Sachin Sant <sachinp@in.ibm.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081216)
+MIME-Version: 1.0
+To: heiko.carstens@de.ibm.com
+CC: linux-s390@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>
+Subject: [s390] 2.6.29-git4 build failure.
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2009-03-29 at 00:40 +0100, Ingo Molnar wrote:
-> * Hugh Dickins <hugh@veritas.com> wrote:
-> > 
-> > Please find a better use for your time.
-> > 
-> > Imagine, there might be developers out there with real work
-> > to do in these files: all you are doing is throwing silly
-> > little obstacles in their way.
-> 
-> Actually, now is the right time to do such changes as we've just 
-> pushed all pending x86 changes upstream. And since these changes 
-> reduce the chance of future patch conflicts, they do help 
-> development. (in a small way)
-> 
-> Nevertheless i'd suggest to make this a single commit, to not 
-> clobber the shortlog with it.
-> 
+2.6.29-git4 build failed on s390 box with
 
-I think individual patches will be better option, in case of unavoidable
-situation we can simply revert that particular patch.
+  CC      drivers/char/sysrq.o
+In file included from drivers/char/sysrq.c:38:
+include/linux/irq.h: In function 'init_alloc_desc_masks':
+include/linux/irq.h:434: error: dereferencing pointer to incomplete type
+include/linux/irq.h:435: error: dereferencing pointer to incomplete type
+include/linux/irq.h:446: error: dereferencing pointer to incomplete type
+include/linux/irq.h:448: error: dereferencing pointer to incomplete type
 
---
-JSR
+Seems like Heiko had already submitted a patch to fix this.
+
+http://marc.info/?l=linux-mm-commits&m=123360349631362&w=4
+
+
+Thanks
+-Sachin
+
+-- 
+
+---------------------------------
+Sachin Sant
+IBM Linux Technology Center
+India Systems and Technology Labs
+Bangalore, India
+---------------------------------
 
