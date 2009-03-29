@@ -1,47 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754444AbZC2WpM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753202AbZC2W4D@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754444AbZC2WpM (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Mar 2009 18:45:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752186AbZC2Wo5
+	id S1753202AbZC2W4D (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Mar 2009 18:56:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751582AbZC2Wzv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Mar 2009 18:44:57 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:42918
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752083AbZC2Wo4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Mar 2009 18:44:56 -0400
-Date: Sun, 29 Mar 2009 15:44:44 -0700 (PDT)
-Message-Id: <20090329.154444.177112758.davem@davemloft.net>
-To: rusty@rustcorp.com.au
-Cc: sparclinux@vger.kernel.org, linux-kernel@vger.kernel.org, mingo@redhat.com,
-       travis@sgi.com
-Subject: Re: [PULL] cpumask updates for sparc
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <200903161444.41621.rusty@rustcorp.com.au>
-References: <200903161444.41621.rusty@rustcorp.com.au>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+	Sun, 29 Mar 2009 18:55:51 -0400
+Received: from gate.crashing.org ([63.228.1.57]:51371 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751245AbZC2Wzu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Mar 2009 18:55:50 -0400
+Subject: Re: [PATCH 1/3] powerpc, Makefile: Make it possible to safely
+ select CONFIG_FRAME_POINTER
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: avorontsov@ru.mvista.com
+Cc: Steven Rostedt <srostedt@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       Sam Ravnborg <sam@ravnborg.org>, Paul Mackerras <paulus@samba.org>,
+       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20090328104857.GA10897@oksana.dev.rtsoft.ru>
+References: <20090320164404.GA19933@oksana.dev.rtsoft.ru>
+	 <20090320164429.GA28037@oksana.dev.rtsoft.ru>
+	 <1237607369.17367.7.camel@localhost.localdomain>
+	 <20090328104857.GA10897@oksana.dev.rtsoft.ru>
+Content-Type: text/plain
+Date: Mon, 30 Mar 2009 09:54:50 +1100
+Message-Id: <1238367290.20197.113.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+X-Mailer: Evolution 2.24.3 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Rusty Russell <rusty@rustcorp.com.au>
-Date: Mon, 16 Mar 2009 14:44:41 +1030
-
->   ssh://master.kernel.org/home/ftp/pub/scm/linux/kernel/git/rusty/linux-2.6-cpumask-for-sparc.git master
+On Sat, 2009-03-28 at 13:48 +0300, Anton Vorontsov wrote:
+> On Fri, Mar 20, 2009 at 11:49:29PM -0400, Steven Rostedt wrote:
+> > Ben,
+> > 
+> > Can you ACK this patch? Or even take it in your tree?
 > 
-> Rusty Russell (10):
->       cpumask: Use smp_call_function_many(): sparc64
->       cpumask: arch_send_call_function_ipi_mask: sparc
->       cpumask: Use accessors code: sparc
->       cpumask: Use accessors code.: sparc64
->       cpumask: prepare for iterators to only go to nr_cpu_ids/nr_cpumask_bits.: sparc64
->       cpumask: prepare for iterators to only go to nr_cpu_ids/nr_cpumask_bits.: sparc
->       cpumask: remove cpu_coregroup_map: sparc
->       cpumask: remove the now-obsoleted pcibus_to_cpumask(): sparc
->       cpumask: remove dangerous CPU_MASK_ALL_PTR, &CPU_MASK_ALL.: sparc
->       cpumask: use mm_cpumask() wrapper: sparc
+> Benjamin, have you had a chance to look into this? Sam, could
+> you also take a look?
 
-Pulled, thanks a lot Rusty.
+Those patches look ok. I'm a little bit surprised that -mno-sched-epilog
+isn't needed, gcc weirdness never ceases to amaze me, but the
+Makefile/Kconfig churning isn't for me to judge. If Sam is happy, then
+let's merge it.
+
+Ben.
+
+> Thanks!
+> 
+> > On Fri, 2009-03-20 at 19:44 +0300, Anton Vorontsov wrote:
+> > > This patch introduces ARCH_HAS_NORMAL_FRAME_POINTERS Kconfig symbol.
+> > > When defined, the top level Makefile won't add -fno-omit-frame-pointer
+> > > cflag (the flag is useless in PowerPC kernels, and also makes gcc
+> > > generate wrong code).
+> > > 
+> > > Also move ARCH_WANT_FRAME_POINTERS's help text.
+> > > 
+> > > Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+> > > ---
+> > >  Makefile             |    7 +++++--
+> > >  arch/powerpc/Kconfig |    1 +
+> > >  lib/Kconfig.debug    |   16 ++++++++++------
+> > >  3 files changed, 16 insertions(+), 8 deletions(-)
+> > > 
+> > > diff --git a/Makefile b/Makefile
+> > > index 46c04c5..bf41b05 100644
+> > > --- a/Makefile
+> > > +++ b/Makefile
+> > > @@ -538,9 +538,12 @@ KBUILD_CFLAGS += $(call cc-option, -fno-stack-protector)
+> > >  endif
+> > >  
+> > >  ifdef CONFIG_FRAME_POINTER
+> > > -KBUILD_CFLAGS	+= -fno-omit-frame-pointer -fno-optimize-sibling-calls
+> > > +  KBUILD_CFLAGS	+= -fno-optimize-sibling-calls
+> > > +  ifndef ARCH_HAS_NORMAL_FRAME_POINTERS
+> > > +    KBUILD_CFLAGS	+= -fno-omit-frame-pointer
+> > > +  endif
+> > >  else
+> > > -KBUILD_CFLAGS	+= -fomit-frame-pointer
+> > > +  KBUILD_CFLAGS	+= -fomit-frame-pointer
+> > >  endif
+> > >  
+> > >  ifdef CONFIG_DEBUG_INFO
+> > > diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+> > > index 97f9a64..4587e66 100644
+> > > --- a/arch/powerpc/Kconfig
+> > > +++ b/arch/powerpc/Kconfig
+> > > @@ -113,6 +113,7 @@ config PPC
+> > >  	select HAVE_FUNCTION_TRACER
+> > >  	select HAVE_FUNCTION_GRAPH_TRACER
+> > >  	select ARCH_WANT_OPTIONAL_GPIOLIB
+> > > +	select ARCH_HAS_NORMAL_FRAME_POINTERS
+> > >  	select HAVE_IDE
+> > >  	select HAVE_IOREMAP_PROT
+> > >  	select HAVE_EFFICIENT_UNALIGNED_ACCESS
+> > > diff --git a/lib/Kconfig.debug b/lib/Kconfig.debug
+> > > index 4b63b6b..fc8cd1f 100644
+> > > --- a/lib/Kconfig.debug
+> > > +++ b/lib/Kconfig.debug
+> > > @@ -661,20 +661,24 @@ config DEBUG_NOTIFIERS
+> > >  	  This is a relatively cheap check but if you care about maximum
+> > >  	  performance, say N.
+> > >  
+> > > -#
+> > > -# Select this config option from the architecture Kconfig, if it
+> > > -# it is preferred to always offer frame pointers as a config
+> > > -# option on the architecture (regardless of KERNEL_DEBUG):
+> > > -#
+> > >  config ARCH_WANT_FRAME_POINTERS
+> > >  	bool
+> > >  	help
+> > > +	  Select this config option from the architecture Kconfig, if it
+> > > +	  it is preferred to always offer frame pointers as a config
+> > > +	  option on the architecture (regardless of KERNEL_DEBUG).
+> > > +
+> > > +config ARCH_HAS_NORMAL_FRAME_POINTERS
+> > > +	bool
+> > > +	help
+> > > +	  Architectures should select this symbol if their ABI implies
+> > > +	  having a frame pointer.
+> > >  
+> > >  config FRAME_POINTER
+> > >  	bool "Compile the kernel with frame pointers"
+> > >  	depends on DEBUG_KERNEL && \
+> > >  		(CRIS || M68K || M68KNOMMU || FRV || UML || S390 || \
+> > > -		 AVR32 || SUPERH || BLACKFIN || MN10300) || \
+> > > +		 AVR32 || SUPERH || BLACKFIN || MN10300 || PPC) || \
+> > >  		ARCH_WANT_FRAME_POINTERS
+> > >  	default y if (DEBUG_INFO && UML) || ARCH_WANT_FRAME_POINTERS
+> > >  	help
+> > 
+> 
+
