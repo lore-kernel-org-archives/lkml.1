@@ -1,68 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758009AbZC2O0S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757913AbZC2OhN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758009AbZC2O0S (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Mar 2009 10:26:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755572AbZC2O0A
+	id S1757913AbZC2OhN (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Mar 2009 10:37:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756725AbZC2Og5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Mar 2009 10:26:00 -0400
-Received: from mail-in-03.arcor-online.net ([151.189.21.43]:33653 "EHLO
-	mail-in-03.arcor-online.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755501AbZC2OZ7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Mar 2009 10:25:59 -0400
-X-DKIM: Sendmail DKIM Filter v2.8.2 mail-in-06.arcor-online.net 8359339A728
-Date: Sun, 29 Mar 2009 16:25:54 +0200 (CEST)
-From: Bodo Eggert <7eggert@gmx.de>
-To: Pavel Machek <pavel@ucw.cz>
-cc: Bodo Eggert <7eggert@gmx.de>, James Morris <jmorris@namei.org>,
-       kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: TOMOYO in linux-next
-In-Reply-To: <20090329115830.GA15492@elf.ucw.cz>
-Message-ID: <alpine.LNX.1.10.0903291613360.20606@be10.lrz>
-References: <ck5CF-5mU-11@gated-at.bofh.it> <E1Ln8MC-0001RR-1E@be1.7eggert.dyndns.org> <20090327114224.GF2585@elf.ucw.cz> <alpine.LSU.0.999.0903271354290.5610@be1.lrz> <20090329115830.GA15492@elf.ucw.cz>
-User-Agent: Alpine 1.10 (LNX 962 2008-03-14)
+	Sun, 29 Mar 2009 10:36:57 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:59061 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756297AbZC2Og5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Mar 2009 10:36:57 -0400
+Message-ID: <49CF8733.7060309@redhat.com>
+Date: Sun, 29 Mar 2009 10:35:31 -0400
+From: Rik van Riel <riel@redhat.com>
+Organization: Red Hat, Inc
+User-Agent: Thunderbird 2.0.0.17 (X11/20080915)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+To: Martin Schwidefsky <schwidefsky@de.ibm.com>
+CC: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       virtualization@lists.osdl.org, frankeh@watson.ibm.com, akpm@osdl.org,
+       nickpiggin@yahoo.com.au, hugh@veritas.com
+Subject: Re: [patch 1/6] Guest page hinting: core + volatile page cache.
+References: <20090327150905.819861420@de.ibm.com>	<20090327151011.534224968@de.ibm.com>	<49CD59DB.3070906@redhat.com> <20090329155640.31472c61@skybase>
+In-Reply-To: <20090329155640.31472c61@skybase>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 29 Mar 2009, Pavel Machek wrote:
-> On Fri 2009-03-27 14:04:32, Bodo Eggert wrote:
->> On Fri, 27 Mar 2009, Pavel Machek wrote:
->>> On Fri 2009-03-27 10:28:07, Bodo Eggert wrote:
->>>> Pavel Machek <pavel@ucw.cz> wrote:
+Martin Schwidefsky wrote:
+> On Fri, 27 Mar 2009 18:57:31 -0400
+> Rik van Riel <riel@redhat.com> wrote:
+>> Martin Schwidefsky wrote:
 
->>>>> I don't think merging that is good idea. Security should be doable
->>>>> without making shell-like glob matching...
->>>>
->>>> How do you suppose a security system should handle mozilla modifying
->>>> ~/.bashrc differently from downloading something to ~/pr0n.jpg?
->>>
->>> How does shell-like glob matching help there? You'd need to parse
->>> /etc/passwd to find all ~ directories...
->>
->> That is, if you'd use HOME=`dd if=/dev/urandom ...`.
->>
->> If you have your users in /home/user, you can tell /home/*/.*
->> is bad, /home/*/[^.]* is OK.
->
-> On the common systems I know of, homes are spread over different
-> volumes and different directories. TOMOYO's wildcards do _not_ solve
-> this particular problems.
+>>>   There are some alternatives how this can be done, e.g. a global
+>>>   lock, or lock per segment in the kernel page table, or the per page
+>>>   bit PG_arch_1 if it is still free.
+>> Can this be taken care of by memory barriers and
+>> careful ordering of operations?
+> 
+> I don't see how this could be done with memory barries, the sequence is
+> 1) check conditions
+> 2) do state change to volatile
+> 
+> another cpus can do
+> i) change one of the conditions
+> 
+> The operation i) needs to be postponed while the first cpu has done 1)
+> but not done 2) yet. 1+2 needs to be atomic but consists of several
+> instructions. Ergo we need a lock, no ?
 
-Don't do that then. If you start having user's homes at 
-/usr/local/sbin/something/, your systenm is FUBAR anyway.
+You are right.
 
-Put your homes into /home/volume/group/user (=~ /home/*/*/*/.*).
+Hashed locks may be a space saving option, with a
+set of (cache line aligned?) locks in each zone
+and the page state lock chosen by taking a hash
+of the page number or address.
 
->> How would you exclude mozilla from writing to .* then? ".a" is bad,
->> ".b" is bad ...? or "A" is OK, "a" is OK, "zzzzzzzzzzzzz" is OK"?
->> Either way, you'd need several universes to store the security profile.
->
-> What is magic about .* files? I want mozilla to store the pictures as
-> .naughty.picture.jpg -- I don't see anything wrong with that.
+Not ideal, but at least we can get some NUMA
+locality.
 
-As long as you have a guaranteed-to-be-complete list of config files, you 
-can get along without wildcards. And still if you do, I'll write a program 
-to make it incomplete.
+>>> +	if (page->index != linear_page_index(vma, addr))
+>>> +		/* If nonlinear, store the file page offset in the pte. */
+>>> +		set_pte_at(dst_mm, addr, dst_pte, pgoff_to_pte(page->index));
+>>> +	else
+>>> +		pte_clear(dst_mm, addr, dst_pte);
+>>>  }
+>> It would be good to document that PG_discarded can only happen for
+>> file pages and NOT for eg. clean swap cache pages.
+> 
+> PG_discarded can happen for swap cache pages as well. If a clean swap
+> cache page gets remove and subsequently access again the discard fault
+> handler will set the bit (see __page_discard). The code necessary for
+> volatile swap cache is introduced with patch #2. So I would rather not
+> add a comment in patch #1 only to remove it again with patch #2 ..
+
+I discovered that once I opened the next email :)
+
+>>> @@ -1390,6 +1391,7 @@ int test_clear_page_writeback(struct pag
+>>>  			radix_tree_tag_clear(&mapping->page_tree,
+>>>  						page_index(page),
+>>>  						PAGECACHE_TAG_WRITEBACK);
+>>> +			page_make_volatile(page, 1);
+>>>  			if (bdi_cap_account_writeback(bdi)) {
+>>>  				__dec_bdi_stat(bdi, BDI_WRITEBACK);
+>>>  				__bdi_writeout_inc(bdi);
+>> Does this mark the page volatile before the IO writing the
+>> dirty data back to disk has even started?  Is that OK?
+>  
+> Hmm, it could be that the page_make_volatile is just superflouos here.
+> The logic here is that whenever one of the conditions that prevent a
+> page from becoming volatile is cleared a try with page_make_volatile
+> is done. The condition in question here is PageWriteback(page). If we
+> can prove that one of the other conditions is true this particular call
+> is a waste of effort.
+
+Actually, test_clear_page_writeback is probably called
+on IO completion and it was just me being confused after
+a few hundred lines of very new (to me) VM code :)
+
+I guess the patch is correct.
+
+Acked-by: Rik van Riel <riel@redhat.com>
+
+-- 
+All rights reversed.
