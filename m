@@ -1,64 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757676AbZC2Nk2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757446AbZC2Nqt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757676AbZC2Nk2 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Mar 2009 09:40:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753890AbZC2NkQ
+	id S1757446AbZC2Nqt (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Mar 2009 09:46:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754842AbZC2Nqh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Mar 2009 09:40:16 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:46957 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753707AbZC2NkP (ORCPT
+	Sun, 29 Mar 2009 09:46:37 -0400
+Received: from fg-out-1718.google.com ([72.14.220.156]:33990 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753890AbZC2Nqg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Mar 2009 09:40:15 -0400
-Date: Sun, 29 Mar 2009 15:40:07 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
-Cc: Artem Bityutskiy <dedekind@yandex.ru>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: replace() system call needed (was Re: EXT4-ish "fixes" in
-	UBIFS)
-Message-ID: <20090329134007.GG15492@elf.ucw.cz>
-References: <49CCCB0A.6070701@nokia.com> <20090329122600.GA13737@elf.ucw.cz> <49CF6CBB.7070907@yandex.ru> <20090329124959.GD15492@elf.ucw.cz> <49CF70FD.7050802@nokia.com> <20090329130251.GF15492@elf.ucw.cz> <49CF7297.4020201@nokia.com>
+	Sun, 29 Mar 2009 09:46:36 -0400
+Message-ID: <49CF7BB6.2010609@petalogix.com>
+Date: Sun, 29 Mar 2009 15:46:30 +0200
+From: Michal Simek <michal.simek@petalogix.com>
+Reply-To: michal.simek@petalogix.com
+User-Agent: Thunderbird 2.0.0.17 (X11/20081001)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49CF7297.4020201@nokia.com>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Sam Ravnborg <sam@ravnborg.org>
+CC: Arnd Bergmann <arnd@arndb.de>, liqin.chen@sunplusct.com,
+       linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
+       torvalds@linux-foundation.org
+Subject: Re: [PATCH 5/13] score - New architecure port to SunplusCT S+CORE
+ processor
+References: <OFE9A5E3A2.37B73BA8-ON48257586.0008CFAC-48257586.00091B05@sunplusct.com> <200903272019.53689.arnd@arndb.de> <20090327202614.GA22054@uranus.ravnborg.org> <200903272153.05622.arnd@arndb.de> <20090327212251.GA22518@uranus.ravnborg.org>
+In-Reply-To: <20090327212251.GA22518@uranus.ravnborg.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun 2009-03-29 16:07:35, Artem Bityutskiy wrote:
-> Pavel Machek wrote:
->> On Sun 2009-03-29 16:00:45, Artem Bityutskiy wrote:
->>> Pavel Machek wrote:
->>>>>>> 2. create/write/rename leads to empty files
->>>>>> ..but this should not be. If we want to make that explicit, we should
->>>>>> provide "replace()" operation; where replace is rename that makes sure
->>>>>> that source file is completely on media before commiting the rename.
->>>>> Well, OK, we can fsync() before rename, we just need clean rules
->>>>> for this, so that all Linux FSes would follow them. Would be nice
->>>>> to have final agreement on all this stuff.
->>>> My proposal is 
->>>>
->>>> rename() stays.
->>> It stays and:
->>>
->>> 1. does _not_ fsync
->>
->> Does not fsync. If someone wants to make sure one of the files is on
->> the disk, he should use replace(). [On non-linux systems, replace()
->> should be implemented as fsync/rename in libc or something.]
+Sam Ravnborg wrote:
+>> Yes, I agree. Hopefully I'll manage to get my patches into
+>> shape to post the generic versions in the next days so we can use
+>> them on microblaze and score as well as all future versions.
+>>     
 >
-> I would be happy with these rules. But the fact is, application
-> people just refuse to add fsync before rename. They say that the
-> FS has to do this. And they say that even Linus supports them,
+> That would be gret.
+> And I need to take a critical look at the patch from Remis Lima Baima -
+> this would help those guys too.
+>   
+yes. I am open to it too. We can clean it and I'll test it and create
+new toolchain for it too.
+I hope we can reach generic solution which can be pattern for another archs.
 
-That's good. fsync before rename would be ugly regression (on ext3 at
-least). We should get them to use replace() syscall, not get them to
-add fsyncs. [Of course, that means we need replace syscall first. :-)]
-									Pavel
+Thanks,
+Michal
+
+P.S.: I am at LKML but please cc me (the best monstr@monstr.eu) for
+every discuss around microblaze.
+
+> 	Sam
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-arch" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>   
+
+
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Michal Simek, Ing. (M.Eng)
+PetaLogix - Linux Solutions for a Reconfigurable World
+w: www.petalogix.com p: +61-7-30090663,+42-0-721842854 f: +61-7-30090663
+
