@@ -1,64 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756845AbZC2NH0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757654AbZC2NH4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756845AbZC2NH0 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Mar 2009 09:07:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753641AbZC2NHI
+	id S1757654AbZC2NH4 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Mar 2009 09:07:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757293AbZC2NHq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Mar 2009 09:07:08 -0400
-Received: from silver.sucs.swan.ac.uk ([137.44.10.1]:55948 "EHLO
-	silver.sucs.swan.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753525AbZC2NHH (ORCPT
+	Sun, 29 Mar 2009 09:07:46 -0400
+Received: from smtp.nokia.com ([192.100.105.134]:23889 "EHLO
+	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754526AbZC2NHo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Mar 2009 09:07:07 -0400
-Date: Sun, 29 Mar 2009 14:07:02 +0100
-From: Sitsofe Wheeler <sitsofe@yahoo.com>
-To: Soeren Sonnenburg <sonne@debian.org>
-Cc: linux-kernel@vger.kernel.org, Eric Anholt <eric@anholt.net>,
-       dri-devel@lists.sourceforge.net,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: Re: enabling kms for i915 disables brightness control and xrandr
-Message-ID: <20090329130702.GA23660@sucs.org>
-References: <1238322841.4185.36.camel@localhost>
+	Sun, 29 Mar 2009 09:07:44 -0400
+Message-ID: <49CF7297.4020201@nokia.com>
+Date: Sun, 29 Mar 2009 16:07:35 +0300
+From: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
+Reply-To: Artem.Bityutskiy@nokia.com
+Organization: Nokia OYJ
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1238322841.4185.36.camel@localhost>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Pavel Machek <pavel@ucw.cz>
+CC: Artem Bityutskiy <dedekind@yandex.ru>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: replace() system call needed (was Re: EXT4-ish "fixes" in UBIFS)
+References: <49CCCB0A.6070701@nokia.com> <20090329122600.GA13737@elf.ucw.cz> <49CF6CBB.7070907@yandex.ru> <20090329124959.GD15492@elf.ucw.cz> <49CF70FD.7050802@nokia.com> <20090329130251.GF15492@elf.ucw.cz>
+In-Reply-To: <20090329130251.GF15492@elf.ucw.cz>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-OriginalArrivalTime: 29 Mar 2009 13:07:36.0749 (UTC) FILETIME=[54CF25D0:01C9B06F]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(CC'ing dri-devel, Eric Anholt and Jesse Barnes)
+Pavel Machek wrote:
+> On Sun 2009-03-29 16:00:45, Artem Bityutskiy wrote:
+>> Pavel Machek wrote:
+>>>>>> 2. create/write/rename leads to empty files
+>>>>> ..but this should not be. If we want to make that explicit, we should
+>>>>> provide "replace()" operation; where replace is rename that makes sure
+>>>>> that source file is completely on media before commiting the rename.
+>>>> Well, OK, we can fsync() before rename, we just need clean rules
+>>>> for this, so that all Linux FSes would follow them. Would be nice
+>>>> to have final agreement on all this stuff.
+>>> My proposal is 
+>>>
+>>> rename() stays.
+>> It stays and:
+>>
+>> 1. does _not_ fsync
+> 
+> Does not fsync. If someone wants to make sure one of the files is on
+> the disk, he should use replace(). [On non-linux systems, replace()
+> should be implemented as fsync/rename in libc or something.]
 
-On Sun, Mar 29, 2009 at 12:34:01PM +0200, Soeren Sonnenburg wrote:
-> Dear all,
-> 
-> I am not sure if this is just a user error/ too old userspace problem,
-
-[User stated that 2.6.3 intel driver is being used in another email]
-
-> but I recognized that when I enable kernel based modesetting on a intel
-> 945 based samsung nc 10 netbook, I loose brightness control from within
-> X and X resolutions are wrong (instead of 1024x600 it is 1024x1024) and
-> xrandr does no longer have the all the modelines ranging from 1024x600
-> to 640x350... Trying to change resolutions / setting the brightness via
-> xrandr results in error messages being printed. 
-> 
-> Furthermore, this same flag disables Xv support..
-> 
-> However, screen switches between terminal and X are quite fast now
-> (without any flicker) and suspend and everything works stably.
-> 
-> I recognized that I can set the brightness via
-> 
-> setpci -s 00:02.1 F4.B=XX
-> 
-> (XX ranging from 00 to FF) just fine...
-> 
-> I am attaching the .config .
-> 
-> Any ideas?
-> Soeren
+I would be happy with these rules. But the fact is, application
+people just refuse to add fsync before rename. They say that the
+FS has to do this. And they say that even Linus supports them,
+which is an argument I find difficult to fight against. This is
+why I want clean rules.
 
 -- 
-Sitsofe | http://sucs.org/~sits/
+Best Regards,
+Artem Bityutskiy (Артём Битюцкий)
