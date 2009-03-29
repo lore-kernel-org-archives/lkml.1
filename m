@@ -1,529 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756757AbZC2Ubf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756193AbZC2Ud0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756757AbZC2Ubf (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Mar 2009 16:31:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753643AbZC2UbY
+	id S1756193AbZC2Ud0 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Mar 2009 16:33:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753711AbZC2UdP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Mar 2009 16:31:24 -0400
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:36692 "EHLO e2.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753007AbZC2UbX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Mar 2009 16:31:23 -0400
-Date: Sun, 29 Mar 2009 13:31:18 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: linux-kernel@vger.kernel.org
-Cc: mingo@elte.hu, akpm@linux-foundation.org, niv@us.ibm.com,
-       dvhltc@us.ibm.com, dhowells@redhat.com, lethal@linux-sh.org,
-       kernel@wantstofly.org, matthew@wil.cx
-Subject: [PATCH] v3 RCU: the bloatwatch edition
-Message-ID: <20090329203118.GA14005@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20090203183426.GA14409@linux.vnet.ibm.com>
+	Sun, 29 Mar 2009 16:33:15 -0400
+Received: from georges.telenet-ops.be ([195.130.137.68]:47701 "EHLO
+	georges.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754223AbZC2UdO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Mar 2009 16:33:14 -0400
+Date: Sun, 29 Mar 2009 22:33:03 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+cc: linux-ide@vger.kernel.org,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>
+Subject: [PATCH] de: drivers/ide/ide-atapi.c needs <linux/scatterlist.h>
+Message-ID: <Pine.LNX.4.64.0903292229400.23398@anakin>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090203183426.GA14409@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch is a version of RCU designed for (!SMP && EMBEDDED)
-provided as a proof of concept of a small-footprint RCU implementation.
-In particular, the implementation of synchronize_rcu() is extremely
-lightweight and high performance.  It passes rcutorture testing in each
-of the four relevant configurations (combinations of NO_HZ and PREEMPT)
-on x86.  This saves about 900 bytes compared to Classic RCU, and a
-couple kilobytes compared to Hierarchical RCU:
+On m68k:
+| drivers/ide/ide-atapi.c: In function 'ide_io_buffers':
+| drivers/ide/ide-atapi.c:87: error: implicit declaration of function 'sg_page'
+| drivers/ide/ide-atapi.c:87: warning: passing argument 1 of 'PageHighMem' makes pointer from integer without a cast
+| drivers/ide/ide-atapi.c:91: warning: passing argument 1 of 'kmap_atomic' makes pointer from integer without a cast
+| drivers/ide/ide-atapi.c:96: error: implicit declaration of function 'sg_virt'
+| drivers/ide/ide-atapi.c:96: warning: assignment makes pointer from integer without a cast
+| drivers/ide/ide-atapi.c:107: error: implicit declaration of function 'sg_next'
+| drivers/ide/ide-atapi.c:107: warning: assignment makes pointer from integer without a cast
 
-	CONFIG_CLASSIC_RCU:
-
-	   text	   data	    bss	    dec	    hex	filename
-	    363	     12	     24	    399	    18f	kernel/rcupdate.o
-	   1237	     64	    124	   1425	    591	kernel/rcuclassic.o
-				   1824 Total
-
-	CONFIG_TREE_RCU:
-
-	   text	   data	    bss	    dec	    hex	filename
-	    363	     12	     24	    399	    18f	kernel/rcupdate.o
-	   2344	    240	    184	   2768	    ad0	kernel/rcutree.o
-				   3167 Total
-
-	CONFIG_TINY_RCU:
-
-	   text	   data	    bss	    dec	    hex	filename
-	    294	     12	     24	    330	    14a	kernel/rcupdate.o
-	    563	     36	      0	    599	    257	kernel/rcutiny.o
-				    929 Total
-
-
-Changes from v2 (http://lkml.org/lkml/2009/2/3/333) include:
-
-o	Fix whitespace issues.
-
-o	Change short-circuit "||" operator to instead be "+" in order to
-	fix performance bug noted by "kraai" on LWN.
-
-		(http://lwn.net/Articles/324348/)
-
-Changes from v1 (http://lkml.org/lkml/2009/1/13/440) include:
-
-o	This version depends on EMBEDDED as well as !SMP, as suggested
-	by Ingo.
-
-o	Updated rcu_needs_cpu() to unconditionally return zero,
-	permitting the CPU to enter dynticks-idle mode at any time.
-	This works because callbacks can be invoked upon entry to
-	dynticks-idle mode.
-
-o	I am now OK with this being included, based on a poll at the
-	Kernel Miniconf at linux.conf.au, where about ten people said
-	that they cared about saving 900 bytes on single-CPU systems.
-
-o	Applies to both mainline and tip/core/rcu.
-
-Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
 ---
+No idea where it got introduced. 2.6.29 was fine.
 
- include/linux/rcupdate.h |    2 
- include/linux/rcutiny.h  |   68 +++++++++++
- init/Kconfig             |    7 +
- kernel/Makefile          |    1 
- kernel/rcupdate.c        |    4 
- kernel/rcutiny.c         |  288 +++++++++++++++++++++++++++++++++++++++++++++++
- 6 files changed, 370 insertions(+)
+ drivers/ide/ide-atapi.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
 
-diff --git a/include/linux/rcupdate.h b/include/linux/rcupdate.h
-index 528343e..19966aa 100644
---- a/include/linux/rcupdate.h
-+++ b/include/linux/rcupdate.h
-@@ -61,6 +61,8 @@ extern int rcu_scheduler_active;
- #include <linux/rcutree.h>
- #elif defined(CONFIG_PREEMPT_RCU)
- #include <linux/rcupreempt.h>
-+#elif CONFIG_TINY_RCU
-+#include <linux/rcutiny.h>
- #else
- #error "Unknown RCU implementation specified to kernel configuration"
- #endif /* #else #if defined(CONFIG_CLASSIC_RCU) */
-diff --git a/include/linux/rcutiny.h b/include/linux/rcutiny.h
-new file mode 100644
-index 0000000..f007cfa
---- /dev/null
-+++ b/include/linux/rcutiny.h
-@@ -0,0 +1,68 @@
-+/*
-+ * Read-Copy Update mechanism for mutual exclusion, the Bloatwatch edition.
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-+ *
-+ * Copyright IBM Corporation, 2008
-+ *
-+ * Author: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-+ *
-+ * For detailed explanation of Read-Copy Update mechanism see -
-+ * 		Documentation/RCU
-+ */
+diff --git a/drivers/ide/ide-atapi.c b/drivers/ide/ide-atapi.c
+index 6adc5b4..445d157 100644
+--- a/drivers/ide/ide-atapi.c
++++ b/drivers/ide/ide-atapi.c
+@@ -6,6 +6,8 @@
+ #include <linux/cdrom.h>
+ #include <linux/delay.h>
+ #include <linux/ide.h>
++#include <linux/scatterlist.h>
 +
-+#ifndef __LINUX_TINY_H
-+#define __LINUX_TINY_H
-+
-+#include <linux/cache.h>
-+
-+/* Global control variables for rcupdate callback mechanism. */
-+struct rcu_ctrlblk {
-+	long completed; 		/* Number of last completed batch. */
-+	struct rcu_head *rcucblist;	/* List of pending callbacks (CBs). */
-+	struct rcu_head **donetail;	/* ->next pointer of last "done" CB. */
-+	struct rcu_head **curtail;	/* ->next pointer of last CB. */
-+};
-+
-+void rcu_qsctr_inc(int cpu);
-+void rcu_bh_qsctr_inc(int cpu);
-+extern int rcu_needs_cpu(int cpu);
-+
-+#define __rcu_read_lock()	preempt_disable()
-+#define __rcu_read_unlock()	preempt_enable()
-+#define __rcu_read_lock_bh()	local_bh_disable()
-+#define __rcu_read_unlock_bh()	local_bh_enable()
-+#define __synchronize_sched	synchronize_rcu
-+#define call_rcu_sched		call_rcu
-+
-+extern void __rcu_init(void);
-+#define rcu_init_sched()	do { } while (0)
-+extern void rcu_check_callbacks(int cpu, int user);
-+extern void rcu_restart_cpu(int cpu);
-+
-+extern long rcu_batches_completed(void);
-+extern long rcu_batches_completed_bh(void);
-+
-+#define rcu_pending(cpu)	1
-+
-+#ifdef CONFIG_NO_HZ
-+void rcu_enter_nohz(void);
-+void rcu_exit_nohz(void);
-+#else /* #ifdef CONFIG_NO_HZ */
-+#define rcu_enter_nohz() do { } while (0)
-+#define rcu_exit_nohz()  do { } while (0)
-+#endif /* #else #ifdef CONFIG_NO_HZ */
-+
-+#endif /* __LINUX_RCUTINY_H */
-diff --git a/init/Kconfig b/init/Kconfig
-index f068071..9404637 100644
---- a/init/Kconfig
-+++ b/init/Kconfig
-@@ -271,6 +271,13 @@ config PREEMPT_RCU
- 	  now-naive assumptions about each RCU read-side critical section
- 	  remaining on a given CPU through its execution.
+ #include <scsi/scsi.h>
  
-+config TINY_RCU
-+	bool "Tiny-Memory RCU"
-+	depends on !SMP && EMBEDDED
-+	help
-+	  This option greatly reduces the memory footprint of RCU,
-+	  but is usable only on UP systems.
-+
- endchoice
- 
- config RCU_TRACE
-diff --git a/kernel/Makefile b/kernel/Makefile
-index e4791b3..7a8c7c5 100644
---- a/kernel/Makefile
-+++ b/kernel/Makefile
-@@ -80,6 +80,7 @@ obj-$(CONFIG_RCU_TORTURE_TEST) += rcutorture.o
- obj-$(CONFIG_CLASSIC_RCU) += rcuclassic.o
- obj-$(CONFIG_TREE_RCU) += rcutree.o
- obj-$(CONFIG_PREEMPT_RCU) += rcupreempt.o
-+obj-$(CONFIG_TINY_RCU) += rcutiny.o
- obj-$(CONFIG_TREE_RCU_TRACE) += rcutree_trace.o
- obj-$(CONFIG_PREEMPT_RCU_TRACE) += rcupreempt_trace.o
- obj-$(CONFIG_RELAY) += relay.o
-diff --git a/kernel/rcupdate.c b/kernel/rcupdate.c
-index cae8a05..3a5bd43 100644
---- a/kernel/rcupdate.c
-+++ b/kernel/rcupdate.c
-@@ -70,6 +70,8 @@ void wakeme_after_rcu(struct rcu_head  *head)
- 	complete(&rcu->completion);
- }
- 
-+#ifndef CONFIG_TINY_RCU
-+
- /**
-  * synchronize_rcu - wait until a grace period has elapsed.
-  *
-@@ -94,6 +96,8 @@ void synchronize_rcu(void)
- }
- EXPORT_SYMBOL_GPL(synchronize_rcu);
- 
-+#endif /* #ifndef CONFIG_TINY_RCU */
-+
- static void rcu_barrier_callback(struct rcu_head *notused)
- {
- 	if (atomic_dec_and_test(&rcu_barrier_cpu_count))
-diff --git a/kernel/rcutiny.c b/kernel/rcutiny.c
-new file mode 100644
-index 0000000..3d36583
---- /dev/null
-+++ b/kernel/rcutiny.c
-@@ -0,0 +1,288 @@
-+/*
-+ * Read-Copy Update mechanism for mutual exclusion, the Bloatwatch edition.
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-+ *
-+ * Copyright IBM Corporation, 2008
-+ *
-+ * Author: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-+ *
-+ * For detailed explanation of Read-Copy Update mechanism see -
-+ * 		Documentation/RCU
-+ */
-+
-+#include <linux/types.h>
-+#include <linux/kernel.h>
-+#include <linux/init.h>
-+#include <linux/rcupdate.h>
-+#include <linux/interrupt.h>
-+#include <linux/sched.h>
-+#include <linux/module.h>
-+#include <linux/completion.h>
-+#include <linux/moduleparam.h>
-+#include <linux/notifier.h>
-+#include <linux/cpu.h>
-+#include <linux/mutex.h>
-+#include <linux/time.h>
-+
-+/* Definition for rcupdate control block. */
-+static struct rcu_ctrlblk rcu_ctrlblk = {
-+	.completed = -300,
-+	.rcucblist = NULL,
-+	.donetail = &rcu_ctrlblk.rcucblist,
-+	.curtail = &rcu_ctrlblk.rcucblist,
-+};
-+static struct rcu_ctrlblk rcu_bh_ctrlblk = {
-+	.completed = -300,
-+	.rcucblist = NULL,
-+	.donetail = &rcu_bh_ctrlblk.rcucblist,
-+	.curtail = &rcu_bh_ctrlblk.rcucblist,
-+};
-+
-+#ifdef CONFIG_NO_HZ
-+static long dynticks_nesting = 1;
-+#endif /* #ifdef CONFIG_NO_HZ */
-+
-+/*
-+ * Helper function for rcu_qsctr_inc() and rcu_bh_qsctr_inc().
-+ */
-+static int rcu_qsctr_help(struct rcu_ctrlblk *rcp)
-+{
-+	if (rcp->rcucblist != NULL &&
-+	    rcp->donetail != rcp->curtail) {
-+		rcp->donetail = rcp->curtail;
-+		return 1;
-+	}
-+	return 0;
-+}
-+
-+/*
-+ * Record an rcu quiescent state.  And an rcu_bh quiescent state while we
-+ * are at it, given that any rcu quiescent state is also an rcu_bh
-+ * quiescent state.  Use "+" instead of "||" to defeat short circuiting.
-+ */
-+void rcu_qsctr_inc(int cpu)
-+{
-+	if (rcu_qsctr_help(&rcu_ctrlblk) + rcu_qsctr_help(&rcu_bh_ctrlblk))
-+		raise_softirq(RCU_SOFTIRQ);
-+}
-+
-+/*
-+ * Record an rcu_bh quiescent state.
-+ */
-+void rcu_bh_qsctr_inc(int cpu)
-+{
-+	if (rcu_qsctr_help(&rcu_bh_ctrlblk))
-+		raise_softirq(RCU_SOFTIRQ);
-+}
-+
-+/*
-+ * Return non-zero if there is RCU work remaining to be done.
-+ */
-+int rcu_needs_cpu(int cpu)
-+{
-+	return 0;
-+}
-+
-+/*
-+ * Check to see if the scheduling-clock interrupt came from an extended
-+ * quiescent state, and, if so, tell RCU about it.
-+ */
-+void rcu_check_callbacks(int cpu, int user)
-+{
-+	if (!rcu_needs_cpu(0))
-+		return;	/* RCU doesn't need anything to be done. */
-+	if (user ||
-+	    (idle_cpu(cpu) &&
-+	     !in_softirq() &&
-+	     hardirq_count() <= (1 << HARDIRQ_SHIFT)))
-+		rcu_qsctr_inc(cpu);
-+	else if (!in_softirq())
-+		rcu_bh_qsctr_inc(cpu);
-+}
-+
-+#ifdef CONFIG_NO_HZ
-+
-+/*
-+ * Enter dynticks-idle mode, which is an extended quiescent state
-+ * if we have fully entered that mode (i.e., if the new value of
-+ * dynticks_nesting is zero).
-+ */
-+void rcu_enter_nohz(void)
-+{
-+	if (--dynticks_nesting == 0)
-+		rcu_qsctr_inc(0); /* implies rcu_bh_qsctr_inc(0) */
-+}
-+
-+/*
-+ * Exit dynticks-idle mode, so that we are no longer in an extended
-+ * quiescent state.
-+ */
-+void rcu_exit_nohz(void)
-+{
-+	dynticks_nesting++;
-+}
-+
-+/*
-+ * Entering an interrupt handler exits nohz mode.
-+ */
-+void rcu_irq_enter(void)
-+{
-+	rcu_exit_nohz();
-+}
-+
-+/*
-+ * Exiting an interrupt handler enters nohz mode.
-+ */
-+void rcu_irq_exit(void)
-+{
-+	rcu_enter_nohz();
-+}
-+
-+void rcu_nmi_enter(void)
-+{
-+}
-+
-+void rcu_nmi_exit(void)
-+{
-+}
-+
-+#endif /* #ifdef CONFIG_NO_HZ */
-+
-+/*
-+ * Helper function for rcu_process_callbacks() that operates on the
-+ * specified rcu_ctrlkblk structure.
-+ */
-+static void __rcu_process_callbacks(struct rcu_ctrlblk *rcp)
-+{
-+	unsigned long flags;
-+	struct rcu_head *next, *list;
-+
-+	/* If no RCU callbacks ready to invoke, just return. */
-+	if (&rcp->rcucblist == rcp->donetail)
-+		return;
-+
-+	/* Move the ready-to-invoke callbacks to a local list. */
-+	local_irq_save(flags);
-+	rcp->completed++;
-+	list = rcp->rcucblist;
-+	rcp->rcucblist = *rcp->donetail;
-+	*rcp->donetail = NULL;
-+	if (rcp->curtail == rcp->donetail)
-+		rcp->curtail = &rcp->rcucblist;
-+	rcp->donetail = &rcp->rcucblist;
-+	local_irq_restore(flags);
-+
-+	/* Invoke the callbacks on the local list. */
-+	while (list) {
-+		next = list->next;
-+		prefetch(next);
-+		list->func(list);
-+		list = next;
-+	}
-+}
-+
-+/*
-+ * Invoke any callbacks whose grace period has completed.
-+ */
-+static void rcu_process_callbacks(struct softirq_action *unused)
-+{
-+	__rcu_process_callbacks(&rcu_ctrlblk);
-+	__rcu_process_callbacks(&rcu_bh_ctrlblk);
-+}
-+
-+/*
-+ * Wait for a grace period to elapse.  But it is illegal to invoke
-+ * synchronize_rcu() from within an RCU read-side critical section.
-+ * Therefore, any legal call to synchronize_rcu() is a quiescent
-+ * state, and so on a UP system, synchronize_rcu() need do nothing.
-+ *
-+ * Cool, huh?  (Due to Josh Triplett.)
-+ *
-+ * However, we do update the grace-period counter to prevent rcutorture
-+ * from hammering us.
-+ */
-+void synchronize_rcu(void)
-+{
-+	unsigned long flags;
-+
-+	local_irq_save(flags);
-+	rcu_ctrlblk.completed++;
-+	local_irq_restore(flags);
-+}
-+EXPORT_SYMBOL(synchronize_rcu);
-+
-+/*
-+ * Helper function for call_rcu() and call_rcu_bh().
-+ */
-+static void __call_rcu(struct rcu_head *head,
-+		       void (*func)(struct rcu_head *rcu),
-+		       struct rcu_ctrlblk *rcp)
-+{
-+	unsigned long flags;
-+
-+	head->func = func;
-+	head->next = NULL;
-+	local_irq_save(flags);
-+	*rcp->curtail = head;
-+	rcp->curtail = &head->next;
-+	local_irq_restore(flags);
-+}
-+
-+/*
-+ * Post an RCU callback to be invoked after the end of an RCU grace
-+ * period.  But since we have but one CPU, that would be after any
-+ * quiescent state.
-+ */
-+void call_rcu(struct rcu_head *head,
-+	      void (*func)(struct rcu_head *rcu))
-+{
-+	__call_rcu(head, func, &rcu_ctrlblk);
-+}
-+EXPORT_SYMBOL(call_rcu);
-+
-+/*
-+ * Post an RCU bottom-half callback to be invoked after any subsequent
-+ * quiescent state.
-+ */
-+void call_rcu_bh(struct rcu_head *head,
-+		 void (*func)(struct rcu_head *rcu))
-+{
-+	__call_rcu(head, func, &rcu_bh_ctrlblk);
-+}
-+EXPORT_SYMBOL(call_rcu_bh);
-+
-+/*
-+ * Return the number of grace periods.
-+ */
-+long rcu_batches_completed(void)
-+{
-+	return rcu_ctrlblk.completed;
-+}
-+EXPORT_SYMBOL(rcu_batches_completed);
-+
-+/*
-+ * Return the number of bottom-half grace periods.
-+ */
-+long rcu_batches_completed_bh(void)
-+{
-+	return rcu_bh_ctrlblk.completed;
-+}
-+EXPORT_SYMBOL(rcu_batches_completed_bh);
-+
-+void __init __rcu_init(void)
-+{
-+	open_softirq(RCU_SOFTIRQ, rcu_process_callbacks);
-+}
+ #ifdef DEBUG
+-- 
+1.6.2.1
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
