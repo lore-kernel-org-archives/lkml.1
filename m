@@ -1,74 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754732AbZC2BX6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756638AbZC2BZb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754732AbZC2BX6 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Mar 2009 21:23:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751668AbZC2BXt
+	id S1756638AbZC2BZb (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Mar 2009 21:25:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752435AbZC2BZW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Mar 2009 21:23:49 -0400
-Received: from rv-out-0506.google.com ([209.85.198.226]:19174 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750880AbZC2BXs convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Mar 2009 21:23:48 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=oyJaT9oAdbuXMkcSvDmBMSeOQzJQHHTeRmM/vhKkfmIGq2q8HAE7XBRe3CFIJS/o4B
-         p4vkI7CDjvAXtY2oEo1wwYWOo26bAbtGqi/vqEi9kY/TfL3cUZ6mXGYdKB5qttg1FQJO
-         O161KE3A8PbJs09Z7JZfFkSh6tBsbO67wdEV0=
+	Sat, 28 Mar 2009 21:25:22 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:47107 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751795AbZC2BZV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Mar 2009 21:25:21 -0400
+Message-ID: <49CECDEB.7040704@garzik.org>
+Date: Sat, 28 Mar 2009 21:24:59 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-In-Reply-To: <20090328193839.GC5588@pengutronix.de>
-References: <20090327232153.GA16348@pengutronix.de>
-	 <1238196439-16535-47-git-send-email-u.kleine-koenig@pengutronix.de>
-	 <f17812d70903280232i12f4ce68h1acff0667212286c@mail.gmail.com>
-	 <20090328193839.GC5588@pengutronix.de>
-Date: Sun, 29 Mar 2009 09:23:46 +0800
-Message-ID: <f17812d70903281823n13308520s527766e14af8c8ce@mail.gmail.com>
-Subject: Re: [PATCH 47/58] move sharpsl-pm's probe function to .devinit.text
-From: Eric Miao <eric.y.miao@gmail.com>
-To: =?UTF-8?Q?Uwe_Kleine=2DK=C3=B6nig?= 
-	<u.kleine-koenig@pengutronix.de>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Dmitry Baryshkov <dbaryshkov@gmail.com>,
-       Russell King <rmk+kernel@arm.linux.org.uk>,
-       Eric Miao <eric.miao@marvell.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+To: david@lang.hm
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       Matthew Garrett <mjg59@srcf.ucam.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Theodore Tso <tytso@mit.edu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       David Rees <drees76@gmail.com>, Jesper Krogh <jesper@krogh.cc>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.29
+References: <20090327051338.GP6239@mit.edu> <20090327055750.GA18065@srcf.ucam.org> <20090327062114.GA18290@srcf.ucam.org> <20090327112438.GQ6239@mit.edu> <20090327145156.GB24819@srcf.ucam.org> <20090327150811.09b313f5@lxorguk.ukuu.org.uk> <20090327152221.GA25234@srcf.ucam.org> <20090327161553.31436545@lxorguk.ukuu.org.uk> <20090327162841.GA26860@srcf.ucam.org> <20090327165150.7e69d9e1@lxorguk.ukuu.org.uk> <20090327170208.GA27646@srcf.ucam.org> <alpine.LFD.2.00.0903271032090.3994@localhost.localdomain> <49CD2C47.4040300@garzik.org> <alpine.LFD.2.00.0903271443440.3994@localhost.localdomain> <49CD4DDF.3000001@garzik.org> <alpine.LFD.2.00.0903271511230.3994@localhost.localdomain> <alpine.LFD.2.00.0903271522210.3994@localhost.localdomain> <49CD7B10.7010601@garzik.org> <alpine.DEB.1.10.0903281726100.22577@asgard.lang.hm>
+In-Reply-To: <alpine.DEB.1.10.0903281726100.22577@asgard.lang.hm>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/3/29 Uwe Kleine-König <u.kleine-koenig@pengutronix.de>:
-> On Sat, Mar 28, 2009 at 05:32:02PM +0800, Eric Miao wrote:
->> 2009/3/28 Uwe Kleine-König <u.kleine-koenig@pengutronix.de>:
->> > A pointer to sharpsl_pm_probe is passed to the core via
->> > platform_driver_register and so the function must not disappear when the
->> > .init sections are discarded.  Otherwise (if also having HOTPLUG=y)
->> > unbinding and binding a device to the driver via sysfs will result in an
->> > oops as does a device being registered late.
->> >
->> > An alternative to this patch is using platform_driver_probe instead of
->> > platform_driver_register plus removing the pointer to the probe function
->> > from the struct platform_driver.
->> >
->>
->> This one looks OK to me.
-> I assume this is an Acked-by: you?
->
+david@lang.hm wrote:
+> ted's suggestion (in his blog) to tweak fsync to 'misbehave' when laptop 
+> mode is enabled (only pushing data out to disk when the disk is awake 
+> anyway, or the time has hit) would really work well for most users. 
+> servers (where you have the data integrity fsync useage) don't use 
+> laptop mode. desktops could use 'laptop mode' with a delay of 0.5 or 1 
+> second and get prety close the the guarentee that users want without a 
+> huge performance hit.
 
-Acked-by: Eric Miao <eric.miao@marvell.com>
+The existential struggle is overall amusing:
 
-> Best regards
-> Uwe
->
-> --
-> Pengutronix e.K.                              | Uwe Kleine-König            |
-> Industrial Linux Solutions                    | http://www.pengutronix.de/  |
->
+Application writers start using userland transactional databases for 
+crash recovery and consistency, and in response, OS writers work to 
+undercut the consistency guarantees currently provided by the OS.
 
 
+More seriously, if we get sqlite, db4 and a few others behaving sanely 
+WRT fsync, you cover a wide swath of apps all at once.
 
--- 
-Cheers
-- eric
+I absolutely agree that db4, sqlite and friends need to be smarter in 
+the case of laptop mode or overall power saving.
+
+	Jeff
+
+
