@@ -1,74 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755017AbZC2JdR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751769AbZC2Jhz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755017AbZC2JdR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Mar 2009 05:33:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751288AbZC2Jc7
+	id S1751769AbZC2Jhz (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Mar 2009 05:37:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751376AbZC2Jhn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Mar 2009 05:32:59 -0400
-Received: from rv-out-0506.google.com ([209.85.198.229]:53007 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751123AbZC2Jc6 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Mar 2009 05:32:58 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=kmgmpIm6dtUHOXFLGzo+sAiH7T4ZWdd1pHypGf/GOk5Z+reapsuTmFlc1NIp4BeZ5W
-         qQ7QowLaQxsWEb8OZ9NURb9kI3K/wCDe/OWZ1b07RrQbrSn3h4g4TVbn/7gCDPi0XLOE
-         BAgcZiry9QGd0QbS0fc9WbQ9GquYIVOjJaG0M=
+	Sun, 29 Mar 2009 05:37:43 -0400
+Received: from isrv.corpit.ru ([81.13.33.159]:55464 "EHLO isrv.corpit.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751042AbZC2Jhm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Mar 2009 05:37:42 -0400
+Message-ID: <49CF4161.6080401@msgid.tls.msk.ru>
+Date: Sun, 29 Mar 2009 13:37:37 +0400
+From: Michael Tokarev <mjt@tls.msk.ru>
+Organization: Telecom Service, JSC
+User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
 MIME-Version: 1.0
-In-Reply-To: <200903291115.54351.prakash@punnoor.de>
-References: <alpine.DEB.1.10.0902171419000.26625@asgard.lang.hm>
-	 <200903282316.55142.prakash@punnoor.de> <49CECFCF.8060403@kernel.org>
-	 <200903291115.54351.prakash@punnoor.de>
-Date: Sun, 29 Mar 2009 02:32:56 -0700
-X-Google-Sender-Auth: 35f7c7eabb0c5b23
-Message-ID: <86802c440903290232g293b72e5oa05c20121bbc16d9@mail.gmail.com>
-Subject: Re: [PATCH] pci: don't enable too much HT MSI mapping -v5 -resend
-From: Yinghai Lu <yinghai@kernel.org>
-To: Prakash Punnoor <prakash@punnoor.de>
-Cc: Jesse Barnes <jbarnes@virtuousgeek.org>, Matthew Wilcox <matthew@wil.cx>,
-       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Robert Hancock <hancockrwd@gmail.com>, david@lang.hm,
-       linux-kernel <linux-kernel@vger.kernel.org>, linux-pci@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+To: Paul Collins <paul@burly.ondioline.org>
+CC: Jiri Slaby <jirislaby@gmail.com>, linux-wireless@vger.kernel.org,
+       linux-kernel@vger.kernel.org, ath5k-devel@venema.h4ckr.net
+Subject: Re: soft lockup apparently in ath5k_hw_update_mib_counters (or ioread32?)
+ with 2.6.29
+References: <87tz5ckfye.fsf@burly.wgtn.ondioline.org>	<49CF316D.6040903@gmail.com> <87prg0k8kd.fsf@burly.wgtn.ondioline.org>
+In-Reply-To: <87prg0k8kd.fsf@burly.wgtn.ondioline.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Mar 29, 2009 at 2:15 AM, Prakash Punnoor <prakash@punnoor.de> wrote:
-> On Sonntag 29 März 2009 03:33:03 Yinghai Lu wrote:
->> please try follwing patch over pci/linux-next
->>
->> Thanks
->>
->> YH
->>
->> [PATCH] pci: don't enable too much HT MSI mapping -v6
->
-> Works fine now, thanks!
->
-> pci 0000:00:00.0: Found disabled HT MSI Mapping
-> pci 0000:00:00.0: Enabling HT MSI Mapping
-> pci 0000:00:00.0: Found enabled HT MSI Mapping
-> pci 0000:00:05.0: Boot video device
-> pci 0000:00:09.0: Found disabled HT MSI Mapping
-> pci 0000:00:0e.0: Enabling HT MSI Mapping
-> pci 0000:00:09.0: Found disabled HT MSI Mapping
-> pci 0000:00:0f.0: Enabling HT MSI Mapping
-> pci 0000:00:09.0: Found disabled HT MSI Mapping
-> pci 0000:00:10.0: Enabling HT MSI Mapping
-> pci 0000:00:09.0: Found disabled HT MSI Mapping
-> pci 0000:00:10.1: Enabling HT MSI Mapping
->
+Paul Collins wrote:
+> Jiri Slaby <jirislaby@gmail.com> writes:
+> 
+>> On 03/29/2009 08:20 AM, Paul Collins wrote:
+>>> After about two days of uptime with 2.6.29 I got this:
+>>>
+>>> BUG: soft lockup - CPU#0 stuck for 61s! [swapper:0]
+>>> Modules linked in: ipt_MASQUERADE iptable_nat nf_nat nf_conntrack_ipv4 nf_defrag_ipv4 xt_state nf_conntrack ipt_REJECT xt_tcpudp iptable_filter ip_tables x_tables vfat fat usb_storage sch_sfq i915 drm i2c_algo_bit cfbcopyarea cfbimgblt cfbfillrect btusb rfcomm hidp l2cap bluetooth tun cpufreq_stats rpcsec_gss_krb5 nfsd exportfs nfs lockd nfs_acl auth_rpcgss sunrpc fuse cbc aes_x86_64 aes_generic xts gf128mul dm_crypt dm_mod fbcon font bitblit softcursor fb kvm_intel kvm acpi_cpufreq firewire_sbp2 loop snd_hda_intel snd_pcm arc4 snd_seq_midi snd_rawmidi ecb snd_seq_midi_event snd_seq snd_timer ath5k snd_seq_device snd mac80211 soundcore firewire_ohci firewire_core thermal snd_page_alloc cfg80211 i2c_i801 crc_itu_t button processor evdev
+>>> CPU 0:
+>>> Modules linked in: ipt_MASQUERADE iptable_nat nf_nat nf_conntrack_ipv4 nf_defrag_ipv4 xt_state nf_conntrack ipt_REJECT xt_tcpudp iptable_filter ip_tables x_tables vfat fat usb_storage sch_sfq i915 drm i2c_algo_bit cfbcopyarea cfbimgblt cfbfillrect btusb rfcomm hidp l2cap bluetooth tun cpufreq_stats rpcsec_gss_krb5 nfsd exportfs nfs lockd nfs_acl auth_rpcgss sunrpc fuse cbc aes_x86_64 aes_generic xts gf128mul dm_crypt dm_mod fbcon font bitblit softcursor fb kvm_intel kvm acpi_cpufreq firewire_sbp2 loop snd_hda_intel snd_pcm arc4 snd_seq_midi snd_rawmidi ecb snd_seq_midi_event snd_seq snd_timer ath5k snd_seq_device snd mac80211 soundcore firewire_ohci firewire_core thermal snd_page_alloc cfg80211 i2c_i801 crc_itu_t button processor evdev
+>>> Pid: 0, comm: swapper Not tainted 2.6.29-00003-g0be8685 #163 Macmini2,1
+>>> RIP: 0010:[<ffffffff803950f0>]  [<ffffffff803950f0>] ioread32+0xf/0x32
+>> Huh. I see no reason for this to happen. I suppose this is a regression,
+>> which kernel worked?
+> 
+> I had a previous instance of the problem with v2.6.29-rc8 after about
+> six days of uptime.  The kernel before that was 2.6.29-rc7ish, ran OK
+> for a couple of days.  But since I don't know how to reproduce it
+> reliably it's hard to say which kernel is truly good.
+> 
+>> There is nothing like "too many interrupts, giving up for now" in dmesg,
+>> right?
+> 
+> No, no messages like that.  I do however get timing-related errors at
+> about the time the soft lockup detector indicates the problem began.
+> 
+> With 2.6.29 I got
+> 
+>         Mar 29 18:45:48 burly kernel: Clocksource tsc unstable (delta = 532189008 ns)
+>         Mar 29 18:46:11 burly kernel: wlan0: No ProbeResp from current AP 00:1a:70:ee:7c:d6 - assume out of range
+>         Mar 29 18:46:34 burly kernel: BUG: soft lockup - CPU#0 stuck for 61s! [swapper:0]
+> 
+> and with 2.6.29-rc8 I got
+> 
+>         Mar 20 21:19:59 burly kernel: CE: hpet increasing min_delta_ns to 22500 nsec
 
-can you put you pcie network card in the pcie slot belong to c51?
-we should find 00:03.0 the pcie bridge...
+Just a wild guest, finger-to-the-sky, but how about trying with hpet=disable
+kernel option?  After all that disasters I've seen with various hpet issues,
+every time I see something about it, especially those familiar "CEL hpet
+  increasing min_delta" messages, I'm starting trembling again ;)
 
-Thanks
-
-YH
+/mjt
