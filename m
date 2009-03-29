@@ -1,72 +1,140 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751769AbZC2Jhz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754556AbZC2KSc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751769AbZC2Jhz (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Mar 2009 05:37:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751376AbZC2Jhn
+	id S1754556AbZC2KSc (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Mar 2009 06:18:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753987AbZC2KSX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Mar 2009 05:37:43 -0400
-Received: from isrv.corpit.ru ([81.13.33.159]:55464 "EHLO isrv.corpit.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751042AbZC2Jhm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Mar 2009 05:37:42 -0400
-Message-ID: <49CF4161.6080401@msgid.tls.msk.ru>
-Date: Sun, 29 Mar 2009 13:37:37 +0400
-From: Michael Tokarev <mjt@tls.msk.ru>
-Organization: Telecom Service, JSC
-User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
+	Sun, 29 Mar 2009 06:18:23 -0400
+Received: from fg-out-1718.google.com ([72.14.220.154]:18584 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753407AbZC2KSW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Mar 2009 06:18:22 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=xFWN0a2Ox3Zu2JygxRstu+8kjSarGyNvRX4SxtnIYYkl9vWIPeQsclS5SBFzu2kfe8
+         Hio3LfU8JGLBItx2sEGdx8QLAyjiPud1T1D/pAsAYkA9QZms3vSAaiD3NfKhEdnf2EhS
+         PGajsXjs+PvdBmLSQkXAjvLcCtV3d8w/rEays=
+Date: Sun, 29 Mar 2009 14:25:48 +0400
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@kernel.org>,
+       Sam Ravnborg <sam@ravnborg.org>,
+       Jaswinder Singh Rajput <jaswinder@kernel.org>,
+       x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [git-pull -tip] x86: include inverse Xmas tree patches
+Message-ID: <20090329102548.GA3014@x200.localdomain>
+References: <1238251730.2526.2.camel@ht.satnam> <20090328150746.GA3268@x200.localdomain> <20090328190350.GA30214@uranus.ravnborg.org> <49CEA3CD.105@kernel.org> <alpine.LFD.2.00.0903290025280.3397@localhost.localdomain> <20090328233438.GA4957@elte.hu> <alpine.LFD.2.00.0903290035390.3397@localhost.localdomain> <20090329000026.GA27015@elte.hu>
 MIME-Version: 1.0
-To: Paul Collins <paul@burly.ondioline.org>
-CC: Jiri Slaby <jirislaby@gmail.com>, linux-wireless@vger.kernel.org,
-       linux-kernel@vger.kernel.org, ath5k-devel@venema.h4ckr.net
-Subject: Re: soft lockup apparently in ath5k_hw_update_mib_counters (or ioread32?)
- with 2.6.29
-References: <87tz5ckfye.fsf@burly.wgtn.ondioline.org>	<49CF316D.6040903@gmail.com> <87prg0k8kd.fsf@burly.wgtn.ondioline.org>
-In-Reply-To: <87prg0k8kd.fsf@burly.wgtn.ondioline.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090329000026.GA27015@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Paul Collins wrote:
-> Jiri Slaby <jirislaby@gmail.com> writes:
+On Sun, Mar 29, 2009 at 01:00:26AM +0100, Ingo Molnar wrote:
 > 
->> On 03/29/2009 08:20 AM, Paul Collins wrote:
->>> After about two days of uptime with 2.6.29 I got this:
->>>
->>> BUG: soft lockup - CPU#0 stuck for 61s! [swapper:0]
->>> Modules linked in: ipt_MASQUERADE iptable_nat nf_nat nf_conntrack_ipv4 nf_defrag_ipv4 xt_state nf_conntrack ipt_REJECT xt_tcpudp iptable_filter ip_tables x_tables vfat fat usb_storage sch_sfq i915 drm i2c_algo_bit cfbcopyarea cfbimgblt cfbfillrect btusb rfcomm hidp l2cap bluetooth tun cpufreq_stats rpcsec_gss_krb5 nfsd exportfs nfs lockd nfs_acl auth_rpcgss sunrpc fuse cbc aes_x86_64 aes_generic xts gf128mul dm_crypt dm_mod fbcon font bitblit softcursor fb kvm_intel kvm acpi_cpufreq firewire_sbp2 loop snd_hda_intel snd_pcm arc4 snd_seq_midi snd_rawmidi ecb snd_seq_midi_event snd_seq snd_timer ath5k snd_seq_device snd mac80211 soundcore firewire_ohci firewire_core thermal snd_page_alloc cfg80211 i2c_i801 crc_itu_t button processor evdev
->>> CPU 0:
->>> Modules linked in: ipt_MASQUERADE iptable_nat nf_nat nf_conntrack_ipv4 nf_defrag_ipv4 xt_state nf_conntrack ipt_REJECT xt_tcpudp iptable_filter ip_tables x_tables vfat fat usb_storage sch_sfq i915 drm i2c_algo_bit cfbcopyarea cfbimgblt cfbfillrect btusb rfcomm hidp l2cap bluetooth tun cpufreq_stats rpcsec_gss_krb5 nfsd exportfs nfs lockd nfs_acl auth_rpcgss sunrpc fuse cbc aes_x86_64 aes_generic xts gf128mul dm_crypt dm_mod fbcon font bitblit softcursor fb kvm_intel kvm acpi_cpufreq firewire_sbp2 loop snd_hda_intel snd_pcm arc4 snd_seq_midi snd_rawmidi ecb snd_seq_midi_event snd_seq snd_timer ath5k snd_seq_device snd mac80211 soundcore firewire_ohci firewire_core thermal snd_page_alloc cfg80211 i2c_i801 crc_itu_t button processor evdev
->>> Pid: 0, comm: swapper Not tainted 2.6.29-00003-g0be8685 #163 Macmini2,1
->>> RIP: 0010:[<ffffffff803950f0>]  [<ffffffff803950f0>] ioread32+0xf/0x32
->> Huh. I see no reason for this to happen. I suppose this is a regression,
->> which kernel worked?
+> * Thomas Gleixner <tglx@linutronix.de> wrote:
 > 
-> I had a previous instance of the problem with v2.6.29-rc8 after about
-> six days of uptime.  The kernel before that was 2.6.29-rc7ish, ran OK
-> for a couple of days.  But since I don't know how to reproduce it
-> reliably it's hard to say which kernel is truly good.
+> > On Sun, 29 Mar 2009, Ingo Molnar wrote:
+> > > * Thomas Gleixner <tglx@linutronix.de> wrote:
+> > > 
+> > > > > Personally I'd prefer alphabetic order, sorting based on length 
+> > > > > isn't a complete ordering.  Nearly all editors can sort 
+> > > > > alphabetically at the push of a key.
+> > > > 
+> > > > I'd prefer if somebody would sit down and write a tool to analyse 
+> > > > the include hell instead of manually shuffling crap around to 
+> > > > avoid trivial merge conflicts. I have cleaned up enough stuff in 
+> > > > the x86 merger myself where I was able to cut the number of 
+> > > > includes at least in half just by staring at the gcc intermediate 
+> > > > files. We could do better and automate the analysis so we get down 
+> > > > to a handful of includes instead of including the world and more.
+> > > 
+> > > I do not disagree with include file cleanups (we've done many of 
+> > > them in this cycle and in previous cycles), but note that the 
+> > > reduction in include files at the top of .c files actually increases 
+> > > the chance of patch conflicts: when a new include file is added by 
+> > > two patches to the same .c file.
+> > 
+> > Those conflicts are trivial and if we have a mechanism to anlyse 
+> > include dependencies then we can avoid such conflicts often at 
+> > all.
 > 
->> There is nothing like "too many interrupts, giving up for now" in dmesg,
->> right?
+> Yeah, i agree that least 50% of the existing #include's are not 
+> needed.
 > 
-> No, no messages like that.  I do however get timing-related errors at
-> about the time the soft lockup detector indicates the problem began.
+> That's not the point though. When two new files both append to the
+> #include file section, they'll clash. Those _new_ includes tend to 
+> be justified - people dont add #includes needlessly - it's years 
+> long bitrot that causes #includes to bloat up slowly.
 > 
-> With 2.6.29 I got
-> 
->         Mar 29 18:45:48 burly kernel: Clocksource tsc unstable (delta = 532189008 ns)
->         Mar 29 18:46:11 burly kernel: wlan0: No ProbeResp from current AP 00:1a:70:ee:7c:d6 - assume out of range
->         Mar 29 18:46:34 burly kernel: BUG: soft lockup - CPU#0 stuck for 61s! [swapper:0]
-> 
-> and with 2.6.29-rc8 I got
-> 
->         Mar 20 21:19:59 burly kernel: CE: hpet increasing min_delta_ns to 22500 nsec
+> > Go through some of the include madness and watch the compiler 
+> > reading the same header file ten times for a single source file 
+> > compile.
 
-Just a wild guest, finger-to-the-sky, but how about trying with hpet=disable
-kernel option?  After all that disasters I've seen with various hpet issues,
-every time I see something about it, especially those familiar "CEL hpet
-  increasing min_delta" messages, I'm starting trembling again ;)
+Care to read strace(1) output? Include file is not even opened second
+time.
 
-/mjt
+[reads strace(1) output himself]
+
+Correction!
+
+Except, e. g., <asm/atomic.h> because i386/x86_64 unification dropped
+ifndef guards in the right place and added them in the wrong one.
+
+> Yes, we need both efforts. That section needs to look professional 
+> (unordered lines look amateurishly random, arbitrary and confusing), 
+> and it needs to be minimalized as well.
+
+These are #include directives, how else should they look like.
+As for confusing, as if you're looking for the first time at C code.
+
+> And the xmas-tree helps the minimizing effort - as it trivially 
+> eliminates duplicate #includes (which do happen frequently as well), 
+
+yes, 5-10-20 for the whole tree per release and people periodically
+removing them regardless of -tip, Xmas and so on.
+
+> and they eliminate related includes as well because they get moved 
+> together and get noticed.
+
+I'll answer on this later.
+
+> Most importantly, such code needs to look like as if someone 
+> actually cared about it.
+
+Reminder, this is include directives, not real code.
+
+> If code looks tidy, people assume that it's 
+> supposed to be perfect, and will notice and fix more subtle 
+> imperfections in it. If code looks totally messy on the other hand, 
+> _nobody_ will care because it's visibly broken. So these changes are 
+> a small step forward.
+
+People probably forgot the real problem with includes and start
+inventing new non-problems with all the consequences.
+
+
+
+So here is my countersuggestion for small and useful improvements:
+
+1. Plug ifndef guargs back on x86.
+   Check with strace(1) for past behaviour re non-opened includes.
+   Remove current ifdef guards (need much more thinking for consequences)
+
+2. Do #1 for other arches which exercised similar transformation
+   (sparc/sparc64?)
+
+3. For headers with small and let's say bounded area like <asm/unistd.h>,
+   go check for every file including them and remove it if header genuinely
+   unneeded.
+
+  In case of <asm/unistd.h> this would check for copy_from_user/copy_to_user,
+  put_user/get_user, clear_user and not much more.
+
+This will reduce compile time _and_ size of DEBUG_INFO=y kernels.
