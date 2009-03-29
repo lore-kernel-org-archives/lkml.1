@@ -1,51 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757123AbZC2GsI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755830AbZC2HUY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757123AbZC2GsI (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Mar 2009 02:48:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753957AbZC2Grw
+	id S1755830AbZC2HUY (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Mar 2009 03:20:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753196AbZC2HUL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Mar 2009 02:47:52 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:39255
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1752739AbZC2Grv (ORCPT
+	Sun, 29 Mar 2009 03:20:11 -0400
+Received: from rhun.apana.org.au ([64.62.148.172]:35260 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751304AbZC2HUK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Mar 2009 02:47:51 -0400
-Date: Sat, 28 Mar 2009 23:47:39 -0700 (PDT)
-Message-Id: <20090328.234739.26481917.davem@davemloft.net>
-To: gorcunov@gmail.com
-Cc: randy.dunlap@oracle.com, pablo@netfilter.org, sfr@canb.auug.org.au,
-       linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org, kaber@trash.net,
-       netfilter-devel@vger.kernel.org
-Subject: Re: linux-next: Tree for March 27 (netfilter build error)
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20090329064704.GA7255@localhost>
-References: <20090328102852.GA7697@localhost>
-	<49CEF882.5000005@oracle.com>
-	<20090329064704.GA7255@localhost>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Sun, 29 Mar 2009 03:20:10 -0400
+Date: Sun, 29 Mar 2009 15:19:50 +0800
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Neil Horman <nhorman@tuxdriver.com>
+Cc: Frank Seidel <fseidel@suse.de>,
+       linux kernel <linux-kernel@vger.kernel.org>,
+       linux-crypto@vger.kernel.org, akpm@linux-foundation.org,
+       "David S. Miller" <davem@davemloft.net>, lho@amcc.com, kaber@trash.net,
+       darrenrjenkins@gmail.com, Frank Seidel <frank@f-seidel.de>
+Subject: Re: [PATCHv3][trivial] crypto: tcrypt - reduce stack size
+Message-ID: <20090329071950.GA11469@gondor.apana.org.au>
+References: <49A54C23.8090209@suse.de> <49A5549F.4070304@suse.de> <49A55B5A.70705@suse.de> <20090225153231.GA16691@hmsreliant.think-freely.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090225153231.GA16691@hmsreliant.think-freely.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-Date: Sun, 29 Mar 2009 10:47:04 +0400
+On Wed, Feb 25, 2009 at 10:32:31AM -0500, Neil Horman wrote:
+> On Wed, Feb 25, 2009 at 03:53:14PM +0100, Frank Seidel wrote:
+> > From: Frank Seidel <frank@f-seidel.de>
+> > 
+> > Applying kernel janitors todos (printk calls need KERN_*
+> > constants on linebeginnings, reduce stack footprint where
+> > possible) to tcrypts test_hash_speed (where stacks
+> > memory footprint was very high (on i386 1184 bytes to
+> > 160 now).
+> > 
+> > Signed-off-by: Frank Seidel <frank@f-seidel.de>
+> Looks good, thanks Frank
+> Acked-by: Neil Horman <nhorman@tuxdriver.com>
 
-> [Randy Dunlap - Sat, Mar 28, 2009 at 09:26:42PM -0700]
-> ... 
-> | works_for_me.  Thanks.
-> | but missing S-O-B.
-> | 
-> | Acked-by: Randy Dunlap <randy.dunlap@oracle.com>
-> ...
-> 
-> Thanks for testing Randy. So if nobody will complain
-> here is a solid version of the patch. Though I would like
-> if Pablo or Patrick confirm its correctness. Thanks!
-
-I'll apply this once Patrick or Pablo have a look at it.
-
-Thanks.
+Patch applied to cryptodev.  Thanks!
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
