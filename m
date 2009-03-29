@@ -1,158 +1,240 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762151AbZC2CHx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756753AbZC2Cak@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762151AbZC2CHx (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Mar 2009 22:07:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756993AbZC2CEP
+	id S1756753AbZC2Cak (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Mar 2009 22:30:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755473AbZC2CaZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Mar 2009 22:04:15 -0400
-Received: from ozlabs.org ([203.10.76.45]:46570 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754140AbZC2CEI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Mar 2009 22:04:08 -0400
-To: linux-kernel@vger.kernel.org
-From: Rusty Russell <rusty@rustcorp.com.au>
-Date: Sun, 29 Mar 2009 00:25:52 +1030
-Subject: [PATCH 7/10] cpumask: use new cpumask_ functions in core code.
-Cc: Greg Kroah-Hartman <gregkh@suse.de>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Trond.Myklebust@netapp.com
-Message-Id: <20090329020405.5CAA8DDD1B@ozlabs.org>
+	Sat, 28 Mar 2009 22:30:25 -0400
+Received: from yw-out-2324.google.com ([74.125.46.30]:20618 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753774AbZC2CaX convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Mar 2009 22:30:23 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=JqUeq73yEPOGqhif6HGqnBFJiN3Zq0mQ6GbBpBmJm4+mk9TALfx8T8vEBxYxA9+k7m
+         RCSMFtCFtiLf1n60EMMnkmZ1lYvZG220zBprczZDvU7ChwxU4aaQL0k9/Uyr3ZAahs+W
+         e4m+plBfrD+1HrPur1TxvUswmwCZhh7YMQmQ8=
+MIME-Version: 1.0
+In-Reply-To: <200903282227.28895.rjw@sisk.pl>
+References: <49B1F934.5050006@kernel.org> <200903212305.00077.rjw@sisk.pl>
+	 <49C96042.8040909@kernel.org> <200903282227.28895.rjw@sisk.pl>
+Date: Sat, 28 Mar 2009 19:30:21 -0700
+X-Google-Sender-Auth: 8a5266c5bccca39c
+Message-ID: <9929d2390903281930r59fe204bk30b511674eebd6a3@mail.gmail.com>
+Subject: Re: [Updated patch] Re: [PATCH] igb: fix kexec with igb
+From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Yinghai Lu <yinghai@kernel.org>,
+       Jesse Brandeburg <jesse.brandeburg@gmail.com>,
+       David Miller <davem@davemloft.net>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       NetDev <netdev@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, Mar 28, 2009 at 2:27 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> On Tuesday 24 March 2009, Yinghai Lu wrote:
+>> Rafael J. Wysocki wrote:
+>> > On Thursday 12 March 2009, Yinghai Lu wrote:
+>> >> Rafael J. Wysocki wrote:
+>> >>> On Sunday 08 March 2009, Rafael J. Wysocki wrote:
+>> >>>> On Sunday 08 March 2009, Yinghai Lu wrote:
+>> >>>>> Rafael J. Wysocki wrote:
+>> >>>>>> On Saturday 07 March 2009, Yinghai Lu wrote:
+>> >>>>>>> On Fri, Mar 6, 2009 at 11:18 PM, Jesse Brandeburg
+>> >>>>>>> <jesse.brandeburg@gmail.com> wrote:
+>> >>>>>>>> On Fri, Mar 6, 2009 at 8:33 PM, Yinghai Lu <yinghai@kernel.org> wrote:
+>> >>>>>>>>> Impact: could probe igb
+>> >>>>>>>>>
+>> >>>>>>>>> Found one system with 82575EB, in the kernel that is kexeced, probe igb
+>> >>>>>>>>> failed with -2.
+>> >>>>>>>>>
+>> >>>>>>>>> it looks like the same behavior happened on forcedeth.
+>> >>>>>>>>>
+>> >>>>>>>>> try to check system_state to make sure if put it on D3
+>> >>>>>>>>>
+>> >>>>>>>>> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+>> >>>>>>>>>
+>> >>>>>>>>> ---
+>> >>>>>>>>>  drivers/net/igb/igb_main.c |   19 ++++++++++++++-----
+>> >>>>>>>>>  1 file changed, 14 insertions(+), 5 deletions(-)
+>> >>>>>>>> I see the point of the patch, but I know for a fact that ixgbe when
+>> >>>>>>>> enabled for MSI-X also doesn't work with kexec.
+>> >>>>>>>>
+>> >>>>>>>> so my questions are:
+>> >>>>>>>> are you going to change every driver?
+>> >>>>>>> i tend to only change driver that i have related HW.
+>> >>>>>>>
+>> >>>>>>>> why can't this be fixed in core kernel code instead?
+>> >>>>>>> will check it.
+>> >>>>>>>
+>> >>>>>>>> Shouldn't pci_enable_device take it out of D3?
+>> >>>>>>>> Or maybe it should be taken out of D3 immediately if someone tries to
+>> >>>>>>>> ioremap any of the BARx registers?
+>> >>>>>>> looks like second kernel can not detect the state any more.
+>> >>>>>> In fact pci_enable_device() calls pci_set_power_state(dev, PCI_D0) as the first
+>> >>>>>> thing.  The question is why it doesn't work as expected.
+>> >>>>> not sure... please check the version for forcedeth that you made.
+>> >>>>>
+>> >>>>> commit 3cb5599a84c557c0dd9a19feb63a3788268cf249
+>> >>>>> Author: Rafael J. Wysocki <rjw@sisk.pl>
+>> >>>>> Date:   Fri Sep 5 14:00:19 2008 -0700
+>> >>>>>
+>> >>>>>     forcedeth: fix kexec regression
+>> >>>>>
+>> >>>>>     Fix regression tracked as http://bugzilla.kernel.org/show_bug.cgi?id=11361
+>> >>>>>     and caused by commit f735a2a1a4f2a0f5cd823ce323e82675990469e2 ("[netdrvr]
+>> >>>>>     forcedeth: setup wake-on-lan before shutting down") that makes network
+>> >>>>>     adapters integrated into the NVidia MCP55 chipsets fail to work in kexeced
+>> >>>>>     kernels.  The problem appears to be that if the adapter is put into D3_hot
+>> >>>>>     during ->shutdown(), it cannot be brought back into D0 after kexec (ref.
+>> >>>>>     http://marc.info/?l=linux-kernel&m=121900062814967&w=4).  Therefore, only
+>> >>>>>     put forcedeth into D3 during ->shutdown() if the system is to be powered
+>> >>>>>     off.
+>> >>>> Thanks, I remember now.
+>> >>> In which case you need to rework igb_shutdown() rather than igb_suspend().
+>> >>>
+>> >>> Something like the patch below, perhaps (totally untested).
+>> >> it works, David, can you picked it up
+>> >
+>> > Still, Yinghai, can you please also test the patch below?  It fixes all
+>> > shortcomings in the driver's suspend and shutdown methods I was talking about
+>> > in one of the previous messages.  If it works, IMO it will be a preferable fix
+>> > (in particular, it would be good to check if WoL still works with it,
+>> > but I don't have the hardware).
+>> >
+>> > Thanks,
+>> > Rafael
+>> >
+>> > ---
+>> > From: Rafael J. Wysocki <rjw@sisk.pl>
+>> > Subject: net/igb: Fix kexec with igb (rev. 3)
+>> > Impact: Fix
+>> >
+>> > Yinghai Lu found one system with 82575EB where, in the kernel that is
+>> > kexeced, probe igb failed with -2, the reason being that the adapter
+>> > could not be brought back from D3 by the kexec kernel, most probably
+>> > due to quirky hardware (it looks like the same behavior happened on
+>> > forcedeth).
+>> >
+>> > Prevent igb from putting the adapter into D3 during shutdown except
+>> > when we going to power off the system.  For this purpose, seperate
+>> > igb_shutdown() from igb_suspend() and use the appropriate PCI PM
+>> > callbacks in both of them.
+>> >
+>> > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+>> > Reported-by: Yinghai Lu <yinghai@kernel.org>
+>> > ---
+>> >  drivers/net/igb/igb_main.c |   42 ++++++++++++++++++++++++++++++------------
+>> >  1 file changed, 30 insertions(+), 12 deletions(-)
+>> >
+>> > Index: linux-2.6/drivers/net/igb/igb_main.c
+>> > ===================================================================
+>> > --- linux-2.6.orig/drivers/net/igb/igb_main.c
+>> > +++ linux-2.6/drivers/net/igb/igb_main.c
+>> > @@ -4277,7 +4277,7 @@ int igb_set_spd_dplx(struct igb_adapter
+>> >  }
+>> >
+>> >
+>> > -static int igb_suspend(struct pci_dev *pdev, pm_message_t state)
+>> > +static int __igb_shutdown(struct pci_dev *pdev, bool *enable_wake)
+>> >  {
+>> >     struct net_device *netdev = pci_get_drvdata(pdev);
+>> >     struct igb_adapter *adapter = netdev_priv(netdev);
+>> > @@ -4336,15 +4336,9 @@ static int igb_suspend(struct pci_dev *p
+>> >             wr32(E1000_WUFC, 0);
+>> >     }
+>> >
+>> > -   /* make sure adapter isn't asleep if manageability/wol is enabled */
+>> > -   if (wufc || adapter->en_mng_pt) {
+>> > -           pci_enable_wake(pdev, PCI_D3hot, 1);
+>> > -           pci_enable_wake(pdev, PCI_D3cold, 1);
+>> > -   } else {
+>> > +   *enable_wake = wufc || adapter->en_mng_pt;
+>> > +   if (!*enable_wake)
+>> >             igb_shutdown_fiber_serdes_link_82575(hw);
+>> > -           pci_enable_wake(pdev, PCI_D3hot, 0);
+>> > -           pci_enable_wake(pdev, PCI_D3cold, 0);
+>> > -   }
+>> >
+>> >     /* Release control of h/w to f/w.  If f/w is AMT enabled, this
+>> >      * would have already happened in close and is redundant. */
+>> > @@ -4352,12 +4346,29 @@ static int igb_suspend(struct pci_dev *p
+>> >
+>> >     pci_disable_device(pdev);
+>> >
+>> > -   pci_set_power_state(pdev, pci_choose_state(pdev, state));
+>> > -
+>> >     return 0;
+>> >  }
+>> >
+>> >  #ifdef CONFIG_PM
+>> > +static int igb_suspend(struct pci_dev *pdev, pm_message_t state)
+>> > +{
+>> > +   int retval;
+>> > +   bool wake;
+>> > +
+>> > +   retval = __igb_shutdown(pdev, &wake);
+>> > +   if (retval)
+>> > +           return retval;
+>> > +
+>> > +   if (wake) {
+>> > +           pci_prepare_to_sleep(pdev);
+>> > +   } else {
+>> > +           pci_wake_from_d3(pdev, false);
+>> > +           pci_set_power_state(pdev, PCI_D3hot);
+>> > +   }
+>> > +
+>> > +   return 0;
+>> > +}
+>> > +
+>> >  static int igb_resume(struct pci_dev *pdev)
+>> >  {
+>> >     struct net_device *netdev = pci_get_drvdata(pdev);
+>> > @@ -4412,7 +4423,14 @@ static int igb_resume(struct pci_dev *pd
+>> >
+>> >  static void igb_shutdown(struct pci_dev *pdev)
+>> >  {
+>> > -   igb_suspend(pdev, PMSG_SUSPEND);
+>> > +   bool wake;
+>> > +
+>> > +   __igb_shutdown(pdev, &wake);
+>> > +
+>> > +   if (system_state == SYSTEM_POWER_OFF) {
+>> > +           pci_wake_from_d3(pdev, wake);
+>> > +           pci_set_power_state(pdev, PCI_D3hot);
+>> > +   }
+>> >  }
+>> >
+>> >  #ifdef CONFIG_NET_POLL_CONTROLLER
+>>
+>> it works too.
+>
+> Great, thanks for testing.
+>
+> Jeff, Jesse, is the patch fine with you?
+>
+> Rafael
 
-Impact: cleanup
+Let me talk with Jesse on Monday about it.  I know that Jesse's
+concern's were that there were more than one driver afflicted with the
+same or similar issue and that it made more sense to fix this in the
+core for all drivers.  For instance ixgbe, IIRC, but because Yinghai
+did not have any other hardware, it was unclear if this was an issue
+on other drivers.
 
-Time to clean up remaining laggards using the old cpu_ functions.
+After discussing this with Jesse, one of us will respond.  I will
+apply this patch to my tree anyway and if we are alright with the
+patch, I will push it out with my other patches to Dave.
 
-Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Greg Kroah-Hartman <gregkh@suse.de>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Trond.Myklebust@netapp.com
----
- drivers/base/cpu.c     |    2 +-
- include/linux/cpuset.h |    4 ++--
- kernel/sched_rt.c      |    4 ++--
- kernel/workqueue.c     |    6 +++---
- mm/allocpercpu.c       |    2 +-
- mm/vmstat.c            |    2 +-
- net/sunrpc/svc.c       |    2 +-
- 7 files changed, 11 insertions(+), 11 deletions(-)
-
-diff --git a/drivers/base/cpu.c b/drivers/base/cpu.c
---- a/drivers/base/cpu.c
-+++ b/drivers/base/cpu.c
-@@ -119,7 +119,7 @@ static ssize_t print_cpus_map(char *buf,
- #define	print_cpus_func(type) \
- static ssize_t print_cpus_##type(struct sysdev_class *class, char *buf)	\
- {									\
--	return print_cpus_map(buf, &cpu_##type##_map);			\
-+	return print_cpus_map(buf, cpu_##type##_mask);			\
- }									\
- static struct sysdev_class_attribute attr_##type##_map = 		\
- 	_SYSDEV_CLASS_ATTR(type, 0444, print_cpus_##type, NULL)
-diff --git a/include/linux/cpuset.h b/include/linux/cpuset.h
---- a/include/linux/cpuset.h
-+++ b/include/linux/cpuset.h
-@@ -90,12 +90,12 @@ static inline void cpuset_cpus_allowed(s
- static inline void cpuset_cpus_allowed(struct task_struct *p,
- 				       struct cpumask *mask)
- {
--	*mask = cpu_possible_map;
-+	cpumask_copy(mask, cpu_possible_mask);
- }
- static inline void cpuset_cpus_allowed_locked(struct task_struct *p,
- 					      struct cpumask *mask)
- {
--	*mask = cpu_possible_map;
-+	cpumask_copy(mask, cpu_possible_mask);
- }
- 
- static inline nodemask_t cpuset_mems_allowed(struct task_struct *p)
-diff --git a/kernel/sched_rt.c b/kernel/sched_rt.c
---- a/kernel/sched_rt.c
-+++ b/kernel/sched_rt.c
-@@ -953,12 +953,12 @@ static struct task_struct *pick_next_hig
- 
- static DEFINE_PER_CPU(cpumask_var_t, local_cpu_mask);
- 
--static inline int pick_optimal_cpu(int this_cpu, cpumask_t *mask)
-+static inline int pick_optimal_cpu(int this_cpu, const struct cpumask *mask)
- {
- 	int first;
- 
- 	/* "this_cpu" is cheaper to preempt than a remote processor */
--	if ((this_cpu != -1) && cpu_isset(this_cpu, *mask))
-+	if ((this_cpu != -1) && cpumask_test_cpu(this_cpu, mask))
- 		return this_cpu;
- 
- 	first = cpumask_first(mask);
-diff --git a/kernel/workqueue.c b/kernel/workqueue.c
---- a/kernel/workqueue.c
-+++ b/kernel/workqueue.c
-@@ -416,7 +416,7 @@ void flush_workqueue(struct workqueue_st
- 	might_sleep();
- 	lock_map_acquire(&wq->lockdep_map);
- 	lock_map_release(&wq->lockdep_map);
--	for_each_cpu_mask_nr(cpu, *cpu_map)
-+	for_each_cpu(cpu, cpu_map)
- 		flush_cpu_workqueue(per_cpu_ptr(wq->cpu_wq, cpu));
- }
- EXPORT_SYMBOL_GPL(flush_workqueue);
-@@ -547,7 +547,7 @@ static void wait_on_work(struct work_str
- 	wq = cwq->wq;
- 	cpu_map = wq_cpu_map(wq);
- 
--	for_each_cpu_mask_nr(cpu, *cpu_map)
-+	for_each_cpu(cpu, cpu_map)
- 		wait_on_cpu_work(per_cpu_ptr(wq->cpu_wq, cpu), work);
- }
- 
-@@ -911,7 +911,7 @@ void destroy_workqueue(struct workqueue_
- 	list_del(&wq->list);
- 	spin_unlock(&workqueue_lock);
- 
--	for_each_cpu_mask_nr(cpu, *cpu_map)
-+	for_each_cpu(cpu, cpu_map)
- 		cleanup_workqueue_thread(per_cpu_ptr(wq->cpu_wq, cpu));
-  	cpu_maps_update_done();
- 
-diff --git a/mm/allocpercpu.c b/mm/allocpercpu.c
---- a/mm/allocpercpu.c
-+++ b/mm/allocpercpu.c
-@@ -139,7 +139,7 @@ void percpu_free(void *__pdata)
- {
- 	if (unlikely(!__pdata))
- 		return;
--	__percpu_depopulate_mask(__pdata, &cpu_possible_map);
-+	__percpu_depopulate_mask(__pdata, cpu_possible_mask);
- 	kfree(__percpu_disguise(__pdata));
- }
- EXPORT_SYMBOL_GPL(percpu_free);
-diff --git a/mm/vmstat.c b/mm/vmstat.c
---- a/mm/vmstat.c
-+++ b/mm/vmstat.c
-@@ -27,7 +27,7 @@ static void sum_vm_events(unsigned long 
- 
- 	memset(ret, 0, NR_VM_EVENT_ITEMS * sizeof(unsigned long));
- 
--	for_each_cpu_mask_nr(cpu, *cpumask) {
-+	for_each_cpu(cpu, cpumask) {
- 		struct vm_event_state *this = &per_cpu(vm_event_states, cpu);
- 
- 		for (i = 0; i < NR_VM_EVENT_ITEMS; i++)
-diff --git a/net/sunrpc/svc.c b/net/sunrpc/svc.c
---- a/net/sunrpc/svc.c
-+++ b/net/sunrpc/svc.c
-@@ -312,7 +312,7 @@ svc_pool_map_set_cpumask(struct task_str
- 	switch (m->mode) {
- 	case SVC_POOL_PERCPU:
- 	{
--		set_cpus_allowed_ptr(task, &cpumask_of_cpu(node));
-+		set_cpus_allowed_ptr(task, cpumask_of(node));
- 		break;
- 	}
- 	case SVC_POOL_PERNODE:
-
-
+-- 
+Cheers,
+Jeff
