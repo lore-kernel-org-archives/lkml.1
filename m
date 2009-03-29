@@ -1,140 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757344AbZC2N47@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758081AbZC2N5c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757344AbZC2N47 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Mar 2009 09:56:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756061AbZC2N4t
+	id S1758081AbZC2N5c (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Mar 2009 09:57:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756061AbZC2N5U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Mar 2009 09:56:49 -0400
-Received: from mtagate8.de.ibm.com ([195.212.29.157]:60750 "EHLO
-	mtagate8.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755331AbZC2N4r (ORCPT
+	Sun, 29 Mar 2009 09:57:20 -0400
+Received: from smtp.nokia.com ([192.100.105.134]:25463 "EHLO
+	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755447AbZC2N5T (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Mar 2009 09:56:47 -0400
-Date: Sun, 29 Mar 2009 15:56:40 +0200
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-To: Rik van Riel <riel@redhat.com>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       virtualization@lists.osdl.org, frankeh@watson.ibm.com, akpm@osdl.org,
-       nickpiggin@yahoo.com.au, hugh@veritas.com
-Subject: Re: [patch 1/6] Guest page hinting: core + volatile page cache.
-Message-ID: <20090329155640.31472c61@skybase>
-In-Reply-To: <49CD59DB.3070906@redhat.com>
-References: <20090327150905.819861420@de.ibm.com>
-	<20090327151011.534224968@de.ibm.com>
-	<49CD59DB.3070906@redhat.com>
-Organization: IBM Corporation
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.14.7; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sun, 29 Mar 2009 09:57:19 -0400
+Message-ID: <49CF7E32.9070704@nokia.com>
+Date: Sun, 29 Mar 2009 16:57:06 +0300
+From: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
+Reply-To: Artem.Bityutskiy@nokia.com
+Organization: Nokia OYJ
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+MIME-Version: 1.0
+To: Pavel Machek <pavel@ucw.cz>
+CC: Artem Bityutskiy <dedekind@yandex.ru>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: replace() system call needed (was Re: EXT4-ish "fixes" in	UBIFS)
+References: <49CCCB0A.6070701@nokia.com> <20090329122600.GA13737@elf.ucw.cz> <49CF6CBB.7070907@yandex.ru> <20090329124959.GD15492@elf.ucw.cz> <49CF70FD.7050802@nokia.com> <20090329130251.GF15492@elf.ucw.cz> <49CF7297.4020201@nokia.com> <20090329134007.GG15492@elf.ucw.cz>
+In-Reply-To: <20090329134007.GG15492@elf.ucw.cz>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-OriginalArrivalTime: 29 Mar 2009 13:57:07.0813 (UTC) FILETIME=[3FB38950:01C9B076]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 27 Mar 2009 18:57:31 -0400
-Rik van Riel <riel@redhat.com> wrote:
+ext Pavel Machek wrote:
+> On Sun 2009-03-29 16:07:35, Artem Bityutskiy wrote:
+>> Pavel Machek wrote:
+>>> On Sun 2009-03-29 16:00:45, Artem Bityutskiy wrote:
+>>>> Pavel Machek wrote:
+>>>>>>>> 2. create/write/rename leads to empty files
+>>>>>>> ..but this should not be. If we want to make that explicit, we should
+>>>>>>> provide "replace()" operation; where replace is rename that makes sure
+>>>>>>> that source file is completely on media before commiting the rename.
+>>>>>> Well, OK, we can fsync() before rename, we just need clean rules
+>>>>>> for this, so that all Linux FSes would follow them. Would be nice
+>>>>>> to have final agreement on all this stuff.
+>>>>> My proposal is 
+>>>>>
+>>>>> rename() stays.
+>>>> It stays and:
+>>>>
+>>>> 1. does _not_ fsync
+>>> Does not fsync. If someone wants to make sure one of the files is on
+>>> the disk, he should use replace(). [On non-linux systems, replace()
+>>> should be implemented as fsync/rename in libc or something.]
+>> I would be happy with these rules. But the fact is, application
+>> people just refuse to add fsync before rename. They say that the
+>> FS has to do this. And they say that even Linus supports them,
+> 
+> That's good. fsync before rename would be ugly regression (on ext3 at
+> least). We should get them to use replace() syscall, not get them to
+> add fsyncs. [Of course, that means we need replace syscall first. :-)]
 
-> Martin Schwidefsky wrote:
-> 
-> > The major obstacles that need to get addressed:
-> > * Concurrent page state changes:
-> >   To guard against concurrent page state updates some kind of lock
-> >   is needed. If page_make_volatile() has already done the 11 checks it
-> >   will issue the state change primitive. If in the meantime one of
-> >   the conditions has changed the user that requires that page in
-> >   stable state will have to wait in the page_make_stable() function
-> >   until the make volatile operation has finished. It is up to the
-> >   architecture to define how this is done with the three primitives
-> >   page_test_set_state_change, page_clear_state_change and
-> >   page_state_change.
-> >   There are some alternatives how this can be done, e.g. a global
-> >   lock, or lock per segment in the kernel page table, or the per page
-> >   bit PG_arch_1 if it is still free.
-> 
-> Can this be taken care of by memory barriers and
-> careful ordering of operations?
-
-I don't see how this could be done with memory barries, the sequence is
-1) check conditions
-2) do state change to volatile
-
-another cpus can do
-i) change one of the conditions
-
-The operation i) needs to be postponed while the first cpu has done 1)
-but not done 2) yet. 1+2 needs to be atomic but consists of several
-instructions. Ergo we need a lock, no ?
-
-> If we consider the states unused -> volatile -> stable
-> as progressively higher, "upgrades" can be done before
-> any kernel operation that requires the page to be in
-> that state (but after setting up the things that allow
-> it to be found), while downgrades can be done after the
-> kernel is done with needing the page at a higher level.
-> 
-> Since the downgrade checks for users that need the page
-> in a higher state, no lock should be required.
-> 
-> In fact, it may be possible to manage the page state
-> bitmap with compare-and-swap, without needing a call
-> to the hypervisor.
-> 
-> > Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
-> 
-> Some comments and questions in line.
-> 
-> > @@ -601,6 +604,21 @@ copy_one_pte(struct mm_struct *dst_mm, s
-> >  
-> >  out_set_pte:
-> >  	set_pte_at(dst_mm, addr, dst_pte, pte);
-> > +	return;
-> > +
-> > +out_discard_pte:
-> > +	/*
-> > +	 * If the page referred by the pte has the PG_discarded bit set,
-> > +	 * copy_one_pte is racing with page_discard. The pte may not be
-> > +	 * copied or we can end up with a pte pointing to a page not
-> > +	 * in the page cache anymore. Do what try_to_unmap_one would do
-> > +	 * if the copy_one_pte had taken place before page_discard.
-> > +	 */
-> > +	if (page->index != linear_page_index(vma, addr))
-> > +		/* If nonlinear, store the file page offset in the pte. */
-> > +		set_pte_at(dst_mm, addr, dst_pte, pgoff_to_pte(page->index));
-> > +	else
-> > +		pte_clear(dst_mm, addr, dst_pte);
-> >  }
-> 
-> It would be good to document that PG_discarded can only happen for
-> file pages and NOT for eg. clean swap cache pages.
-
-PG_discarded can happen for swap cache pages as well. If a clean swap
-cache page gets remove and subsequently access again the discard fault
-handler will set the bit (see __page_discard). The code necessary for
-volatile swap cache is introduced with patch #2. So I would rather not
-add a comment in patch #1 only to remove it again with patch #2 ..
-
-> > @@ -1390,6 +1391,7 @@ int test_clear_page_writeback(struct pag
-> >  			radix_tree_tag_clear(&mapping->page_tree,
-> >  						page_index(page),
-> >  						PAGECACHE_TAG_WRITEBACK);
-> > +			page_make_volatile(page, 1);
-> >  			if (bdi_cap_account_writeback(bdi)) {
-> >  				__dec_bdi_stat(bdi, BDI_WRITEBACK);
-> >  				__bdi_writeout_inc(bdi);
-> 
-> Does this mark the page volatile before the IO writing the
-> dirty data back to disk has even started?  Is that OK?
- 
-Hmm, it could be that the page_make_volatile is just superflouos here.
-The logic here is that whenever one of the conditions that prevent a
-page from becoming volatile is cleared a try with page_make_volatile
-is done. The condition in question here is PageWriteback(page). If we
-can prove that one of the other conditions is true this particular call
-is a waste of effort.
+I'd say it is better to fix ext3 then.
 
 -- 
-blue skies,
-   Martin.
-
-"Reality continues to ruin my life." - Calvin.
-
+Best Regards,
+Artem Bityutskiy (Артём Битюцкий)
