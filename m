@@ -1,381 +1,202 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753463AbZC2XYq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753844AbZC2Xc5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753463AbZC2XYq (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Mar 2009 19:24:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751390AbZC2XYh
+	id S1753844AbZC2Xc5 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Mar 2009 19:32:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752215AbZC2Xco
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Mar 2009 19:24:37 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:42914 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751043AbZC2XYg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Mar 2009 19:24:36 -0400
-Date: Mon, 30 Mar 2009 01:24:22 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Alexey Dobriyan <adobriyan@gmail.com>
-Cc: linux-kernel@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: fault.c cleanup, what else could it be
-Message-ID: <20090329232422.GA9873@elte.hu>
-References: <20090329175642.GA26405@x200.localdomain>
+	Sun, 29 Mar 2009 19:32:44 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:53656 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751390AbZC2Xcn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Mar 2009 19:32:43 -0400
+Date: Sun, 29 Mar 2009 18:32:34 -0500
+From: Larry Finger <Larry.Finger@lwfinger.net>
+To: jgarzik@pobox.com
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: [PATCH 1/2] kaweth: Fix locking to be SMP-safe
+Message-ID: <49d00512.XAF19LdpY1dlK6+U%Larry.Finger@lwfinger.net>
+User-Agent: Heirloom mailx 12.2 01/07/07
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090329175642.GA26405@x200.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Alexey Dobriyan <adobriyan@gmail.com> wrote:
-
-> I have personally stopped sending anything against pure arch/x86/ 
-> if there is even a smallest chance it can be prettyfied like this.
-
-Before you volunteer reviewing x86 code for us (thanks for that!), 
-may i direct your urgent attention at code in your own area of 
-responsibility - such as fs/proc/base.c:
-
-    total: 85 errors, 39 warnings, 2 checks, 3147 lines checked
-
-I filtered out the relevant ones for you below.
-
-Thanks,
-
-	Ingo
-
----------------->
-ERROR: space required before the open parenthesis '('
-#154: FILE: proc/base.c:154:
-+	if(fs)
-
-ERROR: code indent should use tabs where possible
-#276: FILE: proc/base.c:276:
-+ ^Ilen = mm->arg_end - mm->arg_start;$
-
-ERROR: trailing whitespace
-#277: FILE: proc/base.c:277:
-+ $
-
-ERROR: trailing whitespace
-#280: FILE: proc/base.c:280:
-+ $
-
-ERROR: do not use C99 // comments
-#283: FILE: proc/base.c:283:
-+	// If the nul at the end of args has been overwritten, then
-
-ERROR: do not use C99 // comments
-#284: FILE: proc/base.c:284:
-+	// assume application is using setproctitle(3).
-
-WARNING: suspect code indent for conditional statements (16, 20)
-#287: FILE: proc/base.c:287:
-+		if (len < res) {
-+		    res = len;
-
-WARNING: externs should be avoided in .c files
-#452: FILE: proc/base.c:452:
-+unsigned long badness(struct task_struct *p, unsigned long uptime);
-
-ERROR: "foo * bar" should be "foo *bar"
-#722: FILE: proc/base.c:722:
-+static ssize_t proc_info_read(struct file * file, char __user * buf,
-
-ERROR: "foo * bar" should be "foo *bar"
-#725: FILE: proc/base.c:725:
-+	struct inode * inode = file->f_path.dentry->d_inode;
-
-ERROR: do not use assignment in if condition
-#738: FILE: proc/base.c:738:
-+	if (!(page = __get_free_page(GFP_TEMPORARY)))
-
-ERROR: "(foo*)" should be "(foo *)"
-#741: FILE: proc/base.c:741:
-+	length = PROC_I(inode)->op.proc_read(task, (char*)page);
-
-ERROR: "foo* bar" should be "foo *bar"
-#795: FILE: proc/base.c:795:
-+static int mem_open(struct inode* inode, struct file* file)
-
-ERROR: "(foo*)" should be "(foo *)"
-#797: FILE: proc/base.c:797:
-+	file->private_data = (void*)((long)current->self_exec_id);
-
-ERROR: "foo * bar" should be "foo *bar"
-#801: FILE: proc/base.c:801:
-+static ssize_t mem_read(struct file * file, char __user * buf,
-
-ERROR: trailing whitespace
-#822: FILE: proc/base.c:822:
-+ $
-
-ERROR: trailing whitespace
-#828: FILE: proc/base.c:828:
-+ $
-
-ERROR: "(foo*)" should be "(foo *)"
-#829: FILE: proc/base.c:829:
-+	if (file->private_data != (void*)((long)current->self_exec_id))
-
-ERROR: trailing whitespace
-#833: FILE: proc/base.c:833:
-+ $
-
-ERROR: trailing whitespace
-#849: FILE: proc/base.c:849:
-+ $
-
-ERROR: "foo * bar" should be "foo *bar"
-#871: FILE: proc/base.c:871:
-+static ssize_t mem_write(struct file * file, const char __user *buf,
-
-ERROR: trailing whitespace
-#909: FILE: proc/base.c:909:
-+^I^Icount -= retval;^I^I^I$
-
-ERROR: "foo * bar" should be "foo *bar"
-#1070: FILE: proc/base.c:1070:
-+static ssize_t proc_loginuid_read(struct file * file, char __user * buf,
-
-ERROR: "foo * bar" should be "foo *bar"
-#1073: FILE: proc/base.c:1073:
-+	struct inode * inode = file->f_path.dentry->d_inode;
-
-ERROR: "foo * bar" should be "foo *bar"
-#1086: FILE: proc/base.c:1086:
-+static ssize_t proc_loginuid_write(struct file * file, const char __user * buf,
-
-ERROR: "foo * bar" should be "foo *bar"
-#1089: FILE: proc/base.c:1089:
-+	struct inode * inode = file->f_path.dentry->d_inode;
-
-ERROR: "(foo*)" should be "(foo *)"
-#1107: FILE: proc/base.c:1107:
-+	page = (char*)__get_free_page(GFP_TEMPORARY);
-
-ERROR: "foo * bar" should be "foo *bar"
-#1135: FILE: proc/base.c:1135:
-+static ssize_t proc_sessionid_read(struct file * file, char __user * buf,
-
-ERROR: "foo * bar" should be "foo *bar"
-#1138: FILE: proc/base.c:1138:
-+	struct inode * inode = file->f_path.dentry->d_inode;
-
-ERROR: "foo * bar" should be "foo *bar"
-#1157: FILE: proc/base.c:1157:
-+static ssize_t proc_fault_inject_read(struct file * file, char __user * buf,
-
-ERROR: "foo * bar" should be "foo *bar"
-#1175: FILE: proc/base.c:1175:
-+static ssize_t proc_fault_inject_write(struct file * file,
-
-ERROR: "foo * bar" should be "foo *bar"
-#1176: FILE: proc/base.c:1176:
-+			const char __user * buf, size_t count, loff_t *ppos)
-
-ERROR: space required before the open brace '{'
-#1281: FILE: proc/base.c:1281:
-+	if ((mm->num_exe_file_vmas == 0) && mm->exe_file){
-
-ERROR: "(foo*)" should be "(foo *)"
-#1363: FILE: proc/base.c:1363:
-+	char *tmp = (char*)__get_free_page(GFP_TEMPORARY);
-
-ERROR: "foo * bar" should be "foo *bar"
-#1385: FILE: proc/base.c:1385:
-+static int proc_pid_readlink(struct dentry * dentry, char __user * buffer, int buflen)
-
-ERROR: space required before the open parenthesis '('
-#1424: FILE: proc/base.c:1424:
-+	if(dumpable == 1)
-
-ERROR: "foo * bar" should be "foo *bar"
-#1432: FILE: proc/base.c:1432:
-+	struct inode * inode;
-
-ERROR: "foo * bar" should be "foo *bar"
-#1539: FILE: proc/base.c:1539:
-+static int pid_delete_dentry(struct dentry * dentry)
-
-ERROR: code indent should use tabs where possible
-#1732: FILE: proc/base.c:1732:
-+ ^Istruct inode *inode;$
-
-ERROR: code indent should use tabs where possible
-#1733: FILE: proc/base.c:1733:
-+ ^Istruct proc_inode *ei;$
-
-ERROR: "foo * bar" should be "foo *bar"
-#1800: FILE: proc/base.c:1800:
-+static int proc_readfd_common(struct file * filp, void * dirent,
-
-ERROR: "foo * bar" should be "foo *bar"
-#1808: FILE: proc/base.c:1808:
-+	struct files_struct * files;
-
-ERROR: switch and case should be at the same indent
-#1816: FILE: proc/base.c:1816:
-+	switch (fd) {
-+		case 0:
-[...]
-+		case 1:
-[...]
-+		default:
-
-ERROR: code indent should use tabs where possible
-#1919: FILE: proc/base.c:1919:
-+ ^Istruct inode *inode;$
-
-ERROR: code indent should use tabs where possible
-#1920: FILE: proc/base.c:1920:
-+ ^Istruct proc_inode *ei;$
-
-ERROR: trailing whitespace
-#1997: FILE: proc/base.c:1997:
-+static struct dentry *proc_pident_lookup(struct inode *dir, $
-
-ERROR: "foo * bar" should be "foo *bar"
-#2096: FILE: proc/base.c:2096:
-+static ssize_t proc_pid_attr_read(struct file * file, char __user * buf,
-
-ERROR: "foo * bar" should be "foo *bar"
-#2099: FILE: proc/base.c:2099:
-+	struct inode * inode = file->f_path.dentry->d_inode;
-
-ERROR: "(foo*)" should be "(foo *)"
-#2108: FILE: proc/base.c:2108:
-+				      (char*)file->f_path.dentry->d_name.name,
-
-ERROR: "foo * bar" should be "foo *bar"
-#2117: FILE: proc/base.c:2117:
-+static ssize_t proc_pid_attr_write(struct file * file, const char __user * buf,
-
-ERROR: "foo * bar" should be "foo *bar"
-#2120: FILE: proc/base.c:2120:
-+	struct inode * inode = file->f_path.dentry->d_inode;
-
-ERROR: "(foo*)" should be "(foo *)"
-#2137: FILE: proc/base.c:2137:
-+	page = (char*)__get_free_page(GFP_TEMPORARY);
-
-ERROR: "(foo*)" should be "(foo *)"
-#2146: FILE: proc/base.c:2146:
-+				      (char*)file->f_path.dentry->d_name.name,
-
-ERROR: "(foo*)" should be "(foo *)"
-#2147: FILE: proc/base.c:2147:
-+				      (void*)page, count);
-
-ERROR: "foo * bar" should be "foo *bar"
-#2170: FILE: proc/base.c:2170:
-+static int proc_attr_dir_readdir(struct file * filp,
-
-ERROR: "foo * bar" should be "foo *bar"
-#2171: FILE: proc/base.c:2171:
-+			     void * dirent, filldir_t filldir)
-
-ERROR: space required after that ',' (ctx:VxV)
-#2173: FILE: proc/base.c:2173:
-+	return proc_pident_readdir(filp,dirent,filldir,
- 	                               ^
-
-ERROR: space required after that ',' (ctx:VxV)
-#2173: FILE: proc/base.c:2173:
-+	return proc_pident_readdir(filp,dirent,filldir,
- 	                                      ^
-
-ERROR: space required after that ',' (ctx:VxV)
-#2174: FILE: proc/base.c:2174:
-+				   attr_dir_stuff,ARRAY_SIZE(attr_dir_stuff));
- 				                 ^
-
-ERROR: "foo * bar" should be "foo *bar"
-#2561: FILE: proc/base.c:2561:
-+static int proc_tgid_base_readdir(struct file * filp,
-
-ERROR: "foo * bar" should be "foo *bar"
-#2562: FILE: proc/base.c:2562:
-+			     void * dirent, filldir_t filldir)
-
-ERROR: space required after that ',' (ctx:VxV)
-#2564: FILE: proc/base.c:2564:
-+	return proc_pident_readdir(filp,dirent,filldir,
- 	                               ^
-
-ERROR: space required after that ',' (ctx:VxV)
-#2564: FILE: proc/base.c:2564:
-+	return proc_pident_readdir(filp,dirent,filldir,
- 	                                      ^
-
-ERROR: space required after that ',' (ctx:VxV)
-#2565: FILE: proc/base.c:2565:
-+				   tgid_base_stuff,ARRAY_SIZE(tgid_base_stuff));
- 				                  ^
-
-ERROR: space required before the open brace '{'
-#2573: FILE: proc/base.c:2573:
-+static struct dentry *proc_tgid_base_lookup(struct inode *dir, struct dentry *dentry, struct nameidata *nd){
-
-ERROR: "foo * bar" should be "foo *bar"
-#2678: FILE: proc/base.c:2678:
-+					   struct dentry * dentry,
-
-ERROR: spaces required around that '|=' (ctx:VxV)
-#2691: FILE: proc/base.c:2691:
-+	inode->i_flags|=S_IMMUTABLE;
- 	              ^
-
-ERROR: "foo * bar" should be "foo *bar"
-#2791: FILE: proc/base.c:2791:
-+int proc_pid_readdir(struct file * filp, void * dirent, filldir_t filldir)
-
-ERROR: "foo * bar" should be "foo *bar"
-#2896: FILE: proc/base.c:2896:
-+static int proc_tid_base_readdir(struct file * filp,
-
-ERROR: "foo * bar" should be "foo *bar"
-#2897: FILE: proc/base.c:2897:
-+			     void * dirent, filldir_t filldir)
-
-ERROR: space required after that ',' (ctx:VxV)
-#2899: FILE: proc/base.c:2899:
-+	return proc_pident_readdir(filp,dirent,filldir,
- 	                               ^
-
-ERROR: space required after that ',' (ctx:VxV)
-#2899: FILE: proc/base.c:2899:
-+	return proc_pident_readdir(filp,dirent,filldir,
- 	                                      ^
-
-ERROR: space required after that ',' (ctx:VxV)
-#2900: FILE: proc/base.c:2900:
-+				   tid_base_stuff,ARRAY_SIZE(tid_base_stuff));
- 				                 ^
-
-ERROR: space required before the open brace '{'
-#2903: FILE: proc/base.c:2903:
-+static struct dentry *proc_tid_base_lookup(struct inode *dir, struct dentry *dentry, struct nameidata *nd){
-
-ERROR: spaces required around that '|=' (ctx:VxV)
-#2931: FILE: proc/base.c:2931:
-+	inode->i_flags|=S_IMMUTABLE;
- 	              ^
-
-ERROR: "foo * bar" should be "foo *bar"
-#3060: FILE: proc/base.c:3060:
-+static int proc_task_readdir(struct file * filp, void * dirent, filldir_t filldir)
-
-total: 85 errors, 39 warnings, 2 checks, 3147 lines checked
-
-fs/proc/base.c has style problems, please review.  If any of these errors
-are false positives report them to the maintainer, see
-CHECKPATCH in MAINTAINERS.
+On an SMP system, the following message is printed. The patch below gets
+fixes the problem.
+
+=================================
+[ INFO: inconsistent lock state ]
+2.6.29-Linus-05093-gc31f403 #57
+---------------------------------
+inconsistent {hardirq-on-W} -> {in-hardirq-W} usage.
+bash/4105 [HC1[1]:SC0[0]:HE0:SE1] takes:
+ (&kaweth->device_lock){+...}, at: [<ffffffffa01aa286>]
+                 kaweth_usb_receive+0x77/0x1af [kaw eth]
+{hardirq-on-W} state was registered at:
+  [<ffffffff80260503>] __lock_acquire+0x753/0x1685
+  [<ffffffff8026148a>] lock_acquire+0x55/0x71
+  [<ffffffff80461ba6>] _spin_lock+0x31/0x3d
+  [<ffffffffa01aaa0c>] kaweth_start_xmit+0x2b/0x1e1 [kaweth]
+  [<ffffffff803eccd3>] dev_hard_start_xmit+0x22e/0x2ad
+  [<ffffffff803fe120>] __qdisc_run+0xf2/0x203
+  [<ffffffff803ed0cd>] dev_queue_xmit+0x263/0x39b
+  [<ffffffffa03a47cb>] packet_sendmsg_spkt+0x1c4/0x20a [af_packet]
+  [<ffffffff803de0c2>] sock_sendmsg+0xe4/0xfd
+  [<ffffffff803dec8f>] sys_sendto+0xe4/0x10c
+  [<ffffffff8020bccb>] system_call_fastpath+0x16/0x1b
+  [<ffffffffffffffff>] 0xffffffffffffffff
+irq event stamp: 1280
+hardirqs last  enabled at (1279): [<ffffffff80461a71>]
+                  _spin_unlock_irqrestore+0x44/0x4c
+hardirqs last disabled at (1280): [<ffffffff8020bad7>]
+                  save_args+0x67/0x70
+softirqs last  enabled at (660): [<ffffffff8024192c>]
+                  __do_softirq+0x14d/0x15d
+softirqs last disabled at (651): [<ffffffff8020ce9c>]
+                  call_softirq+0x1c/0x28
+
+Signed-off-by: Larry Finger <Larry.Finger@lwfinger.net>
+---
+
+Jeff,
+
+As the listed authors of this driver have not touched it in several years,
+I have taken the liberty of sending it to you as networking drivers maintainer.
+I hope this is OK.
+
+Larry
+---
+
+Index: wireless-testing/drivers/net/usb/kaweth.c
+===================================================================
+--- wireless-testing.orig/drivers/net/usb/kaweth.c
++++ wireless-testing/drivers/net/usb/kaweth.c
+@@ -36,7 +36,6 @@
+  * Run test procedures
+  * Fix bugs from previous two steps
+  * Snoop other OSs for any tricks we're not doing
+- * SMP locking
+  * Reduce arbitrary timeouts
+  * Smart multicast support
+  * Temporary MAC change support
+@@ -529,6 +528,7 @@ static void int_callback(struct urb *u)
+ 		goto resubmit;
+ 	}
+ 
++	spin_lock(&kaweth->device_lock);
+ 	/* we check the link state to report changes */
+ 	if (kaweth->linkstate != (act_state = ( kaweth->intbuffer[STATE_OFFSET] | STATE_MASK) >> STATE_SHIFT)) {
+ 		if (act_state)
+@@ -540,6 +540,7 @@ static void int_callback(struct urb *u)
+ 	}
+ resubmit:
+ 	kaweth_resubmit_int_urb(kaweth, GFP_ATOMIC);
++	spin_unlock(&kaweth->device_lock);
+ }
+ 
+ static void kaweth_resubmit_tl(struct work_struct *work)
+@@ -606,21 +607,19 @@ static void kaweth_usb_receive(struct ur
+ 	__u16 pkt_len = le16_to_cpup((__le16 *)kaweth->rx_buf);
+ 
+ 	struct sk_buff *skb;
++	unsigned long flags;
+ 
++	spin_lock_irqsave(&kaweth->device_lock, flags);
+ 	if(unlikely(status == -ECONNRESET || status == -ESHUTDOWN))
+ 	/* we are killed - set a flag and wake the disconnect handler */
+ 	{
+ 		kaweth->end = 1;
+ 		wake_up(&kaweth->term_wait);
+-		return;
++		goto out;
+ 	}
+ 
+-	spin_lock(&kaweth->device_lock);
+-	if (IS_BLOCKED(kaweth->status)) {
+-		spin_unlock(&kaweth->device_lock);
+-		return;
+-	}
+-	spin_unlock(&kaweth->device_lock);
++	if (IS_BLOCKED(kaweth->status))
++		goto out;
+ 
+ 	if(status && status != -EREMOTEIO && count != 1) {
+ 		err("%s RX status: %d count: %d packet_len: %d",
+@@ -629,7 +628,7 @@ static void kaweth_usb_receive(struct ur
+ 			   count,
+ 			   (int)pkt_len);
+ 		kaweth_resubmit_rx_urb(kaweth, GFP_ATOMIC);
+-                return;
++		goto out;
+ 	}
+ 
+ 	if(kaweth->net && (count > 2)) {
+@@ -638,12 +637,12 @@ static void kaweth_usb_receive(struct ur
+ 			err("Packet len & 2047: %x", pkt_len & 2047);
+ 			err("Count 2: %x", count2);
+ 		        kaweth_resubmit_rx_urb(kaweth, GFP_ATOMIC);
+-                        return;
++			goto out;
+                 }
+ 
+ 		if(!(skb = dev_alloc_skb(pkt_len+2))) {
+ 		        kaweth_resubmit_rx_urb(kaweth, GFP_ATOMIC);
+-                        return;
++			goto out;
+ 		}
+ 
+ 		skb_reserve(skb, 2);    /* Align IP on 16 byte boundaries */
+@@ -661,6 +660,8 @@ static void kaweth_usb_receive(struct ur
+ 	}
+ 
+ 	kaweth_resubmit_rx_urb(kaweth, GFP_ATOMIC);
++out:
++	spin_unlock_irqrestore(&kaweth->device_lock, flags);
+ }
+ 
+ /****************************************************************
+@@ -778,12 +779,14 @@ static void kaweth_usb_transmit_complete
+ 	struct sk_buff *skb = kaweth->tx_skb;
+ 	int status = urb->status;
+ 
++	spin_lock(&kaweth->device_lock);
+ 	if (unlikely(status != 0))
+ 		if (status != -ENOENT)
+ 			dbg("%s: TX status %d.", kaweth->net->name, status);
+ 
+ 	netif_wake_queue(kaweth->net);
+ 	dev_kfree_skb_irq(skb);
++	spin_unlock(&kaweth->device_lock);
+ }
+ 
+ /****************************************************************
+@@ -796,7 +799,7 @@ static int kaweth_start_xmit(struct sk_b
+ 
+ 	int res;
+ 
+-	spin_lock(&kaweth->device_lock);
++	spin_lock_irq(&kaweth->device_lock);
+ 
+ 	kaweth_async_set_rx_mode(kaweth);
+ 	netif_stop_queue(net);
+@@ -814,7 +817,7 @@ static int kaweth_start_xmit(struct sk_b
+ 		if (!copied_skb) {
+ 			kaweth->stats.tx_errors++;
+ 			netif_start_queue(net);
+-			spin_unlock(&kaweth->device_lock);
++			spin_unlock_irq(&kaweth->device_lock);
+ 			return 0;
+ 		}
+ 	}
+@@ -848,7 +851,7 @@ skip:
+ 		net->trans_start = jiffies;
+ 	}
+ 
+-	spin_unlock(&kaweth->device_lock);
++	spin_unlock_irq(&kaweth->device_lock);
+ 
+ 	return 0;
+ }
