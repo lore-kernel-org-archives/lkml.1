@@ -1,107 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754739AbZC2VmZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754739AbZC2Vu5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754739AbZC2VmZ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Mar 2009 17:42:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752210AbZC2VmN
+	id S1754739AbZC2Vu5 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Mar 2009 17:50:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753576AbZC2Vuo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Mar 2009 17:42:13 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:55419 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752234AbZC2VmM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Mar 2009 17:42:12 -0400
-Date: Sun, 29 Mar 2009 23:36:35 +0200
-From: Oleg Nesterov <oleg@redhat.com>
-To: Al Viro <viro@ZenIV.linux.org.uk>
-Cc: Hugh Dickins <hugh@veritas.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Joe Malicki <jmalicki@metacarta.com>, Michael Itz <mitz@metacarta.com>,
-       Kenneth Baker <bakerk@metacarta.com>,
-       Chris Wright <chrisw@sous-sol.org>, David Howells <dhowells@redhat.com>,
-       Alexey Dobriyan <adobriyan@gmail.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: Q: check_unsafe_exec() races (Was: [PATCH 2/4] fix setuid
-	sometimes doesn't)
-Message-ID: <20090329213635.GA21820@redhat.com>
-References: <Pine.LNX.4.64.0903282307050.14892@blonde.anvils> <Pine.LNX.4.64.0903282319270.15432@blonde.anvils> <20090329005343.GA12139@redhat.com> <20090329041022.GF28946@ZenIV.linux.org.uk> <20090329045206.GA15519@redhat.com> <20090329055513.GH28946@ZenIV.linux.org.uk> <20090329060118.GI28946@ZenIV.linux.org.uk>
+	Sun, 29 Mar 2009 17:50:44 -0400
+Received: from mail-qy0-f118.google.com ([209.85.221.118]:55673 "EHLO
+	mail-qy0-f118.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752737AbZC2Vum convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Mar 2009 17:50:42 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=fO0XyFlYM/VMP5Qzi8/SlSF94fW4tISdH/oJ/dGRII0URIURV73KCeByIYf3D1i33q
+         a2W+CumsyZWHGvgqGCCvdvpPVt9/IrBXwvSpMRFW02nNCINk1EjD6N1RhqpKfmJiX933
+         0l3Q+DjPaCnlkzcqy4ltWrC8GSHTRdus68zf8=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090329060118.GI28946@ZenIV.linux.org.uk>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <49CFE7E0.80500@zytor.com>
+References: <cover.1238361501.git.ice799@gmail.com>
+	 <76c37743d20e5737eadc747cbdddbc2beb11f074.1238361501.git.ice799@gmail.com>
+	 <49CFE7E0.80500@zytor.com>
+Date: Sun, 29 Mar 2009 14:50:39 -0700
+Message-ID: <3605561d0903291450v516a7e9csaff4309c0cacb121@mail.gmail.com>
+Subject: Re: [PATCH 1/2] x86: Add getter/setter static inlines for x86 
+	descriptors
+From: Joe Damato <ice799@gmail.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: linux-x86_64@vger.kernel.org, w@1wt.eu, mingo@elte.hu, jeremy@goop.org,
+       linux-newbie@vger.kernel.org, kernel-janitors@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 03/29, Al Viro wrote:
+On Sun, Mar 29, 2009 at 2:28 PM, H. Peter Anvin <hpa@zytor.com> wrote:
+> Joe Damato wrote:
+>> Static inline getters/setters have been provided to encourage consumers not to touch the internals of 32bit x86 descriptors directly.
+>>
+>> Signed-off-by: Joe Damato <ice799@gmail.com>
 >
-> > In principle, we can mark these threads as "-EAGAIN on such clone()" and
-> > clean that on exec failure.
+> Okay, what is the motivation for this?
+>
+> This is a serious question.  The x86 descriptors are so complex that
+> it's not clear to me that this restriction makes the code any more
+> clear.  Especially not with things like:
+>
+> -               cpu->arch.gdt[i].b |= 0x00000100;
+> +               desc_set_hi(tmp,  desc_get_hi(tmp) | 0x00000100);
+>
+> This isn't an improvement.  If you're doing to so something like this,
+> you need to actually implement the *intent* here.
 
-We can't. We can miss the new subthread if we race with clone(CLONE_THREAD).
-Unless we add the additional locking, of course.
+Hi -
 
-We can set current->signal->flags |= SIGNAL_DO_NOT_CLONE_FS. But this is
-really nasty. For examlpe, what if this flag is already set when
-check_unsafe_exec() takes ->siglock ? We should return -ESOMETHING, not
-good. Or schedule_timeout_uninterruptible(1) until it is cleared?
+In my first patch set several months ago I replaced the structure
+desc_struct with bit fields that exposed the fields for IDT/LDT/TSS
+entries. This patch set was rejected for several reasons, one of which
+was that Linux is trying to move away from bit fields. I also received
+other comments such as "take a smaller bite", etc.
 
-This also means copy_process()->copy_fs() path should take ->siglock too,
-otherwise we we don't have a barrier.
+So instead of the bit fields, I implemented static inline
+getters/setters. I thought that this small change would be a good
+first step to re-test the waters of submitting patches to the kernel
+before I started to clean out more pieces of the x86 architecture
+specific code.
 
-> ... or just do that to fs_struct.  After finding that there's no outside
-> users.  Commenst?
+I agree that this isn't very clear, but from comments I received on my
+first set, I assumed that this was closer to what people wanted to see
+in the kernel. I am happy to iterate and submit something better, but
+I am clearly misunderstanding what people would like to see.
 
-This is even worse. Not only we race with our sub-threads, we race
-with CLONE_FS processes.
+Any suggestions on how this first-timer can help are greatly appreciated.
 
-We can't mark fs_struct after finding that there's no outside users
-lockless. Because we can't know whether this is "after" or not, we
-can't trust "atomic_read(fs->count) <= n_fs".
-
-Unless we re-use fs_struct->lock. In this case copy_fs() should take
-it too. But again, ->fs can be already marked when we enter
-check_unsafe_exec().
-
-
-And btw check_unsafe_exec() seem to have another hole. Another thread
-(which shares ->fs with us) can do exit_fs() right before we read
-fs->count. Since this thread was already accounted in n_fs, we can
-miss the fact we share ->fs with another process.
-
-
-Perhaps I missed something...
-
-
-Not that I like this idea (actually I hate), but perhaps we can change
-the meaning of LSM_UNSAFE_SHARE,
-
-	selinux_bprm_set_creds:
-
-		if (new_tsec->sid != old_tsec->sid) {
-			...
-
-			if (avc_has_perm(...))
-				bprm->unsafe |= LSM_UNSAFE_SHARE;
-		}
-
-
-Then we modify de_thread(). It sends SIGKILL to all subthreads, this
-means that another thread can't clone() after we drop ->siglock. So we
-can add this code to the ->siglock protected section
-
-	if (unlikely(bprm->unsafe & LSM_UNSAFE_SHARE)) {
-		if (fs_struct_is_shared())
-			return -EPERM;
-	}
-
-	...
-	zap_other_threads();
-
-Oh, ugly.
-
-I'd better hope I missed something ;)
-
-Oleg.
-
+Joe
