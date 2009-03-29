@@ -1,70 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757223AbZC2MDq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754390AbZC2MSo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757223AbZC2MDq (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Mar 2009 08:03:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757136AbZC2MDf
+	id S1754390AbZC2MSo (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Mar 2009 08:18:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752691AbZC2MSd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Mar 2009 08:03:35 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:39621 "EHLO mx2.redhat.com"
+	Sun, 29 Mar 2009 08:18:33 -0400
+Received: from agrajag.mansr.com ([78.86.181.102]:58303 "EHLO mail.mansr.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756877AbZC2MDe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Mar 2009 08:03:34 -0400
-Message-ID: <49CF6390.1020009@redhat.com>
-Date: Sun, 29 Mar 2009 15:03:28 +0300
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	id S1751211AbZC2MSc convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Mar 2009 08:18:32 -0400
+X-Greylist: delayed 486 seconds by postgrey-1.27 at vger.kernel.org; Sun, 29 Mar 2009 08:18:32 EDT
+To: "Andreas T.Auer" <andreas.t.auer_lkml_73537@ursus.ath.cx>
+Cc: linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org
+Subject: Re: Zero length files - an alternative approach?
+References: <87bprka9sg.fsf@newton.gmurray.org.uk>
+	<yw1xab744lqi.fsf@thrashbarg.mansr.com>
+	<49CF636A.3030400@ursus.ath.cx>
+From: =?iso-8859-1?Q?M=E5ns_Rullg=E5rd?= <mans@mansr.com>
+Date: Sun, 29 Mar 2009 13:10:23 +0100
+In-Reply-To: <49CF636A.3030400@ursus.ath.cx> (Andreas T. Auer's message of "Sun, 29 Mar 2009 14:02:50 +0200")
+Message-ID: <yw1x1vsg4jio.fsf@thrashbarg.mansr.com>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.4.22 (Instant Classic, linux)
 MIME-Version: 1.0
-To: Joerg Roedel <joro@8bytes.org>
-CC: Marcelo Tosatti <mtosatti@redhat.com>, Joerg Roedel <joerg.roedel@amd.com>,
-       kvm@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/7] Support for GB pages in KVM
-References: <1238164319-16092-1-git-send-email-joerg.roedel@amd.com> <20090328214008.GB4694@amt.cnet> <20090328214900.GE31080@8bytes.org>
-In-Reply-To: <20090328214900.GE31080@8bytes.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Joerg Roedel wrote:
-> On Sat, Mar 28, 2009 at 06:40:08PM -0300, Marcelo Tosatti wrote:
->   
->> On Fri, Mar 27, 2009 at 03:31:52PM +0100, Joerg Roedel wrote:
->>     
->>> Hi,
->>>
->>> this patchset extends the KVM MMU implementation to support 1GB pages as
->>> supported by AMD family 16 processors. These patches enable support for
->>> 1 GB pages with Nested Paging. Support for these pages in the shadow
->>> paging code was also developed but does not run stable yet. The patch
->>> for shadow-paging support is not included in this series and will be
->>> sent out seperatly.
->>>       
->> Looks generally sane. I'm not sure its even worthwhile to support
->> GBpages with softmmu, because the chance of finding an area without
->> shadowed (write protected) pages is much smaller than with 2MB pages.
->>     
->
-> Thanks for your review.
->
-> The idea behind GB pages in softmmu code was to provide GB pages to the
-> guest even if hardware does not support it. This would work better with
-> live migration (Only case where we wouldn't have gbpages then would be
-> vmx with ept enabled).
->
->   
->> Have any numbers to share?
->>     
->
-> No numbers I fully trust by now. I measured a 32% improvement in
-> kernbench using nested pages backed with gb pages. I will do some more
-> measurements and share some more solid numbers.
->
->   
+"Andreas T.Auer" <andreas.t.auer_lkml_73537@ursus.ath.cx> writes:
 
-Compared to 2M pages?  But we're already close to native here.
+> On 29.03.2009 13:22 Måns Rullgård wrote:
+>> Consider this scenario:
+>>
+>> 1. Create/write/close newfile
+>> 2. Rename newfile to oldfile
+>> 3. Open/read oldfile.  This must return the new contents.
+>> 4. System crash and reboot before delayed allocation/flush complete
+>> 5. Open/read oldfile.  Old contents now returned.
+>>
+>> This rollback isn't obviously, to me at least, without problems of its
+>> own.
+>>   
+> Having the old data in 5) is far better than having no data in 5).
 
+Of course having old data is better than no data.  However, fsync()
+and similar approaches make a rollback to old data after new data has
+been visible impossible or far less likely than the suggested one.
+I'm not saying it's necessarily a problem, only that it is a
+difference that should be taken into account.
 
 -- 
-error compiling committee.c: too many arguments to function
-
+Måns Rullgård
+mans@mansr.com
