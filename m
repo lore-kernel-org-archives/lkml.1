@@ -1,128 +1,153 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758494AbZC2QjG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755560AbZC2Qiq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758494AbZC2QjG (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Mar 2009 12:39:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754955AbZC2Qhe
+	id S1755560AbZC2Qiq (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Mar 2009 12:38:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754287AbZC2Qhd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Mar 2009 12:37:34 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:39824 "EHLO mx2.suse.de"
+	Sun, 29 Mar 2009 12:37:33 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:39823 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751782AbZC2Qh3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1751620AbZC2Qh3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Sun, 29 Mar 2009 12:37:29 -0400
-Message-Id: <20090329155748.839435874@nick.local0.net>
+Message-Id: <20090329155748.528493980@nick.local0.net>
 User-Agent: quilt/0.46_cvs20080326-19.1
-Date: Mon, 30 Mar 2009 02:55:43 +1100
+Date: Mon, 30 Mar 2009 02:55:41 +1100
 From: npiggin@suse.de
 To: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [patch 04/14] fs: dcache scale nr_dentry
+Subject: [patch 02/14] fs: dcache scale hash
 References: <20090329155539.275927173@nick.local0.net>
-Content-Disposition: inline; filename=fs-dcache-scale-nr_dentry.patch
+Content-Disposition: inline; filename=fs-dcache-scale-d_hash.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Make dentry_stat_t.nr_dentry an atomic_t type, and move it from under
-dcache_lock.
+Add a new lock, dcache_hash_lock, to protect the dcache hash table from
+concurrent modification. d_hash is also protected by d_lock.
 ---
- fs/dcache.c            |   20 +++++++++-----------
- include/linux/dcache.h |    4 ++--
- kernel/sysctl.c        |    6 ++++++
- 3 files changed, 17 insertions(+), 13 deletions(-)
+ fs/dcache.c            |   35 ++++++++++++++++++++++++-----------
+ include/linux/dcache.h |    3 +++
+ 2 files changed, 27 insertions(+), 11 deletions(-)
 
 Index: linux-2.6/fs/dcache.c
 ===================================================================
 --- linux-2.6.orig/fs/dcache.c
 +++ linux-2.6/fs/dcache.c
-@@ -83,6 +83,7 @@ static struct hlist_head *dentry_hashtab
+@@ -34,12 +34,23 @@
+ #include <linux/bootmem.h>
+ #include "internal.h"
  
- /* Statistics gathering. */
- struct dentry_stat_t dentry_stat = {
-+	.nr_dentry = ATOMIC_INIT(0),
- 	.age_limit = 45,
- };
++/*
++ * Usage:
++ * dcache_hash_lock protects dcache hash table
++ *
++ * Ordering:
++ * dcache_lock
++ *   dentry->d_lock
++ *     dcache_hash_lock
++ */
+ int sysctl_vfs_cache_pressure __read_mostly = 100;
+ EXPORT_SYMBOL_GPL(sysctl_vfs_cache_pressure);
  
-@@ -101,11 +102,11 @@ static void d_callback(struct rcu_head *
- }
+- __cacheline_aligned_in_smp DEFINE_SPINLOCK(dcache_lock);
++__cacheline_aligned_in_smp DEFINE_SPINLOCK(dcache_hash_lock);
++__cacheline_aligned_in_smp DEFINE_SPINLOCK(dcache_lock);
+ __cacheline_aligned_in_smp DEFINE_SEQLOCK(rename_lock);
  
- /*
-- * no dcache_lock, please.  The caller must decrement dentry_stat.nr_dentry
-- * inside dcache_lock.
-+ * no dcache_lock, please.
-  */
- static void d_free(struct dentry *dentry)
- {
-+	atomic_dec(&dentry_stat.nr_dentry);
- 	if (dentry->d_op && dentry->d_op->d_release)
- 		dentry->d_op->d_release(dentry);
- 	/* if dentry was never inserted into hash, immediate free is OK */
-@@ -212,7 +213,6 @@ static struct dentry *d_kill(struct dent
- 	struct dentry *parent;
++EXPORT_SYMBOL(dcache_hash_lock);
+ EXPORT_SYMBOL(dcache_lock);
  
- 	list_del(&dentry->d_u.d_child);
--	dentry_stat.nr_dentry--;	/* For d_free, below */
- 	/*drops the locks, at that point nobody can reach this dentry */
- 	dentry_iput(dentry);
- 	if (IS_ROOT(dentry))
-@@ -777,10 +777,7 @@ static void shrink_dcache_for_umount_sub
- 				    struct dentry, d_u.d_child);
+ static struct kmem_cache *dentry_cache __read_mostly;
+@@ -1478,17 +1489,20 @@ int d_validate(struct dentry *dentry, st
+ 		goto out;
+ 
+ 	spin_lock(&dcache_lock);
++	spin_lock(&dcache_hash_lock);
+ 	base = d_hash(dparent, dentry->d_name.hash);
+ 	hlist_for_each(lhp,base) { 
+ 		/* hlist_for_each_entry_rcu() not required for d_hash list
+ 		 * as it is parsed under dcache_lock
+ 		 */
+ 		if (dentry == hlist_entry(lhp, struct dentry, d_hash)) {
++			spin_unlock(&dcache_hash_lock);
+ 			__dget_locked(dentry);
+ 			spin_unlock(&dcache_lock);
+ 			return 1;
+ 		}
  	}
++	spin_unlock(&dcache_hash_lock);
+ 	spin_unlock(&dcache_lock);
  out:
--	/* several dentries were freed, need to correct nr_dentry */
--	spin_lock(&dcache_lock);
--	dentry_stat.nr_dentry -= detached;
--	spin_unlock(&dcache_lock);
-+	return;
+ 	return 0;
+@@ -1562,7 +1576,9 @@ void d_rehash(struct dentry * entry)
+ {
+ 	spin_lock(&dcache_lock);
+ 	spin_lock(&entry->d_lock);
++	spin_lock(&dcache_hash_lock);
+ 	_d_rehash(entry);
++	spin_unlock(&dcache_hash_lock);
+ 	spin_unlock(&entry->d_lock);
+ 	spin_unlock(&dcache_lock);
  }
+@@ -1641,8 +1657,6 @@ static void switch_names(struct dentry *
+  */
+ static void d_move_locked(struct dentry * dentry, struct dentry * target)
+ {
+-	struct hlist_head *list;
+-
+ 	if (!dentry->d_inode)
+ 		printk(KERN_WARNING "VFS: moving negative dcache entry\n");
  
- /*
-@@ -1035,11 +1032,12 @@ struct dentry *d_alloc(struct dentry * p
- 		INIT_LIST_HEAD(&dentry->d_u.d_child);
+@@ -1659,14 +1673,11 @@ static void d_move_locked(struct dentry
  	}
  
--	spin_lock(&dcache_lock);
--	if (parent)
-+	if (parent) {
-+		spin_lock(&dcache_lock);
- 		list_add(&dentry->d_u.d_child, &parent->d_subdirs);
--	dentry_stat.nr_dentry++;
--	spin_unlock(&dcache_lock);
-+		spin_unlock(&dcache_lock);
-+	}
-+	atomic_inc(&dentry_stat.nr_dentry);
+ 	/* Move the dentry to the target hash queue, if on different bucket */
+-	if (d_unhashed(dentry))
+-		goto already_unhashed;
+-
+-	hlist_del_rcu(&dentry->d_hash);
+-
+-already_unhashed:
+-	list = d_hash(target->d_parent, target->d_name.hash);
+-	__d_rehash(dentry, list);
++	spin_lock(&dcache_hash_lock);
++	if (!d_unhashed(dentry))
++		hlist_del_rcu(&dentry->d_hash);
++	__d_rehash(dentry, d_hash(target->d_parent, target->d_name.hash));
++	spin_unlock(&dcache_hash_lock);
  
- 	return dentry;
- }
+ 	/* Unhash the target: dput() will then get rid of it */
+ 	__d_drop(target);
+@@ -1862,7 +1873,9 @@ struct dentry *d_materialise_unique(stru
+ found_lock:
+ 	spin_lock(&actual->d_lock);
+ found:
++	spin_lock(&dcache_hash_lock);
+ 	_d_rehash(actual);
++	spin_unlock(&dcache_hash_lock);
+ 	spin_unlock(&actual->d_lock);
+ 	spin_unlock(&dcache_lock);
+ out_nolock:
 Index: linux-2.6/include/linux/dcache.h
 ===================================================================
 --- linux-2.6.orig/include/linux/dcache.h
 +++ linux-2.6/include/linux/dcache.h
-@@ -37,8 +37,8 @@ struct qstr {
- };
+@@ -184,6 +184,7 @@ d_iput:		no		no		no       yes
  
- struct dentry_stat_t {
--	int nr_dentry;
--	int nr_unused;
-+	atomic_t nr_dentry;
-+	int nr_unused;		/* protected by dcache_lru_lock */
- 	int age_limit;          /* age in seconds */
- 	int want_pages;         /* pages requested by system */
- 	int dummy[2];
-Index: linux-2.6/kernel/sysctl.c
-===================================================================
---- linux-2.6.orig/kernel/sysctl.c
-+++ linux-2.6/kernel/sysctl.c
-@@ -1316,6 +1316,12 @@ static struct ctl_table fs_table[] = {
- 		.extra2		= &sysctl_nr_open_max,
- 	},
- 	{
-+		/*
-+		 * dentry_stat has an atomic_t member, so this is a bit of
-+		 * a hack, but it works for the moment, and I won't bother
-+		 * changing it now because we'll probably want to change to
-+		 * a more scalable counter anyway.
-+		 */
- 		.ctl_name	= FS_DENTRY,
- 		.procname	= "dentry-state",
- 		.data		= &dentry_stat,
+ #define DCACHE_COOKIE		0x0040	/* For use by dcookie subsystem */
+ 
++extern spinlock_t dcache_hash_lock;
+ extern spinlock_t dcache_lock;
+ extern seqlock_t rename_lock;
+ 
+@@ -207,7 +208,9 @@ static inline void __d_drop(struct dentr
+ {
+ 	if (!(dentry->d_flags & DCACHE_UNHASHED)) {
+ 		dentry->d_flags |= DCACHE_UNHASHED;
++		spin_lock(&dcache_hash_lock);
+ 		hlist_del_rcu(&dentry->d_hash);
++		spin_unlock(&dcache_hash_lock);
+ 	}
+ }
+ 
 
 
