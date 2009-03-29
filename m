@@ -1,76 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755498AbZC2Mbq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756581AbZC2McG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755498AbZC2Mbq (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Mar 2009 08:31:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752234AbZC2Mbg
+	id S1756581AbZC2McG (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Mar 2009 08:32:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754914AbZC2Mbl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Mar 2009 08:31:36 -0400
-Received: from smtp.nokia.com ([192.100.105.134]:22978 "EHLO
-	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752047AbZC2Mbf (ORCPT
+	Sun, 29 Mar 2009 08:31:41 -0400
+Received: from smtp-vbr19.xs4all.nl ([194.109.24.39]:1675 "EHLO
+	smtp-vbr19.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753770AbZC2Mbk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Mar 2009 08:31:35 -0400
-Message-ID: <49CF6A08.3000704@yandex.ru>
-Date: Sun, 29 Mar 2009 15:31:04 +0300
-From: Artem Bityutskiy <dedekind@yandex.ru>
+	Sun, 29 Mar 2009 08:31:40 -0400
+Message-ID: <49CF6A28.9030504@xs4all.nl>
+Date: Sun, 29 Mar 2009 14:31:36 +0200
+From: Udo van den Heuvel <udovdh@xs4all.nl>
 User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-To: Kyungmin Park <kmpark@infradead.org>
-CC: Artem.Bityutskiy@nokia.com,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: EXT4-ish "fixes" in UBIFS
-References: <49CCCB0A.6070701@nokia.com> <9c9fda240903271822w29aa131ch57c33f95e543c883@mail.gmail.com>
-In-Reply-To: <9c9fda240903271822w29aa131ch57c33f95e543c883@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-OriginalArrivalTime: 29 Mar 2009 12:31:05.0680 (UTC) FILETIME=[3AD48D00:01C9B06A]
-X-Nokia-AV: Clean
+To: linux-kernel@vger.kernel.org
+Subject: 2.6.28.7 ext3_free_blocks_sb: bit already cleared for xxxx
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kyungmin Park wrote:
-> I also got these request. the file is empty at rename operatoin in
-> case of sudden power off.
-> they say it's different from jffs2. in case of jffs2, it points old
-> files even though power off.
+Hello,
 
-Right, because JFFS2 is synchronous :-)
+Why using myc PC for nothign special I got a few messages of:
 
-> then why is UBIFS different. fix it as before. I said it's not
-> filesystem bug. it's expected behaviors.
+EXT3-fs error (device dm-2): ext3_free_blocks_sb: bit already cleared 
+for xxxx
 
-Right, this is what I've been always thinking. I've always been
-thinking the FS gives no guarantees, and if you want a 100%
-guarantee, use fsync() before renaming. Frankly, I still think
-so. But we'll make ext4-like changes in UBIFS as well to help
-the applications which do not do the sync.
+in my logs.
+When I google for this error it has been occuring in the past as well.
+What is the status of this issue?
 
-> Frankly I'm not sure which one is better. how much filesystem support
-> it. but remember that application programmer also don't want to change
-> their application when filesystem is changed.
-> "The application is not changed, only filesystem is changed. so it's
-> filesystem problem, not us"
+Kind regards,
+Udo
 
-I hope Linux gurus will put it clearly after all - to fsync() or to
-not fsync(). We do need clear rules of the game. For now, I still
-assume the following:
-
-1. If applications want atomic update which gives 100% guarantee,
-   they should fsync before rename.
-2. If the application does not use fsync, FS should try to minimize
-   the probability of data loss by running asynchronous write-back
-   on rename which unlinks a direntry.
-3. All this performance vs. reliability hassle should be solved
-   by fixing the FS, by having good defaults, by having a
-   "fsync/not fsync" knobs in applications.
-
-Indeed, people mostly talk about ext3, desktops, etc. But there
-is also the embedded world, where battery is removed randomly.
-
-But will see where this all leads. I really want clean rules
-for this.
-
--- 
-Best Regards,
-Artem Bityutskiy (Артём Битюцкий)
