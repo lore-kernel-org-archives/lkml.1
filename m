@@ -1,66 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759798AbZC2Qpv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753896AbZC2Qtb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759798AbZC2Qpv (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Mar 2009 12:45:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753890AbZC2Qpl
+	id S1753896AbZC2Qtb (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Mar 2009 12:49:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752327AbZC2QtT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Mar 2009 12:45:41 -0400
-Received: from mail-ew0-f165.google.com ([209.85.219.165]:54455 "EHLO
-	mail-ew0-f165.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751612AbZC2Qpk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Mar 2009 12:45:40 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=RZnFKq7FTgsnpDWyY/tjuWMmL7Lzdg+Afe0vW+a1HQ4vE/QQga3AjIptQWFAfCpkXw
-         AW9jOfqRVeYwMPm/QdUNKVXOA4DunA0GszPo1SfFC8KRB5OeXMzPZ7ESAR2BFx5kUDfA
-         BMnsmCEeqt4mb/bo8omu59eaodYKUQml+kIqw=
+	Sun, 29 Mar 2009 12:49:19 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:60355 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751222AbZC2QtS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Mar 2009 12:49:18 -0400
+Message-ID: <49CFA684.2040102@redhat.com>
+Date: Sun, 29 Mar 2009 19:49:08 +0300
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-In-Reply-To: <20090329085119.0c93fb21@infradead.org>
-References: <4e5e476b0903290840o453bcccdm5800a636078fde6e@mail.gmail.com>
-	 <20090329085119.0c93fb21@infradead.org>
-Date: Sun, 29 Mar 2009 18:45:36 +0200
-Message-ID: <4e5e476b0903290945u19572af6ub366001596a7fd3f@mail.gmail.com>
-Subject: Re: How to debug kernel startup time?
-From: Corrado Zoccolo <czoccolo@gmail.com>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
+To: Graham Murray <graham@gmurray.org.uk>
+CC: linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: Zero length files - an alternative approach?
+References: <87bprka9sg.fsf@newton.gmurray.org.uk>
+In-Reply-To: <87bprka9sg.fsf@newton.gmurray.org.uk>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Mar 29, 2009 at 5:51 PM, Arjan van de Ven <arjan@infradead.org> wrote:
-> On Sun, 29 Mar 2009 17:40:10 +0200
-> Corrado Zoccolo <czoccolo@gmail.com> wrote:
+Graham Murray wrote:
+> Just a thought on the ongoing discussion of dataloss with ext4 vs ext3.
 >
->> Hi,
->> I'm seeing around 2 s "lost" during kernel boot, that are not
->> accounted for any init call (excerpt of dmesg with initcall_debug
->> follows, kernel is 2.6.29).
->> What's the suggested way to investigate such problems?
+> Taking the common scenario:
+> Read oldfile
+> create newfile file
+> write newfile data
+> close newfile
+> rename newfile to oldfile
 >
-> I take it you don't have an initrd ?
-
-You guessed right.
-
+> When using this scenario, the application writer wants to ensure that
+> either the old or new content are present. With delayed allocation, this
+> can lead to zero length files. Most of the suggestions on how to address
+> this have involved syncing the data either before the rename or making
+> the rename sync the data.
 >
-> If so I know what you are hitting; I have a patch to solve it but it's
-> a bit convoluted and not ready for mainline.... let me know if you want
-> to try it, I suspect it'll solve your issue ;)
+> What about, instead of 'bringing forward' the allocation and flushing of
+> the data, would it be possible to instead delay the rename until after
+> the blocks for newfile have been allocated and the data buffers flushed?
+> This would keep the performance benefits of delayed allocation etc and
+> also satisfy the applications developers' apparent dislike of using
+> fsync(). It would give better performance that syncing the data at
+> rename time (either using fsync() or automatically) and satisfy the
+> requirements that either the old or new content is present.
 >
+> I am not a filesystem developer, so do not know how feasible this would
+> be. 
+>   
 
-Sure. I'd like to test it.
+This has been suggested, I believe.  In filesystem terms, it means 
+inserting a barrier before the rename operation, meaning that any write 
+operations needed to carry out the rename must not take place until all 
+write operations from the previous calls have completed.
 
-Thanks,
-Corrado
 
 -- 
-__________________________________________________________________________
+error compiling committee.c: too many arguments to function
 
-dott. Corrado Zoccolo                          mailto:czoccolo@gmail.com
-PhD - Department of Computer Science - University of Pisa, Italy
---------------------------------------------------------------------------
