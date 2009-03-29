@@ -1,240 +1,144 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756753AbZC2Cak@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757609AbZC2CdV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756753AbZC2Cak (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Mar 2009 22:30:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755473AbZC2CaZ
+	id S1757609AbZC2CdV (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Mar 2009 22:33:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756096AbZC2CdF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Mar 2009 22:30:25 -0400
-Received: from yw-out-2324.google.com ([74.125.46.30]:20618 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753774AbZC2CaX convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Mar 2009 22:30:23 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=JqUeq73yEPOGqhif6HGqnBFJiN3Zq0mQ6GbBpBmJm4+mk9TALfx8T8vEBxYxA9+k7m
-         RCSMFtCFtiLf1n60EMMnkmZ1lYvZG220zBprczZDvU7ChwxU4aaQL0k9/Uyr3ZAahs+W
-         e4m+plBfrD+1HrPur1TxvUswmwCZhh7YMQmQ8=
-MIME-Version: 1.0
-In-Reply-To: <200903282227.28895.rjw@sisk.pl>
-References: <49B1F934.5050006@kernel.org> <200903212305.00077.rjw@sisk.pl>
-	 <49C96042.8040909@kernel.org> <200903282227.28895.rjw@sisk.pl>
-Date: Sat, 28 Mar 2009 19:30:21 -0700
-X-Google-Sender-Auth: 8a5266c5bccca39c
-Message-ID: <9929d2390903281930r59fe204bk30b511674eebd6a3@mail.gmail.com>
-Subject: Re: [Updated patch] Re: [PATCH] igb: fix kexec with igb
-From: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Yinghai Lu <yinghai@kernel.org>,
-       Jesse Brandeburg <jesse.brandeburg@gmail.com>,
-       David Miller <davem@davemloft.net>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
+	Sat, 28 Mar 2009 22:33:05 -0400
+Received: from mga03.intel.com ([143.182.124.21]:22701 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756055AbZC2CdD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Mar 2009 22:33:03 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.38,439,1233561600"; 
+   d="scan'208";a="125295533"
+Date: Sun, 29 Mar 2009 10:32:38 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Jos Houtman <jos@hyves.nl>
+Cc: Nick Piggin <nickpiggin@yahoo.com.au>,
        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       NetDev <netdev@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+       Jeff Layton <jlayton@redhat.com>, Dave Chinner <david@fromorbit.com>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
+       "jens.axboe@oracle.com" <jens.axboe@oracle.com>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "hch@infradead.org" <hch@infradead.org>,
+       "linux-nfs@vger.kernel.org" <linux-nfs@vger.kernel.org>
+Subject: Re: Page Cache writeback too slow,   SSD/noop scheduler/ext2
+Message-ID: <20090329023238.GA7825@localhost>
+References: <20090325052637.GA5912@localhost> <C5F2C492.D4A8%jos@hyves.nl>
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="17pEHd4RhPHOinZp"
+Content-Disposition: inline
+In-Reply-To: <C5F2C492.D4A8%jos@hyves.nl>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, Mar 28, 2009 at 2:27 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> On Tuesday 24 March 2009, Yinghai Lu wrote:
->> Rafael J. Wysocki wrote:
->> > On Thursday 12 March 2009, Yinghai Lu wrote:
->> >> Rafael J. Wysocki wrote:
->> >>> On Sunday 08 March 2009, Rafael J. Wysocki wrote:
->> >>>> On Sunday 08 March 2009, Yinghai Lu wrote:
->> >>>>> Rafael J. Wysocki wrote:
->> >>>>>> On Saturday 07 March 2009, Yinghai Lu wrote:
->> >>>>>>> On Fri, Mar 6, 2009 at 11:18 PM, Jesse Brandeburg
->> >>>>>>> <jesse.brandeburg@gmail.com> wrote:
->> >>>>>>>> On Fri, Mar 6, 2009 at 8:33 PM, Yinghai Lu <yinghai@kernel.org> wrote:
->> >>>>>>>>> Impact: could probe igb
->> >>>>>>>>>
->> >>>>>>>>> Found one system with 82575EB, in the kernel that is kexeced, probe igb
->> >>>>>>>>> failed with -2.
->> >>>>>>>>>
->> >>>>>>>>> it looks like the same behavior happened on forcedeth.
->> >>>>>>>>>
->> >>>>>>>>> try to check system_state to make sure if put it on D3
->> >>>>>>>>>
->> >>>>>>>>> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
->> >>>>>>>>>
->> >>>>>>>>> ---
->> >>>>>>>>>  drivers/net/igb/igb_main.c |   19 ++++++++++++++-----
->> >>>>>>>>>  1 file changed, 14 insertions(+), 5 deletions(-)
->> >>>>>>>> I see the point of the patch, but I know for a fact that ixgbe when
->> >>>>>>>> enabled for MSI-X also doesn't work with kexec.
->> >>>>>>>>
->> >>>>>>>> so my questions are:
->> >>>>>>>> are you going to change every driver?
->> >>>>>>> i tend to only change driver that i have related HW.
->> >>>>>>>
->> >>>>>>>> why can't this be fixed in core kernel code instead?
->> >>>>>>> will check it.
->> >>>>>>>
->> >>>>>>>> Shouldn't pci_enable_device take it out of D3?
->> >>>>>>>> Or maybe it should be taken out of D3 immediately if someone tries to
->> >>>>>>>> ioremap any of the BARx registers?
->> >>>>>>> looks like second kernel can not detect the state any more.
->> >>>>>> In fact pci_enable_device() calls pci_set_power_state(dev, PCI_D0) as the first
->> >>>>>> thing.  The question is why it doesn't work as expected.
->> >>>>> not sure... please check the version for forcedeth that you made.
->> >>>>>
->> >>>>> commit 3cb5599a84c557c0dd9a19feb63a3788268cf249
->> >>>>> Author: Rafael J. Wysocki <rjw@sisk.pl>
->> >>>>> Date:   Fri Sep 5 14:00:19 2008 -0700
->> >>>>>
->> >>>>>     forcedeth: fix kexec regression
->> >>>>>
->> >>>>>     Fix regression tracked as http://bugzilla.kernel.org/show_bug.cgi?id=11361
->> >>>>>     and caused by commit f735a2a1a4f2a0f5cd823ce323e82675990469e2 ("[netdrvr]
->> >>>>>     forcedeth: setup wake-on-lan before shutting down") that makes network
->> >>>>>     adapters integrated into the NVidia MCP55 chipsets fail to work in kexeced
->> >>>>>     kernels.  The problem appears to be that if the adapter is put into D3_hot
->> >>>>>     during ->shutdown(), it cannot be brought back into D0 after kexec (ref.
->> >>>>>     http://marc.info/?l=linux-kernel&m=121900062814967&w=4).  Therefore, only
->> >>>>>     put forcedeth into D3 during ->shutdown() if the system is to be powered
->> >>>>>     off.
->> >>>> Thanks, I remember now.
->> >>> In which case you need to rework igb_shutdown() rather than igb_suspend().
->> >>>
->> >>> Something like the patch below, perhaps (totally untested).
->> >> it works, David, can you picked it up
->> >
->> > Still, Yinghai, can you please also test the patch below?  It fixes all
->> > shortcomings in the driver's suspend and shutdown methods I was talking about
->> > in one of the previous messages.  If it works, IMO it will be a preferable fix
->> > (in particular, it would be good to check if WoL still works with it,
->> > but I don't have the hardware).
->> >
->> > Thanks,
->> > Rafael
->> >
->> > ---
->> > From: Rafael J. Wysocki <rjw@sisk.pl>
->> > Subject: net/igb: Fix kexec with igb (rev. 3)
->> > Impact: Fix
->> >
->> > Yinghai Lu found one system with 82575EB where, in the kernel that is
->> > kexeced, probe igb failed with -2, the reason being that the adapter
->> > could not be brought back from D3 by the kexec kernel, most probably
->> > due to quirky hardware (it looks like the same behavior happened on
->> > forcedeth).
->> >
->> > Prevent igb from putting the adapter into D3 during shutdown except
->> > when we going to power off the system.  For this purpose, seperate
->> > igb_shutdown() from igb_suspend() and use the appropriate PCI PM
->> > callbacks in both of them.
->> >
->> > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
->> > Reported-by: Yinghai Lu <yinghai@kernel.org>
->> > ---
->> >  drivers/net/igb/igb_main.c |   42 ++++++++++++++++++++++++++++++------------
->> >  1 file changed, 30 insertions(+), 12 deletions(-)
->> >
->> > Index: linux-2.6/drivers/net/igb/igb_main.c
->> > ===================================================================
->> > --- linux-2.6.orig/drivers/net/igb/igb_main.c
->> > +++ linux-2.6/drivers/net/igb/igb_main.c
->> > @@ -4277,7 +4277,7 @@ int igb_set_spd_dplx(struct igb_adapter
->> >  }
->> >
->> >
->> > -static int igb_suspend(struct pci_dev *pdev, pm_message_t state)
->> > +static int __igb_shutdown(struct pci_dev *pdev, bool *enable_wake)
->> >  {
->> >     struct net_device *netdev = pci_get_drvdata(pdev);
->> >     struct igb_adapter *adapter = netdev_priv(netdev);
->> > @@ -4336,15 +4336,9 @@ static int igb_suspend(struct pci_dev *p
->> >             wr32(E1000_WUFC, 0);
->> >     }
->> >
->> > -   /* make sure adapter isn't asleep if manageability/wol is enabled */
->> > -   if (wufc || adapter->en_mng_pt) {
->> > -           pci_enable_wake(pdev, PCI_D3hot, 1);
->> > -           pci_enable_wake(pdev, PCI_D3cold, 1);
->> > -   } else {
->> > +   *enable_wake = wufc || adapter->en_mng_pt;
->> > +   if (!*enable_wake)
->> >             igb_shutdown_fiber_serdes_link_82575(hw);
->> > -           pci_enable_wake(pdev, PCI_D3hot, 0);
->> > -           pci_enable_wake(pdev, PCI_D3cold, 0);
->> > -   }
->> >
->> >     /* Release control of h/w to f/w.  If f/w is AMT enabled, this
->> >      * would have already happened in close and is redundant. */
->> > @@ -4352,12 +4346,29 @@ static int igb_suspend(struct pci_dev *p
->> >
->> >     pci_disable_device(pdev);
->> >
->> > -   pci_set_power_state(pdev, pci_choose_state(pdev, state));
->> > -
->> >     return 0;
->> >  }
->> >
->> >  #ifdef CONFIG_PM
->> > +static int igb_suspend(struct pci_dev *pdev, pm_message_t state)
->> > +{
->> > +   int retval;
->> > +   bool wake;
->> > +
->> > +   retval = __igb_shutdown(pdev, &wake);
->> > +   if (retval)
->> > +           return retval;
->> > +
->> > +   if (wake) {
->> > +           pci_prepare_to_sleep(pdev);
->> > +   } else {
->> > +           pci_wake_from_d3(pdev, false);
->> > +           pci_set_power_state(pdev, PCI_D3hot);
->> > +   }
->> > +
->> > +   return 0;
->> > +}
->> > +
->> >  static int igb_resume(struct pci_dev *pdev)
->> >  {
->> >     struct net_device *netdev = pci_get_drvdata(pdev);
->> > @@ -4412,7 +4423,14 @@ static int igb_resume(struct pci_dev *pd
->> >
->> >  static void igb_shutdown(struct pci_dev *pdev)
->> >  {
->> > -   igb_suspend(pdev, PMSG_SUSPEND);
->> > +   bool wake;
->> > +
->> > +   __igb_shutdown(pdev, &wake);
->> > +
->> > +   if (system_state == SYSTEM_POWER_OFF) {
->> > +           pci_wake_from_d3(pdev, wake);
->> > +           pci_set_power_state(pdev, PCI_D3hot);
->> > +   }
->> >  }
->> >
->> >  #ifdef CONFIG_NET_POLL_CONTROLLER
->>
->> it works too.
->
-> Great, thanks for testing.
->
-> Jeff, Jesse, is the patch fine with you?
->
-> Rafael
 
-Let me talk with Jesse on Monday about it.  I know that Jesse's
-concern's were that there were more than one driver afflicted with the
-same or similar issue and that it made more sense to fix this in the
-core for all drivers.  For instance ixgbe, IIRC, but because Yinghai
-did not have any other hardware, it was unclear if this was an issue
-on other drivers.
+--17pEHd4RhPHOinZp
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-After discussing this with Jesse, one of us will respond.  I will
-apply this patch to my tree anyway and if we are alright with the
-patch, I will push it out with my other patches to Dave.
+On Sat, Mar 28, 2009 at 12:59:43AM +0800, Jos Houtman wrote:
+> Hi,
+> 
+> >> 
+> >> kupdate surely should just continue to keep trying to write back pages
+> >> so long as there are more old pages to clean, and the queue isn't
+> >> congested. That seems to be the intention anyway: MAX_WRITEBACK_PAGES
+> >> is just the number to write back in a single call, but you see
+> >> nr_to_write is set to the number of dirty pages in the system.
+> 
+> And when it's congested it should just wait a little bit before continuing.
+>  
+> >> On your system, what must be happening is more_io is not being set.
+> >> The logic in fs/fs-writeback.c might be busted.
+> 
+> I don't know about more_io, but I agree that the logic seems busted.
+> 
+> > 
+> > Hi Jos,
+> > 
+> > I prepared a debugging patch for 2.6.28. (I cannot observe writeback
+> > problems on my local ext2 mount.)
+> 
+> Thanx for the patch, but for the next time: How should I apply it?
+> it seems to be context aware (@@) and broke on all kernel versions I tried
+> 2.6.28/2.6.28.7/2.6.29
 
--- 
-Cheers,
-Jeff
+Do you mean that the patch applies after removing " @@.*$"?
+
+To be safe, I created the patch with quilt as well as git, for 2.6.29.
+
+> Because I saw the patch only a few hour ago and didn't want to block on your
+> reply I decided to patch it manually and in the process ported it to 2.6.29.
+> 
+> As for the information the patch provided: It is most helpful.
+> 
+> Attached you will find a list of files containing dirty pages and the count
+> of there dirty pages, there is also a dmesg output where I trace the
+> writeback for 40 seconds.
+
+They helped, thank you!
+
+> I did some testing on my own using printk's and what I saw is that for the
+> inodes located on sdb1 (the database) a lot of times they would pass
+> http://lxr.linux.no/linux+v2.6.29/fs/fs-writeback.c#L335
+> And then redirty_tail would be called, I haven't had the time to dig deeper,
+> but that is my primary suspect for the moment.
+
+You are right. In your case, there are several big dirty files in sdb1,
+and the sdb write queue is constantly (almost-)congested. The SSD write
+speed is so slow, that in each round of sdb1 writeback, it begins with
+an uncongested queue, but quickly fills up after writing some pages.
+Hence all the inodes will get redirtied because of (nr_to_write > 0).
+
+The following quick fix should solve the slow-writeback-on-congested-SSD
+problem. However the writeback sequence is suboptimal: it sync-and-requeue
+each file until congested (in your case about 3~600 pages) instead of
+until MAX_WRITEBACK_PAGES=1024 pages.
+
+A more complete fix would be turning MAX_WRITEBACK_PAGES into an exact
+per-file limit. It has been sitting in my todo list for quite a while...
+
+Thanks,
+Fengguang
+
+---
+ fs/fs-writeback.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+--- mm.orig/fs/fs-writeback.c
++++ mm/fs/fs-writeback.c
+@@ -325,7 +325,8 @@ __sync_single_inode(struct inode *inode,
+ 				 * soon as the queue becomes uncongested.
+ 				 */
+ 				inode->i_state |= I_DIRTY_PAGES;
+-				if (wbc->nr_to_write <= 0) {
++				if (wbc->nr_to_write <= 0 ||
++				    wbc->encountered_congestion) {
+ 					/*
+ 					 * slice used up: queue for next turn
+ 					 */
+
+--17pEHd4RhPHOinZp
+Content-Type: text/x-diff; charset=us-ascii
+Content-Disposition: attachment; filename="writeback-requeue-congestion-quickfix.patch"
+
+diff --git a/fs/fs-writeback.c b/fs/fs-writeback.c
+index e3fe991..da5f88d 100644
+--- a/fs/fs-writeback.c
++++ b/fs/fs-writeback.c
+@@ -325,7 +325,8 @@ __sync_single_inode(struct inode *inode, struct writeback_control *wbc)
+ 				 * soon as the queue becomes uncongested.
+ 				 */
+ 				inode->i_state |= I_DIRTY_PAGES;
+-				if (wbc->nr_to_write <= 0) {
++				if (wbc->nr_to_write <= 0 ||
++				    wbc->encountered_congestion) {
+ 					/*
+ 					 * slice used up: queue for next turn
+ 					 */
+
+--17pEHd4RhPHOinZp--
