@@ -1,67 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753440AbZC2LLk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755487AbZC2LMq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753440AbZC2LLk (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Mar 2009 07:11:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752737AbZC2LL2
+	id S1755487AbZC2LMq (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Mar 2009 07:12:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752974AbZC2LMe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Mar 2009 07:11:28 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:33889 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752287AbZC2LL1 (ORCPT
+	Sun, 29 Mar 2009 07:12:34 -0400
+Received: from fg-out-1718.google.com ([72.14.220.156]:10602 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752772AbZC2LMd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Mar 2009 07:11:27 -0400
-Date: Sun, 29 Mar 2009 13:11:20 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Russell King <rmk+lkml@arm.linux.org.uk>
-Cc: Cyril Hrubi? <metan@ucw.cz>, kernel list <linux-kernel@vger.kernel.org>,
-       rpurdie@rpsys.net, lenz@cs.wisc.edu, Dirk@opfer-online.de,
-       arminlitzel@web.de, pavel.urban@ct.cz, thommycheck@gmail.com,
-       milan@ucw.cz
-Subject: Re: 2.6.29-rc1 on zaurus (spitz)
-Message-ID: <20090329111120.GD2886@elf.ucw.cz>
-References: <20090128113809.GA29424@elf.ucw.cz> <dc2200690902121322l4e16cf84h25d2871ca80c37a3@mail.gmail.com> <20090222135651.GD1387@ucw.cz> <20090222142345.GA21948@flint.arm.linux.org.uk> <20090314162439.GC1496@ucw.cz> <20090317191946.GA13630@flint.arm.linux.org.uk>
+	Sun, 29 Mar 2009 07:12:33 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=gY4c/xa1lDb1uAoLwKEfPmO28YrTiy6EOSZgXEJRkTzQZdVhbkfj6mY3JMW9Cq4f3L
+         aJk/5kmwwWOfGF1HP6CQ0MqzuCalUub7QfQcG4uRAgDJ0Cao8SSx/+Jmcc7M9TCXkVR6
+         Q55kGDkFqOVlUZPJNEiPuN9Kp7wq9k8eSfSXg=
+Date: Sun, 29 Mar 2009 15:19:58 +0400
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: Hugh Dickins <hugh@veritas.com>
+Cc: Al Viro <viro@zeniv.linux.org.uk>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Joe Malicki <jmalicki@metacarta.com>, Michael Itz <mitz@metacarta.com>,
+       Kenneth Baker <bakerk@metacarta.com>,
+       Chris Wright <chrisw@sous-sol.org>, David Howells <dhowells@redhat.com>,
+       Oleg Nesterov <oleg@redhat.com>, Greg Kroah-Hartman <gregkh@suse.de>,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/4] fix setuid sometimes wouldn't
+Message-ID: <20090329111958.GA3468@x200.localdomain>
+References: <Pine.LNX.4.64.0903282307050.14892@blonde.anvils> <Pine.LNX.4.64.0903282320271.15432@blonde.anvils>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090317191946.GA13630@flint.arm.linux.org.uk>
-X-Warning: Reading this can be dangerous to your mental health.
+In-Reply-To: <Pine.LNX.4.64.0903282320271.15432@blonde.anvils>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
-
-> On Sat, Mar 14, 2009 at 05:24:39PM +0100, Pavel Machek wrote:
-> > > > About hda timeouts... I remember seeing them under older kernels, too,
-> > > > under loads such as kernel compile... plus keypresses tend to get lost
-> > > > under high loads :-(.
-> > > 
-> > > Really, what we need is for someone to step up to take on sorting out
-> > > Zaurus.  Looking at this thread, it seems there's very few people here
-> > > willing.  Also, I think Richard Purdie has moved on from Zaurus stuff.
-> > > 
-> > > I know there are a small number of people on linux-arm-kernel who have
-> > > access to some Zaurus platforms, but I don't know what they are.  Really,
-> > > you should be posting to that list if you seriously want help, because
-> > > I doubt they're subscribed to LKML.
-> > 
-> > linux-arm-kernel seems subscriber-only :-(.
+On Sat, Mar 28, 2009 at 11:21:27PM +0000, Hugh Dickins wrote:
+> check_unsafe_exec() also notes whether the fs_struct is being
+> shared by more threads than will get killed by the exec, and if so
+> sets LSM_UNSAFE_SHARE to make bprm_set_creds() careful about euid.
+> But /proc/<pid>/cwd and /proc/<pid>/root lookups make transient
+> use of get_fs_struct(), which also raises that sharing count.
 > 
-> Yes.
+> This might occasionally cause a setuid program not to change euid,
+> in the same way as happened with files->count (check_unsafe_exec
+> also looks at sighand->count, but /proc doesn't raise that one).
 > 
-> > Anyway, new problem blocking testing is that somewhere between
-> > 2.6.29-rc3 and -rc7, pcmcia support stopped working => hda is no
-> > longer detected.
-> 
-> lalala, I'm not listening.
+> We'd prefer exec not to unshare fs_struct: so fix this in procfs,
+> replacing get_fs_struct() by get_fs_path(), which does path_get
+> while still holding task_lock, instead of raising fs->count.
 
-lalala... I think I tried to subscribe to linux-arm-kernel, but all I
-got is automated reply and no flood of messages. Is subscription
-moderated, too?
+> --- 2.6.29/fs/proc/base.c
+> +++ linux/fs/proc/base.c
+> @@ -146,15 +146,22 @@ static unsigned int pid_entry_count_dirs
+>  	return count;
+>  }
+>  
+> -static struct fs_struct *get_fs_struct(struct task_struct *task)
+> +static int get_fs_path(struct task_struct *task, struct path *path, bool root)
+>  {
+>  	struct fs_struct *fs;
+> +	int result = -ENOENT;
+> +
+>  	task_lock(task);
+>  	fs = task->fs;
+> -	if(fs)
+> -		atomic_inc(&fs->count);
+> +	if (fs) {
+> +		read_lock(&fs->lock);
+> +		*path = root ? fs->root : fs->pwd;
+> +		path_get(path);
+> +		read_unlock(&fs->lock);
+> +		result = 0;
+> +	}
+>  	task_unlock(task);
+> -	return fs;
+> +	return result;
+>  }
 
-
-								Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+I think it's better to open-code. "root" parameter is unnatural.
