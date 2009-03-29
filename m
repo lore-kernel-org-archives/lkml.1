@@ -1,68 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756156AbZC2Lyr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755968AbZC2L6s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756156AbZC2Lyr (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Mar 2009 07:54:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752430AbZC2Lyf
+	id S1755968AbZC2L6s (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Mar 2009 07:58:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753449AbZC2L6j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Mar 2009 07:54:35 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:54776 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751620AbZC2Lye (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Mar 2009 07:54:34 -0400
-Message-ID: <49CF6177.9010907@redhat.com>
-Date: Sun, 29 Mar 2009 14:54:31 +0300
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Sun, 29 Mar 2009 07:58:39 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:42655 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753345AbZC2L6i (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Mar 2009 07:58:38 -0400
+Date: Sun, 29 Mar 2009 13:58:30 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Bodo Eggert <7eggert@gmx.de>
+Cc: James Morris <jmorris@namei.org>,
+       kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: TOMOYO in linux-next
+Message-ID: <20090329115830.GA15492@elf.ucw.cz>
+References: <ck5CF-5mU-11@gated-at.bofh.it> <E1Ln8MC-0001RR-1E@be1.7eggert.dyndns.org> <20090327114224.GF2585@elf.ucw.cz> <alpine.LSU.0.999.0903271354290.5610@be1.lrz>
 MIME-Version: 1.0
-To: Joerg Roedel <joerg.roedel@amd.com>
-CC: Marcelo Tosatti <mtosatti@redhat.com>, kvm@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 7/7] kvm x86: report 1GB page support to userspace
-References: <1238164319-16092-1-git-send-email-joerg.roedel@amd.com> <1238164319-16092-8-git-send-email-joerg.roedel@amd.com>
-In-Reply-To: <1238164319-16092-8-git-send-email-joerg.roedel@amd.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LSU.0.999.0903271354290.5610@be1.lrz>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Joerg Roedel wrote:
-> If userspace knows that the kernel part supports 1GB pages it can enable
-> the corresponding cpuid bit so that guests actually use GB pages.
->   
+On Fri 2009-03-27 14:04:32, Bodo Eggert wrote:
+> On Fri, 27 Mar 2009, Pavel Machek wrote:
+> > On Fri 2009-03-27 10:28:07, Bodo Eggert wrote:
+> > > Pavel Machek <pavel@ucw.cz> wrote:
+> 
+> > > > I don't think merging that is good idea. Security should be doable
+> > > > without making shell-like glob matching...
+> > > 
+> > > How do you suppose a security system should handle mozilla modifying
+> > > ~/.bashrc differently from downloading something to ~/pr0n.jpg?
+> > 
+> > How does shell-like glob matching help there? You'd need to parse
+> > /etc/passwd to find all ~ directories...
+> 
+> That is, if you'd use HOME=`dd if=/dev/urandom ...`.
+> 
+> If you have your users in /home/user, you can tell /home/*/.*
+> is bad, /home/*/[^.]* is OK.
 
-> diff --git a/arch/x86/include/asm/kvm_host.h b/arch/x86/include/asm/kvm_host.h
-> index a1df2a3..6593198 100644
-> --- a/arch/x86/include/asm/kvm_host.h
-> +++ b/arch/x86/include/asm/kvm_host.h
-> @@ -542,6 +542,8 @@ struct kvm_x86_ops {
->  	int (*set_tss_addr)(struct kvm *kvm, unsigned int addr);
->  	int (*get_tdp_level)(void);
->  	int (*get_mt_mask_shift)(void);
-> +
-> +	bool (*gb_page_enable)(void);
->  };
->   
+On the common systems I know of, homes are spread over different
+volumes and different directories. TOMOYO's wildcards do _not_ solve
+this particular problems.
 
-Should enable unconditionally.  Of course we need to find the shadow bug 
-first, may be the has_wrprotected thingy.
+> How would you exclude mozilla from writing to .* then? ".a" is bad,
+> ".b" is bad ...? or "A" is OK, "a" is OK, "zzzzzzzzzzzzz" is OK"?
+> Either way, you'd need several universes to store the security profile.
 
-> diff --git a/include/linux/kvm.h b/include/linux/kvm.h
-> index ee755e2..e79eb26 100644
-> --- a/include/linux/kvm.h
-> +++ b/include/linux/kvm.h
-> @@ -413,6 +413,7 @@ struct kvm_trace_rec {
->  #define KVM_CAP_DEVICE_MSIX 28
->  #endif
->  #define KVM_CAP_ASSIGN_DEV_IRQ 29
-> +#define KVM_CAP_1GB_PAGES 30
->  
->  #ifdef KVM_CAP_IRQ_ROUTING
->  
->   
-
-Need KVM_GET_SUPPORTED_CPUID2 support as well.
-
+What is magic about .* files? I want mozilla to store the pictures as
+.naughty.picture.jpg -- I don't see anything wrong with that.
+									Pavel
 -- 
-error compiling committee.c: too many arguments to function
-
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
