@@ -1,39 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755572AbZC2NA3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756167AbZC2NBP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755572AbZC2NA3 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Mar 2009 09:00:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753183AbZC2NAN
+	id S1756167AbZC2NBP (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Mar 2009 09:01:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754569AbZC2NA6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Mar 2009 09:00:13 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:58989 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751293AbZC2NAM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Mar 2009 09:00:12 -0400
-Message-ID: <49CF70D6.4070906@redhat.com>
-Date: Sun, 29 Mar 2009 16:00:06 +0300
-From: Avi Kivity <avi@redhat.com>
+	Sun, 29 Mar 2009 09:00:58 -0400
+Received: from smtp.nokia.com ([192.100.105.134]:23723 "EHLO
+	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753606AbZC2NA5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Mar 2009 09:00:57 -0400
+Message-ID: <49CF70FD.7050802@nokia.com>
+Date: Sun, 29 Mar 2009 16:00:45 +0300
+From: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
+Reply-To: Artem.Bityutskiy@nokia.com
+Organization: Nokia OYJ
 User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-To: Joerg Roedel <joro@8bytes.org>
-CC: Joerg Roedel <joerg.roedel@amd.com>, Marcelo Tosatti <mtosatti@redhat.com>,
-       kvm@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 7/7] kvm x86: report 1GB page support to userspace
-References: <1238164319-16092-1-git-send-email-joerg.roedel@amd.com> <1238164319-16092-8-git-send-email-joerg.roedel@amd.com> <49CF6177.9010907@redhat.com> <20090329124548.GG31080@8bytes.org> <49CF6E47.3050402@redhat.com> <20090329125447.GJ31080@8bytes.org>
-In-Reply-To: <20090329125447.GJ31080@8bytes.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+To: Pavel Machek <pavel@ucw.cz>
+CC: Artem Bityutskiy <dedekind@yandex.ru>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: replace() system call needed (was Re: EXT4-ish "fixes" in	UBIFS)
+References: <49CCCB0A.6070701@nokia.com> <20090329122600.GA13737@elf.ucw.cz> <49CF6CBB.7070907@yandex.ru> <20090329124959.GD15492@elf.ucw.cz>
+In-Reply-To: <20090329124959.GD15492@elf.ucw.cz>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-OriginalArrivalTime: 29 Mar 2009 13:00:47.0447 (UTC) FILETIME=[60D89E70:01C9B06E]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Joerg Roedel wrote:
-> Ok I will change that together with the page_size -> page_level
-> chhanges. But I doubt that there will ever be 0.5T pages ;)
->   
+Pavel Machek wrote:
+>>>> 2. create/write/rename leads to empty files
+>>> ..but this should not be. If we want to make that explicit, we should
+>>> provide "replace()" operation; where replace is rename that makes sure
+>>> that source file is completely on media before commiting the rename.
+>> Well, OK, we can fsync() before rename, we just need clean rules
+>> for this, so that all Linux FSes would follow them. Would be nice
+>> to have final agreement on all this stuff.
+> 
+> My proposal is 
+> 
+> rename() stays.
 
-We're bloating at a rate of 1 bit per 1-2 years, so we have 8-16 years 
-to prepare.
+It stays and:
+
+1. does _not_ fsync
+2. has synchronous fsync added
+3. stays and have asynchronous fsync added?
 
 -- 
-error compiling committee.c: too many arguments to function
-
+Best Regards,
+Artem Bityutskiy (Артём Битюцкий)
