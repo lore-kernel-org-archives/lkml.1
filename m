@@ -1,71 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754999AbZC2LXE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755672AbZC2LXv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754999AbZC2LXE (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Mar 2009 07:23:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753246AbZC2LWx
+	id S1755672AbZC2LXv (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Mar 2009 07:23:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753288AbZC2LXm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Mar 2009 07:22:53 -0400
-Received: from main.gmane.org ([80.91.229.2]:32876 "EHLO ciao.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752734AbZC2LWw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Mar 2009 07:22:52 -0400
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: =?iso-8859-1?Q?M=E5ns_Rullg=E5rd?= <mans@mansr.com>
-Subject: Re: Zero length files - an alternative approach?
-Date: Sun, 29 Mar 2009 12:22:29 +0100
-Message-ID: <yw1xab744lqi.fsf@thrashbarg.mansr.com>
-References: <87bprka9sg.fsf@newton.gmurray.org.uk>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
-X-Complaints-To: usenet@ger.gmane.org
-X-Gmane-NNTP-Posting-Host: thrashbarg.mansr.com
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.4.22 (Instant Classic, linux)
-Cancel-Lock: sha1:OuLM60Mjxt9fFByHwVsHDe+cNZA=
-Cc: linux-ext4@vger.kernel.org
+	Sun, 29 Mar 2009 07:23:42 -0400
+Received: from ti-out-0910.google.com ([209.85.142.187]:42155 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753246AbZC2LXl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Mar 2009 07:23:41 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:reply-to:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=p5R7MLoqxsAYYXDZbEPa5Tc8Pl2QQ9+UZEeI/pLwPpRLWDyQ5ViKG9y1iyvzYkRKVZ
+         hrw5b28Ofc2f16kVGoh7vpLBU0nKeYCh1yqwtb1XNDjsN3uEDtzuEBKGCJr6Zvw1+H0u
+         ZyUo2LGCEhiaAbcswTtaWBpF1vPEvzFjUgwl8=
+Message-ID: <49CF5A2A.1010305@vflare.org>
+Date: Sun, 29 Mar 2009 16:53:22 +0530
+From: Nitin Gupta <nitingupta910@gmail.com>
+Reply-To: ngupta@vflare.org
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
+MIME-Version: 1.0
+To: Marcin Slusarz <marcin.slusarz@gmail.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Ed Tomlinson <edt@aei.ca>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/3] xvmalloc memory allocator
+References: <49CEEE5A.4080004@vflare.org> <49CEEF30.9060202@vflare.org> <49CF4FFA.8090904@gmail.com>
+In-Reply-To: <49CF4FFA.8090904@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Graham Murray <graham@gmurray.org.uk> writes:
-
-> Just a thought on the ongoing discussion of dataloss with ext4 vs ext3.
+Marcin Slusarz wrote:
+> Nitin Gupta wrote:
+>> +static void stat_inc(u64 *value)
+>> +{
+>> +    (*value)++;
+>> +}
+>> +
+>> +static void stat_dec(u64 *value)
+>> +{
+>> +    (*value)--;
+>> +}
+> 
+> Why not open code it?
 >
-> Taking the common scenario:
-> Read oldfile
-> create newfile file
-> write newfile data
-> close newfile
-> rename newfile to oldfile
->
-> When using this scenario, the application writer wants to ensure that
-> either the old or new content are present. With delayed allocation, this
-> can lead to zero length files. Most of the suggestions on how to address
-> this have involved syncing the data either before the rename or making
-> the rename sync the data.
->
-> What about, instead of 'bringing forward' the allocation and flushing of
-> the data, would it be possible to instead delay the rename until after
-> the blocks for newfile have been allocated and the data buffers flushed?
-> This would keep the performance benefits of delayed allocation etc and
-> also satisfy the applications developers' apparent dislike of using
-> fsync(). It would give better performance that syncing the data at
-> rename time (either using fsync() or automatically) and satisfy the
-> requirements that either the old or new content is present.
 
-Consider this scenario:
 
-1. Create/write/close newfile
-2. Rename newfile to oldfile
-3. Open/read oldfile.  This must return the new contents.
-4. System crash and reboot before delayed allocation/flush complete
-5. Open/read oldfile.  Old contents now returned.
+This looks nicer, doesn't it?
 
-This rollback isn't obviously, to me at least, without problems of its
-own.
 
--- 
-Måns Rullgård
-mans@mansr.com
+>> +
+>> +static u32 test_flag(struct block_header *block, enum blockflags flag)
+>> +{
+>> +    return block->prev & (1 << flag);
+>> +}
+>> +
+>> +static void set_flag(struct block_header *block, enum blockflags flag)
+>> +{
+>> +    block->prev |= (1 << flag);
+>> +}
+>> +
+>> +static void clear_flag(struct block_header *block, enum blockflags flag)
+>> +{
+>> +    block->prev &= ~(1 << flag);
+>> +}
+> 
+> Why don't you use test_bit / __set_bit / __clear_bit directly?
+> 
 
+block->prev is 16 bits. __set_bit() etc. need unsigned long pointer.
+
+>> +struct xv_pool *xv_create_pool(void)
+>> +{
+>> +    int i;
+>> +    u32 ovhd_size;
+>> +    struct xv_pool *pool;
+>> +
+>> +    ovhd_size = roundup(sizeof(*pool), PAGE_SIZE);
+>> +    pool = kmalloc(ovhd_size, GFP_KERNEL);
+>> +    if (!pool)
+>> +        return NULL;
+>> +
+>> +    memset(pool, 0, ovhd_size);
+> 
+> Please use kzalloc.
+> 
+
+Ok...
+
+>> +
+>> +    for (i = 0; i < NUM_FREE_LISTS; i++) {
+>> +        pool->freelist[i].pagenum = 0;
+>> +        pool->freelist[i].offset = 0;
+>> +    }
+> 
+> It was already zeroed by memset.
+> 
+Remains from earlier code; we used to set it to 'INVALID_PGNUM'.
+Ok, will remove this.
+
+
+Thanks for review.
+Nitin
