@@ -1,65 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757446AbZC2Nqt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757918AbZC2NtV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757446AbZC2Nqt (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Mar 2009 09:46:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754842AbZC2Nqh
+	id S1757918AbZC2NtV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Mar 2009 09:49:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755192AbZC2NtK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Mar 2009 09:46:37 -0400
-Received: from fg-out-1718.google.com ([72.14.220.156]:33990 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753890AbZC2Nqg (ORCPT
+	Sun, 29 Mar 2009 09:49:10 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:35835 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751293AbZC2NtJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Mar 2009 09:46:36 -0400
-Message-ID: <49CF7BB6.2010609@petalogix.com>
-Date: Sun, 29 Mar 2009 15:46:30 +0200
-From: Michal Simek <michal.simek@petalogix.com>
-Reply-To: michal.simek@petalogix.com
-User-Agent: Thunderbird 2.0.0.17 (X11/20081001)
+	Sun, 29 Mar 2009 09:49:09 -0400
+Date: Sun, 29 Mar 2009 15:49:01 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: M?ns Rullg?rd <mans@mansr.com>
+Cc: "Andreas T.Auer" <andreas.t.auer_lkml_73537@ursus.ath.cx>,
+       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org
+Subject: Re: Zero length files - an alternative approach?
+Message-ID: <20090329134901.GB13737@elf.ucw.cz>
+References: <87bprka9sg.fsf@newton.gmurray.org.uk> <yw1xab744lqi.fsf@thrashbarg.mansr.com> <49CF636A.3030400@ursus.ath.cx> <yw1x1vsg4jio.fsf@thrashbarg.mansr.com>
 MIME-Version: 1.0
-To: Sam Ravnborg <sam@ravnborg.org>
-CC: Arnd Bergmann <arnd@arndb.de>, liqin.chen@sunplusct.com,
-       linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
-       torvalds@linux-foundation.org
-Subject: Re: [PATCH 5/13] score - New architecure port to SunplusCT S+CORE
- processor
-References: <OFE9A5E3A2.37B73BA8-ON48257586.0008CFAC-48257586.00091B05@sunplusct.com> <200903272019.53689.arnd@arndb.de> <20090327202614.GA22054@uranus.ravnborg.org> <200903272153.05622.arnd@arndb.de> <20090327212251.GA22518@uranus.ravnborg.org>
-In-Reply-To: <20090327212251.GA22518@uranus.ravnborg.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <yw1x1vsg4jio.fsf@thrashbarg.mansr.com>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sam Ravnborg wrote:
->> Yes, I agree. Hopefully I'll manage to get my patches into
->> shape to post the generic versions in the next days so we can use
->> them on microblaze and score as well as all future versions.
->>     
->
-> That would be gret.
-> And I need to take a critical look at the patch from Remis Lima Baima -
-> this would help those guys too.
->   
-yes. I am open to it too. We can clean it and I'll test it and create
-new toolchain for it too.
-I hope we can reach generic solution which can be pattern for another archs.
+On Sun 2009-03-29 13:10:23, M?ns Rullg?rd wrote:
+> "Andreas T.Auer" <andreas.t.auer_lkml_73537@ursus.ath.cx> writes:
+> 
+> > On 29.03.2009 13:22 M?ns Rullg?rd wrote:
+> >> Consider this scenario:
+> >>
+> >> 1. Create/write/close newfile
+> >> 2. Rename newfile to oldfile
+> >> 3. Open/read oldfile.  This must return the new contents.
+> >> 4. System crash and reboot before delayed allocation/flush complete
+> >> 5. Open/read oldfile.  Old contents now returned.
+> >>
+> >> This rollback isn't obviously, to me at least, without problems of its
+> >> own.
+> >>   
+> > Having the old data in 5) is far better than having no data in 5).
+> 
+> Of course having old data is better than no data.  However, fsync()
+> and similar approaches make a rollback to old data after new data has
+> been visible impossible or far less likely than the suggested one.
 
-Thanks,
-Michal
+Untrue. Unless you fsync after rename, you can get olddata.
 
-P.S.: I am at LKML but please cc me (the best monstr@monstr.eu) for
-every discuss around microblaze.
-
-> 	Sam
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-arch" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->   
-
-
+fsync() is easy. But some people _want_ to have either newdata _or_
+olddata, but don't care which one, and would prefer to avoid
+fsync. That's where replace() should help...
+									Pavel
 -- 
-Michal Simek, Ing. (M.Eng)
-PetaLogix - Linux Solutions for a Reconfigurable World
-w: www.petalogix.com p: +61-7-30090663,+42-0-721842854 f: +61-7-30090663
-
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
