@@ -1,93 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754252AbZC2Ah2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754830AbZC2Anb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754252AbZC2Ah2 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Mar 2009 20:37:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751082AbZC2AhN
+	id S1754830AbZC2Anb (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Mar 2009 20:43:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751351AbZC2AnV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Mar 2009 20:37:13 -0400
-Received: from mail.lang.hm ([64.81.33.126]:52932 "EHLO bifrost.lang.hm"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751052AbZC2AhM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Mar 2009 20:37:12 -0400
-Date: Sat, 28 Mar 2009 17:33:58 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard.lang.hm
-To: Jeff Garzik <jeff@garzik.org>
-cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Matthew Garrett <mjg59@srcf.ucam.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Theodore Tso <tytso@mit.edu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Rees <drees76@gmail.com>, Jesper Krogh <jesper@krogh.cc>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.29
-In-Reply-To: <49CD7B10.7010601@garzik.org>
-Message-ID: <alpine.DEB.1.10.0903281726100.22577@asgard.lang.hm>
-References: <20090327051338.GP6239@mit.edu> <20090327055750.GA18065@srcf.ucam.org> <20090327062114.GA18290@srcf.ucam.org> <20090327112438.GQ6239@mit.edu> <20090327145156.GB24819@srcf.ucam.org> <20090327150811.09b313f5@lxorguk.ukuu.org.uk>
- <20090327152221.GA25234@srcf.ucam.org> <20090327161553.31436545@lxorguk.ukuu.org.uk> <20090327162841.GA26860@srcf.ucam.org> <20090327165150.7e69d9e1@lxorguk.ukuu.org.uk> <20090327170208.GA27646@srcf.ucam.org> <alpine.LFD.2.00.0903271032090.3994@localhost.localdomain>
- <49CD2C47.4040300@garzik.org> <alpine.LFD.2.00.0903271443440.3994@localhost.localdomain> <49CD4DDF.3000001@garzik.org> <alpine.LFD.2.00.0903271511230.3994@localhost.localdomain> <alpine.LFD.2.00.0903271522210.3994@localhost.localdomain>
- <49CD7B10.7010601@garzik.org>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Sat, 28 Mar 2009 20:43:21 -0400
+Received: from wa-out-1112.google.com ([209.85.146.178]:40093 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751052AbZC2AnU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Mar 2009 20:43:20 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=OVx+n3ILaH7eO3dC7yG8pkrJb6iB5m+L+hr9TMS64a9JrHULXECysYqrmRB3fL1L1h
+         bKAQUtt0zFxi1rjwbEQahwRW+tae1+T8DE52gW6cQ7NX/DbTWPkNUDlrs/v/Tkk9qRVT
+         92n39XSztuw+EyqSgbJReB3cAmsuYV6QLIAYw=
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+In-Reply-To: <49CE102C.604@freenet.de>
+References: <49CE102C.604@freenet.de>
+Date: Sat, 28 Mar 2009 17:43:18 -0700
+Message-ID: <e9c3a7c20903281743o2b9f7aa5yc60a330fee6de2ba@mail.gmail.com>
+Subject: Re: 2.6.29 - raid10 issue - spares do not get synched automatically
+From: Dan Williams <dan.j.williams@gmail.com>
+To: Patrick Ringl <patrick_@freenet.de>
+Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 27 Mar 2009, Jeff Garzik wrote:
+On Sat, Mar 28, 2009 at 4:55 AM, Patrick Ringl <patrick_@freenet.de> wrote:
+> Hello,
+>
+> I am using 2.6.29 on a debian lenny. Anyway, I am having problems with a
+> raid10 sandbox setup consisting of 4 loopback devices. To make a long story
+> short:
+>
+> I created a raid10 array with all these 4 devices (loop0-loop3)
+> then I set two devices faulty, removed them .. checked if I can still write
+> to the array (which I could, so I/O errors, nothing in dmesg):
+>
+> BUT - here it comes: once I am trying to (re)add them (I zero'ed the
+> superblock before) they're only getting added as spares and the array will
+> not sync.
+>
+> Here's the logfile with mdadm -D /dev/md0 in between so one can see what is
+> going on:
+>
+> http://paste.debian.net/31758/
+>
+>
+> Any ideas?
 
-> Linus Torvalds wrote:
->> Of course, your browsing history database is an excellent example of 
->> something you should _not_ care about that much, and where performance is a 
->> lot more important than "ooh, if the machine goes down suddenly, I need to 
->> be 100% up-to-date". Using fsync on that thing was just stupid, even 
->
-> If you are doing a ton of web-based work with a bunch of tabs or windows 
-> open, you really like the post-crash restoration methods that Firefox now 
-> employs.  Some users actually do want to checkpoint/restore their web work, 
-> regardless of whether it was the browser, the window system or the OS that 
-> crashed.
->
-> You may not care about that, but others do care about the integrity of the 
-> database that stores the active FF state (Web URLs currently open), a 
-> database which necessarily changes for each URL visited.
+You failed the whole array.  With 4 devices in the default layout the
+array looks like stripe(mirror(slot0, slot1), mirror(slot2, slot3)).
+In your case mdadm -D shows that you have the loop devices in the
+following slots stripe(mirror(loop2, loop0), mirror(loop1, 3)).  A
+raid10 is failed once all devices in a mirror set are failed, and a
+failed array can't be rebuilt.
 
-as one of those users with many windows tabs open (a couple hundred 
-normally), even the curent firefox behavior isn't good enough because it 
-doesn't let me _not_ load everything back in when a link I go to triggers 
-a crash in firefox every time it loads.
-
-so what I do is do a git commit in cron every min of the history file. git 
-can do the fsync as needed to get it to disk reasonably without firefox 
-needing to do it _for_every_click_
-
-like laptop mode, you need to be able to define "I'm willing to loose this 
-much activity in the name of performance/power"
-
-ted's suggestion (in his blog) to tweak fsync to 'misbehave' when laptop 
-mode is enabled (only pushing data out to disk when the disk is awake 
-anyway, or the time has hit) would really work well for most users. 
-servers (where you have the data integrity fsync useage) don't use laptop 
-mode. desktops could use 'laptop mode' with a delay of 0.5 or 1 second and 
-get prety close the the guarentee that users want without a huge 
-performance hit.
-
-David Lang
-
->
->
-> As an aside, I find it highly ironic that Firefox gained useful session 
-> management around the same time that some GNOME jarhead no-op'd GNOME session 
-> management[1] in X.
->
-> 	Jeff
->
->
->
-> [1] http://np237.livejournal.com/22014.html
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+Regards,
+Dan
