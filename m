@@ -1,50 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755830AbZC2HUY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752575AbZC2HmZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755830AbZC2HUY (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Mar 2009 03:20:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753196AbZC2HUL
+	id S1752575AbZC2HmZ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Mar 2009 03:42:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751364AbZC2HmP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Mar 2009 03:20:11 -0400
-Received: from rhun.apana.org.au ([64.62.148.172]:35260 "EHLO
+	Sun, 29 Mar 2009 03:42:15 -0400
+Received: from rhun.apana.org.au ([64.62.148.172]:45461 "EHLO
 	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751304AbZC2HUK (ORCPT
+	with ESMTP id S1751304AbZC2HmO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Mar 2009 03:20:10 -0400
-Date: Sun, 29 Mar 2009 15:19:50 +0800
+	Sun, 29 Mar 2009 03:42:14 -0400
+Date: Sun, 29 Mar 2009 15:42:04 +0800
 From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Neil Horman <nhorman@tuxdriver.com>
-Cc: Frank Seidel <fseidel@suse.de>,
-       linux kernel <linux-kernel@vger.kernel.org>,
-       linux-crypto@vger.kernel.org, akpm@linux-foundation.org,
-       "David S. Miller" <davem@davemloft.net>, lho@amcc.com, kaber@trash.net,
-       darrenrjenkins@gmail.com, Frank Seidel <frank@f-seidel.de>
-Subject: Re: [PATCHv3][trivial] crypto: tcrypt - reduce stack size
-Message-ID: <20090329071950.GA11469@gondor.apana.org.au>
-References: <49A54C23.8090209@suse.de> <49A5549F.4070304@suse.de> <49A55B5A.70705@suse.de> <20090225153231.GA16691@hmsreliant.think-freely.org>
+To: Huang Ying <ying.huang@intel.com>
+Cc: Sebastian Andrzej Siewior <linux-crypto@ml.breakpoint.cc>,
+       linux-kernel@vger.kernel.org, linux-crypto@vger.kernel.org
+Subject: Re: [PATCH -v3 2/3] crypto: Add fpu template, a wrapper for
+	blkcipher touching FPU
+Message-ID: <20090329074204.GA11735@gondor.apana.org.au>
+References: <1237346517.24215.241.camel@yhuang-dev.sh.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090225153231.GA16691@hmsreliant.think-freely.org>
+In-Reply-To: <1237346517.24215.241.camel@yhuang-dev.sh.intel.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Feb 25, 2009 at 10:32:31AM -0500, Neil Horman wrote:
-> On Wed, Feb 25, 2009 at 03:53:14PM +0100, Frank Seidel wrote:
-> > From: Frank Seidel <frank@f-seidel.de>
-> > 
-> > Applying kernel janitors todos (printk calls need KERN_*
-> > constants on linebeginnings, reduce stack footprint where
-> > possible) to tcrypts test_hash_speed (where stacks
-> > memory footprint was very high (on i386 1184 bytes to
-> > 160 now).
-> > 
-> > Signed-off-by: Frank Seidel <frank@f-seidel.de>
-> Looks good, thanks Frank
-> Acked-by: Neil Horman <nhorman@tuxdriver.com>
+On Wed, Mar 18, 2009 at 11:21:57AM +0800, Huang Ying wrote:
+> Blkcipher touching FPU need to be enclosed by kernel_fpu_begin() and
+> kernel_fpu_end(). If they are invoked in cipher algorithm
+> implementation, they will be invoked for each block, so that
+> performance will be hurt, because they are "slow" operations. This
+> patch implements "fpu" template, which makes these operations to be
+> invoked for each request.
+> 
+> v2: Make FPU mode invisible to end user
+> 
+> Signed-off-by: Huang Ying <ying.huang@intel.com>
 
-Patch applied to cryptodev.  Thanks!
+I've applied all the three patches with no changes except moving
+fpu.c into arch/x86/crypto.
+
+Thanks,
 -- 
 Visit Openswan at http://www.openswan.org/
 Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
