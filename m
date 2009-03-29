@@ -1,58 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759715AbZC2Qod@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759798AbZC2Qpv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759715AbZC2Qod (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Mar 2009 12:44:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758913AbZC2QkT
+	id S1759798AbZC2Qpv (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Mar 2009 12:45:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753890AbZC2Qpl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Mar 2009 12:40:19 -0400
-Received: from ti-out-0910.google.com ([209.85.142.186]:64156 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758897AbZC2QkR (ORCPT
+	Sun, 29 Mar 2009 12:45:41 -0400
+Received: from mail-ew0-f165.google.com ([209.85.219.165]:54455 "EHLO
+	mail-ew0-f165.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751612AbZC2Qpk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Mar 2009 12:40:17 -0400
+	Sun, 29 Mar 2009 12:45:40 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:content-transfer-encoding
-         :in-reply-to:user-agent;
-        b=PH2QRuokAnxmJsBFY+KXkJLbDNvXe7oZk+IuR7qtpXvqfQTLcrp/ZiR9L4GdbMhsGG
-         u2KgYEZQiWEhW7CVLaGV+gVwkpFsiOWYExiG+X/jp9zZwZeVgWIbDEz+o/q6niNAd10z
-         W+Qqc8+Fkk3+5dPVFiWXjCfegXKKUFEyBGQEs=
-Date: Mon, 30 Mar 2009 00:41:02 +0800
-From: =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Rusty Russell <rusty@rustcorp.com.au>, Andrew Morton <akpm@osdl.org>
-Subject: Re: [Patch] kernel/module.c: fix an unused goto label
-Message-ID: <20090329164102.GG7671@hack>
-References: <20090324160719.GE9686@hack> <20090324192647.GA26930@elte.hu>
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=RZnFKq7FTgsnpDWyY/tjuWMmL7Lzdg+Afe0vW+a1HQ4vE/QQga3AjIptQWFAfCpkXw
+         AW9jOfqRVeYwMPm/QdUNKVXOA4DunA0GszPo1SfFC8KRB5OeXMzPZ7ESAR2BFx5kUDfA
+         BMnsmCEeqt4mb/bo8omu59eaodYKUQml+kIqw=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20090324192647.GA26930@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090329085119.0c93fb21@infradead.org>
+References: <4e5e476b0903290840o453bcccdm5800a636078fde6e@mail.gmail.com>
+	 <20090329085119.0c93fb21@infradead.org>
+Date: Sun, 29 Mar 2009 18:45:36 +0200
+Message-ID: <4e5e476b0903290945u19572af6ub366001596a7fd3f@mail.gmail.com>
+Subject: Re: How to debug kernel startup time?
+From: Corrado Zoccolo <czoccolo@gmail.com>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 24, 2009 at 08:26:47PM +0100, Ingo Molnar wrote:
+On Sun, Mar 29, 2009 at 5:51 PM, Arjan van de Ven <arjan@infradead.org> wrote:
+> On Sun, 29 Mar 2009 17:40:10 +0200
+> Corrado Zoccolo <czoccolo@gmail.com> wrote:
 >
->* Américo Wang <xiyou.wangcong@gmail.com> wrote:
+>> Hi,
+>> I'm seeing around 2 s "lost" during kernel boot, that are not
+>> accounted for any init call (excerpt of dmesg with initcall_debug
+>> follows, kernel is 2.6.29).
+>> What's the suggested way to investigate such problems?
 >
->> Label 'free_init' is only used when defined(CONFIG_MODULE_UNLOAD) &&
->> defined(CONFIG_SMP), so move it inside to shut up gcc.
->> 
->> Signed-off-by: WANG Cong <xiyou.wangcong@gmail.com>
->> Cc: Rusty Russell <rusty@rustcorp.com.au>
+> I take it you don't have an initrd ?
+
+You guessed right.
+
 >
->was already sent a week ago - see below.
+> If so I know what you are hitting; I have a patch to solve it but it's
+> a bit convoluted and not ready for mainline.... let me know if you want
+> to try it, I suspect it'll solve your issue ;)
 >
 
-Oh, OK then! Thanks for your point! Please ignore my patch. :)
+Sure. I'd like to test it.
 
+Thanks,
+Corrado
 
 -- 
-Do what you love, f**k the rest! F**k the regulations!
- 
+__________________________________________________________________________
+
+dott. Corrado Zoccolo                          mailto:czoccolo@gmail.com
+PhD - Department of Computer Science - University of Pisa, Italy
+--------------------------------------------------------------------------
