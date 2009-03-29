@@ -1,84 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751293AbZC2ECK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752874AbZC2ELs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751293AbZC2ECK (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Mar 2009 00:02:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750740AbZC2EBz
+	id S1752874AbZC2ELs (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Mar 2009 00:11:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750889AbZC2ELh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Mar 2009 00:01:55 -0400
-Received: from buzzloop.caiaq.de ([212.112.241.133]:51341 "EHLO
-	buzzloop.caiaq.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750799AbZC2EBz (ORCPT
+	Sun, 29 Mar 2009 00:11:37 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:33120 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750799AbZC2ELg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Mar 2009 00:01:55 -0400
-Date: Sun, 29 Mar 2009 06:01:48 +0200
-From: Daniel Mack <daniel@caiaq.de>
-To: kernel list <linux-kernel@vger.kernel.org>
-Subject: include-police.sh
-Message-ID: <20090329040148.GA11678@buzzloop.caiaq.de>
+	Sun, 29 Mar 2009 00:11:36 -0400
+Date: Sun, 29 Mar 2009 05:10:22 +0100
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Oleg Nesterov <oleg@redhat.com>
+Cc: Hugh Dickins <hugh@veritas.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Joe Malicki <jmalicki@metacarta.com>, Michael Itz <mitz@metacarta.com>,
+       Kenneth Baker <bakerk@metacarta.com>,
+       Chris Wright <chrisw@sous-sol.org>, David Howells <dhowells@redhat.com>,
+       Alexey Dobriyan <adobriyan@gmail.com>,
+       Greg Kroah-Hartman <gregkh@suse.de>, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: Q: check_unsafe_exec() races (Was: [PATCH 2/4] fix setuid
+	sometimes doesn't)
+Message-ID: <20090329041022.GF28946@ZenIV.linux.org.uk>
+References: <Pine.LNX.4.64.0903282307050.14892@blonde.anvils> <Pine.LNX.4.64.0903282319270.15432@blonde.anvils> <20090329005343.GA12139@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090329005343.GA12139@redhat.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Sun, Mar 29, 2009 at 01:53:43AM +0100, Oleg Nesterov wrote:
 
-I hacked a small and dumb shell script awhile ago that can help finding
-superfluous include files. Even though it's far from perfect (see the 
-inline comments), its output had helped occasionally, so I wanted to
-share this, also in relationship to the 'reverse Xmas tree' thread.
+> Can't find the patch which introduced check_unsafe_exec(), so
+> I am asking here.
+> 
+> How it is supposed to work?
+> 
+> Let's suppose we have two threads T1 and T2. T1 exits, and calls
+> exit_fs().
+> 
+> 	exit_fs:
+> 
+> 		tsk->fs = NULL;
+> 		// WINDOW
+> 		put_fs_struct(fs);
+> 
+> Now, if T2 does exec() and check_unsafe_exec() happens in the WINDOW
+> above, we set LSM_UNSAFE_SHARE.
+> 
+> Or we can race with sub-thread doing clone(CLONE_FS|CLONE_THREAD),
+> the new thread is not visible in ->thread_group, buy copy_fs()
+> can already increment fs->count.
+ 
+Frankly, I don't think we really care.  Note that having several sub-threads
+and doing execve() in one of them will kill the rest, so you really want
+to do some kind of synchronization to get something similar to reasonable
+behaviour anyway.
 
-Comments welcome :)
+> Another question. Why do we check sighand->count? We always unshare
+> ->sighand on exec, see de_thread().
 
-Daniel
-
-
-#!/bin/sh
-#
-# Find possibly unneeded include files in C/C++ files
-# Daniel Mack <daniel@caiaq.de>, GPLv2
-#
-# The script searches for includes in the given file and removes them, one
-# after the other. After each cycle, 'make' is called to build the object
-# file. Includes found safe to omit (i.e., the removal did not break the
-# built) are echoed, and the file is reset to its original state
-# again.
-#
-# At the end of the script, the file will be restored to what it was in
-# the beginning.
-#
-# Limitations/bugs:
-#  * The output is only to be taken as _hint_ for developers
-#  * The script is not aware of conditional includes
-#  * Include files that do forward declarations of locally implemented
-#    symbols are erroneously reported superfluous
-#  * Depends on 'make' as build tool and the object file is expected
-#    to be at the same location as the source file
-#  * Doesn't report anything when the built fails anyway (for other reasons)
-#
-
-file=$1
-
-if [ -z "$file" ]; then echo "Usage: $0 <file> [build params]"; exit 1; fi
-if [ ! -f "$file" ]; then echo "$0: unable to open file $file"; exit 2; fi
-
-tmp=/tmp/$(basename $file)-$$
-orig=/tmp/$(basename $file).orig-$$
-obj=${file%%.c}.o
-shift
-
-cp $file $orig
-
-for include in $(grep ^#include $file | cut -f2 -d' '); do
-	echo checking $include ...
-	cp $orig $tmp
-	grep -v '^#include '$include $tmp > $file
-	make $* $obj >/dev/null 2>&1
-	[ $? -eq 0 ] && echo --- $include can be omitted
-done
-
-cp $orig $file
-rm -f $tmp $orig
-
+Correct.  That check can and should go.
