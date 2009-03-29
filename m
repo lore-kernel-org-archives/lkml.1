@@ -1,66 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757911AbZC2Oqi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758232AbZC2Osh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757911AbZC2Oqi (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Mar 2009 10:46:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757146AbZC2Oq3
+	id S1758232AbZC2Osh (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Mar 2009 10:48:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757165AbZC2Os2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Mar 2009 10:46:29 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:45710 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756689AbZC2Oq2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Mar 2009 10:46:28 -0400
-Date: Sun, 29 Mar 2009 16:45:32 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Bodo Eggert <7eggert@gmx.de>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Matthew Garrett <mjg59@srcf.ucam.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Theodore Tso <tytso@mit.edu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Rees <drees76@gmail.com>, Jesper Krogh <jesper@krogh.cc>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.29
-Message-ID: <20090329144531.GA1408@ucw.cz>
-References: <cklHL-5IW-23@gated-at.bofh.it> <ckm0Q-6o4-3@gated-at.bofh.it> <ckmaG-6AC-5@gated-at.bofh.it> <ckmWO-7Ro-5@gated-at.bofh.it> <ckn6L-84h-19@gated-at.bofh.it> <cknzG-ff-7@gated-at.bofh.it> <cknJk-IB-9@gated-at.bofh.it> <ckoFm-2eg-3@gated-at.bofh.it> <ckoYP-2DC-13@gated-at.bofh.it> <E1LnX6V-0001aA-AU@be1.7eggert.dyndns.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <E1LnX6V-0001aA-AU@be1.7eggert.dyndns.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Sun, 29 Mar 2009 10:48:28 -0400
+Received: from hera.kernel.org ([140.211.167.34]:38015 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756458AbZC2Os1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Mar 2009 10:48:27 -0400
+Subject: Re: [PATCH -tip] x86: unification of module.c
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Thomas Gleixner <tglx@linutronix.de>, x86 maintainers <x86@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Rusty Russell <rusty@rustcorp.com.au>, Andi Kleen <andi@firstfloor.org>
+In-Reply-To: <20090326223406.GB28755@elte.hu>
+References: <1238072913.2507.3.camel@ht.satnam>
+	 <alpine.LFD.2.00.0903261835020.3397@localhost.localdomain>
+	 <20090326223406.GB28755@elte.hu>
+Content-Type: text/plain
+Date: Sun, 29 Mar 2009 20:17:31 +0530
+Message-Id: <1238338051.2534.6.camel@ht.satnam>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat 2009-03-28 12:53:34, Bodo Eggert wrote:
-> Linus Torvalds <torvalds@linux-foundation.org> wrote:
-> > On Fri, 27 Mar 2009, Linus Torvalds wrote:
+On Thu, 2009-03-26 at 23:34 +0100, Ingo Molnar wrote:
+> * Thomas Gleixner <tglx@linutronix.de> wrote:
 > 
-> >> Yes, some editors (vi, emacs) do it, but even there it's configurable.
+> > On Thu, 26 Mar 2009, Jaswinder Singh Rajput wrote:
+> > > This patch is based on -tip:x86/core:
+> > > 
+> > > From: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+> > > Date: Thu, 26 Mar 2009 18:33:45 +0530
+> > > Subject: [PATCH] x86: unification of module.c
+> > > 
+> > > Impact: Unification, cleanup
+> > > 
+> > > Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+> > > ---
+> > >  arch/x86/kernel/Makefile    |    2 +-
+> > >  arch/x86/kernel/module.c    |  261 +++++++++++++++++++++++++++++++++++++++++++
+> > >  arch/x86/kernel/module_32.c |  152 -------------------------
+> > >  arch/x86/kernel/module_64.c |  194 --------------------------------
+> > >  4 files changed, 262 insertions(+), 347 deletions(-)
+> > >  create mode 100644 arch/x86/kernel/module.c
+> > >  delete mode 100644 arch/x86/kernel/module_32.c
+> > >  delete mode 100644 arch/x86/kernel/module_64.c
 > > 
-> > .. and looking at history, it's even pretty modern. From the vim logs:
+> > Sigh. We went through this before.
 > > 
-> > Patch 6.2.499
-> > Problem:   When writing a file and halting the system, the file might be lost
-> > when using a journalling file system.
-> > Solution:  Use fsync() to flush the file data to disk after writing a file.
-> > (Radim Kolar)
-> > Files:     src/fileio.c
+> > First make module_32 and module_64 the same if necessary in 
+> > several steps. The last step is to rename one of the files to 
+> > module.c and remove the other one.
 > > 
-> > so it looks (assuming those patch numbers mean what they would seem to
-> > mean) that 'fsync()' in vim is from after 6.2 was released. Some time in
-> > 2004.
+> > This cobble all together approach is hard to review and error 
+> > prone.
 > 
-> Besides that, it's a fix specific for /journaled/ filesystems. It's easy to see
-> that the same journal that was supposed to increase filesystem reliability
-> is CAUSING more unreliable behavior.
+> Correct. There are countless examples of properly structured and 
+> well executed unifications in the arch/x86 tree.
+> 
+> The most recent one has been done by Gustavo F. Padovan - and this 
+> was one of this first complex contributions to Linux:
+> 
+>  c577b09: x86, fixmap: unify fixmap.h
+>  c78f322: x86, fixmap: prepare fixmap_32.h for unification
+>  e365bcd: x86, fixmap: prepare fixmap_64.h for unification
+>  5f403fa: x86, fixmap: add CONFIG_EFI
+>  2ae38da: x86, fixmap: add CONFIG_X86_{LOCAL,IO}_APIC
+>  fd862dd: x86, fixmap: define reserve_top_address for x86_64
+>  ab93e3c: x86, fixmap: define FIXADDR_BOOT_* and redefine FIX_ADDR_SIZE
+>  d09375a: x86, fixmap: rename __FIXADDR_SIZE and __FIXADDR_BOOT_SIZE
+> 
+> Please use this as a template - all-in-one patches for unifications 
+> are not reviewable, not testable and not acceptable.
+> 
 
-Journaling is _not_ supposed to increase filesystem reliability.
+OK, pull request withdrawn.
 
-It improves fsck time. That's it.
+Thanks,
 
-Actually ext2 is more reliable in ext3 --  fsck tells you
-about errors on parts of disk that are not normallly used.
-								Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+--
+JSR
+
