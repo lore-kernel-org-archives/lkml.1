@@ -1,141 +1,296 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756491AbZC2Dxz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756248AbZC2D7u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756491AbZC2Dxz (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Mar 2009 23:53:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752210AbZC2Dxq
+	id S1756248AbZC2D7u (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Mar 2009 23:59:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754513AbZC2D7h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Mar 2009 23:53:46 -0400
-Received: from ti-out-0910.google.com ([209.85.142.184]:5596 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751294AbZC2Dxq (ORCPT
+	Sat, 28 Mar 2009 23:59:37 -0400
+Received: from smtp117.sbc.mail.sp1.yahoo.com ([69.147.64.90]:43139 "HELO
+	smtp117.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1753290AbZC2D7g (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Mar 2009 23:53:46 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:reply-to:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=w1t7i1h0X1WjshRhbnQyu2BIXyD3vUwHmvTg9A6iYEs2SomwTRunRKLUDibR/ENPTt
-         PWURCSePw+1HYRgVCoLkg94bIzsidteSTQzeGxeAi2H0d2MLlD5yjxa/+J/88/vQOM5Y
-         Z1plxFDMy20BnydeWTHoPJ+eRNPKqo3+j/sAY=
-Message-ID: <49CEF0B0.8000909@vflare.org>
-Date: Sun, 29 Mar 2009 09:23:20 +0530
-From: Nitin Gupta <nitingupta910@gmail.com>
-Reply-To: ngupta@vflare.org
-User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Christoph Lameter <cl@linux-foundation.org>,
-       Pekka Enberg <penberg@cs.helsinki.fi>, Ed Tomlinson <edt@aei.ca>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: [PATCH 3/3] ramzswap documentation
-References: <49CEEE5A.4080004@vflare.org>
-In-Reply-To: <49CEEE5A.4080004@vflare.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Sat, 28 Mar 2009 23:59:36 -0400
+X-YMail-OSG: jc2fbUsVM1ndqdDLQ161RZP_uhFMYR7b7pxFXWcdwCQXq4imqX4UFd8IuLspz_ImguHzDNSx41u7UGZtcNw1LHtuZW2CVRTKdBMEZrXAjBz4TeQJ1MlGrNPn6.0RGR1FWlZFken4myovdM5w23nrFZSRNBp4nS60ceAYCnyTDj6EJOnLBWcZjuZLDWT6qzhTlKW5B65VkIkko4CyGZLHdPju.QoEh.M-
+X-Yahoo-Newman-Property: ymail-3
+Subject: Subject: [PATCH] [Target_Core_Mod]: Add EVPD 0x83 NAA Registered
+	Extended Assigned identifer support
+From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
+To: LKML <linux-kernel@vger.kernel.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>
+Cc: Brad Fennell <wavebender@hotmail.com>,
+       Jason Hodges <jasonahodges@gmail.com>,
+       Rafiu Fakunle <rafiu@openfiler.com>
+Content-Type: text/plain
+Date: Sat, 28 Mar 2009 20:59:32 -0700
+Message-Id: <1238299172.4250.116.camel@haakon2.linux-iscsi.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  Documentation/blockdev/ramzswap.txt |   67 +++++++++++++++++++++++++++++++++++
-  Documentation/kernel-parameters.txt |    9 +++++
-  2 files changed, 76 insertions(+), 0 deletions(-)
+Greetings all,
 
-Documentation on how to use ramzswap module.
+This patch adds emulation for EVPD 0x83 NAA identifier type (0x3) Registered
+Extended Assigned format (0x6) from spc4r17 section 7.7.3.6.5.  The WWN value
+is based on the emulated Unit Serial Number supplied via ConfigFS into
+/sys/kernel/config/target/core/$HBA/$DEV/wwn/evpd_unit_serial for a
+given storage object.
 
-Signed-off-by: Nitin Gupta <ngupta@vflare.org>
+This patch expects evpd_unit_serial to be in hex.  The first 24 bytes of
+evpd_unit_serial is then encoded in binary hex starting at the
+VENDOR_SPECIFIC_IDENTIFIER (36-bit) and VENDOR_SPECIFIC_IDENTIFIER_EXTENTION
+(64-bit) fields of the NAA identifier.
+
+This patch also uses the OpenFabrics OUI (001405) for the IEEE Company ID
+field of the NAA identifier.  Note that the NAA (0x3) identifer is a requirement
+for logical unit WWN on certain iSCSI capable cluster clients.
+
+These patches are made against lio-core-2.6.git/master and tested on
+v2.6.29 x86 32-bit HVM using sg_inq from sg3_utils. The lio-core-2.6.git tree
+can be found at: 
+
+http://git.kernel.org/?p=linux/kernel/git/nab/lio-core-2.6.git;a=summary
+
+Here is what it looks like:
+
+*) Set WWN value to target_core_mod/IBLOCK exported Linux LVM blockdevice
+
+echo a97e4ce21c0711de829b000c2943d57b > $TARGET/iblock_0/lvm_test0/wwn/evpd_unit_serial
+
+*) From target_core_mod side kernel buffer
+
+IBLOCK: Created bio_set() for major/minor: 254:2
+iblock: Using SPC3_PERSISTENT_RESERVATIONS emulation
+iblock: Enabling ALUA Emulation for SPC-3 device
+iblock: Adding to default ALUA LU Group: core/alua/lu_gps/default_lu_gp
+CORE_iBLOCK[0] - Activating Device with TCQ: 0 at Major: 254 Minor 2
+  Vendor: LIO-ORG   Model: IBLOCK            Revision: 3.0
+  Type:   Direct-Access                      ANSI SCSI revision: 05
+T10 EVPD Unit Serial Number: a97e4ce21c0711de829b000c2943d57b
+T10 EVPD Page Length: 72
+T10 EVPD Identifer Length: 16
+T10 EVPD Identifier Association: addressed logical unit
+T10 EVPD Identifier Type: NAA
+T10 EVPD Binary Device Identifier: 36001405a97e4ce21c0711de829b000c2
+
+*) From Open/iSCSI initiator side using sg_inq
+
+initiator#~# sg_inq -p 0x83 -v /dev/sde
+VPD INQUIRY: Device Identification page
+    inquiry cdb: 12 01 83 00 fc 00
+  Designation descriptor number 1, descriptor length: 20
+    id_type: NAA,  code_set: Binary
+    associated with the addressed logical unit
+      NAA 6, IEEE Company_id: 0x1405
+      Vendor Specific Identifier: 0xa97e4ce21
+      Vendor Specific Identifier Extension: 0xc0711de829b000c2
+      [0x6001405a97e4ce21c0711de829b000c2]
+  Designation descriptor number 2, descriptor length: 52
+    id_type: T10 vendor identification,  code_set: ASCII
+    associated with the addressed logical unit
+      vendor id: LIO-ORG
+      vendor specific: IBLOCK:a97e4ce21c0711de829b000c2943d57b
+  Designation descriptor number 3, descriptor length: 8
+    transport: Internet SCSI (iSCSI)
+    id_type: Relative target port,  code_set: Binary
+    associated with the target port
+      Relative target port: 0x2
+  Designation descriptor number 4, descriptor length: 8
+    transport: Internet SCSI (iSCSI)
+    id_type: Target port group,  code_set: Binary
+    associated with the target port
+      Target port group: 0x0
+  Designation descriptor number 5, descriptor length: 8
+    id_type: Logical unit group,  code_set: Binary
+    associated with the addressed logical unit
+      Logical unit group: 0x0
+  Designation descriptor number 6, descriptor length: 72
+    transport: Internet SCSI (iSCSI)
+    id_type: SCSI name string,  code_set: UTF-8
+    associated with the target port
+      SCSI name string:
+      iqn.2003-01.org.linux-iscsi.target.i686:sn.cff3eedbd2fd,t,0x0001
+
+Signed-off-by: Nicholas A. Bellinger <nab@linux-iscsi.org>
 ---
+ drivers/lio-core/target_core_transport.c |  117 +++++++++++++++++++++++++-----
+ 1 files changed, 100 insertions(+), 17 deletions(-)
 
-diff --git a/Documentation/blockdev/ramzswap.txt b/Documentation/blockdev/ramzswap.txt
-new file mode 100644
-index 0000000..835afcf
---- /dev/null
-+++ b/Documentation/blockdev/ramzswap.txt
-@@ -0,0 +1,67 @@
-+ramzswap: Compressed RAM swap device
-+------------------------------------
+diff --git a/drivers/lio-core/target_core_transport.c b/drivers/lio-core/target_core_transport.c
+index 4132da1..e8879a9 100644
+--- a/drivers/lio-core/target_core_transport.c
++++ b/drivers/lio-core/target_core_transport.c
+@@ -4142,6 +4142,33 @@ static inline void transport_get_maps(se_cmd_t *cmd)
+ 	cmd->transport_unmap_SG_segments = &transport_generic_unmap_SG_segments;
+ }
+ 
++static unsigned char asciihex_to_binaryhex(unsigned char val[2])
++{
++	unsigned char result = 0;
++	/*
++	 * MSB
++	 */
++	if ((val[0] >= 'a') && (val[0] <= 'f'))
++		result = ((val[0] - 'a' + 10) & 0xf) << 4;
++	else
++		if ((val[0] >= 'A') && (val[0] <= 'F'))
++			result = ((val[0] - 'A' + 10) & 0xf) << 4;
++		else /* digit */
++			result = ((val[0] - '0') & 0xf) << 4;
++	/*
++	 * LSB
++	 */
++	if ((val[1] >= 'a') && (val[1] <= 'f'))
++		result |= ((val[1] - 'a' + 10) & 0xf);
++	else
++		if ((val[1] >= 'A') && (val[1] <= 'F'))
++			result |= ((val[1] - 'A' + 10) & 0xf);
++		else /* digit */
++			result |= ((val[1] - '0') & 0xf);
 +
-+Project home: http://compcache.googlecode.com
++	return result;
++}
 +
-+This module creates RAM based block device (named ramzswap0) which acts
-+as swap disk. Pages swapped to this disk are compressed and stored in
-+memory itself.
-+
-+It uses these components:
-+ - xvMalloc: memory allocator (xvmalloc.ko)
-+ - LZO1X: de/compressor: (lzo_compress.ko, lzo_decompress.ko)
-+
-+Usage:
-+ - modprobe ramzswap [memlimit_kb=<val>|disksize_kb=<val>] [backing_swap=<dev>]
-+
-+   memlimit_kb: This param is applicable only when backing_swap is given.
-+	It is limit on amount compressed data stored in memory. Any
-+	additional data is forwarded to backing_swap. It cannot be greater
-+	than backing device size. If missing or 0, default value is used:
-+	15% of RAM or backing device size, whichever is smaller.
-+
-+   disksize_kb: This param is applicable only when backing_swap is not given.
-+	It is limit on amount of *uncompressed* worth of data stored in
-+	memory. For e.g. disksize_kb=1024 means it can hold 1024kb worth of
-+	uncompressed data even if this data compresses to just, say, 100kb.
-+	If missing or 0, default value is used: 25% of RAM.
-+
-+   backing_swap: This is block device to be used as backing store for ramzswap.
-+	It must be a valid swap partition. We move data to this device when we
-+	encounter incompressible page or memlimit is reached. TODO: we may also
-+	move some pages from ramzswap to this device in case system is really
-+	low on memory.
-+	This device is not directly visible to kernel as a swap device
-+	(/proc/swaps will only show /dev/ramzswap0 and not this device).
-+	Managing this backing device is the job of ramzswap module.
-+
-+Examples:
-+	1) modprobe ramzswap memlimit_kb=10240 backing_swap=/dev/sda2
-+	sets ramzswap limit as 10MB and /dev/sda2 as backing swap device.
-+	NOTE: here /dev/sda2 is a valid swap partition.
-+
-+	2) modprobe ramzswap backing_swap=/dev/sda2
-+	same as (1) but memlimit is set to default: 15% of RAM or size of
-+	backing swap device, whichever is smaller.
-+
-+	3) modprobe ramzswap disksize_kb=10240
-+	sets ramzswap disk size as 10MB.
-+
-+	4) modprobe ramzswap.ko
-+	same as (3) but ramzswap disk size will be set to default:
-+	25% of RAM size.
-+
-+	Once module is loaded, activate this swap with highest priority:
-+	swapon /dev/ramzswap0 -p 100
-+	(-p param set swap priority)
-+
-+Notes:
-+ - ramzswap stats are exported via /proc/ramzswap
-+ - If you give non-swap partition as backing_swap, nothing bad will happen -
-+   swapon will simply fail to recognize /dev/ramzswap0 as swap partition.
-+   So, in this case, unload the module and reload with correct backing_swap.
-+
-+Please report any problems to:
-+
-+Nitin Gupta
-+ngupta@vflare.org
-diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
-index fa4e123..d7bcf51 100644
---- a/Documentation/kernel-parameters.txt
-+++ b/Documentation/kernel-parameters.txt
-@@ -415,6 +415,15 @@ and is between 256 and 4096 characters. It is defined in the file
-  			possible to determine what the correct size should be.
-  			This option provides an override for these situations.
+ extern int transport_generic_emulate_inquiry(
+ 	se_cmd_t *cmd,
+ 	unsigned char type,
+@@ -4157,10 +4184,11 @@ extern int transport_generic_emulate_inquiry(
+ 	t10_alua_tg_pt_gp_member_t *tg_pt_gp_mem;
+ 	unsigned char *buf = (unsigned char *) T_TASK(cmd)->t_task_buf;
+ 	unsigned char *cdb = T_TASK(cmd)->t_task_cdb;
+-	unsigned char *iqn_sn;
++	unsigned char *iqn_sn, binary, binary_new;
+ 	u32 prod_len, iqn_sn_len, se_location_len;
+ 	u32 unit_serial_len, off = 0;
+-	u16 len = 0;
++	int i;
++	u16 len = 0, id_len;
+ 
+ 	/*
+ 	 * Make sure we at least have 8 bytes of INQUIRY response payload
+@@ -4256,10 +4284,61 @@ extern int transport_generic_emulate_inquiry(
+ 		 * DESIGNATOR TYPEs see spc4r17 Table 459.
+ 		 */
+ 		buf[1] = 0x83;
++		off = 4;
++		/*
++		 * NAA IEEE Registered Extended Assigned designator format,
++		 * see spc4r17 section 7.7.3.6.5
++		 *
++		 * We depend upon a target_core_mod/ConfigFS provided
++		 * /sys/kernel/config/target/core/$HBA/$DEV/wwn/evpd_unit_serial
++		 * value in order to return the NAA id.
++		 */
++		if (!(dev->se_sub_dev->su_dev_flags &
++					SDF_EMULATED_EVPD_UNIT_SERIAL))
++			goto check_t10_vend_desc;
++		if ((off + 20) > cmd->data_length)
++			goto check_t10_vend_desc;
++		/* CODE SET == Binary */
++		buf[off++] = 0x1;
++		/* Set ASSOICATION == addressed logical unit: 0)b */
++		buf[off] = 0x00;
++		/* Identifier/Designator type == NAA identifier */
++		buf[off++] = 0x3;
++		off++;
++		/* Identifier/Designator length */
++		buf[off++] = 0x10;
++		/*
++		 * Start NAA IEEE Registered Extended Identifier/Designator
++		 */
++		buf[off++] = (0x6 << 4);
++		/*
++		 * Use OpenFabrics IEEE Company ID: 00 14 05
++		 */
++		buf[off++] = 0x01;
++		buf[off++] = 0x40;
++		buf[off] = (0x5 << 4);
++		/*
++		 * Return ConfigFS Unit Serial Number information for
++		 * VENDOR_SPECIFIC_IDENTIFIER and
++		 * VENDOR_SPECIFIC_IDENTIFIER_EXTENTION
++		 */
++		binary = asciihex_to_binaryhex(
++					&DEV_T10_WWN(dev)->unit_serial[0]);
++		buf[off++] |= (binary & 0xf0) >> 4;
++		for (i = 0; i < 24; i += 2) {
++			binary_new = asciihex_to_binaryhex(
++				&DEV_T10_WWN(dev)->unit_serial[i+2]);
++			buf[off] = (binary & 0x0f) << 4;
++			buf[off++] |= (binary_new & 0xf0) >> 4;
++			binary = binary_new;
++		}
++		len = 20;
++		off = (len + 4);
++check_t10_vend_desc:
+ 		/*
+ 		 * T10 Vendor Identifier Page, see spc4r17 section 7.7.3.4
+ 		 */
+-		len += 8; /* For Vendor field */
++		id_len = 8; /* For Vendor field */
+ 		prod_len = 4; /* For EVPD Header */
+ 		prod_len += 8; /* For Vendor field */
+ 		prod_len += strlen(prod);
+@@ -4271,12 +4350,14 @@ extern int transport_generic_emulate_inquiry(
+ 				strlen(&DEV_T10_WWN(dev)->unit_serial[0]);
+ 			unit_serial_len++; /* For NULL Terminator */
+ 
+-			if (((len + 4) + (prod_len + unit_serial_len)) >
++			if ((len + (id_len + 4) +
++			    (prod_len + unit_serial_len)) >
+ 					cmd->data_length) {
+ 				len += (prod_len + unit_serial_len);
+ 				goto check_port;
+ 			}
+-			len += sprintf((unsigned char *)&buf[16], "%s:%s", prod,
++			id_len += sprintf((unsigned char *)&buf[off+12],
++					"%s:%s", prod,
+ 					&DEV_T10_WWN(dev)->unit_serial[0]);
+ 		} else {
+ 			iqn_sn = transport_get_iqn_sn();
+@@ -4285,24 +4366,26 @@ extern int transport_generic_emulate_inquiry(
+ 			se_location_len = strlen(se_location);
+ 			se_location_len++; /* For NULL Terminator */
+ 
+-			if (((len + 4) + (prod_len + iqn_sn_len +
++			if ((len + (id_len + 4) + (prod_len + iqn_sn_len +
+ 					se_location_len)) > cmd->data_length) {
+ 				len += (prod_len + iqn_sn_len +
+ 						se_location_len);
+ 				goto check_port;
+ 			}
+-			len += sprintf((unsigned char *)&buf[16], "%s:%s:%s",
+-					prod, iqn_sn, se_location);
++			id_len += sprintf((unsigned char *)&buf[off+12],
++				"%s:%s:%s", prod, iqn_sn, se_location);
+ 		}
+-		buf[4] = 0x2; /* ASCII */
+-		buf[5] = 0x1; /* T10 Vendor ID */
+-		buf[6] = 0x0;
+-		memcpy((unsigned char *)&buf[8], "LIO-ORG", 8);
+-
+-		len++; /* Extra Byte for NULL Terminator */
+-		buf[7] = len; /* Identifier Length */
+-		len += 4; /* Header size for Designation descriptor */
+-		off = (len + 4);
++		buf[off] = 0x2; /* ASCII */
++		buf[off+1] = 0x1; /* T10 Vendor ID */
++		buf[off+2] = 0x0;
++		memcpy((unsigned char *)&buf[off+4], "LIO-ORG", 8);
++		/* Extra Byte for NULL Terminator */
++		id_len++;
++		/* Identifier Length */
++		buf[off+3] = id_len;
++		/* Header size for Designation descriptor */
++		len += (id_len + 4);
++		off += (id_len + 4);
+ 		/*
+ 		 * se_port_t is only set for INQUIRY EVPD=1 through $FABRIC_MOD
+ 		 */
+-- 
+1.5.4.1
 
-+	ramzswap.memlimit_kb=
-+			See Documentation/blockdev/ramzswap.txt.
-+
-+	ramzswap.disksize_kb=
-+			See Documentation/blockdev/ramzswap.txt.
-+
-+	ramzswap.backing_swap=
-+			See Documentation/blockdev/ramzswap.txt.
-+
-  	security=	[SECURITY] Choose a security module to enable at boot.
-  			If this boot parameter is not specified, only the first
-  			security module asking for security registration will be
+
 
