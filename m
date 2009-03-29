@@ -1,50 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756485AbZC2NGu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756845AbZC2NH0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756485AbZC2NGu (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Mar 2009 09:06:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753525AbZC2NGl
+	id S1756845AbZC2NH0 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Mar 2009 09:07:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753641AbZC2NHI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Mar 2009 09:06:41 -0400
-Received: from smtp.nokia.com ([192.100.105.134]:23866 "EHLO
-	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751691AbZC2NGk (ORCPT
+	Sun, 29 Mar 2009 09:07:08 -0400
+Received: from silver.sucs.swan.ac.uk ([137.44.10.1]:55948 "EHLO
+	silver.sucs.swan.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753525AbZC2NHH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Mar 2009 09:06:40 -0400
-Message-ID: <49CF7254.8030408@nokia.com>
-Date: Sun, 29 Mar 2009 16:06:28 +0300
-From: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
-Reply-To: Artem.Bityutskiy@nokia.com
-Organization: Nokia OYJ
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Sun, 29 Mar 2009 09:07:07 -0400
+Date: Sun, 29 Mar 2009 14:07:02 +0100
+From: Sitsofe Wheeler <sitsofe@yahoo.com>
+To: Soeren Sonnenburg <sonne@debian.org>
+Cc: linux-kernel@vger.kernel.org, Eric Anholt <eric@anholt.net>,
+       dri-devel@lists.sourceforge.net,
+       Jesse Barnes <jbarnes@virtuousgeek.org>
+Subject: Re: enabling kms for i915 disables brightness control and xrandr
+Message-ID: <20090329130702.GA23660@sucs.org>
+References: <1238322841.4185.36.camel@localhost>
 MIME-Version: 1.0
-To: "Andreas T.Auer" <andreas.t.auer_lkml_73537@ursus.ath.cx>
-CC: Artem Bityutskiy <dedekind@yandex.ru>, Pavel Machek <pavel@ucw.cz>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: replace() system call needed (was Re: EXT4-ish "fixes" in UBIFS)
-References: <49CCCB0A.6070701@nokia.com> <20090329122600.GA13737@elf.ucw.cz> <49CF6CBB.7070907@yandex.ru> <49CF7120.4090503@ursus.ath.cx>
-In-Reply-To: <49CF7120.4090503@ursus.ath.cx>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-OriginalArrivalTime: 29 Mar 2009 13:06:29.0703 (UTC) FILETIME=[2CD8BD70:01C9B06F]
-X-Nokia-AV: Clean
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1238322841.4185.36.camel@localhost>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-ext Andreas T.Auer wrote:
-> 
-> On 29.03.2009 14:42 Artem Bityutskiy wrote:
->> Pavel Machek wrote:
->>
->>>> 1. truncate/write/close leads to empty files
->>> this is buggy.
->> In FS, or in application?
-> In application of course. If you rewrite a huge file that way, you have
-> a long-time risk of loosing data in a crash, even with sychronous writes.
+(CC'ing dri-devel, Eric Anholt and Jesse Barnes)
 
-You know, after reading all these blogs and discussions,
-I will not be surprised if someone says this is an FS bug.
+On Sun, Mar 29, 2009 at 12:34:01PM +0200, Soeren Sonnenburg wrote:
+> Dear all,
+> 
+> I am not sure if this is just a user error/ too old userspace problem,
+
+[User stated that 2.6.3 intel driver is being used in another email]
+
+> but I recognized that when I enable kernel based modesetting on a intel
+> 945 based samsung nc 10 netbook, I loose brightness control from within
+> X and X resolutions are wrong (instead of 1024x600 it is 1024x1024) and
+> xrandr does no longer have the all the modelines ranging from 1024x600
+> to 640x350... Trying to change resolutions / setting the brightness via
+> xrandr results in error messages being printed. 
+> 
+> Furthermore, this same flag disables Xv support..
+> 
+> However, screen switches between terminal and X are quite fast now
+> (without any flicker) and suspend and everything works stably.
+> 
+> I recognized that I can set the brightness via
+> 
+> setpci -s 00:02.1 F4.B=XX
+> 
+> (XX ranging from 00 to FF) just fine...
+> 
+> I am attaching the .config .
+> 
+> Any ideas?
+> Soeren
 
 -- 
-Best Regards,
-Artem Bityutskiy (Артём Битюцкий)
+Sitsofe | http://sucs.org/~sits/
