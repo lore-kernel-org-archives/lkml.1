@@ -1,55 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753594AbZC2JQV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756250AbZC2JQp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753594AbZC2JQV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Mar 2009 05:16:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751725AbZC2JQM
+	id S1756250AbZC2JQp (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Mar 2009 05:16:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751725AbZC2JQf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Mar 2009 05:16:12 -0400
-Received: from smtp20.orange.fr ([193.252.22.29]:6606 "EHLO smtp20.orange.fr"
-	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751059AbZC2JQK convert rfc822-to-8bit (ORCPT
+	Sun, 29 Mar 2009 05:16:35 -0400
+Received: from viefep19-int.chello.at ([62.179.121.39]:38952 "EHLO
+	viefep19-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751059AbZC2JQe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Mar 2009 05:16:10 -0400
-X-ME-UUID: 20090329091607880.D6FA620000B4@mwinf2013.orange.fr
-Subject: Re: Linux 2.6.29
-From: Xavier Bestel <xavier.bestel@free.fr>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Matthew Garrett <mjg59@srcf.ucam.org>, Theodore Tso <tytso@mit.edu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Rees <drees76@gmail.com>, Jesper Krogh <jesper@krogh.cc>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <20090327190056.3b699e89@lxorguk.ukuu.org.uk>
-References: <20090327051338.GP6239@mit.edu>
-	 <20090327055750.GA18065@srcf.ucam.org>
-	 <20090327062114.GA18290@srcf.ucam.org> <20090327112438.GQ6239@mit.edu>
-	 <20090327145156.GB24819@srcf.ucam.org>
-	 <20090327150811.09b313f5@lxorguk.ukuu.org.uk>
-	 <20090327152221.GA25234@srcf.ucam.org>
-	 <20090327161553.31436545@lxorguk.ukuu.org.uk>
-	 <20090327162841.GA26860@srcf.ucam.org>
-	 <20090327165150.7e69d9e1@lxorguk.ukuu.org.uk>
-	 <20090327170208.GA27646@srcf.ucam.org>
-	 <alpine.LFD.2.00.0903271032090.3994@localhost.localdomain>
-	 <20090327183214.2e73b6a3@lxorguk.ukuu.org.uk>
-	 <alpine.LFD.2.00.0903271138220.3994@localhost.localdomain>
-	 <20090327190056.3b699e89@lxorguk.ukuu.org.uk>
-Content-Type: text/plain; charset="UTF-8"
-Date: Sun, 29 Mar 2009 11:15:46 +0200
-Message-Id: <1238318146.11869.1.camel@badjo>
+	Sun, 29 Mar 2009 05:16:34 -0400
+X-SourceIP: 213.93.53.227
+Subject: Re: [PATCH 1/9] perf_counter: unify and fix delayed counter wakeup
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Paul Mackerras <paulus@samba.org>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
+       Wu Fengguang <fengguang.wu@intel.com>,
+       Eric Dumazet <dada1@cosmosbay.com>
+In-Reply-To: <18894.48499.125187.92480@cargo.ozlabs.ibm.com>
+References: <20090328194359.426029037@chello.nl>
+	 <20090328194929.451591360@chello.nl>
+	 <18894.48499.125187.92480@cargo.ozlabs.ibm.com>
+Content-Type: text/plain
+Date: Sun, 29 Mar 2009 11:16:41 +0200
+Message-Id: <1238318201.23852.17.camel@twins>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
-Content-Transfer-Encoding: 8BIT
+X-Mailer: Evolution 2.26.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Le vendredi 27 mars 2009 à 19:00 +0000, Alan Cox a écrit :
-> Actually "pure sh*t" is most of the software currently written. The more
-> code I read the happier I get that the lawmakers are finally sick of it
-> and going to make damned sure software is subject to liability law. Boy
-> will that improve things.
+On Sun, 2009-03-29 at 11:14 +1100, Paul Mackerras wrote:
+> Peter Zijlstra writes:
+> 
+> > While going over the wakeup code I noticed delayed wakeups only work
+> > for hardware counters but basically all software counters rely on
+> > them.
+> 
+> Hmmm, I don't like the extra latency this introduces, particularly
+> since on powerpc we already have a good way to avoid the latency.
 
-Alan, you're getting old.
+Right, so I can re-instate the powerpc bits and have it call
+perf_counter_do_pending() whenever it finds the per-cpu pending bit set.
 
+I'd have to look into the fancy new per-cpu stuff for the x86 bits, but
+I'm reasonably sure something like that should be doable.
+
+> I did a grep for perf_swcounter_event calls that have nmi=1, and there
+> are a couple, to my surprise.  Why does the context switch one have
+> nmi=1?  It certainly isn't called from an actual NMI handler.  Is it
+> because of locking issues?
+
+Yeah, can't do a wakeup while holding the rq->lock.
+
+> The other one is the tracepoint call in perf_tpcounter_event.  I
+> assume you have put nmi=1 there because you don't know what context
+> we're in.  That means we'll always delay the wakeup even when we might
+> be in an ordinary interrupt-on process context.  Couldn't we do
+> better?
+
+Maybe, not only real in_nmi() tracepoints have that problem, we also
+have lock_acquire() like tracepoints that could call into the event code
+in the middle of a lock acquisition (which might be rq->lock).
+
+So always using nmi=1 for those seemed like the safe way out.
 
