@@ -1,56 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754390AbZC2MSo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753351AbZC2M0U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754390AbZC2MSo (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Mar 2009 08:18:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752691AbZC2MSd
+	id S1753351AbZC2M0U (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Mar 2009 08:26:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751647AbZC2M0K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Mar 2009 08:18:33 -0400
-Received: from agrajag.mansr.com ([78.86.181.102]:58303 "EHLO mail.mansr.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751211AbZC2MSc convert rfc822-to-8bit (ORCPT
+	Sun, 29 Mar 2009 08:26:10 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:51078 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751211AbZC2M0J (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Mar 2009 08:18:32 -0400
-X-Greylist: delayed 486 seconds by postgrey-1.27 at vger.kernel.org; Sun, 29 Mar 2009 08:18:32 EDT
-To: "Andreas T.Auer" <andreas.t.auer_lkml_73537@ursus.ath.cx>
-Cc: linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org
-Subject: Re: Zero length files - an alternative approach?
-References: <87bprka9sg.fsf@newton.gmurray.org.uk>
-	<yw1xab744lqi.fsf@thrashbarg.mansr.com>
-	<49CF636A.3030400@ursus.ath.cx>
-From: =?iso-8859-1?Q?M=E5ns_Rullg=E5rd?= <mans@mansr.com>
-Date: Sun, 29 Mar 2009 13:10:23 +0100
-In-Reply-To: <49CF636A.3030400@ursus.ath.cx> (Andreas T. Auer's message of "Sun, 29 Mar 2009 14:02:50 +0200")
-Message-ID: <yw1x1vsg4jio.fsf@thrashbarg.mansr.com>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) XEmacs/21.4.22 (Instant Classic, linux)
+	Sun, 29 Mar 2009 08:26:09 -0400
+Date: Sun, 29 Mar 2009 14:26:00 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: replace() system call needed (was Re: EXT4-ish "fixes" in UBIFS)
+Message-ID: <20090329122600.GA13737@elf.ucw.cz>
+References: <49CCCB0A.6070701@nokia.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49CCCB0A.6070701@nokia.com>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Andreas T.Auer" <andreas.t.auer_lkml_73537@ursus.ath.cx> writes:
+On Fri 2009-03-27 14:48:10, Artem Bityutskiy wrote:
+> UBIFS has exactly the same properties like ext4 - in case
+> of power cuts:
+>
+> 1. truncate/write/close leads to empty files
+> 2. create/write/rename leads to empty files
+>
+> UBIFS is used in hand-held and and power-cuts are very
+> often there, because users just remove battery often.
+>
+> I realize the "reality is different" argument, and already
+> concluded that we need a similar changes as Theo has done
+> for ext4:
+> http://git.kernel.org/?p=linux/kernel/git/tytso/ext4.git;a=commitdiff;h=bf1b69c0db7f9b9d8f02e94d40b19fca8336b991
+> http://git.kernel.org/?p=linux/kernel/git/tytso/ext4.git;a=commitdiff;h=f32b730a69bd56c5c9d704d8b75f03e90e290971
+> http://git.kernel.org/?p=linux/kernel/git/tytso/ext4.git;a=commitdiff;h=8411e347c3306ed36b8ca88611bf5fbf4d27d705
+>
+> We have a problem that user-space people do not want to
+> use 'fsync()', even when they are pointed to their code
+> which is doing create/write/rename/close without fsync().
 
-> On 29.03.2009 13:22 Måns Rullgård wrote:
->> Consider this scenario:
->>
->> 1. Create/write/close newfile
->> 2. Rename newfile to oldfile
->> 3. Open/read oldfile.  This must return the new contents.
->> 4. System crash and reboot before delayed allocation/flush complete
->> 5. Open/read oldfile.  Old contents now returned.
->>
->> This rollback isn't obviously, to me at least, without problems of its
->> own.
->>   
-> Having the old data in 5) is far better than having no data in 5).
+Well... they really don't want to spin the disk up for the
+fsync(). I'm not sure if fsync() is really sensible operation to use
+there.
 
-Of course having old data is better than no data.  However, fsync()
-and similar approaches make a rollback to old data after new data has
-been visible impossible or far less likely than the suggested one.
-I'm not saying it's necessarily a problem, only that it is a
-difference that should be taken into account.
+> 1. truncate/write/close leads to empty files
 
+this is buggy.
+
+> 2. create/write/rename leads to empty files
+
+...but this should not be. If we want to make that explicit, we should
+provide "replace()" operation; where replace is rename that makes sure
+that source file is completely on media before commiting the rename.
+
+It is somehow similar to fsync()/rename(), but does not force disk
+spin up immediately -- it only inserts "barrier" between data blocks
+and rename. (And yes, it should be implemented as fsync()+rename() for
+filesystems like xfs. It can be implemented as plain rename for ext3
+and ext4 after the fixes...)
+
+									Pavel
 -- 
-Måns Rullgård
-mans@mansr.com
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
