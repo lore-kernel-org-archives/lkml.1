@@ -1,74 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757924AbZC2OA1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756747AbZC2ONT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757924AbZC2OA1 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Mar 2009 10:00:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754864AbZC2OAQ
+	id S1756747AbZC2ONT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Mar 2009 10:13:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753735AbZC2OND
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Mar 2009 10:00:16 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:36655 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753784AbZC2OAP (ORCPT
+	Sun, 29 Mar 2009 10:13:03 -0400
+Received: from mtagate1.de.ibm.com ([195.212.17.161]:50699 "EHLO
+	mtagate1.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752741AbZC2ONB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Mar 2009 10:00:15 -0400
-Date: Sun, 29 Mar 2009 16:00:05 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
-Cc: Artem Bityutskiy <dedekind@yandex.ru>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: replace() system call needed (was Re: EXT4-ish "fixes" in UBIFS)
-Message-ID: <20090329140005.GI15492@elf.ucw.cz>
-References: <49CCCB0A.6070701@nokia.com> <20090329122600.GA13737@elf.ucw.cz> <49CF6CBB.7070907@yandex.ru> <20090329124959.GD15492@elf.ucw.cz> <49CF70FD.7050802@nokia.com> <20090329130251.GF15492@elf.ucw.cz> <49CF7297.4020201@nokia.com> <20090329134007.GG15492@elf.ucw.cz> <49CF7E32.9070704@nokia.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49CF7E32.9070704@nokia.com>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Sun, 29 Mar 2009 10:13:01 -0400
+Date: Sun, 29 Mar 2009 16:12:53 +0200
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+To: Dave Hansen <dave@linux.vnet.ibm.com>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       virtualization@lists.osdl.org, frankeh@watson.ibm.com, akpm@osdl.org,
+       nickpiggin@yahoo.com.au, hugh@veritas.com, riel@redhat.com
+Subject: Re: [patch 0/6] Guest page hinting version 7.
+Message-ID: <20090329161253.3faffdeb@skybase>
+In-Reply-To: <1238195024.8286.562.camel@nimitz>
+References: <20090327150905.819861420@de.ibm.com>
+	<1238195024.8286.562.camel@nimitz>
+Organization: IBM Corporation
+X-Mailer: Claws Mail 3.7.1 (GTK+ 2.14.7; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun 2009-03-29 16:57:06, Artem Bityutskiy wrote:
-> ext Pavel Machek wrote:
->> On Sun 2009-03-29 16:07:35, Artem Bityutskiy wrote:
->>> Pavel Machek wrote:
->>>> On Sun 2009-03-29 16:00:45, Artem Bityutskiy wrote:
->>>>> Pavel Machek wrote:
->>>>>>>>> 2. create/write/rename leads to empty files
->>>>>>>> ..but this should not be. If we want to make that explicit, we should
->>>>>>>> provide "replace()" operation; where replace is rename that makes sure
->>>>>>>> that source file is completely on media before commiting the rename.
->>>>>>> Well, OK, we can fsync() before rename, we just need clean rules
->>>>>>> for this, so that all Linux FSes would follow them. Would be nice
->>>>>>> to have final agreement on all this stuff.
->>>>>> My proposal is 
->>>>>>
->>>>>> rename() stays.
->>>>> It stays and:
->>>>>
->>>>> 1. does _not_ fsync
->>>> Does not fsync. If someone wants to make sure one of the files is on
->>>> the disk, he should use replace(). [On non-linux systems, replace()
->>>> should be implemented as fsync/rename in libc or something.]
->>> I would be happy with these rules. But the fact is, application
->>> people just refuse to add fsync before rename. They say that the
->>> FS has to do this. And they say that even Linus supports them,
->>
->> That's good. fsync before rename would be ugly regression (on ext3 at
->> least). We should get them to use replace() syscall, not get them to
->> add fsyncs. [Of course, that means we need replace syscall first. :-)]
->
-> I'd say it is better to fix ext3 then.
+On Fri, 27 Mar 2009 16:03:43 -0700
+Dave Hansen <dave@linux.vnet.ibm.com> wrote:
 
-? I don't get this.
+> On Fri, 2009-03-27 at 16:09 +0100, Martin Schwidefsky wrote:
+> > If the host picks one of the
+> > pages the guest can recreate, the host can throw it away instead of writing
+> > it to the paging device. Simple and elegant.
+> 
+> Heh, simple and elegant for the hypervisor.  But I'm not sure I'm going
+> to call *anything* that requires a new CPU instruction elegant. ;)
 
-ext3's rename() is already equivalent to proposed replace(). The
-problem is that btrfs's and ubifs's renames are not.
+Hey its cool if you can request an instruction to solve your problem :-)
 
-So doing extra fsync() on ext3 is actually an performance regression
--> we do not want applications to randomly add open-coded fsyncs().
+> I don't see any description of it in there any more, but I thought this
+> entire patch set was to get rid of the idiotic triple I/Os in the
+> following scenario:
+> 
+> 1. Hypervisor picks a page and evicts it out to disk, pays the I/O cost
+>    to get it written out. (I/O #1)
+> 2. Linux comes along (being a bit late to the party) and picks the same
+>    page, also decides it needs to be out to disk
+> 3. Linux tries to write the page to disk, but touches it in the 
+>    process, pulling the page back in from the store where the hypervisor
+>    wrote it. (I/O #2)
+> 4. Linux writes the page to its swap device (I/O #3)
+> 
+> I don't see that mentioned at all in the current description.
+> Simplifying the hypervisor is hard to get behind, but cutting system I/O
+> by 2/3 is a much nicer benefit for 1200 lines of invasive code. ;)
 
-									Pavel
+You are right, for a newcomer to the party the advantages of this
+approach are not really obvious. Should have copied some more text from
+the boilerplate from the previous versions.
+
+Yes, the guest page hinting code aims to reduce the hosts swap I/O.
+There are two scenarios, one is the above, the other is a simple
+read-only file cache page.
+Without hinting:
+1. Hypervisor picks a page and evicts it, that is one write I/O
+2. Linux access the page and causes a host page fault. The host reads
+the page from its swap disk, one read I/O.
+In total 2 I/O operations.
+With hinting:
+1. Hypervisor picks a page, finds it volatile and throws it away.
+2. Linux access the page and gets a discard fault from the host. Linux
+reads the file page from its block device.
+This is just one I/O operation.
+
+> Can we persuade the hypervisor to tell us which pages it decided to page
+> out and just skip those when we're scanning the LRU?
+
+One principle of the whole approach is that the hypervisor does not
+call into an otherwise idle guest. The cost of schedulung the virtual
+cpu is just too high. So we would a means to store the information where
+the guest can pick it up when it happens to do LRU. I don't think that
+this will work out.
+
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+blue skies,
+   Martin.
+
+"Reality continues to ruin my life." - Calvin.
+
