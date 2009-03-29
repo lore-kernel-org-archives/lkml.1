@@ -1,66 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756689AbZC2OXy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757924AbZC2OYs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756689AbZC2OXy (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Mar 2009 10:23:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754864AbZC2OXo
+	id S1757924AbZC2OYs (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Mar 2009 10:24:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756018AbZC2OYi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Mar 2009 10:23:44 -0400
-Received: from mtagate4.de.ibm.com ([195.212.29.153]:53328 "EHLO
-	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754118AbZC2OXn (ORCPT
+	Sun, 29 Mar 2009 10:24:38 -0400
+Received: from silver.sucs.swan.ac.uk ([137.44.10.1]:46881 "EHLO
+	silver.sucs.swan.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755498AbZC2OYh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Mar 2009 10:23:43 -0400
-Date: Sun, 29 Mar 2009 16:23:36 +0200
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: virtualization@lists.linux-foundation.org, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, virtualization@lists.osdl.org,
-       akpm@osdl.org, nickpiggin@yahoo.com.au, frankeh@watson.ibm.com,
-       riel@redhat.com, hugh@veritas.com
-Subject: Re: [patch 0/6] Guest page hinting version 7.
-Message-ID: <20090329162336.7c0700e9@skybase>
-In-Reply-To: <200903281705.29798.rusty@rustcorp.com.au>
-References: <20090327150905.819861420@de.ibm.com>
-	<200903281705.29798.rusty@rustcorp.com.au>
-Organization: IBM Corporation
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.14.7; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sun, 29 Mar 2009 10:24:37 -0400
+Date: Sun, 29 Mar 2009 15:24:32 +0100
+From: Sitsofe Wheeler <sitsofe@yahoo.com>
+To: Bob Copeland <me@bobcopeland.com>
+Cc: Jiri Slaby <jirislaby@gmail.com>, Nick Kossifidis <mickflemm@gmail.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>, linux-kernel@vger.kernel.org,
+       linux-wireless@vger.kernel.org, ath5k-devel@venema.h4ckr.net,
+       "Luis R. Rodriguez" <lrodriguez@atheros.com>
+Subject: Re: [TIP] BUG kmalloc-4096: Poison overwritten (ath5k_rx_skb_alloc)
+Message-ID: <20090329142432.GA15578@sucs.org>
+References: <20090303041222.GA1238@hash.localnet> <20090303200352.GA8343@silver.sucs.org> <20090304120759.GA6519@hash.localnet> <20090306094249.GA10236@silver.sucs.org> <20090308030928.GB14966@hash.localnet> <49B38FB7.3000002@gmail.com> <20090310004344.GA23466@hash.localnet> <20090312061047.GA13401@silver.sucs.org> <20090313095213.GA14250@silver.sucs.org> <20090320131437.GA30120@hash.localnet>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090320131437.GA30120@hash.localnet>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 28 Mar 2009 17:05:28 +1030
-Rusty Russell <rusty@rustcorp.com.au> wrote:
-
-> On Saturday 28 March 2009 01:39:05 Martin Schwidefsky wrote:
-> > Greetings,
-> > the circus is back in town -- another version of the guest page hinting
-> > patches. The patches differ from version 6 only in the kernel version,
-> > they apply against 2.6.29. My short sniff test showed that the code
-> > is still working as expected.
-> > 
-> > To recap (you can skip this if you read the boiler plate of the last
-> > version of the patches):
-> > The main benefit for guest page hinting vs. the ballooner is that there
-> > is no need for a monitor that keeps track of the memory usage of all the
-> > guests, a complex algorithm that calculates the working set sizes and for
-> > the calls into the guest kernel to control the size of the balloons.
+On Fri, Mar 20, 2009 at 09:14:37AM -0400, Bob Copeland wrote:
 > 
-> I thought you weren't convinced of the concrete benefits over ballooning,
-> or am I misremembering?
+> Looks like the skb was reused right after it was freed by the mac80211
+> workqueue so that seems inline with the idea that the list is getting
+> corrupted somehow.  On top of the last patch, would you mind running 
+> this overnight?  It'll dump a lot of debug info, I'm really only 
+> interested in the last 5 invocations of ath5k_debug_printrxbuffs or so
+> before the poison.  During a scan you'll see lots of rx_start/rx_stop.
 
-The performance test I have seen so far show that the benefits of
-ballooning vs. guest page hinting are about the same. I am still
-convinced that the guest page hinting is the way to go because you do
-not need an external monitor. Calculating the working set size for a
-guest is a challenge. With guest page hinting there is no need for a
-working set size calculation.
+I've been away travelling for the past week and I move house on the 1st
+April (which will make testing this much harder from then on) but I'll
+try to get one final test in before the move.
+
+Do you need an ftrace in addition to dmesg for this? If so is it better
+to leave ieee calls out of the ftrace?
 
 -- 
-blue skies,
-   Martin.
-
-"Reality continues to ruin my life." - Calvin.
-
+Sitsofe | http://sucs.org/~sits/
