@@ -1,70 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752917AbZC2JCd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755332AbZC2JNY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752917AbZC2JCd (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Mar 2009 05:02:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751400AbZC2JCY
+	id S1755332AbZC2JNY (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Mar 2009 05:13:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751769AbZC2JNN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Mar 2009 05:02:24 -0400
-Received: from mail-ew0-f165.google.com ([209.85.219.165]:45144 "EHLO
-	mail-ew0-f165.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752531AbZC2JCX convert rfc822-to-8bit (ORCPT
+	Sun, 29 Mar 2009 05:13:13 -0400
+Received: from mail-in-10.arcor-online.net ([151.189.21.50]:45344 "EHLO
+	mail-in-10.arcor-online.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751671AbZC2JNL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Mar 2009 05:02:23 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=d+GlCNWt0g368XgJ/pvz7oXj718tBt3iRfOcnrzMq81lw+KVipBjvwMjhOWZ+WKWw9
-         aIeiZitvff5ceXmtKXHtt4m/BahuvmtY8eVZGxQEgHdsc+W7Vkf4tE7QvXWorUlewHZr
-         jiNtXQbGG/zSFNfAPTaFV6XVSfpPyl++FMClI=
+	Sun, 29 Mar 2009 05:13:11 -0400
+X-DKIM: Sendmail DKIM Filter v2.8.2 mail-in-02.arcor-online.net 9E2483FE377
+From: Prakash Punnoor <prakash@punnoor.de>
+To: Yinghai Lu <yinghai@kernel.org>
+Subject: Re: [PATCH] pci: don't enable too much HT MSI mapping -v5 -resend
+Date: Sun, 29 Mar 2009 11:15:53 +0200
+User-Agent: KMail/1.11.1 (Linux/2.6.29-rc8; KDE/4.2.1; x86_64; ; )
+Cc: Jesse Barnes <jbarnes@virtuousgeek.org>, Matthew Wilcox <matthew@wil.cx>,
+       Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Robert Hancock <hancockrwd@gmail.com>, david@lang.hm,
+       "linux-kernel" <linux-kernel@vger.kernel.org>,
+       linux-pci@vger.kernel.org
+References: <alpine.DEB.1.10.0902171419000.26625@asgard.lang.hm> <200903282316.55142.prakash@punnoor.de> <49CECFCF.8060403@kernel.org>
+In-Reply-To: <49CECFCF.8060403@kernel.org>
 MIME-Version: 1.0
-In-Reply-To: <200903281727.52929.rob@landley.net>
-References: <20090323180808.2c2ef1a7@nehalam>
-	 <49C847C6.4030904@lougher.demon.co.uk>
-	 <200903281727.52929.rob@landley.net>
-Date: Sun, 29 Mar 2009 11:02:19 +0200
-X-Google-Sender-Auth: 64928cd556a2d7d0
-Message-ID: <10f740e80903290202h1f36b370ga39721536d52a90@mail.gmail.com>
-Subject: Re: Squashfs 4.0 tools
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Rob Landley <rob@landley.net>
-Cc: Phillip Lougher <phillip@lougher.demon.co.uk>,
-       Stephen Hemminger <shemminger@vyatta.com>, linux-kernel@vger.kernel.org,
-       squashfs-devel@lists.sourceforge.net
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: multipart/signed;
+  boundary="nextPart1337132.GHpFeGMOEy";
+  protocol="application/pgp-signature";
+  micalg=pgp-sha1
+Content-Transfer-Encoding: 7bit
+Message-Id: <200903291115.54351.prakash@punnoor.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Mar 29, 2009 at 00:27, Rob Landley <rob@landley.net> wrote:
-> P.S I notice a squashfs-devel mailing list cc'd here, but there's no link to
-> it from the squashfs.org page.  Buried in the middle of a lot of text is a
-> link to the sourceforge squashfs project page, which has a link to "forums"
-> which are not the same as mailing lists.
+--nextPart1337132.GHpFeGMOEy
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-There should be a link to it somewhere on the SF project page...
+On Sonntag 29 M=E4rz 2009 03:33:03 Yinghai Lu wrote:
+> please try follwing patch over pci/linux-next
+>
+> Thanks
+>
+> YH
+>
+> [PATCH] pci: don't enable too much HT MSI mapping -v6
 
-> But it might be nice to at least _hint_ about its existence on the web page.
-> The main page's "contact" section is your personal email and nothing else...
+Works fine now, thanks!
 
-Yep. Fortunately we also have MAINTAINERS ;-)
+pci 0000:00:00.0: Found disabled HT MSI Mapping                            =
+                                                          =20
+pci 0000:00:00.0: Enabling HT MSI Mapping                                  =
+                                                          =20
+pci 0000:00:00.0: Found enabled HT MSI Mapping                             =
+                                                          =20
+pci 0000:00:05.0: Boot video device                                        =
+                                                          =20
+pci 0000:00:09.0: Found disabled HT MSI Mapping                            =
+                                                          =20
+pci 0000:00:0e.0: Enabling HT MSI Mapping                                  =
+                                                          =20
+pci 0000:00:09.0: Found disabled HT MSI Mapping                            =
+                                                          =20
+pci 0000:00:0f.0: Enabling HT MSI Mapping                                  =
+                                                          =20
+pci 0000:00:09.0: Found disabled HT MSI Mapping                            =
+                                                          =20
+pci 0000:00:10.0: Enabling HT MSI Mapping                                  =
+                                                          =20
+pci 0000:00:09.0: Found disabled HT MSI Mapping                            =
+                                                          =20
+pci 0000:00:10.1: Enabling HT MSI Mapping
 
-| SQUASHFS FILE SYSTEM
-| P:      Phillip Lougher
-| M:      phillip@lougher.demon.co.uk
-| L:      squashfs-devel@lists.sourceforge.net (subscribers-only)
-| W:      http://squashfs.org.uk
-| S:      Maintained
+So drop my patch and merge v6 of Yinghai Lu's one.
 
-Gr{oetje,eeting}s,
 
-						Geert
+Cheers,
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+Prakash
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+--nextPart1337132.GHpFeGMOEy
+Content-Type: application/pgp-signature; name=signature.asc 
+Content-Description: This is a digitally signed message part.
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.11 (GNU/Linux)
+
+iEYEABECAAYFAknPPEoACgkQxU2n/+9+t5h5egCgt36ZSZogkEvhy3aaDMLN9USK
+WlEAoLNbwdO+F0eASmXaD2Ney4vuasPi
+=es5P
+-----END PGP SIGNATURE-----
+
+--nextPart1337132.GHpFeGMOEy--
