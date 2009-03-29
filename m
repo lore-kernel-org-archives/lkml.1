@@ -1,39 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753788AbZC2AYg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754476AbZC2AZV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753788AbZC2AYg (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 28 Mar 2009 20:24:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751081AbZC2AY1
+	id S1754476AbZC2AZV (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 28 Mar 2009 20:25:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751795AbZC2AZH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 28 Mar 2009 20:24:27 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:52982 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751080AbZC2AY1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 28 Mar 2009 20:24:27 -0400
-Date: Sun, 29 Mar 2009 00:24:13 +0000
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@kernel.org>,
-       Sam Ravnborg <sam@ravnborg.org>, Alexey Dobriyan <adobriyan@gmail.com>,
-       Jaswinder Singh Rajput <jaswinder@kernel.org>,
-       x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [git-pull -tip] x86: include inverse Xmas tree patches
-Message-ID: <20090329002413.GE28946@ZenIV.linux.org.uk>
-References: <1238251730.2526.2.camel@ht.satnam> <20090328150746.GA3268@x200.localdomain> <20090328190350.GA30214@uranus.ravnborg.org> <49CEA3CD.105@kernel.org> <alpine.LFD.2.00.0903290025280.3397@localhost.localdomain> <20090328233438.GA4957@elte.hu> <alpine.LFD.2.00.0903290035390.3397@localhost.localdomain> <20090329000026.GA27015@elte.hu>
+	Sat, 28 Mar 2009 20:25:07 -0400
+Received: from bilbo.ozlabs.org ([203.10.76.25]:49867 "EHLO bilbo.ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751081AbZC2AZG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 28 Mar 2009 20:25:06 -0400
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090329000026.GA27015@elte.hu>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Transfer-Encoding: 7bit
+Message-ID: <18894.48499.125187.92480@cargo.ozlabs.ibm.com>
+Date: Sun, 29 Mar 2009 11:14:43 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       Mike Galbraith <efault@gmx.de>, Arjan van de Ven <arjan@infradead.org>,
+       Wu Fengguang <fengguang.wu@intel.com>,
+       Eric Dumazet <dada1@cosmosbay.com>
+Subject: Re: [PATCH 1/9] perf_counter: unify and fix delayed counter wakeup
+In-Reply-To: <20090328194929.451591360@chello.nl>
+References: <20090328194359.426029037@chello.nl>
+	<20090328194929.451591360@chello.nl>
+X-Mailer: VM 8.0.9 under Emacs 22.2.1 (i486-pc-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Mar 29, 2009 at 01:00:26AM +0100, Ingo Molnar wrote:
+Peter Zijlstra writes:
 
-> Yes, we need both efforts. That section needs to look professional 
-> (unordered lines look amateurishly random, arbitrary and confusing), 
-> and it needs to be minimalized as well.
+> While going over the wakeup code I noticed delayed wakeups only work
+> for hardware counters but basically all software counters rely on
+> them.
 
-You are _begging_ for basic training jokes, along the lines of "every
-blade of grass shall be painted regulation green"...
+Hmmm, I don't like the extra latency this introduces, particularly
+since on powerpc we already have a good way to avoid the latency.
+
+I did a grep for perf_swcounter_event calls that have nmi=1, and there
+are a couple, to my surprise.  Why does the context switch one have
+nmi=1?  It certainly isn't called from an actual NMI handler.  Is it
+because of locking issues?
+
+The other one is the tracepoint call in perf_tpcounter_event.  I
+assume you have put nmi=1 there because you don't know what context
+we're in.  That means we'll always delay the wakeup even when we might
+be in an ordinary interrupt-on process context.  Couldn't we do
+better?
+
+Paul.
