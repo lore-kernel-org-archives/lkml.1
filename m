@@ -1,50 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751044AbZC3HSS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753558AbZC3HSv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751044AbZC3HSS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Mar 2009 03:18:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751131AbZC3HSD
+	id S1753558AbZC3HSv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Mar 2009 03:18:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750962AbZC3HSj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Mar 2009 03:18:03 -0400
-Received: from fnoeppeil48.netpark.at ([217.175.205.176]:57334 "EHLO
-	roarinelk.homelinux.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750873AbZC3HSB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Mar 2009 03:18:01 -0400
-Date: Mon, 30 Mar 2009 09:17:56 +0200
-From: Manuel Lauss <mano@roarinelk.homelinux.net>
-To: Adrian McMenamin <adrian@newgolddream.dyndns.info>
-Cc: LKML <linux-kernel@vger.kernel.org>, Paul Mundt <lethal@linux-sh.org>,
-       linux-sh <linux-sh@vger.kernel.org>
-Subject: Re: regression in 2.6.29-git3 on SH/Dreamcast
-Message-ID: <20090330071755.GA30234@roarinelk.homelinux.net>
-References: <1238353446.6471.14.camel@localhost.localdomain> <1238369758.6471.16.camel@localhost.localdomain>
+	Mon, 30 Mar 2009 03:18:39 -0400
+Received: from mga03.intel.com ([143.182.124.21]:19964 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750813AbZC3HSi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Mar 2009 03:18:38 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.38,445,1233561600"; 
+   d="scan'208";a="125540074"
+Date: Mon, 30 Mar 2009 15:18:24 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: stable@kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       Jan Kara <jack@suse.cz>, Masayoshi MIZUMA <m.mizuma@jp.fujitsu.com>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
+       "viro@zeniv.linux.org.uk" <viro@zeniv.linux.org.uk>,
+       Nick Piggin <npiggin@suse.de>
+Subject: [PATCH][RESEND for 2.6.29-rc8-mm1] skip I_CLEAR state inodes
+Message-ID: <20090330071824.GA9260@localhost>
+References: <20090318170237.8F6C.61FB500B@jp.fujitsu.com> <20090323103846.GA16577@localhost> <20090324155655.2684.61FB500B@jp.fujitsu.com> <20090324074457.GA7745@localhost> <20090324120502.GC23439@duck.suse.cz> <20090324124001.GA25326@localhost>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1238369758.6471.16.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+In-Reply-To: <20090324124001.GA25326@localhost>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Adrian,
+clear_inode() will switch inode state from I_FREEING to I_CLEAR,
+and do so _outside_ of inode_lock. So any I_FREEING testing is
+incomplete without a coupled testing of I_CLEAR.
 
-On Mon, Mar 30, 2009 at 12:35:58AM +0100, Adrian McMenamin wrote:
-> On Sun, 2009-03-29 at 20:04 +0100, Adrian McMenamin wrote:
-> > While 2.6.29 boots cleanly on the Dreamcast, later revisions are likely
-> > to crash with an OOM condition (this is a race, it doesn't happen on
-> > every boot, but on about one in every three or four).
-> > 
-> 
-> Still don't know why this timer patch is tipping the machine over, but I
-> have found that if I set CONFIG_NO_HZ=y then the machine will boot with
-> the patch applied.
+So add I_CLEAR tests to drop_pagecache_sb(), generic_sync_sb_inodes() and
+add_dquot_ref().
 
-I found that enabling swapfile support in Kconfig also reduces the frequency
-of OOMs on my sh7760.   While I don't experience your particular problem, my
-personal observation is that since around >2.6.22 linux-sh may OOM without
-actual swapspace a lot sooner  (i.e. post 2.6.25 I can't even do "emerge -pv
-world" without the kernel OOMing on me! This is with unreviewed platform code,
-so take this info with a mountain of salt).
+Masayoshi MIZUMA discovered the bug in drop_pagecache_sb() and Jan Kara
+reminds fixing the other two cases.
 
-	Manuel Lauss
+Reported-by: Masayoshi MIZUMA <m.mizuma@jp.fujitsu.com>
+Reviewed-by: Jan Kara <jack@suse.cz>
+Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
+---
+ fs/drop_caches.c  |    2 +-
+ fs/fs-writeback.c |    3 ++-
+ fs/quota/dquot.c  |    2 +-
+ 3 files changed, 4 insertions(+), 3 deletions(-)
+
+--- mm.orig/fs/drop_caches.c
++++ mm/fs/drop_caches.c
+@@ -18,7 +18,7 @@ static void drop_pagecache_sb(struct sup
+ 
+ 	spin_lock(&inode_lock);
+ 	list_for_each_entry(inode, &sb->s_inodes, i_sb_list) {
+-		if (inode->i_state & (I_FREEING|I_WILL_FREE|I_NEW))
++		if (inode->i_state & (I_FREEING|I_CLEAR|I_WILL_FREE|I_NEW))
+ 			continue;
+ 		if (inode->i_mapping->nrpages == 0)
+ 			continue;
+--- mm.orig/fs/fs-writeback.c
++++ mm/fs/fs-writeback.c
+@@ -538,7 +538,8 @@ void generic_sync_sb_inodes(struct super
+ 		list_for_each_entry(inode, &sb->s_inodes, i_sb_list) {
+ 			struct address_space *mapping;
+ 
+-			if (inode->i_state & (I_FREEING|I_WILL_FREE|I_NEW))
++			if (inode->i_state &
++					(I_FREEING|I_CLEAR|I_WILL_FREE|I_NEW))
+ 				continue;
+ 			mapping = inode->i_mapping;
+ 			if (mapping->nrpages == 0)
+--- mm.orig/fs/quota/dquot.c
++++ mm/fs/quota/dquot.c
+@@ -823,7 +823,7 @@ static void add_dquot_ref(struct super_b
+ 
+ 	spin_lock(&inode_lock);
+ 	list_for_each_entry(inode, &sb->s_inodes, i_sb_list) {
+-		if (inode->i_state & (I_FREEING|I_WILL_FREE|I_NEW))
++		if (inode->i_state & (I_FREEING|I_CLEAR|I_WILL_FREE|I_NEW))
+ 			continue;
+ 		if (!atomic_read(&inode->i_writecount))
+ 			continue;
