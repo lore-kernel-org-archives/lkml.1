@@ -1,84 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759945AbZC3TUq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759014AbZC3T0Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759945AbZC3TUq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Mar 2009 15:20:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759571AbZC3TU2
+	id S1759014AbZC3T0Q (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Mar 2009 15:26:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756864AbZC3TZ5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Mar 2009 15:20:28 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:33789 "EHLO mx1.redhat.com"
+	Mon, 30 Mar 2009 15:25:57 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:43604 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759248AbZC3TU1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Mar 2009 15:20:27 -0400
-Date: Mon, 30 Mar 2009 15:20:24 -0400 (EDT)
-From: Mikulas Patocka <mpatocka@redhat.com>
-X-X-Sender: mpatocka@hs20-bc2-1.build.redhat.com
-To: viro@zeniv.linux.org.uk
-cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] fix bmap-vs-truncate race
-Message-ID: <Pine.LNX.4.64.0903301518120.23576@hs20-bc2-1.build.redhat.com>
+	id S1753666AbZC3TZ4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Mar 2009 15:25:56 -0400
+Message-ID: <49D11BDD.70702@redhat.com>
+Date: Mon, 30 Mar 2009 15:22:05 -0400
+From: Rik van Riel <riel@redhat.com>
+Organization: Red Hat, Inc
+User-Agent: Thunderbird 2.0.0.17 (X11/20080915)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Ric Wheeler <rwheeler@redhat.com>,
+       "Andreas T.Auer" <andreas.t.auer_lkml_73537@ursus.ath.cx>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Theodore Tso <tytso@mit.edu>,
+       Mark Lord <lkml@rtr.ca>, Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Jeff Garzik <jeff@garzik.org>, Matthew Garrett <mjg59@srcf.ucam.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       David Rees <drees76@gmail.com>, Jesper Krogh <jesper@krogh.cc>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.29
+References: <alpine.LFD.2.00.0903271511230.3994@localhost.localdomain> <alpine.LFD.2.00.0903271522210.3994@localhost.localdomain> <49CD7B10.7010601@garzik.org> <49CD891A.7030103@rtr.ca> <49CD9047.4060500@garzik.org> <49CE2633.2000903@s5r6.in-berlin.de> <49CE3186.8090903@garzik.org> <49CE35AE.1080702@s5r6.in-berlin.de> <49CE3F74.6090103@rtr.ca> <20090329231451.GR26138@disturbed> <20090330003948.GA13356@mit.edu> <49D0710A.1030805@ursus.ath.cx> <20090330100546.51907bd2@the-village.bc.nu> <49D0A3D6.4000300@ursus.ath.cx> <49D0AA4A.6020308@redhat.com> <alpine.LFD.2.00.0903300817400.3948@localhost.localdomain> <49D0EF1E.9040806@redhat.com> <alpine.LFD.2.00.0903300922231.3948@localhost.localdomain> <49D0FD4C.1010007@redhat.com> <alpine.LFD.2.00.0903301038100.3948@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.0903301038100.3948@localhost.localdomain>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi
+Linus Torvalds wrote:
+> On Mon, 30 Mar 2009, Ric Wheeler wrote:
 
-I'm submitting this patch for 2.6.30 merge window.
+>> Heat is a major killer of spinning drives (as is severe cold). A lot of times,
+>> drives that have read errors only (not failed writes) might be fully
+>> recoverable if you can re-write that injured sector.
+> 
+> It's not worked for me, and yes, I've tried.
 
+It's worked here.  It would be nice to have a device mapper module
+that can just insert itself between the disk and the higher device
+mapper layer and "scrub" the disk, fetching unreadable sectors from
+the other RAID copy where required.
 
-FAT filesystem used down_read(&mapping->host->i_alloc_sem) to prevent 
-a race between bmap and truncate. However, such race is present in all the
-other filesystems --- it is generally assumed that blocks queried with
-get_block won't disappear while get_block is in progress.
+> I'm sure it works for some "ok, the write just failed to take, and the CRC 
+> was bad" case, but that's apparently not what I've had. I suspect either 
+> the track markers got overwritten (and maybe a disk-specific low-level 
+> reformat would have helped, but at that point I was not going to trust the 
+> drive anyway, so I didn't care), or there was actual major physical damage 
+> due to heat and/or head crash and remapping was just not able to cope.
 
-The race can be only triggered by root, non-privileged users can't use
-bmap, so it is not a security issue (unless there is some program run
-by root that bmaps users' files).
+Maybe a stupid question, but aren't tracks so small compared to
+the disk head that a physical head crash would take out multiple
+tracks at once?  (the last on I experienced here took out a major
+part of the disk)
 
-This patch fixes the race in a generic way, in all the filesystems. If some
-filesystem employs its own locking and doesn't want to take i_alloc_sem
-(I don't know about any, where taking i_alloc_sem could be problem),
-let it use its own function and not generic_block_bmap.
+Another case I have seen years ago was me writing data to a disk
+while it was still cold (I brought it home, plugged it in and
+started using it).  Once the drive came up to temperature, it
+could no longer read the tracks it just wrote - maybe the disk
+expanded by more than it is willing to seek around for tracks
+due to thermal correction?   Low level formatting the drive
+made it work perfectly and I kept using it until it was just
+too small to be useful :)
 
-Signed-off-by: Mikulas Patocka <mpatocka@redhat.com>
+> And my point is, IT MAKES SENSE to just do the elevator barrier, _without_ 
+> the drive command. 
 
----
- fs/buffer.c    |    8 ++++++++
- fs/fat/inode.c |    2 --
- 2 files changed, 8 insertions(+), 2 deletions(-)
+No argument there.  I have seen NCQ starvation on SATA disks,
+with some requests sitting in the drive for seconds, while
+the drive was busy handling hundreds of requests/second
+elsewhere...
 
-Index: linux-2.6.29-devel/fs/buffer.c
-===================================================================
---- linux-2.6.29-devel.orig/fs/buffer.c	2009-03-29 04:48:38.000000000 +0200
-+++ linux-2.6.29-devel/fs/buffer.c	2009-03-29 05:26:53.000000000 +0200
-@@ -2963,7 +2963,15 @@ sector_t generic_block_bmap(struct addre
- 	tmp.b_state = 0;
- 	tmp.b_blocknr = 0;
- 	tmp.b_size = 1 << inode->i_blkbits;
-+
-+	/*
-+	 * Protect the inode from being truncated while get_block is
-+	 * in progress.
-+	 */
-+	down_read(&mapping->host->i_alloc_sem);
- 	get_block(inode, block, &tmp, 0);
-+	up_read(&mapping->host->i_alloc_sem);
-+
- 	return tmp.b_blocknr;
- }
- 
-Index: linux-2.6.29-devel/fs/fat/inode.c
-===================================================================
---- linux-2.6.29-devel.orig/fs/fat/inode.c	2009-03-29 04:46:35.000000000 +0200
-+++ linux-2.6.29-devel/fs/fat/inode.c	2009-03-29 05:26:53.000000000 +0200
-@@ -202,9 +202,7 @@ static sector_t _fat_bmap(struct address
- 	sector_t blocknr;
- 
- 	/* fat_get_cluster() assumes the requested blocknr isn't truncated. */
--	down_read(&mapping->host->i_alloc_sem);
- 	blocknr = generic_block_bmap(mapping, block, fat_get_block);
--	up_read(&mapping->host->i_alloc_sem);
- 
- 	return blocknr;
- }
+-- 
+All rights reversed.
