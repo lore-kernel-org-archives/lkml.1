@@ -1,47 +1,260 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754245AbZC3RcJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756498AbZC3Rdl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754245AbZC3RcJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Mar 2009 13:32:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751454AbZC3Rby
+	id S1756498AbZC3Rdl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Mar 2009 13:33:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751755AbZC3Rd3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Mar 2009 13:31:54 -0400
-Received: from rtr.ca ([76.10.145.34]:43598 "EHLO mail.rtr.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752578AbZC3Rbx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Mar 2009 13:31:53 -0400
-Message-ID: <49D10206.5060105@rtr.ca>
-Date: Mon, 30 Mar 2009 13:31:50 -0400
-From: Mark Lord <lkml@rtr.ca>
-Organization: Real-Time Remedies Inc.
-User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
+	Mon, 30 Mar 2009 13:33:29 -0400
+Received: from moutng.kundenserver.de ([212.227.126.187]:63009 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752578AbZC3Rd0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Mar 2009 13:33:26 -0400
+Message-ID: <49D10256.8030307@vlnb.net>
+Date: Mon, 30 Mar 2009 21:33:10 +0400
+From: Vladislav Bolkhovitin <vst@vlnb.net>
+User-Agent: Thunderbird 2.0.0.17 (X11/20081009)
 MIME-Version: 1.0
-To: Hans Verkuil <hverkuil@xs4all.nl>
-Cc: Michael Krufky <mkrufky@linuxtv.org>, linux-media@vger.kernel.org,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: bttv ir patch from Mark Lord
-References: <200903301835.55023.hverkuil@xs4all.nl> <49D0FBCE.8050408@rtr.ca> <49D0FC14.6010109@rtr.ca> <200903301911.40249.hverkuil@xs4all.nl>
-In-Reply-To: <200903301911.40249.hverkuil@xs4all.nl>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: scst-devel <scst-devel@lists.sourceforge.net>
+CC: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       iscsitarget-devel@lists.sourceforge.net, stgt@vger.kernel.org
+Subject: ISCSI-SCST performance (with also IET and STGT data)
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Provags-ID: V01U2FsdGVkX1/36vMJaBClZSlDRn0AfyA/fAstPNCxAe/lj6Y
+ oXlXsbeRgYqhfYQxPHgzSi4cG99OVCb+DyzUmMd/IEkAykpPkG
+ DhPJ7zrny2IuXb+DAh3Aw==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hans Verkuil wrote:
->
-> It's best to wait a bit. Jean Delvare is working on this ir-kbd-i2c driver 
-> right now and when he's finished it should be much easier to add this. Most 
-> importantly you can add this new i2c address to the cx18 driver rather than 
-> add it to the probe_bttv list, which is rather overloaded anyway.
-> 
-> He should be finished within 1-3 weeks I guess. Probably sooner rather than 
-> later. Just watch the linux-media list for it.
-..
+Hi All,
 
-Thanks.  I'll just watch for it arriving upstream in 2.6.31 (?) then,
-if the current ir-kbd-i2c patch doesn't end up in 2.6.30 already.
+As part of 1.0.1 release preparations I made some performance tests to 
+make sure there are no performance regressions in SCST overall and 
+iSCSI-SCST particularly. Results were quite interesting, so I decided to 
+publish them together with the corresponding numbers for IET and STGT 
+iSCSI targets. This isn't a real performance comparison, it includes 
+only few chosen tests, because I don't have time for a complete 
+comparison. But I hope somebody will take up what I did and make it 
+complete.
 
-Good idea on the cleanup in there, too.  It was looking a bit tattered
-around the edges, and my patch doesn't really help much with that aspect. :)
+Setup:
 
-Cheers
+Target: HT 2.4GHz Xeon, x86_32, 2GB of memory limited to 256MB by kernel 
+command line to have less test data footprint, 75GB 15K RPM SCSI disk as 
+backstorage, dual port 1Gbps E1000 Intel network card, 2.6.29 kernel.
+
+Initiator: 1.7GHz Xeon, x86_32, 1GB of memory limited to 256MB by kernel 
+command line to have less test data footprint, dual port 1Gbps E1000 
+Intel network card, 2.6.27 kernel, open-iscsi 2.0-870-rc3.
+
+The target exported a 5GB file on XFS for FILEIO and 5GB partition for 
+BLOCKIO.
+
+All the tests were ran 3 times and average written. All the values are 
+in MB/s. The tests were ran with CFQ and deadline IO schedulers on the 
+target. All other parameters on both target and initiator were default.
+
+==================================================================
+
+I. SEQUENTIAL ACCESS OVER SINGLE LINE
+
+1. # dd if=/dev/sdX of=/dev/null bs=512K count=2000
+
+			ISCSI-SCST	IET		STGT
+NULLIO:			106		105		103
+FILEIO/CFQ:		82		57		55
+FILEIO/deadline		69		69		67
+BLOCKIO/CFQ		81		28		-
+BLOCKIO/deadline	80		66		-
+
+------------------------------------------------------------------
+
+2. # dd if=/dev/zero of=/dev/sdX bs=512K count=2000
+
+I didn't do other write tests, because I have data on those devices.
+
+			ISCSI-SCST	IET		STGT
+NULLIO:			114		114		114
+
+------------------------------------------------------------------
+
+3. /dev/sdX formatted in ext3 and mounted in /mnt on the initiator. Then
+
+# dd if=/mnt/q of=/dev/null bs=512K count=2000
+
+were ran (/mnt/q was created before by the next test)
+
+			ISCSI-SCST	IET		STGT
+FILEIO/CFQ:		94		66		46
+FILEIO/deadline		74		74		72
+BLOCKIO/CFQ		95		35		-
+BLOCKIO/deadline	94		95		-
+
+------------------------------------------------------------------
+
+4. /dev/sdX formatted in ext3 and mounted in /mnt on the initiator. Then
+
+# dd if=/dev/zero of=/mnt/q bs=512K count=2000
+
+were ran (/mnt/q was created by the next test before)
+
+			ISCSI-SCST	IET		STGT
+FILEIO/CFQ:		97		91		88
+FILEIO/deadline		98		96		90
+BLOCKIO/CFQ		112		110		-
+BLOCKIO/deadline	112		110		-
+
+------------------------------------------------------------------
+
+Conclusions:
+
+1. ISCSI-SCST FILEIO on buffered READs on 27% faster than IET (94 vs 
+74). With CFQ the difference is 42% (94 vs 66).
+
+2. ISCSI-SCST FILEIO on buffered READs on 30% faster than STGT (94 vs 
+72). With CFQ the difference is 104% (94 vs 46).
+
+3. ISCSI-SCST BLOCKIO on buffered READs has about the same performance 
+as IET, but with CFQ it's on 170% faster (95 vs 35).
+
+4. Buffered WRITEs are not so interesting, because they are async. with 
+many outstanding commands at time, hence latency insensitive, but even 
+here ISCSI-SCST always a bit faster than IET.
+
+5. STGT always the worst, sometimes considerably.
+
+6. BLOCKIO on buffered WRITEs is constantly faster, than FILEIO, so, 
+definitely, there is a room for future improvement here.
+
+7. For some reason assess on file system is considerably better, than 
+the same device directly.
+
+==================================================================
+
+II. Mostly random "realistic" access.
+
+For this test I used io_trash utility. For more details see
+http://lkml.org/lkml/2008/11/17/444. To show value of target-side 
+caching in this test target was ran with full 2GB of memory. I ran 
+io_trash with the following parameters: "2 2 ./ 500000000 50000000 10 
+4096 4096 300000 10 90 0 10". Total execution time was measured.
+
+			ISCSI-SCST	IET		STGT
+FILEIO/CFQ:		4m45s		5m		5m17s
+FILEIO/deadline		5m20s		5m22s		5m35s
+BLOCKIO/CFQ		23m3s		23m5s		-
+BLOCKIO/deadline	23m15s		23m25s		-
+
+Conclusions:
+
+1. FILEIO on 500% (five times!) faster than BLOCKIO
+
+2. STGT, as usually, always the worst
+
+3. Deadline always a bit slower
+
+==================================================================
+
+III. SEQUENTIAL ACCESS OVER MPIO
+
+Unfortunately, my dual port network card isn't capable of simultaneous 
+data transfers, so I had to do some "modeling" and put my network 
+devices in 100Mbps mode. To make this model more realistic I also used 
+my old IDE 5200RPM hard drive capable to produce locally 35MB/s 
+throughput. So I modeled the case of double 1Gbps links with 350MB/s 
+backstorage, if all the following rules satisfied:
+
+  - Both links a capable of simultaneous data transfers
+
+  - There is sufficient amount of CPU power on both initiator and target 
+to cover requirements for the data transfers.
+
+All the tests were done with iSCSI-SCST only.
+
+1. # dd if=/dev/sdX of=/dev/null bs=512K count=2000
+
+NULLIO:			23
+FILEIO/CFQ:		20
+FILEIO/deadline		20
+BLOCKIO/CFQ		20
+BLOCKIO/deadline	17
+
+Single line NULLIO is 12.
+
+So, there is a 67% improvement using 2 lines. With 1Gbps it should be 
+equivalent of 200MB/s. Not too bad.
+
+==================================================================
+
+Connection to the target were made with the following iSCSI parameters:
+
+# iscsi-scst-adm --op show --tid=1 --sid=0x10000013d0200
+InitialR2T=No
+ImmediateData=Yes
+MaxConnections=1
+MaxRecvDataSegmentLength=2097152
+MaxXmitDataSegmentLength=131072
+MaxBurstLength=2097152
+FirstBurstLength=262144
+DefaultTime2Wait=2
+DefaultTime2Retain=0
+MaxOutstandingR2T=1
+DataPDUInOrder=Yes
+DataSequenceInOrder=Yes
+ErrorRecoveryLevel=0
+HeaderDigest=None
+DataDigest=None
+OFMarker=No
+IFMarker=No
+OFMarkInt=Reject
+IFMarkInt=Reject
+
+# ietadm --op show --tid=1 --sid=0x10000013d0200
+InitialR2T=No
+ImmediateData=Yes
+MaxConnections=1
+MaxRecvDataSegmentLength=262144
+MaxXmitDataSegmentLength=131072
+MaxBurstLength=2097152
+FirstBurstLength=262144
+DefaultTime2Wait=2
+DefaultTime2Retain=20
+MaxOutstandingR2T=1
+DataPDUInOrder=Yes
+DataSequenceInOrder=Yes
+ErrorRecoveryLevel=0
+HeaderDigest=None
+DataDigest=None
+OFMarker=No
+IFMarker=No
+OFMarkInt=Reject
+IFMarkInt=Reject
+
+# tgtadm --op show --mode session --tid 1 --sid 1
+MaxRecvDataSegmentLength=2097152
+MaxXmitDataSegmentLength=131072
+HeaderDigest=None
+DataDigest=None
+InitialR2T=No
+MaxOutstandingR2T=1
+ImmediateData=Yes
+FirstBurstLength=262144
+MaxBurstLength=2097152
+DataPDUInOrder=Yes
+DataSequenceInOrder=Yes
+ErrorRecoveryLevel=0
+IFMarker=No
+OFMarker=No
+DefaultTime2Wait=2
+DefaultTime2Retain=0
+OFMarkInt=Reject
+IFMarkInt=Reject
+MaxConnections=1
+RDMAExtensions=No
+TargetRecvDataSegmentLength=262144
+InitiatorRecvDataSegmentLength=262144
+MaxOutstandingUnexpectedPDUs=0
+
+Vlad
