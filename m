@@ -1,87 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760383AbZC3UAS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760573AbZC3UAz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760383AbZC3UAS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Mar 2009 16:00:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759659AbZC3T74
+	id S1760573AbZC3UAz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Mar 2009 16:00:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760501AbZC3UAP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Mar 2009 15:59:56 -0400
-Received: from zone0.gcu-squad.org ([212.85.147.21]:2235 "EHLO
-	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759596AbZC3T7z (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Mar 2009 15:59:55 -0400
-Date: Mon, 30 Mar 2009 21:59:00 +0200
-From: Jean Delvare <khali@linux-fr.org>
+	Mon, 30 Mar 2009 16:00:15 -0400
+Received: from cantor.suse.de ([195.135.220.2]:59408 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757850AbZC3UAL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Mar 2009 16:00:11 -0400
+Message-ID: <49D124B4.4040500@suse.com>
+Date: Mon, 30 Mar 2009 15:59:48 -0400
+From: Jeff Mahoney <jeffm@suse.com>
+Organization: SUSE Labs, Novell, Inc
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+MIME-Version: 1.0
 To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: LM Sensors <lm-sensors@lm-sensors.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: [GIT PULL] hwmon updates for 2.6.30
-Message-ID: <20090330215900.3cbb2a00@hyperion.delvare>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; x86_64-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       ReiserFS Development List <reiserfs-devel@vger.kernel.org>
+Subject: Re: [patch 00/35] Jeff's ReiserFS Patch Queue
+References: <20090330180215.951354436@suse.com> <alpine.LFD.2.00.0903301236280.4093@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.0903301236280.4093@localhost.localdomain>
+X-Enigmail-Version: 0.95.2
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-Please pull some hwmon subsystem updates for Linux 2.6.30 from:
+Linus Torvalds wrote:
+> 
+> On Mon, 30 Mar 2009, Jeff Mahoney wrote:
+>> I'd like to submit my reiserfs patch queue for inclusion into 2.6.30.
+> 
+> Hmm. Looks fine, and I merged it. I had a number of mostly trivial 
+> conflicts (most due to the quota name cleanup to lower-case, with some 
+> header file export cleanup conflicts added in), but they looked fairly 
+> straightforward and I compile-tested the end result.
+> 
+> I don't have any reiserfs filesystems left, though, so you should really 
+> double-check the end result.
 
-git://jdelvare.pck.nerim.net/jdelvare-2.6 hwmon-for-linus
+Great, thanks! I realized just after I submitted that I didn't adjust
+context to the last few days of mainline. The merge looks good except
+for an added space in reiserfs_delete_inode. I've appended the patch for that.
 
-There is support for 3 new chips (FSC Syleus, FSC Hades and Nuvoton
-W83667HG) as well as improvements to the ds1621 and hdaps drivers.
+>> Once this is applied, I expect reiserfs to be in deep maintenance-only 
+>> mode.
+> 
+> Heh, I hadn't expected even this.
 
- Documentation/hwmon/ds1621                 |   51 +------
- Documentation/{i2c/chips => hwmon}/pcf8591 |    0
- Documentation/hwmon/sysfs-interface        |   22 +++
- Documentation/hwmon/w83627ehf              |   29 +++-
- drivers/firmware/dmi_scan.c                |   18 ++-
- drivers/hwmon/Kconfig                      |   27 +++-
- drivers/hwmon/Makefile                     |    1 +
- drivers/hwmon/ds1621.c                     |  172 ++++++++++-----------
- drivers/hwmon/fschmd.c                     |  229 +++++++++++++++++++++-------
- drivers/hwmon/hdaps.c                      |   66 ++++----
- drivers/{i2c/chips => hwmon}/pcf8591.c     |   24 ++--
- drivers/hwmon/w83627ehf.c                  |  170 +++++++++++++++------
- drivers/i2c/busses/i2c-i801.c              |   77 ++++++++++
- drivers/i2c/chips/Kconfig                  |   13 --
- drivers/i2c/chips/Makefile                 |    1 -
- drivers/platform/x86/dell-laptop.c         |    4 +-
- drivers/watchdog/hpwdt.c                   |    4 +-
- include/linux/dmi.h                        |    7 +-
- 18 files changed, 588 insertions(+), 327 deletions(-)
- rename Documentation/{i2c/chips => hwmon}/pcf8591 (100%)
- rename drivers/{i2c/chips => hwmon}/pcf8591.c (96%)
+Hopefully it won't be. I still have to support reiserfs for our
+enterprise releases, though. :)
 
----------------
+- -Jeff
 
-Frank Seidel (2):
-      hwmon: (hdaps) Allow inversion of separate axis
-      hwmon: (hdaps) Fix Thinkpad X41 axis inversion
+- ---
+ fs/reiserfs/inode.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Gong Jun (2):
-      hwmon: (w83627ehf) Add support for W83667HG
-      hwmon: (w83627ehf) Only expose in6 or temp3 on the W83667HG
+- --- a/fs/reiserfs/inode.c
++++ b/fs/reiserfs/inode.c
+@@ -52,7 +52,7 @@ void reiserfs_delete_inode(struct inode
+ 		/* Do quota update inside a transaction for journaled quotas. We must do that
+ 		 * after delete_object so that quota updates go into the same transaction as
+ 		 * stat data deletion */
+- -		if (!err) 
++		if (!err)
+ 			vfs_dq_free_inode(inode);
+ 
+ 		if (journal_end(&th, inode->i_sb, jbegin_count))
 
-Hans de Goede (3):
-      i2c-i801: Instantiate FSC hardware montioring chips
-      hwmon: (fschmd) Add support for the FSC Syleus IC
-      hwmon: (fschmd) Add support for the FSC Hades IC
+- -- 
+Jeff Mahoney
+SUSE Labs
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
+Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
 
-Jean Delvare (8):
-      hwmon: (ds1621) Reorder code statements
-      hwmon: (ds1621) Clean up register access
-      hwmon: (ds1621) Avoid unneeded register access
-      hwmon: (ds1621) Clean up documentation
-      hwmon: (w83627ehf) Invert fan pin variables logic
-      Move the pcf8591 driver to hwmon
-      hwmon: Define a standard interface for chassis intrusion detection
-      dmi: Let dmi_walk() users pass private data
-
-
-
--- 
-Jean Delvare
+iEYEARECAAYFAknRJLQACgkQLPWxlyuTD7IuOgCbBmWsC7seMVyE7TLD2gejcHgz
+c9EAn2Ey64m2xNZ8R53lWqvAiWlX4UcP
+=Ugl0
+-----END PGP SIGNATURE-----
