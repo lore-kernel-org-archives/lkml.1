@@ -1,74 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753813AbZC3PYH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755238AbZC3P00@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753813AbZC3PYH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Mar 2009 11:24:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754788AbZC3PWu
+	id S1755238AbZC3P00 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Mar 2009 11:26:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751293AbZC3P0R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Mar 2009 11:22:50 -0400
-Received: from mail-fx0-f158.google.com ([209.85.220.158]:45287 "EHLO
-	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752934AbZC3PWp convert rfc822-to-8bit (ORCPT
+	Mon, 30 Mar 2009 11:26:17 -0400
+Received: from rv-out-0506.google.com ([209.85.198.226]:39547 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751013AbZC3P0Q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Mar 2009 11:22:45 -0400
+	Mon, 30 Mar 2009 11:26:16 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:message-id;
-        b=snCoGiPkZs+6D0CYlOJQk31/lguj3C3SHwYJRmbz4Byp0ds2/qztlEutwUEwyqIUbl
-         GVPxzQdtJPzDtQnXgiYTRVhMS1jmjQu0apxtP0grL465ITAbG+CVmuuzH1GSa3l50i5u
-         iW5+vUYiQHWE72QrIR3d2BFcyBfzEVSXMH/0k=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Fernando Luis =?iso-8859-1?q?V=E1zquez_Cao?= 
-	<fernando@oss.ntt.co.jp>
-Subject: Re: [PATCH 7/7] reiserfs: propagate issue-flush error code
-Date: Mon, 30 Mar 2009 17:25:51 +0200
-User-Agent: KMail/1.11.1 (Linux/2.6.29-next-20090327-dirty; KDE/4.2.1; i686; ; )
-Cc: Jeff Garzik <jeff@garzik.org>, Christoph Hellwig <hch@infradead.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Theodore Tso <tytso@mit.edu>, Ingo Molnar <mingo@elte.hu>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Nick Piggin <npiggin@suse.de>,
-       David Rees <drees76@gmail.com>, Jesper Krogh <jesper@krogh.cc>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       chris.mason@oracle.com, david@fromorbit.com, tj@kernel.org
-References: <alpine.LFD.2.00.0903241218130.3032@localhost.localdomain> <49D0B535.2010106@oss.ntt.co.jp> <49D0BCB2.30202@oss.ntt.co.jp>
-In-Reply-To: <49D0BCB2.30202@oss.ntt.co.jp>
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=usABGc9vpKPMiNDP61s/cOqlOZ5GlqIxJnikabL8FbnRGqmSNsNX/DMofHVZWUP6Tu
+         6DiuFxOP/agRS+T4RC31FS19PRVi3VpvGQUJiiLr7QMF8YH09H5Z8uG9Msjf8Gkjk+i9
+         qLeb9k/4sUWNBJEwlJmQzrlOmk46pjeGERI0U=
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200903301725.55916.bzolnier@gmail.com>
+In-Reply-To: <200903301357.17076.alistair@devzero.co.uk>
+References: <9b1675090903291904g7eca965eydb1aa3f852a1b91c@mail.gmail.com>
+	 <9b1675090903292155q6d221da1q6d19b7bca9cbe4e6@mail.gmail.com>
+	 <9b1675090903300033y65dd4bc5td9157de735a76dd9@mail.gmail.com>
+	 <200903301357.17076.alistair@devzero.co.uk>
+Date: Mon, 30 Mar 2009 09:26:13 -0600
+Message-ID: <9b1675090903300826s2ce361e5s1134e13507b0399@mail.gmail.com>
+Subject: Re: 2.6.29 on MacBook 2,1 fails to reboot
+From: "Trenton D. Adams" <trenton.d.adams@gmail.com>
+To: Alistair John Strachan <alistair@devzero.co.uk>
+Cc: "Morten P.D. Stevens" <mstevens@win-professional.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 30 March 2009, Fernando Luis Vázquez Cao wrote:
-> blkdev_issue_flush() may fail (i.e. due to media error on FLUSH CACHE
-> command execution) so its users should check for the return value.
-> 
-> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> Signed-off-by: Fernando Luis Vazquez Cao <fernando@oss.ntt.co.jp>
-> ---
-> 
-> diff -urNp linux-2.6.29-orig/fs/reiserfs/file.c linux-2.6.29/fs/reiserfs/file.c
-> --- linux-2.6.29-orig/fs/reiserfs/file.c	2009-03-24 08:12:14.000000000 +0900
-> +++ linux-2.6.29/fs/reiserfs/file.c	2009-03-30 16:19:19.000000000 +0900
-> @@ -146,8 +146,9 @@ static int reiserfs_sync_file(struct fil
->   	reiserfs_write_lock(p_s_inode->i_sb);
->   	barrier_done = reiserfs_commit_for_inode(p_s_inode);
->   	reiserfs_write_unlock(p_s_inode->i_sb);
-> -	if (barrier_done != 1 && reiserfs_barrier_flush(p_s_inode->i_sb))
-> -		blkdev_issue_flush(p_s_inode->i_sb->s_bdev, NULL);
-> +	if (!n_err && barrier_done != 1 &&
-> +			reiserfs_barrier_flush(p_s_inode->i_sb))
-> +		n_err = block_flush_device(p_s_inode->i_sb->s_bdev);
+On Mon, Mar 30, 2009 at 6:57 AM, Alistair John Strachan
+<alistair@devzero.co.uk> wrote:
+> On Monday 30 March 2009 08:33:06 Trenton D. Adams wrote:
+>>
+>> And, if I mark the 2.6.27 one as bad, it just remains on 2.6.27.
+>
+> Don't worry about the kernel version it generates. Git bisections traverse
+> merged branches, including those that weren't rebased before being merged (in
+> fact the preferred work flow). I usually add "-bisect" to CONFIG_LOCALVERSION
+> so I can isolate my work in progress bisection from system kernels.
+>
+> You can trust git to involve only relevant commits between your initial "good"
+> and "bad" markers; don't add more unless you have to. Sometimes you may need
+> to "shift" the bisection midpoint if you encounter build breakage. You should
+> be able to find comments Linus made on the subject by searching the LKML
+> archive for "git bisect visualize".
+>
+> --
+> Cheers,
+> Alistair.
+>
 
-This is again different from my original patch
-(the change in behavior should be documented).
-
-Thanks,
-Bart
+Okay, so are you saying that switching back to 2.6.27 is okay, because
+the patch that caused this problem may have been created in 2.6.27 (as
+a patch to the released version perhaps), not applied to 2.6.28, and
+then applied to 2.6.29?
