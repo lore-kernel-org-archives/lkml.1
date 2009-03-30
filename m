@@ -1,89 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756720AbZC3SSC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756994AbZC3SS0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756720AbZC3SSC (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Mar 2009 14:18:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753705AbZC3SP0
+	id S1756994AbZC3SS0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Mar 2009 14:18:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753729AbZC3SP1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Mar 2009 14:15:26 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:43341 "EHLO mx2.suse.de"
+	Mon, 30 Mar 2009 14:15:27 -0400
+Received: from cantor.suse.de ([195.135.220.2]:56605 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753029AbZC3SPQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Mar 2009 14:15:16 -0400
-Message-Id: <20090330181009.318046224@suse.com>
+	id S1751561AbZC3SPR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Mar 2009 14:15:17 -0400
+Message-Id: <20090330181012.115651016@suse.com>
 User-Agent: quilt/0.47-14.9
-Date: Mon, 30 Mar 2009 14:02:16 -0400
+Date: Mon, 30 Mar 2009 14:02:37 -0400
 From: Jeff Mahoney <jeffm@suse.com>
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Cc: Andrew Morton <akpm@linux-foundation.org>,
        Linus Torvalds <torvalds@linux-foundation.org>,
        ReiserFS Development List <reiserfs-devel@vger.kernel.org>
-Subject: [patch 01/35 quick-fixes] reiserfs: add support for mount count incrementing
+Subject: [patch 22/35 xattr-rework] reiserfs: remove i_has_xattr_dir
 References: <20090330180215.951354436@suse.com>
-Content-Disposition: inline; filename=patches.suse/reiserfs-mount-count
+Content-Disposition: inline; filename=patches.suse/reiserfs-remove-i_has_xattr_dir.diff
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- The following patch adds the fields for tracking mount counts and
- last fsck timestamps to the superblock. It also increments the mount
- count on every read-write mount. Reiserfsprogs 3.6.21 added support
- for these fields.
+ With the changes to xattr root locking, the i_has_xattr_dir flag
+ is no longer needed. This patch removes it.
 
 Signed-off-by: Jeff Mahoney <jeffm@suse.com>
----
- fs/reiserfs/super.c            |    6 +++++-
- include/linux/reiserfs_fs.h    |    6 +++++-
- include/linux/reiserfs_fs_sb.h |    3 +++
- 3 files changed, 13 insertions(+), 2 deletions(-)
 
---- a/fs/reiserfs/super.c
-+++ b/fs/reiserfs/super.c
-@@ -1280,6 +1280,8 @@ static int reiserfs_remount(struct super
- 		REISERFS_SB(s)->s_mount_state = sb_umount_state(rs);
- 		s->s_flags &= ~MS_RDONLY;
- 		set_sb_umount_state(rs, REISERFS_ERROR_FS);
-+		if (!old_format_only(s))
-+			set_sb_mnt_count(rs, sb_mnt_count(rs) + 1);
- 		/* mark_buffer_dirty (SB_BUFFER_WITH_SB (s), 1); */
- 		journal_mark_dirty(&th, s, SB_BUFFER_WITH_SB(s));
- 		REISERFS_SB(s)->s_mount_state = REISERFS_VALID_FS;
-@@ -1819,7 +1821,9 @@ static int reiserfs_fill_super(struct su
- 			} else if (!silent) {
- 				reiserfs_info(s, "using 3.5.x disk format\n");
- 			}
--		}
-+		} else
-+			set_sb_mnt_count(rs, sb_mnt_count(rs) + 1);
-+
+---
+ fs/reiserfs/xattr.c |    9 +--------
+ 1 file changed, 1 insertion(+), 8 deletions(-)
+
+--- a/fs/reiserfs/xattr.c
++++ b/fs/reiserfs/xattr.c
+@@ -459,10 +459,7 @@ int reiserfs_delete_xattrs(struct inode
  
- 		journal_mark_dirty(&th, s, SB_BUFFER_WITH_SB(s));
- 		errval = journal_end(&th, s, 1);
---- a/include/linux/reiserfs_fs.h
-+++ b/include/linux/reiserfs_fs.h
-@@ -171,7 +171,11 @@ struct reiserfs_super_block {
- 	__le32 s_flags;		/* Right now used only by inode-attributes, if enabled */
- 	unsigned char s_uuid[16];	/* filesystem unique identifier */
- 	unsigned char s_label[16];	/* filesystem volume label */
--	char s_unused[88];	/* zero filled by mkreiserfs and
-+	__le16 s_mnt_count;		/* Count of mounts since last fsck */
-+	__le16 s_max_mnt_count;		/* Maximum mounts before check */
-+	__le32 s_lastcheck;		/* Timestamp of last fsck */
-+	__le32 s_check_interval;	/* Interval between checks */
-+	char s_unused[76];	/* zero filled by mkreiserfs and
- 				 * reiserfs_convert_objectid_map_v1()
- 				 * so any additions must be updated
- 				 * there as well. */
---- a/include/linux/reiserfs_fs_sb.h
-+++ b/include/linux/reiserfs_fs_sb.h
-@@ -73,6 +73,9 @@ typedef enum {
- #define sb_version(sbp)            (le16_to_cpu((sbp)->s_v1.s_version))
- #define set_sb_version(sbp,v)      ((sbp)->s_v1.s_version = cpu_to_le16(v))
+ 	dput(root);
+ out:
+-	if (!err)
+-		REISERFS_I(inode)->i_flags =
+-		    REISERFS_I(inode)->i_flags & ~i_has_xattr_dir;
+-	else
++	if (err)
+ 		reiserfs_warning(inode->i_sb, "jdm-20004",
+ 				 "Couldn't remove all xattrs (%d)\n", err);
+ 	return err;
+@@ -660,7 +657,6 @@ reiserfs_xattr_set(struct inode *inode,
+ 	down_write(&REISERFS_I(inode)->i_xattr_sem);
  
-+#define sb_mnt_count(sbp)	   (le16_to_cpu((sbp)->s_mnt_count))
-+#define set_sb_mnt_count(sbp, v)   ((sbp)->s_mnt_count = cpu_to_le16(v))
-+
- #define sb_reserved_for_journal(sbp) \
-               (le16_to_cpu((sbp)->s_v1.s_reserved_for_journal))
- #define set_sb_reserved_for_journal(sbp,v) \
+ 	xahash = xattr_hash(buffer, buffer_size);
+-	REISERFS_I(inode)->i_flags |= i_has_xattr_dir;
+ 
+ 	/* Resize it so we're ok to write there */
+ 	newattrs.ia_size = buffer_size;
+@@ -769,7 +765,6 @@ reiserfs_xattr_get(const struct inode *i
+ 	down_read(&REISERFS_I(inode)->i_xattr_sem);
+ 
+ 	isize = i_size_read(dentry->d_inode);
+-	REISERFS_I(inode)->i_flags |= i_has_xattr_dir;
+ 
+ 	/* Just return the size needed */
+ 	if (buffer == NULL) {
+@@ -999,8 +994,6 @@ ssize_t reiserfs_listxattr(struct dentry
+ 	buf.r_pos = 0;
+ 	buf.r_inode = dentry->d_inode;
+ 
+-	REISERFS_I(dentry->d_inode)->i_flags |= i_has_xattr_dir;
+-
+ 	mutex_lock_nested(&dir->d_inode->i_mutex, I_MUTEX_XATTR);
+ 	err = xattr_readdir(dir->d_inode, reiserfs_listxattr_filler, &buf);
+ 	mutex_unlock(&dir->d_inode->i_mutex);
 
 
