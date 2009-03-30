@@ -1,286 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757317AbZC3BWZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756591AbZC3BYB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757317AbZC3BWZ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Mar 2009 21:22:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756749AbZC3BVU
+	id S1756591AbZC3BYB (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Mar 2009 21:24:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751133AbZC3BXv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Mar 2009 21:21:20 -0400
-Received: from hera.kernel.org ([140.211.167.34]:33050 "EHLO hera.kernel.org"
+	Sun, 29 Mar 2009 21:23:51 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:58278 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756722AbZC3BVS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Mar 2009 21:21:18 -0400
-Date: Mon, 30 Mar 2009 01:20:18 GMT
-From: Li Zefan <lizf@cn.fujitsu.com>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, acme@redhat.com, hpa@zytor.com,
-       mingo@redhat.com, lizf@cn.fujitsu.com, jens.axboe@oracle.com,
-       fweisbec@gmail.com, rostedt@goodmis.org, tglx@linutronix.de,
-       mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, acme@redhat.com,
-       linux-kernel@vger.kernel.org, lizf@cn.fujitsu.com,
-       jens.axboe@oracle.com, fweisbec@gmail.com, rostedt@goodmis.org,
-       tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <49CC3842.60608@cn.fujitsu.com>
-References: <49CC3842.60608@cn.fujitsu.com>
-Subject: [tip:tracing/blktrace] blktrace: print out BLK_TN_MESSAGE properly
-Message-ID: <tip-36edcee82b04a201500529ec1257a303ad002e7d@git.kernel.org>
-Git-Commit-ID: 36edcee82b04a201500529ec1257a303ad002e7d
-X-Mailer: tip-git-log-daemon
+	id S1751119AbZC3BXu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Mar 2009 21:23:50 -0400
+Date: Mon, 30 Mar 2009 03:23:37 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: Jens Axboe <jens.axboe@oracle.com>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH v2 0/7] blktrace: last round of fixes
+Message-ID: <20090330012337.GC11087@elte.hu>
+References: <49CC6691.7050103@cn.fujitsu.com> <20090328224640.GA2465@elte.hu> <49D014F9.8000404@cn.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 30 Mar 2009 01:20:20 +0000 (UTC)
+In-Reply-To: <49D014F9.8000404@cn.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  36edcee82b04a201500529ec1257a303ad002e7d
-Gitweb:     http://git.kernel.org/tip/36edcee82b04a201500529ec1257a303ad002e7d
-Author:     Li Zefan <lizf@cn.fujitsu.com>
-AuthorDate: Fri, 27 Mar 2009 10:21:54 +0800
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Mon, 30 Mar 2009 03:16:32 +0200
 
-blktrace: print out BLK_TN_MESSAGE properly
+* Li Zefan <lizf@cn.fujitsu.com> wrote:
 
-Impact: improve ftrace plugin output
+> Ingo Molnar wrote:
+> > * Li Zefan <lizf@cn.fujitsu.com> wrote:
+> > 
+> >> This is the last round of fixes for blktrace, I hope.  :) 
+> >>
+> >> Changelog v1 -> v2:
+> >>   - fix a bug in "blktrace: make classic output more classic",
+> >>     and rebase other patches.
+> >>   - re-order patches.
+> >>   - a new patch for filtering BLK_TN_MESSAGE
+> >>
+> >> [PATCH v2 1/6] trace: make 'mem' argument of trace_seq_putmem() const
+> >> [PATCH v2 2/6] blktrace: make classic output more classic
+> >> [PATCH v2 3/6] blktrace: fix blk_probes_ref chaos
+> >> [PATCH v2 4/6] blktrace: fix memory leak when freeing struct blk_io_trace
+> >> [PATCH v2 5/6] blktrace: extract duplidate code
+> >> [PATCH v2 6/6] blktrace: print out BLK_TN_MESSAGE properly
+> >> ---
+> >>  blktrace.c     |  188 +++++++++++++++++++++++++++++++++------------------------
+> >>  trace_output.c |    6 -
+> >>  trace_output.h |    5 -
+> >>  3 files changed, 117 insertions(+), 82 deletions(-)
+> > 
+> > Li, Jens - what's your call for v2.6.30, can the blktrace changes go 
+> > upstream or should i zap the whole thing?
+> > 
+> 
+> It should be fine to merge tip/blktrace into .30, and we still 
+> have 2 month to fix remaining bugs, if any.
 
-Before this patch:
+ok.
 
- # cat trace
-         make-5383  [001]   741.240059:   8,7    P   N [make]
- __trace_note_message: cfq1074
+Although regarding instrumentation patches we carry in -tip we aim 
+to enforce perfect stability right at the point of the merge window. 
 
- # echo 1 > options/blk_classic
- # cat trace
-   8,7    1     0.692221252     0  C   W 130411392 + 1024 [0]
- Bad pc action 6361
- Bad pc action 283d
+One major point of instrumentation is to find kernel bugs ... and 
+it's self-defeating if instrumentation is buggy itself! By the time 
+the stable kernel is released the most important kernel bugs are 
+fixed already so having stable instrumentation by that moment is too 
+late.
 
- # echo 0 > options/blk_classic
- # echo bin > trace_options
- # cat trace_pipe | blkparse -i -
- (can't parse messages generated by blk_add_trace_msg())
+So we've got extensive self-tests and other measures in place to 
+ensure stability.
 
-After this patch:
- # cat trace
-      <idle>-0     [001]   187.600933:   8,7    C   W 145220224 + 8 [0]
-      <idle>-0     [001]   187.600946:   8,7    m   N cfq1076 complete
+( The mixed blktrace ioctl/ftrace plugin usage model fell a bit
+  outside of the expectation of these stability tests though, hence
+  this relatively slow and late stabilization curve there. It still 
+  looks all fine for .30 to me too. )
 
- # echo 1 > options/blk_classic
- # cat trace
-   8,7    1     0.256378996   238  I   W 113190728 + 8 [pdflush]
-   8,7    1     0.256378998   238  m   N cfq1076 insert_request
-
- # echo 0 > options/blk_classic
- # echo bin > trace_options
- # cat trace_pipe | blkparse -i -
-  8,7    1        0    22.973250293     0  C   W 102770576 + 8 [0]
-  8,7    1        0    22.973259213     0  m   N cfq1076 complete
-
-Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
-Acked-by: Jens Axboe <jens.axboe@oracle.com>
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>
-LKML-Reference: <49CC3842.60608@cn.fujitsu.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-
----
- kernel/trace/blktrace.c |   80 +++++++++++++++++++++++++++++++++++-----------
- 1 files changed, 61 insertions(+), 19 deletions(-)
-
-diff --git a/kernel/trace/blktrace.c b/kernel/trace/blktrace.c
-index c103b0c..947c5b3 100644
---- a/kernel/trace/blktrace.c
-+++ b/kernel/trace/blktrace.c
-@@ -59,22 +59,39 @@ static void trace_note(struct blk_trace *bt, pid_t pid, int action,
- 		       const void *data, size_t len)
- {
- 	struct blk_io_trace *t;
-+	struct ring_buffer_event *event = NULL;
-+	int pc = 0;
-+	int cpu = smp_processor_id();
-+	bool blk_tracer = blk_tracer_enabled;
-+
-+	if (blk_tracer) {
-+		pc = preempt_count();
-+		event = trace_buffer_lock_reserve(blk_tr, TRACE_BLK,
-+						  sizeof(*t) + len,
-+						  0, pc);
-+		if (!event)
-+			return;
-+		t = ring_buffer_event_data(event);
-+		goto record_it;
-+	}
- 
- 	if (!bt->rchan)
- 		return;
- 
- 	t = relay_reserve(bt->rchan, sizeof(*t) + len);
- 	if (t) {
--		const int cpu = smp_processor_id();
--
- 		t->magic = BLK_IO_TRACE_MAGIC | BLK_IO_TRACE_VERSION;
- 		t->time = ktime_to_ns(ktime_get());
-+record_it:
- 		t->device = bt->dev;
- 		t->action = action;
- 		t->pid = pid;
- 		t->cpu = cpu;
- 		t->pdu_len = len;
- 		memcpy((void *) t + sizeof(*t), data, len);
-+
-+		if (blk_tracer)
-+			trace_buffer_unlock_commit(blk_tr, event, 0, pc);
- 	}
- }
- 
-@@ -110,14 +127,8 @@ void __trace_note_message(struct blk_trace *bt, const char *fmt, ...)
- 	unsigned long flags;
- 	char *buf;
- 
--	if (blk_tracer_enabled) {
--		va_start(args, fmt);
--		ftrace_vprintk(fmt, args);
--		va_end(args);
--		return;
--	}
--
--	if (!bt->msg_data)
-+	if (unlikely(bt->trace_state != Blktrace_running &&
-+		     !blk_tracer_enabled))
- 		return;
- 
- 	local_irq_save(flags);
-@@ -168,9 +179,9 @@ static void __blk_add_trace(struct blk_trace *bt, sector_t sector, int bytes,
- 	unsigned long *sequence;
- 	pid_t pid;
- 	int cpu, pc = 0;
-+	bool blk_tracer = blk_tracer_enabled;
- 
--	if (unlikely(bt->trace_state != Blktrace_running &&
--		     !blk_tracer_enabled))
-+	if (unlikely(bt->trace_state != Blktrace_running && !blk_tracer))
- 		return;
- 
- 	what |= ddir_act[rw & WRITE];
-@@ -185,7 +196,7 @@ static void __blk_add_trace(struct blk_trace *bt, sector_t sector, int bytes,
- 		return;
- 	cpu = raw_smp_processor_id();
- 
--	if (blk_tracer_enabled) {
-+	if (blk_tracer) {
- 		tracing_record_cmdline(current);
- 
- 		pc = preempt_count();
-@@ -235,7 +246,7 @@ record_it:
- 		if (pdu_len)
- 			memcpy((void *) t + sizeof(*t), pdu_data, pdu_len);
- 
--		if (blk_tracer_enabled) {
-+		if (blk_tracer) {
- 			trace_buffer_unlock_commit(blk_tr, event, 0, pc);
- 			return;
- 		}
-@@ -922,6 +933,11 @@ static void fill_rwbs(char *rwbs, const struct blk_io_trace *t)
- 	int i = 0;
- 	int tc = t->action >> BLK_TC_SHIFT;
- 
-+	if (t->action == BLK_TN_MESSAGE) {
-+		rwbs[i++] = 'N';
-+		goto out;
-+	}
-+
- 	if (tc & BLK_TC_DISCARD)
- 		rwbs[i++] = 'D';
- 	else if (tc & BLK_TC_WRITE)
-@@ -939,7 +955,7 @@ static void fill_rwbs(char *rwbs, const struct blk_io_trace *t)
- 		rwbs[i++] = 'S';
- 	if (tc & BLK_TC_META)
- 		rwbs[i++] = 'M';
--
-+out:
- 	rwbs[i] = '\0';
- }
- 
-@@ -1074,6 +1090,17 @@ static int blk_log_split(struct trace_seq *s, const struct trace_entry *ent)
- 				get_pdu_int(ent), cmd);
- }
- 
-+static int blk_log_msg(struct trace_seq *s, const struct trace_entry *ent)
-+{
-+	int ret;
-+	const struct blk_io_trace *t = te_blk_io_trace(ent);
-+
-+	ret = trace_seq_putmem(s, t + 1, t->pdu_len);
-+	if (ret)
-+		return trace_seq_putc(s, '\n');
-+	return ret;
-+}
-+
- /*
-  * struct tracer operations
-  */
-@@ -1146,6 +1173,13 @@ static enum print_line_t print_one_line(struct trace_iterator *iter,
- 	long_act   = !!(trace_flags & TRACE_ITER_VERBOSE);
- 	log_action = classic ? &blk_log_action_classic : &blk_log_action;
- 
-+	if (t->action == BLK_TN_MESSAGE) {
-+		ret = log_action(iter, long_act ? "message" : "m");
-+		if (ret)
-+			ret = blk_log_msg(s, iter->ent);
-+		goto out;
-+	}
-+
- 	if (unlikely(what == 0 || what >= ARRAY_SIZE(what2act)))
- 		ret = trace_seq_printf(s, "Bad pc action %x\n", what);
- 	else {
-@@ -1153,7 +1187,7 @@ static enum print_line_t print_one_line(struct trace_iterator *iter,
- 		if (ret)
- 			ret = what2act[what].print(s, iter->ent);
- 	}
--
-+out:
- 	return ret ? TRACE_TYPE_HANDLED : TRACE_TYPE_PARTIAL_LINE;
- }
- 
-@@ -1253,11 +1287,16 @@ static int blk_trace_remove_queue(struct request_queue *q)
- static int blk_trace_setup_queue(struct request_queue *q, dev_t dev)
- {
- 	struct blk_trace *old_bt, *bt = NULL;
-+	int ret = -ENOMEM;
- 
- 	bt = kzalloc(sizeof(*bt), GFP_KERNEL);
- 	if (!bt)
- 		return -ENOMEM;
- 
-+	bt->msg_data = __alloc_percpu(BLK_TN_MAX_MSG, __alignof__(char));
-+	if (!bt->msg_data)
-+		goto free_bt;
-+
- 	bt->dev = dev;
- 	bt->act_mask = (u16)-1;
- 	bt->end_lba = -1ULL;
-@@ -1265,14 +1304,17 @@ static int blk_trace_setup_queue(struct request_queue *q, dev_t dev)
- 	old_bt = xchg(&q->blk_trace, bt);
- 	if (old_bt != NULL) {
- 		(void)xchg(&q->blk_trace, old_bt);
--		kfree(bt);
--		return -EBUSY;
-+		ret = -EBUSY;
-+		goto free_bt;
- 	}
- 
- 	if (atomic_inc_return(&blk_probes_ref) == 1)
- 		blk_register_tracepoints();
--
- 	return 0;
-+
-+free_bt:
-+	blk_trace_free(bt);
-+	return ret;
- }
- 
- /*
+	Ingo
