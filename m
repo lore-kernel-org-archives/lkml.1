@@ -1,53 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756946AbZC3BZw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757273AbZC3B0s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756946AbZC3BZw (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Mar 2009 21:25:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753021AbZC3BZn
+	id S1757273AbZC3B0s (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Mar 2009 21:26:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753921AbZC3B0j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Mar 2009 21:25:43 -0400
-Received: from serv2.oss.ntt.co.jp ([222.151.198.100]:59946 "EHLO
-	serv2.oss.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751133AbZC3BZn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Mar 2009 21:25:43 -0400
-Message-ID: <49D01F94.6000101@oss.ntt.co.jp>
-Date: Mon, 30 Mar 2009 10:25:40 +0900
-From: =?ISO-8859-1?Q?Fernando_Luis_V=E1zquez_Cao?= 
-	<fernando@oss.ntt.co.jp>
-User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
+	Sun, 29 Mar 2009 21:26:39 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:41603 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753557AbZC3B0i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Mar 2009 21:26:38 -0400
+Date: Mon, 30 Mar 2009 03:22:04 +0200
+From: Oleg Nesterov <oleg@redhat.com>
+To: Markus Metzger <markus.t.metzger@googlemail.com>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       "Metzger, Markus T" <markus.t.metzger@intel.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "tglx@linutronix.de" <tglx@linutronix.de>,
+       "hpa@zytor.com" <hpa@zytor.com>,
+       "roland@redhat.com" <roland@redhat.com>,
+       "eranian@googlemail.com" <eranian@googlemail.com>,
+       "Villacis, Juan" <juan.villacis@intel.com>,
+       "ak@linux.jf.intel.com" <ak@linux.jf.intel.com>
+Subject: Re: [patch 3/14] x86, ptrace, bts: stop bts tracing early in
+	do_exit
+Message-ID: <20090330012204.GA2058@redhat.com>
+References: <20090327095525.A11052@sedona.ch.intel.com> <20090327143435.GD14504@redhat.com> <928CFBE8E7CB0040959E56B4EA41A77E9266B6D4@irsmsx504.ger.corp.intel.com> <20090327172413.GC25762@redhat.com> <1238239912.6036.0.camel@raistlin>
 MIME-Version: 1.0
-To: Christoph Hellwig <hch@infradead.org>
-CC: Jeff Garzik <jeff@garzik.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Theodore Tso <tytso@mit.edu>, Ingo Molnar <mingo@elte.hu>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Nick Piggin <npiggin@suse.de>,
-       David Rees <drees76@gmail.com>, Jesper Krogh <jesper@krogh.cc>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] issue storage dev flush from generic file_fsync helper
-References: <alpine.LFD.2.00.0903241218130.3032@localhost.localdomain> <49C93AB0.6070300@garzik.org> <20090325093913.GJ27476@kernel.dk> <49CA86BD.6060205@garzik.org> <20090325194341.GB27476@kernel.dk> <49CA9346.6040108@garzik.org> <alpine.LFD.2.00.0903251337410.3032@localhost.localdomain> <20090325212923.GA5620@havoc.gtf.org> <20090326032445.GA16999@havoc.gtf.org> <20090327205046.GA2036@havoc.gtf.org> <20090329082507.GA4242@infradead.org>
-In-Reply-To: <20090329082507.GA4242@infradead.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1238239912.6036.0.camel@raistlin>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Hellwig wrote:
-> Looks good except that we still need a tuning know for it.  Preferably
-> one that works for these filesystems and all the existing barrier using
-> ones.
+On 03/28, Markus Metzger wrote:
+>
+> ds_release_bts(struct bts_tracer *tracer)
+> {
+> 	struct task_struct *task =
+> 		tracer->ds.context->task;
+>
+> 	do {
+> 		set_task_state(task, TASK_UNINTERRUPTIBLE);
 
-Christoph, I reworked my previous fsync() patches so that what was a 
-mount option to trigger a storage device writeback cache flush becomes a 
-sysfs knob.
+Oh, this is not right,
 
-I still need to add support for automatic detection of underlying 
-device's flushing capabilities but first I would like to know if you 
-agree with the general approach.
+> 	while (!wait_task_inactive(task, TASK_UNINTERRUPTIBLE));
 
-I'll be replying to this email with the new patches.
+and can't help to wait_task_inactive(). Again, unless this task
+does a blocking call wait_task_inactive() can't force this task
+to be deactivated. Even we set TASK_UNINTERRUPTIBLE.
 
-- Fernando
+> 	ds_suspend_bts(tracer);
+> 	ds_free_bts(tracer);
+>
+> 	wake_up_process(task);
+
+makes it TASK_RUNNING. This can't restores the proper ->state
+if it was not running (say, TASK_STOPPED).
+
+> }
+>
+> I guess it would not work in general, since task could already sleep
+> on some event and be woken up after the do loop.
+
+This too,
+
+> I was thinking it might work for the exit race, since we don't sleep
+> during exit,
+
+We do. In the context of bts problems, we don't care if the task sleeps
+after _free_tracee(). But this task can have tracees too, it can in turn
+sleep in wait_task_inactive().
+
+> Isn't this a general problem for ptrace?
+>
+> Ptrace uses a similar pattern in ptrace_check_attach().
+> It stops the traced task, but that task might wake up immediately after
+> that check. It might be scheduled in any time during a ptrace operation.
+
+Yes. ptrace() can assume the tracee is TASK_TRACED, or it is dying/dead.
+
+If you need to make sure it is still traced, you can re-check ->state
+under ->siglock. Until you drop this lock, the tracee (if still traced)
+can't escape from ptrace_stop/do_signal_stop, even if scheduled.
+
+Oleg.
+
