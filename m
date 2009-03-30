@@ -1,57 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754951AbZC3OcN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755442AbZC3Ofd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754951AbZC3OcN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Mar 2009 10:32:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755303AbZC3Obf
+	id S1755442AbZC3Ofd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Mar 2009 10:35:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752269AbZC3OfV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Mar 2009 10:31:35 -0400
-Received: from mga09.intel.com ([134.134.136.24]:28343 "EHLO mga09.intel.com"
+	Mon, 30 Mar 2009 10:35:21 -0400
+Received: from THUNK.ORG ([69.25.196.29]:35876 "EHLO thunker.thunk.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755271AbZC3Obd convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Mar 2009 10:31:33 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.38,446,1233561600"; 
-   d="scan'208";a="398693722"
-From: "Sosnowski, Maciej" <maciej.sosnowski@intel.com>
-To: "Williams, Dan J" <dan.j.williams@intel.com>
-CC: "neilb@suse.de" <neilb@suse.de>,
-       "linux-raid@vger.kernel.org" <linux-raid@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Date: Mon, 30 Mar 2009 15:30:47 +0100
-Subject: RE: [PATCH 09/13] iop-adma: P+Q self test
-Thread-Topic: [PATCH 09/13] iop-adma: P+Q self test
-Thread-Index: Acmn/q96QOHNHb0bS26TUmzqyCm34wJNNWRA
-Message-ID: <129600E5E5FB004392DDC3FB599660D790F8BF26@irsmsx504.ger.corp.intel.com>
-References: <20090318191248.20375.40560.stgit@dwillia2-linux.ch.intel.com>
- <20090318192102.20375.36540.stgit@dwillia2-linux.ch.intel.com>
-In-Reply-To: <20090318192102.20375.36540.stgit@dwillia2-linux.ch.intel.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	id S1752150AbZC3OfU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Mar 2009 10:35:20 -0400
+Date: Mon, 30 Mar 2009 10:33:43 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Chris Mason <chris.mason@oracle.com>
+Cc: Fernando Luis =?iso-8859-1?Q?V=E1zquez?= Cao 
+	<fernando@oss.ntt.co.jp>,
+       Jeff Garzik <jeff@garzik.org>, Christoph Hellwig <hch@infradead.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Nick Piggin <npiggin@suse.de>,
+       David Rees <drees76@gmail.com>, Jesper Krogh <jesper@krogh.cc>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       david@fromorbit.com, tj@kernel.org
+Subject: Re: [PATCH 2/7] ext3: call blkdev_issue_flush() on fsync()
+Message-ID: <20090330143343.GJ13356@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Chris Mason <chris.mason@oracle.com>,
+	Fernando Luis =?iso-8859-1?Q?V=E1zquez?= Cao <fernando@oss.ntt.co.jp>,
+	Jeff Garzik <jeff@garzik.org>,
+	Christoph Hellwig <hch@infradead.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+	Arjan van de Ven <arjan@infradead.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Peter Zijlstra <a.p.zijlstra@chello.nl>,
+	Nick Piggin <npiggin@suse.de>, David Rees <drees76@gmail.com>,
+	Jesper Krogh <jesper@krogh.cc>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	david@fromorbit.com, tj@kernel.org
+References: <20090327205046.GA2036@havoc.gtf.org> <20090329082507.GA4242@infradead.org> <49D01F94.6000101@oss.ntt.co.jp> <49D02328.7060108@oss.ntt.co.jp> <49D0258A.9020306@garzik.org> <49D03377.1040909@oss.ntt.co.jp> <49D0B535.2010106@oss.ntt.co.jp> <49D0B70E.8060506@oss.ntt.co.jp> <20090330140427.GG13356@mit.edu> <1238422551.30488.47.camel@think.oraclecorp.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1238422551.30488.47.camel@think.oraclecorp.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Williams, Dan J wrote:
-> +	cookie = iop_adma_tx_submit(tx);
-> +	iop_adma_issue_pending(dma_chan);
-> +	msleep(8);
+On Mon, Mar 30, 2009 at 10:15:51AM -0400, Chris Mason wrote:
+> 
+> I'm not sure we want to stick Fernando with changing how barriers are
+> done in individual filesystems, his patch is just changing the existing
+> call points.
 
-Why sleeping exactly 8 ms?
-Has this value been somehow experiomentally obtained?
-How about introducing wait_for_completion, just like it is in ioatdma now?
+Well, his patch actually added some calls to block_issue_flush().  But
+yes, it's probably better if he just changes the existing call points,
+and we can have the relevant filesystem maintainers double check to
+make sure that there aren't any new call points which are needed.
 
-General remark:
-Both iop_adma_pq_zero_sum_self_test() and iop_adma_xor_zero_sum_self_test()
-are quite long and they consist of series of subsequent similar tests.
-I guess the code would be easier to read if every test was a separate function
-called from iop_adma_XX_zero_sum_self_test().
+> The ext34 code is especially tricky because there's no way to tell if a
+> commit was actually done by sync_inode, so there's no way to know if an
+> extra flush is really required.
 
-Regards,
-Maciej
+Yes, good point.  What we need to do is to save inode->i_state
+*before* the call to sync_inode(), and issue the flush if the original
+value of (inode->i_state & I_DIRTY) == I_DIRTY_PAGES.  But yeah,
+that's tricky.
+
+> I think we'll be better off if he keeps the existing logic and a
+> different patch set is made for tuning the ext3 and ext4 code.
+
+Agreed.
+
+						- Ted
