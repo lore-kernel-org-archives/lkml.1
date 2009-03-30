@@ -1,125 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755878AbZC3MHg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756726AbZC3MIY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755878AbZC3MHg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Mar 2009 08:07:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751252AbZC3MHX
+	id S1756726AbZC3MIY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Mar 2009 08:08:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751433AbZC3MIM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Mar 2009 08:07:23 -0400
-Received: from hera.kernel.org ([140.211.167.34]:33958 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751782AbZC3MHV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Mar 2009 08:07:21 -0400
-Date: Mon, 30 Mar 2009 12:06:41 GMT
-From: Ingo Molnar <mingo@elte.hu>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       tglx@linutronix.de, hpa@linux.intel.com, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       tglx@linutronix.de, hpa@linux.intel.com, mingo@elte.hu
-In-Reply-To: <tip-56aea8468746e673a4bf50b6a13d97b2d1cbe1e8@git.kernel.org>
-References: <tip-56aea8468746e673a4bf50b6a13d97b2d1cbe1e8@git.kernel.org>
-Subject: [tip:x86/mm] x86/mm: further cleanups of fault.c's include file section
-Message-ID: <tip-a2bcd4731f77cb77ae4b5e4a3d7f5471cf346c33@git.kernel.org>
-Git-Commit-ID: a2bcd4731f77cb77ae4b5e4a3d7f5471cf346c33
-X-Mailer: tip-git-log-daemon
+	Mon, 30 Mar 2009 08:08:12 -0400
+Received: from stinky.trash.net ([213.144.137.162]:59440 "EHLO
+	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752165AbZC3MIL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Mar 2009 08:08:11 -0400
+Message-ID: <49D0B628.5000501@trash.net>
+Date: Mon, 30 Mar 2009 14:08:08 +0200
+From: Patrick McHardy <kaber@trash.net>
+User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 30 Mar 2009 12:06:42 +0000 (UTC)
+To: Roman Mindalev <r000n@r000n.net>
+CC: Eric Dumazet <dada1@cosmosbay.com>,
+       Stephen Hemminger <shemminger@vyatta.com>,
+       LKML <linux-kernel@vger.kernel.org>, netfilter@vger.kernel.org,
+       "David S. Miller" <davem@davemloft.net>
+Subject: Re: Regression caused by commit "netfilter: iptables: lock free counters"
+References: <20090329234702.4988017f@desktop.r000n.info>	<49D075A3.1050202@cosmosbay.com> <20090330145031.2dfd854e@desktop.r000n.info>
+In-Reply-To: <20090330145031.2dfd854e@desktop.r000n.info>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  a2bcd4731f77cb77ae4b5e4a3d7f5471cf346c33
-Gitweb:     http://git.kernel.org/tip/a2bcd4731f77cb77ae4b5e4a3d7f5471cf346c33
-Author:     Ingo Molnar <mingo@elte.hu>
-AuthorDate: Sun, 29 Mar 2009 23:47:48 +0200
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Mon, 30 Mar 2009 14:02:02 +0200
+Roman Mindalev wrote:
+> On Mon, 30 Mar 2009 09:32:51 +0200
+> Eric Dumazet <dada1@cosmosbay.com> wrote:
+> 
+>> Could you try following patch ?
+>>
+>> [PATCH] netfilter: use rcu_read_bh() in ipt_do_table()
+>>
+>> Commit 784544739a25c30637397ace5489eeb6e15d7d49
+>> (netfilter: iptables: lock free counters) forgot to disable BH
+>> in arpt_do_table(), ipt_do_table() and  ip6t_do_table()
+>>
+>> Use rcu_read_lock_bh() instead of rcu_read_lock() cures the problem.
+>>
+>> Reported-and-bisected-by: Roman Mindalev <r000n@r000n.net>
+>> Signed-off-by: Eric Dumazet <dada1@cosmosbay.com>
+>> ---
+> 
+> 2.6.29-git4 and 2.6.29-git6 both works fine for me with this patch. 
+> Thanks, Eric!
 
-x86/mm: further cleanups of fault.c's include file section
+Thanks indeed Eric :) Dave, please apply.
 
-Impact: cleanup
-
-Eliminate more than 20 unnecessary #include lines in fault.c
-
-Also fix include file dependency bug in asm/traps.h. (this was
-masked before, by implicit inclusion)
-
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-LKML-Reference: <tip-56aea8468746e673a4bf50b6a13d97b2d1cbe1e8@git.kernel.org>
-Acked-by: H. Peter Anvin <hpa@linux.intel.com>
+Acked-by: Patrick McHardy <kaber@trash.net>
 
 
----
- arch/x86/include/asm/traps.h |    1 +
- arch/x86/mm/fault.c          |   42 +++++++++---------------------------------
- 2 files changed, 10 insertions(+), 33 deletions(-)
-
-diff --git a/arch/x86/include/asm/traps.h b/arch/x86/include/asm/traps.h
-index 0d53425..37fb07a 100644
---- a/arch/x86/include/asm/traps.h
-+++ b/arch/x86/include/asm/traps.h
-@@ -2,6 +2,7 @@
- #define _ASM_X86_TRAPS_H
- 
- #include <asm/debugreg.h>
-+#include <asm/siginfo.h>			/* TRAP_TRACE, ... */
- 
- #ifdef CONFIG_X86_32
- #define dotraplinkage
-diff --git a/arch/x86/mm/fault.c b/arch/x86/mm/fault.c
-index a03b727..24a36a6 100644
---- a/arch/x86/mm/fault.c
-+++ b/arch/x86/mm/fault.c
-@@ -3,40 +3,16 @@
-  *  Copyright (C) 2001, 2002 Andi Kleen, SuSE Labs.
-  *  Copyright (C) 2008-2009, Red Hat Inc., Ingo Molnar
-  */
--#include <linux/interrupt.h>
--#include <linux/mmiotrace.h>
--#include <linux/bootmem.h>
--#include <linux/compiler.h>
--#include <linux/highmem.h>
--#include <linux/kprobes.h>
--#include <linux/uaccess.h>
--#include <linux/vmalloc.h>
--#include <linux/vt_kern.h>
--#include <linux/signal.h>
--#include <linux/kernel.h>
--#include <linux/ptrace.h>
--#include <linux/string.h>
--#include <linux/module.h>
--#include <linux/kdebug.h>
--#include <linux/errno.h>
--#include <linux/magic.h>
--#include <linux/sched.h>
--#include <linux/types.h>
--#include <linux/init.h>
--#include <linux/mman.h>
--#include <linux/tty.h>
--#include <linux/smp.h>
--#include <linux/mm.h>
--
--#include <asm-generic/sections.h>
--
--#include <asm/tlbflush.h>
--#include <asm/pgalloc.h>
--#include <asm/segment.h>
--#include <asm/system.h>
--#include <asm/proto.h>
--#include <asm/traps.h>
--#include <asm/desc.h>
-+#include <linux/magic.h>		/* STACK_END_MAGIC		*/
-+#include <linux/sched.h>		/* test_thread_flag(), ...	*/
-+#include <linux/kdebug.h>		/* oops_begin/end, ...		*/
-+#include <linux/module.h>		/* search_exception_table	*/
-+#include <linux/bootmem.h>		/* max_low_pfn			*/
-+#include <linux/kprobes.h>		/* __kprobes, ...		*/
-+#include <linux/mmiotrace.h>		/* kmmio_handler, ...		*/
-+
-+#include <asm/traps.h>			/* dotraplinkage, ...		*/
-+#include <asm/pgalloc.h>		/* pgd_*(), ...			*/
- 
- /*
-  * Page fault error code bits:
