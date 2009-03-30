@@ -1,44 +1,32 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755704AbZC3RoR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755260AbZC3Rqa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755704AbZC3RoR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Mar 2009 13:44:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753265AbZC3RoF
+	id S1755260AbZC3Rqa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Mar 2009 13:46:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754401AbZC3RqT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Mar 2009 13:44:05 -0400
-Received: from THUNK.ORG ([69.25.196.29]:49926 "EHLO thunker.thunk.org"
+	Mon, 30 Mar 2009 13:46:19 -0400
+Received: from THUNK.ORG ([69.25.196.29]:49939 "EHLO thunker.thunk.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751616AbZC3RoE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Mar 2009 13:44:04 -0400
-Date: Mon, 30 Mar 2009 13:42:07 -0400
+	id S1753550AbZC3RqR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Mar 2009 13:46:17 -0400
+Date: Mon, 30 Mar 2009 13:46:07 -0400
 From: Theodore Tso <tytso@mit.edu>
 To: Chris Mason <chris.mason@oracle.com>
-Cc: Dave Chinner <david@fromorbit.com>, Mark Lord <lkml@rtr.ca>,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Jeff Garzik <jeff@garzik.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Matthew Garrett <mjg59@srcf.ucam.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Rees <drees76@gmail.com>, Jesper Krogh <jesper@krogh.cc>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.29
-Message-ID: <20090330174207.GQ13356@mit.edu>
+Cc: Eric Sandeen <sandeen@redhat.com>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] ext4: fix blkdev_issue_flush() failure handling
+Message-ID: <20090330174607.GR13356@mit.edu>
 Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
 	Chris Mason <chris.mason@oracle.com>,
-	Dave Chinner <david@fromorbit.com>, Mark Lord <lkml@rtr.ca>,
-	Stefan Richter <stefanr@s5r6.in-berlin.de>,
-	Jeff Garzik <jeff@garzik.org>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Matthew Garrett <mjg59@srcf.ucam.org>,
-	Alan Cox <alan@lxorguk.ukuu.org.uk>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	David Rees <drees76@gmail.com>, Jesper Krogh <jesper@krogh.cc>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <alpine.LFD.2.00.0903271522210.3994@localhost.localdomain> <49CD7B10.7010601@garzik.org> <49CD891A.7030103@rtr.ca> <49CD9047.4060500@garzik.org> <49CE2633.2000903@s5r6.in-berlin.de> <49CE3186.8090903@garzik.org> <49CE35AE.1080702@s5r6.in-berlin.de> <49CE3F74.6090103@rtr.ca> <20090329231451.GR26138@disturbed> <1238417751.30488.12.camel@think.oraclecorp.com>
+	Eric Sandeen <sandeen@redhat.com>,
+	Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+	linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <200903291928.14451.bzolnier@gmail.com> <49CFB33A.9020406@redhat.com> <20090330022521.GB13356@mit.edu> <49D03AE1.8070009@redhat.com> <1238413667.30488.2.camel@think.oraclecorp.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1238417751.30488.12.camel@think.oraclecorp.com>
+In-Reply-To: <1238413667.30488.2.camel@think.oraclecorp.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-SA-Exim-Connect-IP: <locally generated>
 X-SA-Exim-Mail-From: tytso@mit.edu
@@ -47,24 +35,18 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 30, 2009 at 08:55:51AM -0400, Chris Mason wrote:
-> Sorry, I'm afraid that rsync falls into the same category as the
-> kde/gnome apps here.
+On Mon, Mar 30, 2009 at 07:47:47AM -0400, Chris Mason wrote:
+> > Yes, it was.  Although I got the idea when hch pointed out that SuSE did
+> > this... thanks to Chris.  It's come full circle.  :)
 > 
-> There are a lot of backup programs built around rsync, and every one of
-> them risks losing the old copy of the file by renaming an unflushed new
-> copy over it.
-> 
-> rsync needs the flushing about a million times more than gnome and kde,
-> and it doesn't have any option to do it automatically.  It does have the
-> option to create backups, which is how a percentage of people are using
-> it, but I wouldn't call its current setup safe outside of ext3.
+> Grin.  I'm not sure the I_DIRTY checks alone are enough to decide that a
+> commit is required though.  I think the inode could be clean but still
+> have metadata that needs commit.
 
-I wouldn't make it to be the default, but as an option, if the backup
-script would take responsibility for restarting rsync if the server
-crashes, and if the rsync process executes a global sync(2) call when
-it is complete, an option to make rsync delete the target file before
-doing the rename to defeat the replace-via-rename hueristic could be
-justifiable.
+So to close this hole, I think what we can do is to track the last
+transaction id where ext4_do_update_inode() was called, and if that
+transaction id == the currently running transaction id, then we need
+to call ext4_force_commit() even though the inode is clean.  I think
+that should fix up the race that you're concerned about.
 
-						- Ted
+     	    	       	    	 		  - Ted
