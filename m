@@ -1,87 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756237AbZC3Pdp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756393AbZC3Ped@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756237AbZC3Pdp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Mar 2009 11:33:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753546AbZC3Pdf
+	id S1756393AbZC3Ped (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Mar 2009 11:34:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752306AbZC3PeV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Mar 2009 11:33:35 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:54170 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753551AbZC3Pde (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Mar 2009 11:33:34 -0400
-Message-ID: <49D0E4E8.20508@redhat.com>
-Date: Mon, 30 Mar 2009 11:27:36 -0400
-From: Ric Wheeler <rwheeler@redhat.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
-MIME-Version: 1.0
-To: Mark Lord <lkml@rtr.ca>, Chris Mason <chris.mason@oracle.com>
-CC: "Andreas T.Auer" <andreas.t.auer_lkml_73537@ursus.ath.cx>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Theodore Tso <tytso@mit.edu>,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Jeff Garzik <jeff@garzik.org>,
+	Mon, 30 Mar 2009 11:34:21 -0400
+Received: from extu-mxob-2.symantec.com ([216.10.194.135]:37126 "EHLO
+	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753443AbZC3PeU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Mar 2009 11:34:20 -0400
+Date: Mon, 30 Mar 2009 15:32:35 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.anvils
+To: Al Viro <viro@ZenIV.linux.org.uk>
+cc: Oleg Nesterov <oleg@redhat.com>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       Matthew Garrett <mjg59@srcf.ucam.org>,
        Andrew Morton <akpm@linux-foundation.org>,
-       David Rees <drees76@gmail.com>, Jesper Krogh <jesper@krogh.cc>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.29
-References: <alpine.LFD.2.00.0903271511230.3994@localhost.localdomain>	<alpine.LFD.2.00.0903271522210.3994@localhost.localdomain>	<49CD7B10.7010601@garzik.org>	<49CD891A.7030103@rtr.ca>	<49CD9047.4060500@garzik.org>	<49CE2633.2000903@s5r6.in-berlin.de>	<49CE3186.8090903@garzik.org>	<49CE35AE.1080702@s5r6.in-berlin.de>	<49CE3F74.6090103@rtr.ca>	<20090329231451.GR26138@disturbed>	<20090330003948.GA13356@mit.edu>	<49D0710A.1030805@ursus.ath.cx> <20090330100546.51907bd2@the-village.bc.nu> <49D0A3D6.4000300@ursus.ath.cx> <49D0AA4A.6020308@redhat.com> <49D0CDBA.7040702@rtr.ca> <49D0D08E.3090100@redhat.com> <49D0DAD3.6030507@rtr.ca> <49D0DDFE.5080701@redhat.com> <49D0E35E.9080003@rtr.ca>
-In-Reply-To: <49D0E35E.9080003@rtr.ca>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+       Joe Malicki <jmalicki@metacarta.com>, Michael Itz <mitz@metacarta.com>,
+       Kenneth Baker <bakerk@metacarta.com>,
+       Chris Wright <chrisw@sous-sol.org>, David Howells <dhowells@redhat.com>,
+       Alexey Dobriyan <adobriyan@gmail.com>,
+       Greg Kroah-Hartman <gregkh@suse.de>, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: Q: check_unsafe_exec() races (Was: [PATCH 2/4] fix setuid
+ sometimes doesn't)
+In-Reply-To: <20090330123101.GQ28946@ZenIV.linux.org.uk>
+Message-ID: <Pine.LNX.4.64.0903301506310.11454@blonde.anvils>
+References: <20090329055513.GH28946@ZenIV.linux.org.uk>
+ <20090329060118.GI28946@ZenIV.linux.org.uk> <20090329213635.GA21820@redhat.com>
+ <20090329222022.GJ28946@ZenIV.linux.org.uk> <20090329235639.GA32199@redhat.com>
+ <20090330000338.GB32199@redhat.com> <20090330010843.GM28946@ZenIV.linux.org.uk>
+ <20090330011303.GN28946@ZenIV.linux.org.uk> <20090330013612.GA4080@redhat.com>
+ <20090330014040.GA4807@redhat.com> <20090330123101.GQ28946@ZenIV.linux.org.uk>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mark Lord wrote:
-> Ric Wheeler wrote:
->>
->> I am confused as to why you think that barriers (flush barriers 
->> specifically) are not equivalent to drive write cache. We disable 
->> barriers when the write cache is off, use them only to insure that our 
->> ordering for fs transactions survives any power loss. No one should be 
->> enabling barriers on linux file systems if your write cache is 
->> disabled or if you have a battery backed write cache (say on an 
->> enterprise class disk array).
->>
->> Chris' test of barriers (with write cache enabled) did show for 
->> desktop class boxes that you would get file system corruption (i.e., 
->> need to fsck the disk) a huge percentage of the time.
-> ..
-> 
-> Sure, no doubt there.  But it's due to the kernel crash,
-> not due to the write cache on the drive.
-> 
-> Anything in the drive's write cache very probably made it to the media
-> within a second or two of arriving there.
+On Mon, 30 Mar 2009, Al Viro wrote:
+> On Mon, Mar 30, 2009 at 03:40:40AM +0200, Oleg Nesterov wrote:
 
-A modern S-ATA drive has up to 32MB of write cache. If you lose power or suffer 
-a sudden reboot (that can reset the bus at least), I am pretty sure that your 
-above assumption is simply not true.
+Well done, Oleg, for finding this: I wish I'd Cc'ed you earlier.
+Shortly before posting my patches, I got very worried by n_fs in
+check_unsafe_exec; then fooled myself into thinking it was okay.
 
 > 
-> So with or without a write cache, the same result should happen
-> for those tests.  Of course, if you disable barriers *and* write cache,
-> then you are no longer testing the same kernel code.
-
-Here, I still disagree. All of the test that we have done have shown that write 
-cache enabled/barriers off will provably result in fs corruption.
-
-It would be great to have Chris revise his earlier barrier/corruption test to 
-validate your assumption (not the test that he posted recently).
-
+> > > We can't proceed. If that another exec() fails, it will clear "under exec" at
+> > > the end of do_execve(), before we kill other threads.
+> > 
+> > Or we need a counter to mark/unmark.
 > 
-> I'm not arguing against battery backup or UPSs,
-> or *for* blindly trusting write caches without reliable power.
+> Nah, easier to have check_unsafe_exec() return -EAGAIN in cases we care
+> about.
 > 
-> Just pointing out that they're not the evil that some folks
-> seem to believe they are.
+> Anyway, completely untested patchset is in
+> git.kernel.org/pub/scm/linux/kernel/git/viro/vfs-2.6.git/ execve-mess
+> (the last 9 changesets of it).
 > 
-> Cheers
+> WARNING: that's *NOT* for merge at the moment; this is not a pull request.
+> 
+> Review (and testing) would be welcome.
+> 
+> Shortlog of execve-related part:
+> Al Viro (6):
+>       Take fs_struct handling to new file (fs/fs_struct.c), sanitize chroot_fs_refs()
+>       New helper - current_umask()
+>       Get rid of indirect include of fs_struct.h
+>       Kill unsharing fs_struct in __set_personality()
+>       New locking/refcounting for fs_struct
+>       check_unsafe_exec() doesn't care about signal handlers sharing
+> 
+> Hugh Dickins (3):
+>       Don't bump fs_struct refcount for procfs accesses
+>       compat_do_execve should unshare_files
+>       fix setuid sometimes doesn't - files_struct
 
-I run with write cache and barriers enabled routinely, but would not run without 
-working barriers on any desktop box when the drives have write cache enabled 
-having spent too many hours watching fsck churn :-)
+I'm looking now.  Your description of what you intended sounded good.
 
-ric
+First impression is that there's lots of good cleanup in there, but
+it's all too mixed up and misordered at present - though we have friends
+who insist upon doing the cleanup first (and I usually like to work that
+way too), it's going to be tiresome when backporting to 2.6.29.stable
+(luckily not needed earlier, unless you've uncovered more on the way).
 
+Note that Linus put the four patches I posted straight into his tree,
+so I think you'll want to be working on top of those, whereas you've
+currently got them mixed in and modified in your tree.
+
+So, setting aside what's already in, and what's just cleanup, I think
+it's just 8c6934e2603283d028ac2292fe8d2812f52f23d3 I should be looking
+at, New locking/refcounting for fs_struct - it'd be good for stable if
+you worked on just that one to go in on top of Linus's current tree.
+
+One of the cleanups, the one which introduces fs/fs_struct.c,
+includes a good-looking but significant change to chroot_fs_refs().
+Better make that a separate patch, I couldn't quite tell if it was
+something I'd seriously missed from the "setuid sometimes doesn't"
+set or not (my belief: yes, I missed it, and it's a good addition;
+but frankly, we don't much care what happens if setuid sometimes
+gets turned off if a parallel thread about to be killed happens
+to be chrooting at the time - that's a much less worrying issue
+than what can happen via /proc).
+
+I think your new chroot_fs_refs() should have a path_get(new_root)
+just before each path_put(old_root)?
+
+Hugh
