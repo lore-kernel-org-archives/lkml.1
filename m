@@ -1,56 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761259AbZC3UgH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761338AbZC3Ugs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761259AbZC3UgH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Mar 2009 16:36:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760481AbZC3Ufr
+	id S1761338AbZC3Ugs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Mar 2009 16:36:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757543AbZC3Ugi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Mar 2009 16:35:47 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:52991 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761267AbZC3Ufr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Mar 2009 16:35:47 -0400
-Message-ID: <49D12CD9.2030507@garzik.org>
-Date: Mon, 30 Mar 2009 16:34:33 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Mon, 30 Mar 2009 16:36:38 -0400
+Received: from mx3.schottelius.org ([77.109.138.221]:52612 "EHLO
+	mx3.schottelius.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753914AbZC3Ugh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Mar 2009 16:36:37 -0400
+Date: Mon, 30 Mar 2009 22:36:19 +0200
+From: Nico Schottelius <nico-linux-20090330@schottelius.org>
+To: LKML <linux-kernel@vger.kernel.org>
+Subject: Reports about latest tested kernel versions
+Message-ID: <20090330203619.GA5106@denkbrett.schottelius.org>
+Mail-Followup-To: Nico Schottelius <nico-linux-20090330@schottelius.org>,
+	LKML <linux-kernel@vger.kernel.org>
 MIME-Version: 1.0
-To: Michael Tokarev <mjt@tls.msk.ru>
-CC: Rik van Riel <riel@redhat.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ric Wheeler <rwheeler@redhat.com>,
-       "Andreas T.Auer" <andreas.t.auer_lkml_73537@ursus.ath.cx>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Theodore Tso <tytso@mit.edu>,
-       Mark Lord <lkml@rtr.ca>, Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Matthew Garrett <mjg59@srcf.ucam.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Rees <drees76@gmail.com>, Jesper Krogh <jesper@krogh.cc>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.29
-References: <alpine.LFD.2.00.0903271511230.3994@localhost.localdomain> <alpine.LFD.2.00.0903271522210.3994@localhost.localdomain> <49CD7B10.7010601@garzik.org> <49CD891A.7030103@rtr.ca> <49CD9047.4060500@garzik.org> <49CE2633.2000903@s5r6.in-berlin.de> <49CE3186.8090903@garzik.org> <49CE35AE.1080702@s5r6.in-berlin.de> <49CE3F74.6090103@rtr.ca> <20090329231451.GR26138@disturbed> <20090330003948.GA13356@mit.edu> <49D0710A.1030805@ursus.ath.cx> <20090330100546.51907bd2@the-village.bc.nu> <49D0A3D6.4000300@ursus.ath.cx> <49D0AA4A.6020308@redhat.com> <alpine.LFD.2.00.0903300817400.3948@localhost.localdomain> <49D0EF1E.9040806@redhat.com> <alpine.LFD.2.00.0903300922231.3948@localhost.localdomain> <49D0FD4C.1010007@redhat.com> <alpine.LFD.2.00.0903301038100.3948@localhost.localdomain> <49D11BDD.70702@redhat.com> <49D1206E.7090809@garzik.org> <49D129B4.1060503@msgid.tls.msk.ru>
-In-Reply-To: <49D129B4.1060503@msgid.tls.msk.ru>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="a8Wt8u1KmwUX3Y2C"
+Content-Disposition: inline
+User-Agent: echo $message | gpg -e $sender  -s | netcat mailhost 25
+X-Unix-Info: http://unix.schottelius.org/
+X-Netzseite: http://nico.schottelius.org/
+X-System-Info: ikn (Linux 2.6.29-wl-36116-g6a982a0 x86_64)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Michael Tokarev wrote:
-> In the SATA world, I've seen no single case.  Seagate (7200.9..7200.11,
-> Barracuda ES and ES2), WD (Caviar CE, Caviar Black, Caviar Green,
-> RE2 GP), Hitachi DeskStar and UltraStar (old and new), some others --
-> all the same, no DPO or FUA.
 
-If your drive supports NCQ, it is highly likely it supports FUA.
+--a8Wt8u1KmwUX3Y2C
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-By default, the libata driver _pretends_ your drive does not support FUA.
+Hello developers, hackers,
 
-grep the kernel source for libata_fua and check out the module parameter 
-'fua'
+as announced before, I'm collecting working (as in: boots and
+is usable for normal usage) kernel configurations [0].
 
-	Jeff
+I'm regulary testing latest kernels in different trees and
+reporting success of failure.
+
+As I'm quite often manually reporting about (non-)working
+kernel versions I thought about reporting it automatically
+via the git post-receive hook (like [1]).
+
+I'm wondering whether that would be some usefull or useless
+information for you?
+
+Sincerly,
+
+Nico
 
 
+[0]:
+  http://git.schottelius.org/configs/linux/
+  git://git.schottelius.org/configs/linux/=20
+  http://git.schottelius.org/?p=3Dconfigs/linux;a=3Dsummary
 
+[1]:
+  http://l.schottelius.org/mailman/listinfo/commits
+
+--=20
+Think about Free and Open Source Software (FOSS).
+http://nico.schottelius.org/documentations/foss/the-term-foss/
+
+PGP: BFE4 C736 ABE5 406F 8F42  F7CF B8BE F92A 9885 188C
+
+--a8Wt8u1KmwUX3Y2C
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAknRLUMACgkQuL75KpiFGIw7MwCgrRreYHxJaX8+22u5QMV4ePuB
+jwMAn1MdxE9W48mJuOQJFHgx2OUGB+5Y
+=qO44
+-----END PGP SIGNATURE-----
+
+--a8Wt8u1KmwUX3Y2C--
