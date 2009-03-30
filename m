@@ -1,100 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755186AbZC3InW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756214AbZC3Inn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755186AbZC3InW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Mar 2009 04:43:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753198AbZC3InK
+	id S1756214AbZC3Inn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Mar 2009 04:43:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754482AbZC3In1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Mar 2009 04:43:10 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:9340 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752323AbZC3InJ (ORCPT
+	Mon, 30 Mar 2009 04:43:27 -0400
+Received: from ti-out-0910.google.com ([209.85.142.190]:14916 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755039AbZC3InZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Mar 2009 04:43:09 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=BAcLGvOIgBLBPZ7Rcvh0UaZEjE/oOcB/cbfnnJiU/uiKqtX8GIrB9yisv2oLXT5vL
-	cpVPAr4uHRUjRpe8va10Q==
-Date: Mon, 30 Mar 2009 01:41:54 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-cc: Christoph Lameter <cl@linux-foundation.org>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, Martin Bligh <mbligh@google.com>,
-       linux-kernel@vger.kernel.org, Mel Gorman <mel@csn.ul.ie>
-Subject: Re: [patch 1/3] slub: add per-cache slab thrash ratio
-In-Reply-To: <1238397091.26742.35.camel@penberg-laptop>
-Message-ID: <alpine.DEB.2.00.0903300128100.26320@chino.kir.corp.google.com>
-References: <alpine.DEB.2.00.0903292241300.15813@chino.kir.corp.google.com>  <alpine.DEB.2.00.0903292242510.15813@chino.kir.corp.google.com> <1238397091.26742.35.camel@penberg-laptop>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Mon, 30 Mar 2009 04:43:25 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=coW7V14JLLnWSAr4vfMg63kZsrC3u4D1/DBFFWFY+utLbUegrLX2GtSjasPIgrByvB
+         uQgXjc8CVbFbMx4ioY/q6tGAlZSirulC5FwORM5o33UJHBgEydXBRzoYg/mseEve1aBd
+         08xyvJqK6kSmbRFXBQq4NL4+OPQxDACPi+5TY=
+Message-ID: <49D08625.8070701@gmail.com>
+Date: Mon, 30 Mar 2009 17:43:17 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: Niel Lambrechts <niel.lambrechts@gmail.com>,
+       Arjan van de Ven <arjan@infradead.org>,
+       "linux.kernel" <linux-kernel@vger.kernel.org>,
+       James Bottomley <James.Bottomley@hansenpartnership.com>,
+       Pavel Machek <pavel@ucw.cz>,
+       Linux IDE mailing list <linux-ide@vger.kernel.org>,
+       Jeff Garzik <jeff@garzik.org>
+Subject: Re: 2.6.29 regression: ATA bus errors on resume
+References: <cjtH6-3Ll-13@gated-at.bofh.it> <20090327153044.3234722d@infradead.org> <49CDFA60.9080403@gmail.com> <200903281506.03364.rjw@sisk.pl>
+In-Reply-To: <200903281506.03364.rjw@sisk.pl>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 30 Mar 2009, Pekka Enberg wrote:
+Hello,
 
-> > The slab_thrash_ratio for each cache do not have non-zero defaults
-> > (yet?).
+Rafael J. Wysocki wrote:
+> On Saturday 28 March 2009, Niel Lambrechts wrote:
+>> On 03/28/2009 12:30 AM, Arjan van de Ven wrote:
+>>> On Fri, 27 Mar 2009 21:10:52 +0200
+>>> Niel Lambrechts <niel.lambrechts@gmail.com> wrote:
+>>>
+>>>   
+>>>> I'm seeing some dubious looking ATA messages even on 2.6.28.9-pae,
+>>>> although with all the 2.6.28 variants I used s2disk/resume has always
+>>>> worked. I was wondering if these "errors" perhaps play more of a role
+>>>> in 2.6.29, perhaps due to the async. changes that was mentioned?
+>>>>     
+>>> unless you actively enabled this via a kernel command line option there
+>>> are no async changes in 2.6.29 in terms of behavior.
+>>>
+>>>
+>>>   
+>> The only non-default option I had was 'modeset=1'. From Jeff's earlier
+>> comment I understood the probing behaviour changed.
+>>
+>> The fundamental difference is that in 2.6.29 everything initially seems
+>> okay, but then there is a
+>> ata1.00: exception Emask 0x10 SAct 0x3f SErr 0x50000 action0xe frozen
+>> ata1.00: irq_stat 0x00400008, PHY RDY changed
+>>
+>> There's nothing frozen it 2.6.28.
+>>
+>> Should I log a kernel bug, what's the best way forward and is there
+>> anything more I can do to help?
 > 
-> If we're going to merge this code, I think it would be better to put a
-> non-zero default there; otherwise we won't be able to hit potential
-> performance regressions or bugs. Furthermore, the optimization is not
-> very useful on large scale if people need to enable it themselves.
-> 
-> Maybe stick 20 there and run tbench, sysbench, et al to see if it makes
-> a difference? I'm cc'ing Mel in case he has some suggestions how to test
-> it.
-> 
+> Let Tejun have a look a this, perhaps?
 
-It won't cause a regression if sane SLAB_THRASHING_THRESHOLD and 
-slab_thrash_ratio values are set since the contention on list_lock will 
-always be slower than utilizing a more free cpu slab when its thrashing.
+What Niel is seeing is probably caused by libata EH somehow moving
+forward too fast and receiving the second PHY changed event after the
+initial reset is complete.  That or the thaw routine is broken and
+doesn't clear hotplug event properly.  Actually, this double reset
+seems to happen quite often, so it might be about time to drill it
+down and find out what's really going on.  But, generally, it isn't a
+serious problem, all that happens is EH doing another round.  The
+original one looks quite serious tho.  I'll reply separately.
 
-I agree that there should be a default value and I was originally going 
-to propose the following as the fourth patch in the series, but I wanted 
-to generate commentary on the approach first and there's always a 
-hesitation when changing the default behavior of the entire allocator for 
-workloads with very specific behavior that trigger this type of problem.
+Thanks.
 
-The fact that we need a tunable for this is unfortunate, but there doesn't 
-seem to be any other way to detect such situations and adjust the partial 
-list handling so that list_lock isn't contended so much and the allocation 
-slowpath to fastpath ratio isn't so high.
-
-I'd be interested to hear other people's approaches.
----
-diff --git a/mm/slub.c b/mm/slub.c
---- a/mm/slub.c
-+++ b/mm/slub.c
-@@ -147,6 +147,12 @@
-  */
- #define SLAB_THRASHING_THRESHOLD 3
- 
-+/*
-+ * Default slab thrash ratio, used to define when a slab is thrashing for a
-+ * particular cpu.
-+ */
-+#define DEFAULT_SLAB_THRASH_RATIO 20
-+
- #define DEBUG_DEFAULT_FLAGS (SLAB_DEBUG_FREE | SLAB_RED_ZONE | \
- 				SLAB_POISON | SLAB_STORE_USER)
- 
-@@ -2392,7 +2398,14 @@ static int kmem_cache_open(struct kmem_cache *s, gfp_t gfpflags,
- 	 */
- 	set_min_partial(s, ilog2(s->size));
- 	s->refcount = 1;
--	s->min_free_watermark = 0;
-+	s->min_free_watermark = oo_objects(s->oo) *
-+					DEFAULT_SLAB_THRASH_RATIO / 100;
-+	/*
-+	 * It doesn't make sense to define a slab as thrashing if its threshold
-+	 * is fewer than 4 objects.
-+	 */
-+	if (s->min_free_watermark < 4)
-+		s->min_free_watermark = 0;
- #ifdef CONFIG_NUMA
- 	s->remote_node_defrag_ratio = 1000;
- #endif
+-- 
+tejun
