@@ -1,100 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757648AbZC3VNA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761234AbZC3VN0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757648AbZC3VNA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Mar 2009 17:13:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758290AbZC3VMs
+	id S1761234AbZC3VN0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Mar 2009 17:13:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758216AbZC3VNM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Mar 2009 17:12:48 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:55219 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758777AbZC3VMr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Mar 2009 17:12:47 -0400
-Date: Mon, 30 Mar 2009 22:12:43 +0100 (IST)
-From: Dave Airlie <airlied@linux.ie>
-X-X-Sender: airlied@skynet.skynet.ie
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-cc: "H. Peter Anvin" <hpa@zytor.com>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Xen-devel <xen-devel@lists.xensource.com>,
-       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Subject: Re: [PATCH 27/27] agp/intel: use dma_alloc_coherent for special
- cursor memory
-In-Reply-To: <1236963612-14287-28-git-send-email-jeremy@goop.org>
-Message-ID: <alpine.DEB.2.00.0903302212250.32052@skynet.skynet.ie>
-References: <1236963612-14287-1-git-send-email-jeremy@goop.org> <1236963612-14287-28-git-send-email-jeremy@goop.org>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 30 Mar 2009 17:13:12 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:42115 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758317AbZC3VNK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Mar 2009 17:13:10 -0400
+Date: Mon, 30 Mar 2009 14:10:37 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Purushotam Kumar <purushotam@ti.com>
+Cc: davinci-linux-open-source@linux.davincidsp.com,
+       linux-kernel@vger.kernel.org, drzeus-mmc@drzeus.cx, purushotam@ti.com
+Subject: Re: [PATCH 1/1] DaVinci: MMC: Updated MMC/SD controller driver for
+ DaVinci family.
+Message-Id: <20090330141037.f473bf99.akpm@linux-foundation.org>
+In-Reply-To: <1237378885-5918-1-git-send-email-purushotam@ti.com>
+References: <1237378885-5918-1-git-send-email-purushotam@ti.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 18 Mar 2009 17:51:25 +0530
+Purushotam Kumar <purushotam@ti.com> wrote:
+
+> This patch adds support for MMC/SD controller driver for DaVinci family SoC.
+> This patch will work for SoC like DM6446 and DM355. SoC like DM365 and
+> DA830 also has same controller with small variations and could supported/added 
+> easily by using this version of patch. It means that this version of patch 
+> could be used for all SoC which has been derived from DaVinci family.
+>  
+> This patch has been generated against latest 2.6.29 mainline kernel. This patch
+> will not compile currently because it depends notably on the EDMA utilities and
+> chip/board setup, that will come at some point through the ARM tree. Please use
+> currently DaVinci GIT tree for EDMA utilities and chip/board setup etc.
+
+The wont-compile thing makes it a bit hard for me to merge.
+
+Specifically where are these prerequisite patches and how will I know
+when they are available and in what tree?
+
+Perhaps the simplest approach would be for you to wait until the code
+_will_ compile?
 
 
-> From: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-> 
-> Given that i810 wants special physically contiguous memory for its cursor,
-> allocate it with dma_alloc_coherent, which will give us memory with the
-> right properties.  This is particularly for Xen, which won't normally
-> give us physically contiuous memory.
-> 
-> Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-> Cc: David Airlie <airlied@linux.ie>
-
-Acked-by: David Airlie <airlied@linux.ie>
-
-> ---
->  drivers/char/agp/intel-agp.c |   26 +++++++++++---------------
->  1 files changed, 11 insertions(+), 15 deletions(-)
-> 
-> diff --git a/drivers/char/agp/intel-agp.c b/drivers/char/agp/intel-agp.c
-> index 4373adb..8ba6808 100644
-> --- a/drivers/char/agp/intel-agp.c
-> +++ b/drivers/char/agp/intel-agp.c
-> @@ -244,33 +244,29 @@ static void intel_i810_agp_enable(struct agp_bridge_data *bridge, u32 mode)
->  /* Exists to support ARGB cursors */
->  static void *i8xx_alloc_pages(void)
->  {
-> -	struct page *page;
-> -
-> -	page = alloc_pages(GFP_KERNEL | GFP_DMA32, 2);
-> -	if (page == NULL)
-> +	void *addr;
-> +	dma_addr_t _d;
-> +	
-> +	addr = dma_alloc_coherent(NULL, 4 * PAGE_SIZE, &_d, GFP_KERNEL);
-> +	if (addr == NULL)
->  		return NULL;
->  
-> -	if (set_pages_uc(page, 4) < 0) {
-> -		set_pages_wb(page, 4);
-> -		__free_pages(page, 2);
-> +	if (set_memory_uc((unsigned long)addr, 4) < 0) {
-> +		set_memory_wb((unsigned long)addr, 4);
-> +		dma_free_coherent(NULL, 4 * PAGE_SIZE, addr, _d);
->  		return NULL;
->  	}
-> -	get_page(page);
->  	atomic_inc(&agp_bridge->current_memory_agp);
-> -	return page_address(page);
-> +	return addr;
->  }
->  
->  static void i8xx_destroy_pages(void *addr)
->  {
-> -	struct page *page;
-> -
->  	if (addr == NULL)
->  		return;
->  
-> -	page = virt_to_page(addr);
-> -	set_pages_wb(page, 4);
-> -	put_page(page);
-> -	__free_pages(page, 2);
-> +	set_memory_wb((unsigned long)addr, 4);
-> +	dma_free_coherent(NULL, 4 * PAGE_SIZE, addr, virt_to_bus(addr));
->  	atomic_dec(&agp_bridge->current_memory_agp);
->  }
->  
-> 
