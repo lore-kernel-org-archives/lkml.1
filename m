@@ -1,434 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758218AbZC3KKN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758384AbZC3KLw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758218AbZC3KKN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Mar 2009 06:10:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756537AbZC3KJ7
+	id S1758384AbZC3KLw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Mar 2009 06:11:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757078AbZC3KLm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Mar 2009 06:09:59 -0400
-Received: from hera.kernel.org ([140.211.167.34]:60540 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755832AbZC3KJ5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Mar 2009 06:09:57 -0400
-Message-ID: <49D099F0.3000807@kernel.org>
-Date: Mon, 30 Mar 2009 19:07:44 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
-MIME-Version: 1.0
-To: Martin Schwidefsky <schwidefsky@de.ibm.com>
-CC: mingo@elte.hu, rusty@rustcorp.com.au, tglx@linutronix.de, x86@kernel.org,
-       linux-kernel@vger.kernel.org, hpa@zytor.com,
-       Paul Mundt <lethal@linux-sh.org>, rmk@arm.linux.org.uk,
-       starvik@axis.com, ralf@linux-mips.org, davem@davemloft.net,
-       cooloney@kernel.org, kyle@mcmartin.ca, matthew@wil.cx,
-       grundler@parisc-linux.org, takata@linux-m32r.org,
-       benh@kernel.crashing.org, rth@twiddle.net, ink@jurassic.park.msu.ru,
-       heiko.carstens@de.ibm.com
-Subject: [PATCH UPDATED] percpu: use dynamic percpu allocator as the default
- percpu allocator
-References: <1236671631-9305-1-git-send-email-tj@kernel.org>	<20090316190132.7965a49a@skybase>	<49C300D8.5080204@kernel.org>	<49C8FAC4.6060508@kernel.org>	<20090325122738.42d105b7@skybase>	<49CA1AC3.9080908@kernel.org> <20090325150035.541e707a@skybase> <49CA3C2C.5030702@kernel.org>
-In-Reply-To: <49CA3C2C.5030702@kernel.org>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 30 Mar 2009 10:07:53 +0000 (UTC)
+	Mon, 30 Mar 2009 06:11:42 -0400
+Received: from xc.sipsolutions.net ([83.246.72.84]:56251 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753002AbZC3KLm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Mar 2009 06:11:42 -0400
+Subject: Re: [PATCH] toshiba-acpi: remove MAINTAINERS entry
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Len Brown <len.brown@intel.com>
+Cc: Philip Langdale <philipl@overt.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>, john@neggie.net
+In-Reply-To: <1238407355.24972.29.camel@johannes.local>
+References: <1238407355.24972.29.camel@johannes.local>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-YhvUhyvgqxTy/QRRPfuz"
+Date: Mon, 30 Mar 2009 12:11:33 +0200
+Message-Id: <1238407893.24972.30.camel@johannes.local>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: use dynamic allocator for most archs w/o
-CONFIG_HAVE_SETUP_PER_CPU_AREA
 
-This patch makes most !CONFIG_HAVE_SETUP_PER_CPU_AREA archs use
-dynamic percpu allocator.  The first chunk is allocated using
-embedding helper and 8k is reserved for modules.  This ensures that
-the new allocator behaves almost identically to the original allocator
-as long as static percpu variables are concerned, so it shouldn't
-introduce much breakage.
+--=-YhvUhyvgqxTy/QRRPfuz
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-s390 and alpha use custom SHIFT_PERCPU_PTR() to work around addressing
-range limit the addressing model imposes.  Unfortunately, this breaks
-if the address is specified using a variable, so for now, the two
-archs aren't converted.
+On Mon, 2009-03-30 at 12:02 +0200, Johannes Berg wrote:
+> The web server at memebeam.org refuses connections and the domain no
+> longer has an MX entry, so apparently John Belmonte has vanished.
 
-The following architectures are affected by this change.
+archive.org shows it's been that way for over a year, but turned up
+another email address, let's see if that works.
 
-* sh
-* arm
-* cris
-* mips
-* sparc(32)
-* blackfin
-* avr32
-* parisc
-* m32r
-* powerpc(32)
+johannes
 
-As this change makes the dynamic allocator the default one,
-CONFIG_HAVE_DYNAMIC_PER_CPU_AREA is replaced with its invert -
-CONFIG_HAVE_LEGACY_PER_CPU_AREA, which is added to yet-to-be converted
-archs.  These archs implement their own setup_per_cpu_areas() and the
-conversion is not trivial.
+> Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
+> ---
+>  MAINTAINERS |    5 +----
+>  1 file changed, 1 insertion(+), 4 deletions(-)
+>=20
+> --- wireless-testing.orig/MAINTAINERS	2009-03-30 12:00:57.000000000 +0200
+> +++ wireless-testing/MAINTAINERS	2009-03-30 12:01:16.000000000 +0200
+> @@ -4294,10 +4294,7 @@ W:	http://sourceforge.net/projects/tlan/
+>  S:	Maintained
+> =20
+>  TOSHIBA ACPI EXTRAS DRIVER
+> -P:	John Belmonte
+> -M:	toshiba_acpi@memebeam.org
+> -W:	http://memebeam.org/toys/ToshibaAcpiDriver
+> -S:	Maintained
+> +S:	Orphan
+> =20
+>  TOSHIBA SMM DRIVER
+>  P:	Jonathan Buzzard
+>=20
 
-* powerpc(64)
-* sparc(64)
-* ia64
-* alpha
-* s390
+--=-YhvUhyvgqxTy/QRRPfuz
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
 
-Boot and batch alloc/free tests on x86_32 with debug code (x86_32
-doesn't use default first chunk initialization).  Compile tested on
-sparc(32), powerpc(32), arm and alpha.
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
 
-Signed-off-by: Tejun Heo <tj@kernel.org>
-Cc: Paul Mundt <lethal@linux-sh.org>
-Cc: Russell King <rmk@arm.linux.org.uk>
-Cc: Mikael Starvik <starvik@axis.com>
-Cc: Ralf Baechle <ralf@linux-mips.org>
-Cc: David S. Miller <davem@davemloft.net>
-Cc: Bryan Wu <cooloney@kernel.org>
-Cc: Kyle McMartin <kyle@mcmartin.ca>
-Cc: Matthew Wilcox <matthew@wil.cx>
-Cc: Grant Grundler <grundler@parisc-linux.org>
-Cc: Hirokazu Takata <takata@linux-m32r.org>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Richard Henderson <rth@twiddle.net>
-Cc: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
-Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Cc: Heiko Carstens <heiko.carstens@de.ibm.com>
----
-Okay, this should keep s390 and alpha working till proper solution is
-found.  Martin, can you please verify?  Ingo, please feel free to push
-this upstream (or -next) once Martin acks.
+iQIcBAABAgAGBQJJ0JrRAAoJEKVg1VMiehFYfLIP/3VqseXbrWE7NPXWETm4Y1KB
+VhNmIDSHxhiRx9fVgy4N/lW4HZ67kcbTmxhtp25zofzDZu5hMwTtm6Xmczgggoka
+E3ckkJy4FxWV0gKVX0YV/j3BEkZ84ZS03dERbp0YpN7Q5u4NpOQKI5znJ+OaUABZ
+fVxshmLWUTza2otY7dE8Nheo6egwhXROM4hael9+1ZpoHNdLzwxnFtqEe72ZWbXF
+Ei9pbdU7nKQ39qiJk0bDglVxYbh8oTU8Z7a9fjJcogWsKpkXTuyIpL3tYZzZgN8L
+LTEQqqYnYsGGBVfWDMtW2siZDDAv6/Rh0JgGnOAzXAHwbdV2Ik+HDDWkfI4OtQ05
+34cFoo1qeLlKesB5+2mren3ia/5/bxwOKGJu7uuXdKZh8nn8ojCWWIt1UGoDJQcC
+H/q+xlJ915GscldS3tu3SsRg3z66hLWD/6Qy0BoN4Y5rWTRP04RD6JFBqjUPEPn8
+M6628Gc57J+gXquDfGMNiIQeeDQevw0T+R9PU2ev1/K05DozziABKRz2F0jVBA9L
+DmP7zH/t61u2STov1BGt1Vrwak47YYeGEw7JT5PFfXzke3O4AmrJEnIpFvkoCiG5
+dxIHHs2yKu5+eFSLOysCSrwj2SIyXaEUJm2tI7ZfWTqT30KIKe6T1jp/C2wQfv2j
+5NSZARtTFKnTyxZKHqr1
+=fSVM
+-----END PGP SIGNATURE-----
 
-Thanks.
+--=-YhvUhyvgqxTy/QRRPfuz--
 
- arch/alpha/Kconfig     |    3 +++
- arch/ia64/Kconfig      |    3 +++
- arch/powerpc/Kconfig   |    3 +++
- arch/s390/Kconfig      |    3 +++
- arch/sparc/Kconfig     |    3 +++
- arch/x86/Kconfig       |    3 ---
- include/linux/percpu.h |   12 +++++++++---
- init/main.c            |   24 ------------------------
- kernel/module.c        |    6 +++---
- mm/Makefile            |    2 +-
- mm/allocpercpu.c       |   28 ++++++++++++++++++++++++++++
- mm/percpu.c            |   40 +++++++++++++++++++++++++++++++++++++++-
- 12 files changed, 95 insertions(+), 35 deletions(-)
-
-diff --git a/arch/alpha/Kconfig b/arch/alpha/Kconfig
-index 9fb8aae..05d8640 100644
---- a/arch/alpha/Kconfig
-+++ b/arch/alpha/Kconfig
-@@ -70,6 +70,9 @@ config AUTO_IRQ_AFFINITY
- 	depends on SMP
- 	default y
- 
-+config HAVE_LEGACY_PER_CPU_AREA
-+	def_bool y
-+
- source "init/Kconfig"
- source "kernel/Kconfig.freezer"
- 
-diff --git a/arch/ia64/Kconfig b/arch/ia64/Kconfig
-index 153e727..f333149 100644
---- a/arch/ia64/Kconfig
-+++ b/arch/ia64/Kconfig
-@@ -85,6 +85,9 @@ config GENERIC_TIME_VSYSCALL
- 	bool
- 	default y
- 
-+config HAVE_LEGACY_PER_CPU_AREA
-+	def_bool y
-+
- config HAVE_SETUP_PER_CPU_AREA
- 	def_bool y
- 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 74cc312..892f1ad 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -42,6 +42,9 @@ config GENERIC_HARDIRQS
- 	bool
- 	default y
- 
-+config HAVE_LEGACY_PER_CPU_AREA
-+	def_bool PPC64
-+
- config HAVE_SETUP_PER_CPU_AREA
- 	def_bool PPC64
- 
-diff --git a/arch/s390/Kconfig b/arch/s390/Kconfig
-index 6b0a353..c69264a 100644
---- a/arch/s390/Kconfig
-+++ b/arch/s390/Kconfig
-@@ -72,6 +72,9 @@ config PGSTE
- config VIRT_CPU_ACCOUNTING
- 	def_bool y
- 
-+config HAVE_LEGACY_PER_CPU_AREA
-+	def_bool y
-+
- mainmenu "Linux Kernel Configuration"
- 
- config S390
-diff --git a/arch/sparc/Kconfig b/arch/sparc/Kconfig
-index c3ea215..0125b57 100644
---- a/arch/sparc/Kconfig
-+++ b/arch/sparc/Kconfig
-@@ -90,6 +90,9 @@ config AUDIT_ARCH
- 	bool
- 	default y
- 
-+config HAVE_LEGACY_PER_CPU_AREA
-+	def_bool y if SPARC64
-+
- config HAVE_SETUP_PER_CPU_AREA
- 	def_bool y if SPARC64
- 
-diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-index f5cef3f..572329a 100644
---- a/arch/x86/Kconfig
-+++ b/arch/x86/Kconfig
-@@ -138,9 +138,6 @@ config ARCH_HAS_CACHE_LINE_SIZE
- config HAVE_SETUP_PER_CPU_AREA
- 	def_bool y
- 
--config HAVE_DYNAMIC_PER_CPU_AREA
--	def_bool y
--
- config HAVE_CPUMASK_OF_CPU_MAP
- 	def_bool X86_64_SMP
- 
-diff --git a/include/linux/percpu.h b/include/linux/percpu.h
-index ee5615d..817136a 100644
---- a/include/linux/percpu.h
-+++ b/include/linux/percpu.h
-@@ -78,7 +78,7 @@
- 
- #ifdef CONFIG_SMP
- 
--#ifdef CONFIG_HAVE_DYNAMIC_PER_CPU_AREA
-+#ifndef CONFIG_HAVE_LEGACY_PER_CPU_AREA
- 
- /* minimum unit size, also is the maximum supported allocation size */
- #define PCPU_MIN_UNIT_SIZE		PFN_ALIGN(64 << 10)
-@@ -124,7 +124,7 @@ extern ssize_t __init pcpu_embed_first_chunk(
- 
- extern void *__alloc_reserved_percpu(size_t size, size_t align);
- 
--#else /* CONFIG_HAVE_DYNAMIC_PER_CPU_AREA */
-+#else /* CONFIG_HAVE_LEGACY_PER_CPU_AREA */
- 
- struct percpu_data {
- 	void *ptrs[1];
-@@ -138,11 +138,15 @@ struct percpu_data {
-         (__typeof__(ptr))__p->ptrs[(cpu)];				\
- })
- 
--#endif /* CONFIG_HAVE_DYNAMIC_PER_CPU_AREA */
-+#endif /* CONFIG_HAVE_LEGACY_PER_CPU_AREA */
- 
- extern void *__alloc_percpu(size_t size, size_t align);
- extern void free_percpu(void *__pdata);
- 
-+#ifndef CONFIG_HAVE_SETUP_PER_CPU_AREA
-+extern void __init setup_per_cpu_areas(void);
-+#endif
-+
- #else /* CONFIG_SMP */
- 
- #define per_cpu_ptr(ptr, cpu) ({ (void)(cpu); (ptr); })
-@@ -163,6 +167,8 @@ static inline void free_percpu(void *p)
- 	kfree(p);
- }
- 
-+static inline void __init setup_per_cpu_areas(void) { }
-+
- #endif /* CONFIG_SMP */
- 
- #define alloc_percpu(type)	(type *)__alloc_percpu(sizeof(type), \
-diff --git a/init/main.c b/init/main.c
-index 6441083..42ae3c0 100644
---- a/init/main.c
-+++ b/init/main.c
-@@ -354,7 +354,6 @@ static void __init smp_init(void)
- #define smp_init()	do { } while (0)
- #endif
- 
--static inline void setup_per_cpu_areas(void) { }
- static inline void setup_nr_cpu_ids(void) { }
- static inline void smp_prepare_cpus(unsigned int maxcpus) { }
- 
-@@ -375,29 +374,6 @@ static void __init setup_nr_cpu_ids(void)
- 	nr_cpu_ids = find_last_bit(cpumask_bits(cpu_possible_mask),NR_CPUS) + 1;
- }
- 
--#ifndef CONFIG_HAVE_SETUP_PER_CPU_AREA
--unsigned long __per_cpu_offset[NR_CPUS] __read_mostly;
--
--EXPORT_SYMBOL(__per_cpu_offset);
--
--static void __init setup_per_cpu_areas(void)
--{
--	unsigned long size, i;
--	char *ptr;
--	unsigned long nr_possible_cpus = num_possible_cpus();
--
--	/* Copy section for each CPU (we discard the original) */
--	size = ALIGN(PERCPU_ENOUGH_ROOM, PAGE_SIZE);
--	ptr = alloc_bootmem_pages(size * nr_possible_cpus);
--
--	for_each_possible_cpu(i) {
--		__per_cpu_offset[i] = ptr - __per_cpu_start;
--		memcpy(ptr, __per_cpu_start, __per_cpu_end - __per_cpu_start);
--		ptr += size;
--	}
--}
--#endif /* CONFIG_HAVE_SETUP_PER_CPU_AREA */
--
- /* Called by boot processor to activate the rest. */
- static void __init smp_init(void)
- {
-diff --git a/kernel/module.c b/kernel/module.c
-index f0e04d6..f9c7b86 100644
---- a/kernel/module.c
-+++ b/kernel/module.c
-@@ -368,7 +368,7 @@ static struct module *find_module(const char *name)
- 
- #ifdef CONFIG_SMP
- 
--#ifdef CONFIG_HAVE_DYNAMIC_PER_CPU_AREA
-+#ifndef CONFIG_HAVE_LEGACY_PER_CPU_AREA
- 
- static void *percpu_modalloc(unsigned long size, unsigned long align,
- 			     const char *name)
-@@ -393,7 +393,7 @@ static void percpu_modfree(void *freeme)
- 	free_percpu(freeme);
- }
- 
--#else /* ... !CONFIG_HAVE_DYNAMIC_PER_CPU_AREA */
-+#else /* ... CONFIG_HAVE_LEGACY_PER_CPU_AREA */
- 
- /* Number of blocks used and allocated. */
- static unsigned int pcpu_num_used, pcpu_num_allocated;
-@@ -528,7 +528,7 @@ static int percpu_modinit(void)
- }
- __initcall(percpu_modinit);
- 
--#endif /* CONFIG_HAVE_DYNAMIC_PER_CPU_AREA */
-+#endif /* CONFIG_HAVE_LEGACY_PER_CPU_AREA */
- 
- static unsigned int find_pcpusec(Elf_Ehdr *hdr,
- 				 Elf_Shdr *sechdrs,
-diff --git a/mm/Makefile b/mm/Makefile
-index 818569b..f3a037b 100644
---- a/mm/Makefile
-+++ b/mm/Makefile
-@@ -30,7 +30,7 @@ obj-$(CONFIG_FAILSLAB) += failslab.o
- obj-$(CONFIG_MEMORY_HOTPLUG) += memory_hotplug.o
- obj-$(CONFIG_FS_XIP) += filemap_xip.o
- obj-$(CONFIG_MIGRATION) += migrate.o
--ifdef CONFIG_HAVE_DYNAMIC_PER_CPU_AREA
-+ifndef CONFIG_HAVE_LEGACY_PER_CPU_AREA
- obj-$(CONFIG_SMP) += percpu.o
- else
- obj-$(CONFIG_SMP) += allocpercpu.o
-diff --git a/mm/allocpercpu.c b/mm/allocpercpu.c
-index 1882923..fd75eff 100644
---- a/mm/allocpercpu.c
-+++ b/mm/allocpercpu.c
-@@ -5,6 +5,8 @@
-  */
- #include <linux/mm.h>
- #include <linux/module.h>
-+#include <linux/bootmem.h>
-+#include <asm/sections.h>
- 
- #ifndef cache_line_size
- #define cache_line_size()	L1_CACHE_BYTES
-@@ -147,3 +149,29 @@ void free_percpu(void *__pdata)
- 	kfree(__percpu_disguise(__pdata));
- }
- EXPORT_SYMBOL_GPL(free_percpu);
-+
-+/*
-+ * Generic percpu area setup.
-+ */
-+#ifndef CONFIG_HAVE_SETUP_PER_CPU_AREA
-+unsigned long __per_cpu_offset[NR_CPUS] __read_mostly;
-+
-+EXPORT_SYMBOL(__per_cpu_offset);
-+
-+void __init setup_per_cpu_areas(void)
-+{
-+	unsigned long size, i;
-+	char *ptr;
-+	unsigned long nr_possible_cpus = num_possible_cpus();
-+
-+	/* Copy section for each CPU (we discard the original) */
-+	size = ALIGN(PERCPU_ENOUGH_ROOM, PAGE_SIZE);
-+	ptr = alloc_bootmem_pages(size * nr_possible_cpus);
-+
-+	for_each_possible_cpu(i) {
-+		__per_cpu_offset[i] = ptr - __per_cpu_start;
-+		memcpy(ptr, __per_cpu_start, __per_cpu_end - __per_cpu_start);
-+		ptr += size;
-+	}
-+}
-+#endif /* CONFIG_HAVE_SETUP_PER_CPU_AREA */
-diff --git a/mm/percpu.c b/mm/percpu.c
-index 1aa5d8f..059b57a 100644
---- a/mm/percpu.c
-+++ b/mm/percpu.c
-@@ -43,7 +43,7 @@
-  *
-  * To use this allocator, arch code should do the followings.
-  *
-- * - define CONFIG_HAVE_DYNAMIC_PER_CPU_AREA
-+ * - drop CONFIG_HAVE_LEGACY_PER_CPU_AREA
-  *
-  * - define __addr_to_pcpu_ptr() and __pcpu_ptr_to_addr() to translate
-  *   regular address to percpu pointer and back if they need to be
-@@ -1324,3 +1324,41 @@ ssize_t __init pcpu_embed_first_chunk(size_t static_size, size_t reserved_size,
- 				      reserved_size, dyn_size,
- 				      pcpue_unit_size, pcpue_ptr, NULL);
- }
-+
-+/*
-+ * Generic percpu area setup.
-+ *
-+ * The embedding helper is used because its behavior closely resembles
-+ * the original non-dynamic generic percpu area setup.  This is
-+ * important because many archs have addressing restrictions and might
-+ * fail if the percpu area is located far away from the previous
-+ * location.  As an added bonus, in non-NUMA cases, embedding is
-+ * generally a good idea TLB-wise because percpu area can piggy back
-+ * on the physical linear memory mapping which uses large page
-+ * mappings on applicable archs.
-+ */
-+#ifndef CONFIG_HAVE_SETUP_PER_CPU_AREA
-+unsigned long __per_cpu_offset[NR_CPUS] __read_mostly;
-+EXPORT_SYMBOL(__per_cpu_offset);
-+
-+void __init setup_per_cpu_areas(void)
-+{
-+	size_t static_size = __per_cpu_end - __per_cpu_start;
-+	ssize_t unit_size;
-+	unsigned long delta;
-+	unsigned int cpu;
-+
-+	/*
-+	 * Always reserve area for module percpu variables.  That's
-+	 * what the legacy allocator did.
-+	 */
-+	unit_size = pcpu_embed_first_chunk(static_size, PERCPU_MODULE_RESERVE,
-+					   PERCPU_DYNAMIC_RESERVE, -1);
-+	if (unit_size < 0)
-+		panic("Failed to initialized percpu areas.");
-+
-+	delta = (unsigned long)pcpu_base_addr - (unsigned long)__per_cpu_start;
-+	for_each_possible_cpu(cpu)
-+		__per_cpu_offset[cpu] = delta + cpu * unit_size;
-+}
-+#endif /* CONFIG_HAVE_SETUP_PER_CPU_AREA */
