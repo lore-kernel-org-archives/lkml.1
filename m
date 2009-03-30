@@ -1,110 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752386AbZC3PoM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753870AbZC3Pri@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752386AbZC3PoM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Mar 2009 11:44:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751351AbZC3Pn5
+	id S1753870AbZC3Pri (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Mar 2009 11:47:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751966AbZC3Pr1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Mar 2009 11:43:57 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:47191 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751323AbZC3Pn4 (ORCPT
+	Mon, 30 Mar 2009 11:47:27 -0400
+Received: from exc01vs1.exchange.cysonet.com ([85.158.200.82]:18825 "EHLO
+	exc01vs1.exchange.cysonet.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752150AbZC3PrZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Mar 2009 11:43:56 -0400
-Date: Mon, 30 Mar 2009 08:34:54 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Ric Wheeler <rwheeler@redhat.com>
-cc: "Andreas T.Auer" <andreas.t.auer_lkml_73537@ursus.ath.cx>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Theodore Tso <tytso@mit.edu>,
-       Mark Lord <lkml@rtr.ca>, Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Jeff Garzik <jeff@garzik.org>, Matthew Garrett <mjg59@srcf.ucam.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Rees <drees76@gmail.com>, Jesper Krogh <jesper@krogh.cc>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.29
-In-Reply-To: <49D0AA4A.6020308@redhat.com>
-Message-ID: <alpine.LFD.2.00.0903300817400.3948@localhost.localdomain>
-References: <alpine.LFD.2.00.0903271511230.3994@localhost.localdomain> <alpine.LFD.2.00.0903271522210.3994@localhost.localdomain> <49CD7B10.7010601@garzik.org> <49CD891A.7030103@rtr.ca> <49CD9047.4060500@garzik.org> <49CE2633.2000903@s5r6.in-berlin.de>
- <49CE3186.8090903@garzik.org> <49CE35AE.1080702@s5r6.in-berlin.de> <49CE3F74.6090103@rtr.ca> <20090329231451.GR26138@disturbed> <20090330003948.GA13356@mit.edu> <49D0710A.1030805@ursus.ath.cx> <20090330100546.51907bd2@the-village.bc.nu> <49D0A3D6.4000300@ursus.ath.cx>
- <49D0AA4A.6020308@redhat.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 30 Mar 2009 11:47:25 -0400
+User-Agent: Microsoft-Entourage/12.15.0.081119
+Date: Mon, 30 Mar 2009 17:47:19 +0100
+Subject: Re: Page Cache writeback too slow,   SSD/noop scheduler/ext2
+From: Jos Houtman <jos@hyves.nl>
+To: Wu Fengguang <fengguang.wu@intel.com>
+CC: Nick Piggin <nickpiggin@yahoo.com.au>, <linux-kernel@vger.kernel.org>,
+       Jeff Layton <jlayton@redhat.com>, Dave Chinner <david@fromorbit.com>,
+       <linux-fsdevel@vger.kernel.org>, <jens.axboe@oracle.com>,
+       <akpm@linux-foundation.org>, <hch@infradead.org>,
+       <linux-nfs@vger.kernel.org>
+Message-ID: <C5F6B627.D9D0%jos@hyves.nl>
+Thread-Topic: Page Cache writeback too slow,   SSD/noop scheduler/ext2
+Thread-Index: AcmwFsYCqkFwmUxBTpma/AE+p/juyQBOAivb
+In-Reply-To: <20090329023238.GA7825@localhost>
+X-Priority: 10
+Mime-version: 1.0
+Content-type: text/plain;
+	charset="US-ASCII"
+Content-transfer-encoding: 7bit
+X-OriginalArrivalTime: 30 Mar 2009 15:47:21.0268 (UTC) FILETIME=[D00A6F40:01C9B14E]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-
-On Mon, 30 Mar 2009, Ric Wheeler wrote:
+>> Thanx for the patch, but for the next time: How should I apply it?
+>> it seems to be context aware (@@) and broke on all kernel versions I tried
+>> 2.6.28/2.6.28.7/2.6.29
 > 
-> People keep forgetting that storage (even on your commodity s-ata class of
-> drives) has very large & volatile cache. The disk firmware can hold writes in
-> that cache as long as it wants, reorder its writes into anything that makes
-> sense and has no explicit ordering promises.
+> Do you mean that the patch applies after removing " @@.*$"?
 
-Well, when it comes to disk caches, it really does make sense to start 
-looking at what breaks.
+I didn't try that, but this time it worked. So it was probably my error.
 
-For example, it is obviously true that any half-way modern disk has 
-megabytes of caches, and write caching is quite often enabled by default. 
+> 
+> You are right. In your case, there are several big dirty files in sdb1,
+> and the sdb write queue is constantly (almost-)congested. The SSD write
+> speed is so slow, that in each round of sdb1 writeback, it begins with
+> an uncongested queue, but quickly fills up after writing some pages.
+> Hence all the inodes will get redirtied because of (nr_to_write > 0).
+> 
+> The following quick fix should solve the slow-writeback-on-congested-SSD
+> problem. However the writeback sequence is suboptimal: it sync-and-requeue
+> each file until congested (in your case about 3~600 pages) instead of
+> until MAX_WRITEBACK_PAGES=1024 pages.
 
-BUT!
+Yeah that fixed it, but performance dropped due to the more constant
+congestion. So I will need to try some different io schedulers.
 
-The write-caches on disk are rather different in many very fundamental 
-ways from the kernel write caches.
 
-One of the differences is that no disk I've ever heard of does write- 
-caching for long times, unless it has battery back-up. Yes, yes, you can 
-probably find firmware that has some odd starvation issue, and if the disk 
-is constantly busy and the access patterns are _just_ right the writes can 
-take a long time, but realistically we're talking delaying and re-ordering 
-things by milliseconds. We're not talking seconds or tens of seconds.
+Next to that I was wondering if there are any plans to make sure that not
+all dirty-files are written back in the same interval.
 
-And that's really quite a _big_ difference in itself. It may not be 
-qualitatively all that different (re-ordering is re-ordering, delays are 
-delays), but IN PRACTICE there's an absolutely huge difference between 
-delaying and re-ordering writes over milliseconds and doing so over 30s.
+In my case all database files are written back each 30 seconds, while I
+would prefer them to be more divided over the interval.
 
-The other (huge) difference is that the on-disk write caching generally 
-fails only if the drive power fails. Yes, there's a software component to 
-it (buggy firmware), but you can really approximate the whole "disk write 
-caches didn't get flushed" with "powerfail".
+Thanks,
 
-Kernel data caches? Let's be honest. The kernel can fail for a thousand 
-different reasons, including very much _any_ component failing, rather 
-than just the power supply. But also obviously including bugs.
+Jos
 
-So when people bring up on-disk caching, it really is a totally different 
-thing from the kernel delaying writes.
-
-So it's entirely reasonable to say "leave the disk doing write caching, 
-and don't force flushing", while still saying "the kernel should order the 
-writes it does".
-
-Thinking that this is somehow a black-and-white issue where "ordered 
-writes" always has to imply "cache flush commands" is simply wrong. It is 
-_not_ that black-and-white, and it should probably not even be a 
-filesystem decision to make (it's a "system" decision).
-
-This, btw, is doubly true simply because if the disk really fails, it's 
-entirely possible that it fails in a really nasty way. As in "not only did 
-it not write the sector, but the whole track is now totally unreadable 
-because power failed while the write head was active".
-
-Because that notion of "power" is not a digital thing - you have 
-capacitors, brown-outs, and generally nasty "oops, for a few milliseconds 
-the drive still had power, but it was way out of spec, and odd things 
-happened".
-
-So quite frankly, if you start worrying about disk power failures, you 
-should also then worry about the disk failing in _way_ more spectacular 
-ways than just the simple "wrote or wrote not - that is the question".
-
-And when was the last time you saw a "safe" logging filesystem that was 
-safe in the face of the log returning IO errors after power comes back on?
-
-Sure, RAID is one answer. Except not so much in 99% of all desktops or 
-especially laptops.
-
-			Linus
