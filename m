@@ -1,80 +1,152 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762447AbZC3WNW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762520AbZC3WNy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762447AbZC3WNW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Mar 2009 18:13:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759776AbZC3WNC
+	id S1762520AbZC3WNy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Mar 2009 18:13:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760757AbZC3WNk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Mar 2009 18:13:02 -0400
-Received: from xc.sipsolutions.net ([83.246.72.84]:58876 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757596AbZC3WNA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Mar 2009 18:13:00 -0400
-Subject: Re: [PATCH] toshiba-acpi: remove MAINTAINERS entry
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Philip Langdale <philipl@overt.org>
-Cc: Len Brown <len.brown@intel.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>, john@neggie.net
-In-Reply-To: <958b283774903506cb69b2a1fefc37c4@localhost>
-References: <1238407355.24972.29.camel@johannes.local>
-	 <1238407893.24972.30.camel@johannes.local>
-	 <958b283774903506cb69b2a1fefc37c4@localhost>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-bRV5aBMXQSuQGSTFcdC0"
-Date: Tue, 31 Mar 2009 00:12:24 +0200
-Message-Id: <1238451144.5970.56.camel@johannes.local>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 
+	Mon, 30 Mar 2009 18:13:40 -0400
+Received: from hera.kernel.org ([140.211.167.34]:42974 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759449AbZC3WNi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Mar 2009 18:13:38 -0400
+Date: Mon, 30 Mar 2009 22:12:45 GMT
+From: Lai Jiangshan <laijs@cn.fujitsu.com>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, paulmck@linux.vnet.ibm.com, hpa@zytor.com,
+       mingo@redhat.com, peterz@infradead.org, tglx@linutronix.de,
+       laijs@cn.fujitsu.com, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, paulmck@linux.vnet.ibm.com,
+       linux-kernel@vger.kernel.org, peterz@infradead.org, tglx@linutronix.de,
+       laijs@cn.fujitsu.com, mingo@elte.hu
+In-Reply-To: <49C36476.1010400@cn.fujitsu.com>
+References: <49C36476.1010400@cn.fujitsu.com>
+Subject: [tip:core/rcu] rcu: rcu_barrier VS cpu_hotplug: Ensure callbacks in dead cpu are migrated to online cpu
+Message-ID: <tip-f69b17d7e745d8edd7c0d90390cbaa77e63c5ea3@git.kernel.org>
+Git-Commit-ID: f69b17d7e745d8edd7c0d90390cbaa77e63c5ea3
+X-Mailer: tip-git-log-daemon
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 30 Mar 2009 22:12:47 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Commit-ID:  f69b17d7e745d8edd7c0d90390cbaa77e63c5ea3
+Gitweb:     http://git.kernel.org/tip/f69b17d7e745d8edd7c0d90390cbaa77e63c5ea3
+Author:     Lai Jiangshan <laijs@cn.fujitsu.com>
+AuthorDate: Fri, 20 Mar 2009 17:40:06 +0800
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Tue, 31 Mar 2009 00:09:37 +0200
 
---=-bRV5aBMXQSuQGSTFcdC0
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+rcu: rcu_barrier VS cpu_hotplug: Ensure callbacks in dead cpu are migrated to online cpu
 
-On Mon, 2009-03-30 at 10:57 -0400, Philip Langdale wrote:
-> On Mon, 30 Mar 2009 12:11:33 +0200, Johannes Berg
-> <johannes@sipsolutions.net> wrote:
-> > On Mon, 2009-03-30 at 12:02 +0200, Johannes Berg wrote:
-> >> The web server at memebeam.org refuses connections and the domain no
-> >> longer has an MX entry, so apparently John Belmonte has vanished.
-> >=20
-> > archive.org shows it's been that way for over a year, but turned up
-> > another email address, let's see if that works.
->=20
-> John sent me an email in January from this address but I never got a
-> reply to my reply. I know you're follow up said that this address went
-> back to the old missing MX but the incident does at least prove it
-> was working a couple of months ago. (Or the maybe he doesn't know the
-> MX is wrong and he can only send :-)
+cpu hotplug may happen asynchronously, some rcu callbacks are maybe
+still on dead cpu, rcu_barrier() also needs to wait for these rcu
+callbacks to complete, so we must ensure callbacks in dead cpu are
+migrated to online cpu.
 
-Hmm, it looks like membeam.org is just missing an MX entry, but accepts
-mail, when it's up, to its A entry. That's just a DNS bug then maybe?
+Paul E. McKenney's review:
 
-johannes
+  Good stuff, Lai!!!  Simpler than any of the approaches that I was
+  considering, and, better yet, independent of the underlying RCU
+  implementation!!!
 
---=-bRV5aBMXQSuQGSTFcdC0
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
+  I was initially worried that wake_up() might wake only one of two
+  possible wait_event()s, namely rcu_barrier() and the CPU_POST_DEAD code,
+  but the fact that wait_event() clears WQ_FLAG_EXCLUSIVE avoids that issue.
+  I was also worried about the fact that different RCU implementations have
+  different mappings of call_rcu(), call_rcu_bh(), and call_rcu_sched(), but
+  this is OK as well because we just get an extra (harmless) callback in the
+  case that they map together (for example, Classic RCU has call_rcu_sched()
+  mapping to call_rcu()).
 
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
+  Overlap of CPU-hotplug operations is prevented by cpu_add_remove_lock,
+  and any stray callbacks that arrive (for example, from irq handlers
+  running on the dying CPU) either are ahead of the CPU_DYING callbacks on
+  the one hand (and thus accounted for), or happened after the rcu_barrier()
+  started on the other (and thus don't need to be accounted for).
 
-iQIcBAABAgAGBQJJ0UPFAAoJEKVg1VMiehFYy00P/jFtIcRvhIMi8hd7HhEK0kIm
-fdYeJ8HyQAqu3WsGlQcaZAjNQyfKWSl25TgD8jR6TZa77O7mk+7ZpNEVd4h9iqnn
-amK2mc2db8sdH6iv9qrOTm+XbjwDHyeMvrvHSngi1+fpl5hViw+LBOoj0Cmlhjlj
-Pf7ItVKo98TLYqWog5kykAHr8etqgI8UJuMThUUeIdU/VyxS7+Ynph9+dD6CFwc9
-UOIMCoGco/fcTNMjAPWAp97+sP61ZzEMLYBGM11TDxdRxLpw/zgBbD6eGmWfdtN7
-Td04Pje04sPPFRWRTXTq6c15iLlGxb5nBW44QcvSSvNTnKBh3Vuskk+MlaMj4EU0
-ZevagyKgql66IYA9XjU70HaDfy1EE0qGXEdu8g82AMtG+AlhPQOItITphoif1v3Z
-PZn+SnYytViobzc1YIbZJkHBYXi8s+wv2psLMcmAFzNQaCwr8Uz1ug3BsUEBDgYm
-+gSP6GRPwXlcA9d2KoqY2Gu+m/B7/vpS1/7GrwlYpvDRM6f9AKDhUhH6KT/seSkX
-zsWNVehkGNGNG4+YWxZmmfq92+8UpG5d3jQuTpBO43Uy/I73LVsx5oQo0RnZdDnw
-eOYC/QBXggZ7GRpA4AH/mQsOKrS+E4Z1ZodCSsZrZMAyIEqtUp8rTSQPwYxT2TBR
-3egdgD+nYTY/Zeyy1JOF
-=ltOc
------END PGP SIGNATURE-----
+Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
+Reviewed-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+Cc: Peter Zijlstra <peterz@infradead.org>
+LKML-Reference: <49C36476.1010400@cn.fujitsu.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
---=-bRV5aBMXQSuQGSTFcdC0--
 
+---
+ kernel/rcupdate.c |   44 ++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 44 insertions(+), 0 deletions(-)
+
+diff --git a/kernel/rcupdate.c b/kernel/rcupdate.c
+index cae8a05..2c7b845 100644
+--- a/kernel/rcupdate.c
++++ b/kernel/rcupdate.c
+@@ -122,6 +122,8 @@ static void rcu_barrier_func(void *type)
+ 	}
+ }
+ 
++static inline void wait_migrated_callbacks(void);
++
+ /*
+  * Orchestrate the specified type of RCU barrier, waiting for all
+  * RCU callbacks of the specified type to complete.
+@@ -147,6 +149,7 @@ static void _rcu_barrier(enum rcu_barrier type)
+ 		complete(&rcu_barrier_completion);
+ 	wait_for_completion(&rcu_barrier_completion);
+ 	mutex_unlock(&rcu_barrier_mutex);
++	wait_migrated_callbacks();
+ }
+ 
+ /**
+@@ -176,9 +179,50 @@ void rcu_barrier_sched(void)
+ }
+ EXPORT_SYMBOL_GPL(rcu_barrier_sched);
+ 
++static atomic_t rcu_migrate_type_count = ATOMIC_INIT(0);
++static struct rcu_head rcu_migrate_head[3];
++static DECLARE_WAIT_QUEUE_HEAD(rcu_migrate_wq);
++
++static void rcu_migrate_callback(struct rcu_head *notused)
++{
++	if (atomic_dec_and_test(&rcu_migrate_type_count))
++		wake_up(&rcu_migrate_wq);
++}
++
++static inline void wait_migrated_callbacks(void)
++{
++	wait_event(rcu_migrate_wq, !atomic_read(&rcu_migrate_type_count));
++}
++
++static int __cpuinit rcu_barrier_cpu_hotplug(struct notifier_block *self,
++		unsigned long action, void *hcpu)
++{
++	if (action == CPU_DYING) {
++		/*
++		 * preempt_disable() in on_each_cpu() prevents stop_machine(),
++		 * so when "on_each_cpu(rcu_barrier_func, (void *)type, 1);"
++		 * returns, all online cpus have queued rcu_barrier_func(),
++		 * and the dead cpu(if it exist) queues rcu_migrate_callback()s.
++		 *
++		 * These callbacks ensure _rcu_barrier() waits for all
++		 * RCU callbacks of the specified type to complete.
++		 */
++		atomic_set(&rcu_migrate_type_count, 3);
++		call_rcu_bh(rcu_migrate_head, rcu_migrate_callback);
++		call_rcu_sched(rcu_migrate_head + 1, rcu_migrate_callback);
++		call_rcu(rcu_migrate_head + 2, rcu_migrate_callback);
++	} else if (action == CPU_POST_DEAD) {
++		/* rcu_migrate_head is protected by cpu_add_remove_lock */
++		wait_migrated_callbacks();
++	}
++
++	return NOTIFY_OK;
++}
++
+ void __init rcu_init(void)
+ {
+ 	__rcu_init();
++	hotcpu_notifier(rcu_barrier_cpu_hotplug, 0);
+ }
+ 
+ void rcu_scheduler_starting(void)
