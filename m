@@ -1,60 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761538AbZC3U6W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761543AbZC3U7N@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761538AbZC3U6W (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Mar 2009 16:58:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755125AbZC3U6K
+	id S1761543AbZC3U7N (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Mar 2009 16:59:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756252AbZC3U6y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Mar 2009 16:58:10 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:51420 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752268AbZC3U6J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Mar 2009 16:58:09 -0400
-Message-ID: <49D13222.5020608@garzik.org>
-Date: Mon, 30 Mar 2009 16:57:06 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
-MIME-Version: 1.0
-To: Mark Lord <lkml@rtr.ca>
-CC: Jens Axboe <jens.axboe@oracle.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       =?UTF-8?B?RmVybmFuZG8gTHVpcyBWw6F6cXVleiBDYW8=?= 
-	<fernando@oss.ntt.co.jp>,
-       Christoph Hellwig <hch@infradead.org>, Theodore Tso <tytso@mit.edu>,
-       Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Nick Piggin <npiggin@suse.de>,
-       David Rees <drees76@gmail.com>, Jesper Krogh <jesper@krogh.cc>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       chris.mason@oracle.com, david@fromorbit.com, tj@kernel.org
-Subject: Re: [PATCH 1/7] block: Add block_flush_device()
-References: <49D02328.7060108@oss.ntt.co.jp> <49D0258A.9020306@garzik.org> <49D03377.1040909@oss.ntt.co.jp> <49D0B535.2010106@oss.ntt.co.jp> <49D0B687.1030407@oss.ntt.co.jp> <alpine.LFD.2.00.0903301028400.3948@localhost.localdomain> <20090330175544.GX5178@kernel.dk> <alpine.LFD.2.00.0903301120200.3948@localhost.localdomain> <20090330185414.GZ5178@kernel.dk> <alpine.LFD.2.00.0903301242040.4093@localhost.localdomain> <20090330201732.GB5178@kernel.dk> <49D13123.7040007@rtr.ca>
-In-Reply-To: <49D13123.7040007@rtr.ca>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Mon, 30 Mar 2009 16:58:54 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:51876
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1755914AbZC3U6x (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Mar 2009 16:58:53 -0400
+Date: Mon, 30 Mar 2009 13:58:42 -0700 (PDT)
+Message-Id: <20090330.135842.184291063.davem@davemloft.net>
+To: nix.or.die@googlemail.com
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: Compile error in net/netfilter/xt_cluster.ko with current git
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <49D087E9.4000004@googlemail.com>
+References: <49D087E9.4000004@googlemail.com>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mark Lord wrote:
-> Jens Axboe wrote:
->> My point is that some file systems may or may not have different paths
->> or optimizations depending on whether barriers are enabled and working
->> or not. Apparently that's just reiserfs and Chris says we can remove it,
->> so it is probably a moot point.
+From: Gabriel C <nix.or.die@googlemail.com>
+Date: Mon, 30 Mar 2009 10:50:49 +0200
 
-> XFS appears to have something along those lines.
-> I believe it tries to disable the drive write caches
-> if it discovers that it cannot do cache flushes.
+> Hello ,
+> 
+> on 2.6.29-5102-g0d34fb8 I get the following compile error :
+> 
+> ERROR: "__ipv6_addr_type" [net/netfilter/xt_cluster.ko] undefined!
+> 
+> with the following config :
 
-Perhaps; but speaking specifically about blkdev_issue_flush() --
+known problem with fix pending:
 
-nobody checks its return value at the present time.
+netfilter: xtables: fix IPv6 dependency in the cluster match
 
-	Jeff
+This patch fixes a dependency with IPv6:
 
+ERROR: "__ipv6_addr_type" [net/netfilter/xt_cluster.ko] undefined!
 
+This patch adds a function that checks if the higher bits of the
+address is 0xFF to identify a multicast address, instead of adding a
+dependency due to __ipv6_addr_type(). I came up with this idea after
+Patrick McHardy pointed possible problems with runtime module
+dependencies.
+
+Reported-by: Steven Noonan <steven@uplinklabs.net>
+Reported-by: Randy Dunlap <randy.dunlap@oracle.com>
+Reported-by: Cyrill Gorcunov <gorcunov@openvz.org>
+Signed-off-by: Pablo Neira Ayuso <pablo@netfilter.org>
+Signed-off-by: David S. Miller <davem@davemloft.net>
+---
+ net/netfilter/xt_cluster.c |   11 +++++++++--
+ 1 files changed, 9 insertions(+), 2 deletions(-)
+
+diff --git a/net/netfilter/xt_cluster.c b/net/netfilter/xt_cluster.c
+index ad5bd89..6c48476 100644
+--- a/net/netfilter/xt_cluster.c
++++ b/net/netfilter/xt_cluster.c
+@@ -58,6 +58,13 @@ xt_cluster_hash(const struct nf_conn *ct,
+ }
+ 
+ static inline bool
++xt_cluster_ipv6_is_multicast(const struct in6_addr *addr)
++{
++	__be32 st = addr->s6_addr32[0];
++	return ((st & htonl(0xFF000000)) == htonl(0xFF000000));
++}
++
++static inline bool
+ xt_cluster_is_multicast_addr(const struct sk_buff *skb, u_int8_t family)
+ {
+ 	bool is_multicast = false;
+@@ -67,8 +74,8 @@ xt_cluster_is_multicast_addr(const struct sk_buff *skb, u_int8_t family)
+ 		is_multicast = ipv4_is_multicast(ip_hdr(skb)->daddr);
+ 		break;
+ 	case NFPROTO_IPV6:
+-		is_multicast = ipv6_addr_type(&ipv6_hdr(skb)->daddr) &
+-						IPV6_ADDR_MULTICAST;
++		is_multicast =
++			xt_cluster_ipv6_is_multicast(&ipv6_hdr(skb)->daddr);
+ 		break;
+ 	default:
+ 		WARN_ON(1);
+-- 
+1.6.2.1.222.g570cc
 
