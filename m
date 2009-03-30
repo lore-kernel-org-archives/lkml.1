@@ -1,161 +1,303 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757712AbZC3RRE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758186AbZC3RQ2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757712AbZC3RRE (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Mar 2009 13:17:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757878AbZC3RPI
+	id S1758186AbZC3RQ2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Mar 2009 13:16:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753192AbZC3RLd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Mar 2009 13:15:08 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:45495 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758022AbZC3RPG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Mar 2009 13:15:06 -0400
-Message-ID: <49D0FD4C.1010007@redhat.com>
-Date: Mon, 30 Mar 2009 13:11:40 -0400
-From: Ric Wheeler <rwheeler@redhat.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
-MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: "Andreas T.Auer" <andreas.t.auer_lkml_73537@ursus.ath.cx>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Theodore Tso <tytso@mit.edu>,
-       Mark Lord <lkml@rtr.ca>, Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Jeff Garzik <jeff@garzik.org>, Matthew Garrett <mjg59@srcf.ucam.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Rees <drees76@gmail.com>, Jesper Krogh <jesper@krogh.cc>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.29
-References: <alpine.LFD.2.00.0903271511230.3994@localhost.localdomain> <alpine.LFD.2.00.0903271522210.3994@localhost.localdomain> <49CD7B10.7010601@garzik.org> <49CD891A.7030103@rtr.ca> <49CD9047.4060500@garzik.org> <49CE2633.2000903@s5r6.in-berlin.de> <49CE3186.8090903@garzik.org> <49CE35AE.1080702@s5r6.in-berlin.de> <49CE3F74.6090103@rtr.ca> <20090329231451.GR26138@disturbed> <20090330003948.GA13356@mit.edu> <49D0710A.1030805@ursus.ath.cx> <20090330100546.51907bd2@the-village.bc.nu> <49D0A3D6.4000300@ursus.ath.cx> <49D0AA4A.6020308@redhat.com> <alpine.LFD.2.00.0903300817400.3948@localhost.localdomain> <49D0EF1E.9040806@redhat.com> <alpine.LFD.2.00.0903300922231.3948@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.00.0903300922231.3948@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Mon, 30 Mar 2009 13:11:33 -0400
+Received: from casper.infradead.org ([85.118.1.10]:49751 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753797AbZC3RLb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Mar 2009 13:11:31 -0400
+Message-Id: <20090330171023.417259499@chello.nl>
+References: <20090330170701.856843742@chello.nl>
+User-Agent: quilt/0.46-1
+Date: Mon, 30 Mar 2009 19:07:05 +0200
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
+Cc: Paul Mackerras <paulus@samba.org>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH 04/15] perf_counter: executable mmap() information
+Content-Disposition: inline; filename=perf_counter-mmap-tracking.patch
+X-Bad-Reply: References but no 'Re:' in Subject.
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
-> 
-> On Mon, 30 Mar 2009, Ric Wheeler wrote:
->> I still disagree strongly with the don't force flush idea - we have an
->> absolute and critical need to have ordered writes that will survive a power
->> failure for any file system that is built on transactions (or data base).
-> 
-> Read that sentence of yours again.
-> 
-> In particular, read the "we" part, and ponder.
-> 
-> YOU have that absolute and critical need.
-> 
-> Others? Likely not so much. The reason people run "data=ordered" on their 
-> laptops is not just because it's the default - rather, it's the default 
-> _because_ it's the one that avoids most obvious problems. And for 99% of 
-> all people, that's what they want. 
+Currently the profiling information returns userspace IPs but no way
+to correlate them to userspace code. Userspace could look into
+/proc/$pid/maps but that might not be current or even present anymore
+at the time of analyzing the IPs.
 
-My "we" is meant to be the file system writers - we build our journalled file 
-systems on top of these assumptions about ordering.  Not having them punts this 
-all to fsck running most likely in a manual repair.
+Therefore provide means to track the mmap information and provide it
+in the output stream.
 
-> 
-> And as mentioned, if you have to have absolute requirements, you 
-> absolutely MUST be using real RAID with real protection (not just RAID0). 
-> 
-> Not "should". MUST. If you don't do redundancy, your disk _will_ 
-> eventually eat your data. Not because the OS wrote in the wrong order, or 
-> the disk cached writes, but simply because bad things do happen.
+XXX: only covers mmap()/munmap(), mremap() and mprotect() are missing.
 
-Simply not true. To build reliable systems, you need reliable components.
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+CC: Andrew Morton <akpm@linux-foundation.org>
+---
+ include/linux/perf_counter.h |   24 ++++++-
+ kernel/perf_counter.c        |  145 +++++++++++++++++++++++++++++++++++++++++++
+ mm/mmap.c                    |   10 ++
+ 3 files changed, 177 insertions(+), 2 deletions(-)
 
-It is perfectly normal to build non-raided systems that are components of a 
-larger storage pool that don't do raid.
+Index: linux-2.6/include/linux/perf_counter.h
+===================================================================
+--- linux-2.6.orig/include/linux/perf_counter.h
++++ linux-2.6/include/linux/perf_counter.h
+@@ -137,9 +137,11 @@ struct perf_counter_hw_event {
+ 				exclude_kernel :  1, /* ditto kernel          */
+ 				exclude_hv     :  1, /* ditto hypervisor      */
+ 				exclude_idle   :  1, /* don't count when idle */
+-				include_tid    :  1, /* include the tid */
++				include_tid    :  1, /* include the tid       */
++				mmap           :  1, /* include mmap data     */
++				munmap         :  1, /* include munmap data   */
+ 
+-				__reserved_1   : 54;
++				__reserved_1   : 52;
+ 
+ 	__u32			extra_config_len;
+ 	__u32			__reserved_4;
+@@ -211,6 +213,9 @@ enum perf_event_type {
+ 	PERF_EVENT_IP		= 0,
+ 	PERF_EVENT_GROUP	= 1,
+ 
++	PERF_EVENT_MMAP		= 2,
++	PERF_EVENT_MUNMAP	= 3,
++
+ 	__PERF_EVENT_TID	= 0x100,
+ };
+ 
+@@ -491,6 +496,12 @@ static inline int is_software_counter(st
+ 
+ extern void perf_swcounter_event(u32, u64, int, struct pt_regs *);
+ 
++extern void perf_counter_mmap(unsigned long addr, unsigned long len,
++			      unsigned long pgoff, struct file *file);
++
++extern void perf_counter_munmap(unsigned long addr, unsigned long len,
++				unsigned long pgoff, struct file *file);
++
+ #else
+ static inline void
+ perf_counter_task_sched_in(struct task_struct *task, int cpu)		{ }
+@@ -511,6 +522,15 @@ static inline int perf_counter_task_enab
+ static inline void
+ perf_swcounter_event(u32 event, u64 nr, int nmi, struct pt_regs *regs)	{ }
+ 
++
++static inline void
++perf_counter_mmap(unsigned long addr, unsigned long len,
++		  unsigned long pgoff, struct file *file)		{ }
++
++static inline void
++perf_counter_munmap(unsigned long addr, unsigned long len,
++		    unsigned long pgoff, struct file *file) 		{ }
++
+ #endif
+ 
+ #endif /* __KERNEL__ */
+Index: linux-2.6/kernel/perf_counter.c
+===================================================================
+--- linux-2.6.orig/kernel/perf_counter.c
++++ linux-2.6/kernel/perf_counter.c
+@@ -25,6 +25,7 @@
+ #include <linux/anon_inodes.h>
+ #include <linux/kernel_stat.h>
+ #include <linux/perf_counter.h>
++#include <linux/dcache.h>
+ 
+ #include <asm/irq_regs.h>
+ 
+@@ -1842,6 +1843,150 @@ void perf_counter_output(struct perf_cou
+ }
+ 
+ /*
++ * mmap tracking
++ */
++
++struct perf_mmap_event {
++	struct file	*file;
++	char		*file_name;
++	int		file_size;
++
++	struct {
++		struct perf_event_header	header;
++
++		u32				pid;
++		u32				tid;
++		u64				start;
++		u64				len;
++		u64				pgoff;
++	} event;
++};
++
++static void perf_counter_mmap_output(struct perf_counter *counter,
++				     struct perf_mmap_event *mmap_event)
++{
++	struct perf_output_handle handle;
++	int size = mmap_event->event.header.size;
++	int ret = perf_output_begin(&handle, counter, size);
++
++	if (ret)
++		return;
++
++	perf_output_put(&handle, mmap_event->event);
++	perf_output_copy(&handle, mmap_event->file_name,
++				   mmap_event->file_size);
++	perf_output_end(&handle, 0);
++}
++
++static int perf_counter_mmap_match(struct perf_counter *counter,
++				   struct perf_mmap_event *mmap_event)
++{
++	if (counter->hw_event.mmap &&
++	    mmap_event->event.header.type == PERF_EVENT_MMAP)
++		return 1;
++
++	if (counter->hw_event.munmap &&
++	    mmap_event->event.header.type == PERF_EVENT_MUNMAP)
++		return 1;
++
++	return 0;
++}
++
++static void perf_counter_mmap_ctx(struct perf_counter_context *ctx,
++				  struct perf_mmap_event *mmap_event)
++{
++	struct perf_counter *counter;
++
++	if (system_state != SYSTEM_RUNNING || list_empty(&ctx->event_list))
++		return;
++
++	rcu_read_lock();
++	list_for_each_entry_rcu(counter, &ctx->event_list, event_entry) {
++		if (perf_counter_mmap_match(counter, mmap_event))
++			perf_counter_mmap_output(counter, mmap_event);
++	}
++	rcu_read_unlock();
++}
++
++static void perf_counter_mmap_event(struct perf_mmap_event *mmap_event)
++{
++	struct perf_cpu_context *cpuctx;
++	struct file *file = mmap_event->file;
++	unsigned int size;
++	char tmp[16];
++	char *buf = NULL;
++	char *name;
++
++	if (file) {
++		buf = kzalloc(PATH_MAX, GFP_KERNEL);
++		if (!buf) {
++			name = strncpy(tmp, "//enomem", sizeof(tmp));
++			goto got_name;
++		}
++		name = dentry_path(file->f_dentry, buf, PATH_MAX);
++		if (IS_ERR(name)) {
++			name = strncpy(tmp, "//toolong", sizeof(tmp));
++			goto got_name;
++		}
++	} else {
++		name = strncpy(tmp, "//anon", sizeof(tmp));
++		goto got_name;
++	}
++
++got_name:
++	size = ALIGN(strlen(name), sizeof(u64));
++
++	mmap_event->file_name = name;
++	mmap_event->file_size = size;
++
++	mmap_event->event.header.size = sizeof(mmap_event->event) + size;
++
++	cpuctx = &get_cpu_var(perf_cpu_context);
++	perf_counter_mmap_ctx(&cpuctx->ctx, mmap_event);
++	put_cpu_var(perf_cpu_context);
++
++	perf_counter_mmap_ctx(&current->perf_counter_ctx, mmap_event);
++
++	kfree(buf);
++}
++
++void perf_counter_mmap(unsigned long addr, unsigned long len,
++		       unsigned long pgoff, struct file *file)
++{
++	struct perf_mmap_event mmap_event = {
++		.file   = file,
++		.event  = {
++			.header = { .type = PERF_EVENT_MMAP, },
++			.pid	= current->group_leader->pid,
++			.tid	= current->pid,
++			.start  = addr,
++			.len    = len,
++			.pgoff  = pgoff,
++		},
++	};
++
++	perf_counter_mmap_event(&mmap_event);
++}
++
++void perf_counter_munmap(unsigned long addr, unsigned long len,
++			 unsigned long pgoff, struct file *file)
++{
++	struct perf_mmap_event mmap_event = {
++		.file   = file,
++		.event  = {
++			.header = { .type = PERF_EVENT_MUNMAP, },
++			.pid	= current->group_leader->pid,
++			.tid	= current->pid,
++			.start  = addr,
++			.len    = len,
++			.pgoff  = pgoff,
++		},
++	};
++
++	perf_counter_mmap_event(&mmap_event);
++}
++
++/*
+  * Generic software counter infrastructure
+  */
+ 
+Index: linux-2.6/mm/mmap.c
+===================================================================
+--- linux-2.6.orig/mm/mmap.c
++++ linux-2.6/mm/mmap.c
+@@ -27,6 +27,7 @@
+ #include <linux/mempolicy.h>
+ #include <linux/rmap.h>
+ #include <linux/mmu_notifier.h>
++#include <linux/perf_counter.h>
+ 
+ #include <asm/uaccess.h>
+ #include <asm/cacheflush.h>
+@@ -1219,6 +1220,9 @@ munmap_back:
+ 	if (correct_wcount)
+ 		atomic_inc(&inode->i_writecount);
+ out:
++	if (vm_flags & VM_EXEC)
++		perf_counter_mmap(addr, len, pgoff, file);
++
+ 	mm->total_vm += len >> PAGE_SHIFT;
+ 	vm_stat_account(mm, vm_flags, file, len >> PAGE_SHIFT);
+ 	if (vm_flags & VM_LOCKED) {
+@@ -1752,6 +1756,12 @@ static void remove_vma_list(struct mm_st
+ 	do {
+ 		long nrpages = vma_pages(vma);
+ 
++		if (vma->vm_flags & VM_EXEC) {
++			perf_counter_munmap(vma->vm_start,
++					nrpages << PAGE_SHIFT,
++					vma->vm_pgoff, vma->vm_file);
++		}
++
+ 		mm->total_vm -= nrpages;
+ 		vm_stat_account(mm, vma->vm_flags, vma->vm_file, -nrpages);
+ 		vma = remove_vma(vma);
 
-Easy example would be two desktops using rsync, most "cloud" storage systems do 
-something similar at the whole file level (i.e., write out my file 3 times).
-
-If you acknowledge back to a client a write, then have a power outage, the 
-client should reasonably be able to expect that the data survived the power outage.
-
-> 
-> But turn that around, and say: if you don't have redundant disks, then 
-> pretty much by definition those drive flushes won't be guaranteeing your 
-> data _anyway_, so why pay the price?
-
-They do in fact provide that promise for the extremely common case of power 
-outage and as such, can be used to build reliable storage if you need to.
-
->> The big issues are that for s-ata drives, our flush mechanism is really,
->> really primitive and brutal. We could/should try to validate a better and less
->> onerous mechanism (with ordering tags? experimental flush ranges? etc).
-> 
-> That's one of the issues. The cost of those flushes can be really quite 
-> high, and as mentioned, in the absense of redundancy you don't actually 
-> get the guarantees that you seem to think that you get.
-
-I have measured the costs of the write flushes on a variety of devices, 
-routinely, a cache flush is on the order of 10-20 ms with a healthy s-ata drive.
-
-Compared to the write speed of writing any large file from DRAM to storage, one 
-20ms cost to make sure it is on disk is normally in the noise.
-
-The trade off is clearly not as good for small files.
-
-And I will add, my data is built on years of real data from commodity hardware 
-running normal Linux kernels - no special hardware. There are also a lot of good 
-papers that the USENIX FAST people have put out (looking at failures in NetApp 
-gear, the HPC servers in national labs and at google) that can help provide 
-realistic & accurate data.
-
-
-> 
->> I spent a very long time looking at huge numbers of installed systems
->> (millions of file systems deployed in the field), including  taking part in
->> weekly analysis of why things failed, whether the rates of failure went up or
->> down with a given configuration, etc. so I can fully appreciate all of the
->> ways drives (or SSD's!) can magically eat your data.
-> 
-> Well, I can go mainly by my own anecdotal evidence, and so far I've 
-> actually had more catastrophic data failure from failed drives than 
-> anything else. OS crashes in the middle of a "yum update"? Yup, been 
-> there, done that, it was really painful. But it was painful in a "damn, I 
-> need to force a re-install of a couple of rpms".
-> 
-> Actual failed drives that got read errors? I seem to average almost one a 
-> year. It's been overheating laptops, and it's been power outages that 
-> apparently happened at really bad times. I have a UPS now.
-
-Heat is a major killer of spinning drives (as is severe cold). A lot of times, 
-drives that have read errors only (not failed writes) might be fully recoverable 
-if you can re-write that injured sector. What you should look for is a peak in 
-the remapped sectors (via hdparm) - that usually is a moderately good indicator 
-(but note that it is normal to have some, just not 10-25% remapped!).
-
-> 
->> What you have to keep in mind is the order of magnitude of various buckets of
->> failures - software crashes/code bugs tend to dominate, followed by drive
->> failures, followed by power supplies, etc.
-> 
-> Sure. And those "write flushes" really only cover a rather small 
-> percentage. For many setups, the other corruption issues (drive failure) 
-> are not just more common, but generally more disastrous anyway. So why 
-> would a person like that worry about the (rare) power failure?
-
-This is simply not a true statement from what I have seen personally.
-
-> 
->> I have personally seen a huge reduction in the "software" rate of failures
->> when you get the write barriers (forced write cache flushing) working properly
->> with a very large installed base, tested over many years :-)
-> 
-> The software rate of failures should only care about the software write 
-> barriers (ie the ones that order the OS elevator - NOT the ones that 
-> actually tell the disk to flush itself).
-> 
-> 			Linus
-
-
-The elevator does not issue write barriers on its own - those write barriers are 
-sent down by the file systems for transaction commits.
-
-I could be totally confused at this point, but I don't know of any sequential 
-ordering needs that CFQ, etc have for their internal needs.
-
-ric
-
+-- 
 
