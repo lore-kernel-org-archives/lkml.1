@@ -1,141 +1,179 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756291AbZC3B7W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756993AbZC3CEl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756291AbZC3B7W (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Mar 2009 21:59:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753719AbZC3B7M
+	id S1756993AbZC3CEl (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Mar 2009 22:04:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754600AbZC3CEc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Mar 2009 21:59:12 -0400
-Received: from serv2.oss.ntt.co.jp ([222.151.198.100]:33041 "EHLO
-	serv2.oss.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753921AbZC3B7M (ORCPT
+	Sun, 29 Mar 2009 22:04:32 -0400
+Received: from wf-out-1314.google.com ([209.85.200.173]:49997 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753921AbZC3CEb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Mar 2009 21:59:12 -0400
-Message-ID: <49D0276D.2060708@oss.ntt.co.jp>
-Date: Mon, 30 Mar 2009 10:59:09 +0900
-From: =?ISO-8859-1?Q?Fernando_Luis_V=E1zquez_Cao?= 
-	<fernando@oss.ntt.co.jp>
-User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
+	Sun, 29 Mar 2009 22:04:31 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type
+         :content-transfer-encoding;
+        b=Ytk7zOMNLH54FqhlLLjx8kpmEhnn43vBYhk0CN10Z9Kyqe1dr8Q4fnr3upjKZ0yBDD
+         mIhBqqDhTTykRuMloJnnZDmNmQypaz8rKT1ELfkBxkamRGgH5f5qzSweH3PGySNWhEKP
+         hn/zueXxZs6SevI942LTJ1HnKmkctGK9LVuc0=
 MIME-Version: 1.0
-To: Christoph Hellwig <hch@infradead.org>
-CC: Jeff Garzik <jeff@garzik.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Theodore Tso <tytso@mit.edu>, Ingo Molnar <mingo@elte.hu>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Nick Piggin <npiggin@suse.de>,
-       David Rees <drees76@gmail.com>, Jesper Krogh <jesper@krogh.cc>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH 5/5] vfs: Add  wbcflush sysfs knob to disable storage device
- writeback cache flushes
-References: <alpine.LFD.2.00.0903241218130.3032@localhost.localdomain> <49C93AB0.6070300@garzik.org> <20090325093913.GJ27476@kernel.dk> <49CA86BD.6060205@garzik.org> <20090325194341.GB27476@kernel.dk> <49CA9346.6040108@garzik.org> <alpine.LFD.2.00.0903251337410.3032@localhost.localdomain> <20090325212923.GA5620@havoc.gtf.org> <20090326032445.GA16999@havoc.gtf.org> <20090327205046.GA2036@havoc.gtf.org> <20090329082507.GA4242@infradead.org> <49D01F94.6000101@oss.ntt.co.jp>
-In-Reply-To: <49D01F94.6000101@oss.ntt.co.jp>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Date: Sun, 29 Mar 2009 20:04:29 -0600
+Message-ID: <9b1675090903291904g7eca965eydb1aa3f852a1b91c@mail.gmail.com>
+Subject: 2.6.29 on MacBook 2,1 fails to reboot
+From: Trenton Adams <trenton.d.adams@gmail.com>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add a sysfs knob to disable storage device writeback cache flushes.
+Hi Guys,
 
-Signed-off-by: Fernando Luis Vazquez Cao <fernando@oss.ntt.co.jp>
----
+I am using v2.6.29 (x86_64 mode) on Linus' tree.
 
-diff -urNp linux-2.6.29-orig/block/blk-barrier.c linux-2.6.29/block/blk-barrier.c
---- linux-2.6.29-orig/block/blk-barrier.c	2009-03-24 08:12:14.000000000 +0900
-+++ linux-2.6.29/block/blk-barrier.c	2009-03-29 17:55:45.000000000 +0900
-@@ -318,6 +318,9 @@ int blkdev_issue_flush(struct block_devi
-  	if (!q)
-  		return -ENXIO;
+I get to run level 6, where all processes have been killed, and the
+system is about to reboot, but it doesn't.  No apparent error messages
+are printed out, it just hangs.
 
-+	if (blk_queue_nowbcflush(q))
-+		return -EOPNOTSUPP;
-+
-  	bio = bio_alloc(GFP_KERNEL, 0);
-  	if (!bio)
-  		return -ENOMEM;
-diff -urNp linux-2.6.29-orig/block/blk-core.c linux-2.6.29/block/blk-core.c
---- linux-2.6.29-orig/block/blk-core.c	2009-03-24 08:12:14.000000000 +0900
-+++ linux-2.6.29/block/blk-core.c	2009-03-29 18:09:18.000000000 +0900
-@@ -1452,7 +1452,8 @@ static inline void __generic_make_reques
-  			goto end_io;
-  		}
-  		if (bio_barrier(bio) && bio_has_data(bio) &&
--		    (q->next_ordered == QUEUE_ORDERED_NONE)) {
-+		    (blk_queue_nowbcflush(q) ||
-+		     q->next_ordered == QUEUE_ORDERED_NONE)) {
-  			err = -EOPNOTSUPP;
-  			goto end_io;
-  		}
-diff -urNp linux-2.6.29-orig/block/blk-sysfs.c linux-2.6.29/block/blk-sysfs.c
---- linux-2.6.29-orig/block/blk-sysfs.c	2009-03-24 08:12:14.000000000 +0900
-+++ linux-2.6.29/block/blk-sysfs.c	2009-03-30 10:21:38.000000000 +0900
-@@ -151,6 +151,27 @@ static ssize_t queue_nonrot_store(struct
-  	return ret;
-  }
+I do the skinny elephant dance, and everything is fine.  But, note
+that when doing "Elephant", it says that there are no more processes
+to kill.
 
-+static ssize_t queue_wbcflush_show(struct request_queue *q, char *page)
-+{
-+	return queue_var_show(!blk_queue_nowbcflush(q), page);
-+}
-+
-+static ssize_t queue_wbcflush_store(struct request_queue *q, const char *page,
-+				    size_t count)
-+{
-+	unsigned long nm;
-+	ssize_t ret = queue_var_store(&nm, page, count);
-+
-+	spin_lock_irq(q->queue_lock);
-+	if (nm)
-+		queue_flag_clear(QUEUE_FLAG_NOWBCFLUSH , q);
-+	else
-+		queue_flag_set(QUEUE_FLAG_NOWBCFLUSH , q);
-+	spin_unlock_irq(q->queue_lock);
-+
-+	return ret;
-+}
-+
-  static ssize_t queue_nomerges_show(struct request_queue *q, char *page)
-  {
-  	return queue_var_show(blk_queue_nomerges(q), page);
-@@ -258,6 +279,12 @@ static struct queue_sysfs_entry queue_no
-  	.store = queue_nonrot_store,
-  };
+System information below.  If you need more info, let me know.
 
-+static struct queue_sysfs_entry queue_wbcflush_entry = {
-+	.attr = {.name = "wbcflush", .mode = S_IRUGO | S_IWUSR },
-+	.show = queue_wbcflush_show,
-+	.store = queue_wbcflush_store,
-+};
-+
-  static struct queue_sysfs_entry queue_nomerges_entry = {
-  	.attr = {.name = "nomerges", .mode = S_IRUGO | S_IWUSR },
-  	.show = queue_nomerges_show,
-@@ -284,6 +311,7 @@ static struct attribute *default_attrs[]
-  	&queue_iosched_entry.attr,
-  	&queue_hw_sector_size_entry.attr,
-  	&queue_nonrot_entry.attr,
-+	&queue_wbcflush_entry.attr,
-  	&queue_nomerges_entry.attr,
-  	&queue_rq_affinity_entry.attr,
-  	&queue_iostats_entry.attr,
-diff -urNp linux-2.6.29-orig/include/linux/blkdev.h linux-2.6.29/include/linux/blkdev.h
---- linux-2.6.29-orig/include/linux/blkdev.h	2009-03-24 08:12:14.000000000 +0900
-+++ linux-2.6.29/include/linux/blkdev.h	2009-03-30 10:23:34.000000000 +0900
-@@ -452,6 +452,7 @@ struct request_queue
-  #define QUEUE_FLAG_NONROT      14	/* non-rotational device (SSD) */
-  #define QUEUE_FLAG_VIRT        QUEUE_FLAG_NONROT /* paravirt device */
-  #define QUEUE_FLAG_IO_STAT     15	/* do IO stats */
-+#define QUEUE_FLAG_NOWBCFLUSH  16	/* disable write-back cache flushing */
+tdamac ~ # uname -a
+Linux tdamac 2.6.29 #3 SMP Sun Mar 29 19:07:55 MDT 2009 x86_64
+Intel(R) Core(TM)2 CPU T7400 @ 2.16GHz GenuineIntel GNU/Linux
 
-  #define QUEUE_FLAG_DEFAULT	((1 << QUEUE_FLAG_IO_STAT) |		\
-  				 (1 << QUEUE_FLAG_CLUSTER) |		\
-@@ -572,6 +573,8 @@ enum {
-  #define blk_queue_stopped(q)	test_bit(QUEUE_FLAG_STOPPED, &(q)->queue_flags)
-  #define blk_queue_nomerges(q)	test_bit(QUEUE_FLAG_NOMERGES, &(q)->queue_flags)
-  #define blk_queue_nonrot(q)	test_bit(QUEUE_FLAG_NONROT, &(q)->queue_flags)
-+#define blk_queue_nowbcflush(q)	\
-+	test_bit(QUEUE_FLAG_NOWBCFLUSH, &(q)->queue_flags)
-  #define blk_queue_io_stat(q)	test_bit(QUEUE_FLAG_IO_STAT, &(q)->queue_flags)
-  #define blk_queue_flushing(q)	((q)->ordseq)
-  #define blk_queue_stackable(q)	\
+tdamac ~ # lspci
+00:00.0 Host bridge: Intel Corporation Mobile 945GM/PM/GMS, 943/940GML
+and 945GT Express Memory Controller Hub (rev 03)
+00:02.0 VGA compatible controller: Intel Corporation Mobile 945GM/GMS,
+943/940GML Express Integrated Graphics Controller (rev 03)
+00:02.1 Display controller: Intel Corporation Mobile 945GM/GMS/GME,
+943/940GML Express Integrated Graphics Controller (rev 03)
+00:07.0 Performance counters: Intel Corporation Device 27a3 (rev 03)
+00:1b.0 Audio device: Intel Corporation 82801G (ICH7 Family) High
+Definition Audio Controller (rev 02)
+00:1c.0 PCI bridge: Intel Corporation 82801G (ICH7 Family) PCI Express
+Port 1 (rev 02)
+00:1c.1 PCI bridge: Intel Corporation 82801G (ICH7 Family) PCI Express
+Port 2 (rev 02)
+00:1d.0 USB Controller: Intel Corporation 82801G (ICH7 Family) USB
+UHCI Controller #1 (rev 02)
+00:1d.1 USB Controller: Intel Corporation 82801G (ICH7 Family) USB
+UHCI Controller #2 (rev 02)
+00:1d.2 USB Controller: Intel Corporation 82801G (ICH7 Family) USB
+UHCI Controller #3 (rev 02)
+00:1d.3 USB Controller: Intel Corporation 82801G (ICH7 Family) USB
+UHCI Controller #4 (rev 02)
+00:1d.7 USB Controller: Intel Corporation 82801G (ICH7 Family) USB2
+EHCI Controller (rev 02)
+00:1e.0 PCI bridge: Intel Corporation 82801 Mobile PCI Bridge (rev e2)
+00:1f.0 ISA bridge: Intel Corporation 82801GBM (ICH7-M) LPC Interface
+Bridge (rev 02)
+00:1f.1 IDE interface: Intel Corporation 82801G (ICH7 Family) IDE
+Controller (rev 02)
+00:1f.2 IDE interface: Intel Corporation 82801GBM/GHM (ICH7 Family)
+SATA IDE Controller (rev 02)
+00:1f.3 SMBus: Intel Corporation 82801G (ICH7 Family) SMBus Controller (rev 02)
+01:00.0 Ethernet controller: Marvell Technology Group Ltd. 88E8053
+PCI-E Gigabit Ethernet Controller (rev 22)
+02:00.0 Network controller: Atheros Communications Inc. AR5418
+802.11abgn Wireless PCI Express Adapter (rev 01)
+03:03.0 FireWire (IEEE 1394): Agere Systems FW323 (rev 61)
+
+tdamac ~ # cat /proc/cpuinfo
+processor       : 0
+vendor_id       : GenuineIntel
+cpu family      : 6
+model           : 15
+model name      : Intel(R) Core(TM)2 CPU         T7400  @ 2.16GHz
+stepping        : 6
+cpu MHz         : 1000.000
+cache size      : 4096 KB
+physical id     : 0
+siblings        : 2
+core id         : 0
+cpu cores       : 2
+apicid          : 0
+initial apicid  : 0
+fpu             : yes
+fpu_exception   : yes
+cpuid level     : 10
+wp              : yes
+flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge
+mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe
+syscall nx lm constant_tsc arch_perfmon pebs bts rep_good pni dtes64
+monitor ds_cpl vmx est tm2 ssse3 cx16 xtpr pdcm lahf_lm tpr_shadow
+bogomips        : 4322.42
+clflush size    : 64
+cache_alignment : 64
+address sizes   : 36 bits physical, 48 bits virtual
+power management:
+
+processor       : 1
+vendor_id       : GenuineIntel
+cpu family      : 6
+model           : 15
+model name      : Intel(R) Core(TM)2 CPU         T7400  @ 2.16GHz
+stepping        : 6
+cpu MHz         : 1000.000
+cache size      : 4096 KB
+physical id     : 0
+siblings        : 2
+core id         : 1
+cpu cores       : 2
+apicid          : 1
+initial apicid  : 1
+fpu             : yes
+fpu_exception   : yes
+cpuid level     : 10
+wp              : yes
+flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge
+mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe
+syscall nx lm constant_tsc arch_perfmon pebs bts rep_good pni dtes64
+monitor ds_cpl vmx est tm2 ssse3 cx16 xtpr pdcm lahf_lm tpr_shadow
+bogomips        : 4322.44
+clflush size    : 64
+cache_alignment : 64
+address sizes   : 36 bits physical, 48 bits virtual
+power management:
+
+tdamac ~ # lsmod
+Module                  Size  Used by
+i915                  148744  2
+drm                   149184  3 i915
+snd_pcm_oss            37728  0
+snd_mixer_oss          14576  1 snd_pcm_oss
+snd_seq_oss            29056  0
+snd_seq_midi_event      6608  1 snd_seq_oss
+snd_seq                48416  4 snd_seq_oss,snd_seq_midi_event
+snd_seq_device          6564  2 snd_seq_oss,snd_seq
+ipt_MASQUERADE          3024  1
+iptable_nat             5392  1
+nf_nat                 18084  2 ipt_MASQUERADE,iptable_nat
+pl2303                 17332  0
+usbserial              30480  1 pl2303
+hermes                  6800  0
+fuse                   53424  0
+cifs                  222728  2
+snd_hda_codec_idt      61392  1
+snd_hda_intel          25096  3
+snd_hda_codec          52368  2 snd_hda_codec_idt,snd_hda_intel
+snd_pcm                71576  3 snd_pcm_oss,snd_hda_intel,snd_hda_codec
+snd_timer              19808  2 snd_seq,snd_pcm
+snd                    55272  16
+snd_pcm_oss,snd_mixer_oss,snd_seq_oss,snd_seq,snd_seq_device,snd_hda_codec_idt,snd_hda_intel,snd_hda_codec,snd_pcm,snd_timer
+snd_page_alloc          8608  2 snd_hda_intel,snd_pcm
+appletouch             10676  0
+pcspkr                  2736  0
+applesmc               29972  0
+hwmon                   2696  1 applesmc
+led_class               3672  1 applesmc
+input_polldev           3808  1 applesmc
+scsi_wait_scan          1360  0
+
+Thanks.
