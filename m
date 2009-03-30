@@ -1,66 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756631AbZC3LWW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758213AbZC3LWi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756631AbZC3LWW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Mar 2009 07:22:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752799AbZC3LWN
+	id S1758213AbZC3LWi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Mar 2009 07:22:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755634AbZC3LWY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Mar 2009 07:22:13 -0400
-Received: from mail-in-03.arcor-online.net ([151.189.21.43]:35186 "EHLO
-	mail-in-03.arcor-online.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750993AbZC3LWM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Mar 2009 07:22:12 -0400
-X-DKIM: Sendmail DKIM Filter v2.8.2 mail-in-03.arcor-online.net A763B2C2F7D
-Date: Mon, 30 Mar 2009 13:22:07 +0200 (CEST)
-From: Bodo Eggert <7eggert@gmx.de>
-To: Pavel Machek <pavel@ucw.cz>
-cc: Bodo Eggert <7eggert@gmx.de>, James Morris <jmorris@namei.org>,
-       kernel list <linux-kernel@vger.kernel.org>
-Subject: Re: TOMOYO in linux-next
-In-Reply-To: <20090329213955.GD31857@elf.ucw.cz>
-Message-ID: <alpine.LSU.0.999.0903301202330.4746@be1.lrz>
-References: <ck5CF-5mU-11@gated-at.bofh.it> <E1Ln8MC-0001RR-1E@be1.7eggert.dyndns.org>
- <20090327114224.GF2585@elf.ucw.cz> <alpine.LSU.0.999.0903271354290.5610@be1.lrz>
- <20090329115830.GA15492@elf.ucw.cz> <alpine.LNX.1.10.0903291613360.20606@be10.lrz>
- <20090329213955.GD31857@elf.ucw.cz>
+	Mon, 30 Mar 2009 07:22:24 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:51774 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754721AbZC3LWW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Mar 2009 07:22:22 -0400
+Message-ID: <49D0AA4A.6020308@redhat.com>
+Date: Mon, 30 Mar 2009 07:17:30 -0400
+From: Ric Wheeler <rwheeler@redhat.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=us-ascii
+To: "Andreas T.Auer" <andreas.t.auer_lkml_73537@ursus.ath.cx>
+CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, Theodore Tso <tytso@mit.edu>,
+       Mark Lord <lkml@rtr.ca>, Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Jeff Garzik <jeff@garzik.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Matthew Garrett <mjg59@srcf.ucam.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       David Rees <drees76@gmail.com>, Jesper Krogh <jesper@krogh.cc>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.29
+References: <alpine.LFD.2.00.0903271511230.3994@localhost.localdomain>	<alpine.LFD.2.00.0903271522210.3994@localhost.localdomain>	<49CD7B10.7010601@garzik.org>	<49CD891A.7030103@rtr.ca>	<49CD9047.4060500@garzik.org>	<49CE2633.2000903@s5r6.in-berlin.de>	<49CE3186.8090903@garzik.org>	<49CE35AE.1080702@s5r6.in-berlin.de>	<49CE3F74.6090103@rtr.ca>	<20090329231451.GR26138@disturbed>	<20090330003948.GA13356@mit.edu>	<49D0710A.1030805@ursus.ath.cx> <20090330100546.51907bd2@the-village.bc.nu> <49D0A3D6.4000300@ursus.ath.cx>
+In-Reply-To: <49D0A3D6.4000300@ursus.ath.cx>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 29 Mar 2009, Pavel Machek wrote:
+Andreas T.Auer wrote:
+> On 30.03.2009 11:05 Alan Cox wrote:
+>   
+>>> It seems you still didn't get the point. ext3 data=ordered is not the
+>>> problem. The problem is that the average developer doesn't expect the fs
+>>> to _re-order_ stuff. This is how most common fs did work long before
+>>>     
+>>>       
+>> No it isn´t. Standard Unix file systems made no such guarantee and would
+>> write out data out of order. The disk scheduler would then further
+>> re-order things.
+>>
+>>   
+>>     
+> You surely know that better: Did fs actually write "later" data quite
+> long before "earlier" data? During the flush data may be re-ordered, but
+> was it also _done_ outside of it?
+>   
 
-> 
-> >>> How would you exclude mozilla from writing to .* then? ".a" is bad,
-> >>> ".b" is bad ...? or "A" is OK, "a" is OK, "zzzzzzzzzzzzz" is OK"?
-> >>> Either way, you'd need several universes to store the security profile.
-> >>
-> >> What is magic about .* files? I want mozilla to store the pictures as
-> >> .naughty.picture.jpg -- I don't see anything wrong with that.
-> >
-> > As long as you have a guaranteed-to-be-complete list of config files, you 
-> > can get along without wildcards. And still if you do, I'll write a 
-> > program to make it incomplete.
-> 
-> Not all config files match .* pattern. I have at least hugo.ini
-> mxmap.ini in my ~.
-       ^^^^
-I see a pattern there.
+People keep forgetting that storage (even on your commodity s-ata class 
+of drives) has very large & volatile cache. The disk firmware can hold 
+writes in that cache as long as it wants, reorder its writes into 
+anything that makes sense and has no explicit ordering promises.
 
-IMO there is no use in a security system if it allows you to modify 
-something like ~/.bashrc, and a security system not allowing mozilla to 
-create ~/.mozilla or ~/pr0n.jpg is not usable at all.
+This is where the write barrier code comes in - for file systems that 
+care about ordering for data, we use barrier ops to impose the required 
+ordering.
 
-You must handle different files in one directory diffrerently, and since 
-they are not there yet, you can't label them. Instead, you'll have to label 
-them at runtime, and you have to do it based on the filename. At the same 
-time, you have a HUGE number of problematic filenames and a HUGE number of 
-safe filenames. Unless you have about 500 universes, you can't implement a 
-bitmap of allowed an non-allowed filenames.
+In a similar way, fsync() gives applications the power to impose their 
+own ordering.
 
-What will you do? Give up and let mozilla modify all the config files you 
-didn't think of? Or not let mozilla store tux.png in ~?
+If we assume that we can "save" an fsync cost with ordering mode, we 
+have to keep in mind that the file system will need to do the expensive 
+cache flushes in order to preserve its internal ordering.
+>   
+>> If you think the ¨guarantees¨ from before ext3 are normal defaults you´ve
+>> been writing junk code
+>>
+>>   
+>>     
+> I'm still on ReiserFS since it was considered stable in some SuSE 7.x.
+> And I expected it to be fairly ordered, but as a network protocol
+> programmer I didn't rely on the ordering of fs write-outs yet.
+>   
 
--- 
-Artificial Intelligence usually beats real stupidity.
+With reiserfs, you will have barriers on by default in SLES/opensuse 
+which will keep (at least fs meta-data) properly ordered....
+
+ric
+
