@@ -1,50 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757862AbZC3Tk2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760271AbZC3Tl2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757862AbZC3Tk2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Mar 2009 15:40:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759299AbZC3TkH
+	id S1760271AbZC3Tl2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Mar 2009 15:41:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760221AbZC3TlM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Mar 2009 15:40:07 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:49123 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1759119AbZC3TkF (ORCPT
+	Mon, 30 Mar 2009 15:41:12 -0400
+Received: from rcsinet13.oracle.com ([148.87.113.125]:28141 "EHLO
+	rgminet13.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760212AbZC3TlK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Mar 2009 15:40:05 -0400
-Date: Mon, 30 Mar 2009 12:38:13 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Jeff Mahoney <jeffm@suse.com>
-cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       ReiserFS Development List <reiserfs-devel@vger.kernel.org>
-Subject: Re: [patch 00/35] Jeff's ReiserFS Patch Queue
-In-Reply-To: <20090330180215.951354436@suse.com>
-Message-ID: <alpine.LFD.2.00.0903301236280.4093@localhost.localdomain>
-References: <20090330180215.951354436@suse.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 30 Mar 2009 15:41:10 -0400
+Cc: linux-kernel@vger.kernel.org, linux-nfs@vger.kernel.org
+Message-Id: <56E66BF1-FBC8-4727-AB62-3BF2A97979F1@oracle.com>
+From: Chuck Lever <chuck.lever@oracle.com>
+To: Mans Rullgard <mans@mansr.com>
+In-Reply-To: <1238270120-31501-1-git-send-email-mans@mansr.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+Content-Transfer-Encoding: 7bit
+Mime-Version: 1.0 (Apple Message framework v930.3)
+Subject: Re: [PATCH] NSM: Fix unaligned accesses in nsm_init_private()
+Date: Mon, 30 Mar 2009 15:40:49 -0400
+References: <1238270120-31501-1-git-send-email-mans@mansr.com>
+X-Mailer: Apple Mail (2.930.3)
+X-Source-IP: acsmt701.oracle.com [141.146.40.71]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090207.49D12047.0008:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mar 28, 2009, at 3:55 PM, Mans Rullgard wrote:
+> This fixes unaligned accesses in nsm_init_private() when
+> creating nlm_reboot keys.
+>
 
+Reviewed-by: Chuck Lever <chuck.lever@oracle.com>
 
-On Mon, 30 Mar 2009, Jeff Mahoney wrote:
-> 
-> I'd like to submit my reiserfs patch queue for inclusion into 2.6.30.
+Did a little testing on x86 as well.
 
-Hmm. Looks fine, and I merged it. I had a number of mostly trivial 
-conflicts (most due to the quota name cleanup to lower-case, with some 
-header file export cleanup conflicts added in), but they looked fairly 
-straightforward and I compile-tested the end result.
+> Signed-off-by: Mans Rullgard <mans@mansr.com>
+> ---
+> fs/lockd/mon.c |    8 ++++++--
+> 1 files changed, 6 insertions(+), 2 deletions(-)
+>
+> diff --git a/fs/lockd/mon.c b/fs/lockd/mon.c
+> index 5e2c4d5..6d5d4a4 100644
+> --- a/fs/lockd/mon.c
+> +++ b/fs/lockd/mon.c
+> @@ -16,6 +16,8 @@
+> #include <linux/sunrpc/svc.h>
+> #include <linux/lockd/lockd.h>
+>
+> +#include <asm/unaligned.h>
+> +
+> #define NLMDBG_FACILITY		NLMDBG_MONITOR
+> #define NSM_PROGRAM		100024
+> #define NSM_VERSION		1
+> @@ -274,10 +276,12 @@ static void nsm_init_private(struct nsm_handle  
+> *nsm)
+> {
+> 	u64 *p = (u64 *)&nsm->sm_priv.data;
+> 	struct timespec ts;
+> +	s64 ns;
+>
+> 	ktime_get_ts(&ts);
+> -	*p++ = timespec_to_ns(&ts);
+> -	*p = (unsigned long)nsm;
+> +	ns = timespec_to_ns(&ts);
+> +	put_unaligned(ns, p);
+> +	put_unaligned((unsigned long)nsm, p + 1);
+> }
+>
+> static struct nsm_handle *nsm_create_handle(const struct sockaddr  
+> *sap,
+> -- 
+> 1.6.2
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-nfs"  
+> in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
-I don't have any reiserfs filesystems left, though, so you should really 
-double-check the end result.
-
-> Once this is applied, I expect reiserfs to be in deep maintenance-only 
-> mode.
-
-Heh, I hadn't expected even this.
-
-		Linus
+--
+Chuck Lever
+chuck[dot]lever[at]oracle[dot]com
