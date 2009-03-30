@@ -1,66 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757186AbZC3CZj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757728AbZC3C0V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757186AbZC3CZj (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Mar 2009 22:25:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755753AbZC3CZ2
+	id S1757728AbZC3C0V (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Mar 2009 22:26:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756167AbZC3C0J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Mar 2009 22:25:28 -0400
-Received: from THUNK.ORG ([69.25.196.29]:59633 "EHLO thunker.thunk.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753921AbZC3CZ1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Mar 2009 22:25:27 -0400
-Date: Sun, 29 Mar 2009 22:25:21 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: Eric Sandeen <sandeen@redhat.com>
-Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, linux-ext4@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] ext4: fix blkdev_issue_flush() failure handling
-Message-ID: <20090330022521.GB13356@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Eric Sandeen <sandeen@redhat.com>,
-	Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-	linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <200903291928.14451.bzolnier@gmail.com> <49CFB33A.9020406@redhat.com>
+	Sun, 29 Mar 2009 22:26:09 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:50214 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755753AbZC3C0I (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Mar 2009 22:26:08 -0400
+Message-ID: <49D02DAD.2040607@jp.fujitsu.com>
+Date: Mon, 30 Mar 2009 11:25:49 +0900
+From: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49CFB33A.9020406@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+To: Alex Chiang <achiang@hp.com>
+CC: jbarnes@virtuousgeek.org, linux-pci@vger.kernel.org,
+       linux-kernel@vger.kernel.org, lenb@kernel.org
+Subject: Re: [PATCH 3/3] PCI: pci_slot: grab refcount on slot's bus
+References: <20090329165352.29073.5159.stgit@bob.kio> <20090329165454.29073.1180.stgit@bob.kio>
+In-Reply-To: <20090329165454.29073.1180.stgit@bob.kio>
+Content-Type: text/plain; charset=ISO-2022-JP
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Mar 29, 2009 at 12:43:22PM -0500, Eric Sandeen wrote:
+Alex Chiang wrote:
+> If a logical hot unplug (remove) is performed on a physical PCI slot's
+> parent bridge, and then pci_slot is unloaded, we will encounter an oops:
 > 
-> As long as we keep the call there this is probably good, but after
-> talking w/ Chris Mason, I think the call is extraneous anyway and should
-> probably just be removed...
+>   [<ffffffff803a788a>] kobject_release+0x9a/0x290
+>   [<ffffffff803a77f0>] ? kobject_release+0x0/0x290
+>   [<ffffffff803a8ce7>] kref_put+0x37/0x80
+>   [<ffffffff803a76f7>] kobject_put+0x27/0x60
+>   [<ffffffff803bebcc>] ? pci_destroy_slot+0x3c/0xc0
+>   [<ffffffff803bebd5>] pci_destroy_slot+0x45/0xc0
+>   [<ffffffffa000f05c>] acpi_pci_slot_remove+0x5c/0x91 [pci_slot]
+>   [<ffffffff8040064b>] acpi_pci_unregister_driver+0x4b/0x62
+>   [<ffffffffa000f5c8>] acpi_pci_slot_exit+0x10/0x12 [pci_slot]
+>   [<ffffffff80276ce1>] sys_delete_module+0x161/0x250
+> 
+> We need to grab a reference to the parent PCI bus, which will pin
+> the bus and prevent it from being released until pci_slot is unloaded.
+> 
+> Cc: lenb@kernel.org
+> Reported-by: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+> Signed-off-by: Alex Chiang <achiang@hp.com>
+> ---
+> 
+>  drivers/acpi/pci_slot.c |    5 +++++
+>  1 files changed, 5 insertions(+), 0 deletions(-)
+> 
+> diff --git a/drivers/acpi/pci_slot.c b/drivers/acpi/pci_slot.c
+> index cd1f446..c7ad9f2 100644
+> --- a/drivers/acpi/pci_slot.c
+> +++ b/drivers/acpi/pci_slot.c
+> @@ -63,6 +63,7 @@ struct acpi_pci_slot {
+>  	acpi_handle root_handle;	/* handle of the root bridge */
+>  	struct pci_slot *pci_slot;	/* corresponding pci_slot */
+>  	struct list_head list;		/* node in the list of slots */
+> +	struct pci_bus *bus;		/* bus the slot is on */
+>  };
+
+I don't think we need an additional 'bus' field in the struct
+acpi_pci_slot. At the register_slot(), we already know the
+address of struct pci_bus. At the acpi_pci_slot_remove(), I
+think we can get the address of struct pci_bus as follows.
+
+		if (slot->root_handle == handle) {
+			struct pci_bus *pbus = slot->pci_slot->bus;
+			list_del(&slot->list);
+			pci_destroy_slot(slot->pci_slot);
+			put_device(&pbus->dev);
+			kfree(slot);
+		}
+
+Thanks,
+Kenji Kaneshige
+
+
+>  
+>  static int acpi_pci_slot_add(acpi_handle handle);
+> @@ -159,11 +160,14 @@ register_slot(acpi_handle handle, u32 lvl, void *context, void **rv)
+>  
+>  	slot->root_handle = parent_context->root_handle;
+>  	slot->pci_slot = pci_slot;
+> +	slot->bus = pci_bus;
+>  	INIT_LIST_HEAD(&slot->list);
+>  	mutex_lock(&slot_list_lock);
+>  	list_add(&slot->list, &slot_list);
+>  	mutex_unlock(&slot_list_lock);
+>  
+> +	get_device(&pci_bus->dev);
+> +
+>  	dbg("pci_slot: %p, pci_bus: %x, device: %d, name: %s\n",
+>  		pci_slot, pci_bus->number, device, name);
+>  
+> @@ -316,6 +320,7 @@ acpi_pci_slot_remove(acpi_handle handle)
+>  		if (slot->root_handle == handle) {
+>  			list_del(&slot->list);
+>  			pci_destroy_slot(slot->pci_slot);
+> +			put_device(&slot->bus->dev);
+>  			kfree(slot);
+>  		}
+>  	}
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pci" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
 > 
 
-Yes, I agree, but it takes a lot of digging to be completely sure of
-that it's safe to remove it.  Interestingly, it was you who added the
-patch which added the call to blkdev_issue_flush():
 
-commit d755fb384250d6bd7fd18a0930e71965acc8e72e
-Author: Eric Sandeen <sandeen@redhat.com>
-Date:   Fri Jul 11 19:27:31 2008 -0400
-
-    ext4: call blkdev_issue_flush on fsync
-    
-    To ensure that bits are truly on-disk after an fsync,
-    we should call blkdev_issue_flush if barriers are supported.
-    
-    Inspired by an old thread on barriers, by reiserfs & xfs
-    which do the same, and by a patch SuSE ships with their kernel
-    
-    Signed-off-by: Eric Sandeen <sandeen@redhat.com>
-    Signed-off-by: Mingming Cao <cmm@us.ibm.com>
-    Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
-
-When we remove it we should add a comment noting why it's not
-necessary.
-
-						- Ted
