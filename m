@@ -1,36 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757681AbZC3GeW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755477AbZC3GiY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757681AbZC3GeW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Mar 2009 02:34:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754200AbZC3GeM
+	id S1755477AbZC3GiY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Mar 2009 02:38:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753590AbZC3GiP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Mar 2009 02:34:12 -0400
-Received: from fwil.voltaire.com ([193.47.165.2]:39208 "EHLO exil.voltaire.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752675AbZC3GeM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Mar 2009 02:34:12 -0400
-Message-ID: <49D067DC.8080907@Voltaire.com>
-Date: Mon, 30 Mar 2009 09:34:04 +0300
-From: Or Gerlitz <ogerlitz@Voltaire.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081209)
-MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: error building Linus tree
-References: <Pine.LNX.4.64.0903292332480.31630@zuben.voltaire.com> <20090329.135441.198148384.davem@davemloft.net>
-In-Reply-To: <20090329.135441.198148384.davem@davemloft.net>
-Content-Type: text/plain; charset=us-ascii
+	Mon, 30 Mar 2009 02:38:15 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:54747 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752675AbZC3GiO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Mar 2009 02:38:14 -0400
+Subject: Re: [patch 0/3] slub partial list thrashing performance degradation
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: David Rientjes <rientjes@google.com>
+Cc: Christoph Lameter <cl@linux-foundation.org>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Martin Bligh <mbligh@google.com>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <alpine.DEB.2.00.0903292241300.15813@chino.kir.corp.google.com>
+References: <alpine.DEB.2.00.0903292241300.15813@chino.kir.corp.google.com>
+Date: Mon, 30 Mar 2009 09:38:11 +0300
+Message-Id: <1238395091.26742.24.camel@penberg-laptop>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 30 Mar 2009 06:34:05.0298 (UTC) FILETIME=[85B36520:01C9B101]
+X-Mailer: Evolution 2.22.3.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Miller wrote:
-> You need to use gcc-4.1.2 or later to correctly compile the kernel.
+On Sun, 2009-03-29 at 22:43 -0700, David Rientjes wrote:
+> SLUB causes a performance degradation in comparison to SLAB when a
+> workload has an object allocation and freeing pattern such that it spends
+> more time in partial list handling than utilizing the fastpaths.
 
-OK, thanks, I'll upgrade the system to newer gcc. Is this limitation being
-around for long time?
+Christoph, Nick, any objections to merging this? The patches look sane
+and the numbers convincing enough to me.
 
-Or.
+			Pekka
 
