@@ -1,54 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759590AbZC3TOq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759525AbZC3TRe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759590AbZC3TOq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Mar 2009 15:14:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757447AbZC3TOZ
+	id S1759525AbZC3TRe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Mar 2009 15:17:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758527AbZC3TRR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Mar 2009 15:14:25 -0400
-Received: from gw.goop.org ([64.81.55.164]:47593 "EHLO mail.goop.org"
+	Mon, 30 Mar 2009 15:17:17 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:53579 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757562AbZC3TOX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Mar 2009 15:14:23 -0400
-Message-ID: <49D11674.9040205@goop.org>
-Date: Mon, 30 Mar 2009 11:59:00 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
+	id S1758453AbZC3TRQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Mar 2009 15:17:16 -0400
+Message-ID: <49D11AB7.8010806@garzik.org>
+Date: Mon, 30 Mar 2009 15:17:11 -0400
+From: Jeff Garzik <jeff@garzik.org>
 User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-To: Rik van Riel <riel@redhat.com>
-CC: Dave Hansen <dave@linux.vnet.ibm.com>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>, akpm@osdl.org,
-       nickpiggin@yahoo.com.au, frankeh@watson.ibm.com,
-       virtualization@lists.osdl.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, hugh@veritas.com
-Subject: Re: [patch 0/6] Guest page hinting version 7.
-References: <20090327150905.819861420@de.ibm.com>	<1238195024.8286.562.camel@nimitz>  <20090329161253.3faffdeb@skybase> <1238428495.8286.638.camel@nimitz> <49D11184.3060002@goop.org> <49D11287.4030307@redhat.com>
-In-Reply-To: <49D11287.4030307@redhat.com>
-X-Enigmail-Version: 0.95.6
+To: Niel Lambrechts <niel.lambrechts@gmail.com>
+CC: "linux.kernel" <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.29 regression: ATA bus errors on resume
+References: <clqON-2Xv-7@gated-at.bofh.it> <clqON-2Xv-9@gated-at.bofh.it> <clqON-2Xv-11@gated-at.bofh.it> <clqON-2Xv-13@gated-at.bofh.it> <clqON-2Xv-15@gated-at.bofh.it> <clqON-2Xv-17@gated-at.bofh.it> <clqON-2Xv-19@gated-at.bofh.it> <clqON-2Xv-5@gated-at.bofh.it> <clqYt-3bu-5@gated-at.bofh.it> <49D10E51.8000104@devnull.org>
+In-Reply-To: <49D10E51.8000104@devnull.org>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rik van Riel wrote:
-> Jeremy Fitzhardinge wrote:
->
->> That said, people have been looking at tracking block IO to work out 
->> when it might be useful to try and share pages between guests under Xen.
->
-> Tracking block IO seems like a bass-ackwards way to figure
-> out what the contents of a memory page are.
+Niel Lambrechts wrote:
+> Any idea of the volume of data would I need to download, git repository
+> wise? I currently only have the 2.6.27 source and patches on top... and
+> bandwidth is quite expensive in SA...
 
-Well, they're research projects, so nobody said that they're necessarily 
-useful results ;).  I think the rationale is that, in general, there 
-aren't all that many sharable pages, and asize from zero-pages, the bulk 
-of them are the result of IO.  Since its much simpler to compare 
-device+block references than doing page content matching, it is worth 
-looking at the IO stream to work out what your candidates are.
 
-> The KVM KSM code has a simpler, yet still efficient, way of
-> figuring out which memory pages can be shared.
-How's that?  Does it do page content comparison?
+Around 300MB for the repo, I think?
 
-    J
+	Jeff
+
+
 
