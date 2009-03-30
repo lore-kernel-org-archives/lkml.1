@@ -1,57 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755889AbZC3Pzy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755022AbZC3P72@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755889AbZC3Pzy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Mar 2009 11:55:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754767AbZC3Pza
+	id S1755022AbZC3P72 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Mar 2009 11:59:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752890AbZC3P7R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Mar 2009 11:55:30 -0400
-Received: from mu-out-0910.google.com ([209.85.134.185]:56568 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754543AbZC3Pz1 convert rfc822-to-8bit (ORCPT
+	Mon, 30 Mar 2009 11:59:17 -0400
+Received: from fmailhost04.isp.att.net ([207.115.11.54]:61156 "EHLO
+	fmailhost04.isp.att.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752567AbZC3P7Q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Mar 2009 11:55:27 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:message-id;
-        b=fmHsmmpdZ0jj46idutgGHcRDkRSTbqFitNAtXb8q+8AAW9K1YcO5o+4yG6EIZN/Ev5
-         ukGTv7AdCO4CNIFZ36LFps1kI2mOiCSqSffMmNl7DimFGOeMW1KbaDafNr4xotD2qW4v
-         +NdISZhd66H4LCLsPXdwKieW9xT3P2vV08AGY=
-From: Diego Calleja <diegocg@gmail.com>
-To: Pavel Machek <pavel@ucw.cz>
-Subject: Re: replace() system call needed (was Re: EXT4-ish "fixes" in UBIFS)
-Date: Mon, 30 Mar 2009 17:58:32 +0200
-User-Agent: KMail/1.11.1 (Linux/2.6.29-rc8-00124-g5bee17f; KDE/4.2.1; x86_64; ; )
-Cc: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <49CCCB0A.6070701@nokia.com> <20090329122600.GA13737@elf.ucw.cz>
-In-Reply-To: <20090329122600.GA13737@elf.ucw.cz>
+	Mon, 30 Mar 2009 11:59:16 -0400
+X-Greylist: delayed 59241 seconds by postgrey-1.27 at vger.kernel.org; Mon, 30 Mar 2009 11:59:16 EDT
+X-Originating-IP: [69.76.240.125]
+Message-ID: <49D0EC24.4080206@lwfinger.net>
+Date: Mon, 30 Mar 2009 10:58:28 -0500
+From: Larry Finger <Larry.Finger@lwfinger.net>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200903301758.32942.diegocg@gmail.com>
+To: Oliver Neukum <oliver@neukum.org>
+CC: jgarzik@pobox.com, linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: [PATCH 1/2] kaweth: Fix locking to be SMP-safe
+References: <49d00512.XAF19LdpY1dlK6+U%Larry.Finger@lwfinger.net> <200903300828.45337.oliver@neukum.org>
+In-Reply-To: <200903300828.45337.oliver@neukum.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Domingo 29 Marzo 2009 14:26:00 Pavel Machek escribió:
+Oliver Neukum wrote:
+> Am Montag 30 März 2009 01:32:34 schrieb Larry Finger:
+>> On an SMP system, the following message is printed. The patch below gets
+>> fixes the problem.
+> 
+> Thanks for this report and the patch. I think, however that it introduces
+> unneeded locking. It seems to me that we should be fine if we fix
+> kaweth_start_xmit(). That code assumes that it is called with interrupts
+> off and under a spinlock. Is that incorrect?
 
-> ...but this should not be. If we want to make that explicit, we should
-> provide "replace()" operation; where replace is rename that makes sure
-> that source file is completely on media before commiting the rename.
+You are correct in that only the locking in kaweth_start_xmit() needs to be
+changed to lock out the other CPU's. In my testing under extreme conditions (X
+server over the network), the interface stalled with no logged messages. My
+other changes in the locking were an unsuccessful attempt to fix that and have
+been removed. Version 2 of the patches will be sent after I finish testing.
 
-An "ad Linus-em" counterexample:
+Thanks,
 
-"And if we have a Linux-specific magic system call or sync action, it's 
-going to be even more rarely used than fsync(). Do you think anybody 
-really uses the OS X FSYNC_FULL ioctl? Nope. Outside of a few databases, 
-it is almost certainly not going to be used, and fsync() will not be 
-reliable in general.
+Larry
 
-So rather than come up with new barriers that nobody will use, filesystem 
-people should aim to make "badly written" code "just work" unless people 
-are really really unlucky. Because like it or not, that's what 99% of all 
-code is."
+
