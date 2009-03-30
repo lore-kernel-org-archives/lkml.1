@@ -1,260 +1,246 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756498AbZC3Rdl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754133AbZC3RgW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756498AbZC3Rdl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Mar 2009 13:33:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751755AbZC3Rd3
+	id S1754133AbZC3RgW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Mar 2009 13:36:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751293AbZC3RgN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Mar 2009 13:33:29 -0400
-Received: from moutng.kundenserver.de ([212.227.126.187]:63009 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752578AbZC3Rd0 (ORCPT
+	Mon, 30 Mar 2009 13:36:13 -0400
+Received: from cadalboia.ferrara.linux.it ([195.110.122.101]:58147 "EHLO
+	cadalboia.ferrara.linux.it" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750998AbZC3RgM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Mar 2009 13:33:26 -0400
-Message-ID: <49D10256.8030307@vlnb.net>
-Date: Mon, 30 Mar 2009 21:33:10 +0400
-From: Vladislav Bolkhovitin <vst@vlnb.net>
-User-Agent: Thunderbird 2.0.0.17 (X11/20081009)
+	Mon, 30 Mar 2009 13:36:12 -0400
+From: Fabio Coatti <cova@ferrara.linux.it>
+Organization: FerraraLUG
+To: linux-kernel@vger.kernel.org
+Subject: [BUG] spinlock lockup on CPU#0
+Date: Mon, 30 Mar 2009 19:36:08 +0200
+User-Agent: KMail/1.11.1 (Linux/2.6.28.8; KDE/4.2.1; i686; ; )
 MIME-Version: 1.0
-To: scst-devel <scst-devel@lists.sourceforge.net>
-CC: linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
-       iscsitarget-devel@lists.sourceforge.net, stgt@vger.kernel.org
-Subject: ISCSI-SCST performance (with also IET and STGT data)
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Provags-ID: V01U2FsdGVkX1/36vMJaBClZSlDRn0AfyA/fAstPNCxAe/lj6Y
- oXlXsbeRgYqhfYQxPHgzSi4cG99OVCb+DyzUmMd/IEkAykpPkG
- DhPJ7zrny2IuXb+DAh3Aw==
+Content-Type: Multipart/Mixed;
+  boundary="Boundary-00=_IMQ0JiM2UnnYUgc"
+Message-Id: <200903301936.08477.cova@ferrara.linux.it>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi All,
+--Boundary-00=_IMQ0JiM2UnnYUgc
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-As part of 1.0.1 release preparations I made some performance tests to 
-make sure there are no performance regressions in SCST overall and 
-iSCSI-SCST particularly. Results were quite interesting, so I decided to 
-publish them together with the corresponding numbers for IET and STGT 
-iSCSI targets. This isn't a real performance comparison, it includes 
-only few chosen tests, because I don't have time for a complete 
-comparison. But I hope somebody will take up what I did and make it 
-complete.
+Hi all, I've got the following BUG: report on one of our servers running 
+2.6.28.8; some background:
+we are seeing several lockups in db (mysql) servers that shows up as a sudden 
+load increase and then, very quickly, the server freezes. It happens in a 
+random way, sometimes after weeks, sometimes very quickly after a system 
+reboot. Trying to discover the problem we installed latest (at the time of 
+test) 2.6.28.X kernel and loaded it with some high disk I/O operations (find, 
+dd, rsync and so on).
+We have been able  to crash a server with these tests; unfortunately we have 
+been able to capture only a remote screen snapshot so I copied by hand 
+(hopefully without typos) the data and this is the result is the following:
 
-Setup:
+ [<ffffffff80213590>] ? default_idle+0x30/0x50
+ [<ffffffff8021358e>] ? default_idle+0x2e/0x50
+ [<ffffffff80213793>] ? c1e_idle+0x73/0x120
+ [<ffffffff80259f11>] ? atomic_notifier_call_chain+0x11/0x20
+ [<ffffffff8020a31f>] ? cpu_idle+0x3f/0x70
+BUG: spinlock lockup on CPU#0, find/13114, ffff8801363d2c80
+Pid: 13114, comm: find Tainted: G      D W  2.6.28.8 #5
+Call Trace:
+ [<ffffffff8041a02e>] _raw_spin_lock+0x14e/0x180
+ [<ffffffff8060b691>] _spin_lock+0x51/0x70
+ [<ffffffff80231ca4>] ? task_rq_lock+0x54/0xa0
+ [<ffffffff80231ca4>] task_rq_lock+0x54/0xa0
+ [<ffffffff80234501>] try_to_wake_up+0x91/0x280
+ [<ffffffff80234720>] wake_up_process+0x10/0x20
+ [<ffffffff803bf863>] xfsbufd_wakeup+0x53/0x70
+ [<ffffffff802871e0>] shrink_slab+0x90/0x180
+ [<ffffffff80287526>] try_to_free_pages+0x256/0x3a0
+ [<ffffffff80285280>] ? isolate_pages_global+0x0/0x280
+ [<ffffffff80281166>] __alloc_pages_internal+0x1b6/0x460
+ [<ffffffff802a186d>] alloc_page_vma+0x6d/0x110
+ [<ffffffff8028d3ab>] handle_mm_fault+0x4ab/0x790
+ [<ffffffff80225293>] do_page_fault+0x463/0x870
+ [<ffffffff8060b199>] ? trace_hardirqs_off_thunk+0x3a/0x3c
+ [<ffffffff8060bf52>] error_exit+0x0/0xa9
 
-Target: HT 2.4GHz Xeon, x86_32, 2GB of memory limited to 256MB by kernel 
-command line to have less test data footprint, 75GB 15K RPM SCSI disk as 
-backstorage, dual port 1Gbps E1000 Intel network card, 2.6.29 kernel.
+The machine is a dual 2216HE (2 cores) AMD with 4 Gb ram; below you can find 
+the .config file. (from /proc/config.gz)
 
-Initiator: 1.7GHz Xeon, x86_32, 1GB of memory limited to 256MB by kernel 
-command line to have less test data footprint, dual port 1Gbps E1000 
-Intel network card, 2.6.27 kernel, open-iscsi 2.0-870-rc3.
+we are seeing similar lockups (at least similar for the results) since several 
+kernel revisions (starting from 2.6.25.X) and on different hardware. Several 
+machines are hit by this, mostly databases (maybe for the specific usage, other 
+machines being apache servers, I don't know).
 
-The target exported a 5GB file on XFS for FILEIO and 5GB partition for 
-BLOCKIO.
+Could someone give us some hints about this issue, or at least some 
+suggestions on how to dig it? Of course we can do any sort of testing and 
+tries.
 
-All the tests were ran 3 times and average written. All the values are 
-in MB/s. The tests were ran with CFQ and deadline IO schedulers on the 
-target. All other parameters on both target and initiator were default.
+Thanks for any answer.
 
-==================================================================
 
-I. SEQUENTIAL ACCESS OVER SINGLE LINE
 
-1. # dd if=/dev/sdX of=/dev/null bs=512K count=2000
 
-			ISCSI-SCST	IET		STGT
-NULLIO:			106		105		103
-FILEIO/CFQ:		82		57		55
-FILEIO/deadline		69		69		67
-BLOCKIO/CFQ		81		28		-
-BLOCKIO/deadline	80		66		-
+--Boundary-00=_IMQ0JiM2UnnYUgc
+Content-Type: application/x-gzip;
+  name="config_bug.gz"
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment;
+	filename="config_bug.gz"
 
-------------------------------------------------------------------
+H4sIAG3azEkCA4xcbW/buLL+vr9C6F7g7gLnNImTuukC+UCTlM21JLIkZcf9IriO2vo2sXNsp9v+
++zukLJuSSOUskG7EGVJ8mRk+86L8/tvvEXo5bJ+Wh/Vq+fj4K/pabsrd8lA+RE/L72W02m6+rL/+
+FT1sN/97iMqH9QF6JOvNy8/oe7nblI/Rj3K3X283f0WDt8O3g9u3t8AQ79ZRutxFg/fR1fVf767/
+uvkQDS4vP/z2+2+YZzEbF8ObEdN3v4D32HB/OyyuB9F6H222h2hfHn5zCMMbYD0/nx+QxJOC0Lh6
+vHuz3K2+Xfy8HV5U896b36F38VB+qVre1D3HNKOS4UKzlJ7Hq1txylWRC4K0Q8QJx1PFc4lpMUca
+Twgfe7oaLjqjmVa9xGIkOSIYKX1mM1RCRaFyIbh0CEojPNUSwZs7tAma0SKBmWZ4obmncwzvgBWJ
+ezyxr0DJmZam+fnhE89oQVLUnTdTKEDgKRLd5lHu2ZnJnLLxRLdOL0WLagkCFzHBZ6qcK5qeOivB
+MrM9rsxUHGZZiJACJWMumZ6kHiGyb5ogVWCRF4wk5gCZ9pwPSthIwl6CUCVo0WUw4lLM1EIBZ9Ja
+ST2+hK73HhrIKcoTbd/v64rwBA6SwRko9om2DlhRnYtCUGlfgSRFLQZoTpGaFjy2HI1jqd7BRlRm
+SDOeFYIrxUadaahcCZoRD7kWjetBq4vgIjfCp4qME9p6bU6Ytmyd91gRVQUXsKGwWFLA6bKMZT6x
+QZIw+dGjTdBaCMlHHgU2y4DRDEvDdBQqdSaYK3oWsFQUE5rADqtmDzAfjU6mzZVi8zxiYC8kHXHe
+IoDOpoKbQ3UFd2rFyMgQkh5pPRk0kAYwD28uHtefL562Dy+P5f7if/IMQWcQMooUvXhb2zWwrb9H
+Y2u9H81gL8+25TgQvYeFwUszjRLPG41mFVMQD+oINZyHLmg2gzMzM0lBYa4HTg+UzGCzQJzu3rw5
+v8klgARo7nmdmrtiAto0YwJ3Gsz/sU7cjRspYk4cU6UKhLF2xz4xaVADMJhaealWKD1zYtPjJfKr
+3WLf6BppmEceF2rCYn13dXseGo8lz4XyDG41NM9gVqBVcPATkHh8NGfnRcfGRghJMegTCVOKmaOE
+smmnjGwoAfeEcrctB1XL/Nth9jlAGiVTeOvMyoEkXhaMTypcxFxaw+U7785B0nRECaHEw5wzcjVs
+rB76Fh2TO4UntUhVt6Xw8oEKgDIWAimny4Rrkbh3lZAs086pNC4ymoBt5dIxNwIrMZWFAAsIy0/d
+FWKeCqThlp961jgC1S3i3J1nnGvq3hoZqA8zNtWZLgVT4nRRbJyhJHZExdgV6TZYrOE2qElKU+c1
+jJ8fZmnFD3PPM90whAKz4mPO5NRpU0k+AgGptui0bpWgkU8EgLnJxkdekQJlixkYzLGXmiIJZiqo
+Yrzq3TS29ooIdqFxzDAzqwbDmsCOgoKBaaENMTGMDE4erjczwTb6Or6i3Sqp9hLsHWjR3ITzBqKx
+5PpGgusWTmJCJUzOu6NoxLLYOT+pi9RIUVP5NcsW1bGHBFGlRmMuT5iQkzxxJ101GAUH/JkAau2Q
+8uzYfD4oTo6XgN+4HDsqiU93ReK7mabA6OJgALgpAKXqQj0ZqhYwPFkuXm3zK+ZN0zEAx4Vve+zF
+WKkyvMDeqIxHavWtNLfxbn/2aAABWLOece7cbXUrUt02QhFJGgupKTj+6C6nBo7Iv5U1uR7Pjygs
+S2BgM+eeXsdp3b1ZffnPm7M3BJYUpFTi3B0ylpR+og1UY3dN7Larcr/f7qLDr+cyWm4eoi/l8vCy
+K5091Ax2G5CmmvCGc5jxYvLJp8DgT8ANqCq795q/lbPEFSWL6Rr+ZyoEkooGnFCLUBr8cPVm3hMx
+xBlfoHFzIxr04xSNLQiPAZP0G0kk0YyBvo9zqnzGAbQdMHljE9Pr26FfFW9ChHc9BK1wkJam937a
+MDQg4HXN8pSxV8j99LSXeuOnTgNTmr737ev0trGnWOaK++1Lam8Wyv0iks5ZBmZM4GEv+dqPu9Ix
+BWQwvr/qoRZJ4BDwQrL74FbOGMLXxSBMfB/Y5JA8GMTkH+6kpSIP6BxQmv5UcnX0k0cLkO+74Y1L
+NJZcWjc0zHOMgwRGrTD90KXNRTHngHsKPm12Mm9LjAspMReLJs04lgLu/gIGxVOVpy2vUOFmw3FW
+rTiXCUPNmi0pgPE0T62LH6OUJYvW+iweA8CcKulEroAbfO5qyt1mlJJuIza+Yi6r2FvDKhEvlhJU
+V2bYATumjaY2PgDgxFkzSZljrJE0d0wVijr7aSmpGr3+I+M6GbkXJzAe3XfHGbLBEnXnuGjV/apS
+L6CytBS73gClqTD3Y9N/r9tnPAGgjOQigGQtV0C0rZ9cIMFaogCYpduYYtq5rACL2fMMjG/o1cGe
+fb3bqV9FGQYPF/QmNJQrS0e1ZKQdCJoswPMiRBb6FN2tzyG3ocMzIr+1TcFgL+BvwepeJwgAnlAB
+rm1WcA2YuKhdozNIAH4jbZ5hj52byl1FouyND7dlDXbakaoTnWbIEzCjCcXa3LZcLgymddXLTzwj
+JVALM3CKsrwZlDnjM6bgN83Gfr76Pac5VizODGqKs4/UyDgslAmA3y3/0rofx/mC9CowAZ7BrCdN
+3bD5mTSDf4yT1N6tDkfjFq3eeHTGPSsUgKRgu8bWiacZaURHRMJ0IXSF1I26n+xhysbSxjvdcEkV
+wFdtGe0R3zr2aU5sfHd18g3AScbOEi0e0xxwprOjeUZnDFdhn0TmbSW210MVPYRrUubCzDYIB82J
+SBPs53OYoy+ukGrpqKp5KhTKmGafaLD9eFYnBbgMsJkjNHFHa1dr5qsGQkYNwElj5pNWio0/1fB6
+PxVXl5e+S+VTMXh32WK9brK2RvEPcwfDNM38RBpno2GVwHH2QxgskZoUJE99TpIRHGZMuYKLAHbv
+5+DS/Nch29jCmXyediX1bRDUjiPNiOJ+emqdPhBHnoQyH8cTbuqZLyhBkUxA9ePMCHJmbXzlvW3/
+KXfR03Kz/Fo+lZuD9d+MlY62z4f1duP4cKIRBRNphUi8Uz+mG/ynec5W+FYFr26ABXNhmDBtHAj6
+numF4POAW2a5qmjrK0xmqCpWFuZBOEwbIQ1QddHDkGsdsASWHqPQthSkFQw5TZgqxWWoV/uOrpYA
+JxSeg+Zwo45QmAHnSnMQAEV06LWjBOGpyXIUC5C9u8vWCGHZqVaFmQkkBkeHs9S0hb1BImuY2jr4
+kepELYxSxrvyPy/lZvUr2q+Wj+vNVzevYnG4pB/9qnlMNnaGTcun7e5X9Gy1ar/8AYMaDbK00cu+
+VqroD1hgVB5Wb/909AuzZliWMAkwo9mWpu1khuXkKWJZM6pLTSKucWWZRuReF82UXapa768azhoP
+TQkdIxwAxdhzqrXO62a+7ph1NnjYiecDeBw1X4hRID1R21azje0zoD/L1cth+fmxjL6szT/b3dPy
+sI8uIvr08rhsWTUTaU21yQA4ntIxwu+SHLMNl6W5Mk5RNJM9mFBEWuHrZuwX8dxvUo5vSVnTza53
+Cl0Pjp5WA+7YdjNme9adVZjsTW6gt7mm0ibwO6bj2j0zeoqJZuXhn+3uO8ix50IADaeufNrnIm2k
+ivOMOcmP+7iZSzHP1tP2YXsYa0oXbtqSNmAIExXeNaUWgRQYAL8ZAjBHCgl75X0NMMVsZBL1k9bg
+IvPH6MzEmGB9xLH0h47UIoPd5lNGA0k70x1NwjSqRJgIZ8nTHrrdbZ1nGU3CTK/R7SDG5zER+EwZ
+2/FfMf/Xw44o7Rkxkb68syURhsZNaSk0FnXzOW0CbfDr+CQbnvFOPDgfuS57rfI1/e7N6uXzevXG
+lZvZMCQYJtxkYLLJdYV4YpboEEDRvkSP0o62jSQjY9d1ScCtvr0cXDWyA+fWYjyTIpB7wBn13b9J
+0giXw+MgoHz3gVWgJLj6CsN3TPrRCkWHcn9o3dOmk5jqMc0CtjeViLAAwg5E+ZkkfvAz8gummPAs
+ILNzZuo5lF/bZTxlzdyYXRkpf6xXZUR26x9VIupcAbJeHZsj3rbGeZXhrUJlxmOb3L252H9eby6+
+bQ/Pjy/nCjnwZzKCEu4mqISsusdMpnPjDraSKvHc5gdd9HBiZVmnwqRKydccjTISixEKItmM+ktk
+LJnOZDMIBHdVMVnA0masBXadmxlMDNYBaqpJKOPStmE1JXM0Cx6Oc0vhONHYzq5OgB22q+2jezNm
+4ujINFOSvlRmTIJJTCw+FgR5s5cVETOlgKMBT0yTwgpQPBL9+VGC8IfhZS8L5nODDlKvr1YzJVVi
+tNtZLoTmSSsF2WHLRqSXru5ve+n5qJcskT95hIkEFwZMByYzErJUBZ+ZOIqe9L5i4rtCDKAzVNYq
+2RETlIHz5B2QUmEm9eEa3/svETVmBePYn/BSPFsUCYI992+4nrBsKhCxXpH//RlOuMqlqUqUdubB
+Wdz73zERBUt4sNdY5qFyDUbcfLl9qNTrsVzuS2AHi7hdvZgghcXwF+uH0vy8Pfw8GIwffSsfny/W
+my/baLuJYIDowVjKvXtZnCoDAGYoOF4fkgDSmDRmAs9GFhro8NQqWI9mABsmHStQNRcgWSOuaEGl
+5FJ5qxwIfVWJgcdoe/8k2lEVM31TTGdkSQdAGbDYYEjcdZ7N5q6+rZ+hIdq/PD9vd4eLzy9fv6x/
+ujl/u0dVItC3uLq0qt/+pGR4c/naBrSAepfB+Joqjk8iBV6js4Z9vQjHK3QGx+2tM54u/IBvXXBJ
+AmCtHuG4A/0m6lMgvtlaQmsqNRVRPBzc3/e+Ary/q3f31/08KXl/89o4mrF78fqZ9Y+iJYsT2s+D
+1bt31/1HPxH6ejjsZfnbpsCy/gsGXw16t18w68N2RU/fDq7699Sy9C80U7fvb67e9fIIggeXcMYF
+T8h/x5jRef+iZ/Npf3WoYiwFnPMKD5zSK1ugEvzhkr5yTlqmgw/9pz1j6HaA718RUI1vh/jy8upV
+baqNgbWeDxXkPtuBM0ZHzNh57S1NNH2dcIpBXaQZbbVt4BwkcPX6b0XDEDK0dm7HSVXlVX88rPff
+/xUdls/lvyJM/g1w4c+u2VKN7DCeyKrV76LUZK68BUenMaVPBZSEeywj3vDz6b1j72ya5VHVerdP
+pXsg++iP8u3Xt7DQ6P9evpeftz//PG3H08vjYf38WEZJnjUuebujNjBUAClwasZZMH6QVp3TSvh4
+HKpStQwK/MYCqUWGQ4Obb1As292Tc5B6t9zszdydS7Ia0ETkjYh15hLjruw1OZj99xUmhVSRsJFC
+fTxSvDZMwucJuIlJmINMfBH7JnYysDqrdp+04rsORxuyGLhWCG+izpLQBHf5FUsGN0FsD4jAh9uJ
+T85T0qMapBHTJGkwDg4k6xS59TKFypA41kWeG1NmUGGj6ROVvMljk/3G0XeLD3LVyqxVkI1SGl1d
+f7iJ/ojXu3IOP3865s7yoGhT/hMtHw/lbgMQ+0cZ1azR/rBcfTeDLn8s1482tv7P+vAtcr8+MbNw
+cBK80L7PCy4HPFAEjllmsk/H+IDyh4U9XhXJ09Sflxhx+8GQ39/5mAMw+uQNROg8a8TMQk6gjVqN
+2gDuLGgyEEcTkwWoZH0LmQJJaKkvoodT7MctkAfVS0w/f8AOwaYYjzZA/6hoyoLU5F4HaZhhRFCQ
+PGOaKlMWF6CrFBzhELH6VrJn2gyLBIB2iCwpSjSdBukxu6ckSE0J48WI6REKCIgNuZuqJP8ZVrJo
+qxOaWUeaBSA/SQa+8g7aHsI2+LEXG/sDHoAjr28Hl6EwqKmt92/h7dXwg//kmLoKgDI1DSBDNV0M
+AmKCQIkSjv0F+ZqNeXbt+MrZ/cDdkI8Jug5hP6QTf73s3ykNHWt9bv7l6W6du7GDj+V+HyUoc/Vy
+boLpQlITT/fPYl6H2/1kNk/mLDa5VdJFgLkanaLf6GH5fGhZBaAXUzQPGSdDFnQcTPcbOvwEo9eB
+AHlMiF+WhPD7hirpSZfFOEQyX0UFuxmigXFawi8BL5wpkoVD9t1bcvP8cug6A6eMknDzrfaxiGNT
+fZNUXxU5qSpDMzMEOese6r7cPZpCm/UGzvPLctUIm9iuKc8VrSLG3vZCKJTfB6kKS0qz4v7u6nJw
+08+zuHs/vG3P/G++aE28QaazVjC7bm7BHmdTO0mNRs8pXYw4gEGnGuDYAso9HZFmOdeRovJsGogd
+n3iS6ass9/pVFnCmQ0U759loPkdztAhumt149wMrW0uuBp6mAiVC+drBN2HwfyF8RPBIkNAM+3uy
+2HzFPPXRzKdUU8FZ1vys5EQ3n8NoGvicxRmG53gyZbqHTQFaDJTEVgxIiITagXqYRjh99+H9TQ/H
+TMFdgVAgjXyUcGUKBXtYbHGn7mMw86zUqIerXdlhlWKy3D38swRkzS541PYJYZO4W20MjwW7vbxp
+XIhVM/wbzMBXHFjfDvD7q8seFoGNUHlLOg0ZYGolpq1uEvlDTGOU0vakqjvr23K3XIHJq93785pn
+jcKVTPHkWF9QFb44Ij3TNYNT5zh32s6IQzsEU2fT9gNOKcfZtCqlbiwQJSE3tXLpy916+egg9WbX
+26q+tdvYnT1g1Ko+E56LRk23261RHtYguGlKl5DJIkdSK+fjfpcs88z+tYKK58bH4inKdqgpyhaF
+rR3z09XEZofdwi+XTKg2VfRBulSnGF223fzbtMHu2023AaDO/Xzs3PyQ22n0yciR/LfylVaY2qUP
+t4XQC2eFVQlcsLH6xPpu8G7olkKA5zUBOUq8niYIKUg64WlDoKum9pc9Z0LrE5BsFkp0yusPw0AQ
+BIyt8RkDH6qhGQ1U+t2+vx7+LMYiUFcBhiGc4DffDrW+JGp/NgBbNa4K6G1Bp19lj38Kx4kp+GGk
+8mbobOkjwFtt/8wBz0AGzHIqj/xsyaomPzb2o3lbX2yLKhO/zzmZ+7PpxstMUeNDkvpvEfksswH2
+5z/mcoyebtarfaTWj+vVdhONlqvvzwAzy0ZwVI26RasmkvrlZbMyadW+CERMrB75xSU2X1+9u/Tv
+ykRj8wcaGL4OdtZpSJro2JQ/cumf+FP5sF46F0qbstruvIH9GSOUFy2Ue/bTZ6PwWquuKSUM9c6p
+u4UEdbd/vFs+fzMH1zFoaOz+zZ2x/Z7P/ZLQNNX24azU0AiOu1/hgTZjflhEAqnYGXiPGum+neC5
+NkDn6Iv5PcZAkYYtEh9PdJFgUpcidwui1nsQ5F89WRrClEjQIjjC/zd2Jc2N4zr4r6T6PtXeY8+r
+PlBbzLa2SJTj5OJyJ57p1CRxynYO/e8fQUoyN0g+zKQNQNwJcAE/+IeP0+GNj+omJelEZbU4r6xt
+nzkRLHOZRXCoD7tNKHYfX2I9Xd5wihNKpwniBiNwvoEPHJhgVNP6IIO70nOusUZrzxTUTZnqRMbV
+iiOLnAbo8QHnu/a45ef+GUw1Z7smAqQq3Y6RmpMJ7Di0isvNgU7ywnhFU4NW6GhkIi+uXYtHk8aN
+X2oSH+F9XKkTg1BFZwFK+KS5JgPp7tF8kwZU2LHVNVGQlCRtq19AaPyiSrhqz0kw2jqvKSBtcbcN
+w07PktsXFhZm8XJu7HgjxFmhda9CxjPiRprEj+lGT7EkCd+C3xlEq0W5DBzhai64y6IqWcIVC7eV
+SCPAdYc4+nWWCkaeNTmA2KKuLVXPG42TLdWltMYKTZYGtlR6HZNNpJOm4u0gHBg0vl+2hXg9Pe/f
+wDAfvk5iMlqe9TIn+Dwq7RIAXaJ0oAUJHlPCRwe8Ks8KXKzrnRbwE+TQA3gP8D/fI5FTvywPpzNo
+3fPx8PbGNW1gqwDx/ex2MxhAXyF9DB1Sd6X2oaAXWca3eJW3ZQwtJjcMw+Fs05FFhmQh6J7wiuOG
+Pt2CoxWajSmcGKsZUzSmjPFNqZTWB2OFlKeM58OhWQ9NopiT2Wy6uDWF2l6pD+H8t93p5NLKYgz7
+CX6UXAgkBnxMBPi3LLFPQdKMhX/fiMrx9R04m7zsP/cfLydw4RN35r+4lbp4Ndy8c9u9ezsdbn7t
+bz72+5f9y/+aJR84CKopLfdvn8Iv8B0WgOAXCM+A+DzTp1ktbjW2JPfM91aKMBIRr1cOMHSw/ZYq
+R8tghNxMaNnmfn9a/N+E9UqVQVAMFleJTae9Yj+rRFxp9wqSmFSIr70qBu716JmgKrgiRdKfXG3j
+wQnAxzstBg8/42H+Zf30vvsXHkVd9h264gz8eUcHCsPNwpUzaXG4gUxO+/y0/Uw3K8j3YUJnI7RY
+nDua4cYtqFi1wRs3XJchPlUKmk07WiQO7zKGPs0VEh2Kz4PFHV/PkQK5lZRZ4Ak0I8J/vPVn4w4x
+sUvH9eMSnt90GKNAHE+j/IgFFAefEp0AS+B6t4N3BeWG3ePbErwt8KaAU1efrzEALTfDu4NmD6Tg
+nYpLsLDsMsuwRo8eUIF1x8d3BG3lJEHAisIEP+6H1Zp5+6pc5sP7aurR2Li4Vo75I5pSjzh3cQXz
+t/JUSSGIxZtOWvosKx/dxHrN9+Pb8aw+NQMJyz6JGc85zrtF+IJb8Ei+hdfzEnQdELUlG7d9Kn1b
+0VA8UHWf3UARi7U1FuQWMaeipC/6Q6f8bXcGY23wjBQByNssE9CDcjhCsMgUkSlyF6+KTMd9IreT
+UadIyVbDW0bmnULJZM56Cgwi42mvyHTRKeLdT+aD7gKvxwPdgUR0yOHjL3gu7+yOICEXbyx5WMMN
+cGBbRQmqRTPCAsxCI+d/JSOmP6ZIOHo9vosrNMfeIgxcc7F9sWYj1cAOf1t4bqSOwA88Ujr9+ah+
+WCK9MakXwUu6NHCU+W1/c/pzOu/flUYMN4zv8kvt+RwQthtwyLTJeVbSDVdMOvBuzSxDvyowVdUm
+TF2OlJw7Nssxdpdj3FWO8TXlmBgOz43Ljn7Zz3+i3pQ8k8QT8G6aIggpXyVxHoIY8tNiXZJTK9SO
+GQD4yfyVBmG+EYnoL9nL7X2VMffY3qiJoxLIPS6Am4zcZQ74DopG2ht5N0E8stf8qdCyArQ33nyS
+O8HYEdy+O4vaYALK1pWTVfivf4f3dzAxrHlBy2wxmw20Ifkzi6kOA/DExZDSVEHkcqsPsvJ7RNj3
+lLnzjQA2QfWiKPkXGmVtisDvFos1C0IAtvoxGd+6+DSDlWrJa/Ht9XSYz6eLv4aKWeeGtXSVOj/t
+v14OAtPCKnH9gEB9z8sJKwPTGmgtYrdKhNLCYQ9lqs+xsUhgSW79dM2YZcUXZ7GnytYkkY+OpQF/
+3NXV9zN6rS/HyFEpzwhLDN8pQVjrDT7GAYtxgzGzBP9wmeO8+3QzwblFV7KA04HxKkydNXgDoMAk
+XI7SIWmkj2f4vR5r98mCYqqrCzPQPg7srwP8cxENxQiOsl1PVAMDB7tmAeVDZGV8VmmhY/eWiYcO
+BYowUj9Hv8kC4pyJu+P5VVyWsj+f+jInJwWjIhJHB7qE1CetqFLLuNR+tGhs377O/8y/qZxGyWy5
+ktFaXuXdjt2YrrrQ7bRfaD4dXCM0ukboquyuKPh8dk2ZZsNrhK4pOHIwYAhNrhG6pgmQF3OG0KJf
+aDG+IqXFNR28GF/RTovJFWWa3+LtxO05GMXtvD+Z4eiaYnMp13tAkCGlT6k+55rsh+a0ahij3pKP
+eyX6az/tlZj1Stz2Six6JYb9lRn212aIV2eV0fm26GZXSPdVLJo3q8mVDFv2e/f8n8SIaX35IboW
+Le4l0Kh1aygjgxjxwmpgRb5bTPXQLQpWgoRerCAGFzgrubYUBUT0gUR+jAaTeav/+YZWrMRU17cq
+Bb9sTk28TDUDEnRE32zUaGNovvIbE5RFUsul5nFXe+HBLTLY4UpH8sgyBoj0icKHG2PqevmIC2/X
+JK7CHwZQZxNgRCWK6D5G1JOtQZTVyLyfvNwYGSB6oxon38mHmxiMZ8YcuIRD2WrLDyA7y6aF69A4
+OZWRn7SDKykszsg6IHGUOGkaHclJoOaSOM401Ots7djM1sHpdIKomStRTVKfW/qBilpo3lhhiAFN
+NSlDWC8CeI113zlfXLfx8syyrWT3mWT+Xw20YXLqECtGQdZJRykBCRiFdBYSDwV4doALKNqRNVgr
+BF+ys4fR0ZF8eYdqGeG/r+/xYUY26k2EvXNvPfxqy/d9DGBfmDvoBIgI+HjGR1StMtSdoncJYghg
+iGaAironxEAIN7ARXrsrWe+PU+hINz7sJRyiAQ6lhJJC1aLAmYmqVCQux25hgOU2jhORMcbkp7KO
+iejfLbcJ0pdGWB923D0bh5BGTgjU2D3XllGXCK8VBD/qFBEKtUMAXPOg5csHypoQRQhuCYyZrqxg
+AnYJgJIB6Bdwc4AHwALoEwa7e1jX7d2OUhRSmCR5jAd7Eh48q7tAD0XFCuqL4eaOkSQisdQoPFDv
+StFsNWByEzXsYvYV+jbw7nJcYUNLAX5UFGcPlhUWzViV5M7SS7BkNRR3zahjRCYkNyIZ5gwASS0z
+lAXG03uVjt/PSal0g2kDGZPBig8myXFIkFgECc2smE3tp1I/bdljHm4Hm/ngslgweXwVNnTzKhna
+c+TmilAPY4snMtNq0TKQ++JWosJ1aiuTZp1hm7QiXupcK0yhvmFFpVlWPycd86SN2tfE3XQ8XHn+
+Or6e/yhuZ+prNuQIqus0v2FG3d/Ks3Sf5ERcplLnbJagce0J8fHP5/kgfbhriK/9UYNpFuI85RxP
+DALIakjDGnlk00M1EJpCtEW9eOXTfKmaEZNjf1RDzdpEW7RQ12kXmi2YkBSCUmF0+4O7aDiaJ5V2
+dVOz0gp5dVvzxZ+gS4JUbBmmfpeI80aYfJ1/7z8gYjXEqQ4/nqH74ZxNgE2Q0+nw/CpYwe68u+zw
+mnL5iV1NB60M7+m6GWHe2+H5v5v3w4t6T94k6PnWxz4rHLTSooW+Z9FymWD9APD0G8l2mZBWLHj9
+d3862yUr/PHIUThBtqIB1UMhmDhoU5tG/SUJY/hrj70k4MPGSZ4NXOTRdOYij0e2dLkkQxfRlQQn
+T4f2oGZ3xXBhkx9yKSwVx+vnb+0Ku53gpWPSl1aY8oaVVh51fFH4E4cuyB4i6pj0Pl+4xzElDkbJ
+pk6q3RaBo+CRATNTk1dL8uTQbWUYuohFrqGFtxPXLi57yJz1q+nWyb3Bbpu4fqvx/nncn06aq2Zb
+VwiuE1opxU+tySh2Hy+H95v06/3X/ljHTa7dPi01lQIQVF4g4B/NdHzAFp2rtfZotN4d0icruIXI
+O379ddwd/9wcD1/n14+9hkHPAH63KB3xrsGNABwXSsCjZwg/hbW9xuaagOtDynTScKZLsOEgoJFO
+o4xvBzXSWJtR/q1yUEA9UxM9cRpsrfVuElSr83iviUcg+oMLoAahTc/rk5O2B0pYcqrPZSXJeDAD
+8dkFJtv/AYAniFETgQAA
 
-2. # dd if=/dev/zero of=/dev/sdX bs=512K count=2000
-
-I didn't do other write tests, because I have data on those devices.
-
-			ISCSI-SCST	IET		STGT
-NULLIO:			114		114		114
-
-------------------------------------------------------------------
-
-3. /dev/sdX formatted in ext3 and mounted in /mnt on the initiator. Then
-
-# dd if=/mnt/q of=/dev/null bs=512K count=2000
-
-were ran (/mnt/q was created before by the next test)
-
-			ISCSI-SCST	IET		STGT
-FILEIO/CFQ:		94		66		46
-FILEIO/deadline		74		74		72
-BLOCKIO/CFQ		95		35		-
-BLOCKIO/deadline	94		95		-
-
-------------------------------------------------------------------
-
-4. /dev/sdX formatted in ext3 and mounted in /mnt on the initiator. Then
-
-# dd if=/dev/zero of=/mnt/q bs=512K count=2000
-
-were ran (/mnt/q was created by the next test before)
-
-			ISCSI-SCST	IET		STGT
-FILEIO/CFQ:		97		91		88
-FILEIO/deadline		98		96		90
-BLOCKIO/CFQ		112		110		-
-BLOCKIO/deadline	112		110		-
-
-------------------------------------------------------------------
-
-Conclusions:
-
-1. ISCSI-SCST FILEIO on buffered READs on 27% faster than IET (94 vs 
-74). With CFQ the difference is 42% (94 vs 66).
-
-2. ISCSI-SCST FILEIO on buffered READs on 30% faster than STGT (94 vs 
-72). With CFQ the difference is 104% (94 vs 46).
-
-3. ISCSI-SCST BLOCKIO on buffered READs has about the same performance 
-as IET, but with CFQ it's on 170% faster (95 vs 35).
-
-4. Buffered WRITEs are not so interesting, because they are async. with 
-many outstanding commands at time, hence latency insensitive, but even 
-here ISCSI-SCST always a bit faster than IET.
-
-5. STGT always the worst, sometimes considerably.
-
-6. BLOCKIO on buffered WRITEs is constantly faster, than FILEIO, so, 
-definitely, there is a room for future improvement here.
-
-7. For some reason assess on file system is considerably better, than 
-the same device directly.
-
-==================================================================
-
-II. Mostly random "realistic" access.
-
-For this test I used io_trash utility. For more details see
-http://lkml.org/lkml/2008/11/17/444. To show value of target-side 
-caching in this test target was ran with full 2GB of memory. I ran 
-io_trash with the following parameters: "2 2 ./ 500000000 50000000 10 
-4096 4096 300000 10 90 0 10". Total execution time was measured.
-
-			ISCSI-SCST	IET		STGT
-FILEIO/CFQ:		4m45s		5m		5m17s
-FILEIO/deadline		5m20s		5m22s		5m35s
-BLOCKIO/CFQ		23m3s		23m5s		-
-BLOCKIO/deadline	23m15s		23m25s		-
-
-Conclusions:
-
-1. FILEIO on 500% (five times!) faster than BLOCKIO
-
-2. STGT, as usually, always the worst
-
-3. Deadline always a bit slower
-
-==================================================================
-
-III. SEQUENTIAL ACCESS OVER MPIO
-
-Unfortunately, my dual port network card isn't capable of simultaneous 
-data transfers, so I had to do some "modeling" and put my network 
-devices in 100Mbps mode. To make this model more realistic I also used 
-my old IDE 5200RPM hard drive capable to produce locally 35MB/s 
-throughput. So I modeled the case of double 1Gbps links with 350MB/s 
-backstorage, if all the following rules satisfied:
-
-  - Both links a capable of simultaneous data transfers
-
-  - There is sufficient amount of CPU power on both initiator and target 
-to cover requirements for the data transfers.
-
-All the tests were done with iSCSI-SCST only.
-
-1. # dd if=/dev/sdX of=/dev/null bs=512K count=2000
-
-NULLIO:			23
-FILEIO/CFQ:		20
-FILEIO/deadline		20
-BLOCKIO/CFQ		20
-BLOCKIO/deadline	17
-
-Single line NULLIO is 12.
-
-So, there is a 67% improvement using 2 lines. With 1Gbps it should be 
-equivalent of 200MB/s. Not too bad.
-
-==================================================================
-
-Connection to the target were made with the following iSCSI parameters:
-
-# iscsi-scst-adm --op show --tid=1 --sid=0x10000013d0200
-InitialR2T=No
-ImmediateData=Yes
-MaxConnections=1
-MaxRecvDataSegmentLength=2097152
-MaxXmitDataSegmentLength=131072
-MaxBurstLength=2097152
-FirstBurstLength=262144
-DefaultTime2Wait=2
-DefaultTime2Retain=0
-MaxOutstandingR2T=1
-DataPDUInOrder=Yes
-DataSequenceInOrder=Yes
-ErrorRecoveryLevel=0
-HeaderDigest=None
-DataDigest=None
-OFMarker=No
-IFMarker=No
-OFMarkInt=Reject
-IFMarkInt=Reject
-
-# ietadm --op show --tid=1 --sid=0x10000013d0200
-InitialR2T=No
-ImmediateData=Yes
-MaxConnections=1
-MaxRecvDataSegmentLength=262144
-MaxXmitDataSegmentLength=131072
-MaxBurstLength=2097152
-FirstBurstLength=262144
-DefaultTime2Wait=2
-DefaultTime2Retain=20
-MaxOutstandingR2T=1
-DataPDUInOrder=Yes
-DataSequenceInOrder=Yes
-ErrorRecoveryLevel=0
-HeaderDigest=None
-DataDigest=None
-OFMarker=No
-IFMarker=No
-OFMarkInt=Reject
-IFMarkInt=Reject
-
-# tgtadm --op show --mode session --tid 1 --sid 1
-MaxRecvDataSegmentLength=2097152
-MaxXmitDataSegmentLength=131072
-HeaderDigest=None
-DataDigest=None
-InitialR2T=No
-MaxOutstandingR2T=1
-ImmediateData=Yes
-FirstBurstLength=262144
-MaxBurstLength=2097152
-DataPDUInOrder=Yes
-DataSequenceInOrder=Yes
-ErrorRecoveryLevel=0
-IFMarker=No
-OFMarker=No
-DefaultTime2Wait=2
-DefaultTime2Retain=0
-OFMarkInt=Reject
-IFMarkInt=Reject
-MaxConnections=1
-RDMAExtensions=No
-TargetRecvDataSegmentLength=262144
-InitiatorRecvDataSegmentLength=262144
-MaxOutstandingUnexpectedPDUs=0
-
-Vlad
+--Boundary-00=_IMQ0JiM2UnnYUgc--
