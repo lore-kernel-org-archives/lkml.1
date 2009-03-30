@@ -1,57 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756726AbZC3MIY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756905AbZC3MJ4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756726AbZC3MIY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Mar 2009 08:08:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751433AbZC3MIM
+	id S1756905AbZC3MJ4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Mar 2009 08:09:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752275AbZC3MJq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Mar 2009 08:08:12 -0400
-Received: from stinky.trash.net ([213.144.137.162]:59440 "EHLO
-	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752165AbZC3MIL (ORCPT
+	Mon, 30 Mar 2009 08:09:46 -0400
+Received: from serv2.oss.ntt.co.jp ([222.151.198.100]:53107 "EHLO
+	serv2.oss.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752255AbZC3MJp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Mar 2009 08:08:11 -0400
-Message-ID: <49D0B628.5000501@trash.net>
-Date: Mon, 30 Mar 2009 14:08:08 +0200
-From: Patrick McHardy <kaber@trash.net>
+	Mon, 30 Mar 2009 08:09:45 -0400
+Message-ID: <49D0B687.1030407@oss.ntt.co.jp>
+Date: Mon, 30 Mar 2009 21:09:43 +0900
+From: =?windows-1252?Q?Fernando_Luis_V=E1zquez_Cao?= 
+	<fernando@oss.ntt.co.jp>
 User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
 MIME-Version: 1.0
-To: Roman Mindalev <r000n@r000n.net>
-CC: Eric Dumazet <dada1@cosmosbay.com>,
-       Stephen Hemminger <shemminger@vyatta.com>,
-       LKML <linux-kernel@vger.kernel.org>, netfilter@vger.kernel.org,
-       "David S. Miller" <davem@davemloft.net>
-Subject: Re: Regression caused by commit "netfilter: iptables: lock free counters"
-References: <20090329234702.4988017f@desktop.r000n.info>	<49D075A3.1050202@cosmosbay.com> <20090330145031.2dfd854e@desktop.r000n.info>
-In-Reply-To: <20090330145031.2dfd854e@desktop.r000n.info>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+To: Jeff Garzik <jeff@garzik.org>
+CC: Christoph Hellwig <hch@infradead.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Theodore Tso <tytso@mit.edu>, Ingo Molnar <mingo@elte.hu>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Nick Piggin <npiggin@suse.de>,
+       David Rees <drees76@gmail.com>, Jesper Krogh <jesper@krogh.cc>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       chris.mason@oracle.com, david@fromorbit.com, tj@kernel.org
+Subject: [PATCH 1/7] block: Add block_flush_device()
+References: <alpine.LFD.2.00.0903241218130.3032@localhost.localdomain> <49C93AB0.6070300@garzik.org> <20090325093913.GJ27476@kernel.dk> <49CA86BD.6060205@garzik.org> <20090325194341.GB27476@kernel.dk> <49CA9346.6040108@garzik.org> <alpine.LFD.2.00.0903251337410.3032@localhost.localdomain> <20090325212923.GA5620@havoc.gtf.org> <20090326032445.GA16999@havoc.gtf.org> <20090327205046.GA2036@havoc.gtf.org> <20090329082507.GA4242@infradead.org> <49D01F94.6000101@oss.ntt.co.jp> <49D02328.7060108@oss.ntt.co.jp> <49D0258A.9020306@garzik.org> <49D03377.1040909@oss.ntt.co.jp> <49D0B535.2010106@oss.ntt.co.jp>
+In-Reply-To: <49D0B535.2010106@oss.ntt.co.jp>
+Content-Type: text/plain; charset=windows-1252; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Roman Mindalev wrote:
-> On Mon, 30 Mar 2009 09:32:51 +0200
-> Eric Dumazet <dada1@cosmosbay.com> wrote:
-> 
->> Could you try following patch ?
->>
->> [PATCH] netfilter: use rcu_read_bh() in ipt_do_table()
->>
->> Commit 784544739a25c30637397ace5489eeb6e15d7d49
->> (netfilter: iptables: lock free counters) forgot to disable BH
->> in arpt_do_table(), ipt_do_table() and  ip6t_do_table()
->>
->> Use rcu_read_lock_bh() instead of rcu_read_lock() cures the problem.
->>
->> Reported-and-bisected-by: Roman Mindalev <r000n@r000n.net>
->> Signed-off-by: Eric Dumazet <dada1@cosmosbay.com>
->> ---
-> 
-> 2.6.29-git4 and 2.6.29-git6 both works fine for me with this patch. 
-> Thanks, Eric!
+This patch adds a helper function that should be used by filesystems that need
+to flush the underlying block device on fsync()/fdatasync().
 
-Thanks indeed Eric :) Dave, please apply.
+Signed-off-by: Fernando Luis Vazquez Cao <fernando@oss.ntt.co.jp>
+---
 
-Acked-by: Patrick McHardy <kaber@trash.net>
+diff -urNp linux-2.6.29-orig/fs/buffer.c linux-2.6.29/fs/buffer.c
+--- linux-2.6.29-orig/fs/buffer.c	2009-03-24 08:12:14.000000000 +0900
++++ linux-2.6.29/fs/buffer.c	2009-03-30 15:27:04.000000000 +0900
+@@ -165,6 +165,17 @@ void end_buffer_write_sync(struct buffer
+  	put_bh(bh);
+  }
 
++/* Issue flush of write caches on the block device */
++int block_flush_device(struct block_device *bdev)
++{
++	int ret = 0;
++
++	ret = blkdev_issue_flush(bdev, NULL);
++
++	return (ret == -EOPNOTSUPP) ? 0 : ret;
++}
++EXPORT_SYMBOL(block_flush_device);
++
+  /*
+   * Write out and wait upon all the dirty data associated with a block
+   * device via its mapping.  Does not take the superblock lock.
+diff -urNp linux-2.6.29-orig/include/linux/buffer_head.h linux-2.6.29/include/linux/buffer_head.h
+--- linux-2.6.29-orig/include/linux/buffer_head.h	2009-03-24 08:12:14.000000000 +0900
++++ linux-2.6.29/include/linux/buffer_head.h	2009-03-30 15:27:26.000000000 +0900
+@@ -238,6 +238,7 @@ int nobh_write_end(struct file *, struct
+  int nobh_truncate_page(struct address_space *, loff_t, get_block_t *);
+  int nobh_writepage(struct page *page, get_block_t *get_block,
+                          struct writeback_control *wbc);
++int block_flush_device(struct block_device *bdev);
+
+  void buffer_init(void);
 
