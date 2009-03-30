@@ -1,66 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759820AbZC3TTF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759945AbZC3TUq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759820AbZC3TTF (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Mar 2009 15:19:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759706AbZC3TSg
+	id S1759945AbZC3TUq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Mar 2009 15:20:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759571AbZC3TU2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Mar 2009 15:18:36 -0400
-Received: from cantor.suse.de ([195.135.220.2]:58261 "EHLO mx1.suse.de"
+	Mon, 30 Mar 2009 15:20:28 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:33789 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759713AbZC3TSe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Mar 2009 15:18:34 -0400
-Message-ID: <49D11AF2.9030701@suse.com>
-Date: Mon, 30 Mar 2009 15:18:10 -0400
-From: Jeff Mahoney <jeffm@suse.com>
-Organization: SUSE Labs, Novell, Inc
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	id S1759248AbZC3TU1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Mar 2009 15:20:27 -0400
+Date: Mon, 30 Mar 2009 15:20:24 -0400 (EDT)
+From: Mikulas Patocka <mpatocka@redhat.com>
+X-X-Sender: mpatocka@hs20-bc2-1.build.redhat.com
+To: viro@zeniv.linux.org.uk
+cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] fix bmap-vs-truncate race
+Message-ID: <Pine.LNX.4.64.0903301518120.23576@hs20-bc2-1.build.redhat.com>
 MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       ReiserFS Development List <reiserfs-devel@vger.kernel.org>
-Subject: Re: [patch 32/35 code-cleanup] reiserfs: rename p_s_inode to inode
-References: <20090330180215.951354436@suse.com>	<20090330181013.465420330@suse.com> <87tz5alua4.fsf@basil.nowhere.org>
-In-Reply-To: <87tz5alua4.fsf@basil.nowhere.org>
-X-Enigmail-Version: 0.95.2
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+Hi
 
-Andi Kleen wrote:
-> Jeff Mahoney <jeffm@suse.com> writes:
->> --- a/fs/reiserfs/file.c
->> +++ b/fs/reiserfs/file.c
->> @@ -137,17 +137,17 @@ static void reiserfs_vfs_truncate_file(s
->>  static int reiserfs_sync_file(struct file *p_s_filp,
->>  			      struct dentry *p_s_dentry, int datasync)
->>  {
->> -	struct inode *p_s_inode = p_s_dentry->d_inode;
->> +	struct inode *inode = p_s_dentry->d_inode;
->>  	int n_err;
->>  	int barrier_done;
-> 
-> Didn't you miss one here?
+I'm submitting this patch for 2.6.30 merge window.
 
-Nope. This renamed p_s_inode, and that's a p_s_dentry. That one gets
-handled in reiserfs: rename p_._ variables.
 
-- -Jeff
+FAT filesystem used down_read(&mapping->host->i_alloc_sem) to prevent 
+a race between bmap and truncate. However, such race is present in all the
+other filesystems --- it is generally assumed that blocks queried with
+get_block won't disappear while get_block is in progress.
 
-- --
-Jeff Mahoney
-SUSE Labs
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
-Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
+The race can be only triggered by root, non-privileged users can't use
+bmap, so it is not a security issue (unless there is some program run
+by root that bmaps users' files).
 
-iEYEARECAAYFAknRGvIACgkQLPWxlyuTD7ItdQCgiuVxsIJVzXv66VzTNuRmfF0n
-VNgAoJZHYLAtS6mj4Uzxb2+WL/J5Pv+y
-=fQ5U
------END PGP SIGNATURE-----
+This patch fixes the race in a generic way, in all the filesystems. If some
+filesystem employs its own locking and doesn't want to take i_alloc_sem
+(I don't know about any, where taking i_alloc_sem could be problem),
+let it use its own function and not generic_block_bmap.
+
+Signed-off-by: Mikulas Patocka <mpatocka@redhat.com>
+
+---
+ fs/buffer.c    |    8 ++++++++
+ fs/fat/inode.c |    2 --
+ 2 files changed, 8 insertions(+), 2 deletions(-)
+
+Index: linux-2.6.29-devel/fs/buffer.c
+===================================================================
+--- linux-2.6.29-devel.orig/fs/buffer.c	2009-03-29 04:48:38.000000000 +0200
++++ linux-2.6.29-devel/fs/buffer.c	2009-03-29 05:26:53.000000000 +0200
+@@ -2963,7 +2963,15 @@ sector_t generic_block_bmap(struct addre
+ 	tmp.b_state = 0;
+ 	tmp.b_blocknr = 0;
+ 	tmp.b_size = 1 << inode->i_blkbits;
++
++	/*
++	 * Protect the inode from being truncated while get_block is
++	 * in progress.
++	 */
++	down_read(&mapping->host->i_alloc_sem);
+ 	get_block(inode, block, &tmp, 0);
++	up_read(&mapping->host->i_alloc_sem);
++
+ 	return tmp.b_blocknr;
+ }
+ 
+Index: linux-2.6.29-devel/fs/fat/inode.c
+===================================================================
+--- linux-2.6.29-devel.orig/fs/fat/inode.c	2009-03-29 04:46:35.000000000 +0200
++++ linux-2.6.29-devel/fs/fat/inode.c	2009-03-29 05:26:53.000000000 +0200
+@@ -202,9 +202,7 @@ static sector_t _fat_bmap(struct address
+ 	sector_t blocknr;
+ 
+ 	/* fat_get_cluster() assumes the requested blocknr isn't truncated. */
+-	down_read(&mapping->host->i_alloc_sem);
+ 	blocknr = generic_block_bmap(mapping, block, fat_get_block);
+-	up_read(&mapping->host->i_alloc_sem);
+ 
+ 	return blocknr;
+ }
