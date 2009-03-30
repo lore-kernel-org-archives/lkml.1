@@ -1,61 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754455AbZC3Qqa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753036AbZC3QsB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754455AbZC3Qqa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Mar 2009 12:46:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752188AbZC3QqU
+	id S1753036AbZC3QsB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Mar 2009 12:48:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753889AbZC3Qrr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Mar 2009 12:46:20 -0400
-Received: from g1t0029.austin.hp.com ([15.216.28.36]:17666 "EHLO
-	g1t0029.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751500AbZC3QqU (ORCPT
+	Mon, 30 Mar 2009 12:47:47 -0400
+Received: from mail09.linbit.com ([212.69.161.110]:46562 "EHLO
+	mail09.linbit.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750873AbZC3Qrr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Mar 2009 12:46:20 -0400
-Date: Mon, 30 Mar 2009 10:45:42 -0600
-From: Alex Chiang <achiang@hp.com>
-To: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
-Cc: jbarnes@virtuousgeek.org, linux-pci@vger.kernel.org,
-       linux-kernel@vger.kernel.org, lenb@kernel.org
-Subject: Re: [PATCH 3/3] PCI: pci_slot: grab refcount on slot's bus
-Message-ID: <20090330164542.GC30433@ldl.fc.hp.com>
-References: <20090329165352.29073.5159.stgit@bob.kio> <20090329165454.29073.1180.stgit@bob.kio> <49D02DAD.2040607@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49D02DAD.2040607@jp.fujitsu.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Mon, 30 Mar 2009 12:47:47 -0400
+From: Philipp Reisner <philipp.reisner@linbit.com>
+To: linux-kernel@vger.kernel.org
+Cc: gregkh@suse.de, jens.axboe@oracle.com, nab@risingtidestorage.com,
+       andi@firstfloor.org
+Subject: [PATCH 00/12] DRBD: a block device for HA clusters
+Date: Mon, 30 Mar 2009 18:47:08 +0200
+Message-Id: <1238431643-19433-1-git-send-email-philipp.reisner@linbit.com>
+X-Mailer: git-send-email 1.5.6.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>:
-> Alex Chiang wrote:
-> > diff --git a/drivers/acpi/pci_slot.c b/drivers/acpi/pci_slot.c
-> > index cd1f446..c7ad9f2 100644
-> > --- a/drivers/acpi/pci_slot.c
-> > +++ b/drivers/acpi/pci_slot.c
-> > @@ -63,6 +63,7 @@ struct acpi_pci_slot {
-> >  	acpi_handle root_handle;	/* handle of the root bridge */
-> >  	struct pci_slot *pci_slot;	/* corresponding pci_slot */
-> >  	struct list_head list;		/* node in the list of slots */
-> > +	struct pci_bus *bus;		/* bus the slot is on */
-> >  };
-> 
-> I don't think we need an additional 'bus' field in the struct
-> acpi_pci_slot. At the register_slot(), we already know the
-> address of struct pci_bus. At the acpi_pci_slot_remove(), I
-> think we can get the address of struct pci_bus as follows.
-> 
-> 		if (slot->root_handle == handle) {
-> 			struct pci_bus *pbus = slot->pci_slot->bus;
-> 			list_del(&slot->list);
-> 			pci_destroy_slot(slot->pci_slot);
-> 			put_device(&pbus->dev);
-> 			kfree(slot);
-> 		}
+Hi,
 
-Ok, that is a little cleaner, I'll do it your way.
+  This is a repost of DRBD, to keep you updated about the ongoing
+  cleanups.
 
-Thanks for the review.
+Description
 
-/ac
+  DRBD is a shared-nothing, synchronously replicated block device. It
+  is designed to serve as a building block for high availability
+  clusters and in this context, is a "drop-in" replacement for shared
+  storage. Simplistically, you could see it as a network RAID 1.
 
+  Each minor device has a role, which can be 'primary' or 'secondary'.
+  On the node with the primary device the application is supposed to
+  run and to access the device (/dev/drbdX). Every write is sent to
+  the local 'lower level block device' and, across the network, to the
+  node with the device in 'secondary' state.  The secondary device
+  simply writes the data to its lower level block device.
+
+  DRBD can also be used in dual-Primary mode (device writable on both
+  nodes), which means it can exhibit shared disk semantics in a
+  shared-nothing cluster.  Needless to say, on top of dual-Primary
+  DRBD utilizing a cluster file system is necessary to maintain for
+  cache coherency.
+
+  This is one of the areas where DRBD differs notably from RAID1 (say
+  md) stacked on top of NBD or iSCSI. DRBD solves the issue of
+  concurrent writes to the same on disk location. That is an error of
+  the layer above us -- it usually indicates a broken lock manager in
+  a cluster file system --, but DRBD has to ensure that both sides
+  agree on which write came last, and therefore overwrites the other
+  write.
+
+  More background on this can be found in this paper:
+    http://www.drbd.org/fileadmin/drbd/publications/drbd8.pdf
+
+  Beyond that, DRBD addresses various issues of cluster partitioning,
+  which the MD/NBD stack, to the best of our knowledge, does not
+  solve. The above-mentioned paper goes into some detail about that as
+  well.
+
+  DRBD can operate in synchronous mode, or in asynchronous mode. I want
+  to point out that we guarantee not to violate a single possible write
+  after write dependency when writing on the standby node. More on that
+  can be found in this paper:
+    http://www.drbd.org/fileadmin/drbd/publications/drbd_lk9.pdf
+
+  Last not least DRBD offers background resynchronisation and keeps
+  a on disk representation of the dirty bitmap up-to-date. A reasonable
+  tradeoff between number of updates, and resyncing more than needed
+  is implemented with the activity log.
+  More on that:
+    http://www.drbd.org/fileadmin/drbd/publications/drbd-activity-logging_v6.pdf
+
+Changes since the last post from DRBD upstream
+
+  * Updated to the final drbd-8.3.1 code
+  * Optionally run-length encode bitmap transfers
+
+Changes triggered by reviews
+
+  * Using the latest proc_create() now
+  * Moved the allocation of md_io_tmpp to attach/detach out of drbd_md_sync_page_io()
+  * Removing the mode selection comments for emacs
+  * Removed DRBD_ratelimit()
+
+cheers,
+  Phil
