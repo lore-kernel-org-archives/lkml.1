@@ -1,40 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757146AbZC3E4U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751110AbZC3E63@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757146AbZC3E4U (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Mar 2009 00:56:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755597AbZC3Ezv
+	id S1751110AbZC3E63 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Mar 2009 00:58:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752251AbZC3E6T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Mar 2009 00:55:51 -0400
-Received: from e28smtp01.in.ibm.com ([59.145.155.1]:56663 "EHLO
-	e28smtp01.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756052AbZC3Ezu (ORCPT
+	Mon, 30 Mar 2009 00:58:19 -0400
+Received: from e32.co.us.ibm.com ([32.97.110.150]:48493 "EHLO
+	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751566AbZC3E6T (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Mar 2009 00:55:50 -0400
-From: Gautham R Shenoy <ego@in.ibm.com>
-Subject: [PATCH] sched: Print sched_group::__cpu_power in sched_domain_debug.
-To: linux-kernel@vger.kernel.org
-Cc: "Ingo Molnar" <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>
-Date: Mon, 30 Mar 2009 10:25:15 +0530
-Message-ID: <20090330045321.2869.9284.stgit@sofia.in.ibm.com>
-User-Agent: StGIT/0.14.2
+	Mon, 30 Mar 2009 00:58:19 -0400
+Date: Mon, 30 Mar 2009 10:28:13 +0530
+From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+To: Masami Hiramatsu <mhiramat@redhat.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       systemtap-ml <systemtap@sources.redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH -tip 3/4 V3] tracing: kprobe-tracer plugin supports
+	arguments
+Message-ID: <20090330045813.GB6411@in.ibm.com>
+Reply-To: ananth@in.ibm.com
+References: <49CC08D2.30608@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49CC08D2.30608@redhat.com>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A simple patch to print the value of __cpu_power in sched_domain_debug.
+On Thu, Mar 26, 2009 at 06:59:30PM -0400, Masami Hiramatsu wrote:
 
----
+> +/* TODO: Move these functions to arch/XXX/include/asm/debugger.h */
+> +
 
-Gautham R Shenoy (1):
-      sched: Print sched_group::__cpu_power in sched_domain_debug.
+Maybe arch/xxx/lib/<>.c too?
 
+I know its on your list of TODOs but I'd prefer to have an
+arch_fetch_func_args() or somesuch in arch specific code, to start with.
+It is trivial to implement the argument extraction code on certain
+architectures and such a helper would be great.
 
- kernel/sched.c |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
-
--- 
-Thanks and Regards
-gautham.
+Ananth
