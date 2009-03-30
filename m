@@ -1,87 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753558AbZC3HSv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753047AbZC3HWR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753558AbZC3HSv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Mar 2009 03:18:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750962AbZC3HSj
+	id S1753047AbZC3HWR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Mar 2009 03:22:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750873AbZC3HWB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Mar 2009 03:18:39 -0400
-Received: from mga03.intel.com ([143.182.124.21]:19964 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750813AbZC3HSi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Mar 2009 03:18:38 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.38,445,1233561600"; 
-   d="scan'208";a="125540074"
-Date: Mon, 30 Mar 2009 15:18:24 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: stable@kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       Jan Kara <jack@suse.cz>, Masayoshi MIZUMA <m.mizuma@jp.fujitsu.com>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       "viro@zeniv.linux.org.uk" <viro@zeniv.linux.org.uk>,
-       Nick Piggin <npiggin@suse.de>
-Subject: [PATCH][RESEND for 2.6.29-rc8-mm1] skip I_CLEAR state inodes
-Message-ID: <20090330071824.GA9260@localhost>
-References: <20090318170237.8F6C.61FB500B@jp.fujitsu.com> <20090323103846.GA16577@localhost> <20090324155655.2684.61FB500B@jp.fujitsu.com> <20090324074457.GA7745@localhost> <20090324120502.GC23439@duck.suse.cz> <20090324124001.GA25326@localhost>
+	Mon, 30 Mar 2009 03:22:01 -0400
+Received: from gerard.telenet-ops.be ([195.130.132.48]:33652 "EHLO
+	gerard.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750754AbZC3HWA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Mar 2009 03:22:00 -0400
+Date: Mon, 30 Mar 2009 09:21:55 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Greg Kroah-Hartman <gregkh@suse.de>
+cc: Linux Kernel Development <linux-kernel@vger.kernel.org>
+Subject: comedi doesn't like the new irqreturn_t
+Message-ID: <Pine.LNX.4.64.0903300919540.19172@anakin>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090324124001.GA25326@localhost>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-clear_inode() will switch inode state from I_FREEING to I_CLEAR,
-and do so _outside_ of inode_lock. So any I_FREEING testing is
-incomplete without a coupled testing of I_CLEAR.
+On m68k:
+| In file included from drivers/staging/comedi/comedidev.h:40,
+|                  from drivers/staging/comedi/comedi_fops.c:45:
+| drivers/staging/comedi/interrupt.h:30:1: warning: "IRQ_RETVAL" redefined
+| In file included from include/linux/interrupt.h:10,
+|                  from drivers/staging/comedi/interrupt.h:22,
+|                  from drivers/staging/comedi/comedidev.h:40,
+|                  from drivers/staging/comedi/comedi_fops.c:45:
+| include/linux/irqreturn.h:15:1: warning: this is the location of the previous definition
+| In file included from drivers/staging/comedi/comedidev.h:41,
+|                  from drivers/staging/comedi/comedi_fops.c:46:
+| drivers/staging/comedi/interrupt.h:27: error: conflicting types for 'irqreturn_t'
+| include/linux/irqreturn.h:14: error: previous declaration of 'irqreturn_t' was here
+| make[6]: *** [drivers/staging/comedi/comedi_fops.o] Error 1
 
-So add I_CLEAR tests to drop_pagecache_sb(), generic_sync_sb_inodes() and
-add_dquot_ref().
+I suspect a similar problem with drivers/staging/otus, but that one isn't
+compiled on m68k due to its dependency on USB.
 
-Masayoshi MIZUMA discovered the bug in drop_pagecache_sb() and Jan Kara
-reminds fixing the other two cases.
+Gr{oetje,eeting}s,
 
-Reported-by: Masayoshi MIZUMA <m.mizuma@jp.fujitsu.com>
-Reviewed-by: Jan Kara <jack@suse.cz>
-Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
----
- fs/drop_caches.c  |    2 +-
- fs/fs-writeback.c |    3 ++-
- fs/quota/dquot.c  |    2 +-
- 3 files changed, 4 insertions(+), 3 deletions(-)
+						Geert
 
---- mm.orig/fs/drop_caches.c
-+++ mm/fs/drop_caches.c
-@@ -18,7 +18,7 @@ static void drop_pagecache_sb(struct sup
- 
- 	spin_lock(&inode_lock);
- 	list_for_each_entry(inode, &sb->s_inodes, i_sb_list) {
--		if (inode->i_state & (I_FREEING|I_WILL_FREE|I_NEW))
-+		if (inode->i_state & (I_FREEING|I_CLEAR|I_WILL_FREE|I_NEW))
- 			continue;
- 		if (inode->i_mapping->nrpages == 0)
- 			continue;
---- mm.orig/fs/fs-writeback.c
-+++ mm/fs/fs-writeback.c
-@@ -538,7 +538,8 @@ void generic_sync_sb_inodes(struct super
- 		list_for_each_entry(inode, &sb->s_inodes, i_sb_list) {
- 			struct address_space *mapping;
- 
--			if (inode->i_state & (I_FREEING|I_WILL_FREE|I_NEW))
-+			if (inode->i_state &
-+					(I_FREEING|I_CLEAR|I_WILL_FREE|I_NEW))
- 				continue;
- 			mapping = inode->i_mapping;
- 			if (mapping->nrpages == 0)
---- mm.orig/fs/quota/dquot.c
-+++ mm/fs/quota/dquot.c
-@@ -823,7 +823,7 @@ static void add_dquot_ref(struct super_b
- 
- 	spin_lock(&inode_lock);
- 	list_for_each_entry(inode, &sb->s_inodes, i_sb_list) {
--		if (inode->i_state & (I_FREEING|I_WILL_FREE|I_NEW))
-+		if (inode->i_state & (I_FREEING|I_CLEAR|I_WILL_FREE|I_NEW))
- 			continue;
- 		if (!atomic_read(&inode->i_writecount))
- 			continue;
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
