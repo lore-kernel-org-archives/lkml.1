@@ -1,447 +1,598 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757153AbZC3SSn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757281AbZC3ST0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757153AbZC3SSn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Mar 2009 14:18:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755091AbZC3SPa
+	id S1757281AbZC3ST0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Mar 2009 14:19:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755100AbZC3SPe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Mar 2009 14:15:30 -0400
-Received: from cantor.suse.de ([195.135.220.2]:56603 "EHLO mx1.suse.de"
+	Mon, 30 Mar 2009 14:15:34 -0400
+Received: from cantor.suse.de ([195.135.220.2]:56601 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753161AbZC3SPR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1753175AbZC3SPR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 30 Mar 2009 14:15:17 -0400
-Message-Id: <20090330181012.374456325@suse.com>
+Message-Id: <20090330181011.851633522@suse.com>
 User-Agent: quilt/0.47-14.9
-Date: Mon, 30 Mar 2009 14:02:39 -0400
+Date: Mon, 30 Mar 2009 14:02:35 -0400
 From: Jeff Mahoney <jeffm@suse.com>
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Cc: Andrew Morton <akpm@linux-foundation.org>,
        Linus Torvalds <torvalds@linux-foundation.org>,
        ReiserFS Development List <reiserfs-devel@vger.kernel.org>
-Subject: [patch 24/35 xattr-rework] reiserfs: journaled xattrs
+Subject: [patch 20/35 xattr-rework] reiserfs: eliminate per-super xattr lock
 References: <20090330180215.951354436@suse.com>
-Content-Disposition: inline; filename=patches.suse/reiserfs-journaled-xattrs.diff
+Content-Disposition: inline; filename=patches.suse/reiserfs-eliminate-per-super-xattr-lock.diff
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- Deadlocks are possible in the xattr code between the journal lock and the
- xattr sems.
+ With the switch to using inode->i_mutex locking during lookups/creation in
+ the xattr root, the per-super xattr lock is no longer needed.
 
- This patch implements journalling for xattr operations. The benefit is
- twofold:
- * It gets rid of the deadlock possibility by always ensuring that xattr
-   write operations are initiated inside a transaction.
- * It corrects the problem where xattr backing files aren't considered any
-   differently than normal files, despite the fact they are metadata.
-
- I discussed the added journal load with Chris Mason, and we decided that
- since xattrs (versus other journal activity) is fairly rare, the introduction
- of larger transactions to support journaled xattrs wouldn't be too big a deal.
+ This patch removes it.
 
 Signed-off-by: Jeff Mahoney <jeffm@suse.com>
-
 --
- fs/reiserfs/inode.c            |    3 -
- fs/reiserfs/namei.c            |   14 +----
- fs/reiserfs/xattr.c            |   39 +++++++++++----
- fs/reiserfs/xattr_acl.c        |  105 +++++++++++++++++++++++++++++++----------
- include/linux/reiserfs_acl.h   |    3 -
- include/linux/reiserfs_fs.h    |    4 +
- include/linux/reiserfs_xattr.h |   40 ++++++++++++++-
- 7 files changed, 159 insertions(+), 49 deletions(-)
+ fs/reiserfs/inode.c            |   14 -------
+ fs/reiserfs/namei.c            |   29 ----------------
+ fs/reiserfs/super.c            |    4 --
+ fs/reiserfs/xattr.c            |   70 +++++++++++++++++++-------------------
+ fs/reiserfs/xattr_acl.c        |   74 ++++++++++++++++++-----------------------
+ include/linux/reiserfs_fs.h    |    3 -
+ include/linux/reiserfs_fs_sb.h |    3 -
+ include/linux/reiserfs_xattr.h |   28 ++-------------
+ 8 files changed, 74 insertions(+), 151 deletions(-)
 
 --- a/fs/reiserfs/inode.c
 +++ b/fs/reiserfs/inode.c
-@@ -1919,9 +1919,8 @@ int reiserfs_new_inode(struct reiserfs_t
- 		goto out_inserted_sd;
- 	}
+@@ -1957,19 +1957,7 @@ int reiserfs_new_inode(struct reiserfs_t
+ 	inode->i_nlink = 0;
+ 	th->t_trans_id = 0;	/* so the caller can't use this handle later */
+ 	unlock_new_inode(inode); /* OK to do even if we hadn't locked it */
+-
+-	/* If we were inheriting an ACL, we need to release the lock so that
+-	 * iput doesn't deadlock in reiserfs_delete_xattrs. The locking
+-	 * code really needs to be reworked, but this will take care of it
+-	 * for now. -jeffm */
+-#ifdef CONFIG_REISERFS_FS_POSIX_ACL
+-	if (REISERFS_I(dir)->i_acl_default && !IS_ERR(REISERFS_I(dir)->i_acl_default)) {
+-		reiserfs_write_unlock_xattrs(dir->i_sb);
+-		iput(inode);
+-		reiserfs_write_lock_xattrs(dir->i_sb);
+-	} else
+-#endif
+-		iput(inode);
++	iput(inode);
+ 	return err;
+ }
  
--	/* XXX CHECK THIS */
- 	if (reiserfs_posixacl(inode->i_sb)) {
--		retval = reiserfs_inherit_default_acl(dir, dentry, inode);
-+		retval = reiserfs_inherit_default_acl(th, dir, dentry, inode);
- 		if (retval) {
- 			err = retval;
- 			reiserfs_check_path(&path_to_key);
 --- a/fs/reiserfs/namei.c
 +++ b/fs/reiserfs/namei.c
-@@ -607,15 +607,13 @@ static int reiserfs_create(struct inode 
- 	    2 * (REISERFS_QUOTA_INIT_BLOCKS(dir->i_sb) +
- 		 REISERFS_QUOTA_TRANS_BLOCKS(dir->i_sb));
- 	struct reiserfs_transaction_handle th;
--	int locked;
+@@ -609,9 +609,6 @@ static int reiserfs_create(struct inode
  
- 	if (!(inode = new_inode(dir->i_sb))) {
- 		return -ENOMEM;
- 	}
- 	new_inode_init(inode, dir, mode);
- 
--	locked = reiserfs_cache_default_acl(dir);
--
-+	jbegin_count += reiserfs_cache_default_acl(dir);
  	reiserfs_write_lock(dir->i_sb);
  
- 	retval = journal_begin(&th, dir->i_sb, jbegin_count);
-@@ -669,7 +667,6 @@ static int reiserfs_mknod(struct inode *
- 	    JOURNAL_PER_BALANCE_CNT * 3 +
- 	    2 * (REISERFS_QUOTA_INIT_BLOCKS(dir->i_sb) +
- 		 REISERFS_QUOTA_TRANS_BLOCKS(dir->i_sb));
--	int locked;
- 
- 	if (!new_valid_dev(rdev))
- 		return -EINVAL;
-@@ -679,8 +676,7 @@ static int reiserfs_mknod(struct inode *
- 	}
- 	new_inode_init(inode, dir, mode);
- 
--	locked = reiserfs_cache_default_acl(dir);
+-	if (locked)
+-		reiserfs_write_lock_xattrs(dir->i_sb);
 -
-+	jbegin_count += reiserfs_cache_default_acl(dir);
- 	reiserfs_write_lock(dir->i_sb);
- 
  	retval = journal_begin(&th, dir->i_sb, jbegin_count);
-@@ -737,7 +733,6 @@ static int reiserfs_mkdir(struct inode *
- 	    JOURNAL_PER_BALANCE_CNT * 3 +
- 	    2 * (REISERFS_QUOTA_INIT_BLOCKS(dir->i_sb) +
- 		 REISERFS_QUOTA_TRANS_BLOCKS(dir->i_sb));
--	int locked;
- 
- #ifdef DISPLACE_NEW_PACKING_LOCALITIES
- 	/* set flag that new packing locality created and new blocks for the content     * of that directory are not displaced yet */
-@@ -749,8 +744,7 @@ static int reiserfs_mkdir(struct inode *
- 	}
- 	new_inode_init(inode, dir, mode);
- 
--	locked = reiserfs_cache_default_acl(dir);
--
-+	jbegin_count += reiserfs_cache_default_acl(dir);
- 	reiserfs_write_lock(dir->i_sb);
- 
- 	retval = journal_begin(&th, dir->i_sb, jbegin_count);
-@@ -1037,8 +1031,6 @@ static int reiserfs_symlink(struct inode
- 	memcpy(name, symname, strlen(symname));
- 	padd_item(name, item_len, strlen(symname));
- 
--	/* We would inherit the default ACL here, but symlinks don't get ACLs */
--
- 	retval = journal_begin(&th, parent_dir->i_sb, jbegin_count);
  	if (retval) {
  		drop_new_inode(inode);
---- a/fs/reiserfs/xattr_acl.c
-+++ b/fs/reiserfs/xattr_acl.c
-@@ -10,15 +10,17 @@
- #include <linux/reiserfs_acl.h>
- #include <asm/uaccess.h>
+@@ -624,11 +621,6 @@ static int reiserfs_create(struct inode
+ 	if (retval)
+ 		goto out_failed;
  
--static int reiserfs_set_acl(struct inode *inode, int type,
-+static int reiserfs_set_acl(struct reiserfs_transaction_handle *th,
-+			    struct inode *inode, int type,
- 			    struct posix_acl *acl);
- 
- static int
- xattr_set_acl(struct inode *inode, int type, const void *value, size_t size)
- {
- 	struct posix_acl *acl;
--	int error;
+-	if (locked) {
+-		reiserfs_write_unlock_xattrs(dir->i_sb);
+-		locked = 0;
+-	}
 -
-+	int error, error2;
-+	struct reiserfs_transaction_handle th;
-+	size_t jcreate_blocks;
- 	if (!reiserfs_posixacl(inode->i_sb))
- 		return -EOPNOTSUPP;
- 	if (!is_owner_or_cap(inode))
-@@ -36,7 +38,21 @@ xattr_set_acl(struct inode *inode, int t
- 	} else
- 		acl = NULL;
+ 	inode->i_op = &reiserfs_file_inode_operations;
+ 	inode->i_fop = &reiserfs_file_operations;
+ 	inode->i_mapping->a_ops = &reiserfs_address_space_operations;
+@@ -655,8 +647,6 @@ static int reiserfs_create(struct inode
+ 	retval = journal_end(&th, dir->i_sb, jbegin_count);
  
--	error = reiserfs_set_acl(inode, type, acl);
-+	/* Pessimism: We can't assume that anything from the xattr root up
-+	 * has been created. */
-+
-+	jcreate_blocks = reiserfs_xattr_jcreate_nblocks(inode) +
-+			 reiserfs_xattr_nblocks(inode, size) * 2;
-+
-+	reiserfs_write_lock(inode->i_sb);
-+	error = journal_begin(&th, inode->i_sb, jcreate_blocks);
-+	if (error == 0) {
-+		error = reiserfs_set_acl(&th, inode, type, acl);
-+		error2 = journal_end(&th, inode->i_sb, jcreate_blocks);
-+		if (error2)
-+			error = error2;
-+	}
-+	reiserfs_write_unlock(inode->i_sb);
+       out_failed:
+-	if (locked)
+-		reiserfs_write_unlock_xattrs(dir->i_sb);
+ 	reiserfs_write_unlock(dir->i_sb);
+ 	return retval;
+ }
+@@ -686,9 +676,6 @@ static int reiserfs_mknod(struct inode *
  
-       release_and_out:
- 	posix_acl_release(acl);
-@@ -266,7 +282,8 @@ struct posix_acl *reiserfs_get_acl(struc
-  * BKL held [before 2.5.x]
-  */
- static int
--reiserfs_set_acl(struct inode *inode, int type, struct posix_acl *acl)
-+reiserfs_set_acl(struct reiserfs_transaction_handle *th, struct inode *inode,
-+		 int type, struct posix_acl *acl)
- {
- 	char *name;
- 	void *value = NULL;
-@@ -310,7 +327,7 @@ reiserfs_set_acl(struct inode *inode, in
- 			return (int)PTR_ERR(value);
+ 	reiserfs_write_lock(dir->i_sb);
+ 
+-	if (locked)
+-		reiserfs_write_lock_xattrs(dir->i_sb);
+-
+ 	retval = journal_begin(&th, dir->i_sb, jbegin_count);
+ 	if (retval) {
+ 		drop_new_inode(inode);
+@@ -702,11 +689,6 @@ static int reiserfs_mknod(struct inode *
+ 		goto out_failed;
  	}
  
--	error = __reiserfs_xattr_set(inode, name, value, size, 0);
-+	error = reiserfs_xattr_set_handle(th, inode, name, value, size, 0);
+-	if (locked) {
+-		reiserfs_write_unlock_xattrs(dir->i_sb);
+-		locked = 0;
+-	}
+-
+ 	inode->i_op = &reiserfs_special_inode_operations;
+ 	init_special_inode(inode, inode->i_mode, rdev);
  
- 	/*
- 	 * Ensure that the inode gets dirtied if we're only using
-@@ -337,7 +354,8 @@ reiserfs_set_acl(struct inode *inode, in
- /* dir->i_mutex: locked,
-  * inode is new and not released into the wild yet */
- int
--reiserfs_inherit_default_acl(struct inode *dir, struct dentry *dentry,
-+reiserfs_inherit_default_acl(struct reiserfs_transaction_handle *th,
-+			     struct inode *dir, struct dentry *dentry,
- 			     struct inode *inode)
- {
- 	struct posix_acl *acl;
-@@ -374,7 +392,8 @@ reiserfs_inherit_default_acl(struct inod
+@@ -736,8 +718,6 @@ static int reiserfs_mknod(struct inode *
+ 	retval = journal_end(&th, dir->i_sb, jbegin_count);
  
- 		/* Copy the default ACL to the default ACL of a new directory */
- 		if (S_ISDIR(inode->i_mode)) {
--			err = reiserfs_set_acl(inode, ACL_TYPE_DEFAULT, acl);
-+			err = reiserfs_set_acl(th, inode, ACL_TYPE_DEFAULT,
-+					       acl);
- 			if (err)
- 				goto cleanup;
- 		}
-@@ -395,9 +414,9 @@ reiserfs_inherit_default_acl(struct inod
- 
- 			/* If we need an ACL.. */
- 			if (need_acl > 0) {
--				err =
--				    reiserfs_set_acl(inode, ACL_TYPE_ACCESS,
--						     acl_copy);
-+				err = reiserfs_set_acl(th, inode,
-+						       ACL_TYPE_ACCESS,
-+						       acl_copy);
- 				if (err)
- 					goto cleanup_copy;
- 			}
-@@ -415,21 +434,45 @@ reiserfs_inherit_default_acl(struct inod
- 	return err;
+       out_failed:
+-	if (locked)
+-		reiserfs_write_unlock_xattrs(dir->i_sb);
+ 	reiserfs_write_unlock(dir->i_sb);
+ 	return retval;
  }
+@@ -767,8 +747,6 @@ static int reiserfs_mkdir(struct inode *
+ 	locked = reiserfs_cache_default_acl(dir);
  
--/* Looks up and caches the result of the default ACL.
-- * We do this so that we don't need to carry the xattr_sem into
-- * reiserfs_new_inode if we don't need to */
-+/* This is used to cache the default acl before a new object is created.
-+ * The biggest reason for this is to get an idea of how many blocks will
-+ * actually be required for the create operation if we must inherit an ACL.
-+ * An ACL write can add up to 3 object creations and an additional file write
-+ * so we'd prefer not to reserve that many blocks in the journal if we can.
-+ * It also has the advantage of not loading the ACL with a transaction open,
-+ * this may seem silly, but if the owner of the directory is doing the
-+ * creation, the ACL may not be loaded since the permissions wouldn't require
-+ * it.
-+ * We return the number of blocks required for the transaction.
-+ */
- int reiserfs_cache_default_acl(struct inode *inode)
- {
--	int ret = 0;
--	if (reiserfs_posixacl(inode->i_sb) && !IS_PRIVATE(inode)) {
--		struct posix_acl *acl;
--		acl = reiserfs_get_acl(inode, ACL_TYPE_DEFAULT);
--		ret = (acl && !IS_ERR(acl));
--		if (ret)
--			posix_acl_release(acl);
-+	struct posix_acl *acl;
-+	int nblocks = 0;
-+
-+	if (IS_PRIVATE(inode))
-+		return 0;
-+
-+	acl = reiserfs_get_acl(inode, ACL_TYPE_DEFAULT);
-+
-+	if (acl && !IS_ERR(acl)) {
-+		int size = reiserfs_acl_size(acl->a_count);
-+
-+		/* Other xattrs can be created during inode creation. We don't
-+		 * want to claim too many blocks, so we check to see if we
-+		 * we need to create the tree to the xattrs, and then we
-+		 * just want two files. */
-+		nblocks = reiserfs_xattr_jcreate_nblocks(inode);
-+		nblocks += JOURNAL_BLOCKS_PER_OBJECT(inode->i_sb);
-+
-+		REISERFS_I(inode)->i_flags |= i_has_xattr_dir;
-+
-+		/* We need to account for writes + bitmaps for two files */
-+		nblocks += reiserfs_xattr_nblocks(inode, size) * 4;
-+		posix_acl_release(acl);
+ 	reiserfs_write_lock(dir->i_sb);
+-	if (locked)
+-		reiserfs_write_lock_xattrs(dir->i_sb);
+ 
+ 	retval = journal_begin(&th, dir->i_sb, jbegin_count);
+ 	if (retval) {
+@@ -790,11 +768,6 @@ static int reiserfs_mkdir(struct inode *
+ 		goto out_failed;
  	}
  
--	return ret;
-+	return nblocks;
- }
+-	if (locked) {
+-		reiserfs_write_unlock_xattrs(dir->i_sb);
+-		locked = 0;
+-	}
+-
+ 	reiserfs_update_inode_transaction(inode);
+ 	reiserfs_update_inode_transaction(dir);
  
- int reiserfs_acl_chmod(struct inode *inode)
-@@ -455,8 +498,22 @@ int reiserfs_acl_chmod(struct inode *ino
- 	if (!clone)
- 		return -ENOMEM;
- 	error = posix_acl_chmod_masq(clone, inode->i_mode);
--	if (!error)
--		error = reiserfs_set_acl(inode, ACL_TYPE_ACCESS, clone);
-+	if (!error) {
-+		struct reiserfs_transaction_handle th;
-+		size_t size = reiserfs_xattr_nblocks(inode,
-+					     reiserfs_acl_size(clone->a_count));
-+		reiserfs_write_lock(inode->i_sb);
-+		error = journal_begin(&th, inode->i_sb, size * 2);
-+		if (!error) {
-+			int error2;
-+			error = reiserfs_set_acl(&th, inode, ACL_TYPE_ACCESS,
-+						 clone);
-+			error2 = journal_end(&th, inode->i_sb, size * 2);
-+			if (error2)
-+				error = error2;
-+		}
-+		reiserfs_write_unlock(inode->i_sb);
-+	}
- 	posix_acl_release(clone);
- 	return error;
+@@ -824,8 +797,6 @@ static int reiserfs_mkdir(struct inode *
+ 	unlock_new_inode(inode);
+ 	retval = journal_end(&th, dir->i_sb, jbegin_count);
+       out_failed:
+-	if (locked)
+-		reiserfs_write_unlock_xattrs(dir->i_sb);
+ 	reiserfs_write_unlock(dir->i_sb);
+ 	return retval;
  }
+--- a/fs/reiserfs/super.c
++++ b/fs/reiserfs/super.c
+@@ -1646,10 +1646,6 @@ static int reiserfs_fill_super(struct su
+ 	REISERFS_SB(s)->s_alloc_options.preallocmin = 0;
+ 	/* Preallocate by 16 blocks (17-1) at once */
+ 	REISERFS_SB(s)->s_alloc_options.preallocsize = 17;
+-#ifdef CONFIG_REISERFS_FS_XATTR
+-	/* Initialize the rwsem for xattr dir */
+-	init_rwsem(&REISERFS_SB(s)->xattr_dir_sem);
+-#endif
+ 	/* setup default block allocator options */
+ 	reiserfs_init_alloc_options(s);
+ 
 --- a/fs/reiserfs/xattr.c
 +++ b/fs/reiserfs/xattr.c
-@@ -632,8 +632,9 @@ out_dput:
-  * inode->i_mutex: down
+@@ -27,6 +27,12 @@
+  * these are special cases for filesystem ACLs, they are interpreted by the
+  * kernel, in addition, they are negatively and positively cached and attached
+  * to the inode so that unnecessary lookups are avoided.
++ *
++ * Locking works like so:
++ * The xattr root (/.reiserfs_priv/xattrs) is protected by its i_mutex.
++ * The xattr dir (/.reiserfs_priv/xattrs/<oid>.<gen>) is protected by
++ * inode->xattr_sem.
++ * The xattrs themselves are likewise protected by the xattr_sem.
   */
- int
--__reiserfs_xattr_set(struct inode *inode, const char *name, const void *buffer,
--		     size_t buffer_size, int flags)
-+reiserfs_xattr_set_handle(struct reiserfs_transaction_handle *th,
-+			  struct inode *inode, const char *name,
-+			  const void *buffer, size_t buffer_size, int flags)
+ 
+ #include <linux/reiserfs_fs.h>
+@@ -392,16 +398,17 @@ reiserfs_delete_xattrs_filler(void *buf,
+ /* This is called w/ inode->i_mutex downed */
+ int reiserfs_delete_xattrs(struct inode *inode)
  {
+-	struct dentry *dir, *root;
  	int err = 0;
- 	struct dentry *dentry;
-@@ -723,14 +724,34 @@ out_unlock:
++	struct dentry *dir, *root;
++	struct reiserfs_transaction_handle th;
++	int blocks = JOURNAL_PER_BALANCE_CNT * 2 + 2 +
++		     4 * REISERFS_QUOTA_TRANS_BLOCKS(inode->i_sb);
+ 
+ 	/* Skip out, an xattr has no xattrs associated with it */
+ 	if (IS_PRIVATE(inode) || get_inode_sd_version(inode) == STAT_DATA_V1)
+ 		return 0;
+ 
+-	reiserfs_read_lock_xattrs(inode->i_sb);
+ 	dir = open_xa_dir(inode, XATTR_REPLACE);
+-	reiserfs_read_unlock_xattrs(inode->i_sb);
+ 	if (IS_ERR(dir)) {
+ 		err = PTR_ERR(dir);
+ 		goto out;
+@@ -416,18 +423,26 @@ int reiserfs_delete_xattrs(struct inode
+ 	if (err)
+ 		goto out_dir;
+ 
+-	/* Leftovers besides . and .. -- that's not good. */
+-	if (dir->d_inode->i_nlink <= 2) {
+-		root = open_xa_root(inode->i_sb, XATTR_REPLACE);
+-		reiserfs_write_lock_xattrs(inode->i_sb);
++	/* We start a transaction here to avoid a ABBA situation
++	 * between the xattr root's i_mutex and the journal lock.
++	 * Inode creation will inherit an ACL, which requires a
++	 * lookup. The lookup locks the xattr root i_mutex with a
++	 * transaction open.  Inode deletion takes teh xattr root
++	 * i_mutex to delete the directory and then starts a
++	 * transaction inside it. Boom. This doesn't incur much
++	 * additional overhead since the reiserfs_rmdir transaction
++	 * will just nest inside the outer transaction. */
++	err = journal_begin(&th, inode->i_sb, blocks);
++	if (!err) {
++		int jerror;
++		root = dget(dir->d_parent);
+ 		mutex_lock_nested(&root->d_inode->i_mutex, I_MUTEX_XATTR);
+ 		err = xattr_rmdir(root->d_inode, dir);
++		jerror = journal_end(&th, inode->i_sb, blocks);
+ 		mutex_unlock(&root->d_inode->i_mutex);
+-		reiserfs_write_unlock_xattrs(inode->i_sb);
+ 		dput(root);
+-	} else {
+-		reiserfs_warning(inode->i_sb, "jdm-20006",
+-				 "Couldn't remove all entries in directory");
++
++		err = jerror ?: err;
+ 	}
+ 
+ out_dir:
+@@ -437,6 +452,9 @@ out:
+ 	if (!err)
+ 		REISERFS_I(inode)->i_flags =
+ 		    REISERFS_I(inode)->i_flags & ~i_has_xattr_dir;
++	else
++		reiserfs_warning(inode->i_sb, "jdm-20004",
++				 "Couldn't remove all xattrs (%d)\n", err);
  	return err;
  }
  
--int
--reiserfs_xattr_set(struct inode *inode, const char *name, const void *buffer,
--		     size_t buffer_size, int flags)
-+/* We need to start a transaction to maintain lock ordering */
-+int reiserfs_xattr_set(struct inode *inode, const char *name,
-+		       const void *buffer, size_t buffer_size, int flags)
- {
--	int err = __reiserfs_xattr_set(inode, name, buffer, buffer_size, flags);
--	if (err == -ENODATA)
--		err = 0;
--	return err;
+@@ -485,9 +503,7 @@ int reiserfs_chown_xattrs(struct inode *
+ 	if (IS_PRIVATE(inode) || get_inode_sd_version(inode) == STAT_DATA_V1)
+ 		return 0;
+ 
+-	reiserfs_read_lock_xattrs(inode->i_sb);
+ 	dir = open_xa_dir(inode, XATTR_REPLACE);
+-	reiserfs_read_unlock_xattrs(inode->i_sb);
+ 	if (IS_ERR(dir)) {
+ 		if (PTR_ERR(dir) != -ENODATA)
+ 			err = PTR_ERR(dir);
+@@ -731,6 +747,11 @@ reiserfs_xattr_get(const struct inode *i
+ 		goto out;
+ 	}
+ 
++	/* protect against concurrent access. xattrs are backed by
++	 * regular files, but they're not regular files. The updates
++	 * must be atomic from the perspective of the user. */
++	mutex_lock_nested(&dentry->d_inode->i_mutex, I_MUTEX_XATTR);
 +
-+	struct reiserfs_transaction_handle th;
-+	int error, error2;
-+	size_t jbegin_count = reiserfs_xattr_nblocks(inode, buffer_size);
-+
-+	if (!(flags & XATTR_REPLACE))
-+		jbegin_count += reiserfs_xattr_jcreate_nblocks(inode);
-+
-+	reiserfs_write_lock(inode->i_sb);
-+	error = journal_begin(&th, inode->i_sb, jbegin_count);
-+	if (error) {
-+		reiserfs_write_unlock(inode->i_sb);
-+		return error;
-+	}
-+
-+	error = reiserfs_xattr_set_handle(&th, inode, name,
-+					  buffer, buffer_size, flags);
-+
-+	error2 = journal_end(&th, inode->i_sb, jbegin_count);
-+	if (error == 0)
-+		error = error2;
-+	reiserfs_write_unlock(inode->i_sb);
-+
-+	return error;
+ 	isize = i_size_read(dentry->d_inode);
+ 	REISERFS_I(inode)->i_flags |= i_has_xattr_dir;
+ 
+@@ -798,6 +819,7 @@ reiserfs_xattr_get(const struct inode *i
+ 	}
+ 
+ out_dput:
++	mutex_unlock(&dentry->d_inode->i_mutex);
+ 	dput(dentry);
+ 
+ out:
+@@ -834,7 +856,6 @@ int reiserfs_xattr_del(struct inode *ino
+ static struct reiserfs_xattr_handler *find_xattr_handler_prefix(const char *);
+ /*
+  * Inode operation getxattr()
+- * Preliminary locking: we down dentry->d_inode->i_mutex
+  */
+ ssize_t
+ reiserfs_getxattr(struct dentry * dentry, const char *name, void *buffer,
+@@ -848,9 +869,7 @@ reiserfs_getxattr(struct dentry * dentry
+ 		return -EOPNOTSUPP;
+ 
+ 	reiserfs_read_lock_xattr_i(dentry->d_inode);
+-	reiserfs_read_lock_xattrs(dentry->d_sb);
+ 	err = xah->get(dentry->d_inode, name, buffer, size);
+-	reiserfs_read_unlock_xattrs(dentry->d_sb);
+ 	reiserfs_read_unlock_xattr_i(dentry->d_inode);
+ 	return err;
  }
+@@ -866,23 +885,13 @@ reiserfs_setxattr(struct dentry *dentry,
+ {
+ 	struct reiserfs_xattr_handler *xah = find_xattr_handler_prefix(name);
+ 	int err;
+-	int lock;
+ 
+ 	if (!xah || !reiserfs_xattrs(dentry->d_sb) ||
+ 	    get_inode_sd_version(dentry->d_inode) == STAT_DATA_V1)
+ 		return -EOPNOTSUPP;
+ 
+ 	reiserfs_write_lock_xattr_i(dentry->d_inode);
+-	lock = !has_xattr_dir(dentry->d_inode);
+-	if (lock)
+-		reiserfs_write_lock_xattrs(dentry->d_sb);
+-	else
+-		reiserfs_read_lock_xattrs(dentry->d_sb);
+ 	err = xah->set(dentry->d_inode, name, value, size, flags);
+-	if (lock)
+-		reiserfs_write_unlock_xattrs(dentry->d_sb);
+-	else
+-		reiserfs_read_unlock_xattrs(dentry->d_sb);
+ 	reiserfs_write_unlock_xattr_i(dentry->d_inode);
+ 	return err;
+ }
+@@ -902,8 +911,6 @@ int reiserfs_removexattr(struct dentry *
+ 		return -EOPNOTSUPP;
+ 
+ 	reiserfs_write_lock_xattr_i(dentry->d_inode);
+-	reiserfs_read_lock_xattrs(dentry->d_sb);
+-
+ 	/* Deletion pre-operation */
+ 	if (xah->del) {
+ 		err = xah->del(dentry->d_inode, name);
+@@ -917,7 +924,6 @@ int reiserfs_removexattr(struct dentry *
+ 	mark_inode_dirty(dentry->d_inode);
+ 
+       out:
+-	reiserfs_read_unlock_xattrs(dentry->d_sb);
+ 	reiserfs_write_unlock_xattr_i(dentry->d_inode);
+ 	return err;
+ }
+@@ -966,8 +972,6 @@ reiserfs_listxattr_filler(void *buf, con
  
  /*
---- a/include/linux/reiserfs_acl.h
-+++ b/include/linux/reiserfs_acl.h
-@@ -49,7 +49,8 @@ static inline int reiserfs_acl_count(siz
- #ifdef CONFIG_REISERFS_FS_POSIX_ACL
- struct posix_acl *reiserfs_get_acl(struct inode *inode, int type);
- int reiserfs_acl_chmod(struct inode *inode);
--int reiserfs_inherit_default_acl(struct inode *dir, struct dentry *dentry,
-+int reiserfs_inherit_default_acl(struct reiserfs_transaction_handle *th,
-+				 struct inode *dir, struct dentry *dentry,
- 				 struct inode *inode);
- int reiserfs_cache_default_acl(struct inode *dir);
- extern struct xattr_handler reiserfs_posix_acl_default_handler;
+  * Inode operation listxattr()
+- *
+- * Preliminary locking: we down dentry->d_inode->i_mutex
+  */
+ ssize_t reiserfs_listxattr(struct dentry * dentry, char *buffer, size_t size)
+ {
+@@ -983,9 +987,7 @@ ssize_t reiserfs_listxattr(struct dentry
+ 		return -EOPNOTSUPP;
+ 
+ 	reiserfs_read_lock_xattr_i(dentry->d_inode);
+-	reiserfs_read_lock_xattrs(dentry->d_sb);
+ 	dir = open_xa_dir(dentry->d_inode, XATTR_REPLACE);
+-	reiserfs_read_unlock_xattrs(dentry->d_sb);
+ 	if (IS_ERR(dir)) {
+ 		err = PTR_ERR(dir);
+ 		if (err == -ENODATA)
+@@ -1114,11 +1116,9 @@ static int reiserfs_check_acl(struct ino
+ 	int error = -EAGAIN; /* do regular unix permission checks by default */
+ 
+ 	reiserfs_read_lock_xattr_i(inode);
+-	reiserfs_read_lock_xattrs(inode->i_sb);
+ 
+ 	acl = reiserfs_get_acl(inode, ACL_TYPE_ACCESS);
+ 
+-	reiserfs_read_unlock_xattrs(inode->i_sb);
+ 	reiserfs_read_unlock_xattr_i(inode);
+ 
+ 	if (acl) {
+--- a/fs/reiserfs/xattr_acl.c
++++ b/fs/reiserfs/xattr_acl.c
+@@ -172,6 +172,29 @@ static void *posix_acl_to_disk(const str
+ 	return ERR_PTR(-EINVAL);
+ }
+ 
++static inline void iset_acl(struct inode *inode, struct posix_acl **i_acl,
++			    struct posix_acl *acl)
++{
++	spin_lock(&inode->i_lock);
++	if (*i_acl != ERR_PTR(-ENODATA))
++		posix_acl_release(*i_acl);
++	*i_acl = posix_acl_dup(acl);
++	spin_unlock(&inode->i_lock);
++}
++
++static inline struct posix_acl *iget_acl(struct inode *inode,
++					 struct posix_acl **i_acl)
++{
++	struct posix_acl *acl = ERR_PTR(-ENODATA);
++
++	spin_lock(&inode->i_lock);
++	if (*i_acl != ERR_PTR(-ENODATA))
++		acl = posix_acl_dup(*i_acl);
++	spin_unlock(&inode->i_lock);
++
++	return acl;
++}
++
+ /*
+  * Inode operation get_posix_acl().
+  *
+@@ -199,11 +222,11 @@ struct posix_acl *reiserfs_get_acl(struc
+ 		return ERR_PTR(-EINVAL);
+ 	}
+ 
+-	if (IS_ERR(*p_acl)) {
+-		if (PTR_ERR(*p_acl) == -ENODATA)
+-			return NULL;
+-	} else if (*p_acl != NULL)
+-		return posix_acl_dup(*p_acl);
++	acl = iget_acl(inode, p_acl);
++	if (acl && !IS_ERR(acl))
++		return acl;
++	else if (PTR_ERR(acl) == -ENODATA)
++		return NULL;
+ 
+ 	size = reiserfs_xattr_get(inode, name, NULL, 0);
+ 	if (size < 0) {
+@@ -229,7 +252,7 @@ struct posix_acl *reiserfs_get_acl(struc
+ 	} else {
+ 		acl = posix_acl_from_disk(value, retval);
+ 		if (!IS_ERR(acl))
+-			*p_acl = posix_acl_dup(acl);
++			iset_acl(inode, p_acl, acl);
+ 	}
+ 
+ 	kfree(value);
+@@ -300,16 +323,8 @@ reiserfs_set_acl(struct inode *inode, in
+ 
+ 	kfree(value);
+ 
+-	if (!error) {
+-		/* Release the old one */
+-		if (!IS_ERR(*p_acl) && *p_acl)
+-			posix_acl_release(*p_acl);
+-
+-		if (acl == NULL)
+-			*p_acl = ERR_PTR(-ENODATA);
+-		else
+-			*p_acl = posix_acl_dup(acl);
+-	}
++	if (!error)
++		iset_acl(inode, p_acl, acl);
+ 
+ 	return error;
+ }
+@@ -404,9 +419,7 @@ int reiserfs_cache_default_acl(struct in
+ 	if (reiserfs_posixacl(inode->i_sb) && !IS_PRIVATE(inode)) {
+ 		struct posix_acl *acl;
+ 		reiserfs_read_lock_xattr_i(inode);
+-		reiserfs_read_lock_xattrs(inode->i_sb);
+ 		acl = reiserfs_get_acl(inode, ACL_TYPE_DEFAULT);
+-		reiserfs_read_unlock_xattrs(inode->i_sb);
+ 		reiserfs_read_unlock_xattr_i(inode);
+ 		ret = (acl && !IS_ERR(acl));
+ 		if (ret)
+@@ -429,9 +442,7 @@ int reiserfs_acl_chmod(struct inode *ino
+ 		return 0;
+ 	}
+ 
+-	reiserfs_read_lock_xattrs(inode->i_sb);
+ 	acl = reiserfs_get_acl(inode, ACL_TYPE_ACCESS);
+-	reiserfs_read_unlock_xattrs(inode->i_sb);
+ 	if (!acl)
+ 		return 0;
+ 	if (IS_ERR(acl))
+@@ -442,17 +453,8 @@ int reiserfs_acl_chmod(struct inode *ino
+ 		return -ENOMEM;
+ 	error = posix_acl_chmod_masq(clone, inode->i_mode);
+ 	if (!error) {
+-		int lock = !has_xattr_dir(inode);
+ 		reiserfs_write_lock_xattr_i(inode);
+-		if (lock)
+-			reiserfs_write_lock_xattrs(inode->i_sb);
+-		else
+-			reiserfs_read_lock_xattrs(inode->i_sb);
+ 		error = reiserfs_set_acl(inode, ACL_TYPE_ACCESS, clone);
+-		if (lock)
+-			reiserfs_write_unlock_xattrs(inode->i_sb);
+-		else
+-			reiserfs_read_unlock_xattrs(inode->i_sb);
+ 		reiserfs_write_unlock_xattr_i(inode);
+ 	}
+ 	posix_acl_release(clone);
+@@ -480,14 +482,9 @@ posix_acl_access_set(struct inode *inode
+ static int posix_acl_access_del(struct inode *inode, const char *name)
+ {
+ 	struct reiserfs_inode_info *reiserfs_i = REISERFS_I(inode);
+-	struct posix_acl **acl = &reiserfs_i->i_acl_access;
+ 	if (strlen(name) != sizeof(POSIX_ACL_XATTR_ACCESS) - 1)
+ 		return -EINVAL;
+-	if (!IS_ERR(*acl) && *acl) {
+-		posix_acl_release(*acl);
+-		*acl = ERR_PTR(-ENODATA);
+-	}
+-
++	iset_acl(inode, &reiserfs_i->i_acl_access, ERR_PTR(-ENODATA));
+ 	return 0;
+ }
+ 
+@@ -533,14 +530,9 @@ posix_acl_default_set(struct inode *inod
+ static int posix_acl_default_del(struct inode *inode, const char *name)
+ {
+ 	struct reiserfs_inode_info *reiserfs_i = REISERFS_I(inode);
+-	struct posix_acl **acl = &reiserfs_i->i_acl_default;
+ 	if (strlen(name) != sizeof(POSIX_ACL_XATTR_DEFAULT) - 1)
+ 		return -EINVAL;
+-	if (!IS_ERR(*acl) && *acl) {
+-		posix_acl_release(*acl);
+-		*acl = ERR_PTR(-ENODATA);
+-	}
+-
++	iset_acl(inode, &reiserfs_i->i_acl_default, ERR_PTR(-ENODATA));
+ 	return 0;
+ }
+ 
 --- a/include/linux/reiserfs_fs.h
 +++ b/include/linux/reiserfs_fs.h
-@@ -1615,6 +1615,10 @@ struct reiserfs_journal_header {
- #define JOURNAL_MAX_COMMIT_AGE 30
- #define JOURNAL_MAX_TRANS_AGE 30
- #define JOURNAL_PER_BALANCE_CNT (3 * (MAX_HEIGHT-2) + 9)
-+#define JOURNAL_BLOCKS_PER_OBJECT(sb)  (JOURNAL_PER_BALANCE_CNT * 3 + \
-+					 2 * (REISERFS_QUOTA_INIT_BLOCKS(sb) + \
-+					      REISERFS_QUOTA_TRANS_BLOCKS(sb)))
-+
+@@ -2224,7 +2224,4 @@ int reiserfs_unpack(struct inode *inode,
+ #define reiserfs_write_lock( sb ) lock_kernel()
+ #define reiserfs_write_unlock( sb ) unlock_kernel()
+ 
+-/* xattr stuff */
+-#define REISERFS_XATTR_DIR_SEM(s) (REISERFS_SB(s)->xattr_dir_sem)
+-
+ #endif				/* _LINUX_REISER_FS_H */
+--- a/include/linux/reiserfs_fs_sb.h
++++ b/include/linux/reiserfs_fs_sb.h
+@@ -403,9 +403,6 @@ struct reiserfs_sb_info {
+ 	spinlock_t bitmap_lock;	/* this lock on now only used to protect reserved_blocks variable */
+ 	struct dentry *priv_root;	/* root of /.reiserfs_priv */
+ 	struct dentry *xattr_root;	/* root of /.reiserfs_priv/.xa */
+-#ifdef CONFIG_REISERFS_FS_XATTR
+-	struct rw_semaphore xattr_dir_sem;
+-#endif
+ 	int j_errno;
  #ifdef CONFIG_QUOTA
- /* We need to update data and inode (atime) */
- #define REISERFS_QUOTA_TRANS_BLOCKS(s) (REISERFS_SB(s)->s_mount_opt & (1<<REISERFS_QUOTA) ? 2 : 0)
+ 	char *s_qf_names[MAXQUOTAS];
 --- a/include/linux/reiserfs_xattr.h
 +++ b/include/linux/reiserfs_xattr.h
-@@ -46,14 +46,50 @@ int reiserfs_removexattr(struct dentry *
- int reiserfs_permission(struct inode *inode, int mask);
+@@ -67,45 +67,27 @@ extern struct reiserfs_xattr_handler use
+ extern struct reiserfs_xattr_handler trusted_handler;
+ extern struct reiserfs_xattr_handler security_handler;
  
- int reiserfs_xattr_get(struct inode *, const char *, void *, size_t);
--int __reiserfs_xattr_set(struct inode *, const char *, const void *,
--			 size_t, int);
- int reiserfs_xattr_set(struct inode *, const char *, const void *, size_t, int);
-+int reiserfs_xattr_set_handle(struct reiserfs_transaction_handle *,
-+			      struct inode *, const char *, const void *,
-+			      size_t, int);
+-static inline void reiserfs_write_lock_xattrs(struct super_block *sb)
+-{
+-	down_write(&REISERFS_XATTR_DIR_SEM(sb));
+-}
+-static inline void reiserfs_write_unlock_xattrs(struct super_block *sb)
+-{
+-	up_write(&REISERFS_XATTR_DIR_SEM(sb));
+-}
+-static inline void reiserfs_read_lock_xattrs(struct super_block *sb)
+-{
+-	down_read(&REISERFS_XATTR_DIR_SEM(sb));
+-}
+-
+-static inline void reiserfs_read_unlock_xattrs(struct super_block *sb)
+-{
+-	up_read(&REISERFS_XATTR_DIR_SEM(sb));
+-}
+-
+ static inline void reiserfs_write_lock_xattr_i(struct inode *inode)
+ {
+-	down_write(&REISERFS_I(inode)->xattr_sem);
++	down_write(&REISERFS_I(inode)->i_xattr_sem);
+ }
+ static inline void reiserfs_write_unlock_xattr_i(struct inode *inode)
+ {
+-	up_write(&REISERFS_I(inode)->xattr_sem);
++	up_write(&REISERFS_I(inode)->i_xattr_sem);
+ }
+ static inline void reiserfs_read_lock_xattr_i(struct inode *inode)
+ {
+-	down_read(&REISERFS_I(inode)->xattr_sem);
++	down_read(&REISERFS_I(inode)->i_xattr_sem);
+ }
  
- extern struct xattr_handler reiserfs_xattr_user_handler;
- extern struct xattr_handler reiserfs_xattr_trusted_handler;
- extern struct xattr_handler reiserfs_xattr_security_handler;
+ static inline void reiserfs_read_unlock_xattr_i(struct inode *inode)
+ {
+-	up_read(&REISERFS_I(inode)->xattr_sem);
++	up_read(&REISERFS_I(inode)->i_xattr_sem);
+ }
  
-+#define xattr_size(size) ((size) + sizeof(struct reiserfs_xattr_header))
-+static inline loff_t reiserfs_xattr_nblocks(struct inode *inode, loff_t size)
-+{
-+	loff_t ret = 0;
-+	if (reiserfs_file_data_log(inode)) {
-+		ret = _ROUND_UP(xattr_size(size), inode->i_sb->s_blocksize);
-+		ret >>= inode->i_sb->s_blocksize_bits;
-+	}
-+	return ret;
-+}
-+
-+/* We may have to create up to 3 objects: xattr root, xattr dir, xattr file.
-+ * Let's try to be smart about it.
-+ * xattr root: We cache it. If it's not cached, we may need to create it.
-+ * xattr dir: If anything has been loaded for this inode, we can set a flag
-+ *            saying so.
-+ * xattr file: Since we don't cache xattrs, we can't tell. We always include
-+ *             blocks for it.
-+ *
-+ * However, since root and dir can be created between calls - YOU MUST SAVE
-+ * THIS VALUE.
-+ */
-+static inline size_t reiserfs_xattr_jcreate_nblocks(struct inode *inode)
-+{
-+	size_t nblocks = JOURNAL_BLOCKS_PER_OBJECT(inode->i_sb);
-+
-+	if ((REISERFS_I(inode)->i_flags & i_has_xattr_dir) == 0) {
-+		nblocks += JOURNAL_BLOCKS_PER_OBJECT(inode->i_sb);
-+		if (REISERFS_SB(inode->i_sb)->xattr_root == NULL)
-+			nblocks += JOURNAL_BLOCKS_PER_OBJECT(inode->i_sb);
-+	}
-+
-+	return nblocks;
-+}
-+
  static inline void reiserfs_init_xattr_rwsem(struct inode *inode)
  {
- 	init_rwsem(&REISERFS_I(inode)->i_xattr_sem);
+-	init_rwsem(&REISERFS_I(inode)->xattr_sem);
++	init_rwsem(&REISERFS_I(inode)->i_xattr_sem);
+ }
+ 
+ #else
 
 
