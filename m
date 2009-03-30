@@ -1,69 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760034AbZC3T0w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760046AbZC3T3m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760034AbZC3T0w (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Mar 2009 15:26:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754133AbZC3T0e
+	id S1760046AbZC3T3m (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Mar 2009 15:29:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753252AbZC3T30
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Mar 2009 15:26:34 -0400
-Received: from main.gmane.org ([80.91.229.2]:45332 "EHLO ciao.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756192AbZC3T0d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Mar 2009 15:26:33 -0400
-X-Injected-Via-Gmane: http://gmane.org/
-To: linux-kernel@vger.kernel.org
-From: Bill Davidsen <davidsen@tmr.com>
-Subject: Re: [PATCH 2/2] Make relatime default
-Date: Mon, 30 Mar 2009 15:26:10 -0400
-Message-ID: <gqr6ci$afs$1@ger.gmane.org>
-References: <20090326090630.GA9369@elte.hu> <20090326113705.GV32307@mit.edu> <20090326140312.GB14822@elte.hu> <20090326144707.GA6239@mit.edu> <alpine.LFD.2.00.0903260914440.3032@localhost.localdomain> <20090326170714.GF6239@mit.edu> <alpine.LFD.2.00.0903261015050.3032@localhost.localdomain> <20090326174956.GB7198@srcf.ucam.org> <20090326175314.GC7198@srcf.ucam.org> <20090326184838.26166549@lxorguk.ukuu.org.uk> <20090330144213.GA5426@random.random>
+	Mon, 30 Mar 2009 15:29:26 -0400
+Received: from rcsinet13.oracle.com ([148.87.113.125]:22801 "EHLO
+	rgminet13.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758271AbZC3T3Z (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Mar 2009 15:29:25 -0400
+Subject: Re: [PATCH 1/7] block: Add block_flush_device()
+From: Chris Mason <chris.mason@oracle.com>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Jens Axboe <jens.axboe@oracle.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Fernando Luis =?ISO-8859-1?Q?V=E1zquez?= Cao 
+	<fernando@oss.ntt.co.jp>,
+       Christoph Hellwig <hch@infradead.org>, Theodore Tso <tytso@mit.edu>,
+       Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Nick Piggin <npiggin@suse.de>,
+       David Rees <drees76@gmail.com>, Jesper Krogh <jesper@krogh.cc>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       david@fromorbit.com, tj@kernel.org
+In-Reply-To: <49D11A8D.1090600@garzik.org>
+References: <20090329082507.GA4242@infradead.org>
+	 <49D01F94.6000101@oss.ntt.co.jp> <49D02328.7060108@oss.ntt.co.jp>
+	 <49D0258A.9020306@garzik.org> <49D03377.1040909@oss.ntt.co.jp>
+	 <49D0B535.2010106@oss.ntt.co.jp> <49D0B687.1030407@oss.ntt.co.jp>
+	 <alpine.LFD.2.00.0903301028400.3948@localhost.localdomain>
+	 <20090330175544.GX5178@kernel.dk>
+	 <alpine.LFD.2.00.0903301120200.3948@localhost.localdomain>
+	 <20090330185414.GZ5178@kernel.dk>  <49D11A8D.1090600@garzik.org>
+Content-Type: text/plain
+Date: Mon, 30 Mar 2009 15:24:03 -0400
+Message-Id: <1238441043.20607.16.camel@think.oraclecorp.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+X-Mailer: Evolution 2.24.1 
 Content-Transfer-Encoding: 7bit
-X-Complaints-To: usenet@ger.gmane.org
-X-Gmane-NNTP-Posting-Host: pool-70-109-119-176.alb.east.verizon.net
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.19) Gecko/20081217 Fedora/1.1.14-1.fc9 SeaMonkey/1.1.14
-In-Reply-To: <20090330144213.GA5426@random.random>
+X-Source-IP: acsmt704.oracle.com [141.146.40.82]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090209.49D11C5C.02F1:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrea Arcangeli wrote:
-> On Thu, Mar 26, 2009 at 06:48:38PM +0000, Alan Cox wrote:
->> On Thu, 26 Mar 2009 17:53:14 +0000
->> Matthew Garrett <mjg@redhat.com> wrote:
->>
->>> Change the default behaviour of the kernel to use relatime for all
->>> filesystems. This can be overridden with the "strictatime" mount
->>> option.
->> NAK this again
+On Mon, 2009-03-30 at 15:16 -0400, Jeff Garzik wrote:
+> Jens Axboe wrote:
+> > On Mon, Mar 30 2009, Linus Torvalds wrote:
+> >>
+> >> On Mon, 30 Mar 2009, Jens Axboe wrote:
+> >>> The problem is that we may not know upfront, so it sort-of has to be
+> >>> this trial approach where the first barrier issued will notice and fail
+> >>> with -EOPNOTSUPP.
+> >> Well, absolutely. Except I don't think you shoul use ENOTSUPP, you should 
+> >> just set a bit in the "struct request_queue", and then return 0.
+> >>
+> >> IOW, something like this
+> >>
+> >> 	--- a/block/blk-barrier.c
+> >> 	+++ b/block/blk-barrier.c
+> >> 	@@ -318,6 +318,9 @@ int blkdev_issue_flush(struct block_device *bdev, sector_t *error_sector)
+> >> 	 	if (!q)
+> >> 	 		return -ENXIO;
+> >> 	 
+> >> 	+	if (is_queue_noflush(q))
+> >> 	+		return 0;
+> >> 	+
+> >> 	 	bio = bio_alloc(GFP_KERNEL, 0);
+> >> 	 	if (!bio)
+> >> 	 		return -ENOMEM;
+> >> 	@@ -339,7 +342,7 @@ int blkdev_issue_flush(struct block_device *bdev, sector_t *error_sector)
+> >> 	 
+> >> 	 	ret = 0;
+> >> 	 	if (bio_flagged(bio, BIO_EOPNOTSUPP))
+> >> 	-		ret = -EOPNOTSUPP;
+> >> 	+		set_queue_noflush(q);
+> >> 	 	else if (!bio_flagged(bio, BIO_UPTODATE))
+> >> 	 		ret = -EIO;
+> >> 	 
+> >>
+> >> which just returns 0 if we don't support flushing on that queue.
+> >>
+> >> (Obviously incomplete patch, which is why I also intentionally 
+> >> whitespace-broke it).
+> >>
+> >>> Sure, we could cache this value, but it's pretty
+> >>> pointless since the filesystem will stop sending barriers in this case.
+> >> Well no, it won't. Or rather, it will have to have such a stupid 
+> >> per-filesystem flag, for no good reason.
+> > 
+> > Sorry, I just don't see much point to doing it this way instead. So now
+> > the fs will have to check a queue bit after it has issued the flush, how
+> > is that any better than having the 'error' returned directly?
 > 
-> NAK but because if we change the default it is better to change it to
-> the real thing: noatime.
+> AFAICS, the aim is simply to return zero rather than EOPNOTSUPP, for the 
+> not-supported case, rather than burdening all callers with such checks.
 > 
-> I think this can be solved in userland but perhaps changing this in
-> kernel would be a stronger message that atime is officially
-> obsoleted. (and nothing will break, not even mutt users will notice,
-> and if they really do it won't be anything more than aesthetical)
+> Which is quite reasonable for Fernando's patch -- the direct call fsync 
+> case.
 > 
-This makes the assumption that atime is not used, which may be true on your 
-system but isn't on others. I regularly move data between faster and slower 
-storage based on atime, and promote reactivated projects to something faster, 
-while retiring inactive project data elsewhere. Other admins use it to identify 
-unused files which are candidates for backup to offline media or the bit bucket.
+> But that leaves open the possibility that some people really do want the 
+> EOPNOTSUPP return value, I guess?  Do existing callers need that?
+> 
 
-Let people who want that behavior specify it for existing filesystems, if you 
-want to remove functionality from ext4 or btrfs or some thing place where people 
-have no existing expectations, I still think it's wrong, but I couldn't say I 
-think it might break anything.
+As far as I know, reiserfs is the only one actively using it to choose
+different code.  It moves a single wait_on_buffer when barriers are on,
+which I took out once to simplify the code.  Ric saw it in some
+benchmark numbers and I put it back in.
 
-I did a patch a few years ago which only updated atime on open and write, and 
-that worked about as well as relatime, the inode update on open is cheap, the 
-head is already there, and it was only slightly slower than noatime. The were no 
-programs which kept files open for days and just read them. The the only storage 
-hierarchy was "slow and cheap." ;-)
+Given that it was a long time ago, I don't have a problem with changing
+it to work like all the other filesystems.
 
--- 
-Bill Davidsen <davidsen@tmr.com>
-   "We have more to fear from the bungling of the incompetent than from
-the machinations of the wicked."  - from Slashdot
+-chris
+
 
