@@ -1,75 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756687AbZC3Bg1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756171AbZC3Bgz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756687AbZC3Bg1 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Mar 2009 21:36:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753216AbZC3BgR
+	id S1756171AbZC3Bgz (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Mar 2009 21:36:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756302AbZC3Bgo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Mar 2009 21:36:17 -0400
-Received: from serv2.oss.ntt.co.jp ([222.151.198.100]:60343 "EHLO
-	serv2.oss.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751137AbZC3BgR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Mar 2009 21:36:17 -0400
-Message-ID: <49D0220B.3000205@oss.ntt.co.jp>
-Date: Mon, 30 Mar 2009 10:36:11 +0900
-From: =?ISO-8859-1?Q?Fernando_Luis_V=E1zquez_Cao?= 
-	<fernando@oss.ntt.co.jp>
-User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
-MIME-Version: 1.0
-To: Christoph Hellwig <hch@infradead.org>
-CC: Jeff Garzik <jeff@garzik.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Theodore Tso <tytso@mit.edu>, Ingo Molnar <mingo@elte.hu>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Nick Piggin <npiggin@suse.de>,
-       David Rees <drees76@gmail.com>, Jesper Krogh <jesper@krogh.cc>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [PATCH 1/5] block: Add block_flush_device()
-References: <alpine.LFD.2.00.0903241218130.3032@localhost.localdomain> <49C93AB0.6070300@garzik.org> <20090325093913.GJ27476@kernel.dk> <49CA86BD.6060205@garzik.org> <20090325194341.GB27476@kernel.dk> <49CA9346.6040108@garzik.org> <alpine.LFD.2.00.0903251337410.3032@localhost.localdomain> <20090325212923.GA5620@havoc.gtf.org> <20090326032445.GA16999@havoc.gtf.org> <20090327205046.GA2036@havoc.gtf.org> <20090329082507.GA4242@infradead.org> <49D01F94.6000101@oss.ntt.co.jp>
-In-Reply-To: <49D01F94.6000101@oss.ntt.co.jp>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Sun, 29 Mar 2009 21:36:44 -0400
+Received: from mga03.intel.com ([143.182.124.21]:62611 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753216AbZC3Bgm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Mar 2009 21:36:42 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.38,443,1233561600"; 
+   d="asc'?scan'208";a="125470523"
+Subject: Re: Accelerate GCM with PCLMULQDQ-NI
+From: Huang Ying <ying.huang@intel.com>
+To: Herbert Xu <herbert@gondor.apana.org.au>
+Cc: Sebastian Andrzej Siewior <linux-crypto@ml.breakpoint.cc>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-crypto@vger.kernel.org" <linux-crypto@vger.kernel.org>
+In-Reply-To: <20090329074326.GB11735@gondor.apana.org.au>
+References: <1237366332.24215.260.camel@yhuang-dev.sh.intel.com>
+	 <20090329074326.GB11735@gondor.apana.org.au>
+Content-Type: multipart/signed; micalg=pgp-sha1; protocol="application/pgp-signature"; boundary="=-ZT24eGYiBapoGWK5d4tS"
+Date: Mon, 30 Mar 2009 09:36:35 +0800
+Message-Id: <1238376995.6639.80.camel@yhuang-dev.sh.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds a helper function that should be used by filesystems that need
-to flush the underlying block device on fsync()/fdatasync().
 
-Signed-off-by: Fernando Luis Vazquez Cao <fernando@oss.ntt.co.jp>
----
+--=-ZT24eGYiBapoGWK5d4tS
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-diff -urNp linux-2.6.29-orig/fs/buffer.c linux-2.6.29/fs/buffer.c
---- linux-2.6.29-orig/fs/buffer.c	2009-03-24 08:12:14.000000000 +0900
-+++ linux-2.6.29/fs/buffer.c	2009-03-28 20:43:51.000000000 +0900
-@@ -165,6 +165,17 @@ void end_buffer_write_sync(struct buffer
-  	put_bh(bh);
-  }
+On Sun, 2009-03-29 at 15:43 +0800, Herbert Xu wrote:
+> On Wed, Mar 18, 2009 at 04:52:12PM +0800, Huang Ying wrote:
+> >
+> > To accelerate GCM with it, I make the following design:
+> >=20
+> > 1. Implement ghash as an ahash algorithm, Use ghash in gcm
+> > implementation.
+> > 2. Provide a new implementation of ghash with PCLMULQDQ-NI.
+> >=20
+> > What do you think about that?
+>=20
+> Sounds OK to me.  I presume the choice of ahash instead of shash
+> is due to the use of XMM registers, just like AES?
 
-+/* Issue flush of write caches on the block device */
-+int block_flush_device(struct super_block *sb)
-+{
-+	int ret = 0;
-+
-+	ret = blkdev_issue_flush(sb->s_bdev, NULL);
-+
-+	return (ret == -EOPNOTSUPP) ? 0 : ret;
-+}
-+EXPORT_SYMBOL(block_flush_device);
-+
-  /*
-   * Write out and wait upon all the dirty data associated with a block
-   * device via its mapping.  Does not take the superblock lock.
-diff -urNp linux-2.6.29-orig/include/linux/buffer_head.h linux-2.6.29/include/linux/buffer_head.h
---- linux-2.6.29-orig/include/linux/buffer_head.h	2009-03-24 08:12:14.000000000 +0900
-+++ linux-2.6.29/include/linux/buffer_head.h	2009-03-28 20:43:51.000000000 +0900
-@@ -238,6 +238,7 @@ int nobh_write_end(struct file *, struct
-  int nobh_truncate_page(struct address_space *, loff_t, get_block_t *);
-  int nobh_writepage(struct page *page, get_block_t *get_block,
-                          struct writeback_control *wbc);
-+int block_flush_device(struct super_block *sb);
+Yes, because PCLMULQDQ touches XMMs too. Just like AES, there is a raw
+shash: ghash-clmul and an ahash via cryptd(ghash-clmul).
 
-  void buffer_init(void);
+Best Regards,
+Huang Ying
+
+
+--=-ZT24eGYiBapoGWK5d4tS
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAknQIh8ACgkQKhFGF+eHlpjiyQCdGZnZKSWJiZpyQET0G2m66wvC
+UAsAnii91nPpLBW1pHWMKdt5aAIhMn0+
+=PIwQ
+-----END PGP SIGNATURE-----
+
+--=-ZT24eGYiBapoGWK5d4tS--
 
