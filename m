@@ -1,64 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761750AbZC3WCo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761755AbZC3WDN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761750AbZC3WCo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Mar 2009 18:02:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753230AbZC3WCf
+	id S1761755AbZC3WDN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Mar 2009 18:03:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753230AbZC3WC4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Mar 2009 18:02:35 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:45365 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752968AbZC3WCf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Mar 2009 18:02:35 -0400
-Message-ID: <49D14137.6060203@garzik.org>
-Date: Mon, 30 Mar 2009 18:01:27 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Mon, 30 Mar 2009 18:02:56 -0400
+Received: from mail-ew0-f165.google.com ([209.85.219.165]:61311 "EHLO
+	mail-ew0-f165.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755110AbZC3WCz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Mar 2009 18:02:55 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:date:from:to:cc:subject:message-id:reply-to:mime-version
+         :content-type:content-disposition:content-transfer-encoding
+         :user-agent;
+        b=qV8EYS5Jyb/JN7hxCzTjCGbHT0CQSBeePZaTusB9TdYXLutK0ilbXQbxsV1Uw6aSro
+         botSnZNNnU3UHaByTmeAyHQIphAlCJ02maRaYx5wdexDPjp+dp9yJjo1EVgKYLaDodg2
+         RmYlwUv9xTnUmCLR4ZX4oRqiDInlJNOBpQfd0=
+Date: Tue, 31 Mar 2009 00:02:46 +0200
+From: Michal Januszewski <spock@gentoo.org>
+To: linux-kernel@vger.kernel.org
+Cc: Krzysztof Helt <krzysztof.h1@poczta.fm>,
+       Ville =?utf-8?B?U3lyasOkbMOk?= <syrjala@sci.fi>,
+       Geert Uytterhoeven <geert.uytterhoeven@gmail.com>,
+       linux-fbdev-devel@lists.sourceforge.net
+Subject: [PATCH] uvesafb: fix color component length for pseudocolor modes
+Message-ID: <20090330220246.GA6894@spock.one.pl>
+Reply-To: spock@gentoo.org
 MIME-Version: 1.0
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-CC: Jens Axboe <jens.axboe@oracle.com>,
-       =?ISO-8859-1?Q?Fernando_Luis_?= =?ISO-8859-1?Q?V=E1zquez_Cao?= 
-	<fernando@oss.ntt.co.jp>,
-       Christoph Hellwig <hch@infradead.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Theodore Tso <tytso@mit.edu>, Ingo Molnar <mingo@elte.hu>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Nick Piggin <npiggin@suse.de>,
-       David Rees <drees76@gmail.com>, Jesper Krogh <jesper@krogh.cc>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       chris.mason@oracle.com, david@fromorbit.com, tj@kernel.org
-Subject: Re: [PATCH 5/7] vfs: Add  wbcflush sysfs knob to disable storage
- device writeback cache flushes
-References: <alpine.LFD.2.00.0903241218130.3032@localhost.localdomain> <20090330175953.GY5178@kernel.dk> <49D118E5.4060209@garzik.org> <200903302256.17738.bzolnier@gmail.com>
-In-Reply-To: <200903302256.17738.bzolnier@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bartlomiej Zolnierkiewicz wrote:
-> calling fsync() after every mail fetched.  Adding mandatory cache flush
-> to it only makes things worse (again looking from performance POV).
-> 
-> BTW in Linux world we never made any guarantees for fsync() on devices
-> using write caching:
+uvesafb incorrectly sets the length of the color fields to 6 bits
+for PSEUDOCOLOR modes, even though 8 bits are always used per pixel.
+Fix this by setting the length to 8.
 
-Quite true, but I've always thought that was trading away correctness 
-for performance...  at a critical juncture where a consistency 
-checkpoint was explicitly requested by the app.
+The switch of the DAC width from the default 6 bits to 8 bits is
+retained and tracked internally in the driver, but never exposed
+to userspace.
 
-My ideal would probably be blkdev cache flushing by default on fsync(2), 
-with a block layer "desktop mode" knob to turn it off if you don't want it.
-
-The current alternatives -- mount sync or disable blkdev writeback cache 
--- are far, far slower and punish the entire system just to provide a 
-consistency checkpoint for a handful of fsync-needful apps.
-
-	Jeff
-
+Signed-off-by: Michal Januszewski <spock@gentoo.org>
+Cc: Krzysztof Helt <krzysztof.h1@poczta.fm>
+Cc: Ville Syrjälä <syrjala@sci.fi>
+Cc: Geert Uytterhoeven <geert.uytterhoeven@gmail.com>
+---
+diff --git a/drivers/video/uvesafb.c b/drivers/video/uvesafb.c
+index 74ae758..5b59198 100644
+--- a/drivers/video/uvesafb.c
++++ b/drivers/video/uvesafb.c
+@@ -55,6 +55,7 @@ static u16 maxvf	__devinitdata; /* maximum vertical frequency */
+ static u16 maxhf	__devinitdata; /* maximum horizontal frequency */
+ static u16 vbemode	__devinitdata; /* force use of a specific VBE mode */
+ static char *mode_option __devinitdata;
++static u8  dac_width	= 6;
+ 
+ static struct uvesafb_ktask *uvfb_tasks[UVESAFB_TASKS_MAX];
+ static DEFINE_MUTEX(uvfb_lock);
+@@ -303,22 +304,10 @@ static void uvesafb_setup_var(struct fb_var_screeninfo *var,
+ 		var->blue.offset   = 0;
+ 		var->transp.offset = 0;
+ 
+-		/*
+-		 * We're assuming that we can switch the DAC to 8 bits. If
+-		 * this proves to be incorrect, we'll update the fields
+-		 * later in set_par().
+-		 */
+-		if (par->vbe_ib.capabilities & VBE_CAP_CAN_SWITCH_DAC) {
+-			var->red.length    = 8;
+-			var->green.length  = 8;
+-			var->blue.length   = 8;
+-			var->transp.length = 0;
+-		} else {
+-			var->red.length    = 6;
+-			var->green.length  = 6;
+-			var->blue.length   = 6;
+-			var->transp.length = 0;
+-		}
++		var->red.length    = 8;
++		var->green.length  = 8;
++		var->blue.length   = 8;
++		var->transp.length = 0;
+ 	}
+ }
+ 
+@@ -1001,7 +990,7 @@ static int uvesafb_setcolreg(unsigned regno, unsigned red, unsigned green,
+ 		struct fb_info *info)
+ {
+ 	struct uvesafb_pal_entry entry;
+-	int shift = 16 - info->var.green.length;
++	int shift = 16 - dac_width;
+ 	int err = 0;
+ 
+ 	if (regno >= info->cmap.len)
+@@ -1050,7 +1039,7 @@ static int uvesafb_setcolreg(unsigned regno, unsigned red, unsigned green,
+ static int uvesafb_setcmap(struct fb_cmap *cmap, struct fb_info *info)
+ {
+ 	struct uvesafb_pal_entry *entries;
+-	int shift = 16 - info->var.green.length;
++	int shift = 16 - dac_width;
+ 	int i, err = 0;
+ 
+ 	if (info->var.bits_per_pixel == 8) {
+@@ -1312,13 +1301,9 @@ setmode:
+ 		err = uvesafb_exec(task);
+ 		if (err || (task->t.regs.eax & 0xffff) != 0x004f ||
+ 		    ((task->t.regs.ebx & 0xff00) >> 8) != 8) {
+-			/*
+-			 * We've failed to set the DAC palette format -
+-			 * time to correct var.
+-			 */
+-			info->var.red.length    = 6;
+-			info->var.green.length  = 6;
+-			info->var.blue.length   = 6;
++			dac_width = 6;
++		} else {
++			dac_width = 8;
+ 		}
+ 	}
+ 
 
