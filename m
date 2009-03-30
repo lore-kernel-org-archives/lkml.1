@@ -1,138 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759688AbZC3TSd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759820AbZC3TTF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759688AbZC3TSd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Mar 2009 15:18:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759605AbZC3TRi
+	id S1759820AbZC3TTF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Mar 2009 15:19:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759706AbZC3TSg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Mar 2009 15:17:38 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:53589 "EHLO mail.dvmed.net"
+	Mon, 30 Mar 2009 15:18:36 -0400
+Received: from cantor.suse.de ([195.135.220.2]:58261 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759589AbZC3TRf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Mar 2009 15:17:35 -0400
-Message-ID: <49D11A8D.1090600@garzik.org>
-Date: Mon, 30 Mar 2009 15:16:29 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	id S1759713AbZC3TSe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Mar 2009 15:18:34 -0400
+Message-ID: <49D11AF2.9030701@suse.com>
+Date: Mon, 30 Mar 2009 15:18:10 -0400
+From: Jeff Mahoney <jeffm@suse.com>
+Organization: SUSE Labs, Novell, Inc
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-To: Jens Axboe <jens.axboe@oracle.com>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       =?ISO-8859-1?Q?Fernan?= =?ISO-8859-1?Q?do_Luis_V=E1zquez_Cao?= 
-	<fernando@oss.ntt.co.jp>,
-       Christoph Hellwig <hch@infradead.org>, Theodore Tso <tytso@mit.edu>,
-       Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Arjan van de Ven <arjan@infradead.org>,
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Nick Piggin <npiggin@suse.de>,
-       David Rees <drees76@gmail.com>, Jesper Krogh <jesper@krogh.cc>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       chris.mason@oracle.com, david@fromorbit.com, tj@kernel.org
-Subject: Re: [PATCH 1/7] block: Add block_flush_device()
-References: <20090329082507.GA4242@infradead.org> <49D01F94.6000101@oss.ntt.co.jp> <49D02328.7060108@oss.ntt.co.jp> <49D0258A.9020306@garzik.org> <49D03377.1040909@oss.ntt.co.jp> <49D0B535.2010106@oss.ntt.co.jp> <49D0B687.1030407@oss.ntt.co.jp> <alpine.LFD.2.00.0903301028400.3948@localhost.localdomain> <20090330175544.GX5178@kernel.dk> <alpine.LFD.2.00.0903301120200.3948@localhost.localdomain> <20090330185414.GZ5178@kernel.dk>
-In-Reply-To: <20090330185414.GZ5178@kernel.dk>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       ReiserFS Development List <reiserfs-devel@vger.kernel.org>
+Subject: Re: [patch 32/35 code-cleanup] reiserfs: rename p_s_inode to inode
+References: <20090330180215.951354436@suse.com>	<20090330181013.465420330@suse.com> <87tz5alua4.fsf@basil.nowhere.org>
+In-Reply-To: <87tz5alua4.fsf@basil.nowhere.org>
+X-Enigmail-Version: 0.95.2
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jens Axboe wrote:
-> On Mon, Mar 30 2009, Linus Torvalds wrote:
->>
->> On Mon, 30 Mar 2009, Jens Axboe wrote:
->>> The problem is that we may not know upfront, so it sort-of has to be
->>> this trial approach where the first barrier issued will notice and fail
->>> with -EOPNOTSUPP.
->> Well, absolutely. Except I don't think you shoul use ENOTSUPP, you should 
->> just set a bit in the "struct request_queue", and then return 0.
->>
->> IOW, something like this
->>
->> 	--- a/block/blk-barrier.c
->> 	+++ b/block/blk-barrier.c
->> 	@@ -318,6 +318,9 @@ int blkdev_issue_flush(struct block_device *bdev, sector_t *error_sector)
->> 	 	if (!q)
->> 	 		return -ENXIO;
->> 	 
->> 	+	if (is_queue_noflush(q))
->> 	+		return 0;
->> 	+
->> 	 	bio = bio_alloc(GFP_KERNEL, 0);
->> 	 	if (!bio)
->> 	 		return -ENOMEM;
->> 	@@ -339,7 +342,7 @@ int blkdev_issue_flush(struct block_device *bdev, sector_t *error_sector)
->> 	 
->> 	 	ret = 0;
->> 	 	if (bio_flagged(bio, BIO_EOPNOTSUPP))
->> 	-		ret = -EOPNOTSUPP;
->> 	+		set_queue_noflush(q);
->> 	 	else if (!bio_flagged(bio, BIO_UPTODATE))
->> 	 		ret = -EIO;
->> 	 
->>
->> which just returns 0 if we don't support flushing on that queue.
->>
->> (Obviously incomplete patch, which is why I also intentionally 
->> whitespace-broke it).
->>
->>> Sure, we could cache this value, but it's pretty
->>> pointless since the filesystem will stop sending barriers in this case.
->> Well no, it won't. Or rather, it will have to have such a stupid 
->> per-filesystem flag, for no good reason.
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
+
+Andi Kleen wrote:
+> Jeff Mahoney <jeffm@suse.com> writes:
+>> --- a/fs/reiserfs/file.c
+>> +++ b/fs/reiserfs/file.c
+>> @@ -137,17 +137,17 @@ static void reiserfs_vfs_truncate_file(s
+>>  static int reiserfs_sync_file(struct file *p_s_filp,
+>>  			      struct dentry *p_s_dentry, int datasync)
+>>  {
+>> -	struct inode *p_s_inode = p_s_dentry->d_inode;
+>> +	struct inode *inode = p_s_dentry->d_inode;
+>>  	int n_err;
+>>  	int barrier_done;
 > 
-> Sorry, I just don't see much point to doing it this way instead. So now
-> the fs will have to check a queue bit after it has issued the flush, how
-> is that any better than having the 'error' returned directly?
+> Didn't you miss one here?
 
-AFAICS, the aim is simply to return zero rather than EOPNOTSUPP, for the 
-not-supported case, rather than burdening all callers with such checks.
+Nope. This renamed p_s_inode, and that's a p_s_dentry. That one gets
+handled in reiserfs: rename p_._ variables.
 
-Which is quite reasonable for Fernando's patch -- the direct call fsync 
-case.
+- -Jeff
 
-But that leaves open the possibility that some people really do want the 
-EOPNOTSUPP return value, I guess?  Do existing callers need that?
+- --
+Jeff Mahoney
+SUSE Labs
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
+Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
 
-
->>> For blkdev_issue_flush() it may not be very interesting, since there's
->>> not much we can do about that. Just seems like very bad style to NOT
->>> return an error in such a case. You can assume that ordering is fine,
->>> but it definitely wont be in all case (eg devices that have write back
->>> caching on by default and don't support flush).
->> So?
->>
->> The thing is, you can't _do_ anything about it. So what's the point in 
->> returning an error? The caller cannot possibly care - because there is 
->> nothing the caller can really do.
-> 
-> Not for blkdev_issue_flush(), all they can do is report about the
-> device. And even that would be a vague "Your data may or may not be
-> safe, we don't know".
-> 
->> Sure, the device may or may not re-order things, but since the caller 
->> can't know, and can't really do a thing about it _anyway_, you're just 
->> better off not even confusing anybody.
-> 
-> I'd call that a pretty reckless approach to data integrity, honestly.
-> You HAVE to issue an error in this case. Then the user/admin can at least
-> check up on the device stack in question, and determine whether this is
-> an issue or not. That goes for both blkdev_issue_flush() and the actual
-> barrier write. And perhaps the cached value is then of some use, since
-> you then know when to warn (bit not already set) and you can keep the
-> warning in blkdev_issue_flush() instead of putting it in every call
-> site.
-
-Indeed -- if the drive tells us it failed the cache flush, it seems 
-self-evident that we should be passing that failure back to userspace 
-where possible.
-
-And as the patches show, it is definitely possible to return a FLUSH 
-CACHE error back to an fsync(2) caller [though, yes, I certainly 
-recognize fsync is not the only generator of these requests].
-
-	Jeff
-
-
-
+iEYEARECAAYFAknRGvIACgkQLPWxlyuTD7ItdQCgiuVxsIJVzXv66VzTNuRmfF0n
+VNgAoJZHYLAtS6mj4Uzxb2+WL/J5Pv+y
+=fQ5U
+-----END PGP SIGNATURE-----
