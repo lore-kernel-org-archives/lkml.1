@@ -1,119 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760046AbZC3T3m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759503AbZC3Tdc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760046AbZC3T3m (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Mar 2009 15:29:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753252AbZC3T30
+	id S1759503AbZC3Tdc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Mar 2009 15:33:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758785AbZC3TdM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Mar 2009 15:29:26 -0400
-Received: from rcsinet13.oracle.com ([148.87.113.125]:22801 "EHLO
-	rgminet13.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758271AbZC3T3Z (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Mar 2009 15:29:25 -0400
-Subject: Re: [PATCH 1/7] block: Add block_flush_device()
-From: Chris Mason <chris.mason@oracle.com>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Jens Axboe <jens.axboe@oracle.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Fernando Luis =?ISO-8859-1?Q?V=E1zquez?= Cao 
-	<fernando@oss.ntt.co.jp>,
-       Christoph Hellwig <hch@infradead.org>, Theodore Tso <tytso@mit.edu>,
-       Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Arjan van de Ven <arjan@infradead.org>,
+	Mon, 30 Mar 2009 15:33:12 -0400
+Received: from cantor.suse.de ([195.135.220.2]:58747 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758746AbZC3TdJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Mar 2009 15:33:09 -0400
+Message-ID: <49D11E57.7060502@suse.com>
+Date: Mon, 30 Mar 2009 15:32:39 -0400
+From: Jeff Mahoney <jeffm@suse.com>
+Organization: SUSE Labs, Novell, Inc
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+MIME-Version: 1.0
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Nick Piggin <npiggin@suse.de>,
-       David Rees <drees76@gmail.com>, Jesper Krogh <jesper@krogh.cc>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       david@fromorbit.com, tj@kernel.org
-In-Reply-To: <49D11A8D.1090600@garzik.org>
-References: <20090329082507.GA4242@infradead.org>
-	 <49D01F94.6000101@oss.ntt.co.jp> <49D02328.7060108@oss.ntt.co.jp>
-	 <49D0258A.9020306@garzik.org> <49D03377.1040909@oss.ntt.co.jp>
-	 <49D0B535.2010106@oss.ntt.co.jp> <49D0B687.1030407@oss.ntt.co.jp>
-	 <alpine.LFD.2.00.0903301028400.3948@localhost.localdomain>
-	 <20090330175544.GX5178@kernel.dk>
-	 <alpine.LFD.2.00.0903301120200.3948@localhost.localdomain>
-	 <20090330185414.GZ5178@kernel.dk>  <49D11A8D.1090600@garzik.org>
-Content-Type: text/plain
-Date: Mon, 30 Mar 2009 15:24:03 -0400
-Message-Id: <1238441043.20607.16.camel@think.oraclecorp.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       ReiserFS Development List <reiserfs-devel@vger.kernel.org>
+Subject: Re: [patch 09/35 error-handling] reiserfs: add locking around error
+ buffer
+References: <20090330180215.951354436@suse.com>	<20090330181010.432220021@suse.com> <87y6umlud1.fsf@basil.nowhere.org>
+In-Reply-To: <87y6umlud1.fsf@basil.nowhere.org>
+X-Enigmail-Version: 0.95.2
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt704.oracle.com [141.146.40.82]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090209.49D11C5C.02F1:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-03-30 at 15:16 -0400, Jeff Garzik wrote:
-> Jens Axboe wrote:
-> > On Mon, Mar 30 2009, Linus Torvalds wrote:
-> >>
-> >> On Mon, 30 Mar 2009, Jens Axboe wrote:
-> >>> The problem is that we may not know upfront, so it sort-of has to be
-> >>> this trial approach where the first barrier issued will notice and fail
-> >>> with -EOPNOTSUPP.
-> >> Well, absolutely. Except I don't think you shoul use ENOTSUPP, you should 
-> >> just set a bit in the "struct request_queue", and then return 0.
-> >>
-> >> IOW, something like this
-> >>
-> >> 	--- a/block/blk-barrier.c
-> >> 	+++ b/block/blk-barrier.c
-> >> 	@@ -318,6 +318,9 @@ int blkdev_issue_flush(struct block_device *bdev, sector_t *error_sector)
-> >> 	 	if (!q)
-> >> 	 		return -ENXIO;
-> >> 	 
-> >> 	+	if (is_queue_noflush(q))
-> >> 	+		return 0;
-> >> 	+
-> >> 	 	bio = bio_alloc(GFP_KERNEL, 0);
-> >> 	 	if (!bio)
-> >> 	 		return -ENOMEM;
-> >> 	@@ -339,7 +342,7 @@ int blkdev_issue_flush(struct block_device *bdev, sector_t *error_sector)
-> >> 	 
-> >> 	 	ret = 0;
-> >> 	 	if (bio_flagged(bio, BIO_EOPNOTSUPP))
-> >> 	-		ret = -EOPNOTSUPP;
-> >> 	+		set_queue_noflush(q);
-> >> 	 	else if (!bio_flagged(bio, BIO_UPTODATE))
-> >> 	 		ret = -EIO;
-> >> 	 
-> >>
-> >> which just returns 0 if we don't support flushing on that queue.
-> >>
-> >> (Obviously incomplete patch, which is why I also intentionally 
-> >> whitespace-broke it).
-> >>
-> >>> Sure, we could cache this value, but it's pretty
-> >>> pointless since the filesystem will stop sending barriers in this case.
-> >> Well no, it won't. Or rather, it will have to have such a stupid 
-> >> per-filesystem flag, for no good reason.
-> > 
-> > Sorry, I just don't see much point to doing it this way instead. So now
-> > the fs will have to check a queue bit after it has issued the flush, how
-> > is that any better than having the 'error' returned directly?
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
+
+Andi Kleen wrote:
+> Jeff Mahoney <jeffm@suse.com> writes:
 > 
-> AFAICS, the aim is simply to return zero rather than EOPNOTSUPP, for the 
-> not-supported case, rather than burdening all callers with such checks.
+>>  The formatting of the error buffer is race prone. It uses static buffers
+>>  for both formatting and output. While overwriting the error buffer
+>>  can product garbled output, overwriting the format buffer with incompatible
+>>  % directives can cause crashes.
 > 
-> Which is quite reasonable for Fernando's patch -- the direct call fsync 
-> case.
-> 
-> But that leaves open the possibility that some people really do want the 
-> EOPNOTSUPP return value, I guess?  Do existing callers need that?
-> 
+> Really? Just curious but could you describe the steps how a garbled printk can
+> leads to a crash?
 
-As far as I know, reiserfs is the only one actively using it to choose
-different code.  It moves a single wait_on_buffer when barriers are on,
-which I took out once to simplify the code.  Ric saw it in some
-benchmark numbers and I put it back in.
+Yeah, I was surprised by this one as well, but I was convinced by seeing
+too many crashes that ended in prepare_error_buf with no other explanation.
 
-Given that it was a long time ago, I don't have a problem with changing
-it to work like all the other filesystems.
+Reiserfs has this really hacky way of formatting extended pointer types
+where it copies the format buffer into a static buffer. If another
+thread copies its format string into the format buffer while the first
+thread is formatting its output, it can hit a pointer format that will
+consume whatever happens to be on the stack whether it's valid or not.
 
--chris
+I posted patches implementing extensible pointer types for printk to
+avoid problems like this, but nobody commented on them.
+prepare_error_buf() depends on undefined varargs behavior that just
+happens to work. Something changed recently where I had to change it
+stop consuming args manually, which is in another patch.
 
+- -Jeff
 
+- --
+Jeff Mahoney
+SUSE Labs
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
+Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
+
+iEYEARECAAYFAknRHlcACgkQLPWxlyuTD7JgtACgiLRbO1IGhvKjmg6wCcZDhR9i
+jkwAn0e81mXl6JvgZqmKqK8f09fApaoq
+=fB0H
+-----END PGP SIGNATURE-----
