@@ -1,109 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762137AbZC3VmS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762168AbZC3Vml@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762137AbZC3VmS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Mar 2009 17:42:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761948AbZC3Vlo
+	id S1762168AbZC3Vml (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Mar 2009 17:42:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762092AbZC3Vls
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Mar 2009 17:41:44 -0400
-Received: from gw1.cosmosbay.com ([212.99.114.194]:46936 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761483AbZC3Vln convert rfc822-to-8bit (ORCPT
+	Mon, 30 Mar 2009 17:41:48 -0400
+Received: from gw01.mail.saunalahti.fi ([195.197.172.115]:36035 "EHLO
+	gw01.mail.saunalahti.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762082AbZC3Vlr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Mar 2009 17:41:43 -0400
-Message-ID: <49D13C50.4030601@cosmosbay.com>
-Date: Mon, 30 Mar 2009 23:40:32 +0200
-From: Eric Dumazet <dada1@cosmosbay.com>
-User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
-MIME-Version: 1.0
-To: Darren Hart <dvhltc@us.ibm.com>
-CC: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       Sripathi Kodi <sripathik@in.ibm.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       John Stultz <johnstul@us.ibm.com>, Steven Rostedt <rostedt@goodmis.org>,
-       Dinakar Guniguntala <dino@in.ibm.com>,
-       Ulrich Drepper <drepper@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       Jakub Jelinek <jakub@redhat.com>
-Subject: Re: [tip PATCH v6 6/8] RFC: futex: Add FUTEX_HAS_TIMEOUT flag to
- restart.futex.flags
-References: <20090330213306.606.9540.stgit@Aeon> <20090330213821.606.93755.stgit@Aeon>
-In-Reply-To: <20090330213821.606.93755.stgit@Aeon>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Mon, 30 Mar 2009 23:40:32 +0200 (CEST)
+	Mon, 30 Mar 2009 17:41:47 -0400
+From: Dmitri Vorobiev <dmitri.vorobiev@movial.com>
+To: viro@zeniv.linux.org.uk, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Cc: tytso@mit.edu, adilger@sun.com, linux-ext4@vger.kernel.org,
+       alex@clusterfs.com, aneesh.kumar@linux.vnet.ibm.com,
+       Dmitri Vorobiev <dmitri.vorobiev@movial.com>
+Subject: [PATCH] Remove two unneeded exports and make two symbols static in fs/mpage.c
+Date: Tue, 31 Mar 2009 00:41:20 +0300
+Message-Id: <1238449280-10318-1-git-send-email-dmitri.vorobiev@movial.com>
+X-Mailer: git-send-email 1.5.6.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Darren Hart a écrit :
-> Currently restart is only used if there is a timeout.  The requeue_pi
-> functionality requires restarting to futex_lock_pi() on signal after
-> wakeup in futex_wait_requeue_pi() regardless of if there was a timeout
-> or not.  Using 0 for the timeout value is confusing as that could
-> indicate an expired timer.  The flag makes this explicit.
-> 
-> Signed-off-by: Darren Hart <dvhltc@us.ibm.com>
-> Cc: Thomas Gleixner <tglx@linutronix.de>
-> Cc: Sripathi Kodi <sripathik@in.ibm.com>
-> Cc: Peter Zijlstra <peterz@infradead.org>
-> Cc: John Stultz <johnstul@us.ibm.com>
-> Cc: Steven Rostedt <rostedt@goodmis.org>
-> Cc: Dinakar Guniguntala <dino@in.ibm.com>
-> Cc: Ulrich Drepper <drepper@redhat.com>
-> Cc: Eric Dumazet <dada1@cosmosbay.com>
-> Cc: Ingo Molnar <mingo@elte.hu>
-> Cc: Jakub Jelinek <jakub@redhat.com>
-> ---
-> 
->  kernel/futex.c |   12 ++++++++----
->  1 files changed, 8 insertions(+), 4 deletions(-)
-> 
-> diff --git a/kernel/futex.c b/kernel/futex.c
-> index dd05803..f54faf5 100644
-> --- a/kernel/futex.c
-> +++ b/kernel/futex.c
-> @@ -1254,6 +1254,7 @@ handle_fault:
->   */
->  #define FLAGS_SHARED		0x01
->  #define FLAGS_CLOCKRT		0x02
-> +#define FLAGS_HAS_TIMEOUT	0x04
->  
->  static long futex_wait_restart(struct restart_block *restart);
->  
-> @@ -1493,7 +1494,7 @@ retry_private:
->  	restart->futex.val = val;
->  	restart->futex.time = abs_time->tv64;
->  	restart->futex.bitset = bitset;
-> -	restart->futex.flags = 0;
-> +	restart->futex.flags = FLAGS_HAS_TIMEOUT;
->  
->  	if (fshared)
->  		restart->futex.flags |= FLAGS_SHARED;
-> @@ -1517,13 +1518,16 @@ static long futex_wait_restart(struct restart_block *restart)
->  {
->  	u32 __user *uaddr = (u32 __user *)restart->futex.uaddr;
->  	int fshared = 0;
-> -	ktime_t t;
-> +	ktime_t t, *tp = NULL;
->  
-> -	t.tv64 = restart->futex.time;
-> +	if (restart->futex.flags | FLAGS_HAS_TIMEOUT) {
+Commit 29a814d2ee0e43c2980f33f91c1311ec06c0aa35 (vfs: add hooks for
+ext4's delayed allocation support) exported the following functions
 
-You probably meant :
+mpage_bio_submit()
+__mpage_writepage()
 
-if (restart->futex.flags & FLAGS_HAS_TIMEOUT)
+for the benefit of ext4's delayed allocation support. Since commit
+a1d6cc563bfdf1bf2829d3e6ce4d8b774251796b (ext4: Rework the
+ext4_da_writepages() function), these functions are not used by the
+ext4 driver anymore. However, the now unnecessary exports still
+remain, and this patch removes those. Moreover, these two functions
+can become static again.
 
-> +		t.tv64 = restart->futex.time;
-> +		tp = &t;
-> +	}
->  	restart->fn = do_no_restart_syscall;
->  	if (restart->futex.flags & FLAGS_SHARED)
->  		fshared = 1;
-> -	return (long)futex_wait(uaddr, fshared, restart->futex.val, &t,
-> +	return (long)futex_wait(uaddr, fshared, restart->futex.val, tp,
->  				restart->futex.bitset,
->  				restart->futex.flags & FLAGS_CLOCKRT);
->  }
-> 
-> 
+The issue was spotted by namespacecheck.
 
+Signed-off-by: Dmitri Vorobiev <dmitri.vorobiev@movial.com>
+---
+ fs/mpage.c            |   13 +++++++++----
+ include/linux/mpage.h |   10 ----------
+ 2 files changed, 9 insertions(+), 14 deletions(-)
+
+diff --git a/fs/mpage.c b/fs/mpage.c
+index 16c3ef3..680ba60 100644
+--- a/fs/mpage.c
++++ b/fs/mpage.c
+@@ -82,7 +82,7 @@ static void mpage_end_io_write(struct bio *bio, int err)
+ 	bio_put(bio);
+ }
+ 
+-struct bio *mpage_bio_submit(int rw, struct bio *bio)
++static struct bio *mpage_bio_submit(int rw, struct bio *bio)
+ {
+ 	bio->bi_end_io = mpage_end_io_read;
+ 	if (rw == WRITE)
+@@ -90,7 +90,6 @@ struct bio *mpage_bio_submit(int rw, struct bio *bio)
+ 	submit_bio(rw, bio);
+ 	return NULL;
+ }
+-EXPORT_SYMBOL(mpage_bio_submit);
+ 
+ static struct bio *
+ mpage_alloc(struct block_device *bdev,
+@@ -439,7 +438,14 @@ EXPORT_SYMBOL(mpage_readpage);
+  * just allocate full-size (16-page) BIOs.
+  */
+ 
+-int __mpage_writepage(struct page *page, struct writeback_control *wbc,
++struct mpage_data {
++	struct bio *bio;
++	sector_t last_block_in_bio;
++	get_block_t *get_block;
++	unsigned use_writepage;
++};
++
++static int __mpage_writepage(struct page *page, struct writeback_control *wbc,
+ 		      void *data)
+ {
+ 	struct mpage_data *mpd = data;
+@@ -648,7 +654,6 @@ out:
+ 	mpd->bio = bio;
+ 	return ret;
+ }
+-EXPORT_SYMBOL(__mpage_writepage);
+ 
+ /**
+  * mpage_writepages - walk the list of dirty pages of the given address space & writepage() all of them
+diff --git a/include/linux/mpage.h b/include/linux/mpage.h
+index 5c42821..068a0c9 100644
+--- a/include/linux/mpage.h
++++ b/include/linux/mpage.h
+@@ -11,21 +11,11 @@
+  */
+ #ifdef CONFIG_BLOCK
+ 
+-struct mpage_data {
+-	struct bio *bio;
+-	sector_t last_block_in_bio;
+-	get_block_t *get_block;
+-	unsigned use_writepage;
+-};
+-
+ struct writeback_control;
+ 
+-struct bio *mpage_bio_submit(int rw, struct bio *bio);
+ int mpage_readpages(struct address_space *mapping, struct list_head *pages,
+ 				unsigned nr_pages, get_block_t get_block);
+ int mpage_readpage(struct page *page, get_block_t get_block);
+-int __mpage_writepage(struct page *page, struct writeback_control *wbc,
+-		      void *data);
+ int mpage_writepages(struct address_space *mapping,
+ 		struct writeback_control *wbc, get_block_t get_block);
+ int mpage_writepage(struct page *page, get_block_t *get_block,
+-- 
+1.5.6.3
 
