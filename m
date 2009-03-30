@@ -1,44 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755354AbZC3QlY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755371AbZC3QmB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755354AbZC3QlY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Mar 2009 12:41:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752318AbZC3QlK
+	id S1755371AbZC3QmB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Mar 2009 12:42:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753171AbZC3Qlr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Mar 2009 12:41:10 -0400
-Received: from g5t0007.atlanta.hp.com ([15.192.0.44]:24600 "EHLO
-	g5t0007.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752251AbZC3QlJ (ORCPT
+	Mon, 30 Mar 2009 12:41:47 -0400
+Received: from wa-out-1112.google.com ([209.85.146.177]:63007 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753284AbZC3Qlo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Mar 2009 12:41:09 -0400
-Date: Mon, 30 Mar 2009 10:41:06 -0600
-From: Alex Chiang <achiang@hp.com>
-To: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
-Cc: jbarnes@virtuousgeek.org, linux-pci@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/3] PCI: allow PCI core hotplug to remove PCI root bus
-Message-ID: <20090330164106.GB30433@ldl.fc.hp.com>
-References: <20090329165352.29073.5159.stgit@bob.kio> <20090329165444.29073.36246.stgit@bob.kio> <49D02B0F.5060409@jp.fujitsu.com>
+	Mon, 30 Mar 2009 12:41:44 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=KJ5HZ228nbiu6ujj6OcsnHq5hw9cPM40tXuLbyIDhCNa7x59lIWQ/vLnrXg4BrjZpY
+         gCVn7wQugTvHHO/y7OsNAU37zv+qVzRa+e4LNB4SJwKiMXR1ebo9JKig8/Vflj6NGxLd
+         r8GjbDCL0iTcfJbzxc49aZDfp2ntCxWSnqTZQ=
+Date: Mon, 30 Mar 2009 18:40:54 +0200
+From: Jarek Poplawski <jarkao2@gmail.com>
+To: Jonathan Corbet <corbet@lwn.net>
+Cc: Markus Trippelsdorf <markus@trippelsdorf.de>,
+       Ilpo =?iso-8859-1?Q?J=E4rvinen?= <ilpo.jarvinen@helsinki.fi>,
+       Netdev <netdev@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: WARNING: at net/ipv4/tcp_input.c:2927 tcp_ack+0xd55/0x1991()
+Message-ID: <20090330164054.GA2723@ami.dom.local>
+References: <20090328075628.3565eb39@bike.lwn.net> <20090330085107.GA5822@ff.dom.local> <20090330080150.724378b0@bike.lwn.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <49D02B0F.5060409@jp.fujitsu.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <20090330080150.724378b0@bike.lwn.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>:
-> Alex Chiang wrote:
-> > There is no reason to prevent root bus removal. We never actually
-> > remove the node from the pci_root_buses list, so a rescan will correctly
-> > rediscover the root bus.
-> > 
+On Mon, Mar 30, 2009 at 08:01:50AM -0600, Jonathan Corbet wrote:
+> On Mon, 30 Mar 2009 08:51:07 +0000
+> Jarek Poplawski <jarkao2@gmail.com> wrote:
 > 
-> I'm a little confused about the description. I don't think the
-> patch is for allowing pci root bus removal. I think it is for
-> allowing removal of pci devices on pci root buses.
+> > Probably I miss something, but generally in a case like this "a_lock"
+> > doesn't have to be taken in IRQ mode to be dangerous. Eg. if one cpu
+> > is trying to take this lock after fasync_lock (with IRQs disabled),
+> > while another cpu is waiting for fasync_lock in IRQ, which preempted
+> > such "a_lock".
+> 
+> The possibility exists, I guess, yes.
+> 
+> > Could you give some details of this fix?
+> 
+> I just reverse the order of lock acquisition in fasync_helper().  Patch
+> is attached.  I'll be sending up a pull request shortly.
 
-Thanks for the review. I'll change the changelog text.
+Yes, this patch should fix this. (And I can see it in the linux-next
+now...)
 
-/ac
+Thanks,
+Jarek P.
 
+> 
+> jon
+> 
+> From 4a6a4499693a419a20559c41e33a7bd70bf20a6f Mon Sep 17 00:00:00 2001
+> From: Jonathan Corbet <corbet@lwn.net>
+> Date: Fri, 27 Mar 2009 12:24:31 -0600
+> Subject: [PATCH] Fix a lockdep warning in fasync_helper()
+> 
+> Lockdep gripes if file->f_lock is taken in a no-IRQ situation, since that
+> is not always the case.  We don't really want to disable IRQs for every
+> acquisition of f_lock; instead, just move it outside of fasync_lock.
+> 
+> Reported-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> Reported-by: Larry Finger <Larry.Finger@lwfinger.net>
+> Reported-by: Wu Fengguang <fengguang.wu@intel.com>
+> Signed-off-by: Jonathan Corbet <corbet@lwn.net>
+> ---
+>  fs/fcntl.c         |   10 +++++++---
+>  include/linux/fs.h |    2 +-
+>  2 files changed, 8 insertions(+), 4 deletions(-)
+> 
+> diff --git a/fs/fcntl.c b/fs/fcntl.c
+> index d865ca6..cc8e4de 100644
+> --- a/fs/fcntl.c
+> +++ b/fs/fcntl.c
+> @@ -531,6 +531,12 @@ int fasync_helper(int fd, struct file * filp, int on, struct fasync_struct **fap
+>  		if (!new)
+>  			return -ENOMEM;
+>  	}
+> +
+> +	/*
+> +	 * We need to take f_lock first since it's not an IRQ-safe
+> +	 * lock.
+> +	 */
+> +	spin_lock(&filp->f_lock);
+>  	write_lock_irq(&fasync_lock);
+>  	for (fp = fapp; (fa = *fp) != NULL; fp = &fa->fa_next) {
+>  		if (fa->fa_file == filp) {
+> @@ -555,14 +561,12 @@ int fasync_helper(int fd, struct file * filp, int on, struct fasync_struct **fap
+>  		result = 1;
+>  	}
+>  out:
+> -	/* Fix up FASYNC bit while still holding fasync_lock */
+> -	spin_lock(&filp->f_lock);
+>  	if (on)
+>  		filp->f_flags |= FASYNC;
+>  	else
+>  		filp->f_flags &= ~FASYNC;
+> -	spin_unlock(&filp->f_lock);
+>  	write_unlock_irq(&fasync_lock);
+> +	spin_unlock(&filp->f_lock);
+>  	return result;
+>  }
+>  
+> diff --git a/include/linux/fs.h b/include/linux/fs.h
+> index 7428c6d..2f13c1d 100644
+> --- a/include/linux/fs.h
+> +++ b/include/linux/fs.h
+> @@ -848,7 +848,7 @@ struct file {
+>  #define f_dentry	f_path.dentry
+>  #define f_vfsmnt	f_path.mnt
+>  	const struct file_operations	*f_op;
+> -	spinlock_t		f_lock;  /* f_ep_links, f_flags */
+> +	spinlock_t		f_lock;  /* f_ep_links, f_flags, no IRQ */
+>  	atomic_long_t		f_count;
+>  	unsigned int 		f_flags;
+>  	fmode_t			f_mode;
+> -- 
+> 1.6.2
+> 
