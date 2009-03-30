@@ -1,78 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760866AbZC3UQa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760858AbZC3URp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760866AbZC3UQa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Mar 2009 16:16:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760336AbZC3UQE
+	id S1760858AbZC3URp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Mar 2009 16:17:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755970AbZC3URf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Mar 2009 16:16:04 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:46930 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1759145AbZC3UQD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Mar 2009 16:16:03 -0400
-Date: Mon, 30 Mar 2009 13:05:54 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Rik van Riel <riel@redhat.com>
-cc: Ric Wheeler <rwheeler@redhat.com>,
-       "Andreas T.Auer" <andreas.t.auer_lkml_73537@ursus.ath.cx>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Theodore Tso <tytso@mit.edu>,
-       Mark Lord <lkml@rtr.ca>, Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Jeff Garzik <jeff@garzik.org>, Matthew Garrett <mjg59@srcf.ucam.org>,
+	Mon, 30 Mar 2009 16:17:35 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:49540 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754884AbZC3URf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Mar 2009 16:17:35 -0400
+Date: Mon, 30 Mar 2009 22:17:32 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Fernando Luis =?iso-8859-1?Q?V=E1zquez?= Cao 
+	<fernando@oss.ntt.co.jp>,
+       Jeff Garzik <jeff@garzik.org>, Christoph Hellwig <hch@infradead.org>,
+       Theodore Tso <tytso@mit.edu>, Ingo Molnar <mingo@elte.hu>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Arjan van de Ven <arjan@infradead.org>,
        Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Nick Piggin <npiggin@suse.de>,
        David Rees <drees76@gmail.com>, Jesper Krogh <jesper@krogh.cc>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.29
-In-Reply-To: <49D11BDD.70702@redhat.com>
-Message-ID: <alpine.LFD.2.00.0903301259490.4093@localhost.localdomain>
-References: <alpine.LFD.2.00.0903271511230.3994@localhost.localdomain> <alpine.LFD.2.00.0903271522210.3994@localhost.localdomain> <49CD7B10.7010601@garzik.org> <49CD891A.7030103@rtr.ca> <49CD9047.4060500@garzik.org> <49CE2633.2000903@s5r6.in-berlin.de>
- <49CE3186.8090903@garzik.org> <49CE35AE.1080702@s5r6.in-berlin.de> <49CE3F74.6090103@rtr.ca> <20090329231451.GR26138@disturbed> <20090330003948.GA13356@mit.edu> <49D0710A.1030805@ursus.ath.cx> <20090330100546.51907bd2@the-village.bc.nu> <49D0A3D6.4000300@ursus.ath.cx>
- <49D0AA4A.6020308@redhat.com> <alpine.LFD.2.00.0903300817400.3948@localhost.localdomain> <49D0EF1E.9040806@redhat.com> <alpine.LFD.2.00.0903300922231.3948@localhost.localdomain> <49D0FD4C.1010007@redhat.com> <alpine.LFD.2.00.0903301038100.3948@localhost.localdomain>
- <49D11BDD.70702@redhat.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       chris.mason@oracle.com, david@fromorbit.com, tj@kernel.org
+Subject: Re: [PATCH 1/7] block: Add block_flush_device()
+Message-ID: <20090330201732.GB5178@kernel.dk>
+References: <49D02328.7060108@oss.ntt.co.jp> <49D0258A.9020306@garzik.org> <49D03377.1040909@oss.ntt.co.jp> <49D0B535.2010106@oss.ntt.co.jp> <49D0B687.1030407@oss.ntt.co.jp> <alpine.LFD.2.00.0903301028400.3948@localhost.localdomain> <20090330175544.GX5178@kernel.dk> <alpine.LFD.2.00.0903301120200.3948@localhost.localdomain> <20090330185414.GZ5178@kernel.dk> <alpine.LFD.2.00.0903301242040.4093@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.00.0903301242040.4093@localhost.localdomain>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Mon, 30 Mar 2009, Rik van Riel wrote:
+On Mon, Mar 30 2009, Linus Torvalds wrote:
 > 
-> Maybe a stupid question, but aren't tracks so small compared to
-> the disk head that a physical head crash would take out multiple
-> tracks at once?  (the last on I experienced here took out a major
-> part of the disk)
-
-Probably. My experiences (not _that_ many drives, but more than one) have 
-certainly been that I've never seen a _single_ read error.
-
-> Another case I have seen years ago was me writing data to a disk
-> while it was still cold (I brought it home, plugged it in and
-> started using it).  Once the drive came up to temperature, it
-> could no longer read the tracks it just wrote - maybe the disk
-> expanded by more than it is willing to seek around for tracks
-> due to thermal correction?   Low level formatting the drive
-> made it work perfectly and I kept using it until it was just
-> too small to be useful :)
-
-I've had one drive that just stopped spinning. On power-on, it would make 
-these pitiful noises trying to get the platters to move, but not actually 
-ever work. If I recall correctly, I got the data off it by letting it just 
-cool down, then powering up (successfully) and transferring all the data 
-I cared about off the disk. And then replacing the disk.
-
-> > And my point is, IT MAKES SENSE to just do the elevator barrier, _without_
-> > the drive command. 
 > 
-> No argument there.  I have seen NCQ starvation on SATA disks,
-> with some requests sitting in the drive for seconds, while
-> the drive was busy handling hundreds of requests/second
-> elsewhere...
+> On Mon, 30 Mar 2009, Jens Axboe wrote:
+> > 
+> > Sorry, I just don't see much point to doing it this way instead. So now
+> > the fs will have to check a queue bit after it has issued the flush, how
+> > is that any better than having the 'error' returned directly?
+> 
+> No.
+> 
+> Now the fs SHOULD NEVER CHECK AT ALL.
+> 
+> Either it did the ordering, or the FS cannot do anything about it. 
+> 
+> That's the point. EOPNOTSUPP is n ot a useful error message. You can't 
+> _do_ anything about it.
 
-I _thought_ we stopped feeding new requests while the flush was active, so 
-if you actually do a flush, that should never actually happen. But I 
-didn't check.
+My point is that some file systems may or may not have different paths
+or optimizations depending on whether barriers are enabled and working
+or not. Apparently that's just reiserfs and Chris says we can remove it,
+so it is probably a moot point.
 
-		Linus
+And that is for the barrier write btw, NOT blkdev_issue_flush(). For the
+latter it obviously doesn't matter if you return -EOPNOTSUPP or not, as
+long as you warn. And before you yell on, please read on below...
+
+> > > Sure, the device may or may not re-order things, but since the caller 
+> > > can't know, and can't really do a thing about it _anyway_, you're just 
+> > > better off not even confusing anybody.
+> > 
+> > I'd call that a pretty reckless approach to data integrity, honestly.
+> 
+> It has _nothing_ to do with 'reckless'. It has everything to do with 'you 
+> can't do anything about it'.
+
+No, but you better damn well inform of such a discovery!
+
+> > You HAVE to issue an error in this case.
+> 
+> No. Returning an error just means that now the box is useless. Nobody can 
+> do anything about it. Not the admin, not the driver writer, not anybody. 
+
+What, that's nonsense. The admin can certainly check whether it's an
+issue or not, and he should. That's different from handling it in the
+kernel or in the application, but you have to inform about it. I
+honestly cannot fathom why you don't think that is important.
+
+> Ok, so a device didn't support flushing. We don't know why, we don't know 
+> if it needed it, we simply don't know. There's nothing to do. But 
+> returning an error to user mode is unacceptable, because that will result 
+> in everything just -failing-. 
+> 
+> And total failure is much worse than "we don't know whether the thing 
+> serialized".
+
+That is not what I meant with returning it to the user. My point was
+that you have to notify that the error occured, which means putting a
+printk() (or whatever) in that blkdev_issue_flush(). I guess most of the
+miscommunication stems from this, I don't want -EOPNOTSUPP returned to
+user space, but I want some notification that tells the admin that this
+device doesn't support flushes. And if the file systems use the same
+path for barrier or no barriers, then it's perfectly fine to have them
+share the very same "flush doesn't work bit" and the same single warning
+that we don't know whether ordering is preserved on this device or not.
+
+IOW, what I'm advocating is just a simple:
+
+@@
+        if (err == -EOPNOTSUPP) {
++               if (!is_queue_noflush(q)) {
++                       warn();
+                        set_queue_noflush(q);
+                }
+        }
+
+change to the pseudo-patch you posted.
+
+-- 
+Jens Axboe
+
