@@ -1,80 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754812AbZC3OEb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754830AbZC3OGR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754812AbZC3OEb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Mar 2009 10:04:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754601AbZC3OEK
+	id S1754830AbZC3OGR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Mar 2009 10:06:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753221AbZC3OGC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Mar 2009 10:04:10 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:59698 "EHLO mx2.redhat.com"
+	Mon, 30 Mar 2009 10:06:02 -0400
+Received: from THUNK.ORG ([69.25.196.29]:46877 "EHLO thunker.thunk.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753794AbZC3OEJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Mar 2009 10:04:09 -0400
-Message-ID: <49D0D08E.3090100@redhat.com>
-Date: Mon, 30 Mar 2009 10:00:46 -0400
-From: Ric Wheeler <rwheeler@redhat.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
-MIME-Version: 1.0
-To: Mark Lord <lkml@rtr.ca>
-CC: "Andreas T.Auer" <andreas.t.auer_lkml_73537@ursus.ath.cx>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Theodore Tso <tytso@mit.edu>,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Jeff Garzik <jeff@garzik.org>,
+	id S1752937AbZC3OGA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Mar 2009 10:06:00 -0400
+Date: Mon, 30 Mar 2009 10:04:27 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Fernando Luis =?iso-8859-1?Q?V=E1zquez?= Cao 
+	<fernando@oss.ntt.co.jp>
+Cc: Jeff Garzik <jeff@garzik.org>, Christoph Hellwig <hch@infradead.org>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       Matthew Garrett <mjg59@srcf.ucam.org>,
+       Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Arjan van de Ven <arjan@infradead.org>,
        Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Nick Piggin <npiggin@suse.de>,
        David Rees <drees76@gmail.com>, Jesper Krogh <jesper@krogh.cc>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.29
-References: <alpine.LFD.2.00.0903271511230.3994@localhost.localdomain>	<alpine.LFD.2.00.0903271522210.3994@localhost.localdomain>	<49CD7B10.7010601@garzik.org>	<49CD891A.7030103@rtr.ca>	<49CD9047.4060500@garzik.org>	<49CE2633.2000903@s5r6.in-berlin.de>	<49CE3186.8090903@garzik.org>	<49CE35AE.1080702@s5r6.in-berlin.de>	<49CE3F74.6090103@rtr.ca>	<20090329231451.GR26138@disturbed>	<20090330003948.GA13356@mit.edu>	<49D0710A.1030805@ursus.ath.cx> <20090330100546.51907bd2@the-village.bc.nu> <49D0A3D6.4000300@ursus.ath.cx> <49D0AA4A.6020308@redhat.com> <49D0CDBA.7040702@rtr.ca>
-In-Reply-To: <49D0CDBA.7040702@rtr.ca>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       chris.mason@oracle.com, david@fromorbit.com, tj@kernel.org
+Subject: Re: [PATCH 2/7] ext3: call blkdev_issue_flush() on fsync()
+Message-ID: <20090330140427.GG13356@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Fernando Luis =?iso-8859-1?Q?V=E1zquez?= Cao <fernando@oss.ntt.co.jp>,
+	Jeff Garzik <jeff@garzik.org>,
+	Christoph Hellwig <hch@infradead.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+	Arjan van de Ven <arjan@infradead.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Peter Zijlstra <a.p.zijlstra@chello.nl>,
+	Nick Piggin <npiggin@suse.de>, David Rees <drees76@gmail.com>,
+	Jesper Krogh <jesper@krogh.cc>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	chris.mason@oracle.com, david@fromorbit.com, tj@kernel.org
+References: <20090325212923.GA5620@havoc.gtf.org> <20090326032445.GA16999@havoc.gtf.org> <20090327205046.GA2036@havoc.gtf.org> <20090329082507.GA4242@infradead.org> <49D01F94.6000101@oss.ntt.co.jp> <49D02328.7060108@oss.ntt.co.jp> <49D0258A.9020306@garzik.org> <49D03377.1040909@oss.ntt.co.jp> <49D0B535.2010106@oss.ntt.co.jp> <49D0B70E.8060506@oss.ntt.co.jp>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <49D0B70E.8060506@oss.ntt.co.jp>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mark Lord wrote:
-> Ric Wheeler wrote:
->>
->> People keep forgetting that storage (even on your commodity s-ata 
->> class of drives) has very large & volatile cache. The disk firmware 
->> can hold writes in that cache as long as it wants, reorder its writes 
->> into anything that makes sense and has no explicit ordering promises.
-> ..
-> 
-> Hi Ric,
-> 
-> No, we don't forget about those drive caches.  But in practice,
-> for nearly everyone, they don't actually matter.
+On Mon, Mar 30, 2009 at 09:11:58PM +0900, Fernando Luis Vázquez Cao wrote:
+> To ensure that bits are truly on-disk after an fsync or fdatasync, we
+> should force a disk flush explicitly when there is dirty data/metadata
+> and the journal didn't emit a write barrier (either because metadata is
+> not being synched or barriers are disabled).
 
-Here I disagree - nearly everyone has their critical data being manipulated in 
-large data centers on top of Linux servers. We all can routinely suffer when 
-linux crashes and loses data at big sites like google, amazon, hospitals or your 
-local bank.
+NACK.
 
-It definitely does matter in practice, we usually just don't see it first hand :-)
+As Eric commented on linux-ext4 (and I think it was Chris Mason
+deserves the credit for originally pointing this out), we don't need
+to call blkdev_issue_flush() after calling sync_inode().  That's
+because sync_inode() eventually (after going through a very deep call
+tree inside fs/fs-writeback.c) __sync_single_inode(), which calls
+write_inode(), which calls the filesystem-specific ->write_inode()
+function, which for both ext3 and ext4, ends up calling
+ext[34]_force_commit.  Which, if barriers are enabled, will end up
+issuing a barrier after writing the commit block.
 
+In the code paths that don't end up calling sync_inode() or
+ext4_force_commit(), (i.e., in the fdatasync() case) calling
+block_flush_device is appropriate.  But as it stands, this patch (and
+the related one for ext4) will result in multiple unnecessary barrier
+requests being sent to the block layer.
 
-> 
-> The kernel can crash, and the drives, in practice, will still
-> flush their caches to media by themselves.  Within a second or two.
+So two out of the three places where this patch adds
+block_flush_device() are not necessary; as far as I can tell, only
+this one is one we should add.
 
-Even with desktops, I am not positive that the drive write cache survives a 
-kernel crash without data loss. If I remember correctly, Chris's tests used 
-crashes (not power outages) to display the data corruption that happened without 
-barriers being enabled properly.
+> -	if (datasync && !(inode->i_state & I_DIRTY_DATASYNC))
+> -		goto out;
+> +	if (datasync && !(i_state & I_DIRTY_DATASYNC)) {
+> +		if (i_state & I_DIRTY_PAGES)
+> +			ret = block_flush_device(inode->i_sb->s_bdev);
+> +		return ret;
+> +	}
 
-> 
-> Sure, there are cases where this might not happen (total power fail),
-> but those are quite rare for desktop users -- and especially for the
-> most common variety of desktop user:  notebook users (whose machines
-> have built-in UPSs).
-> 
-> Cheers
+A similar fixup is needed for the ext4 patch.
 
-Unless of course you push your luck with your battery and run it until really 
-out of power, but in general, I do agree that laptops and notebook users have a 
-reasonably robust built in UPS.
+(And can we please start a new thread for these patches?  Thanks!!)
 
-ric
+Regards,
+
+     	    	   	       	      	  	- Ted
 
