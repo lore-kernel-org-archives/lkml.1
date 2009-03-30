@@ -1,65 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761235AbZC3UdQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761203AbZC3Uft@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761235AbZC3UdQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Mar 2009 16:33:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759006AbZC3Uc5
+	id S1761203AbZC3Uft (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Mar 2009 16:35:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758121AbZC3Ufk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Mar 2009 16:32:57 -0400
-Received: from ti-out-0910.google.com ([209.85.142.186]:11706 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752216AbZC3Uc4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Mar 2009 16:32:56 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent;
-        b=qAsRIGtT/EeEY6t8Ln4/9sUE3iabyJsbFQ9cTh1gXzgHRD1nyXyuot4cjog8PfqpLE
-         X37TtutdsKXYWr6hP5jYJFbw/iuWmXbXe7L7F9HqzyvzZkDGVjKaf7dHle+YBBptfKSC
-         DMIStY9pxDGj+vRIOt4vvYtrLoRGaKNzioqU8=
-Date: Tue, 31 Mar 2009 00:32:40 +0400
-From: Alexander Beregalov <a.beregalov@gmail.com>
-To: Jeff Mahoney <jeffm@suse.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       ReiserFS Development List <reiserfs-devel@vger.kernel.org>
-Subject: [PATCH] reiserfs: fix build breakage
-Message-ID: <20090330203240.GA19456@orion>
+	Mon, 30 Mar 2009 16:35:40 -0400
+Received: from gw.goop.org ([64.81.55.164]:55765 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757245AbZC3Ufj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Mar 2009 16:35:39 -0400
+Message-ID: <49D12D16.6050407@goop.org>
+Date: Mon, 30 Mar 2009 13:35:34 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.19 (2009-01-05)
+To: Rik van Riel <riel@redhat.com>
+CC: Dave Hansen <dave@linux.vnet.ibm.com>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>, akpm@osdl.org,
+       nickpiggin@yahoo.com.au, frankeh@watson.ibm.com,
+       virtualization@lists.osdl.org, linux-kernel@vger.kernel.org,
+       linux-mm@kvack.org, hugh@veritas.com
+Subject: Re: [patch 0/6] Guest page hinting version 7.
+References: <20090327150905.819861420@de.ibm.com>	<1238195024.8286.562.camel@nimitz>  <20090329161253.3faffdeb@skybase> <1238428495.8286.638.camel@nimitz> <49D11184.3060002@goop.org> <49D11287.4030307@redhat.com> <49D11674.9040205@goop.org> <49D12564.40708@redhat.com>
+In-Reply-To: <49D12564.40708@redhat.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-fs/reiserfs/inode.c: In function 'reiserfs_new_inode':
-fs/reiserfs/inode.c:1919: warning: passing argument 1 of
-'reiserfs_inherit_default_acl' from incompatible pointer type
-fs/reiserfs/inode.c:1919: warning: passing argument 2 of
-'reiserfs_inherit_default_acl' from incompatible pointer type
-fs/reiserfs/inode.c:1919: warning: passing argument 3 of
-'reiserfs_inherit_default_acl' from incompatible pointer type
-fs/reiserfs/inode.c:1919: error: too many arguments to function
-'reiserfs_inherit_default_acl'
+Rik van Riel wrote:
+> Jeremy Fitzhardinge wrote:
+>> Rik van Riel wrote:
+>>> Jeremy Fitzhardinge wrote:
+>>>
+>>>> That said, people have been looking at tracking block IO to work 
+>>>> out when it might be useful to try and share pages between guests 
+>>>> under Xen.
+>>>
+>>> Tracking block IO seems like a bass-ackwards way to figure
+>>> out what the contents of a memory page are.
+>>
+>> Well, they're research projects, so nobody said that they're 
+>> necessarily useful results ;).  I think the rationale is that, in 
+>> general, there aren't all that many sharable pages, and asize from 
+>> zero-pages, the bulk of them are the result of IO. 
+>
+> I'll give you a hint:  Windows zeroes out freed pages.
 
-Signed-off-by: Alexander Beregalov <a.beregalov@gmail.com>
----
+Right: "aside from zero-pages".  If you exclude zero-pages from your 
+count of shared pages, the amount of sharing drops a lot.
 
- include/linux/reiserfs_acl.h |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
+> It should also be possible to hook up arch_free_page() so
+> freed pages in Linux guests become sharable.
+>
+> Furthermore, every guest with the same OS version will be
+> running the same system daemons, same glibc, etc.  This
+> means sharable pages from not just disk IO (probably from
+> different disks anyway),
 
-diff --git a/include/linux/reiserfs_acl.h b/include/linux/reiserfs_acl.h
-index 52240e0..8cc6575 100644
---- a/include/linux/reiserfs_acl.h
-+++ b/include/linux/reiserfs_acl.h
-@@ -80,7 +80,8 @@ static inline int reiserfs_acl_chmod(struct inode *inode)
- }
- 
- static inline int
--reiserfs_inherit_default_acl(const struct inode *dir, struct dentry *dentry,
-+reiserfs_inherit_default_acl(struct reiserfs_transaction_handle *th,
-+			     const struct inode *dir, struct dentry *dentry,
- 			     struct inode *inode)
- {
- 	return 0;
+Why?  If you're starting a bunch of cookie-cutter guests, then you're 
+probably starting them from the same template image or COW block 
+devices.  (Also, if you're wearing the cost of physical IO anyway, then 
+additional cost of hashing is relatively small.)
+
+> but also in the BSS and possibly
+> even on the heap.
+
+Well, maybe.  Modern systems generally randomize memory layouts, so even 
+if they're semantically the same, the pointers will all have different 
+values.
+
+Other research into "sharing" mostly-similar pages is more promising for 
+that kind of case.
+
+> Eventually.  It starts out with hashing the first 128 (IIRC)
+> bytes of page content and comparing the hashes.  If that
+> matches, it will do content comparison.
+>
+> Content comparison is done in the background on the host.
+> I suspect (but have not checked) that it is somehow hooked
+> up to the page reclaim code on the host.
+
+Yeah, that's the straightforward approach; there's about a research 
+project/year doing a Xen implementation, but they never seem to get very 
+good results aside from very artificial test conditions.
+
+    J
+
