@@ -1,388 +1,607 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758285AbZC3SXc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758449AbZC3SYj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758285AbZC3SXc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Mar 2009 14:23:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755769AbZC3SQM
+	id S1758449AbZC3SYj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Mar 2009 14:24:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756142AbZC3SQV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Mar 2009 14:16:12 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:43356 "EHLO mx2.suse.de"
+	Mon, 30 Mar 2009 14:16:21 -0400
+Received: from cantor.suse.de ([195.135.220.2]:56609 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753659AbZC3SPU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Mar 2009 14:15:20 -0400
-Message-Id: <20090330181012.815543671@suse.com>
+	id S1753469AbZC3SPT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Mar 2009 14:15:19 -0400
+Message-Id: <20090330181012.538650518@suse.com>
 User-Agent: quilt/0.47-14.9
-Date: Mon, 30 Mar 2009 14:02:42 -0400
+Date: Mon, 30 Mar 2009 14:02:40 -0400
 From: Jeff Mahoney <jeffm@suse.com>
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Cc: Andrew Morton <akpm@linux-foundation.org>,
        Linus Torvalds <torvalds@linux-foundation.org>,
        ReiserFS Development List <reiserfs-devel@vger.kernel.org>
-Subject: [patch 27/35 code-cleanup] reiserfs: factor out buffer_info initialization
+Subject: [patch 25/35 xattr-rework] reiserfs: use generic readdir for operations across all xattrs
 References: <20090330180215.951354436@suse.com>
-Content-Disposition: inline; filename=patches.suse/reiserfs-simplify-buffer-info.diff
+Content-Disposition: inline; filename=patches.suse/reiserfs-kill-xattr-readdir.diff
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- This is the first in a series of patches to make balance_leaf() not quite
- so insane.
+ The current reiserfs xattr implementation open codes reiserfs_readdir and
+ frees the path before calling the filldir function. Typically, the filldir
+ function is something that modifies the file system, such as a chown or
+ an inode deletion that also require reading of an inode associated with each
+ direntry. Since the file system is modified, the path retained becomes
+ invalid for the next run. In addition, it runs backwards in attempt to
+ minimize activity.
 
- This patch factors out the open coded initializations of buffer_info
- structures and defines a few initializers for the 4 cases they're used.
+ This is clearly suboptimal from a code cleanliness perspective as well as
+ performance-wise.
+
+ This patch implements a generic reiserfs_for_each_xattr that uses the generic
+ readdir and a specific filldir routine that simply populates an array of
+ dentries and then performs a specific operation on them. When all files have
+ been operated on, it then calls the operation on the directory itself.
+
+ The result is a noticable code reduction and better performance.
 
 Signed-off-by: Jeff Mahoney <jeffm@suse.com>
 
----
- fs/reiserfs/do_balan.c |  175 ++++++++++++++++---------------------------------
- 1 file changed, 60 insertions(+), 115 deletions(-)
+--
+ fs/reiserfs/dir.c           |   28 +--
+ fs/reiserfs/xattr.c         |  402 ++++++++++++--------------------------------
+ include/linux/reiserfs_fs.h |    1 
+ 3 files changed, 131 insertions(+), 300 deletions(-)
 
---- a/fs/reiserfs/do_balan.c
-+++ b/fs/reiserfs/do_balan.c
-@@ -29,6 +29,43 @@ struct tree_balance *cur_tb = NULL;	/* d
- 					   is interrupting do_balance */
- #endif
+--- a/fs/reiserfs/dir.c
++++ b/fs/reiserfs/dir.c
+@@ -41,10 +41,10 @@ static int reiserfs_dir_fsync(struct fil
  
-+static inline void buffer_info_init_left(struct tree_balance *tb,
-+                                         struct buffer_info *bi)
-+{
-+	bi->tb          = tb;
-+	bi->bi_bh       = tb->L[0];
-+	bi->bi_parent   = tb->FL[0];
-+	bi->bi_position = get_left_neighbor_position(tb, 0);
-+}
-+
-+static inline void buffer_info_init_right(struct tree_balance *tb,
-+                                          struct buffer_info *bi)
-+{
-+	bi->tb          = tb;
-+	bi->bi_bh       = tb->R[0];
-+	bi->bi_parent   = tb->FR[0];
-+	bi->bi_position = get_right_neighbor_position(tb, 0);
-+}
-+
-+static inline void buffer_info_init_tbS0(struct tree_balance *tb,
-+                                         struct buffer_info *bi)
-+{
-+	bi->tb          = tb;
-+	bi->bi_bh        = PATH_PLAST_BUFFER(tb->tb_path);
-+	bi->bi_parent   = PATH_H_PPARENT(tb->tb_path, 0);
-+	bi->bi_position = PATH_H_POSITION(tb->tb_path, 1);
-+}
-+
-+static inline void buffer_info_init_bh(struct tree_balance *tb,
-+                                       struct buffer_info *bi,
-+                                       struct buffer_head *bh)
-+{
-+	bi->tb          = tb;
-+	bi->bi_bh       = bh;
-+	bi->bi_parent   = NULL;
-+	bi->bi_position = 0;
-+}
-+
- inline void do_balance_mark_leaf_dirty(struct tree_balance *tb,
- 				       struct buffer_head *bh, int flag)
+ #define store_ih(where,what) copy_item_head (where, what)
+ 
+-//
+-static int reiserfs_readdir(struct file *filp, void *dirent, filldir_t filldir)
++int reiserfs_readdir_dentry(struct dentry *dentry, void *dirent,
++			   filldir_t filldir, loff_t *pos)
  {
-@@ -86,6 +123,7 @@ static int balance_leaf_when_delete(stru
- 	       "PAP-12010: tree can not be empty");
+-	struct inode *inode = filp->f_path.dentry->d_inode;
++	struct inode *inode = dentry->d_inode;
+ 	struct cpu_key pos_key;	/* key of current position in the directory (key of directory entry) */
+ 	INITIALIZE_PATH(path_to_entry);
+ 	struct buffer_head *bh;
+@@ -64,13 +64,9 @@ static int reiserfs_readdir(struct file
  
- 	ih = B_N_PITEM_HEAD(tbS0, item_pos);
-+	buffer_info_init_tbS0(tb, &bi);
+ 	/* form key for search the next directory entry using f_pos field of
+ 	   file structure */
+-	make_cpu_key(&pos_key, inode,
+-		     (filp->f_pos) ? (filp->f_pos) : DOT_OFFSET, TYPE_DIRENTRY,
+-		     3);
++	make_cpu_key(&pos_key, inode, *pos ?: DOT_OFFSET, TYPE_DIRENTRY, 3);
+ 	next_pos = cpu_key_k_offset(&pos_key);
  
- 	/* Delete or truncate the item */
- 
-@@ -96,10 +134,6 @@ static int balance_leaf_when_delete(stru
- 		       "vs-12013: mode Delete, insert size %d, ih to be deleted %h",
- 		       -tb->insert_size[0], ih);
- 
--		bi.tb = tb;
--		bi.bi_bh = tbS0;
--		bi.bi_parent = PATH_H_PPARENT(tb->tb_path, 0);
--		bi.bi_position = PATH_H_POSITION(tb->tb_path, 1);
- 		leaf_delete_items(&bi, 0, item_pos, 1, -1);
- 
- 		if (!item_pos && tb->CFL[0]) {
-@@ -121,10 +155,6 @@ static int balance_leaf_when_delete(stru
- 		break;
- 
- 	case M_CUT:{		/* cut item in S[0] */
--			bi.tb = tb;
--			bi.bi_bh = tbS0;
--			bi.bi_parent = PATH_H_PPARENT(tb->tb_path, 0);
--			bi.bi_position = PATH_H_POSITION(tb->tb_path, 1);
- 			if (is_direntry_le_ih(ih)) {
- 
- 				/* UFS unlink semantics are such that you can only delete one directory entry at a time. */
-@@ -325,11 +355,7 @@ static int balance_leaf(struct tree_bala
- 					       ih_item_len(ih));
- 
- 					/* Insert new item into L[0] */
--					bi.tb = tb;
--					bi.bi_bh = tb->L[0];
--					bi.bi_parent = tb->FL[0];
--					bi.bi_position =
--					    get_left_neighbor_position(tb, 0);
-+					buffer_info_init_left(tb, &bi);
- 					leaf_insert_into_buf(&bi,
- 							     n + item_pos -
- 							     ret_val, ih, body,
-@@ -369,11 +395,7 @@ static int balance_leaf(struct tree_bala
- 					    leaf_shift_left(tb, tb->lnum[0] - 1,
- 							    tb->lbytes);
- 					/* Insert new item into L[0] */
--					bi.tb = tb;
--					bi.bi_bh = tb->L[0];
--					bi.bi_parent = tb->FL[0];
--					bi.bi_position =
--					    get_left_neighbor_position(tb, 0);
-+					buffer_info_init_left(tb, &bi);
- 					leaf_insert_into_buf(&bi,
- 							     n + item_pos -
- 							     ret_val, ih, body,
-@@ -429,13 +451,7 @@ static int balance_leaf(struct tree_bala
- 							}
- 
- 							/* Append given directory entry to directory item */
--							bi.tb = tb;
--							bi.bi_bh = tb->L[0];
--							bi.bi_parent =
--							    tb->FL[0];
--							bi.bi_position =
--							    get_left_neighbor_position
--							    (tb, 0);
-+							buffer_info_init_left(tb, &bi);
- 							leaf_paste_in_buffer
- 							    (&bi,
- 							     n + item_pos -
-@@ -523,13 +539,7 @@ static int balance_leaf(struct tree_bala
- 									     (tbS0,
- 									      item_pos)));
- 							/* Append to body of item in L[0] */
--							bi.tb = tb;
--							bi.bi_bh = tb->L[0];
--							bi.bi_parent =
--							    tb->FL[0];
--							bi.bi_position =
--							    get_left_neighbor_position
--							    (tb, 0);
-+							buffer_info_init_left(tb, &bi);
- 							leaf_paste_in_buffer
- 							    (&bi,
- 							     n + item_pos -
-@@ -680,11 +690,7 @@ static int balance_leaf(struct tree_bala
- 					    leaf_shift_left(tb, tb->lnum[0],
- 							    tb->lbytes);
- 					/* Append to body of item in L[0] */
--					bi.tb = tb;
--					bi.bi_bh = tb->L[0];
--					bi.bi_parent = tb->FL[0];
--					bi.bi_position =
--					    get_left_neighbor_position(tb, 0);
-+					buffer_info_init_left(tb, &bi);
- 					leaf_paste_in_buffer(&bi,
- 							     n + item_pos -
- 							     ret_val,
-@@ -776,11 +782,7 @@ static int balance_leaf(struct tree_bala
- 					set_le_ih_k_offset(ih, offset);
- 					put_ih_item_len(ih, tb->rbytes);
- 					/* Insert part of the item into R[0] */
--					bi.tb = tb;
--					bi.bi_bh = tb->R[0];
--					bi.bi_parent = tb->FR[0];
--					bi.bi_position =
--					    get_right_neighbor_position(tb, 0);
-+					buffer_info_init_right(tb, &bi);
- 					if ((old_len - tb->rbytes) > zeros_num) {
- 						r_zeros_number = 0;
- 						r_body =
-@@ -817,11 +819,7 @@ static int balance_leaf(struct tree_bala
- 							     tb->rnum[0] - 1,
- 							     tb->rbytes);
- 					/* Insert new item into R[0] */
--					bi.tb = tb;
--					bi.bi_bh = tb->R[0];
--					bi.bi_parent = tb->FR[0];
--					bi.bi_position =
--					    get_right_neighbor_position(tb, 0);
-+					buffer_info_init_right(tb, &bi);
- 					leaf_insert_into_buf(&bi,
- 							     item_pos - n +
- 							     tb->rnum[0] - 1,
-@@ -881,13 +879,7 @@ static int balance_leaf(struct tree_bala
- 							    pos_in_item -
- 							    entry_count +
- 							    tb->rbytes - 1;
--							bi.tb = tb;
--							bi.bi_bh = tb->R[0];
--							bi.bi_parent =
--							    tb->FR[0];
--							bi.bi_position =
--							    get_right_neighbor_position
--							    (tb, 0);
-+							buffer_info_init_right(tb, &bi);
- 							leaf_paste_in_buffer
- 							    (&bi, 0,
- 							     paste_entry_position,
-@@ -1018,12 +1010,7 @@ static int balance_leaf(struct tree_bala
- 						    (tb, tb->CFR[0], 0);
- 
- 						/* Append part of body into R[0] */
--						bi.tb = tb;
--						bi.bi_bh = tb->R[0];
--						bi.bi_parent = tb->FR[0];
--						bi.bi_position =
--						    get_right_neighbor_position
--						    (tb, 0);
-+						buffer_info_init_right(tb, &bi);
- 						if (n_rem > zeros_num) {
- 							r_zeros_number = 0;
- 							r_body =
-@@ -1070,12 +1057,7 @@ static int balance_leaf(struct tree_bala
- 							     tb->rbytes);
- 					/* append item in R[0] */
- 					if (pos_in_item >= 0) {
--						bi.tb = tb;
--						bi.bi_bh = tb->R[0];
--						bi.bi_parent = tb->FR[0];
--						bi.bi_position =
--						    get_right_neighbor_position
--						    (tb, 0);
-+						buffer_info_init_right(tb, &bi);
- 						leaf_paste_in_buffer(&bi,
- 								     item_pos -
- 								     n +
-@@ -1231,10 +1213,7 @@ static int balance_leaf(struct tree_bala
- 					put_ih_item_len(ih, sbytes[i]);
- 
- 					/* Insert part of the item into S_new[i] before 0-th item */
--					bi.tb = tb;
--					bi.bi_bh = S_new[i];
--					bi.bi_parent = NULL;
--					bi.bi_position = 0;
-+					buffer_info_init_bh(tb, &bi, S_new[i]);
- 
- 					if ((old_len - sbytes[i]) > zeros_num) {
- 						r_zeros_number = 0;
-@@ -1266,10 +1245,7 @@ static int balance_leaf(struct tree_bala
- 							S_new[i]);
- 
- 					/* Insert new item into S_new[i] */
--					bi.tb = tb;
--					bi.bi_bh = S_new[i];
--					bi.bi_parent = NULL;
--					bi.bi_position = 0;
-+					buffer_info_init_bh(tb, &bi, S_new[i]);
- 					leaf_insert_into_buf(&bi,
- 							     item_pos - n +
- 							     snum[i] - 1, ih,
-@@ -1326,10 +1302,7 @@ static int balance_leaf(struct tree_bala
- 							     sbytes[i] - 1,
- 							     S_new[i]);
- 							/* Paste given directory entry to directory item */
--							bi.tb = tb;
--							bi.bi_bh = S_new[i];
--							bi.bi_parent = NULL;
--							bi.bi_position = 0;
-+							buffer_info_init_bh(tb, &bi, S_new[i]);
- 							leaf_paste_in_buffer
- 							    (&bi, 0,
- 							     pos_in_item -
-@@ -1399,11 +1372,7 @@ static int balance_leaf(struct tree_bala
- 						if (n_rem < 0)
- 							n_rem = 0;
- 						/* Append part of body into S_new[0] */
--						bi.tb = tb;
--						bi.bi_bh = S_new[i];
--						bi.bi_parent = NULL;
--						bi.bi_position = 0;
+-	/*  reiserfs_warning (inode->i_sb, "reiserfs_readdir 1: f_pos = %Ld", filp->f_pos); */
 -
-+						buffer_info_init_bh(tb, &bi, S_new[i]);
- 						if (n_rem > zeros_num) {
- 							r_zeros_number = 0;
- 							r_body =
-@@ -1490,10 +1459,7 @@ static int balance_leaf(struct tree_bala
- 					       leaf_mi);
+ 	path_to_entry.reada = PATH_READA;
+ 	while (1) {
+ 	      research:
+@@ -144,7 +140,7 @@ static int reiserfs_readdir(struct file
+ 				/* Ignore the .reiserfs_priv entry */
+ 				if (reiserfs_xattrs(inode->i_sb) &&
+ 				    !old_format_only(inode->i_sb) &&
+-				    filp->f_path.dentry == inode->i_sb->s_root &&
++				    dentry == inode->i_sb->s_root &&
+ 				    REISERFS_SB(inode->i_sb)->priv_root &&
+ 				    REISERFS_SB(inode->i_sb)->priv_root->d_inode
+ 				    && deh_objectid(deh) ==
+@@ -156,7 +152,7 @@ static int reiserfs_readdir(struct file
+ 				}
  
- 					/* paste into item */
--					bi.tb = tb;
--					bi.bi_bh = S_new[i];
--					bi.bi_parent = NULL;
--					bi.bi_position = 0;
-+					buffer_info_init_bh(tb, &bi, S_new[i]);
- 					leaf_paste_in_buffer(&bi,
- 							     item_pos - n +
- 							     snum[i],
-@@ -1560,10 +1526,7 @@ static int balance_leaf(struct tree_bala
+ 				d_off = deh_offset(deh);
+-				filp->f_pos = d_off;
++				*pos = d_off;
+ 				d_ino = deh_objectid(deh);
+ 				if (d_reclen <= 32) {
+ 					local_buf = small_buf;
+@@ -223,15 +219,21 @@ static int reiserfs_readdir(struct file
  
- 		switch (flag) {
- 		case M_INSERT:	/* insert item into S[0] */
--			bi.tb = tb;
--			bi.bi_bh = tbS0;
--			bi.bi_parent = PATH_H_PPARENT(tb->tb_path, 0);
--			bi.bi_position = PATH_H_POSITION(tb->tb_path, 1);
-+			buffer_info_init_tbS0(tb, &bi);
- 			leaf_insert_into_buf(&bi, item_pos, ih, body,
- 					     zeros_num);
+ 	}			/* while */
  
-@@ -1590,14 +1553,7 @@ static int balance_leaf(struct tree_bala
- 						       "PAP-12260: insert_size is 0 already");
- 
- 						/* prepare space */
--						bi.tb = tb;
--						bi.bi_bh = tbS0;
--						bi.bi_parent =
--						    PATH_H_PPARENT(tb->tb_path,
--								   0);
--						bi.bi_position =
--						    PATH_H_POSITION(tb->tb_path,
--								    1);
-+						buffer_info_init_tbS0(tb, &bi);
- 						leaf_paste_in_buffer(&bi,
- 								     item_pos,
- 								     pos_in_item,
-@@ -1645,14 +1601,7 @@ static int balance_leaf(struct tree_bala
- 						RFALSE(tb->insert_size[0] <= 0,
- 						       "PAP-12275: insert size must not be %d",
- 						       tb->insert_size[0]);
--						bi.tb = tb;
--						bi.bi_bh = tbS0;
--						bi.bi_parent =
--						    PATH_H_PPARENT(tb->tb_path,
--								   0);
--						bi.bi_position =
--						    PATH_H_POSITION(tb->tb_path,
--								    1);
-+						buffer_info_init_tbS0(tb, &bi);
- 						leaf_paste_in_buffer(&bi,
- 								     item_pos,
- 								     pos_in_item,
-@@ -1725,7 +1674,6 @@ void make_empty_node(struct buffer_info
- struct buffer_head *get_FEB(struct tree_balance *tb)
- {
- 	int i;
--	struct buffer_head *first_b;
- 	struct buffer_info bi;
- 
- 	for (i = 0; i < MAX_FEB_SIZE; i++)
-@@ -1735,16 +1683,13 @@ struct buffer_head *get_FEB(struct tree_
- 	if (i == MAX_FEB_SIZE)
- 		reiserfs_panic(tb->tb_sb, "vs-12300", "FEB list is empty");
- 
--	bi.tb = tb;
--	bi.bi_bh = first_b = tb->FEB[i];
--	bi.bi_parent = NULL;
--	bi.bi_position = 0;
-+	buffer_info_init_bh(tb, &bi, tb->FEB[i]);
- 	make_empty_node(&bi);
--	set_buffer_uptodate(first_b);
-+	set_buffer_uptodate(tb->FEB[i]);
-+	tb->used[i] = tb->FEB[i];
- 	tb->FEB[i] = NULL;
--	tb->used[i] = first_b;
- 
--	return (first_b);
-+	return tb->used[i];
+-      end:
+-	filp->f_pos = next_pos;
++end:
++	*pos = next_pos;
+ 	pathrelse(&path_to_entry);
+ 	reiserfs_check_path(&path_to_entry);
+-      out:
++out:
+ 	reiserfs_write_unlock(inode->i_sb);
+ 	return ret;
  }
  
- /* This is now used because reiserfs_free_block has to be able to
++static int reiserfs_readdir(struct file *file, void *dirent, filldir_t filldir)
++{
++	struct dentry *dentry = file->f_path.dentry;
++	return reiserfs_readdir_dentry(dentry, dirent, filldir, &file->f_pos);
++}
++
+ /* compose directory item containing "." and ".." entries (entries are
+    not aligned to 4 byte boundary) */
+ /* the last four params are LE */
+--- a/fs/reiserfs/xattr.c
++++ b/fs/reiserfs/xattr.c
+@@ -167,218 +167,65 @@ static struct dentry *open_xa_dir(const
+ 
+ }
+ 
+-/*
+- * this is very similar to fs/reiserfs/dir.c:reiserfs_readdir, but
+- * we need to drop the path before calling the filldir struct.  That
+- * would be a big performance hit to the non-xattr case, so I've copied
+- * the whole thing for now. --clm
+- *
+- * the big difference is that I go backwards through the directory,
+- * and don't mess with f->f_pos, but the idea is the same.  Do some
+- * action on each and every entry in the directory.
+- *
+- * we're called with i_mutex held, so there are no worries about the directory
+- * changing underneath us.
+- */
+-static int __xattr_readdir(struct inode *inode, void *dirent, filldir_t filldir)
+-{
+-	struct cpu_key pos_key;	/* key of current position in the directory (key of directory entry) */
+-	INITIALIZE_PATH(path_to_entry);
+-	struct buffer_head *bh;
+-	int entry_num;
+-	struct item_head *ih, tmp_ih;
+-	int search_res;
+-	char *local_buf;
+-	loff_t next_pos;
+-	char small_buf[32];	/* avoid kmalloc if we can */
+-	struct reiserfs_de_head *deh;
+-	int d_reclen;
+-	char *d_name;
+-	off_t d_off;
+-	ino_t d_ino;
+-	struct reiserfs_dir_entry de;
+-
+-	/* form key for search the next directory entry using f_pos field of
+-	   file structure */
+-	next_pos = max_reiserfs_offset(inode);
+-
+-	while (1) {
+-	      research:
+-		if (next_pos <= DOT_DOT_OFFSET)
+-			break;
+-		make_cpu_key(&pos_key, inode, next_pos, TYPE_DIRENTRY, 3);
+-
+-		search_res =
+-		    search_by_entry_key(inode->i_sb, &pos_key, &path_to_entry,
+-					&de);
+-		if (search_res == IO_ERROR) {
+-			// FIXME: we could just skip part of directory which could
+-			// not be read
+-			pathrelse(&path_to_entry);
+-			return -EIO;
+-		}
+-
+-		if (search_res == NAME_NOT_FOUND)
+-			de.de_entry_num--;
+-
+-		set_de_name_and_namelen(&de);
+-		entry_num = de.de_entry_num;
+-		deh = &(de.de_deh[entry_num]);
+-
+-		bh = de.de_bh;
+-		ih = de.de_ih;
+-
+-		if (!is_direntry_le_ih(ih)) {
+-			reiserfs_error(inode->i_sb, "jdm-20000",
+-				       "not direntry %h", ih);
+-			break;
+-		}
+-		copy_item_head(&tmp_ih, ih);
+-
+-		/* we must have found item, that is item of this directory, */
+-		RFALSE(COMP_SHORT_KEYS(&(ih->ih_key), &pos_key),
+-		       "vs-9000: found item %h does not match to dir we readdir %K",
+-		       ih, &pos_key);
+-
+-		if (deh_offset(deh) <= DOT_DOT_OFFSET) {
+-			break;
+-		}
+-
+-		/* look for the previous entry in the directory */
+-		next_pos = deh_offset(deh) - 1;
+-
+-		if (!de_visible(deh))
+-			/* it is hidden entry */
+-			continue;
+-
+-		d_reclen = entry_length(bh, ih, entry_num);
+-		d_name = B_I_DEH_ENTRY_FILE_NAME(bh, ih, deh);
+-		d_off = deh_offset(deh);
+-		d_ino = deh_objectid(deh);
+-
+-		if (!d_name[d_reclen - 1])
+-			d_reclen = strlen(d_name);
+-
+-		if (d_reclen > REISERFS_MAX_NAME(inode->i_sb->s_blocksize)) {
+-			/* too big to send back to VFS */
+-			continue;
+-		}
+-
+-		/* Ignore the .reiserfs_priv entry */
+-		if (reiserfs_xattrs(inode->i_sb) &&
+-		    !old_format_only(inode->i_sb) &&
+-		    deh_objectid(deh) ==
+-		    le32_to_cpu(INODE_PKEY
+-				(REISERFS_SB(inode->i_sb)->priv_root->d_inode)->
+-				k_objectid))
+-			continue;
+-
+-		if (d_reclen <= 32) {
+-			local_buf = small_buf;
+-		} else {
+-			local_buf = kmalloc(d_reclen, GFP_NOFS);
+-			if (!local_buf) {
+-				pathrelse(&path_to_entry);
+-				return -ENOMEM;
+-			}
+-			if (item_moved(&tmp_ih, &path_to_entry)) {
+-				kfree(local_buf);
+-
+-				/* sigh, must retry.  Do this same offset again */
+-				next_pos = d_off;
+-				goto research;
+-			}
+-		}
+-
+-		// Note, that we copy name to user space via temporary
+-		// buffer (local_buf) because filldir will block if
+-		// user space buffer is swapped out. At that time
+-		// entry can move to somewhere else
+-		memcpy(local_buf, d_name, d_reclen);
+-
+-		/* the filldir function might need to start transactions,
+-		 * or do who knows what.  Release the path now that we've
+-		 * copied all the important stuff out of the deh
+-		 */
+-		pathrelse(&path_to_entry);
+-
+-		if (filldir(dirent, local_buf, d_reclen, d_off, d_ino,
+-			    DT_UNKNOWN) < 0) {
+-			if (local_buf != small_buf) {
+-				kfree(local_buf);
+-			}
+-			goto end;
+-		}
+-		if (local_buf != small_buf) {
+-			kfree(local_buf);
+-		}
+-	}			/* while */
+-
+-      end:
+-	pathrelse(&path_to_entry);
+-	return 0;
+-}
+-
+-/*
+- * this could be done with dedicated readdir ops for the xattr files,
+- * but I want to get something working asap
+- * this is stolen from vfs_readdir
+- *
+- */
+-static
+-int xattr_readdir(struct inode *inode, filldir_t filler, void *buf)
+-{
+-	int res = -ENOENT;
+-	if (!IS_DEADDIR(inode)) {
+-		lock_kernel();
+-		res = __xattr_readdir(inode, buf, filler);
+-		unlock_kernel();
+-	}
+-	return res;
+-}
+-
+ /* The following are side effects of other operations that aren't explicitly
+  * modifying extended attributes. This includes operations such as permissions
+  * or ownership changes, object deletions, etc. */
++struct reiserfs_dentry_buf {
++	struct dentry *xadir;
++	int count;
++	struct dentry *dentries[8];
++};
+ 
+ static int
+-reiserfs_delete_xattrs_filler(void *buf, const char *name, int namelen,
+-			      loff_t offset, u64 ino, unsigned int d_type)
++fill_with_dentries(void *buf, const char *name, int namelen, loff_t offset,
++		    u64 ino, unsigned int d_type)
+ {
+-	struct dentry *xadir = (struct dentry *)buf;
++	struct reiserfs_dentry_buf *dbuf = buf;
+ 	struct dentry *dentry;
+-	int err = 0;
+ 
+-	dentry = lookup_one_len(name, xadir, namelen);
++	if (dbuf->count == ARRAY_SIZE(dbuf->dentries))
++		return -ENOSPC;
++
++	if (name[0] == '.' && (name[1] == '\0' ||
++			       (name[1] == '.' && name[2] == '\0')))
++		return 0;
++
++	dentry = lookup_one_len(name, dbuf->xadir, namelen);
+ 	if (IS_ERR(dentry)) {
+-		err = PTR_ERR(dentry);
+-		goto out;
++		return PTR_ERR(dentry);
+ 	} else if (!dentry->d_inode) {
+-		err = -ENODATA;
+-		goto out_file;
++		/* A directory entry exists, but no file? */
++		reiserfs_error(dentry->d_sb, "xattr-20003",
++			       "Corrupted directory: xattr %s listed but "
++			       "not found for file %s.\n",
++			       dentry->d_name.name, dbuf->xadir->d_name.name);
++		dput(dentry);
++		return -EIO;
+ 	}
+ 
+-	/* Skip directories.. */
+-	if (S_ISDIR(dentry->d_inode->i_mode))
+-		goto out_file;
+-
+-	err = xattr_unlink(xadir->d_inode, dentry);
+-
+-out_file:
+-	dput(dentry);
++	dbuf->dentries[dbuf->count++] = dentry;
++	return 0;
++}
+ 
+-out:
+-	return err;
++static void
++cleanup_dentry_buf(struct reiserfs_dentry_buf *buf)
++{
++	int i;
++	for (i = 0; i < buf->count; i++)
++		if (buf->dentries[i])
++			dput(buf->dentries[i]);
+ }
+ 
+-/* This is called w/ inode->i_mutex downed */
+-int reiserfs_delete_xattrs(struct inode *inode)
++static int reiserfs_for_each_xattr(struct inode *inode,
++				   int (*action)(struct dentry *, void *),
++				   void *data)
+ {
+-	int err = -ENODATA;
+-	struct dentry *dir, *root;
+-	struct reiserfs_transaction_handle th;
+-	int blocks = JOURNAL_PER_BALANCE_CNT * 2 + 2 +
+-		     4 * REISERFS_QUOTA_TRANS_BLOCKS(inode->i_sb);
++	struct dentry *dir;
++	int i, err = 0;
++	loff_t pos = 0;
++	struct reiserfs_dentry_buf buf = {
++		.count = 0,
++	};
+ 
+ 	/* Skip out, an xattr has no xattrs associated with it */
+ 	if (IS_PRIVATE(inode) || get_inode_sd_version(inode) == STAT_DATA_V1)
+@@ -389,117 +236,97 @@ int reiserfs_delete_xattrs(struct inode
+ 		err = PTR_ERR(dir);
+ 		goto out;
+ 	} else if (!dir->d_inode) {
+-		dput(dir);
+-		goto out;
++		err = 0;
++		goto out_dir;
+ 	}
+ 
+ 	mutex_lock_nested(&dir->d_inode->i_mutex, I_MUTEX_XATTR);
+-	err = xattr_readdir(dir->d_inode, reiserfs_delete_xattrs_filler, dir);
+-	mutex_unlock(&dir->d_inode->i_mutex);
+-	if (err) {
+-		dput(dir);
+-		goto out;
++	buf.xadir = dir;
++	err = reiserfs_readdir_dentry(dir, &buf, fill_with_dentries, &pos);
++	while ((err == 0 || err == -ENOSPC) && buf.count) {
++		err = 0;
++
++		for (i = 0; i < buf.count && buf.dentries[i]; i++) {
++			int lerr = 0;
++			struct dentry *dentry = buf.dentries[i];
++
++			if (err == 0 && !S_ISDIR(dentry->d_inode->i_mode))
++				lerr = action(dentry, data);
++
++			dput(dentry);
++			buf.dentries[i] = NULL;
++			err = lerr ?: err;
++		}
++		buf.count = 0;
++		if (!err)
++			err = reiserfs_readdir_dentry(dir, &buf,
++						      fill_with_dentries, &pos);
+ 	}
++	mutex_unlock(&dir->d_inode->i_mutex);
+ 
+-	root = dget(dir->d_parent);
+-	dput(dir);
++	/* Clean up after a failed readdir */
++	cleanup_dentry_buf(&buf);
+ 
+-	/* We start a transaction here to avoid a ABBA situation
+-	 * between the xattr root's i_mutex and the journal lock.
+-	 * Inode creation will inherit an ACL, which requires a
+-	 * lookup. The lookup locks the xattr root i_mutex with a
+-	 * transaction open.  Inode deletion takes teh xattr root
+-	 * i_mutex to delete the directory and then starts a
+-	 * transaction inside it. Boom. This doesn't incur much
+-	 * additional overhead since the reiserfs_rmdir transaction
+-	 * will just nest inside the outer transaction. */
+-	err = journal_begin(&th, inode->i_sb, blocks);
+ 	if (!err) {
+-		int jerror;
+-		mutex_lock_nested(&root->d_inode->i_mutex, I_MUTEX_XATTR);
+-		err = xattr_rmdir(root->d_inode, dir);
+-		jerror = journal_end(&th, inode->i_sb, blocks);
+-		mutex_unlock(&root->d_inode->i_mutex);
+-		err = jerror ?: err;
++		/* We start a transaction here to avoid a ABBA situation
++		 * between the xattr root's i_mutex and the journal lock.
++		 * This doesn't incur much additional overhead since the
++		 * new transaction will just nest inside the
++		 * outer transaction. */
++		int blocks = JOURNAL_PER_BALANCE_CNT * 2 + 2 +
++			     4 * REISERFS_QUOTA_TRANS_BLOCKS(inode->i_sb);
++		struct reiserfs_transaction_handle th;
++		err = journal_begin(&th, inode->i_sb, blocks);
++		if (!err) {
++			int jerror;
++			mutex_lock_nested(&dir->d_parent->d_inode->i_mutex,
++					  I_MUTEX_XATTR);
++			err = action(dir, data);
++			jerror = journal_end(&th, inode->i_sb, blocks);
++			mutex_unlock(&dir->d_parent->d_inode->i_mutex);
++			err = jerror ?: err;
++		}
+ 	}
+-
+-	dput(root);
++out_dir:
++	dput(dir);
+ out:
+-	if (err)
+-		reiserfs_warning(inode->i_sb, "jdm-20004",
+-				 "Couldn't remove all xattrs (%d)\n", err);
++	/* -ENODATA isn't an error */
++	if (err == -ENODATA)
++		err = 0;
+ 	return err;
+ }
+ 
+-struct reiserfs_chown_buf {
+-	struct inode *inode;
+-	struct dentry *xadir;
+-	struct iattr *attrs;
+-};
+-
+-/* XXX: If there is a better way to do this, I'd love to hear about it */
+-static int
+-reiserfs_chown_xattrs_filler(void *buf, const char *name, int namelen,
+-			     loff_t offset, u64 ino, unsigned int d_type)
++static int delete_one_xattr(struct dentry *dentry, void *data)
+ {
+-	struct reiserfs_chown_buf *chown_buf = (struct reiserfs_chown_buf *)buf;
+-	struct dentry *xafile, *xadir = chown_buf->xadir;
+-	struct iattr *attrs = chown_buf->attrs;
+-	int err = 0;
++	struct inode *dir = dentry->d_parent->d_inode;
+ 
+-	xafile = lookup_one_len(name, xadir, namelen);
+-	if (IS_ERR(xafile))
+-		return PTR_ERR(xafile);
+-	else if (!xafile->d_inode) {
+-		dput(xafile);
+-		return -ENODATA;
+-	}
++	/* This is the xattr dir, handle specially. */
++	if (S_ISDIR(dentry->d_inode->i_mode))
++		return xattr_rmdir(dir, dentry);
+ 
+-	if (!S_ISDIR(xafile->d_inode->i_mode)) {
+-		mutex_lock_nested(&xafile->d_inode->i_mutex, I_MUTEX_CHILD);
+-		err = reiserfs_setattr(xafile, attrs);
+-		mutex_unlock(&xafile->d_inode->i_mutex);
+-	}
+-	dput(xafile);
++	return xattr_unlink(dir, dentry);
++}
+ 
++static int chown_one_xattr(struct dentry *dentry, void *data)
++{
++	struct iattr *attrs = data;
++	return reiserfs_setattr(dentry, attrs);
++}
++
++/* No i_mutex, but the inode is unconnected. */
++int reiserfs_delete_xattrs(struct inode *inode)
++{
++	int err = reiserfs_for_each_xattr(inode, delete_one_xattr, NULL);
++	if (err)
++		reiserfs_warning(inode->i_sb, "jdm-20004",
++				 "Couldn't delete all xattrs (%d)\n", err);
+ 	return err;
+ }
+ 
++/* inode->i_mutex: down */
+ int reiserfs_chown_xattrs(struct inode *inode, struct iattr *attrs)
+ {
+-	struct dentry *dir;
+-	int err = 0;
+-	struct reiserfs_chown_buf buf;
+-	unsigned int ia_valid = attrs->ia_valid;
+-
+-	/* Skip out, an xattr has no xattrs associated with it */
+-	if (IS_PRIVATE(inode) || get_inode_sd_version(inode) == STAT_DATA_V1)
+-		return 0;
+-
+-	dir = open_xa_dir(inode, XATTR_REPLACE);
+-	if (IS_ERR(dir)) {
+-		if (PTR_ERR(dir) != -ENODATA)
+-			err = PTR_ERR(dir);
+-		goto out;
+-	} else if (!dir->d_inode)
+-		goto out_dir;
+-
+-	attrs->ia_valid &= (ATTR_UID | ATTR_GID | ATTR_CTIME);
+-	buf.xadir = dir;
+-	buf.attrs = attrs;
+-	buf.inode = inode;
+-
+-	mutex_lock_nested(&dir->d_inode->i_mutex, I_MUTEX_XATTR);
+-	err = xattr_readdir(dir->d_inode, reiserfs_chown_xattrs_filler, &buf);
+-
+-	if (!err)
+-		err = reiserfs_setattr(dir, attrs);
+-	mutex_unlock(&dir->d_inode->i_mutex);
+-
+-	attrs->ia_valid = ia_valid;
+-out_dir:
+-	dput(dir);
+-out:
++	int err = reiserfs_for_each_xattr(inode, chown_one_xattr, attrs);
+ 	if (err)
+ 		reiserfs_warning(inode->i_sb, "jdm-20007",
+ 				 "Couldn't chown all xattrs (%d)\n", err);
+@@ -1004,6 +831,7 @@ ssize_t reiserfs_listxattr(struct dentry
+ {
+ 	struct dentry *dir;
+ 	int err = 0;
++	loff_t pos = 0;
+ 	struct listxattr_buf buf = {
+ 		.inode = dentry->d_inode,
+ 		.buf = buffer,
+@@ -1026,7 +854,7 @@ ssize_t reiserfs_listxattr(struct dentry
+ 	}
+ 
+ 	mutex_lock_nested(&dir->d_inode->i_mutex, I_MUTEX_XATTR);
+-	err = xattr_readdir(dir->d_inode, listxattr_filler, &buf);
++	err = reiserfs_readdir_dentry(dir, &buf, listxattr_filler, &pos);
+ 	mutex_unlock(&dir->d_inode->i_mutex);
+ 
+ 	if (!err)
+--- a/include/linux/reiserfs_fs.h
++++ b/include/linux/reiserfs_fs.h
+@@ -1984,6 +1984,7 @@ extern const struct inode_operations rei
+ extern const struct inode_operations reiserfs_symlink_inode_operations;
+ extern const struct inode_operations reiserfs_special_inode_operations;
+ extern const struct file_operations reiserfs_dir_operations;
++int reiserfs_readdir_dentry(struct dentry *, void *, filldir_t, loff_t *);
+ 
+ /* tail_conversion.c */
+ int direct2indirect(struct reiserfs_transaction_handle *, struct inode *,
 
 
