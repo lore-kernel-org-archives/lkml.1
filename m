@@ -1,303 +1,150 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758186AbZC3RQ2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753919AbZC3RQp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758186AbZC3RQ2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Mar 2009 13:16:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753192AbZC3RLd
+	id S1753919AbZC3RQp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Mar 2009 13:16:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755998AbZC3RLw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Mar 2009 13:11:33 -0400
-Received: from casper.infradead.org ([85.118.1.10]:49751 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753797AbZC3RLb (ORCPT
+	Mon, 30 Mar 2009 13:11:52 -0400
+Received: from smtp-vbr12.xs4all.nl ([194.109.24.32]:3039 "EHLO
+	smtp-vbr12.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756000AbZC3RLv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Mar 2009 13:11:31 -0400
-Message-Id: <20090330171023.417259499@chello.nl>
-References: <20090330170701.856843742@chello.nl>
-User-Agent: quilt/0.46-1
-Date: Mon, 30 Mar 2009 19:07:05 +0200
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
-Cc: Paul Mackerras <paulus@samba.org>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH 04/15] perf_counter: executable mmap() information
-Content-Disposition: inline; filename=perf_counter-mmap-tracking.patch
-X-Bad-Reply: References but no 'Re:' in Subject.
+	Mon, 30 Mar 2009 13:11:51 -0400
+From: Hans Verkuil <hverkuil@xs4all.nl>
+To: Mark Lord <lkml@rtr.ca>
+Subject: Re: bttv ir patch from Mark Lord
+Date: Mon, 30 Mar 2009 19:11:40 +0200
+User-Agent: KMail/1.9.9
+Cc: Michael Krufky <mkrufky@linuxtv.org>, linux-media@vger.kernel.org,
+       Linux Kernel <linux-kernel@vger.kernel.org>
+References: <200903301835.55023.hverkuil@xs4all.nl> <49D0FBCE.8050408@rtr.ca> <49D0FC14.6010109@rtr.ca>
+In-Reply-To: <49D0FC14.6010109@rtr.ca>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200903301911.40249.hverkuil@xs4all.nl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Currently the profiling information returns userspace IPs but no way
-to correlate them to userspace code. Userspace could look into
-/proc/$pid/maps but that might not be current or even present anymore
-at the time of analyzing the IPs.
+On Monday 30 March 2009 19:06:28 Mark Lord wrote:
+> Michael Krufky wrote:
+> > Mark Lord wrote:
+> >> Michael Krufky wrote:
+> >>> Hans Verkuil wrote:
+> >>>> Hi Mike,
+> >>>>
+> >>>> The attached patch should be queued for 2.6.29.X. It corresponds to
+> >>>> changeset 11098 (v4l2-common: remove incorrect MODULE test) in our
+> >>>> v4l-dvb tree and is part of the initial set of git patches going
+> >>>> into 2.6.30.
+> >>>>
+> >>>> Without this patch loading ivtv as a module while v4l2-common is
+> >>>> compiled into the kernel will cause a delayed load of the i2c
+> >>>> modules that ivtv needs since request_module is never called
+> >>>> directly.
+> >>>>
+> >>>> While it is nice to see the delayed load in action, it is not so
+> >>>> nice in that ivtv fails to do a lot of necessary i2c initializations
+> >>>> and will oops later on with a division-by-zero.
+> >>>>
+> >>>> Thanks to Mark Lord for reporting this and helping me figure out
+> >>>> what was wrong.
+> >>>>
+> >>>> Regards,
+> >>>>
+> >>>>     Hans
+> >>>
+> >>> Got it, thanks.
+> >>>
+> >>> In the future, please point to hash codes rather than revision ID's
+> >>> -- my rev IDs are not the same as yours, but hash codes are always
+> >>> unique.
+> >>>
+> >>> I'll queue this the moment Linus merges Mauro's pending request.
+> >>
+> >> ..
+> >>
+> >> Can either of you guys figure out how to get this patch (or something
+> >> equivalent) merged?  It's been pending for some time now.
+> >>
+> >> Thanks.
+> >>
+> >> Message-ID: <49884CCB.3070309@rtr.ca>
+> >> Date: Tue, 03 Feb 2009 08:55:23 -0500
+> >> From: Mark Lord <lkml@rtr.ca>
+> >> MIME-Version: 1.0
+> >> To: video4linux-list@redhat.com, Linux Kernel
+> >> <linux-kernel@vger.kernel.org> Subject: [PATCH] ir-kbd-i2c: support
+> >> Hauppauge HVR-1600 R/C port Content-Type: text/plain; charset=UTF-8;
+> >> format=flowed
+> >> Content-Transfer-Encoding: 7bit
+> >>
+> >> (resending, with video4linux-list@redhat.com this time)
+> >>
+> >> Update the ir-kbd-i2c driver to recognize the remote-control port
+> >> on the Hauppauge HV-1600 hybrid tuner card.
+> >>
+> >> Signed-off-by: Mark Lord <mlord@pobox.com>
+> >>
+> >> --- old/drivers/media/video/ir-kbd-i2c.c    2008-12-24
+> >> 18:26:37.000000000 -0500 +++ linux/drivers/media/video/ir-kbd-i2c.c   
+> >> 2009-02-01 13:08:19.000000000 -0500 @@ -354,6 +354,11 @@
+> >>             } else {
+> >>                 ir_codes    = ir_codes_rc5_tv;
+> >>             }
+> >> +        } else if (adap->id == I2C_HW_B_CX2341X) {
+> >> +            name        = "Hauppauge";
+> >> +            ir_type     = IR_TYPE_RC5;
+> >> +            ir->get_key = get_key_haup_xvr;
+> >> +            ir_codes    = ir_codes_hauppauge_new;
+> >>         } else {
+> >>             /* Handled by saa7134-input */
+> >>             name        = "SAA713x remote";
+> >> @@ -449,7 +454,7 @@
+> >>        That's why we probe 0x1a (~0x34) first. CB
+> >>     */
+> >>
+> >> -    static const int probe_bttv[] = { 0x1a, 0x18, 0x4b, 0x64, 0x30,
+> >> -1}; +    static const int probe_bttv[] = { 0x1a, 0x18, 0x4b, 0x64,
+> >> 0x30, 0x71, -1}; static const int probe_saa7134[] = { 0x7a, 0x47,
+> >> 0x71, 0x2d, -1 }; static const int probe_em28XX[] = { 0x30, 0x47, -1
+> >> };
+> >>     static const int probe_cx88[] = { 0x18, 0x6b, 0x71, -1 };
+> >
+> > looks like a zilog, and you should use LIRC for that.
+>
+> ..
+>
+> It's a Hauppauge remote port, just like the one on the (supported)
+> PVR-250. And I don't want the LIRC monstrosity when there's a perfectly
+> good kernel driver to run it directly.  The patch does not prevent others
+> from using LIRC.
+>
+> > PLEASE  DO NOT HIJAAK unrelated threads with unrelated emails.
+>
+> ..
+>
+> "Hijack", not "HIJAAK".   :)
+>
+> Resending to copy linux-kernel again.
+> Please do not edit/delete lists from the email headers, thanks.
+>
+> thanks.
 
-Therefore provide means to track the mmap information and provide it
-in the output stream.
+It's best to wait a bit. Jean Delvare is working on this ir-kbd-i2c driver 
+right now and when he's finished it should be much easier to add this. Most 
+importantly you can add this new i2c address to the cx18 driver rather than 
+add it to the probe_bttv list, which is rather overloaded anyway.
 
-XXX: only covers mmap()/munmap(), mremap() and mprotect() are missing.
+He should be finished within 1-3 weeks I guess. Probably sooner rather than 
+later. Just watch the linux-media list for it.
 
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-CC: Andrew Morton <akpm@linux-foundation.org>
----
- include/linux/perf_counter.h |   24 ++++++-
- kernel/perf_counter.c        |  145 +++++++++++++++++++++++++++++++++++++++++++
- mm/mmap.c                    |   10 ++
- 3 files changed, 177 insertions(+), 2 deletions(-)
+Regards,
 
-Index: linux-2.6/include/linux/perf_counter.h
-===================================================================
---- linux-2.6.orig/include/linux/perf_counter.h
-+++ linux-2.6/include/linux/perf_counter.h
-@@ -137,9 +137,11 @@ struct perf_counter_hw_event {
- 				exclude_kernel :  1, /* ditto kernel          */
- 				exclude_hv     :  1, /* ditto hypervisor      */
- 				exclude_idle   :  1, /* don't count when idle */
--				include_tid    :  1, /* include the tid */
-+				include_tid    :  1, /* include the tid       */
-+				mmap           :  1, /* include mmap data     */
-+				munmap         :  1, /* include munmap data   */
- 
--				__reserved_1   : 54;
-+				__reserved_1   : 52;
- 
- 	__u32			extra_config_len;
- 	__u32			__reserved_4;
-@@ -211,6 +213,9 @@ enum perf_event_type {
- 	PERF_EVENT_IP		= 0,
- 	PERF_EVENT_GROUP	= 1,
- 
-+	PERF_EVENT_MMAP		= 2,
-+	PERF_EVENT_MUNMAP	= 3,
-+
- 	__PERF_EVENT_TID	= 0x100,
- };
- 
-@@ -491,6 +496,12 @@ static inline int is_software_counter(st
- 
- extern void perf_swcounter_event(u32, u64, int, struct pt_regs *);
- 
-+extern void perf_counter_mmap(unsigned long addr, unsigned long len,
-+			      unsigned long pgoff, struct file *file);
-+
-+extern void perf_counter_munmap(unsigned long addr, unsigned long len,
-+				unsigned long pgoff, struct file *file);
-+
- #else
- static inline void
- perf_counter_task_sched_in(struct task_struct *task, int cpu)		{ }
-@@ -511,6 +522,15 @@ static inline int perf_counter_task_enab
- static inline void
- perf_swcounter_event(u32 event, u64 nr, int nmi, struct pt_regs *regs)	{ }
- 
-+
-+static inline void
-+perf_counter_mmap(unsigned long addr, unsigned long len,
-+		  unsigned long pgoff, struct file *file)		{ }
-+
-+static inline void
-+perf_counter_munmap(unsigned long addr, unsigned long len,
-+		    unsigned long pgoff, struct file *file) 		{ }
-+
- #endif
- 
- #endif /* __KERNEL__ */
-Index: linux-2.6/kernel/perf_counter.c
-===================================================================
---- linux-2.6.orig/kernel/perf_counter.c
-+++ linux-2.6/kernel/perf_counter.c
-@@ -25,6 +25,7 @@
- #include <linux/anon_inodes.h>
- #include <linux/kernel_stat.h>
- #include <linux/perf_counter.h>
-+#include <linux/dcache.h>
- 
- #include <asm/irq_regs.h>
- 
-@@ -1842,6 +1843,150 @@ void perf_counter_output(struct perf_cou
- }
- 
- /*
-+ * mmap tracking
-+ */
-+
-+struct perf_mmap_event {
-+	struct file	*file;
-+	char		*file_name;
-+	int		file_size;
-+
-+	struct {
-+		struct perf_event_header	header;
-+
-+		u32				pid;
-+		u32				tid;
-+		u64				start;
-+		u64				len;
-+		u64				pgoff;
-+	} event;
-+};
-+
-+static void perf_counter_mmap_output(struct perf_counter *counter,
-+				     struct perf_mmap_event *mmap_event)
-+{
-+	struct perf_output_handle handle;
-+	int size = mmap_event->event.header.size;
-+	int ret = perf_output_begin(&handle, counter, size);
-+
-+	if (ret)
-+		return;
-+
-+	perf_output_put(&handle, mmap_event->event);
-+	perf_output_copy(&handle, mmap_event->file_name,
-+				   mmap_event->file_size);
-+	perf_output_end(&handle, 0);
-+}
-+
-+static int perf_counter_mmap_match(struct perf_counter *counter,
-+				   struct perf_mmap_event *mmap_event)
-+{
-+	if (counter->hw_event.mmap &&
-+	    mmap_event->event.header.type == PERF_EVENT_MMAP)
-+		return 1;
-+
-+	if (counter->hw_event.munmap &&
-+	    mmap_event->event.header.type == PERF_EVENT_MUNMAP)
-+		return 1;
-+
-+	return 0;
-+}
-+
-+static void perf_counter_mmap_ctx(struct perf_counter_context *ctx,
-+				  struct perf_mmap_event *mmap_event)
-+{
-+	struct perf_counter *counter;
-+
-+	if (system_state != SYSTEM_RUNNING || list_empty(&ctx->event_list))
-+		return;
-+
-+	rcu_read_lock();
-+	list_for_each_entry_rcu(counter, &ctx->event_list, event_entry) {
-+		if (perf_counter_mmap_match(counter, mmap_event))
-+			perf_counter_mmap_output(counter, mmap_event);
-+	}
-+	rcu_read_unlock();
-+}
-+
-+static void perf_counter_mmap_event(struct perf_mmap_event *mmap_event)
-+{
-+	struct perf_cpu_context *cpuctx;
-+	struct file *file = mmap_event->file;
-+	unsigned int size;
-+	char tmp[16];
-+	char *buf = NULL;
-+	char *name;
-+
-+	if (file) {
-+		buf = kzalloc(PATH_MAX, GFP_KERNEL);
-+		if (!buf) {
-+			name = strncpy(tmp, "//enomem", sizeof(tmp));
-+			goto got_name;
-+		}
-+		name = dentry_path(file->f_dentry, buf, PATH_MAX);
-+		if (IS_ERR(name)) {
-+			name = strncpy(tmp, "//toolong", sizeof(tmp));
-+			goto got_name;
-+		}
-+	} else {
-+		name = strncpy(tmp, "//anon", sizeof(tmp));
-+		goto got_name;
-+	}
-+
-+got_name:
-+	size = ALIGN(strlen(name), sizeof(u64));
-+
-+	mmap_event->file_name = name;
-+	mmap_event->file_size = size;
-+
-+	mmap_event->event.header.size = sizeof(mmap_event->event) + size;
-+
-+	cpuctx = &get_cpu_var(perf_cpu_context);
-+	perf_counter_mmap_ctx(&cpuctx->ctx, mmap_event);
-+	put_cpu_var(perf_cpu_context);
-+
-+	perf_counter_mmap_ctx(&current->perf_counter_ctx, mmap_event);
-+
-+	kfree(buf);
-+}
-+
-+void perf_counter_mmap(unsigned long addr, unsigned long len,
-+		       unsigned long pgoff, struct file *file)
-+{
-+	struct perf_mmap_event mmap_event = {
-+		.file   = file,
-+		.event  = {
-+			.header = { .type = PERF_EVENT_MMAP, },
-+			.pid	= current->group_leader->pid,
-+			.tid	= current->pid,
-+			.start  = addr,
-+			.len    = len,
-+			.pgoff  = pgoff,
-+		},
-+	};
-+
-+	perf_counter_mmap_event(&mmap_event);
-+}
-+
-+void perf_counter_munmap(unsigned long addr, unsigned long len,
-+			 unsigned long pgoff, struct file *file)
-+{
-+	struct perf_mmap_event mmap_event = {
-+		.file   = file,
-+		.event  = {
-+			.header = { .type = PERF_EVENT_MUNMAP, },
-+			.pid	= current->group_leader->pid,
-+			.tid	= current->pid,
-+			.start  = addr,
-+			.len    = len,
-+			.pgoff  = pgoff,
-+		},
-+	};
-+
-+	perf_counter_mmap_event(&mmap_event);
-+}
-+
-+/*
-  * Generic software counter infrastructure
-  */
- 
-Index: linux-2.6/mm/mmap.c
-===================================================================
---- linux-2.6.orig/mm/mmap.c
-+++ linux-2.6/mm/mmap.c
-@@ -27,6 +27,7 @@
- #include <linux/mempolicy.h>
- #include <linux/rmap.h>
- #include <linux/mmu_notifier.h>
-+#include <linux/perf_counter.h>
- 
- #include <asm/uaccess.h>
- #include <asm/cacheflush.h>
-@@ -1219,6 +1220,9 @@ munmap_back:
- 	if (correct_wcount)
- 		atomic_inc(&inode->i_writecount);
- out:
-+	if (vm_flags & VM_EXEC)
-+		perf_counter_mmap(addr, len, pgoff, file);
-+
- 	mm->total_vm += len >> PAGE_SHIFT;
- 	vm_stat_account(mm, vm_flags, file, len >> PAGE_SHIFT);
- 	if (vm_flags & VM_LOCKED) {
-@@ -1752,6 +1756,12 @@ static void remove_vma_list(struct mm_st
- 	do {
- 		long nrpages = vma_pages(vma);
- 
-+		if (vma->vm_flags & VM_EXEC) {
-+			perf_counter_munmap(vma->vm_start,
-+					nrpages << PAGE_SHIFT,
-+					vma->vm_pgoff, vma->vm_file);
-+		}
-+
- 		mm->total_vm -= nrpages;
- 		vm_stat_account(mm, vma->vm_flags, vma->vm_file, -nrpages);
- 		vma = remove_vma(vma);
+	Hans
 
 -- 
-
+Hans Verkuil - video4linux developer - sponsored by TANDBERG
