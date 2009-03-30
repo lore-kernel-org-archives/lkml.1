@@ -1,78 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757656AbZC3DbG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758174AbZC3DqY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757656AbZC3DbG (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Mar 2009 23:31:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754425AbZC3Day
+	id S1758174AbZC3DqY (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Mar 2009 23:46:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754302AbZC3DqR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Mar 2009 23:30:54 -0400
-Received: from THUNK.ORG ([69.25.196.29]:34017 "EHLO thunker.thunk.org"
+	Sun, 29 Mar 2009 23:46:17 -0400
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:48801 "EHLO e1.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754084AbZC3Dax (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Mar 2009 23:30:53 -0400
-Date: Sun, 29 Mar 2009 23:28:27 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: Trenton Adams <trenton.d.adams@gmail.com>
-Cc: Mark Lord <lkml@rtr.ca>, Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Jeff Garzik <jeff@garzik.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Matthew Garrett <mjg59@srcf.ucam.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Rees <drees76@gmail.com>, Jesper Krogh <jesper@krogh.cc>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.29
-Message-ID: <20090330032827.GD13356@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Trenton Adams <trenton.d.adams@gmail.com>, Mark Lord <lkml@rtr.ca>,
-	Stefan Richter <stefanr@s5r6.in-berlin.de>,
-	Jeff Garzik <jeff@garzik.org>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Matthew Garrett <mjg59@srcf.ucam.org>,
-	Alan Cox <alan@lxorguk.ukuu.org.uk>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	David Rees <drees76@gmail.com>, Jesper Krogh <jesper@krogh.cc>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-References: <49CD7B10.7010601@garzik.org> <49CD891A.7030103@rtr.ca> <49CD9047.4060500@garzik.org> <49CE2633.2000903@s5r6.in-berlin.de> <49CE3186.8090903@garzik.org> <49CE35AE.1080702@s5r6.in-berlin.de> <49CE3F74.6090103@rtr.ca> <20090329231451.GR26138@disturbed> <20090330003948.GA13356@mit.edu> <9b1675090903291829u7a69df36m65b6698290773859@mail.gmail.com>
+	id S1754084AbZC3DqQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Mar 2009 23:46:16 -0400
+Date: Sun, 29 Mar 2009 20:45:57 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: linux-kernel@vger.kernel.org, Josh Triplett <josh@freedesktop.org>
+Subject: Re: [PATCH 8/10] cpumask: convert rcutorture.c
+Message-ID: <20090330034557.GM11362@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20090329020404.9D073DDECF@ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <9b1675090903291829u7a69df36m65b6698290773859@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+In-Reply-To: <20090329020404.9D073DDECF@ozlabs.org>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Mar 29, 2009 at 07:29:09PM -0600, Trenton Adams wrote:
-> I am slightly confused by the "data=ordered" thing that everyone is
-> mentioning of late.  In theory, it made sense to me before I tried it.
->  I switched to mounting my ext3 as ext4, and I'm still seeing
-> seriously delayed fsyncs.  Theodore, I used a modified version of your
-> fsync-tester.c to bench 1M writes, while doing a dd, and I'm still
-> getting *almost* as bad of "fsync" performance as I was on ext3.  On
-> ext3, the fsync would usually not finish until the dd was complete.
+On Sun, Mar 29, 2009 at 12:25:52AM +1030, Rusty Russell wrote:
+> 
+> We're getting rid of cpumasks on the stack.
+> 
+> Simply change tmp_mask to a global, and allocate it in
+> rcu_torture_init().
 
-How much memory do you have?  On my 4gig X61 laptop, using a 5400 rpm
-laptop drive, I see typical times of 1 to 1.5 seconds, with a few
-outliers at 4-5 seconds.  With ext3, the fsync times immediately
-jumped up to 6-8 seconds, with the outliers in the 13-15 second range.
+Looks good at first glance -- will try running it.
 
-(This is with a filesystem formated as ext3, and mounted as either
-ext3 or ext4; if the filesystem is formatted using "mke2fs -t ext4",
-what you see is a very smooth 1.2-1.5 seconds fsync latency, indirect
-blocks for very big files end up being quite inefficient.)
+Acked-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
 
-So I'm seeing a definite difference --- but also please remember that
-"dd if=/dev/zero of=bigzero.img" really is an unfair, worst-case
-scenario, since you are dirtying memory as fast as your CPU will dirty
-pages.  Normally, even if you are running distcc, the rate at which
-you can dirty pages will be throttled at your local network speed.
-
-You might want to try more normal workloads and see whether you are
-seeing distinct fsync latency differences with ext4.  Even with the
-worst-case dd if=/dev/zero, I'm seeing major differences in my
-testing.
-
-							- Ted
+> Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+> Cc: "Paul E. McKenney" <paulmck@us.ibm.com>
+> Cc: Josh Triplett <josh@freedesktop.org>
+> ---
+>  kernel/rcutorture.c |   25 +++++++++++++++++--------
+>  1 file changed, 17 insertions(+), 8 deletions(-)
+> 
+> diff --git a/kernel/rcutorture.c b/kernel/rcutorture.c
+> --- a/kernel/rcutorture.c
+> +++ b/kernel/rcutorture.c
+> @@ -126,6 +126,7 @@ static atomic_t n_rcu_torture_error;
+>  static atomic_t n_rcu_torture_error;
+>  static long n_rcu_torture_timers = 0;
+>  static struct list_head rcu_torture_removed;
+> +static cpumask_var_t shuffle_tmp_mask;
+> 
+>  static int stutter_pause_test = 0;
+> 
+> @@ -889,10 +890,9 @@ static int rcu_idle_cpu;	/* Force all to
+>   */
+>  static void rcu_torture_shuffle_tasks(void)
+>  {
+> -	cpumask_t tmp_mask;
+>  	int i;
+> 
+> -	cpus_setall(tmp_mask);
+> +	cpumask_setall(shuffle_tmp_mask);
+>  	get_online_cpus();
+> 
+>  	/* No point in shuffling if there is only one online CPU (ex: UP) */
+> @@ -902,29 +902,29 @@ static void rcu_torture_shuffle_tasks(vo
+>  	}
+> 
+>  	if (rcu_idle_cpu != -1)
+> -		cpu_clear(rcu_idle_cpu, tmp_mask);
+> +		cpumask_clear_cpu(rcu_idle_cpu, shuffle_tmp_mask);
+> 
+> -	set_cpus_allowed_ptr(current, &tmp_mask);
+> +	set_cpus_allowed_ptr(current, shuffle_tmp_mask);
+> 
+>  	if (reader_tasks) {
+>  		for (i = 0; i < nrealreaders; i++)
+>  			if (reader_tasks[i])
+>  				set_cpus_allowed_ptr(reader_tasks[i],
+> -						     &tmp_mask);
+> +						     shuffle_tmp_mask);
+>  	}
+> 
+>  	if (fakewriter_tasks) {
+>  		for (i = 0; i < nfakewriters; i++)
+>  			if (fakewriter_tasks[i])
+>  				set_cpus_allowed_ptr(fakewriter_tasks[i],
+> -						     &tmp_mask);
+> +						     shuffle_tmp_mask);
+>  	}
+> 
+>  	if (writer_task)
+> -		set_cpus_allowed_ptr(writer_task, &tmp_mask);
+> +		set_cpus_allowed_ptr(writer_task, shuffle_tmp_mask);
+> 
+>  	if (stats_task)
+> -		set_cpus_allowed_ptr(stats_task, &tmp_mask);
+> +		set_cpus_allowed_ptr(stats_task, shuffle_tmp_mask);
+> 
+>  	if (rcu_idle_cpu == -1)
+>  		rcu_idle_cpu = num_online_cpus() - 1;
+> @@ -1012,6 +1012,7 @@ rcu_torture_cleanup(void)
+>  	if (shuffler_task) {
+>  		VERBOSE_PRINTK_STRING("Stopping rcu_torture_shuffle task");
+>  		kthread_stop(shuffler_task);
+> +		free_cpumask_var(shuffle_tmp_mask);
+>  	}
+>  	shuffler_task = NULL;
+> 
+> @@ -1190,10 +1191,18 @@ rcu_torture_init(void)
+>  	}
+>  	if (test_no_idle_hz) {
+>  		rcu_idle_cpu = num_online_cpus() - 1;
+> +
+> +		if (!alloc_cpumask_var(&shuffle_tmp_mask, GFP_KERNEL)) {
+> +			firsterr = -ENOMEM;
+> +			VERBOSE_PRINTK_ERRSTRING("Failed to alloc mask");
+> +			goto unwind;
+> +		}
+> +
+>  		/* Create the shuffler thread */
+>  		shuffler_task = kthread_run(rcu_torture_shuffle, NULL,
+>  					  "rcu_torture_shuffle");
+>  		if (IS_ERR(shuffler_task)) {
+> +			free_cpumask_var(shuffle_tmp_mask);
+>  			firsterr = PTR_ERR(shuffler_task);
+>  			VERBOSE_PRINTK_ERRSTRING("Failed to create shuffler");
+>  			shuffler_task = NULL;
+> 
