@@ -1,104 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758443AbZC3VZy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757564AbZC3V0a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758443AbZC3VZy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Mar 2009 17:25:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755691AbZC3VZm
+	id S1757564AbZC3V0a (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Mar 2009 17:26:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757658AbZC3V0T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Mar 2009 17:25:42 -0400
-Received: from hera.kernel.org ([140.211.167.34]:59928 "EHLO hera.kernel.org"
+	Mon, 30 Mar 2009 17:26:19 -0400
+Received: from mail.windriver.com ([147.11.1.11]:38434 "EHLO mail.wrs.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750873AbZC3VZl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Mar 2009 17:25:41 -0400
-Date: Mon, 30 Mar 2009 21:24:51 GMT
-From: Peter Zijlstra <peterz@infradead.org>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       a.p.zijlstra@chello.nl, peterz@infradead.org, npiggin@suse.de,
-       heiko.carstens@de.ibm.com, tglx@linutronix.de, mingo@elte.hu
-Reply-To: npiggin@suse.de, mingo@redhat.com, hpa@zytor.com,
-       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
-       peterz@infradead.org, heiko.carstens@de.ibm.com, tglx@linutronix.de,
-       mingo@elte.hu
-In-Reply-To: <1237544000.24626.52.camel@twins>
-References: <1237544000.24626.52.camel@twins>
-Subject: [tip:core/locking-v2] lockdep: fix deadlock in lockdep_trace_alloc
-Message-ID: <tip-2f8501815256af8498904e68bd0984b1afffd6f8@git.kernel.org>
-Git-Commit-ID: 2f8501815256af8498904e68bd0984b1afffd6f8
-X-Mailer: tip-git-log-daemon
+	id S1754889AbZC3V0S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Mar 2009 17:26:18 -0400
+Date: Mon, 30 Mar 2009 17:23:57 -0400
+From: Paul Gortmaker <paul.gortmaker@windriver.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Yasunori Goto <y-goto@jp.fujitsu.com>, clemens@ladisch.de,
+       linux-kernel@vger.kernel.org, robert.picco@hp.com,
+       venkatesh.pallipadi@intel.com, vojtech@suse.cz, mingo@redhat.com
+Subject: Re: [Patch] Fix the possibility of insane return value of
+	hpet_calibrate() against SMI. (take 2)
+Message-ID: <20090330212357.GA386@windriver.com>
+References: <49BFA1D7.8020302@windriver.com> <20090318094346.7BA9.E1E9C6FF@jp.fujitsu.com> <20090318113948.7BAD.E1E9C6FF@jp.fujitsu.com> <20090330140659.66ccbfe9.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 30 Mar 2009 21:24:53 +0000 (UTC)
+In-Reply-To: <20090330140659.66ccbfe9.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-OriginalArrivalTime: 30 Mar 2009 21:24:22.0240 (UTC) FILETIME=[E4ADE600:01C9B17D]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  2f8501815256af8498904e68bd0984b1afffd6f8
-Gitweb:     http://git.kernel.org/tip/2f8501815256af8498904e68bd0984b1afffd6f8
-Author:     Peter Zijlstra <peterz@infradead.org>
-AuthorDate: Fri, 20 Mar 2009 11:13:20 +0100
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Mon, 30 Mar 2009 23:19:24 +0200
+[Re: [Patch] Fix the possibility of insane return value of hpet_calibrate() against SMI. (take 2)] On 30/03/2009 (Mon 14:06) Andrew Morton wrote:
 
-lockdep: fix deadlock in lockdep_trace_alloc
+> On Wed, 18 Mar 2009 11:47:04 +0900
+> Yasunori Goto <y-goto@jp.fujitsu.com> wrote:
+> 
+> > hpet_calibrate() has a possibility of miss-calibration due to SMI.
+> > If SMI interrupts in the while loop of calibration, then return value
+> > will be big. This change calibrates until stabilizing by the return
+> > value with a small value.
+> > 
+> > 
+> > Signed-off-by: Yasunori Goto <y-goto@jp.fujitsu.com>
+> > 
+> > 
+> > ---
+> >  drivers/char/hpet.c |   21 ++++++++++++++++++++-
+> >  1 file changed, 20 insertions(+), 1 deletion(-)
+> > 
+> > Index: hpet_test/drivers/char/hpet.c
+> > ===================================================================
+> > --- hpet_test.orig/drivers/char/hpet.c	2009-03-12 15:47:45.000000000 +0900
+> > +++ hpet_test/drivers/char/hpet.c	2009-03-18 11:12:42.000000000 +0900
+> > @@ -713,7 +713,7 @@
+> >   */
+> >  #define	TICK_CALIBRATE	(1000UL)
+> >  
+> > -static unsigned long hpet_calibrate(struct hpets *hpetp)
+> > +static unsigned long __hpet_calibrate(struct hpets *hpetp)
+> >  {
+> >  	struct hpet_timer __iomem *timer = NULL;
+> >  	unsigned long t, m, count, i, flags, start;
+> > @@ -750,6 +750,25 @@
+> >  	return (m - start) / i;
+> >  }
+> >  
+> > +static unsigned long hpet_calibrate(struct hpets *hpetp)
+> > +{
+> > +	unsigned long ret = ~0UL, tmp;
+> > +
+> > +	/*
+> > +	 * Try to calibrate until return value becomes stable small value.
+> > +	 * If SMI interruption occurs in calibration loop, the return value
+> > +	 * will be big. This avoids its impact.
+> > +	 */
+> > +	do {
+> > +		tmp = __hpet_calibrate(hpetp);
+> > +		if (ret <= tmp)
+> > +			break;
+> > +		ret = tmp;
+> > +	} while (1);
+> > +
+> > +	return ret;
+> > +}
+> 
+> Call me paranoid, but I'd like to see a maximum retry count here and an
+> error message-and-continue if it is exceeded.  To prevent mysterious
+> boot-time lockups from misbehaving hpets, perhaps?
 
-Heiko reported that we grab the graph lock with irqs enabled.
+I'd mentioned that here:
 
-Fix this by providng the same wrapper as all other lockdep entry
-functions have.
+http://lkml.org/lkml/2009/3/18/180
 
-Reported-by: Heiko Carstens <heiko.carstens@de.ibm.com>
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Nick Piggin <npiggin@suse.de>
-LKML-Reference: <1237544000.24626.52.camel@twins>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+but the general consensus was that it was impossible and I was just
+being paranoid.  :-)
 
+Acked-by: Paul Gortmaker <paul.gortmaker@windriver.com>
 
----
- kernel/lockdep.c |   21 +++++++++++++++++++--
- 1 files changed, 19 insertions(+), 2 deletions(-)
+Paul.
 
-diff --git a/kernel/lockdep.c b/kernel/lockdep.c
-index 022d2ed..3673a3f 100644
---- a/kernel/lockdep.c
-+++ b/kernel/lockdep.c
-@@ -2260,7 +2260,7 @@ void trace_softirqs_off(unsigned long ip)
- 		debug_atomic_inc(&redundant_softirqs_off);
- }
- 
--void lockdep_trace_alloc(gfp_t gfp_mask)
-+static void __lockdep_trace_alloc(gfp_t gfp_mask, unsigned long flags)
- {
- 	struct task_struct *curr = current;
- 
-@@ -2279,12 +2279,29 @@ void lockdep_trace_alloc(gfp_t gfp_mask)
- 	if (!(gfp_mask & __GFP_FS))
- 		return;
- 
--	if (DEBUG_LOCKS_WARN_ON(irqs_disabled()))
-+	if (DEBUG_LOCKS_WARN_ON(irqs_disabled_flags(flags)))
- 		return;
- 
- 	mark_held_locks(curr, RECLAIM_FS);
- }
- 
-+static void check_flags(unsigned long flags);
-+
-+void lockdep_trace_alloc(gfp_t gfp_mask)
-+{
-+	unsigned long flags;
-+
-+	if (unlikely(current->lockdep_recursion))
-+		return;
-+
-+	raw_local_irq_save(flags);
-+	check_flags(flags);
-+	current->lockdep_recursion = 1;
-+	__lockdep_trace_alloc(gfp_mask, flags);
-+	current->lockdep_recursion = 0;
-+	raw_local_irq_restore(flags);
-+}
-+
- static int mark_irqflags(struct task_struct *curr, struct held_lock *hlock)
- {
- 	/*
+> 
+> Also, style nit - I find
+> 
+> 	for ( ; ; ) {
+> 		...
+> 	}
+> 
+> to be more readable than
+> 
+> 	do {
+> 		...
+> 	} while (1);
+> 
+> and I believe the former is more common.
+> 
+> 
+> And
+> 
+> 	unsigned long ret = -1;
+> 
+> has the same effect as
+> 
+> 	unsigned long ret = ~0UL;
+> 
+> but is more maintainable - it doesn't subtly break if someone changes
+> the type of `ret'.  (This is a bit of an ugly C trick).
+> 
+> 
+> 
