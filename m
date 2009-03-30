@@ -1,96 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755753AbZC3AOT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756055AbZC3APj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755753AbZC3AOT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Mar 2009 20:14:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754248AbZC3AOE
+	id S1756055AbZC3APj (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Mar 2009 20:15:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755023AbZC3APa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Mar 2009 20:14:04 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:53082
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1753701AbZC3AOB (ORCPT
+	Sun, 29 Mar 2009 20:15:30 -0400
+Received: from tassadar.physics.auth.gr ([155.207.123.25]:52696 "EHLO
+	tassadar.physics.auth.gr" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754395AbZC3AP3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Mar 2009 20:14:01 -0400
-Date: Sun, 29 Mar 2009 17:13:50 -0700 (PDT)
-Message-Id: <20090329.171350.201684885.davem@davemloft.net>
-To: torvalds@linux-foundation.org
-CC: akpm@linux-foundation.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: [GIT]: Networking
-From: David Miller <davem@davemloft.net>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Sun, 29 Mar 2009 20:15:29 -0400
+X-Greylist: delayed 808 seconds by postgrey-1.27 at vger.kernel.org; Sun, 29 Mar 2009 20:15:26 EDT
+Date: Mon, 30 Mar 2009 03:01:50 +0300 (EEST)
+From: Dimitris Zilaskos <dzila@tassadar.physics.auth.gr>
+To: linux-kernel@vger.kernel.org
+Subject: peak vnodes <number>
+Message-ID: <Pine.LNX.4.64.0903300259500.27035@tassadar.physics.auth.gr>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-1) net_device_ops conversion and some fixups from Alexander
-   Beregalov
+After moving to 2.6.29 the following started showing up in kernel logs. 
+What does it mean?
 
-2) netfilter build failure fix from Pedro Neira Ayuso
 
-3) Missing kernel-doc fix from Randy Dunlap
+uname -an
+Linux tassadar 2.6.29 #1 Sat Mar 28 22:52:51 EET 2009 i686 unknown unknown 
+GNU/Linux
 
-4) Use-after-release bug fixes in gianfar and ucc_geth
 
-5) Endianness cures and cleanups from Harvey Harrison
+dmesg|grep peak|head
+peak vnodes: 4164
+peak vnodes: 4165
+peak vnodes: 4166
+peak vnodes: 4167
+peak vnodes: 4168
+peak vnodes: 4169
+peak vnodes: 4170
+peak vnodes: 4171
+peak vnodes: 4172
+peak vnodes: 4173
 
-6) Add GRO support to two drivers.
+dmesg|grep peak|tail
+peak vnodes: 10230
+peak vnodes: 10231
+peak vnodes: 10232
+peak vnodes: 10233
+peak vnodes: 10234
+peak vnodes: 10235
+peak vnodes: 10236
+peak vnodes: 10237
+peak vnodes: 10238
+peak vnodes: 10239
 
-Please pull, thanks a lot!
 
-The following changes since commit 07d43ba98621f08e252a48c96b258b4d572b0257:
-  Linus Torvalds (1):
-        Merge branch 'i2c-for-linus' of git://jdelvare.pck.nerim.net/jdelvare-2.6
+dmesg|grep peak|wc -l
+6076
 
-are available in the git repository at:
 
-  master.kernel.org:/pub/scm/linux/kernel/git/davem/net-2.6.git master
+Cheers,
 
-Alexander Beregalov (3):
-      ni5010: convert to net_device_ops
-      dmascc: fix incomplete conversion to network_device_ops
-      wireless: remove duplicated .ndo_set_mac_address
-
-David S. Miller (5):
-      gianfar: Fix use-after-of_node_put() in gfar_of_init().
-      ucc_geth: Fix use-after-of_node_put() in ucc_geth_probe().
-      niu: Add GRO support.
-      tg3: Add GRO support.
-      Merge branch 'master' of /home/davem/src/GIT/linux-2.6/
-
-Harvey Harrison (3):
-      netfilter: fix endian bug in conntrack printks
-      netpoll: store local and remote ip in net-endian
-      kernel: remove HIPQUAD()
-
-Herbert Xu (1):
-      gso: Fix support for linear packets
-
-Pablo Neira Ayuso (1):
-      netfilter: xtables: fix IPv6 dependency in the cluster match
-
-Randy Dunlap (1):
-      skbuff.h: fix missing kernel-doc
-
- drivers/net/gianfar.c                     |    2 +-
- drivers/net/hamradio/dmascc.c             |    2 +-
- drivers/net/netconsole.c                  |   10 +++-----
- drivers/net/ni5010.c                      |   18 +++++++++++-----
- drivers/net/niu.c                         |   12 ++++++----
- drivers/net/tg3.c                         |    4 +-
- drivers/net/ucc_geth.c                    |   11 +++++----
- drivers/net/wireless/airo.c               |    2 -
- drivers/net/wireless/ipw2x00/ipw2200.c    |    1 -
- drivers/net/wireless/prism54/islpci_dev.c |    1 -
- drivers/net/wireless/zd1201.c             |    1 -
- include/linux/kernel.h                    |   12 -----------
- include/linux/netpoll.h                   |    2 +-
- include/linux/skbuff.h                    |    1 +
- net/core/netpoll.c                        |   31 ++++++++++++++---------------
- net/core/skbuff.c                         |    2 +-
- net/netfilter/nf_conntrack_irc.c          |   15 +++++++------
- net/netfilter/xt_cluster.c                |   11 ++++++++-
- 18 files changed, 68 insertions(+), 70 deletions(-)
+-- 
+=============================================================================
+Dimitris Zilaskos
+GridAUTH Operations Centre @ Aristotle University of Thessaloniki , Greece
+Tel: +302310998988 Fax: +302310994309
+http://www.grid.auth.gr
+=============================================================================
