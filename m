@@ -1,167 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753080AbZC3N5Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754162AbZC3N5l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753080AbZC3N5Y (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Mar 2009 09:57:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751977AbZC3N5O
+	id S1754162AbZC3N5l (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Mar 2009 09:57:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752269AbZC3N5U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Mar 2009 09:57:14 -0400
-Received: from mga11.intel.com ([192.55.52.93]:6508 "EHLO mga11.intel.com"
+	Mon, 30 Mar 2009 09:57:20 -0400
+Received: from THUNK.ORG ([69.25.196.29]:42235 "EHLO thunker.thunk.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750919AbZC3N5N convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Mar 2009 09:57:13 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.38,446,1233561600"; 
-   d="scan'208";a="443250233"
-From: "Metzger, Markus T" <markus.t.metzger@intel.com>
-To: Oleg Nesterov <oleg@redhat.com>
-CC: "Kleen, Andi" <andi.kleen@intel.com>, Ingo Molnar <mingo@elte.hu>,
-       Roland McGrath <roland@redhat.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Markus Metzger <markus.t.metzger@googlemail.com>
-Date: Mon, 30 Mar 2009 14:55:38 +0100
-Subject: RE: [rfc] x86, bts: fix crash
-Thread-Topic: [rfc] x86, bts: fix crash
-Thread-Index: AcmxO/5gAA/gu/UeS6e7d6uRbtk03QAAFwaA
-Message-ID: <928CFBE8E7CB0040959E56B4EA41A77E926D46A7@irsmsx504.ger.corp.intel.com>
-References: <928CFBE8E7CB0040959E56B4EA41A77E9260843D@irsmsx504.ger.corp.intel.com>
- <20090326015801.GA451@redhat.com>
- <928CFBE8E7CB0040959E56B4EA41A77E9266B699@irsmsx504.ger.corp.intel.com>
- <20090327165038.GA25762@redhat.com> <1238175204.6077.18.camel@raistlin>
- <20090327212933.GA5325@redhat.com>
- <928CFBE8E7CB0040959E56B4EA41A77E9266B8F1@irsmsx504.ger.corp.intel.com>
- <928CFBE8E7CB0040959E56B4EA41A77E9266BB48@irsmsx504.ger.corp.intel.com>
- <20090330132904.GA2822@redhat.com>
-In-Reply-To: <20090330132904.GA2822@redhat.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
+	id S1753335AbZC3N5T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Mar 2009 09:57:19 -0400
+Date: Mon, 30 Mar 2009 09:55:52 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Mark Lord <lkml@rtr.ca>, Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Jeff Garzik <jeff@garzik.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Matthew Garrett <mjg59@srcf.ucam.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       David Rees <drees76@gmail.com>, Jesper Krogh <jesper@krogh.cc>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.29
+Message-ID: <20090330135552.GF13356@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>, Mark Lord <lkml@rtr.ca>,
+	Stefan Richter <stefanr@s5r6.in-berlin.de>,
+	Jeff Garzik <jeff@garzik.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Matthew Garrett <mjg59@srcf.ucam.org>,
+	Alan Cox <alan@lxorguk.ukuu.org.uk>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	David Rees <drees76@gmail.com>, Jesper Krogh <jesper@krogh.cc>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <49CD7B10.7010601@garzik.org> <49CD891A.7030103@rtr.ca> <49CD9047.4060500@garzik.org> <49CE2633.2000903@s5r6.in-berlin.de> <49CE3186.8090903@garzik.org> <49CE35AE.1080702@s5r6.in-berlin.de> <49CE3F74.6090103@rtr.ca> <20090329231451.GR26138@disturbed> <20090330003948.GA13356@mit.edu> <20090330063110.GS26138@disturbed>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090330063110.GS26138@disturbed>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->-----Original Message-----
->From: Oleg Nesterov [mailto:oleg@redhat.com]
->Sent: Monday, March 30, 2009 3:29 PM
->To: Metzger, Markus T
+On Mon, Mar 30, 2009 at 05:31:10PM +1100, Dave Chinner wrote:
+> 
+> Pardon my french, but that is a fucking joke.
+> 
+> You are making a judgement call that one application is more
+> important than another application and trying to impose that on
+> everyone. You are saying that we should perturb a well designed and
+> written backup application that is embedded into critical scripts
+> all around the world for the sake of desktop application that has
+> developers that are too fucking lazy to fix their bugs.
 
+You are welcome to argue with the desktop application writers (and
+Linus, who has sided with them).  I *knew* this was a fight I was not
+going to win, so I implemented the replace-via-rename workaround, even
+before I started trying to convince applicaiton writers that they
+should write more portable code that would be safe on filesystems such
+as, say, XFS.  And it looks like we're losing that battle as well;
+it's hard to get people to write correct, portable code!  (I *told*
+the application writers that I was the moderate on this one, even as
+they were flaming me to a crisp.  Given that I'm taking flak from both
+sides, it's to me a good indication that the design choices made for
+ext4 was probably the right thing.)
 
->> >The benefit would be that I don't need to hook into do_exit() anymore.
->
->Metzger, I got lost ;) And I didn't sleep today, so most probably I missed
->what you mean...
+> If you want to trade rsync performance for desktop performance, do
+> it in the filesystem that is aimed at the desktop. Don't fuck rename
+> up for filesystems that are aimed at the server market and don't
+> want to implement performance sucking hacks to work around fucked up
+> desktop applications.
 
-The way I understood you, I should defer the release of the bts tracer.
-I can schedule the work in __ptrace_unlink(), so I don't need the changes
-that hook into do_exit().
-The work will be done at a later time with interrupts enabled.
+What I did was create a mount option for system administrators
+interested in the server market.  And an rsync option that unlinks the
+target filesystem first really isn't that big of a deal --- have you
+seen how many options rsync already has?  It's been a running joke
+with the rsync developers.  :-)
 
-I'm looking into schedule_work() right now, since I don't need all the other
-features of RCU.
+If XFS doesn't want to try to support the desktop market, that's fine
+--- it's your choice.  But at least as far as desktop application
+programmers, this is not a fight we're going to win.  It makes me sad,
+but I'm enough of a realist to understand that.
 
-
->do you mean the helper below will be called under write_lock_irq(tasklist)?
->In that case,
->
->> >This would rid us of the nasty ->ptraced loop.
->> >I will give it a try.
->> >
->> >
->> >I use something like this to wait for the context switch:
->> >  nvcsw = task->nvcsw + 1;
->> >  nivcsw = task->nivcsw + 1;
->> >  for (;;) {
->> >	if (nvcsw < task->nvcsw)
->> >		break;
->> >	if (nivcsw < task->nivcsw)
->> >		break;
->
->Not exactly right, schedule() increments nvcsw/nivcsw before context_switch().
->But this is fixable.
-
-That's why I added +1. There's still the overflow problem. I now use
-
-nvcsw = task->nvcsw;
-for (;;) {
-	if ((task->nvcsw - nvcsw) > 1)
-		break;
-	...
-	if (!task_is_running(task))
-		break;
-	schedule();
-}
-
-this should work even for overflowing counters. It waits for two
-context switches, or - preferably - for task to be currently not running
-on any cpu (see below for task_is_running()).
-
-
->However. What if this task spins in TASK_RUNNING waiting for tasklist_lock ?
->This is deadlockable even with CONFIG_PREEMPT, we take tasklit for reading
->in interrupt context.
-
-That code is executed with interrupts enabled and tasklist lock not held.
-That's why I added the ptrace_bts_exit_tracer() and ptrace_bts_exit_tracee()
-calls - to be able to call ds_release_bts() with interrupts enabled.
-
-
->Afaics, we can also deadlock if task_cpu(task) sends IPI to us (with wait = 1),
->the sender spins with preemption disabled.
->
->> >	if (task->state != TASK_RUNNING)
->> >		break;
->> >  }
->> >
->>
->> That is not quite right, as well. There's a race on the task state.
->> In my example, I got TASK_DEAD before the dying task could complete its
->> final schedule(), and the cpu continued tracing.
->
->But we still have the same problems.
->
->If the tracee doesn't call a blocking syscall, its ->state is always RUNNING.
-
-Agreed.
-
-I meanwhile added a function task_is_running() to sched.h that checks whether
-the parameter task is currently running on any cpu.
-I use that instead of checking ->state.
-
-The function is essentially:
-int task_is_running(struct task_struct *p)
-{
-	struct rq *rq;
-	unsigned long flags;
-	int running;
-
-	rq = task_rq_lock(p, &flags);
-	running = task_running(rq, p);
-	task_rq_unlock(rq, &flags);
-
-	return running;
-}
-
-
-thanks and regards,
-markus.
-
----------------------------------------------------------------------
-Intel GmbH
-Dornacher Strasse 1
-85622 Feldkirchen/Muenchen Germany
-Sitz der Gesellschaft: Feldkirchen bei Muenchen
-Geschaeftsfuehrer: Douglas Lusk, Peter Gleissner, Hannes Schwaderer
-Registergericht: Muenchen HRB 47456 Ust.-IdNr.
-VAT Registration No.: DE129385895
-Citibank Frankfurt (BLZ 502 109 00) 600119052
-
-This e-mail and any attachments may contain confidential material for
-the sole use of the intended recipient(s). Any review or distribution
-by others is strictly prohibited. If you are not the intended
-recipient, please contact the sender and delete all copies.
-
+	     	     	   	       	     - Ted
