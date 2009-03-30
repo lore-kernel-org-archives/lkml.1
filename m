@@ -1,260 +1,341 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758468AbZC3SYW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752268AbZC3SZY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758468AbZC3SYW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Mar 2009 14:24:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755284AbZC3SQR
+	id S1752268AbZC3SZY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Mar 2009 14:25:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755037AbZC3SQX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Mar 2009 14:16:17 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:43355 "EHLO mx2.suse.de"
+	Mon, 30 Mar 2009 14:16:23 -0400
+Received: from cantor.suse.de ([195.135.220.2]:56606 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753605AbZC3SPU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Mar 2009 14:15:20 -0400
-Message-Id: <20090330181011.464018896@suse.com>
+	id S1753426AbZC3SPT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Mar 2009 14:15:19 -0400
+Message-Id: <20090330181012.635299114@suse.com>
 User-Agent: quilt/0.47-14.9
-Date: Mon, 30 Mar 2009 14:02:32 -0400
+Date: Mon, 30 Mar 2009 14:02:41 -0400
 From: Jeff Mahoney <jeffm@suse.com>
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Cc: Andrew Morton <akpm@linux-foundation.org>,
        Linus Torvalds <torvalds@linux-foundation.org>,
        ReiserFS Development List <reiserfs-devel@vger.kernel.org>
-Subject: [patch 17/35 xattr-rework] reiserfs: remove IS_PRIVATE helpers
+Subject: [patch 26/35 xattr-rework] reiserfs: add atomic addition of selinux attributes during inode creation
 References: <20090330180215.951354436@suse.com>
-Content-Disposition: inline; filename=patches.suse/reiserfs-xattr-S_PRIVATE
+Content-Disposition: inline; filename=patches.suse/reiserfs-selinux.diff
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- There are a number of helper functions for marking a reiserfs inode
- private that were leftover from reiserfs did its own thing wrt to
- private inodes. S_PRIVATE has been in the kernel for some time,
- so this patch removes the helpers and uses IS_PRIVATE instead.
+ Some time ago, some changes were made to make security inode attributes
+ be atomically written during inode creation. ReiserFS fell behind in this
+ area, but with the reworking of the xattr code, it's now fairly easy to add.
+
+ The following patch adds the ability for security attributes to be added
+ automatically during inode creation.
 
 Signed-off-by: Jeff Mahoney <jeffm@suse.com>
----
- fs/reiserfs/inode.c            |    5 ++---
- fs/reiserfs/namei.c            |    7 ++++---
- fs/reiserfs/xattr.c            |   14 ++++++--------
- fs/reiserfs/xattr_acl.c        |    6 +++---
- fs/reiserfs/xattr_security.c   |    8 ++++----
- fs/reiserfs/xattr_trusted.c    |    8 ++++----
- include/linux/reiserfs_xattr.h |    8 --------
- 7 files changed, 23 insertions(+), 33 deletions(-)
+
+--
+ fs/reiserfs/inode.c            |   16 +++++++++++-
+ fs/reiserfs/namei.c            |   37 +++++++++++++++++++++++++---
+ fs/reiserfs/xattr_security.c   |   54 +++++++++++++++++++++++++++++++++++++++++
+ include/linux/reiserfs_fs.h    |    4 ++-
+ include/linux/reiserfs_xattr.h |   32 ++++++++++++++++++++++++
+ 5 files changed, 137 insertions(+), 6 deletions(-)
 
 --- a/fs/reiserfs/inode.c
 +++ b/fs/reiserfs/inode.c
-@@ -1932,9 +1932,8 @@ int reiserfs_new_inode(struct reiserfs_t
- 		reiserfs_warning(inode->i_sb, "jdm-13090",
- 				 "ACLs aren't enabled in the fs, "
- 				 "but vfs thinks they are!");
--	} else if (is_reiserfs_priv_object(dir)) {
--		reiserfs_mark_inode_private(inode);
--	}
-+	} else if (IS_PRIVATE(dir))
-+		inode->i_flags |= S_PRIVATE;
+@@ -1756,7 +1756,8 @@ int reiserfs_new_inode(struct reiserfs_t
+ 		       /* 0 for regular, EMTRY_DIR_SIZE for dirs, 
+ 		          strlen (symname) for symlinks) */
+ 		       loff_t i_size, struct dentry *dentry,
+-		       struct inode *inode)
++		       struct inode *inode,
++		       struct reiserfs_security_handle *security)
+ {
+ 	struct super_block *sb;
+ 	struct reiserfs_iget_args args;
+@@ -1934,6 +1935,19 @@ int reiserfs_new_inode(struct reiserfs_t
+ 	} else if (IS_PRIVATE(dir))
+ 		inode->i_flags |= S_PRIVATE;
  
++	if (security->name) {
++		retval = reiserfs_security_write(th, inode, security);
++		if (retval) {
++			err = retval;
++			reiserfs_check_path(&path_to_key);
++			retval = journal_end(th, th->t_super,
++					     th->t_blocks_allocated);
++			if (retval)
++				err = retval;
++			goto out_inserted_sd;
++		}
++	}
++
  	reiserfs_update_sd(th, inode);
-	reiserfs_check_path(&path_to_key);
+ 	reiserfs_check_path(&path_to_key);
+
 --- a/fs/reiserfs/namei.c
 +++ b/fs/reiserfs/namei.c
-@@ -358,9 +358,10 @@ static struct dentry *reiserfs_lookup(st
- 			return ERR_PTR(-EACCES);
- 		}
+@@ -607,6 +607,7 @@ static int reiserfs_create(struct inode 
+ 	    2 * (REISERFS_QUOTA_INIT_BLOCKS(dir->i_sb) +
+ 		 REISERFS_QUOTA_TRANS_BLOCKS(dir->i_sb));
+ 	struct reiserfs_transaction_handle th;
++	struct reiserfs_security_handle security;
  
--		/* Propogate the priv_object flag so we know we're in the priv tree */
--		if (is_reiserfs_priv_object(dir))
--			reiserfs_mark_inode_private(inode);
-+		/* Propogate the private flag so we know we're
-+		 * in the priv tree */
-+		if (IS_PRIVATE(dir))
-+			inode->i_flags |= S_PRIVATE;
+ 	if (!(inode = new_inode(dir->i_sb))) {
+ 		return -ENOMEM;
+@@ -614,6 +615,12 @@ static int reiserfs_create(struct inode 
+ 	new_inode_init(inode, dir, mode);
+ 
+ 	jbegin_count += reiserfs_cache_default_acl(dir);
++	retval = reiserfs_security_init(dir, inode, &security);
++	if (retval < 0) {
++		drop_new_inode(inode);
++		return retval;
++	}
++	jbegin_count += retval;
+ 	reiserfs_write_lock(dir->i_sb);
+ 
+ 	retval = journal_begin(&th, dir->i_sb, jbegin_count);
+@@ -624,7 +631,7 @@ static int reiserfs_create(struct inode 
+ 
+ 	retval =
+ 	    reiserfs_new_inode(&th, dir, mode, NULL, 0 /*i_size */ , dentry,
+-			       inode);
++			       inode, &security);
+ 	if (retval)
+ 		goto out_failed;
+ 
+@@ -662,6 +669,7 @@ static int reiserfs_mknod(struct inode *
+ 	int retval;
+ 	struct inode *inode;
+ 	struct reiserfs_transaction_handle th;
++	struct reiserfs_security_handle security;
+ 	/* We need blocks for transaction + (user+group)*(quotas for new inode + update of quota for directory owner) */
+ 	int jbegin_count =
+ 	    JOURNAL_PER_BALANCE_CNT * 3 +
+@@ -677,6 +685,12 @@ static int reiserfs_mknod(struct inode *
+ 	new_inode_init(inode, dir, mode);
+ 
+ 	jbegin_count += reiserfs_cache_default_acl(dir);
++	retval = reiserfs_security_init(dir, inode, &security);
++	if (retval < 0) {
++		drop_new_inode(inode);
++		return retval;
++	}
++	jbegin_count += retval;
+ 	reiserfs_write_lock(dir->i_sb);
+ 
+ 	retval = journal_begin(&th, dir->i_sb, jbegin_count);
+@@ -687,7 +701,7 @@ static int reiserfs_mknod(struct inode *
+ 
+ 	retval =
+ 	    reiserfs_new_inode(&th, dir, mode, NULL, 0 /*i_size */ , dentry,
+-			       inode);
++			       inode, &security);
+ 	if (retval) {
+ 		goto out_failed;
  	}
- 	reiserfs_write_unlock(dir->i_sb);
- 	if (retval == IO_ERROR) {
---- a/fs/reiserfs/xattr.c
-+++ b/fs/reiserfs/xattr.c
-@@ -633,14 +633,14 @@ __reiserfs_xattr_del(struct dentry *xadi
- 	if (S_ISDIR(dentry->d_inode->i_mode))
- 		goto out_file;
+@@ -728,6 +742,7 @@ static int reiserfs_mkdir(struct inode *
+ 	int retval;
+ 	struct inode *inode;
+ 	struct reiserfs_transaction_handle th;
++	struct reiserfs_security_handle security;
+ 	/* We need blocks for transaction + (user+group)*(quotas for new inode + update of quota for directory owner) */
+ 	int jbegin_count =
+ 	    JOURNAL_PER_BALANCE_CNT * 3 +
+@@ -745,6 +760,12 @@ static int reiserfs_mkdir(struct inode *
+ 	new_inode_init(inode, dir, mode);
  
--	if (!is_reiserfs_priv_object(dentry->d_inode)) {
-+	if (!IS_PRIVATE(dentry->d_inode)) {
- 		reiserfs_error(dir->i_sb, "jdm-20003",
- 			       "OID %08x [%.*s/%.*s] doesn't have "
- 			       "priv flag set [parent is %sset].",
- 			       le32_to_cpu(INODE_PKEY(dentry->d_inode)->
- 					   k_objectid), xadir->d_name.len,
- 			       xadir->d_name.name, namelen, name,
--			       is_reiserfs_priv_object(xadir->d_inode) ? "" :
-+			       IS_PRIVATE(xadir->d_inode) ? "" :
- 			       "not ");
- 		dput(dentry);
- 		return -EIO;
-@@ -701,8 +701,7 @@ int reiserfs_delete_xattrs(struct inode
- 	int err = 0;
+ 	jbegin_count += reiserfs_cache_default_acl(dir);
++	retval = reiserfs_security_init(dir, inode, &security);
++	if (retval < 0) {
++		drop_new_inode(inode);
++		return retval;
++	}
++	jbegin_count += retval;
+ 	reiserfs_write_lock(dir->i_sb);
  
- 	/* Skip out, an xattr has no xattrs associated with it */
--	if (is_reiserfs_priv_object(inode) ||
--	    get_inode_sd_version(inode) == STAT_DATA_V1 ||
-+	if (IS_PRIVATE(inode) || get_inode_sd_version(inode) == STAT_DATA_V1 ||
- 	    !reiserfs_xattrs(inode->i_sb)) {
- 		return 0;
+ 	retval = journal_begin(&th, dir->i_sb, jbegin_count);
+@@ -761,7 +782,7 @@ static int reiserfs_mkdir(struct inode *
+ 	    retval = reiserfs_new_inode(&th, dir, mode, NULL /*symlink */ ,
+ 					old_format_only(dir->i_sb) ?
+ 					EMPTY_DIR_SIZE_V1 : EMPTY_DIR_SIZE,
+-					dentry, inode);
++					dentry, inode, &security);
+ 	if (retval) {
+ 		dir->i_nlink--;
+ 		goto out_failed;
+@@ -1002,6 +1023,7 @@ static int reiserfs_symlink(struct inode
+ 	char *name;
+ 	int item_len;
+ 	struct reiserfs_transaction_handle th;
++	struct reiserfs_security_handle security;
+ 	int mode = S_IFLNK | S_IRWXUGO;
+ 	/* We need blocks for transaction + (user+group)*(quotas for new inode + update of quota for directory owner) */
+ 	int jbegin_count =
+@@ -1014,6 +1036,13 @@ static int reiserfs_symlink(struct inode
  	}
-@@ -786,8 +785,7 @@ int reiserfs_chown_xattrs(struct inode *
- 	unsigned int ia_valid = attrs->ia_valid;
+ 	new_inode_init(inode, parent_dir, mode);
  
- 	/* Skip out, an xattr has no xattrs associated with it */
--	if (is_reiserfs_priv_object(inode) ||
--	    get_inode_sd_version(inode) == STAT_DATA_V1 ||
-+	if (IS_PRIVATE(inode) || get_inode_sd_version(inode) == STAT_DATA_V1 ||
- 	    !reiserfs_xattrs(inode->i_sb)) {
- 		return 0;
- 	}
-@@ -1178,7 +1176,7 @@ int reiserfs_xattr_init(struct super_blo
++	retval = reiserfs_security_init(parent_dir, inode, &security);
++	if (retval < 0) {
++		drop_new_inode(inode);
++		return retval;
++	}
++	jbegin_count += retval;
++
+ 	reiserfs_write_lock(parent_dir->i_sb);
+ 	item_len = ROUND_UP(strlen(symname));
+ 	if (item_len > MAX_DIRECT_ITEM_LEN(parent_dir->i_sb->s_blocksize)) {
+@@ -1040,7 +1069,7 @@ static int reiserfs_symlink(struct inode
  
- 		if (!err && dentry) {
- 			s->s_root->d_op = &xattr_lookup_poison_ops;
--			reiserfs_mark_inode_private(dentry->d_inode);
-+			dentry->d_inode->i_flags |= S_PRIVATE;
- 			REISERFS_SB(s)->priv_root = dentry;
- 		} else if (!(mount_flags & MS_RDONLY)) {	/* xattrs are unavailable */
- 			/* If we're read-only it just means that the dir hasn't been
-@@ -1239,7 +1237,7 @@ int reiserfs_permission(struct inode *in
- 	 * We don't do permission checks on the internal objects.
- 	 * Permissions are determined by the "owning" object.
- 	 */
--	if (is_reiserfs_priv_object(inode))
-+	if (IS_PRIVATE(inode))
- 		return 0;
- 
- 	/*
---- a/fs/reiserfs/xattr_acl.c
-+++ b/fs/reiserfs/xattr_acl.c
-@@ -335,8 +335,8 @@ reiserfs_inherit_default_acl(struct inod
- 	/* Don't apply ACLs to objects in the .reiserfs_priv tree.. This
- 	 * would be useless since permissions are ignored, and a pain because
- 	 * it introduces locking cycles */
--	if (is_reiserfs_priv_object(dir)) {
--		reiserfs_mark_inode_private(inode);
-+	if (IS_PRIVATE(dir)) {
-+		inode->i_flags |= S_PRIVATE;
- 		goto apply_umask;
- 	}
- 
-@@ -401,7 +401,7 @@ reiserfs_inherit_default_acl(struct inod
- int reiserfs_cache_default_acl(struct inode *inode)
- {
- 	int ret = 0;
--	if (reiserfs_posixacl(inode->i_sb) && !is_reiserfs_priv_object(inode)) {
-+	if (reiserfs_posixacl(inode->i_sb) && !IS_PRIVATE(inode)) {
- 		struct posix_acl *acl;
- 		reiserfs_read_lock_xattr_i(inode);
- 		reiserfs_read_lock_xattrs(inode->i_sb);
+ 	retval =
+ 	    reiserfs_new_inode(&th, parent_dir, mode, name, strlen(symname),
+-			       dentry, inode);
++			       dentry, inode, &security);
+ 	kfree(name);
+ 	if (retval) {		/* reiserfs_new_inode iputs for us */
+ 		goto out_failed;
 --- a/fs/reiserfs/xattr_security.c
 +++ b/fs/reiserfs/xattr_security.c
-@@ -12,7 +12,7 @@ security_get(struct inode *inode, const
- 	if (strlen(name) < sizeof(XATTR_SECURITY_PREFIX))
- 		return -EINVAL;
+@@ -4,6 +4,7 @@
+ #include <linux/pagemap.h>
+ #include <linux/xattr.h>
+ #include <linux/reiserfs_xattr.h>
++#include <linux/security.h>
+ #include <asm/uaccess.h>
  
--	if (is_reiserfs_priv_object(inode))
-+	if (IS_PRIVATE(inode))
- 		return -EPERM;
- 
- 	return reiserfs_xattr_get(inode, name, buffer, size);
-@@ -25,7 +25,7 @@ security_set(struct inode *inode, const
- 	if (strlen(name) < sizeof(XATTR_SECURITY_PREFIX))
- 		return -EINVAL;
- 
--	if (is_reiserfs_priv_object(inode))
-+	if (IS_PRIVATE(inode))
- 		return -EPERM;
- 
- 	return reiserfs_xattr_set(inode, name, buffer, size, flags);
-@@ -36,7 +36,7 @@ static int security_del(struct inode *in
- 	if (strlen(name) < sizeof(XATTR_SECURITY_PREFIX))
- 		return -EINVAL;
- 
--	if (is_reiserfs_priv_object(inode))
-+	if (IS_PRIVATE(inode))
- 		return -EPERM;
- 
- 	return 0;
-@@ -47,7 +47,7 @@ security_list(struct inode *inode, const
- {
- 	int len = namelen;
- 
--	if (is_reiserfs_priv_object(inode))
-+	if (IS_PRIVATE(inode))
- 		return 0;
- 
- 	if (out)
---- a/fs/reiserfs/xattr_trusted.c
-+++ b/fs/reiserfs/xattr_trusted.c
-@@ -16,7 +16,7 @@ trusted_get(struct inode *inode, const c
- 	if (!reiserfs_xattrs(inode->i_sb))
- 		return -EOPNOTSUPP;
- 
--	if (!(capable(CAP_SYS_ADMIN) || is_reiserfs_priv_object(inode)))
-+	if (!(capable(CAP_SYS_ADMIN) || IS_PRIVATE(inode)))
- 		return -EPERM;
- 
- 	return reiserfs_xattr_get(inode, name, buffer, size);
-@@ -32,7 +32,7 @@ trusted_set(struct inode *inode, const c
- 	if (!reiserfs_xattrs(inode->i_sb))
- 		return -EOPNOTSUPP;
- 
--	if (!(capable(CAP_SYS_ADMIN) || is_reiserfs_priv_object(inode)))
-+	if (!(capable(CAP_SYS_ADMIN) || IS_PRIVATE(inode)))
- 		return -EPERM;
- 
- 	return reiserfs_xattr_set(inode, name, buffer, size, flags);
-@@ -46,7 +46,7 @@ static int trusted_del(struct inode *ino
- 	if (!reiserfs_xattrs(inode->i_sb))
- 		return -EOPNOTSUPP;
- 
--	if (!(capable(CAP_SYS_ADMIN) || is_reiserfs_priv_object(inode)))
-+	if (!(capable(CAP_SYS_ADMIN) || IS_PRIVATE(inode)))
- 		return -EPERM;
- 
- 	return 0;
-@@ -60,7 +60,7 @@ trusted_list(struct inode *inode, const
- 	if (!reiserfs_xattrs(inode->i_sb))
- 		return 0;
- 
--	if (!(capable(CAP_SYS_ADMIN) || is_reiserfs_priv_object(inode)))
-+	if (!(capable(CAP_SYS_ADMIN) || IS_PRIVATE(inode)))
- 		return 0;
- 
- 	if (out)
---- a/include/linux/reiserfs_xattr.h
-+++ b/include/linux/reiserfs_xattr.h
-@@ -44,7 +44,6 @@ struct reiserfs_xattr_handler {
- };
- 
- #ifdef CONFIG_REISERFS_FS_XATTR
--#define is_reiserfs_priv_object(inode) IS_PRIVATE(inode)
- #define has_xattr_dir(inode) (REISERFS_I(inode)->i_flags & i_has_xattr_dir)
- ssize_t reiserfs_getxattr(struct dentry *dentry, const char *name,
- 			  void *buffer, size_t size);
-@@ -104,11 +103,6 @@ static inline void reiserfs_read_unlock_
- 	up_read(&REISERFS_I(inode)->xattr_sem);
+ static int
+@@ -47,6 +48,59 @@ static size_t security_list(struct inode
+ 	return len;
  }
  
--static inline void reiserfs_mark_inode_private(struct inode *inode)
--{
--	inode->i_flags |= S_PRIVATE;
--}
--
- static inline void reiserfs_init_xattr_rwsem(struct inode *inode)
- {
- 	init_rwsem(&REISERFS_I(inode)->xattr_sem);
-@@ -116,8 +110,6 @@ static inline void reiserfs_init_xattr_r
++/* Initializes the security context for a new inode and returns the number
++ * of blocks needed for the transaction. If successful, reiserfs_security
++ * must be released using reiserfs_security_free when the caller is done. */
++int reiserfs_security_init(struct inode *dir, struct inode *inode,
++			   struct reiserfs_security_handle *sec)
++{
++	int blocks = 0;
++	int error = security_inode_init_security(inode, dir, &sec->name,
++						 &sec->value, &sec->length);
++	if (error) {
++		if (error == -EOPNOTSUPP)
++			error = 0;
++
++		sec->name = NULL;
++		sec->value = NULL;
++		sec->length = 0;
++		return error;
++	}
++
++	if (sec->length) {
++		blocks = reiserfs_xattr_jcreate_nblocks(inode) +
++			 reiserfs_xattr_nblocks(inode, sec->length);
++		/* We don't want to count the directories twice if we have
++		 * a default ACL. */
++		REISERFS_I(inode)->i_flags |= i_has_xattr_dir;
++	}
++	return blocks;
++}
++
++int reiserfs_security_write(struct reiserfs_transaction_handle *th,
++			    struct inode *inode,
++			    struct reiserfs_security_handle *sec)
++{
++	int error;
++	if (strlen(sec->name) < sizeof(XATTR_SECURITY_PREFIX))
++		return -EINVAL;
++
++	error = reiserfs_xattr_set_handle(th, inode, sec->name, sec->value,
++					  sec->length, XATTR_CREATE);
++	if (error == -ENODATA || error == -EOPNOTSUPP)
++		error = 0;
++
++	return error;
++}
++
++void reiserfs_security_free(struct reiserfs_security_handle *sec)
++{
++	kfree(sec->name);
++	kfree(sec->value);
++	sec->name = NULL;
++	sec->value = NULL;
++}
++
+ struct xattr_handler reiserfs_xattr_security_handler = {
+ 	.prefix = XATTR_SECURITY_PREFIX,
+ 	.get = security_get,
+--- a/include/linux/reiserfs_fs.h
++++ b/include/linux/reiserfs_fs.h
+@@ -1915,10 +1915,12 @@ void make_le_item_head(struct item_head 
+ 		       loff_t offset, int type, int length, int entry_count);
+ struct inode *reiserfs_iget(struct super_block *s, const struct cpu_key *key);
  
- #else
++struct reiserfs_security_handle;
+ int reiserfs_new_inode(struct reiserfs_transaction_handle *th,
+ 		       struct inode *dir, int mode,
+ 		       const char *symname, loff_t i_size,
+-		       struct dentry *dentry, struct inode *inode);
++		       struct dentry *dentry, struct inode *inode,
++		       struct reiserfs_security_handle *security);
  
--#define is_reiserfs_priv_object(inode) 0
--#define reiserfs_mark_inode_private(inode) do {;} while(0)
- #define reiserfs_getxattr NULL
- #define reiserfs_setxattr NULL
- #define reiserfs_listxattr NULL
+ void reiserfs_update_sd_size(struct reiserfs_transaction_handle *th,
+ 			     struct inode *inode, loff_t size);
+--- a/include/linux/reiserfs_xattr.h
++++ b/include/linux/reiserfs_xattr.h
+@@ -15,6 +15,12 @@ struct reiserfs_xattr_header {
+ 	__le32 h_hash;		/* hash of the value */
+ };
+ 
++struct reiserfs_security_handle {
++	char *name;
++	void *value;
++	size_t length;
++};
++
+ #ifdef __KERNEL__
+ 
+ #include <linux/init.h>
+@@ -54,6 +60,14 @@ int reiserfs_xattr_set_handle(struct rei
+ extern struct xattr_handler reiserfs_xattr_user_handler;
+ extern struct xattr_handler reiserfs_xattr_trusted_handler;
+ extern struct xattr_handler reiserfs_xattr_security_handler;
++#ifdef CONFIG_REISERFS_FS_SECURITY
++int reiserfs_security_init(struct inode *dir, struct inode *inode,
++			   struct reiserfs_security_handle *sec);
++int reiserfs_security_write(struct reiserfs_transaction_handle *th,
++			    struct inode *inode,
++			    struct reiserfs_security_handle *sec);
++void reiserfs_security_free(struct reiserfs_security_handle *sec);
++#endif
+ 
+ #define xattr_size(size) ((size) + sizeof(struct reiserfs_xattr_header))
+ static inline loff_t reiserfs_xattr_nblocks(struct inode *inode, loff_t size)
+@@ -109,6 +123,24 @@ static inline void reiserfs_init_xattr_r
+ }
+ #endif  /*  CONFIG_REISERFS_FS_XATTR  */
+ 
++#ifndef CONFIG_REISERFS_FS_SECURITY
++static inline int reiserfs_security_init(struct inode *dir,
++					 struct inode *inode,
++					 struct reiserfs_security_handle *sec)
++{
++	return 0;
++}
++static inline int
++reiserfs_security_write(struct reiserfs_transaction_handle *th,
++			struct inode *inode,
++			struct reiserfs_security_handle *sec)
++{
++	return 0;
++}
++static inline void reiserfs_security_free(struct reiserfs_security_handle *sec)
++{}
++#endif
++
+ #endif  /*  __KERNEL__  */
+ 
+ #endif  /*  _LINUX_REISERFS_XATTR_H  */
 
 
