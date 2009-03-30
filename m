@@ -1,73 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757612AbZC3C7s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758037AbZC3DCE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757612AbZC3C7s (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Mar 2009 22:59:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756291AbZC3C7j
+	id S1758037AbZC3DCE (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Mar 2009 23:02:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756286AbZC3DBw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Mar 2009 22:59:39 -0400
-Received: from rtr.ca ([76.10.145.34]:43737 "EHLO mail.rtr.ca"
+	Sun, 29 Mar 2009 23:01:52 -0400
+Received: from gw.goop.org ([64.81.55.164]:50459 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754595AbZC3C7i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Mar 2009 22:59:38 -0400
-Message-ID: <49D03596.8030802@rtr.ca>
-Date: Sun, 29 Mar 2009 22:59:34 -0400
-From: Mark Lord <lkml@rtr.ca>
-Organization: Real-Time Remedies Inc.
-User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
+	id S1754595AbZC3DBv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Mar 2009 23:01:51 -0400
+Message-ID: <49D0361C.3060901@goop.org>
+Date: Sun, 29 Mar 2009 20:01:48 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-To: Linux Kernel <linux-kernel@vger.kernel.org>,
-       v4l-dvb-maintainer@linuxtv.org, g.liakhovetski@gmx.de,
-       video4linux-list@redhat.com, ivtv-devel@ivtvdriver.org
-Subject: 2.6.29: ivtv-vbi.c:  divide-by-zero in compress_sliced_buf()
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: Bryan Donlan <bdonlan@gmail.com>
+CC: LKML <linux-kernel@vger.kernel.org>, xen-devel@lists.xensource.com
+Subject: Re: Bug: ptrace issues under x86_64 Xen kernel 2.6.29
+References: <3e8340490903252341u55abbc3aree9afc1b0a7703e6@mail.gmail.com>
+In-Reply-To: <3e8340490903252341u55abbc3aree9afc1b0a7703e6@mail.gmail.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The changes to line_size in 2.6.29 now cause
-attempts to record from my PVR250 cards (MythTV)
-to die with a divide by zero error in ivtv-vbi.c.
+Bryan Donlan wrote:
+> Using 2.6.29 or 2.6.28 as a 64-bit Xen domU, a number of ptrace()
+> users seem to have issues with unexpected breakpoints. ltrace and gdb
+> both seem to be affected, under both 64-bit and 32-bit userspace.
+> 32-bit kernels do not seem to be affected. Typical symptoms look like:
+>   
 
-The value of "line_size" in compress_sliced_buf() is zero.
+It looks like this is because the kernel sets up int3 (breakpoint) and 
+debug (watchpoints, etc) to be on a separate debug stack in the tss.  
+Xen doesn't do this (and doesn't appear to have a mechanism to do so), 
+so I guess the on-stack format isn't what the kernel expects.  Does the 
+patch below work?
 
-divide error: 0000 [#1] PREEMPT SMP 
-last sysfs file: /sys/block/sr0/removable
-CPU 0 
-Modules linked in: nfsd nfs lockd nfs_acl auth_rpcgss sunrpc ir_kbd_i2c ir_common battery sbs sbshc container ac usbhid tuner msp3400 saa7115 fan ivtv serio_raw nvidia(P) sky2 cx2341x firewire_ohci ehci_hcd thermal sg uhci_hcd intel_agp button processor xc5000 au8522 tea5767 tda9887 tda8290 tea5761 snd_usb_audio snd_usb_lib snd_hwdep au0828 usbcore tveeprom dvb_core snd_hda_codec_realtek snd_hda_intel snd_hda_codec snd_pcm_oss snd_mixer_oss snd_pcm snd_seq_dummy snd_seq_oss snd_seq_midi snd_rawmidi snd_seq_midi_event snd_seq snd_timer snd_seq_device snd soundcore snd_page_alloc firewire_sbp2 firewire_core crc_itu_t fuse
-Pid: 18548, comm: mythbackend Tainted: P       A   2.6.29 #1 OEM
-RIP: 0010:[<ffffffffa09cabc4>]  [<ffffffffa09cabc4>] compress_sliced_buf+0x5c/0x14a [ivtv]
-RSP: 0018:ffff88004e3b1c58  EFLAGS: 00010246
-RAX: 0000000000000000 RBX: ffff88007c1b8300 RCX: 0000000000000000
-RDX: 0000000000000000 RSI: 0000000000000000 RDI: ffff88007b5a0000
-RBP: ffff88007c1b8000 R08: 0000000000000000 R09: 0000000000000000
-R10: 0000000000000000 R11: ffffffffa09c0818 R12: ffff88007b5a0000
-R13: 0000000000000000 R14: 0000000000000000 R15: ffff88007b5a0000
-FS:  000000004f219950(0063) GS:ffffffff80683040(0000) knlGS:0000000000000000
-CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
-CR2: 00007fd267365000 CR3: 0000000078dea000 CR4: 00000000000006e0
-DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-Process mythbackend (pid: 18548, threadinfo ffff88004e3b0000, task ffff880056895580)
-Stack:
- 0000000000000000 ffff88007d199440 ffff88007e0e4e40 0000000000000202
- ffff880001013100 0000000000000000 ffff880001013118 ffffffff80219939
- 0000000000000002 0000000000000300 ffff88007c1b8000 ffff88007b5a0000
-Call Trace:
- [<ffffffff80219939>] ? native_flush_tlb_others+0xaa/0xb5
- [<ffffffffa09cb4a3>] ? ivtv_process_vbi_data+0x10f/0x51c [ivtv]
- [<ffffffff8026de33>] ? __do_fault+0x399/0x3e1
- [<ffffffff80223434>] ? ptep_set_access_flags+0x1a/0x1e
- [<ffffffff8026e6bd>] ? do_wp_page+0x5d8/0x64d
- [<ffffffffa09c0502>] ? ivtv_start_capture+0x54/0x217 [ivtv]
- [<ffffffffa09c0d8f>] ? ivtv_v4l2_read+0x577/0xac4 [ivtv]
- [<ffffffff80247d42>] ? getnstimeofday+0x56/0xb0
- [<ffffffff80244ad7>] ? ktime_get_ts+0x21/0x49
- [<ffffffff80241f34>] ? autoremove_wake_function+0x0/0x2e
- [<ffffffff802853e3>] ? vfs_read+0xaa/0x133
- [<ffffffff80285528>] ? sys_read+0x45/0x6e
- [<ffffffff8020b49b>] ? system_call_fastpath+0x16/0x1b
-Code: 0f 80 7b 02 00 75 09 8a 54 24 1f 38 53 03 74 09 ff c0 48 ff c3 39 c8 72 dd 29 c1 89 c8 44 39 f1 0f 82 e1 00 00 00 31 d2 45 31 ed <41> f7 f6 45 31 e4 89 44 24 18 31 ed e9 c0 00 00 00 89 e8 48 8d 
-RIP  [<ffffffffa09cabc4>] compress_sliced_buf+0x5c/0x14a [ivtv]
- RSP <ffff88004e3b1c58>
----[ end trace a154c5e5843294d8 ]---
+    J
+
+From: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+Date: Sun, 29 Mar 2009 19:56:29 -0700
+Subject: [PATCH] xen/x86-64: fix breakpoints and hardware watchpoints
+
+Native x86-64 uses the IST mechanism to run int3 and debug traps on
+an alternative stack.  Xen does not do this, and so the frames were
+being misinterpreted by the ptrace code.  This change special-cases
+these two exceptions by using Xen variants which run on the normal
+kernel stack properly.
+
+Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+
+diff --git a/arch/x86/include/asm/traps.h b/arch/x86/include/asm/traps.h
+index 0d53425..d696185 100644
+--- a/arch/x86/include/asm/traps.h
++++ b/arch/x86/include/asm/traps.h
+@@ -13,6 +13,8 @@ asmlinkage void divide_error(void);
+ asmlinkage void debug(void);
+ asmlinkage void nmi(void);
+ asmlinkage void int3(void);
++asmlinkage void xen_debug(void);
++asmlinkage void xen_int3(void);
+ asmlinkage void overflow(void);
+ asmlinkage void bounds(void);
+ asmlinkage void invalid_op(void);
+diff --git a/arch/x86/kernel/entry_64.S b/arch/x86/kernel/entry_64.S
+index 3f129d9..6cde382 100644
+--- a/arch/x86/kernel/entry_64.S
++++ b/arch/x86/kernel/entry_64.S
+@@ -1383,6 +1383,10 @@ END(xen_failsafe_callback)
+ 
+ paranoidzeroentry_ist debug do_debug DEBUG_STACK
+ paranoidzeroentry_ist int3 do_int3 DEBUG_STACK
++#ifdef CONFIG_XEN
++zeroentry xen_debug do_debug
++zeroentry xen_int3 do_int3
++#endif
+ paranoiderrorentry stack_segment do_stack_segment
+ errorentry general_protection do_general_protection
+ errorentry page_fault do_page_fault
+diff --git a/arch/x86/xen/enlighten.c b/arch/x86/xen/enlighten.c
+index 02b169e..f98124f 100644
+--- a/arch/x86/xen/enlighten.c
++++ b/arch/x86/xen/enlighten.c
+@@ -20,6 +20,7 @@
+ #include <linux/delay.h>
+ #include <linux/start_kernel.h>
+ #include <linux/sched.h>
++#include <linux/kprobes.h>
+ #include <linux/bootmem.h>
+ #include <linux/module.h>
+ #include <linux/mm.h>
+@@ -44,6 +45,7 @@
+ #include <asm/processor.h>
+ #include <asm/proto.h>
+ #include <asm/msr-index.h>
++#include <asm/traps.h>
+ #include <asm/setup.h>
+ #include <asm/desc.h>
+ #include <asm/pgtable.h>
+@@ -435,11 +437,24 @@ static void xen_write_ldt_entry(struct desc_struct *dt, int entrynum,
+ static int cvt_gate_to_trap(int vector, const gate_desc *val,
+ 			    struct trap_info *info)
+ {
++	unsigned long addr;
++
+ 	if (val->type != GATE_TRAP && val->type != GATE_INTERRUPT)
+ 		return 0;
+ 
+ 	info->vector = vector;
+-	info->address = gate_offset(*val);
++
++	addr = gate_offset(*val);
++#ifdef CONFIG_X86_64
++	if (addr == (unsigned long)debug)
++		addr = (unsigned long)xen_debug;
++	else if (addr == (unsigned long)int3)
++		addr = (unsigned long)xen_int3;
++	else
++		WARN_ON(val->ist != 0);
++#endif	/* CONFIG_X86_64 */
++	info->address = addr;
++
+ 	info->cs = gate_segment(*val);
+ 	info->flags = val->dpl;
+ 	/* interrupt gates clear IF */
+
+
