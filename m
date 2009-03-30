@@ -1,194 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753331AbZC3Ebn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755110AbZC3Eez@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753331AbZC3Ebn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Mar 2009 00:31:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751345AbZC3Ebe
+	id S1755110AbZC3Eez (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Mar 2009 00:34:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751095AbZC3Eeq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Mar 2009 00:31:34 -0400
-Received: from bilbo.ozlabs.org ([203.10.76.25]:56736 "EHLO bilbo.ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751131AbZC3Ebd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Mar 2009 00:31:33 -0400
-MIME-Version: 1.0
+	Mon, 30 Mar 2009 00:34:46 -0400
+Received: from pfepa.post.tele.dk ([195.41.46.235]:46582 "EHLO
+	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750969AbZC3Eep (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Mar 2009 00:34:45 -0400
+Date: Mon, 30 Mar 2009 06:36:43 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: avorontsov@ru.mvista.com, Steven Rostedt <srostedt@redhat.com>,
+       Ingo Molnar <mingo@elte.hu>, Paul Mackerras <paulus@samba.org>,
+       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/3] powerpc, Makefile: Make it possible to safely select CONFIG_FRAME_POINTER
+Message-ID: <20090330043643.GA31362@uranus.ravnborg.org>
+References: <20090320164404.GA19933@oksana.dev.rtsoft.ru> <20090320164429.GA28037@oksana.dev.rtsoft.ru> <1237607369.17367.7.camel@localhost.localdomain> <20090328104857.GA10897@oksana.dev.rtsoft.ru> <1238367290.20197.113.camel@pasglop>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18896.19227.471031.516118@cargo.ozlabs.ibm.com>
-Date: Mon, 30 Mar 2009 15:31:23 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>
-CC: linux-kernel@vger.kernel.org
-Subject: [PATCH v2] perf_counter: make it possible for hw_perf_counter_init to return error codes
-X-Mailer: VM 8.0.9 under Emacs 22.2.1 (i486-pc-linux-gnu)
+Content-Disposition: inline
+In-Reply-To: <1238367290.20197.113.camel@pasglop>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: better error reporting
+On Mon, Mar 30, 2009 at 09:54:50AM +1100, Benjamin Herrenschmidt wrote:
+> On Sat, 2009-03-28 at 13:48 +0300, Anton Vorontsov wrote:
+> > On Fri, Mar 20, 2009 at 11:49:29PM -0400, Steven Rostedt wrote:
+> > > Ben,
+> > > 
+> > > Can you ACK this patch? Or even take it in your tree?
+> > 
+> > Benjamin, have you had a chance to look into this? Sam, could
+> > you also take a look?
+> 
+> Those patches look ok. I'm a little bit surprised that -mno-sched-epilog
+> isn't needed, gcc weirdness never ceases to amaze me, but the
+> Makefile/Kconfig churning isn't for me to judge. If Sam is happy, then
+> let's merge it.
 
-At present, if hw_perf_counter_init encounters an error, all it can do
-is return NULL, which causes sys_perf_counter_open to return an EINVAL
-error to userspace.  This isn't very informative for userspace; it means
-that userspace can't tell the difference between "sorry, oprofile is
-already using the PMU" and "we don't support this CPU" and "this CPU
-doesn't support the requested generic hardware event".
+I will take a closer look tonight or tomorrow - as day-time job permits.
 
-This commit uses the PTR_ERR/ERR_PTR/IS_ERR set of macros to let
-hw_perf_counter_init return an error code on error rather than just NULL
-if it wishes.  If it does so, that error code will be returned from
-sys_perf_counter_open to userspace.  If it returns NULL, an EINVAL
-error will be returned to userspace, as before.
-
-This also adapts the powerpc hw_perf_counter_init to make use of this
-to return ENXIO, EINVAL, EBUSY, or EOPNOTSUPP as appropriate.  It would
-be good to add extra error numbers in future to allow userspace to
-distinguish the various errors that are currently reported as EINVAL,
-i.e. irq_period < 0, too many events in a group, conflict between
-exclude_* settings in a group, and PMU resource conflict in a group.
-
-[v2: fix a bug pointed out by Corey Ashford where error returns from
-hw_perf_counter_init were not handled correctly in the case of raw
-hardware events.]
-
-Signed-off-by: Paul Mackerras <paulus@samba.org>
----
- arch/powerpc/kernel/perf_counter.c |   14 +++++++-------
- kernel/perf_counter.c              |   35 ++++++++++++++++++++++-------------
- 2 files changed, 29 insertions(+), 20 deletions(-)
-
-diff --git a/arch/powerpc/kernel/perf_counter.c b/arch/powerpc/kernel/perf_counter.c
-index 1efd252..3ac2a2d 100644
---- a/arch/powerpc/kernel/perf_counter.c
-+++ b/arch/powerpc/kernel/perf_counter.c
-@@ -624,13 +624,13 @@ hw_perf_counter_init(struct perf_counter *counter)
- 	int err;
- 
- 	if (!ppmu)
--		return NULL;
-+		return ERR_PTR(-ENXIO);
- 	if ((s64)counter->hw_event.irq_period < 0)
--		return NULL;
-+		return ERR_PTR(-EINVAL);
- 	if (!perf_event_raw(&counter->hw_event)) {
- 		ev = perf_event_id(&counter->hw_event);
- 		if (ev >= ppmu->n_generic || ppmu->generic_events[ev] == 0)
--			return NULL;
-+			return ERR_PTR(-EOPNOTSUPP);
- 		ev = ppmu->generic_events[ev];
- 	} else {
- 		ev = perf_event_config(&counter->hw_event);
-@@ -656,14 +656,14 @@ hw_perf_counter_init(struct perf_counter *counter)
- 		n = collect_events(counter->group_leader, ppmu->n_counter - 1,
- 				   ctrs, events);
- 		if (n < 0)
--			return NULL;
-+			return ERR_PTR(-EINVAL);
- 	}
- 	events[n] = ev;
- 	ctrs[n] = counter;
- 	if (check_excludes(ctrs, n, 1))
--		return NULL;
-+		return ERR_PTR(-EINVAL);
- 	if (power_check_constraints(events, n + 1))
--		return NULL;
-+		return ERR_PTR(-EINVAL);
- 
- 	counter->hw.config = events[n];
- 	atomic64_set(&counter->hw.period_left, counter->hw_event.irq_period);
-@@ -687,7 +687,7 @@ hw_perf_counter_init(struct perf_counter *counter)
- 	counter->destroy = hw_perf_counter_destroy;
- 
- 	if (err)
--		return NULL;
-+		return ERR_PTR(err);
- 	return &power_perf_ops;
- }
- 
-diff --git a/kernel/perf_counter.c b/kernel/perf_counter.c
-index 3b862a7..541c2ac 100644
---- a/kernel/perf_counter.c
-+++ b/kernel/perf_counter.c
-@@ -2187,10 +2187,11 @@ perf_counter_alloc(struct perf_counter_hw_event *hw_event,
- {
- 	const struct hw_perf_counter_ops *hw_ops;
- 	struct perf_counter *counter;
-+	long err;
- 
- 	counter = kzalloc(sizeof(*counter), gfpflags);
- 	if (!counter)
--		return NULL;
-+		return ERR_PTR(-ENOMEM);
- 
- 	/*
- 	 * Single counters are their own group leaders, with an
-@@ -2240,12 +2241,18 @@ perf_counter_alloc(struct perf_counter_hw_event *hw_event,
- 		hw_ops = tp_perf_counter_init(counter);
- 		break;
- 	}
-+done:
-+	err = 0;
-+	if (!hw_ops)
-+		err = -EINVAL;
-+	else if (IS_ERR(hw_ops))
-+		err = PTR_ERR(hw_ops);
- 
--	if (!hw_ops) {
-+	if (err) {
- 		kfree(counter);
--		return NULL;
-+		return ERR_PTR(err);
- 	}
--done:
-+
- 	counter->hw_ops = hw_ops;
- 
- 	return counter;
-@@ -2318,10 +2325,10 @@ SYSCALL_DEFINE5(perf_counter_open,
- 			goto err_put_context;
- 	}
- 
--	ret = -EINVAL;
- 	counter = perf_counter_alloc(&hw_event, cpu, ctx, group_leader,
- 				     GFP_KERNEL);
--	if (!counter)
-+	ret = PTR_ERR(counter);
-+	if (IS_ERR(counter))
- 		goto err_put_context;
- 
- 	ret = anon_inode_getfd("[perf_counter]", &perf_fops, counter, 0);
-@@ -2393,8 +2400,8 @@ inherit_counter(struct perf_counter *parent_counter,
- 	child_counter = perf_counter_alloc(&parent_counter->hw_event,
- 					   parent_counter->cpu, child_ctx,
- 					   group_leader, GFP_KERNEL);
--	if (!child_counter)
--		return NULL;
-+	if (IS_ERR(child_counter))
-+		return child_counter;
- 
- 	/*
- 	 * Link it up in the child's context:
-@@ -2445,15 +2452,17 @@ static int inherit_group(struct perf_counter *parent_counter,
- {
- 	struct perf_counter *leader;
- 	struct perf_counter *sub;
-+	struct perf_counter *child_ctr;
- 
- 	leader = inherit_counter(parent_counter, parent, parent_ctx,
- 				 child, NULL, child_ctx);
--	if (!leader)
--		return -ENOMEM;
-+	if (IS_ERR(leader))
-+		return PTR_ERR(leader);
- 	list_for_each_entry(sub, &parent_counter->sibling_list, list_entry) {
--		if (!inherit_counter(sub, parent, parent_ctx,
--				     child, leader, child_ctx))
--			return -ENOMEM;
-+		child_ctr = inherit_counter(sub, parent, parent_ctx,
-+					    child, leader, child_ctx);
-+		if (IS_ERR(child_ctr))
-+			return PTR_ERR(child_ctr);
- 	}
- 	return 0;
- }
--- 
-1.5.6.3
-
+	Sam
