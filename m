@@ -1,26 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759657AbZC3Var@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760307AbZC3VbU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759657AbZC3Var (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Mar 2009 17:30:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757172AbZC3VaG
+	id S1760307AbZC3VbU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Mar 2009 17:31:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757075AbZC3Va6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Mar 2009 17:30:06 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:43620 "EHLO
+	Mon, 30 Mar 2009 17:30:58 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:46466 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756754AbZC3VaE (ORCPT
+	by vger.kernel.org with ESMTP id S1756983AbZC3Va5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Mar 2009 17:30:04 -0400
-Date: Mon, 30 Mar 2009 14:22:00 -0700
+	Mon, 30 Mar 2009 17:30:57 -0400
+Date: Mon, 30 Mar 2009 14:26:10 -0700
 From: Andrew Morton <akpm@linux-foundation.org>
-To: Boaz Harrosh <bharrosh@panasas.com>
-Cc: avishay@gmail.com, jeff@garzik.org, linux-fsdevel@vger.kernel.org,
-       osd-dev@open-osd.org, zbr@ioremap.net,
-       James.Bottomley@HansenPartnership.com, linux-kernel@vger.kernel.org,
-       fujita.tomonori@lab.ntt.co.jp, linux-next@vger.kernel.org
-Subject: Re: [PATCHSET 0/8 version 4] exofs for kernel 2.6.30
-Message-Id: <20090330142200.af4b497c.akpm@linux-foundation.org>
-In-Reply-To: <49C1331D.1080805@panasas.com>
-References: <49C1331D.1080805@panasas.com>
+To: Eric Paris <eparis@redhat.com>
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, peterz@infradead.org,
+       balbir@linux.vnet.ibm.com, eparis@redhat.com,
+       linux-fsdevel@vger.kernel.org, aviro@redhat.com
+Subject: Re: [PATCH] make inotify event handles use GFP_NOFS
+Message-Id: <20090330142610.4b94935d.akpm@linux-foundation.org>
+In-Reply-To: <1237400852.26799.16.camel@localhost.localdomain>
+References: <1237400852.26799.16.camel@localhost.localdomain>
 X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -29,52 +28,39 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 18 Mar 2009 19:45:01 +0200
-Boaz Harrosh <bharrosh@panasas.com> wrote:
+On Wed, 18 Mar 2009 14:27:32 -0400
+Eric Paris <eparis@redhat.com> wrote:
 
-> What's new since last iteration:
+> I think this is a bandaide to shut up lockdep.  I could either figure
+> out lockdep classes and figure out how to reclassify inotify locks since
+> I believe Nick is correct when he says inotify watches pin the inode in
+> core so memory pressure can't evict it.
+
+It's pretty sad to degrading the strength of the memory allocation just
+to squish a lockdep report.
+
+>  I don't want to do that as I
+> think the real fix is my next generation fsnotify which does zero
+> allocations under locks and so everything can be GFP_KERNEL.
+
+I assume that's the 13-patch series further down in my todo pile.
+
+Perhaps this workaround is suitable for 2.6.29.x, or 2.6.30 if the
+13-patch-series was too late.  But do we care enough?
+
+
+>  I'm
+> posting this as it is clearly safe and should fix the issue.
 > 
-> * I completely re-wrote the [PATCH 4/8] exofs: address_space_operations
->   in which we actually write/read to/from osd-storage. The difference is
->   that now we try to accumulate as many contiguous pages as possible and
->   send them as one large request. As opposed to writing each page at a
->   time, in the previous patchset.
+> http://marc.info/?l=linux-kernel&m=123617147432377&w=2
 > 
-> * [PATCH 5/8] exofs: dir_inode and directory operations received lots
->   of love thanks to Evgeniy Polyakov's grate comments.
+> includes a lockdep warning that shows while we are reclaiming FS memory
+> and inode may get evicted which generates an IN_IGNORED message.  Half
+> of that code path already used GFP_NOFS but a second allocation to store
+> the filename was using GFP_KERNEL.  As a precaution I also moved the
+> audit handle_event code path to use GFP_NOFS.
 > 
-> exofs is a file system that uses an OSD device as it's back store.
+> This is much the same as the precaution in f04b30de3c82528 which did
+> something similar.
 > 
-> OSD is a new T10 command set that views storage devices not as a large/flat
-> array of sectors but as a container of objects, each having a length, quota,
-> time attributes and more. Each object is addressed by a 64bit ID, and is
-> contained in a 64bit ID partition. Each object has associated attributes
-> attached to it, which are integral part of the object and provide metadata about
-> the object. The standard defines some common obligatory attributes, but user
-> attributes can be added as needed.
-> 
-> Here is the list of patches
-> [PATCH 1/8] exofs: Kbuild, Headers and osd utils
-> [PATCH 2/8] exofs: file and file_inode operations
-> [PATCH 3/8] exofs: symlink_inode and fast_symlink_inode operations
-> [PATCH 4/8] exofs: address_space_operations
-> [PATCH 5/8] exofs: dir_inode and directory operations
-> [PATCH 6/8] exofs: super_operations and file_system_type
-> [PATCH 7/8] exofs: Documentation
-> [PATCH 8/8] fs: Add exofs to Kernel build
-
-Are all the prerequisites for exofs now in mainline?
-
-> This patchset is also available on:
->   git-clone git://git.open-osd.org/linux-open-osd.git linux-next
-> or on the web at:
->   http://git.open-osd.org/gitweb.cgi?p=linux-open-osd.git;a=shortlog;h=refs/heads/linux-next
-
-Well I could merge them, but given that you have a git tree, a more
-convenient path would be for us to include your tree in linux-next and
-then you ask Linus to pull it directly when the time comes.
-
-I'm unsure when that time will come.  Who has reviewed this work and
-what was the result?
-
 
