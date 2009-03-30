@@ -1,64 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758221AbZC3JHi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756980AbZC3JMn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758221AbZC3JHi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Mar 2009 05:07:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755609AbZC3JH3
+	id S1756980AbZC3JMn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Mar 2009 05:12:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753751AbZC3JMd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Mar 2009 05:07:29 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:40865 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755158AbZC3JH2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Mar 2009 05:07:28 -0400
-Message-ID: <49D08BC7.6070002@jp.fujitsu.com>
-Date: Mon, 30 Mar 2009 18:07:19 +0900
-From: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
+	Mon, 30 Mar 2009 05:12:33 -0400
+Received: from hera.kernel.org ([140.211.167.34]:58398 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752429AbZC3JMc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Mar 2009 05:12:32 -0400
+Message-ID: <49D08CEC.3010705@kernel.org>
+Date: Mon, 30 Mar 2009 18:12:12 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-To: Andi Kleen <ak@linux.intel.com>
-CC: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH -tip 3/3] x86, mce: Add mce=nopoll option to disable timer
- polling
-References: <49CB3F4B.8070406@jp.fujitsu.com> <49CB4453.6000407@linux.intel.com> <49CCA122.8070908@jp.fujitsu.com> <49CCBC07.6000004@linux.intel.com>
-In-Reply-To: <49CCBC07.6000004@linux.intel.com>
-Content-Type: text/plain; charset=ISO-2022-JP
+To: petkovbb@gmail.com, Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Tejun Heo <tj@kernel.org>, linux-kernel@vger.kernel.org,
+       axboe@kernel.dk, linux-ide@vger.kernel.org
+CC: Boaz Harrosh <bharrosh@panasas.com>
+Subject: Re: [PATCHSET pata-2.6] ide: rq->buffer, data, special and misc	cleanups
+References: <1237910776-10983-1-git-send-email-tj@kernel.org> <200903281451.01361.bzolnier@gmail.com> <20090328140405.GA2741@liondog.tnic>
+In-Reply-To: <20090328140405.GA2741@liondog.tnic>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 30 Mar 2009 09:12:16 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
->>> Also I'm not sure a boot argument is really needed. Isn't it
->>> good enough to do this early at boot through sysfs?
->> Maybe it is good for this option, as far as polling never run
->> so soon.  Because sysfs is available after start of polling
->> timer, boot argument is required just in theory of logics.
+Borislav Petkov wrote:
+> On Sat, Mar 28, 2009 at 02:51:01PM +0100, Bartlomiej Zolnierkiewicz wrote:
 > 
-> I think the best way would be to just not run mcelog if you want
-> the BIOS to log all. The only problem I guess is that users might be confused
-> by the printk. So perhaps just do a patch to shut down the printk?
-
-How to prevent banks from clearing?
-
->> One another problem is that there are multiple documentations for
->> machinecheck parameters, but not linked well:
->>
->>  - Documentation/kernel-parameters.txt
->>     ("See Documentation/x86/x86_64/boot-options.txt" for "mce=")
->>  - Documentation/x86/x86_64/boot-options.txt
->>     ("AMD64 specific boot options" is not true now!)
->>  - Documentation/x86/x86_64/machinecheck
->>     (which I had not noticed the existence at first, oops!)
+> [..]
 > 
-> machinecheck is for the sysfs interface, boot options is for the boot parameters.
+>>> Bartlomiej, if you're okay with the changes and Jens acks the patches
+>>> and pushing the first three patches via pata-2.6, please feel free to
+>>> include these patches into your tree.
+>> Everything looks fine to me.  Once I get Jens' ack (block bits)
+>> and Borislav's one (ATAPI bits) I'll happily merge this patchset.
 > 
-> I guess a reference could be added to machinecheck to point to boot-options.txt
+> Yep, I just finished testing the whole series here so you can go ahead
+> and apply them pending a recast of patch 07/14 you'll hopefully be
+> receiving soon from Tejun.
 
-Vice verse, I suppose.
-boot-options.txt just have "Everything else is in sysfs now." without pointing
-machinecheck that describe the sysfs well.
+After the earlier discussion with Boaz Harrosh, I ended up redoing the
+blk_rq_map_{kern|user}_*() stuff and am now in the process of testing
+it.  The patchset is rather large (20+ patches).  As the prealloc
+patch would fit on top of that series, I think it would be better to
+sequence things via git merge.  Is there a git tree I can use for
+pata-2.6 changes?  Or is the current linus master okay?
 
+Thanks.
 
-Thanks,
-H.Seto
+P.S.: Boaz, the above patchset implements blk_rq_map_kern_sgl() and
+kills the SCSI layer hack.  That was the issue you were trying to
+solve, right?
 
+-- 
+tejun
