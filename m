@@ -1,150 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753919AbZC3RQp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755621AbZC3RTo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753919AbZC3RQp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Mar 2009 13:16:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755998AbZC3RLw
+	id S1755621AbZC3RTo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Mar 2009 13:19:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751061AbZC3RTf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Mar 2009 13:11:52 -0400
-Received: from smtp-vbr12.xs4all.nl ([194.109.24.32]:3039 "EHLO
-	smtp-vbr12.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756000AbZC3RLv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Mar 2009 13:11:51 -0400
-From: Hans Verkuil <hverkuil@xs4all.nl>
-To: Mark Lord <lkml@rtr.ca>
-Subject: Re: bttv ir patch from Mark Lord
-Date: Mon, 30 Mar 2009 19:11:40 +0200
-User-Agent: KMail/1.9.9
-Cc: Michael Krufky <mkrufky@linuxtv.org>, linux-media@vger.kernel.org,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-References: <200903301835.55023.hverkuil@xs4all.nl> <49D0FBCE.8050408@rtr.ca> <49D0FC14.6010109@rtr.ca>
-In-Reply-To: <49D0FC14.6010109@rtr.ca>
+	Mon, 30 Mar 2009 13:19:35 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:45592 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751417AbZC3RTe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Mar 2009 13:19:34 -0400
+Message-ID: <49D0FF1E.3010804@redhat.com>
+Date: Mon, 30 Mar 2009 13:19:26 -0400
+From: Ric Wheeler <rwheeler@redhat.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+To: Pavel Machek <pavel@ucw.cz>
+CC: Artem Bityutskiy <dedekind@yandex.ru>,
+       Artem Bityutskiy <Artem.Bityutskiy@nokia.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: replace() system call needed (was Re: EXT4-ish "fixes" in UBIFS)
+References: <49CCCB0A.6070701@nokia.com> <20090329122600.GA13737@elf.ucw.cz> <49CF6CBB.7070907@yandex.ru> <20090329124959.GD15492@elf.ucw.cz>
+In-Reply-To: <20090329124959.GD15492@elf.ucw.cz>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200903301911.40249.hverkuil@xs4all.nl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 30 March 2009 19:06:28 Mark Lord wrote:
-> Michael Krufky wrote:
-> > Mark Lord wrote:
-> >> Michael Krufky wrote:
-> >>> Hans Verkuil wrote:
-> >>>> Hi Mike,
-> >>>>
-> >>>> The attached patch should be queued for 2.6.29.X. It corresponds to
-> >>>> changeset 11098 (v4l2-common: remove incorrect MODULE test) in our
-> >>>> v4l-dvb tree and is part of the initial set of git patches going
-> >>>> into 2.6.30.
-> >>>>
-> >>>> Without this patch loading ivtv as a module while v4l2-common is
-> >>>> compiled into the kernel will cause a delayed load of the i2c
-> >>>> modules that ivtv needs since request_module is never called
-> >>>> directly.
-> >>>>
-> >>>> While it is nice to see the delayed load in action, it is not so
-> >>>> nice in that ivtv fails to do a lot of necessary i2c initializations
-> >>>> and will oops later on with a division-by-zero.
-> >>>>
-> >>>> Thanks to Mark Lord for reporting this and helping me figure out
-> >>>> what was wrong.
-> >>>>
-> >>>> Regards,
-> >>>>
-> >>>>     Hans
-> >>>
-> >>> Got it, thanks.
-> >>>
-> >>> In the future, please point to hash codes rather than revision ID's
-> >>> -- my rev IDs are not the same as yours, but hash codes are always
-> >>> unique.
-> >>>
-> >>> I'll queue this the moment Linus merges Mauro's pending request.
-> >>
-> >> ..
-> >>
-> >> Can either of you guys figure out how to get this patch (or something
-> >> equivalent) merged?  It's been pending for some time now.
-> >>
-> >> Thanks.
-> >>
-> >> Message-ID: <49884CCB.3070309@rtr.ca>
-> >> Date: Tue, 03 Feb 2009 08:55:23 -0500
-> >> From: Mark Lord <lkml@rtr.ca>
-> >> MIME-Version: 1.0
-> >> To: video4linux-list@redhat.com, Linux Kernel
-> >> <linux-kernel@vger.kernel.org> Subject: [PATCH] ir-kbd-i2c: support
-> >> Hauppauge HVR-1600 R/C port Content-Type: text/plain; charset=UTF-8;
-> >> format=flowed
-> >> Content-Transfer-Encoding: 7bit
-> >>
-> >> (resending, with video4linux-list@redhat.com this time)
-> >>
-> >> Update the ir-kbd-i2c driver to recognize the remote-control port
-> >> on the Hauppauge HV-1600 hybrid tuner card.
-> >>
-> >> Signed-off-by: Mark Lord <mlord@pobox.com>
-> >>
-> >> --- old/drivers/media/video/ir-kbd-i2c.c    2008-12-24
-> >> 18:26:37.000000000 -0500 +++ linux/drivers/media/video/ir-kbd-i2c.c   
-> >> 2009-02-01 13:08:19.000000000 -0500 @@ -354,6 +354,11 @@
-> >>             } else {
-> >>                 ir_codes    = ir_codes_rc5_tv;
-> >>             }
-> >> +        } else if (adap->id == I2C_HW_B_CX2341X) {
-> >> +            name        = "Hauppauge";
-> >> +            ir_type     = IR_TYPE_RC5;
-> >> +            ir->get_key = get_key_haup_xvr;
-> >> +            ir_codes    = ir_codes_hauppauge_new;
-> >>         } else {
-> >>             /* Handled by saa7134-input */
-> >>             name        = "SAA713x remote";
-> >> @@ -449,7 +454,7 @@
-> >>        That's why we probe 0x1a (~0x34) first. CB
-> >>     */
-> >>
-> >> -    static const int probe_bttv[] = { 0x1a, 0x18, 0x4b, 0x64, 0x30,
-> >> -1}; +    static const int probe_bttv[] = { 0x1a, 0x18, 0x4b, 0x64,
-> >> 0x30, 0x71, -1}; static const int probe_saa7134[] = { 0x7a, 0x47,
-> >> 0x71, 0x2d, -1 }; static const int probe_em28XX[] = { 0x30, 0x47, -1
-> >> };
-> >>     static const int probe_cx88[] = { 0x18, 0x6b, 0x71, -1 };
-> >
-> > looks like a zilog, and you should use LIRC for that.
+Pavel Machek wrote:
+>>>> We have a problem that user-space people do not want to
+>>>> use 'fsync()', even when they are pointed to their code
+>>>> which is doing create/write/rename/close without fsync().
+>>>>         
+>>> Well... they really don't want to spin the disk up for the
+>>> fsync(). I'm not sure if fsync() is really sensible operation to use
+>>> there.
+>>>       
+>> I'm personally concerned about hand-held, and in case of UBIFS
+>> fsync is not too expensive - we work on flash and on fsync() we
+>> write back only the stuff belonging to inode in question, and
+>> nothing else.
+>>     
 >
-> ..
+> Well, I'm more concerned about spinning disks, having one even in my
+> zaurus. And I do believe that fsync() will write more data than
+> neccessary even in flash case.
 >
-> It's a Hauppauge remote port, just like the one on the (supported)
-> PVR-250. And I don't want the LIRC monstrosity when there's a perfectly
-> good kernel driver to run it directly.  The patch does not prevent others
-> from using LIRC.
+>   
+>>>> 1. truncate/write/close leads to empty files
+>>>>         
+>>> this is buggy.
+>>>       
+>> In FS, or in application?
+>>     
 >
-> > PLEASE  DO NOT HIJAAK unrelated threads with unrelated emails.
+> Application is buggy; no way kernel can help there.
 >
-> ..
+>   
+>>>> 2. create/write/rename leads to empty files
+>>>>         
+>>> ..but this should not be. If we want to make that explicit, we should
+>>> provide "replace()" operation; where replace is rename that makes sure
+>>> that source file is completely on media before commiting the rename.
+>>>       
+>> Well, OK, we can fsync() before rename, we just need clean rules
+>> for this, so that all Linux FSes would follow them. Would be nice
+>> to have final agreement on all this stuff.
+>>     
 >
-> "Hijack", not "HIJAAK".   :)
+> My proposal is 
 >
-> Resending to copy linux-kernel again.
-> Please do not edit/delete lists from the email headers, thanks.
+> rename() stays.
 >
-> thanks.
+> replace(src, bar) is rename that ensures that bar will contain valid
+> data after powerfail.
+>   
 
-It's best to wait a bit. Jean Delvare is working on this ir-kbd-i2c driver 
-right now and when he's finished it should be much easier to add this. Most 
-importantly you can add this new i2c address to the cx18 driver rather than 
-add it to the probe_bttv list, which is rather overloaded anyway.
+Surely the only way to "insure" this is to spin up the drive, write the 
+meta-data and data back and make sure that it is not held in volatile 
+write cache?
 
-He should be finished within 1-3 weeks I guess. Probably sooner rather than 
-later. Just watch the linux-media list for it.
+Why would calling this replace be better or more power efficient than 
+what you need to do today?
 
-Regards,
+ric
 
-	Hans
+>   
+>>> It is somehow similar to fsync()/rename(), but does not force disk
+>>> spin up immediately -- it only inserts "barrier" between data blocks
+>>> and rename. (And yes, it should be implemented as fsync()+rename() for
+>>> filesystems like xfs. It can be implemented as plain rename for ext3
+>>> and ext4 after the fixes...)
+>>>       
+>> Right. But I guess only few file-systems would really implement
+>> this, because this is complex.
+>>     
+>
+> Complex yes, but at least ext3+ext4+btrfs should, and they really have
+> 90% of "market share" :-). ext3 and ext4 implementations are already
+> done :-).
+> 								Pavel
+>   
 
--- 
-Hans Verkuil - video4linux developer - sponsored by TANDBERG
