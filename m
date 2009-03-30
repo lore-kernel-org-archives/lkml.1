@@ -1,90 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759230AbZC3THR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759326AbZC3TIb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759230AbZC3THR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Mar 2009 15:07:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759013AbZC3TG7
+	id S1759326AbZC3TIb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Mar 2009 15:08:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759136AbZC3TIM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Mar 2009 15:06:59 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:39283 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758990AbZC3TG6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Mar 2009 15:06:58 -0400
-Message-ID: <49D11806.80408@garzik.org>
-Date: Mon, 30 Mar 2009 15:05:42 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Mon, 30 Mar 2009 15:08:12 -0400
+Received: from wa-out-1112.google.com ([209.85.146.179]:12903 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756346AbZC3TIJ convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Mar 2009 15:08:09 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=mEJlTrRh1XeDki29shkqn23PbepNS0AMUjMhmWWJhaAVL+6nfNJhsOoT3puI9Dhc0j
+         fWKQmtZt0nKbJCTjyTfDR+26Es8seJRbJQTXdTtSs3QWmqbr87Uj6aFBi9E4bOEdHbyZ
+         s3taQi6xXHm/o4TXnB2zuo0HTKvWdfHGpZxKA=
 MIME-Version: 1.0
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-CC: Ric Wheeler <rwheeler@redhat.com>, Jens Axboe <jens.axboe@oracle.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Theodore Tso <tytso@mit.edu>, Ingo Molnar <mingo@elte.hu>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Nick Piggin <npiggin@suse.de>,
-       David Rees <drees76@gmail.com>, Jesper Krogh <jesper@krogh.cc>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: range-based cache flushing (was Re: Linux 2.6.29)
-References: <20090324093245.GA22483@elte.hu>	 <20090324101011.6555a0b9@lxorguk.ukuu.org.uk>	 <20090324103111.GA26691@elte.hu> <20090324132032.GK5814@mit.edu>	 <alpine.LFD.2.00.0903241053200.3032@localhost.localdomain>	 <20090324184549.GE32307@mit.edu>	 <alpine.LFD.2.00.0903241218130.3032@localhost.localdomain>	 <49C93AB0.6070300@garzik.org> <20090325093913.GJ27476@kernel.dk>	 <49CA86BD.6060205@garzik.org> <20090325194341.GB27476@kernel.dk>	 <49CA8ADA.3040709@redhat.com> <49CA9114.3040205@garzik.org>	 <49CA9324.6010407@redhat.com> <1238016170.3281.36.camel@localhost.localdomain>
-In-Reply-To: <1238016170.3281.36.camel@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+In-Reply-To: <ac3eb2510903301142h21dec2eajd03057095aa4f11c@mail.gmail.com>
+References: <49CF9BA1.5030400@archlinux.org>
+	 <20090329091148.16a618bf@infradead.org>
+	 <49CFA436.5080000@archlinux.org>
+	 <ac3eb2510903291036w13dc34cbi97525e6dd9af1da5@mail.gmail.com>
+	 <49CFB553.1020800@archlinux.org>
+	 <ac3eb2510903291106k27902bafpa8231d6781f8f5c@mail.gmail.com>
+	 <e9c3a7c20903301123l3f05264cvb8522dd4cb030b2f@mail.gmail.com>
+	 <ac3eb2510903301142h21dec2eajd03057095aa4f11c@mail.gmail.com>
+Date: Mon, 30 Mar 2009 12:08:07 -0700
+X-Google-Sender-Auth: 0422d50bcab69e7e
+Message-ID: <e9c3a7c20903301208k6fe17c92xe855a3c85d893454@mail.gmail.com>
+Subject: Re: fastboot/async and initramfs: How am I supposed to know when 
+	devices are finished initializing?
+From: Dan Williams <dan.j.williams@intel.com>
+To: Kay Sievers <kay.sievers@vrfy.org>
+Cc: =?ISO-8859-1?Q?Thomas_B=E4chler?= <thomas@archlinux.org>,
+       Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-James Bottomley wrote:
-> On Wed, 2009-03-25 at 16:25 -0400, Ric Wheeler wrote:
->> Jeff Garzik wrote:
->>> Ric Wheeler wrote:> And, as I am sure that you do know, to add insult 
->>> to injury, FLUSH_CACHE
->>>> is per device (not file system).
+On Mon, Mar 30, 2009 at 11:42 AM, Kay Sievers <kay.sievers@vrfy.org> wrote:
+> On Mon, Mar 30, 2009 at 20:23, Dan Williams <dan.j.williams@intel.com> wrote:
+>
+>> settle: allow --timeout=0 to test for "queue busy"
+>
+>> +       if (!udev_queue_get_queue_is_empty(udev_queue))
+>> +               rc = 1;
+>
+> You mean, we should not wait? Then we need to check for timeout == 0
+> and return immediately instead of entering the checking loop at all,
+> right?
+>
 
->>>> When you issue an fsync() on a disk with multiple partitions, you 
->>>> will flush the data for all of its partitions from the write cache....
->>> SCSI'S SYNCHRONIZE CACHE command already accepts an (LBA, length) 
->>> pair.  We could make use of that.
+We already skip if loop==0...?
 
->>> And I bet we could convince T13 to add FLUSH CACHE RANGE, if we could 
->>> demonstrate clear benefit.
+</me checks latest git>
 
->> How well supported is this in SCSI?  Can we try it out with a commodity 
->> SAS drive?
+Oh, this patch (against 138) needs to be reworked.
 
-> What do you mean by well supported?  The way the SCSI standard is
-> written, a device can do a complete cache flush when a range flush is
-> requested and still be fully standards compliant.  There's no easy way
-> to tell if it does a complete cache flush every time other than by
-> taking the firmware apart (or asking the manufacturer).
-
-Quite true, though wondering aloud...
-
-How difficult would it be to pass the "lower-bound" LBA to SYNCHRONIZE 
-CACHE, where "lower bound" is defined as the lowest sector in the range 
-of sectors to be flushed?
-
-That seems like a reasonable optimization -- it gives the drive an easy 
-way to skip sync'ing sectors lower than the lower-bound LBA, if it is 
-capable.  Otherwise, a standards-compliant firmware will behave as you 
-describe, and do what our code currently expects today -- a full cache 
-flush.
-
-This seems like a good way to speed up cache flush [on SCSI], while also 
-perhaps experimenting with a more fine-grained way to pass down write 
-barriers to the device.
-
-Not a high priority thing overall, but OTOH, consider the case of 
-placing your journal at the end of the disk.  You could then issue a 
-cache flush with a non-zero starting offset:
-
-	SYNCHRONIZE CACHE (max sectors - JOURNAL_SIZE, ~0)
-
-That should be trivial even for dumb disk firmwares to optimize.
-
-	Jeff
-
-
-
+Thanks,
+Dan
