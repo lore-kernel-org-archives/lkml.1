@@ -1,73 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757975AbZC3KnA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752422AbZC3Kog@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757975AbZC3KnA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Mar 2009 06:43:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755889AbZC3Kmt
+	id S1752422AbZC3Kog (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Mar 2009 06:44:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751430AbZC3Ko1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Mar 2009 06:42:49 -0400
-Received: from mtagate8.de.ibm.com ([195.212.29.157]:56742 "EHLO
-	mtagate8.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755477AbZC3Kmt (ORCPT
+	Mon, 30 Mar 2009 06:44:27 -0400
+Received: from mga12.intel.com ([143.182.124.36]:56683 "EHLO
+	azsmga102.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751009AbZC3Ko0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Mar 2009 06:42:49 -0400
-Date: Mon, 30 Mar 2009 12:42:11 +0200
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-To: Tejun Heo <tj@kernel.org>
-Cc: mingo@elte.hu, rusty@rustcorp.com.au, tglx@linutronix.de, x86@kernel.org,
-       linux-kernel@vger.kernel.org, hpa@zytor.com,
-       Paul Mundt <lethal@linux-sh.org>, rmk@arm.linux.org.uk,
-       starvik@axis.com, ralf@linux-mips.org, davem@davemloft.net,
-       cooloney@kernel.org, kyle@mcmartin.ca, matthew@wil.cx,
-       grundler@parisc-linux.org, takata@linux-m32r.org,
-       benh@kernel.crashing.org, rth@twiddle.net, ink@jurassic.park.msu.ru,
-       heiko.carstens@de.ibm.com
-Subject: Re: [PATCH UPDATED] percpu: use dynamic percpu allocator as the
- default percpu allocator
-Message-ID: <20090330124211.2476207c@skybase>
-In-Reply-To: <49D099F0.3000807@kernel.org>
-References: <1236671631-9305-1-git-send-email-tj@kernel.org>
-	<20090316190132.7965a49a@skybase>
-	<49C300D8.5080204@kernel.org>
-	<49C8FAC4.6060508@kernel.org>
-	<20090325122738.42d105b7@skybase>
-	<49CA1AC3.9080908@kernel.org>
-	<20090325150035.541e707a@skybase>
-	<49CA3C2C.5030702@kernel.org>
-	<49D099F0.3000807@kernel.org>
-Organization: IBM Corporation
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.14.7; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 30 Mar 2009 06:44:26 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.38,446,1233561600"; 
+   d="scan'208";a="125588567"
+Message-ID: <49D0A29E.2040406@linux.intel.com>
+Date: Mon, 30 Mar 2009 12:44:46 +0200
+From: Andi Kleen <ak@linux.intel.com>
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
+MIME-Version: 1.0
+To: "Metzger, Markus T" <markus.t.metzger@intel.com>
+CC: Oleg Nesterov <oleg@redhat.com>,
+       Markus Metzger <markus.t.metzger@googlemail.com>,
+       Ingo Molnar <mingo@elte.hu>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "tglx@linutronix.de" <tglx@linutronix.de>,
+       "hpa@zytor.com" <hpa@zytor.com>,
+       "roland@redhat.com" <roland@redhat.com>,
+       "eranian@googlemail.com" <eranian@googlemail.com>,
+       "Villacis, Juan" <juan.villacis@intel.com>,
+       "ak@linux.jf.intel.com" <ak@linux.jf.intel.com>
+Subject: Re: [patch 3/14] x86, ptrace, bts: stop bts tracing early in	do_exit
+References: <20090327095525.A11052@sedona.ch.intel.com> <20090327143435.GD14504@redhat.com> <928CFBE8E7CB0040959E56B4EA41A77E9266B6D4@irsmsx504.ger.corp.intel.com> <20090327172413.GC25762@redhat.com> <1238239912.6036.0.camel@raistlin> <20090330012204.GA2058@redhat.com> <928CFBE8E7CB0040959E56B4EA41A77E9266B8A9@irsmsx504.ger.corp.intel.com>
+In-Reply-To: <928CFBE8E7CB0040959E56B4EA41A77E9266B8A9@irsmsx504.ger.corp.intel.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 30 Mar 2009 19:07:44 +0900
-Tejun Heo <tj@kernel.org> wrote:
 
-> Okay, this should keep s390 and alpha working till proper solution is
-> found.  Martin, can you please verify?  Ingo, please feel free to push
-> this upstream (or -next) once Martin acks.
+> 
+>>> ds_release_bts(struct bts_tracer *tracer)
+>>> {
+>>> 	struct task_struct *task =
+>>> 		tracer->ds.context->task;
+>>>
+>>> 	do {
+>>> 		set_task_state(task, TASK_UNINTERRUPTIBLE);
+>> Oh, this is not right,
+> 
+> Agreed.
+> 
+> I wonder if it is ever safe to change another task's state.
+> There's a lot of code that sets the task state seemingly
+> unprotected - but always for current.
 
-Looks good, everything compiles and the static per-cpu variables are
-resolved via GOTENT:
+It should be safe when you can guarantee that the other task is stopped
+(as in ptrace) and you protect against yourself (only a single
+external writer)
 
-Acked-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
-
-For the proper solution, the easiest fix is imho to define a
-variant of SHIFT_PERCPU_PTR. The macro is currently used for dynamic
-pointers and for per-cpu symbols. We only want to use the GOTENT
-indirection for per-cpu symbols. So why don't we split it into
-1) SHIFT_PERCPU_SYMBOL for per-cpu symbols and
-2) SHIFT_PERCPU_PTR for dynamically allocated pointers?
-For s390 the first would be the current SHIFT_PERCPU_PTR macro, the
-second would be a simple RELOC_HIDE. The patch would be really
-short ..
-
--- 
-blue skies,
-   Martin.
-
-"Reality continues to ruin my life." - Calvin.
-
+-Andi
