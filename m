@@ -1,61 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752970AbZC3Lnc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752327AbZC3LpI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752970AbZC3Lnc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Mar 2009 07:43:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751366AbZC3LnW
+	id S1752327AbZC3LpI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Mar 2009 07:45:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750922AbZC3Lox
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Mar 2009 07:43:22 -0400
-Received: from lxorguk.ukuu.org.uk ([81.2.110.251]:39940 "EHLO
-	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750993AbZC3LnV (ORCPT
+	Mon, 30 Mar 2009 07:44:53 -0400
+Received: from acsinet12.oracle.com ([141.146.126.234]:49248 "EHLO
+	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750754AbZC3Low (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Mar 2009 07:43:21 -0400
-Date: Mon, 30 Mar 2009 12:12:16 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: "Andreas T.Auer" <andreas.t.auer_lkml_73537@ursus.ath.cx>
-Cc: "Andreas T.Auer" <andreas.t.auer_lkml_73537@ursus.ath.cx>,
-       Theodore Tso <tytso@mit.edu>, Mark Lord <lkml@rtr.ca>,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Jeff Garzik <jeff@garzik.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Matthew Garrett <mjg59@srcf.ucam.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Rees <drees76@gmail.com>, Jesper Krogh <jesper@krogh.cc>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.29
-Message-ID: <20090330121216.2a9be61f@the-village.bc.nu>
-In-Reply-To: <49D0A3D6.4000300@ursus.ath.cx>
-References: <alpine.LFD.2.00.0903271511230.3994@localhost.localdomain>
-	<alpine.LFD.2.00.0903271522210.3994@localhost.localdomain>
-	<49CD7B10.7010601@garzik.org>
-	<49CD891A.7030103@rtr.ca>
-	<49CD9047.4060500@garzik.org>
-	<49CE2633.2000903@s5r6.in-berlin.de>
-	<49CE3186.8090903@garzik.org>
-	<49CE35AE.1080702@s5r6.in-berlin.de>
-	<49CE3F74.6090103@rtr.ca>
-	<20090329231451.GR26138@disturbed>
-	<20090330003948.GA13356@mit.edu>
-	<49D0710A.1030805@ursus.ath.cx>
-	<20090330100546.51907bd2@the-village.bc.nu>
-	<49D0A3D6.4000300@ursus.ath.cx>
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.12.12; i386-redhat-linux-gnu)
+	Mon, 30 Mar 2009 07:44:52 -0400
+Subject: Re: [PATCH 0/3] Ext3 latency improvement patches
+From: Chris Mason <chris.mason@oracle.com>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Cc: Theodore Tso <tytso@mit.edu>, Ric Wheeler <rwheeler@redhat.com>,
+       Linux Kernel Developers List <linux-kernel@vger.kernel.org>,
+       Ext4 Developers List <linux-ext4@vger.kernel.org>, jack@suse.cz
+In-Reply-To: <20090330112330.GA11357@skywalker>
+References: <1238185471-31152-1-git-send-email-tytso@mit.edu>
+	 <1238187031.27455.212.camel@think.oraclecorp.com>
+	 <1238187818.27455.217.camel@think.oraclecorp.com>
+	 <20090327213052.GC5176@mit.edu>  <20090330112330.GA11357@skywalker>
+Content-Type: text/plain
+Date: Mon, 30 Mar 2009 07:44:22 -0400
+Message-Id: <1238413462.30488.0.camel@think.oraclecorp.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.24.1 
 Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt704.oracle.com [141.146.40.82]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A01020A.49D0B09A.0038:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> You surely know that better: Did fs actually write "later" data quite
-> long before "earlier" data? During the flush data may be re-ordered, but
-> was it also _done_ outside of it?
+On Mon, 2009-03-30 at 16:53 +0530, Aneesh Kumar K.V wrote:
+> On Fri, Mar 27, 2009 at 05:30:52PM -0400, Theodore Tso wrote:
+> > On Fri, Mar 27, 2009 at 05:03:38PM -0400, Chris Mason wrote:
+> > > > Ric had asked me about a test program that would show the worst case
+> > > > ext3 behavior.  So I've modified your ext3 program a little.  It now
+> > > > creates a 8G file and forks off another proc to do random IO to that
+> > > > file.
+> > > > 
+> > > 
+> > > My understanding of ext4 delalloc is that once blocks are allocated to
+> > > file, we go back to data=ordered.  
+> > 
+> > Yes, that's correct.
+> > 
+> > > Ext4 is going pretty slowly for this fsync test (slower than ext3), it
+> > > looks like we're going for a very long time in
+> > > jbd2_journal_commit_transaction -> write_cache_pages.
+> > 
+> > One of the things that we can do to optimize this case for ext4 (and
+> > ext3) is that if block has already been written out to disk once, we
+> > don't have to flush it to disk a second time.  So if we add a new
+> > buffer_head flag which can distinguish between blocks that have been
+> > newly allocated (and not yet been flushed to disk) versus blocks that
+> > have already been flushed to disk at least once, we wouldn't need to
+> > force I/O for blocks in the latter case.
+> 
+> write_cache_pages should only look at pages which are marked dirty right
+> ?. So why are we writing these pages again and again ?
 
-BSD FFS/UFS and earlier file systems could leave you with all sorts of
-ordering that was not guaranteed - you did get data written within about
-30 seconds but no order guarantees and a crash/fsck could give you
-interesting partial updates .. really interesting.
+The test program is constantly creating new dirty pages to random
+offsets on the disk ;)
 
-renaming was one fairly safe case as BSD FFS/UFS did rename synchronously
-for the most part.
+-chris
+
 
