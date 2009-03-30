@@ -1,76 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754666AbZC3OUr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754949AbZC3OV6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754666AbZC3OUr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Mar 2009 10:20:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751506AbZC3OUf
+	id S1754949AbZC3OV6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Mar 2009 10:21:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751506AbZC3OVt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Mar 2009 10:20:35 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:49614 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751136AbZC3OUe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Mar 2009 10:20:34 -0400
-Message-ID: <49D0D453.4000307@redhat.com>
-Date: Mon, 30 Mar 2009 10:16:51 -0400
-From: Ric Wheeler <rwheeler@redhat.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
-MIME-Version: 1.0
-To: David Rees <drees76@gmail.com>
-CC: Jeff Garzik <jeff@garzik.org>, Theodore Tso <tytso@mit.edu>,
-       Jan Kara <jack@suse.cz>, Chris Mason <chris.mason@oracle.com>,
-       Ric Wheeler <rwheeler@redhat.com>,
-       Linux Kernel Developers List <linux-kernel@vger.kernel.org>,
-       Ext4 Developers List <linux-ext4@vger.kernel.org>
-Subject: Re: [PATCH 0/3] Ext3 latency improvement patches
-References: <1238185471-31152-1-git-send-email-tytso@mit.edu> 	<1238187031.27455.212.camel@think.oraclecorp.com> <1238187818.27455.217.camel@think.oraclecorp.com> 	<20090327213052.GC5176@mit.edu> <20090327215454.GH31071@duck.suse.cz> 	<20090327230902.GG5176@mit.edu> <49CD6BCC.6080602@garzik.org> <72dbd3150903271724n5e7900a5j2486707565cd9d74@mail.gmail.com>
-In-Reply-To: <72dbd3150903271724n5e7900a5j2486707565cd9d74@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Mon, 30 Mar 2009 10:21:49 -0400
+Received: from acsinet12.oracle.com ([141.146.126.234]:40507 "EHLO
+	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750941AbZC3OVs convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Mar 2009 10:21:48 -0400
+Subject: Re: [PATCH 2/7] ext3: call blkdev_issue_flush() on fsync()
+From: Chris Mason <chris.mason@oracle.com>
+To: Theodore Tso <tytso@mit.edu>
+Cc: Fernando Luis =?ISO-8859-1?Q?V=E1zquez?= Cao 
+	<fernando@oss.ntt.co.jp>,
+       Jeff Garzik <jeff@garzik.org>, Christoph Hellwig <hch@infradead.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Nick Piggin <npiggin@suse.de>,
+       David Rees <drees76@gmail.com>, Jesper Krogh <jesper@krogh.cc>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       david@fromorbit.com, tj@kernel.org
+In-Reply-To: <20090330140427.GG13356@mit.edu>
+References: <20090325212923.GA5620@havoc.gtf.org>
+	 <20090326032445.GA16999@havoc.gtf.org>
+	 <20090327205046.GA2036@havoc.gtf.org> <20090329082507.GA4242@infradead.org>
+	 <49D01F94.6000101@oss.ntt.co.jp> <49D02328.7060108@oss.ntt.co.jp>
+	 <49D0258A.9020306@garzik.org> <49D03377.1040909@oss.ntt.co.jp>
+	 <49D0B535.2010106@oss.ntt.co.jp> <49D0B70E.8060506@oss.ntt.co.jp>
+	 <20090330140427.GG13356@mit.edu>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 30 Mar 2009 10:15:51 -0400
+Message-Id: <1238422551.30488.47.camel@think.oraclecorp.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 
+Content-Transfer-Encoding: 8BIT
+X-Source-IP: acsmt700.oracle.com [141.146.40.70]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A010202.49D0D42D.0074:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Rees wrote:
-> On Fri, Mar 27, 2009 at 5:14 PM, Jeff Garzik <jeff@garzik.org> wrote:
->   
->> Theodore Tso wrote:
->>     
->>> OTOH, the really big databases will tend to use direct I/O, so they
->>> won't be dirtying the page cache anyway.  So maybe it's not worth the
->>>       
->> Not necessarily...  From what I understand, a lot of the individual
->> low-level components in cloud storage, such as GoogleFS's chunk server[1] do
->> not bypass the page cache, even though they do care about the details of
->> data caching and data consistency.
->>     
->
-> PostgreSQL does not use direct I/O, either (except for the
-> write-ahead-logs which are written sequentially and only get read
-> during database recovery).  I'm sure that most of MySQL's database
-> engines, also don't.
->
-> -Dave
->   
+On Mon, 2009-03-30 at 10:04 -0400, Theodore Tso wrote:
+> On Mon, Mar 30, 2009 at 09:11:58PM +0900, Fernando Luis Vázquez Cao wrote:
+> > To ensure that bits are truly on-disk after an fsync or fdatasync, we
+> > should force a disk flush explicitly when there is dirty data/metadata
+> > and the journal didn't emit a write barrier (either because metadata is
+> > not being synched or barriers are disabled).
+> 
+> NACK.
+> 
+> As Eric commented on linux-ext4 (and I think it was Chris Mason
+> deserves the credit for originally pointing this out), we don't need
+> to call blkdev_issue_flush() after calling sync_inode().  That's
+> because sync_inode() eventually (after going through a very deep call
+> tree inside fs/fs-writeback.c) __sync_single_inode(), which calls
+> write_inode(), which calls the filesystem-specific ->write_inode()
+> function, which for both ext3 and ext4, ends up calling
+> ext[34]_force_commit.  Which, if barriers are enabled, will end up
+> issuing a barrier after writing the commit block.
+> 
+> In the code paths that don't end up calling sync_inode() or
+> ext4_force_commit(), (i.e., in the fdatasync() case) calling
+> block_flush_device is appropriate.  But as it stands, this patch (and
+> the related one for ext4) will result in multiple unnecessary barrier
+> requests being sent to the block layer.
+> 
 
-The high end, traditional databases like DB2 and Oracle definitely do 
-tend to use direct I/O and manage the cache vs not cached pages 
-carefully on their own.
+I'm not sure we want to stick Fernando with changing how barriers are
+done in individual filesystems, his patch is just changing the existing
+call points.
 
-They also tend to use database "page sizes" larger than our VM page 
-size  or FS block size and work hard to send large, aligned IO's down to 
-storage in the correct order so they can be fully recoverable after a 
-crash (no partially updated DB pages, aka "torn pages").
+The ext34 code is especially tricky because there's no way to tell if a
+commit was actually done by sync_inode, so there's no way to know if an
+extra flush is really required.
 
-A lot of the cloud storage people rely on whole files. For example, you 
-implement RAID at the file level by breaking your file down into K 
-chunks, each one sent over the network to different machines. That chunk 
-is really a whole file and is sent to disk (hopefully with an fsync()!) 
-before ack'ing the transaction. They don't worry about data integrity 
-for objects less than that chunk size.
+I think we'll be better off if he keeps the existing logic and a
+different patch set is made for tuning the ext3 and ext4 code.
 
-At least, this is how we did it in Centera - without doing that, you are 
-definitely open to data loss.
-
-Ric
-
+-chris
 
 
