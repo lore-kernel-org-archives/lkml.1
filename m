@@ -1,61 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758053AbZC3Jl4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756888AbZC3JtZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758053AbZC3Jl4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Mar 2009 05:41:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755832AbZC3Jlr
+	id S1756888AbZC3JtZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Mar 2009 05:49:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755477AbZC3JtQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Mar 2009 05:41:47 -0400
-Received: from mga10.intel.com ([192.55.52.92]:38959 "EHLO
-	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755477AbZC3Jlq (ORCPT
+	Mon, 30 Mar 2009 05:49:16 -0400
+Received: from mailer1.option.com ([81.246.70.162]:63564 "EHLO
+	mailer1.option.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755455AbZC3JtQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Mar 2009 05:41:46 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.38,445,1233561600"; 
-   d="scan'208";a="677096662"
-Message-ID: <49D093F4.2080202@linux.intel.com>
-Date: Mon, 30 Mar 2009 11:42:12 +0200
-From: Andi Kleen <ak@linux.intel.com>
-User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
+	Mon, 30 Mar 2009 05:49:16 -0400
+X-Greylist: delayed 605 seconds by postgrey-1.27 at vger.kernel.org; Mon, 30 Mar 2009 05:49:15 EDT
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Am4BABww0EkKAAAZ/2dsb2JhbAAIw3yDegY
+Date: Mon, 30 Mar 2009 11:39:06 +0200
+From: Jan Dumon <j.dumon@option.com>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH] MAINTAINERS: switch maintainer of the hso driver
+Message-ID: <20090330093905.GA9849@raptor>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH -tip 1/3] x86, mce: Add mce_threshold option for intel
- cmci
-References: <49CB3F24.8040804@jp.fujitsu.com> <20090328120825.GB14464@elte.hu>
-In-Reply-To: <20090328120825.GB14464@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Organization: Option
+User-Agent: Mutt/1.5.16 (2007-06-09)
+X-OriginalArrivalTime: 30 Mar 2009 09:39:06.0952 (UTC) FILETIME=[5ECD5C80:01C9B11B]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Jan Dumon <j.dumon@option.com>
 
-> Makes sense. CMCI is a new CPU feature so having boot controls to 
-> disable it is generally a good idea - while still having old-style 
-> MCE support in place.
+Since Denis is no longer working for Option, I will maintain the driver from
+now on.
 
-That's not what the patch does unfortunately.
-
-> Applied to tip:x86/mce2, thanks Hidetoshi!
-
-If you fear that CMCI is misbehaving you would need a different option to turn
-it off completely, setting the threshold doesn't help. For example there are
-banks that only support threshold == 1 and when the enable bit is on
-then no matter what value you write in there events will cause CMCIs. So
-this patch cannot turn them off.
-
-To turn it off you would need to disable the CMCI enable bit
-completely.
-
-I have no problems in principle with a mce=nocmci that does that
-but that would be a different patch.
-
-However I expect that this will be not a good idea to ever use on Nehalem
-class systems  at least because without CMCI the machine check code cannot
-handle shared banks correctly and you'll get duplicated events from them.
-And on non Nehalem systems there is no CMCI anyways, so it'll be always off.
-
--Andi
+Signed-off-by: Jan Dumon <j.dumon@option.com>
+---
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 5d460c9..45fbbb1 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -2089,8 +2089,8 @@ W:	http://artax.karlin.mff.cuni.cz/~mikulas/vyplody/hpfs/index-e.cgi
+ S:	Maintained
+ 
+ HSO	3G Modem Driver (hso.c)
+-P:	Denis Joseph Barrow
+-M:	d.barow@option.com
++P:	Jan Dumon
++M:	j.dumon@option.com
+ W:	http://www.pharscape.org
+ S:	Maintained
+ 
