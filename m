@@ -1,179 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756993AbZC3CEl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756939AbZC3CPN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756993AbZC3CEl (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Mar 2009 22:04:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754600AbZC3CEc
+	id S1756939AbZC3CPN (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Mar 2009 22:15:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755336AbZC3CO5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Mar 2009 22:04:32 -0400
-Received: from wf-out-1314.google.com ([209.85.200.173]:49997 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753921AbZC3CEb (ORCPT
+	Sun, 29 Mar 2009 22:14:57 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:49693 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753921AbZC3CO5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Mar 2009 22:04:31 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type
-         :content-transfer-encoding;
-        b=Ytk7zOMNLH54FqhlLLjx8kpmEhnn43vBYhk0CN10Z9Kyqe1dr8Q4fnr3upjKZ0yBDD
-         mIhBqqDhTTykRuMloJnnZDmNmQypaz8rKT1ELfkBxkamRGgH5f5qzSweH3PGySNWhEKP
-         hn/zueXxZs6SevI942LTJ1HnKmkctGK9LVuc0=
+	Sun, 29 Mar 2009 22:14:57 -0400
+Message-ID: <49D02B0F.5060409@jp.fujitsu.com>
+Date: Mon, 30 Mar 2009 11:14:39 +0900
+From: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
 MIME-Version: 1.0
-Date: Sun, 29 Mar 2009 20:04:29 -0600
-Message-ID: <9b1675090903291904g7eca965eydb1aa3f852a1b91c@mail.gmail.com>
-Subject: 2.6.29 on MacBook 2,1 fails to reboot
-From: Trenton Adams <trenton.d.adams@gmail.com>
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Alex Chiang <achiang@hp.com>
+CC: jbarnes@virtuousgeek.org, linux-pci@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/3] PCI: allow PCI core hotplug to remove PCI root bus
+References: <20090329165352.29073.5159.stgit@bob.kio> <20090329165444.29073.36246.stgit@bob.kio>
+In-Reply-To: <20090329165444.29073.36246.stgit@bob.kio>
+Content-Type: text/plain; charset=ISO-2022-JP
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Guys,
+Alex Chiang wrote:
+> There is no reason to prevent root bus removal. We never actually
+> remove the node from the pci_root_buses list, so a rescan will correctly
+> rediscover the root bus.
+> 
 
-I am using v2.6.29 (x86_64 mode) on Linus' tree.
+I'm a little confused about the description. I don't think the
+patch is for allowing pci root bus removal. I think it is for
+allowing removal of pci devices on pci root buses.
 
-I get to run level 6, where all processes have been killed, and the
-system is about to reboot, but it doesn't.  No apparent error messages
-are printed out, it just hangs.
+Thanks,
+Kenji Kaneshige
 
-I do the skinny elephant dance, and everything is fine.  But, note
-that when doing "Elephant", it says that there are no more processes
-to kill.
 
-System information below.  If you need more info, let me know.
+> Signed-off-by: Alex Chiang <achiang@hp.com>
+> ---
+> 
+>  drivers/pci/pci-sysfs.c |    4 ----
+>  1 files changed, 0 insertions(+), 4 deletions(-)
+> 
+> diff --git a/drivers/pci/pci-sysfs.c b/drivers/pci/pci-sysfs.c
+> index e9a8706..7b2cb27 100644
+> --- a/drivers/pci/pci-sysfs.c
+> +++ b/drivers/pci/pci-sysfs.c
+> @@ -277,14 +277,10 @@ remove_store(struct device *dev, struct device_attribute *dummy,
+>  {
+>  	int ret = 0;
+>  	unsigned long val;
+> -	struct pci_dev *pdev = to_pci_dev(dev);
+>  
+>  	if (strict_strtoul(buf, 0, &val) < 0)
+>  		return -EINVAL;
+>  
+> -	if (pci_is_root_bus(pdev->bus))
+> -		return -EBUSY;
+> -
+>  	/* An attribute cannot be unregistered by one of its own methods,
+>  	 * so we have to use this roundabout approach.
+>  	 */
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pci" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
+> 
 
-tdamac ~ # uname -a
-Linux tdamac 2.6.29 #3 SMP Sun Mar 29 19:07:55 MDT 2009 x86_64
-Intel(R) Core(TM)2 CPU T7400 @ 2.16GHz GenuineIntel GNU/Linux
 
-tdamac ~ # lspci
-00:00.0 Host bridge: Intel Corporation Mobile 945GM/PM/GMS, 943/940GML
-and 945GT Express Memory Controller Hub (rev 03)
-00:02.0 VGA compatible controller: Intel Corporation Mobile 945GM/GMS,
-943/940GML Express Integrated Graphics Controller (rev 03)
-00:02.1 Display controller: Intel Corporation Mobile 945GM/GMS/GME,
-943/940GML Express Integrated Graphics Controller (rev 03)
-00:07.0 Performance counters: Intel Corporation Device 27a3 (rev 03)
-00:1b.0 Audio device: Intel Corporation 82801G (ICH7 Family) High
-Definition Audio Controller (rev 02)
-00:1c.0 PCI bridge: Intel Corporation 82801G (ICH7 Family) PCI Express
-Port 1 (rev 02)
-00:1c.1 PCI bridge: Intel Corporation 82801G (ICH7 Family) PCI Express
-Port 2 (rev 02)
-00:1d.0 USB Controller: Intel Corporation 82801G (ICH7 Family) USB
-UHCI Controller #1 (rev 02)
-00:1d.1 USB Controller: Intel Corporation 82801G (ICH7 Family) USB
-UHCI Controller #2 (rev 02)
-00:1d.2 USB Controller: Intel Corporation 82801G (ICH7 Family) USB
-UHCI Controller #3 (rev 02)
-00:1d.3 USB Controller: Intel Corporation 82801G (ICH7 Family) USB
-UHCI Controller #4 (rev 02)
-00:1d.7 USB Controller: Intel Corporation 82801G (ICH7 Family) USB2
-EHCI Controller (rev 02)
-00:1e.0 PCI bridge: Intel Corporation 82801 Mobile PCI Bridge (rev e2)
-00:1f.0 ISA bridge: Intel Corporation 82801GBM (ICH7-M) LPC Interface
-Bridge (rev 02)
-00:1f.1 IDE interface: Intel Corporation 82801G (ICH7 Family) IDE
-Controller (rev 02)
-00:1f.2 IDE interface: Intel Corporation 82801GBM/GHM (ICH7 Family)
-SATA IDE Controller (rev 02)
-00:1f.3 SMBus: Intel Corporation 82801G (ICH7 Family) SMBus Controller (rev 02)
-01:00.0 Ethernet controller: Marvell Technology Group Ltd. 88E8053
-PCI-E Gigabit Ethernet Controller (rev 22)
-02:00.0 Network controller: Atheros Communications Inc. AR5418
-802.11abgn Wireless PCI Express Adapter (rev 01)
-03:03.0 FireWire (IEEE 1394): Agere Systems FW323 (rev 61)
-
-tdamac ~ # cat /proc/cpuinfo
-processor       : 0
-vendor_id       : GenuineIntel
-cpu family      : 6
-model           : 15
-model name      : Intel(R) Core(TM)2 CPU         T7400  @ 2.16GHz
-stepping        : 6
-cpu MHz         : 1000.000
-cache size      : 4096 KB
-physical id     : 0
-siblings        : 2
-core id         : 0
-cpu cores       : 2
-apicid          : 0
-initial apicid  : 0
-fpu             : yes
-fpu_exception   : yes
-cpuid level     : 10
-wp              : yes
-flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge
-mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe
-syscall nx lm constant_tsc arch_perfmon pebs bts rep_good pni dtes64
-monitor ds_cpl vmx est tm2 ssse3 cx16 xtpr pdcm lahf_lm tpr_shadow
-bogomips        : 4322.42
-clflush size    : 64
-cache_alignment : 64
-address sizes   : 36 bits physical, 48 bits virtual
-power management:
-
-processor       : 1
-vendor_id       : GenuineIntel
-cpu family      : 6
-model           : 15
-model name      : Intel(R) Core(TM)2 CPU         T7400  @ 2.16GHz
-stepping        : 6
-cpu MHz         : 1000.000
-cache size      : 4096 KB
-physical id     : 0
-siblings        : 2
-core id         : 1
-cpu cores       : 2
-apicid          : 1
-initial apicid  : 1
-fpu             : yes
-fpu_exception   : yes
-cpuid level     : 10
-wp              : yes
-flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge
-mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe
-syscall nx lm constant_tsc arch_perfmon pebs bts rep_good pni dtes64
-monitor ds_cpl vmx est tm2 ssse3 cx16 xtpr pdcm lahf_lm tpr_shadow
-bogomips        : 4322.44
-clflush size    : 64
-cache_alignment : 64
-address sizes   : 36 bits physical, 48 bits virtual
-power management:
-
-tdamac ~ # lsmod
-Module                  Size  Used by
-i915                  148744  2
-drm                   149184  3 i915
-snd_pcm_oss            37728  0
-snd_mixer_oss          14576  1 snd_pcm_oss
-snd_seq_oss            29056  0
-snd_seq_midi_event      6608  1 snd_seq_oss
-snd_seq                48416  4 snd_seq_oss,snd_seq_midi_event
-snd_seq_device          6564  2 snd_seq_oss,snd_seq
-ipt_MASQUERADE          3024  1
-iptable_nat             5392  1
-nf_nat                 18084  2 ipt_MASQUERADE,iptable_nat
-pl2303                 17332  0
-usbserial              30480  1 pl2303
-hermes                  6800  0
-fuse                   53424  0
-cifs                  222728  2
-snd_hda_codec_idt      61392  1
-snd_hda_intel          25096  3
-snd_hda_codec          52368  2 snd_hda_codec_idt,snd_hda_intel
-snd_pcm                71576  3 snd_pcm_oss,snd_hda_intel,snd_hda_codec
-snd_timer              19808  2 snd_seq,snd_pcm
-snd                    55272  16
-snd_pcm_oss,snd_mixer_oss,snd_seq_oss,snd_seq,snd_seq_device,snd_hda_codec_idt,snd_hda_intel,snd_hda_codec,snd_pcm,snd_timer
-snd_page_alloc          8608  2 snd_hda_intel,snd_pcm
-appletouch             10676  0
-pcspkr                  2736  0
-applesmc               29972  0
-hwmon                   2696  1 applesmc
-led_class               3672  1 applesmc
-input_polldev           3808  1 applesmc
-scsi_wait_scan          1360  0
-
-Thanks.
