@@ -1,71 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753159AbZC3NBd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753233AbZC3NWY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753159AbZC3NBd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Mar 2009 09:01:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751053AbZC3NBW
+	id S1753233AbZC3NWY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Mar 2009 09:22:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751388AbZC3NWN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Mar 2009 09:01:22 -0400
-Received: from serv2.oss.ntt.co.jp ([222.151.198.100]:54810 "EHLO
-	serv2.oss.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750813AbZC3NBV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Mar 2009 09:01:21 -0400
-Message-ID: <49D0C29C.1060307@uvigo.es>
-Date: Mon, 30 Mar 2009 22:01:16 +0900
-From: =?ISO-8859-1?Q?Fernando_Luis_V=E1zquez_Cao?= <flvazquez@uvigo.es>
-User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
+	Mon, 30 Mar 2009 09:22:13 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:34095 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751043AbZC3NWM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Mar 2009 09:22:12 -0400
+Date: Mon, 30 Mar 2009 15:22:08 +0200
+From: Jan Kara <jack@suse.cz>
+To: Theodore Tso <tytso@mit.edu>,
+       Linux Kernel Developers List <linux-kernel@vger.kernel.org>,
+       Ext4 Developers List <linux-ext4@vger.kernel.org>
+Subject: Re: [PATCH 3/3] ext3: Avoid starting a transaction in writepage
+	when not necessary
+Message-ID: <20090330132208.GA30897@duck.suse.cz>
+References: <1238185471-31152-1-git-send-email-tytso@mit.edu> <1238185471-31152-2-git-send-email-tytso@mit.edu> <1238185471-31152-3-git-send-email-tytso@mit.edu> <1238185471-31152-4-git-send-email-tytso@mit.edu> <20090327222346.GJ31071@duck.suse.cz> <20090327230341.GF5176@mit.edu>
 MIME-Version: 1.0
-To: Chris Mason <chris.mason@oracle.com>
-CC: Eric Sandeen <sandeen@redhat.com>, Theodore Tso <tytso@mit.edu>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] ext4: fix blkdev_issue_flush() failure handling
-References: <200903291928.14451.bzolnier@gmail.com>	 <49CFB33A.9020406@redhat.com> <20090330022521.GB13356@mit.edu>	 <49D03AE1.8070009@redhat.com> <1238413667.30488.2.camel@think.oraclecorp.com>
-In-Reply-To: <1238413667.30488.2.camel@think.oraclecorp.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/mixed; boundary="liOOAslEiF7prFVr"
+Content-Disposition: inline
+In-Reply-To: <20090327230341.GF5176@mit.edu>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Chris Mason wrote:
-> On Sun, 2009-03-29 at 22:22 -0500, Eric Sandeen wrote:
->> Theodore Tso wrote:
->>> On Sun, Mar 29, 2009 at 12:43:22PM -0500, Eric Sandeen wrote:
->>>> As long as we keep the call there this is probably good, but after
->>>> talking w/ Chris Mason, I think the call is extraneous anyway and should
->>>> probably just be removed...
->>>>
->>> Yes, I agree, but it takes a lot of digging to be completely sure of
->>> that it's safe to remove it.  Interestingly, it was you who added the
->>> patch which added the call to blkdev_issue_flush():
->>> commit d755fb384250d6bd7fd18a0930e71965acc8e72e
->>> Author: Eric Sandeen <sandeen@redhat.com>
->>> Date:   Fri Jul 11 19:27:31 2008 -0400
->>
->> Yes, it was.  Although I got the idea when hch pointed out that SuSE did
->> this... thanks to Chris.  It's come full circle.  :)
+
+--liOOAslEiF7prFVr
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+
+On Fri 27-03-09 19:03:41, Theodore Tso wrote:
+> On Fri, Mar 27, 2009 at 11:23:46PM +0100, Jan Kara wrote:
+> > On Fri 27-03-09 16:24:31, Theodore Ts'o wrote:
+> > > From: Jan Kara <jack@suse.cz>
+> > > 
+> > > We don't have to start a transaction in writepage() when all the blocks
+> > > are a properly allocated. Even in ordered mode either the data has been
+> > > written via write() and they are thus already added to transaction's list
+> > > or the data was written via mmap and then it's random in which transaction
+> > > they get written anyway.
+> > > 
+> > > This should help VM to pageout dirty memory without blocking on transaction
+> > > commits.
+> > > 
+> > > Signed-off-by: Jan Kara <jack@suse.cz>
+> > > Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
+> >   Please, use the patch below instead (and I'd also wait a few days for
+> > Mingo to check whether it also helps him). It also changes data=writeback
+> > mode in the same way and it adheres to coding style...
 > 
-> Grin.  I'm not sure the I_DIRTY checks alone are enough to decide that a
-> commit is required though.  I think the inode could be clean but still
-> have metadata that needs commit.
+> FYI, Looks like Linus has already cherry-picked your first patch from
+> LKML and dropped it into mainline.  My other two patches haven't gone
+> in yet as far as I can tell.
+> 
+> So we'll need to do a delta patch that has the differences from your
+> new patch and what Linus has already pulled into mainline.
+  Thanks for letting me know. Attached is a rediff against current
+Linus's tree.
 
-Chris, I have just sent patches that attempt to fix both ext3 and
-ext4 while also adding a per-device sysfs knob tu disable
-write-flushes. A previous version of this patch set added a new
-generic mount option but comments from Christoph and others
-convinced me to turn it into a per-device tunable. Could you take
-a look at the patches?
+									Honza
+-- 
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
 
-Bartlomiej, I have just noticed that I happened to be working on
-patches for reiserfs and xfs similar to the ones you sent earlier
-this week. I picked some bits from your submission so I took the
-liberty to add your signed-off to my patches. Could you take a
-look at them and let me know if you are confortable with that?
+--liOOAslEiF7prFVr
+Content-Type: text/x-patch; charset=us-ascii
+Content-Disposition: attachment; filename="0001-ext3-Avoid-starting-a-transaction-in-writepage-when.patch"
 
-Latest patches: http://lkml.org/lkml/2009/3/30/100
-Beginning of the sub-thread: http://lkml.org/lkml/2009/3/29/28
+>From f53cf013259b9c782b79f4c1be49d5961884f867 Mon Sep 17 00:00:00 2001
+From: Jan Kara <jack@suse.cz>
+Date: Mon, 30 Mar 2009 15:14:28 +0200
+Subject: [PATCH] ext3: Avoid starting a transaction in writepage when not necessary
 
-Best regards,
+This does the same as commit 9e80d407736161d9b8b0c5a0d44f786e44c322ea
+(avoid starting a transaction when no block allocation is needed)
+but for data=writeback mode of ext3. We also cleanup the data=ordered
+case a bit to stick to coding style...
 
-Fernando
+Signed-off-by: Jan Kara <jack@suse.cz>
+---
+ fs/ext3/inode.c |   23 ++++++++++++++++++-----
+ 1 files changed, 18 insertions(+), 5 deletions(-)
+
+diff --git a/fs/ext3/inode.c b/fs/ext3/inode.c
+index 4a09ff1..70c86b0 100644
+--- a/fs/ext3/inode.c
++++ b/fs/ext3/inode.c
+@@ -1512,12 +1512,16 @@ static int ext3_ordered_writepage(struct page *page,
+ 	if (!page_has_buffers(page)) {
+ 		create_empty_buffers(page, inode->i_sb->s_blocksize,
+ 				(1 << BH_Dirty)|(1 << BH_Uptodate));
+-	} else if (!walk_page_buffers(NULL, page_buffers(page), 0, PAGE_CACHE_SIZE, NULL, buffer_unmapped)) {
+-		/* Provide NULL instead of get_block so that we catch bugs if buffers weren't really mapped */
+-		return block_write_full_page(page, NULL, wbc);
++		page_bufs = page_buffers(page);
++	} else {
++		page_bufs = page_buffers(page);
++		if (!walk_page_buffers(NULL, page_bufs, 0, PAGE_CACHE_SIZE,
++				       NULL, buffer_unmapped)) {
++			/* Provide NULL get_block() to catch bugs if buffers
++			 * weren't really mapped */
++			return block_write_full_page(page, NULL, wbc);
++		}
+ 	}
+-	page_bufs = page_buffers(page);
+-
+ 	handle = ext3_journal_start(inode, ext3_writepage_trans_blocks(inode));
+ 
+ 	if (IS_ERR(handle)) {
+@@ -1572,6 +1576,15 @@ static int ext3_writeback_writepage(struct page *page,
+ 	if (ext3_journal_current_handle())
+ 		goto out_fail;
+ 
++	if (page_has_buffers(page)) {
++		if (!walk_page_buffers(NULL, page_buffers(page), 0,
++				      PAGE_CACHE_SIZE, NULL, buffer_unmapped)) {
++			/* Provide NULL get_block() to catch bugs if buffers
++			 * weren't really mapped */
++			return block_write_full_page(page, NULL, wbc);
++		}
++	}
++
+ 	handle = ext3_journal_start(inode, ext3_writepage_trans_blocks(inode));
+ 	if (IS_ERR(handle)) {
+ 		ret = PTR_ERR(handle);
+-- 
+1.6.0.2
+
+
+--liOOAslEiF7prFVr--
