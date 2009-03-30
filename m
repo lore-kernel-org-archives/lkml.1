@@ -1,109 +1,222 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757708AbZC3JCr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756644AbZC3JGc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757708AbZC3JCr (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Mar 2009 05:02:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756522AbZC3JCf
+	id S1756644AbZC3JGc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Mar 2009 05:06:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754898AbZC3JGW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Mar 2009 05:02:35 -0400
-Received: from smtp-vbr10.xs4all.nl ([194.109.24.30]:2390 "EHLO
-	smtp-vbr10.xs4all.nl" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754550AbZC3JCe (ORCPT
+	Mon, 30 Mar 2009 05:06:22 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:58899 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754550AbZC3JGV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Mar 2009 05:02:34 -0400
-From: Hans Verkuil <hverkuil@xs4all.nl>
-To: ivtv-devel@ivtvdriver.org
-Subject: Re: [ivtv-devel] 2.6.29: ivtv-vbi.c: divide-by-zero in compress_sliced_buf()
-Date: Mon, 30 Mar 2009 11:00:31 +0200
-User-Agent: KMail/1.9.9
-Cc: Mark Lord <lkml@rtr.ca>, Linux Kernel <linux-kernel@vger.kernel.org>,
-       v4l-dvb-maintainer@linuxtv.org, g.liakhovetski@gmx.de,
-       video4linux-list@redhat.com
-References: <49D03596.8030802@rtr.ca>
-In-Reply-To: <49D03596.8030802@rtr.ca>
+	Mon, 30 Mar 2009 05:06:21 -0400
+Message-ID: <49D08B85.9040206@jp.fujitsu.com>
+Date: Mon, 30 Mar 2009 18:06:13 +0900
+From: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Andi Kleen <ak@linux.intel.com>
+CC: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH -tip 1/3] x86, mce: Add mce_threshold option for intel
+ cmci
+References: <49CB3F24.8040804@jp.fujitsu.com> <49CB4677.9010403@linux.intel.com> <49CC9FEC.6090300@jp.fujitsu.com> <49CCAAFD.2000606@linux.intel.com>
+In-Reply-To: <49CCAAFD.2000606@linux.intel.com>
+Content-Type: text/plain; charset=ISO-2022-JP
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200903301100.31611.hverkuil@xs4all.nl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 30 March 2009 04:59:34 Mark Lord wrote:
-> The changes to line_size in 2.6.29 now cause
-> attempts to record from my PVR250 cards (MythTV)
-> to die with a divide by zero error in ivtv-vbi.c.
->
-> The value of "line_size" in compress_sliced_buf() is zero.
+Andi Kleen wrote:
+> Hidetoshi Seto wrote:
+>>> The only potential reason for implementing this threshold at the
+>>> CPU level is if someone is concerned about CPU consumption during error storms.
+>>> But then the threshold should be dynamically adjusted based on the
+>>> current rate, otherwise it doesn't help.
+>> So sysfs is required for such usage, right?
+> 
+> It just needs a kernel heuristic (perhaps a leaky bucket) roughly like:
+> 
+> If Too many errors in time window X
+>    Increase threshold
+>    Start timer
+>    If timer expires and there are no more errors in the time window lower threshold again
+> 
+> So basically in case you get a corrected error storm you would not log every error,
+> but save some CPU in not processing them all.
 
-Weird. That should never be zero. Can you mail me the ivtv initialization 
-log from dmesg? I need the bit between 'ivtv: Start initialization' 
-and 'ivtv: End initialization'.
+FYI, on IPF, it switches CMCI to polling once error storm (5times/s) happened.
+And it return to CMCI if no error detected in a polling interval.
 
-Regards,
+I'm difficult to say which is better, however having such heuristic is good idea.
 
-	Hans
+> No sysfs needed. But again it would be somewhat complex and I didn't feel it was needed
+> and in any case user space might want to see every error even on a error storm
+> (so probably would need a new flag then to turn it off too)
 
->
-> divide error: 0000 [#1] PREEMPT SMP
-> last sysfs file: /sys/block/sr0/removable
-> CPU 0
-> Modules linked in: nfsd nfs lockd nfs_acl auth_rpcgss sunrpc ir_kbd_i2c
-> ir_common battery sbs sbshc container ac usbhid tuner msp3400 saa7115 fan
-> ivtv serio_raw nvidia(P) sky2 cx2341x firewire_ohci ehci_hcd thermal sg
-> uhci_hcd intel_agp button processor xc5000 au8522 tea5767 tda9887 tda8290
-> tea5761 snd_usb_audio snd_usb_lib snd_hwdep au0828 usbcore tveeprom
-> dvb_core snd_hda_codec_realtek snd_hda_intel snd_hda_codec snd_pcm_oss
-> snd_mixer_oss snd_pcm snd_seq_dummy snd_seq_oss snd_seq_midi snd_rawmidi
-> snd_seq_midi_event snd_seq snd_timer snd_seq_device snd soundcore
-> snd_page_alloc firewire_sbp2 firewire_core crc_itu_t fuse Pid: 18548,
-> comm: mythbackend Tainted: P       A   2.6.29 #1 OEM RIP:
-> 0010:[<ffffffffa09cabc4>]  [<ffffffffa09cabc4>]
-> compress_sliced_buf+0x5c/0x14a [ivtv] RSP: 0018:ffff88004e3b1c58  EFLAGS:
-> 00010246
-> RAX: 0000000000000000 RBX: ffff88007c1b8300 RCX: 0000000000000000
-> RDX: 0000000000000000 RSI: 0000000000000000 RDI: ffff88007b5a0000
-> RBP: ffff88007c1b8000 R08: 0000000000000000 R09: 0000000000000000
-> R10: 0000000000000000 R11: ffffffffa09c0818 R12: ffff88007b5a0000
-> R13: 0000000000000000 R14: 0000000000000000 R15: ffff88007b5a0000
-> FS:  000000004f219950(0063) GS:ffffffff80683040(0000)
-> knlGS:0000000000000000 CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
-> CR2: 00007fd267365000 CR3: 0000000078dea000 CR4: 00000000000006e0
-> DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-> DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-> Process mythbackend (pid: 18548, threadinfo ffff88004e3b0000, task
-> ffff880056895580) Stack:
->  0000000000000000 ffff88007d199440 ffff88007e0e4e40 0000000000000202
->  ffff880001013100 0000000000000000 ffff880001013118 ffffffff80219939
->  0000000000000002 0000000000000300 ffff88007c1b8000 ffff88007b5a0000
-> Call Trace:
->  [<ffffffff80219939>] ? native_flush_tlb_others+0xaa/0xb5
->  [<ffffffffa09cb4a3>] ? ivtv_process_vbi_data+0x10f/0x51c [ivtv]
->  [<ffffffff8026de33>] ? __do_fault+0x399/0x3e1
->  [<ffffffff80223434>] ? ptep_set_access_flags+0x1a/0x1e
->  [<ffffffff8026e6bd>] ? do_wp_page+0x5d8/0x64d
->  [<ffffffffa09c0502>] ? ivtv_start_capture+0x54/0x217 [ivtv]
->  [<ffffffffa09c0d8f>] ? ivtv_v4l2_read+0x577/0xac4 [ivtv]
->  [<ffffffff80247d42>] ? getnstimeofday+0x56/0xb0
->  [<ffffffff80244ad7>] ? ktime_get_ts+0x21/0x49
->  [<ffffffff80241f34>] ? autoremove_wake_function+0x0/0x2e
->  [<ffffffff802853e3>] ? vfs_read+0xaa/0x133
->  [<ffffffff80285528>] ? sys_read+0x45/0x6e
->  [<ffffffff8020b49b>] ? system_call_fastpath+0x16/0x1b
-> Code: 0f 80 7b 02 00 75 09 8a 54 24 1f 38 53 03 74 09 ff c0 48 ff c3 39
-> c8 72 dd 29 c1 89 c8 44 39 f1 0f 82 e1 00 00 00 31 d2 45 31 ed <41> f7 f6
-> 45 31 e4 89 44 24 18 31 ed e9 c0 00 00 00 89 e8 48 8d RIP 
-> [<ffffffffa09cabc4>] compress_sliced_buf+0x5c/0x14a [ivtv]
->  RSP <ffff88004e3b1c58>
-> ---[ end trace a154c5e5843294d8 ]---
->
-> _______________________________________________
-> ivtv-devel mailing list
-> ivtv-devel@ivtvdriver.org
-> http://ivtvdriver.org/mailman/listinfo/ivtv-devel
+I suppose AMD's threshold sysfs looks complex because it is per-bank.
+User rarely knows which bank is for what kind of errors, and it may be
+varies on models of the processor.
+
+And it seems there are no user land backend that utilize the per-bank
+threshold.  It can be said that the per-bank threshold is too difficult
+for users who don't know about banks, and also that it is too useless for
+backends who knows about banks and who can have threshold in itself.
+
+> BTW another thing you need to be aware of is that not all CMCI banks necessarily support
+> thresholds > 1. The SDM has a special algorithm to discover the counter width.
+> This means the scheme wouldn't work for some banks.
+
+My current implementation already follows the SDM.
+It discovers maximum threshold the bank supports (which can be "1"),
+and set the lower threshold, i.e. either the specified or the maximum. 
+
+I should have document that "if the maximum threshold the bank supports
+is lower than the specified, the maximum is used."
+
+>> I already have an another patch to have sysfs interface.
+> 
+> Oh no, please no sysfs interface. I know the AMD code has that, but imho it's just
+> a lot of (surprisingly tricky) code for very little to no gain. The surprisingly
+> tricky is because handling all the CPU hotplug cases correctly is not trivial.
+
+Do you say no even if it is not per-bank?
+I'd like to have only one file that controls global value for all banks.
+It is rather simple and easy to use for users (not for intelligent backend).
+
+And again if a backend want to have different threshold for each bank, it
+can implement it by itself in user land.
+
+>>> Also even if this was implemented a boot option would seem
+>>> like the wrong interface compared to sysfs.
+>> CMCI is enabled before sysfs creation, isn't it?
+>> If someone like to disable CMCI at all, it seems sysfs is not enough.
+> 
+> Well they would disable a few interrupts at boot time that noone sees.
+> Is that a problem?
+> 
+> Again I'm not sure why you would want to disable CMCI, but not polling,
+> or polling without CMCI. Is the use case to ignore all corrected errors?
+> In this case you need to do something different too.
+> Also why can't you ignore them in the user space logging.
+
+Such staggered disablements is not what comes first.
+As Ingo pointed, I think "CMCI is a new CPU feature so having boot controls
+to disable it is generally a good idea" + "and it might be handy if the hw
+is misbehaving."
+
+Summarize:
+ - Disabling CMCI (=use polling instead) is nice to have.
+ - Disabling polling (but use CMCI) is pointless.
+    (only use on trouble that only break polling?)
+ - Disabling stuff for CE (both of polling and CMCI) will be help for some
+   particular cases.
+ - Increasing threshold is not so good idea?
+
+Personally, instead of "mce=nopoll" and "mce_threshold=[0|N]", an alternative
+combination, one like "mce=no_corrected" or "mce=ignore_ce" for disable both
+and another like "mce=no_cmci" for disabling CMCI, would be also OK.
+Which do you prefer?
+
+>>> Can you please describe your rationale for this more clearly?
+>> At first I've been asked about the default threshold of CMCI, and
+>> noticed there is no way to know the default value, some kind of
+>> "factory default."  So my concern is the "1", default value of current
+>> implementation, is really appropriate value or not.
+> 
+> It's probably a semantic issue. People know there should be a error threshold
+> before there's some user action to be taken for the error. Then there are other
+> thresholds like a threshold to prevent an error handler from taking up
+> too much CPU time in a storm (let's call this an interrupt threshold).
+> You always have to ask what threshold they mean, although I suspect
+> in most cases they mean the former.
+> 
+> These are not the same. The CMCI threshold is more useful for the later.
+> The former is more usefully implemented in user space, by it looking
+> at every error and then doing specific thresholding.
+> 
+> Classic case for example is to do thresholding per DIMM. But you can't
+> do that with the CMCI threshold because you don't have a MC bank per DIMM.
+> Instead you just get events with the DIMM channels. Software can do
+> thresholding per DIMM, but it needs to see all events then, account
+> them to DIMMs and keep its own thresholds.
+
+I don't doubt that threshold "1" is best setting for intelligent backend.
+
+>> I told it to querier and had some responses that:
+>> 1) It is heard that already there are some customer complaining about
+>>   error reporting for "every" CE.  So thresholding is nice solution
+>>   for such cases.  Is it adjustable?
+> 
+> Why was that a problem for the customer? It seems weird to ask
+> for not seeing all errors.
+
+IIRC, the complain was from user of IPF, because it was "noise" for him.
+Or just there was "it would be acceptable if the rate were 1/5" or so.
+Real solution will be killing CE related stuff in kernel at all, anyway.
+
+>> 2) Usually reporting corrected error never have high priority so even
+>>   it is too higher than reference high threshold would be preferred
+>>   than low one.
+> 
+> I didn't get this. Can you explain more please?
+
+Maybe, in other words, "fine grain is not always required."
+
+(It seems there is not, but) If there were reference values for threshold,
+and if it varies on banks (for example it is "100 for bankA" and "50 for
+bankB"), it means "100 in bankA" and "50 in bankB" is weighted as same level
+at least in the reference.  If fail rate of componentA linked to bankA close
+to be 100% at 10000 count, fail rate of componentB is supposed to be close
+to 100% at 5000.
+
+I should have ask this first:
+  Are there any reference value for CMCI threshold?
+
+>> And additionally that:
+>> 4) It is also heard that some have no interest in correctable errors
+>>   at all!  In such case, kernel message "Machine check events logged"
+>>   for CE (it is leveled KERN_INFO and already rate-limited) can be a
+>>   "noise" in syslog.  Can we disable CE related stuff at all?
+> 
+> Currently the only way to do this is to disable mces completely.
+
+The "mce=off" (and "nomce") have side effects.
+It prevents not only initialization/registration of machine check handler, but
+also prevents setting bit in CR4, i.e. enabling machine check exception.
+
+According to SDM 3A 5.15 Interrupt 18―Machine-Check Exception (#MC):
+  "If the machine-check mechanism is not enabled (the MCE flag in control
+   register CR4 is clear), a machine-check exception causes the processor
+   to enter the shutdown state."
+
+In short, it changes behavior on uncorrected errors, from "panic" to "hang up."
+It also changes #MC to IERR#, and it could let BIOS to different operation.
+
+>> 5) Our BIOS provides good log enough to identify faulty component,
+>>   so OS log is rarely used in maintenance phase.  Comparing these log
+>>   will be cause of confusion, in case if they use different threshold
+>>   and if one reports error while another does not.  It depends on
+>>   the platform which log is better, but I suppose disabling OS feature
+>>   might be a good option for platforms where BIOS wins.
+> 
+> You could just not run mcelog then?  Ok I suppose still need some
+> way to shut up the printk in this case.
+
+The printk is, yes, need to be shut up, I also suppose.
+
+>> 6) In past, EDAC driver troubled us by conflicting with BIOS since it
+>>   clears error information in memory controller.  It would not happen
+>>   in recent platforms that have processors integrated memory controller.
+>>   However it would be a nice workaround to have switch to disable error
+>>   monitoring by OS in advance, just in case there are something nasty
+>>   conflict in BIOS or hardware. 
+> 
+> mce=off ?
+
+It doesn't help.  The side effect will be a another issue.
 
 
+Thanks,
+H.Seto
 
--- 
-Hans Verkuil - video4linux developer - sponsored by TANDBERG
