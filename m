@@ -1,130 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755371AbZC3QmB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755674AbZC3QmX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755371AbZC3QmB (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Mar 2009 12:42:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753171AbZC3Qlr
+	id S1755674AbZC3QmX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Mar 2009 12:42:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754687AbZC3Ql7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Mar 2009 12:41:47 -0400
-Received: from wa-out-1112.google.com ([209.85.146.177]:63007 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753284AbZC3Qlo (ORCPT
+	Mon, 30 Mar 2009 12:41:59 -0400
+Received: from mail-ew0-f165.google.com ([209.85.219.165]:39097 "EHLO
+	mail-ew0-f165.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755362AbZC3Ql7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Mar 2009 12:41:44 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=KJ5HZ228nbiu6ujj6OcsnHq5hw9cPM40tXuLbyIDhCNa7x59lIWQ/vLnrXg4BrjZpY
-         gCVn7wQugTvHHO/y7OsNAU37zv+qVzRa+e4LNB4SJwKiMXR1ebo9JKig8/Vflj6NGxLd
-         r8GjbDCL0iTcfJbzxc49aZDfp2ntCxWSnqTZQ=
-Date: Mon, 30 Mar 2009 18:40:54 +0200
-From: Jarek Poplawski <jarkao2@gmail.com>
-To: Jonathan Corbet <corbet@lwn.net>
-Cc: Markus Trippelsdorf <markus@trippelsdorf.de>,
-       Ilpo =?iso-8859-1?Q?J=E4rvinen?= <ilpo.jarvinen@helsinki.fi>,
-       Netdev <netdev@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: WARNING: at net/ipv4/tcp_input.c:2927 tcp_ack+0xd55/0x1991()
-Message-ID: <20090330164054.GA2723@ami.dom.local>
-References: <20090328075628.3565eb39@bike.lwn.net> <20090330085107.GA5822@ff.dom.local> <20090330080150.724378b0@bike.lwn.net>
+	Mon, 30 Mar 2009 12:41:59 -0400
+Date: Mon, 30 Mar 2009 16:41:53 +0000
+From: Frederik Deweerdt <frederik.deweerdt@xprog.eu>
+To: davej@redhat.com
+Cc: linux-kernel@vger.kernel.org
+Subject: [patch] P4 clock mod: recalibrate_cpu_khz on ia32 only
+Message-ID: <20090330164153.GA13777@gambetta>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20090330080150.724378b0@bike.lwn.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Transfer-Encoding: 8bit
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 30, 2009 at 08:01:50AM -0600, Jonathan Corbet wrote:
-> On Mon, 30 Mar 2009 08:51:07 +0000
-> Jarek Poplawski <jarkao2@gmail.com> wrote:
-> 
-> > Probably I miss something, but generally in a case like this "a_lock"
-> > doesn't have to be taken in IRQ mode to be dangerous. Eg. if one cpu
-> > is trying to take this lock after fasync_lock (with IRQs disabled),
-> > while another cpu is waiting for fasync_lock in IRQ, which preempted
-> > such "a_lock".
-> 
-> The possibility exists, I guess, yes.
-> 
-> > Could you give some details of this fix?
-> 
-> I just reverse the order of lock acquisition in fasync_helper().  Patch
-> is attached.  I'll be sending up a pull request shortly.
+Hello Dave,
 
-Yes, this patch should fix this. (And I can see it in the linux-next
-now...)
+I just triggered the following compile error with an old .config on
+x86_64, (latest git):
 
-Thanks,
-Jarek P.
+  CHK     include/linux/version.h
+  CHK     include/linux/utsrelease.h
+  SYMLINK include/asm -> include/asm-x86
+  CALL    scripts/checksyscalls.sh
+  CHK     include/linux/compile.h
+  CC [M]  arch/x86/kernel/cpu/cpufreq/p4-clockmod.o
+arch/x86/kernel/cpu/cpufreq/p4-clockmod.c: In function ‘cpufreq_p4_cpu_init’:
+arch/x86/kernel/cpu/cpufreq/p4-clockmod.c:232: error: implicit declaration of function ‘recalibrate_cpu_khz’
+make[3]: *** [arch/x86/kernel/cpu/cpufreq/p4-clockmod.o] Error 1
+make[2]: *** [arch/x86/kernel/cpu/cpufreq] Error 2
+make[1]: *** [arch/x86/kernel/cpu] Error 2
+make: *** [arch/x86/kernel] Error 2
 
-> 
-> jon
-> 
-> From 4a6a4499693a419a20559c41e33a7bd70bf20a6f Mon Sep 17 00:00:00 2001
-> From: Jonathan Corbet <corbet@lwn.net>
-> Date: Fri, 27 Mar 2009 12:24:31 -0600
-> Subject: [PATCH] Fix a lockdep warning in fasync_helper()
-> 
-> Lockdep gripes if file->f_lock is taken in a no-IRQ situation, since that
-> is not always the case.  We don't really want to disable IRQs for every
-> acquisition of f_lock; instead, just move it outside of fasync_lock.
-> 
-> Reported-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> Reported-by: Larry Finger <Larry.Finger@lwfinger.net>
-> Reported-by: Wu Fengguang <fengguang.wu@intel.com>
-> Signed-off-by: Jonathan Corbet <corbet@lwn.net>
-> ---
->  fs/fcntl.c         |   10 +++++++---
->  include/linux/fs.h |    2 +-
->  2 files changed, 8 insertions(+), 4 deletions(-)
-> 
-> diff --git a/fs/fcntl.c b/fs/fcntl.c
-> index d865ca6..cc8e4de 100644
-> --- a/fs/fcntl.c
-> +++ b/fs/fcntl.c
-> @@ -531,6 +531,12 @@ int fasync_helper(int fd, struct file * filp, int on, struct fasync_struct **fap
->  		if (!new)
->  			return -ENOMEM;
->  	}
-> +
-> +	/*
-> +	 * We need to take f_lock first since it's not an IRQ-safe
-> +	 * lock.
-> +	 */
-> +	spin_lock(&filp->f_lock);
->  	write_lock_irq(&fasync_lock);
->  	for (fp = fapp; (fa = *fp) != NULL; fp = &fa->fa_next) {
->  		if (fa->fa_file == filp) {
-> @@ -555,14 +561,12 @@ int fasync_helper(int fd, struct file * filp, int on, struct fasync_struct **fap
->  		result = 1;
->  	}
->  out:
-> -	/* Fix up FASYNC bit while still holding fasync_lock */
-> -	spin_lock(&filp->f_lock);
->  	if (on)
->  		filp->f_flags |= FASYNC;
->  	else
->  		filp->f_flags &= ~FASYNC;
-> -	spin_unlock(&filp->f_lock);
->  	write_unlock_irq(&fasync_lock);
-> +	spin_unlock(&filp->f_lock);
->  	return result;
->  }
->  
-> diff --git a/include/linux/fs.h b/include/linux/fs.h
-> index 7428c6d..2f13c1d 100644
-> --- a/include/linux/fs.h
-> +++ b/include/linux/fs.h
-> @@ -848,7 +848,7 @@ struct file {
->  #define f_dentry	f_path.dentry
->  #define f_vfsmnt	f_path.mnt
->  	const struct file_operations	*f_op;
-> -	spinlock_t		f_lock;  /* f_ep_links, f_flags */
-> +	spinlock_t		f_lock;  /* f_ep_links, f_flags, no IRQ */
->  	atomic_long_t		f_count;
->  	unsigned int 		f_flags;
->  	fmode_t			f_mode;
-> -- 
-> 1.6.2
-> 
+The attached patch calls recalibrate_cpu_khz on ia32 only
+
+Regards,
+Frederik
+
+Signed-off-by: Frederik Deweerdt <frederik.deweerdt@gmail.com>
+
+
+diff --git a/arch/x86/kernel/cpu/cpufreq/p4-clockmod.c b/arch/x86/kernel/cpu/cpufreq/p4-clockmod.c
+index 41ed949..88be236 100644
+--- a/arch/x86/kernel/cpu/cpufreq/p4-clockmod.c
++++ b/arch/x86/kernel/cpu/cpufreq/p4-clockmod.c
+@@ -229,7 +229,9 @@ static int cpufreq_p4_cpu_init(struct cpufreq_policy *policy)
+ 	    c->x86_model < 2) {
+ 		/* switch to maximum frequency and measure result */
+ 		cpufreq_p4_setdc(policy->cpu, DC_DISABLE);
++#ifdef CONFIG_X86_32
+ 		recalibrate_cpu_khz();
++#endif
+ 	}
+ 	/* get max frequency */
+ 	stock_freq = cpufreq_p4_get_frequency(c);
