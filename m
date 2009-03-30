@@ -1,68 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756117AbZC3Xp5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757351AbZC3Xui@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756117AbZC3Xp5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Mar 2009 19:45:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753716AbZC3Xpo
+	id S1757351AbZC3Xui (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Mar 2009 19:50:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754884AbZC3Xu0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Mar 2009 19:45:44 -0400
-Received: from e37.co.us.ibm.com ([32.97.110.158]:37837 "EHLO
-	e37.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753697AbZC3Xpn (ORCPT
+	Mon, 30 Mar 2009 19:50:26 -0400
+Received: from out01.mta.xmission.com ([166.70.13.231]:41313 "EHLO
+	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754827AbZC3XuZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Mar 2009 19:45:43 -0400
-Date: Mon, 30 Mar 2009 18:45:39 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Al Viro <viro@ZenIV.linux.org.uk>
-Cc: Oleg Nesterov <oleg@redhat.com>, Hugh Dickins <hugh@veritas.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Joe Malicki <jmalicki@metacarta.com>, Michael Itz <mitz@metacarta.com>,
-       Kenneth Baker <bakerk@metacarta.com>,
-       Chris Wright <chrisw@sous-sol.org>, David Howells <dhowells@redhat.com>,
-       Alexey Dobriyan <adobriyan@gmail.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: Q: check_unsafe_exec() races (Was: [PATCH 2/4] fix setuid
-	sometimes doesn't)
-Message-ID: <20090330234539.GA3462@us.ibm.com>
-References: <20090329060118.GI28946@ZenIV.linux.org.uk> <20090329213635.GA21820@redhat.com> <20090329222022.GJ28946@ZenIV.linux.org.uk> <20090329235639.GA32199@redhat.com> <20090330000338.GB32199@redhat.com> <20090330010843.GM28946@ZenIV.linux.org.uk> <20090330011303.GN28946@ZenIV.linux.org.uk> <20090330013612.GA4080@redhat.com> <20090330014040.GA4807@redhat.com> <20090330123101.GQ28946@ZenIV.linux.org.uk>
+	Mon, 30 Mar 2009 19:50:25 -0400
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: mingo@elte.hu, jbeulich@novell.com, tglx@linutronix.de, mingo@redhat.com,
+       hpa@zytor.com, linux-kernel@vger.kernel.org, ego@in.ibm.com,
+       peterz@infradead.org, adobriyan@gmail.com, netdev@vger.kernel.org
+Subject: Re: [PATCH 2/2] sysctl:  lockdep support for sysctl reference counting.
+References: <49B91A7E.76E4.0078.0@novell.com>
+	<tip-6a09dfa870ba0ed21b1124539968a36b42660661@git.kernel.org>
+	<1236934491.5188.209.camel@laptop> <49BA33BE.76E4.0078.0@novell.com>
+	<1236937423.22914.3698.camel@twins> <20090313103828.GB31094@elte.hu>
+	<m1d4cd9n4k.fsf@fess.ebiederm.org> <20090320085205.GB16021@elte.hu>
+	<m14oxo8qis.fsf@fess.ebiederm.org> <20090320182404.GA31629@elte.hu>
+	<1237575134.4667.5.camel@laptop> <1237577688.4667.68.camel@laptop>
+	<m1iqm3xr2n.fsf_-_@fess.ebiederm.org>
+	<m1eiwrxr05.fsf_-_@fess.ebiederm.org>
+	<m1ab7fxqxw.fsf_-_@fess.ebiederm.org>
+	<20090330152616.7cc2c87c.akpm@linux-foundation.org>
+	<m1k566k4hb.fsf@fess.ebiederm.org>
+	<20090330161858.18951f62.akpm@linux-foundation.org>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Mon, 30 Mar 2009 16:50:17 -0700
+In-Reply-To: <20090330161858.18951f62.akpm@linux-foundation.org> (Andrew Morton's message of "Mon\, 30 Mar 2009 16\:18\:58 -0700")
+Message-ID: <m1iqlqfu4m.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090330123101.GQ28946@ZenIV.linux.org.uk>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=67.169.126.145;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 67.169.126.145
+X-SA-Exim-Rcpt-To: akpm@linux-foundation.org, netdev@vger.kernel.org, adobriyan@gmail.com, peterz@infradead.org, ego@in.ibm.com, linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com, tglx@linutronix.de, jbeulich@novell.com, mingo@elte.hu
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
+X-SA-Exim-Scanned: No (on in01.mta.xmission.com); Unknown failure
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Al Viro (viro@ZenIV.linux.org.uk):
-> On Mon, Mar 30, 2009 at 03:40:40AM +0200, Oleg Nesterov wrote:
-> 
-> > > We can't proceed. If that another exec() fails, it will clear "under exec" at
-> > > the end of do_execve(), before we kill other threads.
-> > 
-> > Or we need a counter to mark/unmark.
-> 
-> Nah, easier to have check_unsafe_exec() return -EAGAIN in cases we care
-> about.
-> 
-> Anyway, completely untested patchset is in
-> git.kernel.org/pub/scm/linux/kernel/git/viro/vfs-2.6.git/ execve-mess
-> (the last 9 changesets of it).
-> 
-> WARNING: that's *NOT* for merge at the moment; this is not a pull request.
-> 
-> Review (and testing) would be welcome.
+Andrew Morton <akpm@linux-foundation.org> writes:
 
-(note exactly *meaningful* review, but)
+> On Mon, 30 Mar 2009 15:53:04 -0700
+> ebiederm@xmission.com (Eric W. Biederman) wrote:
+>
+>> Andrew Morton <akpm@linux-foundation.org> writes:
+>> 
+>> > So I merged these two patches.  I designated them as to-be-merged via
+>> > Alexey, with a Cc:Peter (IOW: wakey wakey ;))
+>> 
+>> It is more sysctl than proc but whichever.  As long as people aren't
+>> blind sided at the last minute I'm fine.
+>
+> Yep.  But keeping all fs/proc/ changes in Alexey's tree keeps things
+> neat and is part of my secret maintainer-impressment plot.
 
-exit_fs() and daemonize_fs_struct() do:
+Sounds like a plan.  You work on that.  I will work on undermining
+the plot by breaking /proc into it's several separate filesystems.
 
-                if (--fs->users)
-                        fs = NULL;
-                write_unlock(&fs->lock);
+> OK, fine, but to avoid confusion and to overtly announce this
+> preference, please do add the From: Line?
 
-Moving the write_unlock up actually let's the kernel boot and
-start running ltp.
+Sounds like a plan.  In truth I have been deleting that line from my
+patches anyway....  It just seemed silly to have it in there when
+the real From matched.
 
--serge
+Eric
+
