@@ -1,140 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759776AbZC3WUa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757730AbZC3WZY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759776AbZC3WUa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Mar 2009 18:20:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755564AbZC3WUV
+	id S1757730AbZC3WZY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Mar 2009 18:25:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752103AbZC3WZL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Mar 2009 18:20:21 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:60901 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755467AbZC3WUU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Mar 2009 18:20:20 -0400
-Message-ID: <49D144D6.9000001@redhat.com>
-Date: Tue, 31 Mar 2009 01:16:54 +0300
-From: Izik Eidus <ieidus@redhat.com>
-User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
+	Mon, 30 Mar 2009 18:25:11 -0400
+Received: from rv-out-0506.google.com ([209.85.198.231]:7423 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751196AbZC3WZJ convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Mar 2009 18:25:09 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=q2e9gzF1m95PZT1ewiCu26Dgn5B2GhPJfyC/Sl+IcOEHgUQh3/2FIVlZiH9cwiXNMT
+         toMg6HMJDvgBzZDGzgpaV50k7SLrYlQMvSZpBgT0QwLsbAQH2qI8B0YptFv6wabi66TA
+         CwlUxZw0mFd6PH25X+7z611TPEu71WqyQw8c0=
 MIME-Version: 1.0
-CC: Jeremy Fitzhardinge <jeremy@goop.org>, Rik van Riel <riel@redhat.com>,
-       akpm@osdl.org, nickpiggin@yahoo.com.au, frankeh@watson.ibm.com,
-       linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       Dave Hansen <dave@linux.vnet.ibm.com>, virtualization@lists.osdl.org,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>, hugh@veritas.com,
-       dlaor@redhat.com
-Subject: Re: [patch 0/6] Guest page hinting version 7.
-References: <20090327150905.819861420@de.ibm.com>	<1238195024.8286.562.camel@nimitz>	<20090329161253.3faffdeb@skybase>	<1238428495.8286.638.camel@nimitz> <49D11184.3060002@goop.org>	<49D11287.4030307@redhat.com> <49D11674.9040205@goop.org>	<49D12564.40708@redhat.com> <49D12D16.6050407@goop.org> <49D13BB9.3010200@redhat.com>
-In-Reply-To: <49D13BB9.3010200@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-To: unlisted-recipients:; (no To-header on input)
+In-Reply-To: <20090330221034.GC27774@cleech-lnx.jf.intel.com>
+References: <20090326220411.GA16286@cleech-lnx.jf.intel.com>
+	 <86802c440903261929s775fe85cv86b900e2610acf1d@mail.gmail.com>
+	 <20090327163438.GA10185@cleech-lnx.jf.intel.com>
+	 <49CDAAD5.9010202@kernel.org>
+	 <20090330221034.GC27774@cleech-lnx.jf.intel.com>
+Date: Mon, 30 Mar 2009 15:25:07 -0700
+X-Google-Sender-Auth: 17db3c7b4b85734f
+Message-ID: <86802c440903301525h41481c98lfff9b40b98b2d7f3@mail.gmail.com>
+Subject: Re: [PATCH] irq: mask irq before move it
+From: Yinghai Lu <yinghai@kernel.org>
+To: Chris Leech <christopher.leech@intel.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeremy Fitzhardinge wrote:
->> Rik van Riel wrote:
->>  
->>> Jeremy Fitzhardinge wrote:
->>>    
->>>> Rik van Riel wrote:
->>>>      
->>>>> Jeremy Fitzhardinge wrote:
->>>>>
->>>>>        
->>>>>> That said, people have been looking at tracking block IO to work 
->>>>>> out when it might be useful to try and share pages between guests 
->>>>>> under Xen.
->>>>>>           
->>>>> Tracking block IO seems like a bass-ackwards way to figure
->>>>> out what the contents of a memory page are.
->>>>>         
->>>> Well, they're research projects, so nobody said that they're 
->>>> necessarily useful results ;).  I think the rationale is that, in 
->>>> general, there aren't all that many sharable pages, and asize from 
->>>> zero-pages, the bulk of them are the result of IO.       
->>> I'll give you a hint:  Windows zeroes out freed pages.
->>>     
+On Mon, Mar 30, 2009 at 3:10 PM, Chris Leech
+<christopher.leech@intel.com> wrote:
+> On Fri, Mar 27, 2009 at 09:43:01PM -0700, Yinghai Lu wrote:
 >>
->> Right: "aside from zero-pages".  If you exclude zero-pages from your 
->> count of shared pages, the amount of sharing drops a lot.
-
-20026 root      15   0  707m 526m 246m S  7.0 14.0   0:39.57 
-qemu-system-x86                                                                                                       
-
-20010 root      15   0  707m 526m 239m S  6.3 14.0   0:47.16 
-qemu-system-x86                                                                                                       
-
-20015 root      15   0  707m 526m 247m S  5.7 14.0   0:46.84 
-qemu-system-x86                                                                                                       
-
-20031 root      15   0  707m 526m 242m S  5.7 14.1   0:46.74 
-qemu-system-x86                                                                                                       
-
-20005 root      15   0  707m 526m 239m S  0.3 14.0   0:54.16 qemu-system-x86
-
-I just ran 5 debian 5.0 guests with each have 512 mb physical ram,
-all i did was just open X, and then open thunderbird and firefox in 
-them, check the SHR field...
-
-You cannot ignore the fact that the librarys and the kernel would be 
-identical among guests and would be shared...
-Other than the library we got the big bonus that is called zero page in 
-windows, but that is really not the case for the above example since 
-thigs guests are linux.....
-
+>> Imapct: fix panic
 >>
->>  
->>> It should also be possible to hook up arch_free_page() so
->>> freed pages in Linux guests become sharable.
->>>
->>> Furthermore, every guest with the same OS version will be
->>> running the same system daemons, same glibc, etc.  This
->>> means sharable pages from not just disk IO (probably from
->>> different disks anyway),
->>>     
+>> try to mask the irq, before move the irq desc
 >>
->> Why?  If you're starting a bunch of cookie-cutter guests, then you're 
->> probably starting them from the same template image or COW block 
->> devices.  (Also, if you're wearing the cost of physical IO anyway, 
->> then additional cost of hashing is relatively small.)
->>
->>  
->>> but also in the BSS and possibly
->>> even on the heap.
->>>     
->>
->> Well, maybe.  Modern systems generally randomize memory layouts, so 
->> even if they're semantically the same, the pointers will all have 
->> different values.
->>
->> Other research into "sharing" mostly-similar pages is more promising 
->> for that kind of case.
->>
->>  
->>> Eventually.  It starts out with hashing the first 128 (IIRC)
->>> bytes of page content and comparing the hashes.  If that
->>> matches, it will do content comparison.
->>>     
-> The algorithm was changed quite a bit. Izik is planning to resubmit it
-> any day now.
->>> Content comparison is done in the background on the host.
->>> I suspect (but have not checked) that it is somehow hooked
->>> up to the page reclaim code on the host.
->>>     
->>
->> Yeah, that's the straightforward approach; there's about a research 
->> project/year doing a Xen implementation, but they never seem to get 
->> very good results aside from very artificial test conditions.
-I keep hear this argument from Microsoft but even in the hardest test 
-condition, how would you make the librarys and the kernel wont be 
-identical among the guests?.
+>> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+>
+> This change did not fix the issue I'm seeing.  The following output was
+> generated with 2.6.29 + this patch.
+>
+> I will send system information and kernel config separately.
 
-Anyway Page sharing is running and installed for our customers and so 
-far i only hear from sells guys how surprised and happy the costumers 
-are from the overcommit that page sharing is offer...
+in your /proc/interrupts
 
+ 57:          0          0          0          0          0          0
+         0          0   PCI-MSI-edge      aerdrv, pciehp
 
-Anyway i have ready massive-changed (mostly the logical algorithm for 
-finding pages) ksm version that i made against the mainline version and 
-is ready to be send after i will get some better benchmarks numbers to 
-post on the list when together with the patch...
+how can that be shared?
 
+YH
