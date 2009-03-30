@@ -1,76 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758136AbZC3C15@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755753AbZC3C2e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758136AbZC3C15 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Mar 2009 22:27:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756549AbZC3C1e
+	id S1755753AbZC3C2e (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Mar 2009 22:28:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756549AbZC3C2V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Mar 2009 22:27:34 -0400
-Received: from mail.renesas.com ([202.234.163.13]:54106 "EHLO
-	mail06.idc.renesas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756273AbZC3C1c (ORCPT
+	Sun, 29 Mar 2009 22:28:21 -0400
+Received: from 219-87-157-169.static.tfn.net.tw ([219.87.157.169]:53446 "EHLO
+	mswedge2.sunplus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756525AbZC3C2U (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Mar 2009 22:27:32 -0400
-X-AuditID: ac14038a-0000000900001ca1-11-49d02dd134d9
-Date: Mon, 30 Mar 2009 11:26:23 +0900
-From: Yoshihiro Shimoda <shimoda.yoshihiro@renesas.com>
-Subject: Re: [PATCH 39/58] move r8a66597_hcd's probe function to .devinit.text
-In-reply-to: <1238196439-16535-39-git-send-email-u.kleine-koenig@pengutronix.de>
-To: =?UTF-8?B?VXdlIEtsZWluZS1Lw7ZuaWc=?= 
-	<u.kleine-koenig@pengutronix.de>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>, Magnus Damm <damm@igel.co.jp>,
-       Stephen Rothwell <sfr@canb.auug.org.au>,
-       Paul Mundt <lethal@linux-sh.org>
-Message-id: <49D02DCF.5000209@renesas.com>
-MIME-version: 1.0
-Content-type: text/plain; charset=UTF-8
-Content-transfer-encoding: 8BIT
-User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
-References: <20090327232153.GA16348@pengutronix.de>
- <1238196439-16535-39-git-send-email-u.kleine-koenig@pengutronix.de>
-X-Brightmail-Tracker: AAAAAA==
+	Sun, 29 Mar 2009 22:28:20 -0400
+In-Reply-To: <200903272153.05622.arnd@arndb.de>
+To: Arnd Bergmann <arnd@arndb.de>, Sam Ravnborg <sam@ravnborg.org>,
+       Thomas Gleixner <tglx@linutronix.de>, Kyle McMartin <kyle@mcmartin.ca>
+Cc: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
+       torvalds@linux-foundation.org
+MIME-Version: 1.0
+Subject: Re: [PATCH 5/13] score - New architecure port to SunplusCT S+CORE processor
+X-Mailer: Lotus Notes Release 6.5 September 26, 2003
+Message-ID: <OFBA5A0860.CDC7D821-ON48257589.000CDE82-48257589.000D7C1F@sunplusct.com>
+From: liqin.chen@sunplusct.com
+Date: Mon, 30 Mar 2009 10:25:26 +0800
+X-MIMETrack: Serialize by Router on ctmail01/SunplusCT(Release 7.0.3FP1|February 24, 2008) at 2009/03/30 ?? 10:25:29,
+	Serialize complete at 2009/03/30 ?? 10:25:29
+Content-Type: text/plain; charset="GB2312"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id n2U2Shqu000542
 
-Acked-by: Yoshihiro Shimoda <shimoda.yoshihiro@renesas.com>
+Hi tglx, Arnd, Kyle and Sam,
 
-Thanks,
-Yoshihiro Shimoda
+        Thank you for your kindly reply, I will update 
+        the code according to your comments.
+        The fixed patches will be sent out soon.
 
-Uwe Kleine-KÃ¶nig wrote:
-> A pointer to r8a66597_probe is passed to the core via
-> platform_driver_register and so the function must not disappear when the
-> .init sections are discarded.  Otherwise (if also having HOTPLUG=y)
-> unbinding and binding a device to the driver via sysfs will result in an
-> oops as does a device being registered late.
+-- 
+Best regards
+Liqin
+liqin.chen@sunplusct.com
+
+Arnd Bergmann <arnd@arndb.de> Ð´ÓÚ 2009-03-28 04:53:05:
+
+> On Friday 27 March 2009, Sam Ravnborg wrote:
 > 
-> An alternative to this patch is using platform_driver_probe instead of
-> platform_driver_register plus removing the pointer to the probe function
-> from the struct platform_driver.
+> > Thats strange indeed.
+> > This structure will then change layout depending on the target 
+bit-size
+> > of the compiler.
+> > 
+> > From x86:
+> > #ifdef __i386__
+> >         unsigned long           __unused1;
+> > #endif
+> >         __kernel_time_t         shm_dtime;      /* last detach time */
+> > #ifdef __i386__
+> >         unsigned long           __unused2;
+> > #endif
+> > 
+> > long is 64 bit in one case and 32 bit in another case.
+> > I'm confused..
 > 
-> Signed-off-by: Uwe Kleine-KÃ¶nig <u.kleine-koenig@pengutronix.de>
-> Cc: Yoshihiro Shimoda <shimoda.yoshihiro@renesas.com>
-> Cc: Greg Kroah-Hartman <gregkh@suse.de>
-> Cc: Magnus Damm <damm@igel.co.jp>
-> Cc: Stephen Rothwell <sfr@canb.auug.org.au>
-> Cc: Paul Mundt <lethal@linux-sh.org>
-> Cc: Andrew Morton <akpm@linux-foundation.org>
-> ---
->  drivers/usb/host/r8a66597-hcd.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
+> The idea here is to have the same layout for both by adding
+> long (32 bit) padding between 32 bit members on i386 and not
+> having the padding along the __kernel_time_t (which is also
+> long) members on x86_64. The problem is that some architectures
+> copying this didn't understand the part about the padding,
+> while others (big-endian ones) put the padding in the wrong
+> place by copying from i386.
 > 
-> diff --git a/drivers/usb/host/r8a66597-hcd.c b/drivers/usb/host/r8a66597-hcd.c
-> index f1626e5..3e1216a 100644
-> --- a/drivers/usb/host/r8a66597-hcd.c
-> +++ b/drivers/usb/host/r8a66597-hcd.c
-> @@ -2373,7 +2373,7 @@ static int __init_or_module r8a66597_remove(struct platform_device *pdev)
->  	return 0;
->  }
->  
-> -static int __init r8a66597_probe(struct platform_device *pdev)
-> +static int __devinit r8a66597_probe(struct platform_device *pdev)
->  {
->  #if defined(CONFIG_SUPERH_ON_CHIP_R8A66597) && defined(CONFIG_HAVE_CLK)
->  	char clk_name[8];
+> By now, most of the existing architectures copied the i386
+> file, which is at least consistent and we've learned to
+> deal with it. I recommend just using this one as the
+> asm-generic version and letting all new archs fall back
+> to that.
+> 
+> > I would expect it to be safer to be bit-size neutral in our
+> > exported headers.
+> > But the score people know there userlend best so let them decide.
+> 
+> > Still they should audit all their exported headers.
+> > They cannot assume it was right because they copied them from
+> > somewhere.
+> 
+> Yes, I agree. Hopefully I'll manage to get my patches into
+> shape to post the generic versions in the next days so we can use
+> them on microblaze and score as well as all future versions.
+> 
+>    Arnd <><
 
+ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éÝ¶¥Šwÿº{.nÇ+‰·¥Š{±þG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŽŠÝ¢j"ú¶m§ÿÿ¾«þG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
