@@ -1,170 +1,213 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754704AbZC3H1c@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753806AbZC3HdS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754704AbZC3H1c (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Mar 2009 03:27:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751452AbZC3H1W
+	id S1753806AbZC3HdS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Mar 2009 03:33:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751637AbZC3HdA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Mar 2009 03:27:22 -0400
-Received: from mail-fx0-f158.google.com ([209.85.220.158]:44209 "EHLO
-	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750890AbZC3H1V (ORCPT
+	Mon, 30 Mar 2009 03:33:00 -0400
+Received: from gw1.cosmosbay.com ([212.99.114.194]:37329 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750890AbZC3Hc7 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Mar 2009 03:27:21 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:reply-to:mail-followup-to
-         :references:mime-version:content-type:content-disposition
-         :in-reply-to:user-agent;
-        b=JiLgoBIGUJdsI8xftDbmC8O066CQ0t7HScMS78OKqhh+ZUMw2AlOtYAptgEdS0YDjE
-         GWIjmlSkCqbiFbwgmhMNUYdzEmK0YeFSiqVSZRHsaBLZuOACc8ASw1DYKNIOWI3oKwlo
-         fovOAEOrfvtjdzeq2TRXivPiDcr4wDRi6Jz3M=
-Date: Mon, 30 Mar 2009 09:27:13 +0200
-From: Borislav Petkov <petkovbb@googlemail.com>
-To: Michael Roth <mroth@nessie.de>, bzolnier@gmail.com
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Bug in 2.6.29 ide-cd: Kernel freeze: bisected + unacceptable
-	workaround
-Message-ID: <20090330072713.GA13776@liondog.tnic>
-Reply-To: petkovbb@gmail.com
-Mail-Followup-To: petkovbb@gmail.com, Michael Roth <mroth@nessie.de>,
-	bzolnier@gmail.com, linux-kernel@vger.kernel.org
-References: <49CFCB2A.4020505@nessie.de> <20090329201337.GA9962@liondog.tnic> <49CFEA24.10700@nessie.de>
+	Mon, 30 Mar 2009 03:32:59 -0400
+Message-ID: <49D075A3.1050202@cosmosbay.com>
+Date: Mon, 30 Mar 2009 09:32:51 +0200
+From: Eric Dumazet <dada1@cosmosbay.com>
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <49CFEA24.10700@nessie.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Roman Mindalev <r000n@r000n.net>
+CC: Stephen Hemminger <shemminger@vyatta.com>,
+       Patrick McHardy <kaber@trash.net>, LKML <linux-kernel@vger.kernel.org>,
+       netfilter@vger.kernel.org
+Subject: Re: Regression caused by commit "netfilter: iptables: lock free counters"
+References: <20090329234702.4988017f@desktop.r000n.info>
+In-Reply-To: <20090329234702.4988017f@desktop.r000n.info>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Mon, 30 Mar 2009 09:32:51 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Michael,
+Roman Mindalev a écrit :
+> Hi.
+> Since 2.6.29-git1 I got many debug messages in kernel log.
+> One from them:
+> 
+> Mar 29 12:06:11 desktop kernel: [  917.414369] BUG: using
+> smp_processor_id() in preemptible [00000000] code: hddtemp/2820 Mar 29
+> 12:06:11 desktop kernel: [  917.414378] caller is
+> ipt_do_table+0xd0/0x3a8 [ip_tables] Mar 29 12:06:11 desktop kernel:
+> [  917.414382] Pid: 2820, comm: hddtemp Not tainted
+> 2.6.29-05093-gc31f403 #1 Mar 29 12:06:11 desktop kernel: [  917.414386]
+> Call Trace: Mar 29 12:06:11 desktop kernel: [  917.414393]
+> [<ffffffff8042d037>] debug_smp_processor_id+0xe7/0xf0 Mar 29 12:06:11
+> desktop kernel: [  917.414400]  [<ffffffffa0171f10>]
+> ipt_do_table+0xd0/0x3a8 [ip_tables] Mar 29 12:06:11 desktop kernel:
+> [  917.414414]  [<ffffffffa0180d0e>] ? nf_conntrack_in+0x23e/0x610
+> [nf_conntrack] Mar 29 12:06:11 desktop kernel: [  917.414422]
+> [<ffffffff8026d47d>] ? trace_hardirqs_off+0xd/0x10 Mar 29 12:06:11
+> desktop kernel: [  917.414429]  [<ffffffffa008e0b3>]
+> ipt_local_out_hook+0x53/0x60 [iptable_filter] Mar 29 12:06:11 desktop
+> kernel: [  917.414435]  [<ffffffff80546a07>] nf_iterate+0x67/0xa0 Mar
+> 29 12:06:11 desktop kernel: [  917.414441]  [<ffffffff80551140>] ?
+> dst_output+0x0/0x10 Mar 29 12:06:11 desktop kernel: [  917.414446]
+> [<ffffffff80546af5>] nf_hook_slow+0xb5/0x100 Mar 29 12:06:11 desktop
+> kernel: [  917.414452]  [<ffffffff80551140>] ? dst_output+0x0/0x10 Mar
+> 29 12:06:11 desktop kernel: [  917.414458]  [<ffffffff80552f7f>]
+> __ip_local_out+0x9f/0xb0 Mar 29 12:06:11 desktop kernel:
+> [  917.414464]  [<ffffffff8058c4db>] ? bictcp_cong_avoid+0x4b/0x2d0 Mar
+> 29 12:06:11 desktop kernel: [  917.414469]  [<ffffffff80552fa1>]
+> ip_local_out+0x11/0x30 Mar 29 12:06:11 desktop kernel: [  917.414474]
+> [<ffffffff8055389c>] ip_queue_xmit+0x21c/0x410 Mar 29 12:06:11 desktop
+> kernel: [  917.414480]  [<ffffffff80272825>] ?
+> print_lock_contention_bug+0x25/0x120 Mar 29 12:06:11 desktop kernel:
+> [  917.414486]  [<ffffffff8056810e>] ?
+> tcp_established_options+0x3e/0xe0 Mar 29 12:06:11 desktop kernel:
+> [  917.414492]  [<ffffffff80272825>] ?
+> print_lock_contention_bug+0x25/0x120 Mar 29 12:06:11 desktop kernel:
+> [  917.414498]  [<ffffffff80568ef5>] tcp_transmit_skb+0x535/0x820 Mar
+> 29 12:06:11 desktop kernel: [  917.414504]  [<ffffffff8056b5fb>]
+> tcp_write_xmit+0x20b/0xaa0 Mar 29 12:06:11 desktop kernel:
+> [  917.414510]  [<ffffffff8055d451>] ? sk_stream_alloc_skb+0x41/0x110
+> Mar 29 12:06:11 desktop kernel: [  917.414515]  [<ffffffff8052799e>] ?
+> __alloc_skb+0x6e/0x150 Mar 29 12:06:11 desktop kernel: [  917.414521]
+> [<ffffffff8056befb>] __tcp_push_pending_frames+0x2b/0x90 Mar 29
+> 12:06:11 desktop kernel: [  917.414527]  [<ffffffff8055ddc3>]
+> tcp_sendmsg+0x8a3/0xbb0 Mar 29 12:06:11 desktop kernel: [  917.414533]
+> [<ffffffff8051d2bb>] sock_aio_write+0x12b/0x140 Mar 29 12:06:11 desktop
+> kernel: [  917.414539]  [<ffffffff802df6f1>] do_sync_write+0xf1/0x140
+> Mar 29 12:06:11 desktop kernel: [  917.414545]  [<ffffffff8025e470>] ?
+> autoremove_wake_function+0x0/0x40 Mar 29 12:06:11 desktop kernel:
+> [  917.414551]  [<ffffffff802e0259>] vfs_write+0x179/0x190 Mar 29
+> 12:06:11 desktop kernel: [  917.414557]  [<ffffffff802e0360>]
+> sys_write+0x50/0x90 Mar 29 12:06:11 desktop kernel: [  917.414563]
+> [<ffffffff8020b51b>] system_call_fastpath+0x16/0x1b
+> 
+> Result of the bisection:
+> 
+> 784544739a25c30637397ace5489eeb6e15d7d49 is first bad commit
+> commit 784544739a25c30637397ace5489eeb6e15d7d49             
+> Author: Stephen Hemminger <shemminger@vyatta.com>           
+> Date:   Fri Feb 20 10:35:32 2009 +0100                      
+> 
+>     netfilter: iptables: lock free counters
+>                                            
+>     The reader/writer lock in ip_tables is acquired in the critical
+>     path of processing packets and is one of the reasons just loading
+>     iptables can cause a 20% performance loss. The rwlock serves two
+>     functions:
+> 
+>     1) it prevents changes to table state (xt_replace) while table is
+>     in use. This is now handled by doing rcu on the xt_table. When
+>     table is replaced, the new table(s) are put in and the old one
+>     table(s) are freed after RCU period.
+> 
+>     2) it provides synchronization when accesing the counter values.
+>        This is now handled by swapping in new table_info entries for
+>     each cpu then summing the old values, and putting the result back
+>     onto one cpu.  On a busy system it may cause sampling to occur at
+>     different times on each cpu, but no packet/byte counts are lost in
+>     the process.
+> 
+>     Signed-off-by: Stephen Hemminger <shemminger@vyatta.com>
+> 
+>     Sucessfully tested on my dual quad core machine too, but iptables
+>     only (no ipv6 here) BTW, my new "tbench 8" result is 2450 MB/s, (it
+>     was 2150 MB/s not so long ago)
+> 
+>     Acked-by: Eric Dumazet <dada1@cosmosbay.com>
+>     Signed-off-by: Patrick McHardy <kaber@trash.net>
+> 
+> :040000 040000 67ef5761d009330e8d538dd1a3aff77c86995172
+> 0d8d6398ced2117bb6995b0c414fd8013685324e M      include :040000 040000
+> 0317c745a0722ade9a6c0cbe9d6cb92abbd40efa
+> 0eb195a365164c05e7c764ab1c2a7da891276837 M      net
+> 
+> After reverting commit no more these messages.
+> 
+> This issue in bugzilla: http://bugzilla.kernel.org/show_bug.cgi?id=12960
 
-On Sun, Mar 29, 2009 at 11:37:40PM +0200, Michael Roth wrote:
-> Hello Borislav,
-> 
-> thank you for your help.
-> 
-> Borislav Petkov schrieb:
-> 
-> >  Can we please see a dmesg of a working
-> > kernel on your machine
-> 
-> Sure, dmesg output appended beneath. I also added the dmesg output
-> of the patched kernel. See below.
-> 
-> 
-> > and also is it possible to catch any kernel output of the crash
-> > any oops or something when your machine freezes - the more the better.
-> 
-> There aren't any messages, neither on the console nor in the syslog.
-> The kernel simple freeze, cursor on the console stops blinking, no
-> more ide activity. I have to hit the reset-bottom to restart.
-> 
-> 
-> > Probably over a serial console would be best but photographed
-> > with a digicam and uploaded somewhere as a screenshot would do too.
-> 
-> I will do that on request, but it will take some time (about days)
-> because currently I don't have access to a second computer or so.
+Thanks Roman for this excellent report 
 
-That'll definitely be very helpful since I wanna know exactly why it
-locks up. If you still have no output it'd be cool if you could enable
-ide-cd debugging and retry catching the output. Here's a patch for that,
-just recompile and reboot (I admit this is not one of the finest ways to
-enable debugging but since this is work in progress...:) ):
+Could you try following patch ?
 
---
-diff --git a/drivers/ide/ide-atapi.c b/drivers/ide/ide-atapi.c
-index e9d042d..4ef3b7e 100644
---- a/drivers/ide/ide-atapi.c
-+++ b/drivers/ide/ide-atapi.c
-@@ -8,6 +8,8 @@
- #include <linux/ide.h>
- #include <scsi/scsi.h>
+[PATCH] netfilter: use rcu_read_bh() in ipt_do_table()
+
+Commit 784544739a25c30637397ace5489eeb6e15d7d49
+(netfilter: iptables: lock free counters) forgot to disable BH
+in arpt_do_table(), ipt_do_table() and  ip6t_do_table()
+
+Use rcu_read_lock_bh() instead of rcu_read_lock() cures the problem.
+
+Reported-and-bisected-by: Roman Mindalev <r000n@r000n.net>
+Signed-off-by: Eric Dumazet <dada1@cosmosbay.com>
+---
+
+diff --git a/net/ipv4/netfilter/arp_tables.c b/net/ipv4/netfilter/arp_tables.c
+index 35c5f6a..5ba533d 100644
+--- a/net/ipv4/netfilter/arp_tables.c
++++ b/net/ipv4/netfilter/arp_tables.c
+@@ -253,7 +253,7 @@ unsigned int arpt_do_table(struct sk_buff *skb,
+ 	indev = in ? in->name : nulldevname;
+ 	outdev = out ? out->name : nulldevname;
  
-+#define DEBUG 1
-+
- #ifdef DEBUG
- #define debug_log(fmt, args...) \
- 	printk(KERN_INFO "ide: " fmt, ## args)
-diff --git a/drivers/ide/ide-cd.c b/drivers/ide/ide-cd.c
-index ddfbea4..ea36295 100644
---- a/drivers/ide/ide-cd.c
-+++ b/drivers/ide/ide-cd.c
-@@ -1991,7 +1991,7 @@ static int ide_cd_probe(ide_drive_t *drive)
+-	rcu_read_lock();
++	rcu_read_lock_bh();
+ 	private = rcu_dereference(table->private);
+ 	table_base = rcu_dereference(private->entries[smp_processor_id()]);
+ 
+@@ -329,7 +329,7 @@ unsigned int arpt_do_table(struct sk_buff *skb,
  		}
- 	}
+ 	} while (!hotdrop);
  
--	drive->debug_mask = debug_mask;
-+	drive->debug_mask = 0xffffffff;
- 	drive->irq_handler = cdrom_newpc_intr;
+-	rcu_read_unlock();
++	rcu_read_unlock_bh();
  
- 	info = kzalloc(sizeof(struct cdrom_info), GFP_KERNEL);
-diff --git a/drivers/ide/ide-cd.h b/drivers/ide/ide-cd.h
-index c878bfc..225afca 100644
---- a/drivers/ide/ide-cd.h
-+++ b/drivers/ide/ide-cd.h
-@@ -8,7 +8,7 @@
- #include <linux/cdrom.h>
- #include <asm/byteorder.h>
+ 	if (hotdrop)
+ 		return NF_DROP;
+diff --git a/net/ipv4/netfilter/ip_tables.c b/net/ipv4/netfilter/ip_tables.c
+index 82ee7c9..810c0b6 100644
+--- a/net/ipv4/netfilter/ip_tables.c
++++ b/net/ipv4/netfilter/ip_tables.c
+@@ -339,7 +339,7 @@ ipt_do_table(struct sk_buff *skb,
  
--#define IDECD_DEBUG_LOG		0
-+#define IDECD_DEBUG_LOG		1
+ 	IP_NF_ASSERT(table->valid_hooks & (1 << hook));
  
- #if IDECD_DEBUG_LOG
- #define ide_debug_log(lvl, fmt, args...) __ide_debug_log(lvl, fmt, args)
+-	rcu_read_lock();
++	rcu_read_lock_bh();
+ 	private = rcu_dereference(table->private);
+ 	table_base = rcu_dereference(private->entries[smp_processor_id()]);
+ 
+@@ -437,7 +437,7 @@ ipt_do_table(struct sk_buff *skb,
+ 		}
+ 	} while (!hotdrop);
+ 
+-	rcu_read_unlock();
++	rcu_read_unlock_bh();
+ 
+ #ifdef DEBUG_ALLOW_ALL
+ 	return NF_ACCEPT;
+diff --git a/net/ipv6/netfilter/ip6_tables.c b/net/ipv6/netfilter/ip6_tables.c
+index e89cfa3..dfed176 100644
+--- a/net/ipv6/netfilter/ip6_tables.c
++++ b/net/ipv6/netfilter/ip6_tables.c
+@@ -365,7 +365,7 @@ ip6t_do_table(struct sk_buff *skb,
+ 
+ 	IP_NF_ASSERT(table->valid_hooks & (1 << hook));
+ 
+-	rcu_read_lock();
++	rcu_read_lock_bh();
+ 	private = rcu_dereference(table->private);
+ 	table_base = rcu_dereference(private->entries[smp_processor_id()]);
+ 
+@@ -466,7 +466,7 @@ ip6t_do_table(struct sk_buff *skb,
+ #ifdef CONFIG_NETFILTER_DEBUG
+ 	((struct ip6t_entry *)table_base)->comefrom = NETFILTER_LINK_POISON;
+ #endif
+-	rcu_read_unlock();
++	rcu_read_unlock_bh();
+ 
+ #ifdef DEBUG_ALLOW_ALL
+ 	return NF_ACCEPT;
 
-> > You could also try the following patch to see whether that is of any
-> > help:
-> 
-> Your patch helps perfectly. I'm writing this email on the patched
-> 2.6.29. I also tested CD and DVD access: They work well. Burning not
-> tested but I assume it will work too.
-
-@Bart: can you take at look at this. Somehow, if the device is behind a
-PCI IDE controller, the order of issuing the command and enabling DMA is
-important. Seen something like that before?
-
-> Probing IDE interface ide2...
-> hde: HL-DT-ST DVDRAM GSA-H42N, ATAPI CD/DVD-ROM drive
-> hde: host max PIO4 wanted PIO255(auto-tune) selected PIO4
-> hde: UDMA/66 mode selected
-> Probing IDE interface ide3...
-> ide2 at 0xa400-0xa407,0xa802 on irq 18
-> ide3 at 0xac00-0xac07,0xb002 on irq 18
-> via82cxxx 0000:00:11.1: VIA vt8235 (rev 00) IDE UDMA133
-> via82cxxx 0000:00:11.1: IDE controller (0x1106:0x0571 rev 0x06)
-> ACPI: PCI Interrupt Link [ALKA] BIOS reported IRQ 0, using IRQ 20
-> ACPI: PCI Interrupt Link [ALKA] enabled at IRQ 20
-> VIA_IDE 0000:00:11.1: PCI INT A -> Link[ALKA] -> GSI 20 (level, low) -> IRQ 20
-> via82cxxx 0000:00:11.1: not 100% native mode: will probe irqs later
->     ide0: BM-DMA at 0xc400-0xc407
->     ide1: BM-DMA at 0xc408-0xc40f
-> Probing IDE interface ide0...
-> hda: SAMSUNG HD400LD, ATA DISK drive
-> hda: host max PIO5 wanted PIO255(auto-tune) selected PIO4
-> hda: UDMA/100 mode selected
-> Probing IDE interface ide1...
-> hdc: SAMSUNG HD400LD, ATA DISK drive
-> hdc: host max PIO5 wanted PIO255(auto-tune) selected PIO4
-> hdc: UDMA/100 mode selected
-> ide0 at 0x1f0-0x1f7,0x3f6 on irq 14
-> ide1 at 0x170-0x177,0x376 on irq 15
-> ide_generic: please use "probe_mask=0x3f" module parameter for probing all legacy ISA IDE ports
-> ide-gd driver 1.18
-> hda: max request size: 512KiB
-> hda: 781422768 sectors (400088 MB) w/8192KiB Cache, CHS=48641/255/63
-> hda: cache flushes supported
->  hda: hda1 hda2 hda3 hda4
-> hdc: max request size: 512KiB
-> hdc: 781422768 sectors (400088 MB) w/8192KiB Cache, CHS=48641/255/63
-> hdc: cache flushes supported
->  hdc: hdc1 hdc2 hdc3 hdc4
-> ide-cd driver 5.00
-> ide-cd: hde: ATAPI 48X DVD-ROM DVD-R/RAM CD-R/RW drive, 2048kB Cache
-> Uniform CD-ROM driver Revision: 3.20
-
--- 
-Regards/Gruss,
-    Boris.
