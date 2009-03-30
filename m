@@ -1,117 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757728AbZC3C0V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758033AbZC3C1m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757728AbZC3C0V (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Mar 2009 22:26:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756167AbZC3C0J
+	id S1758033AbZC3C1m (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Mar 2009 22:27:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756487AbZC3C1d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Mar 2009 22:26:09 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:50214 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755753AbZC3C0I (ORCPT
+	Sun, 29 Mar 2009 22:27:33 -0400
+Received: from mail.renesas.com ([202.234.163.13]:62332 "EHLO
+	mail04.idc.renesas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756224AbZC3C1c (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Mar 2009 22:26:08 -0400
-Message-ID: <49D02DAD.2040607@jp.fujitsu.com>
-Date: Mon, 30 Mar 2009 11:25:49 +0900
-From: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
-MIME-Version: 1.0
-To: Alex Chiang <achiang@hp.com>
-CC: jbarnes@virtuousgeek.org, linux-pci@vger.kernel.org,
-       linux-kernel@vger.kernel.org, lenb@kernel.org
-Subject: Re: [PATCH 3/3] PCI: pci_slot: grab refcount on slot's bus
-References: <20090329165352.29073.5159.stgit@bob.kio> <20090329165454.29073.1180.stgit@bob.kio>
-In-Reply-To: <20090329165454.29073.1180.stgit@bob.kio>
-Content-Type: text/plain; charset=ISO-2022-JP
-Content-Transfer-Encoding: 7bit
+	Sun, 29 Mar 2009 22:27:32 -0400
+X-AuditID: ac140387-00000004000005fd-e1-49d02dce3afb
+Date: Mon, 30 Mar 2009 11:26:20 +0900
+From: Yoshihiro Shimoda <shimoda.yoshihiro@renesas.com>
+Subject: Re: [PATCH 14/58] move sh_flctl's probe function to .devinit.text
+In-reply-to: <1238196439-16535-14-git-send-email-u.kleine-koenig@pengutronix.de>
+To: =?UTF-8?B?VXdlIEtsZWluZS1Lw7ZuaWc=?= 
+	<u.kleine-koenig@pengutronix.de>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       David Woodhouse <David.Woodhouse@intel.com>,
+       Paul Mundt <lethal@linux-sh.org>
+Message-id: <49D02DCC.5040500@renesas.com>
+MIME-version: 1.0
+Content-type: text/plain; charset=UTF-8
+Content-transfer-encoding: 8BIT
+User-Agent: Thunderbird 2.0.0.14 (Windows/20080421)
+References: <20090327232153.GA16348@pengutronix.de>
+ <1238196439-16535-14-git-send-email-u.kleine-koenig@pengutronix.de>
+X-Brightmail-Tracker: AAAAAA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alex Chiang wrote:
-> If a logical hot unplug (remove) is performed on a physical PCI slot's
-> parent bridge, and then pci_slot is unloaded, we will encounter an oops:
-> 
->   [<ffffffff803a788a>] kobject_release+0x9a/0x290
->   [<ffffffff803a77f0>] ? kobject_release+0x0/0x290
->   [<ffffffff803a8ce7>] kref_put+0x37/0x80
->   [<ffffffff803a76f7>] kobject_put+0x27/0x60
->   [<ffffffff803bebcc>] ? pci_destroy_slot+0x3c/0xc0
->   [<ffffffff803bebd5>] pci_destroy_slot+0x45/0xc0
->   [<ffffffffa000f05c>] acpi_pci_slot_remove+0x5c/0x91 [pci_slot]
->   [<ffffffff8040064b>] acpi_pci_unregister_driver+0x4b/0x62
->   [<ffffffffa000f5c8>] acpi_pci_slot_exit+0x10/0x12 [pci_slot]
->   [<ffffffff80276ce1>] sys_delete_module+0x161/0x250
-> 
-> We need to grab a reference to the parent PCI bus, which will pin
-> the bus and prevent it from being released until pci_slot is unloaded.
-> 
-> Cc: lenb@kernel.org
-> Reported-by: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
-> Signed-off-by: Alex Chiang <achiang@hp.com>
-> ---
-> 
->  drivers/acpi/pci_slot.c |    5 +++++
->  1 files changed, 5 insertions(+), 0 deletions(-)
-> 
-> diff --git a/drivers/acpi/pci_slot.c b/drivers/acpi/pci_slot.c
-> index cd1f446..c7ad9f2 100644
-> --- a/drivers/acpi/pci_slot.c
-> +++ b/drivers/acpi/pci_slot.c
-> @@ -63,6 +63,7 @@ struct acpi_pci_slot {
->  	acpi_handle root_handle;	/* handle of the root bridge */
->  	struct pci_slot *pci_slot;	/* corresponding pci_slot */
->  	struct list_head list;		/* node in the list of slots */
-> +	struct pci_bus *bus;		/* bus the slot is on */
->  };
-
-I don't think we need an additional 'bus' field in the struct
-acpi_pci_slot. At the register_slot(), we already know the
-address of struct pci_bus. At the acpi_pci_slot_remove(), I
-think we can get the address of struct pci_bus as follows.
-
-		if (slot->root_handle == handle) {
-			struct pci_bus *pbus = slot->pci_slot->bus;
-			list_del(&slot->list);
-			pci_destroy_slot(slot->pci_slot);
-			put_device(&pbus->dev);
-			kfree(slot);
-		}
+Acked-by: Yoshihiro Shimoda <shimoda.yoshihiro@renesas.com>
 
 Thanks,
-Kenji Kaneshige
+Yoshihiro Shimoda
 
-
->  
->  static int acpi_pci_slot_add(acpi_handle handle);
-> @@ -159,11 +160,14 @@ register_slot(acpi_handle handle, u32 lvl, void *context, void **rv)
->  
->  	slot->root_handle = parent_context->root_handle;
->  	slot->pci_slot = pci_slot;
-> +	slot->bus = pci_bus;
->  	INIT_LIST_HEAD(&slot->list);
->  	mutex_lock(&slot_list_lock);
->  	list_add(&slot->list, &slot_list);
->  	mutex_unlock(&slot_list_lock);
->  
-> +	get_device(&pci_bus->dev);
-> +
->  	dbg("pci_slot: %p, pci_bus: %x, device: %d, name: %s\n",
->  		pci_slot, pci_bus->number, device, name);
->  
-> @@ -316,6 +320,7 @@ acpi_pci_slot_remove(acpi_handle handle)
->  		if (slot->root_handle == handle) {
->  			list_del(&slot->list);
->  			pci_destroy_slot(slot->pci_slot);
-> +			put_device(&slot->bus->dev);
->  			kfree(slot);
->  		}
->  	}
+Uwe Kleine-König wrote:
+> A pointer to flctl_probe is passed to the core via
+> platform_driver_register and so the function must not disappear when the
+> .init sections are discarded.  Otherwise (if also having HOTPLUG=y)
+> unbinding and binding a device to the driver via sysfs will result in an
+> oops as does a device being registered late.
 > 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pci" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> An alternative to this patch is using platform_driver_probe instead of
+> platform_driver_register plus removing the pointer to the probe function
+> from the struct platform_driver.
 > 
+> Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
+> Cc: Yoshihiro Shimoda <shimoda.yoshihiro@renesas.com>
+> Cc: David Woodhouse <David.Woodhouse@intel.com>
+> Cc: Paul Mundt <lethal@linux-sh.org>
+> Cc: Andrew Morton <akpm@linux-foundation.org>
+> ---
+>  drivers/mtd/nand/sh_flctl.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
 > 
-
+> diff --git a/drivers/mtd/nand/sh_flctl.c b/drivers/mtd/nand/sh_flctl.c
+> index 821acb0..fdc0e4e 100644
+> --- a/drivers/mtd/nand/sh_flctl.c
+> +++ b/drivers/mtd/nand/sh_flctl.c
+> @@ -763,7 +763,7 @@ static int flctl_chip_init_tail(struct mtd_info *mtd)
+>  	return 0;
+>  }
+>  
+> -static int __init flctl_probe(struct platform_device *pdev)
+> +static int __devinit flctl_probe(struct platform_device *pdev)
+>  {
+>  	struct resource *res;
+>  	struct sh_flctl *flctl;
 
