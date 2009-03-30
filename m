@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760503AbZC3VjM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761917AbZC3Vje@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760503AbZC3VjM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Mar 2009 17:39:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761696AbZC3ViO
+	id S1761917AbZC3Vje (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Mar 2009 17:39:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761728AbZC3ViX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Mar 2009 17:38:14 -0400
-Received: from e7.ny.us.ibm.com ([32.97.182.137]:39853 "EHLO e7.ny.us.ibm.com"
+	Mon, 30 Mar 2009 17:38:23 -0400
+Received: from e9.ny.us.ibm.com ([32.97.182.139]:52132 "EHLO e9.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761239AbZC3ViL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Mar 2009 17:38:11 -0400
+	id S1761735AbZC3ViV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Mar 2009 17:38:21 -0400
 From: Darren Hart <dvhltc@us.ibm.com>
-Subject: [tip PATCH v6 4/8] RFC: futex: finish_futex_lock_pi()
+Subject: [tip PATCH v6 5/8] RFC: rt_mutex: add proxy lock routines
 To: linux-kernel@vger.kernel.org
 Cc: Thomas Gleixner <tglx@linutronix.de>, Sripathi Kodi <sripathik@in.ibm.com>,
        Peter Zijlstra <peterz@infradead.org>,
@@ -25,8 +25,8 @@ Cc: Thomas Gleixner <tglx@linutronix.de>, Sripathi Kodi <sripathik@in.ibm.com>,
        Dinakar Guniguntala <dino@in.ibm.com>,
        Ulrich Drepper <drepper@redhat.com>, Eric Dumazet <dada1@cosmosbay.com>,
        Ingo Molnar <mingo@elte.hu>, Jakub Jelinek <jakub@redhat.com>
-Date: Mon, 30 Mar 2009 14:38:05 -0700
-Message-ID: <20090330213805.606.35912.stgit@Aeon>
+Date: Mon, 30 Mar 2009 14:38:13 -0700
+Message-ID: <20090330213813.606.64734.stgit@Aeon>
 In-Reply-To: <20090330213306.606.9540.stgit@Aeon>
 References: <20090330213306.606.9540.stgit@Aeon>
 User-Agent: StGIT/0.14.2
@@ -37,14 +37,26 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Refactor the post lock acquisition logic from futex_lock_pi().  This code will
-be reused in futex_wait_requeue_pi().
+This patch is required for the first half of requeue_pi to function.  It
+basically splits rt_mutex_slowlock() right down the middle, just before the
+first call to schedule().
 
-V6: -Minor comment updates
-V4: -Corrected string paranoia check
-    -Move the spinlock(q->lock_ptr) out of finish_futex_lock_pi to retain
-     some semblance of lock/unlock in the same function.
-V3: -Initial version
+This patch uses a new futex_q field, rt_waiter, for now.  I think
+I should be able to use task->pi_blocked_on in a future version of this patch.
+
+V6: -add mark_rt_mutex_waiters() to rt_mutex_start_procy_lock() to avoid
+     the race condition evident in previous versions
+    -cleanup kernel-docs formatting and comments
+    -try to take the lock in rt_mutex_start_proxy_lock() rather than assume
+     the lock is held
+    -remove initial schedule in finish_proxy_lock to allow for signal and
+     timeout detection.
+V5: -remove EXPORT_SYMBOL_GPL from the new routines
+    -minor cleanups
+V4: -made detect_deadlock a parameter to rt_mutex_enqueue_task
+    -refactored rt_mutex_slowlock to share code with new functions
+    -renamed rt_mutex_enqueue_task and rt_mutex_handle_wakeup to
+     rt_mutex_start_proxy_lock and rt_mutex_finish_proxy_lock, respectively
 
 Signed-off-by: Darren Hart <dvhltc@us.ibm.com>
 Cc: Thomas Gleixner <tglx@linutronix.de>
@@ -59,193 +71,390 @@ Cc: Ingo Molnar <mingo@elte.hu>
 Cc: Jakub Jelinek <jakub@redhat.com>
 ---
 
- kernel/futex.c |  147 +++++++++++++++++++++++++++++++-------------------------
- 1 files changed, 81 insertions(+), 66 deletions(-)
+ kernel/rtmutex.c        |  240 +++++++++++++++++++++++++++++++++++++----------
+ kernel/rtmutex_common.h |    8 ++
+ 2 files changed, 195 insertions(+), 53 deletions(-)
 
-diff --git a/kernel/futex.c b/kernel/futex.c
-index 905b52a..dd05803 100644
---- a/kernel/futex.c
-+++ b/kernel/futex.c
-@@ -1258,6 +1258,84 @@ handle_fault:
- static long futex_wait_restart(struct restart_block *restart);
+diff --git a/kernel/rtmutex.c b/kernel/rtmutex.c
+index 69d9cb9..fec77e7 100644
+--- a/kernel/rtmutex.c
++++ b/kernel/rtmutex.c
+@@ -300,7 +300,8 @@ static int rt_mutex_adjust_prio_chain(struct task_struct *task,
+  * assigned pending owner [which might not have taken the
+  * lock yet]:
+  */
+-static inline int try_to_steal_lock(struct rt_mutex *lock)
++static inline int try_to_steal_lock(struct rt_mutex *lock,
++				    struct task_struct *task)
+ {
+ 	struct task_struct *pendowner = rt_mutex_owner(lock);
+ 	struct rt_mutex_waiter *next;
+@@ -309,11 +310,11 @@ static inline int try_to_steal_lock(struct rt_mutex *lock)
+ 	if (!rt_mutex_owner_pending(lock))
+ 		return 0;
+ 
+-	if (pendowner == current)
++	if (pendowner == task)
+ 		return 1;
+ 
+ 	spin_lock_irqsave(&pendowner->pi_lock, flags);
+-	if (current->prio >= pendowner->prio) {
++	if (task->prio >= pendowner->prio) {
+ 		spin_unlock_irqrestore(&pendowner->pi_lock, flags);
+ 		return 0;
+ 	}
+@@ -338,21 +339,21 @@ static inline int try_to_steal_lock(struct rt_mutex *lock)
+ 	 * We are going to steal the lock and a waiter was
+ 	 * enqueued on the pending owners pi_waiters queue. So
+ 	 * we have to enqueue this waiter into
+-	 * current->pi_waiters list. This covers the case,
+-	 * where current is boosted because it holds another
++	 * task->pi_waiters list. This covers the case,
++	 * where task is boosted because it holds another
+ 	 * lock and gets unboosted because the booster is
+ 	 * interrupted, so we would delay a waiter with higher
+-	 * priority as current->normal_prio.
++	 * priority as task->normal_prio.
+ 	 *
+ 	 * Note: in the rare case of a SCHED_OTHER task changing
+ 	 * its priority and thus stealing the lock, next->task
+-	 * might be current:
++	 * might be task:
+ 	 */
+-	if (likely(next->task != current)) {
+-		spin_lock_irqsave(&current->pi_lock, flags);
+-		plist_add(&next->pi_list_entry, &current->pi_waiters);
+-		__rt_mutex_adjust_prio(current);
+-		spin_unlock_irqrestore(&current->pi_lock, flags);
++	if (likely(next->task != task)) {
++		spin_lock_irqsave(&task->pi_lock, flags);
++		plist_add(&next->pi_list_entry, &task->pi_waiters);
++		__rt_mutex_adjust_prio(task);
++		spin_unlock_irqrestore(&task->pi_lock, flags);
+ 	}
+ 	return 1;
+ }
+@@ -389,7 +390,7 @@ static int try_to_take_rt_mutex(struct rt_mutex *lock)
+ 	 */
+ 	mark_rt_mutex_waiters(lock);
+ 
+-	if (rt_mutex_owner(lock) && !try_to_steal_lock(lock))
++	if (rt_mutex_owner(lock) && !try_to_steal_lock(lock, current))
+ 		return 0;
+ 
+ 	/* We got the lock. */
+@@ -411,6 +412,7 @@ static int try_to_take_rt_mutex(struct rt_mutex *lock)
+  */
+ static int task_blocks_on_rt_mutex(struct rt_mutex *lock,
+ 				   struct rt_mutex_waiter *waiter,
++				   struct task_struct *task,
+ 				   int detect_deadlock)
+ {
+ 	struct task_struct *owner = rt_mutex_owner(lock);
+@@ -418,21 +420,21 @@ static int task_blocks_on_rt_mutex(struct rt_mutex *lock,
+ 	unsigned long flags;
+ 	int chain_walk = 0, res;
+ 
+-	spin_lock_irqsave(&current->pi_lock, flags);
+-	__rt_mutex_adjust_prio(current);
+-	waiter->task = current;
++	spin_lock_irqsave(&task->pi_lock, flags);
++	__rt_mutex_adjust_prio(task);
++	waiter->task = task;
+ 	waiter->lock = lock;
+-	plist_node_init(&waiter->list_entry, current->prio);
+-	plist_node_init(&waiter->pi_list_entry, current->prio);
++	plist_node_init(&waiter->list_entry, task->prio);
++	plist_node_init(&waiter->pi_list_entry, task->prio);
+ 
+ 	/* Get the top priority waiter on the lock */
+ 	if (rt_mutex_has_waiters(lock))
+ 		top_waiter = rt_mutex_top_waiter(lock);
+ 	plist_add(&waiter->list_entry, &lock->wait_list);
+ 
+-	current->pi_blocked_on = waiter;
++	task->pi_blocked_on = waiter;
+ 
+-	spin_unlock_irqrestore(&current->pi_lock, flags);
++	spin_unlock_irqrestore(&task->pi_lock, flags);
+ 
+ 	if (waiter == rt_mutex_top_waiter(lock)) {
+ 		spin_lock_irqsave(&owner->pi_lock, flags);
+@@ -460,7 +462,7 @@ static int task_blocks_on_rt_mutex(struct rt_mutex *lock,
+ 	spin_unlock(&lock->wait_lock);
+ 
+ 	res = rt_mutex_adjust_prio_chain(owner, detect_deadlock, lock, waiter,
+-					 current);
++					 task);
+ 
+ 	spin_lock(&lock->wait_lock);
+ 
+@@ -605,37 +607,25 @@ void rt_mutex_adjust_pi(struct task_struct *task)
+ 	rt_mutex_adjust_prio_chain(task, 0, NULL, NULL, task);
+ }
+ 
+-/*
+- * Slow path lock function:
++/**
++ * __rt_mutex_slowlock() - Perform the wait-wake-try-to-take loop
++ * @lock:		 the rt_mutex to take
++ * @state:		 the state the task should block in (TASK_INTERRUPTIBLE
++ * 			 or TASK_UNINTERRUPTIBLE)
++ * @timeout:		 the pre-initialized and started timer, or NULL for none
++ * @waiter:		 the pre-initialized rt_mutex_waiter
++ * @detect_deadlock:	 passed to task_blocks_on_rt_mutex
++ *
++ * lock->wait_lock must be held by the caller.
+  */
+ static int __sched
+-rt_mutex_slowlock(struct rt_mutex *lock, int state,
+-		  struct hrtimer_sleeper *timeout,
+-		  int detect_deadlock)
++__rt_mutex_slowlock(struct rt_mutex *lock, int state,
++		    struct hrtimer_sleeper *timeout,
++		    struct rt_mutex_waiter *waiter,
++		    int detect_deadlock)
+ {
+-	struct rt_mutex_waiter waiter;
+ 	int ret = 0;
+ 
+-	debug_rt_mutex_init_waiter(&waiter);
+-	waiter.task = NULL;
+-
+-	spin_lock(&lock->wait_lock);
+-
+-	/* Try to acquire the lock again: */
+-	if (try_to_take_rt_mutex(lock)) {
+-		spin_unlock(&lock->wait_lock);
+-		return 0;
+-	}
+-
+-	set_current_state(state);
+-
+-	/* Setup the timer, when timeout != NULL */
+-	if (unlikely(timeout)) {
+-		hrtimer_start_expires(&timeout->timer, HRTIMER_MODE_ABS);
+-		if (!hrtimer_active(&timeout->timer))
+-			timeout->task = NULL;
+-	}
+-
+ 	for (;;) {
+ 		/* Try to acquire the lock: */
+ 		if (try_to_take_rt_mutex(lock))
+@@ -656,19 +646,19 @@ rt_mutex_slowlock(struct rt_mutex *lock, int state,
+ 		}
+ 
+ 		/*
+-		 * waiter.task is NULL the first time we come here and
++		 * waiter->task is NULL the first time we come here and
+ 		 * when we have been woken up by the previous owner
+ 		 * but the lock got stolen by a higher prio task.
+ 		 */
+-		if (!waiter.task) {
+-			ret = task_blocks_on_rt_mutex(lock, &waiter,
++		if (!waiter->task) {
++			ret = task_blocks_on_rt_mutex(lock, waiter, current,
+ 						      detect_deadlock);
+ 			/*
+ 			 * If we got woken up by the owner then start loop
+ 			 * all over without going into schedule to try
+ 			 * to get the lock now:
+ 			 */
+-			if (unlikely(!waiter.task)) {
++			if (unlikely(!waiter->task)) {
+ 				/*
+ 				 * Reset the return value. We might
+ 				 * have returned with -EDEADLK and the
+@@ -684,15 +674,52 @@ rt_mutex_slowlock(struct rt_mutex *lock, int state,
+ 
+ 		spin_unlock(&lock->wait_lock);
+ 
+-		debug_rt_mutex_print_deadlock(&waiter);
++		debug_rt_mutex_print_deadlock(waiter);
+ 
+-		if (waiter.task)
++		if (waiter->task)
+ 			schedule_rt_mutex(lock);
+ 
+ 		spin_lock(&lock->wait_lock);
+ 		set_current_state(state);
+ 	}
+ 
++	return ret;
++}
++
++/*
++ * Slow path lock function:
++ */
++static int __sched
++rt_mutex_slowlock(struct rt_mutex *lock, int state,
++		  struct hrtimer_sleeper *timeout,
++		  int detect_deadlock)
++{
++	struct rt_mutex_waiter waiter;
++	int ret = 0;
++
++	debug_rt_mutex_init_waiter(&waiter);
++	waiter.task = NULL;
++
++	spin_lock(&lock->wait_lock);
++
++	/* Try to acquire the lock again: */
++	if (try_to_take_rt_mutex(lock)) {
++		spin_unlock(&lock->wait_lock);
++		return 0;
++	}
++
++	set_current_state(state);
++
++	/* Setup the timer, when timeout != NULL */
++	if (unlikely(timeout)) {
++		hrtimer_start_expires(&timeout->timer, HRTIMER_MODE_ABS);
++		if (!hrtimer_active(&timeout->timer))
++			timeout->task = NULL;
++	}
++
++	ret = __rt_mutex_slowlock(lock, state, timeout, &waiter,
++				  detect_deadlock);
++
+ 	set_current_state(TASK_RUNNING);
+ 
+ 	if (unlikely(waiter.task))
+@@ -986,6 +1013,59 @@ void rt_mutex_proxy_unlock(struct rt_mutex *lock,
+ }
  
  /**
-+ * finish_futex_lock_pi() - Post lock pi_state and corner case management
-+ * @uaddr:	user address of the futex
-+ * @fshared:	whether the futex is shared (1) or not (0)
-+ * @q:		futex_q (contains pi_state and access to the rt_mutex)
-+ * @ret:	the return value of the preceeding attempt to lock the rt_mutex
-+ *
-+ * After attempting to lock an rt_mutex, process the return code and cleanup
-+ * the pi_state as well as handle race conditions that may have caused us to
-+ * lose the lock. Must be called with the hb lock held.
++ * rt_mutex_start_proxy_lock() - Start lock acquisition for another task
++ * @lock:		the rt_mutex to take
++ * @waiter:		the pre-initialized rt_mutex_waiter
++ * @task:		the task to prepare
++ * @detect_deadlock:	perform deadlock detection (1) or not (0)
 + *
 + * Returns:
-+ *  0 - on success
-+ * <0 - on error
++ *  0 - task blocked on lock
++ *  1 - acquired the lock for task, caller should wake it up
++ * <0 - error
++ *
++ * Special API call for FUTEX_REQUEUE_PI support.
 + */
-+static int finish_futex_lock_pi(u32 __user *uaddr, int fshared,
-+				struct futex_q *q, int ret)
++int rt_mutex_start_proxy_lock(struct rt_mutex *lock,
++			      struct rt_mutex_waiter *waiter,
++			      struct task_struct *task, int detect_deadlock)
 +{
-+	if (!ret) {
-+		/*
-+		 * Got the lock. We might not be the anticipated owner
-+		 * if we did a lock-steal - fix up the PI-state in
-+		 * that case:
-+		 */
-+		if (q->pi_state->owner != current)
-+			ret = fixup_pi_state_owner(uaddr, q, current, fshared);
-+		return ret;
++	int ret;
++
++	spin_lock(&lock->wait_lock);
++
++	mark_rt_mutex_waiters(lock);
++
++	if (!rt_mutex_owner(lock) || try_to_steal_lock(lock, task)) {
++		/* We got the lock for task. */
++		debug_rt_mutex_lock(lock);
++
++		rt_mutex_set_owner(lock, task, 0);
++
++		rt_mutex_deadlock_account_lock(lock, task);
++		return 1;
 +	}
 +
-+	/*
-+	 * Catch the rare case, where the lock was released when we were on the
-+	 * way back before we locked the hash bucket.
-+	 */
-+	if (q->pi_state->owner == current) {
-+		/*
-+		 * Try to get the rt_mutex now. This might fail as some other
-+		 * task acquired the rt_mutex after we removed ourself from the
-+		 * rt_mutex waiters list.
-+		 */
-+		if (rt_mutex_trylock(&q->pi_state->pi_mutex))
-+			ret = 0;
-+		else {
-+			/*
-+			 * pi_state is incorrect, some other task did a lock
-+			 * steal and we returned due to timeout or signal
-+			 * without taking the rt_mutex. Too late. We can access
-+			 * the rt_mutex_owner without locking, as the other
-+			 * task is now blocked on the hash bucket lock. Fix the
-+			 * state up.
-+			 */
-+			struct task_struct *owner;
-+			int res;
++	ret = task_blocks_on_rt_mutex(lock, waiter, task, detect_deadlock);
 +
-+			owner = rt_mutex_owner(&q->pi_state->pi_mutex);
-+			res = fixup_pi_state_owner(uaddr, q, owner,
-+					fshared);
 +
-+			/* propagate -EFAULT, if the fixup failed */
-+			if (res)
-+				ret = res;
-+		}
-+	} else {
++	if (ret && !waiter->task) {
 +		/*
-+		 * Paranoia check. If we did not take the lock in the trylock
-+		 * above, then we should not be the owner of the rtmutex,
-+		 * neither the real nor the pending one:
++		 * Reset the return value. We might have
++		 * returned with -EDEADLK and the owner
++		 * released the lock while we were walking the
++		 * pi chain.  Let the waiter sort it out.
 +		 */
-+		if (rt_mutex_owner(&q->pi_state->pi_mutex) == current)
-+			printk(KERN_ERR "finish_futex_lock_pi: "
-+					"ret = %d pi-mutex: %p "
-+					"pi-state %p\n", ret,
-+					q->pi_state->pi_mutex.owner,
-+					q->pi_state->owner);
++		ret = 0;
 +	}
++	spin_unlock(&lock->wait_lock);
++
++	debug_rt_mutex_print_deadlock(waiter);
 +
 +	return ret;
 +}
 +
 +/**
-  * futex_wait_queue_me() - queue_me and wait for wakeup, timeout, or signal.
-  * @hb:		the futex hash bucket, must be locked by the caller
-  * @q:		the futex_q to queue up on
-@@ -1461,7 +1539,6 @@ static int futex_lock_pi(u32 __user *uaddr, int fshared,
- 			 int detect, ktime_t *time, int trylock)
- {
- 	struct hrtimer_sleeper timeout, *to = NULL;
--	struct task_struct *curr = current;
- 	struct futex_hash_bucket *hb;
- 	u32 uval;
- 	struct futex_q q;
-@@ -1529,67 +1606,7 @@ retry_private:
- 	}
+  * rt_mutex_next_owner - return the next owner of the lock
+  *
+  * @lock: the rt lock query
+@@ -1004,3 +1084,57 @@ struct task_struct *rt_mutex_next_owner(struct rt_mutex *lock)
  
- 	spin_lock(q.lock_ptr);
--
--	if (!ret) {
--		/*
--		 * Got the lock. We might not be the anticipated owner
--		 * if we did a lock-steal - fix up the PI-state in
--		 * that case:
--		 */
--		if (q.pi_state->owner != curr)
--			ret = fixup_pi_state_owner(uaddr, &q, curr, fshared);
--	} else {
--		/*
--		 * Catch the rare case, where the lock was released
--		 * when we were on the way back before we locked the
--		 * hash bucket.
--		 */
--		if (q.pi_state->owner == curr) {
--			/*
--			 * Try to get the rt_mutex now. This might
--			 * fail as some other task acquired the
--			 * rt_mutex after we removed ourself from the
--			 * rt_mutex waiters list.
--			 */
--			if (rt_mutex_trylock(&q.pi_state->pi_mutex))
--				ret = 0;
--			else {
--				/*
--				 * pi_state is incorrect, some other
--				 * task did a lock steal and we
--				 * returned due to timeout or signal
--				 * without taking the rt_mutex. Too
--				 * late. We can access the
--				 * rt_mutex_owner without locking, as
--				 * the other task is now blocked on
--				 * the hash bucket lock. Fix the state
--				 * up.
--				 */
--				struct task_struct *owner;
--				int res;
--
--				owner = rt_mutex_owner(&q.pi_state->pi_mutex);
--				res = fixup_pi_state_owner(uaddr, &q, owner,
--							   fshared);
--
--				/* propagate -EFAULT, if the fixup failed */
--				if (res)
--					ret = res;
--			}
--		} else {
--			/*
--			 * Paranoia check. If we did not take the lock
--			 * in the trylock above, then we should not be
--			 * the owner of the rtmutex, neither the real
--			 * nor the pending one:
--			 */
--			if (rt_mutex_owner(&q.pi_state->pi_mutex) == curr)
--				printk(KERN_ERR "futex_lock_pi: ret = %d "
--				       "pi-mutex: %p pi-state %p\n", ret,
--				       q.pi_state->pi_mutex.owner,
--				       q.pi_state->owner);
--		}
--	}
-+	ret = finish_futex_lock_pi(uaddr, fshared, &q, ret);
+ 	return rt_mutex_top_waiter(lock)->task;
+ }
++
++/**
++ * rt_mutex_finish_proxy_lock() - Complete lock acquisition
++ * @lock:		the rt_mutex we were woken on
++ * @to:			the timeout, null if none. hrtimer should already have
++ * 			been started.
++ * @waiter:		the pre-initialized rt_mutex_waiter
++ * @detect_deadlock:	perform deadlock detection (1) or not (0)
++ *
++ * Complete the lock acquisition started our behalf by another thread.
++ *
++ * Returns:
++ *  0 - success
++ * <0 - error, one of -EINTR, -ETIMEDOUT, or -EDEADLK
++ *
++ * Special API call for PI-futex requeue support
++ */
++int rt_mutex_finish_proxy_lock(struct rt_mutex *lock,
++			       struct hrtimer_sleeper *to,
++			       struct rt_mutex_waiter *waiter,
++			       int detect_deadlock)
++{
++	int ret;
++
++	spin_lock(&lock->wait_lock);
++
++	set_current_state(TASK_INTERRUPTIBLE);
++
++	ret = __rt_mutex_slowlock(lock, TASK_INTERRUPTIBLE, to, waiter,
++				  detect_deadlock);
++
++	set_current_state(TASK_RUNNING);
++
++	if (unlikely(waiter->task))
++		remove_waiter(lock, waiter);
++
++	/*
++	 * try_to_take_rt_mutex() sets the waiter bit unconditionally. We might
++	 * have to fix that up.
++	 */
++	fixup_rt_mutex_waiters(lock);
++
++	spin_unlock(&lock->wait_lock);
++
++	/*
++	 * Readjust priority, when we did not get the lock. We might have been
++	 * the pending owner and boosted. Since we did not take the lock, the
++	 * PI boost has to go.
++	 */
++	if (unlikely(ret))
++		rt_mutex_adjust_prio(current);
++
++	return ret;
++}
+diff --git a/kernel/rtmutex_common.h b/kernel/rtmutex_common.h
+index e124bf5..97a2f81 100644
+--- a/kernel/rtmutex_common.h
++++ b/kernel/rtmutex_common.h
+@@ -120,6 +120,14 @@ extern void rt_mutex_init_proxy_locked(struct rt_mutex *lock,
+ 				       struct task_struct *proxy_owner);
+ extern void rt_mutex_proxy_unlock(struct rt_mutex *lock,
+ 				  struct task_struct *proxy_owner);
++extern int rt_mutex_start_proxy_lock(struct rt_mutex *lock,
++				     struct rt_mutex_waiter *waiter,
++				     struct task_struct *task,
++				     int detect_deadlock);
++extern int rt_mutex_finish_proxy_lock(struct rt_mutex *lock,
++				      struct hrtimer_sleeper *to,
++				      struct rt_mutex_waiter *waiter,
++				      int detect_deadlock);
  
- 	/*
- 	 * If fixup_pi_state_owner() faulted and was unable to handle the
-@@ -1601,9 +1618,7 @@ retry_private:
- 	/* Unqueue and drop the lock */
- 	unqueue_me_pi(&q);
- 
--	if (to)
--		destroy_hrtimer_on_stack(&to->timer);
--	return ret != -EINTR ? ret : -ERESTARTNOINTR;
-+	goto out;
- 
- out_unlock_put_key:
- 	queue_unlock(&q, hb);
-@@ -1613,7 +1628,7 @@ out_put_key:
- out:
- 	if (to)
- 		destroy_hrtimer_on_stack(&to->timer);
--	return ret;
-+	return ret != -EINTR ? ret : -ERESTARTNOINTR;
- 
- uaddr_faulted:
- 	/*
+ #ifdef CONFIG_DEBUG_RT_MUTEXES
+ # include "rtmutex-debug.h"
 
