@@ -1,85 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757517AbZC3Qyw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756795AbZC3Qzn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757517AbZC3Qyw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Mar 2009 12:54:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756697AbZC3QuX
+	id S1756795AbZC3Qzn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Mar 2009 12:55:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756149AbZC3Qz1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Mar 2009 12:50:23 -0400
-Received: from g1t0027.austin.hp.com ([15.216.28.34]:10342 "EHLO
-	g1t0027.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756394AbZC3QuU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Mar 2009 12:50:20 -0400
-Subject: [PATCH v2 3/3] PCI: pci_slot: grab refcount on slot's bus
-To: jbarnes@virtuousgeek.org
-From: Alex Chiang <achiang@hp.com>
-Cc: linux-pci@vger.kernel.org,
-       Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>,
-       linux-kernel@vger.kernel.org, lenb@kernel.org
-Date: Mon, 30 Mar 2009 10:50:19 -0600
-Message-ID: <20090330165019.18855.69386.stgit@bob.kio>
-In-Reply-To: <20090330164737.18855.7137.stgit@bob.kio>
-References: <20090330164737.18855.7137.stgit@bob.kio>
-User-Agent: StGit/0.14.3.347.g594a
+	Mon, 30 Mar 2009 12:55:27 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:33876 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756649AbZC3QzZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Mar 2009 12:55:25 -0400
+Date: Mon, 30 Mar 2009 12:55:16 -0400
+From: Dave Jones <davej@redhat.com>
+To: Frederik Deweerdt <frederik.deweerdt@xprog.eu>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [patch] P4 clock mod: recalibrate_cpu_khz on ia32 only
+Message-ID: <20090330165516.GA11902@redhat.com>
+Mail-Followup-To: Dave Jones <davej@redhat.com>,
+	Frederik Deweerdt <frederik.deweerdt@xprog.eu>,
+	linux-kernel@vger.kernel.org
+References: <20090330164153.GA13777@gambetta>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20090330164153.GA13777@gambetta>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-If a logical hot unplug (remove) is performed on a physical PCI slot's
-parent bridge, and then pci_slot is unloaded, we will encounter an oops:
+On Mon, Mar 30, 2009 at 04:41:53PM +0000, Frederik Deweerdt wrote:
+ > Hello Dave,
+ > 
+ > I just triggered the following compile error with an old .config on
+ > x86_64, (latest git):
+ > 
+ >   CHK     include/linux/version.h
+ >   CHK     include/linux/utsrelease.h
+ >   SYMLINK include/asm -> include/asm-x86
+ >   CALL    scripts/checksyscalls.sh
+ >   CHK     include/linux/compile.h
+ >   CC [M]  arch/x86/kernel/cpu/cpufreq/p4-clockmod.o
+ > arch/x86/kernel/cpu/cpufreq/p4-clockmod.c: In function ‘cpufreq_p4_cpu_init’:
+ > arch/x86/kernel/cpu/cpufreq/p4-clockmod.c:232: error: implicit declaration of function ‘recalibrate_cpu_khz’
+ > make[3]: *** [arch/x86/kernel/cpu/cpufreq/p4-clockmod.o] Error 1
+ > make[2]: *** [arch/x86/kernel/cpu/cpufreq] Error 2
+ > make[1]: *** [arch/x86/kernel/cpu] Error 2
+ > make: *** [arch/x86/kernel] Error 2
+ > 
+ > The attached patch calls recalibrate_cpu_khz on ia32 only
 
-  [<ffffffff803a788a>] kobject_release+0x9a/0x290
-  [<ffffffff803a77f0>] ? kobject_release+0x0/0x290
-  [<ffffffff803a8ce7>] kref_put+0x37/0x80
-  [<ffffffff803a76f7>] kobject_put+0x27/0x60
-  [<ffffffff803bebcc>] ? pci_destroy_slot+0x3c/0xc0
-  [<ffffffff803bebd5>] pci_destroy_slot+0x45/0xc0
-  [<ffffffffa000f05c>] acpi_pci_slot_remove+0x5c/0x91 [pci_slot]
-  [<ffffffff8040064b>] acpi_pci_unregister_driver+0x4b/0x62
-  [<ffffffffa000f5c8>] acpi_pci_slot_exit+0x10/0x12 [pci_slot]
-  [<ffffffff80276ce1>] sys_delete_module+0x161/0x250
+Wrong fix.  It needs to be called on 64 bit too.
+The real fix is to reinstate this diff which the recent x86 merge reverted..
 
-We need to grab a reference to the parent PCI bus, which will pin
-the bus and prevent it from being released until pci_slot is unloaded.
-
-Cc: lenb@kernel.org
-Reported-by: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
-Signed-off-by: Alex Chiang <achiang@hp.com>
----
-
- drivers/acpi/pci_slot.c |    5 +++++
- 1 files changed, 5 insertions(+), 0 deletions(-)
-
-diff --git a/drivers/acpi/pci_slot.c b/drivers/acpi/pci_slot.c
-index cd1f446..12158e0 100644
---- a/drivers/acpi/pci_slot.c
-+++ b/drivers/acpi/pci_slot.c
-@@ -164,6 +164,8 @@ register_slot(acpi_handle handle, u32 lvl, void *context, void **rv)
- 	list_add(&slot->list, &slot_list);
- 	mutex_unlock(&slot_list_lock);
+diff --git a/arch/x86/include/asm/timer.h b/arch/x86/include/asm/timer.h
+index 2bb6a83..4f5c247 100644
+--- a/arch/x86/include/asm/timer.h
++++ b/arch/x86/include/asm/timer.h
+@@ -11,8 +11,8 @@ unsigned long native_calibrate_tsc(void);
  
-+	get_device(&pci_bus->dev);
-+
- 	dbg("pci_slot: %p, pci_bus: %x, device: %d, name: %s\n",
- 		pci_slot, pci_bus->number, device, name);
+ #ifdef CONFIG_X86_32
+ extern int timer_ack;
++#endif
+ extern int recalibrate_cpu_khz(void);
+-#endif /* CONFIG_X86_32 */
  
-@@ -310,12 +312,15 @@ static void
- acpi_pci_slot_remove(acpi_handle handle)
- {
- 	struct acpi_pci_slot *slot, *tmp;
-+	struct pci_bus *pbus;
+ extern int no_timer_check;
  
- 	mutex_lock(&slot_list_lock);
- 	list_for_each_entry_safe(slot, tmp, &slot_list, list) {
- 		if (slot->root_handle == handle) {
- 			list_del(&slot->list);
-+			pbus = slot->pci_slot->bus;
- 			pci_destroy_slot(slot->pci_slot);
-+			put_device(&pbus->dev);
- 			kfree(slot);
- 		}
- 	}
 
