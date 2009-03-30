@@ -1,46 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756919AbZC3MRJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757216AbZC3MSV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756919AbZC3MRJ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Mar 2009 08:17:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753124AbZC3MQy
+	id S1757216AbZC3MSV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Mar 2009 08:18:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753124AbZC3MSE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Mar 2009 08:16:54 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:44854 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751253AbZC3MQx (ORCPT
+	Mon, 30 Mar 2009 08:18:04 -0400
+Received: from serv2.oss.ntt.co.jp ([222.151.198.100]:53438 "EHLO
+	serv2.oss.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752896AbZC3MSD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Mar 2009 08:16:53 -0400
-To: npiggin@suse.de
-Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [patch 09/14] fs: use RCU / seqlock logic for reverse and multi-step operaitons
-From: Andi Kleen <andi@firstfloor.org>
-References: <20090329155539.275927173@nick.local0.net>
-	<20090329155749.609663166@nick.local0.net>
-Date: Mon, 30 Mar 2009 14:16:49 +0200
-In-Reply-To: <20090329155749.609663166@nick.local0.net> (npiggin@suse.de's message of "Mon, 30 Mar 2009 02:55:48 +1100")
-Message-ID: <874oxbnr2m.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/22.3 (gnu/linux)
+	Mon, 30 Mar 2009 08:18:03 -0400
+Message-ID: <49D0B878.40308@oss.ntt.co.jp>
+Date: Mon, 30 Mar 2009 21:18:00 +0900
+From: =?ISO-8859-1?Q?Fernando_Luis_V=E1zquez_Cao?= 
+	<fernando@oss.ntt.co.jp>
+User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Jeff Garzik <jeff@garzik.org>
+CC: Christoph Hellwig <hch@infradead.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Theodore Tso <tytso@mit.edu>, Ingo Molnar <mingo@elte.hu>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Nick Piggin <npiggin@suse.de>,
+       David Rees <drees76@gmail.com>, Jesper Krogh <jesper@krogh.cc>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       chris.mason@oracle.com, david@fromorbit.com, tj@kernel.org
+Subject: [PATCH 4/7] vfs: call blkdev_issue_flush() from generic file_fsync()
+ helper
+References: <alpine.LFD.2.00.0903241218130.3032@localhost.localdomain> <49C93AB0.6070300@garzik.org> <20090325093913.GJ27476@kernel.dk> <49CA86BD.6060205@garzik.org> <20090325194341.GB27476@kernel.dk> <49CA9346.6040108@garzik.org> <alpine.LFD.2.00.0903251337410.3032@localhost.localdomain> <20090325212923.GA5620@havoc.gtf.org> <20090326032445.GA16999@havoc.gtf.org> <20090327205046.GA2036@havoc.gtf.org> <20090329082507.GA4242@infradead.org> <49D01F94.6000101@oss.ntt.co.jp> <49D02328.7060108@oss.ntt.co.jp> <49D0258A.9020306@garzik.org> <49D03377.1040909@oss.ntt.co.jp> <49D0B535.2010106@oss.ntt.co.jp>
+In-Reply-To: <49D0B535.2010106@oss.ntt.co.jp>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-npiggin@suse.de writes:
+To ensure that bits are truly on-disk after an fsync or fdatasync
+we should force a disk flush explicitly. This is necessary to
+have data integrity guarantees in filesystems such as FAT which
+do not provide their own fsync implementation and use the vfs
+helper instead.
 
-> The remaining usages for dcache_lock is to allow atomic, multi-step read-side
-> operations over the directory tree by excluding modifications to the tree.
-> Also, to walk in the leaf->root direction in the tree where we don't have
-> a natural d_lock ordering. This is the hardest bit.
+Signed-off-by: Fernando Luis Vazquez Cao <fernando@oss.ntt.co.jp>
+---
 
-General thoughts: is there a way to add a self testing infrastructure
-to this. e.g. by having more sequence counts per object (only enabled
-in the debug case, so it doesn't matter when cache line bounces) and lots of 
-checks? 
+diff -urNp linux-2.6.29-orig/fs/sync.c linux-2.6.29/fs/sync.c
+--- linux-2.6.29-orig/fs/sync.c	2009-03-24 08:12:14.000000000 +0900
++++ linux-2.6.29/fs/sync.c	2009-03-30 15:43:59.000000000 +0900
+@@ -72,6 +72,11 @@ int file_fsync(struct file *filp, struct
+  	err = sync_blockdev(sb->s_bdev);
+  	if (!ret)
+  		ret = err;
++
++	err = block_flush_device(sb->s_bdev);
++	if (!ret)
++		ret = err;
++
+  	return ret;
+  }
 
-I suppose that would lower the work needed of actually fixing this to 
-work significantly.
-
--Andi
--- 
-ak@linux.intel.com -- Speaking for myself only.
