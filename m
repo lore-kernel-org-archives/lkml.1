@@ -1,56 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756353AbZC3VD0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755710AbZC3VKV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756353AbZC3VD0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Mar 2009 17:03:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755147AbZC3VDF
+	id S1755710AbZC3VKV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Mar 2009 17:10:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752959AbZC3VKG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Mar 2009 17:03:05 -0400
-Received: from mga02.intel.com ([134.134.136.20]:27119 "EHLO mga02.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755307AbZC3VDE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Mar 2009 17:03:04 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.38,448,1233561600"; 
-   d="scan'208";a="502060048"
-Message-ID: <49D13385.5060900@intel.com>
-Date: Mon, 30 Mar 2009 14:03:01 -0700
-From: Joseph Cihula <joseph.cihula@intel.com>
-Reply-To: joseph.cihula@intel.com
-User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org, arjan@linux.intel.com, mingo@elte.hu
-Subject: [PATCH] x86: disable stack-protector for __restore_processor_state()
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Mon, 30 Mar 2009 17:10:06 -0400
+Received: from rcsinet13.oracle.com ([148.87.113.125]:43610 "EHLO
+	rgminet13.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751977AbZC3VKF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Mar 2009 17:10:05 -0400
+Date: Mon, 30 Mar 2009 14:08:44 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+To: lkml <linux-kernel@vger.kernel.org>
+Cc: torvalds <torvalds@linux-foundation.org>, mingo <mingo@redhat.com>
+Subject: [PATCH] dma-debug: fix printk formats (i386)
+Message-Id: <20090330140844.af1c9a1d.randy.dunlap@oracle.com>
+Organization: Oracle Linux Eng.
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.12.0; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt705.oracle.com [141.146.40.83]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090201.49D134EB.02A1:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The __restore_processor_state() fn restores %gs on resume from S3.  As
-such, it cannot be protected by the stack-protector guard since %gs will
-not be correct on function entry.
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
-There are only a few other fns in this file and it should not negatively
-impact kernel security that they will also have the stack-protector
-guard removed (and so it's not worth moving them to another file).
+Fix printk format warnings in dma-debug:
 
-Without this change, S3 resume on a kernel built with
-CONFIG_CC_STACKPROTECTOR_ALL=y will fail.
+lib/dma-debug.c:645: warning: format '%016llx' expects type 'long long unsigned int', but argument 6 has type 'dma_addr_t'
+lib/dma-debug.c:662: warning: format '%016llx' expects type 'long long unsigned int', but argument 6 has type 'dma_addr_t'
+lib/dma-debug.c:676: warning: format '%016llx' expects type 'long long unsigned int', but argument 6 has type 'dma_addr_t'
+lib/dma-debug.c:686: warning: format '%016llx' expects type 'long long unsigned int', but argument 6 has type 'dma_addr_t'
 
-Signed-off-by:  Joseph Cihula <joseph.cihula@intel.com>
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+---
+ lib/dma-debug.c |    8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
---- ../linux.trees.git/arch/x86/power/Makefile	2009-03-29 
-12:12:13.000000000 -0700
-+++ arch/x86/power/Makefile	2009-03-30 12:21:19.000000000 -0700
-@@ -1,2 +1,7 @@
-+# __restore_processor_state() restores %gs after S3 resume and so 
-should not
-+# itself be stack-protected
-+nostackp := $(call cc-option, -fno-stack-protector)
-+CFLAGS_cpu_$(BITS).o	:= $(nostackp)
-+
-obj-$(CONFIG_PM_SLEEP)		+= cpu_$(BITS).o
-obj-$(CONFIG_HIBERNATION)	+= hibernate_$(BITS).o hibernate_asm_$(BITS).o
-
-
-
+--- linux-next-20090330.orig/lib/dma-debug.c
++++ linux-next-20090330/lib/dma-debug.c
+@@ -645,7 +645,7 @@ static void check_sync(struct device *de
+ 		err_printk(dev, NULL, "DMA-API: device driver tries "
+ 				"to sync DMA memory it has not allocated "
+ 				"[device address=0x%016llx] [size=%llu bytes]\n",
+-				addr, size);
++				(unsigned long long)addr, size);
+ 		goto out;
+ 	}
+ 
+@@ -663,7 +663,7 @@ static void check_sync(struct device *de
+ 				"DMA memory with different direction "
+ 				"[device address=0x%016llx] [size=%llu bytes] "
+ 				"[mapped with %s] [synced with %s]\n",
+-				addr, entry->size,
++				(unsigned long long)addr, entry->size,
+ 				dir2name[entry->direction],
+ 				dir2name[direction]);
+ 	}
+@@ -677,7 +677,7 @@ static void check_sync(struct device *de
+ 				"device read-only DMA memory for cpu "
+ 				"[device address=0x%016llx] [size=%llu bytes] "
+ 				"[mapped with %s] [synced with %s]\n",
+-				addr, entry->size,
++				(unsigned long long)addr, entry->size,
+ 				dir2name[entry->direction],
+ 				dir2name[direction]);
+ 
+@@ -687,7 +687,7 @@ static void check_sync(struct device *de
+ 				"device write-only DMA memory to device "
+ 				"[device address=0x%016llx] [size=%llu bytes] "
+ 				"[mapped with %s] [synced with %s]\n",
+-				addr, entry->size,
++				(unsigned long long)addr, entry->size,
+ 				dir2name[entry->direction],
+ 				dir2name[direction]);
+ 
