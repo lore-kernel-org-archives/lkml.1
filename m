@@ -1,148 +1,209 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756724AbZC3RMd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756329AbZC3RMM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756724AbZC3RMd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Mar 2009 13:12:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754372AbZC3RLZ
+	id S1756329AbZC3RMM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Mar 2009 13:12:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753968AbZC3RLY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Mar 2009 13:11:25 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:52290 "EHLO
+	Mon, 30 Mar 2009 13:11:24 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:52289 "EHLO
 	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752231AbZC3RLW (ORCPT
+	with ESMTP id S1752160AbZC3RLW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 30 Mar 2009 13:11:22 -0400
-Message-Id: <20090330171024.459968444@chello.nl>
+Message-Id: <20090330171024.341993293@chello.nl>
 References: <20090330170701.856843742@chello.nl>
 User-Agent: quilt/0.46-1
-Date: Mon, 30 Mar 2009 19:07:16 +0200
+Date: Mon, 30 Mar 2009 19:07:15 +0200
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
 Cc: Paul Mackerras <paulus@samba.org>, Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: [PATCH 15/15] perf_counter: pmc arbitration
-Content-Disposition: inline; filename=perf_counter-reserve.patch
+Subject: [PATCH 14/15] perf_counter: x86: callchain support
+Content-Disposition: inline; filename=perf_counter-x86-callchain.patch
 X-Bad-Reply: References but no 'Re:' in Subject.
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Follow the example set by powerpc and try to play nice with oprofile
-and the nmi watchdog.
+Provide the x86 perf_callchain() implementation.
+
+Code based on the sysprof code.
 
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 ---
- arch/x86/kernel/cpu/perf_counter.c |   75 +++++++++++++++++++++++++++++++++++++
- 1 file changed, 75 insertions(+)
+ arch/x86/kernel/cpu/perf_counter.c |  154 +++++++++++++++++++++++++++++++++++++
+ 1 file changed, 154 insertions(+)
 
 Index: linux-2.6/arch/x86/kernel/cpu/perf_counter.c
 ===================================================================
 --- linux-2.6.orig/arch/x86/kernel/cpu/perf_counter.c
 +++ linux-2.6/arch/x86/kernel/cpu/perf_counter.c
-@@ -20,6 +20,7 @@
+@@ -16,8 +16,10 @@
+ #include <linux/module.h>
+ #include <linux/kdebug.h>
+ #include <linux/sched.h>
++#include <linux/uaccess.h>
  
  #include <asm/apic.h>
- #include <asm/stacktrace.h>
-+#include <asm/nmi.h>
++#include <asm/stacktrace.h>
  
  static bool perf_counters_initialized __read_mostly;
  
-@@ -172,6 +173,65 @@ again:
- 	atomic64_sub(delta, &hwc->period_left);
+@@ -958,3 +960,155 @@ hw_perf_counter_init(struct perf_counter
+ 
+ 	return &x86_perf_counter_ops;
  }
- 
-+static atomic_t num_counters;
-+static DEFINE_MUTEX(pmc_reserve_mutex);
 +
-+static bool reserve_pmc_hardware(void)
++/*
++ * callchain support
++ */
++
++static inline
++void callchain_store(struct perf_callchain_entry *entry, unsigned long ip)
 +{
-+	int i;
-+
-+	if (nmi_watchdog == NMI_LOCAL_APIC)
-+		disable_lapic_nmi_watchdog();
-+
-+	for (i = 0; i < nr_counters_generic; i++) {
-+		if (!reserve_perfctr_nmi(pmc_ops->perfctr + i))
-+			goto perfctr_fail;
-+	}
-+
-+	for (i = 0; i < nr_counters_generic; i++) {
-+		if (!reserve_evntsel_nmi(pmc_ops->eventsel + i))
-+			goto eventsel_fail;
-+	}
-+
-+	return true;
-+
-+eventsel_fail:
-+	for (i--; i >= 0; i--)
-+		release_evntsel_nmi(pmc_ops->eventsel + i);
-+
-+	i = nr_counters_generic;
-+
-+perfctr_fail:
-+	for (i--; i >= 0; i--)
-+		release_perfctr_nmi(pmc_ops->perfctr + i);
-+
-+	if (nmi_watchdog == NMI_LOCAL_APIC)
-+		enable_lapic_nmi_watchdog();
-+
-+	return false;
++	if (entry->nr < MAX_STACK_DEPTH)
++		entry->ip[entry->nr++] = ip;
 +}
 +
-+static void release_pmc_hardware(void)
++static DEFINE_PER_CPU(struct perf_callchain_entry, irq_entry);
++static DEFINE_PER_CPU(struct perf_callchain_entry, nmi_entry);
++
++
++static void
++backtrace_warning_symbol(void *data, char *msg, unsigned long symbol)
 +{
-+	int i;
-+
-+	for (i = 0; i < nr_counters_generic; i++) {
-+		release_perfctr_nmi(pmc_ops->perfctr + i);
-+		release_evntsel_nmi(pmc_ops->eventsel + i);
-+	}
-+
-+	if (nmi_watchdog == NMI_LOCAL_APIC)
-+		enable_lapic_nmi_watchdog();
++	/* Ignore warnings */
 +}
 +
-+static void hw_perf_counter_destroy(struct perf_counter *counter)
++static void backtrace_warning(void *data, char *msg)
 +{
-+	if (atomic_dec_and_mutex_lock(&num_counters, &pmc_reserve_mutex)) {
-+		release_pmc_hardware();
-+		mutex_unlock(&pmc_reserve_mutex);
++	/* Ignore warnings */
++}
++
++static int backtrace_stack(void *data, char *name)
++{
++	/* Don't bother with IRQ stacks for now */
++	return -1;
++}
++
++static void backtrace_address(void *data, unsigned long addr, int reliable)
++{
++	struct perf_callchain_entry *entry = data;
++
++	if (reliable)
++		callchain_store(entry, addr);
++}
++
++static const struct stacktrace_ops backtrace_ops = {
++	.warning		= backtrace_warning,
++	.warning_symbol		= backtrace_warning_symbol,
++	.stack			= backtrace_stack,
++	.address		= backtrace_address,
++};
++
++static void
++perf_callchain_kernel(struct pt_regs *regs, struct perf_callchain_entry *entry)
++{
++	unsigned long bp;
++	char *stack;
++
++	callchain_store(entry, instruction_pointer(regs));
++
++	stack = ((char *)regs + sizeof(struct pt_regs));
++#ifdef CONFIG_FRAME_POINTER
++	bp = frame_pointer(regs);
++#else
++	bp = 0;
++#endif
++
++	dump_trace(NULL, regs, (void *)stack, bp, &backtrace_ops, entry);
++}
++
++
++struct stack_frame {
++	const void __user	*next_fp;
++	unsigned long		return_address;
++};
++
++static int copy_stack_frame(const void __user *fp, struct stack_frame *frame)
++{
++	int ret;
++
++	if (!access_ok(VERIFY_READ, fp, sizeof(*frame)))
++		return 0;
++
++	ret = 1;
++	pagefault_disable();
++	if (__copy_from_user_inatomic(frame, fp, sizeof(*frame)))
++		ret = 0;
++	pagefault_enable();
++
++	return ret;
++}
++
++static void
++perf_callchain_user(struct pt_regs *regs, struct perf_callchain_entry *entry)
++{
++	struct stack_frame frame;
++	const void __user *fp;
++
++	regs = (struct pt_regs *)current->thread.sp0 - 1;
++	fp   = (void __user *)regs->bp;
++
++	callchain_store(entry, regs->ip);
++
++	while (entry->nr < MAX_STACK_DEPTH) {
++		frame.next_fp	     = NULL;
++		frame.return_address = 0;
++
++		if (!copy_stack_frame(fp, &frame))
++			break;
++
++		if ((unsigned long)fp < user_stack_pointer(regs))
++			break;
++
++		callchain_store(entry, frame.return_address);
++		fp = frame.next_fp;
 +	}
 +}
 +
- /*
-  * Setup the hardware configuration for a given hw_event_type
-  */
-@@ -179,10 +239,23 @@ static int __hw_perf_counter_init(struct
- {
- 	struct perf_counter_hw_event *hw_event = &counter->hw_event;
- 	struct hw_perf_counter *hwc = &counter->hw;
-+	int err;
- 
- 	if (unlikely(!perf_counters_initialized))
- 		return -EINVAL;
- 
-+	err = 0;
-+	if (atomic_inc_not_zero(&num_counters)) {
-+		mutex_lock(&pmc_reserve_mutex);
-+		if (atomic_read(&num_counters) == 0 && !reserve_pmc_hardware())
-+			err = -EBUSY;
-+		else
-+			atomic_inc(&num_counters);
-+		mutex_unlock(&pmc_reserve_mutex);
-+	}
-+	if (err)
-+		return err;
++static void
++perf_do_callchain(struct pt_regs *regs, struct perf_callchain_entry *entry)
++{
++	int is_user;
 +
- 	/*
- 	 * Generate PMC IRQs:
- 	 * (keep 'enabled' bit clear for now)
-@@ -230,6 +303,8 @@ static int __hw_perf_counter_init(struct
- 		hwc->config |= pmc_ops->event_map(perf_event_id(hw_event));
- 	}
- 
-+	counter->destroy = hw_perf_counter_destroy;
++	if (!regs)
++		return;
 +
- 	return 0;
- }
- 
++	is_user = user_mode(regs);
++
++	if (!current || current->pid == 0)
++		return;
++
++	if (is_user && current->state != TASK_RUNNING)
++		return;
++
++	if (!is_user)
++		perf_callchain_kernel(regs, entry);
++
++	if (current->mm)
++		perf_callchain_user(regs, entry);
++}
++
++struct perf_callchain_entry *perf_callchain(struct pt_regs *regs)
++{
++	struct perf_callchain_entry *entry;
++
++	if (in_nmi())
++		entry = &__get_cpu_var(nmi_entry);
++	else
++		entry = &__get_cpu_var(irq_entry);
++
++	entry->nr = 0;
++
++	perf_do_callchain(regs, entry);
++
++	return entry;
++}
 
 -- 
 
