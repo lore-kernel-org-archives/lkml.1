@@ -1,67 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756156AbZC3O4j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756158AbZC3O5k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756156AbZC3O4j (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Mar 2009 10:56:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752222AbZC3O42
+	id S1756158AbZC3O5k (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Mar 2009 10:57:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751937AbZC3O5a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Mar 2009 10:56:28 -0400
-Received: from mail.vyatta.com ([76.74.103.46]:55917 "EHLO mail.vyatta.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751013AbZC3O41 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Mar 2009 10:56:27 -0400
-Date: Mon, 30 Mar 2009 07:56:19 -0700
-From: Stephen Hemminger <shemminger@vyatta.com>
-To: Patrick McHardy <kaber@trash.net>
-Cc: Roman Mindalev <r000n@r000n.net>, Eric Dumazet <dada1@cosmosbay.com>,
-       LKML <linux-kernel@vger.kernel.org>, netfilter@vger.kernel.org,
-       "David S. Miller" <davem@davemloft.net>
-Subject: Re: Regression caused by commit "netfilter: iptables: lock free
- counters"
-Message-ID: <20090330075619.23677280@nehalam>
-In-Reply-To: <49D0B628.5000501@trash.net>
-References: <20090329234702.4988017f@desktop.r000n.info>
-	<49D075A3.1050202@cosmosbay.com>
-	<20090330145031.2dfd854e@desktop.r000n.info>
-	<49D0B628.5000501@trash.net>
-Organization: Vyatta
-X-Mailer: Claws Mail 3.6.1 (GTK+ 2.16.0; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 30 Mar 2009 10:57:30 -0400
+Received: from smtp.ultrahosting.com ([74.213.174.254]:45332 "EHLO
+	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751020AbZC3O5a (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Mar 2009 10:57:30 -0400
+Date: Mon, 30 Mar 2009 10:50:41 -0400 (EDT)
+From: Christoph Lameter <cl@linux.com>
+X-X-Sender: cl@qirst.com
+To: Ingo Molnar <mingo@elte.hu>
+cc: Tejun Heo <tj@kernel.org>, Martin Schwidefsky <schwidefsky@de.ibm.com>,
+       rusty@rustcorp.com.au, tglx@linutronix.de, x86@kernel.org,
+       linux-kernel@vger.kernel.org, hpa@zytor.com,
+       Paul Mundt <lethal@linux-sh.org>, rmk@arm.linux.org.uk,
+       starvik@axis.com, ralf@linux-mips.org, davem@davemloft.net,
+       cooloney@kernel.org, kyle@mcmartin.ca, matthew@wil.cx,
+       grundler@parisc-linux.org, takata@linux-m32r.org,
+       benh@kernel.crashing.org, rth@twiddle.net, ink@jurassic.park.msu.ru,
+       heiko.carstens@de.ibm.com,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>
+Subject: Re: [PATCH UPDATED] percpu: use dynamic percpu allocator as the
+ default percpu allocator
+In-Reply-To: <20090330114938.GB10070@elte.hu>
+Message-ID: <alpine.DEB.1.10.0903301049060.13333@qirst.com>
+References: <1236671631-9305-1-git-send-email-tj@kernel.org> <20090316190132.7965a49a@skybase> <49C300D8.5080204@kernel.org> <49C8FAC4.6060508@kernel.org> <20090325122738.42d105b7@skybase> <49CA1AC3.9080908@kernel.org> <20090325150035.541e707a@skybase>
+ <49CA3C2C.5030702@kernel.org> <49D099F0.3000807@kernel.org> <20090330114938.GB10070@elte.hu>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 30 Mar 2009 14:08:08 +0200
-Patrick McHardy <kaber@trash.net> wrote:
+On Mon, 30 Mar 2009, Ingo Molnar wrote:
 
-> Roman Mindalev wrote:
-> > On Mon, 30 Mar 2009 09:32:51 +0200
-> > Eric Dumazet <dada1@cosmosbay.com> wrote:
-> > 
-> >> Could you try following patch ?
-> >>
-> >> [PATCH] netfilter: use rcu_read_bh() in ipt_do_table()
-> >>
-> >> Commit 784544739a25c30637397ace5489eeb6e15d7d49
-> >> (netfilter: iptables: lock free counters) forgot to disable BH
-> >> in arpt_do_table(), ipt_do_table() and  ip6t_do_table()
-> >>
-> >> Use rcu_read_lock_bh() instead of rcu_read_lock() cures the problem.
-> >>
-> >> Reported-and-bisected-by: Roman Mindalev <r000n@r000n.net>
-> >> Signed-off-by: Eric Dumazet <dada1@cosmosbay.com>
-> >> ---
-> > 
-> > 2.6.29-git4 and 2.6.29-git6 both works fine for me with this patch. 
-> > Thanks, Eric!
-> 
-> Thanks indeed Eric :) Dave, please apply.
-> 
-> Acked-by: Patrick McHardy <kaber@trash.net>
-> 
-> 
-Acked-by: Stephen Hemminger <shemminger@vyatta.com>
+> We also need the Ack from Davem for Sparc32, the Ack from Martin, an
+> Ack from Ben for the PowerPC bits and an ack from Tony for the IA64
+> bits. We also need the ack from Andrew and Rusty for the MM and
+> module bits. Plus a final Reviewed-by of the all-architectures
+> percpu allocator concepts from Christoph and Nick would be nice as
+> well, just in case we missed some trick or failed to consider a
+> complication.
 
-The original version had rcu_read_lock_bh() but someone (not sure who)
-talked me into removing it.
+I just started looking at this but I see that the patches were already
+merged. Will see if I can find what needs looking after.
+
