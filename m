@@ -1,75 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757351AbZC3Xui@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755796AbZC3X4c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757351AbZC3Xui (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Mar 2009 19:50:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754884AbZC3Xu0
+	id S1755796AbZC3X4c (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Mar 2009 19:56:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752654AbZC3X4X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Mar 2009 19:50:26 -0400
-Received: from out01.mta.xmission.com ([166.70.13.231]:41313 "EHLO
-	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754827AbZC3XuZ (ORCPT
+	Mon, 30 Mar 2009 19:56:23 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:45264 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752289AbZC3X4W (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Mar 2009 19:50:25 -0400
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: mingo@elte.hu, jbeulich@novell.com, tglx@linutronix.de, mingo@redhat.com,
-       hpa@zytor.com, linux-kernel@vger.kernel.org, ego@in.ibm.com,
-       peterz@infradead.org, adobriyan@gmail.com, netdev@vger.kernel.org
-Subject: Re: [PATCH 2/2] sysctl:  lockdep support for sysctl reference counting.
-References: <49B91A7E.76E4.0078.0@novell.com>
-	<tip-6a09dfa870ba0ed21b1124539968a36b42660661@git.kernel.org>
-	<1236934491.5188.209.camel@laptop> <49BA33BE.76E4.0078.0@novell.com>
-	<1236937423.22914.3698.camel@twins> <20090313103828.GB31094@elte.hu>
-	<m1d4cd9n4k.fsf@fess.ebiederm.org> <20090320085205.GB16021@elte.hu>
-	<m14oxo8qis.fsf@fess.ebiederm.org> <20090320182404.GA31629@elte.hu>
-	<1237575134.4667.5.camel@laptop> <1237577688.4667.68.camel@laptop>
-	<m1iqm3xr2n.fsf_-_@fess.ebiederm.org>
-	<m1eiwrxr05.fsf_-_@fess.ebiederm.org>
-	<m1ab7fxqxw.fsf_-_@fess.ebiederm.org>
-	<20090330152616.7cc2c87c.akpm@linux-foundation.org>
-	<m1k566k4hb.fsf@fess.ebiederm.org>
-	<20090330161858.18951f62.akpm@linux-foundation.org>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Mon, 30 Mar 2009 16:50:17 -0700
-In-Reply-To: <20090330161858.18951f62.akpm@linux-foundation.org> (Andrew Morton's message of "Mon\, 30 Mar 2009 16\:18\:58 -0700")
-Message-ID: <m1iqlqfu4m.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=67.169.126.145;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 67.169.126.145
-X-SA-Exim-Rcpt-To: akpm@linux-foundation.org, netdev@vger.kernel.org, adobriyan@gmail.com, peterz@infradead.org, ego@in.ibm.com, linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com, tglx@linutronix.de, jbeulich@novell.com, mingo@elte.hu
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
-X-SA-Exim-Scanned: No (on in01.mta.xmission.com); Unknown failure
+	Mon, 30 Mar 2009 19:56:22 -0400
+Date: Tue, 31 Mar 2009 08:54:51 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: balbir@linux.vnet.ibm.com
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "kosaki.motohiro@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>
+Subject: Re: [RFC][PATCH] memcg soft limit (yet another new design) v1
+Message-Id: <20090331085451.ce6a5147.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20090328181100.GB26686@balbir.in.ibm.com>
+References: <20090327135933.789729cb.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090328181100.GB26686@balbir.in.ibm.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton <akpm@linux-foundation.org> writes:
+On Sat, 28 Mar 2009 23:41:00 +0530
+Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
 
-> On Mon, 30 Mar 2009 15:53:04 -0700
-> ebiederm@xmission.com (Eric W. Biederman) wrote:
->
->> Andrew Morton <akpm@linux-foundation.org> writes:
->> 
->> > So I merged these two patches.  I designated them as to-be-merged via
->> > Alexey, with a Cc:Peter (IOW: wakey wakey ;))
->> 
->> It is more sysctl than proc but whichever.  As long as people aren't
->> blind sided at the last minute I'm fine.
->
-> Yep.  But keeping all fs/proc/ changes in Alexey's tree keeps things
-> neat and is part of my secret maintainer-impressment plot.
+> * KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-03-27 13:59:33]:
+> 
+> > ==brief test result==
+> > On 2CPU/1.6GB bytes machine. create group A and B
+> >   A.  soft limit=300M
+> >   B.  no soft limit
+> > 
+> >   Run a malloc() program on B and allcoate 1G of memory. The program just
+> >   sleeps after allocating memory and no memory refernce after it.
+> >   Run make -j 6 and compile the kernel.
+> > 
+> >   When vm.swappiness = 60  => 60MB of memory are swapped out from B.
+> >   When vm.swappiness = 10  => 1MB of memory are swapped out from B    
+> > 
+> >   If no soft limit, 350MB of swap out will happen from B.(swapiness=60)
+> >
+> 
+> I ran the same tests, booted the machine with mem=1700M and maxcpus=2
+> 
+with your patch ?
 
-Sounds like a plan.  You work on that.  I will work on undermining
-the plot by breaking /proc into it's several separate filesystems.
+> Here is what I see with
+> 
+> A has a swapout of 344M and B has not swapout at all, since B is
+> always under its soft limit. vm.swappiness is set to 60
+> 
+> I think the above is more along the lines of the expected functional behaviour. 
+> 
 
-> OK, fine, but to avoid confusion and to overtly announce this
-> preference, please do add the From: Line?
+yes. but it's depend on workload (and fortune?) of A in this implementation.
+Follwing is what I think now. We need some changes to vmscanc, later.
 
-Sounds like a plan.  In truth I have been deleting that line from my
-patches anyway....  It just seemed silly to have it in there when
-the real From matched.
+explain)
+    This patch rotate memcg's page to the top of LRU. But, LRU is divided into
+    INACTIVE/ACTIVE. So, sometimes, memcg's INACTIVE LRU can be empty and
+    pages from other group can be reclaimed.
+    In my test, group A's RSS usage can be 1-2M sometimes.
 
-Eric
+Thanks,
+-Kame
+    
+
+
+
+
+
 
