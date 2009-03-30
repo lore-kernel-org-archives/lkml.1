@@ -1,80 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759014AbZC3T0Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760034AbZC3T0w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759014AbZC3T0Q (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Mar 2009 15:26:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756864AbZC3TZ5
+	id S1760034AbZC3T0w (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Mar 2009 15:26:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754133AbZC3T0e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Mar 2009 15:25:57 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:43604 "EHLO mx2.redhat.com"
+	Mon, 30 Mar 2009 15:26:34 -0400
+Received: from main.gmane.org ([80.91.229.2]:45332 "EHLO ciao.gmane.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753666AbZC3TZ4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Mar 2009 15:25:56 -0400
-Message-ID: <49D11BDD.70702@redhat.com>
-Date: Mon, 30 Mar 2009 15:22:05 -0400
-From: Rik van Riel <riel@redhat.com>
-Organization: Red Hat, Inc
-User-Agent: Thunderbird 2.0.0.17 (X11/20080915)
-MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: Ric Wheeler <rwheeler@redhat.com>,
-       "Andreas T.Auer" <andreas.t.auer_lkml_73537@ursus.ath.cx>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Theodore Tso <tytso@mit.edu>,
-       Mark Lord <lkml@rtr.ca>, Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Jeff Garzik <jeff@garzik.org>, Matthew Garrett <mjg59@srcf.ucam.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Rees <drees76@gmail.com>, Jesper Krogh <jesper@krogh.cc>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.29
-References: <alpine.LFD.2.00.0903271511230.3994@localhost.localdomain> <alpine.LFD.2.00.0903271522210.3994@localhost.localdomain> <49CD7B10.7010601@garzik.org> <49CD891A.7030103@rtr.ca> <49CD9047.4060500@garzik.org> <49CE2633.2000903@s5r6.in-berlin.de> <49CE3186.8090903@garzik.org> <49CE35AE.1080702@s5r6.in-berlin.de> <49CE3F74.6090103@rtr.ca> <20090329231451.GR26138@disturbed> <20090330003948.GA13356@mit.edu> <49D0710A.1030805@ursus.ath.cx> <20090330100546.51907bd2@the-village.bc.nu> <49D0A3D6.4000300@ursus.ath.cx> <49D0AA4A.6020308@redhat.com> <alpine.LFD.2.00.0903300817400.3948@localhost.localdomain> <49D0EF1E.9040806@redhat.com> <alpine.LFD.2.00.0903300922231.3948@localhost.localdomain> <49D0FD4C.1010007@redhat.com> <alpine.LFD.2.00.0903301038100.3948@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.00.0903301038100.3948@localhost.localdomain>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	id S1756192AbZC3T0d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Mar 2009 15:26:33 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Bill Davidsen <davidsen@tmr.com>
+Subject: Re: [PATCH 2/2] Make relatime default
+Date: Mon, 30 Mar 2009 15:26:10 -0400
+Message-ID: <gqr6ci$afs$1@ger.gmane.org>
+References: <20090326090630.GA9369@elte.hu> <20090326113705.GV32307@mit.edu> <20090326140312.GB14822@elte.hu> <20090326144707.GA6239@mit.edu> <alpine.LFD.2.00.0903260914440.3032@localhost.localdomain> <20090326170714.GF6239@mit.edu> <alpine.LFD.2.00.0903261015050.3032@localhost.localdomain> <20090326174956.GB7198@srcf.ucam.org> <20090326175314.GC7198@srcf.ucam.org> <20090326184838.26166549@lxorguk.ukuu.org.uk> <20090330144213.GA5426@random.random>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: pool-70-109-119-176.alb.east.verizon.net
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.19) Gecko/20081217 Fedora/1.1.14-1.fc9 SeaMonkey/1.1.14
+In-Reply-To: <20090330144213.GA5426@random.random>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus Torvalds wrote:
-> On Mon, 30 Mar 2009, Ric Wheeler wrote:
-
->> Heat is a major killer of spinning drives (as is severe cold). A lot of times,
->> drives that have read errors only (not failed writes) might be fully
->> recoverable if you can re-write that injured sector.
+Andrea Arcangeli wrote:
+> On Thu, Mar 26, 2009 at 06:48:38PM +0000, Alan Cox wrote:
+>> On Thu, 26 Mar 2009 17:53:14 +0000
+>> Matthew Garrett <mjg@redhat.com> wrote:
+>>
+>>> Change the default behaviour of the kernel to use relatime for all
+>>> filesystems. This can be overridden with the "strictatime" mount
+>>> option.
+>> NAK this again
 > 
-> It's not worked for me, and yes, I've tried.
+> NAK but because if we change the default it is better to change it to
+> the real thing: noatime.
+> 
+> I think this can be solved in userland but perhaps changing this in
+> kernel would be a stronger message that atime is officially
+> obsoleted. (and nothing will break, not even mutt users will notice,
+> and if they really do it won't be anything more than aesthetical)
+> 
+This makes the assumption that atime is not used, which may be true on your 
+system but isn't on others. I regularly move data between faster and slower 
+storage based on atime, and promote reactivated projects to something faster, 
+while retiring inactive project data elsewhere. Other admins use it to identify 
+unused files which are candidates for backup to offline media or the bit bucket.
 
-It's worked here.  It would be nice to have a device mapper module
-that can just insert itself between the disk and the higher device
-mapper layer and "scrub" the disk, fetching unreadable sectors from
-the other RAID copy where required.
+Let people who want that behavior specify it for existing filesystems, if you 
+want to remove functionality from ext4 or btrfs or some thing place where people 
+have no existing expectations, I still think it's wrong, but I couldn't say I 
+think it might break anything.
 
-> I'm sure it works for some "ok, the write just failed to take, and the CRC 
-> was bad" case, but that's apparently not what I've had. I suspect either 
-> the track markers got overwritten (and maybe a disk-specific low-level 
-> reformat would have helped, but at that point I was not going to trust the 
-> drive anyway, so I didn't care), or there was actual major physical damage 
-> due to heat and/or head crash and remapping was just not able to cope.
-
-Maybe a stupid question, but aren't tracks so small compared to
-the disk head that a physical head crash would take out multiple
-tracks at once?  (the last on I experienced here took out a major
-part of the disk)
-
-Another case I have seen years ago was me writing data to a disk
-while it was still cold (I brought it home, plugged it in and
-started using it).  Once the drive came up to temperature, it
-could no longer read the tracks it just wrote - maybe the disk
-expanded by more than it is willing to seek around for tracks
-due to thermal correction?   Low level formatting the drive
-made it work perfectly and I kept using it until it was just
-too small to be useful :)
-
-> And my point is, IT MAKES SENSE to just do the elevator barrier, _without_ 
-> the drive command. 
-
-No argument there.  I have seen NCQ starvation on SATA disks,
-with some requests sitting in the drive for seconds, while
-the drive was busy handling hundreds of requests/second
-elsewhere...
+I did a patch a few years ago which only updated atime on open and write, and 
+that worked about as well as relatime, the inode update on open is cheap, the 
+head is already there, and it was only slightly slower than noatime. The were no 
+programs which kept files open for days and just read them. The the only storage 
+hierarchy was "slow and cheap." ;-)
 
 -- 
-All rights reversed.
+Bill Davidsen <davidsen@tmr.com>
+   "We have more to fear from the bungling of the incompetent than from
+the machinations of the wicked."  - from Slashdot
+
