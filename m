@@ -1,99 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753744AbZC3Mgf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752861AbZC3Ml5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753744AbZC3Mgf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Mar 2009 08:36:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753585AbZC3MgW
+	id S1752861AbZC3Ml5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Mar 2009 08:41:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751194AbZC3Mlq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Mar 2009 08:36:22 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:49509 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753512AbZC3MgV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Mar 2009 08:36:21 -0400
-Date: Mon, 30 Mar 2009 14:36:18 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Fernando Luis =?iso-8859-1?Q?V=E1zquez?= Cao 
-	<fernando@oss.ntt.co.jp>
-Cc: Jeff Garzik <jeff@garzik.org>, Christoph Hellwig <hch@infradead.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Theodore Tso <tytso@mit.edu>, Ingo Molnar <mingo@elte.hu>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Nick Piggin <npiggin@suse.de>,
-       David Rees <drees76@gmail.com>, Jesper Krogh <jesper@krogh.cc>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       chris.mason@oracle.com, david@fromorbit.com, tj@kernel.org
-Subject: Re: [PATCH 5/7] vfs: Add  wbcflush sysfs knob to disable storage
-	device  writeback cache flushes
-Message-ID: <20090330123618.GS5178@kernel.dk>
-References: <20090325212923.GA5620@havoc.gtf.org> <20090326032445.GA16999@havoc.gtf.org> <20090327205046.GA2036@havoc.gtf.org> <20090329082507.GA4242@infradead.org> <49D01F94.6000101@oss.ntt.co.jp> <49D02328.7060108@oss.ntt.co.jp> <49D0258A.9020306@garzik.org> <49D03377.1040909@oss.ntt.co.jp> <49D0B535.2010106@oss.ntt.co.jp> <49D0B978.5030107@oss.ntt.co.jp>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <49D0B978.5030107@oss.ntt.co.jp>
+	Mon, 30 Mar 2009 08:41:46 -0400
+Received: from rcsinet12.oracle.com ([148.87.113.124]:58344 "EHLO
+	rgminet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751075AbZC3Mlp convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Mar 2009 08:41:45 -0400
+Subject: Re: Zero length files - an alternative approach?
+From: Chris Mason <chris.mason@oracle.com>
+To: =?ISO-8859-1?Q?M=E5ns_Rullg=E5rd?= <mans@mansr.com>
+Cc: linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org
+In-Reply-To: <yw1xab744lqi.fsf@thrashbarg.mansr.com>
+References: <87bprka9sg.fsf@newton.gmurray.org.uk>
+	 <yw1xab744lqi.fsf@thrashbarg.mansr.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Mon, 30 Mar 2009 08:41:26 -0400
+Message-Id: <1238416886.30488.6.camel@think.oraclecorp.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 
+Content-Transfer-Encoding: 8BIT
+X-Source-IP: acsmt700.oracle.com [141.146.40.70]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090209.49D0BDF9.00E7:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 30 2009, Fernando Luis V�zquez Cao wrote:
-> Add a sysfs knob to disable storage device writeback cache flushes.
->
-> Signed-off-by: Fernando Luis Vazquez Cao <fernando@oss.ntt.co.jp>
-> ---
->
-> diff -urNp linux-2.6.29-orig/block/blk-barrier.c linux-2.6.29/block/blk-barrier.c
-> --- linux-2.6.29-orig/block/blk-barrier.c	2009-03-24 08:12:14.000000000 +0900
-> +++ linux-2.6.29/block/blk-barrier.c	2009-03-30 17:08:28.000000000 +0900
-> @@ -318,6 +318,9 @@ int blkdev_issue_flush(struct block_devi
->  	if (!q)
->  		return -ENXIO;
->
-> +	if (blk_queue_nowbcflush(q))
-> +		return -EOPNOTSUPP;
-> +
->  	bio = bio_alloc(GFP_KERNEL, 0);
->  	if (!bio)
->  		return -ENOMEM;
-> diff -urNp linux-2.6.29-orig/block/blk-core.c linux-2.6.29/block/blk-core.c
-> --- linux-2.6.29-orig/block/blk-core.c	2009-03-24 08:12:14.000000000 +0900
-> +++ linux-2.6.29/block/blk-core.c	2009-03-30 17:08:28.000000000 +0900
-> @@ -1452,7 +1452,8 @@ static inline void __generic_make_reques
->  			goto end_io;
->  		}
->  		if (bio_barrier(bio) && bio_has_data(bio) &&
-> -		    (q->next_ordered == QUEUE_ORDERED_NONE)) {
-> +		    (blk_queue_nowbcflush(q) ||
-> +		     q->next_ordered == QUEUE_ORDERED_NONE)) {
->  			err = -EOPNOTSUPP;
->  			goto end_io;
->  		}
+On Sun, 2009-03-29 at 12:22 +0100, Måns Rullgård wrote:
+> Graham Murray <graham@gmurray.org.uk> writes:
+> 
+> > Just a thought on the ongoing discussion of dataloss with ext4 vs ext3.
+> >
+> > Taking the common scenario:
+> > Read oldfile
+> > create newfile file
+> > write newfile data
+> > close newfile
+> > rename newfile to oldfile
+> >
+> > When using this scenario, the application writer wants to ensure that
+> > either the old or new content are present. With delayed allocation, this
+> > can lead to zero length files. Most of the suggestions on how to address
+> > this have involved syncing the data either before the rename or making
+> > the rename sync the data.
+> >
+> > What about, instead of 'bringing forward' the allocation and flushing of
+> > the data, would it be possible to instead delay the rename until after
+> > the blocks for newfile have been allocated and the data buffers flushed?
+> > This would keep the performance benefits of delayed allocation etc and
+> > also satisfy the applications developers' apparent dislike of using
+> > fsync(). It would give better performance that syncing the data at
+> > rename time (either using fsync() or automatically) and satisfy the
+> > requirements that either the old or new content is present.
+> 
+> Consider this scenario:
+> 
+> 1. Create/write/close newfile
+> 2. Rename newfile to oldfile
 
-This (and the above hunk) should be changed. -EOPNOTSUPP means the
-target does not support barriers, that is a different thing to flushes
-not being needed. A file system issuing a barrier and getting
--EOPNOTSUPP back will disable barriers, since it now thinks that
-ordering cannot be guaranteed.
+2a. create oldfile again
+2b. fsync oldfile
 
-A more appropriate change would be to successfully complete a flush
-without actually sending it down to the device if blk_queue_nowbcflush()
-is true. Then blkdev_issue_flush() would just work as well. It also
-needs to take stacking into account, or stacked drivers will have to
-propagate the settings up the stack. If you allow simply the barrier to
-be passed down, you get that for free.
+> 3. Open/read oldfile.  This must return the new contents.
+> 4. System crash and reboot before delayed allocation/flush complete
+> 5. Open/read oldfile.  Old contents now returned.
+> 
 
-> +static struct queue_sysfs_entry queue_wbcflush_entry = {
-> +	.attr = {.name = "wbcflush", .mode = S_IRUGO | S_IWUSR },
-> +	.show = queue_wbcflush_show,
-> +	.store = queue_wbcflush_store,
-> +};
-> +
+What happens to the new generation of oldfile?  We could insert
+dependency tracking so that we know the fsync of oldfile is supposed to
+also fsync the rename'd new file.  But then picture a loop of operations
+doing renames and creating files in the place of the old one...that
+dependency tracking gets ugly in a hurry.
 
-Naming is also pretty bad, perhaps something like "honor_cache_flush"
-would be better, or perhaps "cache_flush_needed". At least something
-that is more descriptive of this setting actually controls, wbcflush
-does not do that.
+Databases know how to do all of this, but filesystems don't implement
+most of the database transactional features.
 
--- 
-Jens Axboe
+-chris
+
 
