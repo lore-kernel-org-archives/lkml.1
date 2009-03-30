@@ -1,47 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753987AbZC3Lu1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753987AbZC3LwN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753987AbZC3Lu1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Mar 2009 07:50:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751005AbZC3LuQ
+	id S1753987AbZC3LwN (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Mar 2009 07:52:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751254AbZC3Lvw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Mar 2009 07:50:16 -0400
-Received: from monster.nessie.de ([84.200.20.120]:37834 "EHLO
-	monster.nessie.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750922AbZC3LuP (ORCPT
+	Mon, 30 Mar 2009 07:51:52 -0400
+Received: from moutng.kundenserver.de ([212.227.126.188]:51335 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751005AbZC3Lvv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Mar 2009 07:50:15 -0400
-Message-ID: <49D0B1F3.7020706@nessie.de>
-Date: Mon, 30 Mar 2009 13:50:11 +0200
-From: Michael Roth <mroth@nessie.de>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090321)
+	Mon, 30 Mar 2009 07:51:51 -0400
+Date: Mon, 30 Mar 2009 13:52:02 +0200
+From: Thierry Reding <thierry.reding@avionic-design.de>
+To: Heiko Carstens <heiko.carstens@de.ibm.com>
+Cc: "David S. Miller" <davem@davemloft.net>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
+Subject: Re: [PATCH] ETHOC: fix build breakage on s390
+Message-ID: <20090330115202.GA13719@avionic-design.de>
+References: <20090330113015.21576898@osiris.boeblingen.de.ibm.com>
 MIME-Version: 1.0
-To: petkovbb@gmail.com, Michael Roth <mroth@nessie.de>, bzolnier@gmail.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: Bug in 2.6.29 ide-cd: Kernel freeze: bisected + unacceptable
- workaround
-References: <49CFCB2A.4020505@nessie.de> <20090329201337.GA9962@liondog.tnic> <49CFEA24.10700@nessie.de> <20090330072713.GA13776@liondog.tnic> <49D0AF2E.9040006@nessie.de>
-In-Reply-To: <49D0AF2E.9040006@nessie.de>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090330113015.21576898@osiris.boeblingen.de.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Provags-ID: V01U2FsdGVkX1+Jo2dmjbh5uwTsh6DXcZ2XFO4MLMIuHeoaGDg
+ jJAzQ0jHNeBbH1z4g8PePbfn9tqrZwU1tRKTxghLgzjzAx/oPJ
+ Onpx+0akQDmmtjddHyI9Q==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> b.) unpatched 2.6.29, boot without a medium in an drive
->     but _not_ starting /usr/sbin/hald result in _no_ freeze!
+* Heiko Carstens wrote:
+> From: Heiko Carstens <heiko.carstens@de.ibm.com>
 > 
-> I can also mount DVDs and access them, with an unpatched kernel
-> without started /usr/sbin/hald, without any problems, as far
-> as I can see.
+> Let driver depend on HAS_IOMEM to avoid build breakage on s390:
+> 
+>   CC      drivers/net/ethoc.o
+> drivers/net/ethoc.c: In function 'ethoc_read':
+> drivers/net/ethoc.c:221: error: implicit declaration of function 'ioread32'
+> drivers/net/ethoc.c: In function 'ethoc_write':
+> drivers/net/ethoc.c:226: error: implicit declaration of function 'iowrite32'
+> drivers/net/ethoc.c: In function 'ethoc_rx':
+> drivers/net/ethoc.c:405: error: implicit declaration of function 'memcpy_fromio'
+> drivers/net/ethoc.c: In function 'ethoc_start_xmit':
+> drivers/net/ethoc.c:828: error: implicit declaration of function 'memcpy_toio'
+> 
+> Cc: Thierry Reding <thierry.reding@avionic-design.de>
+> Signed-off-by: Heiko Carstens <heiko.carstens@de.ibm.com>
+> ---
+>  drivers/net/Kconfig |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> Index: linux-2.6/drivers/net/Kconfig
+> ===================================================================
+> --- linux-2.6.orig/drivers/net/Kconfig
+> +++ linux-2.6/drivers/net/Kconfig
+> @@ -974,7 +974,7 @@ config ENC28J60_WRITEVERIFY
+>  
+>  config ETHOC
+>  	tristate "OpenCores 10/100 Mbps Ethernet MAC support"
+> -	depends on NET_ETHERNET
+> +	depends on NET_ETHERNET && HAS_IOMEM
+>  	select MII
+>  	select PHYLIB
+>  	help
 
-c.) I unmounted the DVD, started /usr/sbin/hald and it took
-    about 40 seconds until the kernel freeze.
-
-So far as I see, /usr/sbin/hald somehow triggers a bug. But the bug
-isn't triggered, when the dma is started after the command is sent.
-
-
-Michael Roth
-
+Acked-by: Thierry Reding <thierry.reding@avionic-design.de>
 
