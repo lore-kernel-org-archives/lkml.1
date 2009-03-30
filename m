@@ -1,48 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755110AbZC3Eez@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753962AbZC3Ezl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755110AbZC3Eez (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Mar 2009 00:34:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751095AbZC3Eeq
+	id S1753962AbZC3Ezl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Mar 2009 00:55:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751252AbZC3Ez1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Mar 2009 00:34:46 -0400
-Received: from pfepa.post.tele.dk ([195.41.46.235]:46582 "EHLO
-	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750969AbZC3Eep (ORCPT
+	Mon, 30 Mar 2009 00:55:27 -0400
+Received: from e23smtp09.au.ibm.com ([202.81.31.142]:41633 "EHLO
+	e23smtp09.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751110AbZC3Ez0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Mar 2009 00:34:45 -0400
-Date: Mon, 30 Mar 2009 06:36:43 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: avorontsov@ru.mvista.com, Steven Rostedt <srostedt@redhat.com>,
-       Ingo Molnar <mingo@elte.hu>, Paul Mackerras <paulus@samba.org>,
-       linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/3] powerpc, Makefile: Make it possible to safely select CONFIG_FRAME_POINTER
-Message-ID: <20090330043643.GA31362@uranus.ravnborg.org>
-References: <20090320164404.GA19933@oksana.dev.rtsoft.ru> <20090320164429.GA28037@oksana.dev.rtsoft.ru> <1237607369.17367.7.camel@localhost.localdomain> <20090328104857.GA10897@oksana.dev.rtsoft.ru> <1238367290.20197.113.camel@pasglop>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1238367290.20197.113.camel@pasglop>
-User-Agent: Mutt/1.4.2.1i
+	Mon, 30 Mar 2009 00:55:26 -0400
+From: Gautham R Shenoy <ego@in.ibm.com>
+Subject: [PATCH] sched: Print sched_group::__cpu_power in sched_domain_debug.
+To: linux-kernel@vger.kernel.org
+Cc: "Ingo Molnar" <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Gautham R Shenoy <ego@in.ibm.com>
+Date: Mon, 30 Mar 2009 10:25:20 +0530
+Message-ID: <20090330045520.2869.24777.stgit@sofia.in.ibm.com>
+In-Reply-To: <20090330045321.2869.9284.stgit@sofia.in.ibm.com>
+References: <20090330045321.2869.9284.stgit@sofia.in.ibm.com>
+User-Agent: StGIT/0.14.2
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 30, 2009 at 09:54:50AM +1100, Benjamin Herrenschmidt wrote:
-> On Sat, 2009-03-28 at 13:48 +0300, Anton Vorontsov wrote:
-> > On Fri, Mar 20, 2009 at 11:49:29PM -0400, Steven Rostedt wrote:
-> > > Ben,
-> > > 
-> > > Can you ACK this patch? Or even take it in your tree?
-> > 
-> > Benjamin, have you had a chance to look into this? Sam, could
-> > you also take a look?
-> 
-> Those patches look ok. I'm a little bit surprised that -mno-sched-epilog
-> isn't needed, gcc weirdness never ceases to amaze me, but the
-> Makefile/Kconfig churning isn't for me to judge. If Sam is happy, then
-> let's merge it.
+If the user changes the value of the sched_mc/smt_power_savings sysfs tunable,
+it'll trigger a rebuilding of the whole sched_domain tree, with the
+SD_POWERSAVINGS_BALANCE flag set at certain levels.
 
-I will take a closer look tonight or tomorrow - as day-time job permits.
+As a result, there would be a change in the __cpu_power of sched_groups
+in the sched_domain hierarchy.
 
-	Sam
+Print the __cpu_power values for each sched_group in sched_domain_debug
+to help verify this change and correlate it with the change in the
+load-balancing behavior.
+
+Signed-off-by: Gautham R Shenoy <ego@in.ibm.com>
+---
+
+ kernel/sched.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
+
+diff --git a/kernel/sched.c b/kernel/sched.c
+index 706517c..fbac83b 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -7363,7 +7363,8 @@ static int sched_domain_debug_one(struct sched_domain *sd, int cpu, int level,
+ 		cpumask_or(groupmask, groupmask, sched_group_cpus(group));
+ 
+ 		cpulist_scnprintf(str, sizeof(str), sched_group_cpus(group));
+-		printk(KERN_CONT " %s", str);
++		printk(KERN_CONT " %s (__cpu_power = %d)", str,
++						group->__cpu_power);
+ 
+ 		group = group->next;
+ 	} while (group != sd->groups);
+
