@@ -1,118 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754823AbZC3RGn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753951AbZC3RI1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754823AbZC3RGn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Mar 2009 13:06:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751351AbZC3RGc
+	id S1753951AbZC3RI1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Mar 2009 13:08:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752160AbZC3RIS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Mar 2009 13:06:32 -0400
-Received: from rtr.ca ([76.10.145.34]:52724 "EHLO mail.rtr.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750873AbZC3RGb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Mar 2009 13:06:31 -0400
-Message-ID: <49D0FC14.6010109@rtr.ca>
-Date: Mon, 30 Mar 2009 13:06:28 -0400
-From: Mark Lord <lkml@rtr.ca>
-Organization: Real-Time Remedies Inc.
-User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
+	Mon, 30 Mar 2009 13:08:18 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:43168 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751036AbZC3RIR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Mar 2009 13:08:17 -0400
+Date: Mon, 30 Mar 2009 09:58:26 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Mark Lord <lkml@rtr.ca>
+cc: Ric Wheeler <rwheeler@redhat.com>, Chris Mason <chris.mason@oracle.com>,
+       "Andreas T.Auer" <andreas.t.auer_lkml_73537@ursus.ath.cx>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Theodore Tso <tytso@mit.edu>,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Jeff Garzik <jeff@garzik.org>, Matthew Garrett <mjg59@srcf.ucam.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       David Rees <drees76@gmail.com>, Jesper Krogh <jesper@krogh.cc>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.29
+In-Reply-To: <49D0F399.5010407@rtr.ca>
+Message-ID: <alpine.LFD.2.00.0903300946050.3948@localhost.localdomain>
+References: <alpine.LFD.2.00.0903271511230.3994@localhost.localdomain> <alpine.LFD.2.00.0903271522210.3994@localhost.localdomain> <49CD7B10.7010601@garzik.org> <49CD891A.7030103@rtr.ca> <49CD9047.4060500@garzik.org> <49CE2633.2000903@s5r6.in-berlin.de>
+ <49CE3186.8090903@garzik.org> <49CE35AE.1080702@s5r6.in-berlin.de> <49CE3F74.6090103@rtr.ca> <20090329231451.GR26138@disturbed> <20090330003948.GA13356@mit.edu> <49D0710A.1030805@ursus.ath.cx> <20090330100546.51907bd2@the-village.bc.nu> <49D0A3D6.4000300@ursus.ath.cx>
+ <49D0AA4A.6020308@redhat.com> <49D0CDBA.7040702@rtr.ca> <49D0D08E.3090100@redhat.com> <49D0DAD3.6030507@rtr.ca> <49D0DDFE.5080701@redhat.com> <49D0E35E.9080003@rtr.ca> <49D0E4E8.20508@redhat.com> <alpine.LFD.2.00.0903300841420.3948@localhost.localdomain>
+ <49D0F399.5010407@rtr.ca>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-To: Michael Krufky <mkrufky@linuxtv.org>
-Cc: Hans Verkuil <hverkuil@xs4all.nl>, linux-media@vger.kernel.org,
-       Linux Kernel <linux-kernel@vger.kernel.org>
-Subject: Re: bttv ir patch from Mark Lord
-References: <200903301835.55023.hverkuil@xs4all.nl> <49D0F5E1.2030108@linuxtv.org> <49D0F720.7060700@rtr.ca> <49D0F85D.20802@linuxtv.org> <49D0FBCE.8050408@rtr.ca>
-In-Reply-To: <49D0FBCE.8050408@rtr.ca>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Michael Krufky wrote:
-> Mark Lord wrote:
->> Michael Krufky wrote:
->>> Hans Verkuil wrote:
->>>> Hi Mike,
->>>>
->>>> The attached patch should be queued for 2.6.29.X. It corresponds to changeset 11098 (v4l2-common: remove incorrect MODULE test) in our v4l-dvb tree and is part of the initial set of git patches going into 2.6.30.
->>>>
->>>> Without this patch loading ivtv as a module while v4l2-common is compiled into the kernel will cause a delayed load of the i2c modules that ivtv needs since request_module is never called directly.
->>>>
->>>> While it is nice to see the delayed load in action, it is not so nice in that ivtv fails to do a lot of necessary i2c initializations and will oops later on with a division-by-zero.
->>>>
->>>> Thanks to Mark Lord for reporting this and helping me figure out what was wrong.
->>>>
->>>> Regards,
->>>>
->>>>     Hans
->>>>
->>>>   
->>> Got it, thanks.
->>>
->>> In the future, please point to hash codes rather than revision ID's -- my rev IDs are not the same as yours, but hash codes are always unique.
->>>
->>> I'll queue this the moment Linus merges Mauro's pending request.
->> ..
->>
->> Can either of you guys figure out how to get this patch (or something
->> equivalent) merged?  It's been pending for some time now.
->>
->> Thanks.
->>
->> Message-ID: <49884CCB.3070309@rtr.ca>
->> Date: Tue, 03 Feb 2009 08:55:23 -0500
->> From: Mark Lord <lkml@rtr.ca>
->> MIME-Version: 1.0
->> To: video4linux-list@redhat.com, Linux Kernel <linux-kernel@vger.kernel.org>
->> Subject: [PATCH] ir-kbd-i2c: support Hauppauge HVR-1600 R/C port
->> Content-Type: text/plain; charset=UTF-8; format=flowed
->> Content-Transfer-Encoding: 7bit
->>
->> (resending, with video4linux-list@redhat.com this time)
->>
->> Update the ir-kbd-i2c driver to recognize the remote-control port
->> on the Hauppauge HV-1600 hybrid tuner card.
->>
->> Signed-off-by: Mark Lord <mlord@pobox.com>
->>
->> --- old/drivers/media/video/ir-kbd-i2c.c    2008-12-24 18:26:37.000000000 -0500
->> +++ linux/drivers/media/video/ir-kbd-i2c.c    2009-02-01 13:08:19.000000000 -0500
->> @@ -354,6 +354,11 @@
->>             } else {
->>                 ir_codes    = ir_codes_rc5_tv;
->>             }
->> +        } else if (adap->id == I2C_HW_B_CX2341X) {
->> +            name        = "Hauppauge";
->> +            ir_type     = IR_TYPE_RC5;
->> +            ir->get_key = get_key_haup_xvr;
->> +            ir_codes    = ir_codes_hauppauge_new;
->>         } else {
->>             /* Handled by saa7134-input */
->>             name        = "SAA713x remote";
->> @@ -449,7 +454,7 @@
->>        That's why we probe 0x1a (~0x34) first. CB
->>     */
->>
->> -    static const int probe_bttv[] = { 0x1a, 0x18, 0x4b, 0x64, 0x30, -1};
->> +    static const int probe_bttv[] = { 0x1a, 0x18, 0x4b, 0x64, 0x30, 0x71, -1};
->>     static const int probe_saa7134[] = { 0x7a, 0x47, 0x71, 0x2d, -1 };
->>     static const int probe_em28XX[] = { 0x30, 0x47, -1 };
->>     static const int probe_cx88[] = { 0x18, 0x6b, 0x71, -1 };
->>
+
+
+On Mon, 30 Mar 2009, Mark Lord wrote:
 >
-> looks like a zilog, and you should use LIRC for that.
-..
+> I spent an entire day recently, trying to see if I could significantly fill
+> up the 32MB cache on a 750GB Hitach SATA drive here.
+> 
+> With deliberate/random write patterns, big and small, near and far,
+> I could not fill the drive with anything approaching a full second
+> of latent write-cache flush time.
+> 
+> Not even close.  Which is a pity, because I really wanted to do some testing
+> related to a deep write cache.  But it just wouldn't happen.
+> 
+> I tried this again on a 16MB cache of a Seagate drive, no difference.
+> 
+> Bummer.  :)
 
-It's a Hauppauge remote port, just like the one on the (supported) PVR-250.
-And I don't want the LIRC monstrosity when there's a perfectly good
-kernel driver to run it directly.  The patch does not prevent others
-from using LIRC.
-> PLEASE  DO NOT HIJAAK unrelated threads with unrelated emails.
-..
+Try it with laptop drives. You might get to a second, or at least hundreds 
+of ms (not counting the spinup delay if it went to sleep, obviously). You 
+probably tested desktop drives (that 750GB Hitachi one is not a low end 
+one, and I assume the Seagate one isn't either).
 
-"Hijack", not "HIJAAK".   :) 
+You'll have a much easier time getting long latencies when seeks take tens 
+of ms, and the platter rotates at some pitiful 3600rpm (ok, I guess those 
+drives are hard to find these days - I guess 4200rpm is the norm even for 
+1.8" laptop harddrives).
 
-Resending to copy linux-kernel again.
-Please do not edit/delete lists from the email headers, thanks.
+And also - this is probably obvious to you, but it might not be 
+immediately obvious to everybody - make sure that you do have TCQ going, 
+and at full depth. If the drive supports TCQ (and they all do, these days) 
+it is quite possible that the drive firmware basically limits the write 
+caching to one segment per TCQ entry (or at least to something smallish).
 
-thanks.
+Why? Because that really simplifies some of the problem space for the 
+firmware a _lot_ - if you have at least as many segments in your cache as 
+your max TCQ depth, it means that you always have one segment free to be 
+re-used without any physical IO when a new command comes in.
 
+And if I were a disk firmware engineer, I'd try my damndest to keep my 
+problem space simple, so I would do exactly that kind of "limit the number 
+of dirty cache segments by the queue size" thing.
+
+But I dunno. You may not want to touch those slow laptop drives with a 
+ten-foot pole. It's certainly not my favorite pastime.
+
+			Linus
