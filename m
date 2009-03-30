@@ -1,133 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758174AbZC3DqY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757556AbZC3Dyl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758174AbZC3DqY (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Mar 2009 23:46:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754302AbZC3DqR
+	id S1757556AbZC3Dyl (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Mar 2009 23:54:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754848AbZC3Dyc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Mar 2009 23:46:17 -0400
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:48801 "EHLO e1.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754084AbZC3DqQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Mar 2009 23:46:16 -0400
-Date: Sun, 29 Mar 2009 20:45:57 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: linux-kernel@vger.kernel.org, Josh Triplett <josh@freedesktop.org>
-Subject: Re: [PATCH 8/10] cpumask: convert rcutorture.c
-Message-ID: <20090330034557.GM11362@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20090329020404.9D073DDECF@ozlabs.org>
+	Sun, 29 Mar 2009 23:54:32 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:61370 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1754302AbZC3Dyb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Mar 2009 23:54:31 -0400
+Message-ID: <49D041ED.1060007@cn.fujitsu.com>
+Date: Mon, 30 Mar 2009 11:52:13 +0800
+From: Lai Jiangshan <laijs@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090329020404.9D073DDECF@ozlabs.org>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+To: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <srostedt@redhat.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Li Zefan <lizf@cn.fujitsu.com>, LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] tracing: fix incorrect return type of ns2usecs()
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Mar 29, 2009 at 12:25:52AM +1030, Rusty Russell wrote:
-> 
-> We're getting rid of cpumasks on the stack.
-> 
-> Simply change tmp_mask to a global, and allocate it in
-> rcu_torture_init().
 
-Looks good at first glance -- will try running it.
+Impact: fix time output bug in 32bits system
 
-Acked-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+ns2usecs() returns 'long', it's incorrect.
 
-> Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
-> Cc: "Paul E. McKenney" <paulmck@us.ibm.com>
-> Cc: Josh Triplett <josh@freedesktop.org>
-> ---
->  kernel/rcutorture.c |   25 +++++++++++++++++--------
->  1 file changed, 17 insertions(+), 8 deletions(-)
-> 
-> diff --git a/kernel/rcutorture.c b/kernel/rcutorture.c
-> --- a/kernel/rcutorture.c
-> +++ b/kernel/rcutorture.c
-> @@ -126,6 +126,7 @@ static atomic_t n_rcu_torture_error;
->  static atomic_t n_rcu_torture_error;
->  static long n_rcu_torture_timers = 0;
->  static struct list_head rcu_torture_removed;
-> +static cpumask_var_t shuffle_tmp_mask;
-> 
->  static int stutter_pause_test = 0;
-> 
-> @@ -889,10 +890,9 @@ static int rcu_idle_cpu;	/* Force all to
->   */
->  static void rcu_torture_shuffle_tasks(void)
->  {
-> -	cpumask_t tmp_mask;
->  	int i;
-> 
-> -	cpus_setall(tmp_mask);
-> +	cpumask_setall(shuffle_tmp_mask);
->  	get_online_cpus();
-> 
->  	/* No point in shuffling if there is only one online CPU (ex: UP) */
-> @@ -902,29 +902,29 @@ static void rcu_torture_shuffle_tasks(vo
->  	}
-> 
->  	if (rcu_idle_cpu != -1)
-> -		cpu_clear(rcu_idle_cpu, tmp_mask);
-> +		cpumask_clear_cpu(rcu_idle_cpu, shuffle_tmp_mask);
-> 
-> -	set_cpus_allowed_ptr(current, &tmp_mask);
-> +	set_cpus_allowed_ptr(current, shuffle_tmp_mask);
-> 
->  	if (reader_tasks) {
->  		for (i = 0; i < nrealreaders; i++)
->  			if (reader_tasks[i])
->  				set_cpus_allowed_ptr(reader_tasks[i],
-> -						     &tmp_mask);
-> +						     shuffle_tmp_mask);
->  	}
-> 
->  	if (fakewriter_tasks) {
->  		for (i = 0; i < nfakewriters; i++)
->  			if (fakewriter_tasks[i])
->  				set_cpus_allowed_ptr(fakewriter_tasks[i],
-> -						     &tmp_mask);
-> +						     shuffle_tmp_mask);
->  	}
-> 
->  	if (writer_task)
-> -		set_cpus_allowed_ptr(writer_task, &tmp_mask);
-> +		set_cpus_allowed_ptr(writer_task, shuffle_tmp_mask);
-> 
->  	if (stats_task)
-> -		set_cpus_allowed_ptr(stats_task, &tmp_mask);
-> +		set_cpus_allowed_ptr(stats_task, shuffle_tmp_mask);
-> 
->  	if (rcu_idle_cpu == -1)
->  		rcu_idle_cpu = num_online_cpus() - 1;
-> @@ -1012,6 +1012,7 @@ rcu_torture_cleanup(void)
->  	if (shuffler_task) {
->  		VERBOSE_PRINTK_STRING("Stopping rcu_torture_shuffle task");
->  		kthread_stop(shuffler_task);
-> +		free_cpumask_var(shuffle_tmp_mask);
->  	}
->  	shuffler_task = NULL;
-> 
-> @@ -1190,10 +1191,18 @@ rcu_torture_init(void)
->  	}
->  	if (test_no_idle_hz) {
->  		rcu_idle_cpu = num_online_cpus() - 1;
-> +
-> +		if (!alloc_cpumask_var(&shuffle_tmp_mask, GFP_KERNEL)) {
-> +			firsterr = -ENOMEM;
-> +			VERBOSE_PRINTK_ERRSTRING("Failed to alloc mask");
-> +			goto unwind;
-> +		}
-> +
->  		/* Create the shuffler thread */
->  		shuffler_task = kthread_run(rcu_torture_shuffle, NULL,
->  					  "rcu_torture_shuffle");
->  		if (IS_ERR(shuffler_task)) {
-> +			free_cpumask_var(shuffle_tmp_mask);
->  			firsterr = PTR_ERR(shuffler_task);
->  			VERBOSE_PRINTK_ERRSTRING("Failed to create shuffler");
->  			shuffler_task = NULL;
-> 
+(In i386)
+# cat trace
+...
+          <idle>-0     [000]   521.442100: _spin_lock <-tick_do_update_jiffies64
+          <idle>-0     [000]   521.442101: do_timer <-tick_do_update_jiffies64
+          <idle>-0     [000]   521.442102: update_wall_time <-do_timer
+          <idle>-0     [000]   521.442102: update_xtime_cache <-update_wall_time
+....
+(It always print the time less than 2200 seconds besides ...)
+Because 'long' is 32bits in i386. ( (1<<31) useconds is about 2200 seconds)
+
+# cat trace
+...
+          <idle>-0     [001] 4154502640.134759: rcu_bh_qsctr_inc <-__do_softirq
+          <idle>-0     [001] 4154502640.134760: _local_bh_enable <-__do_softirq
+          <idle>-0     [001] 4154502640.134761: idle_cpu <-irq_exit
+...
+(very large value)
+Because 'long' is a signed type and is 32bits in i386.
+
+Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
+Reported-by: Li Zefan <lizf@cn.fujitsu.com>
+Tested-by: Lai Jiangshan <laijs@cn.fujitsu.com>
+---
+diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
+index 2a81dec..c048243 100644
+--- a/kernel/trace/trace.c
++++ b/kernel/trace/trace.c
+@@ -147,8 +147,7 @@ static int __init set_ftrace_dump_on_oops(char *str)
+ }
+ __setup("ftrace_dump_on_oops", set_ftrace_dump_on_oops);
+ 
+-long
+-ns2usecs(cycle_t nsec)
++cycle_t ns2usecs(cycle_t nsec)
+ {
+ 	nsec += 500;
+ 	do_div(nsec, 1000);
+diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
+index fec6521..ed78278 100644
+--- a/kernel/trace/trace.h
++++ b/kernel/trace/trace.h
+@@ -602,7 +602,7 @@ extern int trace_selftest_startup_branch(struct tracer *trace,
+ #endif /* CONFIG_FTRACE_STARTUP_TEST */
+ 
+ extern void *head_page(struct trace_array_cpu *data);
+-extern long ns2usecs(cycle_t nsec);
++extern cycle_t ns2usecs(cycle_t nsec);
+ extern int
+ trace_vbprintk(unsigned long ip, const char *fmt, va_list args);
+ extern int
+diff --git a/kernel/trace/trace_output.c b/kernel/trace/trace_output.c
+index aeac358..0e70fb0 100644
+--- a/kernel/trace/trace_output.c
++++ b/kernel/trace/trace_output.c
+@@ -433,7 +433,7 @@ int trace_print_lat_context(struct trace_iterator *iter)
+ 
+ 		trace_find_cmdline(entry->pid, comm);
+ 
+-		ret = trace_seq_printf(s, "%16s %5d %3d %d %08x %08lx [%08lx]"
++		ret = trace_seq_printf(s, "%16s %5d %3d %d %08x %08lx [%08llx]"
+ 				       " %ld.%03ldms (+%ld.%03ldms): ", comm,
+ 				       entry->pid, iter->cpu, entry->flags,
+ 				       entry->preempt_count, iter->idx,
+
+
