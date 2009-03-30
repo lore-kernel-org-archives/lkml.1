@@ -1,91 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755975AbZC3QBj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753081AbZC3QCT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755975AbZC3QBj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Mar 2009 12:01:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753870AbZC3QB1
+	id S1753081AbZC3QCT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Mar 2009 12:02:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753318AbZC3QCE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Mar 2009 12:01:27 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:34198 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753810AbZC3QB0 (ORCPT
+	Mon, 30 Mar 2009 12:02:04 -0400
+Received: from mail-gx0-f160.google.com ([209.85.217.160]:51292 "EHLO
+	mail-gx0-f160.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752269AbZC3QCD convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Mar 2009 12:01:26 -0400
-Date: Mon, 30 Mar 2009 19:01:22 +0300 (EEST)
-From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
-X-X-Sender: ijjarvin@wrl-59.cs.helsinki.fi
-To: Markus Trippelsdorf <markus@trippelsdorf.de>
-cc: Netdev <netdev@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>,
-       corbet@lwn.net
-Subject: Re: WARNING: at net/ipv4/tcp_input.c:2927 tcp_ack+0xd55/0x1991()
-In-Reply-To: <20090328095514.GA2599@gentoox2.trippelsdorf.de>
-Message-ID: <Pine.LNX.4.64.0903301155150.30150@wrl-59.cs.helsinki.fi>
-References: <20090327211202.GA10014@gentoox2.trippelsdorf.de>
- <Pine.LNX.4.64.0903280031080.5904@wrl-59.cs.helsinki.fi>
- <20090328045056.GA2394@gentoox2.trippelsdorf.de>
- <Pine.LNX.4.64.0903280930440.6696@wrl-59.cs.helsinki.fi>
- <20090328095514.GA2599@gentoox2.trippelsdorf.de>
+	Mon, 30 Mar 2009 12:02:03 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type
+         :content-transfer-encoding;
+        b=SJUsgUsGVN32s14GZBmJZ0pJcpcpRs7NUqBPnDOf3JUQ+tgAIZioL/0kbWHowj1zso
+         4iEo5K0sQSecf+sb7ytG/rY19amoqRHf1f7xWMl1qRq35V7FpYVZyDIK9CbfITX0HdsB
+         ZkW61riYbpxMSXnpH9w/cBAlI5ic7q3w+GAO0=
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; boundary="-696208474-395882101-1238403878=:30150"
-Content-ID: <Pine.LNX.4.64.0903301856110.30150@wrl-59.cs.helsinki.fi>
+Date: Mon, 30 Mar 2009 12:01:59 -0400
+Message-ID: <804dabb00903300901n37e54577ka3000c106a937950@mail.gmail.com>
+Subject: compilation error in linus git tree
+From: Peter Teoh <htmldeveloper@gmail.com>
+To: LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+just git pulled and compiled with the following errors:
 
----696208474-395882101-1238403878=:30150
-Content-Type: TEXT/PLAIN; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-Content-ID: <Pine.LNX.4.64.0903301856111.30150@wrl-59.cs.helsinki.fi>
+  CC [M]  arch/x86/kernel/cpu/cpufreq/speedstep-lib.o
+  CC [M]  arch/x86/kernel/cpu/cpufreq/p4-clockmod.o
+arch/x86/kernel/cpu/cpufreq/p4-clockmod.c: In function ‘cpufreq_p4_cpu_init’:
+arch/x86/kernel/cpu/cpufreq/p4-clockmod.c:232: error: implicit
+declaration of function ‘recalibrate_cpu_khz’
+make[3]: *** [arch/x86/kernel/cpu/cpufreq/p4-clockmod.o] Error 1
+make[2]: *** [arch/x86/kernel/cpu/cpufreq] Error 2
+make[1]: *** [arch/x86/kernel/cpu] Error 2
+make: *** [arch/x86/kernel] Error 2
 
-On Sat, 28 Mar 2009, Markus Trippelsdorf wrote:
+not sure where is the best place to put this, but the error is resolved via
 
-> On Sat, Mar 28, 2009 at 10:29:58AM +0200, Ilpo Järvinen wrote:
-> > On Sat, 28 Mar 2009, Markus Trippelsdorf wrote:
-> > 
-> > > On Sat, Mar 28, 2009 at 01:05:09AM +0200, Ilpo Järvinen wrote:
-> > > > On Fri, 27 Mar 2009, Markus Trippelsdorf wrote:
-> > > > 
-> > > > > I'm running the latest git kernel (2.6.29-03321-gbe0ea69) and I've got
-> > > > > this warning twice in the last few hours.:
+extern int recalibrate_cpu_khz(void);
 
-> > > > > The machine hangs afterwards.
-> > > > 
-> > > > Is it really related to the warning for sure? I find it hard to 
-> > > > believe...
-> > > 
-> > > The machine is normally running stable for days. Switching back to 2.6.29
-> > > solves the problem...
-> > 
-> > Sure, but does is hang right after printing that warning or much later on,
-> > e.g., one minute is already a very long time for the crash to be related 
-> > to that warning... Even 5 seconds is a long time but I'd immediately say 
-> > it's not related then :-).
-> 
-> I really can't tell you. In both occurrences of the warning the machine
-> was already unusable when I noticed. I then rebooted and the last entry
-> in the logs was that warning.
+inside the file:
 
-...And, let me guess, you're in X and therefore unable to catch a final 
-oops if any would be printed? It would be nice to get around that as well, 
-either use serial/netconsole or hang in text mode while waiting for the 
-crash (should be too hard if you are able to setup the workload first 
-and then switch away from X and if reproducing takes about an hour)...
+arch/x86/kernel/cpu/cpufreq/p4-clockmod.c
 
-Arguably the presence of that warning at both times is somewhat alarming.
-
-> > So you never saw this warning before within 2.6.29 or 2.6.28-26 timeframe?
-> 
-> Thats right.
-
-And you were looking for them too at that time? If you still have old logs 
-available you can verify that easily... if they're compressed you'll need 
-something like this:
- for i in <logfiles*.gz>; do gunzip -c -d $i | grep "tcp_input"; done)
-
-
+thanks.
 
 -- 
- i.
----696208474-395882101-1238403878=:30150--
+Regards,
+Peter Teoh
