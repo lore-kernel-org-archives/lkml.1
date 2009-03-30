@@ -1,307 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758916AbZC3S1k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759006AbZC3S2W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758916AbZC3S1k (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Mar 2009 14:27:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754223AbZC3SQp
+	id S1759006AbZC3S2W (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Mar 2009 14:28:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755914AbZC3SQt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Mar 2009 14:16:45 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:43342 "EHLO mx2.suse.de"
+	Mon, 30 Mar 2009 14:16:49 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:43340 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753159AbZC3SPQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1753008AbZC3SPQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 30 Mar 2009 14:15:16 -0400
-Message-Id: <20090330181009.445975961@suse.com>
+Message-Id: <20090330181011.080528326@suse.com>
 User-Agent: quilt/0.47-14.9
-Date: Mon, 30 Mar 2009 14:02:17 -0400
+Date: Mon, 30 Mar 2009 14:02:29 -0400
 From: Jeff Mahoney <jeffm@suse.com>
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Cc: Andrew Morton <akpm@linux-foundation.org>,
        Linus Torvalds <torvalds@linux-foundation.org>,
        ReiserFS Development List <reiserfs-devel@vger.kernel.org>
-Subject: [patch 02/35 quick-fixes] reiserfs: audit transaction ids to always be unsigned ints
+Subject: [patch 14/35 xattr-rework] reiserfs: small variable cleanup
 References: <20090330180215.951354436@suse.com>
-Content-Disposition: inline; filename=patches.fixes/reiserfs-commit-ids-unsigned-ints
+Content-Disposition: inline; filename=patches.suse/reiserfs-remove-xinode
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- This patch fixes up the reiserfs code such that transaction ids are
- always unsigned ints. In places they can currently be signed ints or
- unsigned longs.
-
- The former just causes an annoying clm-2200 warning and may join a
- transaction when it should wait.
-
- The latter is just for correctness since the disk format uses a 32-bit
- transaction id. There aren't any runtime problems that result from it
- not wrapping at the correct location since the value is truncated
- correctly even on big endian systems. The 0 value might make it to disk,
- but the mount-time checks will bump it to 10 itself.
+ This patch removes the xinode and mapping variables from
+ reiserfs_xattr_{get,set}.
 
 Signed-off-by: Jeff Mahoney <jeffm@suse.com>
-
 ---
- fs/reiserfs/journal.c          |   46 ++++++++++++++++++++---------------------
- fs/reiserfs/procfs.c           |    4 +--
- include/linux/reiserfs_fs.h    |    2 -
- include/linux/reiserfs_fs_i.h  |    2 -
- include/linux/reiserfs_fs_sb.h |    8 +++----
- 5 files changed, 31 insertions(+), 31 deletions(-)
+ fs/reiserfs/xattr.c |   20 ++++++++------------
+ 1 file changed, 8 insertions(+), 12 deletions(-)
 
---- a/fs/reiserfs/journal.c
-+++ b/fs/reiserfs/journal.c
-@@ -574,7 +574,7 @@ static inline void put_journal_list(stru
- 				    struct reiserfs_journal_list *jl)
- {
- 	if (jl->j_refcount < 1) {
--		reiserfs_panic(s, "trans id %lu, refcount at %d",
-+		reiserfs_panic(s, "trans id %u, refcount at %d",
- 			       jl->j_trans_id, jl->j_refcount);
+--- a/fs/reiserfs/xattr.c
++++ b/fs/reiserfs/xattr.c
+@@ -420,10 +420,8 @@ reiserfs_xattr_set(struct inode *inode,
+ 	struct dentry *dentry;
+ 	struct page *page;
+ 	char *data;
+-	struct address_space *mapping;
+ 	size_t file_pos = 0;
+ 	size_t buffer_pos = 0;
+-	struct inode *xinode;
+ 	struct iattr newattrs;
+ 	__u32 xahash = 0;
+ 
+@@ -441,11 +439,10 @@ reiserfs_xattr_set(struct inode *inode,
+ 		goto out;
  	}
- 	if (--jl->j_refcount == 0)
-@@ -599,7 +599,7 @@ static void cleanup_freed_for_journal_li
- }
  
- static int journal_list_still_alive(struct super_block *s,
--				    unsigned long trans_id)
-+				    unsigned int trans_id)
- {
- 	struct reiserfs_journal *journal = SB_JOURNAL(s);
- 	struct list_head *entry = &journal->j_journal_list;
-@@ -933,9 +933,9 @@ static int flush_older_commits(struct su
- 	struct reiserfs_journal_list *other_jl;
- 	struct reiserfs_journal_list *first_jl;
- 	struct list_head *entry;
--	unsigned long trans_id = jl->j_trans_id;
--	unsigned long other_trans_id;
--	unsigned long first_trans_id;
-+	unsigned int trans_id = jl->j_trans_id;
-+	unsigned int other_trans_id;
-+	unsigned int first_trans_id;
+-	xinode = dentry->d_inode;
+ 	REISERFS_I(inode)->i_flags |= i_has_xattr_dir;
  
-       find_first:
- 	/*
-@@ -1014,7 +1014,7 @@ static int flush_commit_list(struct supe
- 	int i;
- 	b_blocknr_t bn;
- 	struct buffer_head *tbh = NULL;
--	unsigned long trans_id = jl->j_trans_id;
-+	unsigned int trans_id = jl->j_trans_id;
- 	struct reiserfs_journal *journal = SB_JOURNAL(s);
- 	int barrier = 0;
- 	int retval = 0;
-@@ -1275,7 +1275,7 @@ static void remove_all_from_journal_list
- */
- static int _update_journal_header_block(struct super_block *p_s_sb,
- 					unsigned long offset,
--					unsigned long trans_id)
-+					unsigned int trans_id)
- {
- 	struct reiserfs_journal_header *jh;
- 	struct reiserfs_journal *journal = SB_JOURNAL(p_s_sb);
-@@ -1329,7 +1329,7 @@ static int _update_journal_header_block(
+ 	/* we need to copy it off.. */
+-	if (xinode->i_nlink > 1) {
++	if (dentry->d_inode->i_nlink > 1) {
+ 		dput(dentry);
+ 		err = reiserfs_xattr_del(inode, name);
+ 		if (err < 0)
+@@ -459,12 +456,11 @@ reiserfs_xattr_set(struct inode *inode,
+ 	/* Resize it so we're ok to write there */
+ 	newattrs.ia_size = buffer_size;
+ 	newattrs.ia_valid = ATTR_SIZE | ATTR_CTIME;
+-	mutex_lock_nested(&xinode->i_mutex, I_MUTEX_XATTR);
++	mutex_lock_nested(&dentry->d_inode->i_mutex, I_MUTEX_XATTR);
+ 	err = notify_change(dentry, &newattrs);
+ 	if (err)
+ 		goto out_filp;
  
- static int update_journal_header_block(struct super_block *p_s_sb,
- 				       unsigned long offset,
--				       unsigned long trans_id)
-+				       unsigned int trans_id)
- {
- 	return _update_journal_header_block(p_s_sb, offset, trans_id);
- }
-@@ -1344,7 +1344,7 @@ static int flush_older_journal_lists(str
- 	struct list_head *entry;
- 	struct reiserfs_journal_list *other_jl;
- 	struct reiserfs_journal *journal = SB_JOURNAL(p_s_sb);
--	unsigned long trans_id = jl->j_trans_id;
-+	unsigned int trans_id = jl->j_trans_id;
+-	mapping = xinode->i_mapping;
+ 	while (buffer_pos < buffer_size || buffer_pos == 0) {
+ 		size_t chunk;
+ 		size_t skip = 0;
+@@ -474,7 +470,8 @@ reiserfs_xattr_set(struct inode *inode,
+ 		else
+ 			chunk = buffer_size - buffer_pos;
  
- 	/* we know we are the only ones flushing things, no extra race
- 	 * protection is required.
-@@ -1758,13 +1758,13 @@ static int dirty_one_transaction(struct
- static int kupdate_transactions(struct super_block *s,
- 				struct reiserfs_journal_list *jl,
- 				struct reiserfs_journal_list **next_jl,
--				unsigned long *next_trans_id,
-+				unsigned int *next_trans_id,
- 				int num_blocks, int num_trans)
- {
- 	int ret = 0;
- 	int written = 0;
- 	int transactions_flushed = 0;
--	unsigned long orig_trans_id = jl->j_trans_id;
-+	unsigned int orig_trans_id = jl->j_trans_id;
- 	struct buffer_chunk chunk;
- 	struct list_head *entry;
- 	struct reiserfs_journal *journal = SB_JOURNAL(s);
-@@ -1833,7 +1833,7 @@ static int flush_used_journal_lists(stru
- 	int limit = 256;
- 	struct reiserfs_journal_list *tjl;
- 	struct reiserfs_journal_list *flush_jl;
--	unsigned long trans_id;
-+	unsigned int trans_id;
- 	struct reiserfs_journal *journal = SB_JOURNAL(s);
+-		page = reiserfs_get_page(xinode, file_pos >> PAGE_CACHE_SHIFT);
++		page = reiserfs_get_page(dentry->d_inode,
++					 file_pos >> PAGE_CACHE_SHIFT);
+ 		if (IS_ERR(page)) {
+ 			err = PTR_ERR(page);
+ 			goto out_filp;
+@@ -521,7 +518,7 @@ reiserfs_xattr_set(struct inode *inode,
+ 	}
  
- 	flush_jl = tjl = jl;
-@@ -2023,7 +2023,7 @@ static int journal_compare_desc_commit(s
- */
- static int journal_transaction_is_valid(struct super_block *p_s_sb,
- 					struct buffer_head *d_bh,
--					unsigned long *oldest_invalid_trans_id,
-+					unsigned int *oldest_invalid_trans_id,
- 					unsigned long *newest_mount_id)
- {
- 	struct reiserfs_journal_desc *desc;
-@@ -2124,18 +2124,18 @@ static void brelse_array(struct buffer_h
- static int journal_read_transaction(struct super_block *p_s_sb,
- 				    unsigned long cur_dblock,
- 				    unsigned long oldest_start,
--				    unsigned long oldest_trans_id,
-+				    unsigned int oldest_trans_id,
- 				    unsigned long newest_mount_id)
- {
- 	struct reiserfs_journal *journal = SB_JOURNAL(p_s_sb);
- 	struct reiserfs_journal_desc *desc;
- 	struct reiserfs_journal_commit *commit;
--	unsigned long trans_id = 0;
-+	unsigned int trans_id = 0;
- 	struct buffer_head *c_bh;
- 	struct buffer_head *d_bh;
- 	struct buffer_head **log_blocks = NULL;
- 	struct buffer_head **real_blocks = NULL;
--	unsigned long trans_offset;
-+	unsigned int trans_offset;
- 	int i;
- 	int trans_half;
+       out_filp:
+-	mutex_unlock(&xinode->i_mutex);
++	mutex_unlock(&dentry->d_inode->i_mutex);
+ 	dput(dentry);
  
-@@ -2356,8 +2356,8 @@ static int journal_read(struct super_blo
- {
- 	struct reiserfs_journal *journal = SB_JOURNAL(p_s_sb);
- 	struct reiserfs_journal_desc *desc;
--	unsigned long oldest_trans_id = 0;
--	unsigned long oldest_invalid_trans_id = 0;
-+	unsigned int oldest_trans_id = 0;
-+	unsigned int oldest_invalid_trans_id = 0;
- 	time_t start;
- 	unsigned long oldest_start = 0;
- 	unsigned long cur_dblock = 0;
-@@ -2970,7 +2970,7 @@ static void wake_queued_writers(struct s
- 		wake_up(&journal->j_join_wait);
- }
+       out:
+@@ -541,7 +538,6 @@ reiserfs_xattr_get(const struct inode *i
+ 	size_t file_pos = 0;
+ 	size_t buffer_pos = 0;
+ 	struct page *page;
+-	struct inode *xinode;
+ 	__u32 hash = 0;
  
--static void let_transaction_grow(struct super_block *sb, unsigned long trans_id)
-+static void let_transaction_grow(struct super_block *sb, unsigned int trans_id)
- {
- 	struct reiserfs_journal *journal = SB_JOURNAL(sb);
- 	unsigned long bcount = journal->j_bcount;
-@@ -3001,7 +3001,7 @@ static int do_journal_begin_r(struct rei
- 			      int join)
- {
- 	time_t now = get_seconds();
--	int old_trans_id;
-+	unsigned int old_trans_id;
- 	struct reiserfs_journal *journal = SB_JOURNAL(p_s_sb);
- 	struct reiserfs_transaction_handle myth;
- 	int sched_count = 0;
-@@ -3824,7 +3824,7 @@ static int __commit_trans_jl(struct inod
+ 	if (name == NULL)
+@@ -558,8 +554,7 @@ reiserfs_xattr_get(const struct inode *i
+ 		goto out;
+ 	}
  
- int reiserfs_commit_for_inode(struct inode *inode)
- {
--	unsigned long id = REISERFS_I(inode)->i_trans_id;
-+	unsigned int id = REISERFS_I(inode)->i_trans_id;
- 	struct reiserfs_journal_list *jl = REISERFS_I(inode)->i_jl;
+-	xinode = dentry->d_inode;
+-	isize = xinode->i_size;
++	isize = i_size_read(dentry->d_inode);
+ 	REISERFS_I(inode)->i_flags |= i_has_xattr_dir;
  
- 	/* for the whole inode, assume unset id means it was
-@@ -3938,7 +3938,7 @@ static int do_journal_end(struct reiserf
- 	struct reiserfs_journal_list *jl, *temp_jl;
- 	struct list_head *entry, *safe;
- 	unsigned long jindex;
--	unsigned long commit_trans_id;
-+	unsigned int commit_trans_id;
- 	int trans_half;
+ 	/* Just return the size needed */
+@@ -582,7 +577,8 @@ reiserfs_xattr_get(const struct inode *i
+ 		else
+ 			chunk = isize - file_pos;
  
- 	BUG_ON(th->t_refcount > 1);
-@@ -3946,7 +3946,7 @@ static int do_journal_end(struct reiserf
- 
- 	/* protect flush_older_commits from doing mistakes if the
-            transaction ID counter gets overflowed.  */
--	if (th->t_trans_id == ~0UL)
-+	if (th->t_trans_id == ~0U)
- 		flags |= FLUSH_ALL | COMMIT_NOW | WAIT;
- 	flush = flags & FLUSH_ALL;
- 	wait_on_commit = flags & WAIT;
---- a/fs/reiserfs/procfs.c
-+++ b/fs/reiserfs/procfs.c
-@@ -321,7 +321,7 @@ static int show_journal(struct seq_file
- 		   /* incore fields */
- 		   "j_1st_reserved_block: \t%i\n"
- 		   "j_state: \t%li\n"
--		   "j_trans_id: \t%lu\n"
-+		   "j_trans_id: \t%u\n"
- 		   "j_mount_id: \t%lu\n"
- 		   "j_start: \t%lu\n"
- 		   "j_len: \t%lu\n"
-@@ -329,7 +329,7 @@ static int show_journal(struct seq_file
- 		   "j_wcount: \t%i\n"
- 		   "j_bcount: \t%lu\n"
- 		   "j_first_unflushed_offset: \t%lu\n"
--		   "j_last_flush_trans_id: \t%lu\n"
-+		   "j_last_flush_trans_id: \t%u\n"
- 		   "j_trans_start_time: \t%li\n"
- 		   "j_list_bitmap_index: \t%i\n"
- 		   "j_must_wait: \t%i\n"
---- a/include/linux/reiserfs_fs.h
-+++ b/include/linux/reiserfs_fs.h
-@@ -1676,7 +1676,7 @@ struct reiserfs_transaction_handle {
- 	int t_refcount;
- 	int t_blocks_logged;	/* number of blocks this writer has logged */
- 	int t_blocks_allocated;	/* number of blocks this writer allocated */
--	unsigned long t_trans_id;	/* sanity check, equals the current trans id */
-+	unsigned int t_trans_id;	/* sanity check, equals the current trans id */
- 	void *t_handle_save;	/* save existing current->journal_info */
- 	unsigned displace_new_blocks:1;	/* if new block allocation occurres, that block
- 					   should be displaced from others */
---- a/include/linux/reiserfs_fs_i.h
-+++ b/include/linux/reiserfs_fs_i.h
-@@ -51,7 +51,7 @@ struct reiserfs_inode_info {
- 	/* we use these for fsync or O_SYNC to decide which transaction
- 	 ** needs to be committed in order for this inode to be properly
- 	 ** flushed */
--	unsigned long i_trans_id;
-+	unsigned int i_trans_id;
- 	struct reiserfs_journal_list *i_jl;
- 	struct mutex i_mmap;
- #ifdef CONFIG_REISERFS_FS_POSIX_ACL
---- a/include/linux/reiserfs_fs_sb.h
-+++ b/include/linux/reiserfs_fs_sb.h
-@@ -156,7 +156,7 @@ struct reiserfs_journal_list {
- 	atomic_t j_commit_left;
- 	atomic_t j_older_commits_done;	/* all commits older than this on disk */
- 	struct mutex j_commit_mutex;
--	unsigned long j_trans_id;
-+	unsigned int j_trans_id;
- 	time_t j_timestamp;
- 	struct reiserfs_list_bitmap *j_list_bitmap;
- 	struct buffer_head *j_commit_bh;	/* commit buffer head */
-@@ -185,7 +185,7 @@ struct reiserfs_journal {
- 	int j_1st_reserved_block;	/* first block on s_dev of reserved area journal */
- 
- 	unsigned long j_state;
--	unsigned long j_trans_id;
-+	unsigned int j_trans_id;
- 	unsigned long j_mount_id;
- 	unsigned long j_start;	/* start of current waiting commit (index into j_ap_blocks) */
- 	unsigned long j_len;	/* length of current waiting commit */
-@@ -226,10 +226,10 @@ struct reiserfs_journal {
- 	int j_num_work_lists;	/* number that need attention from kreiserfsd */
- 
- 	/* debugging to make sure things are flushed in order */
--	int j_last_flush_id;
-+	unsigned int j_last_flush_id;
- 
- 	/* debugging to make sure things are committed in order */
--	int j_last_commit_id;
-+	unsigned int j_last_commit_id;
- 
- 	struct list_head j_bitmap_nodes;
- 	struct list_head j_dirty_buffers;
+-		page = reiserfs_get_page(xinode, file_pos >> PAGE_CACHE_SHIFT);
++		page = reiserfs_get_page(dentry->d_inode,
++					 file_pos >> PAGE_CACHE_SHIFT);
+ 		if (IS_ERR(page)) {
+ 			err = PTR_ERR(page);
+ 			goto out_dput;
 
 
