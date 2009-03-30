@@ -1,108 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755761AbZC3Qnk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754455AbZC3Qqa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755761AbZC3Qnk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Mar 2009 12:43:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752448AbZC3Qna
+	id S1754455AbZC3Qqa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Mar 2009 12:46:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752188AbZC3QqU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Mar 2009 12:43:30 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:57606 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752188AbZC3Qn3 (ORCPT
+	Mon, 30 Mar 2009 12:46:20 -0400
+Received: from g1t0029.austin.hp.com ([15.216.28.36]:17666 "EHLO
+	g1t0029.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751500AbZC3QqU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Mar 2009 12:43:29 -0400
-Date: Mon, 30 Mar 2009 09:34:30 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Ric Wheeler <rwheeler@redhat.com>
-cc: "Andreas T.Auer" <andreas.t.auer_lkml_73537@ursus.ath.cx>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Theodore Tso <tytso@mit.edu>,
-       Mark Lord <lkml@rtr.ca>, Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Jeff Garzik <jeff@garzik.org>, Matthew Garrett <mjg59@srcf.ucam.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Rees <drees76@gmail.com>, Jesper Krogh <jesper@krogh.cc>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.29
-In-Reply-To: <49D0EF1E.9040806@redhat.com>
-Message-ID: <alpine.LFD.2.00.0903300922231.3948@localhost.localdomain>
-References: <alpine.LFD.2.00.0903271511230.3994@localhost.localdomain> <alpine.LFD.2.00.0903271522210.3994@localhost.localdomain> <49CD7B10.7010601@garzik.org> <49CD891A.7030103@rtr.ca> <49CD9047.4060500@garzik.org> <49CE2633.2000903@s5r6.in-berlin.de>
- <49CE3186.8090903@garzik.org> <49CE35AE.1080702@s5r6.in-berlin.de> <49CE3F74.6090103@rtr.ca> <20090329231451.GR26138@disturbed> <20090330003948.GA13356@mit.edu> <49D0710A.1030805@ursus.ath.cx> <20090330100546.51907bd2@the-village.bc.nu> <49D0A3D6.4000300@ursus.ath.cx>
- <49D0AA4A.6020308@redhat.com> <alpine.LFD.2.00.0903300817400.3948@localhost.localdomain> <49D0EF1E.9040806@redhat.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Mon, 30 Mar 2009 12:46:20 -0400
+Date: Mon, 30 Mar 2009 10:45:42 -0600
+From: Alex Chiang <achiang@hp.com>
+To: Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>
+Cc: jbarnes@virtuousgeek.org, linux-pci@vger.kernel.org,
+       linux-kernel@vger.kernel.org, lenb@kernel.org
+Subject: Re: [PATCH 3/3] PCI: pci_slot: grab refcount on slot's bus
+Message-ID: <20090330164542.GC30433@ldl.fc.hp.com>
+References: <20090329165352.29073.5159.stgit@bob.kio> <20090329165454.29073.1180.stgit@bob.kio> <49D02DAD.2040607@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49D02DAD.2040607@jp.fujitsu.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Mon, 30 Mar 2009, Ric Wheeler wrote:
+* Kenji Kaneshige <kaneshige.kenji@jp.fujitsu.com>:
+> Alex Chiang wrote:
+> > diff --git a/drivers/acpi/pci_slot.c b/drivers/acpi/pci_slot.c
+> > index cd1f446..c7ad9f2 100644
+> > --- a/drivers/acpi/pci_slot.c
+> > +++ b/drivers/acpi/pci_slot.c
+> > @@ -63,6 +63,7 @@ struct acpi_pci_slot {
+> >  	acpi_handle root_handle;	/* handle of the root bridge */
+> >  	struct pci_slot *pci_slot;	/* corresponding pci_slot */
+> >  	struct list_head list;		/* node in the list of slots */
+> > +	struct pci_bus *bus;		/* bus the slot is on */
+> >  };
 > 
-> I still disagree strongly with the don't force flush idea - we have an
-> absolute and critical need to have ordered writes that will survive a power
-> failure for any file system that is built on transactions (or data base).
+> I don't think we need an additional 'bus' field in the struct
+> acpi_pci_slot. At the register_slot(), we already know the
+> address of struct pci_bus. At the acpi_pci_slot_remove(), I
+> think we can get the address of struct pci_bus as follows.
+> 
+> 		if (slot->root_handle == handle) {
+> 			struct pci_bus *pbus = slot->pci_slot->bus;
+> 			list_del(&slot->list);
+> 			pci_destroy_slot(slot->pci_slot);
+> 			put_device(&pbus->dev);
+> 			kfree(slot);
+> 		}
 
-Read that sentence of yours again.
+Ok, that is a little cleaner, I'll do it your way.
 
-In particular, read the "we" part, and ponder.
+Thanks for the review.
 
-YOU have that absolute and critical need.
+/ac
 
-Others? Likely not so much. The reason people run "data=ordered" on their 
-laptops is not just because it's the default - rather, it's the default 
-_because_ it's the one that avoids most obvious problems. And for 99% of 
-all people, that's what they want. 
-
-And as mentioned, if you have to have absolute requirements, you 
-absolutely MUST be using real RAID with real protection (not just RAID0). 
-
-Not "should". MUST. If you don't do redundancy, your disk _will_ 
-eventually eat your data. Not because the OS wrote in the wrong order, or 
-the disk cached writes, but simply because bad things do happen.
-
-But turn that around, and say: if you don't have redundant disks, then 
-pretty much by definition those drive flushes won't be guaranteeing your 
-data _anyway_, so why pay the price?
-
-> The big issues are that for s-ata drives, our flush mechanism is really,
-> really primitive and brutal. We could/should try to validate a better and less
-> onerous mechanism (with ordering tags? experimental flush ranges? etc).
-
-That's one of the issues. The cost of those flushes can be really quite 
-high, and as mentioned, in the absense of redundancy you don't actually 
-get the guarantees that you seem to think that you get.
-
-> I spent a very long time looking at huge numbers of installed systems
-> (millions of file systems deployed in the field), including  taking part in
-> weekly analysis of why things failed, whether the rates of failure went up or
-> down with a given configuration, etc. so I can fully appreciate all of the
-> ways drives (or SSD's!) can magically eat your data.
-
-Well, I can go mainly by my own anecdotal evidence, and so far I've 
-actually had more catastrophic data failure from failed drives than 
-anything else. OS crashes in the middle of a "yum update"? Yup, been 
-there, done that, it was really painful. But it was painful in a "damn, I 
-need to force a re-install of a couple of rpms".
-
-Actual failed drives that got read errors? I seem to average almost one a 
-year. It's been overheating laptops, and it's been power outages that 
-apparently happened at really bad times. I have a UPS now.
-
-> What you have to keep in mind is the order of magnitude of various buckets of
-> failures - software crashes/code bugs tend to dominate, followed by drive
-> failures, followed by power supplies, etc.
-
-Sure. And those "write flushes" really only cover a rather small 
-percentage. For many setups, the other corruption issues (drive failure) 
-are not just more common, but generally more disastrous anyway. So why 
-would a person like that worry about the (rare) power failure?
-
-> I have personally seen a huge reduction in the "software" rate of failures
-> when you get the write barriers (forced write cache flushing) working properly
-> with a very large installed base, tested over many years :-)
-
-The software rate of failures should only care about the software write 
-barriers (ie the ones that order the OS elevator - NOT the ones that 
-actually tell the disk to flush itself).
-
-			Linus
