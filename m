@@ -1,68 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754659AbZC3PVU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753246AbZC3PWx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754659AbZC3PVU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Mar 2009 11:21:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752268AbZC3PVI
+	id S1753246AbZC3PWx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Mar 2009 11:22:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752150AbZC3PWn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Mar 2009 11:21:08 -0400
-Received: from rtr.ca ([76.10.145.34]:36553 "EHLO mail.rtr.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751293AbZC3PVG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Mar 2009 11:21:06 -0400
-Message-ID: <49D0E35E.9080003@rtr.ca>
-Date: Mon, 30 Mar 2009 11:21:02 -0400
-From: Mark Lord <lkml@rtr.ca>
-Organization: Real-Time Remedies Inc.
-User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
-MIME-Version: 1.0
-To: Ric Wheeler <rwheeler@redhat.com>
-Cc: "Andreas T.Auer" <andreas.t.auer_lkml_73537@ursus.ath.cx>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Theodore Tso <tytso@mit.edu>,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Jeff Garzik <jeff@garzik.org>,
+	Mon, 30 Mar 2009 11:22:43 -0400
+Received: from mail-bw0-f169.google.com ([209.85.218.169]:46582 "EHLO
+	mail-bw0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751013AbZC3PWm convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Mar 2009 11:22:42 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:message-id;
+        b=vFHRlbvc4ix0dcK7AdbyoEEuWwnLAyyq+83+JEMJjjF0h9HAjqL4Yc3s4VoKbgagdn
+         VK7aKqrK2bv0kMA0JU/+/uo00SyWu89mvQtvllPjIaK+tEvj3B/K71jaAZ2f0OENv44L
+         jYmlUSa91jV7V8p8T8/1guUU0uMlu+KTStHrw=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Fernando Luis =?windows-1252?q?V=E1zquez_Cao?= 
+	<fernando@oss.ntt.co.jp>
+Subject: Re: [PATCH 1/7] block: Add block_flush_device()
+Date: Mon, 30 Mar 2009 17:07:41 +0200
+User-Agent: KMail/1.11.1 (Linux/2.6.29-next-20090327-dirty; KDE/4.2.1; i686; ; )
+Cc: Jeff Garzik <jeff@garzik.org>, Christoph Hellwig <hch@infradead.org>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       Matthew Garrett <mjg59@srcf.ucam.org>,
+       Theodore Tso <tytso@mit.edu>, Ingo Molnar <mingo@elte.hu>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Arjan van de Ven <arjan@infradead.org>,
        Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Nick Piggin <npiggin@suse.de>,
        David Rees <drees76@gmail.com>, Jesper Krogh <jesper@krogh.cc>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.29
-References: <alpine.LFD.2.00.0903271511230.3994@localhost.localdomain>	<alpine.LFD.2.00.0903271522210.3994@localhost.localdomain>	<49CD7B10.7010601@garzik.org>	<49CD891A.7030103@rtr.ca>	<49CD9047.4060500@garzik.org>	<49CE2633.2000903@s5r6.in-berlin.de>	<49CE3186.8090903@garzik.org>	<49CE35AE.1080702@s5r6.in-berlin.de>	<49CE3F74.6090103@rtr.ca>	<20090329231451.GR26138@disturbed>	<20090330003948.GA13356@mit.edu>	<49D0710A.1030805@ursus.ath.cx> <20090330100546.51907bd2@the-village.bc.nu> <49D0A3D6.4000300@ursus.ath.cx> <49D0AA4A.6020308@redhat.com> <49D0CDBA.7040702@rtr.ca> <49D0D08E.3090100@redhat.com> <49D0DAD3.6030507@rtr.ca> <49D0DDFE.5080701@redhat.com>
-In-Reply-To: <49D0DDFE.5080701@redhat.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       chris.mason@oracle.com, david@fromorbit.com, tj@kernel.org
+References: <alpine.LFD.2.00.0903241218130.3032@localhost.localdomain> <49D0B535.2010106@oss.ntt.co.jp> <49D0B687.1030407@oss.ntt.co.jp>
+In-Reply-To: <49D0B687.1030407@oss.ntt.co.jp>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="windows-1252"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200903301707.46212.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ric Wheeler wrote:
->
-> I am confused as to why you think that barriers (flush barriers 
-> specifically) are not equivalent to drive write cache. We disable 
-> barriers when the write cache is off, use them only to insure that our 
-> ordering for fs transactions survives any power loss. No one should be 
-> enabling barriers on linux file systems if your write cache is disabled 
-> or if you have a battery backed write cache (say on an enterprise class 
-> disk array).
+On Monday 30 March 2009, Fernando Luis Vázquez Cao wrote:
+> This patch adds a helper function that should be used by filesystems that need
+> to flush the underlying block device on fsync()/fdatasync().
 > 
-> Chris' test of barriers (with write cache enabled) did show for desktop 
-> class boxes that you would get file system corruption (i.e., need to 
-> fsck the disk) a huge percentage of the time.
-..
+> Signed-off-by: Fernando Luis Vazquez Cao <fernando@oss.ntt.co.jp>
+> ---
+> 
+> diff -urNp linux-2.6.29-orig/fs/buffer.c linux-2.6.29/fs/buffer.c
+> --- linux-2.6.29-orig/fs/buffer.c	2009-03-24 08:12:14.000000000 +0900
+> +++ linux-2.6.29/fs/buffer.c	2009-03-30 15:27:04.000000000 +0900
+> @@ -165,6 +165,17 @@ void end_buffer_write_sync(struct buffer
+>   	put_bh(bh);
+>   }
+> 
+> +/* Issue flush of write caches on the block device */
+> +int block_flush_device(struct block_device *bdev)
 
-Sure, no doubt there.  But it's due to the kernel crash,
-not due to the write cache on the drive.
+I don't consider this an improvement over using blkdev_issue_flush().
 
-Anything in the drive's write cache very probably made it to the media
-within a second or two of arriving there.
+> +{
+> +	int ret = 0;
+> +
+> +	ret = blkdev_issue_flush(bdev, NULL);
 
-So with or without a write cache, the same result should happen
-for those tests.  Of course, if you disable barriers *and* write cache,
-then you are no longer testing the same kernel code.
+The problem lies in using NULL for error_sector argument which shows
+a subtle deficiency of the current implementation/usage of barriers
+based on a write cache flushing.
 
-I'm not arguing against battery backup or UPSs,
-or *for* blindly trusting write caches without reliable power.
+I intend to document the issue with adding the FIXME to the current
+users of blkdev_issue_flush() so the problem is at least known and not
+forgotten (fixing it would require some work from both block and fs
+sides and unfortunately there wasn't even a willingness to discuss
+possible solutions few years back when the original code was added).
 
-Just pointing out that they're not the evil that some folks
-seem to believe they are.
-
-Cheers
+Thanks,
+Bart
