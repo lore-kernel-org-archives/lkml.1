@@ -1,53 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755499AbZC3MEm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755964AbZC3MFX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755499AbZC3MEm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Mar 2009 08:04:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755424AbZC3ME3
+	id S1755964AbZC3MFX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Mar 2009 08:05:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751594AbZC3MFF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Mar 2009 08:04:29 -0400
-Received: from stinky.trash.net ([213.144.137.162]:59367 "EHLO
-	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752422AbZC3ME2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Mar 2009 08:04:28 -0400
-Message-ID: <49D0B549.3050900@trash.net>
-Date: Mon, 30 Mar 2009 14:04:25 +0200
-From: Patrick McHardy <kaber@trash.net>
-User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
-MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-CC: jpirko@redhat.com, linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       jgarzik@pobox.com, shemminger@linux-foundation.org,
-       bridge@lists.linux-foundation.org, fubar@us.ibm.com,
-       bonding-devel@lists.sourceforge.net, mschmidt@redhat.com,
-       dada1@cosmosbay.com
-Subject: Re: [PATCH] bonding: allow bond in mode balance-alb to work properly
- in bridge -try4
-References: <20090326155205.GA28868@psychotron.englab.brq.redhat.com>	<20090327.003819.234492275.davem@davemloft.net>	<49CC85E9.7070903@trash.net> <20090329.135355.109115565.davem@davemloft.net>
-In-Reply-To: <20090329.135355.109115565.davem@davemloft.net>
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+	Mon, 30 Mar 2009 08:05:05 -0400
+Received: from relay.atmel.no ([80.232.32.139]:53802 "EHLO relay.atmel.no"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751252AbZC3MFE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Mar 2009 08:05:04 -0400
+Date: Mon, 30 Mar 2009 14:04:56 +0200
+From: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
+To: Erik Waling <erik.waling@konftel.se>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] macb: RLE and BNA handling
+Message-ID: <20090330140456.07eb48b8@hskinnemoen-d830>
+In-Reply-To: <1238060296.23641.8.camel@konftel>
+References: <1231863713.10152.11.camel@konftel>
+	<20090114111505.48d34949@hskinnemoen-d830>
+	<1231928868.10152.31.camel@konftel>
+	<20090114130322.483a7830@hskinnemoen-d830>
+	<1232026671.10152.52.camel@konftel>
+	<1238060296.23641.8.camel@konftel>
+X-Mailer: Claws Mail 3.6.1 (GTK+ 2.16.0; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Miller wrote:
-> From: Patrick McHardy <kaber@trash.net>
-> Date: Fri, 27 Mar 2009 08:53:13 +0100
-> 
->> ... an alternative approach
->> would be to have bonding add FDB entries for all secondary MACs to
->> make bridging treat them as local.
-> 
-> Do you guys foresee any possibility of an alternative implementation
-> any time soon?
-> 
-> Otherwise we're just stalling by not putting something into the tree,
-> and as far as I can tell this patch here might as well be it.
+Erik Waling wrote:
+> Have you had the time to check the patch below? These two issues still
+> needs to be addressed.
 
-Adding bridge FDB entries seems like the best fix. It might
-need some minor ugliness to avoid new dependencies between
-bonding and bridging, but it definitely beats having new hooks
-in the core in my opinion.
+Yeah...sorry for not responding earlier.
 
-But I have no idea whether Jiri is actually implementing this.
+> If you are unsure of the BNA part you could at least pass the RLE part
+> upstreams since it happens more frequently.
+
+Right. I have to admit I'm not at all convinced about the BNA part...it
+seems to me like the only scenario when it makes a difference is when
+the ring is so small that it can't hold an entire frame. And if that's
+the case, isn't the easiest solution to just increase the size of the
+ring?
+
+So, could you please split the patch up into the following parts:
+  1. TX RLE handling
+  2. Call macb_rx() regardless of the status
+  3. Handle incomplete RX frames
+  4. Special case for RX BNA
+
+Then I can pass on the first three, and we can keep discussing the last
+one, which is the one I'm not sure about.
+
+Haavard
