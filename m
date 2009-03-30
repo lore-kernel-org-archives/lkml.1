@@ -1,254 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760704AbZC3Vl0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762096AbZC3Vlt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760704AbZC3Vl0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Mar 2009 17:41:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761832AbZC3Vjn
+	id S1762096AbZC3Vlt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Mar 2009 17:41:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761986AbZC3VkE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Mar 2009 17:39:43 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:40429 "EHLO ogre.sisk.pl"
+	Mon, 30 Mar 2009 17:40:04 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:51726 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755422AbZC3Vjk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Mar 2009 17:39:40 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Subject: Re: [Updated patch] Re: [PATCH] igb: fix kexec with igb
-Date: Mon, 30 Mar 2009 23:39:32 +0200
-User-Agent: KMail/1.11.1 (Linux/2.6.29-rjw; KDE/4.2.1; x86_64; ; )
-Cc: Yinghai Lu <yinghai@kernel.org>,
-       Jesse Brandeburg <jesse.brandeburg@gmail.com>,
-       David Miller <davem@davemloft.net>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       NetDev <netdev@vger.kernel.org>
-References: <49B1F934.5050006@kernel.org> <200903291319.15269.rjw@sisk.pl> <9929d2390903301436q1cd96e05x47d60cff72e41b4d@mail.gmail.com>
-In-Reply-To: <9929d2390903301436q1cd96e05x47d60cff72e41b4d@mail.gmail.com>
+	id S1761980AbZC3VkB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Mar 2009 17:40:01 -0400
+Message-ID: <49D13BB9.3010200@redhat.com>
+Date: Tue, 31 Mar 2009 00:38:01 +0300
+From: Dor Laor <dlaor@redhat.com>
+Reply-To: dlaor@redhat.com
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+CC: Rik van Riel <riel@redhat.com>, akpm@osdl.org, nickpiggin@yahoo.com.au,
+       frankeh@watson.ibm.com, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, Dave Hansen <dave@linux.vnet.ibm.com>,
+       virtualization@lists.osdl.org,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>, hugh@veritas.com,
+       Izik Eidus <ieidus@redhat.com>
+Subject: Re: [patch 0/6] Guest page hinting version 7.
+References: <20090327150905.819861420@de.ibm.com>	<1238195024.8286.562.camel@nimitz>	<20090329161253.3faffdeb@skybase>	<1238428495.8286.638.camel@nimitz> <49D11184.3060002@goop.org>	<49D11287.4030307@redhat.com> <49D11674.9040205@goop.org>	<49D12564.40708@redhat.com> <49D12D16.6050407@goop.org>
+In-Reply-To: <49D12D16.6050407@goop.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200903302339.33781.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 30 March 2009, Jeff Kirsher wrote:
-> On Sun, Mar 29, 2009 at 4:19 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> > On Sunday 29 March 2009, Jeff Kirsher wrote:
-> >> On Sat, Mar 28, 2009 at 2:27 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> >> > On Tuesday 24 March 2009, Yinghai Lu wrote:
-> >> >> Rafael J. Wysocki wrote:
-> >> >> > On Thursday 12 March 2009, Yinghai Lu wrote:
-> >> >> >> Rafael J. Wysocki wrote:
-> >> >> >>> On Sunday 08 March 2009, Rafael J. Wysocki wrote:
-> >> >> >>>> On Sunday 08 March 2009, Yinghai Lu wrote:
-> >> >> >>>>> Rafael J. Wysocki wrote:
-> >> >> >>>>>> On Saturday 07 March 2009, Yinghai Lu wrote:
-> >> >> >>>>>>> On Fri, Mar 6, 2009 at 11:18 PM, Jesse Brandeburg
-> >> >> >>>>>>> <jesse.brandeburg@gmail.com> wrote:
-> >> >> >>>>>>>> On Fri, Mar 6, 2009 at 8:33 PM, Yinghai Lu <yinghai@kernel.org> wrote:
-> >> >> >>>>>>>>> Impact: could probe igb
-> >> >> >>>>>>>>>
-> >> >> >>>>>>>>> Found one system with 82575EB, in the kernel that is kexeced, probe igb
-> >> >> >>>>>>>>> failed with -2.
-> >> >> >>>>>>>>>
-> >> >> >>>>>>>>> it looks like the same behavior happened on forcedeth.
-> >> >> >>>>>>>>>
-> >> >> >>>>>>>>> try to check system_state to make sure if put it on D3
-> >> >> >>>>>>>>>
-> >> >> >>>>>>>>> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-> >> >> >>>>>>>>>
-> >> >> >>>>>>>>> ---
-> >> >> >>>>>>>>>  drivers/net/igb/igb_main.c |   19 ++++++++++++++-----
-> >> >> >>>>>>>>>  1 file changed, 14 insertions(+), 5 deletions(-)
-> >> >> >>>>>>>> I see the point of the patch, but I know for a fact that ixgbe when
-> >> >> >>>>>>>> enabled for MSI-X also doesn't work with kexec.
-> >> >> >>>>>>>>
-> >> >> >>>>>>>> so my questions are:
-> >> >> >>>>>>>> are you going to change every driver?
-> >> >> >>>>>>> i tend to only change driver that i have related HW.
-> >> >> >>>>>>>
-> >> >> >>>>>>>> why can't this be fixed in core kernel code instead?
-> >> >> >>>>>>> will check it.
-> >> >> >>>>>>>
-> >> >> >>>>>>>> Shouldn't pci_enable_device take it out of D3?
-> >> >> >>>>>>>> Or maybe it should be taken out of D3 immediately if someone tries to
-> >> >> >>>>>>>> ioremap any of the BARx registers?
-> >> >> >>>>>>> looks like second kernel can not detect the state any more.
-> >> >> >>>>>> In fact pci_enable_device() calls pci_set_power_state(dev, PCI_D0) as the first
-> >> >> >>>>>> thing.  The question is why it doesn't work as expected.
-> >> >> >>>>> not sure... please check the version for forcedeth that you made.
-> >> >> >>>>>
-> >> >> >>>>> commit 3cb5599a84c557c0dd9a19feb63a3788268cf249
-> >> >> >>>>> Author: Rafael J. Wysocki <rjw@sisk.pl>
-> >> >> >>>>> Date:   Fri Sep 5 14:00:19 2008 -0700
-> >> >> >>>>>
-> >> >> >>>>>     forcedeth: fix kexec regression
-> >> >> >>>>>
-> >> >> >>>>>     Fix regression tracked as http://bugzilla.kernel.org/show_bug.cgi?id=11361
-> >> >> >>>>>     and caused by commit f735a2a1a4f2a0f5cd823ce323e82675990469e2 ("[netdrvr]
-> >> >> >>>>>     forcedeth: setup wake-on-lan before shutting down") that makes network
-> >> >> >>>>>     adapters integrated into the NVidia MCP55 chipsets fail to work in kexeced
-> >> >> >>>>>     kernels.  The problem appears to be that if the adapter is put into D3_hot
-> >> >> >>>>>     during ->shutdown(), it cannot be brought back into D0 after kexec (ref.
-> >> >> >>>>>     http://marc.info/?l=linux-kernel&m=121900062814967&w=4).  Therefore, only
-> >> >> >>>>>     put forcedeth into D3 during ->shutdown() if the system is to be powered
-> >> >> >>>>>     off.
-> >> >> >>>> Thanks, I remember now.
-> >> >> >>> In which case you need to rework igb_shutdown() rather than igb_suspend().
-> >> >> >>>
-> >> >> >>> Something like the patch below, perhaps (totally untested).
-> >> >> >> it works, David, can you picked it up
-> >> >> >
-> >> >> > Still, Yinghai, can you please also test the patch below?  It fixes all
-> >> >> > shortcomings in the driver's suspend and shutdown methods I was talking about
-> >> >> > in one of the previous messages.  If it works, IMO it will be a preferable fix
-> >> >> > (in particular, it would be good to check if WoL still works with it,
-> >> >> > but I don't have the hardware).
-> >> >> >
-> >> >> > Thanks,
-> >> >> > Rafael
-> >> >> >
-> >> >> > ---
-> >> >> > From: Rafael J. Wysocki <rjw@sisk.pl>
-> >> >> > Subject: net/igb: Fix kexec with igb (rev. 3)
-> >> >> > Impact: Fix
-> >> >> >
-> >> >> > Yinghai Lu found one system with 82575EB where, in the kernel that is
-> >> >> > kexeced, probe igb failed with -2, the reason being that the adapter
-> >> >> > could not be brought back from D3 by the kexec kernel, most probably
-> >> >> > due to quirky hardware (it looks like the same behavior happened on
-> >> >> > forcedeth).
-> >> >> >
-> >> >> > Prevent igb from putting the adapter into D3 during shutdown except
-> >> >> > when we going to power off the system.  For this purpose, seperate
-> >> >> > igb_shutdown() from igb_suspend() and use the appropriate PCI PM
-> >> >> > callbacks in both of them.
-> >> >> >
-> >> >> > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> >> >> > Reported-by: Yinghai Lu <yinghai@kernel.org>
-> >> >> > ---
-> >> >> >  drivers/net/igb/igb_main.c |   42 ++++++++++++++++++++++++++++++------------
-> >> >> >  1 file changed, 30 insertions(+), 12 deletions(-)
-> >> >> >
-> >> >> > Index: linux-2.6/drivers/net/igb/igb_main.c
-> >> >> > ===================================================================
-> >> >> > --- linux-2.6.orig/drivers/net/igb/igb_main.c
-> >> >> > +++ linux-2.6/drivers/net/igb/igb_main.c
-> >> >> > @@ -4277,7 +4277,7 @@ int igb_set_spd_dplx(struct igb_adapter
-> >> >> >  }
-> >> >> >
-> >> >> >
-> >> >> > -static int igb_suspend(struct pci_dev *pdev, pm_message_t state)
-> >> >> > +static int __igb_shutdown(struct pci_dev *pdev, bool *enable_wake)
-> >> >> >  {
-> >> >> >     struct net_device *netdev = pci_get_drvdata(pdev);
-> >> >> >     struct igb_adapter *adapter = netdev_priv(netdev);
-> >> >> > @@ -4336,15 +4336,9 @@ static int igb_suspend(struct pci_dev *p
-> >> >> >             wr32(E1000_WUFC, 0);
-> >> >> >     }
-> >> >> >
-> >> >> > -   /* make sure adapter isn't asleep if manageability/wol is enabled */
-> >> >> > -   if (wufc || adapter->en_mng_pt) {
-> >> >> > -           pci_enable_wake(pdev, PCI_D3hot, 1);
-> >> >> > -           pci_enable_wake(pdev, PCI_D3cold, 1);
-> >> >> > -   } else {
-> >> >> > +   *enable_wake = wufc || adapter->en_mng_pt;
-> >> >> > +   if (!*enable_wake)
-> >> >> >             igb_shutdown_fiber_serdes_link_82575(hw);
-> >> >> > -           pci_enable_wake(pdev, PCI_D3hot, 0);
-> >> >> > -           pci_enable_wake(pdev, PCI_D3cold, 0);
-> >> >> > -   }
-> >> >> >
-> >> >> >     /* Release control of h/w to f/w.  If f/w is AMT enabled, this
-> >> >> >      * would have already happened in close and is redundant. */
-> >> >> > @@ -4352,12 +4346,29 @@ static int igb_suspend(struct pci_dev *p
-> >> >> >
-> >> >> >     pci_disable_device(pdev);
-> >> >> >
-> >> >> > -   pci_set_power_state(pdev, pci_choose_state(pdev, state));
-> >> >> > -
-> >> >> >     return 0;
-> >> >> >  }
-> >> >> >
-> >> >> >  #ifdef CONFIG_PM
-> >> >> > +static int igb_suspend(struct pci_dev *pdev, pm_message_t state)
-> >> >> > +{
-> >> >> > +   int retval;
-> >> >> > +   bool wake;
-> >> >> > +
-> >> >> > +   retval = __igb_shutdown(pdev, &wake);
-> >> >> > +   if (retval)
-> >> >> > +           return retval;
-> >> >> > +
-> >> >> > +   if (wake) {
-> >> >> > +           pci_prepare_to_sleep(pdev);
-> >> >> > +   } else {
-> >> >> > +           pci_wake_from_d3(pdev, false);
-> >> >> > +           pci_set_power_state(pdev, PCI_D3hot);
-> >> >> > +   }
-> >> >> > +
-> >> >> > +   return 0;
-> >> >> > +}
-> >> >> > +
-> >> >> >  static int igb_resume(struct pci_dev *pdev)
-> >> >> >  {
-> >> >> >     struct net_device *netdev = pci_get_drvdata(pdev);
-> >> >> > @@ -4412,7 +4423,14 @@ static int igb_resume(struct pci_dev *pd
-> >> >> >
-> >> >> >  static void igb_shutdown(struct pci_dev *pdev)
-> >> >> >  {
-> >> >> > -   igb_suspend(pdev, PMSG_SUSPEND);
-> >> >> > +   bool wake;
-> >> >> > +
-> >> >> > +   __igb_shutdown(pdev, &wake);
-> >> >> > +
-> >> >> > +   if (system_state == SYSTEM_POWER_OFF) {
-> >> >> > +           pci_wake_from_d3(pdev, wake);
-> >> >> > +           pci_set_power_state(pdev, PCI_D3hot);
-> >> >> > +   }
-> >> >> >  }
-> >> >> >
-> >> >> >  #ifdef CONFIG_NET_POLL_CONTROLLER
-> >> >>
-> >> >> it works too.
-> >> >
-> >> > Great, thanks for testing.
-> >> >
-> >> > Jeff, Jesse, is the patch fine with you?
-> >> >
-> >> > Rafael
-> >>
-> >> Let me talk with Jesse on Monday about it.  I know that Jesse's
-> >> concern's were that there were more than one driver afflicted with the
-> >> same or similar issue and that it made more sense to fix this in the
-> >> core for all drivers.  For instance ixgbe, IIRC, but because Yinghai
-> >> did not have any other hardware, it was unclear if this was an issue
-> >> on other drivers.
-> >
-> > I think it was, at least theoretically.  We should generally avoid powering
-> > off things on shutdown when it's not really necessary.  Also, the use of
-> > pci_enable_wake() in these drivers is not really correct.
-> >
-> > And in fact this is why I'm asking, because I have analogouns patches for some
-> > other drivers in the works too.  If you are fine with the approach, I'll post
-> > the whole series.
-> >
-> >> After discussing this with Jesse, one of us will respond.  I will
-> >> apply this patch to my tree anyway and if we are alright with the
-> >> patch, I will push it out with my other patches to Dave.
-> >
-> > Thanks!
-> >
-> > Best,
-> > Rafael
-> > --
-> 
-> After talking with Jesse, we are fine with it if our testers buy off
-> on it.  I have the patch in my tree and so Emil will run a barrage of
-> regression/stress tests on the patch overnight.  If everything looks
-> good, I will send it out with the other igb patches I have.
-
-Great, thanks!
-
-Rafael
+Jeremy Fitzhardinge wrote:
+> Rik van Riel wrote:
+>   
+>> Jeremy Fitzhardinge wrote:
+>>     
+>>> Rik van Riel wrote:
+>>>       
+>>>> Jeremy Fitzhardinge wrote:
+>>>>
+>>>>         
+>>>>> That said, people have been looking at tracking block IO to work 
+>>>>> out when it might be useful to try and share pages between guests 
+>>>>> under Xen.
+>>>>>           
+>>>> Tracking block IO seems like a bass-ackwards way to figure
+>>>> out what the contents of a memory page are.
+>>>>         
+>>> Well, they're research projects, so nobody said that they're 
+>>> necessarily useful results ;).  I think the rationale is that, in 
+>>> general, there aren't all that many sharable pages, and asize from 
+>>> zero-pages, the bulk of them are the result of IO. 
+>>>       
+>> I'll give you a hint:  Windows zeroes out freed pages.
+>>     
+>
+> Right: "aside from zero-pages".  If you exclude zero-pages from your 
+> count of shared pages, the amount of sharing drops a lot.
+>
+>   
+>> It should also be possible to hook up arch_free_page() so
+>> freed pages in Linux guests become sharable.
+>>
+>> Furthermore, every guest with the same OS version will be
+>> running the same system daemons, same glibc, etc.  This
+>> means sharable pages from not just disk IO (probably from
+>> different disks anyway),
+>>     
+>
+> Why?  If you're starting a bunch of cookie-cutter guests, then you're 
+> probably starting them from the same template image or COW block 
+> devices.  (Also, if you're wearing the cost of physical IO anyway, then 
+> additional cost of hashing is relatively small.)
+>
+>   
+>> but also in the BSS and possibly
+>> even on the heap.
+>>     
+>
+> Well, maybe.  Modern systems generally randomize memory layouts, so even 
+> if they're semantically the same, the pointers will all have different 
+> values.
+>
+> Other research into "sharing" mostly-similar pages is more promising for 
+> that kind of case.
+>
+>   
+>> Eventually.  It starts out with hashing the first 128 (IIRC)
+>> bytes of page content and comparing the hashes.  If that
+>> matches, it will do content comparison.
+>>     
+The algorithm was changed quite a bit. Izik is planning to resubmit it
+any day now.
+>> Content comparison is done in the background on the host.
+>> I suspect (but have not checked) that it is somehow hooked
+>> up to the page reclaim code on the host.
+>>     
+>
+> Yeah, that's the straightforward approach; there's about a research 
+> project/year doing a Xen implementation, but they never seem to get very 
+> good results aside from very artificial test conditions.
+>   
+Actually we got really good results by using ksm along with kvm, running 
+large
+amount of windows virtual machines. We can achieve over commit ratio
+of up to 400% of the host ram for VMs doing M$ office load.
+-dor
