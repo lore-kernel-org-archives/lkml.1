@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761140AbZC3U1W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761143AbZC3U3a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761140AbZC3U1W (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Mar 2009 16:27:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760961AbZC3U1A
+	id S1761143AbZC3U3a (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Mar 2009 16:29:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755642AbZC3U3V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Mar 2009 16:27:00 -0400
-Received: from rtr.ca ([76.10.145.34]:48070 "EHLO mail.rtr.ca"
+	Mon, 30 Mar 2009 16:29:21 -0400
+Received: from rtr.ca ([76.10.145.34]:55086 "EHLO mail.rtr.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761073AbZC3U07 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Mar 2009 16:26:59 -0400
-Message-ID: <49D12B10.20805@rtr.ca>
-Date: Mon, 30 Mar 2009 16:26:56 -0400
+	id S1750922AbZC3U3U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Mar 2009 16:29:20 -0400
+Message-ID: <49D12B9D.5050504@rtr.ca>
+Date: Mon, 30 Mar 2009 16:29:17 -0400
 From: Mark Lord <lkml@rtr.ca>
 Organization: Real-Time Remedies Inc.
 User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
@@ -27,20 +27,21 @@ Cc: Jeff Garzik <jeff@garzik.org>, Rik van Riel <riel@redhat.com>,
        David Rees <drees76@gmail.com>, Jesper Krogh <jesper@krogh.cc>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Subject: Re: Linux 2.6.29
-References: <alpine.LFD.2.00.0903271511230.3994@localhost.localdomain> <alpine.LFD.2.00.0903271522210.3994@localhost.localdomain> <49CD7B10.7010601@garzik.org> <49CD891A.7030103@rtr.ca> <49CD9047.4060500@garzik.org> <49CE2633.2000903@s5r6.in-berlin.de> <49CE3186.8090903@garzik.org> <49CE35AE.1080702@s5r6.in-berlin.de> <49CE3F74.6090103@rtr.ca> <20090329231451.GR26138@disturbed> <20090330003948.GA13356@mit.edu> <49D0710A.1030805@ursus.ath.cx> <20090330100546.51907bd2@the-village.bc.nu> <49D0A3D6.4000300@ursus.ath.cx> <49D0AA4A.6020308@redhat.com> <alpine.LFD.2.00.0903300817400.3948@localhost.localdomain> <49D0EF1E.9040806@redhat.com> <alpine.LFD.2.00.0903300922231.3948@localhost.localdomain> <49D0FD4C.1010007@redhat.com> <alpine.LFD.2.00.0903301038100.3948@localhost.localdomain> <49D11BDD.70702@redhat.com> <49D1206E.7090809@garzik.org> <49D129B4.1060503@msgid.tls.msk.ru>
-In-Reply-To: <49D129B4.1060503@msgid.tls.msk.ru>
+References: <alpine.LFD.2.00.0903271511230.3994@localhost.localdomain> <alpine.LFD.2.00.0903271522210.3994@localhost.localdomain> <49CD7B10.7010601@garzik.org> <49CD891A.7030103@rtr.ca> <49CD9047.4060500@garzik.org> <49CE2633.2000903@s5r6.in-berlin.de> <49CE3186.8090903@garzik.org> <49CE35AE.1080702@s5r6.in-berlin.de> <49CE3F74.6090103@rtr.ca> <20090329231451.GR26138@disturbed> <20090330003948.GA13356@mit.edu> <49D0710A.1030805@ursus.ath.cx> <20090330100546.51907bd2@the-village.bc.nu> <49D0A3D6.4000300@ursus.ath.cx> <49D0AA4A.6020308@redhat.com> <alpine.LFD.2.00.0903300817400.3948@localhost.localdomain> <49D0EF1E.9040806@redhat.com> <alpine.LFD.2.00.0903300922231.3948@localhost.localdomain> <49D0FD4C.1010007@redhat.com> <alpine.LFD.2.00.0903301038100.3948@localhost.localdomain> <49D11BDD.70702@redhat.com> <49D1206E.7090809@garzik.org> <49D129B4.1060503@msgid.tls.msk.ru> <49D12B10.20805@rtr.ca>
+In-Reply-To: <49D12B10.20805@rtr.ca>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Michael Tokarev wrote:
->
-> But are there drives out there that actually supports FUA?
+Mark Lord wrote:
+> Michael Tokarev wrote:
+>>
+>> But are there drives out there that actually supports FUA?
+> ..
+> 
+> Most (or all?) current model Hitachi Deskstar drives have it.
 ..
 
-Most (or all?) current model Hitachi Deskstar drives have it.
-
-Cheers
-
+Mmmm.. so does my notebook's WD 250GB drive.
