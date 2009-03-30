@@ -1,66 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754449AbZC3Ihi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755186AbZC3InW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754449AbZC3Ihi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Mar 2009 04:37:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753751AbZC3Ih3
+	id S1755186AbZC3InW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Mar 2009 04:43:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753198AbZC3InK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Mar 2009 04:37:29 -0400
-Received: from gw01.mail.saunalahti.fi ([195.197.172.115]:45326 "EHLO
-	gw01.mail.saunalahti.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752323AbZC3Ih2 (ORCPT
+	Mon, 30 Mar 2009 04:43:10 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:9340 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752323AbZC3InJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Mar 2009 04:37:28 -0400
-From: Dmitri Vorobiev <dmitri.vorobiev@movial.com>
-To: bzolnier@gmail.com, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Cc: Dmitri Vorobiev <dmitri.vorobiev@movial.com>
-Subject: [PATCH 1/1] ide: add missing include into drivers/ide/ide-atapi.c
-Date: Mon, 30 Mar 2009 11:37:09 +0300
-Message-Id: <1238402229-19824-1-git-send-email-dmitri.vorobiev@movial.com>
-X-Mailer: git-send-email 1.5.6.3
+	Mon, 30 Mar 2009 04:43:09 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=BAcLGvOIgBLBPZ7Rcvh0UaZEjE/oOcB/cbfnnJiU/uiKqtX8GIrB9yisv2oLXT5vL
+	cpVPAr4uHRUjRpe8va10Q==
+Date: Mon, 30 Mar 2009 01:41:54 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+cc: Christoph Lameter <cl@linux-foundation.org>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Martin Bligh <mbligh@google.com>,
+       linux-kernel@vger.kernel.org, Mel Gorman <mel@csn.ul.ie>
+Subject: Re: [patch 1/3] slub: add per-cache slab thrash ratio
+In-Reply-To: <1238397091.26742.35.camel@penberg-laptop>
+Message-ID: <alpine.DEB.2.00.0903300128100.26320@chino.kir.corp.google.com>
+References: <alpine.DEB.2.00.0903292241300.15813@chino.kir.corp.google.com>  <alpine.DEB.2.00.0903292242510.15813@chino.kir.corp.google.com> <1238397091.26742.35.camel@penberg-laptop>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A missing include in drivers/ide/ide-atapi.c has produced the following
-build error on MIPS:
+On Mon, 30 Mar 2009, Pekka Enberg wrote:
 
-  CC      drivers/ide/ide-atapi.o
-drivers/ide/ide-atapi.c: In function 'ide_io_buffers':
-drivers/ide/ide-atapi.c:86: error: implicit declaration of function 'sg_page'
-drivers/ide/ide-atapi.c:86: warning: passing argument 1 of 'PageHighMem'
-makes pointer from integer without a cast
-drivers/ide/ide-atapi.c:90: warning: passing argument 1 of 'kmap_atomic'
-makes pointer from integer without a cast
-drivers/ide/ide-atapi.c:95: error: implicit declaration of function 'sg_virt'
-drivers/ide/ide-atapi.c:95: warning: assignment makes pointer from
-integer without a cast
-drivers/ide/ide-atapi.c:106: error: implicit declaration of function 'sg_next'
-drivers/ide/ide-atapi.c:106: warning: assignment makes pointer from
-integer without a cast
-make[2]: *** [drivers/ide/ide-atapi.o] Error 1
-make[1]: *** [drivers/ide] Error 2
-make: *** [drivers] Error 2
+> > The slab_thrash_ratio for each cache do not have non-zero defaults
+> > (yet?).
+> 
+> If we're going to merge this code, I think it would be better to put a
+> non-zero default there; otherwise we won't be able to hit potential
+> performance regressions or bugs. Furthermore, the optimization is not
+> very useful on large scale if people need to enable it themselves.
+> 
+> Maybe stick 20 there and run tbench, sysbench, et al to see if it makes
+> a difference? I'm cc'ing Mel in case he has some suggestions how to test
+> it.
+> 
 
-This patch adds the missing include and fixes the build error above.
+It won't cause a regression if sane SLAB_THRASHING_THRESHOLD and 
+slab_thrash_ratio values are set since the contention on list_lock will 
+always be slower than utilizing a more free cpu slab when its thrashing.
 
-Signed-off-by: Dmitri Vorobiev <dmitri.vorobiev@movial.com>
+I agree that there should be a default value and I was originally going 
+to propose the following as the fourth patch in the series, but I wanted 
+to generate commentary on the approach first and there's always a 
+hesitation when changing the default behavior of the entire allocator for 
+workloads with very specific behavior that trigger this type of problem.
+
+The fact that we need a tunable for this is unfortunate, but there doesn't 
+seem to be any other way to detect such situations and adjust the partial 
+list handling so that list_lock isn't contended so much and the allocation 
+slowpath to fastpath ratio isn't so high.
+
+I'd be interested to hear other people's approaches.
 ---
- drivers/ide/ide-atapi.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
-
-diff --git a/drivers/ide/ide-atapi.c b/drivers/ide/ide-atapi.c
-index 6adc5b4..97f116f 100644
---- a/drivers/ide/ide-atapi.c
-+++ b/drivers/ide/ide-atapi.c
-@@ -6,6 +6,7 @@
- #include <linux/cdrom.h>
- #include <linux/delay.h>
- #include <linux/ide.h>
-+#include <linux/scatterlist.h>
- #include <scsi/scsi.h>
+diff --git a/mm/slub.c b/mm/slub.c
+--- a/mm/slub.c
++++ b/mm/slub.c
+@@ -147,6 +147,12 @@
+  */
+ #define SLAB_THRASHING_THRESHOLD 3
  
- #ifdef DEBUG
--- 
-1.5.6.3
-
++/*
++ * Default slab thrash ratio, used to define when a slab is thrashing for a
++ * particular cpu.
++ */
++#define DEFAULT_SLAB_THRASH_RATIO 20
++
+ #define DEBUG_DEFAULT_FLAGS (SLAB_DEBUG_FREE | SLAB_RED_ZONE | \
+ 				SLAB_POISON | SLAB_STORE_USER)
+ 
+@@ -2392,7 +2398,14 @@ static int kmem_cache_open(struct kmem_cache *s, gfp_t gfpflags,
+ 	 */
+ 	set_min_partial(s, ilog2(s->size));
+ 	s->refcount = 1;
+-	s->min_free_watermark = 0;
++	s->min_free_watermark = oo_objects(s->oo) *
++					DEFAULT_SLAB_THRASH_RATIO / 100;
++	/*
++	 * It doesn't make sense to define a slab as thrashing if its threshold
++	 * is fewer than 4 objects.
++	 */
++	if (s->min_free_watermark < 4)
++		s->min_free_watermark = 0;
+ #ifdef CONFIG_NUMA
+ 	s->remote_node_defrag_ratio = 1000;
+ #endif
