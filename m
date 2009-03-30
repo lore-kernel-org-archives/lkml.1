@@ -1,147 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761354AbZC3WE6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762020AbZC3WFn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761354AbZC3WE6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Mar 2009 18:04:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753941AbZC3WEu
+	id S1762020AbZC3WFn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Mar 2009 18:05:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754926AbZC3WFe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Mar 2009 18:04:50 -0400
-Received: from mail2-relais-roc.national.inria.fr ([192.134.164.83]:36445 "EHLO
-	mail2-relais-roc.national.inria.fr" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753230AbZC3WEt (ORCPT
+	Mon, 30 Mar 2009 18:05:34 -0400
+Received: from mail-ew0-f165.google.com ([209.85.219.165]:39654 "EHLO
+	mail-ew0-f165.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753836AbZC3WFd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Mar 2009 18:04:49 -0400
-X-Greylist: delayed 592 seconds by postgrey-1.27 at vger.kernel.org; Mon, 30 Mar 2009 18:04:48 EDT
-X-IronPort-AV: E=Sophos;i="4.38,448,1233529200"; 
-   d="scan'208";a="23595620"
-Message-ID: <49D13FB1.9090701@inria.fr>
-Date: Mon, 30 Mar 2009 23:54:57 +0200
-From: Brice Goglin <Brice.Goglin@inria.fr>
-User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
+	Mon, 30 Mar 2009 18:05:33 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:date:from:to:cc:subject:message-id:reply-to:mime-version
+         :content-type:content-disposition:x-pgp-key:user-agent;
+        b=Q8w2QuH/oDU7WUN3ZwWImz2+9lIgVSFH692zKbKC4ARj5B8T5Y9OrEnHF6VydU5EHy
+         UvKUWSFxccM4s3T4y3rLq0kBsrKKIK58avZH/XWJdS3t872t8lyYF3tWZc52w4jACyoI
+         yBUtquVdm29G4qbaZnEvUepBMIs4gMdpFArSc=
+Date: Tue, 31 Mar 2009 00:05:24 +0200
+From: Michal Januszewski <spock@gentoo.org>
+To: linux-kernel@vger.kernel.org
+Cc: linux-fbdev-devel@lists.sourceforge.net
+Subject: [PATCH] vga16fb: fix color component length for pseudocolor modes
+Message-ID: <20090330220523.GA6993@spock.one.pl>
+Reply-To: spock@gentoo.org
 MIME-Version: 1.0
-To: Maciej Sosnowski <maciej.sosnowski@intel.com>,
-       LKML <linux-kernel@vger.kernel.org>
-CC: "Andrew J. Gallatin" <gallatin@myri.com>
-Subject: [RFC] ioat-dca: force I/OAT DCA when disabled in BIOS
-X-Enigmail-Version: 0.95.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+X-PGP-Key: http://dev.gentoo.org/~spock/spock.gpg
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Some machines (for instance Dell Poweredge servers) disable I/OAT DCA
-support in the BIOS without any way to reenable it.
-DCA may actually be enabled manually it in the processors' MSR and in
-upstream bridge registers. We have been doing this with a hacky userspace
-program, but we feel that the ioatdma driver may actually take care of it.
-    
-Here's a patch doing so, if the ioat_dca_force module parameter is set
-to 1 on load.
-    
-There are some things to improve:
-* Which pcidev should actually get DCA enabled? The patch below looks for
-  Intel upstream bridges. Do we need a check for pdev->is_pcie ? Or maybe
-  even look at pdev->pcie_type? It looks like the pcidev that need to be
-  configured on my machines are PCI_EXP_TYPE_ROOT_PORT, but I am not sure
-  it actually matters. Some Intel people will probably know how to fix this.
-* Any better name for #defin'ing bit #6 at offset 0x64 in the config-space
-  of these bridges?
-    
-Signed-off-by: Brice Goglin <Brice.Goglin@inria.fr>
-Signed-off-by: Andrew Gallatin <gallatin@myri.com>
+vga16fb incorrectly sets the length of the color fields to 6 or 2 bits
+for PSEUDOCOLOR modes, for which either 8 or 4 bits are used per pixel.
+Fix this by setting the length to 8 or 4, respectively.
 
-diff --git a/arch/x86/include/asm/msr-index.h b/arch/x86/include/asm/msr-index.h
-index f4e505f..1e83796 100644
---- a/arch/x86/include/asm/msr-index.h
-+++ b/arch/x86/include/asm/msr-index.h
-@@ -85,6 +85,7 @@
- #define MSR_P6_PERFCTR1			0x000000c2
- #define MSR_P6_EVNTSEL0			0x00000186
- #define MSR_P6_EVNTSEL1			0x00000187
-+#define MSR_P6_DCA_CAP			0x000001f8
- 
- /* AMD64 MSRs. Not complete. See the architecture manual for a more
-    complete list. */
-diff --git a/drivers/dma/ioat.c b/drivers/dma/ioat.c
-index ed83dd9..8af1960 100644
---- a/drivers/dma/ioat.c
-+++ b/drivers/dma/ioat.c
-@@ -71,10 +71,16 @@ static int __devinit ioat_probe(struct pci_dev *pdev,
- 				const struct pci_device_id *id);
- static void __devexit ioat_remove(struct pci_dev *pdev);
- 
-+void dca_force(void);
-+
- static int ioat_dca_enabled = 1;
- module_param(ioat_dca_enabled, int, 0644);
- MODULE_PARM_DESC(ioat_dca_enabled, "control support of dca service (default: 1)");
- 
-+static int ioat_dca_force = 0;
-+module_param(ioat_dca_force, int, 0644);
-+MODULE_PARM_DESC(ioat_dca_force, "enforce dca in upstream bridges and processors (default: 0)");
-+
- static struct pci_driver ioat_pci_driver = {
- 	.name		= "ioatdma",
- 	.id_table	= ioat_pci_tbl,
-@@ -191,6 +197,9 @@ static void __devexit ioat_remove(struct pci_dev *pdev)
- 
- static int __init ioat_init_module(void)
- {
-+	if (ioat_dca_force)
-+		dca_force();
-+
- 	return pci_register_driver(&ioat_pci_driver);
- }
- module_init(ioat_init_module);
-diff --git a/drivers/dma/ioat_dca.c b/drivers/dma/ioat_dca.c
-index c012a1e..3f45f78 100644
---- a/drivers/dma/ioat_dca.c
-+++ b/drivers/dma/ioat_dca.c
-@@ -88,6 +88,45 @@ static inline u16 dcaid_from_pcidev(struct pci_dev *pci)
- 	return (pci->bus->number << 8) | pci->devfn;
- }
- 
-+static void dca_force_msr(void *dummy)
-+{
-+	uint32_t data1, data2;
-+	rdmsr(MSR_P6_DCA_CAP, data1, data2);
-+	if (!(data1 & 1))
-+		data1 |= 1;
-+	wrmsr(MSR_P6_DCA_CAP, data1, data2);
-+}
-+
-+#define INTEL_BRIDGE_DCAEN_OFFSET 0x64
-+#define INTEL_BRIDGE_DCAEN_BIT	6
-+
-+void dca_force(void)
-+{
-+	struct pci_dev *pdev = NULL;
-+
-+	/* enable DCA in intel upstream bridges */
-+	for_each_pci_dev(pdev) {
-+		if (pdev->hdr_type == PCI_HEADER_TYPE_BRIDGE
-+		    && pdev->vendor == PCI_VENDOR_ID_INTEL
-+		    && !pdev->bus->self) {
-+			u32 val;
-+			int ret;
-+
-+			ret = pci_read_config_dword(pdev, INTEL_BRIDGE_DCAEN_OFFSET, &val);
-+			if (ret < 0)
-+				continue;
-+			if (!(val & (1<<INTEL_BRIDGE_DCAEN_BIT))) {
-+				dev_printk(KERN_INFO, &pdev->dev, "enabling DCA in upstream bridge\n");
-+				val |= 1<<INTEL_BRIDGE_DCAEN_BIT;
-+				pci_write_config_dword(pdev, INTEL_BRIDGE_DCAEN_OFFSET, val);
-+			}
-+		}
-+	}
-+
-+	/* enable DCA in processors */
-+	on_each_cpu(dca_force_msr, NULL, 1);
-+}
-+
- static int dca_enabled_in_bios(struct pci_dev *pdev)
- {
- 	/* CPUID level 9 returns DCA configuration */
-
-
+Signed-off-by: Michal Januszewski <spock@gentoo.org>
+---
+diff --git a/drivers/video/vga16fb.c b/drivers/video/vga16fb.c
+index 5b29389..50033b9 100644
+--- a/drivers/video/vga16fb.c
++++ b/drivers/video/vga16fb.c
+@@ -506,7 +506,7 @@ static int vga16fb_check_var(struct fb_var_screeninfo *var,
+ 	var->red.offset = var->green.offset = var->blue.offset = 
+ 	var->transp.offset = 0;
+ 	var->red.length = var->green.length = var->blue.length =
+-		(par->isVGA) ? 6 : 2;
++		(par->isVGA) ? 8 : 4;
+ 	var->transp.length = 0;
+ 	var->activate = FB_ACTIVATE_NOW;
+ 	var->height = -1;
