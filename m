@@ -1,57 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755964AbZC3MFX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754580AbZC3MHF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755964AbZC3MFX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Mar 2009 08:05:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751594AbZC3MFF
+	id S1754580AbZC3MHF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Mar 2009 08:07:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751599AbZC3MGw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Mar 2009 08:05:05 -0400
-Received: from relay.atmel.no ([80.232.32.139]:53802 "EHLO relay.atmel.no"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751252AbZC3MFE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Mar 2009 08:05:04 -0400
-Date: Mon, 30 Mar 2009 14:04:56 +0200
-From: Haavard Skinnemoen <haavard.skinnemoen@atmel.com>
-To: Erik Waling <erik.waling@konftel.se>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] macb: RLE and BNA handling
-Message-ID: <20090330140456.07eb48b8@hskinnemoen-d830>
-In-Reply-To: <1238060296.23641.8.camel@konftel>
-References: <1231863713.10152.11.camel@konftel>
-	<20090114111505.48d34949@hskinnemoen-d830>
-	<1231928868.10152.31.camel@konftel>
-	<20090114130322.483a7830@hskinnemoen-d830>
-	<1232026671.10152.52.camel@konftel>
-	<1238060296.23641.8.camel@konftel>
-X-Mailer: Claws Mail 3.6.1 (GTK+ 2.16.0; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 30 Mar 2009 08:06:52 -0400
+Received: from stinky.trash.net ([213.144.137.162]:59409 "EHLO
+	stinky.trash.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751507AbZC3MGv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Mar 2009 08:06:51 -0400
+Message-ID: <49D0B5D9.3070405@trash.net>
+Date: Mon, 30 Mar 2009 14:06:49 +0200
+From: Patrick McHardy <kaber@trash.net>
+User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
+MIME-Version: 1.0
+To: Roman Mindalev <r000n@r000n.net>
+CC: Stephen Hemminger <shemminger@vyatta.com>,
+       Eric Dumazet <dada1@cosmosbay.com>, LKML <linux-kernel@vger.kernel.org>,
+       netfilter@vger.kernel.org
+Subject: Re: Regression caused by commit "netfilter: iptables: lock free counters"
+References: <20090329234702.4988017f@desktop.r000n.info>
+In-Reply-To: <20090329234702.4988017f@desktop.r000n.info>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Erik Waling wrote:
-> Have you had the time to check the patch below? These two issues still
-> needs to be addressed.
+Roman Mindalev wrote:
+> Since 2.6.29-git1 I got many debug messages in kernel log.
+> One from them:
+> 
+> Mar 29 12:06:11 desktop kernel: [  917.414369] BUG: using
+> smp_processor_id() in preemptible [00000000] code: hddtemp/2820 Mar 29
+> 12:06:11 desktop kernel: [  917.414378] caller is
+> ipt_do_table+0xd0/0x3a8 [ip_tables]
 
-Yeah...sorry for not responding earlier.
+Stephen, please have a look at this. I think we need to disable
+preemption in *t_do_table() for PREEMPT_RCU.
 
-> If you are unsure of the BNA part you could at least pass the RLE part
-> upstreams since it happens more frequently.
-
-Right. I have to admit I'm not at all convinced about the BNA part...it
-seems to me like the only scenario when it makes a difference is when
-the ring is so small that it can't hold an entire frame. And if that's
-the case, isn't the easiest solution to just increase the size of the
-ring?
-
-So, could you please split the patch up into the following parts:
-  1. TX RLE handling
-  2. Call macb_rx() regardless of the status
-  3. Handle incomplete RX frames
-  4. Special case for RX BNA
-
-Then I can pass on the first three, and we can keep discussing the last
-one, which is the one I'm not sure about.
-
-Haavard
