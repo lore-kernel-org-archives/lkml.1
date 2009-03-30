@@ -1,109 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762096AbZC3Vlt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762137AbZC3VmS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762096AbZC3Vlt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Mar 2009 17:41:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761986AbZC3VkE
+	id S1762137AbZC3VmS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Mar 2009 17:42:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761948AbZC3Vlo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Mar 2009 17:40:04 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:51726 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761980AbZC3VkB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Mar 2009 17:40:01 -0400
-Message-ID: <49D13BB9.3010200@redhat.com>
-Date: Tue, 31 Mar 2009 00:38:01 +0300
-From: Dor Laor <dlaor@redhat.com>
-Reply-To: dlaor@redhat.com
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	Mon, 30 Mar 2009 17:41:44 -0400
+Received: from gw1.cosmosbay.com ([212.99.114.194]:46936 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761483AbZC3Vln convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Mar 2009 17:41:43 -0400
+Message-ID: <49D13C50.4030601@cosmosbay.com>
+Date: Mon, 30 Mar 2009 23:40:32 +0200
+From: Eric Dumazet <dada1@cosmosbay.com>
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
 MIME-Version: 1.0
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-CC: Rik van Riel <riel@redhat.com>, akpm@osdl.org, nickpiggin@yahoo.com.au,
-       frankeh@watson.ibm.com, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, Dave Hansen <dave@linux.vnet.ibm.com>,
-       virtualization@lists.osdl.org,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>, hugh@veritas.com,
-       Izik Eidus <ieidus@redhat.com>
-Subject: Re: [patch 0/6] Guest page hinting version 7.
-References: <20090327150905.819861420@de.ibm.com>	<1238195024.8286.562.camel@nimitz>	<20090329161253.3faffdeb@skybase>	<1238428495.8286.638.camel@nimitz> <49D11184.3060002@goop.org>	<49D11287.4030307@redhat.com> <49D11674.9040205@goop.org>	<49D12564.40708@redhat.com> <49D12D16.6050407@goop.org>
-In-Reply-To: <49D12D16.6050407@goop.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+To: Darren Hart <dvhltc@us.ibm.com>
+CC: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Sripathi Kodi <sripathik@in.ibm.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       John Stultz <johnstul@us.ibm.com>, Steven Rostedt <rostedt@goodmis.org>,
+       Dinakar Guniguntala <dino@in.ibm.com>,
+       Ulrich Drepper <drepper@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       Jakub Jelinek <jakub@redhat.com>
+Subject: Re: [tip PATCH v6 6/8] RFC: futex: Add FUTEX_HAS_TIMEOUT flag to
+ restart.futex.flags
+References: <20090330213306.606.9540.stgit@Aeon> <20090330213821.606.93755.stgit@Aeon>
+In-Reply-To: <20090330213821.606.93755.stgit@Aeon>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Mon, 30 Mar 2009 23:40:32 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeremy Fitzhardinge wrote:
-> Rik van Riel wrote:
->   
->> Jeremy Fitzhardinge wrote:
->>     
->>> Rik van Riel wrote:
->>>       
->>>> Jeremy Fitzhardinge wrote:
->>>>
->>>>         
->>>>> That said, people have been looking at tracking block IO to work 
->>>>> out when it might be useful to try and share pages between guests 
->>>>> under Xen.
->>>>>           
->>>> Tracking block IO seems like a bass-ackwards way to figure
->>>> out what the contents of a memory page are.
->>>>         
->>> Well, they're research projects, so nobody said that they're 
->>> necessarily useful results ;).  I think the rationale is that, in 
->>> general, there aren't all that many sharable pages, and asize from 
->>> zero-pages, the bulk of them are the result of IO. 
->>>       
->> I'll give you a hint:  Windows zeroes out freed pages.
->>     
->
-> Right: "aside from zero-pages".  If you exclude zero-pages from your 
-> count of shared pages, the amount of sharing drops a lot.
->
->   
->> It should also be possible to hook up arch_free_page() so
->> freed pages in Linux guests become sharable.
->>
->> Furthermore, every guest with the same OS version will be
->> running the same system daemons, same glibc, etc.  This
->> means sharable pages from not just disk IO (probably from
->> different disks anyway),
->>     
->
-> Why?  If you're starting a bunch of cookie-cutter guests, then you're 
-> probably starting them from the same template image or COW block 
-> devices.  (Also, if you're wearing the cost of physical IO anyway, then 
-> additional cost of hashing is relatively small.)
->
->   
->> but also in the BSS and possibly
->> even on the heap.
->>     
->
-> Well, maybe.  Modern systems generally randomize memory layouts, so even 
-> if they're semantically the same, the pointers will all have different 
-> values.
->
-> Other research into "sharing" mostly-similar pages is more promising for 
-> that kind of case.
->
->   
->> Eventually.  It starts out with hashing the first 128 (IIRC)
->> bytes of page content and comparing the hashes.  If that
->> matches, it will do content comparison.
->>     
-The algorithm was changed quite a bit. Izik is planning to resubmit it
-any day now.
->> Content comparison is done in the background on the host.
->> I suspect (but have not checked) that it is somehow hooked
->> up to the page reclaim code on the host.
->>     
->
-> Yeah, that's the straightforward approach; there's about a research 
-> project/year doing a Xen implementation, but they never seem to get very 
-> good results aside from very artificial test conditions.
->   
-Actually we got really good results by using ksm along with kvm, running 
-large
-amount of windows virtual machines. We can achieve over commit ratio
-of up to 400% of the host ram for VMs doing M$ office load.
--dor
+Darren Hart a écrit :
+> Currently restart is only used if there is a timeout.  The requeue_pi
+> functionality requires restarting to futex_lock_pi() on signal after
+> wakeup in futex_wait_requeue_pi() regardless of if there was a timeout
+> or not.  Using 0 for the timeout value is confusing as that could
+> indicate an expired timer.  The flag makes this explicit.
+> 
+> Signed-off-by: Darren Hart <dvhltc@us.ibm.com>
+> Cc: Thomas Gleixner <tglx@linutronix.de>
+> Cc: Sripathi Kodi <sripathik@in.ibm.com>
+> Cc: Peter Zijlstra <peterz@infradead.org>
+> Cc: John Stultz <johnstul@us.ibm.com>
+> Cc: Steven Rostedt <rostedt@goodmis.org>
+> Cc: Dinakar Guniguntala <dino@in.ibm.com>
+> Cc: Ulrich Drepper <drepper@redhat.com>
+> Cc: Eric Dumazet <dada1@cosmosbay.com>
+> Cc: Ingo Molnar <mingo@elte.hu>
+> Cc: Jakub Jelinek <jakub@redhat.com>
+> ---
+> 
+>  kernel/futex.c |   12 ++++++++----
+>  1 files changed, 8 insertions(+), 4 deletions(-)
+> 
+> diff --git a/kernel/futex.c b/kernel/futex.c
+> index dd05803..f54faf5 100644
+> --- a/kernel/futex.c
+> +++ b/kernel/futex.c
+> @@ -1254,6 +1254,7 @@ handle_fault:
+>   */
+>  #define FLAGS_SHARED		0x01
+>  #define FLAGS_CLOCKRT		0x02
+> +#define FLAGS_HAS_TIMEOUT	0x04
+>  
+>  static long futex_wait_restart(struct restart_block *restart);
+>  
+> @@ -1493,7 +1494,7 @@ retry_private:
+>  	restart->futex.val = val;
+>  	restart->futex.time = abs_time->tv64;
+>  	restart->futex.bitset = bitset;
+> -	restart->futex.flags = 0;
+> +	restart->futex.flags = FLAGS_HAS_TIMEOUT;
+>  
+>  	if (fshared)
+>  		restart->futex.flags |= FLAGS_SHARED;
+> @@ -1517,13 +1518,16 @@ static long futex_wait_restart(struct restart_block *restart)
+>  {
+>  	u32 __user *uaddr = (u32 __user *)restart->futex.uaddr;
+>  	int fshared = 0;
+> -	ktime_t t;
+> +	ktime_t t, *tp = NULL;
+>  
+> -	t.tv64 = restart->futex.time;
+> +	if (restart->futex.flags | FLAGS_HAS_TIMEOUT) {
+
+You probably meant :
+
+if (restart->futex.flags & FLAGS_HAS_TIMEOUT)
+
+> +		t.tv64 = restart->futex.time;
+> +		tp = &t;
+> +	}
+>  	restart->fn = do_no_restart_syscall;
+>  	if (restart->futex.flags & FLAGS_SHARED)
+>  		fshared = 1;
+> -	return (long)futex_wait(uaddr, fshared, restart->futex.val, &t,
+> +	return (long)futex_wait(uaddr, fshared, restart->futex.val, tp,
+>  				restart->futex.bitset,
+>  				restart->futex.flags & FLAGS_CLOCKRT);
+>  }
+> 
+> 
+
+
