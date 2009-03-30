@@ -1,88 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760573AbZC3UAz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760634AbZC3UBV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760573AbZC3UAz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Mar 2009 16:00:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760501AbZC3UAP
+	id S1760634AbZC3UBV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Mar 2009 16:01:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760587AbZC3UAm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Mar 2009 16:00:15 -0400
-Received: from cantor.suse.de ([195.135.220.2]:59408 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757850AbZC3UAL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Mar 2009 16:00:11 -0400
-Message-ID: <49D124B4.4040500@suse.com>
-Date: Mon, 30 Mar 2009 15:59:48 -0400
-From: Jeff Mahoney <jeffm@suse.com>
-Organization: SUSE Labs, Novell, Inc
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
-MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       ReiserFS Development List <reiserfs-devel@vger.kernel.org>
-Subject: Re: [patch 00/35] Jeff's ReiserFS Patch Queue
-References: <20090330180215.951354436@suse.com> <alpine.LFD.2.00.0903301236280.4093@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.00.0903301236280.4093@localhost.localdomain>
-X-Enigmail-Version: 0.95.2
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Mon, 30 Mar 2009 16:00:42 -0400
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:39815 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760582AbZC3UAl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Mar 2009 16:00:41 -0400
+To: linux-fsdevel@vger.kernel.org
+Cc: jens.axboe@oracle.com, linux-kernel@vger.kernel.org
+Subject: [patch 0/3] fuse: implement missing functionality on "direct_io" files
+Message-Id: <E1LoNev-0007kP-U7@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Mon, 30 Mar 2009 22:00:37 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+Fuse allows filesystems to bypass the page cache using the "direct_io"
+flag.  This is not the same as O_DIRECT, it's dictated by the
+filesystem not the application.
 
-Linus Torvalds wrote:
-> 
-> On Mon, 30 Mar 2009, Jeff Mahoney wrote:
->> I'd like to submit my reiserfs patch queue for inclusion into 2.6.30.
-> 
-> Hmm. Looks fine, and I merged it. I had a number of mostly trivial 
-> conflicts (most due to the quota name cleanup to lower-case, with some 
-> header file export cleanup conflicts added in), but they looked fairly 
-> straightforward and I compile-tested the end result.
-> 
-> I don't have any reiserfs filesystems left, though, so you should really 
-> double-check the end result.
+Some functionality didn't work in this mode, however.  This short
+patchset improves that:
 
-Great, thanks! I realized just after I submitted that I didn't adjust
-context to the last few days of mainline. The merge looks good except
-for an added space in reiserfs_delete_inode. I've appended the patch for that.
+ 1. fuse: allow kernel to access "direct_io" files
+ 2. fuse: allow private mappings of "direct_io" files
+ 3. splice: implement default splice_read method
 
->> Once this is applied, I expect reiserfs to be in deep maintenance-only 
->> mode.
-> 
-> Heh, I hadn't expected even this.
+The third patch is not fuse specific, it implements ->splice_read()
+for any filesystem which doesn't provide one.
 
-Hopefully it won't be. I still have to support reiserfs for our
-enterprise releases, though. :)
+Comments are welcome.
 
-- -Jeff
-
-- ---
- fs/reiserfs/inode.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-- --- a/fs/reiserfs/inode.c
-+++ b/fs/reiserfs/inode.c
-@@ -52,7 +52,7 @@ void reiserfs_delete_inode(struct inode
- 		/* Do quota update inside a transaction for journaled quotas. We must do that
- 		 * after delete_object so that quota updates go into the same transaction as
- 		 * stat data deletion */
-- -		if (!err) 
-+		if (!err)
- 			vfs_dq_free_inode(inode);
- 
- 		if (journal_end(&th, inode->i_sb, jbegin_count))
-
-- -- 
-Jeff Mahoney
-SUSE Labs
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
-Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
-
-iEYEARECAAYFAknRJLQACgkQLPWxlyuTD7IuOgCbBmWsC7seMVyE7TLD2gejcHgz
-c9EAn2Ey64m2xNZ8R53lWqvAiWlX4UcP
-=Ugl0
------END PGP SIGNATURE-----
+Thanks,
+Miklos
