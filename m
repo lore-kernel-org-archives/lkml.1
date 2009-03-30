@@ -1,69 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758221AbZC3Smo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758397AbZC3Sn2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758221AbZC3Smo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Mar 2009 14:42:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757078AbZC3SmY
+	id S1758397AbZC3Sn2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Mar 2009 14:43:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758420AbZC3Smz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Mar 2009 14:42:24 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:49780 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756848AbZC3SmX (ORCPT
+	Mon, 30 Mar 2009 14:42:55 -0400
+Received: from mail-bw0-f169.google.com ([209.85.218.169]:60560 "EHLO
+	mail-bw0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758505AbZC3Smy convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Mar 2009 14:42:23 -0400
-Message-Id: <20090330184213.308586162@goodmis.org>
-References: <20090330184149.866994402@goodmis.org>
-User-Agent: quilt/0.46-1
-Date: Mon, 30 Mar 2009 14:41:50 -0400
-From: Steven Rostedt <rostedt@goodmis.org>
-To: linux-kernel@vger.kernel.org
-Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Steven Rostedt <srostedt@redhat.com>
-Subject: [PATCH 1/2] function-graph: allow unregistering twice
-Content-Disposition: inline; filename=0001-function-graph-allow-unregistering-twice.patch
+	Mon, 30 Mar 2009 14:42:54 -0400
+MIME-Version: 1.0
+In-Reply-To: <e9c3a7c20903301123l3f05264cvb8522dd4cb030b2f@mail.gmail.com>
+References: <49CF9BA1.5030400@archlinux.org> <20090329091148.16a618bf@infradead.org> 
+	<49CFA436.5080000@archlinux.org> <ac3eb2510903291036w13dc34cbi97525e6dd9af1da5@mail.gmail.com> 
+	<49CFB553.1020800@archlinux.org> <ac3eb2510903291106k27902bafpa8231d6781f8f5c@mail.gmail.com> 
+	<e9c3a7c20903301123l3f05264cvb8522dd4cb030b2f@mail.gmail.com>
+Date: Mon, 30 Mar 2009 20:42:36 +0200
+Message-ID: <ac3eb2510903301142h21dec2eajd03057095aa4f11c@mail.gmail.com>
+Subject: Re: fastboot/async and initramfs: How am I supposed to know when 
+	devices are finished initializing?
+From: Kay Sievers <kay.sievers@vrfy.org>
+To: Dan Williams <dan.j.williams@intel.com>
+Cc: =?UTF-8?Q?Thomas_B=C3=A4chler?= <thomas@archlinux.org>,
+       Arjan van de Ven <arjan@infradead.org>, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Steven Rostedt <srostedt@redhat.com>
+On Mon, Mar 30, 2009 at 20:23, Dan Williams <dan.j.williams@intel.com> wrote:
 
-Impact: fix to permanent disabling of function graph tracer
+> settle: allow --timeout=0 to test for "queue busy"
 
-There should be nothing to prevent a tracer from unregistering a
-function graph callback more than once. This can simplify error paths.
+> +       if (!udev_queue_get_queue_is_empty(udev_queue))
+> +               rc = 1;
 
-But currently, the counter does not account for mulitple unregistering
-of the function graph callback. If it happens, the function graph
-tracer will be permanently disabled.
+You mean, we should not wait? Then we need to check for timeout == 0
+and return immediately instead of entering the checking loop at all,
+right?
 
-Signed-off-by: Steven Rostedt <srostedt@redhat.com>
----
- kernel/trace/ftrace.c |    4 ++++
- 1 files changed, 4 insertions(+), 0 deletions(-)
-
-diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
-index 1752a63..f1ed080 100644
---- a/kernel/trace/ftrace.c
-+++ b/kernel/trace/ftrace.c
-@@ -2719,6 +2719,9 @@ void unregister_ftrace_graph(void)
- {
- 	mutex_lock(&ftrace_lock);
- 
-+	if (!unlikely(atomic_read(&ftrace_graph_active)))
-+		goto out;
-+
- 	atomic_dec(&ftrace_graph_active);
- 	unregister_trace_sched_switch(ftrace_graph_probe_sched_switch);
- 	ftrace_graph_return = (trace_func_graph_ret_t)ftrace_stub;
-@@ -2726,6 +2729,7 @@ void unregister_ftrace_graph(void)
- 	ftrace_shutdown(FTRACE_STOP_FUNC_RET);
- 	unregister_pm_notifier(&ftrace_suspend_notifier);
- 
-+ out:
- 	mutex_unlock(&ftrace_lock);
- }
- 
--- 
-1.6.2.1
-
--- 
+Thanks,
+Kay
