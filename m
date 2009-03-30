@@ -1,85 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756326AbZC3G3q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755491AbZC3Gb1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756326AbZC3G3q (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Mar 2009 02:29:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752675AbZC3G3g
+	id S1755491AbZC3Gb1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Mar 2009 02:31:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754326AbZC3GbR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Mar 2009 02:29:36 -0400
-Received: from 69-30-77-85.dq1sn.easystreet.com ([69.30.77.85]:60358 "EHLO
-	kingsolver.anholt.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752083AbZC3G3f (ORCPT
+	Mon, 30 Mar 2009 02:31:17 -0400
+Received: from ipmail01.adl6.internode.on.net ([203.16.214.146]:27454 "EHLO
+	ipmail01.adl6.internode.on.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752675AbZC3GbR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Mar 2009 02:29:35 -0400
-Subject: Re: DRM lock ordering fix series
-From: Eric Anholt <eric@anholt.net>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Andi Kleen <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
-       dri-devel@lists.sourceforge.net, Nick Piggin <nickpiggin@yahoo.com.au>
-In-Reply-To: <1238203799.4039.437.camel@laptop>
-References: <1238017510-26784-1-git-send-email-eric@anholt.net>
-	 <87ocvnmhqx.fsf@basil.nowhere.org>
-	 <1238170767.8275.2397.camel@gaiman.anholt.net>
-	 <1238171805.8275.2434.camel@gaiman.anholt.net>
-	 <20090327181018.GC11935@one.firstfloor.org>
-	 <1238184629.625.44.camel@gaiman.anholt.net>
-	 <1238201922.4039.403.camel@laptop>  <1238203799.4039.437.camel@laptop>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-AFbdMaV3ACgAapRl15aH"
-Date: Sun, 29 Mar 2009 23:29:32 -0700
-Message-Id: <1238394572.9782.13.camel@gaiman.anholt.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 
+	Mon, 30 Mar 2009 02:31:17 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApoEACMC0El5LJex/2dsb2JhbADHSYN6Bocj
+X-IronPort-AV: E=Sophos;i="4.38,445,1233495000"; 
+   d="scan'208";a="321521197"
+Date: Mon, 30 Mar 2009 17:31:10 +1100
+From: Dave Chinner <david@fromorbit.com>
+To: Theodore Tso <tytso@mit.edu>, Mark Lord <lkml@rtr.ca>,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Jeff Garzik <jeff@garzik.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Matthew Garrett <mjg59@srcf.ucam.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       David Rees <drees76@gmail.com>, Jesper Krogh <jesper@krogh.cc>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.29
+Message-ID: <20090330063110.GS26138@disturbed>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>, Mark Lord <lkml@rtr.ca>,
+	Stefan Richter <stefanr@s5r6.in-berlin.de>,
+	Jeff Garzik <jeff@garzik.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Matthew Garrett <mjg59@srcf.ucam.org>,
+	Alan Cox <alan@lxorguk.ukuu.org.uk>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	David Rees <drees76@gmail.com>, Jesper Krogh <jesper@krogh.cc>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <alpine.LFD.2.00.0903271522210.3994@localhost.localdomain> <49CD7B10.7010601@garzik.org> <49CD891A.7030103@rtr.ca> <49CD9047.4060500@garzik.org> <49CE2633.2000903@s5r6.in-berlin.de> <49CE3186.8090903@garzik.org> <49CE35AE.1080702@s5r6.in-berlin.de> <49CE3F74.6090103@rtr.ca> <20090329231451.GR26138@disturbed> <20090330003948.GA13356@mit.edu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090330003948.GA13356@mit.edu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, Mar 29, 2009 at 08:39:48PM -0400, Theodore Tso wrote:
+> On Mon, Mar 30, 2009 at 10:14:51AM +1100, Dave Chinner wrote:
+> > This is a clear case where you want metadata changed before data is
+> > committed to disk. In many cases, you don't even want the data to
+> > hit the disk here.
+> > 
+> > Similarly, rsync does the magic open,write,close,rename sequence
+> > without an fsync before the rename. And it doesn't need the fsync,
+> > either. The proposed implicit fsync on rename will kill rsync
+> > performance, and I think that may make many people unhappy....
+> 
+> I agree.  But unfortunately, I think we're going to be bullied into
+> data=ordered semantics for the open/write/close/rename sequence, at
+> least as the default.  Ext4 has a noauto_da_alloc mount option (which
+> Eric Sandeen suggested we rename to "no_pony" :-), for people who
+> mostly run sane applications that use fsync().
+>
+> For people who care about rsync's performance and who assume that they
+> can always restart rsync if the system crashes while the rsync is
+> running could, rsync could add Yet Another Rsync Option :-) which
+> explicitly unlinks the target file before the rename, which would
+> disable the implicit fsync().
 
---=-AFbdMaV3ACgAapRl15aH
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Pardon my french, but that is a fucking joke.
 
-On Sat, 2009-03-28 at 02:29 +0100, Peter Zijlstra wrote:
-> On Sat, 2009-03-28 at 01:58 +0100, Peter Zijlstra wrote:
->=20
-> > > OK.  I'm not too excited here -- 10% of 2% of the CPU time doesn't ge=
-t
-> > > me to the 10% loss that the slow path added up to.  Most of the cost =
-is
-> > > in k{un,}map_atomic of the returned pages. =20
-> >=20
-> > Also note that doing large gup() with gup_fast() will be undesirable du=
-e
-> > to it disabling IRQs. So iterating say several MB worth of pages will
-> > hurt like crazy. Currently all gup_fast() users do a single page lookup=
-.
->=20
-> Also, what's this weird facination with 32bit, can you even buy a 32bit
-> only cpu these days?
+You are making a judgement call that one application is more
+important than another application and trying to impose that on
+everyone. You are saying that we should perturb a well designed and
+written backup application that is embedded into critical scripts
+all around the world for the sake of desktop application that has
+developers that are too fucking lazy to fix their bugs.
 
-I work on OpenGL.  Many people using OpenGL want to play commercial
-games.  Commercial games are 32-bit.  sysprof doesn't work for 32-on-64,
-so I'd lose a critical tool.  Thus, 32-only.
+If you want to trade rsync performance for desktop performance, do
+it in the filesystem that is aimed at the desktop. Don't fuck rename
+up for filesystems that are aimed at the server market and don't
+want to implement performance sucking hacks to work around fucked up
+desktop applications.
 
-keithp runs 32-on-64, and just about every day we're working together,
-we lament that he can't run sysprof on his box.  Getting ~10% of my CPU
-back by going 32-on-64 would be nice, but it's not worth not being able
-to usefully profile.
+Cheers,
 
---=20
-Eric Anholt
-eric@anholt.net                         eric.anholt@intel.com
-
-
-
---=-AFbdMaV3ACgAapRl15aH
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAknQZswACgkQHUdvYGzw6vefFwCfRSvVgBhH6I0WHEh0a1c3vStq
-6VMAoINkzcooZvxG7q0gGDQNIqjrdo6n
-=Biit
------END PGP SIGNATURE-----
-
---=-AFbdMaV3ACgAapRl15aH--
+Dave.
+-- 
+Dave Chinner
+david@fromorbit.com
