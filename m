@@ -1,78 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760885AbZC3UUU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760978AbZC3UUp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760885AbZC3UUU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Mar 2009 16:20:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760872AbZC3UTx
+	id S1760978AbZC3UUp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Mar 2009 16:20:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760872AbZC3UU3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Mar 2009 16:19:53 -0400
-Received: from acsinet12.oracle.com ([141.146.126.234]:60584 "EHLO
-	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760836AbZC3UTv (ORCPT
+	Mon, 30 Mar 2009 16:20:29 -0400
+Received: from mta-2.ms.rz.RWTH-Aachen.DE ([134.130.7.73]:34636 "EHLO
+	mta-2.ms.rz.rwth-aachen.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1760936AbZC3UU1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Mar 2009 16:19:51 -0400
-Subject: Re: [PATCH 1/7] block: Add block_flush_device()
-From: Chris Mason <chris.mason@oracle.com>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Jeff Garzik <jeff@garzik.org>, Jens Axboe <jens.axboe@oracle.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Fernando Luis =?ISO-8859-1?Q?V=E1zquez?= Cao 
-	<fernando@oss.ntt.co.jp>,
-       Christoph Hellwig <hch@infradead.org>, Theodore Tso <tytso@mit.edu>,
-       Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Nick Piggin <npiggin@suse.de>,
-       David Rees <drees76@gmail.com>, Jesper Krogh <jesper@krogh.cc>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       david@fromorbit.com, tj@kernel.org
-In-Reply-To: <87ljqmlqm5.fsf@basil.nowhere.org>
-References: <20090329082507.GA4242@infradead.org>
-	 <49D01F94.6000101@oss.ntt.co.jp> <49D02328.7060108@oss.ntt.co.jp>
-	 <49D0258A.9020306@garzik.org> <49D03377.1040909@oss.ntt.co.jp>
-	 <49D0B535.2010106@oss.ntt.co.jp> <49D0B687.1030407@oss.ntt.co.jp>
-	 <alpine.LFD.2.00.0903301028400.3948@localhost.localdomain>
-	 <20090330175544.GX5178@kernel.dk>
-	 <alpine.LFD.2.00.0903301120200.3948@localhost.localdomain>
-	 <20090330185414.GZ5178@kernel.dk> <49D11A8D.1090600@garzik.org>
-	 <1238441043.20607.16.camel@think.oraclecorp.com>
-	 <87ljqmlqm5.fsf@basil.nowhere.org>
-Content-Type: text/plain
-Date: Mon, 30 Mar 2009 16:15:08 -0400
-Message-Id: <1238444108.25199.2.camel@think.oraclecorp.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
-Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt706.oracle.com [141.146.40.84]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A090203.49D12853.003F:SCFMA4539814,ss=1,fgs=0
+	Mon, 30 Mar 2009 16:20:27 -0400
+MIME-version: 1.0
+X-IronPort-AV: E=Sophos;i="4.38,448,1233529200";   d="asc'?scan'208";a="3250650"
+Message-id: <49D12986.6060206@archlinux.org>
+Date: Mon, 30 Mar 2009 22:20:22 +0200
+From: =?ISO-8859-15?Q?Thomas_B=E4chler?= <thomas@archlinux.org>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090319)
+To: Alexander Clouter <alex@digriz.org.uk>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: fastboot/async and initramfs: How am I supposed to know
+ when?devices are finished initializing?
+References: <49CF9BA1.5030400@archlinux.org>
+ <20090329091148.16a618bf@infradead.org> <49CFA436.5080000@archlinux.org>
+ <ac3eb2510903291036w13dc34cbi97525e6dd9af1da5@mail.gmail.com>
+ <49CFB553.1020800@archlinux.org> <mp05a6-inv.ln1@woodchuck.wormnet.eu>
+In-reply-to: <mp05a6-inv.ln1@woodchuck.wormnet.eu>
+X-Enigmail-Version: 0.95.6
+Content-type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature";
+ boundary=------------enigD091016C4BCE7BFE66DB87E8
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-03-30 at 22:09 +0200, Andi Kleen wrote:
-> Chris Mason <chris.mason@oracle.com> writes:
-> >
-> > As far as I know, reiserfs is the only one actively using it to choose
-> > different code.  It moves a single wait_on_buffer when barriers are on,
-> > which I took out once to simplify the code.  Ric saw it in some
-> > benchmark numbers and I put it back in.
-> >
-> > Given that it was a long time ago, I don't have a problem with changing
-> > it to work like all the other filesystems.
-> 
-> When it was a win on reiserfs back then maybe it would be a win
-> on ext4 or xfs today too?
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enigD091016C4BCE7BFE66DB87E8
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: quoted-printable
 
-It could be, but you get into some larger changes.  The theory behind
-the code was that writeback cache is on, so wait_on_buffer isn't really
-going to give you a worthwhile error return anyway.  Might as well do
-the wait_on_buffer some time later and fix up the commit blocks if it
-didn't work out.
+Alexander Clouter schrieb:
+> If the user is specifying the boot device, could you not 'teach' them t=
+o=20
+> LABEL the boot device and live off something slightly more fancy (but=20
+> akin to) the following:
+>=20
+> ----
+> while true
+> do
+>   mount LABEL=3Droot /whatever
+>=20
+>   if [ $? -eq 0 ]; then
+>     break
+>   fi
+>=20
+>   # do some md and lvm magic dance here
+>=20
+>   sleep 1
+> done
+> ----
+>=20
+> Your initramfs could do extra steps everytime the loop...erm...loops.
+>=20
+> Now of course the downside is LABELing mounted devices, XFS for example=
+,=20
+> is not an easy thing to do... :-/
 
-We're still arguing about barriers being a good idea all these years
-later, and the drives are better at them than they used to be.  So, I'd
-rather see less complex code in the filesystems than more.
+We do use UUIDs (or LABELs), but that doesn't solve the LVM problem,=20
+because the given device "/dev/somevg/somelv" only appears after LVM has =
 
--chris
+been activated! I am thinking about using udev scan for LVM volume=20
+groups each time a hard drive appear that contains an LVM device. But=20
+that is a topic for another place.
 
 
+--------------enigD091016C4BCE7BFE66DB87E8
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+
+iEYEAREIAAYFAknRKYYACgkQEda5KzHP/VB6kwCfeGgA3mOw2hgtLXwWR+RcUCf8
+v6oAnir20AVwHHNmzA6tZAtsa72wNwqf
+=ofg+
+-----END PGP SIGNATURE-----
+
+--------------enigD091016C4BCE7BFE66DB87E8--
