@@ -1,315 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757443AbZC3S0H@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758719AbZC3SZs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757443AbZC3S0H (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Mar 2009 14:26:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754947AbZC3SQa
+	id S1758719AbZC3SZs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Mar 2009 14:25:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755383AbZC3SQ0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Mar 2009 14:16:30 -0400
-Received: from cantor.suse.de ([195.135.220.2]:56608 "EHLO mx1.suse.de"
+	Mon, 30 Mar 2009 14:16:26 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:43354 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753432AbZC3SPT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1753628AbZC3SPT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 30 Mar 2009 14:15:19 -0400
-Message-Id: <20090330181012.943466005@suse.com>
+Message-Id: <20090330181009.831291133@suse.com>
 User-Agent: quilt/0.47-14.9
-Date: Mon, 30 Mar 2009 14:02:43 -0400
+Date: Mon, 30 Mar 2009 14:02:20 -0400
 From: Jeff Mahoney <jeffm@suse.com>
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Cc: Andrew Morton <akpm@linux-foundation.org>,
        Linus Torvalds <torvalds@linux-foundation.org>,
        ReiserFS Development List <reiserfs-devel@vger.kernel.org>
-Subject: [patch 28/35 code-cleanup] reiserfs: cleanup path functions
+Subject: [patch 05/35 error-handling] reiserfs: make some warnings informational
 References: <20090330180215.951354436@suse.com>
-Content-Disposition: inline; filename=patches.suse/reiserfs-cleanup-path-funcs.diff
+Content-Disposition: inline; filename=patches.suse/reiserfs-reiserfs_info.diff
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- This patch cleans up some redundancies in the reiserfs tree path code.
-
- decrement_bcount() is essentially the same function as brelse(), so we use
- that instead.
-
- decrement_counters_in_path() is exactly the same function as pathrelse(), so
- we kill that and use pathrelse() instead.
-
- There's also a bit of cleanup that makes the code a bit more readable.
+ In several places, reiserfs_warning is used when there is no warning, just
+ a notice. This patch changes some of them to indicate that the message
+ is merely informational.
 
 Signed-off-by: Jeff Mahoney <jeffm@suse.com>
 
----
+--
+ fs/reiserfs/bitmap.c |    6 +++---
+ fs/reiserfs/super.c  |   14 ++++++--------
+ fs/reiserfs/xattr.c  |   10 ++++------
+ 3 files changed, 13 insertions(+), 17 deletions(-)
 
- fs/reiserfs/fix_node.c |   58 ++++++++++++++++++++++++------------------------
- fs/reiserfs/stree.c    |   59 ++++++++++---------------------------------------
- 2 files changed, 43 insertions(+), 74 deletions(-)
-
---- a/fs/reiserfs/fix_node.c
-+++ b/fs/reiserfs/fix_node.c
-@@ -753,20 +753,21 @@ static void free_buffers_in_tb(struct tr
- {
- 	int n_counter;
+--- a/fs/reiserfs/bitmap.c
++++ b/fs/reiserfs/bitmap.c
+@@ -40,8 +40,8 @@
  
--	decrement_counters_in_path(p_s_tb->tb_path);
-+	pathrelse(p_s_tb->tb_path);
- 
- 	for (n_counter = 0; n_counter < MAX_HEIGHT; n_counter++) {
--		decrement_bcount(p_s_tb->L[n_counter]);
-+		brelse(p_s_tb->L[n_counter]);
-+		brelse(p_s_tb->R[n_counter]);
-+		brelse(p_s_tb->FL[n_counter]);
-+		brelse(p_s_tb->FR[n_counter]);
-+		brelse(p_s_tb->CFL[n_counter]);
-+		brelse(p_s_tb->CFR[n_counter]);
-+
- 		p_s_tb->L[n_counter] = NULL;
--		decrement_bcount(p_s_tb->R[n_counter]);
- 		p_s_tb->R[n_counter] = NULL;
--		decrement_bcount(p_s_tb->FL[n_counter]);
- 		p_s_tb->FL[n_counter] = NULL;
--		decrement_bcount(p_s_tb->FR[n_counter]);
- 		p_s_tb->FR[n_counter] = NULL;
--		decrement_bcount(p_s_tb->CFL[n_counter]);
- 		p_s_tb->CFL[n_counter] = NULL;
--		decrement_bcount(p_s_tb->CFR[n_counter]);
- 		p_s_tb->CFR[n_counter] = NULL;
- 	}
- }
-@@ -1022,7 +1023,7 @@ static int get_far_parent(struct tree_ba
- 	if (buffer_locked(*pp_s_com_father)) {
- 		__wait_on_buffer(*pp_s_com_father);
- 		if (FILESYSTEM_CHANGED_TB(p_s_tb)) {
--			decrement_bcount(*pp_s_com_father);
-+			brelse(*pp_s_com_father);
- 			return REPEAT_SEARCH;
- 		}
- 	}
-@@ -1050,8 +1051,8 @@ static int get_far_parent(struct tree_ba
- 		return IO_ERROR;
- 
- 	if (FILESYSTEM_CHANGED_TB(p_s_tb)) {
--		decrement_counters_in_path(&s_path_to_neighbor_father);
--		decrement_bcount(*pp_s_com_father);
-+		pathrelse(&s_path_to_neighbor_father);
-+		brelse(*pp_s_com_father);
- 		return REPEAT_SEARCH;
+ #define SET_OPTION(optname) \
+    do { \
+-        reiserfs_warning(s, "reiserfs: option \"%s\" is set", #optname); \
+-        set_bit(_ALLOC_ ## optname , &SB_ALLOC_OPTS(s)); \
++	reiserfs_info(s, "block allocator option \"%s\" is set", #optname); \
++	set_bit(_ALLOC_ ## optname , &SB_ALLOC_OPTS(s)); \
+     } while(0)
+ #define TEST_OPTION(optname, s) \
+     test_bit(_ALLOC_ ## optname , &SB_ALLOC_OPTS(s))
+@@ -636,7 +636,7 @@ int reiserfs_parse_alloc_options(struct
+ 		return 1;
  	}
  
-@@ -1063,7 +1064,7 @@ static int get_far_parent(struct tree_ba
- 	       FIRST_PATH_ELEMENT_OFFSET, "PAP-8192: path length is too small");
- 
- 	s_path_to_neighbor_father.path_length--;
--	decrement_counters_in_path(&s_path_to_neighbor_father);
-+	pathrelse(&s_path_to_neighbor_father);
- 	return CARRY_ON;
- }
- 
-@@ -1086,10 +1087,10 @@ static int get_parents(struct tree_balan
- 	if (n_path_offset <= FIRST_PATH_ELEMENT_OFFSET) {
- 		/* The root can not have parents.
- 		   Release nodes which previously were obtained as parents of the current node neighbors. */
--		decrement_bcount(p_s_tb->FL[n_h]);
--		decrement_bcount(p_s_tb->CFL[n_h]);
--		decrement_bcount(p_s_tb->FR[n_h]);
--		decrement_bcount(p_s_tb->CFR[n_h]);
-+		brelse(p_s_tb->FL[n_h]);
-+		brelse(p_s_tb->CFL[n_h]);
-+		brelse(p_s_tb->FR[n_h]);
-+		brelse(p_s_tb->CFR[n_h]);
- 		p_s_tb->FL[n_h] = p_s_tb->CFL[n_h] = p_s_tb->FR[n_h] =
- 		    p_s_tb->CFR[n_h] = NULL;
- 		return CARRY_ON;
-@@ -1115,9 +1116,9 @@ static int get_parents(struct tree_balan
- 			return n_ret_value;
- 	}
- 
--	decrement_bcount(p_s_tb->FL[n_h]);
-+	brelse(p_s_tb->FL[n_h]);
- 	p_s_tb->FL[n_h] = p_s_curf;	/* New initialization of FL[n_h]. */
--	decrement_bcount(p_s_tb->CFL[n_h]);
-+	brelse(p_s_tb->CFL[n_h]);
- 	p_s_tb->CFL[n_h] = p_s_curcf;	/* New initialization of CFL[n_h]. */
- 
- 	RFALSE((p_s_curf && !B_IS_IN_TREE(p_s_curf)) ||
-@@ -1145,10 +1146,10 @@ static int get_parents(struct tree_balan
- 		p_s_tb->rkey[n_h] = n_position;
- 	}
- 
--	decrement_bcount(p_s_tb->FR[n_h]);
-+	brelse(p_s_tb->FR[n_h]);
- 	p_s_tb->FR[n_h] = p_s_curf;	/* New initialization of FR[n_path_offset]. */
- 
--	decrement_bcount(p_s_tb->CFR[n_h]);
-+	brelse(p_s_tb->CFR[n_h]);
- 	p_s_tb->CFR[n_h] = p_s_curcf;	/* New initialization of CFR[n_path_offset]. */
- 
- 	RFALSE((p_s_curf && !B_IS_IN_TREE(p_s_curf)) ||
-@@ -1964,7 +1965,7 @@ static int get_neighbors(struct tree_bal
- 		if (!p_s_bh)
- 			return IO_ERROR;
- 		if (FILESYSTEM_CHANGED_TB(p_s_tb)) {
--			decrement_bcount(p_s_bh);
-+			brelse(p_s_bh);
- 			PROC_INFO_INC(p_s_sb, get_neighbors_restart[n_h]);
- 			return REPEAT_SEARCH;
- 		}
-@@ -1980,7 +1981,7 @@ static int get_neighbors(struct tree_bal
- 		       dc_size(B_N_CHILD(p_s_tb->FL[0], n_child_position)),
- 		       "PAP-8290: invalid child size of left neighbor");
- 
--		decrement_bcount(p_s_tb->L[n_h]);
-+		brelse(p_s_tb->L[n_h]);
- 		p_s_tb->L[n_h] = p_s_bh;
- 	}
- 
-@@ -2001,11 +2002,11 @@ static int get_neighbors(struct tree_bal
- 		if (!p_s_bh)
- 			return IO_ERROR;
- 		if (FILESYSTEM_CHANGED_TB(p_s_tb)) {
--			decrement_bcount(p_s_bh);
-+			brelse(p_s_bh);
- 			PROC_INFO_INC(p_s_sb, get_neighbors_restart[n_h]);
- 			return REPEAT_SEARCH;
- 		}
--		decrement_bcount(p_s_tb->R[n_h]);
-+		brelse(p_s_tb->R[n_h]);
- 		p_s_tb->R[n_h] = p_s_bh;
- 
- 		RFALSE(!n_h
-@@ -2511,16 +2512,17 @@ int fix_nodes(int n_op_mode, struct tree
- 			}
- 
- 			brelse(p_s_tb->L[i]);
--			p_s_tb->L[i] = NULL;
- 			brelse(p_s_tb->R[i]);
--			p_s_tb->R[i] = NULL;
- 			brelse(p_s_tb->FL[i]);
--			p_s_tb->FL[i] = NULL;
- 			brelse(p_s_tb->FR[i]);
--			p_s_tb->FR[i] = NULL;
- 			brelse(p_s_tb->CFL[i]);
--			p_s_tb->CFL[i] = NULL;
- 			brelse(p_s_tb->CFR[i]);
-+
-+			p_s_tb->L[i] = NULL;
-+			p_s_tb->R[i] = NULL;
-+			p_s_tb->FL[i] = NULL;
-+			p_s_tb->FR[i] = NULL;
-+			p_s_tb->CFL[i] = NULL;
- 			p_s_tb->CFR[i] = NULL;
- 		}
- 
---- a/fs/reiserfs/stree.c
-+++ b/fs/reiserfs/stree.c
-@@ -23,7 +23,6 @@
-  * get_rkey
-  * key_in_buffer
-  * decrement_bcount
-- * decrement_counters_in_path
-  * reiserfs_check_path
-  * pathrelse_and_restore
-  * pathrelse
-@@ -359,36 +358,6 @@ static inline int key_in_buffer(struct t
- 	return 1;
- }
- 
--inline void decrement_bcount(struct buffer_head *p_s_bh)
--{
--	if (p_s_bh) {
--		if (atomic_read(&(p_s_bh->b_count))) {
--			put_bh(p_s_bh);
--			return;
--		}
--		reiserfs_panic(NULL, "PAP-5070",
--			       "trying to free free buffer %b", p_s_bh);
--	}
--}
--
--/* Decrement b_count field of the all buffers in the path. */
--void decrement_counters_in_path(struct treepath *p_s_search_path)
--{
--	int n_path_offset = p_s_search_path->path_length;
--
--	RFALSE(n_path_offset < ILLEGAL_PATH_ELEMENT_OFFSET ||
--	       n_path_offset > EXTENDED_MAX_HEIGHT - 1,
--	       "PAP-5080: invalid path offset of %d", n_path_offset);
--
--	while (n_path_offset > ILLEGAL_PATH_ELEMENT_OFFSET) {
--		struct buffer_head *bh;
--
--		bh = PATH_OFFSET_PBUFFER(p_s_search_path, n_path_offset--);
--		decrement_bcount(bh);
--	}
--	p_s_search_path->path_length = ILLEGAL_PATH_ELEMENT_OFFSET;
--}
--
- int reiserfs_check_path(struct treepath *p)
- {
- 	RFALSE(p->path_length != ILLEGAL_PATH_ELEMENT_OFFSET,
-@@ -396,12 +365,11 @@ int reiserfs_check_path(struct treepath
+-	reiserfs_warning(s, "allocator options = [%08x]\n", SB_ALLOC_OPTS(s));
++	reiserfs_info(s, "allocator options = [%08x]\n", SB_ALLOC_OPTS(s));
  	return 0;
  }
  
--/* Release all buffers in the path. Restore dirty bits clean
--** when preparing the buffer for the log
--**
--** only called from fix_nodes()
--*/
--void pathrelse_and_restore(struct super_block *s, struct treepath *p_s_search_path)
-+/* Drop the reference to each buffer in a path and restore
-+ * dirty bits clean when preparing the buffer for the log.
-+ * This version should only be called from fix_nodes() */
-+void pathrelse_and_restore(struct super_block *sb,
-+			   struct treepath *p_s_search_path)
- {
- 	int n_path_offset = p_s_search_path->path_length;
+--- a/fs/reiserfs/super.c
++++ b/fs/reiserfs/super.c
+@@ -1380,13 +1380,11 @@ static int read_super_block(struct super
+ 		/* magic is of non-standard journal filesystem, look at s_version to
+ 		   find which format is in use */
+ 		if (sb_version(rs) == REISERFS_VERSION_2)
+-			reiserfs_warning(s,
+-					 "read_super_block: found reiserfs format \"3.6\""
+-					 " with non-standard journal");
++			reiserfs_info(s, "found reiserfs format \"3.6\""
++				      " with non-standard journal\n");
+ 		else if (sb_version(rs) == REISERFS_VERSION_1)
+-			reiserfs_warning(s,
+-					 "read_super_block: found reiserfs format \"3.5\""
+-					 " with non-standard journal");
++			reiserfs_info(s, "found reiserfs format \"3.5\""
++				      " with non-standard journal\n");
+ 		else {
+ 			reiserfs_warning(s,
+ 					 "sh-2012: read_super_block: found unknown "
+@@ -1465,8 +1463,8 @@ static __u32 find_hash_out(struct super_
+ 			if (reiserfs_rupasov_hash(s)) {
+ 				hash = YURA_HASH;
+ 			}
+-			reiserfs_warning(s, "FS seems to be empty, autodetect "
+-					 "is using the default hash");
++			reiserfs_info(s, "FS seems to be empty, autodetect "
++					 "is using the default hash\n");
+ 			break;
+ 		}
+ 		r5hash = GET_HASH_VALUE(r5_hash(de.de_name, de.de_namelen));
+--- a/fs/reiserfs/xattr.c
++++ b/fs/reiserfs/xattr.c
+@@ -1182,12 +1182,10 @@ int reiserfs_xattr_init(struct super_blo
+ 				}
  
-@@ -409,16 +377,15 @@ void pathrelse_and_restore(struct super_
- 	       "clm-4000: invalid path offset");
- 
- 	while (n_path_offset > ILLEGAL_PATH_ELEMENT_OFFSET) {
--		reiserfs_restore_prepared_buffer(s,
--						 PATH_OFFSET_PBUFFER
--						 (p_s_search_path,
--						  n_path_offset));
--		brelse(PATH_OFFSET_PBUFFER(p_s_search_path, n_path_offset--));
-+		struct buffer_head *bh;
-+		bh = PATH_OFFSET_PBUFFER(p_s_search_path, n_path_offset--);
-+		reiserfs_restore_prepared_buffer(sb, bh);
-+		brelse(bh);
- 	}
- 	p_s_search_path->path_length = ILLEGAL_PATH_ELEMENT_OFFSET;
- }
- 
--/* Release all buffers in the path. */
-+/* Drop the reference to each buffer in a path */
- void pathrelse(struct treepath *p_s_search_path)
- {
- 	int n_path_offset = p_s_search_path->path_length;
-@@ -631,7 +598,7 @@ int search_by_key(struct super_block *p_
- 	   we must be careful to release all nodes in a path before we either
- 	   discard the path struct or re-use the path struct, as we do here. */
- 
--	decrement_counters_in_path(p_s_search_path);
-+	pathrelse(p_s_search_path);
- 
- 	right_neighbor_of_leaf_node = 0;
- 
-@@ -691,7 +658,7 @@ int search_by_key(struct super_block *p_
- 			PROC_INFO_INC(p_s_sb, search_by_key_restarted);
- 			PROC_INFO_INC(p_s_sb,
- 				      sbk_restarted[expected_level - 1]);
--			decrement_counters_in_path(p_s_search_path);
-+			pathrelse(p_s_search_path);
- 
- 			/* Get the root block number so that we can repeat the search
- 			   starting from the root. */
-@@ -1868,7 +1835,7 @@ int reiserfs_do_truncate(struct reiserfs
- 		if (journal_transaction_should_end(th, 0) ||
- 		    reiserfs_transaction_free_space(th) <= JOURNAL_FOR_FREE_BLOCK_AND_UPDATE_SD) {
- 			int orig_len_alloc = th->t_blocks_allocated;
--			decrement_counters_in_path(&s_search_path);
-+			pathrelse(&s_search_path);
- 
- 			if (update_timestamps) {
- 				p_s_inode->i_mtime = p_s_inode->i_ctime =
+ 				if (dentry && dentry->d_inode)
+-					reiserfs_warning(s,
+-							 "Created %s on %s - reserved for "
+-							 "xattr storage.",
+-							 PRIVROOT_NAME,
+-							 reiserfs_bdevname
+-							 (inode->i_sb));
++					reiserfs_info(s, "Created %s - "
++						      "reserved for xattr "
++						      "storage.\n",
++						      PRIVROOT_NAME);
+ 			} else if (!dentry->d_inode) {
+ 				dput(dentry);
+ 				dentry = NULL;
 
 
