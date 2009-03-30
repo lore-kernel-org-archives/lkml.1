@@ -1,91 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761203AbZC3Uft@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761259AbZC3UgH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761203AbZC3Uft (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Mar 2009 16:35:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758121AbZC3Ufk
+	id S1761259AbZC3UgH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Mar 2009 16:36:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760481AbZC3Ufr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Mar 2009 16:35:40 -0400
-Received: from gw.goop.org ([64.81.55.164]:55765 "EHLO mail.goop.org"
+	Mon, 30 Mar 2009 16:35:47 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:52991 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757245AbZC3Ufj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Mar 2009 16:35:39 -0400
-Message-ID: <49D12D16.6050407@goop.org>
-Date: Mon, 30 Mar 2009 13:35:34 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
+	id S1761267AbZC3Ufr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Mar 2009 16:35:47 -0400
+Message-ID: <49D12CD9.2030507@garzik.org>
+Date: Mon, 30 Mar 2009 16:34:33 -0400
+From: Jeff Garzik <jeff@garzik.org>
 User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-To: Rik van Riel <riel@redhat.com>
-CC: Dave Hansen <dave@linux.vnet.ibm.com>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>, akpm@osdl.org,
-       nickpiggin@yahoo.com.au, frankeh@watson.ibm.com,
-       virtualization@lists.osdl.org, linux-kernel@vger.kernel.org,
-       linux-mm@kvack.org, hugh@veritas.com
-Subject: Re: [patch 0/6] Guest page hinting version 7.
-References: <20090327150905.819861420@de.ibm.com>	<1238195024.8286.562.camel@nimitz>  <20090329161253.3faffdeb@skybase> <1238428495.8286.638.camel@nimitz> <49D11184.3060002@goop.org> <49D11287.4030307@redhat.com> <49D11674.9040205@goop.org> <49D12564.40708@redhat.com>
-In-Reply-To: <49D12564.40708@redhat.com>
-X-Enigmail-Version: 0.95.6
+To: Michael Tokarev <mjt@tls.msk.ru>
+CC: Rik van Riel <riel@redhat.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ric Wheeler <rwheeler@redhat.com>,
+       "Andreas T.Auer" <andreas.t.auer_lkml_73537@ursus.ath.cx>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Theodore Tso <tytso@mit.edu>,
+       Mark Lord <lkml@rtr.ca>, Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Matthew Garrett <mjg59@srcf.ucam.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       David Rees <drees76@gmail.com>, Jesper Krogh <jesper@krogh.cc>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.29
+References: <alpine.LFD.2.00.0903271511230.3994@localhost.localdomain> <alpine.LFD.2.00.0903271522210.3994@localhost.localdomain> <49CD7B10.7010601@garzik.org> <49CD891A.7030103@rtr.ca> <49CD9047.4060500@garzik.org> <49CE2633.2000903@s5r6.in-berlin.de> <49CE3186.8090903@garzik.org> <49CE35AE.1080702@s5r6.in-berlin.de> <49CE3F74.6090103@rtr.ca> <20090329231451.GR26138@disturbed> <20090330003948.GA13356@mit.edu> <49D0710A.1030805@ursus.ath.cx> <20090330100546.51907bd2@the-village.bc.nu> <49D0A3D6.4000300@ursus.ath.cx> <49D0AA4A.6020308@redhat.com> <alpine.LFD.2.00.0903300817400.3948@localhost.localdomain> <49D0EF1E.9040806@redhat.com> <alpine.LFD.2.00.0903300922231.3948@localhost.localdomain> <49D0FD4C.1010007@redhat.com> <alpine.LFD.2.00.0903301038100.3948@localhost.localdomain> <49D11BDD.70702@redhat.com> <49D1206E.7090809@garzik.org> <49D129B4.1060503@msgid.tls.msk.ru>
+In-Reply-To: <49D129B4.1060503@msgid.tls.msk.ru>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rik van Riel wrote:
-> Jeremy Fitzhardinge wrote:
->> Rik van Riel wrote:
->>> Jeremy Fitzhardinge wrote:
->>>
->>>> That said, people have been looking at tracking block IO to work 
->>>> out when it might be useful to try and share pages between guests 
->>>> under Xen.
->>>
->>> Tracking block IO seems like a bass-ackwards way to figure
->>> out what the contents of a memory page are.
->>
->> Well, they're research projects, so nobody said that they're 
->> necessarily useful results ;).  I think the rationale is that, in 
->> general, there aren't all that many sharable pages, and asize from 
->> zero-pages, the bulk of them are the result of IO. 
->
-> I'll give you a hint:  Windows zeroes out freed pages.
+Michael Tokarev wrote:
+> In the SATA world, I've seen no single case.  Seagate (7200.9..7200.11,
+> Barracuda ES and ES2), WD (Caviar CE, Caviar Black, Caviar Green,
+> RE2 GP), Hitachi DeskStar and UltraStar (old and new), some others --
+> all the same, no DPO or FUA.
 
-Right: "aside from zero-pages".  If you exclude zero-pages from your 
-count of shared pages, the amount of sharing drops a lot.
+If your drive supports NCQ, it is highly likely it supports FUA.
 
-> It should also be possible to hook up arch_free_page() so
-> freed pages in Linux guests become sharable.
->
-> Furthermore, every guest with the same OS version will be
-> running the same system daemons, same glibc, etc.  This
-> means sharable pages from not just disk IO (probably from
-> different disks anyway),
+By default, the libata driver _pretends_ your drive does not support FUA.
 
-Why?  If you're starting a bunch of cookie-cutter guests, then you're 
-probably starting them from the same template image or COW block 
-devices.  (Also, if you're wearing the cost of physical IO anyway, then 
-additional cost of hashing is relatively small.)
+grep the kernel source for libata_fua and check out the module parameter 
+'fua'
 
-> but also in the BSS and possibly
-> even on the heap.
+	Jeff
 
-Well, maybe.  Modern systems generally randomize memory layouts, so even 
-if they're semantically the same, the pointers will all have different 
-values.
 
-Other research into "sharing" mostly-similar pages is more promising for 
-that kind of case.
-
-> Eventually.  It starts out with hashing the first 128 (IIRC)
-> bytes of page content and comparing the hashes.  If that
-> matches, it will do content comparison.
->
-> Content comparison is done in the background on the host.
-> I suspect (but have not checked) that it is somehow hooked
-> up to the page reclaim code on the host.
-
-Yeah, that's the straightforward approach; there's about a research 
-project/year doing a Xen implementation, but they never seem to get very 
-good results aside from very artificial test conditions.
-
-    J
 
