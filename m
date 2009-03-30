@@ -1,57 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757542AbZC3Qyh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755176AbZC3Q6o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757542AbZC3Qyh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Mar 2009 12:54:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756605AbZC3QuN
+	id S1755176AbZC3Q6o (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Mar 2009 12:58:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751616AbZC3Q6c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Mar 2009 12:50:13 -0400
-Received: from g1t0027.austin.hp.com ([15.216.28.34]:10240 "EHLO
-	g1t0027.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756576AbZC3QuK (ORCPT
+	Mon, 30 Mar 2009 12:58:32 -0400
+Received: from mail-gx0-f160.google.com ([209.85.217.160]:63008 "EHLO
+	mail-gx0-f160.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751036AbZC3Q6b (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Mar 2009 12:50:10 -0400
-Subject: [PATCH v2 1/3] PCI: allow PCI core hotplug to remove PCI root bus
-To: jbarnes@virtuousgeek.org
-From: Alex Chiang <achiang@hp.com>
-Cc: linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org
-Date: Mon, 30 Mar 2009 10:50:09 -0600
-Message-ID: <20090330165009.18855.43672.stgit@bob.kio>
-In-Reply-To: <20090330164737.18855.7137.stgit@bob.kio>
-References: <20090330164737.18855.7137.stgit@bob.kio>
-User-Agent: StGit/0.14.3.347.g594a
+	Mon, 30 Mar 2009 12:58:31 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=I0cPu99EpjQr4fiXSXMTn2TnE222nucf4tmvFYBa9eouhYE2kJwTB7WhhS1p4d9yNE
+         YXJwOWocAL3CDcfw+8KlidUsw+0o3OwaHKXHavi3NX1t0EK4pvOcUaYKqOEZnqLCaOGR
+         auiNz2awVU/aEkdC4470l7A3VgOF8/w6a8TkE=
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+In-Reply-To: <20090330085952.GB3837@linux.vnet.ibm.com>
+References: <1231336282-22283-1-git-send-email-jirislaby@gmail.com>
+	 <1231338965-796-1-git-send-email-jirislaby@gmail.com>
+	 <20090107152208.GB4207@linux.vnet.ibm.com>
+	 <4964CAAA.3040801@gmail.com>
+	 <25891f3e0902012357n21e7bc2fmc59fb2a842631651@mail.gmail.com>
+	 <20090215134702.GA10180@hash.localnet> <49A9C3D7.8060706@gmail.com>
+	 <20090330085952.GB3837@linux.vnet.ibm.com>
+Date: Mon, 30 Mar 2009 12:58:28 -0400
+X-Google-Sender-Auth: c93f08b8cc037b84
+Message-ID: <b6c5339f0903300958m587cde69o44ae24d0609228ba@mail.gmail.com>
+Subject: Re: [PATCH 1/1] ath5k: fix hw rate index condition
+From: Bob Copeland <me@bobcopeland.com>
+To: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+Cc: Jiri Slaby <jirislaby@gmail.com>, Dhaval Giani <dhaval.lists@thegianis.in>,
+       linville@tuxdriver.com, davem@davemloft.net,
+       linux-wireless@vger.kernel.org, ath5k-devel@venema.h4ckr.net,
+       Nick Kossifidis <mickflemm@gmail.com>,
+       "Luis R. Rodriguez" <lrodriguez@atheros.com>,
+       linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-There is no reason to prevent removal of root bus devices. A subsequent
-rescan will find them just fine.
+On Mon, Mar 30, 2009 at 4:59 AM, Dhaval Giani <dhaval@linux.vnet.ibm.com> wrote:
+> Where is the fix? Is it merged in? I still see this happen on 2.6.29
+>
+> thanks,
 
-Signed-off-by: Alex Chiang <achiang@hp.com>
----
+It's in b726604706ad88d8b28bc487e45e710f58cc19ee in Linus' tree, after
+2.6.29.  You still might get a warning, but this time from the driver
+side instead of higher up the stack -- if you do please post it.
 
- drivers/pci/pci-sysfs.c |    4 ----
- 1 files changed, 0 insertions(+), 4 deletions(-)
-
-diff --git a/drivers/pci/pci-sysfs.c b/drivers/pci/pci-sysfs.c
-index e9a8706..7b2cb27 100644
---- a/drivers/pci/pci-sysfs.c
-+++ b/drivers/pci/pci-sysfs.c
-@@ -277,14 +277,10 @@ remove_store(struct device *dev, struct device_attribute *dummy,
- {
- 	int ret = 0;
- 	unsigned long val;
--	struct pci_dev *pdev = to_pci_dev(dev);
- 
- 	if (strict_strtoul(buf, 0, &val) < 0)
- 		return -EINVAL;
- 
--	if (pci_is_root_bus(pdev->bus))
--		return -EBUSY;
--
- 	/* An attribute cannot be unregistered by one of its own methods,
- 	 * so we have to use this roundabout approach.
- 	 */
-
+-- 
+Bob Copeland %% www.bobcopeland.com
