@@ -1,69 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754928AbZC3AJX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755788AbZC3AL0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754928AbZC3AJX (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Mar 2009 20:09:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754089AbZC3AJJ
+	id S1755788AbZC3AL0 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Mar 2009 20:11:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754395AbZC3ALR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Mar 2009 20:09:09 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:46714 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753951AbZC3AJI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Mar 2009 20:09:08 -0400
-Date: Mon, 30 Mar 2009 02:03:38 +0200
-From: Oleg Nesterov <oleg@redhat.com>
-To: Al Viro <viro@ZenIV.linux.org.uk>
-Cc: Hugh Dickins <hugh@veritas.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Joe Malicki <jmalicki@metacarta.com>, Michael Itz <mitz@metacarta.com>,
-       Kenneth Baker <bakerk@metacarta.com>,
-       Chris Wright <chrisw@sous-sol.org>, David Howells <dhowells@redhat.com>,
-       Alexey Dobriyan <adobriyan@gmail.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>, linux-fsdevel@vger.kernel.org,
+	Sun, 29 Mar 2009 20:11:17 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:53077
+	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
+	by vger.kernel.org with ESMTP id S1753735AbZC3ALQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Mar 2009 20:11:16 -0400
+Date: Sun, 29 Mar 2009 17:11:04 -0700 (PDT)
+Message-Id: <20090329.171104.142031534.davem@davemloft.net>
+To: torvalds@linux-foundation.org
+CC: akpm@linux-foundation.org, sparclinux@vger.kernel.org,
        linux-kernel@vger.kernel.org
-Subject: Re: Q: check_unsafe_exec() races (Was: [PATCH 2/4] fix setuid
-	sometimes doesn't)
-Message-ID: <20090330000338.GB32199@redhat.com>
-References: <Pine.LNX.4.64.0903282307050.14892@blonde.anvils> <Pine.LNX.4.64.0903282319270.15432@blonde.anvils> <20090329005343.GA12139@redhat.com> <20090329041022.GF28946@ZenIV.linux.org.uk> <20090329045206.GA15519@redhat.com> <20090329055513.GH28946@ZenIV.linux.org.uk> <20090329060118.GI28946@ZenIV.linux.org.uk> <20090329213635.GA21820@redhat.com> <20090329222022.GJ28946@ZenIV.linux.org.uk> <20090329235639.GA32199@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090329235639.GA32199@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Subject: [GIT]: Sparc
+From: David Miller <davem@davemloft.net>
+X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 03/30, Oleg Nesterov wrote:
->
-> On 03/29, Al Viro wrote:
-> >
-> > On Sun, Mar 29, 2009 at 11:36:35PM +0200, Oleg Nesterov wrote:
-> > > > ... or just do that to fs_struct.  After finding that there's no outside
-> > > > users.  Commenst?
-> > >
-> > > This is even worse. Not only we race with our sub-threads, we race
-> > > with CLONE_FS processes.
-> > >
-> > > We can't mark fs_struct after finding that there's no outside users
-> > > lockless. Because we can't know whether this is "after" or not, we
-> > > can't trust "atomic_read(fs->count) <= n_fs".
-> >
-> > We can lock fs_struct in question, go through the threads, then mark
-> > or bail out.  With cloning a reference to fs_struct protected by the
-> > same lock.
->
-> Yes, this is what I meant, copy_fs() needs this lock too,
->
-> > FWIW, I'm not at all sure that we want atomic_t for refcount in that
-> > case...
->
-> I think you are right, because exit_fs() should take fs->lock as well.
->
-> But, again. What whould we do when check_unsafe_exec() takes fs->lock
-> and sees that this ->fs is already marked?
 
-Ah, I am stupid. There is no another process if this flag is set.
+Please pull to get this bug fix, and a set of cpumask updates
+from Rusty.
 
-Oleg.
+Thanks!
 
+The following changes since commit 07d43ba98621f08e252a48c96b258b4d572b0257:
+  Linus Torvalds (1):
+        Merge branch 'i2c-for-linus' of git://jdelvare.pck.nerim.net/jdelvare-2.6
+
+are available in the git repository at:
+
+  master.kernel.org:/pub/scm/linux/kernel/git/davem/sparc-2.6.git master
+
+David S. Miller (2):
+      sparc64: Fix reset hangs on Niagara systems.
+      Merge branch 'master' of ssh://master.kernel.org/home/ftp/.../rusty/linux-2.6-cpumask-for-sparc
+
+Rusty Russell (10):
+      cpumask: Use smp_call_function_many(): sparc64
+      cpumask: arch_send_call_function_ipi_mask: sparc
+      cpumask: Use accessors code: sparc
+      cpumask: Use accessors code.: sparc64
+      cpumask: prepare for iterators to only go to nr_cpu_ids/nr_cpumask_bits.: sparc64
+      cpumask: prepare for iterators to only go to nr_cpu_ids/nr_cpumask_bits.: sparc
+      cpumask: remove cpu_coregroup_map: sparc
+      cpumask: remove the now-obsoleted pcibus_to_cpumask(): sparc
+      cpumask: remove dangerous CPU_MASK_ALL_PTR, &CPU_MASK_ALL.: sparc
+      cpumask: use mm_cpumask() wrapper: sparc
+
+ arch/sparc/include/asm/mmu_context_64.h |    8 +++---
+ arch/sparc/include/asm/smp_64.h         |    3 +-
+ arch/sparc/include/asm/system_32.h      |    2 +-
+ arch/sparc/include/asm/topology_64.h    |    7 +-----
+ arch/sparc/kernel/ds.c                  |    2 +-
+ arch/sparc/kernel/irq_64.c              |    4 +-
+ arch/sparc/kernel/mdesc.c               |    2 +-
+ arch/sparc/kernel/nmi.c                 |   23 +++++++++++++++++++-
+ arch/sparc/kernel/prom_64.c             |    4 +-
+ arch/sparc/kernel/smp_32.c              |   36 +++++++++++++++---------------
+ arch/sparc/kernel/smp_64.c              |   14 ++++++------
+ arch/sparc/kernel/sun4d_smp.c           |   11 ++++-----
+ arch/sparc/kernel/sun4m_smp.c           |   10 +++-----
+ arch/sparc/mm/init_64.c                 |    2 +-
+ arch/sparc/mm/srmmu.c                   |    2 +-
+ 15 files changed, 72 insertions(+), 58 deletions(-)
