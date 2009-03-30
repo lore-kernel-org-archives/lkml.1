@@ -1,59 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755712AbZC3Oov@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755734AbZC3Op2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755712AbZC3Oov (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Mar 2009 10:44:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754424AbZC3Ook
+	id S1755734AbZC3Op2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Mar 2009 10:45:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751520AbZC3OpL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Mar 2009 10:44:40 -0400
-Received: from rtr.ca ([76.10.145.34]:39307 "EHLO mail.rtr.ca"
+	Mon, 30 Mar 2009 10:45:11 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:60045 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751520AbZC3Ooj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Mar 2009 10:44:39 -0400
-Message-ID: <49D0DAD3.6030507@rtr.ca>
-Date: Mon, 30 Mar 2009 10:44:35 -0400
-From: Mark Lord <lkml@rtr.ca>
-Organization: Real-Time Remedies Inc.
-User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
-MIME-Version: 1.0
-To: Ric Wheeler <rwheeler@redhat.com>
-Cc: "Andreas T.Auer" <andreas.t.auer_lkml_73537@ursus.ath.cx>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Theodore Tso <tytso@mit.edu>,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Jeff Garzik <jeff@garzik.org>,
+	id S1753221AbZC3OpJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Mar 2009 10:45:09 -0400
+Date: Mon, 30 Mar 2009 16:42:13 +0200
+From: Andrea Arcangeli <aarcange@redhat.com>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Matthew Garrett <mjg@redhat.com>,
        Linus Torvalds <torvalds@linux-foundation.org>,
-       Matthew Garrett <mjg59@srcf.ucam.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Rees <drees76@gmail.com>, Jesper Krogh <jesper@krogh.cc>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.29
-References: <alpine.LFD.2.00.0903271511230.3994@localhost.localdomain>	<alpine.LFD.2.00.0903271522210.3994@localhost.localdomain>	<49CD7B10.7010601@garzik.org>	<49CD891A.7030103@rtr.ca>	<49CD9047.4060500@garzik.org>	<49CE2633.2000903@s5r6.in-berlin.de>	<49CE3186.8090903@garzik.org>	<49CE35AE.1080702@s5r6.in-berlin.de>	<49CE3F74.6090103@rtr.ca>	<20090329231451.GR26138@disturbed>	<20090330003948.GA13356@mit.edu>	<49D0710A.1030805@ursus.ath.cx> <20090330100546.51907bd2@the-village.bc.nu> <49D0A3D6.4000300@ursus.ath.cx> <49D0AA4A.6020308@redhat.com> <49D0CDBA.7040702@rtr.ca> <49D0D08E.3090100@redhat.com>
-In-Reply-To: <49D0D08E.3090100@redhat.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+       Theodore Tso <tytso@mit.edu>, Ingo Molnar <mingo@elte.hu>,
+       Jan Kara <jack@suse.cz>, Andrew Morton <akpm@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Nick Piggin <npiggin@suse.de>,
+       Jens Axboe <jens.axboe@oracle.com>, David Rees <drees76@gmail.com>,
+       Jesper Krogh <jesper@krogh.cc>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Oleg Nesterov <oleg@redhat.com>, Roland McGrath <roland@redhat.com>
+Subject: Re: [PATCH 2/2] Make relatime default
+Message-ID: <20090330144213.GA5426@random.random>
+References: <20090326090630.GA9369@elte.hu> <20090326113705.GV32307@mit.edu> <20090326140312.GB14822@elte.hu> <20090326144707.GA6239@mit.edu> <alpine.LFD.2.00.0903260914440.3032@localhost.localdomain> <20090326170714.GF6239@mit.edu> <alpine.LFD.2.00.0903261015050.3032@localhost.localdomain> <20090326174956.GB7198@srcf.ucam.org> <20090326175314.GC7198@srcf.ucam.org> <20090326184838.26166549@lxorguk.ukuu.org.uk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090326184838.26166549@lxorguk.ukuu.org.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ric Wheeler wrote:
-> Mark Lord wrote:
->> Ric Wheeler wrote:
-..
->> The kernel can crash, and the drives, in practice, will still
->> flush their caches to media by themselves.  Within a second or two.
+On Thu, Mar 26, 2009 at 06:48:38PM +0000, Alan Cox wrote:
+> On Thu, 26 Mar 2009 17:53:14 +0000
+> Matthew Garrett <mjg@redhat.com> wrote:
 > 
-> Even with desktops, I am not positive that the drive write cache 
-> survives a kernel crash without data loss. If I remember correctly, 
-> Chris's tests used crashes (not power outages) to display the data 
-> corruption that happened without barriers being enabled properly.
-..
+> > Change the default behaviour of the kernel to use relatime for all
+> > filesystems. This can be overridden with the "strictatime" mount
+> > option.
+> 
+> NAK this again
 
-Linux f/s barriers != drive write caches.
+NAK but because if we change the default it is better to change it to
+the real thing: noatime.
 
-Drive write caches are an almost total non-issue for desktop users,
-except on the (very rare) event of a total, sudden power failure
-during extended write outs.
+I think this can be solved in userland but perhaps changing this in
+kernel would be a stronger message that atime is officially
+obsoleted. (and nothing will break, not even mutt users will notice,
+and if they really do it won't be anything more than aesthetical)
 
-Very rare.  Yes, a huge problem for server farms.  No question.
-But the majority of Linux systems are probably (still) desktops/notebooks.
 
-Cheers
+About the open(destination, O_TRUNC); write; close, I think it's not
+worth changing the kernel or the VM in any way to hide buggy
+programming like that, to the contrary it's great it was found early
+on (instead of being filed as some obscure not reproducible bug lost
+in some bugzilla and hitting once in a while with an unlucky
+power-loss during boot). But solving this bug with fsync so it works
+for writeback mode too, would make me prefer to gamble and run the the
+buggy version ;). Not sure if it worth providing any ordering
+guarantee more than 'ordered' mode in the long term or some proper
+barrier, but at least ordered mode already allows for renaming the
+tempfile to be enough and that is clearly the best tradeoff. fsync
+really should be used only to avoid total loss of information (like
+when we need to avoid losing the delivery of an email after the smpt
+client is told the email was already received by the smtp server).
+
+Using fsync to tell the kernel in what order to write is dirty
+pagecache data to disk, is as inefficient as driving a car to travel a
+10 meters distance, so rightfully people isn't using it for this even
+if it's the only way it could work for writeback and ext2 too.
