@@ -1,106 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762361AbZC3WMs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762447AbZC3WNW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762361AbZC3WMs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Mar 2009 18:12:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762266AbZC3WMQ
+	id S1762447AbZC3WNW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Mar 2009 18:13:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759776AbZC3WNC
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Mar 2009 18:12:16 -0400
-Received: from mail-ew0-f165.google.com ([209.85.219.165]:63008 "EHLO
-	mail-ew0-f165.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762298AbZC3WMO (ORCPT
+	Mon, 30 Mar 2009 18:13:02 -0400
+Received: from xc.sipsolutions.net ([83.246.72.84]:58876 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757596AbZC3WNA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Mar 2009 18:12:14 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=sender:date:from:to:cc:subject:message-id:reply-to:mime-version
-         :content-type:content-disposition:x-pgp-key:user-agent;
-        b=mk3808w+UCA8J0saTanJLYb79fcefwRjWX0OX+vs0T/znooat51NUsk9Iv0lsrCp4e
-         VHIRwUJOQjOQ0QtK4OOqhsN8fTJrau+49YWbGxpS1AvKMSSpODF54UYE+PBEKsQt4TuN
-         GlyIjBiHm5nLRr/2acTYkWVgHx+SvQJIVT5Rg=
-Date: Tue, 31 Mar 2009 00:12:05 +0200
-From: Michal Januszewski <spock@gentoo.org>
-To: linux-kernel@vger.kernel.org
-Cc: linux-fbdev-devel@lists.sourceforge.net
-Subject: [PATCH] sa1100fb: fix color component length for pseudocolor modes
-Message-ID: <20090330221205.GE6993@spock.one.pl>
-Reply-To: spock@gentoo.org
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-X-PGP-Key: http://dev.gentoo.org/~spock/spock.gpg
-User-Agent: Mutt/1.5.19 (2009-01-05)
+	Mon, 30 Mar 2009 18:13:00 -0400
+Subject: Re: [PATCH] toshiba-acpi: remove MAINTAINERS entry
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Philip Langdale <philipl@overt.org>
+Cc: Len Brown <len.brown@intel.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>, john@neggie.net
+In-Reply-To: <958b283774903506cb69b2a1fefc37c4@localhost>
+References: <1238407355.24972.29.camel@johannes.local>
+	 <1238407893.24972.30.camel@johannes.local>
+	 <958b283774903506cb69b2a1fefc37c4@localhost>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-bRV5aBMXQSuQGSTFcdC0"
+Date: Tue, 31 Mar 2009 00:12:24 +0200
+Message-Id: <1238451144.5970.56.camel@johannes.local>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-sa1100fb incorrectly sets the length of the color fields to 8 bits
-for PSEUDOCOLOR modes for which only 4 bits are used per pixel.
-Fix this by setting the length to 4 bits for these modes.
 
-Signed-off-by: Michal Januszewski <spock@gentoo.org>
----
-diff --git a/drivers/video/sa1100fb.c b/drivers/video/sa1100fb.c
-index fad58cf..10ddad8 100644
---- a/drivers/video/sa1100fb.c
-+++ b/drivers/video/sa1100fb.c
-@@ -199,16 +199,20 @@
- extern void (*sa1100fb_backlight_power)(int on);
- extern void (*sa1100fb_lcd_power)(int on);
- 
--/*
-- * IMHO this looks wrong.  In 8BPP, length should be 8.
-- */
--static struct sa1100fb_rgb rgb_8 = {
-+static struct sa1100fb_rgb rgb_4 = {
- 	.red	= { .offset = 0,  .length = 4, },
- 	.green	= { .offset = 0,  .length = 4, },
- 	.blue	= { .offset = 0,  .length = 4, },
- 	.transp	= { .offset = 0,  .length = 0, },
- };
- 
-+static struct sa1100fb_rgb rgb_8 = {
-+	.red	= { .offset = 0,  .length = 8, },
-+	.green	= { .offset = 0,  .length = 8, },
-+	.blue	= { .offset = 0,  .length = 8, },
-+	.transp	= { .offset = 0,  .length = 0, },
-+};
-+
- static struct sa1100fb_rgb def_rgb_16 = {
- 	.red	= { .offset = 11, .length = 5, },
- 	.green	= { .offset = 5,  .length = 6, },
-@@ -613,7 +617,7 @@ sa1100fb_check_var(struct fb_var_screeninfo *var, struct fb_info *info)
- 	DPRINTK("var->bits_per_pixel=%d\n", var->bits_per_pixel);
- 	switch (var->bits_per_pixel) {
- 	case 4:
--		rgbidx = RGB_8;
-+		rgbidx = RGB_4;
- 		break;
- 	case 8:
- 		rgbidx = RGB_8;
-@@ -1382,6 +1386,7 @@ static struct sa1100fb_info * __init sa1100fb_init_fbinfo(struct device *dev)
- 	fbi->fb.monspecs	= monspecs;
- 	fbi->fb.pseudo_palette	= (fbi + 1);
- 
-+	fbi->rgb[RGB_4]		= &rgb_4;
- 	fbi->rgb[RGB_8]		= &rgb_8;
- 	fbi->rgb[RGB_16]	= &def_rgb_16;
- 
-diff --git a/drivers/video/sa1100fb.h b/drivers/video/sa1100fb.h
-index 86831db..1c3b459 100644
---- a/drivers/video/sa1100fb.h
-+++ b/drivers/video/sa1100fb.h
-@@ -57,9 +57,10 @@ struct sa1100fb_lcd_reg {
- 	unsigned long lccr3;
- };
- 
--#define RGB_8	(0)
--#define RGB_16	(1)
--#define NR_RGB	2
-+#define RGB_4	(0)
-+#define RGB_8	(1)
-+#define RGB_16	(2)
-+#define NR_RGB	3
- 
- struct sa1100fb_info {
- 	struct fb_info		fb;
+--=-bRV5aBMXQSuQGSTFcdC0
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
+
+On Mon, 2009-03-30 at 10:57 -0400, Philip Langdale wrote:
+> On Mon, 30 Mar 2009 12:11:33 +0200, Johannes Berg
+> <johannes@sipsolutions.net> wrote:
+> > On Mon, 2009-03-30 at 12:02 +0200, Johannes Berg wrote:
+> >> The web server at memebeam.org refuses connections and the domain no
+> >> longer has an MX entry, so apparently John Belmonte has vanished.
+> >=20
+> > archive.org shows it's been that way for over a year, but turned up
+> > another email address, let's see if that works.
+>=20
+> John sent me an email in January from this address but I never got a
+> reply to my reply. I know you're follow up said that this address went
+> back to the old missing MX but the incident does at least prove it
+> was working a couple of months ago. (Or the maybe he doesn't know the
+> MX is wrong and he can only send :-)
+
+Hmm, it looks like membeam.org is just missing an MX entry, but accepts
+mail, when it's up, to its A entry. That's just a DNS bug then maybe?
+
+johannes
+
+--=-bRV5aBMXQSuQGSTFcdC0
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iQIcBAABAgAGBQJJ0UPFAAoJEKVg1VMiehFYy00P/jFtIcRvhIMi8hd7HhEK0kIm
+fdYeJ8HyQAqu3WsGlQcaZAjNQyfKWSl25TgD8jR6TZa77O7mk+7ZpNEVd4h9iqnn
+amK2mc2db8sdH6iv9qrOTm+XbjwDHyeMvrvHSngi1+fpl5hViw+LBOoj0Cmlhjlj
+Pf7ItVKo98TLYqWog5kykAHr8etqgI8UJuMThUUeIdU/VyxS7+Ynph9+dD6CFwc9
+UOIMCoGco/fcTNMjAPWAp97+sP61ZzEMLYBGM11TDxdRxLpw/zgBbD6eGmWfdtN7
+Td04Pje04sPPFRWRTXTq6c15iLlGxb5nBW44QcvSSvNTnKBh3Vuskk+MlaMj4EU0
+ZevagyKgql66IYA9XjU70HaDfy1EE0qGXEdu8g82AMtG+AlhPQOItITphoif1v3Z
+PZn+SnYytViobzc1YIbZJkHBYXi8s+wv2psLMcmAFzNQaCwr8Uz1ug3BsUEBDgYm
++gSP6GRPwXlcA9d2KoqY2Gu+m/B7/vpS1/7GrwlYpvDRM6f9AKDhUhH6KT/seSkX
+zsWNVehkGNGNG4+YWxZmmfq92+8UpG5d3jQuTpBO43Uy/I73LVsx5oQo0RnZdDnw
+eOYC/QBXggZ7GRpA4AH/mQsOKrS+E4Z1ZodCSsZrZMAyIEqtUp8rTSQPwYxT2TBR
+3egdgD+nYTY/Zeyy1JOF
+=ltOc
+-----END PGP SIGNATURE-----
+
+--=-bRV5aBMXQSuQGSTFcdC0--
 
