@@ -1,70 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755764AbZC3Wxa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757430AbZC3Wyf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755764AbZC3Wxa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Mar 2009 18:53:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752540AbZC3WxS
+	id S1757430AbZC3Wyf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Mar 2009 18:54:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753546AbZC3Wy0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Mar 2009 18:53:18 -0400
-Received: from out02.mta.xmission.com ([166.70.13.232]:35603 "EHLO
-	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752355AbZC3WxR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Mar 2009 18:53:17 -0400
+	Mon, 30 Mar 2009 18:54:26 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:40233 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751509AbZC3WyZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Mar 2009 18:54:25 -0400
+Date: Mon, 30 Mar 2009 18:52:06 -0400
+From: "Frank Ch. Eigler" <fche@redhat.com>
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: mingo@elte.hu, jbeulich@novell.com, tglx@linutronix.de, mingo@redhat.com,
-       hpa@zytor.com, linux-kernel@vger.kernel.org, ego@in.ibm.com,
-       peterz@infradead.org, adobriyan@gmail.com, netdev@vger.kernel.org
-Subject: Re: [PATCH 2/2] sysctl:  lockdep support for sysctl reference counting.
-References: <49B91A7E.76E4.0078.0@novell.com>
-	<tip-6a09dfa870ba0ed21b1124539968a36b42660661@git.kernel.org>
-	<1236934491.5188.209.camel@laptop> <49BA33BE.76E4.0078.0@novell.com>
-	<1236937423.22914.3698.camel@twins> <20090313103828.GB31094@elte.hu>
-	<m1d4cd9n4k.fsf@fess.ebiederm.org> <20090320085205.GB16021@elte.hu>
-	<m14oxo8qis.fsf@fess.ebiederm.org> <20090320182404.GA31629@elte.hu>
-	<1237575134.4667.5.camel@laptop> <1237577688.4667.68.camel@laptop>
-	<m1iqm3xr2n.fsf_-_@fess.ebiederm.org>
-	<m1eiwrxr05.fsf_-_@fess.ebiederm.org>
-	<m1ab7fxqxw.fsf_-_@fess.ebiederm.org>
-	<20090330152616.7cc2c87c.akpm@linux-foundation.org>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Mon, 30 Mar 2009 15:53:04 -0700
-In-Reply-To: <20090330152616.7cc2c87c.akpm@linux-foundation.org> (Andrew Morton's message of "Mon\, 30 Mar 2009 15\:26\:16 -0700")
-Message-ID: <m1k566k4hb.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
-MIME-Version: 1.0
+Cc: Theodore Tso <tytso@mit.edu>, oleg@redhat.com, adobriyan@gmail.com,
+       mingo@elte.hu, torvalds@linux-foundation.org, roland@redhat.com,
+       rostedt@goodmis.org, utrace-devel@redhat.com,
+       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
+       tglx@linutronix.de
+Subject: Re: [PATCH 3/3] utrace-based ftrace "process" engine, v2
+Message-ID: <20090330225206.GD16170@redhat.com>
+References: <20090321050422.d1d99eec.akpm@linux-foundation.org> <20090321154501.GA2707@elte.hu> <20090321143413.75ead1aa.akpm@linux-foundation.org> <20090321215145.GB5262@redhat.com> <alpine.LFD.2.00.0903211501060.3030@localhost.localdomain> <20090322123749.GF19826@elte.hu> <20090323134813.GA18219@x200.localdomain> <20090323151400.GA3413@redhat.com> <20090323214417.GD5814@mit.edu> <20090330151844.8b4eed0f.akpm@linux-foundation.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=67.169.126.145;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 67.169.126.145
-X-SA-Exim-Rcpt-To: akpm@linux-foundation.org, netdev@vger.kernel.org, adobriyan@gmail.com, peterz@infradead.org, ego@in.ibm.com, linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com, tglx@linutronix.de, jbeulich@novell.com, mingo@elte.hu
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
-X-SA-Exim-Scanned: No (on in01.mta.xmission.com); Unknown failure
+Content-Disposition: inline
+In-Reply-To: <20090330151844.8b4eed0f.akpm@linux-foundation.org>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton <akpm@linux-foundation.org> writes:
+Hi -
 
-> So I merged these two patches.  I designated them as to-be-merged via
-> Alexey, with a Cc:Peter (IOW: wakey wakey ;))
+On Mon, Mar 30, 2009 at 03:18:44PM -0700, Andrew Morton wrote:
+> So we need to work out what to do about utrace and I feel a need to hit
+> the reset button on all this.  [...]
 
-It is more sysctl than proc but whichever.  As long as people aren't
-blind sided at the last minute I'm fine.
+Thanks.
 
-> Regarding this:
->
->> From: ebiederm@xmission.com (Eric W. Biederman)
->> ...
->> Signed-off-by: Eric Biederman <ebiederm@aristanetworks.com>
->
-> It doesn't make a lot of sense to have a different Author: address,
-> IMO.  So I rewrote the From: address to be ebiederm@aristanetworks.com,
-> OK?
+> [...]  The ftrace patch merged about as (un)successfully as one would
 
->From my perspective it does.  It is much easier to use my personal
-email setup for doing kernel work.  But I need to indicate I am
-signing off as an employee of AristaNetworks.  Saying aristanetworks
-in my signed-off-by seems a little more official.
+A new version against -tip is coming by in a few days.
 
-Eric
-
+- FChE
