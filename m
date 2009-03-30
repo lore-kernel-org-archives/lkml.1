@@ -1,33 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757009AbZC3Glq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758116AbZC3GwY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757009AbZC3Glq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Mar 2009 02:41:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753202AbZC3Glh
+	id S1758116AbZC3GwY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Mar 2009 02:52:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755920AbZC3GwO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Mar 2009 02:41:37 -0400
-Received: from mo-p05-ob.rzone.de ([81.169.146.182]:20241 "EHLO
-	mo-p05-ob.rzone.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752675AbZC3Glg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Mar 2009 02:41:36 -0400
-X-RZG-AUTH: :LWIQcGC8af5qXkYNYt77sURZEFmV4M3TAgvB+Qeh4tE+44JfzNXfZkKf55cV
-X-RZG-CLASS-ID: mo05
-Message-ID: <49D06998.2050301@ursus.ath.cx>
-Date: Mon, 30 Mar 2009 08:41:28 +0200
-From: "Andreas T.Auer" <andreas.t.auer_lkml_73537@ursus.ath.cx>
-User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
+	Mon, 30 Mar 2009 02:52:14 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:56339 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1755870AbZC3GwO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Mar 2009 02:52:14 -0400
+Message-ID: <49D06B9C.3070209@cn.fujitsu.com>
+Date: Mon, 30 Mar 2009 14:50:04 +0800
+From: Lai Jiangshan <laijs@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
-To: Mark Lord <lkml@rtr.ca>
-CC: Stefan Richter <stefanr@s5r6.in-berlin.de>, Jeff Garzik <jeff@garzik.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Matthew Garrett <mjg59@srcf.ucam.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Theodore Tso <tytso@mit.edu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Rees <drees76@gmail.com>, Jesper Krogh <jesper@krogh.cc>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.29
-References: <49CD4DDF.3000001@garzik.org> <alpine.LFD.2.00.0903271511230.3994@localhost.localdomain> <alpine.LFD.2.00.0903271522210.3994@localhost.localdomain> <49CD7B10.7010601@garzik.org> <49CD891A.7030103@rtr.ca> <49CD9047.4060500@garzik.org> <49CE2633.2000903@s5r6.in-berlin.de> <49CE3186.8090903@garzik.org> <49CE35AE.1080702@s5r6.in-berlin.de> <49CE3F74.6090103@rtr.ca> <20090329231451.GR26138@disturbed> <49D03621.5080501@rtr.ca>
-In-Reply-To: <49D03621.5080501@rtr.ca>
+To: Ingo Molnar <mingo@elte.hu>, Arjan van de Ven <arjan@linux.intel.com>,
+       Steven Rostedt <srostedt@redhat.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] tracing: move scripts/trace/power.pl to scripts/tracing/power.pl
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
@@ -35,39 +25,240 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
+Impact: Cleanup
 
-On 30.03.2009 05:01 Mark Lord wrote:
-> Dave Chinner wrote:
->> On Sat, Mar 28, 2009 at 11:17:08AM -0400, Mark Lord wrote:
->>> The better solution seems to be the rather obvious one:
->>>
->>>   the filesystem should commit data to disk before altering metadata.
->>
->> Generalities are bad. For example:
->>
->> write();
->> unlink();
->> <do more stuff>
->> close();
->>
->> This is a clear case where you want metadata changed before data is
->> committed to disk. In many cases, you don't even want the data to
->> hit the disk here.
-> ..
->
-> Err, no actually.  I want a consistent disk state,
-> either all old or all new data after a crash.
->
->
+We use scripts/tracing/ to contain tracing scripts.
+Use one directory only instead of two.
 
-Dave is right that if you write to a file and unlink the same file, so
-that the data are orphaned. In that case you don't want the orphaned
-data to be written on disk. But Mark is right, too. Because in that case
-you probably also don't want any metadata to be written to the disk,
-unless the open() was already commited. You might have to update
-timestamps for the directory.
-So rephrasing it:
-The filesystem should not alter the metadata before writing the _linked_
-data.
+Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
+---
+diff --git a/scripts/trace/power.pl b/scripts/trace/power.pl
+deleted file mode 100644
+index 4f729b3..0000000
+--- a/scripts/trace/power.pl
++++ /dev/null
+@@ -1,108 +0,0 @@
+-#!/usr/bin/perl
+-
+-# Copyright 2008, Intel Corporation
+-#
+-# This file is part of the Linux kernel
+-#
+-# This program file is free software; you can redistribute it and/or modify it
+-# under the terms of the GNU General Public License as published by the
+-# Free Software Foundation; version 2 of the License.
+-#
+-# This program is distributed in the hope that it will be useful, but WITHOUT
+-# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+-# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+-# for more details.
+-#
+-# You should have received a copy of the GNU General Public License
+-# along with this program in a file named COPYING; if not, write to the
+-# Free Software Foundation, Inc.,
+-# 51 Franklin Street, Fifth Floor,
+-# Boston, MA 02110-1301 USA
+-#
+-# Authors:
+-# 	Arjan van de Ven <arjan@linux.intel.com>
+-
+-
+-#
+-# This script turns a cstate ftrace output into a SVG graphic that shows
+-# historic C-state information
+-#
+-#
+-# 	cat /sys/kernel/debug/tracing/trace | perl power.pl > out.svg
+-#
+-
+-my @styles;
+-my $base = 0;
+-
+-my @pstate_last;
+-my @pstate_level;
+-
+-$styles[0] = "fill:rgb(0,0,255);fill-opacity:0.5;stroke-width:1;stroke:rgb(0,0,0)";
+-$styles[1] = "fill:rgb(0,255,0);fill-opacity:0.5;stroke-width:1;stroke:rgb(0,0,0)";
+-$styles[2] = "fill:rgb(255,0,20);fill-opacity:0.5;stroke-width:1;stroke:rgb(0,0,0)";
+-$styles[3] = "fill:rgb(255,255,20);fill-opacity:0.5;stroke-width:1;stroke:rgb(0,0,0)";
+-$styles[4] = "fill:rgb(255,0,255);fill-opacity:0.5;stroke-width:1;stroke:rgb(0,0,0)";
+-$styles[5] = "fill:rgb(0,255,255);fill-opacity:0.5;stroke-width:1;stroke:rgb(0,0,0)";
+-$styles[6] = "fill:rgb(0,128,255);fill-opacity:0.5;stroke-width:1;stroke:rgb(0,0,0)";
+-$styles[7] = "fill:rgb(0,255,128);fill-opacity:0.5;stroke-width:1;stroke:rgb(0,0,0)";
+-$styles[8] = "fill:rgb(0,25,20);fill-opacity:0.5;stroke-width:1;stroke:rgb(0,0,0)";
+-
+-
+-print "<?xml version=\"1.0\" standalone=\"no\"?> \n";
+-print "<svg width=\"10000\" height=\"100%\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\">\n";
+-
+-my $scale = 30000.0;
+-while (<>) {
+-	my $line = $_;
+-	if ($line =~ /([0-9\.]+)\] CSTATE: Going to C([0-9]) on cpu ([0-9]+) for ([0-9\.]+)/) {
+-		if ($base == 0) {
+-			$base = $1;
+-		}
+-		my $time = $1 - $base;
+-		$time = $time * $scale;
+-		my $C = $2;
+-		my $cpu = $3;
+-		my $y = 400 * $cpu;
+-		my $duration = $4 * $scale;
+-		my $msec = int($4 * 100000)/100.0;
+-		my $height = $C * 20;
+-		$style = $styles[$C];
+-
+-		$y = $y + 140 - $height;
+-
+-		$x2 = $time + 4;
+-		$y2 = $y + 4;
+-
+-
+-		print "<rect x=\"$time\" width=\"$duration\" y=\"$y\" height=\"$height\" style=\"$style\"/>\n";
+-		print "<text transform=\"translate($x2,$y2) rotate(90)\">C$C $msec</text>\n";
+-	}
+-	if ($line =~ /([0-9\.]+)\] PSTATE: Going to P([0-9]) on cpu ([0-9]+)/) {
+-		my $time = $1 - $base;
+-		my $state = $2;
+-		my $cpu = $3;
+-
+-		if (defined($pstate_last[$cpu])) {
+-			my $from = $pstate_last[$cpu];
+-			my $oldstate = $pstate_state[$cpu];
+-			my $duration = ($time-$from) * $scale;
+-
+-			$from = $from * $scale;
+-			my $to = $from + $duration;
+-			my $height = 140 - ($oldstate * (140/8));
+-
+-			my $y = 400 * $cpu + 200 + $height;
+-			my $y2 = $y+4;
+-			my $style = $styles[8];
+-
+-			print "<rect x=\"$from\" y=\"$y\" width=\"$duration\" height=\"5\" style=\"$style\"/>\n";
+-			print "<text transform=\"translate($from,$y2)\">P$oldstate (cpu $cpu)</text>\n";
+-		};
+-
+-		$pstate_last[$cpu] = $time;
+-		$pstate_state[$cpu] = $state;
+-	}
+-}
+-
+-
+-print "</svg>\n";
+diff --git a/scripts/tracing/power.pl b/scripts/tracing/power.pl
+new file mode 100644
+index 0000000..4f729b3
+--- /dev/null
++++ b/scripts/tracing/power.pl
+@@ -0,0 +1,108 @@
++#!/usr/bin/perl
++
++# Copyright 2008, Intel Corporation
++#
++# This file is part of the Linux kernel
++#
++# This program file is free software; you can redistribute it and/or modify it
++# under the terms of the GNU General Public License as published by the
++# Free Software Foundation; version 2 of the License.
++#
++# This program is distributed in the hope that it will be useful, but WITHOUT
++# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
++# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
++# for more details.
++#
++# You should have received a copy of the GNU General Public License
++# along with this program in a file named COPYING; if not, write to the
++# Free Software Foundation, Inc.,
++# 51 Franklin Street, Fifth Floor,
++# Boston, MA 02110-1301 USA
++#
++# Authors:
++# 	Arjan van de Ven <arjan@linux.intel.com>
++
++
++#
++# This script turns a cstate ftrace output into a SVG graphic that shows
++# historic C-state information
++#
++#
++# 	cat /sys/kernel/debug/tracing/trace | perl power.pl > out.svg
++#
++
++my @styles;
++my $base = 0;
++
++my @pstate_last;
++my @pstate_level;
++
++$styles[0] = "fill:rgb(0,0,255);fill-opacity:0.5;stroke-width:1;stroke:rgb(0,0,0)";
++$styles[1] = "fill:rgb(0,255,0);fill-opacity:0.5;stroke-width:1;stroke:rgb(0,0,0)";
++$styles[2] = "fill:rgb(255,0,20);fill-opacity:0.5;stroke-width:1;stroke:rgb(0,0,0)";
++$styles[3] = "fill:rgb(255,255,20);fill-opacity:0.5;stroke-width:1;stroke:rgb(0,0,0)";
++$styles[4] = "fill:rgb(255,0,255);fill-opacity:0.5;stroke-width:1;stroke:rgb(0,0,0)";
++$styles[5] = "fill:rgb(0,255,255);fill-opacity:0.5;stroke-width:1;stroke:rgb(0,0,0)";
++$styles[6] = "fill:rgb(0,128,255);fill-opacity:0.5;stroke-width:1;stroke:rgb(0,0,0)";
++$styles[7] = "fill:rgb(0,255,128);fill-opacity:0.5;stroke-width:1;stroke:rgb(0,0,0)";
++$styles[8] = "fill:rgb(0,25,20);fill-opacity:0.5;stroke-width:1;stroke:rgb(0,0,0)";
++
++
++print "<?xml version=\"1.0\" standalone=\"no\"?> \n";
++print "<svg width=\"10000\" height=\"100%\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\">\n";
++
++my $scale = 30000.0;
++while (<>) {
++	my $line = $_;
++	if ($line =~ /([0-9\.]+)\] CSTATE: Going to C([0-9]) on cpu ([0-9]+) for ([0-9\.]+)/) {
++		if ($base == 0) {
++			$base = $1;
++		}
++		my $time = $1 - $base;
++		$time = $time * $scale;
++		my $C = $2;
++		my $cpu = $3;
++		my $y = 400 * $cpu;
++		my $duration = $4 * $scale;
++		my $msec = int($4 * 100000)/100.0;
++		my $height = $C * 20;
++		$style = $styles[$C];
++
++		$y = $y + 140 - $height;
++
++		$x2 = $time + 4;
++		$y2 = $y + 4;
++
++
++		print "<rect x=\"$time\" width=\"$duration\" y=\"$y\" height=\"$height\" style=\"$style\"/>\n";
++		print "<text transform=\"translate($x2,$y2) rotate(90)\">C$C $msec</text>\n";
++	}
++	if ($line =~ /([0-9\.]+)\] PSTATE: Going to P([0-9]) on cpu ([0-9]+)/) {
++		my $time = $1 - $base;
++		my $state = $2;
++		my $cpu = $3;
++
++		if (defined($pstate_last[$cpu])) {
++			my $from = $pstate_last[$cpu];
++			my $oldstate = $pstate_state[$cpu];
++			my $duration = ($time-$from) * $scale;
++
++			$from = $from * $scale;
++			my $to = $from + $duration;
++			my $height = 140 - ($oldstate * (140/8));
++
++			my $y = 400 * $cpu + 200 + $height;
++			my $y2 = $y+4;
++			my $style = $styles[8];
++
++			print "<rect x=\"$from\" y=\"$y\" width=\"$duration\" height=\"5\" style=\"$style\"/>\n";
++			print "<text transform=\"translate($from,$y2)\">P$oldstate (cpu $cpu)</text>\n";
++		};
++
++		$pstate_last[$cpu] = $time;
++		$pstate_state[$cpu] = $state;
++	}
++}
++
++
++print "</svg>\n";
 
 
