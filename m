@@ -1,1065 +1,537 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757746AbZC3SUx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757406AbZC3STm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757746AbZC3SUx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Mar 2009 14:20:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755536AbZC3SPt
+	id S1757406AbZC3STm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Mar 2009 14:19:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754967AbZC3SPg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Mar 2009 14:15:49 -0400
-Received: from cantor.suse.de ([195.135.220.2]:56613 "EHLO mx1.suse.de"
+	Mon, 30 Mar 2009 14:15:36 -0400
+Received: from cantor.suse.de ([195.135.220.2]:56600 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751436AbZC3SPV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Mar 2009 14:15:21 -0400
-Message-Id: <20090330181013.606521434@suse.com>
+	id S1753171AbZC3SPR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Mar 2009 14:15:17 -0400
+Message-Id: <20090330181010.981541444@suse.com>
 User-Agent: quilt/0.47-14.9
-Date: Mon, 30 Mar 2009 14:02:48 -0400
+Date: Mon, 30 Mar 2009 14:02:28 -0400
 From: Jeff Mahoney <jeffm@suse.com>
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Cc: Andrew Morton <akpm@linux-foundation.org>,
        Linus Torvalds <torvalds@linux-foundation.org>,
        ReiserFS Development List <reiserfs-devel@vger.kernel.org>
-Subject: [patch 33/35 code-cleanup] reiserfs: rename p_s_tb to tb
+Subject: [patch 13/35 error-handling] reiserfs: use reiserfs_error()
 References: <20090330180215.951354436@suse.com>
-Content-Disposition: inline; filename=patches.suse/reiserfs-rename-p_s_tb.diff
+Content-Disposition: inline; filename=patches.suse/reiserfs-use-reiserfs_error.diff
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- This patch is a simple s/p_s_tb/tb/g to the reiserfs code. This is the fourth
- in a series of patches to rip out some of the awful variable naming in
- reiserfs.
+ This patch makes many paths that are currently using warnings to handle
+ the error.
 
 Signed-off-by: Jeff Mahoney <jeffm@suse.com>
 
----
+--
 
- fs/reiserfs/fix_node.c      |  482 ++++++++++++++++++++++----------------------
- fs/reiserfs/stree.c         |   21 +
- include/linux/reiserfs_fs.h |    2 
- 3 files changed, 254 insertions(+), 251 deletions(-)
+ fs/reiserfs/bitmap.c          |   56 +++++++++++++++++++++---------------------
+ fs/reiserfs/inode.c           |   45 +++++++++++++++------------------
+ fs/reiserfs/lbalance.c        |   20 +++++++--------
+ fs/reiserfs/namei.c           |   24 +++++++++---------
+ fs/reiserfs/objectid.c        |    4 +--
+ fs/reiserfs/stree.c           |   26 +++++++++----------
+ fs/reiserfs/super.c           |   15 +++++------
+ fs/reiserfs/tail_conversion.c |    6 ++--
+ fs/reiserfs/xattr.c           |   21 +++++++--------
+ 9 files changed, 107 insertions(+), 110 deletions(-)
 
---- a/fs/reiserfs/fix_node.c
-+++ b/fs/reiserfs/fix_node.c
-@@ -749,26 +749,26 @@ else \
- 		  -1, -1);\
- }
+--- a/fs/reiserfs/bitmap.c
++++ b/fs/reiserfs/bitmap.c
+@@ -64,9 +64,9 @@ int is_reusable(struct super_block *s, b
+ 	unsigned int bmap_count = reiserfs_bmap_count(s);
  
--static void free_buffers_in_tb(struct tree_balance *p_s_tb)
-+static void free_buffers_in_tb(struct tree_balance *tb)
- {
- 	int n_counter;
- 
--	pathrelse(p_s_tb->tb_path);
-+	pathrelse(tb->tb_path);
- 
- 	for (n_counter = 0; n_counter < MAX_HEIGHT; n_counter++) {
--		brelse(p_s_tb->L[n_counter]);
--		brelse(p_s_tb->R[n_counter]);
--		brelse(p_s_tb->FL[n_counter]);
--		brelse(p_s_tb->FR[n_counter]);
--		brelse(p_s_tb->CFL[n_counter]);
--		brelse(p_s_tb->CFR[n_counter]);
--
--		p_s_tb->L[n_counter] = NULL;
--		p_s_tb->R[n_counter] = NULL;
--		p_s_tb->FL[n_counter] = NULL;
--		p_s_tb->FR[n_counter] = NULL;
--		p_s_tb->CFL[n_counter] = NULL;
--		p_s_tb->CFR[n_counter] = NULL;
-+		brelse(tb->L[n_counter]);
-+		brelse(tb->R[n_counter]);
-+		brelse(tb->FL[n_counter]);
-+		brelse(tb->FR[n_counter]);
-+		brelse(tb->CFL[n_counter]);
-+		brelse(tb->CFR[n_counter]);
-+
-+		tb->L[n_counter] = NULL;
-+		tb->R[n_counter] = NULL;
-+		tb->FL[n_counter] = NULL;
-+		tb->FR[n_counter] = NULL;
-+		tb->CFL[n_counter] = NULL;
-+		tb->CFR[n_counter] = NULL;
- 	}
- }
- 
-@@ -778,14 +778,14 @@ static void free_buffers_in_tb(struct tr
-  *	        NO_DISK_SPACE - no disk space.
-  */
- /* The function is NOT SCHEDULE-SAFE! */
--static int get_empty_nodes(struct tree_balance *p_s_tb, int n_h)
-+static int get_empty_nodes(struct tree_balance *tb, int n_h)
- {
- 	struct buffer_head *p_s_new_bh,
--	    *p_s_Sh = PATH_H_PBUFFER(p_s_tb->tb_path, n_h);
-+	    *p_s_Sh = PATH_H_PBUFFER(tb->tb_path, n_h);
- 	b_blocknr_t *p_n_blocknr, a_n_blocknrs[MAX_AMOUNT_NEEDED] = { 0, };
- 	int n_counter, n_number_of_freeblk, n_amount_needed,	/* number of needed empty blocks */
- 	 n_retval = CARRY_ON;
--	struct super_block *sb = p_s_tb->tb_sb;
-+	struct super_block *sb = tb->tb_sb;
- 
- 	/* number_of_freeblk is the number of empty blocks which have been
- 	   acquired for use by the balancing algorithm minus the number of
-@@ -803,15 +803,15 @@ static int get_empty_nodes(struct tree_b
- 	   the analysis or 0 if not restarted, then subtract the amount needed
- 	   by all of the levels of the tree below n_h. */
- 	/* blknum includes S[n_h], so we subtract 1 in this calculation */
--	for (n_counter = 0, n_number_of_freeblk = p_s_tb->cur_blknum;
-+	for (n_counter = 0, n_number_of_freeblk = tb->cur_blknum;
- 	     n_counter < n_h; n_counter++)
- 		n_number_of_freeblk -=
--		    (p_s_tb->blknum[n_counter]) ? (p_s_tb->blknum[n_counter] -
-+		    (tb->blknum[n_counter]) ? (tb->blknum[n_counter] -
- 						   1) : 0;
- 
- 	/* Allocate missing empty blocks. */
- 	/* if p_s_Sh == 0  then we are getting a new root */
--	n_amount_needed = (p_s_Sh) ? (p_s_tb->blknum[n_h] - 1) : 1;
-+	n_amount_needed = (p_s_Sh) ? (tb->blknum[n_h] - 1) : 1;
- 	/*  Amount_needed = the amount that we need more than the amount that we have. */
- 	if (n_amount_needed > n_number_of_freeblk)
- 		n_amount_needed -= n_number_of_freeblk;
-@@ -819,7 +819,7 @@ static int get_empty_nodes(struct tree_b
- 		return CARRY_ON;
- 
- 	/* No need to check quota - is not allocated for blocks used for formatted nodes */
--	if (reiserfs_new_form_blocknrs(p_s_tb, a_n_blocknrs,
-+	if (reiserfs_new_form_blocknrs(tb, a_n_blocknrs,
- 				       n_amount_needed) == NO_DISK_SPACE)
- 		return NO_DISK_SPACE;
- 
-@@ -838,14 +838,14 @@ static int get_empty_nodes(struct tree_b
- 		       p_s_new_bh);
- 
- 		/* Put empty buffers into the array. */
--		RFALSE(p_s_tb->FEB[p_s_tb->cur_blknum],
-+		RFALSE(tb->FEB[tb->cur_blknum],
- 		       "PAP-8141: busy slot for new buffer");
- 
- 		set_buffer_journal_new(p_s_new_bh);
--		p_s_tb->FEB[p_s_tb->cur_blknum++] = p_s_new_bh;
-+		tb->FEB[tb->cur_blknum++] = p_s_new_bh;
- 	}
- 
--	if (n_retval == CARRY_ON && FILESYSTEM_CHANGED_TB(p_s_tb))
-+	if (n_retval == CARRY_ON && FILESYSTEM_CHANGED_TB(tb))
- 		n_retval = REPEAT_SEARCH;
- 
- 	return n_retval;
-@@ -896,33 +896,34 @@ static int get_rfree(struct tree_balance
- }
- 
- /* Check whether left neighbor is in memory. */
--static int is_left_neighbor_in_cache(struct tree_balance *p_s_tb, int n_h)
-+static int is_left_neighbor_in_cache(struct tree_balance *tb, int n_h)
- {
- 	struct buffer_head *p_s_father, *left;
--	struct super_block *sb = p_s_tb->tb_sb;
-+	struct super_block *sb = tb->tb_sb;
- 	b_blocknr_t n_left_neighbor_blocknr;
- 	int n_left_neighbor_position;
- 
--	if (!p_s_tb->FL[n_h])	/* Father of the left neighbor does not exist. */
-+	/* Father of the left neighbor does not exist. */
-+	if (!tb->FL[n_h])
+ 	if (block == 0 || block >= SB_BLOCK_COUNT(s)) {
+-		reiserfs_warning(s, "vs-4010",
+-				 "block number is out of range %lu (%u)",
+-				 block, SB_BLOCK_COUNT(s));
++		reiserfs_error(s, "vs-4010",
++			       "block number is out of range %lu (%u)",
++			       block, SB_BLOCK_COUNT(s));
  		return 0;
- 
- 	/* Calculate father of the node to be balanced. */
--	p_s_father = PATH_H_PBUFFER(p_s_tb->tb_path, n_h + 1);
-+	p_s_father = PATH_H_PBUFFER(tb->tb_path, n_h + 1);
- 
- 	RFALSE(!p_s_father ||
- 	       !B_IS_IN_TREE(p_s_father) ||
--	       !B_IS_IN_TREE(p_s_tb->FL[n_h]) ||
-+	       !B_IS_IN_TREE(tb->FL[n_h]) ||
- 	       !buffer_uptodate(p_s_father) ||
--	       !buffer_uptodate(p_s_tb->FL[n_h]),
-+	       !buffer_uptodate(tb->FL[n_h]),
- 	       "vs-8165: F[h] (%b) or FL[h] (%b) is invalid",
--	       p_s_father, p_s_tb->FL[n_h]);
-+	       p_s_father, tb->FL[n_h]);
- 
- 	/* Get position of the pointer to the left neighbor into the left father. */
--	n_left_neighbor_position = (p_s_father == p_s_tb->FL[n_h]) ?
--	    p_s_tb->lkey[n_h] : B_NR_ITEMS(p_s_tb->FL[n_h]);
-+	n_left_neighbor_position = (p_s_father == tb->FL[n_h]) ?
-+	    tb->lkey[n_h] : B_NR_ITEMS(tb->FL[n_h]);
- 	/* Get left neighbor block number. */
- 	n_left_neighbor_blocknr =
--	    B_N_CHILD_NUM(p_s_tb->FL[n_h], n_left_neighbor_position);
-+	    B_N_CHILD_NUM(tb->FL[n_h], n_left_neighbor_position);
- 	/* Look for the left neighbor in the cache. */
- 	if ((left = sb_find_get_block(sb, n_left_neighbor_blocknr))) {
- 
-@@ -953,14 +954,14 @@ static void decrement_key(struct cpu_key
-  		SCHEDULE_OCCURRED - schedule occurred while the function worked;
-  *	        CARRY_ON         - schedule didn't occur while the function worked;
-  */
--static int get_far_parent(struct tree_balance *p_s_tb,
-+static int get_far_parent(struct tree_balance *tb,
- 			  int n_h,
- 			  struct buffer_head **pp_s_father,
- 			  struct buffer_head **pp_s_com_father, char c_lr_par)
- {
- 	struct buffer_head *p_s_parent;
- 	INITIALIZE_PATH(s_path_to_neighbor_father);
--	struct treepath *p_s_path = p_s_tb->tb_path;
-+	struct treepath *p_s_path = tb->tb_path;
- 	struct cpu_key s_lr_father_key;
- 	int n_counter,
- 	    n_position = INT_MAX,
-@@ -1005,9 +1006,9 @@ static int get_far_parent(struct tree_ba
- 	if (n_counter == FIRST_PATH_ELEMENT_OFFSET) {
- 		/* Check whether first buffer in the path is the root of the tree. */
- 		if (PATH_OFFSET_PBUFFER
--		    (p_s_tb->tb_path,
-+		    (tb->tb_path,
- 		     FIRST_PATH_ELEMENT_OFFSET)->b_blocknr ==
--		    SB_ROOT_BLOCK(p_s_tb->tb_sb)) {
-+		    SB_ROOT_BLOCK(tb->tb_sb)) {
- 			*pp_s_father = *pp_s_com_father = NULL;
- 			return CARRY_ON;
- 		}
-@@ -1022,7 +1023,7 @@ static int get_far_parent(struct tree_ba
- 
- 	if (buffer_locked(*pp_s_com_father)) {
- 		__wait_on_buffer(*pp_s_com_father);
--		if (FILESYSTEM_CHANGED_TB(p_s_tb)) {
-+		if (FILESYSTEM_CHANGED_TB(tb)) {
- 			brelse(*pp_s_com_father);
- 			return REPEAT_SEARCH;
- 		}
-@@ -1035,9 +1036,9 @@ static int get_far_parent(struct tree_ba
- 	le_key2cpu_key(&s_lr_father_key,
- 		       B_N_PDELIM_KEY(*pp_s_com_father,
- 				      (c_lr_par ==
--				       LEFT_PARENTS) ? (p_s_tb->lkey[n_h - 1] =
-+				       LEFT_PARENTS) ? (tb->lkey[n_h - 1] =
- 							n_position -
--							1) : (p_s_tb->rkey[n_h -
-+							1) : (tb->rkey[n_h -
- 									   1] =
- 							      n_position)));
- 
-@@ -1045,12 +1046,12 @@ static int get_far_parent(struct tree_ba
- 		decrement_key(&s_lr_father_key);
- 
- 	if (search_by_key
--	    (p_s_tb->tb_sb, &s_lr_father_key, &s_path_to_neighbor_father,
-+	    (tb->tb_sb, &s_lr_father_key, &s_path_to_neighbor_father,
- 	     n_h + 1) == IO_ERROR)
- 		// path is released
- 		return IO_ERROR;
- 
--	if (FILESYSTEM_CHANGED_TB(p_s_tb)) {
-+	if (FILESYSTEM_CHANGED_TB(tb)) {
- 		pathrelse(&s_path_to_neighbor_father);
- 		brelse(*pp_s_com_father);
- 		return REPEAT_SEARCH;
-@@ -1075,24 +1076,26 @@ static int get_far_parent(struct tree_ba
-  * Returns:	SCHEDULE_OCCURRED - schedule occurred while the function worked;
-  *	        CARRY_ON - schedule didn't occur while the function worked;
-  */
--static int get_parents(struct tree_balance *p_s_tb, int n_h)
-+static int get_parents(struct tree_balance *tb, int n_h)
- {
--	struct treepath *p_s_path = p_s_tb->tb_path;
-+	struct treepath *p_s_path = tb->tb_path;
- 	int n_position,
- 	    n_ret_value,
--	    n_path_offset = PATH_H_PATH_OFFSET(p_s_tb->tb_path, n_h);
-+	    n_path_offset = PATH_H_PATH_OFFSET(tb->tb_path, n_h);
- 	struct buffer_head *p_s_curf, *p_s_curcf;
- 
- 	/* Current node is the root of the tree or will be root of the tree */
- 	if (n_path_offset <= FIRST_PATH_ELEMENT_OFFSET) {
- 		/* The root can not have parents.
- 		   Release nodes which previously were obtained as parents of the current node neighbors. */
--		brelse(p_s_tb->FL[n_h]);
--		brelse(p_s_tb->CFL[n_h]);
--		brelse(p_s_tb->FR[n_h]);
--		brelse(p_s_tb->CFR[n_h]);
--		p_s_tb->FL[n_h] = p_s_tb->CFL[n_h] = p_s_tb->FR[n_h] =
--		    p_s_tb->CFR[n_h] = NULL;
-+		brelse(tb->FL[n_h]);
-+		brelse(tb->CFL[n_h]);
-+		brelse(tb->FR[n_h]);
-+		brelse(tb->CFR[n_h]);
-+		tb->FL[n_h] = NULL;
-+		tb->CFL[n_h] = NULL;
-+		tb->FR[n_h] = NULL;
-+		tb->CFR[n_h] = NULL;
- 		return CARRY_ON;
  	}
  
-@@ -1104,22 +1107,22 @@ static int get_parents(struct tree_balan
- 		    PATH_OFFSET_PBUFFER(p_s_path, n_path_offset - 1);
- 		get_bh(p_s_curf);
- 		get_bh(p_s_curf);
--		p_s_tb->lkey[n_h] = n_position - 1;
-+		tb->lkey[n_h] = n_position - 1;
+@@ -79,30 +79,30 @@ int is_reusable(struct super_block *s, b
+ 		b_blocknr_t bmap1 = REISERFS_SB(s)->s_sbh->b_blocknr + 1;
+ 		if (block >= bmap1 &&
+ 		    block <= bmap1 + bmap_count) {
+-			reiserfs_warning(s, "vs-4019", "bitmap block %lu(%u) "
+-					 "can't be freed or reused",
+-					 block, bmap_count);
++			reiserfs_error(s, "vs-4019", "bitmap block %lu(%u) "
++				       "can't be freed or reused",
++				       block, bmap_count);
+ 			return 0;
+ 		}
  	} else {
- 		/* Calculate current parent of L[n_path_offset], which is the left neighbor of the current node.
- 		   Calculate current common parent of L[n_path_offset] and the current node. Note that
- 		   CFL[n_path_offset] not equal FL[n_path_offset] and CFL[n_path_offset] not equal F[n_path_offset].
- 		   Calculate lkey[n_path_offset]. */
--		if ((n_ret_value = get_far_parent(p_s_tb, n_h + 1, &p_s_curf,
-+		if ((n_ret_value = get_far_parent(tb, n_h + 1, &p_s_curf,
- 						  &p_s_curcf,
- 						  LEFT_PARENTS)) != CARRY_ON)
- 			return n_ret_value;
- 	}
- 
--	brelse(p_s_tb->FL[n_h]);
--	p_s_tb->FL[n_h] = p_s_curf;	/* New initialization of FL[n_h]. */
--	brelse(p_s_tb->CFL[n_h]);
--	p_s_tb->CFL[n_h] = p_s_curcf;	/* New initialization of CFL[n_h]. */
-+	brelse(tb->FL[n_h]);
-+	tb->FL[n_h] = p_s_curf;	/* New initialization of FL[n_h]. */
-+	brelse(tb->CFL[n_h]);
-+	tb->CFL[n_h] = p_s_curcf;	/* New initialization of CFL[n_h]. */
- 
- 	RFALSE((p_s_curf && !B_IS_IN_TREE(p_s_curf)) ||
- 	       (p_s_curcf && !B_IS_IN_TREE(p_s_curcf)),
-@@ -1133,7 +1136,7 @@ static int get_parents(struct tree_balan
-    Calculate current common parent of R[n_h] and current node. Note that CFR[n_h]
-    not equal FR[n_path_offset] and CFR[n_h] not equal F[n_h]. */
- 		if ((n_ret_value =
--		     get_far_parent(p_s_tb, n_h + 1, &p_s_curf, &p_s_curcf,
-+		     get_far_parent(tb, n_h + 1, &p_s_curf, &p_s_curcf,
- 				    RIGHT_PARENTS)) != CARRY_ON)
- 			return n_ret_value;
- 	} else {
-@@ -1143,14 +1146,16 @@ static int get_parents(struct tree_balan
- 		    PATH_OFFSET_PBUFFER(p_s_path, n_path_offset - 1);
- 		get_bh(p_s_curf);
- 		get_bh(p_s_curf);
--		p_s_tb->rkey[n_h] = n_position;
-+		tb->rkey[n_h] = n_position;
- 	}
- 
--	brelse(p_s_tb->FR[n_h]);
--	p_s_tb->FR[n_h] = p_s_curf;	/* New initialization of FR[n_path_offset]. */
-+	brelse(tb->FR[n_h]);
-+	/* New initialization of FR[n_path_offset]. */
-+	tb->FR[n_h] = p_s_curf;
- 
--	brelse(p_s_tb->CFR[n_h]);
--	p_s_tb->CFR[n_h] = p_s_curcf;	/* New initialization of CFR[n_path_offset]. */
-+	brelse(tb->CFR[n_h]);
-+	/* New initialization of CFR[n_path_offset]. */
-+	tb->CFR[n_h] = p_s_curcf;
- 
- 	RFALSE((p_s_curf && !B_IS_IN_TREE(p_s_curf)) ||
- 	       (p_s_curcf && !B_IS_IN_TREE(p_s_curcf)),
-@@ -1885,12 +1890,12 @@ static int check_balance(int mode,
- }
- 
- /* Check whether parent at the path is the really parent of the current node.*/
--static int get_direct_parent(struct tree_balance *p_s_tb, int n_h)
-+static int get_direct_parent(struct tree_balance *tb, int n_h)
- {
- 	struct buffer_head *bh;
--	struct treepath *p_s_path = p_s_tb->tb_path;
-+	struct treepath *p_s_path = tb->tb_path;
- 	int n_position,
--	    n_path_offset = PATH_H_PATH_OFFSET(p_s_tb->tb_path, n_h);
-+	    n_path_offset = PATH_H_PATH_OFFSET(tb->tb_path, n_h);
- 
- 	/* We are in the root or in the new root. */
- 	if (n_path_offset <= FIRST_PATH_ELEMENT_OFFSET) {
-@@ -1899,7 +1904,7 @@ static int get_direct_parent(struct tree
- 		       "PAP-8260: invalid offset in the path");
- 
- 		if (PATH_OFFSET_PBUFFER(p_s_path, FIRST_PATH_ELEMENT_OFFSET)->
--		    b_blocknr == SB_ROOT_BLOCK(p_s_tb->tb_sb)) {
-+		    b_blocknr == SB_ROOT_BLOCK(tb->tb_sb)) {
- 			/* Root is not changed. */
- 			PATH_OFFSET_PBUFFER(p_s_path, n_path_offset - 1) = NULL;
- 			PATH_OFFSET_POSITION(p_s_path, n_path_offset - 1) = 0;
-@@ -1924,7 +1929,7 @@ static int get_direct_parent(struct tree
- 
- 	if (buffer_locked(bh)) {
- 		__wait_on_buffer(bh);
--		if (FILESYSTEM_CHANGED_TB(p_s_tb))
-+		if (FILESYSTEM_CHANGED_TB(tb))
- 			return REPEAT_SEARCH;
- 	}
- 
-@@ -1937,85 +1942,86 @@ static int get_direct_parent(struct tree
-  * Returns:	SCHEDULE_OCCURRED - schedule occurred while the function worked;
-  *	        CARRY_ON - schedule didn't occur while the function worked;
-  */
--static int get_neighbors(struct tree_balance *p_s_tb, int n_h)
-+static int get_neighbors(struct tree_balance *tb, int n_h)
- {
- 	int n_child_position,
--	    n_path_offset = PATH_H_PATH_OFFSET(p_s_tb->tb_path, n_h + 1);
-+	    n_path_offset = PATH_H_PATH_OFFSET(tb->tb_path, n_h + 1);
- 	unsigned long n_son_number;
--	struct super_block *sb = p_s_tb->tb_sb;
-+	struct super_block *sb = tb->tb_sb;
- 	struct buffer_head *bh;
- 
- 	PROC_INFO_INC(sb, get_neighbors[n_h]);
- 
--	if (p_s_tb->lnum[n_h]) {
-+	if (tb->lnum[n_h]) {
- 		/* We need left neighbor to balance S[n_h]. */
- 		PROC_INFO_INC(sb, need_l_neighbor[n_h]);
--		bh = PATH_OFFSET_PBUFFER(p_s_tb->tb_path, n_path_offset);
-+		bh = PATH_OFFSET_PBUFFER(tb->tb_path, n_path_offset);
- 
--		RFALSE(bh == p_s_tb->FL[n_h] &&
--		       !PATH_OFFSET_POSITION(p_s_tb->tb_path, n_path_offset),
-+		RFALSE(bh == tb->FL[n_h] &&
-+		       !PATH_OFFSET_POSITION(tb->tb_path, n_path_offset),
- 		       "PAP-8270: invalid position in the parent");
- 
- 		n_child_position =
- 		    (bh ==
--		     p_s_tb->FL[n_h]) ? p_s_tb->lkey[n_h] : B_NR_ITEMS(p_s_tb->
-+		     tb->FL[n_h]) ? tb->lkey[n_h] : B_NR_ITEMS(tb->
- 								       FL[n_h]);
--		n_son_number = B_N_CHILD_NUM(p_s_tb->FL[n_h], n_child_position);
-+		n_son_number = B_N_CHILD_NUM(tb->FL[n_h], n_child_position);
- 		bh = sb_bread(sb, n_son_number);
- 		if (!bh)
- 			return IO_ERROR;
--		if (FILESYSTEM_CHANGED_TB(p_s_tb)) {
-+		if (FILESYSTEM_CHANGED_TB(tb)) {
- 			brelse(bh);
- 			PROC_INFO_INC(sb, get_neighbors_restart[n_h]);
- 			return REPEAT_SEARCH;
+ 		if (offset == 0) {
+-			reiserfs_warning(s, "vs-4020", "bitmap block %lu(%u) "
+-					 "can't be freed or reused",
+-					 block, bmap_count);
++			reiserfs_error(s, "vs-4020", "bitmap block %lu(%u) "
++				       "can't be freed or reused",
++				       block, bmap_count);
+ 			return 0;
  		}
- 
--		RFALSE(!B_IS_IN_TREE(p_s_tb->FL[n_h]) ||
--		       n_child_position > B_NR_ITEMS(p_s_tb->FL[n_h]) ||
--		       B_N_CHILD_NUM(p_s_tb->FL[n_h], n_child_position) !=
-+		RFALSE(!B_IS_IN_TREE(tb->FL[n_h]) ||
-+		       n_child_position > B_NR_ITEMS(tb->FL[n_h]) ||
-+		       B_N_CHILD_NUM(tb->FL[n_h], n_child_position) !=
- 		       bh->b_blocknr, "PAP-8275: invalid parent");
- 		RFALSE(!B_IS_IN_TREE(bh), "PAP-8280: invalid child");
- 		RFALSE(!n_h &&
- 		       B_FREE_SPACE(bh) !=
- 		       MAX_CHILD_SIZE(bh) -
--		       dc_size(B_N_CHILD(p_s_tb->FL[0], n_child_position)),
-+		       dc_size(B_N_CHILD(tb->FL[0], n_child_position)),
- 		       "PAP-8290: invalid child size of left neighbor");
- 
--		brelse(p_s_tb->L[n_h]);
--		p_s_tb->L[n_h] = bh;
-+		brelse(tb->L[n_h]);
-+		tb->L[n_h] = bh;
  	}
  
--	if (p_s_tb->rnum[n_h]) {	/* We need right neighbor to balance S[n_path_offset]. */
-+	/* We need right neighbor to balance S[n_path_offset]. */
-+	if (tb->rnum[n_h]) {
- 		PROC_INFO_INC(sb, need_r_neighbor[n_h]);
--		bh = PATH_OFFSET_PBUFFER(p_s_tb->tb_path, n_path_offset);
-+		bh = PATH_OFFSET_PBUFFER(tb->tb_path, n_path_offset);
- 
--		RFALSE(bh == p_s_tb->FR[n_h] &&
--		       PATH_OFFSET_POSITION(p_s_tb->tb_path,
-+		RFALSE(bh == tb->FR[n_h] &&
-+		       PATH_OFFSET_POSITION(tb->tb_path,
- 					    n_path_offset) >=
- 		       B_NR_ITEMS(bh),
- 		       "PAP-8295: invalid position in the parent");
- 
- 		n_child_position =
--		    (bh == p_s_tb->FR[n_h]) ? p_s_tb->rkey[n_h] + 1 : 0;
--		n_son_number = B_N_CHILD_NUM(p_s_tb->FR[n_h], n_child_position);
-+		    (bh == tb->FR[n_h]) ? tb->rkey[n_h] + 1 : 0;
-+		n_son_number = B_N_CHILD_NUM(tb->FR[n_h], n_child_position);
- 		bh = sb_bread(sb, n_son_number);
- 		if (!bh)
- 			return IO_ERROR;
--		if (FILESYSTEM_CHANGED_TB(p_s_tb)) {
-+		if (FILESYSTEM_CHANGED_TB(tb)) {
- 			brelse(bh);
- 			PROC_INFO_INC(sb, get_neighbors_restart[n_h]);
- 			return REPEAT_SEARCH;
- 		}
--		brelse(p_s_tb->R[n_h]);
--		p_s_tb->R[n_h] = bh;
-+		brelse(tb->R[n_h]);
-+		tb->R[n_h] = bh;
- 
- 		RFALSE(!n_h
- 		       && B_FREE_SPACE(bh) !=
- 		       MAX_CHILD_SIZE(bh) -
--		       dc_size(B_N_CHILD(p_s_tb->FR[0], n_child_position)),
-+		       dc_size(B_N_CHILD(tb->FR[0], n_child_position)),
- 		       "PAP-8300: invalid child size of right neighbor (%d != %d - %d)",
- 		       B_FREE_SPACE(bh), MAX_CHILD_SIZE(bh),
--		       dc_size(B_N_CHILD(p_s_tb->FR[0], n_child_position)));
-+		       dc_size(B_N_CHILD(tb->FR[0], n_child_position)));
- 
+ 	if (bmap >= bmap_count) {
+-		reiserfs_warning(s, "vs-4030", "bitmap for requested block "
+-				 "is out of range: block=%lu, bitmap_nr=%u",
+-				 block, bmap);
++		reiserfs_error(s, "vs-4030", "bitmap for requested block "
++			       "is out of range: block=%lu, bitmap_nr=%u",
++			       block, bmap);
+ 		return 0;
  	}
- 	return CARRY_ON;
-@@ -2139,7 +2145,7 @@ static int clear_all_dirty_bits(struct s
- 	return reiserfs_prepare_for_journal(s, bh, 0);
- }
  
--static int wait_tb_buffers_until_unlocked(struct tree_balance *p_s_tb)
-+static int wait_tb_buffers_until_unlocked(struct tree_balance *tb)
- {
- 	struct buffer_head *locked;
+ 	if (bit_value == 0 && block == SB_ROOT_BLOCK(s)) {
+-		reiserfs_warning(s, "vs-4050", "this is root block (%u), "
+-				 "it must be busy", SB_ROOT_BLOCK(s));
++		reiserfs_error(s, "vs-4050", "this is root block (%u), "
++			       "it must be busy", SB_ROOT_BLOCK(s));
+ 		return 0;
+ 	}
+ 
+@@ -153,8 +153,8 @@ static int scan_bitmap_block(struct reis
+ /* - I mean `a window of zero bits' as in description of this function - Zam. */
+ 
+ 	if (!bi) {
+-		reiserfs_warning(s, "jdm-4055", "NULL bitmap info pointer "
+-				 "for bitmap %d", bmap_n);
++		reiserfs_error(s, "jdm-4055", "NULL bitmap info pointer "
++			       "for bitmap %d", bmap_n);
+ 		return 0;
+ 	}
+ 
+@@ -399,8 +399,8 @@ static void _reiserfs_free_block(struct
+ 	get_bit_address(s, block, &nr, &offset);
+ 
+ 	if (nr >= reiserfs_bmap_count(s)) {
+-		reiserfs_warning(s, "vs-4075", "block %lu is out of range",
+-				 block);
++		reiserfs_error(s, "vs-4075", "block %lu is out of range",
++			       block);
+ 		return;
+ 	}
+ 
+@@ -412,8 +412,8 @@ static void _reiserfs_free_block(struct
+ 
+ 	/* clear bit for the given block in bit map */
+ 	if (!reiserfs_test_and_clear_le_bit(offset, bmbh->b_data)) {
+-		reiserfs_warning(s, "vs-4080",
+-				 "block %lu: bit already cleared", block);
++		reiserfs_error(s, "vs-4080",
++			       "block %lu: bit already cleared", block);
+ 	}
+ 	apbi[nr].free_count++;
+ 	journal_mark_dirty(th, s, bmbh);
+@@ -440,7 +440,7 @@ void reiserfs_free_block(struct reiserfs
+ 		return;
+ 
+ 	if (block > sb_block_count(REISERFS_SB(s)->s_rs)) {
+-		reiserfs_panic(th->t_super, "bitmap-4072",
++		reiserfs_error(th->t_super, "bitmap-4072",
+ 			       "Trying to free block outside file system "
+ 			       "boundaries (%lu > %lu)",
+ 			       block, sb_block_count(REISERFS_SB(s)->s_rs));
+@@ -472,8 +472,8 @@ static void __discard_prealloc(struct re
+ 	BUG_ON(!th->t_trans_id);
  #ifdef CONFIG_REISERFS_CHECK
-@@ -2151,95 +2157,94 @@ static int wait_tb_buffers_until_unlocke
- 
- 		locked = NULL;
- 
--		for (i = p_s_tb->tb_path->path_length;
-+		for (i = tb->tb_path->path_length;
- 		     !locked && i > ILLEGAL_PATH_ELEMENT_OFFSET; i--) {
--			if (PATH_OFFSET_PBUFFER(p_s_tb->tb_path, i)) {
-+			if (PATH_OFFSET_PBUFFER(tb->tb_path, i)) {
- 				/* if I understand correctly, we can only be sure the last buffer
- 				 ** in the path is in the tree --clm
- 				 */
- #ifdef CONFIG_REISERFS_CHECK
--				if (PATH_PLAST_BUFFER(p_s_tb->tb_path) ==
--				    PATH_OFFSET_PBUFFER(p_s_tb->tb_path, i)) {
--					tb_buffer_sanity_check(p_s_tb->tb_sb,
-+				if (PATH_PLAST_BUFFER(tb->tb_path) ==
-+				    PATH_OFFSET_PBUFFER(tb->tb_path, i))
-+					tb_buffer_sanity_check(tb->tb_sb,
- 							       PATH_OFFSET_PBUFFER
--							       (p_s_tb->tb_path,
-+							       (tb->tb_path,
- 								i), "S",
--							       p_s_tb->tb_path->
-+							       tb->tb_path->
- 							       path_length - i);
--				}
+ 	if (ei->i_prealloc_count < 0)
+-		reiserfs_warning(th->t_super, "zam-4001",
+-				 "inode has negative prealloc blocks count.");
++		reiserfs_error(th->t_super, "zam-4001",
++			       "inode has negative prealloc blocks count.");
  #endif
--				if (!clear_all_dirty_bits(p_s_tb->tb_sb,
-+				if (!clear_all_dirty_bits(tb->tb_sb,
- 							  PATH_OFFSET_PBUFFER
--							  (p_s_tb->tb_path,
-+							  (tb->tb_path,
- 							   i))) {
- 					locked =
--					    PATH_OFFSET_PBUFFER(p_s_tb->tb_path,
-+					    PATH_OFFSET_PBUFFER(tb->tb_path,
- 								i);
- 				}
- 			}
+ 	while (ei->i_prealloc_count > 0) {
+ 		reiserfs_free_prealloc_block(th, inode, ei->i_prealloc_block);
+@@ -509,9 +509,9 @@ void reiserfs_discard_all_prealloc(struc
+ 				i_prealloc_list);
+ #ifdef CONFIG_REISERFS_CHECK
+ 		if (!ei->i_prealloc_count) {
+-			reiserfs_warning(th->t_super, "zam-4001",
+-					 "inode is in prealloc list but has "
+-					 "no preallocated blocks.");
++			reiserfs_error(th->t_super, "zam-4001",
++				       "inode is in prealloc list but has "
++				       "no preallocated blocks.");
  		}
+ #endif
+ 		__discard_prealloc(th, ei);
+@@ -1214,7 +1214,9 @@ void reiserfs_cache_bitmap_metadata(stru
+ 	unsigned long *cur = (unsigned long *)(bh->b_data + bh->b_size);
  
--		for (i = 0; !locked && i < MAX_HEIGHT && p_s_tb->insert_size[i];
-+		for (i = 0; !locked && i < MAX_HEIGHT && tb->insert_size[i];
- 		     i++) {
+ 	/* The first bit must ALWAYS be 1 */
+-	BUG_ON(!reiserfs_test_le_bit(0, (unsigned long *)bh->b_data));
++	if (!reiserfs_test_le_bit(0, (unsigned long *)bh->b_data))
++		reiserfs_error(sb, "reiserfs-2025", "bitmap block %lu is "
++			       "corrupted: first bit must be 1", bh->b_blocknr);
  
--			if (p_s_tb->lnum[i]) {
-+			if (tb->lnum[i]) {
+ 	info->free_count = 0;
  
--				if (p_s_tb->L[i]) {
--					tb_buffer_sanity_check(p_s_tb->tb_sb,
--							       p_s_tb->L[i],
-+				if (tb->L[i]) {
-+					tb_buffer_sanity_check(tb->tb_sb,
-+							       tb->L[i],
- 							       "L", i);
- 					if (!clear_all_dirty_bits
--					    (p_s_tb->tb_sb, p_s_tb->L[i]))
--						locked = p_s_tb->L[i];
-+					    (tb->tb_sb, tb->L[i]))
-+						locked = tb->L[i];
- 				}
- 
--				if (!locked && p_s_tb->FL[i]) {
--					tb_buffer_sanity_check(p_s_tb->tb_sb,
--							       p_s_tb->FL[i],
-+				if (!locked && tb->FL[i]) {
-+					tb_buffer_sanity_check(tb->tb_sb,
-+							       tb->FL[i],
- 							       "FL", i);
- 					if (!clear_all_dirty_bits
--					    (p_s_tb->tb_sb, p_s_tb->FL[i]))
--						locked = p_s_tb->FL[i];
-+					    (tb->tb_sb, tb->FL[i]))
-+						locked = tb->FL[i];
- 				}
- 
--				if (!locked && p_s_tb->CFL[i]) {
--					tb_buffer_sanity_check(p_s_tb->tb_sb,
--							       p_s_tb->CFL[i],
-+				if (!locked && tb->CFL[i]) {
-+					tb_buffer_sanity_check(tb->tb_sb,
-+							       tb->CFL[i],
- 							       "CFL", i);
- 					if (!clear_all_dirty_bits
--					    (p_s_tb->tb_sb, p_s_tb->CFL[i]))
--						locked = p_s_tb->CFL[i];
-+					    (tb->tb_sb, tb->CFL[i]))
-+						locked = tb->CFL[i];
- 				}
- 
- 			}
- 
--			if (!locked && (p_s_tb->rnum[i])) {
-+			if (!locked && (tb->rnum[i])) {
- 
--				if (p_s_tb->R[i]) {
--					tb_buffer_sanity_check(p_s_tb->tb_sb,
--							       p_s_tb->R[i],
-+				if (tb->R[i]) {
-+					tb_buffer_sanity_check(tb->tb_sb,
-+							       tb->R[i],
- 							       "R", i);
- 					if (!clear_all_dirty_bits
--					    (p_s_tb->tb_sb, p_s_tb->R[i]))
--						locked = p_s_tb->R[i];
-+					    (tb->tb_sb, tb->R[i]))
-+						locked = tb->R[i];
- 				}
- 
--				if (!locked && p_s_tb->FR[i]) {
--					tb_buffer_sanity_check(p_s_tb->tb_sb,
--							       p_s_tb->FR[i],
-+				if (!locked && tb->FR[i]) {
-+					tb_buffer_sanity_check(tb->tb_sb,
-+							       tb->FR[i],
- 							       "FR", i);
- 					if (!clear_all_dirty_bits
--					    (p_s_tb->tb_sb, p_s_tb->FR[i]))
--						locked = p_s_tb->FR[i];
-+					    (tb->tb_sb, tb->FR[i]))
-+						locked = tb->FR[i];
- 				}
- 
--				if (!locked && p_s_tb->CFR[i]) {
--					tb_buffer_sanity_check(p_s_tb->tb_sb,
--							       p_s_tb->CFR[i],
-+				if (!locked && tb->CFR[i]) {
-+					tb_buffer_sanity_check(tb->tb_sb,
-+							       tb->CFR[i],
- 							       "CFR", i);
- 					if (!clear_all_dirty_bits
--					    (p_s_tb->tb_sb, p_s_tb->CFR[i]))
--						locked = p_s_tb->CFR[i];
-+					    (tb->tb_sb, tb->CFR[i]))
-+						locked = tb->CFR[i];
- 				}
- 			}
+--- a/fs/reiserfs/inode.c
++++ b/fs/reiserfs/inode.c
+@@ -841,12 +841,12 @@ int reiserfs_get_block(struct inode *ino
+ 							  tail_offset);
+ 				if (retval) {
+ 					if (retval != -ENOSPC)
+-						reiserfs_warning(inode->i_sb,
+-							 "clm-6004",
+-							 "convert tail failed "
+-							 "inode %lu, error %d",
+-								 inode->i_ino,
+-								 retval);
++						reiserfs_error(inode->i_sb,
++							"clm-6004",
++							"convert tail failed "
++							"inode %lu, error %d",
++							inode->i_ino,
++							retval);
+ 					if (allocated_block_nr) {
+ 						/* the bitmap, the super, and the stat data == 3 */
+ 						if (!th)
+@@ -1315,10 +1315,9 @@ void reiserfs_update_sd_size(struct reis
+ 		/* look for the object's stat data */
+ 		retval = search_item(inode->i_sb, &key, &path);
+ 		if (retval == IO_ERROR) {
+-			reiserfs_warning(inode->i_sb, "vs-13050",
+-					 "i/o failure occurred trying to "
+-					 "update %K stat data",
+-					 &key);
++			reiserfs_error(inode->i_sb, "vs-13050",
++				       "i/o failure occurred trying to "
++				       "update %K stat data", &key);
+ 			return;
  		}
-@@ -2252,10 +2257,10 @@ static int wait_tb_buffers_until_unlocke
- 		 ** --clm
+ 		if (retval == ITEM_NOT_FOUND) {
+@@ -1407,9 +1406,9 @@ void reiserfs_read_locked_inode(struct i
+ 	/* look for the object's stat data */
+ 	retval = search_item(inode->i_sb, &key, &path_to_sd);
+ 	if (retval == IO_ERROR) {
+-		reiserfs_warning(inode->i_sb, "vs-13070",
+-				 "i/o failure occurred trying to find "
+-				 "stat data of %K", &key);
++		reiserfs_error(inode->i_sb, "vs-13070",
++			       "i/o failure occurred trying to find "
++			       "stat data of %K", &key);
+ 		reiserfs_make_bad_inode(inode);
+ 		return;
+ 	}
+@@ -1661,8 +1660,8 @@ static int reiserfs_new_directory(struct
+ 	/* look for place in the tree for new item */
+ 	retval = search_item(sb, &key, path);
+ 	if (retval == IO_ERROR) {
+-		reiserfs_warning(sb, "vs-13080",
+-				 "i/o failure occurred creating new directory");
++		reiserfs_error(sb, "vs-13080",
++			       "i/o failure occurred creating new directory");
+ 		return -EIO;
+ 	}
+ 	if (retval == ITEM_FOUND) {
+@@ -1701,8 +1700,8 @@ static int reiserfs_new_symlink(struct r
+ 	/* look for place in the tree for new item */
+ 	retval = search_item(sb, &key, path);
+ 	if (retval == IO_ERROR) {
+-		reiserfs_warning(sb, "vs-13080",
+-				 "i/o failure occurred creating new symlink");
++		reiserfs_error(sb, "vs-13080",
++			       "i/o failure occurred creating new symlink");
+ 		return -EIO;
+ 	}
+ 	if (retval == ITEM_FOUND) {
+@@ -2017,10 +2016,8 @@ static int grab_tail_page(struct inode *
+ 		 ** I've screwed up the code to find the buffer, or the code to
+ 		 ** call prepare_write
  		 */
- 		for (i = 0; !locked && i < MAX_FEB_SIZE; i++) {
--			if (p_s_tb->FEB[i]) {
-+			if (tb->FEB[i]) {
- 				if (!clear_all_dirty_bits
--				    (p_s_tb->tb_sb, p_s_tb->FEB[i]))
--					locked = p_s_tb->FEB[i];
-+				    (tb->tb_sb, tb->FEB[i]))
-+					locked = tb->FEB[i];
- 			}
+-		reiserfs_warning(p_s_inode->i_sb, "clm-6000",
+-				 "error reading block %lu on dev %s",
+-				 bh->b_blocknr,
+-				 reiserfs_bdevname(p_s_inode->i_sb));
++		reiserfs_error(p_s_inode->i_sb, "clm-6000",
++			       "error reading block %lu", bh->b_blocknr);
+ 		error = -EIO;
+ 		goto unlock;
+ 	}
+@@ -2062,9 +2059,9 @@ int reiserfs_truncate_file(struct inode
+ 			// and get_block_create_0 could not find a block to read in,
+ 			// which is ok.
+ 			if (error != -ENOENT)
+-				reiserfs_warning(p_s_inode->i_sb, "clm-6001",
+-						 "grab_tail_page failed %d",
+-						 error);
++				reiserfs_error(p_s_inode->i_sb, "clm-6001",
++					       "grab_tail_page failed %d",
++					       error);
+ 			page = NULL;
+ 			bh = NULL;
  		}
+--- a/fs/reiserfs/lbalance.c
++++ b/fs/reiserfs/lbalance.c
+@@ -1291,17 +1291,17 @@ void leaf_paste_entries(struct buffer_in
+ 			prev = (i != 0) ? deh_location(&(deh[i - 1])) : 0;
  
-@@ -2263,21 +2268,20 @@ static int wait_tb_buffers_until_unlocke
- #ifdef CONFIG_REISERFS_CHECK
- 			repeat_counter++;
- 			if ((repeat_counter % 10000) == 0) {
--				reiserfs_warning(p_s_tb->tb_sb, "reiserfs-8200",
-+				reiserfs_warning(tb->tb_sb, "reiserfs-8200",
- 						 "too many iterations waiting "
- 						 "for buffer to unlock "
- 						 "(%b)", locked);
- 
- 				/* Don't loop forever.  Try to recover from possible error. */
- 
--				return (FILESYSTEM_CHANGED_TB(p_s_tb)) ?
-+				return (FILESYSTEM_CHANGED_TB(tb)) ?
- 				    REPEAT_SEARCH : CARRY_ON;
- 			}
+ 			if (prev && prev <= deh_location(&(deh[i])))
+-				reiserfs_warning(NULL, "vs-10240",
+-						 "directory item (%h) "
+-						 "corrupted (prev %a, "
+-						 "cur(%d) %a)",
+-						 ih, deh + i - 1, i, deh + i);
++				reiserfs_error(sb_from_bi(bi), "vs-10240",
++					       "directory item (%h) "
++					       "corrupted (prev %a, "
++					       "cur(%d) %a)",
++					       ih, deh + i - 1, i, deh + i);
+ 			if (next && next >= deh_location(&(deh[i])))
+-				reiserfs_warning(NULL, "vs-10250",
+-						 "directory item (%h) "
+-						 "corrupted (cur(%d) %a, "
+-						 "next %a)",
+-						 ih, i, deh + i, deh + i + 1);
++				reiserfs_error(sb_from_bi(bi), "vs-10250",
++					       "directory item (%h) "
++					       "corrupted (cur(%d) %a, "
++					       "next %a)",
++					       ih, i, deh + i, deh + i + 1);
+ 		}
+ 	}
  #endif
- 			__wait_on_buffer(locked);
--			if (FILESYSTEM_CHANGED_TB(p_s_tb)) {
-+			if (FILESYSTEM_CHANGED_TB(tb))
- 				return REPEAT_SEARCH;
--			}
+--- a/fs/reiserfs/namei.c
++++ b/fs/reiserfs/namei.c
+@@ -120,8 +120,8 @@ int search_by_entry_key(struct super_blo
+ 	switch (retval) {
+ 	case ITEM_NOT_FOUND:
+ 		if (!PATH_LAST_POSITION(path)) {
+-			reiserfs_warning(sb, "vs-7000", "search_by_key "
+-					 "returned item position == 0");
++			reiserfs_error(sb, "vs-7000", "search_by_key "
++				       "returned item position == 0");
+ 			pathrelse(path);
+ 			return IO_ERROR;
  		}
+@@ -135,7 +135,7 @@ int search_by_entry_key(struct super_blo
  
- 	} while (locked);
-@@ -2307,138 +2311,136 @@ static int wait_tb_buffers_until_unlocke
-  *	tb	tree_balance structure;
-  *	inum	item number in S[h];
-  *      pos_in_item - comment this if you can
-- *      ins_ih & ins_sd are used when inserting
-+ *      ins_ih	item head of item being inserted
-+ *	data	inserted item or data to be pasted
-  * Returns:	1 - schedule occurred while the function worked;
-  *	        0 - schedule didn't occur while the function worked;
-  *             -1 - if no_disk_space
-  */
- 
--int fix_nodes(int n_op_mode, struct tree_balance *p_s_tb, struct item_head *p_s_ins_ih,	// item head of item being inserted
--	      const void *data	// inserted item or data to be pasted
--    )
-+int fix_nodes(int n_op_mode, struct tree_balance *tb,
-+	      struct item_head *p_s_ins_ih, const void *data)
- {
--	int n_ret_value, n_h, n_item_num = PATH_LAST_POSITION(p_s_tb->tb_path);
-+	int n_ret_value, n_h, n_item_num = PATH_LAST_POSITION(tb->tb_path);
- 	int n_pos_in_item;
- 
- 	/* we set wait_tb_buffers_run when we have to restore any dirty bits cleared
- 	 ** during wait_tb_buffers_run
- 	 */
- 	int wait_tb_buffers_run = 0;
--	struct buffer_head *p_s_tbS0 = PATH_PLAST_BUFFER(p_s_tb->tb_path);
-+	struct buffer_head *tbS0 = PATH_PLAST_BUFFER(tb->tb_path);
- 
--	++REISERFS_SB(p_s_tb->tb_sb)->s_fix_nodes;
-+	++REISERFS_SB(tb->tb_sb)->s_fix_nodes;
- 
--	n_pos_in_item = p_s_tb->tb_path->pos_in_item;
-+	n_pos_in_item = tb->tb_path->pos_in_item;
- 
--	p_s_tb->fs_gen = get_generation(p_s_tb->tb_sb);
-+	tb->fs_gen = get_generation(tb->tb_sb);
- 
- 	/* we prepare and log the super here so it will already be in the
- 	 ** transaction when do_balance needs to change it.
- 	 ** This way do_balance won't have to schedule when trying to prepare
- 	 ** the super for logging
- 	 */
--	reiserfs_prepare_for_journal(p_s_tb->tb_sb,
--				     SB_BUFFER_WITH_SB(p_s_tb->tb_sb), 1);
--	journal_mark_dirty(p_s_tb->transaction_handle, p_s_tb->tb_sb,
--			   SB_BUFFER_WITH_SB(p_s_tb->tb_sb));
--	if (FILESYSTEM_CHANGED_TB(p_s_tb))
-+	reiserfs_prepare_for_journal(tb->tb_sb,
-+				     SB_BUFFER_WITH_SB(tb->tb_sb), 1);
-+	journal_mark_dirty(tb->transaction_handle, tb->tb_sb,
-+			   SB_BUFFER_WITH_SB(tb->tb_sb));
-+	if (FILESYSTEM_CHANGED_TB(tb))
- 		return REPEAT_SEARCH;
- 
- 	/* if it possible in indirect_to_direct conversion */
--	if (buffer_locked(p_s_tbS0)) {
--		__wait_on_buffer(p_s_tbS0);
--		if (FILESYSTEM_CHANGED_TB(p_s_tb))
-+	if (buffer_locked(tbS0)) {
-+		__wait_on_buffer(tbS0);
-+		if (FILESYSTEM_CHANGED_TB(tb))
- 			return REPEAT_SEARCH;
- 	}
- #ifdef CONFIG_REISERFS_CHECK
- 	if (cur_tb) {
- 		print_cur_tb("fix_nodes");
--		reiserfs_panic(p_s_tb->tb_sb, "PAP-8305",
-+		reiserfs_panic(tb->tb_sb, "PAP-8305",
- 			       "there is pending do_balance");
- 	}
- 
--	if (!buffer_uptodate(p_s_tbS0) || !B_IS_IN_TREE(p_s_tbS0)) {
--		reiserfs_panic(p_s_tb->tb_sb, "PAP-8320", "S[0] (%b %z) is "
-+	if (!buffer_uptodate(tbS0) || !B_IS_IN_TREE(tbS0))
-+		reiserfs_panic(tb->tb_sb, "PAP-8320", "S[0] (%b %z) is "
- 			       "not uptodate at the beginning of fix_nodes "
- 			       "or not in tree (mode %c)",
--			       p_s_tbS0, p_s_tbS0, n_op_mode);
--	}
-+			       tbS0, tbS0, n_op_mode);
- 
- 	/* Check parameters. */
- 	switch (n_op_mode) {
- 	case M_INSERT:
--		if (n_item_num <= 0 || n_item_num > B_NR_ITEMS(p_s_tbS0))
--			reiserfs_panic(p_s_tb->tb_sb, "PAP-8330", "Incorrect "
-+		if (n_item_num <= 0 || n_item_num > B_NR_ITEMS(tbS0))
-+			reiserfs_panic(tb->tb_sb, "PAP-8330", "Incorrect "
- 				       "item number %d (in S0 - %d) in case "
- 				       "of insert", n_item_num,
--				       B_NR_ITEMS(p_s_tbS0));
-+				       B_NR_ITEMS(tbS0));
- 		break;
- 	case M_PASTE:
- 	case M_DELETE:
- 	case M_CUT:
--		if (n_item_num < 0 || n_item_num >= B_NR_ITEMS(p_s_tbS0)) {
--			print_block(p_s_tbS0, 0, -1, -1);
--			reiserfs_panic(p_s_tb->tb_sb, "PAP-8335", "Incorrect "
-+		if (n_item_num < 0 || n_item_num >= B_NR_ITEMS(tbS0)) {
-+			print_block(tbS0, 0, -1, -1);
-+			reiserfs_panic(tb->tb_sb, "PAP-8335", "Incorrect "
- 				       "item number(%d); mode = %c "
- 				       "insert_size = %d",
- 				       n_item_num, n_op_mode,
--				       p_s_tb->insert_size[0]);
-+				       tb->insert_size[0]);
- 		}
- 		break;
  	default:
--		reiserfs_panic(p_s_tb->tb_sb, "PAP-8340", "Incorrect mode "
-+		reiserfs_panic(tb->tb_sb, "PAP-8340", "Incorrect mode "
- 			       "of operation");
- 	}
- #endif
- 
--	if (get_mem_for_virtual_node(p_s_tb) == REPEAT_SEARCH)
-+	if (get_mem_for_virtual_node(tb) == REPEAT_SEARCH)
- 		// FIXME: maybe -ENOMEM when tb->vn_buf == 0? Now just repeat
- 		return REPEAT_SEARCH;
- 
- 	/* Starting from the leaf level; for all levels n_h of the tree. */
--	for (n_h = 0; n_h < MAX_HEIGHT && p_s_tb->insert_size[n_h]; n_h++) {
--		if ((n_ret_value = get_direct_parent(p_s_tb, n_h)) != CARRY_ON) {
-+	for (n_h = 0; n_h < MAX_HEIGHT && tb->insert_size[n_h]; n_h++) {
-+		n_ret_value = get_direct_parent(tb, n_h);
-+		if (n_ret_value != CARRY_ON)
- 			goto repeat;
--		}
- 
--		if ((n_ret_value =
--		     check_balance(n_op_mode, p_s_tb, n_h, n_item_num,
--				   n_pos_in_item, p_s_ins_ih,
--				   data)) != CARRY_ON) {
-+		n_ret_value = check_balance(n_op_mode, tb, n_h, n_item_num,
-+					    n_pos_in_item, p_s_ins_ih, data);
-+		if (n_ret_value != CARRY_ON) {
- 			if (n_ret_value == NO_BALANCING_NEEDED) {
- 				/* No balancing for higher levels needed. */
--				if ((n_ret_value =
--				     get_neighbors(p_s_tb, n_h)) != CARRY_ON) {
-+				n_ret_value = get_neighbors(tb, n_h);
-+				if (n_ret_value != CARRY_ON)
- 					goto repeat;
--				}
- 				if (n_h != MAX_HEIGHT - 1)
--					p_s_tb->insert_size[n_h + 1] = 0;
-+					tb->insert_size[n_h + 1] = 0;
- 				/* ok, analysis and resource gathering are complete */
- 				break;
- 			}
- 			goto repeat;
- 		}
- 
--		if ((n_ret_value = get_neighbors(p_s_tb, n_h)) != CARRY_ON) {
-+		n_ret_value = get_neighbors(tb, n_h);
-+		if (n_ret_value != CARRY_ON)
- 			goto repeat;
--		}
- 
--		if ((n_ret_value = get_empty_nodes(p_s_tb, n_h)) != CARRY_ON) {
--			goto repeat;	/* No disk space, or schedule occurred and
--					   analysis may be invalid and needs to be redone. */
--		}
-+		/* No disk space, or schedule occurred and analysis may be
-+		 * invalid and needs to be redone. */
-+		n_ret_value = get_empty_nodes(tb, n_h);
-+		if (n_ret_value != CARRY_ON)
-+			goto repeat;
- 
--		if (!PATH_H_PBUFFER(p_s_tb->tb_path, n_h)) {
-+		if (!PATH_H_PBUFFER(tb->tb_path, n_h)) {
- 			/* We have a positive insert size but no nodes exist on this
- 			   level, this means that we are creating a new root. */
- 
--			RFALSE(p_s_tb->blknum[n_h] != 1,
-+			RFALSE(tb->blknum[n_h] != 1,
- 			       "PAP-8350: creating new empty root");
- 
- 			if (n_h < MAX_HEIGHT - 1)
--				p_s_tb->insert_size[n_h + 1] = 0;
--		} else if (!PATH_H_PBUFFER(p_s_tb->tb_path, n_h + 1)) {
--			if (p_s_tb->blknum[n_h] > 1) {
-+				tb->insert_size[n_h + 1] = 0;
-+		} else if (!PATH_H_PBUFFER(tb->tb_path, n_h + 1)) {
-+			if (tb->blknum[n_h] > 1) {
- 				/* The tree needs to be grown, so this node S[n_h]
- 				   which is the root node is split into two nodes,
- 				   and a new node (S[n_h+1]) will be created to
-@@ -2447,19 +2449,20 @@ int fix_nodes(int n_op_mode, struct tree
- 				RFALSE(n_h == MAX_HEIGHT - 1,
- 				       "PAP-8355: attempt to create too high of a tree");
- 
--				p_s_tb->insert_size[n_h + 1] =
-+				tb->insert_size[n_h + 1] =
- 				    (DC_SIZE +
--				     KEY_SIZE) * (p_s_tb->blknum[n_h] - 1) +
-+				     KEY_SIZE) * (tb->blknum[n_h] - 1) +
- 				    DC_SIZE;
- 			} else if (n_h < MAX_HEIGHT - 1)
--				p_s_tb->insert_size[n_h + 1] = 0;
-+				tb->insert_size[n_h + 1] = 0;
- 		} else
--			p_s_tb->insert_size[n_h + 1] =
--			    (DC_SIZE + KEY_SIZE) * (p_s_tb->blknum[n_h] - 1);
-+			tb->insert_size[n_h + 1] =
-+			    (DC_SIZE + KEY_SIZE) * (tb->blknum[n_h] - 1);
+ 		pathrelse(path);
+-		reiserfs_warning(sb, "vs-7002", "no path to here");
++		reiserfs_error(sb, "vs-7002", "no path to here");
+ 		return IO_ERROR;
  	}
  
--	if ((n_ret_value = wait_tb_buffers_until_unlocked(p_s_tb)) == CARRY_ON) {
--		if (FILESYSTEM_CHANGED_TB(p_s_tb)) {
-+	n_ret_value = wait_tb_buffers_until_unlocked(tb);
-+	if (n_ret_value == CARRY_ON) {
-+		if (FILESYSTEM_CHANGED_TB(tb)) {
- 			wait_tb_buffers_run = 1;
- 			n_ret_value = REPEAT_SEARCH;
- 			goto repeat;
-@@ -2482,50 +2485,49 @@ int fix_nodes(int n_op_mode, struct tree
- 
- 		/* Release path buffers. */
- 		if (wait_tb_buffers_run) {
--			pathrelse_and_restore(p_s_tb->tb_sb, p_s_tb->tb_path);
-+			pathrelse_and_restore(tb->tb_sb, tb->tb_path);
- 		} else {
--			pathrelse(p_s_tb->tb_path);
-+			pathrelse(tb->tb_path);
- 		}
- 		/* brelse all resources collected for balancing */
- 		for (i = 0; i < MAX_HEIGHT; i++) {
- 			if (wait_tb_buffers_run) {
--				reiserfs_restore_prepared_buffer(p_s_tb->tb_sb,
--								 p_s_tb->L[i]);
--				reiserfs_restore_prepared_buffer(p_s_tb->tb_sb,
--								 p_s_tb->R[i]);
--				reiserfs_restore_prepared_buffer(p_s_tb->tb_sb,
--								 p_s_tb->FL[i]);
--				reiserfs_restore_prepared_buffer(p_s_tb->tb_sb,
--								 p_s_tb->FR[i]);
--				reiserfs_restore_prepared_buffer(p_s_tb->tb_sb,
--								 p_s_tb->
-+				reiserfs_restore_prepared_buffer(tb->tb_sb,
-+								 tb->L[i]);
-+				reiserfs_restore_prepared_buffer(tb->tb_sb,
-+								 tb->R[i]);
-+				reiserfs_restore_prepared_buffer(tb->tb_sb,
-+								 tb->FL[i]);
-+				reiserfs_restore_prepared_buffer(tb->tb_sb,
-+								 tb->FR[i]);
-+				reiserfs_restore_prepared_buffer(tb->tb_sb,
-+								 tb->
- 								 CFL[i]);
--				reiserfs_restore_prepared_buffer(p_s_tb->tb_sb,
--								 p_s_tb->
-+				reiserfs_restore_prepared_buffer(tb->tb_sb,
-+								 tb->
- 								 CFR[i]);
- 			}
- 
--			brelse(p_s_tb->L[i]);
--			brelse(p_s_tb->R[i]);
--			brelse(p_s_tb->FL[i]);
--			brelse(p_s_tb->FR[i]);
--			brelse(p_s_tb->CFL[i]);
--			brelse(p_s_tb->CFR[i]);
--
--			p_s_tb->L[i] = NULL;
--			p_s_tb->R[i] = NULL;
--			p_s_tb->FL[i] = NULL;
--			p_s_tb->FR[i] = NULL;
--			p_s_tb->CFL[i] = NULL;
--			p_s_tb->CFR[i] = NULL;
-+			brelse(tb->L[i]);
-+			brelse(tb->R[i]);
-+			brelse(tb->FL[i]);
-+			brelse(tb->FR[i]);
-+			brelse(tb->CFL[i]);
-+			brelse(tb->CFR[i]);
-+
-+			tb->L[i] = NULL;
-+			tb->R[i] = NULL;
-+			tb->FL[i] = NULL;
-+			tb->FR[i] = NULL;
-+			tb->CFL[i] = NULL;
-+			tb->CFR[i] = NULL;
+@@ -298,7 +298,7 @@ static int reiserfs_find_entry(struct in
+ 		    search_by_entry_key(dir->i_sb, &key_to_search,
+ 					path_to_entry, de);
+ 		if (retval == IO_ERROR) {
+-			reiserfs_warning(dir->i_sb, "zam-7001", "io error");
++			reiserfs_error(dir->i_sb, "zam-7001", "io error");
+ 			return IO_ERROR;
  		}
  
- 		if (wait_tb_buffers_run) {
- 			for (i = 0; i < MAX_FEB_SIZE; i++) {
--				if (p_s_tb->FEB[i]) {
-+				if (tb->FEB[i])
- 					reiserfs_restore_prepared_buffer
--					    (p_s_tb->tb_sb, p_s_tb->FEB[i]);
--				}
-+					    (tb->tb_sb, tb->FEB[i]);
- 			}
+@@ -481,9 +481,9 @@ static int reiserfs_add_entry(struct rei
  		}
- 		return n_ret_value;
-@@ -2533,7 +2535,7 @@ int fix_nodes(int n_op_mode, struct tree
  
+ 		if (retval != NAME_FOUND) {
+-			reiserfs_warning(dir->i_sb, "zam-7002",
+-					 "reiserfs_find_entry() returned "
+-					 "unexpected value (%d)", retval);
++			reiserfs_error(dir->i_sb, "zam-7002",
++				       "reiserfs_find_entry() returned "
++				       "unexpected value (%d)", retval);
+ 		}
+ 
+ 		return -EEXIST;
+@@ -899,9 +899,9 @@ static int reiserfs_rmdir(struct inode *
+ 		goto end_rmdir;
+ 
+ 	if (inode->i_nlink != 2 && inode->i_nlink != 1)
+-		reiserfs_warning(inode->i_sb, "reiserfs-7040",
+-				 "empty directory has nlink != 2 (%d)",
+-				 inode->i_nlink);
++		reiserfs_error(inode->i_sb, "reiserfs-7040",
++			       "empty directory has nlink != 2 (%d)",
++			       inode->i_nlink);
+ 
+ 	clear_nlink(inode);
+ 	inode->i_ctime = dir->i_ctime = dir->i_mtime = CURRENT_TIME_SEC;
+@@ -1494,8 +1494,8 @@ static int reiserfs_rename(struct inode
+ 	if (reiserfs_cut_from_item
+ 	    (&th, &old_entry_path, &(old_de.de_entry_key), old_dir, NULL,
+ 	     0) < 0)
+-		reiserfs_warning(old_dir->i_sb, "vs-7060",
+-				 "couldn't not cut old name. Fsck later?");
++		reiserfs_error(old_dir->i_sb, "vs-7060",
++			       "couldn't not cut old name. Fsck later?");
+ 
+ 	old_dir->i_size -= DEH_SIZE + old_de.de_entrylen;
+ 
+--- a/fs/reiserfs/objectid.c
++++ b/fs/reiserfs/objectid.c
+@@ -159,8 +159,8 @@ void reiserfs_release_objectid(struct re
+ 		i += 2;
+ 	}
+ 
+-	reiserfs_warning(s, "vs-15011", "tried to free free object id (%lu)",
+-			 (long unsigned)objectid_to_release);
++	reiserfs_error(s, "vs-15011", "tried to free free object id (%lu)",
++		       (long unsigned)objectid_to_release);
  }
  
--/* Anatoly will probably forgive me renaming p_s_tb to tb. I just
-+/* Anatoly will probably forgive me renaming tb to tb. I just
-    wanted to make lines shorter */
- void unfix_nodes(struct tree_balance *tb)
- {
+ int reiserfs_convert_objectid_map_v1(struct super_block *s)
 --- a/fs/reiserfs/stree.c
 +++ b/fs/reiserfs/stree.c
-@@ -1063,17 +1063,17 @@ static char prepare_for_delete_or_cut(st
- }
- 
- /* Calculate number of bytes which will be deleted or cut during balance */
--static int calc_deleted_bytes_number(struct tree_balance *p_s_tb, char c_mode)
-+static int calc_deleted_bytes_number(struct tree_balance *tb, char c_mode)
+@@ -720,9 +720,9 @@ int search_by_key(struct super_block *p_
+ 		// make sure, that the node contents look like a node of
+ 		// certain level
+ 		if (!is_tree_node(p_s_bh, expected_level)) {
+-			reiserfs_warning(p_s_sb, "vs-5150",
+-					 "invalid format found in block %ld. "
+-					 "Fsck?", p_s_bh->b_blocknr);
++			reiserfs_error(p_s_sb, "vs-5150",
++				       "invalid format found in block %ld. "
++				       "Fsck?", p_s_bh->b_blocknr);
+ 			pathrelse(p_s_search_path);
+ 			return IO_ERROR;
+ 		}
+@@ -1336,9 +1336,9 @@ void reiserfs_delete_solid_item(struct r
+ 	while (1) {
+ 		retval = search_item(th->t_super, &cpu_key, &path);
+ 		if (retval == IO_ERROR) {
+-			reiserfs_warning(th->t_super, "vs-5350",
+-					 "i/o failure occurred trying "
+-					 "to delete %K", &cpu_key);
++			reiserfs_error(th->t_super, "vs-5350",
++				       "i/o failure occurred trying "
++				       "to delete %K", &cpu_key);
+ 			break;
+ 		}
+ 		if (retval != ITEM_FOUND) {
+@@ -1737,7 +1737,7 @@ static void truncate_directory(struct re
  {
- 	int n_del_size;
--	struct item_head *p_le_ih = PATH_PITEM_HEAD(p_s_tb->tb_path);
-+	struct item_head *p_le_ih = PATH_PITEM_HEAD(tb->tb_path);
- 
- 	if (is_statdata_le_ih(p_le_ih))
- 		return 0;
- 
- 	n_del_size =
- 	    (c_mode ==
--	     M_DELETE) ? ih_item_len(p_le_ih) : -p_s_tb->insert_size[0];
-+	     M_DELETE) ? ih_item_len(p_le_ih) : -tb->insert_size[0];
- 	if (is_direntry_le_ih(p_le_ih)) {
- 		// return EMPTY_DIR_SIZE; /* We delete emty directoris only. */
- 		// we can't use EMPTY_DIR_SIZE, as old format dirs have a different
-@@ -1083,25 +1083,26 @@ static int calc_deleted_bytes_number(str
- 	}
- 
- 	if (is_indirect_le_ih(p_le_ih))
--		n_del_size = (n_del_size / UNFM_P_SIZE) * (PATH_PLAST_BUFFER(p_s_tb->tb_path)->b_size);	// - get_ih_free_space (p_le_ih);
-+		n_del_size = (n_del_size / UNFM_P_SIZE) *
-+				(PATH_PLAST_BUFFER(tb->tb_path)->b_size);
- 	return n_del_size;
- }
- 
- static void init_tb_struct(struct reiserfs_transaction_handle *th,
--			   struct tree_balance *p_s_tb,
-+			   struct tree_balance *tb,
- 			   struct super_block *sb,
- 			   struct treepath *p_s_path, int n_size)
- {
- 
  	BUG_ON(!th->t_trans_id);
+ 	if (inode->i_nlink)
+-		reiserfs_warning(inode->i_sb, "vs-5655", "link count != 0");
++		reiserfs_error(inode->i_sb, "vs-5655", "link count != 0");
  
--	memset(p_s_tb, '\0', sizeof(struct tree_balance));
--	p_s_tb->transaction_handle = th;
--	p_s_tb->tb_sb = sb;
--	p_s_tb->tb_path = p_s_path;
-+	memset(tb, '\0', sizeof(struct tree_balance));
-+	tb->transaction_handle = th;
-+	tb->tb_sb = sb;
-+	tb->tb_path = p_s_path;
- 	PATH_OFFSET_PBUFFER(p_s_path, ILLEGAL_PATH_ELEMENT_OFFSET) = NULL;
- 	PATH_OFFSET_POSITION(p_s_path, ILLEGAL_PATH_ELEMENT_OFFSET) = 0;
--	p_s_tb->insert_size[0] = n_size;
-+	tb->insert_size[0] = n_size;
- }
+ 	set_le_key_k_offset(KEY_FORMAT_3_5, INODE_PKEY(inode), DOT_OFFSET);
+ 	set_le_key_k_type(KEY_FORMAT_3_5, INODE_PKEY(inode), TYPE_DIRENTRY);
+@@ -1790,16 +1790,16 @@ int reiserfs_do_truncate(struct reiserfs
+ 	    search_for_position_by_key(p_s_inode->i_sb, &s_item_key,
+ 				       &s_search_path);
+ 	if (retval == IO_ERROR) {
+-		reiserfs_warning(p_s_inode->i_sb, "vs-5657",
+-				 "i/o failure occurred trying to truncate %K",
+-				 &s_item_key);
++		reiserfs_error(p_s_inode->i_sb, "vs-5657",
++			       "i/o failure occurred trying to truncate %K",
++			       &s_item_key);
+ 		err = -EIO;
+ 		goto out;
+ 	}
+ 	if (retval == POSITION_FOUND || retval == FILE_NOT_FOUND) {
+-		reiserfs_warning(p_s_inode->i_sb, "PAP-5660",
+-				 "wrong result %d of search for %K", retval,
+-				 &s_item_key);
++		reiserfs_error(p_s_inode->i_sb, "PAP-5660",
++			       "wrong result %d of search for %K", retval,
++			       &s_item_key);
  
- void padd_item(char *item, int total_length, int length)
---- a/include/linux/reiserfs_fs.h
-+++ b/include/linux/reiserfs_fs.h
-@@ -2004,7 +2004,7 @@ extern const struct address_space_operat
+ 		err = -EIO;
+ 		goto out;
+--- a/fs/reiserfs/super.c
++++ b/fs/reiserfs/super.c
+@@ -195,9 +195,8 @@ static int finish_unfinished(struct supe
+ 	while (!retval) {
+ 		retval = search_item(s, &max_cpu_key, &path);
+ 		if (retval != ITEM_NOT_FOUND) {
+-			reiserfs_warning(s, "vs-2140",
+-					 "search_by_key returned %d",
+-					 retval);
++			reiserfs_error(s, "vs-2140",
++				       "search_by_key returned %d", retval);
+ 			break;
+ 		}
  
- /* fix_nodes.c */
+@@ -378,9 +377,9 @@ void add_save_link(struct reiserfs_trans
+ 	retval = search_item(inode->i_sb, &key, &path);
+ 	if (retval != ITEM_NOT_FOUND) {
+ 		if (retval != -ENOSPC)
+-			reiserfs_warning(inode->i_sb, "vs-2100",
+-					 "search_by_key (%K) returned %d", &key,
+-					 retval);
++			reiserfs_error(inode->i_sb, "vs-2100",
++				       "search_by_key (%K) returned %d", &key,
++				       retval);
+ 		pathrelse(&path);
+ 		return;
+ 	}
+@@ -393,8 +392,8 @@ void add_save_link(struct reiserfs_trans
+ 	    reiserfs_insert_item(th, &path, &key, &ih, NULL, (char *)&link);
+ 	if (retval) {
+ 		if (retval != -ENOSPC)
+-			reiserfs_warning(inode->i_sb, "vs-2120",
+-					 "insert_item returned %d", retval);
++			reiserfs_error(inode->i_sb, "vs-2120",
++				       "insert_item returned %d", retval);
+ 	} else {
+ 		if (truncate)
+ 			REISERFS_I(inode)->i_flags |=
+--- a/fs/reiserfs/tail_conversion.c
++++ b/fs/reiserfs/tail_conversion.c
+@@ -48,9 +48,9 @@ int direct2indirect(struct reiserfs_tran
  
--int fix_nodes(int n_op_mode, struct tree_balance *p_s_tb,
-+int fix_nodes(int n_op_mode, struct tree_balance *tb,
- 	      struct item_head *p_s_ins_ih, const void *);
- void unfix_nodes(struct tree_balance *);
+ 	// FIXME: we could avoid this 
+ 	if (search_for_position_by_key(sb, &end_key, path) == POSITION_FOUND) {
+-		reiserfs_warning(sb, "PAP-14030",
+-				 "pasted or inserted byte exists in "
+-				 "the tree %K. Use fsck to repair.", &end_key);
++		reiserfs_error(sb, "PAP-14030",
++			       "pasted or inserted byte exists in "
++			       "the tree %K. Use fsck to repair.", &end_key);
+ 		pathrelse(path);
+ 		return -EIO;
+ 	}
+--- a/fs/reiserfs/xattr.c
++++ b/fs/reiserfs/xattr.c
+@@ -259,8 +259,8 @@ static int __xattr_readdir(struct inode
+ 		ih = de.de_ih;
  
+ 		if (!is_direntry_le_ih(ih)) {
+-			reiserfs_warning(inode->i_sb, "jdm-20000",
+-					 "not direntry %h", ih);
++			reiserfs_error(inode->i_sb, "jdm-20000",
++				       "not direntry %h", ih);
+ 			break;
+ 		}
+ 		copy_item_head(&tmp_ih, ih);
+@@ -653,15 +653,14 @@ __reiserfs_xattr_del(struct dentry *xadi
+ 		goto out_file;
+ 
+ 	if (!is_reiserfs_priv_object(dentry->d_inode)) {
+-		reiserfs_warning(dir->i_sb, "jdm-20003",
+-				 "OID %08x [%.*s/%.*s] doesn't have "
+-				 "priv flag set [parent is %sset].",
+-				 le32_to_cpu(INODE_PKEY(dentry->d_inode)->
+-					     k_objectid), xadir->d_name.len,
+-				 xadir->d_name.name, namelen, name,
+-				 is_reiserfs_priv_object(xadir->
+-							 d_inode) ? "" :
+-				 "not ");
++		reiserfs_error(dir->i_sb, "jdm-20003",
++			       "OID %08x [%.*s/%.*s] doesn't have "
++			       "priv flag set [parent is %sset].",
++			       le32_to_cpu(INODE_PKEY(dentry->d_inode)->
++					   k_objectid), xadir->d_name.len,
++			       xadir->d_name.name, namelen, name,
++			       is_reiserfs_priv_object(xadir->d_inode) ? "" :
++			       "not ");
+ 		dput(dentry);
+ 		return -EIO;
+ 	}
 
 
