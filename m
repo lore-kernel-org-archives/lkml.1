@@ -1,65 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757730AbZC3WZY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754292AbZC3W1p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757730AbZC3WZY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Mar 2009 18:25:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752103AbZC3WZL
+	id S1754292AbZC3W1p (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Mar 2009 18:27:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753642AbZC3W1g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Mar 2009 18:25:11 -0400
-Received: from rv-out-0506.google.com ([209.85.198.231]:7423 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751196AbZC3WZJ convert rfc822-to-8bit (ORCPT
+	Mon, 30 Mar 2009 18:27:36 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:50359 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752103AbZC3W1f (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Mar 2009 18:25:09 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=q2e9gzF1m95PZT1ewiCu26Dgn5B2GhPJfyC/Sl+IcOEHgUQh3/2FIVlZiH9cwiXNMT
-         toMg6HMJDvgBzZDGzgpaV50k7SLrYlQMvSZpBgT0QwLsbAQH2qI8B0YptFv6wabi66TA
-         CwlUxZw0mFd6PH25X+7z611TPEu71WqyQw8c0=
-MIME-Version: 1.0
-In-Reply-To: <20090330221034.GC27774@cleech-lnx.jf.intel.com>
-References: <20090326220411.GA16286@cleech-lnx.jf.intel.com>
-	 <86802c440903261929s775fe85cv86b900e2610acf1d@mail.gmail.com>
-	 <20090327163438.GA10185@cleech-lnx.jf.intel.com>
-	 <49CDAAD5.9010202@kernel.org>
-	 <20090330221034.GC27774@cleech-lnx.jf.intel.com>
-Date: Mon, 30 Mar 2009 15:25:07 -0700
-X-Google-Sender-Auth: 17db3c7b4b85734f
-Message-ID: <86802c440903301525h41481c98lfff9b40b98b2d7f3@mail.gmail.com>
-Subject: Re: [PATCH] irq: mask irq before move it
-From: Yinghai Lu <yinghai@kernel.org>
-To: Chris Leech <christopher.leech@intel.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Mon, 30 Mar 2009 18:27:35 -0400
+Date: Mon, 30 Mar 2009 15:18:44 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Theodore Tso <tytso@mit.edu>
+Cc: oleg@redhat.com, adobriyan@gmail.com, mingo@elte.hu,
+       torvalds@linux-foundation.org, fche@redhat.com, roland@redhat.com,
+       rostedt@goodmis.org, utrace-devel@redhat.com,
+       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
+       tglx@linutronix.de
+Subject: Re: [PATCH 3/3] utrace-based ftrace "process" engine, v2
+Message-Id: <20090330151844.8b4eed0f.akpm@linux-foundation.org>
+In-Reply-To: <20090323214417.GD5814@mit.edu>
+References: <20090321041954.72b99e69.akpm@linux-foundation.org>
+	<20090321115141.GA3566@redhat.com>
+	<20090321050422.d1d99eec.akpm@linux-foundation.org>
+	<20090321154501.GA2707@elte.hu>
+	<20090321143413.75ead1aa.akpm@linux-foundation.org>
+	<20090321215145.GB5262@redhat.com>
+	<alpine.LFD.2.00.0903211501060.3030@localhost.localdomain>
+	<20090322123749.GF19826@elte.hu>
+	<20090323134813.GA18219@x200.localdomain>
+	<20090323151400.GA3413@redhat.com>
+	<20090323214417.GD5814@mit.edu>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 30, 2009 at 3:10 PM, Chris Leech
-<christopher.leech@intel.com> wrote:
-> On Fri, Mar 27, 2009 at 09:43:01PM -0700, Yinghai Lu wrote:
->>
->> Imapct: fix panic
->>
->> try to mask the irq, before move the irq desc
->>
->> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
->
-> This change did not fix the issue I'm seeing.  The following output was
-> generated with 2.6.29 + this patch.
->
-> I will send system information and kernel config separately.
 
-in your /proc/interrupts
+So we need to work out what to do about utrace and I feel a need to hit
+the reset button on all this.  Largely because I've forgotten
+everything and it was all confusing anyway.
 
- 57:          0          0          0          0          0          0
-         0          0   PCI-MSI-edge      aerdrv, pciehp
+Could those who object to utrace please pipe up and summarise their
+reasons?
 
-how can that be shared?
 
-YH
+Just to kick the can down the road a bit I merged the first two
+patches.  The ftrace patch merged about as (un)successfully as one would
+expect.
+
+
