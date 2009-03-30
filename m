@@ -1,77 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755593AbZC3BRy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756224AbZC3BUi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755593AbZC3BRy (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 29 Mar 2009 21:17:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752215AbZC3BRp
+	id S1756224AbZC3BUi (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 29 Mar 2009 21:20:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751133AbZC3BU2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 29 Mar 2009 21:17:45 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:56947 "EHLO mx2.mail.elte.hu"
+	Sun, 29 Mar 2009 21:20:28 -0400
+Received: from hera.kernel.org ([140.211.167.34]:33019 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751043AbZC3BRp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 29 Mar 2009 21:17:45 -0400
-Date: Mon, 30 Mar 2009 03:17:25 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Jens Axboe <jens.axboe@oracle.com>
-Cc: Li Zefan <lizf@cn.fujitsu.com>, Arnaldo Carvalho de Melo <acme@redhat.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH v2 0/7] blktrace: last round of fixes
-Message-ID: <20090330011725.GB11087@elte.hu>
-References: <49CC6691.7050103@cn.fujitsu.com> <20090328224640.GA2465@elte.hu> <20090329180235.GC5178@kernel.dk>
+	id S1751009AbZC3BU1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 29 Mar 2009 21:20:27 -0400
+Date: Mon, 30 Mar 2009 01:19:32 GMT
+From: Li Zefan <lizf@cn.fujitsu.com>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, acme@redhat.com, hpa@zytor.com,
+       mingo@redhat.com, lizf@cn.fujitsu.com, jens.axboe@oracle.com,
+       fweisbec@gmail.com, rostedt@goodmis.org, tglx@linutronix.de,
+       mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, acme@redhat.com,
+       linux-kernel@vger.kernel.org, lizf@cn.fujitsu.com,
+       jens.axboe@oracle.com, fweisbec@gmail.com, rostedt@goodmis.org,
+       tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <49CC37C2.7050307@cn.fujitsu.com>
+References: <49CC37C2.7050307@cn.fujitsu.com>
+Subject: [tip:tracing/blktrace] blktrace: make classic output more classic
+Message-ID: <tip-300dc4f1581ef42567a90cb640d994d24d41bf9c@git.kernel.org>
+Git-Commit-ID: 300dc4f1581ef42567a90cb640d994d24d41bf9c
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-In-Reply-To: <20090329180235.GC5178@kernel.dk>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 30 Mar 2009 01:19:34 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Commit-ID:  300dc4f1581ef42567a90cb640d994d24d41bf9c
+Gitweb:     http://git.kernel.org/tip/300dc4f1581ef42567a90cb640d994d24d41bf9c
+Author:     Li Zefan <lizf@cn.fujitsu.com>
+AuthorDate: Fri, 27 Mar 2009 10:19:46 +0800
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Mon, 30 Mar 2009 03:15:42 +0200
 
-* Jens Axboe <jens.axboe@oracle.com> wrote:
+blktrace: make classic output more classic
 
-> On Sat, Mar 28 2009, Ingo Molnar wrote:
-> > 
-> > * Li Zefan <lizf@cn.fujitsu.com> wrote:
-> > 
-> > > This is the last round of fixes for blktrace, I hope.  :) 
-> > > 
-> > > Changelog v1 -> v2:
-> > >   - fix a bug in "blktrace: make classic output more classic",
-> > >     and rebase other patches.
-> > >   - re-order patches.
-> > >   - a new patch for filtering BLK_TN_MESSAGE
-> > > 
-> > > [PATCH v2 1/6] trace: make 'mem' argument of trace_seq_putmem() const
-> > > [PATCH v2 2/6] blktrace: make classic output more classic
-> > > [PATCH v2 3/6] blktrace: fix blk_probes_ref chaos
-> > > [PATCH v2 4/6] blktrace: fix memory leak when freeing struct blk_io_trace
-> > > [PATCH v2 5/6] blktrace: extract duplidate code
-> > > [PATCH v2 6/6] blktrace: print out BLK_TN_MESSAGE properly
-> > > ---
-> > >  blktrace.c     |  188 +++++++++++++++++++++++++++++++++------------------------
-> > >  trace_output.c |    6 -
-> > >  trace_output.h |    5 -
-> > >  3 files changed, 117 insertions(+), 82 deletions(-)
-> > 
-> > Li, Jens - what's your call for v2.6.30, can the blktrace changes go 
-> > upstream or should i zap the whole thing?
-> > 
-> > There are no new -tip test failures here so it's green as far as i'm 
-> > concerned. It's holding up the tracing tree so we need to decide one 
-> > way or another.
-> 
-> If Li deems it ready, then it has my blessing as well.
+Impact: fix ftrace plugin timestamp output
 
-thanks Jens - i have added your Acked-by's as well.
+In the classic user-space blktrace, the output timestamp is sec.nsec
+not sec.usec.
 
-	Ingo
+Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+Acked-by: Jens Axboe <jens.axboe@oracle.com>
+Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>
+LKML-Reference: <49CC37C2.7050307@cn.fujitsu.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+
+---
+ kernel/trace/blktrace.c |    8 ++++----
+ 1 files changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/kernel/trace/blktrace.c b/kernel/trace/blktrace.c
+index d43cdac..5b28f0f 100644
+--- a/kernel/trace/blktrace.c
++++ b/kernel/trace/blktrace.c
+@@ -994,8 +994,8 @@ static void get_pdu_remap(const struct trace_entry *ent,
+ static int blk_log_action_iter(struct trace_iterator *iter, const char *act)
+ {
+ 	char rwbs[6];
+-	unsigned long long ts  = ns2usecs(iter->ts);
+-	unsigned long usec_rem = do_div(ts, USEC_PER_SEC);
++	unsigned long long ts  = iter->ts;
++	unsigned long nsec_rem = do_div(ts, NSEC_PER_SEC);
+ 	unsigned secs	       = (unsigned long)ts;
+ 	const struct trace_entry *ent = iter->ent;
+ 	const struct blk_io_trace *t = (const struct blk_io_trace *)ent;
+@@ -1003,9 +1003,9 @@ static int blk_log_action_iter(struct trace_iterator *iter, const char *act)
+ 	fill_rwbs(rwbs, t);
+ 
+ 	return trace_seq_printf(&iter->seq,
+-				"%3d,%-3d %2d %5d.%06lu %5u %2s %3s ",
++				"%3d,%-3d %2d %5d.%09lu %5u %2s %3s ",
+ 				MAJOR(t->device), MINOR(t->device), iter->cpu,
+-				secs, usec_rem, ent->pid, act, rwbs);
++				secs, nsec_rem, ent->pid, act, rwbs);
+ }
+ 
+ static int blk_log_action_seq(struct trace_seq *s, const struct blk_io_trace *t,
