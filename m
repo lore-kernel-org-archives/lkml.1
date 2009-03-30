@@ -1,82 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754576AbZC3OB1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754341AbZC3OCP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754576AbZC3OB1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Mar 2009 10:01:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752888AbZC3OBS
+	id S1754341AbZC3OCP (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Mar 2009 10:02:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752888AbZC3OBz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Mar 2009 10:01:18 -0400
-Received: from relay1.sgi.com ([192.48.179.29]:49056 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752386AbZC3OBR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Mar 2009 10:01:17 -0400
-Date: Mon, 30 Mar 2009 09:01:11 -0500
-From: Jack Steiner <steiner@sgi.com>
-To: mingo@elte.hu, tglx@linutronix.de
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] x86, UV: Fix for nodes with memory and no cpus
-Message-ID: <20090330140111.GA18461@sgi.com>
+	Mon, 30 Mar 2009 10:01:55 -0400
+Received: from vena.lwn.net ([206.168.112.25]:54935 "EHLO vena.lwn.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750927AbZC3OBy convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Mar 2009 10:01:54 -0400
+Date: Mon, 30 Mar 2009 08:01:50 -0600
+From: Jonathan Corbet <corbet@lwn.net>
+To: Jarek Poplawski <jarkao2@gmail.com>
+Cc: Markus Trippelsdorf <markus@trippelsdorf.de>,
+       =?ISO-8859-2?Q?Ilpo_J?= =?ISO-8859-2?Q?=E4rvinen?= 
+	<ilpo.jarvinen@helsinki.fi>,
+       Netdev <netdev@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: WARNING: at net/ipv4/tcp_input.c:2927 tcp_ack+0xd55/0x1991()
+Message-ID: <20090330080150.724378b0@bike.lwn.net>
+In-Reply-To: <20090330085107.GA5822@ff.dom.local>
+References: <20090328075628.3565eb39@bike.lwn.net>
+	<20090330085107.GA5822@ff.dom.local>
+Organization: LWN.net
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.15.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.4.2.2i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix initialization of UV blade information for systems that have
-nodes with memory but no cpus.
+On Mon, 30 Mar 2009 08:51:07 +0000
+Jarek Poplawski <jarkao2@gmail.com> wrote:
 
-Signed-off-by: Jack Steiner <steiner@sgi.com>
+> Probably I miss something, but generally in a case like this "a_lock"
+> doesn't have to be taken in IRQ mode to be dangerous. Eg. if one cpu
+> is trying to take this lock after fasync_lock (with IRQs disabled),
+> while another cpu is waiting for fasync_lock in IRQ, which preempted
+> such "a_lock".
 
+The possibility exists, I guess, yes.
+
+> Could you give some details of this fix?
+
+I just reverse the order of lock acquisition in fasync_helper().  Patch
+is attached.  I'll be sending up a pull request shortly.
+
+jon
+
+>From 4a6a4499693a419a20559c41e33a7bd70bf20a6f Mon Sep 17 00:00:00 2001
+From: Jonathan Corbet <corbet@lwn.net>
+Date: Fri, 27 Mar 2009 12:24:31 -0600
+Subject: [PATCH] Fix a lockdep warning in fasync_helper()
+
+Lockdep gripes if file->f_lock is taken in a no-IRQ situation, since that
+is not always the case.  We don't really want to disable IRQs for every
+acquisition of f_lock; instead, just move it outside of fasync_lock.
+
+Reported-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Reported-by: Larry Finger <Larry.Finger@lwfinger.net>
+Reported-by: Wu Fengguang <fengguang.wu@intel.com>
+Signed-off-by: Jonathan Corbet <corbet@lwn.net>
 ---
- arch/x86/kernel/apic/x2apic_uv_x.c |   16 ++++++++++++++--
- 1 file changed, 14 insertions(+), 2 deletions(-)
+ fs/fcntl.c         |   10 +++++++---
+ include/linux/fs.h |    2 +-
+ 2 files changed, 8 insertions(+), 4 deletions(-)
 
-Index: linux/arch/x86/kernel/apic/x2apic_uv_x.c
-===================================================================
---- linux.orig/arch/x86/kernel/apic/x2apic_uv_x.c	2009-03-30 01:54:51.000000000 -0500
-+++ linux/arch/x86/kernel/apic/x2apic_uv_x.c	2009-03-30 08:46:49.000000000 -0500
-@@ -555,7 +555,8 @@ void __init uv_system_init(void)
- 	unsigned long gnode_upper, lowmem_redir_base, lowmem_redir_size;
- 	int bytes, nid, cpu, lcpu, pnode, blade, i, j, m_val, n_val;
- 	int max_pnode = 0;
--	unsigned long mmr_base, present;
-+	unsigned long mmr_base, present, paddr;
-+	unsigned short pnode_mask;
- 
- 	map_low_mmrs();
- 
-@@ -598,6 +599,7 @@ void __init uv_system_init(void)
- 		}
+diff --git a/fs/fcntl.c b/fs/fcntl.c
+index d865ca6..cc8e4de 100644
+--- a/fs/fcntl.c
++++ b/fs/fcntl.c
+@@ -531,6 +531,12 @@ int fasync_helper(int fd, struct file * filp, int on, struct fasync_struct **fap
+ 		if (!new)
+ 			return -ENOMEM;
  	}
- 
-+	pnode_mask = (1 << n_val) - 1;
- 	node_id.v = uv_read_local_mmr(UVH_NODE_ID);
- 	gnode_upper = (((unsigned long)node_id.s.node_id) &
- 		       ~((1 << n_val) - 1)) << m_val;
-@@ -621,7 +623,7 @@ void __init uv_system_init(void)
- 		uv_cpu_hub_info(cpu)->numa_blade_id = blade;
- 		uv_cpu_hub_info(cpu)->blade_processor_id = lcpu;
- 		uv_cpu_hub_info(cpu)->pnode = pnode;
--		uv_cpu_hub_info(cpu)->pnode_mask = (1 << n_val) - 1;
-+		uv_cpu_hub_info(cpu)->pnode_mask =pnode_mask;
- 		uv_cpu_hub_info(cpu)->gpa_mask = (1 << (m_val + n_val)) - 1;
- 		uv_cpu_hub_info(cpu)->gnode_upper = gnode_upper;
- 		uv_cpu_hub_info(cpu)->global_mmr_base = mmr_base;
-@@ -637,6 +639,16 @@ void __init uv_system_init(void)
- 			lcpu, blade);
- 	}
- 
-+	/* Add blade/pnode info for nodes without cpus */
-+	for_each_online_node(nid) {
-+		if (uv_node_to_blade[nid] >= 0)
-+			continue;
-+		paddr = node_start_pfn(nid) << PAGE_SHIFT;
-+		pnode = (paddr >> m_val) & pnode_mask;
-+		blade = boot_pnode_to_blade(pnode);
-+		uv_node_to_blade[nid] = blade;
-+	}
 +
- 	map_gru_high(max_pnode);
- 	map_mmr_high(max_pnode);
- 	map_config_high(max_pnode);
++	/*
++	 * We need to take f_lock first since it's not an IRQ-safe
++	 * lock.
++	 */
++	spin_lock(&filp->f_lock);
+ 	write_lock_irq(&fasync_lock);
+ 	for (fp = fapp; (fa = *fp) != NULL; fp = &fa->fa_next) {
+ 		if (fa->fa_file == filp) {
+@@ -555,14 +561,12 @@ int fasync_helper(int fd, struct file * filp, int on, struct fasync_struct **fap
+ 		result = 1;
+ 	}
+ out:
+-	/* Fix up FASYNC bit while still holding fasync_lock */
+-	spin_lock(&filp->f_lock);
+ 	if (on)
+ 		filp->f_flags |= FASYNC;
+ 	else
+ 		filp->f_flags &= ~FASYNC;
+-	spin_unlock(&filp->f_lock);
+ 	write_unlock_irq(&fasync_lock);
++	spin_unlock(&filp->f_lock);
+ 	return result;
+ }
+ 
+diff --git a/include/linux/fs.h b/include/linux/fs.h
+index 7428c6d..2f13c1d 100644
+--- a/include/linux/fs.h
++++ b/include/linux/fs.h
+@@ -848,7 +848,7 @@ struct file {
+ #define f_dentry	f_path.dentry
+ #define f_vfsmnt	f_path.mnt
+ 	const struct file_operations	*f_op;
+-	spinlock_t		f_lock;  /* f_ep_links, f_flags */
++	spinlock_t		f_lock;  /* f_ep_links, f_flags, no IRQ */
+ 	atomic_long_t		f_count;
+ 	unsigned int 		f_flags;
+ 	fmode_t			f_mode;
+-- 
+1.6.2
+
