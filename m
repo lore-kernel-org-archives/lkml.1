@@ -1,62 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752422AbZC3Kog@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753443AbZC3KuY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752422AbZC3Kog (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Mar 2009 06:44:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751430AbZC3Ko1
+	id S1753443AbZC3KuY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Mar 2009 06:50:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752427AbZC3KuJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Mar 2009 06:44:27 -0400
-Received: from mga12.intel.com ([143.182.124.36]:56683 "EHLO
-	azsmga102.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751009AbZC3Ko0 (ORCPT
+	Mon, 30 Mar 2009 06:50:09 -0400
+Received: from mo-p05-ob.rzone.de ([81.169.146.182]:32095 "EHLO
+	mo-p05-ob.rzone.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752401AbZC3KuF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Mar 2009 06:44:26 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.38,446,1233561600"; 
-   d="scan'208";a="125588567"
-Message-ID: <49D0A29E.2040406@linux.intel.com>
-Date: Mon, 30 Mar 2009 12:44:46 +0200
-From: Andi Kleen <ak@linux.intel.com>
-User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
+	Mon, 30 Mar 2009 06:50:05 -0400
+X-RZG-AUTH: :LWIQcGC8af5qXkYNYt77sURZEFmV4M3TAgvB+Qeh4tE+44JfzNXfZkKf55cV
+X-RZG-CLASS-ID: mo05
+Message-ID: <49D0A3D6.4000300@ursus.ath.cx>
+Date: Mon, 30 Mar 2009 12:49:58 +0200
+From: "Andreas T.Auer" <andreas.t.auer_lkml_73537@ursus.ath.cx>
+User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
 MIME-Version: 1.0
-To: "Metzger, Markus T" <markus.t.metzger@intel.com>
-CC: Oleg Nesterov <oleg@redhat.com>,
-       Markus Metzger <markus.t.metzger@googlemail.com>,
-       Ingo Molnar <mingo@elte.hu>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "tglx@linutronix.de" <tglx@linutronix.de>,
-       "hpa@zytor.com" <hpa@zytor.com>,
-       "roland@redhat.com" <roland@redhat.com>,
-       "eranian@googlemail.com" <eranian@googlemail.com>,
-       "Villacis, Juan" <juan.villacis@intel.com>,
-       "ak@linux.jf.intel.com" <ak@linux.jf.intel.com>
-Subject: Re: [patch 3/14] x86, ptrace, bts: stop bts tracing early in	do_exit
-References: <20090327095525.A11052@sedona.ch.intel.com> <20090327143435.GD14504@redhat.com> <928CFBE8E7CB0040959E56B4EA41A77E9266B6D4@irsmsx504.ger.corp.intel.com> <20090327172413.GC25762@redhat.com> <1238239912.6036.0.camel@raistlin> <20090330012204.GA2058@redhat.com> <928CFBE8E7CB0040959E56B4EA41A77E9266B8A9@irsmsx504.ger.corp.intel.com>
-In-Reply-To: <928CFBE8E7CB0040959E56B4EA41A77E9266B8A9@irsmsx504.ger.corp.intel.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: "Andreas T.Auer" <andreas.t.auer_lkml_73537@ursus.ath.cx>,
+       Theodore Tso <tytso@mit.edu>, Mark Lord <lkml@rtr.ca>,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Jeff Garzik <jeff@garzik.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Matthew Garrett <mjg59@srcf.ucam.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       David Rees <drees76@gmail.com>, Jesper Krogh <jesper@krogh.cc>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.29
+References: <alpine.LFD.2.00.0903271511230.3994@localhost.localdomain>	<alpine.LFD.2.00.0903271522210.3994@localhost.localdomain>	<49CD7B10.7010601@garzik.org>	<49CD891A.7030103@rtr.ca>	<49CD9047.4060500@garzik.org>	<49CE2633.2000903@s5r6.in-berlin.de>	<49CE3186.8090903@garzik.org>	<49CE35AE.1080702@s5r6.in-berlin.de>	<49CE3F74.6090103@rtr.ca>	<20090329231451.GR26138@disturbed>	<20090330003948.GA13356@mit.edu>	<49D0710A.1030805@ursus.ath.cx> <20090330100546.51907bd2@the-village.bc.nu>
+In-Reply-To: <20090330100546.51907bd2@the-village.bc.nu>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-> 
->>> ds_release_bts(struct bts_tracer *tracer)
->>> {
->>> 	struct task_struct *task =
->>> 		tracer->ds.context->task;
->>>
->>> 	do {
->>> 		set_task_state(task, TASK_UNINTERRUPTIBLE);
->> Oh, this is not right,
-> 
-> Agreed.
-> 
-> I wonder if it is ever safe to change another task's state.
-> There's a lot of code that sets the task state seemingly
-> unprotected - but always for current.
 
-It should be safe when you can guarantee that the other task is stopped
-(as in ptrace) and you protect against yourself (only a single
-external writer)
+On 30.03.2009 11:05 Alan Cox wrote:
+>> It seems you still didn't get the point. ext3 data=ordered is not the
+>> problem. The problem is that the average developer doesn't expect the fs
+>> to _re-order_ stuff. This is how most common fs did work long before
+>>     
+>
+> No it isn´t. Standard Unix file systems made no such guarantee and would
+> write out data out of order. The disk scheduler would then further
+> re-order things.
+>
+>   
+You surely know that better: Did fs actually write "later" data quite
+long before "earlier" data? During the flush data may be re-ordered, but
+was it also _done_ outside of it?
 
--Andi
+> If you think the ¨guarantees¨ from before ext3 are normal defaults you´ve
+> been writing junk code
+>
+>   
+I'm still on ReiserFS since it was considered stable in some SuSE 7.x.
+And I expected it to be fairly ordered, but as a network protocol
+programmer I didn't rely on the ordering of fs write-outs yet.
