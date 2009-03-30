@@ -1,133 +1,170 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752227AbZC3HZH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754704AbZC3H1c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752227AbZC3HZH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Mar 2009 03:25:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751044AbZC3HYy
+	id S1754704AbZC3H1c (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Mar 2009 03:27:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751452AbZC3H1W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Mar 2009 03:24:54 -0400
-Received: from mga09.intel.com ([134.134.136.24]:38007 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750873AbZC3HYx convert rfc822-to-8bit (ORCPT
+	Mon, 30 Mar 2009 03:27:22 -0400
+Received: from mail-fx0-f158.google.com ([209.85.220.158]:44209 "EHLO
+	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750890AbZC3H1V (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Mar 2009 03:24:53 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.38,445,1233561600"; 
-   d="scan'208";a="398608464"
-From: "Metzger, Markus T" <markus.t.metzger@intel.com>
-To: Oleg Nesterov <oleg@redhat.com>,
-       Markus Metzger <markus.t.metzger@googlemail.com>
-CC: "Kleen, Andi" <andi.kleen@intel.com>, Ingo Molnar <mingo@elte.hu>,
-       Roland McGrath <roland@redhat.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Date: Mon, 30 Mar 2009 08:24:01 +0100
-Subject: RE: [rfc] x86, bts: fix crash
-Thread-Topic: [rfc] x86, bts: fix crash
-Thread-Index: AcmvI6U4PpqZaExDT6u3n/ie5jVDDgB4RT6Q
-Message-ID: <928CFBE8E7CB0040959E56B4EA41A77E9266B8F1@irsmsx504.ger.corp.intel.com>
-References: <928CFBE8E7CB0040959E56B4EA41A77E9260843D@irsmsx504.ger.corp.intel.com>
- <20090326015801.GA451@redhat.com>
- <928CFBE8E7CB0040959E56B4EA41A77E9266B699@irsmsx504.ger.corp.intel.com>
- <20090327165038.GA25762@redhat.com> <1238175204.6077.18.camel@raistlin>
- <20090327212933.GA5325@redhat.com>
-In-Reply-To: <20090327212933.GA5325@redhat.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
+	Mon, 30 Mar 2009 03:27:21 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:reply-to:mail-followup-to
+         :references:mime-version:content-type:content-disposition
+         :in-reply-to:user-agent;
+        b=JiLgoBIGUJdsI8xftDbmC8O066CQ0t7HScMS78OKqhh+ZUMw2AlOtYAptgEdS0YDjE
+         GWIjmlSkCqbiFbwgmhMNUYdzEmK0YeFSiqVSZRHsaBLZuOACc8ASw1DYKNIOWI3oKwlo
+         fovOAEOrfvtjdzeq2TRXivPiDcr4wDRi6Jz3M=
+Date: Mon, 30 Mar 2009 09:27:13 +0200
+From: Borislav Petkov <petkovbb@googlemail.com>
+To: Michael Roth <mroth@nessie.de>, bzolnier@gmail.com
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Bug in 2.6.29 ide-cd: Kernel freeze: bisected + unacceptable
+	workaround
+Message-ID: <20090330072713.GA13776@liondog.tnic>
+Reply-To: petkovbb@gmail.com
+Mail-Followup-To: petkovbb@gmail.com, Michael Roth <mroth@nessie.de>,
+	bzolnier@gmail.com, linux-kernel@vger.kernel.org
+References: <49CFCB2A.4020505@nessie.de> <20090329201337.GA9962@liondog.tnic> <49CFEA24.10700@nessie.de>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <49CFEA24.10700@nessie.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->-----Original Message-----
->From: Oleg Nesterov [mailto:oleg@redhat.com]
->Sent: Friday, March 27, 2009 10:30 PM
->To: Markus Metzger
+Hi Michael,
 
+On Sun, Mar 29, 2009 at 11:37:40PM +0200, Michael Roth wrote:
+> Hello Borislav,
+> 
+> thank you for your help.
+> 
+> Borislav Petkov schrieb:
+> 
+> >  Can we please see a dmesg of a working
+> > kernel on your machine
+> 
+> Sure, dmesg output appended beneath. I also added the dmesg output
+> of the patched kernel. See below.
+> 
+> 
+> > and also is it possible to catch any kernel output of the crash
+> > any oops or something when your machine freezes - the more the better.
+> 
+> There aren't any messages, neither on the console nor in the syslog.
+> The kernel simple freeze, cursor on the console stops blinking, no
+> more ide activity. I have to hit the reset-bottom to restart.
+> 
+> 
+> > Probably over a serial console would be best but photographed
+> > with a digicam and uploaded somewhere as a screenshot would do too.
+> 
+> I will do that on request, but it will take some time (about days)
+> because currently I don't have access to a second computer or so.
 
->> Regarding the race on task->thread.ds_ctx between ds_release_bts() and
->> ds_switch_to(), how would I prevent a task from being rescheduled for
->> a small amount of time?
->
->I don't see how we can do this. We can split wait_task_inactive() into
->2 functions, the first one returns with task_rq_lock() held and interrupts
->disabled. But this is nasty, and in any case wait_task_inactive(p) can't
->force "p" to be deactivated.
->
->Can't we do something different?
->
->For simplicity, let's suppose that we have only task_struct->bts and it
->is just a blob of memory which can be used by CPU somehow.
->
->First, we add "struct rcu_head" into task_struct->bts, and then
->
->	void free_bts((struct rcu_head *rcu)
->	{
->		struct bts_tracer *bts = container_of();
->		...
->		kfree(bts);
->	}
->
->	void ds_release_bts(struct bts_tracer *tracer)
->	{
->		struct task_struct *child = tracer->ds.context->task;
->		struct bts_tracer *bts = child->bts;
->
->		child->bts = NULL;
->
->		// make sure child will NOT use ->bts
->		// after the next context switch,
->		// clear TIF_DS_AREA_MSR or something
->		...
+That'll definitely be very helpful since I wanna know exactly why it
+locks up. If you still have no output it'd be cool if you could enable
+ide-cd debugging and retry catching the output. Here's a patch for that,
+just recompile and reboot (I admit this is not one of the finest ways to
+enable debugging but since this is work in progress...:) ):
 
-But that's exactly the problem if the bts_tracer is released by another
-task (!= current).
-We first need to disable tracing by clearing bits in debugctlmsr.
-Then, we can set ->bts to NULL and clear TIF_DS_AREA_MSR.
+--
+diff --git a/drivers/ide/ide-atapi.c b/drivers/ide/ide-atapi.c
+index e9d042d..4ef3b7e 100644
+--- a/drivers/ide/ide-atapi.c
++++ b/drivers/ide/ide-atapi.c
+@@ -8,6 +8,8 @@
+ #include <linux/ide.h>
+ #include <scsi/scsi.h>
+ 
++#define DEBUG 1
++
+ #ifdef DEBUG
+ #define debug_log(fmt, args...) \
+ 	printk(KERN_INFO "ide: " fmt, ## args)
+diff --git a/drivers/ide/ide-cd.c b/drivers/ide/ide-cd.c
+index ddfbea4..ea36295 100644
+--- a/drivers/ide/ide-cd.c
++++ b/drivers/ide/ide-cd.c
+@@ -1991,7 +1991,7 @@ static int ide_cd_probe(ide_drive_t *drive)
+ 		}
+ 	}
+ 
+-	drive->debug_mask = debug_mask;
++	drive->debug_mask = 0xffffffff;
+ 	drive->irq_handler = cdrom_newpc_intr;
+ 
+ 	info = kzalloc(sizeof(struct cdrom_info), GFP_KERNEL);
+diff --git a/drivers/ide/ide-cd.h b/drivers/ide/ide-cd.h
+index c878bfc..225afca 100644
+--- a/drivers/ide/ide-cd.h
++++ b/drivers/ide/ide-cd.h
+@@ -8,7 +8,7 @@
+ #include <linux/cdrom.h>
+ #include <asm/byteorder.h>
+ 
+-#define IDECD_DEBUG_LOG		0
++#define IDECD_DEBUG_LOG		1
+ 
+ #if IDECD_DEBUG_LOG
+ #define ide_debug_log(lvl, fmt, args...) __ide_debug_log(lvl, fmt, args)
 
-If the traced task is currently in a context switch, clearing debugctlmsr bits
-might come too late. We need to wait for the next context switch until we can
-clear TIF_DS_AREA_MSR.
+> > You could also try the following patch to see whether that is of any
+> > help:
+> 
+> Your patch helps perfectly. I'm writing this email on the patched
+> 2.6.29. I also tested CD and DVD access: They work well. Burning not
+> tested but I assume it will work too.
 
+@Bart: can you take at look at this. Somehow, if the device is behind a
+PCI IDE controller, the order of issuing the command and enabling DMA is
+important. Seen something like that before?
 
-The benefit would be that I don't need to hook into do_exit() anymore.
-This would rid us of the nasty ->ptraced loop.
-I will give it a try.
+> Probing IDE interface ide2...
+> hde: HL-DT-ST DVDRAM GSA-H42N, ATAPI CD/DVD-ROM drive
+> hde: host max PIO4 wanted PIO255(auto-tune) selected PIO4
+> hde: UDMA/66 mode selected
+> Probing IDE interface ide3...
+> ide2 at 0xa400-0xa407,0xa802 on irq 18
+> ide3 at 0xac00-0xac07,0xb002 on irq 18
+> via82cxxx 0000:00:11.1: VIA vt8235 (rev 00) IDE UDMA133
+> via82cxxx 0000:00:11.1: IDE controller (0x1106:0x0571 rev 0x06)
+> ACPI: PCI Interrupt Link [ALKA] BIOS reported IRQ 0, using IRQ 20
+> ACPI: PCI Interrupt Link [ALKA] enabled at IRQ 20
+> VIA_IDE 0000:00:11.1: PCI INT A -> Link[ALKA] -> GSI 20 (level, low) -> IRQ 20
+> via82cxxx 0000:00:11.1: not 100% native mode: will probe irqs later
+>     ide0: BM-DMA at 0xc400-0xc407
+>     ide1: BM-DMA at 0xc408-0xc40f
+> Probing IDE interface ide0...
+> hda: SAMSUNG HD400LD, ATA DISK drive
+> hda: host max PIO5 wanted PIO255(auto-tune) selected PIO4
+> hda: UDMA/100 mode selected
+> Probing IDE interface ide1...
+> hdc: SAMSUNG HD400LD, ATA DISK drive
+> hdc: host max PIO5 wanted PIO255(auto-tune) selected PIO4
+> hdc: UDMA/100 mode selected
+> ide0 at 0x1f0-0x1f7,0x3f6 on irq 14
+> ide1 at 0x170-0x177,0x376 on irq 15
+> ide_generic: please use "probe_mask=0x3f" module parameter for probing all legacy ISA IDE ports
+> ide-gd driver 1.18
+> hda: max request size: 512KiB
+> hda: 781422768 sectors (400088 MB) w/8192KiB Cache, CHS=48641/255/63
+> hda: cache flushes supported
+>  hda: hda1 hda2 hda3 hda4
+> hdc: max request size: 512KiB
+> hdc: 781422768 sectors (400088 MB) w/8192KiB Cache, CHS=48641/255/63
+> hdc: cache flushes supported
+>  hdc: hdc1 hdc2 hdc3 hdc4
+> ide-cd driver 5.00
+> ide-cd: hde: ATAPI 48X DVD-ROM DVD-R/RAM CD-R/RW drive, 2048kB Cache
+> Uniform CD-ROM driver Revision: 3.20
 
-
-I use something like this to wait for the context switch:
-  nvcsw = task->nvcsw + 1;
-  nivcsw = task->nivcsw + 1;
-  for (;;) {
-	if (nvcsw < task->nvcsw)
-		break;
-	if (nivcsw < task->nivcsw)
-		break;
-	if (task->state != TASK_RUNNING)
-		break;
-  }
-
-I would need to check for overflows, but for my examples, I don't expect any.
-
-
-regards,
-markus.
-
----------------------------------------------------------------------
-Intel GmbH
-Dornacher Strasse 1
-85622 Feldkirchen/Muenchen Germany
-Sitz der Gesellschaft: Feldkirchen bei Muenchen
-Geschaeftsfuehrer: Douglas Lusk, Peter Gleissner, Hannes Schwaderer
-Registergericht: Muenchen HRB 47456 Ust.-IdNr.
-VAT Registration No.: DE129385895
-Citibank Frankfurt (BLZ 502 109 00) 600119052
-
-This e-mail and any attachments may contain confidential material for
-the sole use of the intended recipient(s). Any review or distribution
-by others is strictly prohibited. If you are not the intended
-recipient, please contact the sender and delete all copies.
-
+-- 
+Regards/Gruss,
+    Boris.
