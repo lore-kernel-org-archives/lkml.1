@@ -1,71 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755101AbZC3Pzl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755889AbZC3Pzy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755101AbZC3Pzl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Mar 2009 11:55:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753831AbZC3PzM
+	id S1755889AbZC3Pzy (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Mar 2009 11:55:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754767AbZC3Pza
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Mar 2009 11:55:12 -0400
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:32971 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754120AbZC3PzL (ORCPT
+	Mon, 30 Mar 2009 11:55:30 -0400
+Received: from mu-out-0910.google.com ([209.85.134.185]:56568 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754543AbZC3Pz1 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Mar 2009 11:55:11 -0400
-To: torvalds@linux-foundation.org
-CC: Dan Carpenter <error27@gmail.com>, linux-kernel@vger.kernel.org
-Subject: [git pull] fuse fix for 2.6.30 and -stable
-Message-Id: <E1LoJpI-0007JN-Mc@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Mon, 30 Mar 2009 17:55:04 +0200
+	Mon, 30 Mar 2009 11:55:27 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:message-id;
+        b=fmHsmmpdZ0jj46idutgGHcRDkRSTbqFitNAtXb8q+8AAW9K1YcO5o+4yG6EIZN/Ev5
+         ukGTv7AdCO4CNIFZ36LFps1kI2mOiCSqSffMmNl7DimFGOeMW1KbaDafNr4xotD2qW4v
+         +NdISZhd66H4LCLsPXdwKieW9xT3P2vV08AGY=
+From: Diego Calleja <diegocg@gmail.com>
+To: Pavel Machek <pavel@ucw.cz>
+Subject: Re: replace() system call needed (was Re: EXT4-ish "fixes" in UBIFS)
+Date: Mon, 30 Mar 2009 17:58:32 +0200
+User-Agent: KMail/1.11.1 (Linux/2.6.29-rc8-00124-g5bee17f; KDE/4.2.1; x86_64; ; )
+Cc: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <49CCCB0A.6070701@nokia.com> <20090329122600.GA13737@elf.ucw.cz>
+In-Reply-To: <20090329122600.GA13737@elf.ucw.cz>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200903301758.32942.diegocg@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus,
+On Domingo 29 Marzo 2009 14:26:00 Pavel Machek escribió:
 
-Please pull from:
+> ...but this should not be. If we want to make that explicit, we should
+> provide "replace()" operation; where replace is rename that makes sure
+> that source file is completely on media before commiting the rename.
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/mszeredi/fuse.git for-linus
+An "ad Linus-em" counterexample:
 
-to get the following fix.
+"And if we have a Linux-specific magic system call or sync action, it's 
+going to be even more rarely used than fsync(). Do you think anybody 
+really uses the OS X FSYNC_FULL ioctl? Nope. Outside of a few databases, 
+it is almost certainly not going to be used, and fsync() will not be 
+reliable in general.
 
-Thanks,
-Miklos
-
----
-commit 5291658d87ac1ae60418e79e7b6bad7d5f595e0c
-Author: Dan Carpenter <error27@gmail.com>
-Date:   Fri Mar 27 13:36:10 2009 +0300
-
-    fuse: fix fuse_file_lseek returning with lock held
-    
-    This bug was found with smatch (http://repo.or.cz/w/smatch.git/).  If
-    we return directly the inode->i_mutex lock doesn't get released.
-    
-    Signed-off-by: Dan Carpenter <error27@gmail.com>
-    Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
-    CC: stable@kernel.org
----
- fs/fuse/file.c |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
-
-diff --git a/fs/fuse/file.c b/fs/fuse/file.c
-index d9fdb7c..821d10f 100644
---- a/fs/fuse/file.c
-+++ b/fs/fuse/file.c
-@@ -1465,7 +1465,7 @@ static loff_t fuse_file_llseek(struct file *file, loff_t offset, int origin)
- 	case SEEK_END:
- 		retval = fuse_update_attributes(inode, NULL, file, NULL);
- 		if (retval)
--			return retval;
-+			goto exit;
- 		offset += i_size_read(inode);
- 		break;
- 	case SEEK_CUR:
-@@ -1479,6 +1479,7 @@ static loff_t fuse_file_llseek(struct file *file, loff_t offset, int origin)
- 		}
- 		retval = offset;
- 	}
-+exit:
- 	mutex_unlock(&inode->i_mutex);
- 	return retval;
- }
+So rather than come up with new barriers that nobody will use, filesystem 
+people should aim to make "badly written" code "just work" unless people 
+are really really unlucky. Because like it or not, that's what 99% of all 
+code is."
