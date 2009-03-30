@@ -1,104 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755621AbZC3RTo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756930AbZC3RUr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755621AbZC3RTo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Mar 2009 13:19:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751061AbZC3RTf
+	id S1756930AbZC3RUr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Mar 2009 13:20:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751782AbZC3RUf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Mar 2009 13:19:35 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:45592 "EHLO mx2.redhat.com"
+	Mon, 30 Mar 2009 13:20:35 -0400
+Received: from hera.kernel.org ([140.211.167.34]:51529 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751417AbZC3RTe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Mar 2009 13:19:34 -0400
-Message-ID: <49D0FF1E.3010804@redhat.com>
-Date: Mon, 30 Mar 2009 13:19:26 -0400
-From: Ric Wheeler <rwheeler@redhat.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	id S1751061AbZC3RUe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Mar 2009 13:20:34 -0400
+Message-ID: <49D0FF56.3080205@kernel.org>
+Date: Tue, 31 Mar 2009 02:20:22 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-To: Pavel Machek <pavel@ucw.cz>
-CC: Artem Bityutskiy <dedekind@yandex.ru>,
-       Artem Bityutskiy <Artem.Bityutskiy@nokia.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: replace() system call needed (was Re: EXT4-ish "fixes" in UBIFS)
-References: <49CCCB0A.6070701@nokia.com> <20090329122600.GA13737@elf.ucw.cz> <49CF6CBB.7070907@yandex.ru> <20090329124959.GD15492@elf.ucw.cz>
-In-Reply-To: <20090329124959.GD15492@elf.ucw.cz>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Boaz Harrosh <bharrosh@panasas.com>
+CC: petkovbb@gmail.com, Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       linux-kernel@vger.kernel.org, axboe@kernel.dk,
+       linux-ide@vger.kernel.org
+Subject: Re: [PATCHSET pata-2.6] ide: rq->buffer, data, special and misc	cleanups
+References: <1237910776-10983-1-git-send-email-tj@kernel.org> <200903281451.01361.bzolnier@gmail.com> <20090328140405.GA2741@liondog.tnic> <49D08CEC.3010705@kernel.org> <49D0A985.7090307@panasas.com>
+In-Reply-To: <49D0A985.7090307@panasas.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 30 Mar 2009 17:20:27 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Machek wrote:
->>>> We have a problem that user-space people do not want to
->>>> use 'fsync()', even when they are pointed to their code
->>>> which is doing create/write/rename/close without fsync().
->>>>         
->>> Well... they really don't want to spin the disk up for the
->>> fsync(). I'm not sure if fsync() is really sensible operation to use
->>> there.
->>>       
->> I'm personally concerned about hand-held, and in case of UBIFS
->> fsync is not too expensive - we work on flash and on fsync() we
->> write back only the stuff belonging to inode in question, and
->> nothing else.
->>     
->
-> Well, I'm more concerned about spinning disks, having one even in my
-> zaurus. And I do believe that fsync() will write more data than
-> neccessary even in flash case.
->
->   
->>>> 1. truncate/write/close leads to empty files
->>>>         
->>> this is buggy.
->>>       
->> In FS, or in application?
->>     
->
-> Application is buggy; no way kernel can help there.
->
->   
->>>> 2. create/write/rename leads to empty files
->>>>         
->>> ..but this should not be. If we want to make that explicit, we should
->>> provide "replace()" operation; where replace is rename that makes sure
->>> that source file is completely on media before commiting the rename.
->>>       
->> Well, OK, we can fsync() before rename, we just need clean rules
->> for this, so that all Linux FSes would follow them. Would be nice
->> to have final agreement on all this stuff.
->>     
->
-> My proposal is 
->
-> rename() stays.
->
-> replace(src, bar) is rename that ensures that bar will contain valid
-> data after powerfail.
->   
+Boaz Harrosh wrote:
+>> P.S.: Boaz, the above patchset implements blk_rq_map_kern_sgl() 
+> 
+> What is blk_rq_map_kern_sgl() ? I'm not sure I remember ?
+> What is it's API? and what does it do?
+> 
+>> and kills the SCSI layer hack.  That was the issue you were trying
+>> to solve, right?
+> 
+> If you post URL of git tree I can have a look and start an early review
+> if you want
 
-Surely the only way to "insure" this is to spin up the drive, write the 
-meta-data and data back and make sure that it is not held in volatile 
-write cache?
+Here's the patchset.  It builds but I haven't even booted it yet, so
+expect some breakages.
 
-Why would calling this replace be better or more power efficient than 
-what you need to do today?
+  http://git.kernel.org/?p=linux/kernel/git/tj/misc.git;a=shortlog;h=map-untested
+  git://git.kernel.org/pub/scm/linux/kernel/git/tj/misc.git map-untested
 
-ric
+Thanks.
 
->   
->>> It is somehow similar to fsync()/rename(), but does not force disk
->>> spin up immediately -- it only inserts "barrier" between data blocks
->>> and rename. (And yes, it should be implemented as fsync()+rename() for
->>> filesystems like xfs. It can be implemented as plain rename for ext3
->>> and ext4 after the fixes...)
->>>       
->> Right. But I guess only few file-systems would really implement
->> this, because this is complex.
->>     
->
-> Complex yes, but at least ext3+ext4+btrfs should, and they really have
-> 90% of "market share" :-). ext3 and ext4 implementations are already
-> done :-).
-> 								Pavel
->   
-
+-- 
+tejun
