@@ -1,92 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757393AbZC3Fp1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754040AbZC3FuY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757393AbZC3Fp1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Mar 2009 01:45:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755022AbZC3Foc
+	id S1754040AbZC3FuY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Mar 2009 01:50:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750969AbZC3FuJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Mar 2009 01:44:32 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:54809 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751451AbZC3Fo2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Mar 2009 01:44:28 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=H/Bin1RWJ3u5zIFN5fAK/FG5QwfWLkqQucI+vmNuaakDUB2j8ddn/0L+lnD8HRGr4
-	2FiOJuSHA9e9DOsbWr3WQ==
-Date: Sun, 29 Mar 2009 22:43:41 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-cc: Christoph Lameter <cl@linux-foundation.org>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, Martin Bligh <mbligh@google.com>,
-       linux-kernel@vger.kernel.org
-Subject: [patch 3/3] slub: sort parital list when thrashing
-In-Reply-To: <alpine.DEB.2.00.0903292243050.15813@chino.kir.corp.google.com>
-Message-ID: <alpine.DEB.2.00.0903292243200.15813@chino.kir.corp.google.com>
-References: <alpine.DEB.2.00.0903292241300.15813@chino.kir.corp.google.com> <alpine.DEB.2.00.0903292242510.15813@chino.kir.corp.google.com> <alpine.DEB.2.00.0903292243050.15813@chino.kir.corp.google.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Mon, 30 Mar 2009 01:50:09 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:64733 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1750799AbZC3FuI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Mar 2009 01:50:08 -0400
+Message-ID: <49D05D10.4030009@cn.fujitsu.com>
+Date: Mon, 30 Mar 2009 13:48:00 +0800
+From: Lai Jiangshan <laijs@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
+To: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <srostedt@redhat.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Li Zefan <lizf@cn.fujitsu.com>, LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] tracing: fix incorrect return type of ns2usecs() V2
+References: <49D041ED.1060007@cn.fujitsu.com>
+In-Reply-To: <49D041ED.1060007@cn.fujitsu.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Caches that are cpu slab thrashing will scan their entire partial list
-until a slab is found that will satisfy at least the requisite number of
-allocations so that it will not be considered thrashing (as defined by
-/sys/kernel/slab/cache/slab_thrash_ratio).
+Impact: fix time output bug in 32bits system
 
-The partial list can be extremely long and its scanning requires that
-list_lock is held for that particular node.  This can be inefficient if
-slabs at the head of the list are not appropriate cpu slab replacements.
+ns2usecs() returns 'long', it's incorrect.
 
-When an object is freed, the number of free objects for its slab is
-calculated if the cpu cache is currently thrashing.  If it can satisfy
-the requisite number of allocations so that the slab thrash ratio is
-exceeded, it is moved to the head of the partial list.  This minimizes
-the time spent holding list_lock and can help cacheline optimizations
-for recently freed objects.
+(In i386)
+# cat trace
+...
+          <idle>-0     [000]   521.442100: _spin_lock <-tick_do_update_jiffies64
+          <idle>-0     [000]   521.442101: do_timer <-tick_do_update_jiffies64
+          <idle>-0     [000]   521.442102: update_wall_time <-do_timer
+          <idle>-0     [000]   521.442102: update_xtime_cache <-update_wall_time
+....
+(It always print the time less than 2200 seconds besides ...)
+Because 'long' is 32bits in i386. ( (1<<31) useconds is about 2200 seconds)
 
-Cc: Christoph Lameter <cl@linux-foundation.org>
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>
-Signed-off-by: David Rientjes <rientjes@google.com>
+# cat trace
+...
+          <idle>-0     [001] 4154502640.134759: rcu_bh_qsctr_inc <-__do_softirq
+          <idle>-0     [001] 4154502640.134760: _local_bh_enable <-__do_softirq
+          <idle>-0     [001] 4154502640.134761: idle_cpu <-irq_exit
+...
+(very large value)
+Because 'long' is a signed type and it is 32bits in i386.
+
+Changed from V1:
+return 'unsigned long long' instead of 'cycle_t'
+
+Signed-off-by: Lai Jiangshan <laijs@cn.fujitsu.com>
+Reported-by: Li Zefan <lizf@cn.fujitsu.com>
 ---
- mm/slub.c |   16 ++++++++++++++++
- 1 files changed, 16 insertions(+), 0 deletions(-)
-
-diff --git a/mm/slub.c b/mm/slub.c
---- a/mm/slub.c
-+++ b/mm/slub.c
-@@ -1258,6 +1258,13 @@ static void remove_partial(struct kmem_cache *s, struct page *page)
- 	spin_unlock(&n->list_lock);
+diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
+index 2a81dec..5232201 100644
+--- a/kernel/trace/trace.c
++++ b/kernel/trace/trace.c
+@@ -147,8 +147,7 @@ static int __init set_ftrace_dump_on_oops(char *str)
  }
+ __setup("ftrace_dump_on_oops", set_ftrace_dump_on_oops);
  
-+static void move_partial_to_head(struct kmem_cache_node *n, struct page *page)
-+{
-+	spin_lock(&n->list_lock);
-+	list_move(&page->lru, &n->partial);
-+	spin_unlock(&n->list_lock);
-+}
-+
- /*
-  * Remove from the partial list.
-  *
-@@ -1720,6 +1727,15 @@ checks_ok:
- 	if (unlikely(!prior)) {
- 		add_partial(get_node(s, page_to_nid(page)), page, 1);
- 		stat(c, FREE_ADD_PARTIAL);
-+	} else if (c->slowpath_allocs >= SLAB_THRASHING_THRESHOLD) {
-+		/*
-+		 * If the cache is actively slab thrashing, it's necessary to
-+		 * move partial slabs to the head of the list so there isn't
-+		 * excessive partial list scanning while holding list_lock.
-+		 */
-+		if (!skip_partial(s, page))
-+			move_partial_to_head(get_node(s, page_to_nid(page)),
-+					     page);
- 	}
+-long
+-ns2usecs(cycle_t nsec)
++unsigned long long ns2usecs(cycle_t nsec)
+ {
+ 	nsec += 500;
+ 	do_div(nsec, 1000);
+diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
+index fec6521..47aa6d0 100644
+--- a/kernel/trace/trace.h
++++ b/kernel/trace/trace.h
+@@ -602,7 +602,7 @@ extern int trace_selftest_startup_branch(struct tracer *trace,
+ #endif /* CONFIG_FTRACE_STARTUP_TEST */
  
- out_unlock:
+ extern void *head_page(struct trace_array_cpu *data);
+-extern long ns2usecs(cycle_t nsec);
++extern unsigned long long ns2usecs(cycle_t nsec);
+ extern int
+ trace_vbprintk(unsigned long ip, const char *fmt, va_list args);
+ extern int
+diff --git a/kernel/trace/trace_output.c b/kernel/trace/trace_output.c
+index aeac358..0e70fb0 100644
+--- a/kernel/trace/trace_output.c
++++ b/kernel/trace/trace_output.c
+@@ -433,7 +433,7 @@ int trace_print_lat_context(struct trace_iterator *iter)
+ 
+ 		trace_find_cmdline(entry->pid, comm);
+ 
+-		ret = trace_seq_printf(s, "%16s %5d %3d %d %08x %08lx [%08lx]"
++		ret = trace_seq_printf(s, "%16s %5d %3d %d %08x %08lx [%08llx]"
+ 				       " %ld.%03ldms (+%ld.%03ldms): ", comm,
+ 				       entry->pid, iter->cpu, entry->flags,
+ 				       entry->preempt_count, iter->idx,
+
+
