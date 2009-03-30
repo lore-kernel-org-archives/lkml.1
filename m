@@ -1,119 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758131AbZC3Syk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757778AbZC3S5W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758131AbZC3Syk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Mar 2009 14:54:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757598AbZC3SyS
+	id S1757778AbZC3S5W (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Mar 2009 14:57:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752594AbZC3S5N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Mar 2009 14:54:18 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:55689 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757324AbZC3SyR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Mar 2009 14:54:17 -0400
-Date: Mon, 30 Mar 2009 20:54:14 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Fernando Luis =?iso-8859-1?Q?V=E1zquez?= Cao 
-	<fernando@oss.ntt.co.jp>,
-       Jeff Garzik <jeff@garzik.org>, Christoph Hellwig <hch@infradead.org>,
-       Theodore Tso <tytso@mit.edu>, Ingo Molnar <mingo@elte.hu>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Nick Piggin <npiggin@suse.de>,
-       David Rees <drees76@gmail.com>, Jesper Krogh <jesper@krogh.cc>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       chris.mason@oracle.com, david@fromorbit.com, tj@kernel.org
-Subject: Re: [PATCH 1/7] block: Add block_flush_device()
-Message-ID: <20090330185414.GZ5178@kernel.dk>
-References: <20090329082507.GA4242@infradead.org> <49D01F94.6000101@oss.ntt.co.jp> <49D02328.7060108@oss.ntt.co.jp> <49D0258A.9020306@garzik.org> <49D03377.1040909@oss.ntt.co.jp> <49D0B535.2010106@oss.ntt.co.jp> <49D0B687.1030407@oss.ntt.co.jp> <alpine.LFD.2.00.0903301028400.3948@localhost.localdomain> <20090330175544.GX5178@kernel.dk> <alpine.LFD.2.00.0903301120200.3948@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.00.0903301120200.3948@localhost.localdomain>
+	Mon, 30 Mar 2009 14:57:13 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:38041 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753246AbZC3S5M (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Mar 2009 14:57:12 -0400
+Date: Mon, 30 Mar 2009 11:55:24 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Al Viro <viro@zeniv.linux.org.uk>, Nick Piggin <nickpiggin@yahoo.com.au>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: fs: move bdev code out of buffer.c
+Message-Id: <20090330115524.e78dbe14.akpm@linux-foundation.org>
+In-Reply-To: <200903280059.n2S0xvhK006987@hera.kernel.org>
+References: <200903280059.n2S0xvhK006987@hera.kernel.org>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 30 2009, Linus Torvalds wrote:
-> 
-> 
-> On Mon, 30 Mar 2009, Jens Axboe wrote:
-> > 
-> > The problem is that we may not know upfront, so it sort-of has to be
-> > this trial approach where the first barrier issued will notice and fail
-> > with -EOPNOTSUPP.
-> 
-> Well, absolutely. Except I don't think you shoul use ENOTSUPP, you should 
-> just set a bit in the "struct request_queue", and then return 0.
-> 
-> IOW, something like this
-> 
-> 	--- a/block/blk-barrier.c
-> 	+++ b/block/blk-barrier.c
-> 	@@ -318,6 +318,9 @@ int blkdev_issue_flush(struct block_device *bdev, sector_t *error_sector)
-> 	 	if (!q)
-> 	 		return -ENXIO;
-> 	 
-> 	+	if (is_queue_noflush(q))
-> 	+		return 0;
-> 	+
-> 	 	bio = bio_alloc(GFP_KERNEL, 0);
-> 	 	if (!bio)
-> 	 		return -ENOMEM;
-> 	@@ -339,7 +342,7 @@ int blkdev_issue_flush(struct block_device *bdev, sector_t *error_sector)
-> 	 
-> 	 	ret = 0;
-> 	 	if (bio_flagged(bio, BIO_EOPNOTSUPP))
-> 	-		ret = -EOPNOTSUPP;
-> 	+		set_queue_noflush(q);
-> 	 	else if (!bio_flagged(bio, BIO_UPTODATE))
-> 	 		ret = -EIO;
-> 	 
-> 
-> which just returns 0 if we don't support flushing on that queue.
-> 
-> (Obviously incomplete patch, which is why I also intentionally 
-> whitespace-broke it).
-> 
-> > Sure, we could cache this value, but it's pretty
-> > pointless since the filesystem will stop sending barriers in this case.
-> 
-> Well no, it won't. Or rather, it will have to have such a stupid 
-> per-filesystem flag, for no good reason.
+On Sat, 28 Mar 2009 00:59:57 GMT
+Linux Kernel Mailing List <linux-kernel@vger.kernel.org> wrote:
 
-Sorry, I just don't see much point to doing it this way instead. So now
-the fs will have to check a queue bit after it has issued the flush, how
-is that any better than having the 'error' returned directly?
-
-> > For blkdev_issue_flush() it may not be very interesting, since there's
-> > not much we can do about that. Just seems like very bad style to NOT
-> > return an error in such a case. You can assume that ordering is fine,
-> > but it definitely wont be in all case (eg devices that have write back
-> > caching on by default and don't support flush).
+> Gitweb:     http://git.kernel.org/linus/585d3bc06f4ca57f975a5a1f698f65a45ea66225
+> Commit:     585d3bc06f4ca57f975a5a1f698f65a45ea66225
+> Parent:     3ba13d179e8c24c68eac32b93593a6b10fcd1572
+> Author:     Nick Piggin <npiggin@suse.de>
+> AuthorDate: Wed Feb 25 10:44:19 2009 +0100
+> Committer:  Al Viro <viro@zeniv.linux.org.uk>
+> CommitDate: Fri Mar 27 14:44:03 2009 -0400
 > 
-> So?
-> 
-> The thing is, you can't _do_ anything about it. So what's the point in 
-> returning an error? The caller cannot possibly care - because there is 
-> nothing the caller can really do.
+>     fs: move bdev code out of buffer.c
+>     
+>     Move some block device related code out from buffer.c and put it in
+>     block_dev.c. I'm trying to move non-buffer_head code out of buffer.c
+>     
+>     Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
 
-Not for blkdev_issue_flush(), all they can do is report about the
-device. And even that would be a vague "Your data may or may not be
-safe, we don't know".
+This patch moved the CONFIG_BLOCK=y declaration of freeze_bdev() out of
+buffer_head.h and into fs.h.  But it left the CONFIG_BLOCK=n definition
+of freeze_bdev() in buffer_head.h.
 
-> Sure, the device may or may not re-order things, but since the caller 
-> can't know, and can't really do a thing about it _anyway_, you're just 
-> better off not even confusing anybody.
+I'd have noticed this earlier had this patch been in linux-next.  But
+despite having been apparently written over a month ago, it was never
+(afaict) in linux-next.
 
-I'd call that a pretty reckless approach to data integrity, honestly.
-You HAVE to issue an error in this case. Then the user/admin can at least
-check up on the device stack in question, and determine whether this is
-an issue or not. That goes for both blkdev_issue_flush() and the actual
-barrier write. And perhaps the cached value is then of some use, since
-you then know when to warn (bit not already set) and you can keep the
-warning in blkdev_issue_flush() instead of putting it in every call
-site.
-
--- 
-Jens Axboe
-
+This patch is missing Nick's Signed-off-by:.
