@@ -1,147 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752715AbZC3SRH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756720AbZC3SSC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752715AbZC3SRH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Mar 2009 14:17:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753778AbZC3SPV
+	id S1756720AbZC3SSC (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Mar 2009 14:18:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753705AbZC3SP0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Mar 2009 14:15:21 -0400
-Received: from cantor.suse.de ([195.135.220.2]:56592 "EHLO mx1.suse.de"
+	Mon, 30 Mar 2009 14:15:26 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:43341 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752465AbZC3SPO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Mar 2009 14:15:14 -0400
-Message-Id: <20090330181009.574081558@suse.com>
+	id S1753029AbZC3SPQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Mar 2009 14:15:16 -0400
+Message-Id: <20090330181009.318046224@suse.com>
 User-Agent: quilt/0.47-14.9
-Date: Mon, 30 Mar 2009 14:02:18 -0400
+Date: Mon, 30 Mar 2009 14:02:16 -0400
 From: Jeff Mahoney <jeffm@suse.com>
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 Cc: Andrew Morton <akpm@linux-foundation.org>,
        Linus Torvalds <torvalds@linux-foundation.org>,
        ReiserFS Development List <reiserfs-devel@vger.kernel.org>
-Subject: [patch 03/35 error-handling] reiserfs: use buffer_info for leaf_paste_entries
+Subject: [patch 01/35 quick-fixes] reiserfs: add support for mount count incrementing
 References: <20090330180215.951354436@suse.com>
-Content-Disposition: inline; filename=patches.suse/reiserfs-buffer-info-for-balance.diff
+Content-Disposition: inline; filename=patches.suse/reiserfs-mount-count
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- This patch makes leaf_paste_entries more consistent with respect to the
- other leaf operations. Using buffer_info instead of buffer_head directly
- allows us to get a superblock pointer for use in error handling.
+ The following patch adds the fields for tracking mount counts and
+ last fsck timestamps to the superblock. It also increments the mount
+ count on every read-write mount. Reiserfsprogs 3.6.21 added support
+ for these fields.
 
 Signed-off-by: Jeff Mahoney <jeffm@suse.com>
-
 ---
- fs/reiserfs/do_balan.c      |   17 +++++++----------
- fs/reiserfs/lbalance.c      |    5 +++--
- include/linux/reiserfs_fs.h |    2 +-
- 3 files changed, 11 insertions(+), 13 deletions(-)
+ fs/reiserfs/super.c            |    6 +++++-
+ include/linux/reiserfs_fs.h    |    6 +++++-
+ include/linux/reiserfs_fs_sb.h |    3 +++
+ 3 files changed, 13 insertions(+), 2 deletions(-)
 
---- a/fs/reiserfs/do_balan.c
-+++ b/fs/reiserfs/do_balan.c
-@@ -449,8 +449,7 @@ static int balance_leaf(struct tree_bala
- 							/* when we have merge directory item, pos_in_item has been changed too */
+--- a/fs/reiserfs/super.c
++++ b/fs/reiserfs/super.c
+@@ -1280,6 +1280,8 @@ static int reiserfs_remount(struct super
+ 		REISERFS_SB(s)->s_mount_state = sb_umount_state(rs);
+ 		s->s_flags &= ~MS_RDONLY;
+ 		set_sb_umount_state(rs, REISERFS_ERROR_FS);
++		if (!old_format_only(s))
++			set_sb_mnt_count(rs, sb_mnt_count(rs) + 1);
+ 		/* mark_buffer_dirty (SB_BUFFER_WITH_SB (s), 1); */
+ 		journal_mark_dirty(&th, s, SB_BUFFER_WITH_SB(s));
+ 		REISERFS_SB(s)->s_mount_state = REISERFS_VALID_FS;
+@@ -1819,7 +1821,9 @@ static int reiserfs_fill_super(struct su
+ 			} else if (!silent) {
+ 				reiserfs_info(s, "using 3.5.x disk format\n");
+ 			}
+-		}
++		} else
++			set_sb_mnt_count(rs, sb_mnt_count(rs) + 1);
++
  
- 							/* paste new directory entry. 1 is entry number */
--							leaf_paste_entries(bi.
--									   bi_bh,
-+							leaf_paste_entries(&bi,
- 									   n +
- 									   item_pos
- 									   -
-@@ -699,7 +698,7 @@ static int balance_leaf(struct tree_bala
- 							   n + item_pos -
- 							   ret_val);
- 					if (is_direntry_le_ih(pasted))
--						leaf_paste_entries(bi.bi_bh,
-+						leaf_paste_entries(&bi,
- 								   n +
- 								   item_pos -
- 								   ret_val,
-@@ -894,8 +893,7 @@ static int balance_leaf(struct tree_bala
- 							     tb->insert_size[0],
- 							     body, zeros_num);
- 							/* paste entry */
--							leaf_paste_entries(bi.
--									   bi_bh,
-+							leaf_paste_entries(&bi,
- 									   0,
- 									   paste_entry_position,
- 									   1,
-@@ -1096,7 +1094,7 @@ static int balance_leaf(struct tree_bala
- 							   tb->rnum[0]);
- 					if (is_direntry_le_ih(pasted)
- 					    && pos_in_item >= 0) {
--						leaf_paste_entries(bi.bi_bh,
-+						leaf_paste_entries(&bi,
- 								   item_pos -
- 								   n +
- 								   tb->rnum[0],
-@@ -1339,8 +1337,7 @@ static int balance_leaf(struct tree_bala
- 							     tb->insert_size[0],
- 							     body, zeros_num);
- 							/* paste new directory entry */
--							leaf_paste_entries(bi.
--									   bi_bh,
-+							leaf_paste_entries(&bi,
- 									   0,
- 									   pos_in_item
- 									   -
-@@ -1505,7 +1502,7 @@ static int balance_leaf(struct tree_bala
- 							   item_pos - n +
- 							   snum[i]);
- 					if (is_direntry_le_ih(pasted)) {
--						leaf_paste_entries(bi.bi_bh,
-+						leaf_paste_entries(&bi,
- 								   item_pos -
- 								   n + snum[i],
- 								   pos_in_item,
-@@ -1606,7 +1603,7 @@ static int balance_leaf(struct tree_bala
- 								     zeros_num);
- 
- 						/* paste entry */
--						leaf_paste_entries(bi.bi_bh,
-+						leaf_paste_entries(&bi,
- 								   item_pos,
- 								   pos_in_item,
- 								   1,
---- a/fs/reiserfs/lbalance.c
-+++ b/fs/reiserfs/lbalance.c
-@@ -111,7 +111,7 @@ static void leaf_copy_dir_entries(struct
- 	item_num_in_dest =
- 	    (last_first == FIRST_TO_LAST) ? (B_NR_ITEMS(dest) - 1) : 0;
- 
--	leaf_paste_entries(dest_bi->bi_bh, item_num_in_dest,
-+	leaf_paste_entries(dest_bi, item_num_in_dest,
- 			   (last_first ==
- 			    FIRST_TO_LAST) ? I_ENTRY_COUNT(B_N_PITEM_HEAD(dest,
- 									  item_num_in_dest))
-@@ -1191,7 +1191,7 @@ static void leaf_delete_items_entirely(s
- }
- 
- /* paste new_entry_count entries (new_dehs, records) into position before to item_num-th item */
--void leaf_paste_entries(struct buffer_head *bh,
-+void leaf_paste_entries(struct buffer_info *bi,
- 			int item_num,
- 			int before,
- 			int new_entry_count,
-@@ -1203,6 +1203,7 @@ void leaf_paste_entries(struct buffer_he
- 	struct reiserfs_de_head *deh;
- 	char *insert_point;
- 	int i, old_entry_num;
-+	struct buffer_head *bh = bi->bi_bh;
- 
- 	if (new_entry_count == 0)
- 		return;
+ 		journal_mark_dirty(&th, s, SB_BUFFER_WITH_SB(s));
+ 		errval = journal_end(&th, s, 1);
 --- a/include/linux/reiserfs_fs.h
 +++ b/include/linux/reiserfs_fs.h
-@@ -2026,7 +2026,7 @@ void leaf_paste_in_buffer(struct buffer_
- 			  int zeros_number);
- void leaf_cut_from_buffer(struct buffer_info *bi, int cut_item_num,
- 			  int pos_in_item, int cut_size);
--void leaf_paste_entries(struct buffer_head *bh, int item_num, int before,
-+void leaf_paste_entries(struct buffer_info *bi, int item_num, int before,
- 			int new_entry_count, struct reiserfs_de_head *new_dehs,
- 			const char *records, int paste_size);
- /* ibalance.c */
+@@ -171,7 +171,11 @@ struct reiserfs_super_block {
+ 	__le32 s_flags;		/* Right now used only by inode-attributes, if enabled */
+ 	unsigned char s_uuid[16];	/* filesystem unique identifier */
+ 	unsigned char s_label[16];	/* filesystem volume label */
+-	char s_unused[88];	/* zero filled by mkreiserfs and
++	__le16 s_mnt_count;		/* Count of mounts since last fsck */
++	__le16 s_max_mnt_count;		/* Maximum mounts before check */
++	__le32 s_lastcheck;		/* Timestamp of last fsck */
++	__le32 s_check_interval;	/* Interval between checks */
++	char s_unused[76];	/* zero filled by mkreiserfs and
+ 				 * reiserfs_convert_objectid_map_v1()
+ 				 * so any additions must be updated
+ 				 * there as well. */
+--- a/include/linux/reiserfs_fs_sb.h
++++ b/include/linux/reiserfs_fs_sb.h
+@@ -73,6 +73,9 @@ typedef enum {
+ #define sb_version(sbp)            (le16_to_cpu((sbp)->s_v1.s_version))
+ #define set_sb_version(sbp,v)      ((sbp)->s_v1.s_version = cpu_to_le16(v))
+ 
++#define sb_mnt_count(sbp)	   (le16_to_cpu((sbp)->s_mnt_count))
++#define set_sb_mnt_count(sbp, v)   ((sbp)->s_mnt_count = cpu_to_le16(v))
++
+ #define sb_reserved_for_journal(sbp) \
+               (le16_to_cpu((sbp)->s_v1.s_reserved_for_journal))
+ #define set_sb_reserved_for_journal(sbp,v) \
 
 
