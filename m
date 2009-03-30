@@ -1,109 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760001AbZC3XBU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759622AbZC3XCU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760001AbZC3XBU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Mar 2009 19:01:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753298AbZC3XBK
+	id S1759622AbZC3XCU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Mar 2009 19:02:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753697AbZC3XCI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Mar 2009 19:01:10 -0400
-Received: from outbound-mail-01.bluehost.com ([69.89.21.11]:44905 "HELO
-	outbound-mail-01.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752101AbZC3XBJ (ORCPT
+	Mon, 30 Mar 2009 19:02:08 -0400
+Received: from casper.infradead.org ([85.118.1.10]:46671 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753421AbZC3XCH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Mar 2009 19:01:09 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
-	b=R3qhlicUbE8FPhiRM1pEvg4X6nAYEw9V1tDpo8t/Z1nEPzjlN4JKtr2EYHwe1OEGnZ3aezSoAeyeXxEtz1N1+UMcWgufXxGn21XkbRrypk/ex2pU3ei+kR/HsRv8meTY;
-Date: Mon, 30 Mar 2009 16:00:58 -0700
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Soeren Sonnenburg <sonne@debian.org>
-Cc: Sitsofe Wheeler <sitsofe@yahoo.com>, linux-kernel@vger.kernel.org,
-       Eric Anholt <eric@anholt.net>, dri-devel@lists.sourceforge.net
-Subject: Re: enabling kms for i915 disables brightness control and xrandr
-Message-ID: <20090330160058.502ca3f7@hobbes>
-In-Reply-To: <1238453870.11937.72.camel@localhost>
-References: <1238322841.4185.36.camel@localhost>
-	<20090329130702.GA23660@sucs.org>
-	<1238332957.4185.74.camel@localhost>
-	<1238420239.4575.2.camel@localhost>
-	<20090330143447.5653d522@hobbes>
-	<1238453870.11937.72.camel@localhost>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; x86_64-pc-linux-gnu)
+	Mon, 30 Mar 2009 19:02:07 -0400
+Subject: Re: [patch 0/4] Intel IOMMU Supspend/Resume Support
+From: David Woodhouse <dwmw2@infradead.org>
+To: Fenghua Yu <fenghua.yu@intel.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Suresh Siddha <suresh.b.siddha@intel.com>,
+       Andrew Lutomirski <amluto@gmail.com>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Kyle McMartin <kyle@redhat.com>, Yinghai Lu <yinghai@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       IOMMU <iommu@lists.linux-foundation.org>
+In-Reply-To: <20090327212241.234500000@intel.com>>
+References: <20090327212241.234500000@intel.com>>
+Content-Type: text/plain
+Date: Tue, 31 Mar 2009 00:01:42 +0100
+Message-Id: <1238454102.25797.284.camel@macbook.infradead.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
 Content-Transfer-Encoding: 7bit
-X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 31 Mar 2009 00:57:50 +0200
-Soeren Sonnenburg <sonne@debian.org> wrote:
-
-> On Mon, 2009-03-30 at 14:34 -0700, Jesse Barnes wrote:
-> > On Mon, 30 Mar 2009 15:37:19 +0200
-> > Soeren Sonnenburg <sonne@debian.org> wrote:
-> > 
-> > > On Sun, 2009-03-29 at 15:22 +0200, Soeren Sonnenburg wrote:
-> > > > On Sun, 2009-03-29 at 14:07 +0100, Sitsofe Wheeler wrote:
-> > > > > (CC'ing dri-devel, Eric Anholt and Jesse Barnes)
-> > > > > 
-> > > > > On Sun, Mar 29, 2009 at 12:34:01PM +0200, Soeren Sonnenburg
-> > > > > wrote:
-> > > > > > Dear all,
-> > > > > > 
-> > > > > > I am not sure if this is just a user error/ too old
-> > > > > > userspace problem,
-> > > > > 
-> > > > > [User stated that 2.6.3 intel driver is being used in another
-> > > > > email]
-> > > > 
-> > > > Just to not cause any (further?) confusion, I was using 2.6.1
-> > > > when I wrote that email and after compiling/upgrading to 2.6.3
-> > > > a number of problems vanished (like Xv works, screen resolution
-> > > > is correct, things are *a lot* faster with UXA). However,
-> > > > brightness still only works via setpci and xrandr only shows
-> > > > the 1024x600 modeline.
-> > > > 
-> > > > > > but I recognized that when I enable kernel based
-> > > > > > modesetting on a intel 945 based samsung nc 10 netbook, I
-> > > > > > loose brightness control from within X and X resolutions
-> > > > > > are wrong (instead of 1024x600 it is 1024x1024) and xrandr
-> > > > > > does no longer have the all the modelines ranging from
-> > > > > > 1024x600 to 640x350... Trying to change resolutions /
-> > > > > > setting the brightness via xrandr results in error messages
-> > > > > > being printed. 
-> > > > > > 
-> > > > > > Furthermore, this same flag disables Xv support..
-> > > > > > 
-> > > > > > However, screen switches between terminal and X are quite
-> > > > > > fast now (without any flicker) and suspend and everything
-> > > > > > works stably.
-> > > > > > 
-> > > > > > I recognized that I can set the brightness via
-> > > > > > 
-> > > > > > setpci -s 00:02.1 F4.B=XX
-> > > > > > 
-> > > > > > (XX ranging from 00 to FF) just fine...
-> > > 
-> > > One more thing: Connecting an external display I could turn it on
-> > > via xrandr --auto successfully. However, it was not possible to
-> > > turn the internal display off (xrandr --output LVDS1 --off) and
-> > > switching to the console with the external display connected I
-> > > managed to freeze the machine. Turning the external display off
-> > > worked somehow (the display then showed vertical stripes) but I
-> > > could switch to console.
-> > 
-> > Have you filed bugs for these problems?  I think the brightness
-> > control issue is due to some missing bits on the 2D side (we don't
-> > enable backlight property control when KMS is active, but should),
-> > the other issues sound like bugs.
+On Fri, 2009-03-27 at 14:22 -0700, Fenghua Yu wrote:
+> Current Intel IOMMU does not support suspend and resume. In S3 event, kernel
+> crashes when DMAR or interrupt remapping is running.
 > 
-> I did nothing besides asking here on lkml. Where should I report what?
+> The attached patch set implements the suspend and resume feature for Intel
+> IOMMU. It hooks to kernel suspend and resume interface. When suspend happens, itsaves necessary hardware registers. When resume happens, it restores the
+> registers and restarts IOMMU.
+> 
+> This patch set can be applied on the tip tree. 
 
-Your xrandr problems should be reported at bugs.freedesktop.org against
-the xf86-video-intel driver (in the xorg component).  A separate bug
-report should be filed for the missing backlight property.
+Looks good to me, apart from the fact that your #4 patch actually needs
+to come before #1. Shall I apply it to my iommu-2.6.git tree or let Ingo
+take it? If the latter, 
 
-Thanks,
+Acked-by: David Woodhouse <David.Woodhouse@intel.com>
+Acked-by: David Woodhouse <David.Woodhouse@intel.com>
+Acked-by: David Woodhouse <David.Woodhouse@intel.com>
+Acked-by: David Woodhouse <David.Woodhouse@intel.com>
+
+(if you look carefully, you'll see those are in order 4, 1, 2, 3)
+
+Have we tested this on IA64?
+
 -- 
-Jesse Barnes, Intel Open Source Technology Center
+David Woodhouse                            Open Source Technology Centre
+David.Woodhouse@intel.com                              Intel Corporation
+
