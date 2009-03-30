@@ -1,97 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756907AbZC3W6t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760001AbZC3XBU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756907AbZC3W6t (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Mar 2009 18:58:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753553AbZC3W6g
+	id S1760001AbZC3XBU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Mar 2009 19:01:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753298AbZC3XBK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Mar 2009 18:58:36 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:35735 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752483AbZC3W6f (ORCPT
+	Mon, 30 Mar 2009 19:01:10 -0400
+Received: from outbound-mail-01.bluehost.com ([69.89.21.11]:44905 "HELO
+	outbound-mail-01.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752101AbZC3XBJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Mar 2009 18:58:35 -0400
-Date: Mon, 30 Mar 2009 15:55:33 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: linux-kernel@vger.kernel.org, eric.piel@tremplin-utc.net,
-       Luca Cappa <lcappa@gmail.com>
-Subject: Re: axes conversion for hp compaq 8710w for HP_ACCEL linux kernel
- module (fwd)
-Message-Id: <20090330155533.ee3e6dae.akpm@linux-foundation.org>
-In-Reply-To: <20090321230819.GF12291@elf.ucw.cz>
-References: <20090321230819.GF12291@elf.ucw.cz>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Mon, 30 Mar 2009 19:01:09 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
+	b=R3qhlicUbE8FPhiRM1pEvg4X6nAYEw9V1tDpo8t/Z1nEPzjlN4JKtr2EYHwe1OEGnZ3aezSoAeyeXxEtz1N1+UMcWgufXxGn21XkbRrypk/ex2pU3ei+kR/HsRv8meTY;
+Date: Mon, 30 Mar 2009 16:00:58 -0700
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Soeren Sonnenburg <sonne@debian.org>
+Cc: Sitsofe Wheeler <sitsofe@yahoo.com>, linux-kernel@vger.kernel.org,
+       Eric Anholt <eric@anholt.net>, dri-devel@lists.sourceforge.net
+Subject: Re: enabling kms for i915 disables brightness control and xrandr
+Message-ID: <20090330160058.502ca3f7@hobbes>
+In-Reply-To: <1238453870.11937.72.camel@localhost>
+References: <1238322841.4185.36.camel@localhost>
+	<20090329130702.GA23660@sucs.org>
+	<1238332957.4185.74.camel@localhost>
+	<1238420239.4575.2.camel@localhost>
+	<20090330143447.5653d522@hobbes>
+	<1238453870.11937.72.camel@localhost>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 22 Mar 2009 00:08:19 +0100
-Pavel Machek <pavel@ucw.cz> wrote:
+On Tue, 31 Mar 2009 00:57:50 +0200
+Soeren Sonnenburg <sonne@debian.org> wrote:
 
-> Hi!
+> On Mon, 2009-03-30 at 14:34 -0700, Jesse Barnes wrote:
+> > On Mon, 30 Mar 2009 15:37:19 +0200
+> > Soeren Sonnenburg <sonne@debian.org> wrote:
+> > 
+> > > On Sun, 2009-03-29 at 15:22 +0200, Soeren Sonnenburg wrote:
+> > > > On Sun, 2009-03-29 at 14:07 +0100, Sitsofe Wheeler wrote:
+> > > > > (CC'ing dri-devel, Eric Anholt and Jesse Barnes)
+> > > > > 
+> > > > > On Sun, Mar 29, 2009 at 12:34:01PM +0200, Soeren Sonnenburg
+> > > > > wrote:
+> > > > > > Dear all,
+> > > > > > 
+> > > > > > I am not sure if this is just a user error/ too old
+> > > > > > userspace problem,
+> > > > > 
+> > > > > [User stated that 2.6.3 intel driver is being used in another
+> > > > > email]
+> > > > 
+> > > > Just to not cause any (further?) confusion, I was using 2.6.1
+> > > > when I wrote that email and after compiling/upgrading to 2.6.3
+> > > > a number of problems vanished (like Xv works, screen resolution
+> > > > is correct, things are *a lot* faster with UXA). However,
+> > > > brightness still only works via setpci and xrandr only shows
+> > > > the 1024x600 modeline.
+> > > > 
+> > > > > > but I recognized that when I enable kernel based
+> > > > > > modesetting on a intel 945 based samsung nc 10 netbook, I
+> > > > > > loose brightness control from within X and X resolutions
+> > > > > > are wrong (instead of 1024x600 it is 1024x1024) and xrandr
+> > > > > > does no longer have the all the modelines ranging from
+> > > > > > 1024x600 to 640x350... Trying to change resolutions /
+> > > > > > setting the brightness via xrandr results in error messages
+> > > > > > being printed. 
+> > > > > > 
+> > > > > > Furthermore, this same flag disables Xv support..
+> > > > > > 
+> > > > > > However, screen switches between terminal and X are quite
+> > > > > > fast now (without any flicker) and suspend and everything
+> > > > > > works stably.
+> > > > > > 
+> > > > > > I recognized that I can set the brightness via
+> > > > > > 
+> > > > > > setpci -s 00:02.1 F4.B=XX
+> > > > > > 
+> > > > > > (XX ranging from 00 to FF) just fine...
+> > > 
+> > > One more thing: Connecting an external display I could turn it on
+> > > via xrandr --auto successfully. However, it was not possible to
+> > > turn the internal display off (xrandr --output LVDS1 --off) and
+> > > switching to the console with the external display connected I
+> > > managed to freeze the machine. Turning the external display off
+> > > worked somehow (the display then showed vertical stripes) but I
+> > > could switch to console.
+> > 
+> > Have you filed bugs for these problems?  I think the brightness
+> > control issue is due to some missing bits on the 2D side (we don't
+> > enable backlight property control when KMS is active, but should),
+> > the other issues sound like bugs.
+> 
+> I did nothing besides asking here on lkml. Where should I report what?
 
-hi to you too.
+Your xrandr problems should be reported at bugs.freedesktop.org against
+the xf86-video-intel driver (in the xorg component).  A separate bug
+report should be filed for the missing backlight property.
 
-> It seems like Luca has one  more whitelist entry...
-> 								Pavel
-> 
-> 
-> Subject: axes conversion for hp compaq 8710w for HP_ACCEL linux kernel module
-> From: Luca Cappa <lcappa@gmail.com>
-> 
-> 
-> Hello,
-> 
-> I have a laptop HP Compaq 8710W, I compiled into my kernel the
-> LIS3LV02DL and HP_ACCEL module drivers. While loading it cannot
-> recognize the laptop
-> model, so i am sending the necessary information to update the
-> database of Axes Orientations.
-> 
-> >When the laptop is horizontal the position reported is about 0 for X and Y
-> >and a positive value for Z
-> Yes, it is about 0,0,1000, the actual reading says: (-17,-26,1018);
-> 
-> > If the left side is elevated, X increases (becomes positive)
-> Yes, X goes toward to positive 1000.
-> 
-> >If the front side (where the touchpad is) is elevated, Y decreases (becomes negative)
-> No, Y goes toward to positive 1000.
-> 
-> >If the laptop is put upside-down, Z becomes negative
-> Yes, the laptop on a table Z gives 1000, and if upsidedown the Z reads
-> -1000.
-> 
-> So in few words the Y axis is inverted,  I paste here below the very
-> simple patch to configure properly the axis conversion. The patch is
-> against the file hp_accel.c of 2.6.29-rc8, i.e. the one shown here:
-> 
-> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=blob;f=drivers/hwmon/hp_accel.c;h=29c83b5b96974bb88cbeb67d896ba46ee71469f2;hb=HEAD
-> 
-> Greetings,
-> Luca
-> 
-> 
-> --- /home/luca/Desktop/hp_accel.c	2009-03-21 19:28:54.000000000 +0100
-> +++ hp_accel.c	2009-03-21 19:31:05.000000000 +010
-> @@ -201,6 +201,7 @@
->  			PRODUCT_NAME, "HP Pavilion dv5",
->  			BOARD_NAME, "3600",
->  			y_inverted),
-> +    AXIS_DMI_MATCH("HP8710", "HP Compaq 8710", y_inverted),
->  	{ NULL, }
->  /* Laptop models witho
-
-- changelog is a mess
-- originator wasn't cc'ed
-- originator's signed-off-by: is missing
-- your signed-off-by: is missing
-- patch isn't in `patch -p1' form
-- patch is whitespace-mangled
-
-I fixed some of that up.  It'd be nice to get some Signed-off-by:s,
-please.
-
+Thanks,
+-- 
+Jesse Barnes, Intel Open Source Technology Center
