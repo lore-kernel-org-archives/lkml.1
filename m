@@ -1,71 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753870AbZC3Pri@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754619AbZC3Pyf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753870AbZC3Pri (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Mar 2009 11:47:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751966AbZC3Pr1
+	id S1754619AbZC3Pyf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Mar 2009 11:54:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751686AbZC3Py0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Mar 2009 11:47:27 -0400
-Received: from exc01vs1.exchange.cysonet.com ([85.158.200.82]:18825 "EHLO
-	exc01vs1.exchange.cysonet.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752150AbZC3PrZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Mar 2009 11:47:25 -0400
-User-Agent: Microsoft-Entourage/12.15.0.081119
-Date: Mon, 30 Mar 2009 17:47:19 +0100
-Subject: Re: Page Cache writeback too slow,   SSD/noop scheduler/ext2
-From: Jos Houtman <jos@hyves.nl>
-To: Wu Fengguang <fengguang.wu@intel.com>
-CC: Nick Piggin <nickpiggin@yahoo.com.au>, <linux-kernel@vger.kernel.org>,
-       Jeff Layton <jlayton@redhat.com>, Dave Chinner <david@fromorbit.com>,
-       <linux-fsdevel@vger.kernel.org>, <jens.axboe@oracle.com>,
-       <akpm@linux-foundation.org>, <hch@infradead.org>,
-       <linux-nfs@vger.kernel.org>
-Message-ID: <C5F6B627.D9D0%jos@hyves.nl>
-Thread-Topic: Page Cache writeback too slow,   SSD/noop scheduler/ext2
-Thread-Index: AcmwFsYCqkFwmUxBTpma/AE+p/juyQBOAivb
-In-Reply-To: <20090329023238.GA7825@localhost>
-X-Priority: 10
-Mime-version: 1.0
-Content-type: text/plain;
-	charset="US-ASCII"
-Content-transfer-encoding: 7bit
-X-OriginalArrivalTime: 30 Mar 2009 15:47:21.0268 (UTC) FILETIME=[D00A6F40:01C9B14E]
+	Mon, 30 Mar 2009 11:54:26 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:42052 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751929AbZC3PyZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Mar 2009 11:54:25 -0400
+Date: Mon, 30 Mar 2009 16:54:19 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: David Rientjes <rientjes@google.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Nick Piggin <nickpiggin@yahoo.com.au>, Martin Bligh <mbligh@google.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch 1/3] slub: add per-cache slab thrash ratio
+Message-ID: <20090330155419.GC27169@csn.ul.ie>
+References: <alpine.DEB.2.00.0903292241300.15813@chino.kir.corp.google.com> <alpine.DEB.2.00.0903292242510.15813@chino.kir.corp.google.com> <1238397091.26742.35.camel@penberg-laptop>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <1238397091.26742.35.camel@penberg-laptop>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
->> Thanx for the patch, but for the next time: How should I apply it?
->> it seems to be context aware (@@) and broke on all kernel versions I tried
->> 2.6.28/2.6.28.7/2.6.29
+On Mon, Mar 30, 2009 at 10:11:31AM +0300, Pekka Enberg wrote:
+> On Sun, 2009-03-29 at 22:43 -0700, David Rientjes wrote:
+> > The slab_thrash_ratio for each cache do not have non-zero defaults
+> > (yet?).
 > 
-> Do you mean that the patch applies after removing " @@.*$"?
-
-I didn't try that, but this time it worked. So it was probably my error.
-
+> If we're going to merge this code, I think it would be better to put a
+> non-zero default there; otherwise we won't be able to hit potential
+> performance regressions or bugs. Furthermore, the optimization is not
+> very useful on large scale if people need to enable it themselves.
 > 
-> You are right. In your case, there are several big dirty files in sdb1,
-> and the sdb write queue is constantly (almost-)congested. The SSD write
-> speed is so slow, that in each round of sdb1 writeback, it begins with
-> an uncongested queue, but quickly fills up after writing some pages.
-> Hence all the inodes will get redirtied because of (nr_to_write > 0).
+> Maybe stick 20 there and run tbench, sysbench, et al to see if it makes
+> a difference? I'm cc'ing Mel in case he has some suggestions how to test
+> it.
 > 
-> The following quick fix should solve the slow-writeback-on-congested-SSD
-> problem. However the writeback sequence is suboptimal: it sync-and-requeue
-> each file until congested (in your case about 3~600 pages) instead of
-> until MAX_WRITEBACK_PAGES=1024 pages.
 
-Yeah that fixed it, but performance dropped due to the more constant
-congestion. So I will need to try some different io schedulers.
+netperf and tbench will both pound the sl*b allocator far more than sysbench
+will in my opinion although I don't have figures on-hand to back that up. In
+the case of netperf, it might be particular obvious if the client is on one
+CPU and the server on another because I believe that means all allocs happen
+on one CPU and all frees on another.
 
+I have a vague concern that such a tunable needs to exist at all though
+and wonder what workloads it can hurt when set to 20 for example versus any
+other value.
 
-Next to that I was wondering if there are any plans to make sure that not
-all dirty-files are written back in the same interval.
-
-In my case all database files are written back each 30 seconds, while I
-would prefer them to be more divided over the interval.
-
-Thanks,
-
-Jos
-
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
