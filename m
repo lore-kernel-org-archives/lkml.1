@@ -1,91 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760883AbZC3UT4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760885AbZC3UUU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760883AbZC3UT4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Mar 2009 16:19:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755223AbZC3UTq
+	id S1760885AbZC3UUU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Mar 2009 16:20:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760872AbZC3UTx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Mar 2009 16:19:46 -0400
-Received: from rtr.ca ([76.10.145.34]:33589 "EHLO mail.rtr.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752268AbZC3UTq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Mar 2009 16:19:46 -0400
-Message-ID: <49D1295E.7010300@rtr.ca>
-Date: Mon, 30 Mar 2009 16:19:42 -0400
-From: Mark Lord <lkml@rtr.ca>
-Organization: Real-Time Remedies Inc.
-User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
-MIME-Version: 1.0
-To: Chris Mason <chris.mason@oracle.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Ric Wheeler <rwheeler@redhat.com>,
-       "Andreas T.Auer" <andreas.t.auer_lkml_73537@ursus.ath.cx>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Theodore Tso <tytso@mit.edu>,
-       Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Jeff Garzik <jeff@garzik.org>, Matthew Garrett <mjg59@srcf.ucam.org>,
+	Mon, 30 Mar 2009 16:19:53 -0400
+Received: from acsinet12.oracle.com ([141.146.126.234]:60584 "EHLO
+	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760836AbZC3UTv (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Mar 2009 16:19:51 -0400
+Subject: Re: [PATCH 1/7] block: Add block_flush_device()
+From: Chris Mason <chris.mason@oracle.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Jeff Garzik <jeff@garzik.org>, Jens Axboe <jens.axboe@oracle.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Fernando Luis =?ISO-8859-1?Q?V=E1zquez?= Cao 
+	<fernando@oss.ntt.co.jp>,
+       Christoph Hellwig <hch@infradead.org>, Theodore Tso <tytso@mit.edu>,
+       Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Arjan van de Ven <arjan@infradead.org>,
        Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Nick Piggin <npiggin@suse.de>,
        David Rees <drees76@gmail.com>, Jesper Krogh <jesper@krogh.cc>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.29
-References: <alpine.LFD.2.00.0903271511230.3994@localhost.localdomain>	 <49CD7B10.7010601@garzik.org> <49CD891A.7030103@rtr.ca>	 <49CD9047.4060500@garzik.org> <49CE2633.2000903@s5r6.in-berlin.de>	 <49CE3186.8090903@garzik.org> <49CE35AE.1080702@s5r6.in-berlin.de>	 <49CE3F74.6090103@rtr.ca> <20090329231451.GR26138@disturbed>	 <20090330003948.GA13356@mit.edu> <49D0710A.1030805@ursus.ath.cx>	 <20090330100546.51907bd2@the-village.bc.nu> <49D0A3D6.4000300@ursus.ath.cx>		 <49D0AA4A.6020308@redhat.com> <49D0CDBA.7040702@rtr.ca>		 <49D0D08E.3090100@redhat.com> <49D0DAD3.6030507@rtr.ca>		 <49D0DDFE.5080701@redhat.com> <49D0E35E.9080003@rtr.ca>		 <49D0E4E8.20508@redhat.com>	 <alpine.LFD.2.00.0903300841420.3948@localhost.localdomain>	 <49D0F399.5010407@rtr.ca>	 <alpine.LFD.2.00.0903300946050.3948@localhost.localdomain>	 <1238435832.30488.83.camel@think.oraclecorp.com>  <49D111C9.4020502@rtr.ca> <1238439149.20607.12.camel@think.oraclecorp.com>
-In-Reply-To: <1238439149.20607.12.camel@think.oraclecorp.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       david@fromorbit.com, tj@kernel.org
+In-Reply-To: <87ljqmlqm5.fsf@basil.nowhere.org>
+References: <20090329082507.GA4242@infradead.org>
+	 <49D01F94.6000101@oss.ntt.co.jp> <49D02328.7060108@oss.ntt.co.jp>
+	 <49D0258A.9020306@garzik.org> <49D03377.1040909@oss.ntt.co.jp>
+	 <49D0B535.2010106@oss.ntt.co.jp> <49D0B687.1030407@oss.ntt.co.jp>
+	 <alpine.LFD.2.00.0903301028400.3948@localhost.localdomain>
+	 <20090330175544.GX5178@kernel.dk>
+	 <alpine.LFD.2.00.0903301120200.3948@localhost.localdomain>
+	 <20090330185414.GZ5178@kernel.dk> <49D11A8D.1090600@garzik.org>
+	 <1238441043.20607.16.camel@think.oraclecorp.com>
+	 <87ljqmlqm5.fsf@basil.nowhere.org>
+Content-Type: text/plain
+Date: Mon, 30 Mar 2009 16:15:08 -0400
+Message-Id: <1238444108.25199.2.camel@think.oraclecorp.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 
 Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt706.oracle.com [141.146.40.84]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090203.49D12853.003F:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Chris Mason wrote:
-> On Mon, 2009-03-30 at 14:39 -0400, Mark Lord wrote:
->> Chris Mason wrote:
->>> I had some fun trying things with this, and I've been able to reliably
->>> trigger stalls in write cache of ~60 seconds on my seagate 500GB sata
->>> drive.  The worst I saw was 214 seconds.
->> ..
->>
->> I'd be more interested in how you managed that (above),
->> than the quite different test you describe below.
->>
->> Yes, different, I think.  The test below just times how long a single
->> chunk of data might stay in-drive cache under constant load,
->> rather than how long it takes to flush the drive cache on command.
->>
->> Right?
->>
->> Still, useful for other stuff.
->>
+On Mon, 2009-03-30 at 22:09 +0200, Andi Kleen wrote:
+> Chris Mason <chris.mason@oracle.com> writes:
+> >
+> > As far as I know, reiserfs is the only one actively using it to choose
+> > different code.  It moves a single wait_on_buffer when barriers are on,
+> > which I took out once to simplify the code.  Ric saw it in some
+> > benchmark numbers and I put it back in.
+> >
+> > Given that it was a long time ago, I don't have a problem with changing
+> > it to work like all the other filesystems.
 > 
-> That's right, it is testing for starvation in a single sector, not for
-> how long the cache flush actually takes.  But, your remark from higher
-> up in the thread was this:
-> 
->         > 
->         > Anything in the drive's write cache very probably made 
->         > it to the media within a second or two of arriving there.
-..
+> When it was a win on reiserfs back then maybe it would be a win
+> on ext4 or xfs today too?
 
-Yeah, but that was in the context of how long the drive takes
-to clear out it's cache when there's a (brief) break in the action.
+It could be, but you get into some larger changes.  The theory behind
+the code was that writeback cache is on, so wait_on_buffer isn't really
+going to give you a worthwhile error return anyway.  Might as well do
+the wait_on_buffer some time later and fix up the commit blocks if it
+didn't work out.
 
-Still, it's really good to see hard data on a drive that actually
-starves itself for an extended period.  Very handy insight, that!
-         
-> Sorry if I misread things.  But the goal is just to show that it really
-> does matter if we use a writeback cache with or without barriers.  The
-> test has two datasets:
-> 
-> 1) An area that is constantly overwritten sequentially
-> 2) A single sector that stores a critical bit of data.
-> 
-> #1 is the filesystem log, #2 is the filesystem super.  This isn't a
-> specialized workload ;)
-..
+We're still arguing about barriers being a good idea all these years
+later, and the drives are better at them than they used to be.  So, I'd
+rather see less complex code in the filesystems than more.
 
-Good points.
+-chris
 
-I'm thinking of perhaps acquiring an OCZ Vertex SSD.
-The 120GB ones apparently have 64MB of RAM inside,
-much of which is used to cache data heading to the flash.
 
-I wonder how long it takes to empty out that sucker!
-
-Cheers
