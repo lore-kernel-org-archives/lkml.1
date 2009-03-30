@@ -1,47 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760447AbZC3WIT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761726AbZC3WI6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760447AbZC3WIT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Mar 2009 18:08:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760730AbZC3WIE
+	id S1761726AbZC3WI6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Mar 2009 18:08:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756211AbZC3WIr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Mar 2009 18:08:04 -0400
-Received: from mga05.intel.com ([192.55.52.89]:26380 "EHLO
-	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1759169AbZC3WID (ORCPT
+	Mon, 30 Mar 2009 18:08:47 -0400
+Received: from fg-out-1718.google.com ([72.14.220.156]:44158 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755353AbZC3WIq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Mar 2009 18:08:03 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.38,448,1233561600"; 
-   d="scan'208";a="677293975"
-Message-ID: <49D142AC.8090701@linux.intel.com>
-Date: Mon, 30 Mar 2009 15:07:40 -0700
-From: Arjan van de Ven <arjan@linux.intel.com>
-User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
+	Mon, 30 Mar 2009 18:08:46 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=FXbUSK06vjSXlRpa/MpqWfg8ugg+5W1gbGC87k6j/YG22jRBhQvmIgoLRDWxQA5yPq
+         1E8AFlG4Gz/K929W3YoKew2++wHFUmHzI1ywre62pXWs0iPw2cjcFc8pUhyZ8W+9IuP+
+         t6bzrPmQ3Wmxh7NWgb1x26/28iiBQ5c9JNGmE=
+Date: Tue, 31 Mar 2009 02:16:16 +0400
+From: Alexey Dobriyan <adobriyan@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Al Viro <viro@ZenIV.linux.org.uk>, linux-kernel@vger.kernel.org,
+       "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: fault.c cleanup, what else could it be
+Message-ID: <20090330221616.GA28060@x200.localdomain>
+References: <20090329175642.GA26405@x200.localdomain> <20090329232422.GA9873@elte.hu> <20090329234839.GL28946@ZenIV.linux.org.uk> <20090330011355.GA11087@elte.hu> <20090330013355.GO28946@ZenIV.linux.org.uk> <20090330014926.GA32139@elte.hu>
 MIME-Version: 1.0
-To: Hans-Peter Jansen <hpj@urpla.net>
-CC: Linus Torvalds <torvalds@linux-foundation.org>,
-       Mike Galbraith <efault@gmx.de>,
-       Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Linux 2.6.29
-References: <alpine.LFD.2.00.0903231617550.3032@localhost.localdomain> <1238168777.5969.18.camel@marge.simson.net> <alpine.LFD.2.00.0903270852070.3994@localhost.localdomain> <200903310000.11522.hpj@urpla.net>
-In-Reply-To: <200903310000.11522.hpj@urpla.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090330014926.GA32139@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hans-Peter Jansen wrote:
-> Am Freitag, 27. März 2009 schrieb Linus Torvalds:
+On Mon, Mar 30, 2009 at 03:49:26AM +0200, Ingo Molnar wrote:
 > 
-> I always wonder, why Arjan does not intervene for his kerneloops.org 
-> project, since your approach opens a window of uncertainty during the merge 
-> window when simply using git as an efficient fetch tool.
+> * Al Viro <viro@ZenIV.linux.org.uk> wrote:
+> 
+> > On Mon, Mar 30, 2009 at 03:13:55AM +0200, Ingo Molnar wrote:
+> > 
+> > > There is simply no excuse for ever having let that crap get there 
+> > > into fs/proc/base.c. There is no excuse for ever letting that crap 
+> > > grow. The fact that that crap is there is proof of systemic failure 
+> > > over the years to keep that code clean.
+> > 
+> > Nothing like proof by assertion, eh?
+> 
+> The proof is what i quoted - see below the full dump again. Those 
+> are bona fide evidence of unclean code.
+> 
+> > > I dont really want to see "real work" done on code that was not 
+> > > properly and cleanly finished in the first place.
+> > 
+> > Tough.  At the moment we have a rather unpleasant hole with 
+> > tentative fix that touches fs/proc/base.c.  Whether you want said 
+> > work postponed until all whitespace wanking is done on file in 
+> > question or not, I simply don't give a damn - getting rid of real 
+> > bug takes precedence.  Whitespace crap should be dealt with as we 
+> > go through the functions containing such crap, religious bullshit 
+> > nonwithstanding.
+> 
+> I am profoundly surprised that something as lightweight and simple 
+> as a cleanup patch can make life difficult to you at all. How are 
+> you handling them? Have you ever tried?
+> 
+> > And I very much object against completely unfounded assertions 
+> > claiming that checkpatch noise makes a useful proxy for code 
+> > quality.  You keep making those again and again, without a shred 
+> > of evidence to show.
+> 
+> You dont have to take my word for it. Look at the output below. 
+> Check the code. Compare to the CodingStyle. If it does not match, 
+> then it's unclean code that should have been rejected when it got 
+> there. Some of that is ancient code, some of that is recent code.
+> 
+> It might be perfectly fine code otherwise, i made no assertion about 
+> the quality of other code in that area.
+> 
+> 	Ingo
+> 
+> ---------------->
+> ERROR: space required before the open parenthesis '('
+> #154: FILE: proc/base.c:154:
 
-I would *love* it if Linus would, as first commit mark his tree as "-git0"
-(as per snapshots) or "-rc0". So that I can split the "final" versus
-"merge window" oopses.
-
-
-
+I'm finally convinced you do not understand what's going on in this
+thread and previous threads on the subject and quitting. There will be
+C/R stuff because I already promised and nothing more.
