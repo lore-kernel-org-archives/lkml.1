@@ -1,155 +1,146 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759463AbZCaBoW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761180AbZCaBpW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759463AbZCaBoW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Mar 2009 21:44:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756754AbZCaBoN
+	id S1761180AbZCaBpW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Mar 2009 21:45:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754565AbZCaBpE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Mar 2009 21:44:13 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:49611 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754897AbZCaBoM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Mar 2009 21:44:12 -0400
-Date: Tue, 31 Mar 2009 10:42:37 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Minchan Kim <minchan.kim@gmail.com>
-Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       Johannes Weiner <hannes@cmpxchg.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Rik van Riel <riel@redhat.com>,
-       Balbir Singh <balbir@in.ibm.com>
-Subject: Re: [PATCH] vmscan: memcg needs may_swap (Re: [patch] vmscan:
- rename  sc.may_swap to may_unmap)
-Message-Id: <20090331104237.e689f279.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <28c262360903301826w6429720es8ceb361cfc088b1@mail.gmail.com>
-References: <20090327151926.f252fba7.nishimura@mxp.nes.nec.co.jp>
-	<20090327153035.35498303.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090328214636.68FF.A69D9226@jp.fujitsu.com>
-	<28c262360903301826w6429720es8ceb361cfc088b1@mail.gmail.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+	Mon, 30 Mar 2009 21:45:04 -0400
+Received: from mga14.intel.com ([143.182.124.37]:45151 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754559AbZCaBpD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Mar 2009 21:45:03 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.38,449,1233561600"; 
+   d="scan'208";a="125908128"
+Subject: Re: [PATCH] PNPACPI: Enable PNPACPI _PSx Support, v3
+From: yakui_zhao <yakui.zhao@intel.com>
+To: Witold Szczeponik <Witold.Szczeponik@gmx.net>
+Cc: "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "bjorn.helgaas@hp.com" <bjorn.helgaas@hp.com>,
+       "abelay@mit.edu" <abelay@mit.edu>, "rjw@sisk.pl" <rjw@sisk.pl>
+In-Reply-To: <49D101DA.50201@gmx.net>
+References: <49D101DA.50201@gmx.net>
+Content-Type: text/plain
+Organization: Intel Open Source Technology Center
+Date: Tue, 31 Mar 2009 09:45:39 +0800
+Message-Id: <1238463939.3625.99.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 31 Mar 2009 10:26:17 +0900
-Minchan Kim <minchan.kim@gmail.com> wrote:
+On Tue, 2009-03-31 at 01:31 +0800, Witold Szczeponik wrote:
+> Subject: Enable PNPACPI _PSx Support, v3
+> 
+    Very good patch.
+    Do you have the hardware on which the dedicated power source is
+required by the serial port(PnP device) in your hand?
 
-> > diff --git a/mm/vmscan.c b/mm/vmscan.c
-> > index 3be6157..00ea4a1 100644
-> > --- a/mm/vmscan.c
-> > +++ b/mm/vmscan.c
-> > @@ -63,6 +63,9 @@ struct scan_control {
-> >        /* Can mapped pages be reclaimed? */
-> >        int may_unmap;
-> >
-> > +       /* Can pages be swapped as part of reclaim? */
-> > +       int may_swap;
-> > +
-> 
-> Sorry for too late response.
-> I don't know memcg well.
-> 
-> The memcg managed to use may_swap well with global page reclaim until now.
-> I think that was because may_swap can represent both meaning.
-> Do we need each variables really ?
-> 
-> How about using union variable ?
+When the Pnp ACPI device is started, it should be changed to D0 state if
+there exists the _PSX object or the power resource is required. 
+When it is disabled, it should be changed to D3 state.
 
-or Just removing one of them  ?
+   acked-by: Zhao Yakui <yakui.zhao@intel.com>
 
-Thanks,
--Kame
-
-> ---
+Thanks.
 > 
-> struct scan_control {
->   /* Incremented by the number of inactive pages that were scanned */
->   unsigned long nr_scanned;
-> ...
->    union {
->     int may_swap; /* memcg: Cap pages be swapped as part of reclaim? */
->     int may_unmap /* global: Can mapped pages be reclaimed? */
->   };
+> (This is an update to the patch presented earlier in
+> http://lkml.org/lkml/2008/12/8/284, with new error handling.)
 > 
+> This patch sets the power of PnP ACPI devices to D0 when they
+> are activated and to D3 when they are disabled.  The latter is
+> in correspondence with the ACPI 3.0 specification, whereas the
+> former is added in order to be able to power up a device after
+> it has been previously disabled (or when booting up a system).
+> (As a consequence, the patch makes the PnP ACPI code more ACPI
+> compliant.)
 > 
+> Section 6.2.2 of the ACPI Specification (at least versions 1.0b
+> and 3.0a) states: "Prior to running this control method [_DIS],
+> the OS[PM] will have already put the device in the D3 state."
+> Unfortunately, there is no clear statement as to when to put
+> a device in the D0 state. :-( Therefore, the patch executes the
+> method calls as _PS3/_DIS and _SRS/_PS0. What is clear: "If the
+> device is disabled, _SRS enables the device at the specified
+> resources." (From the ACPI 3.0a Specification.)
 > 
-> >        /* This context's SWAP_CLUSTER_MAX. If freeing memory for
-> >         * suspend, we effectively ignore SWAP_CLUSTER_MAX.
-> >         * In this context, it doesn't matter that we scan the
-> > @@ -1379,7 +1382,7 @@ static void get_scan_ratio(struct zone *zone, struct scan_control *sc,
-> >        struct zone_reclaim_stat *reclaim_stat = get_reclaim_stat(zone, sc);
-> >
-> >        /* If we have no swap space, do not bother scanning anon pages. */
-> > -       if (nr_swap_pages <= 0) {
-> > +       if (!sc->may_swap || (nr_swap_pages <= 0)) {
-> >                percent[0] = 0;
-> >                percent[1] = 100;
-> >                return;
-> > @@ -1695,6 +1698,7 @@ unsigned long try_to_free_pages(struct zonelist *zonelist, int order,
-> >                .may_writepage = !laptop_mode,
-> >                .swap_cluster_max = SWAP_CLUSTER_MAX,
-> >                .may_unmap = 1,
-> > +               .may_swap = 1,
-> >                .swappiness = vm_swappiness,
-> >                .order = order,
-> >                .mem_cgroup = NULL,
-> > @@ -1714,6 +1718,7 @@ unsigned long try_to_free_mem_cgroup_pages(struct mem_cgroup *mem_cont,
-> >        struct scan_control sc = {
-> >                .may_writepage = !laptop_mode,
-> >                .may_unmap = 1,
-> > +               .may_swap = 1,
-> >                .swap_cluster_max = SWAP_CLUSTER_MAX,
-> >                .swappiness = swappiness,
-> >                .order = 0,
-> > @@ -1723,7 +1728,7 @@ unsigned long try_to_free_mem_cgroup_pages(struct mem_cgroup *mem_cont,
-> >        struct zonelist *zonelist;
-> >
-> >        if (noswap)
-> > -               sc.may_unmap = 0;
-> > +               sc.may_swap = 0;
-> >
-> >        sc.gfp_mask = (gfp_mask & GFP_RECLAIM_MASK) |
-> >                        (GFP_HIGHUSER_MOVABLE & ~GFP_RECLAIM_MASK);
-> > @@ -1763,6 +1768,7 @@ static unsigned long balance_pgdat(pg_data_t *pgdat, int order)
-> >        struct scan_control sc = {
-> >                .gfp_mask = GFP_KERNEL,
-> >                .may_unmap = 1,
-> > +               .may_swap = 1,
-> >                .swap_cluster_max = SWAP_CLUSTER_MAX,
-> >                .swappiness = vm_swappiness,
-> >                .order = order,
-> > @@ -2109,6 +2115,7 @@ unsigned long shrink_all_memory(unsigned long nr_pages)
-> >        struct scan_control sc = {
-> >                .gfp_mask = GFP_KERNEL,
-> >                .may_unmap = 0,
-> > +               .may_swap = 1,
-> >                .swap_cluster_max = nr_pages,
-> >                .may_writepage = 1,
-> >                .isolate_pages = isolate_pages_global,
-> > @@ -2289,6 +2296,7 @@ static int __zone_reclaim(struct zone *zone, gfp_t gfp_mask, unsigned int order)
-> >        struct scan_control sc = {
-> >                .may_writepage = !!(zone_reclaim_mode & RECLAIM_WRITE),
-> >                .may_unmap = !!(zone_reclaim_mode & RECLAIM_SWAP),
-> > +               .may_swap = 1,
-> >                .swap_cluster_max = max_t(unsigned long, nr_pages,
-> >                                        SWAP_CLUSTER_MAX),
-> >                .gfp_mask = gfp_mask,
-> >
-> >
-> >
-> >
-> >
+> The patch fixes a problem with some IBM ThinkPads (at least the
+> 600E and the 600X) where the serial ports have a dedicated
+> power source that needs to be brought up before the serial port
+> can be used.  Without this patch, the serial port is enabled
+> but has no power. (In the past, the tpctl utility had to be
+> utilized to turn on the power, but support for this feature
+> stopped with version 5.9 as it did not support the more recent
+> kernel versions.)
+> 
+> The error handlers that handle any errors that can occur during
+> the power up/power down phases return the error codes to the
+> caller directly.  Comments welcome! :-)
+> 
+> No regressions were observed on hardware that does not require
+> this patch.
+> 
+> The patch is applied against 2.6.27.x.
 > 
 > 
+> Signed-off-by: Witold Szczeponik <Witold.Szczeponik@gmx.net>
 > 
-> -- 
-> Kinds regards,
-> Minchan Kim
 > 
+> Index: linux/drivers/pnp/pnpacpi/core.c
+> ===================================================================
+> --- linux.orig/drivers/pnp/pnpacpi/core.c
+> +++ linux/drivers/pnp/pnpacpi/core.c
+> @@ -84,7 +84,6 @@ static int pnpacpi_set_resources(struct
+>   	acpi_handle handle = dev->data;
+>   	struct acpi_buffer buffer;
+>   	int ret;
+> -	acpi_status status;
+> 
+>   	dev_dbg(&dev->dev, "set resources\n");
+>   	ret = pnpacpi_build_resource_template(dev, &buffer);
+> @@ -95,21 +94,30 @@ static int pnpacpi_set_resources(struct
+>   		kfree(buffer.pointer);
+>   		return ret;
+>   	}
+> -	status = acpi_set_current_resources(handle, &buffer);
+> -	if (ACPI_FAILURE(status))
+> +	if (ACPI_FAILURE(acpi_set_current_resources(handle, &buffer)))
+>   		ret = -EINVAL;
+> +	else if (acpi_bus_power_manageable(handle))
+> +		ret = acpi_bus_set_power(handle, ACPI_STATE_D0);
+How about changing the power state before calling _SRS object?
+>   	kfree(buffer.pointer);
+>   	return ret;
+>   }
+> 
+>   static int pnpacpi_disable_resources(struct pnp_dev *dev)
+>   {
+> -	acpi_status status;
+> +	acpi_handle handle = dev->data;
+> +	int ret;
+> 
+> +	dev_dbg(&dev->dev, "disable resources\n");
+>   	/* acpi_unregister_gsi(pnp_irq(dev, 0)); */
+> -	status = acpi_evaluate_object((acpi_handle) dev->data,
+> -				      "_DIS", NULL, NULL);
+> -	return ACPI_FAILURE(status) ? -ENODEV : 0;
+> +	ret = 0;
+> +	if (acpi_bus_power_manageable(handle)) {
+> +		ret = acpi_bus_set_power(handle, ACPI_STATE_D3);
+> +		if (ret)
+> +			return ret;
+> +	}
+> +	if (ACPI_FAILURE(acpi_evaluate_object(handle, "_DIS", NULL, NULL)))
+> +		ret = -ENODEV;
+> +	return ret;
+>   }
+> 
+>   #ifdef CONFIG_ACPI_SLEEP
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-acpi" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
