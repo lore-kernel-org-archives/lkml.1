@@ -1,49 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761490AbZCaPDX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761502AbZCaPDi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761490AbZCaPDX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Mar 2009 11:03:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761411AbZCaPC5
+	id S1761502AbZCaPDi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Mar 2009 11:03:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761602AbZCaPDU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Mar 2009 11:02:57 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:36185 "EHLO mx2.redhat.com"
+	Tue, 31 Mar 2009 11:03:20 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:36197 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761375AbZCaPC4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Mar 2009 11:02:56 -0400
-Date: Tue, 31 Mar 2009 17:02:18 +0200
-From: Andrea Arcangeli <aarcange@redhat.com>
-To: Anthony Liguori <anthony@codemonkey.ws>
-Cc: Izik Eidus <ieidus@redhat.com>, linux-kernel@vger.kernel.org,
-       kvm@vger.kernel.org, linux-mm@kvack.org, avi@redhat.com,
-       chrisw@redhat.com, riel@redhat.com, jeremy@goop.org,
-       mtosatti@redhat.com, hugh@veritas.com, corbet@lwn.net, yaniv@redhat.com,
-       dmonakhov@openvz.org
-Subject: Re: [PATCH 4/4] add ksm kernel shared memory driver.
-Message-ID: <20090331150218.GS9137@random.random>
-References: <1238457560-7613-1-git-send-email-ieidus@redhat.com> <1238457560-7613-2-git-send-email-ieidus@redhat.com> <1238457560-7613-3-git-send-email-ieidus@redhat.com> <1238457560-7613-4-git-send-email-ieidus@redhat.com> <1238457560-7613-5-git-send-email-ieidus@redhat.com> <49D17C04.9070307@codemonkey.ws> <49D20B63.8020709@redhat.com> <49D21B33.4070406@codemonkey.ws> <20090331142533.GR9137@random.random> <49D22A9D.4050403@codemonkey.ws>
+	id S1761546AbZCaPDU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Mar 2009 11:03:20 -0400
+Date: Tue, 31 Mar 2009 16:57:50 +0200
+From: Oleg Nesterov <oleg@redhat.com>
+To: Chris Wright <chrisw@sous-sol.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
+       Peter Lojkin <ia6432@inbox.ru>, linux-kernel@vger.kernel.org,
+       Roland McGrath <roland@redhat.com>, stable@kernel.org
+Subject: Re: [stable] [PATCH 1/2] posix-timers: fix RLIMIT_CPU && fork()
+Message-ID: <20090331145750.GB4792@redhat.com>
+References: <20090327000607.GA10104@redhat.com> <20090331030133.GH3264@hera.kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <49D22A9D.4050403@codemonkey.ws>
+In-Reply-To: <20090331030133.GH3264@hera.kernel.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 31, 2009 at 09:37:17AM -0500, Anthony Liguori wrote:
-> In the very least, if you insist on not using sysfs, you should have a 
-> separate character device that's used for control (like /dev/ksmctl).
+On 03/31, Chris Wright wrote:
+>
+> * Oleg Nesterov (oleg@redhat.com) wrote:
+> > See http://bugzilla.kernel.org/show_bug.cgi?id=12911
+> >
+> > copy_signal() copies signal->rlim, but RLIMIT_CPU is "lost". Because
+> > posix_cpu_timers_init_group() sets cputime_expires.prof_exp = 0 and thus
+> > fastpath_timer_check() returns false unless we have other expired cpu timers.
+> >
+> > Change copy_signal() to set cputime_expires.prof_exp if we have RLIMIT_CPU.
+> > Also, set cputimer.running = 1 in that case. This is not strictly necessary,
+> > but imho makes sense.
+>
+> For -stable should this be instead of 37bebc70d7ad4144c571d74500db3bb26ec0c0eb?
 
-I'm fine to use sysfs that's not the point, if you've to add a ksmctl
-device, then sysfs is surely better. Besides ksm would normally be
-enabled at boot, tasks jailed by selinux will better not start/stop
-this thing.
+Yes, sorry for confusion.
 
-If people wants /sys/kernel/mm/ksm instead of the start_stop ioctl we
-surely can add it (provided there's a way to intercept write to the
-sysfs file). Problem is registering memory could also be done with
-'echo 0 -1 >/proc/self/ksm' and be inherited by childs, it's not just
-start/stop. I mean this is more a matter of taste I'm
-afraid... Personally I'm more concerned about the registering of the
-ram API than the start/stop thing which I cannot care less about, so
-my logic is that as long as this pseudodevice exists, we should use it
-for everything. If we go away from it, then we should remove it as a
-whole.
+The commit above was targeted for 2.6.29, it is not optimal. When/if
+"[PATCH 1/2] posix-timers: fix RLIMIT_CPU && fork()" will be merged, I'll sent
+the "revert" patch.
+
+see http://marc.info/?t=123783777600004
+
+Oleg.
+
