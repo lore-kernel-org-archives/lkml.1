@@ -1,49 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759442AbZCaNay@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759495AbZCaNbv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759442AbZCaNay (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Mar 2009 09:30:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757678AbZCaNam
+	id S1759495AbZCaNbv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Mar 2009 09:31:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757678AbZCaNbj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Mar 2009 09:30:42 -0400
-Received: from smtp.ultrahosting.com ([74.213.174.254]:49537 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757330AbZCaNal (ORCPT
+	Tue, 31 Mar 2009 09:31:39 -0400
+Received: from qw-out-2122.google.com ([74.125.92.26]:60867 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755836AbZCaNbh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Mar 2009 09:30:41 -0400
-Date: Tue, 31 Mar 2009 09:26:26 -0400 (EDT)
-From: Christoph Lameter <cl@linux.com>
-X-X-Sender: cl@qirst.com
-To: David Rientjes <rientjes@google.com>
-cc: Pekka Enberg <penberg@cs.helsinki.fi>,
-       Nick Piggin <nickpiggin@yahoo.com.au>, Martin Bligh <mbligh@google.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch 1/3] slub: add per-cache slab thrash ratio
-In-Reply-To: <alpine.DEB.2.00.0903302140250.27065@chino.kir.corp.google.com>
-Message-ID: <alpine.DEB.1.10.0903310925130.24040@qirst.com>
-References: <alpine.DEB.2.00.0903292241300.15813@chino.kir.corp.google.com> <alpine.DEB.2.00.0903292242510.15813@chino.kir.corp.google.com> <alpine.DEB.1.10.0903301026580.13333@qirst.com> <alpine.DEB.2.00.0903301309010.21074@chino.kir.corp.google.com>
- <alpine.DEB.1.10.0903301718080.25929@qirst.com> <alpine.DEB.2.00.0903301545200.30928@chino.kir.corp.google.com> <alpine.DEB.2.00.0903302140250.27065@chino.kir.corp.google.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Tue, 31 Mar 2009 09:31:37 -0400
+Message-ID: <49D21B33.4070406@codemonkey.ws>
+Date: Tue, 31 Mar 2009 08:31:31 -0500
+From: Anthony Liguori <anthony@codemonkey.ws>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Izik Eidus <ieidus@redhat.com>
+CC: linux-kernel@vger.kernel.org, kvm@vger.kernel.org, linux-mm@kvack.org,
+       avi@redhat.com, aarcange@redhat.com, chrisw@redhat.com, riel@redhat.com,
+       jeremy@goop.org, mtosatti@redhat.com, hugh@veritas.com, corbet@lwn.net,
+       yaniv@redhat.com, dmonakhov@openvz.org
+Subject: Re: [PATCH 4/4] add ksm kernel shared memory driver.
+References: <1238457560-7613-1-git-send-email-ieidus@redhat.com> <1238457560-7613-2-git-send-email-ieidus@redhat.com> <1238457560-7613-3-git-send-email-ieidus@redhat.com> <1238457560-7613-4-git-send-email-ieidus@redhat.com> <1238457560-7613-5-git-send-email-ieidus@redhat.com> <49D17C04.9070307@codemonkey.ws> <49D20B63.8020709@redhat.com>
+In-Reply-To: <49D20B63.8020709@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 30 Mar 2009, David Rientjes wrote:
-
-> @@ -3833,7 +3830,9 @@ static ssize_t order_store(struct kmem_cache *s,
->  	if (order > slub_max_order || order < slub_min_order)
->  		return -EINVAL;
+Izik Eidus wrote:
 >
-> +	thrash_ratio = s->min_free_watermark * 100 / oo_objects(s->oo);
->  	calculate_sizes(s, order);
-> +	s->min_free_watermark = oo_objects(s->oo) * thrash_ratio / 100;
->  	return length;
->  }
->
+> I belive using ioctl for registering memory of applications make it 
+> easier....
 
-Hmmm.. Still calculating the trash ratio based on existing objects per
-slab and then resetting the objects per slab to a different number.
-Shouldnt the trash_ratio simply be zapped to an initial value if the
-number of objects per slab changes?
+Yes, I completely agree.
+
+> Ksm doesnt have any complicated API that would benefit from sysfs 
+> (beside adding more complexity)
+>
+>> That is, the KSM_START_STOP_KTHREAD part, not necessarily the rest of 
+>> the API.
+>
+> What you mean?
+
+The ioctl(KSM_START_STOP_KTHREAD) API is distinct from the rest of the 
+API.  Whereas the rest of the API is used by applications to register 
+their memory with KSM, this API is used by ksmctl to allow parameters to 
+be tweaked in userspace.
+
+These parameters are just simple values like enable, pages_to_scan, 
+sleep_time.  Then there is KSM_GET_INFO_KTHREAD which provides a read 
+interface to these parameters.
+
+You could drop KSM_START_STOP_KTHREAD and KSM_GET_INFO_KTHREAD 
+altogether, and introduce a sysfs hierarchy:
+
+/sysfs/<some/path>/ksm/{enable,pages_to_scan,sleep_time}
+
+That eliminates the need for ksmctl altogether, cleanly separates the 
+two APIs, and provides a stronger interface.
+
+The main problem with the current API is that it uses a single device to 
+do both the administrative task and the userspace interface.  That means 
+that any application that has access to registering its memory with KSM 
+also has the ability to disable KSM.  That seems like a security concern 
+to me since registering a memory region ought to be an unprivileged 
+action whereas enabling/disabling KSM ought to be a privileged action.
+
+Regards,
+
+Anthony Liguori
+
+>>
+>> Regards,
+>>
+>> Anthony Liguori
+>>
+>
 
