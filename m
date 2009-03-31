@@ -1,79 +1,150 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761639AbZCaC3p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761483AbZCaCl2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761639AbZCaC3p (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Mar 2009 22:29:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755051AbZCaC3g
+	id S1761483AbZCaCl2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Mar 2009 22:41:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754269AbZCaClR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Mar 2009 22:29:36 -0400
-Received: from ozlabs.org ([203.10.76.45]:39502 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753202AbZCaC3g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Mar 2009 22:29:36 -0400
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Jiri Kosina <jkosina@suse.cz>
-Subject: Re: [PULL] module and parameter patches
-Date: Tue, 31 Mar 2009 12:59:26 +1030
-User-Agent: KMail/1.11.1 (Linux/2.6.27-11-generic; KDE/4.2.1; i686; ; )
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-kernel@vger.kernel.org,
-       =?iso-8859-1?q?Am=E9rico_Wang?= <xiyou.wangcong@gmail.com>,
-       Anders Kaseorg <andersk@mit.edu>,
-       Arjan van de Ven <arjan@linux.intel.com>, Tim Abbott <tabbott@mit.edu>,
-       Russell King <rmk@arm.linux.org.uk>
-References: <200903302203.31097.rusty@rustcorp.com.au> <alpine.LRH.2.00.0903302204100.8561@twin.jikos.cz>
-In-Reply-To: <alpine.LRH.2.00.0903302204100.8561@twin.jikos.cz>
+	Mon, 30 Mar 2009 22:41:17 -0400
+Received: from wa-out-1112.google.com ([209.85.146.179]:35130 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753191AbZCaClR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Mar 2009 22:41:17 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type;
+        b=IcEYbHdP18/FrcBOzPM3PsxGbC3hXkhzODYhnXEuuBKf/0vMH6cH/soLacuIo4uxa3
+         xIXvp7L3G7MCsCUWeVlGcZaPCuMBdr4EztwCHnDWLCuxgHn9i3jXm63hpodJbw0BQNUm
+         s5V1UjZ/b582YB1zytCPNWcLV4aRXNJXLmRu8=
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200903311259.27645.rusty@rustcorp.com.au>
+In-Reply-To: <20090330163317.a273a46a.akpm@linux-foundation.org>
+References: <ea11fea30903222016j1d16372ct2dfd6004452e0531@mail.gmail.com> 
+	<20090330163317.a273a46a.akpm@linux-foundation.org>
+Date: Tue, 31 Mar 2009 08:11:00 +0530
+Message-ID: <ea11fea30903301941p3a5a71c2l816df9a3d8341183@mail.gmail.com>
+Subject: Re: [PATCH] : Add dev-id and inode number for debugging in 
+	init_special_inode in fs/inode.c
+From: Manish Katiyar <mkatiyar@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: trivial@kernel.org, Andreas Dilger <adilger@sun.com>, mkatiyar@gmail.com,
+       LKML <linux-kernel@vger.kernel.org>
+Content-Type: multipart/mixed; boundary=00163646d08c02a0700466612230
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 31 March 2009 06:42:42 Jiri Kosina wrote:
-> On Mon, 30 Mar 2009, Rusty Russell wrote:
-> 
-> > The following changes since commit 0d34fb8e93ceba7b6dad0062dbb4a0813bacd75b:                      
-> >   Linus Torvalds (1):                                                                             
-> >         Merge branch 'bzip2-lzma-for-linus' of git://git.kernel.org/.../x86/linux-2.6-tip         
-> > 
-> > are available in the git repository at:
-> > 
-> >   ssh://master.kernel.org/pub/scm/linux/kernel/git/rusty/linux-2.6-module-and-param.git master
-> > 
-> > Arjan van de Ven (3):
-> >       module: create a request_module_nowait()
-> >       use the new request_module_nowait() in the hid driver
-> [ ... ]
-> > commit 743b7e3627cbcd5b04b2d1878b1c6b39e357173e
-> > Author: Arjan van de Ven <arjan@linux.intel.com>
-> > Date:   Sun Feb 8 10:42:40 2009 -0800
-> > 
-> >     use the new request_module_nowait() in the hid driver
-> >     
-> >     Now that there is a request_module_nowait(), use it in the hid driver.
-> >     This gets rid of a kernel thread, and also greatly simplifies the code...
-> >     
-> >     Signed-off-by: Arjan van de Ven <arjan@linux.intel.com>
-> >     Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
-> > 
-> >  drivers/hid/hid-core.c |   19 +------------------
-> >  1 files changed, 1 insertions(+), 18 deletions(-)
-> 
-> Having noticed that Linus hasn't pulled this yet ... Rusty, you can safely 
-> drop this one. I am currently preparing pull request for HID, which will 
-> remove the whole hid-dummy stuff altogether, so all this will be removed 
-> anyway (this is what Stephen has his extra patch in linux-next).
-> 
-> So if you drop this before Linus pulls, it will save us one conflict.
+--00163646d08c02a0700466612230
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-Sure!  The other use-request_module_nowait patch also has clashes, so I
-dropped that too.
+On Tue, Mar 31, 2009 at 5:03 AM, Andrew Morton
+<akpm@linux-foundation.org> wrote:
+> On Mon, 23 Mar 2009 08:46:12 +0530
+> Manish Katiyar <mkatiyar@gmail.com> wrote:
+>
+>> Hi Andrew,
+>>
+>> Below patch adds device-id and inode number for better debugging.
+>>
+>> Signed-off-by: Manish Katiyar <mkatiyar@gmail.com>
+>> ---
+>> =A0fs/inode.c | =A0 =A05 +++--
+>> =A01 files changed, 3 insertions(+), 2 deletions(-)
+>>
+>> diff --git a/fs/inode.c b/fs/inode.c
+>> index 913ab2d..f75e9a4 100644
+>> --- a/fs/inode.c
+>> +++ b/fs/inode.c
+>> @@ -1540,7 +1540,8 @@ void init_special_inode(struct inode *inode,
+>> umode_t mode, dev_t rdev)
+>> =A0 =A0 =A0 else if (S_ISSOCK(mode))
+>> =A0 =A0 =A0 =A0 =A0 =A0 =A0 inode->i_fop =3D &bad_sock_fops;
+>> =A0 =A0 =A0 else
+>> - =A0 =A0 =A0 =A0 =A0 =A0 printk(KERN_DEBUG "init_special_inode: bogus i=
+_mode (%o)\n",
+>> - =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0mode);
+>> + =A0 =A0 =A0 =A0 =A0 =A0 printk(KERN_DEBUG "init_special_inode: bogus i=
+_mode (%o) for"
+>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 " inode %s=
+:%lu\n", mode, inode->i_sb->s_id,
+>> + =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 =A0 inode->i_i=
+no);
+>> =A0}
+>> =A0EXPORT_SYMBOL(init_special_inode);
+>
+> I don't think this is really a trivial patch. =A0Please cc linux-kernel
+> unless the patch is really really trivail.
+>
+> The changelog falied to give any reason for making this change. =A0It
+> should have done so! =A0I cannot work out the rationale from looking at
+> the code change.
 
-Should be easy for Arjan to respin and re-send once request_module_nowait is
-in.
+Hi Andrew,
+[resending it with updated changelog and ccing linux-kernel]
 
-Thanks!
-Rusty.
+Below patch adds device-id and inode number for better debugging. This
+was suggested by Andreas in one of the threads
+http://article.gmane.org/gmane.comp.file-systems.ext4/12062 .
+
+Signed-off-by: Manish Katiyar <mkatiyar@gmail.com>
+---
+ fs/inode.c |    5 +++--
+ 1 files changed, 3 insertions(+), 2 deletions(-)
+
+diff --git a/fs/inode.c b/fs/inode.c
+index 913ab2d..f75e9a4 100644
+--- a/fs/inode.c
++++ b/fs/inode.c
+@@ -1540,7 +1540,8 @@ void init_special_inode(struct inode *inode,
+umode_t mode, dev_t rdev)
+ 	else if (S_ISSOCK(mode))
+ 		inode->i_fop =3D &bad_sock_fops;
+ 	else
+-		printk(KERN_DEBUG "init_special_inode: bogus i_mode (%o)\n",
+-		       mode);
++		printk(KERN_DEBUG "init_special_inode: bogus i_mode (%o) for"
++				  " inode %s:%lu\n", mode, inode->i_sb->s_id,
++				  inode->i_ino);
+ }
+ EXPORT_SYMBOL(init_special_inode);
+--=20
+1.5.4.3
+
+
+
+PS: I have also attached the patch, in case it gets word wrapped.
+
+Thanks -
+Manish
+
+>
+>
+>
+>
+
+--00163646d08c02a0700466612230
+Content-Type: text/x-diff; charset=US-ASCII; 
+	name="0001-Add-dev-id-and-inode-number-for-debugging-in-init_sp.patch"
+Content-Disposition: attachment; 
+	filename="0001-Add-dev-id-and-inode-number-for-debugging-in-init_sp.patch"
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_fsxzp4mn0
+
+RnJvbSAyNWQyZGRjMDMzNmYxZjgyODUzMjQ3NTY2MmUxMTRiYmQyM2Y0NzhhIE1vbiBTZXAgMTcg
+MDA6MDA6MDAgMjAwMQpGcm9tOiBNYW5pc2ggS2F0aXlhciA8bWthdGl5YXJAZ21haWwuY29tPgpE
+YXRlOiBNb24sIDIzIE1hciAyMDA5IDA4OjA4OjA1ICswNTMwClN1YmplY3Q6IFtQQVRDSF0gQWRk
+IGRldi1pZCBhbmQgaW5vZGUgbnVtYmVyIGZvciBkZWJ1Z2dpbmcgaW4gaW5pdF9zcGVjaWFsX2lu
+b2RlCgoKU2lnbmVkLW9mZi1ieTogTWFuaXNoIEthdGl5YXIgPG1rYXRpeWFyQGdtYWlsLmNvbT4K
+LS0tCiBmcy9pbm9kZS5jIHwgICAgNSArKystLQogMSBmaWxlcyBjaGFuZ2VkLCAzIGluc2VydGlv
+bnMoKyksIDIgZGVsZXRpb25zKC0pCgpkaWZmIC0tZ2l0IGEvZnMvaW5vZGUuYyBiL2ZzL2lub2Rl
+LmMKaW5kZXggOTEzYWIyZC4uZjc1ZTlhNCAxMDA2NDQKLS0tIGEvZnMvaW5vZGUuYworKysgYi9m
+cy9pbm9kZS5jCkBAIC0xNTQwLDcgKzE1NDAsOCBAQCB2b2lkIGluaXRfc3BlY2lhbF9pbm9kZShz
+dHJ1Y3QgaW5vZGUgKmlub2RlLCB1bW9kZV90IG1vZGUsIGRldl90IHJkZXYpCiAJZWxzZSBpZiAo
+U19JU1NPQ0sobW9kZSkpCiAJCWlub2RlLT5pX2ZvcCA9ICZiYWRfc29ja19mb3BzOwogCWVsc2UK
+LQkJcHJpbnRrKEtFUk5fREVCVUcgImluaXRfc3BlY2lhbF9pbm9kZTogYm9ndXMgaV9tb2RlICgl
+bylcbiIsCi0JCSAgICAgICBtb2RlKTsKKwkJcHJpbnRrKEtFUk5fREVCVUcgImluaXRfc3BlY2lh
+bF9pbm9kZTogYm9ndXMgaV9tb2RlICglbykgZm9yIgorCQkJCSAgIiBpbm9kZSAlczolbHVcbiIs
+IG1vZGUsIGlub2RlLT5pX3NiLT5zX2lkLAorCQkJCSAgaW5vZGUtPmlfaW5vKTsKIH0KIEVYUE9S
+VF9TWU1CT0woaW5pdF9zcGVjaWFsX2lub2RlKTsKLS0gCjEuNS40LjMKCg==
+--00163646d08c02a0700466612230--
