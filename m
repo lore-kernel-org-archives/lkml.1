@@ -1,100 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763863AbZCaXxt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764131AbZCaXyW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763863AbZCaXxt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Mar 2009 19:53:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753522AbZCaXxi
+	id S1764131AbZCaXyW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Mar 2009 19:54:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764364AbZCaXx6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Mar 2009 19:53:38 -0400
-Received: from e32.co.us.ibm.com ([32.97.110.150]:54577 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750998AbZCaXxh (ORCPT
+	Tue, 31 Mar 2009 19:53:58 -0400
+Received: from mail-bw0-f169.google.com ([209.85.218.169]:52343 "EHLO
+	mail-bw0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1764188AbZCaXx5 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Mar 2009 19:53:37 -0400
-Date: Tue, 31 Mar 2009 19:52:48 -0400
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Joe Perches <joe@perches.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@ozlabs.org,
-       roel.kluin@gmail.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Add hvc_console to MAINTAINERS
-Message-ID: <20090331235248.GC563@zod.rchland.ibm.com>
-References: <49BF956B.9030109@gmail.com> <20090330133531.f5d99c09.akpm@linux-foundation.org> <20090330205553.GA19278@yoda.jdub.homelinux.org> <20090330141852.59baaeda.akpm@linux-foundation.org> <20090331132944.GB2332@yoda.jdub.homelinux.org> <1238533823.9715.292.camel@localhost> <20090331142252.3bf74fe1.akpm@linux-foundation.org> <1238535658.9715.321.camel@localhost>
+	Tue, 31 Mar 2009 19:53:57 -0400
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1238535658.9715.321.camel@localhost>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <200903311418.53772.david-b@pacbell.net>
+References: <200903260042.42091.david-b@pacbell.net> <200903311418.53772.david-b@pacbell.net>
+Date: Wed, 1 Apr 2009 01:51:48 +0200
+Message-ID: <ac3eb2510903311651i4c5f6805tc74fe04ee765be9c@mail.gmail.com>
+Subject: Re: [patch/rfc 2.6.29 1/2] MTD: driver model updates
+From: Kay Sievers <kay.sievers@vrfy.org>
+To: David Brownell <david-b@pacbell.net>, dwmw2@infradead.org
+Cc: Linux MTD <linux-mtd@lists.infradead.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 31, 2009 at 02:40:58PM -0700, Joe Perches wrote:
->On Tue, 2009-03-31 at 14:22 -0700, Andrew Morton wrote:
->> On Tue, 31 Mar 2009 14:10:23 -0700
->> Joe Perches <joe@perches.com> wrote:
->> > On Tue, 2009-03-31 at 09:29 -0400, Josh Boyer wrote:
->> > > Add a MAINTAINERS entry for the hypervisor virtual console support
->> > > used on IBM POWER servers.
->> > > diff --git a/MAINTAINERS b/MAINTAINERS
->> > > index c5f4e9d..387ad45 100644
->> > > --- a/MAINTAINERS
->> > > +++ b/MAINTAINERS
->> > > @@ -2176,6 +2176,11 @@ W:       http://www.ia64-linux.org/
->> > >  T:     git kernel.org:/pub/scm/linux/kernel/git/aegl/linux-2.6.git
->> > >  S:     Maintained
->> > >  
->> > > +IBM HYPERVISOR VIRTUAL CONSOLE
->> > > +P:     Several
->> > > +L:     linuxppc-dev@ozlabs.org
->> > > +S:     Maintained
->> > > +
->> > >  IBM MCA SCSI SUBSYSTEM DRIVER
->> > >  P:     Michael Lang
->> > >  M:     langa2@kph.uni-mainz.de
->> > 
->> > I think this sort of entry should not be acceptable.
->> > Maintainers should have individual names and contact addresses.
->> 
->> There isn't a maintainer.
->> 
->> But people send patches to the wrong list, so the ppc guys (who use
->> this driver) don't get to see them.
->> 
->> That's a practical, real-world problem.  We should have a fix for it.
->> 
->> > An exploder entry should be OK though.
->> > For instance, the DVB subsystem:
->> > 
->> > 	DVB SUBSYSTEM AND DRIVERS
->> > 	P:	LinuxTV.org Project
->> > 	M:	linux-media@vger.kernel.org
->> > 
->> > A list entry could be something like:
->> > 
->> > 	P:	Linux PCMCIA Team
->> > 	L:	linux-pcmcia@lists.infradead.org
->> > 
->> 
->> I'm unclear on what the difference is here..
+On Tue, Mar 31, 2009 at 23:18, David Brownell <david-b@pacbell.net> wrote:
+> On Thursday 26 March 2009, David Brownell wrote:
+>> From: David Brownell <dbrownell@users.sourceforge.net>
+>>
+>> Update driver model support in the MTD framework, so it fits
+>> better into the current udev-based hotplug framework:
 >
->I have no problem with the "L: list" entry.
->I think that's good.  Along with some file
->matching pattern as well of course...
->
->I think the "P: Several" entry is not good.
->
->"Several" doesn't give any idea as to who
->actually does the work.
+> Hmm, no comments?  I had understood there was interest over on
+> the MTD side of things in exposing more information through
+> sysfs, to help avoid the need to add Even More Ioctls as part
+> of support for things like NAND chips with 4KB pages, or which
+> handle more than 4GBytes ...
 
-I copied that from something else in MAINTAINERS.  I believe it
-was the KERNEL JANITORS entry.  I guess I should have known better
-than to copy from that...
+Please have a look at this. We got asked repeatedly to provide better
+hotplug/udev integration, and the patches, and having the parent
+device properly assigned, would solve some of the problems people run
+into currently.
 
->If the "P:" entry is there at all, it should
->be the list name.
->
->Maybe "P: Linux PPC Development Team" or
->something similar.
-
-Except that isn't right for the reasons Michael specified.
-
-josh
+Thanks,
+Kay
