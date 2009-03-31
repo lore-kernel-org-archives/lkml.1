@@ -1,72 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764245AbZCaXCu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764345AbZCaXDZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764245AbZCaXCu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Mar 2009 19:02:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763265AbZCaXCZ
+	id S1764345AbZCaXDZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Mar 2009 19:03:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764339AbZCaXDA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Mar 2009 19:02:25 -0400
-Received: from cavan.codon.org.uk ([93.93.128.6]:43015 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1764065AbZCaXCY (ORCPT
+	Tue, 31 Mar 2009 19:03:00 -0400
+Received: from smtp-out003.kontent.com ([81.88.40.217]:33099 "EHLO
+	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761311AbZCaXC7 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Mar 2009 19:02:24 -0400
-Date: Wed, 1 Apr 2009 00:02:17 +0100
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Azael Avalos <coproscefalo@gmail.com>
-Cc: linux-acpi@vger.kernel.org, dsilvers@simtec.co.uk,
-       toshiba_acpi@memebeam.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/2] toshiba-acpi: Support TOS1900-type devices
-Message-ID: <20090331230217.GA31599@srcf.ucam.org>
-References: <20090331214501.GC29489@srcf.ucam.org> <20090331214749.GD29489@srcf.ucam.org> <74962ea30903311506m41306659td0cd70c5736f6660@mail.gmail.com> <20090331221107.GA30383@srcf.ucam.org> <74962ea30903311519s2fb6087fxfe8859e3c570ac99@mail.gmail.com>
+	Tue, 31 Mar 2009 19:02:59 -0400
+From: Oliver Neukum <oliver@neukum.org>
+To: David Miller <davem@davemloft.net>
+Subject: Re: [PATCH 1/2 V2] kaweth: Fix locking to be SMP-safe
+Date: Wed, 1 Apr 2009 01:06:10 +0200
+User-Agent: KMail/1.10.3 (Linux/2.6.29-9-default; KDE/4.1.3; x86_64; ; )
+Cc: Larry.Finger@lwfinger.net, jgarzik@pobox.com, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+References: <49d264dd.YwbXLw18YaD1tQqD%Larry.Finger@lwfinger.net> <200904010013.05494.oliver@neukum.org> <20090331.151028.42671906.davem@davemloft.net>
+In-Reply-To: <20090331.151028.42671906.davem@davemloft.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <74962ea30903311519s2fb6087fxfe8859e3c570ac99@mail.gmail.com>
-User-Agent: Mutt/1.5.12-2006-07-14
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
+Message-Id: <200904010106.10974.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ok, can you try this and let me know what codes it generates (if it 
-generates any)? It should go on top of the previous patches.
+Am Mittwoch 01 April 2009 00:10:28 schrieb David Miller:
+> > Here you enable interrupts. Are you sure ndo_start_xmit is never
+> > called with interrupts disabled?
+>
+> It must never be invoked that way, this would break so many
+> drivers.
+>
+> On the other hand, all of these driver paths never execute
+> in a real hardware interrupt context, the deepest it gets
+> into is software interrupts.  So spin_*lock*_bh() might be
+> more appropriate.
 
-diff --git a/drivers/platform/x86/toshiba_acpi.c b/drivers/platform/x86/toshiba_acpi.c
-index 9fb4873..8552e1a 100644
---- a/drivers/platform/x86/toshiba_acpi.c
-+++ b/drivers/platform/x86/toshiba_acpi.c
-@@ -185,7 +185,6 @@ static int write_acpi_int(const char *methodName, int val)
- 	return (status == AE_OK);
- }
- 
--#if 0
- static int read_acpi_int(const char *methodName, int *pVal)
- {
- 	struct acpi_buffer results;
-@@ -200,7 +199,6 @@ static int read_acpi_int(const char *methodName, int *pVal)
- 
- 	return (status == AE_OK) && (out_objs[0].type == ACPI_TYPE_INTEGER);
- }
--#endif
- 
- static const char *method_hci /*= 0*/ ;
- 
-@@ -802,6 +800,13 @@ static void toshiba_acpi_notify(acpi_handle handle, u32 event, void **data)
- 
- 	if (event != 0x80)
- 		return;
-+
-+	if (is_valid_acpi_path(TOSH_INTERFACE_2 SPFC_METHOD)) {
-+		read_acpi_int(TOSH_INTERFACE_2 SPFC_METHOD, &value);
-+		printk("Received 0x%x\n", value);
-+		return;
-+	}
-+
- 	do {
- 		hci_read1(HCI_SYSTEM_EVENT, &value, &hci_result);
- 		if (hci_result == HCI_SUCCESS) {
+Thanks. The patch is good. I'll check the other USB network
+drivers.
 
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+	Regards
+		Oliver
+
