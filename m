@@ -1,133 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758311AbZCaDkX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760944AbZCaDla@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758311AbZCaDkX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Mar 2009 23:40:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755718AbZCaDkJ
+	id S1760944AbZCaDla (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Mar 2009 23:41:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756374AbZCaDlV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Mar 2009 23:40:09 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:36324 "EHLO mx1.redhat.com"
+	Mon, 30 Mar 2009 23:41:21 -0400
+Received: from hera.kernel.org ([140.211.167.34]:55988 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755386AbZCaDkH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Mar 2009 23:40:07 -0400
-Date: Mon, 30 Mar 2009 23:39:59 -0400 (EDT)
-From: Mikulas Patocka <mpatocka@redhat.com>
-X-X-Sender: mpatocka@hs20-bc2-1.build.redhat.com
-To: Jens Axboe <jens.axboe@oracle.com>
-cc: device-mapper development <dm-devel@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       ak@linux.intel.com, "MASON, CHRISTOPHER" <CHRIS.MASON@oracle.com>
-Subject: Re: [dm-devel] Barriers still not passing on simple dm devices...
-In-Reply-To: <20090326084205.GG27476@kernel.dk>
-Message-ID: <Pine.LNX.4.64.0903302314500.6158@hs20-bc2-1.build.redhat.com>
-References: <49C7DD3C.2020401@redhat.com> <Pine.LNX.4.64.0903241000010.29968@hs20-bc2-1.build.redhat.com>
- <20090324140524.GV27476@kernel.dk> <Pine.LNX.4.64.0903241010490.29968@hs20-bc2-1.build.redhat.com>
- <20090324143034.GW27476@kernel.dk> <Pine.LNX.4.64.0903241033070.4088@hs20-bc2-1.build.redhat.com>
- <20090324150517.GX27476@kernel.dk> <Pine.LNX.4.64.0903251106520.27750@hs20-bc2-1.build.redhat.com>
- <20090325152751.GV27476@kernel.dk> <Pine.LNX.4.64.0903251825310.8027@hs20-bc2-1.build.redhat.com>
- <20090326084205.GG27476@kernel.dk>
+	id S1755386AbZCaDlU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Mar 2009 23:41:20 -0400
+Message-ID: <49D18FF0.50707@kernel.org>
+Date: Mon, 30 Mar 2009 20:37:20 -0700
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>, Rusty Russell <rusty@rustcorp.com.au>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: [PATCH] irq: fix cpumask leaking
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 26 Mar 2009, Jens Axboe wrote:
 
-> On Wed, Mar 25 2009, Mikulas Patocka wrote:
->
-> > > > So I think there should be flag (this device does/doesn't support data 
-> > > > consistency) that the journaled filesystems can use to mark the disk dirty 
-> > > > for fsck. And if you implement this flag, you can accept barriers always 
-> > > > to all kind of devices regardless of whether they support consistency. You 
-> > > > can then get rid of that -EOPNOTSUPP and simplify filesystem code because 
-> > > > they'd no longer need two commit paths and a clumsy way to restart 
-> > > > -EOPNOTSUPPed requests.
-> > > 
-> > > And my point is that this case isn't interesting, because most setups
-> > > don't guarantee proper ordering.
-> > 
-> > If the ordering isn't guaranteed, the filesystem should know about it, and 
-> > mark the partition for fsck. That's why I'm suggesting to use a flag for 
-> > that. That flag could be also propagated up through md and dm.
-> 
-> We can do that, not a problem. The problem is that ordering is almost
-> never preserved, SCSI does not use ordered tags because it hasn't
-> verified that its error path doesn't reorder by mistake. So right now
-> you can basically use 'false' as that flag.
+Impact: fix bug
 
-There are three ordering guarantees:
+need to free the old cpumask for affinit and pending_mask
 
-1. - nothing (for devices with write cache without cache control)
+Signed-off-by: Yinghai Lu <yinghai@kernel.org>
 
-2. - non-cached ordering: the sequence [submit req a, end req a, submit 
-req b, end req b] will make the ordering. It is guaranteed that when the 
-request ends successfully, it is on medium. This is what all the 
-filesystems, md and dm assume about disks. This consistency model was used 
-long way before barriers came in.
+---
+ include/linux/irq.h       |   14 ++++++++++++++
+ kernel/irq/numa_migrate.c |    1 +
+ 2 files changed, 15 insertions(+)
 
-3. - barrier ordering: ordering is done with barriers, [submit req a, end 
-req a, submit req b, end req b] won't guarantee ordering of a and b, a 
-barrier must be inserted.
-
---- so you can make a two bitflags that differentiate these models. In 
-current kernel, model (1) and (2) cannot be differentiated in any way. (3) 
-can be differentiated only after a trial write and it won't guarantee that 
-(3) will be valid further.
-
-> > The reasoning: "write barriers aren't supported => the device doesn't 
-> > guarantee consistency" isn't valid.
-> 
-> It's valid in the sense that it's the only RELIABLE primitive we have.
-> Are you really suggestion that we just assume any device is fully
-> ordered, unless proven otherwise?
-
-If someone implements "write barrier's aren't supported => run fsck", then 
-a lot of systems start fscking needlessly (for example those using md or 
-dm without write cache) and become inoperational for long time because of 
-that. So no one can really implement this logic and filesystems don't run 
-fsck at all when operated over a device that doesn't support ordering. So 
-you get data corruption if you get crash on those devices.
-
-> > > The error handling is complex, no doubt
-> > > about that. But the trial barrier test is pretty trivial and even could
-> > > be easily abstracted out. If a later barrier write fails, then that's
-> > > really no different than if a normal write fails. Error handling is not
-> > > easy in that case.
-> > 
-> > I had a discussion with Andi about it some times ago. The conclusion was 
-> > that all the current filesystems handle barriers failing in the middle of 
-> > the operation without functionality loss, but it makes barriers useless 
-> > for any performance-sensitive tasks (commits that wouldn't block 
-> > concurrent activity). Non-blocking commits could only be implemented if 
-> > barriers don't fail.
-> 
-> As long as you do a trial barrier like XFS does, barriers will not fail
-> unless you have media error.
-
-No.
-
-The barrier can be cancelled with -EOPNOTSUPP at any time. Andi Kleen 
-submitted a patch that implements failing barriers for device mapper and 
-he says that md-raid1 does the same thing.
-
-Filesystems handle these randomly failed barriers but the downside is that 
-they must not submit any request concurrently with the barrier. Also, that 
--EOPNOTSUPP restarting code is really crap, the request cannot be 
-restarted from bi_end_io, so bi_end_io needs to handle to another thread 
-for retry without barrier.
-
-See this patch: http://lkml.org/lkml/2008/12/4/433 (and associated thread)
-The patch is silly but it just shows what is really hapenning and what the 
-filesystem must be prepared to deal with.
-
-> Things would also be much easier, if writes never failed.
->
-> -- 
-> Jens Axboe
-
-I definitelly agree that it shouldn't fail. So remove that -EOPNOTSUPP 
-error code at all, make barriers always pass to all kinds of devices and 
-inform the caller via queue flags that the device doesn't support 
-ordering.
-
-Mikulas
+Index: linux-2.6/kernel/irq/numa_migrate.c
+===================================================================
+--- linux-2.6.orig/kernel/irq/numa_migrate.c
++++ linux-2.6/kernel/irq/numa_migrate.c
+@@ -54,6 +54,7 @@ static bool init_copy_one_irq_desc(int i
+ static void free_one_irq_desc(struct irq_desc *old_desc, struct irq_desc *desc)
+ {
+ 	free_kstat_irqs(old_desc, desc);
++	free_desc_masks(old_desc, desc);
+ 	arch_free_chip_data(old_desc, desc);
+ }
+ 
+Index: linux-2.6/include/linux/irq.h
+===================================================================
+--- linux-2.6.orig/include/linux/irq.h
++++ linux-2.6/include/linux/irq.h
+@@ -489,6 +489,16 @@ static inline void init_copy_desc_masks(
+ #endif
+ }
+ 
++static inline void free_desc_masks(struct irq_desc *old_desc,
++				   struct irq_desc *new_desc)
++{
++	free_cpumask_var(old_desc->affinity);
++
++#ifdef CONFIG_GENERIC_PENDING_IRQ
++	free_cpumask_var(old_desc->pending_mask);
++#endif
++}
++
+ #else /* !CONFIG_SMP */
+ 
+ static inline bool alloc_desc_masks(struct irq_desc *desc, int cpu,
+@@ -506,6 +516,10 @@ static inline void init_copy_desc_masks(
+ {
+ }
+ 
++static inline void free_desc_masks(struct irq_desc *old_desc,
++				   struct irq_desc *new_desc)
++{
++}
+ #endif	/* CONFIG_SMP */
+ 
+ #endif /* _LINUX_IRQ_H */
