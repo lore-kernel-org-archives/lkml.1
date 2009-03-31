@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763998AbZCaWyx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764159AbZCaWzf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763998AbZCaWyx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Mar 2009 18:54:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763809AbZCaWwX
+	id S1764159AbZCaWzf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Mar 2009 18:55:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763812AbZCaWwY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Mar 2009 18:52:23 -0400
-Received: from gw.goop.org ([64.81.55.164]:53482 "EHLO abulafia.goop.org"
+	Tue, 31 Mar 2009 18:52:24 -0400
+Received: from gw.goop.org ([64.81.55.164]:53484 "EHLO abulafia.goop.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1761897AbZCaWwU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1763128AbZCaWwU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 31 Mar 2009 18:52:20 -0400
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
 Cc: the arch/x86 maintainers <x86@kernel.org>, Ingo Molnar <mingo@elte.hu>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Subject: [PATCH 7/9] xen/swiotlb: improve comment on gfp flags in xen_alloc_coherent()
-Date: Tue, 31 Mar 2009 15:52:13 -0700
-Message-Id: <1238539935-4295-8-git-send-email-jeremy@goop.org>
+Subject: [PATCH 9/9] pci-swiotlb: remove __weak vs __weak binding
+Date: Tue, 31 Mar 2009 15:52:15 -0700
+Message-Id: <1238539935-4295-10-git-send-email-jeremy@goop.org>
 X-Mailer: git-send-email 1.6.0.6
 In-Reply-To: <1238539935-4295-1-git-send-email-jeremy@goop.org>
 References: <1238539935-4295-1-git-send-email-jeremy@goop.org>
@@ -26,42 +26,29 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 
-Impact: cleanup
-
-Clarify why we don't care about the kernel's pseudo-phys restrictions,
-so long as the underlying pages are in the right place.
+swiotlb_arch_range_needs_mapping() is weak in lib/swiotlb.c so that
+architectures can override it.  The override versions shouldn't be
+weak too.
 
 Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+Reviewed-by: "H. Peter Anvin" <hpa@zytor.com>
 ---
- drivers/pci/xen-iommu.c |   10 ++++++----
- 1 files changed, 6 insertions(+), 4 deletions(-)
+ arch/x86/kernel/pci-swiotlb_64.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/pci/xen-iommu.c b/drivers/pci/xen-iommu.c
-index 2c90642..080aec1 100644
---- a/drivers/pci/xen-iommu.c
-+++ b/drivers/pci/xen-iommu.c
-@@ -198,15 +198,17 @@ static void *xen_alloc_coherent(struct device *dev, size_t size,
- 	unsigned long vstart;
- 	u64 mask;
+diff --git a/arch/x86/kernel/pci-swiotlb_64.c b/arch/x86/kernel/pci-swiotlb_64.c
+index 3b9f817..7894315 100644
+--- a/arch/x86/kernel/pci-swiotlb_64.c
++++ b/arch/x86/kernel/pci-swiotlb_64.c
+@@ -52,7 +52,7 @@ phys_addr_t swiotlb_bus_to_phys(dma_addr_t baddr)
+ 	return baddr;
+ }
  
--	/* ignore region specifiers */
-+	/*
-+	 * Ignore region specifiers - the kernel's ideas of
-+	 * pseudo-phys memory layout has nothing to do with the
-+	 * machine physical layout.  We can't allocate highmem
-+	 * because we can't return a pointer to it.
-+	 */
- 	gfp &= ~(__GFP_DMA | __GFP_HIGHMEM);
- 
- 	if (dma_alloc_from_coherent(dev, size, dma_handle, &ret))
- 		return ret;
- 
--	if (dev == NULL || (dev->coherent_dma_mask < 0xffffffff))
--		gfp |= GFP_DMA;
--
- 	vstart = __get_free_pages(gfp, order);
- 	ret = (void *)vstart;
- 
+-int __weak swiotlb_arch_range_needs_mapping(phys_addr_t paddr, size_t size)
++int swiotlb_arch_range_needs_mapping(phys_addr_t paddr, size_t size)
+ {
+ 	if (xen_pv_domain())
+ 		return xen_range_needs_mapping(paddr, size);
 -- 
 1.6.0.6
 
