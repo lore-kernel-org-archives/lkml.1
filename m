@@ -1,89 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759280AbZCaGIZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761715AbZCaGKS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759280AbZCaGIZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Mar 2009 02:08:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758741AbZCaGID
+	id S1761715AbZCaGKS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Mar 2009 02:10:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753625AbZCaGKE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Mar 2009 02:08:03 -0400
-Received: from e28smtp08.in.ibm.com ([59.145.155.8]:33602 "EHLO
-	e28smtp08.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755897AbZCaGIB (ORCPT
+	Tue, 31 Mar 2009 02:10:04 -0400
+Received: from serv2.oss.ntt.co.jp ([222.151.198.100]:33096 "EHLO
+	serv2.oss.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750901AbZCaGKB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Mar 2009 02:08:01 -0400
-Date: Tue, 31 Mar 2009 11:37:25 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "kosaki.motohiro@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>
-Subject: Re: [RFC][PATCH] memcg soft limit (yet another new design) v1
-Message-ID: <20090331060725.GI16497@balbir.in.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-References: <20090327135933.789729cb.kamezawa.hiroyu@jp.fujitsu.com> <20090328181100.GB26686@balbir.in.ibm.com> <20090328182747.GA8339@balbir.in.ibm.com> <20090331090607.7ebc44c5.kamezawa.hiroyu@jp.fujitsu.com> <20090331050143.GG16497@balbir.in.ibm.com> <20090331141140.9acd9b85.kamezawa.hiroyu@jp.fujitsu.com>
+	Tue, 31 Mar 2009 02:10:01 -0400
+Message-ID: <49D1B3B7.9000109@oss.ntt.co.jp>
+Date: Tue, 31 Mar 2009 15:09:59 +0900
+From: =?windows-1252?Q?Fernando_Luis_V=E1zquez_Cao?= 
+	<fernando@oss.ntt.co.jp>
+User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <20090331141140.9acd9b85.kamezawa.hiroyu@jp.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+CC: Jeff Garzik <jeff@garzik.org>, Christoph Hellwig <hch@infradead.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Theodore Tso <tytso@mit.edu>, Ingo Molnar <mingo@elte.hu>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Nick Piggin <npiggin@suse.de>,
+       David Rees <drees76@gmail.com>, Jesper Krogh <jesper@krogh.cc>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       chris.mason@oracle.com, david@fromorbit.com, tj@kernel.org
+Subject: Re: [PATCH 1/7] block: Add block_flush_device()
+References: <alpine.LFD.2.00.0903241218130.3032@localhost.localdomain> <49D0B535.2010106@oss.ntt.co.jp> <49D0B687.1030407@oss.ntt.co.jp> <200903301707.46212.bzolnier@gmail.com>
+In-Reply-To: <200903301707.46212.bzolnier@gmail.com>
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-03-31 14:11:40]:
-
-> On Tue, 31 Mar 2009 10:31:43 +0530
-> Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+Bartlomiej Zolnierkiewicz wrote:
+> On Monday 30 March 2009, Fernando Luis Vázquez Cao wrote:
+>> This patch adds a helper function that should be used by filesystems that need
+>> to flush the underlying block device on fsync()/fdatasync().
+>>
+>> Signed-off-by: Fernando Luis Vazquez Cao <fernando@oss.ntt.co.jp>
+>> ---
+>>
+>> diff -urNp linux-2.6.29-orig/fs/buffer.c linux-2.6.29/fs/buffer.c
+>> --- linux-2.6.29-orig/fs/buffer.c	2009-03-24 08:12:14.000000000 +0900
+>> +++ linux-2.6.29/fs/buffer.c	2009-03-30 15:27:04.000000000 +0900
+>> @@ -165,6 +165,17 @@ void end_buffer_write_sync(struct buffer
+>>   	put_bh(bh);
+>>   }
+>>
+>> +/* Issue flush of write caches on the block device */
+>> +int block_flush_device(struct block_device *bdev)
 > 
-> > * KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-03-31 09:06:07]:
-> > 
-> > > On Sat, 28 Mar 2009 23:57:47 +0530
-> > > Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-> > > 
-> > > > * Balbir Singh <balbir@linux.vnet.ibm.com> [2009-03-28 23:41:00]:
-> > > > 
-> > > > > * KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-03-27 13:59:33]:
-> > > > > 
-> > > > > > ==brief test result==
-> > > > > > On 2CPU/1.6GB bytes machine. create group A and B
-> > > > > >   A.  soft limit=300M
-> > > > > >   B.  no soft limit
-> > > > > > 
-> > > > > >   Run a malloc() program on B and allcoate 1G of memory. The program just
-> > > > > >   sleeps after allocating memory and no memory refernce after it.
-> > > > > >   Run make -j 6 and compile the kernel.
-> > > > > > 
-> > > > > >   When vm.swappiness = 60  => 60MB of memory are swapped out from B.
-> > > > > >   When vm.swappiness = 10  => 1MB of memory are swapped out from B    
-> > > > > > 
-> > > > > >   If no soft limit, 350MB of swap out will happen from B.(swapiness=60)
-> > > > > >
-> > > > > 
-> > > > > I ran the same tests, booted the machine with mem=1700M and maxcpus=2
-> > > > > 
-> > > > > Here is what I see with
-> > > > 
-> > > > I meant to say, Here is what I see with my patches (v7)
-> > > > 
-> > > 
-> > > your malloc program is like this ?
-> > > 
-> > > int main(int argc, char *argv[])
-> > > {
-> > >     c = malloc(1G);
-> > >     memset(c, 0, 1G);
-> > >     getc();
-> > > }
-> > >
-> > 
-> > Very similar, instead of memset, we go integer by integer and set it
-> > to 0, do two loops of touching and wait for user input before exiting.
-> >  
-> Why two loops of touching ? has special meanings ?
+> I don't consider this an improvement over using blkdev_issue_flush().
 
-The number of loops are configurable and can be used to keep pages
-active. The default loops is two. It has no special meaning in the
-test scenario described.
+The reason I used a wrapper is that I did not like the semantics provided
+by blkdev_issue_flush(). On the one hand, I did not want to pass -EOPNOTSUPP
+to filesystems (it is not an error filesystems should care about). On the
+other hand it is weird that some filesystems use blkdev_issue_flush() when
+they want emit a barrier. blkdev_issue_flush() happens to be implemented
+as an empty (block layer) barrier, but I think that is an implementation
+detail filesystems should not neet to know about. Indeed I am working on a
+patch that implements blkdev_issue_empty_barrier(), so that we can optimize
+fsync() flushes and filesystem-originated barriers independently in the block
+layer.
 
--- 
-	Balbir
+Judging from your comments below, it seems we are in the same page regarding
+this issue.
+
+Again, thank you for you feedback!
+
+- Fernando
+
+>> +{
+>> +	int ret = 0;
+>> +
+>> +	ret = blkdev_issue_flush(bdev, NULL);
+> 
+> The problem lies in using NULL for error_sector argument which shows
+> a subtle deficiency of the current implementation/usage of barriers
+> based on a write cache flushing.
+> 
+> I intend to document the issue with adding the FIXME to the current
+> users of blkdev_issue_flush() so the problem is at least known and not
+> forgotten (fixing it would require some work from both block and fs
+> sides and unfortunately there wasn't even a willingness to discuss
+> possible solutions few years back when the original code was added).
+> 
+> Thanks,
+> Bart
+
