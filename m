@@ -1,88 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757260AbZCaFGu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760417AbZCaFLr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757260AbZCaFGu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Mar 2009 01:06:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751646AbZCaFGj
+	id S1760417AbZCaFLr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Mar 2009 01:11:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755069AbZCaFLh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Mar 2009 01:06:39 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:46851 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751142AbZCaFGi (ORCPT
+	Tue, 31 Mar 2009 01:11:37 -0400
+Received: from wf-out-1314.google.com ([209.85.200.174]:64840 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752326AbZCaFLh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Mar 2009 01:06:38 -0400
-Date: Tue, 31 Mar 2009 14:05:02 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: balbir@linux.vnet.ibm.com
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "kosaki.motohiro@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>
-Subject: Re: [RFC][PATCH] memcg soft limit (yet another new design) v1
-Message-Id: <20090331140502.813993cc.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20090331050055.GF16497@balbir.in.ibm.com>
-References: <20090327135933.789729cb.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090328181100.GB26686@balbir.in.ibm.com>
-	<20090328182747.GA8339@balbir.in.ibm.com>
-	<20090331085538.2aaa5e2b.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090331050055.GF16497@balbir.in.ibm.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 31 Mar 2009 01:11:37 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=m5sL+uHhSan8d9EHMlO/yDqNYS3iEhdrk7EN96G8JiqM2KAfQNOtx9YUz5FD8ULazi
+         FPHlexM18tzIKeQcXhR7Z6IY51h1cBThlbPzXFx8Ku9fo/SYflQHYSJxu6rILArHnubG
+         2Wwup2uWK5nuKDvTqDo+iZ/ekildKodZ1IJYg=
+MIME-Version: 1.0
+In-Reply-To: <200903301944.30030.alistair@devzero.co.uk>
+References: <9b1675090903291904g7eca965eydb1aa3f852a1b91c@mail.gmail.com>
+	 <200903301357.17076.alistair@devzero.co.uk>
+	 <9b1675090903300826s2ce361e5s1134e13507b0399@mail.gmail.com>
+	 <200903301944.30030.alistair@devzero.co.uk>
+Date: Mon, 30 Mar 2009 23:11:35 -0600
+Message-ID: <9b1675090903302211q5703af7fo33f45c93e5db34f0@mail.gmail.com>
+Subject: Re: 2.6.29 on MacBook 2,1 fails to reboot
+From: "Trenton D. Adams" <trenton.d.adams@gmail.com>
+To: Alistair John Strachan <alistair@devzero.co.uk>
+Cc: "Morten P.D. Stevens" <mstevens@win-professional.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 31 Mar 2009 10:30:55 +0530
-Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-
-> * KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-03-31 08:55:38]:
-> 
-> > On Sat, 28 Mar 2009 23:57:47 +0530
-> > Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-> > 
-> > > * Balbir Singh <balbir@linux.vnet.ibm.com> [2009-03-28 23:41:00]:
-> > > 
-> > > > * KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-03-27 13:59:33]:
-> > > > 
-> > > > > ==brief test result==
-> > > > > On 2CPU/1.6GB bytes machine. create group A and B
-> > > > >   A.  soft limit=300M
-> > > > >   B.  no soft limit
-> > > > > 
-> > > > >   Run a malloc() program on B and allcoate 1G of memory. The program just
-> > > > >   sleeps after allocating memory and no memory refernce after it.
-> > > > >   Run make -j 6 and compile the kernel.
-> > > > > 
-> > > > >   When vm.swappiness = 60  => 60MB of memory are swapped out from B.
-> > > > >   When vm.swappiness = 10  => 1MB of memory are swapped out from B    
-> > > > > 
-> > > > >   If no soft limit, 350MB of swap out will happen from B.(swapiness=60)
-> > > > >
-> > > > 
-> > > > I ran the same tests, booted the machine with mem=1700M and maxcpus=2
-> > > > 
-> > > > Here is what I see with
-> > > 
-> > > I meant to say, Here is what I see with my patches (v7)
-> > > 
-> > Hmm, I saw 250MB of swap out ;) As I reported before.
-> 
-> Swapout for A? For A it is expected, but for B it is not. How many
-> nodes do you have on your machine? Any fake numa nodes?
-> 
-Of course, from B.
-
-Nothing special boot options. My test was on VMware 2cpus/1.6GB memory.
-
-I wonder why swapout can be 0 on your test. Do you add some extra hooks to
-kswapd ?
-
-Thanks,
--Kame
-
-
-
-
-
+Okay, I'm getting close.  But, I may not finish the git bisect
+tonight.  I had to go to dinner at my parent's place, and that sucked
+up a bit of my time.  I think I'll likely be finished tomorrow.
