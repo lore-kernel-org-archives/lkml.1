@@ -1,106 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763094AbZCaP3e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762263AbZCaPaf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763094AbZCaP3e (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Mar 2009 11:29:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762563AbZCaPYZ
+	id S1762263AbZCaPaf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Mar 2009 11:30:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760979AbZCaP3F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Mar 2009 11:24:25 -0400
-Received: from g4t0015.houston.hp.com ([15.201.24.18]:14595 "EHLO
-	g4t0015.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762456AbZCaPYY (ORCPT
+	Tue, 31 Mar 2009 11:29:05 -0400
+Received: from rcsinet13.oracle.com ([148.87.113.125]:21302 "EHLO
+	rgminet13.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762977AbZCaP3C (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Mar 2009 11:24:24 -0400
-Subject: [PATCH 15/15] PCI: remove deprecated pci_find_slot() interface
-To: jbarnes@virtuousgeek.org
-From: Alex Chiang <achiang@hp.com>
-Cc: linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org
-Date: Tue, 31 Mar 2009 09:24:22 -0600
-Message-ID: <20090331152422.26622.85161.stgit@bob.kio>
-In-Reply-To: <20090331150158.26622.45423.stgit@bob.kio>
-References: <20090331150158.26622.45423.stgit@bob.kio>
-User-Agent: StGit/0.14.3.347.g594a
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+	Tue, 31 Mar 2009 11:29:02 -0400
+Subject: Re: [PATCH 1/7] block: Add block_flush_device()
+From: Chris Mason <chris.mason@oracle.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Ric Wheeler <rwheeler@redhat.com>, Jens Axboe <jens.axboe@oracle.com>,
+       Fernando Luis =?ISO-8859-1?Q?V=E1zquez?= Cao 
+	<fernando@oss.ntt.co.jp>,
+       Jeff Garzik <jeff@garzik.org>, Christoph Hellwig <hch@infradead.org>,
+       Theodore Tso <tytso@mit.edu>, Ingo Molnar <mingo@elte.hu>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Nick Piggin <npiggin@suse.de>,
+       David Rees <drees76@gmail.com>, Jesper Krogh <jesper@krogh.cc>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       david@fromorbit.com, tj@kernel.org
+In-Reply-To: <alpine.LFD.2.00.0903310746460.4093@localhost.localdomain>
+References: <49D02328.7060108@oss.ntt.co.jp> <49D0258A.9020306@garzik.org>
+	 <49D03377.1040909@oss.ntt.co.jp> <49D0B535.2010106@oss.ntt.co.jp>
+	 <49D0B687.1030407@oss.ntt.co.jp>
+	 <alpine.LFD.2.00.0903301028400.3948@localhost.localdomain>
+	 <20090330175544.GX5178@kernel.dk>
+	 <alpine.LFD.2.00.0903301120200.3948@localhost.localdomain>
+	 <20090330185414.GZ5178@kernel.dk>
+	 <alpine.LFD.2.00.0903301242040.4093@localhost.localdomain>
+	 <20090330201732.GB5178@kernel.dk>
+	 <alpine.LFD.2.00.0903301331320.4093@localhost.localdomain>
+	 <49D17CA2.5060105@redhat.com>
+	 <alpine.LFD.2.00.0903301931230.4093@localhost.localdomain>
+	 <49D1FB64.8000505@redhat.com>
+	 <alpine.LFD.2.00.0903310746460.4093@localhost.localdomain>
+Content-Type: text/plain
+Date: Tue, 31 Mar 2009 11:22:56 -0400
+Message-Id: <1238512976.12564.9.camel@think.oraclecorp.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 
 Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt706.oracle.com [141.146.40.84]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A090206.49D2355A.0289:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The last in-tree caller of pci_find_slot has been converted, so
-let's get rid of this deprecated interface.
+On Tue, 2009-03-31 at 07:55 -0700, Linus Torvalds wrote:
+> 
+> On Tue, 31 Mar 2009, Ric Wheeler wrote:
+> > 
+> > Now you are just being silly. The drive and the write cache - without barriers
+> > or similar tagged operations - will almost certainly reorder all of the IO's
+> > internally.
+> 
+> You do realize that the "drive" may not be a drive at all?
+> 
+> But apparently you don't. You really seem to see just your own case, and 
+> have blinders on for everything else.
+> 
+> That "drive" may be some virtualized device. It may be some super-fancy 
+> memory mapped and largely undocumented random flash thing. It might be a 
+> network block device, it may be somebody's IO trace dummy layer, it may be 
+> anything at all.
+> 
 
-Signed-off-by: Alex Chiang <achiang@hp.com>
----
+The part that we seem to be skipping over in talking about EOPNOTSUPP is
+not what do we do when a barrier isn't supported (print a warning and
+move on), it's what do we do when a barrier works.  I very much agree
+that EOPNOTSUPP tells us almost nothing.
 
- drivers/pci/search.c |   30 ------------------------------
- include/linux/pci.h  |    8 --------
- 2 files changed, 0 insertions(+), 38 deletions(-)
+The idea behind the original implementation was that when barriers did
+work, we could make some assumptions about how IO would be ordered
+around the barrier, and those assumptions would let us optimize things
+for the lying cheating cache enabled storage that we all know and love.
 
-diff --git a/drivers/pci/search.c b/drivers/pci/search.c
-index 5af8bd5..766d27a 100644
---- a/drivers/pci/search.c
-+++ b/drivers/pci/search.c
-@@ -115,36 +115,6 @@ pci_find_next_bus(const struct pci_bus *from)
- 
- #ifdef CONFIG_PCI_LEGACY
- /**
-- * pci_find_slot - locate PCI device from a given PCI slot
-- * @bus: number of PCI bus on which desired PCI device resides
-- * @devfn: encodes number of PCI slot in which the desired PCI
-- * device resides and the logical device number within that slot
-- * in case of multi-function devices.
-- *
-- * Given a PCI bus and slot/function number, the desired PCI device
-- * is located in system global list of PCI devices.  If the device
-- * is found, a pointer to its data structure is returned.  If no
-- * device is found, %NULL is returned.
-- *
-- * NOTE: Do not use this function any more; use pci_get_slot() instead, as
-- * the PCI device returned by this function can disappear at any moment in
-- * time.
-- */
--struct pci_dev *pci_find_slot(unsigned int bus, unsigned int devfn)
--{
--	struct pci_dev *dev = NULL;
--
--	while ((dev = pci_get_device(PCI_ANY_ID, PCI_ANY_ID, dev)) != NULL) {
--		if (dev->bus->number == bus && dev->devfn == devfn) {
--			pci_dev_put(dev);
--			return dev;
--		}
--	}
--	return NULL;
--}
--EXPORT_SYMBOL(pci_find_slot);
--
--/**
-  * pci_find_device - begin or continue searching for a PCI device by vendor/device id
-  * @vendor: PCI vendor id to match, or %PCI_ANY_ID to match all vendor ids
-  * @device: PCI device id to match, or %PCI_ANY_ID to match all device ids
-diff --git a/include/linux/pci.h b/include/linux/pci.h
-index 7bd624b..cd42a55 100644
---- a/include/linux/pci.h
-+++ b/include/linux/pci.h
-@@ -574,8 +574,6 @@ extern void pci_sort_breadthfirst(void);
- struct pci_dev __deprecated *pci_find_device(unsigned int vendor,
- 					     unsigned int device,
- 					     struct pci_dev *from);
--struct pci_dev __deprecated *pci_find_slot(unsigned int bus,
--					   unsigned int devfn);
- #endif /* CONFIG_PCI_LEGACY */
- 
- enum pci_lost_interrupt_reason {
-@@ -895,12 +893,6 @@ static inline struct pci_dev *pci_find_device(unsigned int vendor,
- 	return NULL;
- }
- 
--static inline struct pci_dev *pci_find_slot(unsigned int bus,
--					    unsigned int devfn)
--{
--	return NULL;
--}
--
- static inline struct pci_dev *pci_get_device(unsigned int vendor,
- 					     unsigned int device,
- 					     struct pci_dev *from)
+It turns out 6 years later that very few people are interested in those
+optimizations, and we're probably better off skipping them in favor of
+reducing the complexity of the code involved.
+
+Jens has a little burial site all prepped for pdflush in his yard,
+dumping EOPNOTSUPP in there too wouldn't be a bad thing.
+
+-chris
+
 
