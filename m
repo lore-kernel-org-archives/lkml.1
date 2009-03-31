@@ -1,123 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763409AbZCaWu7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763799AbZCaWwb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763409AbZCaWu7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Mar 2009 18:50:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756815AbZCaWur
+	id S1763799AbZCaWwb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Mar 2009 18:52:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759651AbZCaWwT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Mar 2009 18:50:47 -0400
-Received: from mx2.netapp.com ([216.240.18.37]:16091 "EHLO mx2.netapp.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754023AbZCaWuq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Mar 2009 18:50:46 -0400
-X-IronPort-AV: E=Sophos;i="4.39,304,1235980800"; 
-   d="scan'208";a="148463056"
-Subject: Re: [PATCH 1/4] VFS: Add a VFS helper function
- vfs_remote_path_lookup()
-From: Trond Myklebust <Trond.Myklebust@netapp.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-nfs@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, viro@zeniv.linux.org.uk,
-       hch@infradead.org
-In-Reply-To: <1238539079.28445.103.camel@heimdal.trondhjem.org>
-References: <cover.1238525532.git.Trond.Myklebust@netapp.com>
-	 <3f1264127d431f695be25b940b477e3d287edc68.1238525532.git.Trond.Myklebust@netapp.com>
-	 <alpine.LFD.2.00.0903311423280.6474@localhost.localdomain>
-	 <1238539079.28445.103.camel@heimdal.trondhjem.org>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Organization: NetApp
-Date: Tue, 31 Mar 2009 18:49:49 -0400
-Message-Id: <1238539789.28445.105.camel@heimdal.trondhjem.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.0 
-X-OriginalArrivalTime: 31 Mar 2009 22:50:39.0644 (UTC) FILETIME=[1D10CDC0:01C9B253]
+	Tue, 31 Mar 2009 18:52:19 -0400
+Received: from gw.goop.org ([64.81.55.164]:53466 "EHLO abulafia.goop.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751246AbZCaWwT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Mar 2009 18:52:19 -0400
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Cc: the arch/x86 maintainers <x86@kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Ian Campbell <ian.campbell@citrix.com>,
+       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+Subject: [PATCH 2/9] xen swiotlb: fixup swiotlb is chunks smaller than MAX_CONTIG_ORDER
+Date: Tue, 31 Mar 2009 15:52:08 -0700
+Message-Id: <1238539935-4295-3-git-send-email-jeremy@goop.org>
+X-Mailer: git-send-email 1.6.0.6
+In-Reply-To: <1238539935-4295-1-git-send-email-jeremy@goop.org>
+References: <1238539935-4295-1-git-send-email-jeremy@goop.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-03-31 at 18:38 -0400, Trond Myklebust wrote:
-> On Tue, 2009-03-31 at 14:40 -0700, Linus Torvalds wrote:
-> > 
-> > On Wed, 11 Mar 2009, Trond Myklebust wrote:
-> > >
-> > > This patch therefore defines a VFS helper function that sets up a temporary
-> > > mount namespace to represent the server namespace, and has the current
-> > > task pivot into that prior to doing the path lookup. Upon completion, it
-> > > pivots back into the original namespace, and destroys the private one.
-> > 
-> > This is disgusting.
-> > 
-> > Why don't you just create the namespace once?
-> > 
-> > Also, why do you need that disgusting pivot thing, when we could instead 
-> > trivially just add a 
-> > 
-> > 	struct filesystem *fs;
-> > 
-> > into the nameidata, and then we can initialize it to
-> > 
-> > 	nd->fs = current->fs
-> > 
-> > and make all the path walkers use that.
-> > 
-> > Or we could even try to clean up that horrid AT_FDCWD mess, and drop the 
-> > whole "dfd" passing to "do_path_lookup()", and instead do
-> > 
-> > 	rwlock_t *lock;
-> > 	struct path *root, *pwd;
-> > 
-> > and do
-> > 
-> > 	nd->lock = &current->fs->lock;
-> > 	nd->root = &current->fs->root;
-> > 	nd->pwd =  &current->fs->pwd;
-> > 
-> > to initialize things. Then drop dfd as an argument entirely from 
-> > path_lookup_open() and do_path_lookup(), and just have the caller 
-> > initialize the nameidata (the only caller that doesn't use fs->pwd 
-> > currently is do_filp_open(), which takes that 'dfd' and could just 
-> > initialize nd->pwd to the right thing.
-> 
-> I'd be fine with that.
-> 
-> > I dunno. This is very Al Viroish country, but I really hate how your patch 
-> > looks. 99% of it is just working around the fact that you want some very 
-> > _slight_ differences to how that special '/' thing is handled.
-> 
-> No. The main purpose is to able to look up and walk down an NFSv4 mount
-> path, which is a path on the _server_'s file/directory namespace.
-> In order to be able to follow any valid mount path that the user
-> supplies, we need the ability to follow symlinks, cross mount points and
-> even cross NFSv4 referrals (i.e. afs-like junctions that point to paths
-> on a different server).
-> 
-> Under normal path walking we use the 'follow_link()' method of
-> autogenerating mountpoints (see
-> Documentation/filesystems/automount-support.txt) when we come across
-> mount points or referrals on the server. If you are walking a path that
-> is not supposed to be visible to user processes, you therefore need a
-> private namespace.
-> 
-> > It's not worth doing these kinds of hacks for that.
-> > 
-> > And I think it's positively _wrong_ to have a function that creates and 
-> > destroys the whole "struct fs_struct" and a namespace for just one call. 
-> > Even if you don't think it's at all performance-critical, the interface is 
-> > too damn ugly. Have separate "create/destroy context" functions, so that 
-> > you _can_ do it just once, and have multiple calls in between.
-> 
-> That can probably be done, but the main reason for having the namespace
-> was to be able, once the sys_mount() is complete, to garbage collect and
-> get rid of those autogenerated mount points that are not user visible.
+From: Ian Campbell <ian.campbell@citrix.com>
 
-I meant to say "...the main reason for destroying the namespace"...
+Impact: bugfix
 
-Cheers
-  Trond
+Don't attempt to make larger memory ranges than Xen can cope with
+contiguous.
+
+Signed-off-by: Ian Campbell <ian.campbell@citrix.com>
+Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+---
+ drivers/pci/xen-iommu.c |   27 ++++++++++++++++++---------
+ 1 files changed, 18 insertions(+), 9 deletions(-)
+
+diff --git a/drivers/pci/xen-iommu.c b/drivers/pci/xen-iommu.c
+index c593058..b9b4620 100644
+--- a/drivers/pci/xen-iommu.c
++++ b/drivers/pci/xen-iommu.c
+@@ -5,6 +5,7 @@
+ #include <linux/module.h>
+ #include <linux/version.h>
+ #include <linux/scatterlist.h>
++#include <linux/swiotlb.h>
+ #include <linux/io.h>
+ #include <linux/bug.h>
+ 
+@@ -36,19 +37,27 @@ do {							\
+ } while (0)
+ 
+ 
++static int max_dma_bits = 32;
++
+ void xen_swiotlb_fixup(void *buf, size_t size, unsigned long nslabs)
+ {
+-	unsigned order = get_order(size);
+-
+-	printk(KERN_DEBUG "xen_swiotlb_fixup: buf=%p size=%zu order=%u\n",
+-		buf, size, order);
+-
+-	if (WARN_ON(size != (PAGE_SIZE << order)))
+-		return;
+-
+-	if (xen_create_contiguous_region((unsigned long)buf,
+-					 order, 0xffffffff))
+-		printk(KERN_ERR "xen_create_contiguous_region failed\n");
++	int i, rc;
++	int dma_bits;
++
++	printk(KERN_DEBUG "xen_swiotlb_fixup: buf=%p size=%zu\n",
++		buf, size);
++
++	dma_bits = get_order(IO_TLB_SEGSIZE << IO_TLB_SHIFT) + PAGE_SHIFT;
++	for (i = 0; i < nslabs; i += IO_TLB_SEGSIZE) {
++		do {
++			rc = xen_create_contiguous_region(
++				(unsigned long)buf + (i << IO_TLB_SHIFT),
++				get_order(IO_TLB_SEGSIZE << IO_TLB_SHIFT),
++				dma_bits);
++		} while (rc && dma_bits++ < max_dma_bits);
++		if (rc)
++			panic(KERN_ERR "xen_create_contiguous_region failed\n");
++	}
+ }
+ static inline int address_needs_mapping(struct device *hwdev,
+ 						dma_addr_t addr)
 -- 
-Trond Myklebust
-Linux NFS client maintainer
+1.6.0.6
 
-NetApp
-Trond.Myklebust@netapp.com
-www.netapp.com
