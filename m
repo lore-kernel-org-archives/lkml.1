@@ -1,249 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757585AbZCaM6W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758527AbZCaM6j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757585AbZCaM6W (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Mar 2009 08:58:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754951AbZCaM6M
+	id S1758527AbZCaM6j (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Mar 2009 08:58:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757492AbZCaM6W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Mar 2009 08:58:12 -0400
-Received: from hera.kernel.org ([140.211.167.34]:40923 "EHLO hera.kernel.org"
+	Tue, 31 Mar 2009 08:58:22 -0400
+Received: from hera.kernel.org ([140.211.167.34]:40928 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754699AbZCaM6K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Mar 2009 08:58:10 -0400
-Date: Tue, 31 Mar 2009 12:57:36 GMT
+	id S1757806AbZCaM6U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Mar 2009 08:58:20 -0400
+Date: Tue, 31 Mar 2009 12:57:50 GMT
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: linux-tip-commits@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
        a.p.zijlstra@chello.nl, tglx@linutronix.de, mingo@elte.hu
 Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
        a.p.zijlstra@chello.nl, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <20090313112301.096138802@chello.nl>
-References: <20090313112301.096138802@chello.nl>
-Subject: [tip:core/locking] hrtimer: fix rq->lock inversion (again)
-Message-ID: <tip-7f1e2ca9f04b02794597f60e7b1d43f0a1317939@git.kernel.org>
-Git-Commit-ID: 7f1e2ca9f04b02794597f60e7b1d43f0a1317939
+In-Reply-To: <1237376327.5069.253.camel@laptop>
+References: <1237376327.5069.253.camel@laptop>
+Subject: [tip:core/locking] lockdep: add stack dumps to asserts
+Message-ID: <tip-eedeeabdeeadb016b8c783e3620d06b98d0cb4e1@git.kernel.org>
+Git-Commit-ID: eedeeabdeeadb016b8c783e3620d06b98d0cb4e1
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 31 Mar 2009 12:57:40 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 31 Mar 2009 12:57:52 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  7f1e2ca9f04b02794597f60e7b1d43f0a1317939
-Gitweb:     http://git.kernel.org/tip/7f1e2ca9f04b02794597f60e7b1d43f0a1317939
+Commit-ID:  eedeeabdeeadb016b8c783e3620d06b98d0cb4e1
+Gitweb:     http://git.kernel.org/tip/eedeeabdeeadb016b8c783e3620d06b98d0cb4e1
 Author:     Peter Zijlstra <a.p.zijlstra@chello.nl>
-AuthorDate: Fri, 13 Mar 2009 12:21:27 +0100
+AuthorDate: Wed, 18 Mar 2009 12:38:47 +0100
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Tue, 31 Mar 2009 14:52:52 +0200
+CommitDate: Tue, 31 Mar 2009 14:53:01 +0200
 
-hrtimer: fix rq->lock inversion (again)
+lockdep: add stack dumps to asserts
 
-It appears I inadvertly introduced rq->lock recursion to the
-hrtimer_start() path when I delegated running already expired
-timers to softirq context.
-
-This patch fixes it by introducing a __hrtimer_start_range_ns()
-method that will not use raise_softirq_irqoff() but
-__raise_softirq_irqoff() which avoids the wakeup.
-
-It then also changes schedule() to check for pending softirqs and
-do the wakeup then, I'm not quite sure I like this last bit, nor
-am I convinced its really needed.
+Have a better idea about exactly which loc causes a lockdep
+limit overflow. Often it's a bug or inefficiency in that
+subsystem.
 
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: paulus@samba.org
-LKML-Reference: <20090313112301.096138802@chello.nl>
+LKML-Reference: <1237376327.5069.253.camel@laptop>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
 ---
- include/linux/hrtimer.h   |    5 ++++
- include/linux/interrupt.h |    1 +
- kernel/hrtimer.c          |   55 +++++++++++++++++++++++++++-----------------
- kernel/sched.c            |   14 +++++++++--
- kernel/softirq.c          |    2 +-
- 5 files changed, 52 insertions(+), 25 deletions(-)
+ kernel/lockdep.c |    5 +++++
+ 1 files changed, 5 insertions(+), 0 deletions(-)
 
-diff --git a/include/linux/hrtimer.h b/include/linux/hrtimer.h
-index bd37078..0d2f7c8 100644
---- a/include/linux/hrtimer.h
-+++ b/include/linux/hrtimer.h
-@@ -336,6 +336,11 @@ extern int hrtimer_start(struct hrtimer *timer, ktime_t tim,
- 			 const enum hrtimer_mode mode);
- extern int hrtimer_start_range_ns(struct hrtimer *timer, ktime_t tim,
- 			unsigned long range_ns, const enum hrtimer_mode mode);
-+extern int
-+__hrtimer_start_range_ns(struct hrtimer *timer, ktime_t tim,
-+			 unsigned long delta_ns,
-+			 const enum hrtimer_mode mode, int wakeup);
-+
- extern int hrtimer_cancel(struct hrtimer *timer);
- extern int hrtimer_try_to_cancel(struct hrtimer *timer);
+diff --git a/kernel/lockdep.c b/kernel/lockdep.c
+index 981cd48..a288ae1 100644
+--- a/kernel/lockdep.c
++++ b/kernel/lockdep.c
+@@ -792,6 +792,7 @@ register_lock_class(struct lockdep_map *lock, unsigned int subclass, int force)
  
-diff --git a/include/linux/interrupt.h b/include/linux/interrupt.h
-index c68bffd..4528bf7 100644
---- a/include/linux/interrupt.h
-+++ b/include/linux/interrupt.h
-@@ -294,6 +294,7 @@ extern void softirq_init(void);
- #define __raise_softirq_irqoff(nr) do { or_softirq_pending(1UL << (nr)); } while (0)
- extern void raise_softirq_irqoff(unsigned int nr);
- extern void raise_softirq(unsigned int nr);
-+extern void wakeup_softirqd(void);
- 
- /* This is the worklist that queues up per-cpu softirq work.
-  *
-diff --git a/kernel/hrtimer.c b/kernel/hrtimer.c
-index f394d2a..cb8a15c 100644
---- a/kernel/hrtimer.c
-+++ b/kernel/hrtimer.c
-@@ -651,14 +651,20 @@ static inline void hrtimer_init_timer_hres(struct hrtimer *timer)
-  * and expiry check is done in the hrtimer_interrupt or in the softirq.
-  */
- static inline int hrtimer_enqueue_reprogram(struct hrtimer *timer,
--					    struct hrtimer_clock_base *base)
-+					    struct hrtimer_clock_base *base,
-+					    int wakeup)
- {
- 	if (base->cpu_base->hres_active && hrtimer_reprogram(timer, base)) {
--		spin_unlock(&base->cpu_base->lock);
--		raise_softirq_irqoff(HRTIMER_SOFTIRQ);
--		spin_lock(&base->cpu_base->lock);
-+		if (wakeup) {
-+			spin_unlock(&base->cpu_base->lock);
-+			raise_softirq_irqoff(HRTIMER_SOFTIRQ);
-+			spin_lock(&base->cpu_base->lock);
-+		} else
-+			__raise_softirq_irqoff(HRTIMER_SOFTIRQ);
-+
- 		return 1;
+ 		printk("BUG: MAX_LOCKDEP_KEYS too low!\n");
+ 		printk("turning off the locking correctness validator.\n");
++		dump_stack();
+ 		return NULL;
  	}
-+
- 	return 0;
- }
+ 	class = lock_classes + nr_lock_classes++;
+@@ -855,6 +856,7 @@ static struct lock_list *alloc_list_entry(void)
  
-@@ -703,7 +709,8 @@ static inline int hrtimer_is_hres_enabled(void) { return 0; }
- static inline int hrtimer_switch_to_hres(void) { return 0; }
- static inline void hrtimer_force_reprogram(struct hrtimer_cpu_base *base) { }
- static inline int hrtimer_enqueue_reprogram(struct hrtimer *timer,
--					    struct hrtimer_clock_base *base)
-+					    struct hrtimer_clock_base *base,
-+					    int wakeup)
- {
- 	return 0;
- }
-@@ -886,20 +893,9 @@ remove_hrtimer(struct hrtimer *timer, struct hrtimer_clock_base *base)
- 	return 0;
- }
- 
--/**
-- * hrtimer_start_range_ns - (re)start an hrtimer on the current CPU
-- * @timer:	the timer to be added
-- * @tim:	expiry time
-- * @delta_ns:	"slack" range for the timer
-- * @mode:	expiry mode: absolute (HRTIMER_ABS) or relative (HRTIMER_REL)
-- *
-- * Returns:
-- *  0 on success
-- *  1 when the timer was active
-- */
--int
--hrtimer_start_range_ns(struct hrtimer *timer, ktime_t tim, unsigned long delta_ns,
--			const enum hrtimer_mode mode)
-+int __hrtimer_start_range_ns(struct hrtimer *timer, ktime_t tim,
-+		unsigned long delta_ns, const enum hrtimer_mode mode,
-+		int wakeup)
- {
- 	struct hrtimer_clock_base *base, *new_base;
- 	unsigned long flags;
-@@ -940,12 +936,29 @@ hrtimer_start_range_ns(struct hrtimer *timer, ktime_t tim, unsigned long delta_n
- 	 * XXX send_remote_softirq() ?
- 	 */
- 	if (leftmost && new_base->cpu_base == &__get_cpu_var(hrtimer_bases))
--		hrtimer_enqueue_reprogram(timer, new_base);
-+		hrtimer_enqueue_reprogram(timer, new_base, wakeup);
- 
- 	unlock_hrtimer_base(timer, &flags);
- 
- 	return ret;
- }
-+
-+/**
-+ * hrtimer_start_range_ns - (re)start an hrtimer on the current CPU
-+ * @timer:	the timer to be added
-+ * @tim:	expiry time
-+ * @delta_ns:	"slack" range for the timer
-+ * @mode:	expiry mode: absolute (HRTIMER_ABS) or relative (HRTIMER_REL)
-+ *
-+ * Returns:
-+ *  0 on success
-+ *  1 when the timer was active
-+ */
-+int hrtimer_start_range_ns(struct hrtimer *timer, ktime_t tim,
-+		unsigned long delta_ns, const enum hrtimer_mode mode)
-+{
-+	return __hrtimer_start_range_ns(timer, tim, delta_ns, mode, 1);
-+}
- EXPORT_SYMBOL_GPL(hrtimer_start_range_ns);
- 
- /**
-@@ -961,7 +974,7 @@ EXPORT_SYMBOL_GPL(hrtimer_start_range_ns);
- int
- hrtimer_start(struct hrtimer *timer, ktime_t tim, const enum hrtimer_mode mode)
- {
--	return hrtimer_start_range_ns(timer, tim, 0, mode);
-+	return __hrtimer_start_range_ns(timer, tim, 0, mode, 1);
- }
- EXPORT_SYMBOL_GPL(hrtimer_start);
- 
-diff --git a/kernel/sched.c b/kernel/sched.c
-index 196d48b..63256e3 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -231,13 +231,20 @@ static void start_rt_bandwidth(struct rt_bandwidth *rt_b)
- 
- 	spin_lock(&rt_b->rt_runtime_lock);
- 	for (;;) {
-+		unsigned long delta;
-+		ktime_t soft, hard;
-+
- 		if (hrtimer_active(&rt_b->rt_period_timer))
- 			break;
- 
- 		now = hrtimer_cb_get_time(&rt_b->rt_period_timer);
- 		hrtimer_forward(&rt_b->rt_period_timer, now, rt_b->rt_period);
--		hrtimer_start_expires(&rt_b->rt_period_timer,
--				HRTIMER_MODE_ABS);
-+
-+		soft = hrtimer_get_softexpires(&rt_b->rt_period_timer);
-+		hard = hrtimer_get_expires(&rt_b->rt_period_timer);
-+		delta = ktime_to_ns(ktime_sub(hard, soft));
-+		__hrtimer_start_range_ns(&rt_b->rt_period_timer, soft, delta,
-+				HRTIMER_MODE_ABS, 0);
+ 		printk("BUG: MAX_LOCKDEP_ENTRIES too low!\n");
+ 		printk("turning off the locking correctness validator.\n");
++		dump_stack();
+ 		return NULL;
  	}
- 	spin_unlock(&rt_b->rt_runtime_lock);
- }
-@@ -1146,7 +1153,8 @@ static __init void init_hrtick(void)
-  */
- static void hrtick_start(struct rq *rq, u64 delay)
- {
--	hrtimer_start(&rq->hrtick_timer, ns_to_ktime(delay), HRTIMER_MODE_REL);
-+	__hrtimer_start_range_ns(&rq->hrtick_timer, ns_to_ktime(delay), 0,
-+			HRTIMER_MODE_REL, 0);
- }
+ 	return list_entries + nr_list_entries++;
+@@ -1681,6 +1683,7 @@ cache_hit:
  
- static inline void init_hrtick(void)
-diff --git a/kernel/softirq.c b/kernel/softirq.c
-index 4877516..accc851 100644
---- a/kernel/softirq.c
-+++ b/kernel/softirq.c
-@@ -58,7 +58,7 @@ static DEFINE_PER_CPU(struct task_struct *, ksoftirqd);
-  * to the pending events, so lets the scheduler to balance
-  * the softirq load for us.
-  */
--static inline void wakeup_softirqd(void)
-+void wakeup_softirqd(void)
- {
- 	/* Interrupts are disabled: no need to stop preemption */
- 	struct task_struct *tsk = __get_cpu_var(ksoftirqd);
+ 		printk("BUG: MAX_LOCKDEP_CHAINS too low!\n");
+ 		printk("turning off the locking correctness validator.\n");
++		dump_stack();
+ 		return 0;
+ 	}
+ 	chain = lock_chains + nr_lock_chains++;
+@@ -2540,6 +2543,7 @@ static int __lock_acquire(struct lockdep_map *lock, unsigned int subclass,
+ 		debug_locks_off();
+ 		printk("BUG: MAX_LOCKDEP_SUBCLASSES too low!\n");
+ 		printk("turning off the locking correctness validator.\n");
++		dump_stack();
+ 		return 0;
+ 	}
+ 
+@@ -2636,6 +2640,7 @@ static int __lock_acquire(struct lockdep_map *lock, unsigned int subclass,
+ 		debug_locks_off();
+ 		printk("BUG: MAX_LOCK_DEPTH too low!\n");
+ 		printk("turning off the locking correctness validator.\n");
++		dump_stack();
+ 		return 0;
+ 	}
+ 
