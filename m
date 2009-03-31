@@ -1,58 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757637AbZCaOXd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759944AbZCaOZG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757637AbZCaOXd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Mar 2009 10:23:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757677AbZCaOXG
+	id S1759944AbZCaOZG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Mar 2009 10:25:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756580AbZCaOYy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Mar 2009 10:23:06 -0400
-Received: from e28smtp07.in.ibm.com ([59.145.155.7]:60787 "EHLO
-	e28smtp07.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758239AbZCaOXF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Mar 2009 10:23:05 -0400
-Message-ID: <49D22740.5090603@in.ibm.com>
-Date: Tue, 31 Mar 2009 19:52:56 +0530
-From: Sachin Sant <sachinp@in.ibm.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081216)
+	Tue, 31 Mar 2009 10:24:54 -0400
+Received: from gw.goop.org ([64.81.55.164]:51072 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755957AbZCaOYy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Mar 2009 10:24:54 -0400
+Message-ID: <49D227B2.3000807@goop.org>
+Date: Tue, 31 Mar 2009 07:24:50 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-To: heiko.carstens@de.ibm.com
-CC: linux-s390@vger.kernel.org, linux-kernel <linux-kernel@vger.kernel.org>
-Subject: [s390] 2.6.29-git8 build failure.
-References: <49CF1881.7010206@in.ibm.com>
-In-Reply-To: <49CF1881.7010206@in.ibm.com>
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+CC: linux-kernel@vger.kernel.org, x86@kernel.org
+Subject: Re: [PATCH] swiotlb: use swiotlb_alloc_boot to allocate emergency
+ pool
+References: <49D16916.5000103@goop.org> <20090331172554E.fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20090331172554E.fujita.tomonori@lab.ntt.co.jp>
+X-Enigmail-Version: 0.95.6
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sachin Sant wrote:
-> 2.6.29-git4 build failed on s390 box with
->
->  CC      drivers/char/sysrq.o
-> In file included from drivers/char/sysrq.c:38:
-> include/linux/irq.h: In function 'init_alloc_desc_masks':
-> include/linux/irq.h:434: error: dereferencing pointer to incomplete type
-> include/linux/irq.h:435: error: dereferencing pointer to incomplete type
-> include/linux/irq.h:446: error: dereferencing pointer to incomplete type
-> include/linux/irq.h:448: error: dereferencing pointer to incomplete type
-The above mentioned defconfig build failure can still be
-recreated with 2.6.29-git8 release.
+FUJITA Tomonori wrote:
+> This is a patch for a tree for dom0? I have no idea what xen-iommu.c
+> is doing (I don't know if dom0 support will be merged into mainline or
+> not). But the change to lib/swiotlb.c is fine by me.
+>   
 
-Looks like the patch[1] to fix this failure still hasn't made
-it's way into Linus tree.
+Yes, sorry, I was just asking about the lib/swiotlb.c change.
 
-Regards
--Sachin
-
-[1] -> http://marc.info/?l=linux-mm-commits&m=123360349631362&w=4
-
--- 
-
----------------------------------
-Sachin Sant
-IBM Linux Technology Center
-India Systems and Technology Labs
-Bangalore, India
----------------------------------
-
+Thanks,
+    J
