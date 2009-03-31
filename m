@@ -1,208 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757419AbZCaU4d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762029AbZCaU5Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757419AbZCaU4d (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Mar 2009 16:56:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753542AbZCaU4U
+	id S1762029AbZCaU5Z (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Mar 2009 16:57:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753094AbZCaU5P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Mar 2009 16:56:20 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:34528 "EHLO
-	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751850AbZCaU4T (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Mar 2009 16:56:19 -0400
-Message-ID: <49D283F7.7030508@novell.com>
-Date: Tue, 31 Mar 2009 16:58:31 -0400
-From: Gregory Haskins <ghaskins@novell.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Tue, 31 Mar 2009 16:57:15 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:44582 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756700AbZCaU5N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Mar 2009 16:57:13 -0400
 MIME-Version: 1.0
-To: Avi Kivity <avi@redhat.com>
-CC: linux-kernel@vger.kernel.org, agraf@suse.de, pmullaney@novell.com,
-       pmorreale@novell.com, anthony@codemonkey.ws, rusty@rustcorp.com.au,
-       netdev@vger.kernel.org, kvm@vger.kernel.org
-Subject: Re: [RFC PATCH 01/17] shm-signal: shared-memory signals
-References: <20090331184057.28333.77287.stgit@dev.haskins.net> <20090331184252.28333.70623.stgit@dev.haskins.net> <49D280C0.8010802@redhat.com>
-In-Reply-To: <49D280C0.8010802@redhat.com>
-X-Enigmail-Version: 0.95.7
-OpenPGP: id=D8195319
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enigFA975C718AF72309F919826E"
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Christoph Hellwig <hch@infradead.org>
+X-Fcc: ~/Mail/utrace
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Andrew Morton <akpm@linux-foundation.org>, Theodore Tso <tytso@mit.edu>,
+       oleg@redhat.com, adobriyan@gmail.com, mingo@elte.hu,
+       torvalds@linux-foundation.org, fche@redhat.com, rostedt@goodmis.org,
+       utrace-devel@redhat.com, linux-kernel@vger.kernel.org,
+       tglx@linutronix.de, Jeff Dike <jdike@addtoit.com>
+Subject: Re: [PATCH 3/3] utrace-based ftrace "process" engine, v2
+In-Reply-To: Christoph Hellwig's message of  Tuesday, 31 March 2009 12:25:04 -0400 <20090331162504.GA28442@infradead.org>
+References: <20090321154501.GA2707@elte.hu>
+	<20090321143413.75ead1aa.akpm@linux-foundation.org>
+	<20090321215145.GB5262@redhat.com>
+	<alpine.LFD.2.00.0903211501060.3030@localhost.localdomain>
+	<20090322123749.GF19826@elte.hu>
+	<20090323134813.GA18219@x200.localdomain>
+	<20090323151400.GA3413@redhat.com>
+	<20090323214417.GD5814@mit.edu>
+	<20090330151844.8b4eed0f.akpm@linux-foundation.org>
+	<1238491062.28248.2046.camel@twins>
+	<20090331162504.GA28442@infradead.org>
+X-Antipastobozoticataclysm: When George Bush projectile vomits antipasto on the Japanese.
+Message-Id: <20090331205413.EDEFFFC2A8@magilla.sf.frob.com>
+Date: Tue, 31 Mar 2009 13:54:13 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enigFA975C718AF72309F919826E
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+> I do have a really large objection of merging the current messy double
+> ptrace implementation.  If current utrace based ptrace isn't 100% ready
+> there's absolutely no point in merging it.  
 
-Avi Kivity wrote:
-> Gregory Haskins wrote:
->> This interface provides a bidirectional shared-memory based signaling
->> mechanism.  It can be used by any entities which desire efficient
->> communication via shared memory.  The implementation details of the
->> signaling are abstracted so that they may transcend a wide variety
->> of locale boundaries (e.g. userspace/kernel, guest/host, etc).
->>
->> The shm_signal mechanism supports event masking as well as spurious
->> event delivery mitigation.
->> +
->> +/*
->> + *---------
->> + * The following structures represent data that is shared across
->> boundaries
->> + * which may be quite disparate from one another (e.g. Windows vs
->> Linux,
->> + * 32 vs 64 bit, etc).  Therefore, care has been taken to make sure
->> they
->> + * present data in a manner that is independent of the environment.
->> + *-----------
->> + */
->> +
->> +#define SHM_SIGNAL_MAGIC 0x58fa39df
->> +#define SHM_SIGNAL_VER   1
->> +
->> +struct shm_signal_irq {
->> +    __u8                  enabled;
->> +    __u8                  pending;
->> +    __u8                  dirty;
->> +};
->>  =20
->
-> Some ABIs may choose to pad this, suggest explicit padding.
+There is no "current" utrace-ptrace implementation.  I haven't proposed
+one for merging.  When one is ready and working, we can discuss its actual
+technical details then.
 
-Yeah, good idea.  What is the official way to do this these days?  Are
-GCC pragmas allowed?
+> Other user would be even better, e.g. the seccomp rewrite.
 
->
->> +
->> +enum shm_signal_locality {
->> +    shm_locality_north,
->> +    shm_locality_south,
->> +};
->> +
->> +struct shm_signal_desc {
->> +    __u32                 magic;
->> +    __u32                 ver;
->> +    struct shm_signal_irq irq[2];
->> +};
->>  =20
->
-> Similarly, this should be padded to 0 (mod 8).
-Ack
+The seccomp rewrite is a very simple user for which I have a prototype
+patch.  (It needs testing, but that should be easy enough.)  The only
+real complexity there is in deciding how to merge those changes.
+Its components are:
 
->
-> Instead of versions, I prefer feature flags which can be independently
-> enabled or disabled.
+* clean up Kconfig
+* remove old arch/asm hooks
+** mips
+** powerpc
+** sh
+** sparc
+** x86
+* replace kernel/seccomp.c with utrace-based one
 
-Totally agreed.  If you look, most of the ABI has a type of "NEGCAP"
-(negotiate capabilities) feature.  The version number is a contingency
-plan in case I still have to break it for whatever reason.   I will
-always opt for the feature bits over bumping the version when its
-feasible (especially if/when this is actually in the field).
-
->
->> +
->> +/* --- END SHARED STRUCTURES --- */
->> +
->> +#ifdef __KERNEL__
->> +
->> +#include <linux/interrupt.h>
->> +
->> +struct shm_signal_notifier {
->> +    void (*signal)(struct shm_signal_notifier *);
->> +};
->>  =20
->
-> This means "->inject() has been called from the other side"?
-
-Yep
->
-> (reading below I see this is so.  not used to reading well commented
-> code... :)
-
-:)
-
->
->> +
->> +struct shm_signal;
->> +
->> +struct shm_signal_ops {
->> +    int      (*inject)(struct shm_signal *s);
->> +    void     (*fault)(struct shm_signal *s, const char *fmt, ...);
->>  =20
->
-> Eww.  Must we involve strings and printf formats?
-
-This is still somewhat of a immature part of the design.  Its supposed
-to be used so that by default, its a panic.  But on the host side, we
-can do something like inject a machine-check.  That way malicious/broken
-guests cannot (should not? ;) be able to take down the host.  Note today
-I do not map this to anything other than the default panic, so this
-needs some love.
-
-But given the asynchronous nature of the fault, I want to be sure we
-have decent accounting to avoid bug reports like "silent MCE kills the
-guest" ;)  At least this way, we can log the fault string somewhere to
-get a clue.
-
->
->> +    void     (*release)(struct shm_signal *s);
->> +};
->> +
->> +/*
->> + * signaling protocol:
->> + *
->> + * each side of the shm_signal has an "irq" structure with the
->> following
->> + * fields:
->> + *
->> + *    - enabled: controlled by shm_signal_enable/disable() to
->> mask/unmask
->> + *               the notification locally
->> + *    - dirty:   indicates if the shared-memory is dirty or clean.=20
->> This
->> + *               is updated regardless of the enabled/pending state
->> so that
->> + *               the state is always accurately tracked.
->> + *    - pending: indicates if a signal is pending to the remote local=
-e.
->> + *               This allows us to determine if a
->> remote-notification is
->> + *               already in flight to optimize spurious
->> notifications away.
->> + */
->>  =20
->
-> When you overlay a ring on top of this, won't the ring indexes convey
-> the same information as ->dirty?
-
-I agree that the information may be redundant with components of the
-broader shm state.  However, we need this state at this level of scope
-in order to function optimally, so I dont think its a huge deal to have
-this here as well.  Afterall, the shm_signal library can only assess its
-internal state.  We would have to teach it how to glean the broader
-state through some mechanism otherwise (callback, perhaps), but I don't
-think its worth it.
-
--Greg
-
->
->
+Except for the first one, doing it in small incremental changes would
+leave some intermediate states with no seccomp feature usable in the
+tree.  (And, of course, CONFIG_SECCOMP will require CONFIG_UTRACE
+thereafter.)  Please advise on how many pieces to slice it into and
+how to stage the merging.
 
 
---------------enigFA975C718AF72309F919826E
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
-Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
-
-iEYEARECAAYFAknSg/cACgkQlOSOBdgZUxktWQCfaKfeTHVAhTYOIKcYffTDJl6n
-SwkAnjpue/Nw6bXk46LKhBHaELvGQ6Bj
-=M5si
------END PGP SIGNATURE-----
-
---------------enigFA975C718AF72309F919826E--
+Thanks,
+Roland
