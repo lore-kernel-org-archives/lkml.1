@@ -1,103 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753463AbZCaIUe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755369AbZCaIVB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753463AbZCaIUe (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Mar 2009 04:20:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750789AbZCaIUQ
+	id S1755369AbZCaIVB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Mar 2009 04:21:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751021AbZCaIUn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Mar 2009 04:20:16 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:58156 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750769AbZCaIUO (ORCPT
+	Tue, 31 Mar 2009 04:20:43 -0400
+Received: from mga14.intel.com ([143.182.124.37]:44165 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750789AbZCaIUl convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Mar 2009 04:20:14 -0400
-Date: Tue, 31 Mar 2009 17:18:40 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "kosaki.motohiro@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>
-Subject: Re: [RFC][PATCH 5/8] memcg soft limit (yet another new design) v1
-Message-Id: <20090331171840.83fb7dab.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20090327140923.7dbbf677.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20090327135933.789729cb.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090327140923.7dbbf677.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 31 Mar 2009 04:20:41 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.38,451,1233561600"; 
+   d="scan'208";a="126014952"
+From: "Cihula, Joseph" <joseph.cihula@intel.com>
+To: James Morris <jmorris@namei.org>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "mingo@elte.hu" <mingo@elte.hu>,
+       "arjan@linux.intel.com" <arjan@linux.intel.com>,
+       "chrisw@sous-sol.org" <chrisw@sous-sol.org>,
+       "jbeulich@novell.com" <jbeulich@novell.com>,
+       "peterm@redhat.com" <peterm@redhat.com>,
+       "Wei, Gang" <gang.wei@intel.com>, "Wang, Shane" <shane.wang@intel.com>
+Date: Tue, 31 Mar 2009 01:20:37 -0700
+Subject: RE: [RFC v2][PATCH 0b/1] intel_txt: Intel(R) Trusted Execution
+ Technology support for Linux - Details
+Thread-Topic: [RFC v2][PATCH 0b/1] intel_txt: Intel(R) Trusted Execution
+ Technology support for Linux - Details
+Thread-Index: Acmxzl3THu+xsCAlT2u7QiDWgmxMnwACmjfw
+Message-ID: <4F65016F6CB04E49BFFA15D4F7B798D99469C2B0@orsmsx506.amr.corp.intel.com>
+References: <49D1A6A5.8080501@intel.com>
+ <alpine.LRH.2.00.0903311752260.13053@tundra.namei.org>
+In-Reply-To: <alpine.LRH.2.00.0903311752260.13053@tundra.namei.org>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+MIME-Version: 1.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 27 Mar 2009 14:09:23 +0900
-KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> From: James Morris [mailto:jmorris@namei.org]
+> Sent: Tuesday, March 31, 2009 12:00 AM
+>
+> On Mon, 30 Mar 2009, Joseph Cihula wrote:
+>
+> >   -  If tboot determines that the system does not support Intel TXT or is not
+> >      configured correctly (e.g. the SINIT AC Module was incorrect), it will
+> >      directly launch the kernel with no changes to any state.
+>
+> AC means "authenticated code", right?
 
-> memcg's reclaim routine is designed to ignore locality andplacements and
-> then, inactive_anon_is_low() function doesn't take "zone" as its argument.
-> 
-> In later soft limit patch, we use "zone" as an arguments.
-> 
-> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> ---
-> Index: mmotm-2.6.29-Mar23/mm/memcontrol.c
-> ===================================================================
-> --- mmotm-2.6.29-Mar23.orig/mm/memcontrol.c
-> +++ mmotm-2.6.29-Mar23/mm/memcontrol.c
-> @@ -561,15 +561,28 @@ void mem_cgroup_record_reclaim_priority(
->  	spin_unlock(&mem->reclaim_param_lock);
->  }
->  
-> -static int calc_inactive_ratio(struct mem_cgroup *memcg, unsigned long *present_pages)
-> +static int calc_inactive_ratio(struct mem_cgroup *memcg,
-> +			       unsigned long *present_pages,
-> +			       struct zone *z)
->  {
->  	unsigned long active;
->  	unsigned long inactive;
->  	unsigned long gb;
->  	unsigned long inactive_ratio;
->  
-> -	inactive = mem_cgroup_get_local_zonestat(memcg, LRU_INACTIVE_ANON);
-> -	active = mem_cgroup_get_local_zonestat(memcg, LRU_ACTIVE_ANON);
-> +	if (!z) {
-> +		inactive = mem_cgroup_get_local_zonestat(memcg,
-> +							 LRU_INACTIVE_ANON);
-> +		active = mem_cgroup_get_local_zonestat(memcg, LRU_ACTIVE_ANON);
-> +	} else {
-> +		int nid = z->zone_pgdat->node_id;
-> +		int zid = zone_idx(z);
-> +		struct mem_cgroup_per_zone *mz;
-> +
-> +		mz = mem_cgroup_zoneinfo(memcg, nid, zid);
-> +		inactive = MEM_CGROUP_ZSTAT(mz, LRU_INACTIVE_ANON);
-> +		active = MEM_CGROUP_ZSTAT(mz, LRU_ACTIVE_ANON);
-> +	}
->  
->  	gb = (inactive + active) >> (30 - PAGE_SHIFT);
->  	if (gb)
-> @@ -585,14 +598,14 @@ static int calc_inactive_ratio(struct me
->  	return inactive_ratio;
->  }
->  
-> -int mem_cgroup_inactive_anon_is_low(struct mem_cgroup *memcg)
-> +int mem_cgroup_inactive_anon_is_low(struct mem_cgroup *memcg, struct zone *z)
->  {
->  	unsigned long active;
->  	unsigned long inactive;
->  	unsigned long present_pages[2];
->  	unsigned long inactive_ratio;
->  
-> -	inactive_ratio = calc_inactive_ratio(memcg, present_pages);
-> +	inactive_ratio = calc_inactive_ratio(memcg, present_pages, NULL);
+Right.
 
-The last arguments should be "z" not NULL...
+> How readily can these be redistributed?  The license says:
+>
+> "... you may make a reasonable number of copies of the Software for
+> internal use only, subject to these conditions:
+> 1. You may not copy, modify, rent, sell, distribute, externally display,
+>    externally perform or transfer any part of the Software except as provided
+>    in this Agreement, and you agree to prevent unauthorized copying of the
+>    Software.  "
+>
+> which seems to limit the ability of distributions to include the modules,
+> in case they're redistributed.
 
-seems posted version is a bit old...OMG, sorry.
+We will be updating the license, shortly, to one that allows re-distribution.  We are in the process of validating new versions of all of the modules and will update the licenses when we update the ACMs.
 
-I'm now adding bugfix etc..
-
--Kame
-
+Joe
