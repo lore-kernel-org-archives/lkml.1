@@ -1,72 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759260AbZCaRMV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762099AbZCaRMg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759260AbZCaRMV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Mar 2009 13:12:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757180AbZCaRMD
+	id S1762099AbZCaRMg (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Mar 2009 13:12:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761189AbZCaRMP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Mar 2009 13:12:03 -0400
-Received: from e7.ny.us.ibm.com ([32.97.182.137]:44791 "EHLO e7.ny.us.ibm.com"
+	Tue, 31 Mar 2009 13:12:15 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:37406 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756818AbZCaRMB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Mar 2009 13:12:01 -0400
-Message-ID: <49D24ED0.9060008@linux.vnet.ibm.com>
-Date: Tue, 31 Mar 2009 10:11:44 -0700
-From: Corey Ashford <cjashfor@linux.vnet.ibm.com>
-User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
+	id S1761120AbZCaRMN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Mar 2009 13:12:13 -0400
+Date: Tue, 31 Mar 2009 19:11:58 +0200
+From: Andrea Arcangeli <aarcange@redhat.com>
+To: Anthony Liguori <anthony@codemonkey.ws>
+Cc: Izik Eidus <ieidus@redhat.com>, linux-kernel@vger.kernel.org,
+       kvm@vger.kernel.org, linux-mm@kvack.org, avi@redhat.com,
+       chrisw@redhat.com, riel@redhat.com, jeremy@goop.org,
+       mtosatti@redhat.com, hugh@veritas.com, corbet@lwn.net, yaniv@redhat.com,
+       dmonakhov@openvz.org
+Subject: Re: [PATCH 4/4] add ksm kernel shared memory driver.
+Message-ID: <20090331171158.GY9137@random.random>
+References: <49D20B63.8020709@redhat.com> <49D21B33.4070406@codemonkey.ws> <20090331142533.GR9137@random.random> <49D22A9D.4050403@codemonkey.ws> <20090331150218.GS9137@random.random> <49D23224.9000903@codemonkey.ws> <20090331151845.GT9137@random.random> <49D23CD1.9090208@codemonkey.ws> <20090331162525.GU9137@random.random> <49D24A02.6070000@codemonkey.ws>
 MIME-Version: 1.0
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-CC: Paul Mackerras <paulus@samba.org>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 13/15] perf_counter: provide generic callchain bits
-References: <20090330170701.856843742@chello.nl> <20090330171024.254266860@chello.nl> <18897.46177.528910.51044@cargo.ozlabs.ibm.com> <1238481552.28248.1384.camel@twins> <49D1C544.7020403@linux.vnet.ibm.com> <18897.56973.324304.995540@cargo.ozlabs.ibm.com> <1238508032.8530.278.camel@twins>
-In-Reply-To: <1238508032.8530.278.camel@twins>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49D24A02.6070000@codemonkey.ws>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Zijlstra wrote:
-> On Tue, 2009-03-31 at 20:12 +1100, Paul Mackerras wrote:
->> Corey Ashford writes:
->>
->>> If this is the case, what is the exact meaning of PERF_COUNTER_SIMPLE 
->>> now? and PERF_COUNTER_GROUP?  One simplification would be that reading 
->>> the fd of a group leader would always read up all of the counters in the 
->>> group (along with their enabled and running times if those bits are 
->>> set), and that reading a single counter's fd would yield only that 
->>> counter's values and times (if enabled).  In effect, these two values, 
->>> PERF_COUNTER_GROUP and PERF_COUNTER_SIMPLE would no longer be necessary 
->>> at all.  Other bits would be used to determine what's in the mmap'd samples.
->> Now that events are only read through mmap, it's quite simple -
->> hw_event.read_format controls what read() gives you, and
->> hw_event.record_type controls what gets put into the pages that you
->> get with mmap.
->>
->> Currently read_format and record_type don't use the same set of bit
->> definitions.  Maybe they should?  I don't have a strong feeling about
->> it, but that might be a nice simplification.
-> 
-> Something like the below? 
-> 
-> That still has the record and read things separate, but as one unified
-> overflow output.
-> 
-> I reduced record and read fields to 32bits, as the output type only has
-> 32bits.
-> 
-> diff did a wonderful job making the patch unreadable :/
->
+On Tue, Mar 31, 2009 at 11:51:14AM -0500, Anthony Liguori wrote:
+> You have two things here.  CONFIG_MEM_SHARABLE and CONFIG_KSM.  
+> CONFIG_MEM_SHARABLE cannot be a module. If it's set to =n, then 
+> madvise(MADV_SHARABLE) == -ENOSYS.
 
-This looks great!  I like the idea of two bit vectors to describe what 
-you get when you read and the format of the mmap'd data.  And I like the 
-ability not to include the header on each record if the user space 
-program knows the exact format of the sample records.
+Where the part that -ENOSYS tell userland madvise syscall table is
+empty, which is obviously not the case, wasn't clear?
 
-Paul is right, too, that having a read_format bit to determine whether 
-reading the leader gives all of the counters or just the leader is a 
-nice addition.  I can't think of when I'd use it, but it's a good 
-capability.
+> If CONFIG_MEM_SHARABLE=y, then madvise(MADV_SHARABLE) will keep track of 
+> all sharable memory regions.  Independently of that, CONFIG_KSM can be set 
+> to n,m,y.  It depends on CONFIG_MEM_SHARABLE and when it's loaded, it 
+> consumes the list of sharable vmas.
 
-- Corey
+And what do you gain by creating two config params when only one is
+needed other than more pain for the poor user doing make oldconfig and
+being asked new zillon of questions that aren't necessary?
 
+> But honestly, CONFIG_MEM_SHARABLE shouldn't a lot of code so I don't see 
+> why you'd even need to make it configable.
+
+Even if you were to move the registration code in madvise with a
+-EINVAL retval if KSM was set to N for embedded, CONFIG_KSM would be
+enough: the registration code would be surrounded by CONFIG_KSM_MODULE
+|| CONFIG_KSM, just like page_wrprotect/replace_page. This
+CONFIG_MEM_SHARABLE in addition to CONFIG_KSM is beyond what can make
+sense to me.
+
+> The ioctl() interface is quite bad for what you're doing.  You're telling 
+> the kernel extra information about a VA range in userspace.  That's what 
+
+The ioctl can be extended to also tell which pid to share without
+having to specify VA range, and having the feature inherited by the
+child. Not everyone wants to deal with VA.
+
+But my main issue with madvise is that it's core kernel functionality
+while KSM clearly is not.
