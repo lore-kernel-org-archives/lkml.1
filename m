@@ -1,109 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758092AbZCaU2t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759480AbZCaU3p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758092AbZCaU2t (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Mar 2009 16:28:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751397AbZCaU2k
+	id S1759480AbZCaU3p (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Mar 2009 16:29:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751397AbZCaU3f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Mar 2009 16:28:40 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:57334 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751252AbZCaU2j (ORCPT
+	Tue, 31 Mar 2009 16:29:35 -0400
+Received: from jurassic.park.msu.ru ([195.208.223.243]:55217 "EHLO
+	jurassic.park.msu.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751252AbZCaU3e (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Mar 2009 16:28:39 -0400
-Date: Tue, 31 Mar 2009 22:30:14 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Stefani Seibold <stefani@seibold.net>
-Cc: Andi Kleen <andi@firstfloor.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-mm <linux-mm@kvack.org>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Ingo Molnar <mingo@elte.hu>, Joerg Engel <joern@logfs.org>
-Subject: Re: Detailed Stack Information Patch [0/3]
-Message-ID: <20090331203014.GR11935@one.firstfloor.org>
-References: <1238511498.364.60.camel@matrix> <87eiwdn15a.fsf@basil.nowhere.org> <1238523735.3692.30.camel@matrix>
-Mime-Version: 1.0
+	Tue, 31 Mar 2009 16:29:34 -0400
+Date: Wed, 1 Apr 2009 00:29:39 +0400
+From: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+To: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Cc: Tejun Heo <tj@kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       rusty@rustcorp.com.au, tglx@linutronix.de, x86@kernel.org,
+       linux-kernel@vger.kernel.org, hpa@zytor.com,
+       Paul Mundt <lethal@linux-sh.org>, rmk@arm.linux.org.uk,
+       starvik@axis.com, ralf@linux-mips.org, davem@davemloft.net,
+       cooloney@kernel.org, kyle@mcmartin.ca, matthew@wil.cx,
+       grundler@parisc-linux.org, takata@linux-m32r.org,
+       benh@kernel.crashing.org, rth@twiddle.net, heiko.carstens@de.ibm.com
+Subject: Re: [GIT RFC] percpu: use dynamic percpu allocator as the default
+	percpu allocator
+Message-ID: <20090331202937.GA8354@jurassic.park.msu.ru>
+References: <49CA1AC3.9080908@kernel.org> <20090325122241.GE11571@elte.hu> <49CA2345.70204@kernel.org> <20090325141330.2717dc97@skybase> <49CA2FBF.9000207@kernel.org> <20090325142525.2d31c522@skybase> <49CA32F6.2030408@kernel.org> <20090331185431.72ff1707@skybase> <20090331191703.GA8250@jurassic.park.msu.ru> <20090331221937.1cf4e29a@skybase>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1238523735.3692.30.camel@matrix>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <20090331221937.1cf4e29a@skybase>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 31, 2009 at 08:22:15PM +0200, Stefani Seibold wrote:
-> Hi Andi,
-> 
-> Am Dienstag, den 31.03.2009, 17:49 +0200 schrieb Andi Kleen:
-> > Stefani Seibold <stefani@seibold.net> writes:
-> > >
-> > > - Get out of virtual memory by creating a lot of threads
-> > >  (f.e. the developer did assign each of them the default size)
-> > 
-> > The application just fails then? I don't think that needs
-> > a new monitoring tool.
-> > 
-> 
-> First, this patch is not only a monitoring tool. Only the last part 3/3
-> is the monitoring tool.
-> 
-> Patch 1/3 enhance the the proc/<pid>/task/<tid>/maps by the marking the
-> thread stack.
+On Tue, Mar 31, 2009 at 10:19:37PM +0200, Martin Schwidefsky wrote:
+> Ok, cool. May I add an Acked-by?
 
-Well some implementation of it. There are certainly runtimes that
-switch stacks. For example what happens when someone uses sigaltstack()?
+Yes, sure.
 
-You'll probably need some more sanity checks, otherwise a monitor
-will occasionally just report crap in legitimate cases. Unfortunately
-it's difficult to distingush the legitimate cases from the bugs.
-
-> > > - Misuse the thread stack for big temporary data buffers
-> > 
-> > That would be better checked for at compile time
-> > (except for alloca, but that is quite rare)
-> 
-> Fine but it did not work for functions like:
-
-That's the alloca() case, but you can disable both with the right options.
-There's still the "recursive function" case.
-
-> > > - Thread stack overruns
-> > 
-> > Your method would be racy at best to determine this because
-> > you don't keep track of the worst case, only the current case.
-> > 
-> > So e.g. if you monitoring app checks once per second the stack
-> > could overflow between your monitoring intervals, but already
-> > have bounced back before the checker comes in.
-> > 
-> 
-> The Monitor is part 3/3. And you are right it is not a complete rock
-> solid solution. But it works in many cases and thats is what counts.
-
-For stack overflow one would think a rock solid solution
-is needed?  After all you'll crash if you miss a case.
-
-> > track of consumption in the VMA that has the stack,  but
-> > that can't handle very large jumps (like f() { char x[1<<30]; } )
-> > The later can only be handled well by the compiler.
-> 
-> Thats is exactly what i am doing, i walk through the pages of the thread
-> stack mapped memory and keep track of the highest access page. So i have
-> the high water mark of the used stack.
-
-Ok. Of course it doesn't work for really large allocations. there used
-to be special patches around to add a special gap to catch those,
-but it's problematic with the tight address space on 32bit and also
-again not fully bullet proof. On 64bit the solution is typical
-to just use a large stack.
-
-> The patches are not intrusive, especially part 1.
-
-To be honest it seems too much like a special case hack to me
-to include by default. It could be probably done with a systemtap
-script in the same way, but I would really recommend to just
-build with gcc's stack overflow checker while testing together
-with static checking.
-
--Andi
-
--- 
-ak@linux.intel.com -- Speaking for myself only.
+Ivan.
