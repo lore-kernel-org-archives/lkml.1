@@ -1,280 +1,300 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761650AbZCaTNu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762215AbZCaTP1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761650AbZCaTNu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Mar 2009 15:13:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756035AbZCaTNj
+	id S1762215AbZCaTP1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Mar 2009 15:15:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755943AbZCaTPM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Mar 2009 15:13:39 -0400
-Received: from outbound-mail-142.bluehost.com ([67.222.38.32]:35492 "HELO
-	outbound-mail-142.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1755371AbZCaTNh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Mar 2009 15:13:37 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:Date:From:To:Subject:Message-ID:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
-	b=PueoGHs3hfE2Fep4J0XNY3mZhRM2UnDLh/fRRJul53IcpfmSrownSZvYL+exg40Y82TSk1KB9cku5VUlf/mZ07kV1EbUzFGZ5MDHY6PIUDF8U5xpDoW2xpx6mvwUHrD6;
-Date: Tue, 31 Mar 2009 12:13:31 -0700
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-pci@vger.kernel.org
-Subject: [git pull] PCI changes for 2.6.30
-Message-ID: <20090331121331.3673cf59@hobbes>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
+	Tue, 31 Mar 2009 15:15:12 -0400
+Received: from mga01.intel.com ([192.55.52.88]:13817 "EHLO mga01.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750919AbZCaTPJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Mar 2009 15:15:09 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.39,303,1235980800"; 
+   d="scan'208";a="677581027"
+From: "Tantilov, Emil S" <emil.s.tantilov@intel.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       "Kirsher, Jeffrey T" <jeffrey.t.kirsher@intel.com>
+CC: Yinghai Lu <yinghai@kernel.org>,
+       Jesse Brandeburg <jesse.brandeburg@gmail.com>,
+       David Miller <davem@davemloft.net>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       NetDev <netdev@vger.kernel.org>
+Date: Tue, 31 Mar 2009 13:14:06 -0600
+Subject: RE: [Updated patch] Re: [PATCH] igb: fix kexec with igb
+Thread-Topic: [Updated patch] Re: [PATCH] igb: fix kexec with igb
+Thread-Index: AcmxgQ7BoPtqrfqjTnGZt9+LzzIhlwAsz7Dg
+Message-ID: <EA929A9653AAE14F841771FB1DE5A1365F71995716@rrsmsx501.amr.corp.intel.com>
+References: <49B1F934.5050006@kernel.org> <200903291319.15269.rjw@sisk.pl>
+ <9929d2390903301436q1cd96e05x47d60cff72e41b4d@mail.gmail.com>
+ <200903302339.33781.rjw@sisk.pl>
+In-Reply-To: <200903302339.33781.rjw@sisk.pl>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: 8bit
+X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id n2VJFXqu022478
 
-Please consider pulling my PCI tree from
-  git://git.kernel.org/pub/scm/linux/kernel/git/jbarnes/pci-2.6 linux-next
+Rafael J. Wysocki wrote:
+> On Monday 30 March 2009, Jeff Kirsher wrote:
+>> On Sun, Mar 29, 2009 at 4:19 AM, Rafael J. Wysocki <rjw@sisk.pl>
+>> wrote: 
+>>> On Sunday 29 March 2009, Jeff Kirsher wrote:
+>>>> On Sat, Mar 28, 2009 at 2:27 PM, Rafael J. Wysocki <rjw@sisk.pl>
+>>>> wrote: 
+>>>>> On Tuesday 24 March 2009, Yinghai Lu wrote:
+>>>>>> Rafael J. Wysocki wrote:
+>>>>>>> On Thursday 12 March 2009, Yinghai Lu wrote:
+>>>>>>>> Rafael J. Wysocki wrote:
+>>>>>>>>> On Sunday 08 March 2009, Rafael J. Wysocki wrote:
+>>>>>>>>>> On Sunday 08 March 2009, Yinghai Lu wrote:
+>>>>>>>>>>> Rafael J. Wysocki wrote:
+>>>>>>>>>>>> On Saturday 07 March 2009, Yinghai Lu wrote:
+>>>>>>>>>>>>> On Fri, Mar 6, 2009 at 11:18 PM, Jesse Brandeburg
+>>>>>>>>>>>>> <jesse.brandeburg@gmail.com> wrote:
+>>>>>>>>>>>>>> On Fri, Mar 6, 2009 at 8:33 PM, Yinghai Lu
+>>>>>>>>>>>>>> <yinghai@kernel.org> wrote: 
+>>>>>>>>>>>>>>> Impact: could probe igb
+>>>>>>>>>>>>>>> 
+>>>>>>>>>>>>>>> Found one system with 82575EB, in the kernel that is
+>>>>>>>>>>>>>>> kexeced, probe igb failed with -2. 
+>>>>>>>>>>>>>>> 
+>>>>>>>>>>>>>>> it looks like the same behavior happened on forcedeth.
+>>>>>>>>>>>>>>> 
+>>>>>>>>>>>>>>> try to check system_state to make sure if put it on D3
+>>>>>>>>>>>>>>> 
+>>>>>>>>>>>>>>> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+>>>>>>>>>>>>>>> 
+>>>>>>>>>>>>>>> ---
+>>>>>>>>>>>>>>>  drivers/net/igb/igb_main.c |   19 ++++++++++++++-----
+>>>>>>>>>>>>>>>  1 file changed, 14 insertions(+), 5 deletions(-)
+>>>>>>>>>>>>>> I see the point of the patch, but I know for a fact that
+>>>>>>>>>>>>>> ixgbe when enabled for MSI-X also doesn't work with
+>>>>>>>>>>>>>> kexec. 
+>>>>>>>>>>>>>> 
+>>>>>>>>>>>>>> so my questions are:
+>>>>>>>>>>>>>> are you going to change every driver?
+>>>>>>>>>>>>> i tend to only change driver that i have related HW.
+>>>>>>>>>>>>> 
+>>>>>>>>>>>>>> why can't this be fixed in core kernel code instead?
+>>>>>>>>>>>>>> will check it. 
+>>>>>>>>>>>>> 
+>>>>>>>>>>>>>> Shouldn't pci_enable_device take it out of D3?
+>>>>>>>>>>>>>> Or maybe it should be taken out of D3 immediately if
+>>>>>>>>>>>>>> someone tries to ioremap any of the BARx registers?
+>>>>>>>>>>>>> looks like second kernel can not detect the state any
+>>>>>>>>>>>>> more. 
+>>>>>>>>>>>> In fact pci_enable_device() calls pci_set_power_state(dev,
+>>>>>>>>>>>> PCI_D0) as the first thing.  The question is why it
+>>>>>>>>>>>> doesn't work as expected. 
+>>>>>>>>>>> not sure... please check the version for forcedeth that you
+>>>>>>>>>>> made. 
+>>>>>>>>>>> 
+>>>>>>>>>>> commit 3cb5599a84c557c0dd9a19feb63a3788268cf249
+>>>>>>>>>>> Author: Rafael J. Wysocki <rjw@sisk.pl>
+>>>>>>>>>>> Date:   Fri Sep 5 14:00:19 2008 -0700
+>>>>>>>>>>> 
+>>>>>>>>>>>     forcedeth: fix kexec regression
+>>>>>>>>>>> 
+>>>>>>>>>>>     Fix regression tracked as
+>>>>>>>>>>>     http://bugzilla.kernel.org/show_bug.cgi?id=11361 and
+>>>>>>>>>>>     caused by commit
+>>>>>>>>>>>     f735a2a1a4f2a0f5cd823ce323e82675990469e2 ("[netdrvr]
+>>>>>>>>>>>     forcedeth: setup wake-on-lan before shutting down")
+>>>>>>>>>>>     that makes network adapters integrated into the NVidia
+>>>>>>>>>>>     MCP55 chipsets fail to work in kexeced kernels.  The
+>>>>>>>>>>>     problem appears to be that if the adapter is put into
+>>>>>>>>>>>     D3_hot during ->shutdown(), it cannot be brought back
+>>>>>>>>>>> into D0 after kexec (ref.
+>>>>>>>>>>> http://marc.info/?l=linux-kernel&m=121900062814967&w=4). 
+>>>>>>>>>>> Therefore, only put forcedeth into D3 during ->shutdown()
+>>>>>>>>>>> if the system is to be powered off.    
+>>>>>>>>>> Thanks, I remember now.
+>>>>>>>>> In which case you need to rework igb_shutdown() rather than
+>>>>>>>>> igb_suspend(). 
+>>>>>>>>> 
+>>>>>>>>> Something like the patch below, perhaps (totally untested).
+>>>>>>>> it works, David, can you picked it up
+>>>>>>> 
+>>>>>>> Still, Yinghai, can you please also test the patch below?  It
+>>>>>>> fixes all shortcomings in the driver's suspend and shutdown
+>>>>>>> methods I was talking about in one of the previous messages. 
+>>>>>>> If it works, IMO it will be a preferable fix (in particular, it
+>>>>>>> would be good to check if WoL still works with it, 
+>>>>>>> but I don't have the hardware).
+>>>>>>> 
+>>>>>>> Thanks,
+>>>>>>> Rafael
+>>>>>>> 
+>>>>>>> ---
+>>>>>>> From: Rafael J. Wysocki <rjw@sisk.pl>
+>>>>>>> Subject: net/igb: Fix kexec with igb (rev. 3)
+>>>>>>> Impact: Fix
+>>>>>>> 
+>>>>>>> Yinghai Lu found one system with 82575EB where, in the kernel
+>>>>>>> that is kexeced, probe igb failed with -2, the reason being
+>>>>>>> that the adapter 
+>>>>>>> could not be brought back from D3 by the kexec kernel, most
+>>>>>>> probably 
+>>>>>>> due to quirky hardware (it looks like the same behavior
+>>>>>>> happened on forcedeth). 
+>>>>>>> 
+>>>>>>> Prevent igb from putting the adapter into D3 during shutdown
+>>>>>>> except 
+>>>>>>> when we going to power off the system.  For this purpose,
+>>>>>>> seperate igb_shutdown() from igb_suspend() and use the
+>>>>>>> appropriate PCI PM 
+>>>>>>> callbacks in both of them.
+>>>>>>> 
+>>>>>>> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+>>>>>>> Reported-by: Yinghai Lu <yinghai@kernel.org>
+>>>>>>> ---
+>>>>>>>  drivers/net/igb/igb_main.c |   42
+>>>>>>>  ++++++++++++++++++++++++++++++------------ 1 file changed, 30
+>>>>>>> insertions(+), 12 deletions(-) 
+>>>>>>> 
+>>>>>>> Index: linux-2.6/drivers/net/igb/igb_main.c
+>>>>>>> ===================================================================
+>>>>>>> --- linux-2.6.orig/drivers/net/igb/igb_main.c
+>>>>>>> +++ linux-2.6/drivers/net/igb/igb_main.c
+>>>>>>> @@ -4277,7 +4277,7 @@ int igb_set_spd_dplx(struct igb_adapter  }
+>>>>>>> 
+>>>>>>> 
+>>>>>>> -static int igb_suspend(struct pci_dev *pdev, pm_message_t
+>>>>>>> state) +static int __igb_shutdown(struct pci_dev *pdev, bool
+>>>>>>>     *enable_wake)  { struct net_device *netdev =
+>>>>>>>     pci_get_drvdata(pdev); struct igb_adapter *adapter =
+>>>>>>> netdev_priv(netdev); @@ -4336,15 +4336,9 @@ static int
+>>>>>>>             igb_suspend(struct pci_dev *p wr32(E1000_WUFC, 0);
+>>>>>>>     }
+>>>>>>> 
+>>>>>>> -   /* make sure adapter isn't asleep if manageability/wol is
+>>>>>>> enabled */ 
+>>>>>>> -   if (wufc || adapter->en_mng_pt) {
+>>>>>>> -           pci_enable_wake(pdev, PCI_D3hot, 1);
+>>>>>>> -           pci_enable_wake(pdev, PCI_D3cold, 1);
+>>>>>>> -   } else {
+>>>>>>> +   *enable_wake = wufc || adapter->en_mng_pt;
+>>>>>>> +   if (!*enable_wake)
+>>>>>>>             igb_shutdown_fiber_serdes_link_82575(hw);
+>>>>>>> -           pci_enable_wake(pdev, PCI_D3hot, 0);
+>>>>>>> -           pci_enable_wake(pdev, PCI_D3cold, 0);
+>>>>>>> -   }
+>>>>>>> 
+>>>>>>>     /* Release control of h/w to f/w.  If f/w is AMT enabled,
+>>>>>>>      this * would have already happened in close and is
+>>>>>>> redundant. */ @@ -4352,12 +4346,29 @@ static int
+>>>>>>> igb_suspend(struct pci_dev *p 
+>>>>>>> 
+>>>>>>>     pci_disable_device(pdev);
+>>>>>>> 
+>>>>>>> -   pci_set_power_state(pdev, pci_choose_state(pdev, state)); -
+>>>>>>>     return 0;
+>>>>>>>  }
+>>>>>>> 
+>>>>>>>  #ifdef CONFIG_PM
+>>>>>>> +static int igb_suspend(struct pci_dev *pdev, pm_message_t
+>>>>>>> state) +{ +   int retval;
+>>>>>>> +   bool wake;
+>>>>>>> +
+>>>>>>> +   retval = __igb_shutdown(pdev, &wake);
+>>>>>>> +   if (retval)
+>>>>>>> +           return retval;
+>>>>>>> +
+>>>>>>> +   if (wake) {
+>>>>>>> +           pci_prepare_to_sleep(pdev);
+>>>>>>> +   } else {
+>>>>>>> +           pci_wake_from_d3(pdev, false);
+>>>>>>> +           pci_set_power_state(pdev, PCI_D3hot);
+>>>>>>> +   }
+>>>>>>> +
+>>>>>>> +   return 0;
+>>>>>>> +}
+>>>>>>> +
+>>>>>>>  static int igb_resume(struct pci_dev *pdev)
+>>>>>>>  {
+>>>>>>>     struct net_device *netdev = pci_get_drvdata(pdev);
+>>>>>>> @@ -4412,7 +4423,14 @@ static int igb_resume(struct pci_dev *pd
+>>>>>>> 
+>>>>>>>  static void igb_shutdown(struct pci_dev *pdev)
+>>>>>>>  {
+>>>>>>> -   igb_suspend(pdev, PMSG_SUSPEND);
+>>>>>>> +   bool wake;
+>>>>>>> +
+>>>>>>> +   __igb_shutdown(pdev, &wake);
+>>>>>>> +
+>>>>>>> +   if (system_state == SYSTEM_POWER_OFF) {
+>>>>>>> +           pci_wake_from_d3(pdev, wake);
+>>>>>>> +           pci_set_power_state(pdev, PCI_D3hot);
+>>>>>>> +   }
+>>>>>>>  }
+>>>>>>> 
+>>>>>>>  #ifdef CONFIG_NET_POLL_CONTROLLER
+>>>>>> 
+>>>>>> it works too.
+>>>>> 
+>>>>> Great, thanks for testing.
+>>>>> 
+>>>>> Jeff, Jesse, is the patch fine with you?
+>>>>> 
+>>>>> Rafael
+>>>> 
+>>>> Let me talk with Jesse on Monday about it.  I know that Jesse's
+>>>> concern's were that there were more than one driver afflicted with
+>>>> the same or similar issue and that it made more sense to fix this
+>>>> in the core for all drivers.  For instance ixgbe, IIRC, but
+>>>> because Yinghai did not have any other hardware, it was unclear if
+>>>> this was an issue on other drivers.
+>>> 
+>>> I think it was, at least theoretically.  We should generally avoid
+>>> powering off things on shutdown when it's not really necessary. 
+>>> Also, the use of pci_enable_wake() in these drivers is not really
+>>> correct. 
+>>> 
+>>> And in fact this is why I'm asking, because I have analogouns
+>>> patches for some other drivers in the works too.  If you are fine
+>>> with the approach, I'll post the whole series. 
+>>> 
+>>>> After discussing this with Jesse, one of us will respond.  I will
+>>>> apply this patch to my tree anyway and if we are alright with the
+>>>> patch, I will push it out with my other patches to Dave.
+>>> 
+>>> Thanks!
+>>> 
+>>> Best,
+>>> Rafael
+>>> --
+>> 
+>> After talking with Jesse, we are fine with it if our testers buy off
+>> on it.  I have the patch in my tree and so Emil will run a barrage of
+>> regression/stress tests on the patch overnight.  If everything looks
+>> good, I will send it out with the other igb patches I have.
 
-There are some real changes in here, notably Alex's changes to the core to add
-real hotplug support, Matthew's multiple MSI support, and Yu's SR-IOV support.
-Overall, v12n users should be happy with this set of changes.  And as is
-customary we got a good collection of fixes from the usual suspects: Kenji-san,
-Yinghai, and Bjorn.  Oh and Alpha has support for sysfs PCI resources now,
-thanks to a commit from Ivan.
+The patch checks out. I tested suspend/resume (including WOL) and kexec. There is only a small issue with warning on compile when CONFIG_PM is disabled:
 
-I note you've been having some tree management discussions with people this
-time around, so I figured it would be good to describe how I've been handling
-things.
-
-I generally have two branches going: for-linus and linux-next.  The for-linus
-branch rarely gets merge commits or rebases.  Merges will generally only
-happen if I have some dependencies with another tree (like ACPI), and rebases
-only occur when I need to drop a patch.  Other than that it's just fast
-forwards from pulling your tree (after you've pulled mine) and commits for
-new patches.
-
-I try to keep the linux-next branch a superset of my for-linus branch at the
-request of my downstream developers.  This means periodic rebasing after the
-merge window closes, but it's generally important to get your latest stuff
-into that branch so that downstream developers don't have to fight with bugs
-that have been fixed upstream.  This isn't pain free (downstream developers
-with large patchsets then have to rebase their stuff) but so far it seems
-like the path of least pain for our purposes, probably because I haven't
-started pulling trees from downstream (yet).  If I did, I of course would
-avoid rebasing at that point...
-
-Anyway hope this pull is ok.  I went through every warning by hand to make
-sure none were caused by PCI commits, but that was with the bits in this
-tree, which are -rc8 vintage.
+diff --git a/drivers/net/igb/igb_main.c b/drivers/net/igb/igb_main.c
+index 13fe162..0a4f8f4 100644
+--- a/drivers/net/igb/igb_main.c
++++ b/drivers/net/igb/igb_main.c
+@@ -135,8 +135,8 @@ static inline int igb_set_vf_rlpml(struct igb_adapter *, int, int);
+ static int igb_set_vf_mac(struct igb_adapter *adapter, int, unsigned char *);
+ static void igb_restore_vf_multicasts(struct igb_adapter *adapter);
+ 
+-static int igb_suspend(struct pci_dev *, pm_message_t);
+ #ifdef CONFIG_PM
++static int igb_suspend(struct pci_dev *, pm_message_t);
+ static int igb_resume(struct pci_dev *);
+ #endif
+ static void igb_shutdown(struct pci_dev *); 
 
 Thanks,
--- 
-Jesse Barnes, Intel Open Source Technology Center
-
-Alex Chiang (12):
-      PCI: enhance physical slot debug information
-      PCI: PCIe portdrv: eliminate double kfree in remove path
-      PCIe: portdrv: call pci_disable_device during remove    
-      PCI: always scan child buses                            
-      PCI: do not initialize bridges more than once           
-      PCI: do not enable bridges more than once               
-      PCI: Introduce pci_rescan_bus()                         
-      PCI: Introduce /sys/bus/pci/rescan                      
-      PCI: Introduce /sys/bus/pci/devices/.../remove          
-      PCI: Introduce /sys/bus/pci/devices/.../rescan          
-      PCI Hotplug: rename legacy_fakephp to fakephp           
-      PCI Hotplug: schedule fakephp for feature removal       
-
-Andrew Morton (1):
-      PCI: constify pci_bus_assign_resources()
-
-Bjorn Helgaas (4):
-      PCI/x86: make early dump handle multi-function devices
-      PCI/x86: format early dump like other PCI output      
-      PCI/x86: document pci=earlydump argument              
-      x86: use dev_printk in quirk message                  
-
-Chris Wright (1):
-      PCI: add remove_id sysfs entry
-
-Dave Airlie (1):
-      PCI: expose boot VGA device via sysfs.
-
-David O'Shea (1):
-      PCI: Compaq Evo D510 SMBus quirk using USB instead of VGA
-
-Ed Swierk (1):
-      x86/PCI: Detect mmconfig on nVidia MCP55
-
-Eric W. Biederman (1):
-      PCI: pcie_portdriver: fix pcie_port_device_remove
-
-Frank Seidel (1):
-      PCI: add missing KERN_* constants to printks
-
-Geert Uytterhoeven (1):
-      PCI: Use kzalloc() in pci_create_bus()
-
-Harvey Harrison (1):
-      PCI: __FUNCTION__ is gcc-specific, use __func__
-
-Ivan Kokshaysky (1):
-      PCI/alpha: pci sysfs resources
-
-Jesse Barnes (1):
-      powerpc/PCI: include pci.h in powerpc MSI implementation
-
-Jiri Slaby (1):
-      PCI quirk: don't mark one netmos as class other
-
-Julia Lawall (1):
-      PCI: introduce missing kfree
-
-Kay Sievers (1):
-      PCI: struct device - replace bus_id with dev_name(), dev_set_name()
-
-Kenji Kaneshige (15):
-      PCI: pciehp: fix possible endless loop in pcie_isr
-      PCI: pciehp: enable software notification on empty slots
-      PCI: pciehp: make cmd_busy flag one bit                 
-      PCI/ACPI: move _OSC code to pci_root.c                  
-      PCI/ACPI: rename pci_osc_control_set()                  
-      PCI/ACPI: fix wrong assumption in acpi_pci_get_bridge_handle
-      PCI/ACPI: fix wrong assumption in acpi_find_root_bridge_handle
-      PCI hotplug: fix wrong assumption in acpi_get_hp_params_from_firmware
-      PCI hotplug: fix wrong assumption in acpi_get_hp_hw_control_from_firmware
-      PCI: fix wrong assumption in pci_find_upstream_pcie_bridge               
-      PCI: fix wrong assumption in pci_read_bridge_bases                       
-      PCI: fix wrong assumption in pci_get_interrupt_pin                       
-      PCI: fix wrong assumption in pci_common_swizzle                          
-      PCI: pci_is_root_bus helper                                              
-      PCI: fix kernel oops on bridge removal                                   
-
-Matthew Wilcox (6):
-      Rewrite MSI-HOWTO
-      PCI MSI: Replace 'type' with 'is_msix'
-      PCI MSI: msi_desc->dev is always initialised
-      PCI MSI: Use mask_pos instead of mask_base when appropriate
-      PCI MSI: Refactor interrupt masking code                   
-      PCI MSI: Add support for multiple MSI                      
-
-Michael Ellerman (3):
-      PCI/MSI: Use #ifdefs instead of weak functions
-      PCI/MSI: Allow arch code to return the number of MSI-X available
-      PCI MSI: Add example request loop to MSI-HOWTO.txt              
-
-Rafael J. Wysocki (9):
-      PCI: PCIe portdrv: Use driver data to simplify code
-      PCI: PCIe portdrv: Aviod using service devices with wrong interrupts
-      PCI: PCIe portdrv: Do not enable port device before setting up interrupts
-      PCI: PCIe portdrv: Remove unnecessary function                           
-      PCI: PCIe portdrv: Simplily probe callback of service drivers            
-      PCI: PCIe portdrv: Remove struct pcie_port_service_id                    
-      PCI/MSI: Introduce pci_msix_table_size()                                 
-      PCI/PCIe portdrv: Fix allocation of interrupts                           
-      PCI: PCIe portdrv: Implement pm object                                   
-
-Roel Kluin (1):
-      PCI hotplug: shpchp: fix bus number check to avoid false positive
-
-Sheng Yang (1):
-      PCI: Speed up device reset function
-
-Stephen Rothwell (1):
-      PCI: update fakephp for bus_id removal
-
-Trent Piepho (3):
-      PCI: don't scan existing devices
-      PCI: pci_scan_slot() returns newly found devices
-      PCI Hotplug: restore fakephp interface with complete reimplementation
-
-Yinghai Lu (5):
-      PCI/x86: detect host bridge config space size w/o using quirks
-      x86/PCI: host mmconfig detect clean up                        
-      x86/PCI: make pci=lastbus=255 work when acpi is on            
-      PCI: don't enable too much HT MSI mapping                     
-      PCI: fix HT MSI mapping fix                                   
-
-Yu Zhao (12):
-      PCI: check if a bus is added when removing it
-      PCI: fix incorrect mask of PM No_Soft_Reset bit
-      PCI: initialize and release SR-IOV capability  
-      PCI: restore saved SR-IOV state                
-      PCI: reserve bus range for SR-IOV device       
-      PCI: centralize device setup code              
-      PCI: add SR-IOV API for Physical Function driver
-      PCI: handle SR-IOV Virtual Function Migration   
-      PCI: document SR-IOV sysfs entries              
-      PCI: manual for SR-IOV user and driver developer
-      PCI: fix conflict between SR-IOV and config space sizing
-      PCI: save and restore PCIe 2.0 registers                
-
-Yuji Shimada (1):
-      PCI: allow assignment of memory resources with a specified alignment
-
-akpm@linux-foundation.org (1):
-      PCI: constify pci_bus_add_devices()
-
- Documentation/ABI/testing/sysfs-bus-pci    |   70 +++
- Documentation/DocBook/kernel-api.tmpl      |    1 +  
- Documentation/PCI/MSI-HOWTO.txt            |  814 +++++++++++----------------
- Documentation/PCI/pci-iov-howto.txt        |   99 ++++                       
- Documentation/feature-removal-schedule.txt |   33 ++                         
- Documentation/filesystems/sysfs-pci.txt    |   10 +                          
- Documentation/kernel-parameters.txt        |   11 +                          
- arch/alpha/include/asm/pci.h               |   14 +                          
- arch/alpha/kernel/Makefile                 |    2 +-                         
- arch/alpha/kernel/pci-sysfs.c              |  366 +++++++++++++              
- arch/powerpc/include/asm/pci.h             |    4 +                          
- arch/powerpc/kernel/msi.c                  |    5 +                          
- arch/x86/include/asm/pci.h                 |    3 +                          
- arch/x86/kernel/io_apic.c                  |    4 +                          
- arch/x86/kernel/pci-dma.c                  |    3 +-                         
- arch/x86/pci/early.c                       |   19 +-                         
- arch/x86/pci/fixup.c                       |   20 -                          
- arch/x86/pci/legacy.c                      |    3 +-                         
- arch/x86/pci/mmconfig-shared.c             |  227 ++++++--                   
- arch/x86/pci/mmconfig_64.c                 |   17 +-                         
- drivers/acpi/pci_root.c                    |  180 ++++++-                    
- drivers/pci/Kconfig                        |   10 +                          
- drivers/pci/Makefile                       |    2 +                          
- drivers/pci/bus.c                          |    8 +-                         
- drivers/pci/hotplug/acpi_pcihp.c           |   58 +--                        
- drivers/pci/hotplug/cpqphp_sysfs.c         |    3 +-                         
- drivers/pci/hotplug/fakephp.c              |  444 ++++------------           
- drivers/pci/hotplug/pciehp.h               |   13 +-                         
- drivers/pci/hotplug/pciehp_acpi.c          |   21 +-                         
- drivers/pci/hotplug/pciehp_core.c          |   18 +-                         
- drivers/pci/hotplug/pciehp_hpc.c           |   34 +-                         
- drivers/pci/hotplug/shpchp.h               |   10 +-                         
- drivers/pci/hotplug/shpchp_pci.c           |    2 +-                         
- drivers/pci/intel-iommu.c                  |    2 +-                         
- drivers/pci/iov.c                          |  680 +++++++++++++++++++++++    
- drivers/pci/msi.c                          |  426 ++++++++--------           
- drivers/pci/msi.h                          |    6 -                          
- drivers/pci/pci-acpi.c                     |  215 --------                   
- drivers/pci/pci-driver.c                   |   81 +++-                       
- drivers/pci/pci-sysfs.c                    |  124 ++++-                      
- drivers/pci/pci.c                          |  193 ++++++-                    
- drivers/pci/pci.h                          |   65 +++                        
- drivers/pci/pcie/aer/aerdrv.c              |   28 +-                         
- drivers/pci/pcie/aer/aerdrv_acpi.c         |    2 +-
- drivers/pci/pcie/aer/aerdrv_core.c         |   10 +-
- drivers/pci/pcie/portdrv.h                 |   14 +-
- drivers/pci/pcie/portdrv_bus.c             |   18 +-
- drivers/pci/pcie/portdrv_core.c            |  379 +++++++++-----
- drivers/pci/pcie/portdrv_pci.c             |   50 +-
- drivers/pci/probe.c                        |  210 +++++---
- drivers/pci/quirks.c                       |  221 +++++++--
- drivers/pci/remove.c                       |    4 +
- drivers/pci/search.c                       |    2 +-
- drivers/pci/setup-bus.c                    |    7 +-
- drivers/pci/setup-res.c                    |   15 +
- drivers/pci/slot.c                         |   18 +-
- include/linux/acpi.h                       |   34 ++
- include/linux/msi.h                        |   13 +-
- include/linux/pci-acpi.h                   |   67 +--
- include/linux/pci.h                        |   61 ++-
- include/linux/pci_ids.h                    |    1 +
- include/linux/pci_regs.h                   |   37 ++-
- include/linux/pcieport_if.h                |   36 +-
- 63 files changed, 3644 insertions(+), 1903 deletions(-)
- create mode 100644 Documentation/PCI/pci-iov-howto.txt
- create mode 100644 arch/alpha/kernel/pci-sysfs.c
- create mode 100644 drivers/pci/iov.c
+Emil
+ˇÙË∫{.n«+â∑üÆâ≠Ü+%äÀˇ±È›∂•äwˇ∫{.n«+â∑•ä{±˛G´ùÈˇä{ay∫ á⁄ôÎ,j≠¢f£¢∑höèÔÅÍˇëÍÁz_ËÆ(≠Èöéä›¢j"ù˙∂mßˇˇæ´˛G´ùÈˇ¢∏?ô®Ë≠⁄&£¯ß~è·∂iOïÊ¨z∑övÿ^∂mßˇˇ√ˇ∂Ïˇ¢∏?ñI•
