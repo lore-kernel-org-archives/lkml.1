@@ -1,67 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759388AbZCaOhi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759988AbZCaOpJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759388AbZCaOhi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Mar 2009 10:37:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752088AbZCaOh1
+	id S1759988AbZCaOpJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Mar 2009 10:45:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752268AbZCaOoz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Mar 2009 10:37:27 -0400
-Received: from qw-out-2122.google.com ([74.125.92.25]:7347 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750754AbZCaOh0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Mar 2009 10:37:26 -0400
-Message-ID: <49D22A9D.4050403@codemonkey.ws>
-Date: Tue, 31 Mar 2009 09:37:17 -0500
-From: Anthony Liguori <anthony@codemonkey.ws>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Tue, 31 Mar 2009 10:44:55 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:34707 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752036AbZCaOoz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Mar 2009 10:44:55 -0400
+Date: Tue, 31 Mar 2009 16:40:51 +0200
+From: Oleg Nesterov <oleg@redhat.com>
+To: akpm@linux-foundation.org
+Cc: linux-kernel@vger.kernel.org, adobriyan@gmail.com, dhowells@redhat.com,
+       ebiederm@xmission.com, hch@lst.de, matthltc@us.ibm.com
+Subject: Re: + mm-remove-struct-mm_struct-exe_file-et-al.patch added to -mm
+	tree
+Message-ID: <20090331144051.GA3951@redhat.com>
+References: <200903302344.n2UNi3xd027136@imap1.linux-foundation.org>
 MIME-Version: 1.0
-To: Andrea Arcangeli <aarcange@redhat.com>
-CC: Izik Eidus <ieidus@redhat.com>, linux-kernel@vger.kernel.org,
-       kvm@vger.kernel.org, linux-mm@kvack.org, avi@redhat.com,
-       chrisw@redhat.com, riel@redhat.com, jeremy@goop.org,
-       mtosatti@redhat.com, hugh@veritas.com, corbet@lwn.net, yaniv@redhat.com,
-       dmonakhov@openvz.org
-Subject: Re: [PATCH 4/4] add ksm kernel shared memory driver.
-References: <1238457560-7613-1-git-send-email-ieidus@redhat.com> <1238457560-7613-2-git-send-email-ieidus@redhat.com> <1238457560-7613-3-git-send-email-ieidus@redhat.com> <1238457560-7613-4-git-send-email-ieidus@redhat.com> <1238457560-7613-5-git-send-email-ieidus@redhat.com> <49D17C04.9070307@codemonkey.ws> <49D20B63.8020709@redhat.com> <49D21B33.4070406@codemonkey.ws> <20090331142533.GR9137@random.random>
-In-Reply-To: <20090331142533.GR9137@random.random>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200903302344.n2UNi3xd027136@imap1.linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrea Arcangeli wrote:
+s/mm-commits/lkml/
 
->> the ability to disable KSM.  That seems like a security concern to me since 
->> registering a memory region ought to be an unprivileged action whereas 
->> enabling/disabling KSM ought to be a privileged action.
->>     
+On 03/30, Andrew Morton wrote:
 >
-> sysfs files would then only be writeable by admin, so if we want to
-> allow only admin to start/stop/tune ksm it'd be enough to plug an
-> admin capability check in the ioctl to provide equivalent permissions.
->   
+> From: Alexey Dobriyan <adobriyan@gmail.com>
+>
+> Commit 925d1c401fa6cfd0df5d2e37da8981494ccdec07 ("procfs task exe
+> symlink").  introduced struct mm_struct::exe_file and struct
+> mm_struct::num_exe_file_vmas.
+>
+> The rationale is weak: unifying MMU and no-MMU version of /proc/*/exe
+> code.  For this a) struct mm_struct becomes bigger, b) mmap/munmap/exit
+> become slower, c) patch adds more code than removes in fact.
+>
+> ->exe_file maybe well defined, but doesn't make sense always.  After
+> original executable is unmapped, /proc/*/exe will still report it and,
+> more importantly, pin corresponding struct file.
 
-Caps are not very granular unless you introduce a new capability.  
-Furthermore, it's a bit more difficult to associate a capability with a 
-user/group.
+I never liked the change which introduced mm->exe_file, so I vote for
+this patch.
 
-With sysfs, you use file based permissions to control the API.  It also 
-fits into things like selinux a lot better.
+But, as a advocatus diaboli... There was anotrher reason for ->exe_file,
+iirc.
 
-In the very least, if you insist on not using sysfs, you should have a 
-separate character device that's used for control (like /dev/ksmctl).
+bprm->file->f_op->mmap() can change vma->vm_file, this means proc_exe_link()
+can report the "wrong" path. The original file is not pinned in this case.
 
-Regards,
+Matt?
 
-Anthony Liguori
-
-> I could imagine converting the enable/pages_to_scan/sleep_time to
-> module params and tweaking them through /sys/module/ksm/parameters,
-> but for "enable" to work that way, we'd need to intercept the write so
-> we can at least weakup the kksmd daemon, which doesn't seem possible
-> with /sys/module/ksm/parameters, so in the end if we stick to the
-> ioctl for registering regions, it seems simpler to use it for
-> start/stop/tune too.
->   
+Oleg.
 
