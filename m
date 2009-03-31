@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760597AbZCaNeF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760688AbZCaNek@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760597AbZCaNeF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Mar 2009 09:34:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760271AbZCaNd2
+	id S1760688AbZCaNek (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Mar 2009 09:34:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759330AbZCaNdb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Mar 2009 09:33:28 -0400
+	Tue, 31 Mar 2009 09:33:31 -0400
 Received: from mga01.intel.com ([192.55.52.88]:25809 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760168AbZCaNd1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Mar 2009 09:33:27 -0400
+	id S1760439AbZCaNda (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Mar 2009 09:33:30 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.38,453,1233561600"; 
-   d="scan'208";a="677481194"
-Date: Tue, 31 Mar 2009 14:53:51 +0200
+   d="scan'208";a="677481206"
+Date: Tue, 31 Mar 2009 14:59:47 +0200
 From: Markus Metzger <markus.t.metzger@intel.com>
 To: linux-kernel@vger.kernel.org, mingo@elte.hu, tglx@linutronix.de,
        hpa@zytor.com
 Cc: markus.t.metzger@intel.com, markus.t.metzger@gmail.com, roland@redhat.com,
        eranian@googlemail.com, oleg@redhat.com, juan.villacis@intel.com,
        ak@linux.jf.intel.com
-Subject: [patch 2/21] sched: add task_is_running() fucntion to sched.h
-Message-ID: <20090331145351.A12494@sedona.ch.intel.com>
+Subject: [patch 3/21] x86, bts: wait until traced task has been scheduled out
+Message-ID: <20090331145947.A12565@sedona.ch.intel.com>
 Mime-Version: 1.0
 Content-Disposition: inline
 User-Agent: Mutt/1.2.5i
@@ -30,51 +30,90 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add a function to query whether a task is currently running on any cpu.
+In order to stop branch tracing for a running task, we need to first
+clear the branch tracing control bits before we may free the tracing
+buffer.
+If the traced task is running, the cpu might still trace that task
+after the branch trace control bits have cleared.
+
+Wait until the traced task has been scheduled out before proceeding.
+
+
+A similar problem affects the task debug store context. We first remove
+the context, then we need to wait until the task has been scheduled
+out before we can free the context memory.
 
 
 Signed-off-by: Markus Metzger <markus.t.metzger@intel.com>
 ---
 
-Index: git-tip/include/linux/sched.h
+Index: git-tip/arch/x86/kernel/ds.c
 ===================================================================
---- git-tip.orig/include/linux/sched.h	2009-03-30 13:31:10.000000000 +0200
-+++ git-tip/include/linux/sched.h	2009-03-30 13:36:56.000000000 +0200
-@@ -2280,6 +2280,7 @@ static inline void set_task_cpu(struct t
+--- git-tip.orig/arch/x86/kernel/ds.c	2009-03-30 17:19:14.000000000 +0200
++++ git-tip/arch/x86/kernel/ds.c	2009-03-30 17:20:11.000000000 +0200
+@@ -250,6 +250,42 @@ static DEFINE_PER_CPU(struct ds_context 
+ #define system_context per_cpu(system_context_array, smp_processor_id())
  
- #endif /* CONFIG_SMP */
  
-+extern int task_is_running(struct task_struct *p);
- extern void arch_pick_mmap_layout(struct mm_struct *mm);
- 
- #ifdef CONFIG_TRACING
-Index: git-tip/kernel/sched.c
-===================================================================
---- git-tip.orig/kernel/sched.c	2009-03-30 13:30:56.000000000 +0200
-+++ git-tip/kernel/sched.c	2009-03-30 13:47:39.000000000 +0200
-@@ -1933,6 +1933,22 @@ migrate_task(struct task_struct *p, int 
- }
- 
- /*
-+ * Is the task currently running on any cpu?
++/*
++ * Wait for the traced task to unschedule.
++ *
++ * This guarantees that the bts trace configuration has been
++ * synchronized with the cpu executing the task.
 + */
-+int task_is_running(struct task_struct *p)
++static void wait_to_unschedule(struct task_struct *task)
 +{
-+	struct rq *rq;
-+	unsigned long flags;
-+	int running;
++	unsigned long nvcsw;
++	unsigned long nivcsw;
 +
-+	rq = task_rq_lock(p, &flags);
-+	running = task_running(rq, p);
-+	task_rq_unlock(rq, &flags);
++	if (!task)
++		return;
 +
-+	return running;
++	if (task == current)
++		return;
++
++	nvcsw  = task->nvcsw;
++	nivcsw = task->nivcsw;
++	for (;;) {
++		if (!task_is_running(task))
++			break;
++		/*
++		 * The switch count is incremented before the actual
++		 * context switch. We thus wait for two switches to be
++		 * sure at least one completed.
++		 */
++		if ((task->nvcsw - nvcsw) > 1)
++			break;
++		if ((task->nivcsw - nivcsw) > 1)
++			break;
++
++		schedule();
++	}
 +}
 +
-+/*
-  * wait_task_inactive - wait for a thread to unschedule.
-  *
-  * If @match_state is nonzero, it's the @p->state value just checked and
+ static inline struct ds_context *ds_get_context(struct task_struct *task)
+ {
+ 	struct ds_context **p_context =
+@@ -321,6 +357,9 @@ static inline void ds_put_context(struct
+ 
+ 	spin_unlock_irqrestore(&ds_lock, irq);
+ 
++	/* The context might still be in use for context switching. */
++	wait_to_unschedule(context->task);
++
+ 	kfree(context);
+ }
+ 
+@@ -789,6 +828,9 @@ void ds_release_bts(struct bts_tracer *t
+ 	WARN_ON_ONCE(tracer->ds.context->bts_master != tracer);
+ 	tracer->ds.context->bts_master = NULL;
+ 
++	/* Make sure tracing stopped and the tracer is not in use. */
++	wait_to_unschedule(tracer->ds.context->task);
++
+ 	put_tracer(tracer->ds.context->task);
+ 	ds_put_context(tracer->ds.context);
+ 
 ---------------------------------------------------------------------
 Intel GmbH
 Dornacher Strasse 1
