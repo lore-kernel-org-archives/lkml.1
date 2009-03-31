@@ -1,85 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763863AbZCaW4Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759996AbZCaW4s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763863AbZCaW4Z (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Mar 2009 18:56:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763796AbZCaWwZ
+	id S1759996AbZCaW4s (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Mar 2009 18:56:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763994AbZCaWxO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Mar 2009 18:52:25 -0400
-Received: from gw.goop.org ([64.81.55.164]:53481 "EHLO abulafia.goop.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1761498AbZCaWwU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Mar 2009 18:52:20 -0400
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Cc: the arch/x86 maintainers <x86@kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Subject: [PATCH 6/9] swiotlb: use swiotlb_alloc_boot to allocate emergency pool
-Date: Tue, 31 Mar 2009 15:52:12 -0700
-Message-Id: <1238539935-4295-7-git-send-email-jeremy@goop.org>
-X-Mailer: git-send-email 1.6.0.6
-In-Reply-To: <1238539935-4295-1-git-send-email-jeremy@goop.org>
-References: <1238539935-4295-1-git-send-email-jeremy@goop.org>
+	Tue, 31 Mar 2009 18:53:14 -0400
+Received: from mail.vyatta.com ([76.74.103.46]:35987 "EHLO mail.vyatta.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1763987AbZCaWxM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Mar 2009 18:53:12 -0400
+Date: Tue, 31 Mar 2009 15:53:09 -0700
+From: Stephen Hemminger <shemminger@vyatta.com>
+To: Anton Vorontsov <avorontsov@ru.mvista.com>
+Cc: Jesse Barnes <jbarnes@virtuousgeek.org>, linux-pci@vger.kernel.org,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: [PATCH] PCI: Fix oops in pci_vpd_truncate
+Message-ID: <20090331155309.5d39e6a8@nehalam>
+In-Reply-To: <20090331222341.GA16479@oksana.dev.rtsoft.ru>
+References: <20090331222341.GA16479@oksana.dev.rtsoft.ru>
+Organization: Vyatta
+X-Mailer: Claws Mail 3.6.1 (GTK+ 2.16.0; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: bugfix
+On Wed, 1 Apr 2009 02:23:41 +0400
+Anton Vorontsov <avorontsov@ru.mvista.com> wrote:
 
-Also fix xen_swiotlb_fixup() to deal with sub-slab-sized allocations.
+> pci_vpd_truncate() should check for dev->vpd->attr, otherwise
+> this might happen:
+> 
+> sky2 driver version 1.22
+> Unable to handle kernel paging request for data at address 0x0000000c
+> Faulting instruction address: 0xc01836fc
+> Oops: Kernel access of bad area, sig: 11 [#1]
+> [...]
+> NIP [c01836fc] pci_vpd_truncate+0x38/0x40
+> LR [c029be18] sky2_probe+0x14c/0x518
+> Call Trace:
+> [ef82bde0] [c029bda4] sky2_probe+0xd8/0x518 (unreliable)
+> [ef82be20] [c018a11c] local_pci_probe+0x24/0x34
+> [ef82be30] [c018a14c] pci_call_probe+0x20/0x30
+> [ef82be50] [c018a330] __pci_device_probe+0x64/0x78
+> [ef82be60] [c018a44c] pci_device_probe+0x30/0x58
+> [ef82be80] [c01aa270] really_probe+0x78/0x1a0
+> [ef82bea0] [c01aa460] __driver_attach+0xa4/0xa8
+> [ef82bec0] [c01a96ac] bus_for_each_dev+0x60/0x9c
+> [ef82bef0] [c01aa0b4] driver_attach+0x24/0x34
+> [ef82bf00] [c01a9e08] bus_add_driver+0x12c/0x1cc
+> [ef82bf20] [c01aa87c] driver_register+0x6c/0x110
+> [ef82bf30] [c018a770] __pci_register_driver+0x4c/0x9c
+> [ef82bf50] [c03782c8] sky2_init_module+0x30/0x40
+> [ef82bf60] [c0001dbc] do_one_initcall+0x34/0x1a0
+> [ef82bfd0] [c0362240] do_initcalls+0x38/0x58
+> 
+> This happens with CONFIG_SKY2=y, and "ip=on" kernel command line, so
+> pci_vpd_truncate() is called before late_initcall(pci_sysfs_init),
+> therefore ->attr isn't yet initialized.
+> 
+> Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
 
-Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Acked-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
----
- drivers/pci/xen-iommu.c |   12 +++++++++---
- lib/swiotlb.c           |    3 ++-
- 2 files changed, 11 insertions(+), 4 deletions(-)
+If you are doing this you will never get sky2 vpd pci access,
+but that is not a big loss. I worry that other thing could break if
+devices are getting initialized before sysfs. Drivers that create sysfs
+entries (like the 10G drivers) could also break?
 
-diff --git a/drivers/pci/xen-iommu.c b/drivers/pci/xen-iommu.c
-index 95d0753..2c90642 100644
---- a/drivers/pci/xen-iommu.c
-+++ b/drivers/pci/xen-iommu.c
-@@ -48,16 +48,22 @@ void xen_swiotlb_fixup(void *buf, size_t size, unsigned long nslabs)
- 		buf, size);
- 
- 	dma_bits = get_order(IO_TLB_SEGSIZE << IO_TLB_SHIFT) + PAGE_SHIFT;
--	for (i = 0; i < nslabs; i += IO_TLB_SEGSIZE) {
-+
-+	i = 0;
-+	do {
-+		int slabs = min(nslabs - i, (unsigned long)IO_TLB_SEGSIZE);
-+
- 		do {
- 			rc = xen_create_contiguous_region(
- 				(unsigned long)buf + (i << IO_TLB_SHIFT),
--				get_order(IO_TLB_SEGSIZE << IO_TLB_SHIFT),
-+				get_order(slabs << IO_TLB_SHIFT),
- 				dma_bits);
- 		} while (rc && dma_bits++ < max_dma_bits);
- 		if (rc)
- 			panic(KERN_ERR "xen_create_contiguous_region failed\n");
--	}
-+
-+		i += slabs;
-+	} while(i < nslabs);
- }
- int xen_wants_swiotlb(void)
- {
-diff --git a/lib/swiotlb.c b/lib/swiotlb.c
-index 0de836d..e8df499 100644
---- a/lib/swiotlb.c
-+++ b/lib/swiotlb.c
-@@ -202,7 +202,8 @@ swiotlb_init_with_default_size(size_t default_size)
- 	/*
- 	 * Get the overflow emergency buffer
- 	 */
--	io_tlb_overflow_buffer = alloc_bootmem_low(io_tlb_overflow);
-+	io_tlb_overflow_buffer = swiotlb_alloc_boot(io_tlb_overflow,
-+						    io_tlb_overflow >> IO_TLB_SHIFT);
- 	if (!io_tlb_overflow_buffer)
- 		panic("Cannot allocate SWIOTLB overflow buffer!\n");
- 
--- 
-1.6.0.6
-
+But this is okay as a provisional step, the sysfs startup order
+needs to be fixed.
+Acked-by: Stephen Hemminger <shemminger@vyatta.com>
