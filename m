@@ -1,23 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763971AbZCaWy3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763998AbZCaWyx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763971AbZCaWy3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Mar 2009 18:54:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763801AbZCaWwX
+	id S1763998AbZCaWyx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Mar 2009 18:54:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763809AbZCaWwX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Tue, 31 Mar 2009 18:52:23 -0400
-Received: from gw.goop.org ([64.81.55.164]:53480 "EHLO abulafia.goop.org"
+Received: from gw.goop.org ([64.81.55.164]:53482 "EHLO abulafia.goop.org"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1761164AbZCaWwU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1761897AbZCaWwU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 31 Mar 2009 18:52:20 -0400
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
 Cc: the arch/x86 maintainers <x86@kernel.org>, Ingo Molnar <mingo@elte.hu>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Ian Campbell <ian.campbell@citrix.com>,
        Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Subject: [PATCH 5/9] xen: enable swiotlb for xen domain 0.
-Date: Tue, 31 Mar 2009 15:52:11 -0700
-Message-Id: <1238539935-4295-6-git-send-email-jeremy@goop.org>
+Subject: [PATCH 7/9] xen/swiotlb: improve comment on gfp flags in xen_alloc_coherent()
+Date: Tue, 31 Mar 2009 15:52:13 -0700
+Message-Id: <1238539935-4295-8-git-send-email-jeremy@goop.org>
 X-Mailer: git-send-email 1.6.0.6
 In-Reply-To: <1238539935-4295-1-git-send-email-jeremy@goop.org>
 References: <1238539935-4295-1-git-send-email-jeremy@goop.org>
@@ -25,86 +24,43 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Ian Campbell <ian.campbell@citrix.com>
+From: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 
-Impact: Xen DMA support
+Impact: cleanup
 
-Enable swiotlb when running as a Xen dom0 domain.
+Clarify why we don't care about the kernel's pseudo-phys restrictions,
+so long as the underlying pages are in the right place.
 
-Signed-off-by: Ian Campbell <ian.campbell@citrix.com>
 Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 ---
- arch/x86/kernel/pci-swiotlb_64.c |    3 +++
- arch/x86/xen/Kconfig             |    1 +
- drivers/pci/xen-iommu.c          |    5 +++++
- include/xen/swiotlb.h            |    6 ++++++
- 4 files changed, 15 insertions(+), 0 deletions(-)
+ drivers/pci/xen-iommu.c |   10 ++++++----
+ 1 files changed, 6 insertions(+), 4 deletions(-)
 
-diff --git a/arch/x86/kernel/pci-swiotlb_64.c b/arch/x86/kernel/pci-swiotlb_64.c
-index 7aa8c18..3b9f817 100644
---- a/arch/x86/kernel/pci-swiotlb_64.c
-+++ b/arch/x86/kernel/pci-swiotlb_64.c
-@@ -103,6 +103,9 @@ void __init pci_swiotlb_init(void)
- 	if (!iommu_detected && !no_iommu && max_pfn > MAX_DMA32_PFN)
- 	       swiotlb = 1;
- #endif
-+	if (xen_wants_swiotlb())
-+		swiotlb = 1;
-+
- 	if (swiotlb_force)
- 		swiotlb = 1;
- 	if (swiotlb) {
-diff --git a/arch/x86/xen/Kconfig b/arch/x86/xen/Kconfig
-index 87c13db..2c85967 100644
---- a/arch/x86/xen/Kconfig
-+++ b/arch/x86/xen/Kconfig
-@@ -6,6 +6,7 @@ config XEN
- 	bool "Xen guest support"
- 	select PARAVIRT
- 	select PARAVIRT_CLOCK
-+	select SWIOTLB
- 	depends on X86_64 || (X86_32 && X86_PAE && !X86_VISWS)
- 	depends on X86_CMPXCHG && X86_TSC
- 	help
 diff --git a/drivers/pci/xen-iommu.c b/drivers/pci/xen-iommu.c
-index fcef078..95d0753 100644
+index 2c90642..080aec1 100644
 --- a/drivers/pci/xen-iommu.c
 +++ b/drivers/pci/xen-iommu.c
-@@ -59,6 +59,11 @@ void xen_swiotlb_fixup(void *buf, size_t size, unsigned long nslabs)
- 			panic(KERN_ERR "xen_create_contiguous_region failed\n");
- 	}
- }
-+int xen_wants_swiotlb(void)
-+{
-+	return xen_initial_domain();
-+}
-+
- dma_addr_t xen_phys_to_bus(phys_addr_t paddr)
- {
- 	return phys_to_machine(XPADDR(paddr)).maddr;
-diff --git a/include/xen/swiotlb.h b/include/xen/swiotlb.h
-index e975aa0..9134516 100644
---- a/include/xen/swiotlb.h
-+++ b/include/xen/swiotlb.h
-@@ -6,6 +6,7 @@ extern void xen_swiotlb_fixup(void *buf, size_t size, unsigned long nslabs);
- extern phys_addr_t xen_bus_to_phys(dma_addr_t daddr);
- extern dma_addr_t xen_phys_to_bus(phys_addr_t paddr);
- extern int xen_range_needs_mapping(phys_addr_t phys, size_t size);
-+extern int xen_wants_swiotlb(void);
- #else
- static inline void xen_swiotlb_fixup(void *buf, size_t size, unsigned long nslabs)
- {
-@@ -25,6 +26,11 @@ static inline int xen_range_needs_mapping(phys_addr_t phys, size_t size)
- {
- 	return 0;
- }
-+
-+static inline int xen_wants_swiotlb(void)
-+{
-+	return 0;
-+}
- #endif
+@@ -198,15 +198,17 @@ static void *xen_alloc_coherent(struct device *dev, size_t size,
+ 	unsigned long vstart;
+ 	u64 mask;
  
+-	/* ignore region specifiers */
++	/*
++	 * Ignore region specifiers - the kernel's ideas of
++	 * pseudo-phys memory layout has nothing to do with the
++	 * machine physical layout.  We can't allocate highmem
++	 * because we can't return a pointer to it.
++	 */
+ 	gfp &= ~(__GFP_DMA | __GFP_HIGHMEM);
+ 
+ 	if (dma_alloc_from_coherent(dev, size, dma_handle, &ret))
+ 		return ret;
+ 
+-	if (dev == NULL || (dev->coherent_dma_mask < 0xffffffff))
+-		gfp |= GFP_DMA;
+-
+ 	vstart = __get_free_pages(gfp, order);
+ 	ret = (void *)vstart;
  
 -- 
 1.6.0.6
