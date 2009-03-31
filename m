@@ -1,93 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757266AbZCaMLa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757308AbZCaMRU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757266AbZCaMLa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Mar 2009 08:11:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755196AbZCaMLV
+	id S1757308AbZCaMRU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Mar 2009 08:17:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753420AbZCaMRB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Mar 2009 08:11:21 -0400
-Received: from smtp.nokia.com ([192.100.122.233]:56285 "EHLO
-	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754951AbZCaMLV (ORCPT
+	Tue, 31 Mar 2009 08:17:01 -0400
+Received: from exc01vs1.exchange.cysonet.com ([85.158.200.82]:51190 "EHLO
+	exc01vs1.exchange.cysonet.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753130AbZCaMRA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Mar 2009 08:11:21 -0400
-Message-ID: <49D20816.10506@nokia.com>
-Date: Tue, 31 Mar 2009 15:09:58 +0300
-From: Artem Bityutskiy <Artem.Bityutskiy@nokia.com>
-Reply-To: Artem.Bityutskiy@nokia.com
-Organization: Nokia OYJ
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
-MIME-Version: 1.0
-To: Linus Torvalds <torvalds@linux-foundation.org>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "Hunter Adrian (Nokia-D/Helsinki)" <adrian.hunter@nokia.com>
-Subject: Re: [GIT PULL] UBIFS changes for 2.6.30
-References: <20090331112439.5337.67925.sendpatchset@localhost.localdomain>
-In-Reply-To: <20090331112439.5337.67925.sendpatchset@localhost.localdomain>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-OriginalArrivalTime: 31 Mar 2009 12:09:59.0823 (UTC) FILETIME=[9D2599F0:01C9B1F9]
-X-Nokia-AV: Clean
+	Tue, 31 Mar 2009 08:17:00 -0400
+User-Agent: Microsoft-Entourage/12.15.0.081119
+Date: Tue, 31 Mar 2009 14:16:52 +0200
+Subject: Re: Page Cache writeback too slow,   SSD/noop scheduler/ext2
+From: Jos Houtman <jos@hyves.nl>
+To: Jos Houtman <jos@hyves.nl>, Wu Fengguang <fengguang.wu@intel.com>
+CC: Nick Piggin <nickpiggin@yahoo.com.au>, <linux-kernel@vger.kernel.org>,
+       Jeff Layton <jlayton@redhat.com>, Dave Chinner <david@fromorbit.com>,
+       <linux-fsdevel@vger.kernel.org>, <jens.axboe@oracle.com>,
+       <akpm@linux-foundation.org>, <hch@infradead.org>,
+       <linux-nfs@vger.kernel.org>
+Message-ID: <C5F7D654.DE6F%jos@hyves.nl>
+Thread-Topic: Page Cache writeback too slow,   SSD/noop scheduler/ext2
+Thread-Index: AcmwFsYCqkFwmUxBTpma/AE+p/juyQBOAivbACrxCUE=
+In-Reply-To: <C5F6B627.D9D0%jos@hyves.nl>
+X-Priority: 10
+Mime-version: 1.0
+Content-type: text/plain;
+	charset="US-ASCII"
+Content-transfer-encoding: 7bit
+X-OriginalArrivalTime: 31 Mar 2009 12:16:54.0064 (UTC) FILETIME=[940DC300:01C9B1FA]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bityutskiy Artem (Nokia-D/Helsinki) wrote:
-> Hi Linus,
+> 
+> Next to that I was wondering if there are any plans to make sure that not
+> all dirty-files are written back in the same interval.
+> 
+> In my case all database files are written back each 30 seconds, while I
+> would prefer them to be more divided over the interval.
 
-I'm sorry, one bugfix has been forgotten. Please,
-ignore the previous UBIFS pull request and take this
-one. It is the same but the "UBIFS: fix recovery bug"
-patch has been added.
+There another question I have: does the writeback go through the io
+scheduler? Because no matter the io scheduler or the tuning done, the
+writeback algorithm totally starves the reads.
 
-The following changes since commit d5b562330ec766292a3ac54ae5e0673610bd5b3d:                                                           
-  Hugh Dickins (1):                                                                                                                    
-        mm: fix error case in mlock downgrade reversion                                                                                
+See the url below for an example with CFQ, but deadline or noop all show
+this behaviour:
+http://94.100.113.33/535450001-535500000/535451701-535451800/535451800_6_L7g
+t.jpeg
 
-are available in the git repository at:
+Is there anything I can do about this behaviour by creating a better
+interleaving of the reads and writes?
 
-  git://git.infradead.org/ubifs-2.6.git linux-next
+Jos
 
-Adrian Hunter (3):
-      UBIFS: fix dbg_chk_lpt_sz()
-      UBIFS: fix bug where page is marked uptodate when out of space
-      UBIFS: fix recovery bug
-
-Artem Bityutskiy (9):
-      UBIFS: improve find function interface
-      UBIFS: amend key_hash return value
-      UBIFS: fix bogus assertion
-      UBIFS: fix lprops committing bug
-      UBIFS: use KERN_CONT
-      UBIFS: introduce a helpful variable
-      UBIFS: fix commentaries
-      UBIFS: fully sort GCed nodes
-      UBIFS: add R/O compatibility
-
-Eric Sesterhenn (1):
-      UBIFS: list usage cleanup
-
-Hunter Adrian (1):
-      UBIFS: fix compiler warnings
-
- fs/ubifs/budget.c      |   37 ++---
- fs/ubifs/debug.c       |    6 +-
- fs/ubifs/file.c        |   16 ++-
- fs/ubifs/find.c        |   12 +-
- fs/ubifs/gc.c          |  428 +++++++++++++++++++++++++++++++++---------------
- fs/ubifs/journal.c     |    7 +-
- fs/ubifs/key.h         |    6 +-
- fs/ubifs/log.c         |    5 +-
- fs/ubifs/lpt_commit.c  |   34 ++--
- fs/ubifs/recovery.c    |   70 +++------
- fs/ubifs/replay.c      |    2 +-
- fs/ubifs/sb.c          |   36 ++++-
- fs/ubifs/shrinker.c    |    6 +-
- fs/ubifs/super.c       |   37 +++-
- fs/ubifs/tnc.c         |    2 +-
- fs/ubifs/ubifs-media.h |   30 +++-
- fs/ubifs/ubifs.h       |   13 +-
- 17 files changed, 482 insertions(+), 265 deletions(-)
-
--- 
-Best Regards,
-Artem Bityutskiy (Артём Битюцкий)
