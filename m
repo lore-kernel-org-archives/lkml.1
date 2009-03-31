@@ -1,45 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763123AbZCaP34@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763094AbZCaP3e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763123AbZCaP34 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Mar 2009 11:29:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762690AbZCaPY5
+	id S1763094AbZCaP3e (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Mar 2009 11:29:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762563AbZCaPYZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Mar 2009 11:24:57 -0400
-Received: from fmailhost04.isp.att.net ([204.127.217.104]:44122 "EHLO
-	fmailhost04.isp.att.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762688AbZCaPY4 (ORCPT
+	Tue, 31 Mar 2009 11:24:25 -0400
+Received: from g4t0015.houston.hp.com ([15.201.24.18]:14595 "EHLO
+	g4t0015.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762456AbZCaPYY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Mar 2009 11:24:56 -0400
-X-Originating-IP: [69.76.240.125]
-Message-ID: <49D23598.8050906@lwfinger.net>
-Date: Tue, 31 Mar 2009 10:24:08 -0500
-From: Larry Finger <Larry.Finger@lwfinger.net>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Tue, 31 Mar 2009 11:24:24 -0400
+Subject: [PATCH 15/15] PCI: remove deprecated pci_find_slot() interface
+To: jbarnes@virtuousgeek.org
+From: Alex Chiang <achiang@hp.com>
+Cc: linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org
+Date: Tue, 31 Mar 2009 09:24:22 -0600
+Message-ID: <20090331152422.26622.85161.stgit@bob.kio>
+In-Reply-To: <20090331150158.26622.45423.stgit@bob.kio>
+References: <20090331150158.26622.45423.stgit@bob.kio>
+User-Agent: StGit/0.14.3.347.g594a
 MIME-Version: 1.0
-To: Oliver Neukum <oliver@neukum.org>
-CC: jgarzik@pobox.com, linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: [PATCH 1/2] kaweth: Fix locking to be SMP-safe
-References: <49d00512.XAF19LdpY1dlK6+U%Larry.Finger@lwfinger.net> <200903310939.09690.oliver@neukum.org> <49D22EFC.1020709@lwfinger.net> <200903311713.05451.oliver@neukum.org>
-In-Reply-To: <200903311713.05451.oliver@neukum.org>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Oliver Neukum wrote:
-> 
-> This sounds like kaweth_tx_timeout() should have been called.
-> Did you enable enough logging to see
-> dev_warn(&net->dev, "%s: Tx timed out. Resetting.\n", net->name);
+The last in-tree caller of pci_find_slot has been converted, so
+let's get rid of this deprecated interface.
 
-No, that one did not print.
+Signed-off-by: Alex Chiang <achiang@hp.com>
+---
 
-My initial level of debugging was to #define DEBUG. When the dbg() macros didn't
-trigger, I included a local copy of that one and then saw those messages.
+ drivers/pci/search.c |   30 ------------------------------
+ include/linux/pci.h  |    8 --------
+ 2 files changed, 0 insertions(+), 38 deletions(-)
 
->From my reading of include/linux/device.h, dev_warn() should always be enabled.
-Did I miss something?
-
-Larry
+diff --git a/drivers/pci/search.c b/drivers/pci/search.c
+index 5af8bd5..766d27a 100644
+--- a/drivers/pci/search.c
++++ b/drivers/pci/search.c
+@@ -115,36 +115,6 @@ pci_find_next_bus(const struct pci_bus *from)
+ 
+ #ifdef CONFIG_PCI_LEGACY
+ /**
+- * pci_find_slot - locate PCI device from a given PCI slot
+- * @bus: number of PCI bus on which desired PCI device resides
+- * @devfn: encodes number of PCI slot in which the desired PCI
+- * device resides and the logical device number within that slot
+- * in case of multi-function devices.
+- *
+- * Given a PCI bus and slot/function number, the desired PCI device
+- * is located in system global list of PCI devices.  If the device
+- * is found, a pointer to its data structure is returned.  If no
+- * device is found, %NULL is returned.
+- *
+- * NOTE: Do not use this function any more; use pci_get_slot() instead, as
+- * the PCI device returned by this function can disappear at any moment in
+- * time.
+- */
+-struct pci_dev *pci_find_slot(unsigned int bus, unsigned int devfn)
+-{
+-	struct pci_dev *dev = NULL;
+-
+-	while ((dev = pci_get_device(PCI_ANY_ID, PCI_ANY_ID, dev)) != NULL) {
+-		if (dev->bus->number == bus && dev->devfn == devfn) {
+-			pci_dev_put(dev);
+-			return dev;
+-		}
+-	}
+-	return NULL;
+-}
+-EXPORT_SYMBOL(pci_find_slot);
+-
+-/**
+  * pci_find_device - begin or continue searching for a PCI device by vendor/device id
+  * @vendor: PCI vendor id to match, or %PCI_ANY_ID to match all vendor ids
+  * @device: PCI device id to match, or %PCI_ANY_ID to match all device ids
+diff --git a/include/linux/pci.h b/include/linux/pci.h
+index 7bd624b..cd42a55 100644
+--- a/include/linux/pci.h
++++ b/include/linux/pci.h
+@@ -574,8 +574,6 @@ extern void pci_sort_breadthfirst(void);
+ struct pci_dev __deprecated *pci_find_device(unsigned int vendor,
+ 					     unsigned int device,
+ 					     struct pci_dev *from);
+-struct pci_dev __deprecated *pci_find_slot(unsigned int bus,
+-					   unsigned int devfn);
+ #endif /* CONFIG_PCI_LEGACY */
+ 
+ enum pci_lost_interrupt_reason {
+@@ -895,12 +893,6 @@ static inline struct pci_dev *pci_find_device(unsigned int vendor,
+ 	return NULL;
+ }
+ 
+-static inline struct pci_dev *pci_find_slot(unsigned int bus,
+-					    unsigned int devfn)
+-{
+-	return NULL;
+-}
+-
+ static inline struct pci_dev *pci_get_device(unsigned int vendor,
+ 					     unsigned int device,
+ 					     struct pci_dev *from)
 
