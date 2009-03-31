@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764664AbZCaX0R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764709AbZCaX0k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764664AbZCaX0R (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Mar 2009 19:26:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762343AbZCaXUh
+	id S1764709AbZCaX0k (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Mar 2009 19:26:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762529AbZCaXUi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Mar 2009 19:20:37 -0400
-Received: from sous-sol.org ([216.99.217.87]:33148 "EHLO x200.localdomain"
+	Tue, 31 Mar 2009 19:20:38 -0400
+Received: from sous-sol.org ([216.99.217.87]:33165 "EHLO x200.localdomain"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1760977AbZCaXUa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Mar 2009 19:20:30 -0400
-Message-Id: <20090331231334.644225443@sous-sol.org>
+	id S1762285AbZCaXUe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Mar 2009 19:20:34 -0400
+Message-Id: <20090331231409.035556389@sous-sol.org>
 User-Agent: quilt/0.47-1
-Date: Tue, 31 Mar 2009 16:10:47 -0700
+Date: Tue, 31 Mar 2009 16:10:53 -0700
 From: Chris Wright <chrisw@sous-sol.org>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -24,10 +24,12 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Vitaly Mayatskikh <v.mayatskih@gmail.com>
-Subject: [patch 02/45] udp: Wrong locking code in udp seq_file infrastructure
+       alan@lxorguk.ukuu.org.uk, Alan Stern <stern@rowland.harvard.edu>,
+       David Brownell <david-b@pacbell.net>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [patch 08/45] USB: EHCI: add software retry for transaction errors
 References: <20090331231045.719396245@sous-sol.org>
-Content-Disposition: inline; filename=udp-wrong-locking-code-in-udp-seq_file-infrastructure.patch
+Content-Disposition: inline; filename=usb-ehci-add-software-retry-for-transaction-errors.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -35,92 +37,102 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 ---------------------
 
-From: Vitaly Mayatskikh <v.mayatskih@gmail.com>
+From: Alan Stern <stern@rowland.harvard.edu>
 
-[ Upstream commit 30842f2989aacfaba3ccb39829b3417be9313dbe ]
+upstream commit: a2c2706e1043c17139c2dafd171c4a5cf008ef7e
 
-Reading zero bytes from /proc/net/udp or other similar files which use
-the same seq_file udp infrastructure panics kernel in that way:
+This patch (as1204) adds a software retry mechanism to ehci-hcd.  It
+gets invoked when the driver encounters transaction errors on an
+asynchronous endpoint.  On many systems, hardware deficiencies cause
+such errors to occur if one device is unplugged while the host is
+communicating with another device.  With the patch, the failed
+transactions are retried and generally succeed the second or third
+time through.
 
-=====================================
-[ BUG: bad unlock balance detected! ]
--------------------------------------
-read/1985 is trying to release lock (&table->hash[i].lock) at:
-[<ffffffff81321d83>] udp_seq_stop+0x27/0x29
-but there are no more locks to release!
+This is based on code originally written by Koichiro Saito.
 
-other info that might help us debug this:
-1 lock held by read/1985:
- #0:  (&p->lock){--..}, at: [<ffffffff810eefb6>] seq_read+0x38/0x348
-
-stack backtrace:
-Pid: 1985, comm: read Not tainted 2.6.29-rc8 #9
-Call Trace:
- [<ffffffff81321d83>] ? udp_seq_stop+0x27/0x29
- [<ffffffff8106dab9>] print_unlock_inbalance_bug+0xd6/0xe1
- [<ffffffff8106db62>] lock_release_non_nested+0x9e/0x1c6
- [<ffffffff810ef030>] ? seq_read+0xb2/0x348
- [<ffffffff8106bdba>] ? mark_held_locks+0x68/0x86
- [<ffffffff81321d83>] ? udp_seq_stop+0x27/0x29
- [<ffffffff8106dde7>] lock_release+0x15d/0x189
- [<ffffffff8137163c>] _spin_unlock_bh+0x1e/0x34
- [<ffffffff81321d83>] udp_seq_stop+0x27/0x29
- [<ffffffff810ef239>] seq_read+0x2bb/0x348
- [<ffffffff810eef7e>] ? seq_read+0x0/0x348
- [<ffffffff8111aedd>] proc_reg_read+0x90/0xaf
- [<ffffffff810d878f>] vfs_read+0xa6/0x103
- [<ffffffff8106bfac>] ? trace_hardirqs_on_caller+0x12f/0x153
- [<ffffffff810d88a2>] sys_read+0x45/0x69
- [<ffffffff8101123a>] system_call_fastpath+0x16/0x1b
-BUG: scheduling while atomic: read/1985/0xffffff00
-INFO: lockdep is turned off.
-Modules linked in: cpufreq_ondemand acpi_cpufreq freq_table dm_multipath kvm ppdev snd_hda_codec_analog snd_hda_intel snd_hda_codec snd_hwdep snd_seq_dummy snd_seq_oss snd_seq_midi_event arc4 snd_s
-eq ecb thinkpad_acpi snd_seq_device iwl3945 hwmon sdhci_pci snd_pcm_oss sdhci rfkill mmc_core snd_mixer_oss i2c_i801 mac80211 yenta_socket ricoh_mmc i2c_core iTCO_wdt snd_pcm iTCO_vendor_support rs
-rc_nonstatic snd_timer snd lib80211 cfg80211 soundcore snd_page_alloc video parport_pc output parport e1000e [last unloaded: scsi_wait_scan]
-Pid: 1985, comm: read Not tainted 2.6.29-rc8 #9
-Call Trace:
- [<ffffffff8106b456>] ? __debug_show_held_locks+0x1b/0x24
- [<ffffffff81043660>] __schedule_bug+0x7e/0x83
- [<ffffffff8136ede9>] schedule+0xce/0x838
- [<ffffffff810d7972>] ? fsnotify_access+0x5f/0x67
- [<ffffffff810112d0>] ? sysret_careful+0xb/0x37
- [<ffffffff8106be9c>] ? trace_hardirqs_on_caller+0x1f/0x153
- [<ffffffff8137127b>] ? trace_hardirqs_on_thunk+0x3a/0x3f
- [<ffffffff810112f6>] sysret_careful+0x31/0x37
-read[1985]: segfault at 7fffc479bfe8 ip 0000003e7420a180 sp 00007fffc479bfa0 error 6
-Kernel panic - not syncing: Aiee, killing interrupt handler!
-
-udp_seq_stop() tries to unlock not yet locked spinlock. The lock was lost
-during splitting global udp_hash_lock to subsequent spinlocks.
-
-Signed-off by: Vitaly Mayatskikh <v.mayatskih@gmail.com>
-Acked-by: Eric Dumazet <dada1@cosmosbay.com>
-Signed-off-by: David S. Miller <davem@davemloft.net>
+Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
+Tested by: Koichiro Saito <Saito.Koichiro@adniss.jp>
+CC: David Brownell <david-b@pacbell.net>
+Cc: stable <stable@kernel.org>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 ---
- net/ipv4/udp.c |    6 +++++-
- 1 file changed, 5 insertions(+), 1 deletion(-)
+ drivers/usb/host/ehci-q.c |   32 ++++++++++++++++++++++++++++++++
+ drivers/usb/host/ehci.h   |    3 +++
+ 2 files changed, 35 insertions(+)
 
---- a/net/ipv4/udp.c
-+++ b/net/ipv4/udp.c
-@@ -1614,7 +1614,8 @@ static struct sock *udp_get_next(struct 
- 	} while (sk && (!net_eq(sock_net(sk), net) || sk->sk_family != state->family));
+--- a/drivers/usb/host/ehci-q.c
++++ b/drivers/usb/host/ehci-q.c
+@@ -333,12 +333,40 @@ qh_completions (struct ehci_hcd *ehci, s
+ 		token = hc32_to_cpu(ehci, qtd->hw_token);
  
- 	if (!sk) {
--		spin_unlock_bh(&state->udp_table->hash[state->bucket].lock);
-+		if (state->bucket < UDP_HTABLE_SIZE)
-+			spin_unlock_bh(&state->udp_table->hash[state->bucket].lock);
- 		return udp_get_first(seq, state->bucket + 1);
- 	}
- 	return sk;
-@@ -1632,6 +1633,9 @@ static struct sock *udp_get_idx(struct s
+ 		/* always clean up qtds the hc de-activated */
++ retry_xacterr:
+ 		if ((token & QTD_STS_ACTIVE) == 0) {
  
- static void *udp_seq_start(struct seq_file *seq, loff_t *pos)
- {
-+	struct udp_iter_state *state = seq->private;
-+	state->bucket = UDP_HTABLE_SIZE;
+ 			/* on STALL, error, and short reads this urb must
+ 			 * complete and all its qtds must be recycled.
+ 			 */
+ 			if ((token & QTD_STS_HALT) != 0) {
 +
- 	return *pos ? udp_get_idx(seq, *pos-1) : SEQ_START_TOKEN;
- }
++				/* retry transaction errors until we
++				 * reach the software xacterr limit
++				 */
++				if ((token & QTD_STS_XACT) &&
++						QTD_CERR(token) == 0 &&
++						--qh->xacterrs > 0 &&
++						!urb->unlinked) {
++					ehci_dbg(ehci,
++	"detected XactErr len %d/%d retry %d\n",
++	qtd->length - QTD_LENGTH(token), qtd->length,
++	QH_XACTERR_MAX - qh->xacterrs);
++
++					/* reset the token in the qtd and the
++					 * qh overlay (which still contains
++					 * the qtd) so that we pick up from
++					 * where we left off
++					 */
++					token &= ~QTD_STS_HALT;
++					token |= QTD_STS_ACTIVE |
++							(EHCI_TUNE_CERR << 10);
++					qtd->hw_token = cpu_to_hc32(ehci,
++							token);
++					wmb();
++					qh->hw_token = cpu_to_hc32(ehci, token);
++					goto retry_xacterr;
++				}
+ 				stopped = 1;
  
+ 			/* magic dummy for some short reads; qh won't advance.
+@@ -421,6 +449,9 @@ halt:
+ 		/* remove qtd; it's recycled after possible urb completion */
+ 		list_del (&qtd->qtd_list);
+ 		last = qtd;
++
++		/* reinit the xacterr counter for the next qtd */
++		qh->xacterrs = QH_XACTERR_MAX;
+ 	}
+ 
+ 	/* last urb's completion might still need calling */
+@@ -862,6 +893,7 @@ static void qh_link_async (struct ehci_h
+ 	head->qh_next.qh = qh;
+ 	head->hw_next = dma;
+ 
++	qh->xacterrs = QH_XACTERR_MAX;
+ 	qh->qh_state = QH_STATE_LINKED;
+ 	/* qtd completions reported later by interrupt */
+ }
+--- a/drivers/usb/host/ehci.h
++++ b/drivers/usb/host/ehci.h
+@@ -376,6 +376,9 @@ struct ehci_qh {
+ #define	QH_STATE_UNLINK_WAIT	4		/* LINKED and on reclaim q */
+ #define	QH_STATE_COMPLETING	5		/* don't touch token.HALT */
+ 
++	u8			xacterrs;	/* XactErr retry counter */
++#define	QH_XACTERR_MAX		32		/* XactErr retry limit */
++
+ 	/* periodic schedule info */
+ 	u8			usecs;		/* intr bandwidth */
+ 	u8			gap_uf;		/* uframes split/csplit gap */
 
