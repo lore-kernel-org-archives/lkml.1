@@ -1,98 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758527AbZCaM6j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755819AbZCaNDm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758527AbZCaM6j (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Mar 2009 08:58:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757492AbZCaM6W
+	id S1755819AbZCaNDm (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Mar 2009 09:03:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754143AbZCaNDc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Mar 2009 08:58:22 -0400
-Received: from hera.kernel.org ([140.211.167.34]:40928 "EHLO hera.kernel.org"
+	Tue, 31 Mar 2009 09:03:32 -0400
+Received: from mga02.intel.com ([134.134.136.20]:44254 "EHLO mga02.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757806AbZCaM6U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Mar 2009 08:58:20 -0400
-Date: Tue, 31 Mar 2009 12:57:50 GMT
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       a.p.zijlstra@chello.nl, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       a.p.zijlstra@chello.nl, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <1237376327.5069.253.camel@laptop>
-References: <1237376327.5069.253.camel@laptop>
-Subject: [tip:core/locking] lockdep: add stack dumps to asserts
-Message-ID: <tip-eedeeabdeeadb016b8c783e3620d06b98d0cb4e1@git.kernel.org>
-Git-Commit-ID: eedeeabdeeadb016b8c783e3620d06b98d0cb4e1
-X-Mailer: tip-git-log-daemon
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+	id S1754050AbZCaNDb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Mar 2009 09:03:31 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.38,453,1233561600"; 
+   d="scan'208";a="502274090"
+Date: Tue, 31 Mar 2009 15:03:19 +0200
+From: Markus Metzger <markus.t.metzger@intel.com>
+To: linux-kernel@vger.kernel.org, mingo@elte.hu, tglx@linutronix.de,
+       hpa@zytor.com
+Cc: markus.t.metzger@intel.com, markus.t.metzger@gmail.com, roland@redhat.com,
+       eranian@googlemail.com, oleg@redhat.com, juan.villacis@intel.com,
+       ak@linux.jf.intel.com
+Subject: [patch 4/21] mm: refund memory for a locked buffer
+Message-ID: <20090331150319.A12691@sedona.ch.intel.com>
+Mime-Version: 1.0
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 31 Mar 2009 12:57:52 +0000 (UTC)
+User-Agent: Mutt/1.2.5i
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  eedeeabdeeadb016b8c783e3620d06b98d0cb4e1
-Gitweb:     http://git.kernel.org/tip/eedeeabdeeadb016b8c783e3620d06b98d0cb4e1
-Author:     Peter Zijlstra <a.p.zijlstra@chello.nl>
-AuthorDate: Wed, 18 Mar 2009 12:38:47 +0100
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Tue, 31 Mar 2009 14:53:01 +0200
+Add a function to refund the memory of a locked buffer.
 
-lockdep: add stack dumps to asserts
-
-Have a better idea about exactly which loc causes a lockdep
-limit overflow. Often it's a bug or inefficiency in that
-subsystem.
-
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-LKML-Reference: <1237376327.5069.253.camel@laptop>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+The function will be used by a worker thread to free a buffer
+allocated by a different task and to refund the memory correctly.
 
 
+Signed-off-by: Markus Metzger <markus.t.metzger@intel.com>
 ---
- kernel/lockdep.c |    5 +++++
- 1 files changed, 5 insertions(+), 0 deletions(-)
 
-diff --git a/kernel/lockdep.c b/kernel/lockdep.c
-index 981cd48..a288ae1 100644
---- a/kernel/lockdep.c
-+++ b/kernel/lockdep.c
-@@ -792,6 +792,7 @@ register_lock_class(struct lockdep_map *lock, unsigned int subclass, int force)
+Index: git-tip/include/linux/mm.h
+===================================================================
+--- git-tip.orig/include/linux/mm.h	2009-03-28 13:04:30.000000000 +0100
++++ git-tip/include/linux/mm.h	2009-03-28 13:07:53.000000000 +0100
+@@ -13,6 +13,7 @@
+ #include <linux/prio_tree.h>
+ #include <linux/debug_locks.h>
+ #include <linux/mm_types.h>
++#include <linux/sched.h>
  
- 		printk("BUG: MAX_LOCKDEP_KEYS too low!\n");
- 		printk("turning off the locking correctness validator.\n");
-+		dump_stack();
- 		return NULL;
- 	}
- 	class = lock_classes + nr_lock_classes++;
-@@ -855,6 +856,7 @@ static struct lock_list *alloc_list_entry(void)
+ struct mempolicy;
+ struct anon_vma;
+@@ -1318,6 +1319,6 @@
  
- 		printk("BUG: MAX_LOCKDEP_ENTRIES too low!\n");
- 		printk("turning off the locking correctness validator.\n");
-+		dump_stack();
- 		return NULL;
- 	}
- 	return list_entries + nr_list_entries++;
-@@ -1681,6 +1683,7 @@ cache_hit:
+ extern void *alloc_locked_buffer(size_t size);
+ extern void free_locked_buffer(void *buffer, size_t size);
+-extern void release_locked_buffer(void *buffer, size_t size);
++extern void refund_locked_buffer_memory(struct mm_struct *mm, size_t size);
+ #endif /* __KERNEL__ */
+ #endif /* _LINUX_MM_H */
+Index: git-tip/mm/mlock.c
+===================================================================
+--- git-tip.orig/mm/mlock.c	2009-03-28 13:04:30.000000000 +0100
++++ git-tip/mm/mlock.c	2009-03-28 13:08:53.000000000 +0100
+@@ -660,21 +660,20 @@
+ 	return buffer;
+ }
  
- 		printk("BUG: MAX_LOCKDEP_CHAINS too low!\n");
- 		printk("turning off the locking correctness validator.\n");
-+		dump_stack();
- 		return 0;
- 	}
- 	chain = lock_chains + nr_lock_chains++;
-@@ -2540,6 +2543,7 @@ static int __lock_acquire(struct lockdep_map *lock, unsigned int subclass,
- 		debug_locks_off();
- 		printk("BUG: MAX_LOCKDEP_SUBCLASSES too low!\n");
- 		printk("turning off the locking correctness validator.\n");
-+		dump_stack();
- 		return 0;
- 	}
+-void release_locked_buffer(void *buffer, size_t size)
++void refund_locked_buffer_memory(struct mm_struct *mm, size_t size)
+ {
+ 	unsigned long pgsz = PAGE_ALIGN(size) >> PAGE_SHIFT;
  
-@@ -2636,6 +2640,7 @@ static int __lock_acquire(struct lockdep_map *lock, unsigned int subclass,
- 		debug_locks_off();
- 		printk("BUG: MAX_LOCK_DEPTH too low!\n");
- 		printk("turning off the locking correctness validator.\n");
-+		dump_stack();
- 		return 0;
- 	}
+-	down_write(&current->mm->mmap_sem);
++	down_write(&mm->mmap_sem);
  
+-	current->mm->total_vm  -= pgsz;
+-	current->mm->locked_vm -= pgsz;
++	mm->total_vm  -= pgsz;
++	mm->locked_vm -= pgsz;
+ 
+-	up_write(&current->mm->mmap_sem);
++	up_write(&mm->mmap_sem);
+ }
+ 
+ void free_locked_buffer(void *buffer, size_t size)
+ {
+-	release_locked_buffer(buffer, size);
+-
++	refund_locked_buffer_memory(current->mm, size);
+ 	kfree(buffer);
+ }
+---------------------------------------------------------------------
+Intel GmbH
+Dornacher Strasse 1
+85622 Feldkirchen/Muenchen Germany
+Sitz der Gesellschaft: Feldkirchen bei Muenchen
+Geschaeftsfuehrer: Douglas Lusk, Peter Gleissner, Hannes Schwaderer
+Registergericht: Muenchen HRB 47456 Ust.-IdNr.
+VAT Registration No.: DE129385895
+Citibank Frankfurt (BLZ 502 109 00) 600119052
+
+This e-mail and any attachments may contain confidential material for
+the sole use of the intended recipient(s). Any review or distribution
+by others is strictly prohibited. If you are not the intended
+recipient, please contact the sender and delete all copies.
+
