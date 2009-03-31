@@ -1,48 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765289AbZDAAUa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765499AbZDAAUt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765289AbZDAAUa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Mar 2009 20:20:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759628AbZDAAUM
+	id S1765499AbZDAAUt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Mar 2009 20:20:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765284AbZDAAUU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Mar 2009 20:20:12 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:38345 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758086AbZDAAUK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Mar 2009 20:20:10 -0400
-Date: Tue, 31 Mar 2009 17:16:47 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Trond Myklebust <Trond.Myklebust@netapp.com>
-cc: linux-nfs@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, viro@zeniv.linux.org.uk,
-       hch@infradead.org
-Subject: Re: [PATCH 1/4] VFS: Add a VFS helper function
- vfs_remote_path_lookup()
-In-Reply-To: <1238542722.28445.154.camel@heimdal.trondhjem.org>
-Message-ID: <alpine.LFD.2.00.0903311715110.4130@localhost.localdomain>
-References: <cover.1238525532.git.Trond.Myklebust@netapp.com>  <3f1264127d431f695be25b940b477e3d287edc68.1238525532.git.Trond.Myklebust@netapp.com>  <alpine.LFD.2.00.0903311423280.6474@localhost.localdomain>  <1238539079.28445.103.camel@heimdal.trondhjem.org>
-  <alpine.LFD.2.00.0903311540120.6474@localhost.localdomain> <1238542722.28445.154.camel@heimdal.trondhjem.org>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 31 Mar 2009 20:20:20 -0400
+Received: from sous-sol.org ([216.99.217.87]:55729 "EHLO x200.localdomain"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1764940AbZDAAUT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Mar 2009 20:20:19 -0400
+Message-Id: <20090331231604.521404076@sous-sol.org>
+User-Agent: quilt/0.47-1
+Date: Tue, 31 Mar 2009 16:11:09 -0700
+From: Chris Wright <chrisw@sous-sol.org>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
+Cc: Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
+       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
+       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, Beat Michel Liechti <bml303@gmail.com>,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: [patch 24/45] DVB: firedtv: FireDTV S2 problems with tuning solved
+References: <20090331231045.719396245@sous-sol.org>
+Content-Disposition: inline; filename=dvb-firedtv-firedtv-s2-problems-with-tuning-solved.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+-stable review patch.  If anyone has any objections, please let us know.
+---------------------
 
+From: Beat Michel Liechti <bml303@gmail.com>
 
-On Tue, 31 Mar 2009, Trond Myklebust wrote:
-> 
-> However, if your mount point filehandle has expired, then chances are
-> that you'll probably have to look up all the filehandles in the mount
-> path again too, so why should you cache all that information?
+upstream commit: 32a0f488ce5e8a9a148491f15edc508ab5e8265b
 
-No, that' not the caching I was thinking about.
+Tuning was broken on FireDTV S2 (and presumably  FloppyDTV S2) because a
+wrong opcode was sent.  The box only gave "not implemented" responses.
+Changing the opcode to _TUNE_QPSK2 fixes this for good.
 
-I meant literally just the "namespace" thing. Keeping that around as long 
-as you have a export active. How many of those do you have on your average 
-nfs server? Why not just create those nfsd namespaces once for each 
-export at startup, and destroy them at exit.
+Cc: stable@kernel.org
+Signed-off-by: Beat Michel Liechti <bml303@gmail.com>
+Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Signed-off-by: Chris Wright <chrisw@sous-sol.org>
+---
+ drivers/media/dvb/firewire/firedtv-avc.c |    6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
 
-			Linus
+--- a/drivers/media/dvb/firewire/firedtv-avc.c
++++ b/drivers/media/dvb/firewire/firedtv-avc.c
+@@ -135,6 +135,7 @@ static const char *debug_fcp_opcode(unsi
+ 	case SFE_VENDOR_OPCODE_REGISTER_REMOTE_CONTROL:	return "RegisterRC";
+ 	case SFE_VENDOR_OPCODE_LNB_CONTROL:		return "LNBControl";
+ 	case SFE_VENDOR_OPCODE_TUNE_QPSK:		return "TuneQPSK";
++	case SFE_VENDOR_OPCODE_TUNE_QPSK2:		return "TuneQPSK2";
+ 	case SFE_VENDOR_OPCODE_HOST2CA:			return "Host2CA";
+ 	case SFE_VENDOR_OPCODE_CA2HOST:			return "CA2Host";
+ 	}
+@@ -266,7 +267,10 @@ static void avc_tuner_tuneqpsk(struct fi
+ 	c->operand[0] = SFE_VENDOR_DE_COMPANYID_0;
+ 	c->operand[1] = SFE_VENDOR_DE_COMPANYID_1;
+ 	c->operand[2] = SFE_VENDOR_DE_COMPANYID_2;
+-	c->operand[3] = SFE_VENDOR_OPCODE_TUNE_QPSK;
++	if (fdtv->type == FIREDTV_DVB_S2)
++		c->operand[3] = SFE_VENDOR_OPCODE_TUNE_QPSK2;
++	else
++		c->operand[3] = SFE_VENDOR_OPCODE_TUNE_QPSK;
+ 
+ 	c->operand[4] = (params->frequency >> 24) & 0xff;
+ 	c->operand[5] = (params->frequency >> 16) & 0xff;
+
