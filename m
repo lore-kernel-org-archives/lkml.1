@@ -1,69 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758246AbZCaGiq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758700AbZCaGqF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758246AbZCaGiq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Mar 2009 02:38:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755073AbZCaGih
+	id S1758700AbZCaGqF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Mar 2009 02:46:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755202AbZCaGpw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Mar 2009 02:38:37 -0400
-Received: from viefep14-int.chello.at ([62.179.121.34]:47377 "EHLO
-	viefep14-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751938AbZCaGih (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Mar 2009 02:38:37 -0400
-X-SourceIP: 213.93.53.227
-Subject: Re: [PATCH 13/15] perf_counter: provide generic callchain bits
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Paul Mackerras <paulus@samba.org>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
-In-Reply-To: <18897.46177.528910.51044@cargo.ozlabs.ibm.com>
-References: <20090330170701.856843742@chello.nl>
-	 <20090330171024.254266860@chello.nl>
-	 <18897.46177.528910.51044@cargo.ozlabs.ibm.com>
-Content-Type: text/plain
-Date: Tue, 31 Mar 2009 08:39:12 +0200
-Message-Id: <1238481552.28248.1384.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.0 
-Content-Transfer-Encoding: 7bit
+	Tue, 31 Mar 2009 02:45:52 -0400
+Received: from www.tglx.de ([62.245.132.106]:49581 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752457AbZCaGpv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Mar 2009 02:45:51 -0400
+Date: Tue, 31 Mar 2009 08:44:45 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Darren Hart <dvhltc@us.ibm.com>
+cc: linux-kernel@vger.kernel.org, Sripathi Kodi <sripathik@in.ibm.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       John Stultz <johnstul@us.ibm.com>, Steven Rostedt <rostedt@goodmis.org>,
+       Dinakar Guniguntala <dino@in.ibm.com>,
+       Ulrich Drepper <drepper@redhat.com>, Eric Dumazet <dada1@cosmosbay.com>,
+       Ingo Molnar <mingo@elte.hu>, Jakub Jelinek <jakub@redhat.com>,
+       Sripathi Kodi <sripathik@in.ibm.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       John Stultz <johnstul@us.ibm.com>, Steven Rostedt <rostedt@goodmis.org>,
+       Dinakar Guniguntala <dino@in.ibm.com>,
+       Ulrich Drepper <drepper@redhat.com>, Eric Dumazet <dada1@cosmosbay.com>,
+       Ingo Molnar <mingo@elte.hu>, Jakub Jelinek <jakub@redhat.com>
+Subject: Re: [tip PATCH v6 1/8] RFC: futex: futex_wait_queue_me()
+In-Reply-To: <20090330213739.606.85804.stgit@Aeon>
+Message-ID: <alpine.LFD.2.00.0903310836500.12916@localhost.localdomain>
+References: <20090330213306.606.9540.stgit@Aeon> <20090330213739.606.85804.stgit@Aeon>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-03-31 at 17:12 +1100, Paul Mackerras wrote:
-> Peter Zijlstra writes:
-> 
-> >  				include_tid    :  1, /* include the tid       */
-> >  				mmap           :  1, /* include mmap data     */
-> >  				munmap         :  1, /* include munmap data   */
-> > +				callchain      :  1, /* add callchain data    */
-> 
-> Interesting, I would have put callchain (and include_tid, also) in
-> hw_event.record_type rather than as individual 1-bit fields.  The
-> present arrangement where some selection of what goes into the ring
-> buffer is in record_type and some is in individual bits seems a bit
-> awkward.  Plus, with the current arrangement I can't get both the IP
-> and the values of the other group members, which I might reasonable
-> want.
-> 
-> I think either we make record_type bit-significant, or we define
-> individual bits in hw_event for recording the IP and other group
-> members.
-> 
-> There are a couple of other things I want to be able to record on an
-> event - we have registers on powerpc that give information about the
-> event that caused the interrupt, and it would be nice to be able to
-> record them.  (These registers include instruction and data addresses
-> associated with the event; the instruction address can be further on
-> from where the interrupt was taken because of out-of-order instruction
-> execution and because interrupts might be hard-disabled at the point
-> where the interrupt becomes pending.)
-> 
-> Those registers would need bits in record_type or in the hw_event to
-> indicate that we want them recorded.
+On Mon, 30 Mar 2009, Darren Hart wrote:
+> +
+> +	/* add_wait_queue is the barrier after __set_current_state. */
+> +	__set_current_state(TASK_INTERRUPTIBLE);
+> +	add_wait_queue(&q->waiter, &wait);
+> +	/*
+> +	 * NOTE: we don't remove ourselves from the waitqueue because
+> +	 * we are the only user of it.
+> +	 */
 
-Sure, I'm fine with moving them to record_type and making that a bit
-field. I've also considered merging the group and 'simple' output to
-enable what you say.
+  This comment, while correct is at an odd place.
 
+> +	/* Arm the timer */
+> +	if (timeout) {
+> +		hrtimer_start_expires(&timeout->timer, HRTIMER_MODE_ABS);
+> +		if (!hrtimer_active(&timeout->timer))
+> +			timeout->task = NULL;
+> +	}
+> +
+> +	/*
+> +	 * !plist_node_empty() is safe here without any lock.
+> +	 * q.lock_ptr != 0 is not safe, because of ordering against wakeup.
+> +	 */
+> +	if (likely(!plist_node_empty(&q->list))) {
+> +		/*
+> +		 * If the timer has already expired, current will already be
+> +		 * flagged for rescheduling. Only call schedule if there
+> +		 * is no timeout, or if it has yet to expire.
+> +		 */
+> +		if (!timeout || likely(timeout->task))
 
+  Remove the likely(). It does not make sense
 
+> +			schedule();
+> +	}
+> +	__set_current_state(TASK_RUNNING);
+> +}
+> +
+>  static int futex_wait(u32 __user *uaddr, int fshared,
+>  		      u32 val, ktime_t *abs_time, u32 bitset, int clockrt)
+>  {
+> -	struct task_struct *curr = current;
+> +	struct hrtimer_sleeper timeout, *to = NULL;
+>  	struct restart_block *restart;
+> -	DECLARE_WAITQUEUE(wait, curr);
+>  	struct futex_hash_bucket *hb;
+>  	struct futex_q q;
+>  	u32 uval;
+>  	int ret;
+> -	struct hrtimer_sleeper t;
+> -	int rem = 0;
+>  
+>  	if (!bitset)
+>  		return -EINVAL;
+>  
+>  	q.pi_state = NULL;
+>  	q.bitset = bitset;
+> +
+> +	if (abs_time) {
+> +		unsigned long slack;
+
+  missing new line
+
+> +		to = &timeout;
+> +		slack = current->timer_slack_ns;
+> +		if (rt_task(current))
+> +			slack = 0;
+
+  Hmm. I thought we would use current->timer_slack_ns ?
+
+Thanks,
+
+	tglx
