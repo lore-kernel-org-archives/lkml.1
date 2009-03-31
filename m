@@ -1,92 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752866AbZCaJVU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752400AbZCaJ1k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752866AbZCaJVU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Mar 2009 05:21:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750890AbZCaJVB
+	id S1752400AbZCaJ1k (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Mar 2009 05:27:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751246AbZCaJ1a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Mar 2009 05:21:01 -0400
-Received: from smtp.nokia.com ([192.100.105.134]:39605 "EHLO
-	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750866AbZCaJVA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Mar 2009 05:21:00 -0400
-Subject: Re: [RFC PATCH 0/3] GPIO switch framework
-From: Jani Nikula <ext-jani.1.nikula@nokia.com>
-To: ext Ben Nizette <bn@niasdigital.com>
-Cc: "david-b@pacbell.net" <david-b@pacbell.net>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "juha.yrjola@solidboot.com" <juha.yrjola@solidboot.com>
-In-Reply-To: <1237703121.2720.39.camel@linux-51e8.site>
-References: <1237557050-13742-1-git-send-email-ext-jani.1.nikula@nokia.com>
-	 <1237703121.2720.39.camel@linux-51e8.site>
-Content-Type: text/plain
-Date: Tue, 31 Mar 2009 12:18:58 +0300
-Message-Id: <1238491138.5936.86.camel@jani-desktop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+	Tue, 31 Mar 2009 05:27:30 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:33285 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751099AbZCaJ13 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Mar 2009 05:27:29 -0400
+From: Neil Brown <neilb@suse.de>
+To: Rik van Riel <riel@redhat.com>
+Date: Tue, 31 Mar 2009 20:27:20 +1100
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 31 Mar 2009 09:19:58.0699 (UTC) FILETIME=[DCCD9BB0:01C9B1E1]
-X-Nokia-AV: Clean
+Message-ID: <18897.57848.315067.51672@notabene.brown>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Ric Wheeler <rwheeler@redhat.com>,
+       "Andreas T.Auer" <andreas.t.auer_lkml_73537@ursus.ath.cx>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Theodore Tso <tytso@mit.edu>,
+       Mark Lord <lkml@rtr.ca>, Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Jeff Garzik <jeff@garzik.org>, Matthew Garrett <mjg59@srcf.ucam.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       David Rees <drees76@gmail.com>, Jesper Krogh <jesper@krogh.cc>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.29
+In-Reply-To: message from Rik van Riel on Monday March 30
+References: <alpine.LFD.2.00.0903271511230.3994@localhost.localdomain>
+	<alpine.LFD.2.00.0903271522210.3994@localhost.localdomain>
+	<49CD7B10.7010601@garzik.org>
+	<49CD891A.7030103@rtr.ca>
+	<49CD9047.4060500@garzik.org>
+	<49CE2633.2000903@s5r6.in-berlin.de>
+	<49CE3186.8090903@garzik.org>
+	<49CE35AE.1080702@s5r6.in-berlin.de>
+	<49CE3F74.6090103@rtr.ca>
+	<20090329231451.GR26138@disturbed>
+	<20090330003948.GA13356@mit.edu>
+	<49D0710A.1030805@ursus.ath.cx>
+	<20090330100546.51907bd2@the-village.bc.nu>
+	<49D0A3D6.4000300@ursus.ath.cx>
+	<49D0AA4A.6020308@redhat.com>
+	<alpine.LFD.2.00.0903300817400.3948@localhost.localdomain>
+	<49D0EF1E.9040806@redhat.com>
+	<alpine.LFD.2.00.0903300922231.3948@localhost.localdomain>
+	<49D0FD4C.1010007@redhat.com>
+	<alpine.LFD.2.00.0903301038100.3948@localhost.localdomain>
+	<49D11BDD.70702@redhat.com>
+X-Mailer: VM 7.19 under Emacs 21.4.1
+X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
+	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
+	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Ben, and thanks for your feedback.
-
-On Sun, 2009-03-22 at 07:25 +0100, ext Ben Nizette wrote:
-> On Fri, 2009-03-20 at 15:50 +0200, Jani Nikula wrote:
-> > Hi -
-> > 
-> > This RFC patchset is a pretty straightforward adaptation of OMAP GPIO
-> > switch framework for mainline integration.
-> > 
-> > The GPIO switch framework allows reporting and changing GPIO switches
-> > via sysfs, with debouncing and sysfs/in-kernel notifications for input
-> > switches.
+On Monday March 30, riel@redhat.com wrote:
+> Linus Torvalds wrote:
+> > On Mon, 30 Mar 2009, Ric Wheeler wrote:
 > 
-> OK, so what does this do that /sys/class/gpio/gpioN doesn't currently do
-> apart from debouncing?  And the output being a string rather than a
-> simple value (which IMO might be better suited to userspace
-> interpretation anyway).
+> >> Heat is a major killer of spinning drives (as is severe cold). A lot of times,
+> >> drives that have read errors only (not failed writes) might be fully
+> >> recoverable if you can re-write that injured sector.
+> > 
+> > It's not worked for me, and yes, I've tried.
+> 
+> It's worked here.  It would be nice to have a device mapper module
+> that can just insert itself between the disk and the higher device
+> mapper layer and "scrub" the disk, fetching unreadable sectors from
+> the other RAID copy where required.
 
-In addition to debouncing, there's sysfs and in-kernel notifications.
+You want to start using 'md' :-)
+With raid0,1,4,5,6,10, if it gets a read error, it find the data from
+elsewhere and tries to over-write the read error and then read back.
+If that all works, then it assume the drive is still good.
+This happens during normal IO and all when you 'scrub' the array which
+e.g. Debian does on the first Sunday of the month by default.
 
-To hide potential changes in hardware from userspace, there's naming of
-the sysfs entries (e.g. /sys/class/gpio/switch-foo) and a flag for
-inverting the value.
-
-> I've got a patch, little abandoned at the bottom of my queue, which adds
-> poll(2) compatibility to the gpiolib sysfs entries [1] and extending
-> this patch to do debouncing as well would be almost trivial.
-
-Your patch certainly looks promising, and indeed overlaps with my work.
-Debouncing could be easily added, and perhaps symbolic links to provide
-names for the switches.
-
-However, if I didn't miss anything, your patch allows setting up the
-notification through sysfs only, and there's no way of doing it from
-kernel side. Also, I'd need debounced callback notifications.
-
-> I guess what I'm getting at is that this seems like it solves a problem
-> which has been pretty much solved elsewhere since the OMAP boys wrote
-> this.
-
-It's been only partially solved by your patch, and as you say yourself,
-it's still at the bottom of your queue. There's also the gpio-keys
-(pointed out by Philipp Zabel elsewhere in this thread), but that's
-input only and lacks in-kernel notifications. AFAIK the input layer is
-also pretty fixed in what can be reported. So I am not convinced this
-has been solved elsewhere.
-
-Do you have any plans to resume work on your patch?
-
-
-BR,
-Jani.
-
-
-> 	--Ben.
->  
-> [1] http://marc.info/?l=linux-kernel&m=122454305213792&w=2
-
-
+NeilBrown
