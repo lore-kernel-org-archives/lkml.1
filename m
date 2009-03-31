@@ -1,98 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758534AbZCaVmH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761804AbZCaVma@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758534AbZCaVmH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Mar 2009 17:42:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755800AbZCaVlw
+	id S1761804AbZCaVma (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Mar 2009 17:42:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760530AbZCaVmL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Mar 2009 17:41:52 -0400
-Received: from 136-022.dsl.LABridge.com ([206.117.136.22]:1906 "EHLO
-	mail.perches.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751764AbZCaVlv (ORCPT
+	Tue, 31 Mar 2009 17:42:11 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:41639 "EHLO
+	the-village.bc.nu" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1759106AbZCaVmJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Mar 2009 17:41:51 -0400
-Subject: Re: [PATCH] Add hvc_console to MAINTAINERS
-From: Joe Perches <joe@perches.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: jwboyer@linux.vnet.ibm.com, linuxppc-dev@ozlabs.org, roel.kluin@gmail.com,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20090331142252.3bf74fe1.akpm@linux-foundation.org>
-References: <49BF956B.9030109@gmail.com>
-	 <20090330133531.f5d99c09.akpm@linux-foundation.org>
-	 <20090330205553.GA19278@yoda.jdub.homelinux.org>
-	 <20090330141852.59baaeda.akpm@linux-foundation.org>
-	 <20090331132944.GB2332@yoda.jdub.homelinux.org>
-	 <1238533823.9715.292.camel@localhost>
-	 <20090331142252.3bf74fe1.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Tue, 31 Mar 2009 14:40:58 -0700
-Message-Id: <1238535658.9715.321.camel@localhost>
+	Tue, 31 Mar 2009 17:42:09 -0400
+Date: Tue, 31 Mar 2009 22:10:53 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Ric Wheeler <rwheeler@redhat.com>,
+       "Andreas T.Auer" <andreas.t.auer_lkml_73537@ursus.ath.cx>,
+       Theodore Tso <tytso@mit.edu>, Mark Lord <lkml@rtr.ca>,
+       Stefan Richter <stefanr@s5r6.in-berlin.de>,
+       Jeff Garzik <jeff@garzik.org>, Matthew Garrett <mjg59@srcf.ucam.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       David Rees <drees76@gmail.com>, Jesper Krogh <jesper@krogh.cc>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.29
+Message-ID: <20090331221053.74354735@the-village.bc.nu>
+In-Reply-To: <alpine.LFD.2.00.0903300922231.3948@localhost.localdomain>
+References: <alpine.LFD.2.00.0903271511230.3994@localhost.localdomain>
+	<alpine.LFD.2.00.0903271522210.3994@localhost.localdomain>
+	<49CD7B10.7010601@garzik.org>
+	<49CD891A.7030103@rtr.ca>
+	<49CD9047.4060500@garzik.org>
+	<49CE2633.2000903@s5r6.in-berlin.de>
+	<49CE3186.8090903@garzik.org>
+	<49CE35AE.1080702@s5r6.in-berlin.de>
+	<49CE3F74.6090103@rtr.ca>
+	<20090329231451.GR26138@disturbed>
+	<20090330003948.GA13356@mit.edu>
+	<49D0710A.1030805@ursus.ath.cx>
+	<20090330100546.51907bd2@the-village.bc.nu>
+	<49D0A3D6.4000300@ursus.ath.cx>
+	<49D0AA4A.6020308@redhat.com>
+	<alpine.LFD.2.00.0903300817400.3948@localhost.localdomain>
+	<49D0EF1E.9040806@redhat.com>
+	<alpine.LFD.2.00.0903300922231.3948@localhost.localdomain>
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.12.12; i386-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.2-1.2mdv2009.0 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-03-31 at 14:22 -0700, Andrew Morton wrote:
-> On Tue, 31 Mar 2009 14:10:23 -0700
-> Joe Perches <joe@perches.com> wrote:
-> > On Tue, 2009-03-31 at 09:29 -0400, Josh Boyer wrote:
-> > > Add a MAINTAINERS entry for the hypervisor virtual console support
-> > > used on IBM POWER servers.
-> > > diff --git a/MAINTAINERS b/MAINTAINERS
-> > > index c5f4e9d..387ad45 100644
-> > > --- a/MAINTAINERS
-> > > +++ b/MAINTAINERS
-> > > @@ -2176,6 +2176,11 @@ W:       http://www.ia64-linux.org/
-> > >  T:     git kernel.org:/pub/scm/linux/kernel/git/aegl/linux-2.6.git
-> > >  S:     Maintained
-> > >  
-> > > +IBM HYPERVISOR VIRTUAL CONSOLE
-> > > +P:     Several
-> > > +L:     linuxppc-dev@ozlabs.org
-> > > +S:     Maintained
-> > > +
-> > >  IBM MCA SCSI SUBSYSTEM DRIVER
-> > >  P:     Michael Lang
-> > >  M:     langa2@kph.uni-mainz.de
-> > 
-> > I think this sort of entry should not be acceptable.
-> > Maintainers should have individual names and contact addresses.
-> 
-> There isn't a maintainer.
-> 
-> But people send patches to the wrong list, so the ppc guys (who use
-> this driver) don't get to see them.
-> 
-> That's a practical, real-world problem.  We should have a fix for it.
-> 
-> > An exploder entry should be OK though.
-> > For instance, the DVB subsystem:
-> > 
-> > 	DVB SUBSYSTEM AND DRIVERS
-> > 	P:	LinuxTV.org Project
-> > 	M:	linux-media@vger.kernel.org
-> > 
-> > A list entry could be something like:
-> > 
-> > 	P:	Linux PCMCIA Team
-> > 	L:	linux-pcmcia@lists.infradead.org
-> > 
-> 
-> I'm unclear on what the difference is here..
+> percentage. For many setups, the other corruption issues (drive failure) 
+> are not just more common, but generally more disastrous anyway. So why 
+> would a person like that worry about the (rare) power failure?
 
-I have no problem with the "L: list" entry.
-I think that's good.  Along with some file
-matching pattern as well of course...
+How about the far more regular crash case ? We may be pretty reliable but
+we are hardly indestructible especially on random boxes with funky BIOSes
+or low grade hardware builds.
 
-I think the "P: Several" entry is not good.
-
-"Several" doesn't give any idea as to who
-actually does the work.
-
-If the "P:" entry is there at all, it should
-be the list name.
-
-Maybe "P: Linux PPC Development Team" or
-something similar.
-
+For the generic sane low end server/high end desktop build with at least
+two drive software RAID the hardware failure for data loss case is
+pretty rare. Crashes yes, having to reboot to recover from a RAID failure
+sure but data loss far less so
