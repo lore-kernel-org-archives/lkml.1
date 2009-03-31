@@ -1,91 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761632AbZCaUso@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761918AbZCaUve@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761632AbZCaUso (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Mar 2009 16:48:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754527AbZCaUsf
+	id S1761918AbZCaUve (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Mar 2009 16:51:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753927AbZCaUvZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Mar 2009 16:48:35 -0400
-Received: from rcsinet11.oracle.com ([148.87.113.123]:55794 "EHLO
-	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752021AbZCaUse (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Mar 2009 16:48:34 -0400
-Subject: [GIT PULL] Btrfs updates for 2.6.30-rc
-From: Chris Mason <chris.mason@oracle.com>
-To: linux-kernel <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Content-Type: text/plain
-Date: Tue, 31 Mar 2009 16:47:12 -0400
-Message-Id: <1238532432.12564.27.camel@think.oraclecorp.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
+	Tue, 31 Mar 2009 16:51:25 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:60186 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752841AbZCaUvY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Mar 2009 16:51:24 -0400
+Message-ID: <49D281D8.8030203@garzik.org>
+Date: Tue, 31 Mar 2009 16:49:28 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+MIME-Version: 1.0
+To: Jens Axboe <jens.axboe@oracle.com>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       Theodore Tso <tytso@mit.edu>, Ingo Molnar <mingo@elte.hu>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Nick Piggin <npiggin@suse.de>,
+       David Rees <drees76@gmail.com>, Jesper Krogh <jesper@krogh.cc>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Linux 2.6.29
+References: <20090324093245.GA22483@elte.hu> <20090324101011.6555a0b9@lxorguk.ukuu.org.uk> <20090324103111.GA26691@elte.hu> <20090324132032.GK5814@mit.edu> <alpine.LFD.2.00.0903241053200.3032@localhost.localdomain> <20090324184549.GE32307@mit.edu> <alpine.LFD.2.00.0903241218130.3032@localhost.localdomain> <49C93AB0.6070300@garzik.org> <20090325093913.GJ27476@kernel.dk> <49CA86BD.6060205@garzik.org> <20090325194341.GB27476@kernel.dk>
+In-Reply-To: <20090325194341.GB27476@kernel.dk>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Source-IP: acsmt706.oracle.com [141.146.40.84]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A010209.49D28156.0139:SCFMA4539814,ss=1,fgs=0
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello everyone,
+Jens Axboe wrote:
+> Another problem is that FLUSH_CACHE sucks. Really. And not just on
+> ext3/ordered, generally. Write a 50 byte file, fsync, flush cache and
+> wit for the world to finish. Pretty hard to teach people to use a nicer
+> fdatasync(), when the majority of the cost now becomes flushing the
+> cache of that 1TB drive you happen to have 8 partitions on. Good luck
+> with that.
 
-Here is the first round of btrfs fixes for the next merge window.  The
-majority of this code is to reduce btrfs stack usage by doing extent
-tree updates at a different time.  It generally makes btrfs usable on 4k
-stacks, although more stack reduction work will be done later on.
+(responding to an email way back near the start of the thread)
 
-The second commit from the bottom adds extra ordering for renames and
-truncates to bring back the ext3 flavor everyone has been missing.  I
-tried pretty hard to keep performance impact low, most workloads will
-never notice it (including those that fsync).
+I emailed Microsoft about their proposal to add a WRITE BARRIER command 
+to ATA, documented at
+http://www.t13.org/Documents/UploadedDocuments/docs2007/e07174r0-Write_Barrier_Command_Proposal.doc
 
-Linus, please pull the master branch from:
+The MSFT engineer said they were definitely still pursuing this proposal.
 
-git://git.kernel.org/pub/scm/linux/kernel/git/mason/btrfs-unstable.git
+IMO we could look at this too, or perhaps come up with an alternate 
+proposal like FLUSH CACHE RANGE(s).
 
-Chris Mason (18):
-      Btrfs: don't preallocate metadata blocks during btrfs_search_slot
-      Btrfs: do extent allocation and reference count updates in the background
-      Btrfs: reduce stack usage in some crucial tree balancing functions
-      Btrfs: try to cleanup delayed refs while freeing extents
-      Btrfs: process the delayed reference queue in clusters
-      Btrfs: reduce stalls during transaction commit
-      Btrfs: reduce stack in cow_file_range
-      Btrfs: Check for a blocking lock before taking the spin
-      Btrfs: Only let very young transactions grow during commit
-      Btrfs: leave btree locks spinning more often
-      Btrfs: readahead checksums during btrfs_finish_ordered_io
-      Btrfs: limit balancing work while flushing delayed refs
-      Btrfs: Make sure i_nlink doesn't hit zero too soon during log replay
-      Btrfs: tree logging unlink/rename fixes
-      Btrfs: optimize fsyncs on old files
-      Btrfs: make sure btrfs_update_delayed_ref doesn't increase ref_mod
-      Btrfs: add extra flushing for renames and truncates
-      Btrfs: try to free metadata pages when we free btree blocks
+	Jeff
 
- fs/btrfs/Makefile       |    2
- fs/btrfs/btrfs_inode.h  |   31
- fs/btrfs/ctree.c        |  588 +++++++++-------
- fs/btrfs/ctree.h        |   69 +
- fs/btrfs/delayed-ref.c  |  669 +++++++++++++++++++
- fs/btrfs/delayed-ref.h  |  193 +++++
- fs/btrfs/dir-item.c     |    3
- fs/btrfs/disk-io.c      |   81 +-
- fs/btrfs/disk-io.h      |    1
- fs/btrfs/extent-tree.c  | 1674 +++++++++++++++---------------------------------
- fs/btrfs/extent_io.c    |   51 -
- fs/btrfs/extent_io.h    |    3
- fs/btrfs/file-item.c    |    7
- fs/btrfs/file.c         |   50 +
- fs/btrfs/inode-item.c   |    3
- fs/btrfs/inode.c        |  194 ++++-
- fs/btrfs/locking.c      |   21
- fs/btrfs/ordered-data.c |  118 +++
- fs/btrfs/ordered-data.h |    4
- fs/btrfs/transaction.c  |  151 +++-
- fs/btrfs/transaction.h  |    8
- fs/btrfs/tree-defrag.c  |    2
- fs/btrfs/tree-log.c     |  444 ++++++++++--
- fs/btrfs/tree-log.h     |   17
- 24 files changed, 2762 insertions(+), 1622 deletions(-)
+
 
