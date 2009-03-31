@@ -1,300 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762215AbZCaTP1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762983AbZCaTPp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762215AbZCaTP1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Mar 2009 15:15:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755943AbZCaTPM
+	id S1762983AbZCaTPp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Mar 2009 15:15:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762360AbZCaTPX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Mar 2009 15:15:12 -0400
-Received: from mga01.intel.com ([192.55.52.88]:13817 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750919AbZCaTPJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Mar 2009 15:15:09 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.39,303,1235980800"; 
-   d="scan'208";a="677581027"
-From: "Tantilov, Emil S" <emil.s.tantilov@intel.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       "Kirsher, Jeffrey T" <jeffrey.t.kirsher@intel.com>
-CC: Yinghai Lu <yinghai@kernel.org>,
-       Jesse Brandeburg <jesse.brandeburg@gmail.com>,
-       David Miller <davem@davemloft.net>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       NetDev <netdev@vger.kernel.org>
-Date: Tue, 31 Mar 2009 13:14:06 -0600
-Subject: RE: [Updated patch] Re: [PATCH] igb: fix kexec with igb
-Thread-Topic: [Updated patch] Re: [PATCH] igb: fix kexec with igb
-Thread-Index: AcmxgQ7BoPtqrfqjTnGZt9+LzzIhlwAsz7Dg
-Message-ID: <EA929A9653AAE14F841771FB1DE5A1365F71995716@rrsmsx501.amr.corp.intel.com>
-References: <49B1F934.5050006@kernel.org> <200903291319.15269.rjw@sisk.pl>
- <9929d2390903301436q1cd96e05x47d60cff72e41b4d@mail.gmail.com>
- <200903302339.33781.rjw@sisk.pl>
-In-Reply-To: <200903302339.33781.rjw@sisk.pl>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="utf-8"
-MIME-Version: 1.0
+	Tue, 31 Mar 2009 15:15:23 -0400
+Received: from casper.infradead.org ([85.118.1.10]:54740 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762050AbZCaTPV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Mar 2009 15:15:21 -0400
+Subject: Re: [PATCH] perf_counter: allow and require one-page mmap on
+ counting counters
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Paul Mackerras <paulus@samba.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <18889.64659.917207.685779@cargo.ozlabs.ibm.com>
+References: <18889.59409.260586.87939@cargo.ozlabs.ibm.com>
+	 <20090325082844.GA11217@elte.hu>
+	 <18889.61903.636761.471281@cargo.ozlabs.ibm.com>
+	 <20090325090336.GC2341@elte.hu>
+	 <18889.64659.917207.685779@cargo.ozlabs.ibm.com>
+Content-Type: text/plain
+Date: Tue, 31 Mar 2009 21:15:07 +0200
+Message-Id: <1238526907.3898.93.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by alpha.home.local id n2VJFXqu022478
 
-Rafael J. Wysocki wrote:
-> On Monday 30 March 2009, Jeff Kirsher wrote:
->> On Sun, Mar 29, 2009 at 4:19 AM, Rafael J. Wysocki <rjw@sisk.pl>
->> wrote: 
->>> On Sunday 29 March 2009, Jeff Kirsher wrote:
->>>> On Sat, Mar 28, 2009 at 2:27 PM, Rafael J. Wysocki <rjw@sisk.pl>
->>>> wrote: 
->>>>> On Tuesday 24 March 2009, Yinghai Lu wrote:
->>>>>> Rafael J. Wysocki wrote:
->>>>>>> On Thursday 12 March 2009, Yinghai Lu wrote:
->>>>>>>> Rafael J. Wysocki wrote:
->>>>>>>>> On Sunday 08 March 2009, Rafael J. Wysocki wrote:
->>>>>>>>>> On Sunday 08 March 2009, Yinghai Lu wrote:
->>>>>>>>>>> Rafael J. Wysocki wrote:
->>>>>>>>>>>> On Saturday 07 March 2009, Yinghai Lu wrote:
->>>>>>>>>>>>> On Fri, Mar 6, 2009 at 11:18 PM, Jesse Brandeburg
->>>>>>>>>>>>> <jesse.brandeburg@gmail.com> wrote:
->>>>>>>>>>>>>> On Fri, Mar 6, 2009 at 8:33 PM, Yinghai Lu
->>>>>>>>>>>>>> <yinghai@kernel.org> wrote: 
->>>>>>>>>>>>>>> Impact: could probe igb
->>>>>>>>>>>>>>> 
->>>>>>>>>>>>>>> Found one system with 82575EB, in the kernel that is
->>>>>>>>>>>>>>> kexeced, probe igb failed with -2. 
->>>>>>>>>>>>>>> 
->>>>>>>>>>>>>>> it looks like the same behavior happened on forcedeth.
->>>>>>>>>>>>>>> 
->>>>>>>>>>>>>>> try to check system_state to make sure if put it on D3
->>>>>>>>>>>>>>> 
->>>>>>>>>>>>>>> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
->>>>>>>>>>>>>>> 
->>>>>>>>>>>>>>> ---
->>>>>>>>>>>>>>>  drivers/net/igb/igb_main.c |   19 ++++++++++++++-----
->>>>>>>>>>>>>>>  1 file changed, 14 insertions(+), 5 deletions(-)
->>>>>>>>>>>>>> I see the point of the patch, but I know for a fact that
->>>>>>>>>>>>>> ixgbe when enabled for MSI-X also doesn't work with
->>>>>>>>>>>>>> kexec. 
->>>>>>>>>>>>>> 
->>>>>>>>>>>>>> so my questions are:
->>>>>>>>>>>>>> are you going to change every driver?
->>>>>>>>>>>>> i tend to only change driver that i have related HW.
->>>>>>>>>>>>> 
->>>>>>>>>>>>>> why can't this be fixed in core kernel code instead?
->>>>>>>>>>>>>> will check it. 
->>>>>>>>>>>>> 
->>>>>>>>>>>>>> Shouldn't pci_enable_device take it out of D3?
->>>>>>>>>>>>>> Or maybe it should be taken out of D3 immediately if
->>>>>>>>>>>>>> someone tries to ioremap any of the BARx registers?
->>>>>>>>>>>>> looks like second kernel can not detect the state any
->>>>>>>>>>>>> more. 
->>>>>>>>>>>> In fact pci_enable_device() calls pci_set_power_state(dev,
->>>>>>>>>>>> PCI_D0) as the first thing.  The question is why it
->>>>>>>>>>>> doesn't work as expected. 
->>>>>>>>>>> not sure... please check the version for forcedeth that you
->>>>>>>>>>> made. 
->>>>>>>>>>> 
->>>>>>>>>>> commit 3cb5599a84c557c0dd9a19feb63a3788268cf249
->>>>>>>>>>> Author: Rafael J. Wysocki <rjw@sisk.pl>
->>>>>>>>>>> Date:   Fri Sep 5 14:00:19 2008 -0700
->>>>>>>>>>> 
->>>>>>>>>>>     forcedeth: fix kexec regression
->>>>>>>>>>> 
->>>>>>>>>>>     Fix regression tracked as
->>>>>>>>>>>     http://bugzilla.kernel.org/show_bug.cgi?id=11361 and
->>>>>>>>>>>     caused by commit
->>>>>>>>>>>     f735a2a1a4f2a0f5cd823ce323e82675990469e2 ("[netdrvr]
->>>>>>>>>>>     forcedeth: setup wake-on-lan before shutting down")
->>>>>>>>>>>     that makes network adapters integrated into the NVidia
->>>>>>>>>>>     MCP55 chipsets fail to work in kexeced kernels.  The
->>>>>>>>>>>     problem appears to be that if the adapter is put into
->>>>>>>>>>>     D3_hot during ->shutdown(), it cannot be brought back
->>>>>>>>>>> into D0 after kexec (ref.
->>>>>>>>>>> http://marc.info/?l=linux-kernel&m=121900062814967&w=4). 
->>>>>>>>>>> Therefore, only put forcedeth into D3 during ->shutdown()
->>>>>>>>>>> if the system is to be powered off.    
->>>>>>>>>> Thanks, I remember now.
->>>>>>>>> In which case you need to rework igb_shutdown() rather than
->>>>>>>>> igb_suspend(). 
->>>>>>>>> 
->>>>>>>>> Something like the patch below, perhaps (totally untested).
->>>>>>>> it works, David, can you picked it up
->>>>>>> 
->>>>>>> Still, Yinghai, can you please also test the patch below?  It
->>>>>>> fixes all shortcomings in the driver's suspend and shutdown
->>>>>>> methods I was talking about in one of the previous messages. 
->>>>>>> If it works, IMO it will be a preferable fix (in particular, it
->>>>>>> would be good to check if WoL still works with it, 
->>>>>>> but I don't have the hardware).
->>>>>>> 
->>>>>>> Thanks,
->>>>>>> Rafael
->>>>>>> 
->>>>>>> ---
->>>>>>> From: Rafael J. Wysocki <rjw@sisk.pl>
->>>>>>> Subject: net/igb: Fix kexec with igb (rev. 3)
->>>>>>> Impact: Fix
->>>>>>> 
->>>>>>> Yinghai Lu found one system with 82575EB where, in the kernel
->>>>>>> that is kexeced, probe igb failed with -2, the reason being
->>>>>>> that the adapter 
->>>>>>> could not be brought back from D3 by the kexec kernel, most
->>>>>>> probably 
->>>>>>> due to quirky hardware (it looks like the same behavior
->>>>>>> happened on forcedeth). 
->>>>>>> 
->>>>>>> Prevent igb from putting the adapter into D3 during shutdown
->>>>>>> except 
->>>>>>> when we going to power off the system.  For this purpose,
->>>>>>> seperate igb_shutdown() from igb_suspend() and use the
->>>>>>> appropriate PCI PM 
->>>>>>> callbacks in both of them.
->>>>>>> 
->>>>>>> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
->>>>>>> Reported-by: Yinghai Lu <yinghai@kernel.org>
->>>>>>> ---
->>>>>>>  drivers/net/igb/igb_main.c |   42
->>>>>>>  ++++++++++++++++++++++++++++++------------ 1 file changed, 30
->>>>>>> insertions(+), 12 deletions(-) 
->>>>>>> 
->>>>>>> Index: linux-2.6/drivers/net/igb/igb_main.c
->>>>>>> ===================================================================
->>>>>>> --- linux-2.6.orig/drivers/net/igb/igb_main.c
->>>>>>> +++ linux-2.6/drivers/net/igb/igb_main.c
->>>>>>> @@ -4277,7 +4277,7 @@ int igb_set_spd_dplx(struct igb_adapter  }
->>>>>>> 
->>>>>>> 
->>>>>>> -static int igb_suspend(struct pci_dev *pdev, pm_message_t
->>>>>>> state) +static int __igb_shutdown(struct pci_dev *pdev, bool
->>>>>>>     *enable_wake)  { struct net_device *netdev =
->>>>>>>     pci_get_drvdata(pdev); struct igb_adapter *adapter =
->>>>>>> netdev_priv(netdev); @@ -4336,15 +4336,9 @@ static int
->>>>>>>             igb_suspend(struct pci_dev *p wr32(E1000_WUFC, 0);
->>>>>>>     }
->>>>>>> 
->>>>>>> -   /* make sure adapter isn't asleep if manageability/wol is
->>>>>>> enabled */ 
->>>>>>> -   if (wufc || adapter->en_mng_pt) {
->>>>>>> -           pci_enable_wake(pdev, PCI_D3hot, 1);
->>>>>>> -           pci_enable_wake(pdev, PCI_D3cold, 1);
->>>>>>> -   } else {
->>>>>>> +   *enable_wake = wufc || adapter->en_mng_pt;
->>>>>>> +   if (!*enable_wake)
->>>>>>>             igb_shutdown_fiber_serdes_link_82575(hw);
->>>>>>> -           pci_enable_wake(pdev, PCI_D3hot, 0);
->>>>>>> -           pci_enable_wake(pdev, PCI_D3cold, 0);
->>>>>>> -   }
->>>>>>> 
->>>>>>>     /* Release control of h/w to f/w.  If f/w is AMT enabled,
->>>>>>>      this * would have already happened in close and is
->>>>>>> redundant. */ @@ -4352,12 +4346,29 @@ static int
->>>>>>> igb_suspend(struct pci_dev *p 
->>>>>>> 
->>>>>>>     pci_disable_device(pdev);
->>>>>>> 
->>>>>>> -   pci_set_power_state(pdev, pci_choose_state(pdev, state)); -
->>>>>>>     return 0;
->>>>>>>  }
->>>>>>> 
->>>>>>>  #ifdef CONFIG_PM
->>>>>>> +static int igb_suspend(struct pci_dev *pdev, pm_message_t
->>>>>>> state) +{ +   int retval;
->>>>>>> +   bool wake;
->>>>>>> +
->>>>>>> +   retval = __igb_shutdown(pdev, &wake);
->>>>>>> +   if (retval)
->>>>>>> +           return retval;
->>>>>>> +
->>>>>>> +   if (wake) {
->>>>>>> +           pci_prepare_to_sleep(pdev);
->>>>>>> +   } else {
->>>>>>> +           pci_wake_from_d3(pdev, false);
->>>>>>> +           pci_set_power_state(pdev, PCI_D3hot);
->>>>>>> +   }
->>>>>>> +
->>>>>>> +   return 0;
->>>>>>> +}
->>>>>>> +
->>>>>>>  static int igb_resume(struct pci_dev *pdev)
->>>>>>>  {
->>>>>>>     struct net_device *netdev = pci_get_drvdata(pdev);
->>>>>>> @@ -4412,7 +4423,14 @@ static int igb_resume(struct pci_dev *pd
->>>>>>> 
->>>>>>>  static void igb_shutdown(struct pci_dev *pdev)
->>>>>>>  {
->>>>>>> -   igb_suspend(pdev, PMSG_SUSPEND);
->>>>>>> +   bool wake;
->>>>>>> +
->>>>>>> +   __igb_shutdown(pdev, &wake);
->>>>>>> +
->>>>>>> +   if (system_state == SYSTEM_POWER_OFF) {
->>>>>>> +           pci_wake_from_d3(pdev, wake);
->>>>>>> +           pci_set_power_state(pdev, PCI_D3hot);
->>>>>>> +   }
->>>>>>>  }
->>>>>>> 
->>>>>>>  #ifdef CONFIG_NET_POLL_CONTROLLER
->>>>>> 
->>>>>> it works too.
->>>>> 
->>>>> Great, thanks for testing.
->>>>> 
->>>>> Jeff, Jesse, is the patch fine with you?
->>>>> 
->>>>> Rafael
->>>> 
->>>> Let me talk with Jesse on Monday about it.  I know that Jesse's
->>>> concern's were that there were more than one driver afflicted with
->>>> the same or similar issue and that it made more sense to fix this
->>>> in the core for all drivers.  For instance ixgbe, IIRC, but
->>>> because Yinghai did not have any other hardware, it was unclear if
->>>> this was an issue on other drivers.
->>> 
->>> I think it was, at least theoretically.  We should generally avoid
->>> powering off things on shutdown when it's not really necessary. 
->>> Also, the use of pci_enable_wake() in these drivers is not really
->>> correct. 
->>> 
->>> And in fact this is why I'm asking, because I have analogouns
->>> patches for some other drivers in the works too.  If you are fine
->>> with the approach, I'll post the whole series. 
->>> 
->>>> After discussing this with Jesse, one of us will respond.  I will
->>>> apply this patch to my tree anyway and if we are alright with the
->>>> patch, I will push it out with my other patches to Dave.
->>> 
->>> Thanks!
->>> 
->>> Best,
->>> Rafael
->>> --
->> 
->> After talking with Jesse, we are fine with it if our testers buy off
->> on it.  I have the patch in my tree and so Emil will run a barrage of
->> regression/stress tests on the patch overnight.  If everything looks
->> good, I will send it out with the other igb patches I have.
+On Wed, 2009-03-25 at 20:42 +1100, Paul Mackerras wrote:
+> 
+> And here's something else that is semi-related: the PAPI guys want a
+> kind of counter that counts until it overflows, and then sends a
+> signal to the process and disables itself (and the whole group it's
+> in).
 
-The patch checks out. I tested suspend/resume (including WOL) and kexec. There is only a small issue with warning on compile when CONFIG_PM is disabled:
+I tried doing this this evening, and its remarkably hard. Disabling a
+counter relies on reading the time, and taking ctx->lock and such.
+Things that are impossible to do in NMI context.
 
-diff --git a/drivers/net/igb/igb_main.c b/drivers/net/igb/igb_main.c
-index 13fe162..0a4f8f4 100644
---- a/drivers/net/igb/igb_main.c
-+++ b/drivers/net/igb/igb_main.c
-@@ -135,8 +135,8 @@ static inline int igb_set_vf_rlpml(struct igb_adapter *, int, int);
- static int igb_set_vf_mac(struct igb_adapter *adapter, int, unsigned char *);
- static void igb_restore_vf_multicasts(struct igb_adapter *adapter);
- 
--static int igb_suspend(struct pci_dev *, pm_message_t);
- #ifdef CONFIG_PM
-+static int igb_suspend(struct pci_dev *, pm_message_t);
- static int igb_resume(struct pci_dev *);
- #endif
- static void igb_shutdown(struct pci_dev *); 
+Furthermore, some of the software counters (those that use hrtimers)
+wait for the completion of the handler (hrtimer_cancel) which would
+deadlock when tried from the handler.
 
-Thanks,
-Emil
-ÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
+Some of these things could be hacked around, others less so, but all in
+all it looked remarkably hard for something that sounds so simple.
+
+
+
