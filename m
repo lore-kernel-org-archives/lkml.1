@@ -1,67 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756260AbZCaUAt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754748AbZCaUMy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756260AbZCaUAt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Mar 2009 16:00:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753045AbZCaUAd
+	id S1754748AbZCaUMy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Mar 2009 16:12:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753354AbZCaUMk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Mar 2009 16:00:33 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:33072 "EHLO
-	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752966AbZCaUAb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Mar 2009 16:00:31 -0400
-Message-ID: <49D276E5.6000000@novell.com>
-Date: Tue, 31 Mar 2009 16:02:45 -0400
-From: Gregory Haskins <ghaskins@novell.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Tue, 31 Mar 2009 16:12:40 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:51727 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753204AbZCaUMj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Mar 2009 16:12:39 -0400
+Message-ID: <49D27950.9020801@redhat.com>
+Date: Tue, 31 Mar 2009 23:13:04 +0300
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-To: Avi Kivity <avi@redhat.com>
+To: Gregory Haskins <ghaskins@novell.com>
 CC: linux-kernel@vger.kernel.org, agraf@suse.de, pmullaney@novell.com,
        pmorreale@novell.com, anthony@codemonkey.ws, rusty@rustcorp.com.au,
        netdev@vger.kernel.org, kvm@vger.kernel.org
-Subject: Re: [RFC PATCH 14/17] kvm: add a reset capability
-References: <20090331184057.28333.77287.stgit@dev.haskins.net> <20090331184400.28333.50396.stgit@dev.haskins.net> <49D26D8B.7020201@redhat.com>
-In-Reply-To: <49D26D8B.7020201@redhat.com>
-X-Enigmail-Version: 0.95.7
-OpenPGP: id=D8195319
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig63259ACD3C414AAF73D2D3DF"
+Subject: Re: [RFC PATCH 15/17] kvm: add dynamic IRQ support
+References: <20090331184057.28333.77287.stgit@dev.haskins.net> <20090331184405.28333.59205.stgit@dev.haskins.net> <49D26CFE.1060700@redhat.com> <49D2718F.9070203@novell.com>
+In-Reply-To: <49D2718F.9070203@novell.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig63259ACD3C414AAF73D2D3DF
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+Gregory Haskins wrote:
+>> - works with all guests
+>> - supports hotplug/hotunplug, udev, sysfs, module autoloading, ...
+>> - supported in all OSes
+>> - someone else maintains it
+>>     
+> These points are all valid, and I really struggled with this particular
+> part of the design.  The entire vbus design only requires one IRQ for
+> the entire guest,
 
-Avi Kivity wrote:
-> Gregory Haskins wrote:
->> We need a way to detect if a VM is reset later in the series, so lets
->> add a capability for userspace to signal a VM reset down to the kernel=
-=2E
->>  =20
+Won't this have scaling issues?  One IRQ means one target vcpu.  Whereas 
+I'd like virtio devices to span multiple queues, each queue with its own 
+MSI IRQ.  Also, the single IRQ handler will need to scan for all 
+potential IRQ sources.  Even if implemented carefully, this will cause 
+many cacheline bounces.
+
+>  so its conceivable that I could present a simple
+> "dummy" PCI device with some "VBUS" type PCI-ID, just to piggy back on
+> the IRQ routing logic.  Then userspace could simply pass the IRQ routing
+> info down to the kernel with an ioctl, or something similar.
+>   
+
+Xen does something similar, I believe.
+
+> I think ultimately I was trying to stay away from PCI in general because
+> I want to support environments that do not have PCI.  However, for the
+> kvm-transport case (at least on x86) this isnt really a constraint.
 >
-> How do you handle the case of a guest calling kexec to load a new
-> kernel?  Or is that not important for your use case?
->
+>   
 
-Hmm..I had not considered this.  Any suggestions on ways to detect it?
+s/PCI/the native IRQ solution for your platform/. virtio has the same 
+problem; on s390 we use the native (if that word ever applies to s390) 
+interrupt and device discovery mechanism.
 
+-- 
+I have a truly marvellous patch that fixes the bug which this
+signature is too narrow to contain.
 
---------------enig63259ACD3C414AAF73D2D3DF
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
-Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
-
-iEYEARECAAYFAknSduUACgkQlOSOBdgZUxlUHACgjfkZ9UdnAEAzxUlkMDM3wJLk
-8xAAn1BPfw9RIjH48ZO73jqWUACuFuzh
-=wDa2
------END PGP SIGNATURE-----
-
---------------enig63259ACD3C414AAF73D2D3DF--
