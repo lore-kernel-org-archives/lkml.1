@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764902AbZCaXis@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765131AbZCaXj1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764902AbZCaXis (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Mar 2009 19:38:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764241AbZCaXWm
+	id S1765131AbZCaXj1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Mar 2009 19:39:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764305AbZCaXWp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Mar 2009 19:22:42 -0400
-Received: from sous-sol.org ([216.99.217.87]:33364 "EHLO x200.localdomain"
+	Tue, 31 Mar 2009 19:22:45 -0400
+Received: from sous-sol.org ([216.99.217.87]:33368 "EHLO x200.localdomain"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1764284AbZCaXWk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Mar 2009 19:22:40 -0400
-Message-Id: <20090331231815.480074017@sous-sol.org>
+	id S1759042AbZCaXWo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Mar 2009 19:22:44 -0400
+Message-Id: <20090331231702.070064793@sous-sol.org>
 User-Agent: quilt/0.47-1
-Date: Tue, 31 Mar 2009 16:11:29 -0700
+Date: Tue, 31 Mar 2009 16:11:18 -0700
 From: Chris Wright <chrisw@sous-sol.org>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -24,11 +24,12 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, "Luis R. Rodriguez" <lrodriguez@atheros.com>,
-       John W Linville <linville@tuxdriver.com>
-Subject: [patch 44/45] cfg80211: fix incorrect assumption on last_request for 11d
+       alan@lxorguk.ukuu.org.uk, Mikael Pettersson <mikpe@it.uu.se>,
+       Nicolas Pitre <nico@cam.org>,
+       Russell King <rmk+kernel@arm.linux.org.uk>
+Subject: [patch 33/45] ARM: 5435/1: fix compile warning in sanity_check_meminfo()
 References: <20090331231045.719396245@sous-sol.org>
-Content-Disposition: inline; filename=cfg80211-fix-incorrect-assumption-on-last_request-for-11d.patch
+Content-Disposition: inline; filename=arm-5435-1-fix-compile-warning-in-sanity_check_meminfo.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -36,54 +37,39 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 ---------------------
 
-From: Luis R. Rodriguez <lrodriguez@atheros.com>
+From: Mikael Pettersson <mikpe@it.uu.se>
 
-upstream commit: cc0b6fe88e99096868bdbacbf486c97299533b5a
+upstream commit: f0bba9f934517533acbda7329be93f55d5a01c03
 
-The incorrect assumption is the last regulatory request
-(last_request) is always a country IE when processing
-country IEs. Although this is true 99% of the time the
-first time this happens this could not be true.
+Compiling recent 2.6.29-rc kernels for ARM gives me the following warning:
 
-This fixes an oops in the branch check for the last_request
-when accessing drv_last_ie. The access was done under the
-assumption the struct won't be null.
+arch/arm/mm/mmu.c: In function 'sanity_check_meminfo':
+arch/arm/mm/mmu.c:697: warning: comparison between pointer and integer
 
-Note to stable: to port to 29 replace as follows, only 29 has
-country IE code:
+This is because commit 3fd9825c42c784a59b3b90bdf073f49d4bb42a8d
+"[ARM] 5402/1: fix a case of wrap-around in sanity_check_meminfo()"
+in 2.6.29-rc5-git4 added a comparison of a pointer with PAGE_OFFSET,
+which is an integer.
 
-s|NL80211_REGDOM_SET_BY_COUNTRY_IE|REGDOM_SET_BY_COUNTRY_IE
+Fixed by casting PAGE_OFFSET to void *.
 
-Cc: stable@kernel.org
-Reported-by: Quentin Armitage <Quentin@armitage.org.uk>
-Signed-off-by: Luis R. Rodriguez <lrodriguez@atheros.com>
-Signed-off-by: John W. Linville <linville@tuxdriver.com>
-[chrisw: backport to 2.6.29]
+Signed-off-by: Mikael Pettersson <mikpe@it.uu.se>
+Acked-by: Nicolas Pitre <nico@cam.org>
+Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 ---
- net/wireless/reg.c |    6 +++++-
- 1 file changed, 5 insertions(+), 1 deletion(-)
+ arch/arm/mm/mmu.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/net/wireless/reg.c
-+++ b/net/wireless/reg.c
-@@ -1083,6 +1083,8 @@ EXPORT_SYMBOL(regulatory_hint);
- static bool reg_same_country_ie_hint(struct wiphy *wiphy,
- 			u32 country_ie_checksum)
- {
-+	if (unlikely(last_request->initiator != REGDOM_SET_BY_COUNTRY_IE))
-+		return false;
- 	if (!last_request->wiphy)
- 		return false;
- 	if (likely(last_request->wiphy != wiphy))
-@@ -1133,7 +1135,9 @@ void regulatory_hint_11d(struct wiphy *w
- 	/* We will run this for *every* beacon processed for the BSSID, so
- 	 * we optimize an early check to exit out early if we don't have to
- 	 * do anything */
--	if (likely(last_request->wiphy)) {
-+	if (likely(last_request->initiator ==
-+	    REGDOM_SET_BY_COUNTRY_IE &&
-+	    likely(last_request->wiphy))) {
- 		struct cfg80211_registered_device *drv_last_ie;
- 
- 		drv_last_ie = wiphy_to_dev(last_request->wiphy);
+--- a/arch/arm/mm/mmu.c
++++ b/arch/arm/mm/mmu.c
+@@ -694,7 +694,7 @@ static void __init sanity_check_meminfo(
+ 		 * the vmalloc area.
+ 		 */
+ 		if (__va(bank->start) >= VMALLOC_MIN ||
+-		    __va(bank->start) < PAGE_OFFSET) {
++		    __va(bank->start) < (void *)PAGE_OFFSET) {
+ 			printk(KERN_NOTICE "Ignoring RAM at %.8lx-%.8lx "
+ 			       "(vmalloc region overlap).\n",
+ 			       bank->start, bank->start + bank->size - 1);
 
