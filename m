@@ -1,49 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761897AbZCaCls@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761667AbZCaCna@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761897AbZCaCls (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Mar 2009 22:41:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754269AbZCaCld
+	id S1761667AbZCaCna (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Mar 2009 22:43:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755509AbZCaCnR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Mar 2009 22:41:33 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:40413 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761588AbZCaCla (ORCPT
+	Mon, 30 Mar 2009 22:43:17 -0400
+Received: from rv-out-0506.google.com ([209.85.198.235]:33855 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754269AbZCaCnP convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Mar 2009 22:41:30 -0400
-Date: Mon, 30 Mar 2009 22:41:24 -0400
-From: Kyle McMartin <kyle@mcmartin.ca>
-To: Kyle McMartin <kyle@mcmartin.ca>
-Cc: James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Alexander Beregalov <a.beregalov@gmail.com>,
-       David Miller <davem@davemloft.net>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-parisc@vger.kernel.org
-Subject: Re: [PATCH] Phonet:fix build problem
-Message-ID: <20090331024124.GA30601@bombadil.infradead.org>
-References: <20090320115838.GA26371@orion> <20090321.165950.248659848.davem@davemloft.net> <a4423d670903211719m76baeab0k51f054058d6f5134@mail.gmail.com> <1237694320.25297.3.camel@localhost.localdomain> <20090322160629.GA23227@bombadil.infradead.org>
+	Mon, 30 Mar 2009 22:43:15 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=PiXXfsV8zerBW5+r8CjmVrvof/W7piRPWKufGz4qPjfz0CYFJBcPYFs9SZ3SPjzsVG
+         j4Ls3rtjqZbWv86YmYxSXInSrXcDiVjG2HCryIe/OpToBb3RjyrR3/fgukvNWFu6LWl+
+         YMTg45GSI17vG+eLazNURC5K5mmfDVL5JCgro=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090322160629.GA23227@bombadil.infradead.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090330163529.2c587ef5.akpm@linux-foundation.org>
+References: <ea11fea30903222032x4490af0dy60de450cf4ce6e58@mail.gmail.com> 
+	<20090330163529.2c587ef5.akpm@linux-foundation.org>
+Date: Tue, 31 Mar 2009 08:12:58 +0530
+Message-ID: <ea11fea30903301942w2e6d8555k2dcbb36829778b4f@mail.gmail.com>
+Subject: Re: [PATCH] : Convert simple_strtoul to strict_strtoul in fs/inode.c
+From: Manish Katiyar <mkatiyar@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: trivial@kernel.org, LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Mar 22, 2009 at 12:06:29PM -0400, Kyle McMartin wrote:
-> On Sun, Mar 22, 2009 at 03:58:40AM +0000, James Bottomley wrote:
-> > > > I think that platform's atomic_add() implementation should
-> > > > be fixed instead.
-> > > 
-> > > It is parisc, CC added.
-> > 
-> > Looks like a macro argument screw up in atomic.h
-> > 
-> > This should fix it (uncompiled, of course).
-> > 
-> 
-> Looks correct to me. Applied. Thanks everyone.
+On Tue, Mar 31, 2009 at 5:05 AM, Andrew Morton
+<akpm@linux-foundation.org> wrote:
+> On Mon, 23 Mar 2009 09:02:04 +0530
+> Manish Katiyar <mkatiyar@gmail.com> wrote:
 >
+>> Hi Andrew,
+>>
+>> Below patch converts simple_strtoul to strict_strtoul in fs/inode.c
+>>
+>> Signed-off-by: Manish Katiyar <mkatiyar@gmail.com>
+>> ---
+>>  fs/inode.c |    8 +++++++-
+>>  1 files changed, 7 insertions(+), 1 deletions(-)
+>>
+>> diff --git a/fs/inode.c b/fs/inode.c
+>> index e0dad15..ef4a9b1 100644
+>> --- a/fs/inode.c
+>> +++ b/fs/inode.c
+>> @@ -1447,9 +1447,15 @@ EXPORT_SYMBOL(inode_double_unlock);
+>>  static __initdata unsigned long ihash_entries;
+>>  static int __init set_ihash_entries(char *str)
+>>  {
+>> +     int ret;
+>> +
+>>       if (!str)
+>>               return 0;
+>> -     ihash_entries = simple_strtoul(str, &str, 0);
+>> +
+>> +     ret = strict_strtoul(str, 0, &ihash_entries);
+>> +     if (ret < 0 || ihash_entries == 0)
+>> +             return 0;
+>> +
+>>       return 1;
+>>  }
+>>  __setup("ihash_entries=", set_ihash_entries);
+>
+> Again, there is no reason given for making the change.
 
-Oh, bah, want to resend that with a sign-off, James?
+Hi Andrew,
 
-regards, Kyle
+It showed up during cleanup of this file via checkpatch.pl.
+
+>
+> Bear in mind that this is not a backward-compatible change!  If someone
+> (stupidly) has
+>
+>        ihash_entries=42foo
+>
+> in their grub.conf then your change would break their kernels.
+>
+> it's not a serious problem and we can probably make this change, but
+> trivial@kernel.org is not a suitable list for discussing and
+> promulgating the change.
+
+I have cced lkml.
+
+Thanks -
+Manish
+>
+>
