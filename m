@@ -1,83 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761359AbZCaCDv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760524AbZCaCKI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761359AbZCaCDv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Mar 2009 22:03:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754241AbZCaCDl
+	id S1760524AbZCaCKI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Mar 2009 22:10:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755037AbZCaCJz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Mar 2009 22:03:41 -0400
-Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:59982 "EHLO
-	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753831AbZCaCDk (ORCPT
+	Mon, 30 Mar 2009 22:09:55 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:55859 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754241AbZCaCJz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Mar 2009 22:03:40 -0400
-Date: Tue, 31 Mar 2009 10:52:49 +0900
-From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-To: Minchan Kim <minchan.kim@gmail.com>
-Cc: nishimura@mxp.nes.nec.co.jp,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       Johannes Weiner <hannes@cmpxchg.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Rik van Riel <riel@redhat.com>,
-       Balbir Singh <balbir@in.ibm.com>
-Subject: Re: [PATCH] vmscan: memcg needs may_swap (Re: [patch] vmscan:
- rename  sc.may_swap to may_unmap)
-Message-Id: <20090331105249.98fd051b.nishimura@mxp.nes.nec.co.jp>
-In-Reply-To: <28c262360903301826w6429720es8ceb361cfc088b1@mail.gmail.com>
-References: <20090327151926.f252fba7.nishimura@mxp.nes.nec.co.jp>
-	<20090327153035.35498303.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090328214636.68FF.A69D9226@jp.fujitsu.com>
-	<28c262360903301826w6429720es8ceb361cfc088b1@mail.gmail.com>
-Organization: NEC Soft, Ltd.
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+	Mon, 30 Mar 2009 22:09:55 -0400
+Date: Mon, 30 Mar 2009 22:09:50 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Darren Hart <dvhltc@us.ibm.com>
+cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+       Sripathi Kodi <sripathik@in.ibm.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       John Stultz <johnstul@us.ibm.com>,
+       Dinakar Guniguntala <dino@in.ibm.com>,
+       Ulrich Drepper <drepper@redhat.com>, Eric Dumazet <dada1@cosmosbay.com>,
+       Ingo Molnar <mingo@elte.hu>, Jakub Jelinek <jakub@redhat.com>
+Subject: Re: [tip PATCH v6 0/8] requeue pi implementation
+In-Reply-To: <20090330213306.606.9540.stgit@Aeon>
+Message-ID: <alpine.DEB.2.00.0903302208390.3843@gandalf.stny.rr.com>
+References: <20090330213306.606.9540.stgit@Aeon>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
 
-> > ========
-> > Subject: vmswan: reintroduce sc->may_swap
-> >
-> > vmscan-rename-scmay_swap-to-may_unmap.patch removed may_swap flag,
-> > but memcg had used it as a flag for "we need to use swap?", as the
-> > name indicate.
-> >
-> > And in current implementation, memcg cannot reclaim mapped file caches
-> > when mem+swap hits the limit.
-> >
-> > re-introduce may_swap flag and handle it at get_scan_ratio().
-> > This patch doesn't influence any scan_control users other than memcg.
-> >
-> > Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-> > Signed-off-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-> > --
-> >  mm/vmscan.c |   12 ++++++++++--
-> >  1 files changed, 10 insertions(+), 2 deletions(-)
-> >
-> > diff --git a/mm/vmscan.c b/mm/vmscan.c
-> > index 3be6157..00ea4a1 100644
-> > --- a/mm/vmscan.c
-> > +++ b/mm/vmscan.c
-> > @@ -63,6 +63,9 @@ struct scan_control {
-> >        /* Can mapped pages be reclaimed? */
-> >        int may_unmap;
-> >
-> > +       /* Can pages be swapped as part of reclaim? */
-> > +       int may_swap;
-> > +
+
+
+On Mon, 30 Mar 2009, Darren Hart wrote:
 > 
-> Sorry for too late response.
-> I don't know memcg well.
+> Darren Hart (8):
+>       RFC: futex: add requeue_pi calls
+>       RFC: futex: Add requeue_futex() call
+>       RFC: futex: Add FUTEX_HAS_TIMEOUT flag to restart.futex.flags
+
+I just finished reviewing the first three patches, and I don't see 
+anything wrong with them. I'll review more tomorrow, but just for now, you 
+can add on to the first three:
+
+Reviewed-by: Steven Rostedt <srostedt@redhat.com>
+
+-- Steve
+
+
+>       RFC: rt_mutex: add proxy lock routines
+>       RFC: futex: finish_futex_lock_pi()
+>       RFC: futex: futex_lock_pi_atomic()
+>       RFC: futex: futex_top_waiter()
+>       RFC: futex: futex_wait_queue_me()
 > 
-> The memcg managed to use may_swap well with global page reclaim until now.
-memcg had a bug that it cannot reclaim mapped file caches when it hit
-the mem+swap limit :(
-
-
-Thanks,
-Daisuke Nishimura.
