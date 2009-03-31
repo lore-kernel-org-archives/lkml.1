@@ -1,114 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759309AbZCaN2n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758983AbZCaNaG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759309AbZCaN2n (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Mar 2009 09:28:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758094AbZCaN2a
+	id S1758983AbZCaNaG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Mar 2009 09:30:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757901AbZCaN3x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Mar 2009 09:28:30 -0400
-Received: from mga11.intel.com ([192.55.52.93]:6321 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758998AbZCaN23 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Mar 2009 09:28:29 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.38,453,1233561600"; 
-   d="scan'208";a="677480120"
-Date: Tue, 31 Mar 2009 15:28:12 +0200
-From: Markus Metzger <markus.t.metzger@intel.com>
-To: linux-kernel@vger.kernel.org, mingo@elte.hu, tglx@linutronix.de,
-       hpa@zytor.com
-Cc: markus.t.metzger@intel.com, markus.t.metzger@gmail.com, roland@redhat.com,
-       eranian@googlemail.com, oleg@redhat.com, juan.villacis@intel.com,
-       ak@linux.jf.intel.com
-Subject: [patch 12/21] x86, ds: defer ds selftests
-Message-ID: <20090331152812.A13200@sedona.ch.intel.com>
-Mime-Version: 1.0
+	Tue, 31 Mar 2009 09:29:53 -0400
+Received: from rv-out-0506.google.com ([209.85.198.233]:19084 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757562AbZCaN3x (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Mar 2009 09:29:53 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=t4ZzIrWN+SUPGnQFuG0O61VKWWqEoP6l5dO4G419y2bNbWEJhMQutmewYUjXYmlm6B
+         n6MqRfUXYsESlKQXADjBTIVdU5ct3aQK/JVy9QnZmul5VnG/nuKe2AsoM0rV2kHHgYEG
+         l6UMA3liftqYLighg6zViMzx6cDvv1Yk5IZgE=
+Date: Tue, 31 Mar 2009 09:29:44 -0400
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linuxppc-dev@ozlabs.org, roel.kluin@gmail.com,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH] Add hvc_console to MAINTAINERS
+Message-ID: <20090331132944.GB2332@yoda.jdub.homelinux.org>
+References: <49BF956B.9030109@gmail.com> <20090330133531.f5d99c09.akpm@linux-foundation.org> <20090330205553.GA19278@yoda.jdub.homelinux.org> <20090330141852.59baaeda.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.2.5i
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <20090330141852.59baaeda.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Defer debug store selftests.
+Add a MAINTAINERS entry for the hypervisor virtual console support
+used on IBM POWER servers.
 
-
-Signed-off-by: Markus Metzger <markus.t.metzger@intel.com>
+Signed-off-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
 ---
 
-Index: git-tip/arch/x86/kernel/ds.c
-===================================================================
---- git-tip.orig/arch/x86/kernel/ds.c	2009-03-30 18:52:24.000000000 +0200
-+++ git-tip/arch/x86/kernel/ds.c	2009-03-30 19:02:29.000000000 +0200
-@@ -1289,26 +1289,6 @@ ds_configure(const struct ds_configurati
- 		printk(KERN_INFO "[ds] pebs not available\n");
- 	}
+diff --git a/MAINTAINERS b/MAINTAINERS
+index c5f4e9d..387ad45 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -2176,6 +2176,11 @@ W:       http://www.ia64-linux.org/
+ T:     git kernel.org:/pub/scm/linux/kernel/git/aegl/linux-2.6.git
+ S:     Maintained
  
--	if (ds_cfg.sizeof_rec[ds_bts]) {
--		int error;
--
--		error = ds_selftest_bts();
--		if (error) {
--			WARN(1, "[ds] selftest failed. disabling bts.\n");
--			ds_cfg.sizeof_rec[ds_bts] = 0;
--		}
--	}
--
--	if (ds_cfg.sizeof_rec[ds_pebs]) {
--		int error;
--
--		error = ds_selftest_pebs();
--		if (error) {
--			WARN(1, "[ds] selftest failed. disabling pebs.\n");
--			ds_cfg.sizeof_rec[ds_pebs] = 0;
--		}
--	}
--
- 	printk(KERN_INFO "[ds] sizes: address: %u bit, ",
- 	       8 * ds_cfg.sizeof_ptr_field);
- 	printk("bts/pebs record: %u/%u bytes\n",
-@@ -1406,3 +1386,29 @@ void ds_copy_thread(struct task_struct *
- void ds_exit_thread(struct task_struct *tsk)
- {
- }
++IBM HYPERVISOR VIRTUAL CONSOLE
++P:     Several
++L:     linuxppc-dev@ozlabs.org
++S:     Maintained
 +
-+static __init int ds_selftest(void)
-+{
-+	if (ds_cfg.sizeof_rec[ds_bts]) {
-+		int error;
-+
-+		error = ds_selftest_bts();
-+		if (error) {
-+			WARN(1, "[ds] selftest failed. disabling bts.\n");
-+			ds_cfg.sizeof_rec[ds_bts] = 0;
-+		}
-+	}
-+
-+	if (ds_cfg.sizeof_rec[ds_pebs]) {
-+		int error;
-+
-+		error = ds_selftest_pebs();
-+		if (error) {
-+			WARN(1, "[ds] selftest failed. disabling pebs.\n");
-+			ds_cfg.sizeof_rec[ds_pebs] = 0;
-+		}
-+	}
-+
-+	return 0;
-+}
-+device_initcall(ds_selftest);
----------------------------------------------------------------------
-Intel GmbH
-Dornacher Strasse 1
-85622 Feldkirchen/Muenchen Germany
-Sitz der Gesellschaft: Feldkirchen bei Muenchen
-Geschaeftsfuehrer: Douglas Lusk, Peter Gleissner, Hannes Schwaderer
-Registergericht: Muenchen HRB 47456 Ust.-IdNr.
-VAT Registration No.: DE129385895
-Citibank Frankfurt (BLZ 502 109 00) 600119052
-
-This e-mail and any attachments may contain confidential material for
-the sole use of the intended recipient(s). Any review or distribution
-by others is strictly prohibited. If you are not the intended
-recipient, please contact the sender and delete all copies.
+ IBM MCA SCSI SUBSYSTEM DRIVER
+ P:     Michael Lang
+ M:     langa2@kph.uni-mainz.de
 
