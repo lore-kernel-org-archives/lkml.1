@@ -1,124 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755835AbZCaS5D@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760703AbZCaS6y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755835AbZCaS5D (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Mar 2009 14:57:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751395AbZCaS4t
+	id S1760703AbZCaS6y (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Mar 2009 14:58:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754644AbZCaS6f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Mar 2009 14:56:49 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:43094 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751047AbZCaS4r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Mar 2009 14:56:47 -0400
-Date: Tue, 31 Mar 2009 20:55:41 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Xen-devel <xen-devel@lists.xensource.com>,
-       the arch/x86 maintainers <x86@kernel.org>
-Subject: Re: [GIT PULL] Xen for 2.6.30 #2
-Message-ID: <20090331185541.GA17807@elte.hu>
-References: <49D1209A.9000800@goop.org> <49D25A42.7060300@goop.org>
+	Tue, 31 Mar 2009 14:58:35 -0400
+Received: from mailgw.nyc.medallion.com ([63.68.220.242]:2615 "EHLO
+	mailgw.nyc.medallion.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751395AbZCaS6e convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Mar 2009 14:58:34 -0400
+X-Greylist: delayed 915 seconds by postgrey-1.27 at vger.kernel.org; Tue, 31 Mar 2009 14:58:33 EDT
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.3790.4325
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49D25A42.7060300@goop.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: text/plain;
+	charset="Windows-1252"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: [Iscsitarget-devel] [Scst-devel] ISCSI-SCST performance (withalso IET and STGT	data)
+Date: Tue, 31 Mar 2009 14:43:15 -0400
+Message-ID: <E2BB8074E5500C42984D980D4BD78EF9029E3D0B@MFG-NYC-EXCH2.mfg.prv>
+In-Reply-To: <49D254E4.8050806@vlnb.net>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: [Iscsitarget-devel] [Scst-devel] ISCSI-SCST performance (withalso IET and STGT	data)
+Thread-Index: AcmyJ7YFyzYgt0cmQUadizZzcnhPOgAB0x1A
+References: <49D10256.8030307@vlnb.net>	<e2e108260903301106y2b750c23kfab978567f3de3a0@mail.gmail.com>	<49D11096.3070804@vlnb.net><e2e108260903301153x38e86097vd29c47507da2879f@mail.gmail.com> <49D254E4.8050806@vlnb.net>
+From: "Ross S. W. Walker" <RWalker@medallion.com>
+Importance: normal
+To: "Vladislav Bolkhovitin" <vst@vlnb.net>,
+       "Bart Van Assche" <bart.vanassche@gmail.com>
+Cc: <iscsitarget-devel@lists.sourceforge.net>,
+       "scst-devel" <scst-devel@lists.sourceforge.net>,
+       <linux-kernel@vger.kernel.org>, <linux-scsi@vger.kernel.org>,
+       <stgt@vger.kernel.org>
+X-OriginalArrivalTime: 31 Mar 2009 18:43:15.0959 (UTC) FILETIME=[8D8A3870:01C9B230]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Vladislav Bolkhovitin wrote:
+> Bart Van Assche, on 03/30/2009 10:53 PM wrote:
+> > 
+> > Most applications do indeed use buffered I/O. Database software
+> > however often uses direct I/O. It might be interesting to publish
+> > performance results for both buffered I/O and direct I/O.
+> 
+> Yes, sure
+> 
+> > A quote from
+> > the paper "Asynchronous I/O Support in Linux 2.5" by Bhattacharya e.a.
+> > (Linux Symposium, Ottawa, 2003):
+> > 
+> > Direct I/O (raw and O_DIRECT) transfers data between a user buffer and
+> > a device without copying the data through the kernel’s buffer cache.
+> > This mechanism can boost performance if the data is unlikely to be
+> > used again in the short term (during a disk backup, for example), or
+> > for applications such as large database management systems that
+> > perform their own caching.
+> 
+> Please don't misread phrase "unlikely to be used again in the short 
+> term". If you have read-ahead, all your cached data is *likely* to be 
+> used "again" in the near future after they were read from storage, 
+> although only once in the first read by application. The same is true 
+> for write-back caching, where data written to the cache once for each 
+> command. Both read-ahead and write back are very important for good 
+> performance and O_DIRECT throws them away. All the modern HDDs have a 
+> memory buffer (cache) at least 2MB big on the cheapest ones. 
+> This cache is essential for performance, although how can it make any 
+> difference if the host computer has, say, 1000 times more memory?
+> 
+> Thus, to work effectively with O_DIRECT an application has to be very 
+> smart to workaround the lack of read-ahead and write back.
 
-* Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+True, the application has to perform it's own read-ahead and write-back.
 
-> Hi Linus,
->
-> This is the second (and final) set of Xen updates for 2.6.30.  
-> This set contains Xen dom0 support, which includes:
->
->    * adding to the existing Xen support to allow running as a
->      privileged domain
->    * some hooks into the apic setup code to allow Xen interrupts to get
->      routed properly
->    * a Xen implementation of the DMA ops API
->    * a Xen MTRR driver
->    * other misc things
->
-> These changes only hook into init/setup code, and will have no 
-> runtime performance impact on native execution when 
-> CONFIG_PARAVIRT is enabled, and are completely compiled out 
-> without it.
->
-> These changes are more or less unchanged since their first posting 
-> about 3-4 weeks ago.  The x86 parts have been reviewed (mainly by 
-> HPA) and considered not too objectionable.
+Kind of like how a database does it, or maybe the page cache on the
+iSCSI initiator's system ;-)
 
-This stuff is still on my list of things to look at.
+> I personally consider O_DIRECT (as well as BLOCKIO) as nothing more than 
+> a workaround for possible flaws in the storage subsystem. If O_DIRECT 
+> works better, then in 99+% cases there is something in the storage 
+> subsystem, which should be fixed to perform better.
 
-AFAIK hpa had a look and found it not too objectionable, but didnt 
-ack it, which means the green lights to:
+That's not true, page cached I/O is broken into page sizes which limits
+the I/O bandwidth of the storage hardware while imposing a higher CPU
+overhead. Obviously page-cached I/O isn't ideal for all situations.
 
-  - review it in detail
- 1- then after a round of review feedbacks merge it into the x86 tree
-  - then to test it there
-  - then to fix the (inevitable) bugs and go to 1 until bug-free
-  - then to stage it to linux-next
-  - then after many weeks and months, to eventually send it to Linus
+You could also have an amazing backend storage system with it's own
+NVRAM cache. Why put the performance overhead onto the target system
+when you can off-load it to the controller?
 
-That's NOT the same thing as you sending it straight to Linus, 
-without the broad acks from the x86 maintainers for all details.
+> To be complete, there is one case where O_DIRECT and BLOCKIO have an 
+> advantage: both of them transfer data zero-copy. So they are good if 
+> your memory is too slow comparing to storage (InfiniBand case, for 
+> instance) and additional data copy hurts performance noticeably.
 
-I had a quick look, and stuff like this is not acceptable:
+The bottom line which will always be true:
 
- static inline unsigned int io_apic_read(unsigned int apic, unsigned int reg)
- {
--       struct io_apic __iomem *io_apic = io_apic_base(apic);
-+       struct io_apic __iomem *io_apic;
-+
-+       if (xen_initial_domain())
-+               return xen_io_apic_read(apic, reg);
-+
-+       io_apic = io_apic_base(apic);
+Know your workload, configure your storage to match.
 
-Should be done by introducing your own xen specific irqchip. And 
-this is not news to you, it has been told you in _early February_:
+The best storage solutions allow the implementor the most flexibility
+in configuring the storage, which I think both IET and SCST do.
 
-  http://lkml.indiana.edu/hypermail/linux/kernel/0902.1/00410.html
+IET just needs to fix how it does it workload with CFQ which
+somehow SCST has overcome. Of course SCST tweaks the Linux kernel to
+gain some extra speed.
 
-You didnt reply to that feedback of mine and you didnt fix it.
+Vlad, how about a comparison of SCST vs IET without those kernel hooks?
 
-We are not putting some xen-specific hack into core x86 code ... The 
-irqchip method wont put overhead and ugliness into native Linux. 
-It's an existing abstraction for such stuff, use it and extend it if 
-needed.
+-Ross
 
-And stuff like this in arch/x86/kernel/pci-swiotlb.c:
+______________________________________________________________________
+This e-mail, and any attachments thereto, is intended only for use by
+the addressee(s) named herein and may contain legally privileged
+and/or confidential information. If you are not the intended recipient
+of this e-mail, you are hereby notified that any dissemination,
+distribution or copying of this e-mail, and any attachments thereto,
+is strictly prohibited. If you have received this e-mail in error,
+please immediately notify the sender and permanently delete the
+original and any copy or printout thereof.
 
-  dma_addr_t swiotlb_phys_to_bus(struct device *hwdev, phys_addr_t paddr)
-  {
- +#ifdef CONFIG_PCI_XEN
- +       if (xen_pv_domain())
- +               return xen_phys_to_bus(paddr);
- +#endif
-         return paddr;
-  }
-
-and the other PCI bits very much need the ack of the PCI and 
-sw-IOMMU folks (Fujita Tomonori mainly). I'd be surprised if they 
-werent disgusted by it.
-
-I dont mind pull requests outside of maintenance boundaries, as long 
-as the changes are good.
-
-You know our stance which is very simple: dont put in Xen-only hooks 
-that slow down native, and get rid of the existing Xen-only hooks.
-
-	Ingo
