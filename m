@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765245AbZCaXgY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764571AbZCaXgt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765245AbZCaXgY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Mar 2009 19:36:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763760AbZCaXWL
+	id S1764571AbZCaXgt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Mar 2009 19:36:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762328AbZCaXWR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Mar 2009 19:22:11 -0400
-Received: from sous-sol.org ([216.99.217.87]:33314 "EHLO x200.localdomain"
+	Tue, 31 Mar 2009 19:22:17 -0400
+Received: from sous-sol.org ([216.99.217.87]:33326 "EHLO x200.localdomain"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1762687AbZCaXWJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Mar 2009 19:22:09 -0400
-Message-Id: <20090331231713.224492566@sous-sol.org>
+	id S1764176AbZCaXWP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Mar 2009 19:22:15 -0400
+Message-Id: <20090331231724.678240580@sous-sol.org>
 User-Agent: quilt/0.47-1
-Date: Tue, 31 Mar 2009 16:11:19 -0700
+Date: Tue, 31 Mar 2009 16:11:21 -0700
 From: Chris Wright <chrisw@sous-sol.org>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -24,11 +24,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Dan Carpenter <error27@gmail.com>,
-       Miklos Szeredi <mszeredi@suse.cz>
-Subject: [patch 34/45] fuse: fix fuse_file_lseek returning with lock held
+       alan@lxorguk.ukuu.org.uk,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       Suresh Siddha <suresh.b.siddha@intel.com>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Dave Airlie <airlied@redhat.com>, Ingo Molnar <mingo@elte.hu>
+Subject: [patch 36/45] x86, PAT, PCI: Change vma prot in pci_mmap to reflect inherited prot
 References: <20090331231045.719396245@sous-sol.org>
-Content-Disposition: inline; filename=fuse-fix-fuse_file_lseek-returning-with-lock-held.patch
+Content-Disposition: inline; filename=x86-pat-pci-change-vma-prot-in-pci_mmap-to-reflect-inherited-prot.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -36,38 +39,45 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 ---------------------
 
-From: Dan Carpenter <error27@gmail.com>
+From: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
 
-upstream commit: 5291658d87ac1ae60418e79e7b6bad7d5f595e0c
+upstream commit: 9cdec049389ce2c324fd1ec508a71528a27d4a07
 
-This bug was found with smatch (http://repo.or.cz/w/smatch.git/).  If
-we return directly the inode->i_mutex lock doesn't get released.
+While looking at the issue in the thread:
 
-Signed-off-by: Dan Carpenter <error27@gmail.com>
-Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
-CC: stable@kernel.org
+  http://marc.info/?l=dri-devel&m=123606627824556&w=2
+
+noticed a bug in pci PAT code and memory type setting.
+
+PCI mmap code did not set the proper protection in vma, when it
+inherited protection in reserve_memtype. This bug only affects
+the case where there exists a WC mapping before X does an mmap
+with /proc or /sys pci interface. This will cause X userlevel
+mmap from /proc or /sysfs to fail on fork.
+
+Reported-by: Kevin Winchester <kjwinchester@gmail.com>
+Signed-off-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+Signed-off-by: Suresh Siddha <suresh.b.siddha@intel.com>
+Cc: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: Dave Airlie <airlied@redhat.com>
+Cc: <stable@kernel.org>
+LKML-Reference: <20090323190720.GA16831@linux-os.sc.intel.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 ---
- fs/fuse/file.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ arch/x86/pci/i386.c |    3 +++
+ 1 file changed, 3 insertions(+)
 
---- a/fs/fuse/file.c
-+++ b/fs/fuse/file.c
-@@ -1465,7 +1465,7 @@ static loff_t fuse_file_llseek(struct fi
- 	case SEEK_END:
- 		retval = fuse_update_attributes(inode, NULL, file, NULL);
- 		if (retval)
--			return retval;
-+			goto exit;
- 		offset += i_size_read(inode);
- 		break;
- 	case SEEK_CUR:
-@@ -1479,6 +1479,7 @@ static loff_t fuse_file_llseek(struct fi
+--- a/arch/x86/pci/i386.c
++++ b/arch/x86/pci/i386.c
+@@ -319,6 +319,9 @@ int pci_mmap_page_range(struct pci_dev *
+ 			return -EINVAL;
  		}
- 		retval = offset;
+ 		flags = new_flags;
++		vma->vm_page_prot = __pgprot(
++			(pgprot_val(vma->vm_page_prot) & ~_PAGE_CACHE_MASK) |
++			flags);
  	}
-+exit:
- 	mutex_unlock(&inode->i_mutex);
- 	return retval;
- }
+ 
+ 	if (((vma->vm_pgoff < max_low_pfn_mapped) ||
 
