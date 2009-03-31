@@ -1,66 +1,161 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757506AbZCaMbs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757613AbZCaMdZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757506AbZCaMbs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Mar 2009 08:31:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754479AbZCaMbg
+	id S1757613AbZCaMdZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Mar 2009 08:33:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754951AbZCaMdN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Mar 2009 08:31:36 -0400
-Received: from mga14.intel.com ([143.182.124.37]:64915 "EHLO mga14.intel.com"
+	Tue, 31 Mar 2009 08:33:13 -0400
+Received: from cantor.suse.de ([195.135.220.2]:51922 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753482AbZCaMbf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Mar 2009 08:31:35 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.38,452,1233561600"; 
-   d="scan'208";a="126081549"
-Date: Tue, 31 Mar 2009 20:31:12 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Jos Houtman <jos@hyves.nl>
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Jeff Layton <jlayton@redhat.com>, Dave Chinner <david@fromorbit.com>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       "jens.axboe@oracle.com" <jens.axboe@oracle.com>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "hch@infradead.org" <hch@infradead.org>,
-       "linux-nfs@vger.kernel.org" <linux-nfs@vger.kernel.org>
-Subject: Re: Page Cache writeback too slow,   SSD/noop scheduler/ext2
-Message-ID: <20090331123112.GA15098@localhost>
-References: <C5F6B627.D9D0%jos@hyves.nl> <C5F7D654.DE6F%jos@hyves.nl>
+	id S1751395AbZCaMdL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Mar 2009 08:33:11 -0400
+Date: Tue, 31 Mar 2009 14:33:07 +0200
+From: Jan Kara <jack@suse.cz>
+To: Alexander Beregalov <a.beregalov@gmail.com>
+Cc: Theodore Tso <tytso@mit.edu>,
+       "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>,
+       linux-ext4@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       sparclinux@vger.kernel.org
+Subject: Re: next-20090310: ext4 hangs
+Message-ID: <20090331123307.GG11808@duck.suse.cz>
+References: <20090325151516.GB14881@atrey.karlin.mff.cuni.cz> <a4423d670903250818n512b1c67ja1b38db6d09ac7c@mail.gmail.com> <20090325152234.GN23439@duck.suse.cz> <a4423d670903250829w5e9304a7rce24f4220379620f@mail.gmail.com> <20090325161556.GP23439@duck.suse.cz> <a4423d670903251007r72058ca8m28275c1433ab2706@mail.gmail.com> <20090325194316.GQ23439@duck.suse.cz> <a4423d670903251538p3a7c180br1bcfe08c4f044c15@mail.gmail.com> <20090331100150.GF11808@duck.suse.cz> <a4423d670903310307i7acd31f0r4836beae14cfb92d@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: multipart/mixed; boundary="d6Gm4EdcadzBjdND"
 Content-Disposition: inline
-In-Reply-To: <C5F7D654.DE6F%jos@hyves.nl>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <a4423d670903310307i7acd31f0r4836beae14cfb92d@mail.gmail.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 31, 2009 at 08:16:52PM +0800, Jos Houtman wrote:
-> > 
-> > Next to that I was wondering if there are any plans to make sure that not
-> > all dirty-files are written back in the same interval.
-> > 
-> > In my case all database files are written back each 30 seconds, while I
-> > would prefer them to be more divided over the interval.
+
+--d6Gm4EdcadzBjdND
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+
+On Tue 31-03-09 14:07:30, Alexander Beregalov wrote:
+> 2009/3/31 Jan Kara <jack@suse.cz>:
+> > On Thu 26-03-09 01:38:32, Alexander Beregalov wrote:
+> >> 2009/3/25 Jan Kara <jack@suse.cz>:
+> >> > On Wed 25-03-09 20:07:46, Alexander Beregalov wrote:
+> >> >> 2009/3/25 Jan Kara <jack@suse.cz>:
+> >> >> > On Wed 25-03-09 18:29:10, Alexander Beregalov wrote:
+> >> >> >> 2009/3/25 Jan Kara <jack@suse.cz>:
+> >> >> >> > On Wed 25-03-09 18:18:43, Alexander Beregalov wrote:
+> >> >> >> >> 2009/3/25 Jan Kara <jack@suse.cz>:
+> >> >> >> >> >> > So, I think I need to try it on 2.6.29-rc7 again.
+> >> >> >> >> >>   I've looked into this. Obviously, what's happenning is that we delete
+> >> >> >> >> >> an inode and jbd2_journal_release_jbd_inode() finds inode is just under
+> >> >> >> >> >> writeout in transaction commit and thus it waits. But it gets never woken
+> >> >> >> >> >> up and because it has a handle from the transaction, every one eventually
+> >> >> >> >> >> blocks on waiting for a transaction to finish.
+> >> >> >> >> >>   But I don't really see how that can happen. The code is really
+> >> >> >> >> >> straightforward and everything happens under j_list_lock... Strange.
+> >> >> >> >> >  BTW: Is the system SMP?
+> >> >> >> >> No, it is UP system.
+> >> >> >> >  Even stranger. And do you have CONFIG_PREEMPT set?
+> >> >> >> >
+> >> >> >> >> The bug exists even in 2.6.29, I posted it with a new topic.
+> >> >> >> >  OK, I've sort-of expected this.
+> >> >> >>
+> >> >> >> CONFIG_PREEMPT_RCU=y
+> >> >> >> CONFIG_PREEMPT_RCU_TRACE=y
+> >> >> >> # CONFIG_PREEMPT_NONE is not set
+> >> >> >> # CONFIG_PREEMPT_VOLUNTARY is not set
+> >> >> >> CONFIG_PREEMPT=y
+> >> >> >> CONFIG_DEBUG_PREEMPT=y
+> >> >> >> # CONFIG_PREEMPT_TRACER is not set
+> >> >> >>
+> >> >> >> config is attached.
+> >> >> >  Thanks for the data. I still don't see how the wakeup can get lost. The
+> >> >> > process even cannot be preempted when we are in the section protected by
+> >> >> > j_list_lock... Can you send me a disassembly of functions
+> >> >> > jbd2_journal_release_jbd_inode() and journal_submit_data_buffers() so that
+> >> >> > I can see whether the compiler has not reordered something unexpectedly?
+> >> >  Thanks for the disassembly...
+> >> >
+> >> >> By default gcc inlines journal_submit_data_buffers()
+> >> >> Here is -fno-inline version. Default version is in attach.
+> >  <snip>
+> >
+> >  I'm helpless here. I don't see how we can miss a wakeup (plus you seem to
+> > be the only one reporting the bug). Could you please compile and test the kernel
+> > with the attached patch? It will print to kernel log when we go to sleep
+> > waiting for inode commit and when we send wakeups etc. When you hit the
+> > deadlock, please send me your kernel log. It should help with debugging why do
+> > we miss the wakeup. Thanks.
 > 
-> There another question I have: does the writeback go through the io
-> scheduler? Because no matter the io scheduler or the tuning done, the
-> writeback algorithm totally starves the reads.
+> Which patch?
+  Ups. Forgot to attach ;).
 
-I noticed this annoying writes-starve-reads problem too. I'll look into it.
+										Honza
+-- 
+Jan Kara <jack@suse.cz>
+SUSE Labs, CR
 
-> See the url below for an example with CFQ, but deadline or noop all show
-> this behaviour:
-> http://94.100.113.33/535450001-535500000/535451701-535451800/535451800_6_L7g
-> t.jpeg
-> 
-> Is there anything I can do about this behaviour by creating a better
-> interleaving of the reads and writes?
+--d6Gm4EdcadzBjdND
+Content-Type: text/x-patch; charset=us-ascii
+Content-Disposition: attachment; filename="0001-ext4-Debug-sleepers-in-iput.patch"
 
-I guess it should be handled in the generic block io layer.  Once we
-solved the writes-starve-reads problem, the bursty-writeback behavior
-becomes a no-problem for SSD.
+>From 123ab7510c04c698077e5756b4de6c66ce8ee71e Mon Sep 17 00:00:00 2001
+From: Jan Kara <jack@suse.cz>
+Date: Tue, 31 Mar 2009 11:57:10 +0200
+Subject: [PATCH] ext4: Debug sleepers in iput()
 
-Thanks,
-Fengguang
+Signed-off-by: Jan Kara <jack@suse.cz>
+---
+ fs/jbd2/commit.c  |    4 ++++
+ fs/jbd2/journal.c |    6 ++++++
+ 2 files changed, 10 insertions(+), 0 deletions(-)
 
+diff --git a/fs/jbd2/commit.c b/fs/jbd2/commit.c
+index 62804e5..f47b8a3 100644
+--- a/fs/jbd2/commit.c
++++ b/fs/jbd2/commit.c
+@@ -259,6 +259,8 @@ static int journal_submit_data_buffers(journal_t *journal,
+ 		spin_lock(&journal->j_list_lock);
+ 		J_ASSERT(jinode->i_transaction == commit_transaction);
+ 		jinode->i_flags &= ~JI_COMMIT_RUNNING;
++		if (jinode->i_flags & 4)
++			printk(KERN_INFO "JBD2: Waking up sleeper on ino %lu\n", jinode->i_vfs_inode->i_ino);
+ 		wake_up_bit(&jinode->i_flags, __JI_COMMIT_RUNNING);
+ 	}
+ 	spin_unlock(&journal->j_list_lock);
+@@ -296,6 +298,8 @@ static int journal_finish_inode_data_buffers(journal_t *journal,
+ 		}
+ 		spin_lock(&journal->j_list_lock);
+ 		jinode->i_flags &= ~JI_COMMIT_RUNNING;
++		if (jinode->i_flags & 4)
++			printk(KERN_INFO "JBD2: Waking up sleeper on ino %lu\n", jinode->i_vfs_inode->i_ino);
+ 		wake_up_bit(&jinode->i_flags, __JI_COMMIT_RUNNING);
+ 	}
+ 
+diff --git a/fs/jbd2/journal.c b/fs/jbd2/journal.c
+index 5814410..5459fd9 100644
+--- a/fs/jbd2/journal.c
++++ b/fs/jbd2/journal.c
+@@ -2225,11 +2225,17 @@ restart:
+ 	if (jinode->i_flags & JI_COMMIT_RUNNING) {
+ 		wait_queue_head_t *wq;
+ 		DEFINE_WAIT_BIT(wait, &jinode->i_flags, __JI_COMMIT_RUNNING);
++		unsigned long ino = jinode->i_vfs_inode->i_ino;
++
++		jinode->i_flags |= 4;
++		printk(KERN_INFO "JBD2: Waiting for ino %lu\n", ino);
++
+ 		wq = bit_waitqueue(&jinode->i_flags, __JI_COMMIT_RUNNING);
+ 		prepare_to_wait(wq, &wait.wait, TASK_UNINTERRUPTIBLE);
+ 		spin_unlock(&journal->j_list_lock);
+ 		schedule();
+ 		finish_wait(wq, &wait.wait);
++		printk(KERN_INFO "JBD2: Woken on ino %lu\n", ino);
+ 		goto restart;
+ 	}
+ 
+-- 
+1.6.0.2
+
+
+--d6Gm4EdcadzBjdND--
