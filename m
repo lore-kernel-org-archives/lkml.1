@@ -1,93 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756636AbZCaJGt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755766AbZCaJKC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756636AbZCaJGt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Mar 2009 05:06:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754405AbZCaJGi
+	id S1755766AbZCaJKC (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Mar 2009 05:10:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752374AbZCaJJv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Mar 2009 05:06:38 -0400
-Received: from gw-ca.panasas.com ([209.116.51.66]:10001 "EHLO
-	laguna.int.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754439AbZCaJGh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Mar 2009 05:06:37 -0400
-Message-ID: <49D1DCA4.6010306@panasas.com>
-Date: Tue, 31 Mar 2009 12:04:36 +0300
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090315 Remi/3.0-0.b2.fc10.remi Thunderbird/3.0b2
+	Tue, 31 Mar 2009 05:09:51 -0400
+Received: from bilbo.ozlabs.org ([203.10.76.25]:32989 "EHLO bilbo.ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751953AbZCaJJv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Mar 2009 05:09:51 -0400
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Avishay Traeger <avishay@gmail.com>, Jeff Garzik <jeff@garzik.org>,
-       Evgeniy Polyakov <zbr@ioremap.net>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       open-osd <osd-dev@open-osd.org>,
-       Marcin Slusarz <marcin.slusarz@gmail.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Subject: Re: [PATCH 4/8 ver5] exofs: address_space_operations
-References: <49C1331D.1080805@panasas.com>	<1237399473-29344-1-git-send-email-bharrosh@panasas.com>	<49C64416.4060801@panasas.com> <20090331010420.8a12810e.akpm@linux-foundation.org>
-In-Reply-To: <20090331010420.8a12810e.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 31 Mar 2009 09:06:34.0876 (UTC) FILETIME=[FDAFF3C0:01C9B1DF]
+Message-ID: <18897.56790.860287.221427@cargo.ozlabs.ibm.com>
+Date: Tue, 31 Mar 2009 20:09:42 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Corey Ashford <cjashfor@linux.vnet.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 13/15] perf_counter: provide generic callchain bits
+In-Reply-To: <1238488993.28248.1929.camel@twins>
+References: <20090330170701.856843742@chello.nl>
+	<20090330171024.254266860@chello.nl>
+	<18897.46177.528910.51044@cargo.ozlabs.ibm.com>
+	<1238481552.28248.1384.camel@twins>
+	<49D1C544.7020403@linux.vnet.ibm.com>
+	<1238488993.28248.1929.camel@twins>
+X-Mailer: VM 8.0.9 under Emacs 22.2.1 (i486-pc-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 03/31/2009 11:04 AM, Andrew Morton wrote:
-> On Sun, 22 Mar 2009 15:58:46 +0200 Boaz Harrosh <bharrosh@panasas.com> wrote:
-> 
->> OK Now we start to read and write from osd-objects. We try to
->> collect at most contiguous pages as possible in a single write/read.
->> The first page index is the object's offset.
->>
->> TODO:
->>    In 64-bit a single bio can carry at most 128 pages.
->>    Add support of chaining multiple bios
->>
->>
->> ...
->>
->> +static int write_exec(struct page_collect *pcol)
->> +{
->> +	struct exofs_i_info *oi = exofs_i(pcol->inode);
->> +	struct osd_obj_id obj = {pcol->sbi->s_pid,
->> +					pcol->inode->i_ino + EXOFS_OBJ_OFF};
->> +	struct osd_request *or = NULL;
->> +	struct page_collect *pcol_copy = NULL;
->> +	loff_t i_start = pcol->pg_first << PAGE_CACHE_SHIFT;
-> 
-> bug.  On 32-bit this shift will overflow prior to getting promoted to
-> 64-bit.  Do:
-> 
-> 	loff_t i_start = (loff_t)pcol->pg_first << PAGE_CACHE_SHIFT;
-> 
+Peter Zijlstra writes:
 
-In that case I might make pcol->pg_first loff_t.
-
-Why is inode->i_index not an loff_t then?
-Page-index <=> byte-offset, is done all the time 12 bits does not
-make a difference.
-
->> ...
->>
->> +static int writepage_strip(struct page *page,
->> +			   struct writeback_control *wbc_unused, void *data)
+> >  One simplification would be that reading 
+> > the fd of a group leader would always read up all of the counters in the 
+> > group (along with their enabled and running times if those bits are 
+> > set), and that reading a single counter's fd would yield only that 
+> > counter's values and times (if enabled).  In effect, these two values, 
+> > PERF_COUNTER_GROUP and PERF_COUNTER_SIMPLE would no longer be necessary 
+> > at all.  Other bits would be used to determine what's in the mmap'd samples.
 > 
-> Some of these functions could do with some comments explaining why they exist.
-> 
->> +	struct page_collect *pcol = data;
->> +	struct inode *inode = pcol->inode;
->> +	struct exofs_i_info *oi = exofs_i(inode);
->> +	loff_t i_size = i_size_read(inode);
->> +	pgoff_t end_index = i_size >> PAGE_CACHE_SHIFT;
->> +	size_t len;
->> +	int ret;
->> +
->>
->> ...
->>
-> 
+> Quite so, that sounds sensible, Paul?
 
-Thanks
-Boaz
+I think the readout of the other group members (for a group leader)
+should be enabled by a bit in hw_event.read_format, say
+PERF_FORMAT_GROUP.
+
+There is a slight complication - we would want to read all the
+counters in the group atomically, or as close to atomically as we
+could get, and we don't have any way to do that at the moment.
+
+> Would you be overly bothered by the read() output also having that
+> {type,size} header we use for the mmap() data?
+
+How about a PERF_FORMAT_HEADERS bit in hw_event.read_format to say that
+we want to get the headers in the read() output?
+
+With those two extra bits we can fulfill these desires without adding
+overhead for programs that don't want the extra stuff, and without
+breaking compatibility.
+
+Paul.
