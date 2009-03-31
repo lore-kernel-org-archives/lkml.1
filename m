@@ -1,62 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762490AbZCaGVh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758081AbZCaGaa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762490AbZCaGVh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Mar 2009 02:21:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758471AbZCaGVE
+	id S1758081AbZCaGaa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Mar 2009 02:30:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750901AbZCaGaQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Mar 2009 02:21:04 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:33330 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756895AbZCaGVB (ORCPT
+	Tue, 31 Mar 2009 02:30:16 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:33122 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753215AbZCaGaO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Mar 2009 02:21:01 -0400
-Date: Tue, 31 Mar 2009 07:19:53 +0100
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: "Serge E. Hallyn" <serue@us.ibm.com>
-Cc: Oleg Nesterov <oleg@redhat.com>, Hugh Dickins <hugh@veritas.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Joe Malicki <jmalicki@metacarta.com>, Michael Itz <mitz@metacarta.com>,
-       Kenneth Baker <bakerk@metacarta.com>,
-       Chris Wright <chrisw@sous-sol.org>, David Howells <dhowells@redhat.com>,
-       Alexey Dobriyan <adobriyan@gmail.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: Q: check_unsafe_exec() races (Was: [PATCH 2/4] fix setuid
-	sometimes doesn't)
-Message-ID: <20090331061953.GT28946@ZenIV.linux.org.uk>
-References: <20090329213635.GA21820@redhat.com> <20090329222022.GJ28946@ZenIV.linux.org.uk> <20090329235639.GA32199@redhat.com> <20090330000338.GB32199@redhat.com> <20090330010843.GM28946@ZenIV.linux.org.uk> <20090330011303.GN28946@ZenIV.linux.org.uk> <20090330013612.GA4080@redhat.com> <20090330014040.GA4807@redhat.com> <20090330123101.GQ28946@ZenIV.linux.org.uk> <20090330234539.GA3462@us.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090330234539.GA3462@us.ibm.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+	Tue, 31 Mar 2009 02:30:14 -0400
+Date: Tue, 31 Mar 2009 15:28:43 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: balbir@linux.vnet.ibm.com
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "kosaki.motohiro@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>
+Subject: Re: [RFC][PATCH] memcg soft limit (yet another new design) v1
+Message-Id: <20090331152843.e1db942b.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20090331061010.GJ16497@balbir.in.ibm.com>
+References: <20090327135933.789729cb.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090328181100.GB26686@balbir.in.ibm.com>
+	<20090328182747.GA8339@balbir.in.ibm.com>
+	<20090331085538.2aaa5e2b.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090331050055.GF16497@balbir.in.ibm.com>
+	<20090331140502.813993cc.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090331061010.GJ16497@balbir.in.ibm.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 30, 2009 at 06:45:39PM -0500, Serge E. Hallyn wrote:
+On Tue, 31 Mar 2009 11:40:10 +0530
+Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
 
-> (note exactly *meaningful* review, but)
+> > > Swapout for A? For A it is expected, but for B it is not. How many
+> > > nodes do you have on your machine? Any fake numa nodes?
+> > > 
+> > Of course, from B.
+> >
 > 
-> exit_fs() and daemonize_fs_struct() do:
-> 
->                 if (--fs->users)
->                         fs = NULL;
->                 write_unlock(&fs->lock);
-> 
-> Moving the write_unlock up actually let's the kernel boot and
-> start running ltp.
+> I asked because I see A have a swapout of 350 MB, which is expected
+> since it is way over its soft limit.
+>  
+gcc doesn't use so much RSS..ld ?
 
-Correct fix is
-		kill = !--fs->users;
-		write_unlock(&fs->lock);
-		...
-		if (kill)
-			free_fs_struct(fs);
-and similar in other places with the same idiocy (one of which forgets to
-unlock, on top of everything else).
+> > Nothing special boot options. My test was on VMware 2cpus/1.6GB memory.
+> > 
+> > I wonder why swapout can be 0 on your test. Do you add some extra hooks to
+> > kswapd ?
+> >
+> 
+> Nope.. no special hooks to kswapd. B never enters the RB-Tree and thus
+> never hits the memcg soft limit reclaim path. kswapd can reclaim from
+> it, but it grows back quickly.
+Why grows back ? tasks in B sleeps ?
 
-Anyway, hopefully much saner (== looked through after getting some sleep,
-as opposed to "what I've got in that branch at ~26 hours of uptime")
-variant is in the same repository, same branch.
+>  At some point, memcg soft limit reclaim
+> hits A and reclaims memory from it, allowing B to run without any
+> problems. I am talking about the state at the end of the experiment.
+> 
+Considering LRU rotation (ACTIVE->INACTIVE), pages in group B never goes back
+to ACTIVE list and can be the first candidates for swap-out via kswapd.
+
+Hmm....kswapd doesn't work at all ?
+
+(or 1700MB was too much.)
+
+Thanks,
+-Kame
+
+
