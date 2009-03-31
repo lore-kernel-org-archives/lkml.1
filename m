@@ -1,46 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762310AbZCaVBW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762784AbZCaVBi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762310AbZCaVBW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Mar 2009 17:01:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755421AbZCaVBF
+	id S1762784AbZCaVBi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Mar 2009 17:01:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762267AbZCaVBR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Mar 2009 17:01:05 -0400
-Received: from mail-fx0-f158.google.com ([209.85.220.158]:56912 "EHLO
-	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760521AbZCaVBE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Mar 2009 17:01:04 -0400
+	Tue, 31 Mar 2009 17:01:17 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:35307 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1762097AbZCaVBQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Mar 2009 17:01:16 -0400
+Date: Tue, 31 Mar 2009 22:57:03 +0200
+From: Oleg Nesterov <oleg@redhat.com>
+To: David Howells <dhowells@redhat.com>, James Morris <jmorris@namei.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: what is_single_threaded() does?
+Message-ID: <20090331205703.GA21030@redhat.com>
 MIME-Version: 1.0
-In-Reply-To: <49D280EF.1080507@oracle.com>
-References: <49D280EF.1080507@oracle.com>
-Date: Tue, 31 Mar 2009 23:01:00 +0200
-Message-ID: <897274600903311401v65fe3d3ame8522226a8a71ca9@mail.gmail.com>
-Subject: Re: 2.6.29 boot hang
-From: "Morten P.D. Stevens" <mstevens@win-professional.com>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Bjorn Helgaas <bjorn.helgaas@hp.com>, andreas.herrmann3@amd.com
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/3/31 Randy Dunlap <randy.dunlap@oracle.com>:
+I found this helper by accident, and I am puzzled.
 
-> If I change CONFIG_MICROCODE_AMD=y to CONFIG_MICROCODE_AMD=n & rebuild,
-> the kernel boots successfully.
->
-> Suggestions, fixes, etc.??
->
+	/**
+	 * is_single_threaded - Determine if a thread group is single-threaded or not
+	 * @p: A task in the thread group in question
+	 *
+	 * This returns true if the thread group to which a task belongs is single
+	 * threaded, false if it is not.
+	 */
 
-Does it boot with 2.6.28 and CONFIG_MICROCODE_AMD=y ?
+But this is not what the code does? The "t->mm == mm" check below means
+it also returns false if ->mm is shared with another CLONE_VM process ?
 
-If it is booting with 2.6.28 and AMD=y it could be a linux kernel
-related problem.
+Could you explain what is right, the comment or the code?
 
--
+	bool is_single_threaded(struct task_struct *p)
+	{
+		struct task_struct *g, *t;
+		struct mm_struct *mm = p->mm;
 
-Morten
+		if (atomic_read(&p->signal->count) != 1)
+			goto no;
+
+Is this correct? Let's suppose the main thread dies, and the thread group
+has only one live thread. In that case signal->count == 2.
+
+
+		if (atomic_read(&p->mm->mm_users) != 1) {
+			read_lock(&tasklist_lock);
+			do_each_thread(g, t) {
+
+Why do_each_thread() ? for_each_process() is enough, all sub-threads use
+the same ->mm.
+
+				if (t->mm == mm && t != p)
+					goto no_unlock;
+
+What about use_mm() ? Looks like this needs PF_KTHREAD check.
+
+			} while_each_thread(g, t);
+			read_unlock(&tasklist_lock);
+		}
+
+		return true;
+
+Perhaps it should be current_is_single_thread(void) ...
+
+Oleg.
+
