@@ -1,57 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761817AbZCaCo1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760392AbZCaCp3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761817AbZCaCo1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Mar 2009 22:44:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753572AbZCaCoP
+	id S1760392AbZCaCp3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Mar 2009 22:45:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754706AbZCaCpP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Mar 2009 22:44:15 -0400
-Received: from wa-out-1112.google.com ([209.85.146.176]:26942 "EHLO
-	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754847AbZCaCoO (ORCPT
+	Mon, 30 Mar 2009 22:45:15 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:52288 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753572AbZCaCpN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Mar 2009 22:44:14 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=meEfwxb5mFzC08JqS+1Io8A6gfRLOCVbZw7EhslDfEmwURc6EuT1WKoabxVuz0IHu7
-         09FU2VFVTIJJ2QckPA0Zl4bZPCrifQsxGO1+AZmeoNIml0khMbNq+KLqWuR79PsYMJJ8
-         WxJWLtz2Op8nP5KUFaiTC/UHj+UC/AQdlyqL4=
+	Mon, 30 Mar 2009 22:45:13 -0400
+Message-ID: <49D183B0.6060306@jp.fujitsu.com>
+Date: Tue, 31 Mar 2009 11:45:04 +0900
+From: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
 MIME-Version: 1.0
-In-Reply-To: <20090330163619.d08ba85e.akpm@linux-foundation.org>
-References: <ea11fea30903222039r4bec470crfd9825e37a926d56@mail.gmail.com> 
-	<20090330163619.d08ba85e.akpm@linux-foundation.org>
-Date: Tue, 31 Mar 2009 08:13:56 +0530
-Message-ID: <ea11fea30903301943m34a04f08hc4251c6a6039e97@mail.gmail.com>
-Subject: Re: [PATCH] : Code cleanup for fs/inode.c as per checkpatch.pl
-From: Manish Katiyar <mkatiyar@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: trivial@kernel.org, LKML <linux-kernel@vger.kernel.org>
+To: Ingo Molnar <mingo@elte.hu>
+CC: "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       linux-kernel@vger.kernel.org, Andi Kleen <ak@linux.intel.com>
+Subject: Re: [PATCH -tip 1/3] x86, mce: Add mce_threshold option for intel
+ cmci
+References: <49CB3F24.8040804@jp.fujitsu.com> <20090328120825.GB14464@elte.hu>
+In-Reply-To: <20090328120825.GB14464@elte.hu>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 31, 2009 at 5:06 AM, Andrew Morton
-<akpm@linux-foundation.org> wrote:
-> On Mon, 23 Mar 2009 09:09:26 +0530
-> Manish Katiyar <mkatiyar@gmail.com> wrote:
->
->> Code cleanup for fs/inode.c as per checkpatch.pl
->> Before:
->> total: 24 errors, 25 warnings, 1546 lines checked
->> After:
->> total: 0 errors, 0 warnings, 1539 lines checked
->
-> Probably OK, but again, please cc linux-kernel and/or linx-fsdevel.
+Hi Ingo,
 
-Hi Andrew,
+Sorry, could you drop patch 1/3 and 3/3 from your -tip tree?
+Andi and I discussed some and agreed disabling CMCI need to be
+done in different way (at least parameter name).
 
-[ cced lkml ]
+Thanks,
+H.Seto
 
-Thanks -
-Manish
->
-> Also, your email client wordwrapped the patch.
->
+Ingo Molnar wrote:
+> * Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com> wrote:
+> 
+>> This patch adds a kernel parameter "mce_threshold=n" to enable us
+>> to change the default threshold for CMCI(Corrected Machine Check
+>> Interrupt) that recent Intel processor supports.
+>>
+>> And it also supports CMCI disabling by setting mce_threshold=0.
+>> It would be useful if your hardware does something wrong and/or
+>> if polling by timer is preferred than the threshold interrupt.
+>>
+>> Signed-off-by: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+>> Cc: Andi Kleen <ak@linux.intel.com>
+>> Cc: Ingo Molnar <mingo@elte.hu>
+>> ---
+>>  Documentation/kernel-parameters.txt       |    5 +++
+>>  arch/x86/include/asm/msr-index.h          |    1 +
+>>  arch/x86/kernel/cpu/mcheck/mce_intel_64.c |   56 +++++++++++++++++++++++++++--
+>>  3 files changed, 59 insertions(+), 3 deletions(-)
+>>
+>> diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
+>> index 1d8af36..7a0d117 100644
+>> --- a/Documentation/kernel-parameters.txt
+>> +++ b/Documentation/kernel-parameters.txt
+>> @@ -1267,6 +1267,11 @@ and is between 256 and 4096 characters. It is defined in the file
+>>  
+>>  	mce=option	[X86-64] See Documentation/x86/x86_64/boot-options.txt
+>>  
+>> +	mce_threshold=	[X86-64,intel] Default CMCI threshold
+>> +			Should be unsigned integer. Setting 0 disables cmci.
+>> +			Format: <integer>
+>> +			Default: 1
+> 
+> Makes sense. CMCI is a new CPU feature so having boot controls to 
+> disable it is generally a good idea - while still having old-style 
+> MCE support in place.
+> 
+> Applied to tip:x86/mce2, thanks Hidetoshi!
+> 
+> 	Ingo
+> 
+> 
+
