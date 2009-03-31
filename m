@@ -1,115 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763288AbZCaThU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762876AbZCaTiO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763288AbZCaThU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Mar 2009 15:37:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760261AbZCaThA
+	id S1762876AbZCaTiO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Mar 2009 15:38:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759211AbZCaThz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Mar 2009 15:37:00 -0400
-Received: from 69-30-77-85.dq1sn.easystreet.com ([69.30.77.85]:35780 "EHLO
-	kingsolver.anholt.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754087AbZCaTg7 (ORCPT
+	Tue, 31 Mar 2009 15:37:55 -0400
+Received: from victor.provo.novell.com ([137.65.250.26]:49240 "EHLO
+	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758312AbZCaThy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Mar 2009 15:36:59 -0400
-Subject: Re: [PATCH 6/6] drm/i915: Fix lock order reversal in GEM
- relocation entry copying. -- makes X hang
-From: Eric Anholt <eric@anholt.net>
-To: Florian Mickler <florian@mickler.org>
-Cc: linux-kernel@vger.kernel.org, dri-devel@lists.sourceforge.net,
-       keithp@keithp.com
-In-Reply-To: <20090330120011.0d506d20@schatten>
-References: <1238017510-26784-1-git-send-email-eric@anholt.net>
-	 <1238017510-26784-2-git-send-email-eric@anholt.net>
-	 <1238017510-26784-3-git-send-email-eric@anholt.net>
-	 <1238017510-26784-4-git-send-email-eric@anholt.net>
-	 <1238017510-26784-5-git-send-email-eric@anholt.net>
-	 <1238017510-26784-6-git-send-email-eric@anholt.net>
-	 <1238017510-26784-7-git-send-email-eric@anholt.net>
-	 <20090330120011.0d506d20@schatten>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-izVketRM4JMx3EFxhuR3"
-Date: Tue, 31 Mar 2009 12:36:56 -0700
-Message-Id: <1238528216.8369.390.camel@gaiman.anholt.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 
+	Tue, 31 Mar 2009 15:37:54 -0400
+Message-ID: <49D2718F.9070203@novell.com>
+Date: Tue, 31 Mar 2009 15:39:59 -0400
+From: Gregory Haskins <ghaskins@novell.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+MIME-Version: 1.0
+To: Avi Kivity <avi@redhat.com>
+CC: linux-kernel@vger.kernel.org, agraf@suse.de, pmullaney@novell.com,
+       pmorreale@novell.com, anthony@codemonkey.ws, rusty@rustcorp.com.au,
+       netdev@vger.kernel.org, kvm@vger.kernel.org
+Subject: Re: [RFC PATCH 15/17] kvm: add dynamic IRQ support
+References: <20090331184057.28333.77287.stgit@dev.haskins.net> <20090331184405.28333.59205.stgit@dev.haskins.net> <49D26CFE.1060700@redhat.com>
+In-Reply-To: <49D26CFE.1060700@redhat.com>
+X-Enigmail-Version: 0.95.7
+OpenPGP: id=D8195319
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig5C8B0AB03AD9C6BA9D8D181F"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
---=-izVketRM4JMx3EFxhuR3
-Content-Type: text/plain
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig5C8B0AB03AD9C6BA9D8D181F
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: quoted-printable
 
-On Mon, 2009-03-30 at 12:00 +0200, Florian Mickler wrote:
-> Hi!
->=20
-> On Wed, 25 Mar 2009 14:45:10 -0700
-> Eric Anholt <eric@anholt.net> wrote:
->=20
-> > Signed-off-by: Eric Anholt <eric@anholt.net>
-> > Reviewed-by: Keith Packard <keithp@keithp.com>
-> > ---
-> >  drivers/gpu/drm/i915/i915_gem.c |  187
-> > +++++++++++++++++++++++++++----------- 1 files changed, 133
-> > insertions(+), 54 deletions(-)
-> >=20
->=20
-> I testet Linus' Git tree @ 5d80f8e5a (merge
-> net-2.6) and discovered that X hung after starting up gdm.
->=20
-> When i start gdm the screen is frozen and X hangs.=20
-> I was able to bisect it down to=20
->=20
-> 40a5f0decdf050785ebd62b36ad48c869ee4b384 drm/i915: Fix lock order
-> reversal in GEM relocation entry copying.
->=20
->=20
-> when hung /proc/[xpid]/stack did contain:
->=20
-> [<ffffffff8024c13e>] msleep_interruptible+0x2e/0x40
-> [<ffffffff80557fdd>] i915_wait_ring+0x17d/0x1d0
-> [<ffffffff8056280d>] i915_gem_execbuffer+0xd2d/0xf70
-> [<ffffffff80546555>] drm_ioctl+0x1f5/0x320
-> [<ffffffff802d8ce5>] vfs_ioctl+0x85/0xa0
-> [<ffffffff802d8f0b>] do_vfs_ioctl+0x20b/0x510
-> [<ffffffff802d9297>] sys_ioctl+0x87/0xa0
-> [<ffffffff8020ba8b>] system_call_fastpath+0x16/0x1b
-> [<ffffffffffffffff>] 0xffffffffffffffff
->=20
->=20
-> I reverted that commit now on top of 5d80f8e5a and all 's well .
->=20
->=20
-> My X-Stack is from Git at around 20th march. I will update that now,
-> but as it hangs in a kernel syscall, it shouldn't matter?
->=20
-> Sincerely,
->=20
-> Florian
->=20
-> p.s. no kms=20
+Avi Kivity wrote:
+> Gregory Haskins wrote:
+>> This patch provides the ability to dynamically declare and map an
+>> interrupt-request handle to an x86 8-bit vector.
+>>
+>> Problem Statement: Emulated devices (such as PCI, ISA, etc) have
+>> interrupt routing done via standard PC mechanisms (MP-table, ACPI,
+>> etc).  However, we also want to support a new class of devices
+>> which exist in a new virtualized namespace and therefore should
+>> not try to piggyback on these emulated mechanisms.  Rather, we
+>> create a way to dynamically register interrupt resources that
+>> acts indepent of the emulated counterpart.
+>>
+>> On x86, a simplistic view of the interrupt model is that each core
+>> has a local-APIC which can recieve messages from APIC-compliant
+>> routing devices (such as IO-APIC and MSI) regarding details about
+>> an interrupt (such as which vector to raise).  These routing devices
+>> are controlled by the OS so they may translate a physical event
+>> (such as "e1000: raise an RX interrupt") to a logical destination
+>> (such as "inject IDT vector 46 on core 3").  A dynirq is a virtual
+>> implementation of such a router (think of it as a virtual-MSI, but
+>> without the coupling to an existing standard, such as PCI).
+>>
+>> The model is simple: A guest OS can allocate the mapping of "IRQ"
+>> handle to "vector/core" in any way it sees fit, and provide this
+>> information to the dynirq module running in the host.  The assigned
+>> IRQ then becomes the sole handle needed to inject an IDT vector
+>> to the guest from a host.  A host entity that wishes to raise an
+>> interrupt simple needs to call kvm_inject_dynirq(irq) and the routing
+>> is performed transparently.
+>>  =20
+>
+> A major disadvantage of dynirq is that it will only work on guests
+> which have been ported to it.  So this will only be useful on newer
+> Linux, and will likely never work with Windows guests.
+>
+> Why is having an emulated PCI device so bad?  We found that it has
+> several advantages:
+> - works with all guests
+> - supports hotplug/hotunplug, udev, sysfs, module autoloading, ...
+> - supported in all OSes
+> - someone else maintains it
+These points are all valid, and I really struggled with this particular
+part of the design.  The entire vbus design only requires one IRQ for
+the entire guest, so its conceivable that I could present a simple
+"dummy" PCI device with some "VBUS" type PCI-ID, just to piggy back on
+the IRQ routing logic.  Then userspace could simply pass the IRQ routing
+info down to the kernel with an ioctl, or something similar.
 
-Ouch.  Could you file a bug report using:
+Ultimately I wasn't sure whether I wanted all that goo just to get an
+IRQ assignment...but on the other hand, we have all this goo to build
+one in the first place, and its half on the guest side which has the
+disadvantages you mention.  So perhaps this should go in favor of a
+PCI-esqe type solution, as I think you are suggesting.
 
-http://intellinuxgraphics.org/how_to_report_bug.html
+I think ultimately I was trying to stay away from PCI in general because
+I want to support environments that do not have PCI.  However, for the
+kvm-transport case (at least on x86) this isnt really a constraint.
 
-so I've got the information I need to try to reproduce this?
+>
+> See also the kvm irq routing work, merged into 2.6.30, which does a
+> small part of what you're describing (the "sole handle" part,
+> specifically).
 
---=20
-Eric Anholt
-eric@anholt.net                         eric.anholt@intel.com
+I will take a look, thanks!
+
+(I wish I wish you had accepted those irq patches I wrote a while back.=20
+It had the foundation for this type of stuff all built in.  But alas, I
+think it was before its time, and I didn't do a good job of explaining
+my future plans....) ;)
+
+Regards,
+-Greg
 
 
 
---=-izVketRM4JMx3EFxhuR3
+
+
+--------------enig5C8B0AB03AD9C6BA9D8D181F
 Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+Version: GnuPG v2.0.9 (GNU/Linux)
+Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
 
-iEYEABECAAYFAknScNgACgkQHUdvYGzw6vd3kwCfYqV314/RRCJbIwUpuztq7mkp
-o4IAnRiQGWdOTuNWOE4giPNPUOX4U089
-=z+fj
+iEYEARECAAYFAknScY8ACgkQlOSOBdgZUxmxtQCfVF8Oe0I62LkhTdYyu/+WxseR
+TsgAn0Dfd78oMnbbGy6N152wV/6NDV9Y
+=cE/f
 -----END PGP SIGNATURE-----
 
---=-izVketRM4JMx3EFxhuR3--
+--------------enig5C8B0AB03AD9C6BA9D8D181F--
