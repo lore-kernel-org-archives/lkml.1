@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760127AbZCaXbf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764885AbZCaXb4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760127AbZCaXbf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Mar 2009 19:31:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763631AbZCaXVH
+	id S1764885AbZCaXb4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Mar 2009 19:31:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763671AbZCaXVI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Mar 2009 19:21:07 -0400
-Received: from sous-sol.org ([216.99.217.87]:33221 "EHLO x200.localdomain"
+	Tue, 31 Mar 2009 19:21:08 -0400
+Received: from sous-sol.org ([216.99.217.87]:33225 "EHLO x200.localdomain"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1763801AbZCaXVE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1763637AbZCaXVE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 31 Mar 2009 19:21:04 -0400
-Message-Id: <20090331231454.378948626@sous-sol.org>
+Message-Id: <20090331231535.711519749@sous-sol.org>
 User-Agent: quilt/0.47-1
-Date: Tue, 31 Mar 2009 16:10:58 -0700
+Date: Tue, 31 Mar 2009 16:11:04 -0700
 From: Chris Wright <chrisw@sous-sol.org>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -24,10 +24,11 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Avi Kivity <avi@redhat.com>
-Subject: [patch 13/45] KVM: VMX: Dont allow uninhibited access to EFER on i386
+       alan@lxorguk.ukuu.org.uk, Lorenzo Nava <navalorenx@gmail.com>,
+       Michael Buesch <mb@bu3sch.de>, John W Linville <linville@tuxdriver.com>
+Subject: [patch 19/45] b43: fix b43_plcp_get_bitrate_idx_ofdm return type
 References: <20090331231045.719396245@sous-sol.org>
-Content-Disposition: inline; filename=kvm-vmx-don-t-allow-uninhibited-access-to-efer-on-i386.patch
+Content-Disposition: inline; filename=b43-fix-b43_plcp_get_bitrate_idx_ofdm-return-type.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -35,38 +36,33 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 ---------------------
 
-From: Avi Kivity <avi@redhat.com>
+From: Lorenzo Nava <navalorenx@gmail.com>
 
-upstream commit: 16175a796d061833aacfbd9672235f2d2725df65
+upstream commit: a3c0b87c4f21911fb7185902dd13f0e3cd7f33f7
 
-vmx_set_msr() does not allow i386 guests to touch EFER, but they can still
-do so through the default: label in the switch.  If they set EFER_LME, they
-can oops the host.
+This patch fixes the return type of b43_plcp_get_bitrate_idx_ofdm. If
+the plcp contains an error, the function return value is 255 instead
+of -1, and the packet was not dropped. This causes a warning in
+__ieee80211_rx function because rate idx is out of range.
 
-Fix by having EFER access through the normal channel (which will check for
-EFER_LME) even on i386.
-
-Reported-and-tested-by: Benjamin Gilbert <bgilbert@cs.cmu.edu>
 Cc: stable@kernel.org
-Signed-off-by: Avi Kivity <avi@redhat.com>
+Signed-off-by: Lorenzo Nava <navalorenx@gmail.com>
+Signed-off-by: Michael Buesch <mb@bu3sch.de>
+Signed-off-by: John W. Linville <linville@tuxdriver.com>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 ---
- arch/x86/kvm/vmx.c |    2 +-
+ drivers/net/wireless/b43/xmit.c |    2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/arch/x86/kvm/vmx.c
-+++ b/arch/x86/kvm/vmx.c
-@@ -928,11 +928,11 @@ static int vmx_set_msr(struct kvm_vcpu *
- 	int ret = 0;
+--- a/drivers/net/wireless/b43/xmit.c
++++ b/drivers/net/wireless/b43/xmit.c
+@@ -50,7 +50,7 @@ static int b43_plcp_get_bitrate_idx_cck(
+ }
  
- 	switch (msr_index) {
--#ifdef CONFIG_X86_64
- 	case MSR_EFER:
- 		vmx_load_host_state(vmx);
- 		ret = kvm_set_msr_common(vcpu, msr_index, data);
- 		break;
-+#ifdef CONFIG_X86_64
- 	case MSR_FS_BASE:
- 		vmcs_writel(GUEST_FS_BASE, data);
- 		break;
+ /* Extract the bitrate index out of an OFDM PLCP header. */
+-static u8 b43_plcp_get_bitrate_idx_ofdm(struct b43_plcp_hdr6 *plcp, bool aphy)
++static int b43_plcp_get_bitrate_idx_ofdm(struct b43_plcp_hdr6 *plcp, bool aphy)
+ {
+ 	int base = aphy ? 0 : 4;
+ 
 
