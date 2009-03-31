@@ -1,40 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755411AbZCaTz1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754690AbZCaUAV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755411AbZCaTz1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Mar 2009 15:55:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751536AbZCaTzK
+	id S1754690AbZCaUAV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Mar 2009 16:00:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752315AbZCaT77
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Mar 2009 15:55:10 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:39422 "EHLO
-	the-village.bc.nu" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751466AbZCaTzJ (ORCPT
+	Tue, 31 Mar 2009 15:59:59 -0400
+Received: from victor.provo.novell.com ([137.65.250.26]:59808 "EHLO
+	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752148AbZCaT76 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Mar 2009 15:55:09 -0400
-Date: Tue, 31 Mar 2009 20:27:53 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Ayman KHAMOUMA <ayman.khamouma@st.com>
-Cc: <linux-kernel@vger.kernel.org>
-Subject: Re: Sysfs with no struc device ?
-Message-ID: <20090331202753.4e4fc532@the-village.bc.nu>
-In-Reply-To: <000201c9b21c$7f636aa0$663f81a4@par.st.com>
-References: <000201c9b21c$7f636aa0$663f81a4@par.st.com>
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.12.12; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 31 Mar 2009 15:59:58 -0400
+Message-ID: <49D276C7.80600@novell.com>
+Date: Tue, 31 Mar 2009 16:02:15 -0400
+From: Gregory Haskins <ghaskins@novell.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+MIME-Version: 1.0
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: linux-kernel@vger.kernel.org, agraf@suse.de, pmullaney@novell.com,
+       pmorreale@novell.com, anthony@codemonkey.ws, rusty@rustcorp.com.au,
+       netdev@vger.kernel.org, kvm@vger.kernel.org
+Subject: Re: [RFC PATCH 13/17] x86: allow the irq->vector translation to be
+ determined outside of ioapic
+References: <20090331184057.28333.77287.stgit@dev.haskins.net>	<20090331184355.28333.72382.stgit@dev.haskins.net> <20090331201625.60f1ea81@the-village.bc.nu>
+In-Reply-To: <20090331201625.60f1ea81@the-village.bc.nu>
+X-Enigmail-Version: 0.95.7
+OpenPGP: id=D8195319
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enigFD773E1CA8A872ED2EDE7070"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 31 Mar 2009 18:19:41 +0200
-Ayman KHAMOUMA <ayman.khamouma@st.com> wrote:
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enigFD773E1CA8A872ED2EDE7070
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-> Hi everybody,
-> 
-> I'm trying to write a module which is supposed to write the state of a pin in a sysfs file.
-> As it is neither a char device nor a block device, or anything else, I suposed taht I don't need any struct device...I mau be mistaking...
-> So my question is:
-> How can I create this file in sysfs without any struct device ?
+Alan Cox wrote:
+> On Tue, 31 Mar 2009 14:43:55 -0400
+> Gregory Haskins <ghaskins@novell.com> wrote:
+>
+>  =20
+>> The ioapic code currently privately manages the mapping between irq
+>> and vector.  This results in some layering violations as the support
+>> for certain MSI operations need this info.  As a result, the MSI
+>> code itself was moved to the ioapic module.  This is not really
+>> optimal.
+>>    =20
+>
+> This appears to have been muddled in with the vnet patches ?
+>  =20
+Its needed for the kvm-connector patches later in the series, so it was
+included intentionally.
 
-Wrong question I think - if its a platform device then create a
-platform_device for it ..
+On that topic, I probably should have had a TOC of some kind.  Hmm..let
+me hack one together now:
+
+Patch 1: Stand-alone "shared-memory signal" construct, used by various
+components in vbus/venet
+Patches 2-5: Basic vbus infrastructure
+Patches 6-7: IOQ construct, similar to virtio-ring.  Used to overlay
+ring-like behavior over the shm interface in vbus
+Patches 8-12: virtual-ethernet front and backends
+Patch 13: io-apic work to expose the irq-vector in x86, needed for
+dynirq support
+Patches 14-16: KVM host side support
+Patch 17: KVM guest side support
+
+Sorry for the confusion :(
+
+Regards,
+-Greg
+
+
+--------------enigFD773E1CA8A872ED2EDE7070
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
+Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
+
+iEYEARECAAYFAknSdscACgkQlOSOBdgZUxl01ACfSEnYOhxGIU+EHpUI0oDIUmII
+BfsAn277JrlDG6dO2eSy2gQji78cpbaE
+=rI1L
+-----END PGP SIGNATURE-----
+
+--------------enigFD773E1CA8A872ED2EDE7070--
