@@ -1,112 +1,112 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765571AbZCaXlz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765610AbZCaXmY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765571AbZCaXlz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Mar 2009 19:41:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765298AbZCaXgL
+	id S1765610AbZCaXmY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Mar 2009 19:42:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764585AbZCaXha
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Mar 2009 19:36:11 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:39920 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1764742AbZCaXgK (ORCPT
+	Tue, 31 Mar 2009 19:37:30 -0400
+Received: from ipmail01.adl6.internode.on.net ([203.16.214.146]:24622 "EHLO
+	ipmail01.adl6.internode.on.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1764776AbZCaXh1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Mar 2009 19:36:10 -0400
-Date: Tue, 31 Mar 2009 16:33:35 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Jeff Layton <jlayton@redhat.com>
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Subject: Re: [PATCH] writeback: guard against jiffies wraparound on
- inode->dirtied_when checks
-Message-Id: <20090331163335.46529299.akpm@linux-foundation.org>
-In-Reply-To: <1238431208-3894-1-git-send-email-jlayton@redhat.com>
-References: <1238431208-3894-1-git-send-email-jlayton@redhat.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 31 Mar 2009 19:37:27 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: ApoEADdG0kl5LJex/2dsb2JhbADOR4N6Bg
+X-IronPort-AV: E=Sophos;i="4.39,304,1235914200"; 
+   d="scan'208";a="322652635"
+Date: Wed, 1 Apr 2009 10:37:18 +1100
+From: Dave Chinner <david@fromorbit.com>
+To: Fernando Luis =?iso-8859-1?Q?V=E1zquez?= Cao 
+	<fernando@oss.ntt.co.jp>
+Cc: Jeff Garzik <jeff@garzik.org>, Christoph Hellwig <hch@infradead.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Theodore Tso <tytso@mit.edu>, Ingo Molnar <mingo@elte.hu>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Nick Piggin <npiggin@suse.de>,
+       David Rees <drees76@gmail.com>, Jesper Krogh <jesper@krogh.cc>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       chris.mason@oracle.com, tj@kernel.org, bzolnier@gmail.com
+Subject: Re: [PATCH 6/7] xfs: propagate issue-flush error code
+Message-ID: <20090331233718.GT26138@disturbed>
+Mail-Followup-To: Fernando Luis =?iso-8859-1?Q?V=E1zquez?= Cao <fernando@oss.ntt.co.jp>,
+	Jeff Garzik <jeff@garzik.org>,
+	Christoph Hellwig <hch@infradead.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Theodore Tso <tytso@mit.edu>, Ingo Molnar <mingo@elte.hu>,
+	Alan Cox <alan@lxorguk.ukuu.org.uk>,
+	Arjan van de Ven <arjan@infradead.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Peter Zijlstra <a.p.zijlstra@chello.nl>,
+	Nick Piggin <npiggin@suse.de>, David Rees <drees76@gmail.com>,
+	Jesper Krogh <jesper@krogh.cc>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	chris.mason@oracle.com, tj@kernel.org, bzolnier@gmail.com
+References: <20090325212923.GA5620@havoc.gtf.org> <20090326032445.GA16999@havoc.gtf.org> <20090327205046.GA2036@havoc.gtf.org> <20090329082507.GA4242@infradead.org> <49D01F94.6000101@oss.ntt.co.jp> <49D02328.7060108@oss.ntt.co.jp> <49D0258A.9020306@garzik.org> <49D03377.1040909@oss.ntt.co.jp> <49D0B535.2010106@oss.ntt.co.jp> <49D0BC0A.9050909@oss.ntt.co.jp>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <49D0BC0A.9050909@oss.ntt.co.jp>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 30 Mar 2009 12:40:08 -0400
-Jeff Layton <jlayton@redhat.com> wrote:
+On Mon, Mar 30, 2009 at 09:33:14PM +0900, Fernando Luis Vázquez Cao wrote:
+> blkdev_issue_flush() may fail (i.e. due to media error on FLUSH CACHE
+> command execution) so its users should check for the return value.
+>
+> (This issues was first spotted Bartlomiej Zolnierkiewicz)
+>
+> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> Signed-off-by: Fernando Luis Vazquez Cao <fernando@oss.ntt.co.jp>
 
-> The dirtied_when value on an inode is supposed to represent the first
-> time that an inode has one of its pages dirtied. This value is in units
-> of jiffies. It's used in several places in the writeback code to
-> determine when to write out an inode.
-> 
-> The problem is that these checks assume that dirtied_when is updated
-> periodically. If an inode is continuously being used for I/O it can be
-> persistently marked as dirty and will continue to age. Once the time
-> difference between dirtied_when and the jiffies value it is being
-> compared to is greater than or equal to half the maximum of the jiffies
-> type, the logic of the time_*() macros inverts and the opposite of what
-> is needed is returned. On 32-bit architectures that's just under 25 days
-> (assuming HZ == 1000).
-> 
-> As the least-recently dirtied inode, it'll end up being the first one
-> that pdflush will try to write out. sync_sb_inodes does this check:
-> 
-> 	/* Was this inode dirtied after sync_sb_inodes was called? */
->  	if (time_after(inode->dirtied_when, start))
->  		break;
-> 
-> ...but now dirtied_when appears to be in the future. sync_sb_inodes
-> bails out without attempting to write any dirty inodes. When this
-> occurs, pdflush will stop writing out inodes for this superblock.
-> Nothing can unwedge it until jiffies moves out of the problematic
-> window.
-> 
-> This patch fixes this problem by changing the checks against
-> dirtied_when to also check whether it appears to be in the future. If it
-> does, then we consider the value to be far in the past.
-> 
-> This should shrink the problematic window of time to such a small period
-> as not to matter.
-> 
-> Signed-off-by: Jeff Layton <jlayton@redhat.com>
-> Acked-by: Wu Fengguang <fengguang.wu@intel.com>
-> Acked-by: Ian Kent <raven@themaw.net>
-> ---
->  fs/fs-writeback.c |   11 +++++++----
->  1 files changed, 7 insertions(+), 4 deletions(-)
-> 
-> diff --git a/fs/fs-writeback.c b/fs/fs-writeback.c
-> index e3fe991..dba69a5 100644
-> --- a/fs/fs-writeback.c
-> +++ b/fs/fs-writeback.c
-> @@ -196,8 +196,9 @@ static void redirty_tail(struct inode *inode)
->  		struct inode *tail_inode;
->  
->  		tail_inode = list_entry(sb->s_dirty.next, struct inode, i_list);
-> -		if (!time_after_eq(inode->dirtied_when,
-> -				tail_inode->dirtied_when))
-> +		if (time_before(inode->dirtied_when,
-> +				tail_inode->dirtied_when) ||
-> +		    time_after(inode->dirtied_when, jiffies))
->  			inode->dirtied_when = jiffies;
+I think this patch is unnecessary as well as being broken.
+
+
+> diff -urNp linux-2.6.29-orig/fs/xfs/xfs_vnodeops.c linux-2.6.29/fs/xfs/xfs_vnodeops.c
+> --- linux-2.6.29-orig/fs/xfs/xfs_vnodeops.c	2009-03-24 08:12:14.000000000 +0900
+> +++ linux-2.6.29/fs/xfs/xfs_vnodeops.c	2009-03-30 15:08:21.000000000 +0900
+> @@ -678,20 +678,20 @@ xfs_fsync(
+>  		xfs_iunlock(ip, XFS_ILOCK_EXCL);
 >  	}
->  	list_move(&inode->i_list, &sb->s_dirty);
-> @@ -231,7 +232,8 @@ static void move_expired_inodes(struct list_head *delaying_queue,
->  		struct inode *inode = list_entry(delaying_queue->prev,
->  						struct inode, i_list);
->  		if (older_than_this &&
-> -			time_after(inode->dirtied_when, *older_than_this))
-> +			time_after(inode->dirtied_when, *older_than_this) &&
-> +			time_before_eq(inode->dirtied_when, jiffies))
->  			break;
->  		list_move(&inode->i_list, dispatch_queue);
->  	}
-> @@ -493,7 +495,8 @@ void generic_sync_sb_inodes(struct super_block *sb,
->  		}
->  
->  		/* Was this inode dirtied after sync_sb_inodes was called? */
-> -		if (time_after(inode->dirtied_when, start))
-> +		if (time_after(inode->dirtied_when, start) &&
-> +		    time_before_eq(inode->dirtied_when, jiffies))
->  			break;
->  
+>
+> -	if ((ip->i_mount->m_flags & XFS_MOUNT_BARRIER) && changed) {
+> +	if (!error && (ip->i_mount->m_flags & XFS_MOUNT_BARRIER) && changed) {
 
-It'd be nice to add/update the comments to explain what's going on. 
-Otherwise it's a wee bit obscure, no?
+That is wrong. Even if there was a error, we still need to
+flush the device if it hasn't already been done.
 
+>  		/*
+>  		 * If the log write didn't issue an ordered tag we need
+>  		 * to flush the disk cache for the data device now.
+>  		 */
+>  		if (!log_flushed)
+> -			xfs_blkdev_issue_flush(ip->i_mount->m_ddev_targp);
+> +			error = xfs_blkdev_issue_flush(ip->i_mount->m_ddev_targp);
+
+What happens if we get an EOPNOTSUPP here?
+That is a meaningless error to return to fsync()....
+
+
+>  		/*
+>  		 * If this inode is on the RT dev we need to flush that
+>  		 * cache as well.
+>  		 */
+> -		if (XFS_IS_REALTIME_INODE(ip))
+> -			xfs_blkdev_issue_flush(ip->i_mount->m_rtdev_targp);
+> +		if (!error && XFS_IS_REALTIME_INODE(ip))
+> +			error = xfs_blkdev_issue_flush(ip->i_mount->m_rtdev_targp);
+
+That is broken, too. The realtime device is a different device,
+so always should be flushed regardless of the return from the
+log device.
+
+Cheers,
+
+Dave.
+-- 
+Dave Chinner
+david@fromorbit.com
