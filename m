@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762790AbZCaP0h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762808AbZCaP0z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762790AbZCaP0h (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Mar 2009 11:26:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762327AbZCaPXw
+	id S1762808AbZCaP0z (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Mar 2009 11:26:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762380AbZCaPXz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Mar 2009 11:23:52 -0400
-Received: from g1t0027.austin.hp.com ([15.216.28.34]:34455 "EHLO
-	g1t0027.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762260AbZCaPXu (ORCPT
+	Tue, 31 Mar 2009 11:23:55 -0400
+Received: from g1t0026.austin.hp.com ([15.216.28.33]:22213 "EHLO
+	g1t0026.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762345AbZCaPXy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Mar 2009 11:23:50 -0400
-Subject: [PATCH 08/15] PCI Hotplug: cpqphp: refactor cpqphp_save_slot_config
+	Tue, 31 Mar 2009 11:23:54 -0400
+Subject: [PATCH 09/15] PCI Hotplug: cpqphp: style cleanups
 To: jbarnes@virtuousgeek.org
 From: Alex Chiang <achiang@hp.com>
 Cc: linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org
-Date: Tue, 31 Mar 2009 09:23:46 -0600
-Message-ID: <20090331152346.26622.59422.stgit@bob.kio>
+Date: Tue, 31 Mar 2009 09:23:52 -0600
+Message-ID: <20090331152351.26622.34567.stgit@bob.kio>
 In-Reply-To: <20090331150158.26622.45423.stgit@bob.kio>
 References: <20090331150158.26622.45423.stgit@bob.kio>
 User-Agent: StGit/0.14.3.347.g594a
@@ -26,131 +26,72 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Check for an empty slot, and return early if so.
-
-This allows us to un-indent the rest of the function by one level.
+Clean up style, whitespace in cpqphp_pci.c
 
 Signed-off-by: Alex Chiang <achiang@hp.com>
 ---
 
- drivers/pci/hotplug/cpqphp_pci.c |   85 +++++++++++++++++---------------------
- 1 files changed, 39 insertions(+), 46 deletions(-)
+ drivers/pci/hotplug/cpqphp_pci.c |   17 ++++++-----------
+ 1 files changed, 6 insertions(+), 11 deletions(-)
 
 diff --git a/drivers/pci/hotplug/cpqphp_pci.c b/drivers/pci/hotplug/cpqphp_pci.c
-index 2e96bae..1f1c90d 100644
+index 1f1c90d..bd384e9 100644
 --- a/drivers/pci/hotplug/cpqphp_pci.c
 +++ b/drivers/pci/hotplug/cpqphp_pci.c
-@@ -494,7 +494,7 @@ int cpqhp_save_slot_config (struct controller *ctrl, struct pci_func * new_slot)
- 	u8 secondary_bus;
- 	int sub_bus;
- 	int max_functions;
--	int function;
-+	int function = 0;
- 	int cloop = 0;
- 	int stop_it;
+@@ -950,15 +950,13 @@ int cpqhp_save_used_resources (struct controller *ctrl, struct pci_func * func)
+ 						return(1);
+ 				}
+ 			}	/* End of base register loop */
+-		/* Some other unknown header type */
+-		} else {
+ 		}
  
-@@ -503,65 +503,58 @@ int cpqhp_save_slot_config (struct controller *ctrl, struct pci_func * new_slot)
- 	ctrl->pci_bus->number = new_slot->bus;
- 	pci_bus_read_config_dword (ctrl->pci_bus, PCI_DEVFN(new_slot->device, 0), PCI_VENDOR_ID, &ID);
- 
--	if (ID != 0xFFFFFFFF) {	  /*  device in slot */
--		pci_bus_read_config_byte (ctrl->pci_bus, PCI_DEVFN(new_slot->device, 0), 0x0B, &class_code);
--		pci_bus_read_config_byte (ctrl->pci_bus, PCI_DEVFN(new_slot->device, 0), PCI_HEADER_TYPE, &header_type);
--
--		if (header_type & 0x80)	/* Multi-function device */
--			max_functions = 8;
--		else
--			max_functions = 1;
--
--		function = 0;
-+	if (ID == 0xFFFFFFFF)
-+		return 2;
- 
--		do {
--			if ((header_type & 0x7F) == PCI_HEADER_TYPE_BRIDGE) {
--				/*  Recurse the subordinate bus */
--				pci_bus_read_config_byte (ctrl->pci_bus, PCI_DEVFN(new_slot->device, function), PCI_SECONDARY_BUS, &secondary_bus);
-+	pci_bus_read_config_byte(ctrl->pci_bus, PCI_DEVFN(new_slot->device, 0), 0x0B, &class_code);
-+	pci_bus_read_config_byte(ctrl->pci_bus, PCI_DEVFN(new_slot->device, 0), PCI_HEADER_TYPE, &header_type);
- 
--				sub_bus = (int) secondary_bus;
-+	if (header_type & 0x80)	/* Multi-function device */
-+		max_functions = 8;
-+	else
-+		max_functions = 1;
- 
--				/* Save the config headers for the secondary
--				 * bus.
--				 */
--				rc = cpqhp_save_config(ctrl, sub_bus, 0);
--				if (rc)
--					return(rc);
--				ctrl->pci_bus->number = new_slot->bus;
-+	while (function < max_functions) {
-+		if ((header_type & 0x7F) == PCI_HEADER_TYPE_BRIDGE) {
-+			/*  Recurse the subordinate bus */
-+			pci_bus_read_config_byte (ctrl->pci_bus, PCI_DEVFN(new_slot->device, function), PCI_SECONDARY_BUS, &secondary_bus);
- 
--			}	/* End of IF */
-+			sub_bus = (int) secondary_bus;
- 
--			new_slot->status = 0;
-+			/* Save the config headers for the secondary
-+			 * bus.
-+			 */
-+			rc = cpqhp_save_config(ctrl, sub_bus, 0);
-+			if (rc)
-+				return(rc);
-+			ctrl->pci_bus->number = new_slot->bus;
- 
--			for (cloop = 0; cloop < 0x20; cloop++) {
--				pci_bus_read_config_dword (ctrl->pci_bus, PCI_DEVFN(new_slot->device, function), cloop << 2, (u32 *) & (new_slot-> config_space [cloop]));
--			}
-+		}
- 
--			function++;
-+		new_slot->status = 0;
- 
--			stop_it = 0;
-+		for (cloop = 0; cloop < 0x20; cloop++)
-+			pci_bus_read_config_dword(ctrl->pci_bus, PCI_DEVFN(new_slot->device, function), cloop << 2, (u32 *) & (new_slot-> config_space [cloop]));
- 
--			/* this loop skips to the next present function
--			 * reading in the Class Code and the Header type.
--			 */
--			while ((function < max_functions) && (!stop_it)) {
--				pci_bus_read_config_dword (ctrl->pci_bus, PCI_DEVFN(new_slot->device, function), PCI_VENDOR_ID, &ID);
-+		function++;
- 
--				if (ID == 0xFFFFFFFF) {	 /* nothing there. */
--					function++;
--				} else {  /* Something there */
--					pci_bus_read_config_byte (ctrl->pci_bus, PCI_DEVFN(new_slot->device, function), 0x0B, &class_code);
-+		stop_it = 0;
- 
--					pci_bus_read_config_byte (ctrl->pci_bus, PCI_DEVFN(new_slot->device, function), PCI_HEADER_TYPE, &header_type);
-+		/* this loop skips to the next present function
-+		 * reading in the Class Code and the Header type.
-+		 */
-+		while ((function < max_functions) && (!stop_it)) {
-+			pci_bus_read_config_dword(ctrl->pci_bus, PCI_DEVFN(new_slot->device, function), PCI_VENDOR_ID, &ID);
- 
--					stop_it++;
--				}
-+			if (ID == 0xFFFFFFFF)
-+				function++;
-+			else {
-+				pci_bus_read_config_byte(ctrl->pci_bus, PCI_DEVFN(new_slot->device, function), 0x0B, &class_code);
-+				pci_bus_read_config_byte(ctrl->pci_bus, PCI_DEVFN(new_slot->device, function), PCI_HEADER_TYPE, &header_type);
-+				stop_it++;
- 			}
-+		}
- 
--		} while (function < max_functions);
--	}			/* End of IF (device in slot?) */
--	else {
--		return 2;
+ 		/* find the next device in this slot */
+ 		func = cpqhp_slot_find(func->bus, func->device, index++);
  	}
  
- 	return 0;
+-	return(0);
++	return 0;
+ }
+ 
+ 
+@@ -993,9 +991,8 @@ int cpqhp_configure_board(struct controller *ctrl, struct pci_func * func)
+ 		/* Start at the top of config space so that the control
+ 		 * registers are programmed last
+ 		 */
+-		for (cloop = 0x3C; cloop > 0; cloop -= 4) {
++		for (cloop = 0x3C; cloop > 0; cloop -= 4)
+ 			pci_bus_write_config_dword (pci_bus, devfn, cloop, func->config_space[cloop >> 2]);
+-		}
+ 
+ 		pci_bus_read_config_byte (pci_bus, devfn, PCI_HEADER_TYPE, &header_type);
+ 
+@@ -1210,9 +1207,9 @@ int cpqhp_find_available_resources(struct controller *ctrl, void __iomem *rom_st
+ 	rom_resource_table = detect_HRT_floating_pointer(rom_start, rom_start+0xffff);
+ 	dbg("rom_resource_table = %p\n", rom_resource_table);
+ 
+-	if (rom_resource_table == NULL) {
++	if (rom_resource_table == NULL)
+ 		return -ENODEV;
+-	}
++
+ 	/* Sum all resources and setup resource maps */
+ 	unused_IRQ = readl(rom_resource_table + UNUSED_IRQ);
+ 	dbg("unused_IRQ = %x\n", unused_IRQ);
+@@ -1245,13 +1242,11 @@ int cpqhp_find_available_resources(struct controller *ctrl, void __iomem *rom_st
+ 
+ 	temp = 0;
+ 
+-	if (!cpqhp_nic_irq) {
++	if (!cpqhp_nic_irq)
+ 		cpqhp_nic_irq = ctrl->cfgspc_irq;
+-	}
+ 
+-	if (!cpqhp_disk_irq) {
++	if (!cpqhp_disk_irq)
+ 		cpqhp_disk_irq = ctrl->cfgspc_irq;
+-	}
+ 
+ 	dbg("cpqhp_disk_irq, cpqhp_nic_irq= %d, %d\n", cpqhp_disk_irq, cpqhp_nic_irq);
+ 
 
