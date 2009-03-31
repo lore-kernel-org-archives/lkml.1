@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760613AbZCaUab@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756600AbZCaUfy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760613AbZCaUab (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Mar 2009 16:30:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754289AbZCaUaJ
+	id S1756600AbZCaUfy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Mar 2009 16:35:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755085AbZCaUfm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Mar 2009 16:30:09 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:58426 "EHLO
+	Tue, 31 Mar 2009 16:35:42 -0400
+Received: from victor.provo.novell.com ([137.65.250.26]:45455 "EHLO
 	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751397AbZCaUaH (ORCPT
+	with ESMTP id S1754046AbZCaUfl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Mar 2009 16:30:07 -0400
-Message-ID: <49D27DD3.5080609@novell.com>
-Date: Tue, 31 Mar 2009 16:32:19 -0400
+	Tue, 31 Mar 2009 16:35:41 -0400
+Message-ID: <49D27F24.1070709@novell.com>
+Date: Tue, 31 Mar 2009 16:37:56 -0400
 From: Gregory Haskins <ghaskins@novell.com>
 User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
@@ -19,104 +19,69 @@ To: Avi Kivity <avi@redhat.com>
 CC: linux-kernel@vger.kernel.org, agraf@suse.de, pmullaney@novell.com,
        pmorreale@novell.com, anthony@codemonkey.ws, rusty@rustcorp.com.au,
        netdev@vger.kernel.org, kvm@vger.kernel.org
-Subject: Re: [RFC PATCH 15/17] kvm: add dynamic IRQ support
-References: <20090331184057.28333.77287.stgit@dev.haskins.net> <20090331184405.28333.59205.stgit@dev.haskins.net> <49D26CFE.1060700@redhat.com> <49D2718F.9070203@novell.com> <49D27950.9020801@redhat.com>
-In-Reply-To: <49D27950.9020801@redhat.com>
+Subject: Re: [RFC PATCH 14/17] kvm: add a reset capability
+References: <20090331184057.28333.77287.stgit@dev.haskins.net> <20090331184400.28333.50396.stgit@dev.haskins.net> <49D26D8B.7020201@redhat.com> <49D276E5.6000000@novell.com> <49D27A9B.9030703@redhat.com>
+In-Reply-To: <49D27A9B.9030703@redhat.com>
 X-Enigmail-Version: 0.95.7
 OpenPGP: id=D8195319
 Content-Type: multipart/signed; micalg=pgp-sha1;
  protocol="application/pgp-signature";
- boundary="------------enigDFA0C49CA6F4D0EA40ADD7FF"
+ boundary="------------enig7F02F679749E998113F6CED3"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enigDFA0C49CA6F4D0EA40ADD7FF
+--------------enig7F02F679749E998113F6CED3
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: quoted-printable
 
 Avi Kivity wrote:
 > Gregory Haskins wrote:
->>> - works with all guests
->>> - supports hotplug/hotunplug, udev, sysfs, module autoloading, ...
->>> - supported in all OSes
->>> - someone else maintains it
+>> Avi Kivity wrote:
+>> =20
+>>> Gregory Haskins wrote:
+>>>   =20
+>>>> We need a way to detect if a VM is reset later in the series, so let=
+s
+>>>> add a capability for userspace to signal a VM reset down to the
+>>>> kernel.
+>>>>        =20
+>>> How do you handle the case of a guest calling kexec to load a new
+>>> kernel?  Or is that not important for your use case?
+>>>
 >>>    =20
->> These points are all valid, and I really struggled with this particula=
-r
->> part of the design.  The entire vbus design only requires one IRQ for
->> the entire guest,
->
-> Won't this have scaling issues?  One IRQ means one target vcpu.=20
-> Whereas I'd like virtio devices to span multiple queues, each queue
-> with its own MSI IRQ.
-Hmm..you know I hadnt really thought of it that way, but you have a
-point.  To clarify, my design actually uses one IRQ per "eventq", where
-we can have an arbitrary number of eventq's defined (note: today I only
-define one eventq, however).  An eventq is actually a shm-ring construct
-where I can pass events up to the host like "device added" or "ring X
-signaled".  Each individual device based virtio-ring would then
-aggregates "signal" events onto this eventq mechanism to actually inject
-events to the host.  Only the eventq itself injects an actual IRQ to the
-assigned vcpu.
+>>
+>> Hmm..I had not considered this.  Any suggestions on ways to detect it?=
 
-My intended use of multiple eventqs was for prioritization of different
-rings.  For instance, we could define 8 priority levels, each with its
-own ring/irq.  That way, a virtio-net that supports something like
-802.1p could define 8 virtio-rings, one for each priority level.
-
-But this scheme is more targeted at prioritization than per vcpu
-irq-balancing.  I support the eventq construct I proposed could still be
-used in this fashion since each has its own routable IRQ.  However, I
-would have to think about that some more because it is beyond the design
-spec.
-
-The good news is that the decision to use the "eventq+irq" approach is
-completely contained in the kvm-host+guest.patch.  We could easily
-switch to a 1:1 irq:shm-signal if we wanted to, and the device/drivers
-would work exactly the same without modification.
-
->   Also, the single IRQ handler will need to scan for all potential IRQ
-> sources.  Even if implemented carefully, this will cause many
-> cacheline bounces.
-Well, no, I think this part is covered.  As mentioned above, we use a
-queuing technique so there is no scanning needed.  Ultimately I would
-love to adapt a similar technique to optionally replace the LAPIC.  That
-way we can avoid the EOI trap and just consume the next interrupt (if
-applicable) from the shm-ring.
-
->
->>  so its conceivable that I could present a simple
->> "dummy" PCI device with some "VBUS" type PCI-ID, just to piggy back on=
-
->> the IRQ routing logic.  Then userspace could simply pass the IRQ routi=
-ng
->> info down to the kernel with an ioctl, or something similar.
->>  =20
->
-> Xen does something similar, I believe.
->
->> I think ultimately I was trying to stay away from PCI in general becau=
-se
->> I want to support environments that do not have PCI.  However, for the=
-
->> kvm-transport case (at least on x86) this isnt really a constraint.
 >>
 >>  =20
 >
-> s/PCI/the native IRQ solution for your platform/. virtio has the same
-> problem; on s390 we use the native (if that word ever applies to s390)
-> interrupt and device discovery mechanism.
+> Best would be not to detect it; it's tying global events into a
+> device.  Instead, have a reset command for your device and have the
+> driver issue it on load and unload.
 
-yeah, I agree.  We can contain the "exposure" of PCI to just platforms
-within KVM that care about it.
+Yes, good point.  This is doable within the existing infrastructure, but
+it would have to be declared in each devices ABI definition.  I could
+make it more formal and add it to the list of low-level bus-verbs, like
+DEVICEOPEN, DEVICECLOSE, etc.
 
--Greg
+>
+> btw, reset itself would be better controlled from userspace; qemu
+> knows about resets and can reset vbus devices directly instead of
+> relying on kvm to reset them.
+In a way, this is what I have done (note to self: post the userspace
+patches)
+
+The detection is done by userspace, and it invokes an ioctl.  The kernel
+based devices then react if they are interested.  In my case, vbus
+registers for reset-notification, and it acts as if the guest exited
+when it gets reset (e.g. it issues DEVICECLOSE verbs to all devices the
+guest had open).
 
 
 
---------------enigDFA0C49CA6F4D0EA40ADD7FF
+--------------enig7F02F679749E998113F6CED3
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: OpenPGP digital signature
 Content-Disposition: attachment; filename="signature.asc"
@@ -125,9 +90,9 @@ Content-Disposition: attachment; filename="signature.asc"
 Version: GnuPG v2.0.9 (GNU/Linux)
 Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
 
-iEYEARECAAYFAknSfdMACgkQlOSOBdgZUxn8GwCfY7jZSPBYT0FsCZBduhCRbqq2
-+s8AnRMt7qWgoBuRKiHXbxo+3BLygXZr
-=cuZA
+iEYEARECAAYFAknSfyQACgkQlOSOBdgZUxnmJQCfRd0OJOxHMirir8PbPlPPwa5G
+ZbMAn1JbH3kE+3CzUbETZSS84q6m6YiO
+=sf6d
 -----END PGP SIGNATURE-----
 
---------------enigDFA0C49CA6F4D0EA40ADD7FF--
+--------------enig7F02F679749E998113F6CED3--
