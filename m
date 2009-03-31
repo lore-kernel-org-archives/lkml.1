@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762399AbZCaXUw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763843AbZCaXVS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762399AbZCaXUw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Mar 2009 19:20:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758657AbZCaXUO
+	id S1763843AbZCaXVS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Mar 2009 19:21:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760449AbZCaXUS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Mar 2009 19:20:14 -0400
-Received: from sous-sol.org ([216.99.217.87]:33096 "EHLO x200.localdomain"
+	Tue, 31 Mar 2009 19:20:18 -0400
+Received: from sous-sol.org ([216.99.217.87]:33098 "EHLO x200.localdomain"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756929AbZCaXUL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Mar 2009 19:20:11 -0400
-Message-Id: <20090331231351.257583814@sous-sol.org>
+	id S1757275AbZCaXUN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Mar 2009 19:20:13 -0400
+Message-Id: <20090331231553.020951064@sous-sol.org>
 User-Agent: quilt/0.47-1
-Date: Tue, 31 Mar 2009 16:10:50 -0700
+Date: Tue, 31 Mar 2009 16:11:07 -0700
 From: Chris Wright <chrisw@sous-sol.org>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -24,11 +24,12 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Herbert Xu <herbert@gondor.apana.org.au>,
-       David S Miller <davem@davemloft.net>
-Subject: [patch 05/45] GRO: Disable GRO on legacy netif_rx path
+       alan@lxorguk.ukuu.org.uk, Steve French <sfrench@us.ibm.com>,
+       Sridhar Vinay <vinaysridhar@in.ibm.com>,
+       Shirish Pargaonkar <shirishp@us.ibm.com>
+Subject: [patch 22/45] CIFS: Fix memory overwrite when saving nativeFileSystem field during mount
 References: <20090331231045.719396245@sous-sol.org>
-Content-Disposition: inline; filename=gro-disable-gro-on-legacy-netif_rx-path.patch
+Content-Disposition: inline; filename=cifs-fix-memory-overwrite-when-saving-nativefilesystem-field-during-mount.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -36,52 +37,46 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 ---------------------
 
-From: Herbert Xu <herbert@gondor.apana.org.au>
+From: Steve French <sfrench@us.ibm.com>
 
-[ Upstream commit 8f1ead2d1a626ed0c85b3d2c2046a49081d5933f ]
+upstream commit: b363b3304bcf68c4541683b2eff70b29f0446a5b
 
-When I fixed the GRO crash in the legacy receive path I used
-napi_complete to replace __napi_complete.  Unfortunately they're
-not the same when NETPOLL is enabled, which may result in us
-not calling __napi_complete at all.
+CIFS can allocate a few bytes to little for the nativeFileSystem field
+during tree connect response processing during mount.  This can result
+in a "Redzone overwritten" message to be logged.
 
-What's more, we really do need to keep the __napi_complete call
-within the IRQ-off section since in theory an IRQ can occur in
-between and fill up the backlog to the maximum, causing us to
-lock up.
-
-Since we can't seem to find a fix that works properly right now,
-this patch reverts all the GRO support from the netif_rx path.
-
-Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
-Signed-off-by: David S. Miller <davem@davemloft.net>
+Signed-off-by: Sridhar Vinay <vinaysridhar@in.ibm.com>
+Acked-by: Shirish Pargaonkar <shirishp@us.ibm.com>
+CC: Stable <stable@kernel.org>
+Signed-off-by: Steve French <sfrench@us.ibm.com>
+[chrisw: minor backport to CHANGES file]
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 ---
- net/core/dev.c |    9 +++------
- 1 file changed, 3 insertions(+), 6 deletions(-)
+ fs/cifs/CHANGES   |    3 +++
+ fs/cifs/connect.c |    2 +-
+ 2 files changed, 4 insertions(+), 1 deletion(-)
 
---- a/net/core/dev.c
-+++ b/net/core/dev.c
-@@ -2588,18 +2588,15 @@ static int process_backlog(struct napi_s
- 		local_irq_disable();
- 		skb = __skb_dequeue(&queue->input_pkt_queue);
- 		if (!skb) {
-+			__napi_complete(napi);
- 			local_irq_enable();
--			napi_complete(napi);
--			goto out;
-+			break;
- 		}
- 		local_irq_enable();
+--- a/fs/cifs/CHANGES
++++ b/fs/cifs/CHANGES
+@@ -7,6 +7,9 @@ are authenticated as guest, as reconnect
+ user's smb session.  This fix allows cifs to mount multiple times to the
+ same server with different userids without risking invalidating earlier
+ established security contexts.
++Fix "redzone overwritten" bug in cifs_put_tcon (CIFSTcon may allocate too
++little memory for the "nativeFileSystem" field returned by the server
++during mount). 
  
--		napi_gro_receive(napi, skb);
-+		netif_receive_skb(skb);
- 	} while (++work < quota && jiffies == start_time);
- 
--	napi_gro_flush(napi);
--
--out:
- 	return work;
- }
- 
+ Version 1.56
+ ------------
+--- a/fs/cifs/connect.c
++++ b/fs/cifs/connect.c
+@@ -3667,7 +3667,7 @@ CIFSTCon(unsigned int xid, struct cifsSe
+ 			    BCC(smb_buffer_response)) {
+ 				kfree(tcon->nativeFileSystem);
+ 				tcon->nativeFileSystem =
+-				    kzalloc(length + 2, GFP_KERNEL);
++				    kzalloc(2*(length + 1), GFP_KERNEL);
+ 				if (tcon->nativeFileSystem)
+ 					cifs_strfromUCS_le(
+ 						tcon->nativeFileSystem,
 
