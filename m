@@ -1,54 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763573AbZCaWK4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932131AbZCaWLa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763573AbZCaWK4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Mar 2009 18:10:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759043AbZCaWKl
+	id S932131AbZCaWLa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Mar 2009 18:11:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932097AbZCaWLO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Mar 2009 18:10:41 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:40359
-	"EHLO sunset.davemloft.net" rhost-flags-OK-FAIL-OK-OK)
-	by vger.kernel.org with ESMTP id S1757669AbZCaWKk convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Mar 2009 18:10:40 -0400
-Date: Tue, 31 Mar 2009 15:10:28 -0700 (PDT)
-Message-Id: <20090331.151028.42671906.davem@davemloft.net>
-To: oliver@neukum.org
-Cc: Larry.Finger@lwfinger.net, jgarzik@pobox.com, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: [PATCH 1/2 V2] kaweth: Fix locking to be SMP-safe
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <200904010013.05494.oliver@neukum.org>
-References: <49d264dd.YwbXLw18YaD1tQqD%Larry.Finger@lwfinger.net>
-	<200904010013.05494.oliver@neukum.org>
-X-Mailer: Mew version 6.1 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8BIT
+	Tue, 31 Mar 2009 18:11:14 -0400
+Received: from cavan.codon.org.uk ([93.93.128.6]:45984 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763660AbZCaWLL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Mar 2009 18:11:11 -0400
+Date: Tue, 31 Mar 2009 23:11:07 +0100
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: Azael Avalos <coproscefalo@gmail.com>
+Cc: linux-acpi@vger.kernel.org, dsilvers@simtec.co.uk,
+       toshiba_acpi@memebeam.org, linux-kernel@vger.kernel.org, lenb@intel.com
+Subject: Re: [PATCH 2/2] toshiba-acpi: Support TOS1900-type devices
+Message-ID: <20090331221107.GA30383@srcf.ucam.org>
+References: <20090331214501.GC29489@srcf.ucam.org> <20090331214749.GD29489@srcf.ucam.org> <74962ea30903311506m41306659td0cd70c5736f6660@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <74962ea30903311506m41306659td0cd70c5736f6660@mail.gmail.com>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Oliver Neukum <oliver@neukum.org>
-Date: Wed, 1 Apr 2009 00:13:04 +0200
+On Wed, Apr 01, 2009 at 03:06:12PM +1700, Azael Avalos wrote:
 
-> Am Dienstag 31 März 2009 20:45:49 schrieb Larry Finger:
+> Indeed, my Satellite X205-9800 uses that method, however, it only provides
+> HCI call 0x001E (Hotkey Events) and no System Event FIFO (0x0016),
+> instead, hotkeys are entered on a variable called TOHK (TOshiba HotKeys?).
+> Located in my model in
 > 
-> > @@ -796,7 +799,7 @@ static int kaweth_start_xmit(struct sk_b
-> 
-> > @@ -848,7 +851,7 @@ skip:
-> >  		net->trans_start = jiffies;
-> >  	}
-> >
-> > -	spin_unlock(&kaweth->device_lock);
-> > +	spin_unlock_irq(&kaweth->device_lock);
-> 
-> Here you enable interrupts. Are you sure ndo_start_xmit is never
-> called with interrupts disabled?
+> PCI0.LPCB.EC0.TOHK
 
-It must never be invoked that way, this would break so many
-drivers.
+Ok, interesting. Looking at the DSDTs I have here, TOHK isn't always 
+present on TOS1900 devices. However:
 
-On the other hand, all of these driver paths never execute
-in a real hardware interrupt context, the deepest it gets
-into is software interrupts.  So spin_*lock*_bh() might be
-more appropriate.
+> and it appears that it can be _polled_ tru' method INFO
+> (TOSH_INTERFACE_2 ".INFO"),
+> perhaps a small change in the polling to reflect to that method for
+> TOS1900 devices would be necessary.
+
+The INFO method is, so this looks like a good call.
+
+> 
+> On my model the complete call would be:
+> 
+> \\_SB.VALZ.SPFC
+> \\_SB.VALZ.INFO
+> 
+> Is it different from \\_SB_.VALZ.SPFC or it simply doesn't matter?
+
+Yeah, that shouldn't matter. So it simply looks like in the notification 
+function on these systems we should call the INFO method and that'll 
+give us the key back? I'll send a test patch later (don't have any 
+hardware to test right now).
+
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
