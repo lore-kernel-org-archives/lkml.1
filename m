@@ -1,24 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756063AbZCaKvf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755447AbZCaKwQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756063AbZCaKvf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Mar 2009 06:51:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755144AbZCaKuf
+	id S1755447AbZCaKwQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Mar 2009 06:52:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755537AbZCaKuq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Mar 2009 06:50:35 -0400
-Received: from e28smtp04.in.ibm.com ([59.145.155.4]:49188 "EHLO
-	e28smtp04.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755282AbZCaKue (ORCPT
+	Tue, 31 Mar 2009 06:50:46 -0400
+Received: from e28smtp05.in.ibm.com ([59.145.155.5]:51148 "EHLO
+	e28smtp05.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755517AbZCaKup (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Mar 2009 06:50:34 -0400
+	Tue, 31 Mar 2009 06:50:45 -0400
 From: Gautham R Shenoy <ego@in.ibm.com>
-Subject: [PATCH v4 3/5] sched: Rename the variable
-	sched_mc_preferred_wakeup_cpu
+Subject: [PATCH v4 5/5] sched: Fix sd_parent_degenerate for
+	SD_POWERSAVINGS_BALANCE.
 To: "Ingo Molnar" <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
        Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
 Cc: linux-kernel@vger.kernel.org, Suresh Siddha <suresh.b.siddha@intel.com>,
        "Balbir Singh" <balbir@in.ibm.com>, Gautham R Shenoy <ego@in.ibm.com>
-Date: Tue, 31 Mar 2009 16:20:27 +0530
-Message-ID: <20090331105027.16414.21798.stgit@sofia.in.ibm.com>
+Date: Tue, 31 Mar 2009 16:20:38 +0530
+Message-ID: <20090331105037.16414.86340.stgit@sofia.in.ibm.com>
 In-Reply-To: <20090331104829.16414.11385.stgit@sofia.in.ibm.com>
 References: <20090331104829.16414.11385.stgit@sofia.in.ibm.com>
 User-Agent: StGIT/0.14.2
@@ -29,64 +29,58 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-sched_mc_preferred_wakeup_cpu is currently used when the user seeks
-power savings through aggressive task consolidation.
+Currently a sched_domain having a single group can be prevented from getting
+degenerated if it contains a SD_POWERSAVINGS_BALANCE flag. But since it has
+only one group, it won't have any scope for performing powersavings balance as
+it does not have a sibling group to pull from.
 
-But this functionality is applicable for both sched_mc_power_savings as
-well as sched_smt_power_savings. So rename
-sched_mc_preferred_wakeup_cpu to preferred_wakeup_cpu.
+Apart from not provide any powersavings, it also fails to participate
+in normal load-balancing.
 
-Also fix the comment for preferred_wakeup_cpu.
+So, fix this by allowing such a sched_domain to degenerate and pass on the
+responsibility of performing the POWERSAVINGS_BALANCE to it's parent domain.
+
+This patch also fixes the inconsistent behavior of
+sched_smt_power_savings while running odd number of pairs of tasks.
+
+Ideally, when sched_smt_power_savings is enabled, we would like to see
+the tasks running on sibling threads to take advantage of the
+cache-sharing. However, in the case when there
+are only 2 threads running, and sched_smt_power_savings is enabled,
+the current load balancer doesn't pull them from across packages
+onto a single core. This is because of the way the sched_domains
+are degenerated today, where the degenerating domain doesn't pass on
+the power-savings balance related flag to the new parent.
 
 Signed-off-by: Gautham R Shenoy <ego@in.ibm.com>
 ---
 
- kernel/sched.c      |   12 +++++++-----
- kernel/sched_fair.c |    2 +-
- 2 files changed, 8 insertions(+), 6 deletions(-)
+ kernel/sched.c |   14 ++++++++++++++
+ 1 files changed, 14 insertions(+), 0 deletions(-)
 
 diff --git a/kernel/sched.c b/kernel/sched.c
-index 07b774e..36d116b 100644
+index 193bb67..5f3d16a 100644
 --- a/kernel/sched.c
 +++ b/kernel/sched.c
-@@ -542,11 +542,13 @@ struct root_domain {
- #endif
- #if defined(CONFIG_SCHED_MC) || defined(CONFIG_SCHED_SMT)
- 	/*
--	 * Preferred wake up cpu nominated by sched_mc balance that will be
--	 * used when most cpus are idle in the system indicating overall very
--	 * low system utilisation. Triggered at POWERSAVINGS_BALANCE_WAKEUP(2)
-+	 * Preferred wake up cpu which is nominated by load balancer,
-+	 * is the CPU on which the tasks would be woken up, which
-+	 * otherwise would have woken up on an idle CPU even on a system
-+	 * with low-cpu-utilization.
-+	 * This is triggered at POWERSAVINGS_BALANCE_WAKEUP(2).
- 	 */
--	unsigned int sched_mc_preferred_wakeup_cpu;
-+	unsigned int preferred_wakeup_cpu;
- #endif
- };
- 
-@@ -3451,7 +3453,7 @@ static inline int check_power_save_busiest_group(struct sd_lb_stats *sds,
- 	sds->busiest = sds->group_min;
- 
- 	if (active_power_savings_level >= POWERSAVINGS_BALANCE_WAKEUP) {
--		cpu_rq(this_cpu)->rd->sched_mc_preferred_wakeup_cpu =
-+		cpu_rq(this_cpu)->rd->preferred_wakeup_cpu =
- 			group_first_cpu(sds->group_leader);
+@@ -7489,6 +7489,20 @@ sd_parent_degenerate(struct sched_domain *sd, struct sched_domain *parent)
+ 				SD_SHARE_PKG_RESOURCES);
+ 		if (nr_node_ids == 1)
+ 			pflags &= ~SD_SERIALIZE;
++
++		/*
++		 * If the only flag that is preventing us from degenerating
++		 * a domain with a single group is SD_POWERSAVINGS_BALANCE
++		 * check if it can be transferred to the new parent,
++		 * and degenerate this domain. With a single
++		 * group, it anyway can't contribute to power-aware load
++		 * balancing.
++		 */
++		if (pflags & SD_POWERSAVINGS_BALANCE && parent->parent) {
++			pflags &= ~SD_POWERSAVINGS_BALANCE;
++			parent->parent->flags |=
++				sd_power_saving_flags(parent->level);
++		}
  	}
- 
-diff --git a/kernel/sched_fair.c b/kernel/sched_fair.c
-index 02324d2..dacb0d8 100644
---- a/kernel/sched_fair.c
-+++ b/kernel/sched_fair.c
-@@ -1052,7 +1052,7 @@ static int wake_idle(int cpu, struct task_struct *p)
- 
- 	this_cpu = smp_processor_id();
- 	chosen_wakeup_cpu =
--		cpu_rq(this_cpu)->rd->sched_mc_preferred_wakeup_cpu;
-+		cpu_rq(this_cpu)->rd->preferred_wakeup_cpu;
- 
- 	if (active_power_savings_level >= POWERSAVINGS_BALANCE_WAKEUP &&
- 		idle_cpu(cpu) && idle_cpu(this_cpu) &&
+ 	if (~cflags & pflags)
+ 		return 0;
 
