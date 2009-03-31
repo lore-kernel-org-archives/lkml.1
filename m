@@ -1,44 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754712AbZCaKzl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754479AbZCaLRU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754712AbZCaKzl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Mar 2009 06:55:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752519AbZCaKzd
+	id S1754479AbZCaLRU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Mar 2009 07:17:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751220AbZCaLRH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Mar 2009 06:55:33 -0400
-Received: from cassiel.sirena.org.uk ([80.68.93.111]:41619 "EHLO
-	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751874AbZCaKzc (ORCPT
+	Tue, 31 Mar 2009 07:17:07 -0400
+Received: from extu-mxob-2.symantec.com ([216.10.194.135]:35440 "EHLO
+	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751142AbZCaLRG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Mar 2009 06:55:32 -0400
-Date: Tue, 31 Mar 2009 11:55:28 +0100
-From: Mark Brown <broonie@sirena.org.uk>
-To: Jonathan Cameron <Jonathan.Cameron@gmail.com>
-Cc: Jonathan Cameron <jic23@cam.ac.uk>, Liam Girdwood <lrg@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: regulator: Add disable_on_boot flag to constraints.
-Message-ID: <20090331105528.GA16255@sirena.org.uk>
-References: <4975BE69.5040106@cam.ac.uk> <20090120124338.GA31521@sirena.org.uk> <4975CAF5.9090607@cam.ac.uk> <4975CF70.5080802@gmail.com> <1232482483.16911.299.camel@vega.slimlogic.co.uk> <497734D3.4090207@cam.ac.uk> <49CFCB44.1080608@gmail.com> <20090330095245.GB31781@sirena.org.uk>
+	Tue, 31 Mar 2009 07:17:06 -0400
+Date: Tue, 31 Mar 2009 12:17:50 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.anvils
+To: Minchan Kim <minchan.kim@gmail.com>
+cc: linux-mm <linux-mm@kvack.org>, lkml <linux-kernel@vger.kernel.org>
+Subject: Re: add_to_swap_cache with GFP_ATOMIC ?
+In-Reply-To: <28c262360903310338k20b8eebbncb86baac9b09e54@mail.gmail.com>
+Message-ID: <Pine.LNX.4.64.0903311154570.19028@blonde.anvils>
+References: <28c262360903310338k20b8eebbncb86baac9b09e54@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090330095245.GB31781@sirena.org.uk>
-X-Cookie: You are lost in the Swamps of Despair.
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: broonie@sirena.org.uk
-X-SA-Exim-Scanned: No (on cassiel.sirena.org.uk); SAEximRunCond expanded to false
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 30, 2009 at 10:52:45AM +0100, Mark Brown wrote:
+On Tue, 31 Mar 2009, Minchan Kim wrote:
+> 
+> I don't know why we should call add_to_swap_cache with GFP_ATOMIC ?
+> Is there a special something for avoiding blocking?
 
-> I'm happy with it but it does need redoing against the current regulator
-> branch.  Might be worth renaming the option to disable_immediately or
-> something, though.
+add_to_swap_cache itself does not need to be called with GFP_ATOMIC.
 
-BTW, note that the regulator API has gained the ability to power off
-unused regulators in late_initcall() if the board requests this via
-regulator_has_full_constraints() (which will become the default at some
-point).  The ability to turn off immediately when applying the
-constraints would still be useful, though.
+There are three places from which it is called:
+
+read_swap_cache_async (typically used when faulting) masks the
+gfp_mask coming in (typically GFP_HIGHUSER_MOVABLE for the pages
+themselves) to call add_to_swap_cache typically with GFP_KERNEL.
+
+shmem_writepage does call it with GFP_ATOMIC: that's because it's
+holding the shmem_inode's spin_lock while it switches the page between
+file cache and swap cache - IIRC holding page lock isn't quite enough
+for that, because of other cases; but I've not thought that through
+in a long time, we could re-examine if it troubles you.
+
+The questionable one is add_to_swap (when vmscanning), which calls
+it with __GFP_HIGH|__GFP_NOMEMALLOC|__GFP_NOWARN, i.e. GFP_ATOMIC
+plus __GFP_NOMEMALLOC|__GFP_NOWARN.  That one I have wondered
+about from time to time: GFP_NOIO would be the obvious choice,
+that's what swap_writepage will use to allocate bio soon after.
+
+I've been tempted to change it, but afraid to touch that house
+of cards, and afraid of long testing and justification required.
+Would it be safe to drop that __GFP_HIGH?  What's the effect of the
+__GFP_NOMEMALLOC (we've layer on layer of tweak this one way because
+we're in the reclaim path so let it eat more, then tweak it the other
+way because we don't want it to eat up _too_ much).  I just let it stay.
+
+Hugh
