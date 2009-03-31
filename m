@@ -1,156 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761766AbZCaFtc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757950AbZCaFvb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761766AbZCaFtc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Mar 2009 01:49:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757487AbZCaFtV
+	id S1757950AbZCaFvb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Mar 2009 01:51:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755861AbZCaFvW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Mar 2009 01:49:21 -0400
-Received: from mail-qy0-f118.google.com ([209.85.221.118]:45171 "EHLO
-	mail-qy0-f118.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754582AbZCaFtU (ORCPT
+	Tue, 31 Mar 2009 01:51:22 -0400
+Received: from lon1-post-1.mail.demon.net ([195.173.77.148]:62460 "EHLO
+	lon1-post-1.mail.demon.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750901AbZCaFvV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Mar 2009 01:49:20 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:content-type:date:message-id:mime-version
-         :x-mailer:content-transfer-encoding;
-        b=sTCfqvjxkxHknyJfvzLLRmEUVS3Rbl9A3unrq2rayfzGZGSoI2EJRhxWNLWo973bdh
-         dYgWULnih1kufMLvTpPHUPKLvSht4b/sIXzTCbVvpJ0qohgU58vp16LiLkd3Kdsjt69u
-         3d4ZxS7auKMq3+JSCqmsrxA741lAws+sqWPV0=
-Subject: [PATCH] tracing/filters: add TRACE_EVENT_FORMAT_NOFILTER event
- macro
-From: Tom Zanussi <tzanussi@gmail.com>
-To: linux-kernel <linux-kernel@vger.kernel.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
-       fweisbec@gmail.com
-Content-Type: text/plain
-Date: Tue, 31 Mar 2009 00:49:16 -0500
-Message-Id: <1238478556.6749.14.camel@bookworm>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
+	Tue, 31 Mar 2009 01:51:21 -0400
+Message-ID: <49D1AF5B.6090006@lougher.demon.co.uk>
+Date: Tue, 31 Mar 2009 06:51:23 +0100
+From: Phillip Lougher <phillip@lougher.demon.co.uk>
+User-Agent: Thunderbird 2.0.0.18 (X11/20081125)
+MIME-Version: 1.0
+To: Stephen Hemminger <shemminger@vyatta.com>
+CC: Geert Uytterhoeven <geert@linux-m68k.org>, Rob Landley <rob@landley.net>,
+       linux-kernel@vger.kernel.org, squashfs-devel@lists.sourceforge.net
+Subject: Re: Squashfs 4.0 tools
+References: <20090323180808.2c2ef1a7@nehalam>	<49C847C6.4030904@lougher.demon.co.uk>	<200903281727.52929.rob@landley.net>	<10f740e80903290202h1f36b370ga39721536d52a90@mail.gmail.com> <20090330175524.4e8f802e@nehalam>
+In-Reply-To: <20090330175524.4e8f802e@nehalam>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Frederic Weisbecker suggested that the trace_special event shouldn't be
-filterable; this patch adds a TRACE_EVENT_FORMAT_NOFILTER event macro
-that allows an event format to be exported without having a filter
-attached, and removes filtering from the trace_special event.
+Stephen Hemminger wrote:
+> On Sun, 29 Mar 2009 11:02:19 +0200
+> Geert Uytterhoeven <geert@linux-m68k.org> wrote:
+> 
+>> On Sun, Mar 29, 2009 at 00:27, Rob Landley <rob@landley.net> wrote:
+>>> P.S I notice a squashfs-devel mailing list cc'd here, but there's no link to
+>>> it from the squashfs.org page.  Buried in the middle of a lot of text is a
+>>> link to the sourceforge squashfs project page, which has a link to "forums"
+>>> which are not the same as mailing lists.
+>> There should be a link to it somewhere on the SF project page...
+>>
+>>> But it might be nice to at least _hint_ about its existence on the web page.
+>>> The main page's "contact" section is your personal email and nothing else...
 
-Signed-off-by: Tom Zanussi <tzanussi@gmail.com>
+Squashfs is a sourceforge project, and it has a link to the main sourceforge
+page from the webpage.  I've always thought that sufficient because users
+can get to the mailing lists, web forum, bug tracker etc. from that, and then
+choose what they think is the most appropriate way to report issues.
 
----
- kernel/trace/trace.c             |    2 --
- kernel/trace/trace.h             |    2 ++
- kernel/trace/trace_event_types.h |    2 +-
- kernel/trace/trace_export.c      |   33 +++++++++++++++++++++++++++++++++
- 4 files changed, 36 insertions(+), 3 deletions(-)
+Missing information is simply that, and I rely on feedback from users to
+say if I've forgotten to add important or relevant information anywhere.
+It would be helpful if that feedback didn't include an implied
+criticism, that way we'll all get along better.
 
-diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
-index 39b5de1..5e4163d 100644
---- a/kernel/trace/trace.c
-+++ b/kernel/trace/trace.c
-@@ -1064,7 +1064,6 @@ ftrace_trace_special(void *__tr,
- 		     unsigned long arg1, unsigned long arg2, unsigned long arg3,
- 		     int pc)
- {
--	struct ftrace_event_call *call = &event_special;
- 	struct ring_buffer_event *event;
- 	struct trace_array *tr = __tr;
- 	struct special_entry *entry;
-@@ -1077,7 +1076,6 @@ ftrace_trace_special(void *__tr,
- 	entry->arg1			= arg1;
- 	entry->arg2			= arg2;
- 	entry->arg3			= arg3;
--	filter_check_discard(call, entry, event);
- 	trace_buffer_unlock_commit(tr, event, 0, pc);
- }
- 
-diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
-index f56c628..0d2973c 100644
---- a/kernel/trace/trace.h
-+++ b/kernel/trace/trace.h
-@@ -909,6 +909,8 @@ do {									\
- #undef TRACE_EVENT_FORMAT
- #define TRACE_EVENT_FORMAT(call, proto, args, fmt, tstruct, tpfmt)	\
- 	extern struct ftrace_event_call event_##call;
-+#undef TRACE_EVENT_FORMAT_NOFILTER
-+#define TRACE_EVENT_FORMAT_NOFILTER(call, proto, args, fmt, tstruct, tpfmt)
- #include "trace_event_types.h"
- 
- #endif /* _LINUX_KERNEL_TRACE_H */
-diff --git a/kernel/trace/trace_event_types.h b/kernel/trace/trace_event_types.h
-index 95b147a..cfcecc4 100644
---- a/kernel/trace/trace_event_types.h
-+++ b/kernel/trace/trace_event_types.h
-@@ -57,7 +57,7 @@ TRACE_EVENT_FORMAT(context_switch, TRACE_CTX, ctx_switch_entry, ignore,
- 	TP_RAW_FMT("%u:%u:%u  ==+ %u:%u:%u [%03u]")
- );
- 
--TRACE_EVENT_FORMAT(special, TRACE_SPECIAL, special_entry, ignore,
-+TRACE_EVENT_FORMAT_NOFILTER(special, TRACE_SPECIAL, special_entry, ignore,
- 	TRACE_STRUCT(
- 		TRACE_FIELD(unsigned long, arg1, arg1)
- 		TRACE_FIELD(unsigned long, arg2, arg2)
-diff --git a/kernel/trace/trace_export.c b/kernel/trace/trace_export.c
-index 47989be..a16a29d 100644
---- a/kernel/trace/trace_export.c
-+++ b/kernel/trace/trace_export.c
-@@ -65,6 +65,22 @@ ftrace_format_##call(struct trace_seq *s)				\
- 	return ret;							\
- }
- 
-+#undef TRACE_EVENT_FORMAT_NOFILTER
-+#define TRACE_EVENT_FORMAT_NOFILTER(call, proto, args, fmt, tstruct,	\
-+				    tpfmt)				\
-+static int								\
-+ftrace_format_##call(struct trace_seq *s)				\
-+{									\
-+	struct args field;						\
-+	int ret;							\
-+									\
-+	tstruct;							\
-+									\
-+	trace_seq_printf(s, "\nprint fmt: \"%s\"\n", tpfmt);		\
-+									\
-+	return ret;							\
-+}
-+
- #include "trace_event_types.h"
- 
- #undef TRACE_ZERO_CHAR
-@@ -109,6 +125,19 @@ static int ftrace_raw_init_event_##call(void)				\
- 	return 0;							\
- }									\
- 
-+#undef TRACE_EVENT_FORMAT_NOFILTER
-+#define TRACE_EVENT_FORMAT_NOFILTER(call, proto, args, fmt, tstruct,	\
-+				    tpfmt)				\
-+									\
-+struct ftrace_event_call __used						\
-+__attribute__((__aligned__(4)))						\
-+__attribute__((section("_ftrace_events"))) event_##call = {		\
-+	.name			= #call,				\
-+	.id			= proto,				\
-+	.system			= __stringify(TRACE_SYSTEM),		\
-+	.show_format		= ftrace_format_##call,			\
-+};
-+
- #include "trace_event_types.h"
- 
- #undef TRACE_FIELD
-@@ -150,4 +179,8 @@ ftrace_define_fields_##call(void)					\
- 	return ret;							\
- }
- 
-+#undef TRACE_EVENT_FORMAT_NOFILTER
-+#define TRACE_EVENT_FORMAT_NOFILTER(call, proto, args, fmt, tstruct,	\
-+				    tpfmt)
-+
- #include "trace_event_types.h"
--- 
-1.5.6.3
+> 
+> I built it from cvs (imported into git), and it works okay.
+> 
 
+Good, this is what I suggested you do :-)  CVS contains everything I've
+been working on for the last couple of months.
 
+I intended to do a release last week, but, release testing found a number
+of bugs and other issues which had to be addressed, and which consequently
+delayed the release.
 
+If you grabbed the tools from CVS more than a day ago you'll find
+there's problems with Unsquashfs and big-endian systems.  The last
+bug fix (a deadlock issue in mksquashfs undiscovered since 3.4)
+went in just now, and so CVS should be what's in the release.
+
+BTW Stephen, it would be helpful if you subscribed to the
+squashfs-devel mailing list, at the moment I've having to
+authorise all your posts which is a bit of a pain.
+
+Phillip
