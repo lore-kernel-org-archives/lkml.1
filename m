@@ -1,54 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762983AbZCaTPp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763029AbZCaTRW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762983AbZCaTPp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Mar 2009 15:15:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762360AbZCaTPX
+	id S1763029AbZCaTRW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Mar 2009 15:17:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755125AbZCaTRD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Mar 2009 15:15:23 -0400
-Received: from casper.infradead.org ([85.118.1.10]:54740 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762050AbZCaTPV (ORCPT
+	Tue, 31 Mar 2009 15:17:03 -0400
+Received: from gerard.telenet-ops.be ([195.130.132.48]:51565 "EHLO
+	gerard.telenet-ops.be" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751905AbZCaTRB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Mar 2009 15:15:21 -0400
-Subject: Re: [PATCH] perf_counter: allow and require one-page mmap on
- counting counters
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Paul Mackerras <paulus@samba.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <18889.64659.917207.685779@cargo.ozlabs.ibm.com>
-References: <18889.59409.260586.87939@cargo.ozlabs.ibm.com>
-	 <20090325082844.GA11217@elte.hu>
-	 <18889.61903.636761.471281@cargo.ozlabs.ibm.com>
-	 <20090325090336.GC2341@elte.hu>
-	 <18889.64659.917207.685779@cargo.ozlabs.ibm.com>
-Content-Type: text/plain
-Date: Tue, 31 Mar 2009 21:15:07 +0200
-Message-Id: <1238526907.3898.93.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.0 
-Content-Transfer-Encoding: 7bit
+	Tue, 31 Mar 2009 15:17:01 -0400
+Date: Tue, 31 Mar 2009 21:16:55 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+cc: linux-ide@vger.kernel.org,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>
+Subject: [PATCH] ide: Fix host drivers that need IRQF_SHARED
+Message-ID: <Pine.LNX.4.64.0903312115050.29238@anakin>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-03-25 at 20:42 +1100, Paul Mackerras wrote:
-> 
-> And here's something else that is semi-related: the PAPI guys want a
-> kind of counter that counts until it overflows, and then sends a
-> signal to the process and disables itself (and the whole group it's
-> in).
+commit 255115fb35f80735c21a1cbe9809e9795a3af26e ("ide: allow host drivers to
+specify IRQ flags") added irq_flags fields to struct ide_port_info and struct
+ide_host.  Drivers can now set ide_port_info.irq_flags = IRQF_SHARED, while
+init_irq() passes ide_host.irq_flags to request_irq().
 
-I tried doing this this evening, and its remarkably hard. Disabling a
-counter relies on reading the time, and taking ctx->lock and such.
-Things that are impossible to do in NMI context.
+Unfortunately ide_host.irq_flags is never set, causing (on ARAnyM):
 
-Furthermore, some of the software counters (those that use hrtimers)
-wait for the completion of the handler (hrtimer_cancel) which would
-deadlock when tried from the handler.
+| Uniform Multi-Platform E-IDE driver
+| ide: Falcon IDE controller
+| Probing IDE interface ide0...
+| hda: Sarge m68k, ATA DISK drive
+| init_irq: sa = 0
+| ide0: disabled, unable to get IRQ 15
+| ide0: failed to initialize IDE interface
+| ide0: disabling port
 
-Some of these things could be hacked around, others less so, but all in
-all it looked remarkably hard for something that sounds so simple.
+Solve this by copying ide_port_info.irq_flags to ide_host.irq_flags in
+ide_host_alloc().
 
+This bug probably affects the following IDE host drivers:
+  - buddha
+  - delkin_cb
+  - falconide
+  - gayle
+  - ide-cs
+  - macide
+  - q40ide
+  - scc_pata
+  - sgiioc4
 
+Signed-off-by: Geert Uytterhoeven <geert@linux-m68k.org>
+---
+ drivers/ide/ide-probe.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
+diff --git a/drivers/ide/ide-probe.c b/drivers/ide/ide-probe.c
+index 5488645..4ad37d6 100644
+--- a/drivers/ide/ide-probe.c
++++ b/drivers/ide/ide-probe.c
+@@ -1317,6 +1317,7 @@ struct ide_host *ide_host_alloc(const struct ide_port_info *d, hw_regs_t **hws)
+ 		host->get_lock     = d->get_lock;
+ 		host->release_lock = d->release_lock;
+ 		host->host_flags = d->host_flags;
++		host->irq_flags = d->irq_flags;
+ 	}
+ 
+ 	return host;
+-- 
+1.6.2.1
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
