@@ -1,99 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765654AbZCaXmr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765672AbZCaXnX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765654AbZCaXmr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Mar 2009 19:42:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1765451AbZCaXjf
+	id S1765672AbZCaXnX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Mar 2009 19:43:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764875AbZCaXlU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Mar 2009 19:39:35 -0400
-Received: from mx2.netapp.com ([216.240.18.37]:46959 "EHLO mx2.netapp.com"
+	Tue, 31 Mar 2009 19:41:20 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:39132 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1765448AbZCaXjd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Mar 2009 19:39:33 -0400
-X-IronPort-AV: E=Sophos;i="4.39,304,1235980800"; 
-   d="scan'208";a="148477105"
-Subject: Re: [PATCH 1/4] VFS: Add a VFS helper function
- vfs_remote_path_lookup()
-From: Trond Myklebust <Trond.Myklebust@netapp.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-nfs@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, viro@zeniv.linux.org.uk,
-       hch@infradead.org
-In-Reply-To: <alpine.LFD.2.00.0903311540120.6474@localhost.localdomain>
-References: <cover.1238525532.git.Trond.Myklebust@netapp.com>
-	 <3f1264127d431f695be25b940b477e3d287edc68.1238525532.git.Trond.Myklebust@netapp.com>
-	 <alpine.LFD.2.00.0903311423280.6474@localhost.localdomain>
-	 <1238539079.28445.103.camel@heimdal.trondhjem.org>
-	 <alpine.LFD.2.00.0903311540120.6474@localhost.localdomain>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Organization: NetApp
-Date: Tue, 31 Mar 2009 19:38:42 -0400
-Message-Id: <1238542722.28445.154.camel@heimdal.trondhjem.org>
+	id S1765512AbZCaXlT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Mar 2009 19:41:19 -0400
+Date: Tue, 31 Mar 2009 19:39:58 -0400
+From: Jeff Layton <jlayton@redhat.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Subject: Re: [PATCH] writeback: guard against jiffies wraparound on
+ inode->dirtied_when checks
+Message-ID: <20090331193958.5a44429e@tleilax.poochiereds.net>
+In-Reply-To: <20090331163335.46529299.akpm@linux-foundation.org>
+References: <1238431208-3894-1-git-send-email-jlayton@redhat.com>
+	<20090331163335.46529299.akpm@linux-foundation.org>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.0 
-X-OriginalArrivalTime: 31 Mar 2009 23:39:30.0347 (UTC) FILETIME=[EFE697B0:01C9B259]
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-03-31 at 15:43 -0700, Linus Torvalds wrote:
+On Tue, 31 Mar 2009 16:33:35 -0700
+Andrew Morton <akpm@linux-foundation.org> wrote:
+
+> On Mon, 30 Mar 2009 12:40:08 -0400
+> Jeff Layton <jlayton@redhat.com> wrote:
 > 
-> On Tue, 31 Mar 2009, Trond Myklebust wrote:
+> > The dirtied_when value on an inode is supposed to represent the first
+> > time that an inode has one of its pages dirtied. This value is in units
+> > of jiffies. It's used in several places in the writeback code to
+> > determine when to write out an inode.
 > > 
-> > No. The main purpose is to able to look up and walk down an NFSv4 mount
-> > path, which is a path on the _server_'s file/directory namespace.
-> 
-> Sure, but that's not the "swizzle" part.
-> 
-> If it was just abotu the namespace part, then you'd just do one namespace 
-> per server, and be done with it.
-> 
-> So if you split that function up into a sepate
->  - allocate namespace for nfsd
->  - free nfsd namespace
->  - do the lookup
-> 
-> then really _all_ the extraneous code comes just from that "playing games 
-> with it" swizzling part.
-
-Fair enough.
-
-My main technical problem with the namespace per server is knowing when
-it is safe to release it. AFAICS, you want to cache the per-server
-namespace if there are mount points on "public" namespaces that
-reference that server, but release it if the only remaining mount points
-are the ones on the per-server namespace itself.
-
-> > > And I think it's positively _wrong_ to have a function that creates and 
-> > > destroys the whole "struct fs_struct" and a namespace for just one call. 
-> > > Even if you don't think it's at all performance-critical, the interface is 
-> > > too damn ugly. Have separate "create/destroy context" functions, so that 
-> > > you _can_ do it just once, and have multiple calls in between.
+> > The problem is that these checks assume that dirtied_when is updated
+> > periodically. If an inode is continuously being used for I/O it can be
+> > persistently marked as dirty and will continue to age. Once the time
+> > difference between dirtied_when and the jiffies value it is being
+> > compared to is greater than or equal to half the maximum of the jiffies
+> > type, the logic of the time_*() macros inverts and the opposite of what
+> > is needed is returned. On 32-bit architectures that's just under 25 days
+> > (assuming HZ == 1000).
 > > 
-> > That can probably be done, but the main reason for having the namespace
-> > was to be able, once the sys_mount() is complete, to garbage collect and
-> > get rid of those autogenerated mount points that are not user visible.
+> > As the least-recently dirtied inode, it'll end up being the first one
+> > that pdflush will try to write out. sync_sb_inodes does this check:
+> > 
+> > 	/* Was this inode dirtied after sync_sb_inodes was called? */
+> >  	if (time_after(inode->dirtied_when, start))
+> >  		break;
+> > 
+> > ...but now dirtied_when appears to be in the future. sync_sb_inodes
+> > bails out without attempting to write any dirty inodes. When this
+> > occurs, pdflush will stop writing out inodes for this superblock.
+> > Nothing can unwedge it until jiffies moves out of the problematic
+> > window.
+> > 
+> > This patch fixes this problem by changing the checks against
+> > dirtied_when to also check whether it appears to be in the future. If it
+> > does, then we consider the value to be far in the past.
+> > 
+> > This should shrink the problematic window of time to such a small period
+> > as not to matter.
+> > 
+> > Signed-off-by: Jeff Layton <jlayton@redhat.com>
+> > Acked-by: Wu Fengguang <fengguang.wu@intel.com>
+> > Acked-by: Ian Kent <raven@themaw.net>
+> > ---
+> >  fs/fs-writeback.c |   11 +++++++----
+> >  1 files changed, 7 insertions(+), 4 deletions(-)
+> > 
+> > diff --git a/fs/fs-writeback.c b/fs/fs-writeback.c
+> > index e3fe991..dba69a5 100644
+> > --- a/fs/fs-writeback.c
+> > +++ b/fs/fs-writeback.c
+> > @@ -196,8 +196,9 @@ static void redirty_tail(struct inode *inode)
+> >  		struct inode *tail_inode;
+> >  
+> >  		tail_inode = list_entry(sb->s_dirty.next, struct inode, i_list);
+> > -		if (!time_after_eq(inode->dirtied_when,
+> > -				tail_inode->dirtied_when))
+> > +		if (time_before(inode->dirtied_when,
+> > +				tail_inode->dirtied_when) ||
+> > +		    time_after(inode->dirtied_when, jiffies))
+> >  			inode->dirtied_when = jiffies;
+> >  	}
+> >  	list_move(&inode->i_list, &sb->s_dirty);
+> > @@ -231,7 +232,8 @@ static void move_expired_inodes(struct list_head *delaying_queue,
+> >  		struct inode *inode = list_entry(delaying_queue->prev,
+> >  						struct inode, i_list);
+> >  		if (older_than_this &&
+> > -			time_after(inode->dirtied_when, *older_than_this))
+> > +			time_after(inode->dirtied_when, *older_than_this) &&
+> > +			time_before_eq(inode->dirtied_when, jiffies))
+> >  			break;
+> >  		list_move(&inode->i_list, dispatch_queue);
+> >  	}
+> > @@ -493,7 +495,8 @@ void generic_sync_sb_inodes(struct super_block *sb,
+> >  		}
+> >  
+> >  		/* Was this inode dirtied after sync_sb_inodes was called? */
+> > -		if (time_after(inode->dirtied_when, start))
+> > +		if (time_after(inode->dirtied_when, start) &&
+> > +		    time_before_eq(inode->dirtied_when, jiffies))
+> >  			break;
+> >  
 > 
-> So there is never any reason to do that nfsd-specific pathwalk at 
-> run-time? There are no "server pwd" requests that clients can do?
+> It'd be nice to add/update the comments to explain what's going on. 
+> Otherwise it's a wee bit obscure, no?
+> 
 
-NFSv4 does theoretically support the idea of volatile filehandles. If
-so, and the server were to declare that your mount point's filehandle
-has expired, then your only way of recovering would be to look up that
-mount path again. (We might perhaps implement client support for that
-some day if somebody discovers a good enough reason).
+Thanks for picking this up, Andrew...
 
-However, if your mount point filehandle has expired, then chances are
-that you'll probably have to look up all the filehandles in the mount
-path again too, so why should you cache all that information?
+Good point. I had some comments in the patch that I backported for
+RHEL5. I'll add some and send a respin tomorrow.
 
-Cheers
-  Trond
-
+Cheers,
 -- 
-Trond Myklebust
-Linux NFS client maintainer
-
-NetApp
-Trond.Myklebust@netapp.com
-www.netapp.com
+Jeff Layton <jlayton@redhat.com>
