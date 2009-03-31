@@ -1,53 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762660AbZCaGu5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758209AbZCaGxU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762660AbZCaGu5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Mar 2009 02:50:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758081AbZCaGur
+	id S1758209AbZCaGxU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Mar 2009 02:53:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755073AbZCaGxJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Mar 2009 02:50:47 -0400
-Received: from www.tglx.de ([62.245.132.106]:49019 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754145AbZCaGuq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Mar 2009 02:50:46 -0400
-Date: Tue, 31 Mar 2009 08:49:29 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Darren Hart <dvhltc@us.ibm.com>
-cc: linux-kernel@vger.kernel.org, Sripathi Kodi <sripathik@in.ibm.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       John Stultz <johnstul@us.ibm.com>, Steven Rostedt <rostedt@goodmis.org>,
-       Dinakar Guniguntala <dino@in.ibm.com>,
-       Ulrich Drepper <drepper@redhat.com>, Eric Dumazet <dada1@cosmosbay.com>,
-       Ingo Molnar <mingo@elte.hu>, Jakub Jelinek <jakub@redhat.com>,
-       Sripathi Kodi <sripathik@in.ibm.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       John Stultz <johnstul@us.ibm.com>, Steven Rostedt <rostedt@goodmis.org>,
-       Dinakar Guniguntala <dino@in.ibm.com>,
-       Ulrich Drepper <drepper@redhat.com>, Eric Dumazet <dada1@cosmosbay.com>,
-       Ingo Molnar <mingo@elte.hu>, Jakub Jelinek <jakub@redhat.com>
-Subject: Re: [tip PATCH v6 3/8] RFC: futex: futex_lock_pi_atomic()
-In-Reply-To: <20090330213755.606.39013.stgit@Aeon>
-Message-ID: <alpine.LFD.2.00.0903310845550.12916@localhost.localdomain>
-References: <20090330213306.606.9540.stgit@Aeon> <20090330213755.606.39013.stgit@Aeon>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Tue, 31 Mar 2009 02:53:09 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:35634 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755560AbZCaGxI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Mar 2009 02:53:08 -0400
+Date: Tue, 31 Mar 2009 08:52:54 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, eric.piel@tremplin-utc.net,
+       Luca Cappa <lcappa@gmail.com>
+Subject: Re: axes conversion for hp compaq 8710w for HP_ACCEL linux kernel
+	module (fwd)
+Message-ID: <20090331065254.GE17800@elf.ucw.cz>
+References: <20090321230819.GF12291@elf.ucw.cz> <20090330155533.ee3e6dae.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090330155533.ee3e6dae.akpm@linux-foundation.org>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 30 Mar 2009, Darren Hart wrote:
-> +static int futex_lock_pi_atomic(u32 __user *uaddr, struct futex_hash_bucket *hb,
-> +				union futex_key *key,
-> +				struct futex_pi_state **ps,
-> +				struct task_struct *task)
-> +{
-> +	u32 uval, newval, curval;
-> +	int lock_taken;
-> +	int ret;
-> +	int ownerdied = 0;
 
-  int lock_taken, ret, ownerdied = 0;
+> > Greetings,
+> > Luca
+> > 
+> > 
+> > --- /home/luca/Desktop/hp_accel.c	2009-03-21 19:28:54.000000000 +0100
+> > +++ hp_accel.c	2009-03-21 19:31:05.000000000 +010
+> > @@ -201,6 +201,7 @@
+> >  			PRODUCT_NAME, "HP Pavilion dv5",
+> >  			BOARD_NAME, "3600",
+> >  			y_inverted),
+> > +    AXIS_DMI_MATCH("HP8710", "HP Compaq 8710", y_inverted),
+> >  	{ NULL, }
+> >  /* Laptop models witho
+> 
+> - changelog is a mess
+> - originator wasn't cc'ed
+> - originator's signed-off-by: is missing
+> - your signed-off-by: is missing
+> - patch isn't in `patch -p1' form
+> - patch is whitespace-mangled
+> 
+> I fixed some of that up.  It'd be nice to get some Signed-off-by:s,
+> please.
 
-Thanks,
+Sorry about the mess you had to clean up.
 
-	tglx
+Signed-off-by: Pavel Machek <pavel@ucw.cz>
+									Pavel
+
+
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
