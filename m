@@ -1,44 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756970AbZCaLzt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757180AbZCaL5S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756970AbZCaLzt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Mar 2009 07:55:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753468AbZCaLzk
+	id S1757180AbZCaL5S (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Mar 2009 07:57:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756069AbZCaL45
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Mar 2009 07:55:40 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:34234 "EHLO
-	the-village.bc.nu" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752317AbZCaLzj (ORCPT
+	Tue, 31 Mar 2009 07:56:57 -0400
+Received: from serv2.oss.ntt.co.jp ([222.151.198.100]:45434 "EHLO
+	serv2.oss.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753420AbZCaL44 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Mar 2009 07:55:39 -0400
-Date: Tue, 31 Mar 2009 12:28:20 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: petkovbb@gmail.com
-Cc: petkovbb@googlemail.com, Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Michael Roth <mroth@nessie.de>, linux-kernel@vger.kernel.org
-Subject: Re: Bug in 2.6.29 ide-cd: Kernel freeze: bisected + unacceptable
- workaround
-Message-ID: <20090331122820.167d52e5@the-village.bc.nu>
-In-Reply-To: <20090331074508.GA16403@liondog.tnic>
-References: <49CFCB2A.4020505@nessie.de>
-	<49CFEA24.10700@nessie.de>
-	<20090330072713.GA13776@liondog.tnic>
-	<200903302228.54601.bzolnier@gmail.com>
-	<20090331074508.GA16403@liondog.tnic>
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.12.12; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 31 Mar 2009 07:56:56 -0400
+Message-ID: <49D20505.3060901@oss.ntt.co.jp>
+Date: Tue, 31 Mar 2009 20:56:53 +0900
+From: =?ISO-8859-1?Q?Fernando_Luis_V=E1zquez_Cao?= 
+	<fernando@oss.ntt.co.jp>
+User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
+MIME-Version: 1.0
+To: Jens Axboe <jens.axboe@oracle.com>
+CC: Jeff Garzik <jeff@garzik.org>, Christoph Hellwig <hch@infradead.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Theodore Tso <tytso@mit.edu>, Ingo Molnar <mingo@elte.hu>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Nick Piggin <npiggin@suse.de>,
+       David Rees <drees76@gmail.com>, Jesper Krogh <jesper@krogh.cc>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       chris.mason@oracle.com, david@fromorbit.com, tj@kernel.org
+Subject: Re: [PATCH 5/7] vfs: Add  wbcflush sysfs knob to disable storage
+ device writeback cache flushes
+References: <49D01F94.6000101@oss.ntt.co.jp> <49D02328.7060108@oss.ntt.co.jp> <49D0258A.9020306@garzik.org> <49D03377.1040909@oss.ntt.co.jp> <49D0B535.2010106@oss.ntt.co.jp> <49D0B978.5030107@oss.ntt.co.jp> <20090330123618.GS5178@kernel.dk> <49D0D4D0.5000108@oss.ntt.co.jp> <20090330143539.GT5178@kernel.dk> <49D1BCE3.8060902@oss.ntt.co.jp> <20090331103815.GI5178@kernel.dk>
+In-Reply-To: <20090331103815.GI5178@kernel.dk>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> take it ok. Also, if I remember correctly, the original ide-cd behavior
-> was to issue the command and _then_ start DMA so we're back to that. I
-> guess now we should be concerned whether the other ATAPI devices can
-> handle the reverse situation where you first issue a command and _then_
-> start DMA.. Hmm...
+Jens Axboe wrote:
+> On Tue, Mar 31 2009, Fernando Luis Vázquez Cao wrote:
+>> Jens Axboe wrote:
+>>> On Mon, Mar 30 2009, Fernando Luis Vázquez Cao wrote:
+>>>> Jens Axboe wrote:
+>>>>> On Mon, Mar 30 2009, Fernando Luis Vázquez Cao wrote:
+>>>>>> Add a sysfs knob to disable storage device writeback cache flushes.
+>>>>>>
+>>>>>> Signed-off-by: Fernando Luis Vazquez Cao <fernando@oss.ntt.co.jp>
+>>>>>> ---
+>>>>>>
+>>>>>> diff -urNp linux-2.6.29-orig/block/blk-barrier.c linux-2.6.29/block/blk-barrier.c
+>>>>>> --- linux-2.6.29-orig/block/blk-barrier.c	2009-03-24 08:12:14.000000000 +0900
+>>>>>> +++ linux-2.6.29/block/blk-barrier.c	2009-03-30 17:08:28.000000000 +0900
+>>>>>> @@ -318,6 +318,9 @@ int blkdev_issue_flush(struct block_devi
+>>>>>>  	if (!q)
+>>>>>>  		return -ENXIO;
+>>>>>>
+>>>>>> +	if (blk_queue_nowbcflush(q))
+>>>>>> +		return -EOPNOTSUPP;
+>>>>>> +
+>>>>>>  	bio = bio_alloc(GFP_KERNEL, 0);
+>>>>>>  	if (!bio)
+>>>>>>  		return -ENOMEM;
+>>>>>> diff -urNp linux-2.6.29-orig/block/blk-core.c linux-2.6.29/block/blk-core.c
+>>>>>> --- linux-2.6.29-orig/block/blk-core.c	2009-03-24 08:12:14.000000000 +0900
+>>>>>> +++ linux-2.6.29/block/blk-core.c	2009-03-30 17:08:28.000000000 +0900
+>>>>>> @@ -1452,7 +1452,8 @@ static inline void __generic_make_reques
+>>>>>>  			goto end_io;
+>>>>>>  		}
+>>>>>>  		if (bio_barrier(bio) && bio_has_data(bio) &&
+>>>>>> -		    (q->next_ordered == QUEUE_ORDERED_NONE)) {
+>>>>>> +		    (blk_queue_nowbcflush(q) ||
+>>>>>> +		     q->next_ordered == QUEUE_ORDERED_NONE)) {
+>>>>>>  			err = -EOPNOTSUPP;
+>>>>>>  			goto end_io;
+>>>>>>  		}
+>>>>> This (and the above hunk) should be changed. -EOPNOTSUPP means the
+>>>>> target does not support barriers, that is a different thing to flushes
+>>>>> not being needed. A file system issuing a barrier and getting
+>>>>> -EOPNOTSUPP back will disable barriers, since it now thinks that
+>>>>> ordering cannot be guaranteed.
+>>>> The reason I decided to use -EOPNOTSUPP was that I wanted to keep
+>>>> barriers and device flushes from entering the block layer when
+>>>> they are not needed. I feared that if we pass them down the block
+>>>> stack (knowing in advance they will not be actually submitted to
+>>>> disk) we may end up slowing things down unnecessarily.
+>>> But that's just wrong, you need to make sure that the block layer / io
+>>> scheduler doesn't reorder as well. It's a lot more complex than just the
+>>> device end. So just returning -EOPNOTSUPP and pretending that you need
+>>> not use barriers at the fs end is just wrong.
+>> I should have mentioned that in this patch set I was trying to tackle the
+>> blkdev_issue_flush() case only. As you pointed out, with the code above
+>> requests may get silently reordered across barriers inside the block layer.
+>>
+>> The follow-up patch I am working on implements blkdev_issue_empty_barrier(),
+>> which should be used by filesystems that want to emit an empty barrier (as
+>> opposed to just triggering a device flush). Doing this we can optimize
+>> fsync() flushes (block_flush_device()) and filesystem-originated barriers
+>> (blkdev_issue_empty_barrier()) independently in the block layer.
+> 
+> Not sure it makes sense to abstract that out into an api, it's basically
+> just a bio_alloc(gfp, 0); with setting the bio fields and then
+> submitting. Otherwise you'd have to either pass a ton of parameters, the
+> caller will want to set end_io, bdev, etc anyway. And after that it's
+> just submit_bio().
 
-Most devices don't care but you do need to follow the exact ATAPI spec.
-If you search way back through the archives you'll find long discussions
-on this during either 2.4 or 2.2 when HP hit problems caused by us
-turning DMA on too early.
+I will give it a try and see how it looks.
+
+>> I agree with you that the we should pass barriers down in
+>> __generic_make_request, but the optimization above for fsync()-originated
+>> blkdev_issue_flush()'s seems valid to me.
+> 
+> Of course, we need to do that. Anything else would be broken. The
+> blkdev_issue_flush() should be changed to return 0, with the -EOPNOTSUPP
+> being flag cached.
+
+I am currently cooking a new iteration of these patches that do just
+that. I will be reposting in a new thread and keep you all CCed.
+
+- Fernando
