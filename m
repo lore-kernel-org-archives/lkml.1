@@ -1,45 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757640AbZCaVwN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758510AbZCaVzh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757640AbZCaVwN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Mar 2009 17:52:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752197AbZCaVv4
+	id S1758510AbZCaVzh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Mar 2009 17:55:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754084AbZCaVz2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Mar 2009 17:51:56 -0400
-Received: from gw.goop.org ([64.81.55.164]:53487 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752122AbZCaVvz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Mar 2009 17:51:55 -0400
-Message-ID: <49D29077.80502@goop.org>
-Date: Tue, 31 Mar 2009 14:51:51 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Tue, 31 Mar 2009 17:55:28 -0400
+Received: from rcsinet13.oracle.com ([148.87.113.125]:32017 "EHLO
+	rgminet13.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751764AbZCaVz2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Mar 2009 17:55:28 -0400
+Message-ID: <49D29122.6060601@oracle.com>
+Date: Tue, 31 Mar 2009 14:54:42 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+Organization: Oracle Linux Engineering
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-To: Bojan Smojver <bojan@rexursive.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: Linux 2.6.29
-References: <alpine.LFD.2.00.0903251622420.3032@localhost.localdomain> <20090326171148.9bf8f1ec.akpm@linux-foundation.org> <alpine.LFD.2.00.0903261723250.3994@localhost.localdomain> <20090326174704.cd36bf7b.akpm@linux-foundation.org> <alpine.LFD.2.00.0903261752110.3994@localhost.localdomain> <20090327032301.GN6239@mit.edu> <20090327034705.GA16888@srcf.ucam.org> <20090327051338.GP6239@mit.edu> <20090327055750.GA18065@srcf.ucam.org> <20090327062114.GA18290@srcf.ucam.org> <20090327112438.GQ6239@mit.edu> <49CD4109.2070505@goop.org> <loom.20090328T073850-695@post.gmane.org> <loom.20090328T084304-506@post.gmane.org> <loom.20090328T214417-565@post.gmane.org>
-In-Reply-To: <loom.20090328T214417-565@post.gmane.org>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: "Morten P.D. Stevens" <mstevens@win-professional.com>
+CC: Randy Dunlap <randy.dunlap@oracle.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Bjorn Helgaas <bjorn.helgaas@hp.com>, andreas.herrmann3@amd.com
+Subject: Re: 2.6.29 boot hang
+References: <49D280EF.1080507@oracle.com> <897274600903311401v65fe3d3ame8522226a8a71ca9@mail.gmail.com>
+In-Reply-To: <897274600903311401v65fe3d3ame8522226a8a71ca9@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+X-Source-IP: acsmt702.oracle.com [141.146.40.80]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A09020B.49D2912D.010D:SCFMA4539814,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bojan Smojver wrote:
-> Bojan Smojver <bojan <at> rexursive.com> writes:
->
->   
->> That was stupid. Ignore me.
->>     
->
-> And yet, FreeBSD seems to have a command just like that:
->
-> http://www.freebsd.org/cgi/man.cgi?query=fsync&sektion=1&manpath=FreeBSD+7.1-RELEASE
->   
+Morten P.D. Stevens wrote:
+> 2009/3/31 Randy Dunlap <randy.dunlap@oracle.com>:
+> 
+>> If I change CONFIG_MICROCODE_AMD=y to CONFIG_MICROCODE_AMD=n & rebuild,
+>> the kernel boots successfully.
+>>
+>> Suggestions, fixes, etc.??
+>>
+> 
+> Does it boot with 2.6.28 and CONFIG_MICROCODE_AMD=y ?
 
-I was thinking something like "munge_important_stuff | fsync > output" - 
-ie, cat which fsyncs on close.  In fact, its vaguely surprising that GNU 
-cat doesn't have this already.
+Good question.  I hadn't tested that explicitly, but I have now.
 
-    J
+Yes (for 2.6.28.1).
+
+> If it is booting with 2.6.28 and AMD=y it could be a linux kernel
+> related problem.
+
+Thanks.
+-- 
+~Randy
