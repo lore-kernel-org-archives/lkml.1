@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764413AbZCaXXk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764485AbZCaXX6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764413AbZCaXXk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Mar 2009 19:23:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759213AbZCaXU3
+	id S1764485AbZCaXX6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Mar 2009 19:23:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761255AbZCaXUa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Mar 2009 19:20:29 -0400
-Received: from sous-sol.org ([216.99.217.87]:33136 "EHLO x200.localdomain"
+	Tue, 31 Mar 2009 19:20:30 -0400
+Received: from sous-sol.org ([216.99.217.87]:33138 "EHLO x200.localdomain"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1761022AbZCaXU1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Mar 2009 19:20:27 -0400
-Message-Id: <20090331231616.871423172@sous-sol.org>
+	id S1758874AbZCaXU2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Mar 2009 19:20:28 -0400
+Message-Id: <20090331231358.141644571@sous-sol.org>
 User-Agent: quilt/0.47-1
-Date: Tue, 31 Mar 2009 16:11:11 -0700
+Date: Tue, 31 Mar 2009 16:10:51 -0700
 From: Chris Wright <chrisw@sous-sol.org>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -24,13 +24,11 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Tony Battersby <tonyb@cybernetics.com>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       Douglas Gilbert <dgilbert@interlog.com>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>
-Subject: [patch 26/45] SCSI: sg: fix races with ioctl(SG_IO)
+       alan@lxorguk.ukuu.org.uk, Jesper Nilsson <jesper.nilsson@axis.com>,
+       David S Miller <davem@davemloft.net>
+Subject: [patch 06/45] ipv6: Plug sk_buff leak in ipv6_rcv (net/ipv6/ip6_input.c)
 References: <20090331231045.719396245@sous-sol.org>
-Content-Disposition: inline; filename=scsi-sg-fix-races-with-ioctl.patch
+Content-Disposition: inline; filename=ipv6-plug-sk_buff-leak-in-ipv6_rcv.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -38,124 +36,51 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 ---------------------
 
-From: Tony Battersby <tonyb@cybernetics.com>
+From: Jesper Nilsson <jesper.nilsson@axis.com>
 
-upstream commit: a2dd3b4cea335713b58996bb07b3abcde1175f47
+[ Upstream commit 71f6f6dfdf7c7a67462386d9ea05c1095a89c555 ]
 
-sg_io_owned needs to be set before the command is sent to the midlevel;
-otherwise, a quickly-completing command may cause a different CPU
-to see "srp->done == 1 && !srp->sg_io_owned", which would lead to
-incorrect behavior.
+Commit 778d80be52699596bf70e0eb0761cf5e1e46088d
+(ipv6: Add disable_ipv6 sysctl to disable IPv6 operaion on specific interface)
+seems to have introduced a leak of sk_buff's for ipv6 traffic,
+at least in some configurations where idev is NULL, or when ipv6
+is disabled via sysctl.
 
-Check srp->done and set srp->orphan while holding rq_list_lock to
-prevent races with sg_rq_end_io().
+The problem is that if the first condition of the if-statement
+returns non-NULL, it returns an skb with only one reference,
+and when the other conditions apply, execution jumps to the "out"
+label, which does not call kfree_skb for it.
 
-There is no need to check sfp->closed from read/write/ioctl/poll/etc.
-since the kernel guarantees that this won't happen.
+To plug this leak, change to use the "drop" label instead.
+(this relies on it being ok to call kfree_skb on NULL)
+This also allows us to avoid calling rcu_read_unlock here,
+and removes the only user of the "out" label.
 
-The usefulness of sg_srp_done() was questionable before; now it is
-definitely not needed.
-
-Signed-off-by: Tony Battersby <tonyb@cybernetics.com>
-Acked-by: Douglas Gilbert <dgilbert@interlog.com>
-Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
+Signed-off-by: Jesper Nilsson <jesper.nilsson@axis.com>
+Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 ---
- drivers/scsi/sg.c |   39 ++++++++++++++-------------------------
- 1 file changed, 14 insertions(+), 25 deletions(-)
+ net/ipv6/ip6_input.c |    4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
 
---- a/drivers/scsi/sg.c
-+++ b/drivers/scsi/sg.c
-@@ -189,7 +189,7 @@ static ssize_t sg_new_read(Sg_fd * sfp, 
- 			   Sg_request * srp);
- static ssize_t sg_new_write(Sg_fd *sfp, struct file *file,
- 			const char __user *buf, size_t count, int blocking,
--			int read_only, Sg_request **o_srp);
-+			int read_only, int sg_io_owned, Sg_request **o_srp);
- static int sg_common_write(Sg_fd * sfp, Sg_request * srp,
- 			   unsigned char *cmnd, int timeout, int blocking);
- static int sg_read_oxfer(Sg_request * srp, char __user *outp, int num_read_xfer);
-@@ -561,7 +561,8 @@ sg_write(struct file *filp, const char _
- 		return -EFAULT;
- 	blocking = !(filp->f_flags & O_NONBLOCK);
- 	if (old_hdr.reply_len < 0)
--		return sg_new_write(sfp, filp, buf, count, blocking, 0, NULL);
-+		return sg_new_write(sfp, filp, buf, count,
-+				    blocking, 0, 0, NULL);
- 	if (count < (SZ_SG_HEADER + 6))
- 		return -EIO;	/* The minimum scsi command length is 6 bytes. */
- 
-@@ -642,7 +643,7 @@ sg_write(struct file *filp, const char _
- 
- static ssize_t
- sg_new_write(Sg_fd *sfp, struct file *file, const char __user *buf,
--		 size_t count, int blocking, int read_only,
-+		 size_t count, int blocking, int read_only, int sg_io_owned,
- 		 Sg_request **o_srp)
- {
- 	int k;
-@@ -662,6 +663,7 @@ sg_new_write(Sg_fd *sfp, struct file *fi
- 		SCSI_LOG_TIMEOUT(1, printk("sg_new_write: queue full\n"));
- 		return -EDOM;
+--- a/net/ipv6/ip6_input.c
++++ b/net/ipv6/ip6_input.c
+@@ -75,8 +75,7 @@ int ipv6_rcv(struct sk_buff *skb, struct
+ 	if ((skb = skb_share_check(skb, GFP_ATOMIC)) == NULL ||
+ 	    !idev || unlikely(idev->cnf.disable_ipv6)) {
+ 		IP6_INC_STATS_BH(net, idev, IPSTATS_MIB_INDISCARDS);
+-		rcu_read_unlock();
+-		goto out;
++		goto drop;
  	}
-+	srp->sg_io_owned = sg_io_owned;
- 	hp = &srp->header;
- 	if (__copy_from_user(hp, buf, SZ_SG_IO_HDR)) {
- 		sg_remove_request(sfp, srp);
-@@ -766,18 +768,6 @@ sg_common_write(Sg_fd * sfp, Sg_request 
+ 
+ 	memset(IP6CB(skb), 0, sizeof(struct inet6_skb_parm));
+@@ -147,7 +146,6 @@ err:
+ drop:
+ 	rcu_read_unlock();
+ 	kfree_skb(skb);
+-out:
+ 	return 0;
  }
  
- static int
--sg_srp_done(Sg_request *srp, Sg_fd *sfp)
--{
--	unsigned long iflags;
--	int done;
--
--	read_lock_irqsave(&sfp->rq_list_lock, iflags);
--	done = srp->done;
--	read_unlock_irqrestore(&sfp->rq_list_lock, iflags);
--	return done;
--}
--
--static int
- sg_ioctl(struct inode *inode, struct file *filp,
- 	 unsigned int cmd_in, unsigned long arg)
- {
-@@ -809,27 +799,26 @@ sg_ioctl(struct inode *inode, struct fil
- 				return -EFAULT;
- 			result =
- 			    sg_new_write(sfp, filp, p, SZ_SG_IO_HDR,
--					 blocking, read_only, &srp);
-+					 blocking, read_only, 1, &srp);
- 			if (result < 0)
- 				return result;
--			srp->sg_io_owned = 1;
- 			while (1) {
- 				result = 0;	/* following macro to beat race condition */
- 				__wait_event_interruptible(sfp->read_wait,
--					(sdp->detached || sfp->closed || sg_srp_done(srp, sfp)),
--							   result);
-+					(srp->done || sdp->detached),
-+					result);
- 				if (sdp->detached)
- 					return -ENODEV;
--				if (sfp->closed)
--					return 0;	/* request packet dropped already */
--				if (0 == result)
-+				write_lock_irq(&sfp->rq_list_lock);
-+				if (srp->done) {
-+					srp->done = 2;
-+					write_unlock_irq(&sfp->rq_list_lock);
- 					break;
-+				}
- 				srp->orphan = 1;
-+				write_unlock_irq(&sfp->rq_list_lock);
- 				return result;	/* -ERESTARTSYS because signal hit process */
- 			}
--			write_lock_irqsave(&sfp->rq_list_lock, iflags);
--			srp->done = 2;
--			write_unlock_irqrestore(&sfp->rq_list_lock, iflags);
- 			result = sg_new_read(sfp, p, SZ_SG_IO_HDR, srp);
- 			return (result < 0) ? result : 0;
- 		}
 
