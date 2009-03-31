@@ -1,23 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763680AbZCaSs4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763374AbZCaSrc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763680AbZCaSs4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Mar 2009 14:48:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762988AbZCaSmD
+	id S1763374AbZCaSrc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Mar 2009 14:47:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762215AbZCaSlu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Mar 2009 14:42:03 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:39234 "EHLO
+	Tue, 31 Mar 2009 14:41:50 -0400
+Received: from victor.provo.novell.com ([137.65.250.26]:44296 "EHLO
 	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755268AbZCaSlp (ORCPT
+	with ESMTP id S1761892AbZCaSlo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Mar 2009 14:41:45 -0400
+	Tue, 31 Mar 2009 14:41:44 -0400
 From: Gregory Haskins <ghaskins@novell.com>
-Subject: [RFC PATCH 14/17] kvm: add a reset capability
+Subject: [RFC PATCH 13/17] x86: allow the irq->vector translation to be
+	determined outside of ioapic
 To: linux-kernel@vger.kernel.org
 Cc: agraf@suse.de, pmullaney@novell.com, pmorreale@novell.com,
        anthony@codemonkey.ws, rusty@rustcorp.com.au, netdev@vger.kernel.org,
        kvm@vger.kernel.org
-Date: Tue, 31 Mar 2009 14:44:00 -0400
-Message-ID: <20090331184400.28333.50396.stgit@dev.haskins.net>
+Date: Tue, 31 Mar 2009 14:43:55 -0400
+Message-ID: <20090331184355.28333.72382.stgit@dev.haskins.net>
 In-Reply-To: <20090331184057.28333.77287.stgit@dev.haskins.net>
 References: <20090331184057.28333.77287.stgit@dev.haskins.net>
 User-Agent: StGIT/0.14.3
@@ -28,140 +29,85 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We need a way to detect if a VM is reset later in the series, so lets
-add a capability for userspace to signal a VM reset down to the kernel.
+The ioapic code currently privately manages the mapping between irq
+and vector.  This results in some layering violations as the support
+for certain MSI operations need this info.  As a result, the MSI
+code itself was moved to the ioapic module.  This is not really
+optimal.
+
+We now have another need to gain access to the vector assignment on
+x86.  However, rather than put yet another inappropriately placed
+function into io-apic, lets create a way to export this simple data
+and therefore allow the logic to sit closer to where it belongs.
+
+Ideally we should abstract the entire notion of irq->vector management
+out of io-apic, but we leave that as an excercise for another day.
 
 Signed-off-by: Gregory Haskins <ghaskins@novell.com>
 ---
 
- arch/x86/kvm/x86.c       |    1 +
- include/linux/kvm.h      |    2 ++
- include/linux/kvm_host.h |    6 ++++++
- virt/kvm/kvm_main.c      |   36 ++++++++++++++++++++++++++++++++++++
- 4 files changed, 45 insertions(+), 0 deletions(-)
+ arch/x86/include/asm/irq.h |    6 ++++++
+ arch/x86/kernel/io_apic.c  |   25 +++++++++++++++++++++++++
+ 2 files changed, 31 insertions(+), 0 deletions(-)
 
-diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
-index 758b7a1..9b0a649 100644
---- a/arch/x86/kvm/x86.c
-+++ b/arch/x86/kvm/x86.c
-@@ -971,6 +971,7 @@ int kvm_dev_ioctl_check_extension(long ext)
- 	case KVM_CAP_NOP_IO_DELAY:
- 	case KVM_CAP_MP_STATE:
- 	case KVM_CAP_SYNC_MMU:
-+	case KVM_CAP_RESET:
- 		r = 1;
- 		break;
- 	case KVM_CAP_COALESCED_MMIO:
-diff --git a/include/linux/kvm.h b/include/linux/kvm.h
-index 0424326..7ffd8f5 100644
---- a/include/linux/kvm.h
-+++ b/include/linux/kvm.h
-@@ -396,6 +396,7 @@ struct kvm_trace_rec {
- #ifdef __KVM_HAVE_USER_NMI
- #define KVM_CAP_USER_NMI 22
- #endif
-+#define KVM_CAP_RESET 23
+diff --git a/arch/x86/include/asm/irq.h b/arch/x86/include/asm/irq.h
+index 592688e..b1726d8 100644
+--- a/arch/x86/include/asm/irq.h
++++ b/arch/x86/include/asm/irq.h
+@@ -40,6 +40,12 @@ extern unsigned int do_IRQ(struct pt_regs *regs);
+ extern void init_IRQ(void);
+ extern void native_init_IRQ(void);
  
- /*
-  * ioctls for VM fds
-@@ -429,6 +430,7 @@ struct kvm_trace_rec {
- 				   struct kvm_assigned_pci_dev)
- #define KVM_ASSIGN_IRQ _IOR(KVMIO, 0x70, \
- 			    struct kvm_assigned_irq)
-+#define KVM_RESET	          _IO(KVMIO,  0x67)
- 
- /*
-  * ioctls for vcpu fds
-diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
-index bf6f703..506eca1 100644
---- a/include/linux/kvm_host.h
-+++ b/include/linux/kvm_host.h
-@@ -17,6 +17,7 @@
- #include <linux/preempt.h>
- #include <linux/marker.h>
- #include <linux/msi.h>
-+#include <linux/notifier.h>
- #include <asm/signal.h>
- 
- #include <linux/kvm.h>
-@@ -132,6 +133,8 @@ struct kvm {
- 	unsigned long mmu_notifier_seq;
- 	long mmu_notifier_count;
- #endif
++#ifdef CONFIG_SMP
++extern int set_irq_affinity(int irq, cpumask_t mask);
++#endif
 +
-+	struct raw_notifier_head reset_notifier; /* triggers when VM reboots */
- };
- 
- /* The guest did something we don't support. */
-@@ -158,6 +161,9 @@ void kvm_exit(void);
- void kvm_get_kvm(struct kvm *kvm);
- void kvm_put_kvm(struct kvm *kvm);
- 
-+int kvm_reset_notifier_register(struct kvm *kvm, struct notifier_block *nb);
-+int kvm_reset_notifier_unregister(struct kvm *kvm, struct notifier_block *nb);
++extern int irq_to_vector(int irq);
 +
- #define HPA_MSB ((sizeof(hpa_t) * 8) - 1)
- #define HPA_ERR_MASK ((hpa_t)1 << HPA_MSB)
- static inline int is_error_hpa(hpa_t hpa) { return hpa >> HPA_MSB; }
-diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
-index 29a667c..fca2d25 100644
---- a/virt/kvm/kvm_main.c
-+++ b/virt/kvm/kvm_main.c
-@@ -868,6 +868,8 @@ static struct kvm *kvm_create_vm(void)
- #ifdef KVM_COALESCED_MMIO_PAGE_OFFSET
- 	kvm_coalesced_mmio_init(kvm);
- #endif
-+	RAW_INIT_NOTIFIER_HEAD(&kvm->reset_notifier);
-+
- out:
- 	return kvm;
+ /* Interrupt vector management */
+ extern DECLARE_BITMAP(used_vectors, NR_VECTORS);
+ extern int vector_used_by_percpu_irq(unsigned int vector);
+diff --git a/arch/x86/kernel/io_apic.c b/arch/x86/kernel/io_apic.c
+index bc7ac4d..86a2c36 100644
+--- a/arch/x86/kernel/io_apic.c
++++ b/arch/x86/kernel/io_apic.c
+@@ -614,6 +614,14 @@ set_ioapic_affinity_irq(unsigned int irq, const struct cpumask *mask)
+ 
+ 	set_ioapic_affinity_irq_desc(desc, mask);
  }
-@@ -1485,6 +1487,35 @@ void mark_page_dirty(struct kvm *kvm, gfn_t gfn)
- 	}
- }
- 
-+static void kvm_notify_reset(struct kvm *kvm)
++
++int set_irq_affinity(int irq, cpumask_t mask)
 +{
-+	mutex_lock(&kvm->lock);
-+	raw_notifier_call_chain(&kvm->reset_notifier, 0, kvm);
-+	mutex_unlock(&kvm->lock);
++	set_ioapic_affinity_irq(irq, &mask);
++
++	return 0;
 +}
 +
-+int kvm_reset_notifier_register(struct kvm *kvm, struct notifier_block *nb)
+ #endif /* CONFIG_SMP */
+ 
+ /*
+@@ -3249,6 +3257,23 @@ void destroy_irq(unsigned int irq)
+ 	spin_unlock_irqrestore(&vector_lock, flags);
+ }
+ 
++int irq_to_vector(int irq)
 +{
-+	int ret;
++	struct irq_cfg *cfg;
++	unsigned long flags;
++	int ret = -ENOENT;
 +
-+	mutex_lock(&kvm->lock);
-+	ret = raw_notifier_chain_register(&kvm->reset_notifier, nb);
-+	mutex_unlock(&kvm->lock);
++	spin_lock_irqsave(&vector_lock, flags);
 +
-+	return ret;
-+}
++	cfg = irq_cfg(irq);
++	if (cfg && cfg->vector != 0)
++		ret = cfg->vector;
 +
-+int kvm_reset_notifier_unregister(struct kvm *kvm, struct notifier_block *nb)
-+{
-+	int ret;
-+
-+	mutex_lock(&kvm->lock);
-+	ret = raw_notifier_chain_unregister(&kvm->reset_notifier, nb);
-+	mutex_unlock(&kvm->lock);
++	spin_unlock_irqrestore(&vector_lock, flags);
 +
 +	return ret;
 +}
 +
  /*
-  * The vCPU has executed a HLT instruction with in-kernel mode enabled.
+  * MSI message composition
   */
-@@ -1929,6 +1960,11 @@ static long kvm_vm_ioctl(struct file *filp,
- 		break;
- 	}
- #endif
-+	case KVM_RESET: {
-+		kvm_notify_reset(kvm);
-+		r = 0;
-+		break;
-+	}
- 	default:
- 		r = kvm_arch_vm_ioctl(filp, ioctl, arg);
- 	}
 
