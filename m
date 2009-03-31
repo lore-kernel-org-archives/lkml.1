@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761192AbZCaOfK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760767AbZCaOet@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761192AbZCaOfK (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Mar 2009 10:35:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760555AbZCaOdi
+	id S1760767AbZCaOet (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Mar 2009 10:34:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760591AbZCaOdh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Mar 2009 10:33:38 -0400
-Received: from mga01.intel.com ([192.55.52.88]:11071 "EHLO mga01.intel.com"
+	Tue, 31 Mar 2009 10:33:37 -0400
+Received: from mga01.intel.com ([192.55.52.88]:61683 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760557AbZCaOdg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Mar 2009 10:33:36 -0400
+	id S1760286AbZCaOdf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Mar 2009 10:33:35 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.38,453,1233561600"; 
-   d="scan'208";a="677497678"
-Date: Tue, 31 Mar 2009 15:48:15 +0200
+   d="scan'208";a="677497665"
+Date: Tue, 31 Mar 2009 15:41:59 +0200
 From: Markus Metzger <markus.t.metzger@intel.com>
 To: linux-kernel@vger.kernel.org, mingo@elte.hu, tglx@linutronix.de,
        hpa@zytor.com
 Cc: markus.t.metzger@intel.com, markus.t.metzger@gmail.com, roland@redhat.com,
        eranian@googlemail.com, oleg@redhat.com, juan.villacis@intel.com,
        ak@linux.jf.intel.com
-Subject: [patch 21/21] x86, ds: support Core i7
-Message-ID: <20090331154815.A13576@sedona.ch.intel.com>
+Subject: [patch 18/21] x86, ptrace: remove unused functions
+Message-ID: <20090331154159.A13479@sedona.ch.intel.com>
 Mime-Version: 1.0
 Content-Disposition: inline
 User-Agent: Mutt/1.2.5i
@@ -30,204 +30,174 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add debug store support for Core i7.
+Some time ago, I added a ptrace_fork() function to initialize branch
+tracing stuff when a new task is created.
+There is already a ptrace_init_task() function for that.
 
-Core i7 adds a reset value for each performance counter and a new
-PEBS record format.
 
+Add an arch_ variant to ptrace_init_task() and remove the
+ptrace_fork() version.
 
 
 Signed-off-by: Markus Metzger <markus.t.metzger@intel.com>
 ---
 
----
- arch/x86/include/asm/ds.h |   10 ++++++++--
- arch/x86/kernel/ds.c      |   24 ++++++++++++++++++++++++
- 2 files changed, 32 insertions(+), 2 deletions(-)
-
-Index: git-tip/arch/x86/include/asm/ds.h
+Index: git-tip/arch/x86/include/asm/ptrace.h
 ===================================================================
---- git-tip.orig/arch/x86/include/asm/ds.h	2009-03-30 19:14:01.000000000 +0200
-+++ git-tip/arch/x86/include/asm/ds.h	2009-03-30 19:29:14.000000000 +0200
-@@ -234,8 +234,12 @@ struct bts_trace {
- struct pebs_trace {
- 	struct ds_trace ds;
+--- git-tip.orig/arch/x86/include/asm/ptrace.h	2009-03-31 12:42:50.000000000 +0200
++++ git-tip/arch/x86/include/asm/ptrace.h	2009-03-31 13:30:08.000000000 +0200
+@@ -235,12 +235,13 @@ extern int do_get_thread_area(struct tas
+ extern int do_set_thread_area(struct task_struct *p, int idx,
+ 			      struct user_desc __user *info, int can_allocate);
  
--	/* the PEBS reset value */
--	unsigned long long reset_value;
-+	/* the number of valid counters in the below array */
-+	unsigned int counters;
-+
-+#define MAX_PEBS_COUNTERS 4
-+	/* the counter reset value */
-+	unsigned long long counter_reset[MAX_PEBS_COUNTERS];
- };
+-extern void x86_ptrace_untrace(struct task_struct *);
+-extern void x86_ptrace_fork(struct task_struct *child,
+-			    unsigned long clone_flags);
++#ifdef CONFIG_X86_PTRACE_BTS
++extern void ptrace_bts_untrace(struct task_struct *tsk);
++extern void ptrace_bts_init_task(struct task_struct *tsk);
  
+-#define arch_ptrace_untrace(tsk) x86_ptrace_untrace(tsk)
+-#define arch_ptrace_fork(child, flags) x86_ptrace_fork(child, flags)
++#define arch_ptrace_untrace(tsk)	ptrace_bts_untrace(tsk)
++#define arch_ptrace_init_task(tsk)	ptrace_bts_init_task(tsk)
++#endif /* CONFIG_X86_PTRACE_BTS */
  
-@@ -270,9 +274,11 @@ extern int ds_reset_pebs(struct pebs_tra
-  * Returns 0 on success; -Eerrno on error
-  *
-  * tracer: the tracer handle returned from ds_request_pebs()
-+ * counter: the index of the counter
-  * value: the new counter reset value
-  */
--extern int ds_set_pebs_reset(struct pebs_tracer *tracer, u64 value);
-+extern int ds_set_pebs_reset(struct pebs_tracer *tracer,
-+			     unsigned int counter, u64 value);
+ #endif /* __KERNEL__ */
  
- /*
-  * Initialization
-Index: git-tip/arch/x86/kernel/ds.c
+Index: git-tip/include/linux/ptrace.h
 ===================================================================
---- git-tip.orig/arch/x86/kernel/ds.c	2009-03-30 19:26:02.000000000 +0200
-+++ git-tip/arch/x86/kernel/ds.c	2009-03-30 19:29:14.000000000 +0200
-@@ -43,6 +43,9 @@ struct ds_configuration {
- 	/* The size of a BTS/PEBS record in bytes: */
- 	unsigned char		sizeof_rec[2];
- 
-+	/* The number of pebs counter reset values in the DS structure. */
-+	unsigned char		nr_counter_reset;
-+
- 	/* Control bit-masks indexed by enum ds_feature: */
- 	unsigned long		ctl[dsf_ctl_max];
- };
-@@ -50,7 +53,7 @@ static struct ds_configuration ds_cfg __
- 
- 
- /* Maximal size of a DS configuration: */
--#define MAX_SIZEOF_DS		(12 * 8)
-+#define MAX_SIZEOF_DS		0x80
- 
- /* Maximal size of a BTS record: */
- #define MAX_SIZEOF_BTS		(3 * 8)
-@@ -58,6 +61,12 @@ static struct ds_configuration ds_cfg __
- /* BTS and PEBS buffer alignment: */
- #define DS_ALIGNMENT		(1 << 3)
- 
-+/* Number of buffer pointers in DS: */
-+#define NUM_DS_PTR_FIELDS	8
-+
-+/* Size of a pebs reset value in DS: */
-+#define PEBS_RESET_FIELD_SIZE	8
-+
- /* Mask of control bits in the DS MSR register: */
- #define BTS_CONTROL				  \
- 	( ds_cfg.ctl[dsf_bts]			| \
-@@ -1190,9 +1199,12 @@ const struct pebs_trace *ds_read_pebs(st
- 		return NULL;
- 
- 	ds_read_config(tracer->ds.context, &tracer->trace.ds, ds_pebs);
--	tracer->trace.reset_value =
--		*(u64 *)(tracer->ds.context->ds +
--			 (ds_cfg.sizeof_ptr_field * 8));
-+
-+	tracer->trace.counters = ds_cfg.nr_counter_reset;
-+	memcpy(tracer->trace.counter_reset,
-+	       tracer->ds.context->ds +
-+	       (NUM_DS_PTR_FIELDS * ds_cfg.sizeof_ptr_field),
-+	       ds_cfg.nr_counter_reset * PEBS_RESET_FIELD_SIZE);
- 
- 	return &tracer->trace;
- }
-@@ -1223,13 +1235,18 @@ int ds_reset_pebs(struct pebs_tracer *tr
- 	return 0;
+--- git-tip.orig/include/linux/ptrace.h	2009-03-31 12:42:50.000000000 +0200
++++ git-tip/include/linux/ptrace.h	2009-03-31 13:30:08.000000000 +0200
+@@ -94,7 +94,6 @@ extern void ptrace_notify(int exit_code)
+ extern void __ptrace_link(struct task_struct *child,
+ 			  struct task_struct *new_parent);
+ extern void __ptrace_unlink(struct task_struct *child);
+-extern void ptrace_fork(struct task_struct *task, unsigned long clone_flags);
+ #define PTRACE_MODE_READ   1
+ #define PTRACE_MODE_ATTACH 2
+ /* Returns 0 on success, -errno on denial. */
+@@ -154,6 +153,18 @@ static inline int ptrace_event(int mask,
+ 	return 1;
  }
  
--int ds_set_pebs_reset(struct pebs_tracer *tracer, u64 value)
-+int ds_set_pebs_reset(struct pebs_tracer *tracer,
-+		      unsigned int counter, u64 value)
- {
- 	if (!tracer)
- 		return -EINVAL;
- 
-+	if (ds_cfg.nr_counter_reset < counter)
-+		return -EINVAL;
++#ifndef arch_ptrace_init_task
++/**
++ * arch_ptrace_init_task - initialize machine specific state for a new child
++ * @child:		new child task
++ *
++ * This is called immediately after initializing the general ptrace state.
++ *
++ * Called with current's siglock and write_lock_irq(&tasklist_lock) held.
++ */
++#define arch_ptrace_init_task(child)	do { } while (0)
++#endif
 +
- 	*(u64 *)(tracer->ds.context->ds +
--		 (ds_cfg.sizeof_ptr_field * 8)) = value;
-+		 (NUM_DS_PTR_FIELDS * ds_cfg.sizeof_ptr_field) +
-+		 (counter * PEBS_RESET_FIELD_SIZE)) = value;
- 
- 	return 0;
+ /**
+  * ptrace_init_task - initialize ptrace state for a new child
+  * @child:		new child task
+@@ -174,6 +185,8 @@ static inline void ptrace_init_task(stru
+ 		child->ptrace = current->ptrace;
+ 		ptrace_link(child, current->parent);
+ 	}
++
++	arch_ptrace_init_task(child);
  }
-@@ -1239,16 +1256,26 @@ static const struct ds_configuration ds_
- 	.ctl[dsf_bts]		= (1 << 2) | (1 << 3),
- 	.ctl[dsf_bts_kernel]	= (1 << 5),
- 	.ctl[dsf_bts_user]	= (1 << 6),
-+	.nr_counter_reset	= 1,
- };
- static const struct ds_configuration ds_cfg_pentium_m = {
- 	.name = "Pentium M",
- 	.ctl[dsf_bts]		= (1 << 6) | (1 << 7),
-+	.nr_counter_reset	= 1,
- };
- static const struct ds_configuration ds_cfg_core2_atom = {
- 	.name = "Core 2/Atom",
- 	.ctl[dsf_bts]		= (1 << 6) | (1 << 7),
- 	.ctl[dsf_bts_kernel]	= (1 << 9),
- 	.ctl[dsf_bts_user]	= (1 << 10),
-+	.nr_counter_reset	= 1,
-+};
-+static const struct ds_configuration ds_cfg_core_i7 = {
-+	.name = "Core i7",
-+	.ctl[dsf_bts]		= (1 << 6) | (1 << 7),
-+	.ctl[dsf_bts_kernel]	= (1 << 9),
-+	.ctl[dsf_bts_user]	= (1 << 10),
-+	.nr_counter_reset	= 4,
- };
  
- static void
-@@ -1265,6 +1292,32 @@ ds_configure(const struct ds_configurati
- 	nr_pebs_fields = 18;
+ /**
+@@ -326,15 +339,6 @@ static inline void user_enable_block_ste
+ #define arch_ptrace_untrace(task)		do { } while (0)
  #endif
  
-+	/*
-+	 * Starting with version 2, architectural performance
-+	 * monitoring supports a format specifier.
-+	 */
-+	if ((cpuid_eax(0xa) & 0xff) > 1) {
-+		unsigned long perf_capabilities, format;
-+
-+		rdmsrl(MSR_IA32_PERF_CAPABILITIES, perf_capabilities);
-+
-+		format = (perf_capabilities >> 8) & 0xf;
-+
-+		switch (format) {
-+		case 0:
-+			nr_pebs_fields = 18;
-+			break;
-+		case 1:
-+			nr_pebs_fields = 22;
-+			break;
-+		default:
-+			printk(KERN_INFO
-+			       "[ds] unknown PEBS format: %lu\n", format);
-+			nr_pebs_fields = 0;
-+			break;
-+		}
-+	}
-+
- 	memset(&ds_cfg, 0, sizeof(ds_cfg));
- 	ds_cfg = *cfg;
+-#ifndef arch_ptrace_fork
+-/*
+- * Do machine-specific work to initialize a new task.
+- *
+- * This is called from copy_process().
+- */
+-#define arch_ptrace_fork(child, clone_flags)	do { } while (0)
+-#endif
+-
+ extern int task_current_syscall(struct task_struct *target, long *callno,
+ 				unsigned long args[6], unsigned int maxargs,
+ 				unsigned long *sp, unsigned long *pc);
+Index: git-tip/kernel/fork.c
+===================================================================
+--- git-tip.orig/kernel/fork.c	2009-03-31 12:42:50.000000000 +0200
++++ git-tip/kernel/fork.c	2009-03-31 13:30:08.000000000 +0200
+@@ -1100,8 +1100,6 @@ static struct task_struct *copy_process(
+ #ifdef CONFIG_DEBUG_MUTEXES
+ 	p->blocked_on = NULL; /* not blocked yet */
+ #endif
+-	if (unlikely(current->ptrace))
+-		ptrace_fork(p, clone_flags);
  
-@@ -1288,7 +1341,7 @@ ds_configure(const struct ds_configurati
- 	printk("bts/pebs record: %u/%u bytes\n",
- 	       ds_cfg.sizeof_rec[ds_bts], ds_cfg.sizeof_rec[ds_pebs]);
+ 	/* Perform scheduler related setup. Assign this task to a CPU. */
+ 	sched_fork(p, clone_flags);
+Index: git-tip/kernel/ptrace.c
+===================================================================
+--- git-tip.orig/kernel/ptrace.c	2009-03-31 12:42:50.000000000 +0200
++++ git-tip/kernel/ptrace.c	2009-03-31 13:30:08.000000000 +0200
+@@ -27,16 +27,6 @@
  
--	WARN_ON(MAX_SIZEOF_DS < (12 * ds_cfg.sizeof_ptr_field));
-+	WARN_ON(MAX_PEBS_COUNTERS < ds_cfg.nr_counter_reset);
+ 
+ /*
+- * Initialize a new task whose father had been ptraced.
+- *
+- * Called from copy_process().
+- */
+-void ptrace_fork(struct task_struct *child, unsigned long clone_flags)
+-{
+-	arch_ptrace_fork(child, clone_flags);
+-}
+-
+-/*
+  * ptrace a task: make the debugger its new parent and
+  * move it to the ptrace list.
+  *
+Index: git-tip/arch/x86/kernel/ptrace.c
+===================================================================
+--- git-tip.orig/arch/x86/kernel/ptrace.c	2009-03-31 13:29:12.000000000 +0200
++++ git-tip/arch/x86/kernel/ptrace.c	2009-03-31 13:32:23.000000000 +0200
+@@ -885,7 +885,7 @@ static int ptrace_bts_size(struct task_s
+ 	return (trace->ds.top - trace->ds.begin) / trace->ds.size;
  }
  
- void __cpuinit ds_init_intel(struct cpuinfo_x86 *c)
-@@ -1310,6 +1363,8 @@ void __cpuinit ds_init_intel(struct cpui
- 			ds_configure(&ds_cfg_core2_atom, c);
- 			break;
- 		case 0x1a: /* Core i7 */
-+			ds_configure(&ds_cfg_core_i7, c);
-+			break;
- 		default:
- 			/* Sorry, don't know about them. */
- 			break;
+-static inline void ptrace_bts_fork(struct task_struct *tsk)
++void ptrace_bts_init_task(struct task_struct *tsk)
+ {
+ 	tsk->bts = NULL;
+ 	tsk->thread.bts_ovfl_signal = 0;
+@@ -895,28 +895,15 @@ static inline void ptrace_bts_fork(struc
+  * Called from __ptrace_unlink() after the child has been moved back
+  * to its original parent.
+  */
+-static inline void ptrace_bts_untrace(struct task_struct *child)
++void ptrace_bts_untrace(struct task_struct *child)
+ {
+ 	if (unlikely(child->bts)) {
+ 		free_bts_context(child->bts);
+ 		child->bts = NULL;
+ 	}
+ }
+-#else
+-static inline void ptrace_bts_fork(struct task_struct *tsk) {}
+-static inline void ptrace_bts_untrace(struct task_struct *child) {}
+ #endif /* CONFIG_X86_PTRACE_BTS */
+ 
+-void x86_ptrace_fork(struct task_struct *child, unsigned long clone_flags)
+-{
+-	ptrace_bts_fork(child);
+-}
+-
+-void x86_ptrace_untrace(struct task_struct *child)
+-{
+-	ptrace_bts_untrace(child);
+-}
+-
+ /*
+  * Called by kernel/ptrace.c when detaching..
+  *
 ---------------------------------------------------------------------
 Intel GmbH
 Dornacher Strasse 1
