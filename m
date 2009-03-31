@@ -1,79 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760240AbZCaDBx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760784AbZCaDIU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760240AbZCaDBx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Mar 2009 23:01:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761482AbZCaDBg
+	id S1760784AbZCaDIU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Mar 2009 23:08:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753961AbZCaDIA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Mar 2009 23:01:36 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:43195 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760984AbZCaDBe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Mar 2009 23:01:34 -0400
-Date: Tue, 31 Mar 2009 14:01:24 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Boaz Harrosh <bharrosh@panasas.com>, avishay@gmail.com, jeff@garzik.org,
-       linux-fsdevel@vger.kernel.org, osd-dev@open-osd.org, zbr@ioremap.net,
-       James.Bottomley@HansenPartnership.com, linux-kernel@vger.kernel.org,
-       fujita.tomonori@lab.ntt.co.jp, linux-next@vger.kernel.org
-Subject: Re: [PATCHSET 0/8 version 4] exofs for kernel 2.6.30
-Message-Id: <20090331140124.a21da743.sfr@canb.auug.org.au>
-In-Reply-To: <20090330142200.af4b497c.akpm@linux-foundation.org>
-References: <49C1331D.1080805@panasas.com>
-	<20090330142200.af4b497c.akpm@linux-foundation.org>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.14.7; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Tue__31_Mar_2009_14_01_24_+1100_O+4Ko2zyoDDMMU3N"
+	Mon, 30 Mar 2009 23:08:00 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:35357 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752982AbZCaDH7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Mar 2009 23:07:59 -0400
+Date: Mon, 30 Mar 2009 23:07:54 -0400
+From: Kyle McMartin <kyle@mcmartin.ca>
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: Kyle McMartin <kyle@mcmartin.ca>,
+       Alexander Beregalov <a.beregalov@gmail.com>,
+       David Miller <davem@davemloft.net>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-parisc@vger.kernel.org
+Subject: Re: [PATCH] Phonet:fix build problem
+Message-ID: <20090331030754.GA9923@bombadil.infradead.org>
+References: <20090320115838.GA26371@orion> <20090321.165950.248659848.davem@davemloft.net> <a4423d670903211719m76baeab0k51f054058d6f5134@mail.gmail.com> <1237694320.25297.3.camel@localhost.localdomain> <20090322160629.GA23227@bombadil.infradead.org> <20090331024124.GA30601@bombadil.infradead.org> <1238468776.11257.0.camel@mulgrave.int.hansenpartnership.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1238468776.11257.0.camel@mulgrave.int.hansenpartnership.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Tue__31_Mar_2009_14_01_24_+1100_O+4Ko2zyoDDMMU3N
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-On Mon, 30 Mar 2009 14:22:00 -0700 Andrew Morton <akpm@linux-foundation.org=
-> wrote:
+On Mon, Mar 30, 2009 at 10:06:16PM -0500, James Bottomley wrote:
+> On Mon, 2009-03-30 at 22:41 -0400, Kyle McMartin wrote:
+> > On Sun, Mar 22, 2009 at 12:06:29PM -0400, Kyle McMartin wrote:
+> > > On Sun, Mar 22, 2009 at 03:58:40AM +0000, James Bottomley wrote:
+> > > > > > I think that platform's atomic_add() implementation should
+> > > > > > be fixed instead.
+> > > > > 
+> > > > > It is parisc, CC added.
+> > > > 
+> > > > Looks like a macro argument screw up in atomic.h
+> > > > 
+> > > > This should fix it (uncompiled, of course).
+> > > > 
+> > > 
+> > > Looks correct to me. Applied. Thanks everyone.
+> > >
+> > 
+> > Oh, bah, want to resend that with a sign-off, James?
+> 
+> You can add:
+> 
+> Signed-off-by: James Bottomley <James.Bottomley@HansenPartnership.com>
 >
-> > This patchset is also available on:
-> >   git-clone git://git.open-osd.org/linux-open-osd.git linux-next
-> > or on the web at:
-> >   http://git.open-osd.org/gitweb.cgi?p=3Dlinux-open-osd.git;a=3Dshortlo=
-g;h=3Drefs/heads/linux-next
->=20
-> Well I could merge them, but given that you have a git tree, a more
-> convenient path would be for us to include your tree in linux-next and
-> then you ask Linus to pull it directly when the time comes.
 
-$ git cat-file -p next-20090330:Next/Trees | grep osd
-osd		git	git://git.open-osd.org/linux-open-osd.git#linux-next
+Thanks! Sorted.
 
-i.e. its in there.  Those particular patches have been in linux-next
-since next-20090326 and presumably have been built by the
-all{yes,mod}config builds I do.
-
-> I'm unsure when that time will come.  Who has reviewed this work and
-> what was the result?
-
-That is a good question.  The other is "Is this destined for 2.6.30?"
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Tue__31_Mar_2009_14_01_24_+1100_O+4Ko2zyoDDMMU3N
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAknRh4QACgkQjjKRsyhoI8xDgwCglNFmLN5P9morMjPPbqBcpfRa
-ymgAoLGhL7eNAm+DTUDYOnqOsSA2l2hz
-=PKgw
------END PGP SIGNATURE-----
-
---Signature=_Tue__31_Mar_2009_14_01_24_+1100_O+4Ko2zyoDDMMU3N--
+cheers, Kyle
