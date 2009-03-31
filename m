@@ -1,91 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756481AbZCaVrs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763731AbZCaVsX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756481AbZCaVrs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Mar 2009 17:47:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761646AbZCaVrd
+	id S1763731AbZCaVsX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Mar 2009 17:48:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763717AbZCaVr4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Mar 2009 17:47:33 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:60562 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757419AbZCaVrc (ORCPT
+	Tue, 31 Mar 2009 17:47:56 -0400
+Received: from cavan.codon.org.uk ([93.93.128.6]:46152 "EHLO
+	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763050AbZCaVrz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Mar 2009 17:47:32 -0400
-Date: Tue, 31 Mar 2009 14:45:06 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Joe Perches <joe@perches.com>
-Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org, pavel@ucw.cz
-Subject: Re: [PATCH 0/8] MAINTAINERS - add script and patterns
-Message-Id: <20090331144506.3737e832.akpm@linux-foundation.org>
-In-Reply-To: <1238534648.9715.306.camel@localhost>
-References: <1237331969-28565-1-git-send-email-joe@perches.com>
-	<20090330135315.a05854da.akpm@linux-foundation.org>
-	<1238534648.9715.306.camel@localhost>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 31 Mar 2009 17:47:55 -0400
+Date: Tue, 31 Mar 2009 22:47:49 +0100
+From: Matthew Garrett <mjg59@srcf.ucam.org>
+To: linux-acpi@vger.kernel.org
+Cc: dsilvers@simtec.co.uk, toshiba_acpi@memebeam.org,
+       linux-kernel@vger.kernel.org, lenb@intel.com
+Subject: [PATCH 2/2] toshiba-acpi: Support TOS1900-type devices
+Message-ID: <20090331214749.GD29489@srcf.ucam.org>
+References: <20090331214501.GC29489@srcf.ucam.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090331214501.GC29489@srcf.ucam.org>
+User-Agent: Mutt/1.5.12-2006-07-14
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: mjg59@codon.org.uk
+X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 31 Mar 2009 14:24:08 -0700
-Joe Perches <joe@perches.com> wrote:
+Despite toshiba_acpi exporting TOS1900 as a modalias, it doesn't appear to
+support these machines. They have their HCI method implemented in a
+different but compatible manner and so need a different method address.
 
-> On Mon, 2009-03-30 at 13:53 -0700, Andrew Morton wrote:
-> > Will that be OK?  Will the tool still work OK is MAITNAINERS is a bit
-> > wrong?
-> 
-> More or less.  By default it will still use git
-> "-by:" signers.  More pattern coverage is better.
-> 
-> > Is the tool capable of detecting misformatted MAINTAINERS entries?  If
-> > so, that would help long-term maintenance a lot.
-> 
-> Not really.
-> 
-> The MAINTAINERS file format is weakly specified.
-> 
-> I have a separate script that looks for patterns
-> that have no file matches and sections that have
-> no patterns.
-> 
-> Any suggestions?
+Signed-off-by: Matthew Garrett <mjg@redhat.com>
+---
+ drivers/platform/x86/toshiba_acpi.c |    5 +++++
+ 1 file changed, 5 insertions(+)
 
-Don't worry about it for now.  Have a think about it later, as
-MAINTAINERS maintainer ;)
-
-> btw: I did not do any patterns for ARM or PowerPC.
-> Of course those could be added in the future.
-> 
-> > I never have seen [patch 2/8] because the linux-foundation mail server
-> > thinks it's spam.
-> 
-> Actually, if the mail server is to be believed, the
-> MAINTAINERS file already contains a SPAM URI and
-> could be rejected if you sent it to yourself as-is.
-> 
-> On Tue, 2009-03-17 at 15:22 -0800, Mail Delivery Subsystem wrote:
-> >    ----- The following addresses...
-> > <torvalds@linux-foundation.org>
-> > <akpm@linux-foundation.org>
-> > 
-> >    ----- Transcript of session follows -----
-> > ... while talking to smtp1.linux-foundation.org.:
-> > >>> DATA
-> > <<< 451 4.3.2 Please try again later
-> > ... while talking to smtp2.linux-foundation.org.:
-> > >>> DATA
-> > <<< 554 5.7.1 Email body contains Spam URI
-> > 554 <akpm@linux-foundation.org>,<torvalds@linux-foundation.org>... Service unavailable
-> 
-> > So if all the above looks OK then please resend
-> > everything (yet again) to akpm@kernel.org.
-> 
-> Do you want me to wait for RC1 when most of the
-> MAINTAINERS changes should be done or do you want
-> it now?
-
-At -rc1 please.  Let's try it out and if it looks good I'll see if I
-can fool Linus into taking it for -rc2, when things are a bit quieter.
-
-
+diff --git a/drivers/platform/x86/toshiba_acpi.c b/drivers/platform/x86/toshiba_acpi.c
+index fb87b57..9fb4873 100644
+--- a/drivers/platform/x86/toshiba_acpi.c
++++ b/drivers/platform/x86/toshiba_acpi.c
+@@ -67,6 +67,7 @@ MODULE_LICENSE("GPL");
+ #define TOSH_INTERFACE_2	"\\_SB_.VALZ"
+ #define METHOD_VIDEO_OUT	"\\_SB_.VALX.DSSX"
+ #define GHCI_METHOD		".GHCI"
++#define SPFC_METHOD		".SPFC"
+ 
+ /* Toshiba HCI interface definitions
+  *
+@@ -935,6 +936,10 @@ static int __init toshiba_acpi_init(void)
+ 		method_hci = TOSH_INTERFACE_2 GHCI_METHOD;
+ 		if (toshiba_acpi_setup_keyboard(TOSH_INTERFACE_2))
+ 			printk(MY_INFO "Unable to activate hotkeys\n");
++	} else if (is_valid_acpi_path(TOSH_INTERFACE_2 SPFC_METHOD)) {
++		method_hci = TOSH_INTERFACE_2 SPFC_METHOD;
++		if (toshiba_acpi_setup_keyboard(TOSH_INTERFACE_2))
++			printk(MY_INFO "Unable to activate hotkeys\n");
+ 	} else
+ 		return -ENODEV;
+ 
+-- 
+Matthew Garrett | mjg59@srcf.ucam.org
