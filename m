@@ -1,40 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762721AbZCaRzL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761961AbZCaR6P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762721AbZCaRzL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Mar 2009 13:55:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759374AbZCaRy4
+	id S1761961AbZCaR6P (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Mar 2009 13:58:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756339AbZCaR55
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Mar 2009 13:54:56 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:36445 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756941AbZCaRyz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Mar 2009 13:54:55 -0400
-Date: Tue, 31 Mar 2009 13:54:52 -0400
-From: Christoph Hellwig <hch@infradead.org>
-To: Mikulas Patocka <mpatocka@redhat.com>
-Cc: viro@zeniv.linux.org.uk, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] fix bmap-vs-truncate race
-Message-ID: <20090331175451.GA19484@infradead.org>
-References: <Pine.LNX.4.64.0903301518120.23576@hs20-bc2-1.build.redhat.com>
+	Tue, 31 Mar 2009 13:57:57 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:53211 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757033AbZCaR55 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Mar 2009 13:57:57 -0400
+Message-ID: <49D259BD.1010402@redhat.com>
+Date: Tue, 31 Mar 2009 13:58:21 -0400
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0903301518120.23576@hs20-bc2-1.build.redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+To: Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>
+CC: ananth@in.ibm.com, fche@redhat.com, LKML <linux-kernel@vger.kernel.org>,
+       systemtap-ml <systemtap@sources.redhat.com>
+Subject: [BUGFIX] request for picking fee039a1 up (Re: fee039a1 and ccbeed3a
+ dependency)
+References: <20090331031822.GG6411@in.ibm.com>
+In-Reply-To: <20090331031822.GG6411@in.ibm.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 30, 2009 at 03:20:24PM -0400, Mikulas Patocka wrote:
-> Hi
-> 
-> I'm submitting this patch for 2.6.30 merge window.
+Hi Linus,
 
-Please not.  i_alloc_sem is really a horrible hack needed for a couple
-filesystems only and we should not leak it into more generic code but
-rather move the few instances into the filesystem.
+Since the commit ccbeed3a changed pt_regs, kretprobe has to be
+updated (which was done by commit fee039a1) too.
+
+Could you pick up the commit fee039a1 from Ingo's -tip tree or
+linux-next?
+
+Thank you,
+
+Ananth N Mavinakayanahalli wrote:
+> Hi Ingo,
+> 
+> Commit ccbeed3a introduced a new element (gs) to pt_regs and that broke
+> the kretprobe booster for x86_32. Masami has fixed that and it is in
+> -tip as fee039a1.
+> 
+> As of today, it looks like ccbeed3a is upstream while fee039a1 isn't yet
+> there.
+> 
+> Request you to push fee039a1 with your next set of updates please :-)
+> 
+> Regards,
+> Ananth 
+
+-- 
+Masami Hiramatsu
+
+Software Engineer
+Hitachi Computer Products (America) Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com
+
 
