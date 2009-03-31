@@ -1,67 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755848AbZCaU1j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758092AbZCaU2t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755848AbZCaU1j (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Mar 2009 16:27:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754289AbZCaU10
+	id S1758092AbZCaU2t (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Mar 2009 16:28:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751397AbZCaU2k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Mar 2009 16:27:26 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:44957 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754130AbZCaU1Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Mar 2009 16:27:25 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Subject: Re: [Updated patch] Re: [PATCH] igb: fix kexec with igb
-Date: Tue, 31 Mar 2009 22:27:12 +0200
-User-Agent: KMail/1.11.1 (Linux/2.6.29-rjw; KDE/4.2.1; x86_64; ; )
-Cc: "Tantilov, Emil S" <emil.s.tantilov@intel.com>,
-       Yinghai Lu <yinghai@kernel.org>,
-       Jesse Brandeburg <jesse.brandeburg@gmail.com>,
-       David Miller <davem@davemloft.net>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       NetDev <netdev@vger.kernel.org>
-References: <49B1F934.5050006@kernel.org> <EA929A9653AAE14F841771FB1DE5A1365F71995716@rrsmsx501.amr.corp.intel.com> <9929d2390903311251n43988214y6f1b2defa87e1a48@mail.gmail.com>
-In-Reply-To: <9929d2390903311251n43988214y6f1b2defa87e1a48@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+	Tue, 31 Mar 2009 16:28:40 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:57334 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751252AbZCaU2j (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Mar 2009 16:28:39 -0400
+Date: Tue, 31 Mar 2009 22:30:14 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Stefani Seibold <stefani@seibold.net>
+Cc: Andi Kleen <andi@firstfloor.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-mm <linux-mm@kvack.org>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Ingo Molnar <mingo@elte.hu>, Joerg Engel <joern@logfs.org>
+Subject: Re: Detailed Stack Information Patch [0/3]
+Message-ID: <20090331203014.GR11935@one.firstfloor.org>
+References: <1238511498.364.60.camel@matrix> <87eiwdn15a.fsf@basil.nowhere.org> <1238523735.3692.30.camel@matrix>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200903312227.13788.rjw@sisk.pl>
+In-Reply-To: <1238523735.3692.30.camel@matrix>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 31 March 2009, Jeff Kirsher wrote:
-> On Tue, Mar 31, 2009 at 12:14 PM, Tantilov, Emil S
-> <emil.s.tantilov@intel.com> wrote:
-> >
-> > The patch checks out. I tested suspend/resume (including WOL) and kexec. There is only a small issue with warning on compile when CONFIG_PM is disabled:
-> >
-> > diff --git a/drivers/net/igb/igb_main.c b/drivers/net/igb/igb_main.c
-> > index 13fe162..0a4f8f4 100644
-> > --- a/drivers/net/igb/igb_main.c
-> > +++ b/drivers/net/igb/igb_main.c
-> > @@ -135,8 +135,8 @@ static inline int igb_set_vf_rlpml(struct igb_adapter *, int, int);
-> >  static int igb_set_vf_mac(struct igb_adapter *adapter, int, unsigned char *);
-> >  static void igb_restore_vf_multicasts(struct igb_adapter *adapter);
-> >
-> > -static int igb_suspend(struct pci_dev *, pm_message_t);
-> >  #ifdef CONFIG_PM
-> > +static int igb_suspend(struct pci_dev *, pm_message_t);
-> >  static int igb_resume(struct pci_dev *);
-> >  #endif
-> >  static void igb_shutdown(struct pci_dev *);
-> >
-> > Thanks,
-> > Emil
-> >
+On Tue, Mar 31, 2009 at 08:22:15PM +0200, Stefani Seibold wrote:
+> Hi Andi,
 > 
-> Rafael - Based on Emil's testing, I will modify the patch with Emil's
-> suggestion and push to Dave, ok?
+> Am Dienstag, den 31.03.2009, 17:49 +0200 schrieb Andi Kleen:
+> > Stefani Seibold <stefani@seibold.net> writes:
+> > >
+> > > - Get out of virtual memory by creating a lot of threads
+> > >  (f.e. the developer did assign each of them the default size)
+> > 
+> > The application just fails then? I don't think that needs
+> > a new monitoring tool.
+> > 
+> 
+> First, this patch is not only a monitoring tool. Only the last part 3/3
+> is the monitoring tool.
+> 
+> Patch 1/3 enhance the the proc/<pid>/task/<tid>/maps by the marking the
+> thread stack.
 
-Fine with me.
+Well some implementation of it. There are certainly runtimes that
+switch stacks. For example what happens when someone uses sigaltstack()?
 
-Thanks,
-Rafael
+You'll probably need some more sanity checks, otherwise a monitor
+will occasionally just report crap in legitimate cases. Unfortunately
+it's difficult to distingush the legitimate cases from the bugs.
+
+> > > - Misuse the thread stack for big temporary data buffers
+> > 
+> > That would be better checked for at compile time
+> > (except for alloca, but that is quite rare)
+> 
+> Fine but it did not work for functions like:
+
+That's the alloca() case, but you can disable both with the right options.
+There's still the "recursive function" case.
+
+> > > - Thread stack overruns
+> > 
+> > Your method would be racy at best to determine this because
+> > you don't keep track of the worst case, only the current case.
+> > 
+> > So e.g. if you monitoring app checks once per second the stack
+> > could overflow between your monitoring intervals, but already
+> > have bounced back before the checker comes in.
+> > 
+> 
+> The Monitor is part 3/3. And you are right it is not a complete rock
+> solid solution. But it works in many cases and thats is what counts.
+
+For stack overflow one would think a rock solid solution
+is needed?  After all you'll crash if you miss a case.
+
+> > track of consumption in the VMA that has the stack,  but
+> > that can't handle very large jumps (like f() { char x[1<<30]; } )
+> > The later can only be handled well by the compiler.
+> 
+> Thats is exactly what i am doing, i walk through the pages of the thread
+> stack mapped memory and keep track of the highest access page. So i have
+> the high water mark of the used stack.
+
+Ok. Of course it doesn't work for really large allocations. there used
+to be special patches around to add a special gap to catch those,
+but it's problematic with the tight address space on 32bit and also
+again not fully bullet proof. On 64bit the solution is typical
+to just use a large stack.
+
+> The patches are not intrusive, especially part 1.
+
+To be honest it seems too much like a special case hack to me
+to include by default. It could be probably done with a systemtap
+script in the same way, but I would really recommend to just
+build with gcc's stack overflow checker while testing together
+with static checking.
+
+-Andi
+
+-- 
+ak@linux.intel.com -- Speaking for myself only.
