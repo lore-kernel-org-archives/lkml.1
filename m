@@ -1,62 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764715AbZCaXvy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764677AbZCaXwU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764715AbZCaXvy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Mar 2009 19:51:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758155AbZCaXvo
+	id S1764677AbZCaXwU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Mar 2009 19:52:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764841AbZCaXv5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Mar 2009 19:51:44 -0400
-Received: from e32.co.us.ibm.com ([32.97.110.150]:54282 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757934AbZCaXvm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Mar 2009 19:51:42 -0400
-Date: Tue, 31 Mar 2009 19:50:57 -0400
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Michael Ellerman <michael@ellerman.id.au>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@ozlabs.org,
-       roel.kluin@gmail.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Add hvc_console to MAINTAINERS
-Message-ID: <20090331235057.GB563@zod.rchland.ibm.com>
-References: <49BF956B.9030109@gmail.com> <20090330133531.f5d99c09.akpm@linux-foundation.org> <20090330205553.GA19278@yoda.jdub.homelinux.org> <20090330141852.59baaeda.akpm@linux-foundation.org> <20090331132944.GB2332@yoda.jdub.homelinux.org> <1238543040.6522.10.camel@localhost>
+	Tue, 31 Mar 2009 19:51:57 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:55157 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1764792AbZCaXv4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Mar 2009 19:51:56 -0400
+Date: Wed, 1 Apr 2009 01:48:23 +0200
+From: Oleg Nesterov <oleg@redhat.com>
+To: Markus Metzger <markus.t.metzger@intel.com>
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, tglx@linutronix.de,
+       hpa@zytor.com, markus.t.metzger@gmail.com, roland@redhat.com,
+       eranian@googlemail.com, juan.villacis@intel.com, ak@linux.jf.intel.com
+Subject: Re: [patch 1/21] x86, bts: fix race when bts tracer is removed
+Message-ID: <20090331234823.GB28228@redhat.com>
+References: <20090331145051.A12111@sedona.ch.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1238543040.6522.10.camel@localhost>
+In-Reply-To: <20090331145051.A12111@sedona.ch.intel.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, Apr 01, 2009 at 10:44:00AM +1100, Michael Ellerman wrote:
->On Tue, 2009-03-31 at 09:29 -0400, Josh Boyer wrote:
->> Add a MAINTAINERS entry for the hypervisor virtual console support
->> used on IBM POWER servers.
->> 
->> Signed-off-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
->> ---
->> 
->> diff --git a/MAINTAINERS b/MAINTAINERS
->> index c5f4e9d..387ad45 100644
->> --- a/MAINTAINERS
->> +++ b/MAINTAINERS
->> @@ -2176,6 +2176,11 @@ W:       http://www.ia64-linux.org/
->>  T:     git kernel.org:/pub/scm/linux/kernel/git/aegl/linux-2.6.git
->>  S:     Maintained
->>  
->> +IBM HYPERVISOR VIRTUAL CONSOLE
->> +P:     Several
->> +L:     linuxppc-dev@ozlabs.org
->> +S:     Maintained
+On 03/31, Markus Metzger wrote:
 >
->I don't think it's the "IBM" Hypervisor virtual console driver anymore.
->There are backends for Xen, Beat (Toshiba) and virtio. 
+> Read the tracer once during a context switch.
+> ...
+> @@ -1044,36 +1051,39 @@ void ds_switch_to(struct task_struct *pr
+>  {
+>  	struct ds_context *prev_ctx = prev->thread.ds_ctx;
+>  	struct ds_context *next_ctx = next->thread.ds_ctx;
+> +	unsigned long debugctlmsr = next->thread.debugctlmsr;
+>
+>  	if (prev_ctx) {
+> +		struct bts_tracer *tracer = prev_ctx->bts_master;
+> +
+>  		update_debugctlmsr(0);
+>
+> -		if (prev_ctx->bts_master &&
+> -		    (prev_ctx->bts_master->trace.ds.flags & BTS_TIMESTAMPS)) {
+> +		if (tracer && (tracer->flags & BTS_TIMESTAMPS)) {
 
-Was just going by the copyright in the files, and Documentation/powerpc/hvc*
+In theory, we need barrier() after reading ->bts_master.
 
-Also, if there are other backends, then is the list specified really
-correct?  Perhaps it should just be linux-kernel.
+(actually, I did see the bug reports when the compiler read the pointer
+ twice with the code like above).
 
-Guess that's the problem with trying to add a maintainers entry for something
-that doesn't really have a specific maintainer.
+Off-topic, but afaics modulo bts_task_departs/bts_task_arrives we
+have the identical code for prev_ctx/next_ctx, perhaps it makes
+sense to make a helper which calls bts_write().
 
-josh
+
+
+To clarify, even _if_ I am right and _if_ you agree, we can do this
+later, I am not suggesting to change this patch right now.
+
+Oleg.
+
