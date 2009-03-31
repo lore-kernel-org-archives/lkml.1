@@ -1,140 +1,280 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760859AbZCaTNQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761650AbZCaTNu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760859AbZCaTNQ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Mar 2009 15:13:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754021AbZCaTM4
+	id S1761650AbZCaTNu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Mar 2009 15:13:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756035AbZCaTNj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Mar 2009 15:12:56 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:33098 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753957AbZCaTMz (ORCPT
+	Tue, 31 Mar 2009 15:13:39 -0400
+Received: from outbound-mail-142.bluehost.com ([67.222.38.32]:35492 "HELO
+	outbound-mail-142.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1755371AbZCaTNh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Mar 2009 15:12:55 -0400
-Date: Tue, 31 Mar 2009 22:12:52 +0300 (EEST)
-From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
-X-X-Sender: ijjarvin@wrl-59.cs.helsinki.fi
-To: Markus Trippelsdorf <markus@trippelsdorf.de>
-cc: Netdev <netdev@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: WARNING: at net/ipv4/tcp_input.c:2927 tcp_ack+0xd55/0x1991()
-In-Reply-To: <20090331184959.GA2725@gentoox2.trippelsdorf.de>
-Message-ID: <Pine.LNX.4.64.0903312200420.354@wrl-59.cs.helsinki.fi>
-References: <20090327211202.GA10014@gentoox2.trippelsdorf.de>
- <Pine.LNX.4.64.0903280031080.5904@wrl-59.cs.helsinki.fi>
- <20090328045056.GA2394@gentoox2.trippelsdorf.de>
- <Pine.LNX.4.64.0903280930440.6696@wrl-59.cs.helsinki.fi>
- <20090328095514.GA2599@gentoox2.trippelsdorf.de>
- <Pine.LNX.4.64.0903301155150.30150@wrl-59.cs.helsinki.fi>
- <20090330164035.GA2652@gentoox2.trippelsdorf.de>
- <Pine.LNX.4.64.0903302137100.29272@wrl-59.cs.helsinki.fi>
- <20090331071018.GA2641@gentoox2.trippelsdorf.de>
- <Pine.LNX.4.64.0903311205070.30150@wrl-59.cs.helsinki.fi>
- <20090331184959.GA2725@gentoox2.trippelsdorf.de>
-MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-696208474-1307661833-1238526772=:354"
+	Tue, 31 Mar 2009 15:13:37 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:Date:From:To:Subject:Message-ID:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
+	b=PueoGHs3hfE2Fep4J0XNY3mZhRM2UnDLh/fRRJul53IcpfmSrownSZvYL+exg40Y82TSk1KB9cku5VUlf/mZ07kV1EbUzFGZ5MDHY6PIUDF8U5xpDoW2xpx6mvwUHrD6;
+Date: Tue, 31 Mar 2009 12:13:31 -0700
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org,
+       linux-pci@vger.kernel.org
+Subject: [git pull] PCI changes for 2.6.30
+Message-ID: <20090331121331.3673cf59@hobbes>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+Please consider pulling my PCI tree from
+  git://git.kernel.org/pub/scm/linux/kernel/git/jbarnes/pci-2.6 linux-next
 
----696208474-1307661833-1238526772=:354
-Content-Type: TEXT/PLAIN; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+There are some real changes in here, notably Alex's changes to the core to add
+real hotplug support, Matthew's multiple MSI support, and Yu's SR-IOV support.
+Overall, v12n users should be happy with this set of changes.  And as is
+customary we got a good collection of fixes from the usual suspects: Kenji-san,
+Yinghai, and Bjorn.  Oh and Alpha has support for sysfs PCI resources now,
+thanks to a commit from Ivan.
 
-On Tue, 31 Mar 2009, Markus Trippelsdorf wrote:
+I note you've been having some tree management discussions with people this
+time around, so I figured it would be good to describe how I've been handling
+things.
 
-> On Tue, Mar 31, 2009 at 12:16:51PM +0300, Ilpo Järvinen wrote:
-> > On Tue, 31 Mar 2009, Markus Trippelsdorf wrote:
-> > 
-> > > On Mon, Mar 30, 2009 at 09:52:55PM +0300, Ilpo Järvinen wrote:
-> > > > On Mon, 30 Mar 2009, Markus Trippelsdorf wrote:
-> > > > 
-> > > > > On Mon, Mar 30, 2009 at 07:01:22PM +0300, Ilpo Järvinen wrote:
-> > > > > > On Sat, 28 Mar 2009, Markus Trippelsdorf wrote:
-> > > > > > > On Sat, Mar 28, 2009 at 10:29:58AM +0200, Ilpo Järvinen wrote:
-> > > > > > 
-> > > > > > ...And, let me guess, you're in X and therefore unable to catch a final 
-> > > > > > oops if any would be printed? It would be nice to get around that as well, 
-> > > > > > either use serial/netconsole or hang in text mode while waiting for the 
-> > > > > > crash (should be too hard if you are able to setup the workload first 
-> > > > > > and then switch away from X and if reproducing takes about an hour)...
-> > > > > 
-> > > > > OK, I will try this later.
-> > > > 
-> > > > Lets hope that gives some clue where it ends up going boom (if it is 
-> > > > caused by TCP we certainly should see something more sensible in console 
-> > > > than just a hang)... ...I once again read through tcp commits but just 
-> > > > cannot find anything that could cause fackets_out miscount, not to speak 
-> > > > of crash prone changes so we'll just have to wait and see...
-> > > 
-> > > The machine hanged again this night and I took two pictures:
-> > > http://www.mypicx.com/uploadimg/1055813374_03302009_2.jpg
-> > > http://www.mypicx.com/uploadimg/1543678904_03302009_1.jpg
-> > >
-> > > But this time there was no tcp related warning in the logs.
-> > 
-> > Right. If that oops would be hit often enough one can easily mix the 
-> > warning with that hang though there is no relation (the fact that final 
-> > oops always goes unnoticed in X amplifies the effect).
-> > 
-> > > I then pulled the lateset git changes, rebuild, rebooted and setup the
-> > > workload again. The machine was still up and running in the morning 
-> > > (~4 hours uptime). So it may well be that the issue was fixed with
-> > > the latest changes.
-> > 
-> > Lets hope so, in any case if you still see hangs please get the final oops.
-> > 
-> > > If it ever occurs again I will notify you.
-> 
-> It happend again. In this case it took ~10 minutes from the warning to
-> the final crash.
+I generally have two branches going: for-linus and linux-next.  The for-linus
+branch rarely gets merge commits or rebases.  Merges will generally only
+happen if I have some dependencies with another tree (like ACPI), and rebases
+only occur when I need to drop a patch.  Other than that it's just fast
+forwards from pulling your tree (after you've pulled mine) and commits for
+new patches.
 
-Quite many RTTs in between already then...
+I try to keep the linux-next branch a superset of my for-linus branch at the
+request of my downstream developers.  This means periodic rebasing after the
+merge window closes, but it's generally important to get your latest stuff
+into that branch so that downstream developers don't have to fight with bugs
+that have been fixed upstream.  This isn't pain free (downstream developers
+with large patchsets then have to rebase their stuff) but so far it seems
+like the path of least pain for our purposes, probably because I haven't
+started pulling trees from downstream (yet).  If I did, I of course would
+avoid rebasing at that point...
 
-> I'm pretty sure there must be some kind of relation
-> between the two. How else could one explain that the machine crashes just
-> minutes after _each_ instance of that WARNING?
+Anyway hope this pull is ok.  I went through every warning by hand to make
+sure none were caused by PCI commits, but that was with the bits in this
+tree, which are -rc8 vintage.
 
-Below is a quick counter printout patch, I'd have a more expensive patch 
-which locates the place where the miscount happens for the first time 
-but it needs to be brought up to date before I can let you try with it :-)
-(that warnon triggers quite late but is cheap to calculate as my debug 
-patch adds considerable amount of calculations all around TCP code to 
-catch even minor inconsistencies in early)...
-
-> (Unfortunately I was in X again, because I thought this problem was
-> solved)
-
-Thus again somewhat inconclusive where it crashes... :-( Considering this 
-is very early state kernel I'm not surprised if there are still some 
-non-related things remaining.
-
-How long did you run with 2.6.29 btw, and what did you run before that...? 
-...No need to remember exact dates but some rough idea would be nice know
-as this looks, if related to warning, to be older than last merged 
-stuff...
-
+Thanks,
 -- 
- i.
+Jesse Barnes, Intel Open Source Technology Center
 
-diff --git a/net/ipv4/tcp_input.c b/net/ipv4/tcp_input.c
-index 2bc8e27..179b2cb 100644
---- a/net/ipv4/tcp_input.c
-+++ b/net/ipv4/tcp_input.c
-@@ -2924,8 +2924,13 @@ static void tcp_fastretrans_alert(struct sock *sk, int pkts_acked, int flag)
- 
- 	if (WARN_ON(!tp->packets_out && tp->sacked_out))
- 		tp->sacked_out = 0;
--	if (WARN_ON(!tp->sacked_out && tp->fackets_out))
-+	if (WARN_ON(!tp->sacked_out && tp->fackets_out)) {
-+		printk(KERN_ERR "TCP s%u l%u r%u f%u p%u sack%d\n",
-+		       tp->sacked_out, tp->lost_out, tp->retrans_out,
-+		       tp->fackets_out, tp->packets_out,
-+		       tp->rx_opt.sack_ok);
- 		tp->fackets_out = 0;
-+	}
- 
- 	/* Now state machine starts.
- 	 * A. ECE, hence prohibit cwnd undoing, the reduction is required. */
----696208474-1307661833-1238526772=:354--
+Alex Chiang (12):
+      PCI: enhance physical slot debug information
+      PCI: PCIe portdrv: eliminate double kfree in remove path
+      PCIe: portdrv: call pci_disable_device during remove    
+      PCI: always scan child buses                            
+      PCI: do not initialize bridges more than once           
+      PCI: do not enable bridges more than once               
+      PCI: Introduce pci_rescan_bus()                         
+      PCI: Introduce /sys/bus/pci/rescan                      
+      PCI: Introduce /sys/bus/pci/devices/.../remove          
+      PCI: Introduce /sys/bus/pci/devices/.../rescan          
+      PCI Hotplug: rename legacy_fakephp to fakephp           
+      PCI Hotplug: schedule fakephp for feature removal       
+
+Andrew Morton (1):
+      PCI: constify pci_bus_assign_resources()
+
+Bjorn Helgaas (4):
+      PCI/x86: make early dump handle multi-function devices
+      PCI/x86: format early dump like other PCI output      
+      PCI/x86: document pci=earlydump argument              
+      x86: use dev_printk in quirk message                  
+
+Chris Wright (1):
+      PCI: add remove_id sysfs entry
+
+Dave Airlie (1):
+      PCI: expose boot VGA device via sysfs.
+
+David O'Shea (1):
+      PCI: Compaq Evo D510 SMBus quirk using USB instead of VGA
+
+Ed Swierk (1):
+      x86/PCI: Detect mmconfig on nVidia MCP55
+
+Eric W. Biederman (1):
+      PCI: pcie_portdriver: fix pcie_port_device_remove
+
+Frank Seidel (1):
+      PCI: add missing KERN_* constants to printks
+
+Geert Uytterhoeven (1):
+      PCI: Use kzalloc() in pci_create_bus()
+
+Harvey Harrison (1):
+      PCI: __FUNCTION__ is gcc-specific, use __func__
+
+Ivan Kokshaysky (1):
+      PCI/alpha: pci sysfs resources
+
+Jesse Barnes (1):
+      powerpc/PCI: include pci.h in powerpc MSI implementation
+
+Jiri Slaby (1):
+      PCI quirk: don't mark one netmos as class other
+
+Julia Lawall (1):
+      PCI: introduce missing kfree
+
+Kay Sievers (1):
+      PCI: struct device - replace bus_id with dev_name(), dev_set_name()
+
+Kenji Kaneshige (15):
+      PCI: pciehp: fix possible endless loop in pcie_isr
+      PCI: pciehp: enable software notification on empty slots
+      PCI: pciehp: make cmd_busy flag one bit                 
+      PCI/ACPI: move _OSC code to pci_root.c                  
+      PCI/ACPI: rename pci_osc_control_set()                  
+      PCI/ACPI: fix wrong assumption in acpi_pci_get_bridge_handle
+      PCI/ACPI: fix wrong assumption in acpi_find_root_bridge_handle
+      PCI hotplug: fix wrong assumption in acpi_get_hp_params_from_firmware
+      PCI hotplug: fix wrong assumption in acpi_get_hp_hw_control_from_firmware
+      PCI: fix wrong assumption in pci_find_upstream_pcie_bridge               
+      PCI: fix wrong assumption in pci_read_bridge_bases                       
+      PCI: fix wrong assumption in pci_get_interrupt_pin                       
+      PCI: fix wrong assumption in pci_common_swizzle                          
+      PCI: pci_is_root_bus helper                                              
+      PCI: fix kernel oops on bridge removal                                   
+
+Matthew Wilcox (6):
+      Rewrite MSI-HOWTO
+      PCI MSI: Replace 'type' with 'is_msix'
+      PCI MSI: msi_desc->dev is always initialised
+      PCI MSI: Use mask_pos instead of mask_base when appropriate
+      PCI MSI: Refactor interrupt masking code                   
+      PCI MSI: Add support for multiple MSI                      
+
+Michael Ellerman (3):
+      PCI/MSI: Use #ifdefs instead of weak functions
+      PCI/MSI: Allow arch code to return the number of MSI-X available
+      PCI MSI: Add example request loop to MSI-HOWTO.txt              
+
+Rafael J. Wysocki (9):
+      PCI: PCIe portdrv: Use driver data to simplify code
+      PCI: PCIe portdrv: Aviod using service devices with wrong interrupts
+      PCI: PCIe portdrv: Do not enable port device before setting up interrupts
+      PCI: PCIe portdrv: Remove unnecessary function                           
+      PCI: PCIe portdrv: Simplily probe callback of service drivers            
+      PCI: PCIe portdrv: Remove struct pcie_port_service_id                    
+      PCI/MSI: Introduce pci_msix_table_size()                                 
+      PCI/PCIe portdrv: Fix allocation of interrupts                           
+      PCI: PCIe portdrv: Implement pm object                                   
+
+Roel Kluin (1):
+      PCI hotplug: shpchp: fix bus number check to avoid false positive
+
+Sheng Yang (1):
+      PCI: Speed up device reset function
+
+Stephen Rothwell (1):
+      PCI: update fakephp for bus_id removal
+
+Trent Piepho (3):
+      PCI: don't scan existing devices
+      PCI: pci_scan_slot() returns newly found devices
+      PCI Hotplug: restore fakephp interface with complete reimplementation
+
+Yinghai Lu (5):
+      PCI/x86: detect host bridge config space size w/o using quirks
+      x86/PCI: host mmconfig detect clean up                        
+      x86/PCI: make pci=lastbus=255 work when acpi is on            
+      PCI: don't enable too much HT MSI mapping                     
+      PCI: fix HT MSI mapping fix                                   
+
+Yu Zhao (12):
+      PCI: check if a bus is added when removing it
+      PCI: fix incorrect mask of PM No_Soft_Reset bit
+      PCI: initialize and release SR-IOV capability  
+      PCI: restore saved SR-IOV state                
+      PCI: reserve bus range for SR-IOV device       
+      PCI: centralize device setup code              
+      PCI: add SR-IOV API for Physical Function driver
+      PCI: handle SR-IOV Virtual Function Migration   
+      PCI: document SR-IOV sysfs entries              
+      PCI: manual for SR-IOV user and driver developer
+      PCI: fix conflict between SR-IOV and config space sizing
+      PCI: save and restore PCIe 2.0 registers                
+
+Yuji Shimada (1):
+      PCI: allow assignment of memory resources with a specified alignment
+
+akpm@linux-foundation.org (1):
+      PCI: constify pci_bus_add_devices()
+
+ Documentation/ABI/testing/sysfs-bus-pci    |   70 +++
+ Documentation/DocBook/kernel-api.tmpl      |    1 +  
+ Documentation/PCI/MSI-HOWTO.txt            |  814 +++++++++++----------------
+ Documentation/PCI/pci-iov-howto.txt        |   99 ++++                       
+ Documentation/feature-removal-schedule.txt |   33 ++                         
+ Documentation/filesystems/sysfs-pci.txt    |   10 +                          
+ Documentation/kernel-parameters.txt        |   11 +                          
+ arch/alpha/include/asm/pci.h               |   14 +                          
+ arch/alpha/kernel/Makefile                 |    2 +-                         
+ arch/alpha/kernel/pci-sysfs.c              |  366 +++++++++++++              
+ arch/powerpc/include/asm/pci.h             |    4 +                          
+ arch/powerpc/kernel/msi.c                  |    5 +                          
+ arch/x86/include/asm/pci.h                 |    3 +                          
+ arch/x86/kernel/io_apic.c                  |    4 +                          
+ arch/x86/kernel/pci-dma.c                  |    3 +-                         
+ arch/x86/pci/early.c                       |   19 +-                         
+ arch/x86/pci/fixup.c                       |   20 -                          
+ arch/x86/pci/legacy.c                      |    3 +-                         
+ arch/x86/pci/mmconfig-shared.c             |  227 ++++++--                   
+ arch/x86/pci/mmconfig_64.c                 |   17 +-                         
+ drivers/acpi/pci_root.c                    |  180 ++++++-                    
+ drivers/pci/Kconfig                        |   10 +                          
+ drivers/pci/Makefile                       |    2 +                          
+ drivers/pci/bus.c                          |    8 +-                         
+ drivers/pci/hotplug/acpi_pcihp.c           |   58 +--                        
+ drivers/pci/hotplug/cpqphp_sysfs.c         |    3 +-                         
+ drivers/pci/hotplug/fakephp.c              |  444 ++++------------           
+ drivers/pci/hotplug/pciehp.h               |   13 +-                         
+ drivers/pci/hotplug/pciehp_acpi.c          |   21 +-                         
+ drivers/pci/hotplug/pciehp_core.c          |   18 +-                         
+ drivers/pci/hotplug/pciehp_hpc.c           |   34 +-                         
+ drivers/pci/hotplug/shpchp.h               |   10 +-                         
+ drivers/pci/hotplug/shpchp_pci.c           |    2 +-                         
+ drivers/pci/intel-iommu.c                  |    2 +-                         
+ drivers/pci/iov.c                          |  680 +++++++++++++++++++++++    
+ drivers/pci/msi.c                          |  426 ++++++++--------           
+ drivers/pci/msi.h                          |    6 -                          
+ drivers/pci/pci-acpi.c                     |  215 --------                   
+ drivers/pci/pci-driver.c                   |   81 +++-                       
+ drivers/pci/pci-sysfs.c                    |  124 ++++-                      
+ drivers/pci/pci.c                          |  193 ++++++-                    
+ drivers/pci/pci.h                          |   65 +++                        
+ drivers/pci/pcie/aer/aerdrv.c              |   28 +-                         
+ drivers/pci/pcie/aer/aerdrv_acpi.c         |    2 +-
+ drivers/pci/pcie/aer/aerdrv_core.c         |   10 +-
+ drivers/pci/pcie/portdrv.h                 |   14 +-
+ drivers/pci/pcie/portdrv_bus.c             |   18 +-
+ drivers/pci/pcie/portdrv_core.c            |  379 +++++++++-----
+ drivers/pci/pcie/portdrv_pci.c             |   50 +-
+ drivers/pci/probe.c                        |  210 +++++---
+ drivers/pci/quirks.c                       |  221 +++++++--
+ drivers/pci/remove.c                       |    4 +
+ drivers/pci/search.c                       |    2 +-
+ drivers/pci/setup-bus.c                    |    7 +-
+ drivers/pci/setup-res.c                    |   15 +
+ drivers/pci/slot.c                         |   18 +-
+ include/linux/acpi.h                       |   34 ++
+ include/linux/msi.h                        |   13 +-
+ include/linux/pci-acpi.h                   |   67 +--
+ include/linux/pci.h                        |   61 ++-
+ include/linux/pci_ids.h                    |    1 +
+ include/linux/pci_regs.h                   |   37 ++-
+ include/linux/pcieport_if.h                |   36 +-
+ 63 files changed, 3644 insertions(+), 1903 deletions(-)
+ create mode 100644 Documentation/PCI/pci-iov-howto.txt
+ create mode 100644 arch/alpha/kernel/pci-sysfs.c
+ create mode 100644 drivers/pci/iov.c
