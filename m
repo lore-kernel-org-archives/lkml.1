@@ -1,104 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753177AbZCaInA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753788AbZCaIpa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753177AbZCaInA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Mar 2009 04:43:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752303AbZCaImu
+	id S1753788AbZCaIpa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Mar 2009 04:45:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752046AbZCaIpT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Mar 2009 04:42:50 -0400
-Received: from viefep11-int.chello.at ([62.179.121.31]:19151 "EHLO
-	viefep11-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751953AbZCaIms (ORCPT
+	Tue, 31 Mar 2009 04:45:19 -0400
+Received: from yx-out-2324.google.com ([74.125.44.28]:63113 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751022AbZCaIpQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Mar 2009 04:42:48 -0400
-X-SourceIP: 213.93.53.227
-Subject: Re: [PATCH 13/15] perf_counter: provide generic callchain bits
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Corey Ashford <cjashfor@linux.vnet.ibm.com>
-Cc: Paul Mackerras <paulus@samba.org>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <49D1C544.7020403@linux.vnet.ibm.com>
-References: <20090330170701.856843742@chello.nl>
-	 <20090330171024.254266860@chello.nl>
-	 <18897.46177.528910.51044@cargo.ozlabs.ibm.com>
-	 <1238481552.28248.1384.camel@twins>  <49D1C544.7020403@linux.vnet.ibm.com>
-Content-Type: text/plain
-Date: Tue, 31 Mar 2009 10:43:13 +0200
-Message-Id: <1238488993.28248.1929.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.0 
+	Tue, 31 Mar 2009 04:45:16 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=AasYLWB6S4cMBUbilHnyT3a+WIBsJC2RaqHE4lTW5DBHhRSyUUfioB3rZ2HrUrhVo1
+         5ILCpafc0owoDHcAeOoZd2RioVN0oJL06n51kxOv/u7940gjnl4sFxOV9D4z6s5DgLfg
+         la0ceEk+kiCacEIGwjWUlzfPRv9W3ObP/2kPI=
+Message-ID: <49D1D7A3.40303@panasas.com>
+Date: Tue, 31 Mar 2009 11:43:15 +0300
+From: Boaz Harrosh <bharrosh@panasas.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090315 Remi/3.0-0.b2.fc10.remi Thunderbird/3.0b2
+MIME-Version: 1.0
+To: Tejun Heo <tj@kernel.org>
+CC: petkovbb@gmail.com, Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       linux-kernel@vger.kernel.org, axboe@kernel.dk,
+       linux-ide@vger.kernel.org
+Subject: Re: [PATCHSET pata-2.6] ide: rq->buffer, data, special and misc	cleanups
+References: <1237910776-10983-1-git-send-email-tj@kernel.org> <200903281451.01361.bzolnier@gmail.com> <20090328140405.GA2741@liondog.tnic> <49D08CEC.3010705@kernel.org> <49D0A985.7090307@panasas.com> <49D0FF56.3080205@kernel.org>
+In-Reply-To: <49D0FF56.3080205@kernel.org>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-03-31 at 00:24 -0700, Corey Ashford wrote:
-> Peter Zijlstra wrote:
-> > On Tue, 2009-03-31 at 17:12 +1100, Paul Mackerras wrote:
-> >> Peter Zijlstra writes:
-> >>
-> >>>  				include_tid    :  1, /* include the tid       */
-> >>>  				mmap           :  1, /* include mmap data     */
-> >>>  				munmap         :  1, /* include munmap data   */
-> >>> +				callchain      :  1, /* add callchain data    */
-> >> Interesting, I would have put callchain (and include_tid, also) in
-> >> hw_event.record_type rather than as individual 1-bit fields.  The
-> >> present arrangement where some selection of what goes into the ring
-> >> buffer is in record_type and some is in individual bits seems a bit
-> >> awkward.  Plus, with the current arrangement I can't get both the IP
-> >> and the values of the other group members, which I might reasonable
-> >> want.
-> >>
-> >> I think either we make record_type bit-significant, or we define
-> >> individual bits in hw_event for recording the IP and other group
-> >> members.
-> >>
-> >> There are a couple of other things I want to be able to record on an
-> >> event - we have registers on powerpc that give information about the
-> >> event that caused the interrupt, and it would be nice to be able to
-> >> record them.  (These registers include instruction and data addresses
-> >> associated with the event; the instruction address can be further on
-> >> from where the interrupt was taken because of out-of-order instruction
-> >> execution and because interrupts might be hard-disabled at the point
-> >> where the interrupt becomes pending.)
-> >>
-> >> Those registers would need bits in record_type or in the hw_event to
-> >> indicate that we want them recorded.
-> > 
-> > Sure, I'm fine with moving them to record_type and making that a bit
-> > field. I've also considered merging the group and 'simple' output to
-> > enable what you say.
+On 03/30/2009 08:20 PM, Tejun Heo wrote:
+> Boaz Harrosh wrote:
+>>> P.S.: Boaz, the above patchset implements blk_rq_map_kern_sgl() 
+>> What is blk_rq_map_kern_sgl() ? I'm not sure I remember ?
+>> What is it's API? and what does it do?
+>>
+>>> and kills the SCSI layer hack.  That was the issue you were trying
+>>> to solve, right?
+>> If you post URL of git tree I can have a look and start an early review
+>> if you want
 > 
-> Originally, the record_type field was used to determine what would be 
-> read if you read from the fd.  However, now it seems to be what you get 
-> from the mmap buffer (only), that there is no longer a way to read the 
-> record stream from the fd anymore. Is this true?  
+> Here's the patchset.  It builds but I haven't even booted it yet, so
+> expect some breakages.
+> 
+>   http://git.kernel.org/?p=linux/kernel/git/tj/misc.git;a=shortlog;h=map-untested
+>   git://git.kernel.org/pub/scm/linux/kernel/git/tj/misc.git map-untested
+> 
+> Thanks.
+> 
 
-Yes, read() will return the current value of the counter.
-mmap() is used for all async data streams.
+Hi Tejun.
 
-> If so, I like this 
-> idea because it simplifies the ABI: there is one way to read the current 
-> value of counters and another way to read sample records (via mmap), 
-> both of these operations use a single fd.
+I hope you have not been working on stabilizing this code yet, I've just seen
+it this mornning (Israel time). It has obvious bugs, in the use of scatterlists.
 
-Correct, glad you like it ;-)
+But before you go running to fix them. Don't. I don't like the scatter-list API
+at all. We where working hard to remove them from scsi and I don't like them
+for block layer either. 
 
-> If this is the case, what is the exact meaning of PERF_COUNTER_SIMPLE 
-> now? and PERF_COUNTER_GROUP? 
+If it is for my personal needs then all I need is a simple:
+"I have this bio please attach it to a request". The reason I have a bio
+is because it comes from a filesystem and because I will be needing to use
+the raid engines that are bio based.
 
-Legacy mainly. I've been working towards unifying those. As Paul also
-suggested, group can be yet another output option.
+I must have confused you with my blk_rq_map_pages() patches, these where made just
+as an example of the ugliness and fragility of not using bios. It was suppose to be
+a bad example, not to be accepted. (Hence the absence of my Singed-off-by:)
 
->  One simplification would be that reading 
-> the fd of a group leader would always read up all of the counters in the 
-> group (along with their enabled and running times if those bits are 
-> set), and that reading a single counter's fd would yield only that 
-> counter's values and times (if enabled).  In effect, these two values, 
-> PERF_COUNTER_GROUP and PERF_COUNTER_SIMPLE would no longer be necessary 
-> at all.  Other bits would be used to determine what's in the mmap'd samples.
+Scatterlists are bad because they are two times too fat for what they do here, they
+need to be allocated, chained and slabbed, and finally they need to be converted to
+a bio. Working directly with a bio is the shortest route.
 
-Quite so, that sounds sensible, Paul?
+Looking at the patches it seems you are changing them as I write (git-web is freezing)
+So I sending this mail now. I was in the process of looking at them from the beginning.
 
-Would you be overly bothered by the read() output also having that
-{type,size} header we use for the mmap() data?
+So far it looks like a very deep change, I have some comments, but it will need a proper
+review.
 
+I do not understand what was your intention for the blk_rq_map_kern_sgl() how's
+the user for it?
+
+BTW: now you absolutely must do something with the name of blk_rq_map_sg() which does not
+do any mapping and does not change request at all.
+
+Boaz
