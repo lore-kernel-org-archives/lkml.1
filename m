@@ -1,81 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761114AbZCaA3R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761437AbZCaAb0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761114AbZCaA3R (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Mar 2009 20:29:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756677AbZCaA26
+	id S1761437AbZCaAb0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Mar 2009 20:31:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755694AbZCaAbP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Mar 2009 20:28:58 -0400
-Received: from mga14.intel.com ([143.182.124.37]:3386 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755540AbZCaA25 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Mar 2009 20:28:57 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.38,449,1233561600"; 
-   d="scan'208";a="125885424"
-Date: Tue, 31 Mar 2009 08:28:38 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Jos Houtman <jos@hyves.nl>
-Cc: Nick Piggin <nickpiggin@yahoo.com.au>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Jeff Layton <jlayton@redhat.com>, Dave Chinner <david@fromorbit.com>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
-       "jens.axboe@oracle.com" <jens.axboe@oracle.com>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "hch@infradead.org" <hch@infradead.org>,
-       "linux-nfs@vger.kernel.org" <linux-nfs@vger.kernel.org>
-Subject: Re: Page Cache writeback too slow,   SSD/noop scheduler/ext2
-Message-ID: <20090331002838.GA5895@localhost>
-References: <20090329023238.GA7825@localhost> <C5F6B627.D9D0%jos@hyves.nl>
+	Mon, 30 Mar 2009 20:31:15 -0400
+Received: from moutng.kundenserver.de ([212.227.126.177]:65470 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755350AbZCaAbO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Mar 2009 20:31:14 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: Daniele Napolitano <dnax88@gmail.com>
+Subject: Re: Additional USB identifier for rt2870 driver
+Date: Tue, 31 Mar 2009 02:30:27 +0200
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+References: <15d0b9b20903301624j45040f38tdd1ce5400bbaa247@mail.gmail.com>
+In-Reply-To: <15d0b9b20903301624j45040f38tdd1ce5400bbaa247@mail.gmail.com>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <C5F6B627.D9D0%jos@hyves.nl>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200903310230.27755.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX19LlTnxa4MqWoIs1L8Dg4MoK/+0ojzpjC0ynK9
+ Mq83US8ucTht/PGlG5/HPMt3poS9ffTCg+mRRR0aJfSqH93JCB
+ vqehEV0f4Sj2ZvpFf4wjw==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 31, 2009 at 12:47:19AM +0800, Jos Houtman wrote:
-> 
-> >> Thanx for the patch, but for the next time: How should I apply it?
-> >> it seems to be context aware (@@) and broke on all kernel versions I tried
-> >> 2.6.28/2.6.28.7/2.6.29
-> > 
-> > Do you mean that the patch applies after removing " @@.*$"?
-> 
-> I didn't try that, but this time it worked. So it was probably my error.
-> 
-> > 
-> > You are right. In your case, there are several big dirty files in sdb1,
-> > and the sdb write queue is constantly (almost-)congested. The SSD write
-> > speed is so slow, that in each round of sdb1 writeback, it begins with
-> > an uncongested queue, but quickly fills up after writing some pages.
-> > Hence all the inodes will get redirtied because of (nr_to_write > 0).
-> > 
-> > The following quick fix should solve the slow-writeback-on-congested-SSD
-> > problem. However the writeback sequence is suboptimal: it sync-and-requeue
-> > each file until congested (in your case about 3~600 pages) instead of
-> > until MAX_WRITEBACK_PAGES=1024 pages.
-> 
-> Yeah that fixed it, but performance dropped due to the more constant
-> congestion. So I will need to try some different io schedulers.
+On Tuesday 31 March 2009, Daniele Napolitano wrote:
+> --- rt2870.h 2009-02-07 01:27:09.000000000 +0100
+> +++ rt2870.h~ 2009-02-07 01:26:58.000000000 +0100
 
-Read performance or write performance?
+This patch does not apply with -p1, please make sure that you generate
+your files according to Documentation/SubmittingPatches in the future.
 
-> Next to that I was wondering if there are any plans to make sure that not
-> all dirty-files are written back in the same interval.
-> 
-> In my case all database files are written back each 30 seconds, while I
-> would prefer them to be more divided over the interval.
+As this is a patch for a staging driver, you should also Cc
+Greg Kroah-Hartman <gregkh@suse.de>, because he is maintaining
+the staging drivers.
 
-pdflush will wake up every 5s to sync files dirtied more than 30s.
-So the writeback of inodes should be distributed(somehow randomly)
-into these 5s-interval-wakeups due to varied dirty times.
-
-However the distribution may well be uneven in may cases. It seems to
-be conflicting goals for HDD and SSD: one favors somehow small busty
-writeback, another favors smooth writeback streams. I guess the better
-scheme would be bursty pdflush writebacks plus IO scheduler level QoS.
-
-Thanks,
-Fengguang
+	Arnd <><
