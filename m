@@ -1,98 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761366AbZCaSRb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756947AbZCaS3p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761366AbZCaSRb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Mar 2009 14:17:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754345AbZCaSRK
+	id S1756947AbZCaS3p (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Mar 2009 14:29:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751019AbZCaS3e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Mar 2009 14:17:10 -0400
-Received: from www84.your-server.de ([213.133.104.84]:55397 "EHLO
-	www84.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757828AbZCaSRJ (ORCPT
+	Tue, 31 Mar 2009 14:29:34 -0400
+Received: from mail-qy0-f118.google.com ([209.85.221.118]:56317 "EHLO
+	mail-qy0-f118.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750947AbZCaS3e (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Mar 2009 14:17:09 -0400
-Subject: Re: Detailed Stack Information Patch [0/3]
-From: Stefani Seibold <stefani@seibold.net>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
-       Joerg Engel <joern@logfs.org>
-In-Reply-To: <87eiwdn15a.fsf@basil.nowhere.org>
-References: <1238511498.364.60.camel@matrix>
-	 <87eiwdn15a.fsf@basil.nowhere.org>
-Content-Type: text/plain
-Date: Tue, 31 Mar 2009 20:22:15 +0200
-Message-Id: <1238523735.3692.30.camel@matrix>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 
+	Tue, 31 Mar 2009 14:29:34 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=MpQBI/7k8aFvd/BQVLN4grFTPiyS4I5Kx1gPQPxzxP2fipWnB2vtde3gwziK3r4atz
+         gVGKu0m/xN+57Pv8gyV14YXql5ER1kEhatFxvL3VJMf8SMSYMGi+UhtEpADTmBpsacsz
+         EuWnlGCKGwfEzgVzTcnONujbAmtSh44yxYV/s=
+MIME-Version: 1.0
+In-Reply-To: <200903311251.04746.arnd@arndb.de>
+References: <a95a62fe0903301814k75ce56f5xef0a04c5c188012@mail.gmail.com>
+	 <200903311251.04746.arnd@arndb.de>
+Date: Tue, 31 Mar 2009 11:29:31 -0700
+Message-ID: <a95a62fe0903311129g7ecf6997k2f06f6d9a2abe2c@mail.gmail.com>
+Subject: Re: [PATCHv4] MTD: New ioctl calls for >4GiB device support
+From: Kevin Cernekee <kpc.mtd@gmail.com>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: linux-kernel@vger.kernel.org, dwmw2@infradead.org,
+       linux-mtd@lists.infradead.org
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-Authenticated-Sender: stefani@seibold.net
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Andi,
+On Tue, Mar 31, 2009 at 3:51 AM, Arnd Bergmann <arnd@arndb.de> wrote:
+> On Tuesday 31 March 2009, Kevin Cernekee wrote:
+>> +struct mtd_oob_buf64 {
+>> +       uint64_t start;
+>> +       uint32_t res0;
+>> +       uint32_t length;
+>> +       unsigned char __user *ptr;
+>> +       uint32_t res1[8];
+>> +};
+>
+> Does this have to use an indirect pointer? We normally try to avoid
+> ioctl interfaces like this, because they are hard to trace and you
+> need a compat wrapper. You might be able to at least avoid the wrapper
+> by defining the data structure with a __u64 to take the pointer.
 
-Am Dienstag, den 31.03.2009, 17:49 +0200 schrieb Andi Kleen:
-> Stefani Seibold <stefani@seibold.net> writes:
-> >
-> > - Get out of virtual memory by creating a lot of threads
-> >  (f.e. the developer did assign each of them the default size)
-> 
-> The application just fails then? I don't think that needs
-> a new monitoring tool.
-> 
+Could you please point out another ioctl that is set up this way, so
+that I can follow the same conventions?
 
-First, this patch is not only a monitoring tool. Only the last part 3/3
-is the monitoring tool.
+Are we ever worried about pointers that are larger than 64 bits, or
+ints that are larger than 32 bits?  Or is it generally OK to assume
+this will never happen?
 
-Patch 1/3 enhance the the proc/<pid>/task/<tid>/maps by the marking the
-thread stack.
+> If you leave the data structure the way it is, you should at least
+> move the compat_ioctl handling into mtdchar.c from compat_ioctl.c.
+> It will simplify your code and help reduce the size of the common
+> ioctl handling.
 
-Patch 2/3 gives you an overview of the current process/thread stack
-usage with the /proc/stackmon entry.
+Is this what you are recommending?
 
-> > - Misuse the thread stack for big temporary data buffers
-> 
-> That would be better checked for at compile time
-> (except for alloca, but that is quite rare)
+1) Leave existing MTD COMPATIBLE_IOCTLs in fs/compat_ioctl.c
 
-Fine but it did not work for functions like:
+2) Implement compat_ioctl handler in mtdchar.c for MEMREADOOB64_32 and
+MEMWRITEOOB64_32
 
-void foo(int n)
-{
-	char buf[n*1024];
+3) For all other commands, the new handler should return -ENOIOCTLCMD
+and let fs/compat_ioctl.c handle them
 
-}
+Would it be a good idea to move MTDREADOOB32 / MEMWRITEOOB32 out of
+fs/compat_ioctl.c at the same time, so that everything is in one
+place?
 
-This is valid with gcc.
+If the compat wrappers are moved to mtdchar.c , does that imply that
+they should be reimplemented "natively" instead of using
+compat_alloc_user_space(), copy_in_user(), and sys_ioctl() to cause
+them to reinvoke the 64-bit versions?
 
-> 
-> > - Thread stack overruns
-> 
-> Your method would be racy at best to determine this because
-> you don't keep track of the worst case, only the current case.
-> 
-> So e.g. if you monitoring app checks once per second the stack
-> could overflow between your monitoring intervals, but already
-> have bounced back before the checker comes in.
-> 
-
-The Monitor is part 3/3. And you are right it is not a complete rock
-solid solution. But it works in many cases and thats is what counts.
-
-> Alternatively you could keep
-> track of consumption in the VMA that has the stack,  but
-> that can't handle very large jumps (like f() { char x[1<<30]; } )
-> The later can only be handled well by the compiler.
-
-Thats is exactly what i am doing, i walk through the pages of the thread
-stack mapped memory and keep track of the highest access page. So i have
-the high water mark of the used stack.
-
-The patches are not intrusive, especially part 1.
-
-> 
-
-Stefani
-
-
+Thanks.
