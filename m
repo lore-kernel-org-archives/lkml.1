@@ -1,57 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760536AbZCaT2A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759444AbZCaTbh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760536AbZCaT2A (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Mar 2009 15:28:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754634AbZCaT1u
+	id S1759444AbZCaTbh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Mar 2009 15:31:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751395AbZCaTb2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Mar 2009 15:27:50 -0400
-Received: from lazybastard.de ([212.112.238.170]:55782 "EHLO
-	longford.logfs.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754077AbZCaT1u (ORCPT
+	Tue, 31 Mar 2009 15:31:28 -0400
+Received: from static-71-162-243-5.phlapa.fios.verizon.net ([71.162.243.5]:33897
+	"EHLO grelber.thyrsus.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751219AbZCaTb1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Mar 2009 15:27:50 -0400
-Date: Tue, 31 Mar 2009 20:45:17 +0200
-From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Mark Lord <lkml@rtr.ca>, Stefan Richter <stefanr@s5r6.in-berlin.de>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Matthew Garrett <mjg59@srcf.ucam.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Theodore Tso <tytso@mit.edu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Rees <drees76@gmail.com>, Jesper Krogh <jesper@krogh.cc>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: Linux 2.6.29
-Message-ID: <20090331184517.GA25879@logfs.org>
-References: <alpine.LFD.2.00.0903271511230.3994@localhost.localdomain> <alpine.LFD.2.00.0903271522210.3994@localhost.localdomain> <49CD7B10.7010601@garzik.org> <49CD891A.7030103@rtr.ca> <49CD9047.4060500@garzik.org> <49CE2633.2000903@s5r6.in-berlin.de> <49CE3186.8090903@garzik.org> <49CE35AE.1080702@s5r6.in-berlin.de> <49CE3F74.6090103@rtr.ca> <49CECC7B.70100@garzik.org>
+	Tue, 31 Mar 2009 15:31:27 -0400
+From: Rob Landley <rob@landley.net>
+Organization: Boundaries Unlimited
+To: Stephen Hemminger <shemminger@vyatta.com>
+Subject: Re: Squashfs 4.0 tools
+Date: Tue, 31 Mar 2009 14:31:18 -0500
+User-Agent: KMail/1.9.10
+Cc: Geert Uytterhoeven <geert@linux-m68k.org>,
+       Phillip Lougher <phillip@lougher.demon.co.uk>,
+       linux-kernel@vger.kernel.org, squashfs-devel@lists.sourceforge.net
+References: <20090323180808.2c2ef1a7@nehalam> <10f740e80903290202h1f36b370ga39721536d52a90@mail.gmail.com> <20090330175524.4e8f802e@nehalam>
+In-Reply-To: <20090330175524.4e8f802e@nehalam>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <49CECC7B.70100@garzik.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Message-Id: <200903311431.20494.rob@landley.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 28 March 2009 21:18:51 -0400, Jeff Garzik wrote:
-> 
-> Was the BSD soft-updates idea of FS data-before-metadata a good one? 
-> Yes.  Obviously.
-> 
-> It is the cornerstone of every SANE journalling-esque database or 
-> filesystem out there -- don't leave a window where your metadata is 
-> inconsistent.  "Duh" :)
+On Monday 30 March 2009 19:55:24 Stephen Hemminger wrote:
+> I built it from cvs (imported into git), and it works okay.
 
-Your idea of 'consistent' seems a bit fuzzy.  Soft updates, afaiu, leave
-plenty of windows and reasons to run fsck.  They only guarantee that all
-those windows result in lost space - data allocations without any
-references.  It certainly prevents the worst problems, but I would use a
-different word for it. :)
+I grabbed the cvs snapshot gentoo's been using, but I don't see any way to 
+feed in a device list text file so I can create the /dev/console node root 
+filesystems need without needing root access on the host to mknod.
 
-Jörn
+genext2fs has the -D option, which takes:
 
+  /dev d 755 0 0 - - - - -
+  /dev/console c 640 0 0 5 1 0 0 -
+
+gen_init_cpio takes:
+
+  dir /dev 755 0 0
+  nod /dev/console 660 0 0 c 5 1
+
+Is there a squashfs option I'm missing...?
+
+Rob
 -- 
-Don't worry about people stealing your ideas. If your ideas are any good,
-you'll have to ram them down people's throats.
--- Howard Aiken quoted by Ken Iverson quoted by Jim Horning quoted by
-   Raph Levien, 1979
+GPLv3 is to GPLv2 what Attack of the Clones is to The Empire Strikes Back.
