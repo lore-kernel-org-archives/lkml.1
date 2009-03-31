@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764885AbZCaXb4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764917AbZCaXc0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764885AbZCaXb4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Mar 2009 19:31:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763671AbZCaXVI
+	id S1764917AbZCaXc0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Mar 2009 19:32:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763776AbZCaXVK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Mar 2009 19:21:08 -0400
-Received: from sous-sol.org ([216.99.217.87]:33225 "EHLO x200.localdomain"
+	Tue, 31 Mar 2009 19:21:10 -0400
+Received: from sous-sol.org ([216.99.217.87]:33231 "EHLO x200.localdomain"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1763637AbZCaXVE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Mar 2009 19:21:04 -0400
-Message-Id: <20090331231535.711519749@sous-sol.org>
+	id S1763663AbZCaXVG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Mar 2009 19:21:06 -0400
+Message-Id: <20090331231442.805548084@sous-sol.org>
 User-Agent: quilt/0.47-1
-Date: Tue, 31 Mar 2009 16:11:04 -0700
+Date: Tue, 31 Mar 2009 16:10:56 -0700
 From: Chris Wright <chrisw@sous-sol.org>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -24,11 +24,12 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Lorenzo Nava <navalorenx@gmail.com>,
-       Michael Buesch <mb@bu3sch.de>, John W Linville <linville@tuxdriver.com>
-Subject: [patch 19/45] b43: fix b43_plcp_get_bitrate_idx_ofdm return type
+       alan@lxorguk.ukuu.org.uk,
+       David Brownell <dbrownell@users.sourceforge.net>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [patch 11/45] USB: gadget: fix rndis regression
 References: <20090331231045.719396245@sous-sol.org>
-Content-Disposition: inline; filename=b43-fix-b43_plcp_get_bitrate_idx_ofdm-return-type.patch
+Content-Disposition: inline; filename=usb-gadget-fix-rndis-regression.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -36,33 +37,40 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 ---------------------
 
-From: Lorenzo Nava <navalorenx@gmail.com>
+From: David Brownell <dbrownell@users.sourceforge.net>
 
-upstream commit: a3c0b87c4f21911fb7185902dd13f0e3cd7f33f7
+upstream commit: 090b90118207e786d2990310d063fda5d52cce6e
 
-This patch fixes the return type of b43_plcp_get_bitrate_idx_ofdm. If
-the plcp contains an error, the function return value is 255 instead
-of -1, and the packet was not dropped. This causes a warning in
-__ieee80211_rx function because rate idx is out of range.
+Restore some code that was wrongly dropped from the RNDIS
+driver, and caused interop problems observed with OpenMoko.
 
-Cc: stable@kernel.org
-Signed-off-by: Lorenzo Nava <navalorenx@gmail.com>
-Signed-off-by: Michael Buesch <mb@bu3sch.de>
-Signed-off-by: John W. Linville <linville@tuxdriver.com>
+The issue is with hardware which needs help conforming to part
+of the USB 2.0 spec (section 8.5.3.2); some can automagically
+send a ZLP in response to an unexpected IN, but not all chips
+will do that.  We don't need to check the packet length ourselves
+the way earlier code did, since the UDC must already check it.
+But we do need to tell the UDC when it must force a short packet
+termination of the data stage.
+
+(Based on a patch from Aric D. Blumer <aric at sdgsystems.com>)
+
+Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
+Cc: stable <stable@kernel.org>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 ---
- drivers/net/wireless/b43/xmit.c |    2 +-
+ drivers/usb/gadget/f_rndis.c |    2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/drivers/net/wireless/b43/xmit.c
-+++ b/drivers/net/wireless/b43/xmit.c
-@@ -50,7 +50,7 @@ static int b43_plcp_get_bitrate_idx_cck(
- }
- 
- /* Extract the bitrate index out of an OFDM PLCP header. */
--static u8 b43_plcp_get_bitrate_idx_ofdm(struct b43_plcp_hdr6 *plcp, bool aphy)
-+static int b43_plcp_get_bitrate_idx_ofdm(struct b43_plcp_hdr6 *plcp, bool aphy)
- {
- 	int base = aphy ? 0 : 4;
- 
+--- a/drivers/usb/gadget/f_rndis.c
++++ b/drivers/usb/gadget/f_rndis.c
+@@ -437,7 +437,7 @@ invalid:
+ 		DBG(cdev, "rndis req%02x.%02x v%04x i%04x l%d\n",
+ 			ctrl->bRequestType, ctrl->bRequest,
+ 			w_value, w_index, w_length);
+-		req->zero = 0;
++		req->zero = (value < w_length);
+ 		req->length = value;
+ 		value = usb_ep_queue(cdev->gadget->ep0, req, GFP_ATOMIC);
+ 		if (value < 0)
 
