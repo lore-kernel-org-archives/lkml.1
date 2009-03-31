@@ -1,54 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761502AbZCaPDi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761286AbZCaPJX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761502AbZCaPDi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Mar 2009 11:03:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761602AbZCaPDU
+	id S1761286AbZCaPJX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Mar 2009 11:09:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755957AbZCaPJG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Mar 2009 11:03:20 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:36197 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761546AbZCaPDU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Mar 2009 11:03:20 -0400
-Date: Tue, 31 Mar 2009 16:57:50 +0200
-From: Oleg Nesterov <oleg@redhat.com>
-To: Chris Wright <chrisw@sous-sol.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <peterz@infradead.org>,
-       Peter Lojkin <ia6432@inbox.ru>, linux-kernel@vger.kernel.org,
-       Roland McGrath <roland@redhat.com>, stable@kernel.org
-Subject: Re: [stable] [PATCH 1/2] posix-timers: fix RLIMIT_CPU && fork()
-Message-ID: <20090331145750.GB4792@redhat.com>
-References: <20090327000607.GA10104@redhat.com> <20090331030133.GH3264@hera.kernel.org>
+	Tue, 31 Mar 2009 11:09:06 -0400
+Received: from smtp-out003.kontent.com ([81.88.40.217]:49588 "EHLO
+	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751181AbZCaPJF convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Mar 2009 11:09:05 -0400
+From: Oliver Neukum <oliver@neukum.org>
+To: Larry Finger <Larry.Finger@lwfinger.net>
+Subject: Re: [PATCH 1/2] kaweth: Fix locking to be SMP-safe
+Date: Tue, 31 Mar 2009 17:13:04 +0200
+User-Agent: KMail/1.10.3 (Linux/2.6.29-9-default; KDE/4.1.3; x86_64; ; )
+Cc: jgarzik@pobox.com, linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+References: <49d00512.XAF19LdpY1dlK6+U%Larry.Finger@lwfinger.net> <200903310939.09690.oliver@neukum.org> <49D22EFC.1020709@lwfinger.net>
+In-Reply-To: <49D22EFC.1020709@lwfinger.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <20090331030133.GH3264@hera.kernel.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200903311713.05451.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 03/31, Chris Wright wrote:
->
-> * Oleg Nesterov (oleg@redhat.com) wrote:
-> > See http://bugzilla.kernel.org/show_bug.cgi?id=12911
+Am Dienstag 31 März 2009 16:55:56 schrieb Larry Finger:
+> Oliver Neukum wrote:
+> > Very good.
 > >
-> > copy_signal() copies signal->rlim, but RLIMIT_CPU is "lost". Because
-> > posix_cpu_timers_init_group() sets cputime_expires.prof_exp = 0 and thus
-> > fastpath_timer_check() returns false unless we have other expired cpu timers.
+> >> (X server over the network), the interface stalled with no logged
+> >> messages.
 > >
-> > Change copy_signal() to set cputime_expires.prof_exp if we have RLIMIT_CPU.
-> > Also, set cputimer.running = 1 in that case. This is not strictly necessary,
-> > but imho makes sense.
+> > Do you get something with sysrq-t ?
 >
-> For -stable should this be instead of 37bebc70d7ad4144c571d74500db3bb26ec0c0eb?
+> No. The rest of the system was still functioning; however, the driver
+> needed to be unloaded and reloaded before continuing. There were no log
+> entries until the driver was unloaded.
 
-Yes, sorry for confusion.
+This sounds like kaweth_tx_timeout() should have been called.
+Did you enable enough logging to see
+dev_warn(&net->dev, "%s: Tx timed out. Resetting.\n", net->name);
 
-The commit above was targeted for 2.6.29, it is not optimal. When/if
-"[PATCH 1/2] posix-timers: fix RLIMIT_CPU && fork()" will be merged, I'll sent
-the "revert" patch.
-
-see http://marc.info/?t=123783777600004
-
-Oleg.
+	Regards
+		Oliver
 
