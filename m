@@ -1,92 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753788AbZCaIpa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755399AbZCaIra@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753788AbZCaIpa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Mar 2009 04:45:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752046AbZCaIpT
+	id S1755399AbZCaIra (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Mar 2009 04:47:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751053AbZCaIrV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Mar 2009 04:45:19 -0400
-Received: from yx-out-2324.google.com ([74.125.44.28]:63113 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751022AbZCaIpQ (ORCPT
+	Tue, 31 Mar 2009 04:47:21 -0400
+Received: from ti-out-0910.google.com ([209.85.142.190]:13363 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751506AbZCaIrU convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Mar 2009 04:45:16 -0400
+	Tue, 31 Mar 2009 04:47:20 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=AasYLWB6S4cMBUbilHnyT3a+WIBsJC2RaqHE4lTW5DBHhRSyUUfioB3rZ2HrUrhVo1
-         5ILCpafc0owoDHcAeOoZd2RioVN0oJL06n51kxOv/u7940gjnl4sFxOV9D4z6s5DgLfg
-         la0ceEk+kiCacEIGwjWUlzfPRv9W3ObP/2kPI=
-Message-ID: <49D1D7A3.40303@panasas.com>
-Date: Tue, 31 Mar 2009 11:43:15 +0300
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090315 Remi/3.0-0.b2.fc10.remi Thunderbird/3.0b2
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=X+0XZA3eJcvnjj+FcStxVK12/j2wO6ZZqUoRZ6SY6WBtmPNmlOIsIbAb1ZVedEM106
+         2VRFY3g7L4HZSDBjeshGZiVsEtZ3f9w73yIMdrgtVV1I99m0H/ZZCsWxqUyJlg4OJygB
+         ffaJ4rF/Hhcn+B8XEbjC6tDLRrl11KWNWCxm8=
 MIME-Version: 1.0
-To: Tejun Heo <tj@kernel.org>
-CC: petkovbb@gmail.com, Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       linux-kernel@vger.kernel.org, axboe@kernel.dk,
-       linux-ide@vger.kernel.org
-Subject: Re: [PATCHSET pata-2.6] ide: rq->buffer, data, special and misc	cleanups
-References: <1237910776-10983-1-git-send-email-tj@kernel.org> <200903281451.01361.bzolnier@gmail.com> <20090328140405.GA2741@liondog.tnic> <49D08CEC.3010705@kernel.org> <49D0A985.7090307@panasas.com> <49D0FF56.3080205@kernel.org>
-In-Reply-To: <49D0FF56.3080205@kernel.org>
+In-Reply-To: <804dabb00903302349j5bdbabeaxbbd09291b1cf6e4@mail.gmail.com>
+References: <804dabb00903302349j5bdbabeaxbbd09291b1cf6e4@mail.gmail.com>
+Date: Tue, 31 Mar 2009 16:47:18 +0800
+Message-ID: <df9815e70903310147l1ae6675ag1fa4c2e99250cef4@mail.gmail.com>
+Subject: Re: "make oldconfig" problem
+From: Jike Song <albcamus@gmail.com>
+To: Peter Teoh <htmldeveloper@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       "H. Peter Anvin" <hpa@zytor.com>
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 03/30/2009 08:20 PM, Tejun Heo wrote:
-> Boaz Harrosh wrote:
->>> P.S.: Boaz, the above patchset implements blk_rq_map_kern_sgl() 
->> What is blk_rq_map_kern_sgl() ? I'm not sure I remember ?
->> What is it's API? and what does it do?
->>
->>> and kills the SCSI layer hack.  That was the issue you were trying
->>> to solve, right?
->> If you post URL of git tree I can have a look and start an early review
->> if you want
-> 
-> Here's the patchset.  It builds but I haven't even booted it yet, so
-> expect some breakages.
-> 
->   http://git.kernel.org/?p=linux/kernel/git/tj/misc.git;a=shortlog;h=map-untested
->   git://git.kernel.org/pub/scm/linux/kernel/git/tj/misc.git map-untested
-> 
-> Thanks.
-> 
+On Tue, Mar 31, 2009 at 2:49 PM, Peter Teoh <htmldeveloper@gmail.com> wrote:
+> When I do "make oldconfig" on the latest linus git tree, I got:
+>
+> make oldconfig
+> scripts/kconfig/conf -o arch/x86/Kconfig
+> usr/Kconfig:145:warning: defaults for choice values not supported
+> #
+> # configuration written to .config
+> #
+>
+> But checking usr/Kconfig:145:
+>
+> if INITRAMFS_SOURCE=""
+> # The builtin initramfs is so small so we don't want to bug the user...
+>
+> config INITRAMFS_COMPRESSION_NONE
+>        bool
+>        default y
+>
+> endif
+>
+> I cannot understand the source of errors as well?   Frederic, any ideas?
+>
+> --
+> Regards,
+> Peter Teoh
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
 
-Hi Tejun.
+Seems to be caused by
+40297927575a50b1d0d308d735c445924d33fba6("bzip2/lzma: don't ask for
+compression mode for the default initramfs").
 
-I hope you have not been working on stabilizing this code yet, I've just seen
-it this mornning (Israel time). It has obvious bugs, in the use of scatterlists.
+I get no errors with that commit reverted.
 
-But before you go running to fix them. Don't. I don't like the scatter-list API
-at all. We where working hard to remove them from scsi and I don't like them
-for block layer either. 
 
-If it is for my personal needs then all I need is a simple:
-"I have this bio please attach it to a request". The reason I have a bio
-is because it comes from a filesystem and because I will be needing to use
-the raid engines that are bio based.
-
-I must have confused you with my blk_rq_map_pages() patches, these where made just
-as an example of the ugliness and fragility of not using bios. It was suppose to be
-a bad example, not to be accepted. (Hence the absence of my Singed-off-by:)
-
-Scatterlists are bad because they are two times too fat for what they do here, they
-need to be allocated, chained and slabbed, and finally they need to be converted to
-a bio. Working directly with a bio is the shortest route.
-
-Looking at the patches it seems you are changing them as I write (git-web is freezing)
-So I sending this mail now. I was in the process of looking at them from the beginning.
-
-So far it looks like a very deep change, I have some comments, but it will need a proper
-review.
-
-I do not understand what was your intention for the blk_rq_map_kern_sgl() how's
-the user for it?
-
-BTW: now you absolutely must do something with the name of blk_rq_map_sg() which does not
-do any mapping and does not change request at all.
-
-Boaz
+-- 
+Thanks,
+Jike
