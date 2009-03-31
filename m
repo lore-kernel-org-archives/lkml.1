@@ -1,213 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755229AbZCaIRr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753463AbZCaIUe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755229AbZCaIRr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Mar 2009 04:17:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752823AbZCaIRZ
+	id S1753463AbZCaIUe (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Mar 2009 04:20:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750789AbZCaIUQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Mar 2009 04:17:25 -0400
-Received: from casper.infradead.org ([85.118.1.10]:55051 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752597AbZCaIRX (ORCPT
+	Tue, 31 Mar 2009 04:20:16 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:58156 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750769AbZCaIUO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Mar 2009 04:17:23 -0400
-Subject: Re: [PATCH 2/2] sysctl:  lockdep support for sysctl reference
- counting.
-From: Peter Zijlstra <peterz@infradead.org>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       Jan Beulich <jbeulich@novell.com>, tglx@linutronix.de, mingo@redhat.com,
-       hpa@zytor.com, linux-kernel@vger.kernel.org,
-       Gautham R Shenoy <ego@in.ibm.com>,
-       Alexey Dobriyan <adobriyan@gmail.com>, netdev@vger.kernel.org
-In-Reply-To: <m1ab7fxqxw.fsf_-_@fess.ebiederm.org>
-References: <49B91A7E.76E4.0078.0@novell.com>
-	 <tip-6a09dfa870ba0ed21b1124539968a36b42660661@git.kernel.org>
-	 <1236934491.5188.209.camel@laptop> <49BA33BE.76E4.0078.0@novell.com>
-	 <1236937423.22914.3698.camel@twins> <20090313103828.GB31094@elte.hu>
-	 <m1d4cd9n4k.fsf@fess.ebiederm.org> <20090320085205.GB16021@elte.hu>
-	 <m14oxo8qis.fsf@fess.ebiederm.org> <20090320182404.GA31629@elte.hu>
-	 <1237575134.4667.5.camel@laptop> <1237577688.4667.68.camel@laptop>
-	 <m1iqm3xr2n.fsf_-_@fess.ebiederm.org> <m1eiwrxr05.fsf_-_@fess.ebiederm.org>
-	 <m1ab7fxqxw.fsf_-_@fess.ebiederm.org>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Tue, 31 Mar 2009 10:17:28 +0200
-Message-Id: <1238487448.28248.1805.camel@twins>
+	Tue, 31 Mar 2009 04:20:14 -0400
+Date: Tue, 31 Mar 2009 17:18:40 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "kosaki.motohiro@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>
+Subject: Re: [RFC][PATCH 5/8] memcg soft limit (yet another new design) v1
+Message-Id: <20090331171840.83fb7dab.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20090327140923.7dbbf677.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20090327135933.789729cb.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090327140923.7dbbf677.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.0 
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2009-03-21 at 00:42 -0700, Eric W. Biederman wrote:
-> It is possible for get lock ordering deadlocks between locks
-> and waiting for the sysctl used count to drop to zero.  We have
-> recently observed one of these in the networking code.
+On Fri, 27 Mar 2009 14:09:23 +0900
+KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+
+> memcg's reclaim routine is designed to ignore locality andplacements and
+> then, inactive_anon_is_low() function doesn't take "zone" as its argument.
 > 
-> So teach the sysctl code how to speak lockdep so the kernel
-> can warn about these kinds of rare issues proactively.
-
-It would be very good to extend this changelog with a more detailed
-explanation of the deadlock in question.
-
-Let me see if I got it right:
-
-We're holding a lock, while waiting for the refcount to drop to 0.
-Dropping that refcount is blocked on that lock.
-
-Something like that?
-
-> Signed-off-by: Eric Biederman <ebiederm@aristanetworks.com>
+> In later soft limit patch, we use "zone" as an arguments.
+> 
+> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 > ---
->  include/linux/sysctl.h |    4 ++
->  kernel/sysctl.c        |  108 ++++++++++++++++++++++++++++++++++++++---------
->  2 files changed, 91 insertions(+), 21 deletions(-)
-> 
-> diff --git a/include/linux/sysctl.h b/include/linux/sysctl.h
-> index 39d471d..ec9b1dd 100644
-> --- a/include/linux/sysctl.h
-> +++ b/include/linux/sysctl.h
-> @@ -28,6 +28,7 @@
->  #include <linux/kernel.h>
->  #include <linux/types.h>
->  #include <linux/compiler.h>
-> +#include <linux/lockdep.h>
+> Index: mmotm-2.6.29-Mar23/mm/memcontrol.c
+> ===================================================================
+> --- mmotm-2.6.29-Mar23.orig/mm/memcontrol.c
+> +++ mmotm-2.6.29-Mar23/mm/memcontrol.c
+> @@ -561,15 +561,28 @@ void mem_cgroup_record_reclaim_priority(
+>  	spin_unlock(&mem->reclaim_param_lock);
+>  }
 >  
->  struct file;
->  struct completion;
-> @@ -1087,6 +1088,9 @@ struct ctl_table_header
->  	struct ctl_table *attached_by;
->  	struct ctl_table *attached_to;
->  	struct ctl_table_header *parent;
-> +#ifdef CONFIG_PROVE_LOCKING
-> +	struct lockdep_map dep_map;
-> +#endif
->  };
->  
->  /* struct ctl_path describes where in the hierarchy a table is added */
-> diff --git a/kernel/sysctl.c b/kernel/sysctl.c
-> index c5ef44f..ea8cc39 100644
-> --- a/kernel/sysctl.c
-> +++ b/kernel/sysctl.c
-> @@ -1454,12 +1454,63 @@ static struct ctl_table dev_table[] = {
->  
->  static DEFINE_SPINLOCK(sysctl_lock);
->  
-> +#ifndef CONFIG_PROVE_LOCKING
-> +
-> +# define lock_sysctl() spin_lock(&sysctl_lock)
-> +# define unlock_sysctl() spin_unlock(&sysctl_lock)
-> +
-> +static inline void table_acquire_use(struct ctl_table_header *hdr) { }
-> +static inline void table_release_use(struct ctl_table_header *hdr) { }
-> +static inline void table_acquire(struct ctl_table_header *hdr) { }
-> +static inline void table_contended(struct ctl_table_header *hdr) { }
-> +static inline void table_acquired(struct ctl_table_header *hdr) { }
-> +static inline void table_release(struct ctl_table_header *hdr) { }
-> +
-> +#else	/* CONFIG_PROVE_LOCKING */
-> +
-> +#  define lock_sysctl() __raw_spin_lock(&sysctl_lock.raw_lock)
-> +#  define unlock_sysctl() __raw_spin_unlock(&sysctl_lock.raw_lock)
-
-Uhmm, Please explain that -- without a proper explanation this is a NAK.
-
-> +static inline void table_acquire_use(struct ctl_table_header *hdr)
-> +{
-> +	lock_acquire(&hdr->dep_map, 0, 0, 1, 2, NULL, _RET_IP_);
-> +	lock_acquired(&hdr->dep_map, _RET_IP_);
-> +}
-> +
-> +static inline void table_release_use(struct ctl_table_header *hdr)
-> +{
-> +	lock_release(&hdr->dep_map, 0, _RET_IP_);
-> +}
-> +
-> +static inline void table_acquire(struct ctl_table_header *hdr)
-> +{
-> +	lock_acquire(&hdr->dep_map, 0, 0, 0, 2, NULL, _RET_IP_);
-> +}
-> +
-> +static inline void table_contended(struct ctl_table_header *hdr)
-> +{
-> +	lock_contended(&hdr->dep_map, _RET_IP_);
-> +}
-> +
-> +static inline void table_acquired(struct ctl_table_header *hdr)
-> +{
-> +	lock_acquired(&hdr->dep_map, _RET_IP_);
-> +}
-> +
-> +static inline void table_release(struct ctl_table_header *hdr)
-> +{
-> +	lock_release(&hdr->dep_map, 0, _RET_IP_);
-> +}
-> +
-> +#endif /* CONFIG_PROVE_LOCKING */
-> +
->  /* called under sysctl_lock */
->  static int use_table(struct ctl_table_header *p)
+> -static int calc_inactive_ratio(struct mem_cgroup *memcg, unsigned long *present_pages)
+> +static int calc_inactive_ratio(struct mem_cgroup *memcg,
+> +			       unsigned long *present_pages,
+> +			       struct zone *z)
 >  {
->  	if (unlikely(p->unregistering))
->  		return 0;
->  	p->used++;
-> +	table_acquire_use(p);
->  	return 1;
->  }
+>  	unsigned long active;
+>  	unsigned long inactive;
+>  	unsigned long gb;
+>  	unsigned long inactive_ratio;
 >  
-> @@ -1469,6 +1520,8 @@ static void unuse_table(struct ctl_table_header *p)
->  	if (!--p->used)
->  		if (unlikely(p->unregistering))
->  			complete(p->unregistering);
+> -	inactive = mem_cgroup_get_local_zonestat(memcg, LRU_INACTIVE_ANON);
+> -	active = mem_cgroup_get_local_zonestat(memcg, LRU_ACTIVE_ANON);
+> +	if (!z) {
+> +		inactive = mem_cgroup_get_local_zonestat(memcg,
+> +							 LRU_INACTIVE_ANON);
+> +		active = mem_cgroup_get_local_zonestat(memcg, LRU_ACTIVE_ANON);
+> +	} else {
+> +		int nid = z->zone_pgdat->node_id;
+> +		int zid = zone_idx(z);
+> +		struct mem_cgroup_per_zone *mz;
 > +
-> +	table_release_use(p);
->  }
->  
->  /* called under sysctl_lock, will reacquire if has to wait */
-> @@ -1478,47 +1531,54 @@ static void start_unregistering(struct ctl_table_header *p)
->  	 * if p->used is 0, nobody will ever touch that entry again;
->  	 * we'll eliminate all paths to it before dropping sysctl_lock
->  	 */
-> +	table_acquire(p);
->  	if (unlikely(p->used)) {
->  		struct completion wait;
-> +		table_contended(p);
-> +
->  		init_completion(&wait);
->  		p->unregistering = &wait;
-> -		spin_unlock(&sysctl_lock);
-> +		unlock_sysctl();
->  		wait_for_completion(&wait);
-> -		spin_lock(&sysctl_lock);
-> +		lock_sysctl();
->  	} else {
->  		/* anything non-NULL; we'll never dereference it */
->  		p->unregistering = ERR_PTR(-EINVAL);
->  	}
-> +	table_acquired(p);
-> +
->  	/*
->  	 * do not remove from the list until nobody holds it; walking the
->  	 * list in do_sysctl() relies on that.
->  	 */
->  	list_del_init(&p->ctl_entry);
-> +
-> +	table_release(p);
->  }
->  
-
-> @@ -1951,7 +2011,13 @@ struct ctl_table_header *__register_sysctl_paths(
->  		return NULL;
->  	}
->  #endif
-> -	spin_lock(&sysctl_lock);
-> +#ifdef CONFIG_DEBUG_LOCK_ALLOC
-> +	{
-> +		static struct lock_class_key __key;
-> +		lockdep_init_map(&header->dep_map, "sysctl_used", &__key, 0);
+> +		mz = mem_cgroup_zoneinfo(memcg, nid, zid);
+> +		inactive = MEM_CGROUP_ZSTAT(mz, LRU_INACTIVE_ANON);
+> +		active = MEM_CGROUP_ZSTAT(mz, LRU_ACTIVE_ANON);
 > +	}
-> +#endif	
+>  
+>  	gb = (inactive + active) >> (30 - PAGE_SHIFT);
+>  	if (gb)
+> @@ -585,14 +598,14 @@ static int calc_inactive_ratio(struct me
+>  	return inactive_ratio;
+>  }
+>  
+> -int mem_cgroup_inactive_anon_is_low(struct mem_cgroup *memcg)
+> +int mem_cgroup_inactive_anon_is_low(struct mem_cgroup *memcg, struct zone *z)
+>  {
+>  	unsigned long active;
+>  	unsigned long inactive;
+>  	unsigned long present_pages[2];
+>  	unsigned long inactive_ratio;
+>  
+> -	inactive_ratio = calc_inactive_ratio(memcg, present_pages);
+> +	inactive_ratio = calc_inactive_ratio(memcg, present_pages, NULL);
 
-This means every sysctl thingy gets the same class, is that
-intended/desired?
+The last arguments should be "z" not NULL...
+
+seems posted version is a bit old...OMG, sorry.
+
+I'm now adding bugfix etc..
+
+-Kame
 
