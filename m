@@ -1,68 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762257AbZCaGKx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762313AbZCaGLV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762257AbZCaGKx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Mar 2009 02:10:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761706AbZCaGKi
+	id S1762313AbZCaGLV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Mar 2009 02:11:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761856AbZCaGKj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Mar 2009 02:10:38 -0400
-Received: from smtp-out-41.synserver.de ([217.119.50.41]:1512 "HELO
-	smtp-out-41.synserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1753625AbZCaGKh (ORCPT
+	Tue, 31 Mar 2009 02:10:39 -0400
+Received: from e28smtp09.in.ibm.com ([59.145.155.9]:48081 "EHLO
+	e28smtp09.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761189AbZCaGKi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Mar 2009 02:10:37 -0400
-X-SynServer-TrustedSrc: 1
-X-SynServer-AuthUser: markus@trippelsdorf.de
-X-SynServer-PPID: 19388
-Date: Tue, 31 Mar 2009 09:10:18 +0200
-From: Markus Trippelsdorf <markus@trippelsdorf.de>
-To: Ilpo =?iso-8859-1?Q?J=E4rvinen?= <ilpo.jarvinen@helsinki.fi>
-Cc: Netdev <netdev@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>,
-       corbet@lwn.net
-Subject: Re: WARNING: at net/ipv4/tcp_input.c:2927 tcp_ack+0xd55/0x1991()
-Message-ID: <20090331071018.GA2641@gentoox2.trippelsdorf.de>
-References: <20090327211202.GA10014@gentoox2.trippelsdorf.de> <Pine.LNX.4.64.0903280031080.5904@wrl-59.cs.helsinki.fi> <20090328045056.GA2394@gentoox2.trippelsdorf.de> <Pine.LNX.4.64.0903280930440.6696@wrl-59.cs.helsinki.fi> <20090328095514.GA2599@gentoox2.trippelsdorf.de> <Pine.LNX.4.64.0903301155150.30150@wrl-59.cs.helsinki.fi> <20090330164035.GA2652@gentoox2.trippelsdorf.de> <Pine.LNX.4.64.0903302137100.29272@wrl-59.cs.helsinki.fi>
+	Tue, 31 Mar 2009 02:10:38 -0400
+Date: Tue, 31 Mar 2009 11:40:10 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "kosaki.motohiro@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>
+Subject: Re: [RFC][PATCH] memcg soft limit (yet another new design) v1
+Message-ID: <20090331061010.GJ16497@balbir.in.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+References: <20090327135933.789729cb.kamezawa.hiroyu@jp.fujitsu.com> <20090328181100.GB26686@balbir.in.ibm.com> <20090328182747.GA8339@balbir.in.ibm.com> <20090331085538.2aaa5e2b.kamezawa.hiroyu@jp.fujitsu.com> <20090331050055.GF16497@balbir.in.ibm.com> <20090331140502.813993cc.kamezawa.hiroyu@jp.fujitsu.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <Pine.LNX.4.64.0903302137100.29272@wrl-59.cs.helsinki.fi>
+In-Reply-To: <20090331140502.813993cc.kamezawa.hiroyu@jp.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 30, 2009 at 09:52:55PM +0300, Ilpo Järvinen wrote:
-> On Mon, 30 Mar 2009, Markus Trippelsdorf wrote:
+* KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-03-31 14:05:02]:
+
+> On Tue, 31 Mar 2009 10:30:55 +0530
+> Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
 > 
-> > On Mon, Mar 30, 2009 at 07:01:22PM +0300, Ilpo Järvinen wrote:
-> > > On Sat, 28 Mar 2009, Markus Trippelsdorf wrote:
-> > > > On Sat, Mar 28, 2009 at 10:29:58AM +0200, Ilpo Järvinen wrote:
-> > > 
-> > > ...And, let me guess, you're in X and therefore unable to catch a final 
-> > > oops if any would be printed? It would be nice to get around that as well, 
-> > > either use serial/netconsole or hang in text mode while waiting for the 
-> > > crash (should be too hard if you are able to setup the workload first 
-> > > and then switch away from X and if reproducing takes about an hour)...
+> > * KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-03-31 08:55:38]:
 > > 
-> > OK, I will try this later.
+> > > On Sat, 28 Mar 2009 23:57:47 +0530
+> > > Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+> > > 
+> > > > * Balbir Singh <balbir@linux.vnet.ibm.com> [2009-03-28 23:41:00]:
+> > > > 
+> > > > > * KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-03-27 13:59:33]:
+> > > > > 
+> > > > > > ==brief test result==
+> > > > > > On 2CPU/1.6GB bytes machine. create group A and B
+> > > > > >   A.  soft limit=300M
+> > > > > >   B.  no soft limit
+> > > > > > 
+> > > > > >   Run a malloc() program on B and allcoate 1G of memory. The program just
+> > > > > >   sleeps after allocating memory and no memory refernce after it.
+> > > > > >   Run make -j 6 and compile the kernel.
+> > > > > > 
+> > > > > >   When vm.swappiness = 60  => 60MB of memory are swapped out from B.
+> > > > > >   When vm.swappiness = 10  => 1MB of memory are swapped out from B    
+> > > > > > 
+> > > > > >   If no soft limit, 350MB of swap out will happen from B.(swapiness=60)
+> > > > > >
+> > > > > 
+> > > > > I ran the same tests, booted the machine with mem=1700M and maxcpus=2
+> > > > > 
+> > > > > Here is what I see with
+> > > > 
+> > > > I meant to say, Here is what I see with my patches (v7)
+> > > > 
+> > > Hmm, I saw 250MB of swap out ;) As I reported before.
+> > 
+> > Swapout for A? For A it is expected, but for B it is not. How many
+> > nodes do you have on your machine? Any fake numa nodes?
+> > 
+> Of course, from B.
+>
+
+I asked because I see A have a swapout of 350 MB, which is expected
+since it is way over its soft limit.
+ 
+> Nothing special boot options. My test was on VMware 2cpus/1.6GB memory.
 > 
-> Lets hope that gives some clue where it ends up going boom (if it is 
-> caused by TCP we certainly should see something more sensible in console 
-> than just a hang)... ...I once again read through tcp commits but just 
-> cannot find anything that could cause fackets_out miscount, not to speak 
-> of crash prone changes so we'll just have to wait and see...
+> I wonder why swapout can be 0 on your test. Do you add some extra hooks to
+> kswapd ?
+>
 
-The machine hanged again this night and I took two pictures:
-http://www.mypicx.com/uploadimg/1055813374_03302009_2.jpg
-http://www.mypicx.com/uploadimg/1543678904_03302009_1.jpg
+Nope.. no special hooks to kswapd. B never enters the RB-Tree and thus
+never hits the memcg soft limit reclaim path. kswapd can reclaim from
+it, but it grows back quickly. At some point, memcg soft limit reclaim
+hits A and reclaims memory from it, allowing B to run without any
+problems. I am talking about the state at the end of the experiment.
 
-But this time there was no tcp related warning in the logs.
-
-I then pulled the lateset git changes, rebuild, rebooted and setup the
-workload again. The machine was still up and running in the morning 
-(~4 hours uptime). So it may well be that the issue was fixed with
-the latest changes. If it ever occurs again I will notify you.
-
-Thanks for your assistance so far,
+ 
 
 -- 
-Markus
+	Balbir
