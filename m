@@ -1,81 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756238AbZCaL2U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756251AbZCaLaq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756238AbZCaL2U (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Mar 2009 07:28:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752317AbZCaL2J
+	id S1756251AbZCaLaq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Mar 2009 07:30:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751220AbZCaLah
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Mar 2009 07:28:09 -0400
-Received: from casper.infradead.org ([85.118.1.10]:37724 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751220AbZCaL2I (ORCPT
+	Tue, 31 Mar 2009 07:30:37 -0400
+Received: from wf-out-1314.google.com ([209.85.200.173]:62571 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750991AbZCaLah convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Mar 2009 07:28:08 -0400
-Subject: Re: [PATCH 3/3] utrace-based ftrace "process" engine, v2
-From: Peter Zijlstra <peterz@infradead.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Theodore Tso <tytso@mit.edu>, oleg@redhat.com, adobriyan@gmail.com,
-       mingo@elte.hu, torvalds@linux-foundation.org, fche@redhat.com,
-       roland@redhat.com, rostedt@goodmis.org, utrace-devel@redhat.com,
-       linux-kernel@vger.kernel.org, tglx@linutronix.de,
-       Christoph Hellwig <hch@infradead.org>, Jeff Dike <jdike@addtoit.com>
-In-Reply-To: <1238491062.28248.2046.camel@twins>
-References: <20090321041954.72b99e69.akpm@linux-foundation.org>
-	 <20090321115141.GA3566@redhat.com>
-	 <20090321050422.d1d99eec.akpm@linux-foundation.org>
-	 <20090321154501.GA2707@elte.hu>
-	 <20090321143413.75ead1aa.akpm@linux-foundation.org>
-	 <20090321215145.GB5262@redhat.com>
-	 <alpine.LFD.2.00.0903211501060.3030@localhost.localdomain>
-	 <20090322123749.GF19826@elte.hu> <20090323134813.GA18219@x200.localdomain>
-	 <20090323151400.GA3413@redhat.com> <20090323214417.GD5814@mit.edu>
-	 <20090330151844.8b4eed0f.akpm@linux-foundation.org>
-	 <1238491062.28248.2046.camel@twins>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Tue, 31 Mar 2009 13:27:56 +0200
-Message-Id: <1238498876.27156.9.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.0 
+	Tue, 31 Mar 2009 07:30:37 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=XyzSmN1TlwdlUZQeIvXbKMPoUifojnIeHUcmerltE73hNxtZTS25mel6OS15nzySlx
+         jFdsi1GG6CJH2US3uE3pT/r1yq/q2NDsoAZwJzBkDnL75Ie84CVN6tket3aQpZ2xg1hP
+         yUglgvrsrKWF/sOCKN9xaG6SoVyEIHjga7IRE=
+MIME-Version: 1.0
+In-Reply-To: <Pine.LNX.4.64.0903311154570.19028@blonde.anvils>
+References: <28c262360903310338k20b8eebbncb86baac9b09e54@mail.gmail.com>
+	 <Pine.LNX.4.64.0903311154570.19028@blonde.anvils>
+Date: Tue, 31 Mar 2009 20:30:35 +0900
+Message-ID: <28c262360903310430jc0411fdm5de88476f39bae4c@mail.gmail.com>
+Subject: Re: add_to_swap_cache with GFP_ATOMIC ?
+From: Minchan Kim <minchan.kim@gmail.com>
+To: Hugh Dickins <hugh@veritas.com>
+Cc: linux-mm <linux-mm@kvack.org>, lkml <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-03-31 at 11:17 +0200, Peter Zijlstra wrote:
-> On Mon, 2009-03-30 at 15:18 -0700, Andrew Morton wrote:
-> > So we need to work out what to do about utrace and I feel a need to hit
-> > the reset button on all this.  Largely because I've forgotten
-> > everything and it was all confusing anyway.
-> 
-> Right, from my POV something like utrace is desirable, since its
-> basically a huge multiplexer for the debugger state, eventually allowing
-> us to have multiple debuggers attached to the same process.
-> 
-> So in that respect its a very nice feature.
-> 
-> > Could those who object to utrace please pipe up and summarise their
-> > reasons?
-> 
-> Christoph used to have an opinion on this matter, so I've added him to
-> the CC.
-> 
-> Last time when I looked at the code, it needed a bit more care and
-> comments wrt lifetimes and such. I know Roland has done a lot on that
-> front -- so I'll need to re-inspect.
-> 
-> As to in-kernel users, currently we only have ptrace, and no full
-> conversion to utrace is in a mergeable shape afaik.
-> 
-> UML (Jeff CC'ed) might want to use this.
-> 
-> I know the Systemtap people need this (fche). But that isn't really
-> moving towards mainline any time soon afaict.
-> 
-> Then there is this little thing called frysk which uses it, no idea what
-> kind of kernel space that needs, nor where it lives -- or for that
-> matter, wth it really does ;-)
+Thanks for quick reply.
 
-And Frank reminded me we have an ftrace tracer that utilizes utrace.
+On Tue, Mar 31, 2009 at 8:17 PM, Hugh Dickins <hugh@veritas.com> wrote:
+> On Tue, 31 Mar 2009, Minchan Kim wrote:
+>>
+>> I don't know why we should call add_to_swap_cache with GFP_ATOMIC ?
+>> Is there a special something for avoiding blocking?
+>
+> add_to_swap_cache itself does not need to be called with GFP_ATOMIC.
+>
+> There are three places from which it is called:
+>
+> read_swap_cache_async (typically used when faulting) masks the
+> gfp_mask coming in (typically GFP_HIGHUSER_MOVABLE for the pages
+> themselves) to call add_to_swap_cache typically with GFP_KERNEL.
+>
+> shmem_writepage does call it with GFP_ATOMIC: that's because it's
+> holding the shmem_inode's spin_lock while it switches the page between
+> file cache and swap cache - IIRC holding page lock isn't quite enough
+> for that, because of other cases; but I've not thought that through
+> in a long time, we could re-examine if it troubles you.
 
-> Anyway, long story short, once people have had a little time to go over
-> the code, and a few in-kernel users are lined-up, I think we should
-> consider merging it.
+Yes. My point was that. but I am not sure what are other cases. :(
+Now, It don't hurt me but not sure in future.
+
+> The questionable one is add_to_swap (when vmscanning), which calls
+> it with __GFP_HIGH|__GFP_NOMEMALLOC|__GFP_NOWARN, i.e. GFP_ATOMIC
+> plus __GFP_NOMEMALLOC|__GFP_NOWARN.  That one I have wondered
+> about from time to time: GFP_NOIO would be the obvious choice,
+> that's what swap_writepage will use to allocate bio soon after.
+>
+> I've been tempted to change it, but afraid to touch that house
+> of cards, and afraid of long testing and justification required.
+> Would it be safe to drop that __GFP_HIGH?  What's the effect of the
+> __GFP_NOMEMALLOC (we've layer on layer of tweak this one way because
+> we're in the reclaim path so let it eat more, then tweak it the other
+> way because we don't want it to eat up _too_ much).  I just let it stay.
+
+Sigh.
+What a complex thing to change one line.
+Thanks for kind explanation.
+
+> Hugh
+>
+
+
+
+-- 
+Kinds regards,
+Minchan Kim
