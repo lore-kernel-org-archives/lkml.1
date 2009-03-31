@@ -1,177 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755496AbZCaKvv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756796AbZCaKwd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755496AbZCaKvv (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Mar 2009 06:51:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755440AbZCaKuk
+	id S1756796AbZCaKwd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Mar 2009 06:52:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756032AbZCaKvZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Mar 2009 06:50:40 -0400
-Received: from e28smtp04.in.ibm.com ([59.145.155.4]:49196 "EHLO
-	e28smtp04.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755337AbZCaKuj (ORCPT
+	Tue, 31 Mar 2009 06:51:25 -0400
+Received: from moutng.kundenserver.de ([212.227.126.171]:56611 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755988AbZCaKvY convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Mar 2009 06:50:39 -0400
-From: Gautham R Shenoy <ego@in.ibm.com>
-Subject: [PATCH v4 4/5] sched: Arbitrate the nomination of preferred_wakeup_cpu
-To: "Ingo Molnar" <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, Suresh Siddha <suresh.b.siddha@intel.com>,
-       "Balbir Singh" <balbir@in.ibm.com>, Gautham R Shenoy <ego@in.ibm.com>
-Date: Tue, 31 Mar 2009 16:20:32 +0530
-Message-ID: <20090331105032.16414.5468.stgit@sofia.in.ibm.com>
-In-Reply-To: <20090331104829.16414.11385.stgit@sofia.in.ibm.com>
-References: <20090331104829.16414.11385.stgit@sofia.in.ibm.com>
-User-Agent: StGIT/0.14.2
+	Tue, 31 Mar 2009 06:51:24 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: Kevin Cernekee <kpc.mtd@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCHv4] MTD: New ioctl calls for >4GiB device support
+Date: Tue, 31 Mar 2009 12:51:03 +0200
+User-Agent: KMail/1.9.9
+Cc: dwmw2@infradead.org, linux-mtd@lists.infradead.org
+References: <a95a62fe0903301814k75ce56f5xef0a04c5c188012@mail.gmail.com>
+In-Reply-To: <a95a62fe0903301814k75ce56f5xef0a04c5c188012@mail.gmail.com>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200903311251.04746.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX1/BshC5GtPiSOkKGaro0byLGIWVJGqZWMLU64F
+ /LWd92d12xI4Bht+uHDZD8Nh21fSflD8zdkHYLkPzG0LL9LlRc
+ QSnvCv75aSZ7BjZQOC7dg==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Currently for sched_mc/smt_power_savings = 2, we consolidate tasks
-by having a preferred_wakeup_cpu which will be used for all the
-further wake ups.
+On Tuesday 31 March 2009, Kevin Cernekee wrote:
+> +struct mtd_oob_buf64 {
+> +       uint64_t start;
+> +       uint32_t res0;
+> +       uint32_t length;
+> +       unsigned char __user *ptr;
+> +       uint32_t res1[8];
+> +};
 
-This preferred_wakeup_cpu is currently nominated by find_busiest_group()
-when we perform load-balancing at sched_domains which has
-SD_POWERSAVINGS_BALANCE flag set.
+Does this have to use an indirect pointer? We normally try to avoid
+ioctl interfaces like this, because they are hard to trace and you
+need a compat wrapper. You might be able to at least avoid the wrapper
+by defining the data structure with a __u64 to take the pointer.
 
-However, on systems which are multi-threaded and multi-core, we can
-have multiple sched_domains in the same hierarchy with
-SD_POWERSAVINGS_BALANCE flag set.
+If you leave the data structure the way it is, you should at least
+move the compat_ioctl handling into mtdchar.c from compat_ioctl.c.
+It will simplify your code and help reduce the size of the common
+ioctl handling.
 
-Currently we don't have any arbitration mechanism as to while performing
-load balancing at which sched_domain in the hierarchy should
-find_busiest_group(sd) nominate the preferred_wakeup_cpu.
-Hence can overwrite valid nominations made previously thereby
-causing the preferred_wakup_cpu to ping-pong,
-thereby preventing us from effectively consolidating tasks.
-
-Fix this by means of an arbitration algorithm, where in we nominate the
-preferred_wakeup_cpu while performing load balancing at a particular
-sched_domain if that sched_domain:
-- is the topmost power aware sched_domain.
-	OR
-- contains the previously nominated preferred wake up cpu in it's span.
-
-This will help to further fine tune the wake-up biasing logic by
-identifying a partially busy core within a CPU package instead of
-potentially waking up a completely idle core.
-
-Signed-off-by: Gautham R Shenoy <ego@in.ibm.com>
----
-
- kernel/sched.c |   56 +++++++++++++++++++++++++++++++++++++++++++++++++-------
- 1 files changed, 49 insertions(+), 7 deletions(-)
-
-diff --git a/kernel/sched.c b/kernel/sched.c
-index 36d116b..193bb67 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -549,6 +549,14 @@ struct root_domain {
- 	 * This is triggered at POWERSAVINGS_BALANCE_WAKEUP(2).
- 	 */
- 	unsigned int preferred_wakeup_cpu;
-+
-+	/*
-+	 * top_powersavings_sd_lvl records the level of the highest
-+	 * sched_domain that has the SD_POWERSAVINGS_BALANCE flag set.
-+	 *
-+	 * Used to arbitrate nomination of the preferred_wakeup_cpu.
-+	 */
-+	enum sched_domain_level top_powersavings_sd_lvl;
- #endif
- };
- 
-@@ -3439,9 +3447,11 @@ static inline void update_sd_power_savings_stats(struct sched_group *group,
-  * Returns 1 if there is potential to perform power-savings balance.
-  * Else returns 0.
-  */
--static inline int check_power_save_busiest_group(struct sd_lb_stats *sds,
--					int this_cpu, unsigned long *imbalance)
-+static inline int check_power_save_busiest_group(struct sched_domain *sd,
-+		struct sd_lb_stats *sds, int this_cpu, unsigned long *imbalance)
- {
-+	struct root_domain *my_rd = cpu_rq(this_cpu)->rd;
-+
- 	if (!sds->power_savings_balance)
- 		return 0;
- 
-@@ -3452,8 +3462,25 @@ static inline int check_power_save_busiest_group(struct sd_lb_stats *sds,
- 	*imbalance = sds->min_load_per_task;
- 	sds->busiest = sds->group_min;
- 
--	if (active_power_savings_level >= POWERSAVINGS_BALANCE_WAKEUP) {
--		cpu_rq(this_cpu)->rd->preferred_wakeup_cpu =
-+	/*
-+	 * To avoid overwriting of preferred_wakeup_cpu nominations
-+	 * while performing load-balancing at various sched_domain
-+	 * levels, we define an arbitration mechanism wherein
-+	 * we nominates a preferred_wakeup_cpu while load balancing
-+	 * at a particular sched_domain sd if:
-+	 *
-+	 * - sd is the highest sched_domain in the hierarchy having the
-+	 *   SD_POWERSAVINGS_BALANCE flag set.
-+	 *
-+	 *   OR
-+	 *
-+	 * - sd contains the previously nominated preferred_wakeup_cpu
-+	 *   in it's span.
-+	 */
-+	if (sd->level == my_rd->top_powersavings_sd_lvl ||
-+		cpumask_test_cpu(my_rd->preferred_wakeup_cpu,
-+				sched_domain_span(sd))) {
-+		my_rd->preferred_wakeup_cpu =
- 			group_first_cpu(sds->group_leader);
- 	}
- 
-@@ -3473,8 +3500,8 @@ static inline void update_sd_power_savings_stats(struct sched_group *group,
- 	return;
- }
- 
--static inline int check_power_save_busiest_group(struct sd_lb_stats *sds,
--					int this_cpu, unsigned long *imbalance)
-+static inline int check_power_save_busiest_group(struct sched_domain *sd,
-+		struct sd_lb_stats *sds, int this_cpu, unsigned long *imbalance)
- {
- 	return 0;
- }
-@@ -3838,7 +3865,7 @@ out_balanced:
- 	 * There is no obvious imbalance. But check if we can do some balancing
- 	 * to save power.
- 	 */
--	if (check_power_save_busiest_group(&sds, this_cpu, imbalance))
-+	if (check_power_save_busiest_group(sd, &sds, this_cpu, imbalance))
- 		return sds.busiest;
- ret:
- 	*imbalance = 0;
-@@ -8059,6 +8086,8 @@ static int __build_sched_domains(const struct cpumask *cpu_map,
- 	struct root_domain *rd;
- 	cpumask_var_t nodemask, this_sibling_map, this_core_map, send_covered,
- 		tmpmask;
-+	struct sched_domain *sd;
-+
- #ifdef CONFIG_NUMA
- 	cpumask_var_t domainspan, covered, notcovered;
- 	struct sched_group **sched_group_nodes = NULL;
-@@ -8334,6 +8363,19 @@ static int __build_sched_domains(const struct cpumask *cpu_map,
- 
- 	err = 0;
- 
-+	rd->preferred_wakeup_cpu = UINT_MAX;
-+	rd->top_powersavings_sd_lvl = SD_LV_NONE;
-+
-+	if (active_power_savings_level < POWERSAVINGS_BALANCE_WAKEUP)
-+		goto free_tmpmask;
-+
-+	/* Record the level of the highest power-aware sched_domain */
-+	for_each_domain(first_cpu(*cpu_map), sd) {
-+		if (!(sd->flags & SD_POWERSAVINGS_BALANCE))
-+			continue;
-+		rd->top_powersavings_sd_lvl = sd->level;
-+	}
-+
- free_tmpmask:
- 	free_cpumask_var(tmpmask);
- free_send_covered:
-
+	Arnd <><
