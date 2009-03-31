@@ -1,126 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764025AbZCaSwP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763991AbZCaSvZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764025AbZCaSwP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Mar 2009 14:52:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763579AbZCaSrZ
+	id S1763991AbZCaSvZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Mar 2009 14:51:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763356AbZCaSoO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Mar 2009 14:47:25 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:44354 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763588AbZCaSrX (ORCPT
+	Tue, 31 Mar 2009 14:44:14 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:40646 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763304AbZCaSoM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Mar 2009 14:47:23 -0400
-Date: Tue, 31 Mar 2009 13:47:13 -0500
-From: Larry Finger <Larry.Finger@lwfinger.net>
-To: jgarzik@pobox.com
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org, oliver@neukum.org
-Subject: [PATCH 2/2 V2] kaweth: Clean up code
-Message-ID: <49d26531.EsrSuMQHYRGUbhou%Larry.Finger@lwfinger.net>
-User-Agent: Heirloom mailx 12.2 01/07/07
+	Tue, 31 Mar 2009 14:44:12 -0400
+Date: Tue, 31 Mar 2009 14:44:02 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: Jeff Mahoney <jeffm@suse.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       ReiserFS Development List <reiserfs-devel@vger.kernel.org>
+Subject: Re: [patch 18/35 xattr-rework] reiserfs: Clean up xattrs when
+	REISERFS_FS_XATTR is unset
+Message-ID: <20090331184402.GA28520@infradead.org>
+References: <20090330180215.951354436@suse.com> <20090330181011.592648722@suse.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <20090330181011.592648722@suse.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The driver kaweth yields a -EBUSY error when starting, and a -ETIME
-error when shutting down. These errors are avoided, and the RX status
-is further checked for other potential errors.
+On Mon, Mar 30, 2009 at 02:02:33PM -0400, Jeff Mahoney wrote:
+>  The current reiserfs xattr implementation will not clean up old xattr
+>  files if files are deleted when REISERFS_FS_XATTR is unset. This results
+>  in inaccessible lost files, wasting space.
+> 
+>  This patch compiles in basic xattr knowledge, such as how to delete them and
+>  change ownership for quota tracking. If the file system has never used
+>  xattrs, then the operation is quite fast: it returns immediately when
+>  it sees there is no .reiserfs_priv directory.
 
-Signed-off-by: Larry Finger <Larry.Finger@lwfinger.net>
----
+What about just making xattr suppose unconditional?  That's what most
+never filesystems do, and it really shouldn't be a whole lot of code.
 
-Jeff,
-
-As the listed authors of this driver have not touched it in several years,
-I have taken the liberty of sending it to you as networking drivers maintainer.
-I hope this is OK.
-
-Larry
----
-
-Index: wireless-testing/drivers/net/usb/kaweth.c
-===================================================================
---- wireless-testing.orig/drivers/net/usb/kaweth.c
-+++ wireless-testing/drivers/net/usb/kaweth.c
-@@ -31,7 +31,6 @@
-  ****************************************************************/
- 
- /* TODO:
-- * Fix in_interrupt() problem
-  * Develop test procedures for USB net interfaces
-  * Run test procedures
-  * Fix bugs from previous two steps
-@@ -606,14 +605,30 @@ static void kaweth_usb_receive(struct ur
- 
- 	struct sk_buff *skb;
- 
--	if(unlikely(status == -ECONNRESET || status == -ESHUTDOWN))
--	/* we are killed - set a flag and wake the disconnect handler */
--	{
-+	if (unlikely(status == -EPIPE)) {
-+		kaweth->stats.rx_errors++;
- 		kaweth->end = 1;
- 		wake_up(&kaweth->term_wait);
-+		dbg("Status was -EPIPE.");
- 		return;
- 	}
--
-+	if (unlikely(status == -ECONNRESET || status == -ESHUTDOWN)) {
-+		/* we are killed - set a flag and wake the disconnect handler */
-+		kaweth->end = 1;
-+		wake_up(&kaweth->term_wait);
-+		dbg("Status was -ECONNRESET or -ESHUTDOWN.");
-+		return;
-+	}
-+	if (unlikely(status == -EPROTO || status == -ETIME ||
-+		     status == -EILSEQ)) {
-+		kaweth->stats.rx_errors++;
-+		dbg("Status was -EPROTO, -ETIME, or -EILSEQ.");
-+		return;
-+	}
-+	if (unlikely(status == -EOVERFLOW)) {
-+		kaweth->stats.rx_errors++;
-+		dbg("Status was -EOVERFLOW.");
-+	}
- 	spin_lock(&kaweth->device_lock);
- 	if (IS_BLOCKED(kaweth->status)) {
- 		spin_unlock(&kaweth->device_lock);
-@@ -883,13 +898,16 @@ static void kaweth_set_rx_mode(struct ne
-  ****************************************************************/
- static void kaweth_async_set_rx_mode(struct kaweth_device *kaweth)
- {
-+	int result;
- 	__u16 packet_filter_bitmap = kaweth->packet_filter_bitmap;
-+
- 	kaweth->packet_filter_bitmap = 0;
- 	if (packet_filter_bitmap == 0)
- 		return;
- 
--	{
--	int result;
-+	if (in_interrupt())
-+		return;
-+
- 	result = kaweth_control(kaweth,
- 				usb_sndctrlpipe(kaweth->dev, 0),
- 				KAWETH_COMMAND_SET_PACKET_FILTER,
-@@ -900,13 +918,10 @@ static void kaweth_async_set_rx_mode(str
- 				0,
- 				KAWETH_CONTROL_TIMEOUT);
- 
--	if(result < 0) {
--		err("Failed to set Rx mode: %d", result);
--	}
--	else {
--		dbg("Set Rx mode to %d", packet_filter_bitmap);
--	}
--	}
-+	if (result < 0)
-+		err("Failed to set Rx mode: 0x%X", result);
-+	else
-+		dbg("Set Rx mode to 0x%X", packet_filter_bitmap);
- }
- 
- /****************************************************************
