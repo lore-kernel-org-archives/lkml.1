@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764318AbZCaXcq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764573AbZCaXdT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764318AbZCaXcq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Mar 2009 19:32:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763637AbZCaXVL
+	id S1764573AbZCaXdT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Mar 2009 19:33:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763753AbZCaXVN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Mar 2009 19:21:11 -0400
-Received: from sous-sol.org ([216.99.217.87]:33232 "EHLO x200.localdomain"
+	Tue, 31 Mar 2009 19:21:13 -0400
+Received: from sous-sol.org ([216.99.217.87]:33233 "EHLO x200.localdomain"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1763685AbZCaXVG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Mar 2009 19:21:06 -0400
-Message-Id: <20090331231448.601106125@sous-sol.org>
+	id S1763629AbZCaXVI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Mar 2009 19:21:08 -0400
+Message-Id: <20090331231541.807363680@sous-sol.org>
 User-Agent: quilt/0.47-1
-Date: Tue, 31 Mar 2009 16:10:57 -0700
+Date: Tue, 31 Mar 2009 16:11:05 -0700
 From: Chris Wright <chrisw@sous-sol.org>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -24,11 +24,11 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Alan Stern <stern@rowland.harvard.edu>,
-       Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [patch 12/45] USB: add quirk to avoid config and interface strings
+       alan@lxorguk.ukuu.org.uk, Bob Copeland <me@bobcopeland.com>,
+       John W Linville <linville@tuxdriver.com>
+Subject: [patch 20/45] ath5k: disable MIB interrupts
 References: <20090331231045.719396245@sous-sol.org>
-Content-Disposition: inline; filename=usb-add-quirk-to-avoid-config-and-interface-strings.patch
+Content-Disposition: inline; filename=ath5k-disable-mib-interrupts.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -36,86 +36,35 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 ---------------------
 
-From: Alan Stern <stern@rowland.harvard.edu>
+From: Bob Copeland <me@bobcopeland.com>
 
-upstream commit: 1662e3a7f076e51e3073faf9ce77157b529c475b
+upstream commit: 9ca9fb8aa8422595956af9681518cdb8b167055e
 
-Apparently the Configuration and Interface strings aren't used as
-often as the Vendor, Product, and Serial strings.  In at least one
-device (a Saitek Cyborg Gold 3D joystick), attempts to read the
-Configuration string cause the device to stop responding to Control
-requests.
+The MIB interrupt fires whenever counters overflow; however without
+support for automatic noise immunity, we can sometimes get an interrupt
+storm.  The get_stats() callback reads the counters anyway so we can
+disable the interrupt for now until ANI is implemented.  This fixes
+the issue reported in http://bugzilla.kernel.org/show_bug.cgi?id=12647.
 
-This patch (as1226) adds a quirks flag, telling the kernel not to
-read a device's Configuration or Interface strings, together with a
-new quirk for the offending joystick.
+Changes-licensed-under: 3-Clause-BSD
 
-Reported-by: Melchior FRANZ <melchior.franz@gmail.com>
-Tested-by: Melchior FRANZ <melchior.franz@gmail.com>
-Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
-Cc: stable <stable@kernel.org>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+Cc: stable@kernel.org
+Signed-off-by: Bob Copeland <me@bobcopeland.com>
+Signed-off-by: John W. Linville <linville@tuxdriver.com>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 ---
- drivers/usb/core/message.c |    3 ++-
- drivers/usb/core/quirks.c  |    4 ++++
- drivers/usb/core/sysfs.c   |    4 +++-
- include/linux/usb/quirks.h |    3 +++
- 4 files changed, 12 insertions(+), 2 deletions(-)
+ drivers/net/wireless/ath5k/base.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/drivers/usb/core/message.c
-+++ b/drivers/usb/core/message.c
-@@ -1719,7 +1719,8 @@ free_interfaces:
- 	}
- 	kfree(new_interfaces);
- 
--	if (cp->string == NULL)
-+	if (cp->string == NULL &&
-+			!(dev->quirks & USB_QUIRK_CONFIG_INTF_STRINGS))
- 		cp->string = usb_cache_string(dev, cp->desc.iConfiguration);
- 
- 	/* Now that all the interfaces are set up, register them
---- a/drivers/usb/core/quirks.c
-+++ b/drivers/usb/core/quirks.c
-@@ -54,6 +54,10 @@ static const struct usb_device_id usb_qu
- 	{ USB_DEVICE(0x0638, 0x0a13), .driver_info =
- 	  USB_QUIRK_STRING_FETCH_255 },
- 
-+	/* Saitek Cyborg Gold Joystick */
-+	{ USB_DEVICE(0x06a3, 0x0006), .driver_info =
-+			USB_QUIRK_CONFIG_INTF_STRINGS },
-+
- 	/* M-Systems Flash Disk Pioneers */
- 	{ USB_DEVICE(0x08ec, 0x1000), .driver_info = USB_QUIRK_RESET_RESUME },
- 
---- a/drivers/usb/core/sysfs.c
-+++ b/drivers/usb/core/sysfs.c
-@@ -13,6 +13,7 @@
- #include <linux/kernel.h>
- #include <linux/string.h>
- #include <linux/usb.h>
-+#include <linux/usb/quirks.h>
- #include "usb.h"
- 
- /* Active configuration fields */
-@@ -813,7 +814,8 @@ int usb_create_sysfs_intf_files(struct u
- 	if (intf->sysfs_files_created || intf->unregistering)
- 		return 0;
- 
--	if (alt->string == NULL)
-+	if (alt->string == NULL &&
-+			!(udev->quirks & USB_QUIRK_CONFIG_INTF_STRINGS))
- 		alt->string = usb_cache_string(udev, alt->desc.iInterface);
- 	if (alt->string)
- 		retval = device_create_file(&intf->dev, &dev_attr_interface);
---- a/include/linux/usb/quirks.h
-+++ b/include/linux/usb/quirks.h
-@@ -16,4 +16,7 @@
- /* device can't handle Set-Interface requests */
- #define USB_QUIRK_NO_SET_INTF		0x00000004
- 
-+/* device can't handle its Configuration or Interface strings */
-+#define USB_QUIRK_CONFIG_INTF_STRINGS	0x00000008
-+
- #endif /* __LINUX_USB_QUIRKS_H */
+--- a/drivers/net/wireless/ath5k/base.c
++++ b/drivers/net/wireless/ath5k/base.c
+@@ -2259,7 +2259,7 @@ ath5k_init(struct ath5k_softc *sc, bool 
+ 	sc->curband = &sc->sbands[sc->curchan->band];
+ 	sc->imask = AR5K_INT_RXOK | AR5K_INT_RXERR | AR5K_INT_RXEOL |
+ 		AR5K_INT_RXORN | AR5K_INT_TXDESC | AR5K_INT_TXEOL |
+-		AR5K_INT_FATAL | AR5K_INT_GLOBAL | AR5K_INT_MIB;
++		AR5K_INT_FATAL | AR5K_INT_GLOBAL;
+ 	ret = ath5k_reset(sc, false, false);
+ 	if (ret)
+ 		goto done;
 
