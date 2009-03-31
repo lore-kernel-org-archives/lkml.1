@@ -1,50 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761437AbZCaAb0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759954AbZCaAvw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761437AbZCaAb0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Mar 2009 20:31:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755694AbZCaAbP
+	id S1759954AbZCaAvw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Mar 2009 20:51:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753708AbZCaAvm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Mar 2009 20:31:15 -0400
-Received: from moutng.kundenserver.de ([212.227.126.177]:65470 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755350AbZCaAbO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Mar 2009 20:31:14 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: Daniele Napolitano <dnax88@gmail.com>
-Subject: Re: Additional USB identifier for rt2870 driver
-Date: Tue, 31 Mar 2009 02:30:27 +0200
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org, linux-wireless@vger.kernel.org,
-       Andrew Morton <akpm@linux-foundation.org>
-References: <15d0b9b20903301624j45040f38tdd1ce5400bbaa247@mail.gmail.com>
-In-Reply-To: <15d0b9b20903301624j45040f38tdd1ce5400bbaa247@mail.gmail.com>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Mon, 30 Mar 2009 20:51:42 -0400
+Received: from gw.goop.org ([64.81.55.164]:57028 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753641AbZCaAvl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Mar 2009 20:51:41 -0400
+Message-ID: <49D16916.5000103@goop.org>
+Date: Mon, 30 Mar 2009 17:51:34 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       the arch/x86 maintainers <x86@kernel.org>
+Subject: [PATCH] swiotlb: use swiotlb_alloc_boot to allocate emergency pool
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200903310230.27755.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX19LlTnxa4MqWoIs1L8Dg4MoK/+0ojzpjC0ynK9
- Mq83US8ucTht/PGlG5/HPMt3poS9ffTCg+mRRR0aJfSqH93JCB
- vqehEV0f4Sj2ZvpFf4wjw==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 31 March 2009, Daniele Napolitano wrote:
-> --- rt2870.h 2009-02-07 01:27:09.000000000 +0100
-> +++ rt2870.h~ 2009-02-07 01:26:58.000000000 +0100
+Impact: bugfix
 
-This patch does not apply with -p1, please make sure that you generate
-your files according to Documentation/SubmittingPatches in the future.
+Also fix xen_swiotlb_fixup() to deal with sub-slab-sized allocations.
 
-As this is a patch for a staging driver, you should also Cc
-Greg Kroah-Hartman <gregkh@suse.de>, because he is maintaining
-the staging drivers.
+Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 
-	Arnd <><
+diff --git a/lib/swiotlb.c b/lib/swiotlb.c
+index 0de836d..e8df499 100644
+--- a/lib/swiotlb.c
++++ b/lib/swiotlb.c
+@@ -202,7 +202,8 @@ swiotlb_init_with_default_size(size_t default_size)
+ 	/*
+ 	 * Get the overflow emergency buffer
+ 	 */
+-	io_tlb_overflow_buffer = alloc_bootmem_low(io_tlb_overflow);
++	io_tlb_overflow_buffer = swiotlb_alloc_boot(io_tlb_overflow,
++						    io_tlb_overflow >> IO_TLB_SHIFT);
+ 	if (!io_tlb_overflow_buffer)
+ 		panic("Cannot allocate SWIOTLB overflow buffer!\n");
+ 
+diff --git a/drivers/pci/xen-iommu.c b/drivers/pci/xen-iommu.c
+index 9ce1599..5775691 100644
+--- a/drivers/pci/xen-iommu.c
++++ b/drivers/pci/xen-iommu.c
+@@ -47,16 +47,22 @@ void xen_swiotlb_fixup(void *buf, size_t size, unsigned long nslabs)
+ 		buf, size);
+ 
+ 	dma_bits = get_order(IO_TLB_SEGSIZE << IO_TLB_SHIFT) + PAGE_SHIFT;
+-	for (i = 0; i < nslabs; i += IO_TLB_SEGSIZE) {
++
++	i = 0;
++	do {
++		int slabs = min(nslabs - i, (unsigned long)IO_TLB_SEGSIZE);
++
+ 		do {
+ 			rc = xen_create_contiguous_region(
+ 				(unsigned long)buf + (i << IO_TLB_SHIFT),
+-				get_order(IO_TLB_SEGSIZE << IO_TLB_SHIFT),
++				get_order(slabs << IO_TLB_SHIFT),
+ 				dma_bits);
+ 		} while (rc && dma_bits++ < max_dma_bits);
+ 		if (rc)
+ 			panic(KERN_ERR "xen_create_contiguous_region failed\n");
+-	}
++
++		i += slabs;
++	} while(i < nslabs);
+ }
+ 
+ int xen_wants_swiotlb(void)
+
+
