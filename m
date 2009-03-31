@@ -1,88 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751678AbZCaFNW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762022AbZCaFOW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751678AbZCaFNW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Mar 2009 01:13:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751826AbZCaFNN
+	id S1762022AbZCaFOW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Mar 2009 01:14:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756937AbZCaFOK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Mar 2009 01:13:13 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:57871 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752457AbZCaFNM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Mar 2009 01:13:12 -0400
-Date: Tue, 31 Mar 2009 14:11:40 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: balbir@linux.vnet.ibm.com
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "kosaki.motohiro@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>
-Subject: Re: [RFC][PATCH] memcg soft limit (yet another new design) v1
-Message-Id: <20090331141140.9acd9b85.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20090331050143.GG16497@balbir.in.ibm.com>
-References: <20090327135933.789729cb.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090328181100.GB26686@balbir.in.ibm.com>
-	<20090328182747.GA8339@balbir.in.ibm.com>
-	<20090331090607.7ebc44c5.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090331050143.GG16497@balbir.in.ibm.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 31 Mar 2009 01:14:10 -0400
+Received: from mga11.intel.com ([192.55.52.93]:57026 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751826AbZCaFOI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Mar 2009 01:14:08 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.38,450,1233561600"; 
+   d="scan'208";a="677385819"
+Message-ID: <49D1A69D.7050801@intel.com>
+Date: Mon, 30 Mar 2009 22:14:05 -0700
+From: Joseph Cihula <joseph.cihula@intel.com>
+Reply-To: joseph.cihula@intel.com
+User-Agent: Thunderbird 2.0.0.19 (Windows/20081209)
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+CC: mingo@elte.hu, arjan@linux.intel.com, chrisw@sous-sol.org,
+       jmorris@namei.org, jbeulich@novell.com, peterm@redhat.com,
+       joseph.cihula@intel.com, gang.wei@intel.com, shane.wang@intel.com
+Subject: [RFC v2][PATCH 0a/1] intel_txt: Intel(R) Trusted Execution Technology
+ support for Linux - Overview
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 31 Mar 2009 10:31:43 +0530
-Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+Linux community,
 
-> * KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-03-31 09:06:07]:
-> 
-> > On Sat, 28 Mar 2009 23:57:47 +0530
-> > Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-> > 
-> > > * Balbir Singh <balbir@linux.vnet.ibm.com> [2009-03-28 23:41:00]:
-> > > 
-> > > > * KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-03-27 13:59:33]:
-> > > > 
-> > > > > ==brief test result==
-> > > > > On 2CPU/1.6GB bytes machine. create group A and B
-> > > > >   A.  soft limit=300M
-> > > > >   B.  no soft limit
-> > > > > 
-> > > > >   Run a malloc() program on B and allcoate 1G of memory. The program just
-> > > > >   sleeps after allocating memory and no memory refernce after it.
-> > > > >   Run make -j 6 and compile the kernel.
-> > > > > 
-> > > > >   When vm.swappiness = 60  => 60MB of memory are swapped out from B.
-> > > > >   When vm.swappiness = 10  => 1MB of memory are swapped out from B    
-> > > > > 
-> > > > >   If no soft limit, 350MB of swap out will happen from B.(swapiness=60)
-> > > > >
-> > > > 
-> > > > I ran the same tests, booted the machine with mem=1700M and maxcpus=2
-> > > > 
-> > > > Here is what I see with
-> > > 
-> > > I meant to say, Here is what I see with my patches (v7)
-> > > 
-> > 
-> > your malloc program is like this ?
-> > 
-> > int main(int argc, char *argv[])
-> > {
-> >     c = malloc(1G);
-> >     memset(c, 0, 1G);
-> >     getc();
-> > }
-> >
-> 
-> Very similar, instead of memset, we go integer by integer and set it
-> to 0, do two loops of touching and wait for user input before exiting.
->  
-Why two loops of touching ? has special meanings ?
+The following patches are to add support for Intel(R) Trusted Execution Technology (Intel(R) TXT) and the Trusted Boot open source project (tboot).
 
--Kame
+We request your feedback and suggestions.
+
+
+
+Intel(R) TXT Overview:
+=====================
+
+Intel's technology for safer computing, Intel(R) Trusted Execution Technology (Intel(R) TXT), defines platform-level enhancements that provide the building blocks for creating trusted platforms.
+
+Intel TXT was formerly known by the code name LaGrande Technology (LT).
+
+Intel TXT in Brief:
+o  Provides dynamic root of trust for measurement (DRTM)
+o  Data protection in case of improper shutdown
+o  Measurement and verification of launched environment
+
+Intel TXT is part of the vPro(TM) brand and is also available some non-vPro systems.  It is currently available on desktop systems based on the Q35, X38, Q45, and Q43 Express chipsets (e.g. Dell Optiplex 755, HP dc7800, etc.) and mobile systems based on the GM45, PM45, and GS45 Express chipsets.
+
+For more information, see http://www.intel.com/technology/security/.  
+This site also has a link to the Intel TXT MLE Developers Manual, which has been updated for the new released platforms.
+
+Intel TXT has been presented at various events over the past few years, some of which are:
+      LinuxTAG 2008:  
+http://www.linuxtag.org/2008/en/conf/events/vp-donnerstag/details.html?talkid=110
+      TRUST2008:  
+http://www.trust2008.eu/downloads/Keynote-Speakers/3_David-Grawrock_The-Front-Door-of-Trusted-Computing.pdf
+      IDF 2008, Shanghai:  
+http://inteldeveloperforum.com.edgesuite.net/shanghai_2008/aep/PROS003/index.html
+      IDFs 2006, 2007 (I'm not sure if/where they are online)
+
+Trusted Boot Project Overview:
+=============================
+
+Trusted Boot (tboot) is an open source, pre- kernel/VMM module that uses Intel TXT to perform a measured and verified launch of an OS kernel/VMM.
+
+It is hosted on SourceForge at http://sourceforge.net/projects/tboot.  The mercurial source repo is available at http://www.bughost.org/repos.hg/tboot.hg.
+
+Tboot currently supports launching Xen (open source VMM/hypervisor w/ TXT support since v3.2), and now Linux kernels.
+
+
+Value Proposition for Linux or "Why should you care?"
+=====================================================
+
+While there are many products and technologies that attempt to measure or protect the integrity of a running kernel, they all assume the kernel is "good" to begin with.  The Integrity Measurement Architecture (IMA) and Linux Integrity Module interface are examples of such solutions.
+
+To get trust in the initial kernel without using Intel TXT, a static root of trust must be used.  This bases trust in BIOS starting at system reset and requires measurement of all code executed between system reset through the completion of the kernel boot as well as data objects used by that code.  In the case of a Linux kernel, this means all of BIOS, any option ROMs, the bootloader and the boot config.  In practice, this is a lot of code/data, much of which is subject to change from boot to boot (e.g. changing NICs may change option ROMs).  Without reference hashes, these measurement changes are difficult to assess or confirm as benign.  This process also does not provide DMA protection, memory configuration/alias checks and locks, crash protection, or policy support.
+
+By using the hardware-based root of trust that Intel TXT provides, many of these issues can be mitigated.  Specifically: many pre-launch components can be removed from the trust chain, DMA protection is provided to all launched components, a large number of platform configuration checks are performed and values locked, protection is provided for any data in the event of an improper shutdown, and there is support for policy-based execution/verification.  This provides a more stable measurement and a higher assurance of system configuration and initial state than would be otherwise possible.  Since the tboot project is open source, source code for almost all parts of the trust chain is available (excepting SMM and Intel-provided firmware).
+
+Patchset:
+========
+
+These patches were tested on the 2.6.29-tip git tree and apply cleanly.
+
+Patch 0a/1:  Overview and motivation (this email)
+Patch 0b/1:  Details and how it works
+Patch 1/1:   Intel TXT and tboot support
+
+
+Joseph Cihula
+Shane Wang
+Intel Corp.
 
 
