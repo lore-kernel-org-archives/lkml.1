@@ -1,86 +1,159 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760148AbZCaNcx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760558AbZCaNdn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760148AbZCaNcx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Mar 2009 09:32:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759979AbZCaNcj
+	id S1760558AbZCaNdn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Mar 2009 09:33:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760181AbZCaNdW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Mar 2009 09:32:39 -0400
-Received: from mtagate7.de.ibm.com ([195.212.29.156]:62048 "EHLO
-	mtagate7.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759648AbZCaNch (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Mar 2009 09:32:37 -0400
-Date: Tue, 31 Mar 2009 15:32:23 +0200
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-To: linux-mm@kvack.org, linux-kernel@vger.kernel.org
-Cc: Carsten Otte <cotte@de.ibm.com>, Nick Piggin <npiggin@suse.de>,
-       Jared Hulbert <jaredeh@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH] do_xip_mapping_read: fix length calculation
-Message-ID: <20090331153223.74b177bd@skybase>
-Organization: IBM Corporation
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.14.7; i486-pc-linux-gnu)
+	Tue, 31 Mar 2009 09:33:22 -0400
+Received: from mga03.intel.com ([143.182.124.21]:62407 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759387AbZCaNdV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Mar 2009 09:33:21 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.38,453,1233561600"; 
+   d="scan'208";a="126100131"
+Date: Tue, 31 Mar 2009 15:33:08 +0200
+From: Markus Metzger <markus.t.metzger@intel.com>
+To: linux-kernel@vger.kernel.org, mingo@elte.hu, tglx@linutronix.de,
+       hpa@zytor.com
+Cc: markus.t.metzger@intel.com, markus.t.metzger@gmail.com, roland@redhat.com,
+       eranian@googlemail.com, oleg@redhat.com, juan.villacis@intel.com,
+       ak@linux.jf.intel.com
+Subject: [patch 15/21] x86, ds: add task tracing selftest
+Message-ID: <20090331153308.A13280@sedona.ch.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+User-Agent: Mutt/1.2.5i
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Add selftests to cover per-task branch tracing.
 
-The calculation of the value nr in do_xip_mapping_read is incorrect. If
-the copy required more than one iteration in the do while loop the
-copies variable will be non-zero. The maximum length that may be passed
-to the call to copy_to_user(buf+copied, xip_mem+offset, nr) is len-copied
-but the check only compares against (nr > len).
 
-This bug is the cause for the heap corruption Carsten has been chasing
-for so long:
-
-*** glibc detected *** /bin/bash: free(): invalid next size (normal): 0x00000000800e39f0 ***  
-======= Backtrace: =========  
-/lib64/libc.so.6[0x200000b9b44]  
-/lib64/libc.so.6(cfree+0x8e)[0x200000bdade]  
-/bin/bash(free_buffered_stream+0x32)[0x80050e4e]  
-/bin/bash(close_buffered_stream+0x1c)[0x80050ea4]  
-/bin/bash(unset_bash_input+0x2a)[0x8001c366]  
-/bin/bash(make_child+0x1d4)[0x8004115c]  
-/bin/bash[0x8002fc3c]  
-/bin/bash(execute_command_internal+0x656)[0x8003048e]  
-/bin/bash(execute_command+0x5e)[0x80031e1e]  
-/bin/bash(execute_command_internal+0x79a)[0x800305d2]  
-/bin/bash(execute_command+0x5e)[0x80031e1e]  
-/bin/bash(reader_loop+0x270)[0x8001efe0]  
-/bin/bash(main+0x1328)[0x8001e960]  
-/lib64/libc.so.6(__libc_start_main+0x100)[0x200000592a8]  
-/bin/bash(clearerr+0x5e)[0x8001c092]  
-
-With this bug fix the commit 0e4a9b59282914fe057ab17027f55123964bc2e2
-"ext2/xip: refuse to change xip flag during remount with busy inodes"
-can be removed again.
-
-Cc: Carsten Otte <cotte@de.ibm.com>
-Cc: Nick Piggin <npiggin@suse.de>
-Cc: Jared Hulbert <jaredeh@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Signed-off-by: Markus Metzger <markus.t.metzger@intel.com>
 ---
 
- mm/filemap_xip.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-diff -urpN linux-2.6/mm/filemap_xip.c linux-2.6-patched/mm/filemap_xip.c
---- linux-2.6/mm/filemap_xip.c	2009-03-24 00:12:14.000000000 +0100
-+++ linux-2.6-patched/mm/filemap_xip.c	2009-03-31 15:25:53.000000000 +0200
-@@ -89,8 +89,8 @@ do_xip_mapping_read(struct address_space
- 			}
- 		}
- 		nr = nr - offset;
--		if (nr > len)
--			nr = len;
-+		if (nr > len - copied)
-+			nr = len - copied;
+Index: git-tip/arch/x86/kernel/ds_selftest.c
+===================================================================
+--- git-tip.orig/arch/x86/kernel/ds_selftest.c	2009-03-31 08:59:34.000000000 +0200
++++ git-tip/arch/x86/kernel/ds_selftest.c	2009-03-31 11:18:33.000000000 +0200
+@@ -280,10 +280,51 @@ static int ds_selftest_bts_bad_release_n
+ 	return error ? 0 : -1;
+ }
  
- 		error = mapping->a_ops->get_xip_mem(mapping, index, 0,
- 							&xip_mem, &xip_pfn);
++static int ds_selftest_bts_bad_request_cpu(int cpu, void *buffer)
++{
++	struct bts_tracer *tracer;
++	int error;
++
++	/* Try to request cpu tracing while task tracing is active. */
++	tracer = ds_request_bts_cpu(cpu, buffer, BUFFER_SIZE, NULL,
++				    (size_t)-1, BTS_KERNEL);
++	error = PTR_ERR(tracer);
++	if (!IS_ERR(tracer)) {
++		ds_release_bts(tracer);
++		error = 0;
++	}
++
++	if (error != -EPERM)
++		printk(KERN_CONT "cpu/task tracing overlap...");
++
++	return error ? 0 : -1;
++}
++
++static int ds_selftest_bts_bad_request_task(void *buffer)
++{
++	struct bts_tracer *tracer;
++	int error;
++
++	/* Try to request cpu tracing while task tracing is active. */
++	tracer = ds_request_bts_task(current, buffer, BUFFER_SIZE, NULL,
++				    (size_t)-1, BTS_KERNEL);
++	error = PTR_ERR(tracer);
++	if (!IS_ERR(tracer)) {
++		error = 0;
++		ds_release_bts(tracer);
++	}
++
++	if (error != -EPERM)
++		printk(KERN_CONT "task/cpu tracing overlap...");
++
++	return error ? 0 : -1;
++}
++
+ int ds_selftest_bts(void)
+ {
+ 	struct ds_selftest_bts_conf conf;
+ 	unsigned char buffer[BUFFER_SIZE];
++	unsigned long irq;
+ 	int cpu;
+ 
+ 	printk(KERN_INFO "[ds] bts selftest...");
+@@ -297,6 +338,8 @@ int ds_selftest_bts(void)
+ 			ds_request_bts_cpu(cpu, buffer, BUFFER_SIZE,
+ 					   NULL, (size_t)-1, BTS_KERNEL);
+ 		ds_selftest_bts_cpu(&conf);
++		if (conf.error >= 0)
++			conf.error = ds_selftest_bts_bad_request_task(buffer);
+ 		ds_release_bts(conf.tracer);
+ 		if (conf.error < 0)
+ 			goto out;
+@@ -315,12 +358,40 @@ int ds_selftest_bts(void)
+ 			if (conf.error < 0)
+ 				conf.tracer = NULL;
+ 		}
++		if (conf.error >= 0)
++			conf.error = ds_selftest_bts_bad_request_task(buffer);
+ 		smp_call_function_single(cpu, ds_release_bts_noirq_wrap,
+ 					 conf.tracer, 1);
+ 		if (conf.error < 0)
+ 			goto out;
+ 	}
+ 
++	conf.suspend = ds_suspend_bts_wrap;
++	conf.resume = ds_resume_bts_wrap;
++	conf.tracer =
++		ds_request_bts_task(current, buffer, BUFFER_SIZE,
++				    NULL, (size_t)-1, BTS_KERNEL);
++	ds_selftest_bts_cpu(&conf);
++	if (conf.error >= 0)
++		conf.error = ds_selftest_bts_bad_request_cpu(0, buffer);
++	ds_release_bts(conf.tracer);
++	if (conf.error < 0)
++		goto out;
++
++	conf.suspend = ds_suspend_bts_noirq;
++	conf.resume = ds_resume_bts_noirq;
++	conf.tracer =
++		ds_request_bts_task(current, buffer, BUFFER_SIZE,
++				   NULL, (size_t)-1, BTS_KERNEL);
++	local_irq_save(irq);
++	ds_selftest_bts_cpu(&conf);
++	if (conf.error >= 0)
++		conf.error = ds_selftest_bts_bad_request_cpu(0, buffer);
++	ds_release_bts_noirq(conf.tracer);
++	local_irq_restore(irq);
++	if (conf.error < 0)
++		goto out;
++
+ 	conf.error = 0;
+  out:
+ 	put_online_cpus();
+---------------------------------------------------------------------
+Intel GmbH
+Dornacher Strasse 1
+85622 Feldkirchen/Muenchen Germany
+Sitz der Gesellschaft: Feldkirchen bei Muenchen
+Geschaeftsfuehrer: Douglas Lusk, Peter Gleissner, Hannes Schwaderer
+Registergericht: Muenchen HRB 47456 Ust.-IdNr.
+VAT Registration No.: DE129385895
+Citibank Frankfurt (BLZ 502 109 00) 600119052
+
+This e-mail and any attachments may contain confidential material for
+the sole use of the intended recipient(s). Any review or distribution
+by others is strictly prohibited. If you are not the intended
+recipient, please contact the sender and delete all copies.
+
