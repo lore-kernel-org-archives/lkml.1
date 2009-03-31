@@ -1,98 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756600AbZCaUfy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756855AbZCaUho@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756600AbZCaUfy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Mar 2009 16:35:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755085AbZCaUfm
+	id S1756855AbZCaUho (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Mar 2009 16:37:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755935AbZCaUhe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Mar 2009 16:35:42 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:45455 "EHLO
-	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754046AbZCaUfl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Mar 2009 16:35:41 -0400
-Message-ID: <49D27F24.1070709@novell.com>
-Date: Tue, 31 Mar 2009 16:37:56 -0400
-From: Gregory Haskins <ghaskins@novell.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Tue, 31 Mar 2009 16:37:34 -0400
+Received: from mail.gmx.net ([213.165.64.20]:45365 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1755408AbZCaUhd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Mar 2009 16:37:33 -0400
+X-Authenticated: #787645
+X-Provags-ID: V01U2FsdGVkX18Fyh9R8VEFdp/Y+LnysxMmthl5zHPgY8JkioD6G9
+	1nz0Qc/dg0Xavx
+Message-ID: <49D27F03.2070302@gmx.net>
+Date: Tue, 31 Mar 2009 22:37:23 +0200
+From: Witold Szczeponik <Witold.Szczeponik@gmx.net>
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
 MIME-Version: 1.0
-To: Avi Kivity <avi@redhat.com>
-CC: linux-kernel@vger.kernel.org, agraf@suse.de, pmullaney@novell.com,
-       pmorreale@novell.com, anthony@codemonkey.ws, rusty@rustcorp.com.au,
-       netdev@vger.kernel.org, kvm@vger.kernel.org
-Subject: Re: [RFC PATCH 14/17] kvm: add a reset capability
-References: <20090331184057.28333.77287.stgit@dev.haskins.net> <20090331184400.28333.50396.stgit@dev.haskins.net> <49D26D8B.7020201@redhat.com> <49D276E5.6000000@novell.com> <49D27A9B.9030703@redhat.com>
-In-Reply-To: <49D27A9B.9030703@redhat.com>
-X-Enigmail-Version: 0.95.7
-OpenPGP: id=D8195319
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig7F02F679749E998113F6CED3"
+To: yakui_zhao <yakui.zhao@intel.com>
+CC: "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "bjorn.helgaas@hp.com" <bjorn.helgaas@hp.com>,
+       "abelay@mit.edu" <abelay@mit.edu>, "rjw@sisk.pl" <rjw@sisk.pl>
+Subject: Re: [PATCH] PNPACPI: Enable PNPACPI _PSx Support, v3
+References: <49D101DA.50201@gmx.net> <1238463939.3625.99.camel@localhost.localdomain>
+In-Reply-To: <1238463939.3625.99.camel@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.57
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig7F02F679749E998113F6CED3
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+yakui_zhao wrote:
 
-Avi Kivity wrote:
-> Gregory Haskins wrote:
->> Avi Kivity wrote:
->> =20
->>> Gregory Haskins wrote:
->>>   =20
->>>> We need a way to detect if a VM is reset later in the series, so let=
-s
->>>> add a capability for userspace to signal a VM reset down to the
->>>> kernel.
->>>>        =20
->>> How do you handle the case of a guest calling kexec to load a new
->>> kernel?  Or is that not important for your use case?
->>>
->>>    =20
->>
->> Hmm..I had not considered this.  Any suggestions on ways to detect it?=
+>     Very good patch.
+>     Do you have the hardware on which the dedicated power source is
+> required by the serial port(PnP device) in your hand?
+> 
 
->>
->>  =20
->
-> Best would be not to detect it; it's tying global events into a
-> device.  Instead, have a reset command for your device and have the
-> driver issue it on load and unload.
+Yes, I have an IBM ThinkPad 600E. I need this patch in order to
+be able receive accurate time using a DCF77 receiver attached
+to the serial port.
 
-Yes, good point.  This is doable within the existing infrastructure, but
-it would have to be declared in each devices ABI definition.  I could
-make it more formal and add it to the list of low-level bus-verbs, like
-DEVICEOPEN, DEVICECLOSE, etc.
+[snip]
 
->
-> btw, reset itself would be better controlled from userspace; qemu
-> knows about resets and can reset vbus devices directly instead of
-> relying on kvm to reset them.
-In a way, this is what I have done (note to self: post the userspace
-patches)
+>> -	if (ACPI_FAILURE(status))
+>> +	if (ACPI_FAILURE(acpi_set_current_resources(handle, &buffer)))
+>>   		ret = -EINVAL;
+>> +	else if (acpi_bus_power_manageable(handle))
+>> +		ret = acpi_bus_set_power(handle, ACPI_STATE_D0);
+> How about changing the power state before calling _SRS object?
 
-The detection is done by userspace, and it invokes an ioctl.  The kernel
-based devices then react if they are interested.  In my case, vbus
-registers for reset-notification, and it acts as if the guest exited
-when it gets reset (e.g. it issues DEVICECLOSE verbs to all devices the
-guest had open).
+I recall reading something in the ACPI spec that says that the power
+needs to be set after the device was enabled.  But the main driver
+for this order (_SRS followed by _PS0) is the symmetry to the required
+_PS3 followed by _DIS (according to the spec).
 
+[snip]
 
-
---------------enig7F02F679749E998113F6CED3
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
-Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
-
-iEYEARECAAYFAknSfyQACgkQlOSOBdgZUxnmJQCfRd0OJOxHMirir8PbPlPPwa5G
-ZbMAn1JbH3kE+3CzUbETZSS84q6m6YiO
-=sf6d
------END PGP SIGNATURE-----
-
---------------enig7F02F679749E998113F6CED3--
+--- Witold
