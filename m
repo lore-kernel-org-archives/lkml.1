@@ -1,45 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754551AbZCaHOR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753557AbZCaHSW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754551AbZCaHOR (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Mar 2009 03:14:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752983AbZCaHNq
+	id S1753557AbZCaHSW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Mar 2009 03:18:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752214AbZCaHSN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Mar 2009 03:13:46 -0400
-Received: from tservice.net.ru ([195.178.208.66]:53982 "EHLO tservice.net.ru"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753254AbZCaHNp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Mar 2009 03:13:45 -0400
-Date: Tue, 31 Mar 2009 11:13:26 +0400
-From: Evgeniy Polyakov <zbr@ioremap.net>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Boaz Harrosh <bharrosh@panasas.com>, avishay@gmail.com, jeff@garzik.org,
-       linux-fsdevel@vger.kernel.org, osd-dev@open-osd.org,
-       James.Bottomley@HansenPartnership.com, linux-kernel@vger.kernel.org,
-       fujita.tomonori@lab.ntt.co.jp, linux-next@vger.kernel.org
-Subject: Re: [PATCHSET 0/8 version 4] exofs for kernel 2.6.30
-Message-ID: <20090331071326.GA5072@ioremap.net>
-References: <49C1331D.1080805@panasas.com> <20090330142200.af4b497c.akpm@linux-foundation.org> <20090331140124.a21da743.sfr@canb.auug.org.au>
+	Tue, 31 Mar 2009 03:18:13 -0400
+Received: from ey-out-2122.google.com ([74.125.78.26]:4169 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751489AbZCaHSM convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Mar 2009 03:18:12 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=KmJqsWfbRHAT6WUo80Eex/aTDxMfkFLC2Q1ObHmCNQlOYV4Ekn29EZK+vacWDBJCTO
+         yMc6n+5CUjv996xVK+FIrFYwM7tt/xCT41Ic0LKHbZmNSL+Wk2xS19rF8opBZRyGV6WR
+         pUpwQSkcXxh8VkSERLcCp7klq+2odAFhca5/I=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090331140124.a21da743.sfr@canb.auug.org.au>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <20090330220007.GC6540@spock.one.pl>
+References: <20090330220007.GC6540@spock.one.pl>
+Date: Tue, 31 Mar 2009 09:18:09 +0200
+X-Google-Sender-Auth: eb6d9c9cdfa66d8f
+Message-ID: <10f740e80903310018v7e12de88m696f07e40dc617e3@mail.gmail.com>
+Subject: Re: [PATCH] fbdev: fix color component field length documentation
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: spock@gentoo.org
+Cc: linux-kernel@vger.kernel.org, Krzysztof Helt <krzysztof.h1@poczta.fm>,
+       =?UTF-8?B?VmlsbGUgU3lyasOkbMOk?= <syrjala@sci.fi>,
+       linux-fbdev-devel@lists.sourceforge.net
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi.
+On Tue, Mar 31, 2009 at 00:00, Michal Januszewski <spock@gentoo.org> wrote:
+> The documentation about the meaning of the color component bitfield lengths
+> in pseudocolor modes is inconsistent.  Fix it, so that it indicates the
+> correct interpretation everywhere, i.e. that the 1 << length is the number
+> of palette entries.
+>
+> Signed-off-by: Michal Januszewski <spock@gentoo.org>
+> Cc: Krzysztof Helt <krzysztof.h1@poczta.fm>
+> Cc: Ville Syrjälä <syrjala@sci.fi>
+> Cc: Geert Uytterhoeven <geert.uytterhoeven@gmail.com>
 
-On Tue, Mar 31, 2009 at 02:01:24PM +1100, Stephen Rothwell (sfr@canb.auug.org.au) wrote:
-> > I'm unsure when that time will come.  Who has reviewed this work and
-> > what was the result?
-> 
-> That is a good question.  The other is "Is this destined for 2.6.30?"
+Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
 
-There was a lengthy discussion in scsi list.
-I made another review of the previous revision and we talked a bit about
-ducumented features/bugs for the current one.
+Except for this:
 
--- 
-	Evgeniy Polyakov
+> --- a/include/linux/fb.h
+> +++ b/include/linux/fb.h
+> @@ -172,8 +172,11 @@ struct fb_fix_screeninfo {
+>  /* Interpretation of offset for color fields: All offsets are from the right,
+>  * inside a "pixel" value, which is exactly 'bits_per_pixel' wide (means: you
+>  * can use the offset as right argument to <<). A pixel afterwards is a bit
+> - * stream and is written to video memory as that unmodified. This implies
+> - * big-endian byte order if bits_per_pixel is greater than 8.
+> + * stream and is written to video memory as that unmodified.
+> + *
+> + * For pseudocolor, offset is always 0 and length, which should be the same
+      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+This is not correct. Offset can be non-zero, e.g. for a 8 bpp frame buffer with
+64 palette entries, where the palette index is stored in the upper 6 bits of the
+8-bit pixel value, offset would be 2, and length would be 6.
+Not that I've seen that (so far)...
+
+> + * for all color components, indicates the number of available palette entries
+> + * (i.e. # of entries = 1 << length).
+>  */
+>  struct fb_bitfield {
+>        __u32 offset;                   /* beginning of bitfield        */
+>
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
