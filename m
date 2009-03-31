@@ -1,70 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763012AbZCaR7W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763156AbZCaR7j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763012AbZCaR7W (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Mar 2009 13:59:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756339AbZCaR7I
+	id S1763156AbZCaR7j (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Mar 2009 13:59:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762261AbZCaR7L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Mar 2009 13:59:08 -0400
-Received: from mail-fx0-f158.google.com ([209.85.220.158]:53574 "EHLO
+	Tue, 31 Mar 2009 13:59:11 -0400
+Received: from mail-fx0-f158.google.com ([209.85.220.158]:41572 "EHLO
 	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753522AbZCaR7F (ORCPT
+	with ESMTP id S1754587AbZCaR7J convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Mar 2009 13:59:05 -0400
+	Tue, 31 Mar 2009 13:59:09 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:mime-version:content-type
-         :content-transfer-encoding:content-disposition:message-id;
-        b=ll/k26tvbf3p+00IJp9ed7V7p6Q/fFJwWSv7ddVPaz58GjOC1Bx8E/iboO6YNix2DJ
-         l84SMWj8xeQ5rJChh1vESN9HkAJa0QiNVLY+S5mbGTQ47PFRRog/DVC+C/hAXUrdUfTx
-         ke+s9eJPe99Aw9Hg8R5F9yIinoUxQl9bQoOVk=
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-disposition:message-id:content-type
+         :content-transfer-encoding;
+        b=n3fbSKQCVyjPwgDNfDA9vYLmwyfGvstsGdkWXqGunM/9lKOIDgyeTiwod2rJAD9w6a
+         7VvgTD0ffZEywoheFf+WzQUenp3EFTxEkj27tGjYzH8ZWZbTdeYW4hzvgWiH7tvoAuAx
+         yV/9kkvtFWCLmGR4kpj1qVQtPMpVukI6GdZyE=
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: linux-ide@vger.kernel.org
-Subject: [PATCH] at91_ide: fix ->ftf_flags handling
-Date: Tue, 31 Mar 2009 19:34:30 +0200
+To: petkovbb@gmail.com
+Subject: Re: Bug in 2.6.29 ide-cd: Kernel freeze: bisected + unacceptable workaround
+Date: Tue, 31 Mar 2009 20:01:45 +0200
 User-Agent: KMail/1.11.1 (Linux/2.6.29-next-20090327-dirty; KDE/4.2.1; i686; ; )
-Cc: linux-kernel@vger.kernel.org
+Cc: Michael Roth <mroth@nessie.de>, linux-kernel@vger.kernel.org
+References: <49CFCB2A.4020505@nessie.de> <200903302228.54601.bzolnier@gmail.com> <20090331074508.GA16403@liondog.tnic>
+In-Reply-To: <20090331074508.GA16403@liondog.tnic>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200903311934.30792.bzolnier@gmail.com>
+Message-Id: <200903312001.45960.bzolnier@gmail.com>
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix some incorrect IDE_FTFLAG_* changes which slipped in commit
-"ide: add "flagged" taskfile flags to struct ide_taskfile (v2)"
-(commit 19710d25d50ae0be05eebe4231ed8918b1092d82) few days ago.
+On Tuesday 31 March 2009, Borislav Petkov wrote:
+> Hi,
+> 
+> > > @Bart: can you take at look at this. Somehow, if the device is behind a
+> > > PCI IDE controller, the order of issuing the command and enabling DMA is
+> > > important. Seen something like that before?
+> > 
+> > Spec is unclear on the ordering but empirically it seems that some hosts
+> > may need packet command to start DMA.  I think that we should proceed with
+> > your patch (please repost with patch description) and also apply the same
+> > change to the rest of ATAPI devices in a subsequent patch.
+> 
+> Why two patches, do we really need to differentiate between ide-cd and
+> other ATAPI devices? Besides the patch is so simple: 4 lines moved up.
 
-Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
----
- drivers/ide/at91_ide.c |    6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+Good engineering practice -- we've changed only ide-cd in 2.6.29 so we
+should start with reverting the change and backporting it to -stable.
 
-Index: b/drivers/ide/at91_ide.c
-===================================================================
---- a/drivers/ide/at91_ide.c
-+++ b/drivers/ide/at91_ide.c
-@@ -192,10 +192,10 @@ static void at91_ide_tf_load(ide_drive_t
- 	struct ide_taskfile *tf = &cmd->tf;
- 	u8 HIHI = (cmd->tf_flags & IDE_TFLAG_LBA48) ? 0xE0 : 0xEF;
- 
--	if (cmd->tf_flags & IDE_FTFLAG_FLAGGED)
-+	if (cmd->ftf_flags & IDE_FTFLAG_FLAGGED)
- 		HIHI = 0xFF;
- 
--	if (cmd->tf_flags & IDE_FTFLAG_OUT_DATA) {
-+	if (cmd->ftf_flags & IDE_FTFLAG_OUT_DATA) {
- 		u16 data = (tf->hob_data << 8) | tf->data;
- 
- 		at91_ide_output_data(drive, NULL, &data, 2);
-@@ -233,7 +233,7 @@ static void at91_ide_tf_read(ide_drive_t
- 	struct ide_io_ports *io_ports = &hwif->io_ports;
- 	struct ide_taskfile *tf = &cmd->tf;
- 
--	if (cmd->tf_flags & IDE_FTFLAG_IN_DATA) {
-+	if (cmd->ftf_flags & IDE_FTFLAG_IN_DATA) {
- 		u16 data;
- 
- 		at91_ide_input_data(drive, NULL, &data, 2);
+Fixing other ATAPI devices can be handled later and preferrably after
+testing them first -- who knows if there are no devices which depend on
+the reverse order of doing things or that it won't uncover/trigger some
+other problem.  Feel free to call me (over-)paranoid... :)
+
+However based on later comments from Alan and the current libata code
+I feel that we should be pretty safe in this particular case so we may
+as well fix everything in one go.
+
+> Anyway, I lightly tested it with ide-cd and ide-floppy and both seem to
+> take it ok. Also, if I remember correctly, the original ide-cd behavior
+> was to issue the command and _then_ start DMA so we're back to that. I
+> guess now we should be concerned whether the other ATAPI devices can
+> handle the reverse situation where you first issue a command and _then_
+> start DMA.. Hmm...
+> 
+> --
+> From: Borislav Petkov <petkovbb@gmail.com>
+> Date: Tue, 31 Mar 2009 09:36:44 +0200
+> Subject: [PATCH] ide-atapi: start DMA after issuing a packet command
+> MIME-Version: 1.0
+> Content-Type: text/plain; charset=utf-8
+> Content-Transfer-Encoding: 8bit
+> 
+> Apparently¹, some ATAPI devices want to see the packet command first
+> before enabling DMA otherwise they simply hang indefinitely. Reorder the
+> two steps and start DMA only after having issued the command first.
+> 
+> [1] http://marc.info/?l=linux-kernel&m=123835520317235&w=2
+
+I added "Reported-by:" here
+
+> Signed-off-by: Borislav Petkov <petkovbb@gmail.com>
+
+applied
