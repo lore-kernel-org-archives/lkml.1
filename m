@@ -1,74 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751874AbZCaE2r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751921AbZCaEa6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751874AbZCaE2r (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Mar 2009 00:28:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751132AbZCaE2g
+	id S1751921AbZCaEa6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Mar 2009 00:30:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750766AbZCaEas
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Mar 2009 00:28:36 -0400
-Received: from serv2.oss.ntt.co.jp ([222.151.198.100]:57706 "EHLO
-	serv2.oss.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750866AbZCaE2f (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Mar 2009 00:28:35 -0400
-Message-ID: <49D19BF1.6020305@oss.ntt.co.jp>
-Date: Tue, 31 Mar 2009 13:28:33 +0900
-From: =?UTF-8?B?RmVybmFuZG8gTHVpcyBWw6F6cXVleiBDYW8=?= 
-	<fernando@oss.ntt.co.jp>
-User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
-MIME-Version: 1.0
-To: Chris Mason <chris.mason@oracle.com>
-CC: =?UTF-8?B?RmVybmFuZG8gTHVpcyBWw6F6cXVleiBDYW8=?= 
-	<flvazquez@uvigo.es>,
-       Eric Sandeen <sandeen@redhat.com>, Theodore Tso <tytso@mit.edu>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] ext4: fix blkdev_issue_flush() failure handling
-References: <200903291928.14451.bzolnier@gmail.com>	 <49CFB33A.9020406@redhat.com> <20090330022521.GB13356@mit.edu>	 <49D03AE1.8070009@redhat.com>	 <1238413667.30488.2.camel@think.oraclecorp.com> <49D0C29C.1060307@uvigo.es> <1238419459.30488.42.camel@think.oraclecorp.com>
-In-Reply-To: <1238419459.30488.42.camel@think.oraclecorp.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+	Tue, 31 Mar 2009 00:30:48 -0400
+Received: from mga11.intel.com ([192.55.52.93]:14366 "EHLO mga11.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750755AbZCaEas (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Mar 2009 00:30:48 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.38,450,1233561600"; 
+   d="scan'208";a="443498084"
+Message-Id: <20090331042208.063501000@intel.com>
+User-Agent: quilt/0.46-1
+Date: Mon, 30 Mar 2009 21:22:08 -0700
+From: fenghua.yu@intel.com
+To: Ingo Molnar <mingo@elte.hu>, David Woodhouse <dwmw2@infradead.org>,
+       Suresh Siddha <suresh.b.siddha@intel.com>,
+       Andrew Lutomirski <amluto@gmail.com>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Kyle McMartin <kyle@redhat.com>, Yinghai Lu <yinghai@kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       IOMMU <iommu@lists.linux-foundation.org>
+Subject: Re: [patch 0/4] Intel IOMMU Supspend/Resume Support  
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Chris Mason wrote:
-> On Mon, 2009-03-30 at 22:01 +0900, Fernando Luis Vázquez Cao wrote:
->> Chris Mason wrote:
->>> On Sun, 2009-03-29 at 22:22 -0500, Eric Sandeen wrote:
->>>> Theodore Tso wrote:
->>>>> On Sun, Mar 29, 2009 at 12:43:22PM -0500, Eric Sandeen wrote:
->>>>>> As long as we keep the call there this is probably good, but after
->>>>>> talking w/ Chris Mason, I think the call is extraneous anyway and should
->>>>>> probably just be removed...
->>>>>>
->>>>> Yes, I agree, but it takes a lot of digging to be completely sure of
->>>>> that it's safe to remove it.  Interestingly, it was you who added the
->>>>> patch which added the call to blkdev_issue_flush():
->>>>> commit d755fb384250d6bd7fd18a0930e71965acc8e72e
->>>>> Author: Eric Sandeen <sandeen@redhat.com>
->>>>> Date:   Fri Jul 11 19:27:31 2008 -0400
->>>> Yes, it was.  Although I got the idea when hch pointed out that SuSE did
->>>> this... thanks to Chris.  It's come full circle.  :)
->>> Grin.  I'm not sure the I_DIRTY checks alone are enough to decide that a
->>> commit is required though.  I think the inode could be clean but still
->>> have metadata that needs commit.
->> Chris, I have just sent patches that attempt to fix both ext3 and
->> ext4 while also adding a per-device sysfs knob tu disable
->> write-flushes. A previous version of this patch set added a new
->> generic mount option but comments from Christoph and others
->> convinced me to turn it into a per-device tunable. Could you take
->> a look at the patches?
 >>
-> 
-> Jens' comment are right on I think.  If we get that fixed up we can get
-> rid of all the filesystem mount -o barrier=flush,0,1,xyz confusion and
-> set it via the block devices directly.
-> 
-> That would be nice ;)
+>> The attached patch set implements the suspend and resume feature for
+>Intel
+>> IOMMU. It hooks to kernel suspend and resume interface. When suspend
+>happens, itsaves necessary hardware registers. When resume happens, it
+>restores the
+>> registers and restarts IOMMU.
+>>
+>> This patch set can be applied on the tip tree.
+>
+>Looks good to me, apart from the fact that your #4 patch actually needs
+>to come before #1. Shall I apply it to my iommu-2.6.git tree or let Ingo
+>take it? If the latter,
+>
+>Acked-by: David Woodhouse <David.Woodhouse@intel.com>
+>Acked-by: David Woodhouse <David.Woodhouse@intel.com>
+>Acked-by: David Woodhouse <David.Woodhouse@intel.com>
+>Acked-by: David Woodhouse <David.Woodhouse@intel.com>
+>
+>(if you look carefully, you'll see those are in order 4, 1, 2, 3)
+>
+>Have we tested this on IA64?
 
-Thank you for your feedback, Chris! I will address some of the issues spotted
-in the mailing list and resend the whole patch-set.
+Since ia64 platforms don't support suspend/resume, the code won't take action onia64. But it still installs unused sys device interface.
 
-Regards,
+I'll clean up the code for ia64 and re-send the patch set.
 
-Fernando
+Thanks.
+
+-Fenghua
+
+-- 
+
