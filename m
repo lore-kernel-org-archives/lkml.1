@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764396AbZCaXaB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764031AbZCaXah@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764396AbZCaXaB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Mar 2009 19:30:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763451AbZCaXUy
+	id S1764031AbZCaXah (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Mar 2009 19:30:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763520AbZCaXUz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Mar 2009 19:20:54 -0400
-Received: from sous-sol.org ([216.99.217.87]:33206 "EHLO x200.localdomain"
+	Tue, 31 Mar 2009 19:20:55 -0400
+Received: from sous-sol.org ([216.99.217.87]:33207 "EHLO x200.localdomain"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756878AbZCaXUw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Mar 2009 19:20:52 -0400
-Message-Id: <20090331231640.914632087@sous-sol.org>
+	id S1763403AbZCaXUx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Mar 2009 19:20:53 -0400
+Message-Id: <20090331231523.458171337@sous-sol.org>
 User-Agent: quilt/0.47-1
-Date: Tue, 31 Mar 2009 16:11:14 -0700
+Date: Tue, 31 Mar 2009 16:11:02 -0700
 From: Chris Wright <chrisw@sous-sol.org>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -24,13 +24,11 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Daniel Silverstone <dsilvers@simtec.co.uk>,
-       Simtec Linux Team <linux@simtec.co.uk>,
-       Vincent Sanders <vince@simtec.co.uk>,
-       Russell King <rmk+kernel@arm.linux.org.uk>
-Subject: [patch 29/45] ARM: 5428/1: Module relocation update for R_ARM_V4BX
+       alan@lxorguk.ukuu.org.uk, Bob Copeland <me@bobcopeland.com>,
+       John W Linville <linville@tuxdriver.com>
+Subject: [patch 17/45] ath5k: use spin_lock_irqsave for beacon lock
 References: <20090331231045.719396245@sous-sol.org>
-Content-Disposition: inline; filename=arm-5428-1-module-relocation-update-for-r_arm_v4bx.patch
+Content-Disposition: inline; filename=ath5k-use-spin_lock_irqsave-for-beacon-lock.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -38,57 +36,53 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 ---------------------
 
-From: Daniel Silverstone <dsilvers@simtec.co.uk>
+From: Bob Copeland <me@bobcopeland.com>
 
-upstream commit: 4731f8b66dd34ebf0e67ca6ba9162b0e509bec06
+upstream commit: b5f03956c56d72ad336e5c2c42a025f25d952c30
 
-It would seem when building kernel modules with modern binutils
-(required by modern GCC) for ARM v4T targets (specifically observed
-with the Samsung 24xx SoC which is an 920T) R_ARM_V4BX relocations
-are emitted for function epilogues.
+ath5k_reset can be called from process context, which in turn can
+call ath5k_beacon_config which takes the sc->block spinlock.  Since
+it can also be taken in hard irq context, use spin_lock_irqsave
+everywhere.  This fixes a potential deadlock in adhoc mode.
 
-This manifests at module load time with an "unknown relocation: 40"
-error message.
+Changes-licensed-under: 3-Clause-BSD
 
-The following patch adds the R_ARM_V4BX relocation to the ARM kernel
-module loader. The relocation operation is taken from that within the
-binutils bfd library.
-
-Signed-off-by: Simtec Linux Team <linux@simtec.co.uk>
-Signed-off-by: Vincent Sanders <vince@simtec.co.uk>
-Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
+Cc: stable@kernel.org
+Signed-off-by: Bob Copeland <me@bobcopeland.com>
+Signed-off-by: John W. Linville <linville@tuxdriver.com>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 ---
- arch/arm/include/asm/elf.h |    1 +
- arch/arm/kernel/module.c   |    9 +++++++++
- 2 files changed, 10 insertions(+)
+ drivers/net/wireless/ath5k/base.c |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
---- a/arch/arm/include/asm/elf.h
-+++ b/arch/arm/include/asm/elf.h
-@@ -50,6 +50,7 @@ typedef struct user_fp elf_fpregset_t;
- #define R_ARM_ABS32	2
- #define R_ARM_CALL	28
- #define R_ARM_JUMP24	29
-+#define R_ARM_V4BX	40
+--- a/drivers/net/wireless/ath5k/base.c
++++ b/drivers/net/wireless/ath5k/base.c
+@@ -1668,7 +1668,6 @@ ath5k_check_ibss_tsf(struct ath5k_softc 
+ 	}
+ }
  
- /*
-  * These are used to set parameters in the core dumps.
---- a/arch/arm/kernel/module.c
-+++ b/arch/arm/kernel/module.c
-@@ -132,6 +132,15 @@ apply_relocate(Elf32_Shdr *sechdrs, cons
- 			*(u32 *)loc |= offset & 0x00ffffff;
- 			break;
+-
+ static void
+ ath5k_tasklet_rx(unsigned long data)
+ {
+@@ -2188,6 +2187,7 @@ static void
+ ath5k_beacon_config(struct ath5k_softc *sc)
+ {
+ 	struct ath5k_hw *ah = sc->ah;
++	unsigned long flags;
  
-+	       case R_ARM_V4BX:
-+		       /* Preserve Rm and the condition code. Alter
-+			* other bits to re-code instruction as
-+			* MOV PC,Rm.
-+			*/
-+		       *(u32 *)loc &= 0xf000000f;
-+		       *(u32 *)loc |= 0x01a0f000;
-+		       break;
-+
- 		default:
- 			printk(KERN_ERR "%s: unknown relocation: %u\n",
- 			       module->name, ELF32_R_TYPE(rel->r_info));
+ 	ath5k_hw_set_imr(ah, 0);
+ 	sc->bmisscount = 0;
+@@ -2211,9 +2211,9 @@ ath5k_beacon_config(struct ath5k_softc *
+ 
+ 		if (sc->opmode == NL80211_IFTYPE_ADHOC) {
+ 			if (ath5k_hw_hasveol(ah)) {
+-				spin_lock(&sc->block);
++				spin_lock_irqsave(&sc->block, flags);
+ 				ath5k_beacon_send(sc);
+-				spin_unlock(&sc->block);
++				spin_unlock_irqrestore(&sc->block, flags);
+ 			}
+ 		} else
+ 			ath5k_beacon_update_timers(sc, -1);
 
