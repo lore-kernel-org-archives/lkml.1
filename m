@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765467AbZCaXjz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765495AbZCaXke@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765467AbZCaXjz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Mar 2009 19:39:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764337AbZCaXWv
+	id S1765495AbZCaXke (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Mar 2009 19:40:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763725AbZCaXXA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Mar 2009 19:22:51 -0400
-Received: from sous-sol.org ([216.99.217.87]:52976 "EHLO x200.localdomain"
+	Tue, 31 Mar 2009 19:23:00 -0400
+Received: from sous-sol.org ([216.99.217.87]:52980 "EHLO x200.localdomain"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1764339AbZCaXWu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Mar 2009 19:22:50 -0400
-Message-Id: <20090331231826.243558906@sous-sol.org>
+	id S1757936AbZCaXW7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Mar 2009 19:22:59 -0400
+Message-Id: <20090331231809.935405052@sous-sol.org>
 User-Agent: quilt/0.47-1
-Date: Tue, 31 Mar 2009 16:11:30 -0700
+Date: Tue, 31 Mar 2009 16:11:28 -0700
 From: Chris Wright <chrisw@sous-sol.org>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -24,11 +24,10 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Joerg Roedel <joerg.roedel@amd.com>,
-       Marcelo Tosatti <mtosatti@redhat.com>, Avi Kivity <avi@redhat.com>
-Subject: [patch 45/45] KVM: MMU: Fix another largepage memory leak
+       alan@lxorguk.ukuu.org.uk, Rusty Russell <rusty@rustcorp.com.au>
+Subject: [patch 43/45] lguest: fix spurious BUG_ON() on invalid guest stack.
 References: <20090331231045.719396245@sous-sol.org>
-Content-Disposition: inline; filename=kvm-mmu-fix-another-largepage-memory-leak.patch
+Content-Disposition: inline; filename=lguest-fix-spurious-bug_on-on-invalid-guest-stack.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -36,35 +35,34 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 ---------------------
 
-From: Joerg Roedel <joerg.roedel@amd.com>
+From: Rusty Russell <rusty@rustcorp.com.au>
 
-upstream commit: c5bc22424021cabda862727fb3f5098b866f074d
+upstream commit: 6afbdd059c27330eccbd85943354f94c2b83a7fe
 
-In the paging_fetch function rmap_remove is called after setting a large
-pte to non-present. This causes rmap_remove to not drop the reference to
-the large page. The result is a memory leak of that page.
+Impact: fix crash on misbehaving guest
 
+gpte_addr() contains a BUG_ON(), insisting that the present flag is
+set.  We need to return before we call it if that isn't the case.
+
+Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
 Cc: stable@kernel.org
-Signed-off-by: Joerg Roedel <joerg.roedel@amd.com>
-Acked-by: Marcelo Tosatti <mtosatti@redhat.com>
-Signed-off-by: Avi Kivity <avi@redhat.com>
-[chrisw: backport to 2.6.29]
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 ---
- arch/x86/kvm/paging_tmpl.h |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/lguest/page_tables.c |    4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
---- a/arch/x86/kvm/paging_tmpl.h
-+++ b/arch/x86/kvm/paging_tmpl.h
-@@ -314,9 +314,9 @@ static int FNAME(shadow_walk_entry)(stru
- 		return 0;
+--- a/drivers/lguest/page_tables.c
++++ b/drivers/lguest/page_tables.c
+@@ -373,8 +373,10 @@ unsigned long guest_pa(struct lg_cpu *cp
+ 	/* First step: get the top-level Guest page table entry. */
+ 	gpgd = lgread(cpu, gpgd_addr(cpu, vaddr), pgd_t);
+ 	/* Toplevel not present?  We can't map it in. */
+-	if (!(pgd_flags(gpgd) & _PAGE_PRESENT))
++	if (!(pgd_flags(gpgd) & _PAGE_PRESENT)) {
+ 		kill_guest(cpu, "Bad address %#lx", vaddr);
++		return -1UL;
++	}
  
- 	if (is_large_pte(*sptep)) {
-+		rmap_remove(vcpu->kvm, sptep);
- 		set_shadow_pte(sptep, shadow_trap_nonpresent_pte);
- 		kvm_flush_remote_tlbs(vcpu->kvm);
--		rmap_remove(vcpu->kvm, sptep);
- 	}
- 
- 	if (level == PT_DIRECTORY_LEVEL && gw->level == PT_DIRECTORY_LEVEL) {
+ 	gpte = lgread(cpu, gpte_addr(gpgd, vaddr), pte_t);
+ 	if (!(pte_flags(gpte) & _PAGE_PRESENT))
 
