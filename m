@@ -1,89 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763010AbZCaVUO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760521AbZCaVZk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763010AbZCaVUO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Mar 2009 17:20:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752319AbZCaVT7
+	id S1760521AbZCaVZk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Mar 2009 17:25:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751858AbZCaVZa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Mar 2009 17:19:59 -0400
-Received: from www84.your-server.de ([213.133.104.84]:36395 "EHLO
-	www84.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751043AbZCaVT6 (ORCPT
+	Tue, 31 Mar 2009 17:25:30 -0400
+Received: from 136-022.dsl.LABridge.com ([206.117.136.22]:1879 "EHLO
+	mail.perches.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751219AbZCaVZa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Mar 2009 17:19:58 -0400
-Subject: Re: Detailed Stack Information Patch [0/3]
-From: Stefani Seibold <stefani@seibold.net>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
-       Joerg Engel <joern@logfs.org>
-In-Reply-To: <20090331203014.GR11935@one.firstfloor.org>
-References: <1238511498.364.60.camel@matrix>
-	 <87eiwdn15a.fsf@basil.nowhere.org> <1238523735.3692.30.camel@matrix>
-	 <20090331203014.GR11935@one.firstfloor.org>
+	Tue, 31 Mar 2009 17:25:30 -0400
+Subject: Re: [PATCH 0/8] MAINTAINERS - add script and patterns
+From: Joe Perches <joe@perches.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: torvalds@linux-foundation.org, linux-kernel@vger.kernel.org, pavel@ucw.cz
+In-Reply-To: <20090330135315.a05854da.akpm@linux-foundation.org>
+References: <1237331969-28565-1-git-send-email-joe@perches.com>
+	 <20090330135315.a05854da.akpm@linux-foundation.org>
 Content-Type: text/plain
-Date: Tue, 31 Mar 2009 23:25:09 +0200
-Message-Id: <1238534709.11837.43.camel@matrix>
+Date: Tue, 31 Mar 2009 14:24:08 -0700
+Message-Id: <1238534648.9715.306.camel@localhost>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 
+X-Mailer: Evolution 2.24.2-1.2mdv2009.0 
 Content-Transfer-Encoding: 7bit
-X-Authenticated-Sender: stefani@seibold.net
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Andi,
+On Mon, 2009-03-30 at 13:53 -0700, Andrew Morton wrote:
+> Will that be OK?  Will the tool still work OK is MAITNAINERS is a bit
+> wrong?
 
-stop complaining about the monitor. This is only an additional
-functionality.
+More or less.  By default it will still use git
+"-by:" signers.  More pattern coverage is better.
 
-The main purpose are part 1 and 2.
+> Is the tool capable of detecting misformatted MAINTAINERS entries?  If
+> so, that would help long-term maintenance a lot.
 
+Not really.
+
+The MAINTAINERS file format is weakly specified.
+
+I have a separate script that looks for patterns
+that have no file matches and sections that have
+no patterns.
+
+Any suggestions?
+
+btw: I did not do any patterns for ARM or PowerPC.
+Of course those could be added in the future.
+
+> I never have seen [patch 2/8] because the linux-foundation mail server
+> thinks it's spam.
+
+Actually, if the mail server is to be believed, the
+MAINTAINERS file already contains a SPAM URI and
+could be rejected if you sent it to yourself as-is.
+
+On Tue, 2009-03-17 at 15:22 -0800, Mail Delivery Subsystem wrote:
+>    ----- The following addresses...
+> <torvalds@linux-foundation.org>
+> <akpm@linux-foundation.org>
 > 
-> Well some implementation of it. There are certainly runtimes that
-> switch stacks. For example what happens when someone uses sigaltstack()?
-> 
+>    ----- Transcript of session follows -----
+> ... while talking to smtp1.linux-foundation.org.:
+> >>> DATA
+> <<< 451 4.3.2 Please try again later
+> ... while talking to smtp2.linux-foundation.org.:
+> >>> DATA
+> <<< 554 5.7.1 Email body contains Spam URI
+> 554 <akpm@linux-foundation.org>,<torvalds@linux-foundation.org>... Service unavailable
 
-What should happen with sigaltstack? This is complete independent from
-the process and thread stack. So it works.
+> So if all the above looks OK then please resend
+> everything (yet again) to akpm@kernel.org.
 
-
-> That's the alloca() case, but you can disable both with the right options.
-> There's still the "recursive function" case.
-> 
-
-And no idea ;-) 
-
-> > 
-> > The Monitor is part 3/3. And you are right it is not a complete rock
-> > solid solution. But it works in many cases and thats is what counts.
-> 
-> For stack overflow one would think a rock solid solution
-> is needed?  After all you'll crash if you miss a case.
-> 
-
-Again, the monitor is the only a part of the patch and i know that this
-is a issue.
-
-The first two patches will also work without the monitor and if you
-don't like the monitor, no problem. It is a CONFIG_... parameter.
-
-> To be honest it seems too much like a special case hack to me
-> to include by default. It could be probably done with a systemtap
-> script in the same way, but I would really recommend to just
-> build with gcc's stack overflow checker while testing together
-> with static checking.
-> 
-
-Thanks for the hack - I am not sure if you really had a look at my first
-posting nor had a look into my code.
-
-We discus about complete different things. You have from user land no
-possibility to figure out where is the thread stack locate nor what was
-the highest used thread stack address.
-
-That is a simple debug information which can provide very easily which
-the first two patches.
-
-Stefani
+Do you want me to wait for RC1 when most of the
+MAINTAINERS changes should be done or do you want
+it now?
 
 
