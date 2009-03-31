@@ -1,204 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758154AbZCaMki@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758229AbZCaMlo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758154AbZCaMki (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Mar 2009 08:40:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756152AbZCaMk2
+	id S1758229AbZCaMlo (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Mar 2009 08:41:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755749AbZCaMle
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Mar 2009 08:40:28 -0400
-Received: from mail-bw0-f169.google.com ([209.85.218.169]:61578 "EHLO
-	mail-bw0-f169.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755835AbZCaMk0 convert rfc822-to-8bit (ORCPT
+	Tue, 31 Mar 2009 08:41:34 -0400
+Received: from ti-out-0910.google.com ([209.85.142.187]:35687 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752382AbZCaMld (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Mar 2009 08:40:26 -0400
+	Tue, 31 Mar 2009 08:41:33 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :content-type:content-transfer-encoding;
-        b=CrOHouRnpys5GO3Ghz6gra5TqmlQUxT2sKrxT1P/LJPlb4aokzyO0sevkdhMrQkHbF
-         wVxJTrXBUPwwGQ3Kf87Ws4psgpByMxgNt9irxVWpZ7y0tYYqZZqMe3SyCXWXNpjExVwl
-         gvS7SsEKEoDJIMWneYbXnT3vow0U0y0fBW3Pk=
-MIME-Version: 1.0
-In-Reply-To: <20090331123320.GC13356@mit.edu>
-References: <E1LT8MN-0003Ps-Ur@closure.thunk.org>
-	 <20090211075914.GC20842@skywalker>
-	 <20090211153328.37ef255f@dhcp-100-2-144.bos.redhat.com>
-	 <20090212211935.GE6922@mini-me.lan>
-	 <20090216163507.1e73f452@dhcp-100-2-144.bos.redhat.com>
-	 <b637ec0b0903310502q56fc82eeobd5f62d24a367ac4@mail.gmail.com>
-	 <20090331123320.GC13356@mit.edu>
-Date: Tue, 31 Mar 2009 14:40:22 +0200
-Message-ID: <b637ec0b0903310540s10ddfdb3vcf8e419ebffa09f9@mail.gmail.com>
-Subject: Re: Ext4 tree backports for 2.6.27.13 and 2.6.28.2
-From: Fabio Comolli <fabio.comolli@gmail.com>
-To: Theodore Tso <tytso@mit.edu>, Fabio Comolli <fabio.comolli@gmail.com>,
-       Chuck Ebbert <cebbert@redhat.com>,
-       "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
-       linux-ext4@vger.kernel.org, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=d5b8Buh49GOs7eG0ncXZEpIuUp1Fp5lFIHzwgFJmHu4GEN6smrlI3ZwZlCCYRltzlp
+         /Orn+P/wvx9s3dOiO7/EHqguoA71zGd12qMpyZSHGD5Z1UE4hOTsaxlfP9bpJ+SAYOo2
+         hhVUcSsgdYOfGofHoHMyHSreFVFewAdQ/r8XM=
+From: Huang Weiyi <weiyi.huang@gmail.com>
+To: mingo@elte.hu, hpa@zytor.com
+Cc: linux-kernel@vger.kernel.org, Huang Weiyi <weiyi.huang@gmail.com>
+Subject: [PATCH 2/3] x86, mce: remove duplicated #include
+Date: Tue, 31 Mar 2009 20:41:26 +0800
+Message-Id: <1238503286-3736-1-git-send-email-weiyi.huang@gmail.com>
+X-Mailer: git-send-email 1.6.0.4
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-OK. Now I have on my box the 2.6.27.19 kernel. Do you mean that I have
-to apply 19->20, 20->21 and then this patch?
+Remove duplicated #include in arch/x86/kernel/cpu/mcheck/mce_intel_64.c.
 
-Then mount the fs as ext4dev?
+Signed-off-by: Huang Weiyi <weiyi.huang@gmail.com>
+---
+ arch/x86/kernel/cpu/mcheck/mce_intel_64.c |    1 -
+ 1 files changed, 0 insertions(+), 1 deletions(-)
 
-Thanks,
-Fabio
+diff --git a/arch/x86/kernel/cpu/mcheck/mce_intel_64.c b/arch/x86/kernel/cpu/mcheck/mce_intel_64.c
+index 57df3d3..552279f 100644
+--- a/arch/x86/kernel/cpu/mcheck/mce_intel_64.c
++++ b/arch/x86/kernel/cpu/mcheck/mce_intel_64.c
+@@ -15,7 +15,6 @@
+ #include <asm/hw_irq.h>
+ #include <asm/idle.h>
+ #include <asm/therm_throt.h>
+-#include <asm/apic.h>
+ 
+ asmlinkage void smp_thermal_interrupt(void)
+ {
+-- 
+1.6.0.4
 
-On Tue, Mar 31, 2009 at 2:33 PM, Theodore Tso <tytso@mit.edu> wrote:
-> On Tue, Mar 31, 2009 at 02:02:26PM +0200, Fabio Comolli wrote:
->> Is there a patch for 2.6.27.X for people not using git?
->
-> These patches that were referenced in the mail thread which you
-> replied against have already been integrated into the latest 2.6.27.X
-> series.
->
-> There is another batch of patches which is being queued for the stable
-> series, which I sent out last week.  The for-stable branch and
-> for-stable-2.6.27 branches are for people to do a final round of
-> testing before I submit them to the stable series.  At the moment,
-> they are only available via git, but usually after a week or so, I'll
-> send them out to stable@kernel.org, and then usually within a week or
-> so (unless Greg and Chris are travelling), a new stable series shows
-> up with the latest ext4 bug fixes.
->
-> If you really are interested in testing the latest pre-release stable
-> patches for 2.6.27 --- these are versus 2.6.27.20, they're small
-> enough that I'll include them here.
->
->                                                - Ted
->
-> Eric Sandeen (4):
->      ext4: fix ext4_free_inode() vs. ext4_claim_inode() race
->      ext4: fix header check in ext4_ext_search_right() for deep extent trees.
->      ext4: fix bogus BUG_ONs in in mballoc code
->      ext4: fix bb_prealloc_list corruption due to wrong group locking
->
-> Theodore Ts'o (1):
->      ext4: Print the find_group_flex() warning only once
->
->  fs/ext4/extents.c |    6 ++++--
->  fs/ext4/ialloc.c  |   16 ++++++++++------
->  fs/ext4/mballoc.c |   13 +++++++++----
->  3 files changed, 23 insertions(+), 12 deletions(-)
-> diff --git a/fs/ext4/extents.c b/fs/ext4/extents.c
-> index b24d3c5..acb98c9 100644
-> --- a/fs/ext4/extents.c
-> +++ b/fs/ext4/extents.c
-> @@ -1118,7 +1118,8 @@ ext4_ext_search_right(struct inode *inode, struct ext4_ext_path *path,
->        struct ext4_extent_idx *ix;
->        struct ext4_extent *ex;
->        ext4_fsblk_t block;
-> -       int depth, ee_len;
-> +       int depth;      /* Note, NOT eh_depth; depth from top of tree */
-> +       int ee_len;
->
->        BUG_ON(path == NULL);
->        depth = path->p_depth;
-> @@ -1177,7 +1178,8 @@ ext4_ext_search_right(struct inode *inode, struct ext4_ext_path *path,
->                if (bh == NULL)
->                        return -EIO;
->                eh = ext_block_hdr(bh);
-> -               if (ext4_ext_check_header(inode, eh, depth)) {
-> +               /* subtract from p_depth to get proper eh_depth */
-> +               if (ext4_ext_check_header(inode, eh, path->p_depth - depth)) {
->                        put_bh(bh);
->                        return -EIO;
->                }
-> diff --git a/fs/ext4/ialloc.c b/fs/ext4/ialloc.c
-> index cce841f..b9457e1 100644
-> --- a/fs/ext4/ialloc.c
-> +++ b/fs/ext4/ialloc.c
-> @@ -188,7 +188,7 @@ void ext4_free_inode (handle_t *handle, struct inode * inode)
->        struct ext4_group_desc * gdp;
->        struct ext4_super_block * es;
->        struct ext4_sb_info *sbi;
-> -       int fatal = 0, err;
-> +       int fatal = 0, err, cleared;
->        ext4_group_t flex_group;
->
->        if (atomic_read(&inode->i_count) > 1) {
-> @@ -242,10 +242,12 @@ void ext4_free_inode (handle_t *handle, struct inode * inode)
->                goto error_return;
->
->        /* Ok, now we can actually update the inode bitmaps.. */
-> -       if (!ext4_clear_bit_atomic(sb_bgl_lock(sbi, block_group),
-> -                                       bit, bitmap_bh->b_data))
-> -               ext4_error (sb, "ext4_free_inode",
-> -                             "bit already cleared for inode %lu", ino);
-> +       spin_lock(sb_bgl_lock(sbi, block_group));
-> +       cleared = ext4_clear_bit(bit, bitmap_bh->b_data);
-> +       spin_unlock(sb_bgl_lock(sbi, block_group));
-> +       if (!cleared)
-> +               ext4_error(sb, "ext4_free_inode",
-> +                          "bit already cleared for inode %lu", ino);
->        else {
->                gdp = ext4_get_group_desc (sb, block_group, &bh2);
->
-> @@ -685,6 +687,7 @@ struct inode *ext4_new_inode(handle_t *handle, struct inode * dir, int mode)
->        struct inode *ret;
->        ext4_group_t i;
->        int free = 0;
-> +       static int once = 1;
->        ext4_group_t flex_group;
->
->        /* Cannot create files in a deleted directory */
-> @@ -704,7 +707,8 @@ struct inode *ext4_new_inode(handle_t *handle, struct inode * dir, int mode)
->                ret2 = find_group_flex(sb, dir, &group);
->                if (ret2 == -1) {
->                        ret2 = find_group_other(sb, dir, &group);
-> -                       if (ret2 == 0 && printk_ratelimit())
-> +                       if (ret2 == 0 && once)
-> +                               once = 0;
->                                printk(KERN_NOTICE "ext4: find_group_flex "
->                                       "failed, fallback succeeded dir %lu\n",
->                                       dir->i_ino);
-> diff --git a/fs/ext4/mballoc.c b/fs/ext4/mballoc.c
-> index 39d7cc1..f34dada 100644
-> --- a/fs/ext4/mballoc.c
-> +++ b/fs/ext4/mballoc.c
-> @@ -1450,7 +1450,7 @@ static void ext4_mb_measure_extent(struct ext4_allocation_context *ac,
->        struct ext4_free_extent *gex = &ac->ac_g_ex;
->
->        BUG_ON(ex->fe_len <= 0);
-> -       BUG_ON(ex->fe_len >= EXT4_BLOCKS_PER_GROUP(ac->ac_sb));
-> +       BUG_ON(ex->fe_len > EXT4_BLOCKS_PER_GROUP(ac->ac_sb));
->        BUG_ON(ex->fe_start >= EXT4_BLOCKS_PER_GROUP(ac->ac_sb));
->        BUG_ON(ac->ac_status != AC_STATUS_CONTINUE);
->
-> @@ -3400,7 +3400,7 @@ ext4_mb_normalize_request(struct ext4_allocation_context *ac,
->        }
->        BUG_ON(start + size <= ac->ac_o_ex.fe_logical &&
->                        start > ac->ac_o_ex.fe_logical);
-> -       BUG_ON(size <= 0 || size >= EXT4_BLOCKS_PER_GROUP(ac->ac_sb));
-> +       BUG_ON(size <= 0 || size > EXT4_BLOCKS_PER_GROUP(ac->ac_sb));
->
->        /* now prepare goal request */
->
-> @@ -3698,6 +3698,7 @@ static void ext4_mb_put_pa(struct ext4_allocation_context *ac,
->                        struct super_block *sb, struct ext4_prealloc_space *pa)
->  {
->        unsigned long grp;
-> +       ext4_fsblk_t grp_blk;
->
->        if (!atomic_dec_and_test(&pa->pa_count) || pa->pa_free != 0)
->                return;
-> @@ -3712,8 +3713,12 @@ static void ext4_mb_put_pa(struct ext4_allocation_context *ac,
->        pa->pa_deleted = 1;
->        spin_unlock(&pa->pa_lock);
->
-> -       /* -1 is to protect from crossing allocation group */
-> -       ext4_get_group_no_and_offset(sb, pa->pa_pstart - 1, &grp, NULL);
-> +       grp_blk = pa->pa_pstart;
-> +       /* If linear, pa_pstart may be in the next group when pa is used up */
-> +       if (pa->pa_linear)
-> +               grp_blk--;
-> +
-> +       ext4_get_group_no_and_offset(sb, grp_blk, &grp, NULL);
->
->        /*
->         * possible race:
->
