@@ -1,72 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759607AbZCaNcP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759995AbZCaNcf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759607AbZCaNcP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Mar 2009 09:32:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759463AbZCaNbn
+	id S1759995AbZCaNcf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Mar 2009 09:32:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759259AbZCaNcO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Mar 2009 09:31:43 -0400
-Received: from mga09.intel.com ([134.134.136.24]:29456 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759398AbZCaNbm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Mar 2009 09:31:42 -0400
+	Tue, 31 Mar 2009 09:32:14 -0400
+Received: from mga05.intel.com ([192.55.52.89]:48558 "EHLO
+	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1759421AbZCaNcM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Mar 2009 09:32:12 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.38,453,1233561600"; 
-   d="scan'208";a="502280560"
-Date: Tue, 31 Mar 2009 15:31:27 +0200
-From: Markus Metzger <markus.t.metzger@intel.com>
-To: linux-kernel@vger.kernel.org, mingo@elte.hu, tglx@linutronix.de,
-       hpa@zytor.com
-Cc: markus.t.metzger@intel.com, markus.t.metzger@gmail.com, roland@redhat.com,
-       eranian@googlemail.com, oleg@redhat.com, juan.villacis@intel.com,
-       ak@linux.jf.intel.com
-Subject: [patch 14/21] x86, ds: fix bounds check in ds selftest
-Message-ID: <20090331153127.A13255@sedona.ch.intel.com>
-Mime-Version: 1.0
+   d="scan'208";a="443612204"
+Date: Tue, 31 Mar 2009 15:34:17 +0200
+From: Samuel Ortiz <sameo@openedhand.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>,
+       Tobias Klauser <tklauser@distanz.ch>,
+       Philipp Zabel <philipp.zabel@gmail.com>,
+       Huang Weiyi <weiyi.huang@gmail.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [GIT] MFD pull request
+Message-ID: <20090331123021.GB4612@sortiz.org>
+Reply-To: Samuel Ortiz <sameo@openedhand.com>
+References: <20090331113648.GA4612@sortiz.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.2.5i
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <20090331113648.GA4612@sortiz.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix a bad bounds check in the debug store selftest.
+Forgot to cc lkml...sorry about that.
 
+On Tue, Mar 31, 2009 at 01:36:48PM +0200, Samuel Ortiz wrote:
+> Hi Linus,
+> 
+> Here are a few mfd updates for the rc1. Nothing outstanding, just the regular
+> WM835x updates and some DS1WM and PASIC3 changes.
+> This is my last pull request from git.o-hand.com. I moved the mfd tree to
+> git.kernel.org, as specified in the MAINTAINERS changes.
+> 
+> Thanks in advance for pullling.
+> 
+> The following changes since commit 15f7176eb1cccec0a332541285ee752b935c1c85:
+>   Linus Torvalds (1):
+>         Merge git://git.kernel.org/.../davem/net-2.6
+> 
+> are available in the git repository at:
+> 
+>   git://git.o-hand.com/linux-mfd for-next
+> 
+> Huang Weiyi (1):
+>       mfd: remove duplicated #include from pcf50633
+> 
+> Mark Brown (3):
+>       mfd: Use bulk read to fill WM8350 register cache
+>       mfd: Support active high IRQs on WM835x
+>       mfd: Use the value of the final spin when reading the AUXADC
+> 
+> Philipp Zabel (6):
+>       mfd: convert DS1WM to use MFD core
+>       mfd: convert PASIC3 to use MFD core
+>       pxa/magician: remove deprecated .bus_shift from PASIC3 platform_data
+>       mfd: remove unused PASIC3 bus_shift field
+>       mfd: remove DS1WM clock handling
+>       mfd: PASIC3: supply clock_rate to DS1WM via driver_data
+> 
+> Samuel Ortiz (2):
+>       mfd: fix MAINTAINERS entry
+>       mfd: fix da903x warning
+> 
+> Tobias Klauser (1):
+>       mfd: Storage class should be before const qualifier
+> 
+>  MAINTAINERS                     |    3 +-
+>  arch/arm/mach-pxa/magician.c    |    1 -
+>  drivers/mfd/Kconfig             |    1 +
+>  drivers/mfd/da903x.c            |    2 +-
+>  drivers/mfd/htc-pasic3.c        |  169 ++++++++++++++++-----------------------
+>  drivers/mfd/pcf50633-core.c     |    1 -
+>  drivers/mfd/t7l66xb.c           |    4 +-
+>  drivers/mfd/tc6393xb.c          |    2 +-
+>  drivers/mfd/twl4030-irq.c       |    2 +-
+>  drivers/mfd/wm8350-core.c       |   39 +++++++---
+>  drivers/w1/masters/ds1wm.c      |   58 ++++++-------
+>  include/linux/ds1wm.h           |   12 ---
+>  include/linux/mfd/ds1wm.h       |    6 ++
+>  include/linux/mfd/htc-pasic3.h  |    1 -
+>  include/linux/mfd/wm8350/core.h |    2 +
+>  15 files changed, 139 insertions(+), 164 deletions(-)
+>  delete mode 100644 include/linux/ds1wm.h
+>  create mode 100644 include/linux/mfd/ds1wm.h
+> 
+> -- 
+> Intel Open Source Technology Centre
+> http://oss.intel.com/
 
-Signed-off-by: Markus Metzger <markus.t.metzger@intel.com>
----
-
-Index: git-tip/arch/x86/kernel/ds_selftest.c
-===================================================================
---- git-tip.orig/arch/x86/kernel/ds_selftest.c	2009-03-30 19:12:32.000000000 +0200
-+++ git-tip/arch/x86/kernel/ds_selftest.c	2009-03-30 19:12:43.000000000 +0200
-@@ -55,8 +55,13 @@ static int ds_selftest_bts_consistency(c
- 		printk(KERN_CONT "bad bts buffer setup...");
- 		error = -1;
- 	}
-+	/*
-+	 * We allow top in [begin; end], since its not clear when the
-+	 * overflow adjustment happens: after the increment or before the
-+	 * write.
-+	 */
- 	if ((trace->ds.top < trace->ds.begin) ||
--	    (trace->ds.end <= trace->ds.top)) {
-+	    (trace->ds.end < trace->ds.top)) {
- 		printk(KERN_CONT "bts top out of bounds...");
- 		error = -1;
- 	}
----------------------------------------------------------------------
-Intel GmbH
-Dornacher Strasse 1
-85622 Feldkirchen/Muenchen Germany
-Sitz der Gesellschaft: Feldkirchen bei Muenchen
-Geschaeftsfuehrer: Douglas Lusk, Peter Gleissner, Hannes Schwaderer
-Registergericht: Muenchen HRB 47456 Ust.-IdNr.
-VAT Registration No.: DE129385895
-Citibank Frankfurt (BLZ 502 109 00) 600119052
-
-This e-mail and any attachments may contain confidential material for
-the sole use of the intended recipient(s). Any review or distribution
-by others is strictly prohibited. If you are not the intended
-recipient, please contact the sender and delete all copies.
-
+-- 
+Intel Open Source Technology Centre
+http://oss.intel.com/
