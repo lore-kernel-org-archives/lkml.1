@@ -1,55 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763552AbZCaWr1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763409AbZCaWu7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763552AbZCaWr1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Mar 2009 18:47:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757344AbZCaWrP
+	id S1763409AbZCaWu7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Mar 2009 18:50:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756815AbZCaWur
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Mar 2009 18:47:15 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:59322 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753592AbZCaWrN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Mar 2009 18:47:13 -0400
-Date: Tue, 31 Mar 2009 15:43:14 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Trond Myklebust <Trond.Myklebust@netapp.com>
-cc: linux-nfs@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org, viro@zeniv.linux.org.uk,
-       hch@infradead.org
+	Tue, 31 Mar 2009 18:50:47 -0400
+Received: from mx2.netapp.com ([216.240.18.37]:16091 "EHLO mx2.netapp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754023AbZCaWuq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Mar 2009 18:50:46 -0400
+X-IronPort-AV: E=Sophos;i="4.39,304,1235980800"; 
+   d="scan'208";a="148463056"
 Subject: Re: [PATCH 1/4] VFS: Add a VFS helper function
  vfs_remote_path_lookup()
+From: Trond Myklebust <Trond.Myklebust@netapp.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-nfs@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, viro@zeniv.linux.org.uk,
+       hch@infradead.org
 In-Reply-To: <1238539079.28445.103.camel@heimdal.trondhjem.org>
-Message-ID: <alpine.LFD.2.00.0903311540120.6474@localhost.localdomain>
-References: <cover.1238525532.git.Trond.Myklebust@netapp.com>  <3f1264127d431f695be25b940b477e3d287edc68.1238525532.git.Trond.Myklebust@netapp.com>  <alpine.LFD.2.00.0903311423280.6474@localhost.localdomain>
- <1238539079.28445.103.camel@heimdal.trondhjem.org>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+References: <cover.1238525532.git.Trond.Myklebust@netapp.com>
+	 <3f1264127d431f695be25b940b477e3d287edc68.1238525532.git.Trond.Myklebust@netapp.com>
+	 <alpine.LFD.2.00.0903311423280.6474@localhost.localdomain>
+	 <1238539079.28445.103.camel@heimdal.trondhjem.org>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Organization: NetApp
+Date: Tue, 31 Mar 2009 18:49:49 -0400
+Message-Id: <1238539789.28445.105.camel@heimdal.trondhjem.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.0 
+X-OriginalArrivalTime: 31 Mar 2009 22:50:39.0644 (UTC) FILETIME=[1D10CDC0:01C9B253]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Tue, 31 Mar 2009, Trond Myklebust wrote:
+On Tue, 2009-03-31 at 18:38 -0400, Trond Myklebust wrote:
+> On Tue, 2009-03-31 at 14:40 -0700, Linus Torvalds wrote:
+> > 
+> > On Wed, 11 Mar 2009, Trond Myklebust wrote:
+> > >
+> > > This patch therefore defines a VFS helper function that sets up a temporary
+> > > mount namespace to represent the server namespace, and has the current
+> > > task pivot into that prior to doing the path lookup. Upon completion, it
+> > > pivots back into the original namespace, and destroys the private one.
+> > 
+> > This is disgusting.
+> > 
+> > Why don't you just create the namespace once?
+> > 
+> > Also, why do you need that disgusting pivot thing, when we could instead 
+> > trivially just add a 
+> > 
+> > 	struct filesystem *fs;
+> > 
+> > into the nameidata, and then we can initialize it to
+> > 
+> > 	nd->fs = current->fs
+> > 
+> > and make all the path walkers use that.
+> > 
+> > Or we could even try to clean up that horrid AT_FDCWD mess, and drop the 
+> > whole "dfd" passing to "do_path_lookup()", and instead do
+> > 
+> > 	rwlock_t *lock;
+> > 	struct path *root, *pwd;
+> > 
+> > and do
+> > 
+> > 	nd->lock = &current->fs->lock;
+> > 	nd->root = &current->fs->root;
+> > 	nd->pwd =  &current->fs->pwd;
+> > 
+> > to initialize things. Then drop dfd as an argument entirely from 
+> > path_lookup_open() and do_path_lookup(), and just have the caller 
+> > initialize the nameidata (the only caller that doesn't use fs->pwd 
+> > currently is do_filp_open(), which takes that 'dfd' and could just 
+> > initialize nd->pwd to the right thing.
+> 
+> I'd be fine with that.
+> 
+> > I dunno. This is very Al Viroish country, but I really hate how your patch 
+> > looks. 99% of it is just working around the fact that you want some very 
+> > _slight_ differences to how that special '/' thing is handled.
 > 
 > No. The main purpose is to able to look up and walk down an NFSv4 mount
 > path, which is a path on the _server_'s file/directory namespace.
-
-Sure, but that's not the "swizzle" part.
-
-If it was just abotu the namespace part, then you'd just do one namespace 
-per server, and be done with it.
-
-So if you split that function up into a sepate
- - allocate namespace for nfsd
- - free nfsd namespace
- - do the lookup
-
-then really _all_ the extraneous code comes just from that "playing games 
-with it" swizzling part.
-
+> In order to be able to follow any valid mount path that the user
+> supplies, we need the ability to follow symlinks, cross mount points and
+> even cross NFSv4 referrals (i.e. afs-like junctions that point to paths
+> on a different server).
+> 
+> Under normal path walking we use the 'follow_link()' method of
+> autogenerating mountpoints (see
+> Documentation/filesystems/automount-support.txt) when we come across
+> mount points or referrals on the server. If you are walking a path that
+> is not supposed to be visible to user processes, you therefore need a
+> private namespace.
+> 
+> > It's not worth doing these kinds of hacks for that.
+> > 
 > > And I think it's positively _wrong_ to have a function that creates and 
 > > destroys the whole "struct fs_struct" and a namespace for just one call. 
 > > Even if you don't think it's at all performance-critical, the interface is 
@@ -60,7 +110,14 @@ with it" swizzling part.
 > was to be able, once the sys_mount() is complete, to garbage collect and
 > get rid of those autogenerated mount points that are not user visible.
 
-So there is never any reason to do that nfsd-specific pathwalk at 
-run-time? There are no "server pwd" requests that clients can do?
+I meant to say "...the main reason for destroying the namespace"...
 
-		Linus
+Cheers
+  Trond
+-- 
+Trond Myklebust
+Linux NFS client maintainer
+
+NetApp
+Trond.Myklebust@netapp.com
+www.netapp.com
