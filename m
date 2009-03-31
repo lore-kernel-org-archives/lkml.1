@@ -1,42 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759480AbZCaU3p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760613AbZCaUab@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759480AbZCaU3p (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Mar 2009 16:29:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751397AbZCaU3f
+	id S1760613AbZCaUab (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Mar 2009 16:30:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754289AbZCaUaJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Mar 2009 16:29:35 -0400
-Received: from jurassic.park.msu.ru ([195.208.223.243]:55217 "EHLO
-	jurassic.park.msu.ru" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751252AbZCaU3e (ORCPT
+	Tue, 31 Mar 2009 16:30:09 -0400
+Received: from victor.provo.novell.com ([137.65.250.26]:58426 "EHLO
+	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751397AbZCaUaH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Mar 2009 16:29:34 -0400
-Date: Wed, 1 Apr 2009 00:29:39 +0400
-From: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
-To: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Cc: Tejun Heo <tj@kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       rusty@rustcorp.com.au, tglx@linutronix.de, x86@kernel.org,
-       linux-kernel@vger.kernel.org, hpa@zytor.com,
-       Paul Mundt <lethal@linux-sh.org>, rmk@arm.linux.org.uk,
-       starvik@axis.com, ralf@linux-mips.org, davem@davemloft.net,
-       cooloney@kernel.org, kyle@mcmartin.ca, matthew@wil.cx,
-       grundler@parisc-linux.org, takata@linux-m32r.org,
-       benh@kernel.crashing.org, rth@twiddle.net, heiko.carstens@de.ibm.com
-Subject: Re: [GIT RFC] percpu: use dynamic percpu allocator as the default
-	percpu allocator
-Message-ID: <20090331202937.GA8354@jurassic.park.msu.ru>
-References: <49CA1AC3.9080908@kernel.org> <20090325122241.GE11571@elte.hu> <49CA2345.70204@kernel.org> <20090325141330.2717dc97@skybase> <49CA2FBF.9000207@kernel.org> <20090325142525.2d31c522@skybase> <49CA32F6.2030408@kernel.org> <20090331185431.72ff1707@skybase> <20090331191703.GA8250@jurassic.park.msu.ru> <20090331221937.1cf4e29a@skybase>
+	Tue, 31 Mar 2009 16:30:07 -0400
+Message-ID: <49D27DD3.5080609@novell.com>
+Date: Tue, 31 Mar 2009 16:32:19 -0400
+From: Gregory Haskins <ghaskins@novell.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090331221937.1cf4e29a@skybase>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+To: Avi Kivity <avi@redhat.com>
+CC: linux-kernel@vger.kernel.org, agraf@suse.de, pmullaney@novell.com,
+       pmorreale@novell.com, anthony@codemonkey.ws, rusty@rustcorp.com.au,
+       netdev@vger.kernel.org, kvm@vger.kernel.org
+Subject: Re: [RFC PATCH 15/17] kvm: add dynamic IRQ support
+References: <20090331184057.28333.77287.stgit@dev.haskins.net> <20090331184405.28333.59205.stgit@dev.haskins.net> <49D26CFE.1060700@redhat.com> <49D2718F.9070203@novell.com> <49D27950.9020801@redhat.com>
+In-Reply-To: <49D27950.9020801@redhat.com>
+X-Enigmail-Version: 0.95.7
+OpenPGP: id=D8195319
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enigDFA0C49CA6F4D0EA40ADD7FF"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Mar 31, 2009 at 10:19:37PM +0200, Martin Schwidefsky wrote:
-> Ok, cool. May I add an Acked-by?
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enigDFA0C49CA6F4D0EA40ADD7FF
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-Yes, sure.
+Avi Kivity wrote:
+> Gregory Haskins wrote:
+>>> - works with all guests
+>>> - supports hotplug/hotunplug, udev, sysfs, module autoloading, ...
+>>> - supported in all OSes
+>>> - someone else maintains it
+>>>    =20
+>> These points are all valid, and I really struggled with this particula=
+r
+>> part of the design.  The entire vbus design only requires one IRQ for
+>> the entire guest,
+>
+> Won't this have scaling issues?  One IRQ means one target vcpu.=20
+> Whereas I'd like virtio devices to span multiple queues, each queue
+> with its own MSI IRQ.
+Hmm..you know I hadnt really thought of it that way, but you have a
+point.  To clarify, my design actually uses one IRQ per "eventq", where
+we can have an arbitrary number of eventq's defined (note: today I only
+define one eventq, however).  An eventq is actually a shm-ring construct
+where I can pass events up to the host like "device added" or "ring X
+signaled".  Each individual device based virtio-ring would then
+aggregates "signal" events onto this eventq mechanism to actually inject
+events to the host.  Only the eventq itself injects an actual IRQ to the
+assigned vcpu.
 
-Ivan.
+My intended use of multiple eventqs was for prioritization of different
+rings.  For instance, we could define 8 priority levels, each with its
+own ring/irq.  That way, a virtio-net that supports something like
+802.1p could define 8 virtio-rings, one for each priority level.
+
+But this scheme is more targeted at prioritization than per vcpu
+irq-balancing.  I support the eventq construct I proposed could still be
+used in this fashion since each has its own routable IRQ.  However, I
+would have to think about that some more because it is beyond the design
+spec.
+
+The good news is that the decision to use the "eventq+irq" approach is
+completely contained in the kvm-host+guest.patch.  We could easily
+switch to a 1:1 irq:shm-signal if we wanted to, and the device/drivers
+would work exactly the same without modification.
+
+>   Also, the single IRQ handler will need to scan for all potential IRQ
+> sources.  Even if implemented carefully, this will cause many
+> cacheline bounces.
+Well, no, I think this part is covered.  As mentioned above, we use a
+queuing technique so there is no scanning needed.  Ultimately I would
+love to adapt a similar technique to optionally replace the LAPIC.  That
+way we can avoid the EOI trap and just consume the next interrupt (if
+applicable) from the shm-ring.
+
+>
+>>  so its conceivable that I could present a simple
+>> "dummy" PCI device with some "VBUS" type PCI-ID, just to piggy back on=
+
+>> the IRQ routing logic.  Then userspace could simply pass the IRQ routi=
+ng
+>> info down to the kernel with an ioctl, or something similar.
+>>  =20
+>
+> Xen does something similar, I believe.
+>
+>> I think ultimately I was trying to stay away from PCI in general becau=
+se
+>> I want to support environments that do not have PCI.  However, for the=
+
+>> kvm-transport case (at least on x86) this isnt really a constraint.
+>>
+>>  =20
+>
+> s/PCI/the native IRQ solution for your platform/. virtio has the same
+> problem; on s390 we use the native (if that word ever applies to s390)
+> interrupt and device discovery mechanism.
+
+yeah, I agree.  We can contain the "exposure" of PCI to just platforms
+within KVM that care about it.
+
+-Greg
+
+
+
+--------------enigDFA0C49CA6F4D0EA40ADD7FF
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
+Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
+
+iEYEARECAAYFAknSfdMACgkQlOSOBdgZUxn8GwCfY7jZSPBYT0FsCZBduhCRbqq2
++s8AnRMt7qWgoBuRKiHXbxo+3BLygXZr
+=cuZA
+-----END PGP SIGNATURE-----
+
+--------------enigDFA0C49CA6F4D0EA40ADD7FF--
