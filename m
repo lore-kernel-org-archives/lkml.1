@@ -1,92 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761458AbZCaGGo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762223AbZCaGHH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761458AbZCaGGo (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Mar 2009 02:06:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756042AbZCaGGf
+	id S1762223AbZCaGHH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Mar 2009 02:07:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758178AbZCaGGk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Mar 2009 02:06:35 -0400
-Received: from mail-ew0-f165.google.com ([209.85.219.165]:37618 "EHLO
-	mail-ew0-f165.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755824AbZCaGGe convert rfc822-to-8bit (ORCPT
+	Tue, 31 Mar 2009 02:06:40 -0400
+Received: from e23smtp01.au.ibm.com ([202.81.31.143]:52451 "EHLO
+	e23smtp01.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761067AbZCaGGj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Mar 2009 02:06:34 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=vjHSfeSEsfkT4M5LESwsL+05vvVjliD6CigkIyFhNNZEigdyHahfpXCF26F5vt5/5N
-         DGfY4htXllNZxdxvMBsGiJDsUWSATr+izswstovnhxK3hEWKqUKlKfUFdc8nLLAy1TI/
-         qWvGeoKcDrLMXn6SfFt296lzO3spJJGbdadNM=
+	Tue, 31 Mar 2009 02:06:39 -0400
+Date: Tue, 31 Mar 2009 11:36:07 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "kosaki.motohiro@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>
+Subject: Re: [RFC][PATCH 7/8] memcg soft limit LRU reorder
+Message-ID: <20090331060607.GH16497@balbir.in.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+References: <20090327135933.789729cb.kamezawa.hiroyu@jp.fujitsu.com> <20090327141225.1e483acd.kamezawa.hiroyu@jp.fujitsu.com> <20090330075246.GA16497@balbir.in.ibm.com> <20090331090023.e1d30a5a.kamezawa.hiroyu@jp.fujitsu.com>
 MIME-Version: 1.0
-In-Reply-To: <20090329095917.20948680@infradead.org>
-References: <4e5e476b0903290840o453bcccdm5800a636078fde6e@mail.gmail.com>
-	 <20090329085119.0c93fb21@infradead.org>
-	 <4e5e476b0903290945u19572af6ub366001596a7fd3f@mail.gmail.com>
-	 <20090329095917.20948680@infradead.org>
-Date: Tue, 31 Mar 2009 08:06:31 +0200
-Message-ID: <4e5e476b0903302306n13b84090j2006e89c16735359@mail.gmail.com>
-Subject: Re: How to debug kernel startup time?
-From: Corrado Zoccolo <czoccolo@gmail.com>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <20090331090023.e1d30a5a.kamezawa.hiroyu@jp.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, Mar 29, 2009 at 6:59 PM, Arjan van de Ven <arjan@infradead.org> wrote:
-> On Sun, 29 Mar 2009 18:45:36 +0200
-> Corrado Zoccolo <czoccolo@gmail.com> wrote:
->
->> On Sun, Mar 29, 2009 at 5:51 PM, Arjan van de Ven
->> <arjan@infradead.org> wrote:
->> > On Sun, 29 Mar 2009 17:40:10 +0200
->> > Corrado Zoccolo <czoccolo@gmail.com> wrote:
->> >
->> >> Hi,
->> >> I'm seeing around 2 s "lost" during kernel boot, that are not
->> >> accounted for any init call (excerpt of dmesg with initcall_debug
->> >> follows, kernel is 2.6.29).
->> >> What's the suggested way to investigate such problems?
->> >
->> > I take it you don't have an initrd ?
->>
->> You guessed right.
->>
->> >
->> > If so I know what you are hitting; I have a patch to solve it but
->> > it's a bit convoluted and not ready for mainline.... let me know if
->> > you want to try it, I suspect it'll solve your issue ;)
->> >
->>
->> Sure. I'd like to test it.
->>
->
-> attached...
+* KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-03-31 09:00:23]:
 
-They worked fine. With fastboot enabled + some ACPI patch that alexei
-is working on, I can now boot the kernel in 1.7s.
+> On Mon, 30 Mar 2009 13:22:46 +0530
+> Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+> 
+> > * KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-03-27 14:12:25]:
+> > 
+> > > From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> > > 
+> > > This patch adds a function to change the LRU order of pages in global LRU
+> > > under control of memcg's victim of soft limit.
+> > > 
+> > > FILE and ANON victim is divided and LRU rotation will be done independently.
+> > > (memcg which only includes FILE cache or ANON can exists.)
+> > > 
+> > > The routine finds specfied number of pages from memcg's LRU and
+> > > move it to top of global LRU. They will be the first target of shrink_xxx_list.
+> > 
+> > This seems to be the core of the patch, but I don't like this very
+> > much. Moving LRU pages of the mem cgroup seems very subtle, why can't
+> > we directly use try_to_free_mem_cgroup_pages()?
+> > 
+> It ignores many things.
 
-Corrado
+My concern is that such subtle modification to the global LRU 
 
->
-> --
-> Arjan van de Ven        Intel Open Source Technology Centre
-> For development, discussion and tips for power savings,
-> visit http://www.lesswatts.org
->
-
-
+1. Can break the age property of elements in the LRU (we have mixed
+ages now in the LRU)
+2. Can potentially impact lumpy reclaim, since we've mix LRU pages
+from the memory controlelr into the global LRU?
 
 -- 
-__________________________________________________________________________
-
-dott. Corrado Zoccolo                          mailto:czoccolo@gmail.com
-PhD - Department of Computer Science - University of Pisa, Italy
---------------------------------------------------------------------------
-The self-confidence of a warrior is not the self-confidence of the average
-man. The average man seeks certainty in the eyes of the onlooker and calls
-that self-confidence. The warrior seeks impeccability in his own eyes and
-calls that humbleness.
-                               Tales of Power - C. Castaneda
+	Balbir
