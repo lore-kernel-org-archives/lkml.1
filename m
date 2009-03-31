@@ -1,24 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763374AbZCaSrc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763640AbZCaSsd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763374AbZCaSrc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Mar 2009 14:47:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762215AbZCaSlu
+	id S1763640AbZCaSsd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Mar 2009 14:48:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754289AbZCaSmA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Mar 2009 14:41:50 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:44296 "EHLO
+	Tue, 31 Mar 2009 14:42:00 -0400
+Received: from victor.provo.novell.com ([137.65.250.26]:38365 "EHLO
 	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761892AbZCaSlo (ORCPT
+	with ESMTP id S1760825AbZCaSlp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Mar 2009 14:41:44 -0400
+	Tue, 31 Mar 2009 14:41:45 -0400
 From: Gregory Haskins <ghaskins@novell.com>
-Subject: [RFC PATCH 13/17] x86: allow the irq->vector translation to be
-	determined outside of ioapic
+Subject: [RFC PATCH 12/17] venettap: add scatter-gather support
 To: linux-kernel@vger.kernel.org
 Cc: agraf@suse.de, pmullaney@novell.com, pmorreale@novell.com,
        anthony@codemonkey.ws, rusty@rustcorp.com.au, netdev@vger.kernel.org,
        kvm@vger.kernel.org
-Date: Tue, 31 Mar 2009 14:43:55 -0400
-Message-ID: <20090331184355.28333.72382.stgit@dev.haskins.net>
+Date: Tue, 31 Mar 2009 14:43:50 -0400
+Message-ID: <20090331184349.28333.41764.stgit@dev.haskins.net>
 In-Reply-To: <20090331184057.28333.77287.stgit@dev.haskins.net>
 References: <20090331184057.28333.77287.stgit@dev.haskins.net>
 User-Agent: StGIT/0.14.3
@@ -29,85 +28,329 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The ioapic code currently privately manages the mapping between irq
-and vector.  This results in some layering violations as the support
-for certain MSI operations need this info.  As a result, the MSI
-code itself was moved to the ioapic module.  This is not really
-optimal.
-
-We now have another need to gain access to the vector assignment on
-x86.  However, rather than put yet another inappropriately placed
-function into io-apic, lets create a way to export this simple data
-and therefore allow the logic to sit closer to where it belongs.
-
-Ideally we should abstract the entire notion of irq->vector management
-out of io-apic, but we leave that as an excercise for another day.
-
 Signed-off-by: Gregory Haskins <ghaskins@novell.com>
 ---
 
- arch/x86/include/asm/irq.h |    6 ++++++
- arch/x86/kernel/io_apic.c  |   25 +++++++++++++++++++++++++
- 2 files changed, 31 insertions(+), 0 deletions(-)
+ drivers/vbus/devices/venet-tap.c |  236 +++++++++++++++++++++++++++++++++++++-
+ 1 files changed, 229 insertions(+), 7 deletions(-)
 
-diff --git a/arch/x86/include/asm/irq.h b/arch/x86/include/asm/irq.h
-index 592688e..b1726d8 100644
---- a/arch/x86/include/asm/irq.h
-+++ b/arch/x86/include/asm/irq.h
-@@ -40,6 +40,12 @@ extern unsigned int do_IRQ(struct pt_regs *regs);
- extern void init_IRQ(void);
- extern void native_init_IRQ(void);
+diff --git a/drivers/vbus/devices/venet-tap.c b/drivers/vbus/devices/venet-tap.c
+index ccce58e..0ccb7ed 100644
+--- a/drivers/vbus/devices/venet-tap.c
++++ b/drivers/vbus/devices/venet-tap.c
+@@ -80,6 +80,13 @@ enum {
+ 	TX_IOQ_CONGESTED,
+ };
  
-+#ifdef CONFIG_SMP
-+extern int set_irq_affinity(int irq, cpumask_t mask);
-+#endif
++struct venettap;
 +
-+extern int irq_to_vector(int irq);
++struct venettap_rx_ops {
++	int (*decode)(struct venettap *priv, void *ptr, int len);
++	int (*import)(struct venettap *, struct sk_buff *, void *, int);
++};
 +
- /* Interrupt vector management */
- extern DECLARE_BITMAP(used_vectors, NR_VECTORS);
- extern int vector_used_by_percpu_irq(unsigned int vector);
-diff --git a/arch/x86/kernel/io_apic.c b/arch/x86/kernel/io_apic.c
-index bc7ac4d..86a2c36 100644
---- a/arch/x86/kernel/io_apic.c
-+++ b/arch/x86/kernel/io_apic.c
-@@ -614,6 +614,14 @@ set_ioapic_affinity_irq(unsigned int irq, const struct cpumask *mask)
- 
- 	set_ioapic_affinity_irq_desc(desc, mask);
+ struct venettap {
+ 	spinlock_t                   lock;
+ 	unsigned char                hmac[ETH_ALEN]; /* host-mac */
+@@ -107,6 +114,12 @@ struct venettap {
+ 		struct vbus_memctx          *ctx;
+ 		struct venettap_queue        rxq;
+ 		struct venettap_queue        txq;
++		struct venettap_rx_ops      *rx_ops;
++		struct {
++			struct venet_sg     *desc;
++			size_t               len;
++			int                  enabled:1;
++		} sg;
+ 		int                          connected:1;
+ 		int                          opened:1;
+ 		int                          link:1;
+@@ -288,6 +301,183 @@ venettap_change_mtu(struct net_device *dev, int new_mtu)
  }
+ 
+ /*
++ * ---------------------------
++ * Scatter-Gather support
++ * ---------------------------
++ */
 +
-+int set_irq_affinity(int irq, cpumask_t mask)
++/* assumes reference to priv->vbus.conn held */
++static int
++venettap_sg_decode(struct venettap *priv, void *ptr, int len)
 +{
-+	set_ioapic_affinity_irq(irq, &mask);
++	struct venet_sg *vsg;
++	struct vbus_memctx *ctx;
++	int ret;
++
++	/*
++	 * SG is enabled, so we need to pull in the venet_sg
++	 * header before we can interpret the rest of the
++	 * packet
++	 *
++	 * FIXME: Make sure this is not too big
++	 */
++	if (unlikely(len > priv->vbus.sg.len)) {
++		kfree(priv->vbus.sg.desc);
++		priv->vbus.sg.desc = kzalloc(len, GFP_KERNEL);
++	}
++
++	vsg = priv->vbus.sg.desc;
++	ctx = priv->vbus.ctx;
++
++	ret = ctx->ops->copy_from(ctx, vsg, ptr, len);
++	BUG_ON(ret);
++
++	/*
++	 * Non GSO type packets should be constrained by the MTU setting
++	 * on the host
++	 */
++	if (!(vsg->flags & VENET_SG_FLAG_GSO)
++	    && (vsg->len > (priv->netif.dev->mtu + ETH_HLEN)))
++		return -1;
++
++	return vsg->len;
++}
++
++/*
++ * venettap_sg_import - import an skb in scatter-gather mode
++ *
++ * assumes reference to priv->vbus.conn held
++ */
++static int
++venettap_sg_import(struct venettap *priv, struct sk_buff *skb,
++		   void *ptr, int len)
++{
++	struct venet_sg *vsg = priv->vbus.sg.desc;
++	struct vbus_memctx *ctx = priv->vbus.ctx;
++	int remain = len;
++	int ret;
++	int i;
++
++	PDEBUG("Importing %d bytes in %d segments\n", len, vsg->count);
++
++	for (i = 0; i < vsg->count; i++) {
++		struct venet_iov *iov = &vsg->iov[i];
++
++		if (remain < iov->len)
++			return -EINVAL;
++
++		PDEBUG("Segment %d: %p/%d\n", i, iov->ptr, iov->len);
++
++		ret = ctx->ops->copy_from(ctx, skb_tail_pointer(skb),
++					 (void *)iov->ptr,
++					 iov->len);
++		if (ret)
++			return -EFAULT;
++
++		skb_put(skb, iov->len);
++		remain -= iov->len;
++	}
++
++	if (vsg->flags & VENET_SG_FLAG_NEEDS_CSUM
++	    && !skb_partial_csum_set(skb, vsg->csum.start, vsg->csum.offset))
++		return -EINVAL;
++
++	if (vsg->flags & VENET_SG_FLAG_GSO) {
++		struct skb_shared_info *sinfo = skb_shinfo(skb);
++
++		PDEBUG("GSO packet detected\n");
++
++		switch (vsg->gso.type) {
++		case VENET_GSO_TYPE_TCPV4:
++			sinfo->gso_type = SKB_GSO_TCPV4;
++			break;
++		case VENET_GSO_TYPE_TCPV6:
++			sinfo->gso_type = SKB_GSO_TCPV6;
++			break;
++		case VENET_GSO_TYPE_UDP:
++			sinfo->gso_type = SKB_GSO_UDP;
++			break;
++		default:
++			PDEBUG("Illegal GSO type: %d\n", vsg->gso.type);
++			priv->netif.stats.rx_frame_errors++;
++			kfree_skb(skb);
++			return -EINVAL;
++		}
++
++		if (vsg->flags & VENET_SG_FLAG_ECN)
++			sinfo->gso_type |= SKB_GSO_TCP_ECN;
++
++		sinfo->gso_size = vsg->gso.size;
++		if (skb_shinfo(skb)->gso_size == 0) {
++			PDEBUG("Illegal GSO size: %d\n", vsg->gso.size);
++			priv->netif.stats.rx_frame_errors++;
++			kfree_skb(skb);
++			return -EINVAL;
++		}
++
++		/* Header must be checked, and gso_segs computed. */
++		skb_shinfo(skb)->gso_type |= SKB_GSO_DODGY;
++		skb_shinfo(skb)->gso_segs = 0;
++	}
 +
 +	return 0;
 +}
 +
- #endif /* CONFIG_SMP */
++static struct venettap_rx_ops venettap_sg_rx_ops = {
++	.decode = venettap_sg_decode,
++	.import = venettap_sg_import,
++};
++
++/*
++ * ---------------------------
++ * Flat (non Scatter-Gather) support
++ * ---------------------------
++ */
++
++/* assumes reference to priv->vbus.conn held */
++static int
++venettap_flat_decode(struct venettap *priv, void *ptr, int len)
++{
++	size_t maxlen = priv->netif.dev->mtu + ETH_HLEN;
++
++	if (len > maxlen)
++		return -1;
++
++	/*
++	 * If SG is *not* enabled, the length is simply the
++	 * descriptor length
++	 */
++
++	return len;
++}
++
++/*
++ * venettap_rx_flat - import an skb in non scatter-gather mode
++ *
++ * assumes reference to priv->vbus.conn held
++ */
++static int
++venettap_flat_import(struct venettap *priv, struct sk_buff *skb,
++		     void *ptr, int len)
++{
++	struct vbus_memctx *ctx = priv->vbus.ctx;
++	int ret;
++
++	ret = ctx->ops->copy_from(ctx, skb_tail_pointer(skb), ptr, len);
++	if (ret)
++		return -EFAULT;
++
++	skb_put(skb, len);
++
++	return 0;
++}
++
++static struct venettap_rx_ops venettap_flat_rx_ops = {
++	.decode = venettap_flat_decode,
++	.import = venettap_flat_import,
++};
++
++/*
+  * The poll implementation.
+  */
+ static int
+@@ -301,6 +491,7 @@ venettap_rx(struct venettap *priv)
+ 	int                         ret;
+ 	unsigned long               flags;
+ 	struct vbus_connection     *conn;
++	struct venettap_rx_ops     *rx_ops;
  
- /*
-@@ -3249,6 +3257,23 @@ void destroy_irq(unsigned int irq)
- 	spin_unlock_irqrestore(&vector_lock, flags);
+ 	PDEBUG("polling...\n");
+ 
+@@ -324,6 +515,8 @@ venettap_rx(struct venettap *priv)
+ 	ioq = priv->vbus.rxq.queue;
+ 	ctx = priv->vbus.ctx;
+ 
++	rx_ops = priv->vbus.rx_ops;
++
+ 	spin_unlock_irqrestore(&priv->lock, flags);
+ 
+ 	/* We want to iterate on the head of the in-use index */
+@@ -338,11 +531,14 @@ venettap_rx(struct venettap *priv)
+ 	 * the north side
+ 	 */
+ 	while (priv->vbus.link && iter.desc->sown) {
+-		size_t len = iter.desc->len;
+-		size_t maxlen = priv->netif.dev->mtu + ETH_HLEN;
+ 		struct sk_buff *skb = NULL;
++		size_t len;
+ 
+-		if (unlikely(len > maxlen)) {
++		len = rx_ops->decode(priv,
++				     (void *)iter.desc->ptr,
++				     iter.desc->len);
++
++		if (unlikely(len < 0)) {
+ 			priv->netif.stats.rx_errors++;
+ 			priv->netif.stats.rx_length_errors++;
+ 			goto next;
+@@ -360,10 +556,8 @@ venettap_rx(struct venettap *priv)
+ 		/* align IP on 16B boundary */
+ 		skb_reserve(skb, 2);
+ 
+-		ret = ctx->ops->copy_from(ctx, skb->data,
+-					 (void *)iter.desc->ptr,
+-					 len);
+-		if (unlikely(ret)) {
++		ret = rx_ops->import(priv, skb, (void *)iter.desc->ptr, len);
++		if (unlikely(ret < 0)) {
+ 			priv->netif.stats.rx_errors++;
+ 			goto next;
+ 		}
+@@ -843,6 +1037,23 @@ venettap_macquery(struct venettap *priv, void *data, unsigned long len)
+ 	return 0;
  }
  
-+int irq_to_vector(int irq)
++static u32
++venettap_negcap_sg(struct venettap *priv, u32 requested)
 +{
-+	struct irq_cfg *cfg;
-+	unsigned long flags;
-+	int ret = -ENOENT;
++	u32 available = VENET_CAP_SG|VENET_CAP_TSO4|VENET_CAP_TSO6
++		|VENET_CAP_ECN;
++	u32 ret;
 +
-+	spin_lock_irqsave(&vector_lock, flags);
++	ret = available & requested;
 +
-+	cfg = irq_cfg(irq);
-+	if (cfg && cfg->vector != 0)
-+		ret = cfg->vector;
-+
-+	spin_unlock_irqrestore(&vector_lock, flags);
++	if (ret & VENET_CAP_SG) {
++		priv->vbus.sg.enabled = true;
++		priv->vbus.rx_ops = &venettap_sg_rx_ops;
++	}
 +
 +	return ret;
 +}
 +
  /*
-  * MSI message composition
-  */
+  * Negotiate Capabilities - This function is provided so that the
+  * interface may be extended without breaking ABI compatability
+@@ -870,6 +1081,9 @@ venettap_negcap(struct venettap *priv, void *data, unsigned long len)
+ 		return -EFAULT;
+ 
+ 	switch (caps.gid) {
++	case VENET_CAP_GROUP_SG:
++		caps.bits = venettap_negcap_sg(priv, caps.bits);
++		break;
+ 	default:
+ 		caps.bits = 0;
+ 		break;
+@@ -1037,6 +1251,12 @@ venettap_vlink_release(struct vbus_connection *conn)
+ 	vbus_memctx_put(priv->vbus.ctx);
+ 
+ 	kobject_put(priv->vbus.dev.kobj);
++
++	priv->vbus.sg.enabled = false;
++	priv->vbus.rx_ops = &venettap_flat_rx_ops;
++	kfree(priv->vbus.sg.desc);
++	priv->vbus.sg.desc = NULL;
++	priv->vbus.sg.len = 0;
+ }
+ 
+ static struct vbus_connection_ops venettap_vbus_link_ops = {
+@@ -1315,6 +1535,8 @@ venettap_device_create(struct vbus_devclass *dc,
+ 	_vdev->ops             = &venettap_device_ops;
+ 	_vdev->attrs           = &venettap_attr_group;
+ 
++	priv->vbus.rx_ops      = &venettap_flat_rx_ops;
++
+ 	/*
+ 	 * netif init
+ 	 */
 
