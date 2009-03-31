@@ -1,67 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761066AbZCaNfx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757690AbZCaNkW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761066AbZCaNfx (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Mar 2009 09:35:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760682AbZCaNeO
+	id S1757690AbZCaNkW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Mar 2009 09:40:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754129AbZCaNkH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Mar 2009 09:34:14 -0400
-Received: from vervifontaine.sonytel.be ([80.88.33.193]:50504 "EHLO
-	vervifontaine.sonycom.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1760674AbZCaNeM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Mar 2009 09:34:12 -0400
-Date: Tue, 31 Mar 2009 15:34:10 +0200 (CEST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-To: linux-media@vger.kernel.org
-cc: Linux Kernel Development <linux-kernel@vger.kernel.org>
-Subject: [PATCH] dvb: Remove reference to obsolete linux-dvb@linuxtv.org
-Message-ID: <alpine.LRH.2.00.0903311529050.13151@vixen.sonytel.be>
-User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
+	Tue, 31 Mar 2009 09:40:07 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:37865 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753788AbZCaNkG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Mar 2009 09:40:06 -0400
+Date: Tue, 31 Mar 2009 15:39:50 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: [GIT PULL] stacktrace updates for v2.6.30
+Message-ID: <20090331133950.GA24778@elte.hu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=ISO-8859-15
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-linux-dvb@linuxtv.org auto-responds with:
+Linus,
 
-| This ML is deprecated. Please use linux-media@vger.kernel.org instead.
-| For more info about linux-media@vger.kernel.org, please read:
-| http://vger.kernel.org/vger-lists.html#linux-media
+Please pull the latest stacktrace-for-linus git tree from:
 
-Hence remove it from MAINTAINERS.
+   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git stacktrace-for-linus
 
-Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
----
-There are still a few references to it in various docs and source files
+One patch to improve saved lockdep stack-traces.
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index c5f4e9d..3c07ced 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -1538,7 +1538,6 @@ S:	Maintained
- DVB SUBSYSTEM AND DRIVERS
- P:	LinuxTV.org Project
- M:	linux-media@vger.kernel.org
--L:	linux-dvb@linuxtv.org (subscription required)
- W:	http://linuxtv.org/
- T:	git kernel.org:/pub/scm/linux/kernel/git/mchehab/linux-2.6.git
- S:	Maintained
+ Thanks,
 
-With kind regards,
+	Ingo
 
-Geert Uytterhoeven
-Software Architect
+------------------>
+Ingo Molnar (1):
+      symbols, stacktrace: look up init symbols after module symbols
 
-Sony Techsoft Centre Europe
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
 
-Phone:    +32 (0)2 700 8453
-Fax:      +32 (0)2 700 8622
-E-mail:   Geert.Uytterhoeven@sonycom.com
-Internet: http://www.sony-europe.com/
+ kernel/extable.c |   25 ++++++++++++++++++++++---
+ 1 files changed, 22 insertions(+), 3 deletions(-)
 
-A division of Sony Europe (Belgium) N.V.
-VAT BE 0413.825.160 · RPR Brussels
-Fortis · BIC GEBABEBB · IBAN BE41293037680010
+diff --git a/kernel/extable.c b/kernel/extable.c
+index e136ed8..c46da6a 100644
+--- a/kernel/extable.c
++++ b/kernel/extable.c
+@@ -41,6 +41,14 @@ const struct exception_table_entry *search_exception_tables(unsigned long addr)
+ 	return e;
+ }
+ 
++static inline int init_kernel_text(unsigned long addr)
++{
++	if (addr >= (unsigned long)_sinittext &&
++	    addr <= (unsigned long)_einittext)
++		return 1;
++	return 0;
++}
++
+ __notrace_funcgraph int core_kernel_text(unsigned long addr)
+ {
+ 	if (addr >= (unsigned long)_stext &&
+@@ -48,8 +56,7 @@ __notrace_funcgraph int core_kernel_text(unsigned long addr)
+ 		return 1;
+ 
+ 	if (system_state == SYSTEM_BOOTING &&
+-	    addr >= (unsigned long)_sinittext &&
+-	    addr <= (unsigned long)_einittext)
++	    init_kernel_text(addr))
+ 		return 1;
+ 	return 0;
+ }
+@@ -58,7 +65,19 @@ __notrace_funcgraph int __kernel_text_address(unsigned long addr)
+ {
+ 	if (core_kernel_text(addr))
+ 		return 1;
+-	return __module_text_address(addr) != NULL;
++	if (__module_text_address(addr))
++		return 1;
++	/*
++	 * There might be init symbols in saved stacktraces.
++	 * Give those symbols a chance to be printed in
++	 * backtraces (such as lockdep traces).
++	 *
++	 * Since we are after the module-symbols check, there's
++	 * no danger of address overlap:
++	 */
++	if (init_kernel_text(addr))
++		return 1;
++	return 0;
+ }
+ 
+ int kernel_text_address(unsigned long addr)
