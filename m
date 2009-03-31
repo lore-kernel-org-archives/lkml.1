@@ -1,70 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761375AbZCaPDB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761490AbZCaPDX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761375AbZCaPDB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Mar 2009 11:03:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760046AbZCaPCt
+	id S1761490AbZCaPDX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Mar 2009 11:03:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761411AbZCaPC5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Mar 2009 11:02:49 -0400
-Received: from ppsw-1.csi.cam.ac.uk ([131.111.8.131]:44765 "EHLO
-	ppsw-1.csi.cam.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755761AbZCaPCs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Mar 2009 11:02:48 -0400
-X-Cam-AntiVirus: no malware found
-X-Cam-SpamDetails: not scanned
-X-Cam-ScannerInfo: http://www.cam.ac.uk/cs/email/scanner/
-From: Mark Williamson <mark.williamson@cl.cam.ac.uk>
-To: Xavier Bestel <xavier.bestel@free.fr>
-Subject: Re: Replacing VFAT as filesystem on removeable media
-Date: Tue, 31 Mar 2009 16:02:39 +0100
-User-Agent: KMail/1.11.1 (Linux/2.6.27-11-generic; KDE/4.2.1; i686; ; )
-Cc: Martin Steigerwald <Martin@lichtvoll.de>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, info@fsf.org, office@fsfeurope.org,
-       info@linuxfoundation.org
-References: <200903311015.29222.Martin@Lichtvoll.de> <200903311357.44075.mark.williamson@cl.cam.ac.uk> <1238507227.27596.559.camel@skunk>
-In-Reply-To: <1238507227.27596.559.camel@skunk>
+	Tue, 31 Mar 2009 11:02:57 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:36185 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761375AbZCaPC4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Mar 2009 11:02:56 -0400
+Date: Tue, 31 Mar 2009 17:02:18 +0200
+From: Andrea Arcangeli <aarcange@redhat.com>
+To: Anthony Liguori <anthony@codemonkey.ws>
+Cc: Izik Eidus <ieidus@redhat.com>, linux-kernel@vger.kernel.org,
+       kvm@vger.kernel.org, linux-mm@kvack.org, avi@redhat.com,
+       chrisw@redhat.com, riel@redhat.com, jeremy@goop.org,
+       mtosatti@redhat.com, hugh@veritas.com, corbet@lwn.net, yaniv@redhat.com,
+       dmonakhov@openvz.org
+Subject: Re: [PATCH 4/4] add ksm kernel shared memory driver.
+Message-ID: <20090331150218.GS9137@random.random>
+References: <1238457560-7613-1-git-send-email-ieidus@redhat.com> <1238457560-7613-2-git-send-email-ieidus@redhat.com> <1238457560-7613-3-git-send-email-ieidus@redhat.com> <1238457560-7613-4-git-send-email-ieidus@redhat.com> <1238457560-7613-5-git-send-email-ieidus@redhat.com> <49D17C04.9070307@codemonkey.ws> <49D20B63.8020709@redhat.com> <49D21B33.4070406@codemonkey.ws> <20090331142533.GR9137@random.random> <49D22A9D.4050403@codemonkey.ws>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-6"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200903311602.41272.mark.williamson@cl.cam.ac.uk>
+In-Reply-To: <49D22A9D.4050403@codemonkey.ws>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Xav,
+On Tue, Mar 31, 2009 at 09:37:17AM -0500, Anthony Liguori wrote:
+> In the very least, if you insist on not using sysfs, you should have a 
+> separate character device that's used for control (like /dev/ksmctl).
 
-On Tuesday 31 March 2009 14:47:07 Xavier Bestel wrote:
-> On Tue, 2009-03-31 at 13:57 +0100, Mark Williamson wrote:
-> > Another approach which occurs to me would be to come up with a
-> > "filesystem over USB" protocol so that the actual on-disk format is no
-> > longer relevant.
->
-> Look for MTP. It's what you want, made by Microsoft, and enables all
-> sorts of DRM niceties.
+I'm fine to use sysfs that's not the point, if you've to add a ksmctl
+device, then sysfs is surely better. Besides ksm would normally be
+enabled at boot, tasks jailed by selinux will better not start/stop
+this thing.
 
-Ah, thanks for that.  It looks fairly close to what I had in mind, although I 
-think there are some differences (it transfers whole files at a time and 
-incorporates device control stuff - neither of which is really necessary in the 
-scheme I imagined).
-
-According to Wikipedia  it is now an official USB device class, which sounds 
-attractive.  I've not heard of Linux providing an MTP responder ("server"), 
-which I find mildly surprising as it sounds like it would be useful, 
-particularly given the range of advanced filesystems Linux devices might like 
-to leverage under the hood.  It seems odd if an embedded Linux company hasn't 
-already coded this up for a device ... ?
-
-I can see how a file-based protocol would be "useful" in enforcing DRM-like 
-protections in a device implementation but I don't think that such protocols 
-fundamentally enables any nastiness that couldn't be enforced in other ways by 
-a motivated pro-DRM device manufacturer.  Sounds like MTP is designed to 
-facilitate DRM if the communications endpoints want it; not something I'm keen 
-on but also not something that rules it out as a useful standard.
-
-A file-based transfer protocol seems like it would be useful to have for 
-"sufficiently intelligent" devices, whether it's MTP or something else.
-
-Cheers,
-Mark
+If people wants /sys/kernel/mm/ksm instead of the start_stop ioctl we
+surely can add it (provided there's a way to intercept write to the
+sysfs file). Problem is registering memory could also be done with
+'echo 0 -1 >/proc/self/ksm' and be inherited by childs, it's not just
+start/stop. I mean this is more a matter of taste I'm
+afraid... Personally I'm more concerned about the registering of the
+ram API than the start/stop thing which I cannot care less about, so
+my logic is that as long as this pseudodevice exists, we should use it
+for everything. If we go away from it, then we should remove it as a
+whole.
