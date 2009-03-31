@@ -1,69 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761042AbZCaB52@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760631AbZCaCBF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761042AbZCaB52 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 30 Mar 2009 21:57:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754506AbZCaB5R
+	id S1760631AbZCaCBF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 30 Mar 2009 22:01:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758991AbZCaCAt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 30 Mar 2009 21:57:17 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:53892 "EHLO mx2.suse.de"
+	Mon, 30 Mar 2009 22:00:49 -0400
+Received: from THUNK.ORG ([69.25.196.29]:33517 "EHLO thunker.thunk.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754269AbZCaB5Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 30 Mar 2009 21:57:16 -0400
-Date: Tue, 31 Mar 2009 03:57:12 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Andi Kleen <andi@firstfloor.org>, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch 12/14] fs: dcache per-bucket dcache hash locking
-Message-ID: <20090331015712.GC3555@wotan.suse.de>
-References: <20090329155539.275927173@nick.local0.net> <20090329155750.062096365@nick.local0.net> <878wmnnr73.fsf@basil.nowhere.org> <20090330180031.GB1041@infradead.org>
-Mime-Version: 1.0
+	id S1758829AbZCaCAs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 30 Mar 2009 22:00:48 -0400
+Date: Mon, 30 Mar 2009 21:58:50 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Tejun Heo <tj@kernel.org>
+Cc: Chris Mason <chris.mason@oracle.com>,
+       Fernando Luis =?iso-8859-1?Q?V=E1zquez?= Cao 
+	<fernando@oss.ntt.co.jp>,
+       Jeff Garzik <jeff@garzik.org>, Christoph Hellwig <hch@infradead.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Nick Piggin <npiggin@suse.de>,
+       David Rees <drees76@gmail.com>, Jesper Krogh <jesper@krogh.cc>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       david@fromorbit.com
+Subject: Re: [PATCH 2/7] ext3: call blkdev_issue_flush() on fsync()
+Message-ID: <20090331015850.GY13356@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>, Tejun Heo <tj@kernel.org>,
+	Chris Mason <chris.mason@oracle.com>,
+	Fernando Luis =?iso-8859-1?Q?V=E1zquez?= Cao <fernando@oss.ntt.co.jp>,
+	Jeff Garzik <jeff@garzik.org>,
+	Christoph Hellwig <hch@infradead.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+	Arjan van de Ven <arjan@infradead.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Peter Zijlstra <a.p.zijlstra@chello.nl>,
+	Nick Piggin <npiggin@suse.de>, David Rees <drees76@gmail.com>,
+	Jesper Krogh <jesper@krogh.cc>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	david@fromorbit.com
+References: <49D01F94.6000101@oss.ntt.co.jp> <49D02328.7060108@oss.ntt.co.jp> <49D0258A.9020306@garzik.org> <49D03377.1040909@oss.ntt.co.jp> <49D0B535.2010106@oss.ntt.co.jp> <49D0B70E.8060506@oss.ntt.co.jp> <20090330140427.GG13356@mit.edu> <1238422551.30488.47.camel@think.oraclecorp.com> <20090330143343.GJ13356@mit.edu> <49D17162.1090207@kernel.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090330180031.GB1041@infradead.org>
-User-Agent: Mutt/1.5.9i
+In-Reply-To: <49D17162.1090207@kernel.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, Mar 30, 2009 at 02:00:31PM -0400, Christoph Hellwig wrote:
-> On Mon, Mar 30, 2009 at 02:14:08PM +0200, Andi Kleen wrote:
-> > npiggin@suse.de writes:
-> > 
-> > > We can turn the dcache hash locking from a global dcache_hash_lock into
-> > > per-bucket locking.
-> > 
-> > Per bucket locking is typically a bad idea because you get far too
-> > many locks and you increase cache footprint with all of them. It's
-> > typically better to use a second much smaller hash table that only has
-> > locks (by just shifting the hash value down some more) 
-> > Just need to be careful to avoid too much false sharing.
+On Tue, Mar 31, 2009 at 10:26:58AM +0900, Tejun Heo wrote:
 > 
-> Yeah, I'm also not too happy about it.  I think we're better off
-> replacing the global hash with more fine-grained structures.  That might
-> even some sort of simplistic tree hanging of directory dentries.
+> How about having something like blk_ensure_cache_flushed() which
+> issues flush iff there hasn't been any write since the last flush?
+> It'll be easy to implement and will filter out duplicate flushes in
+> most cases.
 > 
-> The hard part in getting anything like this done was always the amount
-> of different things dcache_lock protects besiseds the hash, but Nick's
-> earlier patches when actually fully implemented should sort that out.
 
-Well yes that's the thing, dcache_hash_lock becomes inner-most and
-very simply protecting dentry hash and d_hash, so it should now
-be quite trivial (locking-wise) to experiment with other data
-structures.
+I thought about such a thing, but my concern is that while this might
+suppress most unnecessary double flushes, some intervening write from
+another process might slip in which doesn't need to be flushed out.
+In other words "in most cases" means that "in some cases" we will take
+a performance hit thanks to the duplicate flushes.  So this isn't
+something we should depend upon, although if we do detect back-to-back
+flushes, obviously we should filter them out.
 
-Of course any proposed new data structure will have to compete with
-a scaled hash table... whether we scale it the dumb way like I did
-or something like Andi suggests, I don't really know. But just to
-be clear, the point of that patch is more to show how it is possible
-to easily change locking. The really important parts of my series for
-the moment are the first half of actually breaking up dcache_lock.
+So if we did something like this, it would be good if we had a
+debugging option which would detect double flushes, and printk a
+warning identifying where the call sites first and second flushes (by
+function name and line number), so that filesystem developers could
+detect the double flushes, and work to eliminate them.
 
-Anyway, no real objections yet, so I'll continue down this path and
-see what I come up with.
+Does that make sense?
 
-If anybody knows of workloads or benchmarks to try, also let me know.
-The patchset posted improved dbench-in-ram performance by about 1.6x
-on my 2s8c system here so it is encouraging but not the most realistic
-test :)
-
+              	   	  	       	    - Ted
