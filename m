@@ -1,123 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760703AbZCaS6y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761819AbZCaTCi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760703AbZCaS6y (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Mar 2009 14:58:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754644AbZCaS6f
+	id S1761819AbZCaTCi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Mar 2009 15:02:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753500AbZCaTC2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Mar 2009 14:58:35 -0400
-Received: from mailgw.nyc.medallion.com ([63.68.220.242]:2615 "EHLO
-	mailgw.nyc.medallion.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751395AbZCaS6e convert rfc822-to-8bit (ORCPT
+	Tue, 31 Mar 2009 15:02:28 -0400
+Received: from lazybastard.de ([212.112.238.170]:35184 "EHLO
+	longford.logfs.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751822AbZCaTC1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Mar 2009 14:58:34 -0400
-X-Greylist: delayed 915 seconds by postgrey-1.27 at vger.kernel.org; Tue, 31 Mar 2009 14:58:33 EDT
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.3790.4325
-Content-class: urn:content-classes:message
+	Tue, 31 Mar 2009 15:02:27 -0400
+X-Greylist: delayed 921 seconds by postgrey-1.27 at vger.kernel.org; Tue, 31 Mar 2009 15:02:27 EDT
+Date: Tue, 31 Mar 2009 21:02:14 +0200
+From: =?utf-8?B?SsO2cm4=?= Engel <joern@logfs.org>
+To: Stefani Seibold <stefani@seibold.net>
+Cc: Andi Kleen <andi@firstfloor.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-mm <linux-mm@kvack.org>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: Detailed Stack Information Patch [0/3]
+Message-ID: <20090331190214.GB25879@logfs.org>
+References: <1238511498.364.60.camel@matrix> <87eiwdn15a.fsf@basil.nowhere.org> <1238523735.3692.30.camel@matrix>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="Windows-1252"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [Iscsitarget-devel] [Scst-devel] ISCSI-SCST performance (withalso IET and STGT	data)
-Date: Tue, 31 Mar 2009 14:43:15 -0400
-Message-ID: <E2BB8074E5500C42984D980D4BD78EF9029E3D0B@MFG-NYC-EXCH2.mfg.prv>
-In-Reply-To: <49D254E4.8050806@vlnb.net>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [Iscsitarget-devel] [Scst-devel] ISCSI-SCST performance (withalso IET and STGT	data)
-Thread-Index: AcmyJ7YFyzYgt0cmQUadizZzcnhPOgAB0x1A
-References: <49D10256.8030307@vlnb.net>	<e2e108260903301106y2b750c23kfab978567f3de3a0@mail.gmail.com>	<49D11096.3070804@vlnb.net><e2e108260903301153x38e86097vd29c47507da2879f@mail.gmail.com> <49D254E4.8050806@vlnb.net>
-From: "Ross S. W. Walker" <RWalker@medallion.com>
-Importance: normal
-To: "Vladislav Bolkhovitin" <vst@vlnb.net>,
-       "Bart Van Assche" <bart.vanassche@gmail.com>
-Cc: <iscsitarget-devel@lists.sourceforge.net>,
-       "scst-devel" <scst-devel@lists.sourceforge.net>,
-       <linux-kernel@vger.kernel.org>, <linux-scsi@vger.kernel.org>,
-       <stgt@vger.kernel.org>
-X-OriginalArrivalTime: 31 Mar 2009 18:43:15.0959 (UTC) FILETIME=[8D8A3870:01C9B230]
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <1238523735.3692.30.camel@matrix>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vladislav Bolkhovitin wrote:
-> Bart Van Assche, on 03/30/2009 10:53 PM wrote:
+On Tue, 31 March 2009 20:22:15 +0200, Stefani Seibold wrote:
+> Am Dienstag, den 31.03.2009, 17:49 +0200 schrieb Andi Kleen:
+> > Stefani Seibold <stefani@seibold.net> writes:
+> 
+> > > - Misuse the thread stack for big temporary data buffers
 > > 
-> > Most applications do indeed use buffered I/O. Database software
-> > however often uses direct I/O. It might be interesting to publish
-> > performance results for both buffered I/O and direct I/O.
+> > That would be better checked for at compile time
+> > (except for alloca, but that is quite rare)
 > 
-> Yes, sure
+> Fine but it did not work for functions like:
 > 
-> > A quote from
-> > the paper "Asynchronous I/O Support in Linux 2.5" by Bhattacharya e.a.
-> > (Linux Symposium, Ottawa, 2003):
-> > 
-> > Direct I/O (raw and O_DIRECT) transfers data between a user buffer and
-> > a device without copying the data through the kernel’s buffer cache.
-> > This mechanism can boost performance if the data is unlikely to be
-> > used again in the short term (during a disk backup, for example), or
-> > for applications such as large database management systems that
-> > perform their own caching.
+> void foo(int n)
+> {
+> 	char buf[n*1024];
 > 
-> Please don't misread phrase "unlikely to be used again in the short 
-> term". If you have read-ahead, all your cached data is *likely* to be 
-> used "again" in the near future after they were read from storage, 
-> although only once in the first read by application. The same is true 
-> for write-back caching, where data written to the cache once for each 
-> command. Both read-ahead and write back are very important for good 
-> performance and O_DIRECT throws them away. All the modern HDDs have a 
-> memory buffer (cache) at least 2MB big on the cheapest ones. 
-> This cache is essential for performance, although how can it make any 
-> difference if the host computer has, say, 1000 times more memory?
+> }
 > 
-> Thus, to work effectively with O_DIRECT an application has to be very 
-> smart to workaround the lack of read-ahead and write back.
+> This is valid with gcc.
 
-True, the application has to perform it's own read-ahead and write-back.
+Good call.  checkstack should look for those as well.  It is certainly
+possible to detect statically and warn about:
 
-Kind of like how a database does it, or maybe the page cache on the
-iSCSI initiator's system ;-)
+  10:   29 c4                   sub    %eax,%esp
 
-> I personally consider O_DIRECT (as well as BLOCKIO) as nothing more than 
-> a workaround for possible flaws in the storage subsystem. If O_DIRECT 
-> works better, then in 99+% cases there is something in the storage 
-> subsystem, which should be fixed to perform better.
+Runaway recursions are a different matter, though.  The code I once had
+to detect them depends on an old version of smatch, which in turn
+depends on gcc 3.1.  And even assuming this was in a reasonable shape, I
+still don't know what to do about it.  The kernel has thousands of
+recursions and trying to work out how deep each one may stack is a
+never-ending project.
 
-That's not true, page cached I/O is broken into page sizes which limits
-the I/O bandwidth of the storage hardware while imposing a higher CPU
-overhead. Obviously page-cached I/O isn't ideal for all situations.
+JÃ¶rn
 
-You could also have an amazing backend storage system with it's own
-NVRAM cache. Why put the performance overhead onto the target system
-when you can off-load it to the controller?
-
-> To be complete, there is one case where O_DIRECT and BLOCKIO have an 
-> advantage: both of them transfer data zero-copy. So they are good if 
-> your memory is too slow comparing to storage (InfiniBand case, for 
-> instance) and additional data copy hurts performance noticeably.
-
-The bottom line which will always be true:
-
-Know your workload, configure your storage to match.
-
-The best storage solutions allow the implementor the most flexibility
-in configuring the storage, which I think both IET and SCST do.
-
-IET just needs to fix how it does it workload with CFQ which
-somehow SCST has overcome. Of course SCST tweaks the Linux kernel to
-gain some extra speed.
-
-Vlad, how about a comparison of SCST vs IET without those kernel hooks?
-
--Ross
-
-______________________________________________________________________
-This e-mail, and any attachments thereto, is intended only for use by
-the addressee(s) named herein and may contain legally privileged
-and/or confidential information. If you are not the intended recipient
-of this e-mail, you are hereby notified that any dissemination,
-distribution or copying of this e-mail, and any attachments thereto,
-is strictly prohibited. If you have received this e-mail in error,
-please immediately notify the sender and permanently delete the
-original and any copy or printout thereof.
-
+-- 
+A quarrel is quickly settled when deserted by one party; there is
+no battle unless there be two.
+-- Seneca
