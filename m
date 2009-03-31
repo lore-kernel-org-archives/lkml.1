@@ -1,98 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757391AbZCaNTs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758564AbZCaNUt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757391AbZCaNTs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Mar 2009 09:19:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754699AbZCaNTj
+	id S1758564AbZCaNUt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Mar 2009 09:20:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754156AbZCaNUk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Mar 2009 09:19:39 -0400
-Received: from mga11.intel.com ([192.55.52.93]:29445 "EHLO mga11.intel.com"
+	Tue, 31 Mar 2009 09:20:40 -0400
+Received: from www.tglx.de ([62.245.132.106]:60953 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754573AbZCaNTi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Mar 2009 09:19:38 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.38,453,1233561600"; 
-   d="scan'208";a="677478351"
-Date: Tue, 31 Mar 2009 15:19:25 +0200
-From: Markus Metzger <markus.t.metzger@intel.com>
-To: linux-kernel@vger.kernel.org, mingo@elte.hu, tglx@linutronix.de,
-       hpa@zytor.com
-Cc: markus.t.metzger@intel.com, markus.t.metzger@gmail.com, roland@redhat.com,
-       eranian@googlemail.com, oleg@redhat.com, juan.villacis@intel.com,
-       ak@linux.jf.intel.com
-Subject: [patch 8/21] x86, debugctlmsr: add _on_cpu variants to debugctlmsr functions
-Message-ID: <20090331151925.A12985@sedona.ch.intel.com>
-Mime-Version: 1.0
-Content-Disposition: inline
-User-Agent: Mutt/1.2.5i
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+	id S1751500AbZCaNUj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Mar 2009 09:20:39 -0400
+Date: Tue, 31 Mar 2009 15:19:25 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Chris Leech <christopher.leech@intel.com>
+cc: Yinghai Lu <yinghai@kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] irq: mask irq before move it
+In-Reply-To: <20090330221034.GC27774@cleech-lnx.jf.intel.com>
+Message-ID: <alpine.LFD.2.00.0903311306190.12916@localhost.localdomain>
+References: <20090326220411.GA16286@cleech-lnx.jf.intel.com> <86802c440903261929s775fe85cv86b900e2610acf1d@mail.gmail.com> <20090327163438.GA10185@cleech-lnx.jf.intel.com> <49CDAAD5.9010202@kernel.org> <20090330221034.GC27774@cleech-lnx.jf.intel.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add functions to get and set the debugctlmsr on different cpus.
+On Mon, 30 Mar 2009, Chris Leech wrote:
+>   alloc kstat_irqs on cpu 2 node 0
+> BUG: spinlock bad magic on CPU#1, swapper/0
+> general protection fault: 0000 [#1] SMP DEBUG_PAGEALLOC
+> last sysfs file: /sys/devices/pci0000:00/0000:00:03.0/0000:03:00.1/irq
+> CPU 1 
+> Modules linked in: netconsole configfs sunrpc ipv6 cpufreq_ondemand acpi_cpufreq freq_table dm_multipath ixgbe igb dca [last unloaded: microcode]
+> Pid: 0, comm: swapper Not tainted 2.6.29-cdl-debug #26 
+> RIP: 0010:[<ffffffff811b287c>]  [<ffffffff811b287c>] spin_bug+0x77/0xab
+> RSP: 0018:ffff88007d157ee8  EFLAGS: 00010002
+> RAX: 00000000ffffffff RBX: 6b6b6b6b6b6b6b6b RCX: ffffffff814f83b5
+> RDX: 000000007d487d47 RSI: 0000000000000001 RDI: 0000000000000046
+> RBP: ffff88007d157f08 R08: 0000000000000002 R09: 000000006b6b6b6b
+> R10: ffffffff814e8f2a R11: 000000000000000a R12: ffff88007bde22a8
+> R13: ffffffff814e8efc R14: ffff88007bde22a8 R15: 0000000000000000
+> FS:  0000000000000000(0000) GS:ffff88007d1503e8(0000) knlGS:0000000000000000
+> CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
+> CR2: 00007fb63f3d8000 CR3: 0000000000201000 CR4: 00000000000006e0
+> DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+> DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
+> Process swapper (pid: 0, threadinfo ffff88003e57e000, task ffff88003e584680)
+> Stack:
+>  ffff88007d157f28 ffff88007bde22a8 0000000000000064 ffff88007b030e10
+>  ffff88007d157f28 ffffffff811b28d1 ffff88007bde22a8 ffff88007bde22a8
+>  ffff88007d157f48 ffffffff813a0e39 ffff88007bde2238 ffff88007bde2238
+> Call Trace:
+>  <IRQ> <0> [<ffffffff811b28d1>] _raw_spin_unlock+0x21/0x94
+>  [<ffffffff813a0e39>] _spin_unlock+0x2b/0x2f
+>  [<ffffffff8109a914>] handle_edge_irq+0x11a/0x123
+>  [<ffffffff81013d27>] do_IRQ+0xe1/0x15a
+>  [<ffffffff81011f93>] ret_from_intr+0x0/0x2e
 
+Yinghai, you made sure that the irq is masked before we move it. Can
+you exclude for sure, that it is not already in progress ?
 
-Signed-off-by: Markus Metzger <markus.t.metzger@intel.com>
----
+Thanks,
 
-Index: git-tip/arch/x86/include/asm/processor.h
-===================================================================
---- git-tip.orig/arch/x86/include/asm/processor.h	2009-03-28 13:04:30.000000000 +0100
-+++ git-tip/arch/x86/include/asm/processor.h	2009-03-29 10:58:10.000000000 +0200
-@@ -785,6 +785,21 @@
-     return debugctlmsr;
- }
- 
-+static inline unsigned long get_debugctlmsr_on_cpu(int cpu)
-+{
-+	u64 debugctlmsr = 0;
-+	u32 val1, val2;
-+
-+#ifndef CONFIG_X86_DEBUGCTLMSR
-+	if (boot_cpu_data.x86 < 6)
-+		return 0;
-+#endif
-+	rdmsr_on_cpu(cpu, MSR_IA32_DEBUGCTLMSR, &val1, &val2);
-+	debugctlmsr = val1 | ((u64)val2 << 32);
-+
-+	return debugctlmsr;
-+}
-+
- static inline void update_debugctlmsr(unsigned long debugctlmsr)
- {
- #ifndef CONFIG_X86_DEBUGCTLMSR
-@@ -794,6 +809,18 @@
- 	wrmsrl(MSR_IA32_DEBUGCTLMSR, debugctlmsr);
- }
- 
-+static inline void update_debugctlmsr_on_cpu(int cpu,
-+					     unsigned long debugctlmsr)
-+{
-+#ifndef CONFIG_X86_DEBUGCTLMSR
-+	if (boot_cpu_data.x86 < 6)
-+		return;
-+#endif
-+	wrmsr_on_cpu(cpu, MSR_IA32_DEBUGCTLMSR,
-+		     (u32)((u64)debugctlmsr),
-+		     (u32)((u64)debugctlmsr >> 32));
-+}
-+
- /*
-  * from system description table in BIOS. Mostly for MCA use, but
-  * others may find it useful:
----------------------------------------------------------------------
-Intel GmbH
-Dornacher Strasse 1
-85622 Feldkirchen/Muenchen Germany
-Sitz der Gesellschaft: Feldkirchen bei Muenchen
-Geschaeftsfuehrer: Douglas Lusk, Peter Gleissner, Hannes Schwaderer
-Registergericht: Muenchen HRB 47456 Ust.-IdNr.
-VAT Registration No.: DE129385895
-Citibank Frankfurt (BLZ 502 109 00) 600119052
-
-This e-mail and any attachments may contain confidential material for
-the sole use of the intended recipient(s). Any review or distribution
-by others is strictly prohibited. If you are not the intended
-recipient, please contact the sender and delete all copies.
-
+	tglx
