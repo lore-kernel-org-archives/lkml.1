@@ -1,96 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753572AbZCaJRP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751128AbZCaJRy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753572AbZCaJRP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Mar 2009 05:17:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751416AbZCaJQ4
+	id S1751128AbZCaJRy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Mar 2009 05:17:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751921AbZCaJRg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Mar 2009 05:16:56 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:35854 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752211AbZCaJQz (ORCPT
+	Tue, 31 Mar 2009 05:17:36 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:48280 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752374AbZCaJRf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Mar 2009 05:16:55 -0400
-Date: Tue, 31 Mar 2009 12:16:51 +0300 (EEST)
-From: "=?ISO-8859-1?Q?Ilpo_J=E4rvinen?=" <ilpo.jarvinen@helsinki.fi>
-X-X-Sender: ijjarvin@wrl-59.cs.helsinki.fi
-To: Markus Trippelsdorf <markus@trippelsdorf.de>
-cc: Netdev <netdev@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>,
-       corbet@lwn.net
-Subject: Re: WARNING: at net/ipv4/tcp_input.c:2927 tcp_ack+0xd55/0x1991()
-In-Reply-To: <20090331071018.GA2641@gentoox2.trippelsdorf.de>
-Message-ID: <Pine.LNX.4.64.0903311205070.30150@wrl-59.cs.helsinki.fi>
-References: <20090327211202.GA10014@gentoox2.trippelsdorf.de>
- <Pine.LNX.4.64.0903280031080.5904@wrl-59.cs.helsinki.fi>
- <20090328045056.GA2394@gentoox2.trippelsdorf.de>
- <Pine.LNX.4.64.0903280930440.6696@wrl-59.cs.helsinki.fi>
- <20090328095514.GA2599@gentoox2.trippelsdorf.de>
- <Pine.LNX.4.64.0903301155150.30150@wrl-59.cs.helsinki.fi>
- <20090330164035.GA2652@gentoox2.trippelsdorf.de>
- <Pine.LNX.4.64.0903302137100.29272@wrl-59.cs.helsinki.fi>
- <20090331071018.GA2641@gentoox2.trippelsdorf.de>
+	Tue, 31 Mar 2009 05:17:35 -0400
+Date: Tue, 31 Mar 2009 10:16:53 +0100
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Manish Katiyar <mkatiyar@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, trivial@kernel.org,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] : Code cleanup for fs/inode.c as per checkpatch.pl
+Message-ID: <20090331091653.GU28946@ZenIV.linux.org.uk>
+References: <ea11fea30903222039r4bec470crfd9825e37a926d56@mail.gmail.com> <20090330163619.d08ba85e.akpm@linux-foundation.org> <ea11fea30903301943m34a04f08hc4251c6a6039e97@mail.gmail.com> <20090331060423.GR28946@ZenIV.linux.org.uk> <ea11fea30903310202i738c1f05y754ea0a1a56574eb@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-696208474-2004850153-1238491011=:30150"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <ea11fea30903310202i738c1f05y754ea0a1a56574eb@mail.gmail.com>
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+On Tue, Mar 31, 2009 at 02:32:37PM +0530, Manish Katiyar wrote:
 
----696208474-2004850153-1238491011=:30150
-Content-Type: TEXT/PLAIN; charset=iso-8859-1
-Content-Transfer-Encoding: 8BIT
+> -static struct inode * find_inode(struct super_block * sb, struct hlist_head *head, int (*test)(struct inode *, void *), void *data)
+> +static struct inode *find_inode(struct super_block *sb, struct hlist_head *head,
+> +				int (*test)(struct inode *, void *), void *data)
 
-On Tue, 31 Mar 2009, Markus Trippelsdorf wrote:
+If you are splitting it, split it all the way, esp. the last line.
 
-> On Mon, Mar 30, 2009 at 09:52:55PM +0300, Ilpo Järvinen wrote:
-> > On Mon, 30 Mar 2009, Markus Trippelsdorf wrote:
-> > 
-> > > On Mon, Mar 30, 2009 at 07:01:22PM +0300, Ilpo Järvinen wrote:
-> > > > On Sat, 28 Mar 2009, Markus Trippelsdorf wrote:
-> > > > > On Sat, Mar 28, 2009 at 10:29:58AM +0200, Ilpo Järvinen wrote:
-> > > > 
-> > > > ...And, let me guess, you're in X and therefore unable to catch a final 
-> > > > oops if any would be printed? It would be nice to get around that as well, 
-> > > > either use serial/netconsole or hang in text mode while waiting for the 
-> > > > crash (should be too hard if you are able to setup the workload first 
-> > > > and then switch away from X and if reproducing takes about an hour)...
-> > > 
-> > > OK, I will try this later.
-> > 
-> > Lets hope that gives some clue where it ends up going boom (if it is 
-> > caused by TCP we certainly should see something more sensible in console 
-> > than just a hang)... ...I once again read through tcp commits but just 
-> > cannot find anything that could cause fackets_out miscount, not to speak 
-> > of crash prone changes so we'll just have to wait and see...
-> 
-> The machine hanged again this night and I took two pictures:
-> http://www.mypicx.com/uploadimg/1055813374_03302009_2.jpg
-> http://www.mypicx.com/uploadimg/1543678904_03302009_1.jpg
->
-> But this time there was no tcp related warning in the logs.
+> -static struct inode * get_new_inode(struct super_block *sb, struct hlist_head *head, int (*test)(struct inode *, void *), int (*set)(struct inode *, void *), void *data)
+> +static struct inode *get_new_inode(struct super_block *sb,
+> +				struct hlist_head *head,
+> +				int (*test)(struct inode *, void *),
+> +				int (*set)(struct inode *, void *), void *data)
 
-Right. If that oops would be hit often enough one can easily mix the 
-warning with that hang though there is no relation (the fact that final 
-oops always goes unnoticed in X amplifies the effect).
-
-> I then pulled the lateset git changes, rebuild, rebooted and setup the
-> workload again. The machine was still up and running in the morning 
-> (~4 hours uptime). So it may well be that the issue was fixed with
-> the latest changes.
-
-Lets hope so, in any case if you still see hangs please get the final oops.
-
-> If it ever occurs again I will notify you.
-
-Thanks. Also, if you keep getting those TCP warnings (even alone without
-a crash) please drop me a note since I'd be interesting in tracking that 
-down as well even though it is probably not very significant flaw. Even 
-once a week/month is very promising rate considering how rare they occur 
-for most of the people who were lucky enough to get them in the first 
-place.
-
-
--- 
- i.
----696208474-2004850153-1238491011=:30150--
+Ditto, and that's even more serious case - here 'void *data' part is
+really obfuscated.
