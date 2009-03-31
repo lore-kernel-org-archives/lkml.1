@@ -1,75 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755158AbZCaIHi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756196AbZCaIIH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755158AbZCaIHi (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Mar 2009 04:07:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753204AbZCaIHV
+	id S1756196AbZCaIIH (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Mar 2009 04:08:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754759AbZCaIHh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Mar 2009 04:07:21 -0400
-Received: from vpn.id2.novell.com ([195.33.99.129]:53072 "EHLO
-	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752137AbZCaIHU convert rfc822-to-8bit (ORCPT
+	Tue, 31 Mar 2009 04:07:37 -0400
+Received: from mga07.intel.com ([143.182.124.22]:46321 "EHLO
+	azsmga101.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1756077AbZCaIHb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Mar 2009 04:07:20 -0400
-Message-Id: <49D1EB87.76E4.0078.0@novell.com>
-X-Mailer: Novell GroupWise Internet Agent 8.0.0 
-Date: Tue, 31 Mar 2009 09:08:07 +0100
-From: "Jan Beulich" <jbeulich@novell.com>
-To: "Ingo Molnar" <mingo@elte.hu>
-Cc: "Hidetoshi Seto" <seto.hidetoshi@jp.fujitsu.com>,
-       <linux-kernel@vger.kernel.org>
-Subject: Re: [RESEND][PATCH -tip] x86: smarten /proc/interrupts output
-	 for newcounters
-References: <49D1CC84.2020102@jp.fujitsu.com>
-In-Reply-To: <49D1CC84.2020102@jp.fujitsu.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
+	Tue, 31 Mar 2009 04:07:31 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.38,451,1233561600"; 
+   d="scan'208";a="126010809"
+Message-ID: <49D1CF60.5020107@linux.intel.com>
+Date: Tue, 31 Mar 2009 10:08:00 +0200
+From: Andi Kleen <ak@linux.intel.com>
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
+MIME-Version: 1.0
+To: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+CC: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH -tip 1/3] x86, mce: Add mce_threshold option for intel
+ cmci
+References: <49CB3F24.8040804@jp.fujitsu.com> <20090328120825.GB14464@elte.hu> <49D093F4.2080202@linux.intel.com> <49D183BA.5020007@jp.fujitsu.com>
+In-Reply-To: <49D183BA.5020007@jp.fujitsu.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Acked-by: Jan Beulich <jbeulich@novell.com>
+Hidetoshi Seto wrote:
+> Andi Kleen wrote:
+>> To turn it off you would need to disable the CMCI enable bit
+>> completely.
+> 
+> mce_threshold=0 discourages CMCI initialization.
+> The CMCI enable bits are kept in off states in this case.
 
->>> Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com> 31.03.09 09:55 >>>
-Now /proc/interrupts of tip tree has new counters:
-  CNT: Performance counter interrupts
-  PLT: Platform interrupts
-
-Format change of output as like that by commit:
-  commit 7a81d9a7da03d2f27840d659f97ef140d032f609
-  x86: smarten /proc/interrupts output
-should be applied to these new counters too.
-
-Signed-off-by: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Jan Beulich <jbeulich@novell.com>
----
- arch/x86/kernel/irq.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/arch/x86/kernel/irq.c b/arch/x86/kernel/irq.c
-index 9c27543..35b3725 100644
---- a/arch/x86/kernel/irq.c
-+++ b/arch/x86/kernel/irq.c
-@@ -63,13 +63,13 @@ static int show_other_interrupts(struct seq_file *p, int prec)
- 	for_each_online_cpu(j)
- 		seq_printf(p, "%10u ", irq_stats(j)->irq_spurious_count);
- 	seq_printf(p, "  Spurious interrupts\n");
--	seq_printf(p, "CNT: ");
-+	seq_printf(p, "%*s: ", prec, "CNT");
- 	for_each_online_cpu(j)
- 		seq_printf(p, "%10u ", irq_stats(j)->apic_perf_irqs);
- 	seq_printf(p, "  Performance counter interrupts\n");
- #endif
- 	if (generic_interrupt_extension) {
--		seq_printf(p, "PLT: ");
-+		seq_printf(p, "%*s: ", prec, "PLT");
- 		for_each_online_cpu(j)
- 			seq_printf(p, "%10u ", irq_stats(j)->generic_irqs);
- 		seq_printf(p, "  Platform interrupts\n");
--- 
-1.6.2.1
+True, I missed that earlier. Still a different option would be better.
 
 
+> 
+>> However I expect that this will be not a good idea to ever use on Nehalem
+>> class systems  at least because without CMCI the machine check code cannot
+>> handle shared banks correctly and you'll get duplicated events from them.
+>> And on non Nehalem systems there is no CMCI anyways, so it'll be always
+>> off.
+> 
+> One question is that even if one clears record in a shared bank, others
+> sharing the bank still can retrieve same record?  Or the duplication of
+> recored only happens if a shared bank is polled by multiple cpu in parallel
+> at same time?
 
+Only when multiple CPUs poll (or machine check) at the same time.
+
+> 
+> So old kernel without CMCI support running on new Nehalem class system will
+> make duplicated records, right?
+
+Occasionally when it races yes.
+
+> Doesn't it impact to current distro like RHEL5?
+
+Yes, somewhat. The bigger problem there is actually lack of broadcast handling,
+that often leads to incorrect reporting of fatal MCEs.
+
+-Andi
