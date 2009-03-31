@@ -1,79 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763403AbZCaWX5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759974AbZCaW3A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763403AbZCaWX5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Mar 2009 18:23:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758246AbZCaWXp
+	id S1759974AbZCaW3A (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Mar 2009 18:29:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756481AbZCaW2t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Mar 2009 18:23:45 -0400
-Received: from [213.79.90.228] ([213.79.90.228]:3198 "EHLO
-	buildserver.ru.mvista.com" rhost-flags-FAIL-FAIL-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1757680AbZCaWXo (ORCPT
+	Tue, 31 Mar 2009 18:28:49 -0400
+Received: from ey-out-2122.google.com ([74.125.78.26]:43271 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755237AbZCaW2s (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Mar 2009 18:23:44 -0400
-Date: Wed, 1 Apr 2009 02:23:41 +0400
-From: Anton Vorontsov <avorontsov@ru.mvista.com>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: Stephen Hemminger <shemminger@vyatta.com>, linux-pci@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH] PCI: Fix oops in pci_vpd_truncate
-Message-ID: <20090331222341.GA16479@oksana.dev.rtsoft.ru>
+	Tue, 31 Mar 2009 18:28:48 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:date:from:to:cc:subject:message-id:reply-to:references
+         :mime-version:content-type:content-disposition
+         :content-transfer-encoding:in-reply-to:user-agent;
+        b=H00NcOG3m4sjZK83qf8qZdvyRt6G+Djpm+Xguu63PkhISebtvDjQu64iJdrpOLNo5l
+         yK7Yr6b5yRmuAMjjXEMWjM5xfaUOuEtxrJr9kyQWOgPZ6TkGfxws7kN4ABqxjqENPF4o
+         cB2Tx7mSzYh98EEEGRg4in/vIiey1/5UbxMM0=
+Date: Wed, 1 Apr 2009 00:28:35 +0200
+From: Michal Januszewski <spock@gentoo.org>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: linux-kernel@vger.kernel.org, Krzysztof Helt <krzysztof.h1@poczta.fm>,
+       Ville =?utf-8?B?U3lyasOkbMOk?= <syrjala@sci.fi>,
+       linux-fbdev-devel@lists.sourceforge.net
+Subject: Re: [PATCH] fbdev: fix color component field length documentation
+Message-ID: <20090331222835.GA8482@tria>
+Reply-To: spock@gentoo.org
+References: <20090330220007.GC6540@spock.one.pl> <10f740e80903310018v7e12de88m696f07e40dc617e3@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf8
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <10f740e80903310018v7e12de88m696f07e40dc617e3@mail.gmail.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-pci_vpd_truncate() should check for dev->vpd->attr, otherwise
-this might happen:
+The documentation about the meaning of the color component bitfield lengths
+in pseudocolor modes is inconsistent.  Fix it, so that it indicates the
+correct interpretation everywhere, i.e. that 1 << length is the number
+of palette entries.
 
-sky2 driver version 1.22
-Unable to handle kernel paging request for data at address 0x0000000c
-Faulting instruction address: 0xc01836fc
-Oops: Kernel access of bad area, sig: 11 [#1]
-[...]
-NIP [c01836fc] pci_vpd_truncate+0x38/0x40
-LR [c029be18] sky2_probe+0x14c/0x518
-Call Trace:
-[ef82bde0] [c029bda4] sky2_probe+0xd8/0x518 (unreliable)
-[ef82be20] [c018a11c] local_pci_probe+0x24/0x34
-[ef82be30] [c018a14c] pci_call_probe+0x20/0x30
-[ef82be50] [c018a330] __pci_device_probe+0x64/0x78
-[ef82be60] [c018a44c] pci_device_probe+0x30/0x58
-[ef82be80] [c01aa270] really_probe+0x78/0x1a0
-[ef82bea0] [c01aa460] __driver_attach+0xa4/0xa8
-[ef82bec0] [c01a96ac] bus_for_each_dev+0x60/0x9c
-[ef82bef0] [c01aa0b4] driver_attach+0x24/0x34
-[ef82bf00] [c01a9e08] bus_add_driver+0x12c/0x1cc
-[ef82bf20] [c01aa87c] driver_register+0x6c/0x110
-[ef82bf30] [c018a770] __pci_register_driver+0x4c/0x9c
-[ef82bf50] [c03782c8] sky2_init_module+0x30/0x40
-[ef82bf60] [c0001dbc] do_one_initcall+0x34/0x1a0
-[ef82bfd0] [c0362240] do_initcalls+0x38/0x58
-
-This happens with CONFIG_SKY2=y, and "ip=on" kernel command line, so
-pci_vpd_truncate() is called before late_initcall(pci_sysfs_init),
-therefore ->attr isn't yet initialized.
-
-Signed-off-by: Anton Vorontsov <avorontsov@ru.mvista.com>
+Signed-off-by: Michal Januszewski <spock@gentoo.org>
+Cc: Krzysztof Helt <krzysztof.h1@poczta.fm>
+Cc: Ville Syrjälä <syrjala@sci.fi>
+Cc: Geert Uytterhoeven <geert.uytterhoeven@gmail.com>
 ---
- drivers/pci/access.c |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
+This version of the patch incorporates Geert's comments about the
+meaning of the offset field for pseudocolor modes.
 
-diff --git a/drivers/pci/access.c b/drivers/pci/access.c
-index 3814447..64dd7df 100644
---- a/drivers/pci/access.c
-+++ b/drivers/pci/access.c
-@@ -356,7 +356,8 @@ int pci_vpd_truncate(struct pci_dev *dev, size_t size)
- 		return -EINVAL;
- 
- 	dev->vpd->len = size;
--	dev->vpd->attr->size = size;
-+	if (dev->vpd->attr)
-+		dev->vpd->attr->size = size;
- 
- 	return 0;
- }
--- 
-1.5.6.5
+diff --git a/drivers/video/skeletonfb.c b/drivers/video/skeletonfb.c
+index df53365..63cf3bf 100644
+--- a/drivers/video/skeletonfb.c
++++ b/drivers/video/skeletonfb.c
+@@ -308,9 +308,11 @@ static int xxxfb_setcolreg(unsigned regno, unsigned red, unsigned green,
+      *   color depth = SUM(var->{color}.length)
+      *
+      * Pseudocolor:
+-     *    var->{color}.offset is 0
+-     *    var->{color}.length contains width of DAC or the number of unique
+-     *                        colors available (color depth)
++     *    var->{color}.offset is 0 unless the palette index takes less than
++     *                        bits_per_pixel bits and is stored in the upper
++     *                        bits of the pixel value
++     *    var->{color}.length is set so that 1 << length is the number of
++     *                        available palette entries
+      *    pseudo_palette is not used
+      *    RAMDAC[X] is programmed to (red, green, blue)
+      *    color depth = var->{color}.length
+diff --git a/drivers/video/vfb.c b/drivers/video/vfb.c
+index 93fe08d..7d58c8a 100644
+--- a/drivers/video/vfb.c
++++ b/drivers/video/vfb.c
+@@ -318,13 +318,16 @@ static int vfb_setcolreg(u_int regno, u_int red, u_int green, u_int blue,
+ 	 *   {hardwarespecific} contains width of RAMDAC
+ 	 *   cmap[X] is programmed to (X << red.offset) | (X << green.offset) | (X << blue.offset)
+ 	 *   RAMDAC[X] is programmed to (red, green, blue)
+-	 * 
++	 *
+ 	 * Pseudocolor:
+-	 *    uses offset = 0 && length = RAMDAC register width.
+-	 *    var->{color}.offset is 0
+-	 *    var->{color}.length contains widht of DAC
++	 *    var->{color}.offset is 0 unless the palette index takes less than
++	 *                        bits_per_pixel bits and is stored in the upper
++	 *                        bits of the pixel value
++	 *    var->{color}.length is set so that 1 << length is the number of available
++	 *                        palette entries
+ 	 *    cmap is not used
+ 	 *    RAMDAC[X] is programmed to (red, green, blue)
++	 *
+ 	 * Truecolor:
+ 	 *    does not use DAC. Usually 3 are present.
+ 	 *    var->{color}.offset contains start of bitfield
+diff --git a/include/linux/fb.h b/include/linux/fb.h
+index 31527e1..0d52630 100644
+--- a/include/linux/fb.h
++++ b/include/linux/fb.h
+@@ -172,8 +172,12 @@ struct fb_fix_screeninfo {
+ /* Interpretation of offset for color fields: All offsets are from the right,
+  * inside a "pixel" value, which is exactly 'bits_per_pixel' wide (means: you
+  * can use the offset as right argument to <<). A pixel afterwards is a bit
+- * stream and is written to video memory as that unmodified. This implies
+- * big-endian byte order if bits_per_pixel is greater than 8.
++ * stream and is written to video memory as that unmodified.
++ *
++ * For pseudocolor: offset and length should be the same for all color
++ * components. Offset specifies the position of the least significant bit
++ * of the pallette index in a pixel value. Length indicates the number
++ * of available palette entries (i.e. # of entries = 1 << length).
+  */
+ struct fb_bitfield {
+ 	__u32 offset;			/* beginning of bitfield	*/
