@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764632AbZCaXZt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764664AbZCaX0R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764632AbZCaXZt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Mar 2009 19:25:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761089AbZCaXUg
+	id S1764664AbZCaX0R (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Mar 2009 19:26:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762343AbZCaXUh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Mar 2009 19:20:36 -0400
-Received: from sous-sol.org ([216.99.217.87]:33154 "EHLO x200.localdomain"
+	Tue, 31 Mar 2009 19:20:37 -0400
+Received: from sous-sol.org ([216.99.217.87]:33148 "EHLO x200.localdomain"
 	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1761311AbZCaXUb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Mar 2009 19:20:31 -0400
-Message-Id: <20090331231646.301581504@sous-sol.org>
+	id S1760977AbZCaXUa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Mar 2009 19:20:30 -0400
+Message-Id: <20090331231334.644225443@sous-sol.org>
 User-Agent: quilt/0.47-1
-Date: Tue, 31 Mar 2009 16:11:15 -0700
+Date: Tue, 31 Mar 2009 16:10:47 -0700
 From: Chris Wright <chrisw@sous-sol.org>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -24,10 +24,10 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Russell King <rmk+kernel@arm.linux.org.uk>
-Subject: [patch 30/45] ARM: cumana: Fix a long standing bogon
+       alan@lxorguk.ukuu.org.uk, Vitaly Mayatskikh <v.mayatskih@gmail.com>
+Subject: [patch 02/45] udp: Wrong locking code in udp seq_file infrastructure
 References: <20090331231045.719396245@sous-sol.org>
-Content-Disposition: inline; filename=arm-cumana-fix-a-long-standing-bogon.patch
+Content-Disposition: inline; filename=udp-wrong-locking-code-in-udp-seq_file-infrastructure.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -35,30 +35,92 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 -stable review patch.  If anyone has any objections, please let us know.
 ---------------------
 
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+From: Vitaly Mayatskikh <v.mayatskih@gmail.com>
 
-upstream commit: ecbf61e7357d5c7047c813edd6983902d158688c
+[ Upstream commit 30842f2989aacfaba3ccb39829b3417be9313dbe ]
 
-Should be using strncmp as the data from user space may be unterminated
+Reading zero bytes from /proc/net/udp or other similar files which use
+the same seq_file udp infrastructure panics kernel in that way:
 
-(Bug #8004)
+=====================================
+[ BUG: bad unlock balance detected! ]
+-------------------------------------
+read/1985 is trying to release lock (&table->hash[i].lock) at:
+[<ffffffff81321d83>] udp_seq_stop+0x27/0x29
+but there are no more locks to release!
 
-Signed-off-by: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Signed-off-by: Russell King <rmk+kernel@arm.linux.org.uk>
+other info that might help us debug this:
+1 lock held by read/1985:
+ #0:  (&p->lock){--..}, at: [<ffffffff810eefb6>] seq_read+0x38/0x348
+
+stack backtrace:
+Pid: 1985, comm: read Not tainted 2.6.29-rc8 #9
+Call Trace:
+ [<ffffffff81321d83>] ? udp_seq_stop+0x27/0x29
+ [<ffffffff8106dab9>] print_unlock_inbalance_bug+0xd6/0xe1
+ [<ffffffff8106db62>] lock_release_non_nested+0x9e/0x1c6
+ [<ffffffff810ef030>] ? seq_read+0xb2/0x348
+ [<ffffffff8106bdba>] ? mark_held_locks+0x68/0x86
+ [<ffffffff81321d83>] ? udp_seq_stop+0x27/0x29
+ [<ffffffff8106dde7>] lock_release+0x15d/0x189
+ [<ffffffff8137163c>] _spin_unlock_bh+0x1e/0x34
+ [<ffffffff81321d83>] udp_seq_stop+0x27/0x29
+ [<ffffffff810ef239>] seq_read+0x2bb/0x348
+ [<ffffffff810eef7e>] ? seq_read+0x0/0x348
+ [<ffffffff8111aedd>] proc_reg_read+0x90/0xaf
+ [<ffffffff810d878f>] vfs_read+0xa6/0x103
+ [<ffffffff8106bfac>] ? trace_hardirqs_on_caller+0x12f/0x153
+ [<ffffffff810d88a2>] sys_read+0x45/0x69
+ [<ffffffff8101123a>] system_call_fastpath+0x16/0x1b
+BUG: scheduling while atomic: read/1985/0xffffff00
+INFO: lockdep is turned off.
+Modules linked in: cpufreq_ondemand acpi_cpufreq freq_table dm_multipath kvm ppdev snd_hda_codec_analog snd_hda_intel snd_hda_codec snd_hwdep snd_seq_dummy snd_seq_oss snd_seq_midi_event arc4 snd_s
+eq ecb thinkpad_acpi snd_seq_device iwl3945 hwmon sdhci_pci snd_pcm_oss sdhci rfkill mmc_core snd_mixer_oss i2c_i801 mac80211 yenta_socket ricoh_mmc i2c_core iTCO_wdt snd_pcm iTCO_vendor_support rs
+rc_nonstatic snd_timer snd lib80211 cfg80211 soundcore snd_page_alloc video parport_pc output parport e1000e [last unloaded: scsi_wait_scan]
+Pid: 1985, comm: read Not tainted 2.6.29-rc8 #9
+Call Trace:
+ [<ffffffff8106b456>] ? __debug_show_held_locks+0x1b/0x24
+ [<ffffffff81043660>] __schedule_bug+0x7e/0x83
+ [<ffffffff8136ede9>] schedule+0xce/0x838
+ [<ffffffff810d7972>] ? fsnotify_access+0x5f/0x67
+ [<ffffffff810112d0>] ? sysret_careful+0xb/0x37
+ [<ffffffff8106be9c>] ? trace_hardirqs_on_caller+0x1f/0x153
+ [<ffffffff8137127b>] ? trace_hardirqs_on_thunk+0x3a/0x3f
+ [<ffffffff810112f6>] sysret_careful+0x31/0x37
+read[1985]: segfault at 7fffc479bfe8 ip 0000003e7420a180 sp 00007fffc479bfa0 error 6
+Kernel panic - not syncing: Aiee, killing interrupt handler!
+
+udp_seq_stop() tries to unlock not yet locked spinlock. The lock was lost
+during splitting global udp_hash_lock to subsequent spinlocks.
+
+Signed-off by: Vitaly Mayatskikh <v.mayatskih@gmail.com>
+Acked-by: Eric Dumazet <dada1@cosmosbay.com>
+Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 ---
- drivers/scsi/arm/cumana_2.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ net/ipv4/udp.c |    6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
 
---- a/drivers/scsi/arm/cumana_2.c
-+++ b/drivers/scsi/arm/cumana_2.c
-@@ -318,7 +318,7 @@ cumanascsi_2_set_proc_info(struct Scsi_H
- {
- 	int ret = length;
+--- a/net/ipv4/udp.c
++++ b/net/ipv4/udp.c
+@@ -1614,7 +1614,8 @@ static struct sock *udp_get_next(struct 
+ 	} while (sk && (!net_eq(sock_net(sk), net) || sk->sk_family != state->family));
  
--	if (length >= 11 && strcmp(buffer, "CUMANASCSI2") == 0) {
-+	if (length >= 11 && strncmp(buffer, "CUMANASCSI2", 11) == 0) {
- 		buffer += 11;
- 		length -= 11;
+ 	if (!sk) {
+-		spin_unlock_bh(&state->udp_table->hash[state->bucket].lock);
++		if (state->bucket < UDP_HTABLE_SIZE)
++			spin_unlock_bh(&state->udp_table->hash[state->bucket].lock);
+ 		return udp_get_first(seq, state->bucket + 1);
+ 	}
+ 	return sk;
+@@ -1632,6 +1633,9 @@ static struct sock *udp_get_idx(struct s
+ 
+ static void *udp_seq_start(struct seq_file *seq, loff_t *pos)
+ {
++	struct udp_iter_state *state = seq->private;
++	state->bucket = UDP_HTABLE_SIZE;
++
+ 	return *pos ? udp_get_idx(seq, *pos-1) : SEQ_START_TOKEN;
+ }
  
 
