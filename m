@@ -1,56 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756658AbZCaJKn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756191AbZCaJNG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756658AbZCaJKn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Mar 2009 05:10:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754699AbZCaJKc
+	id S1756191AbZCaJNG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Mar 2009 05:13:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754673AbZCaJMy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Mar 2009 05:10:32 -0400
-Received: from ti-out-0910.google.com ([209.85.142.191]:13295 "EHLO
-	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752374AbZCaJKb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Mar 2009 05:10:31 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=kU1TLO84m6IYQQi59vGBFajLgI822waoFxd2HfvhkYuOIAw/BzLvKUFZsOnjLQgQsk
-         ALfDhO9Gjk75Jh0JWb/mfSYGFmfkJD2+uSmT57aA/EMgadl+3j9keW0xikTuyPvStRZi
-         EtBtyzxL9wJEETGXM9K7VXzhXxCCjH/F0/D+s=
-Message-ID: <49D1DE00.9030600@gmail.com>
-Date: Tue, 31 Mar 2009 18:10:24 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Tue, 31 Mar 2009 05:12:54 -0400
+Received: from bilbo.ozlabs.org ([203.10.76.25]:35832 "EHLO bilbo.ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752780AbZCaJMx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Mar 2009 05:12:53 -0400
 MIME-Version: 1.0
-To: Boaz Harrosh <bharrosh@panasas.com>
-CC: petkovbb@gmail.com, Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       linux-kernel@vger.kernel.org, axboe@kernel.dk,
-       linux-ide@vger.kernel.org
-Subject: Re: [PATCHSET pata-2.6] ide: rq->buffer, data, special and misc	cleanups
-References: <1237910776-10983-1-git-send-email-tj@kernel.org> <200903281451.01361.bzolnier@gmail.com> <20090328140405.GA2741@liondog.tnic> <49D08CEC.3010705@kernel.org> <49D0A985.7090307@panasas.com> <49D0FF56.3080205@kernel.org> <49D1D7A3.40303@panasas.com> <49D1DCE2.1050201@kernel.org>
-In-Reply-To: <49D1DCE2.1050201@kernel.org>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-ID: <18897.56973.324304.995540@cargo.ozlabs.ibm.com>
+Date: Tue, 31 Mar 2009 20:12:45 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: Corey Ashford <cjashfor@linux.vnet.ibm.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 13/15] perf_counter: provide generic callchain bits
+In-Reply-To: <49D1C544.7020403@linux.vnet.ibm.com>
+References: <20090330170701.856843742@chello.nl>
+	<20090330171024.254266860@chello.nl>
+	<18897.46177.528910.51044@cargo.ozlabs.ibm.com>
+	<1238481552.28248.1384.camel@twins>
+	<49D1C544.7020403@linux.vnet.ibm.com>
+X-Mailer: VM 8.0.9 under Emacs 22.2.1 (i486-pc-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I really should proof read before hitting the send button.  My head is
-somehow pretty good at messing up sentences.
+Corey Ashford writes:
 
-Tejun Heo wrote:
-> The reason why I want with sgl is because it's the sg mapping
-                   went                    it has
-...
-> wouldn't be that large anyway.  Both aren't worth worrying about
-> considering how relative coldness of the path and other overhead of
+> If this is the case, what is the exact meaning of PERF_COUNTER_SIMPLE 
+> now? and PERF_COUNTER_GROUP?  One simplification would be that reading 
+> the fd of a group leader would always read up all of the counters in the 
+> group (along with their enabled and running times if those bits are 
+> set), and that reading a single counter's fd would yield only that 
+> counter's values and times (if enabled).  In effect, these two values, 
+> PERF_COUNTER_GROUP and PERF_COUNTER_SIMPLE would no longer be necessary 
+> at all.  Other bits would be used to determine what's in the mmap'd samples.
 
-Eh.. that was a nice mix of "how the path is relatively cold" and
-"relative coldness of the path".  :-)
+Now that events are only read through mmap, it's quite simple -
+hw_event.read_format controls what read() gives you, and
+hw_event.record_type controls what gets put into the pages that you
+get with mmap.
 
-Thanks.
+Currently read_format and record_type don't use the same set of bit
+definitions.  Maybe they should?  I don't have a strong feeling about
+it, but that might be a nice simplification.
 
--- 
-tejun
+Paul.
