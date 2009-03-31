@@ -1,60 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754479AbZCaLRU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754132AbZCaLSb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754479AbZCaLRU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Mar 2009 07:17:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751220AbZCaLRH
+	id S1754132AbZCaLSb (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Mar 2009 07:18:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751220AbZCaLSV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Mar 2009 07:17:07 -0400
-Received: from extu-mxob-2.symantec.com ([216.10.194.135]:35440 "EHLO
-	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751142AbZCaLRG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Mar 2009 07:17:06 -0400
-Date: Tue, 31 Mar 2009 12:17:50 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.anvils
-To: Minchan Kim <minchan.kim@gmail.com>
-cc: linux-mm <linux-mm@kvack.org>, lkml <linux-kernel@vger.kernel.org>
-Subject: Re: add_to_swap_cache with GFP_ATOMIC ?
-In-Reply-To: <28c262360903310338k20b8eebbncb86baac9b09e54@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0903311154570.19028@blonde.anvils>
-References: <28c262360903310338k20b8eebbncb86baac9b09e54@mail.gmail.com>
+	Tue, 31 Mar 2009 07:18:21 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:52354 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750991AbZCaLSV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Mar 2009 07:18:21 -0400
+Date: Tue, 31 Mar 2009 13:18:18 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Tejun Heo <tj@kernel.org>
+Cc: Theodore Tso <tytso@mit.edu>, Chris Mason <chris.mason@oracle.com>,
+       Fernando Luis =?iso-8859-1?Q?V=E1zquez?= Cao 
+	<fernando@oss.ntt.co.jp>,
+       Jeff Garzik <jeff@garzik.org>, Christoph Hellwig <hch@infradead.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Nick Piggin <npiggin@suse.de>,
+       David Rees <drees76@gmail.com>, Jesper Krogh <jesper@krogh.cc>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       david@fromorbit.com
+Subject: Re: [PATCH 2/7] ext3: call blkdev_issue_flush() on fsync()
+Message-ID: <20090331111818.GL5178@kernel.dk>
+References: <49D01F94.6000101@oss.ntt.co.jp> <49D02328.7060108@oss.ntt.co.jp> <49D0258A.9020306@garzik.org> <49D03377.1040909@oss.ntt.co.jp> <49D0B535.2010106@oss.ntt.co.jp> <49D0B70E.8060506@oss.ntt.co.jp> <20090330140427.GG13356@mit.edu> <1238422551.30488.47.camel@think.oraclecorp.com> <20090330143343.GJ13356@mit.edu> <49D17162.1090207@kernel.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49D17162.1090207@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 31 Mar 2009, Minchan Kim wrote:
+On Tue, Mar 31 2009, Tejun Heo wrote:
+> Hello,
 > 
-> I don't know why we should call add_to_swap_cache with GFP_ATOMIC ?
-> Is there a special something for avoiding blocking?
+> Theodore Tso wrote:
+> > On Mon, Mar 30, 2009 at 10:15:51AM -0400, Chris Mason wrote:
+> >> I'm not sure we want to stick Fernando with changing how barriers are
+> >> done in individual filesystems, his patch is just changing the existing
+> >> call points.
+> > 
+> > Well, his patch actually added some calls to block_issue_flush().  But
+> > yes, it's probably better if he just changes the existing call points,
+> > and we can have the relevant filesystem maintainers double check to
+> > make sure that there aren't any new call points which are needed.
+> 
+> How about having something like blk_ensure_cache_flushed() which
+> issues flush iff there hasn't been any write since the last flush?
+> It'll be easy to implement and will filter out duplicate flushes in
+> most cases.
 
-add_to_swap_cache itself does not need to be called with GFP_ATOMIC.
+My original ide implementation of flushes actually did this. My memory
+is a little hazy on why it was dropped, I'm guessing because it
+basically never triggered anyway.
 
-There are three places from which it is called:
+-- 
+Jens Axboe
 
-read_swap_cache_async (typically used when faulting) masks the
-gfp_mask coming in (typically GFP_HIGHUSER_MOVABLE for the pages
-themselves) to call add_to_swap_cache typically with GFP_KERNEL.
-
-shmem_writepage does call it with GFP_ATOMIC: that's because it's
-holding the shmem_inode's spin_lock while it switches the page between
-file cache and swap cache - IIRC holding page lock isn't quite enough
-for that, because of other cases; but I've not thought that through
-in a long time, we could re-examine if it troubles you.
-
-The questionable one is add_to_swap (when vmscanning), which calls
-it with __GFP_HIGH|__GFP_NOMEMALLOC|__GFP_NOWARN, i.e. GFP_ATOMIC
-plus __GFP_NOMEMALLOC|__GFP_NOWARN.  That one I have wondered
-about from time to time: GFP_NOIO would be the obvious choice,
-that's what swap_writepage will use to allocate bio soon after.
-
-I've been tempted to change it, but afraid to touch that house
-of cards, and afraid of long testing and justification required.
-Would it be safe to drop that __GFP_HIGH?  What's the effect of the
-__GFP_NOMEMALLOC (we've layer on layer of tweak this one way because
-we're in the reclaim path so let it eat more, then tweak it the other
-way because we don't want it to eat up _too_ much).  I just let it stay.
-
-Hugh
