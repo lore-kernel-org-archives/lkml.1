@@ -1,56 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758588AbZCaWhq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763566AbZCaWij@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758588AbZCaWhq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Mar 2009 18:37:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755955AbZCaWhh
+	id S1763566AbZCaWij (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Mar 2009 18:38:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758101AbZCaWi1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Mar 2009 18:37:37 -0400
-Received: from beauty.rexursive.com ([150.101.121.179]:44446 "EHLO
-	beauty.rexursive.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754890AbZCaWhg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Mar 2009 18:37:36 -0400
-X-Greylist: delayed 417 seconds by postgrey-1.27 at vger.kernel.org; Tue, 31 Mar 2009 18:37:36 EDT
-Subject: Re: Linux 2.6.29
-From: Bojan Smojver <bojan@rexursive.com>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: linux-kernel@vger.kernel.org
-In-Reply-To: <49D29077.80502@goop.org>
-References: <alpine.LFD.2.00.0903251622420.3032@localhost.localdomain>
-	 <20090326171148.9bf8f1ec.akpm@linux-foundation.org>
-	 <alpine.LFD.2.00.0903261723250.3994@localhost.localdomain>
-	 <20090326174704.cd36bf7b.akpm@linux-foundation.org>
-	 <alpine.LFD.2.00.0903261752110.3994@localhost.localdomain>
-	 <20090327032301.GN6239@mit.edu> <20090327034705.GA16888@srcf.ucam.org>
-	 <20090327051338.GP6239@mit.edu> <20090327055750.GA18065@srcf.ucam.org>
-	 <20090327062114.GA18290@srcf.ucam.org> <20090327112438.GQ6239@mit.edu>
-	 <49CD4109.2070505@goop.org> <loom.20090328T073850-695@post.gmane.org>
-	 <loom.20090328T084304-506@post.gmane.org>
-	 <loom.20090328T214417-565@post.gmane.org>  <49D29077.80502@goop.org>
+	Tue, 31 Mar 2009 18:38:27 -0400
+Received: from mx2.netapp.com ([216.240.18.37]:6740 "EHLO mx2.netapp.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751850AbZCaWi0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Mar 2009 18:38:26 -0400
+X-IronPort-AV: E=Sophos;i="4.39,304,1235980800"; 
+   d="scan'208";a="148459521"
+Subject: Re: [PATCH 1/4] VFS: Add a VFS helper function
+ vfs_remote_path_lookup()
+From: Trond Myklebust <Trond.Myklebust@netapp.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-nfs@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org, viro@zeniv.linux.org.uk,
+       hch@infradead.org
+In-Reply-To: <alpine.LFD.2.00.0903311423280.6474@localhost.localdomain>
+References: <cover.1238525532.git.Trond.Myklebust@netapp.com>
+	 <3f1264127d431f695be25b940b477e3d287edc68.1238525532.git.Trond.Myklebust@netapp.com>
+	 <alpine.LFD.2.00.0903311423280.6474@localhost.localdomain>
 Content-Type: text/plain
-Date: Wed, 01 Apr 2009 09:30:36 +1100
-Message-Id: <1238538636.26693.11.camel@shrek.rexursive.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
 Content-Transfer-Encoding: 7bit
+Organization: NetApp
+Date: Tue, 31 Mar 2009 18:37:59 -0400
+Message-Id: <1238539079.28445.103.camel@heimdal.trondhjem.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.0 
+X-OriginalArrivalTime: 31 Mar 2009 22:38:22.0066 (UTC) FILETIME=[656F5520:01C9B251]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-03-31 at 14:51 -0700, Jeremy Fitzhardinge wrote:
-> I was thinking something like "munge_important_stuff | fsync > output"
-> - ie, cat which fsyncs on close.
+On Tue, 2009-03-31 at 14:40 -0700, Linus Torvalds wrote:
+> 
+> On Wed, 11 Mar 2009, Trond Myklebust wrote:
+> >
+> > This patch therefore defines a VFS helper function that sets up a temporary
+> > mount namespace to represent the server namespace, and has the current
+> > task pivot into that prior to doing the path lookup. Upon completion, it
+> > pivots back into the original namespace, and destroys the private one.
+> 
+> This is disgusting.
+> 
+> Why don't you just create the namespace once?
+> 
+> Also, why do you need that disgusting pivot thing, when we could instead 
+> trivially just add a 
+> 
+> 	struct filesystem *fs;
+> 
+> into the nameidata, and then we can initialize it to
+> 
+> 	nd->fs = current->fs
+> 
+> and make all the path walkers use that.
+> 
+> Or we could even try to clean up that horrid AT_FDCWD mess, and drop the 
+> whole "dfd" passing to "do_path_lookup()", and instead do
+> 
+> 	rwlock_t *lock;
+> 	struct path *root, *pwd;
+> 
+> and do
+> 
+> 	nd->lock = &current->fs->lock;
+> 	nd->root = &current->fs->root;
+> 	nd->pwd =  &current->fs->pwd;
+> 
+> to initialize things. Then drop dfd as an argument entirely from 
+> path_lookup_open() and do_path_lookup(), and just have the caller 
+> initialize the nameidata (the only caller that doesn't use fs->pwd 
+> currently is do_filp_open(), which takes that 'dfd' and could just 
+> initialize nd->pwd to the right thing.
 
-Yeah, after I wrote my initial comment, I noticed you were saying
-essentially the same thing in your original post. I know, I should
-_read_ before posting. Sorry :-(
+I'd be fine with that.
 
-> In fact, its vaguely surprising that GNU  cat doesn't have this
-> already.
+> I dunno. This is very Al Viroish country, but I really hate how your patch 
+> looks. 99% of it is just working around the fact that you want some very 
+> _slight_ differences to how that special '/' thing is handled.
 
-I have no idea why we don't have that either. FreeBSD code seems really
-straightforward.
+No. The main purpose is to able to look up and walk down an NFSv4 mount
+path, which is a path on the _server_'s file/directory namespace.
+In order to be able to follow any valid mount path that the user
+supplies, we need the ability to follow symlinks, cross mount points and
+even cross NFSv4 referrals (i.e. afs-like junctions that point to paths
+on a different server).
 
+Under normal path walking we use the 'follow_link()' method of
+autogenerating mountpoints (see
+Documentation/filesystems/automount-support.txt) when we come across
+mount points or referrals on the server. If you are walking a path that
+is not supposed to be visible to user processes, you therefore need a
+private namespace.
+
+> It's not worth doing these kinds of hacks for that.
+> 
+> And I think it's positively _wrong_ to have a function that creates and 
+> destroys the whole "struct fs_struct" and a namespace for just one call. 
+> Even if you don't think it's at all performance-critical, the interface is 
+> too damn ugly. Have separate "create/destroy context" functions, so that 
+> you _can_ do it just once, and have multiple calls in between.
+
+That can probably be done, but the main reason for having the namespace
+was to be able, once the sys_mount() is complete, to garbage collect and
+get rid of those autogenerated mount points that are not user visible.
+
+Cheers
+  Trond
 -- 
-Bojan
+Trond Myklebust
+Linux NFS client maintainer
 
+NetApp
+Trond.Myklebust@netapp.com
+www.netapp.com
