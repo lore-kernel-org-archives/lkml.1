@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760863AbZCaNe4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760509AbZCaNfc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760863AbZCaNe4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Mar 2009 09:34:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760469AbZCaNdc
+	id S1760509AbZCaNfc (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Mar 2009 09:35:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760482AbZCaNdd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Mar 2009 09:33:32 -0400
-Received: from mga01.intel.com ([192.55.52.88]:16613 "EHLO mga01.intel.com"
+	Tue, 31 Mar 2009 09:33:33 -0400
+Received: from mga01.intel.com ([192.55.52.88]:25809 "EHLO mga01.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760444AbZCaNda (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1760447AbZCaNda (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 31 Mar 2009 09:33:30 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.38,453,1233561600"; 
-   d="scan'208";a="677481201"
-Date: Tue, 31 Mar 2009 14:42:29 +0200
+   d="scan'208";a="677481212"
+Date: Tue, 31 Mar 2009 14:50:51 +0200
 From: Markus Metzger <markus.t.metzger@intel.com>
 To: linux-kernel@vger.kernel.org, mingo@elte.hu, tglx@linutronix.de,
        hpa@zytor.com
 Cc: markus.t.metzger@intel.com, markus.t.metzger@gmail.com, roland@redhat.com,
        eranian@googlemail.com, oleg@redhat.com, juan.villacis@intel.com,
        ak@linux.jf.intel.com
-Subject: [patch 0/21] x86, ptrace, bts, hw-branch-tracer: fixes and cleanups
-Message-ID: <20090331144229.A11867@sedona.ch.intel.com>
+Subject: [patch 1/21] x86, bts: fix race when bts tracer is removed
+Message-ID: <20090331145051.A12111@sedona.ch.intel.com>
 Mime-Version: 1.0
 Content-Disposition: inline
 User-Agent: Mutt/1.2.5i
@@ -30,68 +30,104 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Patches 1-6 fix a number of races when the traced task is currently running.
+When the bts tracer is removed while the traced task is running,
+the write to clear the bts tracer pointer races with context switch code.
 
-In the worst case, the kernel may crash since the cpu may continue
-tracing after the trace buffer has already been freed.
-This may happen when the tracing or traced task are killed.
-
-The first 5 patches apply to .29 with the small preparation patch below.
+Read the tracer once during a context switch.
 
 
-Patches 7-11 fix problems with the hw-branch-tracer. It performs DS
-operations in an on_each_cpu() context, which has interrupts disabled.
-Patch 7 adds a _noirq version for most ds_ functions and separates
-cpu and task tracing. It allows cpu tracing to be configured from any cpu.
-This allows the hw-branch-tracer in patch 8 to remove the bad spinlock
-and use simple for_each_online_cpu loops.
-The remaining patches change the other DS users to use the new interface.
+When a new tracer is installed, the bts tracer is set in the ds context
+before the tracer is initialized in order to claim the context for that
+tracer.
+This may result in write accesses using an uninitialized trace configuration
+when scheduling timestamps have been requested.
 
-Patches 12-15 add more selftests, defer selftesting, and fix a bad check.
-
-Patches 16-19 do some cleanups that have been requested from reviewers.
-
-Patch 20 fixes a bug where the wrong qualifier was passed to a shared function
-resulting in the bts configuration to be reset when a reset of the pebs
-configuration had been requested.
-
-Patch 21 adds support for Core i7.
-
-
-Thanks to Oleg Nesterov for reviewing the first round of patches and
-for pointing out several races!
+Store active tracing flags separately and only set active flags after
+the tracing configuration has been initialized.
 
 
 Signed-off-by: Markus Metzger <markus.t.metzger@intel.com>
 ---
 
-Index: linux-2.6.29/arch/x86/kernel/ds.c
+Index: git-tip/arch/x86/kernel/ds.c
 ===================================================================
---- linux-2.6.29.orig/arch/x86/kernel/ds.c	2009-03-31 11:56:21.000000000 +0200
-+++ linux-2.6.29/arch/x86/kernel/ds.c	2009-03-31 11:57:38.000000000 +0200
-@@ -78,8 +78,8 @@ struct bts_tracer {
- 	struct ds_tracer ds;
- 	/* the trace including the DS configuration */
- 	struct bts_trace trace;
--	/* buffer overflow notification function */
--	bts_ovfl_callback_t ovfl;
-+	/* Buffer overflow notification function: */
-+	bts_ovfl_callback_t	ovfl;
+--- git-tip.orig/arch/x86/kernel/ds.c	2009-03-30 17:47:21.000000000 +0200
++++ git-tip/arch/x86/kernel/ds.c	2009-03-30 17:48:31.000000000 +0200
+@@ -89,6 +89,9 @@ struct bts_tracer {
+ 
+ 	/* Buffer overflow notification function: */
+ 	bts_ovfl_callback_t	ovfl;
++
++	/* Active flags affecting trace collection. */
++	unsigned int		flags;
  };
  
  struct pebs_tracer {
-Index: linux-2.6.29/arch/x86/kernel/ptrace.c
-===================================================================
---- linux-2.6.29.orig/arch/x86/kernel/ptrace.c	2009-03-31 11:56:21.000000000 +0200
-+++ linux-2.6.29/arch/x86/kernel/ptrace.c	2009-03-31 11:56:24.000000000 +0200
-@@ -21,6 +21,7 @@
- #include <linux/audit.h>
- #include <linux/seccomp.h>
- #include <linux/signal.h>
-+#include <linux/ftrace.h>
+@@ -799,6 +802,8 @@ void ds_suspend_bts(struct bts_tracer *t
+ 	if (!tracer)
+ 		return;
  
- #include <asm/uaccess.h>
- #include <asm/pgtable.h>
++	tracer->flags = 0;
++
+ 	task = tracer->ds.context->task;
+ 
+ 	if (!task || (task == current))
+@@ -820,6 +825,8 @@ void ds_resume_bts(struct bts_tracer *tr
+ 	if (!tracer)
+ 		return;
+ 
++	tracer->flags = tracer->trace.ds.flags;
++
+ 	task = tracer->ds.context->task;
+ 
+ 	control = ds_cfg.ctl[dsf_bts];
+@@ -1044,36 +1051,39 @@ void ds_switch_to(struct task_struct *pr
+ {
+ 	struct ds_context *prev_ctx = prev->thread.ds_ctx;
+ 	struct ds_context *next_ctx = next->thread.ds_ctx;
++	unsigned long debugctlmsr = next->thread.debugctlmsr;
+ 
+ 	if (prev_ctx) {
++		struct bts_tracer *tracer = prev_ctx->bts_master;
++
+ 		update_debugctlmsr(0);
+ 
+-		if (prev_ctx->bts_master &&
+-		    (prev_ctx->bts_master->trace.ds.flags & BTS_TIMESTAMPS)) {
++		if (tracer && (tracer->flags & BTS_TIMESTAMPS)) {
+ 			struct bts_struct ts = {
+ 				.qualifier = bts_task_departs,
+ 				.variant.timestamp.jiffies = jiffies_64,
+ 				.variant.timestamp.pid = prev->pid
+ 			};
+-			bts_write(prev_ctx->bts_master, &ts);
++			bts_write(tracer, &ts);
+ 		}
+ 	}
+ 
+ 	if (next_ctx) {
+-		if (next_ctx->bts_master &&
+-		    (next_ctx->bts_master->trace.ds.flags & BTS_TIMESTAMPS)) {
++		struct bts_tracer *tracer = next_ctx->bts_master;
++
++		if (tracer && (tracer->flags & BTS_TIMESTAMPS)) {
+ 			struct bts_struct ts = {
+ 				.qualifier = bts_task_arrives,
+ 				.variant.timestamp.jiffies = jiffies_64,
+ 				.variant.timestamp.pid = next->pid
+ 			};
+-			bts_write(next_ctx->bts_master, &ts);
++			bts_write(tracer, &ts);
+ 		}
+ 
+ 		wrmsrl(MSR_IA32_DS_AREA, (unsigned long)next_ctx->ds);
+ 	}
+ 
+-	update_debugctlmsr(next->thread.debugctlmsr);
++	update_debugctlmsr(debugctlmsr);
+ }
+ 
+ void ds_copy_thread(struct task_struct *tsk, struct task_struct *father)
 ---------------------------------------------------------------------
 Intel GmbH
 Dornacher Strasse 1
