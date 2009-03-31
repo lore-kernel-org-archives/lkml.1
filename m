@@ -1,22 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762572AbZCaPYu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761699AbZCaP0R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762572AbZCaPYu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Mar 2009 11:24:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762225AbZCaPXa
+	id S1761699AbZCaP0R (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Mar 2009 11:26:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762234AbZCaPXq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Mar 2009 11:23:30 -0400
-Received: from g5t0008.atlanta.hp.com ([15.192.0.45]:42674 "EHLO
-	g5t0008.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762110AbZCaPX2 (ORCPT
+	Tue, 31 Mar 2009 11:23:46 -0400
+Received: from g1t0028.austin.hp.com ([15.216.28.35]:28568 "EHLO
+	g1t0028.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762332AbZCaPXo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Mar 2009 11:23:28 -0400
-Subject: [PATCH 04/15] PCI Hotplug: cpqphp: remove useless prototypes in
-	cpqphp_core.c
+	Tue, 31 Mar 2009 11:23:44 -0400
+Subject: [PATCH 07/15] PCI Hotplug: cpqphp: clean up cpqphp_ctrl.c
 To: jbarnes@virtuousgeek.org
 From: Alex Chiang <achiang@hp.com>
 Cc: linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org
-Date: Tue, 31 Mar 2009 09:23:26 -0600
-Message-ID: <20090331152326.26622.32020.stgit@bob.kio>
+Date: Tue, 31 Mar 2009 09:23:41 -0600
+Message-ID: <20090331152341.26622.15893.stgit@bob.kio>
 In-Reply-To: <20090331150158.26622.45423.stgit@bob.kio>
 References: <20090331150158.26622.45423.stgit@bob.kio>
 User-Agent: StGit/0.14.3.347.g594a
@@ -27,510 +26,313 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: refactor
-
-Refactor code to follow convention more closely and eliminate the need
-for some useless prototypes.
-
-No functional change.
+Style and whitespace cleanups, no functional change.
 
 Signed-off-by: Alex Chiang <achiang@hp.com>
 ---
 
- drivers/pci/hotplug/cpqphp_core.c |  461 ++++++++++++++++++-------------------
- 1 files changed, 224 insertions(+), 237 deletions(-)
+ drivers/pci/hotplug/cpqphp_ctrl.c |  170 +++++++++++++++++--------------------
+ 1 files changed, 79 insertions(+), 91 deletions(-)
 
-diff --git a/drivers/pci/hotplug/cpqphp_core.c b/drivers/pci/hotplug/cpqphp_core.c
-index 91dc958..f05ea7a 100644
---- a/drivers/pci/hotplug/cpqphp_core.c
-+++ b/drivers/pci/hotplug/cpqphp_core.c
-@@ -77,33 +77,6 @@ MODULE_PARM_DESC(debug, "Debugging mode enabled or not");
- 
- #define CPQHPC_MODULE_MINOR 208
- 
--static int one_time_init	(void);
--static int set_attention_status	(struct hotplug_slot *slot, u8 value);
--static int process_SI		(struct hotplug_slot *slot);
--static int process_SS		(struct hotplug_slot *slot);
--static int hardware_test	(struct hotplug_slot *slot, u32 value);
--static int get_power_status	(struct hotplug_slot *slot, u8 *value);
--static int get_attention_status	(struct hotplug_slot *slot, u8 *value);
--static int get_latch_status	(struct hotplug_slot *slot, u8 *value);
--static int get_adapter_status	(struct hotplug_slot *slot, u8 *value);
--static int get_max_bus_speed	(struct hotplug_slot *slot, enum pci_bus_speed *value);
--static int get_cur_bus_speed	(struct hotplug_slot *slot, enum pci_bus_speed *value);
--
--static struct hotplug_slot_ops cpqphp_hotplug_slot_ops = {
--	.owner =		THIS_MODULE,
--	.set_attention_status =	set_attention_status,
--	.enable_slot =		process_SI,
--	.disable_slot =		process_SS,
--	.hardware_test =	hardware_test,
--	.get_power_status =	get_power_status,
--	.get_attention_status =	get_attention_status,
--	.get_latch_status =	get_latch_status,
--	.get_adapter_status =	get_adapter_status,
--	.get_max_bus_speed =	get_max_bus_speed,
--	.get_cur_bus_speed =	get_cur_bus_speed,
--};
--
--
- static inline int is_slot64bit(struct slot *slot)
+diff --git a/drivers/pci/hotplug/cpqphp_ctrl.c b/drivers/pci/hotplug/cpqphp_ctrl.c
+index b02b8dd..2fa47af 100644
+--- a/drivers/pci/hotplug/cpqphp_ctrl.c
++++ b/drivers/pci/hotplug/cpqphp_ctrl.c
+@@ -132,9 +132,8 @@ static struct slot *cpqhp_find_slot(struct controller *ctrl, u8 device)
  {
- 	return (readb(slot->p_sm_slot + SMBIOS_SLOT_WIDTH) == 0x06) ? 1 : 0;
-@@ -322,145 +295,6 @@ static void release_slot(struct hotplug_slot *hotplug_slot)
- 	kfree(slot);
- }
+ 	struct slot *slot = ctrl->slot;
  
--#define SLOT_NAME_SIZE 10
--
--static int ctrl_slot_setup(struct controller *ctrl,
--			void __iomem *smbios_start,
--			void __iomem *smbios_table)
--{
--	struct slot *slot;
--	struct hotplug_slot *hotplug_slot;
--	struct hotplug_slot_info *hotplug_slot_info;
--	u8 number_of_slots;
--	u8 slot_device;
--	u8 slot_number;
--	u8 ctrl_slot;
--	u32 tempdword;
--	char name[SLOT_NAME_SIZE];
--	void __iomem *slot_entry= NULL;
--	int result = -ENOMEM;
--
--	dbg("%s\n", __func__);
--
--	tempdword = readl(ctrl->hpc_reg + INT_INPUT_CLEAR);
--
--	number_of_slots = readb(ctrl->hpc_reg + SLOT_MASK) & 0x0F;
--	slot_device = readb(ctrl->hpc_reg + SLOT_MASK) >> 4;
--	slot_number = ctrl->first_slot;
--
--	while (number_of_slots) {
--		slot = kzalloc(sizeof(*slot), GFP_KERNEL);
--		if (!slot)
--			goto error;
--
--		slot->hotplug_slot = kzalloc(sizeof(*(slot->hotplug_slot)),
--						GFP_KERNEL);
--		if (!slot->hotplug_slot)
--			goto error_slot;
--		hotplug_slot = slot->hotplug_slot;
--
--		hotplug_slot->info =
--				kzalloc(sizeof(*(hotplug_slot->info)),
--							GFP_KERNEL);
--		if (!hotplug_slot->info)
--			goto error_hpslot;
--		hotplug_slot_info = hotplug_slot->info;
--
--		slot->ctrl = ctrl;
--		slot->bus = ctrl->bus;
--		slot->device = slot_device;
--		slot->number = slot_number;
--		dbg("slot->number = %u\n", slot->number);
--
--		slot_entry = get_SMBIOS_entry(smbios_start, smbios_table, 9,
--					slot_entry);
--
--		while (slot_entry && (readw(slot_entry + SMBIOS_SLOT_NUMBER) !=
--				slot->number)) {
--			slot_entry = get_SMBIOS_entry(smbios_start,
--						smbios_table, 9, slot_entry);
--		}
--
--		slot->p_sm_slot = slot_entry;
--
--		init_timer(&slot->task_event);
--		slot->task_event.expires = jiffies + 5 * HZ;
--		slot->task_event.function = cpqhp_pushbutton_thread;
--
--		/*FIXME: these capabilities aren't used but if they are
--		 *	 they need to be correctly implemented
--		 */
--		slot->capabilities |= PCISLOT_REPLACE_SUPPORTED;
--		slot->capabilities |= PCISLOT_INTERLOCK_SUPPORTED;
--
--		if (is_slot64bit(slot))
--			slot->capabilities |= PCISLOT_64_BIT_SUPPORTED;
--		if (is_slot66mhz(slot))
--			slot->capabilities |= PCISLOT_66_MHZ_SUPPORTED;
--		if (ctrl->speed == PCI_SPEED_66MHz)
--			slot->capabilities |= PCISLOT_66_MHZ_OPERATION;
--
--		ctrl_slot =
--			slot_device - (readb(ctrl->hpc_reg + SLOT_MASK) >> 4);
--
--		/* Check presence */
--		slot->capabilities |=
--			((((~tempdword) >> 23) |
--			 ((~tempdword) >> 15)) >> ctrl_slot) & 0x02;
--		/* Check the switch state */
--		slot->capabilities |=
--			((~tempdword & 0xFF) >> ctrl_slot) & 0x01;
--		/* Check the slot enable */
--		slot->capabilities |=
--			((read_slot_enable(ctrl) << 2) >> ctrl_slot) & 0x04;
--
--		/* register this slot with the hotplug pci core */
--		hotplug_slot->release = &release_slot;
--		hotplug_slot->private = slot;
--		snprintf(name, SLOT_NAME_SIZE, "%u", slot->number);
--		hotplug_slot->ops = &cpqphp_hotplug_slot_ops;
--
--		hotplug_slot_info->power_status = get_slot_enabled(ctrl, slot);
--		hotplug_slot_info->attention_status =
--			cpq_get_attention_status(ctrl, slot);
--		hotplug_slot_info->latch_status =
--			cpq_get_latch_status(ctrl, slot);
--		hotplug_slot_info->adapter_status =
--			get_presence_status(ctrl, slot);
--
--		dbg("registering bus %d, dev %d, number %d, "
--				"ctrl->slot_device_offset %d, slot %d\n",
--				slot->bus, slot->device,
--				slot->number, ctrl->slot_device_offset,
--				slot_number);
--		result = pci_hp_register(hotplug_slot,
--					 ctrl->pci_dev->bus,
--					 slot->device,
--					 name);
--		if (result) {
--			err("pci_hp_register failed with error %d\n", result);
--			goto error_info;
--		}
--
--		slot->next = ctrl->slot;
--		ctrl->slot = slot;
--
--		number_of_slots--;
--		slot_device++;
--		slot_number++;
+-	while (slot && (slot->device != device)) {
++	while (slot && (slot->device != device))
+ 		slot = slot->next;
 -	}
+ 
+ 	return slot;
+ }
+@@ -549,10 +548,10 @@ static struct pci_resource *get_io_resource(struct pci_resource **head, u32 size
+ 	if (!(*head))
+ 		return NULL;
+ 
+-	if ( cpqhp_resource_sort_and_combine(head) )
++	if (cpqhp_resource_sort_and_combine(head))
+ 		return NULL;
+ 
+-	if ( sort_by_size(head) )
++	if (sort_by_size(head))
+ 		return NULL;
+ 
+ 	for (node = *head; node; node = node->next) {
+@@ -974,12 +973,8 @@ struct pci_func *cpqhp_slot_create(u8 busnumber)
+ 	struct pci_func *next;
+ 
+ 	new_slot = kzalloc(sizeof(*new_slot), GFP_KERNEL);
+-	if (new_slot == NULL) {
+-		/* I'm not dead yet!
+-		 * You will be.
+-		 */
++	if (new_slot == NULL)
+ 		return new_slot;
+-	}
+ 
+ 	new_slot->next = NULL;
+ 	new_slot->configured = 1;
+@@ -1010,10 +1005,8 @@ static int slot_remove(struct pci_func * old_slot)
+ 		return 1;
+ 
+ 	next = cpqhp_slot_list[old_slot->bus];
 -
--	return 0;
--error_info:
--	kfree(hotplug_slot_info);
--error_hpslot:
--	kfree(hotplug_slot);
--error_slot:
--	kfree(slot);
--error:
--	return result;
--}
+-	if (next == NULL) {
++	if (next == NULL)
+ 		return 1;
+-	}
+ 
+ 	if (next == old_slot) {
+ 		cpqhp_slot_list[old_slot->bus] = old_slot->next;
+@@ -1022,9 +1015,8 @@ static int slot_remove(struct pci_func * old_slot)
+ 		return 0;
+ 	}
+ 
+-	while ((next->next != old_slot) && (next->next != NULL)) {
++	while ((next->next != old_slot) && (next->next != NULL))
+ 		next = next->next;
+-	}
+ 
+ 	if (next->next == old_slot) {
+ 		next->next = old_slot->next;
+@@ -1054,9 +1046,8 @@ static int bridge_slot_remove(struct pci_func *bridge)
+ 	for (tempBus = secondaryBus; tempBus <= subordinateBus; tempBus++) {
+ 		next = cpqhp_slot_list[tempBus];
+ 
+-		while (!slot_remove(next)) {
++		while (!slot_remove(next))
+ 			next = cpqhp_slot_list[tempBus];
+-		}
+ 	}
+ 
+ 	next = cpqhp_slot_list[bridge->bus];
+@@ -1286,17 +1277,17 @@ static u32 board_replaced(struct pci_func *func, struct controller *ctrl)
+ 
+ 	hp_slot = func->device - ctrl->slot_device_offset;
+ 
+-	if (readl(ctrl->hpc_reg + INT_INPUT_CLEAR) & (0x01L << hp_slot)) {
+-		/*
+-		 * The switch is open.
+-		 */
++	/*
++	 * The switch is open.
++	 */
++	if (readl(ctrl->hpc_reg + INT_INPUT_CLEAR) & (0x01L << hp_slot))
+ 		rc = INTERLOCK_OPEN;
+-	} else if (is_slot_enabled (ctrl, hp_slot)) {
+-		/*
+-		 * The board is already on
+-		 */
++	/*
++	 * The board is already on
++	 */
++	else if (is_slot_enabled (ctrl, hp_slot))
+ 		rc = CARD_FUNCTIONING;
+-	} else {
++	else {
+ 		mutex_lock(&ctrl->crit_sect);
+ 
+ 		/* turn on board without attaching to the bus */
+@@ -1542,7 +1533,7 @@ static u32 board_added(struct pci_func *func, struct controller *ctrl)
+ 	}
+ 
+ 	/* All F's is an empty slot or an invalid board */
+-	if (temp_register != 0xFFFFFFFF) {	  /* Check for a board in the slot */
++	if (temp_register != 0xFFFFFFFF) {
+ 		res_lists.io_head = ctrl->io_head;
+ 		res_lists.mem_head = ctrl->mem_head;
+ 		res_lists.p_mem_head = ctrl->p_mem_head;
+@@ -1591,9 +1582,8 @@ static u32 board_added(struct pci_func *func, struct controller *ctrl)
+ 		index = 0;
+ 		do {
+ 			new_slot = cpqhp_slot_find(ctrl->bus, func->device, index++);
+-			if (new_slot && !new_slot->pci_dev) {
++			if (new_slot && !new_slot->pci_dev)
+ 				cpqhp_configure_device(ctrl, new_slot);
+-			}
+ 		} while (new_slot);
+ 
+ 		mutex_lock(&ctrl->crit_sect);
+@@ -2134,9 +2124,8 @@ int cpqhp_process_SS(struct controller *ctrl, struct pci_func *func)
+ 
+ 				/* If the VGA Enable bit is set, remove isn't
+ 				 * supported */
+-				if (BCR & PCI_BRIDGE_CTL_VGA) {
++				if (BCR & PCI_BRIDGE_CTL_VGA)
+ 					rc = REMOVE_NOT_SUPPORTED;
+-				}
+ 			}
+ 		}
+ 
+@@ -2204,67 +2193,67 @@ int cpqhp_hardware_test(struct controller *ctrl, int test_num)
+ 	num_of_slots = readb(ctrl->hpc_reg + SLOT_MASK) & 0x0f;
+ 
+ 	switch (test_num) {
+-		case 1:
+-			/* Do stuff here! */
 -
- static int ctrl_slot_cleanup (struct controller * ctrl)
- {
- 	struct slot *old_slot, *next_slot;
-@@ -793,6 +627,230 @@ static int get_cur_bus_speed (struct hotplug_slot *hotplug_slot, enum pci_bus_sp
+-			/* Do that funky LED thing */
+-			/* so we can restore them later */
+-			save_LED = readl(ctrl->hpc_reg + LED_CONTROL);
+-			work_LED = 0x01010101;
+-			switch_leds(ctrl, num_of_slots, &work_LED, 0);
+-			switch_leds(ctrl, num_of_slots, &work_LED, 1);
+-			switch_leds(ctrl, num_of_slots, &work_LED, 0);
+-			switch_leds(ctrl, num_of_slots, &work_LED, 1);
+-
+-			work_LED = 0x01010000;
+-			writel(work_LED, ctrl->hpc_reg + LED_CONTROL);
+-			switch_leds(ctrl, num_of_slots, &work_LED, 0);
+-			switch_leds(ctrl, num_of_slots, &work_LED, 1);
+-			work_LED = 0x00000101;
+-			writel(work_LED, ctrl->hpc_reg + LED_CONTROL);
+-			switch_leds(ctrl, num_of_slots, &work_LED, 0);
+-			switch_leds(ctrl, num_of_slots, &work_LED, 1);
+-
+-			work_LED = 0x01010000;
+-			writel(work_LED, ctrl->hpc_reg + LED_CONTROL);
+-			for (loop = 0; loop < num_of_slots; loop++) {
+-				set_SOGO(ctrl);
++	case 1:
++		/* Do stuff here! */
++
++		/* Do that funky LED thing */
++		/* so we can restore them later */
++		save_LED = readl(ctrl->hpc_reg + LED_CONTROL);
++		work_LED = 0x01010101;
++		switch_leds(ctrl, num_of_slots, &work_LED, 0);
++		switch_leds(ctrl, num_of_slots, &work_LED, 1);
++		switch_leds(ctrl, num_of_slots, &work_LED, 0);
++		switch_leds(ctrl, num_of_slots, &work_LED, 1);
++
++		work_LED = 0x01010000;
++		writel(work_LED, ctrl->hpc_reg + LED_CONTROL);
++		switch_leds(ctrl, num_of_slots, &work_LED, 0);
++		switch_leds(ctrl, num_of_slots, &work_LED, 1);
++		work_LED = 0x00000101;
++		writel(work_LED, ctrl->hpc_reg + LED_CONTROL);
++		switch_leds(ctrl, num_of_slots, &work_LED, 0);
++		switch_leds(ctrl, num_of_slots, &work_LED, 1);
++
++		work_LED = 0x01010000;
++		writel(work_LED, ctrl->hpc_reg + LED_CONTROL);
++		for (loop = 0; loop < num_of_slots; loop++) {
++			set_SOGO(ctrl);
+ 
+-				/* Wait for SOGO interrupt */
+-				wait_for_ctrl_irq (ctrl);
++			/* Wait for SOGO interrupt */
++			wait_for_ctrl_irq (ctrl);
+ 
+-				/* Get ready for next iteration */
+-				long_delay((3*HZ)/10);
+-				work_LED = work_LED >> 16;
+-				writel(work_LED, ctrl->hpc_reg + LED_CONTROL);
++			/* Get ready for next iteration */
++			long_delay((3*HZ)/10);
++			work_LED = work_LED >> 16;
++			writel(work_LED, ctrl->hpc_reg + LED_CONTROL);
+ 
+-				set_SOGO(ctrl);
++			set_SOGO(ctrl);
+ 
+-				/* Wait for SOGO interrupt */
+-				wait_for_ctrl_irq (ctrl);
++			/* Wait for SOGO interrupt */
++			wait_for_ctrl_irq (ctrl);
+ 
+-				/* Get ready for next iteration */
+-				long_delay((3*HZ)/10);
+-				work_LED = work_LED << 16;
+-				writel(work_LED, ctrl->hpc_reg + LED_CONTROL);
+-				work_LED = work_LED << 1;
+-				writel(work_LED, ctrl->hpc_reg + LED_CONTROL);
+-			}
++			/* Get ready for next iteration */
++			long_delay((3*HZ)/10);
++			work_LED = work_LED << 16;
++			writel(work_LED, ctrl->hpc_reg + LED_CONTROL);
++			work_LED = work_LED << 1;
++			writel(work_LED, ctrl->hpc_reg + LED_CONTROL);
++		}
+ 
+-			/* put it back the way it was */
+-			writel(save_LED, ctrl->hpc_reg + LED_CONTROL);
++		/* put it back the way it was */
++		writel(save_LED, ctrl->hpc_reg + LED_CONTROL);
+ 
+-			set_SOGO(ctrl);
++		set_SOGO(ctrl);
+ 
+-			/* Wait for SOBS to be unset */
+-			wait_for_ctrl_irq (ctrl);
+-			break;
+-		case 2:
+-			/* Do other stuff here! */
+-			break;
+-		case 3:
+-			/* and more... */
+-			break;
++		/* Wait for SOBS to be unset */
++		wait_for_ctrl_irq (ctrl);
++		break;
++	case 2:
++		/* Do other stuff here! */
++		break;
++	case 3:
++		/* and more... */
++		break;
+ 	}
  	return 0;
  }
+@@ -2333,9 +2322,9 @@ static u32 configure_new_device(struct controller * ctrl, struct pci_func * func
+ 		while ((function < max_functions) && (!stop_it)) {
+ 			pci_bus_read_config_dword (ctrl->pci_bus, PCI_DEVFN(func->device, function), 0x00, &ID);
  
-+static struct hotplug_slot_ops cpqphp_hotplug_slot_ops = {
-+	.owner =		THIS_MODULE,
-+	.set_attention_status =	set_attention_status,
-+	.enable_slot =		process_SI,
-+	.disable_slot =		process_SS,
-+	.hardware_test =	hardware_test,
-+	.get_power_status =	get_power_status,
-+	.get_attention_status =	get_attention_status,
-+	.get_latch_status =	get_latch_status,
-+	.get_adapter_status =	get_adapter_status,
-+	.get_max_bus_speed =	get_max_bus_speed,
-+	.get_cur_bus_speed =	get_cur_bus_speed,
-+};
-+
-+#define SLOT_NAME_SIZE 10
-+
-+static int ctrl_slot_setup(struct controller *ctrl,
-+			void __iomem *smbios_start,
-+			void __iomem *smbios_table)
-+{
-+	struct slot *slot;
-+	struct hotplug_slot *hotplug_slot;
-+	struct hotplug_slot_info *hotplug_slot_info;
-+	u8 number_of_slots;
-+	u8 slot_device;
-+	u8 slot_number;
-+	u8 ctrl_slot;
-+	u32 tempdword;
-+	char name[SLOT_NAME_SIZE];
-+	void __iomem *slot_entry= NULL;
-+	int result = -ENOMEM;
-+
-+	dbg("%s\n", __func__);
-+
-+	tempdword = readl(ctrl->hpc_reg + INT_INPUT_CLEAR);
-+
-+	number_of_slots = readb(ctrl->hpc_reg + SLOT_MASK) & 0x0F;
-+	slot_device = readb(ctrl->hpc_reg + SLOT_MASK) >> 4;
-+	slot_number = ctrl->first_slot;
-+
-+	while (number_of_slots) {
-+		slot = kzalloc(sizeof(*slot), GFP_KERNEL);
-+		if (!slot)
-+			goto error;
-+
-+		slot->hotplug_slot = kzalloc(sizeof(*(slot->hotplug_slot)),
-+						GFP_KERNEL);
-+		if (!slot->hotplug_slot)
-+			goto error_slot;
-+		hotplug_slot = slot->hotplug_slot;
-+
-+		hotplug_slot->info =
-+				kzalloc(sizeof(*(hotplug_slot->info)),
-+							GFP_KERNEL);
-+		if (!hotplug_slot->info)
-+			goto error_hpslot;
-+		hotplug_slot_info = hotplug_slot->info;
-+
-+		slot->ctrl = ctrl;
-+		slot->bus = ctrl->bus;
-+		slot->device = slot_device;
-+		slot->number = slot_number;
-+		dbg("slot->number = %u\n", slot->number);
-+
-+		slot_entry = get_SMBIOS_entry(smbios_start, smbios_table, 9,
-+					slot_entry);
-+
-+		while (slot_entry && (readw(slot_entry + SMBIOS_SLOT_NUMBER) !=
-+				slot->number)) {
-+			slot_entry = get_SMBIOS_entry(smbios_start,
-+						smbios_table, 9, slot_entry);
-+		}
-+
-+		slot->p_sm_slot = slot_entry;
-+
-+		init_timer(&slot->task_event);
-+		slot->task_event.expires = jiffies + 5 * HZ;
-+		slot->task_event.function = cpqhp_pushbutton_thread;
-+
-+		/*FIXME: these capabilities aren't used but if they are
-+		 *	 they need to be correctly implemented
-+		 */
-+		slot->capabilities |= PCISLOT_REPLACE_SUPPORTED;
-+		slot->capabilities |= PCISLOT_INTERLOCK_SUPPORTED;
-+
-+		if (is_slot64bit(slot))
-+			slot->capabilities |= PCISLOT_64_BIT_SUPPORTED;
-+		if (is_slot66mhz(slot))
-+			slot->capabilities |= PCISLOT_66_MHZ_SUPPORTED;
-+		if (ctrl->speed == PCI_SPEED_66MHz)
-+			slot->capabilities |= PCISLOT_66_MHZ_OPERATION;
-+
-+		ctrl_slot =
-+			slot_device - (readb(ctrl->hpc_reg + SLOT_MASK) >> 4);
-+
-+		/* Check presence */
-+		slot->capabilities |=
-+			((((~tempdword) >> 23) |
-+			 ((~tempdword) >> 15)) >> ctrl_slot) & 0x02;
-+		/* Check the switch state */
-+		slot->capabilities |=
-+			((~tempdword & 0xFF) >> ctrl_slot) & 0x01;
-+		/* Check the slot enable */
-+		slot->capabilities |=
-+			((read_slot_enable(ctrl) << 2) >> ctrl_slot) & 0x04;
-+
-+		/* register this slot with the hotplug pci core */
-+		hotplug_slot->release = &release_slot;
-+		hotplug_slot->private = slot;
-+		snprintf(name, SLOT_NAME_SIZE, "%u", slot->number);
-+		hotplug_slot->ops = &cpqphp_hotplug_slot_ops;
-+
-+		hotplug_slot_info->power_status = get_slot_enabled(ctrl, slot);
-+		hotplug_slot_info->attention_status =
-+			cpq_get_attention_status(ctrl, slot);
-+		hotplug_slot_info->latch_status =
-+			cpq_get_latch_status(ctrl, slot);
-+		hotplug_slot_info->adapter_status =
-+			get_presence_status(ctrl, slot);
-+
-+		dbg("registering bus %d, dev %d, number %d, "
-+				"ctrl->slot_device_offset %d, slot %d\n",
-+				slot->bus, slot->device,
-+				slot->number, ctrl->slot_device_offset,
-+				slot_number);
-+		result = pci_hp_register(hotplug_slot,
-+					 ctrl->pci_dev->bus,
-+					 slot->device,
-+					 name);
-+		if (result) {
-+			err("pci_hp_register failed with error %d\n", result);
-+			goto error_info;
-+		}
-+
-+		slot->next = ctrl->slot;
-+		ctrl->slot = slot;
-+
-+		number_of_slots--;
-+		slot_device++;
-+		slot_number++;
-+	}
-+
-+	return 0;
-+error_info:
-+	kfree(hotplug_slot_info);
-+error_hpslot:
-+	kfree(hotplug_slot);
-+error_slot:
-+	kfree(slot);
-+error:
-+	return result;
-+}
-+
-+static int one_time_init(void)
-+{
-+	int loop;
-+	int retval = 0;
-+
-+	if (initialized)
-+		return 0;
-+
-+	power_mode = 0;
-+
-+	retval = pci_print_IRQ_route();
-+	if (retval)
-+		goto error;
-+
-+	dbg("Initialize + Start the notification mechanism \n");
-+
-+	retval = cpqhp_event_start_thread();
-+	if (retval)
-+		goto error;
-+
-+	dbg("Initialize slot lists\n");
-+	for (loop = 0; loop < 256; loop++) {
-+		cpqhp_slot_list[loop] = NULL;
-+	}
-+
-+	/* FIXME: We also need to hook the NMI handler eventually.
-+	 * this also needs to be worked with Christoph
-+	 * register_NMI_handler();
-+	 */
-+	/* Map rom address */
-+	cpqhp_rom_start = ioremap(ROM_PHY_ADDR, ROM_PHY_LEN);
-+	if (!cpqhp_rom_start) {
-+		err ("Could not ioremap memory region for ROM\n");
-+		retval = -EIO;
-+		goto error;
-+	}
-+
-+	/* Now, map the int15 entry point if we are on compaq specific
-+	 * hardware
-+	 */
-+	compaq_nvram_init(cpqhp_rom_start);
-+
-+	/* Map smbios table entry point structure */
-+	smbios_table = detect_SMBIOS_pointer(cpqhp_rom_start,
-+					cpqhp_rom_start + ROM_PHY_LEN);
-+	if (!smbios_table) {
-+		err ("Could not find the SMBIOS pointer in memory\n");
-+		retval = -EIO;
-+		goto error_rom_start;
-+	}
-+
-+	smbios_start = ioremap(readl(smbios_table + ST_ADDRESS),
-+					readw(smbios_table + ST_LENGTH));
-+	if (!smbios_start) {
-+		err ("Could not ioremap memory region taken from SMBIOS values\n");
-+		retval = -EIO;
-+		goto error_smbios_start;
-+	}
-+
-+	initialized = 1;
-+
-+	return retval;
-+
-+error_smbios_start:
-+	iounmap(smbios_start);
-+error_rom_start:
-+	iounmap(cpqhp_rom_start);
-+error:
-+	return retval;
-+}
-+
- static int cpqhpc_probe(struct pci_dev *pdev, const struct pci_device_id *ent)
- {
- 	u8 num_of_slots = 0;
-@@ -1300,77 +1358,6 @@ err_disable_device:
- 	return rc;
- }
+-			if (ID == 0xFFFFFFFF) {	  /* There's nothing there. */
++			if (ID == 0xFFFFFFFF) {
+ 				function++;
+-			} else {  /* There's something there */
++			} else {
+ 				/* Setup slot structure. */
+ 				new_slot = cpqhp_slot_create(func->bus);
  
--static int one_time_init(void)
--{
--	int loop;
--	int retval = 0;
--
--	if (initialized)
--		return 0;
--
--	power_mode = 0;
--
--	retval = pci_print_IRQ_route();
--	if (retval)
--		goto error;
--
--	dbg("Initialize + Start the notification mechanism \n");
--
--	retval = cpqhp_event_start_thread();
--	if (retval)
--		goto error;
--
--	dbg("Initialize slot lists\n");
--	for (loop = 0; loop < 256; loop++) {
--		cpqhp_slot_list[loop] = NULL;
--	}
--
--	/* FIXME: We also need to hook the NMI handler eventually.
--	 * this also needs to be worked with Christoph
--	 * register_NMI_handler();
--	 */
--	/* Map rom address */
--	cpqhp_rom_start = ioremap(ROM_PHY_ADDR, ROM_PHY_LEN);
--	if (!cpqhp_rom_start) {
--		err ("Could not ioremap memory region for ROM\n");
--		retval = -EIO;
--		goto error;
--	}
--
--	/* Now, map the int15 entry point if we are on compaq specific
--	 * hardware
--	 */
--	compaq_nvram_init(cpqhp_rom_start);
--
--	/* Map smbios table entry point structure */
--	smbios_table = detect_SMBIOS_pointer(cpqhp_rom_start,
--					cpqhp_rom_start + ROM_PHY_LEN);
--	if (!smbios_table) {
--		err ("Could not find the SMBIOS pointer in memory\n");
--		retval = -EIO;
--		goto error_rom_start;
--	}
--
--	smbios_start = ioremap(readl(smbios_table + ST_ADDRESS),
--					readw(smbios_table + ST_LENGTH));
--	if (!smbios_start) {
--		err ("Could not ioremap memory region taken from SMBIOS values\n");
--		retval = -EIO;
--		goto error_smbios_start;
--	}
--
--	initialized = 1;
--
--	return retval;
--
--error_smbios_start:
--	iounmap(smbios_start);
--error_rom_start:
--	iounmap(cpqhp_rom_start);
--error:
--	return retval;
--}
--
- static void __exit unload_cpqphpd(void)
- {
- 	struct pci_func *next;
+@@ -2360,8 +2349,8 @@ static u32 configure_new_device(struct controller * ctrl, struct pci_func * func
+ 
+ 
+ /*
+-  Configuration logic that involves the hotplug data structures and
+-  their bookkeeping
++ * Configuration logic that involves the hotplug data structures and
++ * their bookkeeping
+  */
+ 
+ 
+@@ -2414,7 +2403,7 @@ static int configure_new_function(struct controller *ctrl, struct pci_func *func
+ 	if (rc)
+ 		return rc;
+ 
+-	if ((temp_byte & 0x7F) == PCI_HEADER_TYPE_BRIDGE) { /* PCI-PCI Bridge */
++	if ((temp_byte & 0x7F) == PCI_HEADER_TYPE_BRIDGE) {
+ 		/* set Primary bus */
+ 		dbg("set Primary bus = %d\n", func->bus);
+ 		rc = pci_bus_write_config_byte(pci_bus, devfn, PCI_PRIMARY_BUS, func->bus);
+@@ -2956,11 +2945,10 @@ static int configure_new_function(struct controller *ctrl, struct pci_func *func
+ 				/* Program IRQ based on card type */
+ 				rc = pci_bus_read_config_byte (pci_bus, devfn, 0x0B, &class_code);
+ 
+-				if (class_code == PCI_BASE_CLASS_STORAGE) {
++				if (class_code == PCI_BASE_CLASS_STORAGE)
+ 					IRQ = cpqhp_disk_irq;
+-				} else {
++				else
+ 					IRQ = cpqhp_nic_irq;
+-				}
+ 			}
+ 
+ 			/* IRQ Line */
 
