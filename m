@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763412AbZCaSo4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763502AbZCaSpx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763412AbZCaSo4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Mar 2009 14:44:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761042AbZCaSlU
+	id S1763502AbZCaSpx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Mar 2009 14:45:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762646AbZCaSlj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Mar 2009 14:41:20 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:54900 "EHLO
+	Tue, 31 Mar 2009 14:41:39 -0400
+Received: from victor.provo.novell.com ([137.65.250.26]:60293 "EHLO
 	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761671AbZCaSlA (ORCPT
+	with ESMTP id S1762148AbZCaSl2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Mar 2009 14:41:00 -0400
+	Tue, 31 Mar 2009 14:41:28 -0400
 From: Gregory Haskins <ghaskins@novell.com>
-Subject: [RFC PATCH 04/17] vbus: add bus-registration notifiers
+Subject: [RFC PATCH 11/17] venet: add scatter-gather support
 To: linux-kernel@vger.kernel.org
 Cc: agraf@suse.de, pmullaney@novell.com, pmorreale@novell.com,
        anthony@codemonkey.ws, rusty@rustcorp.com.au, netdev@vger.kernel.org,
        kvm@vger.kernel.org
-Date: Tue, 31 Mar 2009 14:43:07 -0400
-Message-ID: <20090331184307.28333.20322.stgit@dev.haskins.net>
+Date: Tue, 31 Mar 2009 14:43:44 -0400
+Message-ID: <20090331184344.28333.53834.stgit@dev.haskins.net>
 In-Reply-To: <20090331184057.28333.77287.stgit@dev.haskins.net>
 References: <20090331184057.28333.77287.stgit@dev.haskins.net>
 User-Agent: StGIT/0.14.3
@@ -28,159 +28,386 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We need to get hotswap events in environments which cannot use existing
-facilities (e.g. inotify).  So we add a notifier-chain to allow client
-callbacks whenever an interface is {un}registered.
-
 Signed-off-by: Gregory Haskins <ghaskins@novell.com>
 ---
 
- include/linux/vbus.h |   15 +++++++++++++
- kernel/vbus/core.c   |   59 ++++++++++++++++++++++++++++++++++++++++++++++++++
- kernel/vbus/vbus.h   |    1 +
- 3 files changed, 75 insertions(+), 0 deletions(-)
+ drivers/net/vbus-enet.c |  249 +++++++++++++++++++++++++++++++++++++++++++++--
+ include/linux/venet.h   |   39 +++++++
+ 2 files changed, 275 insertions(+), 13 deletions(-)
 
-diff --git a/include/linux/vbus.h b/include/linux/vbus.h
-index 5f0566c..04db4ff 100644
---- a/include/linux/vbus.h
-+++ b/include/linux/vbus.h
-@@ -29,6 +29,7 @@
- #include <linux/sched.h>
- #include <linux/rcupdate.h>
- #include <linux/vbus_device.h>
-+#include <linux/notifier.h>
+diff --git a/drivers/net/vbus-enet.c b/drivers/net/vbus-enet.c
+index e698b3f..8e96c9c 100644
+--- a/drivers/net/vbus-enet.c
++++ b/drivers/net/vbus-enet.c
+@@ -42,6 +42,8 @@ static int rx_ringlen = 256;
+ module_param(rx_ringlen, int, 0444);
+ static int tx_ringlen = 256;
+ module_param(tx_ringlen, int, 0444);
++static int sg_enabled = 1;
++module_param(sg_enabled, int, 0444);
  
- struct vbus;
- struct task_struct;
-@@ -137,6 +138,20 @@ static inline void task_vbus_disassociate(struct task_struct *p)
+ #undef PDEBUG             /* undef it, just in case */
+ #ifdef VBUS_ENET_DEBUG
+@@ -64,8 +66,17 @@ struct vbus_enet_priv {
+ 	struct vbus_enet_queue     rxq;
+ 	struct vbus_enet_queue     txq;
+ 	struct tasklet_struct      txtask;
++	struct {
++		int                sg:1;
++		int                tso:1;
++		int                ufo:1;
++		int                tso6:1;
++		int                ecn:1;
++	} flags;
+ };
+ 
++static void vbus_enet_tx_reap(struct vbus_enet_priv *priv, int force);
++
+ static struct vbus_enet_priv *
+ napi_to_priv(struct napi_struct *napi)
+ {
+@@ -199,6 +210,93 @@ rx_teardown(struct vbus_enet_priv *priv)
  	}
  }
  
-+enum {
-+	VBUS_EVENT_DEVADD,
-+	VBUS_EVENT_DEVDROP,
-+};
-+
-+struct vbus_event_devadd {
-+	const char   *type;
-+	unsigned long id;
-+};
-+
-+int vbus_notifier_register(struct vbus *vbus, struct notifier_block *nb);
-+int vbus_notifier_unregister(struct vbus *vbus, struct notifier_block *nb);
-+
-+
- #else /* CONFIG_VBUS */
- 
- #define fork_vbus(p) do { } while (0)
-diff --git a/kernel/vbus/core.c b/kernel/vbus/core.c
-index 033999f..b6df487 100644
---- a/kernel/vbus/core.c
-+++ b/kernel/vbus/core.c
-@@ -89,6 +89,7 @@ int vbus_device_interface_register(struct vbus_device *dev,
- {
- 	int ret;
- 	struct vbus_devshell *ds = to_devshell(dev->kobj);
-+	struct vbus_event_devadd ev;
- 
- 	mutex_lock(&vbus->lock);
- 
-@@ -124,6 +125,14 @@ int vbus_device_interface_register(struct vbus_device *dev,
- 	if (ret)
- 		goto error;
- 
-+	ev.type = intf->type;
-+	ev.id   = intf->id;
-+
-+	/* and let any clients know about the new device */
-+	ret = raw_notifier_call_chain(&vbus->notifier, VBUS_EVENT_DEVADD, &ev);
-+	if (ret < 0)
-+		goto error;
-+
- 	mutex_unlock(&vbus->lock);
- 
- 	return 0;
-@@ -144,6 +153,7 @@ int vbus_device_interface_unregister(struct vbus_device_interface *intf)
- 
- 	mutex_lock(&vbus->lock);
- 	_interface_unregister(intf);
-+	raw_notifier_call_chain(&vbus->notifier, VBUS_EVENT_DEVDROP, &intf->id);
- 	mutex_unlock(&vbus->lock);
- 
- 	kobject_put(&intf->kobj);
-@@ -346,6 +356,8 @@ int vbus_create(const char *name, struct vbus **bus)
- 
- 	_bus->next_id = 0;
- 
-+	RAW_INIT_NOTIFIER_HEAD(&_bus->notifier);
-+
- 	mutex_lock(&vbus_root.lock);
- 
- 	ret = map_add(&vbus_root.buses.map, &_bus->node);
-@@ -358,6 +370,53 @@ int vbus_create(const char *name, struct vbus **bus)
- 	return 0;
- }
- 
-+#define for_each_rbnode(node, root) \
-+	for (node = rb_first(root); node != NULL; node = rb_next(node))
-+
-+int vbus_notifier_register(struct vbus *vbus, struct notifier_block *nb)
++static int
++tx_setup(struct vbus_enet_priv *priv)
 +{
++	struct ioq *ioq = priv->txq.queue;
++	struct ioq_iterator iter;
++	int i;
 +	int ret;
-+	struct rb_node *node;
 +
-+	mutex_lock(&vbus->lock);
++	if (!priv->flags.sg)
++		/*
++		 * There is nothing to do for a ring that is not using
++		 * scatter-gather
++		 */
++		return 0;
++
++	ret = ioq_iter_init(ioq, &iter, ioq_idxtype_valid, 0);
++	BUG_ON(ret < 0);
++
++	ret = ioq_iter_seek(&iter, ioq_seek_set, 0, 0);
++	BUG_ON(ret < 0);
 +
 +	/*
-+	 * resync the client for any devices we might already have
++	 * Now populate each descriptor with an empty SG descriptor
 +	 */
-+	for_each_rbnode(node, &vbus->devices.map.root) {
-+		struct vbus_device_interface *intf = node_to_intf(node);
-+		struct vbus_event_devadd ev = {
-+			.type = intf->type,
-+			.id   = intf->id,
-+		};
++	for (i = 0; i < tx_ringlen; i++) {
++		struct venet_sg *vsg;
++		size_t iovlen = sizeof(struct venet_iov) * (MAX_SKB_FRAGS-1);
++		size_t len = sizeof(*vsg) + iovlen;
 +
-+		ret = nb->notifier_call(nb, VBUS_EVENT_DEVADD, &ev);
-+		if (ret & NOTIFY_STOP_MASK) {
-+			mutex_unlock(&vbus->lock);
-+			return -EPERM;
-+		}
++		vsg = kzalloc(len, GFP_KERNEL);
++		if (!vsg)
++			return -ENOMEM;
++
++		iter.desc->cookie = (u64)vsg;
++		iter.desc->len    = len;
++		iter.desc->ptr    = (u64)__pa(vsg);
++
++		ret = ioq_iter_seek(&iter, ioq_seek_next, 0, 0);
++		BUG_ON(ret < 0);
 +	}
 +
-+	ret = raw_notifier_chain_register(&vbus->notifier, nb);
-+
-+	mutex_unlock(&vbus->lock);
-+
-+	return ret;
++	return 0;
 +}
-+EXPORT_SYMBOL_GPL(vbus_notifier_register);
 +
-+int vbus_notifier_unregister(struct vbus *vbus, struct notifier_block *nb)
++static void
++tx_teardown(struct vbus_enet_priv *priv)
 +{
++	struct ioq *ioq = priv->txq.queue;
++	struct ioq_iterator iter;
 +	int ret;
 +
-+	mutex_lock(&vbus->lock);
-+	ret = raw_notifier_chain_unregister(&vbus->notifier, nb);
-+	mutex_unlock(&vbus->lock);
++	/* forcefully free all outstanding transmissions */
++	vbus_enet_tx_reap(priv, 1);
 +
-+	return ret;
++	if (!priv->flags.sg)
++		/*
++		 * There is nothing else to do for a ring that is not using
++		 * scatter-gather
++		 */
++		return;
++
++	ret = ioq_iter_init(ioq, &iter, ioq_idxtype_valid, 0);
++	BUG_ON(ret < 0);
++
++	/* seek to position 0 */
++	ret = ioq_iter_seek(&iter, ioq_seek_set, 0, 0);
++	BUG_ON(ret < 0);
++
++	/*
++	 * free each valid descriptor
++	 */
++	while (iter.desc->cookie) {
++		struct venet_sg *vsg = (struct venet_sg *)iter.desc->cookie;
++
++		iter.desc->valid = 0;
++		wmb();
++
++		iter.desc->ptr = 0;
++		iter.desc->cookie = 0;
++
++		ret = ioq_iter_seek(&iter, ioq_seek_next, 0, 0);
++		BUG_ON(ret < 0);
++
++		kfree(vsg);
++	}
 +}
-+EXPORT_SYMBOL_GPL(vbus_notifier_unregister);
 +
- static void devshell_release(struct kobject *kobj)
- {
- 	struct vbus_devshell *ds = container_of(kobj,
-diff --git a/kernel/vbus/vbus.h b/kernel/vbus/vbus.h
-index 1266d69..cd2676b 100644
---- a/kernel/vbus/vbus.h
-+++ b/kernel/vbus/vbus.h
-@@ -51,6 +51,7 @@ struct vbus {
- 	struct vbus_subdir members;
- 	unsigned long next_id;
- 	struct rb_node node;
-+	struct raw_notifier_head notifier;
+ /*
+  * Open and close
+  */
+@@ -403,14 +501,67 @@ vbus_enet_tx_start(struct sk_buff *skb, struct net_device *dev)
+ 	BUG_ON(ret < 0);
+ 	BUG_ON(iter.desc->sown);
+ 
+-	/*
+-	 * We simply put the skb right onto the ring.  We will get an interrupt
+-	 * later when the data has been consumed and we can reap the pointers
+-	 * at that time
+-	 */
+-	iter.desc->cookie = (u64)skb;
+-	iter.desc->len = (u64)skb->len;
+-	iter.desc->ptr = (u64)__pa(skb->data);
++	if (priv->flags.sg) {
++		struct venet_sg *vsg = (struct venet_sg *)iter.desc->cookie;
++		struct scatterlist sgl[MAX_SKB_FRAGS+1];
++		struct scatterlist *sg;
++		int count, maxcount = ARRAY_SIZE(sgl);
++
++		sg_init_table(sgl, maxcount);
++
++		memset(vsg, 0, sizeof(*vsg));
++
++		vsg->cookie = (u64)skb;
++		vsg->len    = skb->len;
++
++		if (skb->ip_summed == CHECKSUM_PARTIAL) {
++			vsg->flags      |= VENET_SG_FLAG_NEEDS_CSUM;
++			vsg->csum.start  = skb->csum_start - skb_headroom(skb);
++			vsg->csum.offset = skb->csum_offset;
++		}
++
++		if (skb_is_gso(skb)) {
++			struct skb_shared_info *sinfo = skb_shinfo(skb);
++
++			vsg->flags |= VENET_SG_FLAG_GSO;
++
++			vsg->gso.hdrlen = skb_transport_header(skb) - skb->data;
++			vsg->gso.size = sinfo->gso_size;
++			if (sinfo->gso_type & SKB_GSO_TCPV4)
++				vsg->gso.type = VENET_GSO_TYPE_TCPV4;
++			else if (sinfo->gso_type & SKB_GSO_TCPV6)
++				vsg->gso.type = VENET_GSO_TYPE_TCPV6;
++			else if (sinfo->gso_type & SKB_GSO_UDP)
++				vsg->gso.type = VENET_GSO_TYPE_UDP;
++			else
++				panic("Virtual-Ethernet: unknown GSO type " \
++				      "0x%x\n", sinfo->gso_type);
++
++			if (sinfo->gso_type & SKB_GSO_TCP_ECN)
++				vsg->flags |= VENET_SG_FLAG_ECN;
++		}
++
++		count = skb_to_sgvec(skb, sgl, 0, skb->len);
++
++		BUG_ON(count > maxcount);
++
++		for (sg = &sgl[0]; sg; sg = sg_next(sg)) {
++			struct venet_iov *iov = &vsg->iov[vsg->count++];
++
++			iov->len = sg->length;
++			iov->ptr = (u64)sg_phys(sg);
++		}
++
++	} else {
++		/*
++		 * non scatter-gather mode: simply put the skb right onto the
++		 * ring.
++		 */
++		iter.desc->cookie = (u64)skb;
++		iter.desc->len = (u64)skb->len;
++		iter.desc->ptr = (u64)__pa(skb->data);
++	}
++
+ 	iter.desc->valid  = 1;
+ 
+ 	priv->stats.tx_packets++;
+@@ -466,7 +617,17 @@ vbus_enet_tx_reap(struct vbus_enet_priv *priv, int force)
+ 	 * owned by the south-side
+ 	 */
+ 	while (iter.desc->valid && (!iter.desc->sown || force)) {
+-		struct sk_buff *skb = (struct sk_buff *)iter.desc->cookie;
++		struct sk_buff *skb;
++
++		if (priv->flags.sg) {
++			struct venet_sg *vsg;
++
++			vsg = (struct venet_sg *)iter.desc->cookie;
++			skb = (struct sk_buff *)vsg->cookie;
++
++		} else {
++			skb = (struct sk_buff *)iter.desc->cookie;
++		}
+ 
+ 		PDEBUG("%lld: completed sending %d bytes\n",
+ 		       priv->vdev->id, skb->len);
+@@ -567,6 +728,47 @@ tx_isr(struct ioq_notifier *notifier)
+        tasklet_schedule(&priv->txtask);
+ }
+ 
++static int
++vbus_enet_negcap(struct vbus_enet_priv *priv)
++{
++	int ret;
++	struct venet_capabilities caps;
++
++	memset(&caps, 0, sizeof(caps));
++
++	if (sg_enabled) {
++		caps.gid = VENET_CAP_GROUP_SG;
++		caps.bits |= (VENET_CAP_SG|VENET_CAP_TSO4|VENET_CAP_TSO6
++			      |VENET_CAP_ECN|VENET_CAP_UFO);
++	}
++
++	ret = devcall(priv, VENET_FUNC_NEGCAP, &caps, sizeof(caps));
++	if (ret < 0)
++		return ret;
++
++	if (caps.bits & VENET_CAP_SG) {
++		priv->flags.sg = true;
++
++		if (caps.bits & VENET_CAP_TSO4)
++			priv->flags.tso = true;
++		if (caps.bits & VENET_CAP_TSO6)
++			priv->flags.tso6 = true;
++		if (caps.bits & VENET_CAP_UFO)
++			priv->flags.ufo = true;
++		if (caps.bits & VENET_CAP_ECN)
++			priv->flags.ecn = true;
++
++		printk(KERN_INFO "VBUSENET %lld: " \
++		       "Detected GSO features %s%s%s%s\n", priv->vdev->id,
++		       priv->flags.tso  ? "t" : "-",
++		       priv->flags.tso6 ? "T" : "-",
++		       priv->flags.ufo  ? "u" : "-",
++		       priv->flags.ecn  ? "e" : "-");
++	}
++
++	return 0;
++}
++
+ static struct net_device_ops vbus_enet_netdev_ops = {
+ 	.ndo_open          = vbus_enet_open,
+ 	.ndo_stop          = vbus_enet_stop,
+@@ -606,12 +808,21 @@ vbus_enet_probe(struct vbus_device_proxy *vdev)
+ 	priv->dev  = dev;
+ 	priv->vdev = vdev;
+ 
++	ret = vbus_enet_negcap(priv);
++	if (ret < 0) {
++		printk(KERN_INFO "VENET: Error negotiating capabilities for " \
++		       "%lld\n",
++		       priv->vdev->id);
++		goto out_free;
++	}
++
+ 	tasklet_init(&priv->txtask, deferred_tx_isr, (unsigned long)priv);
+ 
+ 	queue_init(priv, &priv->rxq, VENET_QUEUE_RX, rx_ringlen, rx_isr);
+ 	queue_init(priv, &priv->txq, VENET_QUEUE_TX, tx_ringlen, tx_isr);
+ 
+ 	rx_setup(priv);
++	tx_setup(priv);
+ 
+ 	ioq_notify_enable(priv->rxq.queue, 0);  /* enable interrupts */
+ 	ioq_notify_enable(priv->txq.queue, 0);
+@@ -633,6 +844,22 @@ vbus_enet_probe(struct vbus_device_proxy *vdev)
+ 
+ 	dev->features |= NETIF_F_HIGHDMA;
+ 
++	if (priv->flags.sg) {
++		dev->features |= NETIF_F_SG|NETIF_F_HW_CSUM|NETIF_F_FRAGLIST;
++
++		if (priv->flags.tso)
++			dev->features |= NETIF_F_TSO;
++
++		if (priv->flags.ufo)
++			dev->features |= NETIF_F_UFO;
++
++		if (priv->flags.tso6)
++			dev->features |= NETIF_F_TSO6;
++
++		if (priv->flags.ecn)
++			dev->features |= NETIF_F_TSO_ECN;
++	}
++
+ 	ret = register_netdev(dev);
+ 	if (ret < 0) {
+ 		printk(KERN_INFO "VENET: error %i registering device \"%s\"\n",
+@@ -660,9 +887,9 @@ vbus_enet_remove(struct vbus_device_proxy *vdev)
+ 	napi_disable(&priv->napi);
+ 
+ 	rx_teardown(priv);
+-	vbus_enet_tx_reap(priv, 1);
+-
+ 	ioq_put(priv->rxq.queue);
++
++	tx_teardown(priv);
+ 	ioq_put(priv->txq.queue);
+ 
+ 	dev->ops->close(dev, 0);
+diff --git a/include/linux/venet.h b/include/linux/venet.h
+index ef6b199..1c96b90 100644
+--- a/include/linux/venet.h
++++ b/include/linux/venet.h
+@@ -35,8 +35,43 @@ struct venet_capabilities {
+ 	__u32 bits;
  };
  
- struct vbus_member {
+-/* CAPABILITIES-GROUP 0 */
+-/* #define VENET_CAP_FOO    0   (No capabilities defined yet, for now) */
++#define VENET_CAP_GROUP_SG 0
++
++/* CAPABILITIES-GROUP SG */
++#define VENET_CAP_SG     (1 << 0)
++#define VENET_CAP_TSO4   (1 << 1)
++#define VENET_CAP_TSO6   (1 << 2)
++#define VENET_CAP_ECN    (1 << 3)
++#define VENET_CAP_UFO    (1 << 4)
++
++struct venet_iov {
++	__u32 len;
++	__u64 ptr;
++};
++
++#define VENET_SG_FLAG_NEEDS_CSUM (1 << 0)
++#define VENET_SG_FLAG_GSO        (1 << 1)
++#define VENET_SG_FLAG_ECN        (1 << 2)
++
++struct venet_sg {
++	__u64            cookie;
++	__u32            flags;
++	__u32            len;     /* total length of all iovs */
++	struct {
++		__u16    start;	  /* csum starting position */
++		__u16    offset;  /* offset to place csum */
++	} csum;
++	struct {
++#define VENET_GSO_TYPE_TCPV4	0	/* IPv4 TCP (TSO) */
++#define VENET_GSO_TYPE_UDP	1	/* IPv4 UDP (UFO) */
++#define VENET_GSO_TYPE_TCPV6	2	/* IPv6 TCP */
++		__u8     type;
++		__u16    hdrlen;
++		__u16    size;
++	} gso;
++	__u32            count;   /* nr of iovs */
++	struct venet_iov iov[1];
++};
+ 
+ #define VENET_FUNC_LINKUP   0
+ #define VENET_FUNC_LINKDOWN 1
 
