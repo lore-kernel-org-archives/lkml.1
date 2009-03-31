@@ -1,105 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759995AbZCaNcf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760148AbZCaNcx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759995AbZCaNcf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Mar 2009 09:32:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759259AbZCaNcO
+	id S1760148AbZCaNcx (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Mar 2009 09:32:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759979AbZCaNcj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Mar 2009 09:32:14 -0400
-Received: from mga05.intel.com ([192.55.52.89]:48558 "EHLO
-	fmsmga101.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1759421AbZCaNcM (ORCPT
+	Tue, 31 Mar 2009 09:32:39 -0400
+Received: from mtagate7.de.ibm.com ([195.212.29.156]:62048 "EHLO
+	mtagate7.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759648AbZCaNch (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Mar 2009 09:32:12 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.38,453,1233561600"; 
-   d="scan'208";a="443612204"
-Date: Tue, 31 Mar 2009 15:34:17 +0200
-From: Samuel Ortiz <sameo@openedhand.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Mark Brown <broonie@opensource.wolfsonmicro.com>,
-       Tobias Klauser <tklauser@distanz.ch>,
-       Philipp Zabel <philipp.zabel@gmail.com>,
-       Huang Weiyi <weiyi.huang@gmail.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [GIT] MFD pull request
-Message-ID: <20090331123021.GB4612@sortiz.org>
-Reply-To: Samuel Ortiz <sameo@openedhand.com>
-References: <20090331113648.GA4612@sortiz.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090331113648.GA4612@sortiz.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 31 Mar 2009 09:32:37 -0400
+Date: Tue, 31 Mar 2009 15:32:23 +0200
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+To: linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Cc: Carsten Otte <cotte@de.ibm.com>, Nick Piggin <npiggin@suse.de>,
+       Jared Hulbert <jaredeh@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH] do_xip_mapping_read: fix length calculation
+Message-ID: <20090331153223.74b177bd@skybase>
+Organization: IBM Corporation
+X-Mailer: Claws Mail 3.7.1 (GTK+ 2.14.7; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Forgot to cc lkml...sorry about that.
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
 
-On Tue, Mar 31, 2009 at 01:36:48PM +0200, Samuel Ortiz wrote:
-> Hi Linus,
-> 
-> Here are a few mfd updates for the rc1. Nothing outstanding, just the regular
-> WM835x updates and some DS1WM and PASIC3 changes.
-> This is my last pull request from git.o-hand.com. I moved the mfd tree to
-> git.kernel.org, as specified in the MAINTAINERS changes.
-> 
-> Thanks in advance for pullling.
-> 
-> The following changes since commit 15f7176eb1cccec0a332541285ee752b935c1c85:
->   Linus Torvalds (1):
->         Merge git://git.kernel.org/.../davem/net-2.6
-> 
-> are available in the git repository at:
-> 
->   git://git.o-hand.com/linux-mfd for-next
-> 
-> Huang Weiyi (1):
->       mfd: remove duplicated #include from pcf50633
-> 
-> Mark Brown (3):
->       mfd: Use bulk read to fill WM8350 register cache
->       mfd: Support active high IRQs on WM835x
->       mfd: Use the value of the final spin when reading the AUXADC
-> 
-> Philipp Zabel (6):
->       mfd: convert DS1WM to use MFD core
->       mfd: convert PASIC3 to use MFD core
->       pxa/magician: remove deprecated .bus_shift from PASIC3 platform_data
->       mfd: remove unused PASIC3 bus_shift field
->       mfd: remove DS1WM clock handling
->       mfd: PASIC3: supply clock_rate to DS1WM via driver_data
-> 
-> Samuel Ortiz (2):
->       mfd: fix MAINTAINERS entry
->       mfd: fix da903x warning
-> 
-> Tobias Klauser (1):
->       mfd: Storage class should be before const qualifier
-> 
->  MAINTAINERS                     |    3 +-
->  arch/arm/mach-pxa/magician.c    |    1 -
->  drivers/mfd/Kconfig             |    1 +
->  drivers/mfd/da903x.c            |    2 +-
->  drivers/mfd/htc-pasic3.c        |  169 ++++++++++++++++-----------------------
->  drivers/mfd/pcf50633-core.c     |    1 -
->  drivers/mfd/t7l66xb.c           |    4 +-
->  drivers/mfd/tc6393xb.c          |    2 +-
->  drivers/mfd/twl4030-irq.c       |    2 +-
->  drivers/mfd/wm8350-core.c       |   39 +++++++---
->  drivers/w1/masters/ds1wm.c      |   58 ++++++-------
->  include/linux/ds1wm.h           |   12 ---
->  include/linux/mfd/ds1wm.h       |    6 ++
->  include/linux/mfd/htc-pasic3.h  |    1 -
->  include/linux/mfd/wm8350/core.h |    2 +
->  15 files changed, 139 insertions(+), 164 deletions(-)
->  delete mode 100644 include/linux/ds1wm.h
->  create mode 100644 include/linux/mfd/ds1wm.h
-> 
-> -- 
-> Intel Open Source Technology Centre
-> http://oss.intel.com/
+The calculation of the value nr in do_xip_mapping_read is incorrect. If
+the copy required more than one iteration in the do while loop the
+copies variable will be non-zero. The maximum length that may be passed
+to the call to copy_to_user(buf+copied, xip_mem+offset, nr) is len-copied
+but the check only compares against (nr > len).
 
--- 
-Intel Open Source Technology Centre
-http://oss.intel.com/
+This bug is the cause for the heap corruption Carsten has been chasing
+for so long:
+
+*** glibc detected *** /bin/bash: free(): invalid next size (normal): 0x00000000800e39f0 ***  
+======= Backtrace: =========  
+/lib64/libc.so.6[0x200000b9b44]  
+/lib64/libc.so.6(cfree+0x8e)[0x200000bdade]  
+/bin/bash(free_buffered_stream+0x32)[0x80050e4e]  
+/bin/bash(close_buffered_stream+0x1c)[0x80050ea4]  
+/bin/bash(unset_bash_input+0x2a)[0x8001c366]  
+/bin/bash(make_child+0x1d4)[0x8004115c]  
+/bin/bash[0x8002fc3c]  
+/bin/bash(execute_command_internal+0x656)[0x8003048e]  
+/bin/bash(execute_command+0x5e)[0x80031e1e]  
+/bin/bash(execute_command_internal+0x79a)[0x800305d2]  
+/bin/bash(execute_command+0x5e)[0x80031e1e]  
+/bin/bash(reader_loop+0x270)[0x8001efe0]  
+/bin/bash(main+0x1328)[0x8001e960]  
+/lib64/libc.so.6(__libc_start_main+0x100)[0x200000592a8]  
+/bin/bash(clearerr+0x5e)[0x8001c092]  
+
+With this bug fix the commit 0e4a9b59282914fe057ab17027f55123964bc2e2
+"ext2/xip: refuse to change xip flag during remount with busy inodes"
+can be removed again.
+
+Cc: Carsten Otte <cotte@de.ibm.com>
+Cc: Nick Piggin <npiggin@suse.de>
+Cc: Jared Hulbert <jaredeh@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
+---
+
+ mm/filemap_xip.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff -urpN linux-2.6/mm/filemap_xip.c linux-2.6-patched/mm/filemap_xip.c
+--- linux-2.6/mm/filemap_xip.c	2009-03-24 00:12:14.000000000 +0100
++++ linux-2.6-patched/mm/filemap_xip.c	2009-03-31 15:25:53.000000000 +0200
+@@ -89,8 +89,8 @@ do_xip_mapping_read(struct address_space
+ 			}
+ 		}
+ 		nr = nr - offset;
+-		if (nr > len)
+-			nr = len;
++		if (nr > len - copied)
++			nr = len - copied;
+ 
+ 		error = mapping->a_ops->get_xip_mem(mapping, index, 0,
+ 							&xip_mem, &xip_pfn);
