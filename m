@@ -1,99 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764108AbZCaSxb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755835AbZCaS5D@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764108AbZCaSxb (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Mar 2009 14:53:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764051AbZCaSwW
+	id S1755835AbZCaS5D (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Mar 2009 14:57:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751395AbZCaS4t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Mar 2009 14:52:22 -0400
-Received: from gw-ca.panasas.com ([209.116.51.66]:17353 "EHLO
-	laguna.int.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1764050AbZCaSwT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Mar 2009 14:52:19 -0400
-Message-ID: <49D2665A.9090500@panasas.com>
-Date: Tue, 31 Mar 2009 21:52:10 +0300
-From: Benny Halevy <bhalevy@panasas.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686 (x86_64); en-US; rv:1.9.1b3pre) Gecko/20090223 Thunderbird/3.0b2
+	Tue, 31 Mar 2009 14:56:49 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:43094 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751047AbZCaS4r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Mar 2009 14:56:47 -0400
+Date: Tue, 31 Mar 2009 20:55:41 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Xen-devel <xen-devel@lists.xensource.com>,
+       the arch/x86 maintainers <x86@kernel.org>
+Subject: Re: [GIT PULL] Xen for 2.6.30 #2
+Message-ID: <20090331185541.GA17807@elte.hu>
+References: <49D1209A.9000800@goop.org> <49D25A42.7060300@goop.org>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: Boaz Harrosh <bharrosh@panasas.com>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       Jeff Garzik <jeff@garzik.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Avishay Traeger <avishay@gmail.com>, open-osd <osd-dev@open-osd.org>,
-       linux-fsdevel <linux-fsdevel@vger.kernel.org>,
-       Evgeniy Polyakov <zbr@ioremap.net>
-Subject: Re: [osd-dev] [PATCH 6/8] exofs: super_operations and	file_system_type
-References: <49C1331D.1080805@panasas.com>	<1237399791-29502-1-git-send-email-bharrosh@panasas.com> <20090331010430.72e8137e.akpm@linux-foundation.org>
-In-Reply-To: <20090331010430.72e8137e.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 31 Mar 2009 18:52:16.0894 (UTC) FILETIME=[CFF659E0:01C9B231]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49D25A42.7060300@goop.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mar. 31, 2009, 11:04 +0300, Andrew Morton <akpm@linux-foundation.org> wrote:
-> On Wed, 18 Mar 2009 20:09:51 +0200 Boaz Harrosh <bharrosh@panasas.com> wrote:
-> 
->> This patch ties all operation vectors into a file system superblock
->> and registers the exofs file_system_type at module's load time.
->>
->> * The file system control block (AKA on-disk superblock) resides in
->>   an object with a special ID (defined in common.h).
->>   Information included in the file system control block is used to
->>   fill the in-memory superblock structure at mount time. This object
->>   is created before the file system is used by mkexofs.c It contains
->>   information such as:
->> 	- The file system's magic number
->> 	- The next inode number to be allocated
->>
->>
->> ...
->>
->> +static int exofs_statfs(struct dentry *dentry, struct kstatfs *buf)
->> +{
->> +	struct super_block *sb = dentry->d_sb;
->> +	struct exofs_sb_info *sbi = sb->s_fs_info;
->> +	struct osd_obj_id obj = {sbi->s_pid, 0};
->> +	struct osd_attr attrs[] = {
->> +		ATTR_DEF(OSD_APAGE_PARTITION_QUOTAS,
->> +			OSD_ATTR_PQ_CAPACITY_QUOTA, sizeof(__be64)),
->> +		ATTR_DEF(OSD_APAGE_PARTITION_INFORMATION,
->> +			OSD_ATTR_PI_USED_CAPACITY, sizeof(__be64)),
->> +	};
->> +	uint64_t capacity = ~0;
->> +	uint64_t used = ~0;
-> 
-> My brain hurts.
-> 
-> ~0 is signed 0xffffffff.
-> 
-> When assigning to a u64 it gets signed extended to signed
-> 0xffffffffffffffff and then converted to unsigned 0xffffffffffffffff.
 
-Right (I think, I'm not sure in what order)
+* Jeremy Fitzhardinge <jeremy@goop.org> wrote:
 
-> 
-> I think.  Just as with plain old "-1".  Perhaps using plain old "-1"
-> would be clearer here.
+> Hi Linus,
+>
+> This is the second (and final) set of Xen updates for 2.6.30.  
+> This set contains Xen dom0 support, which includes:
+>
+>    * adding to the existing Xen support to allow running as a
+>      privileged domain
+>    * some hooks into the apic setup code to allow Xen interrupts to get
+>      routed properly
+>    * a Xen implementation of the DMA ops API
+>    * a Xen MTRR driver
+>    * other misc things
+>
+> These changes only hook into init/setup code, and will have no 
+> runtime performance impact on native execution when 
+> CONFIG_PARAVIRT is enabled, and are completely compiled out 
+> without it.
+>
+> These changes are more or less unchanged since their first posting 
+> about 3-4 weeks ago.  The x86 parts have been reviewed (mainly by 
+> HPA) and considered not too objectionable.
 
-or maybe ~0ULL or ~(uint64_t)0 to be extremely anal about it.
+This stuff is still on my list of things to look at.
 
-Benny
+AFAIK hpa had a look and found it not too objectionable, but didnt 
+ack it, which means the green lights to:
 
-> 
->> ...
->>
->> +const struct super_operations exofs_sops = {
-> 
-> This can in fact be made static, I believe.
-> 
->> ...
->>
-> 
-> _______________________________________________
-> osd-dev mailing list
-> osd-dev@open-osd.org
-> http://mailman.open-osd.org/mailman/listinfo/osd-dev
+  - review it in detail
+ 1- then after a round of review feedbacks merge it into the x86 tree
+  - then to test it there
+  - then to fix the (inevitable) bugs and go to 1 until bug-free
+  - then to stage it to linux-next
+  - then after many weeks and months, to eventually send it to Linus
+
+That's NOT the same thing as you sending it straight to Linus, 
+without the broad acks from the x86 maintainers for all details.
+
+I had a quick look, and stuff like this is not acceptable:
+
+ static inline unsigned int io_apic_read(unsigned int apic, unsigned int reg)
+ {
+-       struct io_apic __iomem *io_apic = io_apic_base(apic);
++       struct io_apic __iomem *io_apic;
++
++       if (xen_initial_domain())
++               return xen_io_apic_read(apic, reg);
++
++       io_apic = io_apic_base(apic);
+
+Should be done by introducing your own xen specific irqchip. And 
+this is not news to you, it has been told you in _early February_:
+
+  http://lkml.indiana.edu/hypermail/linux/kernel/0902.1/00410.html
+
+You didnt reply to that feedback of mine and you didnt fix it.
+
+We are not putting some xen-specific hack into core x86 code ... The 
+irqchip method wont put overhead and ugliness into native Linux. 
+It's an existing abstraction for such stuff, use it and extend it if 
+needed.
+
+And stuff like this in arch/x86/kernel/pci-swiotlb.c:
+
+  dma_addr_t swiotlb_phys_to_bus(struct device *hwdev, phys_addr_t paddr)
+  {
+ +#ifdef CONFIG_PCI_XEN
+ +       if (xen_pv_domain())
+ +               return xen_phys_to_bus(paddr);
+ +#endif
+         return paddr;
+  }
+
+and the other PCI bits very much need the ack of the PCI and 
+sw-IOMMU folks (Fujita Tomonori mainly). I'd be surprised if they 
+werent disgusted by it.
+
+I dont mind pull requests outside of maintenance boundaries, as long 
+as the changes are good.
+
+You know our stance which is very simple: dont put in Xen-only hooks 
+that slow down native, and get rid of the existing Xen-only hooks.
+
+	Ingo
