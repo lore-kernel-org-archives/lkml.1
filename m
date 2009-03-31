@@ -1,48 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762690AbZCaV1z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761944AbZCaVad@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762690AbZCaV1z (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Mar 2009 17:27:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754559AbZCaV1p
+	id S1761944AbZCaVad (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Mar 2009 17:30:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753764AbZCaVaX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Mar 2009 17:27:45 -0400
-Received: from mail-in-13.arcor-online.net ([151.189.21.53]:34288 "EHLO
-	mail-in-13.arcor-online.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751858AbZCaV1o (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Mar 2009 17:27:44 -0400
-X-DKIM: Sendmail DKIM Filter v2.8.2 mail-in-07.arcor-online.net 9DB813CA5BF
-From: Bodo Eggert <7eggert@gmx.de>
-Subject: Re: replace() system call needed (was Re: EXT4-ish "fixes" in 	UBIFS)
-To: Pavel Machek <pavel@ucw.cz>, Artem Bityutskiy <dedekind@yandex.ru>,
-       Artem Bityutskiy <Artem.Bityutskiy@nokia.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Reply-To: 7eggert@gmx.de
-Date: Tue, 31 Mar 2009 23:27:33 +0200
-References: <ckjPq-2Dl-15@gated-at.bofh.it> <cl2jy-65z-1@gated-at.bofh.it> <cl2CZ-6q2-21@gated-at.bofh.it> <cl2N9-6Bj-9@gated-at.bofh.it>
-User-Agent: KNode/0.10.4
+	Tue, 31 Mar 2009 17:30:23 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:56512 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751636AbZCaVaX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Mar 2009 17:30:23 -0400
+Message-ID: <49D28B1C.8030601@garzik.org>
+Date: Tue, 31 Mar 2009 17:29:00 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7Bit
-Message-Id: <E1LolUc-0003kM-FU@be1.7eggert.dyndns.org>
+To: Jens Axboe <jens.axboe@oracle.com>
+CC: Tejun Heo <tj@kernel.org>, Theodore Tso <tytso@mit.edu>,
+       Chris Mason <chris.mason@oracle.com>,
+       =?ISO-8859-1?Q?Fernando_Luis_V=E1zquez_Cao?= 
+	<fernando@oss.ntt.co.jp>,
+       Christoph Hellwig <hch@infradead.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Nick Piggin <npiggin@suse.de>,
+       David Rees <drees76@gmail.com>, Jesper Krogh <jesper@krogh.cc>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       david@fromorbit.com
+Subject: Re: [PATCH 2/7] ext3: call blkdev_issue_flush() on fsync()
+References: <49D01F94.6000101@oss.ntt.co.jp> <49D02328.7060108@oss.ntt.co.jp> <49D0258A.9020306@garzik.org> <49D03377.1040909@oss.ntt.co.jp> <49D0B535.2010106@oss.ntt.co.jp> <49D0B70E.8060506@oss.ntt.co.jp> <20090330140427.GG13356@mit.edu> <1238422551.30488.47.camel@think.oraclecorp.com> <20090330143343.GJ13356@mit.edu> <49D17162.1090207@kernel.org> <20090331111818.GL5178@kernel.dk>
+In-Reply-To: <20090331111818.GL5178@kernel.dk>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pavel Machek <pavel@ucw.cz> wrote:
-
-> My proposal is
+Jens Axboe wrote:
+> On Tue, Mar 31 2009, Tejun Heo wrote:
+>> Hello,
+>>
+>> Theodore Tso wrote:
+>>> On Mon, Mar 30, 2009 at 10:15:51AM -0400, Chris Mason wrote:
+>>>> I'm not sure we want to stick Fernando with changing how barriers are
+>>>> done in individual filesystems, his patch is just changing the existing
+>>>> call points.
+>>> Well, his patch actually added some calls to block_issue_flush().  But
+>>> yes, it's probably better if he just changes the existing call points,
+>>> and we can have the relevant filesystem maintainers double check to
+>>> make sure that there aren't any new call points which are needed.
+>> How about having something like blk_ensure_cache_flushed() which
+>> issues flush iff there hasn't been any write since the last flush?
+>> It'll be easy to implement and will filter out duplicate flushes in
+>> most cases.
 > 
-> rename() stays.
-> 
-> replace(src, bar) is rename that ensures that bar will contain valid
-> data after powerfail.
+> My original ide implementation of flushes actually did this. My memory
+> is a little hazy on why it was dropped, I'm guessing because it
+> basically never triggered anyway.
 
-This can be done using implicit logic:
+Yeah, and it probably wouldn't trigger today unless we add new code that 
+starts generating enough duplicate cache flushes for this to be 
+significant...
 
-->E.g. on close(), mark inodes without being sync()ed as poisoned.
-(I can think of more sophisticated logic, but ...)
-->On completing the inode with the delayed allocations, unpoison it.
-->Don't commit rename()s if the corresponding inode is poisoned.
+And since duplicate cache flushes are harmless to the drive, you're only 
+talking about no-op ATA command overhead.  Which is only mildly notable 
+on legacy IDE (eight or so inb/outb operations).
 
-Et Voila, everything replace is supposed to guarantee is guaranteed.
+I would put duplicate cache flush filtering way, way down on the 
+priority list, IMO.
+
+	Jeff
+
+
+
 
