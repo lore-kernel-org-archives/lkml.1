@@ -1,41 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761600AbZCaTX0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753204AbZCaTZG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761600AbZCaTX0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 31 Mar 2009 15:23:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752188AbZCaTXN
+	id S1753204AbZCaTZG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 31 Mar 2009 15:25:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753512AbZCaTYy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 31 Mar 2009 15:23:13 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:34109 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753573AbZCaTXM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 31 Mar 2009 15:23:12 -0400
-Message-ID: <49D26D8B.7020201@redhat.com>
-Date: Tue, 31 Mar 2009 22:22:51 +0300
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Tue, 31 Mar 2009 15:24:54 -0400
+Received: from mail-in-07.arcor-online.net ([151.189.21.47]:56106 "EHLO
+	mail-in-07.arcor-online.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752188AbZCaTYx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 31 Mar 2009 15:24:53 -0400
+X-DKIM: Sendmail DKIM Filter v2.8.2 mail-in-03.arcor-online.net B52772C2C86
+From: Bodo Eggert <7eggert@gmx.de>
+Subject: Re: Sysfs with no struc device ?
+To: Ayman KHAMOUMA <ayman.khamouma@st.com>, linux-kernel@vger.kernel.org
+Reply-To: 7eggert@gmx.de
+Date: Tue, 31 Mar 2009 21:24:49 +0200
+References: <clPat-8uW-5@gated-at.bofh.it>
+User-Agent: KNode/0.10.4
 MIME-Version: 1.0
-To: Gregory Haskins <ghaskins@novell.com>
-CC: linux-kernel@vger.kernel.org, agraf@suse.de, pmullaney@novell.com,
-       pmorreale@novell.com, anthony@codemonkey.ws, rusty@rustcorp.com.au,
-       netdev@vger.kernel.org, kvm@vger.kernel.org
-Subject: Re: [RFC PATCH 14/17] kvm: add a reset capability
-References: <20090331184057.28333.77287.stgit@dev.haskins.net> <20090331184400.28333.50396.stgit@dev.haskins.net>
-In-Reply-To: <20090331184400.28333.50396.stgit@dev.haskins.net>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7Bit
+Message-Id: <E1LojZq-0001MG-AM@be1.7eggert.dyndns.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Gregory Haskins wrote:
-> We need a way to detect if a VM is reset later in the series, so lets
-> add a capability for userspace to signal a VM reset down to the kernel.
->   
+Ayman KHAMOUMA <ayman.khamouma@st.com> wrote:
 
-How do you handle the case of a guest calling kexec to load a new 
-kernel?  Or is that not important for your use case?
+> I'm trying to write a module which is supposed to write the state of a pin in
+> a sysfs file. As it is neither a char device nor a block device, or anything
+> else, I suposed taht I don't need any struct device...I mau be mistaking... So
+> my question is: How can I create this file in sysfs without any struct device
+> ?
 
--- 
-I have a truly marvellous patch that fixes the bug which this
-signature is too narrow to contain.
+Why don't you create a char device: Reader will get one char per status change
+(and one initial char, off cause), while mmap will map the flag? You'd get
+the interface you want (except the path beginning with /sys), and more.
+
+Or, if you wanted a more sophisticated way, you could use a one-button-zero-axis
+joystick device, very similar to the parport joystick. But I doubt it would make
+sense for your usecase?
 
